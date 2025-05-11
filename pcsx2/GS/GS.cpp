@@ -120,6 +120,12 @@ static bool OpenGSDevice(GSRendererType renderer, bool clear_state_on_fail, bool
 		EmuConfig.HDRRendering = HDRRenderType::Off;
 		EmuConfig.HDROutput = false;
 	}
+	//TODO: unexpose the setting from Qt on mac, and make a temporary copy in "EmuConfig" like "HDRRendering" has
+	// The HDR brightness is controlled by the OS on Mac, games are expected to output the same range as SDR, so we make it neutral
+	if (new_api == RenderAPI::Metal)
+	{
+		GSConfig.HDR_BrightnessNits = Pcsx2Config::GSOptions::DEFAULT_SRGB_BRIGHTNESS_NITS;
+	}
 	// This is ignored by the SW renderer but let's turn it off for clarity.
 	if (renderer == GSRendererType::SW)
 	{
