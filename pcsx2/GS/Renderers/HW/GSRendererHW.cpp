@@ -6644,7 +6644,7 @@ bool GSRendererHW::CanUseTexIsFB(const GSTextureCache::Target* rt, const GSTextu
 		const GSLocalMemory::psm_t& rt_psm = GSLocalMemory::m_psm[rt->m_TEX0.PSM];
 		if (tex_psm.pal > 0 && tex_psm.bpp < rt_psm.bpp)
 		{
-			GL_CACHE("HW: Disabling tex-is-fb due to palette conversion.");
+			GL_CACHE("HW: Enabling tex-is-fb for palette conversion.");
 			return true;
 		}
 
