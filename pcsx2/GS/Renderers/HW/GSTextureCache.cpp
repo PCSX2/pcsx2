@@ -2112,16 +2112,24 @@ void GSTextureCache::CombineAlignedInsideTargets(Target* target, GSTextureCache:
 				{
 					if (t->m_last_draw > target->m_last_draw || t->m_valid.rintersect(target->m_valid).rempty())
 					{
-						t->Update();
-						const u32 vertical_offset = (((t->m_TEX0.TBP0 - target->m_TEX0.TBP0) >> 5) / std::max(1U, t->m_TEX0.TBW)) * t_psm.pgs.y;
-						const u32 horizontal_offset = page_offset * t_psm.pgs.x;
-						const GSVector4i target_drect_unscaled = t->m_valid + GSVector4i(horizontal_offset, vertical_offset).xyxy();
-						const GSVector4 target_drect = GSVector4(target_drect_unscaled) * target->m_scale;
-						const bool valid_color = t->m_valid_rgb;
-						const bool valid_alpha = (t->m_valid_alpha_high | t->m_valid_alpha_low) && (GSUtil::GetChannelMask(t->m_TEX0.PSM) & 0x8);
-						g_gs_device->StretchRect(t->m_texture, GSVector4(0, 0, 1, 1), target->m_texture, target_drect, valid_color, valid_color, valid_color, valid_alpha, (target->m_type == RenderTarget) ? ShaderConvert::COPY : ShaderConvert::DEPTH_COPY);
+						if (!t->m_drawn_since_read.rempty())
+						{
+							t->Update();
 
-						target->UpdateValidity(target_drect_unscaled);
+							const u32 vertical_offset = (((t->m_TEX0.TBP0 - target->m_TEX0.TBP0) >> 5) / std::max(1U, t->m_TEX0.TBW)) * t_psm.pgs.y;
+							const u32 horizontal_offset = page_offset * t_psm.pgs.x;
+							const GSVector4i target_drect_unscaled = t->m_drawn_since_read + GSVector4i(horizontal_offset, vertical_offset).xyxy();
+
+							const GSVector4 source_rect = GSVector4(t->m_drawn_since_read) / (GSVector4(t->m_unscaled_size) * t->GetScale());
+							const GSVector4 target_drect = GSVector4(target_drect_unscaled) * target->m_scale;
+
+							const bool valid_color = t->m_valid_rgb;
+							const bool valid_alpha = (t->m_valid_alpha_high | t->m_valid_alpha_low) && (GSUtil::GetChannelMask(t->m_TEX0.PSM) & 0x8);
+
+							g_gs_device->StretchRect(t->m_texture, source_rect, target->m_texture, target_drect, valid_color, valid_color, valid_color, valid_alpha, (target->m_type == RenderTarget) ? ShaderConvert::COPY : ShaderConvert::DEPTH_COPY);
+
+							target->UpdateValidity(target_drect_unscaled);
+						}
 					}
 
 					if (src && src->m_from_target == t)
