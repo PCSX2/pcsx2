@@ -2096,7 +2096,7 @@ void GSTextureCache::CombineAlignedInsideTargets(Target* target, GSTextureCache:
 		if (t != target)
 		{
 			// Target not contained, skip it.
-			if (t->m_TEX0.TBP0 < target->m_TEX0.TBP0 || t->m_end_block > target->m_end_block)
+			if (t->m_TEX0.TBP0 < target->m_TEX0.TBP0 || t->UnwrappedEndBlock() > target->UnwrappedEndBlock())
 			{
 				i++;
 				continue;
