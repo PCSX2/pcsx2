@@ -10786,67 +10786,67 @@ Do you want to load this save and continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="452"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="464"/>
         <source>Saving screenshot to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="464"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="476"/>
         <source>Saved screenshot to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="471"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="483"/>
         <source>Failed to save screenshot to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="542"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="554"/>
         <source>Host GPU device encountered an error and was recovered. This may have broken rendering.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="647"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="659"/>
         <source>CAS is not available, your graphics driver does not support the required functionality.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="702"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="714"/>
         <source>with no compression</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="709"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="721"/>
         <source>with LZMA compression</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="716"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="728"/>
         <source>with Zstandard compression</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="722"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="734"/>
         <source>Saving {0} GS dump {1} to &apos;{2}&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="723"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="735"/>
         <source>single frame</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="723"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="735"/>
         <source>multi-frame</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="743"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="755"/>
         <source>Failed to render/download screenshot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="754"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="766"/>
         <source>Saved GS dump to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
