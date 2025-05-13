@@ -613,7 +613,7 @@ void FullscreenUI::ApplyLayoutSettings(const SettingsInterface* bsi)
 
 	const InputLayout layout = ImGuiFullscreen::GetGamepadLayout();
 
-	if (sdl2_nintendo_mode == "true" || (sdl2_nintendo_mode == "auto") && layout == InputLayout::Nintendo)
+	if ((sdl2_nintendo_mode == "true" || sdl2_nintendo_mode == "auto") && layout == InputLayout::Nintendo)
 	{
 		// Apply
 		ImGuiManager::SwapGamepadNorthWest(true);
