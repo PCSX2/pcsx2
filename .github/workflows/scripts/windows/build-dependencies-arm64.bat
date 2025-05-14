@@ -46,7 +46,7 @@ set FREETYPE=2.13.3
 set HARFBUZZ=11.2.0
 set LIBJPEGTURBO=3.1.0
 set LIBPNG=1648
-set SDL=SDL3-3.2.12
+set SDL=SDL3-3.2.14
 set QT=6.9.0
 set QTMINOR=6.9
 set LZ4=1.10.0
@@ -68,7 +68,7 @@ call :downloadfile "harfbuzz-%HARFBUZZ%.zip" https://github.com/harfbuzz/harfbuz
 call :downloadfile "lpng%LIBPNG%.zip" https://download.sourceforge.net/libpng/lpng1648.zip 2e5f080360f77376eb2bfa9e2ed773b9c7728159aba47b638ad53ca839379040 || goto error
 call :downloadfile "libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/%LIBJPEGTURBO%/libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" 9564c72b1dfd1d6fe6274c5f95a8d989b59854575d4bbee44ade7bc17aa9bc93 || goto error
 call :downloadfile "libwebp-%WEBP%.tar.gz" "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-%WEBP%.tar.gz" 7d6fab70cf844bf6769077bd5d7a74893f8ffd4dfb42861745750c63c2a5c92c || goto error
-call :downloadfile "%SDL%.zip" "https://libsdl.org/release/%SDL%.zip" ebf1efd71527afbca6bdf2b0310caf726d00cc102c0e59ac86c1f8cd201f9593 || goto error
+call :downloadfile "%SDL%.zip" "https://libsdl.org/release/%SDL%.zip" 46a17d3ea71fe2580a7f43ca7da286c5b9106dd761e2fd5533bb113e5d86b633 || goto error
 call :downloadfile "qtbase-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtbase-everywhere-src-%QT%.zip" 513df15a6365a40f6230ec9463ad8c71b824e181d4b661dac9707e103b24ae0c || goto error
 call :downloadfile "qtimageformats-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtimageformats-everywhere-src-%QT%.zip" d428fd17a0d3f92c48a30f1d23806bf20352fbce2e80e5bbee27fa80576480ee || goto error
 call :downloadfile "qtsvg-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtsvg-everywhere-src-%QT%.zip" 54bf06afeb67035f1c6afcd00beec755c0d776626b4cce9ab56992a55215ba69 || goto error
