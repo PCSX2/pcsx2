@@ -3212,7 +3212,7 @@ void GSRendererHW::Draw()
 				CleanupDraw(true);
 				return;
 			}
-			else if (IsPageCopy() && src->m_from_target && m_cached_ctx.TEX0.TBP0 >= src->m_from_target->m_TEX0.TBP0)
+			else if (IsPageCopy() && src->m_from_target && m_cached_ctx.TEX0.TBP0 >= src->m_from_target->m_TEX0.TBP0 && m_cached_ctx.FRAME.FBW < ((src->m_from_target->m_TEX0.TBW + 1) >> 1))
 			{
 				FRAME_TEX0.TBW = src->m_from_target->m_TEX0.TBW;
 			}
