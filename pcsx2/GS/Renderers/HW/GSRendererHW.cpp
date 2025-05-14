@@ -5030,6 +5030,8 @@ __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool 
 		// Hitman suffers from this, not sure on the exact scenario at the moment, but we need the barrier.
 		if (PRIM->ABE && m_context->ALPHA.IsCdInBlend())
 		{
+			// Needed to enable IsFeedbackLoop.
+			m_conf.ps.channel_fb = 1;
 			// Assume no overlap when it's a channel shuffle, no need for full barriers.
 			m_conf.require_one_barrier = true;
 		}
