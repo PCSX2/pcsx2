@@ -1713,7 +1713,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 						// If the sizing is completely wrong on the frame vs the source when reading from alpha then it's likely the target has 2 different sizes for rgb and alpha.
 						// This is just changing the target width for the rect translation, it has no bearing on the actual source read or the target itself.
 						// Hitman Blood Money is an example of this in the theatre.
-						const u32 rt_tbw = (possible_shuffle || bw == 1 || GSUtil::GetChannelMask(psm) != 0x8 || frame.FBW <= bw || frame.FBW == t->m_TEX0.TBW) ? t->m_TEX0.TBW : frame.FBW;
+						const u32 rt_tbw = (possible_shuffle || bw == 1 || GSUtil::GetChannelMask(psm) != 0x8 || frame.FBW <= bw || frame.FBW == t->m_TEX0.TBW || bw == t->m_TEX0.TBW) ? t->m_TEX0.TBW : frame.FBW;
 
 						const bool can_translate = CanTranslate(bp, bw, src_psm, new_rect, t->m_TEX0.TBP0, t->m_TEX0.PSM, rt_tbw);
 						if (can_translate)
@@ -2088,6 +2088,10 @@ GSVector2i GSTextureCache::ScaleRenderTargetSize(const GSVector2i& sz, float sca
 
 void GSTextureCache::CombineAlignedInsideTargets(Target* target, GSTextureCache::Source* src)
 {
+	// Don't combine targets if Tex in RT is off, it will just fail to find them and make a new one, causing a loop of copies.
+	if (GSConfig.UserHacks_TextureInsideRt < GSTextureInRtMode::InsideTargets)
+		return;
+
 	auto& list = m_dst[target->m_type];
 
 	for (auto i = list.begin(); i != list.end();)
@@ -2121,11 +2125,16 @@ void GSTextureCache::CombineAlignedInsideTargets(Target* target, GSTextureCache:
 							const u32 horizontal_offset = page_offset * t_psm.pgs.x;
 							const GSVector4i target_drect_unscaled = t->m_drawn_since_read + GSVector4i(horizontal_offset, vertical_offset).xyxy();
 
-							const GSVector4 source_rect = GSVector4(t->m_drawn_since_read) / (GSVector4(t->m_unscaled_size) * t->GetScale());
+							const GSVector4 source_rect = GSVector4(t->m_drawn_since_read) / (GSVector4(t->m_unscaled_size).xyxy() * t->GetScale());
 							const GSVector4 target_drect = GSVector4(target_drect_unscaled) * target->m_scale;
 
 							const bool valid_color = t->m_valid_rgb;
 							const bool valid_alpha = (t->m_valid_alpha_high | t->m_valid_alpha_low) && (GSUtil::GetChannelMask(t->m_TEX0.PSM) & 0x8);
+
+							target->m_valid_alpha_high |= t->m_valid_alpha_high;
+							target->m_valid_alpha_low |= t->m_valid_alpha_low;
+
+							GL_CACHE("Combining %x-%x in to %x-%x draw %d", t->m_TEX0.TBP0, t->m_end_block, target->m_TEX0.TBP0, target->m_end_block, GSState::s_n);
 
 							g_gs_device->StretchRect(t->m_texture, source_rect, target->m_texture, target_drect, valid_color, valid_color, valid_color, valid_alpha, (target->m_type == RenderTarget) ? ShaderConvert::COPY : ShaderConvert::DEPTH_COPY);
 
@@ -2693,7 +2702,8 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 				}
 			}
 
-			if (!dst->m_valid_rgb)
+			const u32 mask = GSLocalMemory::m_psm[TEX0.PSM].fmsk;
+			if (!dst->m_valid_rgb && ((fbmask & 0x00FFFFFF) & mask) != (mask & 0x00FFFFFF))
 			{
 				GL_CACHE("TC: Cannot find RGB target for %s[%x], clearing.", to_string(type), dst->m_TEX0.TBP0);
 
@@ -2775,11 +2785,11 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 		for (auto i = rev_list.begin(); i != rev_list.end(); ++i)
 		{
 			Target* t = *i;
-			// Don't pull in targets without valid lower 24 bits, it makes no sense to convert them.
+			// Don't pull in targets without valid lower 24 bits unless the Z is 32bits and the alpha is valid, it makes no sense to convert them otherwise.
 			// FIXME: Technically the difference in size is fine, but if the target gets reinterpreted, the hw renderer doesn't rearrange the target.
 			// This does cause some extra uploads in some games (like Burnout), but without this, bad data gets displayed in games like Transformers.
-			if (bp != t->m_TEX0.TBP0 || !t->m_valid_rgb || (!is_shuffle && t->m_TEX0.TBW != TEX0.TBW && 
-				(possible_clear || ((~GSLocalMemory::m_psm[t->m_TEX0.PSM].fmsk | fbmask) == 0xffffffff))))
+			if (bp != t->m_TEX0.TBP0 || (!t->m_valid_rgb && (!(GSUtil::GetChannelMask(TEX0.PSM) & 0x8) || !(t->m_valid_alpha_low || t->m_valid_alpha_high))) ||
+				(!is_shuffle && t->m_TEX0.TBW != TEX0.TBW && (possible_clear || ((~GSLocalMemory::m_psm[t->m_TEX0.PSM].fmsk | fbmask) == 0xffffffff))))
 			{
 				continue;
 			}
@@ -3014,9 +3024,8 @@ GSTextureCache::Target* GSTextureCache::CreateTarget(GIFRegTEX0 TEX0, const GSVe
 	if (!is_frame)
 	{
 		// Not having this valid could make things explode, but I do enjoy watching the world burn (and this is actually more correct).
-		dst->m_valid_rgb =true;
-
 		const u32 mask = GSLocalMemory::m_psm[TEX0.PSM].fmsk;
+		dst->m_valid_rgb = GSLocalMemory::m_psm[TEX0.PSM].depth || ((fbmask & 0x00FFFFFF) & mask) != (mask & 0x00FFFFFF) || (dst->m_dirty.GetDirtyChannels() & 0x7);
 
 		// If there is an opposite target without valid RGB, we need to match them up
 		auto& rev_list = m_dst[1 - type];
@@ -3025,9 +3034,6 @@ GSTextureCache::Target* GSTextureCache::CreateTarget(GIFRegTEX0 TEX0, const GSVe
 			Target* const rev_t = *j;
 			if (rev_t->m_TEX0.TBP0 == dst->m_TEX0.TBP0 && GSLocalMemory::m_psm[rev_t->m_TEX0.PSM].bpp == GSLocalMemory::m_psm[dst->m_TEX0.PSM].bpp)
 			{
-				if (GSLocalMemory::m_psm[rev_t->m_TEX0.PSM].trbpp == 24 && ((fbmask & 0x00FFFFFF) & mask) == (mask & 0x00FFFFFF))
-					dst->m_valid_rgb = false;
-
 				if (!rev_t->m_valid_rgb && dst->m_valid_rgb)
 					rev_t->m_was_dst_matched = true;
 
