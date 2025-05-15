@@ -221,6 +221,15 @@ enum class DebugFunctionScanMode
 	SKIP
 };
 
+enum class HDRRenderType : u8
+{
+	Off, // SDR (default)
+	Safe, // HDR (quantized to 8 bit on all channels, without clamping to 255)
+	Unsafe, // HDR (only alpha quantized to 8 bit)
+	Insane, // HDR (no quantization, no clamping)
+	MaxCount
+};
+
 enum class AspectRatioType : u8
 {
 	Stretch, // Stretches to the whole window/display size
@@ -450,6 +459,14 @@ enum class GSNativeScaling : u8
 	Normal,
 	Aggressive,
 	MaxCount
+};
+
+enum class GSColorSpaceCorrection : u8
+{
+	Rec_709, // No correction (Rec.709/sRGB/scRGB)
+	NTSC_M,
+	NTSC_J,
+	PAL
 };
 
 // --------------------------------------------------------------------------------------
@@ -683,6 +700,12 @@ struct Pcsx2Config
 		static constexpr int DEFAULT_AUDIO_CAPTURE_BITRATE = 192;
 		static const char* DEFAULT_CAPTURE_CONTAINER;
 
+		static constexpr float DEFAULT_GAME_GAMMA = 2.35f; // CRT average gamma
+
+		static constexpr float DEFAULT_SRGB_BRIGHTNESS_NITS = 80.f;
+		static constexpr float DEFAULT_HDR_BRIGHTNESS_NITS = 203.f; // ITU standard
+		static constexpr float DEFAULT_HDR_PEAK_BRIGHTNESS_NITS = 1000.f; // Common value as of 2025
+
 		union
 		{
 			u64 bitset;
@@ -740,6 +763,7 @@ struct Pcsx2Config
 					UserHacks_NativePaletteDraw : 1,
 					UserHacks_EstimateTextureRegion : 1,
 					FXAA : 1,
+					ColorCorrect : 1,
 					ShadeBoost : 1,
 					DumpGSData : 1,
 					SaveRT : 1,
@@ -763,6 +787,9 @@ struct Pcsx2Config
 					EnableAudioCaptureParameters : 1;
 			};
 		};
+		
+		HDRRenderType HDRRendering = HDRRenderType::Off;
+		bool HDROutput = false;
 
 		int VsyncQueueSize = 2;
 
@@ -818,6 +845,10 @@ struct Pcsx2Config
 		u8 ShadeBoost_Brightness = 50;
 		u8 ShadeBoost_Contrast = 50;
 		u8 ShadeBoost_Saturation = 50;
+		float ColorCorrect_GameGamma = DEFAULT_GAME_GAMMA;
+		GSColorSpaceCorrection ColorCorrect_GameColorSpace = GSColorSpaceCorrection::Rec_709;
+		float HDR_BrightnessNits = DEFAULT_HDR_BRIGHTNESS_NITS;
+		float HDR_PeakBrightnessNits = DEFAULT_HDR_PEAK_BRIGHTNESS_NITS;
 		u8 PNGCompressionLevel = 1;
 
 		u16 SWExtraThreads = 2;
@@ -1326,6 +1357,8 @@ struct Pcsx2Config
 	AspectRatioType CurrentAspectRatio = AspectRatioType::RAuto4_3_3_2;
 	// Fall back aspect ratio for games that have patches (when AspectRatioType::RAuto4_3_3_2) is active.
 	float CurrentCustomAspectRatio = 0.f;
+	HDRRenderType HDRRendering = HDRRenderType::Off;
+	bool HDROutput = false;
 	bool IsPortableMode = false;
 
 	Pcsx2Config();

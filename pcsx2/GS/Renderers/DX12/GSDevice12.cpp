@@ -47,6 +47,9 @@ static constexpr std::array<D3D12_PRIMITIVE_TOPOLOGY, 3> s_primitive_topology_ma
 
 static constexpr std::array<float, 4> s_present_clear_color = {};
 
+constexpr DXGI_FORMAT swap_chain_hdr_format = DXGI_FORMAT_R16G16B16A16_FLOAT; // GSTexture::Format::ColorHDR. Automatically enables scRGB HDR if set on creation.
+constexpr DXGI_FORMAT swap_chain_sdr_format = DXGI_FORMAT_R10G10B10A2_UNORM; // GSTexture::Format::ColorHQ.
+
 static D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE GetLoadOpForTexture(GSTexture12* tex)
 {
 	if (!tex)
@@ -697,6 +700,10 @@ bool GSDevice12::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 
 	m_name = D3D::GetAdapterName(m_adapter.get());
 
+	m_swap_chain_format = EmuConfig.HDROutput ? swap_chain_hdr_format : swap_chain_sdr_format;
+	// For now these are expected to be identical, but it's probably not necessary
+	pxAssert(m_swap_chain_format == GetNativeFormat(m_postprocess_texture_format));
+
 	if (!CreateDescriptorHeaps() || !CreateCommandLists() || !CreateTimestampQuery())
 		return false;
 
@@ -800,8 +807,6 @@ u32 GSDevice12::GetSwapChainBufferCount() const
 
 bool GSDevice12::CreateSwapChain()
 {
-	constexpr DXGI_FORMAT swap_chain_format = DXGI_FORMAT_R8G8B8A8_UNORM;
-
 	if (m_window_info.type != WindowInfo::Type::Win32)
 		return false;
 
@@ -818,7 +823,7 @@ bool GSDevice12::CreateSwapChain()
 		m_is_exclusive_fullscreen =
 			GetRequestedExclusiveFullscreenMode(&fullscreen_width, &fullscreen_height, &fullscreen_refresh_rate) &&
 			D3D::GetRequestedExclusiveFullscreenModeDesc(m_dxgi_factory.get(), client_rc, fullscreen_width,
-				fullscreen_height, fullscreen_refresh_rate, swap_chain_format, &fullscreen_mode,
+				fullscreen_height, fullscreen_refresh_rate, m_swap_chain_format, &fullscreen_mode,
 				fullscreen_output.put());
 
 		// Using mailbox-style no-allow-tearing causes tearing in exclusive fullscreen.
@@ -836,7 +841,7 @@ bool GSDevice12::CreateSwapChain()
 	DXGI_SWAP_CHAIN_DESC1 swap_chain_desc = {};
 	swap_chain_desc.Width = static_cast<u32>(client_rc.right - client_rc.left);
 	swap_chain_desc.Height = static_cast<u32>(client_rc.bottom - client_rc.top);
-	swap_chain_desc.Format = swap_chain_format;
+	swap_chain_desc.Format = m_swap_chain_format;
 	swap_chain_desc.SampleDesc.Count = 1;
 	swap_chain_desc.BufferCount = GetSwapChainBufferCount();
 	swap_chain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
@@ -933,8 +938,9 @@ bool GSDevice12::CreateSwapChainRTV()
 			return false;
 		}
 
+		pxAssert(swap_chain_desc.BufferDesc.Format == GetNativeFormat(m_postprocess_texture_format));
 		std::unique_ptr<GSTexture12> tex = GSTexture12::Adopt(std::move(backbuffer), GSTexture::Type::RenderTarget,
-			GSTexture::Format::Color, swap_chain_desc.BufferDesc.Width, swap_chain_desc.BufferDesc.Height, 1,
+			m_postprocess_texture_format, swap_chain_desc.BufferDesc.Width, swap_chain_desc.BufferDesc.Height, 1,
 			swap_chain_desc.BufferDesc.Format, DXGI_FORMAT_UNKNOWN, swap_chain_desc.BufferDesc.Format,
 			DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_UNKNOWN, D3D12_RESOURCE_STATE_COMMON);
 		if (!tex)
@@ -1265,7 +1271,7 @@ void GSDevice12::DrawIndexedPrimitive(int offset, int count)
 }
 
 void GSDevice12::LookupNativeFormat(GSTexture::Format format, DXGI_FORMAT* d3d_format, DXGI_FORMAT* srv_format,
-	DXGI_FORMAT* rtv_format, DXGI_FORMAT* dsv_format) const
+	DXGI_FORMAT* rtv_format, DXGI_FORMAT* dsv_format, GSTexture::Type type) const
 {
 	static constexpr std::array<std::array<DXGI_FORMAT, 4>, static_cast<int>(GSTexture::Format::Last) + 1>
 		s_format_mapping = {{
@@ -1301,10 +1307,17 @@ void GSDevice12::LookupNativeFormat(GSTexture::Format format, DXGI_FORMAT* d3d_f
 		*dsv_format = mapping[3];
 }
 
+DXGI_FORMAT GSDevice12::GetNativeFormat(GSTexture::Format format, GSTexture::Type type) const
+{
+	DXGI_FORMAT d3d_format, srv_format, rtv_format, dsv_format;
+	LookupNativeFormat(format, &d3d_format, &srv_format, &rtv_format, &dsv_format, type);
+	return d3d_format;
+}
+
 GSTexture* GSDevice12::CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format)
 {
 	DXGI_FORMAT dxgi_format, srv_format, rtv_format, dsv_format;
-	LookupNativeFormat(format, &dxgi_format, &srv_format, &rtv_format, &dsv_format);
+	LookupNativeFormat(format, &dxgi_format, &srv_format, &rtv_format, &dsv_format, type);
 
 	const DXGI_FORMAT uav_format = (type == GSTexture::Type::RWTexture) ? dxgi_format : DXGI_FORMAT_UNKNOWN;
 
@@ -1419,8 +1432,28 @@ void GSDevice12::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 		int(sRect.right - sRect.left), int(sRect.bottom - sRect.top), int(dRect.left), int(dRect.top),
 		int(dRect.right - dRect.left), int(dRect.bottom - dRect.top));
 
+	if (shader == ShaderConvert::COPY && dTex && dTex->GetFormat() != m_emulation_hw_rt_texture_format)
+	{
+		if (dTex->GetFormat() == GSTexture::Format::Color)
+		{
+			shader = ShaderConvert::COPY_EMU_LQ;
+		}
+		else if (dTex->GetFormat() == m_postprocess_texture_format)
+		{
+			shader = ShaderConvert::COPY_POSTPROCESS;
+		}
+		else
+		{
+			pxAssertMsg(false, "Trying to use the ShaderConvert::COPY shader pipeline to target an unsupported RT format");
+		}
+	}
+	else
+	{
+		pxAssertMsg(dTex, "StretchRect(): The destination texture needs to valid (it used to redirect to the presentation surface but it doesn't anymore)");
+	}
+
 	DoStretchRect(static_cast<GSTexture12*>(sTex), sRect, static_cast<GSTexture12*>(dTex), dRect,
-		dTex ? m_convert[static_cast<int>(shader)].get() : m_present[static_cast<int>(shader)].get(), linear,
+		m_convert[static_cast<int>(shader)].get(), linear,
 		ShaderConvertWriteMask(shader) == 0xf);
 }
 
@@ -1428,6 +1461,8 @@ void GSDevice12::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	bool green, bool blue, bool alpha, ShaderConvert shader)
 {
 	GL_PUSH("ColorCopy Red:%d Green:%d Blue:%d Alpha:%d", red, green, blue, alpha);
+
+	pxAssertMsg((shader == ShaderConvert::COPY || shader == ShaderConvert::RTA_CORRECTION) && dTex && dTex->GetFormat() == m_emulation_hw_rt_texture_format, "Trying to use the m_color_copy shader pipeline to target an unsupported RT format");
 
 	const u32 index = (red ? 1 : 0) | (green ? 2 : 0) | (blue ? 4 : 0) | (alpha ? 8 : 0);
 	int rta_offset = (shader == ShaderConvert::RTA_CORRECTION) ? 16 : 0;
@@ -1443,6 +1478,7 @@ void GSDevice12::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	cb.SetSource(sRect, sTex->GetSize());
 	cb.SetTarget(dRect, dTex ? dTex->GetSize() : GSVector2i(GetWindowWidth(), GetWindowHeight()));
 	cb.SetTime(shaderTime);
+	cb.SetBrightness(EmuConfig.HDROutput ? (GSConfig.HDR_BrightnessNits / Pcsx2Config::GSOptions::DEFAULT_SRGB_BRIGHTNESS_NITS) : 1.f);
 	SetUtilityRootSignature();
 	SetUtilityPushConstants(&cb, sizeof(cb));
 
@@ -1507,6 +1543,8 @@ void GSDevice12::FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u32
 		static_cast<float>(downsample_factor * downsample_factor), {}, clamp_min, static_cast<int>(downsample_factor), 0};
 	SetUtilityRootSignature();
 	SetUtilityPushConstants(&cb, sizeof(cb));
+
+	pxAssert(dTex->GetFormat() == m_emulation_hw_rt_texture_format); // "ShaderConvert::DOWNSAMPLE_COPY" expects RTs of this format
 
 	//const GSVector4 dRect = GSVector4(dTex->GetRect());
 	const ShaderConvert shader = ShaderConvert::DOWNSAMPLE_COPY;
@@ -1624,6 +1662,7 @@ void GSDevice12::DoMultiStretchRects(
 	SetUtilityTexture(rects[0].src, rects[0].linear ? m_linear_sampler_cpu : m_point_sampler_cpu);
 
 	pxAssert(shader == ShaderConvert::COPY || shader == ShaderConvert::RTA_CORRECTION || rects[0].wmask.wrgba == 0xf);
+	pxAssert(shader != ShaderConvert::COPY || dTex->GetFormat() == m_emulation_hw_rt_texture_format);
 	int rta_bit = (shader == ShaderConvert::RTA_CORRECTION) ? 16 : 0;
 	SetPipeline((rects[0].wmask.wrgba != 0xf) ? m_color_copy[rects[0].wmask.wrgba | rta_bit].get() :
 												m_convert[static_cast<int>(shader)].get());
@@ -1757,6 +1796,8 @@ void GSDevice12::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 		SetUtilityPushConstants(&uniforms, sizeof(uniforms));
 	}
 
+	pxAssert(dTex->GetFormat() == m_postprocess_texture_format); // "ShaderConvert::COPY_POSTPROCESS" expects RTs of this format
+
 	const GSVector2i dsize(dTex->GetSize());
 	const GSVector4i darea(0, 0, dsize.x, dsize.y);
 	bool dcleared = false;
@@ -1771,7 +1812,7 @@ void GSDevice12::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 			D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
 			D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS, GSVector4::unorm8(c));
 		SetUtilityRootSignature();
-		SetPipeline(m_convert[static_cast<int>(ShaderConvert::COPY)].get());
+		SetPipeline(m_convert[static_cast<int>(ShaderConvert::COPY_POSTPROCESS)].get());
 		DrawStretchRect(sRect[1], PMODE.SLBG ? dRect[2] : dRect[1], dsize);
 		dTex->SetState(GSTexture::State::Dirty);
 		dcleared = true;
@@ -1833,6 +1874,7 @@ void GSDevice12::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 
 	if (feedback_write_1) // FIXME I'm not sure dRect[0] is always correct
 	{
+		pxAssert(sTex[2]->GetFormat() == m_emulation_hw_rt_texture_format); // "ShaderConvert::YUV" expects RTs of this format
 		EndRenderPass();
 		SetUtilityRootSignature();
 		SetPipeline(m_convert[static_cast<int>(ShaderConvert::YUV)].get());
@@ -1872,7 +1914,7 @@ void GSDevice12::DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	static_cast<GSTexture12*>(dTex)->TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 }
 
-void GSDevice12::DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4])
+void GSDevice12::DoColorCorrect(GSTexture* sTex, GSTexture* dTex, const ColorCorrectConstantBuffer& cb)
 {
 	const GSVector4 sRect = GSVector4(0.0f, 0.0f, 1.0f, 1.0f);
 	const GSVector4i dRect = dTex->GetRect();
@@ -1883,8 +1925,8 @@ void GSDevice12::DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float para
 	BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_DISCARD, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
 		D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS);
 	dTex->SetState(GSTexture::State::Dirty);
-	SetPipeline(m_shadeboost_pipeline.get());
-	SetUtilityPushConstants(params, sizeof(float) * 4);
+	SetPipeline(m_colorcorrect_pipeline.get());
+	SetUtilityPushConstants(&cb, sizeof(cb));
 	DrawStretchRect(sRect, GSVector4(dRect), dTex->GetSize());
 	EndRenderPass();
 
@@ -1954,8 +1996,11 @@ bool GSDevice12::CompileImGuiPipeline()
 		return false;
 	}
 
+	ShaderMacro sm;
+	sm.AddMacro("PS_HDR", EmuConfig.HDROutput ? "1" : "0");
+
 	const ComPtr<ID3DBlob> vs = m_shader_cache.GetVertexShader(hlsl.value(), nullptr, "vs_main");
-	const ComPtr<ID3DBlob> ps = m_shader_cache.GetPixelShader(hlsl.value(), nullptr, "ps_main");
+	const ComPtr<ID3DBlob> ps = m_shader_cache.GetPixelShader(hlsl.value(), sm.GetPtr(), "ps_main");
 	if (!vs || !ps)
 	{
 		Console.Error("D3D12: Failed to compile ImGui shaders");
@@ -1974,7 +2019,7 @@ bool GSDevice12::CompileImGuiPipeline()
 	gpb.SetNoDepthTestState();
 	gpb.SetBlendState(0, true, D3D12_BLEND_SRC_ALPHA, D3D12_BLEND_INV_SRC_ALPHA, D3D12_BLEND_OP_ADD, D3D12_BLEND_ONE,
 		D3D12_BLEND_ZERO, D3D12_BLEND_OP_ADD);
-	gpb.SetRenderTarget(0, DXGI_FORMAT_R8G8B8A8_UNORM);
+	gpb.SetRenderTarget(0, m_swap_chain_format);
 
 	m_imgui_pipeline = gpb.Create(m_device.get(), m_shader_cache, false);
 	if (!m_imgui_pipeline)
@@ -2009,8 +2054,16 @@ void GSDevice12::RenderImGui()
 	};
 	// clang-format on
 
+	float cb[(4 * 4) + 4];
+	std::memcpy(&cb, &ortho_projection, sizeof(ortho_projection));
+	
+	// Imgui currently follows the same brightness as the whole HDR image (applied earlier on presentation),
+	// we could expose this variable to users to make it brightness
+	float imgui_hdr_brightness_nits = GSConfig.HDR_BrightnessNits;
+	cb[4 * 4] = EmuConfig.HDROutput ? (imgui_hdr_brightness_nits / Pcsx2Config::GSOptions::DEFAULT_SRGB_BRIGHTNESS_NITS) : 1.f;
+
 	SetUtilityRootSignature();
-	SetUtilityPushConstants(ortho_projection, sizeof(ortho_projection));
+	SetUtilityPushConstants(cb, sizeof(cb));
 	SetPipeline(m_imgui_pipeline.get());
 	SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -2333,6 +2386,11 @@ GSDevice12::ComPtr<ID3DBlob> GSDevice12::GetUtilityPixelShader(const std::string
 	return m_shader_cache.GetPixelShader(source, sm_model.GetPtr(), entry_point);
 }
 
+GSDevice12::ComPtr<ID3DBlob> GSDevice12::GetUtilityPixelShader(const std::string& source, const char* entry_point, ShaderMacro& shader_macro)
+{
+	return m_shader_cache.GetPixelShader(source, shader_macro.GetPtr(), entry_point);
+}
+
 bool GSDevice12::CreateNullTexture()
 {
 	m_null_texture =
@@ -2439,6 +2497,9 @@ bool GSDevice12::CompileConvertPipelines()
 	gpb.SetNoBlendingState();
 	gpb.SetVertexShader(m_convert_vs.get());
 
+	ShaderMacro sm;
+	sm.AddMacro("PS_HDR", static_cast<int>(EmuConfig.HDRRendering));
+
 	for (ShaderConvert i = ShaderConvert::COPY; static_cast<int>(i) < static_cast<int>(ShaderConvert::Count);
 		 i = static_cast<ShaderConvert>(static_cast<int>(i) + 1))
 	{
@@ -2469,9 +2530,21 @@ bool GSDevice12::CompileConvertPipelines()
 				gpb.SetDepthStencilFormat(DXGI_FORMAT_D32_FLOAT_S8X24_UINT);
 			}
 			break;
+			case ShaderConvert::COPY_EMU_LQ:
+			{
+				gpb.SetRenderTarget(0, GetNativeFormat(GSTexture::Format::Color, GSTexture::Type::RenderTarget));
+				gpb.SetDepthStencilFormat(DXGI_FORMAT_UNKNOWN);
+			}
+			break;
+			case ShaderConvert::COPY_POSTPROCESS:
+			{
+				gpb.SetRenderTarget(0, GetNativeFormat(m_postprocess_texture_format, GSTexture::Type::RenderTarget));
+				gpb.SetDepthStencilFormat(DXGI_FORMAT_UNKNOWN);
+			}
+			break;
 			default:
 			{
-				depth ? gpb.ClearRenderTargets() : gpb.SetRenderTarget(0, DXGI_FORMAT_R8G8B8A8_UNORM);
+				depth ? gpb.ClearRenderTargets() : gpb.SetRenderTarget(0, GetNativeFormat(m_emulation_hw_rt_texture_format, GSTexture::Type::RenderTarget));
 				gpb.SetDepthStencilFormat(depth ? DXGI_FORMAT_D32_FLOAT_S8X24_UINT : DXGI_FORMAT_UNKNOWN);
 			}
 			break;
@@ -2492,7 +2565,7 @@ bool GSDevice12::CompileConvertPipelines()
 
 		gpb.SetColorWriteMask(0, ShaderConvertWriteMask(i));
 
-		ComPtr<ID3DBlob> ps(GetUtilityPixelShader(*shader, shaderName(i)));
+		ComPtr<ID3DBlob> ps(GetUtilityPixelShader(*shader, shaderName(i), sm));
 		if (!ps)
 			return false;
 
@@ -2507,7 +2580,7 @@ bool GSDevice12::CompileConvertPipelines()
 		if (i == ShaderConvert::COPY)
 		{
 			// compile color copy pipelines
-			gpb.SetRenderTarget(0, DXGI_FORMAT_R8G8B8A8_UNORM);
+			gpb.SetRenderTarget(0, GetNativeFormat(m_emulation_hw_rt_texture_format, GSTexture::Type::RenderTarget));
 			gpb.SetDepthStencilFormat(DXGI_FORMAT_UNKNOWN);
 			for (u32 j = 0; j < 16; j++)
 			{
@@ -2524,8 +2597,7 @@ bool GSDevice12::CompileConvertPipelines()
 		}
 		else if (i == ShaderConvert::RTA_CORRECTION)
 		{
-			// compile color copy pipelines
-			gpb.SetRenderTarget(0, DXGI_FORMAT_R8G8B8A8_UNORM);
+			gpb.SetRenderTarget(0, GetNativeFormat(m_emulation_hw_rt_texture_format, GSTexture::Type::RenderTarget));
 			gpb.SetDepthStencilFormat(DXGI_FORMAT_UNKNOWN);
 			for (u32 j = 16; j < 32; j++)
 			{
@@ -2548,7 +2620,7 @@ bool GSDevice12::CompileConvertPipelines()
 			{
 				pxAssert(!arr[ds]);
 
-				gpb.SetRenderTarget(0, is_setup ? DXGI_FORMAT_R16G16B16A16_UNORM : DXGI_FORMAT_R8G8B8A8_UNORM);
+				gpb.SetRenderTarget(0, is_setup ? GetNativeFormat(GSTexture::Format::ColorClip, GSTexture::Type::RenderTarget) : GetNativeFormat(m_emulation_hw_rt_texture_format, GSTexture::Type::RenderTarget));
 				gpb.SetDepthStencilFormat(ds ? DXGI_FORMAT_D32_FLOAT_S8X24_UINT : DXGI_FORMAT_UNKNOWN);
 				arr[ds] = gpb.Create(m_device.get(), m_shader_cache, false);
 				if (!arr[ds])
@@ -2562,7 +2634,7 @@ bool GSDevice12::CompileConvertPipelines()
 	for (u32 datm = 0; datm < 4; datm++)
 	{
 		const std::string entry_point(StringUtil::StdStringFromFormat("ps_stencil_image_init_%d", datm));
-		ComPtr<ID3DBlob> ps(GetUtilityPixelShader(*shader, entry_point.c_str()));
+		ComPtr<ID3DBlob> ps(GetUtilityPixelShader(*shader, entry_point.c_str(), sm));
 		if (!ps)
 			return false;
 
@@ -2610,14 +2682,16 @@ bool GSDevice12::CompilePresentPipelines()
 	gpb.SetVertexShader(vs.get());
 	gpb.SetDepthState(false, false, D3D12_COMPARISON_FUNC_ALWAYS);
 	gpb.SetNoStencilState();
-	gpb.SetRenderTarget(0, DXGI_FORMAT_R8G8B8A8_UNORM);
+	gpb.SetRenderTarget(0, m_swap_chain_format);
 
 	for (PresentShader i = PresentShader::COPY; static_cast<int>(i) < static_cast<int>(PresentShader::Count);
 		 i = static_cast<PresentShader>(static_cast<int>(i) + 1))
 	{
 		const int index = static_cast<int>(i);
 
-		ComPtr<ID3DBlob> ps(GetUtilityPixelShader(*shader, shaderName(i)));
+		ShaderMacro sm;
+		sm.AddMacro("PS_HDR", EmuConfig.HDROutput ? "1" : "0");
+		ComPtr<ID3DBlob> ps(GetUtilityPixelShader(*shader, shaderName(i), sm));
 		if (!ps)
 			return false;
 
@@ -2648,7 +2722,7 @@ bool GSDevice12::CompileInterlacePipelines()
 	gpb.SetNoCullRasterizationState();
 	gpb.SetNoDepthTestState();
 	gpb.SetNoBlendingState();
-	gpb.SetRenderTarget(0, DXGI_FORMAT_R8G8B8A8_UNORM);
+	gpb.SetRenderTarget(0, GetNativeFormat(m_postprocess_texture_format, GSTexture::Type::RenderTarget));
 	gpb.SetVertexShader(m_convert_vs.get());
 
 	for (int i = 0; i < static_cast<int>(m_interlace.size()); i++)
@@ -2683,7 +2757,7 @@ bool GSDevice12::CompileMergePipelines()
 	gpb.SetRootSignature(m_utility_root_signature.get());
 	gpb.SetNoCullRasterizationState();
 	gpb.SetNoDepthTestState();
-	gpb.SetRenderTarget(0, DXGI_FORMAT_R8G8B8A8_UNORM);
+	gpb.SetRenderTarget(0, GetNativeFormat(m_postprocess_texture_format, GSTexture::Type::RenderTarget));
 	gpb.SetVertexShader(m_convert_vs.get());
 
 	for (int i = 0; i < static_cast<int>(m_merge.size()); i++)
@@ -2714,7 +2788,7 @@ bool GSDevice12::CompilePostProcessingPipelines()
 	gpb.SetNoCullRasterizationState();
 	gpb.SetNoDepthTestState();
 	gpb.SetNoBlendingState();
-	gpb.SetRenderTarget(0, DXGI_FORMAT_R8G8B8A8_UNORM);
+	gpb.SetRenderTarget(0, GetNativeFormat(m_postprocess_texture_format, GSTexture::Type::RenderTarget));
 	gpb.SetVertexShader(m_convert_vs.get());
 
 	{
@@ -2727,6 +2801,7 @@ bool GSDevice12::CompilePostProcessingPipelines()
 
 		ShaderMacro sm;
 		sm.AddMacro("FXAA_HLSL", "1");
+		sm.AddMacro("PS_HDR", EmuConfig.HDROutput ? "1" : "0");
 		ComPtr<ID3DBlob> ps = m_shader_cache.GetPixelShader(*shader, sm.GetPtr());
 		if (!ps)
 			return false;
@@ -2741,24 +2816,27 @@ bool GSDevice12::CompilePostProcessingPipelines()
 	}
 
 	{
-		const std::optional<std::string> shader = ReadShaderSource("shaders/dx11/shadeboost.fx");
+		const std::optional<std::string> shader = ReadShaderSource("shaders/dx11/colorcorrect.fx");
 		if (!shader)
 		{
-			Host::ReportErrorAsync("GS", "Failed to read shaders/dx11/shadeboost.fx.");
+			Host::ReportErrorAsync("GS", "Failed to read shaders/dx11/colorcorrect.fx.");
 			return false;
 		}
 
-		ComPtr<ID3DBlob> ps(GetUtilityPixelShader(*shader, "ps_main"));
+		ShaderMacro sm;
+		sm.AddMacro("PS_HDR_INPUT", EmuConfig.HDRRendering > HDRRenderType::Off ? "1" : "0");
+		sm.AddMacro("PS_HDR_OUTPUT", EmuConfig.HDROutput ? "1" : "0");
+		ComPtr<ID3DBlob> ps(GetUtilityPixelShader(*shader, "ps_main", sm));
 		if (!ps)
 			return false;
 
 		gpb.SetPixelShader(ps.get());
 
-		m_shadeboost_pipeline = gpb.Create(m_device.get(), m_shader_cache, false);
-		if (!m_shadeboost_pipeline)
+		m_colorcorrect_pipeline = gpb.Create(m_device.get(), m_shader_cache, false);
+		if (!m_colorcorrect_pipeline)
 			return false;
 
-		D3D12::SetObjectName(m_shadeboost_pipeline.get(), "Shadeboost pipeline");
+		D3D12::SetObjectName(m_colorcorrect_pipeline.get(), "ColorCorrect pipeline");
 	}
 
 	return true;
@@ -2784,7 +2862,7 @@ void GSDevice12::DestroyResources()
 	m_colclip_finish_pipelines = {};
 	m_date_image_setup_pipelines = {};
 	m_fxaa_pipeline.reset();
-	m_shadeboost_pipeline.reset();
+	m_colorcorrect_pipeline.reset();
 	m_imgui_pipeline.reset();
 
 	for (const auto& it : m_samplers)
@@ -2918,6 +2996,7 @@ const ID3DBlob* GSDevice12::GetTFXPixelShader(const GSHWDrawConfig::PSSelector& 
 	sm.AddMacro("PS_TEX_IS_FB", sel.tex_is_fb);
 	sm.AddMacro("PS_NO_COLOR", sel.no_color);
 	sm.AddMacro("PS_NO_COLOR1", sel.no_color1);
+	sm.AddMacro("PS_HDR", static_cast<int>(EmuConfig.HDRRendering)); // It's ok to access this variable here, when toggling HDR, the renderer is restarted
 
 	ComPtr<ID3DBlob> ps(m_shader_cache.GetPixelShader(m_tfx_source, sm.GetPtr(), "ps_main"));
 	it = m_tfx_pixel_shaders.emplace(sel, std::move(ps)).first;
@@ -2955,10 +3034,10 @@ GSDevice12::ComPtr<ID3D12PipelineState> GSDevice12::CreateTFXPipeline(const Pipe
 	{
 		const GSTexture::Format format = IsDATEModePrimIDInit(p.ps.date) ?
 											 GSTexture::Format::PrimID :
-											 (p.ps.colclip_hw ? GSTexture::Format::ColorClip : GSTexture::Format::Color);
+											 (p.ps.colclip_hw ? GSTexture::Format::ColorClip : m_emulation_hw_rt_texture_format);
 
 		DXGI_FORMAT native_format;
-		LookupNativeFormat(format, nullptr, nullptr, &native_format, nullptr);
+		LookupNativeFormat(format, nullptr, nullptr, &native_format, nullptr, GSTexture::Type::RenderTarget);
 		gpb.SetRenderTarget(0, native_format);
 	}
 	if (p.ds)
@@ -3386,6 +3465,7 @@ void GSDevice12::RenderTextureMipmap(
 	cmdlist->RSSetScissorRects(1, &scissor);
 
 	SetUtilityRootSignature();
+	pxAssert(texture->GetFormat() == m_emulation_hw_rt_texture_format); // "ShaderConvert::COPY" expects RTs of this format
 	SetPipeline(m_convert[static_cast<int>(ShaderConvert::COPY)].get());
 	DrawStretchRect(GSVector4(0.0f, 0.0f, 1.0f, 1.0f),
 		GSVector4(0.0f, 0.0f, static_cast<float>(dst_width), static_cast<float>(dst_height)),
@@ -3432,7 +3512,7 @@ void GSDevice12::BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE color_b
 		if (color_begin == D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR)
 		{
 			LookupNativeFormat(m_current_render_target->GetFormat(), nullptr,
-				&rt.BeginningAccess.Clear.ClearValue.Format, nullptr, nullptr);
+				&rt.BeginningAccess.Clear.ClearValue.Format, nullptr, nullptr, m_current_render_target->GetType());
 			GSVector4::store<false>(rt.BeginningAccess.Clear.ClearValue.Color, clear_color);
 		}
 	}
@@ -3446,7 +3526,7 @@ void GSDevice12::BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE color_b
 		if (depth_begin == D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR)
 		{
 			LookupNativeFormat(m_current_depth_target->GetFormat(), nullptr, nullptr, nullptr,
-				&ds.DepthBeginningAccess.Clear.ClearValue.Format);
+				&ds.DepthBeginningAccess.Clear.ClearValue.Format, m_current_render_target->GetType());
 			ds.DepthBeginningAccess.Clear.ClearValue.DepthStencil.Depth = clear_depth;
 		}
 		ds.StencilEndingAccess.Type = stencil_end;
@@ -3454,7 +3534,7 @@ void GSDevice12::BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE color_b
 		if (stencil_begin == D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR)
 		{
 			LookupNativeFormat(m_current_depth_target->GetFormat(), nullptr, nullptr, nullptr,
-				&ds.StencilBeginningAccess.Clear.ClearValue.Format);
+				&ds.StencilBeginningAccess.Clear.ClearValue.Format, m_current_render_target->GetType());
 			ds.StencilBeginningAccess.Clear.ClearValue.DepthStencil.Stencil = clear_stencil;
 		}
 	}
@@ -3604,7 +3684,8 @@ bool GSDevice12::ApplyTFXState(bool already_execed)
 
 	if (flags & DIRTY_FLAG_TFX_SAMPLERS)
 	{
-		if (!GetSamplerAllocator().LookupSingle(&m_tfx_samplers_handle_gpu, m_tfx_sampler))
+		D3D12DescriptorHandle samplers[] = {m_tfx_sampler, m_linear_sampler_cpu};
+		if (!GetSamplerAllocator().LookupGroup(&m_tfx_samplers_handle_gpu, samplers))
 		{
 			ExecuteCommandListAndRestartRenderPass(false, "Ran out of sampler groups");
 			return ApplyTFXState(true);
@@ -3903,7 +3984,8 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	if (config.require_one_barrier || (config.tex && config.tex == config.rt)) // Used as "bind rt" flag when texture barrier is unsupported.
 	{
 		// requires a copy of the RT
-		draw_rt_clone = static_cast<GSTexture12*>(CreateTexture(rtsize.x, rtsize.y, 1, colclip_rt ? GSTexture::Format::ColorClip : GSTexture::Format::Color, true));
+		pxAssert(draw_rt->GetFormat() == (colclip_rt ? GSTexture::Format::ColorClip : m_emulation_hw_rt_texture_format)); //TODO: delete this here and in OGL + VK
+		draw_rt_clone = static_cast<GSTexture12*>(CreateTexture(rtsize.x, rtsize.y, 1, draw_rt->GetFormat(), true));
 		if (draw_rt_clone)
 		{
 			EndRenderPass();

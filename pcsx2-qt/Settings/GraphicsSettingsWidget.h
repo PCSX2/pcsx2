@@ -37,6 +37,8 @@ private Q_SLOTS:
 	void onTextureDumpChanged();
 	void onTextureReplacementChanged();
 	void onShadeBoostChanged();
+	void onColorCorrectChanged();
+	void onHDRChanged();
 	void onMessagesPosChanged();
 	void onPerformancePosChanged();
 	void onCaptureContainerChanged();

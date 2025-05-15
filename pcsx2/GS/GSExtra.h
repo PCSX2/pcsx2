@@ -122,6 +122,8 @@ __fi static T VectorAlign(T value)
 /// Returns the maximum alpha value across a range of data. Assumes stride is 16 byte aligned.
 std::pair<u8, u8> GSGetRGBA8AlphaMinMax(const void* data, u32 width, u32 height, u32 stride);
 
+std::pair<u8, u8> GSGetRGBA16FAlphaMinMax(const void* data, u32 width, u32 height, u32 stride);
+
 // clang-format off
 
 #ifdef _MSC_VER

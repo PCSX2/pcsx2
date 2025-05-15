@@ -211,9 +211,14 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		return false;
 	}
 
+	ShaderMacro sm_emulation;
+	sm_emulation.AddMacro("PS_HDR", static_cast<int>(EmuConfig.HDRRendering));
+	ShaderMacro sm_postprocess;
+	sm_postprocess.AddMacro("PS_HDR", EmuConfig.HDROutput ? "1" : "0");
+
 	for (size_t i = 0; i < std::size(m_convert.ps); i++)
 	{
-		m_convert.ps[i] = m_shader_cache.GetPixelShader(m_dev.get(), *convert_hlsl, nullptr, shaderName(static_cast<ShaderConvert>(i)));
+		m_convert.ps[i] = m_shader_cache.GetPixelShader(m_dev.get(), *convert_hlsl, sm_emulation.GetPtr(), shaderName(static_cast<ShaderConvert>(i)));
 		if (!m_convert.ps[i])
 			return false;
 	}
@@ -229,7 +234,7 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 
 	for (size_t i = 0; i < std::size(m_present.ps); i++)
 	{
-		m_present.ps[i] = m_shader_cache.GetPixelShader(m_dev.get(), *shader, nullptr, shaderName(static_cast<PresentShader>(i)));
+		m_present.ps[i] = m_shader_cache.GetPixelShader(m_dev.get(), *shader, sm_postprocess.GetPtr(), shaderName(static_cast<PresentShader>(i)));
 		if (!m_present.ps[i])
 			return false;
 	}
@@ -277,7 +282,7 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	for (size_t i = 0; i < std::size(m_merge.ps); i++)
 	{
 		const std::string entry_point(StringUtil::StdStringFromFormat("ps_main%d", i));
-		m_merge.ps[i] = m_shader_cache.GetPixelShader(m_dev.get(), *shader, nullptr, entry_point.c_str());
+		m_merge.ps[i] = m_shader_cache.GetPixelShader(m_dev.get(), *shader, sm_emulation.GetPtr(), entry_point.c_str());
 		if (!m_merge.ps[i])
 			return false;
 	}
@@ -308,28 +313,32 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	shader = ReadShaderSource("shaders/dx11/interlace.fx");
 	if (!shader.has_value())
 		return false;
+
 	for (size_t i = 0; i < std::size(m_interlace.ps); i++)
 	{
 		const std::string entry_point(StringUtil::StdStringFromFormat("ps_main%d", i));
-		m_interlace.ps[i] = m_shader_cache.GetPixelShader(m_dev.get(), *shader, nullptr, entry_point.c_str());
+		m_interlace.ps[i] = m_shader_cache.GetPixelShader(m_dev.get(), *shader, sm_emulation.GetPtr(), entry_point.c_str());
 		if (!m_interlace.ps[i])
 			return false;
 	}
 
-	// Shade Boost
+	// Color Correct
 
 	memset(&bd, 0, sizeof(bd));
-	bd.ByteWidth = sizeof(float) * 4;
+	bd.ByteWidth = sizeof(ColorCorrectConstantBuffer);
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 
-	m_dev->CreateBuffer(&bd, nullptr, m_shadeboost.cb.put());
+	m_dev->CreateBuffer(&bd, nullptr, m_colorcorrect.cb.put());
 
-	shader = ReadShaderSource("shaders/dx11/shadeboost.fx");
+	shader = ReadShaderSource("shaders/dx11/colorcorrect.fx");
 	if (!shader.has_value())
 		return false;
-	m_shadeboost.ps = m_shader_cache.GetPixelShader(m_dev.get(), *shader, nullptr, "ps_main");
-	if (!m_shadeboost.ps)
+
+	sm_postprocess.AddMacro("PS_HDR_INPUT", EmuConfig.HDRRendering > HDRRenderType::Off ? "1" : "0");
+	sm_postprocess.AddMacro("PS_HDR_OUTPUT", EmuConfig.HDROutput ? "1" : "0");
+	m_colorcorrect.ps = m_shader_cache.GetPixelShader(m_dev.get(), *shader, sm_postprocess.GetPtr(), "ps_main");
+	if (!m_colorcorrect.ps)
 		return false;
 
 	// Vertex/Index Buffer
@@ -529,7 +538,7 @@ void GSDevice11::Destroy()
 	m_present = {};
 	m_merge = {};
 	m_interlace = {};
-	m_shadeboost = {};
+	m_colorcorrect = {};
 	m_date = {};
 	m_cas = {};
 	m_imgui = {};
@@ -645,10 +654,15 @@ u32 GSDevice11::GetSwapChainBufferCount() const
 
 bool GSDevice11::CreateSwapChain()
 {
-	constexpr DXGI_FORMAT swap_chain_format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	constexpr DXGI_FORMAT swap_chain_hdr_format = DXGI_FORMAT_R16G16B16A16_FLOAT; // GSTexture::Format::ColorHDR. Automatically enables scRGB HDR if set on creation.
+	constexpr DXGI_FORMAT swap_chain_sdr_format = DXGI_FORMAT_R10G10B10A2_UNORM; // GSTexture::Format::ColorHQ.
 
 	if (m_window_info.type != WindowInfo::Type::Win32)
 		return false;
+
+	const DXGI_FORMAT swap_chain_format = EmuConfig.HDROutput ? swap_chain_hdr_format : swap_chain_sdr_format;
+	// For now these are expected to be identical, but it's probably not necessary
+	pxAssert(swap_chain_format == GSTexture11::GetDXGIFormat(m_postprocess_texture_format));
 
 	const HWND window_hwnd = reinterpret_cast<HWND>(m_window_info.window_handle);
 	RECT client_rc{};
@@ -1187,7 +1201,7 @@ GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int width, int height
 	D3D11_TEXTURE2D_DESC desc = {};
 	desc.Width = width;
 	desc.Height = height;
-	desc.Format = GSTexture11::GetDXGIFormat(format);
+	desc.Format = GSTexture11::GetDXGIFormat(format, type);
 	desc.MipLevels = levels;
 	desc.ArraySize = 1;
 	desc.SampleDesc.Count = 1;
@@ -1203,7 +1217,7 @@ GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int width, int height
 			desc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
 			break;
 		case GSTexture::Type::Texture:
-			desc.BindFlags = (levels > 1 && !GSTexture::IsCompressedFormat(format)) ? (D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE) : D3D11_BIND_SHADER_RESOURCE;
+			desc.BindFlags = (levels > 1 && !GSTexture::IsCompressedFormat(format)) ? (D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE) : D3D11_BIND_SHADER_RESOURCE; // RT to generate mips on them
 			desc.MiscFlags = (levels > 1 && !GSTexture::IsCompressedFormat(format)) ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0;
 			break;
 		case GSTexture::Type::RWTexture:
@@ -1244,6 +1258,10 @@ void GSDevice11::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 	const bool depth = (sTex->GetType() == GSTexture::Type::DepthStencil);
 	auto pBox = depth ? nullptr : &box;
 
+	if (sTex->GetFormat() != dTex->GetFormat())
+	{
+		pxAssertMsg(false, "CopyRect between different formats.");
+	}
 	m_ctx->CopySubresourceRegion(*(GSTexture11*)dTex, 0, destX, destY, 0, *(GSTexture11*)sTex, 0, pBox);
 }
 
@@ -1295,6 +1313,8 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 
 	const bool draw_in_depth = dTex && dTex->IsDepthStencil();
 
+	pxAssert(sTex && dTex);
+
 	GSVector2i ds;
 	if (dTex)
 	{
@@ -1303,6 +1323,7 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 			OMSetRenderTargets(nullptr, dTex);
 		else
 			OMSetRenderTargets(dTex, nullptr);
+		pxAssert(dTex->IsRenderTargetOrDepthStencil());
 	}
 	else
 	{
@@ -1333,7 +1354,7 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	};
 
 
-    IASetVertexBuffer(vertices, sizeof(vertices[0]), std::size(vertices));
+	IASetVertexBuffer(vertices, sizeof(vertices[0]), std::size(vertices));
 	IASetInputLayout(m_convert.il.get());
 	IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
@@ -1344,12 +1365,23 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	// ps
 
 	PSSetShaderResource(0, sTex);
-	PSSetSamplerState(linear ? m_convert.ln.get() : m_convert.pt.get());
+	PSSetSamplerState(0, linear ? m_convert.ln.get() : m_convert.pt.get());
 	PSSetShader(ps, ps_cb);
 
 	//
 
 	DrawPrimitive();
+
+#if 1
+	ID3D11RenderTargetView* render_target_view = nullptr;
+	m_ctx->OMGetRenderTargets(1, &render_target_view, nullptr);
+	pxAssert(draw_in_depth || render_target_view);
+	if (render_target_view)
+	{
+		render_target_view->Release();
+		render_target_view = nullptr;
+	}
+#endif
 }
 
 void GSDevice11::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, float shaderTime, bool linear)
@@ -1371,6 +1403,7 @@ void GSDevice11::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	cb.SetSource(sRect, sTex->GetSize());
 	cb.SetTarget(dRect, ds);
 	cb.SetTime(shaderTime);
+	cb.SetBrightness(EmuConfig.HDROutput ? (GSConfig.HDR_BrightnessNits / Pcsx2Config::GSOptions::DEFAULT_SRGB_BRIGHTNESS_NITS) : 1.f);
 	m_ctx->UpdateSubresource(m_present.ps_cb.get(), 0, nullptr, &cb, 0, 0);
 
 	// om
@@ -1403,7 +1436,7 @@ void GSDevice11::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	// ps
 
 	PSSetShaderResource(0, sTex);
-	PSSetSamplerState(linear ? m_convert.ln.get() : m_convert.pt.get());
+	PSSetSamplerState(0, linear ? m_convert.ln.get() : m_convert.pt.get());
 	PSSetShader(m_present.ps[static_cast<u32>(shader)].get(), m_present.ps_cb.get());
 
 	//
@@ -1543,7 +1576,7 @@ void GSDevice11::DoMultiStretchRects(const MultiStretchRect* rects, u32 num_rect
 
 	CommitClear(rects[0].src);
 	PSSetShaderResource(0, rects[0].src);
-	PSSetSamplerState(rects[0].linear ? m_convert.ln.get() : m_convert.pt.get());
+	PSSetSamplerState(0, rects[0].linear ? m_convert.ln.get() : m_convert.pt.get());
 
 	OMSetBlendState(m_convert.bs[rects[0].wmask.wrgba].get(), 0.0f);
 
@@ -1626,6 +1659,7 @@ void GSDevice11::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 
 		ShaderMacro sm;
 		sm.AddMacro("FXAA_HLSL", "1");
+		sm.AddMacro("PS_HDR", EmuConfig.HDROutput ? "1" : "0");
 		m_fxaa_ps = m_shader_cache.GetPixelShader(m_dev.get(), *shader, sm.GetPtr(), "main");
 		if (!m_fxaa_ps)
 			return;
@@ -1634,16 +1668,16 @@ void GSDevice11::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 	StretchRect(sTex, sRect, dTex, dRect, m_fxaa_ps.get(), nullptr, true);
 }
 
-void GSDevice11::DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4])
+void GSDevice11::DoColorCorrect(GSTexture* sTex, GSTexture* dTex, const ColorCorrectConstantBuffer& cb)
 {
 	const GSVector2i s = dTex->GetSize();
 
 	const GSVector4 sRect(0, 0, 1, 1);
 	const GSVector4 dRect(0, 0, s.x, s.y);
 
-	m_ctx->UpdateSubresource(m_shadeboost.cb.get(), 0, nullptr, params, 0, 0);
+	m_ctx->UpdateSubresource(m_colorcorrect.cb.get(), 0, nullptr, &cb, 0, 0);
 
-	StretchRect(sTex, sRect, dTex, dRect, m_shadeboost.ps.get(), m_shadeboost.cb.get(), false);
+	StretchRect(sTex, sRect, dTex, dRect, m_colorcorrect.ps.get(), m_colorcorrect.cb.get(), false);
 }
 
 void GSDevice11::SetupVS(VSSelector sel, const GSHWDrawConfig::VSConstantBuffer* cb)
@@ -1759,6 +1793,7 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 		sm.AddMacro("PS_TEX_IS_FB", sel.tex_is_fb);
 		sm.AddMacro("PS_NO_COLOR", sel.no_color);
 		sm.AddMacro("PS_NO_COLOR1", sel.no_color1);
+		sm.AddMacro("PS_HDR", static_cast<int>(EmuConfig.HDRRendering)); // It's ok to access this variable here, when toggling HDR, the renderer is restarted
 
 		wil::com_ptr_nothrow<ID3D11PixelShader> ps = m_shader_cache.GetPixelShader(m_dev.get(), m_tfx_source, sm.GetPtr(), "ps_main");
 		i = m_ps.try_emplace(sel, std::move(ps)).first;
@@ -1826,7 +1861,9 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 		}
 	}
 
-	PSSetSamplerState(ss0.get());
+	PSSetSamplerState(0, ss0.get());
+	// Forced linear sampler (for HDR LUT/palette sampling)
+	PSSetSamplerState(1, m_convert.ln.get());
 
 	PSSetShader(i->second.get(), m_ps_cb.get());
 }
@@ -1878,6 +1915,9 @@ void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, u8 
 	}
 
 	OMSetDepthStencilState(i->second.get(), 1);
+
+	D3D11_DEPTH_STENCIL_DESC dsd;
+	i->second.get()->GetDesc(&dsd);
 
 	auto j = std::as_const(m_om_bs).find(bsel.key);
 
@@ -1999,9 +2039,12 @@ bool GSDevice11::CreateImGuiResources()
 	};
 	// clang-format on
 
+	ShaderMacro sm;
+	sm.AddMacro("PS_HDR", EmuConfig.HDROutput ? "1" : "0");
+
 	if (!m_shader_cache.GetVertexShaderAndInputLayout(m_dev.get(), m_imgui.vs.put(), m_imgui.il.put(), layout,
 			std::size(layout), hlsl.value(), nullptr, "vs_main") ||
-		!(m_imgui.ps = m_shader_cache.GetPixelShader(m_dev.get(), hlsl.value(), nullptr, "ps_main")))
+		!(m_imgui.ps = m_shader_cache.GetPixelShader(m_dev.get(), hlsl.value(), sm.GetPtr(), "ps_main")))
 	{
 		Console.Error("D3D11: Failed to compile ImGui shaders");
 		return false;
@@ -2025,9 +2068,9 @@ bool GSDevice11::CreateImGuiResources()
 
 	D3D11_BUFFER_DESC buffer_desc = {};
 	buffer_desc.Usage = D3D11_USAGE_DEFAULT;
-	buffer_desc.ByteWidth = sizeof(float) * 4 * 4;
+	buffer_desc.ByteWidth = sizeof(float) * ((4 * 4) + 4);
 	buffer_desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	hr = m_dev->CreateBuffer(&buffer_desc, nullptr, m_imgui.vs_cb.put());
+	hr = m_dev->CreateBuffer(&buffer_desc, nullptr, m_imgui.cb.put());
 	if (FAILED(hr))
 	{
 		Console.Error("D3D11: CreateImGuiResources(): CreateBlendState() failed: %08X", hr);
@@ -2036,7 +2079,6 @@ bool GSDevice11::CreateImGuiResources()
 
 	return true;
 }
-
 void GSDevice11::RenderImGui()
 {
 	ImGui::Render();
@@ -2059,18 +2101,26 @@ void GSDevice11::RenderImGui()
 	};
 	// clang-format on
 
-	m_ctx->UpdateSubresource(m_imgui.vs_cb.get(), 0, nullptr, ortho_projection, 0, 0);
+	float cb[(4 * 4) + 4];
+	std::memcpy(&cb, &ortho_projection, sizeof(ortho_projection));
+
+	// Imgui currently follows the same brightness as the whole HDR image (applied earlier on presentation),
+	// we could expose this variable to users to make it brightness
+	float imgui_hdr_brightness_nits = GSConfig.HDR_BrightnessNits;
+	cb[4 * 4] = EmuConfig.HDROutput ? (imgui_hdr_brightness_nits / Pcsx2Config::GSOptions::DEFAULT_SRGB_BRIGHTNESS_NITS) : 1.f;
+
+	m_ctx->UpdateSubresource(m_imgui.cb.get(), 0, nullptr, cb, 0, 0);
 
 	const UINT vb_stride = sizeof(ImDrawVert);
 	const UINT vb_offset = 0;
 	m_ctx->IASetVertexBuffers(0, 1, m_vb.addressof(), &vb_stride, &vb_offset);
 	IASetInputLayout(m_imgui.il.get());
 	IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	VSSetShader(m_imgui.vs.get(), m_imgui.vs_cb.get());
-	PSSetShader(m_imgui.ps.get(), nullptr);
+	VSSetShader(m_imgui.vs.get(), m_imgui.cb.get());
+	PSSetShader(m_imgui.ps.get(), m_imgui.cb.get());
 	OMSetBlendState(m_imgui.bs.get(), 0.0f);
 	OMSetDepthStencilState(m_convert.dss.get(), 0);
-	PSSetSamplerState(m_convert.ln.get());
+	PSSetSamplerState(0, m_convert.ln.get());
 
 	// Render command lists
 	for (int n = 0; n < draw_data->CmdListsCount; n++)
@@ -2166,7 +2216,7 @@ void GSDevice11::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vert
 
 	// ps
 	PSSetShaderResource(0, rt);
-	PSSetSamplerState(m_convert.pt.get());
+	PSSetSamplerState(0, m_convert.pt.get());
 	PSSetShader(m_convert.ps[SetDATMShader(datm)].get(), nullptr);
 
 	//
@@ -2345,12 +2395,17 @@ void GSDevice11::VSSetShader(ID3D11VertexShader* vs, ID3D11Buffer* vs_cb)
 
 void GSDevice11::PSSetShaderResource(int i, GSTexture* sr)
 {
+	if (sr == nullptr)
+	{
+		m_state.ps_sr_views[i] = nullptr;
+		return;
+	}
 	m_state.ps_sr_views[i] = *static_cast<GSTexture11*>(sr);
 }
 
-void GSDevice11::PSSetSamplerState(ID3D11SamplerState* ss0)
+void GSDevice11::PSSetSamplerState(int i, ID3D11SamplerState* ss)
 {
-	m_state.ps_ss[0] = ss0;
+	m_state.ps_ss[i] = ss;
 }
 
 void GSDevice11::ClearSamplerCache()
@@ -2619,6 +2674,10 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	}
 	IASetPrimitiveTopology(topology);
 
+	bool set_ps_srv_1 = false;
+	bool set_ps_srv_2 = false;
+	bool set_ps_srv_3 = false;
+
 	if (config.tex)
 	{
 		CommitClear(config.tex);
@@ -2628,6 +2687,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	{
 		CommitClear(config.pal);
 		PSSetShaderResource(1, config.pal);
+		set_ps_srv_1 = true;
 	}
 
 	GSTexture* rt_copy = nullptr;
@@ -2641,7 +2701,10 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		if (rt_copy)
 		{
 			if (config.require_one_barrier)
+			{
 				PSSetShaderResource(2, rt_copy);
+				set_ps_srv_2 = true;
+			}
 			if (config.tex && config.tex == config.rt)
 				PSSetShaderResource(0, rt_copy);
 		}
@@ -2664,6 +2727,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		config.alpha_second_pass.ps.date = 3;
 		SetupPS(config.ps, nullptr, config.sampler);
 		PSSetShaderResource(3, primid_tex);
+		set_ps_srv_3 = true;
 	}
 
 	SetupOM(config.depth, OMBlendSelector(config.colormask, config.blend), config.blend.constant);
@@ -2696,6 +2760,22 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		SetupOM(config.alpha_second_pass.depth, OMBlendSelector(config.alpha_second_pass.colormask, config.blend), config.blend.constant);
 		DrawIndexedPrimitive();
 	}
+
+#if defined(PCSX2_DEVBUILD) // Clear them for easier debugging
+	if (set_ps_srv_1)
+	{
+		PSSetShaderResource(1, nullptr);
+	}
+	if (set_ps_srv_2)
+	{
+		PSSetShaderResource(2, nullptr);
+	}
+	if (set_ps_srv_3)
+	{
+		PSSetShaderResource(3, nullptr);
+	}
+	PSSetSamplerState(1, nullptr);
+#endif
 
 	if (rt_copy)
 		Recycle(rt_copy);

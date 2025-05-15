@@ -113,7 +113,8 @@ GSTexture* GSRendererSW::GetOutput(int i, float& scale, int& y_offset)
 	const int w = curFramebuffer.FBW * 64;
 	const int h = framebufferSize.y;
 
-	if (g_gs_device->ResizeRenderTarget(&m_texture[index], w, h, false, false))
+	// This texture needs to be RGBA8 as CPU writes assume so (no need for it to follow "m_emulation_hw_rt_texture_format")
+	if (g_gs_device->ResizeRenderTarget(&m_texture[index], w, h, false, false, GSTexture::Format::Color))
 	{
 		const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[curFramebuffer.PSM];
 		constexpr int pitch = 1024 * 4;

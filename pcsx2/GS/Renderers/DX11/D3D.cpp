@@ -91,6 +91,7 @@ std::vector<GSAdapterInfo> D3D::GetAdapterInfo(IDXGIFactory5* factory)
 		if (SUCCEEDED(hr = adapter->EnumOutputs(0, &output)))
 		{
 			UINT num_modes = 0;
+			// This will work the same regardless of the SDR/HDR format we pass in
 			if (SUCCEEDED(hr = output->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, 0, &num_modes, nullptr)))
 			{
 				std::vector<DXGI_MODE_DESC> dmodes(num_modes);
@@ -530,16 +531,16 @@ wil::com_ptr_nothrow<ID3DBlob> D3D::CompileShader(D3D::ShaderType type, D3D_FEAT
 		error_blob.reset();
 	}
 
-	if (FAILED(hr))
+	if (FAILED(hr) || !error_string.empty())
 	{
-		Console.WriteLn("Failed to compile '%s':\n%s", target, error_string.c_str());
+		Console.WriteLn("Failed to compile '%s':\n%s", entry_point, error_string.c_str());
 
 		std::ofstream ofs(Path::Combine(EmuFolders::Logs, fmt::format("pcsx2_bad_shader_{}.txt", s_next_bad_shader_id++)),
 			std::ofstream::out | std::ofstream::binary);
 		if (ofs.is_open())
 		{
 			ofs << code;
-			ofs << "\n\nCompile as " << target << " failed: " << hr << "\n";
+			ofs << "\n\nCompile as " << target << (FAILED(hr) ? " failed: " : " had warnings: ") << hr << "\n";
 			ofs.write(error_string.c_str(), error_string.size());
 			ofs << "\n";
 			if (macros)
@@ -550,11 +551,12 @@ wil::com_ptr_nothrow<ID3DBlob> D3D::CompileShader(D3D::ShaderType type, D3D_FEAT
 			ofs.close();
 		}
 
-		return {};
+		if (FAILED(hr))
+			return {};
 	}
 
 	if (!error_string.empty())
-		Console.Warning("'%s' compiled with warnings:\n%s", target, error_string.c_str());
+		Console.Warning("'%s' compiled with warnings:\n%s", entry_point, error_string.c_str());
 
 	return blob;
 }

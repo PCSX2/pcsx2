@@ -108,6 +108,30 @@ static bool OpenGSDevice(GSRendererType renderer, bool clear_state_on_fail, bool
 	GSVSyncMode vsync_mode, bool allow_present_throttle)
 {
 	const RenderAPI new_api = GetAPIForRenderer(renderer);
+
+	// These features are only supported by some renderers and on some HW (e.g. HDR displays),
+	// so they need a live state.
+	EmuConfig.HDRRendering = GSConfig.HDRRendering;
+	EmuConfig.HDROutput = GSConfig.HDROutput;
+
+	// Force disable HDR on unsupported (or partially supported) renderers.
+	if (new_api == RenderAPI::OpenGL || new_api == RenderAPI::Metal)
+	{
+		EmuConfig.HDRRendering = HDRRenderType::Off;
+		EmuConfig.HDROutput = false;
+	}
+	//TODO: unexpose the setting from Qt on mac, and make a temporary copy in "EmuConfig" like "HDRRendering" has
+	// The HDR brightness is controlled by the OS on Mac, games are expected to output the same range as SDR, so we make it neutral
+	if (new_api == RenderAPI::Metal)
+	{
+		GSConfig.HDR_BrightnessNits = Pcsx2Config::GSOptions::DEFAULT_SRGB_BRIGHTNESS_NITS;
+	}
+	// This is ignored by the SW renderer but let's turn it off for clarity.
+	if (renderer == GSRendererType::SW)
+	{
+		EmuConfig.HDRRendering = HDRRenderType::Off;
+	}
+
 	switch (new_api)
 	{
 #ifdef _WIN32
@@ -1067,6 +1091,82 @@ std::pair<u8, u8> GSGetRGBA8AlphaMinMax(const void* data, u32 width, u32 height,
 		static_cast<u8>(maxc.maxv_u32() >> 24));
 }
 
+//-------------------------------------------------------------------------------------
+// DirectXPackedVector.inl -- SIMD C++ Math library
+//
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+//
+// http://go.microsoft.com/fwlink/?LinkID=615560
+//-------------------------------------------------------------------------------------
+inline float ConvertHalfToFloat(uint16_t Value) noexcept
+{
+	uint32_t Mantissa = static_cast<uint32_t>(Value & 0x03FF);
+
+	uint32_t Exponent = (Value & 0x7C00);
+	if (Exponent == 0x7C00) // INF/NAN
+	{
+		Exponent = 0x8f;
+	}
+	else if (Exponent != 0) // The value is normalized
+	{
+		Exponent = static_cast<uint32_t>((static_cast<int>(Value) >> 10) & 0x1F);
+	}
+	else if (Mantissa != 0) // The value is denormalized
+	{
+		// Normalize the value in the resulting float
+		Exponent = 1;
+
+		do
+		{
+			Exponent--;
+			Mantissa <<= 1;
+		} while ((Mantissa & 0x0400) == 0);
+
+		Mantissa &= 0x03FF;
+	}
+	else // The value is zero
+	{
+		Exponent = static_cast<uint32_t>(-112);
+	}
+
+	uint32_t Result =
+		((static_cast<uint32_t>(Value) & 0x8000) << 16) // Sign
+		| ((Exponent + 112) << 23) // Exponent
+		| (Mantissa << 13); // Mantissa
+
+	return reinterpret_cast<float*>(&Result)[0];
+}
+
+std::pair<u8, u8> GSGetRGBA16FAlphaMinMax(const void* data, u32 width, u32 height, u32 stride)
+{
+	float min_alpha = 255.f;
+	float max_alpha = 0.f;
+	
+	const uint8_t* cast_data = reinterpret_cast<const uint8_t*>(data);
+
+	// from float 16 to float 32
+	for (u32 y = 0; y < height; ++y)
+	{
+		const uint16_t* row = reinterpret_cast<const uint16_t*>(cast_data + y * stride);
+		for (u32 x = 0; x < width; ++x)
+		{
+			uint16_t pixel = row[x];
+			float a = ConvertHalfToFloat(pixel) * 255.f;
+			if (a < min_alpha)
+			{
+				min_alpha = a;
+			}
+			if (a > max_alpha)
+			{
+				max_alpha = a;
+			}
+		}
+	}
+
+	return std::make_pair<u8, u8>(static_cast<u8>(min_alpha + 0.5f), static_cast<u8>(max_alpha + 0.5f));
+}
+
 static void HotkeyAdjustUpscaleMultiplier(s32 delta)
 {
 	const u32 new_multiplier = static_cast<u32>(std::clamp(static_cast<s32>(EmuConfig.GS.UpscaleMultiplier) + delta, 1, 8));
@@ -1171,6 +1271,17 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphic
 				fmt::format(TRANSLATE_FS("Hotkeys", "Aspect ratio set to '{}'."),
 					Pcsx2Config::GSOptions::AspectRatioNames[static_cast<int>(EmuConfig.CurrentAspectRatio)]),
 				Host::OSD_QUICK_DURATION);
+		}},
+	//TODO: delete?
+	{"HDRMode", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "HDR Mode"),
+		[](s32 pressed) {
+			if (pressed)
+				return;
+
+			// technically this races, but the worst that'll happen is one frame uses the old AR.
+			EmuConfig.HDRRendering = HDRRenderType((static_cast<int>(EmuConfig.HDRRendering) + 1) % (int)HDRRenderType::MaxCount);
+			Host::AddKeyedOSDMessage("HDRMode",
+				fmt::format(TRANSLATE_FS("Hotkeys", "HDR mode set to '{}'."), static_cast<int>(EmuConfig.HDRRendering)), Host::OSD_QUICK_DURATION);
 		}},
 	{"ToggleMipmapMode", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Toggle Hardware Mipmapping"),
 		[](s32 pressed) {

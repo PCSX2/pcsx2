@@ -31,8 +31,8 @@ layout(set = 0, binding = 0) uniform sampler2D samp0;
 void ps_main0()
 {
 		vec4 c = texture(samp0, v_tex);
-		// Note: clamping will be done by fixed unit
-		c.a *= 2.0f;
+		// Alpha 0x80 (128) would be interpreted as 1 (neutral) here, but after it's multiplied by 2 and clamped to 0xFF
+		c.a = clamp(c.a * 2.0f, 0.0f, 2.0f);
 		o_col0 = c;
 }
 

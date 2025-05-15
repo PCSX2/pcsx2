@@ -1,6 +1,10 @@
 // SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
+#ifndef PS_HDR
+#define PS_HDR 0
+#endif
+
 #ifdef VERTEX_SHADER
 
 layout(location = 0) in vec4 a_pos;
@@ -28,7 +32,7 @@ layout(push_constant) uniform cb10
 	vec2 u_rcp_target_resolution; // 1 / u_target_resolution
 	vec2 u_source_resolution;
 	vec2 u_rcp_source_resolution; // 1 / u_source_resolution
-	float u_time;
+	vec2 u_time_and_brightness; // time, user brightness scale (HDR)
 };
 
 layout(location = 0) in vec2 v_tex;
@@ -62,10 +66,31 @@ vec4 ps_scanlines(uint i)
 	return sample_c(v_tex) * clamp((mask[i] + 0.5f), 0.0f, 1.0f);
 }
 
+vec4 EncodeOutput(vec4 color)
+{
+	// If necessary we could convert to any color space here,
+	// assuming we are starting with Rec.709 (gamma 2.2 in SDR and linear in HDR).
+#if !PS_HDR && 1 //TODO: Test only!
+	// Convert to sRGB encoding (useful to test SDR in HDR as Windows interprets SDR content as sRGB)
+	vec3 color_in_excess = color.rgb - clamp(color.rgb, 0.f, 1.f);
+	color.rgb = clamp(color.rgb, 0.f, 1.f);
+	color.rgb = pow(color.rgb, vec3(2.2));
+	color.r = color.r < 0.0031308 ? (color.r * 12.92) : (1.055 * pow(color.r, 0.41666) - 0.055);
+	color.g = color.g < 0.0031308 ? (color.g * 12.92) : (1.055 * pow(color.g, 0.41666) - 0.055);
+	color.b = color.b < 0.0031308 ? (color.b * 12.92) : (1.055 * pow(color.b, 0.41666) - 0.055);
+	color.rgb += color_in_excess;
+#endif
+
+	// Apply the user brightness level
+	color.rgb *= u_time_and_brightness.y;
+	return color;
+}
+
 #ifdef ps_copy
 void ps_copy()
 {
 	o_col0 = sample_c(v_tex);
+	o_col0 = EncodeOutput(o_col0);
 }
 #endif
 
@@ -75,6 +100,7 @@ void ps_filter_scanlines() // scanlines
 	uvec4 p = uvec4(gl_FragCoord);
 
 	o_col0 = ps_scanlines(p.y % 2);
+	o_col0 = EncodeOutput(o_col0);
 }
 #endif
 
@@ -83,6 +109,7 @@ void ps_filter_diagonal() // diagonal
 {
 	uvec4 p = uvec4(gl_FragCoord);
 	o_col0 = ps_crt((p.x + (p.y % 3)) % 3);
+	o_col0 = EncodeOutput(o_col0);
 }
 #endif
 
@@ -93,6 +120,7 @@ void ps_filter_triangular() // triangular
 
 	// output.c = ps_crt(input, ((p.x + (p.y & 1) * 3) >> 1) % 3);
 	o_col0 = ps_crt(((p.x + ((p.y >> 1) & 1) * 3) >> 1) % 3);
+	o_col0 = EncodeOutput(o_col0);
 }
 #endif
 
@@ -103,6 +131,7 @@ void ps_filter_complex() // triangular
 	vec2 texdim = vec2(textureSize(samp0, 0));
 
 	o_col0 = (0.9 - 0.4 * cos(2 * PI * v_tex.y * texdim.y)) * sample_c(vec2(v_tex.x, (floor(v_tex.y * texdim.y) + 0.5) / texdim.y));
+	o_col0 = EncodeOutput(o_col0);
 }
 #endif
 
@@ -123,7 +152,10 @@ void ps_filter_complex() // triangular
 
 float ToLinear1(float c)
 {
-	return c <= 0.04045 ? c / 12.92 : pow((c + 0.055) / 1.055, 2.4);
+#if PS_HDR // Already linear
+	return c;
+#endif
+	return pow(abs(c), 2.2) * sign(c);
 }
 
 vec3 ToLinear(vec3 c)
@@ -131,14 +163,17 @@ vec3 ToLinear(vec3 c)
 	return vec3(ToLinear1(c.r), ToLinear1(c.g), ToLinear1(c.b));
 }
 
-float ToSrgb1(float c)
+float ToGamma1(float c)
 {
-	return c < 0.0031308 ? c * 12.92 : 1.055 * pow(c, 0.41666) - 0.055;
+#if PS_HDR // Already linear
+	return c;
+#endif
+	return pow(abs(c), 1.0 / 2.2) * sign(c);
 }
 
-vec3 ToSrgb(vec3 c)
+vec3 ToGamma(vec3 c)
 {
-	return vec3(ToSrgb1(c.r), ToSrgb1(c.g), ToSrgb1(c.b));
+	return vec3(ToGamma1(c.r), ToGamma1(c.g), ToGamma1(c.b));
 }
 
 vec3 Fetch(vec2 pos, vec2 off)
@@ -391,7 +426,7 @@ vec4 LottesCRTPass()
 #if UseShadowMask
 	color.rgb *= Mask(fragcoord.xy);
 #endif
-	color.rgb = ToSrgb(color.rgb);
+	color.rgb = ToGamma(color.rgb);
 
 	return color;
 }
@@ -399,6 +434,7 @@ vec4 LottesCRTPass()
 void ps_filter_lottes()
 {
 	o_col0 = LottesCRTPass();
+	o_col0 = EncodeOutput(o_col0);
 }
 
 #endif
@@ -418,6 +454,7 @@ void ps_4x_rgss()
 	color += sample_c(v_tex + vec2(-l, s) * dxy).rgb;
 
 	o_col0 = vec4(color * 0.25,1);
+	o_col0 = EncodeOutput(o_col0);
 }
 #endif
 
@@ -440,6 +477,7 @@ void ps_automagical_supersampling()
 	}
 
 	o_col0 = vec4(col / div, 1);
+	o_col0 = EncodeOutput(o_col0);
 }
 #endif
 

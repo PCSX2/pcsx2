@@ -354,9 +354,6 @@
     <None Include="..\bin\resources\shaders\opengl\tfx_fs.glsl">
       <Filter>System\Ps2\GS\Shaders\OpenGL</Filter>
     </None>
-    <None Include="..\bin\resources\shaders\opengl\shadeboost.glsl">
-      <Filter>System\Ps2\GS\Shaders\OpenGL</Filter>
-    </None>
     <None Include="..\bin\resources\shaders\opengl\imgui.glsl">
       <Filter>System\Ps2\GS\Shaders\OpenGL</Filter>
     </None>
@@ -381,13 +378,7 @@
     <None Include="..\bin\resources\shaders\vulkan\imgui.glsl">
       <Filter>System\Ps2\GS\Shaders\Vulkan</Filter>
     </None>
-    <None Include="..\bin\resources\shaders\vulkan\shadeboost.glsl">
-      <Filter>System\Ps2\GS\Shaders\Vulkan</Filter>
-    </None>
     <None Include="..\bin\resources\shaders\dx11\tfx.fx">
-      <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
-    </None>
-    <None Include="..\bin\resources\shaders\dx11\shadeboost.fx">
       <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
     </None>
     <None Include="..\bin\resources\shaders\dx11\merge.fx">
@@ -407,6 +398,15 @@
     </None>
     <None Include="GS\Renderers\Vulkan\VKEntryPoints.inl">
       <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\opengl\colorcorrect.glsl">
+      <Filter>System\Ps2\GS\Shaders\OpenGL</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\vulkan\colorcorrect.glsl">
+      <Filter>System\Ps2\GS\Shaders\Vulkan</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\dx11\colorcorrect.fx">
+      <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

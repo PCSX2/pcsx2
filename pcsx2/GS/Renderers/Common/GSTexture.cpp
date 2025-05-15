@@ -42,7 +42,7 @@ bool GSTexture::Save(const std::string& fn)
 		case Format::UNorm8:
 			format = GSPng::R8I_PNG;
 			break;
-		case Format::Color:
+		case Format::Color: /*GSCapture::CAPTURE_TEX_FORMAT*/
 			break;
 		default:
 			Console.Error("Format %d not saved to image", static_cast<int>(m_format));
@@ -79,7 +79,8 @@ const char* GSTexture::GetFormatName(Format format)
 		"BC3",
 		"BC7",
 	};
-	return format_names[(static_cast<u32>(format) < std::size(format_names)) ? static_cast<u32>(format) : 0];
+	static_assert(std::size(format_names) == (static_cast<size_t>(Format::Last) + 1), "");
+	return format_names[static_cast<u32>(format)];
 }
 
 u32 GSTexture::GetCompressedBytesPerBlock() const
@@ -105,7 +106,7 @@ u32 GSTexture::GetCompressedBytesPerBlock(Format format)
 		16, // BC3 - 16 pixels in 128 bits
 		16, // BC7 - 16 pixels in 128 bits
 	};
-
+	static_assert(std::size(bytes_per_block) == (static_cast<size_t>(Format::Last) + 1), "");
 	return bytes_per_block[static_cast<u32>(format)];
 }
 

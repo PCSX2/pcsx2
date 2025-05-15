@@ -23,7 +23,7 @@ GSTexture11::GSTexture11(wil::com_ptr_nothrow<ID3D11Texture2D> texture, const D3
 	m_mipmap_levels = static_cast<int>(desc.MipLevels);
 }
 
-DXGI_FORMAT GSTexture11::GetDXGIFormat(Format format)
+DXGI_FORMAT GSTexture11::GetDXGIFormat(Format format, Type type) //TODO: remove "type" from all of these?
 {
 	// clang-format off
 	switch (format)
@@ -67,6 +67,9 @@ bool GSTexture11::Update(const GSVector4i& r, const void* data, int pitch, int l
 	const D3D11_BOX box = {Common::AlignDownPow2((u32)r.left, bs), Common::AlignDownPow2((u32)r.top, bs), 0U,
 		Common::AlignUpPow2((u32)r.right, bs), Common::AlignUpPow2((u32)r.bottom, bs), 1U};
 	const UINT subresource = layer; // MipSlice + (ArraySlice * MipLevels).
+	
+	// All the calls to this expect "GSTexture::Format::Color" (8bpc) at the moment
+	pxAssertMsg(EmuConfig.HDRRendering == HDRRenderType::Off || GetFormat() == GSTexture::Format::Color || GetFormat() >= GSTexture::Format::DepthStencil, "GSTexture11::Update unsupported format.");
 
 	GSDevice11::GetInstance()->GetD3DContext()->UpdateSubresource(m_texture.get(), subresource, &box, data, pitch, 0);
 	m_needs_mipmaps_generated |= (layer == 0);
@@ -212,7 +215,7 @@ std::unique_ptr<GSDownloadTexture11> GSDownloadTexture11::Create(u32 width, u32 
 void GSDownloadTexture11::CopyFromTexture(
 	const GSVector4i& drc, GSTexture* stex, const GSVector4i& src, u32 src_level, bool use_transfer_pitch)
 {
-	pxAssert(stex->GetFormat() == m_format);
+	pxAssert(stex->GetFormat() == GetFormat());
 	pxAssert(drc.width() == src.width() && drc.height() == src.height());
 	pxAssert(src.z <= stex->GetWidth() && src.w <= stex->GetHeight());
 	pxAssert(static_cast<u32>(drc.z) <= m_width && static_cast<u32>(drc.w) <= m_height);
@@ -224,6 +227,8 @@ void GSDownloadTexture11::CopyFromTexture(
 
 	if (IsMapped())
 		Unmap();
+
+	pxAssertMsg(GetFormat() == stex->GetFormat(), "CopyFromTexture between different formats.");
 
 	// depth textures need to copy the whole thing..
 	if (m_format == GSTexture::Format::DepthStencil)

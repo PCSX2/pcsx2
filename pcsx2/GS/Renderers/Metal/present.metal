@@ -81,7 +81,7 @@ struct LottesCRTPass
 
 	float ToLinear1(float c)
 	{
-		return c <= 0.04045 ? c / 12.92 : pow((c + 0.055) / 1.055, 2.4);
+		return pow(abs(c), 2.2) * sign(c);
 	}
 
 	float3 ToLinear(float3 c)
@@ -89,14 +89,14 @@ struct LottesCRTPass
 		return float3(ToLinear1(c.r), ToLinear1(c.g), ToLinear1(c.b));
 	}
 
-	float ToSrgb1(float c)
+	float ToGamma1(float c)
 	{
-		return c < 0.0031308 ? c * 12.92 : 1.055 * pow(c, 0.41666) - 0.055;
+		return pow(abs(c), 1.0 / 2.2) * sign(c);
 	}
 
-	float3 ToSrgb(float3 c)
+	float3 ToGamma(float3 c)
 	{
-		return float3(ToSrgb1(c.r), ToSrgb1(c.g), ToSrgb1(c.b));
+		return float3(ToGamma1(c.r), ToGamma1(c.g), ToGamma1(c.b));
 	}
 
 	float3 Fetch(float2 pos, float2 off)
@@ -349,7 +349,7 @@ struct LottesCRTPass
 	#if UseShadowMask
 		color.rgb *= Mask(fragcoord.xy);
 	#endif
-		color.rgb = ToSrgb(color.rgb);
+		color.rgb = ToGamma(color.rgb);
 
 		return color;
 	}

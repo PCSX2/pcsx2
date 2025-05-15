@@ -16,7 +16,9 @@
 
 enum class ShaderConvert
 {
-	COPY = 0,
+	COPY = 0, // Passthrough (generic version, it automatically redirects to the one specific for your render target format if necessary, targets the default HW emulation RTs format, "m_emulation_hw_rt_texture_format")
+	COPY_EMU_LQ, // Some emulation render targets might stay RGBA8 (GSTexture::Format::Color) even when HDR is enabled
+	COPY_POSTPROCESS, // Post processing possibly targets RGBA10 (GSTexture::Format::ColorHQ), see "m_postprocess_rt_texture_format"
 	RGBA8_TO_16_BITS,
 	DATM_1,
 	DATM_0,
@@ -29,7 +31,7 @@ enum class ShaderConvert
 	TRANSPARENCY_FILTER,
 	FLOAT32_TO_16_BITS,
 	FLOAT32_TO_32_BITS,
-	FLOAT32_TO_RGBA8,
+	FLOAT32_TO_RGBA8, // Doesn't necessarily write to RGBA8 render targets (see "m_emulation_hw_rt_texture_format")
 	FLOAT32_TO_RGB8,
 	FLOAT16_TO_RGB5A1,
 	RGBA8_TO_FLOAT32,
@@ -143,7 +145,7 @@ static inline u32 ShaderConvertWriteMask(ShaderConvert shader)
 
 enum class PresentShader
 {
-	COPY = 0,
+	COPY = 0, // Passthrough
 	SCANLINE,
 	DIAGONAL_FILTER,
 	TRIANGULAR_FILTER,
@@ -171,6 +173,7 @@ enum ChannelFetch
 	ChannelFetch_GXBY  = 6,
 };
 
+//TODO
 enum class HWBlendType
 {
 	SRC_ONE_DST_FACTOR      = 1, // Use the dest color as blend factor, Cs is set to 1.
@@ -195,7 +198,7 @@ struct alignas(16) DisplayConstantBuffer
 	GSVector2 RcpTargetResolution; // +56,zw
 	GSVector2 SourceResolution; // +64,xy
 	GSVector2 RcpSourceResolution; // +72,zw
-	GSVector4 TimeAndPad; // seconds since GS init +76,xyzw
+	GSVector4 TimeAndBrightnessAndPad; // seconds since GS init and output brightness multiplier (HDR) +76,xyzw
 	// +96
 
 	// assumes that sRect is normalized
@@ -215,7 +218,11 @@ struct alignas(16) DisplayConstantBuffer
 	}
 	void SetTime(float time)
 	{
-		TimeAndPad = GSVector4(time);
+		TimeAndBrightnessAndPad.x = time;
+	}
+	void SetBrightness(float brightness)
+	{
+		TimeAndBrightnessAndPad.y = brightness;
 	}
 };
 static_assert(sizeof(DisplayConstantBuffer) == 96, "DisplayConstantBuffer is correct size");
@@ -236,6 +243,13 @@ struct alignas(16) InterlaceConstantBuffer
 };
 static_assert(sizeof(InterlaceConstantBuffer) == 16, "InterlaceConstantBuffer is correct size");
 
+struct alignas(16) ColorCorrectConstantBuffer
+{
+	GSVector4 correction;
+	GSVector4 adjustment;
+};
+static_assert(sizeof(ColorCorrectConstantBuffer) == 32, "ColorCorrectConstantBuffer is correct size");
+
 enum HWBlendFlags
 {
 	// Flags to determine blending behavior
@@ -255,6 +269,7 @@ enum HWBlendFlags
 	BLEND_ACCU   = 0x2000, // Allow to use a mix of SW and HW blending to keep the best of the 2 worlds
 	BLEND_NO_REC = 0x4000, // Doesn't require sampling of the RT as a texture
 	BLEND_A_MAX  = 0x8000, // Impossible blending uses coeff bigger than 1
+	BLEND_NEG    = 0x10000, // The blend is "subtractive" and risks resulting in colors below 0
 };
 
 // Determines the HW blend function for the video backend
@@ -263,7 +278,7 @@ struct HWBlend
 	typedef u8 BlendOp; /*GSDevice::BlendOp*/
 	typedef u8 BlendFactor; /*GSDevice::BlendFactor*/
 
-	u16 flags;
+	u32 flags; /*HWBlendFlags*/
 	BlendOp op;
 	BlendFactor src, dst;
 };
@@ -319,7 +334,7 @@ struct alignas(16) GSHWDrawConfig
 			{
 				// Format
 				u32 aem_fmt   : 2;
-				u32 pal_fmt   : 2;
+				u32 pal_fmt   : 2; // 0 None, 1 PSMT4HL, 2 PSMT4HH, 3 PSMT8H
 				u32 dst_fmt   : 2; // 0 → 32-bit, 1 → 24-bit, 2 → 16-bit
 				u32 depth_fmt : 2; // 0 → None, 1 → 32-bit, 2 → 16-bit, 3 → RGBA
 				// Alpha extension/Correction
@@ -361,8 +376,8 @@ struct alignas(16) GSHWDrawConfig
 				u32 blend_hw       : 3; /*HWBlendType*/
 				u32 a_masked       : 1;
 				u32 colclip_hw     : 1; // colclip (COLCLAMP off) emulation through HQ textures
-				u32 rta_correction : 1;
-				u32 rta_source_correction : 1;
+				u32 rta_correction : 1; // Scale target alpha by 0.5, only used with HW blending
+				u32 rta_source_correction : 1; // Scale source alpha by 0.5
 				u32 colclip        : 1; // COLCLAMP off (color blend outputs wrap around 0-255)
 				u32 blend_mix      : 2;
 				u32 round_inv      : 1; // Blending will invert the value, so rounding needs to go the other way
@@ -384,7 +399,7 @@ struct alignas(16) GSHWDrawConfig
 				u32 tcoffsethack : 1;
 				u32 urban_chaos_hle : 1;
 				u32 tales_of_abyss_hle : 1;
-				u32 tex_is_fb : 1; // Jak Shadows
+				u32 tex_is_fb : 1; // Texture is frame buffer (Jak Shadows)
 				u32 automatic_lod : 1;
 				u32 manual_lod : 1;
 				u32 point_sampler : 1;
@@ -864,16 +879,20 @@ protected:
 	bool m_allow_present_throttle = false;
 	u64 m_last_frame_displayed_time = 0;
 
+	GSTexture::Format m_emulation_hw_rt_texture_format; // The generic color RT format HW renderers
+	GSTexture::Format m_postprocess_texture_format;
+
 	GSTexture* m_imgui_font = nullptr;
 
 	GSTexture* m_merge = nullptr;
 	GSTexture* m_weavebob = nullptr;
 	GSTexture* m_blend = nullptr;
 	GSTexture* m_mad = nullptr;
-	GSTexture* m_target_tmp = nullptr;
-	GSTexture* m_current = nullptr;
 	GSTexture* m_cas = nullptr;
 	GSTexture* m_colclip_rt = nullptr; ///< Temp hw colclip texture
+
+	GSTexture* m_target_tmp = nullptr; // A temporary RT for multiple purposes
+	GSTexture* m_current = nullptr; // The current RT (changes constantly)
 
 	bool AcquireWindow(bool recreate_window);
 
@@ -883,7 +902,7 @@ protected:
 	virtual void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, u32 c, const bool linear) = 0;
 	virtual void DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderInterlace shader, bool linear, const InterlaceConstantBuffer& cb) = 0;
 	virtual void DoFXAA(GSTexture* sTex, GSTexture* dTex) = 0;
-	virtual void DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4]) = 0;
+	virtual void DoColorCorrect(GSTexture* sTex, GSTexture* dTex, const ColorCorrectConstantBuffer& cb) = 0;
 
 	/// Resolves CAS shader includes for the specified source.
 	static bool GetCASShaderSource(std::string* source);
@@ -919,6 +938,8 @@ public:
 
 	/// Returns the maximum number of mipmap levels for a given texture size.
 	static int GetMipmapLevelsForSize(int width, int height);
+
+	GSTexture::Format GetEmuHWRTTexFormat() const { return m_emulation_hw_rt_texture_format; }
 
 	__fi u64 GetPoolMemoryUsage() const { return m_pool_memory_usage; }
 
@@ -1037,12 +1058,14 @@ public:
 	void Merge(GSTexture* sTex[3], GSVector4* sRect, GSVector4* dRect, const GSVector2i& fs, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, u32 c);
 	void Interlace(const GSVector2i& ds, int field, int mode, float yoffset);
 	void FXAA();
-	void ShadeBoost();
+	void ColorCorrect();
+	// Resizes the current RT (post processing only)
 	void Resize(int width, int height);
 
 	void CAS(GSTexture*& tex, GSVector4i& src_rect, GSVector4& src_uv, const GSVector4& draw_rect, bool sharpen_only);
 
-	bool ResizeRenderTarget(GSTexture** t, int w, int h, bool preserve_contents, bool recycle);
+	// Creates or resizes a render target
+	bool ResizeRenderTarget(GSTexture** t, int w, int h, bool preserve_contents, bool recycle, GSTexture::Format default_format = GSTexture::Format::Color);
 
 	void AgePool();
 	void PurgePool();
@@ -1059,7 +1082,7 @@ public:
 	// Convert the GS blend equations to HW blend factors/ops
 	// Index is computed as ((((A * 3 + B) * 3) + C) * 3) + D. A, B, C, D taken from ALPHA register.
 	__ri static HWBlend GetBlend(u32 index) { return m_blendMap[index]; }
-	__ri static u16 GetBlendFlags(u32 index) { return m_blendMap[index].flags; }
+	__ri static auto GetBlendFlags(u32 index) { return m_blendMap[index].flags; }
 };
 
 template <>

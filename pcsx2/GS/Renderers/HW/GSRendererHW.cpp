@@ -5249,7 +5249,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 
 	const u8 blend_index = static_cast<u8>(((m_conf.ps.blend_a * 3 + m_conf.ps.blend_b) * 3 + m_conf.ps.blend_c) * 3 + m_conf.ps.blend_d);
 	HWBlend blend = GSDevice::GetBlend(blend_index);
-	const int blend_flag = blend.flags;
+	const auto blend_flag = blend.flags;
 
 	// Re set alpha, it was modified, must be done after index calculation
 	if (blend_ad_alpha_masked)
@@ -5482,6 +5482,10 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 		m_conf.colclip_frame = m_cached_ctx.FRAME;
 	}
 
+	// Needed to avoid rgba values going below zero when doing subtractive blends on HDR/float buffers.
+	// We still clamp out negative values when sampling textures in tfx, but we can't guarantee the final blend on an RT from being cut if lower quality blend accuracies are used.
+	const bool keep_sw_blending = (EmuConfig.HDRRendering > HDRRenderType::Off) && (blend_flag & BLEND_NEG) && (GSConfig.AccurateBlendingUnit >= AccBlendLevel::Full);
+	
 	// Per pixel alpha blending
 	if (PABE)
 	{
@@ -5492,7 +5496,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 		// C 12 Final Resistance triggers it but there's no difference and it's a psx game.
 		if (sw_blending)
 		{
-			if (accumulation_blend && (blend.op != GSDevice::OP_REV_SUBTRACT))
+			if (accumulation_blend && (blend.op != GSDevice::OP_REV_SUBTRACT) && !keep_sw_blending)
 			{
 				// PABE accumulation blend:
 				// Idea is to achieve final output Cs when As < 1, we do this with manipulating Cd using the src1 output.
@@ -5522,7 +5526,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 			else
 			{
 				// PABE sw blend:
-				m_conf.ps.pabe = !(accumulation_blend || blend_mix);
+				m_conf.ps.pabe = !(accumulation_blend || blend_mix) || keep_sw_blending;
 			}
 
 			GL_INS("HW: PABE mode %s", m_conf.ps.pabe ? "ENABLED" : "DISABLED");
@@ -5559,7 +5563,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 		if (m_conf.ps.blend_c == 2)
 			m_conf.cb_ps.TA_MaxDepth_Af.a = static_cast<float>(AFIX) / 128.0f;
 
-		if (accumulation_blend)
+		if (!keep_sw_blending && accumulation_blend)
 		{
 			// Keep HW blending to do the addition/subtraction
 			m_conf.blend = {true, GSDevice::CONST_ONE, GSDevice::CONST_ONE, blend.op, GSDevice::CONST_ONE, GSDevice::CONST_ZERO, false, 0};
@@ -5599,6 +5603,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 					m_conf.ps.blend_b = 2;
 				}
 			}
+			// TODO: Why???
 			else if (m_conf.ps.pabe)
 			{
 				m_conf.blend.dst_factor = GSDevice::SRC1_COLOR;
@@ -5607,7 +5612,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 			// Dual source output not needed (accumulation blend replaces it with ONE).
 			m_conf.ps.no_color1 = (m_conf.ps.pabe == 0);
 		}
-		else if (blend_mix)
+		else if (!keep_sw_blending && blend_mix)
 		{
 			// Disable dithering on blend mix if needed.
 			if (m_conf.ps.dither)
@@ -5622,6 +5627,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 			{
 				if (m_conf.ps.blend_b == m_conf.ps.blend_d && (alpha_c0_high_min_one || alpha_c1_high_min_one || alpha_c2_high_one))
 				{
+					pxAssert(EmuConfig.HDRRendering == HDRRenderType::Off);
 					// Alpha is guaranteed to be > 128.
 					// Replace Cs*Alpha + Cd*(1 - Alpha) with Cs*Alpha - Cd*(Alpha - 1).
 					blend.dst = GSDevice::SRC1_COLOR;
@@ -5784,6 +5790,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 				blend.op = GSDevice::OP_ADD;
 				// Render pass 2: Add or subtract result of render pass 1(Cd) from Cs.
 				m_conf.blend_multi_pass.enable = true;
+				pxAssert(dither == 0 || dither == 1); // It will overflow below if it's any other value
 				m_conf.blend_multi_pass.dither = dither * GSConfig.Dithering;
 				m_conf.blend_multi_pass.blend = {true, blend_multi_pass.src, GSDevice::CONST_ONE, blend_multi_pass.op, GSDevice::CONST_ONE, GSDevice::CONST_ZERO, false, 0};
 			}
@@ -5891,7 +5898,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 	if (sw_blending && DATE_PRIMID && m_conf.require_full_barrier)
 	{
 		GL_PERF("DATE: Swap DATE_PRIMID with DATE_BARRIER");
-		m_conf.require_full_barrier = true;
+		m_conf.require_full_barrier = true; // Just for clarity
 		DATE_PRIMID = false;
 		DATE_BARRIER = true;
 	}
@@ -6517,6 +6524,15 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 		return;
 	}
 
+	// CopyRect() might crash if the source area reads out of bounds or the target area writes out of bounds, so clamp it upfront (it's unclear why we get in this situation in the first place)
+	GSVector4i clamped_copy_range = scaled_copy_range;
+	clamped_copy_range = clamped_copy_range.rintersect(GSVector4i(0, 0, src_target->m_texture->GetWidth(), src_target->m_texture->GetHeight()));
+	
+	clamped_copy_range = clamped_copy_range - clamped_copy_range.xyxy() + GSVector4i(scaled_copy_dst_offset).xyxy();
+	//pxAssert(clamped_copy_range.x >= 0 && clamped_copy_range.z <= src_copy->GetWidth() && clamped_copy_range.y >= 0 && clamped_copy_range.w <= src_copy->GetHeight());
+	clamped_copy_range = clamped_copy_range.rintersect(GSVector4i(0, 0, src_copy->GetWidth(), src_copy->GetHeight()));
+	clamped_copy_range = clamped_copy_range - clamped_copy_range.xyxy() + scaled_copy_range.xyxy();
+
 	if (m_downscale_source)
 	{
 		g_perfmon.Put(GSPerfMon::TextureCopies, 1);
@@ -6546,10 +6562,16 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 			g_gs_device->FilteredDownsampleTexture(src_target->m_texture, src_copy.get(), downsample_factor, clamp_min, dRect);
 		}
 	}
+	else if (src_target->m_texture->GetFormat() != src_copy->GetFormat())
+	{
+		const GSVector4 src_rect = GSVector4(clamped_copy_range) / GSVector4(src_target->m_texture->GetSize()).xyxy();
+		const GSVector4 dst_rect = GSVector4(clamped_copy_range - clamped_copy_range.xyxy() + GSVector4i(scaled_copy_dst_offset).xyxy());
+		g_gs_device->StretchRect(src_target->m_texture, src_rect, src_copy.get(), dst_rect, ShaderConvert::COPY, false);
+	}
 	else
 	{
 		g_gs_device->CopyRect(
-			src_target->m_texture, src_copy.get(), scaled_copy_range, scaled_copy_dst_offset.x, scaled_copy_dst_offset.y);
+			src_target->m_texture, src_copy.get(), clamped_copy_range, scaled_copy_dst_offset.x, scaled_copy_dst_offset.y);
 	}
 	m_conf.tex = src_copy.get();
 }
@@ -6694,22 +6716,25 @@ void GSRendererHW::EmulateATST(float& AREF, GSHWDrawConfig::PSSelector& ps, bool
 	const int atst = pass_2 ? inverted_atst[m_cached_ctx.TEST.ATST] : m_cached_ctx.TEST.ATST;
 	const float aref = static_cast<float>(m_cached_ctx.TEST.AREF);
 
+	// Add an offset to account for 8bit/float inaccuracies, hopefully it's not needed in HDR (see "HDR_FLT_THRESHOLD" in shaders)
+	const float rounding_offset = (EmuConfig.HDRRendering >= HDRRenderType::Unsafe) ? (0.0001f * 128.0f) : 0.1f;
+
 	switch (atst)
 	{
 		case ATST_LESS:
-			AREF = aref - 0.1f;
+			AREF = aref - rounding_offset;
 			ps.atst = 1;
 			break;
 		case ATST_LEQUAL:
-			AREF = aref - 0.1f + 1.0f;
+			AREF = aref - rounding_offset + 1.0f;
 			ps.atst = 1;
 			break;
 		case ATST_GEQUAL:
-			AREF = aref - 0.1f;
+			AREF = aref - rounding_offset;
 			ps.atst = 2;
 			break;
 		case ATST_GREATER:
-			AREF = aref - 0.1f + 1.0f;
+			AREF = aref - rounding_offset + 1.0f;
 			ps.atst = 2;
 			break;
 		case ATST_EQUAL:
@@ -7061,6 +7086,8 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	bool new_scale_rt_alpha = false;
 	if (rt)
 	{
+		// TODO: if HDR rendering is enabled, we could always pre-correct alpha, thus scaling it by 2 (matching 128 to 1) when the texture is first written.
+		// This would allow HDR to skip many RTA correction and decorrection passes, and do more HW blends (because float textures can go beyond 1!).
 		can_scale_rt_alpha = !needs_ad && (GSUtil::GetChannelMask(m_cached_ctx.FRAME.PSM) & 0x8) && rt_new_alpha_max <= 128;
 
 		const bool partial_fbmask = (m_conf.ps.fbmask && m_conf.cb_ps.FbMask.a != 0xFF && m_conf.cb_ps.FbMask.a != 0);
@@ -8507,7 +8534,8 @@ bool GSRendererHW::OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Sourc
 		r_texture.y -= offset;
 		r_texture.w -= offset;
 
-		if (GSTexture* rt = g_gs_device->CreateRenderTarget(tw, th, GSTexture::Format::Color))
+		pxAssert(tex->m_texture->GetFormat() == g_gs_device->GetEmuHWRTTexFormat()); // We don't know what happens if this was the case, probably nothing! //TODO: delete!? All RTs should use the same format due to VK/DX12 limitations.
+		if (GSTexture* rt = g_gs_device->CreateRenderTarget(tw, th, tex->m_texture->GetFormat()))
 		{
 			// sRect is the top of texture
 			// Need to half pixel offset the dest tex coordinates as draw pixels are top left instead of centre for texel reads.

@@ -52,6 +52,23 @@ vec4 sample_c()
 	return texture(TextureSampler, PSin_t);
 }
 
+float saturate(float c)
+{
+	return clamp(c, 0.0, 1.0);
+}
+vec2 saturate(vec2 c)
+{
+	return clamp(c, 0.0, 1.0);
+}
+vec3 saturate(vec3 c)
+{
+	return clamp(c, 0.0, 1.0);
+}
+vec4 saturate(vec4 c)
+{
+	return clamp(c, 0.0, 1.0);
+}
+
 #ifdef ps_copy
 void ps_copy()
 {
@@ -88,7 +105,7 @@ void ps_downsample_copy()
 // Need to be careful with precision here, it can break games like Spider-Man 3 and Dogs Life
 void ps_convert_rgba8_16bits()
 {
-	highp uvec4 i = uvec4(sample_c() * vec4(255.5f, 255.5f, 255.5f, 255.5f));
+	highp uvec4 i = uvec4(saturate(sample_c()) * vec4(255.5f, 255.5f, 255.5f, 255.5f));
 
 	SV_Target1 = ((i.x & 0x00F8u) >> 3) | ((i.y & 0x00F8u) << 2) | ((i.z & 0x00f8u) << 7) | ((i.w & 0x80u) << 8);
 }
@@ -122,25 +139,25 @@ void ps_convert_float16_rgb5a1()
 
 float rgba8_to_depth32(vec4 unorm)
 {
-	uvec4 c = uvec4(unorm * vec4(255.5f));
+	uvec4 c = uvec4(saturate(unorm) * vec4(255.5f));
 	return float(c.r | (c.g << 8) | (c.b << 16) | (c.a << 24)) * exp2(-32.0f);
 }
 
 float rgba8_to_depth24(vec4 unorm)
 {
-	uvec3 c = uvec3(unorm.rgb * vec3(255.5f));
+	uvec3 c = uvec3(saturate(unorm.rgb) * vec3(255.5f));
 	return float(c.r | (c.g << 8) | (c.b << 16)) * exp2(-32.0f);
 }
 
 float rgba8_to_depth16(vec4 unorm)
 {
-	uvec2 c = uvec2(unorm.rg * vec2(255.5f));
+	uvec2 c = uvec2(saturate(unorm.rg) * vec2(255.5f));
 	return float(c.r | (c.g << 8)) * exp2(-32.0f);
 }
 
 float rgb5a1_to_depth16(vec4 unorm)
 {
-	uvec4 c = uvec4(unorm * vec4(255.5f));
+	uvec4 c = uvec4(saturate(unorm) * vec4(255.5f));
 	return float(((c.r & 0xF8u) >> 3) | ((c.g & 0xF8u) << 2) | ((c.b & 0xF8u) << 7) | ((c.a & 0x80u) << 8)) * exp2(-32.0f);
 }
 
@@ -352,6 +369,7 @@ void ps_rta_decorrection()
 void ps_colclip_init()
 {
 	vec4 value = sample_c();
+	value.rgb = saturate(value.rgb); // Clamp to [0,1] range given we might have upgraded the "Color" texture to float/HDR, to avoid overflow
 	SV_Target0 = vec4(round(value.rgb * 255.0f) / 65535.0f, value.a);
 }
 #endif

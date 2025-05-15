@@ -3572,7 +3572,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 
 	MenuHeading(FSUI_CSTR("On-Screen Display"));
 	DrawIntSpinBoxSetting(bsi, FSUI_ICONSTR(ICON_FA_SEARCH, "OSD Scale"),
-		FSUI_CSTR("Determines how large the on-screen messages and monitor are."), "EmuCore/GS", "OsdScale", 100, 25, 500, 1, FSUI_CSTR("%d%%"));
+		FSUI_CSTR("Determines how large the on-screen messages and monitor are."), "EmuCore/GS", "OsdScale", 100, 25, 400, 1, FSUI_CSTR("%d%%"));
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LIST, "Show Messages"),
 		FSUI_CSTR(
 			"Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc."),
@@ -3981,7 +3981,7 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 	static constexpr const char* s_bilinear_options[] = {
 		FSUI_NSTR("Nearest"),
 		FSUI_NSTR("Bilinear (Forced)"),
-		FSUI_NSTR("Bilinear (PS2)"),
+		FSUI_NSTR("Bilinear (PS2) (Default)"),
 		FSUI_NSTR("Bilinear (Forced excluding sprite)"),
 	};
 	static constexpr const char* s_trilinear_options[] = {
@@ -4133,6 +4133,8 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 			"accurate_blending_unit", static_cast<int>(AccBlendLevel::Basic), s_blending_options, std::size(s_blending_options), true);
 		DrawToggleSetting(
 			bsi, FSUI_CSTR("Mipmapping"), FSUI_CSTR("Enables emulation of the GS's texture mipmapping."), "EmuCore/GS", "hw_mipmap", true);
+		DrawToggleSetting(
+			bsi, FSUI_CSTR("HDR"), FSUI_CSTR("Forces all rendering to be in HDR without integer rounding, and HDR output. It will likely break many games. It might not work on all rendering backends."), "EmuCore/GS", "hdr", false);
 	}
 	else
 	{
@@ -4355,7 +4357,28 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 		DrawIntRangeSetting(bsi, FSUI_CSTR("Shade Boost Contrast"), FSUI_CSTR("Adjusts contrast. 50 is normal."), "EmuCore/GS",
 			"ShadeBoost_Contrast", 50, 1, 100, "%d", shadeboost_active);
 		DrawIntRangeSetting(bsi, FSUI_CSTR("Shade Boost Saturation"), FSUI_CSTR("Adjusts saturation. 50 is normal."), "EmuCore/GS",
-			"ShadeBoost_Saturation", 50, 1, 100, "%d", shadeboost_active);
+			"ShadeBoost_Saturation", 50, 0, 100, "%d", shadeboost_active);
+
+		const bool colorcorrect_active = GetEffectiveBoolSetting(bsi, "EmuCore/GS", "ColorCorrect", false);
+
+		DrawToggleSetting(bsi, FSUI_CSTR("Color Correct"), FSUI_CSTR("This will interpret the game as having this specific gamma, and convert it to your display gamma (meant to be 2.2).\n2.35 is the average CRT TV gamma."), "EmuCore/GS", "ColorCorrect", false);
+		DrawFloatSpinBoxSetting(bsi, FSUI_CSTR("Color Correct Game Gamma"), FSUI_CSTR("Adjusts brightness. 50 is normal."), "EmuCore/GS",
+			"ColorCorrect_GameGamma", Pcsx2Config::GSOptions::DEFAULT_GAME_GAMMA, 2.0f, 3.0f, 0.01f, 1.f, "%f", colorcorrect_active);
+		static constexpr const char* s_color_spaces[] = {
+			FSUI_NSTR("Rec.709/sRGB (Default)"),
+			FSUI_NSTR("NTSC-M"),
+			FSUI_NSTR("NTSC-J"),
+			FSUI_NSTR("PAL"),
+		};
+		DrawIntListSetting(bsi, FSUI_CSTR("Color Correct Game Color Space"), FSUI_CSTR("This will interpret the game as being developed on (or for) a specific color space (each region had its own), and convert it to your display color space (Rec.709/sRGB).\nIt's not know what standard each game targeted, if any."), "EmuCore/GS", "ColorCorrect_GameColorSpace", 0,
+			s_color_spaces, std::size(s_color_spaces), colorcorrect_active);
+
+		const bool hdr_active = GetEffectiveBoolSetting(bsi, "EmuCore/GS", "hdr", false);
+		
+		DrawIntRangeSetting(bsi, FSUI_CSTR("HDR Nits"), FSUI_CSTR("Adjusts the brightness of the HDR output (in nits). 203 nits is standard."), "EmuCore/GS",
+			"HDR_BrightnessNits", Pcsx2Config::GSOptions::DEFAULT_HDR_BRIGHTNESS_NITS, 80, 400, "%d", hdr_active);
+		DrawIntRangeSetting(bsi, FSUI_CSTR("HDR Peak Nits"), FSUI_CSTR("Adjusts the peak brightness of the HDR output (in nits). It should match your display peak brightness."), "EmuCore/GS",
+			"HDR_PeakBrightnessNits", Pcsx2Config::GSOptions::DEFAULT_HDR_PEAK_BRIGHTNESS_NITS, 400, 10000, "%d", hdr_active);
 
 		static constexpr const char* s_tv_shaders[] = {
 			FSUI_NSTR("None (Default)"),
@@ -7368,6 +7391,7 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
 // To avoid having to type T_RANSLATE("FullscreenUI", ...) everywhere, we use the shorter macros at the top
 // of the file, then preprocess and generate a bunch of noops here to define the strings. Sadly that means
 // the view in Linguist is gonna suck, but you can search the file for the string for more context.
+// NOTE: if everything goes correctly, these are automatically generated and don't need to be added manually.
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #if 0

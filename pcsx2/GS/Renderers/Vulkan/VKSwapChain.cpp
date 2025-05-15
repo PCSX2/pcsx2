@@ -185,16 +185,49 @@ std::optional<VkSurfaceFormatKHR> VKSwapChain::SelectSurfaceFormat(VkSurfaceKHR 
 		GSDeviceVK::GetInstance()->GetPhysicalDevice(), surface, &format_count, surface_formats.data());
 	pxAssert(res == VK_SUCCESS);
 
+	constexpr VkFormat default_sdr_format = VK_FORMAT_R8G8B8A8_UNORM;
+
 	// If there is a single undefined surface format, the device doesn't care, so we'll just use RGBA
-	if (surface_formats[0].format == VK_FORMAT_UNDEFINED)
-		return VkSurfaceFormatKHR{VK_FORMAT_R8G8B8A8_UNORM, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR};
+	if (surface_formats.empty() || surface_formats[0].format == VK_FORMAT_UNDEFINED)
+		return VkSurfaceFormatKHR{default_sdr_format, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR};
+
+	// HDR if enabled and supported
+	if (EmuConfig.HDROutput)
+	{
+		for (const VkSurfaceFormatKHR& surface_format : surface_formats)
+		{
+			if (surface_format.format == VK_FORMAT_R16G16B16A16_SFLOAT && surface_format.colorSpace == VK_COLOR_SPACE_EXTENDED_SRGB_LINEAR_EXT)
+			{
+				return surface_format;
+			}
+		}
+		// Disable it as it's not supported
+		EmuConfig.HDROutput = false;
+		WARNING_LOG("Vulkan swapchain doesn't support HDR formats.");
+	}
+
+	// Use RGB10A2 if available (higher quality than RGBA8)
+	for (const VkSurfaceFormatKHR& surface_format : surface_formats)
+	{
+		INFO_LOG("Vulkan swapchain supports format {} color space {}.", (u32)surface_format.format, (u32)surface_format.colorSpace);
+		if (surface_format.format == VK_FORMAT_A2B10G10R10_UNORM_PACK32 && surface_format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+		{
+			return surface_format;
+		}
+	}
 
 	// Try to find a suitable format.
 	for (const VkSurfaceFormatKHR& surface_format : surface_formats)
 	{
+		// We could easily support "VK_COLOR_SPACE_BT709_LINEAR_EXT" and "VK_COLOR_SPACE_EXTENDED_SRGB_LINEAR_EXT" for SDR if we linearized on presentation,
+		// but at the moment we don't.
+		if (surface_format.colorSpace != VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+		{
+			continue;
+		}
 		// Some drivers seem to return a SRGB format here (Intel Mesa).
 		// This results in gamma correction when presenting to the screen, which we don't want.
-		// Use a linear format instead, if this is the case.
+		// Use a non sRGB format instead, if this is the case.
 		return VkSurfaceFormatKHR{GetLinearFormat(surface_format.format), VK_COLOR_SPACE_SRGB_NONLINEAR_KHR};
 	}
 
@@ -446,10 +479,21 @@ bool VKSwapChain::CreateSwapChain()
 
 	m_images.reserve(image_count);
 	m_current_image = 0;
+	// It's too early to call "GSDeviceVK::LookupNativeFormat()"
+	GSTexture::Format format = GSTexture::Format::Color;
+	switch (surface_format->format)
+	{
+		case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
+			format = GSTexture::Format::ColorHQ;
+			break;
+		case VK_FORMAT_R16G16B16A16_SFLOAT:
+			format = GSTexture::Format::ColorHDR;
+			break;
+	}
 	for (u32 i = 0; i < image_count; i++)
 	{
 		std::unique_ptr<GSTextureVK> texture =
-			GSTextureVK::Adopt(images[i], GSTexture::Type::RenderTarget, GSTexture::Format::Color,
+			GSTextureVK::Adopt(images[i], GSTexture::Type::RenderTarget, format,
 				m_window_info.surface_width, m_window_info.surface_height, 1, surface_format->format);
 		if (!texture)
 			return false;
