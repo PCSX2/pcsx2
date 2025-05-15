@@ -1107,17 +1107,15 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const bool is_depth, c
 					if (dst->m_unscaled_size != t->m_unscaled_size)
 					{
 						t->ResizeTexture(t->m_unscaled_size.x, t->m_unscaled_size.y);
-						t->m_valid = dst->m_valid;
 					}
 
 					CopyRGBFromDepthToColor(t, dst);
 				}
 
+				t->m_valid = t->m_valid.runion(dst->m_valid);
 				dst = t;
 
-				if (GSUtil::GetChannelMask(TEX0.PSM) & 0x8)
-					t->UnscaleRTAlpha();
-
+				// Don't need to de-RTA here as we were actually copying the RGB over, preserving the existing alpha.
 				inside_target = false;
 				break;
 			}

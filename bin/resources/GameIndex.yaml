@@ -13656,6 +13656,7 @@ SLED-53440:
   name: "Area 51"
   region: "PAL-Unk"
   gsHWFixes:
+    textureInsideRT: 1 # Fixes shadows in some scenarios.
     halfPixelOffset: 2 # Fixes misaligned lighting and other effects, needs Special otherwise lights flicker.
     nativeScaling: 2 # Fixes lights.
 SLED-53442:
@@ -20228,6 +20229,7 @@ SLES-52570:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
+    textureInsideRT: 1 # Fixes shadows in some scenarios.
     halfPixelOffset: 2 # Fixes misaligned lighting and other effects, needs Special otherwise lights flicker.
     nativeScaling: 2 # Fixes lights.
 SLES-52571:
@@ -21857,6 +21859,7 @@ SLES-53075:
   name: "Area 51"
   region: "PAL-M5"
   gsHWFixes:
+    textureInsideRT: 1 # Fixes shadows in some scenarios.
     halfPixelOffset: 2 # Fixes misaligned lighting and other effects, needs Special otherwise lights flicker.
     nativeScaling: 2 # Fixes lights.
 SLES-53076:
@@ -48415,6 +48418,7 @@ SLPM-66468:
   name-en: "Area 51"
   region: "NTSC-J"
   gsHWFixes:
+    textureInsideRT: 1 # Fixes shadows in some scenarios.
     halfPixelOffset: 2 # Fixes misaligned lighting and other effects, needs Special otherwise lights flicker.
     nativeScaling: 2 # Fixes lights.
 SLPM-66469:
@@ -65100,6 +65104,7 @@ SLUS-20595:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    textureInsideRT: 1 # Fixes shadows in some scenarios.
     halfPixelOffset: 2 # Fixes misaligned lighting and other effects, needs Special otherwise lights flicker.
     nativeScaling: 2 # Fixes lights.
 SLUS-20596:
