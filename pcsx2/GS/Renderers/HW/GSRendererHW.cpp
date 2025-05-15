@@ -3760,9 +3760,11 @@ void GSRendererHW::Draw()
 			}
 		}
 		const bool blending_cd = PRIM->ABE && !m_context->ALPHA.IsOpaque();
+		bool valid_width_change = false;
 		if (rt && ((!is_possible_mem_clear || blending_cd) || rt->m_TEX0.PSM != FRAME_TEX0.PSM) && !m_in_target_draw)
 		{
-			if (rt->m_TEX0.TBW != FRAME_TEX0.TBW && !m_cached_ctx.ZBUF.ZMSK && (m_cached_ctx.FRAME.FBMSK & 0xFF000000))
+			valid_width_change = rt->m_TEX0.TBW != FRAME_TEX0.TBW;
+			if (valid_width_change && !m_cached_ctx.ZBUF.ZMSK && (m_cached_ctx.FRAME.FBMSK & 0xFF000000))
 			{
 				// Alpha could be a font, and since the width is changing it's no longer valid.
 				// Be careful of downsize copies or other effects, checking Z MSK should hopefully be enough.. (Okami).
@@ -3776,6 +3778,13 @@ void GSRendererHW::Draw()
 				FRAME_TEX0.TBP0 = rt->m_TEX0.TBP0;
 				rt->m_TEX0 = FRAME_TEX0;
 			}
+
+			if (valid_width_change)
+			{
+				GSVector4i new_valid_width = rt->m_valid;
+				new_valid_width.z = std::min(new_valid_width.z, static_cast<int>(rt->m_TEX0.TBW) * 64);
+				rt->ResizeValidity(new_valid_width);
+			}
 		}
 
 		if (ds && (!is_possible_mem_clear || ds->m_TEX0.PSM != ZBUF_TEX0.PSM || (rt && ds->m_TEX0.TBW != rt->m_TEX0.TBW)) && !m_in_target_draw)
@@ -3785,7 +3794,18 @@ void GSRendererHW::Draw()
 				ZBUF_TEX0.TBP0 = ds->m_TEX0.TBP0;
 				ds->m_TEX0 = ZBUF_TEX0;
 			}
+			if (valid_width_change)
+			{
+				GSVector4i new_valid_width = ds->m_valid;
+				new_valid_width.z = std::min(new_valid_width.z, static_cast<int>(ds->m_TEX0.TBW) * 64);
+				ds->ResizeValidity(new_valid_width);
+			}
 		}
+
+		if (rt)
+			g_texture_cache->CombineAlignedInsideTargets(rt, src);
+		if (ds)
+			g_texture_cache->CombineAlignedInsideTargets(ds, src);
 	}
 	else if (!m_texture_shuffle)
 	{
@@ -3862,7 +3882,7 @@ void GSRendererHW::Draw()
 		}
 		// NFS Undercover does a draw with double width of the actual width 1280x240, which functions the same as doubling the height.
 		// Ignore single page/0 page stuff, that's just gonna get silly
-		else if (buffer_width > 64 && update_rect.z > buffer_width)
+		else if (m_texture_shuffle && buffer_width > 64 && update_rect.z > buffer_width)
 		{
 			update_rect.w *= static_cast<float>(update_rect.z) / static_cast<float>(buffer_width);
 			update_rect.z = buffer_width;
@@ -4013,9 +4033,19 @@ void GSRendererHW::Draw()
 			// Dark cloud writes to 424 when the buffer is only 416 high, but masks the Z.
 			// Updating the valid causes the Z to overlap the framebuffer, which is obviously incorrect.
 			const bool z_masked = m_cached_ctx.ZBUF.ZMSK;
+			const bool z_update = can_update_size && !z_masked;
 
-			ds->UpdateValidity(m_r, !z_masked && (can_update_size || m_r.w <= (resolution.y * 2)));
-			ds->UpdateDrawn(m_r, !z_masked && (can_update_size || m_r.w <= (resolution.y * 2)));
+			if (m_using_temp_z)
+			{
+				const int vertical_offset = ((static_cast<int>(m_cached_ctx.FRAME.Block() - rt->m_TEX0.TBP0) / 32) / std::max(static_cast<int>(rt->m_TEX0.TBW), 1)) * frame_psm.pgs.y;
+				const GSVector4i ds_rect = m_r - GSVector4i(vertical_offset);
+				ds->UpdateValidity(ds_rect, z_update && (can_update_size || (ds_rect.w <= (resolution.y * 2) && !m_texture_shuffle)));
+			}
+			else
+			{
+				ds->UpdateValidity(m_r, z_update && (can_update_size || m_r.w <= (resolution.y * 2)));
+				ds->UpdateDrawn(m_r, z_update && (can_update_size || m_r.w <= (resolution.y * 2)));
+			}
 
 			if (!new_rect && new_height && old_end_block != ds->m_end_block)
 			{
@@ -4246,7 +4276,6 @@ void GSRendererHW::Draw()
 
 		//ds->m_valid = ds->m_valid.runion(r);
 		// Limit to 2x the vertical height of the resolution (for double buffering)
-		ds->UpdateValidity(real_rect, !z_masked && (can_update_size || (real_rect.w <= (resolution.y * 2) && !m_texture_shuffle)));
 
 		if (m_using_temp_z)
 		{
@@ -4254,13 +4283,17 @@ void GSRendererHW::Draw()
 			{
 				const int get_next_ctx = m_env.PRIM.CTXT;
 				const GSDrawingContext& next_ctx = m_env.CTXT[get_next_ctx];
+				const int vertical_offset = ((static_cast<int>(m_cached_ctx.FRAME.Block() - rt->m_TEX0.TBP0) / 32) / std::max(static_cast<int>(rt->m_TEX0.TBW), 1)) * frame_psm.pgs.y;
+				const GSVector4i ds_real_rect = real_rect - GSVector4i(vertical_offset);
+				ds->UpdateValidity(ds_real_rect, !z_masked && (can_update_size || (ds_real_rect.w <= (resolution.y * 2) && !m_texture_shuffle)));
+
 				if ((m_state_flush_reason != CONTEXTCHANGE) || (next_ctx.ZBUF.ZBP == m_context->ZBUF.ZBP && next_ctx.FRAME.FBP == m_context->FRAME.FBP))
 				{
 					m_temp_z_full_copy = true;
 				}
 				else
 				{
-					const int vertical_offset = ((static_cast<int>(m_cached_ctx.FRAME.Block() - rt->m_TEX0.TBP0) / 32) / std::max(static_cast<int>(rt->m_TEX0.TBW), 1)) * frame_psm.pgs.y;
+					
 					const int z_vertical_offset = ((static_cast<int>(m_cached_ctx.ZBUF.Block() - ds->m_TEX0.TBP0) / 32) / std::max(rt->m_TEX0.TBW, 1U)) * GSLocalMemory::m_psm[m_cached_ctx.ZBUF.PSM].pgs.y;
 					
 					if (!m_temp_z_full_copy)
@@ -4288,6 +4321,8 @@ void GSRendererHW::Draw()
 		}
 		else if (m_cached_ctx.DepthWrite() && g_texture_cache->GetTemporaryZ() != nullptr)
 		{
+			ds->UpdateValidity(real_rect, !z_masked && (can_update_size || (real_rect.w <= (resolution.y * 2) && !m_texture_shuffle)));
+
 			GSTextureCache::TempZAddress z_address_info = g_texture_cache->GetTemporaryZInfo();
 			if (ds->m_TEX0.TBP0 == z_address_info.ZBP)
 			{
