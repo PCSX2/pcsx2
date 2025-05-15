@@ -209,7 +209,7 @@ void DockManager::loadLayouts()
 					break;
 				}
 
-				new_name = QString("%1 #%2").arg(name).arg(i);
+				new_name = tr("%1 #%2").arg(name).arg(i);
 			}
 		}
 

@@ -87,7 +87,7 @@ void DockMenuBar::updateLayoutSwitcher(DockLayout::Index current_index, const st
 	for (const DockLayout& layout : layouts)
 	{
 		const char* cpu_name = DebugInterface::cpuName(layout.cpu());
-		QString tab_name = QString("%1 (%2)").arg(layout.name()).arg(cpu_name);
+		QString tab_name = tr("%1 (%2)").arg(layout.name()).arg(cpu_name);
 		m_layout_switcher->addTab(tab_name);
 	}
 
