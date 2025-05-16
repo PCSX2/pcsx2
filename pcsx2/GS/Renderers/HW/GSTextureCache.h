@@ -209,7 +209,7 @@ public:
 	struct TempZAddress
 	{
 		u32 ZBP;
-		u32 offset;
+		int offset;
 		GSVector4i rect_since;
 	};
 
