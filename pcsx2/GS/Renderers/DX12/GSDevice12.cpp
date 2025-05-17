@@ -3828,6 +3828,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	GSTexture12* draw_rt = static_cast<GSTexture12*>(config.rt);
 	GSTexture12* draw_ds = static_cast<GSTexture12*>(config.ds);
 	GSTexture12* draw_rt_clone = nullptr;
+	GSTexture12* draw_ds_clone = nullptr;
 
 	// Align the render area to 128x128, hopefully avoiding render pass restarts for small render area changes (e.g. Ratchet and Clank).
 	const GSVector2i rtsize(config.rt ? config.rt->GetSize() : config.ds->GetSize());
@@ -3883,7 +3884,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	// bind textures before checking the render pass, in case we need to transition them
 	if (config.tex)
 	{
-		PSSetShaderResource(0, config.tex, config.tex != config.rt);
+		PSSetShaderResource(0, config.tex, config.tex != config.rt && config.tex != config.ds);
 		PSSetSampler(config.sampler);
 	}
 	if (config.pal)
@@ -3907,15 +3908,16 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		}
 	}
 
-	if (config.require_one_barrier || (config.tex && config.tex == config.rt)) // Used as "bind rt" flag when texture barrier is unsupported.
+	if (config.require_one_barrier || (config.tex && config.tex == config.rt))
 	{
-		// requires a copy of the RT
+		// Requires a copy of the RT.
+		// Used as "bind rt" flag when texture barrier is unsupported for tex is fb.
 		draw_rt_clone = static_cast<GSTexture12*>(CreateTexture(rtsize.x, rtsize.y, 1, colclip_rt ? GSTexture::Format::ColorClip : GSTexture::Format::Color, true));
 		if (draw_rt_clone)
 		{
 			EndRenderPass();
 
-			GL_PUSH("Copy RT to temp texture for fbmask {%d,%d %dx%d}", config.drawarea.left, config.drawarea.top,
+			GL_PUSH("Copy RT to temp texture {%d,%d %dx%d}", config.drawarea.left, config.drawarea.top,
 				config.drawarea.width(), config.drawarea.height());
 
 			draw_rt_clone->SetState(GSTexture::State::Invalidated);
@@ -3924,6 +3926,23 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 				PSSetShaderResource(2, draw_rt_clone, true);
 			if (config.tex && config.tex == config.rt)
 				PSSetShaderResource(0, draw_rt_clone, true);
+		}
+	}
+
+	if (config.tex && config.tex == config.ds)
+	{
+		// DX requires a copy when sampling the depth buffer.
+		draw_ds_clone = static_cast<GSTexture12*>(CreateDepthStencil(rtsize.x, rtsize.y, config.ds->GetFormat(), false));
+		if (draw_ds_clone)
+		{
+			EndRenderPass();
+
+			GL_PUSH("Copy RT to temp texture {%d,%d %dx%d}", config.drawarea.left, config.drawarea.top,
+				config.drawarea.width(), config.drawarea.height());
+
+			draw_ds_clone->SetState(GSTexture::State::Invalidated);
+			CopyRect(config.ds, draw_ds_clone, config.drawarea, config.drawarea.left, config.drawarea.top);
+			PSSetShaderResource(0, draw_ds_clone, true);
 		}
 	}
 
@@ -4072,6 +4091,9 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 
 	if (draw_rt_clone)
 		Recycle(draw_rt_clone);
+
+	if (draw_ds_clone)
+		Recycle(draw_ds_clone);
 
 	if (date_image)
 		Recycle(date_image);

@@ -2614,10 +2614,10 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 
 	GSTexture* draw_rt_clone = nullptr;
 
-	// Used as "bind rt" flag when texture barrier is unsupported.
 	if (config.require_one_barrier || (config.tex && config.tex == config.rt))
 	{
 		// Requires a copy of the RT.
+		// Used as "bind rt" flag when texture barrier is unsupported for tex is fb.
 		draw_rt_clone = CreateTexture(rtsize.x, rtsize.y, 1, colclip_rt ? GSTexture::Format::ColorClip : GSTexture::Format::Color, true);
 		if (draw_rt_clone)
 		{
@@ -2626,6 +2626,19 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 				PSSetShaderResource(2, draw_rt_clone);
 			if (config.tex && config.tex == config.rt)
 				PSSetShaderResource(0, draw_rt_clone);
+		}
+	}
+
+	GSTexture* draw_ds_clone = nullptr;
+
+	if (config.tex && config.tex == config.ds)
+	{
+		// DX requires a copy when sampling the depth buffer.
+		draw_ds_clone = CreateDepthStencil(rtsize.x, rtsize.y, config.ds->GetFormat(), false);
+		if (draw_ds_clone)
+		{
+			CopyRect(config.ds, draw_ds_clone, config.drawarea, config.drawarea.left, config.drawarea.top);
+			PSSetShaderResource(0, draw_ds_clone);
 		}
 	}
 
@@ -2681,6 +2694,10 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 
 	if (draw_rt_clone)
 		Recycle(draw_rt_clone);
+
+	if (draw_ds_clone)
+		Recycle(draw_ds_clone);
+
 	if (primid_tex)
 		Recycle(primid_tex);
 
