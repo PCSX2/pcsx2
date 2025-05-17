@@ -2489,12 +2489,15 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 
 	if (config.require_one_barrier && !m_features.texture_barrier)
 	{
-		// Requires a copy of the RT
+		// Requires a copy of the RT.
 		draw_rt_clone = CreateTexture(rtsize.x, rtsize.y, 1, colclip_rt ? GSTexture::Format::ColorClip : GSTexture::Format::Color, true);
-		GL_PUSH("Copy RT to temp texture for fbmask {%d,%d %dx%d}",
-			config.drawarea.left, config.drawarea.top,
-			config.drawarea.width(), config.drawarea.height());
-		CopyRect(colclip_rt ? colclip_rt : config.rt, draw_rt_clone, config.drawarea, config.drawarea.left, config.drawarea.top);
+		if (draw_rt_clone)
+		{
+			GL_PUSH("GL: Copy RT to temp texture {%d,%d %dx%d}",
+				config.drawarea.left, config.drawarea.top,
+				config.drawarea.width(), config.drawarea.height());
+			CopyRect(colclip_rt ? colclip_rt : config.rt, draw_rt_clone, config.drawarea, config.drawarea.left, config.drawarea.top);
+		}
 	}
 
 	IASetVertexBuffer(config.verts, config.nverts);
@@ -2563,7 +2566,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	if (check_barrier && ((config.tex && (config.tex == config.ds || config.tex == config.rt)) || ((psel.ps.IsFeedbackLoop() || psel.ps.blend_c == 1) && GLState::rt == config.rt)))
 	{
 		// Ensure all depth writes are finished before sampling
-		GL_INS("Texture barrier to flush depth or rt before reading");
+		GL_INS("GL: Texture barrier to flush depth or rt before reading");
 		glTextureBarrier();
 	}
 	// additional non-pipeline config stuff
