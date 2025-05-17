@@ -26,6 +26,7 @@ namespace SaveStateSelectorUI
 
 	s32 GetCurrentSlot();
 	void LoadCurrentSlot();
+	void LoadCurrentBackupSlot();
 	void SaveCurrentSlot();
 } // namespace SaveStateSelectorUI
 

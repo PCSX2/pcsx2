@@ -72,7 +72,7 @@
        </item>
        <item>
         <property name="text">
-         <string>Array of byte</string>
+         <string>Byte Array</string>
         </property>
        </item>
       </widget>

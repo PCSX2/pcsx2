@@ -1,8 +1,6 @@
 // SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
-#define IMGUI_DEFINE_MATH_OPERATORS
-
 #include "BuildVersion.h"
 #include "CDVD/CDVDcommon.h"
 #include "GS/Renderers/Common/GSDevice.h"
@@ -96,6 +94,7 @@ using ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING;
 using ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING;
 using ImGuiFullscreen::LAYOUT_SCREEN_HEIGHT;
 using ImGuiFullscreen::LAYOUT_SCREEN_WIDTH;
+using ImGuiFullscreen::SvgScaling;
 using ImGuiFullscreen::UIBackgroundColor;
 using ImGuiFullscreen::UIBackgroundHighlightColor;
 using ImGuiFullscreen::UIBackgroundLineColor;
@@ -133,6 +132,8 @@ using ImGuiFullscreen::EndNavBar;
 using ImGuiFullscreen::EnumChoiceButton;
 using ImGuiFullscreen::FloatingButton;
 using ImGuiFullscreen::ForceKeyNavEnabled;
+using ImGuiFullscreen::GetCachedSvgTexture;
+using ImGuiFullscreen::GetCachedSvgTextureAsync;
 using ImGuiFullscreen::GetCachedTexture;
 using ImGuiFullscreen::GetCachedTextureAsync;
 using ImGuiFullscreen::GetPlaceholderTexture;
@@ -141,6 +142,7 @@ using ImGuiFullscreen::HorizontalMenuItem;
 using ImGuiFullscreen::IsFocusResetQueued;
 using ImGuiFullscreen::IsGamepadInputSource;
 using ImGuiFullscreen::LayoutScale;
+using ImGuiFullscreen::LoadSvgTexture;
 using ImGuiFullscreen::LoadTexture;
 using ImGuiFullscreen::MenuButton;
 using ImGuiFullscreen::MenuButtonFrame;
@@ -239,6 +241,11 @@ namespace FullscreenUI
 	static void GetStandardSelectionFooterText(SmallStringBase& dest, bool back_instead_of_cancel);
 	static void ApplyLayoutSettings(const SettingsInterface* bsi = nullptr);
 
+	void DrawSvgTexture(GSTexture* padded_texture, ImVec2 unpadded_size);
+	void DrawCachedSvgTexture(const std::string& path, ImVec2 size, SvgScaling mode);
+	void DrawCachedSvgTextureAsync(const std::string& path, ImVec2 size, SvgScaling mode);
+	void DrawListSvgTexture(ImDrawList* drawList, GSTexture* padded_texture, const ImVec2& p_min, const ImVec2& p_unpadded_max);
+
 	static MainWindowType s_current_main_window = MainWindowType::None;
 	static PauseSubMenu s_current_pause_submenu = PauseSubMenu::None;
 	static bool s_initialized = false;
@@ -258,10 +265,12 @@ namespace FullscreenUI
 	// Resources
 	//////////////////////////////////////////////////////////////////////////
 	static bool LoadResources();
+	static bool LoadSvgResources();
 	static void DestroyResources();
 
 	static std::array<std::shared_ptr<GSTexture>, static_cast<u32>(GameDatabaseSchema::Compatibility::Perfect)>
 		s_game_compatibility_textures;
+	static std::shared_ptr<GSTexture> s_banner_texture;
 	static std::shared_ptr<GSTexture> s_fallback_disc_texture;
 	static std::shared_ptr<GSTexture> s_fallback_exe_texture;
 	static std::vector<std::unique_ptr<GSTexture>> s_cleanup_textures;
@@ -438,7 +447,7 @@ namespace FullscreenUI
 
 	static void InitializePlaceholderSaveStateListEntry(SaveStateListEntry* li, s32 slot);
 	static bool InitializeSaveStateListEntry(
-		SaveStateListEntry* li, const std::string& title, const std::string& serial, u32 crc, s32 slot);
+		SaveStateListEntry* li, const std::string& title, const std::string& serial, u32 crc, s32 slot, bool backup = false);
 	static void ClearSaveStateEntryList();
 	static u32 PopulateSaveStateListEntries(const std::string& title, const std::string& serial, u32 crc);
 	static bool OpenLoadStateSelectorForGame(const std::string& game_path);
@@ -604,7 +613,7 @@ void FullscreenUI::ApplyLayoutSettings(const SettingsInterface* bsi)
 
 	const InputLayout layout = ImGuiFullscreen::GetGamepadLayout();
 
-	if (sdl2_nintendo_mode == "true" || (sdl2_nintendo_mode == "auto") && layout == InputLayout::Nintendo)
+	if ((sdl2_nintendo_mode == "true" || sdl2_nintendo_mode == "auto") && layout == InputLayout::Nintendo)
 	{
 		// Apply
 		ImGuiManager::SwapGamepadNorthWest(true);
@@ -680,6 +689,51 @@ void FullscreenUI::GamepadLayoutChanged()
 	ApplyLayoutSettings();
 }
 
+// When drawing an svg to a non-integer size, we get a padded texture.
+// This function crops off this padding by setting the image UV for the draw.
+// We currently only use integer sizes for images, but I wrote this before checking that.
+void FullscreenUI::DrawSvgTexture(GSTexture* padded_texture, ImVec2 unpadded_size)
+{
+	if (padded_texture != GetPlaceholderTexture().get())
+	{
+		const ImVec2 padded_size(padded_texture->GetWidth(), padded_texture->GetHeight());
+		const ImVec2 uv1 = unpadded_size / padded_size;
+		ImGui::Image(reinterpret_cast<ImTextureID>(padded_texture->GetNativeHandle()), unpadded_size, ImVec2(0.0f, 0.0f), uv1);
+	}
+	else
+	{
+		// Placeholder is a png file and should be scaled by ImGui
+		ImGui::Image(reinterpret_cast<ImTextureID>(padded_texture->GetNativeHandle()), unpadded_size);
+	}
+}
+
+void FullscreenUI::DrawCachedSvgTexture(const std::string& path, ImVec2 size, SvgScaling mode)
+{
+	DrawSvgTexture(GetCachedSvgTexture(path, size, mode), size);
+}
+
+void FullscreenUI::DrawCachedSvgTextureAsync(const std::string& path, ImVec2 size, SvgScaling mode)
+{
+	DrawSvgTexture(GetCachedSvgTextureAsync(path, size, mode), size);
+}
+
+// p_unpadded_max should be equal to p_min + unpadded_size
+void FullscreenUI::DrawListSvgTexture(ImDrawList* drawList, GSTexture* padded_texture, const ImVec2& p_min, const ImVec2& p_unpadded_max)
+{
+	const ImVec2 unpadded_size = p_unpadded_max - p_min;
+	if (padded_texture != GetPlaceholderTexture().get())
+	{
+		const ImVec2 padded_size(padded_texture->GetWidth(), padded_texture->GetHeight());
+		const ImVec2 uv1 = unpadded_size / padded_size;
+		drawList->AddImage(reinterpret_cast<ImTextureID>(padded_texture->GetNativeHandle()), p_min, p_unpadded_max, ImVec2(0.0f, 0.0f), uv1);
+	}
+	else
+	{
+		// Placeholder is a png file and should be scaled by ImGui
+		drawList->AddImage(reinterpret_cast<ImTextureID>(padded_texture->GetNativeHandle()), p_min, p_unpadded_max);
+	}
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Main
 //////////////////////////////////////////////////////////////////////////
@@ -727,6 +781,11 @@ bool FullscreenUI::Initialize()
 bool FullscreenUI::IsInitialized()
 {
 	return s_initialized;
+}
+
+void FullscreenUI::ReloadSvgResources()
+{
+	LoadSvgResources();
 }
 
 bool FullscreenUI::HasActiveWindow()
@@ -1051,10 +1110,17 @@ bool FullscreenUI::LoadResources()
 	s_fallback_disc_texture = LoadTexture("fullscreenui/media-cdrom.png");
 	s_fallback_exe_texture = LoadTexture("fullscreenui/applications-system.png");
 
+	return LoadSvgResources();
+}
+
+bool FullscreenUI::LoadSvgResources()
+{
+	s_banner_texture = LoadSvgTexture("icons/AppBanner.svg", LayoutScale(500.0f, 76.0f), SvgScaling::Fit);
+
 	for (u32 i = static_cast<u32>(GameDatabaseSchema::Compatibility::Nothing);
 		 i <= static_cast<u32>(GameDatabaseSchema::Compatibility::Perfect); i++)
 	{
-		s_game_compatibility_textures[i - 1] = LoadTexture(fmt::format("icons/star-{}.png", i - 1).c_str());
+		s_game_compatibility_textures[i - 1] = LoadSvgTexture(fmt::format("icons/star-{}.svg", i - 1).c_str(), LayoutScale(64.0f, 16.0f), SvgScaling::Fit);
 	}
 
 	return true;
@@ -1064,6 +1130,7 @@ void FullscreenUI::DestroyResources()
 {
 	s_fallback_exe_texture.reset();
 	s_fallback_disc_texture.reset();
+	s_banner_texture.reset();
 	for (auto& tex : s_game_compatibility_textures)
 		tex.reset();
 	for (auto& tex : s_cleanup_textures)
@@ -3885,13 +3952,8 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 	};
 	static const char* s_resolution_options[] = {
 		FSUI_NSTR("Native (PS2)"),
-		FSUI_NSTR("1.25x Native (~450px)"),
-		FSUI_NSTR("1.5x Native (~540px)"),
-		FSUI_NSTR("1.75x Native (~630px)"),
 		FSUI_NSTR("2x Native (~720px/HD)"),
-		FSUI_NSTR("2.5x Native (~900px/HD+)"),
 		FSUI_NSTR("3x Native (~1080px/FHD)"),
-		FSUI_NSTR("3.5x Native (~1260px)"),
 		FSUI_NSTR("4x Native (~1440px/QHD)"),
 		FSUI_NSTR("5x Native (~1800px/QHD+)"),
 		FSUI_NSTR("6x Native (~2160px/4K UHD)"),
@@ -3904,13 +3966,8 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 	};
 	static const char* s_resolution_values[] = {
 		"1",
-		"1.25",
-		"1.5",
-		"1.75",
 		"2",
-		"2.5",
 		"3",
-		"3.5",
 		"4",
 		"5",
 		"6",
@@ -5625,9 +5682,9 @@ void FullscreenUI::InitializePlaceholderSaveStateListEntry(SaveStateListEntry* l
 }
 
 bool FullscreenUI::InitializeSaveStateListEntry(
-	SaveStateListEntry* li, const std::string& title, const std::string& serial, u32 crc, s32 slot)
+	SaveStateListEntry* li, const std::string& title, const std::string& serial, u32 crc, s32 slot, bool backup)
 {
-	std::string filename(VMManager::GetSaveStateFileName(serial.c_str(), crc, slot));
+	std::string filename(VMManager::GetSaveStateFileName(serial.c_str(), crc, slot, backup));
 	FILESYSTEM_STAT_DATA sd;
 	if (filename.empty() || !FileSystem::StatFile(filename.c_str(), &sd))
 	{
@@ -5635,7 +5692,7 @@ bool FullscreenUI::InitializeSaveStateListEntry(
 		return false;
 	}
 
-	li->title = fmt::format("{}##game_slot_{}", TinyString::from_format(FSUI_FSTR("Save Slot {0}"), slot), slot);
+	li->title = fmt::format("{}##game_slot_{}", TinyString::from_format(FSUI_FSTR("{0} Slot {1}"), backup ? "Backup Save" : "Save", slot), slot);
 	li->summary = fmt::format(FSUI_FSTR("Saved {}"), TimeToPrintableString(sd.ModificationTime));
 	li->slot = slot;
 	li->timestamp = sd.ModificationTime;
@@ -5680,6 +5737,10 @@ u32 FullscreenUI::PopulateSaveStateListEntries(const std::string& title, const s
 		SaveStateListEntry li;
 		if (InitializeSaveStateListEntry(&li, title, serial, crc, i) || !s_save_state_selector_loading)
 			s_save_state_selector_slots.push_back(std::move(li));
+
+		SaveStateListEntry bli;
+		if (InitializeSaveStateListEntry(&bli, title, serial, crc, i, true) || !s_save_state_selector_loading)
+			s_save_state_selector_slots.push_back(std::move(bli));
 	}
 
 	return static_cast<u32>(s_save_state_selector_slots.size());
@@ -6499,10 +6560,10 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 
 			// region
 			{
-				std::string flag_texture(fmt::format("icons/flags/{}.png", GameList::RegionToString(selected_entry->region)));
+				std::string flag_texture(fmt::format("icons/flags/{}.svg", GameList::RegionToString(selected_entry->region)));
 				ImGui::TextUnformatted(FSUI_CSTR("Region: "));
 				ImGui::SameLine();
-				ImGui::Image(reinterpret_cast<ImTextureID>(GetCachedTextureAsync(flag_texture.c_str())->GetNativeHandle()), LayoutScale(23.0f, 16.0f));
+				DrawCachedSvgTextureAsync(flag_texture, LayoutScale(23.0f, 16.0f), SvgScaling::Fit);
 				ImGui::SameLine();
 				ImGui::Text(" (%s)", GameList::RegionToString(selected_entry->region));
 			}
@@ -6512,8 +6573,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 			ImGui::SameLine();
 			if (selected_entry->compatibility_rating != GameDatabaseSchema::Compatibility::Unknown)
 			{
-				ImGui::Image(reinterpret_cast<ImTextureID>(s_game_compatibility_textures[static_cast<u32>(selected_entry->compatibility_rating) - 1]->GetNativeHandle()),
-					LayoutScale(64.0f, 16.0f));
+				DrawSvgTexture(s_game_compatibility_textures[static_cast<u32>(selected_entry->compatibility_rating) - 1].get(), LayoutScale(64.0f, 16.0f));
 				ImGui::SameLine();
 			}
 			ImGui::Text(" (%s)", GameList::EntryCompatibilityRatingToString(selected_entry->compatibility_rating));
@@ -6979,7 +7039,7 @@ void FullscreenUI::OpenAboutWindow()
 
 void FullscreenUI::DrawAboutWindow()
 {
-	ImGui::SetNextWindowSize(LayoutScale(1000.0f, 580.0f));
+	ImGui::SetNextWindowSize(LayoutScale(1000.0f, 600.0f));
 	ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 	ImGui::OpenPopup(FSUI_CSTR("About PCSX2"));
 
@@ -6989,20 +7049,23 @@ void FullscreenUI::DrawAboutWindow()
 
 	if (ImGui::BeginPopupModal(FSUI_CSTR("About PCSX2"), &s_about_window_open, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
 	{
+		const ImVec2 image_size = LayoutScale(500.0f, 76.0f);
+		const ImRect image_bb(ImGui::GetCursorScreenPos(), ImGui::GetCursorScreenPos() + ImVec2(ImGui::GetCurrentWindow()->WorkRect.GetWidth(), image_size.y));
+		const ImRect image_rect(CenterImage(image_bb, image_size));
+
+		DrawListSvgTexture(ImGui::GetWindowDrawList(), s_banner_texture.get(), image_rect.Min, image_rect.Max);
+
+		const float indent = image_size.y + LayoutScale(12.0f);
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + indent);
 		ImGui::TextWrapped("%s", FSUI_CSTR(
 									 "PCSX2 is a free and open-source PlayStation 2 (PS2) emulator. Its purpose is to emulate the PS2's hardware, using a "
 									 "combination of MIPS CPU Interpreters, Recompilers and a Virtual Machine which manages hardware states and PS2 system memory. "
 									 "This allows you to play PS2 games on your PC, with many additional features and benefits."));
 		ImGui::NewLine();
 
-		ImGui::TextWrapped(FSUI_CSTR("Version: %s"), BuildVersion::GitRev);
-		ImGui::NewLine();
-
 		ImGui::TextWrapped("%s",
 			FSUI_CSTR("PlayStation 2 and PS2 are registered trademarks of Sony Interactive Entertainment. This application is not "
 					  "affiliated in any way with Sony Interactive Entertainment."));
-
-		ImGui::NewLine();
 
 		BeginMenuButtons();
 
@@ -7029,6 +7092,10 @@ void FullscreenUI::DrawAboutWindow()
 		}
 
 		EndMenuButtons();
+
+		const float alignment = image_size.x + image_size.y;
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + alignment);
+		ImGui::TextWrapped(FSUI_CSTR("Version: %s"), BuildVersion::GitRev);
 
 		ImGui::EndPopup();
 	}
@@ -7765,8 +7832,8 @@ TRANSLATE_NOOP("FullscreenUI", "Identifies any new files added to the game direc
 TRANSLATE_NOOP("FullscreenUI", "Forces a full rescan of all games previously identified.");
 TRANSLATE_NOOP("FullscreenUI", "About PCSX2");
 TRANSLATE_NOOP("FullscreenUI", "PCSX2 is a free and open-source PlayStation 2 (PS2) emulator. Its purpose is to emulate the PS2's hardware, using a combination of MIPS CPU Interpreters, Recompilers and a Virtual Machine which manages hardware states and PS2 system memory. This allows you to play PS2 games on your PC, with many additional features and benefits.");
-TRANSLATE_NOOP("FullscreenUI", "Version: %s");
 TRANSLATE_NOOP("FullscreenUI", "PlayStation 2 and PS2 are registered trademarks of Sony Interactive Entertainment. This application is not affiliated in any way with Sony Interactive Entertainment.");
+TRANSLATE_NOOP("FullscreenUI", "Version: %s");
 TRANSLATE_NOOP("FullscreenUI", "When enabled and logged in, PCSX2 will scan for achievements on startup.");
 TRANSLATE_NOOP("FullscreenUI", "\"Challenge\" mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.");
 TRANSLATE_NOOP("FullscreenUI", "Displays popup messages on events such as achievement unlocks and leaderboard submissions.");
@@ -7809,6 +7876,7 @@ TRANSLATE_NOOP("FullscreenUI", "{} unlabelled patch codes found but not enabled.
 TRANSLATE_NOOP("FullscreenUI", "This Session: {}");
 TRANSLATE_NOOP("FullscreenUI", "All Time: {}");
 TRANSLATE_NOOP("FullscreenUI", "Save Slot {0}");
+TRANSLATE_NOOP("FullscreenUI", "{0} Slot {1}");
 TRANSLATE_NOOP("FullscreenUI", "Saved {}");
 TRANSLATE_NOOP("FullscreenUI", "{} does not exist.");
 TRANSLATE_NOOP("FullscreenUI", "{} deleted.");
@@ -7905,13 +7973,8 @@ TRANSLATE_NOOP("FullscreenUI", "Blend (Bottom Field First, Half FPS)");
 TRANSLATE_NOOP("FullscreenUI", "Adaptive (Top Field First)");
 TRANSLATE_NOOP("FullscreenUI", "Adaptive (Bottom Field First)");
 TRANSLATE_NOOP("FullscreenUI", "Native (PS2)");
-TRANSLATE_NOOP("FullscreenUI", "1.25x Native (~450px)");
-TRANSLATE_NOOP("FullscreenUI", "1.5x Native (~540px)");
-TRANSLATE_NOOP("FullscreenUI", "1.75x Native (~630px)");
 TRANSLATE_NOOP("FullscreenUI", "2x Native (~720px/HD)");
-TRANSLATE_NOOP("FullscreenUI", "2.5x Native (~900px/HD+)");
 TRANSLATE_NOOP("FullscreenUI", "3x Native (~1080px/FHD)");
-TRANSLATE_NOOP("FullscreenUI", "3.5x Native (~1260px)");
 TRANSLATE_NOOP("FullscreenUI", "4x Native (~1440px/QHD)");
 TRANSLATE_NOOP("FullscreenUI", "5x Native (~1800px/QHD+)");
 TRANSLATE_NOOP("FullscreenUI", "6x Native (~2160px/4K UHD)");

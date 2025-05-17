@@ -397,7 +397,11 @@ float4 fetch_raw_color(int2 xy)
 
 float4 fetch_c(int2 uv)
 {
+#if PS_TEX_IS_FB == 1
+	return RtTexture.Load(int3(uv, 0));
+#else
 	return Texture.Load(int3(uv, 0));
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////

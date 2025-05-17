@@ -74,7 +74,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 	//////////////////////////////////////////////////////////////////////////
 	// Global Settings
 	//////////////////////////////////////////////////////////////////////////
-	SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.adapterDropdown, "EmuCore/GS", "Adapter");
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableHWFixes, "EmuCore/GS", "UserHacks", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.spinGPUDuringReadbacks, "EmuCore/GS", "HWSpinGPUForReadbacks", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.spinCPUDuringReadbacks, "EmuCore/GS", "HWSpinCPUForReadbacks", false);
@@ -294,6 +293,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 	}
 
 	connect(m_ui.rendererDropdown, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &GraphicsSettingsWidget::onRendererChanged);
+	connect(m_ui.adapterDropdown, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &GraphicsSettingsWidget::onAdapterChanged);
 	connect(m_ui.enableHWFixes, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::updateRendererDependentOptions);
 	connect(m_ui.extendedUpscales, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::updateRendererDependentOptions);
 	connect(m_ui.textureFiltering, &QComboBox::currentIndexChanged, this, &GraphicsSettingsWidget::onTextureFilteringChange);
@@ -502,7 +502,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 
 		dialog->registerWidgetHelp(m_ui.aspectRatio, tr("Aspect Ratio"), tr("Auto Standard (4:3/3:2 Progressive)"),
 			tr("Changes the aspect ratio used to display the console's output to the screen. The default is Auto Standard (4:3/3:2 "
-			   "Progressive) which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era."));
+			   "Progressive) which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era, and adapts to widescreen/ultrawide game patches."));
 
 		dialog->registerWidgetHelp(m_ui.interlacing, tr("Deinterlacing"), tr("Automatic (Default)"), tr("Determines the deinterlacing method to be used on the interlaced screen of the emulated console. Automatic should be able to correctly deinterlace most games, but if you see visibly shaky graphics, try one of the available options."));
 
@@ -1172,13 +1172,17 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 		std::string current_adapter = Host::GetBaseStringSettingValue("EmuCore/GS", "Adapter", "");
 		m_ui.adapterDropdown->clear();
 		m_ui.adapterDropdown->setEnabled(!adapters.empty());
-		m_ui.adapterDropdown->addItem(GetDefaultAdapter().c_str());
+		m_ui.adapterDropdown->addItem(tr("(Default)"));
 		m_ui.adapterDropdown->setCurrentIndex(0);
+
+		// Treat default adapter as empty
+		if (current_adapter == GetDefaultAdapter())
+			current_adapter.clear();
 
 		if (m_dialog->isPerGameSettings())
 		{
 			m_ui.adapterDropdown->insertItem(
-				0, tr("Use Global Setting [%1]").arg(current_adapter.empty() ? GetDefaultAdapter().c_str() : QString::fromStdString(current_adapter)));
+				0, tr("Use Global Setting [%1]").arg((current_adapter.empty()) ? tr("(Default)") : QString::fromStdString(current_adapter)));
 			if (!m_dialog->getSettingsInterface()->GetStringValue("EmuCore/GS", "Adapter", &current_adapter))
 			{
 				// clear the adapter so we don't set it to the global value
@@ -1240,13 +1244,8 @@ void GraphicsSettingsWidget::populateUpscaleMultipliers(u32 max_upscale_multipli
 {
 	static constexpr std::pair<const char*, float> templates[] = {
 		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Native (PS2) (Default)"), 1.0f},
-		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "1.25x Native (~450px)"), 1.25f},
-		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "1.5x Native (~540px)"), 1.5f},
-		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "1.75x Native (~630px)"), 1.75f},
 		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "2x Native (~720px/HD)"), 2.0f},
-		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "2.5x Native (~900px/HD+)"), 2.5f},
 		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "3x Native (~1080px/FHD)"), 3.0f},
-		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "3.5x Native (~1260px)"), 3.5f},
 		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "4x Native (~1440px/QHD)"), 4.0f},
 		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "5x Native (~1800px/QHD+)"), 5.0f},
 		{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "6x Native (~2160px/4K UHD)"), 6.0f},

@@ -111,7 +111,7 @@ namespace VMManager
 	static bool HasValidOrInitializingVM();
 	static void PrecacheCDVDFile();
 
-	static std::string GetCurrentSaveStateFileName(s32 slot);
+	static std::string GetCurrentSaveStateFileName(s32 slot, bool backup = false);
 	static bool DoLoadState(const char* filename);
 	static bool DoSaveState(const char* filename, s32 slot_for_message, bool zip_on_thread, bool backup_old_state);
 	static void ZipSaveState(std::unique_ptr<ArchiveEntryList> elist,
@@ -876,7 +876,9 @@ void VMManager::RequestDisplaySize(float scale /*= 0.0f*/)
 	switch (GSConfig.AspectRatio)
 	{
 		case AspectRatioType::RAuto4_3_3_2:
-			if (GSgetDisplayMode() == GSVideoMode::SDTV_480P)
+			if (EmuConfig.CurrentCustomAspectRatio > 0.f)
+				x_scale = EmuConfig.CurrentCustomAspectRatio / (static_cast<float>(iwidth) / static_cast<float>(iheight));
+			else if (GSgetDisplayMode() == GSVideoMode::SDTV_480P)
 				x_scale = (3.0f / 2.0f) / (static_cast<float>(iwidth) / static_cast<float>(iheight));
 			else
 				x_scale = (4.0f / 3.0f) / (static_cast<float>(iwidth) / static_cast<float>(iheight));
@@ -1760,13 +1762,15 @@ bool SaveStateBase::vmFreeze()
 	return IsOkay();
 }
 
-std::string VMManager::GetSaveStateFileName(const char* game_serial, u32 game_crc, s32 slot)
+std::string VMManager::GetSaveStateFileName(const char* game_serial, u32 game_crc, s32 slot, bool backup)
 {
 	std::string filename;
 	if (std::strlen(game_serial) > 0)
 	{
 		if (slot < 0)
 			filename = fmt::format("{} ({:08X}).resume.p2s", game_serial, game_crc);
+		else if (backup)
+			filename = fmt::format("{} ({:08X}).{:02d}.p2s.backup", game_serial, game_crc, slot);
 		else
 			filename = fmt::format("{} ({:08X}).{:02d}.p2s", game_serial, game_crc, slot);
 
@@ -1776,7 +1780,7 @@ std::string VMManager::GetSaveStateFileName(const char* game_serial, u32 game_cr
 	return filename;
 }
 
-std::string VMManager::GetSaveStateFileName(const char* filename, s32 slot)
+std::string VMManager::GetSaveStateFileName(const char* filename, s32 slot, bool backup)
 {
 	pxAssertRel(!HasValidVM(), "Should not have a VM when calling the non-gamelist GetSaveStateFileName()");
 
@@ -1784,7 +1788,7 @@ std::string VMManager::GetSaveStateFileName(const char* filename, s32 slot)
 	std::string serial;
 	u32 crc;
 	if (GameList::GetSerialAndCRCForFilename(filename, &serial, &crc))
-		ret = GetSaveStateFileName(serial.c_str(), crc, slot);
+		ret = GetSaveStateFileName(serial.c_str(), crc, slot, backup);
 
 	return ret;
 }
@@ -1795,10 +1799,10 @@ bool VMManager::HasSaveStateInSlot(const char* game_serial, u32 game_crc, s32 sl
 	return (!filename.empty() && FileSystem::FileExists(filename.c_str()));
 }
 
-std::string VMManager::GetCurrentSaveStateFileName(s32 slot)
+std::string VMManager::GetCurrentSaveStateFileName(s32 slot, bool backup)
 {
 	std::unique_lock lock(s_info_mutex);
-	return GetSaveStateFileName(s_disc_serial.c_str(), s_disc_crc, slot);
+	return GetSaveStateFileName(s_disc_serial.c_str(), s_disc_crc, slot, backup);
 }
 
 bool VMManager::DoLoadState(const char* filename)
@@ -1838,7 +1842,7 @@ bool VMManager::DoSaveState(const char* filename, s32 slot_for_message, bool zip
 	if (!elist)
 	{
 		Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_EXCLAMATION_TRIANGLE,
-			fmt::format(TRANSLATE_FS("VMManager", "Failed to save save state: {}."), error.GetDescription()),
+			fmt::format(TRANSLATE_FS("VMManager", "Failed to save state: {}."), error.GetDescription()),
 			Host::OSD_ERROR_DURATION);
 		return false;
 	}
@@ -1893,7 +1897,7 @@ void VMManager::ZipSaveState(std::unique_ptr<ArchiveEntryList> elist,
 	else
 	{
 		Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_EXCLAMATION_TRIANGLE,
-			fmt::format(TRANSLATE_FS("VMManager", "Failed to save save state to slot {}."), slot_for_message,
+			fmt::format(TRANSLATE_FS("VMManager", "Failed to save state to slot {}."), slot_for_message,
 				Host::OSD_ERROR_DURATION));
 	}
 
@@ -1985,13 +1989,13 @@ bool VMManager::LoadState(const char* filename)
 	return false;
 }
 
-bool VMManager::LoadStateFromSlot(s32 slot)
+bool VMManager::LoadStateFromSlot(s32 slot, bool backup)
 {
-	const std::string filename = GetCurrentSaveStateFileName(slot);
+	const std::string filename = GetCurrentSaveStateFileName(slot, backup);
 	if (filename.empty() || !FileSystem::FileExists(filename.c_str()))
 	{
 		Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_EXCLAMATION_TRIANGLE,
-			fmt::format(TRANSLATE_FS("VMManager", "There is no save state in slot {}."), slot),
+			fmt::format(TRANSLATE_FS("VMManager", "There is no saved {} in slot {}."), backup ? TRANSLATE("VMManager", "backup state") : "state", slot),
 			Host::OSD_QUICK_DURATION);
 		return false;
 	}
@@ -2009,13 +2013,13 @@ bool VMManager::LoadStateFromSlot(s32 slot)
 	if (MemcardBusy::IsBusy())
 	{
 		Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_EXCLAMATION_TRIANGLE,
-			fmt::format(TRANSLATE_FS("VMManager", "Failed to load state from slot {} (Memory card is busy)"), slot),
+			fmt::format(TRANSLATE_FS("VMManager", "Failed to load {} from slot {} (Memory card is busy)"), backup ? TRANSLATE("VMManager", "backup state") : TRANSLATE("VMManager", "state"), slot),
 			Host::OSD_QUICK_DURATION);
 		return false;
 	}
 
 	Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_FOLDER_OPEN,
-		fmt::format(TRANSLATE_FS("VMManager", "Loading state from slot {}..."), slot), Host::OSD_QUICK_DURATION);
+		fmt::format(TRANSLATE_FS("VMManager", "Loading {} from slot {}..."), backup ? TRANSLATE("VMManager", "backup state") : TRANSLATE("VMManager", "state"), slot), Host::OSD_QUICK_DURATION);
 	return DoLoadState(filename.c_str());
 }
 
@@ -2504,11 +2508,13 @@ void VMManager::LogCPUCapabilities()
 
 	Console.WriteLnFmt(
 		"  Operating System = {}\n"
-		"  Available RAM    = {} MB\n"
-		"  Physical RAM     = {} MB\n",
+		"  Available RAM    = {} MB ({:.2f} GB)\n"
+		"  Physical RAM     = {} MB ({:.2f} GB)\n",
 		GetOSVersionString(),
 		GetAvailablePhysicalMemory() / _1mb,
-		GetPhysicalMemory() / _1mb);
+		static_cast<double>(GetAvailablePhysicalMemory()) / static_cast<double>(_1gb),
+		GetPhysicalMemory() / _1mb,
+		static_cast<double>(GetPhysicalMemory()) / static_cast<double>(_1gb));
 
 	Console.WriteLnFmt("  Processor        = {}", cpuinfo_get_package(0)->name);
 	Console.WriteLnFmt("  Core Count       = {} cores", cpuinfo_get_cores_count());
@@ -2590,7 +2596,7 @@ void VMManager::ShutdownCPUProviders()
 #else
 	// See the comment in the InitializeCPUProviders for an explaination why we
 	// still need to manage the MTVU thread.
-	if(vu1Thread.IsOpen())
+	if (vu1Thread.IsOpen())
 		vu1Thread.WaitVU();
 #endif
 }

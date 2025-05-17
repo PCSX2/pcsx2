@@ -19,6 +19,7 @@ add_library(imgui
 target_include_directories(imgui PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 target_include_directories(imgui PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 target_link_libraries(imgui PUBLIC Freetype::Freetype)
+target_link_libraries(imgui PUBLIC plutosvg::plutosvg)
 
 # Needed for macOS compile.
 set_property(TARGET imgui PROPERTY CXX_STANDARD 17)

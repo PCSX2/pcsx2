@@ -55,17 +55,22 @@ u64 GetAvailablePhysicalMemory()
 	const mach_port_t host_port = mach_host_self();
 	vm_size_t page_size;
 
+	// Get the system's page size.
 	if (host_page_size(host_port, &page_size) != KERN_SUCCESS)
 		return 0;
 
 	vm_statistics64_data_t vm_stat;
 	mach_msg_type_number_t host_size = sizeof(vm_statistics64_data_t) / sizeof(integer_t);
 
+	// Get system memory statistics.
 	if (host_statistics64(host_port, HOST_VM_INFO, reinterpret_cast<host_info64_t>(&vm_stat), &host_size) != KERN_SUCCESS)
 		return 0;
 
+	// Get the number of free and inactive pages.
 	const u64 free_pages = static_cast<u64>(vm_stat.free_count);
 	const u64 inactive_pages = static_cast<u64>(vm_stat.inactive_count);
+
+	// Calculate available memory.
 	const u64 get_available_mem = (free_pages + inactive_pages) * page_size;
 
 	return get_available_mem;
@@ -432,7 +437,7 @@ std::unique_ptr<SharedMemoryMappingArea> SharedMemoryMappingArea::Create(size_t 
 {
 	pxAssertRel(Common::IsAlignedPow2(size, __pagesize), "Size is page aligned");
 
-	mach_vm_address_t alloc;
+	mach_vm_address_t alloc = 0;
 	const kern_return_t res =
 		mach_vm_map(mach_task_self(), &alloc, size, 0, VM_FLAGS_ANYWHERE,
 			MEMORY_OBJECT_NULL, 0, false, VM_PROT_NONE, VM_PROT_NONE, VM_INHERIT_NONE);

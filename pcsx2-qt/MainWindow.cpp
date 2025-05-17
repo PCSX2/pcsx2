@@ -2819,7 +2819,7 @@ QString MainWindow::getDiscDevicePath(const QString& title)
 	return ret;
 }
 
-void MainWindow::startGameListEntry(const GameList::Entry* entry, std::optional<s32> save_slot, std::optional<bool> fast_boot)
+void MainWindow::startGameListEntry(const GameList::Entry* entry, std::optional<s32> save_slot, std::optional<bool> fast_boot, bool load_backup)
 {
 	std::shared_ptr<VMBootParameters> params = std::make_shared<VMBootParameters>();
 	params->fast_boot = fast_boot;
@@ -2828,7 +2828,7 @@ void MainWindow::startGameListEntry(const GameList::Entry* entry, std::optional<
 
 	if (save_slot.has_value() && !entry->serial.empty())
 	{
-		std::string state_filename = VMManager::GetSaveStateFileName(entry->serial.c_str(), entry->crc, save_slot.value());
+		std::string state_filename = VMManager::GetSaveStateFileName(entry->serial.c_str(), entry->crc, save_slot.value(), load_backup);
 		if (!FileSystem::FileExists(state_filename.c_str()))
 		{
 			QMessageBox::critical(this, tr("Error"), tr("This save state does not exist."));
@@ -2953,12 +2953,12 @@ std::optional<bool> MainWindow::promptForResumeState(const QString& save_state_p
 	return std::nullopt;
 }
 
-void MainWindow::loadSaveStateSlot(s32 slot)
+void MainWindow::loadSaveStateSlot(s32 slot, bool load_backup)
 {
 	if (s_vm_valid)
 	{
 		// easy when we're running
-		g_emu_thread->loadStateFromSlot(slot);
+		g_emu_thread->loadStateFromSlot(slot, load_backup);
 		return;
 	}
 	else
@@ -2968,7 +2968,7 @@ void MainWindow::loadSaveStateSlot(s32 slot)
 		if (!entry)
 			return;
 
-		startGameListEntry(entry, slot, std::nullopt);
+		startGameListEntry(entry, slot, std::nullopt, load_backup);
 	}
 }
 
@@ -3015,15 +3015,6 @@ void MainWindow::populateLoadStateMenu(QMenu* menu, const QString& filename, con
 
 	QAction* delete_save_states_action = menu->addAction(tr("Delete Save States..."));
 
-	// don't include undo in the right click menu
-	if (!is_right_click_menu)
-	{
-		QAction* load_undo_state = menu->addAction(tr("Undo Load State"));
-		load_undo_state->setEnabled(false); // CanUndoLoadState()
-		// connect(load_undo_state, &QAction::triggered, this, &QtHostInterface::undoLoadState);
-		menu->addSeparator();
-	}
-
 	const QByteArray game_serial_utf8(serial.toUtf8());
 	std::string state_filename;
 	FILESYSTEM_STAT_DATA sd;
@@ -3050,6 +3041,18 @@ void MainWindow::populateLoadStateMenu(QMenu* menu, const QString& filename, con
 
 		action = menu->addAction(tr("Load Slot %1 (%2)").arg(i).arg(formatTimestampForSaveStateMenu(sd.ModificationTime)));
 		connect(action, &QAction::triggered, [this, i]() { loadSaveStateSlot(i); });
+		has_any_states = true;
+	}
+
+	for (s32 i = 1; i <= VMManager::NUM_SAVE_STATE_SLOTS; i++)
+	{
+		FILESYSTEM_STAT_DATA sd;
+		state_filename = VMManager::GetSaveStateFileName(game_serial_utf8.constData(), crc, i, true);
+		if (!FileSystem::StatFile(state_filename.c_str(), &sd))
+			continue;
+
+		action = menu->addAction(tr("Load Backup Slot %1 (%2)").arg(i).arg(formatTimestampForSaveStateMenu(sd.ModificationTime)));
+		connect(action, &QAction::triggered, [this, i]() { loadSaveStateSlot(i, true); });
 		has_any_states = true;
 	}
 

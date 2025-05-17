@@ -310,7 +310,7 @@ void AudioSettingsWidget::onOutputVolumeChanged(int new_value)
 	pxAssert(!m_dialog->isPerGameSettings());
 	Host::SetBaseIntSettingValue("SPU2/Output", "OutputVolume", new_value);
 	Host::CommitBaseSettingChanges();
-	g_emu_thread->setAudioOutputVolume(new_value, m_ui.fastForwardVolume->value());
+	g_emu_thread->applySettings();
 
 	updateVolumeLabel();
 }
@@ -321,7 +321,7 @@ void AudioSettingsWidget::onFastForwardVolumeChanged(int new_value)
 	pxAssert(!m_dialog->isPerGameSettings());
 	Host::SetBaseIntSettingValue("SPU2/Output", "FastForwardVolume", new_value);
 	Host::CommitBaseSettingChanges();
-	g_emu_thread->setAudioOutputVolume(m_ui.volume->value(), new_value);
+	g_emu_thread->applySettings();
 
 	updateVolumeLabel();
 }
@@ -334,7 +334,7 @@ void AudioSettingsWidget::onOutputMutedChanged(int new_state)
 	const bool muted = (new_state != 0);
 	Host::SetBaseBoolSettingValue("SPU2/Output", "OutputMuted", muted);
 	Host::CommitBaseSettingChanges();
-	g_emu_thread->setAudioOutputMuted(muted);
+	g_emu_thread->applySettings();
 }
 
 void AudioSettingsWidget::onExpansionSettingsClicked()

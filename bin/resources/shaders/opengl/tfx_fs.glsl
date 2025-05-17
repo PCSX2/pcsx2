@@ -330,7 +330,11 @@ vec4 fetch_raw_color()
 
 vec4 fetch_c(ivec2 uv)
 {
+#if PS_TEX_IS_FB == 1
+	return sample_from_rt();
+#else
 	return texelFetch(TextureSampler, ivec2(uv), 0);
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////

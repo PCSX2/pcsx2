@@ -275,8 +275,8 @@ bool ThreadedFileReader::CheckAvailableMemoryForPrecaching(u64 required_size, Er
 	if (required_size > max_precache_size)
 	{
 		Error::SetStringFmt(error,
-			TRANSLATE_FS("CDVD", "Not enough free memory available for precaching, ({}GB) required."),
-			(required_size + memory_reserve) / _1gb);
+			TRANSLATE_FS("CDVD", "Not enough memory available for precaching ({:.2f} GB required)."),
+			static_cast<double>(required_size + memory_reserve) / static_cast<double>(_1gb));
 		return false;
 	}
 

@@ -1107,6 +1107,14 @@ void SaveStateSelectorUI::LoadCurrentSlot()
 	Close();
 }
 
+void SaveStateSelectorUI::LoadCurrentBackupSlot()
+{
+	Host::RunOnCPUThread([slot = GetCurrentSlot()]() {
+		VMManager::LoadStateFromSlot(slot, true);
+	});
+	Close();
+}
+
 void SaveStateSelectorUI::SaveCurrentSlot()
 {
 	Host::RunOnCPUThread([slot = GetCurrentSlot()]() {

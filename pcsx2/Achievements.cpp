@@ -1,8 +1,6 @@
 // SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
-#define IMGUI_DEFINE_MATH_OPERATORS
-
 #include "Achievements.h"
 #include "BuildVersion.h"
 #include "CDVD/CDVD.h"

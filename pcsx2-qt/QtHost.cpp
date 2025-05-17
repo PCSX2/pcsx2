@@ -320,18 +320,18 @@ void EmuThread::loadState(const QString& filename)
 	VMManager::LoadState(filename.toUtf8().constData());
 }
 
-void EmuThread::loadStateFromSlot(qint32 slot)
+void EmuThread::loadStateFromSlot(qint32 slot, bool load_backup)
 {
 	if (!isOnEmuThread())
 	{
-		QMetaObject::invokeMethod(this, "loadStateFromSlot", Qt::QueuedConnection, Q_ARG(qint32, slot));
+		QMetaObject::invokeMethod(this, "loadStateFromSlot", Qt::QueuedConnection, Q_ARG(qint32, slot), Q_ARG(bool, load_backup));
 		return;
 	}
 
 	if (!VMManager::HasValidVM())
 		return;
 
-	VMManager::LoadStateFromSlot(slot);
+	VMManager::LoadStateFromSlot(slot, load_backup);
 }
 
 void EmuThread::saveState(const QString& filename)

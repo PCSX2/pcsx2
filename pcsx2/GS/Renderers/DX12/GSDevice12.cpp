@@ -1087,7 +1087,14 @@ GSDevice::PresentResult GSDevice12::BeginPresent(bool frame_skip)
 		return PresentResult::DeviceLost;
 
 	if (frame_skip || !m_swap_chain)
+	{
+		if (!m_swap_chain)
+		{
+			ExecuteCommandList(WaitType::None);
+			InvalidateCachedState();
+		}
 		return PresentResult::FrameSkipped;
+	}
 
 	// Check if we lost exclusive fullscreen. If so, notify the host, so it can switch to windowed mode.
 	// This might get called repeatedly if it takes a while to switch back, that's the host's problem.

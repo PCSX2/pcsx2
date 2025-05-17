@@ -1159,6 +1159,8 @@ target_link_libraries(PCSX2_FLAGS INTERFACE
 	Zstd::Zstd
 	demanglegnu
 	ccc
+	plutovg::plutovg
+	plutosvg::plutosvg
 	${LIBC_LIBRARIES}
 )
 
@@ -1286,7 +1288,11 @@ function(setup_main_executable target)
 
 		# Copy dependency libraries.
 		set(DEPS_BINDIR "${CMAKE_SOURCE_DIR}/deps/bin")
-		set(DEPS_TO_COPY freetype.dll harfbuzz.dll jpeg62.dll libpng16.dll libsharpyuv.dll libwebp.dll lz4.dll SDL3.dll shaderc_shared.dll zlib1.dll zstd.dll kddockwidgets-qt62.dll)
+		set(DEPS_TO_COPY freetype.dll harfbuzz.dll jpeg62.dll libpng16.dll libsharpyuv.dll libwebp.dll lz4.dll SDL3.dll shaderc_shared.dll zlib1.dll zstd.dll plutovg.dll plutosvg.dll)
+		set(DEPS_TO_COPY
+			$<IF:$<CONFIG:Debug>,kddockwidgets-qt6d.dll,kddockwidgets-qt6.dll>
+			${DEPS_TO_COPY}
+		)
 		foreach(DEP_TO_COPY ${DEPS_TO_COPY})
 			install(FILES "${DEPS_BINDIR}/${DEP_TO_COPY}" DESTINATION "${CMAKE_SOURCE_DIR}/bin")
 		endforeach()

@@ -408,13 +408,22 @@ class MatcherCastImpl<T, Matcher<U>> {
   }
 
  private:
-  class Impl : public MatcherInterface<T> {
+  // If it's possible to implicitly convert a `const T&` to U, then `Impl` can
+  // take that as input to avoid a copy. Otherwise, such as when `T` is a
+  // non-const reference type or a type explicitly constructible only from a
+  // non-const reference, then `Impl` must use `T` as-is (potentially copying).
+  using ImplArgT =
+      typename std::conditional<std::is_convertible<const T&, const U&>::value,
+                                const T&, T>::type;
+
+  class Impl : public MatcherInterface<ImplArgT> {
    public:
     explicit Impl(const Matcher<U>& source_matcher)
         : source_matcher_(source_matcher) {}
 
     // We delegate the matching logic to the source matcher.
-    bool MatchAndExplain(T x, MatchResultListener* listener) const override {
+    bool MatchAndExplain(ImplArgT x,
+                         MatchResultListener* listener) const override {
       using FromType = typename std::remove_cv<typename std::remove_pointer<
           typename std::remove_reference<T>::type>::type>::type;
       using ToType = typename std::remove_cv<typename std::remove_pointer<
@@ -431,9 +440,8 @@ class MatcherCastImpl<T, Matcher<U>> {
 
       // Do the cast to `U` explicitly if necessary.
       // Otherwise, let implicit conversions do the trick.
-      using CastType =
-          typename std::conditional<std::is_convertible<T&, const U&>::value,
-                                    T&, U>::type;
+      using CastType = typename std::conditional<
+          std::is_convertible<ImplArgT&, const U&>::value, ImplArgT&, U>::type;
 
       return source_matcher_.MatchAndExplain(static_cast<CastType>(x),
                                              listener);
@@ -528,18 +536,16 @@ inline Matcher<T> SafeMatcherCast(const M& polymorphic_matcher_or_value) {
 // safely convert a Matcher<U> to a Matcher<T> (i.e. Matcher is
 // contravariant): just keep a copy of the original Matcher<U>, convert the
 // argument from type T to U, and then pass it to the underlying Matcher<U>.
-// The only exception is when U is a reference and T is not, as the
+// The only exception is when U is a non-const reference and T is not, as the
 // underlying Matcher<U> may be interested in the argument's address, which
-// is not preserved in the conversion from T to U.
+// cannot be preserved in the conversion from T to U (since a copy of the input
+// T argument would be required to provide a non-const reference U).
 template <typename T, typename U>
 inline Matcher<T> SafeMatcherCast(const Matcher<U>& matcher) {
   // Enforce that T can be implicitly converted to U.
   static_assert(std::is_convertible<const T&, const U&>::value,
-                "T must be implicitly convertible to U");
-  // Enforce that we are not converting a non-reference type T to a reference
-  // type U.
-  static_assert(std::is_reference<T>::value || !std::is_reference<U>::value,
-                "cannot convert non reference arg to reference");
+                "T must be implicitly convertible to U (and T must be a "
+                "non-const reference if U is a non-const reference)");
   // In case both T and U are arithmetic types, enforce that the
   // conversion is not lossy.
   typedef GTEST_REMOVE_REFERENCE_AND_CONST_(T) RawT;
@@ -560,6 +566,11 @@ Matcher<T> A();
 // Anything inside the 'internal' namespace IS INTERNAL IMPLEMENTATION
 // and MUST NOT BE USED IN USER CODE!!!
 namespace internal {
+
+// Used per go/ranked-overloads for dispatching.
+struct Rank0 {};
+struct Rank1 : Rank0 {};
+using HighestRank = Rank1;
 
 // If the explanation is not empty, prints it to the ostream.
 inline void PrintIfNotEmpty(const std::string& explanation,
@@ -1300,34 +1311,48 @@ class AllOfMatcherImpl : public MatcherInterface<const T&> {
 
   bool MatchAndExplain(const T& x,
                        MatchResultListener* listener) const override {
-    // If either matcher1_ or matcher2_ doesn't match x, we only need
-    // to explain why one of them fails.
+    // This method uses matcher's explanation when explaining the result.
+    // However, if matcher doesn't provide one, this method uses matcher's
+    // description.
     std::string all_match_result;
-
-    for (size_t i = 0; i < matchers_.size(); ++i) {
+    for (const Matcher<T>& matcher : matchers_) {
       StringMatchResultListener slistener;
-      if (matchers_[i].MatchAndExplain(x, &slistener)) {
-        if (all_match_result.empty()) {
-          all_match_result = slistener.str();
+      // Return explanation for first failed matcher.
+      if (!matcher.MatchAndExplain(x, &slistener)) {
+        const std::string explanation = slistener.str();
+        if (!explanation.empty()) {
+          *listener << explanation;
         } else {
-          std::string result = slistener.str();
-          if (!result.empty()) {
-            all_match_result += ", and ";
-            all_match_result += result;
-          }
+          *listener << "which doesn't match (" << Describe(matcher) << ")";
         }
-      } else {
-        *listener << slistener.str();
         return false;
+      }
+      // Keep track of explanations in case all matchers succeed.
+      std::string explanation = slistener.str();
+      if (explanation.empty()) {
+        explanation = Describe(matcher);
+      }
+      if (all_match_result.empty()) {
+        all_match_result = explanation;
+      } else {
+        if (!explanation.empty()) {
+          all_match_result += ", and ";
+          all_match_result += explanation;
+        }
       }
     }
 
-    // Otherwise we need to explain why *both* of them match.
     *listener << all_match_result;
     return true;
   }
 
  private:
+  // Returns matcher description as a string.
+  std::string Describe(const Matcher<T>& matcher) const {
+    StringMatchResultListener listener;
+    matcher.DescribeTo(listener.stream());
+    return listener.str();
+  }
   const std::vector<Matcher<T>> matchers_;
 };
 
@@ -1405,34 +1430,55 @@ class AnyOfMatcherImpl : public MatcherInterface<const T&> {
 
   bool MatchAndExplain(const T& x,
                        MatchResultListener* listener) const override {
+    // This method uses matcher's explanation when explaining the result.
+    // However, if matcher doesn't provide one, this method uses matcher's
+    // description.
     std::string no_match_result;
-
-    // If either matcher1_ or matcher2_ matches x, we just need to
-    // explain why *one* of them matches.
-    for (size_t i = 0; i < matchers_.size(); ++i) {
+    for (const Matcher<T>& matcher : matchers_) {
       StringMatchResultListener slistener;
-      if (matchers_[i].MatchAndExplain(x, &slistener)) {
-        *listener << slistener.str();
-        return true;
-      } else {
-        if (no_match_result.empty()) {
-          no_match_result = slistener.str();
+      // Return explanation for first match.
+      if (matcher.MatchAndExplain(x, &slistener)) {
+        const std::string explanation = slistener.str();
+        if (!explanation.empty()) {
+          *listener << explanation;
         } else {
-          std::string result = slistener.str();
-          if (!result.empty()) {
-            no_match_result += ", and ";
-            no_match_result += result;
-          }
+          *listener << "which matches (" << Describe(matcher) << ")";
+        }
+        return true;
+      }
+      // Keep track of explanations in case there is no match.
+      std::string explanation = slistener.str();
+      if (explanation.empty()) {
+        explanation = DescribeNegation(matcher);
+      }
+      if (no_match_result.empty()) {
+        no_match_result = explanation;
+      } else {
+        if (!explanation.empty()) {
+          no_match_result += ", and ";
+          no_match_result += explanation;
         }
       }
     }
 
-    // Otherwise we need to explain why *both* of them fail.
     *listener << no_match_result;
     return false;
   }
 
  private:
+  // Returns matcher description as a string.
+  std::string Describe(const Matcher<T>& matcher) const {
+    StringMatchResultListener listener;
+    matcher.DescribeTo(listener.stream());
+    return listener.str();
+  }
+
+  std::string DescribeNegation(const Matcher<T>& matcher) const {
+    StringMatchResultListener listener;
+    matcher.DescribeNegationTo(listener.stream());
+    return listener.str();
+  }
+
   const std::vector<Matcher<T>> matchers_;
 };
 
@@ -1483,7 +1529,7 @@ class SomeOfArrayMatcher {
   }
 
  private:
-  const ::std::vector<T> matchers_;
+  const std::vector<std::remove_const_t<T>> matchers_;
 };
 
 template <typename T>
@@ -2235,6 +2281,9 @@ class ResultOfMatcher {
   class Impl : public MatcherInterface<T> {
     using ResultType = decltype(CallableTraits<Callable>::template Invoke<T>(
         std::declval<CallableStorageType>(), std::declval<T>()));
+    using InnerType = std::conditional_t<
+        std::is_lvalue_reference<ResultType>::value,
+        const typename std::remove_reference<ResultType>::type&, ResultType>;
 
    public:
     template <typename M>
@@ -2242,7 +2291,7 @@ class ResultOfMatcher {
          const CallableStorageType& callable, const M& matcher)
         : result_description_(result_description),
           callable_(callable),
-          matcher_(MatcherCast<ResultType>(matcher)) {}
+          matcher_(MatcherCast<InnerType>(matcher)) {}
 
     void DescribeTo(::std::ostream* os) const override {
       if (result_description_.empty()) {
@@ -2272,7 +2321,7 @@ class ResultOfMatcher {
       // takes a non-const reference as argument.
       // Also, specifying template argument explicitly is needed because T could
       // be a non-const reference (e.g. Matcher<Uncopyable&>).
-      ResultType result =
+      InnerType result =
           CallableTraits<Callable>::template Invoke<T>(callable_, obj);
       return MatchPrintAndExplain(result, matcher_, listener);
     }
@@ -2285,7 +2334,7 @@ class ResultOfMatcher {
     // use stateful callables with ResultOf(), which doesn't guarantee
     // how many times the callable will be invoked.
     mutable CallableStorageType callable_;
-    const Matcher<ResultType> matcher_;
+    const Matcher<InnerType> matcher_;
   };  // class Impl
 
   const std::string result_description_;
@@ -2920,10 +2969,6 @@ class EachMatcher {
   const M inner_matcher_;
 };
 
-// Use go/ranked-overloads for dispatching.
-struct Rank0 {};
-struct Rank1 : Rank0 {};
-
 namespace pair_getters {
 using std::get;
 template <typename T>
@@ -3254,6 +3299,11 @@ template <typename T>
 auto UnpackStructImpl(const T& t, std::make_index_sequence<19>, char) {
   const auto& [a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s] = t;
   return std::tie(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s);
+}
+template <typename T>
+auto UnpackStructImpl(const T& u, std::make_index_sequence<20>, char) {
+  const auto& [a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t] = u;
+  return std::tie(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t);
 }
 #endif  // defined(__cpp_structured_bindings)
 
@@ -3769,7 +3819,7 @@ class UnorderedElementsAreArrayMatcher {
 
  private:
   UnorderedMatcherRequire::Flags match_flags_;
-  ::std::vector<T> matchers_;
+  std::vector<std::remove_const_t<T>> matchers_;
 };
 
 // Implements ElementsAreArray().
@@ -3790,7 +3840,7 @@ class ElementsAreArrayMatcher {
   }
 
  private:
-  const ::std::vector<T> matchers_;
+  const std::vector<std::remove_const_t<T>> matchers_;
 };
 
 // Given a 2-tuple matcher tm of type Tuple2Matcher and a value second
@@ -3877,6 +3927,21 @@ GTEST_API_ std::string FormatMatcherDescription(
     bool negation, const char* matcher_name,
     const std::vector<const char*>& param_names, const Strings& param_values);
 
+// Overloads to support `OptionalMatcher` being used with a type that either
+// supports implicit conversion to bool or a `has_value()` method.
+template <typename Optional>
+auto IsOptionalEngaged(const Optional& optional,
+                       Rank1) -> decltype(!!optional) {
+  // The use of double-negation here is to preserve historical behavior where
+  // the matcher used `operator!` rather than directly using `operator bool`.
+  return !static_cast<bool>(!optional);
+}
+template <typename Optional>
+auto IsOptionalEngaged(const Optional& optional,
+                       Rank0) -> decltype(!optional.has_value()) {
+  return optional.has_value();
+}
+
 // Implements a matcher that checks the value of a optional<> type variable.
 template <typename ValueMatcher>
 class OptionalMatcher {
@@ -3909,7 +3974,7 @@ class OptionalMatcher {
 
     bool MatchAndExplain(Optional optional,
                          MatchResultListener* listener) const override {
-      if (!optional) {
+      if (!IsOptionalEngaged(optional, HighestRank())) {
         *listener << "which is not engaged";
         return false;
       }
@@ -4742,9 +4807,10 @@ Pointwise(const TupleMatcher& tuple_matcher, const Container& rhs) {
 
 // Supports the Pointwise(m, {a, b, c}) syntax.
 template <typename TupleMatcher, typename T>
-inline internal::PointwiseMatcher<TupleMatcher, std::vector<T>> Pointwise(
-    const TupleMatcher& tuple_matcher, std::initializer_list<T> rhs) {
-  return Pointwise(tuple_matcher, std::vector<T>(rhs));
+inline internal::PointwiseMatcher<TupleMatcher,
+                                  std::vector<std::remove_const_t<T>>>
+Pointwise(const TupleMatcher& tuple_matcher, std::initializer_list<T> rhs) {
+  return Pointwise(tuple_matcher, std::vector<std::remove_const_t<T>>(rhs));
 }
 
 // UnorderedPointwise(pair_matcher, rhs) matches an STL-style
@@ -4906,7 +4972,7 @@ inline internal::UnorderedElementsAreArrayMatcher<T> IsSupersetOf(
 // - {1} matches IsSubsetOf({Gt(0), Lt(0)}), as 1 matches Gt(0).
 // - {1, -1} matches IsSubsetOf({Lt(0), Gt(0)}), as 1 matches Gt(0) and -1
 //   matches Lt(0).
-// - {1, 2} doesn't matches IsSubsetOf({Gt(0), Lt(0)}), even though 1 and 2 both
+// - {1, 2} doesn't match IsSubsetOf({Gt(0), Lt(0)}), even though 1 and 2 both
 //   match Gt(0). The reason is that different matchers must be used for
 //   elements in different slots of the container.
 //
@@ -5231,9 +5297,10 @@ inline InnerMatcher AllArgs(const InnerMatcher& matcher) {
 }
 
 // Returns a matcher that matches the value of an optional<> type variable.
-// The matcher implementation only uses '!arg' and requires that the optional<>
-// type has a 'value_type' member type and that '*arg' is of type 'value_type'
-// and is printable using 'PrintToString'. It is compatible with
+// The matcher implementation only uses '!arg' (or 'arg.has_value()' if '!arg`
+// isn't a valid expression) and requires that the optional<> type has a
+// 'value_type' member type and that '*arg' is of type 'value_type' and is
+// printable using 'PrintToString'. It is compatible with
 // std::optional/std::experimental::optional.
 // Note that to compare an optional type variable against nullopt you should
 // use Eq(nullopt) and not Eq(Optional(nullopt)). The latter implies that the

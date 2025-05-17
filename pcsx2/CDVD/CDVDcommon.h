@@ -5,6 +5,7 @@
 
 #include "common/Pcsx2Defs.h"
 
+#include <array>
 #include <string>
 
 class Error;

@@ -33,7 +33,7 @@
     <ClCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
-      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)src;$(SolutionDir)deps\include\freetype2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)src;$(SolutionDir)deps\include\freetype2;$(SolutionDir)deps\include\plutovg;$(SolutionDir)deps\include\plutosvg;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>

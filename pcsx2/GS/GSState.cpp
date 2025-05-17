@@ -2899,17 +2899,24 @@ bool GSState::TrianglesAreQuads(bool shuffle_check)
 		if (idx > 0)
 		{
 			const u16* const prev_tri= m_index.buff + (idx - 3);
-			GIFRegXYZ vert = v[i[0]].XYZ;
-			GIFRegXYZ last_vert = v[i[2]].XYZ;
+			GIFRegXYZ new_verts[3] = {v[i[0]].XYZ, v[i[1]].XYZ, v[i[2]].XYZ};
 
 			if (shuffle_check)
 			{
-				vert.X -= 8 << 4;
-				last_vert.X -= 8 << 4;
+				new_verts[0].X -= 8 << 4;
+				new_verts[1].X -= 8 << 4;
+				new_verts[2].X -= 8 << 4;
 			}
+			u32 match_vert_count = 0;
 
-			if (vert != m_vertex.buff[prev_tri[0]].XYZ && vert != m_vertex.buff[prev_tri[1]].XYZ && vert != m_vertex.buff[prev_tri[2]].XYZ &&
-				last_vert != m_vertex.buff[prev_tri[0]].XYZ && last_vert != m_vertex.buff[prev_tri[1]].XYZ && last_vert != m_vertex.buff[prev_tri[2]].XYZ)
+			if (!(new_verts[0] != m_vertex.buff[prev_tri[0]].XYZ && new_verts[0] != m_vertex.buff[prev_tri[1]].XYZ && new_verts[0] != m_vertex.buff[prev_tri[2]].XYZ))
+				match_vert_count++;
+			if (!(new_verts[1] != m_vertex.buff[prev_tri[0]].XYZ && new_verts[1] != m_vertex.buff[prev_tri[1]].XYZ && new_verts[1] != m_vertex.buff[prev_tri[2]].XYZ))
+				match_vert_count++;
+			if (!(new_verts[2] != m_vertex.buff[prev_tri[0]].XYZ && new_verts[2] != m_vertex.buff[prev_tri[1]].XYZ && new_verts[2] != m_vertex.buff[prev_tri[2]].XYZ))
+				match_vert_count++;
+
+			if (match_vert_count != 2)
 				return false;
 		}
 		// Degenerate triangles should've been culled already, so we can check indices.
@@ -3989,8 +3996,14 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 			// If it's the start of the texture and our little adjustment is all that pushed it over, clamp it to 0.
 			// This stops the border check failing when using repeat but needed less than the full texture
 			// since this was making it take the full texture even though it wasn't needed.
-			if (!clamp_to_tsize && ((m_vt.m_min.t.floor() == GSVector4::zero()).mask() & 0x3) == 0x3)
-				st = st.max(GSVector4::zero());
+			if (!clamp_to_tsize)
+			{
+				const u32 mask = (m_vt.m_min.t.floor() == GSVector4::zero()).mask();
+				if (mask & 1) // X == 0
+					st.x = st.max(GSVector4::zero()).x;
+				if (mask & 2) // Y == 0
+					st.y = st.max(GSVector4::zero()).y;
+			}
 		}
 
 		// draw will get scissored, adjust UVs to suit

@@ -2830,6 +2830,9 @@ void GSDeviceOGL::DebugMessageCallback(GLenum gl_source, GLenum gl_type, GLuint 
 	}
 }
 
+#ifdef ENABLE_OGL_DEBUG
+static int s_debugGroupDepth = 0;
+#endif
 void GSDeviceOGL::PushDebugGroup(const char* fmt, ...)
 {
 #ifdef ENABLE_OGL_DEBUG
@@ -2840,18 +2843,26 @@ void GSDeviceOGL::PushDebugGroup(const char* fmt, ...)
 	va_start(ap, fmt);
 	const std::string buf(StringUtil::StdStringFromFormatV(fmt, ap));
 	va_end(ap);
+
 	if (!buf.empty())
+	{
 		glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0xBAD, -1, buf.c_str());
+
+		// Make sure the calls succeed first.
+		if (glGetError() == GL_NO_ERROR)
+			s_debugGroupDepth++;
+	}
 #endif
 }
 
 void GSDeviceOGL::PopDebugGroup()
 {
 #ifdef ENABLE_OGL_DEBUG
-	if (!glPopDebugGroup || !GSConfig.UseDebugDevice)
+	if (!glPopDebugGroup || !GSConfig.UseDebugDevice || (s_debugGroupDepth <= 0))
 		return;
 
 	glPopDebugGroup();
+	s_debugGroupDepth--;
 #endif
 }
 

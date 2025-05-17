@@ -140,9 +140,11 @@ jobs:
             -DCMAKE_CXX_COMPILER=clang++-17 \
             -DCMAKE_EXE_LINKER_FLAGS_INIT="-fuse-ld=lld" \
             -DCMAKE_MODULE_LINKER_FLAGS_INIT="-fuse-ld=lld" \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
             -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
             -DENABLE_SETCAP=OFF \
             -DDISABLE_ADVANCE_SIMD=TRUE \
+            -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON \
             $ADDITIONAL_CMAKE_ARGS
 
       - name: Build PCSX2

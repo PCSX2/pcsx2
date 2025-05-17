@@ -210,6 +210,7 @@ public:
 	{
 		u32 ZBP;
 		u32 offset;
+		GSVector4i rect_since;
 	};
 
 	class Target : public Surface
@@ -493,10 +494,11 @@ public:
 	GSTexture* LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVector2i& offset, float* scale, const GSVector2i& size);
 	std::shared_ptr<Palette> LookupPaletteObject(const u32* clut, u16 pal, bool need_gs_texture);
 
-	Source* LookupSource(const bool is_color, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GIFRegCLAMP& CLAMP, const GSVector4i& r, const GSVector2i* lod, const bool possible_shuffle, const bool linear, const u32 frame_fbp = 0xFFFFFFFF, bool req_color = true, bool req_alpha = true);
-	Source* LookupDepthSource(const bool is_depth, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GIFRegCLAMP& CLAMP, const GSVector4i& r, const bool possible_shuffle, const bool linear, const u32 frame_fbp = 0xFFFFFFFF, bool req_color = true, bool req_alpha = true, bool palette = false);
+	Source* LookupSource(const bool is_color, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GIFRegCLAMP& CLAMP, const GSVector4i& r, const GSVector2i* lod, const bool possible_shuffle, const bool linear, const GIFRegFRAME& frame, bool req_color = true, bool req_alpha = true);
+	Source* LookupDepthSource(const bool is_depth, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GIFRegCLAMP& CLAMP, const GSVector4i& r, const bool possible_shuffle, const bool linear, const GIFRegFRAME& frame, bool req_color = true, bool req_alpha = true, bool palette = false);
 
 	Target* FindTargetOverlap(Target* target, int type, int psm);
+	void CombineAlignedInsideTargets(Target* target, GSTextureCache::Source* src = nullptr);
 	Target* LookupTarget(GIFRegTEX0 TEX0, const GSVector2i& size, float scale, int type, bool used = true, u32 fbmask = 0,
 						 bool is_frame = false, bool preload = GSConfig.PreloadFrameWithGSData, bool preserve_rgb = true, bool preserve_alpha = true,
 		const GSVector4i draw_rc = GSVector4i::zero(), bool is_shuffle = false, bool possible_clear = false, bool preserve_scale = false, GSTextureCache::Source* src = nullptr, GSTextureCache::Target* ds = nullptr, int offset = -1);
@@ -563,6 +565,7 @@ public:
 	GSTexture* GetTemporaryZ();
 	TempZAddress GetTemporaryZInfo();
 	void SetTemporaryZInfo(u32 address, u32 offset);
+	void SetTemporaryZInfo(TempZAddress address_info);
 	/// Invalidates a temporary Z, a partial copy only created from the current DS for the current draw when Z is not offset but RT is.
 	void InvalidateTemporaryZ();
 

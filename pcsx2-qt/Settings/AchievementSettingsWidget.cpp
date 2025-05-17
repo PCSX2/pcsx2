@@ -117,21 +117,26 @@ void AchievementSettingsWidget::updateEnableState()
 	m_ui.achievementNotificationsDurationLabel->setEnabled(notifications);
 	m_ui.leaderboardNotificationsDuration->setEnabled(lb_notifications);
 	m_ui.leaderboardNotificationsDurationLabel->setEnabled(lb_notifications);
-	m_ui.notificationSoundPath->setEnabled(info);
-	m_ui.notificationSoundBrowse->setEnabled(info);
-	m_ui.notificationSoundOpen->setEnabled(info);
-	m_ui.notificationSoundReset->setEnabled(info);
-	m_ui.notificationSound->setEnabled(enabled);
-	m_ui.unlockSoundPath->setEnabled(unlock);
-	m_ui.unlockSoundBrowse->setEnabled(unlock);
-	m_ui.unlockSoundOpen->setEnabled(unlock);
-	m_ui.unlockSoundReset->setEnabled(unlock);
-	m_ui.unlockSound->setEnabled(enabled);
-	m_ui.lbSoundPath->setEnabled(lbsound);
-	m_ui.lbSoundOpen->setEnabled(lbsound);
-	m_ui.lbSoundBrowse->setEnabled(lbsound);
-	m_ui.lbSoundReset->setEnabled(lbsound);
-	m_ui.lbSound->setEnabled(enabled);
+
+	if (!m_dialog->isPerGameSettings())
+	{
+		m_ui.notificationSoundPath->setEnabled(info);
+		m_ui.notificationSoundBrowse->setEnabled(info);
+		m_ui.notificationSoundOpen->setEnabled(info);
+		m_ui.notificationSoundReset->setEnabled(info);
+		m_ui.notificationSound->setEnabled(enabled);
+		m_ui.unlockSoundPath->setEnabled(unlock);
+		m_ui.unlockSoundBrowse->setEnabled(unlock);
+		m_ui.unlockSoundOpen->setEnabled(unlock);
+		m_ui.unlockSoundReset->setEnabled(unlock);
+		m_ui.unlockSound->setEnabled(enabled);
+		m_ui.lbSoundPath->setEnabled(lbsound);
+		m_ui.lbSoundOpen->setEnabled(lbsound);
+		m_ui.lbSoundBrowse->setEnabled(lbsound);
+		m_ui.lbSoundReset->setEnabled(lbsound);
+		m_ui.lbSound->setEnabled(enabled);
+	}
+
 	m_ui.soundEffects->setEnabled(enabled);
 	m_ui.overlays->setEnabled(enabled);
 	m_ui.encoreMode->setEnabled(enabled);
