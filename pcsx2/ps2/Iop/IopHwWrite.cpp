@@ -104,12 +104,12 @@ void iopHwWrite8_Page1( u32 addr, mem8_t val )
 				DbgCon.Warning( "HwWrite8 to Counter16 [ignored] @ addr 0x%08x = 0x%02x", addr, psxHu8(addr) );
 				psxHu8( addr ) = val;
 			}
-			else if( masked_addr >= 0x480 && masked_addr < 0x4a0 )
+			else if ( masked_addr >= 0x480 && masked_addr < 0x4a0 )
 			{
 				DbgCon.Warning( "HwWrite8 to Counter32 [ignored] @ addr 0x%08x = 0x%02x", addr, psxHu8(addr) );
 				psxHu8( addr ) = val;
 			}
-			else if( (masked_addr >= pgmsk(HW_USB_START)) && (masked_addr < pgmsk(HW_USB_END)) )
+			else if ( (masked_addr >= pgmsk(HW_USB_START)) && (masked_addr < pgmsk(HW_USB_END)) )
 			{
 				USBwrite8( addr, val );
 			}
@@ -219,7 +219,7 @@ static __fi void _HwWrite_16or32_Page1( u32 addr, T val )
 	// ------------------------------------------------------------------------
 	// Counters, 32-bit varieties!
 	//
-	else if( masked_addr >= 0x480 && masked_addr < 0x4b0 )
+	else if ( masked_addr >= 0x480 && masked_addr < 0x4b0 )
 	{
 		int cntidx = (( masked_addr >> 4 ) & 0xf) - 5;
 		switch( masked_addr & 0xf )
@@ -252,14 +252,14 @@ static __fi void _HwWrite_16or32_Page1( u32 addr, T val )
 	// ------------------------------------------------------------------------
 	// USB, with both 16 and 32 bit interfaces
 	//
-	else if( (masked_addr >= pgmsk(HW_USB_START)) && (masked_addr < pgmsk(HW_USB_END)) )
+	else if ( (masked_addr >= pgmsk(HW_USB_START)) && (masked_addr < pgmsk(HW_USB_END)) )
 	{
 		if( sizeof(T) == 2 ) USBwrite16( addr, val ); else USBwrite32( addr, val );
 	}
 	// ------------------------------------------------------------------------
 	// SPU2, accessible in 16 bit mode only!
 	//
-	else if( (masked_addr >= pgmsk(HW_SPU2_START)) && (masked_addr < pgmsk(HW_SPU2_END)) )
+	else if ( (masked_addr >= pgmsk(HW_SPU2_START)) && (masked_addr < pgmsk(HW_SPU2_END)) )
 	{
 		if( sizeof(T) == 2 )
 			SPU2write( addr, val );
@@ -272,7 +272,7 @@ static __fi void _HwWrite_16or32_Page1( u32 addr, T val )
 	// ------------------------------------------------------------------------
 	// PS1 GPU access
 	//
-	else if( (masked_addr >= pgmsk(HW_PS1_GPU_START)) && (masked_addr < pgmsk(HW_PS1_GPU_END)) )
+	else if ( (masked_addr >= pgmsk(HW_PS1_GPU_START)) && (masked_addr < pgmsk(HW_PS1_GPU_END)) )
 	{
 		// todo: psx mode: this is new
 		if( sizeof(T) == 2 )
@@ -599,7 +599,7 @@ void iopHwWrite32_Page8( u32 addr, mem32_t val )
 			const int parm = (masked_addr - 0x200) / 4;
 			g_Sio2.SetSend3(parm, val);
 		}
-		else if( masked_addr < 0x260 )
+		else if ( masked_addr < 0x260 )
 		{
 			// SIO2 Send commands alternate registers.  First reg maps to Send1, second
 			// to Send2, third to Send1, etc.  And the following clever code does this:
@@ -617,7 +617,7 @@ void iopHwWrite32_Page8( u32 addr, mem32_t val )
 				g_Sio2.send1[parm] = val;
 			}
 		}
-		else if( masked_addr <= 0x280 )
+		else if ( masked_addr <= 0x280 )
 		{
 			switch( masked_addr )
 			{
@@ -661,7 +661,7 @@ void iopHwWrite32_Page8( u32 addr, mem32_t val )
 				break;
 			}
 		}
-		else if( masked_addr >= pgmsk(HW_FW_START) && masked_addr <= pgmsk(HW_FW_END) )
+		else if ( masked_addr >= pgmsk(HW_FW_START) && masked_addr <= pgmsk(HW_FW_END) )
 		{
 			FWwrite32( addr, val );
 		}

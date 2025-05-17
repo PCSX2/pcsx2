@@ -515,7 +515,7 @@ void GSSetupPrimCodeGenerator::Color()
 		pshufd(xym1, xym0, _MM_SHUFFLE(1, 0, 3, 2));
 		punpcklwd(xym0, xym1);
 
-		// if(!tme) c = c.srl16(7);
+		// if (!tme) c = c.srl16(7);
 
 		if (m_sel.tfx == TFX_NONE)
 		{

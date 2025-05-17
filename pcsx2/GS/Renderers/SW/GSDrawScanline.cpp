@@ -1491,7 +1491,7 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 						case 2: break;
 					}
 
-					if(!(sel.fpsm == 1 && sel.abc == 1))
+					if (!(sel.fpsm == 1 && sel.abc == 1))
 					{
 						switch(sel.abc)
 						{

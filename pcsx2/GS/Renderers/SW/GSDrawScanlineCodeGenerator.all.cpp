@@ -562,7 +562,7 @@ L("loop");
 
 L("step");
 
-	// if(steps <= 0) break;
+	// if (steps <= 0) break;
 
 	if (!m_sel.edge)
 	{
@@ -768,7 +768,7 @@ void GSDrawScanlineCodeGenerator::Init()
 				cvttps2dq(xym6, vt);
 
 				// s = vti.xxxx() + m_local.d[skip].s;
-				// t = vti.yyyy(); if(!sprite) t += m_local.d[skip].t;
+				// t = vti.yyyy(); if (!sprite) t += m_local.d[skip].t;
 
 				pshufd(s, xym6, _MM_SHUFFLE(0, 0, 0, 0));
 				pshufd(t, xym6, _MM_SHUFFLE(1, 1, 1, 1));
@@ -925,7 +925,7 @@ void GSDrawScanlineCodeGenerator::Step()
 				// GSVector4i stq = m_local.d4.stq;
 
 				// s += stq.xxxx();
-				// if(!sprite) t += st.yyyy();
+				// if (!sprite) t += st.yyyy();
 
 				broadcasti128(stq, _rip_local_d(stq));
 
@@ -2096,7 +2096,7 @@ void GSDrawScanlineCodeGenerator::AlphaTFX()
 
 			clamp16(_ga, tmp);
 
-			// if(!tcc) gat = gat.mix16(ga.srl16(7));
+			// if (!tcc) gat = gat.mix16(ga.srl16(7));
 
 			if (!m_sel.tcc)
 			{
@@ -2109,7 +2109,7 @@ void GSDrawScanlineCodeGenerator::AlphaTFX()
 
 		case TFX_DECAL:
 
-			// if(!tcc) gat = gat.mix16(ga.srl16(7));
+			// if (!tcc) gat = gat.mix16(ga.srl16(7));
 			if (!m_sel.tcc)
 			{
 				// GSVector4i ga = iip ? gaf : m_local.c.ga;
@@ -2139,7 +2139,7 @@ void GSDrawScanlineCodeGenerator::AlphaTFX()
 
 		case TFX_HIGHLIGHT2:
 
-			// if(!tcc) gat = gat.mix16(ga.srl16(7));
+			// if (!tcc) gat = gat.mix16(ga.srl16(7));
 
 			if (!m_sel.tcc)
 			{
@@ -2990,8 +2990,8 @@ void GSDrawScanlineCodeGenerator::WritePixel(const XYm& src_, const AddressReg& 
 	{
 		if (fast)
 		{
-			// if(fzm & 0x0f) GSVector4i::storel(&vm16[addr + 0], fs);
-			// if(fzm & 0xf0) GSVector4i::storeh(&vm16[addr + 8], fs);
+			// if (fzm & 0x0f) GSVector4i::storel(&vm16[addr + 0], fs);
+			// if (fzm & 0xf0) GSVector4i::storeh(&vm16[addr + 8], fs);
 
 			test(mask, 0x0000000f << shift);
 			je("@f");
@@ -3020,10 +3020,10 @@ void GSDrawScanlineCodeGenerator::WritePixel(const XYm& src_, const AddressReg& 
 		}
 		else
 		{
-			// if(fzm & 0x03) WritePixel(fpsm, &vm16[addr + 0], fs.extract32<0>());
-			// if(fzm & 0x0c) WritePixel(fpsm, &vm16[addr + 2], fs.extract32<1>());
-			// if(fzm & 0x30) WritePixel(fpsm, &vm16[addr + 8], fs.extract32<2>());
-			// if(fzm & 0xc0) WritePixel(fpsm, &vm16[addr + 10], fs.extract32<3>());
+			// if (fzm & 0x03) WritePixel(fpsm, &vm16[addr + 0], fs.extract32<0>());
+			// if (fzm & 0x0c) WritePixel(fpsm, &vm16[addr + 2], fs.extract32<1>());
+			// if (fzm & 0x30) WritePixel(fpsm, &vm16[addr + 8], fs.extract32<2>());
+			// if (fzm & 0xc0) WritePixel(fpsm, &vm16[addr + 10], fs.extract32<3>());
 
 			test(mask, 0x00000003 << shift);
 			je("@f");

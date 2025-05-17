@@ -222,7 +222,7 @@ bool IOCtlSrc::ReadDVDInfo()
 		{
 			Console.Warning("IOCTL_DVD_READ_STRUCTURE not supported");
 		}
-		else if(GetLastError() != ERROR_UNRECOGNIZED_MEDIA) // ERROR_UNRECOGNIZED_MEDIA means probably a CD or no disc
+		else if (GetLastError() != ERROR_UNRECOGNIZED_MEDIA) // ERROR_UNRECOGNIZED_MEDIA means probably a CD or no disc
 		{
 			Console.Warning("IOCTL Unknown Error %d", GetLastError());
 		}

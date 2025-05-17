@@ -356,7 +356,7 @@ void ba0W16(u32 mem, u16 value)
 				s_ba_command_executing = true;
 				s_ba_error_detected = false;
 			}
-			else if(s_ba[0x2] == 0x42) // Read Mode
+			else if (s_ba[0x2] == 0x42) // Read Mode
 			{
 				int size = (s_ba[masked_mem] & 0xF);
 
@@ -406,7 +406,7 @@ u16 ba0R16(u32 mem)
 
 void MyMemCheck(u32 mem)
 {
-    if( mem == 0x1c02f2a0 )
+    if ( mem == 0x1c02f2a0 )
         Console.WriteLn("yo; (mem == 0x1c02f2a0) in MyMemCheck...");
 }
 

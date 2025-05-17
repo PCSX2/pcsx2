@@ -190,7 +190,7 @@ static void execI()
 #if 0
 	static long int print_me = 0;
 	// Based on cycle
-	// if( cpuRegs.cycle > 0x4f24d714 )
+	// if ( cpuRegs.cycle > 0x4f24d714 )
 	// Or dump from a particular PC (useful to debug handler/syscall)
 	if (pc == 0x80000000)
 	{

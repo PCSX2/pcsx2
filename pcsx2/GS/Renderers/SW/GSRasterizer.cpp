@@ -444,9 +444,9 @@ void GSRasterizer::DrawTriangle(const GSVertexSW* vertex, const u16* index)
 
 	m1 = (y0011 == y1221).mask() & 7;
 
-	// if(i == 0) => y0 < y1 < y2
-	// if(i == 1) => y0 == y1 < y2
-	// if(i == 4) => y0 < y1 == y2
+	// if (i == 0) => y0 < y1 < y2
+	// if (i == 1) => y0 == y1 < y2
+	// if (i == 4) => y0 < y1 == y2
 
 	if (m1 == 7) // y0 == y1 == y2
 		return;
@@ -623,9 +623,9 @@ void GSRasterizer::DrawTriangle(const GSVertexSW* vertex, const u16* index)
 
 	m1 = (y0011 == y1221).mask() & 7;
 
-	// if(i == 0) => y0 < y1 < y2
-	// if(i == 1) => y0 == y1 < y2
-	// if(i == 4) => y0 < y1 == y2
+	// if (i == 0) => y0 < y1 < y2
+	// if (i == 1) => y0 == y1 < y2
+	// if (i == 4) => y0 < y1 == y2
 
 	if (m1 == 7)
 		return; // y0 == y1 == y2

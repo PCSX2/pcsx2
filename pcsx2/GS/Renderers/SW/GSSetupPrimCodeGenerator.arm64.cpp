@@ -322,7 +322,7 @@ void GSSetupPrimCodeGenerator::Color()
 		armAsm->Ext(v1.V16B(), v0.V16B(), v0.V16B(), 8);
 		armAsm->Zip1(v0.V8H(), v0.V8H(), v1.V8H());
 
-		// if(!tme) c = c.srl16(7);
+		// if (!tme) c = c.srl16(7);
 
 		if (m_sel.tfx == TFX_NONE)
 			armAsm->Ushr(v0.V8H(), v0.V8H(), 7);

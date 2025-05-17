@@ -1356,7 +1356,7 @@ static void iBranchTest(u32 newpc)
 	// Check the Event scheduler if our "cycle target" has been reached.
 	// Equiv code to:
 	//    cpuRegs.cycle += blockcycles;
-	//    if( cpuRegs.cycle > g_nextEventCycle ) { DoEvents(); }
+	//    if ( cpuRegs.cycle > g_nextEventCycle ) { DoEvents(); }
 
 	if (EmuConfig.Speedhacks.WaitLoop && s_nBlockFF && newpc == s_branchTo)
 	{

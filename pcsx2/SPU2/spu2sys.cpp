@@ -1117,7 +1117,7 @@ static void RegWrite_Core(u16 value)
 
 			if (!thiscore.DmaMode && !(thiscore.Regs.STATX & 0x400))
 				thiscore.Regs.STATX &= ~0x80;
-			else if(!oldDmaMode && thiscore.DmaMode)
+			else if (!oldDmaMode && thiscore.DmaMode)
 				thiscore.Regs.STATX |= 0x80;
 
 			thiscore.ActiveTSA = thiscore.TSA;

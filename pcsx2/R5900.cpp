@@ -127,9 +127,9 @@ __ri void cpuException(u32 code, u32 bd)
 			cpuUpdateOperationMode();
 			return;
 		}
-		else if((code & 0x38000) == 0x10000)
+		else if ((code & 0x38000) == 0x10000)
 			offset = 0x80; //Performance Counter
-		else if((code & 0x38000) == 0x18000)
+		else if ((code & 0x38000) == 0x18000)
 			offset = 0x100; //Debug
 		else
 			Console.Error("Unknown Level 2 Exception!! Cause %x", code);
