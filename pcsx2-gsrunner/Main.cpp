@@ -532,7 +532,7 @@ bool GSRunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& pa
 			{
 				std::string str(argv[++i]);
 
-				s_settings_interface.SetBoolValue("EmuCore/GS", "dump", true);
+				s_settings_interface.SetBoolValue("EmuCore/GS", "DumpGSData", true);
 
 				if (str.find("rt") != std::string::npos)
 					s_settings_interface.SetBoolValue("EmuCore/GS", "SaveRT", true);
@@ -764,7 +764,7 @@ bool GSRunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& pa
 		return false;
 	}
 
-	if (s_settings_interface.GetBoolValue("EmuCore/GS", "dump") && !dumpdir.empty())
+	if (s_settings_interface.GetBoolValue("EmuCore/GS", "DumpGSData") && !dumpdir.empty())
 	{
 		if (s_settings_interface.GetStringValue("EmuCore/GS", "HWDumpDirectory").empty())
 			s_settings_interface.SetStringValue("EmuCore/GS", "HWDumpDirectory", dumpdir.c_str());

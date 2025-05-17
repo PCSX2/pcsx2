@@ -1709,7 +1709,7 @@ void GSState::FlushPrim()
 		// Fix huge or nan ST coordinates
 		if (PRIM->TME && !PRIM->FST)
 		{
-			FixHugeSTCoords();	
+			FixHugeSTCoords();
 		}
 
 		// Round fractional parts of ST coords
