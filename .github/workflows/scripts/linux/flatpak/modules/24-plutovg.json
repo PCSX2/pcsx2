@@ -13,7 +13,8 @@
     {
       "type": "git",
       "url": "https://github.com/sammycage/plutovg.git",
-      "tag": "v0.0.13"
+      "tag": "v1.1.0",
+      "commit": "1a8412d0574c4345dd7ef8a91ce7b58c7dcfe253"
     }
   ],
   "cleanup": [
