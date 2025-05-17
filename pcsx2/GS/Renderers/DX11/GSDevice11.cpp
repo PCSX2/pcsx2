@@ -1236,36 +1236,18 @@ void GSDevice11::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 
 	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
-	D3D11_BOX box = {(UINT)r.left, (UINT)r.top, 0U, (UINT)r.right, (UINT)r.bottom, 1U};
+	D3D11_BOX box = {static_cast<UINT>(r.left), static_cast<UINT>(r.top), 0U, static_cast<UINT>(r.right), static_cast<UINT>(r.bottom), 1U};
 
-	// DX api isn't happy if we pass a box for depth copy
-	// It complains that depth/multisample must be a full copy
-	// and asks us to use a NULL for the box
+	// DX11 doesn't support partial depth copy so we need to
+	// either pass a nullptr D3D11_BOX for a full depth copy or use CopyResource instead.
+	// Alternatively use shader copy StretchRect, or full depth copy with
+	// adjusting the scissor and UVs in the shader.
 	const bool depth = (sTex->GetType() == GSTexture::Type::DepthStencil);
 	auto pBox = depth ? nullptr : &box;
+	const u32 x = depth ? 0 : destX;
+	const u32 y = depth ? 0 : destY;
 
-	m_ctx->CopySubresourceRegion(*(GSTexture11*)dTex, 0, destX, destY, 0, *(GSTexture11*)sTex, 0, pBox);
-}
-
-void GSDevice11::CloneTexture(GSTexture* src, GSTexture** dest, const GSVector4i& rect)
-{
-	pxAssertMsg(src->GetType() == GSTexture::Type::DepthStencil || src->GetType() == GSTexture::Type::RenderTarget, "Source is RT or DS.");
-	CommitClear(src);
-
-	const int w = src->GetWidth();
-	const int h = src->GetHeight();
-
-	if (src->GetType() == GSTexture::Type::DepthStencil)
-	{
-		// DX11 requires that you copy the entire depth buffer.
-		*dest = CreateDepthStencil(w, h, src->GetFormat(), false);
-		CopyRect(src, *dest, GSVector4i(0, 0, w, h), 0, 0);
-	}
-	else
-	{
-		*dest = CreateRenderTarget(w, h, src->GetFormat(), false);
-		CopyRect(src, *dest, rect, rect.left, rect.top);
-	}
+	m_ctx->CopySubresourceRegion(*(GSTexture11*)dTex, 0, x, y, 0, *(GSTexture11*)sTex, 0, pBox);
 }
 
 void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader, bool linear)
@@ -2630,20 +2612,20 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		PSSetShaderResource(1, config.pal);
 	}
 
-	GSTexture* rt_copy = nullptr;
-	if (config.require_one_barrier || (config.tex && config.tex == config.rt)) // Used as "bind rt" flag when texture barrier is unsupported.
+	GSTexture* draw_rt_clone = nullptr;
+
+	// Used as "bind rt" flag when texture barrier is unsupported.
+	if (config.require_one_barrier || (config.tex && config.tex == config.rt))
 	{
-		// Bind the RT.This way special effect can use it.
-		// Do not always bind the rt when it's not needed,
-		// only bind it when effects use it such as fbmask emulation currently
-		// because we copy the frame buffer and it is quite slow.
-		CloneTexture(colclip_rt ? colclip_rt : config.rt, &rt_copy, config.drawarea);
-		if (rt_copy)
+		// Requires a copy of the RT.
+		draw_rt_clone = CreateTexture(rtsize.x, rtsize.y, 1, colclip_rt ? GSTexture::Format::ColorClip : GSTexture::Format::Color, true);
+		if (draw_rt_clone)
 		{
+			CopyRect(colclip_rt ? colclip_rt : config.rt, draw_rt_clone, config.drawarea, config.drawarea.left, config.drawarea.top);
 			if (config.require_one_barrier)
-				PSSetShaderResource(2, rt_copy);
+				PSSetShaderResource(2, draw_rt_clone);
 			if (config.tex && config.tex == config.rt)
-				PSSetShaderResource(0, rt_copy);
+				PSSetShaderResource(0, draw_rt_clone);
 		}
 	}
 
@@ -2697,8 +2679,8 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		DrawIndexedPrimitive();
 	}
 
-	if (rt_copy)
-		Recycle(rt_copy);
+	if (draw_rt_clone)
+		Recycle(draw_rt_clone);
 	if (primid_tex)
 		Recycle(primid_tex);
 

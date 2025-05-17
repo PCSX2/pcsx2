@@ -291,7 +291,6 @@ public:
 	std::unique_ptr<GSDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format) override;
 
 	void CommitClear(GSTexture* t);
-	void CloneTexture(GSTexture* src, GSTexture** dest, const GSVector4i& rect);
 
 	void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY) override;
 
