@@ -161,7 +161,7 @@ static __ri const char* _ioplog_GetHwName( u32 addr, T val )
 					default: return "Invalid Counter";
 				}
 			}
-			else if( addr >= 0x1f801480 && addr < 0x1f8014b0 )
+			else if ( addr >= 0x1f801480 && addr < 0x1f8014b0 )
 			{
 				switch( addr & 0xf )
 				{
@@ -174,20 +174,20 @@ static __ri const char* _ioplog_GetHwName( u32 addr, T val )
 					default: return "Invalid Counter";
 				}
 			}
-			else if( (addr >= HW_USB_START) && (addr < HW_USB_END) )
+			else if ( (addr >= HW_USB_START) && (addr < HW_USB_END) )
 			{
 				return "USB";
 			}
-			else if( (addr >= HW_SPU2_START) && (addr < HW_SPU2_END) )
+			else if ( (addr >= HW_SPU2_START) && (addr < HW_SPU2_END) )
 			{
 				return "SPU2";
 			}
-			else if( addr >= pgmsk(HW_FW_START) && addr <= pgmsk(HW_FW_END) )
+			else if ( addr >= pgmsk(HW_FW_START) && addr <= pgmsk(HW_FW_END) )
 			{
 				return "FW";
 			}
-			else if( addr >= 0x1f808200 && addr < 0x1f808240 ) { return "SIO2 param"; }
-			else if( addr >= 0x1f808240 && addr < 0x1f808260 ) { return "SIO2 send"; }
+			else if ( addr >= 0x1f808200 && addr < 0x1f808240 ) { return "SIO2 param"; }
+			else if ( addr >= 0x1f808240 && addr < 0x1f808260 ) { return "SIO2 send"; }
 
 		return NULL; //"Unknown";
 	}

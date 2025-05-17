@@ -2260,7 +2260,7 @@ void GSState::Move()
 				vm[doff] = (vm[doff] & 0xff000000) | (vm[soff] & 0x00ffffff);
 			});
 		}
-		else // if(spsm.trbpp == 16)
+		else // if (spsm.trbpp == 16)
 		{
 			u16* vm = m_mem.vm16();
 			copy(dpo.assertSizesMatch(GSLocalMemory::swizzle16), spo.assertSizesMatch(GSLocalMemory::swizzle16), [vm](u32 doff, u32 soff)

@@ -164,7 +164,7 @@ static int jo_processDU(jo_bits_t *bits, float A[64], const unsigned char htdc[9
 			jo_writeBits(bits, run, 6);
 			if (AC < -127) {
 				jo_writeBits(bits, 128, 12);
-			} else if(AC > 127) {
+			} else if (AC > 127) {
 				jo_writeBits(bits, 0, 12);
 			}
 			code = AC & 0xFFF;

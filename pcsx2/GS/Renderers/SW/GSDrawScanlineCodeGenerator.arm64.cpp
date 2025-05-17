@@ -158,7 +158,7 @@ void GSDrawScanlineCodeGenerator::Generate()
 	Label exit;
 	armAsm->Bind(&m_step_label);
 
-	// if(steps <= 0) break;
+	// if (steps <= 0) break;
 
 	if (!m_sel.edge)
 	{
@@ -332,7 +332,7 @@ void GSDrawScanlineCodeGenerator::Init()
 				armAsm->Fcvtzs(v6.V4S(), v4.V4S());
 
 				// s = vti.xxxx() + m_local.d[skip].s;
-				// t = vti.yyyy(); if(!sprite) t += m_local.d[skip].t;
+				// t = vti.yyyy(); if (!sprite) t += m_local.d[skip].t;
 
 				armAsm->Dup(_temp_s.V4S(), v6.V4S(), 0);
 				armAsm->Dup(_temp_t.V4S(), v6.V4S(), 1);
@@ -485,7 +485,7 @@ void GSDrawScanlineCodeGenerator::Step()
 				// GSVector4i stq = m_local.d4.stq;
 
 				// s += stq.xxxx();
-				// if(!sprite) t += stq.yyyy();
+				// if (!sprite) t += stq.yyyy();
 
 				armAsm->Dup(_vscratch.V4S(), _d4_stq.V4S(), 0);
 				if (m_sel.prim != GS_SPRITE_CLASS || m_sel.mmin)
@@ -1394,7 +1394,7 @@ void GSDrawScanlineCodeGenerator::AlphaTFX()
 			modulate16(v6, _temp_ga, 1);
 			clamp16(v6, v3);
 
-			// if(!tcc) gat = gat.mix16(ga.srl16(7));
+			// if (!tcc) gat = gat.mix16(ga.srl16(7));
 
 			if (!m_sel.tcc)
 			{
@@ -1407,7 +1407,7 @@ void GSDrawScanlineCodeGenerator::AlphaTFX()
 
 		case TFX_DECAL:
 
-			// if(!tcc) gat = gat.mix16(ga.srl16(7));
+			// if (!tcc) gat = gat.mix16(ga.srl16(7));
 
 			if (!m_sel.tcc)
 			{
@@ -1435,7 +1435,7 @@ void GSDrawScanlineCodeGenerator::AlphaTFX()
 
 		case TFX_HIGHLIGHT2:
 
-			// if(!tcc) gat = gat.mix16(ga.srl16(7));
+			// if (!tcc) gat = gat.mix16(ga.srl16(7));
 
 			if (!m_sel.tcc)
 			{
@@ -2158,8 +2158,8 @@ void GSDrawScanlineCodeGenerator::WritePixel(const VRegister& src, const Registe
 	{
 		if (fast)
 		{
-			// if(fzm & 0x0f) GSVector4i::storel(&vm16[addr + 0], fs);
-			// if(fzm & 0xf0) GSVector4i::storeh(&vm16[addr + 8], fs);
+			// if (fzm & 0x0f) GSVector4i::storel(&vm16[addr + 0], fs);
+			// if (fzm & 0xf0) GSVector4i::storeh(&vm16[addr + 8], fs);
 
 			Label skip_low, skip_high;
 			armAsm->Lsl(_wscratch, addr, 1); // *2
@@ -2177,10 +2177,10 @@ void GSDrawScanlineCodeGenerator::WritePixel(const VRegister& src, const Registe
 		}
 		else
 		{
-			// if(fzm & 0x03) WritePixel(fpsm, &vm16[addr + 0], fs.extract32<0>());
-			// if(fzm & 0x0c) WritePixel(fpsm, &vm16[addr + 2], fs.extract32<1>());
-			// if(fzm & 0x30) WritePixel(fpsm, &vm16[addr + 8], fs.extract32<2>());
-			// if(fzm & 0xc0) WritePixel(fpsm, &vm16[addr + 10], fs.extract32<3>());
+			// if (fzm & 0x03) WritePixel(fpsm, &vm16[addr + 0], fs.extract32<0>());
+			// if (fzm & 0x0c) WritePixel(fpsm, &vm16[addr + 2], fs.extract32<1>());
+			// if (fzm & 0x30) WritePixel(fpsm, &vm16[addr + 8], fs.extract32<2>());
+			// if (fzm & 0xc0) WritePixel(fpsm, &vm16[addr + 10], fs.extract32<3>());
 
 			Label skip_0, skip_1, skip_2, skip_3;
 

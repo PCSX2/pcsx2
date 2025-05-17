@@ -236,7 +236,7 @@ static __ri void DmaExec( void (*func)(), u32 mem, u32 value )
 				cpuClearInt( 10 );
 				QueuedDMA._u16 &= ~(1 << 10); //Clear any queued DMA requests for this channel
 			}
-			else if(channel == 2)
+			else if (channel == 2)
 			{
 				cpuClearInt( 11 );
 				QueuedDMA._u16 &= ~(1 << 11); //Clear any queued DMA requests for this channel
@@ -274,7 +274,7 @@ static __ri void DmaExec( void (*func)(), u32 mem, u32 value )
 	{
 		func();
 	}
-	else if(reg.chcr.STR)
+	else if (reg.chcr.STR)
 	{
 		//DevCon.Warning(L"32bit %s DMA Start while DMAC Disabled\n", ChcrName(mem));
 		QueuedDMA._u16 |= (1 << ChannelNumber(mem)); //Queue the DMA up to be started then the DMA's are Enabled and or the Suspend is lifted

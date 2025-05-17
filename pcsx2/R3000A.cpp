@@ -256,7 +256,7 @@ void iopTestIntc()
 		// Note: No need to set the iop's branch delta here, since the EE
 		// will run an IOP branch test regardless.
 	}
-	else if( !iopEventTestIsActive )
+	else if ( !iopEventTestIsActive )
 		psxSetNextBranchDelta( 2 );
 }
 

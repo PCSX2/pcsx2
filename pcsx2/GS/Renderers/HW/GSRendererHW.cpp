@@ -4366,7 +4366,7 @@ void GSRendererHW::Draw()
 					g_gs_device->StretchRect(g_texture_cache->GetTemporaryZ(), sRect, ds->m_texture, GSVector4(dRect), ShaderConvert::DEPTH_COPY, false);
 					g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 				}
-				else if(m_temp_z_full_copy)
+				else if (m_temp_z_full_copy)
 				{
 					GSVector4i dRect = GSVector4i((ds->m_valid.x + z_horizontal_offset) * ds->m_scale, (ds->m_valid.y + z_vertical_offset) * ds->m_scale, (ds->m_valid.z + z_horizontal_offset + (1.0f / ds->m_scale)) * ds->m_scale, (ds->m_valid.w + z_vertical_offset + (1.0f / ds->m_scale)) * ds->m_scale);
 					GSVector4 sRect = GSVector4(((ds->m_valid.x + horizontal_offset) * ds->m_scale) / static_cast<float>(g_texture_cache->GetTemporaryZ()->GetWidth()), static_cast<float>((ds->m_valid.y + vertical_offset) * ds->m_scale) / static_cast<float>(g_texture_cache->GetTemporaryZ()->GetHeight()), (((ds->m_valid.z + horizontal_offset) + (1.0f / ds->m_scale)) * ds->m_scale) / static_cast<float>(g_texture_cache->GetTemporaryZ()->GetWidth()),

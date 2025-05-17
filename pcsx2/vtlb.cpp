@@ -648,7 +648,7 @@ static OperandType vtlbUnmappedPReadSm(u32 addr) {
 	}
 	return 0;
 }
-static RETURNS_R128 vtlbUnmappedPReadLg(u32 addr) { vtlb_BusError(addr, 0); if(!CHECK_EEREC && CHECK_CACHE && CheckCache(addr)){ return readCache128(addr, false); } return r128_zero(); }
+static RETURNS_R128 vtlbUnmappedPReadLg(u32 addr) { vtlb_BusError(addr, 0); if (!CHECK_EEREC && CHECK_CACHE && CheckCache(addr)){ return readCache128(addr, false); } return r128_zero(); }
 
 template <typename OperandType>
 static void vtlbUnmappedPWriteSm(u32 addr, OperandType data) {
@@ -663,7 +663,7 @@ static void vtlbUnmappedPWriteSm(u32 addr, OperandType data) {
 		}
 	}
 }
-static void TAKES_R128 vtlbUnmappedPWriteLg(u32 addr, r128 data) { vtlb_BusError(addr, 1); if(!CHECK_EEREC && CHECK_CACHE && CheckCache(addr)) { writeCache128(addr, reinterpret_cast<mem128_t*>(&data) /*Safe??*/, false); }}
+static void TAKES_R128 vtlbUnmappedPWriteLg(u32 addr, r128 data) { vtlb_BusError(addr, 1); if (!CHECK_EEREC && CHECK_CACHE && CheckCache(addr)) { writeCache128(addr, reinterpret_cast<mem128_t*>(&data) /*Safe??*/, false); }}
 // clang-format on
 
 // --------------------------------------------------------------------------------------

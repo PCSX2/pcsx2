@@ -2277,7 +2277,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 					dst->m_32_bits_fmt |= (psm_s.bpp != 16);
 					break;
 				}
-				else if(!(src && src->m_from_target == t))
+				else if (!(src && src->m_from_target == t))
 				{
 					GL_INS("TC: Deleting RT BP 0x%x BW %d PSM %s due to change in target", t->m_TEX0.TBP0, t->m_TEX0.TBW, psm_str(t->m_TEX0.PSM));
 					InvalidateSourcesFromTarget(t);
@@ -2600,7 +2600,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 					src->m_target_direct = false;
 					src->m_shared_texture = false;
 
-					if(!req_copy)
+					if (!req_copy)
 						dst->ResizeTexture(new_size.x, new_size.y, true, true, GSVector4i(dRect), true);
 					else
 					{
@@ -2650,7 +2650,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 			if ((!is_shuffle && (GSLocalMemory::m_psm[dst->m_TEX0.PSM].bpp != GSLocalMemory::m_psm[TEX0.PSM].bpp || GSLocalMemory::m_psm[dst->m_TEX0.PSM].depth != GSLocalMemory::m_psm[TEX0.PSM].depth)) || 
 				(is_shuffle && GSLocalMemory::m_psm[dst->m_TEX0.PSM].bpp == 16))
 			{
-				if(GSLocalMemory::m_psm[dst->m_TEX0.PSM].depth != GSLocalMemory::m_psm[TEX0.PSM].depth || dst->m_TEX0.TBW != TEX0.TBW)
+				if (GSLocalMemory::m_psm[dst->m_TEX0.PSM].depth != GSLocalMemory::m_psm[TEX0.PSM].depth || dst->m_TEX0.TBW != TEX0.TBW)
 					dst->m_32_bits_fmt = GSLocalMemory::m_psm[TEX0.PSM].bpp != 16;
 
 				if (!is_shuffle || (is_shuffle && GSLocalMemory::m_psm[dst->m_TEX0.PSM].bpp == 16))
@@ -5441,7 +5441,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			src->m_unscaled_size = dst->m_unscaled_size;
 			src->m_shared_texture = true;
 
-			if(channel_shuffle)
+			if (channel_shuffle)
 				m_temporary_source = src;
 		}
 
@@ -5791,7 +5791,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 					src->m_region.SetX(x_offset, x_offset + tw);
 					src->m_region.SetY(y_offset, y_offset + th);
 
-					if(!GSConfig.UserHacks_NativePaletteDraw)
+					if (!GSConfig.UserHacks_NativePaletteDraw)
 						m_temporary_source = src;
 				}
 				else
@@ -6781,7 +6781,7 @@ GSTextureCache::Source::~Source()
 	// to recycle.
 	if (!m_shared_texture && !m_from_hash_cache && m_texture)
 	{
-		if(m_from_target)
+		if (m_from_target)
 			g_texture_cache->m_target_memory_usage -= m_texture->GetMemUsage();
 		else
 			g_texture_cache->m_source_memory_usage -= m_texture->GetMemUsage();

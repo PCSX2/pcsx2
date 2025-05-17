@@ -1455,7 +1455,7 @@ static uint cdvdStartSeek(uint newsector, CDVD_MODE_TYPE mode, bool transition_t
 		}
 		isSeeking = true;
 	}
-	else if(!drive_speed_change_cycles)
+	else if (!drive_speed_change_cycles)
 	{
 		CDVD_LOG("CdSeek Begin > Contiguous block without seek - delta=%d sectors", delta);
 
