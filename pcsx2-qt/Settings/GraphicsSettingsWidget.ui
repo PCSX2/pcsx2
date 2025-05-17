@@ -1516,6 +1516,23 @@
              </widget>
             </item>
             <item>
+             <widget class="QLabel" name="gammaLabel">
+              <property name="text">
+               <string>Gamma:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="shadeBoostGamma">
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>100</number>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QLabel" name="saturationLabel">
               <property name="text">
                <string>Saturation:</string>
