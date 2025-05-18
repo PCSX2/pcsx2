@@ -1037,7 +1037,7 @@ float GSRendererHW::GetTextureScaleFactor()
 	return GetUpscaleMultiplier();
 }
 
-GSVector2i GSRendererHW::GetValidSize(const GSTextureCache::Source* tex)
+GSVector2i GSRendererHW::GetValidSize(const GSTextureCache::Source* tex, const bool is_shuffle)
 {
 	// Don't blindly expand out to the scissor size if we're not drawing to it.
 	// e.g. Burnout 3, God of War II, etc.
@@ -1088,10 +1088,9 @@ GSVector2i GSRendererHW::GetValidSize(const GSTextureCache::Source* tex)
 	// Early detection of texture shuffles. These double the input height because they're interpreting 64x32 C32 pages as 64x64 C16.
 	// Why? Well, we don't want to be doubling the heights of targets, but also we don't want to align C32 targets to 64 instead of 32.
 	// Yumeria's text breaks, and GOW goes to 512x448 instead of 512x416 if we don't.
-	const bool possible_texture_shuffle =
-		(tex && m_vt.m_primclass == GS_SPRITE_CLASS && frame_psm.bpp == 16 &&
+	const bool possible_texture_shuffle = tex && m_vt.m_primclass == GS_SPRITE_CLASS && frame_psm.bpp == 16 &&
 			GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].bpp == 16 &&
-			(tex->m_32_bits_fmt ||
+			(is_shuffle || (tex->m_32_bits_fmt ||
 				(m_cached_ctx.TEX0.TBP0 != m_cached_ctx.FRAME.Block() && IsOpaque() && !(m_context->TEX1.MMIN & 1) &&
 					m_cached_ctx.FRAME.FBMSK && g_texture_cache->Has32BitTarget(m_cached_ctx.FRAME.Block()))));
 	if (possible_texture_shuffle)
@@ -1128,9 +1127,9 @@ GSVector2i GSRendererHW::GetValidSize(const GSTextureCache::Source* tex)
 	return  GSVector2i(width, height);
 }
 
-GSVector2i GSRendererHW::GetTargetSize(const GSTextureCache::Source* tex, const bool can_expand)
+GSVector2i GSRendererHW::GetTargetSize(const GSTextureCache::Source* tex, const bool can_expand, const bool is_shuffle)
 {
-	const GSVector2i valid_size = GetValidSize(tex);
+	const GSVector2i valid_size = GetValidSize(tex, is_shuffle);
 
 	return g_texture_cache->GetTargetSize(m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM, valid_size.x, valid_size.y, can_expand);
 }
@@ -2942,7 +2941,13 @@ void GSRendererHW::Draw()
 			if (possible_shuffle && GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].bpp != 16)
 				possible_shuffle &= draw_uses_target;
 
-			possible_shuffle &= src && (src->m_from_target != nullptr || (m_skip && possible_shuffle));
+			const bool shuffle_source = src && (src->m_from_target != nullptr || (m_skip && possible_shuffle));
+
+			if (!shuffle_source)
+			{
+				if(draw_start > src->m_TEX0.TBP0 || draw_end < src->m_TEX0.TBP0)
+					possible_shuffle &= src && (src->m_from_target != nullptr || (m_skip && possible_shuffle));
+			}
 			// We don't know the alpha range of direct sources when we first tried to optimize the alpha test.
 			// Moving the texture lookup before the ATST optimization complicates things a lot, so instead,
 			// recompute it, and everything derived from it again if it changes.
@@ -2988,7 +2993,7 @@ void GSRendererHW::Draw()
 	const bool can_expand = !(m_cached_ctx.ZBUF.ZMSK && output_black);
 
 	// Estimate size based on the scissor rectangle and height cache.
-	GSVector2i t_size = GetTargetSize(src, can_expand);
+	GSVector2i t_size = GetTargetSize(src, can_expand, possible_shuffle);
 	const GSVector4i t_size_rect = GSVector4i::loadh(t_size);
 
 	// Ensure draw rect is clamped to framebuffer size. Necessary for updating valid area.
@@ -3077,7 +3082,7 @@ void GSRendererHW::Draw()
 
 		if (!ds && m_cached_ctx.FRAME.FBP != m_cached_ctx.ZBUF.ZBP)
 		{
-			ds = g_texture_cache->CreateTarget(ZBUF_TEX0, t_size, GetValidSize(src), target_scale, GSTextureCache::DepthStencil,
+			ds = g_texture_cache->CreateTarget(ZBUF_TEX0, t_size, GetValidSize(src, possible_shuffle), target_scale, GSTextureCache::DepthStencil,
 				true, 0, false, force_preload, preserve_depth, m_r, src);
 			if (!ds) [[unlikely]]
 			{
@@ -3228,7 +3233,7 @@ void GSRendererHW::Draw()
 				return;
 			}
 
-			rt = g_texture_cache->CreateTarget(FRAME_TEX0, t_size, GetValidSize(src), (GSConfig.UserHacks_NativeScaling != GSNativeScaling::Off && scale_draw < 0 && is_possible_mem_clear != ClearType::NormalClear) ? src->m_from_target->GetScale() : target_scale, 
+			rt = g_texture_cache->CreateTarget(FRAME_TEX0, t_size, GetValidSize(src, possible_shuffle), (GSConfig.UserHacks_NativeScaling != GSNativeScaling::Off && scale_draw < 0 && is_possible_mem_clear != ClearType::NormalClear) ? src->m_from_target->GetScale() : target_scale, 
 												GSTextureCache::RenderTarget, true, fm, false, force_preload, preserve_rt_color || possible_shuffle, lookup_rect, src);
 
 			if (!rt) [[unlikely]]
@@ -3241,6 +3246,49 @@ void GSRendererHW::Draw()
 			if (IsPageCopy() && m_cached_ctx.FRAME.FBW == 1)
 			{
 				rt->UpdateValidity(GSVector4i::loadh(GSVector2i(GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs.x, GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs.y)), true);
+			}
+
+			if (src && !src->m_from_target && GSLocalMemory::m_psm[src->m_TEX0.PSM].bpp == GSLocalMemory::m_psm[m_context->FRAME.PSM].bpp && 
+											(GSUtil::GetChannelMask(src->m_TEX0.PSM) & GSUtil::GetChannelMask(m_context->FRAME.PSM)) != 0)
+			{
+				const u32 draw_end = GSLocalMemory::GetEndBlockAddress(m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM, m_r) + 1;
+				const u32 draw_start = GSLocalMemory::GetStartBlockAddress(m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM, m_r);
+
+				if (draw_start <= src->m_TEX0.TBP0 && draw_end > src->m_TEX0.TBP0)
+				{
+					g_texture_cache->ReplaceSourceTexture(src, rt->GetTexture(), rt->GetScale(), rt->GetUnscaledSize(), nullptr, true);
+
+					src->m_from_target = rt;
+					src->m_from_target_TEX0 = rt->m_TEX0;
+					src->m_target_direct = true;
+					src->m_shared_texture = true;
+					src->m_target = true;
+					src->m_texture = rt->m_texture;
+					src->m_32_bits_fmt = rt->m_32_bits_fmt;
+					src->m_valid_rect = rt->m_valid;
+					src->m_alpha_minmax.first = rt->m_alpha_min;
+					src->m_alpha_minmax.second = rt->m_alpha_max;
+					
+					const int target_width = std::max(FRAME_TEX0.TBW, 1U);
+					const int page_offset = (src->m_TEX0.TBP0 - rt->m_TEX0.TBP0) >> 5;
+					const int vertical_page_offset = page_offset / target_width;
+					const int horizontal_page_offset = page_offset - (vertical_page_offset * target_width);
+
+					if (vertical_page_offset)
+					{
+						const int height = std::max(rt->m_valid.w, possible_shuffle ? (m_r.w / 2) : m_r.w);
+						src->m_region.SetY(vertical_page_offset * GSLocalMemory::m_psm[rt->m_TEX0.PSM].pgs.y, height);
+					}
+					if (horizontal_page_offset)
+						src->m_region.SetX(horizontal_page_offset * GSLocalMemory::m_psm[rt->m_TEX0.PSM].pgs.x, target_width * GSLocalMemory::m_psm[rt->m_TEX0.PSM].pgs.x);
+
+					if (rt->m_dirty.empty())
+					{
+						RGBAMask rgba_mask;
+						rgba_mask._u32 = GSUtil::GetChannelMask(rt->m_TEX0.PSM);
+						g_texture_cache->AddDirtyRectTarget(rt, m_r, FRAME_TEX0.PSM, FRAME_TEX0.TBW, rgba_mask, GSLocalMemory::m_psm[FRAME_TEX0.PSM].trbpp >= 16);
+					}
+				}
 			}
 		}
 		else if (rt->m_TEX0.TBP0 != m_cached_ctx.FRAME.Block())
@@ -3539,7 +3587,7 @@ void GSRendererHW::Draw()
 		// This should never happen, but just to be safe..
 		if (!ds)
 		{
-			ds = g_texture_cache->CreateTarget(ZBUF_TEX0, t_size, GetValidSize(src), target_scale, GSTextureCache::DepthStencil,
+			ds = g_texture_cache->CreateTarget(ZBUF_TEX0, t_size, GetValidSize(src, possible_shuffle), target_scale, GSTextureCache::DepthStencil,
 				true, 0, false, force_preload, preserve_depth, m_r, src);
 			if (!ds) [[unlikely]]
 			{
