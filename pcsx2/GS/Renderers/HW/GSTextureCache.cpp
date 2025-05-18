@@ -1408,15 +1408,30 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 
 					if (rect_clean)
 					{
+						bool can_use = true;
 						for (auto& dirty : t->m_dirty)
 						{
 							const GSVector4i dirty_rect = dirty.GetDirtyRect(t->m_TEX0, t->m_TEX0.PSM != dirty.psm);
 							if (!dirty_rect.rintersect(new_rect).rempty())
 							{
 								rect_clean = false;
-								partial |= !new_rect.rintersect(dirty_rect).eq(new_rect) || dirty_rect.eq(new_rect);
+
+								if(!dirty_rect.rintersect(t->m_valid).eq(t->m_valid) || GSUtil::GetChannelMask(t->m_TEX0.PSM) != t->m_dirty.GetDirtyChannels())
+									partial |= !new_rect.rintersect(dirty_rect).eq(new_rect) || dirty_rect.eq(new_rect);
+								else // Nothing is valid anymore, kill it.
+								{
+									can_use = false;
+								}
 								break;
 							}
+						}
+
+						if (!can_use)
+						{
+							InvalidateSourcesFromTarget(t);
+							i = list.erase(i);
+							delete t;
+							continue;
 						}
 					}
 
@@ -2340,11 +2355,11 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 						lookup_rect = lookup_rect & GSVector4i(~8);
 
 					const GSVector4i translated_rect = GSVector4i(0, 0, 0, 0).max_i32(TranslateAlignedRectByPage(t, TEX0.TBP0, TEX0.PSM, TEX0.TBW, lookup_rect));
-					const GSVector4i dirty_rect = t->m_dirty.empty() ? GSVector4i::zero() : t->m_dirty.GetTotalRect(t->m_TEX0, t->m_unscaled_size).rintersect(t->m_valid);
+					const GSVector4i dirty_rect = t->m_dirty.empty() ? GSVector4i::zero() : t->m_dirty.GetTotalRect(t->m_TEX0, t->m_unscaled_size);
 					const bool all_dirty = dirty_rect.eq(t->m_valid);
 
 					
-					if (!is_shuffle && !t->m_dirty.empty() && (!preserve_alpha && !preserve_rgb) && (GSState::s_n - 1) != t->m_last_draw)
+					if (!is_shuffle && !dirty_rect.rempty() && (!preserve_alpha && !preserve_rgb) && (GSState::s_n - 3) > t->m_last_draw)
 					{
 						GL_INS("TC: Deleting RT BP 0x%x BW %d PSM %s due to dirty areas not preserved (Likely change in target)", t->m_TEX0.TBP0, t->m_TEX0.TBW, psm_str(t->m_TEX0.PSM));
 						InvalidateSourcesFromTarget(t);
@@ -2354,7 +2369,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 						continue;
 					}
 
-					if (!all_dirty && ((translated_rect.w <= t->m_valid.w) || widthpage_offset == 0 || (GSState::s_n - 1) == t->m_last_draw))
+					if (!all_dirty && ((translated_rect.w <= t->m_valid.w) || widthpage_offset == 0 || (GSState::s_n - 3) <= t->m_last_draw))
 					{
 						if (TEX0.TBW == t->m_TEX0.TBW && !is_shuffle && widthpage_offset == 0 && ((min_rect.w + 63) / 64) > 1)
 						{
