@@ -1696,22 +1696,27 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 					u32 src_psm = psm;
 
 					// If the input is C16 and it's actually a shuffle of 32bits we need to correct the size.
-					if ((tex_color_psm & 0xF) <= PSMCT24 && (psm & 0x7) == PSMCT16 && possible_shuffle)
+					if ((tex_color_psm & 0xF) <= PSMCT24 && (psm & 0x7) == PSMCT16)
 					{
-						src_psm = t->m_TEX0.PSM;
-						// If it's taking double width for the shuffle, half that.
-						if (src_bw == (rt_tbw * 2))
+						if (possible_shuffle)
 						{
-							src_bw = rt_tbw;
+							src_psm = t->m_TEX0.PSM;
+							// If it's taking double width for the shuffle, half that.
+							if (src_bw == (rt_tbw * 2))
+							{
+								src_bw = rt_tbw;
 
-							rect.x /= 2;
-							rect.z /= 2;
+								rect.x /= 2;
+								rect.z /= 2;
+							}
+							else
+							{
+								rect.y /= 2;
+								rect.w /= 2;
+							}
 						}
-						else
-						{
-							rect.y /= 2;
-							rect.w /= 2;
-						}
+						else // Formats are not compatible for normal draws, only shuffles.
+							continue;
 					}
 					if (bp > t->m_TEX0.TBP0)
 					{
