@@ -1615,7 +1615,7 @@ void InputManager::CloseSources()
 {
 	for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
 	{
-		if (s_input_sources[i]->IsInitialized())
+		if (s_input_sources[i] && s_input_sources[i]->IsInitialized())
 		{
 			s_input_sources[i]->Shutdown();
 		}
