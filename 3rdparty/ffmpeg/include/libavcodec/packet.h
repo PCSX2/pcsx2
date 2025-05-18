@@ -59,10 +59,6 @@ enum AVPacketSideDataType {
      * An AV_PKT_DATA_PARAM_CHANGE side data packet is laid out as follows:
      * @code
      * u32le param_flags
-     * if (param_flags & AV_SIDE_DATA_PARAM_CHANGE_CHANNEL_COUNT)
-     *     s32le channel_count
-     * if (param_flags & AV_SIDE_DATA_PARAM_CHANGE_CHANNEL_LAYOUT)
-     *     u64le channel_layout
      * if (param_flags & AV_SIDE_DATA_PARAM_CHANGE_SAMPLE_RATE)
      *     s32le sample_rate
      * if (param_flags & AV_SIDE_DATA_PARAM_CHANGE_DIMENSIONS)
@@ -331,6 +327,25 @@ enum AVPacketSideDataType {
     AV_PKT_DATA_AMBIENT_VIEWING_ENVIRONMENT,
 
     /**
+     * The number of pixels to discard from the top/bottom/left/right border of the
+     * decoded frame to obtain the sub-rectangle intended for presentation.
+     *
+     * @code
+     * u32le crop_top
+     * u32le crop_bottom
+     * u32le crop_left
+     * u32le crop_right
+     * @endcode
+     */
+    AV_PKT_DATA_FRAME_CROPPING,
+
+    /**
+     * Raw LCEVC payload data, as a uint8_t array, with NAL emulation
+     * bytes intact.
+     */
+    AV_PKT_DATA_LCEVC,
+
+    /**
      * The number of side data types.
      * This is not part of the public API/ABI in the sense that it may
      * change when new side data types are added.
@@ -341,7 +356,9 @@ enum AVPacketSideDataType {
     AV_PKT_DATA_NB
 };
 
+#if FF_API_QUALITY_FACTOR
 #define AV_PKT_DATA_QUALITY_FACTOR AV_PKT_DATA_QUALITY_STATS //DEPRECATED
+#endif
 
 /**
  * This structure stores auxiliary information for decoding, presenting, or
