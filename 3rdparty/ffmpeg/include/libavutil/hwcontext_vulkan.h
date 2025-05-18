@@ -26,8 +26,23 @@
 
 #include "pixfmt.h"
 #include "frame.h"
+#include "hwcontext.h"
 
 typedef struct AVVkFrame AVVkFrame;
+
+typedef struct AVVulkanDeviceQueueFamily {
+    /* Queue family index */
+    int idx;
+    /* Number of queues in the queue family in use */
+    int num;
+    /* Queue family capabilities. Must be non-zero.
+     * Flags may be removed to indicate the queue family may not be used
+     * for a given purpose. */
+    VkQueueFlagBits flags;
+    /* Vulkan implementations are allowed to list multiple video queues
+     * which differ in what they can encode or decode. */
+    VkVideoCodecOperationFlagBitsKHR video_caps;
+} AVVulkanDeviceQueueFamily;
 
 /**
  * @file
@@ -48,9 +63,8 @@ typedef struct AVVulkanDeviceContext {
     const VkAllocationCallbacks *alloc;
 
     /**
-     * Pointer to the instance-provided vkGetInstanceProcAddr loading function.
-     * If NULL, will pick either libvulkan or libvolk, depending on libavutil's
-     * compilation settings, and set this field.
+     * Pointer to a vkGetInstanceProcAddr loading function.
+     * If unset, will dynamically load and use libvulkan.
      */
     PFN_vkGetInstanceProcAddr get_proc_addr;
 
@@ -98,28 +112,35 @@ typedef struct AVVulkanDeviceContext {
     const char * const *enabled_dev_extensions;
     int nb_enabled_dev_extensions;
 
+#if FF_API_VULKAN_FIXED_QUEUES
     /**
      * Queue family index for graphics operations, and the number of queues
-     * enabled for it. If unavaiable, will be set to -1. Not required.
+     * enabled for it. If unavailable, will be set to -1. Not required.
      * av_hwdevice_create() will attempt to find a dedicated queue for each
      * queue family, or pick the one with the least unrelated flags set.
      * Queue indices here may overlap if a queue has to share capabilities.
      */
+    attribute_deprecated
     int queue_family_index;
+    attribute_deprecated
     int nb_graphics_queues;
 
     /**
      * Queue family index for transfer operations and the number of queues
      * enabled. Required.
      */
+    attribute_deprecated
     int queue_family_tx_index;
+    attribute_deprecated
     int nb_tx_queues;
 
     /**
      * Queue family index for compute operations and the number of queues
      * enabled. Required.
      */
+    attribute_deprecated
     int queue_family_comp_index;
+    attribute_deprecated
     int nb_comp_queues;
 
     /**
@@ -127,7 +148,9 @@ typedef struct AVVulkanDeviceContext {
      * If the device doesn't support such, queue_family_encode_index will be -1.
      * Not required.
      */
+    attribute_deprecated
     int queue_family_encode_index;
+    attribute_deprecated
     int nb_encode_queues;
 
     /**
@@ -135,8 +158,11 @@ typedef struct AVVulkanDeviceContext {
      * If the device doesn't support such, queue_family_decode_index will be -1.
      * Not required.
      */
+    attribute_deprecated
     int queue_family_decode_index;
+    attribute_deprecated
     int nb_decode_queues;
+#endif
 
     /**
      * Locks a queue, preventing other threads from submitting any command
@@ -150,6 +176,17 @@ typedef struct AVVulkanDeviceContext {
      * Similar to lock_queue(), unlocks a queue. Must only be called after locking.
      */
     void (*unlock_queue)(struct AVHWDeviceContext *ctx, uint32_t queue_family, uint32_t index);
+
+    /**
+     * Queue families used. Must be preferentially ordered. List may contain
+     * duplicates.
+     *
+     * For compatibility reasons, all the enabled queue families listed above
+     * (queue_family_(tx/comp/encode/decode)_index) must also be included in
+     * this list until they're removed after deprecation.
+     */
+    AVVulkanDeviceQueueFamily qf[64];
+    int nb_qf;
 } AVVulkanDeviceContext;
 
 /**
@@ -159,11 +196,6 @@ typedef enum AVVkFrameFlags {
     /* Unless this flag is set, autodetected flags will be OR'd based on the
      * device and tiling during av_hwframe_ctx_init(). */
     AV_VK_FRAME_FLAG_NONE              = (1ULL << 0),
-
-#if FF_API_VULKAN_CONTIGUOUS_MEMORY
-    /* DEPRECATED: does nothing. Replaced by multiplane images. */
-    AV_VK_FRAME_FLAG_CONTIGUOUS_MEMORY = (1ULL << 1),
-#endif
 
     /* Disables multiplane images.
      * This is required to export/import images from CUDA. */
