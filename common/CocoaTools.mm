@@ -298,6 +298,7 @@ static constexpr short STOP_EVENT_LOOP = 0x100;
 void CocoaTools::RunCocoaEventLoop(bool forever)
 {
 	NSDate* end = forever ? [NSDate distantFuture] : [NSDate distantPast];
+	[NSApplication sharedApplication]; // Ensure NSApp is initialized
 	while (true)
 	{ @autoreleasepool {
 		NSEvent* ev = [NSApp nextEventMatchingMask:NSEventMaskAny
