@@ -2859,7 +2859,8 @@ void GSRendererHW::Draw()
 			(m_vt.m_primclass == GS_SPRITE_CLASS || (m_vt.m_primclass == GS_TRIANGLE_CLASS && (m_index.tail % 6) == 0 && TrianglesAreQuads(true) && m_index.tail > 6)))
 		{
 			// Tail check is to make sure we have enough strips to go all the way across the page, or if it's using a region clamp could be used to draw strips.
-			if (GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].bpp == 16 && (m_index.tail >= (m_cached_ctx.TEX0.TBW * 2) || m_cached_ctx.CLAMP.WMS > CLAMP_CLAMP || m_cached_ctx.CLAMP.WMT > CLAMP_CLAMP))
+			if (GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].bpp == 16 && 
+				(m_index.tail >= (m_cached_ctx.TEX0.TBW * 2) || m_cached_ctx.TEX0.TBP0 == m_cached_ctx.FRAME.Block() || m_cached_ctx.CLAMP.WMS > CLAMP_CLAMP || m_cached_ctx.CLAMP.WMT > CLAMP_CLAMP))
 			{
 				const GSVertex* v = &m_vertex.buff[0];
 
@@ -2883,21 +2884,40 @@ void GSRendererHW::Draw()
 			}
 
 			// It's possible it's writing to an old 32bit target, but is actually just a 16bit copy, so let's make sure it's actually using a mask.
-			if (!shuffle_target && m_cached_ctx.FRAME.FBMSK)
+			if (!shuffle_target)
 			{
-				// FBW is going to be wrong for channel shuffling into a new target, so take it from the source.
-				FRAME_TEX0.U64 = 0;
-				FRAME_TEX0.TBP0 = m_cached_ctx.FRAME.Block();
-				FRAME_TEX0.TBW = m_cached_ctx.FRAME.FBW;
-				FRAME_TEX0.PSM = m_cached_ctx.FRAME.PSM;
+				bool shuffle_channel_reads = true;
+				const u32 increment = (m_vt.m_primclass == GS_TRIANGLE_CLASS) ? 3 : 2;
+				const GSVertex* v = &m_vertex.buff[0];
 
-				GSTextureCache::Target* tgt = g_texture_cache->LookupTarget(FRAME_TEX0, GSVector2i(m_vt.m_max.p.x, m_vt.m_max.p.y), GetTextureScaleFactor(), GSTextureCache::RenderTarget, false,
-					fm, false, false, false, false, GSVector4i::zero(), true);
+				if (!m_cached_ctx.FRAME.FBMSK)
+				{
+					for (u32 i = 0; i < m_index.tail; i += increment)
+					{
+						const int first_u = (PRIM->FST ? v[i].U : static_cast<int>(v[i].ST.S / v[(increment == 2) ? i + 1 : i].RGBAQ.Q)) >> 4;
+						const int second_u = (PRIM->FST ? v[i + 1].U : static_cast<int>(v[i + 1].ST.S / v[i + 1].RGBAQ.Q)) >> 4;
+						if (std::abs((v[i + 1].XYZ.X - v[i].XYZ.X) / 16) != 8 || std::abs(second_u - first_u) != 8)
+						{
+							shuffle_channel_reads = false;
+							break;
+						}
+					}
+				}
+				if (m_cached_ctx.FRAME.FBMSK || shuffle_channel_reads)
+				{
+					// FBW is going to be wrong for channel shuffling into a new target, so take it from the source.
+					FRAME_TEX0.U64 = 0;
+					FRAME_TEX0.TBP0 = m_cached_ctx.FRAME.Block();
+					FRAME_TEX0.TBW = m_cached_ctx.FRAME.FBW;
+					FRAME_TEX0.PSM = m_cached_ctx.FRAME.PSM;
 
-				if (tgt)
-					shuffle_target = tgt->m_32_bits_fmt;
+					GSTextureCache::Target* tgt = g_texture_cache->FindOverlappingTarget(FRAME_TEX0.TBP0, GSLocalMemory::GetEndBlockAddress(FRAME_TEX0.TBP0, FRAME_TEX0.TBW, FRAME_TEX0.PSM, m_r));
 
-				tgt = nullptr;
+					if (tgt)
+						shuffle_target = tgt->m_32_bits_fmt;
+
+					tgt = nullptr;
+				}
 			}
 		}
 
