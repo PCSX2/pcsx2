@@ -56,8 +56,9 @@ typedef unsigned long   ulong;
 
 namespace soundtouch
 {
-    /// Max allowed number of channels
-    #define SOUNDTOUCH_MAX_CHANNELS     16
+    /// Max allowed number of channels. This is not a hard limit but to have some
+    /// maximum value for argument sanity checks -- can be increased if necessary
+    #define SOUNDTOUCH_MAX_CHANNELS     32
 
     /// Activate these undef's to overrule the possible sampletype
     /// setting inherited from some other header file:
