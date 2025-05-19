@@ -3290,23 +3290,19 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 
 					if (buffer_width != std::max(1U, t->m_TEX0.TBW))
 					{
+						i++;
 						// Check if this got messed with at some point, if it did just nuke it.
-						if (t->m_valid.width() == dst->m_valid.width())
+						if (!preserve_target && t->m_age > 0)
 						{
-							// Not correct, but it's better than a null reference.
+							// Probably best we don't poke the beast if it's being used as the current source.
 							if (src && src->m_target_direct && src->m_from_target == t)
-							{
-								DevCon.Warning("Replacing source target, texture may be invalid");
-								src->m_texture = dst->m_texture;
-								src->m_from_target = dst;
-							}
+								continue;
 							
 							InvalidateSourcesFromTarget(t);
 							i = list.erase(j);
 							delete t;
 						}
-						else
-							i++;
+
 						continue;
 					}
 					// If the two targets are misaligned, it's likely a relocation, so we can just kill the old target.
