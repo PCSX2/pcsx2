@@ -52,9 +52,6 @@ protected:
     // Result divider factor in 2^k format
     uint resultDivFactor;
 
-    // Result divider value.
-    SAMPLETYPE resultDivider;
-
     // Memory for filter coefficients
     SAMPLETYPE *filterCoeffs;
     SAMPLETYPE *filterCoeffsStereo;

@@ -15,8 +15,8 @@
 
 <body class="normal">
   <hr>
-  <h1>SoundTouch audio processing library v2.3.3</h1>
-  <p class="normal">SoundTouch library Copyright &copy; Olli Parviainen 2001-2024</p>
+  <h1>SoundTouch audio processing library v2.4.0</h1>
+  <p class="normal">SoundTouch library Copyright &copy; Olli Parviainen 2001-2025</p>
   <hr>
   <h2>1. Introduction </h2>
   <p>SoundTouch is an open-source audio processing library that allows
@@ -81,8 +81,8 @@
   <p>The SoundTouch library compiles in practically any platform
     supporting GNU compiler (GCC) tools.
   <h4>2.2.1 Compiling with autotools</h4>
-  <p>To install build prerequisites for 'autotools' tool chain:</p>
-  <pre>    sudo apt-get install automake autoconf libtool build-essential</pre>
+  <p>To install build prerequisites for 'autotools' tool chain (for Ubuntu/Debian. Use dnf/yum/etc in other distros):</p>
+  <pre>    sudo apt install -y automake autoconf libtool build-essential</pre>
   <p>To build and install the binaries, run the following commands in
     /soundtouch directory:</p>
   <table border="0" cellpadding="0" cellspacing="4">
@@ -140,8 +140,8 @@
 
   <h4><b>2.2.2 Compiling with cmake</b></h4>
   <p>'cmake' build scripts are provided as an alternative to the autotools toolchain.</p>
-  <p>To install cmake build prerequisites:</p>
-  <pre>    sudo apt-get install libtool build-essential cmake</pre>
+  <p>To install cmake build prerequisites (for Ubuntu/Debian. Use dnf/yum/etc in other distros):</p>
+  <pre>    sudo apt install -y libtool build-essential cmake</pre>
   <p>To build:</p>
   <pre>
     cmake .
@@ -205,7 +205,7 @@
       separate mono channels, this isn't recommended because processing the
       channels separately would result in losing the phase coherency between
       the channels, which consequently would ruin the stereo effect.</p>
-    <p>Sample rates between 8000-48000H are supported.</p>
+    <p>Sample rates between 8000-48000Hz are supported.</p>
     <h3>3.2. Processing latency</h3>
     <p>The processing and latency constraints of the SoundTouch library are:</p>
     <ul>
@@ -606,10 +606,17 @@
       <pre>soundstretch original.wav output.wav -pitch=-0.318</pre>
     </blockquote>
     <hr>
-    <h2>5. Change History</h2>
+    <a name="changehistory"><h2>5. Change History</h2></a>
     <h3>5.1. SoundTouch library Change History </h3>
-    <p><b>2.3.3:</b></p>
+    <p><b>2.4.0:</b></p>
     <ul class="current">
+        <li>Set CMake minimum version to 3.5 to avoid deprecation warning</li>
+        <li>Increase max nr. of channels from 16 to 32</li>
+        <li>Don't use `pow()` when using integer precision samples</li>
+        <li>Replace `-Ofast` that's being deprecated in some compilers, by `-O3 -ffast-math`</li>
+    </ul>
+    <p><b>2.3.3:</b></p>
+    <ul>
         <li>Fixing compiler warnings, maintenance fixes to make/build files for various systems
         </li>
     </ul>
@@ -881,9 +888,14 @@
     <ul>
       <li> Initial release</li>
     </ul>
+    <br><br>
     <h3>5.2. SoundStretch application Change History </h3>
-    <p><b>2.3.3:</b></p>
+    <p><b>2.4.0:</b></p>
     <ul class="current_soundstretch">
+      <li>parse command-line argument values with double float precision.</li>
+    </ul>
+    <p><b>2.3.3:</b></p>
+    <ul>
       <li>Added support for Asian / non-latin filenames in Windows. Gnu platform has supported them already earlier.</li>
     </ul>
     <p><b>1.9:</b></p>

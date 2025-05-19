@@ -72,10 +72,10 @@ namespace soundtouch
 {
 
 /// Soundtouch library version string
-#define SOUNDTOUCH_VERSION          "2.3.3"
+#define SOUNDTOUCH_VERSION          "2.4.0"
 
 /// SoundTouch library version id
-#define SOUNDTOUCH_VERSION_ID       (20303)
+#define SOUNDTOUCH_VERSION_ID       (20400)
 
 //
 // Available setting IDs for the 'setSetting' & 'get_setting' functions:
