@@ -9097,10 +9097,7 @@ void GSRendererHW::EndHLEHardwareDraw(bool force_copy_on_hazard /* = false */)
 				return;
 			}
 
-			// DX11 can't partial copy depth textures.
-			const GSVector4i copy_rect = (src->IsDepthStencil() && !features.test_and_sample_depth) ?
-											 src->GetRect() :
-											 config.drawarea.rintersect(src->GetRect());
+			const GSVector4i copy_rect =  config.drawarea.rintersect(src->GetRect());
 			g_gs_device->CopyRect(src, copy, copy_rect - copy_rect.xyxy(), copy_rect.x, copy_rect.y);
 			config.tex = copy;
 		}
