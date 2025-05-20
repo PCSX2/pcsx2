@@ -33,7 +33,7 @@ struct BreakPoint
 	bool temporary = false;
 	bool stepping = false;
 
-	bool hasCond;
+	bool hasCond = false;
 	BreakPointCond cond;
 	BreakPointCpu cpu;
 
