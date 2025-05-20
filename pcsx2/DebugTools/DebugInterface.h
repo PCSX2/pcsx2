@@ -90,6 +90,7 @@ public:
 	virtual SymbolGuardian& GetSymbolGuardian() const = 0;
 	virtual SymbolImporter* GetSymbolImporter() const = 0;
 	virtual std::vector<std::unique_ptr<BiosThread>> GetThreadList() const = 0;
+	virtual std::vector<IopMod> GetModuleList() const = 0;
 
 	bool isAlive();
 	bool isCpuPaused();
@@ -151,6 +152,7 @@ public:
 	SymbolGuardian& GetSymbolGuardian() const override;
 	SymbolImporter* GetSymbolImporter() const override;
 	std::vector<std::unique_ptr<BiosThread>> GetThreadList() const override;
+	std::vector<IopMod> GetModuleList() const override;
 
 	std::string disasm(u32 address, bool simplify) override;
 	bool isValidAddress(u32 address) override;
@@ -194,6 +196,7 @@ public:
 	SymbolGuardian& GetSymbolGuardian() const override;
 	SymbolImporter* GetSymbolImporter() const override;
 	std::vector<std::unique_ptr<BiosThread>> GetThreadList() const override;
+	std::vector<IopMod> GetModuleList() const override;
 
 	std::string disasm(u32 address, bool simplify) override;
 	bool isValidAddress(u32 address) override;
