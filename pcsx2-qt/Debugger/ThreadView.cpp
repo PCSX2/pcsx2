@@ -65,16 +65,17 @@ void ThreadView::openContextMenu(QPoint pos)
 
 void ThreadView::onDoubleClick(const QModelIndex& index)
 {
+	auto real_index = m_proxy_model->mapToSource(index);
 	switch (index.column())
 	{
 		case ThreadModel::ThreadColumns::ENTRY:
 		{
-			goToInMemoryView(m_model->data(index, Qt::UserRole).toUInt(), true);
+			goToInDisassembler(m_model->data(real_index, Qt::UserRole).toUInt(), true);
 			break;
 		}
 		default: // Default to PC
 		{
-			QModelIndex pc_index = m_model->index(index.row(), ThreadModel::ThreadColumns::PC);
+			QModelIndex pc_index = m_model->index(real_index.row(), ThreadModel::ThreadColumns::PC);
 			goToInDisassembler(m_model->data(pc_index, Qt::UserRole).toUInt(), true);
 			break;
 		}
