@@ -462,7 +462,8 @@ void GSClut::GetAlphaMinMax32(int& amin_out, int& amax_out)
 {
 	// call only after Read32
 
-	pxAssert(!m_read.dirty);
+	if (m_read.dirty)
+		GL_INS("GSClut: GetAlphaMinMax32 m_read.dirty");
 
 	if (m_read.adirty)
 	{
