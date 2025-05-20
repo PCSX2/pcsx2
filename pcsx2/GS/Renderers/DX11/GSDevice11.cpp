@@ -2477,20 +2477,9 @@ D3D_SHADER_MACRO* GSDevice11::ShaderMacro::GetPtr()
 	return (D3D_SHADER_MACRO*)mout.data();
 }
 
-/// Checks that we weren't sent things we declared we don't support
-/// Clears things we don't support that can be quietly disabled
-static void preprocessSel(GSDevice11::PSSelector& sel)
-{
-	pxAssert(sel.write_rg  == 0); // Not supported, shouldn't be sent
-}
-
 void GSDevice11::RenderHW(GSHWDrawConfig& config)
 {
-	pxAssert(!config.require_full_barrier); // We always specify no support so it shouldn't request this
-	preprocessSel(config.ps);
-
-	GSVector2i rtsize = (config.rt ? config.rt : config.ds)->GetSize();
-
+	const GSVector2i rtsize = (config.rt ? config.rt : config.ds)->GetSize();
 	GSTexture* colclip_rt = g_gs_device->GetColorClipTexture();
 
 	if (colclip_rt)
@@ -2542,7 +2531,8 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		StretchRect(colclip_rt ? colclip_rt : config.rt, GSVector4(config.drawarea) / GSVector4(rtsize).xyxy(),
 			primid_tex, GSVector4(config.drawarea), m_date.primid_init_ps[static_cast<u8>(config.datm)].get(), nullptr, false);
 	}
-	else if (config.destination_alpha != GSHWDrawConfig::DestinationAlphaMode::Off)
+	else if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::Stencil ||
+			 config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne)
 	{
 		const GSVector4 src = GSVector4(config.drawarea) / GSVector4(config.ds->GetSize()).xyxy();
 		const GSVector4 dst = src * 2.0f - 1.0f;
@@ -2676,7 +2666,6 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 
 	if (config.alpha_second_pass.enable)
 	{
-		preprocessSel(config.alpha_second_pass.ps);
 		if (config.cb_ps.FogColor_AREF.a != config.alpha_second_pass.ps_aref)
 		{
 			config.cb_ps.FogColor_AREF.a = config.alpha_second_pass.ps_aref;
