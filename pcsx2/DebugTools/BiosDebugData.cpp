@@ -79,7 +79,16 @@ std::vector<IopMod> getIOPModules()
 	{
 		IopMod mod;
 
-		mod.name = iopMemReadString(iopMemRead32(maddr + 4));
+		u32 nstr = iopMemRead32(maddr + 4);
+		if (nstr)
+		{
+			mod.name = iopMemReadString(iopMemRead32(maddr + 4));
+		}
+		else
+		{
+			mod.name = "(NULL)";
+		}
+
 		mod.version = iopMemRead16(maddr + 8);
 		mod.entry = iopMemRead32(maddr + 0x10);
 		mod.gp = iopMemRead32(maddr + 0x14);
