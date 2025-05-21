@@ -74,10 +74,24 @@ std::vector<IopMod> getIOPModules()
 {
 	u32 maddr = iopMemRead32(CurrentBiosInformation.iopModListAddr);
 	std::vector<IopMod> modlist;
+	int i = 0;
 
 	while (maddr != 0)
 	{
 		IopMod mod;
+
+		if (maddr >= 0x200000)
+		{
+			// outside of memory
+			// change if we ever support IOP ram extension
+			return {};
+		}
+
+		if (i > 200)
+		{
+			// 200 modules? unlikely
+			return {};
+		}
 
 		u32 nstr = iopMemRead32(maddr + 4);
 		if (nstr)
@@ -100,6 +114,7 @@ std::vector<IopMod> getIOPModules()
 		modlist.push_back(mod);
 
 		maddr = iopMemRead32(maddr);
+		i++;
 	}
 
 	return modlist;
