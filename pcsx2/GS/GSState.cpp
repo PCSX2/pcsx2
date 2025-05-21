@@ -4334,7 +4334,7 @@ void GSState::FixHugeSTCoordsImpl()
 			if (m_vertex.tail >= m_vertex.maxcount)
 				GrowVertexBuffer();
 		}
-		else if (new_index_tail < i) // If new_index_tail == i, don't update indices since no primitives have been culled
+		else if (new_index_tail < i) // If new_index_tail < i, update indices since primitives have been culled
 		{
 			// Keep the same primitive so shift indices down
 			for (u32 j = 0; j < n; j++)
