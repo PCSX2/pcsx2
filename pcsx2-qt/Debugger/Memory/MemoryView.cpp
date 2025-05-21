@@ -565,8 +565,11 @@ void MemoryView::openContextMenu(QPoint pos)
 		return std::optional(event);
 	});
 
-	QAction* go_to_address_action = menu->addAction(tr("Go to address"));
+	QAction* go_to_address_action = menu->addAction(tr("Go to Address"));
 	connect(go_to_address_action, &QAction::triggered, this, [this]() { contextGoToAddress(); });
+
+	QAction* follow_address_action = menu->addAction(tr("Follow Address"));
+	connect(follow_address_action, &QAction::triggered, this, [this]() { contextFollowAddress(); });
 
 	menu->addSeparator();
 
@@ -664,6 +667,16 @@ void MemoryView::contextGoToAddress()
 	}
 
 	gotoAddress(static_cast<u32>(address));
+}
+
+void MemoryView::contextFollowAddress()
+{
+	bool valid;
+	u32 address = cpu().read32(m_table.selectedAddress & ~3, valid);
+	if (!valid)
+		return;
+
+	gotoAddress(address);
 }
 
 void MemoryView::mouseDoubleClickEvent(QMouseEvent* event)
