@@ -32,7 +32,8 @@ ThreadView::ThreadView(const DebuggerViewParameters& parameters)
 	}
 
 	receiveEvent<DebuggerEvents::Refresh>([this](const DebuggerEvents::Refresh& event) -> bool {
-		m_model->refreshData();
+		if (!QtHost::IsVMPaused())
+			m_model->refreshData();
 		return true;
 	});
 
