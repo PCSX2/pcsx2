@@ -19,6 +19,7 @@ ModuleView::ModuleView(const DebuggerViewParameters& parameters)
 	connect(m_ui.moduleList, &QTableView::customContextMenuRequested, this, &ModuleView::openContextMenu);
 	connect(m_ui.moduleList, &QTableView::doubleClicked, this, &ModuleView::onDoubleClick);
 
+	m_ui.moduleList->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeMode::ResizeToContents);
 	for (std::size_t i = 0; auto mode : ModuleModel::HeaderResizeModes)
 	{
 		m_ui.moduleList->horizontalHeader()->setSectionResizeMode(i, mode);
