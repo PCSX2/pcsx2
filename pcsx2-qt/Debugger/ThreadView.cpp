@@ -31,6 +31,11 @@ ThreadView::ThreadView(const DebuggerViewParameters& parameters)
 		i++;
 	}
 
+	receiveEvent<DebuggerEvents::Refresh>([this](const DebuggerEvents::Refresh& event) -> bool {
+		m_model->refreshData();
+		return true;
+	});
+
 	receiveEvent<DebuggerEvents::VMUpdate>([this](const DebuggerEvents::VMUpdate& event) -> bool {
 		m_model->refreshData();
 		return true;
