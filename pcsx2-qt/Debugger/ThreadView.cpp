@@ -9,7 +9,7 @@
 #include <QtWidgets/QMenu>
 
 ThreadView::ThreadView(const DebuggerViewParameters& parameters)
-	: DebuggerView(parameters, NO_DEBUGGER_FLAGS)
+	: DebuggerView(parameters, MONOSPACE_FONT)
 	, m_model(new ThreadModel(cpu()))
 	, m_proxy_model(new QSortFilterProxyModel())
 {
