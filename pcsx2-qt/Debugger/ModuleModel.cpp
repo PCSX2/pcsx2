@@ -24,13 +24,11 @@ int ModuleModel::columnCount(const QModelIndex&) const
 
 QVariant ModuleModel::data(const QModelIndex& index, int role) const
 {
-	const std::vector<IopMod> Modules = m_cpu.GetModuleList();
-
 	size_t row = static_cast<size_t>(index.row());
-	if (row >= Modules.size())
+	if (row >= m_modules.size())
 		return QVariant();
 
-	const IopMod* mod = &Modules[row];
+	const IopMod* mod = &m_modules[row];
 
 	if (role == Qt::DisplayRole)
 	{
@@ -130,5 +128,6 @@ QVariant ModuleModel::headerData(int section, Qt::Orientation orientation, int r
 void ModuleModel::refreshData()
 {
 	beginResetModel();
+	m_modules = m_cpu.GetModuleList();
 	endResetModel();
 }
