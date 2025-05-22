@@ -20,7 +20,11 @@ There are a number of ways to help the project, whether it be bug reporting, gam
 
 *   Want to make changes to emulator code? [Check out the issue tracker](https://github.com/PCSX2/pcsx2/issues), or [fork the PCSX2 repository and work on your own ideas](https://github.com/PCSX2/pcsx2).
 *   Want to patch games? [Check out the cheats and patches forum thread for inspiration](https://forums.pcsx2.net/Thread-Post-your-PCSX2-cheats-patches-here). There are other threads to find as well, [such as those dedicated to 60 FPS patches](https://forums.pcsx2.net/Thread-60-fps-codes) or [widescreen patches](https://forums.pcsx2.net/Thread-PCSX2-Widescreen-Game-Patches).
+<<<<<<< HEAD
 *   Want to report bugs you have discovered in your games? Head over to [the Bug Reporting section of the PCSX2 forums](https://forums.pcsx2.net/Forum-Bug-reporting), to [the PCSX2 Discord](https://pcsx2.net/discord), or to [the GitHub issues section](https://github.com/PCSX2/pcsx2/issues).
+=======
+*   Want to report bugs you have discovered in your games? [Head over to the Bug Reporting section of the PCSX2 forums](https://forums.pcsx2.net/Forum-Bug-reporting). Also check out our [Issue reporting guide](https://pcsx2.net/docs/troubleshooting/identify) for info on how to better report to us issues.
+>>>>>>> 091a4ee5a (docs: update in order to redirect from the GH wiki to our website)
 *   Want to update us on the compatibility of your games? [Take a look at the Public Compatibility List on the PCSX2 forums](https://forums.pcsx2.net/Forum-Public-compatibility-list)
 *   Want to improve the PCSX2 wiki? [Here is how to contribute](https://wiki.pcsx2.net/How_to_contribute)
 
@@ -120,9 +124,7 @@ If you are using a disc:
 Fast Boot, enabled by default, will directly mount and launch the game without first launching the PS2 BIOS. You may disable this in Settings > BIOS > Fast Boot if you wish to see the BIOS startup animation or if Fast Boot is causing an issue.
 
 ### Question 18: How do I build the PCSX2 source code?
-*   [Windows build guide](https://github.com/PCSX2/pcsx2/wiki/12-Building-on-Windows)
-*   [Linux build guide](https://github.com/PCSX2/pcsx2/wiki/10-Building-on-Linux)
-*   [macOS build guide](https://github.com/PCSX2/pcsx2/wiki/11-Building-on-MacOS)
+Have a nice [building guide](https://pcsx2.net/docs/advanced/building) :) .
 
 ### Question 19: When will the next version be released?
 It will be released when it is ready. Please don't waste your time and ours asking when.
