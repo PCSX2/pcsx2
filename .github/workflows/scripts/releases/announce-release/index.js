@@ -66,7 +66,7 @@ const embed = new MessageEmbed()
   .setDescription("To download the latest or previous builds, [visit the official downloads page](https://pcsx2.net/downloads/).")
   .addFields(
     { name: 'Version', value: releaseInfo.tag_name, inline: true },
-    { name: 'Installation Steps', value: '[See Here](https://github.com/PCSX2/pcsx2/wiki/Nightly-Build-Usage-Guide)', inline: true },
+    { name: 'Installation Steps', value: '[See Here](https://pcsx2.net/docs/category/setup)', inline: true },
     { name: 'Included Changes', value: releaseInfo.body, inline: false }
   );
 console.log(embed);

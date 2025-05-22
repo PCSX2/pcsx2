@@ -24,4 +24,4 @@ Please note that a BIOS dump from a legitimately-owned PS2 console is required t
 
 PCSX2 supports translation into other languages using [Crowdin](https://crowdin.com/project/pcsx2-emulator).
 
-See the [Contributing Guidelines](https://github.com/PCSX2/pcsx2/blob/master/.github/CONTRIBUTING.md) or visit the [GitHub Wiki](https://github.com/PCSX2/pcsx2/wiki) for more info on how to contribute.
+See the [Contribution Guide](https://pcsx2.net/docs/contributing/) for more info on how to contribute.

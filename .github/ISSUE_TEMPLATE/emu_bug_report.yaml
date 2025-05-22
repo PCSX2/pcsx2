@@ -66,6 +66,10 @@ body:
 
         Performance issues as a result of not meeting our hardware requirements are not valid.
 
+        Please read our troubleshooting pages and our issue reporting guide.
+        - [Troubleshooting page](https://pcsx2.net/docs/category/troubleshooting).
+        - [Issue reporting guide](https://pcsx2.net/docs/troubleshooting/identify).
+
         We are **not** accepting issues related to the **libretro** core. The libretro core is being maintained separately at this time
   - type: input
     id: rev
