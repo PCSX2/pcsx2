@@ -63,6 +63,12 @@ static std::optional<ryml::Tree> loadYamlFile(const char* filePath)
 static void SaveYAMLToFile(const char* filename, const ryml::NodeRef& node)
 {
 	auto file = FileSystem::OpenCFile(filename, "w");
+	if (!file)
+	{
+		Console.Error(fmt::format("[MemoryCard] Failed to open '{}' for writing: {}.", filename, std::strerror(errno)));
+		return;
+	}
+
 	ryml::emit_yaml(node, file);
 	std::fflush(file);
 	std::fclose(file);
