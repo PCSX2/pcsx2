@@ -2886,17 +2886,20 @@ void GSRendererHW::Draw()
 			// It's possible it's writing to an old 32bit target, but is actually just a 16bit copy, so let's make sure it's actually using a mask.
 			if (!shuffle_target)
 			{
-				bool shuffle_channel_reads = true;
+				bool shuffle_channel_reads = !m_cached_ctx.FRAME.FBMSK;
 				const u32 increment = (m_vt.m_primclass == GS_TRIANGLE_CLASS) ? 3 : 2;
 				const GSVertex* v = &m_vertex.buff[0];
 
-				if (!m_cached_ctx.FRAME.FBMSK)
+				if (shuffle_channel_reads)
 				{
 					for (u32 i = 0; i < m_index.tail; i += increment)
 					{
 						const int first_u = (PRIM->FST ? v[i].U : static_cast<int>(v[i].ST.S / v[(increment == 2) ? i + 1 : i].RGBAQ.Q)) >> 4;
 						const int second_u = (PRIM->FST ? v[i + 1].U : static_cast<int>(v[i + 1].ST.S / v[i + 1].RGBAQ.Q)) >> 4;
-						if (std::abs((v[i + 1].XYZ.X - v[i].XYZ.X) / 16) != 8 || std::abs(second_u - first_u) != 8)
+						const int vector_width = std::abs(v[i + 1].XYZ.X - v[i].XYZ.X) / 16;
+						const int tex_width = std::abs(second_u - first_u);
+						// & 7 just a quicker way of doing % 8
+						if ((vector_width & 7) != 0 || (tex_width & 7) != 0 || tex_width != vector_width)
 						{
 							shuffle_channel_reads = false;
 							break;
@@ -2915,6 +2918,8 @@ void GSRendererHW::Draw()
 
 					if (tgt)
 						shuffle_target = tgt->m_32_bits_fmt;
+					else
+						shuffle_target = shuffle_channel_reads;
 
 					tgt = nullptr;
 				}
@@ -2961,12 +2966,12 @@ void GSRendererHW::Draw()
 			if (possible_shuffle && GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].bpp != 16)
 				possible_shuffle &= draw_uses_target;
 
-			const bool shuffle_source = src && (src->m_from_target != nullptr || (m_skip && possible_shuffle));
+			const bool shuffle_source = possible_shuffle && src && ((src->m_from_target != nullptr && GSLocalMemory::m_psm[src->m_from_target->m_TEX0.PSM].bpp != 16) || m_skip);
 
-			if (!shuffle_source)
+			if (!shuffle_source && possible_shuffle)
 			{
-				if(draw_start > src->m_TEX0.TBP0 || draw_end < src->m_TEX0.TBP0)
-					possible_shuffle &= src && (src->m_from_target != nullptr || (m_skip && possible_shuffle));
+				const bool is_16bit_copy = m_cached_ctx.TEX0.TBP0 != m_cached_ctx.FRAME.Block() && shuffle_target && IsOpaque() && !(context->TEX1.MMIN & 1) && !src->m_32_bits_fmt && m_cached_ctx.FRAME.FBMSK;
+				possible_shuffle &= is_16bit_copy || (m_cached_ctx.TEX0.TBP0 == m_cached_ctx.FRAME.Block() && shuffle_target);
 			}
 			// We don't know the alpha range of direct sources when we first tried to optimize the alpha test.
 			// Moving the texture lookup before the ATST optimization complicates things a lot, so instead,
@@ -3417,38 +3422,32 @@ void GSRendererHW::Draw()
 				t_size.x = rt->m_unscaled_size.x - horizontal_offset;
 				t_size.y = rt->m_unscaled_size.y - vertical_offset;
 			}
+
 			// Don't resize if the BPP don't match.
-			if (frame_psm.bpp == GSLocalMemory::m_psm[rt->m_TEX0.PSM].bpp)
+			GSVector2i new_size = GetValidSize(src, possible_shuffle);
+			if (new_size.x > rt->m_unscaled_size.x || new_size.y > rt->m_unscaled_size.y)
 			{
-				if (m_r.w > rt->m_unscaled_size.y || m_r.z > rt->m_unscaled_size.x)
+				const u32 new_width = std::max(new_size.x, rt->m_unscaled_size.x);
+				const u32 new_height = std::max(new_size.y, rt->m_unscaled_size.y);
+
+				//DevCon.Warning("HW: Resizing texture %d x %d draw %d", rt->m_unscaled_size.x, new_height, s_n);
+				rt->ResizeTexture(new_width, new_height);
+			}
+			else if ((IsPageCopy() || is_possible_mem_clear) && m_r.width() <= frame_psm.pgs.x && m_r.height() <= frame_psm.pgs.y)
+			{
+				const int get_next_ctx = m_env.PRIM.CTXT;
+				const GSDrawingContext& next_ctx = m_env.CTXT[get_next_ctx];
+				GSVector4i update_valid = GSVector4i::loadh(GSVector2i(horizontal_offset + GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs.x, GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs.y + vertical_offset));
+				rt->UpdateValidity(update_valid, true);
+				if (is_possible_mem_clear)
 				{
-					const u32 new_height = std::max(m_r.w, rt->m_unscaled_size.y);
-					const u32 new_width = std::max(m_r.z, rt->m_unscaled_size.x);
-
-					//DevCon.Warning("HW: Resizing texture %d x %d draw %d", rt->m_unscaled_size.x, new_height, s_n);
-					rt->ResizeTexture(new_width, new_height);
-
-					const bool frame_masked = ((m_cached_ctx.FRAME.FBMSK & frame_psm.fmsk) == frame_psm.fmsk) || (m_cached_ctx.TEST.ATE && m_cached_ctx.TEST.ATST == ATST_NEVER && !(m_cached_ctx.TEST.AFAIL & AFAIL_FB_ONLY));
-
-					rt->UpdateValidity(m_r, !frame_masked);
-					rt->UpdateDrawn(m_r, !frame_masked);
-				}
-				else if ((IsPageCopy() || is_possible_mem_clear) && m_r.width() <= frame_psm.pgs.x && m_r.height() <= frame_psm.pgs.y)
-				{
-					const int get_next_ctx = m_env.PRIM.CTXT;
-					const GSDrawingContext& next_ctx = m_env.CTXT[get_next_ctx];
-					GSVector4i update_valid = GSVector4i::loadh(GSVector2i(horizontal_offset + GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs.x, GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs.y + vertical_offset));
-					rt->UpdateValidity(update_valid, true);
-					if (is_possible_mem_clear)
+					if ((horizontal_offset + GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs.x) >= static_cast<int>(rt->m_TEX0.TBW * 64) && next_ctx.FRAME.Block() == (m_cached_ctx.FRAME.Block() + 0x20))
 					{
-						if ((horizontal_offset + GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs.x) >= static_cast<int>(rt->m_TEX0.TBW * 64) && next_ctx.FRAME.Block() == (m_cached_ctx.FRAME.Block() + 0x20))
-						{
-							update_valid.x = 0;
-							update_valid.z = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs.x;
-							update_valid.y += GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs.y;
-							update_valid.w += GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs.y;
-							rt->UpdateValidity(update_valid, true);
-						}
+						update_valid.x = 0;
+						update_valid.z = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs.x;
+						update_valid.y += GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs.y;
+						update_valid.w += GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs.y;
+						rt->UpdateValidity(update_valid, true);
 					}
 				}
 			}
