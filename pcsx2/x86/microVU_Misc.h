@@ -42,6 +42,7 @@ struct mVU_Globals
 	u32   E4      [4] = __four(0x3933e553);
 	u32   E5      [4] = __four(0x36b63510);
 	u32   E6      [4] = __four(0x353961ac);
+	u32   I32MAXF [4] = __four(0x4effffff);
 	float FTOI_4  [4] = __four(16.0);
 	float FTOI_12 [4] = __four(4096.0);
 	float FTOI_15 [4] = __four(32768.0);
