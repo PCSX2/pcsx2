@@ -2095,7 +2095,7 @@ void Achievements::DrawGameOverlays()
 	using ImGuiFullscreen::g_medium_font;
 	using ImGuiFullscreen::LayoutScale;
 
-	if (!HasActiveGame() || !EmuConfig.Achievements.Overlays)
+	if (!HasActiveGame() || !(EmuConfig.Achievements.Overlays || EmuConfig.Achievements.LBOverlays))
 		return;
 
 	const auto lock = GetLock();
@@ -2107,7 +2107,7 @@ void Achievements::DrawGameOverlays()
 	ImVec2 position = CalculateOverlayPosition(io, padding, EmuConfig.Achievements.OverlayPosition);
 	ImDrawList* dl = ImGui::GetBackgroundDrawList();
 
-	if (!s_active_challenge_indicators.empty())
+	if (!s_active_challenge_indicators.empty() && EmuConfig.Achievements.Overlays)
 	{
 		const ImVec2 stack_direction = GetStackingDirection(EmuConfig.Achievements.OverlayPosition);
 		ImVec2 current_position = AdjustPositionForAlignment(position, image_size, EmuConfig.Achievements.OverlayPosition);
@@ -2162,7 +2162,7 @@ void Achievements::DrawGameOverlays()
 		position.y += stack_direction.y * (image_size.y + padding);
 	}
 
-	if (s_active_progress_indicator.has_value())
+	if (s_active_progress_indicator.has_value() && EmuConfig.Achievements.Overlays)
 	{
 		const AchievementProgressIndicator& indicator = s_active_progress_indicator.value();
 		const float opacity = IndicatorOpacity(indicator);
@@ -2206,7 +2206,7 @@ void Achievements::DrawGameOverlays()
 		position.y += stack_direction.y * (progress_box_size.y + padding);
 	}
 
-	if (!s_active_leaderboard_trackers.empty())
+	if (!s_active_leaderboard_trackers.empty() && EmuConfig.Achievements.LBOverlays)
 	{
 		const ImVec2 stack_direction = GetStackingDirection(EmuConfig.Achievements.OverlayPosition);
 		
