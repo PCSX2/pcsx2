@@ -1219,6 +1219,26 @@ PKP2-00702:
   region: "NTSC-J"
   gameFixes:
     - SoftwareRendererFMVHack # Vertical and horizontal lines in FMV.
+PSXC-00201:
+  name: "DESR-7000/DESR-5000 専用:PSXアップデートディスク Version 1.10"
+  name-sort: "でえする-7000/でえする-5000 せんよう:PSXあっぷでーとでぃす うえるしぉん 1.10"
+  name-en: "PSX Update Disc Version 1.10"
+  region: "NTSC-J"
+PSXC-00202:
+  name: "DESR-7000/DESR-5000 専用:PSXアップデートディスク Version 1.20"
+  name-sort: "でえする-7000/でえする-5000 せんよう:PSXあっぷでーとでぃす うえるしぉん 1.20"
+  name-en: "PSX Update Disc Version 1.20"
+  region: "NTSC-J"
+PSXC-00203:
+  name: "DESR-7000/DESR-5000 専用:PSXアップデートディスク Version 1.31"
+  name-sort: "でえする-7000/でえする-5000 せんよう:PSXあっぷでーとでぃす うえるしぉん 1.31"
+  name-en: "PSX Update Disc Version 1.31"
+  region: "NTSC-J"
+PSXC-00204:
+  name: "DESR-7000/DESR-5000 専用:PSXアップデートディスク Version 2.11"
+  name-sort: "でえする-7000/でえする-5000 せんよう:PSXあっぷでーとでぃす うえるしぉん 2.11"
+  name-en: "PSX Update Disc Version 2.11"
+  region: "NTSC-J"
 PUPX-93033:
   name: "PlayStation Seizou Kensa-you Disc 3 CD-ROM US-ban Ver1.1"
   region: "NTSC-U"
