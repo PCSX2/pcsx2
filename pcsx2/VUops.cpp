@@ -879,12 +879,10 @@ static __fi u32 floatToInt(u32 uvalue)
 	float fvalue = std::bit_cast<float>(uvalue);
 	if (Offset)
 		fvalue *= std::bit_cast<float>(0x3f800000 + (Offset << 23));
-	s32 svalue = std::bit_cast<s32>(fvalue);
+	uvalue = std::bit_cast<u32>(fvalue);
 
-	if (svalue >= static_cast<s32>(0x4f000000))
-		return 0x7fffffff;
-	else if (svalue <= static_cast<s32>(0xcf000000))
-		return 0x80000000;
+	if ((uvalue & 0x7f800000) >= 0x4f000000)
+		return (uvalue & 0x80000000) ? 0x80000000 : 0x7fffffff;
 	else
 		return static_cast<u32>(static_cast<s32>(fvalue));
 }
