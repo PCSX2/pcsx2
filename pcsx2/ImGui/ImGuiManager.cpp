@@ -1096,6 +1096,9 @@ void ImGuiManager::UpdateSoftwareCursorTexture(u32 index)
 
 	sc.extent_x = std::ceil(static_cast<float>(image.GetWidth()) * sc.scale * s_global_scale) / 2.0f;
 	sc.extent_y = std::ceil(static_cast<float>(image.GetHeight()) * sc.scale * s_global_scale) / 2.0f;
+	// Log the dimensions of the loaded image for USB port crosshair
+	Console.WriteLn("USB: Loaded software cursor for USB Port %u with image '%s', dimensions %dx%d pixels",
+		(index), sc.image_path.c_str(), image.GetWidth(), image.GetHeight());
 }
 
 void ImGuiManager::DrawSoftwareCursor(const SoftwareCursor& sc, const std::pair<float, float>& pos)
@@ -1115,6 +1118,37 @@ void ImGuiManager::DrawSoftwareCursor(const SoftwareCursor& sc, const std::pair<
 void ImGuiManager::DrawSoftwareCursors()
 {
 	// This one's okay to race, worst that happens is we render the wrong number of cursors for a frame.
+	// Log when a crosshair is requested to be drawn on screen for USB ports
+	// Use (i - 1) to display player ports as 1-based (USB Port 1, USB Port 2, etc.) for clarity
+	for (u32 i = 0; i < std::size(s_software_cursors); i++)
+	{
+		SoftwareCursor& sc = s_software_cursors[i];
+		
+		// Track if we've logged drawing for this game session
+		static bool has_logged_drawing = false;
+
+	// Log drawing only once at game start otherwise it spams per frame drawn
+		if (!has_logged_drawing)
+		{
+			for (u32 i = 0; i < std::size(s_software_cursors); i++)
+			{
+				SoftwareCursor& sc = s_software_cursors[i];
+				if (sc.image_path.empty() || !sc.texture)
+					continue;
+
+				// Calculate portLog and indexLog per cursor
+				int portLog = i; // USB ports start at 1, so port number = i
+				int indexLog = portLog - 1; // Index is zero-based = i - 1
+
+				// Log with both display port (1-based) and raw index for debugging
+				Console.WriteLn("USB: Drawing software cursor for USB Port %d (index %d) with image '%s', scale %.2f",
+					portLog, indexLog, sc.image_path.c_str(), sc.scale);
+			}
+			has_logged_drawing = true; // Prevent further logging
+		}
+
+	}
+	// Draw cursors after logging to match the corresponding log sequence
 	const u32 pointer_count = InputManager::MAX_POINTER_DEVICES;
 	for (u32 i = 0; i < pointer_count; i++)
 		DrawSoftwareCursor(s_software_cursors[i], InputManager::GetPointerAbsolutePosition(i));
@@ -1125,23 +1159,74 @@ void ImGuiManager::DrawSoftwareCursors()
 
 void ImGuiManager::SetSoftwareCursor(u32 index, std::string image_path, float image_scale, u32 multiply_color)
 {
-	MTGS::RunOnGSThread([index, image_path = std::move(image_path), image_scale, multiply_color]() {
-		pxAssert(index < std::size(s_software_cursors));
-		SoftwareCursor& sc = s_software_cursors[index];
-		sc.color = multiply_color | 0xFF000000;
-		if (sc.image_path == image_path && sc.scale == image_scale)
-			return;
+	// Originally, this function ran its operations inside MTGS::RunOnGSThread to ensure thread safety,
+	// synchronizing cursor updates with the Graphics Synthesizer (GS) multi-threading (MT).
+	// However, this caused Player 2's crosshair to not display when both USB ports are set to the USB type GunCon 2,
+	// as reported in PCSX2 GitHub Issue #11423. 
+	// As you can also get weird permanence between first or second crosshairs image files even while disabling one in-game.
+	// Commenting out MTGS::RunOnGSThread allows both crosshairs to be visible by running updates directly,
+	// but may cause side effects like Player 2's crosshair overlaying everything in some games (e.g., Time Crisis 2/3). 
+	// Haven't really tested other games and also had issues even with showing inputs on my end in the OSD lower left section - RedDevilus
+	// This is a temporary workaround until a proper fix is implemented but it shouldn't break anything in-game (hopefully).
+	// MTGS::RunOnGSThread([index, image_path = std::move(image_path), image_scale, multiply_color]() {
 
-		const bool is_hiding_or_showing = (image_path.empty() != sc.image_path.empty());
-		sc.image_path = std::move(image_path);
-		sc.scale = image_scale;
-		if (MTGS::IsOpen())
-			UpdateSoftwareCursorTexture(index);
+	// Ensure the provided index is within the valid range of the software cursors array
+	pxAssert(index < std::size(s_software_cursors));
 
-		// Hide the system cursor when we activate a software cursor.
-		if (is_hiding_or_showing && index == 0)
-			Host::RunOnCPUThread(&InputManager::UpdateHostMouseMode);
-	});
+	// Reference the software cursor object for the given index (0 for Player 1, 1 for Player 2)
+	SoftwareCursor& sc = s_software_cursors[index];
+
+	// Set the cursor's color, ensuring full opacity (alpha = 255) for visibility
+	sc.color = multiply_color | 0xFF000000;
+
+	// If the new image path and scale match the current ones, no update is needed for the drawing/rendering portion. 
+	// The path is the first option the section in GunCon2 settings called Cursor Path where you browse to an image crosshair1.png + crosshair2.png.
+	// Though it does accept all filetypes TODO?
+	if (sc.image_path == image_path && sc.scale == image_scale)
+		return;
+
+	// Check if we are transitioning between showing and hiding the cursor
+	// (i.e., one path is empty and the other is not)
+	const bool is_hiding_or_showing = (image_path.empty() != sc.image_path.empty());
+
+	// Update the cursor's image path and scale with the new values
+	sc.image_path = std::move(image_path);
+	sc.scale = image_scale;
+
+	// Log when a crosshair image is set or hidden for USB port debugging and support
+	// Use (index - 1) to display player ports as 1-based (USB Port 1, USB Port 2, etc.) for clarity
+	const bool is_hiding = !sc.image_path.empty() && image_path.empty();
+	const bool is_showing = sc.image_path.empty() && !image_path.empty();
+	if (is_hiding)
+	{
+		Console.WriteLn("USB: Hiding software cursor for USB Port %u (previous image: '%s')", (index), sc.image_path.c_str());
+	}
+	else if (is_showing)
+	{
+		Console.WriteLn("USB: Setting software cursor for USB Port %u with image '%s', scale %.2f", (index), image_path.c_str(), image_scale);
+	}
+	else if (!image_path.empty())
+	{
+		Console.WriteLn("USB: Updating software cursor for USB Port %u with new image '%s', scale %.2f (previous image: '%s')",
+			(index), image_path.c_str(), image_scale, sc.image_path.c_str());
+	}
+
+	// Update the cursor's position to the current absolute pointer position for this index
+	// Used as a fallback when no pointer device is active
+	sc.pos = InputManager::GetPointerAbsolutePosition(index);
+
+	// If the multi-threaded GS thread is open, update the cursor's texture to reflect the new image (example is a crosshair.png) or scale (size)
+	// This is necessary for rendering the crosshair correctly
+	if (MTGS::IsOpen())
+		UpdateSoftwareCursorTexture(index);
+
+	// If showing or hiding the cursor for Player 1 (index 0), update the host mouse mode
+	// This synchronizes the system cursor visibility with the software cursor
+	// Basically hides the system cursor when we activate a software cursor.
+	if (is_hiding_or_showing && index == 0)
+		Host::RunOnCPUThread(&InputManager::UpdateHostMouseMode);
+
+	// }); // Corresponding closing bracket for MTGS::RunOnGSThread on top of this function which commented out but is here in case we need to bring it back
 }
 
 bool ImGuiManager::HasSoftwareCursor(u32 index)
