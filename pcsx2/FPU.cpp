@@ -249,7 +249,6 @@ void CTC1() {
 
 void CVT_S() {
 	_FdValf_ = (float)_FsValSl_;
-	_FdValf_ = fpuDouble( _FdValUl_ );
 }
 
 void CVT_W() {

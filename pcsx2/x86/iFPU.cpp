@@ -26,8 +26,6 @@ namespace DOUBLE
 	void recC_EQ_xmm(int info);
 	void recC_LE_xmm(int info);
 	void recC_LT_xmm(int info);
-	void recCVT_S_xmm(int info);
-	void recCVT_W();
 	void recDIV_S_xmm(int info);
 	void recMADD_S_xmm(int info);
 	void recMADDA_S_xmm(int info);
@@ -993,15 +991,16 @@ void recCVT_S_xmm(int info)
 	}
 }
 
-FPURECOMPILE_CONSTCODE(CVT_S, XMMINFO_WRITED | XMMINFO_READS);
+void recCVT_S()
+{
+	// Float version is fully accurate, no double version
+	eeFPURecompileCode(recCVT_S_xmm, R5900::Interpreter::OpcodeImpl::COP1::CVT_S, XMMINFO_WRITED | XMMINFO_READS);
+}
 
 void recCVT_W()
 {
-	if (CHECK_FPU_FULL)
-	{
-		DOUBLE::recCVT_W();
-		return;
-	}
+	// Float version is fully accurate, no double version
+
 	// If we have the following EmitOP() on the top then it'll get calculated twice when CHECK_FPU_FULL is true
 	// as we also have an EmitOP() at recCVT_W() on iFPUd.cpp.  hence we have it below the possible return.
 	EE::Profiler.EmitOp(eeOpcode::CVTW);
@@ -1010,26 +1009,23 @@ void recCVT_W()
 
 	if (regs >= 0)
 	{
-		if (CHECK_FPU_EXTRA_OVERFLOW)
-			fpuFloat2(regs);
 		xCVTTSS2SI(eax, xRegisterSSE(regs));
-		xMOVMSKPS(edx, xRegisterSSE(regs)); //extract the signs
-		xAND(edx, 1); // keep only LSB
+		xMOVD(edx, xRegisterSSE(regs));
 	}
 	else
 	{
 		xCVTTSS2SI(eax, ptr32[&fpuRegs.fpr[_Fs_]]);
 		xMOV(edx, ptr[&fpuRegs.fpr[_Fs_]]);
-		xSHR(edx, 31); // mov sign to lsb
 	}
 
 	//kill register allocation for dst because we write directly to fpuRegs.fpr[_Fd_]
 	_deleteFPtoXMMreg(_Fd_, DELETE_REG_FREE_NO_WRITEBACK);
 
-	xADD(edx, 0x7FFFFFFF); // 0x7FFFFFFF if positive, 0x8000 0000 if negative
-
-	xCMP(eax, 0x80000000); // If the result is indefinitive
-	xCMOVE(eax, edx);      // Saturate it
+	// cvttss2si converts unrepresentable values to 0x80000000, so negative values are already handled.
+	// So we just need to handle positive values.
+	xCMP(edx, 0x4f000000); // If the input is greater than INT_MAX
+	xMOV(edx, 0x7fffffff);
+	xCMOVGE(eax, edx);     // Saturate it
 
 	//Write the result
 	xMOV(ptr[&fpuRegs.fpr[_Fd_]], eax);
