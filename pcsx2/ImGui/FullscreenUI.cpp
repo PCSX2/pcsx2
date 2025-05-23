@@ -1007,7 +1007,7 @@ void FullscreenUI::Render()
 	ImGuiFullscreen::BeginLayout();
 
 	// Primed achievements must come first, because we don't want the pause screen to be behind them.
-	if (s_current_main_window == MainWindowType::None && EmuConfig.Achievements.Overlays)
+	if (s_current_main_window == MainWindowType::None && (EmuConfig.Achievements.Overlays || EmuConfig.Achievements.LBOverlays))
 		Achievements::DrawGameOverlays();
 
 	switch (s_current_main_window)
@@ -3686,7 +3686,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 	static constexpr const char* s_osd_position_values[] = {
 		"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
 	};
-	
+
 	DrawStringListSetting(bsi, FSUI_ICONSTR(ICON_FA_COMMENT, "OSD Messages Position"),
 		FSUI_CSTR("Determines where on-screen display messages are positioned."), "EmuCore/GS", "OsdMessagesPos", "1",
 		s_osd_position_options, s_osd_position_values, std::size(s_osd_position_options), true);
@@ -7788,9 +7788,12 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
 		FSUI_CSTR("Plays sound effects for events such as achievement unlocks and leaderboard submissions."), "Achievements",
 		"SoundEffects", true, enabled);
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_PF_HEARTBEAT_ALT, "Enable In-Game Overlays"),
-		FSUI_CSTR("Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active."), "Achievements",
+		FSUI_CSTR("Shows icons in the screen when a challenge/primed achievement is active."), "Achievements",
 		"Overlays", true, enabled);
-	
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_PF_HEARTBEAT_ALT, "Enable In-Game Leaderboard Overlays"),
+		FSUI_CSTR("Shows icons in the screen when leaderboard tracking is active."), "Achievements",
+		"LBOverlays", true, enabled);
+
 	if (enabled)
 	{
 		const char* alignment_options[] = {
@@ -7804,17 +7807,17 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
 			TRANSLATE_NOOP("FullscreenUI", "Bottom Center"),
 			TRANSLATE_NOOP("FullscreenUI", "Bottom Right")
 		};
-		
+
 		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_ALIGN_CENTER, "Overlay Position"),
-			FSUI_CSTR("Determines where achievement overlays are positioned on the screen."), "Achievements", "OverlayPosition", 
+			FSUI_CSTR("Determines where achievement overlays are positioned on the screen."), "Achievements", "OverlayPosition",
 			8, alignment_options, std::size(alignment_options), true, 0, enabled);
-			
+
 		const bool notifications_enabled = GetEffectiveBoolSetting(bsi, "Achievements", "Notifications", true) ||
 											GetEffectiveBoolSetting(bsi, "Achievements", "LeaderboardNotifications", true);
 		if (notifications_enabled)
 		{
 			DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_BELL, "Notification Position"),
-				FSUI_CSTR("Determines where achievement notification popups are positioned on the screen."), "Achievements", "NotificationPosition", 
+				FSUI_CSTR("Determines where achievement notification popups are positioned on the screen."), "Achievements", "NotificationPosition",
 				2, alignment_options, std::size(alignment_options), true, 0, enabled);
 		}
 	}
@@ -8914,4 +8917,3 @@ TRANSLATE_NOOP("FullscreenUI", "Card Name");
 TRANSLATE_NOOP("FullscreenUI", "Eject Card");
 // TRANSLATION-STRING-AREA-END
 #endif
-
