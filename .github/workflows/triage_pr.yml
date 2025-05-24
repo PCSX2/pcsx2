@@ -19,7 +19,7 @@ jobs:
         pr-message: |-
           ## Thank you for submitting a contribution to PCSX2
 
-          As this is your first pull request, [please be aware of the contributing guidelines](https://github.com/PCSX2/pcsx2/blob/master/.github/CONTRIBUTING.md).
+          As this is your first pull request, [please be aware of the contributing guidelines](https://pcsx2.net/docs/contributing/).
 
           Additionally, as per recent changes in GitHub Actions, your pull request will need to be approved by a maintainer before GitHub Actions can run against it. [You can find more information about this change here.](https://github.blog/2021-04-22-github-actions-update-helping-maintainers-combat-bad-actors/)
 
