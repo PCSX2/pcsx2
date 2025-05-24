@@ -52199,6 +52199,14 @@ SLPM-68520:
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
     preloadFrameData: 1 # Fixes glowing emblems.
+  memcardFilters:
+    - "SLPS-25338"
+    - "SLPS-25339"
+    - "SLPS-73202"
+    - "SLPS-73203"
+    - "SLPS-25408"
+    - "SLPS-25462"
+    - "SLPS-73247"
 SLPM-68521:
   name: ".hack//frägment [先行リリース版]"
   name-sort: "どっとはっく fragment [せんこうりりーすばん]"
