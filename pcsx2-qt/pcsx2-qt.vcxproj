@@ -121,6 +121,8 @@
     <ClCompile Include="Debugger\StackView.cpp" />
     <ClCompile Include="Debugger\ThreadModel.cpp" />
     <ClCompile Include="Debugger\ThreadView.cpp" />
+    <ClCompile Include="Debugger\ModuleModel.cpp" />
+    <ClCompile Include="Debugger\ModuleView.cpp" />
     <ClCompile Include="Debugger\Breakpoints\BreakpointDialog.cpp" />
     <ClCompile Include="Debugger\Breakpoints\BreakpointModel.cpp" />
     <ClCompile Include="Debugger\Breakpoints\BreakpointView.cpp" />
@@ -235,6 +237,8 @@
     <QtMoc Include="Debugger\RegisterView.h" />
     <QtMoc Include="Debugger\StackModel.h" />
     <QtMoc Include="Debugger\StackView.h" />
+    <QtMoc Include="Debugger\ModuleModel.h" />
+    <QtMoc Include="Debugger\ModuleView.h" />
     <QtMoc Include="Debugger\ThreadModel.h" />
     <QtMoc Include="Debugger\ThreadView.h" />
     <ClInclude Include="Debugger\DebuggerSettingsManager.h" />
@@ -309,6 +313,8 @@
     <ClCompile Include="$(IntDir)Debugger\moc_RegisterView.cpp" />
     <ClCompile Include="$(IntDir)Debugger\moc_StackModel.cpp" />
     <ClCompile Include="$(IntDir)Debugger\moc_StackView.cpp" />
+    <ClCompile Include="$(IntDir)Debugger\moc_ModuleModel.cpp" />
+    <ClCompile Include="$(IntDir)Debugger\moc_ModuleView.cpp" />
     <ClCompile Include="$(IntDir)Debugger\moc_ThreadModel.cpp" />
     <ClCompile Include="$(IntDir)Debugger\moc_ThreadView.cpp" />
     <ClCompile Include="$(IntDir)Debugger\Breakpoints\moc_BreakpointDialog.cpp" />
@@ -368,6 +374,7 @@
     <QtUi Include="Debugger\StackView.ui" />
     <QtUi Include="Debugger\SymbolTree\NewSymbolDialog.ui" />
     <QtUi Include="Debugger\SymbolTree\SymbolTreeView.ui" />
+    <QtUi Include="Debugger\ModuleView.ui" />
     <QtUi Include="Debugger\ThreadView.ui" />
     <QtUi Include="GameList\EmptyGameListWidget.ui" />
     <QtUi Include="GameList\GameListWidget.ui" />

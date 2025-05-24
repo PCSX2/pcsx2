@@ -69,3 +69,53 @@ std::vector<std::unique_ptr<BiosThread>> getIOPThreads()
 
 	return threads;
 }
+
+std::vector<IopMod> getIOPModules()
+{
+	u32 maddr = iopMemRead32(CurrentBiosInformation.iopModListAddr);
+	std::vector<IopMod> modlist;
+	int i = 0;
+
+	while (maddr != 0)
+	{
+		IopMod mod;
+
+		if (maddr >= 0x200000)
+		{
+			// outside of memory
+			// change if we ever support IOP ram extension
+			return {};
+		}
+
+		if (i > 200)
+		{
+			// 200 modules? unlikely
+			return {};
+		}
+
+		u32 nstr = iopMemRead32(maddr + 4);
+		if (nstr)
+		{
+			mod.name = iopMemReadString(iopMemRead32(maddr + 4));
+		}
+		else
+		{
+			mod.name = "(NULL)";
+		}
+
+		mod.version = iopMemRead16(maddr + 8);
+		mod.entry = iopMemRead32(maddr + 0x10);
+		mod.gp = iopMemRead32(maddr + 0x14);
+		mod.text_addr = iopMemRead32(maddr + 0x18);
+		mod.text_size = iopMemRead32(maddr + 0x1c);
+		mod.data_size = iopMemRead32(maddr + 0x20);
+		mod.bss_size = iopMemRead32(maddr + 0x24);
+
+		modlist.push_back(mod);
+
+		maddr = iopMemRead32(maddr);
+		i++;
+	}
+
+	return modlist;
+}
