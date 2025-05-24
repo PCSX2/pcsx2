@@ -49579,6 +49579,8 @@ SLPM-66628:
     autoFlush: 2 # Reduces post-processing misalignment.
     halfPixelOffset: 2 # Fixes bloom misalignment still a bit misaligned.
     roundSprite: 1 # Fixes bloom misalignment still a bit misaligned + font artifacts.
+  memcardFilters:
+    - "SLPM-66643"
 SLPM-66629:
   name: "ダージュ・オブ・ケルベロス -ファイナルファンタジーⅫ - インターナショナル [Ultimate Hits]"
   name-sort: "だーじゅ・おぶ・けるべろす ふぁいなるふぁんたじー7 いんたーなしょなる [Ultimate Hits]"
@@ -52274,6 +52276,14 @@ SLPM-68520:
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
     preloadFrameData: 1 # Fixes glowing emblems.
+  memcardFilters:
+    - "SLPS-25338"
+    - "SLPS-25339"
+    - "SLPS-73202"
+    - "SLPS-73203"
+    - "SLPS-25408"
+    - "SLPS-25462"
+    - "SLPS-73247"
 SLPM-68521:
   name: ".hack//frägment [先行リリース版]"
   name-sort: "どっとはっく fragment [せんこうりりーすばん]"
@@ -60608,6 +60618,9 @@ SLPS-25829:
   region: "NTSC-J"
   gsHWFixes:
     nativeScaling: 1 # Fixes post processing.
+  memcardFilters:
+    - "SLPS-25394"
+    - "SLPS-25623"
 SLPS-25830:
   name: "ゼロの使い魔 夢魔が紡ぐ夜風の幻想曲 [限定版]"
   name-sort: "ぜろのつかいま むまがつむぐよかぜのげんそうきょく [げんていばん]"
