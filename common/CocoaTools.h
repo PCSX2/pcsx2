@@ -31,6 +31,19 @@ namespace CocoaTools
 	bool DelayedLaunch(std::string_view file);
 	/// Open a Finder window to the given URL
 	bool ShowInFinder(std::string_view file);
+	/// Get the path to the resources directory of the current application
+	std::optional<std::string> GetResourcePath();
+
+	/// Create a window
+	void* CreateWindow(std::string_view title, uint32_t width, uint32_t height);
+	/// Destroy a window
+	void DestroyWindow(void* window);
+	/// Make a WindowInfo from the given window
+	void GetWindowInfoFromWindow(WindowInfo* wi, void* window);
+	/// Run cocoa event loop
+	void RunCocoaEventLoop(bool wait_forever = false);
+	/// Posts an event to the main telling `RunCocoaEventLoop(true)` to exit
+	void StopMainThreadEventLoop();
 }
 
 #endif // __APPLE__

@@ -16,6 +16,7 @@
 #include "fmt/format.h"
 
 #include "common/Assertions.h"
+#include "common/CocoaTools.h"
 #include "common/Console.h"
 #include "common/CrashHandler.h"
 #include "common/FileSystem.h"
@@ -56,7 +57,8 @@ namespace GSRunner
 	static bool CreatePlatformWindow();
 	static void DestroyPlatformWindow();
 	static std::optional<WindowInfo> GetPlatformWindowInfo();
-	static void PumpPlatformMessages();
+	static void PumpPlatformMessages(bool forever = false);
+	static void StopPlatformMessagePump();
 } // namespace GSRunner
 
 static constexpr u32 WINDOW_WIDTH = 640;
@@ -809,6 +811,22 @@ void GSRunner::DumpStats()
 #define main real_main
 #endif
 
+static void CPUThreadMain(VMBootParameters* params) {
+	if (VMManager::Initialize(*params))
+	{
+		// run until end
+		GSDumpReplayer::SetLoopCount(s_loop_count);
+		VMManager::SetState(VMState::Running);
+		while (VMManager::GetState() == VMState::Running)
+			VMManager::Execute();
+		VMManager::Shutdown(false);
+		GSRunner::DumpStats();
+	}
+
+	VMManager::Internal::CPUThreadShutdown();
+	GSRunner::StopPlatformMessagePump();
+}
+
 int main(int argc, char* argv[])
 {
 	CrashHandler::Install();
@@ -837,16 +855,9 @@ int main(int argc, char* argv[])
 	VMManager::ApplySettings();
 	GSDumpReplayer::SetIsDumpRunner(true);
 
-	if (VMManager::Initialize(params))
-	{
-		// run until end
-		GSDumpReplayer::SetLoopCount(s_loop_count);
-		VMManager::SetState(VMState::Running);
-		while (VMManager::GetState() == VMState::Running)
-			VMManager::Execute();
-		VMManager::Shutdown(false);
-		GSRunner::DumpStats();
-	}
+	std::thread cputhread(CPUThreadMain, &params);
+	GSRunner::PumpPlatformMessages(/*forever=*/true);
+	cputhread.join();
 
 	VMManager::Internal::CPUThreadShutdown();
 	GSRunner::DestroyPlatformWindow();
@@ -859,9 +870,6 @@ void Host::PumpMessagesOnCPUThread()
 	// update GS thread copy of frame number
 	MTGS::RunOnGSThread([frame_number = GSDumpReplayer::GetFrameNumber()]() { s_dump_frame_number = frame_number; });
 	MTGS::RunOnGSThread([loop_number = GSDumpReplayer::GetLoopCount()]() { s_loop_number = loop_number; });
-
-	// process any window messages (but we shouldn't really have any)
-	GSRunner::PumpPlatformMessages();
 }
 
 s32 Host::Internal::GetTranslatedStringImpl(
@@ -975,14 +983,30 @@ std::optional<WindowInfo> GSRunner::GetPlatformWindowInfo()
 	return wi;
 }
 
-void GSRunner::PumpPlatformMessages()
+static constexpr SHUTDOWN_MSG = WM_APP + 0x100;
+static DWORD MainThreadID;
+
+void GSRunner::PumpPlatformMessages(bool forever)
 {
 	MSG msg;
-	while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE))
+	while (true)
 	{
-		TranslateMessage(&msg);
-		DispatchMessageW(&msg);
+		while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE))
+		{
+			if (msg.message == SHUTDOWN_MSG)
+				return;
+			TranslateMessage(&msg);
+			DispatchMessageW(&msg);
+		}
+		if (!forever)
+			return;
+		WaitMessage();
 	}
+}
+
+void GSRunner::StopPlatformMessagePump()
+{
+	PostThreadMessageW(MainThreadID, SHUTDOWN_MSG, 0, 0);
 }
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -1003,7 +1027,51 @@ int wmain(int argc, wchar_t** argv)
 		u8_argptrs.push_back(u8_args[i].data());
 	u8_argptrs.push_back(nullptr);
 
+	MainThreadID = GetCurrentThreadId();
+
 	return real_main(argc, u8_argptrs.data());
 }
 
-#endif // _WIN32
+#elif defined(__APPLE__)
+
+static void* s_window;
+static WindowInfo s_wi;
+
+bool GSRunner::CreatePlatformWindow()
+{
+	pxAssertRel(!s_window, "Tried to create window when there already was one!");
+	s_window = CocoaTools::CreateWindow("PCSX2 GS Runner", WINDOW_WIDTH, WINDOW_HEIGHT);
+	CocoaTools::GetWindowInfoFromWindow(&s_wi, s_window);
+	PumpPlatformMessages();
+	return s_window;
+}
+
+void GSRunner::DestroyPlatformWindow()
+{
+	if (s_window) {
+		CocoaTools::DestroyWindow(s_window);
+		s_window = nullptr;
+	}
+}
+
+std::optional<WindowInfo> GSRunner::GetPlatformWindowInfo()
+{
+	WindowInfo wi;
+	if (s_window)
+		wi = s_wi;
+	else
+		wi.type = WindowInfo::Type::Surfaceless;
+	return wi;
+}
+
+void GSRunner::PumpPlatformMessages(bool forever)
+{
+	CocoaTools::RunCocoaEventLoop(forever);
+}
+
+void GSRunner::StopPlatformMessagePump()
+{
+	CocoaTools::StopMainThreadEventLoop();
+}
+
+#endif // _WIN32 / __APPLE__
