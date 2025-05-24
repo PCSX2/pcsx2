@@ -1915,7 +1915,7 @@ SCAJ-20110:
   region: "NTSC-Unk"
   gsHWFixes:
     autoFlush: 1 # Fixes missing bloom from surfaces like windows.
-    halfPixelOffset: 5 # Sharpens world in far distances, aligns some bloom better.
+    halfPixelOffset: 2 # Sharpens world in far distances, aligns some bloom better.
     roundSprite: 1 # Fixes font artifacts.
     nativeScaling: 2 # Fixes background DOF blur in battles.
 SCAJ-20111:
@@ -1959,8 +1959,8 @@ SCAJ-20118:
   clampModes:
     eeClampMode: 2 # Fixes incorrect model position.
   gsHWFixes:
-    alignSprite: 1 # Fixes vertical bars.
-    halfPixelOffset: 2 # Fixes misalignment bloom effects.
+    halfPixelOffset: 4 # Fixes misalignment bloom effects.
+    nativeScaling: 2 # Fixes bloom alignment.
 SCAJ-20119:
   name: "グラディエーター - ロード トゥー フリーダム"
   name-sort: "ぐらでぃえーたー  - ろーど とぅー ふりーだむ"
@@ -2396,6 +2396,7 @@ SCAJ-20177:
     textureInsideRT: 1 # Required for swirl battle transition.
     nativeScaling: 2 # Fixes depth of field effects and bloom.
     roundSprite: 1 # Fixes lines in transitions.
+    cpuSpriteRenderBW: 1 # Fixes upscaled FMV lines.
 SCAJ-20178:
   name: "Ape Escape - Million Monkeys"
   region: "NTSC-Unk"
@@ -2513,6 +2514,7 @@ SCAJ-20197:
     textureInsideRT: 1 # Required for swirl battle transition.
     nativeScaling: 2 # Fixes depth of field effects and bloom.
     roundSprite: 1 # Fixes lines in transitions.
+    cpuSpriteRenderBW: 1 # Fixes upscaled FMV lines.
 SCAJ-20198:
   name: "Everybody's Tennis [PlayStation2 the Best]"
   region: "NTSC-Unk"
@@ -2974,6 +2976,7 @@ SCED-50642:
     eeClampMode: 3 # Fixes animations.
     vu0ClampMode: 2 # Fixes SPS.
   gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing effect on the magus sisters.
     roundSprite: 2 # Fixes font artifacts.
     autoFlush: 1 # Fixes blur effect on attacks.
 SCED-50660:
@@ -3102,6 +3105,7 @@ SCED-50907:
     eeClampMode: 3 # Fixes animations.
     vu0ClampMode: 2 # Fixes SPS.
   gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing effect on the magus sisters.
     roundSprite: 2 # Fixes font artifacts.
     autoFlush: 1 # Fixes blur effect on attacks.
 SCED-50916:
@@ -4846,6 +4850,7 @@ SCES-50490:
     eeClampMode: 3 # Fixes animations.
     vu0ClampMode: 2 # Fixes SPS.
   gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing effect on the magus sisters.
     roundSprite: 2 # Fixes font artifacts.
     autoFlush: 1 # Fixes blur effect on attacks.
 SCES-50491:
@@ -4859,6 +4864,7 @@ SCES-50491:
     eeClampMode: 3 # Fixes animations.
     vu0ClampMode: 2 # Fixes SPS.
   gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing effect on the magus sisters.
     roundSprite: 2 # Fixes font artifacts.
     autoFlush: 1 # Fixes blur effect on attacks.
 SCES-50492:
@@ -4873,6 +4879,7 @@ SCES-50492:
     eeClampMode: 3 # Fixes animations.
     vu0ClampMode: 2 # Fixes SPS.
   gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing effect on the magus sisters.
     roundSprite: 2 # Fixes font artifacts.
     autoFlush: 1 # Fixes blur effect on attacks.
 SCES-50493:
@@ -4886,6 +4893,7 @@ SCES-50493:
     eeClampMode: 3 # Fixes animations.
     vu0ClampMode: 2 # Fixes SPS.
   gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing effect on the magus sisters.
     roundSprite: 2 # Fixes font artifacts.
     autoFlush: 1 # Fixes blur effect on attacks.
 SCES-50494:
@@ -4899,6 +4907,7 @@ SCES-50494:
     eeClampMode: 3 # Fixes animations.
     vu0ClampMode: 2 # Fixes SPS.
   gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing effect on the magus sisters.
     roundSprite: 2 # Fixes font artifacts.
     autoFlush: 1 # Fixes blur effect on attacks.
 SCES-50499:
@@ -7617,6 +7626,7 @@ SCKA-20079:
     textureInsideRT: 1 # Required for swirl battle transition.
     nativeScaling: 2 # Fixes depth of field effects and bloom.
     roundSprite: 1 # Fixes lines in transitions.
+    cpuSpriteRenderBW: 1 # Fixes upscaled FMV lines.
 SCKA-20081:
   name: "Tekken 5 [PlayStation 2 Big Hit Series]"
   region: "NTSC-K"
@@ -13698,9 +13708,9 @@ SLED-53442:
   gameFixes:
     - IbitHack # Fixes constant recompilation problems.
   gsHWFixes:
-    PCRTCOverscan: 1 # Fixes offscreen image.
+    halfPixelOffset: 5 # Corrects the alignment of screen effects.
     nativePaletteDraw: 1 # Fixes the look of screen effects.
-    halfPixelOffset: 2 # Corrects the alignment of screen effects.
+    PCRTCOverscan: 1 # Fixes offscreen image.
 SLED-53445:
   name: "The Incredible Hulk - Ultimate Destruction [Demo]"
   name-sort: "Incredible Hulk, The - Ultimate Destruction [Demo]"
@@ -13909,7 +13919,7 @@ SLED-53977:
   region: "PAL-E"
   gsHWFixes:
     autoFlush: 1 # Fixes missing bloom from surfaces like windows.
-    halfPixelOffset: 5 # Sharpens world in far distances, aligns some bloom better.
+    halfPixelOffset: 2 # Sharpens world in far distances, aligns some bloom better.
     roundSprite: 1 # Fixes font artifacts.
     nativeScaling: 2 # Fixes background DOF blur in battles.
 SLED-53980:
@@ -16147,10 +16157,11 @@ SLES-50876:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     autoFlush: 1 # Aligns and corrects shadows.
-    halfPixelOffset: 2 # Fixes sun and depth line.
+    halfPixelOffset: 5 # Fixes sun and depth line.
     textureInsideRT: 1 # Fixes car textures.
     cpuSpriteRenderBW: 4 # Alleviates text and sky rendering issues.
     cpuSpriteRenderLevel: 2 # Needed for above.
+    nativePaletteDraw: 1 # Fixes broken menu graphics.
 SLES-50877:
   name: "TimeSplitters 2"
   region: "PAL-M5"
@@ -18325,11 +18336,13 @@ SLES-51819:
 SLES-51820:
   name: "Sniper Elite"
   region: "PAL-M5"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes flashing menus after intro FMV plays.
   gsHWFixes:
+    halfPixelOffset: 5 # Fixes bloom misalignment.
     autoFlush: 2 # Fixes bloom misalignment.
-    halfPixelOffset: 2 # Fixes bloom misalignment.
-    textureInsideRT: 1 # Fixes sky bloom.
     nativeScaling: 2 # Fixes post processing.
+    textureInsideRT: 1 # Fixes sky bloom.
 SLES-51821:
   name: "Alias"
   region: "PAL-M5"
@@ -19242,10 +19255,11 @@ SLES-52153:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     autoFlush: 1 # Aligns and corrects shadows.
-    halfPixelOffset: 2 # Fixes sun and depth line.
+    halfPixelOffset: 5 # Fixes sun and depth line.
     textureInsideRT: 1 # Fixes car textures.
     cpuSpriteRenderBW: 4 # Alleviates text and sky rendering issues.
     cpuSpriteRenderLevel: 2 # Needed for above.
+    nativePaletteDraw: 1 # Fixes broken menu graphics.
 SLES-52155:
   name: "EyeToy - L'Eredita"
   region: "PAL-I"
@@ -19276,6 +19290,10 @@ SLES-52179:
   name: "Kaan - Barbarian's Blade"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 5 # Fixes depth line and edge garbage.
+    nativeScaling: 2 # Fixes post effects.
+    gpuTargetCLUT: 2 # Fixes broken effects.
 SLES-52187:
   name: "Baldur's Gate - Dark Alliance II"
   region: "PAL-M3"
@@ -20128,16 +20146,28 @@ SLES-52536:
   compat: 2
   speedHacks:
     mtvu: 0 # Fixes bad graphics due to bad T-Bit handling.
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps misaligned bloom.
+    nativeScaling: 2 # Fixes bloom alignment.
+    autoFlush: 1 # Fixes bloom rendering.
 SLES-52537:
   name: "DreamWorks Shark Tale"
   region: "PAL-M3"
   speedHacks:
     mtvu: 0 # Fixes bad graphics due to bad T-Bit handling.
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps misaligned bloom.
+    nativeScaling: 2 # Fixes bloom alignment.
+    autoFlush: 1 # Fixes bloom rendering.
 SLES-52539:
   name: "DreamWorks Shark Tale"
   region: "PAL-I"
   speedHacks:
     mtvu: 0 # Fixes bad graphics due to bad T-Bit handling.
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps misaligned bloom.
+    nativeScaling: 2 # Fixes bloom alignment.
+    autoFlush: 1 # Fixes bloom rendering.
 SLES-52541:
   name: "Grand Theft Auto - San Andreas"
   region: "PAL-M5"
@@ -20145,8 +20175,9 @@ SLES-52541:
   clampModes:
     eeClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
   gsHWFixes:
+    recommendedBlendingLevel: 2 # Fixes blocky heat haze effect.
+    halfPixelOffset: 5 # Helps align radiosity closer to native.
     autoFlush: 1 # Fixes post processing.
-    halfPixelOffset: 4 # Helps align radiosity closer to native.
 SLES-52542:
   name: "All Music Dance!"
   region: "PAL-I"
@@ -20283,8 +20314,8 @@ SLES-52570:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
+    halfPixelOffset: 5 # Fixes misaligned lighting and other effects.
     textureInsideRT: 1 # Fixes shadows in some scenarios.
-    halfPixelOffset: 2 # Fixes misaligned lighting and other effects, needs Special otherwise lights flicker.
     nativeScaling: 2 # Fixes lights.
 SLES-52571:
   name: "Pacific Air Warriors 2 - Dogfight"
@@ -20841,6 +20872,8 @@ SLES-52741:
   name: "The Red Star [Beta]"
   name-sort: "Red Star, The [Beta]"
   region: "PAL-E"
+  gsHWFixes:
+    halfPixelOffset: 5 # Fixes depth line and edge garbage.
 SLES-52745:
   name: "Hugo - Cannon Cruise"
   region: "PAL-M4"
@@ -21329,6 +21362,10 @@ SLES-52915:
   region: "PAL-SW"
   speedHacks:
     mtvu: 0 # Fixes bad graphics due to bad T-Bit handling.
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps misaligned bloom.
+    nativeScaling: 2 # Fixes bloom alignment.
+    autoFlush: 1 # Fixes bloom rendering.
 SLES-52917:
   name: "Scaler"
   region: "PAL-E-F"
@@ -21369,8 +21406,9 @@ SLES-52927:
   clampModes:
     eeClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
   gsHWFixes:
+    recommendedBlendingLevel: 2 # Fixes blocky heat haze effect.
+    halfPixelOffset: 5 # Helps align radiosity closer to native.
     autoFlush: 1 # Fixes post processing.
-    halfPixelOffset: 4 # Helps align radiosity closer to native.
 SLES-52931:
   name: "Legend of Kay"
   region: "PAL-M5"
@@ -21735,6 +21773,7 @@ SLES-53028:
   clampModes:
     vuClampMode: 0 # Fixes bump mapping issues.
   gsHWFixes:
+    minimumBlendingLevel: 4 # Fixes various rendering errors that appear as large black patches throughout levels.
     halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
     autoFlush: 1 # Fixes sun intensity.
     textureInsideRT: 1 # Fixes post processing.
@@ -21745,6 +21784,7 @@ SLES-53029:
   clampModes:
     vuClampMode: 0 # Fixes bump mapping issues.
   gsHWFixes:
+    minimumBlendingLevel: 4 # Fixes various rendering errors that appear as large black patches throughout levels.
     halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
     autoFlush: 1 # Fixes sun intensity.
     textureInsideRT: 1 # Fixes post processing.
@@ -21755,6 +21795,7 @@ SLES-53030:
   clampModes:
     vuClampMode: 0 # Fixes bump mapping issues.
   gsHWFixes:
+    minimumBlendingLevel: 4 # Fixes various rendering errors that appear as large black patches throughout levels.
     halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
     autoFlush: 1 # Fixes sun intensity.
     textureInsideRT: 1 # Fixes post processing.
@@ -21765,6 +21806,7 @@ SLES-53031:
   clampModes:
     vuClampMode: 0 # Fixes bump mapping issues.
   gsHWFixes:
+    minimumBlendingLevel: 4 # Fixes various rendering errors that appear as large black patches throughout levels.
     halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
     autoFlush: 1 # Fixes sun intensity.
     textureInsideRT: 1 # Fixes post processing.
@@ -21775,6 +21817,7 @@ SLES-53032:
   clampModes:
     vuClampMode: 0 # Fixes bump mapping issues.
   gsHWFixes:
+    minimumBlendingLevel: 4 # Fixes various rendering errors that appear as large black patches throughout levels.
     halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
     autoFlush: 1 # Fixes sun intensity.
     textureInsideRT: 1 # Fixes post processing.
@@ -21913,8 +21956,8 @@ SLES-53075:
   name: "Area 51"
   region: "PAL-M5"
   gsHWFixes:
+    halfPixelOffset: 5 # Fixes misaligned lighting and other effects.
     textureInsideRT: 1 # Fixes shadows in some scenarios.
-    halfPixelOffset: 2 # Fixes misaligned lighting and other effects, needs Special otherwise lights flicker.
     nativeScaling: 2 # Fixes lights.
 SLES-53076:
   name: "Trigger Man"
@@ -22837,9 +22880,9 @@ SLES-53439:
   gameFixes:
     - IbitHack # Fixes constant recompilation problems.
   gsHWFixes:
-    PCRTCOverscan: 1 # Fixes offscreen image.
+    halfPixelOffset: 5 # Corrects the alignment of screen effects.
     nativePaletteDraw: 1 # Fixes the look of screen effects.
-    halfPixelOffset: 2 # Corrects the alignment of screen effects.
+    PCRTCOverscan: 1 # Fixes offscreen image.
 SLES-53441:
   name: "Heroes of the Pacific"
   region: "PAL-M5"
@@ -22847,6 +22890,10 @@ SLES-53443:
   name: "The Warriors"
   name-sort: "Warriors, The"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 4 # Alings recursive blur effects.
+    autoFlush: 2 # Fixes missing recursive blur effects.
+    nativeScaling: 2 # Fixes missing recursive blur effects.
 SLES-53444:
   name: "Panzer Elite Action - Fields of Glory"
   region: "PAL-M5"
@@ -23751,11 +23798,13 @@ SLES-53676:
   compat: 5
   gsHWFixes:
     textureInsideRT: 1 # Fixes Hollywood Hulk Hogan's entrance and slow-mo finisher.
+    nativeScaling: 1 # Better aligns background blur.
 SLES-53677:
   name: "WWE SmackDown! vs. RAW 2006"
   region: "PAL-I"
   gsHWFixes:
     textureInsideRT: 1 # Fixes Hollywood Hulk Hogan's entrance and slow-mo finisher.
+    nativeScaling: 1 # Better aligns background blur.
 SLES-53682:
   name: "James Pond - Codename - RoboCod"
   region: "PAL-E"
@@ -24083,11 +24132,13 @@ SLES-53756:
 SLES-53758:
   name: "Sniper Elite [Pre-Production]"
   region: "PAL-E"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes flashing menus after intro FMV plays.
   gsHWFixes:
+    halfPixelOffset: 5 # Fixes bloom misalignment.
     autoFlush: 2 # Fixes bloom misalignment.
-    halfPixelOffset: 2 # Fixes bloom misalignment.
-    textureInsideRT: 1 # Fixes sky bloom.
     nativeScaling: 2 # Fixes post processing.
+    textureInsideRT: 1 # Fixes sky bloom.
 SLES-53759:
   name: "The Matrix - Path of Neo"
   name-sort: "Matrix, The - Path of Neo"
@@ -24661,7 +24712,7 @@ SLES-53974:
   compat: 5
   gsHWFixes:
     autoFlush: 1 # Fixes missing bloom from surfaces like windows.
-    halfPixelOffset: 5 # Sharpens world in far distances, aligns some bloom better.
+    halfPixelOffset: 2 # Sharpens world in far distances, aligns some bloom better.
     roundSprite: 1 # Fixes font artifacts.
     nativeScaling: 2 # Fixes background DOF blur in battles.
 SLES-53976:
@@ -26549,6 +26600,8 @@ SLES-54581:
   name: "The Red Star"
   name-sort: "Red Star, The"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 5 # Fixes depth line and edge garbage.
 SLES-54582:
   name: "International Tennis Pro"
   region: "PAL-E"
@@ -26723,6 +26776,7 @@ SLES-54644:
     textureInsideRT: 1 # Required for swirl battle transition.
     nativeScaling: 2 # Fixes depth of field effects and bloom.
     roundSprite: 1 # Fixes lines in transitions.
+    cpuSpriteRenderBW: 1 # Fixes upscaled FMV lines.
 SLES-54645:
   name: "Valkyrie Profile 2 - Silmeria"
   region: "PAL-F"
@@ -26733,6 +26787,7 @@ SLES-54645:
     textureInsideRT: 1 # Required for swirl battle transition.
     nativeScaling: 2 # Fixes depth of field effects and bloom.
     roundSprite: 1 # Fixes lines in transitions.
+    cpuSpriteRenderBW: 1 # Fixes upscaled FMV lines.
 SLES-54646:
   name: "Valkyrie Profile 2 - Silmeria"
   region: "PAL-G"
@@ -26744,6 +26799,7 @@ SLES-54646:
     textureInsideRT: 1 # Required for swirl battle transition.
     nativeScaling: 2 # Fixes depth of field effects and bloom.
     roundSprite: 1 # Fixes lines in transitions.
+    cpuSpriteRenderBW: 1 # Fixes upscaled FMV lines.
 SLES-54647:
   name: "Valkyrie Profile 2 - Silmeria"
   region: "PAL-I"
@@ -26755,6 +26811,7 @@ SLES-54647:
     textureInsideRT: 1 # Required for swirl battle transition.
     nativeScaling: 2 # Fixes depth of field effects and bloom.
     roundSprite: 1 # Fixes lines in transitions.
+    cpuSpriteRenderBW: 1 # Fixes upscaled FMV lines.
 SLES-54648:
   name: "Valkyrie Profile 2 - Silmeria"
   region: "PAL-S"
@@ -26765,6 +26822,7 @@ SLES-54648:
     textureInsideRT: 1 # Required for swirl battle transition.
     nativeScaling: 2 # Fixes depth of field effects and bloom.
     roundSprite: 1 # Fixes lines in transitions.
+    cpuSpriteRenderBW: 1 # Fixes upscaled FMV lines.
 SLES-54653:
   name: "Freak Out - Extreme Freeride"
   region: "PAL-M5"
@@ -29479,7 +29537,8 @@ SLES-55511:
   name: "MTV Pimp My Ride - Street Racing"
   region: "PAL-M5"
   gsHWFixes:
-    halfPixelOffset: 4 # Aligns bloom as best it can be.
+    halfPixelOffset: 5 # Helps misaligned bloom.
+    nativeScaling: 2 # Fixes bloom alignment.
     autoFlush: 1 # Fixes bloom rendering.
 SLES-55512:
   name: "Sengoku Anthology"
@@ -31110,10 +31169,11 @@ SLKA-25196:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     autoFlush: 1 # Aligns and corrects shadows.
-    halfPixelOffset: 2 # Fixes sun and depth line.
+    halfPixelOffset: 5 # Fixes sun and depth line.
     textureInsideRT: 1 # Fixes car textures.
     cpuSpriteRenderBW: 4 # Alleviates text and sky rendering issues.
     cpuSpriteRenderLevel: 2 # Needed for above.
+    nativePaletteDraw: 1 # Fixes broken menu graphics.
 SLKA-25198:
   name: "Tenchu Kurenai"
   region: "NTSC-K"
@@ -31685,6 +31745,7 @@ SLKA-25318:
   region: "NTSC-K"
   gsHWFixes:
     textureInsideRT: 1 # Fixes Hollywood Hulk Hogan's entrance and slow-mo finisher.
+    nativeScaling: 1 # Better aligns background blur.
 SLKA-25319:
   name: "보글보글 스폰지밥 - 레디, 액션!"
   name-en: "Nickelodeon SpongeBob SquarePants - Lights, Camera, Pants!"
@@ -32966,8 +33027,9 @@ SLPM-55092:
   clampModes:
     eeClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
   gsHWFixes:
+    recommendedBlendingLevel: 2 # Fixes blocky heat haze effect.
+    halfPixelOffset: 5 # Helps align radiosity closer to native.
     autoFlush: 1 # Fixes post processing.
-    halfPixelOffset: 4 # Helps align radiosity closer to native.
 SLPM-55093:
   name: "ギャラクシーエンジェルⅡ 無限回廊の鍵 [ディスク1/2]"
   name-sort: "ぎゃらくしーえんじぇる2 むげんかいろうのかぎ [でぃすく1/2]"
@@ -33946,8 +34008,9 @@ SLPM-55292:
   clampModes:
     eeClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
   gsHWFixes:
+    recommendedBlendingLevel: 2 # Fixes blocky heat haze effect.
+    halfPixelOffset: 5 # Helps align radiosity closer to native.
     autoFlush: 1 # Fixes post processing.
-    halfPixelOffset: 4 # Helps align radiosity closer to native.
 SLPM-55293:
   name: "グランド・セフト・オートⅢ [ROCKSTAR CLASSICS]"
   name-sort: "ぐらんど・せふと・おーと3 [ROCKSTAR CLASSICS]"
@@ -35255,10 +35318,11 @@ SLPM-61092:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     autoFlush: 1 # Aligns and corrects shadows.
-    halfPixelOffset: 2 # Fixes sun and depth line.
+    halfPixelOffset: 5 # Fixes sun and depth line.
     textureInsideRT: 1 # Fixes car textures.
     cpuSpriteRenderBW: 4 # Alleviates text and sky rendering issues.
     cpuSpriteRenderLevel: 2 # Needed for above.
+    nativePaletteDraw: 1 # Fixes broken menu graphics.
 SLPM-61093:
   name: "ウルトラマン Fighting Evolution 3 [体験版]"
   name-sort: "うるとらまん Fighting Evolution 3 [たいけんばん]"
@@ -38147,7 +38211,7 @@ SLPM-62490:
   region: "NTSC-J"
   gsHWFixes:
     autoFlush: 1 # Fixes missing bloom from surfaces like windows.
-    halfPixelOffset: 5 # Sharpens world in far distances, aligns some bloom better.
+    halfPixelOffset: 2 # Sharpens world in far distances, aligns some bloom better.
     roundSprite: 1 # Fixes font artifacts.
     nativeScaling: 2 # Fixes background DOF blur in battles.
 SLPM-62491:
@@ -44017,10 +44081,11 @@ SLPM-65741:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     autoFlush: 1 # Aligns and corrects shadows.
-    halfPixelOffset: 2 # Fixes sun and depth line.
+    halfPixelOffset: 5 # Fixes sun and depth line.
     textureInsideRT: 1 # Fixes car textures.
     cpuSpriteRenderBW: 4 # Alleviates text and sky rendering issues.
     cpuSpriteRenderLevel: 2 # Needed for above.
+    nativePaletteDraw: 1 # Fixes broken menu graphics.
 SLPM-65742:
   name: "COOL GIRL [KONAMI The BEST] [ディスク1/2]"
   name-sort: "くーる がーる [KONAMI The BEST] [でぃすく1/2]"
@@ -44383,8 +44448,8 @@ SLPM-65800:
   clampModes:
     eeClampMode: 2 # Fixes incorrect model position.
   gsHWFixes:
-    alignSprite: 1 # Fixes vertical bars.
-    halfPixelOffset: 2 # Fixes misalignment bloom effects.
+    halfPixelOffset: 4 # Fixes misalignment bloom effects.
+    nativeScaling: 2 # Fixes bloom alignment.
 SLPM-65801:
   name: "クラッシュ・バンディクー5 え～っクラッシュとコルテックスの野望?！?"
   name-sort: "くらっしゅばんでぃくー5 えーっくらっしゅとこるてっくすのやぼう?！?"
@@ -44873,7 +44938,7 @@ SLPM-65888:
   compat: 5
   gsHWFixes:
     autoFlush: 1 # Fixes missing bloom from surfaces like windows.
-    halfPixelOffset: 5 # Sharpens world in far distances, aligns some bloom better.
+    halfPixelOffset: 2 # Sharpens world in far distances, aligns some bloom better.
     roundSprite: 1 # Fixes font artifacts.
     nativeScaling: 2 # Fixes background DOF blur in battles.
     PCRTCOverscan: 1 # Fixes offscreen image.
@@ -44950,6 +45015,10 @@ SLPM-65901:
   region: "NTSC-J"
   speedHacks:
     mtvu: 0 # Fixes bad graphics due to bad T-Bit handling.
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps misaligned bloom.
+    nativeScaling: 2 # Fixes bloom alignment.
+    autoFlush: 1 # Fixes bloom rendering.
 SLPM-65902:
   name: "Memories Off AfterRain Vol.2 想演 [SPECIAL EDITION]"
   name-sort: "めもりーず おふ あふたーれいん Vol.2 そうえん [SPECIAL EDITION]"
@@ -45424,8 +45493,9 @@ SLPM-65984:
   clampModes:
     eeClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
   gsHWFixes:
+    recommendedBlendingLevel: 2 # Fixes blocky heat haze effect.
+    halfPixelOffset: 5 # Helps align radiosity closer to native.
     autoFlush: 1 # Fixes post processing.
-    halfPixelOffset: 4 # Helps align radiosity closer to native.
 SLPM-65985:
   name: "イリスのアトリエ エターナルマナ2"
   name-sort: "いりすのあとりえ えたーなるまな2"
@@ -46064,9 +46134,9 @@ SLPM-66090:
   name-en: "Crash Bandicoot - Gacchanko World"
   region: "NTSC-J"
   gsHWFixes:
-    PCRTCOverscan: 1 # Fixes offscreen image.
+    halfPixelOffset: 5 # Corrects the alignment of screen effects.
     nativePaletteDraw: 1 # Fixes the look of screen effects.
-    halfPixelOffset: 2 # Corrects the alignment of screen effects.
+    PCRTCOverscan: 1 # Fixes offscreen image.
 SLPM-66091:
   name: "忍道 戒"
   name-sort: "しのびどう いましめ"
@@ -46321,6 +46391,7 @@ SLPM-66124:
     eeClampMode: 3 # Fixes animations.
     vu0ClampMode: 2 # Fixes SPS.
   gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing effect on the magus sisters.
     roundSprite: 2 # Fixes font artifacts.
     autoFlush: 1 # Fixes blur effect on attacks.
 SLPM-66125:
@@ -47260,6 +47331,7 @@ SLPM-66268:
   region: "NTSC-J"
   gsHWFixes:
     textureInsideRT: 1 # Fixes Hollywood Hulk Hogan's entrance and slow-mo finisher.
+    nativeScaling: 1 # Better aligns background blur.
 SLPM-66269:
   name: "ブレイジング ソウルズ [限定版]"
   name-sort: "ぶれいじんぐ そうるず [げんていばん]"
@@ -48180,6 +48252,7 @@ SLPM-66419:
     textureInsideRT: 1 # Required for swirl battle transition.
     nativeScaling: 2 # Fixes depth of field effects and bloom.
     roundSprite: 1 # Fixes lines in transitions.
+    cpuSpriteRenderBW: 1 # Fixes upscaled FMV lines.
 SLPM-66420:
   name: "フロントミッション4 [Ultimate Hits]"
   name-sort: "ふろんとみっしょん4 [Ultimate Hits]"
@@ -48506,8 +48579,8 @@ SLPM-66468:
   name-en: "Area 51"
   region: "NTSC-J"
   gsHWFixes:
+    halfPixelOffset: 5 # Fixes misaligned lighting and other effects.
     textureInsideRT: 1 # Fixes shadows in some scenarios.
-    halfPixelOffset: 2 # Fixes misaligned lighting and other effects, needs Special otherwise lights flicker.
     nativeScaling: 2 # Fixes lights.
 SLPM-66469:
   name: "「ラブ★コン ～パンチDEコント～」[限定版]"
@@ -48610,7 +48683,7 @@ SLPM-66481:
   region: "NTSC-J"
   gsHWFixes:
     autoFlush: 1 # Fixes missing bloom from surfaces like windows.
-    halfPixelOffset: 5 # Sharpens world in far distances, aligns some bloom better.
+    halfPixelOffset: 2 # Sharpens world in far distances, aligns some bloom better.
     roundSprite: 1 # Fixes font artifacts.
     nativeScaling: 2 # Fixes background DOF blur in battles.
 SLPM-66482:
@@ -49621,6 +49694,8 @@ SLPM-66646:
   name-sort: "しゃいにんぐ・ふぉーす いくさ"
   name-en: "Shining Force EXA"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Fixes misaligned bloom.
 SLPM-66649:
   name: "タイトーメモリーズⅡ 上巻"
   name-sort: "たいとーめもりーず2 01 じょうかん"
@@ -50487,6 +50562,7 @@ SLPM-66782:
     textureInsideRT: 1 # Required for swirl battle transition.
     nativeScaling: 2 # Fixes depth of field effects and bloom.
     roundSprite: 1 # Fixes lines in transitions.
+    cpuSpriteRenderBW: 1 # Fixes upscaled FMV lines.
 SLPM-66783:
   name: "アイドル雀士 スーチーパイⅣ 「完全限定版・コレクターズエディション」"
   name-sort: "あいどるじゃんし すーちーぱい4 [かんぜんげんていばん・これくたーずえでぃしょん]"
@@ -50520,8 +50596,9 @@ SLPM-66788:
   clampModes:
     eeClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
   gsHWFixes:
+    recommendedBlendingLevel: 2 # Fixes blocky heat haze effect.
+    halfPixelOffset: 5 # Helps align radiosity closer to native.
     autoFlush: 1 # Fixes post processing.
-    halfPixelOffset: 4 # Helps align radiosity closer to native.
 SLPM-66789:
   name: "グランド・セフト・オートⅢ [Best Price]"
   name-sort: "ぐらんど・せふと・おーと3 [Best Price]"
@@ -52738,6 +52815,8 @@ SLPM-74260:
   name-sort: "しゃいにんぐ・ふぉーす いくさ [PlayStation2 the Best]"
   name-en: "Shining Force EXA [PlayStation2 the Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Fixes misaligned bloom.
 SLPM-74261:
   name: "シャイニング・ウィンド [PlayStation2 the Best]"
   name-sort: "しゃいにんぐ・うぃんど [PlayStation2 the Best]"
@@ -55187,8 +55266,8 @@ SLPS-20444:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 1 # Needed to remove part of red box.
-    roundSprite: 2 #  Fully remove red box when upscaling .
+    halfPixelOffset: 5 # Fixes edge bleed.
+    nativeScaling: 2 # Fixes post effects.
   gameFixes:
     - XGKickHack # Fixes blank textures.
 SLPS-20445:
@@ -55909,6 +55988,7 @@ SLPS-25050:
     eeClampMode: 3 # Fixes animations.
     vu0ClampMode: 2 # Fixes SPS.
   gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing effect on the magus sisters.
     roundSprite: 2 # Fixes font artifacts.
     autoFlush: 1 # Fixes blur effect on attacks.
 SLPS-25051:
@@ -59730,8 +59810,8 @@ SLPS-25691:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes extreme ghosting.
-    forceEvenSpritePosition: 1 # Aligns vertical blurring.
+    halfPixelOffset: 5 # Aligns post effects.
+    nativeScaling: 2 # Fixes post effects.
 SLPS-25693:
   name: "プリンセス・プリンセス 姫たちのアブナい放課後 [初回限定版]"
   name-sort: "ぷりんせすぷりんせす ひめたちのあぶないほうかご [しょかいげんていばん]"
@@ -61538,6 +61618,7 @@ SLPS-72501:
     eeClampMode: 3 # Fixes animations.
     vu0ClampMode: 2 # Fixes SPS.
   gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing effect on the magus sisters.
     roundSprite: 2 # Fixes font artifacts.
     autoFlush: 1 # Fixes blur effect on attacks.
 SLPS-72502:
@@ -63762,6 +63843,7 @@ SLUS-20312:
     eeClampMode: 3 # Fixes animations.
     vu0ClampMode: 2 # Fixes SPS.
   gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing effect on the magus sisters.
     roundSprite: 2 # Fixes font artifacts.
     autoFlush: 1 # Fixes blur effect on attacks.
 SLUS-20313:
@@ -65230,10 +65312,11 @@ SLUS-20587:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     autoFlush: 1 # Aligns and corrects shadows.
-    halfPixelOffset: 2 # Fixes sun and depth line.
+    halfPixelOffset: 5 # Fixes sun and depth line.
     textureInsideRT: 1 # Fixes car textures.
     cpuSpriteRenderBW: 4 # Alleviates text and sky rendering issues.
     cpuSpriteRenderLevel: 2 # Needed for above.
+    nativePaletteDraw: 1 # Fixes broken menu graphics.
 SLUS-20588:
   name: "Activision Anthology"
   region: "NTSC-U"
@@ -65262,8 +65345,8 @@ SLUS-20595:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    halfPixelOffset: 5 # Fixes misaligned lighting and other effects.
     textureInsideRT: 1 # Fixes shadows in some scenarios.
-    halfPixelOffset: 2 # Fixes misaligned lighting and other effects, needs Special otherwise lights flicker.
     nativeScaling: 2 # Fixes lights.
 SLUS-20596:
   name: "UFC - Ultimate Fighting Championship - Sudden Impact"
@@ -66826,6 +66909,8 @@ SLUS-20885:
   name-sort: "Red Star, The"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 5 # Fixes depth line and edge garbage.
 SLUS-20886:
   name: "Sitting Ducks"
   region: "NTSC-U"
@@ -67087,6 +67172,10 @@ SLUS-20925:
   compat: 2
   speedHacks:
     mtvu: 0 # Fixes bad graphics due to bad T-Bit handling.
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps misaligned bloom.
+    nativeScaling: 2 # Fixes bloom alignment.
+    autoFlush: 1 # Fixes bloom rendering.
 SLUS-20926:
   name: "Harry Potter and the Prisoner of Azkaban"
   region: "NTSC-U"
@@ -67208,8 +67297,9 @@ SLUS-20946:
   clampModes:
     eeClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
   gsHWFixes:
+    recommendedBlendingLevel: 2 # Fixes blocky heat haze effect.
+    halfPixelOffset: 5 # Helps align radiosity closer to native.
     autoFlush: 1 # Fixes post processing.
-    halfPixelOffset: 4 # Helps align radiosity closer to native.
 SLUS-20947:
   name: "WinBack 2 - Project Poseidon"
   region: "NTSC-U"
@@ -68206,6 +68296,7 @@ SLUS-21108:
   clampModes:
     vuClampMode: 0 # Fixes bump mapping issues
   gsHWFixes:
+    minimumBlendingLevel: 4 # Fixes various rendering errors that appear as large black patches throughout levels.
     halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
     autoFlush: 1 # Fixes sun intensity.
     textureInsideRT: 1 # Fixes post processing.
@@ -68676,9 +68767,9 @@ SLUS-21191:
   gameFixes:
     - IbitHack # Fixes constant recompilation problems.
   gsHWFixes:
-    PCRTCOverscan: 1 # Fixes offscreen image.
+    halfPixelOffset: 5 # Corrects the alignment of screen effects.
     nativePaletteDraw: 1 # Fixes the look of screen effects.
-    halfPixelOffset: 2 # Corrects the alignment of screen effects.
+    PCRTCOverscan: 1 # Fixes offscreen image.
 SLUS-21192:
   name: "Cabela's Outdoor Adventures [2005]" # Two games four years apart; same name
   region: "NTSC-U"
@@ -68788,7 +68879,7 @@ SLUS-21207:
   compat: 5
   gsHWFixes:
     autoFlush: 1 # Fixes missing bloom from surfaces like windows.
-    halfPixelOffset: 5 # Sharpens world in far distances, aligns some bloom better.
+    halfPixelOffset: 2 # Sharpens world in far distances, aligns some bloom better.
     roundSprite: 1 # Fixes font artifacts.
     nativeScaling: 2 # Fixes background DOF blur in battles.
 SLUS-21208:
@@ -68839,6 +68930,10 @@ SLUS-21215:
   name-sort: "Warriors, The"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 4 # Alings recursive blur effects.
+    autoFlush: 2 # Fixes missing recursive blur effects.
+    nativeScaling: 2 # Fixes missing recursive blur effects.
 SLUS-21216:
   name: "SoulCalibur III"
   region: "NTSC-U"
@@ -68947,11 +69042,13 @@ SLUS-21231:
   name: "Sniper Elite"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes flashing menus after intro FMV plays.
   gsHWFixes:
+    halfPixelOffset: 5 # Fixes bloom misalignment.
     autoFlush: 2 # Fixes bloom misalignment.
-    halfPixelOffset: 2 # Fixes bloom misalignment.
-    textureInsideRT: 1 # Fixes sky bloom.
     nativeScaling: 2 # Fixes post processing.
+    textureInsideRT: 1 # Fixes sky bloom.
 SLUS-21232:
   name: "College Hoops 2K6"
   region: "NTSC-U"
@@ -69198,8 +69295,8 @@ SLUS-21262:
   clampModes:
     eeClampMode: 2 # Fixes incorrect model position.
   gsHWFixes:
-    alignSprite: 1 # Fixes vertical bars.
-    halfPixelOffset: 2 # Fixes misalignment bloom effects.
+    halfPixelOffset: 4 # Fixes misalignment bloom effects.
+    nativeScaling: 2 # Fixes bloom alignment.
 SLUS-21263:
   name: "Romancing SaGa"
   region: "NTSC-U"
@@ -69410,6 +69507,7 @@ SLUS-21286:
   compat: 5
   gsHWFixes:
     textureInsideRT: 1 # Fixes Hollywood Hulk Hogan's entrance and slow-mo finisher.
+    nativeScaling: 1 # Better aligns background blur.
 SLUS-21287:
   name: "Prince of Persia - The Two Thrones"
   region: "NTSC-U"
@@ -70534,6 +70632,7 @@ SLUS-21452:
     textureInsideRT: 1 # Required for swirl battle transition.
     nativeScaling: 2 # Fixes depth of field effects and bloom.
     roundSprite: 1 # Fixes lines in transitions.
+    cpuSpriteRenderBW: 1 # Fixes upscaled FMV lines.
 SLUS-21453:
   name: "Meet the Robinsons"
   region: "NTSC-U"
@@ -71025,6 +71124,8 @@ SLUS-21567:
   name: "Shining Force EXA"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 5 # Fixes misaligned bloom.
 SLUS-21568:
   name: "Arena Football - Road to Glory"
   region: "NTSC-U"
@@ -72718,7 +72819,8 @@ SLUS-21872:
   name: "MTV Pimp My Ride - Street Racing"
   region: "NTSC-U"
   gsHWFixes:
-    halfPixelOffset: 4 # Aligns bloom as best it can be.
+    halfPixelOffset: 5 # Helps misaligned bloom.
+    nativeScaling: 2 # Fixes bloom alignment.
     autoFlush: 1 # Fixes bloom rendering.
 SLUS-21873:
   name: "Dynasty Warriors - Gundam 2"
@@ -73923,7 +74025,7 @@ SLUS-29157:
   region: "NTSC-U"
   gsHWFixes:
     autoFlush: 1 # Fixes missing bloom from surfaces like windows.
-    halfPixelOffset: 5 # Sharpens world in far distances, aligns some bloom better.
+    halfPixelOffset: 2 # Sharpens world in far distances, aligns some bloom better.
     roundSprite: 1 # Fixes font artifacts.
     nativeScaling: 2 # Fixes background DOF blur in battles.
 SLUS-29159:

@@ -394,6 +394,8 @@ __ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spa
 		APPEND("IVU ");
 	if (EmuConfig.Speedhacks.vuThread)
 		APPEND("MTVU ");
+	if (EmuConfig.GS.VsyncEnable)
+		APPEND("VSYNC ");
 
 	APPEND("EER={} EEC={} VUR={} VUC={} VQS={} ", static_cast<unsigned>(EmuConfig.Cpu.FPUFPCR.GetRoundMode()),
 		EmuConfig.Cpu.Recompiler.GetEEClampMode(), static_cast<unsigned>(EmuConfig.Cpu.VU0FPCR.GetRoundMode()),
