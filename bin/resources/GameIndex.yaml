@@ -49506,6 +49506,8 @@ SLPM-66628:
     autoFlush: 2 # Reduces post-processing misalignment.
     halfPixelOffset: 2 # Fixes bloom misalignment still a bit misaligned.
     roundSprite: 1 # Fixes bloom misalignment still a bit misaligned + font artifacts.
+  memcardFilters:
+    - "SLPM-66643"
 SLPM-66629:
   name: "ダージュ・オブ・ケルベロス -ファイナルファンタジーⅫ - インターナショナル [Ultimate Hits]"
   name-sort: "だーじゅ・おぶ・けるべろす ふぁいなるふぁんたじー7 いんたーなしょなる [Ultimate Hits]"
