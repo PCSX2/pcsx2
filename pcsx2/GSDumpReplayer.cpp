@@ -379,8 +379,8 @@ void GSDumpReplayer::RenderUI()
 	do \
 	{ \
 		text_size = font->CalcTextSizeA(font->FontSize, std::numeric_limits<float>::max(), -1.0f, (text), nullptr, nullptr); \
-		dl->AddText(font, font->FontSize, ImVec2(margin + shadow_offset, position_y + shadow_offset), IM_COL32(0, 0, 0, 100), (text)); \
-		dl->AddText(font, font->FontSize, ImVec2(margin, position_y), color, (text)); \
+		dl->AddText(font, font->FontSize, ImVec2(GSConfig.OsdPerformancePos == OsdOverlayPos::TopLeft ? ImGuiManager::GetWindowWidth() - margin - text_size.x + shadow_offset : margin + shadow_offset, position_y + shadow_offset), IM_COL32(0, 0, 0, 100), (text)); \
+		dl->AddText(font, font->FontSize, ImVec2(GSConfig.OsdPerformancePos == OsdOverlayPos::TopLeft ? ImGuiManager::GetWindowWidth() - margin - text_size.x : margin, position_y), color, (text)); \
 		position_y += text_size.y + spacing; \
 	} while (0)
 
