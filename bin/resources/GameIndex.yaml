@@ -60530,6 +60530,9 @@ SLPS-25829:
   region: "NTSC-J"
   gsHWFixes:
     nativeScaling: 1 # Fixes post processing.
+  memcardFilters:
+    - "SLPS-25394"
+    - "SLPS-25623"
 SLPS-25830:
   name: "ゼロの使い魔 夢魔が紡ぐ夜風の幻想曲 [限定版]"
   name-sort: "ぜろのつかいま むまがつむぐよかぜのげんそうきょく [げんていばん]"
