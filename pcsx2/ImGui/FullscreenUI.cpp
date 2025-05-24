@@ -984,7 +984,7 @@ void FullscreenUI::Render()
 	ImGuiFullscreen::BeginLayout();
 
 	// Primed achievements must come first, because we don't want the pause screen to be behind them.
-	if (s_current_main_window == MainWindowType::None && EmuConfig.Achievements.Overlays)
+	if (s_current_main_window == MainWindowType::None && (EmuConfig.Achievements.Overlays || EmuConfig.Achievements.LBOverlays))
 		Achievements::DrawGameOverlays();
 
 	switch (s_current_main_window)
@@ -7232,6 +7232,9 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_PF_HEARTBEAT_ALT, "Enable In-Game Overlays"),
 		FSUI_CSTR("Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active."), "Achievements",
 		"Overlays", true, enabled);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_PF_HEARTBEAT_ALT, "Enable In-Game Leaderboard Overlays"),
+		FSUI_CSTR("Shows icons in the lower-right corner of the screen when leaderboard tracking is active."), "Achievements",
+		"LBOverlays", true, enabled);
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LOCK, "Encore Mode"),
 		FSUI_CSTR("When enabled, each session will behave as if no achievements have been unlocked."), "Achievements", "EncoreMode", false,
 		enabled);
@@ -7302,7 +7305,7 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
 			};
 			OpenFileSelector(FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Select Leaderboard Submit Sound"), false, std::move(callback), GetAudioFileFilters());
 		}
-		
+
 		MenuHeading(FSUI_CSTR("Account"));
 		if (bsi->ContainsValue("Achievements", "Token"))
 		{
