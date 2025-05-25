@@ -15213,7 +15213,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1140"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1142"/>
         <source>Save slot {0} selected ({1}).</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15221,63 +15221,63 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
 <context>
     <name>ImGuiOverlays</name>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="687"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="689"/>
         <source>{} Recording Input</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="691"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="693"/>
         <source>{} Replaying</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="759"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="761"/>
         <source>Saved at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="786"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="788"/>
         <source>Save state selector is unavailable without a valid game serial.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="873"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="875"/>
         <source>Load</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="875"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="877"/>
         <source>Save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="877"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="879"/>
         <source>Select Previous</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="879"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="881"/>
         <source>Select Next</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="881"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="883"/>
         <source>Close Menu</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="934"/>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="956"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="936"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="958"/>
         <source>Save Slot {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="957"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="959"/>
         <source>No save present in this slot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1137"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1139"/>
         <source>no save yet</source>
         <translation type="unfinished"></translation>
     </message>
