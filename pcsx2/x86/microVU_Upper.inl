@@ -484,23 +484,19 @@ static void mVU_FTOIx(mP, const float* addr, microOpcode opEnum)
 			return;
 		const xmm& Fs = mVU.regAlloc->allocReg(_Fs_, _Ft_, _X_Y_Z_W, !((_Fs_ == _Ft_) && (_X_Y_Z_W == 0xf)));
 		const xmm& t1 = mVU.regAlloc->allocReg();
-		const xmm& t2 = mVU.regAlloc->allocReg();
 
-		// Note: For help understanding this algorithm see recVUMI_FTOI_Saturate()
-		xMOVAPS(t1, Fs);
+		// cvttps2dq returns 0x8000000 for any unrepresentable values.
+		// We want it to return 0x8000000 for negative and 0x7fffffff for positive.
+		// So for unrepresentable positive values, xor with 0xffffffff to turn 0x80000000 into 0x7fffffff.
 		if (addr)
 			xMUL.PS(Fs, ptr128[addr]);
+		xMOVAPS(t1, Fs);
+		xPCMP.GTD(t1, ptr128[mVUglob.I32MAXF]);
 		xCVTTPS2DQ(Fs, Fs);
-		xPXOR(t1, ptr128[mVUglob.signbit]);
-		xPSRA.D(t1, 31);
-		xMOVAPS(t2, Fs);
-		xPCMP.EQD(t2, ptr128[mVUglob.signbit]);
-		xAND.PS(t1, t2);
-		xPADD.D(Fs, t1);
+		xPXOR(Fs, t1);
 
 		mVU.regAlloc->clearNeeded(Fs);
 		mVU.regAlloc->clearNeeded(t1);
-		mVU.regAlloc->clearNeeded(t2);
 		mVU.profiler.EmitOp(opEnum);
 	}
 	pass3

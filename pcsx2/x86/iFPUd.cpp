@@ -540,57 +540,10 @@ FPURECOMPILE_CONSTCODE(C_LT, XMMINFO_READS | XMMINFO_READT);
 //------------------------------------------------------------------
 // CVT.x XMM
 //------------------------------------------------------------------
-void recCVT_S_xmm(int info)
-{
-	EE::Profiler.EmitOp(eeOpcode::CVTS_F);
 
-	if (info & PROCESS_EE_D)
-	{
-		if (info & PROCESS_EE_S)
-			xCVTDQ2PS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-		else
-			xCVTSI2SS(xRegisterSSE(EEREC_D), ptr32[&fpuRegs.fpr[_Fs_]]);
-	}
-	else
-	{
-		const int temp = _allocTempXMMreg(XMMT_FPS);
-		xCVTSI2SS(xRegisterSSE(temp), ptr32[&fpuRegs.fpr[_Fs_]]);
-		xMOVSS(ptr32[&fpuRegs.fpr[_Fd_]], xRegisterSSE(temp));
-		_freeXMMreg(temp);
-	}
-}
+// CVT.S: Identical to non-double variant, omitted
+// CVT.W: Identical to non-double variant, omitted
 
-FPURECOMPILE_CONSTCODE(CVT_S, XMMINFO_WRITED | XMMINFO_READS);
-
-void recCVT_W() //called from iFPU.cpp's recCVT_W
-{
-	EE::Profiler.EmitOp(eeOpcode::CVTW);
-	int regs = _checkXMMreg(XMMTYPE_FPREG, _Fs_, MODE_READ);
-
-	if (regs >= 0)
-	{
-		xCVTTSS2SI(eax, xRegisterSSE(regs));
-		xMOVMSKPS(edx, xRegisterSSE(regs)); // extract the signs
-		xAND(edx, 1);                       // keep only LSB
-	}
-	else
-	{
-		xCVTTSS2SI(eax, ptr32[&fpuRegs.fpr[_Fs_]]);
-		xMOV(edx, ptr[&fpuRegs.fpr[_Fs_]]);
-		xSHR(edx, 31); //mov sign to lsb
-	}
-
-	//kill register allocation for dst because we write directly to fpuRegs.fpr[_Fd_]
-	_deleteFPtoXMMreg(_Fd_, DELETE_REG_FREE_NO_WRITEBACK);
-
-	xADD(edx, 0x7FFFFFFF); // 0x7FFFFFFF if positive, 0x8000 0000 if negative
-
-	xCMP(eax, 0x80000000); // If the result is indefinitive
-	xCMOVE(eax, edx);      // Saturate it
-
-	//Write the result
-	xMOV(ptr[&fpuRegs.fpr[_Fd_]], eax);
-}
 //------------------------------------------------------------------
 
 
