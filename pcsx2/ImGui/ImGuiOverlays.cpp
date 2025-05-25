@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
+﻿// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "BuildVersion.h"
@@ -46,6 +46,29 @@
 #include <span>
 #include <tuple>
 #include <unordered_map>
+#include <iomanip>
+#include <sstream>
+#include <ctime>
+
+std::string GetSystemDate()
+{
+	auto now = std::chrono::system_clock::now();
+	std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+	std::tm* tm_now = std::localtime(&now_time);
+	std::stringstream ss;
+	ss << std::put_time(tm_now, "%Y-%m-%d"); // "YYYY-MM-DD"
+	return ss.str();
+}
+
+std::string GetSystemTime()
+{
+	auto now = std::chrono::system_clock::now();
+	std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+	std::tm* tm_now = std::localtime(&now_time);
+	std::stringstream ss;
+	ss << std::put_time(tm_now, "%H:%M:%S"); // "HH:MM:SS"
+	return ss.str();
+}
 
 InputRecordingUI::InputRecordingData g_InputRecordingData;
 
@@ -127,6 +150,53 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 	if (!paused)
 	{
 		bool first = true;
+		// --- Display System Time and Date First + Second Line in Imgui or most top-right by default ---
+		if (GSConfig.OsdShowSystemTime || GSConfig.OsdShowSystemDate)
+		{
+			text.clear(); // Clear for this new line
+
+			if (GSConfig.OsdShowSystemTime)
+			{
+				std::string systemTimeStr = GetSystemTime();
+
+				// Extract hours, minutes, and seconds from the host time string to prepare easier visuals such as HH:MM:SS
+				std::string systemhours = systemTimeStr.substr(0, 2);
+				std::string systemminutes = systemTimeStr.substr(3, 2);
+				std::string systemseconds = systemTimeStr.substr(6, 2);
+
+				// Append formatted time using text.append_format (no icon used here)
+				// TODO ICON_FA_CLOCK
+				text.append_format("{}:{}:{}", systemhours.c_str(), systemminutes.c_str(), systemseconds.c_str()); // Currently: 04:48:30   other examples: 04:48:30 or Time: 04H:48M:30S combination possible or just 04:48:30 as well or combined with what format it is with that and say HH:MM:SS but perhaps best in tooltip instead.
+				first = false; // After the first item is added, set 'first' to false to handle pipe separator correctly.
+			}
+
+			if (GSConfig.OsdShowSystemDate)
+			{
+				std::string systemDateStr = GetSystemDate();
+
+				// Extract year, month, and day from the date string to prepare easier visuals such as YYYY-MM-DD
+				std::string year = systemDateStr.substr(0, 4);
+				std::string month = systemDateStr.substr(5, 2);
+				std::string day = systemDateStr.substr(8, 2);
+
+				// Append formatted date with pipe separator if not the first item
+				if (!first) // If this is not the first item, add the pipe separator before appending the date
+					text.append(" | "); // Add pipe separator if this isn't the first item
+
+				// Append formatted date using text.append_format (no icon used here)
+				// TODO ICON_FA_CALENDAR
+				text.append_format("{}-{}-{}", year.c_str(), month.c_str(), day.c_str()); // Currently: 📅 2025-10-05    other examples: 2025-10-05 or Date: 2025 Y - 10 M - 05 D but can do 2025-10-05 as well or combined with what format it is or even look at the locale of user but perhaps best in tooltip instead.
+			}
+
+			// Only draw if there's any text to display
+			if (!text.empty())
+				DRAW_LINE(fixed_font, text.c_str(), IM_COL32(255, 255, 255, 255)); // Default White color
+		}
+
+		// --- Then, display the FPS, VPS, Speed, Version lines ensuring red and green text is preserved ---
+		text.clear(); // Clear text buffer for the main stats line
+		bool first_item_in_stats_line = true;
+		// TODO show what timezone an user has like UTC - 3 or UTC + 1 maybe even regional variants but less priority
 		const float speed = PerformanceMetrics::GetSpeed();
 
 		if (GSConfig.OsdShowFPS)
