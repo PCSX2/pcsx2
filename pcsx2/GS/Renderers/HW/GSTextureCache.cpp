@@ -3938,24 +3938,30 @@ void GSTextureCache::InvalidateContainedTargets(u32 start_bp, u32 end_bp, u32 wr
 				continue;
 			}
 
-			const u32 offset = (std::abs(static_cast<int>(start_bp - t->m_TEX0.TBP0)) >> 5) % std::max(1U, t->m_TEX0.TBW);
 			// If not fully contained but they are aligned and or clean, just dirty the area.
-			if (type != DepthStencil && start_bp != t->m_TEX0.TBP0 && (t->m_TEX0.TBP0 < start_bp || t->UnwrappedEndBlock() > end_bp) && (offset == 0 || t->m_dirty.size() == 0))
+			if (type != DepthStencil && start_bp != t->m_TEX0.TBP0 && (t->m_TEX0.TBP0 < start_bp || t->UnwrappedEndBlock() > end_bp))
 			{
-				if (write_bw == t->m_TEX0.TBW && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == GSLocalMemory::m_psm[write_psm].bpp)
-				{
-					const u32 page_offset = ((end_bp - start_bp) >> 5);
-					const u32 end_width = write_bw * 64;
-					const u32 end_height = ((page_offset / std::max(write_bw, 1U)) * GSLocalMemory::m_psm[write_psm].pgs.y) + GSLocalMemory::m_psm[write_psm].pgs.y;
-					const GSVector4i r = GSVector4i(0, 0, end_width, end_height);
-					const GSVector4i invalidate_r = TranslateAlignedRectByPage(t, start_bp, write_psm, write_bw, r, false).rintersect(t->m_valid); // it is invalidation but we need a real rect.
-					RGBAMask mask;
-					mask._u32 = GSUtil::GetChannelMask(write_psm);
-					AddDirtyRectTarget(t, invalidate_r, t->m_TEX0.PSM, t->m_TEX0.TBW, mask, false);
-				}
+				const u32 offset = (std::abs(static_cast<int>(start_bp - t->m_TEX0.TBP0)) >> 5) % std::max(1U, t->m_TEX0.TBW);
+				const GSVector4i dirty_rect = t->m_dirty.GetTotalRect(t->m_TEX0, t->m_unscaled_size).rintersect(t->m_valid);
+				const u32 end_page_offset = ((end_bp - start_bp) >> 5);
+				const u32 end_width = write_bw * 64;
+				const u32 end_height = ((end_page_offset / std::max(write_bw, 1U)) * GSLocalMemory::m_psm[write_psm].pgs.y) + GSLocalMemory::m_psm[write_psm].pgs.y;
+				const GSVector4i r = GSVector4i(0, 0, end_width, end_height);
+				const GSVector4i invalidate_r = TranslateAlignedRectByPage(t, start_bp, write_psm, write_bw, r, false).rintersect(t->m_valid); // it is invalidation but we need a real rect.
 
-				++i;
-				continue;
+				if (offset == 0 || dirty_rect.rempty() || !dirty_rect.rintersect(invalidate_r).rempty())
+				{
+					if (write_bw == t->m_TEX0.TBW && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == GSLocalMemory::m_psm[write_psm].bpp)
+					{
+						
+						RGBAMask mask;
+						mask._u32 = GSUtil::GetChannelMask(write_psm);
+						AddDirtyRectTarget(t, invalidate_r, t->m_TEX0.PSM, t->m_TEX0.TBW, mask, false);
+					}
+
+					++i;
+					continue;
+				}
 			}
 
 			InvalidateSourcesFromTarget(t);
