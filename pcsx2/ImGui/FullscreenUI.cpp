@@ -5738,9 +5738,12 @@ u32 FullscreenUI::PopulateSaveStateListEntries(const std::string& title, const s
 		if (InitializeSaveStateListEntry(&li, title, serial, crc, i) || !s_save_state_selector_loading)
 			s_save_state_selector_slots.push_back(std::move(li));
 
-		SaveStateListEntry bli;
-		if (InitializeSaveStateListEntry(&bli, title, serial, crc, i, true) || !s_save_state_selector_loading)
-			s_save_state_selector_slots.push_back(std::move(bli));
+		if (s_save_state_selector_loading)
+		{
+			SaveStateListEntry bli;
+			if (InitializeSaveStateListEntry(&bli, title, serial, crc, i, true))
+				s_save_state_selector_slots.push_back(std::move(bli));
+		}
 	}
 
 	return static_cast<u32>(s_save_state_selector_slots.size());
