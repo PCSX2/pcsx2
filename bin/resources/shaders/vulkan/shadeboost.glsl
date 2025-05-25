@@ -44,6 +44,7 @@ vec4 ContrastSaturationBrightness(vec4 color)
     float brt = params.x;
     float con = params.y;
     float sat = params.z;
+    float gam = params.w;
 
     // Increase or decrease these values to adjust r, g and b color channels separately
     const float AvgLumR = 0.5;
@@ -59,7 +60,9 @@ vec4 ContrastSaturationBrightness(vec4 color)
     vec3 satColor = mix(intensity, brtColor, sat);
     vec3 conColor = mix(AvgLumin, satColor, con);
 
-    color.rgb = conColor;
+    vec3 csb = conColor;
+    csb = pow(csb, vec3(1.0 / gam));
+    color.rgb = csb;
     return color;
 }
 
