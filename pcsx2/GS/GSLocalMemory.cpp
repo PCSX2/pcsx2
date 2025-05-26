@@ -70,6 +70,7 @@ GSLocalMemory::GSLocalMemory()
 		psm.wfa = &GSLocalMemory::WritePixel32;
 		psm.bpp = psm.trbpp = 32;
 		psm.pal = 0;
+		psm.cs = GSVector2i(8, 2);
 		psm.bs = GSVector2i(8, 8);
 		psm.pgs = GSVector2i(64, 32);
 		psm.msk = 0xff;
@@ -197,6 +198,11 @@ GSLocalMemory::GSLocalMemory()
 	m_psm[PSMCT16].fmt = m_psm[PSMZ16].fmt = PSM_FMT_16;
 	m_psm[PSMCT16S].fmt = m_psm[PSMZ16S].fmt = PSM_FMT_16;
 
+	m_psm[PSGPU24].cs = GSVector2i(16, 2);
+	m_psm[PSMCT16].cs = m_psm[PSMCT16S].bs = GSVector2i(16, 2);
+	m_psm[PSMT8].cs = GSVector2i(16, 4);
+	m_psm[PSMT4].cs = GSVector2i(32, 4);
+	m_psm[PSMZ16].cs = m_psm[PSMZ16S].bs = GSVector2i(16, 2);
 
 	m_psm[PSGPU24].bs = GSVector2i(16, 8);
 	m_psm[PSMCT16].bs = m_psm[PSMCT16S].bs = GSVector2i(16, 8);

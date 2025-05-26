@@ -460,7 +460,7 @@ public:
 		readTexture rtx, rtxP;
 		readTextureBlock rtxb, rtxbP;
 		u16 bpp, trbpp, pal, fmt;
-		GSVector2i bs, pgs;
+		GSVector2i cs, bs, pgs;
 		u8 msk, depth;
 		u32 fmsk;
 	};
