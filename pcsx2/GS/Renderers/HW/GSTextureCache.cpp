@@ -5047,7 +5047,7 @@ GSTextureCache::Target* GSTextureCache::GetExactTarget(u32 BP, u32 BW, int type,
 	{
 		Target* t = *it;
 		const u32 tgt_bw = std::max(t->m_TEX0.TBW, 1U);
-		if ((t->m_TEX0.TBP0 == BP || (GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets && t->m_TEX0.TBP0 < BP && ((BP >> 5) % tgt_bw) == 0)) && tgt_bw == BW && t->UnwrappedEndBlock() >= end_bp)
+		if ((t->m_TEX0.TBP0 == BP || (GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets && t->m_TEX0.TBP0 < BP && (((BP - t->m_TEX0.TBP0) >> 5) % tgt_bw) == 0)) && tgt_bw == BW && t->UnwrappedEndBlock() >= end_bp)
 		{
 			rts.MoveFront(it.Index());
 			return t;
