@@ -2678,7 +2678,9 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 		// If our RGB was invalidated, we need to pull it from depth.
 		// Terminator 3 will reuse our dst_matched target with the RGB masked, then later use the full ARGB area, so we need to update the depth.
 		const bool preserve_target = preserve_rgb || preserve_alpha;
-		if (type == RenderTarget && (preserve_target || !dst->m_valid.rintersect(draw_rect).eq(dst->m_valid)) &&
+		const u32 mask = GSLocalMemory::m_psm[TEX0.PSM].fmsk;
+
+		if ((preserve_target || !dst->m_valid.rintersect(draw_rect).eq(dst->m_valid)) &&
 			!dst->m_valid_rgb && !FullRectDirty(dst, 0x7) &&
 			(GSLocalMemory::m_psm[TEX0.PSM].trbpp < 24 || fbmask != 0x00FFFFFFu))
 		{
@@ -2687,34 +2689,61 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 			if (!is_frame)
 			{
 				GL_CACHE("TC: Attempt to repopulate RGB for %s[%x]", to_string(type), dst->m_TEX0.TBP0);
-				for (Target* dst_match : m_dst[DepthStencil])
+				for (Target* dst_match : m_dst[1 - type])
 				{
-					if (dst_match->m_TEX0.TBP0 != TEX0.TBP0 || !dst_match->m_valid_rgb)
+					if (dst_match->m_TEX0.TBP0 != dst->m_TEX0.TBP0 || !dst_match->m_valid_rgb)
 						continue;
 
-					dst->m_was_dst_matched = true;
 					dst->m_TEX0.TBW = dst_match->m_TEX0.TBW;
 					// Force the valid rect to the new size in case of shrinkage.
 					dst->m_valid = dst_match->m_valid;
 					dst->UpdateValidity(dst_match->m_valid);
 
-					if (!CopyRGBFromDepthToColor(dst, dst_match))
+					if (type == RenderTarget)
 					{
-						// Needed new texture and memory allocation failed.
-						return nullptr;
+						dst_match->m_valid_rgb = (fbmask & mask) == (mask & 0x00FFFFFFu);
+						dst->m_was_dst_matched = true;
+						if (!CopyRGBFromDepthToColor(dst, dst_match))
+						{
+							// Needed new texture and memory allocation failed.
+							return nullptr;
+						}
 					}
+					else
+					{
+						dst_match->m_valid_rgb &= (fbmask & mask) == (mask & 0x00FFFFFFu);
+						dst->Update();
 
+						if (!dst->ResizeTexture(dst_match->m_unscaled_size.x, dst_match->m_unscaled_size.y))
+						{
+							// Needed new texture and memory allocation failed.
+							return nullptr;
+						}
+
+						const ShaderConvert shader = (GSLocalMemory::m_psm[dst->m_TEX0.PSM].trbpp == 16) ? ShaderConvert::RGB5A1_TO_FLOAT16 :
+													 (GSLocalMemory::m_psm[dst->m_TEX0.PSM].trbpp == 32) ? ShaderConvert::RGBA8_TO_FLOAT32 :
+																										   ShaderConvert::RGBA8_TO_FLOAT24;
+
+						g_gs_device->StretchRect(dst_match->m_texture, GSVector4(0, 0, 1, 1),
+							dst->m_texture, GSVector4(dst->GetUnscaledRect()) * GSVector4(dst->GetScale()), shader, false);
+						g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+
+						dst_match->m_valid_rgb = !used;
+						dst_match->m_was_dst_matched = true;
+						dst->m_valid_rgb = true;
+						dst->m_32_bits_fmt = dst_match->m_32_bits_fmt;
+					}
 					break;
 				}
 			}
 
-			const u32 mask = GSLocalMemory::m_psm[TEX0.PSM].fmsk;
 			if (!dst->m_valid_rgb && ((fbmask & 0x00FFFFFF) & mask) != (mask & 0x00FFFFFF))
 			{
 				GL_CACHE("TC: Cannot find RGB target for %s[%x], clearing.", to_string(type), dst->m_TEX0.TBP0);
 
 				// We couldn't get RGB from any depth targets. So clear and preload.
 				// Unfortunately, we still have an alpha channel to preserve, and we can't clear RGB...
+				// So, create a new target, clear/preload it, and copy RGB in.
 				// So, create a new target, clear/preload it, and copy RGB in.
 				GSTexture* tex = (type == RenderTarget) ?
 									 g_gs_device->CreateRenderTarget(dst->m_texture->GetWidth(),
@@ -3412,10 +3441,35 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 				{
 					if (dst->m_TEX0.TBP0 > t->m_TEX0.TBP0 && (((dst->m_TEX0.TBP0 - t->m_TEX0.TBP0) >> 5) % std::max(t->m_TEX0.TBW, 1U)) == 0)
 					{
-						int height_adjust = (((dst->m_TEX0.TBP0 - t->m_TEX0.TBP0) >> 5) / std::max(t->m_TEX0.TBW, 1U)) * GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y;
+						// Probably a render target which was previously a Z.
+						if (GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets && t->Inside(dst->m_TEX0.TBP0, dst->m_TEX0.TBW, dst->m_TEX0.PSM, dst->m_valid) &&
+							GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == GSLocalMemory::m_psm[dst->m_TEX0.PSM].bpp)
+						{
+							dst->m_TEX0.TBP0 = t->m_TEX0.TBP0;
+							dst->m_valid = t->m_valid;
+							dst->m_drawn_since_read = t->m_drawn_since_read;
+							dst->m_end_block = t->m_end_block;
+							dst->m_valid_rgb = true;
+							t->m_valid_rgb = false;
+							t->m_was_dst_matched = true;
 
-						t->m_valid.w = std::min(height_adjust, t->m_valid.w);
-						t->ResizeValidity(t->m_valid);
+							dst->ResizeTexture(t->m_unscaled_size.x, t->m_unscaled_size.y);
+							
+							const ShaderConvert shader = (GSLocalMemory::m_psm[dst->m_TEX0.PSM].trbpp == 16) ? ShaderConvert::RGB5A1_TO_FLOAT16 : 
+								(GSLocalMemory::m_psm[dst->m_TEX0.PSM].trbpp == 32) ? ShaderConvert::RGBA8_TO_FLOAT32 : ShaderConvert::RGBA8_TO_FLOAT24;
+
+							g_gs_device->StretchRect(t->m_texture, GSVector4(0,0,1,1),
+								dst->m_texture, GSVector4(t->GetUnscaledRect()) * GSVector4(dst->GetScale()), shader, false);
+
+							break;
+						}
+						else
+						{
+							const int height_adjust = (((dst->m_TEX0.TBP0 - t->m_TEX0.TBP0) >> 5) / std::max(t->m_TEX0.TBW, 1U)) * GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y;
+
+							t->m_valid.w = std::min(height_adjust, t->m_valid.w);
+							t->ResizeValidity(t->m_valid);
+						}
 					}
 					else if (dst->m_TEX0.TBP0 < t->m_TEX0.TBP0 && (((t->m_TEX0.TBP0 - dst->m_TEX0.TBP0) >> 5) % std::max(t->m_TEX0.TBW, 1U)) == 0)
 					{
