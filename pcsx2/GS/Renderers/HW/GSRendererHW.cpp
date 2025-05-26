@@ -4170,6 +4170,7 @@ void GSRendererHW::Draw()
 				const int z_vertical_offset = ((static_cast<int>(m_cached_ctx.ZBUF.Block() - ds->m_TEX0.TBP0) / 32) / std::max(static_cast<int>(ds->m_TEX0.TBW), 1)) * z_psm.pgs.y;
 				const GSVector4i ds_rect = m_r - GSVector4i(vertical_offset - z_vertical_offset);
 				ds->UpdateValidity(ds_rect, z_update && (can_update_size || (ds_rect.w <= (resolution.y * 2) && !m_texture_shuffle)));
+				ds->UpdateDrawn(ds_rect, z_update && (can_update_size || (ds_rect.w <= (resolution.y * 2) && !m_texture_shuffle)));
 			}
 			else
 			{
@@ -4456,6 +4457,7 @@ void GSRendererHW::Draw()
 		else if (was_written && g_texture_cache->GetTemporaryZ() != nullptr)
 		{
 			ds->UpdateValidity(real_rect, !z_masked && (can_update_size || (real_rect.w <= (resolution.y * 2) && !m_texture_shuffle)));
+			ds->UpdateDrawn(real_rect, !z_masked && (can_update_size || (real_rect.w <= (resolution.y * 2) && !m_texture_shuffle)));
 
 			GSTextureCache::TempZAddress z_address_info = g_texture_cache->GetTemporaryZInfo();
 			if (ds->m_TEX0.TBP0 == z_address_info.ZBP)
