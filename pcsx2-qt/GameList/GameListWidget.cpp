@@ -181,11 +181,16 @@ void GameListWidget::initialize()
 	m_sort_model->setSourceModel(m_model);
 
 	m_ui.setupUi(this);
+
 	for (u32 type = 0; type < static_cast<u32>(GameList::EntryType::Count); type++)
 	{
-		m_ui.filterType->addItem(GameListModel::getIconForType(static_cast<GameList::EntryType>(type)),
-			GameList::EntryTypeToString(static_cast<GameList::EntryType>(type), true));
+		if (type != static_cast<u32>(GameList::EntryType::Invalid))
+		{
+			m_ui.filterType->addItem(GameListModel::getIconForType(static_cast<GameList::EntryType>(type)),
+				GameList::EntryTypeToString(static_cast<GameList::EntryType>(type), true));
+		}
 	}
+
 	for (u32 region = 0; region < static_cast<u32>(GameList::Region::Count); region++)
 	{
 		m_ui.filterRegion->addItem(GameListModel::getIconForRegion(static_cast<GameList::Region>(region)),
