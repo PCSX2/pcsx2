@@ -5647,11 +5647,9 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			}
 			else
 			{
-				const GSLocalMemory::psm_t& s_psm = GSLocalMemory::m_psm[TEX0.PSM];
-				const GSLocalMemory::psm_t& t_psm = GSLocalMemory::m_psm[dst->m_TEX0.PSM];
-				u32 dst_pages = (dst->m_unscaled_size.x / t_psm.pgs.x) * (dst->m_unscaled_size.y / t_psm.pgs.y);
-				src->m_unscaled_size.x = std::max(static_cast<int>(TEX0.TBW) * (s_psm.pgs.x / 2), (s_psm.pgs.x / 2));
-				src->m_unscaled_size.y = std::max(static_cast<int>(dst_pages / std::max((TEX0.TBW / 2U), 1U)) * s_psm.pgs.y, s_psm.pgs.y);
+				// We're inside the target, so conversion needs to happen on the entire target so we can offset properly.
+				src->m_unscaled_size.x = dst->m_unscaled_size.x * 2;
+				src->m_unscaled_size.y = dst->m_unscaled_size.y * 2;
 				new_size.x = src->m_unscaled_size.x;
 				new_size.y = src->m_unscaled_size.y;
 			}
@@ -5815,24 +5813,15 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 						sTex = dst->m_texture;
 					}
 
+					const u32 destination_tbw = (dst->m_TEX0.TBP0 == TEX0.TBP0) ? (std::max<u32>(TEX0.TBW, 1u) * 64) : std::max<u32>(dst->m_TEX0.TBW, 1u) * 128;
 					g_gs_device->ConvertToIndexedTexture(sTex, dst->m_scale, x_offset, y_offset,
 						std::max<u32>(dst->m_TEX0.TBW, 1u) * 64, dst->m_TEX0.PSM, dTex,
-						std::max<u32>(TEX0.TBW, 1u) * 64, TEX0.PSM);
+						destination_tbw, TEX0.PSM);
 
-					// Adjust the region for the newly translated rect.
-					u32 const dst_y_height = GSLocalMemory::m_psm[dst->m_TEX0.PSM].pgs.y;
-					u32 const src_y_height = GSLocalMemory::m_psm[TEX0.PSM].pgs.y;
-					u32 const dst_page_offset = (y_offset / dst_y_height) * std::max(dst->m_TEX0.TBW, 1U);
-					y_offset = (dst_page_offset / (std::max(TEX0.TBW / 2U, 1U))) * src_y_height;
+					// Adjust to match a PSMT8 texture (coordinates are double C32, we shouldn't be converting from anything else).
+					x_offset *= 2;
+					y_offset *= 2;
 
-					u32 const src_page_width = GSLocalMemory::m_psm[TEX0.PSM].pgs.x;
-					x_offset = (x_offset / GSLocalMemory::m_psm[dst->m_TEX0.PSM].pgs.x) * GSLocalMemory::m_psm[TEX0.PSM].pgs.x;
-					if (x_offset >= static_cast<int>(std::max(TEX0.TBW, 1U) * src_page_width))
-					{
-						const u32 adjust = x_offset / src_page_width;
-						y_offset += adjust * GSLocalMemory::m_psm[TEX0.PSM].pgs.y;
-						x_offset -= src_page_width * adjust;
-					}
 					src->m_region.SetX(x_offset, x_offset + tw);
 					src->m_region.SetY(y_offset, y_offset + th);
 
