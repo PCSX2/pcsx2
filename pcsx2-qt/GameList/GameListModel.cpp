@@ -440,7 +440,7 @@ bool GameListModel::titlesLessThan(int left_row, int right_row) const
 	const GameList::Entry* left = GameList::GetEntryByIndex(left_row);
 	const GameList::Entry* right = GameList::GetEntryByIndex(right_row);
 	return QtHost::LocaleSensitiveCompare(QString::fromStdString(left->GetTitleSort(m_prefer_english_titles)),
-	                                      QString::fromStdString(right->GetTitleSort(m_prefer_english_titles))) < 0;
+			   QString::fromStdString(right->GetTitleSort(m_prefer_english_titles))) < 0;
 }
 
 bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& right_index, int column) const
@@ -569,7 +569,7 @@ QIcon GameListModel::getIconForType(GameList::EntryType type)
 QIcon GameListModel::getIconForRegion(GameList::Region region)
 {
 	return QIcon(
-		QStringLiteral("%1/icons/flags/%2.svg").arg(QtHost::GetResourcesBasePath()).arg(GameList::RegionToString(region)));
+		QStringLiteral("%1/icons/flags/%2.svg").arg(QtHost::GetResourcesBasePath()).arg(GameList::RegionToString(region, false)));
 }
 
 void GameListModel::loadThemeSpecificImages()

@@ -104,10 +104,9 @@ namespace GameList
 		__fi bool IsDisc() const { return (type == EntryType::PS1Disc || type == EntryType::PS2Disc); }
 	};
 
-	const char* EntryTypeToString(EntryType type);
-	const char* EntryTypeToDisplayString(EntryType type);
-	const char* RegionToString(Region region);
-	const char* EntryCompatibilityRatingToString(CompatibilityRating rating);
+	const char* EntryTypeToString(EntryType type, bool translate);
+	const char* RegionToString(Region region, bool translate);
+	const char* EntryCompatibilityRatingToString(CompatibilityRating rating, bool translate);
 
 	/// Fills in boot parameters (iso or elf) based on the game list entry.
 	void FillBootParametersForEntry(VMBootParameters* params, const Entry* entry);

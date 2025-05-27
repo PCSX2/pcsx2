@@ -3316,15 +3316,15 @@ void FullscreenUI::DrawSummarySettingsPage()
 			CopyTextToClipboard(FSUI_STR("Game serial copied to clipboard."), s_game_settings_entry->serial);
 		if (MenuButton(FSUI_ICONSTR(ICON_FA_CODE, "CRC"), fmt::format("{:08X}", s_game_settings_entry->crc).c_str(), true))
 			CopyTextToClipboard(FSUI_STR("Game CRC copied to clipboard."), fmt::format("{:08X}", s_game_settings_entry->crc));
-		if (MenuButton(FSUI_ICONSTR(ICON_FA_BOX, "Type"), GameList::EntryTypeToDisplayString(s_game_settings_entry->type), true))
-			CopyTextToClipboard(FSUI_STR("Game type copied to clipboard."), GameList::EntryTypeToDisplayString(s_game_settings_entry->type));
-		if (MenuButton(FSUI_ICONSTR(ICON_FA_GLOBE, "Region"), GameList::RegionToString(s_game_settings_entry->region), true))
-			CopyTextToClipboard(FSUI_STR("Game region copied to clipboard."), GameList::RegionToString(s_game_settings_entry->region));
+		if (MenuButton(FSUI_ICONSTR(ICON_FA_BOX, "Type"), GameList::EntryTypeToString(s_game_settings_entry->type, true), true))
+			CopyTextToClipboard(FSUI_STR("Game type copied to clipboard."), GameList::EntryTypeToString(s_game_settings_entry->type, true));
+		if (MenuButton(FSUI_ICONSTR(ICON_FA_GLOBE, "Region"), GameList::RegionToString(s_game_settings_entry->region, true), true))
+			CopyTextToClipboard(FSUI_STR("Game region copied to clipboard."), GameList::RegionToString(s_game_settings_entry->region, true));
 		if (MenuButton(FSUI_ICONSTR(ICON_FA_STAR, "Compatibility Rating"),
-				GameList::EntryCompatibilityRatingToString(s_game_settings_entry->compatibility_rating), true))
+				GameList::EntryCompatibilityRatingToString(s_game_settings_entry->compatibility_rating, true), true))
 		{
 			CopyTextToClipboard(FSUI_STR("Game compatibility copied to clipboard."),
-				GameList::EntryCompatibilityRatingToString(s_game_settings_entry->compatibility_rating));
+				GameList::EntryCompatibilityRatingToString(s_game_settings_entry->compatibility_rating, true));
 		}
 		if (MenuButton(FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Path"), s_game_settings_entry->path.c_str(), true))
 			CopyTextToClipboard(FSUI_STR("Game path copied to clipboard."), s_game_settings_entry->path);
@@ -6459,9 +6459,9 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 
 			summary.clear();
 			if (entry->serial.empty())
-				fmt::format_to(std::back_inserter(summary), "{} - ", GameList::RegionToString(entry->region));
+				fmt::format_to(std::back_inserter(summary), "{} - ", GameList::RegionToString(entry->region, true));
 			else
-				fmt::format_to(std::back_inserter(summary), "{} - {} - ", entry->serial, GameList::RegionToString(entry->region));
+				fmt::format_to(std::back_inserter(summary), "{} - {} - ", entry->serial, GameList::RegionToString(entry->region, true));
 
 			const std::string_view filename(Path::GetFileName(entry->path));
 			summary.append(filename);
@@ -6563,12 +6563,12 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 
 			// region
 			{
-				std::string flag_texture(fmt::format("icons/flags/{}.svg", GameList::RegionToString(selected_entry->region)));
+				std::string flag_texture(fmt::format("icons/flags/{}.svg", GameList::RegionToString(selected_entry->region, false)));
 				ImGui::TextUnformatted(FSUI_CSTR("Region: "));
 				ImGui::SameLine();
 				DrawCachedSvgTextureAsync(flag_texture, LayoutScale(23.0f, 16.0f), SvgScaling::Fit);
 				ImGui::SameLine();
-				ImGui::Text(" (%s)", GameList::RegionToString(selected_entry->region));
+				ImGui::Text(" (%s)", GameList::RegionToString(selected_entry->region, true));
 			}
 
 			// compatibility
@@ -6579,7 +6579,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 				DrawSvgTexture(s_game_compatibility_textures[static_cast<u32>(selected_entry->compatibility_rating) - 1].get(), LayoutScale(64.0f, 16.0f));
 				ImGui::SameLine();
 			}
-			ImGui::Text(" (%s)", GameList::EntryCompatibilityRatingToString(selected_entry->compatibility_rating));
+			ImGui::Text(" (%s)", GameList::EntryCompatibilityRatingToString(selected_entry->compatibility_rating, true));
 
 			// play time
 			ImGui::TextUnformatted(
@@ -7305,7 +7305,7 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
 			};
 			OpenFileSelector(FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Select Leaderboard Submit Sound"), false, std::move(callback), GetAudioFileFilters());
 		}
-		
+
 		MenuHeading(FSUI_CSTR("Account"));
 		if (bsi->ContainsValue("Achievements", "Token"))
 		{
