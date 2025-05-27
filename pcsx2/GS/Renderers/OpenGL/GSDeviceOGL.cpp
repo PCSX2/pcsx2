@@ -2446,7 +2446,11 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 			colclip_rt = CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::ColorClip, false);
 
 			if (!colclip_rt)
+			{
+				Console.Warning("GL: Failed to allocate ColorClip render target, aborting draw.");
+
 				return;
+			}
 
 			OMSetRenderTargets(colclip_rt, config.ds, nullptr);
 
@@ -2467,6 +2471,11 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 			break; // No setup
 		case GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking:
 			primid_texture = InitPrimDateTexture(colclip_rt ? colclip_rt : config.rt, config.drawarea, config.datm);
+			if (!primid_texture)
+			{
+				Console.WriteLn("GL: Failed to allocate DATE image, aborting draw.");
+				return;
+			}
 			break;
 		case GSHWDrawConfig::DestinationAlphaMode::StencilOne:
 			if (m_features.texture_barrier)
@@ -2503,6 +2512,8 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 				config.drawarea.width(), config.drawarea.height());
 			CopyRect(colclip_rt ? colclip_rt : config.rt, draw_rt_clone, config.drawarea, config.drawarea.left, config.drawarea.top);
 		}
+		else
+			Console.Warning("GL: Failed to allocate temp texture for RT copy.");
 	}
 
 	IASetVertexBuffer(config.verts, config.nverts);

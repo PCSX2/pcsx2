@@ -2509,7 +2509,10 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 
 			colclip_rt = CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::ColorClip);
 			if (!colclip_rt)
+			{
+				Console.Warning("D3D11: Failed to allocate ColorClip render target, aborting draw.");
 				return;
+			}
 
 			g_gs_device->SetColorClipTexture(colclip_rt);
 
@@ -2525,7 +2528,10 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	{
 		primid_tex = CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::PrimID, false);
 		if (!primid_tex)
+		{
+			Console.WriteLn("D3D11: Failed to allocate DATE image, aborting draw.");
 			return;
+		}
 
 		StretchRect(colclip_rt ? colclip_rt : config.rt, GSVector4(config.drawarea) / GSVector4(rtsize).xyxy(),
 			primid_tex, GSVector4(config.drawarea), m_date.primid_init_ps[static_cast<u8>(config.datm)].get(), nullptr, false);
@@ -2616,6 +2622,9 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 			if (config.tex && config.tex == config.rt)
 				PSSetShaderResource(0, draw_rt_clone);
 		}
+		else
+			Console.Warning("D3D11: Failed to allocate temp texture for RT copy.");
+
 	}
 
 	GSTexture* draw_ds_clone = nullptr;
@@ -2629,6 +2638,8 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 			CopyRect(config.ds, draw_ds_clone, config.drawarea, config.drawarea.left, config.drawarea.top);
 			PSSetShaderResource(0, draw_ds_clone);
 		}
+		else
+			Console.Warning("D3D11: Failed to allocate temp texture for DS copy.");
 	}
 
 	SetupVS(config.vs, &config.cb_vs);

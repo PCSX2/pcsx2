@@ -3917,7 +3917,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		{
 			EndRenderPass();
 
-			GL_PUSH("Copy RT to temp texture {%d,%d %dx%d}", config.drawarea.left, config.drawarea.top,
+			GL_PUSH("D3D12: Copy RT to temp texture {%d,%d %dx%d}", config.drawarea.left, config.drawarea.top,
 				config.drawarea.width(), config.drawarea.height());
 
 			draw_rt_clone->SetState(GSTexture::State::Invalidated);
@@ -3927,6 +3927,8 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 			if (config.tex && config.tex == config.rt)
 				PSSetShaderResource(0, draw_rt_clone, true);
 		}
+		else
+			Console.Warning("D3D12: Failed to allocate temp texture for RT copy.");
 	}
 
 	if (config.tex && config.tex == config.ds)
@@ -3937,13 +3939,15 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		{
 			EndRenderPass();
 
-			GL_PUSH("Copy DS to temp texture {%d,%d %dx%d}", config.drawarea.left, config.drawarea.top,
+			GL_PUSH("D3D12: Copy DS to temp texture {%d,%d %dx%d}", config.drawarea.left, config.drawarea.top,
 				config.drawarea.width(), config.drawarea.height());
 
 			draw_ds_clone->SetState(GSTexture::State::Invalidated);
 			CopyRect(config.ds, draw_ds_clone, config.drawarea, config.drawarea.left, config.drawarea.top);
 			PSSetShaderResource(0, draw_ds_clone, true);
 		}
+		else
+			Console.Warning("D3D12: Failed to allocate temp texture for DS copy.");
 	}
 
 	// Switch to colclip target for colclip hw rendering
@@ -3958,7 +3962,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 			colclip_rt = static_cast<GSTexture12*>(CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::ColorClip, false));
 			if (!colclip_rt)
 			{
-				Console.WriteLn("D3D12: Failed to allocate ColorClip render target, aborting draw.");
+				Console.Warning("D3D12: Failed to allocate ColorClip render target, aborting draw.");
 
 				if (date_image)
 					Recycle(date_image);
