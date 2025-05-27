@@ -3803,6 +3803,9 @@ void GSRendererHW::Draw()
 			const GSVector4 tmin = m_vt.m_min.t;
 			const GSVector4 tmax = m_vt.m_max.t;
 
+			// Backup original coverage.
+			const GSVector4i coverage = tmm.coverage;
+
 			for (int layer = m_lod.x + 1; layer <= m_lod.y; layer++)
 			{
 				const GIFRegTEX0 MIP_TEX0(GetTex0Layer(layer));
@@ -3824,6 +3827,9 @@ void GSRendererHW::Draw()
 			src->m_texture->ClearMipmapGenerationFlag();
 			m_vt.m_min.t = tmin;
 			m_vt.m_max.t = tmax;
+
+			// Restore original coverage.
+			tmm.coverage = coverage;
 		}
 	}
 
