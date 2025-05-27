@@ -5625,7 +5625,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		date_image = SetupPrimitiveTrackingDATE(config);
 		if (!date_image)
 		{
-			Console.WriteLn("Failed to allocate DATE image, aborting draw.");
+			Console.WriteLn("VK: Failed to allocate DATE image, aborting draw.");
 			return;
 		}
 
@@ -5726,12 +5726,14 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		{
 			EndRenderPass();
 
-			GL_PUSH("Copy RT to temp texture for fbmask {%d,%d %dx%d}", config.drawarea.left, config.drawarea.top,
+			GL_PUSH("VK: Copy RT to temp texture for fbmask {%d,%d %dx%d}", config.drawarea.left, config.drawarea.top,
 				config.drawarea.width(), config.drawarea.height());
 
 			CopyRect(draw_rt, draw_rt_clone, config.drawarea, config.drawarea.left, config.drawarea.top);
 			PSSetShaderResource(2, draw_rt_clone, true);
 		}
+		else
+			Console.Warning("VK: Failed to allocate temp texture for RT copy.");
 	}
 
 	// Switch to colclip target for colclip hw rendering
@@ -5744,7 +5746,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 			colclip_rt = static_cast<GSTextureVK*>(CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::ColorClip, false));
 			if (!colclip_rt)
 			{
-				Console.WriteLn("Failed to allocate ColorClip render target, aborting draw.");
+				Console.Warning("VK: Failed to allocate ColorClip render target, aborting draw.");
 
 				if (date_image)
 					Recycle(date_image);
