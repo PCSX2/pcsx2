@@ -3874,6 +3874,8 @@ SCED-52841:
   speedHacks:
     mtvu: 0 # Fixes SPS when entering Spain in Jackie's and Jade's character models.
     instantVU1: 0 # Fixes SPS when entering Spain in Jackie's and Jade's character models.
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes half right.
 SCED-52846:
   name: "Killzone [Demo]"
   region: "PAL-E"
@@ -5645,6 +5647,8 @@ SCES-52412:
   speedHacks:
     mtvu: 0 # Fixes SPS when entering Spain in Jackie's and Jade's character models.
     instantVU1: 0 # Fixes SPS when entering Spain in Jackie's and Jade's character models.
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes half right.
 SCES-52423:
   name: "Smash Court Tennis - Pro Tournament 2"
   region: "PAL-M5"
@@ -15539,6 +15543,7 @@ SLES-50672:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
+    textureInsideRT: 1 # Fixes half right.
     estimateTextureRegion: 1 # Improves performance.
     roundSprite: 1 # Fixes lines in menus.
 SLES-50677:
@@ -17730,12 +17735,14 @@ SLES-51525:
   name: "Fallout - Brotherhood of Steel"
   region: "PAL-M3"
   gsHWFixes:
+    textureInsideRT: 1 # Fixes half right.
     estimateTextureRegion: 1 # Improves performance and reduces hash cache size when moving.
     roundSprite: 1 # Fixes HUD garbage.
 SLES-51526:
   name: "Fallout - Brotherhood of Steel"
   region: "PAL-M3"
   gsHWFixes:
+    textureInsideRT: 1 # Fixes half right.
     estimateTextureRegion: 1 # Improves performance and reduces hash cache size when moving.
     roundSprite: 1 # Fixes HUD garbage.
 SLES-51547:
@@ -19299,6 +19306,7 @@ SLES-52187:
   region: "PAL-M3"
   compat: 5
   gsHWFixes:
+    textureInsideRT: 1 # Fixes half right.
     roundSprite: 1 # Fixes lines in sprites but still some lines left.
     estimateTextureRegion: 1 # Improves performance.
 SLES-52188:
@@ -19306,6 +19314,7 @@ SLES-52188:
   region: "PAL-M3"
   compat: 5
   gsHWFixes:
+    textureInsideRT: 1 # Fixes half right.
     roundSprite: 1 # Fixes lines in sprites but still some lines left.
     estimateTextureRegion: 1 # Improves performance.
 SLES-52190:
@@ -19625,6 +19634,7 @@ SLES-52325:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal fps detection in some areas.
   gsHWFixes:
+    textureInsideRT: 1 # Fixes half right.
     estimateTextureRegion: 1 # Improves performance.
     roundSprite: 1 # Fixes lines in menus HUD and in game.
     halfPixelOffset: 2 # Fixes edge garbage.
@@ -19729,6 +19739,7 @@ SLES-52373:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal fps detection in some areas.
   gsHWFixes:
+    textureInsideRT: 1 # Fixes half right.
     estimateTextureRegion: 1 # Improves performance.
     roundSprite: 1 # Fixes lines in menus HUD and in game.
     halfPixelOffset: 2 # Fixes edge garbage.
@@ -21184,6 +21195,8 @@ SLES-52853:
   name: "Miami Vice"
   region: "PAL-M6"
   compat: 5
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes half right.
 SLES-52854:
   name: "Capcom Fighting Jam"
   region: "PAL-E"
@@ -21854,6 +21867,7 @@ SLES-53039:
   region: "PAL-M4"
   compat: 5
   gsHWFixes:
+    textureInsideRT: 1 # Fixes half right.
     estimateTextureRegion: 1 # Improves performance.
     roundSprite: 1 # Fixes lines in menus HUD and in game.
     halfPixelOffset: 2 # Fixes erroneous line in menus.
@@ -22176,6 +22190,8 @@ SLES-53149:
 SLES-53150:
   name: "10 Pin - Champions Alley"
   region: "PAL-M6"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes half right.
 SLES-53151:
   name: "Juiced"
   region: "PAL-I"
@@ -22863,6 +22879,8 @@ SLES-53433:
 SLES-53434:
   name: "Red Baron"
   region: "PAL-M3"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes trees.
 SLES-53435:
   name: "SAS Anti-Terror Force"
   region: "PAL-M3"
@@ -26080,6 +26098,7 @@ SLES-54423:
   name: "Justice League Heroes"
   region: "PAL-M5"
   gsHWFixes:
+    textureInsideRT: 1 # Fixes half right.
     estimateTextureRegion: 1 # Improves performance.
   clampModes:
     vuClampMode: 2 # Fixes ingame SPS for the capes.
@@ -44705,6 +44724,7 @@ SLPM-65845:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
+    textureInsideRT: 1 # Fixes half right.
     roundSprite: 1 # Fixes lines in sprites but still some lines left.
     estimateTextureRegion: 1 # Improves performance.
 SLPM-65846:
@@ -45101,6 +45121,7 @@ SLPM-65915:
   name-en: "Fallout - Brotherhood of Steel"
   region: "NTSC-J"
   gsHWFixes:
+    textureInsideRT: 1 # Fixes half right.
     estimateTextureRegion: 1 # Improves performance and reduces hash cache size when moving.
     roundSprite: 1 # Fixes HUD garbage.
 SLPM-65916:
@@ -56482,6 +56503,7 @@ SLPS-25139:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
+    textureInsideRT: 1 # Fixes half right.
     estimateTextureRegion: 1 # Improves performance.
     roundSprite: 1 # Fixes lines in menus.
 SLPS-25140:
@@ -56490,6 +56512,7 @@ SLPS-25140:
   name-en: "Baldur's Gate - Dark Alliance [Standard Edition]"
   region: "NTSC-J"
   gsHWFixes:
+    textureInsideRT: 1 # Fixes half right.
     estimateTextureRegion: 1 # Improves performance.
     roundSprite: 1 # Fixes lines in menus.
 SLPS-25141:
@@ -57346,6 +57369,7 @@ SLPS-25291:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
+    textureInsideRT: 1 # Fixes half right.
     texturePreloading: 1 # Performs much better with partial preload.
     estimateTextureRegion: 1 # Improves performance.
 SLPS-25292:
@@ -62666,6 +62690,7 @@ SLUS-20035:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes FMVs.
   gsHWFixes:
+    textureInsideRT: 1 # Fixes half right.
     estimateTextureRegion: 1 # Improves performance.
     roundSprite: 1 # Fixes lines in menus.
 SLUS-20037:
@@ -65026,6 +65051,7 @@ SLUS-20539:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    textureInsideRT: 1 # Fixes half right.
     estimateTextureRegion: 1 # Improves performance and reduces hash cache size when moving.
     roundSprite: 1 # Fixes HUD garbage.
 SLUS-20540:
@@ -65180,6 +65206,7 @@ SLUS-20565:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal fps detection in some areas.
   gsHWFixes:
+    textureInsideRT: 1 # Fixes half right.
     estimateTextureRegion: 1 # Improves performance.
 SLUS-20566:
   name: "Buffy the Vampire Slayer - Chaos Bleeds"
@@ -65775,6 +65802,7 @@ SLUS-20675:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes FMVs.
   gsHWFixes:
+    textureInsideRT: 1 # Fixes half right.
     roundSprite: 1 # Fixes lines in sprites but still some lines left.
     estimateTextureRegion: 1 # Improves performance.
 SLUS-20676:
@@ -67469,6 +67497,7 @@ SLUS-20973:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    textureInsideRT: 1 # Fixes half right.
     estimateTextureRegion: 1 # Improves performance.
     roundSprite: 1 # Fixes lines in menus HUD and in game.
     halfPixelOffset: 2 # Fixes erroneous line in menus.
@@ -69179,6 +69208,8 @@ SLUS-21246:
 SLUS-21247:
   name: "Jackie Chan Adventures"
   region: "NTSC-U"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes half right.
 SLUS-21248:
   name: "Legend of Kay"
   region: "NTSC-U"
@@ -69611,6 +69642,7 @@ SLUS-21304:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    textureInsideRT: 1 # Fixes half right.
     estimateTextureRegion: 1 # Improves performance.
   clampModes:
     vuClampMode: 2 # Ingame capes become SPS mess with lower than extra VU clamp.
@@ -73723,6 +73755,8 @@ SLUS-29084:
 SLUS-29085:
   name: "Champions of Norrath - Realms of EverQuest"
   region: "NTSC-U"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes half right.
 SLUS-29086:
   name: "FIFA Soccer 2004 [Demo]"
   region: "NTSC-U"
@@ -73743,6 +73777,7 @@ SLUS-29088:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal fps detection in some areas.
   gsHWFixes:
+    textureInsideRT: 1 # Fixes half right.
     estimateTextureRegion: 1 # Improves performance.
 SLUS-29089:
   name: "Resident Evil Outbreak [Public Beta 1.0]"
@@ -73867,6 +73902,7 @@ SLUS-29126:
   region: "NTSC-U"
   compat: 4
   gsHWFixes:
+    textureInsideRT: 1 # Fixes half right.
     estimateTextureRegion: 1 # Improves performance.
     roundSprite: 1 # Fixes lines in menus HUD and in game.
     halfPixelOffset: 2 # Fixes erroneous line in menus.
