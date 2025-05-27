@@ -91,42 +91,98 @@ static std::recursive_mutex s_mutex;
 static GameList::CacheMap s_cache_map;
 static std::FILE* s_cache_write_stream = nullptr;
 
-const char* GameList::EntryTypeToString(EntryType type)
+const char* GameList::EntryTypeToString(EntryType type, bool translate)
 {
-	static std::array<const char*, static_cast<int>(EntryType::Count)> names = {{"PS2Disc", "PS1Disc", "ELF"}};
-	return names[static_cast<int>(type)];
+	static constexpr std::array<const char*, static_cast<int>(EntryType::Count)> names = {
+		TRANSLATE_NOOP("GameList", "PS2 Disc"),
+		TRANSLATE_NOOP("GameList", "PS1 Disc"),
+		TRANSLATE_NOOP("GameList", "ELF"),
+		TRANSLATE_NOOP("GameList", "Invalid"),
+	};
+
+	const char* name = names.at(static_cast<int>(type));
+	if (translate)
+		name = TRANSLATE("GameList", name);
+
+	return name;
 }
 
-const char* GameList::EntryTypeToDisplayString(EntryType type)
+const char* GameList::RegionToString(Region region, bool translate)
 {
-	static std::array<const char*, static_cast<int>(EntryType::Count)> names = {{TRANSLATE("GameList", "PS2 Disc"), TRANSLATE("GameList", "PS1 Disc"), TRANSLATE("GameList", "ELF")}};
-	return names[static_cast<int>(type)];
+	static constexpr std::array<const char*, static_cast<int>(Region::Count)> names = {
+		TRANSLATE_NOOP("GameList", "NTSC-B"),
+		TRANSLATE_NOOP("GameList", "NTSC-C"),
+		TRANSLATE_NOOP("GameList", "NTSC-HK"),
+		TRANSLATE_NOOP("GameList", "NTSC-J"),
+		TRANSLATE_NOOP("GameList", "NTSC-K"),
+		TRANSLATE_NOOP("GameList", "NTSC-T"),
+		TRANSLATE_NOOP("GameList", "NTSC-U"),
+		TRANSLATE_NOOP("GameList", "Other"),
+		TRANSLATE_NOOP("GameList", "PAL-A"),
+		TRANSLATE_NOOP("GameList", "PAL-AF"),
+		TRANSLATE_NOOP("GameList", "PAL-AU"),
+		TRANSLATE_NOOP("GameList", "PAL-BE"),
+		TRANSLATE_NOOP("GameList", "PAL-E"),
+		TRANSLATE_NOOP("GameList", "PAL-F"),
+		TRANSLATE_NOOP("GameList", "PAL-FI"),
+		TRANSLATE_NOOP("GameList", "PAL-G"),
+		TRANSLATE_NOOP("GameList", "PAL-GR"),
+		TRANSLATE_NOOP("GameList", "PAL-I"),
+		TRANSLATE_NOOP("GameList", "PAL-IN"),
+		TRANSLATE_NOOP("GameList", "PAL-M"),
+		TRANSLATE_NOOP("GameList", "PAL-NL"),
+		TRANSLATE_NOOP("GameList", "PAL-NO"),
+		TRANSLATE_NOOP("GameList", "PAL-P"),
+		TRANSLATE_NOOP("GameList", "PAL-PL"),
+		TRANSLATE_NOOP("GameList", "PAL-R"),
+		TRANSLATE_NOOP("GameList", "PAL-S"),
+		TRANSLATE_NOOP("GameList", "PAL-SC"),
+		TRANSLATE_NOOP("GameList", "PAL-SW"),
+		TRANSLATE_NOOP("GameList", "PAL-SWI"),
+		TRANSLATE_NOOP("GameList", "PAL-UK"),
+	};
+
+	const char* name = names.at(static_cast<int>(region));
+	if (translate)
+		name = TRANSLATE("GameList", name);
+
+	return name;
 }
 
-const char* GameList::RegionToString(Region region)
+const char* GameList::EntryCompatibilityRatingToString(CompatibilityRating rating, bool translate)
 {
-	static std::array<const char*, static_cast<int>(Region::Count)> names = {{"NTSC-B", "NTSC-C", "NTSC-HK", "NTSC-J", "NTSC-K", "NTSC-T",
-		"NTSC-U", TRANSLATE("GameList", "Other"), "PAL-A", "PAL-AF", "PAL-AU", "PAL-BE", "PAL-E", "PAL-F", "PAL-FI", "PAL-G", "PAL-GR", "PAL-I", "PAL-IN", "PAL-M",
-		"PAL-NL", "PAL-NO", "PAL-P", "PAL-PL", "PAL-R", "PAL-S", "PAL-SC", "PAL-SW", "PAL-SWI", "PAL-UK"}};
-
-	return names[static_cast<int>(region)];
-}
-
-const char* GameList::EntryCompatibilityRatingToString(CompatibilityRating rating)
-{
-	// clang-format off
+	const char* name = "";
 	switch (rating)
 	{
-		case CompatibilityRating::Unknown:  return TRANSLATE("GameList", "Unknown");
-		case CompatibilityRating::Nothing:  return TRANSLATE("GameList", "Nothing");
-		case CompatibilityRating::Intro:    return TRANSLATE("GameList", "Intro");
-		case CompatibilityRating::Menu:     return TRANSLATE("GameList", "Menu");
-		case CompatibilityRating::InGame:   return TRANSLATE("GameList", "In-Game");
-		case CompatibilityRating::Playable: return TRANSLATE("GameList", "Playable");
-		case CompatibilityRating::Perfect:  return TRANSLATE("GameList", "Perfect");
-		default: return "";
+		case CompatibilityRating::Unknown:
+			name = TRANSLATE_NOOP("GameList", "Unknown");
+			break;
+		case CompatibilityRating::Nothing:
+			name = TRANSLATE_NOOP("GameList", "Nothing");
+			break;
+		case CompatibilityRating::Intro:
+			name = TRANSLATE_NOOP("GameList", "Intro");
+			break;
+		case CompatibilityRating::Menu:
+			name = TRANSLATE_NOOP("GameList", "Menu");
+			break;
+		case CompatibilityRating::InGame:
+			name = TRANSLATE_NOOP("GameList", "In-Game");
+			break;
+		case CompatibilityRating::Playable:
+			name = TRANSLATE_NOOP("GameList", "Playable");
+			break;
+		case CompatibilityRating::Perfect:
+			name = TRANSLATE_NOOP("GameList", "Perfect");
+			break;
+		default:
+			return "";
 	}
-	// clang-format on
+
+	if (translate)
+		name = TRANSLATE("GameList", name);
+
+	return name;
 }
 
 bool GameList::IsScannableFilename(const std::string_view path)
@@ -591,15 +647,18 @@ void GameList::ScanDirectory(const char* path, bool recursive, bool only_cache, 
 	Console.WriteLn("Scanning %s%s", path, recursive ? " (recursively)" : "");
 
 	progress->PushState();
-	progress->SetStatusText(fmt::format(
-		recursive ? TRANSLATE_FS("GameList", "Scanning directory {} (recursively)...") :
-		            TRANSLATE_FS("GameList", "Scanning directory {}..."),
-		path).c_str());
+
+	if (recursive)
+		progress->SetStatusText(
+			fmt::format(TRANSLATE_FS("GameList", "Scanning directory {} (recursively)..."), path).c_str());
+	else
+		progress->SetStatusText(
+			fmt::format(TRANSLATE_FS("GameList", "Scanning directory {}..."), path).c_str());
 
 	FileSystem::FindResultsArray files;
 	FileSystem::FindFiles(path, "*",
 		recursive ? (FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_RECURSIVE) :
-		            (FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES),
+					(FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES),
 		&files, progress);
 
 	u32 files_scanned = 0;
@@ -622,7 +681,7 @@ void GameList::ScanDirectory(const char* path, bool recursive, bool only_cache, 
 		}
 
 		const std::string_view filename = Path::GetFileName(ffd.FileName);
-		progress->SetStatusText(fmt::format(TRANSLATE_FS("GameList","Scanning {}..."), filename.data()).c_str());
+		progress->SetStatusText(fmt::format(TRANSLATE_FS("GameList", "Scanning {}..."), filename.data()).c_str());
 		ScanFile(std::move(ffd.FileName), ffd.ModificationTime, lock, played_time_map, custom_attributes_ini);
 		progress->SetProgressValue(files_scanned);
 	}
@@ -1300,7 +1359,7 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, boo
 				continue;
 			}
 
-			progress->SetStatusText(fmt::format(TRANSLATE_FS("GameList","Downloading cover for {0} [{1}]..."), entry->title, entry->serial).c_str());
+			progress->SetStatusText(fmt::format(TRANSLATE_FS("GameList", "Downloading cover for {0} [{1}]..."), entry->title, entry->serial).c_str());
 		}
 
 		// we could actually do a few in parallel here...

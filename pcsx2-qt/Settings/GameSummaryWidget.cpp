@@ -33,7 +33,7 @@ GameSummaryWidget::GameSummaryWidget(const GameList::Entry* entry, SettingsWindo
 	for (int i = 0; i < m_ui.region->count(); i++)
 	{
 		m_ui.region->setItemIcon(i,
-			QIcon(QStringLiteral("%1/icons/flags/%2.svg").arg(base_path).arg(GameList::RegionToString(static_cast<GameList::Region>(i)))));
+			QIcon(QStringLiteral("%1/icons/flags/%2.svg").arg(base_path).arg(GameList::RegionToString(static_cast<GameList::Region>(i), false))));
 	}
 
 	m_entry_path = entry->path;
@@ -73,16 +73,17 @@ void GameSummaryWidget::populateDetails(const GameList::Entry* entry)
 	m_ui.type->setCurrentIndex(static_cast<int>(entry->type));
 	m_ui.region->setCurrentIndex(static_cast<int>(entry->region));
 	//: First arg is a GameList compat; second is a string with space followed by star rating OR empty if Unknown compat
-	m_ui.compatibility->setText(tr("%0%1")
-		.arg(GameList::EntryCompatibilityRatingToString(entry->compatibility_rating))
-		.arg([entry]() {
-			if (entry->compatibility_rating == GameList::CompatibilityRating::Unknown)
-				return QStringLiteral("");
+	m_ui.compatibility->setText(
+		tr("%0%1")
+			.arg(GameList::EntryCompatibilityRatingToString(entry->compatibility_rating, true))
+			.arg([entry]() {
+				if (entry->compatibility_rating == GameList::CompatibilityRating::Unknown)
+					return QStringLiteral("");
 
-			const qsizetype compatibility_value = static_cast<qsizetype>(entry->compatibility_rating);
-			//: First arg is filled-in stars for game compatibility; second is empty stars; should be swapped for RTL languages
-			return tr(" %0%1").arg(QStringLiteral("★").repeated(compatibility_value - 1)).arg(QStringLiteral("☆").repeated(6 - compatibility_value));
-		}()));
+				const qsizetype compatibility_value = static_cast<qsizetype>(entry->compatibility_rating);
+				//: First arg is filled-in stars for game compatibility; second is empty stars; should be swapped for RTL languages
+				return tr(" %0%1").arg(QStringLiteral("★").repeated(compatibility_value - 1)).arg(QStringLiteral("☆").repeated(6 - compatibility_value));
+			}()));
 
 	int row = 0;
 	m_ui.detailsFormLayout->getWidgetPosition(m_ui.titleSort, &row, nullptr);
@@ -156,7 +157,7 @@ void GameSummaryWidget::onDiscPathChanged(const QString& value)
 
 	// force rescan of elf to update the serial
 	g_main_window->rescanFile(m_entry_path);
-	
+
 	auto lock = GameList::GetLock();
 	const GameList::Entry* entry = GameList::GetEntryForPath(m_entry_path.c_str());
 	if (entry)

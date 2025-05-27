@@ -133,7 +133,7 @@ namespace
 			const QPoint p = QPoint((r.width() - pix_width) / 2, (r.height() - pix_height) / 2);
 			if (option.state & QStyle::State_Selected)
 			{
-				// See QItemDelegate::selectedPixmap()		
+				// See QItemDelegate::selectedPixmap()
 				QString key = QString::fromStdString(fmt::format("{:016X}-{:d}", pix.cacheKey(), enabled));
 				QPixmap pm;
 				if (!QPixmapCache::find(key, &pm))
@@ -184,12 +184,12 @@ void GameListWidget::initialize()
 	for (u32 type = 0; type < static_cast<u32>(GameList::EntryType::Count); type++)
 	{
 		m_ui.filterType->addItem(GameListModel::getIconForType(static_cast<GameList::EntryType>(type)),
-			qApp->translate("GameList", GameList::EntryTypeToDisplayString(static_cast<GameList::EntryType>(type))));
+			GameList::EntryTypeToString(static_cast<GameList::EntryType>(type), true));
 	}
 	for (u32 region = 0; region < static_cast<u32>(GameList::Region::Count); region++)
 	{
 		m_ui.filterRegion->addItem(GameListModel::getIconForRegion(static_cast<GameList::Region>(region)),
-			qApp->translate("GameList", GameList::RegionToString(static_cast<GameList::Region>(region))));
+			GameList::RegionToString(static_cast<GameList::Region>(region), true));
 	}
 
 	connect(m_ui.viewGameList, &QPushButton::clicked, this, &GameListWidget::showGameList);
