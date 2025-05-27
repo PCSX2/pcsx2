@@ -2424,7 +2424,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 			const GSVector4 dRect(config.colclip_update_area);
 			const GSVector4 sRect = dRect / GSVector4(size.x, size.y).xyxy();
 			StretchRect(colclip_rt, sRect, config.rt, dRect, ShaderConvert::COLCLIP_RESOLVE, false);
-
+			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 			Recycle(colclip_rt);
 
 			g_gs_device->SetColorClipTexture(nullptr);
@@ -2444,6 +2444,10 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 			config.colclip_update_area = config.drawarea;
 
 			colclip_rt = CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::ColorClip, false);
+
+			if (!colclip_rt)
+				return;
+
 			OMSetRenderTargets(colclip_rt, config.ds, nullptr);
 
 			g_gs_device->SetColorClipTexture(colclip_rt);
@@ -2451,6 +2455,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 			const GSVector4 dRect = GSVector4((config.colclip_mode == GSHWDrawConfig::ColClipMode::ConvertOnly) ? GSVector4i::loadh(rtsize) : config.drawarea);
 			const GSVector4 sRect = dRect / GSVector4(rtsize.x, rtsize.y).xyxy();
 			StretchRect(config.rt, sRect, colclip_rt, dRect, ShaderConvert::COLCLIP_INIT, false);
+			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 		}
 	}
 
@@ -2713,7 +2718,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 			const GSVector4 dRect(config.colclip_update_area);
 			const GSVector4 sRect = dRect / GSVector4(size.x, size.y).xyxy();
 			StretchRect(colclip_rt, sRect, config.rt, dRect, ShaderConvert::COLCLIP_RESOLVE, false);
-
+			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 			Recycle(colclip_rt);
 
 			g_gs_device->SetColorClipTexture(nullptr);

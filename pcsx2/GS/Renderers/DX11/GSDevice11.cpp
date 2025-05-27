@@ -2507,15 +2507,14 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		{
 			config.colclip_update_area = config.drawarea;
 
-			const GSVector4 dRect = GSVector4((config.colclip_mode == GSHWDrawConfig::ColClipMode::ConvertOnly) ? GSVector4i::loadh(rtsize) : config.drawarea);
-			const GSVector4 sRect = dRect / GSVector4(rtsize.x, rtsize.y).xyxy();
 			colclip_rt = CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::ColorClip);
 			if (!colclip_rt)
 				return;
 
 			g_gs_device->SetColorClipTexture(colclip_rt);
-			// Warning: StretchRect must be called before BeginScene otherwise
-			// vertices will be overwritten. Trust me you don't want to do that.
+
+			const GSVector4 dRect = GSVector4((config.colclip_mode == GSHWDrawConfig::ColClipMode::ConvertOnly) ? GSVector4i::loadh(rtsize) : config.drawarea);
+			const GSVector4 sRect = dRect / GSVector4(rtsize.x, rtsize.y).xyxy();
 			StretchRect(config.rt, sRect, colclip_rt, dRect, ShaderConvert::COLCLIP_INIT, false);
 			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 		}

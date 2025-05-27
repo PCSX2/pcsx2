@@ -3937,7 +3937,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		{
 			EndRenderPass();
 
-			GL_PUSH("Copy RT to temp texture {%d,%d %dx%d}", config.drawarea.left, config.drawarea.top,
+			GL_PUSH("Copy DS to temp texture {%d,%d %dx%d}", config.drawarea.left, config.drawarea.top,
 				config.drawarea.width(), config.drawarea.height());
 
 			draw_ds_clone->SetState(GSTexture::State::Invalidated);
