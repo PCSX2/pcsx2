@@ -128,6 +128,10 @@ namespace
 			const int pix_width = static_cast<int>(pix.width() / pix.devicePixelRatio());
 			const int pix_height = static_cast<int>(pix.height() / pix.devicePixelRatio());
 
+			// Clip the pixmaps so they don't extend outside the column
+			painter->save();
+			painter->setClipRect(option.rect);
+
 			// Draw the icon, using code derived from QItemDelegate::drawDecoration()
 			const bool enabled = option.state & QStyle::State_Enabled;
 			const QPoint p = QPoint((r.width() - pix_width) / 2, (r.height() - pix_height) / 2);
@@ -159,6 +163,9 @@ namespace
 			{
 				painter->drawPixmap(r.topLeft() + p, pix);
 			}
+
+			// Restore the old clip path.
+			painter->restore();
 		}
 	};
 } // namespace
