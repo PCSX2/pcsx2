@@ -3140,7 +3140,8 @@ bool GSState::SpriteDrawWithoutGaps()
 			}
 			else
 			{
-				if ((std::abs(dpX - first_dpX) >= 16 && (i + 2) < m_vertex.next) || std::abs(this_start_X - last_pX) >= 16)
+				const int dpY = v[i + 1].XYZ.Y - v[i].XYZ.Y;
+				if ((std::abs(dpY - first_dpY) >= 16 && (i + 2) < m_vertex.next) || std::abs(this_start_X - last_pX) >= 16)
 					return false;
 			}
 		}
