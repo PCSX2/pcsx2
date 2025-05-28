@@ -2745,7 +2745,6 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 				// We couldn't get RGB from any depth targets. So clear and preload.
 				// Unfortunately, we still have an alpha channel to preserve, and we can't clear RGB...
 				// So, create a new target, clear/preload it, and copy RGB in.
-				// So, create a new target, clear/preload it, and copy RGB in.
 				GSTexture* tex = (type == RenderTarget) ?
 									 g_gs_device->CreateRenderTarget(dst->m_texture->GetWidth(),
 										 dst->m_texture->GetHeight(), GSTexture::Format::Color, true) :
@@ -3290,6 +3289,12 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 		}
 	}
 
+	
+	const GSVector4i dst_valid = dst->m_valid.rempty() ? GSVector4i::loadh(valid_size) : dst->m_valid;
+	u32 dst_end_block = GSLocalMemory::GetEndBlockAddress(dst->m_TEX0.TBP0, dst->m_TEX0.TBW, dst->m_TEX0.PSM, dst_valid);
+	if (dst_end_block < dst->m_TEX0.TBP0)
+		dst_end_block += MAX_BLOCKS;
+
 	// Can't do channel writes to depth targets, and DirectX can't partial copy depth targets.
 	if (psm_s.depth == 0)
 	{
@@ -3301,7 +3306,7 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 				auto j = i;
 				Target* t = *j;
 
-				if (dst != t && t->m_TEX0.PSM == dst->m_TEX0.PSM && t->Overlaps(dst->m_TEX0.TBP0, dst->m_TEX0.TBW, dst->m_TEX0.PSM, dst->m_valid) &&
+				if (dst != t && t->m_TEX0.PSM == dst->m_TEX0.PSM && t->Overlaps(dst->m_TEX0.TBP0, dst->m_TEX0.TBW, dst->m_TEX0.PSM, dst_valid) &&
 					static_cast<int>(((t->m_TEX0.TBP0 - dst->m_TEX0.TBP0) / 32) % std::max(dst->m_TEX0.TBW, 1U)) <= std::max(0, static_cast<int>(dst->m_TEX0.TBW - t->m_TEX0.TBW)))
 				{
 					const u32 buffer_width = std::max(1U, dst->m_TEX0.TBW);
@@ -3344,10 +3349,10 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 						return hw_clear.value_or(false);
 					}
 					// The new texture is behind it but engulfs the whole thing, shrink the new target so it grows in the HW Draw resize.
-					else if (dst->m_TEX0.TBP0 < t->m_TEX0.TBP0 && (dst->UnwrappedEndBlock() + 1) > t->m_TEX0.TBP0)
+					else if (dst->m_TEX0.TBP0 < t->m_TEX0.TBP0 && dst_end_block > t->m_TEX0.TBP0)
 					{
 						const int rt_pages = ((t->UnwrappedEndBlock() + 1) - t->m_TEX0.TBP0) >> 5;
-						const int overlapping_pages = std::min(rt_pages, static_cast<int>((dst->UnwrappedEndBlock() + 1) - t->m_TEX0.TBP0) >> 5);
+						const int overlapping_pages = std::min(rt_pages, static_cast<int>(dst_end_block - t->m_TEX0.TBP0) >> 5);
 						const int overlapping_pages_height = ((overlapping_pages + (buffer_width - 1)) / buffer_width) * GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y;
 
 						if (overlapping_pages_height == 0 || (overlapping_pages % buffer_width))
@@ -3438,10 +3443,10 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 			{
 				auto j = i;
 				Target* t = *j;
-				if (t != dst && t->Overlaps(dst->m_TEX0.TBP0, dst->m_TEX0.TBW, dst->m_TEX0.PSM, dst->m_valid) && GSUtil::HasSharedBits(dst->m_TEX0.PSM, t->m_TEX0.PSM))
+				if (t != dst && t->Overlaps(dst->m_TEX0.TBP0, dst->m_TEX0.TBW, dst->m_TEX0.PSM, dst_valid) && GSUtil::HasSharedBits(dst->m_TEX0.PSM, t->m_TEX0.PSM))
 				{
 					if (dst->m_TEX0.TBP0 > t->m_TEX0.TBP0 && dst->m_TEX0.TBW == t->m_TEX0.TBW &&
-						((((dst->m_TEX0.TBP0 - t->m_TEX0.TBP0) >> 5) % std::max(t->m_TEX0.TBW, 1U)) + (dst->m_valid.z / 64)) <= dst->m_TEX0.TBW)
+						((((dst->m_TEX0.TBP0 - t->m_TEX0.TBP0) >> 5) % std::max(t->m_TEX0.TBW, 1U)) + (dst_valid.z / 64)) <= dst->m_TEX0.TBW)
 					{
 						// Probably a render target which was previously a Z.
 						if (GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets && t->Inside(dst->m_TEX0.TBP0, dst->m_TEX0.TBW, dst->m_TEX0.PSM, dst->m_valid) &&
@@ -3484,15 +3489,15 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 							continue;
 						}
 
-						int height_adjust = ((((dst->m_end_block + 1) - t->m_TEX0.TBP0) >> 5) / std::max(t->m_TEX0.TBW, 1U)) * GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y;
+						const int height_adjust = (((dst_end_block - t->m_TEX0.TBP0) >> 5) / std::max(t->m_TEX0.TBW, 1U)) * GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y;
 
 						if (height_adjust < t->m_unscaled_size.y)
 						{
-							t->m_TEX0.TBP0 = dst->m_end_block + 1;
+							t->m_TEX0.TBP0 = dst_end_block;
 							t->m_valid.w -= height_adjust;
 							t->ResizeValidity(t->m_valid);
 
-							GSTexture* tex = (type == RenderTarget) ?
+							GSTexture* tex = (t->m_type == RenderTarget) ?
 												 g_gs_device->CreateRenderTarget(t->m_texture->GetWidth(),
 													 t->m_texture->GetHeight(), GSTexture::Format::Color, true) :
 												 g_gs_device->CreateDepthStencil(t->m_texture->GetWidth(),
@@ -3518,7 +3523,7 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 						{
 							if (src && src->m_target && src->m_from_target == t)
 							{
-								src->m_from_target = t;
+								src->m_from_target = nullptr;
 								src->m_texture = t->m_texture;
 								src->m_target_direct = false;
 								src->m_shared_texture = false;
