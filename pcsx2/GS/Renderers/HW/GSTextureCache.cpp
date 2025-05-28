@@ -4006,12 +4006,29 @@ void GSTextureCache::InvalidateContainedTargets(u32 start_bp, u32 end_bp, u32 wr
 				{
 					if (write_bw == t->m_TEX0.TBW && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == GSLocalMemory::m_psm[write_psm].bpp)
 					{
-						
+
 						RGBAMask mask;
 						mask._u32 = GSUtil::GetChannelMask(write_psm);
 						AddDirtyRectTarget(t, invalidate_r, t->m_TEX0.PSM, t->m_TEX0.TBW, mask, false);
 					}
 
+					++i;
+					continue;
+				}
+			}
+
+			// This is an annoying edge case where developers don't know how to use SCISSOR correctly, so it's one pixel over size, making the end block too late.
+			// In this case we *don't* want to nuke the depth, but just adjust the size so it's not 1 pixel over.
+			// Prince of Persia - Sands of Time suffers from this.
+			if (type == DepthStencil && t->m_TEX0.TBP0 < start_bp && t->m_end_block > start_bp)
+			{
+				const GSVector4i masked_valid = GSVector4i(t->m_valid.x, t->m_valid.y, t->m_valid.z & ~1, t->m_valid.w & ~1);
+				const u32 reduced_endblock = GSLocalMemory::GetEndBlockAddress(t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM, masked_valid); 
+
+				if (reduced_endblock <= start_bp)
+				{
+					t->ResizeValidity(masked_valid);
+					t->ResizeDrawn(masked_valid);
 					++i;
 					continue;
 				}
