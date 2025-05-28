@@ -1773,7 +1773,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 								continue;
 
 							// Be careful of shuffles where it can shuffle the width of the target, even though it may not have all been drawn to.
-							if (!possible_shuffle && !t->Inside(bp, bw, psm, block_boundary_rect))
+							if (!possible_shuffle && frame.Block() != TEX0.TBP0 && !t->Inside(bp, bw, psm, block_boundary_rect))
 								continue;
 
 							x_offset = rect.x;
@@ -3440,7 +3440,8 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 				Target* t = *j;
 				if (t != dst && t->Overlaps(dst->m_TEX0.TBP0, dst->m_TEX0.TBW, dst->m_TEX0.PSM, dst->m_valid) && GSUtil::HasSharedBits(dst->m_TEX0.PSM, t->m_TEX0.PSM))
 				{
-					if (dst->m_TEX0.TBP0 > t->m_TEX0.TBP0 && (((dst->m_TEX0.TBP0 - t->m_TEX0.TBP0) >> 5) % std::max(t->m_TEX0.TBW, 1U)) == 0)
+					if (dst->m_TEX0.TBP0 > t->m_TEX0.TBP0 && dst->m_TEX0.TBW == t->m_TEX0.TBW &&
+						((((dst->m_TEX0.TBP0 - t->m_TEX0.TBP0) >> 5) % std::max(t->m_TEX0.TBW, 1U)) + (dst->m_valid.z / 64)) <= dst->m_TEX0.TBW)
 					{
 						// Probably a render target which was previously a Z.
 						if (GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets && t->Inside(dst->m_TEX0.TBP0, dst->m_TEX0.TBW, dst->m_TEX0.PSM, dst->m_valid) &&
