@@ -21297,6 +21297,7 @@ SLES-52894:
   name-sort: "Bard's Tale, The"
   region: "PAL-E"
   gsHWFixes:
+    textureInsideRT: 1 # Fixes half right.
     estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
 SLES-52895:
   name: "Nickelodeon The SpongeBob SquarePants Movie"
@@ -22212,6 +22213,7 @@ SLES-53154:
   name-sort: "Bard's Tale, The"
   region: "PAL-M8"
   gsHWFixes:
+    textureInsideRT: 1 # Fixes half right.
     estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
 SLES-53155:
   name: "Star Wars - Episode III - Revenge of the Sith"
@@ -31441,6 +31443,7 @@ SLKA-25246:
   name-sort: "Bard's Tale, The"
   region: "NTSC-K"
   gsHWFixes:
+    textureInsideRT: 1 # Fixes half right.
     estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
 SLKA-25247:
   name: "Prince of Persia - Warrior Within"
@@ -66500,6 +66503,7 @@ SLUS-20803:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    textureInsideRT: 1 # Fixes half right.
     estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
 SLUS-20804:
   name: "Forgotten Realms - Demon Stone"
