@@ -3043,7 +3043,7 @@ GSTextureCache::Target* GSTextureCache::CreateTarget(GIFRegTEX0 TEX0, const GSVe
 	{
 		// Not having this valid could make things explode, but I do enjoy watching the world burn (and this is actually more correct).
 		const u32 mask = GSLocalMemory::m_psm[TEX0.PSM].fmsk;
-		dst->m_valid_rgb = GSLocalMemory::m_psm[TEX0.PSM].depth || ((fbmask & 0x00FFFFFF) & mask) != (mask & 0x00FFFFFF) || (dst->m_dirty.GetDirtyChannels() & 0x7);
+		dst->m_valid_rgb |= GSLocalMemory::m_psm[TEX0.PSM].depth || ((fbmask & 0x00FFFFFF) & mask) != (mask & 0x00FFFFFF) || (dst->m_dirty.GetDirtyChannels() & 0x7);
 
 		// If there is an opposite target without valid RGB, we need to match them up
 		auto& rev_list = m_dst[1 - type];
@@ -3065,8 +3065,8 @@ GSTextureCache::Target* GSTextureCache::CreateTarget(GIFRegTEX0 TEX0, const GSVe
 		// If the alpha is masked and preloaded, we need to say it's valid else textures might fail to use the whole texture if RGB is valid.
 		if (((fbmask & 0xFF000000) & mask) != (mask & 0xFF000000) && bpp != 24)
 		{
-			dst->m_valid_alpha_high = (~(fbmask & mask) & 0xf0000000) & mask;
-			dst->m_valid_alpha_low = (~(fbmask & mask) & 0x0f000000) & mask;
+			dst->m_valid_alpha_high |= ((~(fbmask & mask) & 0xf0000000) & mask) != 0;
+			dst->m_valid_alpha_low |= ((~(fbmask & mask) & 0x0f000000) & mask) != 0;
 
 			if (bpp == 16)
 				dst->m_valid_alpha_low = dst->m_valid_alpha_high;
@@ -3089,8 +3089,8 @@ GSTextureCache::Target* GSTextureCache::CreateTarget(GIFRegTEX0 TEX0, const GSVe
 					// If the format, and location doesn't overlap
 					if (TEX0.TBP0 == iter->blit.DBP && GSUtil::HasCompatibleBits(iter->blit.DPSM, TEX0.PSM) && (iter->blit.DBW == dst->m_TEX0.TBW || (transfer_end >= tex_end && (iter->blit.DBW * 64) == iter->rect.z)))
 					{
-						dst->m_valid_alpha_high = iter->blit.DPSM != PSMT4HL;
-						dst->m_valid_alpha_low = iter->blit.DPSM != PSMT4HH;
+						dst->m_valid_alpha_high |= iter->blit.DPSM != PSMT4HL;
+						dst->m_valid_alpha_low |= iter->blit.DPSM != PSMT4HH;
 						break;
 					}
 
@@ -3366,6 +3366,10 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 							// Clear the dirty first
 							t->Update();
 							dst->Update();
+
+							dst->m_valid_rgb |= t->m_valid_rgb;
+							dst->m_valid_alpha_low |= t->m_valid_alpha_low;
+							dst->m_valid_alpha_high |= t->m_valid_alpha_high;
 
 							// Clamp it if it gets too small, shouldn't happen but stranger things have happened.
 							if (copy_width < 0)
