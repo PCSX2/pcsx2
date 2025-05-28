@@ -2415,11 +2415,24 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 					// If frame is old and dirty, probably modified by the EE, so kill the wrong dimension version.
 					if (!t->m_dirty.empty())
 					{
-						DevCon.Warning("Wanted %x psm %x bw %x, got %x psm %x bw %x, deleting", TEX0.TBP0, TEX0.PSM, TEX0.TBW, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW);
-						InvalidateSourcesFromTarget(t);
-						i = list.erase(i);
-						delete t;
-						continue;
+						const GSVector4i dirty_rect = t->m_dirty.GetTotalRect(t->m_TEX0, t->m_unscaled_size);
+						// It's dirty with the data we want at the right width, so just change it to that.
+						// Prince of Persia - Sands of Time
+						if (t->m_dirty.size() == 1 && t->m_dirty[0].bw == TEX0.TBW)
+						{
+							t->m_TEX0.TBW = TEX0.TBW;
+							t->m_valid = dirty_rect;
+							t->m_end_block = GSLocalMemory::GetEndBlockAddress(t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM, t->m_valid);
+							t->m_drawn_since_read = GSVector4i::zero();
+						}
+						else
+						{
+							DevCon.Warning("Wanted %x psm %x bw %x, got %x psm %x bw %x, deleting", TEX0.TBP0, TEX0.PSM, TEX0.TBW, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW);
+							InvalidateSourcesFromTarget(t);
+							i = list.erase(i);
+							delete t;
+							continue;
+						}
 					}
 				}
 				dst = t;
