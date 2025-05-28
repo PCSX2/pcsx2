@@ -129,6 +129,7 @@ private:
 	bool ContinueSplitClear();
 	void FinishSplitClear();
 
+	bool NeedsBlending();
 	bool IsRTWritten();
 	bool IsDepthAlwaysPassing();
 	bool IsUsingCsInBlend();
