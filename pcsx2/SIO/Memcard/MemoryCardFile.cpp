@@ -887,6 +887,7 @@ std::vector<AvailableMcdInfo> FileMcd_GetAvailableCards(bool include_in_use_card
 		}
 	}
 
+	std::sort(mcds.begin(), mcds.end(), [](auto& a, auto& b) { return a.name < b.name; });
 	return mcds;
 }
 
