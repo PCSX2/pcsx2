@@ -170,6 +170,9 @@ private Q_SLOTS:
 	void onAboutActionTriggered();
 	void onToolsOpenDataDirectoryTriggered();
 	void onToolsCoverDownloaderTriggered();
+#if !defined(__APPLE__)
+	void onCreateGameShortcutTriggered();
+#endif
 	void onToolsEditCheatsPatchesTriggered(bool cheats);
 	void onCreateMemoryCardOpenRequested();
 	void updateTheme();
