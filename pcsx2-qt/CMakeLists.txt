@@ -264,6 +264,14 @@ target_sources(pcsx2-qt PRIVATE
 	resources/resources.qrc
 )
 
+if (NOT APPLE)
+    target_sources(pcsx2-qt PRIVATE
+        ShortcutCreationDialog.cpp
+        ShortcutCreationDialog.h
+        ShortcutCreationDialog.ui
+    )
+endif()
+
 file(GLOB TS_FILES ${CMAKE_CURRENT_SOURCE_DIR}/Translations/*.ts)
 
 target_precompile_headers(pcsx2-qt PRIVATE PrecompiledHeader.h)
