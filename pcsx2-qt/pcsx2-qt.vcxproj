@@ -171,6 +171,7 @@
     <ClCompile Include="AutoUpdaterDialog.cpp" />
     <ClCompile Include="CoverDownloadDialog.cpp" />
     <ClCompile Include="DisplayWidget.cpp" />
+    <ClCompile Include="ShortcutCreationDialog.cpp" />
     <ClCompile Include="QtHost.cpp" />
     <ClCompile Include="MainWindow.cpp" />
     <ClCompile Include="PrecompiledHeader.cpp">
@@ -267,6 +268,7 @@
     <QtMoc Include="AboutDialog.h" />
     <QtMoc Include="AutoUpdaterDialog.h" />
     <QtMoc Include="CoverDownloadDialog.h" />
+    <QtMoc Include="ShortcutCreationDialog.h" />
     <QtMoc Include="MainWindow.h" />
     <QtMoc Include="DisplayWidget.h" />
   </ItemGroup>
@@ -350,6 +352,7 @@
     <ClCompile Include="$(IntDir)moc_QtHost.cpp" />
     <ClCompile Include="$(IntDir)moc_QtProgressCallback.cpp" />
     <ClCompile Include="$(IntDir)moc_SetupWizardDialog.cpp" />
+    <ClCompile Include="$(IntDir)moc_ShortcutCreationDialog.cpp" />
     <ClCompile Include="$(IntDir)Tools\InputRecording\moc_NewInputRecordingDlg.cpp" />
     <ClCompile Include="$(IntDir)Tools\InputRecording\moc_InputRecordingViewer.cpp" />
     <ClCompile Include="$(IntDir)qrc_resources.cpp">
@@ -360,6 +363,7 @@
     <QtUi Include="AboutDialog.ui" />
     <QtUi Include="AutoUpdaterDialog.ui" />
     <QtUi Include="CoverDownloadDialog.ui" />
+    <QtUi Include="ShortcutCreationDialog.ui" />
     <QtUi Include="Debugger\AnalysisOptionsDialog.ui" />
     <QtUi Include="Debugger\Breakpoints\BreakpointDialog.ui" />
     <QtUi Include="Debugger\Breakpoints\BreakpointView.ui" />

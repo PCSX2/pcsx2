@@ -166,6 +166,9 @@ namespace FileSystem
 	/// Copies one file to another, optionally replacing it if it already exists.
 	bool CopyFilePath(const char* source, const char* destination, bool replace);
 
+	/// Returns the path to the current package (AppImage).
+	std::string GetPackagePath();
+
 	/// Returns the path to the current executable.
 	std::string GetProgramPath();
 
