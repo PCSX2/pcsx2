@@ -103,9 +103,9 @@
     <addaction name="actionMemoryCardSettings"/>
     <addaction name="actionDEV9Settings"/>
     <addaction name="actionFolderSettings"/>
+    <addaction name="actionAchievementSettings"/>
     <addaction name="actionControllerSettings"/>
     <addaction name="actionHotkeySettings"/>
-    <addaction name="actionAchievementSettings"/>
     <addaction name="separator"/>
     <addaction name="actionAddGameDirectory"/>
     <addaction name="actionScanForNewGames"/>

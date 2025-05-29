@@ -203,10 +203,10 @@ namespace FullscreenUI
 		Graphics,
 		Audio,
 		MemoryCard,
+		Folders,
+		Achievements,
 		Controller,
 		Hotkey,
-		Achievements,
-		Folders,
 		Advanced,
 		Patches,
 		Cheats,
@@ -322,10 +322,10 @@ namespace FullscreenUI
 	static void DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_advanced_settings);
 	static void DrawAudioSettingsPage();
 	static void DrawMemoryCardSettingsPage();
+	static void DrawFoldersSettingsPage();
+	static void DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& settings_lock);
 	static void DrawControllerSettingsPage();
 	static void DrawHotkeySettingsPage();
-	static void DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& settings_lock);
-	static void DrawFoldersSettingsPage();
 	static void DrawAdvancedSettingsPage();
 	static void DrawPatchesOrCheatsSettingsPage(bool cheats);
 	static void DrawGameFixesSettingsPage();
@@ -3067,10 +3067,10 @@ void FullscreenUI::DrawSettingsWindow()
 			ICON_PF_PICTURE,
 			ICON_PF_SOUND,
 			ICON_PF_MEMORY_CARD,
+			ICON_FA_FOLDER_OPEN,
+			ICON_FA_TROPHY,
 			ICON_PF_GAMEPAD_ALT,
 			ICON_PF_KEYBOARD_ALT,
-			ICON_FA_TROPHY,
-			ICON_FA_FOLDER_OPEN,
 			ICON_FA_EXCLAMATION_TRIANGLE,
 		};
 		static constexpr const char* per_game_icons[] = {
@@ -3090,10 +3090,10 @@ void FullscreenUI::DrawSettingsWindow()
 			SettingsPage::Graphics,
 			SettingsPage::Audio,
 			SettingsPage::MemoryCard,
+			SettingsPage::Folders,
+			SettingsPage::Achievements,
 			SettingsPage::Controller,
 			SettingsPage::Hotkey,
-			SettingsPage::Achievements,
-			SettingsPage::Folders,
 			SettingsPage::Advanced,
 		};
 		static constexpr SettingsPage per_game_pages[] = {
@@ -3114,10 +3114,10 @@ void FullscreenUI::DrawSettingsWindow()
 			FSUI_NSTR("Graphics Settings"),
 			FSUI_NSTR("Audio Settings"),
 			FSUI_NSTR("Memory Card Settings"),
+			FSUI_NSTR("Folder Settings"),
+			FSUI_NSTR("Achievements Settings"),
 			FSUI_NSTR("Controller Settings"),
 			FSUI_NSTR("Hotkey Settings"),
-			FSUI_NSTR("Achievements Settings"),
-			FSUI_NSTR("Folder Settings"),
 			FSUI_NSTR("Advanced Settings"),
 			FSUI_NSTR("Patches"),
 			FSUI_NSTR("Cheats"),
@@ -3240,20 +3240,20 @@ void FullscreenUI::DrawSettingsWindow()
 				DrawMemoryCardSettingsPage();
 				break;
 
-			case SettingsPage::Controller:
-				DrawControllerSettingsPage();
-				break;
-
-			case SettingsPage::Hotkey:
-				DrawHotkeySettingsPage();
+			case SettingsPage::Folders:
+				DrawFoldersSettingsPage();
 				break;
 
 			case SettingsPage::Achievements:
 				DrawAchievementsSettingsPage(lock);
 				break;
 
-			case SettingsPage::Folders:
-				DrawFoldersSettingsPage();
+			case SettingsPage::Controller:
+				DrawControllerSettingsPage();
+				break;
+
+			case SettingsPage::Hotkey:
+				DrawHotkeySettingsPage();
 				break;
 
 			case SettingsPage::Patches:
@@ -7900,10 +7900,10 @@ TRANSLATE_NOOP("FullscreenUI", "Emulation Settings");
 TRANSLATE_NOOP("FullscreenUI", "Graphics Settings");
 TRANSLATE_NOOP("FullscreenUI", "Audio Settings");
 TRANSLATE_NOOP("FullscreenUI", "Memory Card Settings");
+TRANSLATE_NOOP("FullscreenUI", "Folder Settings");
+TRANSLATE_NOOP("FullscreenUI", "Achievements Settings");
 TRANSLATE_NOOP("FullscreenUI", "Controller Settings");
 TRANSLATE_NOOP("FullscreenUI", "Hotkey Settings");
-TRANSLATE_NOOP("FullscreenUI", "Achievements Settings");
-TRANSLATE_NOOP("FullscreenUI", "Folder Settings");
 TRANSLATE_NOOP("FullscreenUI", "Advanced Settings");
 TRANSLATE_NOOP("FullscreenUI", "Patches");
 TRANSLATE_NOOP("FullscreenUI", "Cheats");
