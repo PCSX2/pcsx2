@@ -24286,6 +24286,7 @@ SLES-53804:
   name: "SeaWorld Adventure Park - Shamu's Deep Sea Adventures"
   region: "PAL-E"
   gsHWFixes:
+    textureInsideRT: 1 # Fixes depth blur.
     estimateTextureRegion: 1 # Massively improves performance.
 SLES-53805:
   name: "Cocoto Funfair"
@@ -28396,6 +28397,8 @@ SLES-55102:
   name: "The History Channel - Battle for the Pacific"
   name-sort: "History Channel, The - Battle for the Pacific"
   region: "PAL-E"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes depth blur.
 SLES-55103:
   name: "Cabela's Big Game Hunter [2007]"
   region: "PAL-E"
@@ -69560,6 +69563,7 @@ SLUS-21289:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    textureInsideRT: 1 # Fixes depth blur.
     estimateTextureRegion: 1 # Massively improves performance.
 SLUS-21290:
   name: "Ford Street Racing"
@@ -72001,6 +72005,8 @@ SLUS-21712:
   name: "The History Channel - Battle for the Pacific"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes depth blur.
 SLUS-21713:
   name: "Winter Sports 2008 - The Ultimate Challenge"
   region: "NTSC-U"
