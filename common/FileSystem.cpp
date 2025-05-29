@@ -85,7 +85,7 @@ static inline bool FileSystemCharacterIsSane(char32_t c, bool strip_slashes)
 	if (c == '*')
 		return false;
 
-		// macos doesn't allow colons, apparently
+	// macos doesn't allow colons, apparently
 #ifdef __APPLE__
 	if (c == U':')
 		return false;
@@ -2488,6 +2488,21 @@ bool FileSystem::DeleteDirectory(const char* path)
 		return false;
 
 	return (rmdir(path) == 0);
+}
+
+std::string FileSystem::GetPackagePath()
+{
+	// NOTE: The reason this function is separated from FileSystem::GetProgramPath() is because
+	// This path check breaks other usages of FileSystem::GetProgramPath for the AppImage.
+	// Notably the CI-generated AppImage fails to start because PCSX2 can't find its resources
+	// since it tries to look for them relative to the .AppImage file instead of relative to the actual executable.
+
+	// Check if we are running inside appimage. If so, return the path to the appimage instead.
+	if (const char* appimage_path = getenv("APPIMAGE"))
+		return std::string(appimage_path);
+
+	// Otherwise, find the executable file directly
+	return GetProgramPath();
 }
 
 std::string FileSystem::GetProgramPath()

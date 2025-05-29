@@ -21,6 +21,10 @@
 #include "Tools/InputRecording/InputRecordingViewer.h"
 #include "Tools/InputRecording/NewInputRecordingDlg.h"
 
+#if !defined(__APPLE__)
+#include "ShortcutCreationDialog.h"
+#endif
+
 #include "pcsx2/Achievements.h"
 #include "pcsx2/CDVD/CDVDcommon.h"
 #include "pcsx2/CDVD/CDVDdiscReader.h"
@@ -1452,6 +1456,10 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 		action = menu.addAction(tr("Set Cover Image..."));
 		connect(action, &QAction::triggered, [this, entry]() { setGameListEntryCoverImage(entry); });
 
+#if !defined(__APPLE__)
+		connect(menu.addAction(tr("Create Game Shortcut...")), &QAction::triggered, [this]() { MainWindow::onCreateGameShortcutTriggered(); });
+#endif
+
 		connect(menu.addAction(tr("Exclude From List")), &QAction::triggered,
 			[this, entry]() { getSettingsWindow()->getGameListSettingsWidget()->addExcludedPath(entry->path); });
 
@@ -1758,6 +1766,17 @@ void MainWindow::onToolsCoverDownloaderTriggered()
 	dlg.exec();
 }
 
+#if !defined(__APPLE__)
+void MainWindow::onCreateGameShortcutTriggered()
+{
+	const GameList::Entry* entry = m_game_list_widget->getSelectedEntry();
+	const QString title = QString::fromStdString(entry->GetTitle());
+	const QString path = QString::fromStdString(entry->path);
+	VMLock lock(pauseAndLockVM());
+	ShortcutCreationDialog dlg(lock.getDialogParent(), title, path);
+	dlg.exec();
+}
+#endif
 void MainWindow::onToolsEditCheatsPatchesTriggered(bool cheats)
 {
 	if (s_current_disc_serial.isEmpty() || s_current_running_crc == 0)

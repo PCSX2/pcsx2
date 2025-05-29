@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ShortcutCreationDialog</class>
+ <widget class="QDialog" name="ShortcutCreationDialog">
+  <property name="windowModality">
+   <enum>Qt::WindowModality::ApplicationModal</enum>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>500</width>
+    <height>685</height>
+   </rect>
+  </property>
+  <layout class="QGridLayout" name="shortcutLayout">
+   <item row="4" column="0" colspan="2">
+    <widget class="QGroupBox" name="launchArgsGroup">
+     <property name="title">
+      <string/>
+     </property>
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="7" column="0">
+       <widget class="QLabel" name="displayOptionLabel">
+        <property name="text">
+         <string>Display Options</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QCheckBox" name="overrideBootELFToggle">
+        <property name="text">
+         <string>Override boot ELF:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="11" column="0">
+       <widget class="QLabel" name="customArgsLabel">
+        <property name="text">
+         <string>Custom Arguments</string>
+        </property>
+        <property name="buddy">
+         <cstring>customArgsInput</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="0" colspan="4">
+       <widget class="QGroupBox" name="displayOptionGroup">
+        <property name="title">
+         <string/>
+        </property>
+        <layout class="QGridLayout" name="displayOptionGrid">
+         <item row="0" column="0">
+          <widget class="QCheckBox" name="fullscreenMode">
+           <property name="text">
+            <string>Fullscreen mode:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QComboBox" name="fullscreenModeDropdown">
+           <item>
+            <property name="text">
+             <string>Force Enable</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Force Disable</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QCheckBox" name="bigPictureModeToggle">
+           <property name="text">
+            <string>Use Big Picture mode</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item row="3" column="2" colspan="2">
+       <widget class="QLineEdit" name="gameArgs"/>
+      </item>
+      <item row="4" column="2" colspan="2">
+       <widget class="QComboBox" name="bootOptionDropdown">
+        <item>
+         <property name="text">
+          <string>Fast Boot</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Full Boot</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QCheckBox" name="bootOptionToggle">
+        <property name="text">
+         <string>Boot mode:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="3">
+       <widget class="QPushButton" name="overrideBootELFButton">
+        <property name="text">
+         <string>Browse...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="2">
+       <widget class="QLineEdit" name="overrideBootELFPath"/>
+      </item>
+      <item row="10" column="0" colspan="4">
+       <widget class="QGroupBox" name="saveStateGroup">
+        <property name="title">
+         <string/>
+        </property>
+        <layout class="QGridLayout" name="savestateGridLayout">
+         <item row="1" column="1">
+          <widget class="QSpinBox" name="loadStateIndex">
+           <property name="showGroupSeparator" stdset="0">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QLineEdit" name="loadStateFilePath"/>
+         </item>
+         <item row="0" column="0">
+          <widget class="QRadioButton" name="loadStateNone">
+           <property name="text">
+            <string>Do not load save state</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QRadioButton" name="loadStateIndexToggle">
+           <property name="text">
+            <string>Load save state by slot:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QRadioButton" name="loadStateFileToggle">
+           <property name="text">
+            <string>Load save state from file:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="2">
+          <widget class="QPushButton" name="loadStateFileBrowse">
+           <property name="text">
+            <string>Browse...</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item row="9" column="0">
+       <widget class="QLabel" name="saveStateLabel">
+        <property name="text">
+         <string>Save State Options</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QCheckBox" name="gameArgsToggle">
+        <property name="text">
+         <string>Game arguments:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="12" column="0" colspan="4">
+       <widget class="QGroupBox" name="customArgsGroup">
+        <property name="title">
+         <string/>
+        </property>
+        <layout class="QGridLayout" name="customArgsGrid">
+         <item row="1" column="0">
+          <widget class="QLineEdit" name="customArgsInput"/>
+         </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="customArgsInstruction">
+           <property name="text">
+            <string>You may add additional (space-separated) &lt;a href=&quot;https://pcsx2.net/docs/post/cli/&quot;&gt;custom arguments&lt;/a&gt; that are not listed above here:</string>
+           </property>
+           <property name="textFormat">
+            <enum>Qt::TextFormat::RichText</enum>
+           </property>
+           <property name="wordWrap">
+            <bool>true</bool>
+           </property>
+           <property name="openExternalLinks">
+            <bool>true</bool>
+           </property>
+           <property name="textInteractionFlags">
+            <set>Qt::TextInteractionFlag::TextBrowserInteraction</set>
+           </property>
+           <property name="buddy">
+            <cstring>customArgsInput</cstring>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item row="0" column="0" colspan="3">
+       <widget class="QCheckBox" name="portableModeToggle">
+        <property name="text">
+         <string>Portable Mode (Stores data in local PCSX2 directory)</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="shortcutTypeLabel">
+     <property name="text">
+      <string>Shortcut Type</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="1">
+    <widget class="QDialogButtonBox" name="dialogButtons">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
+     </property>
+     <property name="centerButtons">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="instruction">
+     <property name="text">
+      <string>Launch Options</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0" colspan="2">
+    <widget class="QGroupBox" name="shortcutTypeGroup">
+     <property name="title">
+      <string/>
+     </property>
+     <layout class="QGridLayout" name="shortcutTypeLayout">
+      <item row="2" column="0">
+       <widget class="QRadioButton" name="shortcutStartMenu">
+        <property name="text">
+         <string>Launcher</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QRadioButton" name="shortcutDesktop">
+        <property name="text">
+         <string>Desktop</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="5" column="0">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Orientation::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <tabstops>
+  <tabstop>shortcutDesktop</tabstop>
+  <tabstop>shortcutStartMenu</tabstop>
+  <tabstop>portableModeToggle</tabstop>
+  <tabstop>overrideBootELFToggle</tabstop>
+  <tabstop>overrideBootELFPath</tabstop>
+  <tabstop>overrideBootELFButton</tabstop>
+  <tabstop>gameArgsToggle</tabstop>
+  <tabstop>gameArgs</tabstop>
+  <tabstop>bootOptionToggle</tabstop>
+  <tabstop>bootOptionDropdown</tabstop>
+  <tabstop>fullscreenMode</tabstop>
+  <tabstop>fullscreenModeDropdown</tabstop>
+  <tabstop>bigPictureModeToggle</tabstop>
+  <tabstop>loadStateNone</tabstop>
+  <tabstop>loadStateIndexToggle</tabstop>
+  <tabstop>loadStateIndex</tabstop>
+  <tabstop>loadStateFileToggle</tabstop>
+  <tabstop>loadStateFilePath</tabstop>
+  <tabstop>loadStateFileBrowse</tabstop>
+  <tabstop>customArgsInput</tabstop>
+ </tabstops>
+ <resources>
+  <include location="resources/resources.qrc"/>
+ </resources>
+ <connections/>
+</ui>
