@@ -6916,6 +6916,24 @@ GSTexture* GSTextureCache::LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVec
 			GL_INS("TC: Exact match on BP 0x%04x BW %u", t->m_TEX0.TBP0, t->m_TEX0.TBW);
 			this_offset.x = 0;
 			this_offset.y = 0;
+
+			// If we're using native scaling we can take this opertunity to downscale the target, it should maintain this.
+			if (GSConfig.UserHacks_NativeScaling != GSNativeScaling::Off && t->m_scale > 1.0f)
+			{
+				GSTexture* tex = t->m_type == RenderTarget ? g_gs_device->CreateRenderTarget(t->m_unscaled_size.x, t->m_unscaled_size.y, GSTexture::Format::Color, false) :
+															 g_gs_device->CreateDepthStencil(t->m_unscaled_size.x, t->m_unscaled_size.y, GSTexture::Format::DepthStencil, false);
+				if (!tex)
+					return nullptr;
+
+				g_gs_device->StretchRect(t->m_texture, GSVector4(0, 0, 1, 1), tex, GSVector4(GSVector4i::loadh(t->m_unscaled_size)), (t->m_type == RenderTarget) ? ShaderConvert::COPY : ShaderConvert::DEPTH_COPY, false);
+				g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+				m_target_memory_usage = (m_target_memory_usage - t->m_texture->GetMemUsage()) + tex->GetMemUsage();
+				g_gs_device->Recycle(t->m_texture);
+			
+				t->m_texture = tex;
+				t->m_scale = 1.0f;
+				t->m_downscaled = true;
+			}
 		}
 		else if (GSConfig.UserHacks_GPUTargetCLUTMode == GSGPUTargetCLUTMode::InsideTarget &&
 				 t->m_TEX0.TBP0 < CBP && t->m_end_block >= CBP)
