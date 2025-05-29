@@ -3,6 +3,7 @@
 
 #include "common/Pcsx2Types.h"
 #include "common/Console.h"
+#include "common/FileSystem.h"
 #include "common/HostSys.h"
 #include "common/Path.h"
 #include "common/ScopedGuard.h"
@@ -11,6 +12,7 @@
 #include "common/Threading.h"
 #include "common/WindowInfo.h"
 
+#include "pcsx2/Host.h"
 #include "fmt/format.h"
 
 #include <dbus/dbus.h>
@@ -364,6 +366,80 @@ bool Common::PlaySoundAsync(const char* path)
 #else
 	return false;
 #endif
+}
+
+void Common::CreateShortcut(const std::string name, const std::string game_path, const std::string passed_cli_args)
+{
+	if (name.empty())
+	{
+		Host::ReportErrorAsync(TRANSLATE_SV("LnxMisc", "Failed to create shortcut"), TRANSLATE_SV("LnxMisc", "Cannot create shortcut without a name."));
+		return;
+	}
+
+	// Sanitize filename and game path
+	const std::string clean_name = Path::SanitizeFileName(name).c_str();
+	const std::string clean_path = Path::Canonicalize(Path::RealPath(game_path)).c_str();
+	if (!Path::IsValidFileName(clean_name))
+	{
+		Host::ReportErrorAsync(TRANSLATE_SV("LnxMisc", "Failed to create shortcut"), TRANSLATE_SV("LnxMisc", "Filename contains illegal character."));
+		return;
+	}
+
+	// Find the executable path
+	const std::string executable_path = FileSystem::GetProgramPath();
+	if (executable_path.empty())
+	{
+		Host::ReportErrorAsync(TRANSLATE_SV("LnxMisc", "Failed to create shortcut"), TRANSLATE_SV("LnxMisc", "Executable path is empty."));
+		return;
+	}
+
+	// Find home directory
+	std::string link_path;
+	if (const char* home = ::getenv("HOME"))
+	{
+		link_path = fmt::format("{}/Desktop/{}.desktop", home, clean_name);
+	}
+	else
+	{
+		Host::ReportErrorAsync(TRANSLATE_SV("LnxMisc", "Failed to create shortcut"), TRANSLATE_SV("LnxMisc", "Home path is empty."));
+		return;
+	}
+
+	// Checks if a shortcut already exist
+	if (FileSystem::FileExists(link_path.c_str()))
+	{
+		Host::ReportErrorAsync(TRANSLATE_SV("LnxMisc", "Failed to create shortcut"), TRANSLATE_SV("LnxMisc", "A Shortcut with the same name already exist."));
+		return;
+	}
+
+	// Shortcut content
+	Console.WriteLnFmt("Creating shortcut for '{}' with arguments '{}'", name, passed_cli_args);
+	std::string file_content = 
+	"[Desktop Entry]\n"
+	"Encoding=UTF-8\n"
+	"Version=1.0\n"
+	"Type=Application\n"
+	"Terminal=false\n"
+	"StartupWMClass=PCSX2\n"
+	"Exec="+ executable_path + " " + passed_cli_args + " -- " + game_path + "\n"
+	"Name="+ name + "\n"
+	"Icon=PCSX2\n"
+	"Categories=Game;Emulator;\n";
+	std::string_view sv(file_content);
+
+	// Write to .desktop file
+	if (!FileSystem::WriteStringToFile(link_path.c_str(), sv))
+	{
+		Host::ReportErrorAsync(TRANSLATE_SV("LnxMisc", "Error"), TRANSLATE_SV("LnxMisc", "Failed to create .desktop file"));
+		return;
+	}
+
+	Console.WriteLnFmt(Color_StrongGreen, "Desktop shortcut for {} has been created succesfully.", clean_name);
+
+	if (chmod(link_path.c_str(), S_IRWXU) != 0) // enables user to execute file
+	{
+		Console.ErrorFmt("Failed to change file permissions for .desktop file: {} ({})", strerror(errno), errno);
+	}
 }
 
 void Threading::Sleep(int ms)

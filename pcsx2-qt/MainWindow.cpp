@@ -1454,6 +1454,10 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 			connect(menu.addAction(tr("Check Wiki Page")), &QAction::triggered, [this, entry]() { goToWikiPage(entry); });
 		}
 
+#if !defined(__APPLE__)
+		connect(menu.addAction(tr("Create Desktop Shortcut")), &QAction::triggered, [this, entry]() { createDesktopShortcut(entry->GetTitle(), entry->path); });
+#endif
+
 		menu.addSeparator();
 
 		if (!s_vm_valid)
@@ -2907,6 +2911,21 @@ void MainWindow::goToWikiPage(const GameList::Entry* entry)
 {
 	QtUtils::OpenURL(this, fmt::format("https://wiki.pcsx2.net/{}", entry->serial).c_str());
 }
+
+#if !defined(__APPLE__)
+void MainWindow::createDesktopShortcut(const std::string name, const std::string game_path)
+{
+	QInputDialog args_dialog(this);
+	args_dialog.setWindowTitle(tr("Create Desktop Shortcut"));
+	args_dialog.setLabelText(tr("Insert launch arguments to include with the shortcut:"));
+	args_dialog.setInputMode(QInputDialog::TextInput);
+	args_dialog.setOptions(QInputDialog::UsePlainTextEditForTextInput);
+	if (args_dialog.exec() == 0)
+		return;
+	
+	Common::CreateShortcut(name, game_path, args_dialog.textValue().toStdString());
+}
+#endif
 
 std::optional<bool> MainWindow::promptForResumeState(const QString& save_state_path)
 {
