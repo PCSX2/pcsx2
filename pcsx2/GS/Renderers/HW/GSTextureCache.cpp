@@ -2901,7 +2901,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 			const GSLocalMemory::psm_t& t_psm_s = GSLocalMemory::m_psm[t->m_TEX0.PSM];
 			if (t_psm_s.bpp != psm_s.bpp)
 			{
-				bool remove_target = possible_clear;
+				bool remove_target = possible_clear || (used && !is_shuffle);
 
 				// If we have a BW change, and it's not a multiple of 2 (for a shuffle), the game's going to get a jigsaw
 				// puzzle of pages and can't be expecting to have legitimate data. Tokimeki Memorial 3 reuses a BW 17
