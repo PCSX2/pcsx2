@@ -149,7 +149,9 @@ DockTabBar::DockTabBar(KDDockWidgets::Core::TabBar* controller, QWidget* parent)
 	// that ends up taking ownerhsip of the style for the entire application!
 	if (QProxyStyle* proxy_style = qobject_cast<QProxyStyle*>(style()))
 	{
-		proxy_style->baseStyle()->setParent(qApp);
+		if (proxy_style->baseStyle() == qApp->style())
+			proxy_style->baseStyle()->setParent(qApp);
+
 		proxy_style->setBaseStyle(QStyleFactory::create(qApp->style()->name()));
 	}
 }
