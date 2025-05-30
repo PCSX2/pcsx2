@@ -1988,6 +1988,8 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 			src = CreateMergedSource(TEX0, TEXA, region, dst->m_scale);
 	}
 
+	GSVector4i rect = r;
+
 	if (!src)
 	{
 #ifdef ENABLE_OGL_DEBUG
@@ -2006,7 +2008,43 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 		}
 #endif
 
-		src = CreateSource(TEX0, TEXA, dst, x_offset, y_offset, lod, &r, gpu_clut, region);
+		// This is for the condition where the target doesn't exist on a shuffle and it needs to load from memory.
+		// The Godfather clears the depth buffer with a normal clear, so our depth target gets deleted, then because it finds no target
+		// it assumes it really is 16bits, causing the texture to be full of garbage, and our shuffle handling becomes a mess.
+		// In this case it's actually C24, but let's just assume it means C32, it shouldn't matter in this case.
+		GIFRegTEX0 src_TEX0 = TEX0;
+		if (possible_shuffle && !dst && psm_s.bpp == 16)
+		{
+			if (frame.FBW == src_TEX0.TBW && frame.FBW <= 14)
+			{
+				rect.y /= 2;
+				rect.w /= 2;
+			}
+			else
+			{
+				rect.x /= 2;
+				rect.z /= 2;
+			}
+			if (TEX0.TBP0 == frame.Block())
+			{
+				GIFRegTEX0 target_TEX0;
+				target_TEX0.TBP0 = frame.Block();
+				target_TEX0.PSM = PSMCT32;
+				target_TEX0.TBW = frame.FBW;
+
+				if (target_TEX0.TBW > 14)
+					target_TEX0.TBW /= 2;
+
+				dst = g_texture_cache->CreateTarget(target_TEX0, GSVector2i(rect.z, rect.w), GSVector2i(rect.z, rect.w), GSRendererHW::GetInstance()->GetUpscaleMultiplier(),
+					GSLocalMemory::m_psm[TEX0.PSM].depth ? DepthStencil : RenderTarget, true, 0, false, true, possible_shuffle, rect, nullptr);
+			}
+			else
+			{
+				src_TEX0.PSM = PSMCT32;
+			}
+		}
+
+		src = CreateSource(src_TEX0, TEXA, dst, x_offset, y_offset, lod, &rect, gpu_clut, region);
 		if (!src) [[unlikely]]
 			return nullptr;
 	}
@@ -2071,7 +2109,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 			AttachPaletteToSource(src, psm_s.pal, true, true);
 	}
 
-	src->Update(r);
+	src->Update(rect);
 	return src;
 }
 
