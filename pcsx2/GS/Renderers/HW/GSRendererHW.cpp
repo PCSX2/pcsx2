@@ -4092,8 +4092,13 @@ void GSRendererHW::Draw()
 			const bool rt_update = can_update_size || (m_texture_shuffle && (src && rt && src->m_from_target != rt));
 
 			// If it's updating from a texture shuffle, limit the size to the source size.
-			if (rt_update && !can_update_size && src->m_from_target)
-				update_rect = update_rect.rintersect(src->m_from_target->m_valid);
+			if (rt_update && !can_update_size)
+			{
+				if(src->m_from_target)
+					update_rect = update_rect.rintersect(src->m_from_target->m_valid);
+
+				update_rect = update_rect.rintersect(GSVector4i::loadh(GSVector2i(new_w, new_h)));
+			}
 
 			// if frame is masked or afailing always to never write frame, wanna make sure we don't touch it. This might happen if DATE or Alpha Test is being used to write to Z.
 			const bool frame_masked = ((m_cached_ctx.FRAME.FBMSK & frame_psm.fmsk) == frame_psm.fmsk) || (m_cached_ctx.TEST.ATE && m_cached_ctx.TEST.ATST == ATST_NEVER && !(m_cached_ctx.TEST.AFAIL & AFAIL_FB_ONLY));
