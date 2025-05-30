@@ -153,6 +153,13 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
 	dialog->registerWidgetHelp(m_ui.backupSaveStates, tr("Create Save State Backups"), tr("Checked"),
 		//: Do not translate the ".backup" extension.
 		tr("Creates a backup copy of a save state if it already exists when the save is created. The backup copy has a .backup suffix."));
+
+	connect(dialog, &SettingsWindow::externalSettingsChanged, this, [this]() {
+		// Refresh clamping mode dropdowns
+		m_ui.eeClampMode->setCurrentIndex(getClampingModeIndex(-1));
+		m_ui.vu0ClampMode->setCurrentIndex(getClampingModeIndex(0));
+		m_ui.vu1ClampMode->setCurrentIndex(getClampingModeIndex(1));
+	});
 }
 
 AdvancedSettingsWidget::~AdvancedSettingsWidget() = default;

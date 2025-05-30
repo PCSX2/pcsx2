@@ -159,6 +159,15 @@ DebugSettingsWidget::DebugSettingsWidget(SettingsWindow* dialog, QWidget* parent
 #else
 	m_ui.debugTabs->removeTab(m_ui.debugTabs->indexOf(m_ui.traceLogTabWidget));
 #endif
+
+	connect(dialog, &SettingsWindow::externalSettingsChanged, this, [this]() {
+		// Refresh draw dumping and logging states
+		m_ui.dumpGSData->setChecked(m_dialog->getEffectiveBoolValue("EmuCore/GS", "DumpGSData", false));
+		m_ui.saveRT->setChecked(m_dialog->getEffectiveBoolValue("EmuCore/GS", "SaveRT", false));
+		m_ui.saveFrame->setChecked(m_dialog->getEffectiveBoolValue("EmuCore/GS", "SaveFrame", false));
+		m_ui.saveTexture->setChecked(m_dialog->getEffectiveBoolValue("EmuCore/GS", "SaveTexture", false));
+		m_ui.saveDepth->setChecked(m_dialog->getEffectiveBoolValue("EmuCore/GS", "SaveDepth", false));
+	});
 }
 
 DebugSettingsWidget::~DebugSettingsWidget() = default;
