@@ -17254,7 +17254,7 @@ The saves will not be recoverable.</source>
     <name>MemoryCard</name>
     <message>
         <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="289"/>
-        <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="969"/>
+        <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="970"/>
         <source>Memory Card Creation Failed</source>
         <translation type="unfinished"></translation>
     </message>
@@ -17287,7 +17287,7 @@ Close any other instances of PCSX2, or restart your computer.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="970"/>
+        <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="971"/>
         <source>Failed to create memory card. The error was:
 {}</source>
         <translation type="unfinished"></translation>
