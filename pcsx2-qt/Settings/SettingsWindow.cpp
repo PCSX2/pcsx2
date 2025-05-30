@@ -693,3 +693,8 @@ void SettingsWindow::closeGamePropertiesDialogs()
 		dialog->deleteLater();
 	}
 }
+
+void SettingsWindow::onExternalSettingsChanged()
+{
+	emit externalSettingsChanged();
+}

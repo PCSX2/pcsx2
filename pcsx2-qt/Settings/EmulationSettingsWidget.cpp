@@ -170,6 +170,11 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
 
 	updateOptimalFramePacing();
 	updateUseVSyncForTimingEnabled();
+
+	connect(dialog, &SettingsWindow::externalSettingsChanged, this, [this]() {
+		updateOptimalFramePacing();
+		updateUseVSyncForTimingEnabled();
+	});
 }
 
 EmulationSettingsWidget::~EmulationSettingsWidget() = default;

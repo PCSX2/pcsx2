@@ -874,6 +874,15 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 			   "Can result in a large speed boost on slower systems, at the cost of many broken graphical effects. "
 			   "If games are broken and you have this option enabled, please disable it first."));
 	}
+
+	connect(dialog, &SettingsWindow::externalSettingsChanged, this, [this]() {
+		onShadeBoostChanged();
+		onMessagesPosChanged();
+		onPerformancePosChanged();
+		onTrilinearFilteringChanged();
+		onCPUSpriteRenderBWChanged();
+		onGpuPaletteConversionChanged(m_ui.gpuPaletteConversion->checkState());
+	});
 }
 
 GraphicsSettingsWidget::~GraphicsSettingsWidget() = default;

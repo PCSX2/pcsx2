@@ -1693,6 +1693,8 @@ void FullscreenUI::SetSettingsChanged(SettingsInterface* bsi)
 		s_game_settings_changed.store(true, std::memory_order_release);
 	else
 		s_settings_changed.store(true, std::memory_order_release);
+
+	Host::OnSettingsChangedExternally();
 }
 
 bool FullscreenUI::GetEffectiveBoolSetting(SettingsInterface* bsi, const char* section, const char* key, bool default_value)

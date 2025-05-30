@@ -96,8 +96,12 @@ public:
 	void removeSettingValue(const char* section, const char* key);
 	void saveAndReloadGameSettings();
 
+public Q_SLOTS:
+	void onExternalSettingsChanged();
+
 Q_SIGNALS:
 	void discSerialChanged();
+	void externalSettingsChanged();
 
 private Q_SLOTS:
 	void onCategoryCurrentRowChanged(int row);

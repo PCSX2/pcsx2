@@ -116,6 +116,7 @@ public Q_SLOTS:
 	void reportError(const QString& title, const QString& message);
 	bool confirmMessage(const QString& title, const QString& message);
 	void onStatusMessage(const QString& message);
+	void refreshSettings();
 
 	void runOnUIThread(const std::function<void()>& func);
 	void requestReset();

@@ -1349,6 +1349,14 @@ void MainWindow::checkForSettingChanges()
 	LogWindow::updateSettings();
 }
 
+void MainWindow::refreshSettings()
+{
+	if (SettingsWindow* sw = getSettingsWindow())
+	{
+		sw->onExternalSettingsChanged();
+	}
+}
+
 std::optional<WindowInfo> MainWindow::getWindowInfo()
 {
 	if (!m_display_widget || isRenderingToMain())

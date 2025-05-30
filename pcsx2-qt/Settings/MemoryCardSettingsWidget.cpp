@@ -64,6 +64,10 @@ MemoryCardSettingsWidget::MemoryCardSettingsWidget(SettingsWindow* dialog, QWidg
 		tr("Checked"),
 		tr("(Folder type only / Card size: Auto) Loads only the relevant booted game saves, ignoring others. Avoids "
 		   "running out of space for saves."));
+
+	connect(dialog, &SettingsWindow::externalSettingsChanged, this, [this]() {
+		refresh();
+	});
 }
 
 MemoryCardSettingsWidget::~MemoryCardSettingsWidget() = default;
