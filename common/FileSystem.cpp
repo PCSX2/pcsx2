@@ -2560,6 +2560,17 @@ std::string FileSystem::GetProgramPath()
 #endif
 }
 
+std::string FileSystem::GetPackagePath()
+{
+	// Check if we are running inside appimage. If so, return the path to the appimage instead.
+	if (const char* appimage_path = getenv("APPIMAGE"))
+		return std::string(appimage_path);
+
+	// Otherwise, find the executable using `GetProgramPath()`
+
+	return GetProgramPath();
+}
+
 std::string FileSystem::GetWorkingDirectory()
 {
 	std::string buffer;
