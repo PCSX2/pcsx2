@@ -181,7 +181,7 @@ void GameListWidget::initialize()
 {
 	const float cover_scale = Host::GetBaseFloatSettingValue("UI", "GameListCoverArtScale", 0.45f);
 	const bool show_cover_titles = Host::GetBaseBoolSettingValue("UI", "GameListShowCoverTitles", true);
-	m_model = new GameListModel(cover_scale, show_cover_titles, this);
+	m_model = new GameListModel(cover_scale, show_cover_titles, devicePixelRatioF(), this);
 	m_model->updateCacheSize(width(), height());
 
 	m_sort_model = new GameListSortModel(m_model);
@@ -557,6 +557,18 @@ void GameListWidget::resizeEvent(QResizeEvent* event)
 	QWidget::resizeEvent(event);
 	resizeTableViewColumnsToFit();
 	m_model->updateCacheSize(width(), height());
+}
+
+bool GameListWidget::event(QEvent* event)
+{
+	if (event->type() == QEvent::DevicePixelRatioChange)
+	{
+		m_model->setDevicePixelRatio(devicePixelRatioF());
+		QWidget::event(event);
+		return true;
+	}
+
+	return QWidget::event(event);
 }
 
 void GameListWidget::resizeTableViewColumnsToFit()
