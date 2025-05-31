@@ -1413,6 +1413,9 @@ void GSState::GIFRegHandlerBITBLTBUF(const GIFReg* RESTRICT r)
 		FlushWrite();
 
 	m_env.BITBLTBUF = r->BITBLTBUF;
+
+	if (m_tr.total == 0 && m_tr.start == m_tr.end)
+		m_tr.Init(m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, m_env.BITBLTBUF, m_tr.write);
 }
 
 void GSState::GIFRegHandlerTRXPOS(const GIFReg* RESTRICT r)
@@ -1423,6 +1426,9 @@ void GSState::GIFRegHandlerTRXPOS(const GIFReg* RESTRICT r)
 		FlushWrite();
 
 	m_env.TRXPOS = r->TRXPOS;
+
+	if (m_tr.total == 0 && m_tr.start == m_tr.end)
+		m_tr.Init(m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, m_env.BITBLTBUF, m_tr.write);
 }
 
 void GSState::GIFRegHandlerTRXREG(const GIFReg* RESTRICT r)
