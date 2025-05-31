@@ -138,15 +138,14 @@ namespace
 			if (option.state & QStyle::State_Selected)
 			{
 				// See QItemDelegate::selectedPixmap()
-				QString key = QString::fromStdString(fmt::format("{:016X}-{:d}", pix.cacheKey(), enabled));
+				QColor color = option.palette.color(enabled ? QPalette::Normal : QPalette::Disabled, QPalette::Highlight);
+				color.setAlphaF(0.3f);
+
+				QString key = QString::fromStdString(fmt::format("{:016X}-{:d}-{:08X}", pix.cacheKey(), enabled, color.rgba()));
 				QPixmap pm;
 				if (!QPixmapCache::find(key, &pm))
 				{
 					QImage img = pix.toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied);
-
-					QColor color = option.palette.color(enabled ? QPalette::Normal : QPalette::Disabled,
-						QPalette::Highlight);
-					color.setAlphaF(0.3f);
 
 					QPainter tinted_painter(&img);
 					tinted_painter.setCompositionMode(QPainter::CompositionMode_SourceAtop);
