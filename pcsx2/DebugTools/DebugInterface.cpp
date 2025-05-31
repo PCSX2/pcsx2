@@ -734,6 +734,11 @@ std::vector<std::unique_ptr<BiosThread>> R5900DebugInterface::GetThreadList() co
 	return getEEThreads();
 }
 
+std::vector<IopMod> R5900DebugInterface::GetModuleList() const
+{
+	return {};
+}
+
 //
 // R3000DebugInterface
 //
@@ -1060,6 +1065,11 @@ SymbolImporter* R3000DebugInterface::GetSymbolImporter() const
 std::vector<std::unique_ptr<BiosThread>> R3000DebugInterface::GetThreadList() const
 {
 	return getIOPThreads();
+}
+
+std::vector<IopMod> R3000DebugInterface::GetModuleList() const
+{
+	return getIOPModules();
 }
 
 ElfMemoryReader::ElfMemoryReader(const ccc::ElfFile& elf)
