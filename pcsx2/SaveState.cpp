@@ -1101,11 +1101,16 @@ static bool CheckVersion(const std::string& filename, zip_t* zf, Error* error)
 	// than the emulator recognizes.  99% chance that trying to load it will just corrupt emulation or crash.
 	if (savever > g_SaveVersion || (savever >> 16) != (g_SaveVersion >> 16))
 	{
-		Error::SetString(error, fmt::format(TRANSLATE_FS("SaveState","This save state is outdated and is no longer compatible "
-											"with the current version of PCSX2.\n\n"
-											"If you have any unsaved progress on this save state, you can download the compatible version (PCSX2 {}) "
+		std::string current_emulator_version = BuildVersion::GitTag;
+		if (current_emulator_version.empty())
+		{
+			current_emulator_version = "Unknown";
+		}
+		Error::SetString(error, fmt::format(TRANSLATE_FS("SaveState","This save state was created with PCSX2 version {0}. It is no longer compatible "
+											"with your current PCSX2 version {1}.\n\n"
+											"If you have any unsaved progress on this save state, you can download the compatible PCSX2 version {0} "
 											"from pcsx2.net, load the save state, and save your progress to the memory card."),
-											version_string));
+											version_string, current_emulator_version));
 		return false;
 	}
 
