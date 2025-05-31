@@ -1168,7 +1168,8 @@ void ImGuiManager::SetSoftwareCursor(u32 index, std::string image_path, float im
 	// but may cause side effects like Player 2's crosshair overlaying everything in some games (e.g., Time Crisis 2/3). 
 	// Haven't really tested other games and also had issues even with showing inputs on my end in the OSD lower left section - RedDevilus
 	// This is a temporary workaround until a proper fix is implemented but it shouldn't break anything in-game (hopefully).
-	// MTGS::RunOnGSThread([index, image_path = std::move(image_path), image_scale, multiply_color]() {
+	// Update: MTGS::WaitGS(); is needed outside the function and this seems more appropiate fix and doesn't seem to break anything.
+	MTGS::RunOnGSThread([index, image_path = std::move(image_path), image_scale, multiply_color]() {
 
 	// Ensure the provided index is within the valid range of the software cursors array
 	pxAssert(index < std::size(s_software_cursors));
@@ -1216,9 +1217,14 @@ void ImGuiManager::SetSoftwareCursor(u32 index, std::string image_path, float im
 	sc.pos = InputManager::GetPointerAbsolutePosition(index);
 
 	// If the multi-threaded GS thread is open, update the cursor's texture to reflect the new image (example is a crosshair.png) or scale (size)
-	// This is necessary for rendering the crosshair correctly
+	// This is necessary for rendering the crosshair correctly.
+	// Also, need to make it run on the GSthread to ensure thread safety or OpenGL renderer will have race conditions due to not creating texture without a valid accompanying context.
 	if (MTGS::IsOpen())
-		UpdateSoftwareCursorTexture(index);
+	{
+		MTGS::RunOnGSThread([index]() {
+			UpdateSoftwareCursorTexture(index);
+		});
+	}
 
 	// If showing or hiding the cursor for Player 1 (index 0), update the host mouse mode
 	// This synchronizes the system cursor visibility with the software cursor
@@ -1226,7 +1232,8 @@ void ImGuiManager::SetSoftwareCursor(u32 index, std::string image_path, float im
 	if (is_hiding_or_showing && index == 0)
 		Host::RunOnCPUThread(&InputManager::UpdateHostMouseMode);
 
-	// }); // Corresponding closing bracket for MTGS::RunOnGSThread on top of this function which commented out but is here in case we need to bring it back
+	});
+	MTGS::WaitGS(); // This issue of the missing P2 cursor seems to be caused because the GS (and thus MTGS) gets reset shortly after USBopen, causing the command to get dropped. Putting MTGS::WaitGS() at the end of this function (after the closing bracket for MTGS::RunOnGSThread()) seems enough to fix this. See https://github.com/PCSX2/pcsx2/pull/12697
 }
 
 bool ImGuiManager::HasSoftwareCursor(u32 index)
