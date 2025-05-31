@@ -254,15 +254,6 @@ namespace QtUtils
 		widget->resize(width, height);
 	}
 
-	qreal GetDevicePixelRatioForWidget(const QWidget* widget)
-	{
-		const QScreen* screen_for_ratio = widget->screen();
-		if (!screen_for_ratio)
-			screen_for_ratio = QGuiApplication::primaryScreen();
-
-		return screen_for_ratio ? screen_for_ratio->devicePixelRatio() : static_cast<qreal>(1);
-	}
-
 	std::optional<WindowInfo> GetWindowInfoForWidget(QWidget* widget)
 	{
 		WindowInfo wi;
@@ -303,7 +294,7 @@ namespace QtUtils
 		}
 #endif
 
-		const qreal dpr = GetDevicePixelRatioForWidget(widget);
+		const qreal dpr = widget->devicePixelRatioF();
 		wi.surface_width = static_cast<u32>(static_cast<qreal>(widget->width()) * dpr);
 		wi.surface_height = static_cast<u32>(static_cast<qreal>(widget->height()) * dpr);
 		wi.surface_scale = static_cast<float>(dpr);
