@@ -349,8 +349,7 @@ bool DisplayWidget::event(QEvent* event)
 			return true;
 		}
 
-		// According to https://bugreports.qt.io/browse/QTBUG-95925 the recommended practice for handling DPI change is responding to paint events
-		case QEvent::Paint:
+		case QEvent::DevicePixelRatioChange:
 		case QEvent::Resize:
 		{
 			QWidget::event(event);
