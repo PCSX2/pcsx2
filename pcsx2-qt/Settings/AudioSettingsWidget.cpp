@@ -342,7 +342,7 @@ void AudioSettingsWidget::onExpansionSettingsClicked()
 	QDialog dlg(QtUtils::GetRootWidget(this));
 	Ui::AudioExpansionSettingsDialog dlgui;
 	dlgui.setupUi(&dlg);
-	dlgui.icon->setPixmap(QIcon::fromTheme(QStringLiteral("volume-up-line")).pixmap(32, 32));
+	QtUtils::SetScalableIcon(dlgui.icon, QIcon::fromTheme(QStringLiteral("volume-up-line")), QSize(32, 32));
 
 	SettingsInterface* sif = m_dialog->getSettingsInterface();
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, dlgui.blockSize, "SPU2/Output", "ExpandBlockSize",
@@ -431,7 +431,7 @@ void AudioSettingsWidget::onStretchSettingsClicked()
 	QDialog dlg(QtUtils::GetRootWidget(this));
 	Ui::AudioStretchSettingsDialog dlgui;
 	dlgui.setupUi(&dlg);
-	dlgui.icon->setPixmap(QIcon::fromTheme(QStringLiteral("volume-up-line")).pixmap(32, 32));
+	QtUtils::SetScalableIcon(dlgui.icon, QIcon::fromTheme(QStringLiteral("volume-up-line")), QSize(32, 32));
 
 	SettingsInterface* sif = m_dialog->getSettingsInterface();
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, dlgui.sequenceLength, "SPU2/Output", "StretchSequenceLengthMS",

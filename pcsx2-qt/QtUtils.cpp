@@ -374,4 +374,37 @@ namespace QtUtils
 
 		return true;
 	}
+
+	class IconVariableDpiFilter : QObject
+	{
+	public:
+		explicit IconVariableDpiFilter(QLabel* lbl, const QIcon& icon, const QSize& size, QObject* parent = nullptr)
+			: QObject(parent)
+			, m_lbl{lbl}
+			, m_icn{icon}
+			, m_size{size}
+		{
+			lbl->installEventFilter(this);
+			m_lbl->setPixmap(m_icn.pixmap(m_size, m_lbl->devicePixelRatioF()));
+		}
+
+	protected:
+		bool eventFilter(QObject* object, QEvent* event) override
+		{
+			if (object == m_lbl && event->type() == QEvent::DevicePixelRatioChange)
+				m_lbl->setPixmap(m_icn.pixmap(m_size, m_lbl->devicePixelRatioF()));
+			// Don't block the event
+			return false;
+		}
+
+	private:
+		QLabel* m_lbl;
+		QIcon m_icn;
+		QSize m_size;
+	};
+
+	void SetScalableIcon(QLabel* lbl, const QIcon& icon, const QSize& size)
+	{
+		new IconVariableDpiFilter(lbl, icon, size, lbl);
+	}
 } // namespace QtUtils
