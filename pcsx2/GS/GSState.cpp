@@ -32,7 +32,7 @@ static __fi bool IsFirstProvokingVertex()
 	return (GSIsHardwareRenderer() && !g_gs_device->Features().provoking_vertex_last);
 }
 
-constexpr int GSState::GetSaveStateSize()
+constexpr int GSState::GetSaveStateSize(int version)
 {
 	int size = 0;
 
@@ -78,6 +78,19 @@ constexpr int GSState::GetSaveStateSize()
 
 	size += sizeof(m_tr.x);
 	size += sizeof(m_tr.y);
+	if (version >= 9)
+	{
+		size += sizeof(m_tr.w);
+		size += sizeof(m_tr.h);
+		size += sizeof(m_tr.m_blit);
+		size += sizeof(m_tr.m_pos);
+		size += sizeof(m_tr.m_reg);
+		size += sizeof(m_tr.rect);
+		size += sizeof(m_tr.total);
+		size += sizeof(m_tr.start);
+		size += sizeof(m_tr.end);
+		size += sizeof(m_tr.write);
+	}
 	size += GSLocalMemory::m_vmsize;
 	size += (sizeof(GIFPath::tag) + sizeof(GIFPath::reg)) * 4 /* std::size(GSState::m_path) */; // std::size won't work without an instance.
 	size += sizeof(m_q);
@@ -2569,13 +2582,14 @@ static void ReadState(T* dst, u8*& src, size_t len = sizeof(T))
 
 int GSState::Freeze(freezeData* fd, bool sizeonly)
 {
+	const u32 version = STATE_VERSION;
 	if (sizeonly)
 	{
-		fd->size = GetSaveStateSize();
+		fd->size = GetSaveStateSize(version);
 		return 0;
 	}
 
-	if (!fd->data || fd->size < GetSaveStateSize())
+	if (!fd->data || fd->size < GetSaveStateSize(version))
 		return -1;
 
 	Flush(GSFlushReason::SAVESTATE);
@@ -2584,7 +2598,6 @@ int GSState::Freeze(freezeData* fd, bool sizeonly)
 		ReadbackTextureCache();
 
 	u8* data = fd->data;
-	const u32 version = STATE_VERSION;
 
 	WriteState(data, &version);
 	WriteState(data, &m_env.PRIM);
@@ -2627,6 +2640,18 @@ int GSState::Freeze(freezeData* fd, bool sizeonly)
 	data += sizeof(GIFReg); // obsolite
 	WriteState(data, &m_tr.x);
 	WriteState(data, &m_tr.y);
+	// Version 9 up.
+	WriteState(data, &m_tr.w);
+	WriteState(data, &m_tr.h);
+	WriteState(data, &m_tr.m_blit);
+	WriteState(data, &m_tr.m_pos);
+	WriteState(data, &m_tr.m_reg);
+	WriteState(data, &m_tr.rect);
+	WriteState(data, &m_tr.total);
+	WriteState(data, &m_tr.start);
+	WriteState(data, &m_tr.end);
+	WriteState(data, &m_tr.write);
+	// End of version 9 changes.
 	WriteState(data, m_mem.m_vm8, m_mem.m_vmsize);
 
 	for (GIFPath& path : m_path)
@@ -2654,14 +2679,14 @@ int GSState::Defrost(const freezeData* fd)
 	if (!fd || !fd->data || fd->size == 0)
 		return -1;
 
-	if (fd->size < GetSaveStateSize())
-		return -1;
-
 	u8* data = fd->data;
 
 	u32 version;
 
 	ReadState(&version, data);
+
+	if (fd->size < GetSaveStateSize(version))
+		return -1;
 
 	if (version > STATE_VERSION)
 	{
@@ -2692,12 +2717,6 @@ int GSState::Defrost(const freezeData* fd)
 	ReadState(&m_env.TRXPOS, data);
 	ReadState(&m_env.TRXREG, data);
 	ReadState(&m_env.TRXREG, data); // obsolete
-	// Technically this value ought to be saved like m_tr.x/y (break
-	// compatibility) but so far only a single game (Motocross Mania) really
-	// depends on this value (i.e != BITBLTBUF) Savestates are likely done at
-	// VSYNC, so not in the middle of a texture transfer, therefore register
-	// will be set again properly
-	m_tr.m_blit = m_env.BITBLTBUF;
 
 	for (int i = 0; i < 2; i++)
 	{
@@ -2733,9 +2752,36 @@ int GSState::Defrost(const freezeData* fd)
 	data += sizeof(GIFReg); // obsolite
 	ReadState(&m_tr.x, data);
 	ReadState(&m_tr.y, data);
-	ReadState(m_mem.m_vm8, data, m_mem.m_vmsize);
 
-	m_tr.total = 0; // TODO: restore transfer state
+	if (version >= 9)
+	{
+		ReadState(&m_tr.w, data);
+		ReadState(&m_tr.h, data);
+		ReadState(&m_tr.m_blit, data);
+		ReadState(&m_tr.m_pos, data);
+		ReadState(&m_tr.m_reg, data);
+		ReadState(&m_tr.rect, data);
+		ReadState(&m_tr.total, data);
+		ReadState(&m_tr.start, data);
+		ReadState(&m_tr.end, data);
+		ReadState(&m_tr.write, data);
+	}
+	else
+	{
+		m_tr.w = m_env.TRXREG.RRW;
+		m_tr.h = m_env.TRXREG.RRH;
+		m_tr.m_blit = m_env.BITBLTBUF;
+		m_tr.m_pos = m_env.TRXPOS;
+		m_tr.m_reg = m_env.TRXREG;
+		// Assume the last transfer was a write (but nuke it).
+		m_tr.rect = GSVector4i(m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, m_env.TRXPOS.DSAX + m_tr.w, m_env.TRXPOS.DSAY + m_tr.h);
+		m_tr.total = 0;
+		m_tr.start = 0;
+		m_tr.end = 0;
+		m_tr.write = true;
+	}
+
+	ReadState(m_mem.m_vm8, data, m_mem.m_vmsize);
 
 	for (GIFPath& path : m_path)
 	{
