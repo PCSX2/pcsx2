@@ -108,15 +108,19 @@ private:
 	struct GSTransferBuffer
 	{
 		int x = 0, y = 0;
+		int w = 0, h = 0;
 		int start = 0, end = 0, total = 0;
 		u8* buff = nullptr;
+		GSVector4i rect = GSVector4i::zero();
 		GIFRegBITBLTBUF m_blit = {};
+		GIFRegTRXPOS m_pos = {};
+		GIFRegTRXREG m_reg = {};
 		bool write = false;
 
 		GSTransferBuffer();
 		~GSTransferBuffer();
 
-		void Init(int tx, int ty, const GIFRegBITBLTBUF& blit, bool write);
+		void Init(GIFRegTRXPOS& TRXPOS, GIFRegTRXREG& TRXREG, const GIFRegBITBLTBUF& blit, bool is_write);
 		bool Update(int tw, int th, int bpp, int& len);
 
 	} m_tr;

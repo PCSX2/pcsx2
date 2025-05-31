@@ -1445,10 +1445,10 @@ void GSState::GIFRegHandlerTRXDIR(const GIFReg* RESTRICT r)
 	switch (m_env.TRXDIR.XDIR)
 	{
 		case 0: // host -> local
-			m_tr.Init(m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, m_env.BITBLTBUF, true);
+			m_tr.Init(m_env.TRXPOS, m_env.TRXREG, m_env.BITBLTBUF, true);
 			break;
 		case 1: // local -> host
-			m_tr.Init(m_env.TRXPOS.SSAX, m_env.TRXPOS.SSAY, m_env.BITBLTBUF, false);
+			m_tr.Init(m_env.TRXPOS, m_env.TRXREG, m_env.BITBLTBUF, false);
 			break;
 		case 2: // local -> local
 			CheckWriteOverlap(true, true);
@@ -1549,16 +1549,13 @@ void GSState::FlushWrite()
 
 	GSVector4i r;
 
-	r.left = m_env.TRXPOS.DSAX;
-	r.top = m_env.TRXPOS.DSAY;
-	r.right = r.left + m_env.TRXREG.RRW;
-	r.bottom = r.top + m_env.TRXREG.RRH;
+	r = m_tr.rect;
 
 	InvalidateVideoMem(m_env.BITBLTBUF, r);
 
 	const GSLocalMemory::writeImage wi = GSLocalMemory::m_psm[m_env.BITBLTBUF.DPSM].wi;
 
-	wi(m_mem, m_tr.x, m_tr.y, &m_tr.buff[m_tr.start], len, m_env.BITBLTBUF, m_env.TRXPOS, m_env.TRXREG);
+	wi(m_mem, m_tr.x, m_tr.y, &m_tr.buff[m_tr.start], len, m_tr.m_blit, m_tr.m_pos, m_tr.m_reg);
 
 	m_tr.start += len;
 
@@ -1931,12 +1928,9 @@ void GSState::Write(const u8* mem, int len)
 	if (m_env.TRXDIR.XDIR == 3)
 		return;
 
-	const int w = m_env.TRXREG.RRW;
-	const int h = m_env.TRXREG.RRH;
-
 	CheckWriteOverlap(true, false);
 
-	if (!m_tr.Update(w, h, GSLocalMemory::m_psm[m_env.BITBLTBUF.DPSM].trbpp, len))
+	if (!m_tr.Update(m_tr.w, m_tr.h, GSLocalMemory::m_psm[m_tr.m_blit.DPSM].trbpp, len))
 	{
 		m_env.TRXDIR.XDIR = 3;
 		return;
@@ -1949,10 +1943,7 @@ void GSState::Write(const u8* mem, int len)
 	{
 		GSVector4i r;
 
-		r.left = m_env.TRXPOS.DSAX;
-		r.top = m_env.TRXPOS.DSAY;
-		r.right = r.left + m_env.TRXREG.RRW;
-		r.bottom = r.top + m_env.TRXREG.RRH;
+		r = m_tr.rect;
 
 		s_last_transfer_draw_n = s_n;
 		// Store the transfer for preloading new RT's.
@@ -1974,15 +1965,15 @@ void GSState::Write(const u8* mem, int len)
 
 		GL_CACHE("Write! %u ...  => 0x%x W:%d F:%s (DIR %d%d), dPos(%d %d) size(%d %d) draw %d", s_transfer_n,
 				blit.DBP, blit.DBW, psm_str(blit.DPSM),
-				m_env.TRXPOS.DIRX, m_env.TRXPOS.DIRY,
-				m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, w, h, s_n);
+				m_tr.m_pos.DIRX, m_tr.m_pos.DIRY,
+				m_tr.x, m_tr.y, m_tr.w, m_tr.h, s_n);
 
 		if (len >= m_tr.total)
 		{
 			// received all data in one piece, no need to buffer it
 			InvalidateVideoMem(blit, r);
 
-			psm.wi(m_mem, m_tr.x, m_tr.y, mem, m_tr.total, blit, m_env.TRXPOS, m_env.TRXREG);
+			psm.wi(m_mem, m_tr.x, m_tr.y, mem, m_tr.total, blit, m_tr.m_pos, m_tr.m_reg);
 
 			m_tr.start = m_tr.end = m_tr.total;
 
@@ -2334,7 +2325,7 @@ void GSState::ReadLocalMemoryUnsync(u8* mem, int qwc, GIFRegBITBLTBUF BITBLTBUF,
 	GSTransferBuffer tb;
 
 	if(m_tr.end >= m_tr.total || m_tr.write == true)
-		tb.Init(TRXPOS.SSAX, TRXPOS.SSAY, BITBLTBUF, false);
+		tb.Init(TRXPOS, TRXREG, BITBLTBUF, false);
 
 	int len = qwc * 16;
 	if (!tb.Update(w, h, bpp, len))
@@ -4563,14 +4554,19 @@ GSState::GSTransferBuffer::~GSTransferBuffer()
 	_aligned_free(buff);
 }
 
-void GSState::GSTransferBuffer::Init(int tx, int ty, const GIFRegBITBLTBUF& blit, bool is_write)
+void GSState::GSTransferBuffer::Init(GIFRegTRXPOS& TRXPOS, GIFRegTRXREG& TRXREG, const GIFRegBITBLTBUF& blit, bool is_write)
 {
-	x = tx;
-	y = ty;
+	x = is_write ? TRXPOS.DSAX : TRXPOS.SSAX;
+	y = is_write ? TRXPOS.DSAY : TRXPOS.SSAY;
+	w = TRXREG.RRW;
+	h = TRXREG.RRH;
+	rect = GSVector4i(x, y, x + w, y + h);
 	total = 0;
 	start = 0;
 	end = 0;
 	m_blit = blit;
+	m_pos = TRXPOS;
+	m_reg = TRXREG;
 	write = is_write;
 }
 
