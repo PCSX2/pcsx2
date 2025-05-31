@@ -20,6 +20,7 @@ class QAction;
 class QComboBox;
 class QFileInfo;
 class QFrame;
+class QIcon;
 class QLabel;
 class QKeyEvent;
 class QSlider;
@@ -102,4 +103,8 @@ namespace QtUtils
 	bool IsLightTheme(const QPalette& palette);
 
 	bool IsCompositorManagerRunning();
+
+	/// Sets the scalable icon to a given label (svg icons, or icons with multiple size pixmaps)
+	/// The icon will then be reloaded on DPR changes using an event filter
+	void SetScalableIcon(QLabel* lbl, const QIcon& icon, const QSize& size);
 } // namespace QtUtils
