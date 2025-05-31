@@ -2493,6 +2493,13 @@ bool FileSystem::DeleteDirectory(const char* path)
 std::string FileSystem::GetProgramPath()
 {
 #if defined(__linux__)
+	// Check if we are running inside appimage. If so, return the path to the appimage instead.
+	if (const char* appimage_path = ::getenv("APPIMAGE"))
+	{
+		return std::string(appimage_path);
+	}
+
+	// Otherwise, check for executable
 	static const char* exeFileName = "/proc/self/exe";
 
 	int curSize = PATH_MAX;
