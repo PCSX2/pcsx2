@@ -18,6 +18,11 @@ static ProcessorFeatures::VectorISA getCurrentISA()
 	// For debugging
 	if (const char* over = getenv("OVERRIDE_VECTOR_ISA"))
 	{
+		if (strcasecmp(over, "avx512f") == 0)
+		{
+			fprintf(stderr, "Vector ISA Override: AVX512F\n");
+			return ProcessorFeatures::VectorISA::AVX512F;
+		}
 		if (strcasecmp(over, "avx2") == 0)
 		{
 			fprintf(stderr, "Vector ISA Override: AVX2\n");
@@ -35,12 +40,13 @@ static ProcessorFeatures::VectorISA getCurrentISA()
 		}
 	}
 
-	if (cpuinfo_has_x86_avx2() && cpuinfo_has_x86_bmi() && cpuinfo_has_x86_bmi2())
-		return ProcessorFeatures::VectorISA::AVX2;
-	else if (cpuinfo_has_x86_avx())
-		return ProcessorFeatures::VectorISA::AVX;
-	else
+	if (!cpuinfo_has_x86_avx())
 		return ProcessorFeatures::VectorISA::SSE4;
+	if (!cpuinfo_has_x86_avx2())
+		return ProcessorFeatures::VectorISA::AVX;
+	if (!cpuinfo_has_x86_avx512f())
+		return ProcessorFeatures::VectorISA::AVX2;
+	return ProcessorFeatures::VectorISA::AVX512F;
 }
 
 #endif
@@ -53,10 +59,16 @@ static ProcessorFeatures getProcessorFeatures()
 #if defined(_M_X86)
 	features.vectorISA = getCurrentISA();
 	features.hasFMA = cpuinfo_has_x86_fma3();
+	features.hasBMI2 = cpuinfo_has_x86_bmi() && cpuinfo_has_x86_bmi2();
 	if (const char* over = getenv("OVERRIDE_FMA"))
 	{
 		features.hasFMA = over[0] == 'Y' || over[0] == 'y' || over[0] == '1';
 		fprintf(stderr, "Processor FMA override: %s\n", features.hasFMA ? "Supported" : "Unsupported");
+	}
+	if (const char* over = getenv("OVERRIDE_BMI2"))
+	{
+		features.hasBMI2 = over[0] == 'Y' || over[0] == 'y' || over[0] == '1';
+		fprintf(stderr, "Processor BMI2 override: %s\n", features.hasBMI2 ? "Supported" : "Unsupported");
 	}
 	features.hasSlowGather = false;
 	if (const char* over = getenv("OVERRIDE_SLOW_GATHER")) // Easy override for comparing on vs off
