@@ -254,15 +254,6 @@ namespace QtUtils
 		widget->resize(width, height);
 	}
 
-	qreal GetDevicePixelRatioForWidget(const QWidget* widget)
-	{
-		const QScreen* screen_for_ratio = widget->screen();
-		if (!screen_for_ratio)
-			screen_for_ratio = QGuiApplication::primaryScreen();
-
-		return screen_for_ratio ? screen_for_ratio->devicePixelRatio() : static_cast<qreal>(1);
-	}
-
 	std::optional<WindowInfo> GetWindowInfoForWidget(QWidget* widget)
 	{
 		WindowInfo wi;
@@ -303,7 +294,7 @@ namespace QtUtils
 		}
 #endif
 
-		const qreal dpr = GetDevicePixelRatioForWidget(widget);
+		const qreal dpr = widget->devicePixelRatioF();
 		wi.surface_width = static_cast<u32>(static_cast<qreal>(widget->width()) * dpr);
 		wi.surface_height = static_cast<u32>(static_cast<qreal>(widget->height()) * dpr);
 		wi.surface_scale = static_cast<float>(dpr);
@@ -373,5 +364,38 @@ namespace QtUtils
 #endif
 
 		return true;
+	}
+
+	class IconVariableDpiFilter : QObject
+	{
+	public:
+		explicit IconVariableDpiFilter(QLabel* lbl, const QIcon& icon, const QSize& size, QObject* parent = nullptr)
+			: QObject(parent)
+			, m_lbl{lbl}
+			, m_icn{icon}
+			, m_size{size}
+		{
+			lbl->installEventFilter(this);
+			m_lbl->setPixmap(m_icn.pixmap(m_size, m_lbl->devicePixelRatioF()));
+		}
+
+	protected:
+		bool eventFilter(QObject* object, QEvent* event) override
+		{
+			if (object == m_lbl && event->type() == QEvent::DevicePixelRatioChange)
+				m_lbl->setPixmap(m_icn.pixmap(m_size, m_lbl->devicePixelRatioF()));
+			// Don't block the event
+			return false;
+		}
+
+	private:
+		QLabel* m_lbl;
+		QIcon m_icn;
+		QSize m_size;
+	};
+
+	void SetScalableIcon(QLabel* lbl, const QIcon& icon, const QSize& size)
+	{
+		new IconVariableDpiFilter(lbl, icon, size, lbl);
 	}
 } // namespace QtUtils

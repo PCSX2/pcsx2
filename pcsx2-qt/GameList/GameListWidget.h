@@ -93,6 +93,7 @@ public Q_SLOTS:
 
 protected:
 	void resizeEvent(QResizeEvent* event);
+	bool event(QEvent* event) override;
 
 private:
 	void loadTableViewColumnVisibilitySettings();

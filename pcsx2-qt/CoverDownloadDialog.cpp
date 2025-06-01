@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "CoverDownloadDialog.h"
+#include "QtUtils.h"
 
 #include "pcsx2/GameList.h"
 
@@ -11,7 +12,7 @@ CoverDownloadDialog::CoverDownloadDialog(QWidget* parent /*= nullptr*/)
 	: QDialog(parent)
 {
 	m_ui.setupUi(this);
-	m_ui.coverIcon->setPixmap(QIcon::fromTheme("artboard-2-line").pixmap(32));
+	QtUtils::SetScalableIcon(m_ui.coverIcon, QIcon::fromTheme(QStringLiteral("artboard-2-line")), QSize(32, 32));
 	updateEnabled();
 
 	connect(m_ui.start, &QPushButton::clicked, this, &CoverDownloadDialog::onStartClicked);

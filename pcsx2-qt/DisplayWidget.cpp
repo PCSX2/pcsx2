@@ -52,12 +52,12 @@ DisplayWidget::~DisplayWidget()
 
 int DisplayWidget::scaledWindowWidth() const
 {
-	return std::max(static_cast<int>(std::ceil(static_cast<qreal>(width()) * QtUtils::GetDevicePixelRatioForWidget(this))), 1);
+	return std::max(static_cast<int>(std::ceil(static_cast<qreal>(width()) * devicePixelRatioF())), 1);
 }
 
 int DisplayWidget::scaledWindowHeight() const
 {
-	return std::max(static_cast<int>(std::ceil(static_cast<qreal>(height()) * QtUtils::GetDevicePixelRatioForWidget(this))), 1);
+	return std::max(static_cast<int>(std::ceil(static_cast<qreal>(height()) * devicePixelRatioF())), 1);
 }
 
 std::optional<WindowInfo> DisplayWidget::getWindowInfo()
@@ -268,7 +268,7 @@ bool DisplayWidget::event(QEvent* event)
 
 			if (!m_relative_mouse_enabled)
 			{
-				const qreal dpr = QtUtils::GetDevicePixelRatioForWidget(this);
+				const qreal dpr = devicePixelRatioF();
 				const QPoint mouse_pos = mouse_event->pos();
 
 				const float scaled_x = static_cast<float>(static_cast<qreal>(mouse_pos.x()) * dpr);
@@ -349,13 +349,12 @@ bool DisplayWidget::event(QEvent* event)
 			return true;
 		}
 
-		// According to https://bugreports.qt.io/browse/QTBUG-95925 the recommended practice for handling DPI change is responding to paint events
-		case QEvent::Paint:
+		case QEvent::DevicePixelRatioChange:
 		case QEvent::Resize:
 		{
 			QWidget::event(event);
 
-			const float dpr = QtUtils::GetDevicePixelRatioForWidget(this);
+			const float dpr = devicePixelRatioF();
 			const u32 scaled_width = static_cast<u32>(std::max(static_cast<int>(std::ceil(static_cast<qreal>(width()) * dpr)), 1));
 			const u32 scaled_height = static_cast<u32>(std::max(static_cast<int>(std::ceil(static_cast<qreal>(height()) * dpr)), 1));
 

@@ -43,7 +43,7 @@ public:
 	static QIcon getIconForType(GameList::EntryType type);
 	static QIcon getIconForRegion(GameList::Region region);
 
-	GameListModel(float cover_scale, bool show_cover_titles, QObject* parent = nullptr);
+	GameListModel(float cover_scale, bool show_cover_titles, qreal dpr, QObject* parent = nullptr);
 	~GameListModel();
 
 	int rowCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -71,6 +71,8 @@ public:
 	void refreshCovers();
 	void updateCacheSize(int width, int height);
 
+	void setDevicePixelRatio(qreal dpr);
+
 Q_SIGNALS:
 	void coverScaleChanged();
 
@@ -94,6 +96,7 @@ private:
 	std::array<QPixmap, static_cast<u32>(GameList::Region::Count)> m_region_pixmaps;
 	QPixmap m_placeholder_pixmap;
 	QPixmap m_loading_pixmap;
+	qreal m_dpr;
 
 	std::array<QPixmap, static_cast<int>(GameList::CompatibilityRatingCount)> m_compatibility_pixmaps;
 	mutable LRUCache<std::string, QPixmap> m_cover_pixmap_cache;

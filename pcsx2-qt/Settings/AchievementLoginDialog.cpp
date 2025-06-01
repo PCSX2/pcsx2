@@ -3,6 +3,7 @@
 
 #include "AchievementLoginDialog.h"
 #include "QtHost.h"
+#include "QtUtils.h"
 
 #include "pcsx2/Achievements.h"
 
@@ -15,7 +16,7 @@ AchievementLoginDialog::AchievementLoginDialog(QWidget* parent, Achievements::Lo
 	, m_reason(reason)
 {
 	m_ui.setupUi(this);
-	m_ui.loginIcon->setPixmap(QIcon::fromTheme("login-box-line").pixmap(32));
+	QtUtils::SetScalableIcon(m_ui.loginIcon, QIcon::fromTheme(QStringLiteral("login-box-line")), QSize(32, 32));
 	setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
 	// Adjust text if needed based on reason.
@@ -116,7 +117,6 @@ void AchievementLoginDialog::processLoginResult(bool result, const QString& mess
 				g_emu_thread->resetVM();
 			}
 		}
-
 	}
 
 	done(0);

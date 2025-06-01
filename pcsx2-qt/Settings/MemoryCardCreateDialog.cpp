@@ -9,6 +9,7 @@
 #include <QtWidgets/QPushButton>
 
 #include "Settings/MemoryCardCreateDialog.h"
+#include "QtUtils.h"
 
 #include "pcsx2/SIO/Memcard/MemoryCardFile.h"
 
@@ -16,7 +17,7 @@ MemoryCardCreateDialog::MemoryCardCreateDialog(QWidget* parent /* = nullptr */)
 	: QDialog(parent)
 {
 	m_ui.setupUi(this);
-	m_ui.icon->setPixmap(QIcon::fromTheme("memcard-line").pixmap(m_ui.icon->width()));
+	QtUtils::SetScalableIcon(m_ui.icon, QIcon::fromTheme(QStringLiteral("memcard-line")), QSize(m_ui.icon->width(), m_ui.icon->width()));
 
 	setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
