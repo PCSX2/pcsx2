@@ -6242,10 +6242,30 @@ void FullscreenUI::DrawResumeStateSelector()
 
 void FullscreenUI::DoLoadState(std::string path)
 {
-	Host::RunOnCPUThread([boot_path = s_save_state_selector_game_path, path = std::move(path)]() {
+	Host::RunOnCPUThread([path = std::move(path)]()
+	{
+		const std::string boot_path = s_save_state_selector_game_path;
 		if (VMManager::HasValidVM())
 		{
-			VMManager::LoadState(path.c_str());
+			Error error;
+			if (!SaveState_UnzipFromDisk(path, &error))
+			{
+				if (error.GetDescription().find("outdated") != std::string::npos)
+				{
+					Host::RunOnCPUThread([error_desc = error.GetDescription()]()
+					{
+						ImGuiFullscreen::OpenInfoMessageDialog(
+							FSUI_ICONSTR(ICON_FA_EXCLAMATION_TRIANGLE, "Incompatible Save State"),
+							FSUI_STR(error_desc));
+					});
+				}
+				else
+				{
+					Host::ReportErrorAsync(TRANSLATE_SV("VMManager", "Failed to load save state"), error.GetDescription());
+				}
+				return;
+			}
+
 			if (!boot_path.empty() && VMManager::GetDiscPath() != boot_path)
 				VMManager::ChangeDisc(CDVD_SourceType::Iso, std::move(boot_path));
 		}
