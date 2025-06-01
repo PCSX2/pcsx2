@@ -21,7 +21,7 @@ public:
 	GSState();
 	virtual ~GSState();
 
-	static constexpr int GetSaveStateSize();
+	static constexpr int GetSaveStateSize(int version);
 
 private:
 	// RESTRICT prevents multiple loads of the same part of the register when accessing its bitfields (the compiler is happy to know that memory writes in-between will not go there)
@@ -108,15 +108,19 @@ private:
 	struct GSTransferBuffer
 	{
 		int x = 0, y = 0;
+		int w = 0, h = 0;
 		int start = 0, end = 0, total = 0;
 		u8* buff = nullptr;
+		GSVector4i rect = GSVector4i::zero();
 		GIFRegBITBLTBUF m_blit = {};
+		GIFRegTRXPOS m_pos = {};
+		GIFRegTRXREG m_reg = {};
 		bool write = false;
 
 		GSTransferBuffer();
 		~GSTransferBuffer();
 
-		void Init(int tx, int ty, const GIFRegBITBLTBUF& blit, bool write);
+		void Init(GIFRegTRXPOS& TRXPOS, GIFRegTRXREG& TRXREG, const GIFRegBITBLTBUF& blit, bool is_write);
 		bool Update(int tw, int th, int bpp, int& len);
 
 	} m_tr;
@@ -259,7 +263,7 @@ public:
 	static int s_last_transfer_draw_n;
 	static int s_transfer_n;
 
-	static constexpr u32 STATE_VERSION = 8;
+	static constexpr u32 STATE_VERSION = 9;
 
 	enum REG_DIRTY
 	{
