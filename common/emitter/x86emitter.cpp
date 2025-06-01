@@ -51,6 +51,8 @@
 thread_local u8* x86Ptr;
 thread_local XMMSSEType g_xmmtypes[iREGCNT_XMM] = {XMMT_INT};
 
+bool x86Emitter::use_avx;
+
 namespace x86Emitter
 {
 
@@ -502,6 +504,46 @@ const xRegister32
 		EmitRex(w, r, x, b, reg1.IsExtended8Bit());
 	}
 
+	void EmitRex(SIMDInstructionInfo info, const xRegisterBase& reg1, const xRegisterBase& reg2)
+	{
+		bool w = false;
+		if (info.dst_w)
+			w |= reg1.IsWide();
+		if (info.src_w)
+			w |= reg2.IsWide();
+		bool r = reg1.IsExtended();
+		bool x = false;
+		bool b = reg2.IsExtended();
+		EmitRex(w, r, x, b, reg2.IsExtended8Bit());
+	}
+
+	void EmitRex(SIMDInstructionInfo info, const xRegisterBase& reg1, const xIndirectVoid& sib)
+	{
+		bool w = false;
+		if (info.dst_w)
+			w |= reg1.IsWide();
+		if (info.src_w)
+			w |= sib.IsWide();
+		bool r = reg1.IsExtended();
+		bool x = sib.Index.IsExtended();
+		bool b = sib.Base.IsExtended();
+		if (!NeedsSibMagic(sib))
+		{
+			b = x;
+			x = false;
+		}
+		EmitRex(w, r, x, b, reg1.IsExtended8Bit());
+	}
+
+	void EmitRex(SIMDInstructionInfo info, uint reg1, const xRegisterBase& reg2)
+	{
+		bool w = info.src_w ? reg2.IsWide() : false;
+		bool r = false;
+		bool x = false;
+		bool b = reg2.IsExtended();
+		EmitRex(w, r, x, b, reg2.IsExtended8Bit());
+	}
+
 	// For use by instructions that are implicitly wide
 	void EmitRexImplicitlyWide(const xRegisterBase& reg)
 	{
@@ -524,6 +566,89 @@ const xRegister32
 			x = false;
 		}
 		EmitRex(w, r, x, b);
+	}
+
+	__emitinline static u8 GetVEXRXB(u32 ext, const xRegisterBase& src2)
+	{
+		return src2.IsExtended() << 5;
+	}
+
+	__emitinline static u8 GetVEXRXB(const xRegisterBase& dst, const xIndirectVoid& src2)
+	{
+		bool r = dst.IsExtended();
+		bool x = src2.Index.IsExtended();
+		bool b = src2.Base.IsExtended();
+		if (!NeedsSibMagic(src2))
+		{
+			b = x;
+			x = false;
+		}
+		return (r << 7) | (x << 6) | (b << 5);
+	}
+
+	__emitinline static u8 GetVEXRXB(const xRegisterBase& dst, const xRegisterBase& src2)
+	{
+		return (dst.IsExtended() << 7) | (src2.IsExtended() << 5);
+	}
+
+	__emitinline static u8 GetL(const xRegisterBase& arg) { return arg.IsWideSIMD() ? 4 : 0; }
+	__emitinline static u8 GetL(const xIndirectVoid& arg) { return 0; }
+	__emitinline static u8 GetL(u32 ext) { return 0; }
+
+	__emitinline static u8 GetVEXW(const xRegisterBase& arg) { return arg.GetOperandSize() == 8 ? 0x80 : 0; }
+	__emitinline static u8 GetVEXW(const xIndirectVoid& arg) { return arg.GetOperandSize() == 8 ? 0x80 : 0; }
+	__emitinline static u8 GetVEXW(u32 ext) { return 0; }
+
+	template <typename D, typename S2>
+	__emitinline void xOpWriteVEX(SIMDInstructionInfo info, D dst, u8 src1, const S2& src2, int extraRipOffset)
+	{
+		u8 m = static_cast<u8>(info.map);
+		u8 p = static_cast<u8>(info.prefix);
+		u8 w = 0;
+		if (info.src_w || info.dst_w) {
+			if (info.dst_w)
+				w |= GetVEXW(dst);
+			if (info.src_w)
+				w |= GetVEXW(src2);
+		} else {
+			w = info.w_bit << 7;
+		}
+		u8 l = GetL(dst) | GetL(src2); // Needed for 256-bit movemask.
+		u8 rxb = GetVEXRXB(dst, src2);
+		u8 b2 = p | l | (src1 << 3);
+		if (!w && info.map == SIMDInstructionInfo::Map::M0F && !(rxb & 0x7F))
+		{
+			// Can use a C5 VEX
+			u8 b1 = rxb | b2;
+			xWrite8(0xC5);
+			xWrite8(b1 ^ 0xF8);
+			xWrite8(info.opcode);
+		}
+		else
+		{
+			u8 b1 = rxb | m;
+			b2 |= w;
+			xWrite8(0xC4);
+			xWrite8(b1 ^ 0xE0);
+			xWrite8(b2 ^ 0x78);
+			xWrite8(info.opcode);
+		}
+		EmitSibMagic(dst, src2, extraRipOffset);
+	}
+
+	void EmitVEX(SIMDInstructionInfo info, const xRegisterBase& dst, u8 src1, const xRegisterBase& src2, int extraRipOffset)
+	{
+		xOpWriteVEX(info, dst, src1, src2, extraRipOffset);
+	}
+
+	void EmitVEX(SIMDInstructionInfo info, const xRegisterBase& dst, u8 src1, const xIndirectVoid& src2, int extraRipOffset)
+	{
+		xOpWriteVEX(info, dst, src1, src2, extraRipOffset);
+	}
+
+	void EmitVEX(SIMDInstructionInfo info, u32 ext, u8 dst, const xRegisterBase& src2, int extraRipOffset)
+	{
+		xOpWriteVEX(info, ext, dst, src2, extraRipOffset);
 	}
 
 

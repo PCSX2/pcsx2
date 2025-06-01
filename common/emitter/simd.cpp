@@ -6,6 +6,171 @@
 
 namespace x86Emitter
 {
+	__emitinline static u8 getSSE(SIMDInstructionInfo::Prefix prefix)
+	{
+		switch (prefix) {
+			case SIMDInstructionInfo::Prefix::P66: return 0x66;
+			case SIMDInstructionInfo::Prefix::PF3: return 0xf3;
+			case SIMDInstructionInfo::Prefix::PF2: return 0xf2;
+			case SIMDInstructionInfo::Prefix::None:
+			default:
+				pxAssert(0);
+				return 0;
+		}
+	}
+
+	__emitinline static u16 getSSE(SIMDInstructionInfo::Map map)
+	{
+		switch (map) {
+			case SIMDInstructionInfo::Map::M0F38: return 0x380f;
+			case SIMDInstructionInfo::Map::M0F3A: return 0x3a0f;
+			case SIMDInstructionInfo::Map::M0F:
+			default:
+				pxAssert(0);
+				return 0;
+		}
+	}
+
+	__emitinline static SIMDInstructionInfo getMov(SIMDInstructionInfo::Type type)
+	{
+		switch (type) {
+#ifndef ALWAYS_USE_MOVAPS
+			case SIMDInstructionInfo::Type::Integer:
+				return SIMDInstructionInfo(0x6f).p66().mov();
+			case SIMDInstructionInfo::Type::Double:
+				return SIMDInstructionInfo(0x28).p66().mov();
+#endif
+			default:
+			case SIMDInstructionInfo::Type::Float:
+				return SIMDInstructionInfo(0x28).mov();
+		}
+	}
+
+	template <typename T1, typename T2>
+	__emitinline static void xOpWrite0F(SIMDInstructionInfo info, T1 dst, const T2& src, int extraRIPOffset)
+	{
+		if (info.prefix != SIMDInstructionInfo::Prefix::None)
+			xWrite8(getSSE(info.prefix));
+		pxAssert(!info.w_bit); // Only used by AVX
+		EmitRex(info, dst, src);
+		if (info.map == SIMDInstructionInfo::Map::M0F)
+		{
+			xWrite16(0x0F | (info.opcode << 8));
+		}
+		else
+		{
+			xWrite16(getSSE(info.map));
+			xWrite8(info.opcode);
+		}
+		EmitSibMagic(dst, src, extraRIPOffset);
+	}
+
+	template <typename S2>
+	__emitinline static void EmitSimdOp(SIMDInstructionInfo info, const xRegisterBase& dst, const xRegisterBase& src1, const S2& src2, int extraRIPOffset)
+	{
+		if (x86Emitter::use_avx)
+		{
+			EmitVEX(info, dst, info.is_mov ? 0 : src1.GetId(), src2, extraRIPOffset);
+		}
+		else
+		{
+			if (dst.GetId() != src1.GetId())
+			{
+				pxAssert(!info.is_mov);
+				// Generate a mov to copy from src1 to dst
+				xOpWrite0F(getMov(info.type), dst, src1, 0);
+			}
+			xOpWrite0F(info, dst, src2, extraRIPOffset);
+		}
+	}
+
+	void EmitSIMDImpl(SIMDInstructionInfo info, const xRegisterBase& dst, const xRegisterBase& src1, int extraRipOffset)
+	{
+		pxAssert(!info.is_mov);
+		if (x86Emitter::use_avx)
+		{
+			EmitVEX(info, info.ext, dst.GetId(), src1, extraRipOffset);
+		}
+		else
+		{
+			if (dst.GetId() != src1.GetId())
+			{
+				// Generate a mov to copy from src1 to dst
+				xOpWrite0F(getMov(info.type), dst, src1, 0);
+			}
+			xOpWrite0F(info, info.ext, dst, extraRipOffset);
+		}
+	}
+	void EmitSIMDImpl(SIMDInstructionInfo info, const xRegisterBase& dst, const xRegisterBase& src1, const xRegisterBase& src2, int extraRipOffset)
+	{
+		pxAssert(!info.is_mov || dst.GetId() == src1.GetId());
+		const xRegisterBase* ps1 = &src1;
+		const xRegisterBase* ps2 = &src2;
+		if (x86Emitter::use_avx)
+		{
+			if (info.is_commutative && info.map == SIMDInstructionInfo::Map::M0F && src2.IsExtended() && !src1.IsExtended())
+			{
+				// We can use a C5 op instead of a C4 op if we swap the inputs
+				std::swap(ps1, ps2);
+			}
+		}
+		else if (dst.GetId() != src1.GetId() && dst.GetId() == src2.GetId())
+		{
+			if (info.is_commutative)
+				std::swap(ps1, ps2);
+			else
+				pxAssertRel(0, "SSE4 auto mov would destroy the second source!");
+		}
+		EmitSimdOp(info, dst, *ps1, *ps2, extraRipOffset);
+	}
+	void EmitSIMDImpl(SIMDInstructionInfo info, const xRegisterBase& dst, const xRegisterBase& src1, const xIndirectVoid& src2, int extraRipOffset)
+	{
+		pxAssert(!info.is_mov || dst.GetId() == src1.GetId());
+		if (!x86Emitter::use_avx && info.is_commutative && dst.GetId() != src1.GetId())
+		{
+			// Do load, op instead of mov, op+load
+			// No processors differentiate between loads, so always use movaps
+			EmitSimdOp(getMov(SIMDInstructionInfo::Type::Float), dst, dst, src2, 0);
+			EmitSimdOp(info, dst, dst, src1, extraRipOffset);
+		}
+		else
+		{
+			EmitSimdOp(info, dst, src1, src2, extraRipOffset);
+		}
+	}
+	void EmitSIMD(SIMDInstructionInfo info, const xRegisterBase& dst, const xRegisterBase& src1, const xRegisterBase& src2, const xRegisterBase& src3)
+	{
+		pxAssert(!info.is_mov);
+		pxAssertMsg(!info.is_commutative, "I don't think any blend instructions are commutative...");
+		if (x86Emitter::use_avx)
+		{
+			EmitSimdOp(info, dst, src1, src2, 1);
+			xWrite8(src3.GetId());
+		}
+		else
+		{
+			pxAssertRel(src3.GetId() == 0, "SSE4 requires the third source to be xmm0!");
+			if (dst.GetId() != src1.GetId() && dst.GetId() == src2.GetId())
+				pxAssertRel(0, "SSE4 auto mov would destroy the second source!");
+			EmitSimdOp(info, dst, src1, src2, 0);
+		}
+
+	}
+	void EmitSIMD(SIMDInstructionInfo info, const xRegisterBase& dst, const xRegisterBase& src1, const xIndirectVoid& src2, const xRegisterBase& src3)
+	{
+		pxAssert(!info.is_mov);
+		pxAssertMsg(!info.is_commutative, "I don't think any blend instructions are commutative...");
+		if (x86Emitter::use_avx)
+		{
+			EmitSimdOp(info, dst, src1, src2, 1);
+			xWrite8(src3.GetId());
+		}
+		else
+		{
+			pxAssertRel(src3.GetId() == 0, "SSE4 requires the third source to be xmm0!");
+			EmitSimdOp(info, dst, src1, src2, 0);
+		}
+	}
 
 	// ------------------------------------------------------------------------
 	// SimdPrefix - If the lower byte of the opcode is 0x38 or 0x3a, then the opcode is
@@ -106,6 +271,19 @@ namespace x86Emitter
 
 
 	// ------------------------------------------------------------------------
+
+	void xImplSimd_2Arg::operator()(const xRegisterSSE& dst, const xRegisterSSE& src)  const { EmitSIMD(info, dst, dst, src); }
+	void xImplSimd_2Arg::operator()(const xRegisterSSE& dst, const xIndirectVoid& src) const { EmitSIMD(info, dst, dst, src); }
+	void xImplSimd_2ArgImm::operator()(const xRegisterSSE& dst, const xRegisterSSE& src,  u8 imm) const { EmitSIMD(info, dst, dst, src, imm); }
+	void xImplSimd_2ArgImm::operator()(const xRegisterSSE& dst, const xIndirectVoid& src, u8 imm) const { EmitSIMD(info, dst, dst, src, imm); }
+	void xImplSimd_3Arg::operator()(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegisterSSE& src2)  const { EmitSIMD(info, dst, src1, src2); }
+	void xImplSimd_3Arg::operator()(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirectVoid& src2) const { EmitSIMD(info, dst, src1, src2); }
+	void xImplSimd_3ArgImm::operator()(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegisterSSE& src2,  u8 imm) const { EmitSIMD(info, dst, src1, src2, imm); }
+	void xImplSimd_3ArgImm::operator()(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirectVoid& src2, u8 imm) const { EmitSIMD(info, dst, src1, src2, imm); }
+	void xImplSimd_3ArgCmp::operator()(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegisterSSE& src2,  SSE2_ComparisonType imm) const { EmitSIMD(info, dst, src1, src2, imm); }
+	void xImplSimd_3ArgCmp::operator()(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirectVoid& src2, SSE2_ComparisonType imm) const { EmitSIMD(info, dst, src1, src2, imm); }
+	void xImplSimd_4ArgBlend::operator()(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegisterSSE& src2,  const xRegisterSSE& src3) const { EmitSIMD(info, dst, src1, src2, src3); }
+	void xImplSimd_4ArgBlend::operator()(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirectVoid& src2, const xRegisterSSE& src3) const { EmitSIMD(info, dst, src1, src2, src3); }
 
 	void xImplSimd_DestRegSSE::operator()(const xRegisterSSE& to, const xRegisterSSE& from) const { OpWriteSSE(Prefix, Opcode); }
 	void xImplSimd_DestRegSSE::operator()(const xRegisterSSE& to, const xIndirectVoid& from) const { OpWriteSSE(Prefix, Opcode); }

@@ -29,6 +29,9 @@ namespace x86Emitter
 	static constexpr int SHADOW_STACK_SIZE = 0;
 #endif
 
+	/// This will switch all SSE instructions to generate AVX instructions instead
+	extern bool use_avx;
+
 	extern void xWrite8(u8 val);
 	extern void xWrite16(u16 val);
 	extern void xWrite32(u32 val);
