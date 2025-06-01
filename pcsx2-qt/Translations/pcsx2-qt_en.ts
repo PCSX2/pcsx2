@@ -5469,52 +5469,52 @@ Do you want to overwrite?</source>
 <context>
     <name>DockTabBar</name>
     <message>
-        <location filename="../Debugger/Docking/DockViews.cpp" line="175"/>
+        <location filename="../Debugger/Docking/DockViews.cpp" line="177"/>
         <source>Rename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockViews.cpp" line="186"/>
+        <location filename="../Debugger/Docking/DockViews.cpp" line="188"/>
         <source>Rename Window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockViews.cpp" line="186"/>
+        <location filename="../Debugger/Docking/DockViews.cpp" line="188"/>
         <source>New name:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockViews.cpp" line="192"/>
+        <location filename="../Debugger/Docking/DockViews.cpp" line="194"/>
         <source>Invalid Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockViews.cpp" line="192"/>
+        <location filename="../Debugger/Docking/DockViews.cpp" line="194"/>
         <source>The specified name is too long.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockViews.cpp" line="199"/>
+        <location filename="../Debugger/Docking/DockViews.cpp" line="201"/>
         <source>Reset Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockViews.cpp" line="213"/>
+        <location filename="../Debugger/Docking/DockViews.cpp" line="215"/>
         <source>Primary</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockViews.cpp" line="228"/>
+        <location filename="../Debugger/Docking/DockViews.cpp" line="230"/>
         <source>Set Target</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockViews.cpp" line="249"/>
+        <location filename="../Debugger/Docking/DockViews.cpp" line="251"/>
         <source>Inherit From Layout</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockViews.cpp" line="257"/>
+        <location filename="../Debugger/Docking/DockViews.cpp" line="259"/>
         <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
@@ -9193,22 +9193,22 @@ Do you want to load this save and continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7903"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7905"/>
         <source>Controller Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7904"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7906"/>
         <source>Hotkey Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7905"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7904"/>
         <source>Achievements Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7906"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7903"/>
         <source>Folder Settings</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11344,113 +11344,263 @@ graphical quality, but this will increase system requirements.</source>
 <context>
     <name>GameList</name>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="102"/>
+        <location filename="../../pcsx2/GameList.cpp" line="97"/>
         <source>PS2 Disc</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="102"/>
+        <location filename="../../pcsx2/GameList.cpp" line="98"/>
         <source>PS1 Disc</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="102"/>
+        <location filename="../../pcsx2/GameList.cpp" line="99"/>
         <source>ELF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="109"/>
-        <source>Other</source>
+        <location filename="../../pcsx2/GameList.cpp" line="100"/>
+        <source>Invalid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/GameList.cpp" line="113"/>
+        <source>NTSC-B</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/GameList.cpp" line="114"/>
+        <source>NTSC-C</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/GameList.cpp" line="115"/>
+        <source>NTSC-HK</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/GameList.cpp" line="116"/>
+        <source>NTSC-J</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/GameList.cpp" line="117"/>
+        <source>NTSC-K</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/GameList.cpp" line="118"/>
+        <source>NTSC-T</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/GameList.cpp" line="119"/>
+        <source>NTSC-U</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/GameList.cpp" line="120"/>
-        <source>Unknown</source>
+        <source>Other</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/GameList.cpp" line="121"/>
-        <source>Nothing</source>
+        <source>PAL-A</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/GameList.cpp" line="122"/>
-        <source>Intro</source>
+        <source>PAL-AF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/GameList.cpp" line="123"/>
-        <source>Menu</source>
+        <source>PAL-AU</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/GameList.cpp" line="124"/>
-        <source>In-Game</source>
+        <source>PAL-BE</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/GameList.cpp" line="125"/>
-        <source>Playable</source>
+        <source>PAL-E</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/GameList.cpp" line="126"/>
+        <source>PAL-F</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/GameList.cpp" line="127"/>
+        <source>PAL-FI</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/GameList.cpp" line="128"/>
+        <source>PAL-G</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/GameList.cpp" line="129"/>
+        <source>PAL-GR</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/GameList.cpp" line="130"/>
+        <source>PAL-I</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/GameList.cpp" line="131"/>
+        <source>PAL-IN</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/GameList.cpp" line="132"/>
+        <source>PAL-M</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/GameList.cpp" line="133"/>
+        <source>PAL-NL</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/GameList.cpp" line="134"/>
+        <source>PAL-NO</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/GameList.cpp" line="135"/>
+        <source>PAL-P</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/GameList.cpp" line="136"/>
+        <source>PAL-PL</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/GameList.cpp" line="137"/>
+        <source>PAL-R</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/GameList.cpp" line="138"/>
+        <source>PAL-S</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/GameList.cpp" line="139"/>
+        <source>PAL-SC</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/GameList.cpp" line="140"/>
+        <source>PAL-SW</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/GameList.cpp" line="141"/>
+        <source>PAL-SWI</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/GameList.cpp" line="142"/>
+        <source>PAL-UK</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/GameList.cpp" line="158"/>
+        <source>Unknown</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/GameList.cpp" line="161"/>
+        <source>Nothing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/GameList.cpp" line="164"/>
+        <source>Intro</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/GameList.cpp" line="167"/>
+        <source>Menu</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/GameList.cpp" line="170"/>
+        <source>In-Game</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/GameList.cpp" line="173"/>
+        <source>Playable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/GameList.cpp" line="176"/>
         <source>Perfect</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="595"/>
+        <location filename="../../pcsx2/GameList.cpp" line="653"/>
         <source>Scanning directory {} (recursively)...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="596"/>
+        <location filename="../../pcsx2/GameList.cpp" line="656"/>
         <source>Scanning directory {}...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="625"/>
+        <location filename="../../pcsx2/GameList.cpp" line="684"/>
         <source>Scanning {}...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="1083"/>
+        <location filename="../../pcsx2/GameList.cpp" line="1142"/>
         <source>Never</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="1100"/>
+        <location filename="../../pcsx2/GameList.cpp" line="1159"/>
         <source>Today</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="1105"/>
+        <location filename="../../pcsx2/GameList.cpp" line="1164"/>
         <source>Yesterday</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="1128"/>
+        <location filename="../../pcsx2/GameList.cpp" line="1187"/>
         <source>{}h {}m</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="1130"/>
+        <location filename="../../pcsx2/GameList.cpp" line="1189"/>
         <source>{}h {}m {}s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="1132"/>
+        <location filename="../../pcsx2/GameList.cpp" line="1191"/>
         <source>{}m {}s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="1134"/>
+        <location filename="../../pcsx2/GameList.cpp" line="1193"/>
         <source>{}s</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
         <location filename="../GameList/GameListModel.cpp" line="268"/>
-        <location filename="../../pcsx2/GameList.cpp" line="1141"/>
+        <location filename="../../pcsx2/GameList.cpp" line="1200"/>
         <source>%n hours</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -11459,7 +11609,7 @@ graphical quality, but this will increase system requirements.</source>
     </message>
     <message numerus="yes">
         <location filename="../GameList/GameListModel.cpp" line="270"/>
-        <location filename="../../pcsx2/GameList.cpp" line="1143"/>
+        <location filename="../../pcsx2/GameList.cpp" line="1202"/>
         <source>%n minutes</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -11467,7 +11617,7 @@ graphical quality, but this will increase system requirements.</source>
         </translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="1303"/>
+        <location filename="../../pcsx2/GameList.cpp" line="1362"/>
         <source>Downloading cover for {0} [{1}]...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12055,111 +12205,111 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameSummaryWidget.cpp" line="76"/>
+        <location filename="../Settings/GameSummaryWidget.cpp" line="77"/>
         <source>%0%1</source>
         <extracomment>First arg is a GameList compat; second is a string with space followed by star rating OR empty if Unknown compat</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameSummaryWidget.cpp" line="84"/>
+        <location filename="../Settings/GameSummaryWidget.cpp" line="85"/>
         <source> %0%1</source>
         <extracomment>First arg is filled-in stars for game compatibility; second is empty stars; should be swapped for RTL languages</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameSummaryWidget.cpp" line="173"/>
+        <location filename="../Settings/GameSummaryWidget.cpp" line="174"/>
         <source>Select Disc Path</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameSummaryWidget.cpp" line="186"/>
+        <location filename="../Settings/GameSummaryWidget.cpp" line="187"/>
         <source>Game is not a CD/DVD.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameSummaryWidget.cpp" line="193"/>
+        <location filename="../Settings/GameSummaryWidget.cpp" line="194"/>
         <source>Track list unavailable while virtual machine is running.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameSummaryWidget.cpp" line="218"/>
+        <location filename="../Settings/GameSummaryWidget.cpp" line="219"/>
         <source>#</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameSummaryWidget.cpp" line="221"/>
-        <source>Mode</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../Settings/GameSummaryWidget.cpp" line="222"/>
-        <location filename="../Settings/GameSummaryWidget.cpp" line="230"/>
-        <source>Start</source>
+        <source>Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/GameSummaryWidget.cpp" line="223"/>
         <location filename="../Settings/GameSummaryWidget.cpp" line="231"/>
-        <source>Sectors</source>
+        <source>Start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/GameSummaryWidget.cpp" line="224"/>
         <location filename="../Settings/GameSummaryWidget.cpp" line="232"/>
-        <source>Size</source>
+        <source>Sectors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/GameSummaryWidget.cpp" line="225"/>
         <location filename="../Settings/GameSummaryWidget.cpp" line="233"/>
-        <source>MD5</source>
+        <source>Size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/GameSummaryWidget.cpp" line="226"/>
         <location filename="../Settings/GameSummaryWidget.cpp" line="234"/>
+        <source>MD5</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/GameSummaryWidget.cpp" line="227"/>
+        <location filename="../Settings/GameSummaryWidget.cpp" line="235"/>
         <source>Status</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameSummaryWidget.cpp" line="242"/>
-        <location filename="../Settings/GameSummaryWidget.cpp" line="247"/>
+        <location filename="../Settings/GameSummaryWidget.cpp" line="243"/>
         <location filename="../Settings/GameSummaryWidget.cpp" line="248"/>
         <location filename="../Settings/GameSummaryWidget.cpp" line="249"/>
-        <location filename="../Settings/GameSummaryWidget.cpp" line="255"/>
+        <location filename="../Settings/GameSummaryWidget.cpp" line="250"/>
         <location filename="../Settings/GameSummaryWidget.cpp" line="256"/>
         <location filename="../Settings/GameSummaryWidget.cpp" line="257"/>
+        <location filename="../Settings/GameSummaryWidget.cpp" line="258"/>
         <source>%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameSummaryWidget.cpp" line="250"/>
-        <location filename="../Settings/GameSummaryWidget.cpp" line="258"/>
+        <location filename="../Settings/GameSummaryWidget.cpp" line="251"/>
+        <location filename="../Settings/GameSummaryWidget.cpp" line="259"/>
         <source>&lt;not computed&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameSummaryWidget.cpp" line="274"/>
+        <location filename="../Settings/GameSummaryWidget.cpp" line="275"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameSummaryWidget.cpp" line="274"/>
+        <location filename="../Settings/GameSummaryWidget.cpp" line="275"/>
         <source>Cannot verify image while a game is running.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameSummaryWidget.cpp" line="304"/>
+        <location filename="../Settings/GameSummaryWidget.cpp" line="305"/>
         <source>One or more tracks is missing.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameSummaryWidget.cpp" line="341"/>
+        <location filename="../Settings/GameSummaryWidget.cpp" line="342"/>
         <source>Verified as %1 [%2] (Version %3).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameSummaryWidget.cpp" line="348"/>
+        <location filename="../Settings/GameSummaryWidget.cpp" line="349"/>
         <source>Verified as %1 [%2].</source>
         <translation type="unfinished"></translation>
     </message>
