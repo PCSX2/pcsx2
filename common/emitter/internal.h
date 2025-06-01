@@ -10,6 +10,7 @@ namespace x86Emitter
 {
 
 #define OpWriteSSE(pre, op) xOpWrite0F(pre, op, to, from)
+#define OpWriteSIMDMovOp(op) EmitSIMD(op.mov(), to, to, from)
 
 	extern void SimdPrefix(u8 prefix, u16 opcode);
 	extern void EmitSibMagic(uint regfield, const void* address, int extraRIPOffset = 0);
@@ -25,6 +26,9 @@ namespace x86Emitter
 	extern void EmitRex(const xRegisterBase& reg1, const xRegisterBase& reg2);
 	extern void EmitRex(const xRegisterBase& reg1, const void* src);
 	extern void EmitRex(const xRegisterBase& reg1, const xIndirectVoid& sib);
+	extern void EmitRex(SIMDInstructionInfo info, u32 reg1, const xRegisterBase& reg2);
+	extern void EmitRex(SIMDInstructionInfo info, const xRegisterBase& reg1, const xRegisterBase& reg2);
+	extern void EmitRex(SIMDInstructionInfo info, const xRegisterBase& reg1, const xIndirectVoid& sib);
 
 	extern void _xMovRtoR(const xRegisterInt& to, const xRegisterInt& from);
 
@@ -170,5 +174,45 @@ namespace x86Emitter
 		xWrite8(W | nv | L | p);
 		xWrite8(opcode);
 		EmitSibMagic(param1, param3);
+	}
+
+	void EmitVEX(SIMDInstructionInfo info, const xRegisterBase& dst, u8 src1, const xRegisterBase& src2, int extraRipOffset = 0);
+	void EmitVEX(SIMDInstructionInfo info, const xRegisterBase& dst, u8 src1, const xIndirectVoid& src2, int extraRipOffset = 0);
+	void EmitVEX(SIMDInstructionInfo info, u32 ext, u8 dst, const xRegisterBase& src2, int extraRipOffset = 0);
+
+	template <typename S2>
+	__emitinline static void EmitVEX(SIMDInstructionInfo info, const xRegisterBase& dst, const xRegisterBase& src1, const S2& src2, int extraRipOffset = 0)
+	{
+		EmitVEX(info, dst, src1.GetId(), src2, extraRipOffset);
+	}
+
+	// Emitter helpers for SIMD operations
+	// These will dispatch to either SSE or AVX implementations
+
+	void EmitSIMDImpl(SIMDInstructionInfo info, const xRegisterBase& dst, const xRegisterBase& src1, int extraRipOffset);
+	void EmitSIMDImpl(SIMDInstructionInfo info, const xRegisterBase& dst, const xRegisterBase& src1, const xRegisterBase& src2, int extraRipOffset);
+	void EmitSIMDImpl(SIMDInstructionInfo info, const xRegisterBase& dst, const xRegisterBase& src1, const xIndirectVoid& src2, int extraRipOffset);
+	void EmitSIMD(SIMDInstructionInfo info, const xRegisterBase& dst, const xRegisterBase& src1, const xRegisterBase& src2, const xRegisterBase& src3);
+	void EmitSIMD(SIMDInstructionInfo info, const xRegisterBase& dst, const xRegisterBase& src1, const xIndirectVoid& src2, const xRegisterBase& src3);
+
+	__emitinline static void EmitSIMD(SIMDInstructionInfo info, const xRegisterBase& dst, const xRegisterBase& src1)
+	{
+		EmitSIMDImpl(info, dst, src1, 0);
+	}
+	__emitinline static void EmitSIMD(SIMDInstructionInfo info, const xRegisterBase& dst, const xRegisterBase& src1, u8 imm)
+	{
+		EmitSIMDImpl(info, dst, src1, 1);
+		xWrite8(imm);
+	}
+	template <typename S2>
+	__emitinline static void EmitSIMD(SIMDInstructionInfo info, const xRegisterBase& dst, const xRegisterBase& src1, const S2& src2)
+	{
+		EmitSIMDImpl(info, dst, src1, src2, 0);
+	}
+	template <typename S2>
+	__emitinline static void EmitSIMD(SIMDInstructionInfo info, const xRegisterBase& dst, const xRegisterBase& src1, const S2& src2, u8 imm)
+	{
+		EmitSIMDImpl(info, dst, src1, src2, 1);
+		xWrite8(imm);
 	}
 } // namespace x86Emitter
