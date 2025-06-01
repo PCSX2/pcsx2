@@ -183,6 +183,10 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
 		tr("Prevents the main window from being resized."));
 
 	onRenderToSeparateWindowChanged();
+
+	connect(dialog, &SettingsWindow::externalSettingsChanged, this, [this]() {
+		onRenderToSeparateWindowChanged();
+	});
 }
 
 InterfaceSettingsWidget::~InterfaceSettingsWidget() = default;
