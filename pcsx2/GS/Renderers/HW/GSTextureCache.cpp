@@ -1596,14 +1596,18 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 					{
 						// It is a complex to convert the code in shader. As a reference, let's do it on the CPU,
 						// it will be slow but can work even with upscaling, also fine tune it so it's not enabled when not needed.
-						if (psm == PSMT4 || (GSConfig.UserHacks_CPUFBConversion && psm == PSMT8 && (!possible_shuffle || GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp != 32)) ||
-							(psm == PSMT8H && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 16))
+
+						// PSMT4 no shader conversion, do readback (Beyond Good and Evil).
+						// PSMT4HL/HH 16bit target, no shader conversion, do readback.
+						// PSMT8 24bit target, do readback. It needs all channels to be intact so we can't read it directly,
+						// some game could have uploaded some alpha data, and expects 24bit data from a target to also be in memory,
+						// but we can't update the target on 24bit, no known game seems to hit this path but let's have it as a precaution.
+						// PSMT8 16bit target, no shader conversion, do readback (Harry Potter Games).
+						// PSMT8H 16bit target, no shader conversion, do readback (Sand Grain Studios).
+						const bool is_8bit = psm == PSMT8 && ((!possible_shuffle && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 16) || GSLocalMemory::m_psm[t->m_TEX0.PSM].trbpp == 24);
+						const bool is_pal = !possible_shuffle && GSLocalMemory::m_psm[psm].pal > 0 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 16;
+						if (psm == PSMT4 || is_8bit || is_pal)
 						{
-							// Forces 4-bit and 8-bit frame buffer conversion to be done on the CPU instead of the GPU, but performance will be slower.
-							// There is no dedicated shader to handle 4-bit conversion (Beyond Good and Evil and Stuntman).
-							// Note: Stuntman no longer hits the PSMT4 code path.
-							// Direct3D10/11 and OpenGL support 8-bit fb conversion but don't render some corner cases properly (Harry Potter games).
-							// The hack can fix glitches in some games.
 							if (!t->m_drawn_since_read.rempty())
 							{
 								t->UnscaleRTAlpha();
