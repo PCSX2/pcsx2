@@ -1898,6 +1898,7 @@ Pcsx2Config::Pcsx2Config()
 	UseSavestateSelector = true;
 	BackupSavestate = true;
 	WarnAboutUnsafeSettings = true;
+	EnableDiscordPresence = false;
 	ManuallySetRealTimeClock = false;
 
 	// To be moved to FileMemoryCard pluign (someday)
