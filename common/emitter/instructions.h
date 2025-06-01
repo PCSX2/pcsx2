@@ -565,15 +565,23 @@ namespace x86Emitter
 
 	extern void xCVTSD2SI(const xRegister32or64& to, const xRegisterSSE& from);
 	extern void xCVTSD2SI(const xRegister32or64& to, const xIndirect64& from);
-	extern void xCVTSD2SS(const xRegisterSSE& to, const xRegisterSSE& from);
-	extern void xCVTSD2SS(const xRegisterSSE& to, const xIndirect64& from);
-	extern void xCVTSI2SS(const xRegisterSSE& to, const xRegister32or64& from);
-	extern void xCVTSI2SS(const xRegisterSSE& to, const xIndirect32& from);
+	extern void xCVTSD2SS(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegisterSSE& src2);
+	extern void xCVTSD2SS(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirect64& src2);
+	extern void xCVTSI2SS(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegister32or64& src2);
+	extern void xCVTSI2SS(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirect32& src2);
+	extern void xCVTSI2SS(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirect64& src2);
+	static void xCVTSD2SS(const xRegisterSSE& to, const xRegisterSSE& from)    { xCVTSD2SS(to, to, from); }
+	static void xCVTSD2SS(const xRegisterSSE& to, const xIndirect64& from)     { xCVTSD2SS(to, to, from); }
+	static void xCVTSI2SS(const xRegisterSSE& to, const xRegister32or64& from) { xCVTSI2SS(to, to, from); }
+	static void xCVTSI2SS(const xRegisterSSE& to, const xIndirect32& from)     { xCVTSI2SS(to, to, from); }
+	static void xCVTSI2SS(const xRegisterSSE& to, const xIndirect64& from)     { xCVTSI2SS(to, to, from); }
 
-	extern void xCVTSS2SD(const xRegisterSSE& to, const xRegisterSSE& from);
-	extern void xCVTSS2SD(const xRegisterSSE& to, const xIndirect32& from);
 	extern void xCVTSS2SI(const xRegister32or64& to, const xRegisterSSE& from);
 	extern void xCVTSS2SI(const xRegister32or64& to, const xIndirect32& from);
+	extern void xCVTSS2SD(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegisterSSE& src2);
+	extern void xCVTSS2SD(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirect32& src2);
+	static void xCVTSS2SD(const xRegisterSSE& to, const xRegisterSSE& from) { xCVTSS2SD(to, to, from); }
+	static void xCVTSS2SD(const xRegisterSSE& to, const xIndirect32& from)  { xCVTSS2SD(to, to, from); }
 
 	extern void xCVTTPD2DQ(const xRegisterSSE& to, const xRegisterSSE& from);
 	extern void xCVTTPD2DQ(const xRegisterSSE& to, const xIndirect128& from);
