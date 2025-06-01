@@ -1237,9 +1237,16 @@ fixup_file_properties(PCSX2)
 force_include_last(PCSX2_FLAGS "/(usr|local)/include/?$")
 
 if (APPLE)
+	find_library(APPKIT_LIBRARY AppKit)
+	find_library(IOKIT_LIBRARY IOKit)
 	find_library(METAL_LIBRARY Metal)
 	find_library(QUARTZCORE_LIBRARY QuartzCore)
-	target_link_libraries(PCSX2_FLAGS INTERFACE ${METAL_LIBRARY} ${QUARTZCORE_LIBRARY})
+	target_link_libraries(PCSX2_FLAGS INTERFACE
+		${APPKIT_LIBRARY}
+		${IOKIT_LIBRARY}
+		${METAL_LIBRARY}
+		${QUARTZCORE_LIBRARY}
+	)
 endif()
 
 set_property(GLOBAL PROPERTY PCSX2_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
