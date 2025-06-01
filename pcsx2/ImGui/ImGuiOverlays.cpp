@@ -416,10 +416,10 @@ __ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spa
 
 		APPEND("B={} PL={} ", static_cast<unsigned>(GSConfig.AccurateBlendingUnit), static_cast<unsigned>(GSConfig.TexturePreloading));
 		if (GSConfig.GPUPaletteConversion)
-			APPEND("PT ");
+			APPEND("PLTX ");
 
 		if (GSConfig.HWDownloadMode != GSHardwareDownloadMode::Enabled)
-			APPEND("DL={} ", static_cast<unsigned>(GSConfig.HWDownloadMode));
+			APPEND("HWDM={} ", static_cast<unsigned>(GSConfig.HWDownloadMode));
 
 		if (GSConfig.HWMipmap)
 			APPEND("MM ");
@@ -466,7 +466,7 @@ __ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spa
 		if (GSConfig.UserHacks_CPUFBConversion)
 			APPEND("FBC ");
 		if (GSConfig.UserHacks_ReadTCOnClose)
-			APPEND("FTC ");
+			APPEND("RTOC ");
 		if (GSConfig.UserHacks_DisableDepthSupport)
 			APPEND("DDC ");
 		if (GSConfig.UserHacks_DisablePartialInvalidation)
