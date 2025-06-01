@@ -25934,6 +25934,8 @@ SLES-54364:
 SLES-54365:
   name: "AMF Xtreme Bowling 2006"
   region: "PAL-M6"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes half right.
 SLES-54366:
   name: "David Douillet Judo"
   region: "PAL-NL-F"
@@ -69943,6 +69945,8 @@ SLUS-21347:
   name: "AMF Xtreme Bowling"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes half right.
 SLUS-21348:
   name: "Yakuza"
   region: "NTSC-U"
