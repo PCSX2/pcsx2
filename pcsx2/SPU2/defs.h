@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cstdio>
 
 // --------------------------------------------------------------------------------------
 //  SPU2 Register Table LUT

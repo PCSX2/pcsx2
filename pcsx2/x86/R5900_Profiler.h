@@ -215,6 +215,9 @@ static const char eeOpcodeName[][16] = {
 #ifdef eeProfileProg
 #include <utility>
 #include <algorithm>
+#include "common/emitter/x86emitter.h"
+#include "common/Console.h"
+#include "GS/MultiISA.h"
 
 using namespace x86Emitter;
 
@@ -368,7 +371,7 @@ struct eeProfiler
 	void EmitMem()
 	{
 		// Compact the 4GB virtual address to a 512KB virtual address
-		if (x86caps.hasBMI2)
+		if (g_cpu.hasBMI2)
 		{
 			xPEXT(ebx, ecx, ptr[&memMask]);
 			xADD(ptr32[(rbx * 4) + memStats], 1);
@@ -377,7 +380,7 @@ struct eeProfiler
 
 	void EmitConstMem(u32 add)
 	{
-		if (x86caps.hasBMI2)
+		if (g_cpu.hasBMI2)
 		{
 			u32 a = _pext_u32(add, memMask);
 			xADD(ptr32[a + memStats], 1);

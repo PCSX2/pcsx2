@@ -2527,11 +2527,11 @@ void VMManager::LogCPUCapabilities()
 
 #ifdef _M_X86
 	std::string extensions;
-	if (cpuinfo_has_x86_avx())
+	if (g_cpu.vectorISA >= ProcessorFeatures::VectorISA::AVX)
 		extensions += "AVX ";
-	if (cpuinfo_has_x86_avx2())
+	if (g_cpu.vectorISA >= ProcessorFeatures::VectorISA::AVX2)
 		extensions += "AVX2 ";
-	if (cpuinfo_has_x86_avx512f())
+	if (g_cpu.vectorISA >= ProcessorFeatures::VectorISA::AVX512F)
 		extensions += "AVX512F ";
 #ifdef _M_ARM64
 	if (cpuinfo_has_arm_neon())
