@@ -11,15 +11,16 @@ namespace x86Emitter
 	// --------------------------------------------------------------------------------------
 	struct _SimdShiftHelper
 	{
-		u8 Prefix;
-		u16 Opcode;
-		u16 OpcodeImm;
-		u8 Modcode;
+		SIMDInstructionInfo info;
+		SIMDInstructionInfo infoImm;
 
-		void operator()(const xRegisterSSE& to, const xRegisterSSE& from) const;
-		void operator()(const xRegisterSSE& to, const xIndirectVoid& from) const;
+		void operator()(const xRegisterSSE& dst, const xRegisterSSE& src)  const { (*this)(dst, dst, src); }
+		void operator()(const xRegisterSSE& dst, const xIndirectVoid& src) const { (*this)(dst, dst, src); }
+		void operator()(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegisterSSE& src2)  const;
+		void operator()(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirectVoid& src2) const;
 
-		void operator()(const xRegisterSSE& to, u8 imm8) const;
+		void operator()(const xRegisterSSE& dst, u8 imm8) const { (*this)(dst, dst, imm8); }
+		void operator()(const xRegisterSSE& dst, const xRegisterSSE& src, u8 imm8) const;
 	};
 
 	// --------------------------------------------------------------------------------------
@@ -42,7 +43,8 @@ namespace x86Emitter
 		const _SimdShiftHelper D;
 		const _SimdShiftHelper Q;
 
-		void DQ(const xRegisterSSE& to, u8 imm8) const;
+		void DQ(const xRegisterSSE& dst, u8 imm8) const { DQ(dst, dst, imm8); }
+		void DQ(const xRegisterSSE& dst, const xRegisterSSE& src, u8 imm8) const;
 	};
 
 	//////////////////////////////////////////////////////////////////////////////////////////
