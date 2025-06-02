@@ -51,32 +51,32 @@ namespace x86Emitter
 	//
 	struct xImplSimd_AddSub
 	{
-		const xImplSimd_DestRegEither B;
-		const xImplSimd_DestRegEither W;
-		const xImplSimd_DestRegEither D;
-		const xImplSimd_DestRegEither Q;
+		const xImplSimd_3Arg B;
+		const xImplSimd_3Arg W;
+		const xImplSimd_3Arg D;
+		const xImplSimd_3Arg Q;
 
 		// Add/Sub packed signed byte [8bit] integers from src into dest, and saturate the results.
-		const xImplSimd_DestRegEither SB;
+		const xImplSimd_3Arg SB;
 
 		// Add/Sub packed signed word [16bit] integers from src into dest, and saturate the results.
-		const xImplSimd_DestRegEither SW;
+		const xImplSimd_3Arg SW;
 
 		// Add/Sub packed unsigned byte [8bit] integers from src into dest, and saturate the results.
-		const xImplSimd_DestRegEither USB;
+		const xImplSimd_3Arg USB;
 
 		// Add/Sub packed unsigned word [16bit] integers from src into dest, and saturate the results.
-		const xImplSimd_DestRegEither USW;
+		const xImplSimd_3Arg USW;
 	};
 
 	//////////////////////////////////////////////////////////////////////////////////////////
 	//
 	struct xImplSimd_PMul
 	{
-		const xImplSimd_DestRegEither LW;
-		const xImplSimd_DestRegEither HW;
-		const xImplSimd_DestRegEither HUW;
-		const xImplSimd_DestRegEither UDQ;
+		const xImplSimd_3Arg LW;
+		const xImplSimd_3Arg HW;
+		const xImplSimd_3Arg HUW;
+		const xImplSimd_3Arg UDQ;
 
 		// [SSE-3] PMULHRSW multiplies vertically each signed 16-bit integer from dest with the
 		// corresponding signed 16-bit integer of source, producing intermediate signed 32-bit
@@ -88,14 +88,14 @@ namespace x86Emitter
 		//
 		// Both operands can be MMX or XMM registers.  Source can be register or memory.
 		//
-		const xImplSimd_DestRegEither HRSW;
+		const xImplSimd_3Arg HRSW;
 
 		// [SSE-4.1] Multiply the packed dword signed integers in dest with src, and store
 		// the low 32 bits of each product in xmm1.
-		const xImplSimd_DestRegSSE LD;
+		const xImplSimd_3Arg LD;
 
 		// [SSE-4.1] Multiply the packed signed dword integers in dest with src.
-		const xImplSimd_DestRegSSE DQ;
+		const xImplSimd_3Arg DQ;
 	};
 
 	//////////////////////////////////////////////////////////////////////////////////////////

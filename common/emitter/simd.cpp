@@ -339,41 +339,41 @@ namespace x86Emitter
 	};
 
 	const xImplSimd_AddSub xPADD =
-		{
-			{0x66, 0xdc + 0x20}, // B
-			{0x66, 0xdc + 0x21}, // W
-			{0x66, 0xdc + 0x22}, // D
-			{0x66, 0xd4}, // Q
+	{
+		{SIMDInstructionInfo(0xfc).p66().i().commutative()}, // B
+		{SIMDInstructionInfo(0xfd).p66().i().commutative()}, // W
+		{SIMDInstructionInfo(0xfe).p66().i().commutative()}, // D
+		{SIMDInstructionInfo(0xd4).p66().i().commutative()}, // Q
 
-			{0x66, 0xdc + 0x10}, // SB
-			{0x66, 0xdc + 0x11}, // SW
-			{0x66, 0xdc}, // USB
-			{0x66, 0xdc + 1}, // USW
+		{SIMDInstructionInfo(0xec).p66().i().commutative()}, // SB
+		{SIMDInstructionInfo(0xed).p66().i().commutative()}, // SW
+		{SIMDInstructionInfo(0xdc).p66().i().commutative()}, // USB
+		{SIMDInstructionInfo(0xdd).p66().i().commutative()}, // USW
 	};
 
 	const xImplSimd_AddSub xPSUB =
-		{
-			{0x66, 0xd8 + 0x20}, // B
-			{0x66, 0xd8 + 0x21}, // W
-			{0x66, 0xd8 + 0x22}, // D
-			{0x66, 0xfb}, // Q
+	{
+		{SIMDInstructionInfo(0xf8).p66().i()}, // B
+		{SIMDInstructionInfo(0xf9).p66().i()}, // W
+		{SIMDInstructionInfo(0xfa).p66().i()}, // D
+		{SIMDInstructionInfo(0xfb).p66().i()}, // Q
 
-			{0x66, 0xd8 + 0x10}, // SB
-			{0x66, 0xd8 + 0x11}, // SW
-			{0x66, 0xd8}, // USB
-			{0x66, 0xd8 + 1}, // USW
+		{SIMDInstructionInfo(0xe8).p66().i()}, // SB
+		{SIMDInstructionInfo(0xe9).p66().i()}, // SW
+		{SIMDInstructionInfo(0xd8).p66().i()}, // USB
+		{SIMDInstructionInfo(0xd9).p66().i()}, // USW
 	};
 
 	const xImplSimd_PMul xPMUL =
-		{
-			{0x66, 0xd5}, // LW
-			{0x66, 0xe5}, // HW
-			{0x66, 0xe4}, // HUW
-			{0x66, 0xf4}, // UDQ
+	{
+		{SIMDInstructionInfo(0xd5).p66().i().commutative()}, // LW
+		{SIMDInstructionInfo(0xe5).p66().i().commutative()}, // HW
+		{SIMDInstructionInfo(0xe4).p66().i().commutative()}, // HUW
+		{SIMDInstructionInfo(0xf4).p66().i().commutative()}, // UDQ
 
-			{0x66, 0x0b38}, // HRSW
-			{0x66, 0x4038}, // LD
-			{0x66, 0x2838}, // DQ
+		{SIMDInstructionInfo(0x0b).p66().m0f38().i().commutative()}, // HRSW
+		{SIMDInstructionInfo(0x40).p66().m0f38().i().commutative()}, // LD
+		{SIMDInstructionInfo(0x28).p66().m0f38().i().commutative()}, // DQ
 	};
 
 	const xImplSimd_rSqrt xRSQRT =
