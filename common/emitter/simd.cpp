@@ -212,6 +212,8 @@ namespace x86Emitter
 		}
 	}
 
+	// clang-format off
+
 	const xImplSimd_DestRegEither xPAND = {0x66, 0xdb};
 	const xImplSimd_DestRegEither xPANDN = {0x66, 0xdf};
 	const xImplSimd_DestRegEither xPOR = {0x66, 0xeb};
