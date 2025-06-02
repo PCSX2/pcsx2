@@ -423,23 +423,23 @@ namespace x86Emitter
 	};
 
 	const xImplSimd_HorizAdd xHADD =
-		{
-			{0xf2, 0x7c}, // PS
-			{0x66, 0x7c}, // PD
+	{
+		{SIMDInstructionInfo(0x7c).pf2()}, // PS
+		{SIMDInstructionInfo(0x7c).p66()}, // PD
 	};
 
 	const xImplSimd_DotProduct xDP =
-		{
-			{0x66, 0x403a}, // PS
-			{0x66, 0x413a}, // PD
+	{
+		{SIMDInstructionInfo(0x40).p66().m0f3a().commutative()}, // PS
+		{SIMDInstructionInfo(0x41).p66().m0f3a().commutative()}, // PD
 	};
 
 	const xImplSimd_Round xROUND =
-		{
-			{0x66, 0x083a}, // PS
-			{0x66, 0x093a}, // PD
-			{0x66, 0x0a3a}, // SS
-			{0x66, 0x0b3a}, // SD
+	{
+		{SIMDInstructionInfo(0x08).p66().m0f3a()}, // PS
+		{SIMDInstructionInfo(0x09).p66().m0f3a()}, // PD
+		{SIMDInstructionInfo(0x0a).p66().m0f3a()}, // SS
+		{SIMDInstructionInfo(0x0b).p66().m0f3a()}, // SD
 	};
 
 	// =====================================================================================================

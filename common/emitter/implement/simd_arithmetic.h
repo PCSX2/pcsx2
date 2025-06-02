@@ -216,14 +216,14 @@ namespace x86Emitter
 		//   stores the result in the second dword of dest.
 		// * Adds single-precision floating-point values in the first and second dword of *src*
 		//   and stores the result in the third dword of dest.
-		const xImplSimd_DestRegSSE PS;
+		const xImplSimd_3Arg PS;
 
 		// [SSE-3] Horizontal Add of Packed Data.  A two step process:
 		// * Adds the double-precision floating-point values in the high and low quadwords of
 		//   dest and stores the result in the low quadword of dest.
 		// * Adds the double-precision floating-point values in the high and low quadwords of
 		//   *src* stores the result in the high quadword of dest.
-		const xImplSimd_DestRegSSE PD;
+		const xImplSimd_3Arg PD;
 	};
 
 	//////////////////////////////////////////////////////////////////////////////////////////
@@ -244,10 +244,10 @@ namespace x86Emitter
 		// element in dest.  If a broadcast mask bit is zero, the corresponding element in
 		// the destination is set to zero.
 		//
-		xImplSimd_DestRegImmSSE PS;
+		xImplSimd_3ArgImm PS;
 
 		// [SSE-4.1]
-		xImplSimd_DestRegImmSSE PD;
+		xImplSimd_3ArgImm PD;
 	};
 
 	//////////////////////////////////////////////////////////////////////////////////////////
@@ -265,7 +265,7 @@ namespace x86Emitter
 		// Rounding Mode Reference:
 		//   0 - Nearest, 1 - Negative Infinity, 2 - Positive infinity, 3 - Truncate.
 		//
-		const xImplSimd_DestRegImmSSE PS;
+		const xImplSimd_2ArgImm PS;
 
 		// [SSE-4.1] Rounds the 2 packed double-precision src values and stores them in dest.
 		//
@@ -277,7 +277,7 @@ namespace x86Emitter
 		// Rounding Mode Reference:
 		//   0 - Nearest, 1 - Negative Infinity, 2 - Positive infinity, 3 - Truncate.
 		//
-		const xImplSimd_DestRegImmSSE PD;
+		const xImplSimd_2ArgImm PD;
 
 		// [SSE-4.1] Rounds the single-precision src value and stores in dest.
 		//
@@ -289,7 +289,7 @@ namespace x86Emitter
 		// Rounding Mode Reference:
 		//   0 - Nearest, 1 - Negative Infinity, 2 - Positive infinity, 3 - Truncate.
 		//
-		const xImplSimd_DestRegImmSSE SS;
+		const xImplSimd_3ArgImm SS;
 
 		// [SSE-4.1] Rounds the double-precision src value and stores in dest.
 		//
@@ -301,7 +301,7 @@ namespace x86Emitter
 		// Rounding Mode Reference:
 		//   0 - Nearest, 1 - Negative Infinity, 2 - Positive infinity, 3 - Truncate.
 		//
-		const xImplSimd_DestRegImmSSE SD;
+		const xImplSimd_3ArgImm SD;
 	};
 
 } // End namespace x86Emitter
