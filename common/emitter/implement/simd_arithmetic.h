@@ -133,15 +133,15 @@ namespace x86Emitter
 	{
 		// [sSSE-3] Computes the absolute value of bytes in the src, and stores the result
 		// in dest, as UNSIGNED.
-		const xImplSimd_DestRegEither B;
+		const xImplSimd_2Arg B;
 
 		// [sSSE-3] Computes the absolute value of word in the src, and stores the result
 		// in dest, as UNSIGNED.
-		const xImplSimd_DestRegEither W;
+		const xImplSimd_2Arg W;
 
 		// [sSSE-3] Computes the absolute value of doublewords in the src, and stores the
 		// result in dest, as UNSIGNED.
-		const xImplSimd_DestRegEither D;
+		const xImplSimd_2Arg D;
 	};
 
 	//////////////////////////////////////////////////////////////////////////////////////////
@@ -155,21 +155,21 @@ namespace x86Emitter
 		// of a data element in src is positive, the corresponding data element in dest is
 		// unchanged. If a data element in src is zero, the corresponding data element in
 		// dest is set to zero.
-		const xImplSimd_DestRegEither B;
+		const xImplSimd_3Arg B;
 
 		// [sSSE-3] negates each word element of dest if the signed integer value of the
 		// corresponding data element in src is less than zero. If the signed integer value
 		// of a data element in src is positive, the corresponding data element in dest is
 		// unchanged. If a data element in src is zero, the corresponding data element in
 		// dest is set to zero.
-		const xImplSimd_DestRegEither W;
+		const xImplSimd_3Arg W;
 
 		// [sSSE-3] negates each doubleword element of dest if the signed integer value
 		// of the corresponding data element in src is less than zero. If the signed integer
 		// value of a data element in src is positive, the corresponding data element in dest
 		// is unchanged. If a data element in src is zero, the corresponding data element in
 		// dest is set to zero.
-		const xImplSimd_DestRegEither D;
+		const xImplSimd_3Arg D;
 	};
 
 	//////////////////////////////////////////////////////////////////////////////////////////
@@ -185,7 +185,7 @@ namespace x86Emitter
 		//   DEST[63:32] = ( DEST[47:32] * SRC[47:32]) + (DEST[63:48] * SRC[63:48] );
 		//   [.. repeat in the case of XMM src/dest operands ..]
 		//
-		const xImplSimd_DestRegEither WD;
+		const xImplSimd_3Arg WD;
 
 		// [sSSE-3] multiplies vertically each unsigned byte of dest with the corresponding
 		// signed byte of src, producing intermediate signed 16-bit integers. Each adjacent
@@ -201,7 +201,7 @@ namespace x86Emitter
 		//   DEST[31-16] = SaturateToSignedWord( SRC[31-24] * DEST[31-24] + SRC[23-16] * DEST[23-16] );
 		//   [.. repeat for each 16 bits up to 64 (mmx) or 128 (xmm) ..]
 		//
-		const xImplSimd_DestRegEither UBSW;
+		const xImplSimd_3Arg UBSW;
 	};
 
 	//////////////////////////////////////////////////////////////////////////////////////////

@@ -403,23 +403,23 @@ namespace x86Emitter
 	};
 
 	const xImplSimd_PAbsolute xPABS =
-		{
-			{0x66, 0x1c38}, // B
-			{0x66, 0x1d38}, // W
-			{0x66, 0x1e38} // D
+	{
+		{SIMDInstructionInfo(0x1c).p66().m0f38().i()}, // B
+		{SIMDInstructionInfo(0x1d).p66().m0f38().i()}, // W
+		{SIMDInstructionInfo(0x1e).p66().m0f38().i()}, // D
 	};
 
 	const xImplSimd_PSign xPSIGN =
-		{
-			{0x66, 0x0838}, // B
-			{0x66, 0x0938}, // W
-			{0x66, 0x0a38}, // D
+	{
+		{SIMDInstructionInfo(0x08).p66().m0f38().i()}, // B
+		{SIMDInstructionInfo(0x09).p66().m0f38().i()}, // W
+		{SIMDInstructionInfo(0x0a).p66().m0f38().i()}, // D
 	};
 
 	const xImplSimd_PMultAdd xPMADD =
-		{
-			{0x66, 0xf5}, // WD
-			{0x66, 0xf438}, // UBSW
+	{
+		{SIMDInstructionInfo(0xf5).p66().i().commutative()},         // WD
+		{SIMDInstructionInfo(0x04).p66().m0f38().i().commutative()}, // UBSW
 	};
 
 	const xImplSimd_HorizAdd xHADD =
