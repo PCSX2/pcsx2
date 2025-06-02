@@ -103,26 +103,27 @@ namespace x86Emitter
 	//
 	struct xImplSimd_rSqrt
 	{
-		const xImplSimd_DestRegSSE PS;
-		const xImplSimd_DestRegSSE SS;
+		const xImplSimd_2Arg PS;
+		const xImplSimd_3Arg SS;
 	};
 
 	//////////////////////////////////////////////////////////////////////////////////////////
-	// SQRT has PS/SS/SD forms, but not the PD form.
+	// SQRT has PS/SS/PD/SD forms
 	//
 	struct xImplSimd_Sqrt
 	{
-		const xImplSimd_DestRegSSE PS;
-		const xImplSimd_DestRegSSE SS;
-		const xImplSimd_DestRegSSE SD;
+		const xImplSimd_2Arg PS;
+		const xImplSimd_3Arg SS;
+		const xImplSimd_2Arg PD;
+		const xImplSimd_3Arg SD;
 	};
 
 	//////////////////////////////////////////////////////////////////////////////////////////
 	//
 	struct xImplSimd_AndNot
 	{
-		const xImplSimd_DestRegSSE PS;
-		const xImplSimd_DestRegSSE PD;
+		const xImplSimd_3Arg PS;
+		const xImplSimd_3Arg PD;
 	};
 
 	//////////////////////////////////////////////////////////////////////////////////////////

@@ -377,28 +377,29 @@ namespace x86Emitter
 	};
 
 	const xImplSimd_rSqrt xRSQRT =
-		{
-			{0x00, 0x52}, // PS
-			{0xf3, 0x52} // SS
+	{
+		{SIMDInstructionInfo(0x52)},       // PS
+		{SIMDInstructionInfo(0x52).pf3()}, // SS
 	};
 
 	const xImplSimd_rSqrt xRCP =
-		{
-			{0x00, 0x53}, // PS
-			{0xf3, 0x53} // SS
+	{
+		{SIMDInstructionInfo(0x53)},       // PS
+		{SIMDInstructionInfo(0x53).pf3()}, // SS
 	};
 
 	const xImplSimd_Sqrt xSQRT =
-		{
-			{0x00, 0x51}, // PS
-			{0xf3, 0x51}, // SS
-			{0xf2, 0x51} // SS
+	{
+		{SIMDInstructionInfo(0x51)},       // PS
+		{SIMDInstructionInfo(0x51).pf3()}, // SS
+		{SIMDInstructionInfo(0x51).p66()}, // PD
+		{SIMDInstructionInfo(0x51).pf2()}, // SS
 	};
 
 	const xImplSimd_AndNot xANDN =
-		{
-			{0x00, 0x55}, // PS
-			{0x66, 0x55} // PD
+	{
+		{SIMDInstructionInfo(0x55)},       // PS
+		{SIMDInstructionInfo(0x55).p66()}, // PD
 	};
 
 	const xImplSimd_PAbsolute xPABS =
