@@ -500,36 +500,34 @@ namespace x86Emitter
 	};
 
 	const xImplSimd_PCompare xPCMP =
-		{
-			{0x66, 0x74}, // EQB
-			{0x66, 0x75}, // EQW
-			{0x66, 0x76}, // EQD
+	{
+		{SIMDInstructionInfo(0x74).i().p66().commutative()}, // EQB
+		{SIMDInstructionInfo(0x75).i().p66().commutative()}, // EQW
+		{SIMDInstructionInfo(0x76).i().p66().commutative()}, // EQD
 
-			{0x66, 0x64}, // GTB
-			{0x66, 0x65}, // GTW
-			{0x66, 0x66}, // GTD
+		{SIMDInstructionInfo(0x64).i().p66()}, // GTB
+		{SIMDInstructionInfo(0x65).i().p66()}, // GTW
+		{SIMDInstructionInfo(0x66).i().p66()}, // GTD
 	};
 
 	const xImplSimd_PMinMax xPMIN =
-		{
-			{0x66, 0xda}, // UB
-			{0x66, 0xea}, // SW
-			{0x66, 0x3838}, // SB
-			{0x66, 0x3938}, // SD
-
-			{0x66, 0x3a38}, // UW
-			{0x66, 0x3b38}, // UD
+	{
+		{SIMDInstructionInfo(0xda).i().p66().commutative()},         // UB
+		{SIMDInstructionInfo(0xea).i().p66().commutative()},         // SW
+		{SIMDInstructionInfo(0x38).i().p66().m0f38().commutative()}, // SB
+		{SIMDInstructionInfo(0x39).i().p66().m0f38().commutative()}, // SD
+		{SIMDInstructionInfo(0x3a).i().p66().m0f38().commutative()}, // UW
+		{SIMDInstructionInfo(0x3b).i().p66().m0f38().commutative()}, // UD
 	};
 
 	const xImplSimd_PMinMax xPMAX =
-		{
-			{0x66, 0xde}, // UB
-			{0x66, 0xee}, // SW
-			{0x66, 0x3c38}, // SB
-			{0x66, 0x3d38}, // SD
-
-			{0x66, 0x3e38}, // UW
-			{0x66, 0x3f38}, // UD
+	{
+		{SIMDInstructionInfo(0xde).i().p66().commutative()},         // UB
+		{SIMDInstructionInfo(0xee).i().p66().commutative()},         // SW
+		{SIMDInstructionInfo(0x3c).i().p66().m0f38().commutative()}, // SB
+		{SIMDInstructionInfo(0x3d).i().p66().m0f38().commutative()}, // SD
+		{SIMDInstructionInfo(0x3e).i().p66().m0f38().commutative()}, // UW
+		{SIMDInstructionInfo(0x3f).i().p66().m0f38().commutative()}, // UD
 	};
 
 	// =====================================================================================================
