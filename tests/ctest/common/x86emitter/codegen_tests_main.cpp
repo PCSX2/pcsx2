@@ -231,6 +231,15 @@ TEST(CodegenTests, SSETest)
 	CODEGEN_TEST(xPMADD.WD(xmm0, xmm8),   "66 41 0f f5 c0");
 	CODEGEN_TEST(xPMADD.UBSW(xmm0, xmm8), "66 41 0f 38 04 c0");
 
+	CODEGEN_TEST(xHADD.PS(xmm1, xmm8),     "f2 41 0f 7c c8");
+	CODEGEN_TEST(xHADD.PD(xmm4, ptr[r8]),  "66 41 0f 7c 20");
+	CODEGEN_TEST(xDP.PS(xmm3, xmm9, 0xf7), "66 41 0f 3a 40 d9 f7");
+	CODEGEN_TEST(xDP.PD(xmm8, xmm4, 0x33), "66 44 0f 3a 41 c4 33");
+	CODEGEN_TEST(xROUND.PS(xmm1, xmm3, 0), "66 0f 3a 08 cb 00");
+	CODEGEN_TEST(xROUND.PD(xmm3, xmm9, 1), "66 41 0f 3a 09 d9 01");
+	CODEGEN_TEST(xROUND.SS(xmm5, xmm2, 2), "66 0f 3a 0a ea 02");
+	CODEGEN_TEST(xROUND.SD(xmm8, xmm2, 3), "66 44 0f 3a 0b c2 03");
+
 	CODEGEN_TEST(xMOVAPS(xmm0, xmm1), "0f 28 c1");
 	CODEGEN_TEST(xMOVAPS(xmm8, xmm9), "45 0f 28 c1");
 	CODEGEN_TEST(xMOVUPS(xmm8, ptr128[r8+r9]), "47 0f 10 04 08");
@@ -342,6 +351,15 @@ TEST(CodegenTests, AVXTest)
 	CODEGEN_TEST(xPSIGN.D(xmm2, ptr[r8]), "c4 c2 69 0a 10");
 	CODEGEN_TEST(xPMADD.WD(xmm0, xmm8),   "c5 b9 f5 c0"); // => vpmaddwd xmm0, xmm8, xmm0
 	CODEGEN_TEST(xPMADD.UBSW(xmm0, xmm8), "c4 c2 79 04 c0");
+
+	CODEGEN_TEST(xHADD.PS(xmm1, xmm8),     "c4 c1 73 7c c8");
+	CODEGEN_TEST(xHADD.PD(xmm4, ptr[r8]),  "c4 c1 59 7c 20");
+	CODEGEN_TEST(xDP.PS(xmm3, xmm9, 0xf7), "c4 c3 61 40 d9 f7");
+	CODEGEN_TEST(xDP.PD(xmm8, xmm4, 0x33), "c4 63 39 41 c4 33");
+	CODEGEN_TEST(xROUND.PS(xmm1, xmm3, 0), "c4 e3 79 08 cb 00");
+	CODEGEN_TEST(xROUND.PD(xmm3, xmm9, 1), "c4 c3 79 09 d9 01");
+	CODEGEN_TEST(xROUND.SS(xmm5, xmm2, 2), "c4 e3 51 0a ea 02");
+	CODEGEN_TEST(xROUND.SD(xmm8, xmm2, 3), "c4 63 39 0b c2 03");
 
 	CODEGEN_TEST(xVMOVAPS(xmm0, xmm1), "c5 f8 28 c1");
 	CODEGEN_TEST(xVMOVAPS(xmm0, ptr32[rdi]), "c5 f8 28 07");
