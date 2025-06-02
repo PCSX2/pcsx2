@@ -516,16 +516,16 @@ namespace x86Emitter
 
 	// ------------------------------------------------------------------------
 
-	extern const xImplSimd_DestRegEither xPAND;
-	extern const xImplSimd_DestRegEither xPANDN;
-	extern const xImplSimd_DestRegEither xPOR;
-	extern const xImplSimd_DestRegEither xPXOR;
+	extern const xImplSimd_3Arg xPAND;
+	extern const xImplSimd_3Arg xPANDN;
+	extern const xImplSimd_3Arg xPOR;
+	extern const xImplSimd_3Arg xPXOR;
 
 	extern const xImplSimd_Shuffle xSHUF;
 
 	// ------------------------------------------------------------------------
 
-	extern const xImplSimd_DestRegSSE xPTEST;
+	extern const xImplSimd_2Arg xPTEST;
 
 	extern const xImplSimd_MinMax xMIN;
 	extern const xImplSimd_MinMax xMAX;
