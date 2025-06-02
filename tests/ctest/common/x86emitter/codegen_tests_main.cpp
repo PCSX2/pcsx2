@@ -282,6 +282,16 @@ TEST(CodegenTests, SSETest)
 	CODEGEN_TEST(xPMAX.UW(xmm4, xmm9),     "66 41 0f 38 3e e1");
 	CODEGEN_TEST(xPMAX.UD(xmm2, ptr[r10]), "66 41 0f 38 3f 12");
 
+	CODEGEN_TEST(xSHUF.PS(xmm0, xmm8, 0x33),       "41 0f c6 c0 33");
+	CODEGEN_TEST(xSHUF.PS(xmm0, ptr[r8], 0),       "41 0f c6 00 00");
+	CODEGEN_TEST(xSHUF.PD(xmm3, ptr[rcx], 0),      "66 0f c6 19 00");
+	CODEGEN_TEST(xSHUF.PD(xmm3, xmm2, 2),          "66 0f c6 da 02");
+	CODEGEN_TEST(xINSERTPS(xmm1, xmm2, 0x87),      "66 0f 3a 21 ca 87");
+	CODEGEN_TEST(xINSERTPS(xmm1, ptr32[r8], 0x87), "66 41 0f 3a 21 08 87");
+	CODEGEN_TEST(xEXTRACTPS(eax, xmm2, 2),         "66 0f 3a 17 d0 02");
+	CODEGEN_TEST(xEXTRACTPS(ptr32[r9], xmm3, 3),   "66 41 0f 3a 17 19 03");
+	CODEGEN_TEST(xEXTRACTPS(ptr32[base], xmm1, 2), "66 0f 3a 17 0d f6 ff ff ff 02");
+
 	CODEGEN_TEST(xMOVAPS(xmm0, xmm1), "0f 28 c1");
 	CODEGEN_TEST(xMOVAPS(xmm8, xmm9), "45 0f 28 c1");
 	CODEGEN_TEST(xMOVUPS(xmm8, ptr128[r8+r9]), "47 0f 10 04 08");
@@ -290,7 +300,6 @@ TEST(CodegenTests, SSETest)
 	CODEGEN_TEST(xBLEND.PD(xmm8, xmm9, 0xaa), "66 45 0f 3a 0d c1 aa");
 	CODEGEN_TEST(xPBLEND.W(xmm0, xmm1, 0x55), "66 0f 3a 0e c1 55");
 	CODEGEN_TEST(xPBLEND.VB(xmm1, xmm2), "66 0f 38 10 ca");
-	CODEGEN_TEST(xEXTRACTPS(ptr32[base], xmm1, 2), "66 0f 3a 17 0d f6 ff ff ff 02");
 	CODEGEN_TEST(xMOVD(eax, xmm1), "66 0f 7e c8");
 	CODEGEN_TEST(xMOVD(eax, xmm10), "66 44 0f 7e d0");
 	CODEGEN_TEST(xMOVD(rax, xmm1), "66 48 0f 7e c8");
@@ -444,6 +453,16 @@ TEST(CodegenTests, AVXTest)
 	CODEGEN_TEST(xPMAX.SD(xmm8, xmm3),     "c4 62 39 3d c3");
 	CODEGEN_TEST(xPMAX.UW(xmm4, xmm9),     "c4 c2 59 3e e1");
 	CODEGEN_TEST(xPMAX.UD(xmm2, ptr[r10]), "c4 c2 69 3f 12");
+
+	CODEGEN_TEST(xSHUF.PS(xmm0, xmm8, 0x33),       "c4 c1 78 c6 c0 33");
+	CODEGEN_TEST(xSHUF.PS(xmm0, ptr[r8], 0),       "c4 c1 78 c6 00 00");
+	CODEGEN_TEST(xSHUF.PD(xmm3, ptr[rcx], 0),      "c5 e1 c6 19 00");
+	CODEGEN_TEST(xSHUF.PD(xmm3, xmm2, 2),          "c5 e1 c6 da 02");
+	CODEGEN_TEST(xINSERTPS(xmm1, xmm2, 0x87),      "c4 e3 71 21 ca 87");
+	CODEGEN_TEST(xINSERTPS(xmm1, ptr32[r8], 0x87), "c4 c3 71 21 08 87");
+	CODEGEN_TEST(xEXTRACTPS(eax, xmm2, 2),         "c4 e3 79 17 d0 02");
+	CODEGEN_TEST(xEXTRACTPS(ptr32[r9], xmm3, 3),   "c4 c3 79 17 19 03");
+	CODEGEN_TEST(xEXTRACTPS(ptr32[base], xmm1, 2), "c4 e3 79 17 0d f6 ff ff ff 02");
 
 	CODEGEN_TEST(xVMOVAPS(xmm0, xmm1), "c5 f8 28 c1");
 	CODEGEN_TEST(xVMOVAPS(xmm0, ptr32[rdi]), "c5 f8 28 07");

@@ -13,11 +13,15 @@ namespace x86Emitter
 	{
 		inline void _selector_assertion_check(u8 selector) const;
 
-		void PS(const xRegisterSSE& to, const xRegisterSSE& from, u8 selector) const;
-		void PS(const xRegisterSSE& to, const xIndirectVoid& from, u8 selector) const;
+		void PS(const xRegisterSSE& dst, const xRegisterSSE&  src, u8 selector) const { PS(dst, dst, src, selector); }
+		void PS(const xRegisterSSE& dst, const xIndirectVoid& src, u8 selector) const { PS(dst, dst, src, selector); }
+		void PS(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegisterSSE&  src2, u8 selector) const;
+		void PS(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirectVoid& src2, u8 selector) const;
 
-		void PD(const xRegisterSSE& to, const xRegisterSSE& from, u8 selector) const;
-		void PD(const xRegisterSSE& to, const xIndirectVoid& from, u8 selector) const;
+		void PD(const xRegisterSSE& dst, const xRegisterSSE&  src, u8 selector) const { PD(dst, dst, src, selector); }
+		void PD(const xRegisterSSE& dst, const xIndirectVoid& src, u8 selector) const { PD(dst, dst, src, selector); }
+		void PD(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegisterSSE&  src2, u8 selector) const;
+		void PD(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirectVoid& src2, u8 selector) const;
 	};
 
 	// --------------------------------------------------------------------------------------
