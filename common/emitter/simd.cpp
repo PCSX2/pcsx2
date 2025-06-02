@@ -540,26 +540,26 @@ namespace x86Emitter
 			"Invalid immediate operand on SSE Shuffle: Upper 6 bits of the SSE Shuffle-PD Selector are reserved and must be zero.");
 	}
 
-	void xImplSimd_Shuffle::PS(const xRegisterSSE& to, const xRegisterSSE& from, u8 selector) const
+	void xImplSimd_Shuffle::PS(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegisterSSE& src2, u8 selector) const
 	{
-		xOpWrite0F(0xc6, to, from, selector);
+		EmitSIMD(SIMDInstructionInfo(0xc6), dst, src1, src2, selector);
 	}
 
-	void xImplSimd_Shuffle::PS(const xRegisterSSE& to, const xIndirectVoid& from, u8 selector) const
+	void xImplSimd_Shuffle::PS(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirectVoid& src2, u8 selector) const
 	{
-		xOpWrite0F(0xc6, to, from, selector);
+		EmitSIMD(SIMDInstructionInfo(0xc6), dst, src1, src2, selector);
 	}
 
-	void xImplSimd_Shuffle::PD(const xRegisterSSE& to, const xRegisterSSE& from, u8 selector) const
+	void xImplSimd_Shuffle::PD(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegisterSSE& src2, u8 selector) const
 	{
 		_selector_assertion_check(selector);
-		xOpWrite0F(0x66, 0xc6, to, from, selector & 0x3);
+		EmitSIMD(SIMDInstructionInfo(0xc6).d().p66(), dst, src1, src2, selector);
 	}
 
-	void xImplSimd_Shuffle::PD(const xRegisterSSE& to, const xIndirectVoid& from, u8 selector) const
+	void xImplSimd_Shuffle::PD(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirectVoid& src2, u8 selector) const
 	{
 		_selector_assertion_check(selector);
-		xOpWrite0F(0x66, 0xc6, to, from, selector & 0x3);
+		EmitSIMD(SIMDInstructionInfo(0xc6).d().p66(), dst, src1, src2, selector);
 	}
 
 	void xImplSimd_PInsert::B(const xRegisterSSE& to, const xRegister32& from, u8 imm8) const { xOpWrite0F(0x66, 0x203a, to, from, imm8); }
@@ -866,15 +866,15 @@ namespace x86Emitter
 	//  * ZMASK: Each bit of Imm8[3:0] selects a dword element in dest to  be written
 	//    with 0.0 if set to 1.
 	//
-	__emitinline void xINSERTPS(const xRegisterSSE& to, const xRegisterSSE& from, u8 imm8) { xOpWrite0F(0x66, 0x213a, to, from, imm8); }
-	__emitinline void xINSERTPS(const xRegisterSSE& to, const xIndirect32& from, u8 imm8) { xOpWrite0F(0x66, 0x213a, to, from, imm8); }
+	__emitinline void xINSERTPS(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegisterSSE& src2, u8 imm8) { EmitSIMD(SIMDInstructionInfo(0x21).p66().m0f3a(), dst, src1, src2, imm8); }
+	__emitinline void xINSERTPS(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirect32&  src2, u8 imm8) { EmitSIMD(SIMDInstructionInfo(0x21).p66().m0f3a(), dst, src1, src2, imm8); }
 
 	// [SSE-4.1] Extract a single-precision floating-point value from src at an offset
 	// determined by imm8[1-0]*32. The extracted single precision floating-point value
 	// is stored into the low 32-bits of dest (or at a 32-bit memory pointer).
 	//
-	__emitinline void xEXTRACTPS(const xRegister32or64& to, const xRegisterSSE& from, u8 imm8) { xOpWrite0F(0x66, 0x173a, to, from, imm8); }
-	__emitinline void xEXTRACTPS(const xIndirect32& dest, const xRegisterSSE& from, u8 imm8) { xOpWrite0F(0x66, 0x173a, from, dest, imm8); }
+	__emitinline void xEXTRACTPS(const xRegister32& dst, const xRegisterSSE& src, u8 imm8) { EmitSIMD(SIMDInstructionInfo(0x17).mov().p66().m0f3a(), src, src, dst, imm8); }
+	__emitinline void xEXTRACTPS(const xIndirect32& dst, const xRegisterSSE& src, u8 imm8) { EmitSIMD(SIMDInstructionInfo(0x17).mov().p66().m0f3a(), src, src, dst, imm8); }
 
 
 	// =====================================================================================================

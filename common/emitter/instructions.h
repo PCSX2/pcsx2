@@ -508,11 +508,13 @@ namespace x86Emitter
 	extern const xImplSimd_DestRegSSE xMOVSLDUP;
 	extern const xImplSimd_DestRegSSE xMOVSHDUP;
 
-	extern void xINSERTPS(const xRegisterSSE& to, const xRegisterSSE& from, u8 imm8);
-	extern void xINSERTPS(const xRegisterSSE& to, const xIndirect32& from, u8 imm8);
+	extern void xINSERTPS(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegisterSSE& src2, u8 imm8);
+	extern void xINSERTPS(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirect32&  src2, u8 imm8);
+	static void xINSERTPS(const xRegisterSSE& dst, const xRegisterSSE& src, u8 imm8) { xINSERTPS(dst, dst, src, imm8); }
+	static void xINSERTPS(const xRegisterSSE& dst, const xIndirect32&  src, u8 imm8) { xINSERTPS(dst, dst, src, imm8); }
 
-	extern void xEXTRACTPS(const xRegister32or64& to, const xRegisterSSE& from, u8 imm8);
-	extern void xEXTRACTPS(const xIndirect32& dest, const xRegisterSSE& from, u8 imm8);
+	extern void xEXTRACTPS(const xRegister32& dst, const xRegisterSSE& src, u8 imm8);
+	extern void xEXTRACTPS(const xIndirect32& dst, const xRegisterSSE& src, u8 imm8);
 
 	// ------------------------------------------------------------------------
 
