@@ -8,10 +8,10 @@ namespace x86Emitter
 
 	struct xImplSimd_MinMax
 	{
-		const xImplSimd_DestRegSSE PS; // packed single precision
-		const xImplSimd_DestRegSSE PD; // packed double precision
-		const xImplSimd_DestRegSSE SS; // scalar single precision
-		const xImplSimd_DestRegSSE SD; // scalar double precision
+		const xImplSimd_3Arg PS; // packed single precision
+		const xImplSimd_3Arg PD; // packed double precision
+		const xImplSimd_3Arg SS; // scalar single precision
+		const xImplSimd_3Arg SD; // scalar double precision
 	};
 
 	//////////////////////////////////////////////////////////////////////////////////////////
@@ -20,17 +20,25 @@ namespace x86Emitter
 	{
 		SSE2_ComparisonType CType;
 
-		void PS(const xRegisterSSE& to, const xRegisterSSE& from) const;
-		void PS(const xRegisterSSE& to, const xIndirectVoid& from) const;
+		void PS(const xRegisterSSE& dst, const xRegisterSSE&  src) const { PS(dst, dst, src); }
+		void PS(const xRegisterSSE& dst, const xIndirectVoid& src) const { PS(dst, dst, src); }
+		void PS(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegisterSSE&  src2) const;
+		void PS(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirectVoid& src2) const;
 
-		void PD(const xRegisterSSE& to, const xRegisterSSE& from) const;
-		void PD(const xRegisterSSE& to, const xIndirectVoid& from) const;
+		void PD(const xRegisterSSE& dst, const xRegisterSSE&  src) const { PD(dst, dst, src); }
+		void PD(const xRegisterSSE& dst, const xIndirectVoid& src) const { PD(dst, dst, src); }
+		void PD(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegisterSSE&  src2) const;
+		void PD(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirectVoid& src2) const;
 
-		void SS(const xRegisterSSE& to, const xRegisterSSE& from) const;
-		void SS(const xRegisterSSE& to, const xIndirectVoid& from) const;
+		void SS(const xRegisterSSE& dst, const xRegisterSSE&  src) const { SS(dst, dst, src); }
+		void SS(const xRegisterSSE& dst, const xIndirectVoid& src) const { SS(dst, dst, src); }
+		void SS(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegisterSSE&  src2) const;
+		void SS(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirectVoid& src2) const;
 
-		void SD(const xRegisterSSE& to, const xRegisterSSE& from) const;
-		void SD(const xRegisterSSE& to, const xIndirectVoid& from) const;
+		void SD(const xRegisterSSE& dst, const xRegisterSSE&  src) const { SD(dst, dst, src); }
+		void SD(const xRegisterSSE& dst, const xIndirectVoid& src) const { SD(dst, dst, src); }
+		void SD(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegisterSSE&  src2) const;
+		void SD(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirectVoid& src2) const;
 	};
 
 	//////////////////////////////////////////////////////////////////////////////////////////
@@ -38,8 +46,8 @@ namespace x86Emitter
 	//
 	struct xImplSimd_COMI
 	{
-		const xImplSimd_DestRegSSE SS;
-		const xImplSimd_DestRegSSE SD;
+		const xImplSimd_2Arg SS;
+		const xImplSimd_2Arg SD;
 	};
 
 
