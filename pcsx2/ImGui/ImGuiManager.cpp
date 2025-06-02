@@ -1221,9 +1221,7 @@ void ImGuiManager::SetSoftwareCursor(u32 index, std::string image_path, float im
 	// Also, need to make it run on the GSthread to ensure thread safety or OpenGL renderer will have race conditions due to not creating texture without a valid accompanying context.
 	if (MTGS::IsOpen())
 	{
-		MTGS::RunOnGSThread([index]() {
-			UpdateSoftwareCursorTexture(index);
-		});
+		UpdateSoftwareCursorTexture(index); // Since the entire lambda MTGS::RunOnGSThread([index, image_path = ...]() { ... }); is already executing on the GS thread, the UpdateSoftwareCursorTexture(index) call within it is also on the GS thread. Therefore, it doesn't strictly need its own separate MTGS::RunOnGSThread wrapper around it. If you do call MTGS it will lock up Big Picture Mode (FSUI).
 	}
 
 	// If showing or hiding the cursor for Player 1 (index 0), update the host mouse mode
