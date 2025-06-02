@@ -313,6 +313,23 @@ TEST(CodegenTests, SSETest)
 	CODEGEN_TEST(xPEXTR.D(ptr32[rax], xmm9, 1), "66 44 0f 3a 16 08 01");
 	CODEGEN_TEST(xPEXTR.Q(ptr64[rax], xmm9, 1), "66 4c 0f 3a 16 08 01");
 
+	CODEGEN_TEST(xPUNPCK.LBW(xmm1, xmm2),    "66 0f 60 ca");
+	CODEGEN_TEST(xPUNPCK.LWD(xmm1, ptr[r8]), "66 41 0f 61 08");
+	CODEGEN_TEST(xPUNPCK.LDQ(xmm1, xmm8),    "66 41 0f 62 c8");
+	CODEGEN_TEST(xPUNPCK.LQDQ(xmm8, xmm2),   "66 44 0f 6c c2");
+	CODEGEN_TEST(xPUNPCK.HBW(xmm1, xmm2),    "66 0f 68 ca");
+	CODEGEN_TEST(xPUNPCK.HWD(xmm1, ptr[r8]), "66 41 0f 69 08");
+	CODEGEN_TEST(xPUNPCK.HDQ(xmm1, xmm8),    "66 41 0f 6a c8");
+	CODEGEN_TEST(xPUNPCK.HQDQ(xmm8, xmm2),   "66 44 0f 6d c2");
+	CODEGEN_TEST(xPACK.SSWB(xmm1, xmm2),     "66 0f 63 ca");
+	CODEGEN_TEST(xPACK.SSDW(xmm1, ptr[rax]), "66 0f 6b 08");
+	CODEGEN_TEST(xPACK.USWB(xmm1, xmm8),     "66 41 0f 67 c8");
+	CODEGEN_TEST(xPACK.USDW(xmm8, xmm2),     "66 44 0f 38 2b c2");
+	CODEGEN_TEST(xUNPCK.LPS(xmm1, xmm2),     "0f 14 ca");
+	CODEGEN_TEST(xUNPCK.LPD(xmm1, ptr[r8]),  "66 41 0f 14 08");
+	CODEGEN_TEST(xUNPCK.HPS(xmm1, xmm8),     "41 0f 15 c8");
+	CODEGEN_TEST(xUNPCK.HPD(xmm8, xmm2),     "66 44 0f 15 c2");
+
 	CODEGEN_TEST(xMOVAPS(xmm0, xmm1), "0f 28 c1");
 	CODEGEN_TEST(xMOVAPS(xmm8, xmm9), "45 0f 28 c1");
 	CODEGEN_TEST(xMOVUPS(xmm8, ptr128[r8+r9]), "47 0f 10 04 08");
@@ -496,6 +513,23 @@ TEST(CodegenTests, AVXTest)
 	CODEGEN_TEST(xPEXTR.W(ptr16[rax], xmm9, 1), "c4 63 79 15 08 01");
 	CODEGEN_TEST(xPEXTR.D(ptr32[rax], xmm9, 1), "c4 63 79 16 08 01");
 	CODEGEN_TEST(xPEXTR.Q(ptr64[rax], xmm9, 1), "c4 63 f9 16 08 01");
+
+	CODEGEN_TEST(xPUNPCK.LBW(xmm1, xmm2),    "c5 f1 60 ca");
+	CODEGEN_TEST(xPUNPCK.LWD(xmm1, ptr[r8]), "c4 c1 71 61 08");
+	CODEGEN_TEST(xPUNPCK.LDQ(xmm1, xmm8),    "c4 c1 71 62 c8");
+	CODEGEN_TEST(xPUNPCK.LQDQ(xmm8, xmm2),   "c5 39 6c c2");
+	CODEGEN_TEST(xPUNPCK.HBW(xmm1, xmm2),    "c5 f1 68 ca");
+	CODEGEN_TEST(xPUNPCK.HWD(xmm1, ptr[r8]), "c4 c1 71 69 08");
+	CODEGEN_TEST(xPUNPCK.HDQ(xmm1, xmm8),    "c4 c1 71 6a c8");
+	CODEGEN_TEST(xPUNPCK.HQDQ(xmm8, xmm2),   "c5 39 6d c2");
+	CODEGEN_TEST(xPACK.SSWB(xmm1, xmm2),     "c5 f1 63 ca");
+	CODEGEN_TEST(xPACK.SSDW(xmm1, ptr[rax]), "c5 f1 6b 08");
+	CODEGEN_TEST(xPACK.USWB(xmm1, xmm8),     "c4 c1 71 67 c8");
+	CODEGEN_TEST(xPACK.USDW(xmm8, xmm2),     "c4 62 39 2b c2");
+	CODEGEN_TEST(xUNPCK.LPS(xmm1, xmm2),     "c5 f0 14 ca");
+	CODEGEN_TEST(xUNPCK.LPD(xmm1, ptr[r8]),  "c4 c1 71 14 08");
+	CODEGEN_TEST(xUNPCK.HPS(xmm1, xmm8),     "c4 c1 70 15 c8");
+	CODEGEN_TEST(xUNPCK.HPD(xmm8, xmm2),     "c5 39 15 c2");
 
 	CODEGEN_TEST(xVMOVAPS(xmm0, xmm1), "c5 f8 28 c1");
 	CODEGEN_TEST(xVMOVAPS(xmm0, ptr32[rdi]), "c5 f8 28 07");
