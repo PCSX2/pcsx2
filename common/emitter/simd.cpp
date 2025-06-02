@@ -446,32 +446,32 @@ namespace x86Emitter
 	//  SIMD Comparison Instructions
 	// =====================================================================================================
 
-	void xImplSimd_Compare::PS(const xRegisterSSE& to, const xRegisterSSE& from) const { xOpWrite0F(0x00, 0xc2, to, from, (u8)CType); }
-	void xImplSimd_Compare::PS(const xRegisterSSE& to, const xIndirectVoid& from) const { xOpWrite0F(0x00, 0xc2, to, from, (u8)CType); }
+	void xImplSimd_Compare::PS(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegisterSSE&  src2) const { EmitSIMD(SIMDInstructionInfo(0xc2).f(), dst, src1, src2, CType); }
+	void xImplSimd_Compare::PS(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirectVoid& src2) const { EmitSIMD(SIMDInstructionInfo(0xc2).f(), dst, src1, src2, CType); }
 
-	void xImplSimd_Compare::PD(const xRegisterSSE& to, const xRegisterSSE& from) const { xOpWrite0F(0x66, 0xc2, to, from, (u8)CType); }
-	void xImplSimd_Compare::PD(const xRegisterSSE& to, const xIndirectVoid& from) const { xOpWrite0F(0x66, 0xc2, to, from, (u8)CType); }
+	void xImplSimd_Compare::PD(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegisterSSE&  src2) const { EmitSIMD(SIMDInstructionInfo(0xc2).d().p66(), dst, src1, src2, CType); }
+	void xImplSimd_Compare::PD(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirectVoid& src2) const { EmitSIMD(SIMDInstructionInfo(0xc2).d().p66(), dst, src1, src2, CType); }
 
-	void xImplSimd_Compare::SS(const xRegisterSSE& to, const xRegisterSSE& from) const { xOpWrite0F(0xf3, 0xc2, to, from, (u8)CType); }
-	void xImplSimd_Compare::SS(const xRegisterSSE& to, const xIndirectVoid& from) const { xOpWrite0F(0xf3, 0xc2, to, from, (u8)CType); }
+	void xImplSimd_Compare::SS(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegisterSSE&  src2) const { EmitSIMD(SIMDInstructionInfo(0xc2).f().pf3(), dst, src1, src2, CType); }
+	void xImplSimd_Compare::SS(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirectVoid& src2) const { EmitSIMD(SIMDInstructionInfo(0xc2).f().pf3(), dst, src1, src2, CType); }
 
-	void xImplSimd_Compare::SD(const xRegisterSSE& to, const xRegisterSSE& from) const { xOpWrite0F(0xf2, 0xc2, to, from, (u8)CType); }
-	void xImplSimd_Compare::SD(const xRegisterSSE& to, const xIndirectVoid& from) const { xOpWrite0F(0xf2, 0xc2, to, from, (u8)CType); }
+	void xImplSimd_Compare::SD(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegisterSSE&  src2) const { EmitSIMD(SIMDInstructionInfo(0xc2).d().pf2(), dst, src1, src2, CType); }
+	void xImplSimd_Compare::SD(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirectVoid& src2) const { EmitSIMD(SIMDInstructionInfo(0xc2).d().pf2(), dst, src1, src2, CType); }
 
 	const xImplSimd_MinMax xMIN =
-		{
-			{0x00, 0x5d}, // PS
-			{0x66, 0x5d}, // PD
-			{0xf3, 0x5d}, // SS
-			{0xf2, 0x5d}, // SD
+	{
+		{SIMDInstructionInfo(0x5d).f()},       // PS
+		{SIMDInstructionInfo(0x5d).d().p66()}, // PD
+		{SIMDInstructionInfo(0x5d).f().pf3()}, // SS
+		{SIMDInstructionInfo(0x5d).d().pf2()}, // SD
 	};
 
 	const xImplSimd_MinMax xMAX =
-		{
-			{0x00, 0x5f}, // PS
-			{0x66, 0x5f}, // PD
-			{0xf3, 0x5f}, // SS
-			{0xf2, 0x5f}, // SD
+	{
+		{SIMDInstructionInfo(0x5f).f()},       // PS
+		{SIMDInstructionInfo(0x5f).d().p66()}, // PD
+		{SIMDInstructionInfo(0x5f).f().pf3()}, // SS
+		{SIMDInstructionInfo(0x5f).d().pf2()}, // SD
 	};
 
 	// [TODO] : Merge this into the xCMP class, so that they are notation as: xCMP.EQ
@@ -486,15 +486,15 @@ namespace x86Emitter
 	const xImplSimd_Compare xCMPORD = {SSE2_Ordered};
 
 	const xImplSimd_COMI xCOMI =
-		{
-			{0x00, 0x2f}, // SS
-			{0x66, 0x2f}, // SD
+	{
+		{SIMDInstructionInfo(0x2f)},       // SS
+		{SIMDInstructionInfo(0x2f).p66()}, // SD
 	};
 
 	const xImplSimd_COMI xUCOMI =
-		{
-			{0x00, 0x2e}, // SS
-			{0x66, 0x2e}, // SD
+	{
+		{SIMDInstructionInfo(0x2e)},       // SS
+		{SIMDInstructionInfo(0x2e).p66()}, // SD
 	};
 
 	const xImplSimd_PCompare xPCMP =
