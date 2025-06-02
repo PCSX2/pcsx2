@@ -2059,6 +2059,12 @@ bool GSDeviceVK::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		return false;
 	}
 
+	if (!CreateNullTexture())
+	{
+		Host::ReportErrorAsync("GS", "Failed to create dummy texture");
+		return false;
+	}
+
 	{
 		std::optional<std::string> shader = ReadShaderSource("shaders/vulkan/tfx.glsl");
 		if (!shader.has_value())
@@ -2068,12 +2074,6 @@ bool GSDeviceVK::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		}
 
 		m_tfx_source = std::move(*shader);
-	}
-
-	if (!CreateNullTexture())
-	{
-		Host::ReportErrorAsync("GS", "Failed to create dummy texture");
-		return false;
 	}
 
 	if (!CreatePipelineLayouts())
@@ -5291,8 +5291,12 @@ void GSDeviceVK::SetPipeline(VkPipeline pipeline)
 
 void GSDeviceVK::SetInitialState(VkCommandBuffer cmdbuf)
 {
-	const VkDeviceSize buffer_offset = 0;
-	vkCmdBindVertexBuffers(cmdbuf, 0, 1, m_vertex_stream_buffer.GetBufferPtr(), &buffer_offset);
+	VkBuffer buffer = *m_vertex_stream_buffer.GetBufferPtr();
+	if (buffer != VK_NULL_HANDLE)
+	{
+		constexpr VkDeviceSize buffer_offset = 0;
+		vkCmdBindVertexBuffers(cmdbuf, 0, 1, &buffer, &buffer_offset);
+	}
 }
 
 __ri void GSDeviceVK::ApplyBaseState(u32 flags, VkCommandBuffer cmdbuf)

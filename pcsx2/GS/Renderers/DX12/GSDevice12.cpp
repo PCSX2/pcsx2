@@ -703,11 +703,17 @@ bool GSDevice12::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	if (!AcquireWindow(true) || (m_window_info.type != WindowInfo::Type::Surfaceless && !CreateSwapChain()))
 		return false;
 
+	if (!CreateNullTexture())
+	{
+		Host::ReportErrorAsync("GS", "Failed to create dummy texture");
+		return false;
+	}
+
 	{
 		std::optional<std::string> shader = ReadShaderSource("shaders/dx11/tfx.fx");
 		if (!shader.has_value())
 		{
-			Host::ReportErrorAsync("GS", "Failed to read shaders/dx11/tfx.fxf.");
+			Host::ReportErrorAsync("GS", "Failed to read shaders/dx11/tfx.fx.");
 			return false;
 		}
 
@@ -716,12 +722,6 @@ bool GSDevice12::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 
 	if (!m_shader_cache.Open(m_feature_level, GSConfig.UseDebugDevice))
 		Console.Warning("D3D12: Shader cache failed to open.");
-
-	if (!CreateNullTexture())
-	{
-		Host::ReportErrorAsync("GS", "Failed to create dummy texture");
-		return false;
-	}
 
 	if (!CreateRootSignatures())
 	{
