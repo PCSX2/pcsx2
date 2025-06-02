@@ -10,6 +10,7 @@
 
 #include <QtCore/QFile>
 #include <QtGui/QPalette>
+#include <QtGui/QPixmapCache>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QStyle>
 #include <QtWidgets/QStyleFactory>
@@ -43,6 +44,12 @@ void QtHost::UpdateApplicationTheme()
 
 	SetStyleFromSettings();
 	SetIconThemeFromStyle();
+
+	// Qt generates tinted versions of icons and stores them in QPixmapCache
+	// The key used does not seem to include the theme (or tint colour).
+	// This can cause icons tinted for wrong theme to be used for selected/disabled.
+	// As a workaround, reset the pixmap cache to clear icons tinted for the old theme.
+	QPixmapCache::clear();
 }
 
 bool QtHost::IsDarkApplicationTheme()
