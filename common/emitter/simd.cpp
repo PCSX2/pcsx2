@@ -214,15 +214,15 @@ namespace x86Emitter
 
 	// clang-format off
 
-	const xImplSimd_DestRegEither xPAND = {0x66, 0xdb};
-	const xImplSimd_DestRegEither xPANDN = {0x66, 0xdf};
-	const xImplSimd_DestRegEither xPOR = {0x66, 0xeb};
-	const xImplSimd_DestRegEither xPXOR = {0x66, 0xef};
+	const xImplSimd_3Arg xPAND  = {SIMDInstructionInfo(0xdb).i().p66().commutative()};
+	const xImplSimd_3Arg xPANDN = {SIMDInstructionInfo(0xdf).i().p66()};
+	const xImplSimd_3Arg xPOR   = {SIMDInstructionInfo(0xeb).i().p66().commutative()};
+	const xImplSimd_3Arg xPXOR  = {SIMDInstructionInfo(0xef).i().p66().commutative()};
 
 	// [SSE-4.1] Performs a bitwise AND of dest against src, and sets the ZF flag
 	// only if all bits in the result are 0.  PTEST also sets the CF flag according
 	// to the following condition: (xmm2/m128 AND NOT xmm1) == 0;
-	const xImplSimd_DestRegSSE xPTEST = {0x66, 0x1738};
+	const xImplSimd_2Arg xPTEST = {SIMDInstructionInfo(0x17).p66().m0f38()};
 
 	// =====================================================================================================
 	// SSE Conversion Operations, as looney as they are.

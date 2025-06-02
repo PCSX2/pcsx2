@@ -149,6 +149,12 @@ TEST(CodegenTests, SSETest)
 {
 	x86Emitter::use_avx = false;
 
+	CODEGEN_TEST(xPAND(xmm3, xmm8),  "66 41 0f db d8");
+	CODEGEN_TEST(xPANDN(xmm4, xmm9), "66 41 0f df e1");
+	CODEGEN_TEST(xPOR(xmm5, xmm8),   "66 41 0f eb e8");
+	CODEGEN_TEST(xPXOR(xmm9, xmm4),  "66 44 0f ef cc");
+	CODEGEN_TEST(xPTEST(xmm2, xmm9), "66 41 0f 38 17 d1");
+
 	CODEGEN_TEST(xCVTDQ2PD(xmm0, ptr64[rax]), "f3 0f e6 00");
 	CODEGEN_TEST(xCVTDQ2PS(xmm0, xmm8),       "41 0f 5b c0");
 	CODEGEN_TEST(xCVTPD2DQ(xmm8, ptr128[r8]), "f2 45 0f e6 00");
@@ -305,6 +311,12 @@ TEST(CodegenTests, SSETest)
 TEST(CodegenTests, AVXTest)
 {
 	x86Emitter::use_avx = true;
+
+	CODEGEN_TEST(xPAND(xmm3, xmm8),  "c5 b9 db db"); // => vpand xmm3, xmm8, xmm3
+	CODEGEN_TEST(xPANDN(xmm4, xmm9), "c4 c1 59 df e1");
+	CODEGEN_TEST(xPOR(xmm5, xmm8),   "c5 b9 eb ed"); // => vpor xmm5, xmm8, xmm5
+	CODEGEN_TEST(xPXOR(xmm9, xmm4),  "c5 31 ef cc");
+	CODEGEN_TEST(xPTEST(xmm2, xmm9), "c4 c2 79 17 d1");
 
 	CODEGEN_TEST(xCVTDQ2PD(xmm0, ptr64[rax]), "c5 fa e6 00");
 	CODEGEN_TEST(xCVTDQ2PS(xmm0, xmm8),       "c4 c1 78 5b c0");
