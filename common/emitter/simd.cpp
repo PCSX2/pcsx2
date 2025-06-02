@@ -304,40 +304,38 @@ namespace x86Emitter
 	//  SIMD Arithmetic Instructions
 	// =====================================================================================================
 
-	void _SimdShiftHelper::operator()(const xRegisterSSE& to, const xRegisterSSE& from) const { OpWriteSSE(Prefix, Opcode); }
-	void _SimdShiftHelper::operator()(const xRegisterSSE& to, const xIndirectVoid& from) const { OpWriteSSE(Prefix, Opcode); }
+	void _SimdShiftHelper::operator()(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegisterSSE& src2)  const { EmitSIMD(info, dst, src1, src2); }
+	void _SimdShiftHelper::operator()(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirectVoid& src2) const { EmitSIMD(info, dst, src1, src2); }
 
 
-	void _SimdShiftHelper::operator()(const xRegisterSSE& to, u8 imm8) const
+	void _SimdShiftHelper::operator()(const xRegisterSSE& dst, const xRegisterSSE& src, u8 imm8) const { EmitSIMD(infoImm, dst, src, imm8); }
+
+	void xImplSimd_Shift::DQ(const xRegisterSSE& dst, const xRegisterSSE& src, u8 imm8) const
 	{
-		xOpWrite0F(0x66, OpcodeImm, (int)Modcode, to);
-		xWrite8(imm8);
-	}
-
-	void xImplSimd_Shift::DQ(const xRegisterSSE& to, u8 imm8) const
-	{
-		xOpWrite0F(0x66, 0x73, (int)Q.Modcode + 1, to, imm8);
+		SIMDInstructionInfo info = Q.infoImm;
+		info.ext += 1;
+		EmitSIMD(info, dst, src, imm8);
 	}
 
 
 	const xImplSimd_ShiftWithoutQ xPSRA =
-		{
-			{0x66, 0xe1, 0x71, 4}, // W
-			{0x66, 0xe2, 0x72, 4} // D
+	{
+		{SIMDInstructionInfo(0xe1).p66().i(), SIMDInstructionInfo(0x71, 4).p66().i()}, // W
+		{SIMDInstructionInfo(0xe2).p66().i(), SIMDInstructionInfo(0x72, 4).p66().i()}, // D
 	};
 
 	const xImplSimd_Shift xPSRL =
-		{
-			{0x66, 0xd1, 0x71, 2}, // W
-			{0x66, 0xd2, 0x72, 2}, // D
-			{0x66, 0xd3, 0x73, 2}, // Q
+	{
+		{SIMDInstructionInfo(0xd1).p66().i(), SIMDInstructionInfo(0x71, 2).p66().i()}, // W
+		{SIMDInstructionInfo(0xd2).p66().i(), SIMDInstructionInfo(0x72, 2).p66().i()}, // D
+		{SIMDInstructionInfo(0xd3).p66().i(), SIMDInstructionInfo(0x73, 2).p66().i()}, // Q
 	};
 
 	const xImplSimd_Shift xPSLL =
-		{
-			{0x66, 0xf1, 0x71, 6}, // W
-			{0x66, 0xf2, 0x72, 6}, // D
-			{0x66, 0xf3, 0x73, 6}, // Q
+	{
+		{SIMDInstructionInfo(0xf1).p66().i(), SIMDInstructionInfo(0x71, 6).p66().i()}, // W
+		{SIMDInstructionInfo(0xf2).p66().i(), SIMDInstructionInfo(0x72, 6).p66().i()}, // D
+		{SIMDInstructionInfo(0xf3).p66().i(), SIMDInstructionInfo(0x73, 6).p66().i()}, // Q
 	};
 
 	const xImplSimd_AddSub xPADD =
