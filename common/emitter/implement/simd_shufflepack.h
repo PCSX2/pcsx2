@@ -59,22 +59,22 @@ namespace x86Emitter
 	struct SimdImpl_PUnpack
 	{
 		// Unpack and interleave low-order bytes from src and dest into dest.
-		const xImplSimd_DestRegEither LBW;
+		const xImplSimd_3Arg LBW;
 		// Unpack and interleave low-order words from src and dest into dest.
-		const xImplSimd_DestRegEither LWD;
+		const xImplSimd_3Arg LWD;
 		// Unpack and interleave low-order doublewords from src and dest into dest.
-		const xImplSimd_DestRegEither LDQ;
+		const xImplSimd_3Arg LDQ;
 		// Unpack and interleave low-order quadwords from src and dest into dest.
-		const xImplSimd_DestRegSSE LQDQ;
+		const xImplSimd_3Arg LQDQ;
 
 		// Unpack and interleave high-order bytes from src and dest into dest.
-		const xImplSimd_DestRegEither HBW;
+		const xImplSimd_3Arg HBW;
 		// Unpack and interleave high-order words from src and dest into dest.
-		const xImplSimd_DestRegEither HWD;
+		const xImplSimd_3Arg HWD;
 		// Unpack and interleave high-order doublewords from src and dest into dest.
-		const xImplSimd_DestRegEither HDQ;
+		const xImplSimd_3Arg HDQ;
 		// Unpack and interleave high-order quadwords from src and dest into dest.
-		const xImplSimd_DestRegSSE HQDQ;
+		const xImplSimd_3Arg HQDQ;
 	};
 
 	// --------------------------------------------------------------------------------------
@@ -86,19 +86,19 @@ namespace x86Emitter
 	{
 		// Converts packed signed word integers from src and dest into packed signed
 		// byte integers in dest, using signed saturation.
-		const xImplSimd_DestRegEither SSWB;
+		const xImplSimd_3Arg SSWB;
 
 		// Converts packed signed dword integers from src and dest into packed signed
 		// word integers in dest, using signed saturation.
-		const xImplSimd_DestRegEither SSDW;
+		const xImplSimd_3Arg SSDW;
 
 		// Converts packed unsigned word integers from src and dest into packed unsigned
 		// byte integers in dest, using unsigned saturation.
-		const xImplSimd_DestRegEither USWB;
+		const xImplSimd_3Arg USWB;
 
 		// [SSE-4.1] Converts packed unsigned dword integers from src and dest into packed
 		// unsigned word integers in dest, using signed saturation.
-		const xImplSimd_DestRegSSE USDW;
+		const xImplSimd_3Arg USDW;
 	};
 
 	// --------------------------------------------------------------------------------------
@@ -113,14 +113,14 @@ namespace x86Emitter
 		//    dest[2] <- dest[3]
 		//    dest[3] <- src[3]
 		//
-		const xImplSimd_DestRegSSE HPS;
+		const xImplSimd_3Arg HPS;
 
 		// Unpacks the high quadword [double-precision] values from src and dest into
 		// dest, such that the result of dest looks like this:
 		//    dest.lo <- dest.hi
 		//    dest.hi <- src.hi
 		//
-		const xImplSimd_DestRegSSE HPD;
+		const xImplSimd_3Arg HPD;
 
 		// Unpacks the low doubleword [single-precision] values from src and dest into
 		// dest, such that the result of dest looks like this:
@@ -129,7 +129,7 @@ namespace x86Emitter
 		//    dest[1] <- src[0]
 		//    dest[0] <- dest[0]
 		//
-		const xImplSimd_DestRegSSE LPS;
+		const xImplSimd_3Arg LPS;
 
 		// Unpacks the low quadword [double-precision] values from src and dest into
 		// dest, effectively moving the low portion of src into the upper portion of dest.
@@ -137,7 +137,7 @@ namespace x86Emitter
 		//    dest.hi <- src.lo
 		//    dest.lo <- dest.lo  [remains unchanged!]
 		//
-		const xImplSimd_DestRegSSE LPD;
+		const xImplSimd_3Arg LPD;
 	};
 
 

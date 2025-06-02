@@ -597,32 +597,32 @@ namespace x86Emitter
 	};
 
 	const SimdImpl_PUnpack xPUNPCK =
-		{
-			{0x66, 0x60}, // LBW
-			{0x66, 0x61}, // LWD
-			{0x66, 0x62}, // LDQ
-			{0x66, 0x6c}, // LQDQ
+	{
+		{SIMDInstructionInfo(0x60).i().p66()}, // LBW
+		{SIMDInstructionInfo(0x61).i().p66()}, // LWD
+		{SIMDInstructionInfo(0x62).i().p66()}, // LDQ
+		{SIMDInstructionInfo(0x6c).i().p66()}, // LQDQ
 
-			{0x66, 0x68}, // HBW
-			{0x66, 0x69}, // HWD
-			{0x66, 0x6a}, // HDQ
-			{0x66, 0x6d}, // HQDQ
+		{SIMDInstructionInfo(0x68).i().p66()}, // HBW
+		{SIMDInstructionInfo(0x69).i().p66()}, // HWD
+		{SIMDInstructionInfo(0x6a).i().p66()}, // HDQ
+		{SIMDInstructionInfo(0x6d).i().p66()}, // HQDQ
 	};
 
 	const SimdImpl_Pack xPACK =
-		{
-			{0x66, 0x63}, // SSWB
-			{0x66, 0x6b}, // SSDW
-			{0x66, 0x67}, // USWB
-			{0x66, 0x2b38}, // USDW
+	{
+		{SIMDInstructionInfo(0x63).i().p66()},         // SSWB
+		{SIMDInstructionInfo(0x6b).i().p66()},         // SSDW
+		{SIMDInstructionInfo(0x67).i().p66()},         // USWB
+		{SIMDInstructionInfo(0x2b).i().p66().m0f38()}, // USDW
 	};
 
 	const xImplSimd_Unpack xUNPCK =
-		{
-			{0x00, 0x15}, // HPS
-			{0x66, 0x15}, // HPD
-			{0x00, 0x14}, // LPS
-			{0x66, 0x14}, // LPD
+	{
+		{SIMDInstructionInfo(0x15).f()},       // HPS
+		{SIMDInstructionInfo(0x15).d().p66()}, // HPD
+		{SIMDInstructionInfo(0x14).f()},       // LPS
+		{SIMDInstructionInfo(0x14).d().p66()}, // LPD
 	};
 
 	const xImplSimd_PInsert xPINSR;
