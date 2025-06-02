@@ -292,6 +292,27 @@ TEST(CodegenTests, SSETest)
 	CODEGEN_TEST(xEXTRACTPS(ptr32[r9], xmm3, 3),   "66 41 0f 3a 17 19 03");
 	CODEGEN_TEST(xEXTRACTPS(ptr32[base], xmm1, 2), "66 0f 3a 17 0d f6 ff ff ff 02");
 
+	CODEGEN_TEST(xPSHUF.D(xmm2, ptr[r8], 0),    "66 41 0f 70 10 00");
+	CODEGEN_TEST(xPSHUF.LW(xmm3, xmm8, 1),      "f2 41 0f 70 d8 01");
+	CODEGEN_TEST(xPSHUF.HW(xmm4, xmm2, 8),      "f3 0f 70 e2 08");
+	CODEGEN_TEST(xPSHUF.B(xmm2, ptr[r8]),       "66 41 0f 38 00 10");
+	CODEGEN_TEST(xPINSR.B(xmm1, ebx, 1),        "66 0f 3a 20 cb 01");
+	CODEGEN_TEST(xPINSR.W(xmm1, ebx, 1),        "66 0f c4 cb 01");
+	CODEGEN_TEST(xPINSR.D(xmm1, ebx, 1),        "66 0f 3a 22 cb 01");
+	CODEGEN_TEST(xPINSR.Q(xmm1, rbx, 1),        "66 48 0f 3a 22 cb 01");
+	CODEGEN_TEST(xPINSR.B(xmm9, ptr8[rax], 1),  "66 44 0f 3a 20 08 01");
+	CODEGEN_TEST(xPINSR.W(xmm9, ptr16[rax], 1), "66 44 0f c4 08 01");
+	CODEGEN_TEST(xPINSR.D(xmm9, ptr32[rax], 1), "66 44 0f 3a 22 08 01");
+	CODEGEN_TEST(xPINSR.Q(xmm9, ptr64[rax], 1), "66 4c 0f 3a 22 08 01");
+	CODEGEN_TEST(xPEXTR.B(ebx, xmm1, 1),        "66 0f 3a 14 cb 01");
+	CODEGEN_TEST(xPEXTR.W(ebx, xmm1, 1),        "66 0f c5 d9 01");
+	CODEGEN_TEST(xPEXTR.D(ebx, xmm1, 1),        "66 0f 3a 16 cb 01");
+	CODEGEN_TEST(xPEXTR.Q(rbx, xmm1, 1),        "66 48 0f 3a 16 cb 01");
+	CODEGEN_TEST(xPEXTR.B(ptr8[rax],  xmm9, 1), "66 44 0f 3a 14 08 01");
+	CODEGEN_TEST(xPEXTR.W(ptr16[rax], xmm9, 1), "66 44 0f 3a 15 08 01");
+	CODEGEN_TEST(xPEXTR.D(ptr32[rax], xmm9, 1), "66 44 0f 3a 16 08 01");
+	CODEGEN_TEST(xPEXTR.Q(ptr64[rax], xmm9, 1), "66 4c 0f 3a 16 08 01");
+
 	CODEGEN_TEST(xMOVAPS(xmm0, xmm1), "0f 28 c1");
 	CODEGEN_TEST(xMOVAPS(xmm8, xmm9), "45 0f 28 c1");
 	CODEGEN_TEST(xMOVUPS(xmm8, ptr128[r8+r9]), "47 0f 10 04 08");
@@ -306,15 +327,6 @@ TEST(CodegenTests, SSETest)
 	CODEGEN_TEST(xMOVD(r10, xmm1), "66 49 0f 7e ca");
 	CODEGEN_TEST(xMOVD(rax, xmm10), "66 4c 0f 7e d0");
 	CODEGEN_TEST(xMOVD(r10, xmm10), "66 4d 0f 7e d2");
-	CODEGEN_TEST(xPINSR.B(xmm0, ebx, 1), "66 0f 3a 20 c3 01");
-	CODEGEN_TEST(xPINSR.W(xmm0, ebx, 1), "66 0f c4 c3 01");
-	CODEGEN_TEST(xPINSR.D(xmm0, ebx, 1), "66 0f 3a 22 c3 01");
-	CODEGEN_TEST(xPINSR.Q(xmm0, rbx, 1), "66 48 0f 3a 22 c3 01");
-	CODEGEN_TEST(xPEXTR.B(ebx, xmm0, 1), "66 0f 3a 14 c3 01");
-	CODEGEN_TEST(xPEXTR.W(ebx, xmm0, 1), "66 0f c5 c3 01");
-	CODEGEN_TEST(xPEXTR.D(ebx, xmm0, 1), "66 0f 3a 16 c3 01");
-	CODEGEN_TEST(xPEXTR.Q(rbx, xmm0, 1), "66 48 0f 3a 16 c3 01");
-	CODEGEN_TEST(xPEXTR.Q(ptr64[rax], xmm0, 1), "66 48 0f 3a 16 00 01");
 }
 
 TEST(CodegenTests, AVXTest)
@@ -463,6 +475,27 @@ TEST(CodegenTests, AVXTest)
 	CODEGEN_TEST(xEXTRACTPS(eax, xmm2, 2),         "c4 e3 79 17 d0 02");
 	CODEGEN_TEST(xEXTRACTPS(ptr32[r9], xmm3, 3),   "c4 c3 79 17 19 03");
 	CODEGEN_TEST(xEXTRACTPS(ptr32[base], xmm1, 2), "c4 e3 79 17 0d f6 ff ff ff 02");
+
+	CODEGEN_TEST(xPSHUF.D(xmm2, ptr[r8], 0),    "c4 c1 79 70 10 00");
+	CODEGEN_TEST(xPSHUF.LW(xmm3, xmm8, 1),      "c4 c1 7b 70 d8 01");
+	CODEGEN_TEST(xPSHUF.HW(xmm4, xmm2, 8),      "c5 fa 70 e2 08");
+	CODEGEN_TEST(xPSHUF.B(xmm2, ptr[r8]),       "c4 c2 69 00 10");
+	CODEGEN_TEST(xPINSR.B(xmm1, ebx, 1),        "c4 e3 71 20 cb 01");
+	CODEGEN_TEST(xPINSR.W(xmm1, ebx, 1),        "c5 f1 c4 cb 01");
+	CODEGEN_TEST(xPINSR.D(xmm1, ebx, 1),        "c4 e3 71 22 cb 01");
+	CODEGEN_TEST(xPINSR.Q(xmm1, rbx, 1),        "c4 e3 f1 22 cb 01");
+	CODEGEN_TEST(xPINSR.B(xmm9, ptr8[rax], 1),  "c4 63 31 20 08 01");
+	CODEGEN_TEST(xPINSR.W(xmm9, ptr16[rax], 1), "c5 31 c4 08 01");
+	CODEGEN_TEST(xPINSR.D(xmm9, ptr32[rax], 1), "c4 63 31 22 08 01");
+	CODEGEN_TEST(xPINSR.Q(xmm9, ptr64[rax], 1), "c4 63 b1 22 08 01");
+	CODEGEN_TEST(xPEXTR.B(ebx, xmm1, 1),        "c4 e3 79 14 cb 01");
+	CODEGEN_TEST(xPEXTR.W(ebx, xmm1, 1),        "c5 f9 c5 d9 01");
+	CODEGEN_TEST(xPEXTR.D(ebx, xmm1, 1),        "c4 e3 79 16 cb 01");
+	CODEGEN_TEST(xPEXTR.Q(rbx, xmm1, 1),        "c4 e3 f9 16 cb 01");
+	CODEGEN_TEST(xPEXTR.B(ptr8[rax],  xmm9, 1), "c4 63 79 14 08 01");
+	CODEGEN_TEST(xPEXTR.W(ptr16[rax], xmm9, 1), "c4 63 79 15 08 01");
+	CODEGEN_TEST(xPEXTR.D(ptr32[rax], xmm9, 1), "c4 63 79 16 08 01");
+	CODEGEN_TEST(xPEXTR.Q(ptr64[rax], xmm9, 1), "c4 63 f9 16 08 01");
 
 	CODEGEN_TEST(xVMOVAPS(xmm0, xmm1), "c5 f8 28 c1");
 	CODEGEN_TEST(xVMOVAPS(xmm0, ptr32[rdi]), "c5 f8 28 07");

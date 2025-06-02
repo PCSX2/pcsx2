@@ -31,17 +31,17 @@ namespace x86Emitter
 	{
 		// Copies doublewords from src and inserts them into dest at dword locations selected
 		// with the order operand (8 bit immediate).
-		const xImplSimd_DestRegImmSSE D;
+		const xImplSimd_2ArgImm D;
 
 		// Copies words from the low quadword of src and inserts them into the low quadword
 		// of dest at word locations selected with the order operand (8 bit immediate).
 		// The high quadword of src is copied to the high quadword of dest.
-		const xImplSimd_DestRegImmSSE LW;
+		const xImplSimd_2ArgImm LW;
 
 		// Copies words from the high quadword of src and inserts them into the high quadword
 		// of dest at word locations selected with the order operand (8 bit immediate).
 		// The low quadword of src is copied to the low quadword of dest.
-		const xImplSimd_DestRegImmSSE HW;
+		const xImplSimd_2ArgImm HW;
 
 		// [sSSE-3] Performs in-place shuffles of bytes in dest according to the shuffle
 		// control mask in src.  If the most significant bit (bit[7]) of each byte of the
@@ -50,42 +50,7 @@ namespace x86Emitter
 		// byte in dest. The value of each index is the least significant 4 bits (128-bit
 		// operation) or 3 bits (64-bit operation) of the shuffle control byte.
 		//
-		const xImplSimd_DestRegEither B;
-
-		// below is my test bed for a new system, free of subclasses.  Was supposed to improve intellisense
-		// but it doesn't (makes it worse).  Will try again in MSVC 2010. --air
-
-#if 0
-	// Copies words from src and inserts them into dest at word locations selected with
-	// the order operand (8 bit immediate).
-
-	// Copies doublewords from src and inserts them into dest at dword locations selected
-	// with the order operand (8 bit immediate).
-	void D( const xRegisterSSE& to, const xRegisterSSE& from, u8 imm ) const	{ xOpWrite0F( 0x66, 0x70, to, from, imm ); }
-	void D( const xRegisterSSE& to, const xIndirectVoid& from, u8 imm ) const		{ xOpWrite0F( 0x66, 0x70, to, from, imm ); }
-
-	// Copies words from the low quadword of src and inserts them into the low quadword
-	// of dest at word locations selected with the order operand (8 bit immediate).
-	// The high quadword of src is copied to the high quadword of dest.
-	void LW( const xRegisterSSE& to, const xRegisterSSE& from, u8 imm ) const	{ xOpWrite0F( 0xf2, 0x70, to, from, imm ); }
-	void LW( const xRegisterSSE& to, const xIndirectVoid& from, u8 imm ) const		{ xOpWrite0F( 0xf2, 0x70, to, from, imm ); }
-
-	// Copies words from the high quadword of src and inserts them into the high quadword
-	// of dest at word locations selected with the order operand (8 bit immediate).
-	// The low quadword of src is copied to the low quadword of dest.
-	void HW( const xRegisterSSE& to, const xRegisterSSE& from, u8 imm ) const	{ xOpWrite0F( 0xf3, 0x70, to, from, imm ); }
-	void HW( const xRegisterSSE& to, const xIndirectVoid& from, u8 imm ) const		{ xOpWrite0F( 0xf3, 0x70, to, from, imm ); }
-
-	// [sSSE-3] Performs in-place shuffles of bytes in dest according to the shuffle
-	// control mask in src.  If the most significant bit (bit[7]) of each byte of the
-	// shuffle control mask is set, then constant zero is written in the result byte.
-	// Each byte in the shuffle control mask forms an index to permute the corresponding
-	// byte in dest. The value of each index is the least significant 4 bits (128-bit
-	// operation) or 3 bits (64-bit operation) of the shuffle control byte.
-	//
-	void B( const xRegisterSSE& to, const xRegisterSSE& from ) const	{ OpWriteSSE( 0x66, 0x0038 ); }
-	void B( const xRegisterSSE& to, const xIndirectVoid& from ) const		{ OpWriteSSE( 0x66, 0x0038 ); }
-#endif
+		const xImplSimd_3Arg B;
 	};
 
 	// --------------------------------------------------------------------------------------
@@ -183,17 +148,25 @@ namespace x86Emitter
 	//
 	struct xImplSimd_PInsert
 	{
-		void B(const xRegisterSSE& to, const xRegister32& from, u8 imm8) const;
-		void B(const xRegisterSSE& to, const xIndirect32& from, u8 imm8) const;
+		void B(const xRegisterSSE& dst, const xRegister32& src, u8 imm8) const { B(dst, dst, src, imm8); }
+		void B(const xRegisterSSE& dst, const xIndirect8&  src, u8 imm8) const { B(dst, dst, src, imm8); }
+		void B(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegister32& src2, u8 imm8) const;
+		void B(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirect8&  src2, u8 imm8) const;
 
-		void W(const xRegisterSSE& to, const xRegister32& from, u8 imm8) const;
-		void W(const xRegisterSSE& to, const xIndirect32& from, u8 imm8) const;
+		void W(const xRegisterSSE& dst, const xRegister32& src, u8 imm8) const { W(dst, dst, src, imm8); }
+		void W(const xRegisterSSE& dst, const xIndirect16& src, u8 imm8) const { W(dst, dst, src, imm8); }
+		void W(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegister32& src2, u8 imm8) const;
+		void W(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirect16& src2, u8 imm8) const;
 
-		void D(const xRegisterSSE& to, const xRegister32& from, u8 imm8) const;
-		void D(const xRegisterSSE& to, const xIndirect32& from, u8 imm8) const;
+		void D(const xRegisterSSE& dst, const xRegister32& src, u8 imm8) const { D(dst, dst, src, imm8); }
+		void D(const xRegisterSSE& dst, const xIndirect32& src, u8 imm8) const { D(dst, dst, src, imm8); }
+		void D(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegister32& src2, u8 imm8) const;
+		void D(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirect32& src2, u8 imm8) const;
 
-		void Q(const xRegisterSSE& to, const xRegister64& from, u8 imm8) const;
-		void Q(const xRegisterSSE& to, const xIndirect64& from, u8 imm8) const;
+		void Q(const xRegisterSSE& dst, const xRegister64& src, u8 imm8) const { Q(dst, dst, src, imm8); }
+		void Q(const xRegisterSSE& dst, const xIndirect64& src, u8 imm8) const { Q(dst, dst, src, imm8); }
+		void Q(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegister64& src2, u8 imm8) const;
+		void Q(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirect64& src2, u8 imm8) const;
 	};
 
 	//////////////////////////////////////////////////////////////////////////////////////////
@@ -206,8 +179,8 @@ namespace x86Emitter
 		// [SSE-4.1] Copies the byte element specified by imm8 from src to dest.  The upper bits
 		// of dest are zero-extended (cleared).  This can be used to extract any single packed
 		// byte value from src into an x86 32 bit register.
-		void B(const xRegister32& to, const xRegisterSSE& from, u8 imm8) const;
-		void B(const xIndirect32& dest, const xRegisterSSE& from, u8 imm8) const;
+		void B(const xRegister32& dst, const xRegisterSSE& src, u8 imm8) const;
+		void B(const xIndirect8&  dst, const xRegisterSSE& src, u8 imm8) const;
 
 		// Copies the word element specified by imm8 from src to dest.  The upper bits
 		// of dest are zero-extended (cleared).  This can be used to extract any single packed
@@ -215,16 +188,17 @@ namespace x86Emitter
 		//
 		// [SSE-4.1] Note: Indirect memory forms of this instruction are an SSE-4.1 extension!
 		//
-		void W(const xRegister32& to, const xRegisterSSE& from, u8 imm8) const;
-		void W(const xIndirect32& dest, const xRegisterSSE& from, u8 imm8) const;
+		void W(const xRegister32& dst, const xRegisterSSE& src, u8 imm8) const;
+		void W(const xIndirect16& dst, const xRegisterSSE& src, u8 imm8) const;
 
 		// [SSE-4.1] Copies the dword element specified by imm8 from src to dest.  This can be
 		// used to extract any single packed dword value from src into an x86 32 bit register.
-		void D(const xRegister32& to, const xRegisterSSE& from, u8 imm8) const;
-		void D(const xIndirect32& dest, const xRegisterSSE& from, u8 imm8) const;
+		void D(const xRegister32& dst, const xRegisterSSE& src, u8 imm8) const;
+		void D(const xIndirect32& dst, const xRegisterSSE& src, u8 imm8) const;
 
-		// Insert a qword integer value from r/m64 into the xmm1 at the destination element specified by imm8.
-		void Q(const xRegister64& to, const xRegisterSSE& from, u8 imm8) const;
-		void Q(const xIndirect64& dest, const xRegisterSSE& from, u8 imm8) const;
+		// [SSE-4.1] Copies the dword element specified by imm8 from src to dest.  This can be
+		// used to extract any single packed dword value from src into an x86 64 bit register.
+		void Q(const xRegister64& dst, const xRegisterSSE& src, u8 imm8) const;
+		void Q(const xIndirect64& dst, const xRegisterSSE& src, u8 imm8) const;
 	};
 } // namespace x86Emitter

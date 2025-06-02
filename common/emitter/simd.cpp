@@ -562,39 +562,38 @@ namespace x86Emitter
 		EmitSIMD(SIMDInstructionInfo(0xc6).d().p66(), dst, src1, src2, selector);
 	}
 
-	void xImplSimd_PInsert::B(const xRegisterSSE& to, const xRegister32& from, u8 imm8) const { xOpWrite0F(0x66, 0x203a, to, from, imm8); }
-	void xImplSimd_PInsert::B(const xRegisterSSE& to, const xIndirect32& from, u8 imm8) const { xOpWrite0F(0x66, 0x203a, to, from, imm8); }
+	void xImplSimd_PInsert::B(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegister32& src2, u8 imm8) const { EmitSIMD(SIMDInstructionInfo(0x20).i().p66().m0f3a(), dst, src1, src2, imm8); }
+	void xImplSimd_PInsert::B(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirect8&  src2, u8 imm8) const { EmitSIMD(SIMDInstructionInfo(0x20).i().p66().m0f3a(), dst, src1, src2, imm8); }
 
-	void xImplSimd_PInsert::W(const xRegisterSSE& to, const xRegister32& from, u8 imm8) const { xOpWrite0F(0x66, 0xc4, to, from, imm8); }
-	void xImplSimd_PInsert::W(const xRegisterSSE& to, const xIndirect32& from, u8 imm8) const { xOpWrite0F(0x66, 0xc4, to, from, imm8); }
+	void xImplSimd_PInsert::W(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegister32& src2, u8 imm8) const { EmitSIMD(SIMDInstructionInfo(0xc4).i().p66(), dst, src1, src2, imm8); }
+	void xImplSimd_PInsert::W(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirect16& src2, u8 imm8) const { EmitSIMD(SIMDInstructionInfo(0xc4).i().p66(), dst, src1, src2, imm8); }
 
-	void xImplSimd_PInsert::D(const xRegisterSSE& to, const xRegister32& from, u8 imm8) const { xOpWrite0F(0x66, 0x223a, to, from, imm8); }
-	void xImplSimd_PInsert::D(const xRegisterSSE& to, const xIndirect32& from, u8 imm8) const { xOpWrite0F(0x66, 0x223a, to, from, imm8); }
+	void xImplSimd_PInsert::D(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegister32& src2, u8 imm8) const { EmitSIMD(SIMDInstructionInfo(0x22).i().p66().m0f3a().srcw(), dst, src1, src2, imm8); }
+	void xImplSimd_PInsert::D(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirect32& src2, u8 imm8) const { EmitSIMD(SIMDInstructionInfo(0x22).i().p66().m0f3a().srcw(), dst, src1, src2, imm8); }
 
-	void xImplSimd_PInsert::Q(const xRegisterSSE& to, const xRegister64& from, u8 imm8) const { xOpWrite0F(0x66, 0x223a, to, from, imm8); }
-	void xImplSimd_PInsert::Q(const xRegisterSSE& to, const xIndirect64& from, u8 imm8) const { xOpWrite0F(0x66, 0x223a, to, from, imm8); }
+	void xImplSimd_PInsert::Q(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegister64& src2, u8 imm8) const { EmitSIMD(SIMDInstructionInfo(0x22).i().p66().m0f3a().srcw(), dst, src1, src2, imm8); }
+	void xImplSimd_PInsert::Q(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirect64& src2, u8 imm8) const { EmitSIMD(SIMDInstructionInfo(0x22).i().p66().m0f3a().srcw(), dst, src1, src2, imm8); }
 
-	void SimdImpl_PExtract::B(const xRegister32& to, const xRegisterSSE& from, u8 imm8) const { xOpWrite0F(0x66, 0x143a, from, to, imm8); }
-	void SimdImpl_PExtract::B(const xIndirect32& dest, const xRegisterSSE& from, u8 imm8) const { xOpWrite0F(0x66, 0x143a, from, dest, imm8); }
+	void SimdImpl_PExtract::B(const xRegister32& dst, const xRegisterSSE& src, u8 imm8) const { EmitSIMD(SIMDInstructionInfo(0x14).mov().p66().m0f3a(), src, src, dst, imm8); }
+	void SimdImpl_PExtract::B(const xIndirect8&  dst, const xRegisterSSE& src, u8 imm8) const { EmitSIMD(SIMDInstructionInfo(0x14).mov().p66().m0f3a(), src, src, dst, imm8); }
 
-	void SimdImpl_PExtract::W(const xRegister32& to, const xRegisterSSE& from, u8 imm8) const { xOpWrite0F(0x66, 0xc5, from, to, imm8); }
-	void SimdImpl_PExtract::W(const xIndirect32& dest, const xRegisterSSE& from, u8 imm8) const { xOpWrite0F(0x66, 0x153a, from, dest, imm8); }
+	void SimdImpl_PExtract::W(const xRegister32& dst, const xRegisterSSE& src, u8 imm8) const { EmitSIMD(SIMDInstructionInfo(0xc5).mov().p66(), dst, dst, src, imm8); }
+	void SimdImpl_PExtract::W(const xIndirect16& dst, const xRegisterSSE& src, u8 imm8) const { EmitSIMD(SIMDInstructionInfo(0x15).mov().p66().m0f3a(), src, src, dst, imm8); }
 
-	void SimdImpl_PExtract::D(const xRegister32& to, const xRegisterSSE& from, u8 imm8) const { xOpWrite0F(0x66, 0x163a, from, to, imm8); }
-	void SimdImpl_PExtract::D(const xIndirect32& dest, const xRegisterSSE& from, u8 imm8) const { xOpWrite0F(0x66, 0x163a, from, dest, imm8); }
+	void SimdImpl_PExtract::D(const xRegister32& dst, const xRegisterSSE& src, u8 imm8) const { EmitSIMD(SIMDInstructionInfo(0x16).mov().p66().m0f3a().srcw(), src, src, dst, imm8); }
+	void SimdImpl_PExtract::D(const xIndirect32& dst, const xRegisterSSE& src, u8 imm8) const { EmitSIMD(SIMDInstructionInfo(0x16).mov().p66().m0f3a().srcw(), src, src, dst, imm8); }
 
-	void SimdImpl_PExtract::Q(const xRegister64& to, const xRegisterSSE& from, u8 imm8) const { xOpWrite0F(0x66, 0x163a, from, to, imm8); }
-	void SimdImpl_PExtract::Q(const xIndirect64& dest, const xRegisterSSE& from, u8 imm8) const { xOpWrite0F(0x66, 0x163a, from, dest, imm8); }
+	void SimdImpl_PExtract::Q(const xRegister64& dst, const xRegisterSSE& src, u8 imm8) const { EmitSIMD(SIMDInstructionInfo(0x16).mov().p66().m0f3a().srcw(), src, src, dst, imm8); }
+	void SimdImpl_PExtract::Q(const xIndirect64& dst, const xRegisterSSE& src, u8 imm8) const { EmitSIMD(SIMDInstructionInfo(0x16).mov().p66().m0f3a().srcw(), src, src, dst, imm8); }
 
 	const xImplSimd_Shuffle xSHUF = {};
 
 	const xImplSimd_PShuffle xPSHUF =
-		{
-			{0x66, 0x70}, // D
-			{0xf2, 0x70}, // LW
-			{0xf3, 0x70}, // HW
-
-			{0x66, 0x0038}, // B
+	{
+		{SIMDInstructionInfo(0x70).i().p66()},         // D
+		{SIMDInstructionInfo(0x70).i().pf2()},         // LW
+		{SIMDInstructionInfo(0x70).i().pf3()},         // HW
+		{SIMDInstructionInfo(0x00).i().p66().m0f38()}, // B
 	};
 
 	const SimdImpl_PUnpack xPUNPCK =
