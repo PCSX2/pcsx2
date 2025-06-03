@@ -4808,7 +4808,16 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 		if (!dst)
 			dst = CreateTarget(new_TEX0, target_size, target_size, src->m_scale, src->m_type);
 		else // Expand if necessary (Silent hill 4 takes an old target which is smaller).
+		{
 			dst->ResizeTexture(std::max(dst->m_unscaled_size.x, target_size.x), std::max(dst->m_unscaled_size.y, target_size.y));
+
+			// If it was matched to an old target, make sure to clear the other type and update its information.
+			if (dst->m_was_dst_matched)
+			{
+				g_texture_cache->InvalidateVideoMemType(GSTextureCache::DepthStencil - dst->m_type, dst->m_TEX0.TBP0);
+				dst->m_TEX0 = new_TEX0;
+			}
+		}
 
 		if (!dst)
 			return false;
