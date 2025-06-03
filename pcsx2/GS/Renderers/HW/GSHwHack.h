@@ -21,7 +21,6 @@ public:
 	static bool GSC_SakuraWarsSoLongMyLove(GSRendererHW& r, int& skip);
 	static bool GSC_UltramanFightingEvolution(GSRendererHW& r, int& skip);
 	static bool GSC_TalesofSymphonia(GSRendererHW& r, int& skip);
-	static bool GSC_Simple2000Vol114(GSRendererHW& r, int& skip);
 	static bool GSC_UrbanReign(GSRendererHW& r, int& skip);
 	static bool GSC_SteambotChronicles(GSRendererHW& r, int& skip);
 	static bool GSC_BlueTongueGames(GSRendererHW& r, int& skip);

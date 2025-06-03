@@ -557,26 +557,6 @@ bool GSHwHack::GSC_TalesofSymphonia(GSRendererHW& r, int& skip)
 	return true;
 }
 
-bool GSHwHack::GSC_Simple2000Vol114(GSRendererHW& r, int& skip)
-{
-	if (skip == 0)
-	{
-		if (!s_nativeres && RTME == 0 && (RFBP == 0x1500) && (RTBP0 == 0x2c97 || RTBP0 == 0x2ace || RTBP0 == 0x03d0 || RTBP0 == 0x2448) && (RFBMSK == 0x0000))
-		{
-			// Don't enable hack on native res if crc is below aggressive.
-			// Upscaling issues, removes glow/blur effect which fixes ghosting.
-			skip = 1;
-		}
-		if (RTME && (RFBP == 0x0e00) && (RTBP0 == 0x1000) && (RFBMSK == 0x0000))
-		{
-			// Depth shadows.
-			skip = 1;
-		}
-	}
-
-	return true;
-}
-
 bool GSHwHack::GSC_UrbanReign(GSRendererHW& r, int& skip)
 {
 	if (skip == 0)
@@ -1419,7 +1399,6 @@ const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_function
 	CRC_F(GSC_SacredBlaze),
 	CRC_F(GSC_GuitarHero),
 	CRC_F(GSC_SakuraWarsSoLongMyLove),
-	CRC_F(GSC_Simple2000Vol114),
 	CRC_F(GSC_SFEX3),
 	CRC_F(GSC_DTGames),
 	CRC_F(GSC_TalesOfLegendia),
