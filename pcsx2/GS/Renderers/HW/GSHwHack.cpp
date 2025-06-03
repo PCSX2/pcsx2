@@ -822,23 +822,6 @@ bool GSHwHack::GSC_MetalGearSolid3(GSRendererHW& r, int& skip)
 	return true;
 }
 
-bool GSHwHack::GSC_HitmanBloodMoney(GSRendererHW& r, int& skip)
-{
-	// The game does a stupid thing where it backs up the last 2 pages of the framebuffer with shuffles, uploads a CT32 texture to it
-	// then copies the RGB back (keeping the new alpha only). It's pretty gross, I have no idea why they didn't just upload a new alpha.
-	// This is a real pain to emulate with the current state of things, so let's just clear the dirty area from the upload and pretend it wasn't there.
-	
-	// Catch the first draw of the copy back.
-	if (RFBP > 0 && RTPSM == PSMT8H && RFPSM == PSMCT32)
-	{
-		GSTextureCache::Target* target = g_texture_cache->FindOverlappingTarget(RFBP, RFBP + 1);
-		if (target)
-			target->m_dirty.clear();
-	}
-
-	return false;
-}
-
 bool GSHwHack::OI_PointListPalette(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
 {
 	const u32 n_vertices = r.m_vertex.next;
@@ -1328,7 +1311,6 @@ const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_function
 	CRC_F(GSC_NFSUndercover),
 	CRC_F(GSC_PolyphonyDigitalGames),
 	CRC_F(GSC_MetalGearSolid3),
-	CRC_F(GSC_HitmanBloodMoney),
 	CRC_F(GSC_Battlefield2),
 
 	// Channel Effect
