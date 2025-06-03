@@ -95,27 +95,27 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="25"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="26"/>
         <source>&lt;strong&gt;Your RetroAchievements login token is no longer valid.&lt;/strong&gt; You must re-enter your credentials for achievements to be tracked. Your password will not be saved in PCSX2, an access token will be generated and used instead.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="30"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="31"/>
         <source>&amp;Login</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="43"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="44"/>
         <source>Logging in...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="73"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="74"/>
         <source>Login Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="74"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="75"/>
         <source>Login failed.
 Error: %1
 
@@ -123,29 +123,29 @@ Please check your username and password, and try again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="75"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="76"/>
         <source>Login failed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="83"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="84"/>
         <source>Enable Achievements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="84"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="85"/>
         <source>Achievement tracking is not currently enabled. Your login will have no effect until after tracking is enabled.
 
 Do you want to enable tracking now?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="95"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="96"/>
         <source>Enable Hardcore Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="96"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="97"/>
         <source>Hardcore mode is not currently enabled. Enabling hardcore mode allows you to set times, scores, and participate in game-specific leaderboards.
 
 However, hardcore mode also prevents the usage of save states, cheats and slowdown functionality.
@@ -154,12 +154,12 @@ Do you want to enable hardcore mode?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="112"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="113"/>
         <source>Reset System</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="113"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="114"/>
         <source>Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3539,7 +3539,7 @@ You cannot undo this action.</source>
     </message>
     <message>
         <location filename="../CoverDownloadDialog.ui" line="95"/>
-        <location filename="../CoverDownloadDialog.cpp" line="86"/>
+        <location filename="../CoverDownloadDialog.cpp" line="87"/>
         <source>Start</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3549,12 +3549,12 @@ You cannot undo this action.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../CoverDownloadDialog.cpp" line="64"/>
+        <location filename="../CoverDownloadDialog.cpp" line="65"/>
         <source>Download complete.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../CoverDownloadDialog.cpp" line="86"/>
+        <location filename="../CoverDownloadDialog.cpp" line="87"/>
         <source>Stop</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11599,7 +11599,7 @@ graphical quality, but this will increase system requirements.</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../GameList/GameListModel.cpp" line="268"/>
+        <location filename="../GameList/GameListModel.cpp" line="274"/>
         <location filename="../../pcsx2/GameList.cpp" line="1200"/>
         <source>%n hours</source>
         <translation type="unfinished">
@@ -11608,7 +11608,7 @@ graphical quality, but this will increase system requirements.</source>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../GameList/GameListModel.cpp" line="270"/>
+        <location filename="../GameList/GameListModel.cpp" line="276"/>
         <location filename="../../pcsx2/GameList.cpp" line="1202"/>
         <source>%n minutes</source>
         <translation type="unfinished">
@@ -11625,52 +11625,52 @@ graphical quality, but this will increase system requirements.</source>
 <context>
     <name>GameListModel</name>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="597"/>
+        <location filename="../GameList/GameListModel.cpp" line="603"/>
         <source>Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="598"/>
+        <location filename="../GameList/GameListModel.cpp" line="604"/>
         <source>Code</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="599"/>
+        <location filename="../GameList/GameListModel.cpp" line="605"/>
         <source>Title</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="600"/>
+        <location filename="../GameList/GameListModel.cpp" line="606"/>
         <source>File Title</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="601"/>
+        <location filename="../GameList/GameListModel.cpp" line="607"/>
         <source>CRC</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="602"/>
+        <location filename="../GameList/GameListModel.cpp" line="608"/>
         <source>Time Played</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="603"/>
+        <location filename="../GameList/GameListModel.cpp" line="609"/>
         <source>Last Played</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="604"/>
+        <location filename="../GameList/GameListModel.cpp" line="610"/>
         <source>Size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="605"/>
+        <location filename="../GameList/GameListModel.cpp" line="611"/>
         <source>Region</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="606"/>
+        <location filename="../GameList/GameListModel.cpp" line="612"/>
         <source>Compatibility</source>
         <translation type="unfinished"></translation>
     </message>
@@ -17587,10 +17587,10 @@ Savestates should not be used in place of in-game saves.</source>
     <name>MemoryCardCreateDialog</name>
     <message>
         <location filename="../Settings/MemoryCardCreateDialog.ui" line="14"/>
-        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="106"/>
-        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="113"/>
-        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="120"/>
-        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="133"/>
+        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="107"/>
+        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="114"/>
+        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="121"/>
+        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="134"/>
         <source>Create Memory Card</source>
         <translation type="unfinished"></translation>
     </message>
@@ -17671,22 +17671,22 @@ Savestates should not be used in place of in-game saves.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="107"/>
+        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="108"/>
         <source>Failed to create the Memory Card, because the name &apos;%1&apos; contains one or more invalid characters.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="114"/>
+        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="115"/>
         <source>Failed to create the Memory Card, because another card with the name &apos;%1&apos; already exists.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="121"/>
+        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="122"/>
         <source>Failed to create the Memory Card, the log may contain more information.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="133"/>
+        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="134"/>
         <source>Memory Card &apos;%1&apos; created.</source>
         <translation type="unfinished"></translation>
     </message>
