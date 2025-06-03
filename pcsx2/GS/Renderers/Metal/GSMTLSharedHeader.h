@@ -64,6 +64,7 @@ struct GSMTLIndexedConvertPSUniform
 	float scale;
 	uint sbw;
 	uint dbw;
+	uint psm;
 };
 
 struct GSMTLDownsamplePSUniform

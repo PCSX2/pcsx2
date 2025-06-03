@@ -3158,15 +3158,16 @@ void GSDeviceVK::ConvertToIndexedTexture(
 	{
 		u32 SBW;
 		u32 DBW;
-		u32 pad1[2];
+		u32 PSM;
+		u32 pad1[1];
 		float ScaleFactor;
 		float pad2[3];
 	};
 
-	const Uniforms uniforms = {SBW, DBW, {}, sScale, {}};
+	const Uniforms uniforms = {SBW, DBW, SPSM, {}, sScale, {}};
 	SetUtilityPushConstants(&uniforms, sizeof(uniforms));
 
-	const ShaderConvert shader = ShaderConvert::RGBA_TO_8I;
+	const ShaderConvert shader = ((SPSM & 0xE) == 0) ? ShaderConvert::RGBA_TO_8I : ShaderConvert::RGB5A1_TO_8I;
 	const GSVector4 dRect(0, 0, dTex->GetWidth(), dTex->GetHeight());
 	DoStretchRect(static_cast<GSTextureVK*>(sTex), GSVector4::zero(), static_cast<GSTextureVK*>(dTex), dRect,
 		m_convert[static_cast<int>(shader)], false, true);

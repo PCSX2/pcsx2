@@ -313,6 +313,127 @@ float ps_convert_rgb5a1_float16_biln(PS_INPUT input) : SV_Depth
 	SAMPLE_RGBA_DEPTH_BILN(rgb5a1_to_depth16);
 }
 
+PS_OUTPUT ps_convert_rgb5a1_8i(PS_INPUT input)
+{
+	PS_OUTPUT output;
+
+	// Convert a RGB5A1 texture into a 8 bits packed texture
+	// Input column: 16x2 RGB5A1 pixels
+	// 0: 16 RGBA
+	// 1: 16 RGBA
+	// Output column: 16x4 Index pixels
+	// 0: 16 R5G2
+	// 1: 16 R5G2
+	// 2: 16 G2B5A1
+	// 3: 16 G2B5A1
+	uint2 pos = uint2(input.p.xy);
+
+	// Collapse separate R G B A areas into their base pixel
+	uint2 column = (pos & ~uint2(0u, 3u)) / uint2(1,2);
+	uint2 subcolumn = (pos & uint2(0u, 1u));
+	column.x -= (column.x / 128) * 64;
+	column.y += (column.y / 32) * 32;
+	
+	uint PSM = uint(DOFFSET);
+	
+	// Deal with swizzling differences
+	if ((PSM & 0x8) != 0) // PSMCT16S
+	{
+		if ((pos.x & 32) != 0)
+		{
+			column.y += 32; // 4 columns high times 4 to get bottom 4 blocks
+			column.x &= ~32;
+		}
+		
+		if ((pos.x & 64) != 0)
+		{
+			column.x -= 32;
+		}
+		
+		if (((pos.x & 16) != 0) != ((pos.y & 16) != 0))
+		{
+			column.x ^= 16; 
+			column.y ^= 8;
+		}
+		
+		if ((PSM & 0x30) != 0) // PSMZ16S - Untested but hopefully ok if anything uses it.
+		{
+			column.x ^= 32;
+			column.y ^= 16;
+		}
+	}
+	else // PSMCT16
+	{
+		if ((pos.y & 32) != 0)
+		{
+			column.y -= 16;
+			column.x += 32;
+		}
+		
+		if ((pos.x & 96) != 0)
+		{
+			uint multi = (pos.x & 96) / 32;
+			column.y += 16 * multi; // 4 columns high times 4 to get bottom 4 blocks
+			column.x -= (pos.x & 96);
+		}
+		
+		if (((pos.x & 16) != 0) != ((pos.y & 16) != 0))
+		{
+			column.x ^= 16; 
+			column.y ^= 8;
+		}
+		
+		if ((PSM & 0x30) != 0) // PSMZ16 - Untested but hopefully ok if anything uses it.
+		{
+			column.x ^= 32;
+			column.y ^= 32;
+		}
+	}
+	
+	uint2 coord = column | subcolumn;
+
+	// Compensate for potentially differing page pitch.
+	uint SBW = uint(EMODA);
+	uint DBW = uint(EMODC);
+	uint2 block_xy = coord / uint2(64,64);
+	uint block_num = (block_xy.y * (DBW / 128)) + block_xy.x;
+	uint2 block_offset = uint2((block_num % (SBW / 64)) * 64, (block_num / (SBW / 64)) * 64);
+	coord = (coord % uint2(64, 64)) + block_offset;
+
+	// Apply offset to cols 1 and 2
+	uint is_col23 = pos.y & 4u;
+	uint is_col13 = pos.y & 2u;
+	uint is_col12 = is_col23 ^ (is_col13 << 1);
+	coord.x ^= is_col12; // If cols 1 or 2, flip bit 3 of x
+
+	float ScaleFactor = BGColor.x;
+	if (floor(ScaleFactor) != ScaleFactor)
+		coord = uint2(float2(coord) * ScaleFactor);
+	else
+		coord *= uint(ScaleFactor);
+
+	float4 pixel = Texture.Load(int3(int2(coord), 0));
+	uint4 denorm_c = (uint4)(pixel * 255.5f);
+	if ((pos.y & 2u) == 0u)
+	{
+		uint red = (denorm_c.r >> 3) & 0x1Fu;
+		uint green = (denorm_c.g >> 3) & 0x1Fu;
+		float sel0 = (float)(((green << 5) | red) & 0xFF) / 255.0f;
+		
+		output.c = (float4)(sel0);
+	}
+	else
+	{
+		uint green = (denorm_c.g >> 3) & 0x1Fu;
+		uint blue = (denorm_c.b >> 3) & 0x1Fu;
+		uint alpha = denorm_c.a & 0x80u;
+		float sel0 = (float)((alpha | (blue << 2) | (green >> 3)) & 0xFF) / 255.0f;
+
+		output.c = (float4)(sel0);
+	}
+	return output;
+}
+
 PS_OUTPUT ps_convert_rgba_8i(PS_INPUT input)
 {
 	PS_OUTPUT output;

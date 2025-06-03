@@ -296,6 +296,121 @@ fragment DepthOut ps_convert_rgb5a1_float16_biln(ConvertShaderData data [[stage_
 	return res.sample_biln<rgb5a1_to_depth16>(data.t);
 }
 
+fragment float4 ps_convert_rgb5a1_8i(ConvertShaderData data [[stage_in]], DirectReadTextureIn<float> res,
+	constant GSMTLIndexedConvertPSUniform& uniform [[buffer(GSMTLBufferIndexUniforms)]])
+{
+	// Convert a RGB5A1 texture into a 8 bits packed texture
+	// Input column: 16x2 RGB5A1 pixels
+	// 0: 16 RGBA
+	// 1: 16 RGBA
+	// Output column: 16x4 Index pixels
+	// 0: 16 R5G2
+	// 1: 16 R5G2
+	// 2: 16 G2B5A1
+	// 3: 16 G2B5A1
+	uint2 pos = uint2(data.p.xy);
+
+	// Collapse separate R G B A areas into their base pixel
+	uint2 column = (pos & ~uint2(0u, 3u)) / uint2(1,2);
+	uint2 subcolumn = (pos & uint2(0u, 1u));
+	column.x -= (column.x / 128) * 64;
+	column.y += (column.y / 32) * 32;
+
+	// Deal with swizzling differences
+	if ((uniform.psm & 0x8) != 0) // PSMCT16S
+	{
+		if ((pos.x & 32) != 0)
+		{
+			column.y += 32; // 4 columns high times 4 to get bottom 4 blocks
+			column.x &= ~32;
+		}
+		
+		if ((pos.x & 64) != 0)
+		{
+			column.x -= 32;
+		}
+		
+		if (((pos.x & 16) != 0) != ((pos.y & 16) != 0))
+		{
+			column.x ^= 16; 
+			column.y ^= 8;
+		}
+		
+		if ((uniform.psm & 0x30) != 0) // PSMZ16S - Untested but hopefully ok if anything uses it.
+		{
+			column.x ^= 32;
+			column.y ^= 16;
+		}
+	}
+	else // PSMCT16
+	{
+		if ((pos.y & 32) != 0)
+		{
+			column.y -= 16;
+			column.x += 32;
+		}
+		
+		if ((pos.x & 96) != 0)
+		{
+			uint multi = (pos.x & 96) / 32;
+			column.y += 16 * multi; // 4 columns high times 4 to get bottom 4 blocks
+			column.x -= (pos.x & 96);
+		}
+		
+		if (((pos.x & 16) != 0) != ((pos.y & 16) != 0))
+		{
+			column.x ^= 16; 
+			column.y ^= 8;
+		}
+		
+		if ((uniform.psm & 0x30) != 0) // PSMZ16 - Untested but hopefully ok if anything uses it.
+		{
+			column.x ^= 32;
+			column.y ^= 32;
+		}
+	}
+	
+	uint2 coord = column | subcolumn;
+
+	// Compensate for potentially differing page pitch.
+	uint2 block_xy = coord / uint2(64, 64);
+	uint block_num = (block_xy.y * (uniform.dbw / 128)) + block_xy.x;
+	uint2 block_offset = uint2((block_num % (uniform.sbw / 64)) * 64, (block_num / (uniform.sbw / 64)) * 64);
+	coord = (coord % uint2(64, 64)) + block_offset;
+
+	// Apply offset to cols 1 and 2
+	uint is_col23 = pos.y & 4;
+	uint is_col13 = pos.y & 2;
+	uint is_col12 = is_col23 ^ (is_col13 << 1);
+	coord.x ^= is_col12; // If cols 1 or 2, flip bit 3 of x
+
+	if (any(floor(uniform.scale) != uniform.scale))
+		coord = uint2(float2(coord) * uniform.scale);
+	else
+		coord = mul24(coord, uint2(uniform.scale));
+
+	float4 pixel = res.tex.read(coord);
+	
+	uint4 denorm_c = (uint4)(pixel * 255.5f);
+	if ((pos.y & 2u) == 0u)
+	{
+		uint red = (denorm_c.r >> 3) & 0x1Fu;
+		uint green = (denorm_c.g >> 3) & 0x1Fu;
+		float sel0 = (float)(((green << 5) | red) & 0xFF) / 255.0f;
+		
+		return float4(sel0);
+	}
+	else
+	{
+		uint green = (denorm_c.g >> 3) & 0x1Fu;
+		uint blue = (denorm_c.b >> 3) & 0x1Fu;
+		uint alpha = denorm_c.a & 0x80u;
+		float sel0 = (float)((alpha | (blue << 2) | (green >> 3)) & 0xFF) / 255.0f;
+
+		return float4(sel0);
+	}
+}
+
 fragment float4 ps_convert_rgba_8i(ConvertShaderData data [[stage_in]], DirectReadTextureIn<float> res,
 	constant GSMTLIndexedConvertPSUniform& uniform [[buffer(GSMTLBufferIndexUniforms)]])
 {

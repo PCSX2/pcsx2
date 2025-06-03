@@ -44,6 +44,7 @@ enum class ShaderConvert
 	DEPTH_COPY,
 	DOWNSAMPLE_COPY,
 	RGBA_TO_8I,
+	RGB5A1_TO_8I,
 	CLUT_4,
 	CLUT_8,
 	YUV,
