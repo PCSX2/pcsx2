@@ -237,9 +237,131 @@ void ps_convert_rgb5a1_float16_biln()
 }
 #endif
 
+#ifdef ps_convert_rgb5a1_8i
+uniform uint SBW;
+uniform uint DBW;
+uniform uint PSM;
+uniform float ScaleFactor;
+
+void ps_convert_rgb5a1_8i()
+{
+	// Convert a RGB5A1 texture into a 8 bits packed texture
+	// Input column: 16x2 RGB5A1 pixels
+	// 0: 16 RGBA
+	// 1: 16 RGBA
+	// Output column: 16x4 Index pixels
+	// 0: 16 R5G2
+	// 1: 16 R5G2
+	// 2: 16 G2B5A1
+	// 3: 16 G2B5A1
+	
+	uvec2 pos = uvec2(gl_FragCoord.xy);
+
+	// Collapse separate R G B A areas into their base pixel
+	uvec2 column = (pos & ~uvec2(0u, 3u)) / uvec2(1,2);
+	uvec2 subcolumn = (pos & uvec2(0u, 1u));
+	column.x -= (column.x / 128) * 64;
+	column.y += (column.y / 32) * 32;
+	
+	// Deal with swizzling differences
+	if ((PSM & 0x8) != 0) // PSMCT16S
+	{
+		if ((pos.x & 32) != 0)
+		{
+			column.y += 32; // 4 columns high times 4 to get bottom 4 blocks
+			column.x &= ~32;
+		}
+		
+		if ((pos.x & 64) != 0)
+		{
+			column.x -= 32;
+		}
+		
+		if (((pos.x & 16) != 0) != ((pos.y & 16) != 0))
+		{
+			column.x ^= 16; 
+			column.y ^= 8;
+		}
+		
+		if ((PSM & 0x30) != 0) // PSMZ16S - Untested but hopefully ok if anything uses it.
+		{
+			column.x ^= 32;
+			column.y ^= 16;
+		}
+	}
+	else // PSMCT16
+	{
+		if ((pos.y & 32) != 0)
+		{
+			column.y -= 16;
+			column.x += 32;
+		}
+		
+		if ((pos.x & 96) != 0)
+		{
+			uint multi = (pos.x & 96) / 32;
+			column.y += 16 * multi; // 4 columns high times 4 to get bottom 4 blocks
+			column.x -= (pos.x & 96);
+		}
+		
+		if (((pos.x & 16) != 0) != ((pos.y & 16) != 0))
+		{
+			column.x ^= 16; 
+			column.y ^= 8;
+		}
+		
+		if ((PSM & 0x30) != 0) // PSMZ16 - Untested but hopefully ok if anything uses it.
+		{
+			column.x ^= 32;
+			column.y ^= 32;
+		}
+	}
+	uvec2 coord = column | subcolumn;
+	
+	// Compensate for potentially differing page pitch.
+	uvec2 block_xy = coord / uvec2(64u, 64u);
+	uint block_num = (block_xy.y * (DBW / 128u)) + block_xy.x;
+	uvec2 block_offset = uvec2((block_num % (SBW / 64u)) * 64u, (block_num / (SBW / 64u)) * 64u);
+	coord = (coord % uvec2(64u, 64u)) + block_offset;
+
+	// Apply offset to cols 1 and 2
+	uint is_col23 = pos.y & 4u;
+	uint is_col13 = pos.y & 2u;
+	uint is_col12 = is_col23 ^ (is_col13 << 1);
+	coord.x ^= is_col12; // If cols 1 or 2, flip bit 3 of x
+
+	if (floor(ScaleFactor) != ScaleFactor)
+		coord = uvec2(vec2(coord) * ScaleFactor);
+	else
+		coord *= uvec2(ScaleFactor);
+
+	vec4 pixel = texelFetch(TextureSampler, ivec2(coord), 0);
+	
+	uvec4 denorm_c = uvec4(pixel * 255.5f);
+	if ((pos.y & 2u) == 0u)
+	{
+		uint red = (denorm_c.r >> 3) & 0x1Fu;
+		uint green = (denorm_c.g >> 3) & 0x1Fu;
+		float sel0 = float(((green << 5) | red) & 0xFF) / 255.0f;
+		
+		SV_Target0 = vec4(sel0);
+	}
+	else
+	{
+		uint green = (denorm_c.g >> 3) & 0x1Fu;
+		uint blue = (denorm_c.b >> 3) & 0x1Fu;
+		uint alpha = denorm_c.a & 0x80u;
+		float sel0 = float((alpha | (blue << 2) | (green >> 3)) & 0xFF) / 255.0f;
+
+		SV_Target0 = vec4(sel0);
+	}
+}
+#endif
+
 #ifdef ps_convert_rgba_8i
 uniform uint SBW;
 uniform uint DBW;
+uniform uint PSM;
 uniform float ScaleFactor;
 
 void ps_convert_rgba_8i()

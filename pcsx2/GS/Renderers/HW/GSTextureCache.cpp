@@ -1617,8 +1617,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 						{
 							const bool outside_target = !t->Overlaps(bp, bw, psm, r);
 
-							// We don't have a shader for this.
-							if (!possible_shuffle && TEX0.PSM == PSMT8 && ((GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp != 32) || outside_target))
+							if (!possible_shuffle && TEX0.PSM == PSMT8 && outside_target)
 							{
 								continue;
 							}
@@ -1647,7 +1646,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 				// Make sure the texture actually is INSIDE the RT, it's possibly not valid if it isn't.
 				// Also check BP >= TBP, create source isn't equpped to expand it backwards and all data comes from the target. (GH3)
 				else if (GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets &&
-						 (GSLocalMemory::m_psm[color_psm].bpp >= 16 || (/*possible_shuffle &&*/ GSLocalMemory::m_psm[color_psm].bpp == 8 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 32)) && // Channel shuffles or non indexed lookups.
+						 (GSLocalMemory::m_psm[color_psm].bpp >= 16 || (/*possible_shuffle &&*/ GSLocalMemory::m_psm[color_psm].bpp == 8 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp >= 16)) && // Channel shuffles or non indexed lookups.
 					t->m_age <= 1 && (!found_t || t->m_last_draw > dst->m_last_draw) /*&& CanTranslate(bp, bw, psm, block_boundary_rect, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW)*/)
 				{
 					u32 rt_tbw = std::max(1U, t->m_TEX0.TBW);
@@ -1666,7 +1665,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 					// Keep note that 2 bw is basically 1 normal page, as bw is in 64 pixels, and 8bit pages are 128 pixels wide, aka 2 bw.
 					// Also check for 4HH/HL and 8H which use the alpha channel, if the page order is wrong this can cause problems as well (Jak X font).
 					else if (!possible_shuffle && GSLocalMemory::m_psm[psm].trbpp <= 8 && (GSUtil::GetChannelMask(t->m_TEX0.PSM) != 0xF || 
-							(GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 32 && (!(block_boundary_rect.w <= GSLocalMemory::m_psm[psm].pgs.y &&
+							((GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp != 16 || GSLocalMemory::m_psm[psm].bpp < 16) && (!(block_boundary_rect.w <= GSLocalMemory::m_psm[psm].pgs.y &&
 							((GSLocalMemory::m_psm[psm].bpp == 32) ? bw : ((bw + 1) / 2)) <= t->m_TEX0.TBW) &&
 							!(((GSLocalMemory::m_psm[psm].bpp == 32) ? bw : ((bw + 1) / 2)) == rt_tbw)))))
 					{
@@ -2007,7 +2006,6 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 			GL_CACHE("TC: src miss (0x%x, 0x%x, %s)", TEX0.TBP0, psm_s.pal > 0 ? TEX0.CBP : 0, psm_str(TEX0.PSM));
 		}
 #endif
-
 		// This is for the condition where the target doesn't exist on a shuffle and it needs to load from memory.
 		// The Godfather clears the depth buffer with a normal clear, so our depth target gets deleted, then because it finds no target
 		// it assumes it really is 16bits, causing the texture to be full of garbage, and our shuffle handling becomes a mess.
@@ -5667,7 +5665,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		if (is_8bits)
 		{
 			GL_INS("TC: Reading RT as a packed-indexed 8 bits format");
-			shader = ShaderConvert::RGBA_TO_8I;
+			shader = GSLocalMemory::m_psm[dst->m_TEX0.PSM].bpp == 16 ? ShaderConvert::RGB5A1_TO_8I : ShaderConvert::RGBA_TO_8I;
 		}
 
 #ifdef ENABLE_OGL_DEBUG
@@ -5737,7 +5735,11 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			{
 				// We're inside the target, so conversion needs to happen on the entire target so we can offset properly.
 				src->m_unscaled_size.x = dst->m_unscaled_size.x * 2;
-				src->m_unscaled_size.y = dst->m_unscaled_size.y * 2;
+				if (GSLocalMemory::m_psm[dst->m_TEX0.PSM].bpp == 32)
+					src->m_unscaled_size.y = dst->m_unscaled_size.y * 2;
+				else
+					src->m_unscaled_size.y = dst->m_unscaled_size.y;
+
 				new_size.x = src->m_unscaled_size.x;
 				new_size.y = src->m_unscaled_size.y;
 			}
@@ -5908,7 +5910,8 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 					// Adjust to match a PSMT8 texture (coordinates are double C32, we shouldn't be converting from anything else).
 					x_offset *= 2;
-					y_offset *= 2;
+					if (GSLocalMemory::m_psm[dst->m_TEX0.PSM].bpp == 32) 
+						y_offset *= 2;
 
 					src->m_region.SetX(x_offset, x_offset + tw);
 					src->m_region.SetY(y_offset, y_offset + th);
