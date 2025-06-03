@@ -6698,6 +6698,8 @@ void GSTextureCache::Read(Target* t, const GSVector4i& r)
 	{
 		case PSMCT32:
 		case PSMCT24:
+		case PSMZ32:
+		case PSMZ24:
 		{
 			// If we're downloading a depth buffer that's been reinterpreted as a color
 			// format, convert it to integer. The format/swizzle is likely wrong, but it's
@@ -6723,27 +6725,11 @@ void GSTextureCache::Read(Target* t, const GSVector4i& r)
 
 		case PSMCT16:
 		case PSMCT16S:
-		{
-			fmt = GSTexture::Format::UInt16;
-			ps_shader = is_depth ? ShaderConvert::FLOAT32_TO_16_BITS : ShaderConvert::RGBA8_TO_16_BITS;
-			dltex = &m_uint16_download_texture;
-		}
-		break;
-
-		case PSMZ32:
-		case PSMZ24:
-		{
-			fmt = GSTexture::Format::UInt32;
-			ps_shader = ShaderConvert::FLOAT32_TO_32_BITS;
-			dltex = &m_uint32_download_texture;
-		}
-		break;
-
 		case PSMZ16:
 		case PSMZ16S:
 		{
 			fmt = GSTexture::Format::UInt16;
-			ps_shader = ShaderConvert::FLOAT32_TO_16_BITS;
+			ps_shader = is_depth ? ShaderConvert::FLOAT32_TO_16_BITS : ShaderConvert::RGBA8_TO_16_BITS;
 			dltex = &m_uint16_download_texture;
 		}
 		break;
