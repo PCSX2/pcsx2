@@ -10,6 +10,7 @@
 
 #include <kddockwidgets/Config.h>
 #include <kddockwidgets/core/Group.h>
+#include <kddockwidgets/core/Platform.h>
 #include <kddockwidgets/core/indicators/SegmentedDropIndicatorOverlay.h>
 #include <kddockwidgets/qtwidgets/ViewFactory.h>
 
