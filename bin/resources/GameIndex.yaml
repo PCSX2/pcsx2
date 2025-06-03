@@ -12927,7 +12927,7 @@ SLAJ-25041:
   name: "Harry Potter and the Prisoner of Azkaban"
   region: "NTSC-C"
   gsHWFixes:
-    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    textureInsideRT: 1 # Fixes right side shadow lookup.
     halfPixelOffset: 2 # Aligns mirror reflections, removes some bloom-related ghosting.
     recommendedBlendingLevel: 4 # Improves lighting effects.
 SLAJ-25042:
@@ -16829,7 +16829,7 @@ SLES-51192:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes missing lighting effects.
-    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    textureInsideRT: 1 # Fixes right side shadow lookup.
     halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
     texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
 SLES-51193:
@@ -16839,7 +16839,7 @@ SLES-51193:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes missing lighting effects.
-    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    textureInsideRT: 1 # Fixes right side shadow lookup.
     halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
     texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
 SLES-51194:
@@ -16849,7 +16849,7 @@ SLES-51194:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes missing lighting effects.
-    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    textureInsideRT: 1 # Fixes right side shadow lookup.
     halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
     texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
 SLES-51195:
@@ -16859,7 +16859,7 @@ SLES-51195:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes missing lighting effects.
-    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    textureInsideRT: 1 # Fixes right side shadow lookup.
     halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
     texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
 SLES-51196:
@@ -16869,7 +16869,7 @@ SLES-51196:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes missing lighting effects.
-    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    textureInsideRT: 1 # Fixes right side shadow lookup.
     halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
     texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
 SLES-51197:
@@ -16926,7 +16926,7 @@ SLES-51214:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes missing lighting effects.
-    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    textureInsideRT: 1 # Fixes right side shadow lookup.
     halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
     texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
 SLES-51215:
@@ -16936,7 +16936,7 @@ SLES-51215:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes missing lighting effects.
-    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    textureInsideRT: 1 # Fixes right side shadow lookup.
     halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
     texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
 SLES-51216:
@@ -16946,7 +16946,7 @@ SLES-51216:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes missing lighting effects.
-    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    textureInsideRT: 1 # Fixes right side shadow lookup.
     halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
     texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
 SLES-51217:
@@ -16956,7 +16956,7 @@ SLES-51217:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes missing lighting effects.
-    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    textureInsideRT: 1 # Fixes right side shadow lookup.
     halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
     texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
 SLES-51218:
@@ -16966,7 +16966,7 @@ SLES-51218:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes missing lighting effects.
-    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    textureInsideRT: 1 # Fixes right side shadow lookup.
     halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
     texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
 SLES-51219:
@@ -16976,7 +16976,7 @@ SLES-51219:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes missing lighting effects.
-    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    textureInsideRT: 1 # Fixes right side shadow lookup.
     halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
     texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
 SLES-51220:
@@ -19896,7 +19896,7 @@ SLES-52440:
   region: "PAL-M7"
   compat: 3
   gsHWFixes:
-    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    textureInsideRT: 1 # Fixes right side shadow lookup.
     halfPixelOffset: 2 # Aligns mirror reflections, removes some bloom-related ghosting.
     recommendedBlendingLevel: 4 # Improves lighting effects.
 SLES-52444:
@@ -20123,7 +20123,7 @@ SLES-52527:
   name: "Harry Potter og Fangen fra Azkaban"
   region: "PAL-M4"
   gsHWFixes:
-    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    textureInsideRT: 1 # Fixes right side shadow lookup.
     halfPixelOffset: 2 # Aligns mirror reflections, removes some bloom-related ghosting.
     recommendedBlendingLevel: 4 # Improves lighting effects.
 SLES-52531:
@@ -20434,7 +20434,7 @@ SLES-52600:
   name: "Harry Potter and the Prisoner of Azkaban"
   region: "PAL-PL"
   gsHWFixes:
-    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    textureInsideRT: 1 # Fixes right side shadow lookup.
     halfPixelOffset: 2 # Aligns mirror reflections, removes some bloom-related ghosting.
     recommendedBlendingLevel: 4 # Improves lighting effects.
 SLES-52601:
@@ -31108,7 +31108,7 @@ SLKA-25172:
   name: "Harry Potter and the Prisoner of Azkaban"
   region: "NTSC-K"
   gsHWFixes:
-    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    textureInsideRT: 1 # Fixes right side shadow lookup.
     halfPixelOffset: 2 # Aligns mirror reflections, removes some bloom-related ghosting.
     recommendedBlendingLevel: 4 # Improves lighting effects.
 SLKA-25173:
@@ -36957,7 +36957,7 @@ SLPM-62241:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes missing lighting effects.
-    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    textureInsideRT: 1 # Fixes right side shadow lookup.
     halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
 SLPM-62242:
   name: "撞球 ビリヤードマスター2"
@@ -38369,7 +38369,7 @@ SLPM-62513:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes missing lighting effects.
-    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    textureInsideRT: 1 # Fixes right side shadow lookup.
     halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
 SLPM-62514:
   name: "シムピープル ～お茶の間劇場～ [EA BEST HITS]"
@@ -39800,7 +39800,7 @@ SLPM-64528:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes missing lighting effects.
-    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    textureInsideRT: 1 # Fixes right side shadow lookup.
     halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
 SLPM-64532:
   name: "Digital Holmes"
@@ -43355,7 +43355,7 @@ SLPM-65612:
   name-en: "Harry Potter and the Prisoner of Azkaban"
   region: "NTSC-J"
   gsHWFixes:
-    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    textureInsideRT: 1 # Fixes right side shadow lookup.
     halfPixelOffset: 2 # Aligns mirror reflections, removes some bloom-related ghosting.
     recommendedBlendingLevel: 4 # Improves lighting effects.
 SLPM-65613:
@@ -52157,7 +52157,7 @@ SLPM-68005:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes missing lighting effects.
-    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    textureInsideRT: 1 # Fixes right side shadow lookup.
     halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
 SLPM-68007:
   name: "カラオケレボリューション用マイク同梱お試しディスク"
@@ -54308,7 +54308,7 @@ SLPS-20234:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes missing lighting effects.
-    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    textureInsideRT: 1 # Fixes right side shadow lookup.
     halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
 SLPS-20237:
   name: "Saikyou Toudai Shougi 3"
@@ -65273,7 +65273,7 @@ SLUS-20576:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes missing lighting effects.
-    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    textureInsideRT: 1 # Fixes right side shadow lookup.
     halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
 SLUS-20577:
   name: "Drome Racers"
@@ -67218,7 +67218,7 @@ SLUS-20926:
   name: "Harry Potter and the Prisoner of Azkaban"
   region: "NTSC-U"
   gsHWFixes:
-    cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    textureInsideRT: 1 # Fixes right side shadow lookup.
     halfPixelOffset: 2 # Aligns mirror reflections, removes some bloom-related ghosting.
     recommendedBlendingLevel: 4 # Improves lighting effects.
 SLUS-20927:
