@@ -14276,8 +14276,6 @@ SLES-50078:
 SLES-50079:
   name: "Armored Core 2"
   region: "PAL-E"
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes random corruption.
   clampModes:
     eeClampMode: 2 # Fixes Abnormal AI behavior.
   gsHWFixes:
@@ -55725,8 +55723,6 @@ SLPS-25007:
   name-sort: "あーまーどこあ 2"
   name-en: "Armored Core 2"
   region: "NTSC-J"
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes random corruption.
   clampModes:
     eeClampMode: 2 # Fixes Abnormal AI behavior.
   gsHWFixes:
@@ -62370,8 +62366,6 @@ SLPS-73403:
   name-sort: "あーまーどこあ 2 [PlayStation2 the Best]"
   name-en: "Armored Core 2 [PlayStation2 the Best]"
   region: "NTSC-J"
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes random corruption.
   clampModes:
     eeClampMode: 2 # Fixes Abnormal AI behavior.
   gsHWFixes:
@@ -62626,8 +62620,6 @@ SLUS-20014:
   name: "Armored Core 2"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes random corruption.
   clampModes:
     eeClampMode: 2 # Fixes Abnormal AI behavior.
   gsHWFixes:
