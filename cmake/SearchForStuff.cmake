@@ -120,7 +120,7 @@ add_subdirectory(3rdparty/demangler EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/ccc EXCLUDE_FROM_ALL)
 
 # The docking system for the debugger.
-find_package(KDDockWidgets-qt6 REQUIRED)
+find_package(KDDockWidgets-qt6 2.0.0 REQUIRED)
 # Add an extra include path to work around a broken include directive.
 # TODO: Remove this the next time we update KDDockWidgets.
 get_target_property(KDDOCKWIDGETS_INCLUDE_DIRECTORY KDAB::kddockwidgets INTERFACE_INCLUDE_DIRECTORIES)
