@@ -1940,11 +1940,13 @@ SCAJ-20115:
   name: "Yoshitsune Eiyuuden"
   region: "NTSC-Unk"
 SCAJ-20116:
-  name: "Death by Degrees - Tekken - Nina Williams"
-  region: "NTSC-C-J"
+  name: "戰慄殺機 鐵拳 - 妮娜 - 威廉斯"
+  name-en: "Death by Degrees"
+  region: "NTSC-C"
   gsHWFixes:
-    alignSprite: 1 # Fixes FMV lines.
+    getSkipCount: "GSC_NamcoGames"
     halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
+    alignSprite: 1 # Fixes FMV lines.
     textureInsideRT: 1 # Fixes post shuffles.
 SCAJ-20117:
   name: "Fu-un Bakumatsu-den"
@@ -5763,8 +5765,9 @@ SCES-52586:
   region: "PAL-E-S"
   compat: 5
   gsHWFixes:
-    alignSprite: 1 # Fixes FMV lines.
+    getSkipCount: "GSC_NamcoGames"
     halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
+    alignSprite: 1 # Fixes FMV lines.
     textureInsideRT: 1 # Fixes post shuffles.
 SCES-52596:
   name: "This is Football 2005"
@@ -5865,16 +5868,18 @@ SCES-53053:
   name: "Death by Degrees"
   region: "PAL-F-I"
   gsHWFixes:
-    alignSprite: 1 # Fixes FMV lines.
+    getSkipCount: "GSC_NamcoGames"
     halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
+    alignSprite: 1 # Fixes FMV lines.
     textureInsideRT: 1 # Fixes post shuffles.
 SCES-53054:
   name: "Death by Degrees"
   region: "PAL-E-G"
   compat: 5
   gsHWFixes:
-    alignSprite: 1 # Fixes FMV lines.
+    getSkipCount: "GSC_NamcoGames"
     halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
+    alignSprite: 1 # Fixes FMV lines.
     textureInsideRT: 1 # Fixes post shuffles.
 SCES-53055:
   name: "Eyetoy - Antigrav"
@@ -7309,8 +7314,9 @@ SCKA-20039:
   name: "Tekken Nina Williams In Death By Degree"
   region: "NTSC-K"
   gsHWFixes:
+    getSkipCount: "GSC_NamcoGames"
+    halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
     alignSprite: 1 # Fixes FMV lines.
-    halfPixelOffset: 2 # Aligns post effects.
     textureInsideRT: 1 # Fixes post shuffles.
 SCKA-20040:
   name: "Jak 3"
@@ -34786,8 +34792,9 @@ SLPM-60257:
   name-en: "Death by Degrees - Tekken - Nina Williams [Trial]"
   region: "NTSC-J"
   gsHWFixes:
-    alignSprite: 1 # Fixes FMV lines.
+    getSkipCount: "GSC_NamcoGames"
     halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
+    alignSprite: 1 # Fixes FMV lines.
     textureInsideRT: 1 # Fixes post shuffles.
 SLPM-60258:
   name: "THE TYPING OF THE DEAD ZOMBIE PANIC [体験版]"
@@ -58219,8 +58226,9 @@ SLPS-25422:
   name-en: "Death by Degrees - Tekken - Nina Williams"
   region: "NTSC-J"
   gsHWFixes:
-    alignSprite: 1 # Fixes FMV lines.
+    getSkipCount: "GSC_NamcoGames"
     halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
+    alignSprite: 1 # Fixes FMV lines.
     textureInsideRT: 1 # Fixes post shuffles.
 SLPS-25423:
   name: "怪盗アプリコット 完全版 [限定版]"
@@ -67254,8 +67262,9 @@ SLUS-20934:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    alignSprite: 1 # Fixes FMV lines.
+    getSkipCount: "GSC_NamcoGames"
     halfPixelOffset: 5 # Fixes alignment of shuffles and post processing.
+    alignSprite: 1 # Fixes FMV lines.
     textureInsideRT: 1 # Fixes post shuffles.
 SLUS-20935:
   name: "IHRA Professional Drag Racing 2005"
