@@ -270,19 +270,19 @@ std::string GSTextureReplacements::GetDumpFilename(const TextureName& name, u32 
 		return ret;
 
 	const std::string game_dir(GetGameTextureDirectory());
-	if (!FileSystem::DirectoryExists(game_dir.c_str()))
+	const std::string game_subdir(Path::Combine(game_dir, TEXTURE_DUMP_SUBDIRECTORY_NAME));
+
+	if (!FileSystem::DirectoryExists(game_subdir.c_str()))
 	{
 		// create both dumps and replacements
 		if (!FileSystem::CreateDirectoryPath(game_dir.c_str(), false) ||
-			!FileSystem::EnsureDirectoryExists(Path::Combine(game_dir, "dumps").c_str(), false) ||
-			!FileSystem::EnsureDirectoryExists(Path::Combine(game_dir, "replacements").c_str(), false))
+			!FileSystem::EnsureDirectoryExists(game_subdir.c_str(), false) ||
+			!FileSystem::EnsureDirectoryExists(Path::Combine(game_dir, TEXTURE_REPLACEMENT_SUBDIRECTORY_NAME).c_str(), false))
 		{
 			// if it fails to create, we're not going to be able to use it anyway
 			return ret;
 		}
 	}
-
-	const std::string game_subdir(Path::Combine(game_dir, TEXTURE_DUMP_SUBDIRECTORY_NAME));
 
 	std::string filename;
 	if (name.HasRegion())
