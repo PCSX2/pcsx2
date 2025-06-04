@@ -12,10 +12,9 @@
   },
   "sources": [
     {
-	  "type": "git",
+      "type": "git",
       "url": "https://github.com/sammycage/plutosvg.git",
-	  "tag": "v0.0.6",
-      "sha256": "c5388fa96feca1f1376a3d0485d5e35159452707"
+      "tag": "v0.0.6"
     }
   ],
   "cleanup": [
