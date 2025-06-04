@@ -11,10 +11,9 @@
   },
   "sources": [
     {
-	  "type": "git",
+      "type": "git",
       "url": "https://github.com/sammycage/plutovg.git",
-      "tag": "v0.0.13",
-      "sha256": "5e4712cf873b0c7829a4a6157763e2ad3ac49164"
+      "tag": "v0.0.13"
     }
   ],
   "cleanup": [
