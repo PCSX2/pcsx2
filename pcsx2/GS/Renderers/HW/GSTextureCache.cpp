@@ -3543,11 +3543,11 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 							continue;
 						}
 
-						const int height_adjust = (((dst_end_block - t->m_TEX0.TBP0) >> 5) / std::max(t->m_TEX0.TBW, 1U)) * GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y;
+						const int height_adjust = ((((dst_end_block + 31) - t->m_TEX0.TBP0) >> 5) / std::max(t->m_TEX0.TBW, 1U)) * GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y;
 
 						if (height_adjust < t->m_unscaled_size.y)
 						{
-							t->m_TEX0.TBP0 = dst_end_block;
+							t->m_TEX0.TBP0 = GSLocalMemory::GetStartBlockAddress(t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM, GSVector4i(0, height_adjust, t->m_valid.z, t->m_valid.w));
 							t->m_valid.w -= height_adjust;
 							t->ResizeValidity(t->m_valid);
 
