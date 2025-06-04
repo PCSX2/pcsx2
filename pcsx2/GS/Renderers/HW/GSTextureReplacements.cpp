@@ -350,6 +350,28 @@ void GSTextureReplacements::GameChanged()
 	ClearDumpedTextureList();
 }
 
+/// If the given file exists in the given directory, but with a different case than the original file, write its path to `*output` and return true.
+static bool GetWrongCasePath(std::string* output, const char* dir, std::string_view file, FileSystem::FindResultsArray* reuseme)
+{
+	if (FileSystem::FindFiles(dir, "*", FILESYSTEM_FIND_FOLDERS | FILESYSTEM_FIND_HIDDEN_FILES, reuseme))
+	{
+		for (const FILESYSTEM_FIND_DATA& fd : *reuseme)
+		{
+			std::string_view name = Path::GetFileName(fd.FileName);
+			if (name.size() != file.size())
+				continue;
+			if (0 == strncmp(name.data(), file.data(), name.size()))
+				continue;
+			if (0 == StringUtil::Strncasecmp(name.data(), file.data(), name.size()))
+			{
+				*output = fd.FileName;
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 void GSTextureReplacements::ReloadReplacementMap()
 {
 	SyncWorkerThread();
@@ -369,9 +391,27 @@ void GSTextureReplacements::ReloadReplacementMap()
 	if (s_current_serial.empty() || !GSConfig.LoadTextureReplacements)
 		return;
 
-	const std::string replacement_dir(Path::Combine(GetGameTextureDirectory(), TEXTURE_REPLACEMENT_SUBDIRECTORY_NAME));
+	const std::string texture_dir = GetGameTextureDirectory();
+	const std::string replacement_dir(Path::Combine(texture_dir, TEXTURE_REPLACEMENT_SUBDIRECTORY_NAME));
 
 	FileSystem::FindResultsArray files;
+
+	// For some reason texture pack authors think it's a good idea to rename the replacements directory to something with the wrong case...
+	std::string wrong_case_path;
+	const std::string* right_case_path = nullptr;
+	if (GetWrongCasePath(&wrong_case_path, EmuFolders::Textures.c_str(), s_current_serial, &files))
+		right_case_path = &texture_dir;
+	else if (GetWrongCasePath(&wrong_case_path, texture_dir.c_str(), TEXTURE_REPLACEMENT_SUBDIRECTORY_NAME, &files))
+		right_case_path = &replacement_dir;
+	if (right_case_path)
+	{
+		Host::AddKeyedOSDMessage("TextureReplacementDirCaseMismatch",
+			fmt::format(TRANSLATE_FS("TextureReplacement", "Texture replacement directory {} will not work on case sensitive filesystems.\n"
+			                                               "Rename it to {} to remove this warning."),
+			            wrong_case_path, *right_case_path),
+			Host::OSD_WARNING_DURATION);
+	}
+
 	if (!FileSystem::FindFiles(replacement_dir.c_str(), "*", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_RECURSIVE, &files))
 		return;
 
