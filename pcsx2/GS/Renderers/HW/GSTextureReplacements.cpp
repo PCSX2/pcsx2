@@ -289,37 +289,38 @@ std::string GSTextureReplacements::GetDumpFilename(const TextureName& name, u32 
 	{
 		if (name.HasPalette())
 		{
-			filename = (level > 0) ?
-						   StringUtil::StdStringFromFormat(TEXTURE_FILENAME_REGION_CLUT_FORMAT_STRING "-mip%u.png",
-							   name.TEX0Hash, name.CLUTHash, name.region_width, name.region_height, name.bits, level) :
-						   StringUtil::StdStringFromFormat(TEXTURE_FILENAME_REGION_CLUT_FORMAT_STRING ".png",
-							   name.TEX0Hash, name.CLUTHash, name.region_width, name.region_height, name.bits);
+			filename = (level > 0)
+				? StringUtil::StdStringFromFormat(TEXTURE_FILENAME_REGION_CLUT_FORMAT_STRING "-mip%u.png",
+					name.TEX0Hash, name.CLUTHash, name.region_width, name.region_height, name.bits, level)
+				: StringUtil::StdStringFromFormat(TEXTURE_FILENAME_REGION_CLUT_FORMAT_STRING ".png",
+					name.TEX0Hash, name.CLUTHash, name.region_width, name.region_height, name.bits);
 		}
 		else
 		{
-			filename = (level > 0) ? StringUtil::StdStringFromFormat(
-										 TEXTURE_FILENAME_REGION_FORMAT_STRING "-mip%u.png", name.TEX0Hash,
-										 name.region_width, name.region_height, name.bits, level) :
-									 StringUtil::StdStringFromFormat(
-										 TEXTURE_FILENAME_REGION_FORMAT_STRING ".png", name.TEX0Hash,
-										 name.region_width, name.region_height, name.bits);
+			filename = (level > 0)
+				? StringUtil::StdStringFromFormat(TEXTURE_FILENAME_REGION_FORMAT_STRING "-mip%u.png",
+					name.TEX0Hash, name.region_width, name.region_height, name.bits, level)
+				: StringUtil::StdStringFromFormat(TEXTURE_FILENAME_REGION_FORMAT_STRING ".png",
+					name.TEX0Hash, name.region_width, name.region_height, name.bits);
 		}
 	}
 	else
 	{
 		if (name.HasPalette())
 		{
-			filename = (level > 0) ? StringUtil::StdStringFromFormat(TEXTURE_FILENAME_CLUT_FORMAT_STRING "-mip%u.png",
-										 name.TEX0Hash, name.CLUTHash, name.bits, level) :
-									 StringUtil::StdStringFromFormat(TEXTURE_FILENAME_CLUT_FORMAT_STRING ".png",
-										 name.TEX0Hash, name.CLUTHash, name.bits);
+			filename = (level > 0)
+				? StringUtil::StdStringFromFormat(TEXTURE_FILENAME_CLUT_FORMAT_STRING "-mip%u.png",
+				                                  name.TEX0Hash, name.CLUTHash, name.bits, level)
+				: StringUtil::StdStringFromFormat(TEXTURE_FILENAME_CLUT_FORMAT_STRING ".png",
+				                                  name.TEX0Hash, name.CLUTHash, name.bits);
 		}
 		else
 		{
-			filename = (level > 0) ? StringUtil::StdStringFromFormat(
-										 TEXTURE_FILENAME_FORMAT_STRING "-mip%u.png", name.TEX0Hash, name.bits, level) :
-									 StringUtil::StdStringFromFormat(
-										 TEXTURE_FILENAME_FORMAT_STRING ".png", name.TEX0Hash, name.bits);
+			filename = (level > 0)
+				? StringUtil::StdStringFromFormat(TEXTURE_FILENAME_FORMAT_STRING "-mip%u.png",
+				                                  name.TEX0Hash, name.bits, level)
+				: StringUtil::StdStringFromFormat(TEXTURE_FILENAME_FORMAT_STRING ".png",
+				                                  name.TEX0Hash, name.bits);
 		}
 	}
 
