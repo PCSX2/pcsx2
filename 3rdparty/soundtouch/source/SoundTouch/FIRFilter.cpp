@@ -56,7 +56,6 @@ using namespace soundtouch;
 FIRFilter::FIRFilter()
 {
     resultDivFactor = 0;
-    resultDivider = 0;
     length = 0;
     lengthDiv8 = 0;
     filterCoeffs = nullptr;
@@ -79,7 +78,7 @@ uint FIRFilter::evaluateFilterStereo(SAMPLETYPE *dest, const SAMPLETYPE *src, ui
     uint ilength = length & -8;
 
     assert((length != 0) && (length == ilength) && (src != nullptr) && (dest != nullptr) && (filterCoeffs != nullptr));
-    assert(numSamples > ilength);
+    assert(numSamples >= ilength);
 
     end = 2 * (numSamples - ilength);
 
@@ -155,7 +154,7 @@ uint FIRFilter::evaluateFilterMulti(SAMPLETYPE *dest, const SAMPLETYPE *src, uin
     assert(src != nullptr);
     assert(dest != nullptr);
     assert(filterCoeffs != nullptr);
-    assert(numChannels < 16);
+    assert(numChannels <= SOUNDTOUCH_MAX_CHANNELS);
 
     // hint compiler autovectorization that loop length is divisible by 8
     int ilength = length & -8;
@@ -207,24 +206,24 @@ void FIRFilter::setCoefficients(const SAMPLETYPE *coeffs, uint newLength, uint u
     assert(newLength > 0);
     if (newLength % 8) ST_THROW_RT_ERROR("FIR filter length not divisible by 8");
 
-    #ifdef SOUNDTOUCH_FLOAT_SAMPLES
-        // scale coefficients already here if using floating samples
-        double scale = 1.0 / resultDivider;
-    #else
-        short scale = 1;
-    #endif
-
     lengthDiv8 = newLength / 8;
     length = lengthDiv8 * 8;
     assert(length == newLength);
 
     resultDivFactor = uResultDivFactor;
-    resultDivider = (SAMPLETYPE)::pow(2.0, (int)resultDivFactor);
 
     delete[] filterCoeffs;
     filterCoeffs = new SAMPLETYPE[length];
     delete[] filterCoeffsStereo;
     filterCoeffsStereo = new SAMPLETYPE[length*2];
+
+#ifdef SOUNDTOUCH_FLOAT_SAMPLES
+    // scale coefficients already here if using floating samples
+    const double scale = ::pow(0.5, (int)resultDivFactor);;
+#else
+    const short scale = 1;
+#endif
+
     for (uint i = 0; i < length; i ++)
     {
         filterCoeffs[i] = (SAMPLETYPE)(coeffs[i] * scale);
