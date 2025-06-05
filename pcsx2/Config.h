@@ -818,6 +818,7 @@ struct Pcsx2Config
 		u8 ShadeBoost_Brightness = 50;
 		u8 ShadeBoost_Contrast = 50;
 		u8 ShadeBoost_Saturation = 50;
+		u8 ShadeBoost_Gamma = 50;
 		u8 PNGCompressionLevel = 1;
 
 		u16 SWExtraThreads = 2;
