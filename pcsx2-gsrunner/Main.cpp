@@ -983,7 +983,7 @@ std::optional<WindowInfo> GSRunner::GetPlatformWindowInfo()
 	return wi;
 }
 
-static constexpr SHUTDOWN_MSG = WM_APP + 0x100;
+static constexpr int SHUTDOWN_MSG = WM_APP + 0x100;
 static DWORD MainThreadID;
 
 void GSRunner::PumpPlatformMessages(bool forever)
