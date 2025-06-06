@@ -228,8 +228,8 @@ bool GSTextureCache::CanTranslate(u32 bp, u32 bw, u32 spsm, GSVector4i r, u32 db
 {
 	const GSVector2i src_page_size = GSLocalMemory::m_psm[spsm].pgs;
 	const GSVector2i dst_page_size = GSLocalMemory::m_psm[dpsm].pgs;
-	const bool bp_page_aligned_bp = ((bp & ~((1 << 5) - 1)) == bp) || bp == dbp;
 	const bool block_layout_match = GSLocalMemory::m_psm[spsm].bpp == GSLocalMemory::m_psm[dpsm].bpp;
+	const bool bp_page_aligned_bp = ((bp & ~((1 << 5) - 1)) == bp) || bp == dbp || (block_layout_match && bw == dbw);
 	const GSVector4i page_mask(GSVector4i((src_page_size.x - 1), (src_page_size.y - 1)).xyxy());
 	const GSVector4i masked_rect(r & ~page_mask);
 	const int src_pixel_width = static_cast<int>(bw * 64);
@@ -276,7 +276,7 @@ GSVector4i GSTextureCache::TranslateAlignedRectByPage(u32 tbp, u32 tebp, u32 tbw
 	int page_offset = (static_cast<int>(sbp) - static_cast<int>(tbp)) >> 5;
 	int block_offset = (static_cast<int>(sbp) - static_cast<int>(tbp)) & 0x1F;
 
-	if (!(s_psm.bpp == t_psm.bpp))
+	if (!(s_psm.bpp == t_psm.bpp) || block_offset)
 	{
 		if (block_offset)
 			in_rect = in_rect.ralign<Align_Outside>(s_psm.bs);
@@ -1279,11 +1279,6 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 			// Make sure it is page aligned, otherwise things get messy with the pixel order (Tomb Raider Legend).
 			if (t->m_used)
 			{
-				// If the BP is block offset it's unlikely to be a target, but a target can be made by a HW move, so we need to check for a match.
-				// Good for Baldurs Gate Dark Alliance (HW Move), bad for Tomb Raider Legends (just offset).
-				if (((bp & (BLOCKS_PER_PAGE - 1)) != (t->m_TEX0.TBP0 & (BLOCKS_PER_PAGE - 1))) && (bp & (BLOCKS_PER_PAGE - 1)))
-					continue;
-
 				//const bool overlaps = t->Inside(bp, bw, psm, block_boundary_rect);
 				const bool overlaps = t->Overlaps(bp, bw, psm, block_boundary_rect);
 				// Try to make sure the target has available what we need, be careful of self referencing frames with font in the alpha.
@@ -1291,6 +1286,12 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 				// it's probable that's more correct than being inside (Tomb Raider Legends + Project Snowblind)
 				// Vakyrie Profile 2 also has some in draws which get done on a different target due to a slight offset, so we need to make sure we have the newer one.
 				if (!overlaps || (found_t && (GSState::s_n - dst->m_last_draw) < (GSState::s_n - t->m_last_draw)))
+					continue;
+
+				// If the BP is offset in to a page and the format does not match, trying to match up the correct position is very difficult since we don't swizzle.
+				// Tomb Raider Legends does a block level BP in PSMT8 over a C16 target, which is just a nightmare to get right.
+				// Baldurs Gate used to have this too, but now we can translate HW moves inside targets when the format matches.
+				if (((bp & (BLOCKS_PER_PAGE - 1)) != (t->m_TEX0.TBP0 & (BLOCKS_PER_PAGE - 1))) && (bp & (BLOCKS_PER_PAGE - 1)) && !CanTranslate(bp, bw, psm, block_boundary_rect, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW))
 					continue;
 
 				const bool width_match = (std::max(64U, bw * 64U) >> GSLocalMemory::m_psm[psm].info.pageShiftX()) ==
@@ -4830,6 +4831,24 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 
 	if (!src || !dst || src->m_scale != dst->m_scale)
 		return false;
+
+	// If we have an offset, adjust the base positions
+	if (src->m_TEX0.TBP0 != SBP)
+	{
+		GSVector4i offset = TranslateAlignedRectByPage(dst, SBP, SPSM, SBW, GSVector4i(0, 1).xxyy(), false);
+
+		sx += offset.x;
+		sy += offset.y;
+	}
+
+	if (dst->m_TEX0.TBP0 != DBP)
+	{
+		GSVector4i offset = TranslateAlignedRectByPage(dst, DBP, DPSM, DBW, GSVector4i(0, 1).xxyy(), false);
+
+		dx += offset.x;
+		dy += offset.y;
+		req_resize = true;
+	}
 
 	// Scale coordinates.
 	const float scale = src->m_scale;
