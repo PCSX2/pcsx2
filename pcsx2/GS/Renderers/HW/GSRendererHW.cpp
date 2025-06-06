@@ -2862,7 +2862,9 @@ void GSRendererHW::Draw()
 
 		GIFRegTEX0 FRAME_TEX0;
 		bool shuffle_target = false;
-		if (!no_rt && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 16 && GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].bpp >= 16 &&
+		const u32 page_alignment = GSLocalMemory::IsPageAlignedMasked(m_cached_ctx.TEX0.PSM, m_r);
+		const bool page_aligned = (page_alignment & 0xF0F0) != 0; // Make sure Y is page aligned.
+		if (!no_rt && page_aligned && m_cached_ctx.ZBUF.ZMSK && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 16 && GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].bpp >= 16 &&
 			(m_vt.m_primclass == GS_SPRITE_CLASS || (m_vt.m_primclass == GS_TRIANGLE_CLASS && (m_index.tail % 6) == 0 && TrianglesAreQuads(true) && m_index.tail > 6)))
 		{
 			// Tail check is to make sure we have enough strips to go all the way across the page, or if it's using a region clamp could be used to draw strips.

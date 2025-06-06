@@ -228,8 +228,8 @@ bool GSTextureCache::CanTranslate(u32 bp, u32 bw, u32 spsm, GSVector4i r, u32 db
 {
 	const GSVector2i src_page_size = GSLocalMemory::m_psm[spsm].pgs;
 	const GSVector2i dst_page_size = GSLocalMemory::m_psm[dpsm].pgs;
-	const bool bp_page_aligned_bp = ((bp & ~((1 << 5) - 1)) == bp) || bp == dbp;
 	const bool block_layout_match = GSLocalMemory::m_psm[spsm].bpp == GSLocalMemory::m_psm[dpsm].bpp;
+	const bool bp_page_aligned_bp = ((bp & ~((1 << 5) - 1)) == bp) || bp == dbp || (block_layout_match && bw == dbw);
 	const GSVector4i page_mask(GSVector4i((src_page_size.x - 1), (src_page_size.y - 1)).xyxy());
 	const GSVector4i masked_rect(r & ~page_mask);
 	const int src_pixel_width = static_cast<int>(bw * 64);
@@ -276,7 +276,7 @@ GSVector4i GSTextureCache::TranslateAlignedRectByPage(u32 tbp, u32 tebp, u32 tbw
 	int page_offset = (static_cast<int>(sbp) - static_cast<int>(tbp)) >> 5;
 	int block_offset = (static_cast<int>(sbp) - static_cast<int>(tbp)) & 0x1F;
 
-	if (!(s_psm.bpp == t_psm.bpp))
+	if (!(s_psm.bpp == t_psm.bpp) || block_offset)
 	{
 		if (block_offset)
 			in_rect = in_rect.ralign<Align_Outside>(s_psm.bs);
@@ -298,6 +298,33 @@ GSVector4i GSTextureCache::TranslateAlignedRectByPage(u32 tbp, u32 tebp, u32 tbw
 		{
 			DevCon.Warning("Error translating rect");
 			return GSVector4i::zero();
+		}
+
+		const bool block_matched_format = s_psm.bpp == t_psm.bpp && (sbw == tbw || sbw == 1);
+		// If there is block offset left over, try to adjust to that.
+		if (block_matched_format)
+		{
+			GSVector4i b2a_offset = GSVector4i::zero();
+			const GSVector4i target_rect = GSVector4i(0, 0, src_bw, 2048);
+			bool offset_found = false;
+
+			for (b2a_offset.x = target_rect.x; b2a_offset.x < target_rect.z; b2a_offset.x += s_psm.bs.x)
+			{
+				for (b2a_offset.y = target_rect.y; b2a_offset.y < target_rect.w; b2a_offset.y += s_psm.bs.y)
+				{
+					const u32 a_candidate_bp = s_psm.info.bn(b2a_offset.x, b2a_offset.y, tbp, sbw);
+					if (sbp == a_candidate_bp)
+					{
+						offset_found = true;
+						break;
+					}
+				}
+				if (offset_found)
+					break;
+			}
+
+			if (offset_found)
+				in_rect = (in_rect + b2a_offset.xyxy()).max_i32(GSVector4i(0));
 		}
 	}
 
@@ -618,7 +645,7 @@ void GSTextureCache::DirtyRectByPage(u32 sbp, u32 spsm, u32 sbw, Target* t, GSVe
 	int block_offset = static_cast<int>(sbp) - static_cast<int>(target_bp);
 	// Different format needs to be page aligned, unless the block layout matches, then we can block align
 	// Might be able to translate the original rect.
-	if (!(src_info->bpp == dst_info->bpp))
+	if (!(src_info->bpp == dst_info->bpp) || block_offset)
 	{
 		const int src_bpp = src_info->bpp;
 		const bool column_align = !block_offset && src_r.z <= src_info->cs.x && src_r.w <= src_info->cs.y && src_info->depth == dst_info->depth;
@@ -741,7 +768,7 @@ void GSTextureCache::DirtyRectByPage(u32 sbp, u32 spsm, u32 sbw, Target* t, GSVe
 			const int yblocks = in_rect.height() / src_info->bs.y;
 			// if !(block_offset & 0x7) is false, this is technically incorrect, but FFX hates it and starts making a mess, so it's better this way without adding complexity.
 			// TODO maybe: Add per block invalidation? ugh, would have to keep that to small blocks. 2 blocks in the case of FFX.
-			if ((xblocks <= 4 && yblocks <= 2) || req_depth_offset)
+			if ((xblocks <= (src_info->pgs.x / src_info->bs.x) && yblocks <= (src_info->pgs.y / src_info->bs.y)) || req_depth_offset)
 			{
 				GSVector4i b2a_offset = GSVector4i::zero();
 				const GSVector4i target_rect = GSVector4i(0, 0, src_width, 2048);
@@ -1279,11 +1306,6 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 			// Make sure it is page aligned, otherwise things get messy with the pixel order (Tomb Raider Legend).
 			if (t->m_used)
 			{
-				// If the BP is block offset it's unlikely to be a target, but a target can be made by a HW move, so we need to check for a match.
-				// Good for Baldurs Gate Dark Alliance (HW Move), bad for Tomb Raider Legends (just offset).
-				if (((bp & (BLOCKS_PER_PAGE - 1)) != (t->m_TEX0.TBP0 & (BLOCKS_PER_PAGE - 1))) && (bp & (BLOCKS_PER_PAGE - 1)))
-					continue;
-
 				//const bool overlaps = t->Inside(bp, bw, psm, block_boundary_rect);
 				const bool overlaps = t->Overlaps(bp, bw, psm, block_boundary_rect);
 				// Try to make sure the target has available what we need, be careful of self referencing frames with font in the alpha.
@@ -1291,6 +1313,12 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 				// it's probable that's more correct than being inside (Tomb Raider Legends + Project Snowblind)
 				// Vakyrie Profile 2 also has some in draws which get done on a different target due to a slight offset, so we need to make sure we have the newer one.
 				if (!overlaps || (found_t && (GSState::s_n - dst->m_last_draw) < (GSState::s_n - t->m_last_draw)))
+					continue;
+
+				// If the BP is offset in to a page and the format does not match, trying to match up the correct position is very difficult since we don't swizzle.
+				// Tomb Raider Legends does a block level BP in PSMT8 over a C16 target, which is just a nightmare to get right.
+				// Baldurs Gate used to have this too, but now we can translate HW moves inside targets when the format matches.
+				if (((bp & (BLOCKS_PER_PAGE - 1)) != (t->m_TEX0.TBP0 & (BLOCKS_PER_PAGE - 1))) && (bp & (BLOCKS_PER_PAGE - 1)) && !CanTranslate(bp, bw, psm, block_boundary_rect, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW))
 					continue;
 
 				const bool width_match = (std::max(64U, bw * 64U) >> GSLocalMemory::m_psm[psm].info.pageShiftX()) ==
@@ -3543,11 +3571,11 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 							continue;
 						}
 
-						const int height_adjust = (((dst_end_block - t->m_TEX0.TBP0) >> 5) / std::max(t->m_TEX0.TBW, 1U)) * GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y;
+						const int height_adjust = ((((dst_end_block + 31) - t->m_TEX0.TBP0) >> 5) / std::max(t->m_TEX0.TBW, 1U)) * GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y;
 
 						if (height_adjust < t->m_unscaled_size.y)
 						{
-							t->m_TEX0.TBP0 = dst_end_block;
+							t->m_TEX0.TBP0 = GSLocalMemory::GetStartBlockAddress(t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM, GSVector4i(0, height_adjust, t->m_valid.z, t->m_valid.w));
 							t->m_valid.w -= height_adjust;
 							t->ResizeValidity(t->m_valid);
 
@@ -4733,7 +4761,7 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 	// Not even going to go down the rabbit hole of palette formats on the GPU.. We shouldn't have any targets with P4/P8 anyway.
 	const GSLocalMemory::psm_t& spsm_s = GSLocalMemory::m_psm[SPSM];
 	const GSLocalMemory::psm_t& dpsm_s = GSLocalMemory::m_psm[DPSM];
-	if (SPSM != DPSM || ((spsm_s.pal + dpsm_s.pal) != 0 && !alpha_only))
+	if (GSLocalMemory::m_psm[SPSM].bpp != GSLocalMemory::m_psm[DPSM].bpp || ((spsm_s.pal + dpsm_s.pal) != 0 && !alpha_only))
 	{
 		GL_CACHE("TC: Skipping HW move from 0x%X to 0x%X with SPSM=%s DPSM=%s", SBP, DBP, psm_str(SPSM), psm_str(DPSM));
 		return false;
@@ -4749,6 +4777,7 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 			return false;
 	}
 
+	bool req_resize = false;
 	if (m_expected_src_bp == static_cast<int>(SBP) && m_expected_dst_bp == static_cast<int>(DBP))
 	{
 		// Get the new position so we can work out the offset.
@@ -4759,7 +4788,7 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 		sy += rect_offset.y;
 		dx += rect_offset.x;
 		dy += rect_offset.y;
-
+		req_resize = true;
 		GL_INS("TC: Detected striped move, realigning from SBP %x->%x DBP %x->%x", SBP, m_remembered_src_bp, DBP, m_remembered_dst_bp);
 
 		SBP = m_remembered_src_bp;
@@ -4804,15 +4833,18 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 		const GSVector2i target_size = GetTargetSize(DBP, DBW, DPSM, Common::AlignUpPow2(w, 64), h);
 		dst = LookupTarget(new_TEX0, target_size, src->m_scale, src->m_type);
 		if (!dst)
-			dst = CreateTarget(new_TEX0, target_size, target_size, src->m_scale, src->m_type);
+		{
+			dst = Target::Create(new_TEX0, target_size.x, target_size.y, src->m_scale, GSLocalMemory::m_psm[DPSM].depth, true);
+			if (!dst) [[unlikely]]
+				return false;
+		}
 		else // Expand if necessary (Silent hill 4 takes an old target which is smaller).
 		{
-			dst->ResizeTexture(std::max(dst->m_unscaled_size.x, target_size.x), std::max(dst->m_unscaled_size.y, target_size.y));
+			req_resize = true;
 
 			// If it was matched to an old target, make sure to clear the other type and update its information.
 			if (dst->m_was_dst_matched)
 			{
-				g_texture_cache->InvalidateVideoMemType(GSTextureCache::DepthStencil - dst->m_type, dst->m_TEX0.TBP0);
 				dst->m_TEX0 = new_TEX0;
 			}
 		}
@@ -4827,6 +4859,24 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 	if (!src || !dst || src->m_scale != dst->m_scale)
 		return false;
 
+	// If we have an offset, adjust the base positions
+	if (src->m_TEX0.TBP0 != SBP)
+	{
+		GSVector4i offset = TranslateAlignedRectByPage(dst, SBP, SPSM, SBW, GSVector4i(0, 1).xxyy(), false);
+
+		sx += offset.x;
+		sy += offset.y;
+	}
+
+	if (dst->m_TEX0.TBP0 != DBP)
+	{
+		GSVector4i offset = TranslateAlignedRectByPage(dst, DBP, DPSM, DBW, GSVector4i(0, 1).xxyy(), false);
+
+		dx += offset.x;
+		dy += offset.y;
+		req_resize = true;
+	}
+
 	// Scale coordinates.
 	const float scale = src->m_scale;
 	const int scaled_sx = static_cast<int>(sx * scale);
@@ -4840,6 +4890,11 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 	if ((scaled_sx + scaled_w) > src->m_texture->GetWidth() || (scaled_sy + scaled_h) > src->m_texture->GetHeight())
 		return false;
 
+	if (req_resize)
+	{
+		const GSVector2i target_size = GetTargetSize(DBP, DBW, DPSM, Common::AlignUpPow2(dx + w, 64), dx + h);
+		dst->ResizeTexture(std::max(dst->m_unscaled_size.x, target_size.x), std::max(dst->m_unscaled_size.y, target_size.y));
+	}
 	// We don't want to copy "old" data that the game has overwritten with writes,
 	// so flush any overlapping dirty area.
 	src->UpdateIfDirtyIntersects(GSVector4i(sx, sy, sx + w, sy + h));
@@ -4847,6 +4902,9 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 	// The main point of HW moves is so GPU data can get used as sources. If we don't flush all writes,
 	// we're not going to be able to use it as a source.
 	dst->Update();
+
+	// Invalidate any opposite targets.
+	g_texture_cache->InvalidateVideoMemType(GSTextureCache::DepthStencil - dst->m_type, dst->m_TEX0.TBP0);
 
 	// Expand the target when we used a more conservative size.
 	const int required_dh = scaled_dy + scaled_h;
@@ -4936,9 +4994,30 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 	{
 		if (SPSM == PSMT8H && SPSM == DPSM)
 		{
+			ShaderConvert shader = ShaderConvert::COPY;
+
 			const GSVector4 src_rect = GSVector4(scaled_sx, scaled_sy, scaled_sx + scaled_w, scaled_sy + scaled_h) / (GSVector4(src->m_texture->GetSize()).xyxy());
 			const GSVector4 dst_rect = GSVector4(scaled_dx, scaled_dy, (scaled_dx + scaled_w), (scaled_dy + scaled_h));
-			g_gs_device->StretchRect(src->m_texture, src_rect, dst->m_texture, dst_rect, false, false, false, true);
+			g_gs_device->StretchRect(src->m_texture, src_rect, dst->m_texture, dst_rect, false, false, false, true, shader);
+		}
+		else if (src->m_type != dst->m_type)
+		{
+			ShaderConvert shader = dst->m_type ? ShaderConvert::RGBA8_TO_FLOAT32 : ShaderConvert::FLOAT32_TO_RGBA8;
+
+			switch (dpsm_s.trbpp)
+			{
+				case 24:
+					shader = dst->m_type ? ShaderConvert::RGBA8_TO_FLOAT24 : ShaderConvert::FLOAT32_TO_RGB8;
+					break;
+				case 16:
+					shader = dst->m_type ? ShaderConvert::RGB5A1_TO_FLOAT16 : ShaderConvert::FLOAT16_TO_RGB5A1;
+					break;
+				default:
+					break;
+			}
+			const GSVector4 src_rect = GSVector4(scaled_sx, scaled_sy, scaled_sx + scaled_w, scaled_sy + scaled_h) / (GSVector4(src->m_texture->GetSize()).xyxy());
+			g_gs_device->StretchRect(src->m_texture, src_rect, dst->m_texture, GSVector4(scaled_sx, scaled_sy, scaled_sx + scaled_w, scaled_sy + scaled_h), shader, false);
+
 		}
 		else
 		{
@@ -4966,7 +5045,8 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 		dst->m_alpha_range |= src->m_alpha_range;
 	}
 
-	if (GSLocalMemory::IsPageAligned(src->m_TEX0.PSM, GSVector4i(sx, sy, sx + w, sy + h)) && (w == GSLocalMemory::m_psm[src->m_TEX0.PSM].pgs.x || h == GSLocalMemory::m_psm[src->m_TEX0.PSM].pgs.y))
+	u32 page_mask = GSLocalMemory::IsPageAlignedMasked(src->m_TEX0.PSM, GSVector4i(sx, sy, sx + w, sy + h));
+	if (((page_mask & 0x0f0f) == 0x0f0f || (page_mask & 0xf0f0) == 0xf0f0) && (w == GSLocalMemory::m_psm[src->m_TEX0.PSM].pgs.x || h == GSLocalMemory::m_psm[src->m_TEX0.PSM].pgs.y))
 	{
 		// Vertical Strips
 		if (w == GSLocalMemory::m_psm[src->m_TEX0.PSM].pgs.x)
@@ -5001,7 +5081,7 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 
 	// Invalidate any sources that overlap with the target (since they're now stale).
 	InvalidateVideoMem(g_gs_renderer->m_mem.GetOffset(DBP, DBW, DPSM), GSVector4i(dx, dy, dx + w, dy + h), false);
-
+	CombineAlignedInsideTargets(dst);
 	return true;
 }
 
@@ -5188,7 +5268,7 @@ GSTextureCache::Target* GSTextureCache::GetExactTarget(u32 BP, u32 BW, int type,
 	{
 		Target* t = *it;
 		const u32 tgt_bw = std::max(t->m_TEX0.TBW, 1U);
-		if ((t->m_TEX0.TBP0 == BP || (GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets && t->m_TEX0.TBP0 < BP && (((BP - t->m_TEX0.TBP0) >> 5) % tgt_bw) == 0)) && tgt_bw == BW && t->UnwrappedEndBlock() >= end_bp)
+		if ((t->m_TEX0.TBP0 == BP || (GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets && t->m_TEX0.TBP0 < BP && !(BP & 0x1f) && (((BP - t->m_TEX0.TBP0) >> 5) % tgt_bw) == 0)) && tgt_bw == BW && t->UnwrappedEndBlock() >= end_bp)
 		{
 			rts.MoveFront(it.Index());
 			return t;

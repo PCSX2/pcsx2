@@ -2557,8 +2557,6 @@ SCAJ-25012:
 SCAJ-25026:
   name: "Kunoichi Shinobi"
   region: "NTSC-Unk"
-  gsHWFixes:
-    getSkipCount: "GSC_Kunoichi"
 SCAJ-25034:
   name: "Sakura Taisen Monogatari"
   region: "NTSC-Unk"
@@ -12878,8 +12876,6 @@ SLAJ-25023:
 SLAJ-25026:
   name: "Kunoichi Shinobi"
   region: "NTSC-Unk"
-  gsHWFixes:
-    getSkipCount: "GSC_Kunoichi"
 SLAJ-25027:
   name: "Sonic Heroes"
   region: "NTSC-Unk"
@@ -12894,8 +12890,6 @@ SLAJ-25030:
 SLAJ-25031:
   name: "Kunoichi - Shinobu"
   region: "NTSC-C-J"
-  gsHWFixes:
-    getSkipCount: "GSC_Kunoichi"
 SLAJ-25033:
   name: "Puyo Puyo Fever"
   region: "NTSC-Unk"
@@ -19388,8 +19382,6 @@ SLES-52238:
   name: "Nightshade"
   region: "PAL-M5"
   compat: 5
-  gsHWFixes:
-    getSkipCount: "GSC_Kunoichi"
 SLES-52240:
   name: "International Pool Championship"
   region: "PAL-M5"
@@ -30958,8 +30950,6 @@ SLKA-25135:
   name: "Kunoichi"
   region: "NTSC-K"
   compat: 5
-  gsHWFixes:
-    getSkipCount: "GSC_Kunoichi"
 SLKA-25136:
   name: "Need for Speed - Underground"
   region: "NTSC-K"
@@ -32524,8 +32514,6 @@ SLKA-35004:
   name: "Sakura Wars 5 So Long My Love"
   region: "NTSC-K"
   compat: 5
-  gsHWFixes:
-    getSkipCount: "GSC_SakuraWarsSoLongMyLove"
 SLKA-35005:
   name: "Jin Samguk Mussang 5 - Special"
   region: "NTSC-K"
@@ -35219,8 +35207,6 @@ SLPM-61059:
   name-sort: "くのいち -しのび- [たいけんばん]"
   name-en: "Kunoichi -Shinobi- [Trial]"
   region: "NTSC-J"
-  gsHWFixes:
-    getSkipCount: "GSC_Kunoichi"
 SLPM-61060:
   name: "BUSIN 0 ～Wizardry Alternative NEO～ [体験版]"
   name-sort: "ぶしん ぜろ ～うぃざーどりぃ おるたなてぃぶ ねお～ [たいけんばん]"
@@ -42475,8 +42461,6 @@ SLPM-65447:
   name-en: "Kunoichi -Shinobi-"
   region: "NTSC-J"
   compat: 5
-  gsHWFixes:
-    getSkipCount: "GSC_Kunoichi"
 SLPM-65448:
   name: "カンブリアンQTS ～化石になっても～"
   name-sort: "かんぶりあんQTS ～かせきになっても～"
@@ -66542,8 +66526,6 @@ SLUS-20810:
   name: "Nightshade"
   region: "NTSC-U"
   compat: 5
-  gsHWFixes:
-    getSkipCount: "GSC_Kunoichi"
 SLUS-20811:
   name: "Need for Speed - Underground"
   region: "NTSC-U"
@@ -73139,8 +73121,6 @@ SLUS-21927:
   name: "Sakura Wars - So Long, My Love [English - Disc 1]"
   region: "NTSC-U"
   compat: 5
-  gsHWFixes:
-    getSkipCount: "GSC_SakuraWarsSoLongMyLove"
 SLUS-21928:
   name: "Scooby-Doo! and the Spooky Swamp"
   region: "NTSC-U"
@@ -73157,8 +73137,6 @@ SLUS-21930:
   name: "Sakura Wars - So Long, My Love [Japanese - Disc 2]"
   region: "NTSC-U"
   compat: 5
-  gsHWFixes:
-    getSkipCount: "GSC_SakuraWarsSoLongMyLove"
 SLUS-21931:
   name: "Disney/Pixar Toy Story 3"
   region: "NTSC-U"
