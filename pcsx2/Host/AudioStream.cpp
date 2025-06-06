@@ -857,7 +857,7 @@ void AudioStreamParameters::LoadSave(SettingsWrapper& wrap, const char* section)
 	wrap.EnumEntry(section, "ExpansionMode", expansion_mode, &AudioStream::ParseExpansionMode, &AudioStream::GetExpansionModeName, DEFAULT_EXPANSION_MODE);
 	minimal_output_latency = wrap.EntryBitBool(section, "OutputLatencyMinimal", DEFAULT_OUTPUT_LATENCY_MINIMAL);
 	buffer_ms = static_cast<u16>(std::clamp<int>(wrap.EntryBitfield(section, "BufferMS", buffer_ms, DEFAULT_BUFFER_MS), 0, std::numeric_limits<u16>::max()));
-	output_latency_ms = static_cast<u16>(std::clamp<int>(wrap.EntryBitfield(section, "OutputLatencyMS", buffer_ms, DEFAULT_OUTPUT_LATENCY_MS), 0, std::numeric_limits<u16>::max()));
+	output_latency_ms = static_cast<u16>(std::clamp<int>(wrap.EntryBitfield(section, "OutputLatencyMS", output_latency_ms, DEFAULT_OUTPUT_LATENCY_MS), 0, std::numeric_limits<u16>::max()));
 
 	stretch_sequence_length_ms = static_cast<u16>(std::clamp<int>(wrap.EntryBitfield(section, "StretchSequenceLengthMS", DEFAULT_STRETCH_SEQUENCE_LENGTH), 0, std::numeric_limits<u16>::max()));
 	stretch_seekwindow_ms = static_cast<u16>(std::clamp<int>(wrap.EntryBitfield(section, "StretchSeekWindowMS", DEFAULT_STRETCH_SEEKWINDOW), 0, std::numeric_limits<u16>::max()));
