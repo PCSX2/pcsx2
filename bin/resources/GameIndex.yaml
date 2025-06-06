@@ -22086,6 +22086,8 @@ SLES-53099:
 SLES-53100:
   name: "Scooby-Doo! Unmasked"
   region: "PAL-M4"
+  gsHWFixes:
+    nativeScaling: 2 # Fixes post processing position.
 SLES-53104:
   name: "Tom Clancy's Rainbow Six - Lockdown"
   region: "PAL-M5"
@@ -68233,6 +68235,8 @@ SLUS-21091:
   name: "Scooby-Doo! Unmasked"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    nativeScaling: 2 # Fixes post processing position.
 SLUS-21093:
   name: "Worms Forts - Under Siege"
   region: "NTSC-U"
