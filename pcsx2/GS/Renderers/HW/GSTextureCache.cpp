@@ -1772,10 +1772,6 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 							if (!t->HasValidBitsForFormat(psm, req_color, req_alpha, rt_tbw == TEX0.TBW) && !(possible_shuffle && GSLocalMemory::m_psm[psm].bpp == 16 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 32))
 								continue;
 
-							// Be careful of shuffles where it can shuffle the width of the target, even though it may not have all been drawn to.
-							if (!possible_shuffle && frame.Block() != TEX0.TBP0 && !t->Inside(bp, bw, psm, block_boundary_rect))
-								continue;
-
 							x_offset = rect.x;
 							y_offset = rect.y;
 							dst = t;
