@@ -16,9 +16,7 @@ public:
 	static bool GSC_BlackAndBurnoutSky(GSRendererHW& r, int& skip);
 	static bool GSC_MidnightClub3(GSRendererHW& r, int& skip);
 	static bool GSC_TalesOfLegendia(GSRendererHW& r, int& skip);
-	static bool GSC_Kunoichi(GSRendererHW& r, int& skip);
 	static bool GSC_ZettaiZetsumeiToshi2(GSRendererHW& r, int& skip);
-	static bool GSC_SakuraWarsSoLongMyLove(GSRendererHW& r, int& skip);
 	static bool GSC_UltramanFightingEvolution(GSRendererHW& r, int& skip);
 	static bool GSC_TalesofSymphonia(GSRendererHW& r, int& skip);
 	static bool GSC_UrbanReign(GSRendererHW& r, int& skip);
