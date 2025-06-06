@@ -31,7 +31,7 @@
      <x>0</x>
      <y>0</y>
      <width>1050</width>
-     <height>27</height>
+     <height>28</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuSystem">
@@ -176,6 +176,9 @@
     <addaction name="actionGridViewZoomIn"/>
     <addaction name="actionGridViewZoomOut"/>
     <addaction name="actionGridViewRefreshCovers"/>
+    <addaction name="separator"/>
+    <addaction name="actionSetGameListBackground"/>
+    <addaction name="actionClearGameListBackground"/>
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
@@ -1054,6 +1057,22 @@
    </property>
    <property name="text">
     <string>Edit &amp;Patches...</string>
+   </property>
+  </action>
+  <action name="actionSetGameListBackground">
+   <property name="text">
+    <string>Set Custom Background</string>
+   </property>
+   <property name="icon">
+    <iconset theme="artboard-2-line"/>
+   </property>
+  </action>
+  <action name="actionClearGameListBackground">
+   <property name="text">
+    <string>Clear Custom Background</string>
+   </property>
+   <property name="icon">
+    <iconset theme="trash-fill"/>
    </property>
   </action>
  </widget>
