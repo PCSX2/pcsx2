@@ -173,6 +173,10 @@ target_sources(pcsx2-qt PRIVATE
 	Debugger/DisassemblyView.h
 	Debugger/DisassemblyView.ui
 	Debugger/JsonValueWrapper.h
+	Debugger/ModuleModel.cpp
+	Debugger/ModuleModel.h
+	Debugger/ModuleView.cpp
+	Debugger/ModuleView.h
 	Debugger/RegisterView.cpp
 	Debugger/RegisterView.h
 	Debugger/RegisterView.ui
