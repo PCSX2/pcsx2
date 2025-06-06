@@ -59136,6 +59136,8 @@ SLPS-25581:
   name-sort: "しんぷる2000しりーず Vol.  92 THE のろいのげーむ"
   name-en: "Simple 2000 Series Vol. 92 - The Game of a Curse"
   region: "NTSC-J"
+  gsHWFixes:
+    cpuCLUTRender: 1 # Fixes corrupted and missing graphics.
 SLPS-25582:
   name: "アストロ球団 決戦！！ビクトリー球団編"
   name-sort: "あすとろきゅうだん けっせん！！びくとりーきゅうだんへん"
