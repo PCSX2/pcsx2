@@ -299,6 +299,33 @@ GSVector4i GSTextureCache::TranslateAlignedRectByPage(u32 tbp, u32 tebp, u32 tbw
 			DevCon.Warning("Error translating rect");
 			return GSVector4i::zero();
 		}
+
+		const bool block_matched_format = s_psm.bpp == t_psm.bpp && (sbw == tbw || sbw == 1);
+		// If there is block offset left over, try to adjust to that.
+		if (block_matched_format)
+		{
+			GSVector4i b2a_offset = GSVector4i::zero();
+			const GSVector4i target_rect = GSVector4i(0, 0, src_bw, 2048);
+			bool offset_found = false;
+
+			for (b2a_offset.x = target_rect.x; b2a_offset.x < target_rect.z; b2a_offset.x += s_psm.bs.x)
+			{
+				for (b2a_offset.y = target_rect.y; b2a_offset.y < target_rect.w; b2a_offset.y += s_psm.bs.y)
+				{
+					const u32 a_candidate_bp = s_psm.info.bn(b2a_offset.x, b2a_offset.y, tbp, sbw);
+					if (sbp == a_candidate_bp)
+					{
+						offset_found = true;
+						break;
+					}
+				}
+				if (offset_found)
+					break;
+			}
+
+			if (offset_found)
+				in_rect = (in_rect + b2a_offset.xyxy()).max_i32(GSVector4i(0));
+		}
 	}
 
 	GSVector4i new_rect = GSVector4i::zero();
@@ -618,7 +645,7 @@ void GSTextureCache::DirtyRectByPage(u32 sbp, u32 spsm, u32 sbw, Target* t, GSVe
 	int block_offset = static_cast<int>(sbp) - static_cast<int>(target_bp);
 	// Different format needs to be page aligned, unless the block layout matches, then we can block align
 	// Might be able to translate the original rect.
-	if (!(src_info->bpp == dst_info->bpp))
+	if (!(src_info->bpp == dst_info->bpp) || block_offset)
 	{
 		const int src_bpp = src_info->bpp;
 		const bool column_align = !block_offset && src_r.z <= src_info->cs.x && src_r.w <= src_info->cs.y && src_info->depth == dst_info->depth;
@@ -741,7 +768,7 @@ void GSTextureCache::DirtyRectByPage(u32 sbp, u32 spsm, u32 sbw, Target* t, GSVe
 			const int yblocks = in_rect.height() / src_info->bs.y;
 			// if !(block_offset & 0x7) is false, this is technically incorrect, but FFX hates it and starts making a mess, so it's better this way without adding complexity.
 			// TODO maybe: Add per block invalidation? ugh, would have to keep that to small blocks. 2 blocks in the case of FFX.
-			if ((xblocks <= 4 && yblocks <= 2) || req_depth_offset)
+			if ((xblocks <= (src_info->pgs.x / src_info->bs.x) && yblocks <= (src_info->pgs.y / src_info->bs.y)) || req_depth_offset)
 			{
 				GSVector4i b2a_offset = GSVector4i::zero();
 				const GSVector4i target_rect = GSVector4i(0, 0, src_width, 2048);
