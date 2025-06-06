@@ -10866,7 +10866,7 @@ Do you want to load this save and continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="5060"/>
+        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="5061"/>
         <source>Spin GPU During Readbacks is enabled, but calibrated timestamps are unavailable.  This might be really slow.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10959,7 +10959,7 @@ Please see our official documentation for more information.</source>
 <context>
     <name>GSDeviceOGL</name>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/OpenGL/GSDeviceOGL.cpp" line="641"/>
+        <location filename="../../pcsx2/GS/Renderers/OpenGL/GSDeviceOGL.cpp" line="642"/>
         <source>OpenGL renderer is not supported. Only OpenGL {}.{}
  was found</source>
         <translation type="unfinished"></translation>
