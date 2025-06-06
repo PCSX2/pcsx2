@@ -1165,8 +1165,8 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const bool is_depth, c
 		if (inside_target)
 		{
 			// Need to set it up as a region target.
-			src->m_region.SetX(block_boundary_rect.x, src->m_from_target->m_valid.z);
-			src->m_region.SetY(block_boundary_rect.y, src->m_from_target->m_valid.w);
+			src->m_region.SetX(block_boundary_rect.x, std::max(src->m_from_target->m_valid.z, block_boundary_rect.z));
+			src->m_region.SetY(block_boundary_rect.y, std::max(src->m_from_target->m_valid.w, block_boundary_rect.w));
 		}
 
 		if (GSRendererHW::GetInstance()->IsTBPFrameOrZ(dst->m_TEX0.TBP0))
@@ -1770,10 +1770,6 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 							}
 
 							if (!t->HasValidBitsForFormat(psm, req_color, req_alpha, rt_tbw == TEX0.TBW) && !(possible_shuffle && GSLocalMemory::m_psm[psm].bpp == 16 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 32))
-								continue;
-
-							// Be careful of shuffles where it can shuffle the width of the target, even though it may not have all been drawn to.
-							if (!possible_shuffle && frame.Block() != TEX0.TBP0 && !t->Inside(bp, bw, psm, block_boundary_rect))
 								continue;
 
 							x_offset = rect.x;
