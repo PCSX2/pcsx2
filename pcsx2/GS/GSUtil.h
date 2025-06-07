@@ -15,6 +15,10 @@ public:
 	static GS_PRIM_CLASS GetPrimClass(u32 prim);
 	static int GetVertexCount(u32 prim);
 	static int GetClassVertexCount(u32 primclass);
+	template<u32 prim>
+	static constexpr int GetVertexCount();
+	template<u32 primclass>
+	static constexpr int GetClassVertexCount();
 
 	static const u32* HasSharedBitsPtr(u32 dpsm);
 	static bool HasSharedBits(u32 spsm, const u32* ptr);
