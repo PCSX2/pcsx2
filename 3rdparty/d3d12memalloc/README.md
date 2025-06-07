@@ -10,10 +10,6 @@ Easy to integrate memory allocation library for Direct3D 12.
 
 **Product page:** [D3D12 Memory Allocator on GPUOpen](https://gpuopen.com/gaming-product/d3d12-memory-allocator/)
 
-**Build status:**
-
-Windows: [![Build status](https://ci.appveyor.com/api/projects/status/860i07bxv55ydgvg?svg=true)](https://ci.appveyor.com/project/adam-sawicki-amd/d3d12memoryallocator)
-
 [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator.svg)](http://isitmaintained.com/project/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator "Average time to resolve an issue")
 
 # Problem
@@ -91,7 +87,7 @@ With this one function call:
 
 # Binaries
 
-The release comes with precompiled binary executable for "D3D12Sample" application which contains test suite. It is compiled using Visual Studio 2019, so it requires appropriate libraries to work, including "MSVCP140.dll", "VCRUNTIME140.dll", "VCRUNTIME140_1.dll". If its launch fails with error message telling about those files missing, please download and install [Microsoft Visual C++ Redistributable for Visual Studio 2015, 2017 and 2019](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads), "x64" version.
+The release comes with precompiled binary executable for "D3D12Sample" application which contains test suite. It is compiled using Visual Studio 2022, so it requires appropriate libraries to work, including "MSVCP140.dll", "VCRUNTIME140.dll", "VCRUNTIME140_1.dll". If its launch fails with error message telling about those files missing, please download and install [Microsoft Visual C++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170), "X64" version.
 
 # Copyright notice
 
@@ -113,7 +109,8 @@ For more information see [NOTICES.txt](NOTICES.txt).
 
 - **[Qt Project](https://github.com/qt)**
 - **[Ghost of Tsushima: Director's Cut PC](https://www.youtube.com/watch?v=cPKBDbCYctc&t=698s)** - Information avaliable in 11:38 of credits
+- **[Godot Engine](https://github.com/godotengine/godot/)** - multi-platform 2D and 3D game engine. License: MIT.
 - **[The Forge](https://github.com/ConfettiFX/The-Forge)** - cross-platform rendering framework. Apache License 2.0.
-- **[Wicked Engine<img src="https://github.com/turanszkij/WickedEngine/blob/master/Content/logo_small.png" width="28px" align="center"/>](https://github.com/turanszkij/WickedEngine)** - 3D engine with modern graphics
+- **[Wicked Engine](https://github.com/turanszkij/WickedEngine)** - 3D engine with modern graphics
 
 [Some other projects on GitHub](https://github.com/search?q=D3D12MemAlloc.h&type=Code) and some game development studios that use DX12 in their games.
