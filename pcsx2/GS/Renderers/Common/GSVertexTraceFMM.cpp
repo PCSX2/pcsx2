@@ -218,8 +218,6 @@ void GSVertexTraceFMM::FindMinMax(GSVertexTrace& vt, const void* vertex, const u
 	vt.m_min.p = (GSVector4(pmin) - o) * s;
 	vt.m_max.p = (GSVector4(pmax) - o) * s;
 
-	// FIXME: We can fully determine m_eq here without having to correct depth trace, etc.
-
 	// Fix signed int conversion
 	vt.m_min.p.z = (float)pmin.U32[2];
 	vt.m_max.p.z = (float)pmax.U32[2];
@@ -254,4 +252,9 @@ void GSVertexTraceFMM::FindMinMax(GSVertexTrace& vt, const void* vertex, const u
 		vt.m_min.c = GSVector4i::zero();
 		vt.m_max.c = GSVector4i::zero();
 	}
+
+	const u32 p_eq = (pmin == pmax).mask(); // Use integer comparison to rounding issues for Z
+	const u32 t_eq = (vt.m_min.t == vt.m_max.t).mask();
+	const u32 c_eq = (vt.m_min.c == vt.m_max.c).mask();
+	vt.m_eq.value = c_eq | (p_eq << 16) | (t_eq << 20);
 }

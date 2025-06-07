@@ -43,17 +43,7 @@ void GSVertexTrace::Update(const void* vertex, const u16* index, int v_count, in
 		m_max.c.a = 128;
 	}
 
-	// FIXME: This could be moved into the FMM functions
-	m_eq.value = (m_min.c == m_max.c).mask() | ((m_min.p == m_max.p).mask() << 16) | ((m_min.t == m_max.t).mask() << 20);
-
 	m_alpha.valid = false;
-
-	// FIXME: IF we just did the accurate STQ check, we could totally remove this
-	// I'm not sure of the cost. In doubt let's do it only when depth is enabled
-	if (m_state->m_context->TEST.ZTE == 1 && m_state->m_context->TEST.ZTST > ZTST_ALWAYS)
-	{
-		CorrectDepthTrace(vertex, v_count);
-	}
 
 	if (tme)
 	{
@@ -123,51 +113,5 @@ void GSVertexTrace::Update(const void* vertex, const u16* index, int v_count, in
 				m_filter.opt_linear = m_filter.linear;
 				break;
 		}
-	}
-}
-
-void GSVertexTrace::CorrectDepthTrace(const void* vertex, int count)
-{
-	if (m_eq.z == 0)
-		return;
-
-	// FindMinMax isn't accurate for the depth value. Lsb bit is always 0.
-	// The code below will check that depth value is really constant
-	// and will update m_min/m_max/m_eq accordingly
-	//
-	// Really impact Xenosaga3
-	//
-	// Hopefully function is barely called so AVX/SSE will be useless here
-
-	const GSVertex* RESTRICT v = (GSVertex*)vertex;
-
-	const int sprite_step = (m_primclass == GS_SPRITE_CLASS) ? 1 : 0;
-
-	u32 z = v[sprite_step].XYZ.Z;
-
-	if (z & 1)
-	{
-		// Check that first bit is always 1
-		for (int i = sprite_step; i < count; i += (sprite_step + 1))
-		{
-			z &= v[i].XYZ.Z;
-		}
-	}
-	else
-	{
-		// Check that first bit is always 0
-		for (int i = sprite_step; i < count; i += (sprite_step + 1))
-		{
-			z |= v[i].XYZ.Z;
-		}
-	}
-
-	if (z == v[sprite_step].XYZ.Z)
-	{
-		m_eq.z = 1;
-	}
-	else
-	{
-		m_eq.z = 0;
 	}
 }
