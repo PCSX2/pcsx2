@@ -24,7 +24,7 @@ void GSVertexTrace::Update(const void* vertex, const u16* index, int v_count, in
 	const u32 tme = m_state->PRIM->TME;
 	const u32 fst = m_state->PRIM->FST;
 	const u32 color = !(m_state->PRIM->TME && m_state->m_context->TEX0.TFX == TFX_DECAL && m_state->m_context->TEX0.TCC);
-
+	
 	m_fmm[color][fst][tme][iip][primclass](*this, vertex, index, i_count);
 
 	// Potential float overflow detected. Better uses the slower division instead
@@ -43,10 +43,12 @@ void GSVertexTrace::Update(const void* vertex, const u16* index, int v_count, in
 		m_max.c.a = 128;
 	}
 
+	// FIXME: This could be moved into the FMM functions
 	m_eq.value = (m_min.c == m_max.c).mask() | ((m_min.p == m_max.p).mask() << 16) | ((m_min.t == m_max.t).mask() << 20);
 
 	m_alpha.valid = false;
 
+	// FIXME: IF we just did the accurate STQ check, we could totally remove this
 	// I'm not sure of the cost. In doubt let's do it only when depth is enabled
 	if (m_state->m_context->TEST.ZTE == 1 && m_state->m_context->TEST.ZTST > ZTST_ALWAYS)
 	{
@@ -136,7 +138,6 @@ void GSVertexTrace::CorrectDepthTrace(const void* vertex, int count)
 	// Really impact Xenosaga3
 	//
 	// Hopefully function is barely called so AVX/SSE will be useless here
-
 
 	const GSVertex* RESTRICT v = (GSVertex*)vertex;
 

@@ -955,34 +955,28 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 		zm = 0xffffffff;
 	}
 
-	if (PRIM->TME)
+	if (PRIM->TME && GSLocalMemory::m_psm[context->TEX0.PSM].pal > 0)
 	{
-		if (GSLocalMemory::m_psm[context->TEX0.PSM].pal > 0)
-		{
-			m_mem.m_clut.Read32(context->TEX0, env.TEXA);
-		}
+		m_mem.m_clut.Read32(context->TEX0, env.TEXA);
 	}
 
-	if (context->TEST.ATE)
+	if (context->TEST.ATE && !TryAlphaTest(fm, zm))
 	{
-		if (!TryAlphaTest(fm, zm))
+		gd.sel.atst = context->TEST.ATST;
+		gd.sel.afail = context->TEST.GetAFAIL(context->FRAME.PSM);
+
+		gd.aref = GSVector4i((int)context->TEST.AREF);
+
+		switch (gd.sel.atst)
 		{
-			gd.sel.atst = context->TEST.ATST;
-			gd.sel.afail = context->TEST.GetAFAIL(context->FRAME.PSM);
-
-			gd.aref = GSVector4i((int)context->TEST.AREF);
-
-			switch (gd.sel.atst)
-			{
-				case ATST_LESS:
-					gd.sel.atst = ATST_LEQUAL;
-					gd.aref -= GSVector4i::x00000001();
-					break;
-				case ATST_GREATER:
-					gd.sel.atst = ATST_GEQUAL;
-					gd.aref += GSVector4i::x00000001();
-					break;
-			}
+			case ATST_LESS:
+				gd.sel.atst = ATST_LEQUAL;
+				gd.aref -= GSVector4i::x00000001();
+				break;
+			case ATST_GREATER:
+				gd.sel.atst = ATST_GEQUAL;
+				gd.aref += GSVector4i::x00000001();
+				break;
 		}
 	}
 
@@ -1044,7 +1038,16 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 
 			GIFRegTEX0 TEX0 = m_context->GetSizeFixedTEX0(m_vt.m_min.t.xyxy(m_vt.m_max.t), m_vt.IsLinear(), mipmap);
 
-			GSVector4i r = GetTextureMinMax(TEX0, context->CLAMP, gd.sel.ltf, true).coverage;
+			// Calculate the range of UV coordinates of the texture that are used for the draw.
+			// First try to do exact UV calculation in the case of axis-aligned triangles or sprites.
+			// If this fails, do a rough UV calculation.
+			GSVector4i r;
+			TextureMinMaxResult tmm_result;
+			if (!GetTextureMinMaxAxisAligned(TEX0, context->CLAMP, gd.sel.ltf, &tmm_result))
+			{
+				tmm_result = GetTextureMinMax(TEX0, context->CLAMP, gd.sel.ltf, false);
+			}
+			r = tmm_result.coverage;
 
 			GSTextureCacheSW::Texture* t = m_tc->Lookup(TEX0, env.TEXA);
 
@@ -1150,7 +1153,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 						return false;
 					}
 
-					GSVector4i r = GetTextureMinMax(MIP_TEX0, MIP_CLAMP, gd.sel.ltf, true).coverage;
+					GSVector4i r = GetTextureMinMax(MIP_TEX0, MIP_CLAMP, gd.sel.ltf, false).coverage;
 
 					data->SetSource(t, r, i);
 				}
