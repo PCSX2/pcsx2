@@ -311,7 +311,7 @@ void searchWorker(DebugInterface* cpu, std::vector<SearchResult>& searchResults,
 			const auto readValue = readValueAtAddress<T>(cpu, addr);
 
 			const bool doesMatch = handleSearchComparison(searchComparison, addr, &searchResult, searchValue, readValue);
-			if (!doesMatch)
+			if (doesMatch)
 				searchResult = MemorySearchView::SearchResult(addr, QVariant::fromValue(readValue), searchType);
 
 			return !doesMatch;
