@@ -727,6 +727,9 @@ Pcsx2Config::GSOptions::GSOptions()
 	OsdShowHardwareInfo = false;
 	OsdShowVideoCapture = true;
 	OsdShowInputRec = true;
+	OsdShowSystemTime = false;
+	OsdShowSystemDate = false;
+//	OsdShowUTCOffset = false; TODO show what timezone an user has like UTC-3 or UTC+1 maybe even regional variants but less priority
 
 	HWDownloadMode = GSHardwareDownloadMode::Enabled;
 	HWSpinGPUForReadbacks = false;
@@ -942,6 +945,9 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(OsdShowHardwareInfo);
 	SettingsWrapBitBool(OsdShowVideoCapture);
 	SettingsWrapBitBool(OsdShowInputRec);
+	SettingsWrapBitBool(OsdShowSystemTime);
+	SettingsWrapBitBool(OsdShowSystemDate);
+//	SettingsWrapBitBool(OsdShowUTCOffset); TODO show what timezone an user has like UTC-3 or UTC+1 maybe even regional variants but less priority
 
 	SettingsWrapBitBool(HWSpinGPUForReadbacks);
 	SettingsWrapBitBool(HWSpinCPUForReadbacks);

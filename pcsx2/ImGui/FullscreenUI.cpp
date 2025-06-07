@@ -3617,6 +3617,12 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_PF_MONITOR_CODE, "Show Hardware Info"),
 		FSUI_CSTR("Shows the current system hardware information on the OSD."), "EmuCore/GS", "OsdShowHardwareInfo",
 		false);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_CLOCK, "Show System Time"),
+		FSUI_CSTR("Shows the current system time on the OSD currently with Hour:Minute:Second (HH:MM:SS)."), "EmuCore/GS", "OsdShowSystemTime", false);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_CALENDAR, "Show System Date"),
+		FSUI_CSTR("Shows the current system date on the OSD currently with Year-Month-Day (YYYY-MM-DD) format.."), "EmuCore/GS", "OsdShowSystemDate", false);
+//	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_CLOCK, "Show UTC Offset"),
+//		FSUI_CSTR("Shows the UTC offset on the OSD."), "EmuCore/GS", "OsdShowUTCOffset", false);
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_EXCLAMATION, "Warn About Unsafe Settings"),
 		FSUI_CSTR("Displays warnings when settings are enabled which may break games."), "EmuCore", "WarnAboutUnsafeSettings", true);
 
