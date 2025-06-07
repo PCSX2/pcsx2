@@ -242,7 +242,7 @@ u32 NewSymbolDialog::parseAddress(QString& error_message)
 NewFunctionDialog::NewFunctionDialog(DebugInterface& cpu, QWidget* parent)
 	: NewSymbolDialog(GLOBAL_STORAGE | SIZE_FIELD | EXISTING_FUNCTIONS_FIELD, 4, cpu, parent)
 {
-	setWindowTitle("New Function");
+	setWindowTitle(tr("New Function"));
 
 	m_ui.customSizeSpinBox->setValue(8);
 }
@@ -367,7 +367,7 @@ void NewFunctionDialog::createSymbol()
 NewGlobalVariableDialog::NewGlobalVariableDialog(DebugInterface& cpu, QWidget* parent)
 	: NewSymbolDialog(GLOBAL_STORAGE | TYPE_FIELD, 1, cpu, parent)
 {
-	setWindowTitle("New Global Variable");
+	setWindowTitle(tr("New Global Variable"));
 }
 
 bool NewGlobalVariableDialog::parseUserInput()
@@ -424,7 +424,7 @@ void NewGlobalVariableDialog::createSymbol()
 NewLocalVariableDialog::NewLocalVariableDialog(DebugInterface& cpu, QWidget* parent)
 	: NewSymbolDialog(GLOBAL_STORAGE | REGISTER_STORAGE | STACK_STORAGE | TYPE_FIELD | FUNCTION_FIELD, 1, cpu, parent)
 {
-	setWindowTitle("New Local Variable");
+	setWindowTitle(tr("New Local Variable"));
 }
 
 bool NewLocalVariableDialog::parseUserInput()
@@ -542,7 +542,7 @@ void NewLocalVariableDialog::createSymbol()
 NewParameterVariableDialog::NewParameterVariableDialog(DebugInterface& cpu, QWidget* parent)
 	: NewSymbolDialog(REGISTER_STORAGE | STACK_STORAGE | TYPE_FIELD | FUNCTION_FIELD, 1, cpu, parent)
 {
-	setWindowTitle("New Parameter Variable");
+	setWindowTitle(tr("New Parameter Variable"));
 }
 
 bool NewParameterVariableDialog::parseUserInput()
