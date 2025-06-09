@@ -280,7 +280,7 @@ void MainWindow::setupAdditionalUi()
 		connect(action, &QAction::triggered, [this, opacity]() { 
 			Host::SetBaseFloatSettingValue("UI", "GameListBackgroundOpacity", (static_cast<float>(opacity / 10.0f)));
 			Host::CommitBaseSettingChanges();
-			m_game_list_widget->setCustomBackground(true);
+			m_game_list_widget->setCustomBackground();
 		 });
 	}
 
@@ -1597,7 +1597,9 @@ void MainWindow::onStartFullscreenUITriggered()
 	if (m_display_widget)
 		g_emu_thread->stopFullscreenUI();
 	else
+	{
 		g_emu_thread->startFullscreenUI(Host::GetBaseBoolSettingValue("UI", "StartFullscreen", false));
+	}
 }
 
 void MainWindow::onFullscreenUIStateChange(bool running)
@@ -2078,10 +2080,13 @@ void MainWindow::onVMStopped()
 		return;
 	}
 
+
 	if (m_display_widget)
 		updateDisplayWidgetCursor();
 	else
+	{
 		switchToGameListView();
+	}
 
 	// reload played time
 	if (m_game_list_widget->isShowingGameList())
