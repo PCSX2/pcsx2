@@ -30,6 +30,7 @@
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QScrollBar>
 #include <QtWidgets/QStyledItemDelegate>
+#include <qwidget.h>
 
 static const char* SUPPORTED_FORMATS_STRING = QT_TRANSLATE_NOOP(GameListWidget,
 	".bin/.iso (ISO Disc Images)\n"
@@ -295,7 +296,6 @@ void GameListWidget::initialize()
 
 	updateToolbar();
 	resizeTableViewColumnsToFit();
-	setCustomBackground(false);
 }
 
 static void resizeAndPadImage(QImage* image, int expected_width, int expected_height, bool fill_with_top_left)
@@ -351,7 +351,7 @@ static void resizeAndPadImage(QImage* image, int expected_width, int expected_he
 	*image = std::move(padded_image);
 }
 
-void GameListWidget::setCustomBackground(bool reload)
+void GameListWidget::setCustomBackground()
 {
 	std::string path = Host::GetBaseStringSettingValue("UI", "GameListBackgroundPath");
 	bool enabled = Host::GetBaseBoolSettingValue("UI", "GameListBackgroundEnabled");
@@ -359,22 +359,19 @@ void GameListWidget::setCustomBackground(bool reload)
 	if (!Path::IsAbsolute(path))
 		path = Path::Combine(EmuFolders::DataRoot, path);
 
-	if (reload)
+	if (m_background_movie != nullptr)
 	{
-		if (m_background_movie != nullptr)
-		{
-			delete m_background_movie;
-			m_background_movie = nullptr;
-		}
+		delete m_background_movie;
+		m_background_movie = nullptr;
+	}
 
-		if (!path.empty() || enabled)
-		{
-			QMovie* new_movie = new QMovie(path.c_str());
-			if (new_movie->isValid())
-				m_background_movie = new_movie;
-			else
-				delete new_movie;
-		}
+	if (!path.empty() || enabled)
+	{
+		QMovie* new_movie = new QMovie(path.c_str());
+		if (new_movie->isValid())
+			m_background_movie = new_movie;
+		else
+			delete new_movie;
 	}
 
 	if (m_background_movie == nullptr || path.empty() || !enabled)
@@ -384,20 +381,43 @@ void GameListWidget::setCustomBackground(bool reload)
 		return;
 	}
 
-	connect(m_background_movie, &QMovie::frameChanged, this, [this](int frame) {
-		QImage img = m_background_movie->currentImage();
-		img.setDevicePixelRatio(devicePixelRatioF());
-		const int widget_width = m_ui.stack->width();
-		const int widget_height = m_ui.stack->height();
-		resizeAndPadImage(&img, widget_width, widget_height, false);
-
-		QPalette new_palette(m_ui.stack->palette());
-		new_palette.setBrush(QPalette::Base, QPixmap::fromImage(img));
-		m_ui.stack->setPalette(new_palette);
-	});
+	connect(m_background_movie, &QMovie::frameChanged, this, [this](int frameNum) { processBackgroundFrames(frameNum); });
 
 	m_background_movie->start();
 	m_table_view->setAlternatingRowColors(false);
+}
+
+void GameListWidget::updateCustomBackgroundState()
+{
+	if (m_background_movie)
+	{
+		if (GameListWidget::isVisible() && QtHost::isFocused())
+		{
+			m_background_movie->start();
+		}
+		else
+		{
+			m_background_movie->stop();
+		}
+	}
+}
+
+void GameListWidget::processBackgroundFrames(int frameNum)
+{
+	// temporary solution
+	if (!QtHost::isFocused())
+		return;
+
+	QImage img = m_background_movie->currentImage();
+	img.setDevicePixelRatio(devicePixelRatioF());
+	const int widget_width = m_ui.stack->width();
+	const int widget_height = m_ui.stack->height();
+
+	resizeAndPadImage(&img, widget_width, widget_height, false);
+
+	QPalette new_palette(m_ui.stack->palette());
+	new_palette.setBrush(QPalette::Base, img);
+	m_ui.stack->setPalette(new_palette);
 }
 
 bool GameListWidget::isShowingGameList() const
@@ -600,7 +620,8 @@ void GameListWidget::onViewSetGameListBackgroundTriggered()
 		Host::SetBaseFloatSettingValue("UI", "GameListBackgroundOpacity", 1.0f);
 
 	Host::CommitBaseSettingChanges();
-	setCustomBackground(true);
+	if (!VMManager::HasValidVM())
+		setCustomBackground();
 }
 
 void GameListWidget::onViewClearGameListBackgroundTriggered()
@@ -609,7 +630,7 @@ void GameListWidget::onViewClearGameListBackgroundTriggered()
 	Host::CommitBaseSettingChanges();
 	updateToolbar();
 	resizeTableViewColumnsToFit();
-	setCustomBackground(true);
+	setCustomBackground();
 }
 
 void GameListWidget::showGameList()
@@ -685,12 +706,24 @@ void GameListWidget::updateToolbar()
 	m_ui.gridScale->setEnabled(grid_view);
 }
 
+void GameListWidget::showEvent(QShowEvent* event)
+{
+	QWidget::showEvent(event);
+	updateCustomBackgroundState();
+}
+
+void GameListWidget::hideEvent(QHideEvent* event)
+{
+	QWidget::hideEvent(event);
+	updateCustomBackgroundState();
+}
+
 void GameListWidget::resizeEvent(QResizeEvent* event)
 {
 	QWidget::resizeEvent(event);
 	resizeTableViewColumnsToFit();
 	m_model->updateCacheSize(width(), height());
-	setCustomBackground(true);
+	setCustomBackground();
 }
 
 bool GameListWidget::event(QEvent* event)
