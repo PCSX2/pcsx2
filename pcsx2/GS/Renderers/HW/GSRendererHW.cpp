@@ -3166,6 +3166,144 @@ void GSRendererHW::Draw()
 				}
 			}
 		}
+
+		if (no_rt && ds->m_TEX0.TBP0 != m_cached_ctx.ZBUF.Block())
+		{
+			const GSLocalMemory::psm_t& zbuf_psm = GSLocalMemory::m_psm[m_cached_ctx.ZBUF.PSM];
+			int vertical_offset = ((static_cast<int>(m_cached_ctx.ZBUF.Block() - ds->m_TEX0.TBP0) / 32) / std::max(static_cast<int>(ds->m_TEX0.TBW), 1)) * zbuf_psm.pgs.y; // I know I could just not shift it..
+			int texture_offset = 0;
+			int horizontal_offset = ((static_cast<int>((m_cached_ctx.ZBUF.Block() - ds->m_TEX0.TBP0)) / 32) % static_cast<int>(std::max(ds->m_TEX0.TBW, 1U))) * zbuf_psm.pgs.x;
+			// Used to reduce the offset made later in channel shuffles
+			m_target_offset = std::abs(static_cast<int>((m_cached_ctx.ZBUF.Block() - ds->m_TEX0.TBP0)) >> 5);
+
+			if (vertical_offset < 0)
+			{
+				ds->m_TEX0.TBP0 = m_cached_ctx.ZBUF.Block();
+				GSVector2i new_size = ds->m_unscaled_size;
+				// Make sure to use the original format for the offset.
+				const int new_offset = std::abs((vertical_offset / zbuf_psm.pgs.y) * GSLocalMemory::m_psm[ds->m_TEX0.PSM].pgs.y);
+				texture_offset = new_offset;
+
+				new_size.y += new_offset;
+
+				const GSVector4i new_drect = GSVector4i(0, new_offset * ds->m_scale, new_size.x * ds->m_scale, new_size.y * ds->m_scale);
+				ds->ResizeTexture(new_size.x, new_size.y, true, true, new_drect);
+
+				if (src && src->m_from_target && src->m_from_target == ds && src->m_target_direct)
+				{
+					src->m_texture = ds->m_texture;
+
+					// If we've moved it and the source is expecting to be inside this target, we need to update the region to point to it.
+					int max_region_y = src->m_region.GetMaxY() + new_offset;
+					if (max_region_y == new_offset)
+						max_region_y = new_size.y;
+
+					src->m_region.SetY(src->m_region.GetMinY() + new_offset, max_region_y);
+				}
+
+				ds->m_valid.y += new_offset;
+				ds->m_valid.w += new_offset;
+				ds->m_drawn_since_read.y += new_offset;
+				ds->m_drawn_since_read.w += new_offset;
+
+				g_texture_cache->CombineAlignedInsideTargets(ds, src);
+
+				if (ds->m_dirty.size())
+				{
+					for (int i = 0; i < static_cast<int>(ds->m_dirty.size()); i++)
+					{
+						ds->m_dirty[i].r.y += new_offset;
+						ds->m_dirty[i].r.w += new_offset;
+					}
+				}
+
+				t_size.y += std::abs(vertical_offset);
+				vertical_offset = 0;
+			}
+
+			if (horizontal_offset < 0)
+			{
+				// Thankfully this doesn't really happen, but catwoman moves the framebuffer backwards 1 page with a channel shuffle, which is really messy and not easy to deal with.
+				// Hopefully the quick channel shuffle will just guess this and run with it.
+				ds->m_TEX0.TBP0 += horizontal_offset;
+				horizontal_offset = 0;
+			}
+
+			if (vertical_offset || horizontal_offset)
+			{
+				GSVertex* v = &m_vertex.buff[0];
+
+				for (u32 i = 0; i < m_vertex.tail; i++)
+				{
+					v[i].XYZ.X += horizontal_offset << 4;
+					v[i].XYZ.Y += vertical_offset << 4;
+				}
+
+				if (texture_offset && src && src->m_from_target && src->m_target_direct && src->m_from_target == ds)
+				{
+					GSVector4i src_region = src->GetRegionRect();
+
+					if (src_region.rempty())
+					{
+						src_region = GSVector4i::loadh(ds->m_unscaled_size);
+						src_region.y += texture_offset;
+					}
+					else
+					{
+						src_region.y += texture_offset;
+						src_region.w += texture_offset;
+					}
+					src->m_region.SetX(src_region.x, src_region.z);
+					src->m_region.SetY(src_region.y, src_region.w);
+				}
+
+				m_context->scissor.in.x += horizontal_offset;
+				m_context->scissor.in.z += horizontal_offset;
+				m_context->scissor.in.y += vertical_offset;
+				m_context->scissor.in.w += vertical_offset;
+				m_r.y += vertical_offset;
+				m_r.w += vertical_offset;
+				m_r.x += horizontal_offset;
+				m_r.z += horizontal_offset;
+				m_in_target_draw = ds->m_TEX0.TBP0 != m_cached_ctx.ZBUF.Block();
+				m_vt.m_min.p.x += horizontal_offset;
+				m_vt.m_max.p.x += horizontal_offset;
+				m_vt.m_min.p.y += vertical_offset;
+				m_vt.m_max.p.y += vertical_offset;
+
+				t_size.y = ds->m_unscaled_size.y - vertical_offset;
+				t_size.x = ds->m_unscaled_size.x - horizontal_offset;
+			}
+
+			// Don't resize if the BPP don't match.
+			GSVector2i new_size = GetValidSize(src, possible_shuffle);
+			if (new_size.x > ds->m_unscaled_size.x || new_size.y > ds->m_unscaled_size.y)
+			{
+				const u32 new_width = std::max(new_size.x, ds->m_unscaled_size.x);
+				const u32 new_height = std::max(new_size.y, ds->m_unscaled_size.y);
+
+				//DevCon.Warning("HW: Resizing texture %d x %d draw %d", ds->m_unscaled_size.x, new_height, s_n);
+				ds->ResizeTexture(new_width, new_height);
+			}
+			else if ((IsPageCopy() || is_possible_mem_clear) && m_r.width() <= zbuf_psm.pgs.x && m_r.height() <= zbuf_psm.pgs.y)
+			{
+				const int get_next_ctx = m_env.PRIM.CTXT;
+				const GSDrawingContext& next_ctx = m_env.CTXT[get_next_ctx];
+				GSVector4i update_valid = GSVector4i::loadh(GSVector2i(horizontal_offset + GSLocalMemory::m_psm[m_cached_ctx.ZBUF.PSM].pgs.x, GSLocalMemory::m_psm[m_cached_ctx.ZBUF.PSM].pgs.y + vertical_offset));
+				ds->UpdateValidity(update_valid, true);
+				if (is_possible_mem_clear)
+				{
+					if ((horizontal_offset + GSLocalMemory::m_psm[m_cached_ctx.ZBUF.PSM].pgs.x) >= static_cast<int>(ds->m_TEX0.TBW * 64) && next_ctx.ZBUF.Block() == (m_cached_ctx.ZBUF.Block() + 0x20))
+					{
+						update_valid.x = 0;
+						update_valid.z = GSLocalMemory::m_psm[m_cached_ctx.ZBUF.PSM].pgs.x;
+						update_valid.y += GSLocalMemory::m_psm[m_cached_ctx.ZBUF.PSM].pgs.y;
+						update_valid.w += GSLocalMemory::m_psm[m_cached_ctx.ZBUF.PSM].pgs.y;
+						ds->UpdateValidity(update_valid, true);
+					}
+				}
+			}
+		}
 	}
 
 	if (!no_rt)
