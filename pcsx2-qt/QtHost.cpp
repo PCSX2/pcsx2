@@ -602,7 +602,7 @@ void Host::CheckForSettingsChanges(const Pcsx2Config& old_config)
 
 bool EmuThread::shouldRenderToMain() const
 {
-	return !Host::GetBoolSettingValue("UI", "RenderToSeparateWindow", false) && !QtHost::InNoGUIMode();
+	return !Host::GetBoolSettingValue("UI", "RenderToSeparateWindow", false) && !Host::InNoGUIMode();
 }
 
 void EmuThread::toggleSoftwareRendering()
@@ -1268,7 +1268,7 @@ void Host::RequestVMShutdown(bool allow_confirm, bool allow_save_state, bool def
 
 		// This will probably call shutdownVM() again, but by the time it runs, we'll have already shut down
 		// and it'll be a noop.
-		if (QtHost::InBatchMode())
+		if (Host::InBatchMode())
 			QMetaObject::invokeMethod(g_main_window, "requestExit", Qt::QueuedConnection, Q_ARG(bool, false));
 	}
 }
@@ -1437,12 +1437,12 @@ void Host::CommitBaseSettingChanges()
 	}
 }
 
-bool QtHost::InBatchMode()
+bool Host::InBatchMode()
 {
 	return s_batch_mode;
 }
 
-bool QtHost::InNoGUIMode()
+bool Host::InNoGUIMode()
 {
 	return s_nogui_mode;
 }

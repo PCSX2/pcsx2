@@ -1130,7 +1130,7 @@ bool MainWindow::shouldHideMainWindow() const
 	// NOTE: We can't use isRenderingToMain() here, because this happens post-fullscreen-switch.
 	return (Host::GetBoolSettingValue("UI", "HideMainWindowWhenRunning", false) && !g_emu_thread->shouldRenderToMain()) ||
 		   (g_emu_thread->shouldRenderToMain() && (isRenderingFullscreen() || m_is_temporarily_windowed)) ||
-		   QtHost::InNoGUIMode();
+		   Host::InNoGUIMode();
 }
 
 bool MainWindow::shouldMouseLock() const
@@ -1306,7 +1306,7 @@ bool MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, b
 	// reshow the main window during display updates, because otherwise fullscreen transitions and renderer switches
 	// would briefly show and then hide the main window. So instead, we do it on shutdown, here. Except if we're in
 	// batch mode, when we're going to exit anyway.
-	if (!isRenderingToMain() && isHidden() && !QtHost::InBatchMode() && !g_emu_thread->isRunningFullscreenUI())
+	if (!isRenderingToMain() && isHidden() && !Host::InBatchMode() && !g_emu_thread->isRunningFullscreenUI())
 		updateWindowState(true);
 
 	// Clear the VM valid state early. That way we can't do anything in the UI if we take a while to shut down.
@@ -2060,7 +2060,7 @@ void MainWindow::onVMStopped()
 	updateInputRecordingActions(false);
 
 	// If we're closing or in batch mode, quit the whole application now.
-	if (m_is_closing || QtHost::InBatchMode())
+	if (m_is_closing || Host::InBatchMode())
 	{
 		quit();
 		return;

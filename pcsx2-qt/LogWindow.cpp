@@ -43,7 +43,7 @@ void LogWindow::updateSettings()
 {
 	std::unique_lock lock(s_log_mutex);
 
-	const bool new_enabled = Host::GetBaseBoolSettingValue("Logging", "EnableLogWindow", false) && !QtHost::InNoGUIMode();
+	const bool new_enabled = Host::GetBaseBoolSettingValue("Logging", "EnableLogWindow", false) && !Host::InNoGUIMode();
 	const bool attach_to_main = Host::GetBaseBoolSettingValue("Logging", "AttachLogWindowToMainWindow", true);
 	const bool curr_enabled = Log::IsHostOutputEnabled();
 
