@@ -49,7 +49,9 @@ public:
 	void refresh(bool invalidate_cache);
 	void cancelRefresh();
 	void reloadThemeSpecificImages();
-	void setCustomBackground(bool reload);
+	void setCustomBackground();
+	void updateCustomBackgroundState();
+	void processBackgroundFrames(int frameNum);
 
 	bool isShowingGameList() const;
 	bool isShowingGameGrid() const;
@@ -96,6 +98,8 @@ public Q_SLOTS:
 	void onViewClearGameListBackgroundTriggered();
 
 protected:
+	void showEvent(QShowEvent* event) override;
+	void hideEvent(QHideEvent* event) override;
 	void resizeEvent(QResizeEvent* event) override;
 	bool event(QEvent* event) override;
 
