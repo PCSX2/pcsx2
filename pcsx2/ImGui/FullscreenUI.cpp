@@ -1602,7 +1602,7 @@ void FullscreenUI::DrawExitWindow()
 
 	ImGui::PushStyleColor(ImGuiCol_Text, UIBackgroundTextColor);
 
-	if (BeginHorizontalMenu("exit_window", menu_pos, menu_size, 3))
+	if (BeginHorizontalMenu("exit_window", menu_pos, menu_size, (Host::InNoGUIMode()) ? 2 : 3))
 	{
 		ResetFocusHere();
 
@@ -1621,10 +1621,13 @@ void FullscreenUI::DrawExitWindow()
 			DoRequestExit();
 		}
 
-		if (HorizontalMenuItem(GetCachedTexture("fullscreenui/desktop-mode.png"), FSUI_CSTR("Desktop Mode"),
-				FSUI_CSTR("Exits Big Picture mode, returning to the desktop interface.")))
+		if (!Host::InNoGUIMode())
 		{
-			DoDesktopMode();
+			if (HorizontalMenuItem(GetCachedTexture("fullscreenui/desktop-mode.png"), FSUI_CSTR("Desktop Mode"),
+				FSUI_CSTR("Exits Big Picture mode, returning to the desktop interface.")))
+			{
+				DoDesktopMode();
+			}
 		}
 	}
 	EndHorizontalMenu();
