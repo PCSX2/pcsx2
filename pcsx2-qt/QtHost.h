@@ -245,12 +245,6 @@ namespace QtHost
 	/// Sets the icon theme, based on the current style (light/dark).
 	void SetIconThemeFromStyle();
 
-	/// Sets batch mode (exit after game shutdown).
-	bool InBatchMode();
-
-	/// Sets NoGUI mode (implys batch mode, does not display main window, exits on shutdown).
-	bool InNoGUIMode();
-
 	/// Returns true if the calling thread is the UI thread.
 	bool IsOnUIThread();
 

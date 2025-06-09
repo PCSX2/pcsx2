@@ -56,6 +56,16 @@ void Host::OpenURL(const std::string_view url)
 {
 }
 
+bool Host::InBatchMode()
+{
+	return false;
+}
+
+bool Host::InNoGUIMode()
+{
+	return false;
+}
+
 bool Host::CopyTextToClipboard(const std::string_view text)
 {
 	return false;
