@@ -185,7 +185,14 @@ PS2Float PS2Float::Add(PS2Float addend)
 		else if (!IsDenormalized() && addend.IsDenormalized())
 			return PS2Float(sign, Exponent(), Mantissa());
 		else if (IsDenormalized() && addend.IsDenormalized())
-			return PS2Float(sign, 0, 0);
+		{
+			if (!Sign() || !addend.Sign())
+				return PS2Float(false, 0, 0);
+			else if (Sign() && addend.Sign())
+				return PS2Float(true, 0, 0);
+			else
+				Console.Error("Unhandled addition operation flags");
+		}
 		else
 			Console.Error("Both numbers are not denormalized");
 
@@ -227,7 +234,14 @@ PS2Float PS2Float::Sub(PS2Float subtrahend)
 		else if (!IsDenormalized() && subtrahend.IsDenormalized())
 			return PS2Float(sign, Exponent(), Mantissa());
 		else if (IsDenormalized() && subtrahend.IsDenormalized())
-			return PS2Float(sign, 0, 0);
+		{
+			if (!Sign() || subtrahend.Sign())
+				return PS2Float(false, 0, 0);
+			else if (Sign() && !subtrahend.Sign())
+				return PS2Float(true, 0, 0);
+			else
+				Console.Error("Unhandled subtraction operation flags");
+		}
 		else
 			Console.Error("Both numbers are not denormalized");
 
@@ -883,31 +897,11 @@ bool PS2Float::DetermineMultiplicationDivisionOperationSign(PS2Float a, PS2Float
 
 bool PS2Float::DetermineAdditionOperationSign(PS2Float a, PS2Float b)
 {
-	if (a.IsZero() && b.IsZero())
-	{
-		if (!a.Sign() || !b.Sign())
-			return false;
-		else if (a.Sign() && b.Sign())
-			return true;
-		else
-			Console.Error("Unhandled addition operation flags");
-	}
-
 	return a.CompareOperands(b) >= 0 ? a.Sign() : b.Sign();
 }
 
 bool PS2Float::DetermineSubtractionOperationSign(PS2Float a, PS2Float b)
 {
-	if (a.IsZero() && b.IsZero())
-	{
-		if (!a.Sign() || b.Sign())
-			return false;
-		else if (a.Sign() && !b.Sign())
-			return true;
-		else
-			Console.Error("Unhandled subtraction operation flags");
-	}
-
 	return a.CompareOperands(b) >= 0 ? a.Sign() : !b.Sign();
 }
 
