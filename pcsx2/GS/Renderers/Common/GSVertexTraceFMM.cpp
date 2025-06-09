@@ -6,6 +6,20 @@
 #include "GS/GSUtil.h"
 #include <cfloat>
 
+// FILE* debug_log = nullptr;
+
+// #define PRINTF(...) \
+// do \
+// { \
+// 	if (GSState::s_n == 10) { \
+// 		if (!debug_log) { \
+// 			debug_log = fopen("E:\\bad.log", "w"); \
+// 		} \
+// 		fprintf(debug_log, __VA_ARGS__); \
+// 		fflush(debug_log); \
+// 	} \
+// } while (0)
+
 class CURRENT_ISA::GSVertexTraceFMM
 {
 	template <GS_PRIM_CLASS primclass, u32 iip, u32 tme, u32 fst, u32 color, bool flat_swapped>

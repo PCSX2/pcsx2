@@ -540,6 +540,11 @@ void GSState::DumpVertices(const std::string& filename)
 	v2 = m_vt.m_max.t;
 	file << "\tmax t (x,y,z,w): " << v2.x << DEL << v2.y << DEL << v2.z << DEL << v2.w << std::endl;
 
+	// FIXME: MAKE THIS A NEW PR
+	 file << std::endl;
+	 file << "\teq (r,g,b,a): " << (m_vt.m_eq.r & 1) << DEL << (m_vt.m_eq.g & 1) << DEL << (m_vt.m_eq.b & 1) << DEL << (m_vt.m_eq.a & 1) << std::endl;
+	 file << "\teq (x,y,z,f): " << m_vt.m_eq.x << DEL << m_vt.m_eq.y << DEL << m_vt.m_eq.z << DEL << m_vt.m_eq.f << std::endl;
+	 file << "\teq (s,t,q)  : " << m_vt.m_eq.s << DEL << m_vt.m_eq.t << DEL << m_vt.m_eq.q << std::endl;
 	file.close();
 }
 
