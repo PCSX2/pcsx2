@@ -1026,6 +1026,8 @@ namespace R3000A
 							case 'O':
 							case 'x':
 							case 'X':
+							case 'u':
+							case 'U':
 								printed_bytes = snprintf(ptmp, remaining_buf, tmp2, (u32)iopMemRead32(sp + n * 4));
 								remaining_buf -= printed_bytes;
 								ptmp += printed_bytes;
