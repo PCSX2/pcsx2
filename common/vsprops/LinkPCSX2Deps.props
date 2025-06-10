@@ -26,6 +26,12 @@
     <DepsDLLs Include="$(DepsBinDir)plutovg.dll" />
     <DepsDLLs Include="$(DepsBinDir)plutosvg.dll" />
   </ItemGroup>
+  <Target Name="DepsListPDBs"
+    AfterTargets="Build">
+    <ItemGroup>
+      <DepsPDBs Include="@(DepsDLLs -> '%(RelativeDir)%(Filename).pdb')" Condition="Exists('%(RelativeDir)%(Filename).pdb')" />
+    </ItemGroup>
+  </Target>
   <Target Name="DepsCopyDLLs"
     AfterTargets="Build"
     Inputs="@(DepsDLLs)"
@@ -33,6 +39,17 @@
     <Message Text="Copying Dependency DLLs" Importance="High" />
     <Copy
       SourceFiles="@(DepsDLLs)"
+      DestinationFolder="$(OutDir)"
+      SkipUnchangedFiles="true"
+    />
+  </Target>
+  <Target Name="DepsCopyPDB"
+    AfterTargets="Build"
+    Inputs="@(DepsPDBs)"
+    Outputs="@(DepsPDBs -> '$(OutDir)%(RecursiveDir)%(Filename)%(Extension)')">
+    <Message Text="Copying Dependency PDBs" Importance="High" />
+    <Copy
+      SourceFiles="@(DepsPDBs)"
       DestinationFolder="$(OutDir)"
       SkipUnchangedFiles="true"
     />

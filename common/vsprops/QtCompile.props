@@ -138,11 +138,17 @@
   <ItemGroup>
     <QtLibNames Include="Qt6Core$(QtLibSuffix);Qt6Gui$(QtLibSuffix);Qt6Widgets$(QtLibSuffix);Qt6Svg$(QtLibSuffix);Qt6Concurrent$(QtLibSuffix)" />
     <QtDlls Include="@(QtLibNames -> '$(QtBinDir)%(Identity).dll')" />
+    <QtPDBs Include="@(QtLibNames -> '$(QtBinDir)%(Identity).pdb')" />
     <!--Filter plugins to copy based on the observation that all debug versions end in "d"-->
     <QtAllPlugins Include="$(QtPluginsDir)**\*$(QtLibSuffix).dll" />
     <QtPlugins Condition="$(Configuration.Contains(Debug))" Include="@(QtAllPlugins)" />
     <QtPlugins Condition="!$(Configuration.Contains(Debug))" Exclude="$(QtPluginsDir)**\*$(QtDebugSuffix).dll" Include="@(QtAllPlugins)" />
     <QtPluginsDest Include="@(QtPlugins -> '$(QtBinaryOutputDir)$(QtPluginFolder)\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <!--And again for PDBs-->
+    <QtAllPluginPDBs Include="$(QtPluginsDir)**\*$(QtLibSuffix).pdb" />
+    <QtPluginPDBs Condition="$(Configuration.Contains(Debug))" Include="@(QtAllPluginPDBs)" />
+    <QtPluginPDBs Condition="!$(Configuration.Contains(Debug))" Exclude="$(QtPluginsDir)**\*$(QtDebugSuffix).pdb" Include="@(QtAllPluginPDBs)" />
+    <QtPluginPDBsDest Include="@(QtPluginPDBs -> '$(QtBinaryOutputDir)$(QtPluginFolder)\%(RecursiveDir)%(Filename)%(Extension)')" />
   </ItemGroup>
   <PropertyGroup>
     <QtConfFile>$(QtBinaryOutputDir)qt.conf</QtConfFile>
@@ -160,6 +166,22 @@
     <Copy
       SourceFiles="@(QtPlugins)"
       DestinationFiles="@(QtPluginsDest)"
+      SkipUnchangedFiles="true"
+    />
+  </Target>
+    <Target Name="QtCopyPDBs"
+    AfterTargets="Build"
+    Inputs="@(QtPDBs);@(QtPluginPDBs)"
+    Outputs="@(QtPDBs -> '$(QtBinaryOutputDir)%(RecursiveDir)%(Filename)%(Extension)');@(QtPluginPDBsDest)">
+    <Message Text="Copying Qt .pdbs" Importance="High" />
+    <Copy
+      SourceFiles="@(QtPDBs)"
+      DestinationFolder="$(QtBinaryOutputDir)"
+      SkipUnchangedFiles="true"
+    />
+    <Copy
+      SourceFiles="@(QtPluginPDBs)"
+      DestinationFiles="@(QtPluginPDBsDest)"
       SkipUnchangedFiles="true"
     />
   </Target>
