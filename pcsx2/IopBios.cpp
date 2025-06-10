@@ -21,6 +21,7 @@
 #include <cstring>
 #include <fmt/format.h>
 #include <sys/stat.h>
+#include <algorithm>
 
 #include <fcntl.h>
 
@@ -956,7 +957,7 @@ namespace R3000A
 			char tmp[max_len], tmp2[max_len];
 			char* ptmp = tmp;
 			unsigned int printed_bytes = 0;
-			unsigned int remaining_buf = max_len - 1;
+			int remaining_buf = max_len - 1;
 			int n = 1, i = 0, j = 0;
 
 			while (fmt[i])
@@ -1000,7 +1001,7 @@ namespace R3000A
 						{
 							case 'f':
 							case 'F':
-								printed_bytes = snprintf(ptmp, remaining_buf, tmp2, (float)iopMemRead32(sp + n * 4));
+								printed_bytes = std::min(remaining_buf, snprintf(ptmp, remaining_buf, tmp2, (float)iopMemRead32(sp + n * 4)));
 								remaining_buf -= printed_bytes;
 								ptmp += printed_bytes;
 								n++;
@@ -1012,7 +1013,7 @@ namespace R3000A
 							case 'E':
 							case 'g':
 							case 'G':
-								printed_bytes = snprintf(ptmp, remaining_buf, tmp2, (double)iopMemRead32(sp + n * 4));
+								printed_bytes = std::min(remaining_buf, snprintf(ptmp, remaining_buf, tmp2, (double)iopMemRead32(sp + n * 4)));
 								remaining_buf -= printed_bytes;
 								ptmp += printed_bytes;
 								n++;
@@ -1028,14 +1029,14 @@ namespace R3000A
 							case 'X':
 							case 'u':
 							case 'U':
-								printed_bytes = snprintf(ptmp, remaining_buf, tmp2, (u32)iopMemRead32(sp + n * 4));
+								printed_bytes = std::min(remaining_buf, snprintf(ptmp, remaining_buf, tmp2, (u32)iopMemRead32(sp + n * 4)));
 								remaining_buf -= printed_bytes;
 								ptmp += printed_bytes;
 								n++;
 								break;
 
 							case 'c':
-								printed_bytes = snprintf(ptmp, remaining_buf, tmp2, (u8)iopMemRead32(sp + n * 4));
+								printed_bytes = std::min(remaining_buf, snprintf(ptmp, remaining_buf, tmp2, (u8)iopMemRead32(sp + n * 4)));
 								remaining_buf -= printed_bytes;
 								ptmp += printed_bytes;
 								n++;
@@ -1044,7 +1045,7 @@ namespace R3000A
 							case 's':
 							{
 								std::string s = iopMemReadString(iopMemRead32(sp + n * 4));
-								printed_bytes = snprintf(ptmp, remaining_buf, tmp2, s.data());
+								printed_bytes = std::min(remaining_buf, snprintf(ptmp, remaining_buf, tmp2, s.data()));
 								remaining_buf -= printed_bytes;
 								ptmp += printed_bytes;
 								n++;
