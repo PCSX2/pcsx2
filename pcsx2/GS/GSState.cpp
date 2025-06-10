@@ -3901,329 +3901,414 @@ __forceinline void GSState::VertexKick(u32 skip)
 		Flush(VERTEXCOUNT);
 }
 
-/// Checks if region repeat is used (applying it does something to at least one of the values in min...max)
-/// Also calculates the real min and max values seen after applying the region repeat to all values in min...max
-static bool UsesRegionRepeat(int fix, int msk, int min, int max, int* min_out, int* max_out)
+// Maps the range min .. max under the region repeat function determined by MSK and FIX.
+// The region repeat function is f(x) = (x & MSK) | FIX.
+// min_boundary and max_boundary return the same value: if any values are modified.
+// i.e., does the region repeat have any effect on the values in min .. max?
+void GSState::GetClampWrapMinMaxUVRegionRepeat(int MSK, int FIX, int min, int max, int* min_out, int* max_out, bool* min_boundary, bool* max_boundary)
 {
-	if ((min < 0) != (max < 0))
+	if (min < 0 && 0 <= max)
 	{
-		// Algorithm doesn't work properly if bits overflow when incrementing (happens on the -1 → 0 crossing)
-		// Conveniently, crossing zero guarantees you use the full range
-		*min_out = fix;
-		*max_out = (fix | msk) + 1;
-		return true;
+		// If we cross from -1 to 0 combine the negative and positive parts separately
+		// as the below algorithm only works if min <= max as unsigned integers.
+
+		int min_out_1, max_out_1, min_out_2, max_out_2;
+		bool min_boundary_1, max_boundary_1, min_boundary_2, max_boundary_2;
+		GetClampWrapMinMaxUVRegionRepeat(MSK, FIX, min, -1, &min_out_1, &max_out_1, &min_boundary_1, &max_boundary_1);
+		GetClampWrapMinMaxUVRegionRepeat(MSK, FIX, 0, max, &min_out_2, &max_out_2, &min_boundary_2, &max_boundary_2);
+		*min_out = std::min(min_out_1, min_out_2);
+		*max_out = std::max(max_out_1, max_out_2);
+		*min_boundary = min_boundary_1 || min_boundary_2;
+		*max_boundary = max_boundary_1 || max_boundary_2;
 	}
+	else
+	{
+		// min, max both negative or non-negative
 
-	const int cleared_bits = ~msk & ~fix; // Bits that are always cleared by applying msk and fix
-	const int set_bits = fix; // Bits that are always set by applying msk and fix
-	unsigned long msb;
-	int variable_bits = min ^ max;
-	if (_BitScanReverse(&msb, variable_bits))
-		variable_bits |= (1 << msb) - 1; // Fill in all lower bits
+		const int cleared_bits = ~MSK & ~FIX; // Bits that are always cleared by applying msk and fix
+		const int set_bits = FIX; // Bits that are always set by applying msk and fix
+		unsigned long msb;
+		int variable_bits = min ^ max;
+		if (_BitScanReverse(&msb, variable_bits))
+			variable_bits |= (1 << msb) - 1; // Fill in all lower bits
 
-	const int always_set = min & ~variable_bits;   // Bits that are set in every value in min...max
-	const int sometimes_set = min | variable_bits; // Bits that are set in at least one value in min...max
+		const int always_set = min & ~variable_bits; // Bits that are set in every value in min...max
+		const int sometimes_set = min | variable_bits; // Bits that are set in at least one value in min...max
 
-	const bool sets_bits = (set_bits | always_set) != always_set; // At least one bit in min...max is set by applying msk and fix
-	const bool clears_bits = (cleared_bits & sometimes_set) != 0; // At least one bit in min...max is cleared by applying msk and fix
+		const bool sets_bits = (set_bits | always_set) != always_set; // At least one bit in min...max is set by applying msk and fix
+		const bool clears_bits = (cleared_bits & sometimes_set) != 0; // At least one bit in min...max is cleared by applying msk and fix
 
-	const int overwritten_variable_bits = (cleared_bits | set_bits) & variable_bits;
-	// A variable bit that's `0` in `min` will at some point switch to a `1` (because it's variable)
-	// When it does, all bits below it will switch to a `0` (that's how incrementing works)
-	// If the 0 to 1 switch is reflected in the final output (not masked and not replaced by a fixed value),
-	// the final value would be larger than the previous.  Otherwise, the final value will be less.
-	// The true minimum value is `min` with all bits below the most significant replaced variable `0` bit cleared
-	const int min_overwritten_variable_zeros = ~min & overwritten_variable_bits;
-	if (_BitScanReverse(&msb, min_overwritten_variable_zeros))
-		min &= (~0u << msb);
-	// Similar thing for max, but the first masked `1` bit
-	const int max_overwritten_variable_ones = max & overwritten_variable_bits;
-	if (_BitScanReverse(&msb, max_overwritten_variable_ones))
-		max |= (1 << msb) - 1;
+		const int overwritten_variable_bits = (cleared_bits | set_bits) & variable_bits;
+		// A variable bit that's `0` in `min` will at some point switch to a `1` (because it's variable)
+		// When it does, all bits below it will switch to a `0` (that's how incrementing works)
+		// If the 0 to 1 switch is reflected in the final output (not masked and not replaced by a fixed value),
+		// the final value would be larger than the previous.  Otherwise, the final value will be less.
+		// The true minimum value is `min` with all bits below the most significant replaced variable `0` bit cleared
+		const int min_overwritten_variable_zeros = ~min & overwritten_variable_bits;
+		if (_BitScanReverse(&msb, min_overwritten_variable_zeros))
+			min &= (~0u << msb);
+		// Similar thing for max, but the first masked `1` bit
+		const int max_overwritten_variable_ones = max & overwritten_variable_bits;
+		if (_BitScanReverse(&msb, max_overwritten_variable_ones))
+			max |= (1 << msb) - 1;
 
-	*min_out = (msk & min) | fix;
-	*max_out = ((msk & max) | fix) + 1;
+		*min_out = (min & MSK) | FIX;
+		*max_out = (max & MSK) | FIX;
 
-	return sets_bits || clears_bits;
+		// Assume both boundaries are used if any wrapping occurs
+		*max_boundary = *min_boundary = sets_bits || clears_bits;
+	}
 }
 
-GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCLAMP CLAMP, bool linear, bool clamp_to_tsize)
+// Get the min/max texel coordinate (U or V) assuming it takes the values min .. max and is then
+// wrapped/clamped according to the mode WM.
+// SIZE: Log2 width or height of texture (TH or TW)
+// MIN/MAX: Either the clamping range (in REGION_CLAMP mode) or the MKS/FIX parameters (in REGION_REPEAT mode)
+// Returns true if any of the values are changed. I.e., if f(x) is the mapping function for clamp/wrap mode,
+// return true if f(x) != x for some x in [ min .. max ]
+void GSState::GetClampWrapMinMaxUV(int SIZE, int WM, int MIN, int MAX, int min, int max, int* min_out, int* max_out, bool* min_boundary, bool* max_boundary)
 {
-	// TODO: some of the +1s can be removed if linear == false
+	const int size = 1 << SIZE;
+	const int MSK = MIN;
+	const int FIX = MAX;
 
-	const int tw = TEX0.TW;
-	const int th = TEX0.TH;
-
-	const int w = 1 << tw;
-	const int h = 1 << th;
-	const int tw_mask = (1 << tw) - 1;
-	const int th_mask = (1 << th) - 1;
-
-	GSVector4i tr(0, 0, w, h);
-
-	const int wms = CLAMP.WMS;
-	const int wmt = CLAMP.WMT;
-
-	const int minu = (int)CLAMP.MINU;
-	const int minv = (int)CLAMP.MINV;
-	const int maxu = (int)CLAMP.MAXU;
-	const int maxv = (int)CLAMP.MAXV;
-
-	GSVector4i vr = tr;
-
-	switch (wms)
+	if (WM == CLAMP_REPEAT)
 	{
-		case CLAMP_REPEAT:
-			break;
-		case CLAMP_CLAMP:
-			break;
-		case CLAMP_REGION_CLAMP:
-			vr.x = minu;
-			vr.z = maxu + 1;
-			break;
-		case CLAMP_REGION_REPEAT:
-			vr.x = maxu;
-			vr.z = (maxu | minu) + 1;
-			break;
-		default:
-			ASSUME(0);
+		// If we cross the size boundary then we always get the largest/smallest possible wrapped value
+		if ((min & ~(size - 1)) != (max & ~(size - 1)))
+		{
+			*min_out = 0;
+			*max_out = size - 1;
+			*min_boundary = *max_boundary = true;
+		}
+		else
+		{
+			*min_out = min & (size - 1);
+			*max_out = max & (size - 1);
+			*min_boundary = *max_boundary = false;
+		}
 	}
-
-	switch (wmt)
+	else if (WM == CLAMP_CLAMP)
 	{
-		case CLAMP_REPEAT:
-			break;
-		case CLAMP_CLAMP:
-			break;
-		case CLAMP_REGION_CLAMP:
-			vr.y = minv;
-			vr.w = maxv + 1;
-			break;
-		case CLAMP_REGION_REPEAT:
-			vr.y = maxv;
-			vr.w = (maxv | minv) + 1;
-			break;
-		default:
-			ASSUME(0);
+		*min_out = std::max(0, std::min(size - 1, min));
+		*max_out = std::max(0, std::min(size - 1, max));
+		*min_boundary = min < 0;
+		*max_boundary = max > size - 1;
 	}
-
-	// Software renderer fixes TEX0 so that TW/TH contain MAXU/MAXV.
-	// Hardware renderer doesn't, and handles it in the texture cache, so don't clamp here.
-	if (clamp_to_tsize)
-		vr = vr.rintersect(tr);
+	else if (WM == CLAMP_REGION_CLAMP)
+	{
+		*min_out = std::max(MIN, std::min(MAX, min));
+		*max_out = std::max(MIN, std::min(MAX, max));
+		*min_boundary = min < MIN;
+		*max_boundary = max > MAX;
+	}
+	else if (WM == CLAMP_REGION_REPEAT)
+	{
+		GetClampWrapMinMaxUVRegionRepeat(MSK, FIX, min, max, min_out, max_out, min_boundary, max_boundary);
+	}
 	else
-		tr = tr.runion(vr);
+	{
+		pxAssertMsg(false, "Invalid clamp/wrap mode");
+	}
+}
 
-	u8 uses_border = 0;
+GSState::TextureMinMaxResult GSState::GetTextureMinMaxApprox(GIFRegTEX0 TEX0, GIFRegCLAMP CLAMP, bool linear)
+{
+	const int TW = TEX0.TW;
+	const int TH = TEX0.TH;
 
-	if (m_vt.m_max.t.x >= FLT_MAX || m_vt.m_min.t.x <= -FLT_MAX ||
-		m_vt.m_max.t.y >= FLT_MAX || m_vt.m_min.t.y <= -FLT_MAX)
+	const int width = 1 << TW;
+	const int height = 1 << TH;
+
+	const int WMS = CLAMP.WMS;
+	const int WMT = CLAMP.WMT;
+
+	const int MINU = (int)CLAMP.MINU;
+	const int MINV = (int)CLAMP.MINV;
+	const int MAXU = (int)CLAMP.MAXU;
+	const int MAXV = (int)CLAMP.MAXV;
+
+	GSVector4i uvi; // Rectangle computed from UV bounds of vertices
+	u8 uses_border = 0; // Bit mask of TextureMinMaxResult::USES_BOUNDARY_* flags
+	GSVector4 uvf = m_vt.m_min.t.xyxy(m_vt.m_max.t); // Contains min, max of texture coordinates (Umin, Vmin, Umax, Vmax)
+
+	// FIXME: Replace this with a flag that says "huge or nans" detected in texture coords.
+	if (uvf.right >= FLT_MAX || uvf.left <= -FLT_MAX || uvf.bottom >= FLT_MAX || uvf.top <= -FLT_MAX)
 	{
 		// If any of the min/max values are +-FLT_MAX we can't rely on them
-		// so just assume full texture.
+		// so just assume full texture and all borders.
+		uvi = GSVector4i(0, 0, width - 1, height - 1);
 		uses_border = 0xF;
 	}
 	else
 	{
-		// Optimisation aims to reduce the amount of texture loaded to only the bit which will be read
-		GSVector4 st = m_vt.m_min.t.xyxy(m_vt.m_max.t);
+		if (linear)
+			uvf += GSVector4(-0.5f, -0.5f, 0.5f, 0.5f);
+
+		uvi = GSVector4i(uvf.floor());
+
+		bool min_boundary_u, min_boundary_v, max_boundary_u, max_boundary_v;
+
+		GetClampWrapMinMaxUV(TW, WMS, MINU, MAXU, uvi.left, uvi.right, &uvi.left, &uvi.right, &min_boundary_u, &max_boundary_u);
+		GetClampWrapMinMaxUV(TH, WMT, MINV, MAXV, uvi.top, uvi.bottom, &uvi.top, &uvi.bottom, &min_boundary_v, &max_boundary_v);
+
+		if (min_boundary_u)
+			uses_border |= TextureMinMaxResult::USES_BOUNDARY_LEFT;
+		if (max_boundary_u)
+			uses_border |= TextureMinMaxResult::USES_BOUNDARY_RIGHT;
+		if (min_boundary_v)
+			uses_border |= TextureMinMaxResult::USES_BOUNDARY_TOP;
+		if (max_boundary_v)
+			uses_border |= TextureMinMaxResult::USES_BOUNDARY_BOTTOM;
+	}
+
+	uvi += GSVector4i(0, 0, 1, 1); // Rectangles have exclusive endpoints by convention
+
+	return {uvi, uses_border};
+}
+
+// TODO: Rename these to GetTextureUV
+
+GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCLAMP CLAMP, GSVector4i scissor, bool linear)
+{
+	// Calculate the range of UV coordinates of the texture that are used for the draw.
+	// First try to do exact UV calculation in the case of axis-aligned triangles or sprites.
+	// If this fails, do a rough UV calculation.
+	TextureMinMaxResult tmm_result;
+	if (GetTextureMinMaxAxisAligned(TEX0, CLAMP, scissor, linear, &tmm_result))
+		return tmm_result;
+	else
+		return GetTextureMinMaxApprox(TEX0, CLAMP, linear);
+}
+
+// TODO: Replace this with optimized SIMD code.
+// Returns true if the 3 vertices in verts reprsents a axis-aligned right triangles (both XY and ST/UV) and
+// outputs the indices of the corner, vertical, and horizontal point in idx_out
+static bool IsAxisAlignedRightTriangle(const GSVertex* vertex, const u16* index, bool fst, u32* i_out)
+{
+	bool same_coord_x[3] = {false, false, false};
+	bool same_coord_y[3] = {false, false, false};
+
+	// Find which vertices have the same X/Y coordinates as other vertices
+	for (u32 i0 = 0; i0 < 3; i0++)
+	{
+		const u32 i1 = (i0 + 1) % 3;
+		bool same_x = vertex[index[i0]].XYZ.X == vertex[index[i1]].XYZ.X;
+		bool same_y = vertex[index[i0]].XYZ.Y == vertex[index[i1]].XYZ.Y;
+		if (fst)
+		{
+			same_x &= vertex[index[i0]].U == vertex[index[i1]].U;
+			same_y &= vertex[index[i0]].V == vertex[index[i1]].V;
+		}
+		else
+		{
+			same_x &= vertex[index[i0]].ST.S == vertex[index[i1]].ST.S;
+			same_y &= vertex[index[i0]].ST.T == vertex[index[i1]].ST.T;
+		}
+		if (same_x)
+		{
+			same_coord_x[i0] = same_coord_x[i1] = true;
+		}
+		if (same_y)
+		{
+			same_coord_y[i0] = same_coord_y[i1] = true;
+		}
+	}
+
+	// Find the corner vertex, which should share both X/Y both other vertices
+	int i_corner = -1;
+	int i_vertical = -1;
+	int i_horizontal = -1;
+	for (int i = 0; i < 3; i++)
+	{
+		if (same_coord_x[i] && same_coord_y[i])
+		{
+			if (i_corner != -1) // There can only be one corner point
+				return false;
+			i_corner = i;
+		}
+	}
+
+	if (i_corner < 0)
+		return false;
+
+	// The vertical vertex is the one that has the same x coordinate as the corner vertex
+	for (int i = 1; i < 3; i++)
+	{
+		if (same_coord_x[(i_corner + i) % 3])
+		{
+			if (i_vertical != -1)
+				return false; // There can only be one vertical point
+			i_vertical = (i_corner + i) % 3;
+		}
+	}
+
+	// The horizontal vertex is the one that has the same y coordinate as the corner vertex
+	for (int i = 1; i < 3; i++)
+	{
+		if (same_coord_y[(i_corner + i) % 3])
+		{
+			if (i_horizontal != -1)
+				return false; // There can only be one horizontal point
+			i_horizontal = (i_corner + i) % 3;
+		}
+	}
+
+	pxAssertMsg(i_horizontal != i_vertical, "Impossible");
+
+	i_out[0] = (u32)i_corner;
+	i_out[1] = (u32)i_vertical;
+	i_out[2] = (u32)i_horizontal;
+	return true;
+}
+
+// TODO: Replace this with optimized SIMD code.
+void GSState::GetTextureMinMaxAxisAlignedHelper(
+	GIFRegTEX0 TEX0, GSVector4i scissor, u32 fst, const GSVertex* vertex, u16 index0, u16 index1, GSVector4* minmax)
+{
+	const u16 index[2] = { index0, index1 };
+
+	const int ix0 = (vertex[index[0]].XYZ.X > vertex[index[1]].XYZ.X) & 1;
+	const int iy0 = (vertex[index[0]].XYZ.Y > vertex[index[1]].XYZ.Y) & 1;
+	const int ix1 = ix0 ^ 1;
+	const int iy1 = iy0 ^ 1;
+		
+	float x0 = (float)(vertex[index[ix0]].XYZ.X - m_xyof.x) / 16.0f;
+	float y0 = (float)(vertex[index[iy0]].XYZ.Y - m_xyof.y) / 16.0f;
+	float x1 = (float)(vertex[index[ix1]].XYZ.X - m_xyof.x) / 16.0f;
+	float y1 = (float)(vertex[index[iy1]].XYZ.Y - m_xyof.y) / 16.0f;
+
+	float u0, u1, v0, v1;
+
+	if (fst)
+	{
+		u0 = (float)vertex[index[ix0]].U / 16.0f;
+		v0 = (float)vertex[index[iy0]].V / 16.0f;
+		u1 = (float)vertex[index[ix1]].U / 16.0f;
+		v1 = (float)vertex[index[iy1]].V / 16.0f;
+	}
+	else
+	{
+		u0 = vertex[index[ix0]].ST.S / vertex[index[ix0]].RGBAQ.Q * (1 << TEX0.TW);
+		v0 = vertex[index[iy0]].ST.T / vertex[index[iy0]].RGBAQ.Q * (1 << TEX0.TH);
+		u1 = vertex[index[ix1]].ST.S / vertex[index[ix1]].RGBAQ.Q * (1 << TEX0.TW);
+		v1 = vertex[index[iy1]].ST.T / vertex[index[iy1]].RGBAQ.Q * (1 << TEX0.TH);
+	}
+
+	// pixel center coordinates
+	float px0 = std::ceil(x0);
+	float py0 = std::ceil(y0);
+	float px1 = std::floor(x1);
+	float py1 = std::floor(y1);
+
+	// Exclude right/bottom edges
+	if (px1 == x1)
+		px1 = std::max(px0, px1 - 1);
+	if (py1 == y1)
+		py1 = std::max(py0, py1 - 1);
+
+	// scissoring
+	px0 = std::max((float)scissor.left, std::min((float)scissor.right, px0));
+	py0 = std::max((float)scissor.top, std::min((float)scissor.bottom, py0));
+	px1 = std::max((float)scissor.left, std::min((float)scissor.right, px1));
+	py1 = std::max((float)scissor.top, std::min((float)scissor.bottom, py1));
+
+	// FIXME: What if px1 < px0 or py1 < py0?
+
+	float u0_interp = ((x1 - px0) * u0 + (px0 - x0) * u1) / (x1 - x0);
+	float v0_interp = ((y1 - py0) * v0 + (py0 - y0) * v1) / (y1 - y0);
+	float u1_interp = ((x1 - px1) * u0 + (px1 - x0) * u1) / (x1 - x0);
+	float v1_interp = ((y1 - py1) * v0 + (py1 - y0) * v1) / (y1 - y0);
+
+	float u_min = std::min(u0_interp, u1_interp);
+	float v_min = std::min(v0_interp, v1_interp);
+	float u_max = std::max(u0_interp, u1_interp);
+	float v_max = std::max(v0_interp, v1_interp);
+
+	minmax->left = std::min(minmax->left, u_min);
+	minmax->top = std::min(minmax->top, v_min);
+	minmax->right = std::max(minmax->right, u_max);
+	minmax->bottom = std::max(minmax->bottom, v_max);
+}
+
+// TODO: Replace stuff with templates for efficiency
+bool GSState::GetTextureMinMaxAxisAligned(GIFRegTEX0 TEX0, GIFRegCLAMP CLAMP, GSVector4i scissor, bool linear, GSState::TextureMinMaxResult* result)
+{
+	const GS_PRIM_CLASS primclass = GSUtil::GetPrimClass(PRIM->PRIM);
+
+	GSVector4 minmax(FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX); // min u, min v, max u, max v
+
+	const GSVertex* const vertex = m_vertex.buff;
+	const u16* const index = m_index.buff;
+	const u32 fst = PRIM->FST;
+
+	if (primclass == GS_PRIM_CLASS::GS_TRIANGLE_CLASS)
+	{
+		for (u32 i = 0; i < m_index.tail; i += 3)
+		{
+			const u16* const idx = &index[i]; 
+			u32 i_tri[3]; // Vertices of triangle in order: corner, vertical, horizontal
+			if (!IsAxisAlignedRightTriangle(vertex, &idx[0], fst, &i_tri[0]))
+				return false;
+			GetTextureMinMaxAxisAlignedHelper(TEX0, scissor, fst, vertex, idx[i_tri[1]], idx[i_tri[2]], &minmax);
+		}
+	}
+	else if (primclass == GS_PRIM_CLASS::GS_SPRITE_CLASS)
+	{
+		for (u32 i = 0; i < m_index.tail; i += 2)
+		{
+			GetTextureMinMaxAxisAlignedHelper(TEX0, scissor, fst, vertex, index[i], index[i + 1], &minmax);
+		}
+	}
+	else
+	{
+		return false;
+	}
+
+	// Convert to integer coordinates
+	GSVector4i minmaxi;
+	if (linear)
+	{
+		minmaxi.left = (int)std::floor(minmax.left - 0.5);
+		minmaxi.top = (int)std::floor(minmax.top - 0.5);
+		minmaxi.right = (int)std::floor(minmax.right + 0.5);
+		minmaxi.bottom = (int)std::floor(minmax.bottom + 0.5);
+
+		// This is a hack to prevent coordinates from wrapping in certain effects.
+		// Games sometimes draw a sprite or triangle while sampling a rectangle of form (0, 0, u, v) of the
+		// current texture (where u < 2**TW, v < 2**TH). If linear filtering is enabled with repeat or region repeat,
+		// the left/top 0s can become -1 and wrap to 2**TW and 2**TH. While this is technically
+		// PS2 accurate, it causes problems with the texture caches, which may have allocated
+		// less for the actual texture, and will need to resize texture to an unwanted
+		// larger size. This can lead to garbage data in the borders of the texture and break
+		// graphics later on. To prevent this, we force the left/top coordinates to 0.
 		if (linear)
 		{
-			st += GSVector4(-0.5f, 0.5f).xxyy();
-			
-			// If it's the start of the texture and our little adjustment is all that pushed it over, clamp it to 0.
-			// This stops the border check failing when using repeat but needed less than the full texture
-			// since this was making it take the full texture even though it wasn't needed.
-			if (!clamp_to_tsize)
-			{
-				const u32 mask = (m_vt.m_min.t.floor() == GSVector4::zero()).mask();
-				if (mask & 1) // X == 0
-					st.x = st.max(GSVector4::zero()).x;
-				if (mask & 2) // Y == 0
-					st.y = st.max(GSVector4::zero()).y;
-			}
+			if (minmaxi.left == -1 && minmax.left >= 0 && (CLAMP.WMS == CLAMP_REPEAT || CLAMP.WMS == CLAMP_REGION_REPEAT))
+				minmaxi.left = 0;
+			if (minmaxi.top == -1 && minmax.top >= 0 && (CLAMP.WMT == CLAMP_REPEAT || CLAMP.WMT == CLAMP_REGION_REPEAT))
+				minmaxi.top = 0;
 		}
+	}
+	else
+	{
+		minmaxi.left = (int)std::floor(minmax.left);
+		minmaxi.top = (int)std::floor(minmax.top);
+		minmaxi.right = (int)std::floor(minmax.right);
+		minmaxi.bottom = (int)std::floor(minmax.bottom);
+	}
 
-		// draw will get scissored, adjust UVs to suit
-		const GSVector2 pos_range(std::max(m_vt.m_max.p.x - m_vt.m_min.p.x, 1.0f), std::max(m_vt.m_max.p.y - m_vt.m_min.p.y, 1.0f));
-		const GSVector2 uv_range(m_vt.m_max.t.x - m_vt.m_min.t.x, m_vt.m_max.t.y - m_vt.m_min.t.y);
-		const GSVector2 grad(uv_range / pos_range);
-		// Adjust texture range when sprites get scissor clipped. Since we linearly interpolate, this
-		// optimization doesn't work when perspective correction is enabled.
-		// Allowing for quads when the gradiant is 1. It's not guaranteed (would need to check the grandient on each vector), but should be close enough.
-		if (m_primitive_covers_without_gaps != NoGapsType::GapsFound && (m_vt.m_primclass == GS_SPRITE_CLASS || (m_vt.m_primclass == GS_TRIANGLE_CLASS && grad.x == 1.0f && grad.y == 1.0f && TrianglesAreQuads(false))))
-		{
-			// When coordinates are fractional, GS appears to draw to the right/bottom (effectively
-			// taking the ceiling), not to the top/left (taking the floor).
-			const GSVector4i int_rc(m_vt.m_min.p.ceil().xyxy(m_vt.m_max.p.floor()));
-			const GSVector4i scissored_rc(int_rc.rintersect(m_context->scissor.in));
-			if (!int_rc.eq(scissored_rc))
-			{
-
-				const GSVertex* vert_first = &m_vertex.buff[m_index.buff[0]];
-				const GSVertex* vert_second = &m_vertex.buff[m_index.buff[1]];
-				const GSVertex* vert_third = &m_vertex.buff[m_index.buff[2]];
-
-				GSVector4 new_st = st;
-				bool u_forward_check = false;
-				bool x_forward_check = false;
-				if (m_vt.m_primclass == GS_TRIANGLE_CLASS)
-				{
-					u_forward_check = PRIM->FST ? ((vert_first->U < vert_second->U) || (vert_first->U < vert_third->U)) : (((vert_first->ST.S / vert_first->RGBAQ.Q) < (vert_second->ST.S / vert_second->RGBAQ.Q)) || ((vert_first->ST.S / vert_first->RGBAQ.Q) < (vert_third->ST.S / vert_third->RGBAQ.Q)));
-					x_forward_check = (vert_first->XYZ.X < vert_second->XYZ.X) || (vert_first->XYZ.X < vert_third->XYZ.X);
-				}
-				else
-				{
-					u_forward_check = PRIM->FST ? (vert_first->U < vert_second->U) : ((vert_first->ST.T / vert_first->RGBAQ.Q) < (vert_second->ST.T / vert_first->RGBAQ.Q));
-					x_forward_check = vert_first->XYZ.Y < vert_second->XYZ.Y;
-				}
-				// Check if the UV coords are going in a different direction to the verts, if they match direction, no need to swap
-				const bool u_forward = u_forward_check;
-				const bool x_forward = x_forward_check;
-				const bool swap_x = u_forward != x_forward;
-
-				if (int_rc.left < scissored_rc.left)
-				{
-					if (!swap_x)
-						new_st.x += floor(static_cast<float>(scissored_rc.left - int_rc.left) * grad.x);
-					else
-						new_st.z -= floor(static_cast<float>(scissored_rc.left - int_rc.left) * grad.x);
-				}
-				if (int_rc.right > scissored_rc.right)
-				{
-					if (!swap_x)
-						new_st.z -= floor(static_cast<float>(int_rc.right - scissored_rc.right) * grad.x);
-					else
-						new_st.x += floor(static_cast<float>(int_rc.right - scissored_rc.right) * grad.x);
-				}
-				// we need to check that it's not going to repeat over the non-clipped part
-				if (wms != CLAMP_REGION_REPEAT && (wms != CLAMP_REPEAT || (static_cast<int>(new_st.x) & ~tw_mask) == (static_cast<int>(new_st.z - 1) & ~tw_mask)))
-				{
-					st.x = new_st.x;
-					st.z = new_st.z;
-				}
-				bool v_forward_check = false;
-				bool y_forward_check = false;
-				if (m_vt.m_primclass == GS_TRIANGLE_CLASS)
-				{
-					v_forward_check = PRIM->FST ? ((vert_first->V < vert_second->V) || (vert_first->V < vert_third->V)) : (((vert_first->ST.T / vert_first->RGBAQ.Q) < (vert_second->ST.T / vert_second->RGBAQ.Q)) || ((vert_first->ST.T / vert_first->RGBAQ.Q) < (vert_third->ST.T / vert_third->RGBAQ.Q)));
-					y_forward_check = (vert_first->XYZ.Y < vert_second->XYZ.Y) || (vert_first->XYZ.Y < vert_third->XYZ.Y);
-				}
-				else
-				{
-					v_forward_check = PRIM->FST ? (vert_first->V < vert_second->V) : ((vert_first->ST.T / vert_first->RGBAQ.Q) < (vert_second->ST.T / vert_first->RGBAQ.Q));
-					y_forward_check = vert_first->XYZ.Y < vert_second->XYZ.Y;
-				}
-				const bool v_forward = v_forward_check;
-				const bool y_forward = y_forward_check;
-				const bool swap_y = v_forward != y_forward;
-
-				if (int_rc.top < scissored_rc.top)
-				{
-					if (!swap_y)
-						new_st.y += floor(static_cast<float>(scissored_rc.top - int_rc.top) * grad.y);
-					else
-						new_st.w -= floor(static_cast<float>(scissored_rc.top - int_rc.top) * grad.y);
-				}
-				if (int_rc.bottom > scissored_rc.bottom)
-				{
-					if (!swap_y)
-						new_st.w -= floor(static_cast<float>(int_rc.bottom - scissored_rc.bottom) * grad.y);
-					else
-						new_st.y += floor(static_cast<float>(int_rc.bottom - scissored_rc.bottom) * grad.y);
-				}
-				if (wmt != CLAMP_REGION_REPEAT && (wmt != CLAMP_REPEAT || (static_cast<int>(new_st.y) & ~th_mask) == (static_cast<int>(new_st.w - 1) & ~th_mask)))
-				{
-					st.y = new_st.y;
-					st.w = new_st.w;
-				}
-			}
-		}
-
-		const GSVector4i uv = GSVector4i(st.floor());
-		uses_border = GSVector4::cast((uv < vr).blend32<0xc>(uv >= vr)).mask();
-
-		// Need to make sure we don't oversample, this can cause trouble in grabbing textures.
-		// This may be inaccurate depending on the draw, but adding 1 all the time is wrong too.
-		// FIXME: It breaks sw renderer so let's still use 1 for SW mode for now.
-		const int inclusive_x_req = GSIsHardwareRenderer() ? (((m_vt.m_primclass < GS_TRIANGLE_CLASS) || (grad.x < 1.0f || (grad.x == 1.0f && m_vt.m_max.p.x != floor(m_vt.m_max.p.x)))) ? 1 : 0) : 1;
-		const int inclusive_y_req = GSIsHardwareRenderer() ? (((m_vt.m_primclass < GS_TRIANGLE_CLASS) || (grad.y < 1.0f || (grad.y == 1.0f && m_vt.m_max.p.y != floor(m_vt.m_max.p.y)))) ? 1 : 0) : 1;
+	bool left_boundary, top_boundary, right_boundary, bottom_boundary;
+	GetClampWrapMinMaxUV(TEX0.TW, CLAMP.WMS, CLAMP.MINU, CLAMP.MAXU, minmaxi.left, minmaxi.right, &minmaxi.left, &minmaxi.right, &left_boundary, &right_boundary);
+	GetClampWrapMinMaxUV(TEX0.TH, CLAMP.WMT, CLAMP.MINV, CLAMP.MAXV, minmaxi.top, minmaxi.bottom, &minmaxi.top, &minmaxi.bottom, &top_boundary, &bottom_boundary);
 	
-		// Roughly cut out the min/max of the read (Clamp)
-		switch (wms)
-		{
-			case CLAMP_REPEAT:
-				if ((uv.x & ~tw_mask) == (uv.z & ~tw_mask))
-				{
-					vr.x = std::max(vr.x, uv.x & tw_mask);
-					vr.z = std::min(vr.z, (uv.z & tw_mask) + inclusive_x_req);
-				}
-				break;
-			case CLAMP_CLAMP:
-			case CLAMP_REGION_CLAMP:
-				if (vr.x < uv.x)
-					vr.x = std::min(uv.x, vr.z - 1);
-				if (vr.z > (uv.z + 1))
-					vr.z = std::max(uv.z, vr.x) + inclusive_x_req;
-				break;
-			case CLAMP_REGION_REPEAT:
-				if (UsesRegionRepeat(maxu, minu, uv.x, uv.z, &vr.x, &vr.z) || maxu >= tw)
-					uses_border |= TextureMinMaxResult::USES_BOUNDARY_U;
-				break;
-		}
-
-		switch (wmt)
-		{
-			case CLAMP_REPEAT:
-				if ((uv.y & ~th_mask) == (uv.w & ~th_mask))
-				{
-					vr.y = std::max(vr.y, uv.y & th_mask);
-					vr.w = std::min(vr.w, (uv.w & th_mask) + inclusive_y_req);
-				}
-				break;
-			case CLAMP_CLAMP:
-			case CLAMP_REGION_CLAMP:
-				if (vr.y < uv.y)
-					vr.y = std::min(uv.y, vr.w - 1);
-				if (vr.w > (uv.w + 1))
-					vr.w = std::max(uv.w, vr.y) + inclusive_y_req;
-				break;
-			case CLAMP_REGION_REPEAT:
-				if (UsesRegionRepeat(maxv, minv, uv.y, uv.w, &vr.y, &vr.w) || maxv >= th)
-					uses_border |= TextureMinMaxResult::USES_BOUNDARY_V;
-				break;
-		}
-	}
-
-	vr = vr.rintersect(tr);
-
-	// This really shouldn't happen now except with the clamping region set entirely outside the texture,
-	// special handling should be written for that case.
-	if (vr.rempty())
-	{
-		// NOTE: this can happen when texcoords are all outside the texture or clamping area is zero, but we can't
-		// let the texture cache update nothing, the sampler will still need a single texel from the border somewhere
-		// examples:
-		// - THPS (no visible problems)
-		// - NFSMW (strange rectangles on screen, might be unrelated)
-		// - Lupin 3rd (huge problems, textures sizes seem to be randomly specified)
-
-		const bool inc_x = vr.x < tr.z;
-		const bool inc_y = vr.y < tr.w;
-		vr = (vr + GSVector4i(inc_x ? 0 : -1, inc_y ? 0 : -1, inc_x ? 1 : 0, inc_y ? 1 : 0)).rintersect(tr);
-	}
-	else if (vr.xxzz().rempty())
-	{
-		const bool inc_x = vr.x < tr.z;
-		vr = (vr + GSVector4i(inc_x ? 0 : -1, 0, inc_x ? 1 : 0, 0)).rintersect(tr);
-	}
-	else if (vr.yyww().rempty())
-	{
-		const bool inc_y = vr.y < tr.w;
-		vr = (vr + GSVector4i(0, inc_y ? 0 : -1, 0, inc_y ? 1 : 0)).rintersect(tr);
-	}
-
-	return { vr, uses_border };
+	result->coverage = GSVector4i(minmaxi.left, minmaxi.top, minmaxi.right + 1, minmaxi.bottom + 1); // use exclusive coordinates for right/bottom
+	result->uses_boundary = 0;
+	result->uses_boundary |= left_boundary ? TextureMinMaxResult::USES_BOUNDARY_LEFT : 0;
+	result->uses_boundary |= top_boundary ? TextureMinMaxResult::USES_BOUNDARY_TOP : 0;
+	result->uses_boundary |= right_boundary ? TextureMinMaxResult::USES_BOUNDARY_RIGHT : 0;
+	result->uses_boundary |= bottom_boundary ? TextureMinMaxResult::USES_BOUNDARY_BOTTOM : 0;
+	return true;
 }
 
 void GSState::CalcAlphaMinMax(const int tex_alpha_min, const int tex_alpha_max)
