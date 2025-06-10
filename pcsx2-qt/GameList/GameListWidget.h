@@ -92,7 +92,7 @@ public Q_SLOTS:
 	void refreshGridCovers();
 
 protected:
-	void resizeEvent(QResizeEvent* event);
+	void resizeEvent(QResizeEvent* event) override;
 	bool event(QEvent* event) override;
 
 private:
