@@ -37,7 +37,8 @@ public:
 protected:
 	const GSState* m_state;
 
-	typedef void (*FindMinMaxPtr)(GSVertexTrace& vt, const void* vertex, const u16* index, int count);
+	typedef void (*FindMinMaxPtr)(const void* vertex, const u16* index, int count,
+		GSVector4* tmin_out, GSVector4* tmax_out, GSVector4i* cmin_out, GSVector4i* cmax_out, GSVector4i* pmin_out, GSVector4i* pmax_out);
 
 	FindMinMaxPtr m_fmm[2][2][2][2][4];
 
