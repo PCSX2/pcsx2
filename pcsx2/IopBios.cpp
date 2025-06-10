@@ -641,7 +641,7 @@ namespace R3000A
 
 				for (size_t i = 0; i < handles.size(); i++)
 				{
-					if (handles[i].fd_index == (u32) fd - firstfd)
+					if (handles[i].fd_index == (u32)fd - firstfd)
 					{
 						handles.erase(handles.begin() + i);
 						break;
@@ -951,8 +951,12 @@ namespace R3000A
 			if (!ConsoleLogging.iopConsole.IsActive())
 				return 1;
 
-			char tmp[1024], tmp2[1024];
+			// maximum allowed size for our buffer before we truncate
+			const unsigned int max_len = 4096;
+			char tmp[max_len], tmp2[max_len];
 			char* ptmp = tmp;
+			unsigned int printed_bytes = 0;
+			unsigned int remaining_buf = max_len - 1;
 			int n = 1, i = 0, j = 0;
 
 			while (fmt[i])
@@ -963,21 +967,32 @@ namespace R3000A
 						j = 0;
 						tmp2[j++] = '%';
 					_start:
-						switch (fmt[++i])
+						// let's check whether this is our null terminator
+						// before allowing the parser to proceed
+						if (fmt[i + 1])
 						{
-							case '.':
-							case 'l':
-								tmp2[j++] = fmt[i];
-								goto _start;
-							default:
-								if (fmt[i] >= '0' && fmt[i] <= '9')
-								{
+							switch (fmt[++i])
+							{
+								case '.':
+								case 'l':
+									if (j >= max_len)
+										break;
 									tmp2[j++] = fmt[i];
 									goto _start;
-								}
-								break;
+								default:
+									if (fmt[i] >= '0' && fmt[i] <= '9')
+									{
+										if (j >= max_len)
+											break;
+										tmp2[j++] = fmt[i];
+										goto _start;
+									}
+									break;
+							}
 						}
 
+						if (j >= max_len)
+							break;
 						tmp2[j++] = fmt[i];
 						tmp2[j] = 0;
 
@@ -985,7 +1000,9 @@ namespace R3000A
 						{
 							case 'f':
 							case 'F':
-								ptmp += sprintf(ptmp, tmp2, (float)iopMemRead32(sp + n * 4));
+								printed_bytes = snprintf(ptmp, remaining_buf, tmp2, (float)iopMemRead32(sp + n * 4));
+								remaining_buf -= printed_bytes;
+								ptmp += printed_bytes;
 								n++;
 								break;
 
@@ -995,7 +1012,9 @@ namespace R3000A
 							case 'E':
 							case 'g':
 							case 'G':
-								ptmp += sprintf(ptmp, tmp2, (double)iopMemRead32(sp + n * 4));
+								printed_bytes = snprintf(ptmp, remaining_buf, tmp2, (double)iopMemRead32(sp + n * 4));
+								remaining_buf -= printed_bytes;
+								ptmp += printed_bytes;
 								n++;
 								break;
 
@@ -1007,19 +1026,25 @@ namespace R3000A
 							case 'O':
 							case 'x':
 							case 'X':
-								ptmp += sprintf(ptmp, tmp2, (u32)iopMemRead32(sp + n * 4));
+								printed_bytes = snprintf(ptmp, remaining_buf, tmp2, (u32)iopMemRead32(sp + n * 4));
+								remaining_buf -= printed_bytes;
+								ptmp += printed_bytes;
 								n++;
 								break;
 
 							case 'c':
-								ptmp += sprintf(ptmp, tmp2, (u8)iopMemRead32(sp + n * 4));
+								printed_bytes = snprintf(ptmp, remaining_buf, tmp2, (u8)iopMemRead32(sp + n * 4));
+								remaining_buf -= printed_bytes;
+								ptmp += printed_bytes;
 								n++;
 								break;
 
 							case 's':
 							{
 								std::string s = iopMemReadString(iopMemRead32(sp + n * 4));
-								ptmp += sprintf(ptmp, tmp2, s.data());
+								printed_bytes = snprintf(ptmp, remaining_buf, tmp2, s.data());
+								remaining_buf -= printed_bytes;
+								ptmp += printed_bytes;
 								n++;
 							}
 							break;
