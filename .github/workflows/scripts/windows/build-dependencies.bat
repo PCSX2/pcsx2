@@ -90,7 +90,7 @@ if %DEBUG%==1 (
   echo Building release libraries...
 )
 
-set FORCEPDB=-DCMAKE_SHARED_LINKER_FLAGS_RELEASE="/DEBUG"
+set FORCEPDB=-DCMAKE_SHARED_LINKER_FLAGS_RELEASE="/DEBUG" -DCMAKE_MODULE_LINKER_FLAGS_RELEASE="/DEBUG"
 
 echo Building Zlib...
 rmdir /S /Q "zlib-%ZLIB%"
