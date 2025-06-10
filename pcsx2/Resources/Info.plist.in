@@ -45,6 +45,46 @@
 	<string>public.app-category.games</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
+	<key>UTImportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>public.ini</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.plain-text</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Configuration File</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>ini</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
+	<key>UTExportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>net.pcsx2.pnach</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.ini</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>PCSX2 Game Patch</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>pnach</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
 	<key>CFBundleLocalizations</key>
 	<array>${PCSX2_MACOS_LOCALIZATIONS}
 	</array>
