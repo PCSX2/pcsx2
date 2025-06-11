@@ -9,12 +9,52 @@
 			<array>
 				<string>iso</string>
 				<string>cso</string>
+				<string>zso</string>
 				<string>chd</string>
+				<string>mdf</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
 			<string>PCSX2.icns</string>
 			<key>CFBundleTypeName</key>
 			<string>PS2 Game</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>elf</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>PCSX2.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>PS2 Homebrew Application</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>gs</string>
+				<string>gs.xz</string>
+				<string>gs.zst</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>PCSX2.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>PCSX2 GSdump</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>p2s</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>PCSX2.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>PCSX2 Save State</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 		</dict>
@@ -64,6 +104,74 @@
 				</array>
 			</dict>
 		</dict>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>public.iso-image</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.archive</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>ISO Disk Image</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>iso</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>public.cso-image</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.archive</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>CSO Disk Image</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>cso</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>public.chd-image</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.archive</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>CHD Disk Image</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>chd</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>public.elf</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.executable</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>ELF Executable</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>elf</string>
+				</array>
+			</dict>
+		</dict>
 	</array>
 	<key>UTExportedTypeDeclarations</key>
 	<array>
@@ -81,6 +189,59 @@
 				<key>public.filename-extension</key>
 				<array>
 					<string>pnach</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>net.pcsx2.memcard</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>PCSX2 Memory Card</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>ps2</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>net.pcsx2.savestate</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>PCSX2 Save State</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>p2s</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>net.pcsx2.gsdump</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>PCSX2 GSdump</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>gs</string>
+					<string>gs.zst</string>
+					<string>gs.xz</string>
 				</array>
 			</dict>
 		</dict>
