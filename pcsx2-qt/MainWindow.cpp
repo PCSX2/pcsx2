@@ -2169,56 +2169,55 @@ void MainWindow::dragEnterEvent(QDragEnterEvent* event)
 
 void MainWindow::dropEvent(QDropEvent* event)
 {
+	if (startFile(getFilenameFromMimeData(event->mimeData())))
+		event->acceptProposedAction();
+}
+
+bool MainWindow::startFile(const QString& filename)
+{
 	const auto mcLock = pauseAndLockVM();
 
 	// Check if memcard is busy, deny request if so
 	if (shouldAbortForMemcardBusy(mcLock))
 	{
-		return;
+		return false;
 	}
 
-	const QString filename(getFilenameFromMimeData(event->mimeData()));
-	const std::string filename_str(filename.toStdString());
+	std::string filename_str = filename.toStdString();
+
 	if (VMManager::IsSaveStateFileName(filename_str))
 	{
-		event->acceptProposedAction();
-
 		// can't load a save state without a current VM
 		if (s_vm_valid)
 			g_emu_thread->loadState(filename);
 		else
 			QMessageBox::critical(this, tr("Load State Failed"), tr("Cannot load a save state without a running VM."));
 
-		return;
+		return true;
 	}
 
 	if (!VMManager::IsLoadableFileName(filename_str))
-		return;
+		return false;
 
 	// if we're already running, do a disc change, otherwise start
 	if (!s_vm_valid)
 	{
-		event->acceptProposedAction();
 		doStartFile(std::nullopt, filename);
-		return;
+		return true;
 	}
 
 	if (VMManager::IsDiscFileName(filename_str) || VMManager::IsBlockDumpFileName(filename_str))
 	{
-		event->acceptProposedAction();
 		doDiscChange(CDVD_SourceType::Iso, filename);
 	}
 	else if (VMManager::IsElfFileName(filename_str))
 	{
 		const auto lock = pauseAndLockVM();
 
-		event->acceptProposedAction();
-
-		if (QMessageBox::question(this, tr("Confirm Reset"),
-				tr("The new ELF cannot be loaded without resetting the virtual machine. Do you want to reset the virtual machine now?")) !=
-			QMessageBox::Yes)
+		if (QMessageBox::Yes != QMessageBox::question(this, tr("Confirm Reset"),
+				tr("The new ELF cannot be loaded without resetting the virtual machine. Do you want to reset the virtual machine now?")))
 		{
-			return;
+			return true;
 		}
 
 		g_emu_thread->setELFOverride(filename);
@@ -2226,17 +2225,15 @@ void MainWindow::dropEvent(QDropEvent* event)
 	}
 	else if (VMManager::IsGSDumpFileName(filename_str))
 	{
-		event->acceptProposedAction();
-
 		if (!GSDumpReplayer::IsReplayingDump())
 		{
 			QMessageBox::critical(this, tr("Error"), tr("Cannot change from game to GS dump without shutting down first."));
-			return;
 		}
 
 		g_emu_thread->changeGSDump(filename);
 		switchToEmulationView();
 	}
+	return true;
 }
 
 void MainWindow::moveEvent(QMoveEvent* event)
