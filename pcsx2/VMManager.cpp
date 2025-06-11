@@ -3199,6 +3199,11 @@ void VMManager::WarnAboutUnsafeSettings()
 			append(ICON_FA_BUG,
 				TRANSLATE_SV("VMManager", "Debug device is enabled. This will massively reduce performance."));
 		}
+		if (EmuConfig.GS.Dithering == 3)
+		{
+			append(ICON_FA_TV,
+				TRANSLATE_SV("VMManager", "Dithering is set to Force 32 bit. This will break rendering in some games."));
+		}
 		static bool render_change_warn = false;
 		if (EmuConfig.GS.Renderer != GSRendererType::Auto && EmuConfig.GS.Renderer != GSRendererType::SW && !render_change_warn)
 		{
