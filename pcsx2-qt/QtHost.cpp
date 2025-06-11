@@ -2327,6 +2327,24 @@ bool QtHost::RunSetupWizard()
 	return true;
 }
 
+class PCSX2MainApplication : public QApplication {
+public:
+	using QApplication::QApplication;
+
+	bool event(QEvent* event) override {
+		if (event->type() == QEvent::FileOpen)
+		{
+			QFileOpenEvent* open = static_cast<QFileOpenEvent*>(event);
+			const QUrl url = open->url();
+			if (url.isLocalFile())
+				return g_main_window->startFile(url.toLocalFile());
+			else
+				return false; // No URL schemas currently supported
+		}
+		return QApplication::event(event);
+	}
+};
+
 int main(int argc, char* argv[])
 {
 	CrashHandler::Install();
@@ -2336,7 +2354,7 @@ int main(int argc, char* argv[])
 	QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 	QtHost::RegisterTypes();
 
-	QApplication app(argc, argv);
+	PCSX2MainApplication app(argc, argv);
 
 #ifndef _WIN32
 	if (!PerformEarlyHardwareChecks())
