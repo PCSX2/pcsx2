@@ -103,6 +103,9 @@ public:
 	/// Rescans a single file. NOTE: Happens on UI thread.
 	void rescanFile(const std::string& path);
 
+	/// Start a file from a user action (e.g. dragging a file onto the main window or with macOS open with)
+	bool startFile(const QString& path);
+
 	void doSettings(const char* category = nullptr);
 	void doGameSettings(const char* category = nullptr);
 
