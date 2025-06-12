@@ -12,6 +12,9 @@ public:
 	static const char* GetATSTName(u32 atst);
 	static const char* GetAFAILName(u32 afail);
 	static const char* GetPSMName(int psm);
+	static const char* GetWMName(u32 wm);
+	static const char* GetZTSTName(u32 ztst);
+	static const char* GetPrimName(u32 prim);
 
 	static const u32* HasSharedBitsPtr(u32 dpsm);
 	static bool HasSharedBits(u32 spsm, const u32* ptr);
