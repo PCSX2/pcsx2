@@ -11,6 +11,9 @@ class GSUtil
 public:
 	static const char* GetATSTName(u32 atst);
 	static const char* GetAFAILName(u32 afail);
+	static const char* GetWMName(u32 wm);
+	static const char* GetZTSTName(u32 ztst);
+	static const char* GetPrimName(u32 prim);
 
 	static GS_PRIM_CLASS GetPrimClass(u32 prim);
 	static int GetVertexCount(u32 prim);
