@@ -331,12 +331,6 @@ bool GSDevice::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 
 void GSDevice::Destroy()
 {
-	if (m_imgui_font)
-	{
-		Recycle(m_imgui_font);
-		m_imgui_font = nullptr;
-	}
-
 	ClearCurrent();
 	PurgePool();
 }
@@ -408,37 +402,108 @@ void GSDevice::InvalidateRenderTarget(GSTexture* t)
 	t->SetState(GSTexture::State::Invalidated);
 }
 
-bool GSDevice::UpdateImGuiFontTexture()
+void GSDevice::UpdateImGuiTextures()
 {
-	ImGuiIO& io = ImGui::GetIO();
-
-	unsigned char* pixels;
-	int width, height;
-	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
-
-	const GSVector4i r(0, 0, width, height);
-	const int pitch = sizeof(u32) * width;
-
-	if (m_imgui_font && m_imgui_font->GetWidth() == width && m_imgui_font->GetHeight() == height &&
-		m_imgui_font->Update(r, pixels, pitch))
+	// TODO, use ImDrawData https://github.com/ocornut/imgui/issues/8597#issuecomment-2871835598
+	for (ImTextureData* im_tex : ImGui::GetPlatformIO().Textures)
 	{
-		io.Fonts->SetTexID(reinterpret_cast<ImTextureID>(m_imgui_font->GetNativeHandle()));
-		return true;
-	}
+		switch (im_tex->Status)
+		{
+			case ImTextureStatus_OK:
+			case ImTextureStatus_Destroyed:
+				continue;
+			case ImTextureStatus_WantCreate:
+			{
+				GSTexture* gs_tex = g_gs_device->CreateTexture(im_tex->Width, im_tex->Height, 1, GSTexture::Format::Color);
+				if (!gs_tex)
+					pxFailRel("Failed to create ImGui texture");
 
-	GSTexture* new_font = CreateTexture(width, height, 1, GSTexture::Format::Color);
-	if (!new_font || !new_font->Update(r, pixels, pitch))
+				im_tex->SetTexID(reinterpret_cast<ImTextureID>(gs_tex->GetNativeHandle()));
+				im_tex->BackendUserData = gs_tex;
+				[[fallthrough]];
+			}
+			case ImTextureStatus_WantUpdates:
+			{
+				// If we fell through from WantCreate, then we are uploading the full size
+				// Otherwise, we are just updating the specified region
+				// clange-format off
+				const int upload_x = (im_tex->Status == ImTextureStatus_WantCreate) ? 0 : im_tex->UpdateRect.x;
+				const int upload_y = (im_tex->Status == ImTextureStatus_WantCreate) ? 0 : im_tex->UpdateRect.y;
+				const int upload_w = (im_tex->Status == ImTextureStatus_WantCreate) ? im_tex->Width : im_tex->UpdateRect.w;
+				const int upload_h = (im_tex->Status == ImTextureStatus_WantCreate) ? im_tex->Height : im_tex->UpdateRect.h;
+				const int upload_pitch = upload_w * im_tex->BytesPerPixel;
+				// clange-format on
+
+				const GSVector4i rect{
+					upload_x,
+					upload_y,
+					upload_x + upload_w,
+					upload_y + upload_h,
+				};
+
+				GSTexture* gs_tex = static_cast<GSTexture*>(im_tex->BackendUserData);
+				GSTexture::GSMap map;
+				if (gs_tex->Map(map, &rect))
+				{
+					for (int y = 0; y < upload_h; y++)
+						std::memcpy(map.bits + map.pitch * y, im_tex->GetPixelsAt(rect.x, rect.y + y), upload_pitch);
+
+					gs_tex->Unmap();
+				}
+				else
+				{
+					for (int y = 0; y < upload_h; y++)
+						gs_tex->Update({rect.left, rect.top + y, rect.right, rect.top + y + 1},
+							im_tex->GetPixelsAt(rect.x, rect.y + y), upload_pitch);
+				}
+
+				im_tex->Status = ImTextureStatus_OK;
+				break;
+			}
+			case ImTextureStatus_WantDestroy:
+			{
+				GSTexture* gs_tex = static_cast<GSTexture*>(im_tex->BackendUserData);
+				if (gs_tex == nullptr)
+					break;
+
+				// While it's unlikely we're going to reuse the same size as imgui for rendering,
+				// imgui may request a new atlas of the same size if old font sizes are evicted.
+				Recycle(gs_tex);
+
+				im_tex->SetTexID(ImTextureID_Invalid);
+				im_tex->BackendUserData = nullptr;
+				im_tex->Status = ImTextureStatus_Destroyed;
+				break;
+			}
+			default:
+				pxAssert(false);
+				break;
+		}
+	}
+}
+
+void GSDevice::DestroyImGuiTextures()
+{
+	if (!ImGui::GetCurrentContext())
+		return;
+
+	for (ImTextureData* im_tex : ImGui::GetPlatformIO().Textures)
 	{
-		io.Fonts->SetTexID(reinterpret_cast<ImTextureID>(m_imgui_font ? m_imgui_font->GetNativeHandle() : nullptr));
-		return false;
+		if (im_tex->Status != ImTextureStatus_Destroyed)
+		{
+			GSTexture* gs_tex = static_cast<GSTexture*>(im_tex->BackendUserData);
+			if (gs_tex == nullptr)
+				continue;
+
+			Recycle(gs_tex);
+
+			pxAssert(im_tex->RefCount == 1);
+
+			im_tex->SetTexID(ImTextureID_Invalid);
+			im_tex->BackendUserData = nullptr;
+			im_tex->Status = ImTextureStatus_Destroyed;
+		}
 	}
-
-	// Don't bother recycling, it's unlikely we're going to reuse the same size as imgui for rendering.
-	delete m_imgui_font;
-
-	m_imgui_font = new_font;
-	ImGui::GetIO().Fonts->SetTexID(reinterpret_cast<ImTextureID>(new_font->GetNativeHandle()));
-	return true;
 }
 
 void GSDevice::TextureRecycleDeleter::operator()(GSTexture* const tex)
