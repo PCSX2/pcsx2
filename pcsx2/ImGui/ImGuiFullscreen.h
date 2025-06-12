@@ -42,9 +42,9 @@ namespace ImGuiFullscreen
 	static constexpr float LAYOUT_HORIZONTAL_MENU_PADDING = 30.0f;
 	static constexpr float LAYOUT_HORIZONTAL_MENU_ITEM_WIDTH = 250.0f;
 
-	extern ImFont* g_standard_font;
-	extern ImFont* g_medium_font;
-	extern ImFont* g_large_font;
+	extern std::pair<ImFont*, float> g_standard_font;
+	extern std::pair<ImFont*, float> g_medium_font;
+	extern std::pair<ImFont*, float> g_large_font;
 
 	extern float g_layout_scale;
 	extern float g_rcp_layout_scale;
@@ -93,8 +93,9 @@ namespace ImGuiFullscreen
 	bool Initialize(const char* placeholder_image_path);
 
 	void SetTheme(std::string_view theme);
-	void SetFonts(ImFont* standard_font, ImFont* medium_font, ImFont* large_font);
+	void SetFont(ImFont* standard_font);
 	bool UpdateLayoutScale();
+	void UpdateFontScale();
 
 	/// Shuts down, optionally clearing all state (including notifications).
 	void Shutdown(bool clear_state);
@@ -178,33 +179,33 @@ namespace ImGuiFullscreen
 	void MenuHeading(const char* title, bool draw_line = true);
 	bool MenuHeadingButton(const char* title, const char* value = nullptr, bool enabled = true, bool draw_line = true);
 	bool ActiveButton(const char* title, bool is_active, bool enabled = true, float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY,
-		ImFont* font = g_large_font);
+		std::pair<ImFont*, float> font = g_large_font);
 	bool ActiveButtonWithRightText(const char* title, const char* right_title, bool is_active, bool enabled = true,
-		float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImFont* font = g_large_font);
+		float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, std::pair<ImFont*, float> font = g_large_font);
 	bool MenuButton(const char* title, const char* summary, bool enabled = true, float height = LAYOUT_MENU_BUTTON_HEIGHT,
-		ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
+		std::pair<ImFont*, float> font = g_large_font, std::pair<ImFont*, float> summary_font = g_medium_font);
 	bool MenuButtonWithoutSummary(const char* title, bool enabled = true, float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY,
-		ImFont* font = g_large_font, const ImVec2& text_align = ImVec2(0.0f, 0.0f));
+		std::pair<ImFont*, float> font = g_large_font, const ImVec2& text_align = ImVec2(0.0f, 0.0f));
 	bool MenuButtonWithValue(const char* title, const char* summary, const char* value, bool enabled = true,
-		float height = LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
+		float height = LAYOUT_MENU_BUTTON_HEIGHT, std::pair<ImFont*, float> font = g_large_font, std::pair<ImFont*, float> summary_font = g_medium_font);
 	bool MenuImageButton(const char* title, const char* summary, ImTextureID user_texture_id, const ImVec2& image_size, bool enabled = true,
 		float height = LAYOUT_MENU_BUTTON_HEIGHT, const ImVec2& uv0 = ImVec2(0.0f, 0.0f), const ImVec2& uv1 = ImVec2(1.0f, 1.0f),
-		ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
+		std::pair<ImFont*, float> font = g_large_font, std::pair<ImFont*, float> summary_font = g_medium_font);
 	bool FloatingButton(const char* text, float x, float y, float width = -1.0f, float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY,
-		float anchor_x = 0.0f, float anchor_y = 0.0f, bool enabled = true, ImFont* font = g_large_font, ImVec2* out_position = nullptr,
+		float anchor_x = 0.0f, float anchor_y = 0.0f, bool enabled = true, std::pair<ImFont*, float> font = g_large_font, ImVec2* out_position = nullptr,
 		bool repeat_button = false);
 	bool ToggleButton(const char* title, const char* summary, bool* v, bool enabled = true, float height = LAYOUT_MENU_BUTTON_HEIGHT,
-		ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
+		std::pair<ImFont*, float> font = g_large_font, std::pair<ImFont*, float> summary_font = g_medium_font);
 	bool ThreeWayToggleButton(const char* title, const char* summary, std::optional<bool>* v, bool enabled = true,
-		float height = LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
+		float height = LAYOUT_MENU_BUTTON_HEIGHT, std::pair<ImFont*, float> font = g_large_font, std::pair<ImFont*, float> summary_font = g_medium_font);
 	bool EnumChoiceButtonImpl(const char* title, const char* summary, s32* value_pointer,
-		const char* (*to_display_name_function)(s32 value, void* opaque), void* opaque, u32 count, bool enabled, float height, ImFont* font,
-		ImFont* summary_font);
+		const char* (*to_display_name_function)(s32 value, void* opaque), void* opaque, u32 count, bool enabled, float height, std::pair<ImFont*, float> font,
+		std::pair<ImFont*, float> summary_font);
 
 	template <typename DataType, typename CountType>
 	static __fi bool EnumChoiceButton(const char* title, const char* summary, DataType* value_pointer,
 		const char* (*to_display_name_function)(DataType value), CountType count, bool enabled = true,
-		float height = LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font, ImFont* summary_font = g_medium_font)
+		float height = LAYOUT_MENU_BUTTON_HEIGHT, std::pair<ImFont*, float> font = g_large_font, std::pair<ImFont*, float> summary_font = g_medium_font)
 	{
 		s32 value = static_cast<s32>(*value_pointer);
 		auto to_display_name_wrapper = [](s32 value, void* opaque) -> const char* {
@@ -225,13 +226,13 @@ namespace ImGuiFullscreen
 
 	void BeginNavBar(float x_padding = LAYOUT_MENU_BUTTON_X_PADDING, float y_padding = LAYOUT_MENU_BUTTON_Y_PADDING);
 	void EndNavBar();
-	void NavTitle(const char* title, float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImFont* font = g_large_font);
+	void NavTitle(const char* title, float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, std::pair<ImFont*, float> font = g_large_font);
 	void RightAlignNavButtons(u32 num_items = 0, float item_width = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY,
 		float item_height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 	bool NavButton(const char* title, bool is_active, bool enabled = true, float width = -1.0f,
-		float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImFont* font = g_large_font);
+		float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, std::pair<ImFont*, float> font = g_large_font);
 	bool NavTab(const char* title, bool is_active, bool enabled, float width, float height, const ImVec4& background,
-		ImFont* font = g_large_font);
+		std::pair<ImFont*, float> font = g_large_font);
 
 	bool BeginHorizontalMenu(const char* name, const ImVec2& position, const ImVec2& size, u32 num_items);
 	void EndHorizontalMenu();
