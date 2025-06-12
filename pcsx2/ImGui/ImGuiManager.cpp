@@ -133,13 +133,17 @@ bool ImGuiManager::Initialize()
 	s_global_scale = std::max(0.5f, g_gs_device->GetWindowScale() * (GSConfig.OsdScale / 100.0f));
 	s_scale_changed = false;
 
-	ImGui::CreateContext();
+	ImGuiContext& g = *ImGui::CreateContext();
 
 	ImGuiIO& io = ImGui::GetIO();
 	io.IniFilename = nullptr;
 	io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset | ImGuiBackendFlags_RendererHasTextures | ImGuiBackendFlags_HasGamepad;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
 	io.KeyRepeatDelay = 0.5f;
+
+	g.ConfigNavWindowingKeyNext = ImGuiKey_None;
+	g.ConfigNavWindowingKeyPrev = ImGuiKey_None;
+	g.ConfigNavWindowingWithGamepad = false;
 
 	s_window_width = static_cast<float>(g_gs_device->GetWindowWidth());
 	s_window_height = static_cast<float>(g_gs_device->GetWindowHeight());
