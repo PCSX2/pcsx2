@@ -171,29 +171,29 @@ void GSDrawingContext::Dump(const std::string& filename)
 
 	fprintf(fp,
 		"XYOFFSET\n"
-		"\tX:%u\n"
-		"\tY:%u\n\n",
-		XYOFFSET.OFX, XYOFFSET.OFY);
+		"\tOFX:%.4f\n"
+		"\tOFY:%.4f\n\n",
+		XYOFFSET.OFX / 16.0f, XYOFFSET.OFY / 16.0f);
 
 	fprintf(fp,
 		"MIPTBP1\n"
-		"\tBP1:0x%x\n"
-		"\tBW1:%u\n"
-		"\tBP2:0x%x\n"
-		"\tBW2:%u\n"
-		"\tBP3:0x%x\n"
-		"\tBW3:%u\n\n",
+		"\tTBP1:0x%x\n"
+		"\tTBW1:%u\n"
+		"\tTBP2:0x%x\n"
+		"\tTBW2:%u\n"
+		"\tTBP3:0x%x\n"
+		"\tTBW3:%u\n\n",
 		static_cast<uint32_t>(MIPTBP1.TBP1), static_cast<uint32_t>(MIPTBP1.TBW1), static_cast<uint32_t>(MIPTBP1.TBP2),
 		static_cast<uint32_t>(MIPTBP1.TBW2), static_cast<uint32_t>(MIPTBP1.TBP3), static_cast<uint32_t>(MIPTBP1.TBW3));
 
 	fprintf(fp,
 		"MIPTBP2\n"
-		"\tBP4:0x%x\n"
-		"\tBW4:%u\n"
-		"\tBP5:0x%x\n"
-		"\tBW5:%u\n"
-		"\tBP6:0x%x\n"
-		"\tBW6:%u\n\n",
+		"\tTBP4:0x%x\n"
+		"\tTBW4:%u\n"
+		"\tTBP5:0x%x\n"
+		"\tTBW5:%u\n"
+		"\tTBP6:0x%x\n"
+		"\tTBW6:%u\n\n",
 		static_cast<uint32_t>(MIPTBP2.TBP4), static_cast<uint32_t>(MIPTBP2.TBW4), static_cast<uint32_t>(MIPTBP2.TBP5),
 		static_cast<uint32_t>(MIPTBP2.TBW5), static_cast<uint32_t>(MIPTBP2.TBP6), static_cast<uint32_t>(MIPTBP2.TBW6));
 
@@ -201,17 +201,17 @@ void GSDrawingContext::Dump(const std::string& filename)
 		"TEX0\n"
 		"\tTBP0:0x%x\n"
 		"\tTBW:%u\n"
-		"\tPSM:0x%x\n"
+		"\tPSM:0x%x (%s)\n"
 		"\tTW:%u\n"
 		"\tTH:%u\n"
 		"\tTCC:%u\n"
 		"\tTFX:%u\n"
 		"\tCBP:0x%x\n"
-		"\tCPSM:0x%x\n"
+		"\tCPSM:0x%x (%s)\n"
 		"\tCSM:%u\n"
 		"\tCSA:%u\n"
 		"\tCLD:%u\n\n",
-		TEX0.TBP0, TEX0.TBW, TEX0.PSM, TEX0.TW, static_cast<uint32_t>(TEX0.TH), TEX0.TCC, TEX0.TFX, TEX0.CBP, TEX0.CPSM, TEX0.CSM, TEX0.CSA, TEX0.CLD);
+		TEX0.TBP0, TEX0.TBW, TEX0.PSM, GSUtil::GetPSMName(TEX0.PSM), TEX0.TW, static_cast<uint32_t>(TEX0.TH), TEX0.TCC, TEX0.TFX, TEX0.CBP, TEX0.CPSM, GSUtil::GetPSMName(TEX0.CPSM), TEX0.CSM,TEX0.CSA, TEX0.CLD);
 
 	fprintf(fp,
 		"TEX1\n"
@@ -226,21 +226,20 @@ void GSDrawingContext::Dump(const std::string& filename)
 
 	fprintf(fp,
 		"CLAMP\n"
-		"\tWMS:%u\n"
-		"\tWMT:%u\n"
+		"\tWMS:%u (%s)\n"
+		"\tWMT:%u (%s)\n"
 		"\tMINU:%u\n"
 		"\tMAXU:%u\n"
 		"\tMAXV:%u\n"
 		"\tMINV:%u\n\n",
-		CLAMP.WMS, CLAMP.WMT, CLAMP.MINU, CLAMP.MAXU, CLAMP.MAXV, static_cast<uint32_t>(CLAMP.MINV));
+		CLAMP.WMS, GSUtil::GetWMName(CLAMP.WMS), CLAMP.WMT,GSUtil::GetWMName(CLAMP.WMT),  CLAMP.MINU, CLAMP.MAXU, CLAMP.MAXV, static_cast<uint32_t>(CLAMP.MINV));
 
-	// TODO mimmap? (yes I'm lazy)
 	fprintf(fp,
 		"SCISSOR\n"
-		"\tX0:%u\n"
-		"\tX1:%u\n"
-		"\tY0:%u\n"
-		"\tY1:%u\n\n",
+		"\tSCAX0:%u\n"
+		"\tSCAX1:%u\n"
+		"\tSCAY0:%u\n"
+		"\tSCAY1:%u\n\n",
 		SCISSOR.SCAX0, SCISSOR.SCAX1, SCISSOR.SCAY0, SCISSOR.SCAY1);
 
 	fprintf(fp,
@@ -258,14 +257,14 @@ void GSDrawingContext::Dump(const std::string& filename)
 	fprintf(fp,
 		"TEST\n"
 		"\tATE:%u\n"
-		"\tATST:%s\n"
+		"\tATST:%u (%s)\n"
 		"\tAREF:%u\n"
-		"\tAFAIL:%s\n"
+		"\tAFAIL:%u (%s)\n"
 		"\tDATE:%u\n"
 		"\tDATM:%u\n"
 		"\tZTE:%u\n"
-		"\tZTST:%u\n\n",
-		TEST.ATE, GSUtil::GetATSTName(TEST.ATST), TEST.AREF, GSUtil::GetAFAILName(TEST.AFAIL), TEST.DATE, TEST.DATM, TEST.ZTE, TEST.ZTST);
+		"\tZTST:%u (%s)\n\n",
+		TEST.ATE, TEST.ATST, GSUtil::GetATSTName(TEST.ATST), TEST.AREF, TEST.AFAIL, GSUtil::GetAFAILName(TEST.AFAIL), TEST.DATE, TEST.DATM, TEST.ZTE, TEST.ZTST, GSUtil::GetZTSTName(TEST.ZTST));
 
 	fprintf(fp,
 		"FBA\n"
@@ -276,16 +275,16 @@ void GSDrawingContext::Dump(const std::string& filename)
 		"FRAME\n"
 		"\tFBP (*32):0x%x\n"
 		"\tFBW:%u\n"
-		"\tPSM:0x%x\n"
+		"\tPSM:0x%x (%s)\n"
 		"\tFBMSK:0x%x\n\n",
-		FRAME.FBP * 32, FRAME.FBW, FRAME.PSM, FRAME.FBMSK);
+		FRAME.FBP * 32, FRAME.FBW, FRAME.PSM, GSUtil::GetPSMName(FRAME.PSM), FRAME.FBMSK);
 
 	fprintf(fp,
 		"ZBUF\n"
 		"\tZBP (*32):0x%x\n"
-		"\tPSM:0x%x\n"
+		"\tPSM:0x%x (%s)\n"
 		"\tZMSK:%u\n\n",
-		ZBUF.ZBP * 32, ZBUF.PSM, ZBUF.ZMSK);
+		ZBUF.ZBP * 32, ZBUF.PSM, GSUtil::GetPSMName(ZBUF.PSM), ZBUF.ZMSK);
 
 	fclose(fp);
 }

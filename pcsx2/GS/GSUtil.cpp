@@ -94,6 +94,26 @@ const char* GSUtil::GetAFAILName(u32 afail)
 	return (afail < std::size(names)) ? names[afail] : "";
 }
 
+const char* GSUtil::GetWMName(u32 wm)
+{
+	static constexpr const char* names[] = {"REPEAT", "CLAMP", "REGION_CLAMP", "REGION_REPEAT"};
+	return (wm < std::size(names)) ? names[wm] : "";
+}
+
+const char* GSUtil::GetZTSTName(u32 ztst)
+{
+	static constexpr const char* names[] = {
+		"NEVER", "ALWAYS", "GEQUAL", "GREATER"};
+	return (ztst < std::size(names)) ? names[ztst] : "";
+}
+
+const char* GSUtil::GetPrimName(u32 prim)
+{
+	static constexpr const char* names[] = {
+		"POINT", "LINE", "LINESTRIP", "TRIANGLE", "TRIANGLESTRIP", "TRIANGLEFAN", "SPRITE", "INVALID"};
+	return (prim < std::size(names)) ? names[prim] : "";
+}
+
 const u32* GSUtil::HasSharedBitsPtr(u32 dpsm)
 {
 	return s_maps.SharedBitsField[dpsm];
