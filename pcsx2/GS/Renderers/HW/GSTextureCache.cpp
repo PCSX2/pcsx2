@@ -629,6 +629,8 @@ void GSTextureCache::DirtyRectByPage(u32 sbp, u32 spsm, u32 sbw, Target* t, GSVe
 	{
 		RGBAMask rgba;
 		rgba._u32 = GSUtil::GetChannelMask(spsm);
+		// FIXME: This could be a problem if used when the valid area is smaller than dirty area and it needs the data during expansion on a later draw.
+		// This happens on Kamen Rider - Seigi no Keifu if the invalidatevideomem function was to use this function for depth clearing.
 		AddDirtyRectTarget(t, t->m_valid, t->m_TEX0.PSM, t->m_TEX0.TBW, rgba);
 		return;
 	}
@@ -4363,7 +4365,9 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 								InvalidateTemporaryZ();
 						}
 
-						if (GSLocalMemory::m_psm[psm].depth)
+						// If we're dealing with quadrant draws, we need to position them correctly (Final Fantasy X).
+						if (GSLocalMemory::m_psm[psm].depth &&
+							r.width() <= (GSLocalMemory::m_psm[psm].pgs.x >> 1) && r.height() <= (GSLocalMemory::m_psm[psm].pgs.y >> 1))
 							DirtyRectByPage(bp, psm, bw, t, r);
 						else
 							AddDirtyRectTarget(t, r, psm, bw, rgba);
