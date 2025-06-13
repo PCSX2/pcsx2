@@ -586,8 +586,8 @@ void GSDevice11::SetFeatures(IDXGIAdapter1* adapter)
 {
 	// Check all three formats, since the feature means any can be used.
 	m_features.dxt_textures = SupportsTextureFormat(m_dev.get(), DXGI_FORMAT_BC1_UNORM) &&
-							  SupportsTextureFormat(m_dev.get(), DXGI_FORMAT_BC2_UNORM) &&
-							  SupportsTextureFormat(m_dev.get(), DXGI_FORMAT_BC3_UNORM);
+	                          SupportsTextureFormat(m_dev.get(), DXGI_FORMAT_BC2_UNORM) &&
+	                          SupportsTextureFormat(m_dev.get(), DXGI_FORMAT_BC3_UNORM);
 
 	m_features.bptc_textures = SupportsTextureFormat(m_dev.get(), DXGI_FORMAT_BC7_UNORM);
 
@@ -595,8 +595,8 @@ void GSDevice11::SetFeatures(IDXGIAdapter1* adapter)
 	m_features.cas_sharpening = (m_feature_level >= D3D_FEATURE_LEVEL_11_0);
 
 	m_max_texture_size = (m_feature_level >= D3D_FEATURE_LEVEL_11_0) ?
-							 D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION :
-							 D3D10_REQ_TEXTURE2D_U_OR_V_DIMENSION;
+	                         D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION :
+	                         D3D10_REQ_TEXTURE2D_U_OR_V_DIMENSION;
 }
 
 bool GSDevice11::HasSurface() const
@@ -752,7 +752,7 @@ bool GSDevice11::CreateSwapChain()
 	else
 	{
 		Console.ErrorFmt("D3D11: GetParent() on swap chain to get factory failed: {}", Error::CreateHResult(hr).GetDescription());
-	}	
+	}
 
 	if (!CreateSwapChainRTV())
 	{
@@ -801,7 +801,7 @@ bool GSDevice11::CreateSwapChainRTV()
 			SUCCEEDED(m_swap_chain->GetDesc(&desc)))
 		{
 			m_window_info.surface_refresh_rate = static_cast<float>(desc.BufferDesc.RefreshRate.Numerator) /
-												 static_cast<float>(desc.BufferDesc.RefreshRate.Denominator);
+			                                     static_cast<float>(desc.BufferDesc.RefreshRate.Denominator);
 		}
 	}
 
@@ -1263,7 +1263,7 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red, bool green, bool blue, bool alpha, ShaderConvert shader)
 {
 	const u8 index = static_cast<u8>(red) | (static_cast<u8>(green) << 1) | (static_cast<u8>(blue) << 2) |
-					 (static_cast<u8>(alpha) << 3);
+	                 (static_cast<u8>(alpha) << 3);
 	StretchRect(sTex, sRect, dTex, dRect, m_convert.ps[static_cast<int>(shader)].get(), nullptr,
 		m_convert.bs[index].get(), false);
 }
@@ -1316,7 +1316,7 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	};
 
 
-    IASetVertexBuffer(vertices, sizeof(vertices[0]), std::size(vertices));
+	IASetVertexBuffer(vertices, sizeof(vertices[0]), std::size(vertices));
 	IASetInputLayout(m_convert.il.get());
 	IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
@@ -1795,8 +1795,8 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 				}};
 
 				const u8 index = (static_cast<u8>(ssel.IsMipFilterLinear()) << 2) |
-								 (static_cast<u8>(ssel.IsMagFilterLinear()) << 1) |
-								 static_cast<u8>(ssel.IsMinFilterLinear());
+				                 (static_cast<u8>(ssel.IsMagFilterLinear()) << 1) |
+				                 static_cast<u8>(ssel.IsMinFilterLinear());
 				sd.Filter = filters[index];
 			}
 

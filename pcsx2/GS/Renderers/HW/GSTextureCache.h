@@ -290,7 +290,7 @@ public:
 	public:
 		HashCacheEntry* m_from_hash_cache = nullptr;
 		std::shared_ptr<Palette> m_palette_obj;
-		std::unique_ptr<u32[]> m_valid;// each u32 bits map to the 32 blocks of that page
+		std::unique_ptr<u32[]> m_valid; // each u32 bits map to the 32 blocks of that page
 		GSTexture* m_palette = nullptr;
 		GSVector4i m_valid_rect = {};
 		GSVector2i m_lod = {};
@@ -398,13 +398,13 @@ public:
 
 	struct SurfaceOffsetKey
 	{
-		std::array<SurfaceOffsetKeyElem, 2> elems;  // A and B elems.
+		std::array<SurfaceOffsetKeyElem, 2> elems; // A and B elems.
 	};
 
 	struct SurfaceOffset
 	{
 		bool is_valid;
-		GSVector4i b2a_offset;  // B to A offset in B coords.
+		GSVector4i b2a_offset; // B to A offset in B coords.
 	};
 
 	struct SurfaceOffsetKeyHash
@@ -504,9 +504,9 @@ public:
 	Target* FindTargetOverlap(Target* target, int type, int psm);
 	void CombineAlignedInsideTargets(Target* target, GSTextureCache::Source* src = nullptr);
 	Target* LookupTarget(GIFRegTEX0 TEX0, const GSVector2i& size, float scale, int type, bool used = true, u32 fbmask = 0,
-						 bool is_frame = false, bool preload = GSConfig.PreloadFrameWithGSData, bool preserve_rgb = true, bool preserve_alpha = true,
+		bool is_frame = false, bool preload = GSConfig.PreloadFrameWithGSData, bool preserve_rgb = true, bool preserve_alpha = true,
 		const GSVector4i draw_rc = GSVector4i::zero(), bool is_shuffle = false, bool possible_clear = false, bool preserve_scale = false, GSTextureCache::Source* src = nullptr, GSTextureCache::Target* ds = nullptr, int offset = -1);
-	Target* CreateTarget(GIFRegTEX0 TEX0, const GSVector2i& size, const GSVector2i& valid_size,float scale, int type, bool used = true, u32 fbmask = 0,
+	Target* CreateTarget(GIFRegTEX0 TEX0, const GSVector2i& size, const GSVector2i& valid_size, float scale, int type, bool used = true, u32 fbmask = 0,
 		bool is_frame = false, bool preload = GSConfig.PreloadFrameWithGSData, bool preserve_target = true,
 		const GSVector4i draw_rc = GSVector4i::zero(), GSTextureCache::Source* src = nullptr);
 	Target* LookupDisplayTarget(GIFRegTEX0 TEX0, const GSVector2i& size, float scale, bool is_feedback);

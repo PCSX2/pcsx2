@@ -40,7 +40,7 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.notificationPosition, "Achievements", "NotificationPosition", static_cast<int>(OsdOverlayPos::TopLeft));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.encoreMode, "Achievements", "EncoreMode", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.spectatorMode, "Achievements", "SpectatorMode", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.unofficialAchievements, "Achievements", "UnofficialTestMode",false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.unofficialAchievements, "Achievements", "UnofficialTestMode", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.achievementNotificationsDuration, "Achievements", "NotificationsDuration", Pcsx2Config::AchievementsOptions::DEFAULT_NOTIFICATION_DURATION);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.leaderboardNotificationsDuration, "Achievements", "LeaderboardsDuration", Pcsx2Config::AchievementsOptions::DEFAULT_LEADERBOARD_DURATION);
 
@@ -57,7 +57,7 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
 	dialog->registerWidgetHelp(m_ui.overlays, tr("Enable In-Game Overlays"), tr("Checked"), tr("Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active."));
 	dialog->registerWidgetHelp(m_ui.overlayPosition, tr("Overlay Position"), tr("Bottom Right"), tr("Determines where achievement overlays are positioned on the screen."));
 	dialog->registerWidgetHelp(m_ui.notificationPosition, tr("Notification Position"), tr("Top Left"), tr("Determines where achievement notification popups are positioned on the screen."));
-	dialog->registerWidgetHelp(m_ui.encoreMode, tr("Enable Encore Mode"), tr("Unchecked"),tr("When enabled, each session will behave as if no achievements have been unlocked."));
+	dialog->registerWidgetHelp(m_ui.encoreMode, tr("Enable Encore Mode"), tr("Unchecked"), tr("When enabled, each session will behave as if no achievements have been unlocked."));
 	dialog->registerWidgetHelp(m_ui.spectatorMode, tr("Enable Spectator Mode"), tr("Unchecked"), tr("When enabled, PCSX2 will assume all achievements are locked and not send any unlock notifications to the server."));
 	dialog->registerWidgetHelp(m_ui.unofficialAchievements, tr("Test Unofficial Achievements"), tr("Unchecked"), tr("When enabled, PCSX2 will list achievements from unofficial sets. Please note that these achievements are not tracked by RetroAchievements, so they unlock every time."));
 
@@ -211,8 +211,8 @@ void AchievementSettingsWidget::updateLoginState()
 			StringUtil::FromChars<u64>(Host::GetBaseStringSettingValue("Achievements", "LoginTimestamp", "0")).value_or(0);
 		const QDateTime login_timestamp(QDateTime::fromSecsSinceEpoch(static_cast<qint64>(login_unix_timestamp)));
 		m_ui.loginStatus->setText(tr("Username: %1\nLogin token generated on %2.")
-									  .arg(QString::fromStdString(username))
-									  .arg(login_timestamp.toString(Qt::TextDate)));
+				.arg(QString::fromStdString(username))
+				.arg(login_timestamp.toString(Qt::TextDate)));
 		m_ui.loginButton->setText(tr("Logout"));
 	}
 	else

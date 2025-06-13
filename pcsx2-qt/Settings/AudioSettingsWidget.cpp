@@ -160,20 +160,20 @@ void AudioSettingsWidget::onSyncModeChanged()
 {
 	const Pcsx2Config::SPU2Options::SPU2SyncMode sync_mode =
 		Pcsx2Config::SPU2Options::ParseSyncMode(
-			m_dialog
-				->getEffectiveStringValue("SPU2/Output", "SyncMode",
-					Pcsx2Config::SPU2Options::GetSyncModeName(Pcsx2Config::SPU2Options::DEFAULT_SYNC_MODE))
-				.c_str())
-			.value_or(Pcsx2Config::SPU2Options::DEFAULT_SYNC_MODE);
+			m_dialog->getEffectiveStringValue("SPU2/Output", "SyncMode",
+				Pcsx2Config::SPU2Options::GetSyncModeName(Pcsx2Config::SPU2Options::DEFAULT_SYNC_MODE)
+			).c_str()
+		).value_or(Pcsx2Config::SPU2Options::DEFAULT_SYNC_MODE);
 	m_ui.stretchSettings->setEnabled(sync_mode == Pcsx2Config::SPU2Options::SPU2SyncMode::TimeStretch);
 }
 
 AudioBackend AudioSettingsWidget::getEffectiveBackend() const
 {
-	return AudioStream::ParseBackendName(m_dialog->getEffectiveStringValue("SPU2/Output", "Backend",
-													 AudioStream::GetBackendName(Pcsx2Config::SPU2Options::DEFAULT_BACKEND))
-											 .c_str())
-		.value_or(Pcsx2Config::SPU2Options::DEFAULT_BACKEND);
+	return AudioStream::ParseBackendName(
+		m_dialog->getEffectiveStringValue("SPU2/Output", "Backend",
+			AudioStream::GetBackendName(Pcsx2Config::SPU2Options::DEFAULT_BACKEND)
+		).c_str()
+	).value_or(Pcsx2Config::SPU2Options::DEFAULT_BACKEND);
 }
 
 void AudioSettingsWidget::updateDriverNames()
@@ -263,17 +263,17 @@ void AudioSettingsWidget::updateLatencyLabel()
 		if (expand_buffer_ms > 0)
 		{
 			m_ui.bufferingLabel->setText(tr("Maximum Latency: %1 ms (%2 ms buffer + %3 ms expand + %4 ms output)")
-											 .arg(config_buffer_ms + expand_buffer_ms + output_latency_ms)
-											 .arg(config_buffer_ms)
-											 .arg(expand_buffer_ms)
-											 .arg(output_latency_ms));
+					.arg(config_buffer_ms + expand_buffer_ms + output_latency_ms)
+					.arg(config_buffer_ms)
+					.arg(expand_buffer_ms)
+					.arg(output_latency_ms));
 		}
 		else
 		{
 			m_ui.bufferingLabel->setText(tr("Maximum Latency: %1 ms (%2 ms buffer + %3 ms output)")
-											 .arg(config_buffer_ms + output_latency_ms)
-											 .arg(config_buffer_ms)
-											 .arg(output_latency_ms));
+					.arg(config_buffer_ms + output_latency_ms)
+					.arg(config_buffer_ms)
+					.arg(output_latency_ms));
 		}
 	}
 	else
@@ -281,8 +281,8 @@ void AudioSettingsWidget::updateLatencyLabel()
 		if (expand_buffer_ms > 0)
 		{
 			m_ui.bufferingLabel->setText(tr("Maximum Latency: %1 ms (%2 ms expand, minimum output latency unknown)")
-											 .arg(expand_buffer_ms + config_buffer_ms)
-											 .arg(expand_buffer_ms));
+					.arg(expand_buffer_ms + config_buffer_ms)
+					.arg(expand_buffer_ms));
 		}
 		else
 		{

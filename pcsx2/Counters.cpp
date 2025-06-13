@@ -234,7 +234,7 @@ static void vSyncInfoCalc(vSyncTimingInfo* info, double framesPerSecond, u32 sca
 	{
 		hBlank /= 2;
 		hRender /= 2;
- 	}
+	}
 
 	//TODO: Carry fixed-point math all the way through the entire vsync and hsync counting processes, and continually apply rounding
 	//as needed for each scheduled v/hsync related event. Much better to handle than this messed state.
@@ -412,8 +412,8 @@ void UpdateVSyncRate(bool force)
 		s32 vdiff = vsyncCounter.deltaCycles;
 		hsyncCounter.deltaCycles = (hsyncCounter.Mode == MODE_HBLANK) ? vSyncInfo.hBlank : vSyncInfo.hRender;
 		vsyncCounter.deltaCycles = (vsyncCounter.Mode == MODE_GSBLANK) ?
-								  vSyncInfo.GSBlank :
-								  ((vsyncCounter.Mode == MODE_VBLANK) ? vSyncInfo.Blank : vSyncInfo.Render);
+		                               vSyncInfo.GSBlank :
+		                               ((vsyncCounter.Mode == MODE_VBLANK) ? vSyncInfo.Blank : vSyncInfo.Render);
 
 		hsyncCounter.startCycle += hdiff - hsyncCounter.deltaCycles;
 		vsyncCounter.startCycle += vdiff - vsyncCounter.deltaCycles;
@@ -653,10 +653,10 @@ __fi void rcntUpdate_hScanline()
 	}
 	else
 	{ //HBLANK START / HRENDER End
-		
+
 		// set up the hblank's start and end cycle information:
 		hsyncCounter.startCycle += vSyncInfo.hRender; // start (absolute cycle value)
-		hsyncCounter.deltaCycles = vSyncInfo.hBlank;   // endpoint (delta from start value)
+		hsyncCounter.deltaCycles = vSyncInfo.hBlank;  // endpoint (delta from start value)
 		if (!GSSMODE1reg.SINT)
 		{
 			if (!CSRreg.HSINT)
@@ -765,7 +765,7 @@ __fi void rcntUpdate()
 		rcntSyncCounter(i);
 
 		if (counters[i].mode.ClockSource == 0x3 || !rcntCanCount(i)) // don't count hblank sources
-				continue;
+			continue;
 
 		_cpuTestOverflow(i);
 		_cpuTestTarget(i);
@@ -813,7 +813,7 @@ static __fi void rcntStartGate(bool isVblank, u32 sCycle)
 
 		switch (counters[i].mode.GateMode)
 		{
-			case 0x0:  //Count When Signal is low (V_RENDER ONLY)
+			case 0x0: // Count When Signal is low (V_RENDER ONLY)
 
 				// Just set the start cycle -- counting will be done as needed
 				// for events (overflows, targets, mode changes, and the gate off below)
@@ -955,7 +955,7 @@ __fi u32 rcntRcount(int index)
 	u32 ret;
 
 	rcntSyncCounter(index);
-	
+
 	ret = counters[index].count;
 
 	// Spams the Console.

@@ -55,11 +55,11 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
 		connect(m_ui.manuallySetRealTimeClock, &QCheckBox::checkStateChanged, this, &EmulationSettingsWidget::onManuallySetRealTimeClockChanged);
 		EmulationSettingsWidget::onManuallySetRealTimeClockChanged();
 
-		m_ui.eeCycleRate->insertItem(
-			0, tr("Use Global Setting [%1]")
-				   .arg(m_ui.eeCycleRate->itemText(
-					   std::clamp(Host::GetBaseIntSettingValue("EmuCore/Speedhacks", "EECycleRate", DEFAULT_EE_CYCLE_RATE) - MINIMUM_EE_CYCLE_RATE,
-						   0, MAXIMUM_EE_CYCLE_RATE - MINIMUM_EE_CYCLE_RATE))));
+		m_ui.eeCycleRate->insertItem(0,
+			tr("Use Global Setting [%1]")
+				.arg(m_ui.eeCycleRate->itemText(
+					std::clamp(Host::GetBaseIntSettingValue("EmuCore/Speedhacks", "EECycleRate", DEFAULT_EE_CYCLE_RATE) - MINIMUM_EE_CYCLE_RATE,
+						0, MAXIMUM_EE_CYCLE_RATE - MINIMUM_EE_CYCLE_RATE))));
 
 		// Disable cheats, use the cheats panel instead (move fastcvd up in its spot).
 		const int count = m_ui.systemSettingsLayout->count();
@@ -92,9 +92,9 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
 
 	const std::optional<int> cycle_rate =
 		m_dialog->getIntValue("EmuCore/Speedhacks", "EECycleRate", sif ? std::nullopt : std::optional<int>(DEFAULT_EE_CYCLE_RATE));
-	m_ui.eeCycleRate->setCurrentIndex(cycle_rate.has_value() ? (std::clamp(cycle_rate.value(), MINIMUM_EE_CYCLE_RATE, MAXIMUM_EE_CYCLE_RATE) +
-																   (0 - MINIMUM_EE_CYCLE_RATE) + static_cast<int>(m_dialog->isPerGameSettings())) :
-                                                               0);
+	m_ui.eeCycleRate->setCurrentIndex(cycle_rate.has_value() ? (std::clamp(cycle_rate.value(), MINIMUM_EE_CYCLE_RATE, MAXIMUM_EE_CYCLE_RATE)
+	                                                            + (0 - MINIMUM_EE_CYCLE_RATE) + static_cast<int>(m_dialog->isPerGameSettings()))
+	                                                         : 0);
 	connect(m_ui.eeCycleRate, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this](int index) {
 		std::optional<int> value;
 		if (!m_dialog->isPerGameSettings() || index > 0)
@@ -164,9 +164,9 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
 		tr("Manually set a real-time clock to use for the virtual PlayStation 2 instead of using your OS' system clock."));
 	dialog->registerWidgetHelp(m_ui.rtcDateTime, tr("Real-Time Clock"), tr("Current date and time"),
 		tr("Real-time clock (RTC) used by the virtual PlayStation 2. Date format is the same as the one used by your OS. "
-			"This time is only applied upon booting the PS2; changing it while in-game will have no effect. "
-			"NOTE: This assumes you have your PS2 set to the default timezone of GMT+0 and default DST of Summer Time. "
-			"Some games require an RTC date/time set after their release date."));
+		   "This time is only applied upon booting the PS2; changing it while in-game will have no effect. "
+		   "NOTE: This assumes you have your PS2 set to the default timezone of GMT+0 and default DST of Summer Time. "
+		   "Some games require an RTC date/time set after their release date."));
 
 	updateOptimalFramePacing();
 	updateUseVSyncForTimingEnabled();

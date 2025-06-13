@@ -1129,8 +1129,8 @@ bool MainWindow::shouldHideMainWindow() const
 {
 	// NOTE: We can't use isRenderingToMain() here, because this happens post-fullscreen-switch.
 	return (Host::GetBoolSettingValue("UI", "HideMainWindowWhenRunning", false) && !g_emu_thread->shouldRenderToMain()) ||
-		   (g_emu_thread->shouldRenderToMain() && (isRenderingFullscreen() || m_is_temporarily_windowed)) ||
-		   Host::InNoGUIMode();
+	       (g_emu_thread->shouldRenderToMain() && (isRenderingFullscreen() || m_is_temporarily_windowed)) ||
+	       Host::InNoGUIMode();
 }
 
 bool MainWindow::shouldMouseLock() const
@@ -1142,8 +1142,8 @@ bool MainWindow::shouldMouseLock() const
 		return false;
 
 	bool windowsHidden = (!g_debugger_window || g_debugger_window->isHidden()) &&
-						 (!m_controller_settings_window || m_controller_settings_window->isHidden()) &&
-						 (!m_settings_window || m_settings_window->isHidden());
+	                     (!m_controller_settings_window || m_controller_settings_window->isHidden()) &&
+	                     (!m_settings_window || m_settings_window->isHidden());
 
 	return windowsHidden && (isActiveWindow() || isRenderingFullscreen());
 }
