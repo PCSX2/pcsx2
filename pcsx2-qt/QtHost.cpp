@@ -1000,21 +1000,21 @@ void EmuThread::updatePerformanceMetrics(bool force)
 		if (THREAD_VU1)
 		{
 			gs_stat = tr("Slot: %1 | Volume: %2% | %3 | EE: %4% | VU: %5% | GS: %6%")
-						  .arg(SaveStateSelectorUI::GetCurrentSlot())
-						  .arg(SPU2::GetOutputVolume())
-						  .arg(gs_stat_str.c_str())
-						  .arg(PerformanceMetrics::GetCPUThreadUsage(), 0, 'f', 0)
-						  .arg(PerformanceMetrics::GetVUThreadUsage(), 0, 'f', 0)
-						  .arg(PerformanceMetrics::GetGSThreadUsage(), 0, 'f', 0);
+			              .arg(SaveStateSelectorUI::GetCurrentSlot())
+			              .arg(SPU2::GetOutputVolume())
+			              .arg(gs_stat_str.c_str())
+			              .arg(PerformanceMetrics::GetCPUThreadUsage(), 0, 'f', 0)
+			              .arg(PerformanceMetrics::GetVUThreadUsage(), 0, 'f', 0)
+			              .arg(PerformanceMetrics::GetGSThreadUsage(), 0, 'f', 0);
 		}
 		else
 		{
 			gs_stat = tr("Slot: %1 | Volume: %2% | %3 | EE: %4% | GS: %5%")
-						  .arg(SaveStateSelectorUI::GetCurrentSlot())
-						  .arg(SPU2::GetOutputVolume())
-						  .arg(gs_stat_str.c_str())
-						  .arg(PerformanceMetrics::GetCPUThreadUsage(), 0, 'f', 0)
-						  .arg(PerformanceMetrics::GetGSThreadUsage(), 0, 'f', 0);
+			              .arg(SaveStateSelectorUI::GetCurrentSlot())
+			              .arg(SPU2::GetOutputVolume())
+			              .arg(gs_stat_str.c_str())
+			              .arg(PerformanceMetrics::GetCPUThreadUsage(), 0, 'f', 0)
+			              .arg(PerformanceMetrics::GetGSThreadUsage(), 0, 'f', 0);
 		}
 
 		QMetaObject::invokeMethod(g_main_window->getStatusVerboseWidget(), "setText", Qt::QueuedConnection, Q_ARG(const QString&, gs_stat));
@@ -1129,9 +1129,9 @@ void Host::OnAchievementsRefreshed()
 		game_id = Achievements::GetGameID();
 
 		game_info = qApp
-						->translate("EmuThread", "Game: %1 (%2)\n")
-						.arg(QString::fromStdString(Achievements::GetGameTitle()))
-						.arg(game_id);
+		                ->translate("EmuThread", "Game: %1 (%2)\n")
+		                .arg(QString::fromStdString(Achievements::GetGameTitle()))
+		                .arg(game_id);
 
 		const std::string& rich_presence_string = Achievements::GetRichPresenceString();
 		if (!rich_presence_string.empty())
@@ -1181,7 +1181,7 @@ void Host::OpenHostFileSelectorAsync(std::string_view title, bool select_directo
 	if (!filters.empty())
 	{
 		filters_str.append(QStringLiteral("All File Types (%1)")
-							   .arg(QString::fromStdString(StringUtil::JoinString(filters.begin(), filters.end(), " "))));
+				.arg(QString::fromStdString(StringUtil::JoinString(filters.begin(), filters.end(), " "))));
 		for (const std::string& filter : filters)
 		{
 			filters_str.append(

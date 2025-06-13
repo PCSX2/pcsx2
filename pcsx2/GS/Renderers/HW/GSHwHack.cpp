@@ -1093,7 +1093,7 @@ bool GSHwHack::OI_SonicUnleashed(GSRendererHW& r, GSTexture* rt, GSTexture* ds, 
 		rt_again->m_texture = tex;
 		rt = tex;
 	}
-	
+
 	GSVector2i rt_size(rt->GetSize());
 
 	// This is awful, but so is the CRC hack... it's a texture shuffle split horizontally instead of vertically.
@@ -1102,14 +1102,14 @@ bool GSHwHack::OI_SonicUnleashed(GSRendererHW& r, GSTexture* rt, GSTexture* ds, 
 		if (rt_again->m_unscaled_size.x < src->m_unscaled_size.x || rt_again->m_unscaled_size.y < src->m_unscaled_size.y)
 		{
 			GSVector2i new_size = GSVector2i(std::max(rt_again->m_unscaled_size.x, src->m_unscaled_size.x),
-									std::max(rt_again->m_unscaled_size.y, src->m_unscaled_size.y));
+				std::max(rt_again->m_unscaled_size.y, src->m_unscaled_size.y));
 			rt_again->ResizeTexture(new_size.x, new_size.y);
 			rt = rt_again->m_texture;
 			rt_size = new_size * GSVector2i(src->GetScale());
 			rt_again->UpdateDrawn(GSVector4i::loadh(new_size));
 		}
 	}
-	
+
 
 	const GSVector2i copy_size(std::min(rt_size.x, src_size.x), std::min(rt_size.y, src_size.y));
 

@@ -23,7 +23,7 @@ void GSPerfMon::EndFrame(bool frame_only)
 {
 	m_frame++;
 
-	if(!frame_only)
+	if (!frame_only)
 		m_count++;
 }
 

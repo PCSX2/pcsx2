@@ -260,7 +260,7 @@ void InputBindingWidget::clearBinding()
 void InputBindingWidget::reloadBinding()
 {
 	m_bindings_settings = m_sif ? m_sif->GetStringList(m_section_name.c_str(), m_key_name.c_str()) :
-								  Host::GetBaseStringListSetting(m_section_name.c_str(), m_key_name.c_str());
+	                              Host::GetBaseStringListSetting(m_section_name.c_str(), m_key_name.c_str());
 
 	m_bindings_ui.clear();
 	m_bindings_ui.reserve(m_bindings_settings.size());

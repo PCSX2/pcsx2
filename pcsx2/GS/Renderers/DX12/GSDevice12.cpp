@@ -134,7 +134,7 @@ bool GSDevice12::SupportsTextureFormat(DXGI_FORMAT format)
 
 	D3D12_FEATURE_DATA_FORMAT_SUPPORT support = {format};
 	return SUCCEEDED(m_device->CheckFeatureSupport(D3D12_FEATURE_FORMAT_SUPPORT, &support, sizeof(support))) &&
-		   (support.Support1 & required) == required;
+	       (support.Support1 & required) == required;
 }
 
 u32 GSDevice12::GetAdapterVendorID() const
@@ -958,7 +958,7 @@ bool GSDevice12::CreateSwapChainRTV()
 			SUCCEEDED(m_swap_chain->GetDesc(&desc)))
 		{
 			m_window_info.surface_refresh_rate = static_cast<float>(desc.BufferDesc.RefreshRate.Numerator) /
-												 static_cast<float>(desc.BufferDesc.RefreshRate.Denominator);
+			                                     static_cast<float>(desc.BufferDesc.RefreshRate.Denominator);
 		}
 	}
 
@@ -1238,8 +1238,8 @@ bool GSDevice12::CheckFeatures(const u32& vendor_id)
 	m_features.vs_expand = !GSConfig.DisableVertexShaderExpand;
 
 	m_features.dxt_textures = SupportsTextureFormat(DXGI_FORMAT_BC1_UNORM) &&
-							  SupportsTextureFormat(DXGI_FORMAT_BC2_UNORM) &&
-							  SupportsTextureFormat(DXGI_FORMAT_BC3_UNORM);
+	                          SupportsTextureFormat(DXGI_FORMAT_BC2_UNORM) &&
+	                          SupportsTextureFormat(DXGI_FORMAT_BC3_UNORM);
 	m_features.bptc_textures = SupportsTextureFormat(DXGI_FORMAT_BC7_UNORM);
 
 	m_max_texture_size = D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION;
@@ -1643,8 +1643,8 @@ void GSDevice12::BeginRenderPassForStretchRect(
 	GSTexture12* dTex, const GSVector4i& dtex_rc, const GSVector4i& dst_rc, bool allow_discard)
 {
 	const D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE load_op = (allow_discard && dst_rc.eq(dtex_rc)) ?
-																D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_DISCARD :
-																GetLoadOpForTexture(dTex);
+	                                                            D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_DISCARD :
+	                                                            GetLoadOpForTexture(dTex);
 	dTex->SetState(GSTexture::State::Dirty);
 
 	if (dTex->GetType() != GSTexture::Type::DepthStencil)
@@ -1742,8 +1742,8 @@ void GSDevice12::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 		(sTex[0] && (sTex[0]->GetState() == GSTexture::State::Dirty ||
 						(sTex[0]->GetState() == GSTexture::State::Cleared || sTex[0]->GetClearColor() != 0)));
 	const bool has_input_1 = (PMODE.SLBG == 0 || feedback_write_2_but_blend_bg) && sTex[1] &&
-							 (sTex[1]->GetState() == GSTexture::State::Dirty ||
-								 (sTex[1]->GetState() == GSTexture::State::Cleared || sTex[1]->GetClearColor() != 0));
+	                         (sTex[1]->GetState() == GSTexture::State::Dirty ||
+	                             (sTex[1]->GetState() == GSTexture::State::Cleared || sTex[1]->GetClearColor() != 0));
 	if (has_input_0)
 	{
 		static_cast<GSTexture12*>(sTex[0])->CommitClear();
@@ -2261,7 +2261,7 @@ bool GSDevice12::GetSampler(D3D12DescriptorHandle* cpu_handle, GSHWDrawConfig::S
 		}};
 
 		const u8 index = (static_cast<u8>(ss.IsMipFilterLinear()) << 2) |
-						 (static_cast<u8>(ss.IsMagFilterLinear()) << 1) | static_cast<u8>(ss.IsMinFilterLinear());
+		                 (static_cast<u8>(ss.IsMagFilterLinear()) << 1) | static_cast<u8>(ss.IsMinFilterLinear());
 		sd.Filter = filters[index];
 	}
 
@@ -2448,8 +2448,7 @@ bool GSDevice12::CompileConvertPipelines()
 	gpb.SetNoBlendingState();
 	gpb.SetVertexShader(m_convert_vs.get());
 
-	for (ShaderConvert i = ShaderConvert::COPY; static_cast<int>(i) < static_cast<int>(ShaderConvert::Count);
-		 i = static_cast<ShaderConvert>(static_cast<int>(i) + 1))
+	for (ShaderConvert i = ShaderConvert::COPY; i < ShaderConvert::Count; i = static_cast<ShaderConvert>(static_cast<int>(i) + 1))
 	{
 		const bool depth = HasDepthOutput(i);
 		const int index = static_cast<int>(i);
@@ -2621,8 +2620,7 @@ bool GSDevice12::CompilePresentPipelines()
 	gpb.SetNoStencilState();
 	gpb.SetRenderTarget(0, DXGI_FORMAT_R8G8B8A8_UNORM);
 
-	for (PresentShader i = PresentShader::COPY; static_cast<int>(i) < static_cast<int>(PresentShader::Count);
-		 i = static_cast<PresentShader>(static_cast<int>(i) + 1))
+	for (PresentShader i = PresentShader::COPY; i < PresentShader::Count; i = static_cast<PresentShader>(static_cast<int>(i) + 1))
 	{
 		const int index = static_cast<int>(i);
 
@@ -2963,8 +2961,8 @@ GSDevice12::ComPtr<ID3D12PipelineState> GSDevice12::CreateTFXPipeline(const Pipe
 	if (p.rt)
 	{
 		const GSTexture::Format format = IsDATEModePrimIDInit(p.ps.date) ?
-											 GSTexture::Format::PrimID :
-											 (p.ps.colclip_hw ? GSTexture::Format::ColorClip : GSTexture::Format::Color);
+		                                     GSTexture::Format::PrimID :
+		                                     (p.ps.colclip_hw ? GSTexture::Format::ColorClip : GSTexture::Format::Color);
 
 		DXGI_FORMAT native_format;
 		LookupNativeFormat(format, nullptr, nullptr, &native_format, nullptr);
@@ -3650,8 +3648,8 @@ bool GSDevice12::ApplyTFXState(bool already_execed)
 	{
 		m_current_root_signature = RootSignature::TFX;
 		flags |= DIRTY_FLAG_VS_CONSTANT_BUFFER_BINDING | DIRTY_FLAG_PS_CONSTANT_BUFFER_BINDING |
-				 DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE | DIRTY_FLAG_SAMPLERS_DESCRIPTOR_TABLE |
-				 DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE_2 | DIRTY_FLAG_PIPELINE;
+		         DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE | DIRTY_FLAG_SAMPLERS_DESCRIPTOR_TABLE |
+		         DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE_2 | DIRTY_FLAG_PIPELINE;
 		cmdlist->SetGraphicsRootSignature(m_tfx_root_signature.get());
 	}
 

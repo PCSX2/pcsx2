@@ -38,7 +38,7 @@ namespace GSCapture
 	CodecList GetVideoCodecList(const char* container);
 	CodecList GetAudioCodecList(const char* container);
 
-	using FormatName = std::pair<int , std::string>; // id,name
+	using FormatName = std::pair<int, std::string>; // id,name
 	using FormatList = std::vector<FormatName>;
 	FormatList GetVideoFormatList(const char* codec);
 }; // namespace GSCapture

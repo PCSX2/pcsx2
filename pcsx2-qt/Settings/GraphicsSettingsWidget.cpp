@@ -1280,8 +1280,8 @@ void GraphicsSettingsWidget::populateUpscaleMultipliers(u32 max_upscale_multipli
 	m_ui.upscaleMultiplier->clear();
 
 	const u32 max_shown_multiplier = m_ui.extendedUpscales && m_ui.extendedUpscales->checkState() == Qt::Checked ?
-										 max_upscale_multiplier :
-										 std::min(max_upscale_multiplier, max_non_advanced_multiplier);
+	                                     max_upscale_multiplier :
+	                                     std::min(max_upscale_multiplier, max_non_advanced_multiplier);
 	for (const auto& [name, value] : templates)
 	{
 		if (value > max_shown_multiplier)

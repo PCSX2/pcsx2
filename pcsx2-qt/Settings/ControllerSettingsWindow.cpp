@@ -206,7 +206,7 @@ void ControllerSettingsWindow::onRenameProfileClicked()
 	{
 		std::string game_settings_path(game_settings.FileName.c_str());
 		std::unique_ptr<INISettingsInterface> update_sif(std::make_unique<INISettingsInterface>(std::move(game_settings_path)));
-		
+
 		update_sif->Load();
 
 		if (!old_profile_name.compare(update_sif->GetStringValue("EmuCore", "InputProfileName")))
@@ -458,9 +458,9 @@ void ControllerSettingsWindow::createWidgets()
 
 		QListWidgetItem* item = new QListWidgetItem();
 		//: Controller Port is an official term from Sony. Find the official translation for your language inside the console's manual.
-		item->setText(mtap_enabled[port] ? (tr("Controller Port %1%2\n%3").arg(port + 1).arg(s_mtap_slot_names[slot]).arg(display_name)) :
-                                           //: Controller Port is an official term from Sony. Find the official translation for your language inside the console's manual.
-                                           tr("Controller Port %1\n%2").arg(port + 1).arg(display_name));
+		item->setText(mtap_enabled[port] ? (tr("Controller Port %1%2\n%3").arg(port + 1).arg(s_mtap_slot_names[slot]).arg(display_name))
+		//: Controller Port is an official term from Sony. Find the official translation for your language inside the console's manual.
+		                                 : tr("Controller Port %1\n%2").arg(port + 1).arg(display_name));
 		item->setIcon(m_port_bindings[global_slot]->getIcon());
 		item->setData(Qt::UserRole, QVariant(global_slot));
 		m_ui.settingsCategory->addItem(item);
@@ -514,9 +514,9 @@ void ControllerSettingsWindow::updateListDescription(u32 global_slot, Controller
 			const QString display_name = QString::fromUtf8(ci ? ci->GetLocalizedName() : "Unknown");
 
 			//: Controller Port is an official term from Sony. Find the official translation for your language inside the console's manual.
-			item->setText(mtap_enabled ? (tr("Controller Port %1%2\n%3").arg(port + 1).arg(s_mtap_slot_names[slot]).arg(display_name)) :
-                                         //: Controller Port is an official term from Sony. Find the official translation for your language inside the console's manual.
-                                         tr("Controller Port %1\n%2").arg(port + 1).arg(display_name));
+			item->setText(mtap_enabled ? (tr("Controller Port %1%2\n%3").arg(port + 1).arg(s_mtap_slot_names[slot]).arg(display_name))
+			//: Controller Port is an official term from Sony. Find the official translation for your language inside the console's manual.
+			                           : tr("Controller Port %1\n%2").arg(port + 1).arg(display_name));
 			item->setIcon(widget->getIcon());
 			break;
 		}

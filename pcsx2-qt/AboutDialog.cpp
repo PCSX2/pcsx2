@@ -47,16 +47,16 @@ AboutDialog::AboutDialog(QWidget* parent)
 	m_ui.links->setTextInteractionFlags(Qt::TextBrowserInteraction);
 	m_ui.links->setText(QStringLiteral(
 		R"(<a href="%1">%2</a> | <a href="%3">%4</a> | <a href="%5">%6</a> | <a href="%7">%8</a> | <a href="%9">%10</a>)")
-							.arg(getWebsiteUrl())
-							.arg(tr("Website"))
-							.arg(getSupportForumsUrl())
-							.arg(tr("Support Forums"))
-							.arg(getGitHubRepositoryUrl())
-							.arg(tr("GitHub Repository"))
-							.arg(getLicenseUrl())
-							.arg(tr("License"))
-							.arg(getThirdPartyLicensesUrl())
-							.arg(tr("Third-Party Licenses")));
+			.arg(getWebsiteUrl())
+			.arg(tr("Website"))
+			.arg(getSupportForumsUrl())
+			.arg(tr("Support Forums"))
+			.arg(getGitHubRepositoryUrl())
+			.arg(tr("GitHub Repository"))
+			.arg(getLicenseUrl())
+			.arg(tr("License"))
+			.arg(getThirdPartyLicensesUrl())
+			.arg(tr("Third-Party Licenses")));
 
 	connect(m_ui.links, &QLabel::linkActivated, this, &AboutDialog::linksLinkActivated);
 	connect(m_ui.buttonBox, &QDialogButtonBox::rejected, this, &QDialog::close);

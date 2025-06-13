@@ -101,7 +101,7 @@ void MemoryCardCreateDialog::createCard()
 	const QString name = m_ui.name->text();
 	const std::string name_str = QStringLiteral("%1.%2").arg(name)
 		.arg((m_fileType == MemoryCardFileType::PS1) ? QStringLiteral("mcr") : QStringLiteral("ps2"))
-							   .toStdString();
+		.toStdString();
 	if (!Path::IsValidFileName(name_str, false))
 	{
 		QMessageBox::critical(this, tr("Create Memory Card"),
@@ -123,7 +123,7 @@ void MemoryCardCreateDialog::createCard()
 		return;
 	}
 
-#ifdef  _WIN32
+#ifdef _WIN32
 	if (m_type == MemoryCardType::File)
 	{
 		const std::string fullPath = Path::Combine(EmuFolders::MemoryCards, name_str);
