@@ -205,7 +205,7 @@ void GameCheatSettingsWidget::reloadList()
 {
 	u32 num_unlabelled_codes = 0;
 	bool showAllCRCS = m_ui.allCRCsCheckbox->isChecked();
-	m_patches = Patch::GetPatchInfo(m_dialog->getSerial(), m_dialog->getDiscCRC(), true, showAllCRCS, & num_unlabelled_codes);
+	m_patches = Patch::GetPatchInfo(m_dialog->getSerial(), m_dialog->getDiscCRC(), true, showAllCRCS, &num_unlabelled_codes);
 	m_enabled_patches =
 		m_dialog->getSettingsInterface()->GetStringList(Patch::CHEATS_CONFIG_SECTION, Patch::PATCH_ENABLE_CONFIG_KEY);
 
