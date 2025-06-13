@@ -250,7 +250,7 @@ void MemoryCardConvertDialog::ConvertCard()
 		baseName.replace(extensionPos, 4, "");
 		// Add _converted to the end of it
 		baseName.append("_converted");
-		
+
 		size_t num = 0;
 		QString destName = baseName;
 		destName.append(".ps2");
@@ -322,5 +322,5 @@ void MemoryCardConvertDialog::SetType_Folder()
 
 void MemoryCardConvertDialog::FileOpenError(const QString errmsg)
 {
-	QMessageBox::critical(this, tr("Cannot Convert Memory Card"),tr("There was an error when accessing the memory card directory. Error message: %0").arg(errmsg));
+	QMessageBox::critical(this, tr("Cannot Convert Memory Card"), tr("There was an error when accessing the memory card directory. Error message: %0").arg(errmsg));
 }

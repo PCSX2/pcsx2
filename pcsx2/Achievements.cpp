@@ -640,9 +640,9 @@ void Achievements::ClientServerCall(
 														HTTPDownloader::Request::Data data) {
 		rc_api_server_response_t rr;
 		rr.http_status_code = (status_code <= 0) ? (status_code == HTTPDownloader::HTTP_STATUS_CANCELLED ?
-														   RC_API_SERVER_RESPONSE_CLIENT_ERROR :
-														   RC_API_SERVER_RESPONSE_RETRYABLE_CLIENT_ERROR) :
-												   status_code;
+		                                                   RC_API_SERVER_RESPONSE_CLIENT_ERROR :
+		                                                   RC_API_SERVER_RESPONSE_RETRYABLE_CLIENT_ERROR)
+		                                         : status_code;
 		rr.body_length = data.size();
 		rr.body = reinterpret_cast<const char*>(data.data());
 
@@ -1421,7 +1421,7 @@ bool Achievements::ResetHardcoreMode(bool is_booting)
 	// because the gameid can be cached, and identify immediately on GameChanged(),
 	// which gets called before ResetHardcoreMode().
 	const bool wanted_hardcore_mode = (IsLoggedInOrLoggingIn() || s_load_game_request) &&
-									  EmuConfig.Achievements.HardcoreMode;
+	                                  EmuConfig.Achievements.HardcoreMode;
 	if (s_hardcore_mode == wanted_hardcore_mode)
 		return false;
 
