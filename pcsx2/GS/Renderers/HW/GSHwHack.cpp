@@ -637,7 +637,7 @@ bool GSHwHack::GSC_PolyphonyDigitalGames(GSRendererHW& r, int& skip)
 		constexpr u32 base = 0;
 
 		GL_PUSH("GSC_PolyphonyDigitalGames(): HLE Gran Turismo A channel shuffle");
-		GL_INS("Src: %x %s TBW %u, Dst: %x, %x, %x", src->m_TEX0.TBP0, psm_str(src->m_TEX0.PSM), src->m_TEX0.TBW,
+		GL_INS("Src: %x %s TBW %u, Dst: %x, %x, %x", src->m_TEX0.TBP0, GSUtil::GetPSMName(src->m_TEX0.PSM), src->m_TEX0.TBW,
 			base, base + page_offset, base + page_offset * 2);
 		GL_INS("Rect: %d,%d => %d,%d", src->m_drawn_since_read.x, src->m_drawn_since_read.y,
 			src->m_drawn_since_read.z, src->m_drawn_since_read.w);

@@ -11,6 +11,7 @@ class GSUtil
 public:
 	static const char* GetATSTName(u32 atst);
 	static const char* GetAFAILName(u32 afail);
+	static const char* GetPSMName(int psm);
 
 	static GS_PRIM_CLASS GetPrimClass(u32 prim);
 	static int GetVertexCount(u32 prim);
@@ -27,5 +28,3 @@ public:
 
 	static GSRendererType GetPreferredRenderer();
 };
-
-const char* psm_str(int psm);
