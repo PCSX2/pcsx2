@@ -1626,14 +1626,12 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 					{
 						// It is a complex to convert the code in shader. As a reference, let's do it on the CPU,
 						// it will be slow but can work even with upscaling, also fine tune it so it's not enabled when not needed.
-						if (psm == PSMT4 || (GSConfig.UserHacks_CPUFBConversion && psm == PSMT8 && (!possible_shuffle || GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp != 32)) ||
-							(psm == PSMT8H && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 16))
+						if (psm == PSMT4 || (psm == PSMT8H && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 16))
 						{
-							// Forces 4-bit and 8-bit frame buffer conversion to be done on the CPU instead of the GPU, but performance will be slower.
-							// There is no dedicated shader to handle 4-bit conversion (Beyond Good and Evil and Stuntman).
+							// Enable readbacks on PSMT4 as we don't have a dedicated shader (Beyond Good and Evil and Stuntman).
+							// Enable readbacks on PSMT8H 16bit as we don't have a dedicated shader (History Channel - Battle for the Pacific, Sea World - Shamu's Big Adventure). 
 							// Note: Stuntman no longer hits the PSMT4 code path.
-							// Direct3D10/11 and OpenGL support 8-bit fb conversion but don't render some corner cases properly (Harry Potter games).
-							// The hack can fix glitches in some games.
+							// Note2: Harry Potter is now properly handled with shader conversion and no need to enable frame buffer conversion.
 							if (!t->m_drawn_since_read.rempty())
 							{
 								t->UnscaleRTAlpha();
