@@ -419,6 +419,16 @@ void Host::OnCreateMemoryCardOpenRequested()
 	// noop
 }
 
+bool Host::InBatchMode()
+{
+	return false;
+}
+
+bool Host::InNoGUIMode()
+{
+	return false;
+}
+
 bool Host::ShouldPreferHostFileSelector()
 {
 	return false;
