@@ -1977,7 +1977,7 @@ void GSState::Write(const u8* mem, int len)
 		}
 
 		GL_CACHE("Write! %u ...  => 0x%x W:%d F:%s (DIR %d%d), dPos(%d %d) size(%d %d) draw %d", s_transfer_n,
-				blit.DBP, blit.DBW, psm_str(blit.DPSM),
+				blit.DBP, blit.DBW, GSUtil::GetPSMName(blit.DPSM),
 				m_tr.m_pos.DIRX, m_tr.m_pos.DIRY,
 				m_tr.x, m_tr.y, m_tr.w, m_tr.h, s_n);
 
@@ -2107,8 +2107,8 @@ void GSState::Move()
 	const int h = m_env.TRXREG.RRH;
 
 	GL_CACHE("Move! 0x%x W:%d F:%s => 0x%x W:%d F:%s (DIR %d%d), sPos(%d %d) dPos(%d %d) size(%d %d)",
-			 m_env.BITBLTBUF.SBP, m_env.BITBLTBUF.SBW, psm_str(m_env.BITBLTBUF.SPSM),
-			 m_env.BITBLTBUF.DBP, m_env.BITBLTBUF.DBW, psm_str(m_env.BITBLTBUF.DPSM),
+			 m_env.BITBLTBUF.SBP, m_env.BITBLTBUF.SBW, GSUtil::GetPSMName(m_env.BITBLTBUF.SPSM),
+			 m_env.BITBLTBUF.DBP, m_env.BITBLTBUF.DBW, GSUtil::GetPSMName(m_env.BITBLTBUF.DPSM),
 			 m_env.TRXPOS.DIRX, m_env.TRXPOS.DIRY,
 			 sx, sy, dx, dy, w, h);
 
