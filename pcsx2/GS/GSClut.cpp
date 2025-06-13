@@ -185,7 +185,7 @@ bool GSClut::CanLoadCLUT(const GIFRegTEX0& TEX0, const bool update_CBP)
 		case 4:
 			if (m_CBP[0] == TEX0.CBP)
 				return false;
-			if(update_CBP)
+			if (update_CBP)
 				m_CBP[0] = TEX0.CBP;
 			break;
 		case 5:
@@ -531,7 +531,7 @@ void GSClut::GetAlphaMinMax32(int& amin_out, int& amax_out)
 void GSClut::WriteCLUT_T32_I8_CSM1(const u32* RESTRICT src, u16* RESTRICT clut, u16 offset)
 {
 	// This is required when CSA is offset from the base of the CLUT so we point to the right data
-	for (int i = offset; i < 16; i ++)
+	for (int i = offset; i < 16; i++)
 	{
 		const int off = i << 4; // WriteCLUT_T32_I4_CSM1 loads 16 at a time
 		// Source column

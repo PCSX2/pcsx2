@@ -42,7 +42,7 @@ private:
 	void SetType_64();
 	void SetType_Folder();
 	void FileOpenError(const QString errmsg);
-	
+
 	Ui::MemoryCardConvertDialog m_ui;
 
 	bool isSetup = false;
@@ -57,7 +57,7 @@ private:
 	static constexpr u32 FLAGS = FILESYSTEM_FIND_RECURSIVE | FILESYSTEM_FIND_FOLDERS | FILESYSTEM_FIND_FILES;
 };
 
-// Card capacities computed from freshly formatted superblocks. 
+// Card capacities computed from freshly formatted superblocks.
 namespace CardCapacity
 {
 	static constexpr size_t _8_MB = 0x1f40 * 512 * 2; //(0x1fc7 - 0x29) * 2 * 512;
