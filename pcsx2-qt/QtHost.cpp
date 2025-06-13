@@ -94,6 +94,7 @@ static bool s_test_config_and_exit = false;
 static bool s_run_setup_wizard = false;
 static bool s_cleanup_after_update = false;
 static bool s_boot_and_debug = false;
+static bool s_window_focused = true;
 
 //////////////////////////////////////////////////////////////////////////
 // CPU Thread
@@ -562,6 +563,7 @@ void EmuThread::updateEmuFolders()
 void EmuThread::connectSignals()
 {
 	connect(qApp, &QGuiApplication::applicationStateChanged, this, &EmuThread::onApplicationStateChanged);
+	connect(qApp, &QGuiApplication::applicationStateChanged, this, &QtHost::setFocusState);
 }
 
 void EmuThread::loadSettings(SettingsInterface& si, std::unique_lock<std::mutex>& lock)
@@ -1437,6 +1439,15 @@ void Host::CommitBaseSettingChanges()
 	}
 }
 
+void QtHost::setFocusState(Qt::ApplicationState state)
+{
+	if (state == Qt::ApplicationActive)
+		s_window_focused = true;
+
+	else
+		s_window_focused = false;
+}
+
 bool QtHost::InBatchMode()
 {
 	return s_batch_mode;
@@ -1456,6 +1467,11 @@ bool QtHost::IsOnUIThread()
 bool QtHost::ShouldShowAdvancedSettings()
 {
 	return Host::GetBaseBoolSettingValue("UI", "ShowAdvancedSettings", false);
+}
+
+bool QtHost::isFocused()
+{
+	return s_window_focused;
 }
 
 void QtHost::RunOnUIThread(const std::function<void()>& func, bool block /*= false*/)
