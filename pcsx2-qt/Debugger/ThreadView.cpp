@@ -9,7 +9,7 @@
 #include <QtWidgets/QMenu>
 
 ThreadView::ThreadView(const DebuggerViewParameters& parameters)
-	: DebuggerView(parameters, NO_DEBUGGER_FLAGS)
+	: DebuggerView(parameters, MONOSPACE_FONT)
 	, m_model(new ThreadModel(cpu()))
 	, m_proxy_model(new QSortFilterProxyModel())
 {
@@ -24,11 +24,18 @@ ThreadView::ThreadView(const DebuggerViewParameters& parameters)
 	m_ui.threadList->setModel(m_proxy_model);
 	m_ui.threadList->setSortingEnabled(true);
 	m_ui.threadList->sortByColumn(ThreadModel::ThreadColumns::ID, Qt::SortOrder::AscendingOrder);
+	m_ui.threadList->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeMode::ResizeToContents);
 	for (std::size_t i = 0; auto mode : ThreadModel::HeaderResizeModes)
 	{
 		m_ui.threadList->horizontalHeader()->setSectionResizeMode(i, mode);
 		i++;
 	}
+
+	receiveEvent<DebuggerEvents::Refresh>([this](const DebuggerEvents::Refresh& event) -> bool {
+		if (!QtHost::IsVMPaused())
+			m_model->refreshData();
+		return true;
+	});
 
 	receiveEvent<DebuggerEvents::VMUpdate>([this](const DebuggerEvents::VMUpdate& event) -> bool {
 		m_model->refreshData();

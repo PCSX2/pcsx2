@@ -1073,27 +1073,22 @@ namespace R3000A
 
 		u32 GetModList(u32 a0reg)
 		{
-			u32 lcptr = iopMemRead32(0x3f0);
-			u32 lcstring = irxFindLoadcore(lcptr);
-			u32 list = 0;
+			/* Loadcore puts a pointer to a static array at 0x3f0 */
+			u32 bootmodes_ptr = iopMemRead32(0x3f0);
+			/* Search for the main loadcore struct from there */
+			u32 lcstring = irxFindLoadcore(bootmodes_ptr);
+			u32 lc_struct = 0;
 
 			if (lcstring == 0)
 			{
-				list = lcptr - 0x20;
+				lc_struct = bootmodes_ptr - 0x20;
 			}
 			else
 			{
-				list = lcstring + 0x18;
+				lc_struct = lcstring + 0x18;
 			}
 
-			u32 mod = iopMemRead32(list);
-
-			while (mod != 0)
-			{
-				mod = iopMemRead32(mod);
-			}
-
-			return list;
+			return lc_struct + 0x10;
 		}
 
 		// Gets the thread list ptr from thbase

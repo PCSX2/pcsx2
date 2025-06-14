@@ -5,6 +5,7 @@
 
 #include "Debugger/DebuggerEvents.h"
 #include "Debugger/DisassemblyView.h"
+#include "Debugger/ModuleView.h"
 #include "Debugger/RegisterView.h"
 #include "Debugger/StackView.h"
 #include "Debugger/ThreadView.h"
@@ -49,6 +50,7 @@ const std::map<std::string, DockTables::DebuggerViewDescription> DockTables::DEB
 	DEBUGGER_VIEW(SavedAddressesView, QT_TRANSLATE_NOOP("DebuggerView", "Saved Addresses"), BOTTOM_MIDDLE),
 	DEBUGGER_VIEW(StackView, QT_TRANSLATE_NOOP("DebuggerView", "Stack"), BOTTOM_MIDDLE),
 	DEBUGGER_VIEW(ThreadView, QT_TRANSLATE_NOOP("DebuggerView", "Threads"), BOTTOM_MIDDLE),
+	DEBUGGER_VIEW(ModuleView, QT_TRANSLATE_NOOP("DebuggerView", "Modules"), BOTTOM_MIDDLE),
 };
 
 #undef DEBUGGER_VIEW
@@ -99,6 +101,7 @@ const std::vector<DockTables::DefaultDockLayout> DockTables::DEFAULT_DOCK_LAYOUT
 			{"MemoryView", DefaultDockGroup::BOTTOM},
 			{"BreakpointView", DefaultDockGroup::BOTTOM},
 			{"ThreadView", DefaultDockGroup::BOTTOM},
+			{"ModuleView", DefaultDockGroup::BOTTOM},
 			{"StackView", DefaultDockGroup::BOTTOM},
 			{"SavedAddressesView", DefaultDockGroup::BOTTOM},
 			{"GlobalVariableTreeView", DefaultDockGroup::BOTTOM},
