@@ -15,7 +15,7 @@
 #include "common/StringUtil.h"
 
 #include "imgui.h"
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 
 #include <cinttypes>
 #include <fstream>

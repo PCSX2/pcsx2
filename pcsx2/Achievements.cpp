@@ -1879,7 +1879,7 @@ void Achievements::ConfirmHardcoreModeDisableAsync(const char* trigger, std::fun
 													 "want to disable hardcore mode? {0} will be cancelled if you select No."),
 				trigger),
 			std::move(real_callback), fmt::format(ICON_FA_CHECK " {}", TRANSLATE_SV("Achievements", "Yes")),
-			fmt::format(ICON_FA_TIMES " {}", TRANSLATE_SV("Achievements", "No")));
+			fmt::format(ICON_FA_XMARK " {}", TRANSLATE_SV("Achievements", "No")));
 	});
 }
 
@@ -2208,7 +2208,7 @@ void Achievements::DrawAchievementsWindow()
 			SmallString text;
 			ImVec2 text_size;
 
-			if (ImGuiFullscreen::FloatingButton(ICON_FA_WINDOW_CLOSE, 10.0f, 10.0f, -1.0f, -1.0f, 1.0f, 0.0f, true, g_large_font) ||
+			if (ImGuiFullscreen::FloatingButton(ICON_FA_SQUARE_XMARK, 10.0f, 10.0f, -1.0f, -1.0f, 1.0f, 0.0f, true, g_large_font) ||
 				ImGuiFullscreen::WantsToCloseMenu())
 			{
 				FullscreenUI::ReturnToPreviousWindow();
@@ -2569,7 +2569,7 @@ void Achievements::DrawLeaderboardsWindow()
 
 			if (!is_leaderboard_open)
 			{
-				if (ImGuiFullscreen::FloatingButton(ICON_FA_WINDOW_CLOSE, 10.0f, 10.0f, -1.0f, -1.0f, 1.0f, 0.0f, true, g_large_font) ||
+				if (ImGuiFullscreen::FloatingButton(ICON_FA_SQUARE_XMARK, 10.0f, 10.0f, -1.0f, -1.0f, 1.0f, 0.0f, true, g_large_font) ||
 					ImGuiFullscreen::WantsToCloseMenu())
 				{
 					FullscreenUI::ReturnToPreviousWindow();
@@ -2578,7 +2578,7 @@ void Achievements::DrawLeaderboardsWindow()
 			else
 			{
 				if (ImGuiFullscreen::FloatingButton(
-						ICON_FA_CARET_SQUARE_LEFT, 10.0f, 10.0f, -1.0f, -1.0f, 1.0f, 0.0f, true, g_large_font) ||
+						ICON_FA_SQUARE_CARET_LEFT, 10.0f, 10.0f, -1.0f, -1.0f, 1.0f, 0.0f, true, g_large_font) ||
 					ImGuiFullscreen::WantsToCloseMenu())
 				{
 					close_leaderboard_on_exit = true;
