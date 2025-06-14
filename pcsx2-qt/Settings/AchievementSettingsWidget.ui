@@ -181,16 +181,23 @@
            </widget>
           </item>
           <item row="3" column="0">
-           <widget class="QCheckBox" name="soundEffects">
+           <widget class="QCheckBox" name="overlays">
             <property name="text">
-             <string>Enable Sound Effects</string>
+             <string>Enable In-Game Overlays</string>
             </property>
            </widget>
           </item>
           <item row="3" column="1">
-           <widget class="QCheckBox" name="overlays">
+           <widget class="QCheckBox" name="leaderboardOverlays">
             <property name="text">
-             <string>Enable In-Game Overlays</string>
+             <string>Enable In-Game Leaderboard Overlays</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QCheckBox" name="soundEffects">
+            <property name="text">
+             <string>Enable Sound Effects</string>
             </property>
            </widget>
           </item>
