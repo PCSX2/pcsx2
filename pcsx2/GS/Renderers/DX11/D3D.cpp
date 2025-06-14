@@ -15,7 +15,7 @@
 #include "common/StringUtil.h"
 #include "common/Path.h"
 
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 
 #include <appmodel.h>
 #include <array>
