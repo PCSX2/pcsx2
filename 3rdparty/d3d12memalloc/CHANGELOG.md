@@ -1,3 +1,34 @@
+# 3.0.1 (2025-05-08)
+
+- Fixed macros `D3D12MA_RECOMMENDED_ALLOCATOR_FLAGS`, `D3D12MA_RECOMMENDED_POOL_FLAGS` (#73).
+
+# 3.0.0 (2025-05-05)
+
+It has been a long time since the previous official release, so hopefully everyone has been using the latest code from "master" branch, which is always maintained in a good state, not the old version. For completeness, here is the list of changes since v2.0.1. The major version number has changed, so there are some compatibility-breaking changes, but the basic API stays the same and is mostly backward-compatible.
+
+- Added helper structs: `CALLOCATION_DESC`, `CPOOL_DESC`, `CVIRTUAL_BLOCK_DESC`, `CVIRTUAL_ALLOCATION_DESC`.
+- Added macros: `D3D12MA_RECOMMENDED_ALLOCATOR_FLAGS`, `D3D12MA_RECOMMENDED_HEAP_FLAGS`, `D3D12MA_RECOMMENDED_POOL_FLAGS`.
+- Added functions: `Allocator::CreateResource3`, `CreateAliasingResource2`.
+    - They support parameters: `D3D12_BARRIER_LAYOUT InitialLayout`, `const DXGI_FORMAT* pCastableFormats`.
+    - They require recent DirectX 12 Agility SDK. To use them, `ID3D12Device10` must be available.
+      To use non-empty list of castable formats, `ID3D12Device12` must be available.
+- Added support for GPU Upload Heaps (`D3D12_HEAP_TYPE_GPU_UPLOAD`).
+    - Requires recent DirectX 12 Agility SDK. Support on the user's machine is available only when supported by the motherboard, GPU, drivers, and enabled as "Resizable BAR" in UEFI settings. It can be queried using new `Allocator::IsGPUUploadHeapSupported` function.
+    - `TotalStatistics::HeapType` array was extended from 4 to 5 elements.
+- Added missing function `Allocator::CreateAliasingResource1`.
+- Added `POOL_DESC::ResidencyPriority` member.
+- Removed `Allocation::WasZeroInitialized` function. It wasn't fully implemented anyway.
+- Added `POOL_FLAG_ALWAYS_COMMITTED`.
+- Added a heuristic that prefers creating small buffers as committed to save memory.
+    - It is enabled by default. It can be disabled by new flag `ALLOCATOR_FLAG_DONT_PREFER_SMALL_BUFFERS_COMMITTED`.
+- Macro `D3D12MA_OPTIONS16_SUPPORTED` is no longer exposed in the header or Cmake script.
+  It is defined automatically based on the Agility SDK version.
+- Added macro `D3D12MA_DEBUG_LOG`, which can be used to log unfreed allocations.
+- Many improvements in the documentation, including new chapters: "Frequently asked questions", "Optimal resource allocation".
+- Countless fixes and improvements, including performance optimizations, compatibility with various compilers, tests.
+- Major changes in the Cmake script.
+- Fixes in "GpuMemDumpVis.py" script.
+
 # 2.0.1 (2022-04-05)
 
 A maintenance release with some bug fixes and improvements. There are no changes in the library API.
