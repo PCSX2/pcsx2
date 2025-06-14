@@ -1480,6 +1480,16 @@ bool Host::RequestResetSettings(bool folders, bool core, bool controllers, bool 
 	return true;
 }
 
+void Host::OnSettingsChangedExternally()
+{
+	QtHost::RunOnUIThread([]() {
+		if (g_main_window)
+		{
+			g_main_window->refreshSettings();
+		}
+	});
+}
+
 QString QtHost::GetAppNameAndVersion()
 {
 	return QString("PCSX2 %1").arg(BuildVersion::GitRev);
