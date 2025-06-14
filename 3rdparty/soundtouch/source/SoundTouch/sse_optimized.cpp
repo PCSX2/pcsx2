@@ -211,9 +211,6 @@ FIRFilterSSE::~FIRFilterSSE()
 // (overloaded) Calculates filter coefficients for SSE routine
 void FIRFilterSSE::setCoefficients(const float *coeffs, uint newLength, uint uResultDivFactor)
 {
-    uint i;
-    float fDivider;
-
     FIRFilter::setCoefficients(coeffs, newLength, uResultDivFactor);
 
     // Scale the filter coefficients so that it won't be necessary to scale the filtering result
@@ -223,13 +220,13 @@ void FIRFilterSSE::setCoefficients(const float *coeffs, uint newLength, uint uRe
     filterCoeffsUnalign = new float[2 * newLength + 4];
     filterCoeffsAlign = (float *)SOUNDTOUCH_ALIGN_POINTER_16(filterCoeffsUnalign);
 
-    fDivider = (float)resultDivider;
+    const float scale = ::pow(0.5, (int)resultDivFactor);
 
-    // rearrange the filter coefficients for mmx routines
-    for (i = 0; i < newLength; i ++)
+    // rearrange the filter coefficients for sse routines
+    for (auto i = 0U; i < newLength; i ++)
     {
         filterCoeffsAlign[2 * i + 0] =
-        filterCoeffsAlign[2 * i + 1] = coeffs[i + 0] / fDivider;
+        filterCoeffsAlign[2 * i + 1] = coeffs[i] * scale;
     }
 }
 
