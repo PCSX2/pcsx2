@@ -487,6 +487,7 @@ set(pcsx2GSSources
 	GS/GSCapture.cpp
 	GS/GSClut.cpp
 	GS/GSDrawingContext.cpp
+	GS/GSDrawingEnvironment.cpp
 	GS/GSDump.cpp
 	GS/GSLocalMemory.cpp
 	GS/GSLzma.cpp
