@@ -6,7 +6,7 @@
 #include "Counters.h"
 #include "GS/GS.h"
 #include "Host.h"
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 #include "ImGui/FullscreenUI.h"
 #include "ImGui/ImGuiFullscreen.h"
 #include "ImGui/ImGuiManager.h"
@@ -487,8 +487,10 @@ ImFont* ImGuiManager::AddFixedFont()
 
 bool ImGuiManager::AddIconFonts()
 {
-	// Exclude Emojis
-	static constexpr ImWchar range_emoji[] = {0x10000, 0x1ffff, 0x0, 0x0};
+	// Exclude any characters outside the BMP PUA plane
+	static constexpr ImWchar range_exclude_non_bmp[] = {0x1, 0xdfff, 0xf900, 0x10ffff, 0x0, 0x0};
+	// Exclude emojis
+	static constexpr ImWchar range_exclude_emoji[] = {0x10000, 0x1ffff, 0x0, 0x0};
 
 	{
 		ImFontConfig cfg;
@@ -496,7 +498,7 @@ bool ImGuiManager::AddIconFonts()
 		cfg.PixelSnapH = true;
 		cfg.GlyphMinAdvanceX = FONT_BASE_SIZE;
 		cfg.GlyphMaxAdvanceX = FONT_BASE_SIZE;
-		cfg.GlyphExcludeRanges = range_emoji;
+		cfg.GlyphExcludeRanges = range_exclude_non_bmp;
 		cfg.FontDataOwnedByAtlas = false;
 
 		if (!ImGui::GetIO().Fonts->AddFontFromMemoryTTF(
@@ -512,7 +514,7 @@ bool ImGuiManager::AddIconFonts()
 		cfg.PixelSnapH = true;
 		cfg.GlyphMinAdvanceX = FONT_BASE_SIZE;
 		cfg.GlyphMaxAdvanceX = FONT_BASE_SIZE;
-		cfg.GlyphExcludeRanges = range_emoji;
+		cfg.GlyphExcludeRanges = range_exclude_emoji;
 		cfg.FontDataOwnedByAtlas = false;
 
 		if (!ImGui::GetIO().Fonts->AddFontFromMemoryTTF(

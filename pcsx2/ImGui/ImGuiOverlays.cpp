@@ -10,7 +10,7 @@
 #include "GS/GSVector.h"
 #include "GS/Renderers/Common/GSDevice.h"
 #include "Host.h"
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 #include "IconsPromptFont.h"
 #include "ImGui/FullscreenUI.h"
 #include "ImGui/ImGuiAnimated.h"
@@ -290,7 +290,7 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 				if (target_speed == EmuConfig.EmulationSpeed.SlomoScalar) // Slow-Motion
 					DRAW_LINE(standard_font, font_size, ICON_PF_SLOW_MOTION, IM_COL32(255, 255, 255, 255));
 				else if (target_speed == EmuConfig.EmulationSpeed.TurboScalar) // Turbo
-					DRAW_LINE(standard_font, font_size, ICON_FA_FAST_FORWARD, IM_COL32(255, 255, 255, 255));
+					DRAW_LINE(standard_font, font_size, ICON_FA_FORWARD_FAST, IM_COL32(255, 255, 255, 255));
 				else // Unlimited
 					DRAW_LINE(standard_font, font_size, ICON_FA_FORWARD, IM_COL32(255, 255, 255, 255));
 			}
@@ -1143,7 +1143,7 @@ void SaveStateSelectorUI::ShowSlotOSDMessage()
 	else
 		date = TRANSLATE_STR("ImGuiOverlays", "no save yet");
 
-	Host::AddIconOSDMessage("ShowSlotOSDMessage", ICON_FA_SEARCH,
+	Host::AddIconOSDMessage("ShowSlotOSDMessage", ICON_FA_MAGNIFYING_GLASS,
 		fmt::format(TRANSLATE_FS("Hotkeys", "Save slot {0} selected ({1})."), slot, date),
 		Host::OSD_QUICK_DURATION);
 }
