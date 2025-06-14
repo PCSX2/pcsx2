@@ -4,7 +4,7 @@
 #include "GameDatabase.h"
 #include "GS/GS.h"
 #include "Host.h"
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 #include "vtlb.h"
 
 #include "common/Console.h"
@@ -890,7 +890,7 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 										"Recommended Blending Accuracy for this game is {2}.\n"
 										"You can adjust the blending level in Game Properties to improve\n"
 										"graphical quality, but this will increase system requirements."),
-							ICON_FA_PAINT_BRUSH,
+							ICON_FA_PAINTBRUSH,
 							Pcsx2Config::GSOptions::BlendingLevelNames[static_cast<int>(
 								EmuConfig.GS.AccurateBlendingUnit)],
 							Pcsx2Config::GSOptions::BlendingLevelNames[value]),
@@ -928,7 +928,7 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 	if (!is_sw_renderer && !disabled_fixes.empty())
 	{
 		Host::AddKeyedOSDMessage("HWFixesWarning",
-			fmt::format(ICON_FA_MAGIC " {}\n{}",
+			fmt::format(ICON_FA_WAND_MAGIC_SPARKLES " {}\n{}",
 				TRANSLATE_SV("GameDatabase", "Manual GS hardware renderer fixes are enabled, automatic fixes were not applied:"),
 					disabled_fixes),
 			Host::OSD_ERROR_DURATION);
