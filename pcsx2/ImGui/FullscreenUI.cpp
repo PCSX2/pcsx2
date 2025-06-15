@@ -65,9 +65,17 @@ namespace
 		{
 			SmallStackString<L>::format("{} {}", icon, Host::TranslateToStringView(TR_CONTEXT, str));
 		}
+		__fi IconStackString(const char8_t* icon, const char* str)
+		{
+			SmallStackString<L>::format("{} {}", reinterpret_cast<const char*>(icon), Host::TranslateToStringView(TR_CONTEXT, str));
+		}
 		__fi IconStackString(const char* icon, const char* str, const char* suffix)
 		{
 			SmallStackString<L>::format("{} {}##{}", icon, Host::TranslateToStringView(TR_CONTEXT, str), suffix);
+		}
+		__fi IconStackString(const char8_t* icon, const char* str, const char* suffix)
+		{
+			SmallStackString<L>::format("{} {}##{}", reinterpret_cast<const char*>(icon), Host::TranslateToStringView(TR_CONTEXT, str), suffix);
 		}
 	};
 } // namespace
