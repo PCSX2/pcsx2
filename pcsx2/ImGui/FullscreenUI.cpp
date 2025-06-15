@@ -301,6 +301,8 @@ namespace FullscreenUI
 
 	static void ConfirmShutdownIfMemcardBusy(std::function<void(bool)> callback);
 
+	static bool ShouldDefaultToGameList();
+
 	//////////////////////////////////////////////////////////////////////////
 	// Settings
 	//////////////////////////////////////////////////////////////////////////
@@ -772,9 +774,9 @@ bool FullscreenUI::Initialize()
 	}
 	else
 	{
-		// only switch to landing if we weren't e.g. in settings
-		if (s_current_main_window == MainWindowType::None)
-			SwitchToLanding();
+		const bool open_main_window = s_current_main_window == MainWindowType::None;
+		if (open_main_window)
+			ReturnToMainWindow();
 	}
 
 	ForceKeyNavEnabled();
@@ -858,7 +860,7 @@ void FullscreenUI::OnVMDestroyed()
 		s_pause_menu_was_open = false;
 		s_was_paused_on_quick_menu_open = false;
 		s_current_pause_submenu = PauseSubMenu::None;
-		SwitchToLanding();
+		ReturnToMainWindow();
 	});
 }
 
@@ -1105,7 +1107,7 @@ void FullscreenUI::ReturnToPreviousWindow()
 void FullscreenUI::ReturnToMainWindow()
 {
 	ClosePauseMenu();
-	s_current_main_window = VMManager::HasValidVM() ? MainWindowType::None : MainWindowType::Landing;
+	s_current_main_window = VMManager::HasValidVM() ? MainWindowType::None : (ShouldDefaultToGameList() ? MainWindowType::GameList : MainWindowType::Landing);
 }
 
 bool FullscreenUI::LoadResources()
@@ -1359,6 +1361,11 @@ void FullscreenUI::ConfirmShutdownIfMemcardBusy(std::function<void(bool)> callba
 	OpenConfirmMessageDialog(FSUI_ICONSTR(ICON_PF_MEMORY_CARD, "WARNING: Memory Card Busy"),
 		FSUI_STR("WARNING: Your memory card is still writing data. Shutting down now will IRREVERSIBLY DESTROY YOUR MEMORY CARD. It is strongly recommended to resume your game and let it finish writing to your memory card.\n\nDo you wish to shutdown anyways and IRREVERSIBLY DESTROY YOUR MEMORY CARD?"),
 		std::move(callback));
+}
+
+bool FullscreenUI::ShouldDefaultToGameList()
+{
+	return Host::GetBaseBoolSettingValue("UI", "FullscreenUIDefaultToGameList", false);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -3157,7 +3164,7 @@ void FullscreenUI::DrawSettingsWindow()
 		}
 
 		if (NavButton(ICON_PF_BACKWARD, true, true))
-			ReturnToMainWindow();
+			SwitchToLanding();
 
 		if (s_game_settings_entry)
 		{
@@ -3449,6 +3456,8 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 	DrawStringListSetting(bsi, FSUI_ICONSTR(ICON_FA_PAINT_BRUSH, "Theme"),
 		FSUI_CSTR("Selects the color style to be used for Big Picture Mode."),
 		"UI", "FullscreenUITheme", "Dark", s_theme_name, s_theme_value, std::size(s_theme_name), true);
+	DrawToggleSetting(
+	bsi, FSUI_ICONSTR(ICON_FA_LIST, "Default To Game List"), FSUI_CSTR("When Big Picture mode is started, the game list will be displayed instead of the main menu."), "UI", "FullscreenUIDefaultToGameList", false);
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_INFO_CIRCLE, "Use Save State Selector"),
 		FSUI_CSTR("Show a save state selector UI when switching slots instead of showing a notification bubble."),
 		"EmuCore", "UseSavestateSelector", true);
@@ -6346,7 +6355,7 @@ void FullscreenUI::DrawGameListWindow()
 		BeginNavBar();
 
 		if (NavButton(ICON_PF_BACKWARD, true, true))
-			ReturnToPreviousWindow();
+			SwitchToLanding();
 
 		NavTitle(Host::TranslateToCString(TR_CONTEXT, titles[static_cast<u32>(s_game_list_view)]));
 		RightAlignNavButtons(count, ITEM_WIDTH, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
@@ -6434,7 +6443,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 	}
 
 	if (!AreAnyDialogsOpen() && WantsToCloseMenu())
-		ReturnToPreviousWindow();
+		SwitchToLanding();
 
 	const GameList::Entry* selected_entry = nullptr;
 
@@ -6641,7 +6650,7 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
 	}
 
 	if (!AreAnyDialogsOpen() && WantsToCloseMenu())
-		ReturnToPreviousWindow();
+		SwitchToLanding();
 
 	ResetFocusHere();
 	BeginMenuButtons();
