@@ -955,34 +955,28 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 		zm = 0xffffffff;
 	}
 
-	if (PRIM->TME)
+	if (PRIM->TME && GSLocalMemory::m_psm[context->TEX0.PSM].pal > 0)
 	{
-		if (GSLocalMemory::m_psm[context->TEX0.PSM].pal > 0)
-		{
-			m_mem.m_clut.Read32(context->TEX0, env.TEXA);
-		}
+		m_mem.m_clut.Read32(context->TEX0, env.TEXA);
 	}
 
-	if (context->TEST.ATE)
+	if (context->TEST.ATE && !TryAlphaTest(fm, zm))
 	{
-		if (!TryAlphaTest(fm, zm))
+		gd.sel.atst = context->TEST.ATST;
+		gd.sel.afail = context->TEST.GetAFAIL(context->FRAME.PSM);
+
+		gd.aref = GSVector4i((int)context->TEST.AREF);
+
+		switch (gd.sel.atst)
 		{
-			gd.sel.atst = context->TEST.ATST;
-			gd.sel.afail = context->TEST.GetAFAIL(context->FRAME.PSM);
-
-			gd.aref = GSVector4i((int)context->TEST.AREF);
-
-			switch (gd.sel.atst)
-			{
-				case ATST_LESS:
-					gd.sel.atst = ATST_LEQUAL;
-					gd.aref -= GSVector4i::x00000001();
-					break;
-				case ATST_GREATER:
-					gd.sel.atst = ATST_GEQUAL;
-					gd.aref += GSVector4i::x00000001();
-					break;
-			}
+			case ATST_LESS:
+				gd.sel.atst = ATST_LEQUAL;
+				gd.aref -= GSVector4i::x00000001();
+				break;
+			case ATST_GREATER:
+				gd.sel.atst = ATST_GEQUAL;
+				gd.aref += GSVector4i::x00000001();
+				break;
 		}
 	}
 
@@ -1042,9 +1036,9 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 
 			bool mipmap = IsMipMapActive();
 
-			GIFRegTEX0 TEX0 = m_context->GetSizeFixedTEX0(m_vt.m_min.t.xyxy(m_vt.m_max.t), m_vt.IsLinear(), mipmap);
+			GSVector4i r = GetTextureMinMax(context->TEX0, context->CLAMP, context->scissor.in, gd.sel.ltf).coverage;
 
-			GSVector4i r = GetTextureMinMax(TEX0, context->CLAMP, gd.sel.ltf, true).coverage;
+			const GIFRegTEX0 TEX0 = context->GetSizeFixedTEX0(r, m_vt.IsLinear(), mipmap);
 
 			GSTextureCacheSW::Texture* t = m_tc->Lookup(TEX0, env.TEXA);
 
@@ -1150,7 +1144,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 						return false;
 					}
 
-					GSVector4i r = GetTextureMinMax(MIP_TEX0, MIP_CLAMP, gd.sel.ltf, true).coverage;
+					GSVector4i r = GetTextureMinMax(MIP_TEX0, MIP_CLAMP, context->scissor.in, gd.sel.ltf).coverage;
 
 					data->SetSource(t, r, i);
 				}
