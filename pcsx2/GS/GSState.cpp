@@ -4082,87 +4082,6 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 }
 
 // TODO: Replace this with optimized SIMD code.
-// Returns true if the 3 vertices in verts reprsents a axis-aligned right triangles (both XY and ST/UV) and
-// outputs the indices of the corner, vertical, and horizontal point in idx_out
-static bool IsAxisAlignedRightTriangle(const GSVertex* vertex, const u16* index, bool fst, u32* i_out)
-{
-	bool same_coord_x[3] = {false, false, false};
-	bool same_coord_y[3] = {false, false, false};
-
-	// Find which vertices have the same X/Y coordinates as other vertices
-	for (u32 i0 = 0; i0 < 3; i0++)
-	{
-		const u32 i1 = (i0 + 1) % 3;
-		bool same_x = vertex[index[i0]].XYZ.X == vertex[index[i1]].XYZ.X;
-		bool same_y = vertex[index[i0]].XYZ.Y == vertex[index[i1]].XYZ.Y;
-		if (fst)
-		{
-			same_x &= vertex[index[i0]].U == vertex[index[i1]].U;
-			same_y &= vertex[index[i0]].V == vertex[index[i1]].V;
-		}
-		else
-		{
-			same_x &= vertex[index[i0]].ST.S == vertex[index[i1]].ST.S;
-			same_y &= vertex[index[i0]].ST.T == vertex[index[i1]].ST.T;
-		}
-		if (same_x)
-		{
-			same_coord_x[i0] = same_coord_x[i1] = true;
-		}
-		if (same_y)
-		{
-			same_coord_y[i0] = same_coord_y[i1] = true;
-		}
-	}
-
-	// Find the corner vertex, which should share both X/Y both other vertices
-	int i_corner = -1;
-	int i_vertical = -1;
-	int i_horizontal = -1;
-	for (int i = 0; i < 3; i++)
-	{
-		if (same_coord_x[i] && same_coord_y[i])
-		{
-			if (i_corner != -1) // There can only be one corner point
-				return false;
-			i_corner = i;
-		}
-	}
-
-	if (i_corner < 0)
-		return false;
-
-	// The vertical vertex is the one that has the same x coordinate as the corner vertex
-	for (int i = 1; i < 3; i++)
-	{
-		if (same_coord_x[(i_corner + i) % 3])
-		{
-			if (i_vertical != -1)
-				return false; // There can only be one vertical point
-			i_vertical = (i_corner + i) % 3;
-		}
-	}
-
-	// The horizontal vertex is the one that has the same y coordinate as the corner vertex
-	for (int i = 1; i < 3; i++)
-	{
-		if (same_coord_y[(i_corner + i) % 3])
-		{
-			if (i_horizontal != -1)
-				return false; // There can only be one horizontal point
-			i_horizontal = (i_corner + i) % 3;
-		}
-	}
-
-	pxAssertMsg(i_horizontal != i_vertical, "Impossible");
-
-	i_out[0] = (u32)i_corner;
-	i_out[1] = (u32)i_vertical;
-	i_out[2] = (u32)i_horizontal;
-	return true;
-}
-
-// TODO: Replace this with optimized SIMD code.
 void GSState::GetTextureMinMaxAxisAlignedHelper(
 	GIFRegTEX0 TEX0, GSVector4i scissor, u32 fst, const GSVertex* vertex, u16 index0, u16 index1, GSVector4* minmax)
 {
@@ -4231,7 +4150,6 @@ void GSState::GetTextureMinMaxAxisAlignedHelper(
 	minmax->bottom = std::max(minmax->bottom, v_max);
 }
 
-// TODO: Replace stuff with templates for efficiency
 bool GSState::GetTextureMinMaxAxisAligned(GIFRegTEX0 TEX0, GIFRegCLAMP CLAMP, GSVector4i scissor, bool linear, GSState::TextureMinMaxResult* result)
 {
 	const GS_PRIM_CLASS primclass = GSUtil::GetPrimClass(PRIM->PRIM);
@@ -4244,13 +4162,19 @@ bool GSState::GetTextureMinMaxAxisAligned(GIFRegTEX0 TEX0, GIFRegCLAMP CLAMP, GS
 
 	if (primclass == GS_PRIM_CLASS::GS_TRIANGLE_CLASS)
 	{
+		const auto IsTriangleRight = fst ? GSUtil::IsTriangleRight<1, 1> : GSUtil::IsTriangleRight<1, 0>;
+
 		for (u32 i = 0; i < m_index.tail; i += 3)
 		{
 			const u16* const idx = &index[i]; 
-			u32 i_tri[3]; // Vertices of triangle in order: corner, vertical, horizontal
-			if (!IsAxisAlignedRightTriangle(vertex, &idx[0], fst, &i_tri[0]))
+			
+			GSUtil::TriangleOrdering order;
+			if (!IsTriangleRight(vertex, &idx[0], &order))
 				return false;
-			GetTextureMinMaxAxisAlignedHelper(TEX0, scissor, fst, vertex, idx[i_tri[1]], idx[i_tri[2]], &minmax);
+			
+			// We ignore the right angle corner of the triangle (order.b) and just pass the acute angle corners,
+			// (order.a and order.c) since this is all we need to infer the limits of the UV coordinates.
+			GetTextureMinMaxAxisAlignedHelper(TEX0, scissor, fst, vertex, idx[order.a], idx[order.c], &minmax);
 		}
 	}
 	else if (primclass == GS_PRIM_CLASS::GS_SPRITE_CLASS)
@@ -4299,8 +4223,10 @@ bool GSState::GetTextureMinMaxAxisAligned(GIFRegTEX0 TEX0, GIFRegCLAMP CLAMP, GS
 	}
 
 	bool left_boundary, top_boundary, right_boundary, bottom_boundary;
-	GetClampWrapMinMaxUV(TEX0.TW, CLAMP.WMS, CLAMP.MINU, CLAMP.MAXU, minmaxi.left, minmaxi.right, &minmaxi.left, &minmaxi.right, &left_boundary, &right_boundary);
-	GetClampWrapMinMaxUV(TEX0.TH, CLAMP.WMT, CLAMP.MINV, CLAMP.MAXV, minmaxi.top, minmaxi.bottom, &minmaxi.top, &minmaxi.bottom, &top_boundary, &bottom_boundary);
+	GetClampWrapMinMaxUV(TEX0.TW, CLAMP.WMS, CLAMP.MINU, CLAMP.MAXU, minmaxi.left, minmaxi.right,
+		&minmaxi.left, &minmaxi.right, &left_boundary, &right_boundary);
+	GetClampWrapMinMaxUV(TEX0.TH, CLAMP.WMT, CLAMP.MINV, CLAMP.MAXV, minmaxi.top, minmaxi.bottom,
+		&minmaxi.top, &minmaxi.bottom, &top_boundary, &bottom_boundary);
 	
 	result->coverage = GSVector4i(minmaxi.left, minmaxi.top, minmaxi.right + 1, minmaxi.bottom + 1); // use exclusive coordinates for right/bottom
 	result->uses_boundary = 0;
