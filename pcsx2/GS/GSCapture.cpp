@@ -10,7 +10,7 @@
 #include "SPU2/spu2.h"
 #include "Host.h"
 #include "Host/AudioStream.h"
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 #include "common/Assertions.h"
 #include "common/Console.h"
 #include "common/BitUtils.h"

@@ -14,7 +14,7 @@
 
 #include "Input/SDLInputSource.h"
 
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 
 #include "VMManager.h"
 #include "common/Assertions.h"

@@ -152,7 +152,7 @@ public:
 
 		/// Returns the end block for the target, but doesn't wrap at 0x3FFF.
 		/// Can be used for overlap tests.
-		u32 UnwrappedEndBlock() const { return (m_end_block + (Wraps() ? MAX_BLOCKS : 0)); }
+		u32 UnwrappedEndBlock() const { return (m_end_block + (Wraps() ? GS_MAX_BLOCKS : 0)); }
 
 		bool Inside(u32 bp, u32 bw, u32 psm, const GSVector4i& rect);
 		bool Overlaps(u32 bp, u32 bw, u32 psm, const GSVector4i& rect);
@@ -308,7 +308,7 @@ public:
 		HashType m_layer_hash[7] = {};
 		// Keep a GSTextureCache::SourceMap::m_map iterator to allow fast erase
 		// Deliberately not initialized to save cycles.
-		std::array<u16, MAX_PAGES> m_erase_it;
+		std::array<u16, GS_MAX_PAGES> m_erase_it;
 		GSOffset::PageLooper m_pages;
 
 	public:
@@ -356,7 +356,7 @@ public:
 	{
 	public:
 		std::unordered_set<Source*> m_surfaces;
-		std::array<FastList<Source*>, MAX_PAGES> m_map;
+		std::array<FastList<Source*>, GS_MAX_PAGES> m_map;
 
 		void Add(Source* s, const GIFRegTEX0& TEX0);
 		void SwapTexture(GSTexture* old_tex, GSTexture* new_tex);

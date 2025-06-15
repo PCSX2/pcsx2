@@ -15,7 +15,7 @@
 #include "common/StringUtil.h"
 
 #include "imgui.h"
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 
 #include <cinttypes>
 #include <fstream>
@@ -2107,6 +2107,8 @@ void GSDeviceOGL::RenderImGui()
 	const ImDrawData* draw_data = ImGui::GetDrawData();
 	if (draw_data->CmdListsCount == 0)
 		return;
+
+	UpdateImGuiTextures();
 
 	constexpr float L = 0.0f;
 	const float R = static_cast<float>(m_window_info.surface_width);
