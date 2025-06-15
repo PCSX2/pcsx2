@@ -301,7 +301,7 @@ void BPMDetect::updateXCorr(int process_samples)
     pBuffer = buffer->ptrBegin();
 
     // calculate decay factor for xcorr filtering
-    float xcorr_decay = (float)pow(0.5, 1.0 / (XCORR_DECAY_TIME_CONSTANT * TARGET_SRATE / process_samples));
+    float xcorr_decay = (float)pow(0.5, process_samples / (XCORR_DECAY_TIME_CONSTANT * TARGET_SRATE));
 
     // prescale pbuffer
     float tmp[XCORR_UPDATE_SEQUENCE];
