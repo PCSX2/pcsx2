@@ -617,71 +617,70 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 			EndPresentFrame();
 
 		PerformanceMetrics::Update(registers_written, fb_sprite_frame, skip_frame);
-		return;
 	}
-
-	if (!idle_frame)
-		g_gs_device->AgePool();
-
-
-	g_perfmon.EndFrame(idle_frame);
-
-	if ((g_perfmon.GetFrame() & 0x1f) == 0)
-		g_perfmon.Update();
-
-	// Little bit ugly, but we can't do CAS inside the render pass.
-	GSVector4i src_rect;
-	GSVector4 src_uv, draw_rect;
-	GSTexture* current = g_gs_device->GetCurrent();
-	if (current && !blank_frame)
+	else
 	{
-		src_rect = CalculateDrawSrcRect(current, m_real_size);
-		src_uv = GSVector4(src_rect) / GSVector4(current->GetSize()).xyxy();
-		draw_rect = CalculateDrawDstRect(g_gs_device->GetWindowWidth(), g_gs_device->GetWindowHeight(),
-			src_rect, current->GetSize(), s_display_alignment, g_gs_device->UsesLowerLeftOrigin(),
-			GetVideoMode() == GSVideoMode::SDTV_480P);
-		s_last_draw_rect = draw_rect;
+		if (!idle_frame)
+			g_gs_device->AgePool();
 
-		if (GSConfig.CASMode != GSCASMode::Disabled)
-		{
-			static bool cas_log_once = false;
-			if (g_gs_device->Features().cas_sharpening)
-			{
-				// sharpen only if the IR is higher than the display resolution
-				const bool sharpen_only = (GSConfig.CASMode == GSCASMode::SharpenOnly ||
-										   (current->GetWidth() > g_gs_device->GetWindowWidth() &&
-											   current->GetHeight() > g_gs_device->GetWindowHeight()));
-				g_gs_device->CAS(current, src_rect, src_uv, draw_rect, sharpen_only);
-			}
-			else if (!cas_log_once)
-			{
-				Host::AddIconOSDMessage("CASUnsupported", ICON_FA_EXCLAMATION_TRIANGLE,
-					TRANSLATE_SV("GS",
-						"CAS is not available, your graphics driver does not support the required functionality."),
-					10.0f);
-				cas_log_once = true;
-			}
-		}
-	}
+		g_perfmon.EndFrame(idle_frame);
 
-	if (BeginPresentFrame(false))
-	{
+		if ((g_perfmon.GetFrame() & 0x1f) == 0)
+			g_perfmon.Update();
+
+		// Little bit ugly, but we can't do CAS inside the render pass.
+		GSVector4i src_rect;
+		GSVector4 src_uv, draw_rect;
+		GSTexture* current = g_gs_device->GetCurrent();
 		if (current && !blank_frame)
 		{
-			const u64 current_time = Common::Timer::GetCurrentValue();
-			const float shader_time = static_cast<float>(Common::Timer::ConvertValueToSeconds(current_time - m_shader_time_start));
+			src_rect = CalculateDrawSrcRect(current, m_real_size);
+			src_uv = GSVector4(src_rect) / GSVector4(current->GetSize()).xyxy();
+			draw_rect = CalculateDrawDstRect(g_gs_device->GetWindowWidth(), g_gs_device->GetWindowHeight(),
+				src_rect, current->GetSize(), s_display_alignment, g_gs_device->UsesLowerLeftOrigin(),
+				GetVideoMode() == GSVideoMode::SDTV_480P);
+			s_last_draw_rect = draw_rect;
 
-			g_gs_device->PresentRect(current, src_uv, nullptr, draw_rect,
-				s_tv_shader_indices[GSConfig.TVShader], shader_time, GSConfig.LinearPresent != GSPostBilinearMode::Off);
+			if (GSConfig.CASMode != GSCASMode::Disabled)
+			{
+				static bool cas_log_once = false;
+				if (g_gs_device->Features().cas_sharpening)
+				{
+					// sharpen only if the IR is higher than the display resolution
+					const bool sharpen_only = (GSConfig.CASMode == GSCASMode::SharpenOnly ||
+					                           (current->GetWidth() > g_gs_device->GetWindowWidth() &&
+					                            current->GetHeight() > g_gs_device->GetWindowHeight()));
+					g_gs_device->CAS(current, src_rect, src_uv, draw_rect, sharpen_only);
+				}
+				else if (!cas_log_once)
+				{
+					Host::AddIconOSDMessage("CASUnsupported", ICON_FA_EXCLAMATION_TRIANGLE,
+						TRANSLATE_SV("GS", "CAS is not available, your graphics driver does not support the required functionality."),
+						10.0f);
+					cas_log_once = true;
+				}
+			}
 		}
 
-		EndPresentFrame();
+		if (BeginPresentFrame(false))
+		{
+			if (current && !blank_frame)
+			{
+				const u64 current_time = Common::Timer::GetCurrentValue();
+				const float shader_time = static_cast<float>(Common::Timer::ConvertValueToSeconds(current_time - m_shader_time_start));
 
-		if (GSConfig.OsdShowGPU)
-			PerformanceMetrics::OnGPUPresent(g_gs_device->GetAndResetAccumulatedGPUTime());
+				g_gs_device->PresentRect(current, src_uv, nullptr, draw_rect,
+					s_tv_shader_indices[GSConfig.TVShader], shader_time, GSConfig.LinearPresent != GSPostBilinearMode::Off);
+			}
+
+			EndPresentFrame();
+
+			if (GSConfig.OsdShowGPU)
+				PerformanceMetrics::OnGPUPresent(g_gs_device->GetAndResetAccumulatedGPUTime());
+		}
+
+		PerformanceMetrics::Update(registers_written, fb_sprite_frame, false);
 	}
-
-	PerformanceMetrics::Update(registers_written, fb_sprite_frame, false);
 
 	// snapshot
 	if (!m_snapshot.empty())
