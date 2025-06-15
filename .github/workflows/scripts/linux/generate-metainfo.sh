@@ -12,12 +12,24 @@ GIT_DATE=$(git log -1 --pretty=%cd --date=iso8601)
 GIT_VERSION=$(git tag --points-at HEAD)
 GIT_HASH=$(git rev-parse HEAD)
 
-if [[ "${GIT_VERSION}" == "" ]]; then
-	# In the odd event that we run this script before the release gets tagged.
-	GIT_VERSION=$(git describe --tags)
-	if [[ "${GIT_VERSION}" == "" ]]; then
-		GIT_VERSION=$(git rev-parse HEAD)
-	fi
+if [[ -z "${GIT_VERSION}" ]]; then
+    if git branch -r --contains HEAD | grep -q 'origin/master'; then
+        # Our master doesn't have a tagged commit
+        # This happens when the commit is "ci skip" 
+        # abbrev so we have just the latest tag
+        # ie v2.3.420 (Yes, that's the current master at the time of writing)
+        GIT_VERSION=$(git describe --tags --abbrev=0)
+    else
+        # We are probably building a PR
+        # Keep the short SHA in the version
+        # ie v2.3.420-1-g10dc1a2da
+        GIT_VERSION=$(git describe --tags)
+    fi
+
+    if [[ -z "${GIT_VERSION}" ]]; then
+        # Fallback to raw commit hash
+        GIT_VERSION=$(git rev-parse HEAD)
+    fi
 fi
 
 echo "GIT_DATE: ${GIT_DATE}"
