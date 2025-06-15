@@ -54,18 +54,15 @@ jobs:
         uses: actions/checkout@v4
         with:
           set-safe-directory: ${{ env.GITHUB_WORKSPACE }}
+          # 10 here, since the odds of having 10 untagged commits in a row should be slim to none
+          # This is required for the tagging logic in generate-metainfo.sh
+          fetch-depth: 10
+          fetch-tags: true
 
       # Work around container ownership issue
       - name: Set Safe Directory
         shell: bash
         run: git config --global --add safe.directory "*"
-
-      # Hackity hack. When running the workflow on a schedule, we don't have the tag,
-      # it doesn't fetch tags, therefore we don't get a version. So grab them manually.
-      # actions/checkout elides tags, fetch them primarily for releases
-      - name: Fetch tags
-        if: ${{ inputs.fetchTags }}
-        run: git fetch --tags --no-recurse-submodules
 
       - name: Add stable release identifier file
         if: ${{ inputs.stableBuild == true || inputs.stableBuild == 'true' }}
@@ -125,7 +122,7 @@ jobs:
           cache: true
           restore-cache: true
           cache-key: ${{ inputs.os }} ${{ inputs.platform }} ${{ inputs.compiler }} flatpak ${{ hashFiles('.github/workflows/scripts/linux/flatpak/**/*.json') }}
-  
+
       #- name: Validate build
       #  run: |
       #    flatpak-builder-lint repo repo
