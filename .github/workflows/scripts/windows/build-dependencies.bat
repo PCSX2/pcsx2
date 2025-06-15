@@ -90,7 +90,7 @@ if %DEBUG%==1 (
   echo Building release libraries...
 )
 
-set FORCEPDB=-DCMAKE_SHARED_LINKER_FLAGS_RELEASE="/DEBUG"
+set FORCEPDB=-DCMAKE_SHARED_LINKER_FLAGS_RELEASE="/DEBUG" -DCMAKE_MODULE_LINKER_FLAGS_RELEASE="/DEBUG"
 
 echo Building Zlib...
 rmdir /S /Q "zlib-%ZLIB%"
@@ -254,8 +254,8 @@ if %DEBUG%==1 (
   set KDDOCKWIDGETSBUILDSPEC=-DCMAKE_CONFIGURATION_TYPES="Release;Debug" -DCMAKE_CROSS_CONFIGS=all -DCMAKE_DEFAULT_BUILD_TYPE=Release -DCMAKE_DEFAULT_CONFIGS=all -G "Ninja Multi-Config"
 ) else (
   rem kddockwidgets slightly changes the name of the dll depending on if CMAKE_BUILD_TYPE or CMAKE_CONFIGURATION_TYPES is used
-  rem The dll name being kddockwidgets-qt62.dll or kddockwidgets-qt62.dll respectively
-  rem Always use CMAKE_CONFIGURATION_TYPES to give consistant naming
+  rem The dll name being kddockwidgets-qt62.dll or kddockwidgets-qt6.dll respectively
+  rem Always use CMAKE_CONFIGURATION_TYPES to give consistent naming
   set KDDOCKWIDGETSBUILDSPEC=-DCMAKE_CONFIGURATION_TYPES=Release -DCMAKE_CROSS_CONFIGS=all -DCMAKE_DEFAULT_BUILD_TYPE=Release -DCMAKE_DEFAULT_CONFIGS=Release -G "Ninja Multi-Config"
 )
 
