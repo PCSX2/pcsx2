@@ -142,12 +142,12 @@ void DockManager::switchToLayout(DockLayout::Index layout_index, bool blink_tab)
 			layout.thaw();
 
 			int tab_index = static_cast<int>(layout_index);
-			if (m_menu_bar && tab_index >= 0)
+			if (tab_index >= 0 && m_menu_bar)
 				m_menu_bar->onCurrentLayoutChanged(layout_index);
 		}
 	}
 
-	if (blink_tab)
+	if (blink_tab && m_menu_bar)
 		m_menu_bar->startBlink(m_current_layout);
 }
 
@@ -512,7 +512,8 @@ void DockManager::newLayoutClicked()
 {
 	// The plus button has just been made the current tab, so set it back to the
 	// one corresponding to the current layout again.
-	m_menu_bar->onCurrentLayoutChanged(m_current_layout);
+	if (m_menu_bar)
+		m_menu_bar->onCurrentLayoutChanged(m_current_layout);
 
 	auto name_validator = [this](const QString& name) {
 		return !hasNameConflict(name, DockLayout::INVALID_INDEX);
