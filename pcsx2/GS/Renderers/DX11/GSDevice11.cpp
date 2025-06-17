@@ -1281,6 +1281,7 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	if (dTex)
 	{
 		ds = dTex->GetSize();
+		PSUnbindConflictingSRVs(dTex, nullptr);
 		if (draw_in_depth)
 			OMSetRenderTargets(nullptr, dTex);
 		else
@@ -1329,7 +1330,7 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	PSSetSamplerState(linear ? m_convert.ln.get() : m_convert.pt.get());
 	PSSetShader(ps, ps_cb);
 
-	//
+	// draw
 
 	DrawPrimitive();
 }
@@ -1388,7 +1389,7 @@ void GSDevice11::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	PSSetSamplerState(linear ? m_convert.ln.get() : m_convert.pt.get());
 	PSSetShader(m_present.ps[static_cast<u32>(shader)].get(), m_present.ps_cb.get());
 
-	//
+	// draw
 
 	DrawPrimitive();
 }
@@ -2147,11 +2148,12 @@ void GSDevice11::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vert
 	VSSetShader(m_convert.vs.get(), nullptr);
 
 	// ps
+
 	PSSetShaderResource(0, rt);
 	PSSetSamplerState(m_convert.pt.get());
 	PSSetShader(m_convert.ps[SetDATMShader(datm)].get(), nullptr);
 
-	//
+	// draw
 
 	DrawPrimitive();
 }
@@ -2361,6 +2363,23 @@ void GSDevice11::PSUpdateShaderState()
 {
 	m_ctx->PSSetShaderResources(0, m_state.ps_sr_views.size(), m_state.ps_sr_views.data());
 	m_ctx->PSSetSamplers(0, m_state.ps_ss.size(), m_state.ps_ss.data());
+}
+
+void GSDevice11::PSUnbindConflictingSRVs(GSTexture* rt, GSTexture* ds)
+{
+	// Make sure no SRVs are bound using the same texture before binding it to a RTV.
+	bool changed = false;
+	for (size_t i = 0; i < m_state.ps_sr_views.size(); i++)
+	{
+		if ((rt && m_state.ps_sr_views[i] == *(GSTexture11*)rt) || (ds && m_state.ps_sr_views[i] == *(GSTexture11*)ds))
+		{
+			m_state.ps_sr_views[i] = nullptr;
+			changed = true;
+		}
+	}
+
+	if (changed)
+		PSUpdateShaderState();
 }
 
 void GSDevice11::OMSetDepthStencilState(ID3D11DepthStencilState* dss, u8 sref)
@@ -2595,6 +2614,9 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		case GSHWDrawConfig::Topology::Triangle: topology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST; break;
 	}
 	IASetPrimitiveTopology(topology);
+
+	// Should be called before changing local srv state.
+	PSUnbindConflictingSRVs(colclip_rt ? colclip_rt : config.rt, config.ds);
 
 	if (config.tex)
 	{
