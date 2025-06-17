@@ -280,9 +280,11 @@ target_link_libraries(pcsx2-qt PRIVATE
 	PCSX2_FLAGS
 	PCSX2
 	Qt6::Core
+	Qt6::CorePrivate
 	Qt6::Gui
 	Qt6::GuiPrivate
 	Qt6::Widgets
+	Qt6::WidgetsPrivate
 	KDAB::kddockwidgets
 )
 
