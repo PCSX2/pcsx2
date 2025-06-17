@@ -110,48 +110,24 @@ uint ps_convert_rgba8_16bits(PS_INPUT input) : SV_Target0
 	return ((i.x & 0x00F8u) >> 3) | ((i.y & 0x00F8u) << 2) | ((i.z & 0x00f8u) << 7) | ((i.w & 0x80u) << 8);
 }
 
-PS_OUTPUT ps_datm1(PS_INPUT input)
+void ps_datm1(PS_INPUT input)
 {
-	PS_OUTPUT output;
-	
 	clip(sample_c(input.t).a - 127.5f / 255); // >= 0x80 pass
-	
-	output.c = 0;
-
-	return output;
 }
 
-PS_OUTPUT ps_datm0(PS_INPUT input)
+void ps_datm0(PS_INPUT input)
 {
-	PS_OUTPUT output;
-	
 	clip(127.5f / 255 - sample_c(input.t).a); // < 0x80 pass (== 0x80 should not pass)
-	
-	output.c = 0;
-
-	return output;
 }
 
-PS_OUTPUT ps_datm1_rta_correction(PS_INPUT input)
+void ps_datm1_rta_correction(PS_INPUT input)
 {
-	PS_OUTPUT output;
-
 	clip(sample_c(input.t).a - 254.5f / 255); // >= 0x80 pass
-
-	output.c = 0;
-
-	return output;
 }
 
-PS_OUTPUT ps_datm0_rta_correction(PS_INPUT input)
+void ps_datm0_rta_correction(PS_INPUT input)
 {
-	PS_OUTPUT output;
-
 	clip(254.5f / 255 - sample_c(input.t).a); // < 0x80 pass (== 0x80 should not pass)
-
-	output.c = 0;
-
-	return output;
 }
 
 PS_OUTPUT ps_rta_correction(PS_INPUT input)
