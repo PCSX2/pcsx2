@@ -104,7 +104,6 @@ void ps_datm1()
 {
 	if(sample_c(v_tex).a < (127.5f / 255.0f)) // >= 0x80 pass
 		discard;
-
 }
 #endif
 
