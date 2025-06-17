@@ -189,16 +189,6 @@ u8 PadNegcon::ModeSwitch(u8 commandByte)
 	{
 		case 3:
 			this->analogLight = commandByte;
-
-			if (this->analogLight)
-			{
-				this->currentMode = Pad::Mode::ANALOG;
-			}
-			else
-			{
-				this->currentMode = Pad::Mode::DIGITAL;
-			}
-
 			break;
 		case 4:
 			this->analogLocked = (commandByte == 0x03);
@@ -219,7 +209,7 @@ u8 PadNegcon::StatusInfo(u8 commandByte)
 		case 4:
 			return 0x02;
 		case 5:
-			return this->analogLight;
+			return 0x01;
 		case 6:
 			return 0x02;
 		case 7:
@@ -500,7 +490,7 @@ u8 PadNegcon::SendCommandByte(u8 commandByte)
 				Console.Warning("%s(%02X) Config-only command was sent to a pad outside of config mode!", __FUNCTION__, commandByte);
 			}
 
-			ret = this->isInConfig ? static_cast<u8>(Pad::Mode::CONFIG) : static_cast<u8>(this->currentMode);
+			ret = this->isInConfig ? static_cast<u8>(Pad::Mode::CONFIG) : static_cast<u8>(Pad::Mode::NEGCON);
 			break;
 		case 2:
 			ret = 0x5a;
