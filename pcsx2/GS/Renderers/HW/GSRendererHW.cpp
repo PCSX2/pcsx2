@@ -4039,7 +4039,8 @@ void GSRendererHW::Draw()
 		bool valid_width_change = false;
 		if (rt && ((!is_possible_mem_clear || blending_cd) || rt->m_TEX0.PSM != FRAME_TEX0.PSM) && !m_in_target_draw)
 		{
-			valid_width_change = rt->m_TEX0.TBW != FRAME_TEX0.TBW;
+			const u32 frame_mask = (m_cached_ctx.FRAME.FBMSK & frame_psm.fmsk);
+			valid_width_change = rt->m_TEX0.TBW != FRAME_TEX0.TBW && (frame_mask != (frame_psm.fmsk & 0x00FFFFFF) || rt->m_valid_rgb == false);
 			if (valid_width_change && !m_cached_ctx.ZBUF.ZMSK && (m_cached_ctx.FRAME.FBMSK & 0xFF000000))
 			{
 				// Alpha could be a font, and since the width is changing it's no longer valid.
