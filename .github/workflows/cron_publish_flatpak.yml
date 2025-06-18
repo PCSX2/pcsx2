@@ -43,6 +43,8 @@ jobs:
     # and: https://github.com/orgs/community/discussions/57480
 
 #   if: fromJson(needs.check.outputs.FLATHUB_RELEASE) < fromJson(needs.check.outputs.PCSX2_RELEASE)
+    # As the check step is disabled, perform repository check here
+    if: github.repository == 'PCSX2/pcsx2'
     name: "Build and publish Flatpak"
     uses: ./.github/workflows/linux_build_flatpak.yml
     with:
