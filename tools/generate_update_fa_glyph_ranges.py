@@ -5,6 +5,7 @@ import os
 import glob
 import re
 import functools
+import yaml
 
 # PCSX2 - PS2 Emulator for PCs
 # Copyright (C) 2002-2025 PCSX2 Dev Team
@@ -24,6 +25,7 @@ import functools
 
 src_dirs = [os.path.join(os.path.dirname(__file__), "..", "pcsx2"), os.path.join(os.path.dirname(__file__), "..", "pcsx2-qt")]
 fa_file = os.path.join(os.path.dirname(__file__), "..", "3rdparty", "include", "IconsFontAwesome6.h")
+fa_yml_file = os.path.join(os.path.dirname(__file__), "..", "3rdparty", "include", "IconsFontAwesome6_metadata_icons.yml")
 pf_file = os.path.join(os.path.dirname(__file__), "..", "3rdparty", "include", "IconsPromptFont.h")
 dst_file = os.path.join(os.path.dirname(__file__), "..", "pcsx2", "ImGui", "ImGuiManager.cpp")
 
@@ -58,6 +60,12 @@ def decode_encoding(value):
 
     return bytes(value, 'utf-8')
 
+def decode_unicode(value):
+    u32_bytes = bytes.fromhex(value.zfill(8))
+    str_value = str(u32_bytes, "utf-32be")
+    return bytes(str_value, 'utf-8')
+
+# Fetch min and max range
 u8_encodings_fa = {}
 with open(fa_file, "r") as f:
     for line in f.readlines():
@@ -65,6 +73,26 @@ with open(fa_file, "r") as f:
         if match is None:
             continue
         u8_encodings_fa[match[1]] = decode_encoding(match[2])
+
+u8_encodings_fa_aliased = {}
+all_fa_tokens = set()
+with open(fa_yml_file, "r") as f:
+    icons = yaml.safe_load(f)
+    for icon in icons:
+        if not ('solid' in icons[icon]['styles']):
+            continue
+
+        icon_define = "ICON_FA_" + str.upper(icon).replace( '-', '_' )
+        # handle aliased codepoints
+        if ('aliases' in icons[icon]) and ('unicodes' in icons[icon]['aliases']):
+            for aliase_type in icons[icon]['aliases']['unicodes']:
+                for codepoint in icons[icon]['aliases']['unicodes'][aliase_type]:
+                    if codepoint in u8_encodings_fa_aliased:
+                        continue
+                    utf32 = int(codepoint, 16)
+                    if utf32 >= 0xe000 and utf32 <= 0xf8ff:
+                        u8_encodings_fa_aliased[codepoint] = decode_unicode(codepoint)
+
 u8_encodings_pf = {}
 with open(pf_file, "r") as f:
     for line in f.readlines():
@@ -79,6 +107,9 @@ for pf_token in u8_encodings_pf.keys():
     for fa_token in u8_encodings_fa.keys():
         if u8_encodings_pf[pf_token] == u8_encodings_fa[fa_token]:
             cf_tokens_all[pf_token] = fa_token
+    for codepoint in u8_encodings_fa_aliased.values():
+        if u8_encodings_pf[pf_token] == codepoint:
+            cf_tokens_all[pf_token] = "aliased"   
 
 cf_tokens_used = []
 for token in pf_tokens:
