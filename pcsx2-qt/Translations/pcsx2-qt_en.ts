@@ -5422,33 +5422,33 @@ Do you want to overwrite?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockManager.cpp" line="580"/>
+        <location filename="../Debugger/Docking/DockManager.cpp" line="581"/>
         <source>Edit Layout</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockManager.cpp" line="585"/>
+        <location filename="../Debugger/Docking/DockManager.cpp" line="586"/>
         <source>Reset Layout</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockManager.cpp" line="635"/>
+        <location filename="../Debugger/Docking/DockManager.cpp" line="636"/>
         <source>Are you sure you want to reset layout &apos;%1&apos;?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockManager.cpp" line="636"/>
-        <location filename="../Debugger/Docking/DockManager.cpp" line="659"/>
+        <location filename="../Debugger/Docking/DockManager.cpp" line="637"/>
+        <location filename="../Debugger/Docking/DockManager.cpp" line="660"/>
         <source>Confirmation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockManager.cpp" line="591"/>
+        <location filename="../Debugger/Docking/DockManager.cpp" line="592"/>
         <source>Delete Layout</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockManager.cpp" line="658"/>
+        <location filename="../Debugger/Docking/DockManager.cpp" line="659"/>
         <source>Are you sure you want to delete layout &apos;%1&apos;?</source>
         <translation type="unfinished"></translation>
     </message>
