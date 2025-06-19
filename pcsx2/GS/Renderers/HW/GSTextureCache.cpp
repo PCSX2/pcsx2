@@ -424,7 +424,7 @@ GSVector4i GSTextureCache::TranslateAlignedRectByPage(u32 tbp, u32 tebp, u32 tbw
 			}
 		}
 	}
-	else // Widths match
+	else if (!block_offset) // Widths match
 	{
 		const int horizontal_dst_page_offset = page_offset % clamped_tbw;
 		const int vertical_dst_page_offset = page_offset / clamped_tbw;
