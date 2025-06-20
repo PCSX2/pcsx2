@@ -4179,6 +4179,10 @@ void GSRendererHW::Draw()
 
 		const int new_w = std::min(2048, std::max(new_size.x, std::max(rt ? rt->m_unscaled_size.x : 0, ds ? ds_size.x : 0)));
 		const int new_h = std::min(2048, std::max(new_size.y, std::max(rt ? rt->m_unscaled_size.y : 0, ds ? ds_size.y : 0)));
+
+		const bool full_cover_clear = is_possible_mem_clear && GSLocalMemory::IsPageAligned(m_cached_ctx.FRAME.PSM, m_r) && m_r.x == 0 && m_r.y == 0 && !preserve_rt_rgb &&
+									  !IsPageCopy() && m_r.width() == (m_cached_ctx.FRAME.FBW * 64);
+
 		if (rt)
 		{
 			const u32 old_end_block = rt->m_end_block;
@@ -4225,9 +4229,9 @@ void GSRendererHW::Draw()
 					g_texture_cache->AddDirtyRectTarget(rt, GSVector4i(rt->m_valid.x, rt->m_valid.w, rt->m_valid.z, new_h), rt->m_TEX0.PSM, rt->m_TEX0.TBW, mask, false);
 					g_texture_cache->GetTargetSize(rt->m_TEX0.TBP0, rt->m_TEX0.TBW, rt->m_TEX0.PSM, 0, new_h);
 				}
-
-				rt->ResizeValidity(rt->m_valid.rintersect(rt->GetUnscaledRect()));
-				rt->ResizeDrawn(rt->m_drawn_since_read.rintersect(rt->GetUnscaledRect()));
+				const bool rt_cover = full_cover_clear && (m_r.height() + frame_psm.pgs.y) >= rt->m_valid.height();
+				rt->ResizeValidity(rt_cover ? update_rect : rt->m_valid.rintersect(rt->GetUnscaledRect()));
+				rt->ResizeDrawn(rt_cover ? update_rect : rt->m_drawn_since_read.rintersect(rt->GetUnscaledRect()));
 			}
 
 			const bool rt_update = can_update_size || (m_texture_shuffle && (src && rt && src->m_from_target != rt));
@@ -4235,7 +4239,7 @@ void GSRendererHW::Draw()
 			// If it's updating from a texture shuffle, limit the size to the source size.
 			if (rt_update && !can_update_size)
 			{
-				if(src->m_from_target)
+				if (src->m_from_target)
 					update_rect = update_rect.rintersect(src->m_from_target->m_valid);
 
 				update_rect = update_rect.rintersect(GSVector4i::loadh(GSVector2i(new_w, new_h)));
@@ -4305,16 +4309,18 @@ void GSRendererHW::Draw()
 						DevCon.Warning("HW: Temporary depth buffer creation failed.");
 				}
 			}
+			const bool z_masked = m_cached_ctx.ZBUF.ZMSK;
+
 			if (!m_texture_shuffle && !m_channel_shuffle)
 			{
-				ds->ResizeValidity(ds->GetUnscaledRect());
-				ds->ResizeDrawn(ds->GetUnscaledRect());
+				const bool z_cover = full_cover_clear && (m_r.height() + GSLocalMemory::m_psm[m_cached_ctx.ZBUF.PSM].pgs.y) >= ds->m_valid.height();
+				ds->ResizeValidity(z_cover ? m_r : ds->GetUnscaledRect());
+				ds->ResizeDrawn(z_cover ? m_r : ds->GetUnscaledRect());
 			}
 
 			// Limit to 2x the vertical height of the resolution (for double buffering)
 			// Dark cloud writes to 424 when the buffer is only 416 high, but masks the Z.
 			// Updating the valid causes the Z to overlap the framebuffer, which is obviously incorrect.
-			const bool z_masked = m_cached_ctx.ZBUF.ZMSK;
 			const bool z_update = can_update_size && !z_masked;
 
 			if (rt && m_using_temp_z)
