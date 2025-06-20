@@ -45,6 +45,9 @@ public:
 		bool HasY() const { return static_cast<u32>(bits >> 32) != 0; }
 		bool HasEither() const { return (bits != 0); }
 
+		void ClearX() { bits &= ~0xFFFFFFFFULL; }
+		void ClearY() { bits &= 0xFFFFFFFFULL; }
+
 		void SetX(s32 min, s32 max) { bits |= (static_cast<u64>(static_cast<u16>(min)) | (static_cast<u64>(static_cast<u16>(max) << 16))); }
 		void SetY(s32 min, s32 max) { bits |= ((static_cast<u64>(static_cast<u16>(min)) << 32) | (static_cast<u64>(static_cast<u16>(max)) << 48)); }
 
