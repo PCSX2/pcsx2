@@ -2041,11 +2041,29 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 			{
 				rect.y /= 2;
 				rect.w /= 2;
+
+				if (region.HasY())
+				{
+					const u32 min_y = region.GetMinY() / 2;
+					const u32 max_y = region.GetMaxY() / 2;
+
+					region.ClearY();
+					region.SetY(min_y, max_y);
+				}
 			}
 			else
 			{
 				rect.x /= 2;
 				rect.z /= 2;
+
+				if (region.HasX())
+				{
+					const u32 min_x = region.GetMinX() / 2;
+					const u32 max_x = region.GetMaxX() / 2;
+
+					region.ClearX();
+					region.SetX(min_x, max_x);
+				}
 			}
 			if (TEX0.TBP0 == frame.Block())
 			{
