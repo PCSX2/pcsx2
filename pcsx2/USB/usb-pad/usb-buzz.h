@@ -75,7 +75,7 @@ namespace usb_pad
 			u8 player4_blue : 1;
 
 			u8 tail : 4;
-		} data = {};
+		} data = {}, lastData = {};
 		#pragma pack(pop)
 	};
 
