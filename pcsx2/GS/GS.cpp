@@ -48,7 +48,7 @@
 #include "common/SmallString.h"
 #include "common/StringUtil.h"
 
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 
 #include "fmt/format.h"
 
@@ -190,7 +190,7 @@ static void GSClampUpscaleMultiplier(Pcsx2Config::GSOptions& config)
 		return;
 	}
 
-	Host::AddIconOSDMessage("GSUpscaleMultiplierInvalid", ICON_FA_EXCLAMATION_TRIANGLE,
+	Host::AddIconOSDMessage("GSUpscaleMultiplierInvalid", ICON_FA_TRIANGLE_EXCLAMATION,
 		fmt::format(TRANSLATE_FS("GS", "Configured upscale multiplier {}x is above your GPU's supported multiplier of {}x."),
 			config.UpscaleMultiplier, max_upscale_multiplier),
 		Host::OSD_WARNING_DURATION);

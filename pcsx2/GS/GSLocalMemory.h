@@ -173,7 +173,7 @@ public:
 		/// Get the current block number
 		u32 value() const
 		{
-			return valueNoWrap() % MAX_BLOCKS;
+			return valueNoWrap() % GS_MAX_BLOCKS;
 		}
 	};
 
@@ -222,7 +222,7 @@ public:
 		int base = m_bp << (m_pageShiftX + m_pageShiftY - 5);   // Offset from base pointer
 		base += ((y & ~m_pageMask.y) * m_bwPg) << m_pageShiftX; // Offset from pages in y direction
 		// TODO: Old GSOffset masked here but is that useful?  Probably should mask at end or not at all...
-		base &= (MAX_PAGES << (m_pageShiftX + m_pageShiftY)) - 1; // Mask
+		base &= (GS_MAX_PAGES << (m_pageShiftX + m_pageShiftY)) - 1; // Mask
 		base += m_pixelSwizzleCol[y & m_pageMask.y]; // Add offset from y within page
 		return base;
 	}
@@ -307,7 +307,7 @@ public:
 
 			if (slowPath) [[unlikely]]
 			{
-				u32 touched[MAX_PAGES / 32] = {};
+				u32 touched[GS_MAX_PAGES / 32] = {};
 				for (int y = 0; y < yCnt; y++)
 				{
 					u32 start = lineBP + startOff;
@@ -315,7 +315,7 @@ public:
 					lineBP += yInc;
 					for (u32 pos = start; pos < end; pos++)
 					{
-						u32 page = pos % MAX_PAGES;
+						u32 page = pos % GS_MAX_PAGES;
 						u32 idx = page / 32;
 						u32 mask = 1 << (page % 32);
 						if (touched[idx] & mask)
@@ -349,7 +349,7 @@ public:
 					nextMin = end;
 					lineBP += yInc;
 					for (u32 pos = start; pos < end; pos++)
-						if (!fn(pos % MAX_PAGES))
+						if (!fn(pos % GS_MAX_PAGES))
 							return;
 
 					if (y < yCnt - 2)
@@ -579,7 +579,7 @@ public:
 
 	u8* BlockPtr(u32 bp) const
 	{
-		return &m_vm8[(bp % MAX_BLOCKS) << 8];
+		return &m_vm8[(bp % GS_MAX_BLOCKS) << 8];
 	}
 
 	u8* BlockPtr32(int x, int y, u32 bp, u32 bw) const

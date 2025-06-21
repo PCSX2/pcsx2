@@ -6,7 +6,7 @@
 #include "CDVD/IsoFileFormats.h"
 #include "Config.h"
 #include "Host.h"
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 
 #include "common/Assertions.h"
 #include "common/Console.h"
@@ -283,7 +283,7 @@ void CDVDsys_SetFile(CDVD_SourceType srctype, std::string newfile)
 		const auto driveType = GetDriveType(StringUtil::UTF8StringToWideString(root).c_str());
 		if (driveType == DRIVE_REMOVABLE)
 		{
-			Host::AddIconOSDMessage("RemovableDriveWarning", ICON_FA_EXCLAMATION_TRIANGLE,
+			Host::AddIconOSDMessage("RemovableDriveWarning", ICON_FA_TRIANGLE_EXCLAMATION,
 				TRANSLATE_SV("CDVD", "Game disc location is on a removable drive, performance issues such as jittering "
 									 "and freezing may occur."),
 				Host::OSD_WARNING_DURATION);
