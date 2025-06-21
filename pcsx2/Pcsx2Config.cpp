@@ -1834,6 +1834,7 @@ Pcsx2Config::AchievementsOptions::AchievementsOptions()
 	UnlockSound = true;
 	LBSubmitSound = true;
 	Overlays = true;
+	LBOverlays = true;
 }
 
 void Pcsx2Config::AchievementsOptions::LoadSave(SettingsWrapper& wrap)
@@ -1861,6 +1862,7 @@ void Pcsx2Config::AchievementsOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(UnlockSound);
 	SettingsWrapBitBool(LBSubmitSound);
 	SettingsWrapBitBool(Overlays);
+	SettingsWrapBitBool(LBOverlays);
 	SettingsWrapEntry(NotificationsDuration);
 	SettingsWrapEntry(LeaderboardsDuration);
 	SettingsWrapEntry(InfoSoundName);
