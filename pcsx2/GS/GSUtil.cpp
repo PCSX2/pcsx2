@@ -235,7 +235,7 @@ GSRendererType GSUtil::GetPreferredRenderer()
 	return preferred_renderer;
 }
 
-const char* psm_str(int psm)
+const char* GSUtil::GetPSMName(int psm)
 {
 	switch (psm)
 	{

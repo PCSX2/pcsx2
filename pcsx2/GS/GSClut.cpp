@@ -449,7 +449,7 @@ void GSClut::Read32(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA)
 				if (dst)
 				{
 					GL_PUSH("Update GPU CLUT [CBP=%04X, CPSM=%s, CBW=%u, CSA=%u, Offset=(%d,%d)]",
-						TEX0.CBP, psm_str(TEX0.CPSM), CBW, TEX0.CSA, offset.x, offset.y);
+						TEX0.CBP, GSUtil::GetPSMName(TEX0.CPSM), CBW, TEX0.CSA, offset.x, offset.y);
 					g_gs_device->UpdateCLUTTexture(src, scale, offset.x, offset.y, dst, dOffset, dst_size);
 					m_current_gpu_clut = dst;
 				}
