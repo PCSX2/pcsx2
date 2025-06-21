@@ -235,7 +235,7 @@ void DockTabBar::openContextMenu(QPoint pos)
 	{
 		const char* long_cpu_name = DebugInterface::longCpuName(cpu);
 		const char* cpu_name = DebugInterface::cpuName(cpu);
-		QString text = QString("%1 (%2)").arg(long_cpu_name).arg(cpu_name);
+		QString text = tr("%1 (%2)").arg(long_cpu_name).arg(cpu_name);
 
 		QAction* cpu_action = set_target_menu->addAction(text);
 		cpu_action->setCheckable(true);
