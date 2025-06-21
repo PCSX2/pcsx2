@@ -228,19 +228,22 @@ bool GSTextureCache::CanTranslate(u32 bp, u32 bw, u32 spsm, GSVector4i r, u32 db
 {
 	const GSVector2i src_page_size = GSLocalMemory::m_psm[spsm].pgs;
 	const GSVector2i dst_page_size = GSLocalMemory::m_psm[dpsm].pgs;
+	const u32 src_bw = std::max(1U, bw);
+	const u32 dst_bw = std::max(1U, dbw);
 	const bool block_layout_match = GSLocalMemory::m_psm[spsm].bpp == GSLocalMemory::m_psm[dpsm].bpp;
-	const bool bp_page_aligned_bp = ((bp & ~((1 << 5) - 1)) == bp) || bp == dbp || (block_layout_match && bw == dbw);
+	const bool bp_page_aligned_bp = ((bp & ~((1 << 5) - 1)) == bp) || bp == dbp || (block_layout_match && src_bw == dst_bw);
 	const GSVector4i page_mask(GSVector4i((src_page_size.x - 1), (src_page_size.y - 1)).xyxy());
 	const GSVector4i masked_rect(r & ~page_mask);
-	const int src_pixel_width = static_cast<int>(bw * 64);
+	const int src_pixel_width = src_bw * 64;
+	const int dst_pixel_width = dst_bw * 64;
 	// We can do this if:
 	// The page width matches.
 	// The rect width is less than the width of the destination texture and the height is less than or equal to 1 page high.
 	// The rect width and height is equal to the page size and it covers the width of the incoming bw, so lines are sequential.
 	const bool page_aligned_rect = masked_rect.xyxy().eq(r.xyxy());
-	const bool width_match = ((bw * 64) / src_page_size.x) == ((dbw * 64) / dst_page_size.x);
+	const bool width_match = (src_pixel_width / src_page_size.x) == (dst_pixel_width / dst_page_size.x);
 	const bool sequential_pages = page_aligned_rect && r.x == 0 && r.z == src_pixel_width;
-	const bool single_row = (((bw * 64) / src_page_size.x) <= ((dbw * 64) / dst_page_size.x)) && r.width() <= src_pixel_width && r.height() <= src_page_size.y;
+	const bool single_row = ((src_pixel_width / src_page_size.x) <= (dst_pixel_width / dst_page_size.x)) && r.width() <= src_pixel_width && r.height() <= src_page_size.y;
 	const bool single_page_aligned = page_aligned_rect && r.z <= src_page_size.x && r.w <= src_page_size.y;
 	if (block_layout_match)
 	{
@@ -300,7 +303,7 @@ GSVector4i GSTextureCache::TranslateAlignedRectByPage(u32 tbp, u32 tebp, u32 tbw
 			return GSVector4i::zero();
 		}
 
-		const bool block_matched_format = s_psm.bpp == t_psm.bpp && (sbw == tbw || sbw == 1);
+		const bool block_matched_format = s_psm.bpp == t_psm.bpp && (clamped_sbw == clamped_tbw || clamped_sbw == 1);
 		// If there is block offset left over, try to adjust to that.
 		if (block_matched_format)
 		{
@@ -431,6 +434,8 @@ GSVector4i GSTextureCache::TranslateAlignedRectByPage(u32 tbp, u32 tebp, u32 tbw
 		GSVector4i offset_rect(horizontal_dst_page_offset * t_psm.pgs.x, vertical_dst_page_offset * t_psm.pgs.y);
 		new_rect = in_rect + offset_rect.xyxy();
 	}
+	else
+		new_rect = in_rect;
 
 	if (new_rect.z > dst_bw)
 	{
@@ -1320,7 +1325,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 				// If the BP is offset in to a page and the format does not match, trying to match up the correct position is very difficult since we don't swizzle.
 				// Tomb Raider Legends does a block level BP in PSMT8 over a C16 target, which is just a nightmare to get right.
 				// Baldurs Gate used to have this too, but now we can translate HW moves inside targets when the format matches.
-				if (((bp & (BLOCKS_PER_PAGE - 1)) != (t->m_TEX0.TBP0 & (BLOCKS_PER_PAGE - 1))) && (bp & (BLOCKS_PER_PAGE - 1)) && !CanTranslate(bp, bw, psm, block_boundary_rect, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW))
+				if (((bp & (BLOCKS_PER_PAGE - 1)) != (t->m_TEX0.TBP0 & (BLOCKS_PER_PAGE - 1))) && (bp & (BLOCKS_PER_PAGE - 1)))
 					continue;
 
 				const bool width_match = (std::max(64U, bw * 64U) >> GSLocalMemory::m_psm[psm].info.pageShiftX()) ==
