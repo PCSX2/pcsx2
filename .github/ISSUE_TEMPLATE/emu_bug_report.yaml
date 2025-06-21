@@ -87,6 +87,8 @@ body:
       - Windows 11
       - Windows 10 (64bit)
       - Linux (64bit) - Specify distro below
+      - macOS 26 (Tahoe)
+      - macOS 15 (Sequoia)
       - macOS 14 (Sonoma)
       - macOS 13 (Ventura)
       - macOS 12 (Monterey)
@@ -104,14 +106,14 @@ body:
     id: cpu
     attributes:
       label: CPU
-      placeholder: "Example: i5-7600"
+      placeholder: "Example: Intel i5 12400F"
     validations:
       required: true
   - type: input
     id: gpu
     attributes:
       label: GPU
-      placeholder: "Example: GTX 1070"
+      placeholder: "Example: Nvidia RTX 4060"
     validations:
       required: true
   - type: textarea
