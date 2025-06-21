@@ -6285,7 +6285,7 @@ void FullscreenUI::PopulateGameListEntryList()
 				case 4: // CRC
 				{
 					if (lhs->crc != rhs->crc)
-						return reverse ? (lhs->crc >= rhs->crc) : (lhs->crc < rhs->crc);
+						return reverse ? (lhs->crc > rhs->crc) : (lhs->crc < rhs->crc);
 				}
 				break;
 
