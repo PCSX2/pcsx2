@@ -1992,7 +1992,7 @@ void ImGuiFullscreen::EndHorizontalMenu()
 	EndFullscreenWindow();
 }
 
-bool ImGuiFullscreen::HorizontalMenuItem(GSTexture* icon, const char* title, const char* description)
+bool ImGuiFullscreen::HorizontalMenuItem(GSTexture* icon, const ImVec2& icon_uv0, const ImVec2& icon_uv1, const char* title, const char* description)
 {
 	ImGuiWindow* window = ImGui::GetCurrentWindow();
 	if (window->SkipItems)
@@ -2031,7 +2031,7 @@ bool ImGuiFullscreen::HorizontalMenuItem(GSTexture* icon, const char* title, con
 	const ImVec2 icon_pos = bb.Min + ImVec2((avail_width - icon_size) * 0.5f, 0.0f);
 
 	ImDrawList* dl = ImGui::GetWindowDrawList();
-	dl->AddImage(reinterpret_cast<ImTextureID>(icon->GetNativeHandle()), icon_pos, icon_pos + ImVec2(icon_size, icon_size));
+	dl->AddImage(reinterpret_cast<ImTextureID>(icon->GetNativeHandle()), icon_pos, icon_pos + ImVec2(icon_size, icon_size), icon_uv0, icon_uv1);
 
 	ImFont* title_font = g_large_font;
 	const ImVec2 title_size = title_font->CalcTextSizeA(title_font->FontSize, avail_width, 0.0f, title);
@@ -2054,6 +2054,22 @@ bool ImGuiFullscreen::HorizontalMenuItem(GSTexture* icon, const char* title, con
 
 	s_menu_button_index++;
 	return pressed;
+}
+
+bool ImGuiFullscreen::HorizontalMenuItem(GSTexture* icon, const char* title, const char* description)
+{
+	return HorizontalMenuItem(icon, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), title, description);
+}
+
+bool ImGuiFullscreen::HorizontalMenuSvgItem(const char* svg_path, const char* title, const char* description, SvgScaling mode)
+{
+	const ImVec2 icon_size = LayoutScale(150.0f, 150.0f);
+	GSTexture* padded_texture = GetCachedSvgTexture(svg_path, icon_size, mode);
+
+	const ImVec2 padded_size(padded_texture->GetWidth(), padded_texture->GetHeight());
+	const ImVec2 uv1 = icon_size / padded_size;
+
+	return HorizontalMenuItem(padded_texture, ImVec2(0.0f, 0.0f), uv1, title, description);
 }
 
 void ImGuiFullscreen::PopulateFileSelectorItems()
