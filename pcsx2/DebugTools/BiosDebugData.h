@@ -178,5 +178,18 @@ private:
 	IOPInternalThread data;
 };
 
+struct IopMod
+{
+	std::string name;
+	u16 version;
+	u32 text_addr;
+	u32 entry;
+	u32 gp;
+	u32 text_size;
+	u32 data_size;
+	u32 bss_size;
+};
+
 std::vector<std::unique_ptr<BiosThread>> getIOPThreads();
+std::vector<IopMod> getIOPModules();
 std::vector<std::unique_ptr<BiosThread>> getEEThreads();
