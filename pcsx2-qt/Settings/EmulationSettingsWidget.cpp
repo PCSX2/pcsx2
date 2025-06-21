@@ -112,7 +112,7 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
 		tr("Sets the fast-forward speed. This speed will be used when the fast-forward hotkey is pressed/toggled."));
 	//: The "User Preference" string will appear after the text "Recommended Value:"
 	dialog->registerWidgetHelp(m_ui.slowMotionSpeed, tr("Slow-Motion Speed"), tr("User Preference"),
-		tr("Sets the slow-motion speed. This speed will be used when the slow-motion hotkey is pressed/toggled."));	
+		tr("Sets the slow-motion speed. This speed will be used when the slow-motion hotkey is pressed/toggled."));
 
 	dialog->registerWidgetHelp(m_ui.eeCycleRate, tr("EE Cycle Rate"), tr("100% (Normal Speed)"),
 		tr("Higher values may increase internal framerate in games, but will increase CPU requirements substantially. "
@@ -124,12 +124,12 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
 	dialog->registerWidgetHelp(m_ui.threadPinning, tr("Enable Thread Pinning"), tr("Unchecked"),
 		tr("Sets the priority for specific threads in a specific order ignoring the system scheduler. "
 		   //: P-Core = Performance Core, E-Core = Efficiency Core. See if Intel has official translations for these terms.
-		   "May help CPUs with big (P) and little (E) cores (e.g. Intel 12th or newer generation CPUs from Intel or other vendors such as AMD)."));
+		   "May help CPUs with big (P) and little (E) cores (e.g., Intel 12th or newer generation CPUs or other vendors such as AMD)."));
 	dialog->registerWidgetHelp(m_ui.MTVU, tr("Enable Multithreaded VU1 (MTVU1)"), tr("Checked"),
 		tr("Generally a speedup on CPUs with 4 or more cores. "
 		   "Safe for most games, but a few are incompatible and may hang."));
 	dialog->registerWidgetHelp(m_ui.fastCDVD, tr("Enable Fast CDVD"), tr("Unchecked"),
-		tr("Fast disc access, less loading times. Check HDLoader compatibility lists for known games that have issues with this."));
+		tr("Fast disc access, shorter loading times. Check HDLoader compatibility lists for games that are known to have issues with this."));
 	dialog->registerWidgetHelp(m_ui.precacheCDVD, tr("Enable CDVD Precaching"), tr("Unchecked"),
 		tr("Loads the disc image into RAM before starting the virtual machine. Can reduce stutter on systems with hard drives that "
 		   "have long wake times, but significantly increases boot times."));
@@ -143,7 +143,7 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
 		   "Using this setting can reduce input lag at the cost of measurably higher CPU and GPU requirements."));
 	dialog->registerWidgetHelp(m_ui.maxFrameLatency, tr("Maximum Frame Latency"), tr("2 Frames"),
 		tr("Sets the maximum number of frames that can be queued up to the GS, before the CPU thread will wait for one of them to complete before continuing. "
-		   "Higher values can assist with smoothing out irregular frame times, but add additional input lag."));
+		   "Higher values can assist with smoothing out irregular frame times, but increase input lag."));
 	dialog->registerWidgetHelp(m_ui.syncToHostRefreshRate, tr("Sync to Host Refresh Rate"), tr("Unchecked"),
 		tr("Speeds up emulation so that the guest refresh rate matches the host. This results in the smoothest animations possible, at the cost of "
 		   "potentially increasing the emulation speed by less than 1%. Sync to Host Refresh Rate will not take effect if "
@@ -151,11 +151,11 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
 		   "should disable this option."));
 	dialog->registerWidgetHelp(m_ui.vsync, tr("Vertical Sync (VSync)"), tr("Unchecked"),
 		tr("Enable this option to match PCSX2's refresh rate with your current monitor or screen. VSync is automatically disabled when "
-		   "it is not possible (eg. running at non-100% speed)."));
+		   "it is not possible (e.g., running at non-100% speed)."));
 	dialog->registerWidgetHelp(m_ui.useVSyncForTiming, tr("Use Host VSync Timing"), tr("Unchecked"),
-		tr("When synchronizing with the host refresh rate, this option disable's PCSX2's internal frame timing, and uses the host instead. "
+		tr("When synchronizing with the host refresh rate, this option disables PCSX2's internal frame timing and uses the host instead. "
 		   "Can result in smoother frame pacing, <strong>but at the cost of increased input latency</strong>."));
-	dialog->registerWidgetHelp(m_ui.skipPresentingDuplicateFrames, tr("Skip Presenting Duplicate Frames"), tr("Checked"),
+	dialog->registerWidgetHelp(m_ui.skipPresentingDuplicateFrames, tr("Skip Presenting Duplicate Frames"), tr("Unchecked"),
 		tr("Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still "
 		   "rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth out frame time "
 		   "fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase "

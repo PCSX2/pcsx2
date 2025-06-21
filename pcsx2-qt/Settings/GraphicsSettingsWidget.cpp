@@ -494,7 +494,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 			   "If disabled, the FMV Aspect Ratio will match the same value as the general Aspect Ratio setting."));
 
 		dialog->registerWidgetHelp(m_ui.PCRTCAntiBlur, tr("Anti-Blur"), tr("Checked"),
-			tr("Enables internal Anti-Blur hacks. Less accurate to PS2 rendering but will make a lot of games look less blurry."));
+			tr("Enables internal Anti-Blur hacks. Less accurate than PS2 rendering but will make a lot of games look less blurry."));
 
 		dialog->registerWidgetHelp(m_ui.integerScaling, tr("Integer Scaling"), tr("Unchecked"),
 			tr("Adds padding to the display area to ensure that the ratio between pixels on the host to pixels in the console is an "
@@ -504,7 +504,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 			tr("Changes the aspect ratio used to display the console's output to the screen. The default is Auto Standard (4:3/3:2 "
 			   "Progressive) which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era, and adapts to widescreen/ultrawide game patches."));
 
-		dialog->registerWidgetHelp(m_ui.interlacing, tr("Deinterlacing"), tr("Automatic (Default)"), tr("Determines the deinterlacing method to be used on the interlaced screen of the emulated console. Automatic should be able to correctly deinterlace most games, but if you see visibly shaky graphics, try one of the available options."));
+		dialog->registerWidgetHelp(m_ui.interlacing, tr("Deinterlacing"), tr("Automatic (Default)"), tr("Determines the deinterlacing method to be used on the interlaced screen of the emulated console. Automatic should be able to correctly deinterlace most games, but if you see visibly shaky graphics, try one of the other options."));
 
 		dialog->registerWidgetHelp(m_ui.screenshotSize, tr("Screenshot Size"), tr("Screen Resolution"),
 			tr("Determines the resolution at which screenshots will be saved. Internal resolutions preserve more detail at the cost of "
@@ -569,21 +569,21 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 			tr("Reduces banding between colors and improves the perceived color depth.<br> "
 			   "Off: Disables any dithering.<br> "
 			   "Scaled: Upscaling-aware / Highest dithering effect.<br> "
-			   "Unscaled: Native Dithering / Lowest dithering effect does not increase size of squares when upscaling.<br> "
-			   "Force 32bit: Treat all draws as if they were 32bit to avoid banding and dithering."));
+			   "Unscaled: Native dithering / Lowest dithering effect, does not increase size of squares when upscaling.<br> "
+			   "Force 32bit: Treats all draws as if they were 32bit to avoid banding and dithering."));
 
 		dialog->registerWidgetHelp(m_ui.blending, tr("Blending Accuracy"), tr("Basic (Recommended)"),
 			tr("Control the accuracy level of the GS blending unit emulation.<br> "
 			   "The higher the setting, the more blending is emulated in the shader accurately, and the higher the speed penalty will "
 			   "be.<br> "
-			   "Do note that Direct3D's blending is reduced in capability compared to OpenGL/Vulkan."));
+			   "Note that Direct3D's blending is reduced in capability compared to OpenGL/Vulkan."));
 
 		dialog->registerWidgetHelp(m_ui.texturePreloading, tr("Texture Preloading"), tr("Full (Hash Cache)"),
-			tr("Uploads entire textures at once instead of small pieces, avoiding redundant uploads when possible. "
+			tr("Uploads entire textures at once instead of in small pieces, avoiding redundant uploads when possible. "
 			   "Improves performance in most games, but can make a small selection slower."));
 
 		dialog->registerWidgetHelp(m_ui.gpuPaletteConversion, tr("GPU Palette Conversion"), tr("Unchecked"),
-			tr("When enabled GPU converts colormap-textures, otherwise the CPU will. "
+			tr("When enabled the GPU will convert colormap textures, otherwise the CPU will. "
 			   "It is a trade-off between GPU and CPU."));
 
 		dialog->registerWidgetHelp(m_ui.enableHWFixes, tr("Manual Hardware Renderer Fixes"), tr("Unchecked"),
@@ -605,7 +605,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 			   "2 to 4 threads is recommended, any more than that is likely to be slower instead of faster."));
 
 		dialog->registerWidgetHelp(m_ui.swAutoFlush, tr("Auto Flush"), tr("Checked"),
-			tr("Force a primitive flush when a framebuffer is also an input texture. "
+			tr("Forces a primitive flush when a framebuffer is also an input texture. "
 			   "Fixes some processing effects such as the shadows in the Jak series and radiosity in GTA:SA."));
 
 		dialog->registerWidgetHelp(
@@ -621,7 +621,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 			tr("Tries to detect when a game is drawing its own color palette and then renders it in software, instead of on the GPU."));
 
 		dialog->registerWidgetHelp(m_ui.gpuTargetCLUTMode, tr("GPU Target CLUT"), tr("Disabled"),
-			tr("Try to detect when a game is drawing its own color palette and then renders it on the GPU with special handling."));
+			tr("Tries to detect when a game is drawing its own color palette and then renders it on the GPU with special handling."));
 
 		dialog->registerWidgetHelp(m_ui.skipDrawStart, tr("Skipdraw Range Start"), tr("0"),
 			tr("Completely skips drawing surfaces from the surface in the left box up to the surface specified in the box on the right."));
@@ -630,17 +630,17 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 			tr("Completely skips drawing surfaces from the surface in the left box up to the surface specified in the box on the right."));
 
 		dialog->registerWidgetHelp(m_ui.hwAutoFlush, tr("Auto Flush"), tr("Unchecked"),
-			tr("Force a primitive flush when a framebuffer is also an input texture. "
+			tr("Forces a primitive flush when a framebuffer is also an input texture. "
 			   "Fixes some processing effects such as the shadows in the Jak series and radiosity in GTA:SA."));
 
 		dialog->registerWidgetHelp(m_ui.disableDepthEmulation, tr("Disable Depth Conversion"), tr("Unchecked"),
-			tr("Disable the support of depth buffers in the texture cache. "
+			tr("Disables the support of depth buffers in the texture cache. "
 			   "Will likely create various glitches and is only useful for debugging."));
 
 		dialog->registerWidgetHelp(m_ui.disableSafeFeatures, tr("Disable Safe Features"), tr("Unchecked"),
 			tr("This option disables multiple safe features. "
 			   "Disables accurate Unscale Point and Line rendering which can help Xenosaga games. "
-			   "Disables accurate GS Memory Clearing to be done on the CPU, and let the GPU handle it, which can help Kingdom Hearts "
+			   "Disables accurate GS Memory Clearing to be done on the CPU, and lets the GPU handle it, which can help Kingdom Hearts "
 			   "games."));
 
 		dialog->registerWidgetHelp(
@@ -703,7 +703,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 			tr("Replaces post-processing multiple paving sprites by a single fat sprite. It reduces various upscaling lines."));
 
 		dialog->registerWidgetHelp(m_ui.nativePaletteDraw, tr("Unscaled Palette Texture Draws"), tr("Unchecked"),
-			tr("Force palette texture draws to render at native resolution."));
+			tr("Forces palette texture draws to render at native resolution."));
 	}
 
 	// Texture Replacement tab
@@ -742,7 +742,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 		dialog->registerWidgetHelp(m_ui.shadeBoostSaturation, tr("Saturation"), tr("50"), tr("Adjusts saturation. 50 is normal."));
 
 		dialog->registerWidgetHelp(m_ui.tvShader, tr("TV Shader"), tr("None (Default)"),
-			tr("Applies a shader which replicates the visual effects of different styles of television set."));
+			tr("Applies a shader which replicates the visual effects of different styles of television sets."));
 	}
 
 	// OSD tab
@@ -805,21 +805,21 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 
 	// Recording tab
 	{
-		dialog->registerWidgetHelp(m_ui.videoCaptureCodec, tr("Video Codec"), tr("Default"), tr("Selects which Video Codec to be used for Video Capture. "
+		dialog->registerWidgetHelp(m_ui.videoCaptureCodec, tr("Video Codec"), tr("Default"), tr("Selects the Video Codec to be used for Video Capture. "
 
 																								"<b>If unsure, leave it on default.<b>"));
 
-		dialog->registerWidgetHelp(m_ui.videoCaptureFormat, tr("Video Format"), tr("Default"), tr("Selects which Video Format to be used for Video Capture. If by chance the codec does not support the format, the first format available will be used. "
+		dialog->registerWidgetHelp(m_ui.videoCaptureFormat, tr("Video Format"), tr("Default"), tr("Selects the Video Format to be used for Video Capture. If by chance the codec does not support the format, the first format available will be used. "
 
 																								  "<b>If unsure, leave it on default.<b>"));
 
 		dialog->registerWidgetHelp(m_ui.videoCaptureBitrate, tr("Video Bitrate"), tr("6000 kbps"), tr("Sets the video bitrate to be used. "
 
-																									  "Larger bitrate generally yields better video quality at the cost of larger resulting file size."));
+																									  "Higher bitrates generally yield better video quality at the cost of larger resulting file sizes."));
 
-		dialog->registerWidgetHelp(m_ui.videoCaptureResolutionAuto, tr("Automatic Resolution"), tr("Unchecked"), tr("When checked, the video capture resolution will follows the internal resolution of the running game.<br><br>"
+		dialog->registerWidgetHelp(m_ui.videoCaptureResolutionAuto, tr("Automatic Resolution"), tr("Unchecked"), tr("When checked, the video capture resolution will follow the internal resolution of the running game.<br><br>"
 
-																													"<b>Be careful when using this setting especially when you are upscaling, as higher internal resolution (above 4x) can results in very large video capture and can cause system overload.</b>"));
+																													"<b>Be careful when using this setting especially when you are upscaling, as higher internal resolutions (above 4x) can result in very large video capture and can cause system overload.</b>"));
 
 
 		dialog->registerWidgetHelp(m_ui.enableVideoCaptureArguments, tr("Enable Extra Video Arguments"), tr("Unchecked"), tr("Allows you to pass arguments to the selected video codec."));
@@ -829,11 +829,11 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 			   "<b>You must use '=' to separate key from value and ':' to separate two pairs from each other.</b><br>"
 			   "For example: \"crf = 21 : preset = veryfast\""));
 
-		dialog->registerWidgetHelp(m_ui.audioCaptureCodec, tr("Audio Codec"), tr("Default"), tr("Selects which Audio Codec to be used for Video Capture. "
+		dialog->registerWidgetHelp(m_ui.audioCaptureCodec, tr("Audio Codec"), tr("Default"), tr("Selects the Audio Codec to be used for Video Capture. "
 
 																								"<b>If unsure, leave it on default.<b>"));
 
-		dialog->registerWidgetHelp(m_ui.audioCaptureBitrate, tr("Audio Bitrate"), tr("160 kbps"), tr("Sets the audio bitrate to be used."));
+		dialog->registerWidgetHelp(m_ui.audioCaptureBitrate, tr("Audio Bitrate"), tr("192 kbps"), tr("Sets the audio bitrate to be used."));
 
 		dialog->registerWidgetHelp(m_ui.enableAudioCaptureArguments, tr("Enable Extra Audio Arguments"), tr("Unchecked"), tr("Allows you to pass arguments to the selected audio codec."));
 
