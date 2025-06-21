@@ -154,11 +154,16 @@ namespace usb_pad
 	static void buzz_handle_data(USBDevice* dev, USBPacket* p)
 	{
 		BuzzState* s = USB_CONTAINER_OF(dev, BuzzState, dev);
+		
+		if (p->ep->nr != 1)
+		{
+			goto fail;
+		}
 
 		switch (p->pid)
 		{
 			case USB_TOKEN_IN:
-				if (p->ep->nr == 1)
+				if (std::memcmp(&s->lastData, &s->data, sizeof(s->data)) != 0)
 				{
 					pxAssert(p->buffer_size >= sizeof(s->data));
 
@@ -166,12 +171,13 @@ namespace usb_pad
 					s->data.tail = 0xf;
 
 					std::memcpy(p->buffer_ptr, &s->data, sizeof(s->data));
+					std::memcpy(&s->lastData, &s->data, sizeof(s->data));
 
 					p->actual_length += sizeof(s->data);
 				}
 				else
 				{
-					goto fail;
+					p->status = USB_RET_NAK;
 				}
 				break;
 			case USB_TOKEN_OUT:
