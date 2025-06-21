@@ -235,7 +235,9 @@ namespace ImGuiFullscreen
 
 	bool BeginHorizontalMenu(const char* name, const ImVec2& position, const ImVec2& size, u32 num_items);
 	void EndHorizontalMenu();
+	bool HorizontalMenuItem(GSTexture* icon, const ImVec2& icon_uv0, const ImVec2& icon_uv1, const char* title, const char* description);
 	bool HorizontalMenuItem(GSTexture* icon, const char* title, const char* description);
+	bool HorizontalMenuSvgItem(const char* svg_path, const char* title, const char* description, SvgScaling mode = SvgScaling::Stretch);
 
 	using FileSelectorCallback = std::function<void(const std::string& path)>;
 	using FileSelectorFilters = std::vector<std::string>;
