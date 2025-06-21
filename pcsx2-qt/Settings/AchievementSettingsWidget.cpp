@@ -97,6 +97,21 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
 	updateEnableState();
 	onAchievementsNotificationDurationSliderChanged();
 	onLeaderboardsNotificationDurationSliderChanged();
+
+	connect(dialog, &SettingsWindow::externalSettingsChanged, this, [this]() {
+		// Refresh achievement states and notification durations
+		m_ui.enable->setChecked(m_dialog->getEffectiveBoolValue("Achievements", "Enabled", false));
+		m_ui.hardcoreMode->setChecked(m_dialog->getEffectiveBoolValue("Achievements", "ChallengeMode", false));
+		m_ui.achievementNotifications->setChecked(m_dialog->getEffectiveBoolValue("Achievements", "Notifications", true));
+		m_ui.leaderboardNotifications->setChecked(m_dialog->getEffectiveBoolValue("Achievements", "LeaderboardNotifications", true));
+		
+		updateEnableState();
+		onAchievementsNotificationDurationSliderChanged();
+		onLeaderboardsNotificationDurationSliderChanged();
+		
+		if (!m_dialog->isPerGameSettings())
+			updateLoginState();
+	});
 }
 
 AchievementSettingsWidget::~AchievementSettingsWidget() = default;

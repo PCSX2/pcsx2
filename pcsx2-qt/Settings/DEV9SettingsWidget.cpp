@@ -191,6 +191,11 @@ DEV9SettingsWidget::DEV9SettingsWidget(SettingsWindow* dialog, QWidget* parent)
 	SettingWidgetBinder::SettingAccessor<QSpinBox>::connectValueChanged(m_ui.hddSizeSpinBox, [&]() { onHddSizeAccessorSpin(); });
 
 	connect(m_ui.hddCreate, &QPushButton::clicked, this, &DEV9SettingsWidget::onHddCreateClicked);
+
+	connect(dialog, &SettingsWindow::externalSettingsChanged, this, [this]() {
+		LoadAdapters();
+		UpdateHddSizeUIValues();
+	});
 }
 
 void DEV9SettingsWidget::onEthEnabledChanged(Qt::CheckState state)

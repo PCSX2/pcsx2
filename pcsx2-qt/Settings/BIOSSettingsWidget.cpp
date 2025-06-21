@@ -41,6 +41,11 @@ BIOSSettingsWidget::BIOSSettingsWidget(SettingsWindow* dialog, QWidget* parent)
 	connect(m_ui.refresh, &QPushButton::clicked, this, &BIOSSettingsWidget::refreshList);
 	connect(m_ui.fileList, &QTreeWidget::currentItemChanged, this, &BIOSSettingsWidget::listItemChanged);
 	connect(m_ui.fastBoot, &QCheckBox::checkStateChanged, this, &BIOSSettingsWidget::fastBootChanged);
+
+	connect(dialog, &SettingsWindow::externalSettingsChanged, this, [this]() {
+		refreshList();
+		fastBootChanged();
+	});
 }
 
 BIOSSettingsWidget::~BIOSSettingsWidget() = default;
