@@ -126,6 +126,7 @@ public slots:
 	void openContextMenu(QPoint pos);
 
 	void contextGoToAddress();
+	void contextFollowAddress();
 	void contextCopyByte();
 	void contextCopySegment();
 	void contextCopyCharacter();
