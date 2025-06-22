@@ -2475,7 +2475,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 			primid_texture = InitPrimDateTexture(colclip_rt ? colclip_rt : config.rt, config.drawarea, config.datm);
 			if (!primid_texture)
 			{
-				Console.WriteLn("GL: Failed to allocate DATE image, aborting draw.");
+				Console.Warning("GL: Failed to allocate DATE image, aborting draw.");
 				return;
 			}
 			break;
@@ -2607,7 +2607,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		}
 	}
 
-	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking)
+	if (primid_texture)
 	{
 		GL_PUSH("Destination Alpha PrimID Init");
 
