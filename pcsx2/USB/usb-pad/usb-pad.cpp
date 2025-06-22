@@ -284,6 +284,7 @@ namespace usb_pad
 
 				w->lo = data.steering & 0x3FF;
 				w->lo |= (data.buttons & 0xFFF) << 10;
+				w->lo |= 1 << 16; // Tokyo Xtreme Racer (Zero) ignores the pedals unless the 3rd byte is different than zero
 				w->lo |= 0xFF << 24;
 
 				w->hi = (data.throttle & 0xFF);
