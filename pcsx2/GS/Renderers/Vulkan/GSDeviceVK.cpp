@@ -5630,7 +5630,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		date_image = SetupPrimitiveTrackingDATE(config);
 		if (!date_image)
 		{
-			Console.WriteLn("VK: Failed to allocate DATE image, aborting draw.");
+			Console.Warning("VK: Failed to allocate DATE image, aborting draw.");
 			return;
 		}
 

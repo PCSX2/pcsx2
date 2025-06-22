@@ -3903,7 +3903,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		config.rt = backup_rt;
 		if (!date_image)
 		{
-			Console.WriteLn("D3D12: Failed to allocate DATE image, aborting draw.");
+			Console.Warning("D3D12: Failed to allocate DATE image, aborting draw.");
 			return;
 		}
 	}

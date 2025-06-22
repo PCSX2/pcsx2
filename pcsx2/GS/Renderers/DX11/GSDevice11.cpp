@@ -2542,18 +2542,18 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		}
 	}
 
-	GSTexture* primid_tex = nullptr;
+	GSTexture* primid_texture = nullptr;
 	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking)
 	{
-		primid_tex = CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::PrimID, false);
-		if (!primid_tex)
+		primid_texture = CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::PrimID, false);
+		if (!primid_texture)
 		{
-			Console.WriteLn("D3D11: Failed to allocate DATE image, aborting draw.");
+			Console.Warning("D3D11: Failed to allocate DATE image, aborting draw.");
 			return;
 		}
 
 		StretchRect(colclip_rt ? colclip_rt : config.rt, GSVector4(config.drawarea) / GSVector4(rtsize).xyxy(),
-			primid_tex, GSVector4(config.drawarea), m_date.primid_init_ps[static_cast<u8>(config.datm)].get(), nullptr, false);
+			primid_texture, GSVector4(config.drawarea), m_date.primid_init_ps[static_cast<u8>(config.datm)].get(), nullptr, false);
 	}
 	else if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::Stencil ||
 			 config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne)
@@ -2667,20 +2667,20 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	SetupVS(config.vs, &config.cb_vs);
 	SetupPS(config.ps, &config.cb_ps, config.sampler);
 
-	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking)
+	if (primid_texture)
 	{
 		OMDepthStencilSelector dss = config.depth;
 		dss.zwe = 0;
 		const OMBlendSelector blend(GSHWDrawConfig::ColorMaskSelector(1),
 			GSHWDrawConfig::BlendState(true, CONST_ONE, CONST_ONE, 3 /* MIN */, CONST_ONE, CONST_ZERO, false, 0));
 		SetupOM(dss, blend, 0);
-		OMSetRenderTargets(primid_tex, config.ds, &config.scissor);
+		OMSetRenderTargets(primid_texture, config.ds, &config.scissor);
 		DrawIndexedPrimitive();
 
 		config.ps.date = 3;
 		config.alpha_second_pass.ps.date = 3;
 		SetupPS(config.ps, nullptr, config.sampler);
-		PSSetShaderResource(3, primid_tex);
+		PSSetShaderResource(3, primid_texture);
 	}
 
 	SetupOM(config.depth, OMBlendSelector(config.colormask, config.blend), config.blend.constant);
@@ -2719,8 +2719,8 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	if (draw_ds_clone)
 		Recycle(draw_ds_clone);
 
-	if (primid_tex)
-		Recycle(primid_tex);
+	if (primid_texture)
+		Recycle(primid_texture);
 
 	if (colclip_rt)
 	{
