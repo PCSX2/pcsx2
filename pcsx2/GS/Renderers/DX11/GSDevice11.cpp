@@ -1281,7 +1281,7 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	if (dTex)
 	{
 		ds = dTex->GetSize();
-		PSUnbindConflictingSRVs(dTex, nullptr);
+		PSUnbindConflictingSRVs(dTex);
 		if (draw_in_depth)
 			OMSetRenderTargets(nullptr, dTex);
 		else
@@ -1457,6 +1457,7 @@ void GSDevice11::DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_re
 	PSSetShader(m_convert.ps[static_cast<int>(shader)].get(), nullptr);
 
 	OMSetDepthStencilState(dTex->IsRenderTarget() ? m_convert.dss.get() : m_convert.dss_write.get(), 0);
+	PSUnbindConflictingSRVs(dTex);
 	OMSetRenderTargets(dTex->IsRenderTarget() ? dTex : nullptr, dTex->IsDepthStencil() ? dTex : nullptr);
 
 	const GSVector2 ds(static_cast<float>(dTex->GetWidth()), static_cast<float>(dTex->GetHeight()));
@@ -2365,13 +2366,13 @@ void GSDevice11::PSUpdateShaderState()
 	m_ctx->PSSetSamplers(0, m_state.ps_ss.size(), m_state.ps_ss.data());
 }
 
-void GSDevice11::PSUnbindConflictingSRVs(GSTexture* rt, GSTexture* ds)
+void GSDevice11::PSUnbindConflictingSRVs(GSTexture* tex1, GSTexture* tex2)
 {
 	// Make sure no SRVs are bound using the same texture before binding it to a RTV.
 	bool changed = false;
 	for (size_t i = 0; i < m_state.ps_sr_views.size(); i++)
 	{
-		if ((rt && m_state.ps_sr_views[i] == *(GSTexture11*)rt) || (ds && m_state.ps_sr_views[i] == *(GSTexture11*)ds))
+		if ((tex1 && m_state.ps_sr_views[i] == *(GSTexture11*)tex1) || (tex2 && m_state.ps_sr_views[i] == *(GSTexture11*)tex2))
 		{
 			m_state.ps_sr_views[i] = nullptr;
 			changed = true;
