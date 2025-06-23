@@ -947,12 +947,12 @@ namespace R3000A
 				return 1;
 
 			// maximum allowed size for our buffer before we truncate
-			const unsigned int max_len = 4096;
+			constexpr unsigned int max_len = 4096;
 			char tmp[max_len], tmp2[max_len];
 			char* ptmp = tmp;
 			unsigned int printed_bytes = 0;
 			int remaining_buf = max_len - 1;
-			int n = 1, i = 0, j = 0;
+			unsigned int n = 1, i = 0, j = 0;
 
 			while (fmt[i])
 			{
