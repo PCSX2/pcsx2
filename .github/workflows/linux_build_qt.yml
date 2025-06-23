@@ -144,6 +144,7 @@ jobs:
             -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
             -DENABLE_SETCAP=OFF \
             -DDISABLE_ADVANCE_SIMD=TRUE \
+            -DUSE_LINKED_FFMPEG=ON \
             -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON \
             $ADDITIONAL_CMAKE_ARGS
 
