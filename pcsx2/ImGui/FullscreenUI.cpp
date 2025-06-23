@@ -6507,24 +6507,46 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 
 	if (BeginFullscreenColumnWindow(-530.0f, 0.0f, "game_list_info", UIPrimaryDarkColor))
 	{
-		const ImVec2 image_size = LayoutScale(ImVec2(275.0f, 400.0f));
-		ImGui::SetCursorPos(LayoutScale(ImVec2(128.0f, 20.0f)));
+		const float img_padding_y = LayoutScale(20.0f);
+		// Spacing between each text item
+		const float text_spacing_y = LayoutScale(8.0f);
+		// Space between title/serial and details, is in addition to text_spacing_y
+		const float title_padding_below_y = LayoutScale(12.0f);
+
+		// Estimate how much space is needed for text
+		// Do this even when nothing is selected, to ensure cover/icon is in a consistant size/position
+		const float title_detail_height =
+			LayoutScale(LAYOUT_LARGE_FONT_SIZE) + text_spacing_y + // Title
+			LayoutScale(LAYOUT_MEDIUM_FONT_SIZE) + text_spacing_y + // Serial
+			title_padding_below_y +
+			7.0f * (LayoutScale(LAYOUT_MEDIUM_FONT_SIZE) + text_spacing_y) + // File, CRC, Region, Compat, Time/Last Played, Size
+			LayoutScale(12.0f); // Extra padding
+
+		// Limit cover height to avoid pushing text off the screen
+		const ImGuiWindow* window = ImGui::GetCurrentWindow();
+		// Based on ImGui code for WorkRect, with scrolling logic removed
+		const float window_height = std::trunc(window->InnerRect.GetHeight() - 2.0f * std::max(window->WindowPadding.y, window->WindowBorderSize));
+
+		const float free_height = window_height - title_detail_height;
+		const float img_height = std::min(free_height - 2.0f * img_padding_y, LayoutScale(400.0f));
+
+		const ImVec2 image_size = ImVec2(LayoutScale(275.0f), img_height);
+		ImGui::SetCursorPos(ImVec2(LayoutScale(128.0f), img_padding_y));
 
 		if (selected_entry)
 			DrawGameCover(selected_entry, image_size);
 		else
 			DrawFallbackCover(image_size);
 
-		const float work_width = ImGui::GetCurrentWindow()->WorkRect.GetWidth();
-		constexpr float field_margin_y = 10.0f;
-		constexpr float start_x = 50.0f;
-		float text_y = 440.0f;
+		const float work_width = window->WorkRect.GetWidth();
+		const float start_x = LayoutScale(50.0f);
+		const float text_y = img_height + 2.0f * img_padding_y;
 		float text_width;
 
 		PushPrimaryColor();
-		ImGui::SetCursorPos(LayoutScale(start_x, text_y));
-		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, field_margin_y));
-		ImGui::PushTextWrapPos(LayoutScale(480.0f));
+		ImGui::SetCursorPos(ImVec2(start_x, text_y));
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, text_spacing_y));
+		ImGui::PushTextWrapPos(LayoutScale(490.0f));
 		ImGui::BeginGroup();
 
 		if (selected_entry)
@@ -6533,6 +6555,8 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 			ImGui::PushFont(g_large_font);
 			const std::string_view title(std::string_view(selected_entry->GetTitle(true)).substr(0, 37));
 			text_width = ImGui::CalcTextSize(title.data(), title.data() + title.length(), false, work_width).x;
+			if (title.length() != selected_entry->GetTitle(true).length())
+				text_width += ImGui::CalcTextSize("...", nullptr, false, -1.0f).x;
 			ImGui::SetCursorPosX((work_width - text_width) / 2.0f);
 			ImGui::TextWrapped(
 				"%.*s%s", static_cast<int>(title.size()), title.data(), (title.length() == selected_entry->GetTitle(true).length()) ? "" : "...");
@@ -6544,7 +6568,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 			text_width = ImGui::CalcTextSize(selected_entry->serial.c_str(), nullptr, false, work_width).x;
 			ImGui::SetCursorPosX((work_width - text_width) / 2.0f);
 			ImGui::TextWrapped("%s", selected_entry->serial.c_str());
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 15.0f);
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + title_padding_below_y);
 
 			// file tile
 			ImGui::TextWrapped("%s", SmallString::from_format(FSUI_FSTR("File: {}"), Path::GetFileName(selected_entry->path)).c_str());
