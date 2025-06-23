@@ -75,6 +75,7 @@ class Error;
 #pragma clang diagnostic ignored "-Wnullability-completeness"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #pragma clang diagnostic ignored "-Wunused-function"
+#pragma clang diagnostic ignored "-Wunused-private-field"
 #endif
 
 #define VMA_STATIC_VULKAN_FUNCTIONS 1
