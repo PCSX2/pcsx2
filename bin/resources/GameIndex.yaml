@@ -69974,6 +69974,11 @@ SLUS-21338:
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
     preloadFrameData: 1 # Fixes glowing emblems.
+  memcardFilters: # Convert savegames from AC: Nexus and AC: Nine Breaker.
+    - "SLUS-21338"
+    - "SLUS-21200"
+    - "SLUS-20986"
+    - "SLUS-21079"
 SLUS-21339:
   name: "Puzzle Challenge - Crosswords and More!"
   region: "NTSC-U"
