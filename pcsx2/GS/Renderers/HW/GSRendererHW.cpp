@@ -8336,8 +8336,8 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 			return false;
 	}
 
-	// Z and color must be constant and the same
-	if (m_vt.m_eq.rgba != 0xFFFF || !m_vt.m_eq.z)
+	// Z and color must be constant and the same and both are enabled.
+	if (m_vt.m_eq.rgba != 0xFFFF || !m_vt.m_eq.z || (no_ds != no_rt))
 		return false;
 
 	const u32 write_color = GetConstantDirectWriteMemClearColor();
@@ -8416,7 +8416,7 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 	// bang up next to each other, or a double half clear. The two are really difficult to differentiate.
 	// Have to check both contexts, because God of War 2 likes to do this in-between setting TRXDIR, which
 	// causes a flush, and we don't have the next context backed up index set.
-	bool horizontal = false;
+	bool horizontal = std::abs(static_cast<int>(m_cached_ctx.FRAME.FBP) - static_cast<int>(m_cached_ctx.ZBUF.ZBP)) == (m_cached_ctx.FRAME.FBW >> 1);
 	const bool possible_next_clear = !m_env.PRIM.TME && !(m_env.SCANMSK.MSK & 2) && !m_env.CTXT[next_ctx].TEST.ATE && !m_env.CTXT[next_ctx].TEST.DATE &&
 		(!m_env.CTXT[next_ctx].TEST.ZTE || m_env.CTXT[next_ctx].TEST.ZTST == ZTST_ALWAYS);
 
@@ -8499,6 +8499,14 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 	else
 	{
 		const int height = m_r.height();
+
+		// We don't want to double half clear already full sized targets, making them double the size, this could be very bad.
+		// This gets triggered by Monster Lab which clears the Z and FRAME in one go, butted up against each other.
+		// It's highly unlikely that it will actually require a > 600 high framebuffer, but check with the display height first.
+		const int display_height = PCRTCDisplays.GetResolution().y;
+		if ((display_height != 0 && height >= (display_height - 1)) || height > 300)
+			return false;
+
 		m_r.w = ((half - base) / m_cached_ctx.FRAME.FBW) * frame_psm.pgs.y;
 		m_r.w += m_r.y + height;
 	}
