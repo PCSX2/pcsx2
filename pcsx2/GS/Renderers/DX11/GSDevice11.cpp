@@ -1343,6 +1343,7 @@ void GSDevice11::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	if (dTex)
 	{
 		ds = dTex->GetSize();
+		PSUnbindConflictingSRVs(dTex);
 		OMSetRenderTargets(dTex, nullptr);
 	}
 	else
@@ -2136,6 +2137,7 @@ void GSDevice11::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vert
 
 	OMSetDepthStencilState(m_date.dss.get(), 1);
 	OMSetBlendState(m_date.bs.get(), 0);
+	PSUnbindConflictingSRVs(ds);
 	OMSetRenderTargets(nullptr, ds);
 
 	// ia
@@ -2362,8 +2364,38 @@ void GSDevice11::PSSetShader(ID3D11PixelShader* ps, ID3D11Buffer* ps_cb)
 
 void GSDevice11::PSUpdateShaderState()
 {
-	m_ctx->PSSetShaderResources(0, m_state.ps_sr_views.size(), m_state.ps_sr_views.data());
-	m_ctx->PSSetSamplers(0, m_state.ps_ss.size(), m_state.ps_ss.data());
+	// Shader resource caching requires srv/rtv hazards to be resolved, ensure PSUnbindConflictingSRVs handle.
+	bool sr_changed = false;
+	for (size_t i = 0; i < m_state.ps_sr_views.size(); ++i)
+	{
+		if (m_state.ps_cached_sr_views[i] != m_state.ps_sr_views[i])
+		{
+			sr_changed = true;
+			break;
+		}
+	}
+
+	if (sr_changed)
+	{
+		m_state.ps_cached_sr_views = m_state.ps_sr_views;
+		m_ctx->PSSetShaderResources(0, m_state.ps_sr_views.size(), m_state.ps_sr_views.data());
+	}
+
+	bool ss_changed = false;
+	for (size_t i = 0; i < m_state.ps_ss.size(); ++i)
+	{
+		if (m_state.ps_cached_ss[i] != m_state.ps_ss[i])
+		{
+			ss_changed = true;
+			break;
+		}
+	}
+
+	if (ss_changed)
+	{
+		m_state.ps_cached_ss = m_state.ps_ss;
+		m_ctx->PSSetSamplers(0, m_state.ps_ss.size(), m_state.ps_ss.data());
+	}
 }
 
 void GSDevice11::PSUnbindConflictingSRVs(GSTexture* tex1, GSTexture* tex2)
