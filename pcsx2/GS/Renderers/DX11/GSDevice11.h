@@ -326,7 +326,7 @@ public:
 
 	void PSSetShaderResource(int i, GSTexture* sr);
 	void PSSetShader(ID3D11PixelShader* ps, ID3D11Buffer* ps_cb);
-	void PSUpdateShaderState();
+	void PSUpdateShaderState(const bool sr_update, const bool ss_update);
 	void PSUnbindConflictingSRVs(GSTexture* tex1 = nullptr, GSTexture* tex2 = nullptr);
 	void PSSetSamplerState(ID3D11SamplerState* ss0);
 
