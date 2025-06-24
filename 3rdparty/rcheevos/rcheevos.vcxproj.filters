@@ -4,9 +4,6 @@
     <Filter Include="rcheevos">
       <UniqueIdentifier>{0d8ef204-a486-4873-a41d-743ca6cbe840}</UniqueIdentifier>
     </Filter>
-    <Filter Include="rurl">
-      <UniqueIdentifier>{3aa9379e-4fd1-4772-b18c-b899631a4161}</UniqueIdentifier>
-    </Filter>
     <Filter Include="rhash">
       <UniqueIdentifier>{c95da822-5bca-4274-b57e-d2092e76e8f1}</UniqueIdentifier>
     </Filter>
@@ -35,9 +32,6 @@
     </ClCompile>
     <ClCompile Include="src\rhash\md5.c">
       <Filter>rhash</Filter>
-    </ClCompile>
-    <ClCompile Include="src\rurl\url.c">
-      <Filter>rurl</Filter>
     </ClCompile>
     <ClCompile Include="src\rc_client.c" />
     <ClCompile Include="src\rc_compat.c" />

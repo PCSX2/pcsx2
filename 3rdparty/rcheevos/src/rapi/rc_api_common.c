@@ -13,8 +13,7 @@
 #define RETROACHIEVEMENTS_IMAGE_HOST "https://media.retroachievements.org"
 #define RETROACHIEVEMENTS_HOST_NONSSL "http://retroachievements.org"
 #define RETROACHIEVEMENTS_IMAGE_HOST_NONSSL "http://media.retroachievements.org"
-static char* g_host = NULL;
-static char* g_imagehost = NULL;
+rc_api_host_t g_host = { NULL, NULL };
 
 /* --- rc_json --- */
 
@@ -318,6 +317,18 @@ static int rc_json_convert_error_code(const char* server_error_code)
     case 'i':
       if (strcmp(server_error_code, "invalid_credentials") == 0)
         return RC_INVALID_CREDENTIALS;
+      if (strcmp(server_error_code, "invalid_parameter") == 0)
+        return RC_INVALID_STATE;
+      break;
+
+    case 'm':
+      if (strcmp(server_error_code, "missing_parameter") == 0)
+        return RC_INVALID_STATE;
+      break;
+
+    case 'n':
+      if (strcmp(server_error_code, "not_found") == 0)
+        return RC_NOT_FOUND;
       break;
 
     default:
@@ -694,6 +705,57 @@ int rc_json_get_string(const char** out, rc_buffer_t* buffer, const rc_json_fiel
   *dst++ = '\0';
   rc_buffer_consume(buffer, (uint8_t*)(*out), (uint8_t*)dst);
   return 1;
+}
+
+int rc_json_field_string_matches(const rc_json_field_t* field, const char* text) {
+  int is_quoted = 0;
+  const char* ptr = field->value_start;
+  if (!ptr)
+    return 0;
+
+  if (*ptr == '"') {
+    is_quoted = 1;
+    ++ptr;
+  }
+
+  while (ptr < field->value_end) {
+    if (*ptr != *text) {
+      if (*ptr != '\\') {
+        if (*ptr == '"' && is_quoted && (*text == '\0')) {
+          is_quoted = 0;
+          ++ptr;
+          continue;
+        }
+
+        return 0;
+      }
+
+      ++ptr;
+      switch (*ptr) {
+        case 'n':
+          if (*text != '\n')
+            return 0;
+          break;
+        case 'r':
+          if (*text != '\r')
+            return 0;
+          break;
+        case 't':
+          if (*text != '\t')
+            return 0;
+          break;
+        default:
+          if (*text != *ptr)
+            return 0;
+          break;
+      }
+    }
+
+    ++text;
+    ++ptr;
+  }
+
+  return !is_quoted && (*text == '\0');
 }
 
 void rc_json_get_optional_string(const char** out, rc_api_response_t* response, const rc_json_field_t* field, const char* field_name, const char* default_value) {
@@ -1128,21 +1190,25 @@ void rc_url_builder_append_str_param(rc_api_url_builder_t* builder, const char* 
   rc_url_builder_append_encoded_str(builder, value);
 }
 
-void rc_api_url_build_dorequest_url(rc_api_request_t* request) {
+void rc_api_url_build_dorequest_url(rc_api_request_t* request, const rc_api_host_t* host) {
   #define DOREQUEST_ENDPOINT "/dorequest.php"
   rc_buffer_init(&request->buffer);
 
-  if (!g_host) {
+  if (!host || !host->host) {
     request->url = RETROACHIEVEMENTS_HOST DOREQUEST_ENDPOINT;
   }
   else {
     const size_t endpoint_len = sizeof(DOREQUEST_ENDPOINT);
-    const size_t host_len = strlen(g_host);
-    const size_t url_len = host_len + endpoint_len;
+    const size_t host_len = strlen(host->host);
+    const size_t protocol_len = (strstr(host->host, "://")) ? 0 : 7;
+    const size_t url_len = protocol_len + host_len + endpoint_len;
     uint8_t* url = rc_buffer_reserve(&request->buffer, url_len);
 
-    memcpy(url, g_host, host_len);
-    memcpy(url + host_len, DOREQUEST_ENDPOINT, endpoint_len);
+    if (protocol_len)
+      memcpy(url, "http://", protocol_len);
+
+    memcpy(url + protocol_len, host->host, host_len);
+    memcpy(url + protocol_len + host_len, DOREQUEST_ENDPOINT, endpoint_len);
     rc_buffer_consume(&request->buffer, url, url + url_len);
 
     request->url = (char*)url;
@@ -1165,9 +1231,9 @@ int rc_api_url_build_dorequest(rc_api_url_builder_t* builder, const char* api, c
 
 /* --- Set Host --- */
 
-static void rc_api_update_host(char** host, const char* hostname) {
+static void rc_api_update_host(const char** host, const char* hostname) {
   if (*host != NULL)
-    free(*host);
+    free((void*)*host);
 
   if (hostname != NULL) {
     if (strstr(hostname, "://")) {
@@ -1196,11 +1262,15 @@ static void rc_api_update_host(char** host, const char* hostname) {
   }
 }
 
+const char* rc_api_default_host(void) {
+  return RETROACHIEVEMENTS_HOST;
+}
+
 void rc_api_set_host(const char* hostname) {
   if (hostname && strcmp(hostname, RETROACHIEVEMENTS_HOST) == 0)
     hostname = NULL;
 
-  rc_api_update_host(&g_host, hostname);
+  rc_api_update_host(&g_host.host, hostname);
 
   if (!hostname) {
     /* also clear out the image hostname */
@@ -1214,24 +1284,45 @@ void rc_api_set_host(const char* hostname) {
 }
 
 void rc_api_set_image_host(const char* hostname) {
-  rc_api_update_host(&g_imagehost, hostname);
+  rc_api_update_host(&g_host.media_host, hostname);
 }
 
 /* --- Fetch Image --- */
 
 int rc_api_init_fetch_image_request(rc_api_request_t* request, const rc_api_fetch_image_request_t* api_params) {
+  return rc_api_init_fetch_image_request_hosted(request, api_params, &g_host);
+}
+
+int rc_api_init_fetch_image_request_hosted(rc_api_request_t* request, const rc_api_fetch_image_request_t* api_params, const rc_api_host_t* host) {
   rc_api_url_builder_t builder;
 
   rc_buffer_init(&request->buffer);
   rc_url_builder_init(&builder, &request->buffer, 64);
 
-  if (g_imagehost) {
-    rc_url_builder_append(&builder, g_imagehost, strlen(g_imagehost));
+  if (host && host->media_host) {
+    /* custom media host provided */
+    if (!strstr(host->host, "://"))
+      rc_url_builder_append(&builder, "http://", 7);
+    rc_url_builder_append(&builder, host->media_host, strlen(host->media_host));
   }
-  else if (g_host) {
-    rc_url_builder_append(&builder, g_host, strlen(g_host));
+  else if (host && host->host) {
+    if (strcmp(host->host, RETROACHIEVEMENTS_HOST_NONSSL) == 0) {
+      /* if host specifically set to non-ssl host, and no media host provided, use non-ssl media host */
+      rc_url_builder_append(&builder, RETROACHIEVEMENTS_IMAGE_HOST_NONSSL, sizeof(RETROACHIEVEMENTS_IMAGE_HOST_NONSSL) - 1);
+    }
+    else if (strcmp(host->host, RETROACHIEVEMENTS_HOST) == 0) {
+      /* if host specifically set to ssl host, and no media host provided, use media host */
+      rc_url_builder_append(&builder, RETROACHIEVEMENTS_IMAGE_HOST, sizeof(RETROACHIEVEMENTS_IMAGE_HOST) - 1);
+    }
+    else {
+      /* custom host and no media host provided. assume custom host is also media host */
+      if (!strstr(host->host, "://"))
+        rc_url_builder_append(&builder, "http://", 7);
+      rc_url_builder_append(&builder, host->host, strlen(host->host));
+    }
   }
   else {
+    /* no custom host provided */
     rc_url_builder_append(&builder, RETROACHIEVEMENTS_IMAGE_HOST, sizeof(RETROACHIEVEMENTS_IMAGE_HOST) - 1);
   }
 
@@ -1269,4 +1360,20 @@ int rc_api_init_fetch_image_request(rc_api_request_t* request, const rc_api_fetc
   request->post_data = NULL;
 
   return builder.result;
+}
+
+const char* rc_api_build_avatar_url(rc_buffer_t* buffer, uint32_t image_type, const char* image_name) {
+  rc_api_fetch_image_request_t image_request;
+  rc_api_request_t request;
+  int result;
+
+  memset(&image_request, 0, sizeof(image_request));
+  image_request.image_type = image_type;
+  image_request.image_name = image_name;
+
+  result = rc_api_init_fetch_image_request(&request, &image_request);
+  if (result == RC_OK)
+    return rc_buffer_strcpy(buffer, request.url);
+
+  return NULL;
 }

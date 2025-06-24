@@ -121,7 +121,7 @@ RC_EXPORT void* RC_CCONV rc_client_get_userdata(const rc_client_t* client);
 /**
  * Sets the name of the server to use.
  */
-RC_EXPORT void RC_CCONV rc_client_set_host(const rc_client_t* client, const char* hostname);
+RC_EXPORT void RC_CCONV rc_client_set_host(rc_client_t* client, const char* hostname);
 
 typedef uint64_t rc_clock_t;
 typedef rc_clock_t (RC_CCONV *rc_get_time_millisecs_func_t)(const rc_client_t* client);
@@ -188,6 +188,8 @@ typedef struct rc_client_user_t {
   uint32_t score;
   uint32_t score_softcore;
   uint32_t num_unread_messages;
+  /* minimum version: 12.0 */
+  const char* avatar_url;
 } rc_client_user_t;
 
 /**
@@ -217,6 +219,39 @@ typedef struct rc_client_user_game_summary_t {
  */
 RC_EXPORT void RC_CCONV rc_client_get_user_game_summary(const rc_client_t* client, rc_client_user_game_summary_t* summary);
 
+typedef struct rc_client_all_user_progress_entry_t {
+  uint32_t game_id;
+  uint32_t num_achievements;
+  uint32_t num_unlocked_achievements;
+  uint32_t num_unlocked_achievements_hardcore;
+} rc_client_all_user_progress_entry_t;
+
+typedef struct rc_client_all_user_progress_t {
+  rc_client_all_user_progress_entry_t* entries;
+  uint32_t num_entries;
+} rc_client_all_user_progress_t;
+
+/**
+ * Callback that is fired when an all progress query completes. list may be null if the query failed.
+ */
+typedef void(RC_CCONV* rc_client_fetch_all_user_progress_callback_t)(int result, const char* error_message,
+                                                                     rc_client_all_user_progress_t* list,
+                                                                     rc_client_t* client, void* callback_userdata);
+
+/**
+ * Starts an asynchronous request for all progress for the given console.
+ * This query returns the total number of achievements for all games tracked by this console, as well as
+ * the user's achievement unlock count for both softcore and hardcore modes.
+ */
+RC_EXPORT rc_client_async_handle_t* RC_CCONV
+rc_client_begin_fetch_all_user_progress(rc_client_t* client, uint32_t console_id,
+                                        rc_client_fetch_all_user_progress_callback_t callback, void* callback_userdata);
+
+/**
+ * Destroys a previously-allocated result from the rc_client_begin_fetch_all_progress_list() callback.
+ */
+RC_EXPORT void RC_CCONV rc_client_destroy_all_user_progress(rc_client_all_user_progress_t* list);
+
 /*****************************************************************************\
 | Game                                                                        |
 \*****************************************************************************/
@@ -229,6 +264,12 @@ RC_EXPORT rc_client_async_handle_t* RC_CCONV rc_client_begin_identify_and_load_g
     uint32_t console_id, const char* file_path,
     const uint8_t* data, size_t data_size,
     rc_client_callback_t callback, void* callback_userdata);
+
+struct rc_hash_callbacks;
+/**
+ * Provide callback functions for interacting with the file system and processing disc-based files when generating hashes.
+ */
+RC_EXPORT void rc_client_set_hash_callbacks(rc_client_t* client, const struct rc_hash_callbacks* callbacks);
 #endif
 
 /**
@@ -243,9 +284,9 @@ RC_EXPORT rc_client_async_handle_t* RC_CCONV rc_client_begin_load_game(rc_client
 RC_EXPORT int RC_CCONV rc_client_get_load_game_state(const rc_client_t* client);
 enum {
   RC_CLIENT_LOAD_GAME_STATE_NONE,
-  RC_CLIENT_LOAD_GAME_STATE_IDENTIFYING_GAME,
   RC_CLIENT_LOAD_GAME_STATE_AWAIT_LOGIN,
-  RC_CLIENT_LOAD_GAME_STATE_FETCHING_GAME_DATA,
+  RC_CLIENT_LOAD_GAME_STATE_IDENTIFYING_GAME,
+  RC_CLIENT_LOAD_GAME_STATE_FETCHING_GAME_DATA, /* [deprecated] - game data is now returned by identify call */
   RC_CLIENT_LOAD_GAME_STATE_STARTING_SESSION,
   RC_CLIENT_LOAD_GAME_STATE_DONE,
   RC_CLIENT_LOAD_GAME_STATE_ABORTED
@@ -267,6 +308,8 @@ typedef struct rc_client_game_t {
   const char* title;
   const char* hash;
   const char* badge_name;
+  /* minimum version: 12.0 */
+  const char* badge_url;
 } rc_client_game_t;
 
 /**
@@ -285,15 +328,17 @@ RC_EXPORT int RC_CCONV rc_client_game_get_image_url(const rc_client_game_t* game
 /**
  * Changes the active disc in a multi-disc game.
  */
-RC_EXPORT rc_client_async_handle_t* RC_CCONV rc_client_begin_change_media(rc_client_t* client, const char* file_path,
+RC_EXPORT rc_client_async_handle_t* RC_CCONV rc_client_begin_identify_and_change_media(rc_client_t* client, const char* file_path,
     const uint8_t* data, size_t data_size, rc_client_callback_t callback, void* callback_userdata);
 #endif
 
 /**
  * Changes the active disc in a multi-disc game.
  */
-RC_EXPORT rc_client_async_handle_t* RC_CCONV rc_client_begin_change_media_from_hash(rc_client_t* client, const char* hash,
+RC_EXPORT rc_client_async_handle_t* RC_CCONV rc_client_begin_change_media(rc_client_t* client, const char* hash,
     rc_client_callback_t callback, void* callback_userdata);
+/* this function was renamed in rcheevos 12.0 */
+#define rc_client_begin_change_media_from_hash rc_client_begin_change_media
 
 /*****************************************************************************\
 | Subsets                                                                     |
@@ -306,9 +351,46 @@ typedef struct rc_client_subset_t {
 
   uint32_t num_achievements;
   uint32_t num_leaderboards;
+
+  /* minimum version: 12.0 */
+  const char* badge_url;
 } rc_client_subset_t;
 
 RC_EXPORT const rc_client_subset_t* RC_CCONV rc_client_get_subset_info(rc_client_t* client, uint32_t subset_id);
+
+/*****************************************************************************\
+| Fetch Game Hashes                                                           |
+\*****************************************************************************/
+
+typedef struct rc_client_hash_library_entry_t {
+  char hash[33];
+  uint32_t game_id;
+} rc_client_hash_library_entry_t;
+
+typedef struct rc_client_hash_library_t {
+  rc_client_hash_library_entry_t* entries;
+  uint32_t num_entries;
+} rc_client_hash_library_t;
+
+/**
+ * Callback that is fired when a hash library request completes. list may be null if the query failed.
+ */
+typedef void(RC_CCONV* rc_client_fetch_hash_library_callback_t)(int result, const char* error_message,
+                                                                rc_client_hash_library_t* list, rc_client_t* client,
+                                                                void* callback_userdata);
+
+/**
+ * Starts an asynchronous request for all hashes for the given console.
+ * This request returns a mapping from hashes to the game's unique identifier. A single game may have multiple
+ * hashes in the case of multi-disc games, or variants that are still compatible with the same achievement set.
+ */
+RC_EXPORT rc_client_async_handle_t* RC_CCONV rc_client_begin_fetch_hash_library(
+  rc_client_t* client, uint32_t console_id, rc_client_fetch_hash_library_callback_t callback, void* callback_userdata);
+
+/**
+ * Destroys a previously-allocated result from the rc_client_destroy_hash_library() callback.
+ */
+RC_EXPORT void RC_CCONV rc_client_destroy_hash_library(rc_client_hash_library_t* list);
 
 /*****************************************************************************\
 | Achievements                                                                |
@@ -373,6 +455,9 @@ typedef struct rc_client_achievement_t {
   float rarity;
   float rarity_hardcore;
   uint8_t type;
+  /* minimum version: 12.0 */
+  const char* badge_url;
+  const char* badge_locked_url;
 } rc_client_achievement_t;
 
 /**
@@ -387,7 +472,7 @@ RC_EXPORT const rc_client_achievement_t* RC_CCONV rc_client_get_achievement_info
 RC_EXPORT int RC_CCONV rc_client_achievement_get_image_url(const rc_client_achievement_t* achievement, int state, char buffer[], size_t buffer_size);
 
 typedef struct rc_client_achievement_bucket_t {
-  rc_client_achievement_t** achievements;
+  const rc_client_achievement_t** achievements;
   uint32_t num_achievements;
 
   const char* label;
@@ -396,7 +481,7 @@ typedef struct rc_client_achievement_bucket_t {
 } rc_client_achievement_bucket_t;
 
 typedef struct rc_client_achievement_list_t {
-  rc_client_achievement_bucket_t* buckets;
+  const rc_client_achievement_bucket_t* buckets;
   uint32_t num_buckets;
 } rc_client_achievement_list_t;
 
@@ -463,7 +548,7 @@ typedef struct rc_client_leaderboard_tracker_t {
 } rc_client_leaderboard_tracker_t;
 
 typedef struct rc_client_leaderboard_bucket_t {
-  rc_client_leaderboard_t** leaderboards;
+  const rc_client_leaderboard_t** leaderboards;
   uint32_t num_leaderboards;
 
   const char* label;
@@ -472,7 +557,7 @@ typedef struct rc_client_leaderboard_bucket_t {
 } rc_client_leaderboard_bucket_t;
 
 typedef struct rc_client_leaderboard_list_t {
-  rc_client_leaderboard_bucket_t* buckets;
+  const rc_client_leaderboard_bucket_t* buckets;
   uint32_t num_buckets;
 } rc_client_leaderboard_list_t;
 
@@ -619,7 +704,8 @@ enum {
   RC_CLIENT_EVENT_GAME_COMPLETED = 15, /* all achievements for the game have been earned */
   RC_CLIENT_EVENT_SERVER_ERROR = 16, /* an API response returned a [server_error] and will not be retried */
   RC_CLIENT_EVENT_DISCONNECTED = 17, /* an unlock request could not be completed and is pending */
-  RC_CLIENT_EVENT_RECONNECTED = 18 /* all pending unlocks have been completed */
+  RC_CLIENT_EVENT_RECONNECTED = 18, /* all pending unlocks have been completed */
+  RC_CLIENT_EVENT_SUBSET_COMPLETED = 19 /* all achievements for the subset have been earned */
 };
 
 typedef struct rc_client_server_error_t {
@@ -637,6 +723,7 @@ typedef struct rc_client_event_t {
   rc_client_leaderboard_tracker_t* leaderboard_tracker;
   rc_client_leaderboard_scoreboard_t* leaderboard_scoreboard;
   rc_client_server_error_t* server_error;
+  rc_client_subset_t* subset;
 
 } rc_client_event_t;
 
@@ -654,6 +741,11 @@ RC_EXPORT void RC_CCONV rc_client_set_event_handler(rc_client_t* client, rc_clie
  * Provides a callback for reading memory.
  */
 RC_EXPORT void RC_CCONV rc_client_set_read_memory_function(rc_client_t* client, rc_client_read_memory_func_t handler);
+
+/**
+ * Specifies whether rc_client is allowed to read memory outside of rc_client_do_frame/rc_client_idle.
+ */
+RC_EXPORT void RC_CCONV rc_client_set_allow_background_memory_reads(rc_client_t* client, int allowed);
 
 /**
  * Determines if there are any active achievements/leaderboards/rich presence that need processing.

@@ -10,19 +10,10 @@
 
 #include "rc_consoles.h"
 #include "rc_compat.h"
+#include "rhash/rc_hash_internal.h"
 
 #include <ctype.h>
 #include <string.h>
-
-/* internal helper functions in hash.c */
-extern void* rc_file_open(const char* path);
-extern void rc_file_seek(void* file_handle, int64_t offset, int origin);
-extern int64_t rc_file_tell(void* file_handle);
-extern size_t rc_file_read(void* file_handle, void* buffer, int requested_bytes);
-extern void rc_file_close(void* file_handle);
-extern int rc_path_compare_extension(const char* path, const char* ext);
-extern int rc_hash_error(const char* message);
-
 
 static rc_libretro_message_callback rc_libretro_verbose_message_callback = NULL;
 
@@ -124,7 +115,7 @@ static const rc_disallowed_setting_t _rc_disallowed_neocd_settings[] = {
 };
 
 static const rc_disallowed_setting_t _rc_disallowed_pcsx_rearmed_settings[] = {
-  { "pcsx_rearmed_psxclock", "<55" },
+  { "pcsx_rearmed_psxclock", ",!auto,<55" },
   { "pcsx_rearmed_region", "pal" },
   { NULL, NULL }
 };
@@ -202,14 +193,14 @@ static const rc_disallowed_core_settings_t rc_disallowed_core_settings[] = {
   { NULL, NULL }
 };
 
-static int rc_libretro_string_equal_nocase_wildcard(const char* test, const char* value) {
+static int rc_libretro_string_equal_nocase_wildcard(const char* test, const char* match) {
   char c1, c2;
   while ((c1 = *test++)) {
-    if (tolower(c1) != tolower(c2 = *value++) && c2 != '?')
+    if (tolower(c1) != tolower(c2 = *match++) && c2 != '?')
       return (c2 == '*');
   }
 
-  return (*value == '\0');
+  return (*match == '\0');
 }
 
 static int rc_libretro_numeric_less_than(const char* test, const char* value) {
@@ -218,7 +209,50 @@ static int rc_libretro_numeric_less_than(const char* test, const char* value) {
   return (test_num < value_num);
 }
 
+static int rc_libretro_match_token(const char* val, const char* token, size_t size, int* result) {
+  if (*token == '!') {
+    /* !X => if X is a match, it's explicitly allowed. match with result = false */
+    if (rc_libretro_match_token(val, token + 1, size - 1, result)) {
+      *result = 0;
+      return 1;
+    }
+  }
+
+  if (*token == '<') {
+    /* if val < token, match with result = true */
+    char buffer[128];
+    memcpy(buffer, token + 1, size - 1);
+    buffer[size - 1] = '\0';
+    if (rc_libretro_numeric_less_than(val, buffer)) {
+      *result = 1;
+      return 1;
+    }
+  }
+
+  if (memcmp(token, val, size) == 0 && val[size] == 0) {
+    /* exact match, match with result = true */
+    *result = 1;
+    return 1;
+  }
+  else {
+    /* check for case insensitive match */
+    char buffer[128];
+    memcpy(buffer, token, size);
+    buffer[size] = '\0';
+    if (rc_libretro_string_equal_nocase_wildcard(val, buffer)) {
+      /* case insensitive match, match with result = true */
+      *result = 1;
+      return 1;
+    }
+  }
+
+  /* no match */
+  return 0;
+}
+
 static int rc_libretro_match_value(const char* val, const char* match) {
+  int result = 0;
+
   /* if value starts with a comma, it's a CSV list of potential matches */
   if (*match == ',') {
     do {
@@ -229,33 +263,23 @@ static int rc_libretro_match_value(const char* val, const char* match) {
         ++match;
 
       size = match - ptr;
-      if (val[size] == '\0') {
-        if (memcmp(ptr, val, size) == 0) {
-          return 1;
-        }
-        else {
-          char buffer[128];
-          memcpy(buffer, ptr, size);
-          buffer[size] = '\0';
-          if (rc_libretro_string_equal_nocase_wildcard(buffer, val))
-            return 1;
-        }
-      }
-    } while (*match == ',');
+      if (rc_libretro_match_token(val, ptr, size, &result))
+        return result;
 
-    return 0;
+    } while (*match == ',');
+  }
+  else {
+    /* a leading exclamation point means the provided value(s) are not forbidden (are allowed) */
+    if (*match == '!')
+      return !rc_libretro_match_value(val, &match[1]);
+
+    /* just a single value, attempt to match it */
+    if (rc_libretro_match_token(val, match, strlen(match), &result))
+      return result;
   }
 
-  /* a leading exclamation point means the provided value(s) are not forbidden (are allowed) */
-  if (*match == '!')
-    return !rc_libretro_match_value(val, &match[1]);
-
-  /* a leading less tahn means the provided value is the minimum allowed */
-  if (*match == '<')
-    return rc_libretro_numeric_less_than(val, &match[1]);
-
-  /* just a single value, attempt to match it */
-  return rc_libretro_string_equal_nocase_wildcard(val, match);
+  /* value did not match filters, assume it's allowed */
+  return 0;
 }
 
 int rc_libretro_is_setting_allowed(const rc_disallowed_setting_t* disallowed_settings, const char* setting, const char* value) {
@@ -711,7 +735,8 @@ void rc_libretro_memory_destroy(rc_libretro_memory_regions_t* regions) {
 }
 
 void rc_libretro_hash_set_init(struct rc_libretro_hash_set_t* hash_set,
-                               const char* m3u_path, rc_libretro_get_image_path_func get_image_path) {
+                               const char* m3u_path, rc_libretro_get_image_path_func get_image_path,
+                               const rc_hash_filereader_t* file_reader) {
   char image_path[1024];
   char* m3u_contents;
   char* ptr;
@@ -724,22 +749,23 @@ void rc_libretro_hash_set_init(struct rc_libretro_hash_set_t* hash_set,
   if (!rc_path_compare_extension(m3u_path, "m3u"))
     return;
 
-  file_handle = rc_file_open(m3u_path);
+  file_handle = file_reader->open(m3u_path);
   if (!file_handle) {
-    rc_hash_error("Could not open playlist");
+    rc_hash_iterator_t iterator;
+    memset(&iterator, 0, sizeof(iterator));
+    memcpy(&iterator.callbacks, &hash_set->callbacks, sizeof(hash_set->callbacks));
+    rc_hash_iterator_error(&iterator, "Could not open playlist");
     return;
   }
 
-  rc_file_seek(file_handle, 0, SEEK_END);
-  file_len = rc_file_tell(file_handle);
-  rc_file_seek(file_handle, 0, SEEK_SET);
+  file_reader->seek(file_handle, 0, SEEK_END);
+  file_len = file_reader->tell(file_handle);
+  file_reader->seek(file_handle, 0, SEEK_SET);
 
   m3u_contents = (char*)malloc((size_t)file_len + 1);
   if (m3u_contents) {
-    rc_file_read(file_handle, m3u_contents, (int)file_len);
+    file_reader->read(file_handle, m3u_contents, (int)file_len);
     m3u_contents[file_len] = '\0';
-
-    rc_file_close(file_handle);
 
     ptr = m3u_contents;
     do
@@ -773,6 +799,9 @@ void rc_libretro_hash_set_init(struct rc_libretro_hash_set_t* hash_set,
 
     free(m3u_contents);
   }
+
+  if (file_reader->close)
+    file_reader->close(file_handle);
 
   if (hash_set->entries_count > 0) {
     /* at least one save disk was found. make sure the core supports the #SAVEDISK: extension by

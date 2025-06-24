@@ -1,5 +1,15 @@
+#if !defined(RC_NO_THREADS) && !defined(_WIN32) && !defined(GEKKO) && !defined(_3DS) && (!defined(_XOPEN_SOURCE) || (_XOPEN_SOURCE - 0) < 500)
+/* We'll want to use pthread_mutexattr_settype/PTHREAD_MUTEX_RECURSIVE, but glibc only conditionally exposes pthread_mutexattr_settype and PTHREAD_MUTEX_RECURSIVE depending on feature flags
+ * Defining _XOPEN_SOURCE must be done at the top of the source file, before including any headers
+ * pthread_mutexattr_settype/PTHREAD_MUTEX_RECURSIVE are specified the Single UNIX Specification (Version 2, 1997), along with POSIX later on (IEEE Standard 1003.1-2008), so should cover practically any pthread implementation
+ */
+#undef _XOPEN_SOURCE
+#define _XOPEN_SOURCE 500
+#endif
+
 #include "rc_compat.h"
 
+#include <assert.h>
 #include <ctype.h>
 #include <stdarg.h>
 
@@ -58,7 +68,7 @@ int rc_snprintf(char* buffer, size_t size, const char* format, ...)
 
   va_start(args, format);
 
-#ifdef __STDC_WANT_SECURE_LIB__
+#ifdef __STDC_SECURE_LIB__
   result = vsprintf_s(buffer, size, format, args);
 #else
   /* assume buffer is large enough and ignore size */
@@ -73,7 +83,7 @@ int rc_snprintf(char* buffer, size_t size, const char* format, ...)
 
 #endif
 
-#ifndef __STDC_WANT_SECURE_LIB__
+#ifndef __STDC_SECURE_LIB__
 
 struct tm* rc_gmtime_s(struct tm* buf, const time_t* timer)
 {
@@ -88,31 +98,78 @@ struct tm* rc_gmtime_s(struct tm* buf, const time_t* timer)
 
 #if defined(_WIN32)
 
-/* https://gist.github.com/roxlu/1c1af99f92bafff9d8d9 */
+/* https://learn.microsoft.com/en-us/archive/msdn-magazine/2012/november/windows-with-c-the-evolution-of-synchronization-in-windows-and-c */
+/* implementation largely taken from https://github.com/libsdl-org/SDL/blob/0fc3574/src/thread/windows/SDL_sysmutex.c */
 
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
- 
+#if defined(WINVER) && WINVER >= 0x0600
+
 void rc_mutex_init(rc_mutex_t* mutex)
 {
-  /* default security, not owned by calling thread, unnamed */
-  mutex->handle = CreateMutex(NULL, FALSE, NULL);
+  InitializeSRWLock(&mutex->srw_lock);
+  /* https://learn.microsoft.com/en-us/windows/win32/procthread/thread-handles-and-identifiers */
+  /* thread ids are never 0 */
+  mutex->owner = 0;
+  mutex->count = 0;
 }
 
 void rc_mutex_destroy(rc_mutex_t* mutex)
 {
-  CloseHandle(mutex->handle);
+  /* Nothing to do here */
+  (void)mutex;
 }
 
 void rc_mutex_lock(rc_mutex_t* mutex)
 {
-  WaitForSingleObject(mutex->handle, 0xFFFFFFFF);
+  DWORD current_thread = GetCurrentThreadId();
+  if (mutex->owner == current_thread) {
+    ++mutex->count;
+    assert(mutex->count > 0);
+  }
+  else {
+    AcquireSRWLockExclusive(&mutex->srw_lock);
+    assert(mutex->owner == 0 && mutex->count == 0);
+    mutex->owner = current_thread;
+    mutex->count = 1;
+  }
 }
 
 void rc_mutex_unlock(rc_mutex_t* mutex)
 {
-  ReleaseMutex(mutex->handle);
+  if (mutex->owner == GetCurrentThreadId()) {
+    assert(mutex->count > 0);
+    if (--mutex->count == 0) {
+      mutex->owner = 0;
+      ReleaseSRWLockExclusive(&mutex->srw_lock);
+    }
+  }
+  else {
+    assert(!"Tried to unlock unowned mutex");
+  }
 }
+
+#else
+
+void rc_mutex_init(rc_mutex_t* mutex)
+{
+  InitializeCriticalSection(&mutex->critical_section);
+}
+
+void rc_mutex_destroy(rc_mutex_t* mutex)
+{
+  DeleteCriticalSection(&mutex->critical_section);
+}
+
+void rc_mutex_lock(rc_mutex_t* mutex)
+{
+  EnterCriticalSection(&mutex->critical_section);
+}
+
+void rc_mutex_unlock(rc_mutex_t* mutex)
+{
+  LeaveCriticalSection(&mutex->critical_section);
+}
+
+#endif
 
 #elif defined(GEKKO)
 
@@ -120,29 +177,59 @@ void rc_mutex_unlock(rc_mutex_t* mutex)
 
 void rc_mutex_init(rc_mutex_t* mutex)
 {
-  LWP_MutexInit(mutex, NULL);
+  /* LWP_MutexInit has the handle passed by reference */
+  /* Other LWP_Mutex* calls have the handle passed by value */
+  LWP_MutexInit(&mutex->handle, 1);
 }
 
 void rc_mutex_destroy(rc_mutex_t* mutex)
 {
-  LWP_MutexDestroy(mutex);
+  LWP_MutexDestroy(mutex->handle);
 }
 
 void rc_mutex_lock(rc_mutex_t* mutex)
 {
-  LWP_MutexLock(mutex);
+  LWP_MutexLock(mutex->handle);
 }
 
 void rc_mutex_unlock(rc_mutex_t* mutex)
 {
-  LWP_MutexUnlock(mutex);
+  LWP_MutexUnlock(mutex->handle);
+}
+
+#elif defined(_3DS)
+
+void rc_mutex_init(rc_mutex_t* mutex)
+{
+  RecursiveLock_Init(mutex);
+}
+
+void rc_mutex_destroy(rc_mutex_t* mutex)
+{
+  /* Nothing to do here */
+  (void)mutex;
+}
+
+void rc_mutex_lock(rc_mutex_t* mutex)
+{
+  RecursiveLock_Lock(mutex);
+}
+
+void rc_mutex_unlock(rc_mutex_t* mutex)
+{
+  RecursiveLock_Unlock(mutex);
 }
 
 #else
 
 void rc_mutex_init(rc_mutex_t* mutex)
 {
-  pthread_mutex_init(mutex, NULL);
+  /* Define the mutex as recursive, for consistent semantics against other rc_mutex_t implementations */
+  pthread_mutexattr_t attr;
+  pthread_mutexattr_init(&attr);
+  pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+  pthread_mutex_init(mutex, &attr);
+  pthread_mutexattr_destroy(&attr);
 }
 
 void rc_mutex_destroy(rc_mutex_t* mutex)

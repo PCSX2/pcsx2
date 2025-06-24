@@ -1,3 +1,72 @@
+# v12.0.0
+* rc_client changes
+  * add RC_CLIENT_EVENT_SUBSET_COMPLETED event
+  * add 'avatar_url' to rc_client_user_t
+  * add 'badge_url' to rc_client_game_t
+  * add 'badge_url' and 'badge_locked_url' to rc_client_achievement_t
+  * add rc_client_set_hash_callbacks
+  * add rc_client_set_allow_background_memory_reads
+  * renamed rc_client_begin_change_media to rc_client_begin_identify_and_change_media
+  * renamed rc_client_begin_change_media_from_hash to rc_client_begin_change_media
+  * use slim read/write locks for rc_mutex on Windows Vista+
+  * use critical sections for rc_mutex on older versions of Windows
+  * add translation layer in rc_client_external for cross-version support 
+* rhash changes
+  * rc_hash_init_verbose_message_callback and rc_hash_init_error_message_callback have been deprecated.
+    - set values in iterator.callbacks instead.
+  * rc_hash_init_custom_filereader and rc_hash_init_custom_cdreader have been deprecated.
+    - set values in iterator.callbacks instead.
+  * rc_hash_generate_from_file and rc_hash_generate_from_buffer have been deprecated.
+    - use rc_hash_initialize_iterator and rc_hash_generate instead.
+  * hash.c has been split into several smaller files which can be conditionally excluded from the build.
+    - hash_disc.c can be excluded by defining RC_HASH_NO_DISC
+    - hash_encrypted.c can be excluded by defining RC_HASH_NO_ENCRYPTED
+    - hash_rom.c can be excluded by defining RC_HASH_NO_ROM
+    - hash_zip.c can be excluded by defining RC_HASH_NO_ZIP
+  * add hash method for RC_CONSOLE_WII
+  * add hash method for Arduboy FX games (RC_CONSOLE_ARDUBOY)
+  * fix hash for PCE homebrew games that aren't multiples of 128KB
+* rapi changes
+  * add _hosted variations of rc_api_init functions for interacting with custom hosts
+    - rc_api_set_host and rc_api_set_image_host have been deprecated
+  * add rc_api_fetch_game_sets
+  * add rc_api_fetch_followed_users
+  * add rc_api_fetch_hash_library
+  * add rc_api_fetch_all_user_progress
+  * add 'avatar_url' to login response, achievement_info response, and leaderboard_info responses
+  * add 'badge_url' to game_data response
+  * rurl has been removed (deprecated in v10.0.0)
+* trigger parsing/processing code has been largely modified to improve processing performance
+  * AddAddress/AddSource chains can now be shared across triggers to avoid recalculating them multiple times
+  * triggers are preprocessed to allocate conditions as array instead of linked list. 
+    - array is sorted such that similar conditions (pause/reset/hittarget/etc) can be processed together
+      without having to scan the linked list multiple times
+    - the linked list still exists for backwards compatibility and to maintain the original ordering  
+  * each condition type has its own handler, eliminating many switches and branches when processing triggers
+  * memrefs are now allocated in arrays (eliminating the linked list pointer from each to reduce memory footprint)
+* commas are now inserted into all numeric formats except SCORE. a new format type UNFORMATTED (@Unformatted) has
+  been added to display a number without commas.
+  - To forcibly exclude commas in a backwards-compatible way, use the @Unformatted macro and define Unformatted as
+    a VALUE formatter. Legacy clients will use the VALUE formatted and new clients will use the @Unformatted macro.
+* add RC_CONSOLE_FAMICOM_DISK_SYSTEM (split off of RC_CONSOLE_NINTENDO)
+* update RC_CONSOLE_SNES memory map to support SA-1 I-RAM and BW-RAM
+* update RC_CONSOLE_SEGACD memory map to supprot WORD RAM
+* update RC_CONSOLE_N64 memory map to place RDRAM at $80000000 and expansion pak RAM at $80400000
+* remove HAVE_LUA define and support (implementation was never finished)
+* report error when RP contains address starting with `0x0x`.
+* add .natvis files to improve debugging in Visual Studio
+
+# v11.6.0
+* backdate retried unlocks in rc_client
+* add memory map and hash method for RC_CONSOLE_ZX_SPECTRUM
+* add RC_CONSOLE_GAMECUBE to supported consoles for iso file extension
+* add DTCM to RC_CONSOLE_NINTENDO_DS and RC_CONSOLE_NINTENDO_DSI memory maps
+* don't report conflict if last conditions of OrNext chain conflict
+* don't report conflict if last conditions of AddSource chain conflict
+* fix hits not being reset on leaderboard value when start and submit are both true in a single frame
+* fix crash when multiple items in a CSV lookup overlap
+* fix crash if game is unloaded while activating achievements
+
 # v11.5.0
 * add total_entries to rc_api_fetch_leaderboard_info_response_t
 * add RC_CLIENT_RAINTEGRATION_EVENT_MENU_CHANGED event

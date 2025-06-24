@@ -1,5 +1,6 @@
 #include "rc_api_info.h"
 #include "rc_api_common.h"
+#include "rc_api_runtime.h"
 
 #include "rc_runtime_types.h"
 
@@ -11,9 +12,15 @@
 /* --- Fetch Achievement Info --- */
 
 int rc_api_init_fetch_achievement_info_request(rc_api_request_t* request, const rc_api_fetch_achievement_info_request_t* api_params) {
+  return rc_api_init_fetch_achievement_info_request_hosted(request, api_params, &g_host);
+}
+
+int rc_api_init_fetch_achievement_info_request_hosted(rc_api_request_t* request,
+                                                      const rc_api_fetch_achievement_info_request_t* api_params,
+                                                      const rc_api_host_t* host) {
   rc_api_url_builder_t builder;
 
-  rc_api_url_build_dorequest_url(request);
+  rc_api_url_build_dorequest_url(request, host);
 
   if (api_params->achievement_id == 0)
     return RC_INVALID_STATE;
@@ -73,7 +80,8 @@ int rc_api_process_fetch_achievement_info_server_response(rc_api_fetch_achieveme
 
   rc_json_field_t entry_fields[] = {
     RC_JSON_NEW_FIELD("User"),
-    RC_JSON_NEW_FIELD("DateAwarded")
+    RC_JSON_NEW_FIELD("DateAwarded"),
+    RC_JSON_NEW_FIELD("AvatarUrl")
   };
 
   memset(response, 0, sizeof(*response));
@@ -116,6 +124,10 @@ int rc_api_process_fetch_achievement_info_server_response(rc_api_fetch_achieveme
         return RC_MISSING_VALUE;
       entry->awarded = (time_t)timet;
 
+      rc_json_get_optional_string(&entry->avatar_url, &response->response, &entry_fields[2], "AvatarUrl", NULL);
+      if (!entry->avatar_url)
+        entry->avatar_url = rc_api_build_avatar_url(&response->response.buffer, RC_IMAGE_TYPE_USER, entry->username);
+
       ++entry;
     }
   }
@@ -130,9 +142,15 @@ void rc_api_destroy_fetch_achievement_info_response(rc_api_fetch_achievement_inf
 /* --- Fetch Leaderboard Info --- */
 
 int rc_api_init_fetch_leaderboard_info_request(rc_api_request_t* request, const rc_api_fetch_leaderboard_info_request_t* api_params) {
+  return rc_api_init_fetch_leaderboard_info_request_hosted(request, api_params, &g_host);
+}
+
+int rc_api_init_fetch_leaderboard_info_request_hosted(rc_api_request_t* request,
+                                                      const rc_api_fetch_leaderboard_info_request_t* api_params,
+                                                      const rc_api_host_t* host) {
   rc_api_url_builder_t builder;
 
-  rc_api_url_build_dorequest_url(request);
+  rc_api_url_build_dorequest_url(request, host);
 
   if (api_params->leaderboard_id == 0)
     return RC_INVALID_STATE;
@@ -191,13 +209,6 @@ int rc_api_process_fetch_leaderboard_info_server_response(rc_api_fetch_leaderboa
     RC_JSON_NEW_FIELD("LBUpdated"),
     RC_JSON_NEW_FIELD("Entries"), /* array */
     RC_JSON_NEW_FIELD("TotalEntries")
-    /* unused fields
-    RC_JSON_NEW_FIELD("GameTitle"),
-    RC_JSON_NEW_FIELD("ConsoleID"),
-    RC_JSON_NEW_FIELD("ConsoleName"),
-    RC_JSON_NEW_FIELD("ForumTopicID"),
-    RC_JSON_NEW_FIELD("GameIcon")
-     * unused fields */
   };
 
   rc_json_field_t entry_fields[] = {
@@ -205,7 +216,8 @@ int rc_api_process_fetch_leaderboard_info_server_response(rc_api_fetch_leaderboa
     RC_JSON_NEW_FIELD("Rank"),
     RC_JSON_NEW_FIELD("Index"),
     RC_JSON_NEW_FIELD("Score"),
-    RC_JSON_NEW_FIELD("DateSubmitted")
+    RC_JSON_NEW_FIELD("DateSubmitted"),
+    RC_JSON_NEW_FIELD("AvatarUrl")
   };
 
   memset(response, 0, sizeof(*response));
@@ -281,6 +293,10 @@ int rc_api_process_fetch_leaderboard_info_server_response(rc_api_fetch_leaderboa
         return RC_MISSING_VALUE;
       entry->submitted = (time_t)timet;
 
+      rc_json_get_optional_string(&entry->avatar_url, &response->response, &entry_fields[5], "AvatarUrl", NULL);
+      if (!entry->avatar_url)
+        entry->avatar_url = rc_api_build_avatar_url(&response->response.buffer, RC_IMAGE_TYPE_USER, entry->username);
+
       ++entry;
     }
   }
@@ -295,9 +311,15 @@ void rc_api_destroy_fetch_leaderboard_info_response(rc_api_fetch_leaderboard_inf
 /* --- Fetch Games List --- */
 
 int rc_api_init_fetch_games_list_request(rc_api_request_t* request, const rc_api_fetch_games_list_request_t* api_params) {
+  return rc_api_init_fetch_games_list_request_hosted(request, api_params, &g_host);
+}
+
+int rc_api_init_fetch_games_list_request_hosted(rc_api_request_t* request,
+                                                const rc_api_fetch_games_list_request_t* api_params,
+                                                const rc_api_host_t* host) {
   rc_api_url_builder_t builder;
 
-  rc_api_url_build_dorequest_url(request);
+  rc_api_url_build_dorequest_url(request, host);
 
   if (api_params->console_id == 0)
     return RC_INVALID_STATE;
@@ -380,11 +402,17 @@ void rc_api_destroy_fetch_games_list_response(rc_api_fetch_games_list_response_t
 /* --- Fetch Game Titles --- */
 
 int rc_api_init_fetch_game_titles_request(rc_api_request_t* request, const rc_api_fetch_game_titles_request_t* api_params) {
+  return rc_api_init_fetch_game_titles_request_hosted(request, api_params, &g_host);
+}
+
+int rc_api_init_fetch_game_titles_request_hosted(rc_api_request_t* request,
+                                                 const rc_api_fetch_game_titles_request_t* api_params,
+                                                 const rc_api_host_t* host) {
   rc_api_url_builder_t builder;
   char num[16];
   uint32_t i;
 
-  rc_api_url_build_dorequest_url(request);
+  rc_api_url_build_dorequest_url(request, host);
 
   if (api_params->num_game_ids == 0)
     return RC_INVALID_STATE;
@@ -462,5 +490,93 @@ int rc_api_process_fetch_game_titles_server_response(rc_api_fetch_game_titles_re
 }
 
 void rc_api_destroy_fetch_game_titles_response(rc_api_fetch_game_titles_response_t* response) {
+  rc_buffer_destroy(&response->response.buffer);
+}
+
+/* --- Fetch Game Hashes --- */
+
+int rc_api_init_fetch_hash_library_request(rc_api_request_t* request,
+                                           const rc_api_fetch_hash_library_request_t* api_params)
+{
+  return rc_api_init_fetch_hash_library_request_hosted(request, api_params, &g_host);
+}
+
+int rc_api_init_fetch_hash_library_request_hosted(rc_api_request_t* request,
+                                                  const rc_api_fetch_hash_library_request_t* api_params,
+                                                  const rc_api_host_t* host)
+{
+  rc_api_url_builder_t builder;
+  rc_api_url_build_dorequest_url(request, host);
+
+  /* note: unauthenticated request */
+  rc_url_builder_init(&builder, &request->buffer, 48);
+  rc_url_builder_append_str_param(&builder, "r", "hashlibrary");
+  if (api_params->console_id != 0)
+    rc_url_builder_append_unum_param(&builder, "c", api_params->console_id);
+
+  request->post_data = rc_url_builder_finalize(&builder);
+  request->content_type = RC_CONTENT_TYPE_URLENCODED;
+
+  return builder.result;
+}
+
+int rc_api_process_fetch_hash_library_server_response(rc_api_fetch_hash_library_response_t* response,
+                                                      const rc_api_server_response_t* server_response)
+{
+  rc_api_hash_library_entry_t* entry;
+  rc_json_iterator_t iterator;
+  rc_json_field_t field;
+  int result;
+
+  rc_json_field_t fields[] = {
+    RC_JSON_NEW_FIELD("Success"),
+    RC_JSON_NEW_FIELD("Error"),
+    RC_JSON_NEW_FIELD("MD5List"),
+  };
+
+  memset(response, 0, sizeof(*response));
+  rc_buffer_init(&response->response.buffer);
+
+  result =
+    rc_json_parse_server_response(&response->response, server_response, fields, sizeof(fields) / sizeof(fields[0]));
+  if (result != RC_OK)
+    return result;
+
+  if (!fields[2].value_start) {
+    /* call rc_json_get_required_object to generate the error message */
+    rc_json_get_required_object(NULL, 0, &response->response, &fields[2], "MD5List");
+    return RC_MISSING_VALUE;
+  }
+
+  response->num_entries = fields[2].array_size;
+  if (response->num_entries > 0) {
+    rc_buffer_reserve(&response->response.buffer, response->num_entries * (33 + sizeof(rc_api_hash_library_entry_t)));
+
+    response->entries = (rc_api_hash_library_entry_t*)rc_buffer_alloc(
+      &response->response.buffer, response->num_entries * sizeof(rc_api_hash_library_entry_t));
+    if (!response->entries)
+      return RC_OUT_OF_MEMORY;
+
+    memset(&iterator, 0, sizeof(iterator));
+    iterator.json = fields[2].value_start;
+    iterator.end = fields[2].value_end;
+
+    entry = response->entries;
+    while (rc_json_get_next_object_field(&iterator, &field)) {
+      entry->hash = rc_buffer_strncpy(&response->response.buffer, field.name, field.name_len);
+
+      field.name = "";
+      if (!rc_json_get_unum(&entry->game_id, &field, ""))
+        return RC_MISSING_VALUE;
+
+      ++entry;
+    }
+  }
+
+  return RC_OK;
+}
+
+void rc_api_destroy_fetch_hash_library_response(rc_api_fetch_hash_library_response_t* response)
+{
   rc_buffer_destroy(&response->response.buffer);
 }

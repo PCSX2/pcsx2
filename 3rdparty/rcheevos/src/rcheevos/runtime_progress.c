@@ -28,8 +28,6 @@ typedef struct rc_runtime_progress_t {
   uint32_t buffer_size;
 
   uint32_t chunk_size_offset;
-
-  lua_State* L;
 } rc_runtime_progress_t;
 
 #define assert_chunk_size(expected_size) assert((uint32_t)(progress->offset - progress->chunk_size_offset - 4) == (uint32_t)(expected_size))
@@ -40,7 +38,7 @@ typedef struct rc_runtime_progress_t {
 
 #define RC_VAR_FLAG_HAS_COND_DATA         0x01000000
 
-#define RC_COND_FLAG_IS_TRUE                            0x00000001
+#define RC_COND_FLAG_IS_TRUE_MASK                       0x00000003
 #define RC_COND_FLAG_OPERAND1_IS_INDIRECT_MEMREF        0x00010000
 #define RC_COND_FLAG_OPERAND1_MEMREF_CHANGED_THIS_FRAME 0x00020000
 #define RC_COND_FLAG_OPERAND2_IS_INDIRECT_MEMREF        0x00100000
@@ -116,22 +114,17 @@ static void rc_runtime_progress_end_chunk(rc_runtime_progress_t* progress)
   }
 }
 
-static void rc_runtime_progress_init(rc_runtime_progress_t* progress, const rc_runtime_t* runtime, lua_State* L)
+static void rc_runtime_progress_init(rc_runtime_progress_t* progress, const rc_runtime_t* runtime)
 {
   memset(progress, 0, sizeof(rc_runtime_progress_t));
   progress->runtime = runtime;
-  progress->L = L;
 }
 
 #define RC_RUNTIME_SERIALIZED_MEMREF_SIZE 16 /* 4x uint: address, flags, value, prior */
 
 static int rc_runtime_progress_write_memrefs(rc_runtime_progress_t* progress)
 {
-  rc_memref_t* memref;
-  uint32_t count = 0;
-
-  for (memref = progress->runtime->memrefs; memref; memref = memref->next)
-    ++count;
+  uint32_t count = rc_memrefs_count_memrefs(progress->runtime->memrefs);
   if (count == 0)
     return RC_OK;
 
@@ -145,15 +138,24 @@ static int rc_runtime_progress_write_memrefs(rc_runtime_progress_t* progress)
   }
   else {
     uint32_t flags = 0;
-    for (memref = progress->runtime->memrefs; memref; memref = memref->next) {
-      flags = memref->value.size;
-      if (memref->value.changed)
-        flags |= RC_MEMREF_FLAG_CHANGED_THIS_FRAME;
+    const rc_memref_list_t* memref_list = &progress->runtime->memrefs->memrefs;
+    const rc_memref_t* memref;
 
-      rc_runtime_progress_write_uint(progress, memref->address);
-      rc_runtime_progress_write_uint(progress, flags);
-      rc_runtime_progress_write_uint(progress, memref->value.value);
-      rc_runtime_progress_write_uint(progress, memref->value.prior);
+    for (; memref_list; memref_list = memref_list->next) {
+      const rc_memref_t* memref_end;
+
+      memref = memref_list->items;
+      memref_end = memref + memref_list->count;
+      for (; memref < memref_end; ++memref) {
+        flags = memref->value.size;
+        if (memref->value.changed)
+          flags |= RC_MEMREF_FLAG_CHANGED_THIS_FRAME;
+
+        rc_runtime_progress_write_uint(progress, memref->address);
+        rc_runtime_progress_write_uint(progress, flags);
+        rc_runtime_progress_write_uint(progress, memref->value.value);
+        rc_runtime_progress_write_uint(progress, memref->value.prior);
+      }
     }
   }
 
@@ -162,13 +164,77 @@ static int rc_runtime_progress_write_memrefs(rc_runtime_progress_t* progress)
   return RC_OK;
 }
 
+static void rc_runtime_progress_update_modified_memrefs(rc_runtime_progress_t* progress)
+{
+  rc_typed_value_t value, prior_value, modifier, prior_modifier;
+  rc_modified_memref_list_t* modified_memref_list;
+  rc_modified_memref_t* modified_memref;
+  rc_operand_t prior_parent_operand, prior_modifier_operand;
+  rc_memref_t prior_parent_memref, prior_modifier_memref;
+
+  modified_memref_list = &progress->runtime->memrefs->modified_memrefs;
+  for (; modified_memref_list; modified_memref_list = modified_memref_list->next) {
+    const rc_modified_memref_t* modified_memref_end;
+    modified_memref = modified_memref_list->items;
+    modified_memref_end = modified_memref + modified_memref_list->count;
+    for (; modified_memref < modified_memref_end; ++modified_memref) {
+      modified_memref->memref.value.changed = 0;
+
+      /* indirect memref values are stored in conditions */
+      if (modified_memref->modifier_type == RC_OPERATOR_INDIRECT_READ)
+        continue;
+
+      /* non-indirect memref values can be reconstructed from the parents */
+      memcpy(&prior_parent_operand, &modified_memref->parent, sizeof(prior_parent_operand));
+      if (rc_operand_is_memref(&prior_parent_operand)) {
+        memcpy(&prior_parent_memref, modified_memref->parent.value.memref, sizeof(prior_parent_memref));
+        prior_parent_memref.value.value = prior_parent_memref.value.prior;
+        modified_memref->memref.value.changed |= prior_parent_memref.value.changed;
+        prior_parent_operand.value.memref = &prior_parent_memref;
+      }
+
+      memcpy(&prior_modifier_operand, &modified_memref->modifier, sizeof(prior_modifier_operand));
+      if (rc_operand_is_memref(&prior_modifier_operand)) {
+        memcpy(&prior_modifier_memref, modified_memref->modifier.value.memref, sizeof(prior_modifier_memref));
+        prior_modifier_memref.value.value = prior_modifier_memref.value.prior;
+        modified_memref->memref.value.changed |= prior_modifier_memref.value.changed;
+        prior_modifier_operand.value.memref = &prior_modifier_memref;
+      }
+
+      rc_evaluate_operand(&value, &modified_memref->parent, NULL);
+      rc_evaluate_operand(&modifier, &modified_memref->modifier, NULL);
+      rc_evaluate_operand(&prior_value, &prior_parent_operand, NULL);
+      rc_evaluate_operand(&prior_modifier, &prior_modifier_operand, NULL);
+
+      if (modified_memref->modifier_type == RC_OPERATOR_SUB_PARENT) {
+        rc_typed_value_negate(&value);
+        rc_typed_value_add(&value, &modifier);
+
+        rc_typed_value_negate(&prior_value);
+        rc_typed_value_add(&prior_value, &prior_modifier);
+      }
+      else {
+        rc_typed_value_combine(&value, &modifier, modified_memref->modifier_type);
+        rc_typed_value_combine(&prior_value, &prior_modifier, modified_memref->modifier_type);
+      }
+
+      rc_typed_value_convert(&value, modified_memref->memref.value.type);
+      modified_memref->memref.value.value = value.value.u32;
+
+      rc_typed_value_convert(&prior_value, modified_memref->memref.value.type);
+      modified_memref->memref.value.prior = prior_value.value.u32;
+    }
+  }
+}
+
 static int rc_runtime_progress_read_memrefs(rc_runtime_progress_t* progress)
 {
   uint32_t entries;
   uint32_t address, flags, value, prior;
   uint8_t size;
+  rc_memref_list_t* unmatched_memref_list = &progress->runtime->memrefs->memrefs;
+  rc_memref_t* first_unmatched_memref = unmatched_memref_list->items;
   rc_memref_t* memref;
-  rc_memref_t* first_unmatched_memref = progress->runtime->memrefs;
 
   /* re-read the chunk size to determine how many memrefs are present */
   progress->offset -= 4;
@@ -183,23 +249,45 @@ static int rc_runtime_progress_read_memrefs(rc_runtime_progress_t* progress)
     size = flags & 0xFF;
 
     memref = first_unmatched_memref;
-    while (memref) {
-      if (memref->address == address && memref->value.size == size) {
-        memref->value.value = value;
-        memref->value.changed = (flags & RC_MEMREF_FLAG_CHANGED_THIS_FRAME) ? 1 : 0;
-        memref->value.prior = prior;
+    if (memref->address == address && memref->value.size == size) {
+      memref->value.value = value;
+      memref->value.changed = (flags & RC_MEMREF_FLAG_CHANGED_THIS_FRAME) ? 1 : 0;
+      memref->value.prior = prior;
 
-        if (memref == first_unmatched_memref)
-          first_unmatched_memref = memref->next;
-
-        break;
+      first_unmatched_memref++;
+      if (first_unmatched_memref >= unmatched_memref_list->items + unmatched_memref_list->count) {
+        unmatched_memref_list = unmatched_memref_list->next;
+        if (!unmatched_memref_list)
+          break;
+        first_unmatched_memref = unmatched_memref_list->items;
       }
+    }
+    else {
+      rc_memref_list_t* memref_list = unmatched_memref_list;
+      do {
+        ++memref;
+        if (memref >= memref_list->items + memref_list->count) {
+          memref_list = memref_list->next;
+          if (!memref_list)
+            break;
 
-      memref = memref->next;
+          memref = memref_list->items;
+        }
+
+        if (memref->address == address && memref->value.size == size) {
+          memref->value.value = value;
+          memref->value.changed = (flags & RC_MEMREF_FLAG_CHANGED_THIS_FRAME) ? 1 : 0;
+          memref->value.prior = prior;
+          break;
+        }
+
+      } while (1);
     }
 
     --entries;
   }
+
+  rc_runtime_progress_update_modified_memrefs(progress);
 
   return RC_OK;
 }
@@ -211,11 +299,14 @@ static int rc_runtime_progress_is_indirect_memref(rc_operand_t* oper)
     case RC_OPERAND_CONST:
     case RC_OPERAND_FP:
     case RC_OPERAND_RECALL:
-    case RC_OPERAND_LUA:
+    case RC_OPERAND_FUNC:
       return 0;
 
     default:
-      return oper->value.memref->value.is_indirect;
+      if (oper->value.memref->value.memref_type != RC_MEMREF_TYPE_MODIFIED_MEMREF)
+        return 0;
+
+      return ((const rc_modified_memref_t*)oper->value.memref)->modifier_type == RC_OPERATOR_INDIRECT_READ;
   }
 }
 
@@ -231,9 +322,7 @@ static int rc_runtime_progress_write_condset(rc_runtime_progress_t* progress, rc
 
   cond = condset->conditions;
   while (cond) {
-    flags = 0;
-    if (cond->is_true)
-      flags |= RC_COND_FLAG_IS_TRUE;
+    flags = (cond->is_true & RC_COND_FLAG_IS_TRUE_MASK);
 
     if (rc_runtime_progress_is_indirect_memref(&cond->operand1)) {
       flags |= RC_COND_FLAG_OPERAND1_IS_INDIRECT_MEMREF;
@@ -287,7 +376,7 @@ static int rc_runtime_progress_read_condset(rc_runtime_progress_t* progress, rc_
     cond->current_hits = rc_runtime_progress_read_uint(progress);
     flags = rc_runtime_progress_read_uint(progress);
 
-    cond->is_true = (flags & RC_COND_FLAG_IS_TRUE) ? 1 : 0;
+    cond->is_true = (flags & RC_COND_FLAG_IS_TRUE_MASK);
 
     if (flags & RC_COND_FLAG_OPERAND1_IS_INDIRECT_MEMREF) {
       if (!rc_operand_is_memref(&cond->operand1)) /* this should never happen, but better safe than sorry */
@@ -317,8 +406,8 @@ static uint32_t rc_runtime_progress_should_serialize_variable_condset(const rc_c
 {
   const rc_condition_t* condition;
 
-  /* predetermined presence of pause flag or indirect memrefs - must serialize */
-  if (conditions->has_pause || conditions->has_indirect_memrefs)
+  /* predetermined presence of pause flag - must serialize */
+  if (conditions->has_pause)
     return RC_VAR_FLAG_HAS_COND_DATA;
 
   /* if any conditions has required hits, must serialize */
@@ -358,12 +447,15 @@ static int rc_runtime_progress_write_variable(rc_runtime_progress_t* progress, c
 
 static int rc_runtime_progress_write_variables(rc_runtime_progress_t* progress)
 {
-  uint32_t count = 0;
-  const rc_value_t* variable;
+  uint32_t count;
+  const rc_value_t* value;
   int result;
 
-  for (variable = progress->runtime->variables; variable; variable = variable->next)
-    ++count;
+  if (!progress->runtime->richpresence || !progress->runtime->richpresence->richpresence)
+    return RC_OK;
+
+  value = progress->runtime->richpresence->richpresence->values;
+  count = rc_count_values(value);
   if (count == 0)
     return RC_OK;
 
@@ -374,14 +466,14 @@ static int rc_runtime_progress_write_variables(rc_runtime_progress_t* progress)
   rc_runtime_progress_start_chunk(progress, RC_RUNTIME_CHUNK_VARIABLES);
   rc_runtime_progress_write_uint(progress, count);
 
-  for (variable = progress->runtime->variables; variable; variable = variable->next) {
-    uint32_t djb2 = rc_djb2(variable->name);
+  for (; value; value = value->next) {
+    const uint32_t djb2 = rc_djb2(value->name);
     if (progress->offset + 16 > progress->buffer_size)
       return RC_INSUFFICIENT_BUFFER;
 
     rc_runtime_progress_write_uint(progress, djb2);
 
-    result = rc_runtime_progress_write_variable(progress, variable);
+    result = rc_runtime_progress_write_variable(progress, value);
     if (result != RC_OK)
       return result;
   }
@@ -418,19 +510,20 @@ static int rc_runtime_progress_read_variables(rc_runtime_progress_t* progress)
   };
   struct rc_pending_value_t local_pending_variables[32];
   struct rc_pending_value_t* pending_variables;
-  rc_value_t* variable;
+  rc_value_t* value;
   uint32_t count, serialized_count;
   int result;
-  uint32_t i;
+  int32_t i;
 
   serialized_count = rc_runtime_progress_read_uint(progress);
   if (serialized_count == 0)
     return RC_OK;
 
-  count = 0;
-  for (variable = progress->runtime->variables; variable; variable = variable->next)
-    ++count;
+  if (!progress->runtime->richpresence || !progress->runtime->richpresence->richpresence)
+    return RC_OK;
 
+  value = progress->runtime->richpresence->richpresence->values;
+  count = rc_count_values(value);
   if (count == 0)
     return RC_OK;
 
@@ -443,22 +536,22 @@ static int rc_runtime_progress_read_variables(rc_runtime_progress_t* progress)
       return RC_OUT_OF_MEMORY;
   }
 
-  count = 0;
-  for (variable = progress->runtime->variables; variable; variable = variable->next) {
-    pending_variables[count].variable = variable;
-    pending_variables[count].djb2 = rc_djb2(variable->name);
-    ++count;
+  i = (int32_t)count;
+  for (; value; value = value->next) {
+    --i;
+    pending_variables[i].variable = value;
+    pending_variables[i].djb2 = rc_djb2(value->name);
   }
 
   result = RC_OK;
   for (; serialized_count > 0 && result == RC_OK; --serialized_count) {
     uint32_t djb2 = rc_runtime_progress_read_uint(progress);
-    for (i = 0; i < count; ++i) {
+    for (i = (int32_t)count - 1; i >= 0; --i) {
       if (pending_variables[i].djb2 == djb2) {
-        variable = pending_variables[i].variable;
-        result = rc_runtime_progress_read_variable(progress, variable);
+        value = pending_variables[i].variable;
+        result = rc_runtime_progress_read_variable(progress, value);
         if (result == RC_OK) {
-          if (i < count - 1)
+          if (i < (int32_t)count - 1)
             memcpy(&pending_variables[i], &pending_variables[count - 1], sizeof(struct rc_pending_value_t));
           count--;
         }
@@ -467,8 +560,17 @@ static int rc_runtime_progress_read_variables(rc_runtime_progress_t* progress)
     }
   }
 
+  /* VS raises a C6385 warning here because it thinks count can exceed the size of the local_pending_variables array.
+   * When count is larger, pending_variables points to allocated memory, so the warning is wrong. */
+#if defined (_MSC_VER)
+ #pragma warning(push)
+ #pragma warning(disable:6385)
+#endif
   while (count > 0)
     rc_reset_value(pending_variables[--count].variable);
+#if defined (_MSC_VER)
+ #pragma warning(pop)
+#endif
 
   if (pending_variables != local_pending_variables)
     free(pending_variables);
@@ -742,7 +844,7 @@ static int rc_runtime_progress_read_rich_presence(rc_runtime_progress_t* progres
     return RC_OK;
 
   if (!rc_runtime_progress_match_md5(progress, progress->runtime->richpresence->md5)) {
-    rc_reset_richpresence(progress->runtime->richpresence->richpresence);
+    rc_reset_richpresence_triggers(progress->runtime->richpresence->richpresence);
     return RC_OK;
   }
 
@@ -799,12 +901,14 @@ static int rc_runtime_progress_serialize_internal(rc_runtime_progress_t* progres
   return RC_OK;
 }
 
-uint32_t rc_runtime_progress_size(const rc_runtime_t* runtime, lua_State* L)
+uint32_t rc_runtime_progress_size(const rc_runtime_t* runtime, void* unused_L)
 {
   rc_runtime_progress_t progress;
   int result;
 
-  rc_runtime_progress_init(&progress, runtime, L);
+  (void)unused_L;
+
+  rc_runtime_progress_init(&progress, runtime);
   progress.buffer_size = 0xFFFFFFFF;
 
   result = rc_runtime_progress_serialize_internal(&progress);
@@ -814,31 +918,33 @@ uint32_t rc_runtime_progress_size(const rc_runtime_t* runtime, lua_State* L)
   return progress.offset;
 }
 
-int rc_runtime_serialize_progress(void* buffer, const rc_runtime_t* runtime, lua_State* L)
+int rc_runtime_serialize_progress(void* buffer, const rc_runtime_t* runtime, void* unused_L)
 {
-  return rc_runtime_serialize_progress_sized(buffer, 0xFFFFFFFF, runtime, L);
+  return rc_runtime_serialize_progress_sized(buffer, 0xFFFFFFFF, runtime, unused_L);
 }
 
-int rc_runtime_serialize_progress_sized(uint8_t* buffer, uint32_t buffer_size, const rc_runtime_t* runtime, lua_State* L)
+int rc_runtime_serialize_progress_sized(uint8_t* buffer, uint32_t buffer_size, const rc_runtime_t* runtime, void* unused_L)
 {
   rc_runtime_progress_t progress;
+
+  (void)unused_L;
 
   if (!buffer)
     return RC_INVALID_STATE;
 
-  rc_runtime_progress_init(&progress, runtime, L);
+  rc_runtime_progress_init(&progress, runtime);
   progress.buffer = (uint8_t*)buffer;
   progress.buffer_size = buffer_size;
 
   return rc_runtime_progress_serialize_internal(&progress);
 }
 
-int rc_runtime_deserialize_progress(rc_runtime_t* runtime, const uint8_t* serialized, lua_State* L)
+int rc_runtime_deserialize_progress(rc_runtime_t* runtime, const uint8_t* serialized, void* unused_L)
 {
-  return rc_runtime_deserialize_progress_sized(runtime, serialized, 0xFFFFFFFF, L);
+  return rc_runtime_deserialize_progress_sized(runtime, serialized, 0xFFFFFFFF, unused_L);
 }
 
-int rc_runtime_deserialize_progress_sized(rc_runtime_t* runtime, const uint8_t* serialized, uint32_t serialized_size, lua_State* L)
+int rc_runtime_deserialize_progress_sized(rc_runtime_t* runtime, const uint8_t* serialized, uint32_t serialized_size, void* unused_L)
 {
   rc_runtime_progress_t progress;
   md5_state_t state;
@@ -850,12 +956,14 @@ int rc_runtime_deserialize_progress_sized(rc_runtime_t* runtime, const uint8_t* 
   int seen_rich_presence = 0;
   int result = RC_OK;
 
+  (void)unused_L;
+
   if (!serialized || serialized_size < RC_RUNTIME_MIN_BUFFER_SIZE) {
     rc_runtime_reset(runtime);
     return RC_INSUFFICIENT_BUFFER;
   }
 
-  rc_runtime_progress_init(&progress, runtime, L);
+  rc_runtime_progress_init(&progress, runtime);
   progress.buffer = (uint8_t*)serialized;
 
   if (rc_runtime_progress_read_uint(&progress) != RC_RUNTIME_MARKER) {
@@ -958,7 +1066,7 @@ int rc_runtime_deserialize_progress_sized(rc_runtime_t* runtime, const uint8_t* 
     }
 
     if (!seen_rich_presence && runtime->richpresence && runtime->richpresence->richpresence)
-      rc_reset_richpresence(runtime->richpresence->richpresence);
+      rc_reset_richpresence_triggers(runtime->richpresence->richpresence);
   }
 
   return result;

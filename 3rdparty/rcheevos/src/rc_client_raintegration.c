@@ -6,6 +6,24 @@
 
 #ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
 
+/* ===== natvis extensions ===== */
+
+typedef struct __rc_client_raintegration_event_enum_t { uint8_t value; } __rc_client_raintegration_event_enum_t;
+static void rc_client_raintegration_natvis_helper(void)
+{
+  struct natvis_extensions {
+    __rc_client_raintegration_event_enum_t raintegration_event_type;
+  } natvis;
+
+  natvis.raintegration_event_type.value = RC_CLIENT_RAINTEGRATION_EVENT_TYPE_NONE;
+  natvis.raintegration_event_type.value = RC_CLIENT_RAINTEGRATION_EVENT_MENUITEM_CHECKED_CHANGED;
+  natvis.raintegration_event_type.value = RC_CLIENT_RAINTEGRATION_EVENT_HARDCORE_CHANGED;
+  natvis.raintegration_event_type.value = RC_CLIENT_RAINTEGRATION_EVENT_PAUSE;
+  natvis.raintegration_event_type.value = RC_CLIENT_RAINTEGRATION_EVENT_MENU_CHANGED;
+}
+
+/* ============================= */
+
 static void rc_client_raintegration_load_dll(rc_client_t* client,
     const wchar_t* search_directory, rc_client_callback_t callback, void* callback_userdata)
 {
@@ -89,6 +107,9 @@ static void rc_client_raintegration_load_dll(rc_client_t* client,
     FreeLibrary(hDLL);
 
     callback(RC_ABORTED, "One or more required exports was not found in RA_Integration.dll", client, callback_userdata);
+
+    /* dummy reference to natvis helper to ensure extensions get compiled in. */
+    raintegration->shutdown = rc_client_raintegration_natvis_helper;
   }
   else {
     rc_mutex_lock(&client->state.mutex);
@@ -151,7 +172,7 @@ static void rc_client_init_raintegration(rc_client_t* client,
     const char* host_url = client->state.raintegration->get_host_url();
     if (host_url) {
       if (strcmp(host_url, "OFFLINE") != 0) {
-        if (strcmp(host_url, "https://retroachievements.org") != 0)
+        if (strcmp(host_url, rc_api_default_host()) != 0)
           rc_client_set_host(client, host_url);
       }
       else if (client->state.raintegration->init_client_offline) {
@@ -323,7 +344,7 @@ rc_client_async_handle_t* rc_client_begin_load_raintegration(rc_client_t* client
 
   if (client->state.raintegration->get_host_url) {
     const char* host_url = client->state.raintegration->get_host_url();
-    if (host_url && strcmp(host_url, "https://retroachievements.org") != 0 &&
+    if (host_url && strcmp(host_url, rc_api_default_host()) != 0 &&
                     strcmp(host_url, "OFFLINE") != 0) {
       /* if the DLL specifies a custom host, use it */
       rc_client_set_host(client, host_url);
@@ -331,7 +352,7 @@ rc_client_async_handle_t* rc_client_begin_load_raintegration(rc_client_t* client
   }
 
   memset(&request, 0, sizeof(request));
-  rc_api_url_build_dorequest_url(&request);
+  rc_api_url_build_dorequest_url(&request, &client->state.host);
   rc_url_builder_init(&builder, &request.buffer, 48);
   rc_url_builder_append_str_param(&builder, "r", "latestintegration");
   request.post_data = rc_url_builder_finalize(&builder);
