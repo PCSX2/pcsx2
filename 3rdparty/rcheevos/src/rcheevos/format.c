@@ -4,6 +4,7 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <ctype.h>
 
 int rc_parse_format(const char* format_str) {
   switch (*format_str++) {
@@ -158,6 +159,52 @@ static int rc_format_value_padded(char* buffer, size_t size, const char* format,
   return snprintf(buffer, size, format, value);
 }
 
+static int rc_format_insert_commas(int chars, char* buffer, size_t size)
+{
+  int to_insert;
+  char* src = buffer;
+  char* ptr;
+  char* dst = &buffer[chars];
+  if (chars == 0)
+    return 0;
+
+  /* ignore leading negative sign */
+  if (*src == '-')
+    src++;
+
+  /* determine how many digits are present in the leading number */
+  ptr = src;
+  while (ptr < dst && isdigit((int)*ptr))
+    ++ptr;
+
+  /* determine how many commas are needed */
+  to_insert = (int)((ptr - src - 1) / 3);
+  if (to_insert == 0) /* no commas needed */
+    return chars;
+
+  /* if there's not enough room to insert the commas, leave string as-is, but return wanted space */
+  chars += to_insert;
+  if (chars >= (int)size)
+    return chars;
+
+  /* move the trailing part of the string */
+  memmove(ptr + to_insert, ptr, dst - ptr + 1);
+
+  /* shift blocks of three digits at a time, inserting commas in front of them */
+  src = ptr - 1;
+  dst = src + to_insert;
+  while (to_insert > 0) {
+    *dst-- = *src--;
+    *dst-- = *src--;
+    *dst-- = *src--;
+    *dst-- = ',';
+
+    --to_insert;
+  }
+
+  return chars;
+}
+
 int rc_format_typed_value(char* buffer, size_t size, const rc_typed_value_t* value, int format) {
   int chars;
   rc_typed_value_t converted_value;
@@ -199,8 +246,7 @@ int rc_format_typed_value(char* buffer, size_t size, const rc_typed_value_t* val
 
     case RC_FORMAT_SCORE:
       rc_typed_value_convert(&converted_value, RC_VALUE_TYPE_SIGNED);
-      chars = snprintf(buffer, size, "%06d", converted_value.value.i32);
-      break;
+      return snprintf(buffer, size, "%06d", converted_value.value.i32);
 
     case RC_FORMAT_FLOAT1:
       rc_typed_value_convert(&converted_value, RC_VALUE_TYPE_FLOAT);
@@ -266,9 +312,13 @@ int rc_format_typed_value(char* buffer, size_t size, const rc_typed_value_t* val
       rc_typed_value_convert(&converted_value, RC_VALUE_TYPE_UNSIGNED);
       chars = snprintf(buffer, size, "%u", converted_value.value.u32);
       break;
+
+    case RC_FORMAT_UNFORMATTED:
+      rc_typed_value_convert(&converted_value, RC_VALUE_TYPE_UNSIGNED);
+      return snprintf(buffer, size, "%u", converted_value.value.u32);
   }
 
-  return chars;
+  return rc_format_insert_commas(chars, buffer, size);
 }
 
 int rc_format_value(char* buffer, int size, int32_t value, int format) {

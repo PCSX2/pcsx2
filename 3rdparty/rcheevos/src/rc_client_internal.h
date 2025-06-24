@@ -9,6 +9,9 @@
 #ifdef RC_CLIENT_SUPPORTS_EXTERNAL
  #include "rc_client_external.h"
 #endif
+#ifdef RC_CLIENT_SUPPORTS_HASH
+ #include "rhash/rc_hash_internal.h"
+#endif
 
 #include "rc_compat.h"
 #include "rc_runtime.h"
@@ -20,9 +23,9 @@ RC_BEGIN_C_DECLS
 | Callbacks                                                                   |
 \*****************************************************************************/
 
-struct rc_api_fetch_game_data_response_t;
-typedef void (RC_CCONV *rc_client_post_process_game_data_response_t)(const rc_api_server_response_t* server_response,
-              struct rc_api_fetch_game_data_response_t* game_data_response, rc_client_t* client, void* userdata);
+struct rc_api_fetch_game_sets_response_t;
+typedef void (RC_CCONV *rc_client_post_process_game_sets_response_t)(const rc_api_server_response_t* server_response,
+              struct rc_api_fetch_game_sets_response_t* game_sets_response, rc_client_t* client, void* userdata);
 typedef int (RC_CCONV *rc_client_can_submit_achievement_unlock_t)(uint32_t achievement_id, rc_client_t* client);
 typedef int (RC_CCONV *rc_client_can_submit_leaderboard_entry_t)(uint32_t leaderboard_id, rc_client_t* client);
 typedef int (RC_CCONV *rc_client_rich_presence_override_t)(rc_client_t* client, char buffer[], size_t buffersize);
@@ -36,10 +39,14 @@ typedef struct rc_client_callbacks_t {
   rc_client_message_callback_t log_call;
   rc_get_time_millisecs_func_t get_time_millisecs;
   rc_client_identify_hash_func_t identify_unknown_hash;
-  rc_client_post_process_game_data_response_t post_process_game_data_response;
+  rc_client_post_process_game_sets_response_t post_process_game_sets_response;
   rc_client_can_submit_achievement_unlock_t can_submit_achievement_unlock;
   rc_client_can_submit_leaderboard_entry_t can_submit_leaderboard_entry;
   rc_client_rich_presence_override_t rich_presence_override;
+
+#ifdef RC_CLIENT_SUPPORTS_HASH
+  rc_hash_callbacks_t hash;
+#endif
 
   void* client_data;
 } rc_client_callbacks_t;
@@ -215,14 +222,13 @@ typedef struct rc_client_subset_info_t {
   uint8_t pending_events;
 } rc_client_subset_info_t;
 
-rc_client_async_handle_t* rc_client_begin_load_subset(rc_client_t* client, uint32_t subset_id, rc_client_callback_t callback, void* callback_userdata);
-
 /*****************************************************************************\
 | Game                                                                        |
 \*****************************************************************************/
 
 typedef struct rc_client_game_hash_t {
   char hash[33];
+  uint8_t is_unknown;
   uint32_t game_id;
   struct rc_client_game_hash_t* next;
 } rc_client_game_hash_t;
@@ -300,9 +306,11 @@ typedef struct rc_client_state_t {
   rc_buffer_t buffer;
 
   rc_client_scheduled_callback_data_t* scheduled_callbacks;
+  rc_api_host_t host;
 
 #ifdef RC_CLIENT_SUPPORTS_EXTERNAL
   rc_client_external_t* external_client;
+  struct rc_client_external_conversions_t* external_client_conversions;
 #endif
 #ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
   rc_client_raintegration_t* raintegration;
@@ -319,6 +327,7 @@ typedef struct rc_client_state_t {
   uint8_t user;
   uint8_t disconnect;
   uint8_t allow_leaderboards_in_softcore;
+  uint8_t allow_background_memory_reads;
 
   struct rc_client_load_state_t* load;
   struct rc_client_async_handle_t* async_handles[4];

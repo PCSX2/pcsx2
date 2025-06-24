@@ -53,7 +53,6 @@
     <ClCompile Include="src\rc_compat.c" />
     <ClCompile Include="src\rc_util.c" />
     <ClCompile Include="src\rhash\md5.c" />
-    <ClCompile Include="src\rurl\url.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\rcheevos.h" />
@@ -80,7 +79,7 @@
   </ItemGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <PreprocessorDefinitions>_CRT_NONSTDC_NO_WARNINGS;RC_DISABLE_LUA=1;RCHEEVOS_URL_SSL=1;RC_NO_THREADS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_NONSTDC_NO_WARNINGS;RC_DISABLE_LUA=1;RCHEEVOS_URL_SSL=1;RC_NO_THREADS=1;RC_HASH_NO_DISC=1;RC_HASH_NO_ENCRYPTED=1;RC_HASH_NO_ROM=1;RC_HASH_NO_ZIP=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
     </ClCompile>

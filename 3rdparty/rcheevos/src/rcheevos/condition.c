@@ -1,6 +1,7 @@
 #include "rc_internal.h"
 
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 
 static int rc_test_condition_compare(uint32_t value1, uint32_t value2, uint8_t oper) {
@@ -15,7 +16,7 @@ static int rc_test_condition_compare(uint32_t value1, uint32_t value2, uint8_t o
   }
 }
 
-static char rc_condition_determine_comparator(const rc_condition_t* self) {
+static uint8_t rc_condition_determine_comparator(const rc_condition_t* self) {
   switch (self->oper) {
     case RC_OPERATOR_EQ:
     case RC_OPERATOR_NE:
@@ -31,7 +32,8 @@ static char rc_condition_determine_comparator(const rc_condition_t* self) {
   }
 
   if ((self->operand1.type == RC_OPERAND_ADDRESS || self->operand1.type == RC_OPERAND_DELTA) &&
-      !self->operand1.value.memref->value.is_indirect && !rc_operand_is_float(&self->operand1)) {
+    /* TODO: allow modified memref comparisons */
+      self->operand1.value.memref->value.memref_type == RC_MEMREF_TYPE_MEMREF && !rc_operand_is_float(&self->operand1)) {
     /* left side is an integer memory reference */
     int needs_translate = (self->operand1.size != self->operand1.value.memref->value.size);
 
@@ -43,7 +45,7 @@ static char rc_condition_determine_comparator(const rc_condition_t* self) {
       return needs_translate ? RC_PROCESSING_COMPARE_DELTA_TO_CONST_TRANSFORMED : RC_PROCESSING_COMPARE_DELTA_TO_CONST;
     }
     else if ((self->operand2.type == RC_OPERAND_ADDRESS || self->operand2.type == RC_OPERAND_DELTA) &&
-             !self->operand2.value.memref->value.is_indirect && !rc_operand_is_float(&self->operand2)) {
+             self->operand2.value.memref->value.memref_type == RC_MEMREF_TYPE_MEMREF && !rc_operand_is_float(&self->operand2)) {
       /* right side is an integer memory reference */
       const int is_same_memref = (self->operand1.value.memref == self->operand2.value.memref);
       needs_translate |= (self->operand2.size != self->operand2.value.memref->value.size);
@@ -161,17 +163,45 @@ static int rc_parse_operator(const char** memaddr) {
   }
 }
 
-rc_condition_t* rc_parse_condition(const char** memaddr, rc_parse_state_t* parse, uint8_t is_indirect) {
-  rc_condition_t* self;
+void rc_condition_convert_to_operand(const rc_condition_t* condition, rc_operand_t* operand, rc_parse_state_t* parse) {
+  if (condition->oper == RC_OPERATOR_NONE) {
+    if (operand != &condition->operand1)
+      memcpy(operand, &condition->operand1, sizeof(*operand));
+  }
+  else {
+    uint8_t new_size = RC_MEMSIZE_32_BITS;
+    if (rc_operand_is_float(&condition->operand1) || rc_operand_is_float(&condition->operand2))
+      new_size = RC_MEMSIZE_FLOAT;
+
+    /* NOTE: this makes the operand include the modification, but we have to also
+     * leave the modification in the condition so the condition reflects the actual
+     * definition. This doesn't affect the evaluation logic since this method is only
+     * called for combining conditions and Measured, and the Measured handling function
+     * ignores the operator assuming it's been handled by a modified memref chain */
+    operand->value.memref = (rc_memref_t*)rc_alloc_modified_memref(parse,
+      new_size, &condition->operand1, condition->oper, &condition->operand2);
+
+    /* not actually an address, just a non-delta memref read */
+    operand->type = operand->memref_access_type = RC_OPERAND_ADDRESS;
+
+    operand->size = new_size;
+  }
+}
+
+rc_condition_t* rc_parse_condition(const char** memaddr, rc_parse_state_t* parse) {
+  rc_condition_t * self = RC_ALLOC(rc_condition_t, parse);
+  rc_parse_condition_internal(self, memaddr, parse);
+  return (parse->offset < 0) ? NULL : self;
+}
+
+void rc_parse_condition_internal(rc_condition_t* self, const char** memaddr, rc_parse_state_t* parse) {
   const char* aux;
   int result;
   int can_modify = 0;
 
   aux = *memaddr;
-  self = RC_ALLOC(rc_condition_t, parse);
   self->current_hits = 0;
   self->is_true = 0;
-  self->pause = 0;
   self->optimized_comparator = RC_PROCESSING_COMPARE_DEFAULT;
 
   if (*aux != 0 && aux[1] == ':') {
@@ -194,8 +224,11 @@ rc_condition_t* rc_parse_condition(const char** memaddr, rc_parse_state_t* parse
           parse->measured_as_percent = 1;
           self->type = RC_CONDITION_MEASURED;
           break;
+
       /* e f h j l s u v w x y */
-      default: parse->offset = RC_INVALID_CONDITION_TYPE; return 0;
+      default:
+        parse->offset = RC_INVALID_CONDITION_TYPE;
+        return;
     }
 
     aux += 2;
@@ -204,79 +237,65 @@ rc_condition_t* rc_parse_condition(const char** memaddr, rc_parse_state_t* parse
     self->type = RC_CONDITION_STANDARD;
   }
 
-  result = rc_parse_operand(&self->operand1, &aux, is_indirect, parse);
+  result = rc_parse_operand(&self->operand1, &aux, parse);
   if (result < 0) {
     parse->offset = result;
-    return 0;
+    return;
   }
 
   result = rc_parse_operator(&aux);
   if (result < 0) {
     parse->offset = result;
-    return 0;
+    return;
   }
 
-  self->oper = (char)result;
-  switch (self->oper) {
-    case RC_OPERATOR_NONE:
-      /* non-modifying statements must have a second operand */
-      if (!can_modify) {
-        /* measured does not require a second operand when used in a value */
-        if (self->type != RC_CONDITION_MEASURED) {
-          parse->offset = RC_INVALID_OPERATOR;
-          return 0;
-        }
+  self->oper = (uint8_t)result;
+
+  if (self->oper == RC_OPERATOR_NONE) {
+    /* non-modifying statements must have a second operand */
+    if (!can_modify) {
+      /* measured does not require a second operand when used in a value */
+      if (self->type != RC_CONDITION_MEASURED && !parse->ignore_non_parse_errors) {
+        parse->offset = RC_INVALID_OPERATOR;
+        return;
       }
+    }
 
-      /* provide dummy operand of '1' and no required hits */
-      self->operand2.type = RC_OPERAND_CONST;
-      self->operand2.value.num = 1;
-      self->required_hits = 0;
-      *memaddr = aux;
-      return self;
+    /* provide dummy operand of '1' and no required hits */
+    rc_operand_set_const(&self->operand2, 1);
+    self->required_hits = 0;
+    *memaddr = aux;
+    return;
+  }
 
-    case RC_OPERATOR_MULT:
-    case RC_OPERATOR_DIV:
-    case RC_OPERATOR_AND:
-    case RC_OPERATOR_XOR:
-    case RC_OPERATOR_MOD:
-    case RC_OPERATOR_ADD:
-    case RC_OPERATOR_SUB:
-      /* modifying operators are only valid on modifying statements */
-      if (can_modify)
+  if (can_modify && !rc_operator_is_modifying(self->oper)) {
+    /* comparison operators are not valid on modifying statements */
+    switch (self->type) {
+      case RC_CONDITION_ADD_SOURCE:
+      case RC_CONDITION_SUB_SOURCE:
+      case RC_CONDITION_ADD_ADDRESS:
+        /* prevent parse errors on legacy achievements where a condition was present before changing the type */
+        self->oper = RC_OPERATOR_NONE;
         break;
-      /* fallthrough */
 
-    default:
-      /* comparison operators are not valid on modifying statements */
-      if (can_modify) {
-        switch (self->type) {
-          case RC_CONDITION_ADD_SOURCE:
-          case RC_CONDITION_SUB_SOURCE:
-          case RC_CONDITION_ADD_ADDRESS:
-          case RC_CONDITION_REMEMBER:
-            /* prevent parse errors on legacy achievements where a condition was present before changing the type */
-            self->oper = RC_OPERATOR_NONE;
-            break;
-
-          default:
-            parse->offset = RC_INVALID_OPERATOR;
-            return 0;
+      default:
+        if (!parse->ignore_non_parse_errors) {
+          parse->offset = RC_INVALID_OPERATOR;
+          return;
         }
-      }
-      break;
+        break;
+    }
   }
 
-  result = rc_parse_operand(&self->operand2, &aux, is_indirect, parse);
+  result = rc_parse_operand(&self->operand2, &aux, parse);
   if (result < 0) {
     parse->offset = result;
-    return 0;
+    return;
   }
 
   if (self->oper == RC_OPERATOR_NONE) {
     /* if operator is none, explicitly clear out the right side */
-    self->operand2.type = RC_OPERAND_CONST;
-    self->operand2.value.num = 0;
+    rc_operand_set_const(&self->operand2, 0);
   }
 
   if (*aux == '(') {
@@ -285,7 +304,7 @@ rc_condition_t* rc_parse_condition(const char** memaddr, rc_parse_state_t* parse
 
     if (end == aux || *end != ')') {
       parse->offset = RC_INVALID_REQUIRED_HITS;
-      return 0;
+      return;
     }
 
     /* if operator is none, explicitly clear out the required hits */
@@ -302,7 +321,7 @@ rc_condition_t* rc_parse_condition(const char** memaddr, rc_parse_state_t* parse
 
     if (end == aux || *end != '.') {
       parse->offset = RC_INVALID_REQUIRED_HITS;
-      return 0;
+      return;
     }
 
     /* if operator is none, explicitly clear out the required hits */
@@ -321,7 +340,185 @@ rc_condition_t* rc_parse_condition(const char** memaddr, rc_parse_state_t* parse
     self->optimized_comparator = rc_condition_determine_comparator(self);
 
   *memaddr = aux;
-  return self;
+}
+
+void rc_condition_update_parse_state(rc_condition_t* condition, rc_parse_state_t* parse) {
+  /* type of values in the chain are determined by the parent.
+   * the last element of a chain is determined by the operand
+   *
+   * 1   + 1.5 + 1.75 + 1.0 =>   (int)1   +   (int)1   +   (int)1    + (float)1   = (float)4.0
+   * 1.0 + 1.5 + 1.75 + 1.0 => (float)1.0 + (float)1.5 + (float)1.75 + (float)1.0 = (float)5.25
+   * 1.0 + 1.5 + 1.75 + 1   => (float)1.0 + (float)1.5 + (float)1.75 +   (int)1   =   (int)5
+   */
+
+  switch (condition->type) {
+    case RC_CONDITION_ADD_ADDRESS:
+      if (condition->oper != RC_OPERAND_NONE)
+        rc_condition_convert_to_operand(condition, &parse->indirect_parent, parse);
+      else
+        memcpy(&parse->indirect_parent, &condition->operand1, sizeof(parse->indirect_parent));
+
+      break;
+
+    case RC_CONDITION_ADD_SOURCE:
+      if (parse->addsource_parent.type == RC_OPERAND_NONE) {
+        rc_condition_convert_to_operand(condition, &parse->addsource_parent, parse);
+      }
+      else {
+        rc_operand_t cond_operand;
+        /* type determined by parent */
+        const uint8_t new_size = rc_operand_is_float(&parse->addsource_parent) ? RC_MEMSIZE_FLOAT : RC_MEMSIZE_32_BITS;
+
+        rc_condition_convert_to_operand(condition, &cond_operand, parse);
+        rc_operand_addsource(&cond_operand, parse, new_size);
+        memcpy(&parse->addsource_parent, &cond_operand, sizeof(cond_operand));
+      }
+
+      parse->addsource_oper = RC_OPERATOR_ADD;
+      parse->indirect_parent.type = RC_OPERAND_NONE;
+      break;
+
+    case RC_CONDITION_SUB_SOURCE:
+      if (parse->addsource_parent.type == RC_OPERAND_NONE) {
+        rc_condition_convert_to_operand(condition, &parse->addsource_parent, parse);
+        parse->addsource_oper = RC_OPERATOR_SUB_PARENT;
+      }
+      else {
+        rc_operand_t cond_operand;
+        /* type determined by parent */
+        const uint8_t new_size = rc_operand_is_float(&parse->addsource_parent) ? RC_MEMSIZE_FLOAT : RC_MEMSIZE_32_BITS;
+
+        if (parse->addsource_oper == RC_OPERATOR_ADD && !rc_operand_is_memref(&parse->addsource_parent)) {
+          /* if the previous element was a constant we have to turn it into a memref by adding zero */
+          rc_modified_memref_t* memref;
+          rc_operand_t zero;
+          rc_operand_set_const(&zero, 0);
+          memref = rc_alloc_modified_memref(parse,
+              parse->addsource_parent.size, &parse->addsource_parent, RC_OPERATOR_ADD, &zero);
+          parse->addsource_parent.value.memref = (rc_memref_t*)memref;
+          parse->addsource_parent.type = RC_OPERAND_ADDRESS;
+        }
+        else if (parse->addsource_oper == RC_OPERATOR_SUB_PARENT) {
+          /* if the previous element was also a SubSource, we have to insert a 0 and start subtracting from there */
+          rc_modified_memref_t* negate;
+          rc_operand_t zero;
+
+          if (rc_operand_is_float(&parse->addsource_parent))
+            rc_operand_set_float_const(&zero, 0.0);
+          else
+            rc_operand_set_const(&zero, 0);
+
+          negate = rc_alloc_modified_memref(parse, new_size, &parse->addsource_parent, RC_OPERATOR_SUB_PARENT, &zero);
+          parse->addsource_parent.value.memref = (rc_memref_t*)negate;
+          parse->addsource_parent.size = zero.size;
+        }
+
+        /* subtract the condition from the chain */
+        parse->addsource_oper = rc_operand_is_memref(&parse->addsource_parent) ? RC_OPERATOR_SUB : RC_OPERATOR_SUB_PARENT;
+        rc_condition_convert_to_operand(condition, &cond_operand, parse);
+        rc_operand_addsource(&cond_operand, parse, new_size);
+        memcpy(&parse->addsource_parent, &cond_operand, sizeof(cond_operand));
+
+        /* indicate the next value can be added to the chain */
+        parse->addsource_oper = RC_OPERATOR_ADD;
+      }
+
+      parse->indirect_parent.type = RC_OPERAND_NONE;
+      break;
+
+    case RC_CONDITION_REMEMBER:
+      rc_condition_convert_to_operand(condition, &condition->operand1, parse);
+
+      if (parse->addsource_parent.type != RC_OPERAND_NONE) {
+        /* type determined by leaf */
+        rc_operand_addsource(&condition->operand1, parse, condition->operand1.size);
+        condition->operand1.is_combining = 1;
+      }
+
+      memcpy(&parse->remember, &condition->operand1, sizeof(parse->remember));
+
+      parse->addsource_parent.type = RC_OPERAND_NONE;
+      parse->indirect_parent.type = RC_OPERAND_NONE;
+      break;
+
+    case RC_CONDITION_MEASURED:
+      /* Measured condition can have modifiers in values */
+      if (parse->is_value) {
+        switch (condition->oper) {
+          case RC_OPERATOR_AND:
+          case RC_OPERATOR_XOR:
+          case RC_OPERATOR_DIV:
+          case RC_OPERATOR_MULT:
+          case RC_OPERATOR_MOD:
+          case RC_OPERATOR_ADD:
+          case RC_OPERATOR_SUB:
+            rc_condition_convert_to_operand(condition, &condition->operand1, parse);
+            break;
+
+          default:
+            break;
+        }
+      }
+
+      /* fallthrough */ /* to default */
+
+    default:
+      if (parse->addsource_parent.type != RC_OPERAND_NONE) {
+        /* type determined by leaf */
+        rc_operand_addsource(&condition->operand1, parse, condition->operand1.size);
+        condition->operand1.is_combining = 1;
+
+        if (parse->buffer)
+          condition->optimized_comparator = rc_condition_determine_comparator(condition);
+      }
+
+      parse->addsource_parent.type = RC_OPERAND_NONE;
+      parse->indirect_parent.type = RC_OPERAND_NONE;
+      break;
+  }
+}
+
+static const rc_modified_memref_t* rc_operand_get_modified_memref(const rc_operand_t* operand) {
+  if (!rc_operand_is_memref(operand))
+    return NULL;
+
+  if (operand->value.memref->value.memref_type != RC_MEMREF_TYPE_MODIFIED_MEMREF)
+    return NULL;
+
+  return (rc_modified_memref_t*)operand->value.memref;
+}
+
+/* rc_condition_update_parse_state will mutate the operand1 to point at the modified memref
+ * containing the accumulated result up until that point. this function returns the original
+ * unmodified operand1 from parsing the definition.
+ */
+const rc_operand_t* rc_condition_get_real_operand1(const rc_condition_t* self) {
+  const rc_operand_t* operand = &self->operand1;
+  const rc_modified_memref_t* modified_memref;
+
+  if (operand->is_combining) {
+    /* operand = "previous + current" - extract current */
+    const rc_modified_memref_t* combining_modified_memref = rc_operand_get_modified_memref(operand);
+    if (combining_modified_memref)
+      operand = &combining_modified_memref->modifier;
+  }
+
+  /* modifying operators are merged into an rc_modified_memref_t
+   * if operand1 is a modified memref, assume it's been merged with the right side and
+   * extract the parent which is the actual operand1. */
+  modified_memref = rc_operand_get_modified_memref(operand);
+  if (modified_memref) {
+    if (modified_memref->modifier_type == RC_OPERATOR_INDIRECT_READ) {
+      /* if the modified memref is an indirect read, the parent is the indirect
+       * address and the modifier is the offset. the actual size and address are
+       * stored in the modified memref - use it */
+    } else if (rc_operator_is_modifying(self->oper) && self->oper != RC_OPERATOR_NONE) {
+      /* operand = "parent*modifier" - extract parent.modifier will already be in operand2 */
+      operand = &modified_memref->parent;
+    }
+  }
+
+  return operand;
 }
 
 int rc_condition_is_combining(const rc_condition_t* self) {
@@ -500,41 +697,35 @@ static int rc_test_condition_compare_delta_to_memref_transformed(rc_condition_t*
 int rc_test_condition(rc_condition_t* self, rc_eval_state_t* eval_state) {
   rc_typed_value_t value1, value2;
 
-  if (eval_state->add_value.type != RC_VALUE_TYPE_NONE) {
-    /* if there's an accumulator, we can't use the optimized comparators */
-    rc_evaluate_operand(&value1, &self->operand1, eval_state);
-    rc_typed_value_add(&value1, &eval_state->add_value);
-  } else {
-    /* use an optimized comparator whenever possible */
-    switch (self->optimized_comparator) {
-      case RC_PROCESSING_COMPARE_MEMREF_TO_CONST:
-        return rc_test_condition_compare_memref_to_const(self);
-      case RC_PROCESSING_COMPARE_MEMREF_TO_DELTA:
-        return rc_test_condition_compare_memref_to_delta(self);
-      case RC_PROCESSING_COMPARE_MEMREF_TO_MEMREF:
-        return rc_test_condition_compare_memref_to_memref(self);
-      case RC_PROCESSING_COMPARE_DELTA_TO_CONST:
-        return rc_test_condition_compare_delta_to_const(self);
-      case RC_PROCESSING_COMPARE_DELTA_TO_MEMREF:
-        return rc_test_condition_compare_delta_to_memref(self);
-      case RC_PROCESSING_COMPARE_MEMREF_TO_CONST_TRANSFORMED:
-        return rc_test_condition_compare_memref_to_const_transformed(self);
-      case RC_PROCESSING_COMPARE_MEMREF_TO_DELTA_TRANSFORMED:
-        return rc_test_condition_compare_memref_to_delta_transformed(self);
-      case RC_PROCESSING_COMPARE_MEMREF_TO_MEMREF_TRANSFORMED:
-        return rc_test_condition_compare_memref_to_memref_transformed(self);
-      case RC_PROCESSING_COMPARE_DELTA_TO_CONST_TRANSFORMED:
-        return rc_test_condition_compare_delta_to_const_transformed(self);
-      case RC_PROCESSING_COMPARE_DELTA_TO_MEMREF_TRANSFORMED:
-        return rc_test_condition_compare_delta_to_memref_transformed(self);
-      case RC_PROCESSING_COMPARE_ALWAYS_TRUE:
-        return 1;
-      case RC_PROCESSING_COMPARE_ALWAYS_FALSE:
-        return 0;
-      default:
-        rc_evaluate_operand(&value1, &self->operand1, eval_state);
-        break;
-    }
+  /* use an optimized comparator whenever possible */
+  switch (self->optimized_comparator) {
+    case RC_PROCESSING_COMPARE_MEMREF_TO_CONST:
+      return rc_test_condition_compare_memref_to_const(self);
+    case RC_PROCESSING_COMPARE_MEMREF_TO_DELTA:
+      return rc_test_condition_compare_memref_to_delta(self);
+    case RC_PROCESSING_COMPARE_MEMREF_TO_MEMREF:
+      return rc_test_condition_compare_memref_to_memref(self);
+    case RC_PROCESSING_COMPARE_DELTA_TO_CONST:
+      return rc_test_condition_compare_delta_to_const(self);
+    case RC_PROCESSING_COMPARE_DELTA_TO_MEMREF:
+      return rc_test_condition_compare_delta_to_memref(self);
+    case RC_PROCESSING_COMPARE_MEMREF_TO_CONST_TRANSFORMED:
+      return rc_test_condition_compare_memref_to_const_transformed(self);
+    case RC_PROCESSING_COMPARE_MEMREF_TO_DELTA_TRANSFORMED:
+      return rc_test_condition_compare_memref_to_delta_transformed(self);
+    case RC_PROCESSING_COMPARE_MEMREF_TO_MEMREF_TRANSFORMED:
+      return rc_test_condition_compare_memref_to_memref_transformed(self);
+    case RC_PROCESSING_COMPARE_DELTA_TO_CONST_TRANSFORMED:
+      return rc_test_condition_compare_delta_to_const_transformed(self);
+    case RC_PROCESSING_COMPARE_DELTA_TO_MEMREF_TRANSFORMED:
+      return rc_test_condition_compare_delta_to_memref_transformed(self);
+    case RC_PROCESSING_COMPARE_ALWAYS_TRUE:
+      return 1;
+    case RC_PROCESSING_COMPARE_ALWAYS_FALSE:
+      return 0;
+    default:
+      rc_evaluate_operand(&value1, &self->operand1, eval_state);
+      break;
   }
 
   rc_evaluate_operand(&value2, &self->operand2, eval_state);
@@ -548,38 +739,5 @@ void rc_evaluate_condition_value(rc_typed_value_t* value, rc_condition_t* self, 
   rc_evaluate_operand(value, &self->operand1, eval_state);
   rc_evaluate_operand(&amount, &self->operand2, eval_state);
 
-  switch (self->oper) {
-    case RC_OPERATOR_MULT:
-      rc_typed_value_multiply(value, &amount);
-      break;
-
-    case RC_OPERATOR_DIV:
-      rc_typed_value_divide(value, &amount);
-      break;
-
-    case RC_OPERATOR_AND:
-      rc_typed_value_convert(value, RC_VALUE_TYPE_UNSIGNED);
-      rc_typed_value_convert(&amount, RC_VALUE_TYPE_UNSIGNED);
-      value->value.u32 &= amount.value.u32;
-      break;
-
-    case RC_OPERATOR_XOR:
-      rc_typed_value_convert(value, RC_VALUE_TYPE_UNSIGNED);
-      rc_typed_value_convert(&amount, RC_VALUE_TYPE_UNSIGNED);
-      value->value.u32 ^= amount.value.u32;
-      break;
-
-    case RC_OPERATOR_MOD:
-      rc_typed_value_modulus(value, &amount);
-      break;
-
-    case RC_OPERATOR_ADD:
-      rc_typed_value_add(value, &amount);
-      break;
-
-    case RC_OPERATOR_SUB:
-      rc_typed_value_negate(&amount);
-      rc_typed_value_add(value, &amount);
-      break;
-  }
+  rc_typed_value_combine(value, &amount, self->oper);
 }

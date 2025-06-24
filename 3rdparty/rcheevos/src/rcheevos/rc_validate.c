@@ -17,6 +17,7 @@ static int rc_validate_memref(const rc_memref_t* memref, char result[], const si
 
   switch (console_id) {
     case RC_CONSOLE_NINTENDO:
+    case RC_CONSOLE_FAMICOM_DISK_SYSTEM:
       if (memref->address >= 0x0800 && memref->address <= 0x1FFF) {
         snprintf(result, result_size, "Mirror RAM may not be exposed by emulator (address %04X)", memref->address);
         return 0;
@@ -42,14 +43,19 @@ static int rc_validate_memref(const rc_memref_t* memref, char result[], const si
   return 1;
 }
 
-int rc_validate_memrefs(const rc_memref_t* memref, char result[], const size_t result_size, uint32_t max_address)
+int rc_validate_memrefs(const rc_memrefs_t* memrefs, char result[], const size_t result_size, uint32_t max_address)
 {
-  while (memref) {
-    if (!rc_validate_memref(memref, result, result_size, 0, max_address))
-      return 0;
+  const rc_memref_list_t* memref_list = &memrefs->memrefs;
+  do {
+    const rc_memref_t* memref = memref_list->items;
+    const rc_memref_t* memref_stop = memref + memref_list->count;
+    for (; memref < memref_stop; ++memref) {
+      if (!rc_validate_memref(memref, result, result_size, 0, max_address))
+        return 0;
+    }
 
-    memref = memref->next;
-  }
+    memref_list = memref_list->next;
+  } while (memref_list);
 
   return 1;
 }
@@ -64,15 +70,22 @@ static uint32_t rc_console_max_address(uint32_t console_id)
   return 0xFFFFFFFF;
 }
 
-int rc_validate_memrefs_for_console(const rc_memref_t* memref, char result[], const size_t result_size, uint32_t console_id)
+int rc_validate_memrefs_for_console(const rc_memrefs_t* memrefs, char result[], const size_t result_size, uint32_t console_id)
 {
   const uint32_t max_address = rc_console_max_address(console_id);
-  while (memref) {
-    if (!rc_validate_memref(memref, result, result_size, console_id, max_address))
-      return 0;
+  const rc_memref_list_t* memref_list = &memrefs->memrefs;
+  do
+  {
+    const rc_memref_t* memref = memref_list->items;
+    const rc_memref_t* memref_stop = memref + memref_list->count;
+    for (; memref < memref_stop; ++memref)
+    {
+      if (!rc_validate_memref(memref, result, result_size, console_id, max_address))
+        return 0;
+    }
 
-    memref = memref->next;
-  }
+    memref_list = memref_list->next;
+  } while (memref_list);
 
   return 1;
 }
@@ -104,6 +117,7 @@ static uint32_t rc_max_value(const rc_operand_t* operand)
       return 8;
 
     case RC_MEMSIZE_8_BITS:
+      /* NOTE: BCD should max out at 0x99, but because each digit can be 15, it actually maxes at 15*10 + 15 */
       return (operand->type == RC_OPERAND_BCD) ? 165 : 0xFF;
 
     case RC_MEMSIZE_16_BITS:
@@ -160,10 +174,18 @@ static uint32_t rc_scale_value(uint32_t value, uint8_t oper, const rc_operand_t*
 
     case RC_OPERATOR_SUB:
     {
-      if (operand->type == RC_OPERAND_CONST)
-        return value - operand->value.num;
-      else if (value > rc_max_value(operand))
-        return value - rc_max_value(operand);
+      const uint32_t op_max = (operand->type == RC_OPERAND_CONST) ? operand->value.num : rc_max_value(operand);
+      if (value > op_max)
+        return value - op_max;
+
+      return 0xFFFFFFFF;
+    }
+
+    case RC_OPERATOR_SUB_PARENT:
+    {
+      const uint32_t op_max = (operand->type == RC_OPERAND_CONST) ? operand->value.num : rc_max_value(operand);
+      if (op_max > value)
+        return op_max - value;
 
       return 0xFFFFFFFF;
     }
@@ -171,6 +193,19 @@ static uint32_t rc_scale_value(uint32_t value, uint8_t oper, const rc_operand_t*
     default:
       return value;
   }
+}
+
+static uint32_t rc_max_chain_value(const rc_operand_t* operand)
+{
+  if (rc_operand_is_memref(operand) && operand->value.memref->value.memref_type == RC_MEMREF_TYPE_MODIFIED_MEMREF) {
+    const rc_modified_memref_t* modified_memref = (const rc_modified_memref_t*)operand->value.memref;
+    if (modified_memref->modifier_type != RC_OPERATOR_INDIRECT_READ) {
+      const uint32_t op_max = rc_max_chain_value(&modified_memref->parent);
+      return rc_scale_value(op_max, modified_memref->modifier_type, &modified_memref->modifier);
+    }
+  }
+
+  return rc_max_value(operand);
 }
 
 static int rc_validate_get_condition_index(const rc_condset_t* condset, const rc_condition_t* condition)
@@ -256,18 +291,14 @@ static int rc_validate_range(uint32_t min_val, uint32_t max_val, char oper, uint
   return 1;
 }
 
-int rc_validate_condset_internal(const rc_condset_t* condset, char result[], const size_t result_size, uint32_t console_id, uint32_t max_address)
+static int rc_validate_condset_internal(const rc_condset_t* condset, char result[], const size_t result_size, uint32_t console_id, uint32_t max_address)
 {
   const rc_condition_t* cond;
   char buffer[128];
-  uint32_t max_val;
   int index = 1;
-  unsigned long long add_source_max = 0;
   int in_add_hits = 0;
   int in_add_address = 0;
   int is_combining = 0;
-  int remember_used = 0;
-  int remember_used_in_pause = 0;
 
   if (!condset) {
     *result = '\0';
@@ -275,13 +306,13 @@ int rc_validate_condset_internal(const rc_condset_t* condset, char result[], con
   }
 
   for (cond = condset->conditions; cond; cond = cond->next, ++index) {
-    uint32_t max = rc_max_value(&cond->operand1);
-    const int is_memref1 = rc_operand_is_memref(&cond->operand1);
+    /* validate the original operands first */
+    const rc_operand_t* operand1 = rc_condition_get_real_operand1(cond);
+    int is_memref1 = rc_operand_is_memref(operand1);
     const int is_memref2 = rc_operand_is_memref(&cond->operand2);
-    const int uses_recall = rc_operand_is_recall(&cond->operand1) || rc_operand_is_recall(&cond->operand2);
 
     if (!in_add_address) {
-      if (is_memref1 && !rc_validate_memref(cond->operand1.value.memref, buffer, sizeof(buffer), console_id, max_address)) {
+      if (is_memref1 && !rc_validate_memref(operand1->value.memref, buffer, sizeof(buffer), console_id, max_address)) {
         snprintf(result, result_size, "Condition %d: %s", index, buffer);
         return 0;
       }
@@ -294,55 +325,42 @@ int rc_validate_condset_internal(const rc_condset_t* condset, char result[], con
       in_add_address = 0;
     }
 
-    if (!remember_used && uses_recall) {
-      if (!cond->pause && condset->has_pause) {
-        /* pause conditions will be processed before non-pause conditions.
-         * scan forward for any remembers in yet-to-be-processed pause conditions */
-        const rc_condition_t* cond_rem_pause_check = cond->next;
-        for (; cond_rem_pause_check; cond_rem_pause_check = cond_rem_pause_check->next) {
-          if (cond_rem_pause_check->type == RC_CONDITION_REMEMBER && cond_rem_pause_check->pause) {
-            remember_used = 1; /* do not set remember_used_in_pause here because we don't know at which poing in the pause processing this remember is occurring. */
-            break;
-          }
-        }
-      }
-      if (!remember_used) {
+    if (rc_operand_is_recall(operand1)) {
+      if (rc_operand_type_is_memref(operand1->memref_access_type) && !operand1->value.memref) {
         snprintf(result, result_size, "Condition %d: Recall used before Remember", index);
         return 0;
       }
     }
-    else if (cond->pause && uses_recall && !remember_used_in_pause) {
-      snprintf(result, result_size, "Condition %d: Recall used in Pause processing before Remember was used in Pause processing", index);
-      return 0;
+
+    if (rc_operand_is_recall(&cond->operand2)) {
+      if (rc_operand_type_is_memref(cond->operand2.memref_access_type) && !cond->operand2.value.memref) {
+        snprintf(result, result_size, "Condition %d: Recall used before Remember", index);
+        return 0;
+      }
     }
 
     switch (cond->type) {
       case RC_CONDITION_ADD_SOURCE:
-        max = rc_scale_value(max, cond->oper, &cond->operand2);
-        add_source_max += max;
-        is_combining = 1;
-        continue;
-
       case RC_CONDITION_SUB_SOURCE:
-        max = rc_scale_value(max, cond->oper, &cond->operand2);
-        if (add_source_max < max) /* potential underflow - may be expected */
-          add_source_max = 0xFFFFFFFF;
+      case RC_CONDITION_REMEMBER:
         is_combining = 1;
         continue;
 
       case RC_CONDITION_ADD_ADDRESS:
-        if (cond->operand1.type == RC_OPERAND_DELTA || cond->operand1.type == RC_OPERAND_PRIOR) {
+        if (operand1->type == RC_OPERAND_DELTA || operand1->type == RC_OPERAND_PRIOR) {
           snprintf(result, result_size, "Condition %d: Using pointer from previous frame", index);
+          return 0;
+        }
+        if (rc_operand_is_float(&cond->operand1) || rc_operand_is_float(&cond->operand2)) {
+          snprintf(result, result_size, "Condition %d: Using non-integer value in AddAddress calcuation", index);
+          return 0;
+        }
+        if (rc_operand_type_is_transform(cond->operand1.type)) {
+          snprintf(result, result_size, "Condition %d: Using transformed value in AddAddress calcuation", index);
           return 0;
         }
         in_add_address = 1;
         is_combining = 1;
-        continue;
-
-      case RC_CONDITION_REMEMBER:
-        is_combining = 1;
-        remember_used = 1;
-        remember_used_in_pause += cond->pause;
         continue;
 
       case RC_CONDITION_ADD_HITS:
@@ -358,6 +376,13 @@ int rc_validate_condset_internal(const rc_condset_t* condset, char result[], con
         break;
 
       case RC_CONDITION_RESET_IF:
+        if (in_add_hits) {
+          /* ResetIf at the end of a hit chain does not require a hit target.
+           * It's meant to reset things if some subset of conditions have been true. */
+          in_add_hits = 0;
+          is_combining = 0;
+          break;
+        }
         if (cond->required_hits == 1) {
           snprintf(result, result_size, "Condition %d: Hit target of 1 is redundant on ResetIf", index);
           return 0;
@@ -377,38 +402,39 @@ int rc_validate_condset_internal(const rc_condset_t* condset, char result[], con
         break;
     }
 
-    /* if we're in an add source chain, check for overflow */
-    if (add_source_max) {
-      const unsigned long long overflow = add_source_max + max;
-      if (overflow > 0xFFFFFFFFUL)
-        max = 0xFFFFFFFF;
-      else
-        max += (unsigned)add_source_max;
-    }
+    /* original operands are valid. now switch to the derived operands for logic
+     * combining/comparing them */
+    operand1 = &cond->operand1;
+    is_memref1 = rc_operand_is_memref(operand1);
 
     /* check for comparing two differently sized memrefs */
-    max_val = rc_max_value(&cond->operand2);
-    if (max_val != max && add_source_max == 0 && is_memref1 && is_memref2) {
+    if (is_memref1 && is_memref2 &&
+        operand1->value.memref->value.memref_type == RC_MEMREF_TYPE_MEMREF &&
+        cond->operand2.value.memref->value.memref_type == RC_MEMREF_TYPE_MEMREF &&
+        rc_max_value(operand1) != rc_max_value(&cond->operand2)) {
       snprintf(result, result_size, "Condition %d: Comparing different memory sizes", index);
       return 0;
     }
 
-    if (is_memref1 && rc_operand_is_float(&cond->operand1)) {
+    if (is_memref1 && rc_operand_is_float(operand1)) {
       /* if left side is a float, right side will be converted to a float, so don't do range validation */
     }
-    else if (is_memref1 || is_memref2 || add_source_max) {
-      /* if either side is a memref, or there's a running add source chain, check for impossible comparisons */
+    else if (is_memref1 || is_memref2) {
+      /* if either side is a memref, check for impossible comparisons */
       const size_t prefix_length = snprintf(result, result_size, "Condition %d: ", index);
-      const rc_operand_t* operand1 = &cond->operand1;
       const rc_operand_t* operand2 = &cond->operand2;
       uint8_t oper = cond->oper;
+      uint32_t max = rc_max_chain_value(operand1);
+      uint32_t max_val = rc_max_value(operand2);
       uint32_t min_val;
 
-      if (!is_memref1 && !add_source_max) {
+      if (!is_memref1) {
         /* pretend constant was on right side */
+        operand2 = operand1;
         operand1 = &cond->operand2;
-        operand2 = &cond->operand1;
-        max = max_val;
+        max_val = max;
+        max = rc_max_value(&cond->operand2);
+
         switch (oper) {
           case RC_OPERATOR_LT: oper = RC_OPERATOR_GT; break;
           case RC_OPERATOR_LE: oper = RC_OPERATOR_GE; break;
@@ -426,8 +452,7 @@ int rc_validate_condset_internal(const rc_condset_t* condset, char result[], con
           min_val = (int)operand2->value.dbl;
 
           /* cannot compare an integer memory reference to a non-integral floating point value */
-          if (!add_source_max && !rc_operand_is_float_memref(operand1) &&
-              (float)min_val != operand2->value.dbl) {
+          if (!rc_operand_is_float_memref(operand1) && (float)min_val != operand2->value.dbl) {
             switch (oper) {
               case RC_OPERATOR_EQ:
                 snprintf(result + prefix_length, result_size - prefix_length, "Comparison is never true");
@@ -455,8 +480,6 @@ int rc_validate_condset_internal(const rc_condset_t* condset, char result[], con
       if (!rc_validate_range(min_val, max_val, oper, max, result + prefix_length, result_size - prefix_length))
         return 0;
     }
-
-    add_source_max = 0;
   }
 
   if (is_combining) {
@@ -697,24 +720,6 @@ static int rc_validate_comparison_overlap(int comparison1, uint32_t value1, int 
   return RC_OVERLAP_NONE;
 }
 
-static int rc_validate_are_operands_equal(const rc_operand_t* oper1, const rc_operand_t* oper2)
-{
-  if (oper1->type != oper2->type)
-    return 0;
-
-  switch (oper1->type)
-  {
-  case RC_OPERAND_CONST:
-    return (oper1->value.num == oper2->value.num);
-  case RC_OPERAND_FP:
-    return (oper1->value.dbl == oper2->value.dbl);
-  case RC_OPERAND_RECALL:
-    return (oper2->type == RC_OPERAND_RECALL);
-  default:
-    return (oper1->value.memref->address == oper2->value.memref->address && oper1->size == oper2->size);
-  }
-}
-
 static int rc_validate_conflicting_conditions(const rc_condset_t* conditions, const rc_condset_t* compare_conditions,
     const char* prefix, const char* compare_prefix, char result[], const size_t result_size)
 {
@@ -736,7 +741,7 @@ static int rc_validate_conflicting_conditions(const rc_condset_t* conditions, co
   for (condition = conditions->conditions; condition != NULL; condition = condition->next)
   {
     condition_chain_start = condition;
-    while (rc_condition_is_combining(condition))
+    while (condition && rc_condition_is_combining(condition))
       condition = condition->next;
     if (!condition)
       break;
@@ -787,14 +792,14 @@ static int rc_validate_conflicting_conditions(const rc_condset_t* conditions, co
           if (compare_condition->type != condition_chain_iter->type ||
             compare_condition->oper != condition_chain_iter->oper ||
             compare_condition->required_hits != condition_chain_iter->required_hits ||
-            !rc_validate_are_operands_equal(&compare_condition->operand1, &condition_chain_iter->operand1))
+            !rc_operands_are_equal(&compare_condition->operand1, &condition_chain_iter->operand1))
           {
             chain_matches = 0;
             break;
           }
 
           if (compare_condition->oper != RC_OPERATOR_NONE &&
-            !rc_validate_are_operands_equal(&compare_condition->operand2, &condition_chain_iter->operand2))
+            !rc_operands_are_equal(&compare_condition->operand2, &condition_chain_iter->operand2))
           {
             chain_matches = 0;
             break;
@@ -905,12 +910,11 @@ static int rc_validate_conflicting_conditions(const rc_condset_t* conditions, co
               continue;
             }
           }
-          else if (compare_condition->type == RC_CONDITION_TRIGGER || condition->type == RC_CONDITION_TRIGGER)
+          else if (condition->type == RC_CONDITION_TRIGGER && compare_condition->type != RC_CONDITION_TRIGGER)
           {
             /* Trigger is allowed to be redundant with non-trigger conditions as there may be limits that start a
-             * challenge that are furhter reduced for the completion of the challenge */
-            if (compare_condition->type != condition->type)
-              continue;
+             * challenge that are further reduced for the completion of the challenge */
+            continue;
           }
           break;
 

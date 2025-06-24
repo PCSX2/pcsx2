@@ -9,6 +9,17 @@
 RC_BEGIN_C_DECLS
 
 /**
+ * Information about the server being connected to.
+ */
+typedef struct rc_api_host_t {
+  /* The host name for the API calls (retroachievements.org) */
+  const char* host;
+  /* The host name for media URLs (media.retroachievements.org) */
+  const char* media_host;
+}
+rc_api_host_t;
+
+/**
  * A constructed request to send to the retroachievements server.
  */
 typedef struct rc_api_request_t {
@@ -42,7 +53,9 @@ rc_api_response_t;
 
 RC_EXPORT void RC_CCONV rc_api_destroy_request(rc_api_request_t* request);
 
+/* [deprecated] use rc_api_init_*_hosted instead */
 RC_EXPORT void RC_CCONV rc_api_set_host(const char* hostname);
+/* [deprecated] use rc_api_init_*_hosted instead */
 RC_EXPORT void RC_CCONV rc_api_set_image_host(const char* hostname);
 
 typedef struct rc_api_server_response_t {

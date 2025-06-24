@@ -28,6 +28,7 @@ rc_api_fetch_image_request_t;
 #define RC_IMAGE_TYPE_USER 4
 
 RC_EXPORT int RC_CCONV rc_api_init_fetch_image_request(rc_api_request_t* request, const rc_api_fetch_image_request_t* api_params);
+RC_EXPORT int RC_CCONV rc_api_init_fetch_image_request_hosted(rc_api_request_t* request, const rc_api_fetch_image_request_t* api_params, const rc_api_host_t* host);
 
 /* --- Resolve Hash --- */
 
@@ -57,6 +58,8 @@ typedef struct rc_api_resolve_hash_response_t {
 rc_api_resolve_hash_response_t;
 
 RC_EXPORT int RC_CCONV rc_api_init_resolve_hash_request(rc_api_request_t* request, const rc_api_resolve_hash_request_t* api_params);
+RC_EXPORT int RC_CCONV rc_api_init_resolve_hash_request_hosted(rc_api_request_t* request, const rc_api_resolve_hash_request_t* api_params, const rc_api_host_t* host);
+/* [deprecated] use rc_api_process_resolve_hash_server_response instead */
 RC_EXPORT int RC_CCONV rc_api_process_resolve_hash_response(rc_api_resolve_hash_response_t* response, const char* server_response);
 RC_EXPORT int RC_CCONV rc_api_process_resolve_hash_server_response(rc_api_resolve_hash_response_t* response, const rc_api_server_response_t* server_response);
 RC_EXPORT void RC_CCONV rc_api_destroy_resolve_hash_response(rc_api_resolve_hash_response_t* response);
@@ -73,6 +76,8 @@ typedef struct rc_api_fetch_game_data_request_t {
   const char* api_token;
   /* The unique identifier of the game */
   uint32_t game_id;
+  /* The generated hash of the game to be identified (ignored if game_id is not 0) */
+  const char* game_hash;
 }
 rc_api_fetch_game_data_request_t;
 
@@ -105,7 +110,7 @@ typedef struct rc_api_achievement_definition_t {
   uint32_t category;
   /* The title of the achievement */
   const char* title;
-  /* The dscription of the achievement */
+  /* The description of the achievement */
   const char* description;
   /* The definition of the achievement to be passed to rc_runtime_activate_achievement */
   const char* definition;
@@ -123,6 +128,10 @@ typedef struct rc_api_achievement_definition_t {
   float rarity;
   /* The approximate rarity of the achievement in hardcore (X% of users have earned the achievement in hardcore) */
   float rarity_hardcore;
+  /* The URL for the achievement badge */
+  const char* badge_url;
+  /* The URL for the locked achievement badge */
+  const char* badge_locked_url;
 }
 rc_api_achievement_definition_t;
 
@@ -146,6 +155,8 @@ typedef struct rc_api_fetch_game_data_response_t {
   const char* title;
   /* The image name for the game badge */
   const char* image_name;
+  /* The URL for the game badge */
+  const char* image_url;
   /* The rich presence script for the game to be passed to rc_runtime_activate_richpresence */
   const char* rich_presence_script;
 
@@ -165,9 +176,95 @@ typedef struct rc_api_fetch_game_data_response_t {
 rc_api_fetch_game_data_response_t;
 
 RC_EXPORT int RC_CCONV rc_api_init_fetch_game_data_request(rc_api_request_t* request, const rc_api_fetch_game_data_request_t* api_params);
+RC_EXPORT int RC_CCONV rc_api_init_fetch_game_data_request_hosted(rc_api_request_t* request, const rc_api_fetch_game_data_request_t* api_params, const rc_api_host_t* host);
+/* [deprecated] use rc_api_process_fetch_game_data_server_response instead */
 RC_EXPORT int RC_CCONV rc_api_process_fetch_game_data_response(rc_api_fetch_game_data_response_t* response, const char* server_response);
 RC_EXPORT int RC_CCONV rc_api_process_fetch_game_data_server_response(rc_api_fetch_game_data_response_t* response, const rc_api_server_response_t* server_response);
 RC_EXPORT void RC_CCONV rc_api_destroy_fetch_game_data_response(rc_api_fetch_game_data_response_t* response);
+
+/* --- Fetch Game Sets --- */
+
+/**
+ * API parameters for a fetch game data request.
+ */
+typedef struct rc_api_fetch_game_sets_request_t {
+  /* The username of the player */
+  const char* username;
+  /* The API token from the login request */
+  const char* api_token;
+  /* The unique identifier of the game */
+  uint32_t game_id;
+  /* The generated hash of the game to be identified (ignored if game_id is not 0) */
+  const char* game_hash;
+}
+rc_api_fetch_game_sets_request_t;
+
+#define RC_ACHIEVEMENT_SET_TYPE_CORE 0
+#define RC_ACHIEVEMENT_SET_TYPE_BONUS 1
+#define RC_ACHIEVEMENT_SET_TYPE_SPECIALTY 2
+#define RC_ACHIEVEMENT_SET_TYPE_EXCLUSIVE 3
+
+/* A game subset definition */
+typedef struct rc_api_achievement_set_definition_t {
+  /* The unique identifier of the achievement set */
+  uint32_t id;
+  /* The legacy game_id of the achievement set (used for editor API calls) */
+  uint32_t game_id;
+  /* The title of the achievement set */
+  const char* title;
+  /* The image name for the achievement set badge */
+  const char* image_name;
+  /* The URL for the achievement set badge */
+  const char* image_url;
+
+  /* An array of achievements for the achievement set */
+  rc_api_achievement_definition_t* achievements;
+  /* The number of items in the achievements array */
+  uint32_t num_achievements;
+
+  /* An array of leaderboards for the achievement set */
+  rc_api_leaderboard_definition_t* leaderboards;
+  /* The number of items in the leaderboards array */
+  uint32_t num_leaderboards;
+
+  /* The type of the achievement set */
+  uint8_t type;
+}
+rc_api_achievement_set_definition_t;
+
+/**
+ * Response data for a fetch game sets request.
+ */
+typedef struct rc_api_fetch_game_sets_response_t {
+  /* The unique identifier of the game */
+  uint32_t id;
+  /* The console associated to the game */
+  uint32_t console_id;
+  /* The title of the game */
+  const char* title;
+  /* The image name for the game badge */
+  const char* image_name;
+  /* The URL for the game badge */
+  const char* image_url;
+  /* The rich presence script for the game to be passed to rc_runtime_activate_richpresence */
+  const char* rich_presence_script;
+  /* The unique identifier of the game to use for session requests (startsession/ping/etc) */
+  uint32_t session_game_id;
+
+  /* An array of sets for the game */
+  rc_api_achievement_set_definition_t* sets;
+  /* The number of items in the sets array */
+  uint32_t num_sets;
+
+  /* Common server-provided response information */
+  rc_api_response_t response;
+}
+rc_api_fetch_game_sets_response_t;
+
+RC_EXPORT int RC_CCONV rc_api_init_fetch_game_sets_request(rc_api_request_t* request, const rc_api_fetch_game_sets_request_t* api_params);
+RC_EXPORT int RC_CCONV rc_api_init_fetch_game_sets_request_hosted(rc_api_request_t* request, const rc_api_fetch_game_sets_request_t* api_params, const rc_api_host_t* host);
+RC_EXPORT int RC_CCONV rc_api_process_fetch_game_sets_server_response(rc_api_fetch_game_sets_response_t* response, const rc_api_server_response_t* server_response);
+RC_EXPORT void RC_CCONV rc_api_destroy_fetch_game_sets_response(rc_api_fetch_game_sets_response_t* response);
 
 /* --- Ping --- */
 
@@ -200,6 +297,8 @@ typedef struct rc_api_ping_response_t {
 rc_api_ping_response_t;
 
 RC_EXPORT int RC_CCONV rc_api_init_ping_request(rc_api_request_t* request, const rc_api_ping_request_t* api_params);
+RC_EXPORT int RC_CCONV rc_api_init_ping_request_hosted(rc_api_request_t* request, const rc_api_ping_request_t* api_params, const rc_api_host_t* host);
+/* [deprecated] use rc_api_process_ping_server_response instead */
 RC_EXPORT int RC_CCONV rc_api_process_ping_response(rc_api_ping_response_t* response, const char* server_response);
 RC_EXPORT int RC_CCONV rc_api_process_ping_server_response(rc_api_ping_response_t* response, const rc_api_server_response_t* server_response);
 RC_EXPORT void RC_CCONV rc_api_destroy_ping_response(rc_api_ping_response_t* response);
@@ -245,6 +344,8 @@ typedef struct rc_api_award_achievement_response_t {
 rc_api_award_achievement_response_t;
 
 RC_EXPORT int RC_CCONV rc_api_init_award_achievement_request(rc_api_request_t* request, const rc_api_award_achievement_request_t* api_params);
+RC_EXPORT int RC_CCONV rc_api_init_award_achievement_request_hosted(rc_api_request_t* request, const rc_api_award_achievement_request_t* api_params, const rc_api_host_t* host);
+/* [deprecated] use rc_api_process_award_achievement_server_response instead */
 RC_EXPORT int RC_CCONV rc_api_process_award_achievement_response(rc_api_award_achievement_response_t* response, const char* server_response);
 RC_EXPORT int RC_CCONV rc_api_process_award_achievement_server_response(rc_api_award_achievement_response_t* response, const rc_api_server_response_t* server_response);
 RC_EXPORT void RC_CCONV rc_api_destroy_award_achievement_response(rc_api_award_achievement_response_t* response);
@@ -305,6 +406,8 @@ typedef struct rc_api_submit_lboard_entry_response_t {
 rc_api_submit_lboard_entry_response_t;
 
 RC_EXPORT int RC_CCONV rc_api_init_submit_lboard_entry_request(rc_api_request_t* request, const rc_api_submit_lboard_entry_request_t* api_params);
+RC_EXPORT int RC_CCONV rc_api_init_submit_lboard_entry_request_hosted(rc_api_request_t* request, const rc_api_submit_lboard_entry_request_t* api_params, const rc_api_host_t* host);
+/* [deprecated] use rc_api_process_submit_lboard_entry_server_response instead */
 RC_EXPORT int RC_CCONV rc_api_process_submit_lboard_entry_response(rc_api_submit_lboard_entry_response_t* response, const char* server_response);
 RC_EXPORT int RC_CCONV rc_api_process_submit_lboard_entry_server_response(rc_api_submit_lboard_entry_response_t* response, const rc_api_server_response_t* server_response);
 RC_EXPORT void RC_CCONV rc_api_destroy_submit_lboard_entry_response(rc_api_submit_lboard_entry_response_t* response);

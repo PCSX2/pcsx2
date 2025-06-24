@@ -3,6 +3,8 @@
 
 #include "rc_export.h"
 
+#include "rc_hash.h"
+
 /* this file comes from the libretro repository, which is not an explicit submodule.
  * the integration must set up paths appropriately to find it. */
 #include <libretro.h>
@@ -75,12 +77,15 @@ typedef struct rc_libretro_hash_set_t
   struct rc_libretro_hash_entry_t* entries;
   uint16_t                         entries_count;
   uint16_t                         entries_size;
+
+  rc_hash_callbacks_t              callbacks;
 } rc_libretro_hash_set_t;
 
 typedef int (RC_CCONV *rc_libretro_get_image_path_func)(uint32_t index, char* buffer, size_t buffer_size);
 
 RC_EXPORT void RC_CCONV rc_libretro_hash_set_init(struct rc_libretro_hash_set_t* hash_set,
-                               const char* m3u_path, rc_libretro_get_image_path_func get_image_path);
+                               const char* m3u_path, rc_libretro_get_image_path_func get_image_path,
+                               const rc_hash_filereader_t* file_reader);
 RC_EXPORT void RC_CCONV rc_libretro_hash_set_destroy(struct rc_libretro_hash_set_t* hash_set);
 
 RC_EXPORT void RC_CCONV rc_libretro_hash_set_add(struct rc_libretro_hash_set_t* hash_set,

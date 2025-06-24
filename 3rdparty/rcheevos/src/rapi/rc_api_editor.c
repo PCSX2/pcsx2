@@ -11,9 +11,15 @@
 /* --- Fetch Code Notes --- */
 
 int rc_api_init_fetch_code_notes_request(rc_api_request_t* request, const rc_api_fetch_code_notes_request_t* api_params) {
+  return rc_api_init_fetch_code_notes_request_hosted(request, api_params, &g_host);
+}
+
+int rc_api_init_fetch_code_notes_request_hosted(rc_api_request_t* request,
+                                                const rc_api_fetch_code_notes_request_t* api_params,
+                                                const rc_api_host_t* host) {
   rc_api_url_builder_t builder;
 
-  rc_api_url_build_dorequest_url(request);
+  rc_api_url_build_dorequest_url(request, host);
 
   if (api_params->game_id == 0)
     return RC_INVALID_STATE;
@@ -106,8 +112,14 @@ int rc_api_process_fetch_code_notes_server_response(rc_api_fetch_code_notes_resp
         if (!rc_json_get_required_string(&note->author, &response->response, &note_fields[1], "User"))
           return RC_MISSING_VALUE;
 
-        last_author = note->author;
-        last_author_len = len;
+        if (note->author == NULL) {
+          /* ensure we don't pass NULL out to client */
+          last_author = note->author = "";
+          last_author_len = 0;
+        } else {
+          last_author = note->author;
+          last_author_len = len;
+        }
       }
 
       ++note;
@@ -124,9 +136,15 @@ void rc_api_destroy_fetch_code_notes_response(rc_api_fetch_code_notes_response_t
 /* --- Update Code Note --- */
 
 int rc_api_init_update_code_note_request(rc_api_request_t* request, const rc_api_update_code_note_request_t* api_params) {
+  return rc_api_init_update_code_note_request_hosted(request, api_params, &g_host);
+}
+
+int rc_api_init_update_code_note_request_hosted(rc_api_request_t* request,
+                                                const rc_api_update_code_note_request_t* api_params,
+                                                const rc_api_host_t* host) {
   rc_api_url_builder_t builder;
 
-  rc_api_url_build_dorequest_url(request);
+  rc_api_url_build_dorequest_url(request, host);
 
   if (api_params->game_id == 0)
     return RC_INVALID_STATE;
@@ -196,12 +214,18 @@ static const char* rc_type_string(uint32_t type) {
 }
 
 int rc_api_init_update_achievement_request(rc_api_request_t* request, const rc_api_update_achievement_request_t* api_params) {
+  return rc_api_init_update_achievement_request_hosted(request, api_params, &g_host);
+}
+
+int rc_api_init_update_achievement_request_hosted(rc_api_request_t* request,
+                                                  const rc_api_update_achievement_request_t* api_params,
+                                                  const rc_api_host_t* host) {
   rc_api_url_builder_t builder;
   char buffer[33];
   md5_state_t md5;
   md5_byte_t hash[16];
 
-  rc_api_url_build_dorequest_url(request);
+  rc_api_url_build_dorequest_url(request, host);
 
   if (api_params->game_id == 0 || api_params->category == 0)
     return RC_INVALID_STATE;
@@ -290,12 +314,18 @@ void rc_api_destroy_update_achievement_response(rc_api_update_achievement_respon
 /* --- Update Leaderboard --- */
 
 int rc_api_init_update_leaderboard_request(rc_api_request_t* request, const rc_api_update_leaderboard_request_t* api_params) {
+  return rc_api_init_update_leaderboard_request_hosted(request, api_params, &g_host);
+}
+
+int rc_api_init_update_leaderboard_request_hosted(rc_api_request_t* request,
+                                                  const rc_api_update_leaderboard_request_t* api_params,
+                                                  const rc_api_host_t* host) {
     rc_api_url_builder_t builder;
     char buffer[33];
     md5_state_t md5;
     md5_byte_t hash[16];
 
-    rc_api_url_build_dorequest_url(request);
+    rc_api_url_build_dorequest_url(request, host);
 
     if (api_params->game_id == 0)
         return RC_INVALID_STATE;
@@ -392,9 +422,15 @@ void rc_api_destroy_update_leaderboard_response(rc_api_update_leaderboard_respon
 /* --- Fetch Badge Range --- */
 
 int rc_api_init_fetch_badge_range_request(rc_api_request_t* request, const rc_api_fetch_badge_range_request_t* api_params) {
+  return rc_api_init_fetch_badge_range_request_hosted(request, api_params, &g_host);
+}
+
+int rc_api_init_fetch_badge_range_request_hosted(rc_api_request_t* request,
+                                                 const rc_api_fetch_badge_range_request_t* api_params,
+                                                 const rc_api_host_t* host) {
   rc_api_url_builder_t builder;
 
-  rc_api_url_build_dorequest_url(request);
+  rc_api_url_build_dorequest_url(request, host);
 
   rc_url_builder_init(&builder, &request->buffer, 48);
   rc_url_builder_append_str_param(&builder, "r", "badgeiter");
@@ -449,9 +485,15 @@ void rc_api_destroy_fetch_badge_range_response(rc_api_fetch_badge_range_response
 /* --- Add Game Hash --- */
 
 int rc_api_init_add_game_hash_request(rc_api_request_t* request, const rc_api_add_game_hash_request_t* api_params) {
+  return rc_api_init_add_game_hash_request_hosted(request, api_params, &g_host);
+}
+
+int rc_api_init_add_game_hash_request_hosted(rc_api_request_t* request,
+                                             const rc_api_add_game_hash_request_t* api_params,
+                                             const rc_api_host_t* host) {
   rc_api_url_builder_t builder;
 
-  rc_api_url_build_dorequest_url(request);
+  rc_api_url_build_dorequest_url(request, host);
 
   if (api_params->console_id == 0)
     return RC_INVALID_STATE;

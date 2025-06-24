@@ -43,10 +43,9 @@ add_library(rcheevos
 	src/rc_version.h
 	src/rhash/md5.c
 	src/rhash/md5.h
-	src/rurl/url.c
 )
 
 target_include_directories(rcheevos PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include")
 target_include_directories(rcheevos INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include")
-target_compile_definitions(rcheevos PRIVATE "RC_DISABLE_LUA=1" "RCHEEVOS_URL_SSL=1" "RC_NO_THREADS=1")
+target_compile_definitions(rcheevos PRIVATE "RC_DISABLE_LUA=1" "RCHEEVOS_URL_SSL=1" "RC_NO_THREADS=1" "RC_HASH_NO_DISC" "RC_HASH_NO_ENCRYPTED" "RC_HASH_NO_ROM" "RC_HASH_NO_ZIP")
 
