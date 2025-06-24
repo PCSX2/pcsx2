@@ -145,9 +145,11 @@ private:
 		ID3D11VertexShader* vs;
 		ID3D11Buffer* vs_cb;
 		std::array<ID3D11ShaderResourceView*, MAX_TEXTURES> ps_sr_views;
+		std::array<ID3D11ShaderResourceView*, MAX_TEXTURES> ps_cached_sr_views;
 		ID3D11PixelShader* ps;
 		ID3D11Buffer* ps_cb;
 		std::array<ID3D11SamplerState*, MAX_SAMPLERS> ps_ss;
+		std::array<ID3D11SamplerState*, MAX_SAMPLERS> ps_cached_ss;
 		GSVector2i viewport;
 		GSVector4i scissor;
 		u32 vb_stride;
