@@ -3850,6 +3850,9 @@ void GSTextureCache::ScaleTargetForDisplay(Target* t, const GIFRegTEX0& dispfb, 
 	{
 		const GSVector4i right(old_width, 0, preload_width, needed_height);
 		const GSVector4i bottom(0, old_height, old_width, needed_height);
+
+		t->UpdateValidity(right.rintersect(bottom));
+
 		AddDirtyRectTarget(t, right, t->m_TEX0.PSM, t->m_TEX0.TBW, rgba);
 		AddDirtyRectTarget(t, bottom, t->m_TEX0.PSM, t->m_TEX0.TBW, rgba);
 	}
@@ -3858,6 +3861,9 @@ void GSTextureCache::ScaleTargetForDisplay(Target* t, const GIFRegTEX0& dispfb, 
 		const GSVector4i newrect = GSVector4i((old_height < new_height) ? 0 : old_width,
 			(old_width < preload_width) ? 0 : old_height,
 			preload_width, needed_height);
+
+		t->UpdateValidity(newrect);
+
 		AddDirtyRectTarget(t, newrect, t->m_TEX0.PSM, t->m_TEX0.TBW, rgba);
 	}
 
