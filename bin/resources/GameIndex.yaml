@@ -23004,7 +23004,6 @@ SLES-53471:
   region: "PAL-M5"
 SLES-53473:
   name: "Disney/Pixar The Incredibles - Rise of the Underminer"
-  name-sort: "Disney/Pixar Incredibles, The - Rise of the Underminer"
   region: "PAL-M3"
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes building shade and shadows.
@@ -23012,7 +23011,6 @@ SLES-53473:
     nativeScaling: 2 # Fixes post effects.
 SLES-53474:
   name: "Disney/Pixar The Incredibles - Rise of the Underminer"
-  name-sort: "Disney/Pixar Incredibles, The - Rise of the Underminer"
   region: "PAL-M3"
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes building shade and shadows.
