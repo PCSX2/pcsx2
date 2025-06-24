@@ -6074,6 +6074,8 @@ SCES-53409:
 SCES-53422:
   name: "Stuart Little 3 - Big Photo Adventure"
   region: "PAL-M9"
+  gameFixes:
+    - InstantDMAHack # Fixes loading screen corruption.
   gsHWFixes:
     autoFlush: 2 # Fixes missing effects.
 SCES-53449:
@@ -7551,8 +7553,11 @@ SCKA-20066:
   name: "EyeToy - Play 3"
   region: "NTSC-K"
 SCKA-20067:
-  name: "Stuart Little 3 - Big Photo Adventure"
+  name: "스튜어트 리틀 3 - 빅 포토 어드벤처"
+  name-en: "Stuart Little 3 - Big Photo Adventure"
   region: "NTSC-K"
+  gameFixes:
+    - InstantDMAHack # Fixes loading screen corruption.
   gsHWFixes:
     autoFlush: 2 # Fixes missing effects.
 SCKA-20068:
@@ -69990,6 +69995,8 @@ SLUS-21341:
   name: "Stuart Little 3 - Big Photo Adventure"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - InstantDMAHack # Fixes loading screen corruption.
   gsHWFixes:
     autoFlush: 2 # Fixes missing effects.
 SLUS-21342:
