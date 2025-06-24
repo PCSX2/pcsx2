@@ -69074,7 +69074,6 @@ SLUS-21216:
     nativeScaling: 2 # Fixes misaligned bloom.
 SLUS-21217:
   name: "Disney/Pixar The Incredibles - Rise of the Underminer"
-  name-sort: "Disney/Pixar Incredibles, The - Rise of the Underminer"
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
