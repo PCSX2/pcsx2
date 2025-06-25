@@ -140,6 +140,7 @@ private:
 	struct HWCachedCtx
 	{
 		GIFRegTEX0 TEX0;
+		GIFRegTEXA TEXA;
 		GIFRegCLAMP CLAMP;
 		GIFRegTEST TEST;
 		GIFRegFRAME FRAME;
