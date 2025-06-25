@@ -213,6 +213,7 @@ public:
 	{
 		u32 ZBP;
 		int offset;
+		int rt_offset;
 		GSVector4i rect_since;
 	};
 
@@ -567,7 +568,7 @@ public:
 	void SetTemporaryZ(GSTexture* temp_z);
 	GSTexture* GetTemporaryZ();
 	TempZAddress GetTemporaryZInfo();
-	void SetTemporaryZInfo(u32 address, u32 offset);
+	void SetTemporaryZInfo(u32 address, u32 offset, u32 rt_offset);
 	void SetTemporaryZInfo(TempZAddress address_info);
 	/// Invalidates a temporary Z, a partial copy only created from the current DS for the current draw when Z is not offset but RT is.
 	void InvalidateTemporaryZ();

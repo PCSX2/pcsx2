@@ -8063,10 +8063,11 @@ GSTextureCache::TempZAddress GSTextureCache::GetTemporaryZInfo()
 	return m_temporary_z_info;
 }
 
-void GSTextureCache::SetTemporaryZInfo(u32 address, u32 offset)
+void GSTextureCache::SetTemporaryZInfo(u32 address, u32 offset, u32 rt_offset)
 {
 	m_temporary_z_info.ZBP = address;
 	m_temporary_z_info.offset = offset;
+	m_temporary_z_info.rt_offset = rt_offset;
 	m_temporary_z_info.rect_since = GSVector4i::zero();
 }
 void GSTextureCache::SetTemporaryZInfo(TempZAddress address_info)
