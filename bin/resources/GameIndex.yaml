@@ -905,6 +905,8 @@ PCPX-96323:
   name-sort: "とろときゅうじつ [でも]"
   name-en: "Toro to Kyuujitsu [Demo Movie]"
   region: "NTSC-J"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes depth shadow stenciling effects.
 PCPX-96324:
   name: "デュアルハーツ [体験版]"
   name-sort: "でゅあるはーつ [たいけんばん]"
@@ -7945,6 +7947,7 @@ SCKA-20142:
   region: "NTSC-K"
   gsHWFixes:
     textureInsideRT: 1 # Needed for mipmapping to function correctly.
+    mipmap: 0 # Currently causes texture corruption.
 SCKA-20171:
   name: "Let's Bravo Music"
   region: "NTSC-K"
@@ -8460,6 +8463,8 @@ SCPS-15015:
   name-en: "Toro to Kyuujitsu"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes depth shadow stenciling effects.
 SCPS-15016:
   name: "みんなのGOLF 3"
   name-sort: "みんなのごるふ 3"
@@ -12804,6 +12809,7 @@ SCUS-97657:
   compat: 5
   gsHWFixes:
     textureInsideRT: 1 # Needed for mipmapping to function correctly.
+    mipmap: 0 # Currently causes texture corruption.
 SCUS-97660:
   name: "SingStar - Latino"
   region: "NTSC-U"
