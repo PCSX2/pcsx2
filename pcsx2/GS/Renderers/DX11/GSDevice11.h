@@ -159,6 +159,8 @@ private:
 		u8 bf;
 		ID3D11RenderTargetView* rt_view;
 		ID3D11DepthStencilView* dsv;
+		GSTexture* cached_rt_view;
+		GSTexture* cached_dsv;
 	} m_state;
 
 	std::array<std::array<wil::com_ptr_nothrow<ID3D11Query>, 3>, NUM_TIMESTAMP_QUERIES> m_timestamp_queries = {};

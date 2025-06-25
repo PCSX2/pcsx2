@@ -551,9 +551,18 @@ void GSDevice11::Destroy()
 	m_rs.reset();
 
 	if (m_state.rt_view)
+	{
 		m_state.rt_view->Release();
+		m_state.rt_view = nullptr;
+	}
+	m_state.cached_rt_view = nullptr;
+
 	if (m_state.dsv)
+	{
 		m_state.dsv->Release();
+		m_state.dsv = nullptr;
+	}
+	m_state.cached_dsv = nullptr;
 
 	m_shader_cache.Close();
 
@@ -950,11 +959,13 @@ GSDevice::PresentResult GSDevice11::BeginPresent(bool frame_skip)
 		m_state.rt_view->Release();
 	m_state.rt_view = m_swap_chain_rtv.get();
 	m_state.rt_view->AddRef();
+	m_state.cached_rt_view = nullptr;
 	if (m_state.dsv)
 	{
 		m_state.dsv->Release();
 		m_state.dsv = nullptr;
 	}
+	m_state.cached_dsv = nullptr;
 
 	g_perfmon.Put(GSPerfMon::RenderPasses, 1);
 
@@ -2480,6 +2491,7 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 		if (rtv)
 			rtv->AddRef();
 		m_state.rt_view = rtv;
+		m_state.cached_rt_view = rt;
 	}
 	if (m_state.dsv != dsv)
 	{
@@ -2488,6 +2500,7 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 		if (dsv)
 			dsv->AddRef();
 		m_state.dsv = dsv;
+		m_state.cached_dsv = ds;
 	}
 	if (changed)
 		m_ctx->OMSetRenderTargets(1, &rtv, dsv);
@@ -2731,8 +2744,25 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		PSSetShaderResource(3, primid_texture);
 	}
 
+	// Avoid changing framebuffer just to switch from rt+depth to rt and vice versa.
+	GSTexture* draw_rt = colclip_rt ? colclip_rt : config.rt;
+	GSTexture* draw_ds = config.ds;
+	// Make sure no tex is bound as both rtv and srv at the same time.
+	// All conflicts should've been taken care of by PSUnbindConflictingSRVs.
+	// It is fine to do the optimiation when on slot 0 tex is fb, tex is ds, and slot 2 sw blend as they are copies bound to srv.
+	if (!draw_rt && draw_ds && m_state.rt_view && m_state.cached_rt_view && m_state.rt_view == *(GSTexture11*)m_state.cached_rt_view &&
+		m_state.cached_dsv == draw_ds && config.tex != m_state.cached_rt_view && m_state.cached_rt_view->GetSize() == draw_ds->GetSize())
+	{
+		draw_rt = m_state.cached_rt_view;
+	}
+	else if (!draw_ds && draw_rt && m_state.dsv && m_state.cached_dsv && m_state.dsv == *(GSTexture11*)m_state.cached_dsv &&
+		m_state.cached_rt_view == draw_rt && config.tex != m_state.cached_dsv && m_state.cached_dsv->GetSize() == draw_rt->GetSize())
+	{
+		draw_ds = m_state.cached_dsv;
+	}
+
 	SetupOM(config.depth, OMBlendSelector(config.colormask, config.blend), config.blend.constant);
-	OMSetRenderTargets(colclip_rt ? colclip_rt : config.rt, config.ds, &config.scissor);
+	OMSetRenderTargets(draw_rt, draw_ds, &config.scissor);
 	DrawIndexedPrimitive();
 
 	if (config.blend_multi_pass.enable)
