@@ -1792,7 +1792,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 
 							//rect = rect.rintersect(t->m_valid);
 
-							if (rect.rintersect(t->m_valid).rempty())
+							if (rect.rintersect(t->m_valid - GSVector4i(0, 1).xyxy()).rempty())
 								continue;
 
 							if (!t->m_dirty.empty())
@@ -2382,6 +2382,15 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 			// Probably pointing to half way through the target
 			else if (!min_rect.rempty() && GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets)
 			{
+				// Some games misuse the scissor so it ends up valid 1 pixel over, which causes hell for us. So check if it still overlaps without the extra pixel.
+				const GSVector4i adjusted_valid = GSVector4i(t->m_valid.x, t->m_valid.y, std::min(t->m_valid.z, static_cast<int>(t->m_TEX0.TBW) * 64), t->m_valid.w - 1);
+				const u32 adjusted_endblock = GSLocalMemory::GetEndBlockAddress(t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM, adjusted_valid);
+				if (adjusted_endblock <= bp)
+				{
+					i++;
+					continue;
+				}
+
 				const u32 widthpage_offset = (std::abs(static_cast<int>(bp - t->m_TEX0.TBP0)) >> 5) % std::max(t->m_TEX0.TBW, 1U);
 				const bool is_aligned_ok = widthpage_offset == 0 || ((min_rect.width() <= static_cast<int>((t->m_TEX0.TBW - widthpage_offset) * 64) && (t->m_TEX0.TBW == TEX0.TBW || TEX0.TBW == 1)) && bp >= t->m_TEX0.TBP0);
 				const bool no_target_or_newer = (!dst || ((GSState::s_n - dst->m_last_draw) < (GSState::s_n - t->m_last_draw)));
@@ -2401,9 +2410,10 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 					// 896 is just 448 * 2,just gives the buffer chance to be larger than normal, in case they do something like 640x640, or something ridiculous.
 					if (!is_shuffle && (ds && offset == 0 && (t->m_valid.w >= 896) && ((((t->m_end_block + 1) - t->m_TEX0.TBP0) >> 1) + t->m_TEX0.TBP0) <= bp))
 					{
-						t->m_valid.w /= 2;
-						t->m_end_block = ((((t->m_end_block + 1) - t->m_TEX0.TBP0) >> 1) + t->m_TEX0.TBP0) - 1;
-						continue;
+						u32 offset = (((bp - t->m_TEX0.TBP0) >> 5) / std::max(t->m_TEX0.TBW, 1U)) * s_psm.pgs.y;
+						dst = CreateTarget(TEX0, GSVector2i(t->m_valid.z, t->m_valid.w - offset), GSVector2i(t->m_valid.z, t->m_valid.w - offset), scale, type, true, fbmask, false, false, preserve_rgb || preserve_alpha, GSVector4i::zero(), src);
+						dst->m_32_bits_fmt |= (psm_s.bpp != 16);
+						break;
 					}
 
 					// I know what you're thinking, and I hate the guy who wrote it too (me). Project Snowblind, Tomb Raider etc decide to offset where they're drawing using a channel shuffle, and this gets messy, so best just to kill the old target.
@@ -3405,7 +3415,7 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 				Target* t = *j;
 
 				if (dst != t && t->m_TEX0.PSM == dst->m_TEX0.PSM && t->Overlaps(dst->m_TEX0.TBP0, dst->m_TEX0.TBW, dst->m_TEX0.PSM, dst_valid) &&
-					static_cast<int>(((t->m_TEX0.TBP0 - dst->m_TEX0.TBP0) / 32) % std::max(dst->m_TEX0.TBW, 1U)) <= std::max(0, static_cast<int>(dst->m_TEX0.TBW - t->m_TEX0.TBW)))
+					((std::abs(static_cast<int>(t->m_TEX0.TBP0 - dst->m_TEX0.TBP0)) >> 5) % std::max(static_cast<int>(dst->m_TEX0.TBW), 1)) <= std::max(0, static_cast<int>(dst->m_TEX0.TBW - t->m_TEX0.TBW)))
 				{
 					const u32 buffer_width = std::max(1U, dst->m_TEX0.TBW);
 
@@ -3428,7 +3438,7 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 					}
 					// If the two targets are misaligned, it's likely a relocation, so we can just kill the old target.
 					// Kill targets that are overlapping new targets, but ignore the copy if the old target is dirty  because we favour GS memory.
-					if (((((t->m_TEX0.TBP0 - dst->m_TEX0.TBP0) >> 5) % buffer_width) != 0) && !t->m_dirty.empty())
+					if (((std::abs(static_cast<int>(t->m_TEX0.TBP0 - dst->m_TEX0.TBP0) >> 5) % buffer_width) != 0) && !t->m_dirty.empty())
 					{
 						InvalidateSourcesFromTarget(t);
 						i = list.erase(j);
@@ -3442,6 +3452,23 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 					{
 						GSVector4i new_valid = t->m_valid;
 						new_valid.w /= 2;
+						if (preserve_target && t->m_scale == dst->m_scale && dst->m_type == t->m_type && dst->m_dirty.empty() && !t->m_drawn_since_read.rintersect(new_valid).eq(t->m_drawn_since_read))
+						{
+							// Clamp the copy inside the source and destination.
+							const GSVector4i copy_rect = GSVector4i(GSVector4((new_valid + GSVector4i(0, new_valid.w).xyxy()).rintersect(t->m_drawn_since_read).rintersect(GSVector4i(0, 0, dst->m_unscaled_size.x, new_valid.w + dst->m_unscaled_size.y))) * dst->m_scale);
+							// Copy over the double buffer data, in case we need it.
+							// Clear the dirty first
+							t->Update();
+
+							dst->m_valid_rgb = t->m_valid_rgb;
+							dst->m_valid_alpha_low = t->m_valid_alpha_low;
+							dst->m_valid_alpha_high = t->m_valid_alpha_high;
+							dst->m_alpha_max = t->m_alpha_max;
+							dst->m_alpha_min = t->m_alpha_min;
+							dst->m_rt_alpha_scale = t->m_rt_alpha_scale;
+
+							g_gs_device->CopyRect(t->m_texture, dst->m_texture, copy_rect, 0, 0);
+						}
 						GL_INS("TC: RT resize buffer for FBP 0x%x, %dx%d => %d,%d", t->m_TEX0.TBP0, t->m_valid.width(), t->m_valid.height(), new_valid.width(), new_valid.height());
 						t->ResizeValidity(new_valid);
 						return hw_clear.value_or(false);
