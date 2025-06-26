@@ -27980,6 +27980,10 @@ SLES-54996:
   name: "The Golden Compass"
   name-sort: "Golden Compass, The"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 4 # Aligns post processing.
+    autoFlush: 1 # Fixes light penetrating objects and intensity.
+    nativeScaling: 2 # Aligns post processing.
 SLES-54997:
   name: "Mercenaries 2 - World in Flames"
   region: "PAL-E"
@@ -28187,7 +28191,11 @@ SLES-55011:
 SLES-55012:
   name: "The Golden Compass"
   name-sort: "Golden Compass, The"
-  region: "PAL-M5"
+  region: "PAL-SC"
+  gsHWFixes:
+    halfPixelOffset: 4 # Aligns post processing.
+    autoFlush: 1 # Fixes light penetrating objects and intensity.
+    nativeScaling: 2 # Aligns post processing.
 SLES-55013:
   name: "Iridium Runners"
   region: "PAL-M5"
@@ -71945,6 +71953,10 @@ SLUS-21677:
   name-sort: "Golden Compass, The"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 4 # Aligns post processing.
+    autoFlush: 1 # Fixes light penetrating objects and intensity.
+    nativeScaling: 2 # Aligns post processing.
 SLUS-21678:
   name: "Dragon Ball Z - Budokai Tenkaichi 3"
   region: "NTSC-U"
