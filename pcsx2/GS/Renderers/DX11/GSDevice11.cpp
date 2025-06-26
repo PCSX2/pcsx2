@@ -2741,7 +2741,6 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		config.ps.date = 3;
 		config.alpha_second_pass.ps.date = 3;
 		SetupPS(config.ps, nullptr, config.sampler);
-		PSSetShaderResource(3, primid_texture);
 	}
 
 	// Avoid changing framebuffer just to switch from rt+depth to rt and vice versa.
@@ -2761,8 +2760,12 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		draw_ds = m_state.cached_dsv;
 	}
 
-	SetupOM(config.depth, OMBlendSelector(config.colormask, config.blend), config.blend.constant);
 	OMSetRenderTargets(draw_rt, draw_ds, &config.scissor);
+
+	if (primid_texture)
+		PSSetShaderResource(3, primid_texture);
+
+	SetupOM(config.depth, OMBlendSelector(config.colormask, config.blend), config.blend.constant);
 	DrawIndexedPrimitive();
 
 	if (config.blend_multi_pass.enable)
