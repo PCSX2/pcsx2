@@ -120,7 +120,8 @@ namespace GSDumpTypes
 #undef DEF_GIFReg
 	// clang-format on
 
-	template <typename Output, typename Input, typename std::enable_if<sizeof(Input) == sizeof(Output), bool>::type = true>
+	template <typename Output, typename Input>
+		requires(sizeof(Input) == sizeof(Output))
 	static constexpr Output BitCast(Input input)
 	{
 		Output output;

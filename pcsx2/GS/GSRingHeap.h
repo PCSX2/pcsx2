@@ -262,7 +262,7 @@ public:
 	template <typename T>
 	typename _unique_if<T>::_unique_array_unknown_bound make_unique(size_t count)
 	{
-		typedef typename std::remove_extent<T>::type Base;
+		typedef std::remove_extent_t<T> Base;
 		return UniquePtr<T>(make_array<Base>(count));
 	}
 
