@@ -2585,6 +2585,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	{
 		// Ensure all depth writes are finished before sampling
 		GL_INS("GL: Texture barrier to flush depth or rt before reading");
+		g_perfmon.Put(GSPerfMon::Barriers, 1);
 		glTextureBarrier();
 	}
 	// additional non-pipeline config stuff
