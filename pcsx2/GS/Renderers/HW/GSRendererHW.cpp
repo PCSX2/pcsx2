@@ -2360,7 +2360,6 @@ void GSRendererHW::Draw()
 	const u32 fm_mask = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk;
 
 	// Note required to compute TryAlphaTest below. So do it now.
-	const GSDrawingEnvironment& env = *m_draw_env;
 	const GSLocalMemory::psm_t& tex_psm = GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM];
 	if (PRIM->TME && tex_psm.pal > 0)
 	{
@@ -3694,8 +3693,6 @@ void GSRendererHW::Draw()
 				// Size here should match whichever is biggest, since that's probably what's going to happen with it further down.
 				const int new_height = std::min(2048, std::max(t_size.y, static_cast<int>(vertical_size))) * ds->m_scale;
 				const int new_width = std::min(2048, std::max(t_size.x, static_cast<int>(horizontal_size))) * ds->m_scale;
-				const int height_diff = new_height - (ds->m_unscaled_size.y * ds->m_scale);
-				const int width_diff = new_width - (ds->m_unscaled_size.x * ds->m_scale);
 
 				if (GSTexture* tex = g_gs_device->CreateDepthStencil(new_width, new_height, GSTexture::Format::DepthStencil, true))
 				{
