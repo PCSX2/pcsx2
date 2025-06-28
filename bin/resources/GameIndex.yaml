@@ -21206,6 +21206,10 @@ SLES-52835:
   name: "The Mummy"
   name-sort: "Mummy, The"
   region: "PAL-M6"
+  gsHWFixes:
+    halfPixelOffset: 5 # Aligns post processing.
+    autoFlush: 1 # Fixes light penetrating objects and intensity.
+    nativeScaling: 1 # Aligns post processing.
 SLES-52836:
   name: "Knight Rider 2"
   region: "PAL-M6"
