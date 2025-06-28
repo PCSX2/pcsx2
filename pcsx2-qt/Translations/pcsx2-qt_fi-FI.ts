@@ -9,18 +9,18 @@
       <translation>Tietoja PCSX2:sta</translation>
     </message>
     <message>
-      <location filename="../AboutDialog.ui" line="69"/>
+      <location filename="../AboutDialog.ui" line="66"/>
       <source>SCM Version</source>
       <extracomment>SCM= Source Code Management</extracomment>
       <translation>SCM-versio</translation>
     </message>
     <message>
-      <location filename="../AboutDialog.ui" line="79"/>
+      <location filename="../AboutDialog.ui" line="76"/>
       <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;PCSX2 is a free and open-source PlayStation 2 (PS2) emulator. Its purpose is to emulate the PS2&apos;s hardware, using a combination of MIPS CPU Interpreters, Recompilers and a Virtual Machine which manages hardware states and PS2 system memory. This allows you to play PS2 games on your PC, with many additional features and benefits.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
       <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;PCSX2 on ilmainen ja avoimen lähdekoodin PlayStation 2 (PS2) -emulaattori. Sen tarkoitus on emuloida PS2:n laitteistoa käyttämällä MIPS-suorittimen tulkkien, uudelleenkääntäjien ja virtuaalikoneen yhdistelmää, joka hallitsee laitteiston tiloja ja PS2:n järjestelmämuistia. Tämän avulla voit pelata PS2-pelejä tietokoneellasi monien lisäominaisuuksien ja etujen kera.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-      <location filename="../AboutDialog.ui" line="105"/>
+      <location filename="../AboutDialog.ui" line="110"/>
       <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;PlayStation 2 and PS2 are registered trademarks of Sony Interactive Entertainment. This application is not affiliated in any way with Sony Interactive Entertainment.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
       <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;PlayStation 2 ja PS2 ovat Sony Interactive Entertainmentin rekisteröityjä tavaramerkkejä. Tämä sovellus ei ole millään tavalla sidoksissa Sony Interactive Entertainmentiin.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
@@ -50,12 +50,12 @@
       <translation>Kolmannen osapuolen lisenssit</translation>
     </message>
     <message>
-      <location filename="../AboutDialog.cpp" line="109"/>
+      <location filename="../AboutDialog.cpp" line="119"/>
       <source>View Document</source>
       <translation>Näytä asiakirja</translation>
     </message>
     <message>
-      <location filename="../AboutDialog.cpp" line="131"/>
+      <location filename="../AboutDialog.cpp" line="141"/>
       <source>File not found: %1</source>
       <translation>Tiedostoa ei löytynyt: %1</translation>
     </message>
@@ -95,27 +95,27 @@
       <translation>Valmis...</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementLoginDialog.cpp" line="25"/>
+      <location filename="../Settings/AchievementLoginDialog.cpp" line="26"/>
       <source>&lt;strong&gt;Your RetroAchievements login token is no longer valid.&lt;/strong&gt; You must re-enter your credentials for achievements to be tracked. Your password will not be saved in PCSX2, an access token will be generated and used instead.</source>
       <translation>&lt;strong&gt;RetroAchievements-kirjautumistunnuksesi ei ole enää voimassa.&lt;/strong&gt; Sinun on syötettävä tunnuksesi uudelleen, jotta saavutuksia voidaan seurata. Salasanaasi ei tallenneta PCSX2:een, vaan sinulle luodaan pääsytunnus, jota käytetään sen sijaan.</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementLoginDialog.cpp" line="30"/>
+      <location filename="../Settings/AchievementLoginDialog.cpp" line="31"/>
       <source>&amp;Login</source>
       <translation>&amp;Kirjaudu</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementLoginDialog.cpp" line="43"/>
+      <location filename="../Settings/AchievementLoginDialog.cpp" line="44"/>
       <source>Logging in...</source>
       <translation>Kirjaudutaan sisään...</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementLoginDialog.cpp" line="73"/>
+      <location filename="../Settings/AchievementLoginDialog.cpp" line="74"/>
       <source>Login Error</source>
       <translation>Virhe sisäänkirjautumisessa</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementLoginDialog.cpp" line="74"/>
+      <location filename="../Settings/AchievementLoginDialog.cpp" line="75"/>
       <source>Login failed.
 Error: %1
 
@@ -126,17 +126,17 @@ Virhe: %1
 Tarkista käyttäjätunnuksesi ja salasanasi, ja yritä uudelleen.</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementLoginDialog.cpp" line="75"/>
+      <location filename="../Settings/AchievementLoginDialog.cpp" line="76"/>
       <source>Login failed.</source>
       <translation>Kirjautuminen epäonnistui.</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementLoginDialog.cpp" line="83"/>
+      <location filename="../Settings/AchievementLoginDialog.cpp" line="84"/>
       <source>Enable Achievements</source>
       <translation>Ota saavutukset käyttöön</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementLoginDialog.cpp" line="84"/>
+      <location filename="../Settings/AchievementLoginDialog.cpp" line="85"/>
       <source>Achievement tracking is not currently enabled. Your login will have no effect until after tracking is enabled.
 
 Do you want to enable tracking now?</source>
@@ -145,12 +145,12 @@ Do you want to enable tracking now?</source>
 Haluatko ottaa seurannan käyttöön nyt?</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementLoginDialog.cpp" line="95"/>
+      <location filename="../Settings/AchievementLoginDialog.cpp" line="96"/>
       <source>Enable Hardcore Mode</source>
       <translation>Ota hardcore-tila käyttöön</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementLoginDialog.cpp" line="96"/>
+      <location filename="../Settings/AchievementLoginDialog.cpp" line="97"/>
       <source>Hardcore mode is not currently enabled. Enabling hardcore mode allows you to set times, scores, and participate in game-specific leaderboards.
 
 However, hardcore mode also prevents the usage of save states, cheats and slowdown functionality.
@@ -163,12 +163,12 @@ Hardcore-tila kuitenkin estää tilatallennusten, huijausten ja hidastustoiminto
 Haluatko ottaa hardcore-tilan käyttöön?</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementLoginDialog.cpp" line="112"/>
+      <location filename="../Settings/AchievementLoginDialog.cpp" line="113"/>
       <source>Reset System</source>
       <translation>Nollaa järjestelmä</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementLoginDialog.cpp" line="113"/>
+      <location filename="../Settings/AchievementLoginDialog.cpp" line="114"/>
       <source>Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?</source>
       <translation>Hardcore-tilaa ei oteta käyttöön ennen järjestelmän nollausta. Haluatko nollata järjestelmän nyt?</translation>
     </message>
@@ -176,183 +176,239 @@ Haluatko ottaa hardcore-tilan käyttöön?</translation>
   <context>
     <name>AchievementSettingsWidget</name>
     <message>
-      <location filename="../Settings/AchievementSettingsWidget.ui" line="42"/>
-      <location filename="../Settings/AchievementSettingsWidget.cpp" line="39"/>
+      <location filename="../Settings/AchievementSettingsWidget.ui" line="64"/>
+      <location filename="../Settings/AchievementSettingsWidget.cpp" line="48"/>
       <source>Enable Achievements</source>
       <translation>Ota saavutukset käyttöön</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementSettingsWidget.ui" line="63"/>
-      <location filename="../Settings/AchievementSettingsWidget.cpp" line="40"/>
+      <location filename="../Settings/AchievementSettingsWidget.ui" line="57"/>
+      <location filename="../Settings/AchievementSettingsWidget.cpp" line="49"/>
       <source>Enable Hardcore Mode</source>
       <translation>Ota hardcore-tila käyttöön</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementSettingsWidget.ui" line="49"/>
-      <location filename="../Settings/AchievementSettingsWidget.cpp" line="47"/>
+      <location filename="../Settings/AchievementSettingsWidget.ui" line="50"/>
+      <location filename="../Settings/AchievementSettingsWidget.cpp" line="57"/>
       <source>Test Unofficial Achievements</source>
       <translation>Testaa epävirallisia saavutuksia</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementSettingsWidget.ui" line="171"/>
-      <location filename="../Settings/AchievementSettingsWidget.cpp" line="43"/>
+      <location filename="../Settings/AchievementSettingsWidget.ui" line="186"/>
+      <location filename="../Settings/AchievementSettingsWidget.cpp" line="52"/>
       <source>Enable Sound Effects</source>
       <translation>Ota äänitehosteet käyttöön</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementSettingsWidget.ui" line="73"/>
+      <location filename="../Settings/AchievementSettingsWidget.ui" line="88"/>
       <source>Notifications</source>
       <translation>Ilmoitukset</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementSettingsWidget.ui" line="109"/>
-      <location filename="../Settings/AchievementSettingsWidget.ui" line="155"/>
+      <location filename="../Settings/AchievementSettingsWidget.ui" line="124"/>
+      <location filename="../Settings/AchievementSettingsWidget.ui" line="170"/>
       <source>5 seconds</source>
       <translation>5 sekuntia</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementSettingsWidget.ui" line="188"/>
+      <location filename="../Settings/AchievementSettingsWidget.ui" line="305"/>
       <source>Account</source>
       <translation>Tili</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementSettingsWidget.ui" line="214"/>
-      <location filename="../Settings/AchievementSettingsWidget.cpp" line="162"/>
+      <location filename="../Settings/AchievementSettingsWidget.ui" line="331"/>
+      <location filename="../Settings/AchievementSettingsWidget.cpp" line="205"/>
       <source>Login...</source>
       <translation>Kirjaudu...</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementSettingsWidget.ui" line="207"/>
+      <location filename="../Settings/AchievementSettingsWidget.ui" line="324"/>
       <source>View Profile...</source>
       <translation>Näytä profiili...</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementSettingsWidget.ui" line="29"/>
+      <location filename="../Settings/AchievementSettingsWidget.ui" line="44"/>
       <source>Settings</source>
       <translation>Asetukset</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementSettingsWidget.ui" line="35"/>
-      <location filename="../Settings/AchievementSettingsWidget.cpp" line="46"/>
+      <location filename="../Settings/AchievementSettingsWidget.ui" line="71"/>
+      <location filename="../Settings/AchievementSettingsWidget.cpp" line="56"/>
       <source>Enable Spectator Mode</source>
       <translation>Ota katselutila käyttöön</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementSettingsWidget.ui" line="56"/>
-      <location filename="../Settings/AchievementSettingsWidget.cpp" line="45"/>
+      <location filename="../Settings/AchievementSettingsWidget.ui" line="78"/>
+      <location filename="../Settings/AchievementSettingsWidget.cpp" line="55"/>
       <source>Enable Encore Mode</source>
       <translation>Ota uusintatila käyttöön</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementSettingsWidget.ui" line="118"/>
-      <location filename="../Settings/AchievementSettingsWidget.cpp" line="41"/>
+      <location filename="../Settings/AchievementSettingsWidget.ui" line="133"/>
+      <location filename="../Settings/AchievementSettingsWidget.cpp" line="50"/>
       <source>Show Achievement Notifications</source>
       <translation>Näytä saavutusilmoitukset</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementSettingsWidget.ui" line="164"/>
-      <location filename="../Settings/AchievementSettingsWidget.cpp" line="42"/>
+      <location filename="../Settings/AchievementSettingsWidget.ui" line="179"/>
+      <location filename="../Settings/AchievementSettingsWidget.cpp" line="51"/>
       <source>Show Leaderboard Notifications</source>
       <translation>Näytä tulostauluilmoitukset</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementSettingsWidget.ui" line="178"/>
-      <location filename="../Settings/AchievementSettingsWidget.cpp" line="44"/>
+      <location filename="../Settings/AchievementSettingsWidget.ui" line="193"/>
+      <location filename="../Settings/AchievementSettingsWidget.cpp" line="54"/>
       <source>Enable In-Game Overlays</source>
       <translation>Ota pelinsisäiset peittokuvat käyttöön</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementSettingsWidget.ui" line="194"/>
+      <location filename="../Settings/AchievementSettingsWidget.ui" line="203"/>
+      <source>Sound Effects</source>
+      <translation>Äänitehosteet</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AchievementSettingsWidget.ui" line="215"/>
+      <location filename="../Settings/AchievementSettingsWidget.ui" line="236"/>
+      <location filename="../Settings/AchievementSettingsWidget.ui" line="246"/>
+      <source>Browse...</source>
+      <translation>Selaa...</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AchievementSettingsWidget.ui" line="222"/>
+      <location filename="../Settings/AchievementSettingsWidget.ui" line="281"/>
+      <location filename="../Settings/AchievementSettingsWidget.ui" line="288"/>
+      <source>Reset</source>
+      <translation>Nollaa</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AchievementSettingsWidget.ui" line="229"/>
+      <source>Achievement Unlock Sound</source>
+      <translation>Saavutusten avausääni</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AchievementSettingsWidget.ui" line="253"/>
+      <location filename="../Settings/AchievementSettingsWidget.ui" line="260"/>
+      <location filename="../Settings/AchievementSettingsWidget.ui" line="274"/>
+      <source>Preview</source>
+      <translation>Esikatsele</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AchievementSettingsWidget.ui" line="267"/>
+      <source>Notification Sound</source>
+      <translation>Ilmoitusääni</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AchievementSettingsWidget.ui" line="295"/>
+      <source>Leaderboard Submit Sound</source>
+      <translation>Tulostauluun lähettämisen ääni</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AchievementSettingsWidget.ui" line="311"/>
       <source>Username:
 Login token generated at:</source>
       <translation>Käyttäjätunnus:
 Kirjautumistunnus luotu:</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementSettingsWidget.ui" line="232"/>
+      <location filename="../Settings/AchievementSettingsWidget.ui" line="349"/>
       <source>Game Info</source>
       <translation>Pelitiedot</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementSettingsWidget.ui" line="248"/>
+      <location filename="../Settings/AchievementSettingsWidget.ui" line="365"/>
       <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;PCSX2 uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;https://retroachievements.org/&quot;&gt;retroachievements.org&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;To view the achievement list in-game, press the hotkey for &lt;span style=&quot; font-weight:600;&quot;&gt;Open Pause Menu&lt;/span&gt; and select &lt;span style=&quot; font-weight:600;&quot;&gt;Achievements&lt;/span&gt; from the menu.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
       <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;PCSX2 käyttää RetroAchievements:ia saavutusten tietokantana ja edistymisen seurantaan. Voit käyttää saavutuksia rekisteröimällä tilin osoitteessa &lt;a href=&quot;https://retroachievements.org/&quot;&gt;retroachievements.org&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;Voit tarkastella saavutusluetteloa pelissä painamalla &lt;span style=&quot; font-weight:600;&quot;&gt;Avaa taukovalikko&lt;/span&gt; -pikanäppäintä, ja valitsemalla &lt;span style=&quot; font-weight:600;&quot;&gt;Saavutukset&lt;/span&gt; valikosta.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementSettingsWidget.cpp" line="39"/>
-      <location filename="../Settings/AchievementSettingsWidget.cpp" line="40"/>
-      <location filename="../Settings/AchievementSettingsWidget.cpp" line="45"/>
-      <location filename="../Settings/AchievementSettingsWidget.cpp" line="46"/>
-      <location filename="../Settings/AchievementSettingsWidget.cpp" line="47"/>
+      <location filename="../Settings/AchievementSettingsWidget.cpp" line="48"/>
+      <location filename="../Settings/AchievementSettingsWidget.cpp" line="49"/>
+      <location filename="../Settings/AchievementSettingsWidget.cpp" line="55"/>
+      <location filename="../Settings/AchievementSettingsWidget.cpp" line="56"/>
+      <location filename="../Settings/AchievementSettingsWidget.cpp" line="57"/>
       <source>Unchecked</source>
       <translation>Ei käytössä</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementSettingsWidget.cpp" line="46"/>
+      <location filename="../Settings/AchievementSettingsWidget.cpp" line="56"/>
       <source>When enabled, PCSX2 will assume all achievements are locked and not send any unlock notifications to the server.</source>
       <translation>Kun tämä on käytössä, PCSX2 olettaa kaikkien saavutusten olevan lukittu, eikä lähetä avausten ilmoituksia palvelimelle.</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementSettingsWidget.cpp" line="47"/>
+      <location filename="../Settings/AchievementSettingsWidget.cpp" line="57"/>
       <source>When enabled, PCSX2 will list achievements from unofficial sets. Please note that these achievements are not tracked by RetroAchievements, so they unlock every time.</source>
       <translation>Kun tämä on käytössä, PCSX2 listaa saavutukset epävirallisista lajitelmista. Huomaa, että RetroAchievements ei seuraa näitä saavutuksia, joten ne avautuvat joka kerta.</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementSettingsWidget.cpp" line="40"/>
+      <location filename="../Settings/AchievementSettingsWidget.cpp" line="49"/>
       <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
       <translation>&quot;Haastetila&quot; saavutuksille, mukana tulosten seuranta. Poistaa käytöstä tilatallennukset, huijaukset ja hidastustoiminnot.</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementSettingsWidget.cpp" line="41"/>
-      <location filename="../Settings/AchievementSettingsWidget.cpp" line="42"/>
-      <location filename="../Settings/AchievementSettingsWidget.cpp" line="43"/>
-      <location filename="../Settings/AchievementSettingsWidget.cpp" line="44"/>
+      <location filename="../Settings/AchievementSettingsWidget.cpp" line="50"/>
+      <location filename="../Settings/AchievementSettingsWidget.cpp" line="51"/>
+      <location filename="../Settings/AchievementSettingsWidget.cpp" line="52"/>
+      <location filename="../Settings/AchievementSettingsWidget.cpp" line="54"/>
       <source>Checked</source>
       <translation>Käytössä</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementSettingsWidget.cpp" line="43"/>
+      <location filename="../Settings/AchievementSettingsWidget.cpp" line="52"/>
       <source>Plays sound effects for events such as achievement unlocks and leaderboard submissions.</source>
       <translation>Toistaa äänitehosteita tietyissä tapauksissa, kuten saavutusten avaamisessa ja tulosten lähettämisessä.</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementSettingsWidget.cpp" line="44"/>
+      <location filename="../Settings/AchievementSettingsWidget.cpp" line="54"/>
       <source>Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active.</source>
       <translation>Näyttää kuvakkeita näytön oikeassa alakulmassa, kun haaste/saavutus on aktiivinen.</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementSettingsWidget.cpp" line="39"/>
+      <location filename="../Settings/AchievementSettingsWidget.cpp" line="48"/>
       <source>When enabled and logged in, PCSX2 will scan for achievements on startup.</source>
       <translation>Kun tämä on käytössä ja olet kirjautunut sisään, PCSX2 etsii saavutuksia käynnistyksen aikana.</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementSettingsWidget.cpp" line="41"/>
+      <location filename="../Settings/AchievementSettingsWidget.cpp" line="50"/>
       <source>Displays popup messages on events such as achievement unlocks and game completion.</source>
       <translation>Näyttää ponnahdusviestit tapahtumista, kuten saavutusten avaamisesta ja pelin läpäisystä.</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementSettingsWidget.cpp" line="42"/>
+      <location filename="../Settings/AchievementSettingsWidget.cpp" line="51"/>
       <source>Displays popup messages when starting, submitting, or failing a leaderboard challenge.</source>
       <translation>Näyttää ponnahdusviestit aloitettaessa, lähetettäessä tai epäonnistuttaessa tulostauluhaasteen.</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementSettingsWidget.cpp" line="45"/>
+      <location filename="../Settings/AchievementSettingsWidget.cpp" line="53"/>
+      <source>Custom Sound Effect</source>
+      <translation>Mukautettu äänitehoste</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AchievementSettingsWidget.cpp" line="53"/>
+      <source>Any</source>
+      <translation>Mikä tahansa</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AchievementSettingsWidget.cpp" line="53"/>
+      <source>Customize the sound effect that are played whenever you received a notification, earned an achievement or submitted an entry to the leaderboard.</source>
+      <translation>Mukauta äänitehostetta, joka soitetaan kun olet saanut ilmoituksen, ansainnut saavutuksen tai lähettänyt tuloksesi tulostauluun.</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AchievementSettingsWidget.cpp" line="55"/>
       <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
       <translation>Kun tämä on käytössä, jokainen istunto käyttäytyy ikään kuin saavutuksia ei olisi avattu.</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementSettingsWidget.cpp" line="120"/>
+      <location filename="../Settings/AchievementSettingsWidget.cpp" line="163"/>
       <source>Reset System</source>
       <translation>Nollaa järjestelmä</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementSettingsWidget.cpp" line="121"/>
+      <location filename="../Settings/AchievementSettingsWidget.cpp" line="164"/>
       <source>Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?</source>
       <translation>Hardcore-tilaa ei oteta käyttöön ennen järjestelmän nollausta. Haluatko nollata järjestelmän nyt?</translation>
     </message>
     <message numerus="yes">
-      <location filename="../Settings/AchievementSettingsWidget.cpp" line="134"/>
-      <location filename="../Settings/AchievementSettingsWidget.cpp" line="141"/>
+      <location filename="../Settings/AchievementSettingsWidget.cpp" line="177"/>
+      <location filename="../Settings/AchievementSettingsWidget.cpp" line="184"/>
       <source>%n seconds</source>
       <translation>
         <numerusform>%n sekunti</numerusform>
@@ -360,19 +416,19 @@ Kirjautumistunnus luotu:</translation>
       </translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementSettingsWidget.cpp" line="154"/>
+      <location filename="../Settings/AchievementSettingsWidget.cpp" line="197"/>
       <source>Username: %1
 Login token generated on %2.</source>
       <translation>Käyttäjätunnus: %1
 Kirjautumistunnus luotu %2.</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementSettingsWidget.cpp" line="157"/>
+      <location filename="../Settings/AchievementSettingsWidget.cpp" line="200"/>
       <source>Logout</source>
       <translation>Kirjaudu ulos</translation>
     </message>
     <message>
-      <location filename="../Settings/AchievementSettingsWidget.cpp" line="161"/>
+      <location filename="../Settings/AchievementSettingsWidget.cpp" line="204"/>
       <source>Not Logged In.</source>
       <translation>Ei kirjautuneena.</translation>
     </message>
@@ -380,33 +436,33 @@ Kirjautumistunnus luotu %2.</translation>
   <context>
     <name>Achievements</name>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1065"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1058"/>
       <source>Hardcore mode will be enabled on system reset.</source>
       <translation>Hardcore-tila otetaan käyttöön järjestelmän nollautuessa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1845"/>
-      <location filename="../../pcsx2/Achievements.cpp" line="1886"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1837"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1878"/>
       <source>{0} cannot be performed while hardcore mode is active. Do you want to disable hardcore mode? {0} will be cancelled if you select No.</source>
       <translation>{0} ei ole mahdollista hardcore-tilan ollessa aktiivinen. Haluatko poistaa hardcore-tilan käytöstä? {0} peruutetaan, jos valitset Ei.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1457"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1449"/>
       <source>Hardcore mode is now enabled.</source>
       <translation>Hardcore-tila on nyt käytössä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1023"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1017"/>
       <source>{} (Hardcore Mode)</source>
       <translation>{} (hardcore-tila)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1031"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1025"/>
       <source>{0}, {1}.</source>
       <translation>{0} {1}.</translation>
     </message>
     <message numerus="yes">
-      <location filename="../../pcsx2/Achievements.cpp" line="1032"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1026"/>
       <source>You have unlocked {} of %n achievements</source>
       <comment>Achievement popup</comment>
       <translation>
@@ -415,7 +471,7 @@ Kirjautumistunnus luotu %2.</translation>
       </translation>
     </message>
     <message numerus="yes">
-      <location filename="../../pcsx2/Achievements.cpp" line="1035"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1029"/>
       <source>and earned {} of %n points</source>
       <comment>Achievement popup</comment>
       <translation>
@@ -424,22 +480,22 @@ Kirjautumistunnus luotu %2.</translation>
       </translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1093"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1086"/>
       <source>{} (Unofficial)</source>
       <translation>{} (epävirallinen)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1117"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1110"/>
       <source>Mastered {}</source>
       <translation>Masteroitu {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1119"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1112"/>
       <source>{0}, {1}</source>
       <translation>{0}, {1}</translation>
     </message>
     <message numerus="yes">
-      <location filename="../../pcsx2/Achievements.cpp" line="1120"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1113"/>
       <source>%n achievements</source>
       <comment>Mastery popup</comment>
       <translation>
@@ -448,7 +504,7 @@ Kirjautumistunnus luotu %2.</translation>
       </translation>
     </message>
     <message numerus="yes">
-      <location filename="../../pcsx2/Achievements.cpp" line="1122"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1115"/>
       <source>%n points</source>
       <comment>Mastery popup</comment>
       <translation>
@@ -457,267 +513,267 @@ Kirjautumistunnus luotu %2.</translation>
       </translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1141"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1134"/>
       <source>Leaderboard attempt started.</source>
       <translation>Tulostauluyritys aloitettu.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1160"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1153"/>
       <source>Leaderboard attempt failed.</source>
       <translation>Tulostauluyritys epäonnistui.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1179"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1172"/>
       <source>Your Time: {}{}</source>
       <translation>Oma aika: {}{}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1180"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1173"/>
       <source>Your Score: {}{}</source>
       <translation>Oma tulos: {}{}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1181"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1174"/>
       <source>Your Value: {}{}</source>
       <translation>Oma arvo: {}{}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1189"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1182"/>
       <source> (Submitting)</source>
       <translation> (lähetetään)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1355"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1347"/>
       <source>Achievements Disconnected</source>
       <translation>Yhteys saavutuksiin katkesi</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1356"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1348"/>
       <source>An unlock request could not be completed. We will keep retrying to submit this request.</source>
       <translation>Avauspyyntöä ei pystytty suorittamaan. Jatkamme pyynnön lähetyksen yrittämistä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1368"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1360"/>
       <source>Achievements Reconnected</source>
       <translation>Yhteys saavutuksiin palautui</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1369"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1361"/>
       <source>All pending unlock requests have completed.</source>
       <translation>Kaikki odottavat avauspyynnöt ovat suoritettu.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1458"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1450"/>
       <source>Hardcore mode is now disabled.</source>
       <translation>Hardcore-tila on poistettu käytöstä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1761"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1753"/>
       <source>Score: {0} pts (softcore: {1} pts)
 Unread messages: {2}</source>
       <translation>Tulos: {0} p. (softcore: {1} p.)
 Lukemattomat viestit: {2}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1844"/>
-      <location filename="../../pcsx2/Achievements.cpp" line="1885"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1836"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1877"/>
       <source>Confirm Hardcore Mode</source>
       <translation>Vahvista hardcore-tila</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2102"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2096"/>
       <source>Active Challenge Achievements</source>
       <translation>Aktiivisten haasteiden saavutukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2227"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2221"/>
       <source> (Hardcore Mode)</source>
       <translation> (Hardcore-tila)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2240"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2234"/>
       <source>You have unlocked all achievements and earned {} points!</source>
       <translation>Olet avannut kaikki saavutukset ja ansainnut {} pistettä!</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2943"/>
-      <location filename="../../pcsx2/Achievements.cpp" line="2963"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2939"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2959"/>
       <source>Leaderboard Download Failed</source>
       <translation>Tulostaulun lataus epäonnistui</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1212"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1205"/>
       <source>Your Time: {0} (Best: {1})</source>
       <translation>Oma aika: {0} (Paras: {1})</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1213"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1206"/>
       <source>Your Score: {0} (Best: {1})</source>
       <translation>Oma tulos: {0} (Paras: {1})</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1214"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1207"/>
       <source>Your Value: {0} (Best: {1})</source>
       <translation>Oma arvo: {0} (Paras: {1})</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1218"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1211"/>
       <source>{0}
 Leaderboard Position: {1} of {2}</source>
       <translation>{0}
 Tulostaulusija: {1} / {2}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1341"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1333"/>
       <source>Server error in {0}:
 {1}</source>
       <translation>Palvelinvirhe {0}:
 {1}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1889"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1881"/>
       <source>Yes</source>
       <translation>Kyllä</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1890"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1882"/>
       <source>No</source>
       <translation>Ei</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2245"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2239"/>
       <source>You have unlocked {0} of {1} achievements, earning {2} of {3} possible points.</source>
       <translation>Olet avannut {0} / {1} saavutusta ja ansainnut {2} / {3} pistettä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2293"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2289"/>
       <source>Unknown</source>
       <translation>Tuntematon</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2294"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2290"/>
       <source>Locked</source>
       <translation>Lukittu</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2295"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2291"/>
       <source>Unlocked</source>
       <translation>Avattu</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2296"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2292"/>
       <source>Unsupported</source>
       <translation>Tukematon</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2297"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2293"/>
       <source>Unofficial</source>
       <translation>Epäviralliset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2298"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2294"/>
       <source>Recently Unlocked</source>
       <translation>Viimeksi avattu</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2299"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2295"/>
       <source>Active Challenges</source>
       <translation>Aktiiviset haasteet</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2300"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2296"/>
       <source>Almost There</source>
       <translation>Melkein suoritettu</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2402"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2398"/>
       <source>{} points</source>
       <translation>{} pistettä</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2402"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2398"/>
       <source>{} point</source>
       <translation>{} piste</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2354"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2350"/>
       <source>XXX points</source>
       <translation>XXX pistettä</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2453"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2449"/>
       <source>Unlocked: {}</source>
       <translation>Avattu: {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2620"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2616"/>
       <source>This game has {} leaderboards.</source>
       <translation>Tälle pelille on {} tulostaulua.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2636"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2632"/>
       <source>Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only.</source>
       <translation>Tuloksien lähetys ei ole käytössä, koska hardcore-tila on pois päältä. Tulostaulut ovat vain luettavia.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2652"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2648"/>
       <source>Show Best</source>
       <translation>Näytä paras</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2652"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2648"/>
       <source>Show Nearby</source>
       <translation>Näytä lähistöllä</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2677"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2673"/>
       <source>Rank</source>
       <translation>Sijoitus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2682"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2678"/>
       <source>Name</source>
       <translation>Nimi</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2686"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2682"/>
       <source>Time</source>
       <translation>Aika</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2687"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2683"/>
       <source>Score</source>
       <translation>Tulos</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2688"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2684"/>
       <source>Value</source>
       <translation>Arvo</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2700"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2696"/>
       <source>Date Submitted</source>
       <translation>Lähetyspäivä</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2761"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2757"/>
       <source>Downloading leaderboard data, please wait...</source>
       <translation>Ladataan tulostaulun tietoja, odota...</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="2780"/>
-      <location filename="../../pcsx2/Achievements.cpp" line="2789"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2776"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2785"/>
       <source>Loading...</source>
       <translation>Ladataan...</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="1041"/>
-      <location filename="../../pcsx2/Achievements.cpp" line="2252"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="1035"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="2246"/>
       <source>This game has no achievements.</source>
       <translation>Tälle pelille ei ole saavutuksia.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Achievements.cpp" line="893"/>
+      <location filename="../../pcsx2/Achievements.cpp" line="887"/>
       <source>Failed to read executable from disc. Achievements disabled.</source>
       <translation>Ajotiedoston lukeminen levyltä epäonnistui. Saavutukset poistettu käytöstä.</translation>
     </message>
@@ -2079,90 +2135,95 @@ Tulostaulusija: {1} / {2}</translation>
   <context>
     <name>BreakpointDialog</name>
     <message>
-      <location filename="../Debugger/BreakpointDialog.ui" line="41"/>
+      <location filename="../Debugger/Breakpoints/BreakpointDialog.ui" line="41"/>
       <source>Create / Modify Breakpoint</source>
       <translation>Luo / muokkaa pysäytyskohtia</translation>
     </message>
     <message>
-      <location filename="../Debugger/BreakpointDialog.ui" line="78"/>
+      <location filename="../Debugger/Breakpoints/BreakpointDialog.ui" line="78"/>
       <source>Type</source>
       <translation>Tyyppi</translation>
     </message>
     <message>
-      <location filename="../Debugger/BreakpointDialog.ui" line="84"/>
+      <location filename="../Debugger/Breakpoints/BreakpointDialog.ui" line="84"/>
       <source>Execute</source>
       <translation>Suorita</translation>
     </message>
     <message>
-      <location filename="../Debugger/BreakpointDialog.ui" line="91"/>
-      <location filename="../Debugger/BreakpointDialog.ui" line="157"/>
+      <location filename="../Debugger/Breakpoints/BreakpointDialog.ui" line="91"/>
+      <location filename="../Debugger/Breakpoints/BreakpointDialog.ui" line="183"/>
       <source>Memory</source>
       <translation>Muisti</translation>
     </message>
     <message>
-      <location filename="../Debugger/BreakpointDialog.ui" line="116"/>
+      <location filename="../Debugger/Breakpoints/BreakpointDialog.ui" line="119"/>
       <source>Address</source>
       <translation>Osoite</translation>
     </message>
     <message>
-      <location filename="../Debugger/BreakpointDialog.ui" line="138"/>
+      <location filename="../Debugger/Breakpoints/BreakpointDialog.ui" line="141"/>
       <source>0</source>
       <translation>0</translation>
     </message>
     <message>
-      <location filename="../Debugger/BreakpointDialog.ui" line="165"/>
+      <location filename="../Debugger/Breakpoints/BreakpointDialog.ui" line="148"/>
+      <source>Description</source>
+      <translation type="unfinished">Description</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Breakpoints/BreakpointDialog.ui" line="191"/>
       <source>Read</source>
       <translation>Lue</translation>
     </message>
     <message>
-      <location filename="../Debugger/BreakpointDialog.ui" line="175"/>
+      <location filename="../Debugger/Breakpoints/BreakpointDialog.ui" line="201"/>
       <source>Write</source>
       <translation>Kirjoita</translation>
     </message>
     <message>
-      <location filename="../Debugger/BreakpointDialog.ui" line="185"/>
+      <location filename="../Debugger/Breakpoints/BreakpointDialog.ui" line="211"/>
       <source>Change</source>
       <translation>Muuta</translation>
     </message>
     <message>
-      <location filename="../Debugger/BreakpointDialog.ui" line="196"/>
+      <location filename="../Debugger/Breakpoints/BreakpointDialog.ui" line="222"/>
       <source>Size</source>
       <translation>Koko</translation>
     </message>
     <message>
-      <location filename="../Debugger/BreakpointDialog.ui" line="215"/>
+      <location filename="../Debugger/Breakpoints/BreakpointDialog.ui" line="241"/>
       <source>1</source>
       <translation>1</translation>
     </message>
     <message>
-      <location filename="../Debugger/BreakpointDialog.ui" line="239"/>
+      <location filename="../Debugger/Breakpoints/BreakpointDialog.ui" line="265"/>
       <source>Condition</source>
       <translation>Ehto</translation>
     </message>
     <message>
-      <location filename="../Debugger/BreakpointDialog.ui" line="267"/>
+      <location filename="../Debugger/Breakpoints/BreakpointDialog.ui" line="293"/>
       <source>Log</source>
       <translation>Loki</translation>
     </message>
     <message>
-      <location filename="../Debugger/BreakpointDialog.ui" line="277"/>
+      <location filename="../Debugger/Breakpoints/BreakpointDialog.ui" line="303"/>
       <source>Enable</source>
       <translation>Päälle</translation>
     </message>
     <message>
-      <location filename="../Debugger/BreakpointDialog.cpp" line="100"/>
-      <location filename="../Debugger/BreakpointDialog.cpp" line="128"/>
+      <location filename="../Debugger/Breakpoints/BreakpointDialog.cpp" line="103"/>
+      <location filename="../Debugger/Breakpoints/BreakpointDialog.cpp" line="132"/>
       <source>Invalid Address</source>
       <translation>Virheellinen osoite</translation>
     </message>
     <message>
-      <location filename="../Debugger/BreakpointDialog.cpp" line="115"/>
-      <location filename="../Debugger/BreakpointDialog.cpp" line="150"/>
+      <location filename="../Debugger/Breakpoints/BreakpointDialog.cpp" line="119"/>
+      <location filename="../Debugger/Breakpoints/BreakpointDialog.cpp" line="155"/>
       <source>Invalid Condition</source>
       <translation>Virheellinen ehto</translation>
     </message>
     <message>
-      <location filename="../Debugger/BreakpointDialog.cpp" line="135"/>
+      <location filename="../Debugger/Breakpoints/BreakpointDialog.cpp" line="139"/>
       <source>Invalid Size</source>
       <translation>Virheellinen koko</translation>
     </message>
@@ -2170,83 +2231,133 @@ Tulostaulusija: {1} / {2}</translation>
   <context>
     <name>BreakpointModel</name>
     <message>
-      <location filename="../Debugger/Models/BreakpointModel.cpp" line="46"/>
+      <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="77"/>
       <source>Execute</source>
       <translation>Suorita</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/BreakpointModel.cpp" line="57"/>
-      <location filename="../Debugger/Models/BreakpointModel.cpp" line="80"/>
+      <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="90"/>
+      <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="115"/>
       <source>--</source>
       <translation>--</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/BreakpointModel.cpp" line="65"/>
+      <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="75"/>
+      <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="98"/>
       <source>Enabled</source>
       <translation>Käytössä</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/BreakpointModel.cpp" line="65"/>
+      <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="75"/>
+      <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="98"/>
       <source>Disabled</source>
       <translation>Ei käytössä</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/BreakpointModel.cpp" line="69"/>
+      <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="102"/>
       <source>Read</source>
       <translation>Lue</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/BreakpointModel.cpp" line="72"/>
+      <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="105"/>
       <source>Write(C)</source>
       <extracomment>(C) = changes, as in &quot;look for changes&quot;.</extracomment>
       <translation>Kirjoita(M)</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/BreakpointModel.cpp" line="72"/>
+      <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="105"/>
       <source>Write</source>
       <translation>Kirjoita</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/BreakpointModel.cpp" line="207"/>
+      <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="267"/>
       <source>TYPE</source>
       <extracomment>Warning: limited space available. Abbreviate if needed.</extracomment>
       <translation>TYYPPI</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/BreakpointModel.cpp" line="210"/>
+      <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="270"/>
       <source>OFFSET</source>
       <extracomment>Warning: limited space available. Abbreviate if needed.</extracomment>
       <translation>OFFSET</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/BreakpointModel.cpp" line="213"/>
+      <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="275"/>
       <source>SIZE / LABEL</source>
       <extracomment>Warning: limited space available. Abbreviate if needed.</extracomment>
       <translation>KOKO / NIMI</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/BreakpointModel.cpp" line="216"/>
+      <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="278"/>
       <source>INSTRUCTION</source>
       <extracomment>Warning: limited space available. Abbreviate if needed.</extracomment>
       <translation>KÄSKY</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/BreakpointModel.cpp" line="219"/>
+      <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="281"/>
       <source>CONDITION</source>
       <extracomment>Warning: limited space available. Abbreviate if needed.</extracomment>
       <translation>EHTO</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/BreakpointModel.cpp" line="222"/>
+      <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="284"/>
       <source>HITS</source>
       <extracomment>Warning: limited space available. Abbreviate if needed.</extracomment>
       <translation>OSUMAT</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/BreakpointModel.cpp" line="225"/>
+      <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="287"/>
       <source>X</source>
       <extracomment>Warning: limited space available. Abbreviate if needed.</extracomment>
       <translation>X</translation>
+    </message>
+  </context>
+  <context>
+    <name>BreakpointView</name>
+    <message>
+      <location filename="../Debugger/Breakpoints/BreakpointView.ui" line="14"/>
+      <source>Form</source>
+      <translation type="unfinished">Form</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Breakpoints/BreakpointView.cpp" line="40"/>
+      <source>New</source>
+      <translation type="unfinished">New</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Breakpoints/BreakpointView.cpp" line="47"/>
+      <source>Edit</source>
+      <translation type="unfinished">Edit</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Breakpoints/BreakpointView.cpp" line="52"/>
+      <source>Copy</source>
+      <translation type="unfinished">Copy</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Breakpoints/BreakpointView.cpp" line="56"/>
+      <source>Delete</source>
+      <translation type="unfinished">Delete</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Breakpoints/BreakpointView.cpp" line="64"/>
+      <source>Copy all as CSV</source>
+      <translation type="unfinished">Copy all as CSV</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Breakpoints/BreakpointView.cpp" line="74"/>
+      <source>Paste from CSV</source>
+      <translation type="unfinished">Paste from CSV</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Breakpoints/BreakpointView.cpp" line="79"/>
+      <source>Load from Settings</source>
+      <translation type="unfinished">Load from Settings</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Breakpoints/BreakpointView.cpp" line="85"/>
+      <source>Save to Settings</source>
+      <translation type="unfinished">Save to Settings</translation>
     </message>
   </context>
   <context>
@@ -2303,9 +2414,9 @@ Tallentaa CDVD-lohkon kopion kohteeseen &apos;{}&apos;.</translation>
       <translation>Esivälimuistia ei tueta tälle tiedostomuodolle.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/CDVD/ThreadedFileReader.cpp" line="276"/>
-      <source>Required memory ({}GB) is the above the maximum allowed ({}GB).</source>
-      <translation>Vaadittu muisti ({} Gt) ylittää suurimman sallitun rajan ({} Gt).</translation>
+      <location filename="../../pcsx2/CDVD/ThreadedFileReader.cpp" line="278"/>
+      <source>Not enough memory available for precaching ({:.2f} GB required).</source>
+      <translation>Muisti ei riitä esivälimuistin käyttöön ({:.2f} Gt vaaditaan).</translation>
     </message>
   </context>
   <context>
@@ -3460,7 +3571,7 @@ Tätä toimintoa ei voi peruuttaa.</translation>
     </message>
     <message>
       <location filename="../CoverDownloadDialog.ui" line="95"/>
-      <location filename="../CoverDownloadDialog.cpp" line="86"/>
+      <location filename="../CoverDownloadDialog.cpp" line="87"/>
       <source>Start</source>
       <translation>Käynnistä</translation>
     </message>
@@ -3470,157 +3581,14 @@ Tätä toimintoa ei voi peruuttaa.</translation>
       <translation>Sulje</translation>
     </message>
     <message>
-      <location filename="../CoverDownloadDialog.cpp" line="64"/>
+      <location filename="../CoverDownloadDialog.cpp" line="65"/>
       <source>Download complete.</source>
       <translation>Lataus on valmis.</translation>
     </message>
     <message>
-      <location filename="../CoverDownloadDialog.cpp" line="86"/>
+      <location filename="../CoverDownloadDialog.cpp" line="87"/>
       <source>Stop</source>
       <translation>Pysäytä</translation>
-    </message>
-  </context>
-  <context>
-    <name>CpuWidget</name>
-    <message>
-      <location filename="../Debugger/CpuWidget.ui" line="52"/>
-      <source>Registers</source>
-      <translation>Rekisterit</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.ui" line="104"/>
-      <source>Functions</source>
-      <translation>Funktiot</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.ui" line="109"/>
-      <source>Memory Search</source>
-      <translation>Muistihaku</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.ui" line="204"/>
-      <source>Memory</source>
-      <translation>Muisti</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.ui" line="253"/>
-      <source>Breakpoints</source>
-      <translation>Keskeytyspisteet</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.ui" line="285"/>
-      <source>Threads</source>
-      <translation>Säikeet</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.ui" line="323"/>
-      <source>Active Call Stack</source>
-      <translation>Aktiivinen kutsupino</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.ui" line="367"/>
-      <source>Saved Addresses</source>
-      <translation>Tallennetut osoitteet</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.ui" line="399"/>
-      <source>Globals</source>
-      <translation>Globaalit</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.ui" line="404"/>
-      <source>Locals</source>
-      <translation>Paikalliset</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.ui" line="409"/>
-      <source>Parameters</source>
-      <translation>Parametrit</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="364"/>
-      <source>Breakpoint List Context Menu</source>
-      <translation>Keskeytyspisteiden luettelon pikavalikko</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="368"/>
-      <location filename="../Debugger/CpuWidget.cpp" line="509"/>
-      <source>New</source>
-      <translation>Uusi</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="376"/>
-      <source>Edit</source>
-      <translation>Muokkaa</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="382"/>
-      <location filename="../Debugger/CpuWidget.cpp" line="636"/>
-      <location filename="../Debugger/CpuWidget.cpp" line="684"/>
-      <source>Copy</source>
-      <translation>Kopioi</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="387"/>
-      <location filename="../Debugger/CpuWidget.cpp" line="572"/>
-      <source>Delete</source>
-      <translation>Poista</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="396"/>
-      <location filename="../Debugger/CpuWidget.cpp" line="545"/>
-      <location filename="../Debugger/CpuWidget.cpp" line="649"/>
-      <location filename="../Debugger/CpuWidget.cpp" line="697"/>
-      <source>Copy all as CSV</source>
-      <translation>Kopioi kaikki CSV:nä</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="406"/>
-      <location filename="../Debugger/CpuWidget.cpp" line="552"/>
-      <source>Paste from CSV</source>
-      <translation>Liitä CSV:stä</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="634"/>
-      <source>Thread List Context Menu</source>
-      <translation>Säieluettelon pikavalikko</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="528"/>
-      <source>Go to in Disassembly</source>
-      <translation>Siirry purkukoodinäkymään</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="410"/>
-      <location filename="../Debugger/CpuWidget.cpp" line="558"/>
-      <source>Load from Settings</source>
-      <translation>Lataa asetuksista</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="417"/>
-      <location filename="../Debugger/CpuWidget.cpp" line="565"/>
-      <source>Save to Settings</source>
-      <translation>Tallenna asetuksiin</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="520"/>
-      <source>Go to in Memory View</source>
-      <translation>Siirry muistinäkymään</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="536"/>
-      <source>Copy Address</source>
-      <translation>Kopioi osoite</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="536"/>
-      <source>Copy Text</source>
-      <translation>Kopioi teksti</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/CpuWidget.cpp" line="682"/>
-      <source>Stack List Context Menu</source>
-      <translation>Pinoluettelon pikavalikko</translation>
     </message>
   </context>
   <context>
@@ -4001,7 +3969,7 @@ Haluatko korvata sen?</translation>
     </message>
     <message>
       <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="44"/>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="69"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="80"/>
       <source>Automatically Select Symbols To Clear</source>
       <translation>Valitse automaattisesti poistettavat symbolit</translation>
     </message>
@@ -4017,25 +3985,25 @@ Haluatko korvata sen?</translation>
     </message>
     <message>
       <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="132"/>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="88"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="99"/>
       <source>Import From ELF</source>
       <translation>Tuo ELF-tiedostosta</translation>
     </message>
     <message>
       <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="139"/>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="92"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="103"/>
       <source>Demangle Symbols</source>
       <translation>Pura symbolit</translation>
     </message>
     <message>
       <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="146"/>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="95"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="106"/>
       <source>Demangle Parameters</source>
       <translation>Pura parametrit</translation>
     </message>
     <message>
       <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="153"/>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="90"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="101"/>
       <source>Import Default .sym File</source>
       <translation>Tuo oletus .sym-tiedosto</translation>
     </message>
@@ -4066,7 +4034,7 @@ Haluatko korvata sen?</translation>
     </message>
     <message>
       <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="289"/>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="115"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="126"/>
       <source>Scan ELF</source>
       <translation>Skannaa ELF-tiedosto</translation>
     </message>
@@ -4102,419 +4070,451 @@ Haluatko korvata sen?</translation>
     </message>
     <message>
       <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="401"/>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="141"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="160"/>
       <source>Gray Out Symbols For Overwritten Functions</source>
       <translation>Himmennä ohitettujen funktioiden symbolit</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="69"/>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="88"/>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="90"/>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="92"/>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="95"/>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="141"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="80"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="99"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="101"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="103"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="106"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="160"/>
       <source>Checked</source>
       <translation>Käytössä</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="70"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="81"/>
       <source>Automatically delete symbols that were generated by any previous analysis runs.</source>
       <translation>Poista automaattisesti edellisten analyysisuoritusten luomat symbolit.</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="89"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="100"/>
       <source>Import symbol tables stored in the game&apos;s boot ELF.</source>
       <translation>Tuo pelin käynnistys-ELF-tiedostoon tallennetut symbolitaulukot.</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="91"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="102"/>
       <source>Import symbols from a .sym file with the same name as the loaded ISO file on disk if such a file exists.</source>
       <translation>Tuo symbolit .sym-tiedostosta, jolla on sama nimi kuin ladatulla ISO-tiedostolla levyllä, jos tiedosto on olemassa.</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="93"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="104"/>
       <source>Demangle C++ symbols during the import process so that the function and global variable names shown in the debugger are more readable.</source>
       <translation>Pura C++-symbolit tuontiprosessin aikana, jotta funktioiden ja globaalien muuttujien nimet ovat luettavampia virheenjäljittimessä.</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="96"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="107"/>
       <source>Include parameter lists in demangled function names.</source>
       <translation>Sisällytä parametriluettelot purettujen funktioiden nimiin.</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="115"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="126"/>
       <source>Scan Mode</source>
       <translation>Skannaustila</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="116"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="127"/>
       <source>Choose where the function scanner looks to find functions. This option can be useful if the application loads additional code at runtime.</source>
       <translation>Valitse, mistä funktioskanneri etsii funktioita. Tästä voi olla hyötyä, jos sovellus lataa lisäkoodia suoritettaessa.</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="128"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="147"/>
       <source>Custom Address Range</source>
       <translation>Mukautettu osoitealue</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="128"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="147"/>
       <source>Unchecked</source>
       <translation>Ei käytössä</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="129"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="148"/>
       <source>Whether to look for functions from the address range specified (Checked), or from the ELF segment containing the entry point (Unchecked).</source>
       <translation>Määrittää, etsitäänkö funktioita määritetyltä osoitealueelta (Käytössä), vai tulopisteen sisältävästä ELF-tiedoston segmentistä (Ei käytössä).</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="142"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="161"/>
       <source>Generate hashes for all the detected functions, and gray out the symbols displayed in the debugger for functions that no longer match.</source>
       <translation>Luo hajautukset kaikille havaituille funktioille ja himmentää virheenjäljittimessä näytetyt symbolit funktioilta, jotka eivät enää täsmää.</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="220"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="239"/>
       <source>&lt;i&gt;No symbol sources in database.&lt;/i&gt;</source>
       <translation>&lt;i&gt;Ei tietokannassa olevia symbolilähteitä.&lt;/i&gt;</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="240"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="259"/>
       <source>&lt;i&gt;Start this game to modify the symbol sources list.&lt;/i&gt;</source>
       <translation>&lt;i&gt;Aloita tämä peli muokataksesi symbolilähteiden luetteloa.&lt;/i&gt;</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="312"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="334"/>
       <source>Path</source>
       <translation>Polku</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="313"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="335"/>
       <source>Base Address</source>
       <translation>Pohjaosoite</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="314"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="336"/>
       <source>Condition</source>
       <translation>Ehto</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="361"/>
+      <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="383"/>
       <source>Add Symbol File</source>
       <translation>Lisää symbolitiedosto</translation>
+    </message>
+  </context>
+  <context>
+    <name>DebugInteface</name>
+    <message>
+      <location filename="../../pcsx2/DebugTools/DebugInterface.cpp" line="202"/>
+      <source>Input Output Processor</source>
+      <translation>Siirräntäprosessori</translation>
+    </message>
+  </context>
+  <context>
+    <name>DebugInterface</name>
+    <message>
+      <location filename="../../pcsx2/DebugTools/DebugInterface.cpp" line="200"/>
+      <source>Emotion Engine</source>
+      <translation>Emotion Engine</translation>
     </message>
   </context>
   <context>
     <name>DebugSettingsWidget</name>
     <message>
       <location filename="../Settings/DebugSettingsWidget.ui" line="36"/>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="91"/>
+      <source>User Interface</source>
+      <translation>Käyttöliittymä</translation>
+    </message>
+    <message>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="41"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="96"/>
       <source>Analysis</source>
       <translation>Analysointi</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="75"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="80"/>
       <source>These settings control what and when analysis passes should be performed on the program running in the virtual machine so that the resultant information can be shown in the debugger.</source>
       <translation>Nämä asetukset ohjaavat mitkä analyysiläpäisyt tulisi suorittaa virtuaalikoneessa ajettavassa ohjelmassa ja milloin, jotta tuloksena oleva tieto voidaan esittää virheenjäljittimessä.</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="99"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="104"/>
       <source>Automatically Analyze Program:</source>
       <translation>Analysoi ohjelmaa automaattisesti:</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="107"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="112"/>
       <source>Always</source>
       <translation>Aina</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="112"/>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="32"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="117"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="47"/>
       <source>If Debugger Is Open</source>
       <translation>Jos virheenjäljitin on auki</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="117"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="122"/>
       <source>Never</source>
       <translation>Ei koskaan</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="127"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="132"/>
       <source>Generate Symbols For IRX Exports</source>
       <translation>Luo symbolit IRX-vientejä varten</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="152"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="157"/>
       <source>GS</source>
       <translation>GS</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="158"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="163"/>
       <source>Draw Dumping</source>
       <translation>Piirtovedostus</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="166"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="171"/>
       <source>Dump GS Draws</source>
       <translation>Tee GS-piirtovedos</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="173"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="178"/>
       <source>Save RT</source>
       <translation>Tallenna RT</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="180"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="185"/>
       <source>Save Frame</source>
       <translation>Tallenna kuva</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="187"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="192"/>
       <source>Save Texture</source>
       <translation>Tallenna tekstuuri</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="194"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="199"/>
       <source>Save Depth</source>
       <translation>Tallenna syvyys</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="203"/>
-      <source>Start Draw Number:</source>
-      <translation>Aloituspiirron numero:</translation>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="206"/>
+      <source>Save Alpha</source>
+      <translation>Tallenna alfa</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="217"/>
-      <source>Draw Dump Count:</source>
-      <translation>Piirtovedosten määrä:</translation>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="213"/>
+      <source>Save Info</source>
+      <translation>Tallenna tiedot</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="234"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="222"/>
+      <source>Save Draw Start:</source>
+      <translation>Tallennettavien piirtojen alku:</translation>
+    </message>
+    <message>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="236"/>
+      <source>Save Draw Count:</source>
+      <translation>Tallennettavien piirtojen määrä:</translation>
+    </message>
+    <message>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="253"/>
+      <source>Save Frame Start:</source>
+      <translation>Tallennettavien kuvien alku:</translation>
+    </message>
+    <message>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="267"/>
+      <source>Save Frame Count:</source>
+      <translation>Tallennettavien kuvien määrä:</translation>
+    </message>
+    <message>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="284"/>
       <source>Hardware Dump Directory:</source>
       <translation>Laitteistovedoskansio:</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="241"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="291"/>
       <source>Software Dump Directory:</source>
       <translation>Ohjelmistovedoskansio:</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="253"/>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="274"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="303"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="324"/>
       <source>Browse...</source>
       <translation>Selaa...</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="260"/>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="281"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="310"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="331"/>
       <source>Open...</source>
       <translation>Avaa...</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="294"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="344"/>
       <source>Trace Logging</source>
       <translation>Jäljityslokitus</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="300"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="350"/>
       <source>Enable</source>
       <translation>Päälle</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="309"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="359"/>
       <source>EE</source>
       <translation>EE</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="317"/>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="553"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="367"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="603"/>
       <source>DMA Control</source>
       <translation>DMA:n hallinta</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="324"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="374"/>
       <source>SPR / MFIFO</source>
       <translation>SPR / MFIFO</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="331"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="381"/>
       <source>VIF</source>
       <translation>VIF</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="338"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="388"/>
       <source>COP1 (FPU)</source>
       <translation>COP1 (FPU)</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="345"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="395"/>
       <source>MSKPATH3</source>
       <translation>MSKPATH3</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="352"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="402"/>
       <source>Cache</source>
       <translation>Välimuisti</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="359"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="409"/>
       <source>GIF</source>
       <translation>GIF</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="366"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="416"/>
       <source>R5900</source>
       <translation>R5900</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="373"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="423"/>
       <source>COP0</source>
       <translation>COP0</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="380"/>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="497"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="430"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="547"/>
       <source>HW Regs (MMIO)</source>
       <translation>Laitteistorekisterit (MMIO)</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="387"/>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="483"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="437"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="533"/>
       <source>Counters</source>
       <translation>Laskurit</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="394"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="444"/>
       <source>SIF</source>
       <translation>SIF</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="401"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="451"/>
       <source>COP2 (VU0 Macro)</source>
       <translation>COP2 (VU0-makro)</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="408"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="458"/>
       <source>VIFCodes</source>
       <translation>VIFCodes</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="415"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="465"/>
       <source>Memory</source>
       <translation>Muisti</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="422"/>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="490"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="472"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="540"/>
       <source>Unknown MMIO</source>
       <translation>Tuntematon MMIO</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="429"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="479"/>
       <source>IPU</source>
       <translation>IPU</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="436"/>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="539"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="486"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="589"/>
       <source>BIOS</source>
       <translation>BIOS</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="443"/>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="525"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="493"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="575"/>
       <source>DMA Registers</source>
       <translation>DMA-rekisterit</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="450"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="500"/>
       <source>GIFTags</source>
       <translation>GIFTags</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="475"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="525"/>
       <source>IOP</source>
       <translation>IOP</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="504"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="554"/>
       <source>CDVD</source>
       <translation>CDVD</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="511"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="561"/>
       <source>R3000A</source>
       <translation>R3000A</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="518"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="568"/>
       <source>Memcards</source>
       <translation>Muistikortit</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="532"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="582"/>
       <source>Pad</source>
       <translation>Pad</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="546"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="596"/>
       <source>MDEC</source>
       <translation>MDEC</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.ui" line="560"/>
+      <location filename="../Settings/DebugSettingsWidget.ui" line="610"/>
       <source>COP2 (GPU)</source>
       <translation>COP2 (GPU)</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="32"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="47"/>
       <source>Analyze Program</source>
       <translation>Analysoi ohjelma</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="33"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="48"/>
       <source>Choose when the analysis passes should be run: Always (to save time when opening the debugger), If Debugger Is Open (to save memory if you never open the debugger), or Never.</source>
       <translation>Valitse milloin analyysisuoritukset suoritetaan: Aina (säästää aikaa avattaessa virheenjäljitintä), jos virheenjäljitin on auki (tallentaa muistia, jos et koskaan avaa virheenjäljitintä), tai ei koskaan.</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="35"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="50"/>
       <source>Generate Symbols for IRX Export Tables</source>
       <translation>Luo symbolit IRX-tiedostojen vientitaulukoille</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="35"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="50"/>
       <source>Checked</source>
       <translation>Käytössä</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="36"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="51"/>
       <source>Hook IRX module loading/unloading and generate symbols for exported functions on the fly.</source>
       <translation>Linkittää IRX-moduulien lataamisen ja purkamisen, ja luo symboleja viedyille funktioille lennossa.</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="68"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="87"/>
       <source>Enable Trace Logging</source>
       <translation>Ota jäljitysloki käyttöön</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="68"/>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="71"/>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="73"/>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="75"/>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="77"/>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="79"/>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="81"/>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="83"/>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="85"/>
       <location filename="../Settings/DebugSettingsWidget.cpp" line="87"/>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="89"/>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="91"/>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="93"/>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="95"/>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="97"/>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="99"/>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="101"/>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="103"/>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="105"/>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="107"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="90"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="92"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="94"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="96"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="98"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="100"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="102"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="104"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="106"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="108"/>
       <location filename="../Settings/DebugSettingsWidget.cpp" line="110"/>
       <location filename="../Settings/DebugSettingsWidget.cpp" line="112"/>
       <location filename="../Settings/DebugSettingsWidget.cpp" line="114"/>
@@ -4524,321 +4524,543 @@ Haluatko korvata sen?</translation>
       <location filename="../Settings/DebugSettingsWidget.cpp" line="122"/>
       <location filename="../Settings/DebugSettingsWidget.cpp" line="124"/>
       <location filename="../Settings/DebugSettingsWidget.cpp" line="126"/>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="128"/>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="130"/>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="132"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="129"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="131"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="133"/>
       <location filename="../Settings/DebugSettingsWidget.cpp" line="135"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="137"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="139"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="141"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="143"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="145"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="147"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="149"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="151"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="154"/>
       <source>Unchecked</source>
       <translation>Ei käytössä</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="68"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="87"/>
       <source>Globally enable / disable trace logging.</source>
       <translation>Ota jäljitysloki käyttöön yleisesti tai poista se käytöstä.</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="71"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="90"/>
       <source>EE BIOS</source>
       <translation>EE BIOS</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="71"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="90"/>
       <source>Log SYSCALL and DECI2 activity.</source>
       <translation>Lokittaa SYSCALLin ja DECI2:n toiminnan.</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="73"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="92"/>
       <source>EE Memory</source>
       <translation>EE-muisti</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="73"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="92"/>
       <source>Log memory access to unknown or unmapped EE memory.</source>
       <translation>Lokittaa muistin käytön tuntemattomaan tai kartoittamattomaan EE-muistiin.</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="75"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="94"/>
       <source>EE R5900</source>
       <translation>EE R5900</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="75"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="94"/>
       <source>Log R5900 core instructions (excluding COPs). Requires modifying the PCSX2 source and enabling the interpreter.</source>
       <translation>Lokittaa R5900:n ydinkäskyt (paitsi COP:t). Vaatii PCSX2:n lähteen muokkaamista ja tulkin käyttöönoton.</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="77"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="96"/>
       <source>EE COP0</source>
       <translation>EE COP0</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="77"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="96"/>
       <source>Log COP0 (MMU, CPU status, etc) instructions.</source>
       <translation>Lokittaa COP0:n (MMU, suorittimen tila, jne.) käskyt.</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="79"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="98"/>
       <source>EE COP1</source>
       <translation>EE COP1</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="79"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="98"/>
       <source>Log COP1 (FPU) instructions.</source>
       <translation>Lokittaa COP1:n (FPU) käskyt.</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="81"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="100"/>
       <source>EE COP2</source>
       <translation>EE COP2</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="81"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="100"/>
       <source>Log COP2 (VU0 Macro mode) instructions.</source>
       <translation>Lokittaa COP2:n (VU0-makrotila) käskyt.</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="83"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="102"/>
       <source>EE Cache</source>
       <translation>EE-välimuisti</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="83"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="102"/>
       <source>Log EE cache activity.</source>
       <translation>Lokittaa EE-välimuistin toiminnan.</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="85"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="104"/>
       <source>EE Known MMIO</source>
       <translation>EE - tunnettu MMIO</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="85"/>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="118"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="104"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="137"/>
       <source>Log known MMIO accesses.</source>
       <translation>Lokittaa tunnetut MMIO-käytöt.</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="87"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="106"/>
       <source>EE Unknown MMIO</source>
       <translation>EE - tuntematon MMIO</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="87"/>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="120"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="106"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="139"/>
       <source>Log unknown or unimplemented MMIO accesses.</source>
       <translation>Lokittaa tuntemattomat tai toteuttamattomat MMIO-käytöt.</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="89"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="108"/>
       <source>EE DMA Registers</source>
       <translation>EE DMA-rekisterit</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="89"/>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="122"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="108"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="141"/>
       <source>Log DMA-related MMIO accesses.</source>
       <translation>Lokittaa DMA:han liittyvät MMIO-käytöt.</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="91"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="110"/>
       <source>EE IPU</source>
       <translation>EE IPU</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="91"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="110"/>
       <source>Log IPU activity; MMIO, decoding operations, DMA status, etc.</source>
       <translation>Lokittaa IPU:n toiminnan: MMIO, dekoodausoperaatiot, DMA:n tila, jne.</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="93"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="112"/>
       <source>EE GIF Tags</source>
       <translation>EE GIF-tagit</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="93"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="112"/>
       <source>Log GIFtag parsing activity.</source>
       <translation>Lokittaa GIFtagien jäsennystoiminnan.</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="95"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="114"/>
       <source>EE VIF Codes</source>
       <translation>EE VIF Codes</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="95"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="114"/>
       <source>Log VIFcode processing; command, tag style, interrupts.</source>
       <translation>Lokittaa VIFcoden käsittelyn: komento, tagityyli, keskeytykset.</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="97"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="116"/>
       <source>EE MSKPATH3</source>
       <translation>EE MSKPATH3</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="97"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="116"/>
       <source>Log Path3 Masking processing.</source>
       <translation>Lokittaa Path3:n peittokäsittelyn.</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="99"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="118"/>
       <source>EE MFIFO</source>
       <translation>EE MFIFO</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="99"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="118"/>
       <source>Log Scratchpad MFIFO activity.</source>
       <translation>Lokittaa Scratchpad MFIFO:n toiminnan.</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="101"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="120"/>
       <source>EE DMA Controller</source>
       <translation>EE DMA-ohjain</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="101"/>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="126"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="120"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="145"/>
       <source>Log DMA transfer activity. Stalls, bus right arbitration, etc.</source>
       <translation>Lokittaa DMA:n siirtotoiminnan: pysäytykset, väylävälitysmenettely, jne.</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="103"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="122"/>
       <source>EE Counters</source>
       <translation>EE-laskurit</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="103"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="122"/>
       <source>Log all EE counters events and some counter register activity.</source>
       <translation>Lokittaa kaikki EE-laskurien tapahtumat ja jotain laskurirekisteritoimintaa.</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="105"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="124"/>
       <source>EE VIF</source>
       <translation>EE VIF</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="105"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="124"/>
       <source>Log various VIF and VIFcode processing data.</source>
       <translation>Lokittaa erilaisia VIFin ja VIFcoden käsittelytietoja.</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="107"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="126"/>
       <source>EE GIF</source>
       <translation>EE GIF</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="107"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="126"/>
       <source>Log various GIF and GIFtag parsing data.</source>
       <translation>Lokittaa erilaisia GIFin ja GIFtagien jäsennystietoja.</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="110"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="129"/>
       <source>IOP BIOS</source>
       <translation>IOP BIOS</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="110"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="129"/>
       <source>Log SYSCALL and IRX activity.</source>
       <translation>Lokittaa SYSCALLin ja IRX:n toiminnan.</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="112"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="131"/>
       <source>IOP Memcards</source>
       <translation>IOP-muistikortit</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="112"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="131"/>
       <source>Log memory card activity. Reads, Writes, erases, etc.</source>
       <translation>Lokittaa muistikorttien toiminnan: lukemat, kirjoitukset, poistot, jne.</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="114"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="133"/>
       <source>IOP R3000A</source>
       <translation>IOP R3000A</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="114"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="133"/>
       <source>Log R3000A core instructions (excluding COPs).</source>
       <translation>Lokittaa R3000A:n ydinkäskyt (paitsi COP:t).</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="116"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="135"/>
       <source>IOP COP2</source>
       <translation>IOP COP2</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="116"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="135"/>
       <source>Log IOP GPU co-processor instructions.</source>
       <translation>Lokittaa IOP GPU:n apusuorittimen käskyt.</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="118"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="137"/>
       <source>IOP Known MMIO</source>
       <translation>IOP - tunnettu MMIO</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="120"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="139"/>
       <source>IOP Unknown MMIO</source>
       <translation>IOP - tuntematon MMIO</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="122"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="141"/>
       <source>IOP DMA Registers</source>
       <translation>IOP DMA-rekisterit</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="124"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="143"/>
       <source>IOP PAD</source>
       <translation>IOP PAD</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="124"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="143"/>
       <source>Log PAD activity.</source>
       <translation>Lokittaa PAD-toiminnan.</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="126"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="145"/>
       <source>IOP DMA Controller</source>
       <translation>IOP DMA-ohjain</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="128"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="147"/>
       <source>IOP Counters</source>
       <translation>IOP-laskurit</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="128"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="147"/>
       <source>Log all IOP counters events and some counter register activity.</source>
       <translation>Lokittaa kaikki IOP-laskurien tapahtumat ja jotain laskurirekisteritoimintaa.</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="130"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="149"/>
       <source>IOP CDVD</source>
       <translation>IOP CDVD</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="130"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="149"/>
       <source>Log CDVD hardware activity.</source>
       <translation>Lokittaa CDVD:n laitteistotoiminnan.</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="132"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="151"/>
       <source>IOP MDEC</source>
       <translation>IOP MDEC</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="132"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="151"/>
       <source>Log Motion (FMV) Decoder hardware unit activity.</source>
       <translation>Lokittaa Motion (FMV) Decoder -laitteistoyksikön toimintaa.</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="135"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="154"/>
       <source>EE SIF</source>
       <translation>EE SIF</translation>
     </message>
     <message>
-      <location filename="../Settings/DebugSettingsWidget.cpp" line="135"/>
+      <location filename="../Settings/DebugSettingsWidget.cpp" line="154"/>
       <source>Log SIF (EE &lt;-&gt; IOP) activity.</source>
       <translation>Lokittaa SIFin (EE &lt;-&gt; IOP) toiminnan.</translation>
+    </message>
+  </context>
+  <context>
+    <name>DebugUserInterfaceSettingsWidget</name>
+    <message>
+      <location filename="../Settings/DebugUserInterfaceSettingsWidget.ui" line="38"/>
+      <source>Debugger Window</source>
+      <translation>Virheenjäljitysikkuna</translation>
+    </message>
+    <message>
+      <location filename="../Settings/DebugUserInterfaceSettingsWidget.ui" line="57"/>
+      <location filename="../Settings/DebugUserInterfaceSettingsWidget.cpp" line="43"/>
+      <source>Save Window Geometry</source>
+      <translation>Tallenna ikkunan geometria</translation>
+    </message>
+    <message>
+      <location filename="../Settings/DebugUserInterfaceSettingsWidget.ui" line="50"/>
+      <location filename="../Settings/DebugUserInterfaceSettingsWidget.cpp" line="37"/>
+      <source>Show On Startup</source>
+      <translation>Näytä käynnistettäessä</translation>
+    </message>
+    <message>
+      <location filename="../Settings/DebugUserInterfaceSettingsWidget.ui" line="64"/>
+      <source>Refresh Interval:</source>
+      <translation>Päivitysväli:</translation>
+    </message>
+    <message>
+      <location filename="../Settings/DebugUserInterfaceSettingsWidget.ui" line="71"/>
+      <source>ms</source>
+      <translation> ms</translation>
+    </message>
+    <message>
+      <location filename="../Settings/DebugUserInterfaceSettingsWidget.ui" line="96"/>
+      <source>Docking</source>
+      <translation>Telakointi</translation>
+    </message>
+    <message>
+      <location filename="../Settings/DebugUserInterfaceSettingsWidget.ui" line="102"/>
+      <source>Drop Indicator Style:</source>
+      <translation>Pudotusilmaisimen tyyli:</translation>
+    </message>
+    <message>
+      <location filename="../Settings/DebugUserInterfaceSettingsWidget.cpp" line="56"/>
+      <source>Drop Indicator Style</source>
+      <translation>Pudotusilmaisimen tyyli</translation>
+    </message>
+    <message>
+      <location filename="../Settings/DebugUserInterfaceSettingsWidget.cpp" line="10"/>
+      <location filename="../Settings/DebugUserInterfaceSettingsWidget.cpp" line="56"/>
+      <source>Classic</source>
+      <translation>Klassinen</translation>
+    </message>
+    <message>
+      <location filename="../Settings/DebugUserInterfaceSettingsWidget.cpp" line="11"/>
+      <source>Segmented</source>
+      <translation>Eroteltu</translation>
+    </message>
+    <message>
+      <location filename="../Settings/DebugUserInterfaceSettingsWidget.cpp" line="12"/>
+      <source>Minimalistic</source>
+      <translation>Minimalistinen</translation>
+    </message>
+    <message>
+      <location filename="../Settings/DebugUserInterfaceSettingsWidget.cpp" line="30"/>
+      <source>Refresh Interval</source>
+      <translation>Päivitysväli</translation>
+    </message>
+    <message>
+      <location filename="../Settings/DebugUserInterfaceSettingsWidget.cpp" line="30"/>
+      <source>1000ms</source>
+      <translation>1000 ms</translation>
+    </message>
+    <message>
+      <location filename="../Settings/DebugUserInterfaceSettingsWidget.cpp" line="31"/>
+      <source>The amount of time to wait between subsequent attempts to update the user interface to reflect the state of the virtual machine.</source>
+      <translation>Odotettava aikaväli käyttöliittymän päivittämiseen virtuaalikoneen tilan mukaiseksi.</translation>
+    </message>
+    <message>
+      <location filename="../Settings/DebugUserInterfaceSettingsWidget.cpp" line="37"/>
+      <source>Unchecked</source>
+      <translation>Ei käytössä</translation>
+    </message>
+    <message>
+      <location filename="../Settings/DebugUserInterfaceSettingsWidget.cpp" line="38"/>
+      <source>Open the debugger window automatically when PCSX2 starts.</source>
+      <translation>Avaa virheenjäljittimen ikkuna automaattisesti, kun PCSX2 käynnistyy.</translation>
+    </message>
+    <message>
+      <location filename="../Settings/DebugUserInterfaceSettingsWidget.cpp" line="43"/>
+      <source>Checked</source>
+      <translation>Käytössä</translation>
+    </message>
+    <message>
+      <location filename="../Settings/DebugUserInterfaceSettingsWidget.cpp" line="44"/>
+      <source>Save the position and size of the debugger window when it is closed so that it can be restored later.</source>
+      <translation>Tallenna virheenjäljittimen ikkunan sijainti ja koko, kun se suljetaan, jotta se voidaan palauttaa myöhemmin.</translation>
+    </message>
+    <message>
+      <location filename="../Settings/DebugUserInterfaceSettingsWidget.cpp" line="57"/>
+      <source>Choose how the drop indicators that appear when you drag dock windows in the debugger are styled. You will have to restart the debugger for this option to take effect.</source>
+      <translation>Valitse miltä telakointi-ikkunoiden pudotusilmaisimet näyttävät, kun raahaat niitä virheenjäljittimessä. Virheenjäljitin on käynnistettävä uudelleen, jotta tämä asetus tulee voimaan.</translation>
+    </message>
+  </context>
+  <context>
+    <name>DebuggerEvent</name>
+    <message>
+      <location filename="../Debugger/DebuggerView.cpp" line="281"/>
+      <source>%1...</source>
+      <translation>%1...</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DebuggerView.cpp" line="293"/>
+      <source>%1 %2</source>
+      <translation>%1 %2</translation>
+    </message>
+  </context>
+  <context>
+    <name>DebuggerEvents</name>
+    <message>
+      <location filename="../Debugger/DebuggerEvents.h" line="41"/>
+      <source>Go to in</source>
+      <translation type="unfinished">Go to in</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DebuggerEvents.h" line="56"/>
+      <source>Add to</source>
+      <translation type="unfinished">Add to</translation>
+    </message>
+  </context>
+  <context>
+    <name>DebuggerLayout</name>
+    <message>
+      <location filename="../Debugger/Docking/DockTables.cpp" line="58"/>
+      <source>R5900</source>
+      <translation>R5900</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/DockTables.cpp" line="88"/>
+      <source>R3000</source>
+      <translation>R3000</translation>
+    </message>
+  </context>
+  <context>
+    <name>DebuggerView</name>
+    <message>
+      <location filename="../Debugger/DebuggerView.cpp" line="52"/>
+      <source>%1 #%2</source>
+      <translation type="unfinished">%1 #%2</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DebuggerView.cpp" line="55"/>
+      <source>%1 (%2)</source>
+      <translation type="unfinished">%1 (%2)</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/DockTables.cpp" line="40"/>
+      <source>Breakpoints</source>
+      <translation type="unfinished">Breakpoints</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/DockTables.cpp" line="41"/>
+      <source>Disassembly</source>
+      <translation type="unfinished">Disassembly</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/DockTables.cpp" line="42"/>
+      <source>Functions</source>
+      <translation type="unfinished">Functions</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/DockTables.cpp" line="43"/>
+      <source>Globals</source>
+      <translation type="unfinished">Globals</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/DockTables.cpp" line="44"/>
+      <source>Locals</source>
+      <translation type="unfinished">Locals</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/DockTables.cpp" line="45"/>
+      <source>Memory Search</source>
+      <translation type="unfinished">Memory Search</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/DockTables.cpp" line="46"/>
+      <source>Memory</source>
+      <translation type="unfinished">Memory</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/DockTables.cpp" line="47"/>
+      <source>Parameters</source>
+      <translation type="unfinished">Parameters</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/DockTables.cpp" line="48"/>
+      <source>Registers</source>
+      <translation type="unfinished">Registers</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/DockTables.cpp" line="49"/>
+      <source>Saved Addresses</source>
+      <translation type="unfinished">Saved Addresses</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/DockTables.cpp" line="50"/>
+      <source>Stack</source>
+      <translation type="unfinished">Stack</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/DockTables.cpp" line="51"/>
+      <source>Threads</source>
+      <translation type="unfinished">Threads</translation>
     </message>
   </context>
   <context>
@@ -4849,226 +5071,486 @@ Haluatko korvata sen?</translation>
       <translation>PCSX2-virheenjäljitin</translation>
     </message>
     <message>
-      <location filename="../Debugger/DebuggerWindow.ui" line="65"/>
-      <location filename="../Debugger/DebuggerWindow.cpp" line="76"/>
+      <location filename="../Debugger/DebuggerWindow.ui" line="32"/>
+      <location filename="../Debugger/DebuggerWindow.ui" line="105"/>
+      <source>File</source>
+      <translation>Tiedosto</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DebuggerWindow.ui" line="42"/>
+      <location filename="../Debugger/DebuggerWindow.ui" line="87"/>
+      <source>Debug</source>
+      <translation>Virheenjäljitys</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DebuggerWindow.ui" line="51"/>
+      <source>Windows</source>
+      <translation>Ikkunat</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DebuggerWindow.ui" line="57"/>
+      <location filename="../Debugger/DebuggerWindow.ui" line="138"/>
+      <source>View</source>
+      <translation>Näkymä</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DebuggerWindow.ui" line="67"/>
+      <source>Layouts</source>
+      <translation>Asettelut</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DebuggerWindow.ui" line="74"/>
+      <source>Tools</source>
+      <translation>Työkalut</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DebuggerWindow.ui" line="122"/>
+      <source>System</source>
+      <translation>Järjestelmä</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DebuggerWindow.ui" line="159"/>
+      <location filename="../Debugger/DebuggerWindow.cpp" line="319"/>
       <source>Run</source>
       <translation>Suorita</translation>
     </message>
     <message>
-      <location filename="../Debugger/DebuggerWindow.ui" line="73"/>
+      <location filename="../Debugger/DebuggerWindow.ui" line="167"/>
       <source>Step Into</source>
       <translation>Astu sisään</translation>
     </message>
     <message>
-      <location filename="../Debugger/DebuggerWindow.ui" line="76"/>
+      <location filename="../Debugger/DebuggerWindow.ui" line="170"/>
       <source>F11</source>
       <translation>F11</translation>
     </message>
     <message>
-      <location filename="../Debugger/DebuggerWindow.ui" line="84"/>
+      <location filename="../Debugger/DebuggerWindow.ui" line="178"/>
       <source>Step Over</source>
       <translation>Astu yli</translation>
     </message>
     <message>
-      <location filename="../Debugger/DebuggerWindow.ui" line="87"/>
+      <location filename="../Debugger/DebuggerWindow.ui" line="181"/>
       <source>F10</source>
       <translation>F10</translation>
     </message>
     <message>
-      <location filename="../Debugger/DebuggerWindow.ui" line="95"/>
+      <location filename="../Debugger/DebuggerWindow.ui" line="189"/>
       <source>Step Out</source>
       <translation>Astu ulos</translation>
     </message>
     <message>
-      <location filename="../Debugger/DebuggerWindow.ui" line="98"/>
+      <location filename="../Debugger/DebuggerWindow.ui" line="192"/>
       <source>Shift+F11</source>
       <translation>Vaihto+F11</translation>
     </message>
     <message>
-      <location filename="../Debugger/DebuggerWindow.ui" line="109"/>
+      <location filename="../Debugger/DebuggerWindow.ui" line="203"/>
       <source>Always On Top</source>
       <translation>Aina päällimmäisenä</translation>
     </message>
     <message>
-      <location filename="../Debugger/DebuggerWindow.ui" line="112"/>
+      <location filename="../Debugger/DebuggerWindow.ui" line="206"/>
       <source>Show this window on top</source>
       <translation>Näytä tämä ikkuna päällimmäisenä</translation>
     </message>
     <message>
-      <location filename="../Debugger/DebuggerWindow.ui" line="120"/>
+      <location filename="../Debugger/DebuggerWindow.ui" line="214"/>
       <source>Analyze</source>
       <translation>Analysoi</translation>
     </message>
     <message>
-      <location filename="../Debugger/DebuggerWindow.cpp" line="67"/>
+      <location filename="../Debugger/DebuggerWindow.ui" line="219"/>
+      <source>Reset All Layouts</source>
+      <translation>Nollaa kaikki asettelut</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DebuggerWindow.ui" line="224"/>
+      <source>Reset Default Layouts</source>
+      <translation>Nollaa oletusasettelut</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DebuggerWindow.ui" line="229"/>
+      <source>Reset Splitter Positions</source>
+      <translation type="unfinished">Reset Splitter Positions</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DebuggerWindow.ui" line="237"/>
+      <source>Shut Down</source>
+      <translation>Sammuta</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DebuggerWindow.ui" line="248"/>
+      <source>Reset</source>
+      <translation>Nollaa</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DebuggerWindow.ui" line="259"/>
+      <source>Close</source>
+      <translation>Sulje</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DebuggerWindow.ui" line="270"/>
+      <source>Increase Font Size</source>
+      <translation>Suurenna fonttikokoa</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DebuggerWindow.ui" line="281"/>
+      <source>Decrease Font Size</source>
+      <translation>Pienennä fonttikokoa</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DebuggerWindow.ui" line="284"/>
+      <source>Ctrl+-</source>
+      <translation>Ctrl+-</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DebuggerWindow.ui" line="295"/>
+      <source>Reset Font Size</source>
+      <translation>Nollaa fonttikoko</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DebuggerWindow.ui" line="306"/>
+      <source>Settings</source>
+      <translation>Asetukset</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DebuggerWindow.ui" line="317"/>
+      <source>Game Settings</source>
+      <translation>Peliasetukset</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DebuggerWindow.cpp" line="73"/>
+      <source>Are you sure you want to reset all layouts?</source>
+      <translation>Haluatko varmasti nollata kaikki asettelut?</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DebuggerWindow.cpp" line="74"/>
+      <location filename="../Debugger/DebuggerWindow.cpp" line="82"/>
+      <source>Confirmation</source>
+      <translation>Vahvistus</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DebuggerWindow.cpp" line="81"/>
+      <source>Are you sure you want to reset the default layouts?</source>
+      <translation>Haluatko varmasti nollata oletusasettelut?</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DebuggerWindow.cpp" line="359"/>
       <source>Pause</source>
       <translation>Pysäytä</translation>
     </message>
   </context>
   <context>
-    <name>DisassemblyWidget</name>
+    <name>DisassemblyView</name>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.ui" line="14"/>
+      <location filename="../Debugger/DisassemblyView.ui" line="14"/>
       <source>Disassembly</source>
-      <translation>Purku</translation>
+      <translation type="unfinished">Disassembly</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="619"/>
-      <source>Copy Address</source>
-      <translation>Kopioi osoite</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="621"/>
-      <source>Copy Instruction Hex</source>
-      <translation>Kopioi käskyn heksa</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="640"/>
-      <source>NOP Instruction(s)</source>
-      <translation>NOP-käsky(t)</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="643"/>
-      <source>Run to Cursor</source>
-      <translation>Suorita kursoriin asti</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="651"/>
-      <source>Follow Branch</source>
-      <translation>Seuraa haaraa</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="657"/>
-      <source>Go to in Memory View</source>
-      <translation>Siirry muistinäkymään</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="660"/>
-      <source>Add Function</source>
-      <translation>Lisää funktio</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="229"/>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="662"/>
-      <source>Rename Function</source>
-      <translation>Nimeä funktio uudelleen</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="664"/>
-      <source>Remove Function</source>
-      <translation>Poista funktio</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="51"/>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="70"/>
+      <location filename="../Debugger/DisassemblyView.cpp" line="113"/>
+      <location filename="../Debugger/DisassemblyView.cpp" line="132"/>
       <source>Assemble Error</source>
-      <translation>Kokoamisvirhe</translation>
+      <translation type="unfinished">Assemble Error</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="51"/>
+      <location filename="../Debugger/DisassemblyView.cpp" line="113"/>
       <source>Unable to change assembly while core is running</source>
-      <translation>Kokoamista ei voida muuttaa, kun ydin on käynnissä</translation>
+      <translation type="unfinished">Unable to change assembly while core is running</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="58"/>
+      <location filename="../Debugger/DisassemblyView.cpp" line="120"/>
       <source>Assemble Instruction</source>
-      <translation>Kokoa käsky</translation>
+      <translation type="unfinished">Assemble Instruction</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="229"/>
-      <source>Function name</source>
-      <translation>Funktion nimi</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="222"/>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="235"/>
-      <source>Rename Function Error</source>
-      <translation>Virhe funktion uudelleenimeämisessä</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="235"/>
-      <source>Function name cannot be nothing.</source>
-      <translation>Funktion nimi ei voi olla tyhjä.</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="222"/>
-      <source>No function / symbol is currently selected.</source>
-      <translation>Funktiota/symbolia ei ole tällä hetkellä valittuna.</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="166"/>
+      <location filename="../Debugger/DisassemblyView.cpp" line="213"/>
       <source>Go To In Disassembly</source>
-      <translation>Siirry purkukoodinäkymään</translation>
+      <translation type="unfinished">Go To In Disassembly</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="176"/>
+      <location filename="../Debugger/DisassemblyView.cpp" line="223"/>
       <source>Cannot Go To</source>
-      <translation>Siirtyminen ei onnistu</translation>
+      <translation type="unfinished">Cannot Go To</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="279"/>
+      <location filename="../Debugger/DisassemblyView.cpp" line="270"/>
+      <location filename="../Debugger/DisassemblyView.cpp" line="283"/>
+      <source>Rename Function Error</source>
+      <translation type="unfinished">Rename Function Error</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DisassemblyView.cpp" line="270"/>
+      <source>No function / symbol is currently selected.</source>
+      <translation type="unfinished">No function / symbol is currently selected.</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DisassemblyView.cpp" line="277"/>
+      <location filename="../Debugger/DisassemblyView.cpp" line="750"/>
+      <source>Rename Function</source>
+      <translation type="unfinished">Rename Function</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DisassemblyView.cpp" line="277"/>
+      <source>Function name</source>
+      <translation type="unfinished">Function name</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DisassemblyView.cpp" line="283"/>
+      <source>Function name cannot be nothing.</source>
+      <translation type="unfinished">Function name cannot be nothing.</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DisassemblyView.cpp" line="327"/>
       <source>Restore Function Error</source>
-      <translation>Virhe funktion palauttamisessa</translation>
+      <translation type="unfinished">Restore Function Error</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="279"/>
+      <location filename="../Debugger/DisassemblyView.cpp" line="327"/>
       <source>Unable to stub selected address.</source>
-      <translation>Valitun osoitteen korvaaminen epäonnistui.</translation>
+      <translation type="unfinished">Unable to stub selected address.</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="623"/>
+      <location filename="../Debugger/DisassemblyView.cpp" line="680"/>
+      <source>Copy Address</source>
+      <translation type="unfinished">Copy Address</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DisassemblyView.cpp" line="683"/>
+      <source>Copy Instruction Hex</source>
+      <translation type="unfinished">Copy Instruction Hex</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DisassemblyView.cpp" line="686"/>
       <source>&amp;Copy Instruction Text</source>
-      <translation>&amp;Kopioi käskyn teksti</translation>
+      <translation type="unfinished">&amp;Copy Instruction Text</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="628"/>
+      <location filename="../Debugger/DisassemblyView.cpp" line="692"/>
       <source>Copy Function Name</source>
-      <translation>Kopioi funktion nimi</translation>
+      <translation type="unfinished">Copy Function Name</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="634"/>
+      <location filename="../Debugger/DisassemblyView.cpp" line="700"/>
       <source>Restore Instruction(s)</source>
-      <translation>Palauta käsky(t)</translation>
+      <translation type="unfinished">Restore Instruction(s)</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="637"/>
+      <location filename="../Debugger/DisassemblyView.cpp" line="704"/>
       <source>Asse&amp;mble new Instruction(s)</source>
-      <translation>K&amp;okoa uudet käskyt</translation>
+      <translation type="unfinished">Asse&amp;mble new Instruction(s)</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="645"/>
+      <location filename="../Debugger/DisassemblyView.cpp" line="708"/>
+      <source>NOP Instruction(s)</source>
+      <translation type="unfinished">NOP Instruction(s)</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DisassemblyView.cpp" line="713"/>
+      <source>Run to Cursor</source>
+      <translation type="unfinished">Run to Cursor</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DisassemblyView.cpp" line="716"/>
       <source>&amp;Jump to Cursor</source>
-      <translation>&amp;Hyppää kursoriin asti</translation>
+      <translation type="unfinished">&amp;Jump to Cursor</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="648"/>
+      <location filename="../Debugger/DisassemblyView.cpp" line="720"/>
       <source>Toggle &amp;Breakpoint</source>
-      <translation>&amp;Lisää/poista keskeytyskohta</translation>
+      <translation type="unfinished">Toggle &amp;Breakpoint</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="654"/>
+      <location filename="../Debugger/DisassemblyView.cpp" line="724"/>
+      <source>Follow Branch</source>
+      <translation type="unfinished">Follow Branch</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DisassemblyView.cpp" line="729"/>
       <source>&amp;Go to Address</source>
-      <translation>&amp;Siirry osoitteeseen</translation>
+      <translation type="unfinished">&amp;Go to Address</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="668"/>
+      <location filename="../Debugger/DisassemblyView.cpp" line="739"/>
+      <source>Go to PC on Pause</source>
+      <translation type="unfinished">Go to PC on Pause</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DisassemblyView.cpp" line="747"/>
+      <source>Add Function</source>
+      <translation type="unfinished">Add Function</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DisassemblyView.cpp" line="753"/>
+      <source>Remove Function</source>
+      <translation type="unfinished">Remove Function</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DisassemblyView.cpp" line="759"/>
       <source>Restore Function</source>
-      <translation>Palauta funktio</translation>
+      <translation type="unfinished">Restore Function</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="673"/>
+      <location filename="../Debugger/DisassemblyView.cpp" line="764"/>
       <source>Stub (NOP) Function</source>
-      <translation>Lakkauta (NOP) funktio</translation>
+      <translation type="unfinished">Stub (NOP) Function</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="678"/>
-      <source>Show &amp;Opcode</source>
-      <translation>Näytä &amp;Opcode</translation>
+      <location filename="../Debugger/DisassemblyView.cpp" line="770"/>
+      <source>Show &amp;Instruction Bytes</source>
+      <translation type="unfinished">Show &amp;Instruction Bytes</translation>
     </message>
     <message>
-      <location filename="../Debugger/DisassemblyWidget.cpp" line="693"/>
+      <location filename="../Debugger/DisassemblyView.cpp" line="829"/>
       <source>%1 NOT VALID ADDRESS</source>
-      <translation>%1 PÄTEMÄTÖN OSOITE</translation>
+      <translation type="unfinished">%1 NOT VALID ADDRESS</translation>
+    </message>
+  </context>
+  <context>
+    <name>DisassemblyViewColumnTitle</name>
+    <message>
+      <location filename="../Debugger/DisassemblyView.cpp" line="788"/>
+      <source> %1 %2 %3  %4</source>
+      <translation type="unfinished"> %1 %2 %3  %4</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DisassemblyView.cpp" line="792"/>
+      <source> %1 %2  %3</source>
+      <translation type="unfinished"> %1 %2  %3</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DisassemblyView.cpp" line="800"/>
+      <source>Location</source>
+      <translation type="unfinished">Location</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DisassemblyView.cpp" line="805"/>
+      <source>Bytes   </source>
+      <translation type="unfinished">Bytes   </translation>
+    </message>
+    <message>
+      <location filename="../Debugger/DisassemblyView.cpp" line="809"/>
+      <source>Instruction</source>
+      <translation type="unfinished">Instruction</translation>
+    </message>
+  </context>
+  <context>
+    <name>DockLayout</name>
+    <message>
+      <location filename="../Debugger/Docking/DockLayout.cpp" line="729"/>
+      <source>Unnamed</source>
+      <translation>Nimetön</translation>
+    </message>
+  </context>
+  <context>
+    <name>DockManager</name>
+    <message>
+      <location filename="../Debugger/Docking/DockManager.cpp" line="111"/>
+      <source>No Layouts</source>
+      <translation>Ei asetteluja</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/DockManager.cpp" line="366"/>
+      <source>Add Another...</source>
+      <translation>Lisää toinen...</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/DockManager.cpp" line="581"/>
+      <source>Edit Layout</source>
+      <translation>Muokkaa asettelua</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/DockManager.cpp" line="586"/>
+      <source>Reset Layout</source>
+      <translation>Nollaa asettelu</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/DockManager.cpp" line="636"/>
+      <source>Are you sure you want to reset layout &apos;%1&apos;?</source>
+      <translation>Haluatko varmasti nollata asettelun &apos;%1&apos;?</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/DockManager.cpp" line="637"/>
+      <location filename="../Debugger/Docking/DockManager.cpp" line="660"/>
+      <source>Confirmation</source>
+      <translation>Vahvistus</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/DockManager.cpp" line="592"/>
+      <source>Delete Layout</source>
+      <translation>Poista asettelu</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/DockManager.cpp" line="659"/>
+      <source>Are you sure you want to delete layout &apos;%1&apos;?</source>
+      <translation>Haluatko varmasti poistaa asettelun &apos;%1&apos;?</translation>
+    </message>
+  </context>
+  <context>
+    <name>DockMenuBar</name>
+    <message>
+      <location filename="../Debugger/Docking/DockMenuBar.cpp" line="132"/>
+      <source>Layout Locked</source>
+      <translation>Asettelu lukittu</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/DockMenuBar.cpp" line="137"/>
+      <source>Layout Unlocked</source>
+      <translation>Asettelu avattu</translation>
+    </message>
+  </context>
+  <context>
+    <name>DockTabBar</name>
+    <message>
+      <location filename="../Debugger/Docking/DockViews.cpp" line="177"/>
+      <source>Rename</source>
+      <translation>Nimeä uudelleen</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/DockViews.cpp" line="188"/>
+      <source>Rename Window</source>
+      <translation>Nimeä ikkuna uudelleen</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/DockViews.cpp" line="188"/>
+      <source>New name:</source>
+      <translation>Uusi nimi:</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/DockViews.cpp" line="194"/>
+      <source>Invalid Name</source>
+      <translation>Virheellinen nimi</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/DockViews.cpp" line="194"/>
+      <source>The specified name is too long.</source>
+      <translation>Annettu nimi on liian pitkä.</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/DockViews.cpp" line="201"/>
+      <source>Reset Name</source>
+      <translation>Nollaa nimi</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/DockViews.cpp" line="215"/>
+      <source>Primary</source>
+      <translation>Ensisijainen</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/DockViews.cpp" line="230"/>
+      <source>Set Target</source>
+      <translation>Aseta kohde</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/DockViews.cpp" line="251"/>
+      <source>Inherit From Layout</source>
+      <translation>Peri asettelusta</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/DockViews.cpp" line="259"/>
+      <source>Close</source>
+      <translation>Sulje</translation>
     </message>
   </context>
   <context>
@@ -5092,87 +5574,87 @@ Haluatko korvata sen?</translation>
   <context>
     <name>EmuThread</name>
     <message>
-      <location filename="../QtHost.cpp" line="1001"/>
+      <location filename="../QtHost.cpp" line="1002"/>
       <source>Slot: %1 | Volume: %2% | %3 | EE: %4% | VU: %5% | GS: %6%</source>
       <translation>Tilatallennuspaikka: %1 | Ääni: %2% | %3 | EE: %4% | VU: %5% | GS: %6%</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1011"/>
+      <location filename="../QtHost.cpp" line="1012"/>
       <source>Slot: %1 | Volume: %2% | %3 | EE: %4% | GS: %5%</source>
       <translation>Tilatallennuspaikka: %1 | Ääni: %2% | %3 | EE: %4% | GS: %5%</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1043"/>
+      <location filename="../QtHost.cpp" line="1044"/>
       <source>No Image</source>
       <translation>Ei levykuvaa</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1045"/>
+      <location filename="../QtHost.cpp" line="1046"/>
       <source>%1x%2</source>
       <translation>%1x%2</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1057"/>
+      <location filename="../QtHost.cpp" line="1058"/>
       <source>FPS: %1</source>
       <translation>FPS: %1</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1064"/>
+      <location filename="../QtHost.cpp" line="1065"/>
       <source>VPS: %1 </source>
       <translation>VPS: %1 </translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1070"/>
+      <location filename="../QtHost.cpp" line="1071"/>
       <source>Speed: %1% </source>
       <translation>Nopeus: %1% </translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1125"/>
+      <location filename="../QtHost.cpp" line="1126"/>
       <source>Game: %1 (%2)
 </source>
       <translation>Peli: %1 (%2)
 </translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1133"/>
+      <location filename="../QtHost.cpp" line="1134"/>
       <source>Rich presence inactive or unsupported.</source>
       <translation>Rikas läsnäolo epäaktiivinen tai tukematon.</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1137"/>
+      <location filename="../QtHost.cpp" line="1138"/>
       <source>Game not loaded or no RetroAchievements available.</source>
       <translation>Peliä ei ole ladattuna tai RetroAchievements-saavutuksia ei ole saatavilla.</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1545"/>
-      <location filename="../QtHost.cpp" line="1565"/>
-      <location filename="../QtHost.cpp" line="1573"/>
-      <location filename="../QtHost.cpp" line="1607"/>
+      <location filename="../QtHost.cpp" line="1557"/>
+      <location filename="../QtHost.cpp" line="1577"/>
+      <location filename="../QtHost.cpp" line="1585"/>
+      <location filename="../QtHost.cpp" line="1619"/>
       <source>Error</source>
       <translation>Virhe</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1545"/>
+      <location filename="../QtHost.cpp" line="1557"/>
       <source>Failed to create HTTPDownloader.</source>
       <translation>HTTPDownloaderin luominen epäonnistui.</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1553"/>
+      <location filename="../QtHost.cpp" line="1565"/>
       <source>Downloading %1...</source>
       <translation>Ladataan %1...</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1566"/>
+      <location filename="../QtHost.cpp" line="1578"/>
       <source>Download failed with HTTP status code %1.</source>
       <translation>Lataus epäonnistui HTTP-tilakoodilla %1.</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1574"/>
+      <location filename="../QtHost.cpp" line="1586"/>
       <source>Download failed: Data is empty.</source>
       <translation>Lataus epäonnistui: Tiedot ovat tyhjiä.</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1608"/>
+      <location filename="../QtHost.cpp" line="1620"/>
       <source>Failed to write &apos;%1&apos;.</source>
       <translation>&apos;%1&apos; kirjoittaminen epäonnistui.</translation>
     </message>
@@ -5196,7 +5678,7 @@ Haluatko korvata sen?</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="139"/>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="127"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="136"/>
       <source>Enable Cheats</source>
       <translation>Ota huijaukset käyttöön</translation>
     </message>
@@ -5217,25 +5699,25 @@ Haluatko korvata sen?</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="153"/>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="129"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="138"/>
       <source>Enable Host Filesystem</source>
       <translation>Ota isäntätiedostojärjestelmä käyttöön</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="160"/>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="122"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="131"/>
       <source>Enable Fast CDVD</source>
       <translation>Ota nopea CDVD käyttöön</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="167"/>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="124"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="133"/>
       <source>Enable CDVD Precaching</source>
       <translation>Ota käyttöön CDVD:n vienti esivälimuistiin</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="174"/>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="115"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="124"/>
       <source>Enable Thread Pinning</source>
       <translation>Ota säiekiinnitys käyttöön</translation>
     </message>
@@ -5246,7 +5728,7 @@ Haluatko korvata sen?</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="114"/>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="111"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="120"/>
       <source>Disabled</source>
       <translation>Ei käytössä</translation>
     </message>
@@ -5287,7 +5769,7 @@ Haluatko korvata sen?</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="90"/>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="108"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="117"/>
       <source>100% (Normal Speed)</source>
       <translation>100 % (normaali nopeus)</translation>
     </message>
@@ -5323,222 +5805,262 @@ Haluatko korvata sen?</translation>
       <translation>Kuvan enimmäisviive:</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.ui" line="228"/>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="146"/>
+      <location filename="../Settings/EmulationSettingsWidget.ui" line="249"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="155"/>
       <source>Use Host VSync Timing</source>
       <translation>Käytä isännän pystytahdistusajoitusta</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.ui" line="235"/>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="138"/>
+      <location filename="../Settings/EmulationSettingsWidget.ui" line="228"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="147"/>
       <source>Sync to Host Refresh Rate</source>
       <translation>Synkronoi isännän virkistystaajuuteen</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="242"/>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="132"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="141"/>
       <source>Optimal Frame Pacing</source>
       <translation>Optimaalinen kuvanrytmitys</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.ui" line="249"/>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="143"/>
+      <location filename="../Settings/EmulationSettingsWidget.ui" line="235"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="152"/>
       <source>Vertical Sync (VSync)</source>
       <translation>Pystytahdistus (VSync)</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="52"/>
+      <location filename="../Settings/EmulationSettingsWidget.ui" line="256"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="158"/>
+      <source>Skip Presenting Duplicate Frames</source>
+      <translation>Ohita kaksoiskuvien esitys</translation>
+    </message>
+    <message>
+      <location filename="../Settings/EmulationSettingsWidget.ui" line="281"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="165"/>
+      <source>Real-Time Clock</source>
+      <translation>Reaaliaikainen kello</translation>
+    </message>
+    <message>
+      <location filename="../Settings/EmulationSettingsWidget.ui" line="287"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="163"/>
+      <source>Manually Set Real-Time Clock</source>
+      <translation>Määritä reaaliaikainen kello</translation>
+    </message>
+    <message>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="59"/>
       <source>Use Global Setting [%1]</source>
       <translation>Käytä yleistä asetusta [%1]</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="98"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="107"/>
       <source>Normal Speed</source>
       <translation>Tavallinen nopeus</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="99"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="108"/>
       <source>Sets the target emulation speed. It is not guaranteed that this speed will be reached, and if not, the emulator will run as fast as it can manage.</source>
       <translation>Asettaa kohde-emulointinopeuden. Tämän nopeuden saavuttaminen ei ole taattua, ja tällöin emulaattori toimii niin nopeasti kuin se pystyy.</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="102"/>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="105"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="111"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="114"/>
       <source>User Preference</source>
       <translation>Käyttäjän asetus</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="119"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="128"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="158"/>
       <source>Checked</source>
       <translation>Käytössä</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="109"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="118"/>
       <source>Higher values may increase internal framerate in games, but will increase CPU requirements substantially. Lower values will reduce the CPU load allowing lightweight games to run full speed on weaker CPUs.</source>
       <translation>Suuremmat arvot voivat korottaa sisäistä kuvataajuutta peleissä, mutta kasvattavat huomattavasti suorittimen vaatimuksia. Pienemmät arvot vähentävät suorittimen kuormitusta ja mahdollistavat kevyiden pelien sujuvan toiston heikommilla suorittimilla.</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="112"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="121"/>
       <source>Makes the emulated Emotion Engine skip cycles. Helps a small subset of games like SOTC. Most of the time it&apos;s harmful to performance.</source>
       <extracomment>SOTC = Shadow of the Colossus. A game&apos;s title, should not be translated unless an official translation exists.</extracomment>
       <translation>Saa emuloidun Emotion Enginen ohittamaan syklejä. Auttaa pientä määrää pelejä, kuten Shadow of the Colossusta. Useimmiten heikentää suorituskykyä.</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="115"/>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="122"/>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="124"/>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="127"/>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="129"/>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="132"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="131"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="133"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="136"/>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="138"/>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="143"/>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="146"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="141"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="147"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="152"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="155"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="163"/>
       <source>Unchecked</source>
       <translation>Ei käytössä</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="123"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="132"/>
       <source>Fast disc access, less loading times. Check HDLoader compatibility lists for known games that have issues with this.</source>
       <translation>Nopea levyn haku, vähemmän latausaikaa. Tarkista HDLoaderin yhteensopivuuslistoilta tunnettuja pelejä, joilla on ongelmia tämän kanssa.</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="128"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="137"/>
       <source>Automatically loads and applies cheats on game start.</source>
       <translation>Lataa ja soveltaa huijaukset automaattisesti pelin käynnistyksen yhteydessä.</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="130"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="139"/>
       <source>Allows games and homebrew to access files / folders directly on the host computer.</source>
       <translation>Mahdollistaa pelien ja kotitekoisten ohjelmistojen pääsyn tiedostoihin / kansioihin suoraan isäntätietokoneella.</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="102"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="111"/>
       <source>Fast-Forward Speed</source>
       <extracomment>The &quot;User Preference&quot; string will appear after the text &quot;Recommended Value:&quot;</extracomment>
       <translation>Pikakelauksen nopeus</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="98"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="107"/>
       <source>100%</source>
       <translation>100 %</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="103"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="112"/>
       <source>Sets the fast-forward speed. This speed will be used when the fast-forward hotkey is pressed/toggled.</source>
       <translation>Asettaa pikakelauksen nopeuden. Tätä nopeutta käytetään pikakelauksen pikanäppäintä painettaessa.</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="105"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="114"/>
       <source>Slow-Motion Speed</source>
       <extracomment>The &quot;User Preference&quot; string will appear after the text &quot;Recommended Value:&quot;</extracomment>
       <translation>Hidastuksen nopeus</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="106"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="115"/>
       <source>Sets the slow-motion speed. This speed will be used when the slow-motion hotkey is pressed/toggled.</source>
       <translation>Asettaa hidastuksen nopeuden. Tätä nopeutta käytetään hidastuksen pikanäppäintä painettaessa.</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="108"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="117"/>
       <source>EE Cycle Rate</source>
       <translation>EE-syklitaajuus</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="111"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="120"/>
       <source>EE Cycle Skip</source>
       <translation>EE-syklin ohitus</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="116"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="125"/>
       <source>Sets the priority for specific threads in a specific order ignoring the system scheduler. May help CPUs with big (P) and little (E) cores (e.g. Intel 12th or newer generation CPUs from Intel or other vendors such as AMD).</source>
       <extracomment>P-Core = Performance Core, E-Core = Efficiency Core. See if Intel has official translations for these terms.</extracomment>
       <translation>Asettaa etusijan tietyille säikeille tietyssä järjestyksessä, ohittaen järjestelmän ajoittajan. Saattaa auttaa suorittimia, joissa on suuria (P) ja pieniä (E) ytimiä (esim. Intelin 12. sukupolven tai uudemmat suorittimet, sekä muiden valmistajien, kuten AMD).</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="119"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="128"/>
       <source>Enable Multithreaded VU1 (MTVU1)</source>
       <translation>Ota monisäikeinen VU1 käyttöön (MTVU1)</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="120"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="129"/>
       <source>Generally a speedup on CPUs with 4 or more cores. Safe for most games, but a few are incompatible and may hang.</source>
       <translation>Yleensä nopeuttaa suorittimilla, joissa on 4 tai useampia ytimiä. Turvallinen useimmille peleille, mutta jotkut eivät ole yhteensopivia ja saattavat jäätyä.</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="125"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="134"/>
       <source>Loads the disc image into RAM before starting the virtual machine. Can reduce stutter on systems with hard drives that have long wake times, but significantly increases boot times.</source>
       <translation>Lataa levykuvan RAM-muistiin ennen virtuaalikoneen käynnistystä. Voi vähentää pätkimistä järjestelmissä, joiden kovalevyissä on pitkät heräämisajat, mutta lisää huomattavasti käynnistysaikaa.</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="133"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="142"/>
       <source>Sets the VSync queue size to 0, making every frame be completed and presented by the GS before input is polled and the next frame begins. Using this setting can reduce input lag at the cost of measurably higher CPU and GPU requirements.</source>
       <translation>Asettaa pystytahdistuksen (VSync) jonon pituuden arvoon 0, jolloin jokainen kuva valmistuu ja esitetään GS:n toimesta, ennen kuin syötteitä tarkastellaan ja seuraava kuva alkaa. Tämän asetuksen käyttö voi vähentää syöttöviivettä, mutta nostaa huomattavasti sekä suorittimen että grafiikkasuorittimen vaatimuksia.</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="135"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="144"/>
       <source>Maximum Frame Latency</source>
       <translation>Kuvan enimmäisviive</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="135"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="144"/>
       <source>2 Frames</source>
       <translation>2 kuvaa</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="136"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="145"/>
       <source>Sets the maximum number of frames that can be queued up to the GS, before the CPU thread will wait for one of them to complete before continuing. Higher values can assist with smoothing out irregular frame times, but add additional input lag.</source>
       <translation>Asettaa enimmäismäärän kuvia, jotka jonotetaan GS:ään, ennen kuin suorittimen säie odottaa yhden niistä valmistumista ennen jatkamista. Suuremmat arvot voivat auttaa tasoittamaan epäsäännöllisiä kuva-aikoja, mutta lisäävät ylimääräistä syöttöviivettä.</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="139"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="148"/>
       <source>Speeds up emulation so that the guest refresh rate matches the host. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%. Sync to Host Refresh Rate will not take effect if the console&apos;s refresh rate is too far from the host&apos;s refresh rate. Users with variable refresh rate displays should disable this option.</source>
       <translation>Nopeuttaa emulointia niin, että vieraan virkistystaajuus vastaa isännän omaa. Tämä johtaa mahdollisimman sulaviin animaatioihin, mutta saattaa lisätä emulointinopeutta alle 1 %:n. Asetus ei astu voimaan, jos konsolin virkistystaajuus eroaa liikaa isännän virkistystaajuudesta. Käyttäjien, joilla on eroavaiset virkistystaajuudet, suositellaan poistamaan asetus käytöstä.</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="144"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="153"/>
       <source>Enable this option to match PCSX2&apos;s refresh rate with your current monitor or screen. VSync is automatically disabled when it is not possible (eg. running at non-100% speed).</source>
       <translation>Ota käyttöön, jos haluat PCSX2:n vastaavan nykyisen näyttösi virkistystaajuutta. VSync poistetaan käytöstä automaattisesti, kun se ei ole mahdollista (esim. suorittaminen yli tai ali 100 % nopeudella).</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="147"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="156"/>
       <source>When synchronizing with the host refresh rate, this option disable&apos;s PCSX2&apos;s internal frame timing, and uses the host instead. Can result in smoother frame pacing, &lt;strong&gt;but at the cost of increased input latency&lt;/strong&gt;.</source>
       <translation>Kun synkronoidaan isännän virkistystaajuuden kanssa, tämä asetus poistaa käytöstä PCSX2:n sisäisen kuva-ajoituksen ja suosii isäntää sen sijasta. Voi johtaa tasaisempaan kuvanrytmitykseen, &lt;strong&gt;mutta syöttöviiveen kustannuksella&lt;/strong&gt;.</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="161"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="159"/>
+      <source>Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth out frame time fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase input lag. Helps when using frame generation on 25/30fps games.</source>
+      <translation>Havaitsee 25/30 FPS:n peleissä esitetyt seisontakuvat ja ohittaa ne. Kuva yhä renderöidään, mutta se tarkoittaa, että grafiikkasuorittimella on enemmän aikaa suorittaa se (kyseessä ei ole kuvanohitus). Voi tasoittaa kuva-aikojen epävakaisuutta suorittimen/grafiikkasuorittimen ollessa lähes maksimaalisessa käytössä, mutta tekee kuvanrytmityksestä epävakaampaa ja lisää mahdollisesti syöttöviivettä. Auttaa käytettäessä kuvagenerointia 25/30 FPS:n peleissä.</translation>
+    </message>
+    <message>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="164"/>
+      <source>Manually set a real-time clock to use for the virtual PlayStation 2 instead of using your OS&apos; system clock.</source>
+      <translation>Määritä reaaliaikainen kello manuaalisesti virtuaalisen PlayStation 2:n käyttöön käyttöjärjestelmäsi kellon sijaan.</translation>
+    </message>
+    <message>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="165"/>
+      <source>Current date and time</source>
+      <translation>Päivämäärä ja kellonaika</translation>
+    </message>
+    <message>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="166"/>
+      <source>Real-time clock (RTC) used by the virtual PlayStation 2. Date format is the same as the one used by your OS. This time is only applied upon booting the PS2; changing it while in-game will have no effect. NOTE: This assumes you have your PS2 set to the default timezone of GMT+0 and default DST of Summer Time. Some games require an RTC date/time set after their release date.</source>
+      <translation>Virtuaalisen PlayStation 2:n käyttämä reaaliaikainen kello (RTC). Päivämäärän formaatti on sama kuin käyttöjärjestelmässäsi. Aika asetetaan vain PS2:n käynnistyksen yhteydessä, sen muuttamisella pelin ollessa käynnissä ei ole vaikutusta. HUOM: PS2:n oletetaan olevan asetettu oletusaikavyöhykkeelle GMT+0 ja kesäajalle. Jotkut pelit vaativat päivämäärän tai ajan olevan asetettu niiden julkaisupäivän jälkeen.</translation>
+    </message>
+    <message>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="182"/>
       <source>Use Global Setting [%1%]</source>
       <translation>Käytä yleistä asetusta [%1%]</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="173"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="194"/>
       <source>%1% [%2 FPS (NTSC) / %3 FPS (PAL)]</source>
       <translation>%1% [%2 FPS (NTSC) / %3 FPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="181"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="202"/>
       <source>Unlimited</source>
       <extracomment>Every case that uses this particular string seems to refer to speeds: Normal Speed/Fast Forward Speed/Slow Motion Speed.</extracomment>
       <translation>Rajoittamaton</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="185"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="206"/>
       <source>Custom</source>
       <extracomment>Every case that uses this particular string seems to refer to speeds: Normal Speed/Fast Forward Speed/Slow Motion Speed.</extracomment>
       <translation>Mukautettu</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="193"/>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="229"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="214"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="250"/>
       <source>Custom [%1% / %2 FPS (NTSC) / %3 FPS (PAL)]</source>
       <translation>Mukautettu [%1% / %2 FPS (NTSC) / %3 FPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="214"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="235"/>
       <source>Custom Speed</source>
       <translation>Mukautettu nopeus</translation>
     </message>
     <message>
-      <location filename="../Settings/EmulationSettingsWidget.cpp" line="214"/>
+      <location filename="../Settings/EmulationSettingsWidget.cpp" line="235"/>
       <source>Enter Custom Speed</source>
       <translation>Anna mukautettu nopeus</translation>
     </message>
@@ -5546,12 +6068,12 @@ Haluatko korvata sen?</translation>
   <context>
     <name>ExpressionParser</name>
     <message>
-      <location filename="../../pcsx2/DebugTools/DebugInterface.cpp" line="1296"/>
+      <location filename="../../pcsx2/DebugTools/DebugInterface.cpp" line="1353"/>
       <source>Invalid memory access size %d.</source>
       <translation>Virheellinen muistin käyttökoon arvo %d.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/DebugTools/DebugInterface.cpp" line="1302"/>
+      <location filename="../../pcsx2/DebugTools/DebugInterface.cpp" line="1359"/>
       <source>Invalid memory access (unaligned).</source>
       <translation>Virheellinen muistin käyttö (kohdistamaton).</translation>
     </message>
@@ -5616,16 +6138,21 @@ Haluatko korvata sen?</translation>
       <source>Invalid tertiary operator.</source>
       <translation>Virheellinen kolmoisoperaattori.</translation>
     </message>
+    <message>
+      <location filename="../../pcsx2/DebugTools/ExpressionParser.cpp" line="604"/>
+      <source>Invalid expression (Too many constants?)</source>
+      <translation type="unfinished">Invalid expression (Too many constants?)</translation>
+    </message>
   </context>
   <context>
     <name>FileOperations</name>
     <message>
-      <location filename="../QtUtils.cpp" line="154"/>
+      <location filename="../QtUtils.cpp" line="159"/>
       <source>Failed to show file</source>
       <translation>Tiedostoa ei voitu näyttää</translation>
     </message>
     <message>
-      <location filename="../QtUtils.cpp" line="155"/>
+      <location filename="../QtUtils.cpp" line="160"/>
       <source>Failed to show file in file explorer.
 
 The file was: %1</source>
@@ -5634,30 +6161,30 @@ The file was: %1</source>
 Tiedosto oli: %1</translation>
     </message>
     <message>
-      <location filename="../QtUtils.cpp" line="163"/>
+      <location filename="../QtUtils.cpp" line="168"/>
       <source>Show in Folder</source>
       <extracomment>Windows action to show a file in Windows Explorer</extracomment>
       <translation>Näytä kansiossa</translation>
     </message>
     <message>
-      <location filename="../QtUtils.cpp" line="166"/>
+      <location filename="../QtUtils.cpp" line="171"/>
       <source>Show in Finder</source>
       <extracomment>macOS action to show a file in Finder</extracomment>
       <translation>Näytä Finderissa</translation>
     </message>
     <message>
-      <location filename="../QtUtils.cpp" line="169"/>
+      <location filename="../QtUtils.cpp" line="174"/>
       <source>Open Containing Directory</source>
       <extracomment>Opens the system file manager to the directory containing a selected file</extracomment>
       <translation>Avaa tiedostosijainti</translation>
     </message>
     <message>
-      <location filename="../QtUtils.cpp" line="177"/>
+      <location filename="../QtUtils.cpp" line="182"/>
       <source>Failed to open URL</source>
       <translation>URL-osoitetta ei voitu avata</translation>
     </message>
     <message>
-      <location filename="../QtUtils.cpp" line="178"/>
+      <location filename="../QtUtils.cpp" line="183"/>
       <source>Failed to open URL.
 
 The URL was: %1</source>
@@ -5749,342 +6276,337 @@ URL-osoite oli: %1</translation>
   <context>
     <name>FullscreenUI</name>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6907"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7464"/>
       <source>Could not find any CD/DVD-ROM devices. Please ensure you have a drive connected and sufficient permissions to access it.</source>
       <translation>CD/DVD-ROM-laitteita ei löytynyt. Varmista, että laite on yhdistetty ja sinulla on käyttölupa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6909"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7466"/>
       <source>Use Global Setting</source>
       <translation>Käytä yleistä asetusta</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6910"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7467"/>
       <source>Automatic binding failed, no devices are available.</source>
       <translation>Automaattinen sidonta epäonnistui, ei laitteita saatavilla.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6911"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7468"/>
       <source>Game title copied to clipboard.</source>
       <translation>Pelin nimi kopioitu leikepöydälle.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6912"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7469"/>
       <source>Game serial copied to clipboard.</source>
       <translation>Pelin sarjanumero kopioitu leikepöydälle.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6913"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7470"/>
       <source>Game CRC copied to clipboard.</source>
       <translation>Pelin CRC kopioitu leikepöydälle.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6914"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7471"/>
       <source>Game type copied to clipboard.</source>
       <translation>Pelin tyyppi kopioitu leikepöydälle.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6915"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7472"/>
       <source>Game region copied to clipboard.</source>
       <translation>Pelin alue kopioitu leikepöydälle.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6916"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7473"/>
       <source>Game compatibility copied to clipboard.</source>
       <translation>Pelin yhteensopivuus kopioitu leikepöydälle.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6917"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7474"/>
       <source>Game path copied to clipboard.</source>
       <translation>Pelin polku kopioitu leikepöydälle.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6919"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7476"/>
       <source>Controller settings reset to default.</source>
       <translation>Ohjainasetukset nollattu oletusarvoihin.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6920"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7477"/>
       <source>No input profiles available.</source>
       <translation>Syöttöprofiileja ei löytynyt.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6921"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7478"/>
       <source>Create New...</source>
       <translation>Luo uusi...</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6922"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7479"/>
       <source>Enter the name of the input profile you wish to create.</source>
       <translation>Nimeä uusi syöttöprofiilisi.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6923"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7480"/>
       <source>Are you sure you want to restore the default settings? Any preferences will be lost.</source>
       <translation>Haluatko varmasti palauttaa oletusarvoiset asetukset? Kaikki mukautukset menetetään.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6924"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7481"/>
       <source>Settings reset to defaults.</source>
       <translation>Asetukset nollattu oletusarvoisiksi.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6925"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7482"/>
       <source>No save present in this slot.</source>
       <translation>Ei tallennusta tässä paikassa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6926"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7483"/>
       <source>No save states found.</source>
       <translation>Tilatallennuksia ei löytynyt.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6927"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7484"/>
       <source>Failed to delete save state.</source>
       <translation>Tilatallennuksen poisto epäonnistui.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6928"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7485"/>
       <source>Failed to copy text to clipboard.</source>
       <translation>Tekstin kopiointi leikepöydälle epäonnistui.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6929"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7486"/>
       <source>This game has no achievements.</source>
       <translation>Tälle pelille ei ole saavutuksia.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6930"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7487"/>
       <source>This game has no leaderboards.</source>
       <translation>Tälle pelille ei ole tulostauluja.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6931"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7488"/>
       <source>Reset System</source>
       <translation>Nollaa järjestelmä</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6932"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7489"/>
       <source>Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?</source>
       <translation>Hardcore-tilaa ei oteta käyttöön ennen järjestelmän nollausta. Haluatko nollata järjestelmän nyt?</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6934"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7491"/>
       <source>Launch a game from images scanned from your game directories.</source>
       <translation>Käynnistä peli kansioistasi skannatuista levykuvista.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6942"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7499"/>
       <source>Launch a game by selecting a file/disc image.</source>
       <translation>Käynnistä peli valitsemalla tiedosto/levykuva.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6946"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7503"/>
       <source>Start the console without any disc inserted.</source>
       <translation>Käynnistä konsoli ilman syötettyä levyä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6944"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7501"/>
       <source>Start a game from a disc in your PC&apos;s DVD drive.</source>
       <translation>Käynnistä peli levyltä tietokoneesi DVD-asemassa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6954"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7511"/>
       <source>No Binding</source>
       <translation>Ei sidosta</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6955"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7512"/>
       <source>Setting %s binding %s.</source>
       <translation>Asetetaan %s sidontaa %s.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6956"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7513"/>
       <source>Push a controller button or axis now.</source>
       <translation>Käytä ohjaimen painiketta tai ohjaussauvaa nyt.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6957"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7514"/>
       <source>Timing out in %.0f seconds...</source>
       <translation>Aikakatkaistaan %.0f sekunnin kuluttua...</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6958"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7515"/>
       <source>Unknown</source>
       <translation>Tuntematon</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6959"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7516"/>
       <source>OK</source>
       <translation>OK</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6960"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7517"/>
       <source>Select Device</source>
       <translation>Valitse laite</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6961"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7518"/>
       <source>Details</source>
       <translation>Tiedot</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6965"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7522"/>
       <source>Options</source>
       <translation>Asetukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6966"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7523"/>
       <source>Copies the current global settings to this game.</source>
       <translation>Kopioi nykyiset yleiset asetukset tähän peliin.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6967"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7524"/>
       <source>Clears all settings set for this game.</source>
       <translation>Poistaa kaikki tämän pelin asetukset.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6968"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7528"/>
       <source>Behaviour</source>
       <translation>Käyttäytyminen</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6969"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7529"/>
       <source>Prevents the screen saver from activating and the host from sleeping while emulation is running.</source>
       <translation>Estää näytönsäästäjää aktivoitumasta ja isännän siirtymistä lepotilaan emuloinnin aikana.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6970"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7538"/>
       <source>Shows the game you are currently playing as part of your profile on Discord.</source>
       <translation>Näyttää paraikaa pelattavan pelin osana profiiliasi Discordissa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6971"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7530"/>
       <source>Pauses the emulator when a game is started.</source>
       <translation>Pysäyttää emulaattorin, kun peli käynnistetään.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6972"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7531"/>
       <source>Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back.</source>
       <translation>Pysäyttää emulaattorin, kun pienennät ikkunan tai avaat toisen ohjelman, ja jatkaa avattaessa ikkunan uudelleen.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6974"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7533"/>
       <source>Pauses the emulator when you open the quick menu, and unpauses when you close it.</source>
       <translation>Pysäyttää emulaattorin, kun avaat pikavalikon, ja jatkaa suljettaessa sen.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6975"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7534"/>
       <source>Determines whether a prompt will be displayed to confirm shutting down the emulator/game when the hotkey is pressed.</source>
       <translation>Määrittää, näytetäänkö vahvistuskehote, kun emulaattori/peli suljetaan pikanäppäimellä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6976"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7535"/>
       <source>Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time.</source>
       <translation>Automaattisesti tallentaa emulaattorin tilan, kun poistutaan tai virta sammutetaan. Sitten voit jatkaa suoraan siitä mihin viimeksi jäit.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6979"/>
-      <source>Uses a light coloured theme instead of the default dark theme.</source>
-      <translation>Käyttää vaalean väristä teemaa oletusarvoisen tumman teeman sijasta.</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6980"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7539"/>
       <source>Game Display</source>
       <translation>Pelinäkymä</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6982"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7541"/>
       <source>Switches between full screen and windowed when the window is double-clicked.</source>
       <translation>Vaihtaa koko näytön ja ikkunoidun tilan välillä, kun ikkunaa napsautetaan kahdesti.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6983"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7542"/>
       <source>Hides the mouse pointer/cursor when the emulator is in fullscreen mode.</source>
       <translation>Piilottaa hiiren osoittimen/kohdistimen emulaattorin ollessa koko näytön tilassa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6985"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7544"/>
       <source>Determines how large the on-screen messages and monitor are.</source>
       <translation>Määrittää ruudulla olevien viestien ja näytön suuruuden.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6987"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7546"/>
       <source>Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc.</source>
       <translation>Näyttää ruudulla viestit tapahtumille, kuten tilatallennuksia luodessa/ladattaessa, ottaessa kuvakaappauksia jne.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6989"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7548"/>
       <source>Shows the current emulation speed of the system in the top-right corner of the display as a percentage.</source>
       <translation>Näyttää järjestelmän nykyisen emulointinopeuden prosentteina näytön oikeassa yläkulmassa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6990"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7549"/>
       <source>Shows the number of video frames (or v-syncs) displayed per second by the system in the top-right corner of the display.</source>
       <translation>Näyttää järjestelmän sekunnin aikana esittävien videokuvien (tai v-syncien) määrän näytön oikeassa yläkulmassa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6991"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7550"/>
       <source>Shows the CPU usage based on threads in the top-right corner of the display.</source>
       <translation>Näyttää suorittimen käytön säikeillä näytön oikeassa yläkulmassa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6992"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7551"/>
       <source>Shows the host&apos;s GPU usage in the top-right corner of the display.</source>
       <translation>Näyttää isännän grafiikkasuorittimen käytön näytön oikeassa yläkulmassa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6994"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7553"/>
       <source>Shows statistics about GS (primitives, draw calls) in the top-right corner of the display.</source>
       <translation>Näyttää GS:n tilastot (primitiivit, piirtokäskyt) näytön oikeassa yläkulmassa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6995"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7554"/>
       <source>Shows indicators when fast forwarding, pausing, and other abnormal states are active.</source>
       <translation>Näyttää indikaattorit, kun pikakelataan, pysäytetään ja kun muut epänormaalit tilat ovat aktiivisia.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6998"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7557"/>
       <source>Shows the current configuration in the bottom-right corner of the display.</source>
       <translation>Näyttää nykyisen konfiguraation näytön oikeassa alakulmassa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6999"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7558"/>
       <source>Shows the current controller state of the system in the bottom-left corner of the display.</source>
       <translation>Näyttää järjestelmän nykyisen ohjaimen tilan näytön vasemmassa alakulmassa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7002"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7561"/>
       <source>Displays warnings when settings are enabled which may break games.</source>
       <translation>Näyttää varoituksia, kun päällä on asetuksia, jotka saattavat rikkoa pelejä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7004"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7563"/>
       <source>Resets configuration to defaults (excluding controller settings).</source>
       <translation>Nollaa konfiguraation oletusarvoiseksi (ohjainasetuksia lukuunottamatta).</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7006"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7565"/>
       <source>Changes the BIOS image used to start future sessions.</source>
       <translation>Muuttaa BIOS-kuvaa, jota käytetään tulevien istuntojen aloittamiseen.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6918"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7475"/>
       <source>Automatic</source>
       <translation>Automaattinen</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7381"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7943"/>
       <source>{0}/{1}/{2}/{3}</source>
       <translation>{0}/{1}/{2}/{3}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7611"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8186"/>
       <source>Default</source>
       <translation>Oletus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6908"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7465"/>
       <source>WARNING: Your memory card is still writing data. Shutting down now will IRREVERSIBLY DESTROY YOUR MEMORY CARD. It is strongly recommended to resume your game and let it finish writing to your memory card.
 
 Do you wish to shutdown anyways and IRREVERSIBLY DESTROY YOUR MEMORY CARD?</source>
@@ -6093,1982 +6615,2072 @@ Do you wish to shutdown anyways and IRREVERSIBLY DESTROY YOUR MEMORY CARD?</sour
 Haluatko sammuttaa siitä huolimatta ja PERUUTTAMATTOMASTI TUHOTA MUISTIKORTTISI?</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6981"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7540"/>
       <source>Automatically switches to fullscreen mode when a game is started.</source>
       <translation>Siirtyy automaattisesti koko näytön tilaan, kun peli käynnistetään.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6984"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7543"/>
       <source>On-Screen Display</source>
       <translation>Näyttöpäällys</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6986"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7545"/>
       <source>%d%%</source>
       <translation>%d %%</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6993"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7552"/>
       <source>Shows the resolution of the game in the top-right corner of the display.</source>
       <translation>Näyttää pelin kuvatarkkuuden näytön oikeassa yläkulmassa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7005"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7564"/>
       <source>BIOS Configuration</source>
       <translation>BIOS-konfiguraatio</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7007"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7566"/>
       <source>BIOS Selection</source>
       <translation>BIOSin valinta</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7008"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7567"/>
       <source>Options and Patches</source>
       <translation>Asetukset ja paikkaukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7009"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7568"/>
       <source>Skips the intro screen, and bypasses region checks.</source>
       <translation>Ohittaa intro-ruudun sekä alueentarkastukset.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7010"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7569"/>
       <source>Speed Control</source>
       <translation>Nopeuden hallinta</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7666"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8243"/>
       <source>Normal Speed</source>
       <translation>Tavallinen nopeus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7011"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7570"/>
       <source>Sets the speed when running without fast forwarding.</source>
       <translation>Asettaa suorittamisen nopeuden ilman pikakelausta.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7667"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8244"/>
       <source>Fast Forward Speed</source>
       <translation>Pikakelauksen nopeus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7012"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7571"/>
       <source>Sets the speed when using the fast forward hotkey.</source>
       <translation>Asettaa nopeuden kun käytössä on eteenpäin kelaus pikanappi.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7668"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8245"/>
       <source>Slow Motion Speed</source>
       <translation>Hidastuksen nopeus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7013"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7572"/>
       <source>Sets the speed when using the slow motion hotkey.</source>
       <translation>Asettaa nopeuden, jota käytetään hidastuksen pikanäppäintä painettaessa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7014"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7573"/>
       <source>System Settings</source>
       <translation>Järjestelmäasetukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7015"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7574"/>
       <source>EE Cycle Rate</source>
       <translation>EE-syklitaajuus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7016"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7575"/>
       <source>Underclocks or overclocks the emulated Emotion Engine CPU.</source>
       <translation>Alikellottaa tai ylikellottaa emuloidun Emotion Engine -suorittimen.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7017"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7576"/>
       <source>EE Cycle Skipping</source>
       <translation>EE-syklin ohitus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7019"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7578"/>
       <source>Enable MTVU (Multi-Threaded VU1)</source>
       <translation>Ota MTVU käyttöön (monisäikeinen VU1)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7282"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7843"/>
       <source>Enable Instant VU1</source>
       <translation>Ota välitön VU1 käyttöön</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7023"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7582"/>
       <source>Enable Cheats</source>
       <translation>Ota huijaukset käyttöön</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7024"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7583"/>
       <source>Enables loading cheats from pnach files.</source>
       <translation>Mahdollistaa huijausten lataamisen pnach-tiedostoista.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7025"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7584"/>
       <source>Enable Host Filesystem</source>
       <translation>Ota isäntätiedostojärjestelmä käyttöön</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7026"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7585"/>
       <source>Enables access to files from the host: namespace in the virtual machine.</source>
       <translation>Mahdollistaa tiedostojen käytön virtuaalikoneen isäntä:-nimiavaruudesta.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7027"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7586"/>
       <source>Enable Fast CDVD</source>
       <translation>Ota nopea CDVD käyttöön</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7028"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7587"/>
       <source>Fast disc access, less loading times. Not recommended.</source>
       <translation>Nopea levyn käyttö, vähemmän latausaikoja. Ei suositella.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7031"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7590"/>
       <source>Frame Pacing/Latency Control</source>
       <translation>Kuvanrytmitys / viiveen hallinta</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7032"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7591"/>
       <source>Maximum Frame Latency</source>
       <translation>Kuvan enimmäisviive</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7033"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7592"/>
       <source>Sets the number of frames which can be queued.</source>
       <translation>Asettaa jonotettavien kuvien määrän.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7034"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7593"/>
       <source>Optimal Frame Pacing</source>
       <translation>Optimaalinen kuvanrytmitys</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7035"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7594"/>
       <source>Synchronize EE and GS threads after each frame. Lowest input latency, but increases system requirements.</source>
       <translation>Synkronoi EE- ja GS-säikeet jokaisen kuvan jälkeen. Pienin syöttöviive, mutta nostaa järjestelmän vaatimuksia.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7039"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7598"/>
       <source>Speeds up emulation so that the guest refresh rate matches the host.</source>
       <translation>Nopeuttaa emulointia niin, että vieraan virkistystaajuus vastaa isännän omaa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7042"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7601"/>
       <source>Renderer</source>
       <translation>Renderöijä</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7043"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7602"/>
       <source>Selects the API used to render the emulated GS.</source>
       <translation>Valitsee API:n, jota käytetään emuloidun GS:n renderöinnissä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7037"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7596"/>
       <source>Synchronizes frame presentation with host refresh.</source>
       <translation>Synkronoi kuvan esityksen isännän virkistystaajuuteen.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7044"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7603"/>
       <source>Display</source>
       <translation>Näyttö</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7045"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7604"/>
       <source>Aspect Ratio</source>
       <translation>Kuvasuhde</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7046"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7605"/>
       <source>Selects the aspect ratio to display the game content at.</source>
       <translation>Määrittää näytön kuvasuhteen, jossa pelin sisältö näytetään.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7047"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7606"/>
       <source>FMV Aspect Ratio Override</source>
       <translation>FMV-kuvasuhteen ohitus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7048"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7607"/>
       <source>Selects the aspect ratio for display when a FMV is detected as playing.</source>
       <translation>Määrittää näytön kuvasuhteen, kun FMV:iden havaitaan toistettavan.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7049"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7608"/>
       <source>Deinterlacing</source>
       <translation>Lomituksen poisto</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7050"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7609"/>
       <source>Selects the algorithm used to convert the PS2&apos;s interlaced output to progressive for display.</source>
       <translation>Valitsee algoritmin, jota käytetään PS2:n lomitetun lähdön muuntamiseen progressiiviseksi näytölle.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7051"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7610"/>
       <source>Screenshot Size</source>
       <translation>Kuvakaappauksen koko</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7052"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7611"/>
       <source>Determines the resolution at which screenshots will be saved.</source>
       <translation>Määrittää kuvatarkkuuden, jolla kuvakaappaukset tallennetaan.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7053"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7612"/>
       <source>Screenshot Format</source>
       <translation>Kuvakaappauksen muoto</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7054"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7613"/>
       <source>Selects the format which will be used to save screenshots.</source>
       <translation>Valitsee tiedostomuodon, jota käytetään kuvakaappausten tallentamiseen.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7055"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7614"/>
       <source>Screenshot Quality</source>
       <translation>Kuvakaappauksen laatu</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7056"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7615"/>
       <source>Selects the quality at which screenshots will be compressed.</source>
       <translation>Määrittää kuvakaappausten pakkauslaadun.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7057"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7616"/>
       <source>Vertical Stretch</source>
       <translation>Pystysuora venytys</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7058"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7617"/>
       <source>Increases or decreases the virtual picture size vertically.</source>
       <translation>Kasvattaa tai pienentää virtuaalisen kuvan kokoa pystysuunnassa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7059"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7618"/>
       <source>Crop</source>
       <translation>Rajaa</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7060"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7619"/>
       <source>Crops the image, while respecting aspect ratio.</source>
       <translation>Rajaa kuvan, huomioiden kuvasuhteen.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7061"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7620"/>
       <source>%dpx</source>
       <translation>%d px</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7066"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7625"/>
       <source>Bilinear Upscaling</source>
       <translation>Bilineaarinen skaalaus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7067"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7626"/>
       <source>Smooths out the image when upscaling the console to the screen.</source>
       <translation>Pehmentää kuvan, kun konsoli skaalataan ruudulle.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7068"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7627"/>
       <source>Integer Upscaling</source>
       <translation>Kokonaislukuskaalaus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7069"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7628"/>
       <source>Adds padding to the display area to ensure that the ratio between pixels on the host to pixels in the console is an integer number. May result in a sharper image in some 2D games.</source>
       <translation>Lisää täytettä näyttöalueelle varmistukseksi, että isännän ja konsolin pikselien välinen suhde on kokonaisluku. Voi saada aikaan terävämmän kuvan joissakin 2D-peleissä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7070"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7629"/>
       <source>Screen Offsets</source>
       <translation>Näytön siirrot</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7071"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7630"/>
       <source>Enables PCRTC Offsets which position the screen as the game requests.</source>
       <translation>Ottaa käyttöön PCRTC-siirrot, jotka sijoittavat näyttöä pelin käskyjen mukaan.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7072"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7631"/>
       <source>Show Overscan</source>
       <translation>Näytä yliskannaus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7073"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7632"/>
       <source>Enables the option to show the overscan area on games which draw more than the safe area of the screen.</source>
       <translation>Ottaa käyttöön vaihtoehdon näyttää yliskannauksen alue peleissä, jotka piirtävät näytön turvallisen alueen yli.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7074"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7633"/>
       <source>Anti-Blur</source>
       <translation>Sumennuksenesto</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7075"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7634"/>
       <source>Enables internal Anti-Blur hacks. Less accurate to PS2 rendering but will make a lot of games look less blurry.</source>
       <translation>Ottaa käyttöön sisäiset sumennuksenestoniksit. Vähemmän täsmällinen PS2-renderöintiin nähden, mutta tekee useista peleistä vähemmän sumeita.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7076"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7635"/>
       <source>Rendering</source>
       <translation>Renderöinti</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7077"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7636"/>
       <source>Internal Resolution</source>
       <translation>Sisäinen kuvatarkkuus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7078"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7637"/>
       <source>Multiplies the render resolution by the specified factor (upscaling).</source>
       <translation>Laajentaa renderöinnin kuvatarkkuutta määritetyllä kertoimella (skaalaa).</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7089"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7648"/>
       <source>Mipmapping</source>
       <translation>Mipmappaus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7079"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7638"/>
       <source>Bilinear Filtering</source>
       <translation>Bilineaarinen suodatus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7080"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7639"/>
       <source>Selects where bilinear filtering is utilized when rendering textures.</source>
       <translation>Määrittää, missä bilineaarista suodatusta käytetään tekstuurien renderöinnissä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7081"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7640"/>
       <source>Trilinear Filtering</source>
       <translation>Trilineaarinen suodatus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7082"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7641"/>
       <source>Selects where trilinear filtering is utilized when rendering textures.</source>
       <translation>Määrittää, missä trilineaarista suodatusta käytetään tekstuurien renderöinnissä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7083"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7642"/>
       <source>Anisotropic Filtering</source>
       <translation>Anisotrooppinen suodatus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7085"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7644"/>
       <source>Dithering</source>
       <translation>Dithering</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7086"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7645"/>
       <source>Selects the type of dithering applies when the game requests it.</source>
       <translation>Määrittää käytettävän dither-menetelmän pelin sitä pyytäessä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7087"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7646"/>
       <source>Blending Accuracy</source>
       <translation>Sekoituksen tarkkuus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7088"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7647"/>
       <source>Determines the level of accuracy when emulating blend modes not supported by the host graphics API.</source>
       <translation>Määrittää tarkkuuden emuloidessa sekoitustiloja, joita isäntägrafiikka-API ei tue.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7205"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7766"/>
       <source>Texture Preloading</source>
       <translation>Tekstuurien esilataus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7206"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7767"/>
       <source>Uploads full textures to the GPU on use, rather than only the utilized regions. Can improve performance in some games.</source>
       <translation>Lataa täydet tekstuurit grafiikkasuorittimeen, ei ainoastaan hyödynnettyjä alueita. Voi parantaa suorituskykyä joissakin peleissä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7091"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7650"/>
       <source>Software Rendering Threads</source>
       <translation>Ohjelmistorenderöinnin säikeet</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7092"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7651"/>
       <source>Number of threads to use in addition to the main GS thread for rasterization.</source>
       <translation>Rasterointiin käytettävien säikeiden määrä GS:n pääsäikeen lisäksi.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7093"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7652"/>
       <source>Auto Flush (Software)</source>
       <translation>Automaattinen huuhtelu (ohjelmisto)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7094"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7653"/>
       <source>Force a primitive flush when a framebuffer is also an input texture.</source>
       <translation>Pakottaa primitiivien huuhtelun, kun kuvapuskuri on myös syöttötekstuuri.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7095"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7654"/>
       <source>Edge AA (AA1)</source>
       <translation>Reunanpehmennys (AA1)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7096"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7655"/>
       <source>Enables emulation of the GS&apos;s edge anti-aliasing (AA1).</source>
       <translation>Mahdollistaa GS:n reunanpehmennyksen (AA1) emuloinnin.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7090"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7649"/>
       <source>Enables emulation of the GS&apos;s texture mipmapping.</source>
       <translation>Mahdollistaa GS:n tekstuurien mipmappauksen emuloinnin.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6962"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7519"/>
       <source>The selected input profile will be used for this game.</source>
       <translation>Valittua syöttöprofiilia käytetään tässä pelissä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6963"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7520"/>
       <source>Shared</source>
       <translation>Yleinen</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6964"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7521"/>
       <source>Input Profile</source>
       <translation>Syöttöprofiili</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6978"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7525"/>
+      <source>Appearance</source>
+      <translation>Ulkoasu</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7526"/>
+      <source>Selects the color style to be used for Big Picture Mode.</source>
+      <translation>Valitsee televisiotilassa käytettävän värityylin.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7527"/>
       <source>Show a save state selector UI when switching slots instead of showing a notification bubble.</source>
       <translation>Näyttää tilatallennusvalitsimen käyttöliittymän vaihtaessasi paikkaa ilmoituskuplan sijaan.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6988"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7537"/>
+      <source>Integration</source>
+      <translation>Integraatio</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7547"/>
       <source>Shows the current PCSX2 version on the top-right corner of the display.</source>
       <translation>Näyttää nykyisen PCSX2-version näytön oikeassa yläkulmassa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6996"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7555"/>
       <source>Shows the currently active input recording status.</source>
       <translation>Näyttää tällä hetkellä aktiivisen syötteentallennuksen tilan.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6997"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7556"/>
       <source>Shows the currently active video capture status.</source>
       <translation>Näyttää aktiivisen videonauhoituksen tilan.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7000"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7559"/>
       <source>Shows a visual history of frame times in the upper-left corner of the display.</source>
       <translation>Näyttää kuva-aikojen visuaalisen historian näytön vasemmassa yläkulmassa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7001"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7560"/>
       <source>Shows the current system hardware information on the OSD.</source>
       <translation>Näyttää nykyisen järjestelmän laitteistotiedot näyttöpäällyksessä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7022"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7581"/>
       <source>Pins emulation threads to CPU cores to potentially improve performance/frame time variance.</source>
       <translation>Yhdistää emulaatiosäikeet suorittimen ytimiin parantaakseen suorituskykyä/kuva-aikojen vaihtelua.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7062"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7621"/>
       <source>Enable Widescreen Patches</source>
       <translation>Ota laajakuvapaikkaukset käyttöön</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7063"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7622"/>
       <source>Enables loading widescreen patches from pnach files.</source>
       <translation>Ottaa käyttöön laajakuvapaikkausten lataamisen pnach-tiedostoista.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7064"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7623"/>
       <source>Enable No-Interlacing Patches</source>
       <translation>Ota lomituksenpoistopaikkaukset käyttöön</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7065"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7624"/>
       <source>Enables loading no-interlacing patches from pnach files.</source>
       <translation>Ottaa käyttöön lomituksenpoistopaikkausten lataamisen pnach-tiedostoista.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7097"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7656"/>
       <source>Hardware Fixes</source>
       <translation>Laitteistokorjaukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7098"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7657"/>
       <source>Manual Hardware Fixes</source>
       <translation>Manuaaliset laitteistokorjaukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7099"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7658"/>
       <source>Disables automatic hardware fixes, allowing you to set fixes manually.</source>
       <translation>Poistaa automaattiset laitteistokorjaukset käytöstä, jolloin voit asettaa korjauksia manuaalisesti.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7100"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7659"/>
       <source>CPU Sprite Render Size</source>
       <translation>Suorittimen sprite-renderöinnin koko</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7101"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7660"/>
       <source>Uses software renderer to draw texture decompression-like sprites.</source>
       <translation>Käyttää ohjelmistorenderöijää piirtämään tekstuurien purkamisen kaltaisia spritejä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7102"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7661"/>
       <source>CPU Sprite Render Level</source>
       <translation>Suorittimen sprite-renderöinnin taso</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7103"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7662"/>
       <source>Determines filter level for CPU sprite render.</source>
       <translation>Määrittää suorittimen sprite-renderöinnin suodatustason.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7104"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7663"/>
       <source>Software CLUT Render</source>
       <translation>Ohjelmisto-CLUT-renderöinti</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7105"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7664"/>
       <source>Uses software renderer to draw texture CLUT points/sprites.</source>
       <translation>Käyttää ohjelmistorenderöijää piirtämään tekstuurien CLUT-pisteitä/-spritejä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7106"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7665"/>
+      <source>GPU Target CLUT</source>
+      <translation>Grafiikkasuorittimen kohde-CLUT</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7666"/>
+      <source>Try to detect when a game is drawing its own color palette and then renders it on the GPU with special handling.</source>
+      <translation>Yrittää havaita, kun peli piirtää oman väripaletin, ja renderöi sen sitten grafiikkasuorittimella erityiskäsittelyllä.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7667"/>
       <source>Skip Draw Start</source>
       <translation>Piirron ohitusvälin alku</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7107"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7668"/>
       <source>Object range to skip drawing.</source>
       <translation>Objektien piirron ohituksen väli.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7108"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7669"/>
       <source>Skip Draw End</source>
       <translation>Piirron ohitusvälin loppu</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7109"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7670"/>
       <source>Auto Flush (Hardware)</source>
       <translation>Automaattinen huuhtelu (laitteisto)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7110"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7671"/>
       <source>CPU Framebuffer Conversion</source>
       <translation>Suorittimen kuvapuskurin muunnos</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7112"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7673"/>
       <source>Disable Depth Conversion</source>
       <translation>Poista syvyyden muunnos käytöstä</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7114"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7675"/>
       <source>Disable Safe Features</source>
       <translation>Poista turvaominaisuudet käytöstä</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7115"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7676"/>
       <source>This option disables multiple safe features.</source>
       <translation>Poistaa käytöstä useita turvaominaisuuksia.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7117"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7678"/>
       <source>This option disables game-specific render fixes.</source>
       <translation>Poistaa käytöstä pelikohtaiset renderöintikorjaukset.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7119"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7680"/>
       <source>Uploads GS data when rendering a new frame to reproduce some effects accurately.</source>
       <translation>Lataa GS-tietoja uutta kuvaa renderöidessä joidenkin tehosteiden tarkkaan tuottoon.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7120"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7681"/>
       <source>Disable Partial Invalidation</source>
       <translation>Poista osittainen mitätöinti käytöstä</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7121"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7682"/>
       <source>Removes texture cache entries when there is any intersection, rather than only the intersected areas.</source>
       <translation>Poistaa merkinnät tekstuurivälimuistista, kun leikkauskohtia on olemassa, pelkkien leikkauskohtien poistamisen sijaan.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7123"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7684"/>
       <source>Allows the texture cache to reuse as an input texture the inner portion of a previous framebuffer.</source>
       <translation>Sallii tekstuurivälimuistin uudelleenkäyttää edellisen kuvapuskurin sisäosaa syöttötekstuurina.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7124"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7685"/>
       <source>Read Targets When Closing</source>
       <translation>Lue kohteet suljettaessa</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7125"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7686"/>
       <source>Flushes all targets in the texture cache back to local memory when shutting down.</source>
       <translation>Huuhtelee kaikki kohteet tekstuurivälimuistissa takaisin paikalliseen muistiin suljettaessa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7126"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7687"/>
       <source>Estimate Texture Region</source>
       <translation>Arvioi tekstuurialue</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7127"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7688"/>
       <source>Attempts to reduce the texture size when games do not set it themselves (e.g. Snowblind games).</source>
       <translation>Yrittää pienentää tekstuurin kokoa, kun pelit eivät itse aseta sitä (esim. Snowblind-pelit).</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7128"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7689"/>
       <source>GPU Palette Conversion</source>
       <translation>Grafiikkasuorittimen paletin muunnos</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7130"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7691"/>
       <source>Upscaling Fixes</source>
       <translation>Skaalauskorjaukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7132"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7693"/>
       <source>Adjusts vertices relative to upscaling.</source>
       <translation>Säätää kärkipisteitä suhteessa skaalaukseen.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7133"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7694"/>
       <source>Native Scaling</source>
       <translation>Alkuperäisen skaalaus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7134"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7695"/>
       <source>Attempt to do rescaling at native resolution.</source>
       <translation>Yrittää uudelleenskaalata alkuperäisessä kuvatarkkuudessa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7135"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7696"/>
       <source>Round Sprite</source>
       <translation>Pyöristä sprite</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7136"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7697"/>
       <source>Adjusts sprite coordinates.</source>
       <translation>Säätää spritejen koordinaatteja.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7137"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7698"/>
       <source>Bilinear Upscale</source>
       <translation>Bilineaarinen skaalaus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7138"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7699"/>
       <source>Can smooth out textures due to be bilinear filtered when upscaling. E.g. Brave sun glare.</source>
       <translation>Pehmentää bilineaarisesti suodatettavia tekstuureja skaalauksessa. Esim. Braven auringonloiste.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7140"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7701"/>
       <source>Adjusts target texture offsets.</source>
       <translation>Säätää tekstuurien poikkeamia.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7142"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7703"/>
       <source>Align Sprite</source>
       <translation>Kohdista sprite</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7143"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7704"/>
       <source>Fixes issues with upscaling (vertical lines) in some games.</source>
       <translation>Korjaa skaalausongelmia (pystysuoria viivoja) joissakin peleissä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7144"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7705"/>
       <source>Merge Sprite</source>
       <translation>Yhdistä sprite</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7145"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7706"/>
       <source>Replaces multiple post-processing sprites with a larger single sprite.</source>
       <translation>Korvaa useat jälkikäsittelyn spritet yhdellä isolla spritellä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7147"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7708"/>
       <source>Lowers the GS precision to avoid gaps between pixels when upscaling. Fixes the text on Wild Arms games.</source>
       <translation>Laskee GS:n tarkkuutta pikselien välisten rakojen välttämiseen skaalauksessa. Korjaa tekstin Wild Arms -peleissä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7148"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7709"/>
       <source>Unscaled Palette Texture Draws</source>
       <translation>Skaalaamaton palettitekstuurien piirto</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7149"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7710"/>
       <source>Can fix some broken effects which rely on pixel perfect precision.</source>
       <translation>Voi korjata joitain rikkinäisiä pikselintarkkoja tehosteita.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7150"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7711"/>
       <source>Texture Replacement</source>
       <translation>Tekstuurien korvaus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7151"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7712"/>
       <source>Load Textures</source>
       <translation>Lataa tekstuurit</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7152"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7713"/>
       <source>Loads replacement textures where available and user-provided.</source>
       <translation>Lataa korvaavat tekstuurit, jos ne ovat saatavilla ja käyttäjän toimittamia.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7153"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7714"/>
       <source>Asynchronous Texture Loading</source>
       <translation>Asynkroninen tekstuurien lataus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7154"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7715"/>
       <source>Loads replacement textures on a worker thread, reducing microstutter when replacements are enabled.</source>
       <translation>Lataa korvaavat tekstuurit työläissäikeelle vähentäen mikrotärinää, kun korvaukset ovat käytössä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7155"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7716"/>
       <source>Precache Replacements</source>
       <translation>Vie korvikkeet esivälimuistiin</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7156"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7717"/>
       <source>Preloads all replacement textures to memory. Not necessary with asynchronous loading.</source>
       <translation>Esilataa kaikki korvaavat tekstuurit muistiin. Ei tarvita asynkronisella latauksella.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7157"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7718"/>
       <source>Replacements Directory</source>
       <translation>Korvaavien tekstuurien kansio</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7158"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7719"/>
       <source>Folders</source>
       <translation>Kansiot</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7159"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7720"/>
       <source>Texture Dumping</source>
       <translation>Tekstuurivedostus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7160"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7721"/>
       <source>Dump Textures</source>
       <translation>Tee tekstuurivedos</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7162"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7723"/>
       <source>Dump Mipmaps</source>
       <translation>Tee mipmap-vedos</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7163"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7724"/>
       <source>Includes mipmaps when dumping textures.</source>
       <translation>Sisällyttää mipmapit mukaan tekstuurivedoksissa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7164"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7725"/>
       <source>Dump FMV Textures</source>
       <translation>Tee FMV-tekstuurivedos</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7165"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7726"/>
       <source>Allows texture dumping when FMVs are active. You should not enable this.</source>
       <translation>Sallii tekstuurien vedostuksen FMV:iden ollessa aktiivisia. Tätä ei pitäisi ottaa käyttöön.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7166"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7727"/>
       <source>Post-Processing</source>
       <translation>Jälkikäsittely</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7167"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7728"/>
       <source>FXAA</source>
       <translation>FXAA</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7168"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7729"/>
       <source>Enables FXAA post-processing shader.</source>
       <translation>Ottaa FXAA-jälkikäsittelyvarjostimen käyttöön.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7169"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7730"/>
       <source>Contrast Adaptive Sharpening</source>
       <translation>Kontrastimukautuva terävöitys (CAS)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7170"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7731"/>
       <source>Enables FidelityFX Contrast Adaptive Sharpening.</source>
       <translation>Ottaa FidelityFX:n kontrastimukautuvan terävöityksen käyttöön.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7171"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7732"/>
       <source>CAS Sharpness</source>
       <translation>CAS-terävyys</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7172"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7733"/>
       <source>Determines the intensity the sharpening effect in CAS post-processing.</source>
       <translation>Määrittää CAS-jälkikäsittelyn terävöittämisen voimakkuuden.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7173"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7734"/>
       <source>Filters</source>
       <translation>Suodattimet</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7174"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7735"/>
       <source>Shade Boost</source>
       <translation>Varjotehostus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7175"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7736"/>
       <source>Enables brightness/contrast/saturation adjustment.</source>
       <translation>Ottaa käyttöön kirkkauden/kontrastin/kylläisyyden säätelyt.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7176"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7737"/>
       <source>Shade Boost Brightness</source>
       <translation>Varjotehostuksen kirkkaus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7177"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7738"/>
       <source>Adjusts brightness. 50 is normal.</source>
       <translation>Säätää kirkkautta. 50 on normaali.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7178"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7739"/>
       <source>Shade Boost Contrast</source>
       <translation>Varjotehostuksen kontrasti</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7179"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7740"/>
       <source>Adjusts contrast. 50 is normal.</source>
       <translation>Säätää kontrastia. 50 on normaali.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7180"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7741"/>
       <source>Shade Boost Saturation</source>
       <translation>Varjotehostuksen kylläisyys</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7181"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7742"/>
       <source>Adjusts saturation. 50 is normal.</source>
       <translation>Säätää värikylläisyyttä. 50 on normaali.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7182"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7743"/>
       <source>TV Shaders</source>
       <translation>TV-varjostimet</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7184"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7745"/>
       <source>Advanced</source>
       <translation>Lisäasetukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7185"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7746"/>
       <source>Skip Presenting Duplicate Frames</source>
       <translation>Ohita kaksoiskuvien esitys</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7189"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7750"/>
       <source>Extended Upscaling Multipliers</source>
       <translation>Laajennetut skaalauskertoimet</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7190"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7751"/>
       <source>Displays additional, very high upscaling multipliers dependent on GPU capability.</source>
       <translation>Näyttää enemmän hyvin korkeita skaalauskertoimia, riippuvaisia grafiikkasuorittimen toimintakyvystä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7191"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7752"/>
       <source>Hardware Download Mode</source>
       <translation>Laitteistolataustila</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7192"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7753"/>
       <source>Changes synchronization behavior for GS downloads.</source>
       <translation>Muuttaa synkronoinnin käyttäytymistä GS:n latauksissa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7193"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7754"/>
       <source>Allow Exclusive Fullscreen</source>
       <translation>Salli yksinomainen koko näytön tila</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7194"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7755"/>
       <source>Overrides the driver&apos;s heuristics for enabling exclusive fullscreen, or direct flip/scanout.</source>
       <translation>Ohittaa ajurin heuristiikat yksinomaisen koko näyön tilan tai suoran käännön/skannauksen käyttöönottoon.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7195"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7756"/>
       <source>Override Texture Barriers</source>
       <translation>Ohita tekstuurirajat</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7196"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7757"/>
       <source>Forces texture barrier functionality to the specified value.</source>
       <translation>Pakottaa tekstuurirajojen toiminnallisuuden määritettyyn arvoon.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7197"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7758"/>
       <source>GS Dump Compression</source>
       <translation>GS-vedoksen pakkaus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7198"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7759"/>
       <source>Sets the compression algorithm for GS dumps.</source>
       <translation>Asettaa pakkausalgoritmin GS-vedoksiin.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7199"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7760"/>
       <source>Disable Framebuffer Fetch</source>
       <translation>Poista kuvapuskurin nouto käytöstä</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7200"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7761"/>
       <source>Prevents the usage of framebuffer fetch when supported by host GPU.</source>
       <translation>Estää kuvapuskurin noudon käytön, kun isäntägrafiikkasuoritin tukee sitä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7201"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7762"/>
       <source>Disable Shader Cache</source>
       <translation>Poista varjostimien välimuisti käytöstä</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7202"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7763"/>
       <source>Prevents the loading and saving of shaders/pipelines to disk.</source>
       <translation>Estää varjostimien/kanavien latauksen ja tallentamisen levylle.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7203"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7764"/>
       <source>Disable Vertex Shader Expand</source>
       <translation>Poista kärkipistevarjostinlaajennus käytöstä</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7204"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7765"/>
       <source>Falls back to the CPU for expanding sprites/lines.</source>
       <translation>Antaa suorittimen laajentaa spritejä/viivoja.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7214"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7775"/>
       <source>Changes when SPU samples are generated relative to system emulation.</source>
       <translation>Muuttaa, milloin SPU-otoksia luodaan suhteessa järjestelmän emulointiin.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7216"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7777"/>
       <source>%d ms</source>
       <translation>%d ms</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7219"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7780"/>
       <source>Settings and Operations</source>
       <translation>Asetukset ja toiminnot</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7220"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7781"/>
       <source>Creates a new memory card file or folder.</source>
       <translation>Luo uuden muistikorttitiedoston tai kansion.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7221"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7782"/>
       <source>Simulates a larger memory card by filtering saves only to the current game.</source>
       <translation>Simuloi suurempaa muistikorttia suodattamalla tallennuksia ainoastaan nykyiseen peliin.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7222"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7783"/>
       <source>If not set, this card will be considered unplugged.</source>
       <translation>Jos kortti ei ole käytössä, se katsotaan kytkemättömäksi.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7223"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7784"/>
       <source>The selected memory card image will be used for this slot.</source>
       <translation>Valittua muistikortin näköistiedostoa käytetään tässä paikassa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7232"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7793"/>
       <source>Enable/Disable the Player LED on DualSense controllers.</source>
       <translation>Ota käyttöön / poista käytöstä pelaajan merkkivalo DualSense-ohjaimissa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7238"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7799"/>
       <source>Trigger</source>
       <translation>Laukaisin</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7239"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7800"/>
       <source>Toggles the macro when the button is pressed, instead of held.</source>
       <translation>Vaihtaa makron päälle/pois painiketta painettaessa, pohjassa painamisen sijaan.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7287"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7848"/>
       <source>Savestate</source>
       <translation>Tilatallennus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7288"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7849"/>
       <source>Compression Method</source>
       <translation>Pakkausmenetelmä</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7289"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7850"/>
       <source>Sets the compression algorithm for savestate.</source>
       <translation>Määrittää tilatallennusten pakkausalgoritmin.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7290"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7851"/>
       <source>Compression Level</source>
       <translation>Pakkauksen taso</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7291"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7852"/>
       <source>Sets the compression level for savestate.</source>
       <translation>Määrittää tilatallennusten pakkauksen tason.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7362"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7924"/>
       <source>Version: %s</source>
       <translation>Versio: %s</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7380"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7942"/>
       <source>{:%H:%M}</source>
       <translation>{:%H:%M}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7386"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7949"/>
+      <source>Swaps both {}/{} (When Swap OK/Cancel is set to automatic) and {}/{} buttons</source>
+      <translation>Vaihtaa molemmat {}/{} (kun Vaihda OK/Peruuta on asetettu automaattiseksi) ja {}/{}-näppäimet</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7950"/>
       <source>Slot {}</source>
       <translation>Paikka {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7486"/>
-      <source>1.25x Native (~450px)</source>
-      <translation>1,25x alkuperäinen (~450 px)</translation>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7967"/>
+      <source>{0} Slot {1}</source>
+      <translation type="unfinished">{0} Slot {1}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7487"/>
-      <source>1.5x Native (~540px)</source>
-      <translation>1,5x alkuperäinen (~540 px)</translation>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7995"/>
+      <source>Dark</source>
+      <translation>Tumma</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7488"/>
-      <source>1.75x Native (~630px)</source>
-      <translation>1,75x alkuperäinen (~630 px)</translation>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7996"/>
+      <source>Light</source>
+      <translation>Vaalea</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7489"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7997"/>
+      <source>Grey Matter</source>
+      <translation>Grey Matter</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7998"/>
+      <source>Untouched Lagoon</source>
+      <translation>Untouched Lagoon</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7999"/>
+      <source>Baby Pastel</source>
+      <translation>Baby Pastel</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8000"/>
+      <source>Pizza Time!</source>
+      <translation>Pizza Time!</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8001"/>
+      <source>PCSX2 Blue</source>
+      <translation>PCSX2-sininen</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8002"/>
+      <source>Scarlet Devil</source>
+      <translation>Scarlet Devil</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8003"/>
+      <source>Violet Angel</source>
+      <translation>Violet Angel</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8004"/>
+      <source>Cobalt Sky</source>
+      <translation>Cobalt Sky</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8005"/>
+      <source>AMOLED</source>
+      <translation>AMOLED</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8006"/>
+      <source>Enabled</source>
+      <translation>Käytössä</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8064"/>
       <source>2x Native (~720px/HD)</source>
       <translation>2x alkuperäinen (~720 px/HD)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7490"/>
-      <source>2.5x Native (~900px/HD+)</source>
-      <translation>2,5x alkuperäinen (~900 px/HD+)</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7491"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8065"/>
       <source>3x Native (~1080px/FHD)</source>
       <translation>3x alkuperäinen (~1080 px/FHD)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7492"/>
-      <source>3.5x Native (~1260px)</source>
-      <translation>3,5x alkuperäinen (~1260 px)</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7493"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8066"/>
       <source>4x Native (~1440px/QHD)</source>
       <translation>4x alkuperäinen (~1440 px/QHD)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7494"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8067"/>
       <source>5x Native (~1800px/QHD+)</source>
       <translation>5x alkuperäinen (~1800 px/QHD+)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7495"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8068"/>
       <source>6x Native (~2160px/4K UHD)</source>
       <translation>6x alkuperäinen (~2160 px/4K UHD)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7496"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8069"/>
       <source>7x Native (~2520px)</source>
       <translation>7x alkuperäinen (~2520 px)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7497"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8070"/>
       <source>8x Native (~2880px/5K UHD)</source>
       <translation>8x alkuperäinen (~2880 px/5K UHD)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7498"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8071"/>
       <source>9x Native (~3240px)</source>
       <translation>9x alkuperäinen (~3240 px)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7499"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8072"/>
       <source>10x Native (~3600px/6K UHD)</source>
       <translation>10x alkuperäinen (~3600 px/6K UHD)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7500"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8073"/>
       <source>11x Native (~3960px)</source>
       <translation>11x alkuperäinen (~3960 px)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7501"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8074"/>
       <source>12x Native (~4320px/8K UHD)</source>
       <translation>12x alkuperäinen (~4320 px/8K UHD)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7535"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8108"/>
       <source>WebP</source>
       <translation>WebP</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7559"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8130"/>
+      <source>Align to Native</source>
+      <translation>Kohdista alkuperäiseen kuvatarkkuuteen</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8131"/>
+      <source>Align to Native - with Texture Offset</source>
+      <translation>Kohdista alkuperäiseen kuvatarkkuuteen - tekstuurien siirrolla</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8132"/>
       <source>Aggressive</source>
       <translation>Aggressiivinen</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7587"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8139"/>
+      <source>Enabled (Exact Match)</source>
+      <translation>Käytössä (tarkka sovitus)</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8140"/>
+      <source>Enabled (Check Inside Target)</source>
+      <translation>Käytössä (tarkista kohteen sisälle)</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8162"/>
       <source>Deflate64</source>
       <translation>Deflate64</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7588"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8163"/>
       <source>Zstandard</source>
       <translation>Zstandard</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7589"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8164"/>
       <source>LZMA2</source>
       <translation>LZMA2</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7590"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8165"/>
       <source>Low (Fast)</source>
       <translation>Alhainen (nopea)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7591"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8166"/>
       <source>Medium (Recommended)</source>
       <translation>Keskitaso (suositeltu)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7592"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8167"/>
       <source>Very High (Slow, Not Recommended)</source>
       <translation>Hyvin korkea (hidas, ei suositella)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7602"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8177"/>
       <source>Change Selection</source>
       <translation>Muuta valintaa</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7603"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8178"/>
       <source>Select</source>
       <translation>Valitse</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7605"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8180"/>
       <source>Parent Directory</source>
       <translation>Yläkansio</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7606"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8181"/>
       <source>Enter Value</source>
       <translation>Syötä arvo</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7607"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8182"/>
       <source>About</source>
       <translation>Tietoja</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7609"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8184"/>
       <source>Toggle Fullscreen</source>
       <translation>Vaihda näyttötila</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7608"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8183"/>
       <source>Navigate</source>
       <translation>Navigoi</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7610"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8185"/>
       <source>Load Global State</source>
       <translation>Lataa yleinen tila</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7612"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8187"/>
       <source>Change Page</source>
       <translation>Vaihda sivua</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7614"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8189"/>
       <source>Return To Game</source>
       <translation>Palaa peliin</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7615"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8190"/>
       <source>Select State</source>
       <translation>Valitse tila</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7617"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8192"/>
       <source>Select Game</source>
       <translation>Valitse peli</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7618"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8193"/>
       <source>Change View</source>
       <translation>Vaihda näkymää</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7619"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8194"/>
       <source>Launch Options</source>
       <translation>Käynnistysvalinnat</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7640"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8216"/>
       <source>Create Save State Backups</source>
       <translation>Varmuuskopioi tilatallennukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7648"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8225"/>
       <source>Show PCSX2 Version</source>
       <translation>Näytä PCSX2-versio</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7656"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8233"/>
       <source>Show Input Recording Status</source>
       <translation>Näytä syötteentallennuksen tila</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7657"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8234"/>
       <source>Show Video Capture Status</source>
       <translation>Näytä videonauhoituksen tila</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7660"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8237"/>
       <source>Show Frame Times</source>
       <translation>Näytä kuva-ajat</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7661"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8238"/>
       <source>Show Hardware Info</source>
       <translation>Näytä laitetiedot</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7678"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8255"/>
       <source>Create Memory Card</source>
       <translation>Luo muistikortti</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7225"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7786"/>
       <source>Configuration</source>
       <translation>Asetukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6935"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7492"/>
       <source>Start Game</source>
       <translation>Käynnistä peli</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6936"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7493"/>
       <source>Launch a game from a file, disc, or starts the console without any disc inserted.</source>
       <translation>Käynnistä peli tiedostosta, levystä tai käynnistä konsoli ilman syötettyä levyä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6938"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7495"/>
       <source>Changes settings for the application.</source>
       <translation>Muuta sovelluksen asetuksia.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6940"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7497"/>
       <source>Return to desktop mode, or exit the application.</source>
       <translation>Palaa työpöytätilaan tai poistu sovelluksesta.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6947"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7504"/>
       <source>Back</source>
       <translation>Takaisin</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6948"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7505"/>
       <source>Return to the previous menu.</source>
       <translation>Palaa edelliseen valikkoon.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6949"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7506"/>
       <source>Exit PCSX2</source>
       <translation>Poistu PCSX2:sta</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6950"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7507"/>
       <source>Completely exits the application, returning you to your desktop.</source>
       <translation>Poistuu sovelluksesta täysin ja palauttaa sinut työpöydälle.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6951"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7508"/>
       <source>Desktop Mode</source>
       <translation>Työpöytätila</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6952"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7509"/>
       <source>Exits Big Picture mode, returning to the desktop interface.</source>
       <translation>Poistuu televisiotilasta ja palaa työpöytätilan käyttöliittymään.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7226"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7787"/>
       <source>Resets all configuration to defaults (including bindings).</source>
       <translation>Palauttaa kaikki määritykset oletusarvoihin (myös sidokset).</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7227"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7788"/>
       <source>Replaces these settings with a previously saved input profile.</source>
       <translation>Korvaa nämä asetukset aiemmin tallennetulla syöttöprofiililla.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7228"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7789"/>
       <source>Stores the current settings to an input profile.</source>
       <translation>Tallentaa nykyiset asetukset syöttöprofiiliin.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7229"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7790"/>
       <source>Input Sources</source>
       <translation>Syöttölähteet</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7230"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7791"/>
       <source>The SDL input source supports most controllers.</source>
       <translation>SDL-syöttölähde tukee useimpia ohjaimia.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7231"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7792"/>
       <source>Provides vibration and LED control support over Bluetooth.</source>
       <translation>Tarjoaa tuen värinän ja LED-valojen hallintaan Bluetoothin kautta.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7233"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7794"/>
       <source>Allow SDL to use raw access to input devices.</source>
       <translation>Sallii SDL:lle raa'an pääsyn syöttölaitteisiin.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7234"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7795"/>
       <source>The XInput source provides support for XBox 360/XBox One/XBox Series controllers.</source>
       <translation>XInput-lähde tarjoaa tukea Xbox 360 / Xbox One / Xbox Series -ohjaimille.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7235"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7796"/>
       <source>Multitap</source>
       <translation>Moniohjainsovitin</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7236"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7797"/>
       <source>Enables an additional three controller slots. Not supported in all games.</source>
       <translation>Ottaa käyttöön kolme ylimääräistä ohjainporttia. Ei tuettu kaikissa peleissä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7237"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7798"/>
       <source>Attempts to map the selected port to a chosen controller.</source>
       <translation>Yrittää kartoittaa valitun portin haluttuun ohjaimeen.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7241"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7802"/>
       <source>Determines how much pressure is simulated when macro is active.</source>
       <translation>Määrittää, kuinka paljon painetta simuloidaan makron ollessa aktiivinen.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7242"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7803"/>
       <source>Determines the pressure required to activate the macro.</source>
       <translation>Määrittää makron aktivoimiseen tarvittavan paineen.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7243"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7804"/>
       <source>Toggle every %d frames</source>
       <translation>Vaihda joka %d kuvan välein</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7244"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7805"/>
       <source>Clears all bindings for this USB controller.</source>
       <translation>Poistaa kaikki tämän USB-ohjaimen sidokset.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7245"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7806"/>
       <source>Data Save Locations</source>
       <translation>Tietojen tallennuspaikat</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7720"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8297"/>
       <source>Show Advanced Settings</source>
       <translation>Näytä lisäasetukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7246"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7807"/>
       <source>Changing these options may cause games to become non-functional. Modify at your own risk, the PCSX2 team will not provide support for configurations with these settings changed.</source>
       <translation>Näiden asetusten muuttaminen voi aiheuttaa pelien viallisen toiminnan. Muokkaa omalla vastuullasi, PCSX2-tiimi ei tarjoa tukea kokoonpanoille, joissa näitä asetuksia on muutettu.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7247"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7808"/>
       <source>Logging</source>
       <translation>Lokitus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7721"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8298"/>
       <source>System Console</source>
       <translation>Järjestelmäkonsoli</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7248"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7809"/>
       <source>Writes log messages to the system console (console window/standard output).</source>
       <translation>Kirjoittaa lokiviestejä järjestelmäkonsoliin (konsoli-ikkuna/vakiolähtö).</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7722"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8299"/>
       <source>File Logging</source>
       <translation>Tiedostolokitus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7249"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7810"/>
       <source>Writes log messages to emulog.txt.</source>
       <translation>Kirjaa lokiviestejä emulog.txt -tiedostoon.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7723"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8300"/>
       <source>Verbose Logging</source>
       <translation>Yksityiskohtainen lokitus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7250"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7811"/>
       <source>Writes dev log messages to log sinks.</source>
       <translation>Kirjoittaa kehittäjille tarkoitettuja viestejä lokiin.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7724"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8301"/>
       <source>Log Timestamps</source>
       <translation>Lokin aikaleimat</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7251"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7812"/>
       <source>Writes timestamps alongside log messages.</source>
       <translation>Kirjoittaa aikaleimat lokiviestien rinnalla.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7725"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8302"/>
       <source>EE Console</source>
       <translation>EE-konsoli</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7252"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7813"/>
       <source>Writes debug messages from the game&apos;s EE code to the console.</source>
       <translation>Kirjoittaa virheenjäljitysviestejä pelin EE-koodista konsoliin.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7726"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8303"/>
       <source>IOP Console</source>
       <translation>IOP-konsoli</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7253"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7814"/>
       <source>Writes debug messages from the game&apos;s IOP code to the console.</source>
       <translation>Kirjoittaa virheenjäljitysviestejä pelin IOP-koodista konsoliin.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7727"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8304"/>
       <source>CDVD Verbose Reads</source>
       <translation>CDVD:n yksityiskohtaiset lukemiset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7254"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7815"/>
       <source>Logs disc reads from games.</source>
       <translation>Lokittaa levyn lukemiset peleistä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7255"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7816"/>
       <source>Emotion Engine</source>
       <translation>Emotion Engine</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7256"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7817"/>
       <source>Rounding Mode</source>
       <translation>Pyöristystila</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7257"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7818"/>
       <source>Determines how the results of floating-point operations are rounded. Some games need specific settings.</source>
       <translation>Määrittää, miten liukulukujen laskutoimitusten tulokset pyöristetään. Jotkut pelit tarvitsevat erityisiä asetuksia.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7258"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7819"/>
       <source>Division Rounding Mode</source>
       <translation>Jaon pyöristystila</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7259"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7820"/>
       <source>Determines how the results of floating-point division is rounded. Some games need specific settings.</source>
       <translation>Määrittää, miten liukulukujen jakotulokset pyöristetään. Jotkut pelit tarvitsevat erityisiä asetuksia.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7260"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7821"/>
       <source>Clamping Mode</source>
       <translation>Rajoitustila</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7261"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7822"/>
       <source>Determines how out-of-range floating point numbers are handled. Some games need specific settings.</source>
       <translation>Määrittää, miten kantaman ulkopuolisia liukulukuja käsitellään. Jotkut pelit tarvitsevat erityisiä asetuksia.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7262"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7823"/>
       <source>Enable EE Recompiler</source>
       <translation>Käytä EE-uudelleenkääntäjää</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7263"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7824"/>
       <source>Performs just-in-time binary translation of 64-bit MIPS-IV machine code to native code.</source>
       <translation>Suorittaa 64-bittisen MIPS-IV-konekoodin ajonaikaisen binäärikäännöksen alkuperäiskoodiksi.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7264"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7825"/>
       <source>Enable EE Cache</source>
       <translation>Käytä EE-välimuistia</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7265"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7826"/>
       <source>Enables simulation of the EE&apos;s cache. Slow.</source>
       <translation>Ottaa käyttöön EE:n välimuistin simuloinnin. Hidas.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7266"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7827"/>
       <source>Enable INTC Spin Detection</source>
       <translation>INTC:n pyörityksen tunnistus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7267"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7828"/>
       <source>Huge speedup for some games, with almost no compatibility side effects.</source>
       <translation>Valtava nopeutuminen joissakin peleissä, lähes ilman sivuvaikutuksia yhteensopivuudessa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7268"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7829"/>
       <source>Enable Wait Loop Detection</source>
       <translation>Käytä odotussilmukoiden tunnistusta</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7269"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7830"/>
       <source>Moderate speedup for some games, with no known side effects.</source>
       <translation>Kohtalainen nopeutuminen joissakin peleissä ilman tunnettuja sivuvaikutuksia.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7270"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7831"/>
       <source>Enable Fast Memory Access</source>
       <translation>Nopea muistin käyttö</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7271"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7832"/>
       <source>Uses backpatching to avoid register flushing on every memory access.</source>
       <translation>Käyttää takaisinsijoitusta välttääkseen rekisterin tyhjennyksen jokaisen muistin käytön yhteydessä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7272"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7833"/>
       <source>Vector Units</source>
       <translation>Vektoriyksiköt</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7273"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7834"/>
       <source>VU0 Rounding Mode</source>
       <translation>VU0-pyöristystila</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7274"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7835"/>
       <source>VU0 Clamping Mode</source>
       <translation>VU0-rajoitustila</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7275"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7836"/>
       <source>VU1 Rounding Mode</source>
       <translation>VU1-pyöristystila</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7276"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7837"/>
       <source>VU1 Clamping Mode</source>
       <translation>VU1-rajoitustila</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7277"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7838"/>
       <source>Enable VU0 Recompiler (Micro Mode)</source>
       <translation>Ota VU0-uudelleenkääntäjä käyttöön (mikrotila)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7278"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7839"/>
       <source>New Vector Unit recompiler with much improved compatibility. Recommended.</source>
       <translation>Uusi vektoriyksiköiden uudelleenkääntäjä huomattavasti paremmalla yhteensopivuudella. Suositellaan.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7279"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7840"/>
       <source>Enable VU1 Recompiler</source>
       <translation>Ota VU1-uudelleenkääntäjä käyttöön</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7280"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7841"/>
       <source>Enable VU Flag Optimization</source>
       <translation>Ota käyttöön VU-merkkien optimointi</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7281"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7842"/>
       <source>Good speedup and high compatibility, may cause graphical errors.</source>
       <translation>Hyvä nopeutus ja yhteensopivuus, saattaa aiheuttaa graafisia virheitä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7284"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7845"/>
       <source>I/O Processor</source>
       <translation>I/O-prosessori</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7285"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7846"/>
       <source>Enable IOP Recompiler</source>
       <translation>Ota IOP-uudelleenkääntäjä käyttöön</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7286"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7847"/>
       <source>Performs just-in-time binary translation of 32-bit MIPS-I machine code to native code.</source>
       <translation>Suorittaa 32-bittisen MIPS-I-konekoodin ajonaikaisen binäärikäännöksen alkuperäiskoodiksi.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7292"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7853"/>
       <source>Graphics</source>
       <translation>Grafiikka</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7293"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7854"/>
       <source>Use Debug Device</source>
       <translation>Käytä virheenjäljityslaitetta</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6937"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7494"/>
       <source>Settings</source>
       <translation>Asetukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7295"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7856"/>
       <source>No cheats are available for this game.</source>
       <translation>Ei huijauskoodeja saatavilla tälle pelille.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7296"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7857"/>
       <source>Cheat Codes</source>
       <translation>Huijauskoodit</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7297"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7858"/>
       <source>No patches are available for this game.</source>
       <translation>Ei paikkauksia saatavilla tähän peliin.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7298"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7859"/>
       <source>Game Patches</source>
       <translation>Pelipaikkaukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7299"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7860"/>
       <source>Activating cheats can cause unpredictable behavior, crashing, soft-locks, or broken saved games.</source>
       <translation>Huijausten käyttöönotto voi aiheuttaa arvaamatonta käyttäytymistä, kaatumista, soft-lockeja tai pelitallennusten rikkoutumista.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7300"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7861"/>
       <source>Activating game patches can cause unpredictable behavior, crashing, soft-locks, or broken saved games.</source>
       <translation>Pelipaikkausten käyttöönotto voi aiheuttaa arvaamatonta käyttäytymistä, kaatumista, soft-lockeja tai pelitallennusten rikkoutumista.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7301"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7862"/>
       <source>Use patches at your own risk, the PCSX2 team will provide no support for users who have enabled game patches.</source>
       <translation>Käytä paikkauksia omalla vastuullasi, PCSX2-tiimi ei tarjoa tukea käyttäjille, jotka ovat ottaneet paikkaukset käyttöön.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7302"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7863"/>
       <source>Game Fixes</source>
       <translation>Pelikorjaukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7303"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7864"/>
       <source>Game fixes should not be modified unless you are aware of what each option does and the implications of doing so.</source>
       <translation>Pelikorjauksia ei pitäisi muokata, ellet ymmärrä mitä jokainen vaihtoehto tekee ja mitä niistä seuraa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7304"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7865"/>
       <source>FPU Multiply Hack</source>
       <translation>Niksi FPU:n moninkertaistamiseen</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7305"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7866"/>
       <source>For Tales of Destiny.</source>
       <translation>Tales of Destiny -pelille.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7310"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7871"/>
       <source>Preload TLB Hack</source>
       <translation>Niksi TLB:n esilataukseen</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7307"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7868"/>
       <source>Needed for some games with complex FMV rendering.</source>
       <translation>Tarvitaan joidenkin pelien monimutkaisissa FMV-renderöinneissä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7308"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7869"/>
       <source>Skip MPEG Hack</source>
       <translation>Niksi MPEG:ien ohitukseen</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7309"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7870"/>
       <source>Skips videos/FMVs in games to avoid game hanging/freezes.</source>
       <translation>Ohittaa videot/FMV:t peleissä jumittumisen/jäätymisen välttämiseksi.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7316"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7877"/>
       <source>OPH Flag Hack</source>
       <translation>Niksi OPH-merkintöihin</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7312"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7873"/>
       <source>EE Timing Hack</source>
       <translation>Niksi EE:n ajoitukseen</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7314"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7875"/>
       <source>Instant DMA Hack</source>
       <translation>Niksi välittömään DMA:han</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7321"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7882"/>
       <source>Known to affect following games: Mana Khemia 1, Metal Saga, Pilot Down Behind Enemy Lines.</source>
       <translation>Tiedetään vaikuttavan seuraaviin peleihin: Mana Khemia 1, Metal Saga, Pilot Down Behind Enemy Lines.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7323"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7884"/>
       <source>For SOCOM 2 HUD and Spy Hunter loading hang.</source>
       <translation>SOCOM 2:n HUD-näyttöön ja Spy Hunterin latausten viipymisiin.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7330"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7891"/>
       <source>VU Add Hack</source>
       <translation>VU:n lisäysniksi</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7326"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7887"/>
       <source>Full VU0 Synchronization</source>
       <translation>Täysi VU0:n synkronointi</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7327"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7888"/>
       <source>Forces tight VU0 sync on every COP2 instruction.</source>
       <translation>Pakottaa tiukan VU0:n synkronoinnin jokaisessa COP2-käskyssä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7332"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7893"/>
       <source>VU Overflow Hack</source>
       <translation>VU:n ylivuotoniksi</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7333"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7894"/>
       <source>To check for possible float overflows (Superman Returns).</source>
       <translation>Mahdollisten liukulukujen ylivuotojen tarkistamiseen (Superman Returns).</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7337"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7898"/>
       <source>Use accurate timing for VU XGKicks (slower).</source>
       <translation>Käyttää tarkkaa ajoitusta VU XGKickeissä (hitaampi).</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7340"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7901"/>
       <source>Load State</source>
       <translation>Lataa tila</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7018"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7577"/>
       <source>Makes the emulated Emotion Engine skip cycles. Helps a small subset of games like SOTC. Most of the time it&apos;s harmful to performance.</source>
       <translation>Saa emuloidun Emotion Enginen ohittamaan syklejä. Auttaa pientä määrää pelejä, kuten Shadow of the Colossusta. Useimmiten heikentää suorituskykyä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7020"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7579"/>
       <source>Generally a speedup on CPUs with 4 or more cores. Safe for most games, but a few are incompatible and may hang.</source>
       <translation>Yleensä nopeuttaa suorittimilla, joissa on 4 tai useampia ytimiä. Turvallinen useimmille peleille, mutta jotkut eivät ole yhteensopivia ja saattavat jäätyä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7283"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7844"/>
       <source>Runs VU1 instantly. Provides a modest speed improvement in most games. Safe for most games, but a few games may exhibit graphical errors.</source>
       <translation>VU1 toimii välittömästi. Antaa pienen nopeusparannuksen useimmissa peleissä. Turvallinen useimmissa peleissä, mutta joissakin saattaa ilmestyä grafiikkavirheitä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7113"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7674"/>
       <source>Disable the support of depth buffers in the texture cache.</source>
       <translation>Poistaa syvyyspuskurien tuen käytöstä tekstuurivälimuistissa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7116"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7677"/>
       <source>Disable Render Fixes</source>
       <translation>Poista renderöintikorjaukset käytöstä</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7118"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7679"/>
       <source>Preload Frame Data</source>
       <translation>Esilataa kuvatiedot</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7122"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7683"/>
       <source>Texture Inside RT</source>
       <translation>Tekstuurit renderöintikohteen sisällä</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7129"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7690"/>
       <source>When enabled GPU converts colormap-textures, otherwise the CPU will. It is a trade-off between GPU and CPU.</source>
       <translation>Kun tämä on käytössä, grafiikkasuoritin muuntaa värikarttatekstuurit, muuten sen tekee suoritin. Kompromissi grafiikkasuorittimen ja suorittimen välillä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7131"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7692"/>
       <source>Half Pixel Offset</source>
       <translation>Puolen pikselin siirto</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7139"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7700"/>
       <source>Texture Offset X</source>
       <translation>Tekstuurien X-siirto</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7141"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7702"/>
       <source>Texture Offset Y</source>
       <translation>Tekstuurien Y-siirto</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7161"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7722"/>
       <source>Dumps replaceable textures to disk. Will reduce performance.</source>
       <translation>Vedostaa korvattavat tekstuurit levylle. Heikentää suorituskykyä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7183"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7744"/>
       <source>Applies a shader which replicates the visual effects of different styles of television set.</source>
       <translation>Soveltaa käyttöön varjostimen, joka voi esittää erityylisten televisioiden visuaalisia vaikutuksia.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7186"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7747"/>
       <source>Skips displaying frames that don&apos;t change in 25/30fps games. Can improve speed, but increase input lag/make frame pacing worse.</source>
       <translation>Ohittaa peräkkäisten muutoksettomien kuvien esityksen 25/30 FPS:n peleissä. Voi parantaa nopeutta, mutta lisää syöttöviivettä / huonontaa kuvanrytmitystä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7294"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7855"/>
       <source>Enables API-level validation of graphics commands.</source>
       <translation>Sallii API-tason vahvistuksen grafiikkakomentoihin.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7306"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7867"/>
       <source>Use Software Renderer For FMVs</source>
       <translation>Käytä ohjelmistorenderöijää FMV:issä</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7311"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7872"/>
       <source>To avoid TLB miss on Goemon.</source>
       <translation>TLB:n ohituksen välttämiseen Goemonissa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7313"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7874"/>
       <source>General-purpose timing hack. Known to affect following games: Digital Devil Saga, SSX.</source>
       <translation>Yleiskäyttöinen ajoitusniksi. Tiedetään vaikuttavan seuraaviin peleihin: Digital Devil Saga, SSX.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7315"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7876"/>
       <source>Good for cache emulation problems. Known to affect following games: Fire Pro Wrestling Z.</source>
       <translation>Hyvä välimuistin emulointiongelmille. Tiedetään vaikuttavan seuraaviin peleihin: Fire Pro Wrestling Z.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7317"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7878"/>
       <source>Known to affect following games: Bleach Blade Battlers, Growlanser II and III, Wizardry.</source>
       <translation>Tiedetään vaikuttavan seuraaviin peleihin: Bleach Blade Battlers, Growlanser II ja III, Wizardry.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7318"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7879"/>
       <source>Emulate GIF FIFO</source>
       <translation>Emuloi GIF FIFO</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7319"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7880"/>
       <source>Correct but slower. Known to affect the following games: Fifa Street 2.</source>
       <translation>Tarkka mutta hitaampi. Tiedetään vaikuttavan seuraaviin peleihin: Fifa Street 2.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7320"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7881"/>
       <source>DMA Busy Hack</source>
       <translation>Niksi varattuun DMA:han</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7322"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7883"/>
       <source>Delay VIF1 Stalls</source>
       <translation>Viivytä VIF1:n sammumisia</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7324"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7885"/>
       <source>Emulate VIF FIFO</source>
       <translation>Emuloi VIF FIFO</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7325"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7886"/>
       <source>Simulate VIF1 FIFO read ahead. Known to affect following games: Test Drive Unlimited, Transformers.</source>
       <translation>Simuloi VIF1 FIFO:n edelläluvun. Tiedetään vaikuttavan seuraaviin peleihin: Test Drive Unlimited, Transformers.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7328"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7889"/>
       <source>VU I Bit Hack</source>
       <translation>Niksi VU:n I-bittiin</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7329"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7890"/>
       <source>Avoids constant recompilation in some games. Known to affect the following games: Scarface The World is Yours, Crash Tag Team Racing.</source>
       <translation>Välttää jatkuvaa uudelleenkääntämistä joissakin peleissä. Tiedetään vaikuttavan seuraaviin peleihin: Scarface The World is Yours, Crash Tag Team Racing.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7331"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7892"/>
       <source>For Tri-Ace Games: Star Ocean 3, Radiata Stories, Valkyrie Profile 2.</source>
       <translation>Tri-Acen peleille: Star Ocean 3, Radiata Stories, Valkyrie Profile 2.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7334"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7895"/>
       <source>VU Sync</source>
       <translation>VU:n synkronointi</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7335"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7896"/>
       <source>Run behind. To avoid sync problems when reading or writing VU registers.</source>
       <translation>Suorittaa jäljessä välttääkseen synkronointiongelmia lukiessa tai kirjoittaessa VU-rekistereitä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7336"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7897"/>
       <source>VU XGKick Sync</source>
       <translation>VU XGKickin synkronointi</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7338"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7899"/>
       <source>Force Blit Internal FPS Detection</source>
       <translation>Pakota sisäinen FPS-tunnistus BLITeillä</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7341"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7902"/>
       <source>Save State</source>
       <translation>Tallenna tila</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7342"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7903"/>
       <source>Load Resume State</source>
       <translation>Lataa jatkamistila</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7343"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7904"/>
       <source>A resume save state created at %s was found.
 
 Do you want to load this save and continue?</source>
@@ -8077,2076 +8689,2116 @@ Do you want to load this save and continue?</source>
 Haluatko ladata tämän tilan ja jatkaa?</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7344"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7905"/>
       <source>Region: </source>
       <translation>Alue: </translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7345"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7906"/>
       <source>Compatibility: </source>
       <translation>Yhteensopivuus: </translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7346"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7907"/>
       <source>No Game Selected</source>
       <translation>Ei peliä valittuna</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7348"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7909"/>
       <source>Search Directories</source>
       <translation>Hakukansiot</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7349"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7910"/>
       <source>Adds a new directory to the game search list.</source>
       <translation>Lisää uuden kansion pelien hakulistalle.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7350"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7911"/>
       <source>Scanning Subdirectories</source>
       <translation>Skannataan alikansioita</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7351"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7912"/>
       <source>Not Scanning Subdirectories</source>
       <translation>Ei skannata alikansioita</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7352"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7913"/>
       <source>List Settings</source>
       <translation>Luettelon asetukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7353"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7914"/>
       <source>Sets which view the game list will open to.</source>
       <translation>Asettaa näkymän, missä peliluettelo avataan.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7354"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7915"/>
       <source>Determines which field the game list will be sorted by.</source>
       <translation>Määrittää, minkä tekijän perusteella peliluettelo järjestetään.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7355"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7916"/>
       <source>Reverses the game list sort order from the default (usually ascending to descending).</source>
       <translation>Kääntää peliluettelon järjestyksen oletuksesta (yleensä nousevasta laskevaan).</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7356"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7917"/>
       <source>Cover Settings</source>
       <translation>Kansikuva-asetukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7357"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7918"/>
       <source>Downloads covers from a user-specified URL template.</source>
       <translation>Lataa kansikuvia käyttäjän määrittelemästä URL-mallista.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7003"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7562"/>
       <source>Operations</source>
       <translation>Operaatiot</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7084"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7643"/>
       <source>Selects where anisotropic filtering is utilized when rendering textures.</source>
       <translation>Määrittää, missä anisotrooppista suodatusta käytetään tekstuurien renderöinnissä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7339"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7900"/>
       <source>Use alternative method to calculate internal FPS to avoid false readings in some games.</source>
       <translation>Käytä vaihtoehtoista menetelmää sisäisen kuvataajuuden laskemiseen välttääksesi vääriä lukemia joissakin peleissä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7358"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7919"/>
       <source>Identifies any new files added to the game directories.</source>
       <translation>Tunnistaa kaikki uudet pelikansioihin lisätyt tiedostot.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7359"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7920"/>
       <source>Forces a full rescan of all games previously identified.</source>
       <translation>Pakottaa täyden uudelleenskannauksen kaikista aiemmin tunnistetuista peleistä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7755"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8332"/>
       <source>Download Covers</source>
       <translation>Lataa kansikuvat</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7360"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7921"/>
       <source>About PCSX2</source>
       <translation>Tietoja PCSX2:sta</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7361"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7922"/>
       <source>PCSX2 is a free and open-source PlayStation 2 (PS2) emulator. Its purpose is to emulate the PS2&apos;s hardware, using a combination of MIPS CPU Interpreters, Recompilers and a Virtual Machine which manages hardware states and PS2 system memory. This allows you to play PS2 games on your PC, with many additional features and benefits.</source>
       <translation>PCSX2 on ilmainen ja avoimen lähdekoodin PlayStation 2 (PS2) -emulaattori. Sen tarkoitus on emuloida PS2:n laitteistoa käyttämällä MIPS-suorittimen tulkkien, uudelleenkääntäjien ja virtuaalikoneen yhdistelmää, joka hallitsee laitteiston tiloja ja PS2:n järjestelmämuistia. Tämän avulla voit pelata PS2-pelejä tietokoneellasi monien lisäominaisuuksien ja etujen kera.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7363"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7923"/>
       <source>PlayStation 2 and PS2 are registered trademarks of Sony Interactive Entertainment. This application is not affiliated in any way with Sony Interactive Entertainment.</source>
       <translation>PlayStation 2 ja PS2 ovat Sony Interactive Entertainmentin rekisteröityjä tavaramerkkejä. Tämä sovellus ei ole millään tavalla sidoksissa Sony Interactive Entertainmentiin.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7364"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7925"/>
       <source>When enabled and logged in, PCSX2 will scan for achievements on startup.</source>
       <translation>Kun tämä on käytössä ja olet kirjautunut sisään, PCSX2 etsii saavutuksia käynnistyksen aikana.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7365"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7926"/>
       <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
       <translation>&quot;Haastetila&quot; saavutuksille, joka sisältää tulosten seurannan tulostaululla. Poistaa käytöstä tilatallennus-, huijaus- ja hidastustoiminnot.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7366"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7927"/>
       <source>Displays popup messages on events such as achievement unlocks and leaderboard submissions.</source>
       <translation>Näyttää ponnahdusviestit tapahtumista, kuten saavutusten avaamisesta ja tulosten lähettämisestä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7368"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7929"/>
       <source>Plays sound effects for events such as achievement unlocks and leaderboard submissions.</source>
       <translation>Toistaa äänitehosteita tietyissä tapauksissa, kuten saavutusten avaamisessa ja tulosten lähettämisessä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7369"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7930"/>
       <source>Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active.</source>
       <translation>Näyttää kuvakkeita näytön oikeassa alakulmassa, kun haaste/saavutus on aktiivinen.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7372"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7933"/>
       <source>When enabled, PCSX2 will list achievements from unofficial sets. These achievements are not tracked by RetroAchievements.</source>
       <translation>Kun tämä on käytössä, PCSX2 listaa saavutukset epävirallisista lajitelmista. RetroAchievements ei seuraa näitä saavutuksia.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7371"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7932"/>
       <source>When enabled, PCSX2 will assume all achievements are locked and not send any unlock notifications to the server.</source>
       <translation>Kun tämä on käytössä, PCSX2 olettaa kaikkien saavutusten olevan lukittu, eikä lähetä avausten ilmoituksia palvelimelle.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6906"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7463"/>
       <source>Error</source>
       <translation>Virhe</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6973"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7532"/>
       <source>Pauses the emulator when a controller with bindings is disconnected.</source>
       <translation>Pysäyttää emulaattorin, kun yhteys sidoksia käyttävään ohjaimeen katkeaa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6977"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7536"/>
       <source>Creates a backup copy of a save state if it already exists when the save is created. The backup copy has a .backup suffix</source>
       <translation>Luo varmuuskopion tilatallennuksesta, jos se on jo olemassa, kun tallennus luodaan. Varmuuskopiossa on .backup-jälkiliite</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7029"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7588"/>
       <source>Enable CDVD Precaching</source>
       <translation>Ota käyttöön CDVD:n vienti esivälimuistiin</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7030"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7589"/>
       <source>Loads the disc image into RAM before starting the virtual machine.</source>
       <translation>Lataa levykuvan RAM-muistiin ennen virtuaalikoneen käynnistystä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7036"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7595"/>
       <source>Vertical Sync (VSync)</source>
       <translation>Pystytahdistus (VSync)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7038"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7597"/>
       <source>Sync to Host Refresh Rate</source>
       <translation>Synkronoi isännän virkistystaajuuteen</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7040"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7599"/>
       <source>Use Host VSync Timing</source>
       <translation>Käytä isännän pystytahdistusajoitusta</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7041"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7600"/>
       <source>Disables PCSX2&apos;s internal frame timing, and uses host vsync instead.</source>
       <translation>Poistaa käytöstä PCSX2:n sisäisen kuva-ajoituksen ja suosii isännän pystytahdistusta sen sijaan.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7187"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7748"/>
       <source>Disable Mailbox Presentation</source>
       <translation>Poista mailbox-esitys käytöstä</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7188"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7749"/>
       <source>Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.</source>
       <translation>Pakottaa FIFO:n käytön mailbox-esityksen sijasta, eli kaksinkertainen puskurointi kolminkertaisen sijasta. Yleensä tuloksena on huonompi kuvanrytmitys.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7207"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7768"/>
       <source>Audio Control</source>
       <translation>Äänen hallinta</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7208"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7769"/>
       <source>Controls the volume of the audio played on the host.</source>
       <translation>Hallitsee isännän äänenvoimakkuutta.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7670"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8247"/>
       <source>Fast Forward Volume</source>
       <translation>Pikakelauksen äänenvoimakkuus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7209"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7770"/>
       <source>Controls the volume of the audio played on the host when fast forwarding.</source>
       <translation>Hallitsee isännän äänenvoimakkuutta pikakelattaessa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7671"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8248"/>
       <source>Mute All Sound</source>
       <translation>Mykistä kaikki äänet</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7210"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7771"/>
       <source>Prevents the emulator from producing any audible sound.</source>
       <translation>Estää emulaattoria tuottamasta mitään ääntä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7211"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7772"/>
       <source>Backend Settings</source>
       <translation>Taustaohjelman asetukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7672"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8249"/>
       <source>Audio Backend</source>
       <translation>Äänen taustaohjelma</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7212"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7773"/>
       <source>The audio backend determines how frames produced by the emulator are submitted to the host.</source>
       <translation>Äänen taustaohjelma määrittää, miten emulaattorin tuottamat kuvat lähetetään isännälle.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7673"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8250"/>
       <source>Expansion</source>
       <translation>Laajennus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7213"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7774"/>
       <source>Determines how audio is expanded from stereo to surround for supported games.</source>
       <translation>Määrittää, kuinka ääntä laajennetaan stereosta tilaääneen tuetuissa peleissä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7674"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8251"/>
       <source>Synchronization</source>
       <translation>Synkronointi</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7675"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8252"/>
       <source>Buffer Size</source>
       <translation>Puskurin koko</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7215"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7776"/>
       <source>Determines the amount of audio buffered before being pulled by the host API.</source>
       <translation>Määrittää puskuroidun äänen määrän, ennen kuin isäntä-API noutaa sen.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7676"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8253"/>
       <source>Output Latency</source>
       <translation>Lähtöviive</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7217"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7778"/>
       <source>Determines how much latency there is between the audio being picked up by the host API, and played through speakers.</source>
       <translation>Määrittää viiveen määrän isäntä-API:n äänen noudosta sen toistoon kaiuttimista.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7677"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8254"/>
       <source>Minimal Output Latency</source>
       <translation>Minimaalinen lähtöviive</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7218"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7779"/>
       <source>When enabled, the minimum supported output latency will be used for the host API.</source>
       <translation>Kun tämä on käytössä, pienintä tuettua lähtöviivettä käytetään isäntä-API:ssa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7021"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7580"/>
       <source>Thread Pinning</source>
       <translation>Säiekiinnitys</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7146"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7707"/>
       <source>Force Even Sprite Position</source>
       <translation>Pakota tasainen spritejen sijainti</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7367"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7928"/>
       <source>Displays popup messages when starting, submitting, or failing a leaderboard challenge.</source>
       <translation>Näyttää ponnahdusviestit aloitettaessa, lähetettäessä tai epäonnistuttaessa tulostauluhaasteen.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7370"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7931"/>
       <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
       <translation>Kun tämä on käytössä, jokainen istunto käyttäytyy ikään kuin saavutuksia ei olisi avattu.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7373"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7935"/>
       <source>Account</source>
       <translation>Tili</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7374"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7936"/>
       <source>Logs out of RetroAchievements.</source>
       <translation>Kirjautuu ulos RetroAchievementsista.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7375"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7937"/>
       <source>Logs in to RetroAchievements.</source>
       <translation>Kirjautuu sisään RetroAchievementsiin.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7376"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7938"/>
       <source>Current Game</source>
       <translation>Nykyinen peli</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7377"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7939"/>
       <source>An error occurred while deleting empty game settings:
 {}</source>
       <translation>Virhe poistettaessa tyhjiä peliasetuksia:
 {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7378"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7940"/>
       <source>An error occurred while saving game settings:
 {}</source>
       <translation>Virhe tallennettaessa peliasetuksia:
 {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7379"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7941"/>
       <source>{} is not a valid disc image.</source>
       <translation>{} ei ole kelvollinen levykuva.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7382"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7944"/>
       <source>Automatic mapping completed for {}.</source>
       <translation>Automaattinen kartoitus valmis kohteelle {}.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7383"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7945"/>
       <source>Automatic mapping failed for {}.</source>
       <translation>Automaattinen kartoitus epäonnistui kohteelle {}.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7384"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7946"/>
       <source>Game settings initialized with global settings for &apos;{}&apos;.</source>
       <translation>&apos;{}&apos; peliasetukset alustettu yleisillä asetuksilla.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7385"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7947"/>
       <source>Game settings have been cleared for &apos;{}&apos;.</source>
       <translation>&apos;{}&apos; peliasetukset tyhjennetty.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7387"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7948"/>
+      <source>Uses {} as confirm when using a controller</source>
+      <translation>Käyttää {}-näppäintä vahvistuksena käyttäessäsi ohjainta</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7951"/>
       <source>{} (Current)</source>
       <translation>{} (nykyinen)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7388"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7952"/>
       <source>{} (Folder)</source>
       <translation>{} (kansio)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7389"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7953"/>
       <source>Failed to load &apos;{}&apos;.</source>
       <translation>&apos;%1&apos; lataus epäonnistui.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7390"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7954"/>
       <source>Input profile &apos;{}&apos; loaded.</source>
       <translation>Syöttöprofiili &apos;{}&apos; ladattu.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7391"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7955"/>
       <source>Input profile &apos;{}&apos; saved.</source>
       <translation>Syöttöprofiili &apos;{}&apos; tallennettu.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7392"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7956"/>
       <source>Failed to save input profile &apos;{}&apos;.</source>
       <translation>Syöttöprofiilin &apos;{}&apos; tallentaminen epäonnistui.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7393"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7957"/>
       <source>Port {} Controller Type</source>
       <translation>Ohjaintyyppi (portti {})</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7394"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7958"/>
       <source>Select Macro {} Binds</source>
       <translation>Valitse makron {} sidokset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7396"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7960"/>
       <source>Port {} Device</source>
       <translation>Laite portissa {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7397"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7961"/>
       <source>Port {} Subtype</source>
       <translation>Portin {} alatyyppi</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7398"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7962"/>
       <source>{} unlabelled patch codes will automatically activate.</source>
       <translation>{} nimetöntä paikkauskoodia aktivoituu automaattisesti.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7399"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7963"/>
       <source>{} unlabelled patch codes found but not enabled.</source>
       <translation>{} nimetöntä paikkauskoodia löydetty, mutta ei käytössä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7400"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7964"/>
       <source>This Session: {}</source>
       <translation>Tämä istunto: {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7401"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7965"/>
       <source>All Time: {}</source>
       <translation>Yhteensä: {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7402"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7966"/>
       <source>Save Slot {0}</source>
       <translation>Tallennuspaikka {0}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7403"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7968"/>
       <source>Saved {}</source>
       <translation>Tallennettu {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7404"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7969"/>
       <source>{} does not exist.</source>
       <translation>{} ei ole olemassa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7405"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7970"/>
       <source>{} deleted.</source>
       <translation>{} poistettu.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7406"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7971"/>
       <source>Failed to delete {}.</source>
       <translation>{} poistaminen epäonnistui.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7407"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7972"/>
       <source>File: {}</source>
       <translation>Tiedosto: {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7408"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7973"/>
       <source>CRC: {:08X}</source>
       <translation>CRC: {:08X}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7409"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7974"/>
       <source>Time Played: {}</source>
       <translation>Peliaika: {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7410"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7975"/>
       <source>Last Played: {}</source>
       <translation>Viimeksi pelattu: {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7411"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7976"/>
       <source>Size: {:.2f} MB</source>
       <translation>Koko: {:.2f} Mt</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7412"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7977"/>
       <source>Left: </source>
       <translation>Vasen: </translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7413"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7978"/>
       <source>Top: </source>
       <translation>Yläreuna: </translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7414"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7979"/>
       <source>Right: </source>
       <translation>Oikea: </translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7415"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7980"/>
       <source>Bottom: </source>
       <translation>Alareuna: </translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7416"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7981"/>
       <source>Summary</source>
       <translation>Yhteenveto</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7417"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7982"/>
       <source>Interface Settings</source>
       <translation>Käyttöliittymän asetukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7418"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7983"/>
       <source>BIOS Settings</source>
       <translation>BIOS-asetukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7419"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7984"/>
       <source>Emulation Settings</source>
       <translation>Emulaatioasetukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7420"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7985"/>
       <source>Graphics Settings</source>
       <translation>Grafiikka-asetukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7421"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7986"/>
       <source>Audio Settings</source>
       <translation>Ääniasetukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7422"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7987"/>
       <source>Memory Card Settings</source>
       <translation>Muistikorttiasetukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7423"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7990"/>
       <source>Controller Settings</source>
       <translation>Ohjainasetukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7424"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7991"/>
       <source>Hotkey Settings</source>
       <translation>Pikanäppäinasetukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7425"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7989"/>
       <source>Achievements Settings</source>
       <translation>Saavutusten asetukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7426"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7988"/>
       <source>Folder Settings</source>
       <translation>Kansioasetukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7427"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7992"/>
       <source>Advanced Settings</source>
       <translation>Lisäasetukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7428"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7993"/>
       <source>Patches</source>
       <translation>Korjaukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7429"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7994"/>
       <source>Cheats</source>
       <translation>Huijaukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7430"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8008"/>
       <source>2% [1 FPS (NTSC) / 1 FPS (PAL)]</source>
       <translation>2 % [1 FPS (NTSC) / 1 FPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7431"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8009"/>
       <source>10% [6 FPS (NTSC) / 5 FPS (PAL)]</source>
       <translation>10 % [6 FPS (NTSC) / 5 FPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7432"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8010"/>
       <source>25% [15 FPS (NTSC) / 12 FPS (PAL)]</source>
       <translation>25 % [15 FPS (NTSC) / 12 FPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7433"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8011"/>
       <source>50% [30 FPS (NTSC) / 25 FPS (PAL)]</source>
       <translation>50 % [30 FPS (NTSC) / 25 FPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7434"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8012"/>
       <source>75% [45 FPS (NTSC) / 37 FPS (PAL)]</source>
       <translation>75 % [45 FPS (NTSC) / 37 FPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7435"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8013"/>
       <source>90% [54 FPS (NTSC) / 45 FPS (PAL)]</source>
       <translation>90 % [54 FPS (NTSC) / 45 FPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7436"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8014"/>
       <source>100% [60 FPS (NTSC) / 50 FPS (PAL)]</source>
       <translation>100 % [60 FPS (NTSC) / 50 FPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7437"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8015"/>
       <source>110% [66 FPS (NTSC) / 55 FPS (PAL)]</source>
       <translation>110 % [66 FPS (NTSC) / 55 FPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7438"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8016"/>
       <source>120% [72 FPS (NTSC) / 60 FPS (PAL)]</source>
       <translation>120 % [72 FPS (NTSC) / 60 FPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7439"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8017"/>
       <source>150% [90 FPS (NTSC) / 75 FPS (PAL)]</source>
       <translation>150 % [90 FPS (NTSC) / 75 FPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7440"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8018"/>
       <source>175% [105 FPS (NTSC) / 87 FPS (PAL)]</source>
       <translation>175 % [105 FPS (NTSC) / 87 FPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7441"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8019"/>
       <source>200% [120 FPS (NTSC) / 100 FPS (PAL)]</source>
       <translation>200 % [120 FPS (NTSC) / 100 FPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7442"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8020"/>
       <source>300% [180 FPS (NTSC) / 150 FPS (PAL)]</source>
       <translation>300 % [180 FPS (NTSC) / 150 FPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7443"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8021"/>
       <source>400% [240 FPS (NTSC) / 200 FPS (PAL)]</source>
       <translation>400 % [240 FPS (NTSC) / 200 FPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7444"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8022"/>
       <source>500% [300 FPS (NTSC) / 250 FPS (PAL)]</source>
       <translation>500 % [300 FPS (NTSC) / 250 FPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7445"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8023"/>
       <source>1000% [600 FPS (NTSC) / 500 FPS (PAL)]</source>
       <translation>1000 % [600 FPS (NTSC) / 500 FPS (PAL)]</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7446"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8024"/>
       <source>50% Speed</source>
       <translation>50 % nopeus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7447"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8025"/>
       <source>60% Speed</source>
       <translation>60 % nopeus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7448"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8026"/>
       <source>75% Speed</source>
       <translation>75 % nopeus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7449"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8027"/>
       <source>100% Speed (Default)</source>
       <translation>100 % nopeus (oletus)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7450"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8028"/>
       <source>130% Speed</source>
       <translation>130 % nopeus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7451"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8029"/>
       <source>180% Speed</source>
       <translation>180 % nopeus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7452"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8030"/>
       <source>300% Speed</source>
       <translation>300 % nopeus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7453"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8031"/>
       <source>Normal (Default)</source>
       <translation>Normaali (oletus)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7454"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8032"/>
       <source>Mild Underclock</source>
       <translation>Lievä alikellotus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7455"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8033"/>
       <source>Moderate Underclock</source>
       <translation>Kohtalainen alikellotus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7456"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8034"/>
       <source>Maximum Underclock</source>
       <translation>Enimmäisalikellotus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7552"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8007"/>
       <source>Disabled</source>
       <translation>Ei käytössä</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7457"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8035"/>
       <source>0 Frames (Hard Sync)</source>
       <translation>0 kuvaa (kova synkronointi)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7458"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8036"/>
       <source>1 Frame</source>
       <translation>1 kuva</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7459"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8037"/>
       <source>2 Frames</source>
       <translation>2 kuvaa</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7460"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8038"/>
       <source>3 Frames</source>
       <translation>3 kuvaa</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7461"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8039"/>
       <source>None</source>
       <translation>Ei mitään</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7462"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8040"/>
       <source>Extra + Preserve Sign</source>
       <translation>Ekstra + säilytä etumerkki</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7463"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8041"/>
       <source>Full</source>
       <translation>Täysi</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7464"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8042"/>
       <source>Extra</source>
       <translation>Ekstra</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7465"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8043"/>
       <source>Automatic (Default)</source>
       <translation>Automaattinen (oletus)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7466"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8044"/>
       <source>Direct3D 11</source>
       <translation>Direct3D 11</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7467"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8045"/>
       <source>Direct3D 12</source>
       <translation>Direct3D 12</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7468"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8046"/>
       <source>OpenGL</source>
       <translation>OpenGL</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7469"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8047"/>
       <source>Vulkan</source>
       <translation>Vulkan</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7470"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8048"/>
       <source>Metal</source>
       <translation>Metal</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7471"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8049"/>
       <source>Software</source>
       <translation>Ohjelmisto</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7472"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8050"/>
       <source>Null</source>
       <translation>Tyhjä</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7473"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8051"/>
       <source>Off</source>
       <translation>Pois</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7474"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8052"/>
       <source>Bilinear (Smooth)</source>
       <translation>Bilineaarinen (pehmeä)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7475"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8053"/>
       <source>Bilinear (Sharp)</source>
       <translation>Bilineaarinen (terävä)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7477"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8055"/>
       <source>Weave (Top Field First, Sawtooth)</source>
       <translation>Kutova (yläkenttä ensin, sahahammas)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7478"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8056"/>
       <source>Weave (Bottom Field First, Sawtooth)</source>
       <translation>Kutova (alakenttä ensin, sahahammas)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7479"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8057"/>
       <source>Bob (Top Field First)</source>
       <translation>Hyppivä (yläkenttä ensin)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7480"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8058"/>
       <source>Bob (Bottom Field First)</source>
       <translation>Hyppivä (alakenttä ensin)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7481"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8059"/>
       <source>Blend (Top Field First, Half FPS)</source>
       <translation>Sekoitus (yläkenttä ensin, puolikas FPS)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7482"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8060"/>
       <source>Blend (Bottom Field First, Half FPS)</source>
       <translation>Sekoitus (alakenttä ensin, puolikas FPS)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7483"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8061"/>
       <source>Adaptive (Top Field First)</source>
       <translation>Mukautuva (yläkenttä ensin)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7484"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8062"/>
       <source>Adaptive (Bottom Field First)</source>
       <translation>Mukautuva (alakenttä ensin)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7485"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8063"/>
       <source>Native (PS2)</source>
       <translation>Alkuperäinen (PS2)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7502"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8075"/>
       <source>Nearest</source>
       <translation>Lähin</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7503"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8076"/>
       <source>Bilinear (Forced)</source>
       <translation>Bilineaarinen (pakotettu)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7504"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8077"/>
       <source>Bilinear (PS2)</source>
       <translation>Bilineaarinen (PS2)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7505"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8078"/>
       <source>Bilinear (Forced excluding sprite)</source>
       <translation>Bilineaarinen (pakotettu, paitsi spritet)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7506"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8079"/>
       <source>Off (None)</source>
       <translation>Pois (ei mitään)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7507"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8080"/>
       <source>Trilinear (PS2)</source>
       <translation>Trilineaarinen (PS2)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7508"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8081"/>
       <source>Trilinear (Forced)</source>
       <translation>Trilineaarinen (pakotettu)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7509"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8082"/>
       <source>Scaled</source>
       <translation>Skaalattu</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7510"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8083"/>
       <source>Unscaled (Default)</source>
       <translation>Skaalaamaton (oletus)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7512"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8085"/>
       <source>Minimum</source>
       <translation>Minimi</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7513"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8086"/>
       <source>Basic (Recommended)</source>
       <translation>Perus (suositeltu)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7514"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8087"/>
       <source>Medium</source>
       <translation>Keskitaso</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7515"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8088"/>
       <source>High</source>
       <translation>Korkea</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7516"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8089"/>
       <source>Full (Slow)</source>
       <translation>Täysi (hidas)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7517"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8090"/>
       <source>Maximum (Very Slow)</source>
       <translation>Maksimi (hyvin hidas)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7518"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8091"/>
       <source>Off (Default)</source>
       <translation>Pois (oletus)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7519"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8092"/>
       <source>2x</source>
       <translation>2x</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7520"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8093"/>
       <source>4x</source>
       <translation>4x</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7521"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8094"/>
       <source>8x</source>
       <translation>8x</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7522"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8095"/>
       <source>16x</source>
       <translation>16x</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7523"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8096"/>
       <source>Partial</source>
       <translation>Osittainen</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7524"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8097"/>
       <source>Full (Hash Cache)</source>
       <translation>Täysi (hajautusvälimuisti)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7525"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8098"/>
       <source>Force Disabled</source>
       <translation>Pakota pois käytöstä</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7526"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8099"/>
       <source>Force Enabled</source>
       <translation>Pakota käyttöönotto</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7527"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8100"/>
       <source>Accurate (Recommended)</source>
       <translation>Tarkka (suositeltu)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7528"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8101"/>
       <source>Disable Readbacks (Synchronize GS Thread)</source>
       <translation>Poista takaisinluvut käytöstä (synkronoi GS-säie)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7529"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8102"/>
       <source>Unsynchronized (Non-Deterministic)</source>
       <translation>Synkronoimaton (ei-määrittelevä)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7530"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8103"/>
       <source>Disabled (Ignore Transfers)</source>
       <translation>Pois käytöstä (ohita siirrot)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7531"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8104"/>
       <source>Screen Resolution</source>
       <translation>Näytön kuvatarkkuus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7532"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8105"/>
       <source>Internal Resolution (Aspect Uncorrected)</source>
       <translation>Sisäinen kuvatarkkuus (korjaamaton suhde)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7616"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8191"/>
       <source>Load/Save State</source>
       <translation>Lataa/tallenna tila</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7622"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8197"/>
       <source>WARNING: Memory Card Busy</source>
       <translation>VAROITUS: Muistikortti varattu</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7629"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8204"/>
       <source>Cannot show details for games which were not scanned in the game list.</source>
       <translation>Tietoja ei voida näyttää peleistä, joita ei ole skannattu peliluettelossa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7636"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8207"/>
+      <source>Theme</source>
+      <translation>Teema</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8212"/>
       <source>Pause On Controller Disconnection</source>
       <translation>Pysäytä ohjaimen yhteyden katketessa</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7641"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8208"/>
       <source>Use Save State Selector</source>
       <translation>Käytä tilatallennusvalitsinta</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7686"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8217"/>
+      <source>Swap OK/Cancel in Big Picture Mode</source>
+      <translation>Vaihda OK/Peruuta televisiotilassa</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8263"/>
       <source>SDL DualSense Player LED</source>
       <translation>SDL DualSensen pelaajan merkkivalo</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7699"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8276"/>
       <source>Press To Toggle</source>
       <translation>Päälle/pois painamalla</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7701"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8278"/>
       <source>Deadzone</source>
       <translation>Katvealue</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7745"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8322"/>
       <source>Full Boot</source>
       <translation>Täysi käynnistys</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7766"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8343"/>
       <source>Achievement Notifications</source>
       <translation>Saavutusilmoitukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7767"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8344"/>
       <source>Leaderboard Notifications</source>
       <translation>Tulostauluilmoitukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7769"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8345"/>
       <source>Enable In-Game Overlays</source>
       <translation>Ota pelinsisäiset peittokuvat käyttöön</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7770"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8346"/>
       <source>Encore Mode</source>
       <translation>Uusintatila</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7771"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8347"/>
       <source>Spectator Mode</source>
       <translation>Katselutila</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7533"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8106"/>
       <source>PNG</source>
       <translation>PNG</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6953"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7510"/>
       <source>-</source>
       <translation>-</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7111"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7672"/>
       <source>Convert 4-bit and 8-bit framebuffer on the CPU instead of the GPU.</source>
       <translation>Muuntaa 4-bittisen ja 8-bittisen kuvapuskurin suorittimella grafiikkasuorittimen sijaan.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7224"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7785"/>
       <source>Removes the current card from the slot.</source>
       <translation>Poistaa nykyisen kortin paikasta.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7240"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7801"/>
       <source>Determines the frequency at which the macro will toggle the buttons on and off (aka auto fire).</source>
       <translation>Määrittää taajuuden, jolla makro kytkee painikkeet päälle ja pois (ts. automaattitulitus).</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7395"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7959"/>
       <source>{} Frames</source>
       <translation>{} kuvaa</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7476"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8054"/>
       <source>No Deinterlacing</source>
       <translation>Ei lomituksen poistoa</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7511"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8084"/>
       <source>Force 32bit</source>
       <translation>Pakota 32-bittinen</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7534"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8107"/>
       <source>JPEG</source>
       <translation>JPEG</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7536"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8109"/>
       <source>0 (Disabled)</source>
       <translation>0 (ei käytössä)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7537"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8110"/>
       <source>1 (64 Max Width)</source>
       <translation>1 (64 enimmäisleveys)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7538"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8111"/>
       <source>2 (128 Max Width)</source>
       <translation>2 (128 enimmäisleveys)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7539"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8112"/>
       <source>3 (192 Max Width)</source>
       <translation>3 (192 enimmäisleveys)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7540"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8113"/>
       <source>4 (256 Max Width)</source>
       <translation>4 (256 enimmäisleveys)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7541"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8114"/>
       <source>5 (320 Max Width)</source>
       <translation>5 (320 enimmäisleveys)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7542"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8115"/>
       <source>6 (384 Max Width)</source>
       <translation>6 (384 enimmäisleveys)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7543"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8116"/>
       <source>7 (448 Max Width)</source>
       <translation>7 (448 enimmäisleveys)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7544"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8117"/>
       <source>8 (512 Max Width)</source>
       <translation>8 (512 enimmäisleveys)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7545"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8118"/>
       <source>9 (576 Max Width)</source>
       <translation>9 (576 enimmäisleveys)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7546"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8119"/>
       <source>10 (640 Max Width)</source>
       <translation>10 (640 enimmäisleveys)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7547"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8120"/>
       <source>Sprites Only</source>
       <translation>Vain spritet</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7548"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8121"/>
       <source>Sprites/Triangles</source>
       <translation>Spritet/kolmiot</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7549"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8122"/>
       <source>Blended Sprites/Triangles</source>
       <translation>Sekoitetut spritet/kolmiot</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7550"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8123"/>
       <source>1 (Normal)</source>
       <translation>1 (normaali)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7551"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8124"/>
       <source>2 (Aggressive)</source>
       <translation>2 (aggressiivinen)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7553"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8125"/>
       <source>Inside Target</source>
       <translation>Kohteen sisällä</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7554"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8126"/>
       <source>Merge Targets</source>
       <translation>Yhdistä kohteet</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7555"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8127"/>
       <source>Normal (Vertex)</source>
       <translation>Normaali (kärkipiste)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7556"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8128"/>
       <source>Special (Texture)</source>
       <translation>Erityinen (tekstuuri)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7557"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8129"/>
       <source>Special (Texture - Aggressive)</source>
       <translation>Erityinen (tekstuuri - aggressiivinen)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7558"/>
-      <source>Align To Native</source>
-      <translation>Kohdista alkuperäiseen</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7560"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8133"/>
       <source>Half</source>
       <translation>Puolikas</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7561"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8134"/>
       <source>Force Bilinear</source>
       <translation>Pakota bilineaarinen</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7562"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8135"/>
       <source>Force Nearest</source>
       <translation>Pakoita lähin</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7563"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8136"/>
       <source>Disabled (Default)</source>
       <translation>Ei käytössä (oletus)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7564"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8137"/>
       <source>Enabled (Sprites Only)</source>
       <translation>Käytössä (vain spritet)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7565"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8138"/>
       <source>Enabled (All Primitives)</source>
       <translation>Käytössä (kaikki primitiivit)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7566"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8141"/>
       <source>None (Default)</source>
       <translation>Ei mitään (oletus)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7567"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8142"/>
       <source>Sharpen Only (Internal Resolution)</source>
       <translation>Vain terävöitys (sisäinen kuvatarkkuus)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7568"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8143"/>
       <source>Sharpen and Resize (Display Resolution)</source>
       <translation>Terävöitä ja muuta kokoa (näytön kuvatarkkuus)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7569"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8144"/>
       <source>Scanline Filter</source>
       <translation>Scanline-suodatin</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7570"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8145"/>
       <source>Diagonal Filter</source>
       <translation>Viisto suodatin</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7571"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8146"/>
       <source>Triangular Filter</source>
       <translation>Kolmikulmainen suodatin</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7572"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8147"/>
       <source>Wave Filter</source>
       <translation>Aaltosuodatin</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7573"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8148"/>
       <source>Lottes CRT</source>
       <translation>Lottes CRT</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7574"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8149"/>
       <source>4xRGSS</source>
       <translation>4xRGSS</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7575"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8150"/>
       <source>NxAGSS</source>
       <translation>NxAGSS</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7576"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8151"/>
       <source>Uncompressed</source>
       <translation>Pakkaamaton</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7577"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8152"/>
       <source>LZMA (xz)</source>
       <translation>LZMA (xz)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7578"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8153"/>
       <source>Zstandard (zst)</source>
       <translation>Zstandard (zst)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7579"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8154"/>
       <source>PS2 (8MB)</source>
       <translation>PS2 (8 Mt)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7580"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8155"/>
       <source>PS2 (16MB)</source>
       <translation>PS2 (16 Mt)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7581"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8156"/>
       <source>PS2 (32MB)</source>
       <translation>PS2 (32 Mt)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7582"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8157"/>
       <source>PS2 (64MB)</source>
       <translation>PS2 (64 Mt)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7583"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8158"/>
       <source>PS1</source>
       <translation>PS1</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7584"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8159"/>
       <source>Negative</source>
       <translation>Negatiivinen</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7585"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8160"/>
       <source>Positive</source>
       <translation>Positiivinen</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7586"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8161"/>
       <source>Chop/Zero (Default)</source>
       <translation>Pilko/nolla (oletus)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7593"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8168"/>
       <source>Game Grid</source>
       <translation>Peliruudukko</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6933"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7490"/>
       <source>Game List</source>
       <translation>Peliluettelo</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7347"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7908"/>
       <source>Game List Settings</source>
       <translation>Peliluettelon asetukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7594"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8169"/>
       <source>Type</source>
       <translation>Tyyppi</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7595"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8170"/>
       <source>Serial</source>
       <translation>Sarjanumero</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7596"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8171"/>
       <source>Title</source>
       <translation>Nimike</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7597"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8172"/>
       <source>File Title</source>
       <translation>Tiedostonimi</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7598"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8173"/>
       <source>CRC</source>
       <translation>CRC</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7599"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8174"/>
       <source>Time Played</source>
       <translation>Peliaika</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7600"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8175"/>
       <source>Last Played</source>
       <translation>Viimeksi pelattu</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7601"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8176"/>
       <source>Size</source>
       <translation>Koko</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7620"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8195"/>
       <source>Select Disc Image</source>
       <translation>Valitse levykuva</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7621"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8196"/>
       <source>Select Disc Drive</source>
       <translation>Valitse levyasema</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6941"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7498"/>
       <source>Start File</source>
       <translation>Käynnistä tiedosto</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6945"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7502"/>
       <source>Start BIOS</source>
       <translation>Käynnistä BIOS</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6943"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7500"/>
       <source>Start Disc</source>
       <translation>Käynnistä levy</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6939"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7496"/>
       <source>Exit</source>
       <translation>Poistu</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7623"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8198"/>
       <source>Set Input Binding</source>
       <translation>Aseta syötteen sidos</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7624"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8199"/>
       <source>Region</source>
       <translation>Alue</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7625"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8200"/>
       <source>Compatibility Rating</source>
       <translation>Yhteensopivuuden arvio</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7626"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8201"/>
       <source>Path</source>
       <translation>Polku</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7627"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8202"/>
       <source>Disc Path</source>
       <translation>Levyn polku</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7628"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8203"/>
       <source>Select Disc Path</source>
       <translation>Valitse levyn polku</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7630"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8205"/>
       <source>Copy Settings</source>
       <translation>Kopioi asetukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7631"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8206"/>
       <source>Clear Settings</source>
       <translation>Tyhjennä asetukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7632"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8209"/>
       <source>Inhibit Screensaver</source>
       <translation>Estä näytönsäästäjä</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7633"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8219"/>
       <source>Enable Discord Presence</source>
       <translation>Ota Discord Presence käyttöön</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7634"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8210"/>
       <source>Pause On Start</source>
       <translation>Pysäytä käynnistettäessä</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7635"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8211"/>
       <source>Pause On Focus Loss</source>
       <translation>Pysäytä kohdistuksen hävitessä</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7637"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8213"/>
       <source>Pause On Menu</source>
       <translation>Pysäytä valikossa</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7638"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8214"/>
       <source>Confirm Shutdown</source>
       <translation>Vahvista sammutus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7639"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8215"/>
       <source>Save State On Shutdown</source>
       <translation>Tallenna tila sammuttaessa</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7642"/>
-      <source>Use Light Theme</source>
-      <translation>Käytä vaalea teemaa</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7643"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8220"/>
       <source>Start Fullscreen</source>
       <translation>Käynnistä koko näytön tilassa</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7644"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8221"/>
       <source>Double-Click Toggles Fullscreen</source>
       <translation>Kaksoisnapsautus vaihtaa koko näytön tilaan</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7645"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8222"/>
       <source>Hide Cursor In Fullscreen</source>
       <translation>Piilota kohdistin koko näytön tilassa</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7646"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8223"/>
       <source>OSD Scale</source>
       <translation>Näyttöpäällyksen skaala</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7647"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8224"/>
       <source>Show Messages</source>
       <translation>Näytä viestit</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7649"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8226"/>
       <source>Show Speed</source>
       <translation>Näytä nopeus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7650"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8227"/>
       <source>Show FPS</source>
       <translation>Näytä FPS</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7651"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8228"/>
       <source>Show CPU Usage</source>
       <translation>Näytä suorittimen käyttö</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7652"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8229"/>
       <source>Show GPU Usage</source>
       <translation>Näytä grafiikkasuorittimen käyttö</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7653"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8230"/>
       <source>Show Resolution</source>
       <translation>Näytä kuvatarkkuus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7654"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8231"/>
       <source>Show GS Statistics</source>
       <translation>Näytä GS:n tilastot</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7655"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8232"/>
       <source>Show Status Indicators</source>
       <translation>Näytä tilaindikaattorit</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7658"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8235"/>
       <source>Show Settings</source>
       <translation>Näytä asetukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7659"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8236"/>
       <source>Show Inputs</source>
       <translation>Näytä syötteet</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7662"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8239"/>
       <source>Warn About Unsafe Settings</source>
       <translation>Varoita epäturvallisista asetuksista</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7663"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8240"/>
       <source>Reset Settings</source>
       <translation>Nollaa asetukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7664"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8241"/>
       <source>Change Search Directory</source>
       <translation>Muuta hakukansiota</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7665"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8242"/>
       <source>Fast Boot</source>
       <translation>Nopea käynnistys</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7669"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8246"/>
       <source>Output Volume</source>
       <translation>Lähdön voimakkuus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7679"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8256"/>
       <source>Memory Card Directory</source>
       <translation>Muistikorttien kansio</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7680"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8257"/>
       <source>Folder Memory Card Filter</source>
       <translation>Kansiomuistikorttisuodatin</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7683"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8260"/>
       <source>Create</source>
       <translation>Luo</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7604"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8179"/>
       <source>Cancel</source>
       <translation>Peruuta</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7681"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8258"/>
       <source>Load Profile</source>
       <translation>Lataa profiili</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7682"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8259"/>
       <source>Save Profile</source>
       <translation>Tallenna profiili</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7684"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8261"/>
       <source>Enable SDL Input Source</source>
       <translation>Käytä SDL-syöttölähdettä</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7685"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8262"/>
       <source>SDL DualShock 4 / DualSense Enhanced Mode</source>
       <translation>SDL DualShock 4 / DualSense tehostettu tila</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7687"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8264"/>
       <source>SDL Raw Input</source>
       <translation>SDL-raakasyöte</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7688"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8265"/>
       <source>Enable XInput Input Source</source>
       <translation>Ota XInput-syöttölähde käyttöön</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7689"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8266"/>
       <source>Enable Console Port 1 Multitap</source>
       <translation>Moniohjainsovitin konsolin portissa 1</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7690"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8267"/>
       <source>Enable Console Port 2 Multitap</source>
       <translation>Moniohjainsovitin konsolin portissa 2</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7691"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8268"/>
       <source>Controller Port {}{}</source>
       <translation>Ohjainportti {}{}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7692"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8269"/>
       <source>Controller Port {}</source>
       <translation>Ohjainportti {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7693"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8270"/>
       <source>Controller Type</source>
       <translation>Ohjaintyyppi</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7694"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8271"/>
       <source>Automatic Mapping</source>
       <translation>Automaattinen sidonta</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7695"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8272"/>
       <source>Controller Port {}{} Macros</source>
       <translation>Ohjainportin {}{} makrot</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7696"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8273"/>
       <source>Controller Port {} Macros</source>
       <translation>Ohjainportin {} makrot</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7697"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8274"/>
       <source>Macro Button {}</source>
       <translation>Makropainike {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7698"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8275"/>
       <source>Buttons</source>
       <translation>Painikkeet</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7613"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8188"/>
       <source>Frequency</source>
       <translation>Taajuus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7700"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8218"/>
+      <source>Use Legacy Nintendo Layout in Big Picture Mode</source>
+      <translation>Käytä Nintendon vanhaa asettelua televisiotilassa</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8277"/>
       <source>Pressure</source>
       <translation>Paine</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7702"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8279"/>
       <source>Controller Port {}{} Settings</source>
       <translation>Ohjainportin {}{} asetukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7703"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8280"/>
       <source>Controller Port {} Settings</source>
       <translation>Ohjainportin {} asetukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7704"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8281"/>
       <source>USB Port {}</source>
       <translation>USB-portti {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7705"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8282"/>
       <source>Device Type</source>
       <translation>Laitetyyppi</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7706"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8283"/>
       <source>Device Subtype</source>
       <translation>Laitteen alatyyppi</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7707"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8284"/>
       <source>{} Bindings</source>
       <translation>{} Sidokset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7708"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8285"/>
       <source>Clear Bindings</source>
       <translation>Poista sidokset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7709"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8286"/>
       <source>{} Settings</source>
       <translation>{} Asetukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7710"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8287"/>
       <source>Cache Directory</source>
       <translation>Välimuistin kansio</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7711"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8288"/>
       <source>Covers Directory</source>
       <translation>Kansikuvien kansio</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7712"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8289"/>
       <source>Snapshots Directory</source>
       <translation>Kuvakaappausten kansio</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7713"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8290"/>
       <source>Save States Directory</source>
       <translation>Tilatallennusten kansio</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7714"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8291"/>
       <source>Game Settings Directory</source>
       <translation>Peliasetusten kansio</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7715"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8292"/>
       <source>Input Profile Directory</source>
       <translation>Syöttöprofiilien kansio</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7716"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8293"/>
       <source>Cheats Directory</source>
       <translation>Huijausten kansio</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7717"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8294"/>
       <source>Patches Directory</source>
       <translation>Korjausten kansio</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7718"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8295"/>
       <source>Texture Replacements Directory</source>
       <translation>Korvaavien tekstuurien kansio</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7719"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8296"/>
       <source>Video Dumping Directory</source>
       <translation>Nauhoitusten kansio</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7728"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8305"/>
       <source>Resume Game</source>
       <translation>Jatka peliä</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7729"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8306"/>
       <source>Toggle Frame Limit</source>
       <translation>Kuvarajoitus päälle/pois</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7730"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8307"/>
       <source>Game Properties</source>
       <translation>Pelin ominaisuudet</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7731"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8308"/>
       <source>Achievements</source>
       <translation>Saavutukset</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7732"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8309"/>
       <source>Save Screenshot</source>
       <translation>Tallenna kuvakaappaus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7733"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8310"/>
       <source>Switch To Software Renderer</source>
       <translation>Vaihda ohjelmistorenderöijään</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7734"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8311"/>
       <source>Switch To Hardware Renderer</source>
       <translation>Vaihda laitteistorenderöijään</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7735"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8312"/>
       <source>Change Disc</source>
       <translation>Vaihda levy</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7736"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8313"/>
       <source>Close Game</source>
       <translation>Sulje peli</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7737"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8314"/>
       <source>Exit Without Saving</source>
       <translation>Poistu tallentamatta</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7738"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8315"/>
       <source>Back To Pause Menu</source>
       <translation>Takaisin taukovalikkoon</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7739"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8316"/>
       <source>Exit And Save State</source>
       <translation>Poistu ja tallenna tila</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7740"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8317"/>
       <source>Leaderboards</source>
       <translation>Tulostaulut</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7741"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8318"/>
       <source>Delete Save</source>
       <translation>Poista tallennus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7742"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8319"/>
       <source>Close Menu</source>
       <translation>Sulje valikko</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7744"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8321"/>
       <source>Delete State</source>
       <translation>Poista tila</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7743"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8320"/>
       <source>Default Boot</source>
       <translation>Oletuskäynnistys</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7746"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8323"/>
       <source>Reset Play Time</source>
       <translation>Nollaa peliaika</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7747"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8324"/>
       <source>Add Search Directory</source>
       <translation>Lisää hakukansio</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7748"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8325"/>
       <source>Open in File Browser</source>
       <translation>Avaa tiedostoselaimessa</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7749"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8326"/>
       <source>Disable Subdirectory Scanning</source>
       <translation>Poista alikansioiden skannaus käytöstä</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7750"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8327"/>
       <source>Enable Subdirectory Scanning</source>
       <translation>Ota alikansioiden skannaus käyttöön</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7751"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8328"/>
       <source>Remove From List</source>
       <translation>Poista luettelosta</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7752"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8329"/>
       <source>Default View</source>
       <translation>Oletusnäkymä</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7753"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8330"/>
       <source>Sort By</source>
       <translation>Järjestele</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7754"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8331"/>
       <source>Sort Reversed</source>
       <translation>Käänteinen järjestys</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7756"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8333"/>
       <source>Scan For New Games</source>
       <translation>Etsi uusia pelejä</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7757"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8334"/>
       <source>Rescan All Games</source>
       <translation>Skannaa pelit uudelleen</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7758"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8335"/>
       <source>Website</source>
       <translation>Verkkosivu</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7759"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8336"/>
       <source>Support Forums</source>
       <translation>Tukifoorumit</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7760"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8337"/>
       <source>GitHub Repository</source>
       <translation>GitHub-repositorio</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7761"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8338"/>
       <source>License</source>
       <translation>Lisenssi</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7762"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8339"/>
       <source>Close</source>
       <translation>Sulje</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7763"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8340"/>
       <source>RAIntegration is being used instead of the built-in achievements implementation.</source>
       <translation>RAIntegrationia käytetään sisäänrakennetun saavutusjärjestelmän sijaan.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7764"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8341"/>
       <source>Enable Achievements</source>
       <translation>Ota saavutukset käyttöön</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7765"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8342"/>
       <source>Hardcore Mode</source>
       <translation>Hardcore-tila</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7768"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7934"/>
       <source>Sound Effects</source>
       <translation>Äänitehosteet</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7772"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8348"/>
       <source>Test Unofficial Achievements</source>
       <translation>Testaa epävirallisia saavutuksia</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7773"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8349"/>
+      <source>Notification Sound</source>
+      <translation>Ilmoitusääni</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8350"/>
+      <source>Select Notification Sound</source>
+      <translation>Valitse ilmoitusääni</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8351"/>
+      <source>Unlock Sound</source>
+      <translation>Avausääni</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8352"/>
+      <source>Select Unlock Sound</source>
+      <translation>Valitse avausääni</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8353"/>
+      <source>Leaderboard Submit Sound</source>
+      <translation>Tulostauluun lähettämisen ääni</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8354"/>
+      <source>Select Leaderboard Submit Sound</source>
+      <translation>Valitse tulostauluun lähettämisen ääni</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8355"/>
       <source>Username: {}</source>
       <translation>Käyttäjätunnus: {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7774"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8356"/>
       <source>Login token generated on {}</source>
       <translation>Kirjautumistunnus luotu: {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7775"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8357"/>
       <source>Logout</source>
       <translation>Kirjaudu ulos</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7776"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8358"/>
       <source>Not Logged In</source>
       <translation>Ei kirjautuneena</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7777"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8359"/>
       <source>Login</source>
       <translation>Kirjaudu</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7778"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8360"/>
       <source>Game: {0} ({1})</source>
       <translation>Peli: {0} ({1})</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7779"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8361"/>
       <source>Rich presence inactive or unsupported.</source>
       <translation>Rikas läsnäolo epäaktiivinen tai tukematon.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7780"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8362"/>
       <source>Game not loaded or no RetroAchievements available.</source>
       <translation>Peliä ei ole ladattuna tai RetroAchievements-saavutuksia ei ole saatavilla.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7781"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8363"/>
       <source>Card Enabled</source>
       <translation>Käytä korttia</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7782"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8364"/>
       <source>Card Name</source>
       <translation>Kortin nimi</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7783"/>
+      <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8365"/>
       <source>Eject Card</source>
       <translation>Poista kortti</translation>
     </message>
@@ -10169,77 +10821,77 @@ Haluatko ladata tämän tilan ja jatkaa?</translation>
       <translation>Renderöintilaitteen luonti epäonnistui. Syynä voi olla, että grafiikkasuorittimesi ei tue valittua renderöijää ({}), tai grafiikka-ajurisi ovat päivitettävä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="537"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="546"/>
       <source>Failed to change window after update. The log may contain more information.</source>
       <translation>Ikkunan vaihto päivityksen jälkeen epäonnistui. Loki saattaa sisältää lisätietoja.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1065"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1074"/>
       <source>Upscale multiplier set to {}x.</source>
       <translation>Skaalauskerroin asetettu arvoon {}x.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="441"/>
+      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="464"/>
       <source>Saving screenshot to &apos;{}&apos;.</source>
       <translation>Tallennetaan kuvakaappausta kohteeseen &apos;{}&apos;.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="453"/>
+      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="476"/>
       <source>Saved screenshot to &apos;{}&apos;.</source>
       <translation>Kuvakaappaus tallennettu kohteeseen &apos;{}&apos;.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="460"/>
+      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="483"/>
       <source>Failed to save screenshot to &apos;{}&apos;.</source>
       <translation>Kuvakaappauksen tallennus kohteeseen &apos;{}&apos; epäonnistui.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="531"/>
+      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="554"/>
       <source>Host GPU device encountered an error and was recovered. This may have broken rendering.</source>
       <translation>Isäntägrafiikkasuoritinlaite kohtasi virheen ja se palautettiin. Tämä saattaa rikkoneen renderöintiä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="636"/>
+      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="658"/>
       <source>CAS is not available, your graphics driver does not support the required functionality.</source>
       <translation>CAS ei ole käytettävissä, näytönohjaimesi ei tue vaadittua toimintoa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="691"/>
+      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="713"/>
       <source>with no compression</source>
       <translation>ilman pakkausta</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="698"/>
+      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="720"/>
       <source>with LZMA compression</source>
       <translation>LZMA-pakkauksessa</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="705"/>
+      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="727"/>
       <source>with Zstandard compression</source>
       <translation>Zstandard-pakkauksessa</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="711"/>
+      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="733"/>
       <source>Saving {0} GS dump {1} to &apos;{2}&apos;</source>
       <translation>Tallennetaan {0} GS-vedosta {1} kohteeseen &apos;{2}&apos;</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="712"/>
+      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="734"/>
       <source>single frame</source>
       <translation>yksikuvaista</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="712"/>
+      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="734"/>
       <source>multi-frame</source>
       <translation>monikuvaista</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="732"/>
+      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="754"/>
       <source>Failed to render/download screenshot.</source>
       <translation>Kuvakaappauksen renderöinti/lataaminen epäonnistui.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="743"/>
+      <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="765"/>
       <source>Saved GS dump to &apos;{}&apos;.</source>
       <translation>GS-vedos tallennettu kohteeseen &apos;{}&apos;.</translation>
     </message>
@@ -10249,22 +10901,22 @@ Haluatko ladata tämän tilan ja jatkaa?</translation>
       <translation>Hajautusvälimuisti on käyttänyt {:.2f} Mt VRAM-muistia, poistetaan käytöstä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/Renderers/HW/GSTextureReplacements.cpp" line="699"/>
+      <location filename="../../pcsx2/GS/Renderers/HW/GSTextureReplacements.cpp" line="740"/>
       <source>Disabling autogenerated mipmaps on one or more compressed replacement textures. Please generate mipmaps when compressing your textures.</source>
       <translation>Poistetaan automaattisesti luodut mipmapit käytöstä yhdessä tai useammassa pakatussa korvaustekstuurissa. On suositeltavaa luoda mipmapit, kun pakkaat tekstuureja.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="2686"/>
+      <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="2688"/>
       <source>Stencil buffers and texture barriers are both unavailable, this will break some graphical effects.</source>
       <translation>Kaavainpuskurit ja tekstuurirajat eivät kummatkaan ole käytettävissä, tämä tulee rikkomaan joitakin graafisia tehosteita.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="5064"/>
+      <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="5061"/>
       <source>Spin GPU During Readbacks is enabled, but calibrated timestamps are unavailable.  This might be really slow.</source>
       <translation>Grafiikkasuorittimen pyöritys takaisinlukujen aikana on käytössä, mutta kalibroidut aikaleimat eivät ole käytettävissä. Tämä voi olla todella hidasta.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/Renderers/DX11/D3D.cpp" line="391"/>
+      <location filename="../../pcsx2/GS/Renderers/DX11/D3D.cpp" line="392"/>
       <source>Your system has the &quot;OpenCL, OpenGL, and Vulkan Compatibility Pack&quot; installed.
 This Vulkan driver crashes PCSX2 on some GPUs.
 To use the Vulkan renderer, you should remove this app package.</source>
@@ -10273,7 +10925,7 @@ Tämä Vulkan-ajuri aiheuttaa PCSX2:n kaatumista joillakin grafiikkasuorittimill
 Käyttääksesi Vulkan-renderöijää, sinun tulee poistaa tämä sovelluspaketti.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/Renderers/DX11/D3D.cpp" line="410"/>
+      <location filename="../../pcsx2/GS/Renderers/DX11/D3D.cpp" line="411"/>
       <source>The Vulkan renderer was automatically selected, but no compatible devices were found.
        You should update all graphics drivers in your system, including any integrated GPUs
        to use the Vulkan renderer.</source>
@@ -10293,14 +10945,14 @@ Käyttääksesi Vulkan-renderöijää, sinun tulee poistaa tämä sovelluspakett
     </message>
     <message>
       <location filename="../../pcsx2/GS/Renderers/DX11/GSDevice11.cpp" line="115"/>
-      <source>Failed to create D3D device: 0x{:08X}. A GPU which supports Direct3D Feature Level 10.0 is required.</source>
-      <translation>D3D-laitteen luonti epäonnistui: 0x{:08X}. Vaaditaan grafiikkasuoritin, joka tukee Direct3D:n ominaisuustasoa 10.0.</translation>
+      <source>Failed to create D3D11 device: 0x{:08X}. A GPU which supports Direct3D Feature Level 10.0 is required.</source>
+      <translation>D3D11-laitteen luonti epäonnistui: 0x{:08X}. Vaaditaan grafiikkasuoritin, joka tukee Direct3D:n ominaisuustasoa 10.0.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/GS/Renderers/DX11/GSDevice11.cpp" line="514"/>
-      <source>The Direct3D renderer is running at feature level 10.0. This is an UNSUPPORTED configuration.
+      <source>The Direct3D11 renderer is running at feature level 10.0. This is an UNSUPPORTED configuration.
 Do not request support, please upgrade your hardware/drivers first.</source>
-      <translation>Direct3D-renderöijä toimii ominaisuustasolla 10.0. Tämä on TUKEMATON kokoonpano.
+      <translation>Direct3D11-renderöijä toimii ominaisuustasolla 10.0. Tämä kokoonpano on TUKEMATON.
 Ole hyvä ja päivitä laitteistosi/ajurisi, ennen kuin pyydät tukea.</translation>
     </message>
   </context>
@@ -10364,7 +11016,7 @@ Lisätietoja saat virallisesta dokumentaatiostamme.</translation>
   <context>
     <name>GSDeviceOGL</name>
     <message>
-      <location filename="../../pcsx2/GS/Renderers/OpenGL/GSDeviceOGL.cpp" line="641"/>
+      <location filename="../../pcsx2/GS/Renderers/OpenGL/GSDeviceOGL.cpp" line="642"/>
       <source>OpenGL renderer is not supported. Only OpenGL {}.{}
  was found</source>
       <translation>OpenGL-renderöijää ei tueta.
@@ -10374,7 +11026,7 @@ Vain OpenGL {}.{} löytyi</translation>
   <context>
     <name>GSDeviceVK</name>
     <message>
-      <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="2057"/>
+      <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="2058"/>
       <source>Your GPU does not support the required Vulkan features.</source>
       <translation>Grafiikkasuorittimesi ei tue vaadittuja Vulkan-ominaisuuksia.</translation>
     </message>
@@ -10432,22 +11084,22 @@ Vain OpenGL {}.{} löytyi</translation>
       <translation>Lataa huijaukset uudelleen</translation>
     </message>
     <message>
-      <location filename="../Settings/GameCheatSettingsWidget.cpp" line="60"/>
+      <location filename="../Settings/GameCheatSettingsWidget.cpp" line="61"/>
       <source>Show Cheats For All CRCs</source>
       <translation>Näytä huijaukset kaikille CRC:ille</translation>
     </message>
     <message>
-      <location filename="../Settings/GameCheatSettingsWidget.cpp" line="60"/>
+      <location filename="../Settings/GameCheatSettingsWidget.cpp" line="61"/>
       <source>Checked</source>
       <translation>Käytössä</translation>
     </message>
     <message>
-      <location filename="../Settings/GameCheatSettingsWidget.cpp" line="61"/>
+      <location filename="../Settings/GameCheatSettingsWidget.cpp" line="62"/>
       <source>Toggles scanning patch files for all CRCs of the game. With this enabled available patches for the game serial with different CRCs will also be loaded.</source>
       <translation>Skannaa paikkaustiedostoja kaikille pelin CRC:ille. Kun tämä on käytössä, saatavilla olevat paikkaukset pelin sarjanumerolla, mutta eri CRC-koodeilla, ladataan myös.</translation>
     </message>
     <message>
-      <location filename="../Settings/GameCheatSettingsWidget.cpp" line="234"/>
+      <location filename="../Settings/GameCheatSettingsWidget.cpp" line="236"/>
       <source>%1 unlabelled patch codes will automatically activate.</source>
       <translation>%1 nimetöntä paikkauskoodia aktivoituu automaattisesti.</translation>
     </message>
@@ -10756,113 +11408,263 @@ graafista laatua, mutta se nostaa järjestelmän vaatimuksia.</translation>
   <context>
     <name>GameList</name>
     <message>
-      <location filename="../../pcsx2/GameList.cpp" line="102"/>
+      <location filename="../../pcsx2/GameList.cpp" line="97"/>
       <source>PS2 Disc</source>
       <translation>PS2-levy</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GameList.cpp" line="102"/>
+      <location filename="../../pcsx2/GameList.cpp" line="98"/>
       <source>PS1 Disc</source>
       <translation>PS1-levy</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GameList.cpp" line="102"/>
+      <location filename="../../pcsx2/GameList.cpp" line="99"/>
       <source>ELF</source>
       <translation>ELF</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GameList.cpp" line="109"/>
+      <location filename="../../pcsx2/GameList.cpp" line="100"/>
+      <source>Invalid</source>
+      <translation>Virheellinen</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GameList.cpp" line="113"/>
+      <source>NTSC-B</source>
+      <translation>NTSC-B</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GameList.cpp" line="114"/>
+      <source>NTSC-C</source>
+      <translation>NTSC-C</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GameList.cpp" line="115"/>
+      <source>NTSC-HK</source>
+      <translation>NTSC-HK</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GameList.cpp" line="116"/>
+      <source>NTSC-J</source>
+      <translation>NTSC-J</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GameList.cpp" line="117"/>
+      <source>NTSC-K</source>
+      <translation>NTSC-K</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GameList.cpp" line="118"/>
+      <source>NTSC-T</source>
+      <translation>NTSC-T</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GameList.cpp" line="119"/>
+      <source>NTSC-U</source>
+      <translation>NTSC-U</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GameList.cpp" line="120"/>
       <source>Other</source>
       <translation>Muu</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GameList.cpp" line="120"/>
+      <location filename="../../pcsx2/GameList.cpp" line="121"/>
+      <source>PAL-A</source>
+      <translation>PAL-A</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GameList.cpp" line="122"/>
+      <source>PAL-AF</source>
+      <translation>PAL-AF</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GameList.cpp" line="123"/>
+      <source>PAL-AU</source>
+      <translation>PAL-AU</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GameList.cpp" line="124"/>
+      <source>PAL-BE</source>
+      <translation>PAL-BE</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GameList.cpp" line="125"/>
+      <source>PAL-E</source>
+      <translation>PAL-E</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GameList.cpp" line="126"/>
+      <source>PAL-F</source>
+      <translation>PAL-F</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GameList.cpp" line="127"/>
+      <source>PAL-FI</source>
+      <translation>PAL-FI</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GameList.cpp" line="128"/>
+      <source>PAL-G</source>
+      <translation>PAL-G</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GameList.cpp" line="129"/>
+      <source>PAL-GR</source>
+      <translation>PAL-GR</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GameList.cpp" line="130"/>
+      <source>PAL-I</source>
+      <translation>PAL-I</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GameList.cpp" line="131"/>
+      <source>PAL-IN</source>
+      <translation>PAL-IN</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GameList.cpp" line="132"/>
+      <source>PAL-M</source>
+      <translation>PAL-M</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GameList.cpp" line="133"/>
+      <source>PAL-NL</source>
+      <translation>PAL-NL</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GameList.cpp" line="134"/>
+      <source>PAL-NO</source>
+      <translation>PAL-NO</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GameList.cpp" line="135"/>
+      <source>PAL-P</source>
+      <translation>PAL-P</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GameList.cpp" line="136"/>
+      <source>PAL-PL</source>
+      <translation>PAL-PL</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GameList.cpp" line="137"/>
+      <source>PAL-R</source>
+      <translation>PAL-R</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GameList.cpp" line="138"/>
+      <source>PAL-S</source>
+      <translation>PAL-S</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GameList.cpp" line="139"/>
+      <source>PAL-SC</source>
+      <translation>PAL-SC</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GameList.cpp" line="140"/>
+      <source>PAL-SW</source>
+      <translation>PAL-SW</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GameList.cpp" line="141"/>
+      <source>PAL-SWI</source>
+      <translation>PAL-SWI</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GameList.cpp" line="142"/>
+      <source>PAL-UK</source>
+      <translation>PAL-UK</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/GameList.cpp" line="158"/>
       <source>Unknown</source>
       <translation>Tuntematon</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GameList.cpp" line="121"/>
+      <location filename="../../pcsx2/GameList.cpp" line="161"/>
       <source>Nothing</source>
       <translation>Ei mitään</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GameList.cpp" line="122"/>
+      <location filename="../../pcsx2/GameList.cpp" line="164"/>
       <source>Intro</source>
       <translation>Vika introssa</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GameList.cpp" line="123"/>
+      <location filename="../../pcsx2/GameList.cpp" line="167"/>
       <source>Menu</source>
       <translation>Vika valikossa</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GameList.cpp" line="124"/>
+      <location filename="../../pcsx2/GameList.cpp" line="170"/>
       <source>In-Game</source>
       <translation>Vika pelissä</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GameList.cpp" line="125"/>
+      <location filename="../../pcsx2/GameList.cpp" line="173"/>
       <source>Playable</source>
       <translation>Pelattava</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GameList.cpp" line="126"/>
+      <location filename="../../pcsx2/GameList.cpp" line="176"/>
       <source>Perfect</source>
       <translation>Moitteeton</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GameList.cpp" line="595"/>
+      <location filename="../../pcsx2/GameList.cpp" line="653"/>
       <source>Scanning directory {} (recursively)...</source>
       <translation>Skannataan kansiota {} (rekursiivisesti)...</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GameList.cpp" line="596"/>
+      <location filename="../../pcsx2/GameList.cpp" line="656"/>
       <source>Scanning directory {}...</source>
       <translation>Skannataan kansiota {}...</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GameList.cpp" line="626"/>
+      <location filename="../../pcsx2/GameList.cpp" line="684"/>
       <source>Scanning {}...</source>
       <translation>Skannataan {}...</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GameList.cpp" line="1084"/>
+      <location filename="../../pcsx2/GameList.cpp" line="1142"/>
       <source>Never</source>
       <translation>Ei koskaan</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GameList.cpp" line="1101"/>
+      <location filename="../../pcsx2/GameList.cpp" line="1159"/>
       <source>Today</source>
       <translation>Tänään</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GameList.cpp" line="1106"/>
+      <location filename="../../pcsx2/GameList.cpp" line="1164"/>
       <source>Yesterday</source>
       <translation>Eilen</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GameList.cpp" line="1129"/>
+      <location filename="../../pcsx2/GameList.cpp" line="1187"/>
       <source>{}h {}m</source>
       <translation>{}h {}m</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GameList.cpp" line="1131"/>
+      <location filename="../../pcsx2/GameList.cpp" line="1189"/>
       <source>{}h {}m {}s</source>
       <translation>{}h {}m {}s</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GameList.cpp" line="1133"/>
+      <location filename="../../pcsx2/GameList.cpp" line="1191"/>
       <source>{}m {}s</source>
       <translation>{}m {}s</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GameList.cpp" line="1135"/>
+      <location filename="../../pcsx2/GameList.cpp" line="1193"/>
       <source>{}s</source>
       <translation>{}s</translation>
     </message>
     <message numerus="yes">
-      <location filename="../GameList/GameListModel.cpp" line="268"/>
-      <location filename="../../pcsx2/GameList.cpp" line="1142"/>
+      <location filename="../GameList/GameListModel.cpp" line="274"/>
+      <location filename="../../pcsx2/GameList.cpp" line="1200"/>
       <source>%n hours</source>
       <translation>
         <numerusform>%n tunti</numerusform>
@@ -10870,8 +11672,8 @@ graafista laatua, mutta se nostaa järjestelmän vaatimuksia.</translation>
       </translation>
     </message>
     <message numerus="yes">
-      <location filename="../GameList/GameListModel.cpp" line="270"/>
-      <location filename="../../pcsx2/GameList.cpp" line="1144"/>
+      <location filename="../GameList/GameListModel.cpp" line="276"/>
+      <location filename="../../pcsx2/GameList.cpp" line="1202"/>
       <source>%n minutes</source>
       <translation>
         <numerusform>%n minuutti</numerusform>
@@ -10879,7 +11681,7 @@ graafista laatua, mutta se nostaa järjestelmän vaatimuksia.</translation>
       </translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GameList.cpp" line="1304"/>
+      <location filename="../../pcsx2/GameList.cpp" line="1362"/>
       <source>Downloading cover for {0} [{1}]...</source>
       <translation>Ladataan kansikuvaa pelille {0} [{1}]...</translation>
     </message>
@@ -10887,52 +11689,52 @@ graafista laatua, mutta se nostaa järjestelmän vaatimuksia.</translation>
   <context>
     <name>GameListModel</name>
     <message>
-      <location filename="../GameList/GameListModel.cpp" line="597"/>
+      <location filename="../GameList/GameListModel.cpp" line="603"/>
       <source>Type</source>
       <translation>Tyyppi</translation>
     </message>
     <message>
-      <location filename="../GameList/GameListModel.cpp" line="598"/>
+      <location filename="../GameList/GameListModel.cpp" line="604"/>
       <source>Code</source>
       <translation>Koodi</translation>
     </message>
     <message>
-      <location filename="../GameList/GameListModel.cpp" line="599"/>
+      <location filename="../GameList/GameListModel.cpp" line="605"/>
       <source>Title</source>
       <translation>Nimike</translation>
     </message>
     <message>
-      <location filename="../GameList/GameListModel.cpp" line="600"/>
+      <location filename="../GameList/GameListModel.cpp" line="606"/>
       <source>File Title</source>
       <translation>Tiedostonimi</translation>
     </message>
     <message>
-      <location filename="../GameList/GameListModel.cpp" line="601"/>
+      <location filename="../GameList/GameListModel.cpp" line="607"/>
       <source>CRC</source>
       <translation>CRC-arvo</translation>
     </message>
     <message>
-      <location filename="../GameList/GameListModel.cpp" line="602"/>
+      <location filename="../GameList/GameListModel.cpp" line="608"/>
       <source>Time Played</source>
       <translation>Peliaika</translation>
     </message>
     <message>
-      <location filename="../GameList/GameListModel.cpp" line="603"/>
+      <location filename="../GameList/GameListModel.cpp" line="609"/>
       <source>Last Played</source>
       <translation>Viimeksi pelattu</translation>
     </message>
     <message>
-      <location filename="../GameList/GameListModel.cpp" line="604"/>
+      <location filename="../GameList/GameListModel.cpp" line="610"/>
       <source>Size</source>
       <translation>Koko</translation>
     </message>
     <message>
-      <location filename="../GameList/GameListModel.cpp" line="605"/>
+      <location filename="../GameList/GameListModel.cpp" line="611"/>
       <source>Region</source>
       <translation>Alue</translation>
     </message>
     <message>
-      <location filename="../GameList/GameListModel.cpp" line="606"/>
+      <location filename="../GameList/GameListModel.cpp" line="612"/>
       <source>Compatibility</source>
       <translation>Yhteensopivuus</translation>
     </message>
@@ -11154,22 +11956,22 @@ Rekursiivinen skannaus vie enemmän aikaa, mutta tunnistaa tiedostot alikansiois
       <translation>Lataa paikkaukset uudelleen</translation>
     </message>
     <message>
-      <location filename="../Settings/GamePatchSettingsWidget.cpp" line="85"/>
+      <location filename="../Settings/GamePatchSettingsWidget.cpp" line="86"/>
       <source>Show Patches For All CRCs</source>
       <translation>Näytä paikkaukset kaikille CRC:ille</translation>
     </message>
     <message>
-      <location filename="../Settings/GamePatchSettingsWidget.cpp" line="85"/>
+      <location filename="../Settings/GamePatchSettingsWidget.cpp" line="86"/>
       <source>Checked</source>
       <translation>Käytössä</translation>
     </message>
     <message>
-      <location filename="../Settings/GamePatchSettingsWidget.cpp" line="86"/>
+      <location filename="../Settings/GamePatchSettingsWidget.cpp" line="87"/>
       <source>Toggles scanning patch files for all CRCs of the game. With this enabled available patches for the game serial with different CRCs will also be loaded.</source>
       <translation>Skannaa paikkaustiedostoja kaikille pelin CRC:ille. Kun tämä on käytössä, saatavilla olevat paikkaukset pelin sarjanumerolla, mutta eri CRC-koodeilla, ladataan myös.</translation>
     </message>
     <message>
-      <location filename="../Settings/GamePatchSettingsWidget.cpp" line="184"/>
+      <location filename="../Settings/GamePatchSettingsWidget.cpp" line="186"/>
       <source>There are no patches available for this game.</source>
       <translation>Ei paikkauksia saatavilla tähän peliin.</translation>
     </message>
@@ -11188,7 +11990,7 @@ Rekursiivinen skannaus vie enemmän aikaa, mutta tunnistaa tiedostot alikansiois
     </message>
     <message>
       <location filename="../Settings/GameSummaryWidget.ui" line="51"/>
-      <location filename="../Settings/GameSummaryWidget.ui" line="366"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="363"/>
       <source>Restore</source>
       <translation>Palauta</translation>
     </message>
@@ -11234,356 +12036,356 @@ Rekursiivinen skannaus vie enemmän aikaa, mutta tunnistaa tiedostot alikansiois
       <translation>PS2-levy</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="173"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="172"/>
       <source>PS1 Disc</source>
       <translation>PS1-levy</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="182"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="180"/>
       <source>ELF (PS2 Executable)</source>
       <translation>ELF (PS2-suoritettava)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="194"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="191"/>
       <source>Region:</source>
       <translation>Alue:</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="210"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="207"/>
       <source>NTSC-B (Brazil)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>NTSC-B (Brasilia)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="215"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="212"/>
       <source>NTSC-C (China)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>NTSC-C (Kiina)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="220"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="217"/>
       <source>NTSC-HK (Hong Kong)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>NTSC-HK (Hongkong)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="225"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="222"/>
       <source>NTSC-J (Japan)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>NTSC-J (Japani)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="230"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="227"/>
       <source>NTSC-K (Korea)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>NTSC-K (Korea)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="235"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="232"/>
       <source>NTSC-T (Taiwan)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>NTSC-T (Taiwan)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="240"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="237"/>
       <source>NTSC-U (US)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>NTSC-U (Yhdysvallat)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="245"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="242"/>
       <source>Other</source>
       <translation>Muu</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="250"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="247"/>
       <source>PAL-A (Australia)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-A (Australia)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="255"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="252"/>
       <source>PAL-AF (South Africa)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-AF (Etelä-Afrikka)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="260"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="257"/>
       <source>PAL-AU (Austria)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-AU (Itävalta)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="265"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="262"/>
       <source>PAL-BE (Belgium)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-BE (Belgia)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="270"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="267"/>
       <source>PAL-E (Europe/Australia)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-E (Eurooppa/Australia)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="275"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="272"/>
       <source>PAL-F (France)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-F (Ranska)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="280"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="277"/>
       <source>PAL-FI (Finland)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-FI (Suomi)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="285"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="282"/>
       <source>PAL-G (Germany)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-G (Saksa)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="290"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="287"/>
       <source>PAL-GR (Greece)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-GR (Kreikka)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="295"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="292"/>
       <source>PAL-I (Italy)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-I (Italia)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="300"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="297"/>
       <source>PAL-IN (India)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-IN (Intia)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="305"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="302"/>
       <source>PAL-M (Europe/Australia)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-M (Eurooppa/Australia)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="310"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="307"/>
       <source>PAL-NL (Netherlands)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-NL (Alankomaat)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="315"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="312"/>
       <source>PAL-NO (Norway)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-NO (Norja)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="320"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="317"/>
       <source>PAL-P (Portugal)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-P (Portugali)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="325"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="322"/>
       <source>PAL-PL (Poland)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-PL (Puola)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="330"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="327"/>
       <source>PAL-R (Russia)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-R (Venäjä)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="335"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="332"/>
       <source>PAL-S (Spain)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-S (Espanja)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="340"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="337"/>
       <source>PAL-SC (Scandinavia)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-SC (Skandinavia)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="345"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="342"/>
       <source>PAL-SW (Sweden)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-SW (Ruotsi)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="350"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="347"/>
       <source>PAL-SWI (Switzerland)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-SWI (Sveitsi)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="355"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="352"/>
       <source>PAL-UK (United Kingdom)</source>
       <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
       <translation>PAL-UK (Iso-Britannia)</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="375"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="372"/>
       <source>Compatibility:</source>
       <translation>Yhteensopivuus:</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="389"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="386"/>
       <source>Input Profile:</source>
       <translation>Syöttöprofiili:</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="403"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="400"/>
       <source>Shared</source>
       <extracomment>Refers to the shared settings profile.</extracomment>
       <translation>Yleinen</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="411"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="408"/>
       <source>Disc Path:</source>
       <translation>Levyn polku:</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="423"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="420"/>
       <source>Browse...</source>
       <translation>Selaa...</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="430"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="427"/>
       <source>Clear</source>
       <translation>Tyhjennä</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="482"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="479"/>
       <source>Verify</source>
       <translation>Vahvista</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.ui" line="525"/>
+      <location filename="../Settings/GameSummaryWidget.ui" line="522"/>
       <source>Search on Redump.org...</source>
       <translation>Etsi Redump.org -sivustolta...</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="76"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="77"/>
       <source>%0%1</source>
       <extracomment>First arg is a GameList compat; second is a string with space followed by star rating OR empty if Unknown compat</extracomment>
       <translation>%0%1</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="84"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="85"/>
       <source> %0%1</source>
       <extracomment>First arg is filled-in stars for game compatibility; second is empty stars; should be swapped for RTL languages</extracomment>
       <translation> %0%1</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="165"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="174"/>
       <source>Select Disc Path</source>
       <translation>Valitse levyn polku</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="178"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="187"/>
       <source>Game is not a CD/DVD.</source>
       <translation>Peli ei ole CD/DVD.</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="185"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="194"/>
       <source>Track list unavailable while virtual machine is running.</source>
       <translation>Raitaluettelo ei ole käytettävissä, kun virtuaalikone on käynnissä.</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="210"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="219"/>
       <source>#</source>
       <translation>#</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="213"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="222"/>
       <source>Mode</source>
       <translation>Tila</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="214"/>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="222"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="223"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="231"/>
       <source>Start</source>
       <translation>Alku</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="215"/>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="223"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="224"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="232"/>
       <source>Sectors</source>
       <translation>Sektorit</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="216"/>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="224"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="225"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="233"/>
       <source>Size</source>
       <translation>Koko</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="217"/>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="225"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="226"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="234"/>
       <source>MD5</source>
       <translation>MD5</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="218"/>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="226"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="227"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="235"/>
       <source>Status</source>
       <translation>Tila</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="234"/>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="239"/>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="240"/>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="241"/>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="247"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="243"/>
       <location filename="../Settings/GameSummaryWidget.cpp" line="248"/>
       <location filename="../Settings/GameSummaryWidget.cpp" line="249"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="250"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="256"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="257"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="258"/>
       <source>%1</source>
       <translation>%1</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="242"/>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="250"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="251"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="259"/>
       <source>&lt;not computed&gt;</source>
       <translation>&lt;ei laskettu&gt;</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="266"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="275"/>
       <source>Error</source>
       <translation>Virhe</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="266"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="275"/>
       <source>Cannot verify image while a game is running.</source>
       <translation>Levykuvaa ei voida vahvistaa pelin ollessa käynnissä.</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="296"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="305"/>
       <source>One or more tracks is missing.</source>
       <translation>Yksi tai useampi raita puuttuu.</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="333"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="342"/>
       <source>Verified as %1 [%2] (Version %3).</source>
       <translation>Vahvistettu nimellä %1 [%2] (versio %3).</translation>
     </message>
     <message>
-      <location filename="../Settings/GameSummaryWidget.cpp" line="340"/>
+      <location filename="../Settings/GameSummaryWidget.cpp" line="349"/>
       <source>Verified as %1 [%2].</source>
       <translation>Vahvistettu nimellä %1 [%2].</translation>
     </message>
   </context>
   <context>
-    <name>GlobalVariableTreeWidget</name>
+    <name>GlobalVariableTreeView</name>
     <message>
-      <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="796"/>
+      <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="855"/>
       <source>unknown function</source>
-      <translation>tuntematon funktio</translation>
+      <translation type="unfinished">unknown function</translation>
     </message>
   </context>
   <context>
@@ -11637,6 +12439,12 @@ Rekursiivinen skannaus vie enemmän aikaa, mutta tunnistaa tiedostot alikansiois
       <translation>Laajakuva (16:9)</translation>
     </message>
     <message>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="109"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="145"/>
+      <source>Native/Full (10:7)</source>
+      <translation>Alkuperäinen/Täysi (10:7)</translation>
+    </message>
+    <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="117"/>
       <source>FMV Aspect Ratio Override:</source>
       <translation>FMV-kuvasuhteen ohitus:</translation>
@@ -11644,25 +12452,25 @@ Rekursiivinen skannaus vie enemmän aikaa, mutta tunnistaa tiedostot alikansiois
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="125"/>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1038"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1100"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1105"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="48"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="494"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="567"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="675"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="678"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="492"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="565"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="673"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="676"/>
       <source>Off (Default)</source>
       <translation>Pois (oletus)</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="161"/>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="520"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1126"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2184"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2245"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1131"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2182"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2243"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="23"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="509"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="561"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="860"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="507"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="559"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="858"/>
       <source>Automatic (Default)</source>
       <translation>Automaattinen (oletus)</translation>
     </message>
@@ -11721,15 +12529,15 @@ Rekursiivinen skannaus vie enemmän aikaa, mutta tunnistaa tiedostot alikansiois
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="222"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1592"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1618"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2203"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1597"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1623"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2201"/>
       <source>None</source>
       <translation>Ei mitään</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="227"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="481"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="479"/>
       <source>Bilinear (Smooth)</source>
       <extracomment>Smooth: Refers to the texture clarity.</extracomment>
       <translation>Bilineaarinen (pehmeä)</translation>
@@ -11748,8 +12556,8 @@ Rekursiivinen skannaus vie enemmän aikaa, mutta tunnistaa tiedostot alikansiois
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="294"/>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="316"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1376"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1571"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1381"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1576"/>
       <source>%</source>
       <extracomment>Percentage sign that shows next to a value. You might want to add a space before if your language requires it.
 ----------
@@ -11795,19 +12603,19 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="448"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="485"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="483"/>
       <source>Screen Offsets</source>
       <translation>Näytön siirrot</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="455"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="490"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="488"/>
       <source>Show Overscan</source>
       <translation>Näytä yliskannaus</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="431"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="498"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="496"/>
       <source>Anti-Blur</source>
       <translation>Sumennuksenesto</translation>
     </message>
@@ -11818,7 +12626,7 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="441"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="478"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="476"/>
       <source>Disable Interlace Offset</source>
       <translation>Poista lomituksen poikkeama</translation>
     </message>
@@ -11828,18 +12636,18 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
       <translation>Kuvakaappauksen koko:</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="511"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="509"/>
       <source>Screen Resolution</source>
       <translation>Näytön kuvatarkkuus</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="545"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="543"/>
       <source>Internal Resolution</source>
       <translation>Sisäinen kuvatarkkuus</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="269"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="515"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="513"/>
       <source>PNG</source>
       <translation>PNG</translation>
     </message>
@@ -11866,7 +12674,7 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="561"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1074"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1079"/>
       <source>Off</source>
       <translation>Pois</translation>
     </message>
@@ -11891,7 +12699,7 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="499"/>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="680"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="554"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="552"/>
       <source>Bilinear (PS2)</source>
       <translation>Bilineaarinen (PS2)</translation>
     </message>
@@ -11938,7 +12746,7 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="571"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="570"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="568"/>
       <source>Unscaled (Default)</source>
       <translation>Skaalaamaton (oletus)</translation>
     </message>
@@ -11954,7 +12762,7 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="597"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="577"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="575"/>
       <source>Basic (Recommended)</source>
       <translation>Perus (suositeltu)</translation>
     </message>
@@ -11979,18 +12787,18 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
       <translation>Maksimi (hyvin hidas)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2221"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2219"/>
       <source>Texture Preloading:</source>
       <translation>Tekstuurien esilataus:</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2208"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2206"/>
       <source>Partial</source>
       <translation>Osittainen</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2213"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="583"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2211"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="581"/>
       <source>Full (Hash Cache)</source>
       <translation>Täysi (hajautusvälimuisti)</translation>
     </message>
@@ -12006,31 +12814,31 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="958"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="638"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="636"/>
       <source>Disable Depth Conversion</source>
       <translation>Poista syvyyden muunnos käytöstä</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="993"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="587"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="585"/>
       <source>GPU Palette Conversion</source>
       <translation>Grafiikkasuorittimen paletin muunnos</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="627"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="591"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="589"/>
       <source>Manual Hardware Renderer Fixes</source>
       <translation>Manuaaliset laitteistorenderöinnin korjaukset</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2160"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="600"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2165"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="598"/>
       <source>Spin GPU During Readbacks</source>
       <translation>Pyöritä grafiikkasuoritinta takaisinlukujen aikana</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2167"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="596"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2158"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="594"/>
       <source>Spin CPU During Readbacks</source>
       <translation>Pyöritä suoritinta takaisinlukujen aikana</translation>
     </message>
@@ -12042,15 +12850,15 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="634"/>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="709"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="551"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="614"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="549"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="612"/>
       <source>Mipmapping</source>
       <translation>Mipmappaus</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="716"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="609"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="634"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="607"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="632"/>
       <source>Auto Flush</source>
       <translation>Automaattinen huuhtelu</translation>
     </message>
@@ -12060,12 +12868,12 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
       <translation>Laitteistokorjaukset</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2250"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2248"/>
       <source>Force Disabled</source>
       <translation>Pakota pois käytöstä</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2255"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2253"/>
       <source>Force Enabled</source>
       <translation>Pakota käyttöönotto</translation>
     </message>
@@ -12078,8 +12886,8 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="742"/>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="828"/>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="835"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="619"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="622"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="617"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="620"/>
       <source>0 (Disabled)</source>
       <extracomment>0 (Disabled)</extracomment>
       <translation>0 (ei käytössä)</translation>
@@ -12136,18 +12944,18 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="972"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="642"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="640"/>
       <source>Disable Safe Features</source>
       <translation>Poista turvaominaisuudet käytöstä</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="986"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="659"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="657"/>
       <source>Preload Frame Data</source>
       <translation>Esilataa kuvatiedot</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="662"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="660"/>
       <source>Texture Inside RT</source>
       <translation>Tekstuurit renderöintikohteen sisällä</translation>
     </message>
@@ -12215,44 +13023,44 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
       <translation>Erityinen (tekstuuri - aggressiivinen)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1092"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1097"/>
       <source>Round Sprite:</source>
       <translation>Pyöristä sprite:</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1105"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1110"/>
       <source>Half</source>
       <translation>Puolikas</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1110"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1115"/>
       <source>Full</source>
       <translation>Täysi</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1144"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1149"/>
       <source>Texture Offsets:</source>
       <translation>Tekstuurien siirto:</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1153"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1158"/>
       <source>X:</source>
       <translation>X:</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1167"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1172"/>
       <source>Y:</source>
       <translation>Y:</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1199"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="704"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1204"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="702"/>
       <source>Merge Sprite</source>
       <translation>Yhdistä sprite</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1185"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="693"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1190"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="691"/>
       <source>Align Sprite</source>
       <translation>Kohdista sprite</translation>
     </message>
@@ -12338,121 +13146,110 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="965"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="651"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="649"/>
       <source>Disable Partial Source Invalidation</source>
       <translation>Poista osittainen lähteen mitätöinti käytöstä</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="979"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="665"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="663"/>
       <source>Read Targets When Closing</source>
       <translation>Lue kohteet suljettaessa</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1007"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="669"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="667"/>
       <source>Estimate Texture Region</source>
       <translation>Arvioi tekstuurialue</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1014"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="649"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="647"/>
       <source>Disable Render Fixes</source>
       <translation>Poista renderöintikorjaukset käytöstä</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1058"/>
-      <source>Align To Native</source>
-      <translation>Kohdista alkuperäiseen</translation>
-    </message>
-    <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1192"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="707"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1197"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="705"/>
       <source>Unscaled Palette Texture Draws</source>
       <translation>Skaalaamaton palettitekstuurien piirto</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1118"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1123"/>
       <source>Bilinear Dirty Upscale:</source>
       <translation>Bilineaarinen skaalaus:</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1131"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1136"/>
       <source>Force Bilinear</source>
       <translation>Pakota bilineaarinen</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1136"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1141"/>
       <source>Force Nearest</source>
       <translation>Pakoita lähin</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1216"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1221"/>
       <source>Texture Replacement</source>
       <translation>Tekstuurien korvaus</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1273"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1278"/>
       <source>Search Directory</source>
       <translation>Hakukansio</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1282"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2021"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1287"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2026"/>
       <source>Browse...</source>
       <translation>Selaa...</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1289"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2028"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1294"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2033"/>
       <source>Open...</source>
       <translation>Avaa...</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1296"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2035"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1301"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2040"/>
       <source>Reset</source>
       <translation>Nollaa</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1303"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1308"/>
       <source>PCSX2 will dump and load texture replacements from this directory.</source>
       <translation>PCSX2 vedostaa ja lataa tekstuurikorvauksia tästä kansiosta.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1222"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1227"/>
       <source>Options</source>
       <translation>Asetukset</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1249"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="713"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1254"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="711"/>
       <source>Dump Textures</source>
       <translation>Tee tekstuurivedos</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1256"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="715"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1261"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="713"/>
       <source>Dump Mipmaps</source>
       <translation>Tee mipmap-vedos</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1263"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="717"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1268"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="715"/>
       <source>Dump FMV Textures</source>
       <translation>Tee FMV-tekstuurivedos</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1242"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="721"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1247"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="719"/>
       <source>Load Textures</source>
       <translation>Lataa tekstuurit</translation>
-    </message>
-    <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="109"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="145"/>
-      <source>Native (10:7)</source>
-      <translation>Alkuperäinen (10:7)</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="417"/>
@@ -12465,438 +13262,442 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
       <translation>Käytä lomituksenpoistopaikkauksia</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1066"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1058"/>
+      <source>Align to Native</source>
+      <translation>Kohdista alkuperäiseen kuvatarkkuuteen</translation>
+    </message>
+    <message>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1063"/>
+      <source>Align to Native - with Texture Offset</source>
+      <translation>Kohdista alkuperäiseen kuvatarkkuuteen - tekstuurien siirrolla</translation>
+    </message>
+    <message>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1071"/>
       <source>Native Scaling</source>
       <translation>Alkuperäisen skaalaus</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1079"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1084"/>
       <source>Normal</source>
       <translation>Normaali</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1084"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1089"/>
       <source>Aggressive</source>
       <translation>Aggressiivinen</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1206"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="697"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1211"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="695"/>
       <source>Force Even Sprite Position</source>
       <translation>Pakota tasainen spritejen sijainti</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1228"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="723"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1233"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="721"/>
       <source>Precache Textures</source>
       <translation>Vie tekstuurit esivälimuistiin</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1327"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1332"/>
       <source>Post-Processing</source>
       <translation>Jälkikäsittely</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1333"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1338"/>
       <source>Sharpening/Anti-Aliasing</source>
       <translation>Terävöitys/reunanpehmennys</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1339"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1344"/>
       <source>Contrast Adaptive Sharpening:</source>
       <extracomment>You might find an official translation for this on AMD&apos;s website (Spanish version linked): https://www.amd.com/es/technologies/radeon-software-fidelityfx</extracomment>
       <translation>Kontrastimukautuva terävöitys (CAS):</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1349"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1417"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="729"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="746"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1354"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1422"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="727"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="744"/>
       <source>None (Default)</source>
       <translation>Ei mitään (oletus)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1354"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1359"/>
       <source>Sharpen Only (Internal Resolution)</source>
       <translation>Vain terävöitys (sisäinen kuvatarkkuus)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1359"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1364"/>
       <source>Sharpen and Resize (Display Resolution)</source>
       <translation>Terävöitä ja muuta kokoa (näytön kuvatarkkuus)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1369"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1374"/>
       <source>Sharpness:</source>
       <translation>Terävyys:</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1393"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="738"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1398"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="736"/>
       <source>FXAA</source>
       <translation>FXAA</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1403"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1408"/>
       <source>Filters</source>
       <translation>Suodattimet</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1409"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1414"/>
       <source>TV Shader:</source>
       <translation>TV-varjostin:</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1422"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1427"/>
       <source>Scanline Filter</source>
       <translation>Scanline-suodatin</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1427"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1432"/>
       <source>Diagonal Filter</source>
       <translation>Viisto suodatin</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1432"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1437"/>
       <source>Triangular Filter</source>
       <translation>Kolmikulmainen suodatin</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1437"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1442"/>
       <source>Wave Filter</source>
       <translation>Aaltosuodatin</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1442"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1447"/>
       <source>Lottes CRT</source>
       <extracomment>Lottes = Timothy Lottes, the creator of the shader filter. Leave as-is. CRT= Cathode Ray Tube, an old type of television technology.</extracomment>
       <translation>Lottes CRT</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1447"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1452"/>
       <source>4xRGSS downsampling (4x Rotated Grid SuperSampling)</source>
       <translation>4xRGSS laskeva otanta (4x Rotated Grid SuperSampling)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1452"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1457"/>
       <source>NxAGSS downsampling (Nx Automatic Grid SuperSampling)</source>
       <translation>NxAGSS laskeva otanta (Nx Automatic Grid SuperSampling)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1460"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="733"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1465"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="731"/>
       <source>Shade Boost</source>
       <translation>Varjotehostus</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1482"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1487"/>
       <source>Brightness:</source>
       <translation>Kirkkaus:</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1499"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1504"/>
       <source>Contrast:</source>
       <translation>Kontrasti:</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="744"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="742"/>
       <source>Saturation</source>
       <translation>Kylläisyys</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1552"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1557"/>
       <source>OSD</source>
       <translation>Näyttöpäällys</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1558"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1563"/>
       <source>On-Screen Display</source>
       <translation>Näyttöpäällys</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1564"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1569"/>
       <source>OSD Scale:</source>
       <translation>Skaala:</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1659"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="780"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1664"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="778"/>
       <source>Show Indicators</source>
       <translation>Näytä ilmaisinkuvakkeet</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1722"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="770"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1727"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="768"/>
       <source>Show Resolution</source>
       <translation>Näytä kuvatarkkuus</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1680"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="786"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1685"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="784"/>
       <source>Show Inputs</source>
       <translation>Näytä syötteet</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1694"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="775"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1699"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="773"/>
       <source>Show GPU Usage</source>
       <translation>Näytä grafiikkasuorittimen käyttö</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1708"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="783"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1713"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="781"/>
       <source>Show Settings</source>
       <translation>Näytä asetukset</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1666"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="761"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1671"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="759"/>
       <source>Show FPS</source>
       <translation>Näytä kuvataajuus</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2132"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="870"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2144"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="862"/>
       <source>Disable Mailbox Presentation</source>
       <extracomment>Mailbox Presentation: a type of graphics-rendering technique that has not been exposed to the public that often, so chances are you will need to keep the word mailbox in English. It does not have anything to do with postal mailboxes or email inboxes/outboxes.</extracomment>
       <translation>Poista mailbox-esitys käytöstä</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2153"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="874"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2137"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="866"/>
       <source>Extended Upscaling Multipliers</source>
       <translation>Laajennetut skaalauskertoimet</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2272"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2270"/>
       <source>Disable Shader Cache</source>
       <translation>Poista varjostimien välimuisti käytöstä</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2279"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2277"/>
       <source>Disable Vertex Shader Expand</source>
       <translation>Poista kärkipistevarjostinlaajennus käytöstä</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1729"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="777"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1734"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="775"/>
       <source>Show Statistics</source>
       <translation>Näytä tilastot</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1235"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="719"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1240"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="717"/>
       <source>Asynchronous Texture Loading</source>
       <translation>Asynkroninen tekstuurien lataus</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1516"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1521"/>
       <source>Saturation:</source>
       <translation>Kylläisyys:</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1701"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="773"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1706"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="771"/>
       <source>Show CPU Usage</source>
       <translation>Näytä suorittimen käyttö</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1743"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="804"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1748"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="802"/>
       <source>Warn About Unsafe Settings</source>
       <translation>Varoita epäturvallisista asetuksista</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1769"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1774"/>
       <source>Recording</source>
       <translation>Nauhoitus</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2010"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2015"/>
       <source>Video Dumping Directory</source>
       <translation>Nauhoitusten kansio</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1778"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1783"/>
       <source>Capture Setup</source>
       <translation>Nauhoitusasetukset</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1584"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1589"/>
       <source>OSD Messages Position:</source>
       <translation>Viestien sijainti:</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1597"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="754"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1602"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="752"/>
       <source>Left (Default)</source>
       <translation>Vasen (oletus)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1610"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1615"/>
       <source>OSD Performance Position:</source>
       <translation>Tilastojen sijainti:</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1628"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="758"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1633"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="756"/>
       <source>Right (Default)</source>
       <translation>Oikea (oletus)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1715"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="789"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1720"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="787"/>
       <source>Show Frame Times</source>
       <translation>Näytä kuva-ajat</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1736"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="792"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1741"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="790"/>
       <source>Show PCSX2 Version</source>
       <translation>Näytä PCSX2-versio</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1687"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="801"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1692"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="799"/>
       <source>Show Hardware Info</source>
       <translation>Näytä laitetiedot</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1652"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="798"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1657"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="796"/>
       <source>Show Input Recording Status</source>
       <translation>Näytä syötteentallennuksen tila</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1645"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="795"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1650"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="793"/>
       <source>Show Video Capture Status</source>
       <translation>Näytä videonauhoituksen tila</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1673"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="764"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1678"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="762"/>
       <source>Show VPS</source>
       <translation>Näytä VPS</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1775"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1780"/>
       <source>capture</source>
       <translation>kaappaus</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1784"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1789"/>
       <source>Container:</source>
       <translation>Muoto:</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1817"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1885"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1822"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1890"/>
       <source>Codec:</source>
       <translation>Koodekki:</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1850"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1985"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1855"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1990"/>
       <source>Extra Arguments</source>
       <translation>Lisäkomennot</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1863"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1868"/>
       <source>Capture Audio</source>
       <translation>Nauhoita ääntä</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1895"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1900"/>
       <source>Format:</source>
       <translation>Muoto:</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1928"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1933"/>
       <source>Resolution:</source>
       <translation>Kuvatarkkuus:</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1953"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1958"/>
       <source>x</source>
       <translation>x</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1976"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1981"/>
       <source>Auto</source>
       <translation>Auto</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1998"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2003"/>
       <source>Capture Video</source>
       <translation>Nauhoita videota</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2061"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2066"/>
       <source>Advanced</source>
       <extracomment>Advanced here refers to the advanced graphics options.</extracomment>
       <translation>Lisäasetukset</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2067"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2072"/>
       <source>Advanced Options</source>
       <translation>Lisäasetukset</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2073"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2078"/>
       <source>Hardware Download Mode:</source>
       <translation>Laitteistolataustila:</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2081"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2086"/>
       <source>Accurate (Recommended)</source>
       <translation>Tarkka (suositeltu)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2086"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2091"/>
       <source>Disable Readbacks (Synchronize GS Thread)</source>
       <translation>Poista takaisinluvut käytöstä (synkronoi GS-säie)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2091"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2096"/>
       <source>Unsynchronized (Non-Deterministic)</source>
       <translation>Synkronoimaton (ei-määrittelevä)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2096"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2101"/>
       <source>Disabled (Ignore Transfers)</source>
       <translation>Pois käytöstä (ohita siirrot)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2104"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2109"/>
       <source>GS Dump Compression:</source>
       <translation>GS-vedoksen pakkaus:</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2112"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2117"/>
       <source>Uncompressed</source>
       <translation>Pakkaamaton</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2117"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2122"/>
       <source>LZMA (xz)</source>
       <translation>LZMA (xz)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2122"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="850"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2127"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="848"/>
       <source>Zstandard (zst)</source>
       <translation>Zstandard (zst)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2146"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="864"/>
-      <source>Skip Presenting Duplicate Frames</source>
-      <translation>Ohita kaksoiskuvien esitys</translation>
-    </message>
-    <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2139"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="854"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2151"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="852"/>
       <source>Use Blit Swap Chain</source>
       <extracomment>Blit = a data operation. You might want to write it as-is, but fully uppercased. More information: https://en.wikipedia.org/wiki/Bit_blit \nSwap chain: see Microsoft&apos;s Terminology Portal.
 ----------
@@ -12905,56 +13706,56 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
       <translation>Käytä BLIT-vaihtoketjua</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1827"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1905"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1832"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1910"/>
       <source>Bitrate:</source>
       <translation>Bittinopeus:</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1834"/>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1912"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1839"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1917"/>
       <source> kbps</source>
       <extracomment>Unit that will appear next to a number. Alter the space or whatever is needed before the text depending on your language.</extracomment>
       <translation> kbps</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2176"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2174"/>
       <source>Allow Exclusive Fullscreen:</source>
       <translation>Salli yksinomainen koko näytön tila:</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2189"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2187"/>
       <source>Disallowed</source>
       <translation>Estetty</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2194"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2192"/>
       <source>Allowed</source>
       <translation>Hyväksytty</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2231"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2229"/>
       <source>Debugging Options</source>
       <translation>Virheenjäljitysasetukset</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2237"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2235"/>
       <source>Override Texture Barriers:</source>
       <translation>Ohita tekstuurirajat:</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2286"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2284"/>
       <source>Use Debug Device</source>
       <translation>Käytä virheenkorjauslaitetta</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1638"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="767"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1643"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="765"/>
       <source>Show Speed Percentages</source>
       <translation>Näytä nopeusprosentit</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2265"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="2263"/>
       <source>Disable Framebuffer Fetch</source>
       <translation>Poista kuvapuskurin nouto käytöstä</translation>
     </message>
@@ -13021,1152 +13822,1131 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
       <translation>16x</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="289"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1189"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1223"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1307"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="287"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1185"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1219"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1298"/>
       <source>Use Global Setting [%1]</source>
       <translation>Käytä yleistä asetusta [%1]</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="472"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="475"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="478"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="485"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="490"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="501"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="587"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="591"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="596"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="600"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="634"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="638"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="642"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="470"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="473"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="476"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="483"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="488"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="499"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="585"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="589"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="594"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="598"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="632"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="636"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="640"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="647"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="649"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="651"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="655"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="659"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="665"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="669"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="693"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="697"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="701"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="704"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="707"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="653"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="657"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="663"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="667"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="691"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="695"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="699"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="702"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="705"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="711"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="713"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="715"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="717"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="719"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="721"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="723"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="733"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="738"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="761"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="764"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="767"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="770"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="731"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="736"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="759"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="762"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="765"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="768"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="771"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="773"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="775"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="777"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="783"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="786"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="789"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="792"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="801"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="822"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="827"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="840"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="854"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="864"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="870"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="874"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="877"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="781"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="784"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="787"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="790"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="799"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="820"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="825"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="838"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="852"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="862"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="866"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="869"/>
       <source>Unchecked</source>
       <translation>Ei käytössä</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="472"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="470"/>
       <source>Enable Widescreen Patches</source>
       <translation>Ota laajakuvapaikkaukset käyttöön</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="473"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="471"/>
       <source>Automatically loads and applies widescreen patches on game start. Can cause issues.</source>
       <translation>Automaattisesti lataa ja ottaa käyttöön laajakuvapaikkaukset pelin käynnistettäessä. Saattaa aiheuttaa ongelmia.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="475"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="473"/>
       <source>Enable No-Interlacing Patches</source>
       <translation>Ota lomituksenpoistopaikkaukset käyttöön</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="476"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="474"/>
       <source>Automatically loads and applies no-interlacing patches on game start. Can cause issues.</source>
       <translation>Automaattisesti lataa ja ottaa käyttöön lomituksenpoistopaikkaukset pelin käynnistettäessä. Saattaa aiheuttaa ongelmia.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="479"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="477"/>
       <source>Disables interlacing offset which may reduce blurring in some situations.</source>
       <translation>Poistaa lomituksen poikkeaman, mikä saattaa vähentää sumennusta joissain tapauksissa.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="481"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="479"/>
       <source>Bilinear Filtering</source>
       <translation>Bilineaarinen suodatus</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="482"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="480"/>
       <source>Enables bilinear post processing filter. Smooths the overall picture as it is displayed on the screen. Corrects positioning between pixels.</source>
       <translation>Soveltaa bilineaarisen jälkikäsittelysuodattimen. Pehmentää kokonaisuudessaan näytölle esitettyä kuvaa. Korjaa paikannusta pikselien väleissä.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="487"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="485"/>
       <source>Enables PCRTC Offsets which position the screen as the game requests. Useful for some games such as WipEout Fusion for its screen shake effect, but can make the picture blurry.</source>
       <extracomment>PCRTC: Programmable CRT (Cathode Ray Tube) Controller.</extracomment>
       <translation>Ottaa käyttöön PCRTC-siirrot, jotka sijoittavat näyttöä pelin käskyjen mukaan. Hyödyllinen joissakin peleissä, kuten WipEout Fusionissa sen näyttötärinätehosteeseen, mutta voi tehdä kuvasta sumean.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="491"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="489"/>
       <source>Enables the option to show the overscan area on games which draw more than the safe area of the screen.</source>
       <translation>Näyttää yliskannauksen alueen peleissä, jotka piirtävät näytön turvallisen alueen yli.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="494"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="492"/>
       <source>FMV Aspect Ratio Override</source>
       <translation>FMV-kuvasuhteen ohitus</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="509"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="507"/>
       <source>Determines the deinterlacing method to be used on the interlaced screen of the emulated console. Automatic should be able to correctly deinterlace most games, but if you see visibly shaky graphics, try one of the available options.</source>
       <translation>Määrittää lomituksenpoiston menetelmän, jota käytetään emuloidun konsolin lomitetussa näytössä. Automaattisen pitäisi pystyä poistamaan lomitus oikein useimmissa peleissä, mutta jos huomaat grafiikan tärisevän, kokeile saatavilla olevia vaihtoehtoja.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="578"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="576"/>
       <source>Control the accuracy level of the GS blending unit emulation.&lt;br&gt; The higher the setting, the more blending is emulated in the shader accurately, and the higher the speed penalty will be.&lt;br&gt; Do note that Direct3D&apos;s blending is reduced in capability compared to OpenGL/Vulkan.</source>
       <translation>Hallitse GS-sekoitusyksikön emuloinnin tarkkuutta.&lt;br&gt; Mitä korkeampi asetus, sitä tarkempi sekoitus emuloidaan varjostimessa, mutta myös sitä suurempi tehovaatimus vaaditaan.&lt;br&gt; Huomaa, että Direct3D:n sekoituskyky on rajoitetumpi verrattuna OpenGL/Vulkaniin.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="605"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="603"/>
       <source>Software Rendering Threads</source>
       <translation>Ohjelmistorenderöinnin säikeet</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="619"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="617"/>
       <source>CPU Sprite Render Size</source>
       <translation>Suorittimen sprite-renderöinnin koko</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="622"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="620"/>
       <source>Software CLUT Render</source>
       <translation>Ohjelmisto-CLUT-renderöinti</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="626"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="624"/>
       <source>Try to detect when a game is drawing its own color palette and then renders it on the GPU with special handling.</source>
       <translation>Yrittää havaita, kun peli piirtää oman väripaletin, ja renderöi sen sitten grafiikkasuorittimella erityiskäsittelyllä.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="649"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="647"/>
       <source>This option disables game-specific render fixes.</source>
       <translation>Poistaa käytöstä pelikohtaiset renderöintikorjaukset.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="652"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="650"/>
       <source>By default, the texture cache handles partial invalidations. Unfortunately it is very costly to compute CPU wise. This hack replaces the partial invalidation with a complete deletion of the texture to reduce the CPU load. It helps with the Snowblind engine games.</source>
       <translation>Oletusarvona tekstuurivälimuisti käsittelee osittaisia mitätöintejä. Valitettavasti se on erittäin raskasta käsitellä suorittimella. Tämä niksi korvaa osittaisen mitätöinnin täydellä tekstuurin poistolla vähentääkseen suorittimen kuormaa. Auttaa Snowblind-moottorin peleissä.</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="1000"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="655"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="653"/>
       <source>Framebuffer Conversion</source>
       <translation>Kuvapuskurin muunnos</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="656"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="654"/>
       <source>Convert 4-bit and 8-bit framebuffer on the CPU instead of the GPU. Helps Harry Potter and Stuntman games. It has a big impact on performance.</source>
       <translation>Muuntaa 4-bittisen ja 8-bittisen kuvapuskurin suorittimella grafiikkasuorittimen sijaan. Auttaa Harry Potter ja Stuntman -peleissä. Suuri vaikutus suorituskykyyn.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="625"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="662"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="623"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="660"/>
       <source>Disabled</source>
       <translation>Ei käytössä</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="495"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="493"/>
       <source>Overrides the full-motion video (FMV) aspect ratio. If disabled, the FMV Aspect Ratio will match the same value as the general Aspect Ratio setting.</source>
       <translation>Ohittaa full motion videon (FMV) kuvasuhteen. Jos pois päältä, FMV-kuvasuhde vastaa yleisen kuvasuhde-asetuksen arvoa.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="551"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="504"/>
+      <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is Auto Standard (4:3/3:2 Progressive) which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era, and adapts to widescreen/ultrawide game patches.</source>
+      <translation>Määrittää kuvasuhteen, millä konsolin lähtö esitetään näytöllä. Oletusarvo on Automaattinen vakio (4:3/3:2 progressiviinen), mikä säätää kuvasuhteen automaattisesti sellaiseksi, miten peli näkyisi sen aikakauden tyypillisessä televisiossa, sekä mukautuu laajakuva/ultrawide-pelipaikkauksiin.</translation>
+    </message>
+    <message>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="516"/>
+      <source>90%</source>
+      <translation>90 %</translation>
+    </message>
+    <message>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="517"/>
+      <source>Selects the quality at which screenshots will be compressed. Higher values preserve more detail for JPEG and WebP, and reduce file size for PNG.</source>
+      <translation>Määrittää kuvakaappausten pakkauslaadun. Korkeammat arvot säilyttävät JPEG- ja WebP-muodoissa enemmän yksityiskohtia ja pienentävät PNG:n tiedostokokoa.</translation>
+    </message>
+    <message>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="549"/>
       <source>Enables mipmapping, which some games require to render correctly. Mipmapping uses progressively lower resolution variants of textures at progressively further distances to reduce processing load and avoid visual artifacts.</source>
       <translation>Ottaa käyttöön mipmappauksen, jota jotkut pelit vaativat renderöidäkseen oikein. Mipmappauksessa käytetään asteittain epätarkempia tekstuurivariantteja mitä kauempana ne ovat, mikä vähentää prosessoinnin kuormitusta ja visuaalisia virheitä.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="555"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="553"/>
       <source>Changes what filtering algorithm is used to map textures to surfaces.&lt;br&gt; Nearest: Makes no attempt to blend colors.&lt;br&gt; Bilinear (Forced): Will blend colors together to remove harsh edges between different colored pixels even if the game told the PS2 not to.&lt;br&gt; Bilinear (PS2): Will apply filtering to all surfaces that a game instructs the PS2 to filter.&lt;br&gt; Bilinear (Forced Excluding Sprites): Will apply filtering to all surfaces, even if the game told the PS2 not to, except sprites.</source>
       <translation>Muuttaa tekstuurien kartoittamisessa pintoihin käytettävää suodatusalgoritmia.&lt;br&gt; Lähin: Ei yritä sekoittaa värejä.&lt;br&gt; Bilineaarinen (pakotettu): Sekoittaa värejä yhteen poistaakseen teräviä reunoja eriväristen pikselien välillä, vaikka peli määräisi PS2:ta toisin.&lt;br&gt; Bilineaarinen (PS2): Soveltaa suodatusta kaikkiin pintoihin, jotka peli määrää PS2:ta suodattamaan.&lt;br&gt; Bilineaarinen (pakotettu, paitsi spritet): Soveltaa suodatusta kaikkiin pintoihin paitsi spriteille, vaikka peli määräisi PS2:ta toisin.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="562"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="560"/>
       <source>Reduces blurriness of large textures applied to small, steeply angled surfaces by sampling colors from the two nearest Mipmaps. Requires Mipmapping to be &apos;on&apos;.&lt;br&gt; Off: Disables the feature.&lt;br&gt; Trilinear (PS2): Applies Trilinear filtering to all surfaces that a game instructs the PS2 to.&lt;br&gt; Trilinear (Forced): Applies Trilinear filtering to all surfaces, even if the game told the PS2 not to.</source>
       <translation>Vähentää suurten tekstuurien sumentumista pienissä, jyrkkäkulmaisissa pinnoissa väriotoksilla kahdesta lähimmästä mipmapista. Vaatii mipmappauksen olevan &apos;päällä&apos;.&lt;br&gt; Pois: Poistaa ominaisuuden käytöstä.&lt;br&gt; Trilineaarinen (PS2): Soveltaa trilineaarisen suodatuksen kaikkiin pintoihin, joihin peli määrää PS2:ta soveltamaan.&lt;br&gt; Trilineaarinen (pakotettu): Soveltaa trilineaarisen suodatuksen kaikkiin pintoihin huolimatta pelin määräyksistä PS2:lle.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="571"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="569"/>
       <source>Reduces banding between colors and improves the perceived color depth.&lt;br&gt; Off: Disables any dithering.&lt;br&gt; Scaled: Upscaling-aware / Highest dithering effect.&lt;br&gt; Unscaled: Native Dithering / Lowest dithering effect does not increase size of squares when upscaling.&lt;br&gt; Force 32bit: Treat all draws as if they were 32bit to avoid banding and dithering.</source>
       <translation>Vähentää värien raidoittumista ja parantaa havaittua värisyvyyttä.&lt;br&gt; Pois: Poistaa ditheröinnin.&lt;br&gt; Skaalattu: Skaalaustietoinen / korkein dither-vaikutus&lt;br&gt; Skaalaamaton: Natiivi ditheröinti / alhaisin dither-vaikutus, ei suurenna neliöiden kokoa skaalattaessa.&lt;br&gt; Pakota 32-bittinen: Kohtelee kaikkia piirtoja kuin ne olisivat 32-bittisiä välttääkseen raidoittumista ja ditheröintiä.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="597"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="595"/>
       <source>Does useless work on the CPU during readbacks to prevent it from going to into powersave modes. May improve performance during readbacks but with a significant increase in power usage.</source>
       <translation>Lähetää hyödytöntä työkuormaa suorittimelle takaisinlukujen aikana, jotta se ei menisi virransäästötilaan. Voi parantaa suorituskykyä takaisinlukujen aikana, mutta kuluttaa huomattavasti enemmän virtaa.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="601"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="599"/>
       <source>Submits useless work to the GPU during readbacks to prevent it from going into powersave modes. May improve performance during readbacks but with a significant increase in power usage.</source>
       <translation>Lähetää hyödytöntä työkuormaa grafiikkasuorittimelle takaisinlukujen aikana, jotta se ei menisi virransäästötilaan. Voi parantaa suorituskykyä takaisinlukujen aikana, mutta kuluttaa huomattavasti enemmän virtaa.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="606"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="604"/>
       <source>Number of rendering threads: 0 for single thread, 2 or more for multithread (1 is for debugging). 2 to 4 threads is recommended, any more than that is likely to be slower instead of faster.</source>
       <translation>Renderöintisäikeiden määrä: 0 yksittäiselle säikeelle, 2 tai enemmän monisäikeelle (1 on vianjäljitykseen). 2-4 säiettä on suositeltua, yksikin tätä enemmän on todennäköisesti hitaampi kuin nopeampi.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="639"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="637"/>
       <source>Disable the support of depth buffers in the texture cache. Will likely create various glitches and is only useful for debugging.</source>
       <translation>Poistaa syvyyspuskurien tuen käytöstä tekstuurivälimuistissa. Todennäköisesti luo erilaisia häiriöitä ja hyödyllinen vain virheenjäljityksessä.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="663"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="661"/>
       <source>Allows the texture cache to reuse as an input texture the inner portion of a previous framebuffer.</source>
       <translation>Sallii tekstuurivälimuistin uudelleenkäyttää edellisen kuvapuskurin sisäosaa syöttötekstuurina.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="666"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="664"/>
       <source>Flushes all targets in the texture cache back to local memory when shutting down. Can prevent lost visuals when saving state or switching renderers, but can also cause graphical corruption.</source>
       <translation>Huuhtelee kaikki kohteet tekstuurivälimuistissa takaisin paikalliseen muistiin suljettaessa. Voi ehkäistä grafiikan katoamista luotaessa tilatallennusta tai vaihdettaessa renderöijää, mutta voi myös aiheuttaa graafista vioittumista.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="670"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="668"/>
       <source>Attempts to reduce the texture size when games do not set it themselves (e.g. Snowblind games).</source>
       <translation>Yrittää pienentää tekstuurin kokoa, kun pelit eivät itse aseta sitä (esim. Snowblind-pelit).</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="695"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="693"/>
       <source>Fixes issues with upscaling (vertical lines) in Namco games like Ace Combat, Tekken, Soul Calibur, etc.</source>
       <extracomment>Namco: a game publisher and development company. Leave the name as-is. Ace Combat, Tekken, Soul Calibur: game names. Leave as-is or use official translations.</extracomment>
       <translation>Korjaa skaalausongelmia (pystysuoria viivoja) Namcon peleissä, kuten Ace Combat, Tekken, Soul Calibur, jne.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="713"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="711"/>
       <source>Dumps replaceable textures to disk. Will reduce performance.</source>
       <translation>Vedostaa korvattavat tekstuurit levylle. Heikentää suorituskykyä.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="715"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="713"/>
       <source>Includes mipmaps when dumping textures.</source>
       <translation>Sisällyttää mipmapit mukaan tekstuurivedoksissa.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="717"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="715"/>
       <source>Allows texture dumping when FMVs are active. You should not enable this.</source>
       <translation>Sallii tekstuurien vedostuksen FMV:iden ollessa aktiivisia. Tätä ei pitäisi ottaa käyttöön.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="719"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="717"/>
       <source>Loads replacement textures on a worker thread, reducing microstutter when replacements are enabled.</source>
       <translation>Lataa korvaavat tekstuurit työläissäikeelle vähentäen mikrotärinää, kun korvaukset ovat käytössä.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="721"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="719"/>
       <source>Loads replacement textures where available and user-provided.</source>
       <translation>Lataa korvaavat tekstuurit, jos ne ovat saatavilla ja käyttäjän toimittamia.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="723"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="721"/>
       <source>Preloads all replacement textures to memory. Not necessary with asynchronous loading.</source>
       <translation>Esilataa kaikki korvaavat tekstuurit muistiin. Ei tarvita asynkronisella latauksella.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="729"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="727"/>
       <source>Enables FidelityFX Contrast Adaptive Sharpening.</source>
       <translation>Ottaa FidelityFX:n kontrastimukautuvan terävöityksen käyttöön.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="731"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="729"/>
       <source>Determines the intensity the sharpening effect in CAS post-processing.</source>
       <translation>Määrittää CAS-jälkikäsittelyn terävöittämisen voimakkuuden.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="740"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="738"/>
       <source>Adjusts brightness. 50 is normal.</source>
       <translation>Säätää kirkkautta. 50 on normaali.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="742"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="740"/>
       <source>Adjusts contrast. 50 is normal.</source>
       <translation>Säätää kontrastia. 50 on normaali.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="744"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="742"/>
       <source>Adjusts saturation. 50 is normal.</source>
       <translation>Säätää värikylläisyyttä. 50 on normaali.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="752"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="750"/>
       <source>Scales the size of the onscreen OSD from 50% to 500%.</source>
       <translation>Muuttaa näyttöpäällyksen kokoa väliltä 50 % - 500 %.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="754"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="752"/>
       <source>OSD Messages Position</source>
       <translation>Viestien sijainti näyttöpäällyksessä</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="758"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="756"/>
       <source>OSD Statistics Position</source>
       <translation>Tilastojen sijainti näyttöpäällyksessä</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="759"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="757"/>
       <source>Shows a variety of on-screen performance data points as selected by the user.</source>
       <translation>Näyttää käyttäjän valitsemia suorituskyvyn datapisteitä näytöllä.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="765"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="763"/>
       <source>Shows the vsync rate of the emulator in the top-right corner of the display.</source>
       <translation>Näyttää emulattorin pystytahdistuksen taajuuden näytön oikeassa yläkulmassa.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="781"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="779"/>
       <source>Shows OSD icon indicators for emulation states such as Pausing, Turbo, Fast-Forward, and Slow-Motion.</source>
       <translation>Näyttää näyttöpäällyksen kuvakemerkit emulointitiloissa, kuten pysäytyksessä, turbo-tilassa, pikakelauksessa ja hidastuksessa.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="784"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="782"/>
       <source>Displays various settings and the current values of those settings, useful for debugging.</source>
       <translation>Näyttää useat asetukset ja niiden nykyiset arvot. Hyödyllinen virheenjäljitystä varten.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="790"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="788"/>
       <source>Displays a graph showing the average frametimes.</source>
       <translation>Näyttää kaavion, joka esittää keskimääräiset kuva-ajat.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="802"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="800"/>
       <source>Shows the current system hardware information on the OSD.</source>
       <translation>Näyttää nykyisen järjestelmän laitteistotiedot näyttöpäällyksessä.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="810"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="808"/>
       <source>Video Codec</source>
       <translation>Videokoodekki</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="810"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="808"/>
       <source>Selects which Video Codec to be used for Video Capture. &lt;b&gt;If unsure, leave it on default.&lt;b&gt;</source>
       <translation>Määrittää, mitä videokoodekkia käytetään videonauhoituksessa. &lt;b&gt;Jos olet epävarma, jätä se oletusarvoon.&lt;b&gt;</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="814"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="812"/>
       <source>Video Format</source>
       <translation>Videomuoto</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="814"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="812"/>
       <source>Selects which Video Format to be used for Video Capture. If by chance the codec does not support the format, the first format available will be used. &lt;b&gt;If unsure, leave it on default.&lt;b&gt;</source>
       <translation>Määrittää videonauhoituksessa käytettävän videomuodon. Jos koodekki ei tue muotoa, ensimmäistä saatavilla olevaa muotoa käytetään. &lt;b&gt;Jos olet epävarma, jätä se oletusarvoon.&lt;b&gt;</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="818"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="816"/>
       <source>Video Bitrate</source>
       <translation>Videon bittinopeus</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="818"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="816"/>
       <source>6000 kbps</source>
       <translation>6000 kbps</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="818"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="816"/>
       <source>Sets the video bitrate to be used. Larger bitrate generally yields better video quality at the cost of larger resulting file size.</source>
       <translation>Asettaa videossa käytettävän bittinopeuden. Suurempi bittinopeus tuottaa paremman videon laadun, mutta suuremmalla tiedostokoolla.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="822"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="820"/>
       <source>Automatic Resolution</source>
       <translation>Automaattinen kuvatarkkuus</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="822"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="820"/>
       <source>When checked, the video capture resolution will follows the internal resolution of the running game.&lt;br&gt;&lt;br&gt;&lt;b&gt;Be careful when using this setting especially when you are upscaling, as higher internal resolution (above 4x) can results in very large video capture and can cause system overload.&lt;/b&gt;</source>
       <translation>Kun tämä on valittuna, videonauhoituksen kuvatarkkuus seuraa käynnissä olevan pelin sisäistä kuvatarkkuutta.&lt;br&gt;&lt;br&gt;&lt;b&gt;Ole varovainen käyttäessäsi tätä asetusta, varsinkin skaalattuasi, koska suurempi sisäinen kuvatarkkuus (yli 4x) voi johtaa erittäin suureen videokaappaukseen, ja voi aiheuttaa järjestelmän ylikuormitusta.&lt;/b&gt;</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="827"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="825"/>
       <source>Enable Extra Video Arguments</source>
       <translation>Ota videon lisäkomennot käyttöön</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="827"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="825"/>
       <source>Allows you to pass arguments to the selected video codec.</source>
       <translation>Antaa sinun syöttää komentoja valittuun videokoodekkiin.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="829"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="827"/>
       <source>Extra Video Arguments</source>
       <translation>Videon lisäkomennot</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="834"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="832"/>
       <source>Audio Codec</source>
       <translation>Äänikoodekki</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="834"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="832"/>
       <source>Selects which Audio Codec to be used for Video Capture. &lt;b&gt;If unsure, leave it on default.&lt;b&gt;</source>
       <translation>Määrittää, mitä äänikoodekkia käytetään videonauhoituksessa. &lt;b&gt;Jos olet epävarma, jätä se oletusarvoon.&lt;b&gt;</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="838"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="836"/>
       <source>Audio Bitrate</source>
       <translation>Äänen bittinopeus</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="840"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="838"/>
       <source>Enable Extra Audio Arguments</source>
       <translation>Ota äänen lisäkomennot käyttöön</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="840"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="838"/>
       <source>Allows you to pass arguments to the selected audio codec.</source>
       <translation>Antaa sinun syöttää komentoja valittuun äänikoodekkiin.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="842"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="840"/>
       <source>Extra Audio Arguments</source>
       <translation>Äänen lisäkomennot</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="860"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="858"/>
       <source>Allow Exclusive Fullscreen</source>
       <translation>Salli yksinomainen koko näytön tila</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="861"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="859"/>
       <source>Overrides the driver&apos;s heuristics for enabling exclusive fullscreen, or direct flip/scanout.&lt;br&gt;Disallowing exclusive fullscreen may enable smoother task switching and overlays, but increase input latency.</source>
       <translation>Ohittaa ajurin heuristiikat yksinomaisen koko näyön tilan tai suoran käännön/skannauksen käyttöönottoon.&lt;br&gt;Yksinomaisen koko näytön tilan poistaminen käytöstä voi mahdollistaa sujuvamman tehtävien vaihdon ja näyttöpäällykset, mutta se lisää syöttöviivettä.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1251"/>
-      <source>1.25x Native (~450px)</source>
-      <translation>1,25x alkuperäinen (~450 px)</translation>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1175"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1185"/>
+      <source>(Default)</source>
+      <translation>(Oletus)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1252"/>
-      <source>1.5x Native (~540px)</source>
-      <translation>1,5x alkuperäinen (~540 px)</translation>
-    </message>
-    <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1253"/>
-      <source>1.75x Native (~630px)</source>
-      <translation>1,75x alkuperäinen (~630 px)</translation>
-    </message>
-    <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1254"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1247"/>
       <source>2x Native (~720px/HD)</source>
       <translation>2x alkuperäinen (~720 px/HD)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1255"/>
-      <source>2.5x Native (~900px/HD+)</source>
-      <translation>2,5x alkuperäinen (~900 px/HD+)</translation>
-    </message>
-    <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1256"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1248"/>
       <source>3x Native (~1080px/FHD)</source>
       <translation>3x alkuperäinen (~1080 px/FHD)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1257"/>
-      <source>3.5x Native (~1260px)</source>
-      <translation>3,5x alkuperäinen (~1260 px)</translation>
-    </message>
-    <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1258"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1249"/>
       <source>4x Native (~1440px/QHD)</source>
       <translation>4x alkuperäinen (~1440 px/QHD)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1259"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1250"/>
       <source>5x Native (~1800px/QHD+)</source>
       <translation>5x alkuperäinen (~1800 px/QHD+)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1260"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1251"/>
       <source>6x Native (~2160px/4K UHD)</source>
       <translation>6x alkuperäinen (~2160 px/4K UHD)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1261"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1252"/>
       <source>7x Native (~2520px)</source>
       <translation>7x alkuperäinen (~2520 px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1262"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1253"/>
       <source>8x Native (~2880px/5K UHD)</source>
       <translation>8x alkuperäinen (~2880 px/5K UHD)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1263"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1254"/>
       <source>9x Native (~3240px)</source>
       <translation>9x alkuperäinen (~3240 px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1264"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1255"/>
       <source>10x Native (~3600px/6K UHD)</source>
       <translation>10x alkuperäinen (~3600 px/6K UHD)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1265"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1256"/>
       <source>11x Native (~3960px)</source>
       <translation>11x alkuperäinen (~3960 px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1266"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1257"/>
       <source>12x Native (~4320px/8K UHD)</source>
       <translation>12x alkuperäinen (~4320 px/8K UHD)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1267"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1258"/>
       <source>13x Native (~4680px)</source>
       <translation>13x alkuperäinen (~4680 px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1268"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1259"/>
       <source>14x Native (~5040px)</source>
       <translation>14x alkuperäinen (~5040 px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1269"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1260"/>
       <source>15x Native (~5400px)</source>
       <translation>15x alkuperäinen (~5400 px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1270"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1261"/>
       <source>16x Native (~5760px)</source>
       <translation>16x alkuperäinen (~5760 px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1271"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1262"/>
       <source>17x Native (~6120px)</source>
       <translation>17x alkuperäinen (~6120 px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1272"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1263"/>
       <source>18x Native (~6480px/12K UHD)</source>
       <translation>18x alkuperäinen (~6480 px/12K UHD)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1273"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1264"/>
       <source>19x Native (~6840px)</source>
       <translation>19x alkuperäinen (~6840 px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1274"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1265"/>
       <source>20x Native (~7200px)</source>
       <translation>20x alkuperäinen (~7200 px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1275"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1266"/>
       <source>21x Native (~7560px)</source>
       <translation>21x alkuperäinen (~7560 px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1276"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1267"/>
       <source>22x Native (~7920px)</source>
       <translation>22x alkuperäinen (~7920 px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1277"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1268"/>
       <source>23x Native (~8280px)</source>
       <translation>23x alkuperäinen (~8280 px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1278"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1269"/>
       <source>24x Native (~8640px/16K UHD)</source>
       <translation>24x alkuperäinen (~8640 px/16K UHD)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1279"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1270"/>
       <source>25x Native (~9000px)</source>
       <translation>25x alkuperäinen (~9000 px)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1300"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1306"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1291"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1297"/>
       <source>%1x Native</source>
       <translation>%1x alkuperäinen</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="498"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="551"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="609"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="614"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="719"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="780"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="795"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="798"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="804"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="496"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="549"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="607"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="612"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="717"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="778"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="793"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="796"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="802"/>
       <source>Checked</source>
       <translation>Käytössä</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="499"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="497"/>
       <source>Enables internal Anti-Blur hacks. Less accurate to PS2 rendering but will make a lot of games look less blurry.</source>
       <translation>Ottaa käyttöön sisäiset sumennuksenestoniksit. Vähemmän täsmällinen PS2-renderöintiin nähden, mutta tekee useista peleistä vähemmän sumeita.</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.ui" line="410"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="501"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="499"/>
       <source>Integer Scaling</source>
       <translation>Kokonaislukuskaalaus</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="502"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="500"/>
       <source>Adds padding to the display area to ensure that the ratio between pixels on the host to pixels in the console is an integer number. May result in a sharper image in some 2D games.</source>
       <translation>Lisää täytettä näyttöalueelle varmistukseksi, että isännän ja konsolin pikselien välinen suhde on kokonaisluku. Voi saada aikaan terävämmän kuvan joissakin 2D-peleissä.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="505"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="503"/>
       <source>Aspect Ratio</source>
       <translation>Kuvasuhde</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="505"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="503"/>
       <source>Auto Standard (4:3/3:2 Progressive)</source>
       <translation>Automaattinen vakio (4:3/3:2 progressiivinen)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="506"/>
-      <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is Auto Standard (4:3/3:2 Progressive) which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era.</source>
-      <translation>Määrittää kuvasuhteen, millä konsolin lähtö esitetään näytöllä. Oletusarvo on Automaattinen vakio (4:3/3:2 progressiviinen), joka säätää kuvasuhdetta automaattisesti vastaamaan, miten peli näkyisi sen aikakauden tyypillisessä televisiossa.</translation>
-    </message>
-    <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="509"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="507"/>
       <source>Deinterlacing</source>
       <translation>Lomituksen poisto</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="511"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="509"/>
       <source>Screenshot Size</source>
       <translation>Kuvakaappauksen koko</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="512"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="510"/>
       <source>Determines the resolution at which screenshots will be saved. Internal resolutions preserve more detail at the cost of file size.</source>
       <translation>Määrittää kuvatarkkuuden, jolla kuvakaappaukset tallennetaan. Sisäiset kuvatarkkuudet säilyttävät enemmän yksityiskohtia tiedostokoon kustannuksella.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="515"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="513"/>
       <source>Screenshot Format</source>
       <translation>Kuvakaappauksen muoto</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="516"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="514"/>
       <source>Selects the format which will be used to save screenshots. JPEG produces smaller files, but loses detail.</source>
       <translation>Valitsee tiedostomuodon, jota käytetään kuvakaappausten tallentamiseen. JPEG tuottaa pienempiä tiedostoja, mutta menettää yksityiskohtia.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="518"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="516"/>
       <source>Screenshot Quality</source>
       <translation>Kuvakaappauksen laatu</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="518"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="731"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="729"/>
       <source>50%</source>
       <translation>50 %</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="519"/>
-      <source>Selects the quality at which screenshots will be compressed. Higher values preserve more detail for JPEG, and reduce file size for PNG.</source>
-      <translation>Määrittää kuvakaappausten pakkauslaadun. Korkeammat arvot säilyttävät JPEG:issä enemmän yksityiskohtia ja pienentävät PNG:n tiedostokokoa.</translation>
-    </message>
-    <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="522"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="752"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="520"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="750"/>
       <source>100%</source>
       <translation>100 %</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="522"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="520"/>
       <source>Vertical Stretch</source>
       <translation>Pystysuora venytys</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="524"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="522"/>
       <source>Stretches (&amp;lt; 100%) or squashes (&amp;gt; 100%) the vertical component of the display.</source>
       <translation>Venyttää (&amp;lt; 100 %) tai kasaa (&amp;gt; 100 %) näytön pystysuoran komponentin.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="526"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="524"/>
       <source>Fullscreen Mode</source>
       <translation>Koko näytön tila</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="526"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1217"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1223"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="524"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1213"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1219"/>
       <source>Borderless Fullscreen</source>
       <translation>Reunaton koko näyttö</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="527"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="525"/>
       <source>Chooses the fullscreen resolution and frequency.</source>
       <translation>Valitsee koko näytön kuvatarkkuuden ja -taajuuden.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1623"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="530"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1628"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="528"/>
       <source>Left</source>
       <translation>Vasen</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="530"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="533"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="536"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="539"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="528"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="531"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="534"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="537"/>
       <source>0px</source>
       <translation>0 px</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="530"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="528"/>
       <source>Changes the number of pixels cropped from the left side of the display.</source>
       <translation>Muuttaa näytön vasemmasta reunasta rajattujen pikseleiden määrää.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="533"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="531"/>
       <source>Top</source>
       <translation>Ylä</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="533"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="531"/>
       <source>Changes the number of pixels cropped from the top of the display.</source>
       <translation>Muuttaa näytön yläreunasta rajattujen pikseleiden määrää.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1602"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="536"/>
+      <location filename="../Settings/GraphicsSettingsWidget.ui" line="1607"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="534"/>
       <source>Right</source>
       <translation>Oikea</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="536"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="534"/>
       <source>Changes the number of pixels cropped from the right side of the display.</source>
       <translation>Muuttaa näytön oikeasta reunasta rajattujen pikseleiden määrää.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="539"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="537"/>
       <source>Bottom</source>
       <translation>Ala</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="539"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="537"/>
       <source>Changes the number of pixels cropped from the bottom of the display.</source>
       <translation>Muuttaa näytön alareunasta rajattujen pikseleiden määrää.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="545"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1250"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="543"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1246"/>
       <source>Native (PS2) (Default)</source>
       <translation>Alkuperäinen (PS2) (oletus)</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="546"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="544"/>
       <source>Control the resolution at which games are rendered. High resolutions can impact performance on older or lower-end GPUs.&lt;br&gt;Non-native resolution may cause minor graphical issues in some games.&lt;br&gt;FMV resolution will remain unchanged, as the video files are pre-rendered.</source>
       <translation>Säätää kuvatarkkuutta, jolla pelit renderöidään. Korkeat kuvatarkkuudet voivat vaikuttaa suorituskykyyn vanhemmissa tai heikommissa grafiikkasuorittimissa.&lt;br&gt;Alkuperäisestä poikkeavat kuvatarkkuudet saattavat aiheuttaa pieniä graafisia virheitä joissakin peleissä.&lt;br&gt;FMV:iden kuvatarkkuus pysyy muuttumattomana, koska videotiedostot ovat aina esirenderöityjä.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="554"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="552"/>
       <source>Texture Filtering</source>
       <translation>Tekstuurien suodatus</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="561"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="559"/>
       <source>Trilinear Filtering</source>
       <translation>Trilineaarinen suodatus</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="567"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="565"/>
       <source>Anisotropic Filtering</source>
       <translation>Anisotrooppinen suodatus</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="568"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="566"/>
       <source>Reduces texture aliasing at extreme viewing angles.</source>
       <translation>Vähentää tekstuurien aliasointia äärimmäisissä katselukulmissa.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="570"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="568"/>
       <source>Dithering</source>
       <translation>Dithering</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="577"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="575"/>
       <source>Blending Accuracy</source>
       <translation>Sekoituksen tarkkuus</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="583"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="581"/>
       <source>Texture Preloading</source>
       <translation>Tekstuurien esilataus</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="584"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="582"/>
       <source>Uploads entire textures at once instead of small pieces, avoiding redundant uploads when possible. Improves performance in most games, but can make a small selection slower.</source>
       <translation>Lataa kokonaisia tekstuureja kerralla pienten kappaleiden sijaan välttäen tarpeettomia latauksia mahdollisuuksien mukaan. Parantaa suorituskykyä useimmissa peleissä, mutta voi tehdä muutamista hitaampia.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="588"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="586"/>
       <source>When enabled GPU converts colormap-textures, otherwise the CPU will. It is a trade-off between GPU and CPU.</source>
       <translation>Kun tämä on käytössä, grafiikkasuoritin muuntaa värikarttatekstuurit, muuten sen tekee suoritin. Kompromissi grafiikkasuorittimen ja suorittimen välillä.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="592"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="590"/>
       <source>Enabling this option gives you the ability to change the renderer and upscaling fixes to your games. However IF you have ENABLED this, you WILL DISABLE AUTOMATIC SETTINGS and you can re-enable automatic settings by unchecking this option.</source>
       <translation>Antaa sinun muuttaa renderöinti- ja skaalauskorjauksia peleihisi. Jos olet ottanut tämän käyttöön, AUTOMAATTISET ASETUKSET POISTETAAN KÄYTÖSTÄ, ja voit palauttaa ne käyttöön poistamalla tämän vaihtoehdon käytöstä.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="605"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="603"/>
       <source>2 threads</source>
       <translation>2 säiettä</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="610"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="635"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="608"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="633"/>
       <source>Force a primitive flush when a framebuffer is also an input texture. Fixes some processing effects such as the shadows in the Jak series and radiosity in GTA:SA.</source>
       <translation>Pakottaa primitiivien huuhtelun, kun kuvapuskuri on myös syöttötekstuuri. Korjaa eräitä käsittelytehosteita, kuten varjoja Jak-sarjassa ja radiositeettia GTA:SA:ssa.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="614"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="612"/>
       <source>Enables mipmapping, which some games require to render correctly.</source>
       <translation>Ottaa käyttöön mipmappauksen, jota jotkut pelit vaativat renderöidäkseen oikein.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="620"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="618"/>
       <source>The maximum target memory width that will allow the CPU Sprite Renderer to activate on.</source>
       <translation>Maksimi tavoitemuistinleveys, joka sallii suorittimen sprite-renderöinnin aktivoinnin.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="623"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="621"/>
       <source>Tries to detect when a game is drawing its own color palette and then renders it in software, instead of on the GPU.</source>
       <translation>Yrittää havaita, kun peli piirtää oman väripaletin, ja renderöi sen sitten ohjelmistossa grafiikkasuorittimen sijaan.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="625"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="623"/>
       <source>GPU Target CLUT</source>
       <translation>Grafiikkasuorittimen kohde-CLUT</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="628"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="626"/>
       <source>Skipdraw Range Start</source>
       <translation>Piirron ohitusvälin alku</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="628"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="631"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="683"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="688"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="626"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="629"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="681"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="686"/>
       <source>0</source>
       <translation>0</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="629"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="632"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="627"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="630"/>
       <source>Completely skips drawing surfaces from the surface in the left box up to the surface specified in the box on the right.</source>
       <translation>Ohittaa täysin pintojen piirron vasempaan laatikkoon määritetystä pinnasta oikeanpuoleiseen asti.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="631"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="629"/>
       <source>Skipdraw Range End</source>
       <translation>Piirron ohitusvälin loppu</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="643"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="641"/>
       <source>This option disables multiple safe features. Disables accurate Unscale Point and Line rendering which can help Xenosaga games. Disables accurate GS Memory Clearing to be done on the CPU, and let the GPU handle it, which can help Kingdom Hearts games.</source>
       <translation>Poistaa käytöstä useita turvaominaisuuksia. Estää tarkan Skaalaamaton piste ja viiva -renderöinnin, mikä voi auttaa Xenosaga-peleissä. Estää tarkan GS-muistin tyhjennyksen suorittimella, ja antaa sen grafiikkasuorittimen käsiteltäväksi, mikä voi auttaa Kingdom Hearts -peleissä.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="660"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="658"/>
       <source>Uploads GS data when rendering a new frame to reproduce some effects accurately.</source>
       <translation>Lataa GS-tietoja uutta kuvaa renderöidessä joidenkin tehosteiden tarkkaan tuottoon.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="675"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="673"/>
       <source>Half Pixel Offset</source>
       <translation>Puolen pikselin siirto</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="676"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="674"/>
       <source>Might fix some misaligned fog, bloom, or blend effect.</source>
       <translation>Saattaa korjata joitain väärin kohdistettuja sumu-, hehku- tai sekoitustehosteita.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="678"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="676"/>
       <source>Round Sprite</source>
       <translation>Pyöristä sprite</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="679"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="677"/>
       <source>Corrects the sampling of 2D sprite textures when upscaling. Fixes lines in sprites of games like Ar tonelico when upscaling. Half option is for flat sprites, Full is for all sprites.</source>
       <translation>Korjaa 2D-sprite-tekstuurien otannan skaalauksessa. Korjaa spritejen viivoja skaalauksessa peleissä kuten Ar tonelico. Puolikas-vaihtoehto on litteille spriteille, Täysi on kaikille spriteille.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="683"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="681"/>
       <source>Texture Offsets X</source>
       <translation>Tekstuurien X-siirto</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="685"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="690"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="683"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="688"/>
       <source>Offset for the ST/UV texture coordinates. Fixes some odd texture issues and might fix some post processing alignment too.</source>
       <extracomment>ST and UV are different types of texture coordinates, like XY would be spatial coordinates.</extracomment>
       <translation>Poikkeamat ST/UV-tekstuurikoordinaateille. Korjaa joitain tekstuurivirheitä ja saattaa myös korjata joidenkin jälkikäsittelyjen linjausta.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="688"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="686"/>
       <source>Texture Offsets Y</source>
       <translation>Tekstuurien Y-siirto</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="699"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="697"/>
       <source>Lowers the GS precision to avoid gaps between pixels when upscaling. Fixes the text on Wild Arms games.</source>
       <extracomment>Wild Arms: name of a game series. Leave as-is or use an official translation.</extracomment>
       <translation>Laskee GS:n tarkkuutta pikselien välisten rakojen välttämiseen skaalauksessa. Korjaa tekstin Wild Arms -peleissä.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="701"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="699"/>
       <source>Bilinear Upscale</source>
       <translation>Bilineaarinen skaalaus</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="702"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="700"/>
       <source>Can smooth out textures due to be bilinear filtered when upscaling. E.g. Brave sun glare.</source>
       <translation>Pehmentää bilineaarisesti suodatettavia tekstuureja skaalauksessa. Esim. Braven auringonloiste.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="705"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="703"/>
       <source>Replaces post-processing multiple paving sprites by a single fat sprite. It reduces various upscaling lines.</source>
       <translation>Korvaa useiden päällekkäisten spritejen jälkikäsittelyn yhdellä isolla spritellä. Vähentää monenlaisia skaalausviivoja.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="708"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="706"/>
       <source>Force palette texture draws to render at native resolution.</source>
       <translation>Pakottaa palettitekstuurien piirtojen renderöinnin alkuperäisessä kuvatarkkuudessa.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="729"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="727"/>
       <source>Contrast Adaptive Sharpening</source>
       <extracomment>You might find an official translation for this on AMD&apos;s website (Spanish version linked): https://www.amd.com/es/technologies/radeon-software-fidelityfx</extracomment>
       <translation>Kontrastimukautuva terävöitys</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="731"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="729"/>
       <source>Sharpness</source>
       <translation>Terävyys</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="734"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="732"/>
       <source>Enables saturation, contrast, and brightness to be adjusted. Values of brightness, saturation, and contrast are at default 50.</source>
       <translation>Mahdollistaa värikylläisyyden, kontrastin ja kirkkauden säädön. Oletusarvot ovat 50.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="738"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="736"/>
       <source>Applies the FXAA anti-aliasing algorithm to improve the visual quality of games.</source>
       <translation>Soveltaa FXAA-antialiasointialgoritmia parantamaan pelien visuaalista laatua.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="740"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="738"/>
       <source>Brightness</source>
       <translation>Kirkkaus</translation>
     </message>
     <message>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="738"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="740"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="742"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="744"/>
       <source>50</source>
       <translation>50</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="742"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="740"/>
       <source>Contrast</source>
       <translation>Kontrasti</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="746"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="744"/>
       <source>TV Shader</source>
       <translation>TV-varjostin</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="747"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="745"/>
       <source>Applies a shader which replicates the visual effects of different styles of television set.</source>
       <translation>Soveltaa käyttöön varjostimen, joka voi esittää erityylisten televisioiden visuaalisia vaikutuksia.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="752"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="750"/>
       <source>OSD Scale</source>
       <translation>Näyttöpäällyksen skaala</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="755"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="753"/>
       <source>Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc.</source>
       <translation>Näyttää ruudulla viestit tapahtumille, kuten tilatallennuksia luodessa/ladattaessa, ottaessa kuvakaappauksia jne.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="762"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="760"/>
       <source>Shows the internal frame rate of the game in the top-right corner of the display.</source>
       <translation>Näyttää pelin sisäisen kuvataajuuden näytön oikeassa yläkulmassa.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="768"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="766"/>
       <source>Shows the current emulation speed of the system in the top-right corner of the display as a percentage.</source>
       <translation>Näyttää järjestelmän nykyisen emulointinopeuden näytön oikeassa yläkulmassa prosentteina.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="771"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="769"/>
       <source>Shows the resolution of the game in the top-right corner of the display.</source>
       <translation>Näyttää pelin kuvatarkkuuden näytön oikeassa yläkulmassa.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="773"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="771"/>
       <source>Shows host&apos;s CPU utilization.</source>
       <translation>Näyttää isännän suorittimen käytön.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="775"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="773"/>
       <source>Shows host&apos;s GPU utilization.</source>
       <translation>Näyttää isännän grafiikkasuorittimen käytön.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="778"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="776"/>
       <source>Shows counters for internal graphical utilization, useful for debugging.</source>
       <translation>Näyttää sisäisen graafisen käytön laskurit, hyödyllinen vianmäärityksessä.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="787"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="785"/>
       <source>Shows the current controller state of the system in the bottom-left corner of the display.</source>
       <translation>Näyttää järjestelmän nykyisen ohjaimen tilan näytön vasemmassa alakulmassa.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="793"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="791"/>
       <source>Shows the current PCSX2 version on the top-right corner of the display.</source>
       <translation>Näyttää nykyisen PCSX2-version näytön oikeassa yläkulmassa.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="796"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="794"/>
       <source>Shows the currently active video capture status.</source>
       <translation>Näyttää aktiivisen videonauhoituksen tilan.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="799"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="797"/>
       <source>Shows the currently active input recording status.</source>
       <translation>Näyttää tällä hetkellä aktiivisen syötteentallennuksen tilan.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="805"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="803"/>
       <source>Displays warnings when settings are enabled which may break games.</source>
       <translation>Näyttää varoituksia, kun päällä on asetuksia, jotka saattavat rikkoa pelejä.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="829"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="842"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="827"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="840"/>
       <source>Leave It Blank</source>
       <translation>Jätä tyhjäksi</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="830"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="828"/>
       <source>Parameters passed to the selected video codec.&lt;br&gt;&lt;b&gt;You must use &apos;=&apos; to separate key from value and &apos;:&apos; to separate two pairs from each other.&lt;/b&gt;&lt;br&gt;For example: &quot;crf = 21 : preset = veryfast&quot;</source>
       <translation>Valittuun videokoodekkiin syötettävät parametrit.&lt;br&gt;&lt;b&gt;Käytä &apos;=&apos; erottaaksesi tunnuksen arvosta ja &apos;:&apos; erottaaksesi kaksi paria toisistaan.&lt;/b&gt;&lt;br&gt;Esimerkiksi: &quot;crf = 21 : preset = veryfast&quot;</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="838"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="836"/>
       <source>Sets the audio bitrate to be used.</source>
       <translation>Asettaa äänessä käytettävän bittinopeuden.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="838"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="836"/>
       <source>160 kbps</source>
       <translation>160 kbps</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="843"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="841"/>
       <source>Parameters passed to the selected audio codec.&lt;br&gt;&lt;b&gt;You must use &apos;=&apos; to separate key from value and &apos;:&apos; to separate two pairs from each other.&lt;/b&gt;&lt;br&gt;For example: &quot;compression_level = 4 : joint_stereo = 1&quot;</source>
       <translation>Valittuun äänikoodekkiin syötettävät parametrit.&lt;br&gt;&lt;b&gt;Käytä &apos;=&apos; erottaaksesi tunnuksen arvosta ja &apos;:&apos; erottaaksesi kaksi paria toisistaan.&lt;/b&gt;&lt;br&gt;Esimerkiksi: &quot;compression_level = 4 : joint_stereo = 1&quot;</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="850"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="848"/>
       <source>GS Dump Compression</source>
       <translation>GS-vedoksen pakkaus</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="851"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="849"/>
       <source>Change the compression algorithm used when creating a GS dump.</source>
       <translation>Valitsee GS-vedosta luodessa käytettävän pakkausalgoritmin.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="856"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="854"/>
       <source>Uses a blit presentation model instead of flipping when using the Direct3D 11 renderer. This usually results in slower performance, but may be required for some streaming applications, or to uncap framerates on some systems.</source>
       <extracomment>Blit = a data operation. You might want to write it as-is, but fully uppercased. More information: https://en.wikipedia.org/wiki/Bit_blit</extracomment>
       <translation>Käyttää BLIT-esitysmallia kääntämisen sijaan Direct3D 11 -renderöijää käytettäessä. Johtaa yleensä hitaampaan suorituskykyyn, mutta saattaa olla tarpeen joissakin suoratoistosovelluksissa tai kuvataajuuksien rajoituksen poistoon joillakin järjestelmillä.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="865"/>
-      <source>Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth out frame time fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase input lag.</source>
-      <translation>Havaitsee 25/30 FPS:n peleissä esitetyt seisontakuvat ja ohittaa ne. Kuva yhä renderöidään, mutta se tarkoittaa vain sitä, että grafiikkasuorittimella on enemmän aikaa suorittaa se (kyseessä ei ole kuvanohitus). Voi tasoittaa kuva-aikojen epävakaisuutta suorittimen/grafiikkasuorittimen ollessa lähes maksimaalisessa käytössä, mutta tekee kuvanrytmityksestä epävakaamman ja lisää mahdollisesti syöttöviivettä.</translation>
-    </message>
-    <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="875"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="867"/>
       <source>Displays additional, very high upscaling multipliers dependent on GPU capability.</source>
       <translation>Näyttää enemmän hyvin korkeita skaalauskertoimia, riippuvaisia grafiikkasuorittimen toimintakyvystä.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="877"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="869"/>
       <source>Enable Debug Device</source>
       <translation>Käytä virheenjäljityslaitetta</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="878"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="870"/>
       <source>Enables API-level validation of graphics commands.</source>
       <translation>Sallii API-tason vahvistuksen grafiikkakomentoihin.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="880"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="872"/>
       <source>GS Download Mode</source>
       <translation>GS:n lataustila</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="880"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="872"/>
       <source>Accurate</source>
       <translation>Tarkka</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="881"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="873"/>
       <source>Skips synchronizing with the GS thread and host GPU for GS downloads. Can result in a large speed boost on slower systems, at the cost of many broken graphical effects. If games are broken and you have this option enabled, please disable it first.</source>
       <translation>Ohittaa GS-säikeen ja isäntägrafiikkasuorittimen synkronoinnin GS:n latauksia varten. Voi johtaa suureen nopeutukseen hitaammilla järjestelmillä, mutta monien grafiikkavirheiden kustannuksella. Jos pelit ovat rikki ja sinulla on tämä asetus käytössä, poista se käytöstä ensin.</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="810"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="814"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="834"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1011"/>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1025"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="808"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="812"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="832"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1003"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1017"/>
       <source>Default</source>
       <extracomment>This string refers to a default codec, whether it&apos;s an audio codec or a video codec.</extracomment>
       <translation>Oletus</translation>
     </message>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="871"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="863"/>
       <source>Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.</source>
       <translation>Pakottaa FIFO:n käytön mailbox-esityksen sijasta, eli kaksinkertainen puskurointi kolminkertaisen sijasta. Yleensä tuloksena on huonompi kuvanrytmitys.</translation>
     </message>
@@ -14174,7 +14954,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
   <context>
     <name>GraphicsSettingsWidget::GraphicsSettingsWidget</name>
     <message>
-      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1042"/>
+      <location filename="../Settings/GraphicsSettingsWidget.cpp" line="1034"/>
       <source>Default</source>
       <extracomment>This string refers to a default pixel format</extracomment>
       <translation>Oletus</translation>
@@ -14183,190 +14963,190 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
   <context>
     <name>Hotkeys</name>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1086"/>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1094"/>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1114"/>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1121"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1095"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1103"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1123"/>
       <location filename="../../pcsx2/GS/GS.cpp" line="1130"/>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1136"/>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1142"/>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1148"/>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1153"/>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1166"/>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1179"/>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1207"/>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1219"/>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1233"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1139"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1145"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1151"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1157"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1162"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1175"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1188"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1216"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1228"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1242"/>
       <source>Graphics</source>
       <translation>Grafiikka</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1087"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1096"/>
       <source>Save Screenshot</source>
       <translation>Tallenna kuvakaappaus</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1094"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1103"/>
       <source>Toggle Video Capture</source>
       <translation>Videonauhoitus päälle/pois</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1114"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1123"/>
       <source>Save Single Frame GS Dump</source>
       <translation>Tallenna yksikuvainen GS-vedos</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1121"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1130"/>
       <source>Save Multi Frame GS Dump</source>
       <translation>Tallenna monikuvainen GS-vedos</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1131"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1140"/>
       <source>Toggle Software Rendering</source>
       <translation>Ohjelmistorenderöinti päälle/pois</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1137"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1146"/>
       <source>Increase Upscale Multiplier</source>
       <translation>Suurenna skaalauskerrointa</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1143"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1152"/>
       <source>Decrease Upscale Multiplier</source>
       <translation>Pienennä skaalauskerrointa</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1148"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1157"/>
       <source>Toggle On-Screen Display</source>
       <translation>Näyttöpäällys päälle/pois</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1153"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1162"/>
       <source>Cycle Aspect Ratio</source>
       <translation>Muuta kuvasuhdetta</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1162"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1171"/>
       <source>Aspect ratio set to &apos;{}&apos;.</source>
       <translation>Kuvasuhde asetettu arvoon &apos;{}&apos;.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1166"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1175"/>
       <source>Toggle Hardware Mipmapping</source>
       <translation>Laitteistomipmappaus päälle/pois</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1173"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1182"/>
       <source>Hardware mipmapping is now enabled.</source>
       <translation>Laitteistomipmappaus on nyt käytössä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1174"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1183"/>
       <source>Hardware mipmapping is now disabled.</source>
       <translation>Laitteistomipmappaus on nyt pois käytöstä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1179"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1188"/>
       <source>Cycle Deinterlace Mode</source>
       <translation>Muuta lomituksen poiston tilaa</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1185"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1194"/>
       <source>Automatic</source>
       <translation>Automaattinen</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1186"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1195"/>
       <source>Off</source>
       <translation>Pois</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1187"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1196"/>
       <source>Weave (Top Field First)</source>
       <translation>Kutova (yläkenttä ensin)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1188"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1197"/>
       <source>Weave (Bottom Field First)</source>
       <translation>Kutova (alakenttä ensin)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1189"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1198"/>
       <source>Bob (Top Field First)</source>
       <translation>Hyppivä (yläkenttä ensin)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1190"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1199"/>
       <source>Bob (Bottom Field First)</source>
       <translation>Hyppivä (alakenttä ensin)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1191"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1200"/>
       <source>Blend (Top Field First)</source>
       <translation>Sekoitus (yläkenttä ensin)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1192"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1201"/>
       <source>Blend (Bottom Field First)</source>
       <translation>Sekoitus (alakenttä ensin)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1193"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1202"/>
       <source>Adaptive (Top Field First)</source>
       <translation>Mukautuva (yläkenttä ensin)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1194"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1203"/>
       <source>Adaptive (Bottom Field First)</source>
       <translation>Mukautuva (alakenttä ensin)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1201"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1210"/>
       <source>Deinterlace mode set to &apos;{}&apos;.</source>
       <translation>Lomituksen poiston tila asetettu arvoon &apos;{}&apos;.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1207"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1216"/>
       <source>Toggle Texture Dumping</source>
       <translation>Tekstuurivedostus päälle/pois</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1213"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1222"/>
       <source>Texture dumping is now enabled.</source>
       <translation>Tekstuurivedostus on nyt käytössä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1214"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1223"/>
       <source>Texture dumping is now disabled.</source>
       <translation>Tekstuurivedostus on nyt pois käytöstä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1220"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1229"/>
       <source>Toggle Texture Replacements</source>
       <translation>Tekstuurikorvaukset päälle/pois</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1227"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1236"/>
       <source>Texture replacements are now enabled.</source>
       <translation>Tekstuurikorvaukset ovat nyt käytössä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1228"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1237"/>
       <source>Texture replacements are now disabled.</source>
       <translation>Tekstuurikorvaukset ovat nyt pois käytöstä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1234"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1243"/>
       <source>Reload Texture Replacements</source>
       <translation>Lataa tekstuurikorvaukset uudelleen</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1241"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1250"/>
       <source>Texture replacements are not enabled.</source>
       <translation>Tekstuurikorvaukset eivät ole käytössä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/GS/GS.cpp" line="1246"/>
+      <location filename="../../pcsx2/GS/GS.cpp" line="1255"/>
       <source>Reloading texture replacements...</source>
       <translation>Ladataan tekstuurikorvaukset uudelleen...</translation>
     </message>
@@ -14508,7 +15288,8 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
       <location filename="../../pcsx2/Hotkeys.cpp" line="237"/>
       <location filename="../../pcsx2/Hotkeys.cpp" line="242"/>
       <location filename="../../pcsx2/Hotkeys.cpp" line="247"/>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="255"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="252"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="260"/>
       <source>Save States</source>
       <translation>Tilatallennukset</translation>
     </message>
@@ -14534,116 +15315,121 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     </message>
     <message>
       <location filename="../../pcsx2/Hotkeys.cpp" line="248"/>
+      <source>Load Backup State From Selected Slot</source>
+      <translation>Lataa varmuuskopiotila valitusta paikasta</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="253"/>
       <source>Save State and Select Next Slot</source>
       <translation>Tallenna tila ja valitse seuraava paikka</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="256"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="261"/>
       <source>Select Next Slot and Save State</source>
       <translation>Valitse seuraava paikka ja tallenna tila</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="274"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="279"/>
       <source>Save State To Slot 1</source>
       <translation>Tallenna tila paikkaan 1</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="275"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="280"/>
       <source>Load State From Slot 1</source>
       <translation>Lataa tila paikasta 1</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="276"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="281"/>
       <source>Save State To Slot 2</source>
       <translation>Tallenna tila paikkaan 2</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="277"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="282"/>
       <source>Load State From Slot 2</source>
       <translation>Lataa tila paikasta 2</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="278"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="283"/>
       <source>Save State To Slot 3</source>
       <translation>Tallenna tila paikkaan 3</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="279"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="284"/>
       <source>Load State From Slot 3</source>
       <translation>Lataa tila paikasta 3</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="280"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="285"/>
       <source>Save State To Slot 4</source>
       <translation>Tallenna tila paikkaan 4</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="281"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="286"/>
       <source>Load State From Slot 4</source>
       <translation>Lataa tila paikasta 4</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="282"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="287"/>
       <source>Save State To Slot 5</source>
       <translation>Tallenna tila paikkaan 5</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="283"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="288"/>
       <source>Load State From Slot 5</source>
       <translation>Lataa tila paikasta 5</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="284"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="289"/>
       <source>Save State To Slot 6</source>
       <translation>Tallenna tila paikkaan 6</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="285"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="290"/>
       <source>Load State From Slot 6</source>
       <translation>Lataa tila paikasta 6</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="286"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="291"/>
       <source>Save State To Slot 7</source>
       <translation>Tallenna tila paikkaan 7</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="287"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="292"/>
       <source>Load State From Slot 7</source>
       <translation>Lataa tila paikasta 7</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="288"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="293"/>
       <source>Save State To Slot 8</source>
       <translation>Tallenna tila paikkaan 8</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="289"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="294"/>
       <source>Load State From Slot 8</source>
       <translation>Lataa tila paikasta 8</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="290"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="295"/>
       <source>Save State To Slot 9</source>
       <translation>Tallenna tila paikkaan 9</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="291"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="296"/>
       <source>Load State From Slot 9</source>
       <translation>Lataa tila paikasta 9</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="292"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="297"/>
       <source>Save State To Slot 10</source>
       <translation>Tallenna tila paikkaan 10</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Hotkeys.cpp" line="293"/>
+      <location filename="../../pcsx2/Hotkeys.cpp" line="298"/>
       <source>Load State From Slot 10</source>
       <translation>Lataa tila paikasta 10</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1130"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1142"/>
       <source>Save slot {0} selected ({1}).</source>
       <translation>Tallennuspaikka {0} valittu ({1}).</translation>
     </message>
@@ -14651,78 +15437,63 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
   <context>
     <name>ImGuiOverlays</name>
     <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="685"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="689"/>
       <source>{} Recording Input</source>
       <translation>{} Tallennetaan syötettä</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="689"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="693"/>
       <source>{} Replaying</source>
       <translation>{} Toistetaan</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="693"/>
-      <source>Input Recording Active: {}</source>
-      <translation>Syöttötallennus aktiivinen: {}</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="694"/>
-      <source>Frame: {}/{} ({})</source>
-      <translation>Kuva: {}/{} ({})</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="695"/>
-      <source>Undo Count: {}</source>
-      <translation>Kumouksia: {}</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="757"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="761"/>
       <source>Saved at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}.</source>
       <translation>Tallennettu {0:%H:%M} {0:%d/%m/%Y}.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="784"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="788"/>
       <source>Save state selector is unavailable without a valid game serial.</source>
       <translation>Tilatallennusvalitsin ei ole käytettävissä ilman kelvollista pelin sarjanumeroa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="871"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="875"/>
       <source>Load</source>
       <translation>Lataa</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="873"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="877"/>
       <source>Save</source>
       <translation>Tallenna</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="875"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="879"/>
       <source>Select Previous</source>
       <translation>Valitse edellinen</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="877"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="881"/>
       <source>Select Next</source>
       <translation>Valitse seuraava</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="879"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="883"/>
       <source>Close Menu</source>
       <translation>Sulje valikko</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="932"/>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="954"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="936"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="958"/>
       <source>Save Slot {0}</source>
       <translation>Tallennuspaikka {0}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="955"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="959"/>
       <source>No save present in this slot.</source>
       <translation>Ei tallennusta tässä paikassa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1127"/>
+      <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1139"/>
       <source>no save yet</source>
       <translation>ei vielä tallennusta</translation>
     </message>
@@ -14771,24 +15542,24 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
       <translation>Poista sidokset</translation>
     </message>
     <message>
-      <location filename="../Settings/InputBindingDialog.cpp" line="28"/>
+      <location filename="../Settings/InputBindingDialog.cpp" line="29"/>
       <source>Bindings for %1 %2</source>
       <translation>Sidokset kohteelle %1 %2</translation>
     </message>
     <message>
-      <location filename="../Settings/InputBindingDialog.cpp" line="29"/>
+      <location filename="../Settings/InputBindingDialog.cpp" line="30"/>
       <source>Close</source>
       <translation>Sulje</translation>
     </message>
     <message>
-      <location filename="../Settings/InputBindingDialog.cpp" line="159"/>
-      <location filename="../Settings/InputBindingDialog.cpp" line="174"/>
+      <location filename="../Settings/InputBindingDialog.cpp" line="162"/>
+      <location filename="../Settings/InputBindingDialog.cpp" line="177"/>
       <source>Push Button/Axis... [%1]</source>
       <translation>Paina painiketta/akselia... [%1]</translation>
     </message>
     <message>
-      <location filename="../Settings/InputBindingDialog.cpp" line="332"/>
-      <location filename="../Settings/InputBindingDialog.cpp" line="337"/>
+      <location filename="../Settings/InputBindingDialog.cpp" line="343"/>
+      <location filename="../Settings/InputBindingDialog.cpp" line="348"/>
       <source>%1%</source>
       <translation>%1 %</translation>
     </message>
@@ -14796,7 +15567,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
   <context>
     <name>InputBindingWidget</name>
     <message>
-      <location filename="../Settings/InputBindingWidget.cpp" line="62"/>
+      <location filename="../Settings/InputBindingWidget.cpp" line="66"/>
       <source>
 
 Left click to assign a new button
@@ -14807,19 +15578,19 @@ Napsauta hiiren vasemmalla painikkeella määrittääksesi uuden painikkeen
 Vaihto + vasen napsautus lisäsidosten määrittämiseen</translation>
     </message>
     <message>
-      <location filename="../Settings/InputBindingWidget.cpp" line="63"/>
+      <location filename="../Settings/InputBindingWidget.cpp" line="67"/>
       <source>
 Right click to clear binding</source>
       <translation>
 Poista sidos napsauttamalla hiiren kakkospainikkeella</translation>
     </message>
     <message>
-      <location filename="../Settings/InputBindingWidget.cpp" line="69"/>
+      <location filename="../Settings/InputBindingWidget.cpp" line="73"/>
       <source>No bindings registered</source>
       <translation>Ei rekisteröityjä sidoksia</translation>
     </message>
     <message numerus="yes">
-      <location filename="../Settings/InputBindingWidget.cpp" line="73"/>
+      <location filename="../Settings/InputBindingWidget.cpp" line="77"/>
       <source>%n bindings</source>
       <translation>
         <numerusform>%n sidos</numerusform>
@@ -14827,8 +15598,8 @@ Poista sidos napsauttamalla hiiren kakkospainikkeella</translation>
       </translation>
     </message>
     <message>
-      <location filename="../Settings/InputBindingWidget.cpp" line="287"/>
-      <location filename="../Settings/InputBindingWidget.cpp" line="302"/>
+      <location filename="../Settings/InputBindingWidget.cpp" line="300"/>
+      <location filename="../Settings/InputBindingWidget.cpp" line="315"/>
       <source>Push Button/Axis... [%1]</source>
       <translation>Paina painiketta/akselia... [%1]</translation>
     </message>
@@ -14836,39 +15607,54 @@ Poista sidos napsauttamalla hiiren kakkospainikkeella</translation>
   <context>
     <name>InputRecording</name>
     <message>
-      <location filename="../../pcsx2/Recording/InputRecording.cpp" line="75"/>
+      <location filename="../../pcsx2/Recording/InputRecording.cpp" line="77"/>
       <source>Started new input recording</source>
       <translation>Uusi syöttötallennus aloitettiin</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Recording/InputRecording.cpp" line="94"/>
+      <location filename="../../pcsx2/Recording/InputRecording.cpp" line="96"/>
       <source>Savestate load failed for input recording</source>
       <translation>Tilatallennuksen lataus epäonnistui syöttötallennuksessa</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Recording/InputRecording.cpp" line="104"/>
+      <location filename="../../pcsx2/Recording/InputRecording.cpp" line="106"/>
       <source>Savestate load failed for input recording, unsupported version?</source>
       <translation>Tilatallennuksen lataus epäonnistui syöttötallennuksessa, tukematon versio?</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Recording/InputRecording.cpp" line="121"/>
+      <location filename="../../pcsx2/Recording/InputRecording.cpp" line="123"/>
       <source>Replaying input recording</source>
       <translation>Toistetaan syöttötallennusta</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Recording/InputRecording.cpp" line="139"/>
+      <location filename="../../pcsx2/Recording/InputRecording.cpp" line="141"/>
       <source>Input recording stopped</source>
       <translation>Syöttötallennus pysäytetty</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Recording/InputRecording.cpp" line="144"/>
+      <location filename="../../pcsx2/Recording/InputRecording.cpp" line="146"/>
       <source>Unable to stop input recording</source>
       <translation>Syöttötallennuksen pysäyttäminen epäonnistui</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Recording/InputRecording.cpp" line="232"/>
+      <location filename="../../pcsx2/Recording/InputRecording.cpp" line="234"/>
       <source>Congratulations, you&apos;ve been playing for far too long and thus have reached the limit of input recording! Stopping recording now...</source>
       <translation>Onnittelut, olet pelannut liian kauan ja täten saavuttanut syötteen tallennuksen rajan! Nauhoitus lopetetaan nyt...</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/Recording/InputRecording.cpp" line="394"/>
+      <source>Input Recording Active: {}</source>
+      <translation>Syöttötallennus aktiivinen: {}</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/Recording/InputRecording.cpp" line="395"/>
+      <source>Frame: {}/{} ({})</source>
+      <translation>Kuva: {}/{} ({})</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/Recording/InputRecording.cpp" line="396"/>
+      <source>Undo Count: {}</source>
+      <translation>Kumouksia: {}</translation>
     </message>
   </context>
   <context>
@@ -15042,17 +15828,17 @@ Poista sidos napsauttamalla hiiren kakkospainikkeella</translation>
   <context>
     <name>InputVibrationBindingWidget</name>
     <message>
-      <location filename="../Settings/InputBindingWidget.cpp" line="450"/>
+      <location filename="../Settings/InputBindingWidget.cpp" line="489"/>
       <source>Error</source>
       <translation>Virhe</translation>
     </message>
     <message>
-      <location filename="../Settings/InputBindingWidget.cpp" line="450"/>
+      <location filename="../Settings/InputBindingWidget.cpp" line="489"/>
       <source>No devices with vibration motors were detected.</source>
       <translation>Värinän moottoreilla varustettuja laitteita ei havaittu.</translation>
     </message>
     <message>
-      <location filename="../Settings/InputBindingWidget.cpp" line="456"/>
+      <location filename="../Settings/InputBindingWidget.cpp" line="495"/>
       <source>Select vibration motor for %1.</source>
       <translation>Valitse värähtelymoottori kohteelle %1.</translation>
     </message>
@@ -15065,319 +15851,395 @@ Poista sidos napsauttamalla hiiren kakkospainikkeella</translation>
       <translation>Käyttäytyminen</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.ui" line="70"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="146"/>
+      <location filename="../Settings/InterfaceSettingsWidget.ui" line="77"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="157"/>
       <source>Pause On Focus Loss</source>
       <translation>Pysäytä kohdistuksen hävitessä</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="35"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="138"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="149"/>
       <source>Inhibit Screensaver</source>
       <translation>Estä näytönsäästäjä</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.ui" line="56"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="144"/>
+      <location filename="../Settings/InterfaceSettingsWidget.ui" line="63"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="155"/>
       <source>Pause On Start</source>
       <translation>Pysäytä käynnistettäessä</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="42"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="141"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="152"/>
       <source>Confirm Shutdown</source>
       <translation>Vahvista sammutus</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="49"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="162"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="173"/>
       <source>Enable Discord Presence</source>
       <translation>Ota Discord Presence käyttöön</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.ui" line="63"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="149"/>
+      <location filename="../Settings/InterfaceSettingsWidget.ui" line="56"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="176"/>
+      <source>Enable Mouse Lock</source>
+      <translation>Lukitse hiiri</translation>
+    </message>
+    <message>
+      <location filename="../Settings/InterfaceSettingsWidget.ui" line="70"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="160"/>
       <source>Pause On Controller Disconnection</source>
       <translation>Pysäytä ohjaimen yhteyden katketessa</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.ui" line="80"/>
+      <location filename="../Settings/InterfaceSettingsWidget.ui" line="87"/>
       <source>Game Display</source>
       <translation>Pelinäkymä</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.ui" line="86"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="151"/>
+      <location filename="../Settings/InterfaceSettingsWidget.ui" line="93"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="162"/>
       <source>Start Fullscreen</source>
       <translation>Käynnistä koko näytön tilassa</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.ui" line="93"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="165"/>
+      <location filename="../Settings/InterfaceSettingsWidget.ui" line="100"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="179"/>
       <source>Double-Click Toggles Fullscreen</source>
       <translation>Kaksoisnapsautus vaihtaa koko näytön tilaan</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.ui" line="100"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="156"/>
+      <location filename="../Settings/InterfaceSettingsWidget.ui" line="107"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="167"/>
       <source>Render To Separate Window</source>
       <translation>Renderöi erilliseen ikkunaan</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.ui" line="107"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="159"/>
+      <location filename="../Settings/InterfaceSettingsWidget.ui" line="114"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="170"/>
       <source>Hide Main Window When Running</source>
       <translation>Piilota pääikkuna pelattaessa</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.ui" line="114"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="168"/>
+      <location filename="../Settings/InterfaceSettingsWidget.ui" line="121"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="182"/>
       <source>Disable Window Resizing</source>
       <translation>Estä ikkunan koon muuttaminen</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.ui" line="121"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="153"/>
+      <location filename="../Settings/InterfaceSettingsWidget.ui" line="128"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="164"/>
       <source>Hide Cursor In Fullscreen</source>
       <translation>Piilota kohdistin koko näytön tilassa</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.ui" line="131"/>
+      <location filename="../Settings/InterfaceSettingsWidget.ui" line="138"/>
       <source>Preferences</source>
       <translation>Mieltymykset</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.ui" line="137"/>
+      <location filename="../Settings/InterfaceSettingsWidget.ui" line="144"/>
       <source>Language:</source>
       <translation>Kieli:</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.ui" line="147"/>
+      <location filename="../Settings/InterfaceSettingsWidget.ui" line="154"/>
       <source>Theme:</source>
       <translation>Teema:</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.ui" line="160"/>
+      <location filename="../Settings/InterfaceSettingsWidget.ui" line="167"/>
       <source>Automatic Updater</source>
       <translation>Automaattinen päivittäjä</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.ui" line="173"/>
+      <location filename="../Settings/InterfaceSettingsWidget.ui" line="180"/>
       <source>Update Channel:</source>
       <translation>Päivityskanava:</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.ui" line="180"/>
+      <location filename="../Settings/InterfaceSettingsWidget.ui" line="187"/>
       <source>Current Version:</source>
       <translation>Nykyinen versio:</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.ui" line="192"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="109"/>
+      <location filename="../Settings/InterfaceSettingsWidget.ui" line="199"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="120"/>
       <source>Enable Automatic Update Check</source>
       <translation>Tarkista päivitykset automaattisesti</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.ui" line="199"/>
+      <location filename="../Settings/InterfaceSettingsWidget.ui" line="206"/>
       <source>Check for Updates...</source>
       <translation>Tarkista päivitykset...</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="12"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="13"/>
       <source>Native</source>
       <translation>Alkuperäinen</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="15"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="16"/>
       <source>Classic Windows</source>
       <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
       <translation>Klassinen Windows</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="19"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="20"/>
       <source>Dark Fusion (Gray) [Dark]</source>
       <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
       <translation>Dark Fusion (harmaa) [tumma]</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="21"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="22"/>
       <source>Dark Fusion (Blue) [Dark]</source>
       <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
       <translation>Dark Fusion (sininen) [tumma]</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="23"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="24"/>
       <source>Grey Matter (Gray) [Dark]</source>
       <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
       <translation>Grey Matter (harmaa) [tumma]</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="25"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="26"/>
       <source>Untouched Lagoon (Grayish Green/-Blue ) [Light]</source>
       <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
       <translation>Untouched Lagoon (harmaanvihreä/-sininen) [vaalea]</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="27"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="28"/>
       <source>Baby Pastel (Pink) [Light]</source>
       <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
       <translation>Baby Pastel (pinkki) [vaalea]</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="29"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="30"/>
       <source>Pizza Time! (Brown-ish/Creamy White) [Light]</source>
       <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
       <translation>Pizza Time! (ruskea/kermanvalkoinen) [vaalea]</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="31"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="32"/>
       <source>PCSX2 (White/Blue) [Light]</source>
       <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
       <translation>PCSX2 (valkoinen/sininen) [vaalea]</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="33"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="34"/>
       <source>Scarlet Devil (Red/Purple) [Dark]</source>
       <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
       <translation>Scarlet Devil (punainen/violetti) [tumma]</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="35"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="36"/>
       <source>Violet Angel (Blue/Purple) [Dark]</source>
       <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
       <translation>Violet Angel (sininen/violetti) [tumma]</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="37"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="38"/>
       <source>Cobalt Sky (Blue) [Dark]</source>
       <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
       <translation>Cobalt Sky (sininen) [tumma]</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="39"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="40"/>
+      <source>AMOLED (Black) [Dark]</source>
+      <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
+      <translation>AMOLED (musta) [tumma]</translation>
+    </message>
+    <message>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="42"/>
       <source>Ruby (Black/Red) [Dark]</source>
       <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
       <translation>Ruby (musta/punainen) [tumma]</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="41"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="44"/>
       <source>Sapphire (Black/Blue) [Dark]</source>
       <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
       <translation>Sapphire (musta/sininen) [tumma]</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="43"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="46"/>
       <source>Emerald (Black/Green) [Dark]</source>
       <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
       <translation>Emerald (musta/vihreä) [tumma]</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="45"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="48"/>
       <source>Custom.qss [Drop in PCSX2 Folder]</source>
       <extracomment>&quot;Custom.qss&quot; must be kept as-is.</extracomment>
       <translation>Custom.qss [pudota PCSX2-kansioon]</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="109"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="138"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="141"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="165"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="120"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="149"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="152"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="179"/>
       <source>Checked</source>
       <translation>Käytössä</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="110"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="121"/>
       <source>Automatically checks for updates to the program on startup. Updates can be deferred until later or skipped entirely.</source>
       <translation>Tarkistaa automaattisesti ohjelman päivitykset käynnistyksessä. Päivitykset voidaan lykätä myöhemmäksi tai ohittaa kokonaan.</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="118"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="129"/>
       <source>%1 (%2)</source>
       <extracomment>Variable %1 shows the version number and variable %2 shows a timestamp.</extracomment>
       <translation>%1 (%2)</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="139"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="150"/>
       <source>Prevents the screen saver from activating and the host from sleeping while emulation is running.</source>
       <translation>Estää näytönsäästäjää aktivoitumasta ja isännän siirtymistä lepotilaan emuloinnin aikana.</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="142"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="153"/>
       <source>Determines whether a prompt will be displayed to confirm shutting down the virtual machine when the hotkey is pressed.</source>
       <translation>Määrittää näytetäänkö vahvistuskehote, kun virtuaalikone suljetaan pikanäppäimellä.</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="150"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="161"/>
       <source>Pauses the emulator when a controller with bindings is disconnected.</source>
       <translation>Pysäyttää emulaattorin, kun yhteys sidoksia käyttävään ohjaimeen katkeaa.</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="166"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="177"/>
+      <source>Locks the mouse cursor to the windows when PCSX2 is in focus and all other windows are closed.&lt;br&gt;&lt;b&gt;Unavailable on Linux Wayland.&lt;/b&gt;&lt;br&gt;&lt;b&gt;Requires accessibility permissions on macOS.&lt;/b&gt;</source>
+      <translation>Lukitsee hiiren kursorin ikkunaan, kun PCSX2 on kohdistettuna ja kaikki muut ikkunat suljettuna.&lt;br&gt;&lt;b&gt;Ei käytettävissä Linux Waylandilla.&lt;/b&gt;&lt;br&gt;&lt;b&gt;Vaatii käyttöoikeudet macOS:llä.&lt;/b&gt;</translation>
+    </message>
+    <message>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="180"/>
       <source>Allows switching in and out of fullscreen mode by double-clicking the game window.</source>
       <translation>Mahdollistaa siirtymisen koko näytön tilaan ja pois siitä kaksoisnapsauttamalla peli-ikkunaa.</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="169"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="183"/>
       <source>Prevents the main window from being resized.</source>
       <translation>Estää pääikkunan koon muuttamisen.</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="144"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="146"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="150"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="151"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="153"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="156"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="159"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="155"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="157"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="161"/>
       <location filename="../Settings/InterfaceSettingsWidget.cpp" line="162"/>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="168"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="164"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="167"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="170"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="173"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="176"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="182"/>
       <source>Unchecked</source>
       <translation>Ei käytössä</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="17"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="18"/>
       <source>Fusion [Light/Dark]</source>
       <translation>Fusion [vaalea/tumma]</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="145"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="156"/>
       <source>Pauses the emulator when a game is started.</source>
       <translation>Pysäyttää emulaattorin, kun peli käynnistetään.</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="147"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="158"/>
       <source>Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back.</source>
       <translation>Pysäyttää emulaattorin, kun pienennät ikkunan tai avaat toisen ohjelman, ja jatkaa avattaessa ikkunan uudelleen.</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="152"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="163"/>
       <source>Automatically switches to fullscreen mode when a game is started.</source>
       <translation>Siirtyy automaattisesti koko näytön tilaan, kun peli käynnistetään.</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="154"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="165"/>
       <source>Hides the mouse pointer/cursor when the emulator is in fullscreen mode.</source>
       <translation>Piilottaa hiiren osoittimen/kohdistimen emulaattorin ollessa koko näytön tilassa.</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="157"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="168"/>
       <source>Renders the game to a separate window, instead of the main window. If unchecked, the game will display over the top of the game list.</source>
       <translation>Renderöi pelin erilliseen ikkunaan pääikkunan sijasta. Jos tämä ei ole käytössä, peli näytetään peliluettelon päällä.</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="160"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="171"/>
       <source>Hides the main window (with the game list) when a game is running, requires Render To Separate Window to be enabled.</source>
       <translation>Piilottaa pääikkunan (peliluettelon), kun peli on käynnissä. Vaatii Renderöi erilliseen ikkunaan -valinnan olevan käytössä.</translation>
     </message>
     <message>
-      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="163"/>
+      <location filename="../Settings/InterfaceSettingsWidget.cpp" line="174"/>
       <source>Shows the game you are currently playing as part of your profile in Discord.</source>
       <translation>Näyttää paraikaa pelattavan pelin osana profiiliasi Discordissa.</translation>
     </message>
     <message>
-      <location filename="../Translations.cpp" line="226"/>
+      <location filename="../Translations.cpp" line="240"/>
       <source>System Language [Default]</source>
       <translation>Järjestelmän kieli [oletus]</translation>
+    </message>
+  </context>
+  <context>
+    <name>LayoutEditorDialog</name>
+    <message>
+      <location filename="../Debugger/Docking/LayoutEditorDialog.ui" line="22"/>
+      <source>Name</source>
+      <translation>Nimi</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/LayoutEditorDialog.ui" line="29"/>
+      <source>Target</source>
+      <translation>Kohde</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/LayoutEditorDialog.ui" line="36"/>
+      <source>Initial State</source>
+      <translation>Alkutila</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/LayoutEditorDialog.cpp" line="18"/>
+      <source>New Layout</source>
+      <translation>Uusi asettelu</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/LayoutEditorDialog.cpp" line="32"/>
+      <source>Edit Layout</source>
+      <translation>Muokkaa asettelua</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/LayoutEditorDialog.cpp" line="77"/>
+      <source>Create Default &quot;%1&quot; Layout</source>
+      <translation>Luo oletus &quot;%1&quot; asettelu</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/LayoutEditorDialog.cpp" line="80"/>
+      <source>Create Blank Layout</source>
+      <translation>Luo tyhjä asettelu</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/LayoutEditorDialog.cpp" line="83"/>
+      <source>Clone Current Layout</source>
+      <translation>Monista nykyinen asettelu</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/LayoutEditorDialog.cpp" line="94"/>
+      <source>Name is empty.</source>
+      <translation>Nimi puuttuu.</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/LayoutEditorDialog.cpp" line="98"/>
+      <source>Name too long.</source>
+      <translation>Nimi liian pitkä.</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/LayoutEditorDialog.cpp" line="102"/>
+      <source>A layout with that name already exists.</source>
+      <translation>Samanniminen asettelu on jo olemassa.</translation>
     </message>
   </context>
   <context>
@@ -15468,37 +16330,37 @@ Poista sidos napsauttamalla hiiren kakkospainikkeella</translation>
   <context>
     <name>MAC_APPLICATION_MENU</name>
     <message>
-      <location filename="../Translations.cpp" line="37"/>
+      <location filename="../Translations.cpp" line="38"/>
       <source>Services</source>
       <translation>Palvelut</translation>
     </message>
     <message>
-      <location filename="../Translations.cpp" line="38"/>
+      <location filename="../Translations.cpp" line="39"/>
       <source>Hide %1</source>
       <translation>Piilota %1</translation>
     </message>
     <message>
-      <location filename="../Translations.cpp" line="39"/>
+      <location filename="../Translations.cpp" line="40"/>
       <source>Hide Others</source>
       <translation>Piilota muut</translation>
     </message>
     <message>
-      <location filename="../Translations.cpp" line="40"/>
+      <location filename="../Translations.cpp" line="41"/>
       <source>Show All</source>
       <translation>Näytä kaikki</translation>
     </message>
     <message>
-      <location filename="../Translations.cpp" line="41"/>
+      <location filename="../Translations.cpp" line="42"/>
       <source>Preferences...</source>
       <translation>Mieltymykset...</translation>
     </message>
     <message>
-      <location filename="../Translations.cpp" line="42"/>
+      <location filename="../Translations.cpp" line="43"/>
       <source>Quit %1</source>
       <translation>Lopeta %1</translation>
     </message>
     <message>
-      <location filename="../Translations.cpp" line="43"/>
+      <location filename="../Translations.cpp" line="44"/>
       <source>About %1</source>
       <translation>Tietoja kohteesta %1</translation>
     </message>
@@ -15516,18 +16378,18 @@ Poista sidos napsauttamalla hiiren kakkospainikkeella</translation>
       <translation>&amp;Järjestelmä</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1406"/>
-      <location filename="../MainWindow.cpp" line="1467"/>
+      <location filename="../MainWindow.cpp" line="1489"/>
+      <location filename="../MainWindow.cpp" line="1550"/>
       <source>Change Disc</source>
       <translation>Vaihda levy</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2785"/>
+      <location filename="../MainWindow.cpp" line="2929"/>
       <source>Load State</source>
       <translation>Lataa tila</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="596"/>
+      <location filename="../MainWindow.ui" line="614"/>
       <source>S&amp;ettings</source>
       <translation>&amp;Asetukset</translation>
     </message>
@@ -15537,164 +16399,164 @@ Poista sidos napsauttamalla hiiren kakkospainikkeella</translation>
       <translation>&amp;Ohje</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="129"/>
+      <location filename="../MainWindow.ui" line="131"/>
       <source>&amp;Debug</source>
       <translation>&amp;Virheenjäljitys</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="151"/>
+      <location filename="../MainWindow.ui" line="153"/>
       <source>&amp;View</source>
       <translation>&amp;Näkymä</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="155"/>
+      <location filename="../MainWindow.ui" line="157"/>
       <source>&amp;Window Size</source>
       <translation>&amp;Ikkunan koko</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="180"/>
+      <location filename="../MainWindow.ui" line="182"/>
       <source>&amp;Tools</source>
       <translation>&amp;Työkalut</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="230"/>
+      <location filename="../MainWindow.ui" line="232"/>
       <source>Toolbar</source>
       <translation>Työkalupalkki</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="274"/>
+      <location filename="../MainWindow.ui" line="276"/>
       <source>Start &amp;File...</source>
       <translation>Käynnistä &amp;tiedosto...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="306"/>
+      <location filename="../MainWindow.ui" line="308"/>
       <source>Start &amp;BIOS</source>
       <translation>Käynnistä &amp;BIOS</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="322"/>
+      <location filename="../MainWindow.ui" line="324"/>
       <source>&amp;Scan For New Games</source>
       <translation>&amp;Etsi uusia pelejä</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="330"/>
+      <location filename="../MainWindow.ui" line="332"/>
       <source>&amp;Rescan All Games</source>
       <translation>&amp;Skannaa pelit uudelleen</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="338"/>
+      <location filename="../MainWindow.ui" line="340"/>
       <source>Shut &amp;Down</source>
       <translation>&amp;Sammuta</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="354"/>
+      <location filename="../MainWindow.ui" line="356"/>
       <source>Shut Down &amp;Without Saving</source>
       <translation>Sammuta &amp;tallentamatta</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="362"/>
+      <location filename="../MainWindow.ui" line="364"/>
       <source>&amp;Reset</source>
       <translation>&amp;Nollaa</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="381"/>
+      <location filename="../MainWindow.ui" line="383"/>
       <source>&amp;Pause</source>
       <translation>&amp;Pysäytä</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="416"/>
+      <location filename="../MainWindow.ui" line="418"/>
       <source>E&amp;xit</source>
       <translation>&amp;Sulje</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="424"/>
+      <location filename="../MainWindow.ui" line="426"/>
       <source>&amp;BIOS</source>
       <translation>&amp;BIOS</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="440"/>
+      <location filename="../MainWindow.ui" line="442"/>
       <source>&amp;Controllers</source>
       <translation>&amp;Ohjaimet</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="456"/>
+      <location filename="../MainWindow.ui" line="458"/>
       <source>&amp;Hotkeys</source>
       <translation>Pika&amp;näppäimet</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="464"/>
+      <location filename="../MainWindow.ui" line="466"/>
       <source>&amp;Graphics</source>
       <translation>&amp;Grafiikka</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="477"/>
+      <location filename="../MainWindow.ui" line="479"/>
       <source>&amp;Post-Processing Settings...</source>
       <translation>&amp;Jälkikäsittelyasetukset...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="498"/>
+      <location filename="../MainWindow.ui" line="500"/>
       <source>Resolution Scale</source>
       <translation>Kuvatarkkuuden skaala</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="506"/>
+      <location filename="../MainWindow.ui" line="508"/>
       <source>&amp;GitHub Repository...</source>
       <translation>&amp;GitHub repository...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="514"/>
+      <location filename="../MainWindow.ui" line="516"/>
       <source>Support &amp;Forums...</source>
       <translation>&amp;Tukifoorumit...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="522"/>
+      <location filename="../MainWindow.ui" line="540"/>
       <source>&amp;Discord Server...</source>
       <translation>&amp;Discord-palvelin...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="530"/>
+      <location filename="../MainWindow.ui" line="548"/>
       <source>Check for &amp;Updates...</source>
       <translation>Tarkista &amp;päivitykset...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="539"/>
+      <location filename="../MainWindow.ui" line="557"/>
       <source>About &amp;Qt...</source>
       <translation>Tietoja &amp;Qt:stä...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="548"/>
+      <location filename="../MainWindow.ui" line="566"/>
       <source>&amp;About PCSX2...</source>
       <translation>&amp;Tietoja PCSX2:sta...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="493"/>
+      <location filename="../MainWindow.ui" line="495"/>
       <source>Fullscreen</source>
       <comment>In Toolbar</comment>
       <translation>Koko näyttö</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="556"/>
+      <location filename="../MainWindow.ui" line="574"/>
       <source>Change Disc...</source>
       <comment>In Toolbar</comment>
       <translation>Vaihda levy...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="564"/>
+      <location filename="../MainWindow.ui" line="582"/>
       <source>&amp;Audio</source>
       <translation>&amp;Ääni</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="635"/>
+      <location filename="../MainWindow.ui" line="653"/>
       <source>Global State</source>
       <translation>Yleinen tila</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="643"/>
+      <location filename="../MainWindow.ui" line="661"/>
       <source>&amp;Screenshot</source>
       <translation>&amp;Kuvakaappaus</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="282"/>
+      <location filename="../MainWindow.ui" line="284"/>
       <source>Start File</source>
       <comment>In Toolbar</comment>
       <translation>Käynnistä tiedosto</translation>
@@ -15720,404 +16582,415 @@ Poista sidos napsauttamalla hiiren kakkospainikkeella</translation>
       <translation>&amp;Asetukset</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="133"/>
+      <location filename="../MainWindow.ui" line="135"/>
       <source>&amp;Switch Renderer</source>
       <translation>Vaihda &amp;renderöijää</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="184"/>
+      <location filename="../MainWindow.ui" line="186"/>
       <source>&amp;Input Recording</source>
       <translation>&amp;Syötteentallennus</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="290"/>
+      <location filename="../MainWindow.ui" line="292"/>
       <source>Start D&amp;isc...</source>
       <translation>&amp;Käynnistä levy...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="298"/>
+      <location filename="../MainWindow.ui" line="300"/>
       <source>Start Disc</source>
       <comment>In Toolbar</comment>
       <translation>Käynnistä levy</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="314"/>
+      <location filename="../MainWindow.ui" line="316"/>
       <source>Start BIOS</source>
       <comment>In Toolbar</comment>
       <translation>Käynnistä BIOS</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="346"/>
+      <location filename="../MainWindow.ui" line="348"/>
       <source>Shut Down</source>
       <comment>In Toolbar</comment>
       <translation>Sammuta</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="370"/>
+      <location filename="../MainWindow.ui" line="372"/>
       <source>Reset</source>
       <comment>In Toolbar</comment>
       <translation>Nollaa</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="392"/>
+      <location filename="../MainWindow.ui" line="394"/>
       <source>Pause</source>
       <comment>In Toolbar</comment>
       <translation>Pysäytä</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="400"/>
+      <location filename="../MainWindow.ui" line="402"/>
       <source>Load State</source>
       <comment>In Toolbar</comment>
       <translation>Lataa tila</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="408"/>
+      <location filename="../MainWindow.ui" line="410"/>
       <source>Save State</source>
       <comment>In Toolbar</comment>
       <translation>Tallenna tila</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="432"/>
+      <location filename="../MainWindow.ui" line="434"/>
       <source>&amp;Emulation</source>
       <translation>&amp;Emulaatio</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="448"/>
+      <location filename="../MainWindow.ui" line="450"/>
       <source>Controllers</source>
       <comment>In Toolbar</comment>
       <translation>Ohjaimet</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="472"/>
+      <location filename="../MainWindow.ui" line="474"/>
       <source>Achie&amp;vements</source>
       <translation>Saa&amp;vutukset</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="485"/>
+      <location filename="../MainWindow.ui" line="487"/>
       <source>&amp;Fullscreen</source>
       <translation>&amp;Koko näyttö</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="580"/>
+      <location filename="../MainWindow.ui" line="524"/>
+      <source>PCSX2 &amp;Wiki...</source>
+      <translation>PCSX2 &amp;Wiki...</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="532"/>
+      <source>D&amp;ocumentation...</source>
+      <translation>D&amp;okumentaatio...</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.ui" line="598"/>
       <source>&amp;Interface</source>
       <translation>&amp;Käyttöliittymä</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="588"/>
+      <location filename="../MainWindow.ui" line="606"/>
       <source>Add Game &amp;Directory...</source>
       <translation>Lisää &amp;pelikansio...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="607"/>
+      <location filename="../MainWindow.ui" line="625"/>
       <source>Settings</source>
       <comment>In Toolbar</comment>
       <translation>Asetukset</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="615"/>
+      <location filename="../MainWindow.ui" line="633"/>
       <source>&amp;From File...</source>
       <translation>&amp;Tiedostosta...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="620"/>
+      <location filename="../MainWindow.ui" line="638"/>
       <source>From &amp;Device...</source>
       <translation>&amp;Laitteesta...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="625"/>
+      <location filename="../MainWindow.ui" line="643"/>
       <source>From &amp;Game List...</source>
       <translation>&amp;Peliluettelosta...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="630"/>
+      <location filename="../MainWindow.ui" line="648"/>
       <source>&amp;Remove Disc</source>
       <translation>&amp;Poista levy asemasta</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="651"/>
+      <location filename="../MainWindow.ui" line="669"/>
       <source>Screenshot</source>
       <comment>In Toolbar</comment>
       <translation>Kuvakaappaus</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="659"/>
+      <location filename="../MainWindow.ui" line="677"/>
       <source>&amp;Memory Cards</source>
       <translation>&amp;Muistikortit</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="667"/>
+      <location filename="../MainWindow.ui" line="685"/>
       <source>&amp;Network &amp;&amp; HDD</source>
       <translation>&amp;Verkko ja kiintolevy</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="675"/>
+      <location filename="../MainWindow.ui" line="693"/>
       <source>&amp;Folders</source>
       <translation>&amp;Kansiot</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="686"/>
+      <location filename="../MainWindow.ui" line="704"/>
       <source>&amp;Toolbar</source>
       <translation>&amp;Työkalupalkki</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="771"/>
+      <location filename="../MainWindow.ui" line="789"/>
       <source>Show Titl&amp;es (Grid View)</source>
       <translation>Näytä &amp;otsikot (ruudukkonäkymä)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="817"/>
+      <location filename="../MainWindow.ui" line="835"/>
       <source>&amp;Open Data Directory...</source>
       <translation>&amp;Avaa tietokansio...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="825"/>
+      <location filename="../MainWindow.ui" line="843"/>
       <source>&amp;Toggle Software Rendering</source>
       <translation>&amp;Ohjelmistorenderöinti päälle/pois</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="833"/>
+      <location filename="../MainWindow.ui" line="851"/>
       <source>&amp;Open Debugger</source>
       <translation>Avaa &amp;virheenjäljitin</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="841"/>
+      <location filename="../MainWindow.ui" line="859"/>
       <source>&amp;Reload Cheats/Patches</source>
       <translation>&amp;Päivitä huijaukset/paikkaukset</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="849"/>
+      <location filename="../MainWindow.ui" line="867"/>
       <source>E&amp;nable System Console</source>
       <translation>Näytä &amp;järjestelmäkonsoli</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="857"/>
+      <location filename="../MainWindow.ui" line="875"/>
       <source>Enable &amp;Debug Console</source>
       <translation>Näytä &amp;virheenjäljityskonsoli</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="865"/>
+      <location filename="../MainWindow.ui" line="883"/>
       <source>Enable &amp;Log Window</source>
       <translation>Näytä &amp;loki-ikkuna</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="873"/>
+      <location filename="../MainWindow.ui" line="891"/>
       <source>Enable &amp;Verbose Logging</source>
       <translation>&amp;Yksityiskohtaiset lokit</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="881"/>
+      <location filename="../MainWindow.ui" line="899"/>
       <source>Enable EE Console &amp;Logging</source>
       <translation>Näytä &amp;EE-lokikonsoli</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="889"/>
+      <location filename="../MainWindow.ui" line="907"/>
       <source>Enable &amp;IOP Console Logging</source>
       <translation>Näytä &amp;IOP-lokikonsoli</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="897"/>
+      <location filename="../MainWindow.ui" line="915"/>
       <source>Save Single Frame &amp;GS Dump</source>
       <translation>Tallenna yksikuvainen &amp;GS-vedos</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="905"/>
+      <location filename="../MainWindow.ui" line="923"/>
       <source>&amp;New</source>
       <extracomment>This section refers to the Input Recording submenu.</extracomment>
       <translation>&amp;Uusi</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="913"/>
+      <location filename="../MainWindow.ui" line="931"/>
       <source>&amp;Play</source>
       <extracomment>This section refers to the Input Recording submenu.</extracomment>
       <translation>&amp;Toista</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="921"/>
+      <location filename="../MainWindow.ui" line="939"/>
       <source>&amp;Stop</source>
       <extracomment>This section refers to the Input Recording submenu.</extracomment>
       <translation>&amp;Pysäytä</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="934"/>
+      <location filename="../MainWindow.ui" line="952"/>
       <source>&amp;Controller Logs</source>
       <translation>&amp;Ohjainlokit</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="942"/>
+      <location filename="../MainWindow.ui" line="960"/>
       <source>&amp;Input Recording Logs</source>
       <translation>&amp;Syötteentallennuslokit</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="958"/>
+      <location filename="../MainWindow.ui" line="976"/>
       <source>Enable &amp;CDVD Read Logging</source>
       <translation>&amp;CDVD-lukujen lokitus</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="966"/>
+      <location filename="../MainWindow.ui" line="984"/>
       <source>Save CDVD &amp;Block Dump</source>
       <translation>Tallenna CDVD-&amp;lohkovedos</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="974"/>
+      <location filename="../MainWindow.ui" line="992"/>
       <source>&amp;Enable Log Timestamps</source>
       <translation>&amp;Näytä aikaleimat lokissa</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="982"/>
+      <location filename="../MainWindow.ui" line="1000"/>
       <source>Start Big Picture &amp;Mode</source>
       <translation>Käynnistä &amp;televisiotila</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="998"/>
+      <location filename="../MainWindow.ui" line="1016"/>
       <source>&amp;Cover Downloader...</source>
       <translation>&amp;Kansikuvien lataaja...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="1006"/>
+      <location filename="../MainWindow.ui" line="1024"/>
       <source>&amp;Show Advanced Settings</source>
       <translation>Näytä &amp;lisäasetukset</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="1011"/>
+      <location filename="../MainWindow.ui" line="1029"/>
       <source>&amp;Recording Viewer</source>
       <translation>&amp;Tallennesoitin</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="1022"/>
+      <location filename="../MainWindow.ui" line="1040"/>
       <source>&amp;Video Capture</source>
       <translation>&amp;Videonauhoitus</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="1030"/>
+      <location filename="../MainWindow.ui" line="1048"/>
       <source>&amp;Edit Cheats...</source>
       <translation>Muokkaa &amp;huijauksia...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="1038"/>
+      <location filename="../MainWindow.ui" line="1056"/>
       <source>Edit &amp;Patches...</source>
       <translation>Muokkaa &amp;paikkauksia...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="708"/>
+      <location filename="../MainWindow.ui" line="726"/>
       <source>&amp;Status Bar</source>
       <translation>&amp;Tilapalkki</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="572"/>
-      <location filename="../MainWindow.ui" line="727"/>
+      <location filename="../MainWindow.ui" line="590"/>
+      <location filename="../MainWindow.ui" line="745"/>
       <source>Game &amp;List</source>
       <translation>Peli&amp;luettelo</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="697"/>
+      <location filename="../MainWindow.ui" line="715"/>
       <source>Loc&amp;k Toolbar</source>
       <translation>&amp;Lukitse työkalupalkki</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="719"/>
+      <location filename="../MainWindow.ui" line="737"/>
       <source>&amp;Verbose Status</source>
       <translation>&amp;Yksityiskohtainen tila</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="738"/>
+      <location filename="../MainWindow.ui" line="756"/>
       <source>System &amp;Display</source>
       <extracomment>This grayed-out at first option will become available while there is a game emulated and the game list is displayed over the actual emulation, to let users display the system emulation once more.</extracomment>
       <translation>Järjestelmän &amp;näkymä</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="749"/>
+      <location filename="../MainWindow.ui" line="767"/>
       <source>Game &amp;Properties</source>
       <translation>Pelin &amp;ominaisuudet</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="757"/>
+      <location filename="../MainWindow.ui" line="775"/>
       <source>Game &amp;Grid</source>
       <translation>Peliruudukko</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="779"/>
+      <location filename="../MainWindow.ui" line="797"/>
       <source>Zoom &amp;In (Grid View)</source>
       <translation>&amp;Suurenna (ruudukkonäkymä)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="782"/>
+      <location filename="../MainWindow.ui" line="800"/>
       <source>Ctrl++</source>
       <translation>Ctrl++</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="790"/>
+      <location filename="../MainWindow.ui" line="808"/>
       <source>Zoom &amp;Out (Grid View)</source>
       <translation>&amp;Pienennä (ruudukkonäkymä)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="793"/>
+      <location filename="../MainWindow.ui" line="811"/>
       <source>Ctrl+-</source>
       <translation>Ctrl+-</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="801"/>
+      <location filename="../MainWindow.ui" line="819"/>
       <source>Refresh &amp;Covers (Grid View)</source>
       <translation>Päivitä &amp;kansikuvat (ruudukkonäkymä)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="809"/>
+      <location filename="../MainWindow.ui" line="827"/>
       <source>Open Memory Card Directory...</source>
       <translation>Avaa muistikorttikansio...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="926"/>
+      <location filename="../MainWindow.ui" line="944"/>
       <source>Input Recording Logs</source>
       <translation>Syötteentallennuslokit</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="950"/>
+      <location filename="../MainWindow.ui" line="968"/>
       <source>Enable &amp;File Logging</source>
       <translation>Käytä tiedostolokitusta</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1510"/>
+      <location filename="../MainWindow.cpp" line="1593"/>
       <source>Start Big Picture Mode</source>
       <translation>Käynnistä televisiotila</translation>
     </message>
     <message>
-      <location filename="../MainWindow.ui" line="990"/>
-      <location filename="../MainWindow.cpp" line="1511"/>
+      <location filename="../MainWindow.ui" line="1008"/>
+      <location filename="../MainWindow.cpp" line="1594"/>
       <source>Big Picture</source>
       <comment>In Toolbar</comment>
       <translation>Televisiotila</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="673"/>
+      <location filename="../MainWindow.cpp" line="692"/>
       <source>Show Advanced Settings</source>
       <translation>Näytä lisäasetukset</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="742"/>
+      <location filename="../MainWindow.cpp" line="763"/>
+      <location filename="../MainWindow.cpp" line="812"/>
       <source>Video Capture</source>
       <translation>Videonauhoitus</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="251"/>
+      <location filename="../MainWindow.cpp" line="273"/>
       <source>Internal Resolution</source>
       <translation>Sisäinen kuvatarkkuus</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="251"/>
+      <location filename="../MainWindow.cpp" line="273"/>
       <source>%1x Scale</source>
       <translation>%1x mittakaava</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="651"/>
+      <location filename="../MainWindow.cpp" line="670"/>
       <source>Select location to save block dump:</source>
       <translation>Valitse lohkovedoksen tallennussijainti:</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="669"/>
+      <location filename="../MainWindow.cpp" line="688"/>
       <source>Do not show again</source>
       <translation>Älä näytä uudelleen</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="674"/>
+      <location filename="../MainWindow.cpp" line="693"/>
       <source>Changing advanced settings can have unpredictable effects on games, including graphical glitches, lock-ups, and even corrupted save files. We do not recommend changing advanced settings unless you know what you are doing, and the implications of changing each setting.
 
 The PCSX2 team will not provide any support for configurations that modify these settings, you are on your own.
@@ -16130,297 +17003,309 @@ PCSX2-tiimi ei tarjoa mitään tukea määrityksille, jotka muokkaavat näitä a
 Haluatko varmasti jatkaa?</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="739"/>
+      <location filename="../MainWindow.cpp" line="750"/>
+      <location filename="../MainWindow.cpp" line="775"/>
+      <source>Record On Boot</source>
+      <translation>Nauhoita käynnistettäessä</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.cpp" line="752"/>
+      <source>Did you want to start recording on boot?</source>
+      <translation>Haluatko aloittaa nauhoituksen käynnistyksen yhteydessä?</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.cpp" line="760"/>
+      <location filename="../MainWindow.cpp" line="809"/>
       <source>%1 Files (*.%2)</source>
       <translation>%1-tiedostot (*.%2)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1078"/>
+      <location filename="../MainWindow.cpp" line="777"/>
+      <source>Did you want to cancel recording on boot?</source>
+      <translation>Haluatko peruuttaa nauhoituksen käynnistyksen yhteydessä?</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.cpp" line="802"/>
+      <source>Recording will start in a moment</source>
+      <translation>Nauhoitus alkaa pian</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.cpp" line="1157"/>
       <source>WARNING: Memory Card Busy</source>
       <translation>VAROITUS: Muistikortti varattu</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1199"/>
+      <location filename="../MainWindow.cpp" line="1283"/>
       <source>Confirm Shutdown</source>
       <translation>Vahvista sammutus</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1202"/>
+      <location filename="../MainWindow.cpp" line="1286"/>
       <source>Are you sure you want to shut down the virtual machine?</source>
       <translation>Haluatko varmasti sammuttaa virtuaalikoneen?</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1204"/>
+      <location filename="../MainWindow.cpp" line="1288"/>
       <source>Save State For Resume</source>
       <translation>Tallenna tila jatkaaksesi myöhemmin</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1312"/>
-      <location filename="../MainWindow.cpp" line="1707"/>
-      <location filename="../MainWindow.cpp" line="2194"/>
-      <location filename="../MainWindow.cpp" line="2329"/>
-      <location filename="../MainWindow.cpp" line="2690"/>
-      <location filename="../MainWindow.cpp" line="2804"/>
+      <location filename="../MainWindow.cpp" line="1396"/>
+      <location filename="../MainWindow.cpp" line="1766"/>
+      <location filename="../MainWindow.cpp" line="2233"/>
+      <location filename="../MainWindow.cpp" line="2397"/>
+      <location filename="../MainWindow.cpp" line="2834"/>
+      <location filename="../MainWindow.cpp" line="2948"/>
       <source>Error</source>
       <translation>Virhe</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1312"/>
+      <location filename="../MainWindow.cpp" line="1396"/>
       <source>You must select a disc to change discs.</source>
       <translation>Valitse levy vaihtaaksesi sen.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1344"/>
+      <location filename="../MainWindow.cpp" line="1428"/>
       <source>Properties...</source>
       <translation>Ominaisuudet...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1361"/>
+      <location filename="../MainWindow.cpp" line="1444"/>
       <source>Set Cover Image...</source>
       <translation>Aseta kansikuva...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1364"/>
+      <location filename="../MainWindow.cpp" line="1447"/>
       <source>Exclude From List</source>
       <translation>Poista luettelosta</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1367"/>
+      <location filename="../MainWindow.cpp" line="1450"/>
       <source>Reset Play Time</source>
       <translation>Nollaa peliaika</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1371"/>
+      <location filename="../MainWindow.cpp" line="1454"/>
       <source>Check Wiki Page</source>
       <translation>Avaa Wiki-sivu</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1378"/>
+      <location filename="../MainWindow.cpp" line="1461"/>
       <source>Default Boot</source>
       <translation>Oletuskäynnistys</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1385"/>
+      <location filename="../MainWindow.cpp" line="1468"/>
       <source>Fast Boot</source>
       <translation>Nopea käynnistys</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1388"/>
+      <location filename="../MainWindow.cpp" line="1471"/>
       <source>Full Boot</source>
       <translation>Täysi käynnistys</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1393"/>
+      <location filename="../MainWindow.cpp" line="1476"/>
       <source>Boot and Debug</source>
       <translation>Käynnistys ja virheenjäljitys</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1417"/>
+      <location filename="../MainWindow.cpp" line="1500"/>
       <source>Add Search Directory...</source>
       <translation>Lisää hakukansio...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1426"/>
+      <location filename="../MainWindow.cpp" line="1509"/>
       <source>Start File</source>
       <translation>Käynnistä tiedosto</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1435"/>
+      <location filename="../MainWindow.cpp" line="1518"/>
       <source>Start Disc</source>
       <translation>Käynnistä levy</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1452"/>
+      <location filename="../MainWindow.cpp" line="1535"/>
       <source>Select Disc Image</source>
       <translation>Valitse levykuva</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1620"/>
+      <location filename="../MainWindow.cpp" line="1679"/>
       <source>Updater Error</source>
       <translation>Päivitysvirhe</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1626"/>
+      <location filename="../MainWindow.cpp" line="1685"/>
       <source>&lt;p&gt;Sorry, you are trying to update a PCSX2 version which is not an official GitHub release. To prevent incompatibilities, the auto-updater is only enabled on official builds.&lt;/p&gt;&lt;p&gt;To obtain an official build, please download from the link below:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://pcsx2.net/downloads/&quot;&gt;https://pcsx2.net/downloads/&lt;/a&gt;&lt;/p&gt;</source>
       <translation>&lt;p&gt;Pahoittelut, yrität päivittää PCSX2-versiota, joka ei ole virallinen GitHub-julkaisu. Yhteensopimattomuuksien välttämiseksi automaattinen päivitysohjelma toimii vain virallisissa versioissa.&lt;/p&gt;&lt;p&gt;Hanki virallinen versio lataamalla alla olevasta linkistä:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://pcsx2.net/downloads/&quot;&gt;https://pcsx2.net/downloads/&lt;/a&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1631"/>
+      <location filename="../MainWindow.cpp" line="1690"/>
       <source>Automatic updating is not supported on the current platform.</source>
       <translation>Nykyinen alusta ei tue automaattista päivitystä.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1697"/>
+      <location filename="../MainWindow.cpp" line="1756"/>
       <source>Confirm File Creation</source>
       <translation>Vahvista tiedoston luonti</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1698"/>
+      <location filename="../MainWindow.cpp" line="1757"/>
       <source>The pnach file &apos;%1&apos; does not currently exist. Do you want to create it?</source>
       <translation>Pnach tiedostoa &apos;%1&apos; ei ole tällä hetkellä olemassa. Haluatko luoda sen?</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1707"/>
+      <location filename="../MainWindow.cpp" line="1766"/>
       <source>Failed to create &apos;%1&apos;.</source>
       <translation>Kohteen &apos;%1&apos; luominen epäonnistui.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1732"/>
-      <source>Theme Change</source>
-      <translation>Teeman vaihto</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.cpp" line="1733"/>
-      <source>Changing the theme will close the debugger window. Any unsaved data will be lost. Do you want to continue?</source>
-      <translation>Teeman vaihtaminen sulkee virheenjäljitysikkunan. Kaikki tallentamattomat tiedot menetetään. Haluatko jatkaa?</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.cpp" line="1831"/>
+      <location filename="../MainWindow.cpp" line="1865"/>
       <source>Input Recording Failed</source>
       <translation>Syöttötallennus epäonnistui</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1832"/>
+      <location filename="../MainWindow.cpp" line="1866"/>
       <source>Failed to create file: {}</source>
       <translation>Virhe luodessa tiedostoa: %1</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1855"/>
+      <location filename="../MainWindow.cpp" line="1889"/>
       <source>Input Recording Files (*.p2m2)</source>
       <translation>Syötetallennetiedostot (*.p2m2)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1890"/>
+      <location filename="../MainWindow.cpp" line="1924"/>
       <source>Input Playback Failed</source>
       <translation>Syötteen toisto epäonnistui</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1891"/>
+      <location filename="../MainWindow.cpp" line="1925"/>
       <source>Failed to open file: {}</source>
       <translation>Virhe avatessa tiedostoa: {}</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1972"/>
+      <location filename="../MainWindow.cpp" line="2011"/>
       <source>Paused</source>
       <translation>Pysäytetty</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2151"/>
+      <location filename="../MainWindow.cpp" line="2190"/>
       <source>Load State Failed</source>
       <translation>Tilan lataus epäonnistui</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2151"/>
+      <location filename="../MainWindow.cpp" line="2190"/>
       <source>Cannot load a save state without a running VM.</source>
       <translation>Tilatallennusta ei voida ladata ilman virtuaalikonetta.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2179"/>
+      <location filename="../MainWindow.cpp" line="2218"/>
       <source>The new ELF cannot be loaded without resetting the virtual machine. Do you want to reset the virtual machine now?</source>
       <translation>Uutta ELF:ää ei voida ladata ilman virtuaalisen koneen nollaamista. Haluatko nollata virtuaalisen koneen nyt?</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2194"/>
+      <location filename="../MainWindow.cpp" line="2233"/>
       <source>Cannot change from game to GS dump without shutting down first.</source>
       <translation>Pelistä ei voi vaihtaa GS-vedokseen sulkematta sitä ensin.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2329"/>
+      <location filename="../MainWindow.cpp" line="2397"/>
       <source>Failed to get window info from widget</source>
       <translation>Ikkunan tietoja ei saatu widgetistä</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1510"/>
+      <location filename="../MainWindow.cpp" line="1593"/>
       <source>Stop Big Picture Mode</source>
       <translation>Poistu televisiotilasta</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1511"/>
+      <location filename="../MainWindow.cpp" line="1594"/>
       <source>Exit Big Picture</source>
       <comment>In Toolbar</comment>
       <translation>Poistu televisiotilasta</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1575"/>
+      <location filename="../MainWindow.cpp" line="2740"/>
       <source>Game Properties</source>
       <translation>Pelin ominaisuudet</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1575"/>
+      <location filename="../MainWindow.cpp" line="2740"/>
       <source>Game properties is unavailable for the current game.</source>
       <translation>Pelin ominaisuudet eivät ole saatavilla nykyiselle pelille.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2648"/>
+      <location filename="../MainWindow.cpp" line="2792"/>
       <source>Could not find any CD/DVD-ROM devices. Please ensure you have a drive connected and sufficient permissions to access it.</source>
       <translation>CD/DVD-ROM-laitteita ei löytynyt. Varmista, että laite on yhdistetty ja sinulla on käyttölupa.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2666"/>
+      <location filename="../MainWindow.cpp" line="2810"/>
       <source>Select disc drive:</source>
       <translation>Valitse levyasema:</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2690"/>
+      <location filename="../MainWindow.cpp" line="2834"/>
       <source>This save state does not exist.</source>
       <translation>Tätä tilatallennusta ei ole olemassa.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2703"/>
+      <location filename="../MainWindow.cpp" line="2847"/>
       <source>Select Cover Image</source>
       <translation>Valitse kansikuva</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2720"/>
+      <location filename="../MainWindow.cpp" line="2864"/>
       <source>Cover Already Exists</source>
       <translation>Kansikuva on jo olemassa</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2721"/>
+      <location filename="../MainWindow.cpp" line="2865"/>
       <source>A cover image for this game already exists, do you wish to replace it?</source>
       <translation>Kansikuva tälle pelille on jo olemassa, haluatko korvata sen?</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2716"/>
-      <location filename="../MainWindow.cpp" line="2730"/>
-      <location filename="../MainWindow.cpp" line="2736"/>
-      <location filename="../MainWindow.cpp" line="2742"/>
+      <location filename="../MainWindow.cpp" line="2860"/>
+      <location filename="../MainWindow.cpp" line="2874"/>
+      <location filename="../MainWindow.cpp" line="2880"/>
+      <location filename="../MainWindow.cpp" line="2886"/>
       <source>Copy Error</source>
       <translation>Kopiointivirhe</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2730"/>
+      <location filename="../MainWindow.cpp" line="2874"/>
       <source>Failed to remove existing cover &apos;%1&apos;</source>
       <translation>Olemassa olevan kansikuvan &apos;%1&apos; poisto epäonnistui</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2736"/>
+      <location filename="../MainWindow.cpp" line="2880"/>
       <source>Failed to copy &apos;%1&apos; to &apos;%2&apos;</source>
       <translation>&apos;%1&apos; kopiointi kohteeseen &apos;%2&apos; epäonnistui</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2742"/>
+      <location filename="../MainWindow.cpp" line="2886"/>
       <source>Failed to remove &apos;%1&apos;</source>
       <translation>&apos;%1&apos; poisto epäonnistui</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2178"/>
-      <location filename="../MainWindow.cpp" line="2751"/>
+      <location filename="../MainWindow.cpp" line="2217"/>
+      <location filename="../MainWindow.cpp" line="2895"/>
       <source>Confirm Reset</source>
       <translation>Vahvista nollaus</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2703"/>
+      <location filename="../MainWindow.cpp" line="2847"/>
       <source>All Cover Image Types (*.jpg *.jpeg *.png *.webp)</source>
       <translation>Kaikki kansikuvatyypit (*.jpg *.jpeg *.png *.webp)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2716"/>
+      <location filename="../MainWindow.cpp" line="2860"/>
       <source>You must select a different file to the current cover image.</source>
       <translation>Sinun on valittava toinen tiedosto nykyiseen kansikuvaan.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2752"/>
+      <location filename="../MainWindow.cpp" line="2896"/>
       <source>Are you sure you want to reset the play time for &apos;%1&apos;?
 
 This action cannot be undone.</source>
@@ -16429,12 +17314,12 @@ This action cannot be undone.</source>
 Tätä toimintoa ei voi peruuttaa.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2779"/>
+      <location filename="../MainWindow.cpp" line="2923"/>
       <source>Load Resume State</source>
       <translation>Lataa jatkamistila</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2782"/>
+      <location filename="../MainWindow.cpp" line="2926"/>
       <source>A resume save state was found for this game, saved at:
 
 %1.
@@ -16447,89 +17332,89 @@ Do you want to load this state, or start from a fresh boot?</source>
 Haluatko ladata tämän tilan vai aloittaa uuden käynnistyksen?</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2786"/>
+      <location filename="../MainWindow.cpp" line="2930"/>
       <source>Fresh Boot</source>
       <translation>Uusi käynnistys</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2787"/>
+      <location filename="../MainWindow.cpp" line="2931"/>
       <source>Delete And Boot</source>
       <translation>Poista ja käynnistä</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2804"/>
+      <location filename="../MainWindow.cpp" line="2948"/>
       <source>Failed to delete save state file &apos;%1&apos;.</source>
       <translation>Tilatallennustiedoston &apos;%1&apos; poistaminen epäonnistui.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2862"/>
+      <location filename="../MainWindow.cpp" line="3006"/>
       <source>Load State File...</source>
       <translation>Lataa tila tiedostosta...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2862"/>
+      <location filename="../MainWindow.cpp" line="3006"/>
       <source>Load From File...</source>
       <translation>Lataa tiedostosta...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2865"/>
-      <location filename="../MainWindow.cpp" line="2936"/>
+      <location filename="../MainWindow.cpp" line="3009"/>
+      <location filename="../MainWindow.cpp" line="3083"/>
       <source>Select Save State File</source>
       <translation>Valitse tilatallennuksen tiedosto</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2936"/>
+      <location filename="../MainWindow.cpp" line="3054"/>
+      <source>Load Backup Slot %1 (%2)</source>
+      <translation>Lataa varmuuskopio paikasta %1 (%2)</translation>
+    </message>
+    <message>
+      <location filename="../MainWindow.cpp" line="3083"/>
       <source>Save States (*.p2s)</source>
       <translation>Tilatallennukset (*.p2s)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2872"/>
+      <location filename="../MainWindow.cpp" line="3016"/>
       <source>Delete Save States...</source>
       <translation>Poista tilatallennukset...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="57"/>
+      <location filename="../MainWindow.cpp" line="58"/>
       <source>All File Types (*.bin *.iso *.cue *.mdf *.chd *.cso *.zso *.gz *.elf *.irx *.gs *.gs.xz *.gs.zst *.dump);;Single-Track Raw Images (*.bin *.iso);;Cue Sheets (*.cue);;Media Descriptor File (*.mdf);;MAME CHD Images (*.chd);;CSO Images (*.cso);;ZSO Images (*.zso);;GZ Images (*.gz);;ELF Executables (*.elf);;IRX Executables (*.irx);;GS Dumps (*.gs *.gs.xz *.gs.zst);;Block Dumps (*.dump)</source>
       <translation>Kaikki tiedostotyypit (*.bin *.iso *.cue *.mdf *.chd *.cso *.zso *.gz *.elf *.irx *.gs *.gs.xz *.gs.zst *.dump);;Yksiraitaiset raakalevykuvat (*.bin *.iso);;Cue Sheets (*.cue);;Media Descriptor File (*.mdf);;MAME CHD -levykuvat (*.chd);;CSO-levykuvat (*.cso);;ZSO-levykuvat (*.zso);;GZ-levykuvat (*.gz);;ELF-suoritettavat (*.elf);;IRX-suoritettavat (*.irx);;GS-vedokset (*.gs *.gs.xz *.gs.zst);;Lohkovedokset (*.dump)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="70"/>
+      <location filename="../MainWindow.cpp" line="71"/>
       <source>All File Types (*.bin *.iso *.cue *.mdf *.chd *.cso *.zso *.gz *.dump);;Single-Track Raw Images (*.bin *.iso);;Cue Sheets (*.cue);;Media Descriptor File (*.mdf);;MAME CHD Images (*.chd);;CSO Images (*.cso);;ZSO Images (*.zso);;GZ Images (*.gz);;Block Dumps (*.dump)</source>
       <translation>Kaikki tiedostotyypit (*.bin *.iso *.cue *.mdf *.chd *.cso *.zso *.gz *.dump);;Yksiraitaiset raakalevykuvat (*.bin *.iso);;Cue Sheets (*.cue);;Media Descriptor File (*.mdf);;MAME CHD -levykuvat (*.chd);;CSO-levykuvat (*.cso);;ZSO-levykuvat (*.zso);;GZ-levykuvat (*.gz);;Lohkovedokset (*.dump)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="1079"/>
+      <location filename="../MainWindow.cpp" line="1158"/>
       <source>WARNING: Your memory card is still writing data. Shutting down now &lt;b&gt;WILL IRREVERSIBLY DESTROY YOUR MEMORY CARD.&lt;/b&gt; It is strongly recommended to resume your game and let it finish writing to your memory card.&lt;br&gt;&lt;br&gt;Do you wish to shutdown anyways and &lt;b&gt;IRREVERSIBLY DESTROY YOUR MEMORY CARD?&lt;/b&gt;</source>
       <translation>VAROITUS: Muistikorttisi kirjoittaa edelleen tietoja. Tämän aikana sammuttaminen &lt;b&gt;PERUUTTAMATTOMASTI TUHOAA MUISTIKORTTISI.&lt;/b&gt; On erittäin suositeltavaa palata peliin ja antaa sen viimeistellä muistikorttiin kirjoittamisen.&lt;br&gt;&lt;br&gt;Haluatko sammuttaa siitä huolimatta ja &lt;b&gt;PERUUTTAMATTOMASTI TUHOTA MUISTIKORTTISI?&lt;/b&gt;</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2865"/>
+      <location filename="../MainWindow.cpp" line="3009"/>
       <source>Save States (*.p2s *.p2s.backup)</source>
       <translation>Tilatallennukset (*.p2s *.p2s.backup)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2877"/>
-      <source>Undo Load State</source>
-      <translation>Kumoa tilan lataus</translation>
-    </message>
-    <message>
-      <location filename="../MainWindow.cpp" line="2891"/>
+      <location filename="../MainWindow.cpp" line="3026"/>
       <source>Resume (%2)</source>
       <translation>Jatka (%2)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2907"/>
+      <location filename="../MainWindow.cpp" line="3042"/>
       <source>Load Slot %1 (%2)</source>
       <translation>Lataa paikka %1 (%2)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2916"/>
-      <location filename="../MainWindow.cpp" line="2924"/>
+      <location filename="../MainWindow.cpp" line="3063"/>
+      <location filename="../MainWindow.cpp" line="3071"/>
       <source>Delete Save States</source>
       <translation>Poista tilatallennukset</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2917"/>
+      <location filename="../MainWindow.cpp" line="3064"/>
       <source>Are you sure you want to delete all save states for %1?
 
 The saves will not be recoverable.</source>
@@ -16538,83 +17423,88 @@ The saves will not be recoverable.</source>
 Tallennuksia ei voida palauttaa.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2924"/>
+      <location filename="../MainWindow.cpp" line="3071"/>
       <source>%1 save states deleted.</source>
       <translation>%1 tilatallennusta poistettu.</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2934"/>
+      <location filename="../MainWindow.cpp" line="3081"/>
       <source>Save To File...</source>
       <translation>Tallenna tiedostoon...</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2954"/>
+      <location filename="../MainWindow.cpp" line="3101"/>
       <source>Empty</source>
       <translation>Tyhjä</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="2956"/>
+      <location filename="../MainWindow.cpp" line="3103"/>
       <source>Save Slot %1 (%2)</source>
       <translation>Tallenna paikkaan %1 (%2)</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="3007"/>
+      <location filename="../MainWindow.cpp" line="3154"/>
       <source>Confirm Disc Change</source>
       <translation>Vahvista levyn vaihto</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="3008"/>
+      <location filename="../MainWindow.cpp" line="3155"/>
       <source>Do you want to swap discs or boot the new image (via system reset)?</source>
       <translation>Haluatko vaihtaa levyjä vai käynnistää uuden kuvan (järjestelmän nollaamisen kautta)?</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="3009"/>
+      <location filename="../MainWindow.cpp" line="3156"/>
       <source>Swap Disc</source>
       <translation>Vaihda levy</translation>
     </message>
     <message>
-      <location filename="../MainWindow.cpp" line="3010"/>
+      <location filename="../MainWindow.cpp" line="3157"/>
       <source>Reset</source>
       <translation>Nollaa</translation>
     </message>
     <message>
-      <location filename="../Translations.cpp" line="362"/>
+      <location filename="../Translations.cpp" line="376"/>
       <source>Missing Font File</source>
       <translation>Puuttuva fonttitiedosto</translation>
     </message>
     <message>
-      <location filename="../Translations.cpp" line="367"/>
+      <location filename="../Translations.cpp" line="381"/>
       <source>The font file &apos;%1&apos; is required for the On-Screen Display and Big Picture Mode to show messages in your language.&lt;br&gt;&lt;br&gt;Do you want to download this file now? These files are usually less than 10 megabytes in size.&lt;br&gt;&lt;br&gt;&lt;strong&gt;If you do not download this file, on-screen messages will not be readable.&lt;/strong&gt;</source>
       <translation>Fonttitiedosto &apos;%1&apos; vaaditaan, jotta kuvaruutunäytössä ja televisiotilassa voidaan näyttää viestejä kielelläsi.&lt;br&gt;&lt;br&gt;Haluatko ladata tämän tiedoston nyt? Nämä tiedostot ovat yleensä alle 10 megatavua.&lt;br&gt;&lt;br&gt;&lt;strong&gt;Jos et lataa tätä tiedostoa, näyttöviestit eivät ole luettavissa.&lt;/strong&gt;</translation>
     </message>
     <message>
-      <location filename="../Translations.cpp" line="377"/>
+      <location filename="../Translations.cpp" line="391"/>
       <source>Downloading Files</source>
       <translation>Ladataan tiedostoja</translation>
+    </message>
+    <message>
+      <location filename="../Settings/AchievementSettingsWidget.cpp" line="19"/>
+      <source>Audio Files (*.wav)</source>
+      <translation>Äänitiedostot (*.wav)</translation>
     </message>
   </context>
   <context>
     <name>MemoryCard</name>
     <message>
-      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="282"/>
-      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="967"/>
+      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="289"/>
+      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="970"/>
       <source>Memory Card Creation Failed</source>
       <translation>Muistikortin luonti epäonnistui</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="283"/>
+      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="290"/>
       <source>Could not create the memory card:
 {}</source>
       <translation>Muistikorttia ei voitu luoda:
 {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="308"/>
+      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="315"/>
       <source>Memory Card Read Failed</source>
       <translation>Muistikortin luku epäonnistui</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="309"/>
+      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="316"/>
       <source>Unable to access memory card:
 
 {}
@@ -16631,13 +17521,13 @@ Sulje kaikki muut PCSX2-istunnot tai käynnistä tietokoneesi uudelleen.
 </translation>
     </message>
     <message>
-      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="504"/>
-      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFolder.cpp" line="2344"/>
+      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="497"/>
+      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFolder.cpp" line="2345"/>
       <source>Memory Card &apos;{}&apos; was saved to storage.</source>
       <translation>Muistikortti &apos;{}&apos; tallennettiin muistiin.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="968"/>
+      <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="971"/>
       <source>Failed to create memory card. The error was:
 {}</source>
       <translation>Muistikortin luonti epäonnistui. Virhe oli:
@@ -16654,9 +17544,11 @@ Sulje kaikki muut PCSX2-istunnot tai käynnistä tietokoneesi uudelleen.
       <translation>Kaikki muistikortit poistetaan asemista. Uudelleensijoitetaan sekunnin kuluessa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/SIO/Sio.cpp" line="165"/>
-      <source>The virtual console hasn&apos;t saved to your memory card for quite some time. Savestates should not be used in place of in-game saves.</source>
-      <translation>Virtuaalinen konsoli ei ole tallentanut muistikortillesi pitkään aikaan. Tilatallennuksia ei pitäisi käyttää pelinsisäisten tallennusten korvikkeena.</translation>
+      <location filename="../../pcsx2/SIO/Sio.cpp" line="164"/>
+      <source>The virtual console hasn&apos;t saved to your memory card in a long time.
+Savestates should not be used in place of in-game saves.</source>
+      <translation>Virtuaalinen konsoli ei ole tallentanut muistikortillesi pitkään aikaan.
+Tilatallennuksia ei pitäisi käyttää pelinsisäisten tallennusten korvikkeena.</translation>
     </message>
   </context>
   <context>
@@ -16787,10 +17679,10 @@ Sulje kaikki muut PCSX2-istunnot tai käynnistä tietokoneesi uudelleen.
     <name>MemoryCardCreateDialog</name>
     <message>
       <location filename="../Settings/MemoryCardCreateDialog.ui" line="14"/>
-      <location filename="../Settings/MemoryCardCreateDialog.cpp" line="106"/>
-      <location filename="../Settings/MemoryCardCreateDialog.cpp" line="113"/>
-      <location filename="../Settings/MemoryCardCreateDialog.cpp" line="120"/>
-      <location filename="../Settings/MemoryCardCreateDialog.cpp" line="133"/>
+      <location filename="../Settings/MemoryCardCreateDialog.cpp" line="107"/>
+      <location filename="../Settings/MemoryCardCreateDialog.cpp" line="114"/>
+      <location filename="../Settings/MemoryCardCreateDialog.cpp" line="121"/>
+      <location filename="../Settings/MemoryCardCreateDialog.cpp" line="134"/>
       <source>Create Memory Card</source>
       <translation>Luo muistikortti</translation>
     </message>
@@ -16871,22 +17763,22 @@ Sulje kaikki muut PCSX2-istunnot tai käynnistä tietokoneesi uudelleen.
       <translation>NTFS-pakkaus on sisäänrakennettu, nopea ja täysin luotettava. Tavallisesti pakkaa muistikortit (erittäin suositeltavaa).</translation>
     </message>
     <message>
-      <location filename="../Settings/MemoryCardCreateDialog.cpp" line="107"/>
+      <location filename="../Settings/MemoryCardCreateDialog.cpp" line="108"/>
       <source>Failed to create the Memory Card, because the name &apos;%1&apos; contains one or more invalid characters.</source>
       <translation>Muistikorttia ei voitu luoda, koska nimi &apos;%1&apos; sisältää yhden tai useampia virheellisiä merkkejä.</translation>
     </message>
     <message>
-      <location filename="../Settings/MemoryCardCreateDialog.cpp" line="114"/>
+      <location filename="../Settings/MemoryCardCreateDialog.cpp" line="115"/>
       <source>Failed to create the Memory Card, because another card with the name &apos;%1&apos; already exists.</source>
       <translation>Muistikorttia ei voitu luoda, koska toinen kortti nimellä &apos;%1&apos; on jo olemassa.</translation>
     </message>
     <message>
-      <location filename="../Settings/MemoryCardCreateDialog.cpp" line="121"/>
+      <location filename="../Settings/MemoryCardCreateDialog.cpp" line="122"/>
       <source>Failed to create the Memory Card, the log may contain more information.</source>
       <translation>Muistikorttia ei voitu luoda, lokissa voi olla lisätietoja.</translation>
     </message>
     <message>
-      <location filename="../Settings/MemoryCardCreateDialog.cpp" line="133"/>
+      <location filename="../Settings/MemoryCardCreateDialog.cpp" line="134"/>
       <source>Memory Card &apos;%1&apos; created.</source>
       <translation>Muistikortti &apos;%1&apos; luotu.</translation>
     </message>
@@ -16894,12 +17786,12 @@ Sulje kaikki muut PCSX2-istunnot tai käynnistä tietokoneesi uudelleen.
   <context>
     <name>MemoryCardListWidget</name>
     <message>
-      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="443"/>
+      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="457"/>
       <source>Yes</source>
       <translation>Kyllä</translation>
     </message>
     <message>
-      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="443"/>
+      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="457"/>
       <source>No</source>
       <translation>Ei</translation>
     </message>
@@ -16964,25 +17856,25 @@ Sulje kaikki muut PCSX2-istunnot tai käynnistä tietokoneesi uudelleen.
     </message>
     <message>
       <location filename="../Settings/MemoryCardSettingsWidget.ui" line="145"/>
-      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="292"/>
+      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="306"/>
       <source>Create</source>
       <translation>Luo</translation>
     </message>
     <message>
       <location filename="../Settings/MemoryCardSettingsWidget.ui" line="152"/>
-      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="286"/>
+      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="300"/>
       <source>Rename</source>
       <translation>Nimeä uudelleen</translation>
     </message>
     <message>
       <location filename="../Settings/MemoryCardSettingsWidget.ui" line="159"/>
-      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="287"/>
+      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="301"/>
       <source>Convert</source>
       <translation>Muunna</translation>
     </message>
     <message>
       <location filename="../Settings/MemoryCardSettingsWidget.ui" line="166"/>
-      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="288"/>
+      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="302"/>
       <source>Delete</source>
       <translation>Poista</translation>
     </message>
@@ -17019,36 +17911,37 @@ Sulje kaikki muut PCSX2-istunnot tai käynnistä tietokoneesi uudelleen.
     </message>
     <message>
       <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="153"/>
-      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="327"/>
+      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="276"/>
+      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="341"/>
       <source>Error</source>
       <translation>Virhe</translation>
     </message>
     <message>
-      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="205"/>
-      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="215"/>
+      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="213"/>
+      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="223"/>
       <source>Delete Memory Card</source>
       <translation>Poista muistikortti</translation>
     </message>
     <message>
-      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="230"/>
-      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="237"/>
-      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="244"/>
-      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="251"/>
+      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="238"/>
+      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="245"/>
+      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="252"/>
+      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="259"/>
       <source>Rename Memory Card</source>
       <translation>Uudelleennimeä muistikortti</translation>
     </message>
     <message>
-      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="230"/>
+      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="238"/>
       <source>New Card Name</source>
       <translation>Uuden kortin nimi</translation>
     </message>
     <message>
-      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="237"/>
+      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="245"/>
       <source>New name is invalid, it must end with .ps2</source>
       <translation>Uusi nimi on virheellinen, sen lopussa on oltava .ps2</translation>
     </message>
     <message>
-      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="245"/>
+      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="253"/>
       <source>New name is invalid, a card with this name already exists.</source>
       <translation>Uusi nimi ei kelpaa, samanniminen muistikortti on jo olemassa.</translation>
     </message>
@@ -17063,7 +17956,7 @@ Sulje kaikki muut PCSX2-istunnot tai käynnistä tietokoneesi uudelleen.
       <translation>Tätä muistikorttia ei voida tunnistaa tai sen tiedostotyyppi ei ole kelvollinen.</translation>
     </message>
     <message>
-      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="206"/>
+      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="214"/>
       <source>Are you sure you wish to delete the Memory Card &apos;%1&apos;?
 
 This action cannot be reversed, and you will lose any saves on the card.</source>
@@ -17072,58 +17965,63 @@ This action cannot be reversed, and you will lose any saves on the card.</source
 Tätä toimintoa ei voi peruuttaa, ja menetät jokaisen kortilla oleva tallennuksen.</translation>
     </message>
     <message>
-      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="216"/>
+      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="224"/>
       <source>Failed to delete the Memory Card. The log may have more information.</source>
       <translation>Muistikorttia ei voitu poistaa. Loki saattaa sisältää lisätietoja.</translation>
     </message>
     <message>
-      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="252"/>
+      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="260"/>
       <source>Failed to rename Memory Card. The log may contain more information.</source>
       <translation>Muistikorttia ei voitu nimetä uudelleen. Loki saattaa sisältää lisätietoja.</translation>
     </message>
     <message>
-      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="281"/>
+      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="276"/>
+      <source>Cannot convert an unformatted memory card.</source>
+      <translation>Alustamatonta muistikorttia ei voida muuntaa.</translation>
+    </message>
+    <message>
+      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="295"/>
       <source>Use for Slot %1</source>
       <translation>Käytä paikassa %1</translation>
     </message>
     <message>
-      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="327"/>
+      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="341"/>
       <source>Both slots must have a card selected to swap.</source>
       <translation>Molemmissa paikoissa on oltava muistikortti valittuna paikkojen vaihtamiseen.</translation>
     </message>
     <message>
-      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="343"/>
+      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="357"/>
       <source>PS2 (8MB)</source>
       <translation>PS2 (8 Mt)</translation>
     </message>
     <message>
-      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="346"/>
+      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="360"/>
       <source>PS2 (16MB)</source>
       <translation>PS2 (16 Mt)</translation>
     </message>
     <message>
-      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="349"/>
+      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="363"/>
       <source>PS2 (32MB)</source>
       <translation>PS2 (32 Mt)</translation>
     </message>
     <message>
-      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="352"/>
+      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="366"/>
       <source>PS2 (64MB)</source>
       <translation>PS2 (64 Mt)</translation>
     </message>
     <message>
-      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="355"/>
+      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="369"/>
       <source>PS1 (128KB)</source>
       <translation>PS1 (128 Kt)</translation>
     </message>
     <message>
-      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="359"/>
-      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="368"/>
+      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="373"/>
+      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="382"/>
       <source>Unknown</source>
       <translation>Tuntematon</translation>
     </message>
     <message>
-      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="364"/>
+      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="378"/>
       <source>PS2 (Folder)</source>
       <translation>PS2 (kansio)</translation>
     </message>
@@ -17131,327 +18029,310 @@ Tätä toimintoa ei voi peruuttaa, ja menetät jokaisen kortilla oleva tallennuk
   <context>
     <name>MemoryCardSlotWidget</name>
     <message>
-      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="496"/>
+      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="514"/>
       <source>%1 [%2]</source>
       <translation>%1 [%2]</translation>
     </message>
     <message>
-      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="502"/>
+      <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="520"/>
       <source>%1 [Missing]</source>
       <extracomment>Ignore Crowdin&apos;s warning for [Missing], the text should be translated.</extracomment>
       <translation>%1 [puuttuu]</translation>
     </message>
   </context>
   <context>
-    <name>MemorySearchWidget</name>
+    <name>MemorySearchView</name>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.ui" line="27"/>
+      <location filename="../Debugger/Memory/MemorySearchView.ui" line="22"/>
       <source>Value</source>
-      <translation>Arvo</translation>
+      <translation type="unfinished">Value</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.ui" line="37"/>
+      <location filename="../Debugger/Memory/MemorySearchView.ui" line="32"/>
       <source>Type</source>
-      <translation>Tyyppi</translation>
+      <translation type="unfinished">Type</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.ui" line="45"/>
+      <location filename="../Debugger/Memory/MemorySearchView.ui" line="40"/>
       <source>1 Byte (8 bits)</source>
-      <translation>1 tavu (8 bittiä)</translation>
+      <translation type="unfinished">1 Byte (8 bits)</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.ui" line="50"/>
+      <location filename="../Debugger/Memory/MemorySearchView.ui" line="45"/>
       <source>2 Bytes (16 bits)</source>
-      <translation>2 tavua (16 bittiä)</translation>
+      <translation type="unfinished">2 Bytes (16 bits)</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.ui" line="55"/>
+      <location filename="../Debugger/Memory/MemorySearchView.ui" line="50"/>
       <source>4 Bytes (32 bits)</source>
-      <translation>4 tavua (32 bittiä)</translation>
+      <translation type="unfinished">4 Bytes (32 bits)</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.ui" line="60"/>
+      <location filename="../Debugger/Memory/MemorySearchView.ui" line="55"/>
       <source>8 Bytes (64 bits)</source>
-      <translation>8 tavua (64 bittiä)</translation>
+      <translation type="unfinished">8 Bytes (64 bits)</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.ui" line="65"/>
+      <location filename="../Debugger/Memory/MemorySearchView.ui" line="60"/>
       <source>Float</source>
-      <translation>Liukuluku</translation>
+      <translation type="unfinished">Float</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.ui" line="70"/>
+      <location filename="../Debugger/Memory/MemorySearchView.ui" line="65"/>
       <source>Double</source>
-      <translation>Double</translation>
+      <translation type="unfinished">Double</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.ui" line="75"/>
+      <location filename="../Debugger/Memory/MemorySearchView.ui" line="70"/>
       <source>String</source>
-      <translation>Merkkijono</translation>
+      <translation type="unfinished">String</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.ui" line="80"/>
-      <source>Array of byte</source>
-      <translation>Tavutaulukko</translation>
+      <location filename="../Debugger/Memory/MemorySearchView.ui" line="75"/>
+      <source>Byte Array</source>
+      <translation type="unfinished">Byte Array</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.ui" line="88"/>
+      <location filename="../Debugger/Memory/MemorySearchView.ui" line="83"/>
       <source>Hex</source>
-      <translation>Heksa</translation>
+      <translation type="unfinished">Hex</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.ui" line="105"/>
+      <location filename="../Debugger/Memory/MemorySearchView.ui" line="100"/>
       <source>Search</source>
-      <translation>Etsi</translation>
+      <translation type="unfinished">Search</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.ui" line="115"/>
+      <location filename="../Debugger/Memory/MemorySearchView.ui" line="110"/>
       <source>Filter Search</source>
-      <translation>Suodata hakua</translation>
+      <translation type="unfinished">Filter Search</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.ui" line="123"/>
-      <location filename="../Debugger/MemorySearchWidget.h" line="59"/>
+      <location filename="../Debugger/Memory/MemorySearchView.ui" line="118"/>
+      <location filename="../Debugger/Memory/MemorySearchView.h" line="61"/>
       <source>Equals</source>
-      <translation>Yhtä suuri kuin</translation>
+      <translation type="unfinished">Equals</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.ui" line="128"/>
-      <location filename="../Debugger/MemorySearchWidget.h" line="60"/>
+      <location filename="../Debugger/Memory/MemorySearchView.ui" line="123"/>
+      <location filename="../Debugger/Memory/MemorySearchView.h" line="62"/>
       <source>Not Equals</source>
-      <translation>Erisuuri kuin</translation>
+      <translation type="unfinished">Not Equals</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.ui" line="133"/>
-      <location filename="../Debugger/MemorySearchWidget.h" line="61"/>
+      <location filename="../Debugger/Memory/MemorySearchView.ui" line="128"/>
+      <location filename="../Debugger/Memory/MemorySearchView.h" line="63"/>
       <source>Greater Than</source>
-      <translation>Suurempi kuin</translation>
+      <translation type="unfinished">Greater Than</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.ui" line="138"/>
-      <location filename="../Debugger/MemorySearchWidget.h" line="62"/>
+      <location filename="../Debugger/Memory/MemorySearchView.ui" line="133"/>
+      <location filename="../Debugger/Memory/MemorySearchView.h" line="64"/>
       <source>Greater Than Or Equal</source>
-      <translation>Suurempi tai yhtä suuri kuin</translation>
+      <translation type="unfinished">Greater Than Or Equal</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.ui" line="143"/>
-      <location filename="../Debugger/MemorySearchWidget.h" line="63"/>
+      <location filename="../Debugger/Memory/MemorySearchView.ui" line="138"/>
+      <location filename="../Debugger/Memory/MemorySearchView.h" line="65"/>
       <source>Less Than</source>
-      <translation>Pienempi kuin</translation>
+      <translation type="unfinished">Less Than</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.ui" line="148"/>
-      <location filename="../Debugger/MemorySearchWidget.h" line="64"/>
+      <location filename="../Debugger/Memory/MemorySearchView.ui" line="143"/>
+      <location filename="../Debugger/Memory/MemorySearchView.h" line="66"/>
       <source>Less Than Or Equal</source>
-      <translation>Pienempi tai yhtä suuri kuin</translation>
+      <translation type="unfinished">Less Than Or Equal</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.ui" line="156"/>
+      <location filename="../Debugger/Memory/MemorySearchView.ui" line="148"/>
+      <location filename="../Debugger/Memory/MemorySearchView.h" line="74"/>
+      <source>Unknown Initial Value</source>
+      <translation type="unfinished">Unknown Initial Value</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Memory/MemorySearchView.ui" line="156"/>
       <source>Comparison</source>
-      <translation>Vertailu</translation>
+      <translation type="unfinished">Comparison</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.ui" line="167"/>
+      <location filename="../Debugger/Memory/MemorySearchView.ui" line="167"/>
       <source>Start</source>
-      <translation>Alku</translation>
+      <translation type="unfinished">Start</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.ui" line="181"/>
+      <location filename="../Debugger/Memory/MemorySearchView.ui" line="181"/>
       <source>End</source>
-      <translation>Loppu</translation>
+      <translation type="unfinished">End</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.cpp" line="94"/>
-      <source>Search Results List Context Menu</source>
-      <translation>Hakutulosluettelon pikavalikko</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/MemorySearchWidget.cpp" line="100"/>
+      <location filename="../Debugger/Memory/MemorySearchView.cpp" line="91"/>
       <source>Copy Address</source>
-      <translation>Kopioi osoite</translation>
+      <translation type="unfinished">Copy Address</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.cpp" line="104"/>
-      <source>Go to in Disassembly</source>
-      <translation>Siirry purkukoodinäkymään</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/MemorySearchWidget.cpp" line="108"/>
-      <source>Add to Saved Memory Addresses</source>
-      <translation>Lisää tallennettuihin muistiosoitteisiin</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/MemorySearchWidget.cpp" line="115"/>
+      <location filename="../Debugger/Memory/MemorySearchView.cpp" line="108"/>
       <source>Remove Result</source>
-      <translation>Poista tulos</translation>
+      <translation type="unfinished">Remove Result</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.cpp" line="486"/>
-      <location filename="../Debugger/MemorySearchWidget.cpp" line="494"/>
-      <location filename="../Debugger/MemorySearchWidget.cpp" line="500"/>
-      <location filename="../Debugger/MemorySearchWidget.cpp" line="531"/>
-      <location filename="../Debugger/MemorySearchWidget.cpp" line="555"/>
-      <location filename="../Debugger/MemorySearchWidget.cpp" line="564"/>
+      <location filename="../Debugger/Memory/MemorySearchView.cpp" line="481"/>
+      <location filename="../Debugger/Memory/MemorySearchView.cpp" line="489"/>
+      <location filename="../Debugger/Memory/MemorySearchView.cpp" line="495"/>
+      <location filename="../Debugger/Memory/MemorySearchView.cpp" line="530"/>
+      <location filename="../Debugger/Memory/MemorySearchView.cpp" line="554"/>
+      <location filename="../Debugger/Memory/MemorySearchView.cpp" line="568"/>
+      <location filename="../Debugger/Memory/MemorySearchView.cpp" line="581"/>
       <source>Debugger</source>
-      <translation>Virheenjäljitin</translation>
+      <translation type="unfinished">Debugger</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.cpp" line="486"/>
+      <location filename="../Debugger/Memory/MemorySearchView.cpp" line="481"/>
       <source>Invalid start address</source>
-      <translation>Virheellinen alkuosoite</translation>
+      <translation type="unfinished">Invalid start address</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.cpp" line="494"/>
+      <location filename="../Debugger/Memory/MemorySearchView.cpp" line="489"/>
       <source>Invalid end address</source>
-      <translation>Virheellinen loppuosoite</translation>
+      <translation type="unfinished">Invalid end address</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.cpp" line="500"/>
+      <location filename="../Debugger/Memory/MemorySearchView.cpp" line="495"/>
       <source>Start address can&apos;t be equal to or greater than the end address</source>
-      <translation>Alkuosoite ei voi olla yhtä suuri tai suurempi kuin loppuosoite</translation>
+      <translation type="unfinished">Start address can&apos;t be equal to or greater than the end address</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.cpp" line="531"/>
+      <location filename="../Debugger/Memory/MemorySearchView.cpp" line="530"/>
       <source>Invalid search value</source>
-      <translation>Virheellinen hakuarvo</translation>
+      <translation type="unfinished">Invalid search value</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.cpp" line="555"/>
+      <location filename="../Debugger/Memory/MemorySearchView.cpp" line="554"/>
       <source>Value is larger than type</source>
-      <translation>Arvo on suurempi kuin tyyppi</translation>
+      <translation type="unfinished">Value is larger than type</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.cpp" line="564"/>
+      <location filename="../Debugger/Memory/MemorySearchView.cpp" line="568"/>
+      <location filename="../Debugger/Memory/MemorySearchView.cpp" line="581"/>
       <source>This search comparison can only be used with filter searches.</source>
-      <translation>Tätä hakuvertailua voidaan käyttää vain suodatinhakujen kanssa.</translation>
+      <translation type="unfinished">This search comparison can only be used with filter searches.</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.cpp" line="577"/>
+      <location filename="../Debugger/Memory/MemorySearchView.cpp" line="594"/>
       <source>%0 results found</source>
-      <translation>%0 tulosta löytyi</translation>
+      <translation type="unfinished">%0 results found</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.cpp" line="594"/>
+      <location filename="../Debugger/Memory/MemorySearchView.cpp" line="611"/>
       <source>Searching...</source>
-      <translation>Haetaan...</translation>
+      <translation type="unfinished">Searching...</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.h" line="65"/>
+      <location filename="../Debugger/Memory/MemorySearchView.h" line="67"/>
       <source>Increased</source>
-      <translation>Lisääntynyt</translation>
+      <translation type="unfinished">Increased</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.h" line="66"/>
+      <location filename="../Debugger/Memory/MemorySearchView.h" line="68"/>
       <source>Increased By</source>
-      <translation>Lisääntynyt määrällä</translation>
+      <translation type="unfinished">Increased By</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.h" line="67"/>
+      <location filename="../Debugger/Memory/MemorySearchView.h" line="69"/>
       <source>Decreased</source>
-      <translation>Vähentynyt</translation>
+      <translation type="unfinished">Decreased</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.h" line="68"/>
+      <location filename="../Debugger/Memory/MemorySearchView.h" line="70"/>
       <source>Decreased By</source>
-      <translation>Vähentynyt määrällä</translation>
+      <translation type="unfinished">Decreased By</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.h" line="69"/>
+      <location filename="../Debugger/Memory/MemorySearchView.h" line="71"/>
       <source>Changed</source>
-      <translation>Muuttunut</translation>
+      <translation type="unfinished">Changed</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.h" line="70"/>
+      <location filename="../Debugger/Memory/MemorySearchView.h" line="72"/>
       <source>Changed By</source>
-      <translation>Muuttunut määrällä</translation>
+      <translation type="unfinished">Changed By</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemorySearchWidget.h" line="71"/>
+      <location filename="../Debugger/Memory/MemorySearchView.h" line="73"/>
       <source>Not Changed</source>
-      <translation>Muuttumaton</translation>
+      <translation type="unfinished">Not Changed</translation>
     </message>
   </context>
   <context>
-    <name>MemoryViewWidget</name>
+    <name>MemoryView</name>
     <message>
-      <location filename="../Debugger/MemoryViewWidget.ui" line="14"/>
+      <location filename="../Debugger/Memory/MemoryView.ui" line="14"/>
       <source>Memory</source>
-      <translation>Muisti</translation>
+      <translation type="unfinished">Memory</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="496"/>
+      <location filename="../Debugger/Memory/MemoryView.cpp" line="557"/>
       <source>Copy Address</source>
-      <translation>Kopioi osoite</translation>
+      <translation type="unfinished">Copy Address</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="500"/>
-      <source>Go to in Disassembly</source>
-      <translation>Siirry purkukoodinäkymään</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="504"/>
+      <location filename="../Debugger/Memory/MemoryView.cpp" line="568"/>
       <source>Go to address</source>
-      <translation>Siirry osoitteeseen</translation>
+      <translation type="unfinished">Go to address</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="510"/>
+      <location filename="../Debugger/Memory/MemoryView.cpp" line="573"/>
       <source>Show as Little Endian</source>
-      <translation>Näytä Little Endian -muodossa</translation>
+      <translation type="unfinished">Show as Little Endian</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="516"/>
+      <location filename="../Debugger/Memory/MemoryView.cpp" line="586"/>
       <source>Show as 1 byte</source>
-      <translation>Näytä 1:nä tavuna</translation>
+      <translation type="unfinished">Show as 1 byte</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="521"/>
+      <location filename="../Debugger/Memory/MemoryView.cpp" line="592"/>
       <source>Show as 2 bytes</source>
-      <translation>Näytä 2:na tavuna</translation>
+      <translation type="unfinished">Show as 2 bytes</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="526"/>
+      <location filename="../Debugger/Memory/MemoryView.cpp" line="598"/>
       <source>Show as 4 bytes</source>
-      <translation>Näytä 4:nä tavuna</translation>
+      <translation type="unfinished">Show as 4 bytes</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="531"/>
+      <location filename="../Debugger/Memory/MemoryView.cpp" line="604"/>
       <source>Show as 8 bytes</source>
-      <translation>Näytä 8:na tavuna</translation>
+      <translation type="unfinished">Show as 8 bytes</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="538"/>
-      <source>Add to Saved Memory Addresses</source>
-      <translation>Lisää tallennettuihin muistiosoitteisiin</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="542"/>
+      <location filename="../Debugger/Memory/MemoryView.cpp" line="618"/>
       <source>Copy Byte</source>
-      <translation>Kopioi tavu</translation>
+      <translation type="unfinished">Copy Byte</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="546"/>
+      <location filename="../Debugger/Memory/MemoryView.cpp" line="619"/>
       <source>Copy Segment</source>
-      <translation>Kopioi segmentti</translation>
+      <translation type="unfinished">Copy Segment</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="550"/>
+      <location filename="../Debugger/Memory/MemoryView.cpp" line="620"/>
       <source>Copy Character</source>
-      <translation>Kopioi merkki</translation>
+      <translation type="unfinished">Copy Character</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="554"/>
+      <location filename="../Debugger/Memory/MemoryView.cpp" line="621"/>
       <source>Paste</source>
-      <translation>Liitä</translation>
+      <translation type="unfinished">Paste</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="595"/>
+      <location filename="../Debugger/Memory/MemoryView.cpp" line="652"/>
       <source>Go To In Memory View</source>
-      <translation>Siirry muistinäkymään</translation>
+      <translation type="unfinished">Go To In Memory View</translation>
     </message>
     <message>
-      <location filename="../Debugger/MemoryViewWidget.cpp" line="605"/>
+      <location filename="../Debugger/Memory/MemoryView.cpp" line="662"/>
       <source>Cannot Go To</source>
-      <translation>Siirtyminen ei onnistu</translation>
+      <translation type="unfinished">Cannot Go To</translation>
     </message>
   </context>
   <context>
@@ -17750,6 +18631,24 @@ Tätä toimintoa ei voi peruuttaa, ja menetät jokaisen kortilla oleva tallennuk
       <location filename="../Debugger/SymbolTree/NewSymbolDialogs.cpp" line="235"/>
       <source>Address is not aligned.</source>
       <translation>Osoite ei täsmää.</translation>
+    </message>
+  </context>
+  <context>
+    <name>NoLayoutsWidget</name>
+    <message>
+      <location filename="../Debugger/Docking/NoLayoutsWidget.ui" line="14"/>
+      <source>Form</source>
+      <translation>Muoto</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/NoLayoutsWidget.ui" line="36"/>
+      <source>There are no layouts.</source>
+      <translation>Asetteluja ei ole.</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Docking/NoLayoutsWidget.ui" line="61"/>
+      <source>Create Default Layouts</source>
+      <translation>Luo oletusasettelut</translation>
     </message>
   </context>
   <context>
@@ -18124,7 +19023,7 @@ Tätä toimintoa ei voi peruuttaa, ja menetät jokaisen kortilla oleva tallennuk
       <translation>Kitara</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/SIO/Pad/Pad.cpp" line="576"/>
+      <location filename="../../pcsx2/SIO/Pad/Pad.cpp" line="583"/>
       <source>Controller port {0}, slot {1} has a {2} connected, but the save state has a {3}.
 Ejecting {3} and replacing it with {2}.</source>
       <translation>Ohjainportissa {0} paikassa {1} on kytkettynä {2}, mutta tilatallennuksessa on {3}.
@@ -18289,12 +19188,12 @@ Poistetaan {3} ja korvataan se kohteella {2}.</translation>
   <context>
     <name>Patch</name>
     <message>
-      <location filename="../../pcsx2/Patch.cpp" line="350"/>
+      <location filename="../../pcsx2/Patch.cpp" line="352"/>
       <source>Failed to open {}. Built-in game patches are not available.</source>
       <translation>{} ei voitu avata. Sisäänrakennettuja pelipaikkauksia ei ole saatavilla.</translation>
     </message>
     <message numerus="yes">
-      <location filename="../../pcsx2/Patch.cpp" line="726"/>
+      <location filename="../../pcsx2/Patch.cpp" line="762"/>
       <source>%n GameDB patches are active.</source>
       <comment>OSD Message</comment>
       <translation>
@@ -18303,7 +19202,7 @@ Poistetaan {3} ja korvataan se kohteella {2}.</translation>
       </translation>
     </message>
     <message numerus="yes">
-      <location filename="../../pcsx2/Patch.cpp" line="733"/>
+      <location filename="../../pcsx2/Patch.cpp" line="769"/>
       <source>%n game patches are active.</source>
       <comment>OSD Message</comment>
       <translation>
@@ -18312,7 +19211,7 @@ Poistetaan {3} ja korvataan se kohteella {2}.</translation>
       </translation>
     </message>
     <message numerus="yes">
-      <location filename="../../pcsx2/Patch.cpp" line="740"/>
+      <location filename="../../pcsx2/Patch.cpp" line="776"/>
       <source>%n cheat patches are active.</source>
       <comment>OSD Message</comment>
       <translation>
@@ -18321,7 +19220,7 @@ Poistetaan {3} ja korvataan se kohteella {2}.</translation>
       </translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Patch.cpp" line="755"/>
+      <location filename="../../pcsx2/Patch.cpp" line="791"/>
       <source>No cheats or patches (widescreen, compatibility or others) are found / enabled.</source>
       <translation>Huijauksia tai paikkauksia (laajakuva, yhteensopivuus tai muut) ei löydy / ole käytössä.</translation>
     </message>
@@ -18329,12 +19228,12 @@ Poistetaan {3} ja korvataan se kohteella {2}.</translation>
   <context>
     <name>Pcsx2Config</name>
     <message>
-      <location filename="../../pcsx2/Pcsx2Config.cpp" line="1118"/>
+      <location filename="../../pcsx2/Pcsx2Config.cpp" line="1138"/>
       <source>Disabled (Noisy)</source>
       <translation>Pois käytöstä (meluisa)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/Pcsx2Config.cpp" line="1119"/>
+      <location filename="../../pcsx2/Pcsx2Config.cpp" line="1139"/>
       <source>TimeStretch (Recommended)</source>
       <translation>TimeStretch (suositeltu)</translation>
     </message>
@@ -18342,7 +19241,7 @@ Poistetaan {3} ja korvataan se kohteella {2}.</translation>
   <context>
     <name>PermissionsDialogCamera</name>
     <message>
-      <location filename="../Translations.cpp" line="47"/>
+      <location filename="../Translations.cpp" line="48"/>
       <source>PCSX2 uses your camera to emulate an EyeToy camera plugged into the virtual PS2.</source>
       <translation>PCSX2 käyttää kameraasi EyeToy-kameran emuloimiseen, kytkettynä virtuaaliseen PS2:een.</translation>
     </message>
@@ -18350,7 +19249,7 @@ Poistetaan {3} ja korvataan se kohteella {2}.</translation>
   <context>
     <name>PermissionsDialogMicrophone</name>
     <message>
-      <location filename="../Translations.cpp" line="46"/>
+      <location filename="../Translations.cpp" line="47"/>
       <source>PCSX2 uses your microphone to emulate a USB microphone plugged into the virtual PS2.</source>
       <translation>PCSX2 käyttää mikrofoniasi USB-mikrofonin emuloimiseen, kytkettynä virtuaaliseen PS2:een.</translation>
     </message>
@@ -18422,47 +19321,47 @@ Poistetaan {3} ja korvataan se kohteella {2}.</translation>
   <context>
     <name>QtHost</name>
     <message>
-      <location filename="../QtHost.cpp" line="1105"/>
+      <location filename="../QtHost.cpp" line="1106"/>
       <source>RA: Logged in as %1 (%2 pts, softcore: %3 pts). %4 unread messages.</source>
       <translation>RA: Kirjautuneena sisään nimellä %1 (%2 p., softcore: %3 p.). %4 lukematonta viestiä.</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1515"/>
-      <location filename="../QtHost.cpp" line="1530"/>
+      <location filename="../QtHost.cpp" line="1527"/>
+      <location filename="../QtHost.cpp" line="1542"/>
       <source>Error</source>
       <translation>Virhe</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1516"/>
+      <location filename="../QtHost.cpp" line="1528"/>
       <source>An error occurred while deleting empty game settings:
 {}</source>
       <translation>Virhe poistettaessa tyhjiä peliasetuksia:
 {}</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1531"/>
+      <location filename="../QtHost.cpp" line="1543"/>
       <source>An error occurred while saving game settings:
 {}</source>
       <translation>Virhe tallennettaessa peliasetuksia:
 {}</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1679"/>
+      <location filename="../QtHost.cpp" line="1703"/>
       <source>Controller {} connected.</source>
       <translation>Ohjain {} yhdistettiin.</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1692"/>
+      <location filename="../QtHost.cpp" line="1716"/>
       <source>System paused because controller {} was disconnected.</source>
       <translation>Järjestelmä pysäytettiin, koska ohjaimen {} yhteys katkesi.</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1705"/>
+      <location filename="../QtHost.cpp" line="1729"/>
       <source>Controller {} disconnected.</source>
       <translation>Ohjaimen {} yhteys katkesi.</translation>
     </message>
     <message>
-      <location filename="../QtHost.cpp" line="1932"/>
+      <location filename="../QtHost.cpp" line="1957"/>
       <source>Cancel</source>
       <translation>Peruuta</translation>
     </message>
@@ -18496,106 +19395,112 @@ Poistetaan {3} ja korvataan se kohteella {2}.</translation>
     </message>
   </context>
   <context>
-    <name>RegisterWidget</name>
+    <name>RegisterView</name>
     <message>
-      <location filename="../Debugger/RegisterWidget.ui" line="26"/>
+      <location filename="../Debugger/RegisterView.ui" line="26"/>
       <source>Register View</source>
-      <translation>Rekisterinäkymä</translation>
+      <translation type="unfinished">Register View</translation>
     </message>
     <message>
-      <location filename="../Debugger/RegisterWidget.cpp" line="239"/>
-      <location filename="../Debugger/RegisterWidget.cpp" line="246"/>
-      <source>View as hex</source>
-      <translation>Näytä heksadesimaalina</translation>
+      <location filename="../Debugger/RegisterView.cpp" line="258"/>
+      <location filename="../Debugger/RegisterView.cpp" line="271"/>
+      <source>Show as Float</source>
+      <translation type="unfinished">Show as Float</translation>
     </message>
     <message>
-      <location filename="../Debugger/RegisterWidget.cpp" line="239"/>
-      <location filename="../Debugger/RegisterWidget.cpp" line="246"/>
-      <source>View as float</source>
-      <translation>Näytä liukulukuna</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/RegisterWidget.cpp" line="253"/>
+      <location filename="../Debugger/RegisterView.cpp" line="284"/>
       <source>Copy Top Half</source>
-      <translation>Kopioi yläpuolisko</translation>
+      <translation type="unfinished">Copy Top Half</translation>
     </message>
     <message>
-      <location filename="../Debugger/RegisterWidget.cpp" line="255"/>
+      <location filename="../Debugger/RegisterView.cpp" line="285"/>
       <source>Copy Bottom Half</source>
-      <translation>Kopioi alapuolisko</translation>
+      <translation type="unfinished">Copy Bottom Half</translation>
     </message>
     <message>
-      <location filename="../Debugger/RegisterWidget.cpp" line="257"/>
+      <location filename="../Debugger/RegisterView.cpp" line="286"/>
       <source>Copy Segment</source>
-      <translation>Kopioi segmentti</translation>
+      <translation type="unfinished">Copy Segment</translation>
     </message>
     <message>
-      <location filename="../Debugger/RegisterWidget.cpp" line="262"/>
+      <location filename="../Debugger/RegisterView.cpp" line="290"/>
       <source>Copy Value</source>
-      <translation>Kopioi arvo</translation>
+      <translation type="unfinished">Copy Value</translation>
     </message>
     <message>
-      <location filename="../Debugger/RegisterWidget.cpp" line="270"/>
+      <location filename="../Debugger/RegisterView.cpp" line="297"/>
       <source>Change Top Half</source>
-      <translation>Muuta yläpuoliskoa</translation>
+      <translation type="unfinished">Change Top Half</translation>
     </message>
     <message>
-      <location filename="../Debugger/RegisterWidget.cpp" line="272"/>
+      <location filename="../Debugger/RegisterView.cpp" line="299"/>
       <source>Change Bottom Half</source>
-      <translation>Muuta alapuoliskoa</translation>
+      <translation type="unfinished">Change Bottom Half</translation>
     </message>
     <message>
-      <location filename="../Debugger/RegisterWidget.cpp" line="274"/>
+      <location filename="../Debugger/RegisterView.cpp" line="301"/>
       <source>Change Segment</source>
-      <translation>Muuta segmenttiä</translation>
+      <translation type="unfinished">Change Segment</translation>
     </message>
     <message>
-      <location filename="../Debugger/RegisterWidget.cpp" line="279"/>
+      <location filename="../Debugger/RegisterView.cpp" line="306"/>
       <source>Change Value</source>
-      <translation>Muuta arvoa</translation>
+      <translation type="unfinished">Change Value</translation>
     </message>
     <message>
-      <location filename="../Debugger/RegisterWidget.cpp" line="285"/>
-      <source>Go to in Disassembly</source>
-      <translation>Siirry purkukoodinäkymään</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/RegisterWidget.cpp" line="288"/>
-      <source>Go to in Memory View</source>
-      <translation>Siirry muistinäkymään</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/RegisterWidget.cpp" line="344"/>
+      <location filename="../Debugger/RegisterView.cpp" line="369"/>
       <source>Change %1</source>
       <extracomment>Changing the value in a CPU register (e.g. &quot;Change t0&quot;)</extracomment>
-      <translation>Muuta %1</translation>
+      <translation type="unfinished">Change %1</translation>
     </message>
     <message>
-      <location filename="../Debugger/RegisterWidget.cpp" line="355"/>
-      <location filename="../Debugger/RegisterWidget.cpp" line="364"/>
+      <location filename="../Debugger/RegisterView.cpp" line="380"/>
+      <location filename="../Debugger/RegisterView.cpp" line="389"/>
       <source>Invalid register value</source>
-      <translation>Virheellinen rekisteriarvo</translation>
+      <translation type="unfinished">Invalid register value</translation>
     </message>
     <message>
-      <location filename="../Debugger/RegisterWidget.cpp" line="355"/>
+      <location filename="../Debugger/RegisterView.cpp" line="380"/>
       <source>Invalid hexadecimal register value.</source>
-      <translation>Virheellinen heksadesimaalinen rekisteriarvo.</translation>
+      <translation type="unfinished">Invalid hexadecimal register value.</translation>
     </message>
     <message>
-      <location filename="../Debugger/RegisterWidget.cpp" line="364"/>
+      <location filename="../Debugger/RegisterView.cpp" line="389"/>
       <source>Invalid floating-point register value.</source>
-      <translation>Virheellinen liukulukuinen rekisteriarvo.</translation>
+      <translation type="unfinished">Invalid floating-point register value.</translation>
     </message>
     <message>
-      <location filename="../Debugger/RegisterWidget.cpp" line="433"/>
+      <location filename="../Debugger/RegisterView.cpp" line="459"/>
       <source>Invalid target address</source>
-      <translation>Virheellinen kohdeosoite</translation>
+      <translation type="unfinished">Invalid target address</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/RegisterView.cpp" line="460"/>
+      <source>This register holds an invalid address.</source>
+      <translation type="unfinished">This register holds an invalid address.</translation>
+    </message>
+  </context>
+  <context>
+    <name>SDLInputSource</name>
+    <message>
+      <location filename="../../pcsx2/Input/SDLInputSource.cpp" line="767"/>
+      <source>SDL3 Migration</source>
+      <translation>Siirto SDL3:een</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/Input/SDLInputSource.cpp" line="768"/>
+      <source>As part of our upgrade to SDL3, we&apos;ve had to migrate your binds
+Your controller did not match the Xbox layout and may need rebinding
+Please verify your controller settings and amend if required</source>
+      <translation>Osana päivitystämme SDL3:een, meidän on täytynyt siirtää sidoksesi.
+Ohjaimesi ei vastaa Xbox-asettelua ja saattaa vaatia uudelleensidontaa.
+Varmista ohjainasetukset ja korjaa tarvittaessa.</translation>
     </message>
   </context>
   <context>
     <name>SaveState</name>
     <message>
-      <location filename="../../pcsx2/SaveState.cpp" line="1100"/>
+      <location filename="../../pcsx2/SaveState.cpp" line="1104"/>
       <source>This save state is outdated and is no longer compatible with the current version of PCSX2.
 
 If you have any unsaved progress on this save state, you can download the compatible version (PCSX2 {}) from pcsx2.net, load the save state, and save your progress to the memory card.</source>
@@ -18607,43 +19512,91 @@ Jos tilatallennuksessa on tallentamatonta edistymistä, voit ladata yhteensopiva
   <context>
     <name>SavedAddressesModel</name>
     <message>
-      <location filename="../Debugger/Models/SavedAddressesModel.cpp" line="109"/>
+      <location filename="../Debugger/Memory/SavedAddressesModel.cpp" line="128"/>
       <source>MEMORY ADDRESS</source>
       <translation>MUISTIOSOITE</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/SavedAddressesModel.cpp" line="111"/>
+      <location filename="../Debugger/Memory/SavedAddressesModel.cpp" line="130"/>
       <source>LABEL</source>
       <translation>NIMIKE</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/SavedAddressesModel.cpp" line="113"/>
+      <location filename="../Debugger/Memory/SavedAddressesModel.cpp" line="132"/>
       <source>DESCRIPTION</source>
       <translation>KUVAUS</translation>
     </message>
   </context>
   <context>
+    <name>SavedAddressesView</name>
+    <message>
+      <location filename="../Debugger/Memory/SavedAddressesView.ui" line="14"/>
+      <source>Saved Addresses</source>
+      <translation type="unfinished">Saved Addresses</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Memory/SavedAddressesView.cpp" line="59"/>
+      <source>New</source>
+      <translation type="unfinished">New</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Memory/SavedAddressesView.cpp" line="78"/>
+      <source>Copy Address</source>
+      <translation type="unfinished">Copy Address</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Memory/SavedAddressesView.cpp" line="78"/>
+      <source>Copy Text</source>
+      <translation type="unfinished">Copy Text</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Memory/SavedAddressesView.cpp" line="87"/>
+      <source>Copy all as CSV</source>
+      <translation type="unfinished">Copy all as CSV</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Memory/SavedAddressesView.cpp" line="94"/>
+      <source>Paste from CSV</source>
+      <translation type="unfinished">Paste from CSV</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Memory/SavedAddressesView.cpp" line="97"/>
+      <source>Load from Settings</source>
+      <translation type="unfinished">Load from Settings</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Memory/SavedAddressesView.cpp" line="104"/>
+      <source>Save to Settings</source>
+      <translation type="unfinished">Save to Settings</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/Memory/SavedAddressesView.cpp" line="108"/>
+      <source>Delete</source>
+      <translation type="unfinished">Delete</translation>
+    </message>
+  </context>
+  <context>
     <name>SettingWidgetBinder</name>
     <message>
-      <location filename="../SettingWidgetBinder.h" line="348"/>
-      <location filename="../SettingWidgetBinder.h" line="472"/>
-      <location filename="../SettingWidgetBinder.h" line="600"/>
+      <location filename="../SettingWidgetBinder.h" line="349"/>
+      <location filename="../SettingWidgetBinder.h" line="473"/>
+      <location filename="../SettingWidgetBinder.h" line="601"/>
       <source>Reset</source>
       <translation>Nollaa</translation>
     </message>
     <message>
-      <location filename="../SettingWidgetBinder.h" line="373"/>
-      <location filename="../SettingWidgetBinder.h" line="501"/>
+      <location filename="../SettingWidgetBinder.h" line="374"/>
+      <location filename="../SettingWidgetBinder.h" line="502"/>
       <source>Default: </source>
       <translation>Oletus: </translation>
     </message>
     <message>
-      <location filename="../SettingWidgetBinder.h" line="1173"/>
+      <location filename="../SettingWidgetBinder.h" line="1194"/>
       <source>Confirm Folder</source>
       <translation>Vahvista kansio</translation>
     </message>
     <message>
-      <location filename="../SettingWidgetBinder.h" line="1174"/>
+      <location filename="../SettingWidgetBinder.h" line="1195"/>
       <source>The chosen directory does not currently exist:
 
 %1
@@ -18656,38 +19609,55 @@ Do you want to create this directory?</source>
 Haluatko luoda tämän kansion?</translation>
     </message>
     <message>
-      <location filename="../SettingWidgetBinder.h" line="1196"/>
+      <location filename="../SettingWidgetBinder.h" line="1217"/>
+      <location filename="../SettingWidgetBinder.h" line="1305"/>
+      <location filename="../SettingWidgetBinder.h" line="1314"/>
       <source>Error</source>
       <translation>Virhe</translation>
     </message>
     <message>
-      <location filename="../SettingWidgetBinder.h" line="1197"/>
+      <location filename="../SettingWidgetBinder.h" line="1218"/>
       <source>Folder path cannot be empty.</source>
       <translation>Kansion polku ei voi olla tyhjä.</translation>
     </message>
     <message>
-      <location filename="../SettingWidgetBinder.h" line="1215"/>
+      <location filename="../SettingWidgetBinder.h" line="1236"/>
       <source>Select folder for %1</source>
       <translation>Valitse kansio kohteelle %1</translation>
+    </message>
+    <message>
+      <location filename="../SettingWidgetBinder.h" line="1306"/>
+      <source>File cannot be found.</source>
+      <translation>Tiedostoa ei löytynyt.</translation>
+    </message>
+    <message>
+      <location filename="../SettingWidgetBinder.h" line="1315"/>
+      <source>File path cannot be empty.</source>
+      <translation>Tiedostopolku ei voi olla tyhjä.</translation>
+    </message>
+    <message>
+      <location filename="../SettingWidgetBinder.h" line="1332"/>
+      <source>Select File</source>
+      <translation>Valitse tiedosto</translation>
     </message>
   </context>
   <context>
     <name>SettingsDialog</name>
     <message>
-      <location filename="../SettingWidgetBinder.h" line="120"/>
+      <location filename="../SettingWidgetBinder.h" line="121"/>
       <source>Use Global Setting [Enabled]</source>
       <extracomment>THIS STRING IS SHARED ACROSS MULTIPLE OPTIONS. Be wary about gender/number. Also, ignore Crowdin&apos;s warning regarding [Enabled]: the text must be translated.</extracomment>
       <translation>Käytä yleistä asetusta [käytössä]</translation>
     </message>
     <message>
-      <location filename="../SettingWidgetBinder.h" line="122"/>
+      <location filename="../SettingWidgetBinder.h" line="123"/>
       <source>Use Global Setting [Disabled]</source>
       <extracomment>THIS STRING IS SHARED ACROSS MULTIPLE OPTIONS. Be wary about gender/number. Also, ignore Crowdin&apos;s warning regarding [Disabled]: the text must be translated.</extracomment>
       <translation>Käytä yleistä asetusta [ei käytössä]</translation>
     </message>
     <message>
-      <location filename="../SettingWidgetBinder.h" line="130"/>
-      <location filename="../SettingWidgetBinder.h" line="146"/>
+      <location filename="../SettingWidgetBinder.h" line="131"/>
+      <location filename="../SettingWidgetBinder.h" line="147"/>
       <source>Use Global Setting [%1]</source>
       <translation>Käytä yleistä asetusta [%1]</translation>
     </message>
@@ -19221,40 +20191,58 @@ Rekursiivinen skannaus vie enemmän aikaa, mutta tunnistaa tiedostot alikansiois
   <context>
     <name>StackModel</name>
     <message>
-      <location filename="../Debugger/Models/StackModel.cpp" line="77"/>
+      <location filename="../Debugger/StackModel.cpp" line="82"/>
       <source>ENTRY</source>
       <extracomment>Warning: short space limit. Abbreviate if needed.</extracomment>
       <translation>SYÖTE</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/StackModel.cpp" line="80"/>
+      <location filename="../Debugger/StackModel.cpp" line="85"/>
       <source>LABEL</source>
       <extracomment>Warning: short space limit. Abbreviate if needed.</extracomment>
       <translation>NIMIKE</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/StackModel.cpp" line="83"/>
+      <location filename="../Debugger/StackModel.cpp" line="88"/>
       <source>PC</source>
       <extracomment>Warning: short space limit. Abbreviate if needed. PC = Program Counter (location where the CPU is executing).</extracomment>
       <translation>PC</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/StackModel.cpp" line="86"/>
+      <location filename="../Debugger/StackModel.cpp" line="91"/>
       <source>INSTRUCTION</source>
       <extracomment>Warning: short space limit. Abbreviate if needed.</extracomment>
       <translation>KÄSKY</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/StackModel.cpp" line="89"/>
+      <location filename="../Debugger/StackModel.cpp" line="94"/>
       <source>STACK POINTER</source>
       <extracomment>Warning: short space limit. Abbreviate if needed.</extracomment>
       <translation>PINON OSOITIN</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/StackModel.cpp" line="92"/>
+      <location filename="../Debugger/StackModel.cpp" line="97"/>
       <source>SIZE</source>
       <extracomment>Warning: short space limit. Abbreviate if needed.</extracomment>
       <translation>KOKO</translation>
+    </message>
+  </context>
+  <context>
+    <name>StackView</name>
+    <message>
+      <location filename="../Debugger/StackView.ui" line="14"/>
+      <source>Stack</source>
+      <translation type="unfinished">Stack</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/StackView.cpp" line="42"/>
+      <source>Copy</source>
+      <translation type="unfinished">Copy</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/StackView.cpp" line="53"/>
+      <source>Copy all as CSV</source>
+      <translation type="unfinished">Copy all as CSV</translation>
     </message>
   </context>
   <context>
@@ -19314,289 +20302,307 @@ Rekursiivinen skannaus vie enemmän aikaa, mutta tunnistaa tiedostot alikansiois
     </message>
   </context>
   <context>
-    <name>SymbolTreeWidget</name>
+    <name>SymbolTreeView</name>
     <message>
-      <location filename="../Debugger/SymbolTree/SymbolTreeWidget.ui" line="14"/>
-      <source>Form</source>
-      <translation>Muoto</translation>
+      <location filename="../Debugger/SymbolTree/SymbolTreeView.ui" line="14"/>
+      <source>Symbol Tree</source>
+      <translation type="unfinished">Symbol Tree</translation>
     </message>
     <message>
-      <location filename="../Debugger/SymbolTree/SymbolTreeWidget.ui" line="43"/>
+      <location filename="../Debugger/SymbolTree/SymbolTreeView.ui" line="43"/>
       <source>Refresh</source>
-      <translation>Päivitä</translation>
+      <translation type="unfinished">Refresh</translation>
     </message>
     <message>
-      <location filename="../Debugger/SymbolTree/SymbolTreeWidget.ui" line="50"/>
+      <location filename="../Debugger/SymbolTree/SymbolTreeView.ui" line="50"/>
       <source>Filter</source>
-      <translation>Suodata</translation>
+      <translation type="unfinished">Filter</translation>
     </message>
     <message>
-      <location filename="../Debugger/SymbolTree/SymbolTreeWidget.ui" line="63"/>
+      <location filename="../Debugger/SymbolTree/SymbolTreeView.ui" line="63"/>
       <source>+</source>
-      <translation>+</translation>
+      <translation type="unfinished">+</translation>
     </message>
     <message>
-      <location filename="../Debugger/SymbolTree/SymbolTreeWidget.ui" line="76"/>
+      <location filename="../Debugger/SymbolTree/SymbolTreeView.ui" line="76"/>
       <source>-</source>
-      <translation>-</translation>
+      <translation type="unfinished">-</translation>
     </message>
     <message>
-      <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="283"/>
+      <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="355"/>
       <source>(unknown source file)</source>
-      <translation>(tuntematon lähdetiedosto)</translation>
+      <translation type="unfinished">(unknown source file)</translation>
     </message>
     <message>
-      <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="323"/>
+      <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="394"/>
       <source>(unknown section)</source>
-      <translation>(tuntematon osio)</translation>
+      <translation type="unfinished">(unknown section)</translation>
     </message>
     <message>
-      <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="369"/>
+      <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="439"/>
       <source>(unknown module)</source>
-      <translation>(tuntematon moduuli)</translation>
+      <translation type="unfinished">(unknown module)</translation>
     </message>
     <message>
-      <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="385"/>
+      <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="464"/>
       <source>Copy Name</source>
-      <translation>Kopioi nimi</translation>
+      <translation type="unfinished">Copy Name</translation>
     </message>
     <message>
-      <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="391"/>
+      <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="469"/>
       <source>Copy Mangled Name</source>
-      <translation>Kopioi muunneltu nimi</translation>
+      <translation type="unfinished">Copy Mangled Name</translation>
     </message>
     <message>
-      <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="396"/>
+      <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="473"/>
       <source>Copy Location</source>
-      <translation>Kopioi sijainti</translation>
+      <translation type="unfinished">Copy Location</translation>
     </message>
     <message>
-      <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="402"/>
-      <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="552"/>
+      <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="478"/>
+      <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="624"/>
       <source>Rename Symbol</source>
-      <translation>Nimeä symboli uudelleen</translation>
+      <translation type="unfinished">Rename Symbol</translation>
     </message>
     <message>
-      <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="408"/>
-      <source>Go to in Disassembly</source>
-      <translation>Siirry purkukoodinäkymään</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="412"/>
-      <source>Go to in Memory View</source>
-      <translation>Siirry muistinäkymään</translation>
-    </message>
-    <message>
-      <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="416"/>
+      <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="498"/>
       <source>Show Size Column</source>
-      <translation>Näytä koon sarake</translation>
+      <translation type="unfinished">Show Size Column</translation>
     </message>
     <message>
-      <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="425"/>
+      <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="510"/>
       <source>Group by Module</source>
-      <translation>Ryhmitä moduulin mukaan</translation>
+      <translation type="unfinished">Group by Module</translation>
     </message>
     <message>
-      <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="432"/>
+      <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="518"/>
       <source>Group by Section</source>
-      <translation>Ryhmitä osion mukaan</translation>
+      <translation type="unfinished">Group by Section</translation>
     </message>
     <message>
-      <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="437"/>
+      <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="526"/>
       <source>Group by Source File</source>
-      <translation>Ryhmitä lähdetiedoston mukaan</translation>
+      <translation type="unfinished">Group by Source File</translation>
     </message>
     <message>
-      <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="447"/>
+      <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="539"/>
       <source>Sort by if type is known</source>
-      <translation>Järjestä tunnetut tyypit</translation>
+      <translation type="unfinished">Sort by if type is known</translation>
     </message>
     <message>
-      <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="458"/>
-      <source>Reset children</source>
-      <translation>Nollaa alatasot</translation>
+      <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="552"/>
+      <source>Reset Children</source>
+      <translation type="unfinished">Reset Children</translation>
     </message>
     <message>
-      <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="461"/>
-      <source>Change type temporarily</source>
-      <translation>Muuta tyyppiä väliaikaisesti</translation>
+      <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="556"/>
+      <source>Change Type Temporarily</source>
+      <translation type="unfinished">Change Type Temporarily</translation>
     </message>
     <message>
-      <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="506"/>
+      <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="578"/>
       <source>Confirm Deletion</source>
-      <translation>Vahvista poistaminen</translation>
+      <translation type="unfinished">Confirm Deletion</translation>
     </message>
     <message>
-      <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="506"/>
+      <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="578"/>
       <source>Delete &apos;%1&apos;?</source>
-      <translation>Poista &apos;%1&apos;?</translation>
+      <translation type="unfinished">Delete &apos;%1&apos;?</translation>
     </message>
     <message>
-      <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="553"/>
+      <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="625"/>
       <source>Name:</source>
-      <translation>Nimi:</translation>
+      <translation type="unfinished">Name:</translation>
     </message>
     <message>
-      <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="613"/>
+      <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="667"/>
       <source>Change Type To</source>
-      <translation>Muuta tyypiksi</translation>
+      <translation type="unfinished">Change Type To</translation>
     </message>
     <message>
-      <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="614"/>
+      <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="668"/>
       <source>Type:</source>
-      <translation>Tyyppi:</translation>
+      <translation type="unfinished">Type:</translation>
     </message>
     <message>
-      <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="618"/>
-      <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="629"/>
+      <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="672"/>
+      <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="683"/>
       <source>Cannot Change Type</source>
-      <translation>Tyyppiä ei voida muuttaa</translation>
+      <translation type="unfinished">Cannot Change Type</translation>
     </message>
     <message>
-      <location filename="../Debugger/SymbolTree/SymbolTreeWidgets.cpp" line="618"/>
+      <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="672"/>
       <source>That node cannot have a type.</source>
-      <translation>Tällä solmulla ei voi olla tyyppiä.</translation>
+      <translation type="unfinished">That node cannot have a type.</translation>
+    </message>
+  </context>
+  <context>
+    <name>TextureReplacement</name>
+    <message>
+      <location filename="../../pcsx2/GS/Renderers/HW/GSTextureReplacements.cpp" line="409"/>
+      <source>Texture replacement directory {} will not work on case sensitive filesystems.
+Rename it to {} to remove this warning.</source>
+      <translation type="unfinished">Texture replacement directory {} will not work on case sensitive filesystems.
+Rename it to {} to remove this warning.</translation>
     </message>
   </context>
   <context>
     <name>ThreadModel</name>
     <message>
-      <location filename="../Debugger/Models/ThreadModel.cpp" line="52"/>
-      <location filename="../Debugger/Models/ThreadModel.cpp" line="60"/>
+      <location filename="../Debugger/ThreadModel.cpp" line="57"/>
+      <location filename="../Debugger/ThreadModel.cpp" line="65"/>
       <source>INVALID</source>
       <translation>VIRHEELLINEN</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/ThreadModel.cpp" line="100"/>
+      <location filename="../Debugger/ThreadModel.cpp" line="105"/>
       <source>ID</source>
       <extracomment>Warning: short space limit. Abbreviate if needed.</extracomment>
       <translation>ID</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/ThreadModel.cpp" line="103"/>
+      <location filename="../Debugger/ThreadModel.cpp" line="108"/>
       <source>PC</source>
       <extracomment>Warning: short space limit. Abbreviate if needed. PC = Program Counter (location where the CPU is executing).</extracomment>
       <translation>PC</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/ThreadModel.cpp" line="106"/>
+      <location filename="../Debugger/ThreadModel.cpp" line="111"/>
       <source>ENTRY</source>
       <extracomment>Warning: short space limit. Abbreviate if needed.</extracomment>
       <translation>SYÖTE</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/ThreadModel.cpp" line="109"/>
+      <location filename="../Debugger/ThreadModel.cpp" line="114"/>
       <source>PRIORITY</source>
       <extracomment>Warning: short space limit. Abbreviate if needed.</extracomment>
       <translation>PRIORITEETTI</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/ThreadModel.cpp" line="112"/>
+      <location filename="../Debugger/ThreadModel.cpp" line="117"/>
       <source>STATE</source>
       <extracomment>Warning: short space limit. Abbreviate if needed.</extracomment>
       <translation>TILA</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/ThreadModel.cpp" line="115"/>
+      <location filename="../Debugger/ThreadModel.cpp" line="120"/>
       <source>WAIT TYPE</source>
       <extracomment>Warning: short space limit. Abbreviate if needed.</extracomment>
       <translation>ODOTUSTYYPPI</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/ThreadModel.h" line="53"/>
+      <location filename="../Debugger/ThreadModel.h" line="53"/>
       <source>BAD</source>
       <extracomment>Refers to a Thread State in the Debugger.</extracomment>
       <translation>VIALLINEN</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/ThreadModel.h" line="55"/>
+      <location filename="../Debugger/ThreadModel.h" line="55"/>
       <source>RUN</source>
       <extracomment>Refers to a Thread State in the Debugger.</extracomment>
       <translation>SUORITTAA</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/ThreadModel.h" line="57"/>
+      <location filename="../Debugger/ThreadModel.h" line="57"/>
       <source>READY</source>
       <extracomment>Refers to a Thread State in the Debugger.</extracomment>
       <translation>VALMIS</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/ThreadModel.h" line="59"/>
+      <location filename="../Debugger/ThreadModel.h" line="59"/>
       <source>WAIT</source>
       <extracomment>Refers to a Thread State in the Debugger.</extracomment>
       <translation>ODOTTAA</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/ThreadModel.h" line="61"/>
+      <location filename="../Debugger/ThreadModel.h" line="61"/>
       <source>SUSPEND</source>
       <extracomment>Refers to a Thread State in the Debugger.</extracomment>
       <translation>KESKEYTETTY</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/ThreadModel.h" line="63"/>
+      <location filename="../Debugger/ThreadModel.h" line="63"/>
       <source>WAIT SUSPEND</source>
       <extracomment>Refers to a Thread State in the Debugger.</extracomment>
       <translation>ODOTTAA KESKEYTYSTÄ</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/ThreadModel.h" line="65"/>
+      <location filename="../Debugger/ThreadModel.h" line="65"/>
       <source>DORMANT</source>
       <extracomment>Refers to a Thread State in the Debugger.</extracomment>
       <translation>TOIMETON</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/ThreadModel.h" line="71"/>
+      <location filename="../Debugger/ThreadModel.h" line="71"/>
       <source>NONE</source>
       <extracomment>Refers to a Thread Wait State in the Debugger.</extracomment>
       <translation>EI MITÄÄN</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/ThreadModel.h" line="73"/>
+      <location filename="../Debugger/ThreadModel.h" line="73"/>
       <source>WAKEUP REQUEST</source>
       <extracomment>Refers to a Thread Wait State in the Debugger.</extracomment>
       <translation>HERÄTYSPYYNTÖ</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/ThreadModel.h" line="75"/>
+      <location filename="../Debugger/ThreadModel.h" line="75"/>
       <source>SEMAPHORE</source>
       <extracomment>Refers to a Thread Wait State in the Debugger.</extracomment>
       <translation>SEMAFORI</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/ThreadModel.h" line="77"/>
+      <location filename="../Debugger/ThreadModel.h" line="77"/>
       <source>SLEEP</source>
       <extracomment>Refers to a Thread Wait State in the Debugger.</extracomment>
       <translation>LEPÄÄ</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/ThreadModel.h" line="79"/>
+      <location filename="../Debugger/ThreadModel.h" line="79"/>
       <source>DELAY</source>
       <extracomment>Refers to a Thread Wait State in the Debugger.</extracomment>
       <translation>VIIVÄSTYNYT</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/ThreadModel.h" line="81"/>
+      <location filename="../Debugger/ThreadModel.h" line="81"/>
       <source>EVENTFLAG</source>
       <extracomment>Refers to a Thread Wait State in the Debugger.</extracomment>
       <translation>TAPAHTUMAMERKINTÄ</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/ThreadModel.h" line="83"/>
+      <location filename="../Debugger/ThreadModel.h" line="83"/>
       <source>MBOX</source>
       <extracomment>Refers to a Thread Wait State in the Debugger.</extracomment>
       <translation>MBOX</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/ThreadModel.h" line="85"/>
+      <location filename="../Debugger/ThreadModel.h" line="85"/>
       <source>VPOOL</source>
       <extracomment>Refers to a Thread Wait State in the Debugger.</extracomment>
       <translation>VPOOL</translation>
     </message>
     <message>
-      <location filename="../Debugger/Models/ThreadModel.h" line="87"/>
+      <location filename="../Debugger/ThreadModel.h" line="87"/>
       <source>FIXPOOL</source>
       <extracomment>Refers to a Thread Wait State in the Debugger.</extracomment>
       <translation>FIXPOOL</translation>
+    </message>
+  </context>
+  <context>
+    <name>ThreadView</name>
+    <message>
+      <location filename="../Debugger/ThreadView.ui" line="14"/>
+      <source>Threads</source>
+      <translation type="unfinished">Threads</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/ThreadView.cpp" line="47"/>
+      <source>Copy</source>
+      <translation type="unfinished">Copy</translation>
+    </message>
+    <message>
+      <location filename="../Debugger/ThreadView.cpp" line="58"/>
+      <source>Copy all as CSV</source>
+      <translation type="unfinished">Copy all as CSV</translation>
     </message>
   </context>
   <context>
@@ -20725,8 +21731,10 @@ Rekursiivinen skannaus vie enemmän aikaa, mutta tunnistaa tiedostot alikansiois
     </message>
     <message>
       <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="467"/>
-      <source>Apply a multiplier to the turntable</source>
-      <translation>Aseta kerroin levylautaseen</translation>
+      <source>Apply a sensitivity multiplier to turntable rotation.
+Xbox 360 turntables require a 256x multiplier, most other turntables can use the default 1x multiplier.</source>
+      <translation>Asettaa herkkyyskertoimen levylautasen pyöritykseen.
+Xbox 360 -levylautaset vaativat 256x-kertoimen, mutta useimmat muut levylautaset toimivat oletuskertoimella 1x.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="445"/>
@@ -21808,42 +22816,37 @@ Rekursiivinen skannaus vie enemmän aikaa, mutta tunnistaa tiedostot alikansiois
   <context>
     <name>VMManager</name>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1856"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1860"/>
       <source>Failed to back up old save state {}.</source>
       <translation>Vanhan tilatallennuksen {} varmuuskopiointi epäonnistui.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1841"/>
-      <source>Failed to save save state: {}.</source>
-      <translation>Tilatallennuksen tallentaminen epäonnistui: {}.</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1026"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1028"/>
       <source>PS2 BIOS ({})</source>
       <translation>PS2 BIOS ({})</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1087"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1089"/>
       <source>Unknown Game</source>
       <translation>Tuntematon peli</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1250"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1252"/>
       <source>CDVD precaching was cancelled.</source>
       <translation>CDVD:n vienti esivälimuistiin peruutettiin.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1256"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1258"/>
       <source>CDVD precaching failed: {}</source>
       <translation>CDVD:n vienti esivälimuistiin epäonnistui: {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1349"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1351"/>
       <source>Error</source>
       <translation>Virhe</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1350"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1352"/>
       <source>PCSX2 requires a PS2 BIOS in order to run.
 
 For legal reasons, you *must* obtain a BIOS from an actual PS2 unit that you own (borrowing doesn&apos;t count).
@@ -21860,272 +22863,295 @@ Poimittuasi BIOS-tiedoston, se tulee sijoittaa bios-kansioon tietohakemistossa (
 Tutustu usein kysyttyihin kysymyksiin (FAQ) ja oppaisiin lisäohjeita varten.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1441"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1443"/>
       <source>Resuming state</source>
       <translation>Tilan jatkaminen</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1446"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1448"/>
       <source>Boot and Debug</source>
       <translation>Käynnistys ja virheenjäljitys</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1814"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1818"/>
       <source>Failed to load save state</source>
       <translation>Tilatallennuksen lataaminen epäonnistui</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1889"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1893"/>
       <source>State saved to slot {}.</source>
       <translation>Tila tallennettu paikkaan {}.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1896"/>
-      <source>Failed to save save state to slot {}.</source>
-      <translation>Tilan tallennus paikkaan {} epäonnistui.</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1964"/>
-      <location filename="../../pcsx2/VMManager.cpp" line="2001"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1968"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="2005"/>
       <source>Loading state</source>
       <translation>Tilan lataaminen</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1975"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1979"/>
       <source>Failed to load state (Memory card is busy)</source>
       <translation>Tilan lataaminen epäonnistui (muistikortti on varattu)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="1994"/>
-      <source>There is no save state in slot {}.</source>
-      <translation>Paikassa {} ei ole tilatallennusta.</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2012"/>
-      <source>Failed to load state from slot {} (Memory card is busy)</source>
-      <translation>Tilan lataaminen paikasta {} epäonnistui (muistikortti on varattu)</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2018"/>
-      <source>Loading state from slot {}...</source>
-      <translation>Ladataan tilaa paikasta {}...</translation>
-    </message>
-    <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2027"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="2031"/>
       <source>Failed to save state (Memory card is busy)</source>
       <translation>Tilan tallennus epäonnistui (muistikortti on varattu)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2044"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="2048"/>
       <source>Failed to save state to slot {} (Memory card is busy)</source>
       <translation>Tilan tallennus paikkaan {} epäonnistui (muistikortti on varattu)</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2051"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="2055"/>
       <source>Saving state to slot {}...</source>
       <translation>Tallennetaan tilaa paikkaan {}...</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2217"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="2221"/>
       <source>Frame advancing</source>
       <translation>Kuvalla eteneminen</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2245"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="2249"/>
       <source>Disc removed.</source>
       <translation>Levy poistettu asemasta.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2251"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="2255"/>
       <source>Disc changed to &apos;{}&apos;.</source>
       <translation>Levyksi vaihdettiin &apos;{}&apos;.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2260"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="2264"/>
       <source>Failed to open new disc image &apos;{}&apos;. Reverting to old image.
 Error was: {}</source>
       <translation>Levyn näköistiedoston &apos;{}&apos; avaus epäonnistui. Palautetaan vanha näköistiedosto.
 Virhe oli: {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="2269"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="2273"/>
       <source>Failed to switch back to old disc image. Removing disc.
 Error was: {}</source>
       <translation>Vanhan levyn näköistiedoston palauttamien ei onnistunut. Poistetaan levyä.
 Virhe oli: {}</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3054"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3075"/>
       <source>Cheats have been disabled due to achievements hardcore mode.</source>
       <translation>Huijaukset on poistettu käytöstä saavutusten hardcore-tilassa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3107"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3128"/>
       <source>Fast CDVD is enabled, this may break games.</source>
       <translation>Nopea CDVD on käytössä, tämä voi rikkoa pelejä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3111"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3132"/>
       <source>Cycle rate/skip is not at default, this may crash or make games run too slow.</source>
       <translation>Syklitaajuus/-ohitus ei ole oletusarvossa, tämä saattaa kaataa pelejä tai hidastaa suorittamista.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3121"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3142"/>
       <source>Upscale multiplier is below native, this will break rendering.</source>
       <translation>Skaalauskerroin on alle alkuperäisen arvon, tämä rikkoo renderöintiä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3161"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3182"/>
       <source>Mipmapping is disabled. This may break rendering in some games.</source>
       <translation>Mipmappaus on pois käytöstä. Tämä voi rikkoa renderöinnin joissakin peleissä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3170"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3187"/>
+      <source>Debug device is enabled. This will massively reduce performance.</source>
+      <translation>Virheenjäljityslaite on käytössä. Tämä vähentää suorituskykyä merkittävästi.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/VMManager.cpp" line="3196"/>
       <source>Renderer is not set to Automatic. This may cause performance problems and graphical issues.</source>
       <translation>Renderöijä ei ole asetettu arvoon Automaattinen. Tämä voi aiheuttaa ongelmia suorituskyvyssä ja grafiikassa.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3176"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3202"/>
       <source>Texture filtering is not set to Bilinear (PS2). This will break rendering in some games.</source>
       <translation>Tekstuurisuodatus ei ole asetettu arvoon Bilineaarinen (PS2). Tämä rikkoo renderöintiä joissakin peleissä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3639"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3665"/>
       <source>No Game Running</source>
       <translation>Ei peliä käynnissä</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3126"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3147"/>
       <source>Trilinear filtering is not set to automatic. This may break rendering in some games.</source>
       <translation>Trilineaarinen suodatus ei ole asetettu automaattiseksi. Tämä voi rikkoa renderöinnin joissakin peleissä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3131"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="1845"/>
+      <source>Failed to save state: {}.</source>
+      <translation>Tilan tallentaminen epäonnistui: {}.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/VMManager.cpp" line="1900"/>
+      <source>Failed to save state to slot {}.</source>
+      <translation>Tilan tallentaminen paikkaan {} epäonnistui.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/VMManager.cpp" line="1998"/>
+      <source>There is no saved {} in slot {}.</source>
+      <translation>Paikassa {1} ei ole tallennettua {0}.</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/VMManager.cpp" line="1998"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="2016"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="2022"/>
+      <source>backup state</source>
+      <translation>varmuuskopiotilaa</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/VMManager.cpp" line="2016"/>
+      <source>Failed to load {} from slot {} (Memory card is busy)</source>
+      <translation>Virhe ladattaessa {0} paikasta {1} (muistikortti on varattu)</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/VMManager.cpp" line="2016"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="2022"/>
+      <source>state</source>
+      <translation>tilaa</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/VMManager.cpp" line="2022"/>
+      <source>Loading {} from slot {}...</source>
+      <translation>Ladataan {0} paikasta {1}...</translation>
+    </message>
+    <message>
+      <location filename="../../pcsx2/VMManager.cpp" line="3152"/>
       <source>Blending Accuracy is below Basic, this may break effects in some games.</source>
       <translation>Sekoituksen tarkkuus on alle Perus-arvon, tämä voi rikkoa tehosteita joissakin peleissä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3136"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3157"/>
       <source>Hardware Download Mode is not set to Accurate, this may break rendering in some games.</source>
       <translation>Laitteistolataustila ei ole asetettu arvoon Tarkka, tämä voi rikkoa renderöinnin joissakin peleissä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3182"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3208"/>
       <source>EE FPU Round Mode is not set to default, this may break some games.</source>
       <translation>EE FPU-pyöristystila ei ole oletusarvossa, tämä voi rikkoa joitakin pelejä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3188"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3214"/>
       <source>EE FPU Clamp Mode is not set to default, this may break some games.</source>
       <translation>EE FPU-rajoitustila ei ole oletusarvossa, tämä voi rikkoa joitakin pelejä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3193"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3219"/>
       <source>VU0 Round Mode is not set to default, this may break some games.</source>
       <translation>VU0-pyöristystila ei ole oletusarvossa, tämä voi rikkoa joitakin pelejä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3198"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3224"/>
       <source>VU1 Round Mode is not set to default, this may break some games.</source>
       <translation>VU1-pyöristystila ei ole oletusarvossa, tämä voi rikkoa joitakin pelejä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3205"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3231"/>
       <source>VU Clamp Mode is not set to default, this may break some games.</source>
       <translation>VU-rajoitustila ei ole oletusarvossa, tämä voi rikkoa joitakin pelejä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3210"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3236"/>
       <source>128MB RAM is enabled. Compatibility with some games may be affected.</source>
       <translation>128 Mt RAM-muisti on käytössä. Tämä saattaa vaikuttaa joidenkin pelien yhteensopivuuteen.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3215"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3241"/>
       <source>Game Fixes are not enabled. Compatibility with some games may be affected.</source>
       <translation>Pelikorjaukset eivät ole käytössä. Tämä saattaa vaikuttaa joidenkin pelien yhteensopivuuteen.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3220"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3246"/>
       <source>Compatibility Patches are not enabled. Compatibility with some games may be affected.</source>
       <translation>Yhteensopivuuspaikkaukset eivät ole käytössä. Tämä saattaa vaikuttaa joidenkin pelien yhteensopivuuteen.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3224"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3250"/>
       <source>Frame rate for NTSC is not default. This may break some games.</source>
       <translation>NTSC-kuvataajuus ei ole oletusarvossa. Tämä voi rikkoa joitakin pelejä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3226"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3252"/>
       <source>Frame rate for PAL is not default. This may break some games.</source>
       <translation>PAL-kuvataajuus ei ole oletusarvossa. Tämä voi rikkoa joitakin pelejä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3245"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3271"/>
       <source>EE Recompiler is not enabled, this will significantly reduce performance.</source>
       <translation>EE-uudelleenkääntäjä ei ole käytössä, tämä heikentää suorituskykyä merkittävästi.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3250"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3276"/>
       <source>VU0 Recompiler is not enabled, this will significantly reduce performance.</source>
       <translation>VU0-uudelleenkääntäjä ei ole käytössä, tämä heikentää suorituskykyä merkittävästi.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3255"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3281"/>
       <source>VU1 Recompiler is not enabled, this will significantly reduce performance.</source>
       <translation>VU1-uudelleenkääntäjä ei ole käytössä, tämä heikentää suorituskykyä merkittävästi.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3260"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3286"/>
       <source>IOP Recompiler is not enabled, this will significantly reduce performance.</source>
       <translation>IOP-uudelleenkääntäjä ei ole käytössä, tämä heikentää suorituskykyä merkittävästi.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3265"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3291"/>
       <source>EE Cache is enabled, this will significantly reduce performance.</source>
       <translation>EE-välimuisti on käytössä, tämä heikentää suorituskykyä merkittävästi.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3270"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3296"/>
       <source>EE Wait Loop Detection is not enabled, this may reduce performance.</source>
       <translation>EE-odotussilmukoiden tunnistus ei ole käytössä, tämä saattaa heikentää suorituskykyä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3275"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3301"/>
       <source>INTC Spin Detection is not enabled, this may reduce performance.</source>
       <translation>INTC:n pyörityksen tunnistus ei ole käytössä, tämä saattaa heikentää suorituskykyä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3278"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3304"/>
       <source>Fastmem is not enabled, this will reduce performance.</source>
       <translation>Nopea muistin käyttö ei ole käytössä, tämä heikentää suorituskykyä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3282"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3308"/>
       <source>Instant VU1 is disabled, this may reduce performance.</source>
       <translation>Välitön VU1 on poistettu käytöstä, tämä saattaa heikentää suorituskykyä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3287"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3313"/>
       <source>mVU Flag Hack is not enabled, this may reduce performance.</source>
       <translation>mVU-korjaus ei ole käytössä, tämä saattaa heikentää suorituskykyä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3141"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3162"/>
       <source>GPU Palette Conversion is enabled, this may reduce performance.</source>
       <translation>Grafiikkasuorittimen paletin muunnos on käytössä, tämä saattaa heikentää suorituskykyä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3146"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3167"/>
       <source>Texture Preloading is not Full, this may reduce performance.</source>
       <translation>Tekstuurien esilataus ei ole arvossa Täysi, tämä saattaa heikentää suorituskykyä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3151"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3172"/>
       <source>Estimate texture region is enabled, this may reduce performance.</source>
       <translation>Tekstuurialueen arvionti on käytössä, tämä saattaa heikentää suorituskykyä.</translation>
     </message>
     <message>
-      <location filename="../../pcsx2/VMManager.cpp" line="3156"/>
+      <location filename="../../pcsx2/VMManager.cpp" line="3177"/>
       <source>Texture dumping is enabled, this will continually dump textures to disk.</source>
       <translation>Tekstuurivedostus on käytössä, tämä vedostaa tekstuureja levylle jatkuvasti.</translation>
     </message>
