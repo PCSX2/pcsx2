@@ -15,7 +15,7 @@
 #include "common/StringUtil.h"
 
 #include "imgui.h"
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 
 #include <bit>
 #include <fstream>
@@ -510,7 +510,7 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 
 	if (m_feature_level < D3D_FEATURE_LEVEL_11_0)
 	{
-		Host::AddIconOSDMessage("d3d11_feature_level_warning", ICON_FA_EXCLAMATION_TRIANGLE,
+		Host::AddIconOSDMessage("d3d11_feature_level_warning", ICON_FA_TRIANGLE_EXCLAMATION,
 			TRANSLATE_SV("GS", "The Direct3D11 renderer is running at feature level 10.0. This is an UNSUPPORTED configuration.\n"
 							   "Do not request support, please upgrade your hardware/drivers first."),
 			Host::OSD_WARNING_DURATION);
@@ -2034,6 +2034,8 @@ void GSDevice11::RenderImGui()
 	const ImDrawData* draw_data = ImGui::GetDrawData();
 	if (draw_data->CmdListsCount == 0)
 		return;
+
+	UpdateImGuiTextures();
 
 	const float L = 0.0f;
 	const float R = static_cast<float>(m_window_info.surface_width);

@@ -633,7 +633,7 @@ bool GSHwHack::GSC_PolyphonyDigitalGames(GSRendererHW& r, int& skip)
 		// get away with just hardcoding it.
 		const GSVector2i resolution = r.PCRTCDisplays.GetResolution();
 		const GSVector2i size = GSVector2i(resolution.x, resolution.y / 2);
-		const u32 page_offset = ((size.y + 31) / 32) * src->m_TEX0.TBW * BLOCKS_PER_PAGE;
+		const u32 page_offset = ((size.y + 31) / 32) * src->m_TEX0.TBW * GS_BLOCKS_PER_PAGE;
 		constexpr u32 base = 0;
 
 		GL_PUSH("GSC_PolyphonyDigitalGames(): HLE Gran Turismo A channel shuffle");
