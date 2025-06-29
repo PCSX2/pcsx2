@@ -25,12 +25,24 @@ See also:
   </Type>
 
   <Type Name="c4::yml::NodeType">
-    <DisplayString>{type}</DisplayString>
+    <DisplayString Condition="((type &amp; c4::yml::KEY  ) == c4::yml::KEY) &amp;&amp; ((type &amp; c4::yml::VAL) == c4::yml::VAL)">[KEYVAL]</DisplayString>
+    <DisplayString Condition="((type &amp; c4::yml::KEY  ) == c4::yml::KEY) &amp;&amp; ((type &amp; c4::yml::SEQ) == c4::yml::SEQ)">[KEYSEQ]</DisplayString>
+    <DisplayString Condition="((type &amp; c4::yml::KEY  ) == c4::yml::KEY) &amp;&amp; ((type &amp; c4::yml::MAP) == c4::yml::MAP)">[KEYMAP]</DisplayString>
+    <DisplayString Condition="((type &amp; c4::yml::DOC  ) == c4::yml::DOC) &amp;&amp; ((type &amp; c4::yml::VAL) == c4::yml::VAL)">[DOCVAL]</DisplayString>
+    <DisplayString Condition="((type &amp; c4::yml::DOC  ) == c4::yml::DOC) &amp;&amp; ((type &amp; c4::yml::SEQ) == c4::yml::SEQ)">[DOCSEQ]</DisplayString>
+    <DisplayString Condition="((type &amp; c4::yml::DOC  ) == c4::yml::DOC) &amp;&amp; ((type &amp; c4::yml::MAP) == c4::yml::MAP)">[DOCMAP]</DisplayString>
+    <DisplayString Condition="(type &amp; c4::yml::VAL   ) == c4::yml::VAL"   >[VAL]</DisplayString>
+    <DisplayString Condition="(type &amp; c4::yml::KEY   ) == c4::yml::KEY"   >[KEY]</DisplayString>
+    <DisplayString Condition="(type &amp; c4::yml::SEQ   ) == c4::yml::SEQ"   >[SEQ]</DisplayString>
+    <DisplayString Condition="(type &amp; c4::yml::MAP   ) == c4::yml::MAP"   >[MAP]</DisplayString>
+    <DisplayString Condition="(type &amp; c4::yml::DOC   ) == c4::yml::DOC"   >[DOC]</DisplayString>
+    <DisplayString Condition="(type &amp; c4::yml::STREAM) == c4::yml::STREAM">[STREAM]</DisplayString>
+    <DisplayString Condition="(type &amp; c4::yml::NOTYPE) == c4::yml::NOTYPE">[NOTYPE]</DisplayString>
     <Expand>
-      <Synthetic Name="[enabled bits]">
+      <Synthetic Name="[type bits]">
         <Expand>
-          <Item Name="[0]" Condition="(type &amp; c4::yml::VAL) != 0">c4::yml::VAL</Item>
-          <Item Name="[1]" Condition="(type &amp; c4::yml::KEY) != 0">c4::yml::KEY</Item>
+          <Item Name="[0]" Condition="(type &amp; c4::yml::KEY) != 0">c4::yml::KEY</Item>
+          <Item Name="[1]" Condition="(type &amp; c4::yml::VAL) != 0">c4::yml::VAL</Item>
           <Item Name="[2]" Condition="(type &amp; c4::yml::MAP) != 0">c4::yml::MAP</Item>
           <Item Name="[3]" Condition="(type &amp; c4::yml::SEQ) != 0">c4::yml::SEQ</Item>
           <Item Name="[4]" Condition="(type &amp; c4::yml::DOC) != 0">c4::yml::DOC</Item>
@@ -41,8 +53,25 @@ See also:
           <Item Name="[9]" Condition="(type &amp; c4::yml::VALANCH) != 0">c4::yml::VALANCH</Item>
           <Item Name="[10]" Condition="(type &amp; c4::yml::KEYTAG) != 0">c4::yml::KEYTAG</Item>
           <Item Name="[11]" Condition="(type &amp; c4::yml::VALTAG) != 0">c4::yml::VALTAG</Item>
-          <Item Name="[12]" Condition="(type &amp; c4::yml::VALQUO) != 0">c4::yml::VALQUO</Item>
-          <Item Name="[13]" Condition="(type &amp; c4::yml::KEYQUO) != 0">c4::yml::KEYQUO</Item>
+        </Expand>
+      </Synthetic>
+      <Synthetic Name="[style bits]">
+        <Expand>
+          <Item Name="[0]" Condition="(type &amp; c4::yml::_WIP_KEY_UNFILT) != 0">c4::yml::_WIP_KEY_UNFILT</Item>
+          <Item Name="[1]" Condition="(type &amp; c4::yml::_WIP_VAL_UNFILT) != 0">c4::yml::_WIP_VAL_UNFILT</Item>
+          <Item Name="[2]" Condition="(type &amp; c4::yml::_WIP_STYLE_FLOW_SL) != 0">c4::yml::_WIP_STYLE_FLOW</Item>
+          <Item Name="[3]" Condition="(type &amp; c4::yml::_WIP_STYLE_FLOW_ML) != 0">c4::yml::_WIP_STYLE_FLOW</Item>
+          <Item Name="[4]" Condition="(type &amp; c4::yml::_WIP_STYLE_BLOCK) != 0">c4::yml::_WIP_STYLE_BLOCK</Item>
+          <Item Name="[5]" Condition="(type &amp; c4::yml::_WIP_KEY_LITERAL) != 0">c4::yml::_WIP_KEY_LITERAL</Item>
+          <Item Name="[6]" Condition="(type &amp; c4::yml::_WIP_VAL_LITERAL) != 0">c4::yml::_WIP_VAL_LITERAL</Item>
+          <Item Name="[7]" Condition="(type &amp; c4::yml::_WIP_KEY_FOLDED) != 0">c4::yml::_WIP_KEY_FOLDED</Item>
+          <Item Name="[8]" Condition="(type &amp; c4::yml::_WIP_VAL_FOLDED) != 0">c4::yml::_WIP_VAL_FOLDED</Item>
+          <Item Name="[9]" Condition="(type &amp; c4::yml::_WIP_KEY_SQUO) != 0">c4::yml::_WIP_KEY_SQUO</Item>
+          <Item Name="[10]" Condition="(type &amp; c4::yml::_WIP_VAL_SQUO) != 0">c4::yml::_WIP_VAL_SQUO</Item>
+          <Item Name="[11]" Condition="(type &amp; c4::yml::_WIP_KEY_DQUO) != 0">c4::yml::_WIP_KEY_DQUO</Item>
+          <Item Name="[12]" Condition="(type &amp; c4::yml::_WIP_VAL_DQUO) != 0">c4::yml::_WIP_VAL_DQUO</Item>
+          <Item Name="[13]" Condition="(type &amp; c4::yml::_WIP_KEY_PLAIN) != 0">c4::yml::_WIP_KEY_PLAIN</Item>
+          <Item Name="[14]" Condition="(type &amp; c4::yml::_WIP_VAL_PLAIN) != 0">c4::yml::_WIP_VAL_PLAIN</Item>
         </Expand>
       </Synthetic>
     </Expand>
@@ -211,6 +240,62 @@ See also:
             <Size>m_size</Size>
             <ValuePointer>m_stack</ValuePointer>
           </ArrayItems>
+        </Expand>
+      </Synthetic>
+    </Expand>
+  </Type>
+
+  <Type Name="c4::yml::detail::FilterProcessorSrcDst">
+    <DisplayString>src={src.str,[rpos]} dst={dst.str,[wpos]}</DisplayString>
+    <Expand>
+      <Item Name="[src]">src</Item>
+      <Item Name="[dst]">dst</Item>
+      <Item Name="[rpos]">rpos</Item>
+      <Item Name="[wpos]">wpos</Item>
+      <Synthetic Name="[read]">
+        <StringView>src.str,[rpos]</StringView>
+        <Expand>
+          <ArrayItems>
+            <Size>rpos</Size>
+            <ValuePointer>src.str</ValuePointer>
+          </ArrayItems>
+        </Expand>
+      </Synthetic>
+    </Expand>
+  </Type>
+
+  <Type Name="c4::yml::detail::FilterProcessorInplace">
+    <DisplayString>src={src.str,[rpos]} dst={src.str,[wpos]}</DisplayString>
+    <Expand>
+      <Item Name="[rpos]">rpos</Item>
+      <Item Name="[wpos]">wpos</Item>
+      <Item Name="[wcap]">wcap</Item>
+      <Synthetic Name="[buf]">
+        <StringView>src.str,[wcap]</StringView>
+        <Expand>
+          <ArrayItems>
+            <Size>wcap</Size>
+            <ValuePointer>src.str</ValuePointer>
+          </ArrayItems>
+        </Expand>
+      </Synthetic>
+      <Item Name="[src]">src</Item>
+      <Synthetic Name="[to be read]">
+        <StringView>src.str+rpos,[src.len-rpos]</StringView>
+        <Expand>
+          <ArrayItems><Size>src.len-rpos</Size><ValuePointer>src.str+rpos</ValuePointer></ArrayItems>
+        </Expand>
+      </Synthetic>
+      <Synthetic Name="[read]">
+        <StringView>src.str,[rpos]</StringView>
+        <Expand>
+          <ArrayItems><Size>rpos</Size><ValuePointer>src.str</ValuePointer></ArrayItems>
+        </Expand>
+      </Synthetic>
+      <Synthetic Name="[written]">
+        <StringView>src.str,[wpos]</StringView>
+        <Expand>
+          <ArrayItems><Size>wpos</Size><ValuePointer>src.str</ValuePointer></ArrayItems>
         </Expand>
       </Synthetic>
     </Expand>

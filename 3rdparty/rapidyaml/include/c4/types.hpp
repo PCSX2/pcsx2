@@ -17,6 +17,8 @@
 
 /** @defgroup types Type utilities */
 
+// NOLINTBEGIN(bugprone-macro-parentheses)
+
 namespace c4 {
 
 /** @defgroup intrinsic_types Intrinsic types
@@ -114,17 +116,17 @@ using fastcref = typename std::conditional<c4::cref_uses_val<T>::value, T, T con
 //--------------------------------------------------
 
 /** Just what its name says. Useful sometimes as a default empty policy class. */
-struct EmptyStruct
+struct EmptyStruct // NOLINT
 {
-    template<class... T> EmptyStruct(T && ...){}
+    template<class... T> EmptyStruct(T && ...){} // NOLINT
 };
 
 /** Just what its name says. Useful sometimes as a default policy class to
  * be inherited from. */
-struct EmptyStructVirtual
+struct EmptyStructVirtual // NOLINT
 {
     virtual ~EmptyStructVirtual() = default;
-    template<class... T> EmptyStructVirtual(T && ...){}
+    template<class... T> EmptyStructVirtual(T && ...){} // NOLINT
 };
 
 
@@ -159,7 +161,7 @@ struct Padded : public T
     using T::T;
     using T::operator=;
     Padded(T const& val) : T(val) {}
-    Padded(T && val) : T(val) {}
+    Padded(T && val) : T(std::forward<T>(val)) {} // NOLINT
     char ___c4padspace___[BytesToPadAtEnd];
 };
 #pragma pack(pop)
@@ -170,7 +172,7 @@ struct Padded<T, 0> : public T
     using T::T;
     using T::operator=;
     Padded(T const& val) : T(val) {}
-    Padded(T && val) : T(val) {}
+    Padded(T && val) : T(std::forward<T>(val)) {} // NOLINT
 };
 
 /** make T have a size which is at least Min bytes */
@@ -499,5 +501,7 @@ using index_sequence_for = make_index_sequence<sizeof...(_Tp)>;
 
 
 } // namespace c4
+
+// NOLINTEND(bugprone-macro-parentheses)
 
 #endif /* _C4_TYPES_HPP_ */

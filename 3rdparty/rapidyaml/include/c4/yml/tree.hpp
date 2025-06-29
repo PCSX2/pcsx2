@@ -5,11 +5,22 @@
 
 #include "c4/error.hpp"
 #include "c4/types.hpp"
+#ifndef _C4_YML_FWD_HPP_
+#include "c4/yml/fwd.hpp"
+#endif
 #ifndef _C4_YML_COMMON_HPP_
 #include "c4/yml/common.hpp"
 #endif
-
+#ifndef C4_YML_NODE_TYPE_HPP_
+#include "c4/yml/node_type.hpp"
+#endif
+#ifndef _C4_YML_TAG_HPP_
+#include "c4/yml/tag.hpp"
+#endif
+#ifndef _C4_CHARCONV_HPP_
 #include <c4/charconv.hpp>
+#endif
+
 #include <cmath>
 #include <limits>
 
@@ -19,301 +30,23 @@ C4_SUPPRESS_WARNING_MSVC(4251) // needs to have dll-interface to be used by clie
 C4_SUPPRESS_WARNING_MSVC(4296) // expression is always 'boolean_value'
 C4_SUPPRESS_WARNING_GCC_CLANG_PUSH
 C4_SUPPRESS_WARNING_GCC_CLANG("-Wold-style-cast")
+C4_SUPPRESS_WARNING_GCC("-Wuseless-cast")
 C4_SUPPRESS_WARNING_GCC("-Wtype-limits")
 
 
 namespace c4 {
 namespace yml {
 
-struct NodeScalar;
-struct NodeInit;
-struct NodeData;
-class NodeRef;
-class ConstNodeRef;
-class Tree;
+template<class T> inline auto read(Tree const* C4_RESTRICT tree, id_type id, T *v) -> typename std::enable_if<!std::is_arithmetic<T>::value, bool>::type;
+template<class T> inline auto read(Tree const* C4_RESTRICT tree, id_type id, T *v) -> typename std::enable_if<std::is_arithmetic<T>::value && !std::is_floating_point<T>::value, bool>::type;
+template<class T> inline auto read(Tree const* C4_RESTRICT tree, id_type id, T *v) -> typename std::enable_if<std::is_floating_point<T>::value, bool>::type;
 
+template<class T> inline auto readkey(Tree const* C4_RESTRICT tree, id_type id, T *v) -> typename std::enable_if<!std::is_arithmetic<T>::value, bool>::type;
+template<class T> inline auto readkey(Tree const* C4_RESTRICT tree, id_type id, T *v) -> typename std::enable_if<std::is_arithmetic<T>::value && !std::is_floating_point<T>::value, bool>::type;
+template<class T> inline auto readkey(Tree const* C4_RESTRICT tree, id_type id, T *v) -> typename std::enable_if<std::is_floating_point<T>::value, bool>::type;
 
-/** encode a floating point value to a string. */
-template<class T>
-size_t to_chars_float(substr buf, T val)
-{
-    C4_SUPPRESS_WARNING_GCC_CLANG_WITH_PUSH("-Wfloat-equal");
-    static_assert(std::is_floating_point<T>::value, "must be floating point");
-    if(C4_UNLIKELY(std::isnan(val)))
-        return to_chars(buf, csubstr(".nan"));
-    else if(C4_UNLIKELY(val == std::numeric_limits<T>::infinity()))
-        return to_chars(buf, csubstr(".inf"));
-    else if(C4_UNLIKELY(val == -std::numeric_limits<T>::infinity()))
-        return to_chars(buf, csubstr("-.inf"));
-    return to_chars(buf, val);
-    C4_SUPPRESS_WARNING_GCC_CLANG_POP
-}
-
-
-/** decode a floating point from string. Accepts special values: .nan,
- * .inf, -.inf */
-template<class T>
-bool from_chars_float(csubstr buf, T *C4_RESTRICT val)
-{
-    static_assert(std::is_floating_point<T>::value, "must be floating point");
-    if(C4_LIKELY(from_chars(buf, val)))
-    {
-        return true;
-    }
-    else if(C4_UNLIKELY(buf == ".nan" || buf == ".NaN" || buf == ".NAN"))
-    {
-        *val = std::numeric_limits<T>::quiet_NaN();
-        return true;
-    }
-    else if(C4_UNLIKELY(buf == ".inf" || buf == ".Inf" || buf == ".INF"))
-    {
-        *val = std::numeric_limits<T>::infinity();
-        return true;
-    }
-    else if(C4_UNLIKELY(buf == "-.inf" || buf == "-.Inf" || buf == "-.INF"))
-    {
-        *val = -std::numeric_limits<T>::infinity();
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
-
-
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-
-
-/** @addtogroup doc_tag_utils
- *
- * @{
- */
-
-/** the integral type necessary to cover all the bits marking node tags */
-using tag_bits = uint16_t;
-
-/** a bit mask for marking tags for types */
-typedef enum : tag_bits {
-    // container types
-    TAG_NONE      =  0, /**< no tag is set */
-    TAG_MAP       =  1, /**< !!map   Unordered set of key: value pairs without duplicates. @see https://yaml.org/type/map.html */
-    TAG_OMAP      =  2, /**< !!omap  Ordered sequence of key: value pairs without duplicates. @see https://yaml.org/type/omap.html */
-    TAG_PAIRS     =  3, /**< !!pairs Ordered sequence of key: value pairs allowing duplicates. @see https://yaml.org/type/pairs.html */
-    TAG_SET       =  4, /**< !!set   Unordered set of non-equal values. @see https://yaml.org/type/set.html */
-    TAG_SEQ       =  5, /**< !!seq   Sequence of arbitrary values. @see https://yaml.org/type/seq.html */
-    // scalar types
-    TAG_BINARY    =  6, /**< !!binary A sequence of zero or more octets (8 bit values). @see https://yaml.org/type/binary.html */
-    TAG_BOOL      =  7, /**< !!bool   Mathematical Booleans. @see https://yaml.org/type/bool.html */
-    TAG_FLOAT     =  8, /**< !!float  Floating-point approximation to real numbers. https://yaml.org/type/float.html */
-    TAG_INT       =  9, /**< !!float  Mathematical integers. https://yaml.org/type/int.html */
-    TAG_MERGE     = 10, /**< !!merge  Specify one or more mapping to be merged with the current one. https://yaml.org/type/merge.html */
-    TAG_NULL      = 11, /**< !!null   Devoid of value. https://yaml.org/type/null.html */
-    TAG_STR       = 12, /**< !!str    A sequence of zero or more Unicode characters. https://yaml.org/type/str.html */
-    TAG_TIMESTAMP = 13, /**< !!timestamp A point in time https://yaml.org/type/timestamp.html */
-    TAG_VALUE     = 14, /**< !!value  Specify the default value of a mapping https://yaml.org/type/value.html */
-    TAG_YAML      = 15, /**< !!yaml   Specify the default value of a mapping https://yaml.org/type/yaml.html */
-} YamlTag_e;
-
-YamlTag_e to_tag(csubstr tag);
-csubstr from_tag(YamlTag_e tag);
-csubstr from_tag_long(YamlTag_e tag);
-csubstr normalize_tag(csubstr tag);
-csubstr normalize_tag_long(csubstr tag);
-
-struct TagDirective
-{
-    /** Eg `!e!` in `%TAG !e! tag:example.com,2000:app/` */
-    csubstr handle;
-    /** Eg `tag:example.com,2000:app/` in `%TAG !e! tag:example.com,2000:app/` */
-    csubstr prefix;
-    /** The next node to which this tag directive applies */
-    size_t next_node_id;
-};
-
-#ifndef RYML_MAX_TAG_DIRECTIVES
-/** the maximum number of tag directives in a Tree */
-#define RYML_MAX_TAG_DIRECTIVES 4
-#endif
-
-/** @} */
-
-
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-
-
-/** @addtogroup doc_node_type
- *
- * @{
- */
-
-
-/** the integral type necessary to cover all the bits marking node types */
-using type_bits = uint64_t;
-
-
-/** a bit mask for marking node types. See NodeType */
-typedef enum : type_bits {
-    // a convenience define, undefined below
-    #define c4bit(v) (type_bits(1) << v)
-    NOTYPE  = 0,            ///< no node type is set
-    VAL     = c4bit(0),     ///< a leaf node, has a (possibly empty) value
-    KEY     = c4bit(1),     ///< is member of a map, must have non-empty key
-    MAP     = c4bit(2),     ///< a map: a parent of keyvals
-    SEQ     = c4bit(3),     ///< a seq: a parent of vals
-    DOC     = c4bit(4),     ///< a document
-    STREAM  = c4bit(5)|SEQ, ///< a stream: a seq of docs
-    KEYREF  = c4bit(6),     ///< a *reference: the key references an &anchor
-    VALREF  = c4bit(7),     ///< a *reference: the val references an &anchor
-    KEYANCH = c4bit(8),     ///< the key has an &anchor
-    VALANCH = c4bit(9),     ///< the val has an &anchor
-    KEYTAG  = c4bit(10),    ///< the key has an explicit tag/type
-    VALTAG  = c4bit(11),    ///< the val has an explicit tag/type
-    _TYMASK = c4bit(12)-1,  // all the bits up to here
-    VALQUO  = c4bit(12),    ///< the val is quoted by '', "", > or |
-    KEYQUO  = c4bit(13),    ///< the key is quoted by '', "", > or |
-    KEYVAL  = KEY|VAL,
-    KEYSEQ  = KEY|SEQ,
-    KEYMAP  = KEY|MAP,
-    DOCMAP  = DOC|MAP,
-    DOCSEQ  = DOC|SEQ,
-    DOCVAL  = DOC|VAL,
-    _KEYMASK = KEY | KEYQUO | KEYANCH | KEYREF | KEYTAG,
-    _VALMASK = VAL | VALQUO | VALANCH | VALREF | VALTAG,
-    // these flags are from a work in progress and should be used with care
-    _WIP_STYLE_FLOW_SL = c4bit(14), ///< mark container with single-line flow format (seqs as `[val1,val2]`, maps as `{key: val, key2: val2}`)
-    _WIP_STYLE_FLOW_ML = c4bit(15), ///< mark container with multi-line flow format (seqs as `[val1,\nval2]`, maps as `{key: val,\nkey2: val2}`)
-    _WIP_STYLE_BLOCK   = c4bit(16), ///< mark container with block format (seqs as `- val\n`, maps as `key: val`)
-    _WIP_KEY_LITERAL   = c4bit(17), ///< mark key scalar as multiline, block literal |
-    _WIP_VAL_LITERAL   = c4bit(18), ///< mark val scalar as multiline, block literal |
-    _WIP_KEY_FOLDED    = c4bit(19), ///< mark key scalar as multiline, block folded >
-    _WIP_VAL_FOLDED    = c4bit(20), ///< mark val scalar as multiline, block folded >
-    _WIP_KEY_SQUO      = c4bit(21), ///< mark key scalar as single quoted
-    _WIP_VAL_SQUO      = c4bit(22), ///< mark val scalar as single quoted
-    _WIP_KEY_DQUO      = c4bit(23), ///< mark key scalar as double quoted
-    _WIP_VAL_DQUO      = c4bit(24), ///< mark val scalar as double quoted
-    _WIP_KEY_PLAIN     = c4bit(25), ///< mark key scalar as plain scalar (unquoted, even when multiline)
-    _WIP_VAL_PLAIN     = c4bit(26), ///< mark val scalar as plain scalar (unquoted, even when multiline)
-    _WIP_KEY_STYLE     = _WIP_KEY_LITERAL|_WIP_KEY_FOLDED|_WIP_KEY_SQUO|_WIP_KEY_DQUO|_WIP_KEY_PLAIN,
-    _WIP_VAL_STYLE     = _WIP_VAL_LITERAL|_WIP_VAL_FOLDED|_WIP_VAL_SQUO|_WIP_VAL_DQUO|_WIP_VAL_PLAIN,
-    _WIP_KEY_FT_NL     = c4bit(27), ///< features: mark key scalar as having \n in its contents
-    _WIP_VAL_FT_NL     = c4bit(28), ///< features: mark val scalar as having \n in its contents
-    _WIP_KEY_FT_SQ     = c4bit(29), ///< features: mark key scalar as having single quotes in its contents
-    _WIP_VAL_FT_SQ     = c4bit(30), ///< features: mark val scalar as having single quotes in its contents
-    _WIP_KEY_FT_DQ     = c4bit(31), ///< features: mark key scalar as having double quotes in its contents
-    _WIP_VAL_FT_DQ     = c4bit(32), ///< features: mark val scalar as having double quotes in its contents
-    #undef c4bit
-} NodeType_e;
-
-
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-
-/** wraps a NodeType_e element with some syntactic sugar and predicates */
-struct NodeType
-{
-public:
-
-    NodeType_e type;
-
-public:
-
-    C4_ALWAYS_INLINE NodeType() : type(NOTYPE) {}
-    C4_ALWAYS_INLINE NodeType(NodeType_e t) : type(t) {}
-    C4_ALWAYS_INLINE NodeType(type_bits t) : type((NodeType_e)t) {}
-
-    C4_ALWAYS_INLINE const char *type_str() const { return type_str(type); }
-    static const char* type_str(NodeType_e t);
-
-    C4_ALWAYS_INLINE void set(NodeType_e t) { type = t; }
-    C4_ALWAYS_INLINE void set(type_bits  t) { type = (NodeType_e)t; }
-
-    C4_ALWAYS_INLINE void add(NodeType_e t) { type = (NodeType_e)(type|t); }
-    C4_ALWAYS_INLINE void add(type_bits  t) { type = (NodeType_e)(type|t); }
-
-    C4_ALWAYS_INLINE void rem(NodeType_e t) { type = (NodeType_e)(type & ~t); }
-    C4_ALWAYS_INLINE void rem(type_bits  t) { type = (NodeType_e)(type & ~t); }
-
-    C4_ALWAYS_INLINE void clear() { type = NOTYPE; }
-
-public:
-
-    C4_ALWAYS_INLINE operator NodeType_e      & C4_RESTRICT ()       { return type; }
-    C4_ALWAYS_INLINE operator NodeType_e const& C4_RESTRICT () const { return type; }
-
-    C4_ALWAYS_INLINE bool operator== (NodeType_e t) const { return type == t; }
-    C4_ALWAYS_INLINE bool operator!= (NodeType_e t) const { return type != t; }
-
-public:
-
-    #if defined(__clang__)
-    #   pragma clang diagnostic push
-    #   pragma clang diagnostic ignored "-Wnull-dereference"
-    #elif defined(__GNUC__)
-    #   pragma GCC diagnostic push
-    #   if __GNUC__ >= 6
-    #       pragma GCC diagnostic ignored "-Wnull-dereference"
-    #   endif
-    #endif
-
-    C4_ALWAYS_INLINE bool is_notype() const { return type == NOTYPE; }
-    C4_ALWAYS_INLINE bool is_stream() const { return ((type & STREAM) == STREAM) != 0; }
-    C4_ALWAYS_INLINE bool is_doc() const { return (type & DOC) != 0; }
-    C4_ALWAYS_INLINE bool is_container() const { return (type & (MAP|SEQ|STREAM)) != 0; }
-    C4_ALWAYS_INLINE bool is_map() const { return (type & MAP) != 0; }
-    C4_ALWAYS_INLINE bool is_seq() const { return (type & SEQ) != 0; }
-    C4_ALWAYS_INLINE bool has_key() const { return (type & KEY) != 0; }
-    C4_ALWAYS_INLINE bool has_val() const { return (type & VAL) != 0; }
-    C4_ALWAYS_INLINE bool is_val() const { return (type & KEYVAL) == VAL; }
-    C4_ALWAYS_INLINE bool is_keyval() const { return (type & KEYVAL) == KEYVAL; }
-    C4_ALWAYS_INLINE bool has_key_tag() const { return (type & (KEY|KEYTAG)) == (KEY|KEYTAG); }
-    C4_ALWAYS_INLINE bool has_val_tag() const { return ((type & VALTAG) && (type & (VAL|MAP|SEQ))); }
-    C4_ALWAYS_INLINE bool has_key_anchor() const { return (type & (KEY|KEYANCH)) == (KEY|KEYANCH); }
-    C4_ALWAYS_INLINE bool is_key_anchor() const { return (type & (KEY|KEYANCH)) == (KEY|KEYANCH); }
-    C4_ALWAYS_INLINE bool has_val_anchor() const { return (type & VALANCH) != 0 && (type & (VAL|SEQ|MAP)) != 0; }
-    C4_ALWAYS_INLINE bool is_val_anchor() const { return (type & VALANCH) != 0 && (type & (VAL|SEQ|MAP)) != 0; }
-    C4_ALWAYS_INLINE bool has_anchor() const { return (type & (KEYANCH|VALANCH)) != 0; }
-    C4_ALWAYS_INLINE bool is_anchor() const { return (type & (KEYANCH|VALANCH)) != 0; }
-    C4_ALWAYS_INLINE bool is_key_ref() const { return (type & KEYREF) != 0; }
-    C4_ALWAYS_INLINE bool is_val_ref() const { return (type & VALREF) != 0; }
-    C4_ALWAYS_INLINE bool is_ref() const { return (type & (KEYREF|VALREF)) != 0; }
-    C4_ALWAYS_INLINE bool is_anchor_or_ref() const { return (type & (KEYANCH|VALANCH|KEYREF|VALREF)) != 0; }
-    C4_ALWAYS_INLINE bool is_key_quoted() const { return (type & (KEY|KEYQUO)) == (KEY|KEYQUO); }
-    C4_ALWAYS_INLINE bool is_val_quoted() const { return (type & (VAL|VALQUO)) == (VAL|VALQUO); }
-    C4_ALWAYS_INLINE bool is_quoted() const { return (type & (KEY|KEYQUO)) == (KEY|KEYQUO) || (type & (VAL|VALQUO)) == (VAL|VALQUO); }
-
-    // these predicates are a work in progress and subject to change. Don't use yet.
-    C4_ALWAYS_INLINE bool default_block() const { return (type & (_WIP_STYLE_BLOCK|_WIP_STYLE_FLOW_ML|_WIP_STYLE_FLOW_SL)) == 0; }
-    C4_ALWAYS_INLINE bool marked_block() const { return (type & (_WIP_STYLE_BLOCK)) != 0; }
-    C4_ALWAYS_INLINE bool marked_flow_sl() const { return (type & (_WIP_STYLE_FLOW_SL)) != 0; }
-    C4_ALWAYS_INLINE bool marked_flow_ml() const { return (type & (_WIP_STYLE_FLOW_ML)) != 0; }
-    C4_ALWAYS_INLINE bool marked_flow() const { return (type & (_WIP_STYLE_FLOW_ML|_WIP_STYLE_FLOW_SL)) != 0; }
-    C4_ALWAYS_INLINE bool key_marked_literal() const { return (type & (_WIP_KEY_LITERAL)) != 0; }
-    C4_ALWAYS_INLINE bool val_marked_literal() const { return (type & (_WIP_VAL_LITERAL)) != 0; }
-    C4_ALWAYS_INLINE bool key_marked_folded() const { return (type & (_WIP_KEY_FOLDED)) != 0; }
-    C4_ALWAYS_INLINE bool val_marked_folded() const { return (type & (_WIP_VAL_FOLDED)) != 0; }
-    C4_ALWAYS_INLINE bool key_marked_squo() const { return (type & (_WIP_KEY_SQUO)) != 0; }
-    C4_ALWAYS_INLINE bool val_marked_squo() const { return (type & (_WIP_VAL_SQUO)) != 0; }
-    C4_ALWAYS_INLINE bool key_marked_dquo() const { return (type & (_WIP_KEY_DQUO)) != 0; }
-    C4_ALWAYS_INLINE bool val_marked_dquo() const { return (type & (_WIP_VAL_DQUO)) != 0; }
-    C4_ALWAYS_INLINE bool key_marked_plain() const { return (type & (_WIP_KEY_PLAIN)) != 0; }
-    C4_ALWAYS_INLINE bool val_marked_plain() const { return (type & (_WIP_VAL_PLAIN)) != 0; }
-
-    #if defined(__clang__)
-    #   pragma clang diagnostic pop
-    #elif defined(__GNUC__)
-    #   pragma GCC diagnostic pop
-    #endif
-
-};
-
-
-/** @} */
+template<class T> size_t to_chars_float(substr buf, T val);
+template<class T> bool from_chars_float(csubstr buf, T *C4_RESTRICT val);
 
 
 //-----------------------------------------------------------------------------
@@ -336,17 +69,17 @@ struct NodeScalar
 public:
 
     /// initialize as an empty scalar
-    inline NodeScalar() noexcept : tag(), scalar(), anchor() {}
+    NodeScalar() noexcept : tag(), scalar(), anchor() {} // NOLINT
 
     /// initialize as an untagged scalar
     template<size_t N>
-    inline NodeScalar(const char (&s)[N]) noexcept : tag(), scalar(s), anchor() {}
-    inline NodeScalar(csubstr      s    ) noexcept : tag(), scalar(s), anchor() {}
+    NodeScalar(const char (&s)[N]) noexcept : tag(), scalar(s), anchor() {}
+    NodeScalar(csubstr      s    ) noexcept : tag(), scalar(s), anchor() {}
 
     /// initialize as a tagged scalar
     template<size_t N, size_t M>
-    inline NodeScalar(const char (&t)[N], const char (&s)[N]) noexcept : tag(t), scalar(s), anchor() {}
-    inline NodeScalar(csubstr      t    , csubstr      s    ) noexcept : tag(t), scalar(s), anchor() {}
+    NodeScalar(const char (&t)[N], const char (&s)[N]) noexcept : tag(t), scalar(s), anchor() {}
+    NodeScalar(csubstr      t    , csubstr      s    ) noexcept : tag(t), scalar(s), anchor() {}
 
 public:
 
@@ -393,12 +126,14 @@ public:
     NodeInit(NodeType_e t) : type(t), key(), val() {}
     /// initialize as a sequence member
     NodeInit(NodeScalar const& v) : type(VAL), key(), val(v) { _add_flags(); }
+    /// initialize as a sequence member with explicit type
+    NodeInit(NodeScalar const& v, NodeType_e t) : type(t|VAL), key(), val(v) { _add_flags(); }
     /// initialize as a mapping member
-    NodeInit(              NodeScalar const& k, NodeScalar const& v) : type(KEYVAL), key(k.tag, k.scalar), val(v.tag, v.scalar) { _add_flags(); }
+    NodeInit(              NodeScalar const& k, NodeScalar const& v) : type(KEYVAL), key(k), val(v) { _add_flags(); }
     /// initialize as a mapping member with explicit type
-    NodeInit(NodeType_e t, NodeScalar const& k, NodeScalar const& v) : type(t     ), key(k.tag, k.scalar), val(v.tag, v.scalar) { _add_flags(); }
-    /// initialize as a mapping member with explicit type (eg SEQ or MAP)
-    NodeInit(NodeType_e t, NodeScalar const& k                     ) : type(t     ), key(k.tag, k.scalar), val(               ) { _add_flags(KEY); }
+    NodeInit(NodeType_e t, NodeScalar const& k, NodeScalar const& v) : type(t), key(k), val(v) { _add_flags(); }
+    /// initialize as a mapping member with explicit type (eg for SEQ or MAP)
+    NodeInit(NodeType_e t, NodeScalar const& k                     ) : type(t), key(k), val( ) { _add_flags(KEY); }
 
 public:
 
@@ -449,11 +184,11 @@ struct NodeData
     NodeScalar m_key;
     NodeScalar m_val;
 
-    size_t     m_parent;
-    size_t     m_first_child;
-    size_t     m_last_child;
-    size_t     m_next_sibling;
-    size_t     m_prev_sibling;
+    id_type    m_parent;
+    id_type    m_first_child;
+    id_type    m_last_child;
+    id_type    m_next_sibling;
+    id_type    m_prev_sibling;
 };
 C4_MUST_BE_TRIVIAL_COPY(NodeData);
 
@@ -471,16 +206,16 @@ public:
 
     Tree() : Tree(get_callbacks()) {}
     Tree(Callbacks const& cb);
-    Tree(size_t node_capacity, size_t arena_capacity=0) : Tree(node_capacity, arena_capacity, get_callbacks()) {}
-    Tree(size_t node_capacity, size_t arena_capacity, Callbacks const& cb);
+    Tree(id_type node_capacity, size_t arena_capacity=0) : Tree(node_capacity, arena_capacity, get_callbacks()) {}
+    Tree(id_type node_capacity, size_t arena_capacity, Callbacks const& cb);
 
     ~Tree();
 
     Tree(Tree const& that);
-    Tree(Tree     && that);
+    Tree(Tree     && that) noexcept;
 
     Tree& operator= (Tree const& that);
-    Tree& operator= (Tree     && that);
+    Tree& operator= (Tree     && that) noexcept;
 
     /** @} */
 
@@ -489,19 +224,19 @@ public:
     /** @name memory and sizing */
     /** @{ */
 
-    void reserve(size_t node_capacity);
+    void reserve(id_type node_capacity);
 
     /** clear the tree and zero every node
      * @note does NOT clear the arena
      * @see clear_arena() */
     void clear();
-    inline void clear_arena() { m_arena_pos = 0; }
+    void clear_arena() { m_arena_pos = 0; }
 
-    inline bool   empty() const { return m_size == 0; }
+    bool empty() const { return m_size == 0; }
 
-    inline size_t size() const { return m_size; }
-    inline size_t capacity() const { return m_cap; }
-    inline size_t slack() const { RYML_ASSERT(m_cap >= m_size); return m_cap - m_size; }
+    id_type size() const { return m_size; }
+    id_type capacity() const { return m_cap; }
+    id_type slack() const { RYML_ASSERT(m_cap >= m_size); return m_cap - m_size; }
 
     Callbacks const& callbacks() const { return m_callbacks; }
     void callbacks(Callbacks const& cb) { m_callbacks = cb; }
@@ -515,17 +250,17 @@ public:
 
     //! get the index of a node belonging to this tree.
     //! @p n can be nullptr, in which case NONE is returned
-    size_t id(NodeData const* n) const
+    id_type id(NodeData const* n) const
     {
         if( ! n)
             return NONE;
         _RYML_CB_ASSERT(m_callbacks, n >= m_buf && n < m_buf + m_cap);
-        return static_cast<size_t>(n - m_buf);
+        return static_cast<id_type>(n - m_buf);
     }
 
     //! get a pointer to a node's NodeData.
     //! i can be NONE, in which case a nullptr is returned
-    inline NodeData *get(size_t node)
+    NodeData *get(id_type node) // NOLINT(readability-make-member-function-const)
     {
         if(node == NONE)
             return nullptr;
@@ -534,7 +269,7 @@ public:
     }
     //! get a pointer to a node's NodeData.
     //! i can be NONE, in which case a nullptr is returned.
-    inline NodeData const *get(size_t node) const
+    NodeData const *get(id_type node) const
     {
         if(node == NONE)
             return nullptr;
@@ -544,22 +279,22 @@ public:
 
     //! An if-less form of get() that demands a valid node index.
     //! This function is implementation only; use at your own risk.
-    inline NodeData       * _p(size_t node)       { _RYML_CB_ASSERT(m_callbacks, node != NONE && node >= 0 && node < m_cap); return m_buf + node; }
+    NodeData       * _p(id_type node)       { _RYML_CB_ASSERT(m_callbacks, node != NONE && node >= 0 && node < m_cap); return m_buf + node; } // NOLINT(readability-make-member-function-const)
     //! An if-less form of get() that demands a valid node index.
     //! This function is implementation only; use at your own risk.
-    inline NodeData const * _p(size_t node) const { _RYML_CB_ASSERT(m_callbacks, node != NONE && node >= 0 && node < m_cap); return m_buf + node; }
+    NodeData const * _p(id_type node) const { _RYML_CB_ASSERT(m_callbacks, node != NONE && node >= 0 && node < m_cap); return m_buf + node; }
 
     //! Get the id of the root node
-    size_t root_id()       { if(m_cap == 0) { reserve(16); } _RYML_CB_ASSERT(m_callbacks, m_cap > 0 && m_size > 0); return 0; }
+    id_type root_id()       { if(m_cap == 0) { reserve(16); } _RYML_CB_ASSERT(m_callbacks, m_cap > 0 && m_size > 0); return 0; }
     //! Get the id of the root node
-    size_t root_id() const {                                 _RYML_CB_ASSERT(m_callbacks, m_cap > 0 && m_size > 0); return 0; }
+    id_type root_id() const {                                 _RYML_CB_ASSERT(m_callbacks, m_cap > 0 && m_size > 0); return 0; }
 
     //! Get a NodeRef of a node by id
-    NodeRef      ref(size_t node);
+    NodeRef      ref(id_type node);
     //! Get a NodeRef of a node by id
-    ConstNodeRef ref(size_t node) const;
+    ConstNodeRef ref(id_type node) const;
     //! Get a NodeRef of a node by id
-    ConstNodeRef cref(size_t node) const;
+    ConstNodeRef cref(id_type node) const;
 
     //! Get the root as a NodeRef
     NodeRef      rootref();
@@ -570,10 +305,13 @@ public:
 
     //! get the i-th document of the stream
     //! @note @p i is NOT the node id, but the doc position within the stream
-    NodeRef      docref(size_t i);
+    NodeRef      docref(id_type i);
     //! get the i-th document of the stream
     //! @note @p i is NOT the node id, but the doc position within the stream
-    ConstNodeRef docref(size_t i) const;
+    ConstNodeRef docref(id_type i) const;
+    //! get the i-th document of the stream
+    //! @note @p i is NOT the node id, but the doc position within the stream
+    ConstNodeRef cdocref(id_type i) const;
 
     //! find a root child by name, return it as a NodeRef
     //! @note requires the root to be a map.
@@ -584,10 +322,10 @@ public:
 
     //! find a root child by index: return the root node's @p i-th child as a NodeRef
     //! @note @p i is NOT the node id, but the child's position
-    NodeRef      operator[] (size_t i);
+    NodeRef      operator[] (id_type i);
     //! find a root child by index: return the root node's @p i-th child as a NodeRef
     //! @note @p i is NOT the node id, but the child's position
-    ConstNodeRef operator[] (size_t i) const;
+    ConstNodeRef operator[] (id_type i) const;
 
     /** @} */
 
@@ -596,73 +334,76 @@ public:
     /** @name node property getters */
     /** @{ */
 
-    NodeType type(size_t node) const { return _p(node)->m_type; }
-    const char* type_str(size_t node) const { return NodeType::type_str(_p(node)->m_type); }
+    NodeType type(id_type node) const { return _p(node)->m_type; }
+    const char* type_str(id_type node) const { return NodeType::type_str(_p(node)->m_type); }
 
-    csubstr    const& key       (size_t node) const { _RYML_CB_ASSERT(m_callbacks, has_key(node)); return _p(node)->m_key.scalar; }
-    csubstr    const& key_tag   (size_t node) const { _RYML_CB_ASSERT(m_callbacks, has_key_tag(node)); return _p(node)->m_key.tag; }
-    csubstr    const& key_ref   (size_t node) const { _RYML_CB_ASSERT(m_callbacks, is_key_ref(node) && ! has_key_anchor(node)); return _p(node)->m_key.anchor; }
-    csubstr    const& key_anchor(size_t node) const { _RYML_CB_ASSERT(m_callbacks,  ! is_key_ref(node) && has_key_anchor(node)); return _p(node)->m_key.anchor; }
-    NodeScalar const& keysc     (size_t node) const { _RYML_CB_ASSERT(m_callbacks, has_key(node)); return _p(node)->m_key; }
+    csubstr    const& key       (id_type node) const { _RYML_CB_ASSERT(m_callbacks, has_key(node)); return _p(node)->m_key.scalar; }
+    csubstr    const& key_tag   (id_type node) const { _RYML_CB_ASSERT(m_callbacks, has_key_tag(node)); return _p(node)->m_key.tag; }
+    csubstr    const& key_ref   (id_type node) const { _RYML_CB_ASSERT(m_callbacks, is_key_ref(node)); return _p(node)->m_key.anchor; }
+    csubstr    const& key_anchor(id_type node) const { _RYML_CB_ASSERT(m_callbacks, has_key_anchor(node)); return _p(node)->m_key.anchor; }
+    NodeScalar const& keysc     (id_type node) const { _RYML_CB_ASSERT(m_callbacks, has_key(node)); return _p(node)->m_key; }
 
-    csubstr    const& val       (size_t node) const { _RYML_CB_ASSERT(m_callbacks, has_val(node)); return _p(node)->m_val.scalar; }
-    csubstr    const& val_tag   (size_t node) const { _RYML_CB_ASSERT(m_callbacks, has_val_tag(node)); return _p(node)->m_val.tag; }
-    csubstr    const& val_ref   (size_t node) const { _RYML_CB_ASSERT(m_callbacks, is_val_ref(node) && ! has_val_anchor(node)); return _p(node)->m_val.anchor; }
-    csubstr    const& val_anchor(size_t node) const { _RYML_CB_ASSERT(m_callbacks,  ! is_val_ref(node) && has_val_anchor(node)); return _p(node)->m_val.anchor; }
-    NodeScalar const& valsc     (size_t node) const { _RYML_CB_ASSERT(m_callbacks, has_val(node)); return _p(node)->m_val; }
+    csubstr    const& val       (id_type node) const { _RYML_CB_ASSERT(m_callbacks, has_val(node)); return _p(node)->m_val.scalar; }
+    csubstr    const& val_tag   (id_type node) const { _RYML_CB_ASSERT(m_callbacks, has_val_tag(node)); return _p(node)->m_val.tag; }
+    csubstr    const& val_ref   (id_type node) const { _RYML_CB_ASSERT(m_callbacks, is_val_ref(node)); return _p(node)->m_val.anchor; }
+    csubstr    const& val_anchor(id_type node) const { _RYML_CB_ASSERT(m_callbacks, has_val_anchor(node)); return _p(node)->m_val.anchor; }
+    NodeScalar const& valsc     (id_type node) const { _RYML_CB_ASSERT(m_callbacks, has_val(node)); return _p(node)->m_val; }
 
     /** @} */
 
 public:
 
-    /** @name node predicates */
+    /** @name node type predicates */
     /** @{ */
 
-    C4_ALWAYS_INLINE bool is_stream(size_t node) const { return _p(node)->m_type.is_stream(); }
-    C4_ALWAYS_INLINE bool is_doc(size_t node) const { return _p(node)->m_type.is_doc(); }
-    C4_ALWAYS_INLINE bool is_container(size_t node) const { return _p(node)->m_type.is_container(); }
-    C4_ALWAYS_INLINE bool is_map(size_t node) const { return _p(node)->m_type.is_map(); }
-    C4_ALWAYS_INLINE bool is_seq(size_t node) const { return _p(node)->m_type.is_seq(); }
-    C4_ALWAYS_INLINE bool has_key(size_t node) const { return _p(node)->m_type.has_key(); }
-    C4_ALWAYS_INLINE bool has_val(size_t node) const { return _p(node)->m_type.has_val(); }
-    C4_ALWAYS_INLINE bool is_val(size_t node) const { return _p(node)->m_type.is_val(); }
-    C4_ALWAYS_INLINE bool is_keyval(size_t node) const { return _p(node)->m_type.is_keyval(); }
-    C4_ALWAYS_INLINE bool has_key_tag(size_t node) const { return _p(node)->m_type.has_key_tag(); }
-    C4_ALWAYS_INLINE bool has_val_tag(size_t node) const { return _p(node)->m_type.has_val_tag(); }
-    C4_ALWAYS_INLINE bool has_key_anchor(size_t node) const { return _p(node)->m_type.has_key_anchor(); }
-    C4_ALWAYS_INLINE bool is_key_anchor(size_t node) const { return _p(node)->m_type.is_key_anchor(); }
-    C4_ALWAYS_INLINE bool has_val_anchor(size_t node) const { return _p(node)->m_type.has_val_anchor(); }
-    C4_ALWAYS_INLINE bool is_val_anchor(size_t node) const { return _p(node)->m_type.is_val_anchor(); }
-    C4_ALWAYS_INLINE bool has_anchor(size_t node) const { return _p(node)->m_type.has_anchor(); }
-    C4_ALWAYS_INLINE bool is_anchor(size_t node) const { return _p(node)->m_type.is_anchor(); }
-    C4_ALWAYS_INLINE bool is_key_ref(size_t node) const { return _p(node)->m_type.is_key_ref(); }
-    C4_ALWAYS_INLINE bool is_val_ref(size_t node) const { return _p(node)->m_type.is_val_ref(); }
-    C4_ALWAYS_INLINE bool is_ref(size_t node) const { return _p(node)->m_type.is_ref(); }
-    C4_ALWAYS_INLINE bool is_anchor_or_ref(size_t node) const { return _p(node)->m_type.is_anchor_or_ref(); }
-    C4_ALWAYS_INLINE bool is_key_quoted(size_t node) const { return _p(node)->m_type.is_key_quoted(); }
-    C4_ALWAYS_INLINE bool is_val_quoted(size_t node) const { return _p(node)->m_type.is_val_quoted(); }
-    C4_ALWAYS_INLINE bool is_quoted(size_t node) const { return _p(node)->m_type.is_quoted(); }
+    C4_ALWAYS_INLINE bool type_has_any(id_type node, NodeType_e bits) const { return _p(node)->m_type.has_any(bits); }
+    C4_ALWAYS_INLINE bool type_has_all(id_type node, NodeType_e bits) const { return _p(node)->m_type.has_all(bits); }
+    C4_ALWAYS_INLINE bool type_has_none(id_type node, NodeType_e bits) const { return _p(node)->m_type.has_none(bits); }
 
-    C4_ALWAYS_INLINE bool parent_is_seq(size_t node) const { _RYML_CB_ASSERT(m_callbacks, has_parent(node)); return is_seq(_p(node)->m_parent); }
-    C4_ALWAYS_INLINE bool parent_is_map(size_t node) const { _RYML_CB_ASSERT(m_callbacks, has_parent(node)); return is_map(_p(node)->m_parent); }
+    C4_ALWAYS_INLINE bool is_stream(id_type node) const { return _p(node)->m_type.is_stream(); }
+    C4_ALWAYS_INLINE bool is_doc(id_type node) const { return _p(node)->m_type.is_doc(); }
+    C4_ALWAYS_INLINE bool is_container(id_type node) const { return _p(node)->m_type.is_container(); }
+    C4_ALWAYS_INLINE bool is_map(id_type node) const { return _p(node)->m_type.is_map(); }
+    C4_ALWAYS_INLINE bool is_seq(id_type node) const { return _p(node)->m_type.is_seq(); }
+    C4_ALWAYS_INLINE bool has_key(id_type node) const { return _p(node)->m_type.has_key(); }
+    C4_ALWAYS_INLINE bool has_val(id_type node) const { return _p(node)->m_type.has_val(); }
+    C4_ALWAYS_INLINE bool is_val(id_type node) const { return _p(node)->m_type.is_val(); }
+    C4_ALWAYS_INLINE bool is_keyval(id_type node) const { return _p(node)->m_type.is_keyval(); }
+    C4_ALWAYS_INLINE bool has_key_tag(id_type node) const { return _p(node)->m_type.has_key_tag(); }
+    C4_ALWAYS_INLINE bool has_val_tag(id_type node) const { return _p(node)->m_type.has_val_tag(); }
+    C4_ALWAYS_INLINE bool has_key_anchor(id_type node) const { return _p(node)->m_type.has_key_anchor(); }
+    C4_ALWAYS_INLINE bool has_val_anchor(id_type node) const { return _p(node)->m_type.has_val_anchor(); }
+    C4_ALWAYS_INLINE bool has_anchor(id_type node) const { return _p(node)->m_type.has_anchor(); }
+    C4_ALWAYS_INLINE bool is_key_ref(id_type node) const { return _p(node)->m_type.is_key_ref(); }
+    C4_ALWAYS_INLINE bool is_val_ref(id_type node) const { return _p(node)->m_type.is_val_ref(); }
+    C4_ALWAYS_INLINE bool is_ref(id_type node) const { return _p(node)->m_type.is_ref(); }
 
-    /** true when key and val are empty, and has no children */
-    C4_ALWAYS_INLINE bool empty(size_t node) const { return ! has_children(node) && _p(node)->m_key.empty() && (( ! (_p(node)->m_type & VAL)) || _p(node)->m_val.empty()); }
+    C4_ALWAYS_INLINE bool parent_is_seq(id_type node) const { _RYML_CB_ASSERT(m_callbacks, has_parent(node)); return is_seq(_p(node)->m_parent); }
+    C4_ALWAYS_INLINE bool parent_is_map(id_type node) const { _RYML_CB_ASSERT(m_callbacks, has_parent(node)); return is_map(_p(node)->m_parent); }
+
     /** true when the node has an anchor named a */
-    C4_ALWAYS_INLINE bool has_anchor(size_t node, csubstr a) const { return _p(node)->m_key.anchor == a || _p(node)->m_val.anchor == a; }
+    C4_ALWAYS_INLINE bool has_anchor(id_type node, csubstr a) const { return _p(node)->m_key.anchor == a || _p(node)->m_val.anchor == a; }
 
-    C4_ALWAYS_INLINE bool key_is_null(size_t node) const { _RYML_CB_ASSERT(m_callbacks, has_key(node)); NodeData const* C4_RESTRICT n = _p(node); return !n->m_type.is_key_quoted() && scalar_is_null(n->m_key.scalar); }
-    C4_ALWAYS_INLINE bool val_is_null(size_t node) const { _RYML_CB_ASSERT(m_callbacks, has_val(node)); NodeData const* C4_RESTRICT n = _p(node); return !n->m_type.is_val_quoted() && scalar_is_null(n->m_val.scalar); }
+    /** true if the node key is empty, or its scalar verifies @ref scalar_is_null().
+     * @warning the node must verify @ref Tree::has_key() (asserted) (ie must be a member of a map)
+     * @see https://github.com/biojppm/rapidyaml/issues/413 */
+    C4_ALWAYS_INLINE bool key_is_null(id_type node) const { _RYML_CB_ASSERT(m_callbacks, has_key(node)); NodeData const* C4_RESTRICT n = _p(node); return !n->m_type.is_key_quoted() && (n->m_type.key_is_null() || scalar_is_null(n->m_key.scalar)); }
+    /** true if the node val is empty, or its scalar verifies @ref scalar_is_null().
+     * @warning the node must verify @ref Tree::has_val() (asserted) (ie must be a scalar / must not be a container)
+     * @see https://github.com/biojppm/rapidyaml/issues/413 */
+    C4_ALWAYS_INLINE bool val_is_null(id_type node) const { _RYML_CB_ASSERT(m_callbacks, has_val(node)); NodeData const* C4_RESTRICT n = _p(node); return !n->m_type.is_val_quoted() && (n->m_type.val_is_null() || scalar_is_null(n->m_val.scalar)); }
 
-    /** @todo move this function to node_type.hpp */
-    static bool scalar_is_null(csubstr s) noexcept
-    {
-        return s.str == nullptr ||
-            s == "~" ||
-            s == "null" ||
-            s == "Null" ||
-            s == "NULL";
-    }
+    /// true if the key was a scalar requiring filtering and was left
+    /// unfiltered during the parsing (see ParserOptions)
+    C4_ALWAYS_INLINE bool is_key_unfiltered(id_type node) const { return _p(node)->m_type.is_key_unfiltered(); }
+    /// true if the val was a scalar requiring filtering and was left
+    /// unfiltered during the parsing (see ParserOptions)
+    C4_ALWAYS_INLINE bool is_val_unfiltered(id_type node) const { return _p(node)->m_type.is_val_unfiltered(); }
+
+    RYML_DEPRECATED("use has_key_anchor()")    bool is_key_anchor(id_type node) const { return _p(node)->m_type.has_key_anchor(); }
+    RYML_DEPRECATED("use has_val_anchor()")    bool is_val_anchor(id_type node) const { return _p(node)->m_type.has_val_anchor(); }
+    RYML_DEPRECATED("use has_anchor()")        bool is_anchor(id_type node) const { return _p(node)->m_type.has_anchor(); }
+    RYML_DEPRECATED("use has_anchor_or_ref()") bool is_anchor_or_ref(id_type node) const { return _p(node)->m_type.has_anchor() || _p(node)->m_type.is_ref(); }
 
     /** @} */
 
@@ -671,23 +412,29 @@ public:
     /** @name hierarchy predicates */
     /** @{ */
 
-    bool is_root(size_t node) const { _RYML_CB_ASSERT(m_callbacks, _p(node)->m_parent != NONE || node == 0); return _p(node)->m_parent == NONE; }
+    bool is_root(id_type node) const { _RYML_CB_ASSERT(m_callbacks, _p(node)->m_parent != NONE || node == 0); return _p(node)->m_parent == NONE; }
 
-    bool has_parent(size_t node) const { return _p(node)->m_parent != NONE; }
+    bool has_parent(id_type node) const { return _p(node)->m_parent != NONE; }
+
+    /** true when ancestor is parent or parent of a parent of node */
+    bool is_ancestor(id_type node, id_type ancestor) const;
+
+    /** true when key and val are empty, and has no children */
+    bool empty(id_type node) const { return ! has_children(node) && _p(node)->m_key.empty() && (( ! (_p(node)->m_type & VAL)) || _p(node)->m_val.empty()); }
 
     /** true if @p node has a child with id @p ch */
-    bool has_child(size_t node, size_t ch) const { return _p(ch)->m_parent == node; }
+    bool has_child(id_type node, id_type ch) const { return _p(ch)->m_parent == node; }
     /** true if @p node has a child with key @p key */
-    bool has_child(size_t node, csubstr key) const { return find_child(node, key) != npos; }
+    bool has_child(id_type node, csubstr key) const { return find_child(node, key) != NONE; }
     /** true if @p node has any children key */
-    bool has_children(size_t node) const { return _p(node)->m_first_child != NONE; }
+    bool has_children(id_type node) const { return _p(node)->m_first_child != NONE; }
 
     /** true if @p node has a sibling with id @p sib */
-    bool has_sibling(size_t node, size_t sib) const { return _p(node)->m_parent == _p(sib)->m_parent; }
+    bool has_sibling(id_type node, id_type sib) const { return _p(node)->m_parent == _p(sib)->m_parent; }
     /** true if one of the node's siblings has the given key */
-    bool has_sibling(size_t node, csubstr key) const { return find_sibling(node, key) != npos; }
+    bool has_sibling(id_type node, csubstr key) const { return find_sibling(node, key) != NONE; }
     /** true if node is not a single child */
-    bool has_other_siblings(size_t node) const
+    bool has_other_siblings(id_type node) const
     {
         NodeData const *n = _p(node);
         if(C4_LIKELY(n->m_parent != NONE))
@@ -698,7 +445,7 @@ public:
         return false;
     }
 
-    RYML_DEPRECATED("use has_other_siblings()") bool has_siblings(size_t /*node*/) const { return true; }
+    RYML_DEPRECATED("use has_other_siblings()") static bool has_siblings(id_type /*node*/) { return true; }
 
     /** @} */
 
@@ -707,64 +454,100 @@ public:
     /** @name hierarchy getters */
     /** @{ */
 
-    size_t parent(size_t node) const { return _p(node)->m_parent; }
+    id_type parent(id_type node) const { return _p(node)->m_parent; }
 
-    size_t prev_sibling(size_t node) const { return _p(node)->m_prev_sibling; }
-    size_t next_sibling(size_t node) const { return _p(node)->m_next_sibling; }
+    id_type prev_sibling(id_type node) const { return _p(node)->m_prev_sibling; }
+    id_type next_sibling(id_type node) const { return _p(node)->m_next_sibling; }
 
     /** O(#num_children) */
-    size_t num_children(size_t node) const;
-    size_t child_pos(size_t node, size_t ch) const;
-    size_t first_child(size_t node) const { return _p(node)->m_first_child; }
-    size_t last_child(size_t node) const { return _p(node)->m_last_child; }
-    size_t child(size_t node, size_t pos) const;
-    size_t find_child(size_t node, csubstr const& key) const;
+    id_type num_children(id_type node) const;
+    id_type child_pos(id_type node, id_type ch) const;
+    id_type first_child(id_type node) const { return _p(node)->m_first_child; }
+    id_type last_child(id_type node) const { return _p(node)->m_last_child; }
+    id_type child(id_type node, id_type pos) const;
+    id_type find_child(id_type node, csubstr const& key) const;
 
     /** O(#num_siblings) */
     /** counts with this */
-    size_t num_siblings(size_t node) const { return is_root(node) ? 1 : num_children(_p(node)->m_parent); }
+    id_type num_siblings(id_type node) const { return is_root(node) ? 1 : num_children(_p(node)->m_parent); }
     /** does not count with this */
-    size_t num_other_siblings(size_t node) const { size_t ns = num_siblings(node); _RYML_CB_ASSERT(m_callbacks, ns > 0); return ns-1; }
-    size_t sibling_pos(size_t node, size_t sib) const { _RYML_CB_ASSERT(m_callbacks,  ! is_root(node) || node == root_id()); return child_pos(_p(node)->m_parent, sib); }
-    size_t first_sibling(size_t node) const { return is_root(node) ? node : _p(_p(node)->m_parent)->m_first_child; }
-    size_t last_sibling(size_t node) const { return is_root(node) ? node : _p(_p(node)->m_parent)->m_last_child; }
-    size_t sibling(size_t node, size_t pos) const { return child(_p(node)->m_parent, pos); }
-    size_t find_sibling(size_t node, csubstr const& key) const { return find_child(_p(node)->m_parent, key); }
+    id_type num_other_siblings(id_type node) const { id_type ns = num_siblings(node); _RYML_CB_ASSERT(m_callbacks, ns > 0); return ns-1; }
+    id_type sibling_pos(id_type node, id_type sib) const { _RYML_CB_ASSERT(m_callbacks,  ! is_root(node) || node == root_id()); return child_pos(_p(node)->m_parent, sib); }
+    id_type first_sibling(id_type node) const { return is_root(node) ? node : _p(_p(node)->m_parent)->m_first_child; }
+    id_type last_sibling(id_type node) const { return is_root(node) ? node : _p(_p(node)->m_parent)->m_last_child; }
+    id_type sibling(id_type node, id_type pos) const { return child(_p(node)->m_parent, pos); }
+    id_type find_sibling(id_type node, csubstr const& key) const { return find_child(_p(node)->m_parent, key); }
 
-    size_t doc(size_t i) const { size_t rid = root_id(); _RYML_CB_ASSERT(m_callbacks, is_stream(rid)); return child(rid, i); } //!< gets the @p i document node index. requires that the root node is a stream.
+    id_type doc(id_type i) const { id_type rid = root_id(); _RYML_CB_ASSERT(m_callbacks, is_stream(rid)); return child(rid, i); } //!< gets the @p i document node index. requires that the root node is a stream.
+
+    id_type depth_asc(id_type node) const; /**< O(log(num_tree_nodes)) get the ascending depth of the node: number of levels between root and node */
+    id_type depth_desc(id_type node) const; /**< O(num_tree_nodes) get the descending depth of the node: number of levels between node and deepest child */
 
     /** @} */
 
 public:
 
-    /** @name node modifiers */
+    /** @name node style predicates and modifiers. see the corresponding predicate in NodeType */
     /** @{ */
 
-    void to_keyval(size_t node, csubstr key, csubstr val, type_bits more_flags=0);
-    void to_map(size_t node, csubstr key, type_bits more_flags=0);
-    void to_seq(size_t node, csubstr key, type_bits more_flags=0);
-    void to_val(size_t node, csubstr val, type_bits more_flags=0);
-    void to_map(size_t node, type_bits more_flags=0);
-    void to_seq(size_t node, type_bits more_flags=0);
-    void to_doc(size_t node, type_bits more_flags=0);
-    void to_stream(size_t node, type_bits more_flags=0);
+    C4_ALWAYS_INLINE bool is_container_styled(id_type node) const { return _p(node)->m_type.is_container_styled(); }
+    C4_ALWAYS_INLINE bool is_block(id_type node) const { return _p(node)->m_type.is_block(); }
+    C4_ALWAYS_INLINE bool is_flow_sl(id_type node) const { return _p(node)->m_type.is_flow_sl(); }
+    C4_ALWAYS_INLINE bool is_flow_ml(id_type node) const { return _p(node)->m_type.is_flow_ml(); }
+    C4_ALWAYS_INLINE bool is_flow(id_type node) const { return _p(node)->m_type.is_flow(); }
 
-    void set_key(size_t node, csubstr key) { _RYML_CB_ASSERT(m_callbacks, has_key(node)); _p(node)->m_key.scalar = key; }
-    void set_val(size_t node, csubstr val) { _RYML_CB_ASSERT(m_callbacks, has_val(node)); _p(node)->m_val.scalar = val; }
+    C4_ALWAYS_INLINE bool is_key_styled(id_type node) const { return _p(node)->m_type.is_key_styled(); }
+    C4_ALWAYS_INLINE bool is_val_styled(id_type node) const { return _p(node)->m_type.is_val_styled(); }
+    C4_ALWAYS_INLINE bool is_key_literal(id_type node) const { return _p(node)->m_type.is_key_literal(); }
+    C4_ALWAYS_INLINE bool is_val_literal(id_type node) const { return _p(node)->m_type.is_val_literal(); }
+    C4_ALWAYS_INLINE bool is_key_folded(id_type node) const { return _p(node)->m_type.is_key_folded(); }
+    C4_ALWAYS_INLINE bool is_val_folded(id_type node) const { return _p(node)->m_type.is_val_folded(); }
+    C4_ALWAYS_INLINE bool is_key_squo(id_type node) const { return _p(node)->m_type.is_key_squo(); }
+    C4_ALWAYS_INLINE bool is_val_squo(id_type node) const { return _p(node)->m_type.is_val_squo(); }
+    C4_ALWAYS_INLINE bool is_key_dquo(id_type node) const { return _p(node)->m_type.is_key_dquo(); }
+    C4_ALWAYS_INLINE bool is_val_dquo(id_type node) const { return _p(node)->m_type.is_val_dquo(); }
+    C4_ALWAYS_INLINE bool is_key_plain(id_type node) const { return _p(node)->m_type.is_key_plain(); }
+    C4_ALWAYS_INLINE bool is_val_plain(id_type node) const { return _p(node)->m_type.is_val_plain(); }
+    C4_ALWAYS_INLINE bool is_key_quoted(id_type node) const { return _p(node)->m_type.is_key_quoted(); }
+    C4_ALWAYS_INLINE bool is_val_quoted(id_type node) const { return _p(node)->m_type.is_val_quoted(); }
+    C4_ALWAYS_INLINE bool is_quoted(id_type node) const { return _p(node)->m_type.is_quoted(); }
 
-    void set_key_tag(size_t node, csubstr tag) { _RYML_CB_ASSERT(m_callbacks, has_key(node)); _p(node)->m_key.tag = tag; _add_flags(node, KEYTAG); }
-    void set_val_tag(size_t node, csubstr tag) { _RYML_CB_ASSERT(m_callbacks, has_val(node) || is_container(node)); _p(node)->m_val.tag = tag; _add_flags(node, VALTAG); }
+    C4_ALWAYS_INLINE void set_container_style(id_type node, NodeType_e style) { _RYML_CB_ASSERT(m_callbacks, is_container(node)); _p(node)->m_type.set_container_style(style); }
+    C4_ALWAYS_INLINE void set_key_style(id_type node, NodeType_e style) { _RYML_CB_ASSERT(m_callbacks, has_key(node)); _p(node)->m_type.set_key_style(style); }
+    C4_ALWAYS_INLINE void set_val_style(id_type node, NodeType_e style) { _RYML_CB_ASSERT(m_callbacks, has_val(node)); _p(node)->m_type.set_val_style(style); }
 
-    void set_key_anchor(size_t node, csubstr anchor) { _RYML_CB_ASSERT(m_callbacks,  ! is_key_ref(node)); _p(node)->m_key.anchor = anchor.triml('&'); _add_flags(node, KEYANCH); }
-    void set_val_anchor(size_t node, csubstr anchor) { _RYML_CB_ASSERT(m_callbacks,  ! is_val_ref(node)); _p(node)->m_val.anchor = anchor.triml('&'); _add_flags(node, VALANCH); }
-    void set_key_ref   (size_t node, csubstr ref   ) { _RYML_CB_ASSERT(m_callbacks,  ! has_key_anchor(node)); NodeData* C4_RESTRICT n = _p(node); n->m_key.set_ref_maybe_replacing_scalar(ref, n->m_type.has_key()); _add_flags(node, KEY|KEYREF); }
-    void set_val_ref   (size_t node, csubstr ref   ) { _RYML_CB_ASSERT(m_callbacks,  ! has_val_anchor(node)); NodeData* C4_RESTRICT n = _p(node); n->m_val.set_ref_maybe_replacing_scalar(ref, n->m_type.has_val()); _add_flags(node, VAL|VALREF); }
+    /** @} */
 
-    void rem_key_anchor(size_t node) { _p(node)->m_key.anchor.clear(); _rem_flags(node, KEYANCH); }
-    void rem_val_anchor(size_t node) { _p(node)->m_val.anchor.clear(); _rem_flags(node, VALANCH); }
-    void rem_key_ref   (size_t node) { _p(node)->m_key.anchor.clear(); _rem_flags(node, KEYREF); }
-    void rem_val_ref   (size_t node) { _p(node)->m_val.anchor.clear(); _rem_flags(node, VALREF); }
-    void rem_anchor_ref(size_t node) { _p(node)->m_key.anchor.clear(); _p(node)->m_val.anchor.clear(); _rem_flags(node, KEYANCH|VALANCH|KEYREF|VALREF); }
+public:
+
+    /** @name node type modifiers */
+    /** @{ */
+
+    void to_keyval(id_type node, csubstr key, csubstr val, type_bits more_flags=0);
+    void to_map(id_type node, csubstr key, type_bits more_flags=0);
+    void to_seq(id_type node, csubstr key, type_bits more_flags=0);
+    void to_val(id_type node, csubstr val, type_bits more_flags=0);
+    void to_map(id_type node, type_bits more_flags=0);
+    void to_seq(id_type node, type_bits more_flags=0);
+    void to_doc(id_type node, type_bits more_flags=0);
+    void to_stream(id_type node, type_bits more_flags=0);
+
+    void set_key(id_type node, csubstr key) { _RYML_CB_ASSERT(m_callbacks, has_key(node)); _p(node)->m_key.scalar = key; }
+    void set_val(id_type node, csubstr val) { _RYML_CB_ASSERT(m_callbacks, has_val(node)); _p(node)->m_val.scalar = val; }
+
+    void set_key_tag(id_type node, csubstr tag) { _RYML_CB_ASSERT(m_callbacks, has_key(node)); _p(node)->m_key.tag = tag; _add_flags(node, KEYTAG); }
+    void set_val_tag(id_type node, csubstr tag) { _RYML_CB_ASSERT(m_callbacks, has_val(node) || is_container(node)); _p(node)->m_val.tag = tag; _add_flags(node, VALTAG); }
+
+    void set_key_anchor(id_type node, csubstr anchor) { _RYML_CB_ASSERT(m_callbacks,  ! is_key_ref(node)); _p(node)->m_key.anchor = anchor.triml('&'); _add_flags(node, KEYANCH); }
+    void set_val_anchor(id_type node, csubstr anchor) { _RYML_CB_ASSERT(m_callbacks,  ! is_val_ref(node)); _p(node)->m_val.anchor = anchor.triml('&'); _add_flags(node, VALANCH); }
+    void set_key_ref   (id_type node, csubstr ref   ) { _RYML_CB_ASSERT(m_callbacks,  ! has_key_anchor(node)); NodeData* C4_RESTRICT n = _p(node); n->m_key.set_ref_maybe_replacing_scalar(ref, n->m_type.has_key()); _add_flags(node, KEY|KEYREF); }
+    void set_val_ref   (id_type node, csubstr ref   ) { _RYML_CB_ASSERT(m_callbacks,  ! has_val_anchor(node)); NodeData* C4_RESTRICT n = _p(node); n->m_val.set_ref_maybe_replacing_scalar(ref, n->m_type.has_val()); _add_flags(node, VAL|VALREF); }
+
+    void rem_key_anchor(id_type node) { _p(node)->m_key.anchor.clear(); _rem_flags(node, KEYANCH); }
+    void rem_val_anchor(id_type node) { _p(node)->m_val.anchor.clear(); _rem_flags(node, VALANCH); }
+    void rem_key_ref   (id_type node) { _p(node)->m_key.anchor.clear(); _rem_flags(node, KEYREF); }
+    void rem_val_ref   (id_type node) { _p(node)->m_val.anchor.clear(); _rem_flags(node, VALREF); }
+    void rem_anchor_ref(id_type node) { _p(node)->m_key.anchor.clear(); _p(node)->m_val.anchor.clear(); _rem_flags(node, KEYANCH|VALANCH|KEYREF|VALREF); }
 
     /** @} */
 
@@ -776,30 +559,26 @@ public:
     /** reorder the tree in memory so that all the nodes are stored
      * in a linear sequence when visited in depth-first order.
      * This will invalidate existing ids, since the node id is its
-     * position in the node array. */
+     * position in the tree's node array. */
     void reorder();
 
-    /** Resolve references (aliases <- anchors) in the tree.
-     *
-     * Dereferencing is opt-in; after parsing, Tree::resolve()
-     * has to be called explicitly for obtaining resolved references in the
-     * tree. This method will resolve all references and substitute the
-     * anchored values in place of the reference.
-     *
-     * This method first does a full traversal of the tree to gather all
-     * anchors and references in a separate collection, then it goes through
-     * that collection to locate the names, which it does by obeying the YAML
-     * standard diktat that "an alias node refers to the most recent node in
-     * the serialization having the specified anchor"
-     *
-     * So, depending on the number of anchor/alias nodes, this is a
-     * potentially expensive operation, with a best-case linear complexity
-     * (from the initial traversal). This potential cost is the reason for
-     * requiring an explicit call.
-     */
-    void resolve();
-
     /** @} */
+
+public:
+
+    /** @name anchors and references/aliases */
+    /** @{ */
+
+    /** Resolve references (aliases <- anchors), by forwarding to @ref
+     * ReferenceResolver::resolve(); refer to @ref
+     * ReferenceResolver::resolve() for further details. */
+    void resolve(ReferenceResolver *C4_RESTRICT rr, bool clear_anchors=true);
+
+    /** Resolve references (aliases <- anchors), by forwarding to @ref
+     * ReferenceResolver::resolve(); refer to @ref
+     * ReferenceResolver::resolve() for further details. This overload
+     * uses a throwaway resolver object. */
+    void resolve(bool clear_anchors=true);
 
 public:
 
@@ -807,30 +586,29 @@ public:
     /** @{ */
 
     void resolve_tags();
+    void normalize_tags();
+    void normalize_tags_long();
 
-    size_t num_tag_directives() const;
-    size_t add_tag_directive(TagDirective const& td);
+    id_type num_tag_directives() const;
+    bool add_tag_directive(csubstr directive);
+    id_type add_tag_directive(TagDirective const& td);
     void clear_tag_directives();
 
-    size_t resolve_tag(substr output, csubstr tag, size_t node_id) const;
-    csubstr resolve_tag_sub(substr output, csubstr tag, size_t node_id) const
+    /** resolve the given tag, appearing at node_id. Write the result into output.
+     * @return the number of characters required for the resolved tag */
+    size_t resolve_tag(substr output, csubstr tag, id_type node_id) const;
+    csubstr resolve_tag_sub(substr output, csubstr tag, id_type node_id) const
     {
         size_t needed = resolve_tag(output, tag, node_id);
         return needed <= output.len ? output.first(needed) : output;
     }
 
-    using tag_directive_const_iterator = TagDirective const*;
-    tag_directive_const_iterator begin_tag_directives() const { return m_tag_directives; }
-    tag_directive_const_iterator end_tag_directives() const { return m_tag_directives + num_tag_directives(); }
+    TagDirective const* begin_tag_directives() const { return m_tag_directives; }
+    TagDirective const* end_tag_directives() const { return m_tag_directives + num_tag_directives(); }
+    c4::yml::TagDirectiveRange tag_directives() const { return c4::yml::TagDirectiveRange{begin_tag_directives(), end_tag_directives()}; }
 
-    struct TagDirectiveProxy
-    {
-        tag_directive_const_iterator b, e;
-        tag_directive_const_iterator begin() const { return b; }
-        tag_directive_const_iterator end() const { return e; }
-    };
-
-    TagDirectiveProxy tag_directives() const { return TagDirectiveProxy{begin_tag_directives(), end_tag_directives()}; }
+    RYML_DEPRECATED("use c4::yml::tag_directive_const_iterator") typedef TagDirective const* tag_directive_const_iterator;
+    RYML_DEPRECATED("use c4::yml::TagDirectiveRange") typedef c4::yml::TagDirectiveRange TagDirectiveProxy;
 
     /** @} */
 
@@ -842,19 +620,25 @@ public:
     /** create and insert a new child of @p parent. insert after the (to-be)
      * sibling @p after, which must be a child of @p parent. To insert as the
      * first child, set after to NONE */
-    C4_ALWAYS_INLINE size_t insert_child(size_t parent, size_t after)
+    C4_ALWAYS_INLINE id_type insert_child(id_type parent, id_type after)
     {
         _RYML_CB_ASSERT(m_callbacks, parent != NONE);
         _RYML_CB_ASSERT(m_callbacks, is_container(parent) || is_root(parent));
         _RYML_CB_ASSERT(m_callbacks, after == NONE || (_p(after)->m_parent == parent));
-        size_t child = _claim();
+        id_type child = _claim();
         _set_hierarchy(child, parent, after);
         return child;
     }
     /** create and insert a node as the first child of @p parent */
-    C4_ALWAYS_INLINE size_t prepend_child(size_t parent) { return insert_child(parent, NONE); }
+    C4_ALWAYS_INLINE id_type prepend_child(id_type parent) { return insert_child(parent, NONE); }
     /** create and insert a node as the last child of @p parent */
-    C4_ALWAYS_INLINE size_t  append_child(size_t parent) { return insert_child(parent, _p(parent)->m_last_child); }
+    C4_ALWAYS_INLINE id_type append_child(id_type parent) { return insert_child(parent, _p(parent)->m_last_child); }
+    C4_ALWAYS_INLINE id_type _append_child__unprotected(id_type parent)
+    {
+        id_type child = _claim();
+        _set_hierarchy(child, parent, _p(parent)->m_last_child);
+        return child;
+    }
 
 public:
 
@@ -869,25 +653,25 @@ public:
     #endif
 
     //! create and insert a new sibling of n. insert after "after"
-    C4_ALWAYS_INLINE size_t insert_sibling(size_t node, size_t after)
+    C4_ALWAYS_INLINE id_type insert_sibling(id_type node, id_type after)
     {
         return insert_child(_p(node)->m_parent, after);
     }
     /** create and insert a node as the first node of @p parent */
-    C4_ALWAYS_INLINE size_t prepend_sibling(size_t node) { return prepend_child(_p(node)->m_parent); }
-    C4_ALWAYS_INLINE size_t  append_sibling(size_t node) { return append_child(_p(node)->m_parent); }
+    C4_ALWAYS_INLINE id_type prepend_sibling(id_type node) { return prepend_child(_p(node)->m_parent); }
+    C4_ALWAYS_INLINE id_type  append_sibling(id_type node) { return append_child(_p(node)->m_parent); }
 
 public:
 
     /** remove an entire branch at once: ie remove the children and the node itself */
-    inline void remove(size_t node)
+    void remove(id_type node)
     {
         remove_children(node);
         _release(node);
     }
 
     /** remove all the node's children, but keep the node itself */
-    void remove_children(size_t node);
+    void remove_children(id_type node);
 
     /** change the @p type of the node to one of MAP, SEQ or VAL.  @p
      * type must have one and only one of MAP,SEQ,VAL; @p type may
@@ -898,9 +682,9 @@ public:
      * initialize with a null scalar (~), changing to MAP will
      * initialize with an empty map ({}), and changing to SEQ will
      * initialize with an empty seq ([]). */
-    bool change_type(size_t node, NodeType type);
+    bool change_type(id_type node, NodeType type);
 
-    bool change_type(size_t node, type_bits type)
+    bool change_type(id_type node, type_bits type)
     {
         return change_type(node, (NodeType)type);
     }
@@ -914,14 +698,14 @@ public:
 public:
 
     /** change the node's position in the parent */
-    void move(size_t node, size_t after);
+    void move(id_type node, id_type after);
 
     /** change the node's parent and position */
-    void move(size_t node, size_t new_parent, size_t after);
+    void move(id_type node, id_type new_parent, id_type after);
 
     /** change the node's parent and position to a different tree
      * @return the index of the new node in the destination tree */
-    size_t move(Tree * src, size_t node, size_t new_parent, size_t after);
+    id_type move(Tree * src, id_type node, id_type new_parent, id_type after);
 
     /** ensure the first node is a stream. Eg, change this tree
      *
@@ -951,34 +735,34 @@ public:
     /** recursively duplicate a node from this tree into a new parent,
      * placing it after one of its children
      * @return the index of the copy */
-    size_t duplicate(size_t node, size_t new_parent, size_t after);
+    id_type duplicate(id_type node, id_type new_parent, id_type after);
     /** recursively duplicate a node from a different tree into a new parent,
      * placing it after one of its children
      * @return the index of the copy */
-    size_t duplicate(Tree const* src, size_t node, size_t new_parent, size_t after);
+    id_type duplicate(Tree const* src, id_type node, id_type new_parent, id_type after);
 
     /** recursively duplicate the node's children (but not the node)
      * @return the index of the last duplicated child */
-    size_t duplicate_children(size_t node, size_t parent, size_t after);
+    id_type duplicate_children(id_type node, id_type parent, id_type after);
     /** recursively duplicate the node's children (but not the node), where
      * the node is from a different tree
      * @return the index of the last duplicated child */
-    size_t duplicate_children(Tree const* src, size_t node, size_t parent, size_t after);
-
-    void duplicate_contents(size_t node, size_t where);
-    void duplicate_contents(Tree const* src, size_t node, size_t where);
+    id_type duplicate_children(Tree const* src, id_type node, id_type parent, id_type after);
 
     /** duplicate the node's children (but not the node) in a new parent, but
      * omit repetitions where a duplicated node has the same key (in maps) or
      * value (in seqs). If one of the duplicated children has the same key
      * (in maps) or value (in seqs) as one of the parent's children, the one
      * that is placed closest to the end will prevail. */
-    size_t duplicate_children_no_rep(size_t node, size_t parent, size_t after);
-    size_t duplicate_children_no_rep(Tree const* src, size_t node, size_t parent, size_t after);
+    id_type duplicate_children_no_rep(id_type node, id_type parent, id_type after);
+    id_type duplicate_children_no_rep(Tree const* src, id_type node, id_type parent, id_type after);
+
+    void duplicate_contents(id_type node, id_type where);
+    void duplicate_contents(Tree const* src, id_type node, id_type where);
 
 public:
 
-    void merge_with(Tree const* src, size_t src_node=NONE, size_t dst_root=NONE);
+    void merge_with(Tree const* src, id_type src_node=NONE, id_type dst_root=NONE);
 
     /** @} */
 
@@ -990,16 +774,16 @@ public:
     /** get the current size of the tree's internal arena */
     RYML_DEPRECATED("use arena_size() instead") size_t arena_pos() const { return m_arena_pos; }
     /** get the current size of the tree's internal arena */
-    inline size_t arena_size() const { return m_arena_pos; }
+    size_t arena_size() const { return m_arena_pos; }
     /** get the current capacity of the tree's internal arena */
-    inline size_t arena_capacity() const { return m_arena.len; }
+    size_t arena_capacity() const { return m_arena.len; }
     /** get the current slack of the tree's internal arena */
-    inline size_t arena_slack() const { _RYML_CB_ASSERT(m_callbacks, m_arena.len >= m_arena_pos); return m_arena.len - m_arena_pos; }
+    size_t arena_slack() const { _RYML_CB_ASSERT(m_callbacks, m_arena.len >= m_arena_pos); return m_arena.len - m_arena_pos; }
 
     /** get the current arena */
     csubstr arena() const { return m_arena.first(m_arena_pos); }
     /** get the current arena */
-    substr arena() { return m_arena.first(m_arena_pos); }
+    substr arena() { return m_arena.first(m_arena_pos); } // NOLINT(readability-make-member-function-const)
 
     /** return true if the given substring is part of the tree's string arena */
     bool in_arena(csubstr s) const
@@ -1014,12 +798,12 @@ public:
      * existing arena, and thus change the contents of individual
      * nodes, and thus cost O(numnodes)+O(arenasize). To avoid this
      * cost, ensure that the arena is reserved to an appropriate size
-     * using .reserve_arena()
+     * using @ref Tree::reserve_arena().
      *
      * @see alloc_arena() */
     template<class T>
-    typename std::enable_if<std::is_floating_point<T>::value, csubstr>::type
-    to_arena(T const& C4_RESTRICT a)
+    auto to_arena(T const& C4_RESTRICT a)
+        -> typename std::enable_if<std::is_floating_point<T>::value, csubstr>::type
     {
         substr rem(m_arena.sub(m_arena_pos));
         size_t num = to_chars_float(rem, a);
@@ -1040,12 +824,12 @@ public:
      * existing arena, and thus change the contents of individual
      * nodes, and thus cost O(numnodes)+O(arenasize). To avoid this
      * cost, ensure that the arena is reserved to an appropriate size
-     * using .reserve_arena()
+     * using @ref Tree::reserve_arena().
      *
      * @see alloc_arena() */
     template<class T>
-    typename std::enable_if<!std::is_floating_point<T>::value, csubstr>::type
-    to_arena(T const& C4_RESTRICT a)
+    auto to_arena(T const& C4_RESTRICT a)
+        -> typename std::enable_if<!std::is_floating_point<T>::value, csubstr>::type
     {
         substr rem(m_arena.sub(m_arena_pos));
         size_t num = to_chars(rem, a);
@@ -1066,7 +850,7 @@ public:
      * existing arena, and thus change the contents of individual
      * nodes, and thus cost O(numnodes)+O(arenasize). To avoid this
      * cost, ensure that the arena is reserved to an appropriate size
-     * using .reserve_arena()
+     * using @ref Tree::reserve_arena().
      *
      * @see alloc_arena() */
     csubstr to_arena(csubstr a)
@@ -1104,7 +888,7 @@ public:
     {
         return to_arena(to_csubstr(s));
     }
-    C4_ALWAYS_INLINE csubstr to_arena(std::nullptr_t)
+    C4_ALWAYS_INLINE static csubstr to_arena(std::nullptr_t)
     {
         return csubstr{};
     }
@@ -1116,9 +900,11 @@ public:
      * existing arena, and thus change the contents of individual
      * nodes, and thus cost O(numnodes)+O(arenasize). To avoid this
      * cost, ensure that the arena is reserved to an appropriate size
-     * using .reserve_arena()
+     * before using @ref Tree::reserve_arena()
      *
-     * @see alloc_arena() */
+     * @see reserve_arena()
+     * @see alloc_arena()
+     */
     substr copy_to_arena(csubstr s)
     {
         substr cp = alloc_arena(s.len);
@@ -1127,7 +913,7 @@ public:
         #if (!defined(__clang__)) && (defined(__GNUC__) && __GNUC__ >= 10)
         C4_SUPPRESS_WARNING_GCC_PUSH
         C4_SUPPRESS_WARNING_GCC("-Wstringop-overflow=") // no need for terminating \0
-        C4_SUPPRESS_WARNING_GCC( "-Wrestrict") // there's an assert to ensure no violation of restrict behavior
+        C4_SUPPRESS_WARNING_GCC("-Wrestrict") // there's an assert to ensure no violation of restrict behavior
         #endif
         if(s.len)
             memcpy(cp.str, s.str, s.len);
@@ -1156,8 +942,8 @@ public:
     }
 
     /** ensure the tree's internal string arena is at least the given capacity
-     * @note This operation has a potential complexity of O(numNodes)+O(arenasize).
-     * Growing the arena may cause relocation of the entire
+     * @warning This operation may be expensive, with a potential complexity of O(numNodes)+O(arenasize).
+     * @warning Growing the arena may cause relocation of the entire
      * existing arena, and thus change the contents of individual nodes. */
     void reserve_arena(size_t arena_cap)
     {
@@ -1191,6 +977,7 @@ private:
 
     substr _request_span(size_t sz)
     {
+        _RYML_CB_ASSERT(m_callbacks, m_arena_pos + sz <= m_arena.len);
         substr s;
         s = m_arena.sub(m_arena_pos, sz);
         m_arena_pos += sz;
@@ -1201,7 +988,7 @@ private:
     {
         _RYML_CB_ASSERT(m_callbacks, m_arena.is_super(s));
         _RYML_CB_ASSERT(m_callbacks, m_arena.sub(0, m_arena_pos).is_super(s));
-        auto pos = (s.str - m_arena.str);
+        auto pos = (s.str - m_arena.str); // this is larger than 0 based on the assertions above
         substr r(next_arena.str + pos, s.len);
         _RYML_CB_ASSERT(m_callbacks, r.str - next_arena.str == pos);
         _RYML_CB_ASSERT(m_callbacks, next_arena.sub(0, m_arena_pos).is_super(r));
@@ -1215,15 +1002,15 @@ public:
 
     struct lookup_result
     {
-        size_t  target;
-        size_t  closest;
+        id_type  target;
+        id_type  closest;
         size_t  path_pos;
         csubstr path;
 
-        inline operator bool() const { return target != NONE; }
+        operator bool() const { return target != NONE; }
 
         lookup_result() : target(NONE), closest(NONE), path_pos(0), path() {}
-        lookup_result(csubstr path_, size_t start) : target(NONE), closest(start), path_pos(0), path(path_) {}
+        lookup_result(csubstr path_, id_type start) : target(NONE), closest(start), path_pos(0), path(path_) {}
 
         /** get the part ot the input path that was resolved */
         csubstr resolved() const;
@@ -1232,19 +1019,19 @@ public:
     };
 
     /** for example foo.bar[0].baz */
-    lookup_result lookup_path(csubstr path, size_t start=NONE) const;
+    lookup_result lookup_path(csubstr path, id_type start=NONE) const;
 
     /** defaulted lookup: lookup @p path; if the lookup fails, recursively modify
      * the tree so that the corresponding lookup_path() would return the
      * default value.
      * @see lookup_path() */
-    size_t lookup_path_or_modify(csubstr default_value, csubstr path, size_t start=NONE);
+    id_type lookup_path_or_modify(csubstr default_value, csubstr path, id_type start=NONE);
 
     /** defaulted lookup: lookup @p path; if the lookup fails, recursively modify
      * the tree so that the corresponding lookup_path() would return the
      * branch @p src_node (from the tree @p src).
      * @see lookup_path() */
-    size_t lookup_path_or_modify(Tree const *src, size_t src_node, csubstr path, size_t start=NONE);
+    id_type lookup_path_or_modify(Tree const *src, id_type src_node, csubstr path, id_type start=NONE);
 
     /** @} */
 
@@ -1256,19 +1043,19 @@ private:
         NodeType type;
         _lookup_path_token() : value(), type() {}
         _lookup_path_token(csubstr v, NodeType t) : value(v), type(t) {}
-        inline operator bool() const { return type != NOTYPE; }
+        operator bool() const { return type != NOTYPE; }
         bool is_index() const { return value.begins_with('[') && value.ends_with(']'); }
     };
 
-    size_t _lookup_path_or_create(csubstr path, size_t start);
+    id_type _lookup_path_or_create(csubstr path, id_type start);
 
     void   _lookup_path       (lookup_result *r) const;
     void   _lookup_path_modify(lookup_result *r);
 
-    size_t _next_node       (lookup_result *r, _lookup_path_token *parent) const;
-    size_t _next_node_modify(lookup_result *r, _lookup_path_token *parent);
+    id_type _next_node       (lookup_result *r, _lookup_path_token *parent) const;
+    id_type _next_node_modify(lookup_result *r, _lookup_path_token *parent);
 
-    void   _advance(lookup_result *r, size_t more) const;
+    static void _advance(lookup_result *r, size_t more);
 
     _lookup_path_token _next_token(lookup_result *r, _lookup_path_token const& parent) const;
 
@@ -1277,7 +1064,7 @@ private:
     void _clear();
     void _free();
     void _copy(Tree const& that);
-    void _move(Tree      & that);
+    void _move(Tree      & that) noexcept;
 
     void _relocate(substr next_arena);
 
@@ -1286,11 +1073,11 @@ public:
     /** @cond dev*/
 
     #if ! RYML_USE_ASSERT
-    C4_ALWAYS_INLINE void _check_next_flags(size_t, type_bits) {}
+    C4_ALWAYS_INLINE void _check_next_flags(id_type, type_bits) {}
     #else
-    void _check_next_flags(size_t node, type_bits f)
+    void _check_next_flags(id_type node, type_bits f)
     {
-        auto n = _p(node);
+        NodeData *n = _p(node);
         type_bits o = n->m_type; // old
         C4_UNUSED(o);
         if(f & MAP)
@@ -1321,34 +1108,34 @@ public:
     }
     #endif
 
-    inline void _set_flags(size_t node, NodeType_e f) { _check_next_flags(node, f); _p(node)->m_type = f; }
-    inline void _set_flags(size_t node, type_bits  f) { _check_next_flags(node, f); _p(node)->m_type = f; }
+    void _set_flags(id_type node, NodeType_e f) { _check_next_flags(node, f); _p(node)->m_type = f; }
+    void _set_flags(id_type node, type_bits  f) { _check_next_flags(node, f); _p(node)->m_type = f; }
 
-    inline void _add_flags(size_t node, NodeType_e f) { NodeData *d = _p(node); type_bits fb = f |  d->m_type; _check_next_flags(node, fb); d->m_type = (NodeType_e) fb; }
-    inline void _add_flags(size_t node, type_bits  f) { NodeData *d = _p(node);                f |= d->m_type; _check_next_flags(node,  f); d->m_type = f; }
+    void _add_flags(id_type node, NodeType_e f) { NodeData *d = _p(node); type_bits fb = f |  d->m_type; _check_next_flags(node, fb); d->m_type = (NodeType_e) fb; }
+    void _add_flags(id_type node, type_bits  f) { NodeData *d = _p(node);                f |= d->m_type; _check_next_flags(node,  f); d->m_type = f; }
 
-    inline void _rem_flags(size_t node, NodeType_e f) { NodeData *d = _p(node); type_bits fb = d->m_type & ~f; _check_next_flags(node, fb); d->m_type = (NodeType_e) fb; }
-    inline void _rem_flags(size_t node, type_bits  f) { NodeData *d = _p(node);            f = d->m_type & ~f; _check_next_flags(node,  f); d->m_type = f; }
+    void _rem_flags(id_type node, NodeType_e f) { NodeData *d = _p(node); type_bits fb = d->m_type & ~f; _check_next_flags(node, fb); d->m_type = (NodeType_e) fb; }
+    void _rem_flags(id_type node, type_bits  f) { NodeData *d = _p(node);            f = d->m_type & ~f; _check_next_flags(node,  f); d->m_type = f; }
 
-    void _set_key(size_t node, csubstr key, type_bits more_flags=0)
+    void _set_key(id_type node, csubstr key, type_bits more_flags=0)
     {
         _p(node)->m_key.scalar = key;
         _add_flags(node, KEY|more_flags);
     }
-    void _set_key(size_t node, NodeScalar const& key, type_bits more_flags=0)
+    void _set_key(id_type node, NodeScalar const& key, type_bits more_flags=0)
     {
         _p(node)->m_key = key;
         _add_flags(node, KEY|more_flags);
     }
 
-    void _set_val(size_t node, csubstr val, type_bits more_flags=0)
+    void _set_val(id_type node, csubstr val, type_bits more_flags=0)
     {
         _RYML_CB_ASSERT(m_callbacks, num_children(node) == 0);
         _RYML_CB_ASSERT(m_callbacks, !is_seq(node) && !is_map(node));
         _p(node)->m_val.scalar = val;
         _add_flags(node, VAL|more_flags);
     }
-    void _set_val(size_t node, NodeScalar const& val, type_bits more_flags=0)
+    void _set_val(id_type node, NodeScalar const& val, type_bits more_flags=0)
     {
         _RYML_CB_ASSERT(m_callbacks, num_children(node) == 0);
         _RYML_CB_ASSERT(m_callbacks,  ! is_container(node));
@@ -1356,7 +1143,7 @@ public:
         _add_flags(node, VAL|more_flags);
     }
 
-    void _set(size_t node, NodeInit const& i)
+    void _set(id_type node, NodeInit const& i)
     {
         _RYML_CB_ASSERT(m_callbacks, i._check());
         NodeData *n = _p(node);
@@ -1373,10 +1160,10 @@ public:
         n->m_val = i.val;
     }
 
-    void _set_parent_as_container_if_needed(size_t in)
+    void _set_parent_as_container_if_needed(id_type in)
     {
         NodeData const* n = _p(in);
-        size_t ip = parent(in);
+        id_type ip = parent(in);
         if(ip != NONE)
         {
             if( ! (is_seq(ip) || is_map(ip)))
@@ -1396,10 +1183,10 @@ public:
         }
     }
 
-    void _seq2map(size_t node)
+    void _seq2map(id_type node)
     {
         _RYML_CB_ASSERT(m_callbacks, is_seq(node));
-        for(size_t i = first_child(node); i != NONE; i = next_sibling(i))
+        for(id_type i = first_child(node); i != NONE; i = next_sibling(i))
         {
             NodeData *C4_RESTRICT ch = _p(i);
             if(ch->m_type.is_keyval())
@@ -1412,24 +1199,24 @@ public:
         n->m_type.add(MAP);
     }
 
-    size_t _do_reorder(size_t *node, size_t count);
+    id_type _do_reorder(id_type *node, id_type count);
 
-    void _swap(size_t n_, size_t m_);
-    void _swap_props(size_t n_, size_t m_);
-    void _swap_hierarchy(size_t n_, size_t m_);
-    void _copy_hierarchy(size_t dst_, size_t src_);
+    void _swap(id_type n_, id_type m_);
+    void _swap_props(id_type n_, id_type m_);
+    void _swap_hierarchy(id_type n_, id_type m_);
+    void _copy_hierarchy(id_type dst_, id_type src_);
 
-    inline void _copy_props(size_t dst_, size_t src_)
+    void _copy_props(id_type dst_, id_type src_)
     {
         _copy_props(dst_, this, src_);
     }
 
-    inline void _copy_props_wo_key(size_t dst_, size_t src_)
+    void _copy_props_wo_key(id_type dst_, id_type src_)
     {
         _copy_props_wo_key(dst_, this, src_);
     }
 
-    void _copy_props(size_t dst_, Tree const* that_tree, size_t src_)
+    void _copy_props(id_type dst_, Tree const* that_tree, id_type src_)
     {
         auto      & C4_RESTRICT dst = *_p(dst_);
         auto const& C4_RESTRICT src = *that_tree->_p(src_);
@@ -1438,7 +1225,16 @@ public:
         dst.m_val  = src.m_val;
     }
 
-    void _copy_props_wo_key(size_t dst_, Tree const* that_tree, size_t src_)
+    void _copy_props(id_type dst_, Tree const* that_tree, id_type src_, type_bits src_mask)
+    {
+        auto      & C4_RESTRICT dst = *_p(dst_);
+        auto const& C4_RESTRICT src = *that_tree->_p(src_);
+        dst.m_type = (src.m_type & src_mask) | (dst.m_type & ~src_mask);
+        dst.m_key  = src.m_key;
+        dst.m_val  = src.m_val;
+    }
+
+    void _copy_props_wo_key(id_type dst_, Tree const* that_tree, id_type src_)
     {
         auto      & C4_RESTRICT dst = *_p(dst_);
         auto const& C4_RESTRICT src = *that_tree->_p(src_);
@@ -1446,12 +1242,20 @@ public:
         dst.m_val  = src.m_val;
     }
 
-    inline void _clear_type(size_t node)
+    void _copy_props_wo_key(id_type dst_, Tree const* that_tree, id_type src_, type_bits src_mask)
+    {
+        auto      & C4_RESTRICT dst = *_p(dst_);
+        auto const& C4_RESTRICT src = *that_tree->_p(src_);
+        dst.m_type = (src.m_type & ((~_KEYMASK)|src_mask)) | (dst.m_type & (_KEYMASK|~src_mask));
+        dst.m_val  = src.m_val;
+    }
+
+    void _clear_type(id_type node)
     {
         _p(node)->m_type = NOTYPE;
     }
 
-    inline void _clear(size_t node)
+    void _clear(id_type node)
     {
         auto *C4_RESTRICT n = _p(node);
         n->m_type = NOTYPE;
@@ -1462,13 +1266,13 @@ public:
         n->m_last_child = NONE;
     }
 
-    inline void _clear_key(size_t node)
+    void _clear_key(id_type node)
     {
         _p(node)->m_key.clear();
         _rem_flags(node, KEY);
     }
 
-    inline void _clear_val(size_t node)
+    void _clear_val(id_type node)
     {
         _p(node)->m_val.clear();
         _rem_flags(node, VAL);
@@ -1478,28 +1282,30 @@ public:
 
 private:
 
-    void _clear_range(size_t first, size_t num);
+    void _clear_range(id_type first, id_type num);
 
-    size_t _claim();
+public:
+    id_type _claim();
+private:
     void   _claim_root();
-    void   _release(size_t node);
-    void   _free_list_add(size_t node);
-    void   _free_list_rem(size_t node);
+    void   _release(id_type node);
+    void   _free_list_add(id_type node);
+    void   _free_list_rem(id_type node);
 
-    void _set_hierarchy(size_t node, size_t parent, size_t after_sibling);
-    void _rem_hierarchy(size_t node);
+    void _set_hierarchy(id_type node, id_type parent, id_type after_sibling);
+    void _rem_hierarchy(id_type node);
 
 public:
 
     // members are exposed, but you should NOT access them directly
 
-    NodeData * m_buf;
-    size_t m_cap;
+    NodeData *m_buf;
+    id_type   m_cap;
 
-    size_t m_size;
+    id_type m_size;
 
-    size_t m_free_head;
-    size_t m_free_tail;
+    id_type m_free_head;
+    id_type m_free_tail;
 
     substr m_arena;
     size_t m_arena_pos;
@@ -1510,7 +1316,213 @@ public:
 
 };
 
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+
+/** @defgroup doc_serialization_helpers Serialization helpers
+ *
+ * @{
+ */
+
+
+// NON-ARITHMETIC -------------------------------------------------------------
+
+/** convert the val of a scalar node to a particular non-arithmetic
+ * non-float type, by forwarding its val to @ref from_chars<T>(). The
+ * full string is used.
+ * @return false if the conversion failed, or if the key was empty and unquoted */
+template<class T>
+inline auto read(Tree const* C4_RESTRICT tree, id_type id, T *v)
+    -> typename std::enable_if<!std::is_arithmetic<T>::value, bool>::type
+{
+    return C4_LIKELY(!(tree->type(id) & VALNIL)) ? from_chars(tree->val(id), v) : false;
+}
+
+/** convert the key of a node to a particular non-arithmetic
+ * non-float type, by forwarding its key to @ref from_chars<T>(). The
+ * full string is used.
+ * @return false if the conversion failed, or if the key was empty and unquoted */
+template<class T>
+inline auto readkey(Tree const* C4_RESTRICT tree, id_type id, T *v)
+    -> typename std::enable_if<!std::is_arithmetic<T>::value, bool>::type
+{
+    return C4_LIKELY(!(tree->type(id) & KEYNIL)) ? from_chars(tree->key(id), v) : false;
+}
+
+
+// INTEGRAL, NOT FLOATING -------------------------------------------------------------
+
+/** convert the val of a scalar node to a particular arithmetic
+ * integral non-float type, by forwarding its val to @ref
+ * from_chars<T>(). The full string is used.
+ *
+ * @return false if the conversion failed */
+template<class T>
+inline auto read(Tree const* C4_RESTRICT tree, id_type id, T *v)
+    -> typename std::enable_if<std::is_arithmetic<T>::value && !std::is_floating_point<T>::value, bool>::type
+{
+    using U = typename std::remove_cv<T>::type;
+    enum { ischar = std::is_same<char, U>::value || std::is_same<signed char, U>::value || std::is_same<unsigned char, U>::value };
+    csubstr val = tree->val(id);
+    NodeType ty = tree->type(id);
+    if(C4_UNLIKELY((ty & VALNIL) || val.empty()))
+        return false;
+    // quote integral numbers if they have a leading 0
+    // https://github.com/biojppm/rapidyaml/issues/291
+    char first = val[0];
+    if(ty.is_val_quoted() && (first != '0' && !ischar))
+        return false;
+    else if(first == '+')
+        val = val.sub(1);
+    return from_chars(val, v);
+}
+
+/** convert the key of a node to a particular arithmetic
+ * integral non-float type, by forwarding its val to @ref
+ * from_chars<T>(). The full string is used.
+ *
+ * @return false if the conversion failed */
+template<class T>
+inline auto readkey(Tree const* C4_RESTRICT tree, id_type id, T *v)
+    -> typename std::enable_if<std::is_arithmetic<T>::value && !std::is_floating_point<T>::value, bool>::type
+{
+    using U = typename std::remove_cv<T>::type;
+    enum { ischar = std::is_same<char, U>::value || std::is_same<signed char, U>::value || std::is_same<unsigned char, U>::value };
+    csubstr key = tree->key(id);
+    NodeType ty = tree->type(id);
+    if((ty & KEYNIL) || key.empty())
+        return false;
+    // quote integral numbers if they have a leading 0
+    // https://github.com/biojppm/rapidyaml/issues/291
+    char first = key[0];
+    if(ty.is_key_quoted() && (first != '0' && !ischar))
+        return false;
+    else if(first == '+')
+        key = key.sub(1);
+    return from_chars(key, v);
+}
+
+
+// FLOATING -------------------------------------------------------------
+
+/** encode a floating point value to a string. */
+template<class T>
+size_t to_chars_float(substr buf, T val)
+{
+    static_assert(std::is_floating_point<T>::value, "must be floating point");
+    C4_SUPPRESS_WARNING_GCC_CLANG_WITH_PUSH("-Wfloat-equal");
+    if(C4_UNLIKELY(std::isnan(val)))
+        return to_chars(buf, csubstr(".nan"));
+    else if(C4_UNLIKELY(val == std::numeric_limits<T>::infinity()))
+        return to_chars(buf, csubstr(".inf"));
+    else if(C4_UNLIKELY(val == -std::numeric_limits<T>::infinity()))
+        return to_chars(buf, csubstr("-.inf"));
+    return to_chars(buf, val);
+    C4_SUPPRESS_WARNING_GCC_CLANG_POP
+}
+
+
+/** decode a floating point from string. Accepts special values: .nan,
+ * .inf, -.inf */
+template<class T>
+bool from_chars_float(csubstr buf, T *C4_RESTRICT val)
+{
+    static_assert(std::is_floating_point<T>::value, "must be floating point");
+    if(buf.begins_with('+'))
+    {
+        buf = buf.sub(1);
+    }
+    if(C4_LIKELY(from_chars(buf, val)))
+    {
+        return true;
+    }
+    else if(C4_UNLIKELY(buf == ".nan" || buf == ".NaN" || buf == ".NAN"))
+    {
+        *val = std::numeric_limits<T>::quiet_NaN();
+        return true;
+    }
+    else if(C4_UNLIKELY(buf == ".inf" || buf == ".Inf" || buf == ".INF"))
+    {
+        *val = std::numeric_limits<T>::infinity();
+        return true;
+    }
+    else if(C4_UNLIKELY(buf == "-.inf" || buf == "-.Inf" || buf == "-.INF"))
+    {
+        *val = -std::numeric_limits<T>::infinity();
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+/** convert the val of a scalar node to a floating point type, by
+ * forwarding its val to @ref from_chars_float<T>().
+ *
+ * @return false if the conversion failed
+ *
+ * @warning Unlike non-floating types, only the leading part of the
+ * string that may constitute a number is processed. This happens
+ * because the float parsing is delegated to fast_float, which is
+ * implemented that way. Consequently, for example, all of `"34"`,
+ * `"34 "` `"34hg"` `"34 gh"` will be read as 34. If you are not sure
+ * about the contents of the data, you can use
+ * csubstr::first_real_span() to check before calling `>>`, for
+ * example like this:
+ *
+ * ```cpp
+ * csubstr val = node.val();
+ * if(val.first_real_span() == val)
+ *     node >> v;
+ * else
+ *     ERROR("not a real")
+ * ```
+ */
+template<class T>
+typename std::enable_if<std::is_floating_point<T>::value, bool>::type
+inline read(Tree const* C4_RESTRICT tree, id_type id, T *v)
+{
+    csubstr val = tree->val(id);
+    return C4_LIKELY(!val.empty()) ? from_chars_float(val, v) : false;
+}
+
+/** convert the key of a scalar node to a floating point type, by
+ * forwarding its key to @ref from_chars_float<T>().
+ *
+ * @return false if the conversion failed
+ *
+ * @warning Unlike non-floating types, only the leading part of the
+ * string that may constitute a number is processed. This happens
+ * because the float parsing is delegated to fast_float, which is
+ * implemented that way. Consequently, for example, all of `"34"`,
+ * `"34 "` `"34hg"` `"34 gh"` will be read as 34. If you are not sure
+ * about the contents of the data, you can use
+ * csubstr::first_real_span() to check before calling `>>`, for
+ * example like this:
+ *
+ * ```cpp
+ * csubstr key = node.key();
+ * if(key.first_real_span() == key)
+ *     node >> v;
+ * else
+ *     ERROR("not a real")
+ * ```
+ */
+template<class T>
+typename std::enable_if<std::is_floating_point<T>::value, bool>::type
+inline readkey(Tree const* C4_RESTRICT tree, id_type id, T *v)
+{
+    csubstr key = tree->key(id);
+    return C4_LIKELY(!key.empty()) ? from_chars_float(key, v) : false;
+}
+
 /** @} */
+
+/** @} */
+
 
 } // namespace yml
 } // namespace c4

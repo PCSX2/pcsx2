@@ -4,9 +4,9 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-#define C4_LOGF_ERR(...) fprintf(stderr, __VA_ARGS__); fflush(stderr)
-#define C4_LOGF_WARN(...) fprintf(stderr, __VA_ARGS__); fflush(stderr)
-#define C4_LOGP(msg, ...) printf(msg)
+#define C4_LOGF_ERR(...) (void)fprintf(stderr, __VA_ARGS__); (void)fflush(stderr)
+#define C4_LOGF_WARN(...) (void)fprintf(stderr, __VA_ARGS__); (void)fflush(stderr)
+#define C4_LOGP(msg, ...) (void)printf(msg)
 
 #if defined(C4_XBOX) || (defined(C4_WIN) && defined(C4_MSVC))
 #   include "c4/windows.hpp"
@@ -41,6 +41,7 @@
 #   pragma GCC diagnostic ignored "-Wformat-nonliteral"
 #   pragma GCC diagnostic ignored "-Wold-style-cast"
 #endif
+// NOLINTBEGIN(*use-anonymous-namespace*,cert-dcl50-cpp)
 
 
 //-----------------------------------------------------------------------------
@@ -48,6 +49,7 @@ namespace c4 {
 
 static error_flags         s_error_flags = ON_ERROR_DEFAULTS;
 static error_callback_type s_error_callback = nullptr;
+
 
 //-----------------------------------------------------------------------------
 
@@ -70,6 +72,7 @@ void set_error_callback(error_callback_type cb)
     s_error_callback = cb;
 }
 
+
 //-----------------------------------------------------------------------------
 
 void handle_error(srcloc where, const char *fmt, ...)
@@ -80,7 +83,7 @@ void handle_error(srcloc where, const char *fmt, ...)
     {
         va_list args;
         va_start(args, fmt);
-        int ilen = vsnprintf(buf, sizeof(buf), fmt, args); // ss.vprintf(fmt, args);
+        int ilen = vsnprintf(buf, sizeof(buf), fmt, args); // NOLINT(clang-analyzer-valist.Uninitialized)
         va_end(args);
         msglen = ilen >= 0 && ilen < (int)sizeof(buf) ? static_cast<size_t>(ilen) : sizeof(buf)-1;
     }
@@ -102,8 +105,15 @@ void handle_error(srcloc where, const char *fmt, ...)
     {
         if(s_error_callback)
         {
-            s_error_callback(buf, msglen/*ss.c_strp(), ss.tellp()*/);
+            s_error_callback(buf, msglen);
         }
+    }
+
+    if(s_error_flags & ON_ERROR_THROW)
+    {
+#if defined(C4_EXCEPTIONS_ENABLED) && defined(C4_ERROR_THROWS_EXCEPTION)
+        throw std::runtime_error(buf);
+#endif
     }
 
     if(s_error_flags & ON_ERROR_ABORT)
@@ -111,14 +121,8 @@ void handle_error(srcloc where, const char *fmt, ...)
         abort();
     }
 
-    if(s_error_flags & ON_ERROR_THROW)
-    {
-#if defined(C4_EXCEPTIONS_ENABLED) && defined(C4_ERROR_THROWS_EXCEPTION)
-        throw std::runtime_error(buf);
-#else
-        abort();
-#endif
-    }
+    abort(); // abort anyway, in case nothing was set
+    C4_UNREACHABLE_AFTER_ERR();
 }
 
 //-----------------------------------------------------------------------------
@@ -126,20 +130,23 @@ void handle_error(srcloc where, const char *fmt, ...)
 void handle_warning(srcloc where, const char *fmt, ...)
 {
     va_list args;
-    char buf[1024]; //sstream<c4::string> ss;
+    char buf[1024];
     va_start(args, fmt);
-    vsnprintf(buf, sizeof(buf), fmt, args);
+    int ret = vsnprintf(buf, sizeof(buf), fmt, args); // NOLINT(clang-analyzer-valist.Uninitialized)
+    if(ret+1 > (int)sizeof(buf))
+        buf[sizeof(buf) - 1] = '\0'; // truncate
+    else if(ret < 0)
+        buf[0] = '\0'; // output/format error
     va_end(args);
     C4_LOGF_WARN("\n");
 #if defined(C4_ERROR_SHOWS_FILELINE) && defined(C4_ERROR_SHOWS_FUNC)
-    C4_LOGF_WARN("%s:%d: WARNING: %s\n", where.file, where.line, buf/*ss.c_strp()*/);
+    C4_LOGF_WARN("%s:%d: WARNING: %s\n", where.file, where.line, buf);
     C4_LOGF_WARN("%s:%d: WARNING: here: %s\n", where.file, where.line, where.func);
 #elif defined(C4_ERROR_SHOWS_FILELINE)
-    C4_LOGF_WARN("%s:%d: WARNING: %s\n", where.file, where.line, buf/*ss.c_strp()*/);
+    C4_LOGF_WARN("%s:%d: WARNING: %s\n", where.file, where.line, buf);
 #elif ! defined(C4_ERROR_SHOWS_FUNC)
-    C4_LOGF_WARN("WARNING: %s\n", buf/*ss.c_strp()*/);
+    C4_LOGF_WARN("WARNING: %s\n", buf);
 #endif
-    //c4::log.flush();
 }
 
 //-----------------------------------------------------------------------------
@@ -158,30 +165,21 @@ bool is_debugger_attached()
         //! @see http://stackoverflow.com/questions/3596781/how-to-detect-if-the-current-process-is-being-run-by-gdb
         //! (this answer: http://stackoverflow.com/a/24969863/3968589 )
         char buf[1024] = "";
-        int status_fd = open("/proc/self/status", O_RDONLY);
+        int status_fd = open("/proc/self/status", O_RDONLY); // NOLINT
         if (status_fd == -1)
+            return false;
+        ssize_t num_read = ::read(status_fd, buf, sizeof(buf));
+        if (num_read > 0)
         {
-            return 0;
+            static const char TracerPid[] = "TracerPid:";
+            char *tracer_pid;
+            if(num_read < 1024)
+                buf[num_read] = 0;
+            tracer_pid = strstr(buf, TracerPid);
+            if(tracer_pid)
+                first_call_result = !!::atoi(tracer_pid + sizeof(TracerPid) - 1); // NOLINT
         }
-        else
-        {
-            ssize_t num_read = ::read(status_fd, buf, sizeof(buf));
-            if (num_read > 0)
-            {
-                static const char TracerPid[] = "TracerPid:";
-                char *tracer_pid;
-                if(num_read < 1024)
-                {
-                    buf[num_read] = 0;
-                }
-                tracer_pid = strstr(buf, TracerPid);
-                if (tracer_pid)
-                {
-                    first_call_result = !!::atoi(tracer_pid + sizeof(TracerPid) - 1);
-                }
-            }
-            close(status_fd);
-        }
+        close(status_fd);
         C4_SUPPRESS_WARNING_GCC_POP
     }
     return first_call_result;
@@ -216,6 +214,7 @@ bool is_debugger_attached()
     size = sizeof(info);
     junk = sysctl(mib, sizeof(mib) / sizeof(*mib), &info, &size, NULL, 0);
     assert(junk == 0);
+    (void)junk;
 
     // We're being debugged if the P_TRACED flag is set.
     return ((info.kp_proc.p_flag & P_TRACED) != 0);
@@ -226,6 +225,7 @@ bool is_debugger_attached()
 
 } // namespace c4
 
+// NOLINTEND(*use-anonymous-namespace*,cert-dcl50-cpp)
 
 #ifdef __clang__
 #   pragma clang diagnostic pop

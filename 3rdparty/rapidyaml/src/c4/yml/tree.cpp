@@ -1,236 +1,17 @@
 #include "c4/yml/tree.hpp"
 #include "c4/yml/detail/parser_dbg.hpp"
 #include "c4/yml/node.hpp"
-#include "c4/yml/detail/stack.hpp"
+#include "c4/yml/reference_resolver.hpp"
 
 
 C4_SUPPRESS_WARNING_MSVC_WITH_PUSH(4296/*expression is always 'boolean_value'*/)
+C4_SUPPRESS_WARNING_MSVC(4702/*unreachable code*/)
 C4_SUPPRESS_WARNING_GCC_CLANG_WITH_PUSH("-Wold-style-cast")
 C4_SUPPRESS_WARNING_GCC("-Wtype-limits")
+C4_SUPPRESS_WARNING_GCC("-Wuseless-cast")
 
 namespace c4 {
 namespace yml {
-
-
-csubstr normalize_tag(csubstr tag)
-{
-    YamlTag_e t = to_tag(tag);
-    if(t != TAG_NONE)
-        return from_tag(t);
-    if(tag.begins_with("!<"))
-        tag = tag.sub(1);
-    if(tag.begins_with("<!"))
-        return tag;
-    return tag;
-}
-
-csubstr normalize_tag_long(csubstr tag)
-{
-    YamlTag_e t = to_tag(tag);
-    if(t != TAG_NONE)
-        return from_tag_long(t);
-    if(tag.begins_with("!<"))
-        tag = tag.sub(1);
-    if(tag.begins_with("<!"))
-        return tag;
-    return tag;
-}
-
-YamlTag_e to_tag(csubstr tag)
-{
-    if(tag.begins_with("!<"))
-        tag = tag.sub(1);
-    if(tag.begins_with("!!"))
-        tag = tag.sub(2);
-    else if(tag.begins_with('!'))
-        return TAG_NONE;
-    else if(tag.begins_with("tag:yaml.org,2002:"))
-    {
-        RYML_ASSERT(csubstr("tag:yaml.org,2002:").len == 18);
-        tag = tag.sub(18);
-    }
-    else if(tag.begins_with("<tag:yaml.org,2002:"))
-    {
-        RYML_ASSERT(csubstr("<tag:yaml.org,2002:").len == 19);
-        tag = tag.sub(19);
-        if(!tag.len)
-            return TAG_NONE;
-        tag = tag.offs(0, 1);
-    }
-
-    if(tag == "map")
-        return TAG_MAP;
-    else if(tag == "omap")
-        return TAG_OMAP;
-    else if(tag == "pairs")
-        return TAG_PAIRS;
-    else if(tag == "set")
-        return TAG_SET;
-    else if(tag == "seq")
-        return TAG_SEQ;
-    else if(tag == "binary")
-        return TAG_BINARY;
-    else if(tag == "bool")
-        return TAG_BOOL;
-    else if(tag == "float")
-        return TAG_FLOAT;
-    else if(tag == "int")
-        return TAG_INT;
-    else if(tag == "merge")
-        return TAG_MERGE;
-    else if(tag == "null")
-        return TAG_NULL;
-    else if(tag == "str")
-        return TAG_STR;
-    else if(tag == "timestamp")
-        return TAG_TIMESTAMP;
-    else if(tag == "value")
-        return TAG_VALUE;
-
-    return TAG_NONE;
-}
-
-csubstr from_tag_long(YamlTag_e tag)
-{
-    switch(tag)
-    {
-    case TAG_MAP:
-        return {"<tag:yaml.org,2002:map>"};
-    case TAG_OMAP:
-        return {"<tag:yaml.org,2002:omap>"};
-    case TAG_PAIRS:
-        return {"<tag:yaml.org,2002:pairs>"};
-    case TAG_SET:
-        return {"<tag:yaml.org,2002:set>"};
-    case TAG_SEQ:
-        return {"<tag:yaml.org,2002:seq>"};
-    case TAG_BINARY:
-        return {"<tag:yaml.org,2002:binary>"};
-    case TAG_BOOL:
-        return {"<tag:yaml.org,2002:bool>"};
-    case TAG_FLOAT:
-        return {"<tag:yaml.org,2002:float>"};
-    case TAG_INT:
-        return {"<tag:yaml.org,2002:int>"};
-    case TAG_MERGE:
-        return {"<tag:yaml.org,2002:merge>"};
-    case TAG_NULL:
-        return {"<tag:yaml.org,2002:null>"};
-    case TAG_STR:
-        return {"<tag:yaml.org,2002:str>"};
-    case TAG_TIMESTAMP:
-        return {"<tag:yaml.org,2002:timestamp>"};
-    case TAG_VALUE:
-        return {"<tag:yaml.org,2002:value>"};
-    case TAG_YAML:
-        return {"<tag:yaml.org,2002:yaml>"};
-    case TAG_NONE:
-        return {""};
-    }
-    return {""};
-}
-
-csubstr from_tag(YamlTag_e tag)
-{
-    switch(tag)
-    {
-    case TAG_MAP:
-        return {"!!map"};
-    case TAG_OMAP:
-        return {"!!omap"};
-    case TAG_PAIRS:
-        return {"!!pairs"};
-    case TAG_SET:
-        return {"!!set"};
-    case TAG_SEQ:
-        return {"!!seq"};
-    case TAG_BINARY:
-        return {"!!binary"};
-    case TAG_BOOL:
-        return {"!!bool"};
-    case TAG_FLOAT:
-        return {"!!float"};
-    case TAG_INT:
-        return {"!!int"};
-    case TAG_MERGE:
-        return {"!!merge"};
-    case TAG_NULL:
-        return {"!!null"};
-    case TAG_STR:
-        return {"!!str"};
-    case TAG_TIMESTAMP:
-        return {"!!timestamp"};
-    case TAG_VALUE:
-        return {"!!value"};
-    case TAG_YAML:
-        return {"!!yaml"};
-    case TAG_NONE:
-        return {""};
-    }
-    return {""};
-}
-
-
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-
-const char* NodeType::type_str(NodeType_e ty)
-{
-    switch(ty & _TYMASK)
-    {
-    case KEYVAL:
-        return "KEYVAL";
-    case KEY:
-        return "KEY";
-    case VAL:
-        return "VAL";
-    case MAP:
-        return "MAP";
-    case SEQ:
-        return "SEQ";
-    case KEYMAP:
-        return "KEYMAP";
-    case KEYSEQ:
-        return "KEYSEQ";
-    case DOCSEQ:
-        return "DOCSEQ";
-    case DOCMAP:
-        return "DOCMAP";
-    case DOCVAL:
-        return "DOCVAL";
-    case DOC:
-        return "DOC";
-    case STREAM:
-        return "STREAM";
-    case NOTYPE:
-        return "NOTYPE";
-    default:
-        if((ty & KEYVAL) == KEYVAL)
-            return "KEYVAL***";
-        if((ty & KEYMAP) == KEYMAP)
-            return "KEYMAP***";
-        if((ty & KEYSEQ) == KEYSEQ)
-            return "KEYSEQ***";
-        if((ty & DOCSEQ) == DOCSEQ)
-            return "DOCSEQ***";
-        if((ty & DOCMAP) == DOCMAP)
-            return "DOCMAP***";
-        if((ty & DOCVAL) == DOCVAL)
-            return "DOCVAL***";
-        if(ty & KEY)
-            return "KEY***";
-        if(ty & VAL)
-            return "VAL***";
-        if(ty & MAP)
-            return "MAP***";
-        if(ty & SEQ)
-            return "SEQ***";
-        if(ty & DOC)
-            return "DOC***";
-        return "(unk)";
-    }
-}
 
 
 //-----------------------------------------------------------------------------
@@ -251,17 +32,17 @@ ConstNodeRef Tree::crootref() const
     return ConstNodeRef(this, root_id());
 }
 
-NodeRef Tree::ref(size_t id)
+NodeRef Tree::ref(id_type id)
 {
     _RYML_CB_ASSERT(m_callbacks, id != NONE && id >= 0 && id < m_cap);
     return NodeRef(this, id);
 }
-ConstNodeRef Tree::ref(size_t id) const
+ConstNodeRef Tree::ref(id_type id) const
 {
     _RYML_CB_ASSERT(m_callbacks, id != NONE && id >= 0 && id < m_cap);
     return ConstNodeRef(this, id);
 }
-ConstNodeRef Tree::cref(size_t id) const
+ConstNodeRef Tree::cref(id_type id) const
 {
     _RYML_CB_ASSERT(m_callbacks, id != NONE && id >= 0 && id < m_cap);
     return ConstNodeRef(this, id);
@@ -276,20 +57,24 @@ ConstNodeRef Tree::operator[] (csubstr key) const
     return rootref()[key];
 }
 
-NodeRef Tree::operator[] (size_t i)
+NodeRef Tree::operator[] (id_type i)
 {
     return rootref()[i];
 }
-ConstNodeRef Tree::operator[] (size_t i) const
+ConstNodeRef Tree::operator[] (id_type i) const
 {
     return rootref()[i];
 }
 
-NodeRef Tree::docref(size_t i)
+NodeRef Tree::docref(id_type i)
 {
     return ref(doc(i));
 }
-ConstNodeRef Tree::docref(size_t i) const
+ConstNodeRef Tree::docref(id_type i) const
+{
+    return cref(doc(i));
+}
+ConstNodeRef Tree::cdocref(id_type i) const
 {
     return cref(doc(i));
 }
@@ -305,10 +90,11 @@ Tree::Tree(Callbacks const& cb)
     , m_arena()
     , m_arena_pos(0)
     , m_callbacks(cb)
+    , m_tag_directives()
 {
 }
 
-Tree::Tree(size_t node_capacity, size_t arena_capacity, Callbacks const& cb)
+Tree::Tree(id_type node_capacity, size_t arena_capacity, Callbacks const& cb)
     : Tree(cb)
 {
     reserve(node_capacity);
@@ -328,22 +114,28 @@ Tree::Tree(Tree const& that) : Tree(that.m_callbacks)
 
 Tree& Tree::operator= (Tree const& that)
 {
-    _free();
-    m_callbacks = that.m_callbacks;
-    _copy(that);
+    if(&that != this)
+    {
+        _free();
+        m_callbacks = that.m_callbacks;
+        _copy(that);
+    }
     return *this;
 }
 
-Tree::Tree(Tree && that) : Tree(that.m_callbacks)
+Tree::Tree(Tree && that) noexcept : Tree(that.m_callbacks)
 {
     _move(that);
 }
 
-Tree& Tree::operator= (Tree && that)
+Tree& Tree::operator= (Tree && that) noexcept
 {
-    _free();
-    m_callbacks = that.m_callbacks;
-    _move(that);
+    if(&that != this)
+    {
+        _free();
+        m_callbacks = that.m_callbacks;
+        _move(that);
+    }
     return *this;
 }
 
@@ -352,7 +144,7 @@ void Tree::_free()
     if(m_buf)
     {
         _RYML_CB_ASSERT(m_callbacks, m_cap > 0);
-        _RYML_CB_FREE(m_callbacks, m_buf, NodeData, m_cap);
+        _RYML_CB_FREE(m_callbacks, m_buf, NodeData, (size_t)m_cap);
     }
     if(m_arena.str)
     {
@@ -377,7 +169,7 @@ void Tree::_clear()
     m_free_tail = 0;
     m_arena = {};
     m_arena_pos = 0;
-    for(size_t i = 0; i < RYML_MAX_TAG_DIRECTIVES; ++i)
+    for(id_type i = 0; i < RYML_MAX_TAG_DIRECTIVES; ++i)
         m_tag_directives[i] = {};
 }
 
@@ -386,8 +178,11 @@ void Tree::_copy(Tree const& that)
     _RYML_CB_ASSERT(m_callbacks, m_buf == nullptr);
     _RYML_CB_ASSERT(m_callbacks, m_arena.str == nullptr);
     _RYML_CB_ASSERT(m_callbacks, m_arena.len == 0);
-    m_buf = _RYML_CB_ALLOC_HINT(m_callbacks, NodeData, that.m_cap, that.m_buf);
-    memcpy(m_buf, that.m_buf, that.m_cap * sizeof(NodeData));
+    if(that.m_cap)
+    {
+        m_buf = _RYML_CB_ALLOC_HINT(m_callbacks, NodeData, (size_t)that.m_cap, that.m_buf);
+        memcpy(m_buf, that.m_buf, (size_t)that.m_cap * sizeof(NodeData));
+    }
     m_cap = that.m_cap;
     m_size = that.m_size;
     m_free_head = that.m_free_head;
@@ -403,11 +198,11 @@ void Tree::_copy(Tree const& that)
         _relocate(arena); // does a memcpy of the arena and updates nodes using the old arena
         m_arena = arena;
     }
-    for(size_t i = 0; i < RYML_MAX_TAG_DIRECTIVES; ++i)
+    for(id_type i = 0; i < RYML_MAX_TAG_DIRECTIVES; ++i)
         m_tag_directives[i] = that.m_tag_directives[i];
 }
 
-void Tree::_move(Tree & that)
+void Tree::_move(Tree & that) noexcept
 {
     _RYML_CB_ASSERT(m_callbacks, m_buf == nullptr);
     _RYML_CB_ASSERT(m_callbacks, m_arena.str == nullptr);
@@ -419,7 +214,7 @@ void Tree::_move(Tree & that)
     m_free_tail = that.m_free_tail;
     m_arena = that.m_arena;
     m_arena_pos = that.m_arena_pos;
-    for(size_t i = 0; i < RYML_MAX_TAG_DIRECTIVES; ++i)
+    for(id_type i = 0; i < RYML_MAX_TAG_DIRECTIVES; ++i)
         m_tag_directives[i] = that.m_tag_directives[i];
     that._clear();
 }
@@ -428,7 +223,8 @@ void Tree::_relocate(substr next_arena)
 {
     _RYML_CB_ASSERT(m_callbacks, next_arena.not_empty());
     _RYML_CB_ASSERT(m_callbacks, next_arena.len >= m_arena.len);
-    memcpy(next_arena.str, m_arena.str, m_arena_pos);
+    if(m_arena_pos)
+        memcpy(next_arena.str, m_arena.str, m_arena_pos);
     for(NodeData *C4_RESTRICT n = m_buf, *e = m_buf + m_cap; n != e; ++n)
     {
         if(in_arena(n->m_key.scalar))
@@ -455,17 +251,17 @@ void Tree::_relocate(substr next_arena)
 
 
 //-----------------------------------------------------------------------------
-void Tree::reserve(size_t cap)
+void Tree::reserve(id_type cap)
 {
     if(cap > m_cap)
     {
-        NodeData *buf = _RYML_CB_ALLOC_HINT(m_callbacks, NodeData, cap, m_buf);
+        NodeData *buf = _RYML_CB_ALLOC_HINT(m_callbacks, NodeData, (size_t)cap, m_buf);
         if(m_buf)
         {
-            memcpy(buf, m_buf, m_cap * sizeof(NodeData));
-            _RYML_CB_FREE(m_callbacks, m_buf, NodeData, m_cap);
+            memcpy(buf, m_buf, (size_t)m_cap * sizeof(NodeData));
+            _RYML_CB_FREE(m_callbacks, m_buf, NodeData, (size_t)m_cap);
         }
-        size_t first = m_cap, del = cap - m_cap;
+        id_type first = m_cap, del = cap - m_cap;
         m_cap = cap;
         m_buf = buf;
         _clear_range(first, del);
@@ -509,26 +305,26 @@ void Tree::clear()
         m_free_head = NONE;
         m_free_tail = NONE;
     }
-    for(size_t i = 0; i < RYML_MAX_TAG_DIRECTIVES; ++i)
+    for(id_type i = 0; i < RYML_MAX_TAG_DIRECTIVES; ++i)
         m_tag_directives[i] = {};
 }
 
 void Tree::_claim_root()
 {
-    size_t r = _claim();
+    id_type r = _claim();
     _RYML_CB_ASSERT(m_callbacks, r == 0);
     _set_hierarchy(r, NONE, NONE);
 }
 
 
 //-----------------------------------------------------------------------------
-void Tree::_clear_range(size_t first, size_t num)
+void Tree::_clear_range(id_type first, id_type num)
 {
     if(num == 0)
         return; // prevent overflow when subtracting
     _RYML_CB_ASSERT(m_callbacks, first >= 0 && first + num <= m_cap);
-    memset(m_buf + first, 0, num * sizeof(NodeData)); // TODO we should not need this
-    for(size_t i = first, e = first + num; i < e; ++i)
+    memset(m_buf + first, 0, (size_t)num * sizeof(NodeData)); // TODO we should not need this
+    for(id_type i = first, e = first + num; i < e; ++i)
     {
         _clear(i);
         NodeData *n = m_buf + i;
@@ -542,7 +338,7 @@ C4_SUPPRESS_WARNING_GCC_POP
 
 
 //-----------------------------------------------------------------------------
-void Tree::_release(size_t i)
+void Tree::_release(id_type i)
 {
     _RYML_CB_ASSERT(m_callbacks, i >= 0 && i < m_cap);
 
@@ -555,7 +351,7 @@ void Tree::_release(size_t i)
 
 //-----------------------------------------------------------------------------
 // add to the front of the free list
-void Tree::_free_list_add(size_t i)
+void Tree::_free_list_add(id_type i)
 {
     _RYML_CB_ASSERT(m_callbacks, i >= 0 && i < m_cap);
     NodeData &C4_RESTRICT w = m_buf[i];
@@ -570,7 +366,7 @@ void Tree::_free_list_add(size_t i)
         m_free_tail = m_free_head;
 }
 
-void Tree::_free_list_rem(size_t i)
+void Tree::_free_list_rem(id_type i)
 {
     if(m_free_head == i)
         m_free_head = _p(i)->m_next_sibling;
@@ -578,11 +374,11 @@ void Tree::_free_list_rem(size_t i)
 }
 
 //-----------------------------------------------------------------------------
-size_t Tree::_claim()
+id_type Tree::_claim()
 {
     if(m_free_head == NONE || m_buf == nullptr)
     {
-        size_t sz = 2 * m_cap;
+        id_type sz = 2 * m_cap;
         sz = sz ? sz : 16;
         reserve(sz);
         _RYML_CB_ASSERT(m_callbacks, m_free_head != NONE);
@@ -591,7 +387,7 @@ size_t Tree::_claim()
     _RYML_CB_ASSERT(m_callbacks, m_size < m_cap);
     _RYML_CB_ASSERT(m_callbacks, m_free_head >= 0 && m_free_head < m_cap);
 
-    size_t ichild = m_free_head;
+    id_type ichild = m_free_head;
     NodeData *child = m_buf + ichild;
 
     ++m_size;
@@ -612,16 +408,22 @@ size_t Tree::_claim()
 C4_SUPPRESS_WARNING_GCC_PUSH
 C4_SUPPRESS_WARNING_CLANG_PUSH
 C4_SUPPRESS_WARNING_CLANG("-Wnull-dereference")
-#if defined(__GNUC__) && (__GNUC__ >= 6)
+#if defined(__GNUC__)
+#if (__GNUC__ >= 6)
 C4_SUPPRESS_WARNING_GCC("-Wnull-dereference")
 #endif
+#if (__GNUC__ > 9)
+C4_SUPPRESS_WARNING_GCC("-Wanalyzer-fd-leak")
+#endif
+#endif
 
-void Tree::_set_hierarchy(size_t ichild, size_t iparent, size_t iprev_sibling)
+void Tree::_set_hierarchy(id_type ichild, id_type iparent, id_type iprev_sibling)
 {
+    _RYML_CB_ASSERT(m_callbacks, ichild >= 0 && ichild < m_cap);
     _RYML_CB_ASSERT(m_callbacks, iparent == NONE || (iparent >= 0 && iparent < m_cap));
     _RYML_CB_ASSERT(m_callbacks, iprev_sibling == NONE || (iprev_sibling >= 0 && iprev_sibling < m_cap));
 
-    NodeData *C4_RESTRICT child = get(ichild);
+    NodeData *C4_RESTRICT child = _p(ichild);
 
     child->m_parent = iparent;
     child->m_prev_sibling = NONE;
@@ -636,7 +438,7 @@ void Tree::_set_hierarchy(size_t ichild, size_t iparent, size_t iprev_sibling)
     if(iparent == NONE)
         return;
 
-    size_t inext_sibling = iprev_sibling != NONE ? next_sibling(iprev_sibling) : first_child(iparent);
+    id_type inext_sibling = iprev_sibling != NONE ? next_sibling(iprev_sibling) : first_child(iparent);
     NodeData *C4_RESTRICT parent = get(iparent);
     NodeData *C4_RESTRICT psib   = get(iprev_sibling);
     NodeData *C4_RESTRICT nsib   = get(inext_sibling);
@@ -678,7 +480,7 @@ C4_SUPPRESS_WARNING_CLANG_POP
 
 
 //-----------------------------------------------------------------------------
-void Tree::_rem_hierarchy(size_t i)
+void Tree::_rem_hierarchy(id_type i)
 {
     _RYML_CB_ASSERT(m_callbacks, i >= 0 && i < m_cap);
 
@@ -712,14 +514,8 @@ void Tree::_rem_hierarchy(size_t i)
 }
 
 //-----------------------------------------------------------------------------
-void Tree::reorder()
-{
-    size_t r = root_id();
-    _do_reorder(&r, 0);
-}
-
-//-----------------------------------------------------------------------------
-size_t Tree::_do_reorder(size_t *node, size_t count)
+/** @cond dev */
+id_type Tree::_do_reorder(id_type *node, id_type count)
 {
     // swap this node if it's not in place
     if(*node != count)
@@ -730,7 +526,7 @@ size_t Tree::_do_reorder(size_t *node, size_t count)
     ++count; // bump the count from this node
 
     // now descend in the hierarchy
-    for(size_t i = first_child(*node); i != NONE; i = next_sibling(i))
+    for(id_type i = first_child(*node); i != NONE; i = next_sibling(i))
     {
         // this child may have been relocated to a different index,
         // so get an updated version
@@ -738,9 +534,18 @@ size_t Tree::_do_reorder(size_t *node, size_t count)
     }
     return count;
 }
+/** @endcond */
+
+void Tree::reorder()
+{
+    id_type r = root_id();
+    _do_reorder(&r, 0);
+}
+
 
 //-----------------------------------------------------------------------------
-void Tree::_swap(size_t n_, size_t m_)
+/** @cond dev */
+void Tree::_swap(id_type n_, id_type m_)
 {
     _RYML_CB_ASSERT(m_callbacks, (parent(n_) != NONE) || type(n_) == NOTYPE);
     _RYML_CB_ASSERT(m_callbacks, (parent(m_) != NONE) || type(m_) == NOTYPE);
@@ -774,18 +579,18 @@ void Tree::_swap(size_t n_, size_t m_)
 }
 
 //-----------------------------------------------------------------------------
-void Tree::_swap_hierarchy(size_t ia, size_t ib)
+void Tree::_swap_hierarchy(id_type ia, id_type ib)
 {
     if(ia == ib) return;
 
-    for(size_t i = first_child(ia); i != NONE; i = next_sibling(i))
+    for(id_type i = first_child(ia); i != NONE; i = next_sibling(i))
     {
         if(i == ib || i == ia)
             continue;
         _p(i)->m_parent = ib;
     }
 
-    for(size_t i = first_child(ib); i != NONE; i = next_sibling(i))
+    for(id_type i = first_child(ib); i != NONE; i = next_sibling(i))
     {
         if(i == ib || i == ia)
             continue;
@@ -871,7 +676,7 @@ void Tree::_swap_hierarchy(size_t ia, size_t ib)
                 _RYML_CB_ASSERT(m_callbacks, b.m_next_sibling != ia);
                 _p(b.m_next_sibling)->m_prev_sibling = ia;
             }
-            size_t ns = b.m_next_sibling;
+            id_type ns = b.m_next_sibling;
             b.m_prev_sibling = a.m_prev_sibling;
             b.m_next_sibling = ia;
             a.m_prev_sibling = ib;
@@ -890,7 +695,7 @@ void Tree::_swap_hierarchy(size_t ia, size_t ib)
                 _RYML_CB_ASSERT(m_callbacks, a.m_next_sibling != ib);
                 _p(a.m_next_sibling)->m_prev_sibling = ib;
             }
-            size_t ns = b.m_prev_sibling;
+            id_type ns = b.m_prev_sibling;
             a.m_prev_sibling = b.m_prev_sibling;
             a.m_next_sibling = ib;
             b.m_prev_sibling = ia;
@@ -930,12 +735,12 @@ void Tree::_swap_hierarchy(size_t ia, size_t ib)
 }
 
 //-----------------------------------------------------------------------------
-void Tree::_copy_hierarchy(size_t dst_, size_t src_)
+void Tree::_copy_hierarchy(id_type dst_, id_type src_)
 {
     auto const& C4_RESTRICT src = *_p(src_);
     auto      & C4_RESTRICT dst = *_p(dst_);
     auto      & C4_RESTRICT prt = *_p(src.m_parent);
-    for(size_t i = src.m_first_child; i != NONE; i = next_sibling(i))
+    for(id_type i = src.m_first_child; i != NONE; i = next_sibling(i))
     {
         _p(i)->m_parent = dst_;
     }
@@ -963,7 +768,7 @@ void Tree::_copy_hierarchy(size_t dst_, size_t src_)
 }
 
 //-----------------------------------------------------------------------------
-void Tree::_swap_props(size_t n_, size_t m_)
+void Tree::_swap_props(id_type n_, id_type m_)
 {
     NodeData &C4_RESTRICT n = *_p(n_);
     NodeData &C4_RESTRICT m = *_p(m_);
@@ -971,9 +776,10 @@ void Tree::_swap_props(size_t n_, size_t m_)
     std::swap(n.m_key, m.m_key);
     std::swap(n.m_val, m.m_val);
 }
+/** @endcond */
 
 //-----------------------------------------------------------------------------
-void Tree::move(size_t node, size_t after)
+void Tree::move(id_type node, id_type after)
 {
     _RYML_CB_ASSERT(m_callbacks, node != NONE);
     _RYML_CB_ASSERT(m_callbacks, node != after);
@@ -986,7 +792,7 @@ void Tree::move(size_t node, size_t after)
 
 //-----------------------------------------------------------------------------
 
-void Tree::move(size_t node, size_t new_parent, size_t after)
+void Tree::move(id_type node, id_type new_parent, id_type after)
 {
     _RYML_CB_ASSERT(m_callbacks, node != NONE);
     _RYML_CB_ASSERT(m_callbacks, node != after);
@@ -999,21 +805,21 @@ void Tree::move(size_t node, size_t new_parent, size_t after)
     _set_hierarchy(node, new_parent, after);
 }
 
-size_t Tree::move(Tree *src, size_t node, size_t new_parent, size_t after)
+id_type Tree::move(Tree *src, id_type node, id_type new_parent, id_type after)
 {
     _RYML_CB_ASSERT(m_callbacks, src != nullptr);
     _RYML_CB_ASSERT(m_callbacks, node != NONE);
     _RYML_CB_ASSERT(m_callbacks, new_parent != NONE);
     _RYML_CB_ASSERT(m_callbacks, new_parent != after);
 
-    size_t dup = duplicate(src, node, new_parent, after);
+    id_type dup = duplicate(src, node, new_parent, after);
     src->remove(node);
     return dup;
 }
 
 void Tree::set_root_as_stream()
 {
-    size_t root = root_id();
+    id_type root = root_id();
     if(is_stream(root))
         return;
     // don't use _add_flags() because it's checked and will fail
@@ -1022,7 +828,7 @@ void Tree::set_root_as_stream()
         if(is_val(root))
         {
             _p(root)->m_type.add(SEQ);
-            size_t next_doc = append_child(root);
+            id_type next_doc = append_child(root);
             _copy_props_wo_key(next_doc, root);
             _p(next_doc)->m_type.add(DOC);
             _p(next_doc)->m_type.rem(SEQ);
@@ -1031,10 +837,10 @@ void Tree::set_root_as_stream()
         return;
     }
     _RYML_CB_ASSERT(m_callbacks, !has_key(root));
-    size_t next_doc = append_child(root);
+    id_type next_doc = append_child(root);
     _copy_props_wo_key(next_doc, root);
     _add_flags(next_doc, DOC);
-    for(size_t prev = NONE, ch = first_child(root), next = next_sibling(ch); ch != NONE; )
+    for(id_type prev = NONE, ch = first_child(root), next = next_sibling(ch); ch != NONE; )
     {
         if(ch == next_doc)
             break;
@@ -1048,15 +854,15 @@ void Tree::set_root_as_stream()
 
 
 //-----------------------------------------------------------------------------
-void Tree::remove_children(size_t node)
+void Tree::remove_children(id_type node)
 {
     _RYML_CB_ASSERT(m_callbacks, get(node) != nullptr);
-    size_t ich = get(node)->m_first_child;
+    id_type ich = get(node)->m_first_child;
     while(ich != NONE)
     {
         remove_children(ich);
         _RYML_CB_ASSERT(m_callbacks, get(ich) != nullptr);
-        size_t next = get(ich)->m_next_sibling;
+        id_type next = get(ich)->m_next_sibling;
         _release(ich);
         if(ich == get(node)->m_last_child)
             break;
@@ -1064,7 +870,7 @@ void Tree::remove_children(size_t node)
     }
 }
 
-bool Tree::change_type(size_t node, NodeType type)
+bool Tree::change_type(id_type node, NodeType type)
 {
     _RYML_CB_ASSERT(m_callbacks, type.is_val() || type.is_map() || type.is_seq());
     _RYML_CB_ASSERT(m_callbacks, type.is_val() + type.is_map() + type.is_seq() == 1);
@@ -1083,19 +889,19 @@ bool Tree::change_type(size_t node, NodeType type)
 
 
 //-----------------------------------------------------------------------------
-size_t Tree::duplicate(size_t node, size_t parent, size_t after)
+id_type Tree::duplicate(id_type node, id_type parent, id_type after)
 {
     return duplicate(this, node, parent, after);
 }
 
-size_t Tree::duplicate(Tree const* src, size_t node, size_t parent, size_t after)
+id_type Tree::duplicate(Tree const* src, id_type node, id_type parent, id_type after)
 {
     _RYML_CB_ASSERT(m_callbacks, src != nullptr);
     _RYML_CB_ASSERT(m_callbacks, node != NONE);
     _RYML_CB_ASSERT(m_callbacks, parent != NONE);
     _RYML_CB_ASSERT(m_callbacks,  ! src->is_root(node));
 
-    size_t copy = _claim();
+    id_type copy = _claim();
 
     _copy_props(copy, src, node);
     _set_hierarchy(copy, parent, after);
@@ -1105,20 +911,20 @@ size_t Tree::duplicate(Tree const* src, size_t node, size_t parent, size_t after
 }
 
 //-----------------------------------------------------------------------------
-size_t Tree::duplicate_children(size_t node, size_t parent, size_t after)
+id_type Tree::duplicate_children(id_type node, id_type parent, id_type after)
 {
     return duplicate_children(this, node, parent, after);
 }
 
-size_t Tree::duplicate_children(Tree const* src, size_t node, size_t parent, size_t after)
+id_type Tree::duplicate_children(Tree const* src, id_type node, id_type parent, id_type after)
 {
     _RYML_CB_ASSERT(m_callbacks, src != nullptr);
     _RYML_CB_ASSERT(m_callbacks, node != NONE);
     _RYML_CB_ASSERT(m_callbacks, parent != NONE);
     _RYML_CB_ASSERT(m_callbacks, after == NONE || has_child(parent, after));
 
-    size_t prev = after;
-    for(size_t i = src->first_child(node); i != NONE; i = src->next_sibling(i))
+    id_type prev = after;
+    for(id_type i = src->first_child(node); i != NONE; i = src->next_sibling(i))
     {
         prev = duplicate(src, i, parent, prev);
     }
@@ -1127,12 +933,12 @@ size_t Tree::duplicate_children(Tree const* src, size_t node, size_t parent, siz
 }
 
 //-----------------------------------------------------------------------------
-void Tree::duplicate_contents(size_t node, size_t where)
+void Tree::duplicate_contents(id_type node, id_type where)
 {
     duplicate_contents(this, node, where);
 }
 
-void Tree::duplicate_contents(Tree const *src, size_t node, size_t where)
+void Tree::duplicate_contents(Tree const *src, id_type node, id_type where)
 {
     _RYML_CB_ASSERT(m_callbacks, src != nullptr);
     _RYML_CB_ASSERT(m_callbacks, node != NONE);
@@ -1142,12 +948,12 @@ void Tree::duplicate_contents(Tree const *src, size_t node, size_t where)
 }
 
 //-----------------------------------------------------------------------------
-size_t Tree::duplicate_children_no_rep(size_t node, size_t parent, size_t after)
+id_type Tree::duplicate_children_no_rep(id_type node, id_type parent, id_type after)
 {
     return duplicate_children_no_rep(this, node, parent, after);
 }
 
-size_t Tree::duplicate_children_no_rep(Tree const *src, size_t node, size_t parent, size_t after)
+id_type Tree::duplicate_children_no_rep(Tree const *src, id_type node, id_type parent, id_type after)
 {
     _RYML_CB_ASSERT(m_callbacks, node != NONE);
     _RYML_CB_ASSERT(m_callbacks, parent != NONE);
@@ -1156,10 +962,10 @@ size_t Tree::duplicate_children_no_rep(Tree const *src, size_t node, size_t pare
     // don't loop using pointers as there may be a relocation
 
     // find the position where "after" is
-    size_t after_pos = NONE;
+    id_type after_pos = NONE;
     if(after != NONE)
     {
-        for(size_t i = first_child(parent), icount = 0; i != NONE; ++icount, i = next_sibling(i))
+        for(id_type i = first_child(parent), icount = 0; i != NONE; ++icount, i = next_sibling(i))
         {
             if(i == after)
             {
@@ -1171,53 +977,68 @@ size_t Tree::duplicate_children_no_rep(Tree const *src, size_t node, size_t pare
     }
 
     // for each child to be duplicated...
-    size_t prev = after;
-    for(size_t i = src->first_child(node); i != NONE; i = src->next_sibling(i))
+    id_type prev = after;
+    for(id_type i = src->first_child(node); i != NONE; i = src->next_sibling(i))
     {
+        _c4dbgpf("duplicate_no_rep: {} -> {}/{}", i, parent, prev);
+        _RYML_CB_CHECK(m_callbacks, this != src || (parent != i && !is_ancestor(parent, i)));
         if(is_seq(parent))
         {
-            prev = duplicate(i, parent, prev);
+            _c4dbgpf("duplicate_no_rep: {} is seq", parent);
+            prev = duplicate(src, i, parent, prev);
         }
         else
         {
+            _c4dbgpf("duplicate_no_rep: {} is map", parent);
             _RYML_CB_ASSERT(m_callbacks, is_map(parent));
             // does the parent already have a node with key equal to that of the current duplicate?
-            size_t rep = NONE, rep_pos = NONE;
-            for(size_t j = first_child(parent), jcount = 0; j != NONE; ++jcount, j = next_sibling(j))
+            id_type dstnode_dup = NONE, dstnode_dup_pos = NONE;
             {
-                if(key(j) == key(i))
+                csubstr srckey = src->key(i);
+                for(id_type j = first_child(parent), jcount = 0; j != NONE; ++jcount, j = next_sibling(j))
                 {
-                    rep = j;
-                    rep_pos = jcount;
-                    break;
+                    if(key(j) == srckey)
+                    {
+                        _c4dbgpf("duplicate_no_rep: found matching key '{}' src={}/{} dst={}/{}", srckey, node, i, parent, j);
+                        dstnode_dup = j;
+                        dstnode_dup_pos = jcount;
+                        break;
+                    }
                 }
             }
-            if(rep == NONE) // there is no repetition; just duplicate
+            _c4dbgpf("duplicate_no_rep: dstnode_dup={} dstnode_dup_pos={} after_pos={}", dstnode_dup, dstnode_dup_pos, after_pos);
+            if(dstnode_dup == NONE) // there is no repetition; just duplicate
             {
+                _c4dbgpf("duplicate_no_rep: no repetition, just duplicate i={} parent={} prev={}", i, parent, prev);
                 prev = duplicate(src, i, parent, prev);
             }
             else  // yes, there is a repetition
             {
-                if(after_pos != NONE && rep_pos < after_pos)
+                if(after_pos != NONE && dstnode_dup_pos <= after_pos)
                 {
-                    // rep is located before the node which will be inserted,
+                    // the dst duplicate is located before the node which will be inserted,
                     // and will be overridden by the duplicate. So replace it.
-                    remove(rep);
+                    _c4dbgpf("duplicate_no_dstnode_dup: replace {}/{} with {}/{}", parent, dstnode_dup, node, i);
+                    if(prev == dstnode_dup)
+                        prev = prev_sibling(dstnode_dup);
+                    remove(dstnode_dup);
                     prev = duplicate(src, i, parent, prev);
                 }
                 else if(prev == NONE)
                 {
-                    // first iteration with prev = after = NONE and repetition
-                    prev = rep;
+                    _c4dbgpf("duplicate_no_dstnode_dup: {}=prev <- {}", prev, dstnode_dup);
+                    // first iteration with prev = after = NONE and dstnode_dupetition
+                    prev = dstnode_dup;
                 }
-                else if(rep != prev)
+                else if(dstnode_dup != prev)
                 {
-                    // rep is located after the node which will be inserted
-                    // and overrides it. So move the rep into this node's place.
-                    move(rep, prev);
-                    prev = rep;
+                    // dstnode_dup is located after the node which will be inserted
+                    // and overrides it. So move the dstnode_dup into this node's place.
+                    _c4dbgpf("duplicate_no_dstnode_dup: move({}, {})", dstnode_dup, prev);
+                    move(dstnode_dup, prev);
+                    prev = dstnode_dup;
                 }
-            } // there's a repetition
+            } // there's a dstnode_dupetition
         }
     }
 
@@ -1227,7 +1048,7 @@ size_t Tree::duplicate_children_no_rep(Tree const *src, size_t node, size_t pare
 
 //-----------------------------------------------------------------------------
 
-void Tree::merge_with(Tree const *src, size_t src_node, size_t dst_node)
+void Tree::merge_with(Tree const *src, id_type src_node, id_type dst_node)
 {
     _RYML_CB_ASSERT(m_callbacks, src != nullptr);
     if(src_node == NONE)
@@ -1235,20 +1056,24 @@ void Tree::merge_with(Tree const *src, size_t src_node, size_t dst_node)
     if(dst_node == NONE)
         dst_node = root_id();
     _RYML_CB_ASSERT(m_callbacks, src->has_val(src_node) || src->is_seq(src_node) || src->is_map(src_node));
-
     if(src->has_val(src_node))
     {
+        type_bits mask_src = ~STYLE; // keep the existing style if it is already a val
         if( ! has_val(dst_node))
         {
             if(has_children(dst_node))
                 remove_children(dst_node);
+            mask_src |= VAL_STYLE; // copy the src style
         }
         if(src->is_keyval(src_node))
-            _copy_props(dst_node, src, src_node);
-        else if(src->is_val(src_node))
-            _copy_props_wo_key(dst_node, src, src_node);
+        {
+            _copy_props(dst_node, src, src_node, mask_src);
+        }
         else
-            C4_NEVER_REACH();
+        {
+            _RYML_CB_ASSERT(m_callbacks, src->is_val(src_node));
+            _copy_props_wo_key(dst_node, src, src_node, mask_src);
+        }
     }
     else if(src->is_seq(src_node))
     {
@@ -1261,16 +1086,18 @@ void Tree::merge_with(Tree const *src, size_t src_node, size_t dst_node)
                 to_seq(dst_node, src->key(src_node));
             else
                 to_seq(dst_node);
+            _p(dst_node)->m_type = src->_p(src_node)->m_type;
         }
-        for(size_t sch = src->first_child(src_node); sch != NONE; sch = src->next_sibling(sch))
+        for(id_type sch = src->first_child(src_node); sch != NONE; sch = src->next_sibling(sch))
         {
-            size_t dch = append_child(dst_node);
+            id_type dch = append_child(dst_node);
             _copy_props_wo_key(dch, src, sch);
             merge_with(src, sch, dch);
         }
     }
-    else if(src->is_map(src_node))
+    else
     {
+        _RYML_CB_ASSERT(m_callbacks, src->is_map(src_node));
         if( ! is_map(dst_node))
         {
             if(has_children(dst_node))
@@ -1280,10 +1107,11 @@ void Tree::merge_with(Tree const *src, size_t src_node, size_t dst_node)
                 to_map(dst_node, src->key(src_node));
             else
                 to_map(dst_node);
+            _p(dst_node)->m_type = src->_p(src_node)->m_type;
         }
-        for(size_t sch = src->first_child(src_node); sch != NONE; sch = src->next_sibling(sch))
+        for(id_type sch = src->first_child(src_node); sch != NONE; sch = src->next_sibling(sch))
         {
-            size_t dch = find_child(dst_node, src->key(sch));
+            id_type dch = find_child(dst_node, src->key(sch));
             if(dch == NONE)
             {
                 dch = append_child(dst_node);
@@ -1292,279 +1120,42 @@ void Tree::merge_with(Tree const *src, size_t src_node, size_t dst_node)
             merge_with(src, sch, dch);
         }
     }
-    else
-    {
-        C4_NEVER_REACH();
-    }
 }
 
 
 //-----------------------------------------------------------------------------
 
-namespace detail {
-/** @todo make this part of the public API, refactoring as appropriate
- * to be able to use the same resolver to handle multiple trees (one
- * at a time) */
-struct ReferenceResolver
-{
-    struct refdata
-    {
-        NodeType type;
-        size_t node;
-        size_t prev_anchor;
-        size_t target;
-        size_t parent_ref;
-        size_t parent_ref_sibling;
-    };
-
-    Tree *t;
-    /** from the specs: "an alias node refers to the most recent
-     * node in the serialization having the specified anchor". So
-     * we need to start looking upward from ref nodes.
-     *
-     * @see http://yaml.org/spec/1.2/spec.html#id2765878 */
-    stack<refdata> refs;
-
-    ReferenceResolver(Tree *t_) : t(t_), refs(t_->callbacks())
-    {
-        resolve();
-    }
-
-    void store_anchors_and_refs()
-    {
-        // minimize (re-)allocations by counting first
-        size_t num_anchors_and_refs = count_anchors_and_refs(t->root_id());
-        if(!num_anchors_and_refs)
-            return;
-        refs.reserve(num_anchors_and_refs);
-
-        // now descend through the hierarchy
-        _store_anchors_and_refs(t->root_id());
-
-        // finally connect the reference list
-        size_t prev_anchor = npos;
-        size_t count = 0;
-        for(auto &rd : refs)
-        {
-            rd.prev_anchor = prev_anchor;
-            if(rd.type.is_anchor())
-                prev_anchor = count;
-            ++count;
-        }
-    }
-
-    size_t count_anchors_and_refs(size_t n)
-    {
-        size_t c = 0;
-        c += t->has_key_anchor(n);
-        c += t->has_val_anchor(n);
-        c += t->is_key_ref(n);
-        c += t->is_val_ref(n);
-        for(size_t ch = t->first_child(n); ch != NONE; ch = t->next_sibling(ch))
-            c += count_anchors_and_refs(ch);
-        return c;
-    }
-
-    void _store_anchors_and_refs(size_t n)
-    {
-        if(t->is_key_ref(n) || t->is_val_ref(n) || (t->has_key(n) && t->key(n) == "<<"))
-        {
-            if(t->is_seq(n))
-            {
-                // for merging multiple inheritance targets
-                //   <<: [ *CENTER, *BIG ]
-                for(size_t ich = t->first_child(n); ich != NONE; ich = t->next_sibling(ich))
-                {
-                    RYML_ASSERT(t->num_children(ich) == 0);
-                    refs.push({VALREF, ich, npos, npos, n, t->next_sibling(n)});
-                }
-                return;
-            }
-            if(t->is_key_ref(n) && t->key(n) != "<<") // insert key refs BEFORE inserting val refs
-            {
-                RYML_CHECK((!t->has_key(n)) || t->key(n).ends_with(t->key_ref(n)));
-                refs.push({KEYREF, n, npos, npos, NONE, NONE});
-            }
-            if(t->is_val_ref(n))
-            {
-                RYML_CHECK((!t->has_val(n)) || t->val(n).ends_with(t->val_ref(n)));
-                refs.push({VALREF, n, npos, npos, NONE, NONE});
-            }
-        }
-        if(t->has_key_anchor(n))
-        {
-            RYML_CHECK(t->has_key(n));
-            refs.push({KEYANCH, n, npos, npos, NONE, NONE});
-        }
-        if(t->has_val_anchor(n))
-        {
-            RYML_CHECK(t->has_val(n) || t->is_container(n));
-            refs.push({VALANCH, n, npos, npos, NONE, NONE});
-        }
-        for(size_t ch = t->first_child(n); ch != NONE; ch = t->next_sibling(ch))
-        {
-            _store_anchors_and_refs(ch);
-        }
-    }
-
-    size_t lookup_(refdata *C4_RESTRICT ra)
-    {
-        RYML_ASSERT(ra->type.is_key_ref() || ra->type.is_val_ref());
-        RYML_ASSERT(ra->type.is_key_ref() != ra->type.is_val_ref());
-        csubstr refname;
-        if(ra->type.is_val_ref())
-        {
-            refname = t->val_ref(ra->node);
-        }
-        else
-        {
-            RYML_ASSERT(ra->type.is_key_ref());
-            refname = t->key_ref(ra->node);
-        }
-        while(ra->prev_anchor != npos)
-        {
-            ra = &refs[ra->prev_anchor];
-            if(t->has_anchor(ra->node, refname))
-                return ra->node;
-        }
-
-        #ifndef RYML_ERRMSG_SIZE
-          #define RYML_ERRMSG_SIZE 1024
-        #endif
-
-        char errmsg[RYML_ERRMSG_SIZE];
-        snprintf(errmsg, RYML_ERRMSG_SIZE, "anchor does not exist: '%.*s'",
-                 static_cast<int>(refname.size()), refname.data());
-        c4::yml::error(errmsg);
-        C4_UNREACHABLE_AFTER_ERR();
-    }
-
-    void resolve()
-    {
-        store_anchors_and_refs();
-        if(refs.empty())
-            return;
-
-        /* from the specs: "an alias node refers to the most recent
-         * node in the serialization having the specified anchor". So
-         * we need to start looking upward from ref nodes.
-         *
-         * @see http://yaml.org/spec/1.2/spec.html#id2765878 */
-        for(size_t i = 0, e = refs.size(); i < e; ++i)
-        {
-            auto &C4_RESTRICT rd = refs.top(i);
-            if( ! rd.type.is_ref())
-                continue;
-            rd.target = lookup_(&rd);
-        }
-    }
-
-}; // ReferenceResolver
-} // namespace detail
-
-void Tree::resolve()
+void Tree::resolve(bool clear_anchors)
 {
     if(m_size == 0)
         return;
-
-    detail::ReferenceResolver rr(this);
-
-    // insert the resolved references
-    size_t prev_parent_ref = NONE;
-    size_t prev_parent_ref_after = NONE;
-    for(auto const& C4_RESTRICT rd : rr.refs)
-    {
-        if( ! rd.type.is_ref())
-            continue;
-        if(rd.parent_ref != NONE)
-        {
-            _RYML_CB_ASSERT(m_callbacks, is_seq(rd.parent_ref));
-            size_t after, p = parent(rd.parent_ref);
-            if(prev_parent_ref != rd.parent_ref)
-            {
-                after = rd.parent_ref;//prev_sibling(rd.parent_ref_sibling);
-                prev_parent_ref_after = after;
-            }
-            else
-            {
-                after = prev_parent_ref_after;
-            }
-            prev_parent_ref = rd.parent_ref;
-            prev_parent_ref_after = duplicate_children_no_rep(rd.target, p, after);
-            remove(rd.node);
-        }
-        else
-        {
-            if(has_key(rd.node) && is_key_ref(rd.node) && key(rd.node) == "<<")
-            {
-                _RYML_CB_ASSERT(m_callbacks, is_keyval(rd.node));
-                size_t p = parent(rd.node);
-                size_t after = prev_sibling(rd.node);
-                duplicate_children_no_rep(rd.target, p, after);
-                remove(rd.node);
-            }
-            else if(rd.type.is_key_ref())
-            {
-                _RYML_CB_ASSERT(m_callbacks, is_key_ref(rd.node));
-                _RYML_CB_ASSERT(m_callbacks, has_key_anchor(rd.target) || has_val_anchor(rd.target));
-                if(has_val_anchor(rd.target) && val_anchor(rd.target) == key_ref(rd.node))
-                {
-                    _RYML_CB_CHECK(m_callbacks, !is_container(rd.target));
-                    _RYML_CB_CHECK(m_callbacks, has_val(rd.target));
-                    _p(rd.node)->m_key.scalar = val(rd.target);
-                    _add_flags(rd.node, KEY);
-                }
-                else
-                {
-                    _RYML_CB_CHECK(m_callbacks, key_anchor(rd.target) == key_ref(rd.node));
-                    _p(rd.node)->m_key.scalar = key(rd.target);
-                    _add_flags(rd.node, VAL);
-                }
-            }
-            else
-            {
-                _RYML_CB_ASSERT(m_callbacks, rd.type.is_val_ref());
-                if(has_key_anchor(rd.target) && key_anchor(rd.target) == val_ref(rd.node))
-                {
-                    _RYML_CB_CHECK(m_callbacks, !is_container(rd.target));
-                    _RYML_CB_CHECK(m_callbacks, has_val(rd.target));
-                    _p(rd.node)->m_val.scalar = key(rd.target);
-                    _add_flags(rd.node, VAL);
-                }
-                else
-                {
-                    duplicate_contents(rd.target, rd.node);
-                }
-            }
-        }
-    }
-
-    // clear anchors and refs
-    for(auto const& C4_RESTRICT ar : rr.refs)
-    {
-        rem_anchor_ref(ar.node);
-        if(ar.parent_ref != NONE)
-            if(type(ar.parent_ref) != NOTYPE)
-                remove(ar.parent_ref);
-    }
-
+    ReferenceResolver rr;
+    resolve(&rr, clear_anchors);
 }
+
+void Tree::resolve(ReferenceResolver *C4_RESTRICT rr, bool clear_anchors)
+{
+    if(m_size == 0)
+        return;
+    rr->resolve(this, clear_anchors);
+}
+
 
 //-----------------------------------------------------------------------------
 
-size_t Tree::num_children(size_t node) const
+id_type Tree::num_children(id_type node) const
 {
-    size_t count = 0;
-    for(size_t i = first_child(node); i != NONE; i = next_sibling(i))
+    id_type count = 0;
+    for(id_type i = first_child(node); i != NONE; i = next_sibling(i))
         ++count;
     return count;
 }
 
-size_t Tree::child(size_t node, size_t pos) const
+id_type Tree::child(id_type node, id_type pos) const
 {
     _RYML_CB_ASSERT(m_callbacks, node != NONE);
-    size_t count = 0;
-    for(size_t i = first_child(node); i != NONE; i = next_sibling(i))
+    id_type count = 0;
+    for(id_type i = first_child(node); i != NONE; i = next_sibling(i))
     {
         if(count++ == pos)
             return i;
@@ -1572,17 +1163,17 @@ size_t Tree::child(size_t node, size_t pos) const
     return NONE;
 }
 
-size_t Tree::child_pos(size_t node, size_t ch) const
+id_type Tree::child_pos(id_type node, id_type ch) const
 {
     _RYML_CB_ASSERT(m_callbacks, node != NONE);
-    size_t count = 0;
-    for(size_t i = first_child(node); i != NONE; i = next_sibling(i))
+    id_type count = 0;
+    for(id_type i = first_child(node); i != NONE; i = next_sibling(i))
     {
         if(i == ch)
             return count;
         ++count;
     }
-    return npos;
+    return NONE;
 }
 
 #if defined(__clang__)
@@ -1593,9 +1184,12 @@ size_t Tree::child_pos(size_t node, size_t ch) const
 #   if __GNUC__ >= 6
 #       pragma GCC diagnostic ignored "-Wnull-dereference"
 #   endif
+#   if __GNUC__ > 9
+#       pragma GCC diagnostic ignored "-Wanalyzer-null-dereference"
+#   endif
 #endif
 
-size_t Tree::find_child(size_t node, csubstr const& name) const
+id_type Tree::find_child(id_type node, csubstr const& name) const
 {
     _RYML_CB_ASSERT(m_callbacks, node != NONE);
     _RYML_CB_ASSERT(m_callbacks, is_map(node));
@@ -1608,7 +1202,7 @@ size_t Tree::find_child(size_t node, csubstr const& name) const
     {
         _RYML_CB_ASSERT(m_callbacks, _p(node)->m_last_child != NONE);
     }
-    for(size_t i = first_child(node); i != NONE; i = next_sibling(i))
+    for(id_type i = first_child(node); i != NONE; i = next_sibling(i))
     {
         if(_p(i)->m_key.scalar == name)
         {
@@ -1624,10 +1218,54 @@ size_t Tree::find_child(size_t node, csubstr const& name) const
 #   pragma GCC diagnostic pop
 #endif
 
+namespace {
+id_type depth_desc_(Tree const& C4_RESTRICT t, id_type id, id_type currdepth=0, id_type maxdepth=0)
+{
+    maxdepth = currdepth > maxdepth ? currdepth : maxdepth;
+    for(id_type child = t.first_child(id); child != NONE; child = t.next_sibling(child))
+    {
+        const id_type d = depth_desc_(t, child, currdepth+1, maxdepth);
+        maxdepth = d > maxdepth ? d : maxdepth;
+    }
+    return maxdepth;
+}
+}
+
+id_type Tree::depth_desc(id_type node) const
+{
+    _RYML_CB_ASSERT(m_callbacks, node != NONE);
+    return depth_desc_(*this, node);
+}
+
+id_type Tree::depth_asc(id_type node) const
+{
+    _RYML_CB_ASSERT(m_callbacks, node != NONE);
+    id_type depth = 0;
+    while(!is_root(node))
+    {
+        ++depth;
+        node = parent(node);
+    }
+    return depth;
+}
+
+bool Tree::is_ancestor(id_type node, id_type ancestor) const
+{
+    _RYML_CB_ASSERT(m_callbacks, node != NONE);
+    id_type p = parent(node);
+    while(p != NONE)
+    {
+        if(p == ancestor)
+            return true;
+        p = parent(p);
+    }
+    return false;
+}
+
 
 //-----------------------------------------------------------------------------
 
-void Tree::to_val(size_t node, csubstr val, type_bits more_flags)
+void Tree::to_val(id_type node, csubstr val, type_bits more_flags)
 {
     _RYML_CB_ASSERT(m_callbacks,  ! has_children(node));
     _RYML_CB_ASSERT(m_callbacks, parent(node) == NONE || ! parent_is_map(node));
@@ -1636,7 +1274,7 @@ void Tree::to_val(size_t node, csubstr val, type_bits more_flags)
     _p(node)->m_val = val;
 }
 
-void Tree::to_keyval(size_t node, csubstr key, csubstr val, type_bits more_flags)
+void Tree::to_keyval(id_type node, csubstr key, csubstr val, type_bits more_flags)
 {
     _RYML_CB_ASSERT(m_callbacks,  ! has_children(node));
     _RYML_CB_ASSERT(m_callbacks, parent(node) == NONE || parent_is_map(node));
@@ -1645,7 +1283,7 @@ void Tree::to_keyval(size_t node, csubstr key, csubstr val, type_bits more_flags
     _p(node)->m_val = val;
 }
 
-void Tree::to_map(size_t node, type_bits more_flags)
+void Tree::to_map(id_type node, type_bits more_flags)
 {
     _RYML_CB_ASSERT(m_callbacks,  ! has_children(node));
     _RYML_CB_ASSERT(m_callbacks, parent(node) == NONE || ! parent_is_map(node)); // parent must not have children with keys
@@ -1654,7 +1292,7 @@ void Tree::to_map(size_t node, type_bits more_flags)
     _p(node)->m_val.clear();
 }
 
-void Tree::to_map(size_t node, csubstr key, type_bits more_flags)
+void Tree::to_map(id_type node, csubstr key, type_bits more_flags)
 {
     _RYML_CB_ASSERT(m_callbacks,  ! has_children(node));
     _RYML_CB_ASSERT(m_callbacks, parent(node) == NONE || parent_is_map(node));
@@ -1663,7 +1301,7 @@ void Tree::to_map(size_t node, csubstr key, type_bits more_flags)
     _p(node)->m_val.clear();
 }
 
-void Tree::to_seq(size_t node, type_bits more_flags)
+void Tree::to_seq(id_type node, type_bits more_flags)
 {
     _RYML_CB_ASSERT(m_callbacks,  ! has_children(node));
     _RYML_CB_ASSERT(m_callbacks, parent(node) == NONE || parent_is_seq(node));
@@ -1672,7 +1310,7 @@ void Tree::to_seq(size_t node, type_bits more_flags)
     _p(node)->m_val.clear();
 }
 
-void Tree::to_seq(size_t node, csubstr key, type_bits more_flags)
+void Tree::to_seq(id_type node, csubstr key, type_bits more_flags)
 {
     _RYML_CB_ASSERT(m_callbacks,  ! has_children(node));
     _RYML_CB_ASSERT(m_callbacks, parent(node) == NONE || parent_is_map(node));
@@ -1681,7 +1319,7 @@ void Tree::to_seq(size_t node, csubstr key, type_bits more_flags)
     _p(node)->m_val.clear();
 }
 
-void Tree::to_doc(size_t node, type_bits more_flags)
+void Tree::to_doc(id_type node, type_bits more_flags)
 {
     _RYML_CB_ASSERT(m_callbacks,  ! has_children(node));
     _set_flags(node, DOC|more_flags);
@@ -1689,7 +1327,7 @@ void Tree::to_doc(size_t node, type_bits more_flags)
     _p(node)->m_val.clear();
 }
 
-void Tree::to_stream(size_t node, type_bits more_flags)
+void Tree::to_stream(id_type node, type_bits more_flags)
 {
     _RYML_CB_ASSERT(m_callbacks,  ! has_children(node));
     _set_flags(node, STREAM|more_flags);
@@ -1699,10 +1337,10 @@ void Tree::to_stream(size_t node, type_bits more_flags)
 
 
 //-----------------------------------------------------------------------------
-size_t Tree::num_tag_directives() const
+id_type Tree::num_tag_directives() const
 {
     // this assumes we have a very small number of tag directives
-    for(size_t i = 0; i < RYML_MAX_TAG_DIRECTIVES; ++i)
+    for(id_type i = 0; i < RYML_MAX_TAG_DIRECTIVES; ++i)
         if(m_tag_directives[i].handle.empty())
             return i;
     return RYML_MAX_TAG_DIRECTIVES;
@@ -1714,134 +1352,115 @@ void Tree::clear_tag_directives()
         td = {};
 }
 
-size_t Tree::add_tag_directive(TagDirective const& td)
+id_type Tree::add_tag_directive(TagDirective const& td)
 {
     _RYML_CB_CHECK(m_callbacks, !td.handle.empty());
     _RYML_CB_CHECK(m_callbacks, !td.prefix.empty());
-    _RYML_CB_ASSERT(m_callbacks, td.handle.begins_with('!'));
-    _RYML_CB_ASSERT(m_callbacks, td.handle.ends_with('!'));
+    _RYML_CB_CHECK(m_callbacks, td.handle.begins_with('!'));
+    _RYML_CB_CHECK(m_callbacks, td.handle.ends_with('!'));
     // https://yaml.org/spec/1.2.2/#rule-ns-word-char
-    _RYML_CB_ASSERT(m_callbacks, td.handle == '!' || td.handle == "!!" || td.handle.trim('!').first_not_of("01234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-") == npos);
-    size_t pos = num_tag_directives();
+    _RYML_CB_CHECK(m_callbacks, td.handle == '!' || td.handle == "!!" || td.handle.trim('!').first_not_of("01234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-") == npos);
+    id_type pos = num_tag_directives();
     _RYML_CB_CHECK(m_callbacks, pos < RYML_MAX_TAG_DIRECTIVES);
     m_tag_directives[pos] = td;
     return pos;
 }
 
-size_t Tree::resolve_tag(substr output, csubstr tag, size_t node_id) const
+bool Tree::add_tag_directive(csubstr directive_)
+{
+    TagDirective td;
+    if(td.create_from_str(directive_, this))
+    {
+        add_tag_directive(td);
+        return true;
+    }
+    return false;
+}
+
+size_t Tree::resolve_tag(substr output, csubstr tag, id_type node_id) const
 {
     // lookup from the end. We want to find the first directive that
     // matches the tag and has a target node id leq than the given
     // node_id.
-    for(size_t i = RYML_MAX_TAG_DIRECTIVES-1; i != (size_t)-1; --i)
+    for(id_type i = RYML_MAX_TAG_DIRECTIVES-1; i != (id_type)-1; --i)
     {
         auto const& td = m_tag_directives[i];
         if(td.handle.empty())
             continue;
         if(tag.begins_with(td.handle) && td.next_node_id <= node_id)
+            return td.transform(tag, output, m_callbacks);
+    }
+    if(tag.begins_with('!'))
+    {
+        if(is_custom_tag(tag))
         {
-            _RYML_CB_ASSERT(m_callbacks, tag.len >= td.handle.len);
-            csubstr rest = tag.sub(td.handle.len);
-            size_t len = 1u + td.prefix.len + rest.len + 1u;
-            size_t numpc = rest.count('%');
-            if(numpc == 0)
-            {
-                if(len <= output.len)
-                {
-                    output.str[0] = '<';
-                    memcpy(1u + output.str, td.prefix.str, td.prefix.len);
-                    memcpy(1u + output.str + td.prefix.len, rest.str, rest.len);
-                    output.str[1u + td.prefix.len + rest.len] = '>';
-                }
-            }
-            else
-            {
-                // need to decode URI % sequences
-                size_t pos = rest.find('%');
-                _RYML_CB_ASSERT(m_callbacks, pos != npos);
-                do {
-                    size_t next = rest.first_not_of("0123456789abcdefABCDEF", pos+1);
-                    if(next == npos)
-                        next = rest.len;
-                    _RYML_CB_CHECK(m_callbacks, pos+1 < next);
-                    _RYML_CB_CHECK(m_callbacks, pos+1 + 2 <= next);
-                    size_t delta = next - (pos+1);
-                    len -= delta;
-                    pos = rest.find('%', pos+1);
-                } while(pos != npos);
-                if(len <= output.len)
-                {
-                    size_t prev = 0, wpos = 0;
-                    auto appendstr = [&](csubstr s) { memcpy(output.str + wpos, s.str, s.len); wpos += s.len; };
-                    auto appendchar = [&](char c) { output.str[wpos++] = c; };
-                    appendchar('<');
-                    appendstr(td.prefix);
-                    pos = rest.find('%');
-                    _RYML_CB_ASSERT(m_callbacks, pos != npos);
-                    do {
-                        size_t next = rest.first_not_of("0123456789abcdefABCDEF", pos+1);
-                        if(next == npos)
-                            next = rest.len;
-                        _RYML_CB_CHECK(m_callbacks, pos+1 < next);
-                        _RYML_CB_CHECK(m_callbacks, pos+1 + 2 <= next);
-                        uint8_t val;
-                        if(C4_UNLIKELY(!read_hex(rest.range(pos+1, next), &val) || val > 127))
-                            _RYML_CB_ERR(m_callbacks, "invalid URI character");
-                        appendstr(rest.range(prev, pos));
-                        appendchar((char)val);
-                        prev = next;
-                        pos = rest.find('%', pos+1);
-                    } while(pos != npos);
-                    _RYML_CB_ASSERT(m_callbacks, pos == npos);
-                    _RYML_CB_ASSERT(m_callbacks, prev > 0);
-                    _RYML_CB_ASSERT(m_callbacks, rest.len >= prev);
-                    appendstr(rest.sub(prev));
-                    appendchar('>');
-                    _RYML_CB_ASSERT(m_callbacks, wpos == len);
-                }
-            }
-            return len;
+            _RYML_CB_ERR(m_callbacks, "tag directive not found");
         }
     }
     return 0; // return 0 to signal that the tag is local and cannot be resolved
 }
 
 namespace {
-csubstr _transform_tag(Tree *t, csubstr tag, size_t node)
+csubstr _transform_tag(Tree *t, csubstr tag, id_type node)
 {
+    _c4dbgpf("[{}] resolving tag ~~~{}~~~", node, tag);
     size_t required_size = t->resolve_tag(substr{}, tag, node);
     if(!required_size)
+    {
+        if(tag.begins_with("!<"))
+            tag = tag.sub(1);
+        _c4dbgpf("[{}] resolved tag: ~~~{}~~~", node, tag);
         return tag;
-    const char *prev_arena = t->arena().str; (void)prev_arena;
+    }
+    const char *prev_arena = t->arena().str;(void)prev_arena;
     substr buf = t->alloc_arena(required_size);
     _RYML_CB_ASSERT(t->m_callbacks, t->arena().str == prev_arena);
     size_t actual_size = t->resolve_tag(buf, tag, node);
     _RYML_CB_ASSERT(t->m_callbacks, actual_size <= required_size);
+    _c4dbgpf("[{}] resolved tag: ~~~{}~~~", node, buf.first(actual_size));
     return buf.first(actual_size);
 }
-void _resolve_tags(Tree *t, size_t node)
+void _resolve_tags(Tree *t, id_type node)
 {
-    for(size_t child = t->first_child(node); child != NONE; child = t->next_sibling(child))
-    {
-        if(t->has_key(child) && t->has_key_tag(child))
-            t->set_key_tag(child, _transform_tag(t, t->key_tag(child), child));
-        if(t->has_val(child) && t->has_val_tag(child))
-            t->set_val_tag(child, _transform_tag(t, t->val_tag(child), child));
+    NodeData *C4_RESTRICT d = t->_p(node);
+    if(d->m_type & KEYTAG)
+        d->m_key.tag = _transform_tag(t, d->m_key.tag, node);
+    if(d->m_type & VALTAG)
+        d->m_val.tag = _transform_tag(t, d->m_val.tag, node);
+    for(id_type child = t->first_child(node); child != NONE; child = t->next_sibling(child))
         _resolve_tags(t, child);
-    }
 }
-size_t _count_resolved_tags_size(Tree const* t, size_t node)
+size_t _count_resolved_tags_size(Tree const* t, id_type node)
 {
     size_t sz = 0;
-    for(size_t child = t->first_child(node); child != NONE; child = t->next_sibling(child))
-    {
-        if(t->has_key(child) && t->has_key_tag(child))
-            sz += t->resolve_tag(substr{}, t->key_tag(child), child);
-        if(t->has_val(child) && t->has_val_tag(child))
-            sz += t->resolve_tag(substr{}, t->val_tag(child), child);
+    NodeData const* C4_RESTRICT d = t->_p(node);
+    if(d->m_type & KEYTAG)
+        sz += t->resolve_tag(substr{}, d->m_key.tag, node);
+    if(d->m_type & VALTAG)
+        sz += t->resolve_tag(substr{}, d->m_val.tag, node);
+    for(id_type child = t->first_child(node); child != NONE; child = t->next_sibling(child))
         sz += _count_resolved_tags_size(t, child);
-    }
     return sz;
+}
+void _normalize_tags(Tree *t, id_type node)
+{
+    NodeData *C4_RESTRICT d = t->_p(node);
+    if(d->m_type & KEYTAG)
+        d->m_key.tag = normalize_tag(d->m_key.tag);
+    if(d->m_type & VALTAG)
+        d->m_val.tag = normalize_tag(d->m_val.tag);
+    for(id_type child = t->first_child(node); child != NONE; child = t->next_sibling(child))
+        _normalize_tags(t, child);
+}
+void _normalize_tags_long(Tree *t, id_type node)
+{
+    NodeData *C4_RESTRICT d = t->_p(node);
+    if(d->m_type & KEYTAG)
+        d->m_key.tag = normalize_tag_long(d->m_key.tag);
+    if(d->m_type & VALTAG)
+        d->m_val.tag = normalize_tag_long(d->m_val.tag);
+    for(id_type child = t->first_child(node); child != NONE; child = t->next_sibling(child))
+        _normalize_tags_long(t, child);
 }
 } // namespace
 
@@ -1849,12 +1468,24 @@ void Tree::resolve_tags()
 {
     if(empty())
         return;
-    if(num_tag_directives() == 0)
-        return;
     size_t needed_size = _count_resolved_tags_size(this, root_id());
     if(needed_size)
         reserve_arena(arena_size() + needed_size);
     _resolve_tags(this, root_id());
+}
+
+void Tree::normalize_tags()
+{
+    if(empty())
+        return;
+    _normalize_tags(this, root_id());
+}
+
+void Tree::normalize_tags_long()
+{
+    if(empty())
+        return;
+    _normalize_tags_long(this, root_id());
 }
 
 
@@ -1873,14 +1504,14 @@ csubstr Tree::lookup_result::unresolved() const
     return path.sub(path_pos);
 }
 
-void Tree::_advance(lookup_result *r, size_t more) const
+void Tree::_advance(lookup_result *r, size_t more)
 {
     r->path_pos += more;
     if(r->path.sub(r->path_pos).begins_with('.'))
         ++r->path_pos;
 }
 
-Tree::lookup_result Tree::lookup_path(csubstr path, size_t start) const
+Tree::lookup_result Tree::lookup_path(csubstr path, id_type start) const
 {
     if(start == NONE)
         start = root_id();
@@ -1893,9 +1524,9 @@ Tree::lookup_result Tree::lookup_path(csubstr path, size_t start) const
     return r;
 }
 
-size_t Tree::lookup_path_or_modify(csubstr default_value, csubstr path, size_t start)
+id_type Tree::lookup_path_or_modify(csubstr default_value, csubstr path, id_type start)
 {
-    size_t target = _lookup_path_or_create(path, start);
+    id_type target = _lookup_path_or_create(path, start);
     if(parent_is_map(target))
         to_keyval(target, key(target), default_value);
     else
@@ -1903,14 +1534,14 @@ size_t Tree::lookup_path_or_modify(csubstr default_value, csubstr path, size_t s
     return target;
 }
 
-size_t Tree::lookup_path_or_modify(Tree const *src, size_t src_node, csubstr path, size_t start)
+id_type Tree::lookup_path_or_modify(Tree const *src, id_type src_node, csubstr path, id_type start)
 {
-    size_t target = _lookup_path_or_create(path, start);
+    id_type target = _lookup_path_or_create(path, start);
     merge_with(src, src_node, target);
     return target;
 }
 
-size_t Tree::_lookup_path_or_create(csubstr path, size_t start)
+id_type Tree::_lookup_path_or_create(csubstr path, id_type start)
 {
     if(start == NONE)
         start = root_id();
@@ -1929,7 +1560,7 @@ void Tree::_lookup_path(lookup_result *r) const
 {
     C4_ASSERT( ! r->unresolved().empty());
     _lookup_path_token parent{"", type(r->closest)};
-    size_t node;
+    id_type node;
     do
     {
         node = _next_node(r, &parent);
@@ -1947,7 +1578,7 @@ void Tree::_lookup_path_modify(lookup_result *r)
 {
     C4_ASSERT( ! r->unresolved().empty());
     _lookup_path_token parent{"", type(r->closest)};
-    size_t node;
+    id_type node;
     do
     {
         node = _next_node_modify(r, &parent);
@@ -1961,13 +1592,13 @@ void Tree::_lookup_path_modify(lookup_result *r)
     } while(node != NONE);
 }
 
-size_t Tree::_next_node(lookup_result * r, _lookup_path_token *parent) const
+id_type Tree::_next_node(lookup_result * r, _lookup_path_token *parent) const
 {
     _lookup_path_token token = _next_token(r, *parent);
     if( ! token)
         return NONE;
 
-    size_t node = NONE;
+    id_type node = NONE;
     csubstr prev = token.value;
     if(token.type == MAP || token.type == SEQ)
     {
@@ -1986,7 +1617,7 @@ size_t Tree::_next_node(lookup_result * r, _lookup_path_token *parent) const
     {
         _RYML_CB_ASSERT(m_callbacks, token.value.begins_with('[') && token.value.ends_with(']'));
         token.value = token.value.offs(1, 1).trim(' ');
-        size_t idx = 0;
+        id_type idx = 0;
         _RYML_CB_CHECK(m_callbacks, from_chars(token.value, &idx));
         node = child(r->closest, idx);
     }
@@ -2010,13 +1641,13 @@ size_t Tree::_next_node(lookup_result * r, _lookup_path_token *parent) const
     return node;
 }
 
-size_t Tree::_next_node_modify(lookup_result * r, _lookup_path_token *parent)
+id_type Tree::_next_node_modify(lookup_result * r, _lookup_path_token *parent)
 {
     _lookup_path_token token = _next_token(r, *parent);
     if( ! token)
         return NONE;
 
-    size_t node = NONE;
+    id_type node = NONE;
     if(token.type == MAP || token.type == SEQ)
     {
         _RYML_CB_ASSERT(m_callbacks, !token.value.begins_with('['));
@@ -2034,7 +1665,7 @@ size_t Tree::_next_node_modify(lookup_result * r, _lookup_path_token *parent)
                 node = find_child(r->closest, token.value);
             else
             {
-                size_t pos = NONE;
+                id_type pos = NONE;
                 _RYML_CB_CHECK(m_callbacks, c4::atox(token.value, &pos));
                 _RYML_CB_ASSERT(m_callbacks, pos != NONE);
                 node = child(r->closest, pos);
@@ -2073,7 +1704,7 @@ size_t Tree::_next_node_modify(lookup_result * r, _lookup_path_token *parent)
     {
         _RYML_CB_ASSERT(m_callbacks, token.value.begins_with('[') && token.value.ends_with(']'));
         token.value = token.value.offs(1, 1).trim(' ');
-        size_t idx;
+        id_type idx;
         if( ! from_chars(token.value, &idx))
              return NONE;
         if( ! is_container(r->closest))
@@ -2095,7 +1726,7 @@ size_t Tree::_next_node_modify(lookup_result * r, _lookup_path_token *parent)
         if(node == NONE)
         {
             _RYML_CB_ASSERT(m_callbacks, num_children(r->closest) <= idx);
-            for(size_t i = num_children(r->closest); i <= idx; ++i)
+            for(id_type i = num_children(r->closest); i <= idx; ++i)
             {
                 node = append_child(r->closest);
                 if(i < idx)
@@ -2118,7 +1749,7 @@ size_t Tree::_next_node_modify(lookup_result * r, _lookup_path_token *parent)
     return node;
 }
 
-/** types of tokens:
+/* types of tokens:
  * - seeing "map."  ---> "map"/MAP
  * - finishing "scalar" ---> "scalar"/KEYVAL
  * - seeing "seq[n]" ---> "seq"/SEQ (--> "[n]"/KEY)
@@ -2167,7 +1798,7 @@ Tree::_lookup_path_token Tree::_next_token(lookup_result *r, _lookup_path_token 
 }
 
 
-} // namespace ryml
+} // namespace yml
 } // namespace c4
 
 

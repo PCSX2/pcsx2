@@ -7,7 +7,7 @@
 // see also https://sourceforge.net/p/predef/wiki/Architectures/
 // see also https://sourceforge.net/p/predef/wiki/Endianness/
 // see also https://github.com/googlesamples/android-ndk/blob/android-mk/hello-jni/jni/hello-jni.c
-// see http://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/global/qprocessordetection.h
+// see also http://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/global/qprocessordetection.h
 
 #ifdef __ORDER_LITTLE_ENDIAN__
 #   define _C4EL __ORDER_LITTLE_ENDIAN__
@@ -22,7 +22,11 @@
 #endif
 
 // mixed byte order (eg, PowerPC or ia64)
-#define _C4EM 1111
+#define _C4EM 1111 // NOLINT
+
+
+// NOTE: to find defined macros in a platform,
+// g++ <flags> -dM -E - </dev/null | sort
 
 #if defined(__x86_64) || defined(__x86_64__) || defined(__amd64) || defined(_M_X64)
 #    define C4_CPU_X86_64
@@ -60,11 +64,15 @@
         || defined(__ARM_ARCH_6M__) || defined(__ARM_ARCH_6KZ__) \
         || (defined(__TARGET_ARCH_ARM) && __TARGET_ARCH_ARM >= 6)
 #           define C4_CPU_ARMV6
-#       elif defined(__ARM_ARCH_5TEJ__) \
+#       elif (defined(__ARM_ARCH) && __ARM_ARCH == 5) \
+        || defined(__ARM_ARCH_5TEJ__) \
         || defined(__ARM_ARCH_5TE__) \
+        || defined(__ARM_ARCH_5T__) \
         || (defined(__TARGET_ARCH_ARM) && __TARGET_ARCH_ARM >= 5)
 #           define C4_CPU_ARMV5
-#       elif defined(__ARM_ARCH_4T__) \
+#       elif (defined(__ARM_ARCH) && __ARM_ARCH == 4) \
+        || defined(__ARM_ARCH_4T__) \
+        || defined(__ARM_ARCH_4__) \
         || (defined(__TARGET_ARCH_ARM) && __TARGET_ARCH_ARM >= 4)
 #           define C4_CPU_ARMV4
 #       else
@@ -144,6 +152,44 @@
 #       define C4_WORDSIZE 4
 #   endif
 #   define C4_BYTE_ORDER _C4EL
+
+#elif defined(__mips__) || defined(_mips) || defined(mips)
+#   if defined(__mips)
+#       if __mips == 64
+#           define C4_CPU_MIPS64
+#           define C4_WORDSIZE 8
+#       elif __mips == 32
+#           define C4_CPU_MIPS32
+#           define C4_WORDSIZE 4
+#       endif
+#   elif defined(__arch64__) || (defined(__SIZE_WIDTH__) && __SIZE_WIDTH__ == 64) || (defined(__LP64__) && __LP64__)
+#       define C4_CPU_MIPS64
+#       define C4_WORDSIZE 8
+#   elif defined(__arch32__) || (defined(__SIZE_WIDTH__) && __SIZE_WIDTH__ == 32) || (defined(__LP32__) && __LP32__)
+#       define C4_CPU_MIPS32
+#       define C4_WORDSIZE 4
+#   else
+#       error "unknown mips architecture"
+#   endif
+#   if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+#       define C4_BYTE_ORDER _C4EB
+#   elif __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#       define C4_BYTE_ORDER _C4EL
+#   else
+#       error "unknown mips endianness"
+#   endif
+
+#elif defined(__sparc__) || defined(__sparc) || defined(sparc)
+#   if defined(__arch64__) || (defined(__SIZE_WIDTH__) && __SIZE_WIDTH__ == 64) || (defined(__LP64__) && __LP64__)
+#       define C4_CPU_SPARC64
+#       define C4_WORDSIZE 8
+#   elif defined(__arch32__) || (defined(__SIZE_WIDTH__) && __SIZE_WIDTH__ == 32) || (defined(__LP32__) && __LP32__)
+#       define C4_CPU_SPARC32
+#       define C4_WORDSIZE 4
+#   else
+#       error "unknown sparc architecture"
+#   endif
+#   define C4_BYTE_ORDER _C4EB
 
 #elif defined(SWIG)
 #   error "please define CPU architecture macros when compiling with swig"

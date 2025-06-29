@@ -67,12 +67,9 @@ static inline void _do_reverse(C *C4_RESTRICT first, C *C4_RESTRICT last)
  * @see a [quickstart
  * sample](https://rapidyaml.readthedocs.io/latest/doxygen/group__doc__quickstart.html#ga43e253da0692c13967019446809c1113)
  * in rapidyaml's documentation.
- *
- * @see @ref substr and @ref to_substr()
- * @see @ref csubstr and @ref to_csubstr()
  */
 template<class C>
-struct C4CORE_EXPORT basic_substring
+struct C4CORE_EXPORT basic_substring // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 {
 public:
 
@@ -530,11 +527,11 @@ public:
     /** @name Lookup methods */
     /** @{ */
 
-    inline size_t find(const C c, size_t start_pos=0) const
+    size_t find(const C c, size_t start_pos=0) const
     {
         return first_of(c, start_pos);
     }
-    inline size_t find(ro_substr pattern, size_t start_pos=0) const
+    size_t find(ro_substr pattern, size_t start_pos=0) const
     {
         C4_ASSERT(start_pos == npos || (start_pos >= 0 && start_pos <= len));
         if(len < pattern.len) return npos;
@@ -561,7 +558,7 @@ public:
 public:
 
     /** count the number of occurrences of c */
-    inline size_t count(const C c, size_t pos=0) const
+    size_t count(const C c, size_t pos=0) const
     {
         C4_ASSERT(pos >= 0 && pos <= len);
         size_t num = 0;
@@ -575,7 +572,7 @@ public:
     }
 
     /** count the number of occurrences of s */
-    inline size_t count(ro_substr c, size_t pos=0) const
+    size_t count(ro_substr c, size_t pos=0) const
     {
         C4_ASSERT(pos >= 0 && pos <= len);
         size_t num = 0;
@@ -589,14 +586,14 @@ public:
     }
 
     /** get the substr consisting of the first occurrence of @p c after @p pos, or an empty substr if none occurs */
-    inline basic_substring select(const C c, size_t pos=0) const
+    basic_substring select(const C c, size_t pos=0) const
     {
         pos = find(c, pos);
         return pos != npos ? sub(pos, 1) : basic_substring();
     }
 
     /** get the substr consisting of the first occurrence of @p pattern after @p pos, or an empty substr if none occurs */
-    inline basic_substring select(ro_substr pattern, size_t pos=0) const
+    basic_substring select(ro_substr pattern, size_t pos=0) const
     {
         pos = find(pattern, pos);
         return pos != npos ? sub(pos, pattern.len) : basic_substring();
@@ -608,7 +605,7 @@ public:
     {
         size_t which;
         size_t pos;
-        inline operator bool() const { return which != NONE && pos != npos; }
+        operator bool() const { return which != NONE && pos != npos; }
     };
 
     first_of_any_result first_of_any(ro_substr s0, ro_substr s1) const
@@ -1307,12 +1304,12 @@ public:
             else if(c == '.')
             {
                 ++pos;
-                goto fractional_part_dec;
+                goto fractional_part_dec; // NOLINT
             }
             else if(c == 'e' || c == 'E')
             {
                 ++pos;
-                goto power_part_dec;
+                goto power_part_dec; // NOLINT
             }
             else if(_is_delim_char(c))
             {
@@ -1341,7 +1338,7 @@ public:
             else if(c == 'e' || c == 'E')
             {
                 ++pos;
-                goto power_part_dec;
+                goto power_part_dec; // NOLINT
             }
             else if(_is_delim_char(c))
             {
@@ -1394,12 +1391,12 @@ public:
             else if(c == '.')
             {
                 ++pos;
-                goto fractional_part_hex;
+                goto fractional_part_hex; // NOLINT
             }
             else if(c == 'p' || c == 'P')
             {
                 ++pos;
-                goto power_part_hex;
+                goto power_part_hex; // NOLINT
             }
             else if(_is_delim_char(c))
             {
@@ -1428,7 +1425,7 @@ public:
             else if(c == 'p' || c == 'P')
             {
                 ++pos;
-                goto power_part_hex;
+                goto power_part_hex; // NOLINT
             }
             else if(_is_delim_char(c))
             {
@@ -1484,12 +1481,12 @@ public:
             else if(c == '.')
             {
                 ++pos;
-                goto fractional_part_bin;
+                goto fractional_part_bin; // NOLINT
             }
             else if(c == 'p' || c == 'P')
             {
                 ++pos;
-                goto power_part_bin;
+                goto power_part_bin; // NOLINT
             }
             else if(_is_delim_char(c))
             {
@@ -1518,7 +1515,7 @@ public:
             else if(c == 'p' || c == 'P')
             {
                 ++pos;
-                goto power_part_bin;
+                goto power_part_bin; // NOLINT
             }
             else if(_is_delim_char(c))
             {
@@ -1574,12 +1571,12 @@ public:
             else if(c == '.')
             {
                 ++pos;
-                goto fractional_part_oct;
+                goto fractional_part_oct; // NOLINT
             }
             else if(c == 'p' || c == 'P')
             {
                 ++pos;
-                goto power_part_oct;
+                goto power_part_oct; // NOLINT
             }
             else if(_is_delim_char(c))
             {
@@ -1608,7 +1605,7 @@ public:
             else if(c == 'p' || c == 'P')
             {
                 ++pos;
-                goto power_part_oct;
+                goto power_part_oct; // NOLINT
             }
             else if(_is_delim_char(c))
             {
@@ -1714,7 +1711,7 @@ private:
             }
 
             split_iterator_impl& operator++ () { _tick(); return *this; }
-            split_iterator_impl  operator++ (int) { split_iterator_impl it = *this; _tick(); return it; }
+            split_iterator_impl  operator++ (int) { split_iterator_impl it = *this; _tick(); return it; } // NOLINT
 
             basic_substring& operator*  () { return  m_str; }
             basic_substring* operator-> () { return &m_str; }
@@ -2069,7 +2066,7 @@ public:
     C4_REQUIRE_RW(basic_substring) erase_range(size_t first, size_t last)
     {
         C4_ASSERT(first <= last);
-        return erase(first, static_cast<size_t>(last-first));
+        return erase(first, static_cast<size_t>(last-first)); // NOLINT
     }
 
     /** erase a part of the string.
