@@ -22,9 +22,12 @@ public:
 	virtual ~GSState();
 
 	static constexpr int GetSaveStateSize(int version);
+	static void GetClampWrapMinMaxUVRegionRepeat(int MSK, int FIX, int min, int max, int* min_out, int* max_out, bool* min_boundary, bool* max_boundary);
+	static void GetClampWrapMinMaxUV(int SIZE, int WM, int MIN, int MAX, int min, int max, int* min_out, int* max_out, bool* min_boundary, bool* max_boundary);
 
 private:
-	// RESTRICT prevents multiple loads of the same part of the register when accessing its bitfields (the compiler is happy to know that memory writes in-between will not go there)
+	// RESTRICT prevents multiple loads of the same part of the register when accessing its bitfields
+	// (the compiler is happy to know that memory writes in-between will not go there)
 
 	typedef void (GSState::*GIFPackedRegHandler)(const GIFPackedReg* RESTRICT r);
 
@@ -134,10 +137,14 @@ protected:
 	GSVector4i m_scissor_cull_max = {};
 	GSVector4i m_xyof = {};
 
+	// head: first vertex of the current primitive
+	//       points to "center" vertex of a triangle fan
+	// tail: last vertex of the current primitive + 1
+	// next: last vertex of the previous primitive + 1
 	struct
 	{
 		GSVertex* buff;
-		u32 head, tail, next, maxcount; // head: first vertex, tail: last vertex + 1, next: last indexed + 1
+		u32 head, tail, next, maxcount;
 		u32 xy_tail;
 		GSVector4i xy[4];
 		GSVector4i xyhead;
@@ -201,7 +208,10 @@ protected:
 		GSVector4i coverage; ///< Part of the texture used
 		u8 uses_boundary;    ///< Whether or not the usage touches the left, top, right, or bottom edge (and therefore needs wrap modes preserved)
 	};
-	TextureMinMaxResult GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCLAMP CLAMP, bool linear, bool clamp_to_tsize);
+	TextureMinMaxResult GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCLAMP CLAMP, GSVector4i scissor, bool linear);
+	TextureMinMaxResult GetTextureMinMaxApprox(GIFRegTEX0 TEX0, GIFRegCLAMP CLAMP, bool linear);
+	void GetTextureMinMaxAxisAlignedHelper(GIFRegTEX0 TEX0, GSVector4i scissor, u32 fst, const GSVertex* vertex, u16 index0, u16 index1, GSVector4* minmax);
+	bool GetTextureMinMaxAxisAligned(GIFRegTEX0 TEX0, GIFRegCLAMP CLAMP, GSVector4i scissor, bool linear, GSState::TextureMinMaxResult* result);
 	bool TryAlphaTest(u32& fm, u32& zm);
 	bool IsOpaque();
 	bool IsMipMapDraw();

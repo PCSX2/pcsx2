@@ -18,14 +18,65 @@ void GSVertexTrace::Update(const void* vertex, const u16* index, int v_count, in
 	if (i_count == 0)
 		return;
 
+	const GSDrawingContext* context = m_state->m_context;
+
 	m_primclass = primclass;
 
+	// Setup selector parameters for FindMinMax()
 	const u32 iip = m_state->PRIM->IIP;
 	const u32 tme = m_state->PRIM->TME;
 	const u32 fst = m_state->PRIM->FST;
-	const u32 color = !(m_state->PRIM->TME && m_state->m_context->TEX0.TFX == TFX_DECAL && m_state->m_context->TEX0.TCC);
+	const u32 color = !(m_state->PRIM->TME && context->TEX0.TFX == TFX_DECAL && context->TEX0.TCC);
 
-	m_fmm[color][fst][tme][iip][primclass](*this, vertex, index, i_count);
+	// Select correct FindMinMax() function to calculaute raw min/max values
+	GSVector4 tmin, tmax;
+	GSVector4i cmin, cmax, pmin, pmax;
+	m_fmm[color][fst][tme][iip][primclass](vertex, index, i_count, &tmin, &tmax, &cmin, &cmax, &pmin, &pmax);
+
+	// Set m_min and m_max values based on the raw min/max values
+	const GSVector4 offset(m_state->m_context->XYOFFSET);
+	const GSVector4 pscale(1.0f / 16, 1.0f / 16, 0.0f, 1.0f);
+
+	m_min.p = (GSVector4(pmin) - offset) * pscale;
+	m_max.p = (GSVector4(pmax) - offset) * pscale;
+
+	// Do Z separately, requires unsigned int conversion
+	m_min.p.z = (float)pmin.U32[2];
+	m_max.p.z = (float)pmax.U32[2];
+
+	m_min.t = GSVector4::zero();
+	m_max.t = GSVector4::zero();
+	m_min.c = GSVector4i::zero();
+	m_max.c = GSVector4i::zero();
+
+	if (tme)
+	{
+		const GSVector4 tscale = fst ? GSVector4(1.0f / 16, 1.0f / 16, 1.0f, 1.0f) :
+																	 GSVector4((float)(1 << context->TEX0.TW), (float)(1 << context->TEX0.TH), 1.0f, 1.0f);
+		m_min.t = tmin * tscale;
+		m_max.t = tmax * tscale;
+	}
+
+	if (color)
+	{
+		m_min.c = cmin.u8to32();
+		m_max.c = cmax.u8to32();
+	}
+
+	// AA1: Set alpha min max to coverage 128 when there is no alpha blending.
+	if (!m_state->PRIM->ABE && m_state->PRIM->AA1 && (primclass == GS_LINE_CLASS || primclass == GS_TRIANGLE_CLASS))
+	{
+		m_min.c.a = 128;
+		m_max.c.a = 128;
+	}
+
+	m_alpha.valid = false;
+
+	// Set m_eq flags for when vertex values are constant
+	const u32 t_eq = (m_min.t == m_max.t).mask();          // GSVector4, 4 bit mask
+	const u32 p_eq = GSVector4::cast(pmin == pmax).mask(); // Cast to GSVector4() for 4 bit mask
+	const u32 c_eq = (m_min.c == m_max.c).mask();          // GSVector4i, 16 bit mask
+	m_eq.value = c_eq | (p_eq << 16) | (t_eq << 20);
 
 	// Potential float overflow detected. Better uses the slower division instead
 	// Note: If Q is too big, 1/Q will end up as 0. 1e30 is a random number
@@ -36,23 +87,7 @@ void GSVertexTrace::Update(const void* vertex, const u16* index, int v_count, in
 		m_accurate_stq = true;
 	}
 
-	// AA1: Set alpha min max to coverage 128 when there is no alpha blending.
-	if (!m_state->PRIM->ABE && m_state->PRIM->AA1 && (m_primclass == GS_LINE_CLASS || m_primclass == GS_TRIANGLE_CLASS))
-	{
-		m_min.c.a = 128;
-		m_max.c.a = 128;
-	}
-
-	m_eq.value = (m_min.c == m_max.c).mask() | ((m_min.p == m_max.p).mask() << 16) | ((m_min.t == m_max.t).mask() << 20);
-
-	m_alpha.valid = false;
-
-	// I'm not sure of the cost. In doubt let's do it only when depth is enabled
-	if (m_state->m_context->TEST.ZTE == 1 && m_state->m_context->TEST.ZTST > ZTST_ALWAYS)
-	{
-		CorrectDepthTrace(vertex, v_count);
-	}
-
+	// Determine mipmapping LOD and whether linear filter is used
 	if (tme)
 	{
 		const GIFRegTEX1& TEX1 = m_state->m_context->TEX1;
@@ -121,52 +156,5 @@ void GSVertexTrace::Update(const void* vertex, const u16* index, int v_count, in
 				m_filter.opt_linear = m_filter.linear;
 				break;
 		}
-	}
-}
-
-void GSVertexTrace::CorrectDepthTrace(const void* vertex, int count)
-{
-	if (m_eq.z == 0)
-		return;
-
-	// FindMinMax isn't accurate for the depth value. Lsb bit is always 0.
-	// The code below will check that depth value is really constant
-	// and will update m_min/m_max/m_eq accordingly
-	//
-	// Really impact Xenosaga3
-	//
-	// Hopefully function is barely called so AVX/SSE will be useless here
-
-
-	const GSVertex* RESTRICT v = (GSVertex*)vertex;
-
-	const int sprite_step = (m_primclass == GS_SPRITE_CLASS) ? 1 : 0;
-
-	u32 z = v[sprite_step].XYZ.Z;
-
-	if (z & 1)
-	{
-		// Check that first bit is always 1
-		for (int i = sprite_step; i < count; i += (sprite_step + 1))
-		{
-			z &= v[i].XYZ.Z;
-		}
-	}
-	else
-	{
-		// Check that first bit is always 0
-		for (int i = sprite_step; i < count; i += (sprite_step + 1))
-		{
-			z |= v[i].XYZ.Z;
-		}
-	}
-
-	if (z == v[sprite_step].XYZ.Z)
-	{
-		m_eq.z = 1;
-	}
-	else
-	{
-		m_eq.z = 0;
 	}
 }
