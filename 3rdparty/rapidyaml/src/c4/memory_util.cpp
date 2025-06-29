@@ -19,7 +19,7 @@ void mem_repeat(void* dest, void const* pattern, size_t pattern_size, size_t num
     while(begin + 2*n < end)
     {
         ::memcpy(begin + n, begin, n);
-        n <<= 1; // double n
+        n <<= 1u; // double n
     }
     // copy the missing part
     if(begin + n < end)

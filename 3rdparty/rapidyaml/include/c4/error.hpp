@@ -63,6 +63,7 @@ struct fail_type__ {};
 #else
 #   ifdef __clang__
 #       pragma clang diagnostic push
+#       pragma clang diagnostic ignored "-Wundef"
 #       if !defined(__APPLE_CC__)
 #           if __clang_major__ >= 10
 #               pragma clang diagnostic ignored "-Wgnu-inline-cpp-without-extern" // debugbreak/debugbreak.h:50:16: error: 'gnu_inline' attribute without 'extern' in C++ treated as externally available, this changed in Clang 10 [-Werror,-Wgnu-inline-cpp-without-extern]
@@ -73,12 +74,15 @@ struct fail_type__ {};
 #           endif
 #       endif
 #   elif defined(__GNUC__)
+#       pragma GCC diagnostic push
+#       pragma GCC diagnostic ignored "-Wundef"
 #   endif
 #   include <c4/ext/debugbreak/debugbreak.h>
 #   define C4_DEBUG_BREAK() if(c4::is_debugger_attached()) { ::debug_break(); }
 #   ifdef __clang__
 #       pragma clang diagnostic pop
 #   elif defined(__GNUC__)
+#       pragma GCC diagnostic pop
 #   endif
 #endif
 
@@ -114,17 +118,17 @@ namespace c4 {
 typedef enum : uint32_t {
     /** when an error happens and the debugger is attached, call C4_DEBUG_BREAK().
      * Without effect otherwise. */
-    ON_ERROR_DEBUGBREAK = 0x01 << 0,
+    ON_ERROR_DEBUGBREAK = 0x01u << 0u,
     /** when an error happens log a message. */
-    ON_ERROR_LOG = 0x01 << 1,
+    ON_ERROR_LOG = 0x01u << 1u,
     /** when an error happens invoke a callback if it was set with
      * set_error_callback(). */
-    ON_ERROR_CALLBACK = 0x01 << 2,
+    ON_ERROR_CALLBACK = 0x01u << 2u,
     /** when an error happens call std::terminate(). */
-    ON_ERROR_ABORT = 0x01 << 3,
+    ON_ERROR_ABORT = 0x01u << 3u,
     /** when an error happens and exceptions are enabled throw an exception.
      * Without effect otherwise. */
-    ON_ERROR_THROW = 0x01 << 4,
+    ON_ERROR_THROW = 0x01u << 4u,
     /** the default flags. */
     ON_ERROR_DEFAULTS = ON_ERROR_DEBUGBREAK|ON_ERROR_LOG|ON_ERROR_CALLBACK|ON_ERROR_ABORT
 } ErrorFlags_e;
@@ -140,7 +144,7 @@ C4CORE_EXPORT error_callback_type get_error_callback();
 
 //-----------------------------------------------------------------------------
 /** RAII class controling the error settings inside a scope. */
-struct ScopedErrorSettings
+struct ScopedErrorSettings // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 {
     error_flags m_flags;
     error_callback_type m_callback;
@@ -177,7 +181,8 @@ struct ScopedErrorSettings
 /** source location */
 struct srcloc;
 
-C4CORE_EXPORT void handle_error(srcloc s, const char *fmt, ...);
+// watchout: for VS the [[noreturn]] needs to come before other annotations like C4CORE_EXPORT
+[[noreturn]] C4CORE_EXPORT void handle_error(srcloc s, const char *fmt, ...);
 C4CORE_EXPORT void handle_warning(srcloc s, const char *fmt, ...);
 
 

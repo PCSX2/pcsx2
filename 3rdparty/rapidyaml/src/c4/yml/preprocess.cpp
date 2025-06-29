@@ -21,7 +21,7 @@ C4_ALWAYS_INLINE bool _is_idchar(char c)
         || (c == '_' || c == '-' || c == '~' || c == '$');
 }
 
-typedef enum { kReadPending = 0, kKeyPending = 1, kValPending = 2 } _ppstate;
+enum _ppstate : int { kReadPending = 0, kKeyPending = 1, kValPending = 2 };
 C4_ALWAYS_INLINE _ppstate _next(_ppstate s)
 {
     int n = (int)s + 1;

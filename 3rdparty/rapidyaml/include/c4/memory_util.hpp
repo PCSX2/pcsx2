@@ -25,6 +25,8 @@
 
 /** @file memory_util.hpp Some memory utilities. */
 
+// NOLINTBEGIN(google-runtime-int)
+
 namespace c4 {
 
 C4_SUPPRESS_WARNING_GCC_CLANG_WITH_PUSH("-Wold-style-cast")
@@ -696,8 +698,8 @@ struct tight_pair<First, Second, tpc_same_empty> : public First
 
     C4_ALWAYS_INLINE C4_CONSTEXPR14 First      & first ()       { return static_cast<First      &>(*this); }
     C4_ALWAYS_INLINE C4_CONSTEXPR14 First const& first () const { return static_cast<First const&>(*this); }
-    C4_ALWAYS_INLINE C4_CONSTEXPR14 Second      & second()       { return reinterpret_cast<Second      &>(*this); }
-    C4_ALWAYS_INLINE C4_CONSTEXPR14 Second const& second() const { return reinterpret_cast<Second const&>(*this); }
+    C4_ALWAYS_INLINE C4_CONSTEXPR14 Second      & second()       { return reinterpret_cast<Second      &>(*this); } // NOLINT
+    C4_ALWAYS_INLINE C4_CONSTEXPR14 Second const& second() const { return reinterpret_cast<Second const&>(*this); } // NOLINT
 };
 
 template<class First, class Second>
@@ -774,5 +776,7 @@ using tight_pair = detail::tight_pair<First, Second, detail::tpc_which_case<Firs
 C4_SUPPRESS_WARNING_GCC_CLANG_POP
 
 } // namespace c4
+
+// NOLINTEND(google-runtime-int)
 
 #endif /* _C4_MEMORY_UTIL_HPP_ */

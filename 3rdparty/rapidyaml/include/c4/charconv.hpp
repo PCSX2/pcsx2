@@ -55,14 +55,7 @@
 #       define C4CORE_HAVE_FAST_FLOAT 1
 #   endif
 #   if C4CORE_HAVE_FAST_FLOAT
-        C4_SUPPRESS_WARNING_GCC_WITH_PUSH("-Wsign-conversion")
-        C4_SUPPRESS_WARNING_GCC("-Warray-bounds")
-#       if defined(__GNUC__) && __GNUC__ >= 5
-            C4_SUPPRESS_WARNING_GCC("-Wshift-count-overflow")
-#       endif
-//#       include "c4/ext/fast_float.hpp"
 #include "fast_float/fast_float.h"
-        C4_SUPPRESS_WARNING_GCC_POP
 #   endif
 #elif (C4_CPP >= 17)
 #   define C4CORE_HAVE_FAST_FLOAT 0
@@ -102,15 +95,13 @@
 #endif
 
 
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) && !defined(__clang__)
 #   pragma warning(push)
 #   pragma warning(disable: 4996) // snprintf/scanf: this function or variable may be unsafe
 #   if C4_MSVC_VERSION != C4_MSVC_VERSION_2017
 #       pragma warning(disable: 4800) //'int': forcing value to bool 'true' or 'false' (performance warning)
 #   endif
-#endif
-
-#if defined(__clang__)
+#elif defined(__clang__)
 #   pragma clang diagnostic push
 #   pragma clang diagnostic ignored "-Wtautological-constant-out-of-range-compare"
 #   pragma clang diagnostic ignored "-Wformat-nonliteral"
@@ -136,6 +127,7 @@
 #define C4_NO_UBSAN_IOVRFLW
 #endif
 
+// NOLINTBEGIN(hicpp-signed-bitwise)
 
 namespace c4 {
 
@@ -144,11 +136,11 @@ namespace c4 {
  * Lightweight, very fast generic type-safe wrappers for converting
  * individual values to/from strings. These are the main generic
  * functions:
- *   - @ref doc_to_chars and its alias @ref doc_xtoa: implemented by calling @ref itoa()/@ref utoa()/@ref ftoa()/@ref dtoa() (or generically @ref xtoa())
- *   - @ref doc_from_chars and its alias @ref doc_atox: implemented by calling @ref atoi()/@ref atou()/@ref atof()/@ref atod() (or generically @ref atox())
+ *   - @ref doc_to_chars and its alias @ref xtoa(): implemented by calling @ref itoa() / @ref utoa() / @ref ftoa() / @ref dtoa() (or generically @ref xtoa())
+ *   - @ref doc_from_chars and its alias @ref atox(): implemented by calling @ref atoi() / @ref atou() / @ref atof() / @ref atod() (or generically @ref atox())
  *   - @ref to_chars_sub()
  *   - @ref from_chars_first()
- *   - @ref xtoa()/@ref atox() are implemented in terms @ref write_dec()/@ref read_dec() et al (see @ref doc_write/@ref doc_read())
+ *   - @ref xtoa() and @ref atox() are implemented in terms of @ref write_dec() / @ref read_dec() et al (see @ref doc_write / @ref doc_read())
  *
  * And also some modest brag is in order: these functions are really
  * fast: faster even than C++17 `std::to_chars()` and
@@ -241,7 +233,7 @@ struct is_fixed_length
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && !defined(__clang__)
 #   pragma warning(push)
 #elif defined(__clang__)
 #   pragma clang diagnostic push
@@ -377,7 +369,7 @@ template<> struct charconv_digits_<4u, false> // uint32_t
     static constexpr csubstr max_value_dec() noexcept { return csubstr("4294967295"); }
     static constexpr bool is_oct_overflow(csubstr str) noexcept { return !((str.len < 11) || (str.len == 11 && str[0] <= '3')); }
 };
-template<> struct charconv_digits_<8u, true> // int32_t
+template<> struct charconv_digits_<8u, true> // int64_t
 {
     enum : size_t {
         maxdigits_bin       = 1 + 2 + 64, // len=67: -9223372036854775808 -0b1000000000000000000000000000000000000000000000000000000000000000
@@ -396,7 +388,7 @@ template<> struct charconv_digits_<8u, true> // int32_t
     static constexpr csubstr max_value_dec() noexcept { return csubstr("9223372036854775807"); }
     static constexpr bool    is_oct_overflow(csubstr str) noexcept { return !((str.len < 22)); }
 };
-template<> struct charconv_digits_<8u, false>
+template<> struct charconv_digits_<8u, false> // uint64_t
 {
     enum : size_t {
         maxdigits_bin       = 2 + 64, // len=66: 18446744073709551615 0b1111111111111111111111111111111111111111111111111111111111111111
@@ -545,24 +537,25 @@ C4_CONSTEXPR14 C4_ALWAYS_INLINE unsigned digits_oct(T v_) noexcept
     // TODO: is there a better way?
     C4_STATIC_ASSERT(std::is_integral<T>::value);
     C4_ASSERT(v_ >= 0);
-    using U = typename
-        std::conditional<sizeof(T) <= sizeof(unsigned),
-                         unsigned,
-                         typename std::make_unsigned<T>::type>::type;
-    U v = (U) v_;  // safe because we require v_ >= 0
-    unsigned __n = 1;
-    const unsigned __b2 = 64u;
-    const unsigned __b3 = __b2 * 8u;
-    const unsigned long __b4 = __b3 * 8u;
+    using U = typename std::conditional<sizeof(T) <= sizeof(unsigned),
+                                        unsigned,
+                                        typename std::make_unsigned<T>::type>::type;
+    U v = (U) v_;  // safe because we require v_ >= 0 // NOLINT
+    uint32_t __n = 1;
+    enum : U {
+        __b2 = 64u,
+        __b3 = 64u * 8u,
+        __b4 = 64u * 8u * 8u,
+    };
     while(true)
 	{
         if(v < 8u)
             return __n;
-        if(v < __b2)
+        else if(v < __b2)
             return __n + 1;
-        if(v < __b3)
+        else if(v < __b3)
             return __n + 2;
-        if(v < __b4)
+        else if(v < __b4)
             return __n + 3;
         v /= (U) __b4;
         __n += 4;
@@ -617,7 +610,7 @@ void write_dec_unchecked(substr buf, T v, unsigned digits_v) noexcept
     {
         T quo = v;
         quo /= T(100);
-        const auto num = (v - quo * T(100)) << 1u;
+        const auto num = (v - quo * T(100)) << 1u; // NOLINT
         v = quo;
         buf.str[--digits_v] = detail::digits0099[num + 1];
         buf.str[--digits_v] = detail::digits0099[num];
@@ -782,15 +775,18 @@ template<class T, NumberWriter<T> writer>
 size_t write_num_digits(substr buf, T v, size_t num_digits) noexcept
 {
     C4_STATIC_ASSERT(std::is_integral<T>::value);
-    size_t ret = writer(buf, v);
+    const size_t ret = writer(buf, v);
     if(ret >= num_digits)
         return ret;
     else if(ret >= buf.len || num_digits > buf.len)
         return num_digits;
     C4_ASSERT(num_digits >= ret);
-    size_t delta = static_cast<size_t>(num_digits - ret);
-    memmove(buf.str + delta, buf.str, ret);
-    memset(buf.str, '0', delta);
+    const size_t delta = static_cast<size_t>(num_digits - ret); // NOLINT
+    C4_ASSERT(ret + delta <= buf.len);
+    if(ret)
+        memmove(buf.str + delta, buf.str, ret);
+    if(delta)
+        memset(buf.str, '0', delta);
     return num_digits;
 }
 } // namespace detail
@@ -985,7 +981,9 @@ C4_SUPPRESS_WARNING_GCC_WITH_PUSH("-Wswitch-default")
 namespace detail {
 inline size_t _itoa2buf(substr buf, size_t pos, csubstr val) noexcept
 {
+    C4_ASSERT(pos < buf.len);
     C4_ASSERT(pos + val.len <= buf.len);
+    C4_ASSERT(val.len > 0);
     memcpy(buf.str + pos, val.str, val.len);
     return pos + val.len;
 }
@@ -1013,7 +1011,7 @@ C4_NO_INLINE size_t _itoa2buf(substr buf, I radix) noexcept
     size_t pos = 0;
     if(C4_LIKELY(buf.len > 0))
         buf.str[pos++] = '-';
-    switch(radix)
+    switch(radix) // NOLINT(hicpp-multiway-paths-covered)
     {
     case I(10):
         if(C4_UNLIKELY(buf.len < digits_type::maxdigits_dec))
@@ -1052,7 +1050,7 @@ C4_NO_INLINE size_t _itoa2buf(substr buf, I radix, size_t num_digits) noexcept
     size_t needed_digits = 0;
     if(C4_LIKELY(buf.len > 0))
         buf.str[pos++] = '-';
-    switch(radix)
+    switch(radix) // NOLINT(hicpp-multiway-paths-covered)
     {
     case I(10):
         // add 1 to account for -
@@ -1117,7 +1115,7 @@ C4_ALWAYS_INLINE size_t itoa(substr buf, T v) noexcept
     }
     // when T is the min value (eg i8: -128), negating it
     // will overflow, so treat the min as a special case
-    else if(C4_LIKELY(v != std::numeric_limits<T>::min()))
+    if(C4_LIKELY(v != std::numeric_limits<T>::min()))
     {
         v = -v;
         unsigned digits = digits_dec(v);
@@ -1160,7 +1158,7 @@ C4_ALWAYS_INLINE size_t itoa(substr buf, T v, T radix) noexcept
             ++pos;
         }
         unsigned digits = 0;
-        switch(radix)
+        switch(radix) // NOLINT(hicpp-multiway-paths-covered)
         {
         case T(10):
             digits = digits_dec(v);
@@ -1237,7 +1235,7 @@ C4_ALWAYS_INLINE size_t itoa(substr buf, T v, T radix, size_t num_digits) noexce
             ++pos;
         }
         unsigned total_digits = 0;
-        switch(radix)
+        switch(radix) // NOLINT(hicpp-multiway-paths-covered)
         {
         case T(10):
             total_digits = digits_dec(v);
@@ -1322,7 +1320,7 @@ C4_ALWAYS_INLINE size_t utoa(substr buf, T v, T radix) noexcept
     C4_STATIC_ASSERT(std::is_unsigned<T>::value);
     C4_ASSERT(radix == 10 || radix == 16 || radix == 2 || radix == 8);
     unsigned digits = 0;
-    switch(radix)
+    switch(radix) // NOLINT(hicpp-multiway-paths-covered)
     {
     case T(10):
         digits = digits_dec(v);
@@ -1377,7 +1375,7 @@ C4_ALWAYS_INLINE size_t utoa(substr buf, T v, T radix, size_t num_digits) noexce
     C4_STATIC_ASSERT(std::is_unsigned<T>::value);
     C4_ASSERT(radix == 10 || radix == 16 || radix == 2 || radix == 8);
     unsigned total_digits = 0;
-    switch(radix)
+    switch(radix) // NOLINT(hicpp-multiway-paths-covered)
     {
     case T(10):
         total_digits = digits_dec(v);
@@ -1601,7 +1599,7 @@ C4_ALWAYS_INLINE size_t atou_first(csubstr str, T *v)
 
 /** @} */
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && !defined(__clang__)
 #   pragma warning(pop)
 #elif defined(__clang__)
 #   pragma clang diagnostic pop
@@ -1618,19 +1616,16 @@ C4_ALWAYS_INLINE size_t atou_first(csubstr str, T *v)
 namespace detail {
 inline bool check_overflow(csubstr str, csubstr limit) noexcept
 {
-    if(str.len == limit.len)
-    {
-        for(size_t i = 0; i < limit.len; ++i)
-        {
-            if(str[i] < limit[i])
-                return false;
-            else if(str[i] > limit[i])
-                return true;
-        }
-        return false;
-    }
-    else
+    if(str.len != limit.len)
         return str.len > limit.len;
+    for(size_t i = 0; i < limit.len; ++i)
+    {
+        if(str[i] < limit[i])
+            return false;
+        else if(str[i] > limit[i])
+            return true;
+    }
+    return false;
 }
 } // namespace detail
 /** @endcond */
@@ -1714,7 +1709,7 @@ auto overflows(csubstr str) noexcept
  * @see doc_overflow_checked for format specifiers to enforce no-overflow reads
  */
 template<class T>
-auto overflows(csubstr str)
+auto overflows(csubstr str) noexcept
     -> typename std::enable_if<std::is_signed<T>::value, bool>::type
 {
     C4_STATIC_ASSERT(std::is_integral<T>::value);
@@ -1762,7 +1757,9 @@ auto overflows(csubstr str)
             }
         }
         else
+        {
             return detail::check_overflow(str.sub(1), detail::charconv_digits<T>::min_value_dec());
+        }
     }
     else if(str.str[0] == '0')
     {
@@ -1805,7 +1802,9 @@ auto overflows(csubstr str)
         }
     }
     else
+    {
         return detail::check_overflow(str, detail::charconv_digits<T>::max_value_dec());
+    }
 }
 
 /** @} */
@@ -1989,7 +1988,7 @@ C4_ALWAYS_INLINE bool scan_rhex(csubstr s, T *C4_RESTRICT val) noexcept
         else if(c == 'p' || c == 'P')
         {
             ++pos;
-            goto power; // no mantissa given, jump to power
+            goto power; // no mantissa given, jump to power // NOLINT
         }
         else
         {
@@ -1999,7 +1998,7 @@ C4_ALWAYS_INLINE bool scan_rhex(csubstr s, T *C4_RESTRICT val) noexcept
     // mantissa
     {
         // 0.0625 == 1/16 == value of first digit after the comma
-        for(T digit = T(0.0625); pos < s.len; ++pos, digit /= T(16))
+        for(T digit = T(0.0625); pos < s.len; ++pos, digit /= T(16)) // NOLINT
         {
             const char c = s.str[pos];
             if(c >= '0' && c <= '9')
@@ -2011,7 +2010,7 @@ C4_ALWAYS_INLINE bool scan_rhex(csubstr s, T *C4_RESTRICT val) noexcept
             else if(c == 'p' || c == 'P')
             {
                 ++pos;
-                goto power; // mantissa finished, jump to power
+                goto power; // mantissa finished, jump to power // NOLINT
             }
             else
             {
@@ -2172,6 +2171,7 @@ inline size_t atof_first(csubstr str, float * C4_RESTRICT v) noexcept
  */
 C4_ALWAYS_INLINE bool atod(csubstr str, double * C4_RESTRICT v) noexcept
 {
+    C4_ASSERT(str.len > 0);
     C4_ASSERT(str.triml(" \r\t\n").len == str.len);
 #if C4CORE_HAVE_FAST_FLOAT
     // fastfloat cannot parse hexadecimal floats
@@ -2228,8 +2228,8 @@ inline size_t atod_first(csubstr str, double * C4_RESTRICT v) noexcept
 /** @cond dev */
 // on some platforms, (unsigned) int and (unsigned) long
 // are not any of the fixed length types above
-#define _C4_IF_NOT_FIXED_LENGTH_I(T, ty) C4_ALWAYS_INLINE typename std::enable_if<std::  is_signed<T>::value && !is_fixed_length<T>::value_i, ty>
-#define _C4_IF_NOT_FIXED_LENGTH_U(T, ty) C4_ALWAYS_INLINE typename std::enable_if<std::is_unsigned<T>::value && !is_fixed_length<T>::value_u, ty>
+#define _C4_IF_NOT_FIXED_LENGTH_I(T, ty) typename std::enable_if<std::  is_signed<T>::value && !is_fixed_length<T>::value_i, ty>
+#define _C4_IF_NOT_FIXED_LENGTH_U(T, ty) typename std::enable_if<std::is_unsigned<T>::value && !is_fixed_length<T>::value_u, ty>
 /** @endcond*/
 
 
@@ -2271,8 +2271,8 @@ C4_ALWAYS_INLINE size_t xtoa(substr s,  int64_t v,  int64_t radix, size_t num_di
 C4_ALWAYS_INLINE size_t xtoa(substr s,  float v, int precision, RealFormat_e formatting=FTOA_FLEX) noexcept { return ftoa(s, v, precision, formatting); }
 C4_ALWAYS_INLINE size_t xtoa(substr s, double v, int precision, RealFormat_e formatting=FTOA_FLEX) noexcept { return dtoa(s, v, precision, formatting); }
 
-template <class T> _C4_IF_NOT_FIXED_LENGTH_I(T, size_t)::type xtoa(substr buf, T v) noexcept { return itoa(buf, v); }
-template <class T> _C4_IF_NOT_FIXED_LENGTH_U(T, size_t)::type xtoa(substr buf, T v) noexcept { return write_dec(buf, v); }
+template <class T> C4_ALWAYS_INLINE auto xtoa(substr buf, T v) noexcept -> _C4_IF_NOT_FIXED_LENGTH_I(T, size_t)::type { return itoa(buf, v); }
+template <class T> C4_ALWAYS_INLINE auto xtoa(substr buf, T v) noexcept -> _C4_IF_NOT_FIXED_LENGTH_U(T, size_t)::type { return write_dec(buf, v); }
 template <class T>
 C4_ALWAYS_INLINE size_t xtoa(substr s, T *v) noexcept { return itoa(s, (intptr_t)v, (intptr_t)16); }
 
@@ -2296,8 +2296,8 @@ C4_ALWAYS_INLINE bool atox(csubstr s,  int64_t *C4_RESTRICT v) noexcept { return
 C4_ALWAYS_INLINE bool atox(csubstr s,    float *C4_RESTRICT v) noexcept { return atof(s, v); }
 C4_ALWAYS_INLINE bool atox(csubstr s,   double *C4_RESTRICT v) noexcept { return atod(s, v); }
 
-template <class T> _C4_IF_NOT_FIXED_LENGTH_I(T, bool  )::type atox(csubstr buf, T *C4_RESTRICT v) noexcept { return atoi(buf, v); }
-template <class T> _C4_IF_NOT_FIXED_LENGTH_U(T, bool  )::type atox(csubstr buf, T *C4_RESTRICT v) noexcept { return atou(buf, v); }
+template <class T> C4_ALWAYS_INLINE auto atox(csubstr buf, T *C4_RESTRICT v) noexcept -> _C4_IF_NOT_FIXED_LENGTH_I(T, bool)::type { return atoi(buf, v); }
+template <class T> C4_ALWAYS_INLINE auto atox(csubstr buf, T *C4_RESTRICT v) noexcept -> _C4_IF_NOT_FIXED_LENGTH_U(T, bool)::type { return atou(buf, v); }
 template <class T>
 C4_ALWAYS_INLINE bool atox(csubstr s, T **v) noexcept { intptr_t tmp; bool ret = atox(s, &tmp); if(ret) { *v = (T*)tmp; } return ret; }
 
@@ -2336,8 +2336,8 @@ C4_ALWAYS_INLINE size_t to_chars(substr buf,  int64_t v) noexcept { return itoa(
 C4_ALWAYS_INLINE size_t to_chars(substr buf,    float v) noexcept { return ftoa(buf, v); }
 C4_ALWAYS_INLINE size_t to_chars(substr buf,   double v) noexcept { return dtoa(buf, v); }
 
-template <class T> _C4_IF_NOT_FIXED_LENGTH_I(T, size_t)::type to_chars(substr buf, T v) noexcept { return itoa(buf, v); }
-template <class T> _C4_IF_NOT_FIXED_LENGTH_U(T, size_t)::type to_chars(substr buf, T v) noexcept { return write_dec(buf, v); }
+template <class T> C4_ALWAYS_INLINE auto to_chars(substr buf, T v) noexcept -> _C4_IF_NOT_FIXED_LENGTH_I(T, size_t)::type { return itoa(buf, v); }
+template <class T> C4_ALWAYS_INLINE auto to_chars(substr buf, T v) noexcept -> _C4_IF_NOT_FIXED_LENGTH_U(T, size_t)::type { return write_dec(buf, v); }
 template <class T>
 C4_ALWAYS_INLINE size_t to_chars(substr s, T *v) noexcept { return itoa(s, (intptr_t)v, (intptr_t)16); }
 
@@ -2371,8 +2371,8 @@ C4_ALWAYS_INLINE bool from_chars(csubstr buf,  int64_t *C4_RESTRICT v) noexcept 
 C4_ALWAYS_INLINE bool from_chars(csubstr buf,    float *C4_RESTRICT v) noexcept { return atof(buf, v); }
 C4_ALWAYS_INLINE bool from_chars(csubstr buf,   double *C4_RESTRICT v) noexcept { return atod(buf, v); }
 
-template <class T> _C4_IF_NOT_FIXED_LENGTH_I(T, bool  )::type from_chars(csubstr buf, T *C4_RESTRICT v) noexcept { return atoi(buf, v); }
-template <class T> _C4_IF_NOT_FIXED_LENGTH_U(T, bool  )::type from_chars(csubstr buf, T *C4_RESTRICT v) noexcept { return atou(buf, v); }
+template <class T> C4_ALWAYS_INLINE auto from_chars(csubstr buf, T *C4_RESTRICT v) noexcept -> _C4_IF_NOT_FIXED_LENGTH_I(T, bool)::type { return atoi(buf, v); }
+template <class T> C4_ALWAYS_INLINE auto from_chars(csubstr buf, T *C4_RESTRICT v) noexcept -> _C4_IF_NOT_FIXED_LENGTH_U(T, bool)::type { return atou(buf, v); }
 template <class T>
 C4_ALWAYS_INLINE bool from_chars(csubstr buf, T **v) noexcept { intptr_t tmp; bool ret = from_chars(buf, &tmp); if(ret) { *v = (T*)tmp; } return ret; }
 
@@ -2399,8 +2399,8 @@ C4_ALWAYS_INLINE size_t from_chars_first(csubstr buf,  int64_t *C4_RESTRICT v) n
 C4_ALWAYS_INLINE size_t from_chars_first(csubstr buf,    float *C4_RESTRICT v) noexcept { return atof_first(buf, v); }
 C4_ALWAYS_INLINE size_t from_chars_first(csubstr buf,   double *C4_RESTRICT v) noexcept { return atod_first(buf, v); }
 
-template <class T> _C4_IF_NOT_FIXED_LENGTH_I(T, size_t)::type from_chars_first(csubstr buf, T *C4_RESTRICT v) noexcept { return atoi_first(buf, v); }
-template <class T> _C4_IF_NOT_FIXED_LENGTH_U(T, size_t)::type from_chars_first(csubstr buf, T *C4_RESTRICT v) noexcept { return atou_first(buf, v); }
+template <class T> C4_ALWAYS_INLINE auto from_chars_first(csubstr buf, T *C4_RESTRICT v) noexcept -> _C4_IF_NOT_FIXED_LENGTH_I(T, size_t)::type { return atoi_first(buf, v); }
+template <class T> C4_ALWAYS_INLINE auto from_chars_first(csubstr buf, T *C4_RESTRICT v) noexcept -> _C4_IF_NOT_FIXED_LENGTH_U(T, size_t)::type { return atou_first(buf, v); }
 template <class T>
 C4_ALWAYS_INLINE size_t from_chars_first(csubstr buf, T **v) noexcept { intptr_t tmp; bool ret = from_chars_first(buf, &tmp); if(ret) { *v = (T*)tmp; } return ret; }
 
@@ -2657,11 +2657,11 @@ inline size_t to_chars(substr buf, const char * C4_RESTRICT v) noexcept
 
 } // namespace c4
 
-#ifdef _MSC_VER
-#   pragma warning(pop)
-#endif
+// NOLINTEND(hicpp-signed-bitwise)
 
-#if defined(__clang__)
+#if defined(_MSC_VER) && !defined(__clang__)
+#   pragma warning(pop)
+#elif defined(__clang__)
 #   pragma clang diagnostic pop
 #elif defined(__GNUC__)
 #   pragma GCC diagnostic pop

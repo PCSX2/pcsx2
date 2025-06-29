@@ -17,7 +17,7 @@ namespace c4 {
 namespace yml {
 
 
-void check_invariants(Tree const& t, size_t node=NONE);
+void check_invariants(Tree const& t, id_type node=NONE);
 void check_free_list(Tree const& t);
 void check_arena(Tree const& t);
 
@@ -26,16 +26,16 @@ void check_arena(Tree const& t);
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 
-inline void check_invariants(Tree const& t, size_t node)
+inline void check_invariants(Tree const& t, id_type node)
 {
     if(node == NONE)
     {
-        if(t.size() == 0) return;
+        if(t.empty()) return;
         node = t.root_id();
     }
 
-    auto const& n = *t._p(node);
-#ifdef RYML_DBG
+    NodeData const& n = *t._p(node);
+#if defined(RYML_DBG) && 0
     if(n.m_first_child != NONE || n.m_last_child != NONE)
     {
         printf("check(%zu): fc=%zu lc=%zu\n", node, n.m_first_child, n.m_last_child);
@@ -100,10 +100,10 @@ inline void check_invariants(Tree const& t, size_t node)
         C4_CHECK(t._p(n.m_next_sibling)->m_next_sibling != node);
     }
 
-    size_t count = 0;
-    for(size_t i = n.m_first_child; i != NONE; i = t.next_sibling(i))
+    id_type count = 0;
+    for(id_type i = n.m_first_child; i != NONE; i = t.next_sibling(i))
     {
-#ifdef RYML_DBG
+#if defined(RYML_DBG) && 0
         printf("check(%zu):               descend to child[%zu]=%zu\n", node, count, i);
 #endif
         auto const& ch = *t._p(i);
@@ -131,7 +131,7 @@ inline void check_invariants(Tree const& t, size_t node)
         check_arena(t);
     }
 
-    for(size_t i = t.first_child(node); i != NONE; i = t.next_sibling(i))
+    for(id_type i = t.first_child(node); i != NONE; i = t.next_sibling(i))
     {
         check_invariants(t, i);
     }
@@ -159,8 +159,8 @@ inline void check_free_list(Tree const& t)
     //C4_CHECK(head.m_prev_sibling == NONE);
     //C4_CHECK(tail.m_next_sibling == NONE);
 
-    size_t count = 0;
-    for(size_t i = t.m_free_head, prev = NONE; i != NONE; i = t._p(i)->m_next_sibling)
+    id_type count = 0;
+    for(id_type i = t.m_free_head, prev = NONE; i != NONE; i = t._p(i)->m_next_sibling)
     {
         auto const& elm = *t._p(i);
         if(&elm != &head)

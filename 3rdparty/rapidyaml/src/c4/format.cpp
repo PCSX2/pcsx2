@@ -19,7 +19,7 @@ size_t to_chars(substr buf, fmt::const_raw_wrapper r)
 {
     void * vptr = buf.str;
     size_t space = buf.len;
-    auto ptr = (decltype(buf.str)) std::align(r.alignment, r.len, vptr, space);
+    char * ptr = (char*) std::align(r.alignment, r.len, vptr, space);
     if(ptr == nullptr)
     {
         // if it was not possible to align, return a conservative estimate
@@ -42,7 +42,7 @@ bool from_chars(csubstr buf, fmt::raw_wrapper *r)
     void * vptr = (void*)buf.str;
     C4_SUPPRESS_WARNING_GCC_POP
     size_t space = buf.len;
-    auto ptr = (decltype(buf.str)) std::align(r->alignment, r->len, vptr, space);
+    char * ptr = (char*) std::align(r->alignment, r->len, vptr, space);
     C4_CHECK(ptr != nullptr);
     C4_CHECK(ptr >= buf.begin() && ptr <= buf.end());
     C4_SUPPRESS_WARNING_GCC_PUSH

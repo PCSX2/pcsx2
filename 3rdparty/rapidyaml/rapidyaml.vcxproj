@@ -95,8 +95,19 @@
     <ClInclude Include="include\c4\yml\std\std.hpp" />
     <ClInclude Include="include\c4\yml\std\string.hpp" />
     <ClInclude Include="include\c4\yml\std\vector.hpp" />
+    <ClInclude Include="include\c4\yml\tag.hpp" />
+    <ClInclude Include="include\c4\yml\version.hpp" />
     <ClInclude Include="include\c4\yml\tree.hpp" />
     <ClInclude Include="include\c4\yml\writer.hpp" />
+    <ClInclude Include="include\c4\yml\event_handler_stack.hpp" />
+    <ClInclude Include="include\c4\yml\event_handler_tree.hpp" />
+    <ClInclude Include="include\c4\yml\filter_processor.hpp" />
+    <ClInclude Include="include\c4\yml\fwd.hpp" />
+    <ClInclude Include="include\c4\yml\node_type.hpp" />
+    <ClInclude Include="include\c4\yml\parse_engine.def.hpp" />
+    <ClInclude Include="include\c4\yml\parse_engine.hpp" />
+    <ClInclude Include="include\c4\yml\parser_state.hpp" />
+    <ClInclude Include="include\c4\yml\reference_resolver.hpp" />
     <ClInclude Include="include\c4\yml\yml.hpp" />
     <ClInclude Include="include\ryml.hpp" />
     <ClInclude Include="include\ryml_std.hpp" />
@@ -117,6 +128,10 @@
     <ClCompile Include="src\c4\yml\parse.cpp" />
     <ClCompile Include="src\c4\yml\preprocess.cpp" />
     <ClCompile Include="src\c4\yml\tree.cpp" />
+    <ClCompile Include="src\c4\yml\node_type.cpp" />
+    <ClCompile Include="src\c4\yml\reference_resolver.cpp" />
+    <ClCompile Include="src\c4\yml\tag.cpp" />
+    <ClCompile Include="src\c4\yml\version.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

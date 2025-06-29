@@ -333,7 +333,7 @@ namespace detail {
 #ifdef __GNUC__
 #   define C4_DONT_OPTIMIZE(var) c4::detail::dont_optimize(var)
 template< class T >
-C4_ALWAYS_INLINE void dont_optimize(T const& value) { asm volatile("" : : "g"(value) : "memory"); }
+C4_ALWAYS_INLINE void dont_optimize(T const& value) { asm volatile("" : : "g"(value) : "memory"); } // NOLINT
 #else
 #   define C4_DONT_OPTIMIZE(var) c4::detail::use_char_pointer(reinterpret_cast< const char* >(&var))
 void use_char_pointer(char const volatile*);

@@ -34,15 +34,26 @@ add_library(pcsx2-rapidyaml
   include/c4/yml/detail/stack.hpp
   include/c4/yml/emit.def.hpp
   include/c4/yml/emit.hpp
+  include/c4/yml/event_handler_stack.hpp
+  include/c4/yml/event_handler_tree.hpp
+  include/c4/yml/filter_processor.hpp
+  include/c4/yml/fwd.hpp
   include/c4/yml/export.hpp
   include/c4/yml/node.hpp
+  include/c4/yml/node_type.hpp
   include/c4/yml/parse.hpp
+  include/c4/yml/parse_engine.def.hpp
+  include/c4/yml/parse_engine.hpp
+  include/c4/yml/parser_state.hpp
+  include/c4/yml/reference_resolver.hpp
   include/c4/yml/preprocess.hpp
   include/c4/yml/std/map.hpp
   include/c4/yml/std/std.hpp
   include/c4/yml/std/string.hpp
   include/c4/yml/std/vector.hpp
+  include/c4/yml/tag.hpp
   include/c4/yml/tree.hpp
+  include/c4/yml/version.hpp
   include/c4/yml/writer.hpp
   include/c4/yml/yml.hpp
   include/ryml.hpp
@@ -58,6 +69,10 @@ add_library(pcsx2-rapidyaml
   src/c4/yml/parse.cpp
   src/c4/yml/preprocess.cpp
   src/c4/yml/tree.cpp
+  src/c4/yml/node_type.cpp
+  src/c4/yml/reference_resolver.cpp
+  src/c4/yml/tag.cpp
+  src/c4/yml/version.cpp
 )
 
 target_include_directories(pcsx2-rapidyaml PRIVATE

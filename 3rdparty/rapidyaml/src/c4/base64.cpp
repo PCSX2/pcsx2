@@ -6,10 +6,13 @@
 #   pragma clang diagnostic ignored "-Wold-style-cast"
 #elif defined(__GNUC__)
 #   pragma GCC diagnostic push
+#   pragma GCC diagnostic ignored "-Wuseless-cast"
 #   pragma GCC diagnostic ignored "-Wchar-subscripts"
 #   pragma GCC diagnostic ignored "-Wtype-limits"
 #   pragma GCC diagnostic ignored "-Wold-style-cast"
 #endif
+
+// NOLINTBEGIN(bugprone-signed-char-misuse,cert-str34-c,hicpp-signed-bitwise)
 
 namespace c4 {
 
@@ -78,7 +81,7 @@ void base64_test_tables()
     for(size_t i = 0; i < C4_COUNTOF(detail::base64_sextet_to_char_); ++i)
     {
         char s2c = base64_sextet_to_char_[i];
-        char c2s = base64_char_to_sextet_[(int)s2c];
+        char c2s = base64_char_to_sextet_[(unsigned)s2c];
         C4_CHECK((size_t)c2s == i);
     }
     for(size_t i = 0; i < C4_COUNTOF(detail::base64_char_to_sextet_); ++i)
@@ -86,7 +89,7 @@ void base64_test_tables()
         char c2s = base64_char_to_sextet_[i];
         if(c2s == char(-1))
             continue;
-        char s2c = base64_sextet_to_char_[(int)c2s];
+        char s2c = base64_sextet_to_char_[(unsigned)c2s];
         C4_CHECK((size_t)s2c == i);
     }
 }
@@ -96,7 +99,7 @@ void base64_test_tables()
 
 bool base64_valid(csubstr encoded)
 {
-    if(encoded.len & 3u) // (encoded.len % 4u)
+    if((encoded.len & size_t(3u)) != size_t(0)) // (encoded.len % 4u)
         return false;
     for(const char c : encoded)
     {
@@ -159,7 +162,7 @@ size_t base64_decode(csubstr encoded, blob data)
     #define c4append_(c) { if(wpos < data.len) { data.buf[wpos] = static_cast<c4::byte>(c); } ++wpos; }
     #define c4appendval_(c, shift)\
     {\
-        C4_XASSERT(c >= 0);\
+        C4_XASSERT((c) >= 0);\
         C4_XASSERT(size_t(c) < sizeof(detail::base64_char_to_sextet_));\
         val |= static_cast<uint32_t>(detail::base64_char_to_sextet_[(c)]) << ((shift) * 6);\
     }
@@ -213,6 +216,8 @@ size_t base64_decode(csubstr encoded, blob data)
 }
 
 } // namespace c4
+
+// NOLINTEND(bugprone-signed-char-misuse,cert-str34-c,hicpp-signed-bitwise)
 
 #ifdef __clang__
 #    pragma clang diagnostic pop
