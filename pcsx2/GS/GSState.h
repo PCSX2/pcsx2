@@ -209,6 +209,10 @@ protected:
 	bool IsCoverageAlpha();
 	void CalcAlphaMinMax(const int tex_min, const int tex_max);
 	void CorrectATEAlphaMinMax(const u32 atst, const int aref);
+	void RoundSTCoords();
+	void FixHugeSTCoords();
+	template <u32 n, bool cull>
+	void FixHugeSTCoordsImpl();
 
 public:
 	struct GSUploadQueue
