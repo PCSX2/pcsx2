@@ -4,6 +4,17 @@ on:
   schedule:
     - cron: "0 0 * * *" # Every day at 12am UTC.
   workflow_dispatch: # As well as manually.
+    inputs:
+      stableBuild:
+        description: Build and or publish to flathub stable or beta?
+        required: true
+        type: boolean
+        default: false
+      ref:
+        description: The git ref to build and or publish.
+        required: true
+        type: string 
+        default: master
 
 jobs:
 
@@ -54,6 +65,7 @@ jobs:
       cmakeflags: ""
       publish: true
       fetchTags: true
-      stableBuild: false
+      stableBuild: ${{ inputs.stableBuild || 'false' }}
+      ref: ${{ inputs.ref|| 'master' }}
     secrets: inherit
 
