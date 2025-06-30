@@ -35,6 +35,7 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.unlockSound, "Achievements", "UnlockSound", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.lbSound, "Achievements", "LBSubmitSound", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.overlays, "Achievements", "Overlays", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.leaderboardOverlays, "Achievements", "LBOverlays", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.encoreMode, "Achievements", "EncoreMode", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.spectatorMode, "Achievements", "SpectatorMode", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.unofficialAchievements, "Achievements", "UnofficialTestMode",false);
@@ -52,6 +53,7 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
 	dialog->registerWidgetHelp(m_ui.soundEffects, tr("Enable Sound Effects"), tr("Checked"), tr("Plays sound effects for events such as achievement unlocks and leaderboard submissions."));
 	dialog->registerWidgetHelp(m_ui.soundEffectsBox, tr("Custom Sound Effect"), tr("Any"), tr("Customize the sound effect that are played whenever you received a notification, earned an achievement or submitted an entry to the leaderboard."));
 	dialog->registerWidgetHelp(m_ui.overlays, tr("Enable In-Game Overlays"), tr("Checked"), tr("Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active."));
+	dialog->registerWidgetHelp(m_ui.leaderboardOverlays, tr("Enable In-Game Leaderboard Overlays"), tr("Checked"), tr("Shows icons in the lower-right corner of the screen when leaderboard tracking is active."));
 	dialog->registerWidgetHelp(m_ui.encoreMode, tr("Enable Encore Mode"), tr("Unchecked"),tr("When enabled, each session will behave as if no achievements have been unlocked."));
 	dialog->registerWidgetHelp(m_ui.spectatorMode, tr("Enable Spectator Mode"), tr("Unchecked"), tr("When enabled, PCSX2 will assume all achievements are locked and not send any unlock notifications to the server."));
 	dialog->registerWidgetHelp(m_ui.unofficialAchievements, tr("Test Unofficial Achievements"), tr("Unchecked"), tr("When enabled, PCSX2 will list achievements from unofficial sets. Please note that these achievements are not tracked by RetroAchievements, so they unlock every time."));
@@ -139,6 +141,7 @@ void AchievementSettingsWidget::updateEnableState()
 
 	m_ui.soundEffects->setEnabled(enabled);
 	m_ui.overlays->setEnabled(enabled);
+	m_ui.leaderboardOverlays->setEnabled(enabled);
 	m_ui.encoreMode->setEnabled(enabled);
 	m_ui.spectatorMode->setEnabled(enabled);
 	m_ui.unofficialAchievements->setEnabled(enabled);
