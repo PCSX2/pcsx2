@@ -7287,7 +7287,7 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 
 		ImGui::PushTextWrapPos(content_width);
 		ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.8f, 0.8f, 1.0f));
-		ImGui::TextWrapped(FSUI_CSTR("Please enter your user name and password for retroachievements.org below. Your password will not be saved in PCSX2, an access token will be generated and used instead."));
+		ImGui::TextWrapped("%s", FSUI_CSTR("Please enter your user name and password for retroachievements.org below. \n\n Your password will not be saved in PCSX2, an access token will be generated and used instead."));
 		ImGui::PopStyleColor();
 		ImGui::PopTextWrapPos();
 
