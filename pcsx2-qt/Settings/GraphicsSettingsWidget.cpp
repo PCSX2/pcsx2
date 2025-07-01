@@ -100,6 +100,10 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToIntSetting(
 		sif, m_ui.screenshotFormat, "EmuCore/GS", "ScreenshotFormat", static_cast<int>(GSScreenshotFormat::PNG));
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.screenshotQuality, "EmuCore/GS", "ScreenshotQuality", 90);
+   	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.organizeScreenshotsByGame, "EmuCore/GS", "OrganizeScreenshotsByGame", false);
+	connect(m_ui.organizeScreenshotsByGame, &QCheckBox::checkStateChanged, this, [](int state) {
+		GSConfig.OrganizeScreenshotsByGame = (state == Qt::Checked);
+	});
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.stretchY, "EmuCore/GS", "StretchY", 100.0f);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.cropLeft, "EmuCore/GS", "CropLeft", 0);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.cropTop, "EmuCore/GS", "CropTop", 0);
@@ -516,6 +520,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 		dialog->registerWidgetHelp(m_ui.screenshotQuality, tr("Screenshot Quality"), tr("90%"),
 			tr("Selects the quality at which screenshots will be compressed. Higher values preserve more detail for JPEG and WebP, and reduce file "
 			   "size for PNG."));
+
+		dialog->registerWidgetHelp(m_ui.organizeScreenshotsByGame, tr("Organize Screenshots by Game"), tr("Unchecked"),
+			tr("When enabled, screenshots will be saved in a folder with the game's name, instead of all being saved in the Screenshots folder"));
 
 		dialog->registerWidgetHelp(m_ui.stretchY, tr("Vertical Stretch"), tr("100%"),
 			// Characters </> need to be converted into entities in order to be shown correctly.
