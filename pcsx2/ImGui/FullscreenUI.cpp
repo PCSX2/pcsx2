@@ -290,6 +290,17 @@ namespace FullscreenUI
 			return true;
 		}
 
+		static void CancelAllOperations()
+		{
+			std::lock_guard<std::mutex> lock(s_operationsMutex);
+			for (auto& operation : s_activeOperations)
+			{
+				operation->SetCanceled();
+				operation->SafeCloseDialog();
+			}
+			s_activeOperations.clear();
+		}
+
 	protected:
 		virtual void Init() override
 		{
@@ -338,6 +349,11 @@ namespace FullscreenUI
 		}
 
 		return HddCreateInProgress::StartCreation(filePath, sizeInGB, use48BitLBA);
+	}
+
+	void CancelAllHddOperations()
+	{
+		HddCreateInProgress::CancelAllOperations();
 	}
 
 	enum class MainWindowType
@@ -1137,6 +1153,7 @@ void FullscreenUI::Shutdown(bool clear_state)
 {
 	if (clear_state)
 	{
+		CancelAllHddOperations();
 		CloseSaveStateSelector();
 		s_cover_image_map.clear();
 		s_game_list_sorted_entries = {};
