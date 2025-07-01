@@ -21,6 +21,7 @@ BreakpointView::BreakpointView(const DebuggerViewParameters& parameters)
 	connect(m_ui.breakpointList, &QTableView::doubleClicked, this, &BreakpointView::onDoubleClicked);
 
 	m_ui.breakpointList->setModel(m_model);
+	m_ui.breakpointList->horizontalHeader()->setSectionsMovable(true);
 	this->resizeColumns();
 }
 

@@ -16,6 +16,7 @@ SavedAddressesView::SavedAddressesView(const DebuggerViewParameters& parameters)
 	m_ui.setupUi(this);
 
 	m_ui.savedAddressesList->setModel(m_model);
+	m_ui.savedAddressesList->horizontalHeader()->setSectionsMovable(true);
 
 	m_ui.savedAddressesList->setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(m_ui.savedAddressesList, &QTableView::customContextMenuRequested,

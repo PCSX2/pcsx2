@@ -14,6 +14,7 @@ ModuleView::ModuleView(const DebuggerViewParameters& parameters)
 {
 	m_ui.setupUi(this);
 	m_ui.moduleList->setModel(m_model);
+	m_ui.moduleList->horizontalHeader()->setSectionsMovable(true);
 
 	m_ui.moduleList->setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(m_ui.moduleList, &QTableView::customContextMenuRequested, this, &ModuleView::openContextMenu);
