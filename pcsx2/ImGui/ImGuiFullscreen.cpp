@@ -121,6 +121,7 @@ namespace ImGuiFullscreen
 	static std::string s_input_dialog_text;
 	static std::string s_input_dialog_ok_text;
 	static InputStringDialogCallback s_input_dialog_callback;
+	static InputFilterType s_input_dialog_filter_type = InputFilterType::None;
 
 	static bool s_message_dialog_open = false;
 	static std::string s_message_dialog_title;
@@ -2459,14 +2460,17 @@ bool ImGuiFullscreen::IsInputDialogOpen()
 }
 
 void ImGuiFullscreen::OpenInputStringDialog(
-	std::string title, std::string message, std::string caption, std::string ok_button_text, InputStringDialogCallback callback)
+	std::string title, std::string message, std::string caption, std::string ok_button_text, InputStringDialogCallback callback,
+	std::string default_value, InputFilterType filter_type)
 {
 	s_input_dialog_open = true;
 	s_input_dialog_title = std::move(title);
 	s_input_dialog_message = std::move(message);
 	s_input_dialog_caption = std::move(caption);
 	s_input_dialog_ok_text = std::move(ok_button_text);
+	s_input_dialog_text = std::move(default_value);
 	s_input_dialog_callback = std::move(callback);
+	s_input_dialog_filter_type = filter_type;
 	QueueResetFocus(FocusResetType::PopupOpened);
 }
 
@@ -2487,10 +2491,11 @@ void ImGuiFullscreen::DrawInputDialog()
 	ImGui::PushStyleColor(ImGuiCol_Text, UIPrimaryTextColor);
 	ImGui::PushStyleColor(ImGuiCol_TitleBg, UIPrimaryDarkColor);
 	ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIPrimaryColor);
+	ImGui::PushStyleColor(ImGuiCol_PopupBg, UIBackgroundColor);
 
 	bool is_open = true;
 	if (ImGui::BeginPopupModal(s_input_dialog_title.c_str(), &is_open,
-			ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
+			ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
 	{
 		ResetFocusHere();
 		ImGui::TextWrapped("%s", s_input_dialog_message.c_str());
@@ -2509,7 +2514,40 @@ void ImGuiFullscreen::DrawInputDialog()
 		{
 			ImGui::SetNextItemWidth(ImGui::GetCurrentWindow()->WorkRect.GetWidth());
 		}
-		ImGui::InputText("##input", &s_input_dialog_text);
+
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
+
+		static auto input_callback = [](ImGuiInputTextCallbackData* data) -> int {
+			InputFilterType* filter_type = static_cast<InputFilterType*>(data->UserData);
+
+			if (data->EventFlag == ImGuiInputTextFlags_CallbackCharFilter) {
+				char c = static_cast<char>(data->EventChar);
+
+				if (*filter_type == InputFilterType::Numeric) {
+					if (!std::isdigit(c)) {
+						return 1;
+					}
+				}
+				else if (*filter_type == InputFilterType::IPAddress) {
+					if (!std::isdigit(c) && c != '.') {
+						return 1;
+					}
+				}
+			}
+
+			return 0;
+		};
+
+		ImGuiInputTextFlags flags = ImGuiInputTextFlags_None;
+		if (s_input_dialog_filter_type != InputFilterType::None)
+			flags |= ImGuiInputTextFlags_CallbackCharFilter;
+		
+		if (s_focus_reset_queued != FocusResetType::None)
+			ImGui::SetKeyboardFocusHere();
+		
+		ImGui::InputText("##input", &s_input_dialog_text, flags, 
+			(s_input_dialog_filter_type != InputFilterType::None) ? input_callback : nullptr,
+			(s_input_dialog_filter_type != InputFilterType::None) ? static_cast<void*>(&s_input_dialog_filter_type) : nullptr);
 
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
 
@@ -2541,7 +2579,7 @@ void ImGuiFullscreen::DrawInputDialog()
 	else
 		GetInputDialogHelpText(s_fullscreen_footer_text);
 
-	ImGui::PopStyleColor(3);
+	ImGui::PopStyleColor(4);
 	ImGui::PopStyleVar(3);
 	ImGui::PopFont();
 }
@@ -2558,6 +2596,7 @@ void ImGuiFullscreen::CloseInputDialog()
 	s_input_dialog_ok_text = {};
 	s_input_dialog_text = {};
 	s_input_dialog_callback = {};
+	s_input_dialog_filter_type = InputFilterType::None;
 }
 
 bool ImGuiFullscreen::IsMessageBoxDialogOpen()
