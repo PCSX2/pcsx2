@@ -19,6 +19,7 @@ StackView::StackView(const DebuggerViewParameters& parameters)
 	connect(m_ui.stackList, &QTableView::doubleClicked, this, &StackView::onDoubleClick);
 
 	m_ui.stackList->setModel(m_model);
+	m_ui.stackList->horizontalHeader()->setSectionsMovable(true);
 	for (std::size_t i = 0; auto mode : StackModel::HeaderResizeModes)
 	{
 		m_ui.stackList->horizontalHeader()->setSectionResizeMode(i, mode);

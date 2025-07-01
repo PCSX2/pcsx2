@@ -24,6 +24,7 @@ ThreadView::ThreadView(const DebuggerViewParameters& parameters)
 	m_ui.threadList->setModel(m_proxy_model);
 	m_ui.threadList->setSortingEnabled(true);
 	m_ui.threadList->sortByColumn(ThreadModel::ThreadColumns::ID, Qt::SortOrder::AscendingOrder);
+	m_ui.threadList->horizontalHeader()->setSectionsMovable(true);
 	m_ui.threadList->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeMode::ResizeToContents);
 	for (std::size_t i = 0; auto mode : ThreadModel::HeaderResizeModes)
 	{
