@@ -40,6 +40,9 @@ namespace FullscreenUI
 	void Render();
 	void InvalidateCoverCache();
 	TinyString TimeToPrintableString(time_t t);
+	
+	bool CreateHardDriveWithProgress(const std::string& filePath, int sizeInGB, bool use48BitLBA = true);
+	void CancelAllHddOperations();
 } // namespace FullscreenUI
 
 // Host UI triggers from Big Picture mode.
