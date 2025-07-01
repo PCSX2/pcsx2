@@ -255,8 +255,16 @@ namespace ImGuiFullscreen
 
 	using InputStringDialogCallback = std::function<void(std::string text)>;
 	bool IsInputDialogOpen();
+	enum class InputFilterType : u8
+	{
+		None,
+		Numeric,
+		IPAddress
+	};
+
 	void OpenInputStringDialog(
-		std::string title, std::string message, std::string caption, std::string ok_button_text, InputStringDialogCallback callback);
+		std::string title, std::string message, std::string caption, std::string ok_button_text, InputStringDialogCallback callback,
+		std::string default_value = std::string(), InputFilterType filter_type = InputFilterType::None);
 	void CloseInputDialog();
 
 	using ConfirmMessageDialogCallback = std::function<void(bool)>;
