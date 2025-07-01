@@ -781,7 +781,8 @@ struct Pcsx2Config
 					EnableVideoCaptureParameters : 1,
 					VideoCaptureAutoResolution : 1,
 					EnableAudioCapture : 1,
-					EnableAudioCaptureParameters : 1;
+					EnableAudioCaptureParameters : 1,
+					OrganizeScreenshotsByGame : 1;
 			};
 		};
 

@@ -876,7 +876,30 @@ static std::string GSGetBaseFilename()
 std::string GSGetBaseSnapshotFilename()
 {
 	// prepend snapshots directory
-	return Path::Combine(EmuFolders::Snapshots, GSGetBaseFilename());
+	std::string base_path = EmuFolders::Snapshots;
+
+	// If organize by game is enabled, create a game-specific folder
+	if (GSConfig.OrganizeScreenshotsByGame)
+	{
+		std::string game_name = VMManager::GetTitle(true);
+		if (!game_name.empty())
+		{
+			Path::SanitizeFileName(&game_name);
+			if (game_name.length() > 219)
+			{
+				game_name.resize(219);
+			}
+			const std::string game_dir = Path::Combine(base_path, game_name);
+			if (!FileSystem::DirectoryExists(game_dir.c_str()))
+			{
+				FileSystem::CreateDirectoryPath(game_dir.c_str(), false);
+			}
+
+			base_path = game_dir;
+		}
+	}
+
+	return Path::Combine(base_path, GSGetBaseFilename());
 }
 
 std::string GSGetBaseVideoFilename()
