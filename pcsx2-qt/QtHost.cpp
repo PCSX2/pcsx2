@@ -2413,8 +2413,8 @@ int main(int argc, char* argv[])
 		g_main_window->activateWindow();
 	}
 
-	// Initialize big picture mode if requested.
-	if (s_start_fullscreen_ui)
+	// Initialize big picture mode if requested by command line or settings.
+	if (s_start_fullscreen_ui || Host::GetBaseBoolSettingValue("UI", "StartBigPictureMode", false))
 		g_emu_thread->startFullscreenUI(s_start_fullscreen_ui_fullscreen);
 
 	if (s_boot_and_debug || DebuggerWindow::shouldShowOnStartup())
