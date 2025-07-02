@@ -45,12 +45,12 @@ const std::map<std::string, DockTables::DebuggerViewDescription> DockTables::DEB
 	DEBUGGER_VIEW(LocalVariableTreeView, QT_TRANSLATE_NOOP("DebuggerView", "Locals"), BOTTOM_MIDDLE),
 	DEBUGGER_VIEW(MemorySearchView, QT_TRANSLATE_NOOP("DebuggerView", "Memory Search"), TOP_LEFT),
 	DEBUGGER_VIEW(MemoryView, QT_TRANSLATE_NOOP("DebuggerView", "Memory"), BOTTOM_MIDDLE),
+	DEBUGGER_VIEW(ModuleView, QT_TRANSLATE_NOOP("DebuggerView", "Modules"), BOTTOM_MIDDLE),
 	DEBUGGER_VIEW(ParameterVariableTreeView, QT_TRANSLATE_NOOP("DebuggerView", "Parameters"), BOTTOM_MIDDLE),
 	DEBUGGER_VIEW(RegisterView, QT_TRANSLATE_NOOP("DebuggerView", "Registers"), TOP_LEFT),
 	DEBUGGER_VIEW(SavedAddressesView, QT_TRANSLATE_NOOP("DebuggerView", "Saved Addresses"), BOTTOM_MIDDLE),
 	DEBUGGER_VIEW(StackView, QT_TRANSLATE_NOOP("DebuggerView", "Stack"), BOTTOM_MIDDLE),
 	DEBUGGER_VIEW(ThreadView, QT_TRANSLATE_NOOP("DebuggerView", "Threads"), BOTTOM_MIDDLE),
-	DEBUGGER_VIEW(ModuleView, QT_TRANSLATE_NOOP("DebuggerView", "Modules"), BOTTOM_MIDDLE),
 };
 
 #undef DEBUGGER_VIEW
