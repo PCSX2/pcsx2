@@ -41,8 +41,8 @@ static const SettingInfo s_settings[] = {
 		"1.0", "0.01", "2.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
 };
 
-const Pad::ControllerInfo PadNegcon::ControllerInfo = {Pad::ControllerType::Negcon, "Negcon",
-	TRANSLATE_NOOP("Pad", "Negcon"), ICON_PF_GAMEPAD_ALT, s_bindings, s_settings, Pad::VibrationCapabilities::LargeSmallMotors};
+const Pad::ControllerInfo PadNegcon::ControllerInfo = {Pad::ControllerType::Negcon, "NeGcon",
+	TRANSLATE_NOOP("Pad", "NeGcon"), ICON_PF_GAMEPAD_ALT, s_bindings, s_settings, Pad::VibrationCapabilities::LargeSmallMotors};
 
 void PadNegcon::ConfigLog()
 {
@@ -50,7 +50,7 @@ void PadNegcon::ConfigLog()
 
 	// AL: Analog Light (is it turned on right now)
 	// AB: Analog Button (is it useable or is it locked in its current state)
-	Console.WriteLn(fmt::format("Pad: Negcon Config Finished - P{0}/S{1} - AL: {2} - AB: {3}",
+	Console.WriteLn(fmt::format("Pad: NeGcon Config Finished - P{0}/S{1} - AL: {2} - AB: {3}",
 		port + 1,
 		slot + 1,
 		(this->analogLight ? "On" : "Off"),
