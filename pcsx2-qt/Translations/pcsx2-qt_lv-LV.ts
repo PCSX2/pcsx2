@@ -414,9 +414,9 @@ Pieslēgšānās žetons ģenerēts šeit:</translation>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="184"/>
       <source>%n seconds</source>
       <translation>
-        <numerusform>%n sekundes</numerusform>
         <numerusform>%n sekunde</numerusform>
         <numerusform>%n sekundes</numerusform>
+        <numerusform>%n sekunde</numerusform>
       </translation>
     </message>
     <message>
@@ -11674,9 +11674,9 @@ graphical quality, but this will increase system requirements.</translation>
       <location filename="../../pcsx2/GameList.cpp" line="1200"/>
       <source>%n hours</source>
       <translation>
-        <numerusform>%n stundas</numerusform>
         <numerusform>%n stunda</numerusform>
         <numerusform>%n stundas</numerusform>
+        <numerusform>%n stunda</numerusform>
       </translation>
     </message>
     <message numerus="yes">
@@ -11684,9 +11684,9 @@ graphical quality, but this will increase system requirements.</translation>
       <location filename="../../pcsx2/GameList.cpp" line="1202"/>
       <source>%n minutes</source>
       <translation>
-        <numerusform>%n minūtes</numerusform>
         <numerusform>%n minūte</numerusform>
         <numerusform>%n minūtes</numerusform>
+        <numerusform>%n minūte</numerusform>
       </translation>
     </message>
     <message>
