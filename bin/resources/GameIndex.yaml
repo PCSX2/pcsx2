@@ -2971,7 +2971,7 @@ SCED-50642:
   name: "Final Fantasy X [Demo] [Final Fantasy VI PS1 - Bonus Disc]"
   region: "PAL-E"
   gameFixes:
-    - SoftwareRendererFMVHack # Fixes interlacing.
+    - SoftwareRendererFMVHack # Fixes interlacing.X
   roundModes:
     eeRoundMode: 2 # Fixes cutscene animations while slightly dislocating a few select meshes. Setting round mode to Chop/Zero or Nearest fixes the issues with meshes at the cost of breaking important cutscenes.
   clampModes:
