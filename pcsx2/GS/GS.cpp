@@ -1213,6 +1213,31 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphic
 
 			MTGS::RunOnGSThread([new_mode]() { GSConfig.InterlaceMode = new_mode; });
 		}},
+	{"CycleTVShader", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Cycle TV Shader"),
+		[](s32 pressed) {
+			if (pressed)
+				return;
+
+			static constexpr std::array<const char*, 8> option_names = {{
+				TRANSLATE_NOOP("Hotkeys", "None (Default)"),
+				TRANSLATE_NOOP("Hotkeys", "Scanline Filter"),
+				TRANSLATE_NOOP("Hotkeys", "Diagonal Filter"),
+				TRANSLATE_NOOP("Hotkeys", "Triangular Filter"),
+				TRANSLATE_NOOP("Hotkeys", "Wave Filter"),
+				TRANSLATE_NOOP("Hotkeys", "Lottes CRT"),
+				TRANSLATE_NOOP("Hotkeys", "4xRGSS"),
+				TRANSLATE_NOOP("Hotkeys", "NxAGSS"),
+			}};
+
+			const u32 new_shader = (EmuConfig.GS.TVShader + 1) % 8;
+			Host::AddKeyedOSDMessage("CycleTVShader",
+				fmt::format(
+					TRANSLATE_FS("Hotkeys", "TV shader set to '{}'."), option_names[new_shader]),
+				Host::OSD_QUICK_DURATION);
+			EmuConfig.GS.TVShader = new_shader;
+
+			MTGS::RunOnGSThread([new_shader]() { GSConfig.TVShader = new_shader; });
+		}},
 	{"ToggleTextureDumping", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Toggle Texture Dumping"),
 		[](s32 pressed) {
 			if (!pressed)
