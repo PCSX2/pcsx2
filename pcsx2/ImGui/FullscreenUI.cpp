@@ -47,6 +47,7 @@
 #include "fmt/chrono.h"
 #include "fmt/format.h"
 
+#include <algorithm>
 #include <array>
 #include <bitset>
 #include <thread>
@@ -418,6 +419,8 @@ namespace FullscreenUI
 	static void StartAutomaticBinding(u32 port);
 	static void DrawSettingInfoSetting(SettingsInterface* bsi, const char* section, const char* key, const SettingInfo& si,
 		const char* translation_ctx);
+	static void OpenMemoryCardCreateDialog();
+	static void DoCreateMemoryCard(std::string name, MemoryCardType type, MemoryCardFileType file_type, bool use_ntfs_compression = false);
 
 	static SettingsPage s_settings_page = SettingsPage::Interface;
 	static std::unique_ptr<INISettingsInterface> s_game_settings_interface;
@@ -4541,7 +4544,7 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
 
 	MenuHeading(FSUI_CSTR("Settings and Operations"));
 	if (MenuButton(FSUI_ICONSTR(ICON_FA_FILE_CIRCLE_PLUS, "Create Memory Card"), FSUI_CSTR("Creates a new memory card file or folder.")))
-		Host::OnCreateMemoryCardOpenRequested();
+		OpenMemoryCardCreateDialog();
 
 	DrawFolderSetting(bsi, FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Memory Card Directory"), "Folders", "MemoryCards", EmuFolders::MemoryCards);
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_MAGNIFYING_GLASS, "Folder Memory Card Filter"),
@@ -4633,6 +4636,139 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
 
 
 	EndMenuButtons();
+}
+
+void FullscreenUI::OpenMemoryCardCreateDialog()
+{
+	OpenInputStringDialog(FSUI_ICONSTR(ICON_FA_PLUS, "Create Memory Card"),
+		FSUI_STR("Enter the name for the new memory card."), std::string(),
+		FSUI_ICONSTR(ICON_FA_CHECK, "Create"), [](std::string name) {
+			if (name.empty())
+				return;
+
+			name.erase(std::remove(name.begin(), name.end(), '.'), name.end());
+			if (name.empty())
+			{
+				ShowToast(std::string(), FSUI_STR("Memory card name cannot be empty."));
+				return;
+			}
+
+			// Show memory card selection dialog
+			ImGuiFullscreen::ChoiceDialogOptions options;
+			options.emplace_back(FSUI_STR("PS2 (8MB)"), true);
+			options.emplace_back(FSUI_STR("PS2 (16MB)"), false);
+			options.emplace_back(FSUI_STR("PS2 (32MB)"), false);
+			options.emplace_back(FSUI_STR("PS2 (64MB)"), false);
+			options.emplace_back(FSUI_STR("PS1 (128KB)"), false);
+			options.emplace_back(FSUI_STR("Folder"), false);
+
+			OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_FLOPPY_DISK, "Memory Card Type"), false, std::move(options),
+				[name](s32 index, const std::string& title, bool checked) {
+					if (index < 0)
+						return;
+
+					MemoryCardType type;
+					MemoryCardFileType file_type;
+
+					switch (index)
+					{
+						case 0: // PS2 (8MB)
+							type = MemoryCardType::File;
+							file_type = MemoryCardFileType::PS2_8MB;
+							break;
+						case 1: // PS2 (16MB)
+							type = MemoryCardType::File;
+							file_type = MemoryCardFileType::PS2_16MB;
+							break;
+						case 2: // PS2 (32MB)
+							type = MemoryCardType::File;
+							file_type = MemoryCardFileType::PS2_32MB;
+							break;
+						case 3: // PS2 (64MB)
+							type = MemoryCardType::File;
+							file_type = MemoryCardFileType::PS2_64MB;
+							break;
+						case 4: // PS1 (128KB)
+							type = MemoryCardType::File;
+							file_type = MemoryCardFileType::PS1;
+							break;
+						case 5: // Folder
+							type = MemoryCardType::Folder;
+							file_type = MemoryCardFileType::Unknown;
+							break;
+						default:
+							return;
+					}
+
+#ifdef _WIN32
+					// On Windows, show NTFS compression option for only file options (not folder)
+					if (type == MemoryCardType::File)
+					{
+						ImGuiFullscreen::ChoiceDialogOptions compression_options;
+						compression_options.emplace_back(FSUI_STR("Yes - Enable NTFS compression"), true);
+						compression_options.emplace_back(FSUI_STR("No - Disable NTFS compression"), false);
+
+						OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_BOX_ARCHIVE, "Use NTFS Compression?"),
+							false, std::move(compression_options),
+							[name, type, file_type](s32 compression_index, const std::string& compression_title, bool compression_checked) {
+								if (compression_index < 0)
+									return;
+
+								const bool use_compression = (compression_index == 0); // 0 = Yes, 1 = No
+								DoCreateMemoryCard(name, type, file_type, use_compression);
+								CloseChoiceDialog();
+							});
+						return;
+					}
+					else
+					{
+						DoCreateMemoryCard(name, type, file_type, false);
+						CloseChoiceDialog();
+					}
+#else
+					DoCreateMemoryCard(name, type, file_type, false);
+					CloseChoiceDialog();
+#endif
+				});
+		});
+}
+
+void FullscreenUI::DoCreateMemoryCard(std::string name, MemoryCardType type, MemoryCardFileType file_type, bool use_ntfs_compression)
+{
+	// Build the filename with the extension
+	const std::string name_str = fmt::format("{}.{}", name,
+		(file_type == MemoryCardFileType::PS1) ? "mcr" : "ps2");
+
+	// check the filename
+	if (!Path::IsValidFileName(name_str, false))
+	{
+		ShowToast(std::string(), fmt::format(FSUI_FSTR("Failed to create the Memory Card, because the name '{}' contains one or more invalid characters."), name));
+		return;
+	}
+
+	// Check if a memory card with this name already exists
+	if (FileMcd_GetCardInfo(name_str).has_value())
+	{
+		ShowToast(std::string(), fmt::format(FSUI_FSTR("Failed to create the Memory Card, because another card with the name '{}' already exists."), name));
+		return;
+	}
+
+	// Create the memory card
+	if (!FileMcd_CreateNewCard(name_str, type, file_type))
+	{
+		ShowToast(std::string(), FSUI_STR("Failed to create the Memory Card, the log may contain more information."));
+		return;
+	}
+
+#ifdef _WIN32
+	if (type == MemoryCardType::File && use_ntfs_compression)
+	{
+		const std::string full_path = Path::Combine(EmuFolders::MemoryCards, name_str);
+		FileSystem::SetPathCompression(full_path.c_str(), true);
+	}
+#endif
+
+	ShowToast(std::string(), fmt::format(FSUI_FSTR("Memory Card '{}' created."), name));
 }
 
 void FullscreenUI::ResetControllerSettings()
