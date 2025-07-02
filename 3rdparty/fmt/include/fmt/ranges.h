@@ -527,7 +527,9 @@ struct formatter<
 template <typename R, typename Char>
 struct formatter<
     R, Char,
-    enable_if_t<range_format_kind<R, Char>::value == range_format::map>> {
+    enable_if_t<conjunction<
+        bool_constant<range_format_kind<R, Char>::value == range_format::map>,
+        detail::is_formattable_delayed<R, Char>>::value>> {
  private:
   using map_type = detail::maybe_const_range<R>;
   using element_type = detail::uncvref_type<map_type>;
@@ -772,13 +774,13 @@ struct formatter<
     : formatter<detail::all<typename T::container_type>, Char> {
   using all = detail::all<typename T::container_type>;
   template <typename FormatContext>
-  auto format(const T& t, FormatContext& ctx) const -> decltype(ctx.out()) {
+  auto format(const T& value, FormatContext& ctx) const -> decltype(ctx.out()) {
     struct getter : T {
-      static auto get(const T& t) -> all {
-        return {t.*(&getter::c)};  // Access c through the derived class.
+      static auto get(const T& v) -> all {
+        return {v.*(&getter::c)};  // Access c through the derived class.
       }
     };
-    return formatter<all>::format(getter::get(t), ctx);
+    return formatter<all>::format(getter::get(value), ctx);
   }
 };
 
