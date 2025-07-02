@@ -2973,10 +2973,10 @@ SCED-50642:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
-    eeRoundMode: 2 # Fixes reverse control and boss in some places.
+    eeRoundMode: 2 # Fixes cutscene animations while slightly dislocating a few select meshes. Setting round mode to Chop/Zero or Nearest fixes the issues with meshes at the cost of breaking important cutscenes.
   clampModes:
-    eeClampMode: 3 # Fixes animations.
-    vu0ClampMode: 2 # Fixes SPS.
+    eeClampMode: 3 # Fixes reverse controls as well as bosses and characters facing the wrong way during certain battles.
+    vu0ClampMode: 2 # Fixes Yojimbo's flickering cloak issue caused by EE Full Clamping.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes missing effect on the magus sisters.
     roundSprite: 2 # Fixes font artifacts.
@@ -3099,17 +3099,6 @@ SCED-50844:
 SCED-50907:
   name: "Final Fantasy X [Bonus Disc - Beyond Final Fantasy]"
   region: "PAL-Unk"
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes interlacing.
-  roundModes:
-    eeRoundMode: 2 # Fixes reverse control and boss in some places.
-  clampModes:
-    eeClampMode: 3 # Fixes animations.
-    vu0ClampMode: 2 # Fixes SPS.
-  gsHWFixes:
-    recommendedBlendingLevel: 4 # Fixes missing effect on the magus sisters.
-    roundSprite: 2 # Fixes font artifacts.
-    autoFlush: 1 # Fixes blur effect on attacks.
 SCED-50916:
   name: "Ratchet & Clank [Demo]"
   region: "PAL-M5"
@@ -4853,10 +4842,10 @@ SCES-50490:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
-    eeRoundMode: 2 # Fixes reverse control and boss in some places.
+    eeRoundMode: 2 # Fixes cutscene animations while slightly dislocating a few select meshes. Setting round mode to Chop/Zero or Nearest fixes the issues with meshes at the cost of breaking important cutscenes.
   clampModes:
-    eeClampMode: 3 # Fixes animations.
-    vu0ClampMode: 2 # Fixes SPS.
+    eeClampMode: 3 # Fixes reverse controls as well as bosses and characters facing the wrong way during certain battles.
+    vu0ClampMode: 2 # Fixes Yojimbo's flickering cloak issue caused by EE Full Clamping.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes missing effect on the magus sisters.
     roundSprite: 2 # Fixes font artifacts.
@@ -4867,10 +4856,10 @@ SCES-50491:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
-    eeRoundMode: 2 # Fixes reverse control and boss in some places.
+    eeRoundMode: 2 # Fixes cutscene animations while slightly dislocating a few select meshes. Setting round mode to Chop/Zero or Nearest fixes the issues with meshes at the cost of breaking important cutscenes.
   clampModes:
-    eeClampMode: 3 # Fixes animations.
-    vu0ClampMode: 2 # Fixes SPS.
+    eeClampMode: 3 # Fixes reverse controls as well as bosses and characters facing the wrong way during certain battles.
+    vu0ClampMode: 2 # Fixes Yojimbo's flickering cloak issue caused by EE Full Clamping.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes missing effect on the magus sisters.
     roundSprite: 2 # Fixes font artifacts.
@@ -4882,10 +4871,10 @@ SCES-50492:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
-    eeRoundMode: 2 # Fixes reverse control and boss in some places.
+    eeRoundMode: 2 # Fixes cutscene animations while slightly dislocating a few select meshes. Setting round mode to Chop/Zero or Nearest fixes the issues with meshes at the cost of breaking important cutscenes.
   clampModes:
-    eeClampMode: 3 # Fixes animations.
-    vu0ClampMode: 2 # Fixes SPS.
+    eeClampMode: 3 # Fixes reverse controls as well as bosses and characters facing the wrong way during certain battles.
+    vu0ClampMode: 2 # Fixes Yojimbo's flickering cloak issue caused by EE Full Clamping.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes missing effect on the magus sisters.
     roundSprite: 2 # Fixes font artifacts.
@@ -4896,10 +4885,10 @@ SCES-50493:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
-    eeRoundMode: 2 # Fixes reverse control and boss in some places.
+    eeRoundMode: 2 # Fixes cutscene animations while slightly dislocating a few select meshes. Setting round mode to Chop/Zero or Nearest fixes the issues with meshes at the cost of breaking important cutscenes.
   clampModes:
-    eeClampMode: 3 # Fixes animations.
-    vu0ClampMode: 2 # Fixes SPS.
+    eeClampMode: 3 # Fixes reverse controls as well as bosses and characters facing the wrong way during certain battles.
+    vu0ClampMode: 2 # Fixes Yojimbo's flickering cloak issue caused by EE Full Clamping.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes missing effect on the magus sisters.
     roundSprite: 2 # Fixes font artifacts.
@@ -4910,10 +4899,10 @@ SCES-50494:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
-    eeRoundMode: 2 # Fixes reverse control and boss in some places.
+    eeRoundMode: 2 # Fixes cutscene animations while slightly dislocating a few select meshes. Setting round mode to Chop/Zero or Nearest fixes the issues with meshes at the cost of breaking important cutscenes.
   clampModes:
-    eeClampMode: 3 # Fixes animations.
-    vu0ClampMode: 2 # Fixes SPS.
+    eeClampMode: 3 # Fixes reverse controls as well as bosses and characters facing the wrong way during certain battles.
+    vu0ClampMode: 2 # Fixes Yojimbo's flickering cloak issue caused by EE Full Clamping.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes missing effect on the magus sisters.
     roundSprite: 2 # Fixes font artifacts.
@@ -31378,10 +31367,12 @@ SLKA-25214:
   name: "Final Fantasy X - International [PlayStation 2 - Big Hit Series]"
   region: "NTSC-K"
   roundModes:
-    eeRoundMode: 2 # Fixes reverse control and boss in some places.
+    eeRoundMode: 2 # Fixes cutscene animations while slightly dislocating a few select meshes. Setting round mode to Chop/Zero or Nearest fixes the issues with meshes at the cost of breaking important cutscenes.
   clampModes:
-    eeClampMode: 3 # Fixes animations.
+    eeClampMode: 3 # Fixes reverse controls as well as bosses and characters facing the wrong way during certain battles.
+    vu0ClampMode: 2 # Fixes Yojimbo's flickering cloak issue caused by EE Full Clamping.
   gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing effect on the magus sisters.
     roundSprite: 2 # Fixes font artifacts.
     autoFlush: 1 # Fixes blur effect on attacks.
 SLKA-25215:
@@ -40642,10 +40633,12 @@ SLPM-65115:
   name-en: "Final Fantasy X International"
   region: "NTSC-J"
   roundModes:
-    eeRoundMode: 2 # Fixes reverse control and boss in some places.
+    eeRoundMode: 2 # Fixes cutscene animations while slightly dislocating a few select meshes. Setting round mode to Chop/Zero or Nearest fixes the issues with meshes at the cost of breaking important cutscenes.
   clampModes:
-    eeClampMode: 3 # Fixes animations.
+    eeClampMode: 3 # Fixes reverse controls as well as bosses and characters facing the wrong way during certain battles.
+    vu0ClampMode: 2 # Fixes Yojimbo's flickering cloak issue caused by EE Full Clamping.
   gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing effect on the magus sisters.
     roundSprite: 2 # Fixes font artifacts.
     autoFlush: 1 # Fixes blur effect on attacks.
 SLPM-65116:
@@ -46535,10 +46528,10 @@ SLPM-66124:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
-    eeRoundMode: 2 # Fixes reverse control and boss in some places.
+    eeRoundMode: 2 # Fixes cutscene animations while slightly dislocating a few select meshes. Setting round mode to Chop/Zero or Nearest fixes the issues with meshes at the cost of breaking important cutscenes.
   clampModes:
-    eeClampMode: 3 # Fixes animations.
-    vu0ClampMode: 2 # Fixes SPS.
+    eeClampMode: 3 # Fixes reverse controls as well as bosses and characters facing the wrong way during certain battles.
+    vu0ClampMode: 2 # Fixes Yojimbo's flickering cloak issue caused by EE Full Clamping.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes missing effect on the magus sisters.
     roundSprite: 2 # Fixes font artifacts.
@@ -50053,10 +50046,12 @@ SLPM-66677:
   name-en: "Final Fantasy X - International [Ultimate Hits]"
   region: "NTSC-J"
   roundModes:
-    eeRoundMode: 2 # Fixes reverse control and boss in some places.
+    eeRoundMode: 2 # Fixes cutscene animations while slightly dislocating a few select meshes. Setting round mode to Chop/Zero or Nearest fixes the issues with meshes at the cost of breaking important cutscenes.
   clampModes:
-    eeClampMode: 3 # Fixes animations.
+    eeClampMode: 3 # Fixes reverse controls as well as bosses and characters facing the wrong way during certain battles.
+    vu0ClampMode: 2 # Fixes Yojimbo's flickering cloak issue caused by EE Full Clamping.
   gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing effect on the magus sisters.
     roundSprite: 2 # Fixes font artifacts.
     autoFlush: 1 # Fixes blur effect on attacks.
 SLPM-66678:
@@ -52112,10 +52107,12 @@ SLPM-67513:
   name: "Final Fantasy X International"
   region: "NTSC-K"
   roundModes:
-    eeRoundMode: 2 # Fixes reverse control and boss in some places.
+    eeRoundMode: 2 # Fixes cutscene animations while slightly dislocating a few select meshes. Setting round mode to Chop/Zero or Nearest fixes the issues with meshes at the cost of breaking important cutscenes.
   clampModes:
-    eeClampMode: 3 # Fixes animations.
+    eeClampMode: 3 # Fixes reverse controls as well as bosses and characters facing the wrong way during certain battles.
+    vu0ClampMode: 2 # Fixes Yojimbo's flickering cloak issue caused by EE Full Clamping.
   gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing effect on the magus sisters.
     roundSprite: 2 # Fixes font artifacts.
     autoFlush: 1 # Fixes blur effect on attacks.
 SLPM-67514:
@@ -56145,10 +56142,10 @@ SLPS-25050:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
-    eeRoundMode: 2 # Fixes reverse control and boss in some places.
+    eeRoundMode: 2 # Fixes cutscene animations while slightly dislocating a few select meshes. Setting round mode to Chop/Zero or Nearest fixes the issues with meshes at the cost of breaking important cutscenes.
   clampModes:
-    eeClampMode: 3 # Fixes animations.
-    vu0ClampMode: 2 # Fixes SPS.
+    eeClampMode: 3 # Fixes reverse controls as well as bosses and characters facing the wrong way during certain battles.
+    vu0ClampMode: 2 # Fixes Yojimbo's flickering cloak issue caused by EE Full Clamping.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes missing effect on the magus sisters.
     roundSprite: 2 # Fixes font artifacts.
@@ -56373,10 +56370,12 @@ SLPS-25088:
   region: "NTSC-J"
   compat: 5
   roundModes:
-    eeRoundMode: 2 # Fixes reverse control and boss in some places.
+    eeRoundMode: 2 # Fixes cutscene animations while slightly dislocating a few select meshes. Setting round mode to Chop/Zero or Nearest fixes the issues with meshes at the cost of breaking important cutscenes.
   clampModes:
-    eeClampMode: 3 # Fixes animations.
+    eeClampMode: 3 # Fixes reverse controls as well as bosses and characters facing the wrong way during certain battles.
+    vu0ClampMode: 2 # Fixes Yojimbo's flickering cloak issue caused by EE Full Clamping.
   gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing effect on the magus sisters.
     roundSprite: 2 # Fixes font artifacts.
     autoFlush: 1 # Fixes blur effect on attacks.
 SLPS-25089:
@@ -61796,10 +61795,10 @@ SLPS-72501:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
-    eeRoundMode: 2 # Fixes reverse control and boss in some places.
+    eeRoundMode: 2 # Fixes cutscene animations while slightly dislocating a few select meshes. Setting round mode to Chop/Zero or Nearest fixes the issues with meshes at the cost of breaking important cutscenes.
   clampModes:
-    eeClampMode: 3 # Fixes animations.
-    vu0ClampMode: 2 # Fixes SPS.
+    eeClampMode: 3 # Fixes reverse controls as well as bosses and characters facing the wrong way during certain battles.
+    vu0ClampMode: 2 # Fixes Yojimbo's flickering cloak issue caused by EE Full Clamping.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes missing effect on the magus sisters.
     roundSprite: 2 # Fixes font artifacts.
@@ -64021,10 +64020,10 @@ SLUS-20312:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
-    eeRoundMode: 2 # Fixes reverse control and boss in some places.
+    eeRoundMode: 2 # Fixes cutscene animations while slightly dislocating a few select meshes. Setting round mode to Chop/Zero or Nearest fixes the issues with meshes at the cost of breaking important cutscenes.
   clampModes:
-    eeClampMode: 3 # Fixes animations.
-    vu0ClampMode: 2 # Fixes SPS.
+    eeClampMode: 3 # Fixes reverse controls as well as bosses and characters facing the wrong way during certain battles.
+    vu0ClampMode: 2 # Fixes Yojimbo's flickering cloak issue caused by EE Full Clamping.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes missing effect on the magus sisters.
     roundSprite: 2 # Fixes font artifacts.
