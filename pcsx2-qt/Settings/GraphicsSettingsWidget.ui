@@ -1612,12 +1612,47 @@
             </item>
             <item>
              <property name="text">
-              <string>Left (Default)</string>
+              <string>Top Left (Default)</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>Right</string>
+              <string>Top Center</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Top Right</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Center Left</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Center</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Center Right</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Bottom Left</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Bottom Center</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Bottom Right</string>
              </property>
             </item>
            </widget>
@@ -1631,12 +1666,47 @@
             </item>
             <item>
              <property name="text">
-              <string>Left</string>
+              <string>Top Left</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>Right (Default)</string>
+              <string>Top Center</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Top Right (Default)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Center Left</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Center</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Center Right</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Bottom Left</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Bottom Center</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Bottom Right</string>
              </property>
             </item>
            </widget>

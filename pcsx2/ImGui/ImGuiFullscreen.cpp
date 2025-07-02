@@ -181,6 +181,9 @@ namespace ImGuiFullscreen
 	};
 
 	static std::vector<Notification> s_notifications;
+	static float s_notification_vertical_position = 0.15f;
+	static float s_notification_vertical_direction = 1.0f;
+	static float s_notification_horizontal_position = 0.0f; // 0.0 = left, 0.5 = center, 1.0 = right
 
 	static std::string s_toast_title;
 	static std::string s_toast_message;
@@ -697,7 +700,17 @@ void ImGuiFullscreen::EndLayout()
 	const float notification_margin = LayoutScale(10.0f);
 	const float spacing = LayoutScale(10.0f);
 	const float notification_vertical_pos = GetNotificationVerticalPosition();
-	ImVec2 position(notification_margin, notification_vertical_pos * ImGui::GetIO().DisplaySize.y +
+	
+	// Get the horizonal position based on alignment
+	float horizontal_pos;
+	if (s_notification_horizontal_position <= 0.0f)
+		horizontal_pos = notification_margin; // Left
+	else if (s_notification_horizontal_position >= 1.0f) 
+		horizontal_pos = ImGui::GetIO().DisplaySize.x - notification_margin; // Right
+	else
+		horizontal_pos = ImGui::GetIO().DisplaySize.x * s_notification_horizontal_position; // Center
+	
+	ImVec2 position(horizontal_pos, notification_vertical_pos * ImGui::GetIO().DisplaySize.y +
 											 ((notification_vertical_pos >= 0.5f) ? -notification_margin : notification_margin));
 	DrawBackgroundProgressDialogs(position, spacing);
 	DrawNotifications(position, spacing);
@@ -2672,9 +2685,6 @@ void ImGuiFullscreen::DrawMessageDialog()
 	}
 }
 
-static float s_notification_vertical_position = 0.15f;
-static float s_notification_vertical_direction = 1.0f;
-
 float ImGuiFullscreen::GetNotificationVerticalPosition()
 {
 	return s_notification_vertical_position;
@@ -2688,6 +2698,13 @@ float ImGuiFullscreen::GetNotificationVerticalDirection()
 void ImGuiFullscreen::SetNotificationVerticalPosition(float position, float direction)
 {
 	s_notification_vertical_position = position;
+	s_notification_vertical_direction = direction;
+}
+
+void ImGuiFullscreen::SetNotificationPosition(float horizontal_position, float vertical_position, float direction)
+{
+	s_notification_horizontal_position = horizontal_position;
+	s_notification_vertical_position = vertical_position;
 	s_notification_vertical_direction = direction;
 }
 
@@ -2952,7 +2969,14 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
 			}
 		}
 
-		const ImVec2 box_min(position.x, actual_y);
+		// Adjust horizontal position based on alignment
+		float final_x = position.x;
+		if (s_notification_horizontal_position >= 1.0f)
+			final_x = position.x - box_width;
+		else if (s_notification_horizontal_position > 0.0f && s_notification_horizontal_position < 1.0f)
+			final_x = position.x - (box_width * 0.5f);
+		
+		const ImVec2 box_min(final_x, actual_y);
 		const ImVec2 box_max(box_min.x + box_width, box_min.y + box_height);
 		const u32 background_color = (toast_background_color & ~IM_COL32_A_MASK) | (opacity << IM_COL32_A_SHIFT);
 		const u32 border_color = (toast_border_color & ~IM_COL32_A_MASK) | (opacity << IM_COL32_A_SHIFT);
