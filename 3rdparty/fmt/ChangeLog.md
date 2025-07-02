@@ -1,3 +1,162 @@
+# 11.2.0 - 2025-05-03
+
+- Added the `s` specifier for `std::error_code`. It allows formatting an error
+  message as a string. For example:
+
+  ```c++
+  #include <fmt/std.h>
+
+  int main() {
+    auto ec = std::make_error_code(std::errc::no_such_file_or_directory);
+    fmt::print("{:s}\n", ec);
+  }
+  ```
+
+  prints
+
+  ```
+  No such file or directory
+  ```
+  (The actual message is platform-specific.)
+
+- Fixed formatting of `std::chrono::local_time` and `tm`
+  (https://github.com/fmtlib/fmt/issues/3815,
+  https://github.com/fmtlib/fmt/issues/4350).
+  For example ([godbolt](https://www.godbolt.org/z/8o4b1PPn5)):
+
+  ```c++
+  #include <fmt/chrono.h>
+
+  int main() {
+    std::chrono::zoned_time zt(
+      std::chrono::current_zone(),
+      std::chrono::system_clock::now());
+    fmt::print("{}", zt.get_local_time());
+  }
+  ```
+
+  is now formatted consistenly across platforms.
+
+- Added diagnostics for cases when timezone information is not available.
+  For example:
+
+  ```c++
+  fmt::print("{:Z}", std::chrono::local_seconds());
+  ```
+
+  now gives a compile-time error.
+
+- Deprecated `fmt::localtime` in favor of `std::localtime`.
+
+- Fixed compilation with GCC 15 and C++20 modules enabled
+  (https://github.com/fmtlib/fmt/pull/4347). Thanks @tkhyn.
+
+- Fixed handling of named arguments in format specs
+  (https://github.com/fmtlib/fmt/issues/4360,
+  https://github.com/fmtlib/fmt/pull/4361). Thanks @dinomight.
+
+- Added error reporting for duplicate named arguments
+  (https://github.com/fmtlib/fmt/pull/4367). Thanks @dinomight.
+
+- Fixed formatting of `long` with `FMT_BUILTIN_TYPES=0`
+  (https://github.com/fmtlib/fmt/issues/4375,
+  https://github.com/fmtlib/fmt/issues/4394).
+
+- Optimized `text_style` using bit packing
+  (https://github.com/fmtlib/fmt/pull/4363). Thanks @LocalSpook.
+
+- Added support for incomplete types (https://github.com/fmtlib/fmt/issues/3180,
+  https://github.com/fmtlib/fmt/pull/4383). Thanks @LocalSpook.
+
+- Fixed a flush issue in `fmt::print` when using libstdc++
+  (https://github.com/fmtlib/fmt/issues/4398).
+
+- Fixed `fmt::println` usage with `FMT_ENFORCE_COMPILE_STRING` and legacy
+  compile-time checks (https://github.com/fmtlib/fmt/pull/4407).
+  Thanks @madmaxoft.
+
+- Removed legacy header `fmt/core.h` from docs
+  (https://github.com/fmtlib/fmt/pull/4421,
+  https://github.com/fmtlib/fmt/pull/4422). Thanks @krzysztofkortas.
+
+- Worked around limitations of `__builtin_strlen` during constant evaluation
+  (https://github.com/fmtlib/fmt/issues/4423,
+  https://github.com/fmtlib/fmt/pull/4429). Thanks @BRevzin.
+
+- Worked around a bug in MSVC v141 (https://github.com/fmtlib/fmt/issues/4412,
+  https://github.com/fmtlib/fmt/pull/4413). Thanks @hirohira9119.
+
+- Removed the `fmt_detail` namespace
+  (https://github.com/fmtlib/fmt/issues/4324).
+
+- Removed specializations of `std::is_floating_point` in tests
+  (https://github.com/fmtlib/fmt/issues/4417).
+
+- Fixed a CMake error when setting `CMAKE_MODULE_PATH` in the pedantic mode
+  (https://github.com/fmtlib/fmt/pull/4426). Thanks @rlalik.
+
+- Updated the Bazel config (https://github.com/fmtlib/fmt/pull/4400).
+  Thanks @Vertexwahn.
+
+# 11.1.4 - 2025-02-26
+
+- Fixed ABI compatibility with earlier 11.x versions on Windows
+  (https://github.com/fmtlib/fmt/issues/4359).
+
+- Improved the logic of switching between fixed and exponential format for
+  `float` (https://github.com/fmtlib/fmt/issues/3649).
+
+- Moved `is_compiled_string` to the public API
+  (https://github.com/fmtlib/fmt/issues/4342). Thanks @SwooshyCueb.
+
+- Simplified implementation of `operator""_cf`
+  (https://github.com/fmtlib/fmt/pull/4349). Thanks @LocalSpook.
+
+- Fixed `__builtin_strlen` detection (https://github.com/fmtlib/fmt/pull/4329).
+  Thanks @LocalSpook.
+
+- Fixed handling of BMI paths with the Ninja generator
+  (https://github.com/fmtlib/fmt/pull/4344). Thanks @tkhyn.
+
+- Fixed gcc 8.3 compile errors (https://github.com/fmtlib/fmt/issues/4331,
+  https://github.com/fmtlib/fmt/pull/4336). Thanks @sergiud.
+
+- Fixed a bogus MSVC warning (https://github.com/fmtlib/fmt/pull/4356).
+  Thanks @dinomight.
+
+# 11.1.3 - 2025-01-25
+
+- Fixed compilation on GCC 9.4 (https://github.com/fmtlib/fmt/issues/4313).
+
+- Worked around an internal compiler error when using C++20 modules with GCC
+  14.2 and earlier (https://github.com/fmtlib/fmt/issues/4295).
+
+- Worked around a bug in GCC 6 (https://github.com/fmtlib/fmt/issues/4318).
+
+- Fixed an issue caused by instantiating `formatter<const T>`
+  (https://github.com/fmtlib/fmt/issues/4303,
+  https://github.com/fmtlib/fmt/pull/4325). Thanks @timsong-cpp.
+
+- Fixed formatting into `std::ostreambuf_iterator` when using format string
+  compilation (https://github.com/fmtlib/fmt/issues/4309,
+  https://github.com/fmtlib/fmt/pull/4312). Thanks @phprus.
+
+- Restored a constraint on the map formatter so that it correctly reports as
+  unformattable when the element is (https://github.com/fmtlib/fmt/pull/4326).
+  Thanks @timsong-cpp.
+
+- Reduced the size of format specs (https://github.com/fmtlib/fmt/issues/4298).
+
+- Readded `args()` to `fmt::format_context`
+  (https://github.com/fmtlib/fmt/issues/4307,
+  https://github.com/fmtlib/fmt/pull/4310). Thanks @Erroneous1.
+
+- Fixed a bogus MSVC warning (https://github.com/fmtlib/fmt/issues/4314,
+  https://github.com/fmtlib/fmt/pull/4322). Thanks @ZehMatt.
+
+- Fixed a pedantic mode error in the CMake config
+  (https://github.com/fmtlib/fmt/pull/4327). Thanks @rlalik.
+
 # 11.1.2 - 2025-01-12
 
 - Fixed ABI compatibility with earlier 11.x versions
