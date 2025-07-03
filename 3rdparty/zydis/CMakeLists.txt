@@ -1,10 +1,5 @@
 add_library(zydis
 	dependencies/zycore/src/Allocator.c
-	dependencies/zycore/src/API/Memory.c
-	dependencies/zycore/src/API/Process.c
-	dependencies/zycore/src/API/Synchronization.c
-	dependencies/zycore/src/API/Terminal.c
-	dependencies/zycore/src/API/Thread.c
 	dependencies/zycore/src/ArgParse.c
 	dependencies/zycore/src/Bitset.c
 	dependencies/zycore/src/Format.c
@@ -12,34 +7,51 @@ add_library(zydis
 	dependencies/zycore/src/String.c
 	dependencies/zycore/src/Vector.c
 	dependencies/zycore/src/Zycore.c
+	dependencies/zycore/src/API/Memory.c
+	dependencies/zycore/src/API/Process.c
+	dependencies/zycore/src/API/Synchronization.c
+	dependencies/zycore/src/API/Terminal.c
+	dependencies/zycore/src/API/Thread.c
 	src/Decoder.c
 	src/DecoderData.c
-	src/Formatter.c
+	src/Disassembler.c
+	src/Encoder.c
+	src/EncoderData.c
 	src/FormatterATT.c
 	src/FormatterBase.c
 	src/FormatterBuffer.c
+	src/Formatter.c
 	src/FormatterIntel.c
 	src/MetaInfo.c
 	src/Mnemonic.c
 	src/Register.c
+	src/Segment.c
 	src/SharedData.c
 	src/String.c
 	src/Utils.c
 	src/Zydis.c
+	src/Generated/AccessedFlags.inc
+	src/Generated/DecoderTables.inc
+	src/Generated/EncoderTables.inc
+	src/Generated/EnumInstructionCategory.inc
+	src/Generated/EnumISAExt.inc
+	src/Generated/EnumISASet.inc
+	src/Generated/EnumMnemonic.inc
+	src/Generated/EnumRegister.inc
+	src/Generated/FormatterStrings.inc
+	src/Generated/GetRelInfo.inc
+	src/Generated/InstructionDefinitions.inc
+	src/Generated/InstructionEncodings.inc
+	src/Generated/OperandDefinitions.inc
+	src/Generated/RegisterClassLookup.inc
+	src/Generated/RegisterLookup.inc
 	dependencies/zycore/include/Zycore/Allocator.h
-	dependencies/zycore/include/Zycore/API/Memory.h
-	dependencies/zycore/include/Zycore/API/Process.h
-	dependencies/zycore/include/Zycore/API/Synchronization.h
-	dependencies/zycore/include/Zycore/API/Terminal.h
-	dependencies/zycore/include/Zycore/API/Thread.h
 	dependencies/zycore/include/Zycore/ArgParse.h
 	dependencies/zycore/include/Zycore/Atomic.h
 	dependencies/zycore/include/Zycore/Bitset.h
 	dependencies/zycore/include/Zycore/Comparison.h
 	dependencies/zycore/include/Zycore/Defines.h
 	dependencies/zycore/include/Zycore/Format.h
-	dependencies/zycore/include/Zycore/Internal/AtomicGNU.h
-	dependencies/zycore/include/Zycore/Internal/AtomicMSVC.h
 	dependencies/zycore/include/Zycore/LibC.h
 	dependencies/zycore/include/Zycore/List.h
 	dependencies/zycore/include/Zycore/Object.h
@@ -48,34 +60,46 @@ add_library(zydis
 	dependencies/zycore/include/Zycore/Types.h
 	dependencies/zycore/include/Zycore/Vector.h
 	dependencies/zycore/include/Zycore/Zycore.h
+	dependencies/zycore/include/Zycore/API/Memory.h
+	dependencies/zycore/include/Zycore/API/Process.h
+	dependencies/zycore/include/Zycore/API/Synchronization.h
+	dependencies/zycore/include/Zycore/API/Terminal.h
+	dependencies/zycore/include/Zycore/API/Thread.h
+	dependencies/zycore/include/Zycore/Internal/AtomicGNU.h
+	dependencies/zycore/include/Zycore/Internal/AtomicMSVC.h
 	include/Zydis/Decoder.h
 	include/Zydis/DecoderTypes.h
-	include/Zydis/Formatter.h
+	include/Zydis/Defines.h
+	include/Zydis/Disassembler.h
+	include/Zydis/Encoder.h
 	include/Zydis/FormatterBuffer.h
+	include/Zydis/Formatter.h
+	include/Zydis/MetaInfo.h
+	include/Zydis/Mnemonic.h
+	include/Zydis/Register.h
+	include/Zydis/Segment.h
+	include/Zydis/SharedTypes.h
+	include/Zydis/ShortString.h
+	include/Zydis/Status.h
+	include/Zydis/Utils.h
+	include/Zydis/Zydis.h
 	include/Zydis/Generated/EnumInstructionCategory.h
 	include/Zydis/Generated/EnumISAExt.h
 	include/Zydis/Generated/EnumISASet.h
 	include/Zydis/Generated/EnumMnemonic.h
 	include/Zydis/Generated/EnumRegister.h
 	include/Zydis/Internal/DecoderData.h
+	include/Zydis/Internal/EncoderData.h
 	include/Zydis/Internal/FormatterATT.h
 	include/Zydis/Internal/FormatterBase.h
 	include/Zydis/Internal/FormatterIntel.h
 	include/Zydis/Internal/SharedData.h
 	include/Zydis/Internal/String.h
-	include/Zydis/MetaInfo.h
-	include/Zydis/Mnemonic.h
-	include/Zydis/Register.h
-	include/Zydis/SharedTypes.h
-	include/Zydis/ShortString.h
-	include/Zydis/Status.h
-	include/Zydis/Utils.h
-	include/Zydis/Zydis.h
 )
 
 target_compile_definitions(zydis PUBLIC
-	ZYCORE_STATIC_DEFINE
-	ZYDIS_STATIC_DEFINE
+	ZYCORE_STATIC_BUILD
+	ZYDIS_STATIC_BUILD
 )
 
 target_include_directories(zydis PUBLIC

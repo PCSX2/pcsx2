@@ -1,7 +1,6 @@
-static const ZydisShortString STR_REGISTER[] =
+static const ZydisShortString STR_REGISTERS[] =
 {
     ZYDIS_MAKE_SHORTSTRING("none"),
-
     // General purpose registers  8-bit
     ZYDIS_MAKE_SHORTSTRING("al"),
     ZYDIS_MAKE_SHORTSTRING("cl"),

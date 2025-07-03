@@ -25,6 +25,10 @@
 ***************************************************************************************************/
 
 #include <Zycore/Defines.h>
+#include <Zycore/API/Process.h>
+
+#ifndef ZYAN_NO_LIBC
+
 #if defined(ZYAN_WINDOWS)
 #if   defined(ZYAN_KERNEL)
 #      include <wdm.h>
@@ -36,9 +40,6 @@
 #else
 #   error "Unsupported platform detected"
 #endif
-#include <Zycore/API/Process.h>
-
-#ifndef ZYAN_NO_LIBC
 
 /* ============================================================================================== */
 /* Exported functions                                                                             */

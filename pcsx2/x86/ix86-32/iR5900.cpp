@@ -2561,7 +2561,7 @@ StartRecomp:
 
 #ifdef DUMP_BLOCKS
 	ZydisDecoder disas_decoder;
-	ZydisDecoderInit(&disas_decoder, ZYDIS_MACHINE_MODE_LONG_64, ZYDIS_ADDRESS_WIDTH_64);
+	ZydisDecoderInit(&disas_decoder, ZYDIS_MACHINE_MODE_LONG_64, ZYDIS_STACK_WIDTH_64);
 
 	ZydisFormatter disas_formatter;
 	ZydisFormatterInit(&disas_formatter, ZYDIS_FORMATTER_STYLE_INTEL);
@@ -2569,7 +2569,6 @@ StartRecomp:
 	s_old_print_address = (ZydisFormatterFunc)&ZydisFormatterPrintAddressAbsolute;
 	ZydisFormatterSetHook(&disas_formatter, ZYDIS_FORMATTER_FUNC_PRINT_ADDRESS_ABS, (const void**)&s_old_print_address);
 
-	ZydisDecodedInstruction disas_instruction;
 #if 0
 	const bool dump_block = (startpc == 0x00000000);
 #elif 1
@@ -2598,19 +2597,33 @@ StartRecomp:
 				disR5900Fasm(disasm, *(u32*)PSM(pc), pc, false);
 				fprintf(stderr, "Compiling %08X %s\n", pc, disasm.c_str());
 
-				const u8* instStart = x86Ptr;
+				const u8* inst_start = x86Ptr;
 				recompileNextInstruction(false, false);
 
-				const u8* instPtr = instStart;
-				ZyanUSize instLength = static_cast<ZyanUSize>(x86Ptr - instStart);
-				while (ZYAN_SUCCESS(ZydisDecoderDecodeBuffer(&disas_decoder, instPtr, instLength, &disas_instruction)))
+				const u8* inst_ptr = inst_start;
+				ZyanUSize inst_length = static_cast<ZyanUSize>(x86Ptr - inst_start);
+
+				ZydisDecodedInstruction instruction;
+				ZydisDecodedOperand operands[ZYDIS_MAX_OPERAND_COUNT];
+
+				while (ZYAN_SUCCESS(ZydisDecoderDecodeFull(&disas_decoder, inst_ptr, inst_length, &instruction, operands)))
 				{
 					char buffer[256];
-					if (ZYAN_SUCCESS(ZydisFormatterFormatInstruction(&disas_formatter, &disas_instruction, buffer, sizeof(buffer), (ZyanU64)instPtr)))
-						std::fprintf(stderr, "    %016" PRIX64 "    %s\n", (u64)instPtr, buffer);
+					ZyanStatus status = ZydisFormatterFormatInstruction(
+						&disas_formatter,
+						&instruction,
+						operands,
+						instruction.operand_count,
+						buffer,
+						sizeof(buffer),
+						reinterpret_cast<ZyanU64>(inst_ptr),
+						nullptr);
 
-					instPtr += disas_instruction.length;
-					instLength -= disas_instruction.length;
+					if (ZYAN_SUCCESS(status))
+						std::fprintf(stderr, "    %016" PRIX64 "    %s\n", reinterpret_cast<u64>(inst_ptr), buffer);
+
+					inst_ptr += instruction.length;
+					inst_length -= instruction.length;
 				}
 			}
 			else

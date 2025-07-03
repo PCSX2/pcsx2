@@ -32,9 +32,9 @@
 #ifndef ZYDIS_FORMATTER_TOKEN_H
 #define ZYDIS_FORMATTER_TOKEN_H
 
-#include <ZydisExportConfig.h>
 #include <Zycore/String.h>
 #include <Zycore/Types.h>
+#include <Zydis/Defines.h>
 #include <Zydis/Status.h>
 
 #ifdef __cplusplus
@@ -50,7 +50,7 @@ extern "C" {
 /* ---------------------------------------------------------------------------------------------- */
 
 /**
- * @biref   Defines the `ZydisTokenType` data-type.
+ * Defines the `ZydisTokenType` data-type.
  */
 typedef ZyanU8 ZydisTokenType;
 

@@ -51,7 +51,7 @@ extern "C" {
 /**
  * A macro that defines the zycore version.
  */
-#define ZYCORE_VERSION (ZyanU64)0x0001000200000000
+#define ZYCORE_VERSION 0x0001000500020000ULL
 
 /* ---------------------------------------------------------------------------------------------- */
 /* Helper macros                                                                                  */
@@ -62,28 +62,28 @@ extern "C" {
  *
  * @param   version The zycore version value
  */
-#define ZYCORE_VERSION_MAJOR(version) (ZyanU16)((version & 0xFFFF000000000000) >> 48)
+#define ZYCORE_VERSION_MAJOR(version) ((version & 0xFFFF000000000000) >> 48)
 
 /**
  * Extracts the minor-part of the zycore version.
  *
  * @param   version The zycore version value
  */
-#define ZYCORE_VERSION_MINOR(version) (ZyanU16)((version & 0x0000FFFF00000000) >> 32)
+#define ZYCORE_VERSION_MINOR(version) ((version & 0x0000FFFF00000000) >> 32)
 
 /**
  * Extracts the patch-part of the zycore version.
  *
  * @param   version The zycore version value
  */
-#define ZYCORE_VERSION_PATCH(version) (ZyanU16)((version & 0x00000000FFFF0000) >> 16)
+#define ZYCORE_VERSION_PATCH(version) ((version & 0x00000000FFFF0000) >> 16)
 
 /**
  * Extracts the build-part of the zycore version.
  *
  * @param   version The zycore version value
  */
-#define ZYCORE_VERSION_BUILD(version) (ZyanU16)(version & 0x000000000000FFFF)
+#define ZYCORE_VERSION_BUILD(version) (version & 0x000000000000FFFF)
 
 /* ---------------------------------------------------------------------------------------------- */
 

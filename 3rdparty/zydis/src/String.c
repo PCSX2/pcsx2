@@ -65,8 +65,8 @@ static const char* const DECIMAL_LOOKUP =
 /* Decimal                                                                                        */
 /* ---------------------------------------------------------------------------------------------- */
 
-#if defined(ZYAN_X86) || defined(ZYAN_ARM) || defined(ZYAN_EMSCRIPTEN)
-ZyanStatus ZydisStringAppendDecU32(ZyanString* string, ZyanU32 value, ZyanU8 padding_length)
+#if defined(ZYAN_X86) || defined(ZYAN_ARM) || defined(ZYAN_EMSCRIPTEN) || defined(ZYAN_WASM) || defined(ZYAN_PPC)
+static ZyanStatus ZydisStringAppendDecU32(ZyanString* string, ZyanU32 value, ZyanU8 padding_length)
 {
     ZYAN_ASSERT(string);
     ZYAN_ASSERT(!string->vector.allocator);
@@ -110,7 +110,7 @@ ZyanStatus ZydisStringAppendDecU32(ZyanString* string, ZyanU32 value, ZyanU8 pad
 }
 #endif
 
-ZyanStatus ZydisStringAppendDecU64(ZyanString* string, ZyanU64 value, ZyanU8 padding_length)
+static ZyanStatus ZydisStringAppendDecU64(ZyanString* string, ZyanU64 value, ZyanU8 padding_length)
 {
     ZYAN_ASSERT(string);
     ZYAN_ASSERT(!string->vector.allocator);
@@ -122,7 +122,7 @@ ZyanStatus ZydisStringAppendDecU64(ZyanString* string, ZyanU64 value, ZyanU8 pad
     {
         const ZyanU64 value_old = value;
         buffer_write_pointer -= 2;
-        value /= 100;
+        ZYAN_DIV64(value, 100);
         ZYAN_MEMCPY(buffer_write_pointer, &DECIMAL_LOOKUP[(value_old - (value * 100)) * 2], 2);
     }
     buffer_write_pointer -= 2;
@@ -157,9 +157,9 @@ ZyanStatus ZydisStringAppendDecU64(ZyanString* string, ZyanU64 value, ZyanU8 pad
 /* Hexadecimal                                                                                    */
 /* ---------------------------------------------------------------------------------------------- */
 
-#if defined(ZYAN_X86) || defined(ZYAN_ARM) || defined(ZYAN_EMSCRIPTEN)
-ZyanStatus ZydisStringAppendHexU32(ZyanString* string, ZyanU32 value, ZyanU8 padding_length,
-    ZyanBool uppercase)
+#if defined(ZYAN_X86) || defined(ZYAN_ARM) || defined(ZYAN_EMSCRIPTEN) || defined(ZYAN_WASM) || defined(ZYAN_PPC)
+static ZyanStatus ZydisStringAppendHexU32(ZyanString* string, ZyanU32 value, ZyanU8 padding_length,
+    ZyanBool force_leading_number, ZyanBool uppercase)
 {
     ZYAN_ASSERT(string);
     ZYAN_ASSERT(!string->vector.allocator);
@@ -199,11 +199,16 @@ ZyanStatus ZydisStringAppendHexU32(ZyanString* string, ZyanU32 value, ZyanU8 pad
             {
                 continue;
             }
-            if (remaining <= (ZyanU8)i)
+            const ZyanU8 zero = force_leading_number && (v > 9) && (padding_length <= i) ? 1 : 0;
+            if (remaining <= (ZyanUSize)i + zero)
             {
                 return ZYAN_STATUS_INSUFFICIENT_BUFFER_SIZE;
             }
             buffer = (char*)string->vector.data + len - 1;
+            if (zero)
+            {
+                buffer[n++] = '0';
+            }
             if (padding_length > i)
             {
                 n = padding_length - i - 1;
@@ -226,8 +231,8 @@ ZyanStatus ZydisStringAppendHexU32(ZyanString* string, ZyanU32 value, ZyanU8 pad
 }
 #endif
 
-ZyanStatus ZydisStringAppendHexU64(ZyanString* string, ZyanU64 value, ZyanU8 padding_length,
-    ZyanBool uppercase)
+static ZyanStatus ZydisStringAppendHexU64(ZyanString* string, ZyanU64 value, ZyanU8 padding_length,
+    ZyanBool force_leading_number, ZyanBool uppercase)
 {
     ZYAN_ASSERT(string);
     ZYAN_ASSERT(!string->vector.allocator);
@@ -268,11 +273,16 @@ ZyanStatus ZydisStringAppendHexU64(ZyanString* string, ZyanU64 value, ZyanU8 pad
             {
                 continue;
             }
-            if (remaining <= (ZyanU8)i)
+            const ZyanU8 zero = force_leading_number && (v > 9) && (padding_length <= i) ? 1 : 0;
+            if (remaining <= (ZyanUSize)i + zero)
             {
                 return ZYAN_STATUS_INSUFFICIENT_BUFFER_SIZE;
             }
             buffer = (char*)string->vector.data + len - 1;
+            if (zero)
+            {
+                buffer[n++] = '0';
+            }
             if (padding_length > i)
             {
                 n = padding_length - i - 1;
@@ -312,7 +322,7 @@ ZyanStatus ZydisStringAppendDecU(ZyanString* string, ZyanU64 value, ZyanU8 paddi
         ZYAN_CHECK(ZydisStringAppend(string, prefix));
     }
 
-#if defined(ZYAN_X64) || defined(ZYAN_AARCH64)
+#if defined(ZYAN_X64) || defined(ZYAN_AARCH64) || defined(ZYAN_PPC64) || defined(ZYAN_RISCV64) || defined(ZYAN_LOONGARCH)
     ZYAN_CHECK(ZydisStringAppendDecU64(string, value, padding_length));
 #else
     if (value & 0xFFFFFFFF00000000)
@@ -330,23 +340,27 @@ ZyanStatus ZydisStringAppendDecU(ZyanString* string, ZyanU64 value, ZyanU8 paddi
 }
 
 ZyanStatus ZydisStringAppendHexU(ZyanString* string, ZyanU64 value, ZyanU8 padding_length,
-    ZyanBool uppercase, const ZyanStringView* prefix, const ZyanStringView* suffix)
+    ZyanBool force_leading_number, ZyanBool uppercase, const ZyanStringView* prefix,
+    const ZyanStringView* suffix)
 {
     if (prefix)
     {
         ZYAN_CHECK(ZydisStringAppend(string, prefix));
     }
 
-#if defined(ZYAN_X64) || defined(ZYAN_AARCH64)
-    ZYAN_CHECK(ZydisStringAppendHexU64(string, value, padding_length, uppercase));
+#if defined(ZYAN_X64) || defined(ZYAN_AARCH64) || defined(ZYAN_PPC64) || defined(ZYAN_RISCV64) || defined(ZYAN_LOONGARCH)
+    ZYAN_CHECK(ZydisStringAppendHexU64(string, value, padding_length, force_leading_number,
+        uppercase));
 #else
     if (value & 0xFFFFFFFF00000000)
     {
-        ZYAN_CHECK(ZydisStringAppendHexU64(string, value, padding_length, uppercase));
+        ZYAN_CHECK(ZydisStringAppendHexU64(string, value, padding_length, force_leading_number,
+            uppercase));
     }
     else
     {
-        ZYAN_CHECK(ZydisStringAppendHexU32(string, (ZyanU32)value, padding_length, uppercase));
+        ZYAN_CHECK(ZydisStringAppendHexU32(string, (ZyanU32)value, padding_length,
+            force_leading_number, uppercase));
     }
 #endif
 

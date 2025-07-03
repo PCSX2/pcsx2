@@ -45,7 +45,9 @@
 #include <Zycore/Types.h>
 #include <Zycore/Format.h>
 #include <Zydis/ShortString.h>
-#include <Zydis/Status.h>
+#include <Zycore/Defines.h>
+#include <Zycore/Status.h>
+#include <Zycore/Vector.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -327,7 +329,7 @@ ZYAN_INLINE ZyanStatus ZydisStringAppendShortCase(ZyanString* destination,
  * appends it to the `string`.
  *
  * @param   string          A pointer to the `ZyanString` instance.
- * @param   value           The value.
+ * @param   value           The value to append.
  * @param   padding_length  Padds the converted value with leading zeros, if the number of chars is
  *                          less than the `padding_length`.
  * @param   prefix          The string to use as prefix or `ZYAN_NULL`, if not needed.
@@ -346,10 +348,10 @@ ZyanStatus ZydisStringAppendDecU(ZyanString* string, ZyanU64 value, ZyanU8 paddi
  * appends it to the `string`.
  *
  * @param   string          A pointer to the `ZyanString` instance.
- * @param   value           The value.
+ * @param   value           The value to append.
  * @param   padding_length  Padds the converted value with leading zeros, if the number of chars is
  *                          less than the `padding_length`.
- * @param   force_sign      Set `ZYAN_TRUE`, to force printing of the `+` sign for positive numbers.
+ * @param   force_sign      Enable this option to print the `+` sign for positive numbers.
  * @param   prefix          The string to use as prefix or `ZYAN_NULL`, if not needed.
  * @param   suffix          The string to use as suffix or `ZYAN_NULL`, if not needed.
  *
@@ -388,14 +390,16 @@ ZYAN_INLINE ZyanStatus ZydisStringAppendDecS(ZyanString* string, ZyanI64 value,
  * Formats the given unsigned ordinal `value` to its hexadecimal text-representation and
  * appends it to the `string`.
  *
- * @param   string          A pointer to the `ZyanString` instance.
- * @param   value           The value.
- * @param   padding_length  Padds the converted value with leading zeros, if the number of chars is
- *                          less than the `padding_length`.
- * @param   uppercase       Set `ZYAN_TRUE` to use uppercase letters ('A'-'F') instead of lowercase
- *                          ones ('a'-'f').
- * @param   prefix          The string to use as prefix or `ZYAN_NULL`, if not needed.
- * @param   suffix          The string to use as suffix or `ZYAN_NULL`, if not needed.
+ * @param   string                  A pointer to the `ZyanString` instance.
+ * @param   value                   The value to append.
+ * @param   padding_length          Pads the converted value with leading zeros if the number of
+ *                                  chars is less than the `padding_length`.
+ * @param   force_leading_number    Enable this option to prepend a leading `0` if the first
+ *                                  character is non-numeric.
+ * @param   uppercase               Enable this option to use uppercase letters ('A'-'F') instead
+ *                                  of lowercase ones ('a'-'f').
+ * @param   prefix                  The string to use as prefix or `ZYAN_NULL`, if not needed.
+ * @param   suffix                  The string to use as suffix or `ZYAN_NULL`, if not needed.
  *
  * @return  A zyan status code.
  *
@@ -403,33 +407,34 @@ ZYAN_INLINE ZyanStatus ZydisStringAppendDecS(ZyanString* string, ZyanI64 value,
  * `ZyanString` instance.
  */
 ZyanStatus ZydisStringAppendHexU(ZyanString* string, ZyanU64 value, ZyanU8 padding_length,
-    ZyanBool uppercase, const ZyanStringView* prefix, const ZyanStringView* suffix);
+    ZyanBool force_leading_number, ZyanBool uppercase, const ZyanStringView* prefix,
+    const ZyanStringView* suffix);
 
 /**
  * Formats the given signed ordinal `value` to its hexadecimal text-representation and
  * appends it to the `string`.
  *
- * @param   string          A pointer to the string.
- * @param   value           The value.
- * @param   padding_length  Padds the converted value with leading zeros, if the number of chars is
- *                          less than the `padding_length` (the sign char is ignored).
- * @param   uppercase       Set `ZYAN_TRUE` to print the hexadecimal value in uppercase letters
- *                          instead of lowercase ones.
- * @param   force_sign      Set to `ZYAN_TRUE`, to force printing of the `+` sign for positive
- *                          numbers.
- * @param   prefix          The string to use as prefix or `NULL`, if not needed.
- * @param   suffix          The string to use as suffix or `NULL`, if not needed.
+ * @param   string                  A pointer to the `ZyanString` instance.
+ * @param   value                   The value to append.
+ * @param   padding_length          Padds the converted value with leading zeros, if the number of
+ *                                  chars is less than the `padding_length` (the sign char does not
+ *                                  count).
+ * @param   force_leading_number    Enable this option to prepend a leading `0`, if the first
+ *                                  character is non-numeric.
+ * @param   uppercase               Enable this option to use uppercase letters ('A'-'F') instead
+ *                                  of lowercase ones ('a'-'f').
+ * @param   force_sign              Enable this option to print the `+` sign for positive numbers.
+ * @param   prefix                  The string to use as prefix or `ZYAN_NULL`, if not needed.
+ * @param   suffix                  The string to use as suffix or `ZYAN_NULL`, if not needed.
  *
- * @return  `ZYAN_STATUS_SUCCESS`, if the function succeeded, or
- *          `ZYAN_STATUS_INSUFFICIENT_BUFFER_SIZE`, if the size of the buffer was not
- *          sufficient to append the given `value`.
+ * @return  A zyan status code.
  *
- * The string-buffer pointer is increased by the number of chars written, if the call was
- * successful.
+ * This function will fail if the `ZYAN_STRING_IS_IMMUTABLE` flag is set for the specified
+ * `ZyanString` instance.
  */
 ZYAN_INLINE ZyanStatus ZydisStringAppendHexS(ZyanString* string, ZyanI64 value,
-    ZyanU8 padding_length, ZyanBool uppercase, ZyanBool force_sign, const ZyanStringView* prefix,
-    const ZyanStringView* suffix)
+    ZyanU8 padding_length, ZyanBool force_leading_number, ZyanBool uppercase, ZyanBool force_sign,
+    const ZyanStringView* prefix, const ZyanStringView* suffix)
 {
     static const ZydisShortString str_add = ZYDIS_MAKE_SHORTSTRING("+");
     static const ZydisShortString str_sub = ZYDIS_MAKE_SHORTSTRING("-");
@@ -441,8 +446,8 @@ ZYAN_INLINE ZyanStatus ZydisStringAppendHexS(ZyanString* string, ZyanI64 value,
         {
             ZYAN_CHECK(ZydisStringAppend(string, prefix));
         }
-        return ZydisStringAppendHexU(string, ZyanAbsI64(value), padding_length, uppercase,
-            (const ZyanStringView*)ZYAN_NULL, suffix);
+        return ZydisStringAppendHexU(string, ZyanAbsI64(value), padding_length,
+            force_leading_number, uppercase, (const ZyanStringView*)ZYAN_NULL, suffix);
     }
 
     if (force_sign)
@@ -450,7 +455,8 @@ ZYAN_INLINE ZyanStatus ZydisStringAppendHexS(ZyanString* string, ZyanI64 value,
         ZYAN_ASSERT(value >= 0);
         ZYAN_CHECK(ZydisStringAppendShort(string, &str_add));
     }
-    return ZydisStringAppendHexU(string, value, padding_length, uppercase, prefix, suffix);
+    return ZydisStringAppendHexU(string, value, padding_length, force_leading_number, uppercase,
+        prefix, suffix);
 }
 
 /* ---------------------------------------------------------------------------------------------- */

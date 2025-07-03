@@ -108,17 +108,15 @@ void ZydisGetInstructionDefinition(ZydisInstructionEncoding encoding, ZyanU16 id
 /* ---------------------------------------------------------------------------------------------- */
 
 #ifndef ZYDIS_MINIMAL_MODE
-ZyanU8 ZydisGetOperandDefinitions(const ZydisInstructionDefinition* definition,
-    const ZydisOperandDefinition** operand)
+const ZydisOperandDefinition* ZydisGetOperandDefinitions(
+    const ZydisInstructionDefinition* definition)
 {
     if (definition->operand_count == 0)
     {
-        *operand = ZYAN_NULL;
-        return 0;
+        return ZYAN_NULL;
     }
     ZYAN_ASSERT(definition->operand_reference != 0xFFFF);
-    *operand = &OPERAND_DEFINITIONS[definition->operand_reference];
-    return definition->operand_count;
+    return &OPERAND_DEFINITIONS[definition->operand_reference];
 }
 #endif
 
@@ -143,26 +141,31 @@ void ZydisGetElementInfo(ZydisInternalElementType element, ZydisElementType* typ
         { ZYDIS_ELEMENT_TYPE_UINT     ,   0 },
         { ZYDIS_ELEMENT_TYPE_INT      ,   1 },
         { ZYDIS_ELEMENT_TYPE_INT      ,   8 },
+        { ZYDIS_ELEMENT_TYPE_INT      ,  32 }, // TODO: Should indicate 4 INT8 elements
         { ZYDIS_ELEMENT_TYPE_INT      ,  16 },
+        { ZYDIS_ELEMENT_TYPE_INT      ,  32 }, // TODO: Should indicate 2 INT16 elements
         { ZYDIS_ELEMENT_TYPE_INT      ,  32 },
         { ZYDIS_ELEMENT_TYPE_INT      ,  64 },
         { ZYDIS_ELEMENT_TYPE_UINT     ,   8 },
+        { ZYDIS_ELEMENT_TYPE_UINT     ,  32 }, // TODO: Should indicate 4 UINT8 elements
         { ZYDIS_ELEMENT_TYPE_UINT     ,  16 },
+        { ZYDIS_ELEMENT_TYPE_UINT     ,  32 }, // TODO: Should indicate 2 UINT16 elements
         { ZYDIS_ELEMENT_TYPE_UINT     ,  32 },
         { ZYDIS_ELEMENT_TYPE_UINT     ,  64 },
         { ZYDIS_ELEMENT_TYPE_UINT     , 128 },
         { ZYDIS_ELEMENT_TYPE_UINT     , 256 },
         { ZYDIS_ELEMENT_TYPE_FLOAT16  ,  16 },
-        { ZYDIS_ELEMENT_TYPE_FLOAT16  ,  32 }, // TODO: Should indicate 2 float16 elements
+        { ZYDIS_ELEMENT_TYPE_FLOAT16  ,  32 }, // TODO: Should indicate 2 FLOAT16 elements
         { ZYDIS_ELEMENT_TYPE_FLOAT32  ,  32 },
         { ZYDIS_ELEMENT_TYPE_FLOAT64  ,  64 },
+        { ZYDIS_ELEMENT_TYPE_BFLOAT16 ,  32 }, // TODO: Should indicate 2 BFLOAT16 elements
         { ZYDIS_ELEMENT_TYPE_FLOAT80  ,  80 },
         { ZYDIS_ELEMENT_TYPE_LONGBCD  ,  80 },
         { ZYDIS_ELEMENT_TYPE_CC       ,   3 },
         { ZYDIS_ELEMENT_TYPE_CC       ,   5 }
     };
 
-    ZYAN_ASSERT(element < ZYAN_ARRAY_LENGTH(lookup));
+    ZYAN_ASSERT((ZyanUSize)element < ZYAN_ARRAY_LENGTH(lookup));
 
     *type = lookup[element].type;
     *size = lookup[element].size;
@@ -175,7 +178,7 @@ void ZydisGetElementInfo(ZydisInternalElementType element, ZydisElementType* typ
 
 #ifndef ZYDIS_MINIMAL_MODE
 ZyanBool ZydisGetAccessedFlags(const ZydisInstructionDefinition* definition,
-    const ZydisAccessedFlags** flags)
+    const ZydisDefinitionAccessedFlags** flags)
 {
     ZYAN_ASSERT(definition->flags_reference < ZYAN_ARRAY_LENGTH(ACCESSED_FLAGS));
     *flags = &ACCESSED_FLAGS[definition->flags_reference];
