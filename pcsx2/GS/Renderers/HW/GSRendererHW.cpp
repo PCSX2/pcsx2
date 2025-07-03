@@ -2661,9 +2661,13 @@ void GSRendererHW::Draw()
 			return;
 		}
 
+		const int get_next_ctx = m_env.PRIM.CTXT;
+		const GSDrawingContext& next_ctx = m_env.CTXT[get_next_ctx];
+
 		// Try to fix large single-page-wide draws.
 		bool height_invalid = m_r.w >= 1024;
 		const GSVector2i& pgs = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs;
+		const bool width_change = next_ctx.FRAME.FBW > m_cached_ctx.FRAME.FBW && next_ctx.FRAME.FBP == m_cached_ctx.FRAME.FBP && next_ctx.FRAME.PSM == m_cached_ctx.FRAME.PSM;
 		if (height_invalid && m_cached_ctx.FRAME.FBW <= 1 &&
 			TryToResolveSinglePageFramebuffer(m_cached_ctx.FRAME, true))
 		{
@@ -2672,6 +2676,16 @@ void GSRendererHW::Draw()
 				GSVector2i(1, 1));
 			height_invalid = false;
 		}
+		else if (width_change)
+		{
+			const int num_pages = m_cached_ctx.FRAME.FBW * ((m_r.w + (pgs.y - 1)) / pgs.y);
+			m_cached_ctx.FRAME.FBW = next_ctx.FRAME.FBW;
+
+			ReplaceVerticesWithSprite(
+				GetDrawRectForPages(m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM, num_pages),
+				GSVector2i(1, 1));
+		}
+
 		const u32 vert_index = (m_vt.m_primclass == GS_TRIANGLE_CLASS) ? 2 : 1;
 		u32 const_color = m_vertex.buff[m_index.buff[vert_index]].RGBAQ.U32[0];
 		u32 fb_mask = m_cached_ctx.FRAME.FBMSK;
@@ -2685,8 +2699,6 @@ void GSRendererHW::Draw()
 		if (clear_16bit_likely && ((const_color != 0 && (const_color >> 16) == (const_color & 0xFFFF) && ((const_color >> 8) & 0xFF) != (const_color & 0xFF)) ||
 												(fb_mask != 0 && (fb_mask >> 16) == (fb_mask & 0xFFFF) && ((fb_mask >> 8) & 0xFF) != (fb_mask & 0xFF))))
 		{
-			const int get_next_ctx = m_env.PRIM.CTXT;
-			const GSDrawingContext& next_ctx = m_env.CTXT[get_next_ctx];
 
 			GL_CACHE("Clear 16bit with 32bit %d", s_n);
 
