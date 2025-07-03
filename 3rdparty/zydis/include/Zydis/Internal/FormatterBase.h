@@ -50,13 +50,16 @@ extern "C" {
 /**
  * Appends an unsigned numeric value to the given string.
  *
- * @param   formatter       A pointer to the `ZydisFormatter` instance.
- * @param   base            The numeric base.
- * @param   str             The destination string.
- * @param   value           The value.
- * @param   padding_length  The padding length.
+ * @param   formatter               A pointer to the `ZydisFormatter` instance.
+ * @param   base                    The numeric base.
+ * @param   str                     The destination string.
+ * @param   value                   The value to append.
+ * @param   padding_length          The padding length.
+ * @param   force_leading_number    Enable this option to prepend a leading `0` if the first
+ *                                  character is non-numeric.
  */
-#define ZYDIS_STRING_APPEND_NUM_U(formatter, base, str, value, padding_length) \
+#define ZYDIS_STRING_APPEND_NUM_U(formatter, base, str, value, padding_length, \
+    force_leading_number) \
     switch (base) \
     { \
     case ZYDIS_NUMERIC_BASE_DEC: \
@@ -65,7 +68,7 @@ extern "C" {
             (formatter)->number_format[base][1].string)); \
         break; \
     case ZYDIS_NUMERIC_BASE_HEX: \
-        ZYAN_CHECK(ZydisStringAppendHexU(str, value, padding_length, \
+        ZYAN_CHECK(ZydisStringAppendHexU(str, value, padding_length, force_leading_number, \
             (formatter)->hex_uppercase, \
             (formatter)->number_format[base][0].string, \
             (formatter)->number_format[base][1].string)); \
@@ -77,14 +80,17 @@ extern "C" {
 /**
  * Appends a signed numeric value to the given string.
  *
- * @param   formatter       A pointer to the `ZydisFormatter` instance.
- * @param   base            The numeric base.
- * @param   str             The destination string.
- * @param   value           The value.
- * @param   padding_length  The padding length.
- * @param   force_sign      Forces printing of the '+' sign for positive numbers.
+ * @param   formatter               A pointer to the `ZydisFormatter` instance.
+ * @param   base                    The numeric base.
+ * @param   str                     The destination string.
+ * @param   value                   The value to append.
+ * @param   padding_length          The padding length.
+ * @param   force_leading_number    Enable this option to prepend a leading `0`, if the first
+ *                                  character is non-numeric.
+ * @param   force_sign              Enable to print the '+' sign for positive numbers.
  */
-#define ZYDIS_STRING_APPEND_NUM_S(formatter, base, str, value, padding_length, force_sign) \
+#define ZYDIS_STRING_APPEND_NUM_S(formatter, base, str, value, padding_length, \
+    force_leading_number, force_sign) \
     switch (base) \
     { \
     case ZYDIS_NUMERIC_BASE_DEC: \
@@ -93,7 +99,7 @@ extern "C" {
             (formatter)->number_format[base][1].string)); \
         break; \
     case ZYDIS_NUMERIC_BASE_HEX: \
-        ZYAN_CHECK(ZydisStringAppendHexS(str, value, padding_length,  \
+        ZYAN_CHECK(ZydisStringAppendHexS(str, value, padding_length, force_leading_number,  \
             (formatter)->hex_uppercase, force_sign, \
             (formatter)->number_format[base][0].string, \
             (formatter)->number_format[base][1].string)); \
@@ -162,7 +168,7 @@ extern "C" {
  *
  * @param   buffer      A pointer to the `ZydisFormatterBuffer` struct.
  * @param   name        The base name (without prefix) of the string- or token.
- * @param   letter-case The desired letter-case.
+ * @param   letter_case The desired letter-case.
  */
 #define ZYDIS_BUFFER_APPEND_CASE(buffer, name, letter_case) \
     if ((buffer)->is_token_list) \
@@ -252,7 +258,7 @@ ZYAN_INLINE ZyanStatus ZydisFormatterBufferAppendPredefined(ZydisFormatterBuffer
  *
  * @param   formatter   A pointer to the `ZydisFormatter` instance.
  * @param   context     A pointer to the `ZydisFormatterContext` struct.
- * @param   memop_id    The operand-id of the instructions first memory operand.
+ * @param   operand     The instructions first memory operand.
  *
  * @return  Returns the explicit size, if required, or `0`, if not needed.
  *
@@ -260,7 +266,7 @@ ZYAN_INLINE ZyanStatus ZydisFormatterBufferAppendPredefined(ZydisFormatterBuffer
  * is set to `ZYAN_TRUE`.
  */
 ZyanU32 ZydisFormatterHelperGetExplicitSize(const ZydisFormatter* formatter,
-    ZydisFormatterContext* context, ZyanU8 memop_id);
+    ZydisFormatterContext* context, const ZydisDecodedOperand* operand);
 
 /* ---------------------------------------------------------------------------------------------- */
 

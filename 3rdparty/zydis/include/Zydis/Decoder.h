@@ -136,11 +136,28 @@ typedef enum ZydisDecoderMode_
      * This mode is enabled by default.
      */
     ZYDIS_DECODER_MODE_CLDEMOTE,
+    /**
+     * Enables the `IPREFETCH` mode.
+     *
+     * The `IPREFETCH` isa-extension reuses (overrides) some of the widenop instruction opcodes.
+     *
+     * This mode is enabled by default.
+     */
+    ZYDIS_DECODER_MODE_IPREFETCH,
+    /**
+     * Enables the `UD0` compatibility mode.
+     *
+     * Some processors decode the `UD0` instruction without a ModR/M byte. Enable this decoder mode
+     * to mimic this behavior.
+     *
+     * This mode is disabled by default.
+     */
+    ZYDIS_DECODER_MODE_UD0_COMPAT,
 
     /**
      * Maximum value of this enum.
      */
-    ZYDIS_DECODER_MODE_MAX_VALUE = ZYDIS_DECODER_MODE_CLDEMOTE,
+    ZYDIS_DECODER_MODE_MAX_VALUE = ZYDIS_DECODER_MODE_UD0_COMPAT,
     /**
      * The minimum number of bits required to represent all values of this enum.
      */
@@ -164,13 +181,13 @@ typedef struct ZydisDecoder_
      */
     ZydisMachineMode machine_mode;
     /**
-     * The address width.
+     * The stack width.
      */
-    ZydisAddressWidth address_width;
+    ZydisStackWidth stack_width;
     /**
-     * The decoder mode array.
+     * The decoder mode bitmap.
      */
-    ZyanBool decoder_mode[ZYDIS_DECODER_MODE_MAX_VALUE + 1];
+    ZyanU32 decoder_mode;
 } ZydisDecoder;
 
 /* ---------------------------------------------------------------------------------------------- */
@@ -190,12 +207,12 @@ typedef struct ZydisDecoder_
  *
  * @param   decoder         A pointer to the `ZydisDecoder` instance.
  * @param   machine_mode    The machine mode.
- * @param   address_width   The address width.
+ * @param   stack_width     The stack width.
  *
  * @return  A zyan status code.
  */
 ZYDIS_EXPORT ZyanStatus ZydisDecoderInit(ZydisDecoder* decoder, ZydisMachineMode machine_mode,
-    ZydisAddressWidth address_width);
+    ZydisStackWidth stack_width);
 
 /**
  * Enables or disables the specified decoder-mode.
@@ -210,9 +227,44 @@ ZYDIS_EXPORT ZyanStatus ZydisDecoderEnableMode(ZydisDecoder* decoder, ZydisDecod
     ZyanBool enabled);
 
 /**
+ * Decodes the instruction in the given input `buffer` and returns all details (e.g. operands).
+ *
+ * @param   decoder         A pointer to the `ZydisDecoder` instance.
+ * @param   buffer          A pointer to the input buffer.
+ * @param   length          The length of the input buffer. Note that this can be bigger than the
+ *                          actual size of the instruction -- you don't have to know the size up
+ *                          front. This length is merely used to prevent Zydis from doing
+ *                          out-of-bounds reads on your buffer.
+ * @param   instruction     A pointer to the `ZydisDecodedInstruction` struct receiving the details
+ *                          about the decoded instruction.
+ * @param   operands        A pointer to an array with `ZYDIS_MAX_OPERAND_COUNT` entries that
+ *                          receives the decoded operands. The number of operands decoded is
+ *                          determined by the `instruction.operand_count` field. Excess entries are
+ *                          zeroed.
+ *
+ * This is a convenience function that combines the following functions into one call:
+ * 
+ *   - `ZydisDecoderDecodeInstruction`
+ *   - `ZydisDecoderDecodeOperands`
+ * 
+ * Please refer to `ZydisDecoderDecodeInstruction` if operand decoding is not required or should
+ * be done separately (`ZydisDecoderDecodeOperands`).
+ *
+ * This function is not available in MINIMAL_MODE.
+ *
+ * @return  A zyan status code.
+ */
+ZYDIS_EXPORT ZyanStatus ZydisDecoderDecodeFull(const ZydisDecoder* decoder,
+    const void* buffer, ZyanUSize length, ZydisDecodedInstruction* instruction,
+    ZydisDecodedOperand operands[ZYDIS_MAX_OPERAND_COUNT]);
+
+/**
  * Decodes the instruction in the given input `buffer`.
  *
  * @param   decoder     A pointer to the `ZydisDecoder` instance.
+ * @param   context     A pointer to a decoder context struct which is required for further
+ *                      decoding (e.g. operand decoding using `ZydisDecoderDecodeOperands`) or
+ *                      `ZYAN_NULL` if not needed.
  * @param   buffer      A pointer to the input buffer.
  * @param   length      The length of the input buffer. Note that this can be bigger than the
  *                      actual size of the instruction -- you don't have to know the size up
@@ -223,8 +275,39 @@ ZYDIS_EXPORT ZyanStatus ZydisDecoderEnableMode(ZydisDecoder* decoder, ZydisDecod
  *
  * @return  A zyan status code.
  */
-ZYDIS_EXPORT ZyanStatus ZydisDecoderDecodeBuffer(const ZydisDecoder* decoder,
-    const void* buffer, ZyanUSize length, ZydisDecodedInstruction* instruction);
+ZYDIS_EXPORT ZyanStatus ZydisDecoderDecodeInstruction(const ZydisDecoder* decoder,
+    ZydisDecoderContext* context, const void* buffer, ZyanUSize length,
+    ZydisDecodedInstruction* instruction);
+
+/**
+ * Decodes the instruction operands.
+ *
+ * @param   decoder         A pointer to the `ZydisDecoder` instance.
+ * @param   context         A pointer to the `ZydisDecoderContext` struct.
+ * @param   instruction     A pointer to the `ZydisDecodedInstruction` struct.
+ * @param   operands        The array that receives the decoded operands.
+ *                          Refer to `ZYDIS_MAX_OPERAND_COUNT` or `ZYDIS_MAX_OPERAND_COUNT_VISIBLE`
+ *                          when allocating space for the array to ensure that the buffer size is
+ *                          sufficient to always fit all instruction operands.
+ *                          Refer to `instruction.operand_count` or
+ *                          `instruction.operand_count_visible' when allocating space for the array
+ *                          to ensure that the buffer size is sufficient to fit all operands of
+ *                          the given instruction.
+ * @param   operand_count   The length of the `operands` array.
+ *                          This argument as well limits the maximum amount of operands to decode.
+ *                          If this value is `0`, no operands will be decoded and `ZYAN_NULL` will
+ *                          be accepted for the `operands` argument.
+ *
+ * This function fails, if `operand_count` is larger than the total number of operands for the
+ * given instruction (`instruction.operand_count`).
+ *
+ * This function is not available in MINIMAL_MODE.
+ *
+ * @return  A zyan status code.
+ */
+ZYDIS_EXPORT ZyanStatus ZydisDecoderDecodeOperands(const ZydisDecoder* decoder,
+    const ZydisDecoderContext* context, const ZydisDecodedInstruction* instruction,
+    ZydisDecodedOperand* operands, ZyanU8 operand_count);
 
 /** @} */
 

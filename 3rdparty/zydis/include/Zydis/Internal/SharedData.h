@@ -116,11 +116,15 @@ typedef enum ZydisInternalElementType_
     ZYDIS_IELEMENT_TYPE_UINT,
     ZYDIS_IELEMENT_TYPE_INT1,
     ZYDIS_IELEMENT_TYPE_INT8,
+    ZYDIS_IELEMENT_TYPE_INT8X4,
     ZYDIS_IELEMENT_TYPE_INT16,
+    ZYDIS_IELEMENT_TYPE_INT16X2,
     ZYDIS_IELEMENT_TYPE_INT32,
     ZYDIS_IELEMENT_TYPE_INT64,
     ZYDIS_IELEMENT_TYPE_UINT8,
+    ZYDIS_IELEMENT_TYPE_UINT8X4,
     ZYDIS_IELEMENT_TYPE_UINT16,
+    ZYDIS_IELEMENT_TYPE_UINT16X2,
     ZYDIS_IELEMENT_TYPE_UINT32,
     ZYDIS_IELEMENT_TYPE_UINT64,
     ZYDIS_IELEMENT_TYPE_UINT128,
@@ -130,6 +134,7 @@ typedef enum ZydisInternalElementType_
     ZYDIS_IELEMENT_TYPE_FLOAT32,
     ZYDIS_IELEMENT_TYPE_FLOAT64,
     ZYDIS_IELEMENT_TYPE_FLOAT80,
+    ZYDIS_IELEMENT_TYPE_BFLOAT16X2,
     ZYDIS_IELEMENT_TYPE_BCD80,
     ZYDIS_IELEMENT_TYPE_CC3,
     ZYDIS_IELEMENT_TYPE_CC5,
@@ -151,12 +156,13 @@ typedef enum ZydisInternalElementType_
  */
 typedef enum ZydisImplicitRegisterType_
 {
+    // TODO: Rename OSZ|ASZ|SSZ_
     ZYDIS_IMPLREG_TYPE_STATIC,
     ZYDIS_IMPLREG_TYPE_GPR_OSZ,
     ZYDIS_IMPLREG_TYPE_GPR_ASZ,
-    ZYDIS_IMPLREG_TYPE_GPR_SSZ,
     ZYDIS_IMPLREG_TYPE_IP_ASZ,
     ZYDIS_IMPLREG_TYPE_IP_SSZ,
+    ZYDIS_IMPLREG_TYPE_GPR_SSZ,
     ZYDIS_IMPLREG_TYPE_FLAGS_SSZ,
 
     /**
@@ -176,6 +182,7 @@ typedef enum ZydisImplicitRegisterType_
  */
 typedef enum ZydisImplicitMemBase_
 {
+    // TODO: Rename OSZ|ASZ|SSZ_
     ZYDIS_IMPLMEM_BASE_AGPR_REG,
     ZYDIS_IMPLMEM_BASE_AGPR_RM,
     ZYDIS_IMPLMEM_BASE_AAX,
@@ -264,35 +271,6 @@ typedef enum ZydisReadWriteAction_
      */
     ZYDIS_RW_ACTION_REQUIRED_BITS = ZYAN_BITS_TO_REPRESENT(ZYDIS_RW_ACTION_MAX_VALUE)
 } ZydisReadWriteAction;
-
-/* ---------------------------------------------------------------------------------------------- */
-
-/**
- * Defines the `ZydisRegisterConstraint` enum.
- */
-typedef enum ZydisRegisterConstraint_
-{
-    ZYDIS_REG_CONSTRAINTS_UNUSED,
-    ZYDIS_REG_CONSTRAINTS_NONE,
-    ZYDIS_REG_CONSTRAINTS_GPR,
-    ZYDIS_REG_CONSTRAINTS_SR_DEST,
-    ZYDIS_REG_CONSTRAINTS_SR,
-    ZYDIS_REG_CONSTRAINTS_CR,
-    ZYDIS_REG_CONSTRAINTS_DR,
-    ZYDIS_REG_CONSTRAINTS_MASK,
-    ZYDIS_REG_CONSTRAINTS_BND,
-    ZYDIS_REG_CONSTRAINTS_VSIB,
-    ZYDIS_REG_CONSTRAINTS_NO_REL,
-
-    /**
-     * Maximum value of this enum.
-     */
-    ZYDIS_REG_CONSTRAINTS_MAX_VALUE = ZYDIS_REG_CONSTRAINTS_NO_REL,
-    /**
-     * The minimum number of bits required to represent all values of this enum.
-     */
-    ZYDIS_REG_CONSTRAINTS_REQUIRED_BITS = ZYAN_BITS_TO_REPRESENT(ZYDIS_REG_CONSTRAINTS_MAX_VALUE)
-} ZydisRegisterConstraint;
 
 /* ---------------------------------------------------------------------------------------------- */
 
@@ -442,7 +420,7 @@ typedef enum ZydisEVEXTupleType_
     /**
      * Quarter of the vector-length.
      */
-     ZYDIS_TUPLETYPE_QUARTER,
+    ZYDIS_TUPLETYPE_QUARTER,
 
     /**
      * Maximum value of this enum.
@@ -713,6 +691,21 @@ typedef enum ZydisMaskOverride_
 
 /* ---------------------------------------------------------------------------------------------- */
 
+#define ZYDIS_OPDEF_REQUIRED_BITS \
+    ZYAN_MAX(ZYDIS_REGKIND_REQUIRED_BITS, ZYDIS_MEMOP_TYPE_REQUIRED_BITS + 1) + 1
+
+#define ZYDIS_OPDEF_GET_REG(operand_definition) \
+    ((operand_definition) & ((1 << ZYDIS_REGKIND_REQUIRED_BITS   ) - 1))
+
+#define ZYDIS_OPDEF_GET_MEM(operand_definition) \
+    ((operand_definition) & ((1 << ZYDIS_MEMOP_TYPE_REQUIRED_BITS) - 1))
+
+#define ZYDIS_OPDEF_GET_REG_HIGH_BIT(operand_definition) \
+    (((operand_definition) >> ZYDIS_REGKIND_REQUIRED_BITS   ) & 0x01)
+
+#define ZYDIS_OPDEF_GET_MEM_HIGH_BIT(operand_definition) \
+    (((operand_definition) >> ZYDIS_MEMOP_TYPE_REQUIRED_BITS) & 0x01)
+
 // MSVC does not correctly execute the `pragma pack(1)` compiler-directive, if we use the correct
 // enum types
 ZYAN_STATIC_ASSERT(ZYDIS_MNEMONIC_REQUIRED_BITS        <= 16);
@@ -721,13 +714,14 @@ ZYAN_STATIC_ASSERT(ZYDIS_ISA_SET_REQUIRED_BITS         <=  8);
 ZYAN_STATIC_ASSERT(ZYDIS_ISA_EXT_REQUIRED_BITS         <=  8);
 ZYAN_STATIC_ASSERT(ZYDIS_BRANCH_TYPE_REQUIRED_BITS     <=  8);
 ZYAN_STATIC_ASSERT(ZYDIS_EXCEPTION_CLASS_REQUIRED_BITS <=  8);
-ZYAN_STATIC_ASSERT(ZYDIS_REG_CONSTRAINTS_REQUIRED_BITS <=  8);
+ZYAN_STATIC_ASSERT(ZYDIS_OPDEF_REQUIRED_BITS           <=  8);
 ZYAN_STATIC_ASSERT(ZYDIS_RW_ACTION_REQUIRED_BITS       <=  8);
 
 #ifndef ZYDIS_MINIMAL_MODE
 #   define ZYDIS_INSTRUCTION_DEFINITION_BASE \
         ZyanU16 mnemonic                       ZYAN_BITFIELD(ZYDIS_MNEMONIC_REQUIRED_BITS); \
         ZyanU8 operand_count                   ZYAN_BITFIELD( 4); \
+        ZyanU8 operand_count_visible           ZYAN_BITFIELD( 3); \
         ZyanU16 operand_reference              ZYAN_BITFIELD(15); \
         ZyanU8 operand_size_map                ZYAN_BITFIELD( 3); \
         ZyanU8 address_size_map                ZYAN_BITFIELD( 2); \
@@ -739,8 +733,8 @@ ZYAN_STATIC_ASSERT(ZYDIS_RW_ACTION_REQUIRED_BITS       <=  8);
         ZyanU8 isa_ext                         ZYAN_BITFIELD(ZYDIS_ISA_EXT_REQUIRED_BITS); \
         ZyanU8 branch_type                     ZYAN_BITFIELD(ZYDIS_BRANCH_TYPE_REQUIRED_BITS); \
         ZyanU8 exception_class                 ZYAN_BITFIELD(ZYDIS_EXCEPTION_CLASS_REQUIRED_BITS); \
-        ZyanU8 constr_REG                      ZYAN_BITFIELD(ZYDIS_REG_CONSTRAINTS_REQUIRED_BITS); \
-        ZyanU8 constr_RM                       ZYAN_BITFIELD(ZYDIS_REG_CONSTRAINTS_REQUIRED_BITS); \
+        ZyanU8 op_reg                          ZYAN_BITFIELD(ZYDIS_OPDEF_REQUIRED_BITS); \
+        ZyanU8 op_rm                           ZYAN_BITFIELD(ZYDIS_OPDEF_REQUIRED_BITS); \
         ZyanU8 cpu_state                       ZYAN_BITFIELD(ZYDIS_RW_ACTION_REQUIRED_BITS); \
         ZyanU8 fpu_state                       ZYAN_BITFIELD(ZYDIS_RW_ACTION_REQUIRED_BITS); \
         ZyanU8 xmm_state                       ZYAN_BITFIELD(ZYDIS_RW_ACTION_REQUIRED_BITS); \
@@ -751,18 +745,20 @@ ZYAN_STATIC_ASSERT(ZYDIS_RW_ACTION_REQUIRED_BITS       <=  8);
         ZyanU8 operand_size_map                ZYAN_BITFIELD( 3); \
         ZyanU8 address_size_map                ZYAN_BITFIELD( 2); \
         ZyanBool requires_protected_mode       ZYAN_BITFIELD( 1); \
-        ZyanU8 constr_REG                      ZYAN_BITFIELD(ZYDIS_REG_CONSTRAINTS_REQUIRED_BITS); \
-        ZyanU8 constr_RM                       ZYAN_BITFIELD(ZYDIS_REG_CONSTRAINTS_REQUIRED_BITS)
+        ZyanBool no_compat_mode                ZYAN_BITFIELD( 1); \
+        ZyanU8 op_reg                          ZYAN_BITFIELD(ZYDIS_OPDEF_REQUIRED_BITS); \
+        ZyanU8 op_rm                           ZYAN_BITFIELD(ZYDIS_OPDEF_REQUIRED_BITS)
 #endif
 
 #define ZYDIS_INSTRUCTION_DEFINITION_BASE_VECTOR \
     ZYDIS_INSTRUCTION_DEFINITION_BASE; \
-    ZyanU8 constr_NDSNDD                   ZYAN_BITFIELD(ZYDIS_REG_CONSTRAINTS_REQUIRED_BITS)
+    ZyanU8 op_ndsndd                       ZYAN_BITFIELD(ZYDIS_OPDEF_REQUIRED_BITS)
 
 #define ZYDIS_INSTRUCTION_DEFINITION_BASE_VECTOR_INTEL \
     ZYDIS_INSTRUCTION_DEFINITION_BASE_VECTOR; \
     ZyanBool is_gather                     ZYAN_BITFIELD( 1); \
-    ZyanBool no_source_dest_match          ZYAN_BITFIELD( 1)
+    ZyanBool no_source_dest_match          ZYAN_BITFIELD( 1); \
+    ZyanBool no_source_source_match        ZYAN_BITFIELD( 1)        // TODO: Could be moved to VEX
 
 /**
  * Defines the `ZydisInstructionDefinition` struct.
@@ -883,25 +879,30 @@ typedef struct ZydisInstructionDefinitionMVEX_
 #endif
 
 /* ---------------------------------------------------------------------------------------------- */
-/* Accessed CPU flags                                                                             */
-/* ---------------------------------------------------------------------------------------------- */
-
-typedef struct ZydisAccessedFlags_
-{
-    ZydisCPUFlagAction action[ZYDIS_CPUFLAG_MAX_VALUE + 1];
-    ZyanU32 cpu_flags_read      ZYAN_BITFIELD(22);
-    ZyanU32 cpu_flags_written   ZYAN_BITFIELD(22);
-    ZyanU8 fpu_flags_read       ZYAN_BITFIELD( 4);
-    ZyanU8 fpu_flags_written    ZYAN_BITFIELD( 4);
-} ZydisAccessedFlags;
-
-/* ---------------------------------------------------------------------------------------------- */
 
 #pragma pack(pop)
 
 #ifdef ZYAN_MSVC
 #   pragma warning(pop)
 #endif
+
+/* ---------------------------------------------------------------------------------------------- */
+/* Accessed CPU/FPU flags                                                                         */
+/* ---------------------------------------------------------------------------------------------- */
+
+/*
+ * Contains information about the CPU/FPU flags accessed by an instruction.
+ *
+ * We don't want this struct to be packed! A pointer to the individual members will be used by the
+ * `ZydisDecodedInstruction` struct.
+ */
+typedef struct ZydisDefinitionAccessedFlags_
+{
+    ZydisAccessedFlags cpu_flags;
+    ZydisAccessedFlags fpu_flags;
+} ZydisDefinitionAccessedFlags;
+
+/* ---------------------------------------------------------------------------------------------- */
 
 /* ============================================================================================== */
 /* Functions                                                                                      */
@@ -931,13 +932,11 @@ ZYDIS_NO_EXPORT void ZydisGetInstructionDefinition(ZydisInstructionEncoding enco
  * Returns the the operand-definitions for the given instruction-`definition`.
  *
  * @param   definition  A pointer to the instruction-definition.
- * @param   operand     A pointer to the variable that receives a pointer to the first operand-
- *                      definition of the instruction.
  *
- * @return  The number of operands for the given instruction-definition.
+ * @return  A pointer to the first operand definition of the instruction, or `ZYAN_NULL`.
  */
-ZYDIS_NO_EXPORT ZyanU8 ZydisGetOperandDefinitions(const ZydisInstructionDefinition* definition,
-    const ZydisOperandDefinition** operand);
+ZYDIS_NO_EXPORT const ZydisOperandDefinition* ZydisGetOperandDefinitions(
+    const ZydisInstructionDefinition* definition);
 #endif
 
 /* ---------------------------------------------------------------------------------------------- */
@@ -965,12 +964,13 @@ ZYDIS_NO_EXPORT void ZydisGetElementInfo(ZydisInternalElementType element, Zydis
  * Returns the the operand-definitions for the given instruction-`definition`.
  *
  * @param   definition  A pointer to the instruction-definition.
- * @param   flags       A pointer to the variable that receives the `ZydisAccessedFlags` struct.
+ * @param   flags       A pointer to the variable that receives the `ZydisDefinitionAccessedFlags`
+ *                      struct.
  *
  * @return  `ZYAN_TRUE`, if the instruction accesses any flags, or `ZYAN_FALSE`, if not.
  */
 ZYDIS_NO_EXPORT ZyanBool ZydisGetAccessedFlags(const ZydisInstructionDefinition* definition,
-    const ZydisAccessedFlags** flags);
+    const ZydisDefinitionAccessedFlags** flags);
 #endif
 
 /* ---------------------------------------------------------------------------------------------- */

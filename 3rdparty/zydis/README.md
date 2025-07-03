@@ -1,80 +1,48 @@
 <p align="center">
-  <img alt="zydis logo" src="https://zydis.re/img/logo.svg" width="400px">
+  <a href="https://zydis.re/">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/zyantific/zydis/master/assets/img/logo-dark.svg" width="400px">
+      <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/zyantific/zydis/master/assets/img/logo-light.svg" width="400px">
+      <img alt="zydis logo" src="https://raw.githubusercontent.com/zyantific/zydis/master/assets/img/logo-dark.svg" width="400px">
+    </picture>
+  </a>
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT">
-  <a href="https://github.com/zyantific/zydis/actions"><img src="https://github.com/zyantific/zydis/workflows/GitHub%20Actions%20CI/badge.svg" alt="GitHub Actions"></a>
+  <a href="https://github.com/zyantific/zydis/actions"><img src="https://github.com/zyantific/zydis/workflows/CI/badge.svg" alt="GitHub Actions"></a>
   <a href="https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:zydis"><img src="https://oss-fuzz-build-logs.storage.googleapis.com/badges/zydis.svg" alt="Fuzzing Status"></a>
-  <a href="https://gitter.im/zyantific/zydis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=body_badge"><img src="https://badges.gitter.im/zyantific/zyan-disassembler-engine.svg" alt="Gitter"></a>
   <a href="https://discord.zyantific.com/"><img src="https://img.shields.io/discord/390136917779415060.svg?logo=discord&label=Discord" alt="Discord"></a>
 </p>
 
-<p align="center">Fast and lightweight x86/x86-64 disassembler library.</p>
+<p align="center">Fast and lightweight x86/x86-64 disassembler and code generation library.</p>
 
 ## Features
+
 - Supports all x86 and x86-64 (AMD64) instructions and [extensions](./include/Zydis/Generated/EnumISAExt.h)
 - Optimized for high performance
 - No dynamic memory allocation ("malloc")
 - Thread-safe by design
 - Very small file-size overhead compared to other common disassembler libraries
-- [Complete doxygen documentation](https://zydis.re/doc/3/)
+- [Complete doxygen documentation](https://doc.zydis.re/)
+- Trusted by many major open-source projects
+  - Examples include [x64dbg][zydis-x64dbg], [Mozilla Firefox][zydis-firefox] and [Webkit][zydis-webkit]
 - Absolutely no third party dependencies — not even libc
-  - Should compile on any platform with a working C99 compiler
+  - Should compile on any platform with a working C11 compiler
   - Tested on Windows, macOS, FreeBSD, Linux and UEFI, both user and kernel mode
 
-## Quick Example
-The following example program uses Zydis to disassemble a given memory buffer and prints the output to the console ([more examples here](./examples/)).
+[zydis-x64dbg]: https://github.com/x64dbg/x64dbg/tree/729285ef82580812edf7167c41aa6a2c23d8d72d/src/zydis_wrapper
+[zydis-firefox]: https://github.com/mozilla/gecko-dev/tree/3ddbce3c426a55080bd84974444f9ac4869e580b/js/src/zydis
+[zydis-webkit]: https://github.com/WebKit/WebKit/tree/1f2d2a92eeb831bedd01bbb5b694a0e29fa9af81/Source/JavaScriptCore/disassembler/zydis
 
-```C
-#include <stdio.h>
-#include <inttypes.h>
-#include <Zydis/Zydis.h>
+## Examples
 
-int main()
-{
-    ZyanU8 data[] =
-    {
-        0x51, 0x8D, 0x45, 0xFF, 0x50, 0xFF, 0x75, 0x0C, 0xFF, 0x75,
-        0x08, 0xFF, 0x15, 0xA0, 0xA5, 0x48, 0x76, 0x85, 0xC0, 0x0F,
-        0x88, 0xFC, 0xDA, 0x02, 0x00
-    };
+### Disassembler
 
-    // Initialize decoder context
-    ZydisDecoder decoder;
-    ZydisDecoderInit(&decoder, ZYDIS_MACHINE_MODE_LONG_64, ZYDIS_ADDRESS_WIDTH_64);
+The following example program uses Zydis to disassemble a given memory buffer and prints the output to the console.
 
-    // Initialize formatter. Only required when you actually plan to do instruction
-    // formatting ("disassembling"), like we do here
-    ZydisFormatter formatter;
-    ZydisFormatterInit(&formatter, ZYDIS_FORMATTER_STYLE_INTEL);
+https://github.com/zyantific/zydis/blob/214536a814ba20d2e33d2a907198d1a329aac45c/examples/DisassembleSimple.c#L38-L63
 
-    // Loop over the instructions in our buffer.
-    // The runtime-address (instruction pointer) is chosen arbitrary here in order to better
-    // visualize relative addressing
-    ZyanU64 runtime_address = 0x007FFFFFFF400000;
-    ZyanUSize offset = 0;
-    const ZyanUSize length = sizeof(data);
-    ZydisDecodedInstruction instruction;
-    while (ZYAN_SUCCESS(ZydisDecoderDecodeBuffer(&decoder, data + offset, length - offset,
-        &instruction)))
-    {
-        // Print current instruction pointer.
-        printf("%016" PRIX64 "  ", runtime_address);
-
-        // Format & print the binary instruction structure to human readable format
-        char buffer[256];
-        ZydisFormatterFormatInstruction(&formatter, &instruction, buffer, sizeof(buffer),
-            runtime_address);
-        puts(buffer);
-
-        offset += instruction.length;
-        runtime_address += instruction.length;
-    }
-}
-```
-
-## Sample Output
 The above example program generates the following output:
 
 ```asm
@@ -88,74 +56,133 @@ The above example program generates the following output:
 007FFFFFFF400013   js 0x007FFFFFFF42DB15
 ```
 
+### Encoder
+
+https://github.com/zyantific/zydis/blob/b37076e69f5aa149fde540cae43c50f15a380dfc/examples/EncodeMov.c#L39-L62
+
+The above example program generates the following output:
+
+```
+48 C7 C0 37 13 00 00
+```
+
+### More Examples
+
+More examples can be found in the [examples](./examples/) directory of this repository.
+
 ## Build
 
-#### Unix
-Zydis builds cleanly on most platforms without any external dependencies. You can use CMake to generate project files for your favorite C99 compiler.
+There are many ways to make Zydis available on your system. The following sub-sections list commonly used options.
+
+### CMake Build
+
+**Platforms:** Windows, macOS, Linux, BSDs
+
+You can use CMake to build Zydis on all supported platforms. 
+Instructions on how to install CMake can be found [here](https://cmake.org/install/).
 
 ```bash
 git clone --recursive 'https://github.com/zyantific/zydis.git'
 cd zydis
-mkdir build && cd build
-cmake ..
-make
+cmake -B build
+cmake --build build -j4
 ```
 
-#### Windows
-Either use the [Visual Studio 2017 project](./msvc/) or build Zydis using [CMake](https://cmake.org/download/) ([video guide](https://www.youtube.com/watch?v=fywLDK1OAtQ)).
+### Visual Studio 2022 project
 
-#### Building Zydis - Using vcpkg
+**Platforms:** Windows
 
-You can download and install Zydis using the [vcpkg](https://github.com/Microsoft/vcpkg) dependency manager:
+We manually maintain a [Visual Studio 2022 project](./msvc/) in addition to the CMake build logic.
 
-```bash
-git clone https://github.com/Microsoft/vcpkg.git
-cd vcpkg
-./bootstrap-vcpkg.sh
-./vcpkg integrate install
-vcpkg install zydis
-```
-The Zydis port in vcpkg is kept up to date by Microsoft team members and community contributors. If the version is out of date, please [create an issue or pull request](https://github.com/Microsoft/vcpkg) on the vcpkg repository.
+### CMake generated VS project
+
+**Platforms:** Windows
+
+CMake can be instructed to generate a Visual Studio project for pretty much any VS version. A video guide describing how to use the CMake GUI to generate such project files is available [here](https://www.youtube.com/watch?v=fywLDK1OAtQ). Don't be confused by the apparent use of macOS in the video: Windows is simply running in a virtual machine.
+
+### Amalgamated distribution
+
+**Platforms:** any platform with a working C11 compiler
+
+We provide an auto-generated single header & single source file variant of Zydis. To use this variant
+of Zydis in your project, all you need to do is to copy these two files into your project. The 
+amalgamated builds can be found on our [release page](https://github.com/zyantific/zydis/releases)
+as `zydis-amalgamated.tar.gz`.
+
+These files are generated with the [`amalgamate.py`](./assets/amalgamate.py) script.
+
+### Package managers
+
+**Platforms:** Windows, macOS, Linux, FreeBSD
+
+Pre-built headers, shared libraries and executables are available through a variety of package managers.
+
+<details>
+  <summary>Zydis version in various package repositories</summary>
+  
+  [![Packaging status](https://repology.org/badge/vertical-allrepos/zydis.svg)](https://repology.org/project/zydis/versions)
+  
+</details>
+
+| Repository | Install command                            | 
+|------------|--------------------------------------------|
+| Arch Linux | `pacman -S zydis`                          |
+| Debian     | `apt-get install libzydis-dev zydis-tools` |
+| Homebrew   | `brew install zydis`                       |
+| NixOS      | `nix-shell -p zydis`                       |
+| Ubuntu     | `apt-get install libzydis-dev zydis-tools` |
+| vcpkg      | `vcpkg install zydis`                      |
 
 ## Using Zydis in a CMake project
+
 An example on how to use Zydis in your own CMake based project [can be found in this repo](https://github.com/zyantific/zydis-submodule-example).
 
 ## `ZydisInfo` tool
+
+The `ZydisInfo` command-line tool can be used to inspect essentially all information 
+that Zydis provides about an instruction.
+
 ![ZydisInfo](./assets/screenshots/ZydisInfo.png)
 
 ## Bindings
-Official bindings exist for a selection of languages:
-- [Pascal](https://github.com/zyantific/zydis-pascal)
-- [Python 3](https://github.com/zyantific/zydis-py)
-- [Rust](https://github.com/zyantific/zydis-rs)
 
-Unofficial but actively maintained bindings:
-- [Go](https://github.com/jpap/go-zydis)
-- [LuaJIT](https://github.com/Wiladams/lj2zydis)
-- [Haskell](https://github.com/nerded1337/zydiskell)
+Official bindings exist for a selection of languages:
+
+- [Rust](https://github.com/zyantific/zydis-rs)
+- [Python 3](https://github.com/zyantific/zydis-py)
+
+### asmjit-style C++ front-end
+
+If you're looking for an asmjit-style assembler front-end for the encoder, check out [zasm](https://github.com/zyantific/zasm).
+zasm also provides an idiomatic C++ wrapper around the decoder and formatter interface.
 
 ## Versions
 
-#### Scheme
-Versions follow the [semantic versioning scheme](https://semver.org/). All stability guarantees apply to the API only — ABI stability between patches cannot be assumed unless explicitly mentioned in the release notes.
+### Scheme
 
-#### Branches & Tags
+Versions follow the [semantic versioning scheme](https://semver.org/). All stability guarantees apply to the API only. ABI stability is provided only between patch versions.
+
+### Branches & Tags
+
 - `master` holds the bleeding edge code of the next, unreleased Zydis version. Elevated amounts of bugs and issues must be expected, API stability is not guaranteed outside of tagged commits.
 - Stable and preview versions are annotated with git tags
   - beta and other preview versions have `-beta`, `-rc`, etc. suffixes
-- `maintenance/v2` contains the code of the latest legacy release of v2
-  - v2 is now deprecated, but will receive security fixes until 2021
+- `maintenance/v3` points to the code of the latest release of v3
+  - v3 won't get any feature updates but will receive security updates until 2025
+- `maintenance/v2` points to the code of the last legacy release of v2
+  - v2 is has reached end-of-life and won't receive any security updates
 
 ## Credits
+
 - Intel (for open-sourcing [XED](https://github.com/intelxed/xed), allowing for automatic comparison of our tables against theirs, improving both)
 - [LLVM](https://llvm.org) (for providing pretty solid instruction data as well)
-- Christian Ludloff (http://sandpile.org, insanely helpful)
+- Christian Ludloff (https://sandpile.org, insanely helpful)
 - [LekoArts](https://www.lekoarts.de/) (for creating the project logo)
 - Our [contributors on GitHub](https://github.com/zyantific/zydis/graphs/contributors)
 
 ## Troubleshooting
 
-#### `-fPIC` for shared library builds
+### `-fPIC` for shared library builds
 
 ```
 /usr/bin/ld: ./libfoo.a(foo.c.o): relocation R_X86_64_PC32 against symbol `bar' can not be used when making a shared object; recompile with -fPIC
@@ -167,11 +194,12 @@ might fail to detect that relocation information must be emitted. This can be fo
 by passing `-DCMAKE_POSITION_INDEPENDENT_CODE=ON` to the CMake invocation.
 
 ## Consulting and Business Support
+
 We offer consulting services and professional business support for Zydis. If you need a custom extension, require help in integrating Zydis into your product or simply want contractually guaranteed updates and turnaround times, we are happy to assist with that! Please contact us at business@zyantific.com.
 
 ## Donations
 
-Since GitHub Sponsors currently doesn't support sponsoring teams directly, donations are collected and distributed using [flobernd](https://github.com/users/flobernd/sponsorship)s account.
+Donations are collected and distributed using [flobernd](https://github.com/users/flobernd/sponsorship)'s account.
 
 ## License
 

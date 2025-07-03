@@ -64,6 +64,10 @@
 #if defined(__clang__)
 #   define ZYAN_CLANG
 #   define ZYAN_GNUC
+#   if defined(_MSC_VER)
+#       define ZYAN_CLANG_CL
+#       define ZYAN_MSVC
+#   endif
 #elif defined(__ICC) || defined(__INTEL_COMPILER)
 #   define ZYAN_ICC
 #elif defined(__GNUC__) || defined(__GNUG__)
@@ -97,10 +101,16 @@
 #elif defined(__FreeBSD__)
 #   define ZYAN_FREEBSD
 #   define ZYAN_POSIX
+#elif defined(__NetBSD__)
+#   define ZYAN_NETBSD
+#   define ZYAN_POSIX
 #elif defined(sun) || defined(__sun)
 #   define ZYAN_SOLARIS
 #   define ZYAN_POSIX
-#elif defined(__unix)
+#elif defined(__HAIKU__)
+#   define ZYAN_HAIKU
+#   define ZYAN_POSIX
+#elif defined(__unix) || defined(__unix__)
 #   define ZYAN_UNIX
 #   define ZYAN_POSIX
 #elif defined(__posix)
@@ -136,6 +146,14 @@
 #   define ZYAN_ARM
 #elif defined(__EMSCRIPTEN__) || defined(__wasm__) || defined(__WASM__)
 #   define ZYAN_WASM
+#elif defined(__loongarch__)
+#   define ZYAN_LOONGARCH
+#elif defined(__powerpc64__)
+#   define ZYAN_PPC64
+#elif defined(__powerpc__)
+#   define ZYAN_PPC
+#elif defined(__riscv) && __riscv_xlen == 64
+#   define ZYAN_RISCV64
 #else
 #   error "Unsupported architecture detected"
 #endif
@@ -176,12 +194,17 @@
 /* Generic DLL import/export helpers                                                              */
 /* ============================================================================================== */
 
-#if defined(ZYAN_MSVC)
+#if defined(ZYAN_MSVC) || (defined(ZYAN_WINDOWS) && defined(ZYAN_GNUC))
 #   define ZYAN_DLLEXPORT __declspec(dllexport)
 #   define ZYAN_DLLIMPORT __declspec(dllimport)
 #else
-#   define ZYAN_DLLEXPORT
-#   define ZYAN_DLLIMPORT
+#   if defined(ZYAN_GNUC)
+#       define ZYAN_DLLEXPORT __attribute__((__visibility__("default")))
+#       define ZYAN_DLLIMPORT extern
+#   else
+#       define ZYAN_DLLEXPORT
+#       define ZYAN_DLLIMPORT
+#   endif
 #endif
 
 /* ============================================================================================== */
@@ -201,8 +224,7 @@
 // backward compatibility for users that don't use CMake and previously manually defined these, we
 // translate the old defines here and print a warning.
 #if defined(ZYCORE_STATIC_DEFINE)
-// Warning disabled for PCSX2 since we define this on the command line.
-//#   pragma message("ZYCORE_STATIC_DEFINE was renamed to ZYCORE_STATIC_BUILD.")
+#   pragma message("ZYCORE_STATIC_DEFINE was renamed to ZYCORE_STATIC_BUILD.")
 #   define ZYCORE_STATIC_BUILD
 #endif
 #if defined(Zycore_EXPORTS)
@@ -226,7 +248,11 @@
 /**
  * Symbol is not exported and for internal use only.
  */
-#define ZYCORE_NO_EXPORT
+#if defined(ZYAN_GNUC)
+#   define ZYCORE_NO_EXPORT __attribute__((__visibility__("hidden")))
+#else
+#   define ZYCORE_NO_EXPORT
+#endif
 
 /* ============================================================================================== */
 /* Misc compatibility macros                                                                      */
@@ -272,12 +298,15 @@
 /**
  * Compiler-time assertion.
  */
-#if __STDC_VERSION__ >= 201112L && !defined(__cplusplus)
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L && !defined(__cplusplus)
 #   define ZYAN_STATIC_ASSERT(x) _Static_assert(x, #x)
 #elif (defined(__cplusplus) && __cplusplus >= 201103L) || \
       (defined(__cplusplus) && defined (_MSC_VER) && (_MSC_VER >= 1600)) || \
       (defined (_MSC_VER) && (_MSC_VER >= 1800))
 #   define ZYAN_STATIC_ASSERT(x) static_assert(x, #x)
+#elif defined(ZYAN_GNUC)
+#   define ZYAN_STATIC_ASSERT(x) \
+        __attribute__((unused)) typedef int ZYAN_MACRO_CONCAT_EXPAND(ZYAN_SASSERT_, __COUNTER__) [(x) ? 1 : -1]
 #else
 #   define ZYAN_STATIC_ASSERT(x) \
         typedef int ZYAN_MACRO_CONCAT_EXPAND(ZYAN_SASSERT_, __COUNTER__) [(x) ? 1 : -1]
@@ -335,7 +364,7 @@
  * Intentional fallthrough.
  */
 #if defined(ZYAN_GCC) && __GNUC__ >= 7
-#   define ZYAN_FALLTHROUGH __attribute__((__fallthrough__))
+#   define ZYAN_FALLTHROUGH ; __attribute__((__fallthrough__))
 #else
 #   define ZYAN_FALLTHROUGH
 #endif
@@ -468,6 +497,20 @@
  * Note that this macro only works for powers of 2.
  */
 #define ZYAN_ALIGN_DOWN(x, align) (((x) - 1) & ~((align) - 1))
+
+/**
+ * Divide the 64bit integer value by the given divisor.
+ *
+ * @param   n       Variable containing the dividend that will be updated with the result of the
+ *                  division.
+ * @param   divisor The divisor.
+ */
+#if defined(ZYAN_LINUX) && defined(ZYAN_KERNEL)
+#   include <asm/div64.h> /* do_div */
+#   define ZYAN_DIV64(n, divisor) do_div(n, divisor)
+#else
+#   define ZYAN_DIV64(n, divisor) (n /= divisor)
+#endif
 
 /* ---------------------------------------------------------------------------------------------- */
 /* Bit operations                                                                                 */

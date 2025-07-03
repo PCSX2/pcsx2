@@ -26,8 +26,8 @@
 #include "common/Perf.h"
 #include "DebugTools/Breakpoints.h"
 
-// #define DUMP_BLOCKS 1
-// #define TRACE_BLOCKS 1
+//#define DUMP_BLOCKS 1
+//#define TRACE_BLOCKS 1
 
 #ifdef DUMP_BLOCKS
 #include "Zydis/Zydis.h"
@@ -92,7 +92,7 @@ static void iopClearRecLUT(BASEBLOCK* base, int count);
 #define PSXREC_CLEARM(mem) \
 	(((mem) < g_psxMaxRecMem && (psxRecLUT[(mem) >> 16] + (mem))) ? \
 			psxRecClearMem(mem) : \
-            4)
+			4)
 
 #ifdef DUMP_BLOCKS
 static ZydisFormatterFunc s_old_print_address;
@@ -981,7 +981,7 @@ static __noinline s32 recExecuteBlock(s32 eeCycles)
 	// 	mov         edx,dword ptr [iopCycleEE (832A84h)]
 	// 	lea         eax,[edx+ecx]
 
-	((void(*)())iopEnterRecompiledCode)();
+	((void (*)())iopEnterRecompiledCode)();
 
 	return psxRegs.iopBreak + psxRegs.iopCycleEE;
 }
@@ -1416,17 +1416,16 @@ void psxRecompileNextInstruction(bool delayslot, bool swapped_delayslot)
 #ifdef DUMP_BLOCKS
 	const bool dump_block = true;
 
-	const u8* instStart = x86Ptr;
+	const u8* inst_start = x86Ptr;
 	ZydisDecoder disas_decoder;
 	ZydisFormatter disas_formatter;
-	ZydisDecodedInstruction disas_instruction;
 
 	if (dump_block)
 	{
 		fprintf(stderr, "Compiling %s%s\n", delayslot ? "delay slot " : "", disR3000AF(iopMemRead32(psxpc), psxpc));
 		if (!delayslot)
 		{
-			ZydisDecoderInit(&disas_decoder, ZYDIS_MACHINE_MODE_LONG_64, ZYDIS_ADDRESS_WIDTH_64);
+			ZydisDecoderInit(&disas_decoder, ZYDIS_MACHINE_MODE_LONG_64, ZYDIS_STACK_WIDTH_64);
 			ZydisFormatterInit(&disas_formatter, ZYDIS_FORMATTER_STYLE_INTEL);
 			s_old_print_address = (ZydisFormatterFunc)&ZydisFormatterPrintAddressAbsolute;
 			ZydisFormatterSetHook(&disas_formatter, ZYDIS_FORMATTER_FUNC_PRINT_ADDRESS_ABS, (const void**)&s_old_print_address);
@@ -1472,16 +1471,30 @@ void psxRecompileNextInstruction(bool delayslot, bool swapped_delayslot)
 #ifdef DUMP_BLOCKS
 	if (dump_block && !delayslot)
 	{
-		const u8* instPtr = instStart;
-		ZyanUSize instLength = static_cast<ZyanUSize>(x86Ptr - instStart);
-		while (ZYAN_SUCCESS(ZydisDecoderDecodeBuffer(&disas_decoder, instPtr, instLength, &disas_instruction)))
+		const u8* inst_ptr = inst_start;
+		ZyanUSize inst_length = static_cast<ZyanUSize>(x86Ptr - inst_start);
+
+		ZydisDecodedInstruction instruction;
+		ZydisDecodedOperand operands[ZYDIS_MAX_OPERAND_COUNT];
+
+		while (ZYAN_SUCCESS(ZydisDecoderDecodeFull(&disas_decoder, inst_ptr, inst_length, &instruction, operands)))
 		{
 			char buffer[256];
-			if (ZYAN_SUCCESS(ZydisFormatterFormatInstruction(&disas_formatter, &disas_instruction, buffer, sizeof(buffer), (ZyanU64)instPtr)))
-				std::fprintf(stderr, "    %016" PRIX64 "    %s\n", (u64)instPtr, buffer);
+			ZyanStatus status = ZydisFormatterFormatInstruction(
+				&disas_formatter,
+				&instruction,
+				operands,
+				instruction.operand_count,
+				buffer,
+				sizeof(buffer),
+				reinterpret_cast<ZyanU64>(inst_ptr),
+				nullptr);
 
-			instPtr += disas_instruction.length;
-			instLength -= disas_instruction.length;
+			if (ZYAN_SUCCESS(status))
+				std::fprintf(stderr, "    %016" PRIX64 "    %s\n", reinterpret_cast<u64>(inst_ptr), buffer);
+
+			inst_ptr += instruction.length;
+			inst_length -= instruction.length;
 		}
 	}
 #endif
@@ -1530,7 +1543,7 @@ static void iopRecRecompile(const u32 startpc)
 	// When upgrading the IOP, there are two resets, the second of which is a 'fake' reset
 	// This second 'reset' involves UDNL calling SYSMEM and LOADCORE directly, resetting LOADCORE's modules
 	// This detects when SYSMEM is called and clears the modules then
-	if(startpc == 0x890)
+	if (startpc == 0x890)
 	{
 		DevCon.WriteLn(Color_Gray, "R3000 Debugger: Branch to 0x890 (SYSMEM). Clearing modules.");
 		R3000SymbolGuardian.ClearIrxModules();
