@@ -15195,7 +15195,9 @@ SLES-50479:
   region: "PAL-M4"
   compat: 5
   gsHWFixes:
+    halfPixelOffset: 2 # Fixes depth/fog lines.
     textureInsideRT: 1 # Fixes underwater levels.
+    getSkipCount: "GSC_Turok"
 SLES-50480:
   name: "Aggressive Inline"
   region: "PAL-M4"
@@ -16704,7 +16706,9 @@ SLES-51124:
   region: "PAL-G"
   compat: 5
   gsHWFixes:
+    halfPixelOffset: 2 # Fixes depth/fog lines.
     textureInsideRT: 1 # Fixes underwater levels.
+    getSkipCount: "GSC_Turok"
 SLES-51125:
   name: "Sega Soccer Slam"
   region: "PAL-E"
@@ -64136,7 +64140,9 @@ SLUS-20333:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    halfPixelOffset: 2 # Fixes depth/fog lines.
     textureInsideRT: 1 # Fixes underwater levels.
+    getSkipCount: "GSC_Turok"
 SLUS-20334:
   name: "Kelly Slater's Pro Surfer"
   region: "NTSC-U"
