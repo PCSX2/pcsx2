@@ -125,9 +125,9 @@ static ZyanStatus ZydisFormatterPrintAddressAbsolute(const ZydisFormatter* forma
 	{
 		len = snprintf(buf, sizeof(buf), "psxRegs.cycle");
 	}
-	else if (address == A(&g_nextEventCycle))
+	else if (address == A(&psxRegs.iopNextEventCycle))
 	{
-		len = snprintf(buf, sizeof(buf), "g_nextEventCycle");
+		len = snprintf(buf, sizeof(buf), "psxRegs.iopNextEventCycle");
 	}
 
 #undef A
