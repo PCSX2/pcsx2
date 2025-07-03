@@ -3456,22 +3456,47 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 					{
 						GSVector4i new_valid = t->m_valid;
 						new_valid.w /= 2;
-						if (preserve_target && t->m_scale == dst->m_scale && dst->m_type == t->m_type && dst->m_dirty.empty() && !t->m_drawn_since_read.rintersect(new_valid).eq(t->m_drawn_since_read))
+						if (preserve_target && t->m_scale == dst->m_scale && dst->m_type == t->m_type && !t->m_drawn_since_read.rintersect(new_valid).eq(t->m_drawn_since_read))
 						{
 							// Clamp the copy inside the source and destination.
 							const GSVector4i copy_rect = GSVector4i(GSVector4((new_valid + GSVector4i(0, new_valid.w).xyxy()).rintersect(t->m_drawn_since_read).rintersect(GSVector4i(0, 0, dst->m_unscaled_size.x, new_valid.w + dst->m_unscaled_size.y))) * dst->m_scale);
 							// Copy over the double buffer data, in case we need it.
 							// Clear the dirty first
-							t->Update();
+							bool copy_target = true;
 
-							dst->m_valid_rgb = t->m_valid_rgb;
-							dst->m_valid_alpha_low = t->m_valid_alpha_low;
-							dst->m_valid_alpha_high = t->m_valid_alpha_high;
-							dst->m_alpha_max = t->m_alpha_max;
-							dst->m_alpha_min = t->m_alpha_min;
-							dst->m_rt_alpha_scale = t->m_rt_alpha_scale;
+							if (!t->m_dirty.empty())
+							{
+								const GSVector4i t_dirty = t->m_dirty.GetTotalRect(t->m_TEX0, t->m_unscaled_size);
+								if (copy_rect.rintersect(t_dirty).eq(copy_rect))
+								{
+									copy_target = false;
+									// This might do nothing, but no point in copying from the target if this area is completel dirty.
+									RGBAMask rgba;
+									rgba._u32 = GSUtil::GetChannelMask(dst->m_TEX0.PSM);
+									AddDirtyRectTarget(dst, copy_rect - GSVector4i(0, new_valid.w).xyxy(), dst->m_TEX0.PSM, dst->m_TEX0.TBW, rgba, GSLocalMemory::m_psm[dst->m_TEX0.PSM].trbpp >= 16);
+								}
+							}
 
-							g_gs_device->CopyRect(t->m_texture, dst->m_texture, copy_rect, 0, 0);
+							if (copy_target)
+							{
+								// Copy over the double buffer data, in case we need it.
+								// Clear the dirty first
+								t->Update();
+
+								if (dst->m_valid.rintersect(copy_rect - GSVector4i(0, new_valid.w).xyxy()).eq(dst->m_valid))
+									dst->m_dirty.clear();
+								else
+									dst->Update();
+
+								dst->m_valid_rgb = t->m_valid_rgb;
+								dst->m_valid_alpha_low = t->m_valid_alpha_low;
+								dst->m_valid_alpha_high = t->m_valid_alpha_high;
+								dst->m_alpha_max = t->m_alpha_max;
+								dst->m_alpha_min = t->m_alpha_min;
+								dst->m_rt_alpha_scale = t->m_rt_alpha_scale;
+
+								g_gs_device->CopyRect(t->m_texture, dst->m_texture, copy_rect, 0, 0);
+							}
 						}
 						GL_INS("TC: RT resize buffer for FBP 0x%x, %dx%d => %d,%d", t->m_TEX0.TBP0, t->m_valid.width(), t->m_valid.height(), new_valid.width(), new_valid.height());
 						t->ResizeValidity(new_valid);
