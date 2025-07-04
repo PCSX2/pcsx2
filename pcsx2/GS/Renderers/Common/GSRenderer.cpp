@@ -22,7 +22,7 @@
 #include "common/Timer.h"
 
 #include "fmt/format.h"
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 
 #include <algorithm>
 #include <array>
@@ -550,7 +550,7 @@ bool GSRenderer::BeginPresentFrame(bool frame_skip)
 	}
 
 	// First frame after reopening is definitely going to be trash, so skip it.
-	Host::AddIconOSDMessage("GSDeviceLost", ICON_FA_EXCLAMATION_TRIANGLE,
+	Host::AddIconOSDMessage("GSDeviceLost", ICON_FA_TRIANGLE_EXCLAMATION,
 		TRANSLATE_SV("GS", "Host GPU device encountered an error and was recovered. This may have broken rendering."),
 		Host::OSD_CRITICAL_ERROR_DURATION);
 	return false;
@@ -654,7 +654,7 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 				}
 				else if (!cas_log_once)
 				{
-					Host::AddIconOSDMessage("CASUnsupported", ICON_FA_EXCLAMATION_TRIANGLE,
+					Host::AddIconOSDMessage("CASUnsupported", ICON_FA_TRIANGLE_EXCLAMATION,
 						TRANSLATE_SV("GS", "CAS is not available, your graphics driver does not support the required functionality."),
 						10.0f);
 					cas_log_once = true;

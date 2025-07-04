@@ -13,7 +13,7 @@
 
 #include "cubeb/cubeb.h"
 #include "fmt/format.h"
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 
 #ifdef _WIN32
 #include "common/RedtapeWindows.h"
@@ -207,7 +207,7 @@ bool CubebAudioStream::Initialize(const char* driver_name, const char* device_na
 
 			if (!selected_device)
 			{
-				Host::AddIconOSDMessage("AudioDeviceUnavailable", ICON_FA_VOLUME_UP,
+				Host::AddIconOSDMessage("AudioDeviceUnavailable", ICON_FA_VOLUME_HIGH,
 					fmt::format("Requested audio output device '{}' not found, using default.", device_name),
 					Host::OSD_ERROR_DURATION);
 			}

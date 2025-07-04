@@ -13,7 +13,7 @@
 #include "fmt/format.h"
 #include "StateWrapper.h"
 #include "Host.h"
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 
 namespace usb_printer
 {
@@ -88,13 +88,13 @@ namespace usb_printer
 		s->print_file = FileSystem::OpenCFile(s->print_filename.c_str(), "wb");
 		if (!s->print_file)
 		{
-			Host::AddIconOSDMessage("USBPrinterOpen", ICON_FA_EXCLAMATION_TRIANGLE,
+			Host::AddIconOSDMessage("USBPrinterOpen", ICON_FA_TRIANGLE_EXCLAMATION,
 				fmt::format(TRANSLATE_FS("USB", "Failed to open '{}' for printing."), s->print_filename),
 				Host::OSD_ERROR_DURATION);
 			return;
 		}
 
-		Host::AddIconOSDMessage("USBPrinterOpen", ICON_FA_SAVE,
+		Host::AddIconOSDMessage("USBPrinterOpen", ICON_FA_FLOPPY_DISK,
 			fmt::format(TRANSLATE_FS("USB", "Printer saving to '{}'..."), Path::GetFileName(s->print_filename)),
 			Host::OSD_INFO_DURATION);
 
