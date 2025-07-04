@@ -23,7 +23,7 @@ import functools
 # pylint: disable=bare-except, disable=missing-function-docstring
 
 src_dirs = [os.path.join(os.path.dirname(__file__), "..", "pcsx2"), os.path.join(os.path.dirname(__file__), "..", "pcsx2-qt")]
-fa_file = os.path.join(os.path.dirname(__file__), "..", "3rdparty", "include", "IconsFontAwesome5.h")
+fa_file = os.path.join(os.path.dirname(__file__), "..", "3rdparty", "include", "IconsFontAwesome6.h")
 pf_file = os.path.join(os.path.dirname(__file__), "..", "3rdparty", "include", "IconsPromptFont.h")
 dst_file = os.path.join(os.path.dirname(__file__), "..", "pcsx2", "ImGui", "ImGuiManager.cpp")
 
@@ -49,19 +49,28 @@ print("{}/{} tokens found.".format(len(tokens), len(pf_tokens)))
 if len(tokens) == 0 and len(pf_tokens) == 0:
     sys.exit(0)
 
+def decode_encoding(value):
+    if value.startswith("\\x"):
+        return bytes.fromhex(value.replace("\\x", ""))
+
+    if len(value) > 1:
+        raise ValueError("Unhandled encoding value {}".format(value))
+
+    return bytes(value, 'utf-8')
+
 u8_encodings = {}
 with open(fa_file, "r") as f:
     for line in f.readlines():
         match = re.match("#define (ICON_FA_[^ ]+) \"([^\"]+)\"", line)
         if match is None:
             continue
-        u8_encodings[match[1]] = bytes.fromhex(match[2].replace("\\x", ""))
+        u8_encodings[match[1]] = decode_encoding(match[2])
 with open(pf_file, "r") as f:
     for line in f.readlines():
         match = re.match("#define (ICON_PF_[^ ]+) \"([^\"]+)\"", line)
         if match is None:
             continue
-        u8_encodings[match[1]] = bytes.fromhex(match[2].replace("\\x", ""))
+        u8_encodings[match[1]] = decode_encoding(match[2])
 
 out_pattern = "(static constexpr ImWchar range_fa\[\] = \{)[0-9A-Z_a-z, \n]+(\};)"
 out_pf_pattern = "(static constexpr ImWchar range_pf\[\] = \{)[0-9A-Z_a-z, \n]+(\};)"

@@ -22,7 +22,7 @@
 #include "common/Threading.h"
 #include "common/Timer.h"
 
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 #include "imgui_internal.h"
 #include "imgui_stdlib.h"
 
@@ -2368,7 +2368,7 @@ void ImGuiFullscreen::DrawChoiceDialog()
 				auto& option = s_choice_dialog_options[i];
 
 				const SmallString title =
-					SmallString::from_format("{0} {1}", option.second ? ICON_FA_CHECK_SQUARE : ICON_FA_SQUARE, option.first);
+					SmallString::from_format("{0} {1}", option.second ? ICON_FA_SQUARE_CHECK : ICON_FA_SQUARE, option.first);
 				if (MenuButton(title.c_str(), nullptr, true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
 				{
 					choice = i;
@@ -2501,7 +2501,7 @@ void ImGuiFullscreen::DrawInputDialog()
 			cb(std::move(text));
 		}
 
-		if (ActiveButton(ICON_FA_TIMES " Cancel", false))
+		if (ActiveButton(ICON_FA_XMARK " Cancel", false))
 		{
 			CloseInputDialog();
 

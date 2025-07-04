@@ -6,7 +6,7 @@
 #include "MTGS.h"
 #include "MTVU.h"
 #include "Host.h"
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 #include "VMManager.h"
 
 #include "common/FPControl.h"
@@ -993,7 +993,7 @@ void MTGS::SetSoftwareRendering(bool software, GSInterlaceMode interlace, bool d
 
 	if (display_message)
 	{
-		Host::AddIconOSDMessage("SwitchRenderer", ICON_FA_MAGIC, software ?
+		Host::AddIconOSDMessage("SwitchRenderer", ICON_FA_WAND_MAGIC_SPARKLES, software ?
 			TRANSLATE_STR("GS", "Switching to Software Renderer...") : TRANSLATE_STR("GS", "Switching to Hardware Renderer..."),
 			Host::OSD_QUICK_DURATION);
 	}

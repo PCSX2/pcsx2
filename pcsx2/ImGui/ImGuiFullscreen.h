@@ -5,7 +5,7 @@
 
 #include "common/Pcsx2Defs.h"
 
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 #include "imgui.h"
 #include "imgui_internal.h"
 
@@ -263,9 +263,9 @@ namespace ImGuiFullscreen
 	using MessageDialogCallback = std::function<void(s32)>;
 	bool IsMessageBoxDialogOpen();
 	void OpenConfirmMessageDialog(std::string title, std::string message, ConfirmMessageDialogCallback callback,
-		std::string yes_button_text = ICON_FA_CHECK " Yes", std::string no_button_text = ICON_FA_TIMES " No");
+		std::string yes_button_text = ICON_FA_CHECK " Yes", std::string no_button_text = ICON_FA_XMARK " No");
 	void OpenInfoMessageDialog(std::string title, std::string message, InfoMessageDialogCallback callback = {},
-		std::string button_text = ICON_FA_WINDOW_CLOSE " Close");
+		std::string button_text = ICON_FA_SQUARE_XMARK " Close");
 	void OpenMessageDialog(std::string title, std::string message, MessageDialogCallback callback, std::string first_button_text,
 		std::string second_button_text, std::string third_button_text);
 	void CloseMessageDialog();
