@@ -274,6 +274,7 @@ private:
 	void setGameListEntryCoverImage(const GameList::Entry* entry);
 	void clearGameListEntryPlayTime(const GameList::Entry* entry);
 	void goToWikiPage(const GameList::Entry* entry);
+	void openScreenshotsFolderForGame(const GameList::Entry* entry);
 
 	std::optional<bool> promptForResumeState(const QString& save_state_path);
 	void loadSaveStateSlot(s32 slot, bool load_backup = false);
