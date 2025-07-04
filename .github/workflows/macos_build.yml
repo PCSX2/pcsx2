@@ -12,7 +12,7 @@ on:
       os:
         required: false
         type: string
-        default: macos-14
+        default: macos-15
       patchesUrl:
         required: false
         type: string
@@ -62,8 +62,8 @@ jobs:
           echo "#define DEFAULT_UPDATER_CHANNEL \"stable\"" > ./pcsx2-qt/DefaultUpdaterChannel.h
           cat ./pcsx2-qt/DefaultUpdaterChannel.h
 
-      - name: Use Xcode 15.2
-        run: sudo xcode-select -s /Applications/Xcode_15.2.app
+      - name: Use Xcode 16.4
+        run: sudo xcode-select -s /Applications/Xcode_16.4.app
 
       - name: Prepare Artifact Metadata
         id: artifact-metadata
