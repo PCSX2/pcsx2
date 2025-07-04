@@ -1118,7 +1118,17 @@ void FullscreenUI::ReturnToPreviousWindow()
 void FullscreenUI::ReturnToMainWindow()
 {
 	ClosePauseMenu();
-	s_current_main_window = VMManager::HasValidVM() ? MainWindowType::None : (ShouldDefaultToGameList() ? MainWindowType::GameList : MainWindowType::Landing);
+
+	if (VMManager::HasValidVM())
+	{
+		s_current_main_window = MainWindowType::None;
+		return;
+	}
+
+	if (ShouldDefaultToGameList())
+		SwitchToGameList();
+	else
+		SwitchToLanding();
 }
 
 bool FullscreenUI::LoadResources()
@@ -3175,7 +3185,12 @@ void FullscreenUI::DrawSettingsWindow()
 		}
 
 		if (NavButton(ICON_PF_BACKWARD, true, true))
-			SwitchToLanding();
+		{
+			if (VMManager::HasValidVM())
+				ReturnToPreviousWindow();
+			else
+				SwitchToLanding();
+		}
 
 		if (s_game_settings_entry)
 		{
