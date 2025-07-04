@@ -7700,11 +7700,6 @@ Do you want to enable hardcore mode?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8198"/>
-        <source>Please enter your user name and password for retroachievements.org below. Your password will not be saved in PCSX2, an access token will be generated and used instead.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8199"/>
         <source>Username</source>
         <translation type="unfinished"></translation>
@@ -9449,6 +9444,13 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8287"/>
         <source>Disabled</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8198"/>
+        <source>Please enter your user name and password for retroachievements.org below. 
+
+ Your password will not be saved in PCSX2, an access token will be generated and used instead.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -16412,7 +16414,7 @@ Right click to clear binding</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2929"/>
+        <location filename="../MainWindow.cpp" line="2926"/>
         <source>Load State</source>
         <translation type="unfinished"></translation>
     </message>
@@ -17076,10 +17078,10 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../MainWindow.cpp" line="1396"/>
         <location filename="../MainWindow.cpp" line="1766"/>
-        <location filename="../MainWindow.cpp" line="2233"/>
-        <location filename="../MainWindow.cpp" line="2397"/>
-        <location filename="../MainWindow.cpp" line="2834"/>
-        <location filename="../MainWindow.cpp" line="2948"/>
+        <location filename="../MainWindow.cpp" line="2230"/>
+        <location filename="../MainWindow.cpp" line="2394"/>
+        <location filename="../MainWindow.cpp" line="2831"/>
+        <location filename="../MainWindow.cpp" line="2945"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
@@ -17214,12 +17216,12 @@ Are you sure you want to continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2190"/>
+        <location filename="../MainWindow.cpp" line="2194"/>
         <source>Load State Failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2190"/>
+        <location filename="../MainWindow.cpp" line="2194"/>
         <source>Cannot load a save state without a running VM.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -17229,12 +17231,12 @@ Are you sure you want to continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2233"/>
+        <location filename="../MainWindow.cpp" line="2230"/>
         <source>Cannot change from game to GS dump without shutting down first.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2397"/>
+        <location filename="../MainWindow.cpp" line="2394"/>
         <source>Failed to get window info from widget</source>
         <translation type="unfinished"></translation>
     </message>
@@ -17250,98 +17252,98 @@ Are you sure you want to continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2740"/>
+        <location filename="../MainWindow.cpp" line="2737"/>
         <source>Game Properties</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2740"/>
+        <location filename="../MainWindow.cpp" line="2737"/>
         <source>Game properties is unavailable for the current game.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2792"/>
+        <location filename="../MainWindow.cpp" line="2789"/>
         <source>Could not find any CD/DVD-ROM devices. Please ensure you have a drive connected and sufficient permissions to access it.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2810"/>
+        <location filename="../MainWindow.cpp" line="2807"/>
         <source>Select disc drive:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2834"/>
+        <location filename="../MainWindow.cpp" line="2831"/>
         <source>This save state does not exist.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2847"/>
+        <location filename="../MainWindow.cpp" line="2844"/>
         <source>Select Cover Image</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2864"/>
+        <location filename="../MainWindow.cpp" line="2861"/>
         <source>Cover Already Exists</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2865"/>
+        <location filename="../MainWindow.cpp" line="2862"/>
         <source>A cover image for this game already exists, do you wish to replace it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2860"/>
-        <location filename="../MainWindow.cpp" line="2874"/>
-        <location filename="../MainWindow.cpp" line="2880"/>
-        <location filename="../MainWindow.cpp" line="2886"/>
+        <location filename="../MainWindow.cpp" line="2857"/>
+        <location filename="../MainWindow.cpp" line="2871"/>
+        <location filename="../MainWindow.cpp" line="2877"/>
+        <location filename="../MainWindow.cpp" line="2883"/>
         <source>Copy Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2874"/>
+        <location filename="../MainWindow.cpp" line="2871"/>
         <source>Failed to remove existing cover &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2880"/>
+        <location filename="../MainWindow.cpp" line="2877"/>
         <source>Failed to copy &apos;%1&apos; to &apos;%2&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2886"/>
+        <location filename="../MainWindow.cpp" line="2883"/>
         <source>Failed to remove &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../MainWindow.cpp" line="2217"/>
-        <location filename="../MainWindow.cpp" line="2895"/>
+        <location filename="../MainWindow.cpp" line="2892"/>
         <source>Confirm Reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2847"/>
+        <location filename="../MainWindow.cpp" line="2844"/>
         <source>All Cover Image Types (*.jpg *.jpeg *.png *.webp)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2860"/>
+        <location filename="../MainWindow.cpp" line="2857"/>
         <source>You must select a different file to the current cover image.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2896"/>
+        <location filename="../MainWindow.cpp" line="2893"/>
         <source>Are you sure you want to reset the play time for &apos;%1&apos;?
 
 This action cannot be undone.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2923"/>
+        <location filename="../MainWindow.cpp" line="2920"/>
         <source>Load Resume State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2926"/>
+        <location filename="../MainWindow.cpp" line="2923"/>
         <source>A resume save state was found for this game, saved at:
 
 %1.
@@ -17350,48 +17352,48 @@ Do you want to load this state, or start from a fresh boot?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2930"/>
+        <location filename="../MainWindow.cpp" line="2927"/>
         <source>Fresh Boot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2931"/>
+        <location filename="../MainWindow.cpp" line="2928"/>
         <source>Delete And Boot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2948"/>
+        <location filename="../MainWindow.cpp" line="2945"/>
         <source>Failed to delete save state file &apos;%1&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3006"/>
+        <location filename="../MainWindow.cpp" line="3003"/>
         <source>Load State File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3006"/>
+        <location filename="../MainWindow.cpp" line="3003"/>
         <source>Load From File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3009"/>
-        <location filename="../MainWindow.cpp" line="3083"/>
+        <location filename="../MainWindow.cpp" line="3006"/>
+        <location filename="../MainWindow.cpp" line="3080"/>
         <source>Select Save State File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3054"/>
+        <location filename="../MainWindow.cpp" line="3051"/>
         <source>Load Backup Slot %1 (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3083"/>
+        <location filename="../MainWindow.cpp" line="3080"/>
         <source>Save States (*.p2s)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3016"/>
+        <location filename="../MainWindow.cpp" line="3013"/>
         <source>Delete Save States...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -17411,70 +17413,70 @@ Do you want to load this state, or start from a fresh boot?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3009"/>
+        <location filename="../MainWindow.cpp" line="3006"/>
         <source>Save States (*.p2s *.p2s.backup)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3026"/>
+        <location filename="../MainWindow.cpp" line="3023"/>
         <source>Resume (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3042"/>
+        <location filename="../MainWindow.cpp" line="3039"/>
         <source>Load Slot %1 (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3063"/>
-        <location filename="../MainWindow.cpp" line="3071"/>
+        <location filename="../MainWindow.cpp" line="3060"/>
+        <location filename="../MainWindow.cpp" line="3068"/>
         <source>Delete Save States</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3064"/>
+        <location filename="../MainWindow.cpp" line="3061"/>
         <source>Are you sure you want to delete all save states for %1?
 
 The saves will not be recoverable.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3071"/>
+        <location filename="../MainWindow.cpp" line="3068"/>
         <source>%1 save states deleted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3081"/>
+        <location filename="../MainWindow.cpp" line="3078"/>
         <source>Save To File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3101"/>
+        <location filename="../MainWindow.cpp" line="3098"/>
         <source>Empty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3103"/>
+        <location filename="../MainWindow.cpp" line="3100"/>
         <source>Save Slot %1 (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3154"/>
+        <location filename="../MainWindow.cpp" line="3151"/>
         <source>Confirm Disc Change</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3155"/>
+        <location filename="../MainWindow.cpp" line="3152"/>
         <source>Do you want to swap discs or boot the new image (via system reset)?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3156"/>
+        <location filename="../MainWindow.cpp" line="3153"/>
         <source>Swap Disc</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3157"/>
+        <location filename="../MainWindow.cpp" line="3154"/>
         <source>Reset</source>
         <translation type="unfinished"></translation>
     </message>
@@ -19273,7 +19275,7 @@ Ejecting {3} and replacing it with {2}.</source>
     </message>
     <message>
         <location filename="../../pcsx2/SIO/Pad/PadNegcon.cpp" line="45"/>
-        <source>Negcon</source>
+        <source>NeGcon</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
