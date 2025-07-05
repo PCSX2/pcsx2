@@ -84,7 +84,6 @@ static std::mutex s_instance_mutex;
 // Device extensions that are required for PCSX2.
 static constexpr const char* s_required_device_extensions[] = {
 	VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME,
-	VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME,
 };
 
 GSDeviceVK::GSDeviceVK()
@@ -3356,13 +3355,13 @@ void GSDeviceVK::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 	static_cast<GSTextureVK*>(dTex)->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
 }
 
-void GSDeviceVK::IASetVertexBuffer(const void* vertex, size_t stride, size_t count)
+void GSDeviceVK::IASetVertexBuffer(const void* vertex, size_t stride, size_t count, size_t align_multiplier)
 {
 	const u32 size = static_cast<u32>(stride) * static_cast<u32>(count);
-	if (!m_vertex_stream_buffer.ReserveMemory(size, static_cast<u32>(stride)))
+	if (!m_vertex_stream_buffer.ReserveMemory(size, static_cast<u32>(stride) * align_multiplier))
 	{
 		ExecuteCommandBufferAndRestartRenderPass(false, "Uploading bytes to vertex buffer");
-		if (!m_vertex_stream_buffer.ReserveMemory(size, static_cast<u32>(stride)))
+		if (!m_vertex_stream_buffer.ReserveMemory(size, static_cast<u32>(stride) * align_multiplier))
 			pxFailRel("Failed to reserve space for vertices");
 	}
 
@@ -3612,7 +3611,6 @@ static void AddShaderHeader(std::stringstream& ss)
 
 	ss << "#version 460 core\n";
 	ss << "#extension GL_EXT_samplerless_texture_functions : require\n";
-	ss << "#extension GL_ARB_shader_draw_parameters : require\n";
 
 	if (!features.texture_barrier)
 		ss << "#define DISABLE_TEXTURE_BARRIER 1\n";
@@ -6024,7 +6022,8 @@ void GSDeviceVK::UpdateHWPipelineSelector(GSHWDrawConfig& config, PipelineSelect
 
 void GSDeviceVK::UploadHWDrawVerticesAndIndices(const GSHWDrawConfig& config)
 {
-	IASetVertexBuffer(config.verts, sizeof(GSVertex), config.nverts);
+	IASetVertexBuffer(config.verts, sizeof(GSVertex), config.nverts, GetVertexAlignment(config.vs.expand));
+	m_vertex.start *= GetExpansionFactor(config.vs.expand);
 
 	if (config.vs.UseExpandIndexBuffer())
 	{
