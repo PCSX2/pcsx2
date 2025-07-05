@@ -5,22 +5,16 @@
 
 // clang-format off
 
-// MacOS headers define PAGE_SIZE to the size of an x86 page
-#ifdef __APPLE__
-	#include <mach/vm_page_size.h>
-	#undef PAGE_SIZE
-#endif
-
 #define VM_SIZE 4194304u
 #define HALF_VM_SIZE (VM_SIZE / 2u)
-#define PAGE_SIZE 8192u
-#define BLOCK_SIZE 256u
-#define COLUMN_SIZE 64u
-#define BLOCKS_PER_PAGE (PAGE_SIZE / BLOCK_SIZE)
+#define GS_PAGE_SIZE 8192u
+#define GS_BLOCK_SIZE 256u
+#define GS_COLUMN_SIZE 64u
+#define GS_BLOCKS_PER_PAGE (GS_PAGE_SIZE / GS_BLOCK_SIZE)
 
-#define MAX_PAGES (VM_SIZE / PAGE_SIZE)
-#define MAX_BLOCKS (VM_SIZE / BLOCK_SIZE)
-#define MAX_COLUMNS (VM_SIZE / COLUMN_SIZE)
+#define GS_MAX_PAGES (VM_SIZE / GS_PAGE_SIZE)
+#define GS_MAX_BLOCKS (VM_SIZE / GS_BLOCK_SIZE)
+#define GS_MAX_COLUMNS (VM_SIZE / GS_COLUMN_SIZE)
 
 //if defined, will send much info in reply to the API title info queri from PCSX2
 //default should be undefined
