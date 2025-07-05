@@ -98,6 +98,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.renderToSeparateWindow, "UI", "RenderToSeparateWindow", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.hideMainWindow, "UI", "HideMainWindowWhenRunning", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableWindowResizing, "UI", "DisableWindowResize", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.startFullscreenUI, "UI", "StartBigPictureMode", false);
 	connect(m_ui.renderToSeparateWindow, &QCheckBox::checkStateChanged, this, &InterfaceSettingsWidget::onRenderToSeparateWindowChanged);
 
 	SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.theme, "UI", "Theme", THEME_NAMES, THEME_VALUES,
@@ -181,6 +182,9 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
 	dialog->registerWidgetHelp(
 		m_ui.disableWindowResizing, tr("Disable Window Resizing"), tr("Unchecked"),
 		tr("Prevents the main window from being resized."));
+	dialog->registerWidgetHelp(
+		m_ui.startFullscreenUI, tr("Start Big Picture Mode"), tr("Unchecked"),
+		tr("Automatically starts Big Picture Mode instead of the regular Qt interface when PCSX2 launches."));
 
 	onRenderToSeparateWindowChanged();
 }
