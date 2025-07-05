@@ -4425,6 +4425,8 @@ void GSDeviceVK::RenderImGui()
 	if (draw_data->CmdListsCount == 0)
 		return;
 
+	UpdateImGuiTextures();
+
 	const float uniforms[2][2] = {{
 									  2.0f / static_cast<float>(m_window_info.surface_width),
 									  2.0f / static_cast<float>(m_window_info.surface_height),
