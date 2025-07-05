@@ -196,11 +196,11 @@ input(void *ud, zip_uint8_t *data, zip_uint64_t length) {
 }
 
 
-static void
-end_of_input(void *ud) {
+static bool end_of_input(void *ud) {
     struct ctx *ctx = (struct ctx *)ud;
 
     ctx->end_of_input = true;
+    return ctx->zstr.avail_in != 0;
 }
 
 

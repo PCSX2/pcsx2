@@ -40,7 +40,7 @@
 ZIP_EXTERN int
 zip_file_set_encryption(zip_t *za, zip_uint64_t idx, zip_uint16_t method, const char *password) {
     zip_entry_t *e;
-    zip_uint16_t old_method;
+    char *our_password = NULL;
 
     if (idx >= za->nentry) {
         zip_error_set(&za->error, ZIP_ER_INVAL, 0);
@@ -63,56 +63,33 @@ zip_file_set_encryption(zip_t *za, zip_uint64_t idx, zip_uint16_t method, const 
 
     e = za->entry + idx;
 
-    old_method = (e->orig == NULL ? ZIP_EM_NONE : e->orig->encryption_method);
 
-    if (method == old_method && password == NULL) {
-        if (e->changes) {
-            if (e->changes->changed & ZIP_DIRENT_PASSWORD) {
-                _zip_crypto_clear(e->changes->password, strlen(e->changes->password));
-                free(e->changes->password);
-                e->changes->password = (e->orig == NULL ? NULL : e->orig->password);
-            }
-            e->changes->changed &= ~(ZIP_DIRENT_ENCRYPTION_METHOD | ZIP_DIRENT_PASSWORD);
-            if (e->changes->changed == 0) {
-                _zip_dirent_free(e->changes);
-                e->changes = NULL;
-            }
+    if (e->changes == NULL) {
+        if ((e->changes = _zip_dirent_clone(e->orig)) == NULL) {
+            zip_error_set(&za->error, ZIP_ER_MEMORY, 0);
+            return -1;
         }
     }
+
+    if (password) {
+        if ((our_password = strdup(password)) == NULL) {
+            zip_error_set(&za->error, ZIP_ER_MEMORY, 0);
+            return -1;
+        }
+    }
+
+    e->changes->encryption_method = method;
+    e->changes->changed |= ZIP_DIRENT_ENCRYPTION_METHOD;
+    if (password) {
+        e->changes->password = our_password;
+        e->changes->changed |= ZIP_DIRENT_PASSWORD;
+    }
     else {
-        char *our_password = NULL;
-
-        if (password) {
-            if ((our_password = strdup(password)) == NULL) {
-                zip_error_set(&za->error, ZIP_ER_MEMORY, 0);
-                return -1;
-            }
-        }
-
-        if (e->changes == NULL) {
-            if ((e->changes = _zip_dirent_clone(e->orig)) == NULL) {
-                if (our_password) {
-                    _zip_crypto_clear(our_password, strlen(our_password));
-                }
-                free(our_password);
-                zip_error_set(&za->error, ZIP_ER_MEMORY, 0);
-                return -1;
-            }
-        }
-
-        e->changes->encryption_method = method;
-        e->changes->changed |= ZIP_DIRENT_ENCRYPTION_METHOD;
-        if (password) {
-            e->changes->password = our_password;
-            e->changes->changed |= ZIP_DIRENT_PASSWORD;
-        }
-        else {
-            if (e->changes->changed & ZIP_DIRENT_PASSWORD) {
-                _zip_crypto_clear(e->changes->password, strlen(e->changes->password));
-                free(e->changes->password);
-                e->changes->password = e->orig ? e->orig->password : NULL;
-                e->changes->changed &= ~ZIP_DIRENT_PASSWORD;
-            }
+        if (e->changes->changed & ZIP_DIRENT_PASSWORD) {
+            _zip_crypto_clear(e->changes->password, strlen(e->changes->password));
+            free(e->changes->password);
+            e->changes->password = e->orig ? e->orig->password : NULL;
+            e->changes->changed &= ~ZIP_DIRENT_PASSWORD;
         }
     }
 

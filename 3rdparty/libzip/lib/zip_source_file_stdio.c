@@ -95,9 +95,11 @@ _zip_stdio_op_close(zip_source_file_context_t *ctx) {
 zip_int64_t
 _zip_stdio_op_read(zip_source_file_context_t *ctx, void *buf, zip_uint64_t len) {
     size_t i;
+#if SIZE_MAX < ZIP_UINT64_MAX
     if (len > SIZE_MAX) {
         len = SIZE_MAX;
     }
+#endif
 
     if ((i = fread(buf, 1, (size_t)len, ctx->f)) == 0) {
         if (ferror((FILE *)ctx->f)) {

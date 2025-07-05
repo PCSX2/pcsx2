@@ -207,7 +207,7 @@ _zip_open(zip_source_t *src, unsigned int flags, zip_error_t *error) {
 
     if ((cdir = _zip_find_central_dir(za, len)) == NULL) {
         _zip_error_copy(error, &za->error);
-        if (zip_error_code_zip(error) == ZIP_ER_NOZIP) {
+        if (zip_error_code_zip(&za->error) == ZIP_ER_NOZIP) {
             /* not a zip - find out if it's truncated */
             if (_is_truncated_zip(src)) {
                 zip_error_set(error, ZIP_ER_TRUNCATED_ZIP, 0);
