@@ -356,43 +356,43 @@ namespace FullscreenUI
 
 	static bool DrawToggleSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section, const char* key,
 		bool default_value, bool enabled = true, bool allow_tristate = true, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
-		ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
+		std::pair<ImFont*, float> font = g_large_font, std::pair<ImFont*, float> summary_font = g_medium_font);
 	static void DrawIntListSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section, const char* key,
 		int default_value, const char* const* options, size_t option_count, bool translate_options, int option_offset = 0,
-		bool enabled = true, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font,
-		ImFont* summary_font = g_medium_font);
+		bool enabled = true, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, std::pair<ImFont*, float> font = g_large_font,
+		std::pair<ImFont*, float> summary_font = g_medium_font);
 	static void DrawIntRangeSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section, const char* key,
 		int default_value, int min_value, int max_value, const char* format = "%d", bool enabled = true,
-		float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
+		float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, std::pair<ImFont*, float> font = g_large_font, std::pair<ImFont*, float> summary_font = g_medium_font);
 	static void DrawIntSpinBoxSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section, const char* key,
 		int default_value, int min_value, int max_value, int step_value, const char* format = "%d", bool enabled = true,
-		float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
+		float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, std::pair<ImFont*, float> font = g_large_font, std::pair<ImFont*, float> summary_font = g_medium_font);
 #if 0
 	// Unused as of now
 	static void DrawFloatRangeSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section, const char* key,
 		float default_value, float min_value, float max_value, const char* format = "%f", float multiplier = 1.0f, bool enabled = true,
-		float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
+		float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, std::pair<ImFont*, float> font = g_large_font, std::pair<ImFont*, float> summary_font = g_medium_font);
 #endif
 	static void DrawFloatSpinBoxSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
 		const char* key, float default_value, float min_value, float max_value, float step_value, float multiplier,
 		const char* format = "%f", bool enabled = true, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
-		ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
+		std::pair<ImFont*, float> font = g_large_font, std::pair<ImFont*, float> summary_font = g_medium_font);
 	static void DrawIntRectSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
 		const char* left_key, int default_left, const char* top_key, int default_top, const char* right_key, int default_right,
 		const char* bottom_key, int default_bottom, int min_value, int max_value, int step_value, const char* format = "%d",
-		bool enabled = true, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font,
-		ImFont* summary_font = g_medium_font);
+		bool enabled = true, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, std::pair<ImFont*, float> font = g_large_font,
+		std::pair<ImFont*, float> summary_font = g_medium_font);
 	static void DrawStringListSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section, const char* key,
 		const char* default_value, const char* const* options, const char* const* option_values, size_t option_count,
-		bool translate_options, bool enabled = true, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font,
-		ImFont* summary_font = g_medium_font, const char* translation_ctx = TR_CONTEXT);
+		bool translate_options, bool enabled = true, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, std::pair<ImFont*, float> font = g_large_font,
+		std::pair<ImFont*, float> summary_font = g_medium_font, const char* translation_ctx = TR_CONTEXT);
 	static void DrawStringListSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section, const char* key,
 		const char* default_value, SettingInfo::GetOptionsCallback options_callback, bool enabled = true,
-		float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
+		float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, std::pair<ImFont*, float> font = g_large_font, std::pair<ImFont*, float> summary_font = g_medium_font);
 	static void DrawFloatListSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section, const char* key,
 		float default_value, const char* const* options, const float* option_values, size_t option_count, bool translate_options,
-		bool enabled = true, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font,
-		ImFont* summary_font = g_medium_font);
+		bool enabled = true, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, std::pair<ImFont*, float> font = g_large_font,
+		std::pair<ImFont*, float> summary_font = g_medium_font);
 	template <typename DataType, typename SizeType>
 	static void DrawEnumSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
 		const char* key, DataType default_value,
@@ -400,13 +400,13 @@ namespace FullscreenUI
 		const char* (*to_string_function)(DataType value),
 		const char* (*to_display_string_function)(DataType value), SizeType option_count,
 		bool enabled = true, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
-		ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
+		std::pair<ImFont*, float> font = g_large_font, std::pair<ImFont*, float> summary_font = g_medium_font);
 	static void DrawFolderSetting(SettingsInterface* bsi, const char* title, const char* section, const char* key,
-		const std::string& runtime_var, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font,
-		ImFont* summary_font = g_medium_font);
+		const std::string& runtime_var, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, std::pair<ImFont*, float> font = g_large_font,
+		std::pair<ImFont*, float> summary_font = g_medium_font);
 	static void DrawPathSetting(SettingsInterface* bsi, const char* title, const char* section, const char* key, const char* default_value,
-		bool enabled = true, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font,
-		ImFont* summary_font = g_medium_font);
+		bool enabled = true, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, std::pair<ImFont*, float> font = g_large_font,
+		std::pair<ImFont*, float> summary_font = g_medium_font);
 	static void DrawClampingModeSetting(SettingsInterface* bsi, const char* title, const char* summary, int vunum);
 	static void PopulateGraphicsAdapterList();
 	static void PopulateGameListDirectoryCache(SettingsInterface* si);
@@ -764,9 +764,10 @@ bool FullscreenUI::Initialize()
 
 	ImGuiFullscreen::SetTheme(Host::GetBaseStringSettingValue("UI", "FullscreenUITheme", "Dark"));
 	ImGuiFullscreen::UpdateLayoutScale();
+	ImGuiFullscreen::UpdateFontScale();
 	ApplyLayoutSettings();
 
-	if (!ImGuiManager::AddFullscreenFontsIfMissing() || !ImGuiFullscreen::Initialize("fullscreenui/placeholder.png") || !LoadResources())
+	if (!ImGuiFullscreen::Initialize("fullscreenui/placeholder.png") || !LoadResources())
 	{
 		DestroyResources();
 		ImGuiFullscreen::Shutdown(true);
@@ -1413,11 +1414,11 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
 
 	if (BeginFullscreenWindow(ImVec2(0.0f, 0.0f), heading_size, "landing_heading", UIPrimaryColor))
 	{
-		ImFont* const heading_font = g_large_font;
+		const std::pair<ImFont*, float> heading_font = g_large_font;
 		ImDrawList* const dl = ImGui::GetWindowDrawList();
 		SmallString heading_str;
 
-		ImGui::PushFont(heading_font);
+		ImGui::PushFont(heading_font.first, heading_font.second);
 		ImGui::PushStyleColor(ImGuiCol_Text, UIPrimaryTextColor);
 
 		// draw branding
@@ -1426,7 +1427,7 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
 			const ImVec2 logo_size = LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 			dl->AddImage(reinterpret_cast<ImTextureID>(GetCachedTexture("icons/AppIconLarge.png")->GetNativeHandle()),
 				logo_pos, logo_pos + logo_size);
-			dl->AddText(heading_font, heading_font->FontSize,
+			dl->AddText(heading_font.first, heading_font.second,
 				ImVec2(logo_pos.x + logo_size.x + LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING), logo_pos.y),
 				ImGui::GetColorU32(ImGuiCol_Text), "PCSX2");
 		}
@@ -1436,7 +1437,7 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
 		{
 			heading_str.format(FSUI_FSTR("{:%H:%M}"), fmt::localtime(std::time(nullptr)));
 
-			const ImVec2 time_size = heading_font->CalcTextSizeA(heading_font->FontSize, FLT_MAX, 0.0f, "00:00");
+			const ImVec2 time_size = heading_font.first->CalcTextSizeA(heading_font.second, FLT_MAX, 0.0f, "00:00");
 			time_pos = ImVec2(heading_size.x - LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING) - time_size.x,
 				LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING));
 			ImGui::RenderTextClipped(time_pos, time_pos + time_size, heading_str.c_str(), heading_str.end_ptr(), &time_size);
@@ -1449,7 +1450,7 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
 			const char* username = Achievements::GetLoggedInUserName();
 			if (username)
 			{
-				const ImVec2 name_size = heading_font->CalcTextSizeA(heading_font->FontSize, FLT_MAX, 0.0f, username);
+				const ImVec2 name_size = heading_font.first->CalcTextSizeA(heading_font.second, FLT_MAX, 0.0f, username);
 				const ImVec2 name_pos =
 					ImVec2(time_pos.x - name_size.x - LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING), time_pos.y);
 				ImGui::RenderTextClipped(name_pos, name_pos + name_size, username, nullptr, &name_size);
@@ -1785,11 +1786,11 @@ void FullscreenUI::DrawInputBindingButton(
 		}
 	}
 
-	const float midpoint = bb.Min.y + g_large_font->FontSize + LayoutScale(4.0f);
+	const float midpoint = bb.Min.y + g_large_font.second + LayoutScale(4.0f);
 
 	if (oneline)
 	{
-		ImGui::PushFont(g_large_font);
+		ImGui::PushFont(g_large_font.first, g_large_font.second);
 
 		const ImVec2 value_size(ImGui::CalcTextSize(value.empty() ? FSUI_CSTR("-") : value.c_str(), nullptr));
 		const float text_end = bb.Max.x - value_size.x;
@@ -1806,12 +1807,12 @@ void FullscreenUI::DrawInputBindingButton(
 		const ImRect title_bb(bb.Min, ImVec2(bb.Max.x, midpoint));
 		const ImRect summary_bb(ImVec2(bb.Min.x, midpoint), bb.Max);
 
-		ImGui::PushFont(g_large_font);
+		ImGui::PushFont(g_large_font.first, g_large_font.second);
 		ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, show_type ? title.c_str() : display_name, nullptr, nullptr,
 			ImVec2(0.0f, 0.0f), &title_bb);
 		ImGui::PopFont();
 
-		ImGui::PushFont(g_medium_font);
+		ImGui::PushFont(g_medium_font.first, g_medium_font.second);
 		ImGui::RenderTextClipped(summary_bb.Min, summary_bb.Max, value.empty() ? FSUI_CSTR("No Binding") : value.c_str(),
 			nullptr, nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
 		ImGui::PopFont();
@@ -1937,7 +1938,7 @@ void FullscreenUI::DrawInputBindingWindow()
 	ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 	ImGui::OpenPopup(title);
 
-	ImGui::PushFont(g_large_font);
+	ImGui::PushFont(g_large_font.first, g_large_font.second);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
@@ -1958,7 +1959,7 @@ void FullscreenUI::DrawInputBindingWindow()
 }
 
 bool FullscreenUI::DrawToggleSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section, const char* key,
-	bool default_value, bool enabled, bool allow_tristate, float height, ImFont* font, ImFont* summary_font)
+	bool default_value, bool enabled, bool allow_tristate, float height, std::pair<ImFont*, float> font, std::pair<ImFont*, float> summary_font)
 {
 	if (!allow_tristate || !IsEditingGameSettings(bsi))
 	{
@@ -1988,7 +1989,7 @@ bool FullscreenUI::DrawToggleSetting(SettingsInterface* bsi, const char* title, 
 
 void FullscreenUI::DrawIntListSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section, const char* key,
 	int default_value, const char* const* options, size_t option_count, bool translate_options, int option_offset, bool enabled,
-	float height, ImFont* font, ImFont* summary_font)
+	float height, std::pair<ImFont*, float> font, std::pair<ImFont*, float> summary_font)
 {
 	if (options && option_count == 0)
 	{
@@ -2044,7 +2045,7 @@ void FullscreenUI::DrawIntListSetting(SettingsInterface* bsi, const char* title,
 }
 
 void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section, const char* key,
-	int default_value, int min_value, int max_value, const char* format, bool enabled, float height, ImFont* font, ImFont* summary_font)
+	int default_value, int min_value, int max_value, const char* format, bool enabled, float height, std::pair<ImFont*, float> font, std::pair<ImFont*, float> summary_font)
 {
 	const bool game_settings = IsEditingGameSettings(bsi);
 	const std::optional<int> value =
@@ -2058,7 +2059,7 @@ void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, const char* title
 	ImGui::SetNextWindowSize(LayoutScale(500.0f, 192.0f));
 	ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
-	ImGui::PushFont(g_large_font);
+	ImGui::PushFont(g_large_font.first, g_large_font.second);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
@@ -2099,7 +2100,7 @@ void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, const char* title
 
 void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
 	const char* key, int default_value, int min_value, int max_value, int step_value, const char* format, bool enabled, float height,
-	ImFont* font, ImFont* summary_font)
+	std::pair<ImFont*, float> font, std::pair<ImFont*, float> summary_font)
 {
 	const bool game_settings = IsEditingGameSettings(bsi);
 	const std::optional<int> value =
@@ -2118,7 +2119,7 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, const char* tit
 	ImGui::SetNextWindowSize(LayoutScale(500.0f, 192.0f));
 	ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
-	ImGui::PushFont(g_large_font);
+	ImGui::PushFont(g_large_font.first, g_large_font.second);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
@@ -2157,7 +2158,7 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, const char* tit
 
 			// Align value text in middle.
 			ImGui::SetCursorPosY(
-				button_pos.y + ((LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) + padding.y * 2.0f) - g_large_font->FontSize) * 0.5f);
+				button_pos.y + ((LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) + padding.y * 2.0f) - g_large_font.second) * 0.5f);
 			ImGui::TextUnformatted(str_value);
 
 			s32 step = 0;
@@ -2220,7 +2221,7 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, const char* tit
 // Unused as of now
 void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
 	const char* key, float default_value, float min_value, float max_value, const char* format, float multiplier, bool enabled,
-	float height, ImFont* font, ImFont* summary_font)
+	float height, std::pair<ImFont*, float> font, std::pair<ImFont*, float> summary_font)
 {
 	const bool game_settings = IsEditingGameSettings(bsi);
 	const std::optional<float> value =
@@ -2234,7 +2235,7 @@ void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, const char* tit
 	ImGui::SetNextWindowSize(LayoutScale(500.0f, 190.0f));
 	ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
-	ImGui::PushFont(g_large_font);
+	ImGui::PushFont(g_large_font.first, g_large_font.second);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
@@ -2278,7 +2279,7 @@ void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, const char* tit
 
 void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
 	const char* key, float default_value, float min_value, float max_value, float step_value, float multiplier, const char* format,
-	bool enabled, float height, ImFont* font, ImFont* summary_font)
+	bool enabled, float height, std::pair<ImFont*, float> font, std::pair<ImFont*, float> summary_font)
 {
 	const bool game_settings = IsEditingGameSettings(bsi);
 	const std::optional<float> value =
@@ -2297,7 +2298,7 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, const char* t
 	ImGui::SetNextWindowSize(LayoutScale(500.0f, 192.0f));
 	ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
-	ImGui::PushFont(g_large_font);
+	ImGui::PushFont(g_large_font.first, g_large_font.second);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
@@ -2343,7 +2344,7 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, const char* t
 
 			// Align value text in middle.
 			ImGui::SetCursorPosY(
-				button_pos.y + ((LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) + padding.y * 2.0f) - g_large_font->FontSize) * 0.5f);
+				button_pos.y + ((LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) + padding.y * 2.0f) - g_large_font.second) * 0.5f);
 			ImGui::TextUnformatted(str_value);
 
 			float step = 0;
@@ -2405,7 +2406,7 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, const char* t
 void FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
 	const char* left_key, int default_left, const char* top_key, int default_top, const char* right_key, int default_right,
 	const char* bottom_key, int default_bottom, int min_value, int max_value, int step_value, const char* format, bool enabled,
-	float height, ImFont* font, ImFont* summary_font)
+	float height, std::pair<ImFont*, float> font, std::pair<ImFont*, float> summary_font)
 {
 	const bool game_settings = IsEditingGameSettings(bsi);
 	const std::optional<int> left_value =
@@ -2433,7 +2434,7 @@ void FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, const char* title,
 	ImGui::SetNextWindowSize(LayoutScale(550.0f, 370.0f));
 	ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
-	ImGui::PushFont(g_large_font);
+	ImGui::PushFont(g_large_font.first, g_large_font.second);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
@@ -2488,7 +2489,7 @@ void FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, const char* title,
 
 			// Align value text in middle.
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() +
-								 ((LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) + padding.y * 2.0f) - g_large_font->FontSize) * 0.5f);
+								 ((LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) + padding.y * 2.0f) - g_large_font.second) * 0.5f);
 			ImGui::TextUnformatted(Host::TranslateToCString(TR_CONTEXT, labels[i]));
 			ImGui::SameLine(midpoint);
 			ImGui::SetNextItemWidth(end);
@@ -2573,7 +2574,7 @@ void FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, const char* title,
 
 void FullscreenUI::DrawStringListSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
 	const char* key, const char* default_value, const char* const* options, const char* const* option_values, size_t option_count,
-	bool translate_options, bool enabled, float height, ImFont* font, ImFont* summary_font, const char* translation_ctx)
+	bool translate_options, bool enabled, float height, std::pair<ImFont*, float> font, std::pair<ImFont*, float> summary_font, const char* translation_ctx)
 {
 	const bool game_settings = IsEditingGameSettings(bsi);
 	const std::optional<SmallString> value(
@@ -2642,8 +2643,8 @@ void FullscreenUI::DrawStringListSetting(SettingsInterface* bsi, const char* tit
 }
 
 void FullscreenUI::DrawStringListSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
-	const char* key, const char* default_value, SettingInfo::GetOptionsCallback option_callback, bool enabled, float height, ImFont* font,
-	ImFont* summary_font)
+	const char* key, const char* default_value, SettingInfo::GetOptionsCallback option_callback, bool enabled, float height, std::pair<ImFont*, float> font,
+	std::pair<ImFont*, float> summary_font)
 {
 	const bool game_settings = IsEditingGameSettings(bsi);
 	const std::optional<SmallString> value(
@@ -2687,7 +2688,7 @@ void FullscreenUI::DrawStringListSetting(SettingsInterface* bsi, const char* tit
 
 void FullscreenUI::DrawFloatListSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
 	const char* key, float default_value, const char* const* options, const float* option_values, size_t option_count,
-	bool translate_options, bool enabled, float height, ImFont* font, ImFont* summary_font)
+	bool translate_options, bool enabled, float height, std::pair<ImFont*, float> font, std::pair<ImFont*, float> summary_font)
 {
 	const bool game_settings = IsEditingGameSettings(bsi);
 	const std::optional<float> value(
@@ -2759,7 +2760,7 @@ template <typename DataType, typename SizeType>
 void FullscreenUI::DrawEnumSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
 	const char* key, DataType default_value, std::optional<DataType> (*from_string_function)(const char* str),
 	const char* (*to_string_function)(DataType value), const char* (*to_display_string_function)(DataType value), SizeType option_count,
-	bool enabled, float height, ImFont* font, ImFont* summary_font)
+	bool enabled, float height, std::pair<ImFont*, float> font, std::pair<ImFont*, float> summary_font)
 {
 	const bool game_settings = IsEditingGameSettings(bsi);
 	const std::optional<SmallString> value(bsi->GetOptionalSmallStringValue(
@@ -2807,8 +2808,8 @@ void FullscreenUI::DrawEnumSetting(SettingsInterface* bsi, const char* title, co
 }
 
 void FullscreenUI::DrawFolderSetting(SettingsInterface* bsi, const char* title, const char* section, const char* key,
-	const std::string& runtime_var, float height /* = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT */, ImFont* font /* = g_large_font */,
-	ImFont* summary_font /* = g_medium_font */)
+	const std::string& runtime_var, float height /* = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT */, std::pair<ImFont*, float> font /* = g_large_font */,
+	std::pair<ImFont*, float> summary_font /* = g_medium_font */)
 {
 	if (MenuButton(title, runtime_var.c_str()))
 	{
@@ -2833,7 +2834,7 @@ void FullscreenUI::DrawFolderSetting(SettingsInterface* bsi, const char* title, 
 
 void FullscreenUI::DrawPathSetting(SettingsInterface* bsi, const char* title, const char* section, const char* key,
 	const char* default_value, bool enabled /* = true */, float height /* = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT */,
-	ImFont* font /* = g_large_font */, ImFont* summary_font /* = g_medium_font */)
+	std::pair<ImFont*, float> font /* = g_large_font */, std::pair<ImFont*, float> summary_font /* = g_medium_font */)
 {
 	const bool game_settings = IsEditingGameSettings(bsi);
 	const std::optional<SmallString> value(
@@ -5121,7 +5122,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 			ImGui::SetNextWindowSize(LayoutScale(500.0f, 180.0f));
 			ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
-			ImGui::PushFont(g_large_font);
+			ImGui::PushFont(g_large_font.first, g_large_font.second);
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
 			ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
@@ -5586,10 +5587,10 @@ void FullscreenUI::DrawGameFixesSettingsPage()
 }
 
 static void DrawShadowedText(
-	ImDrawList* dl, ImFont* font, const ImVec2& pos, u32 col, const char* text, const char* text_end = nullptr, float wrap_width = 0.0f)
+	ImDrawList* dl, std::pair<ImFont*, float> font, const ImVec2& pos, u32 col, const char* text, const char* text_end = nullptr, float wrap_width = 0.0f)
 {
-	dl->AddText(font, font->FontSize, pos + LayoutScale(1.0f, 1.0f), IM_COL32(0, 0, 0, 100), text, text_end, wrap_width);
-	dl->AddText(font, font->FontSize, pos, col, text, text_end, wrap_width);
+	dl->AddText(font.first, font.second, pos + LayoutScale(1.0f, 1.0f), IM_COL32(0, 0, 0, 100), text, text_end, wrap_width);
+	dl->AddText(font.first, font.second, pos, col, text, text_end, wrap_width);
 }
 
 void FullscreenUI::DrawPauseMenu(MainWindowType type)
@@ -5606,20 +5607,20 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 		const float image_height = 90.0f;
 		const std::string_view path_string(Path::GetFileName(s_current_disc_path));
 		const ImVec2 title_size(
-			g_large_font->CalcTextSizeA(g_large_font->FontSize, std::numeric_limits<float>::max(), -1.0f, s_current_game_title.c_str()));
+			g_large_font.first->CalcTextSizeA(g_large_font.second, std::numeric_limits<float>::max(), -1.0f, s_current_game_title.c_str()));
 		const ImVec2 path_size(path_string.empty() ?
 								   ImVec2(0.0f, 0.0f) :
-								   g_medium_font->CalcTextSizeA(g_medium_font->FontSize, std::numeric_limits<float>::max(), -1.0f,
+								   g_medium_font.first->CalcTextSizeA(g_medium_font.second, std::numeric_limits<float>::max(), -1.0f,
 									   path_string.data(), path_string.data() + path_string.length()));
-		const ImVec2 subtitle_size(g_medium_font->CalcTextSizeA(
-			g_medium_font->FontSize, std::numeric_limits<float>::max(), -1.0f, s_current_game_subtitle.c_str()));
+		const ImVec2 subtitle_size(g_medium_font.first->CalcTextSizeA(
+			g_medium_font.second, std::numeric_limits<float>::max(), -1.0f, s_current_game_subtitle.c_str()));
 
 		ImVec2 title_pos(display_size.x - LayoutScale(10.0f + image_width + 20.0f) - title_size.x,
 			display_size.y - LayoutScale(LAYOUT_FOOTER_HEIGHT) - LayoutScale(10.0f + image_height));
 		ImVec2 path_pos(display_size.x - LayoutScale(10.0f + image_width + 20.0f) - path_size.x,
-			title_pos.y + g_large_font->FontSize + LayoutScale(4.0f));
+			title_pos.y + g_large_font.second + LayoutScale(4.0f));
 		ImVec2 subtitle_pos(display_size.x - LayoutScale(10.0f + image_width + 20.0f) - subtitle_size.x,
-			(path_string.empty() ? title_pos.y + g_large_font->FontSize : path_pos.y + g_medium_font->FontSize) + LayoutScale(4.0f));
+			(path_string.empty() ? title_pos.y + g_large_font.second : path_pos.y + g_medium_font.second) + LayoutScale(4.0f));
 
 		float rp_height = 0.0f;
 		{
@@ -5629,14 +5630,14 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 			if (!rp.empty())
 			{
 				const float wrap_width = LayoutScale(350.0f);
-				const ImVec2 rp_size = g_medium_font->CalcTextSizeA(
-					g_medium_font->FontSize, std::numeric_limits<float>::max(), wrap_width, rp.data(), rp.data() + rp.length());
+				const ImVec2 rp_size = g_medium_font.first->CalcTextSizeA(
+					g_medium_font.second, std::numeric_limits<float>::max(), wrap_width, rp.data(), rp.data() + rp.length());
 
 				// Add a small extra gap if any Rich Presence is displayed
-				rp_height = rp_size.y - g_medium_font->FontSize + LayoutScale(2.0f);
+				rp_height = rp_size.y - g_medium_font.second + LayoutScale(2.0f);
 
 				const ImVec2 rp_pos(display_size.x - LayoutScale(20.0f + 50.0f + 20.0f) - rp_size.x,
-					subtitle_pos.y + g_medium_font->FontSize + LayoutScale(4.0f) - rp_height);
+					subtitle_pos.y + g_medium_font.second + LayoutScale(4.0f) - rp_height);
 
 				title_pos.y -= rp_height;
 				path_pos.y -= rp_height;
@@ -5679,7 +5680,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 #endif
 		std::strftime(buf, sizeof(buf), "%X", &ltime);
 
-		const ImVec2 time_size(g_large_font->CalcTextSizeA(g_large_font->FontSize, std::numeric_limits<float>::max(), -1.0f, buf));
+		const ImVec2 time_size(g_large_font.first->CalcTextSizeA(g_large_font.second, std::numeric_limits<float>::max(), -1.0f, buf));
 		const ImVec2 time_pos(display_size.x - LayoutScale(10.0f) - time_size.x, LayoutScale(10.0f));
 		DrawShadowedText(dl, g_large_font, time_pos, text_color, buf);
 
@@ -5692,15 +5693,15 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 
 			SmallString buf;
 			buf.format(FSUI_FSTR("This Session: {}"), session_time_str);
-			const ImVec2 session_size(g_medium_font->CalcTextSizeA(g_medium_font->FontSize, std::numeric_limits<float>::max(), -1.0f, buf));
+			const ImVec2 session_size(g_medium_font.first->CalcTextSizeA(g_medium_font.second, std::numeric_limits<float>::max(), -1.0f, buf));
 			const ImVec2 session_pos(
-				display_size.x - LayoutScale(10.0f) - session_size.x, time_pos.y + g_large_font->FontSize + LayoutScale(4.0f));
+				display_size.x - LayoutScale(10.0f) - session_size.x, time_pos.y + g_large_font.second + LayoutScale(4.0f));
 			DrawShadowedText(dl, g_medium_font, session_pos, text_color, buf);
 
 			buf.format(FSUI_FSTR("All Time: {}"), played_time_str);
-			const ImVec2 total_size(g_medium_font->CalcTextSizeA(g_medium_font->FontSize, std::numeric_limits<float>::max(), -1.0f, buf));
+			const ImVec2 total_size(g_medium_font.first->CalcTextSizeA(g_medium_font.second, std::numeric_limits<float>::max(), -1.0f, buf));
 			const ImVec2 total_pos(
-				display_size.x - LayoutScale(10.0f) - total_size.x, session_pos.y + g_medium_font->FontSize + LayoutScale(4.0f));
+				display_size.x - LayoutScale(10.0f) - total_size.x, session_pos.y + g_medium_font.second + LayoutScale(4.0f));
 			DrawShadowedText(dl, g_medium_font, total_pos, text_color, buf);
 		}
 	}
@@ -6066,8 +6067,8 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 		const float image_width = item_width - (style.FramePadding.x * 2.0f);
 		const float image_height = image_width / 1.33f;
 		const ImVec2 image_size(image_width, image_height);
-		const float item_height = (style.FramePadding.y * 2.0f) + image_height + title_spacing + g_large_font->FontSize + summary_spacing +
-								  g_medium_font->FontSize;
+		const float item_height = (style.FramePadding.y * 2.0f) + image_height + title_spacing + g_large_font.second + summary_spacing +
+								  g_medium_font.second;
 		const ImVec2 item_size(item_width, item_height);
 		const u32 grid_count_x = std::floor(ImGui::GetWindowWidth() / item_width_with_spacing);
 		const float start_x =
@@ -6086,7 +6087,7 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 
 				// can't use a choice dialog here, because we're already in a modal...
 				ImGuiFullscreen::PushResetLayout();
-				ImGui::PushFont(g_large_font);
+				ImGui::PushFont(g_large_font.first, g_large_font.second);
 				ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
 				ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
@@ -6097,7 +6098,7 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 
 				const float width = LayoutScale(600.0f);
 				const float title_height =
-					g_large_font->FontSize + ImGui::GetStyle().FramePadding.y * 2.0f + ImGui::GetStyle().WindowPadding.y * 2.0f;
+					g_large_font.second + ImGui::GetStyle().FramePadding.y * 2.0f + ImGui::GetStyle().WindowPadding.y * 2.0f;
 				const float height =
 					title_height + LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY + (LAYOUT_MENU_BUTTON_Y_PADDING * 2.0f)) * 3.0f;
 				ImGui::SetNextWindowSize(ImVec2(width, height));
@@ -6230,16 +6231,16 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 					image_rect.Min, image_rect.Max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
 
 				const ImVec2 title_pos(bb.Min.x, bb.Min.y + image_height + title_spacing);
-				const ImRect title_bb(title_pos, ImVec2(bb.Max.x, title_pos.y + g_large_font->FontSize));
-				ImGui::PushFont(g_large_font);
+				const ImRect title_bb(title_pos, ImVec2(bb.Max.x, title_pos.y + g_large_font.second));
+				ImGui::PushFont(g_large_font.first, g_large_font.second);
 				ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, entry.title.c_str(), nullptr, nullptr, ImVec2(0.0f, 0.0f), &title_bb);
 				ImGui::PopFont();
 
 				if (!entry.summary.empty())
 				{
-					const ImVec2 summary_pos(bb.Min.x, title_pos.y + g_large_font->FontSize + summary_spacing);
-					const ImRect summary_bb(summary_pos, ImVec2(bb.Max.x, summary_pos.y + g_medium_font->FontSize));
-					ImGui::PushFont(g_medium_font);
+					const ImVec2 summary_pos(bb.Min.x, title_pos.y + g_large_font.second + summary_spacing);
+					const ImRect summary_bb(summary_pos, ImVec2(bb.Max.x, summary_pos.y + g_medium_font.second));
+					ImGui::PushFont(g_medium_font.first, g_medium_font.second);
 					ImGui::RenderTextClipped(
 						summary_bb.Min, summary_bb.Max, entry.summary.c_str(), nullptr, nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
 					ImGui::PopFont();
@@ -6338,7 +6339,7 @@ void FullscreenUI::DrawResumeStateSelector()
 	ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 	ImGui::OpenPopup(FSUI_CSTR("Load Resume State"));
 
-	ImGui::PushFont(g_large_font);
+	ImGui::PushFont(g_large_font.first, g_large_font.second);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
 
@@ -6683,12 +6684,12 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 
 			DrawGameCover(entry, ImGui::GetWindowDrawList(), bb.Min, bb.Min + image_size);
 
-			const float midpoint = bb.Min.y + g_large_font->FontSize + LayoutScale(4.0f);
+			const float midpoint = bb.Min.y + g_large_font.second + LayoutScale(4.0f);
 			const float text_start_x = bb.Min.x + image_size.x + LayoutScale(15.0f);
 			const ImRect title_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
 			const ImRect summary_bb(ImVec2(text_start_x, midpoint), bb.Max);
 
-			ImGui::PushFont(g_large_font);
+			ImGui::PushFont(g_large_font.first, g_large_font.second);
 			// TODO: Fix font fallback issues and enable native-language titles
 			ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, entry->GetTitle(true).c_str(), entry->GetTitle(true).c_str() + entry->GetTitle(true).size(), nullptr,
 				ImVec2(0.0f, 0.0f), &title_bb);
@@ -6696,7 +6697,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 
 			if (!summary.empty())
 			{
-				ImGui::PushFont(g_medium_font);
+				ImGui::PushFont(g_medium_font.first, g_medium_font.second);
 				ImGui::RenderTextClipped(
 					summary_bb.Min, summary_bb.Max, summary.c_str(), nullptr, nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
 				ImGui::PopFont();
@@ -6767,7 +6768,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 		if (selected_entry)
 		{
 			// title
-			ImGui::PushFont(g_large_font);
+			ImGui::PushFont(g_large_font.first, g_large_font.second);
 			const std::string_view title(std::string_view(selected_entry->GetTitle(true)).substr(0, 37));
 			text_width = ImGui::CalcTextSize(title.data(), title.data() + title.length(), false, work_width).x;
 			if (title.length() != selected_entry->GetTitle(true).length())
@@ -6777,7 +6778,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 				"%.*s%s", static_cast<int>(title.size()), title.data(), (title.length() == selected_entry->GetTitle(true).length()) ? "" : "...");
 			ImGui::PopFont();
 
-			ImGui::PushFont(g_medium_font);
+			ImGui::PushFont(g_medium_font.first, g_medium_font.second);
 
 			// code
 			text_width = ImGui::CalcTextSize(selected_entry->serial.c_str(), nullptr, false, work_width).x;
@@ -6827,7 +6828,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 		{
 			// title
 			const char* title = FSUI_CSTR("No Game Selected");
-			ImGui::PushFont(g_large_font);
+			ImGui::PushFont(g_large_font.first, g_large_font.second);
 			text_width = ImGui::CalcTextSize(title, nullptr, false, work_width).x;
 			ImGui::SetCursorPosX((work_width - text_width) / 2.0f);
 			ImGui::TextWrapped("%s", title);
@@ -6870,7 +6871,7 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
 	const float image_width = item_width - (style.FramePadding.x * 2.0f);
 	const float image_height = image_width * 1.33f;
 	const ImVec2 image_size(image_width, image_height);
-	const float item_height = (style.FramePadding.y * 2.0f) + image_height + title_spacing + g_medium_font->FontSize;
+	const float item_height = (style.FramePadding.y * 2.0f) + image_height + title_spacing + g_medium_font.second;
 	const ImVec2 item_size(item_width, item_height);
 	const u32 grid_count_x = std::floor(ImGui::GetWindowWidth() / item_width_with_spacing);
 	const float start_x =
@@ -6926,7 +6927,7 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
 			const std::string_view title(std::string_view(entry->GetTitle(true)).substr(0, 31));
 			draw_title.clear();
 			fmt::format_to(std::back_inserter(draw_title), "{}{}", title, (title.length() == entry->GetTitle(true).length()) ? "" : "...");
-			ImGui::PushFont(g_medium_font);
+			ImGui::PushFont(g_medium_font.first, g_medium_font.second);
 			ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, draw_title.c_str(), draw_title.c_str() + draw_title.length(), nullptr,
 				ImVec2(0.5f, 0.0f), &title_bb);
 			ImGui::PopFont();
@@ -7346,7 +7347,7 @@ void FullscreenUI::DrawAboutWindow()
 	ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 	ImGui::OpenPopup(FSUI_CSTR("About PCSX2"));
 
-	ImGui::PushFont(g_large_font);
+	ImGui::PushFont(g_large_font.first, g_large_font.second);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(30.0f, 30.0f));
 
@@ -7435,7 +7436,7 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 	{
 		const float content_width = ImGui::GetContentRegionAvail().x;
 
-		ImGui::PushFont(g_large_font);
+		ImGui::PushFont(g_large_font.first, g_large_font.second);
 
 		const float icon_height = LayoutScale(24.0f);
 		const float icon_width = icon_height * (500.0f / 275.0f);
