@@ -60,10 +60,9 @@ namespace ImGuiFullscreen
 	static void SetFileSelectorDirectory(std::string dir);
 	static ImGuiID GetBackgroundProgressID(const char* str_id);
 
-	ImFont* g_standard_font = nullptr;
-	ImFont* g_medium_font = nullptr;
-	ImFont* g_large_font = nullptr;
-	ImFont* g_icon_font = nullptr;
+	std::pair<ImFont*, float> g_standard_font{};
+	std::pair<ImFont*, float> g_medium_font{};
+	std::pair<ImFont*, float> g_large_font{};
 
 	float g_layout_scale = 1.0f;
 	float g_rcp_layout_scale = 1.0f;
@@ -202,11 +201,11 @@ namespace ImGuiFullscreen
 	static InputLayout s_gamepad_layout = InputLayout::Unknown;
 } // namespace ImGuiFullscreen
 
-void ImGuiFullscreen::SetFonts(ImFont* standard_font, ImFont* medium_font, ImFont* large_font)
+void ImGuiFullscreen::SetFont(ImFont* standard_font)
 {
-	g_standard_font = standard_font;
-	g_medium_font = medium_font;
-	g_large_font = large_font;
+	g_standard_font.first = standard_font;
+	g_medium_font.first = standard_font;
+	g_large_font.first = standard_font;
 }
 
 bool ImGuiFullscreen::Initialize(const char* placeholder_image_path)
@@ -241,9 +240,9 @@ void ImGuiFullscreen::Shutdown(bool clear_state)
 
 	s_texture_upload_queue.clear();
 	s_placeholder_texture.reset();
-	g_standard_font = nullptr;
-	g_medium_font = nullptr;
-	g_large_font = nullptr;
+	g_standard_font.first = nullptr;
+	g_medium_font.first = nullptr;
+	g_large_font.first = nullptr;
 
 	s_texture_cache.Clear();
 
@@ -643,6 +642,13 @@ bool ImGuiFullscreen::UpdateLayoutScale()
 	return g_layout_scale != old_scale;
 }
 
+void ImGuiFullscreen::UpdateFontScale()
+{
+	g_standard_font.second = ImGuiManager::GetFontSizeStandard();
+	g_medium_font.second = ImGuiFullscreen::LayoutScale(ImGuiFullscreen::LAYOUT_MEDIUM_FONT_SIZE);
+	g_large_font.second = ImGuiFullscreen::LayoutScale(ImGuiFullscreen::LAYOUT_LARGE_FONT_SIZE);
+}
+
 ImRect ImGuiFullscreen::CenterImage(const ImVec2& fit_size, const ImVec2& image_size, bool fill)
 {
 	const float fit_ar = fit_size.x / fit_size.y;
@@ -844,7 +850,7 @@ bool ImGuiFullscreen::BeginFullscreenColumns(const char* title, float pos_y, boo
 	bool clipped;
 	if (title)
 	{
-		ImGui::PushFont(g_large_font);
+		ImGui::PushFont(g_large_font.first, g_large_font.second);
 		clipped = ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
 		ImGui::PopFont();
 	}
@@ -986,7 +992,7 @@ void ImGuiFullscreen::DrawFullscreenFooter()
 	ImDrawList* dl = ImGui::GetForegroundDrawList();
 	dl->AddRectFilled(ImVec2(0.0f, io.DisplaySize.y - height), io.DisplaySize, ImGui::GetColorU32(UIPrimaryColor), 0.0f);
 
-	ImFont* const font = g_medium_font;
+	const std::pair<ImFont*, float> font = g_medium_font;
 	const float max_width = io.DisplaySize.x - padding * 2.0f;
 
 	float prev_opacity = 0.0f;
@@ -1004,11 +1010,11 @@ void ImGuiFullscreen::DrawFullscreenFooter()
 		if (prev_opacity > 0.0f)
 		{
 			const ImVec2 text_size =
-				font->CalcTextSizeA(font->FontSize, max_width, 0.0f, s_last_fullscreen_footer_text.c_str(),
+				font.first->CalcTextSizeA(font.second, max_width, 0.0f, s_last_fullscreen_footer_text.c_str(),
 					s_last_fullscreen_footer_text.end_ptr());
 			dl->AddText(
-				font, font->FontSize,
-				ImVec2(io.DisplaySize.x - padding * 2.0f - text_size.x, io.DisplaySize.y - font->FontSize - padding),
+				font.first, font.second,
+				ImVec2(io.DisplaySize.x - padding * 2.0f - text_size.x, io.DisplaySize.y - font.second - padding),
 				ImGui::GetColorU32(ImVec4(UIPrimaryTextColor.x, UIPrimaryTextColor.y, UIPrimaryTextColor.z, prev_opacity)),
 				s_last_fullscreen_footer_text.c_str(), s_last_fullscreen_footer_text.end_ptr());
 		}
@@ -1020,11 +1026,11 @@ void ImGuiFullscreen::DrawFullscreenFooter()
 
 	if (prev_opacity < 1.0f)
 	{
-		const ImVec2 text_size = font->CalcTextSizeA(font->FontSize, max_width, 0.0f, s_fullscreen_footer_text.c_str(),
+		const ImVec2 text_size = font.first->CalcTextSizeA(font.second, max_width, 0.0f, s_fullscreen_footer_text.c_str(),
 			s_fullscreen_footer_text.end_ptr());
 		dl->AddText(
-			font, font->FontSize,
-			ImVec2(io.DisplaySize.x - padding * 2.0f - text_size.x, io.DisplaySize.y - font->FontSize - padding),
+			font.first, font.second,
+			ImVec2(io.DisplaySize.x - padding * 2.0f - text_size.x, io.DisplaySize.y - font.second - padding),
 			ImGui::GetColorU32(ImVec4(UIPrimaryTextColor.x, UIPrimaryTextColor.y, UIPrimaryTextColor.z, 1.0f - prev_opacity)),
 			s_fullscreen_footer_text.c_str(), s_fullscreen_footer_text.end_ptr());
 	}
@@ -1081,18 +1087,18 @@ void ImGuiFullscreen::DrawWindowTitle(const char* title)
 	ImGuiWindow* window = ImGui::GetCurrentWindow();
 	const ImVec2 pos(window->DC.CursorPos + LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
 	const ImVec2 size(window->WorkRect.GetWidth() - (LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING) * 2.0f),
-		g_large_font->FontSize + LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f);
+		g_large_font.second + LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f);
 	const ImRect rect(pos, pos + size);
 
 	ImGui::ItemSize(size);
 	if (!ImGui::ItemAdd(rect, window->GetID("window_title")))
 		return;
 
-	ImGui::PushFont(g_large_font);
+	ImGui::PushFont(g_large_font.first, g_large_font.second);
 	ImGui::RenderTextClipped(rect.Min, rect.Max, title, nullptr, nullptr, ImVec2(0.0f, 0.0f), &rect);
 	ImGui::PopFont();
 
-	const ImVec2 line_start(pos.x, pos.y + g_large_font->FontSize + LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING));
+	const ImVec2 line_start(pos.x, pos.y + g_large_font.second + LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING));
 	const ImVec2 line_end(pos.x + size.x, line_start.y);
 	const float line_thickness = LayoutScale(1.0f);
 	ImDrawList* dl = ImGui::GetWindowDrawList();
@@ -1243,14 +1249,14 @@ void ImGuiFullscreen::MenuHeading(const char* title, bool draw_line /*= true*/)
 		return;
 
 	ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetColorU32(ImGuiCol_TextDisabled));
-	ImGui::PushFont(g_large_font);
+	ImGui::PushFont(g_large_font.first, g_large_font.second);
 	ImGui::RenderTextClipped(bb.Min, bb.Max, title, nullptr, nullptr, ImVec2(0.0f, 0.0f), &bb);
 	ImGui::PopFont();
 	ImGui::PopStyleColor();
 
 	if (draw_line)
 	{
-		const ImVec2 line_start(bb.Min.x, bb.Min.y + g_large_font->FontSize + line_padding);
+		const ImVec2 line_start(bb.Min.x, bb.Min.y + g_large_font.second + line_padding);
 		const ImVec2 line_end(bb.Max.x, line_start.y);
 		ImGui::GetWindowDrawList()->AddLine(line_start, line_end, ImGui::GetColorU32(ImGuiCol_TextDisabled), line_thickness);
 	}
@@ -1270,12 +1276,12 @@ bool ImGuiFullscreen::MenuHeadingButton(
 
 	if (!enabled)
 		ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetColorU32(ImGuiCol_TextDisabled));
-	ImGui::PushFont(g_large_font);
+	ImGui::PushFont(g_large_font.first, g_large_font.second);
 	ImGui::RenderTextClipped(bb.Min, bb.Max, title, nullptr, nullptr, ImVec2(0.0f, 0.0f), &bb);
 
 	if (value)
 	{
-		const ImVec2 value_size(g_large_font->CalcTextSizeA(g_large_font->FontSize, std::numeric_limits<float>::max(), 0.0f, value));
+		const ImVec2 value_size(g_large_font.first->CalcTextSizeA(g_large_font.second, std::numeric_limits<float>::max(), 0.0f, value));
 		const ImRect value_bb(ImVec2(bb.Max.x - value_size.x, bb.Min.y), ImVec2(bb.Max.x, bb.Max.y));
 		ImGui::RenderTextClipped(value_bb.Min, value_bb.Max, value, nullptr, nullptr, ImVec2(0.0f, 0.0f), &value_bb);
 	}
@@ -1286,7 +1292,7 @@ bool ImGuiFullscreen::MenuHeadingButton(
 
 	if (draw_line)
 	{
-		const ImVec2 line_start(bb.Min.x, bb.Min.y + g_large_font->FontSize + line_padding);
+		const ImVec2 line_start(bb.Min.x, bb.Min.y + g_large_font.second + line_padding);
 		const ImVec2 line_end(bb.Max.x, line_start.y);
 		ImGui::GetWindowDrawList()->AddLine(line_start, line_end, ImGui::GetColorU32(ImGuiCol_TextDisabled), line_thickness);
 	}
@@ -1294,13 +1300,13 @@ bool ImGuiFullscreen::MenuHeadingButton(
 	return pressed;
 }
 
-bool ImGuiFullscreen::ActiveButton(const char* title, bool is_active, bool enabled, float height, ImFont* font)
+bool ImGuiFullscreen::ActiveButton(const char* title, bool is_active, bool enabled, float height, std::pair<ImFont*, float> font)
 {
 	return ActiveButtonWithRightText(title, nullptr, is_active, enabled, height, font);
 }
 
 bool ImGuiFullscreen::ActiveButtonWithRightText(const char* title, const char* right_title, bool is_active,
-	bool enabled, float height, ImFont* font)
+	bool enabled, float height, std::pair<ImFont*, float> font)
 {
 	if (is_active)
 	{
@@ -1323,13 +1329,13 @@ bool ImGuiFullscreen::ActiveButtonWithRightText(const char* title, const char* r
 	if (!enabled)
 		ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetColorU32(ImGuiCol_TextDisabled));
 
-	ImGui::PushFont(font);
+	ImGui::PushFont(font.first, font.second);
 	ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, title, nullptr, nullptr, ImVec2(0.0f, 0.0f), &title_bb);
 
 
 	if (right_title && *right_title)
 	{
-		const ImVec2 right_text_size = font->CalcTextSizeA(font->FontSize, title_bb.GetWidth(), 0.0f, right_title);
+		const ImVec2 right_text_size = font.first->CalcTextSizeA(font.second, title_bb.GetWidth(), 0.0f, right_title);
 		const ImVec2 right_text_start = ImVec2(title_bb.Max.x - right_text_size.x, title_bb.Min.y);
 		ImGui::RenderTextClipped(right_text_start, title_bb.Max, right_title, nullptr, &right_text_size, ImVec2(0.0f, 0.0f),
 			&title_bb);
@@ -1344,7 +1350,7 @@ bool ImGuiFullscreen::ActiveButtonWithRightText(const char* title, const char* r
 	return pressed;
 }
 
-bool ImGuiFullscreen::MenuButton(const char* title, const char* summary, bool enabled, float height, ImFont* font, ImFont* summary_font)
+bool ImGuiFullscreen::MenuButton(const char* title, const char* summary, bool enabled, float height, std::pair<ImFont*, float> font, std::pair<ImFont*, float> summary_font)
 {
 	ImRect bb;
 	bool visible, hovered;
@@ -1352,20 +1358,20 @@ bool ImGuiFullscreen::MenuButton(const char* title, const char* summary, bool en
 	if (!visible)
 		return false;
 
-	const float midpoint = bb.Min.y + font->FontSize + LayoutScale(4.0f);
+	const float midpoint = bb.Min.y + font.second + LayoutScale(4.0f);
 	const ImRect title_bb(bb.Min, ImVec2(bb.Max.x, midpoint));
 	const ImRect summary_bb(ImVec2(bb.Min.x, midpoint), bb.Max);
 
 	if (!enabled)
 		ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetColorU32(ImGuiCol_TextDisabled));
 
-	ImGui::PushFont(font);
+	ImGui::PushFont(font.first, font.second);
 	ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, title, nullptr, nullptr, ImVec2(0.0f, 0.0f), &title_bb);
 	ImGui::PopFont();
 
 	if (summary)
 	{
-		ImGui::PushFont(summary_font);
+		ImGui::PushFont(summary_font.first, summary_font.second);
 		ImGui::RenderTextClipped(summary_bb.Min, summary_bb.Max, summary, nullptr, nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
 		ImGui::PopFont();
 	}
@@ -1377,7 +1383,7 @@ bool ImGuiFullscreen::MenuButton(const char* title, const char* summary, bool en
 	return pressed;
 }
 
-bool ImGuiFullscreen::MenuButtonWithoutSummary(const char* title, bool enabled, float height, ImFont* font, const ImVec2& text_align)
+bool ImGuiFullscreen::MenuButtonWithoutSummary(const char* title, bool enabled, float height, std::pair<ImFont*, float> font, const ImVec2& text_align)
 {
 	ImRect bb;
 	bool visible, hovered;
@@ -1385,14 +1391,14 @@ bool ImGuiFullscreen::MenuButtonWithoutSummary(const char* title, bool enabled, 
 	if (!visible)
 		return false;
 
-	const float midpoint = bb.Min.y + font->FontSize + LayoutScale(4.0f);
+	const float midpoint = bb.Min.y + font.second + LayoutScale(4.0f);
 	const ImRect title_bb(bb.Min, ImVec2(bb.Max.x, midpoint));
 	const ImRect summary_bb(ImVec2(bb.Min.x, midpoint), bb.Max);
 
 	if (!enabled)
 		ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetColorU32(ImGuiCol_TextDisabled));
 
-	ImGui::PushFont(font);
+	ImGui::PushFont(font.first, font.second);
 	ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, title, nullptr, nullptr, text_align, &title_bb);
 	ImGui::PopFont();
 
@@ -1404,7 +1410,7 @@ bool ImGuiFullscreen::MenuButtonWithoutSummary(const char* title, bool enabled, 
 }
 
 bool ImGuiFullscreen::MenuImageButton(const char* title, const char* summary, ImTextureID user_texture_id, const ImVec2& image_size,
-	bool enabled, float height, const ImVec2& uv0, const ImVec2& uv1, ImFont* title_font, ImFont* summary_font)
+	bool enabled, float height, const ImVec2& uv0, const ImVec2& uv1, std::pair<ImFont*, float> title_font, std::pair<ImFont*, float> summary_font)
 {
 	ImRect bb;
 	bool visible, hovered;
@@ -1415,7 +1421,7 @@ bool ImGuiFullscreen::MenuImageButton(const char* title, const char* summary, Im
 	ImGui::GetWindowDrawList()->AddImage(user_texture_id, bb.Min, bb.Min + image_size, uv0, uv1,
 		enabled ? IM_COL32(255, 255, 255, 255) : ImGui::GetColorU32(ImGuiCol_TextDisabled));
 
-	const float midpoint = bb.Min.y + title_font->FontSize + LayoutScale(4.0f);
+	const float midpoint = bb.Min.y + title_font.second + LayoutScale(4.0f);
 	const float text_start_x = bb.Min.x + image_size.x + LayoutScale(15.0f);
 	const ImRect title_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
 	const ImRect summary_bb(ImVec2(text_start_x, midpoint), bb.Max);
@@ -1423,13 +1429,13 @@ bool ImGuiFullscreen::MenuImageButton(const char* title, const char* summary, Im
 	if (!enabled)
 		ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetColorU32(ImGuiCol_TextDisabled));
 
-	ImGui::PushFont(title_font);
+	ImGui::PushFont(title_font.first, title_font.second);
 	ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, title, nullptr, nullptr, ImVec2(0.0f, 0.0f), &title_bb);
 	ImGui::PopFont();
 
 	if (summary)
 	{
-		ImGui::PushFont(summary_font);
+		ImGui::PushFont(summary_font.first, summary_font.second);
 		ImGui::RenderTextClipped(summary_bb.Min, summary_bb.Max, summary, nullptr, nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
 		ImGui::PopFont();
 	}
@@ -1442,9 +1448,9 @@ bool ImGuiFullscreen::MenuImageButton(const char* title, const char* summary, Im
 }
 
 bool ImGuiFullscreen::FloatingButton(const char* text, float x, float y, float width, float height, float anchor_x, float anchor_y,
-	bool enabled, ImFont* font, ImVec2* out_position, bool repeat_button)
+	bool enabled, std::pair<ImFont*, float> font, ImVec2* out_position, bool repeat_button)
 {
-	const ImVec2 text_size(font->CalcTextSizeA(font->FontSize, std::numeric_limits<float>::max(), 0.0f, text));
+	const ImVec2 text_size(font.first->CalcTextSizeA(font.second, std::numeric_limits<float>::max(), 0.0f, text));
 	const ImVec2& padding(ImGui::GetStyle().FramePadding);
 	if (width < 0.0f)
 		width = (padding.x * 2.0f) + text_size.x;
@@ -1521,7 +1527,7 @@ bool ImGuiFullscreen::FloatingButton(const char* text, float x, float y, float w
 	if (!enabled)
 		ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetColorU32(ImGuiCol_TextDisabled));
 
-	ImGui::PushFont(font);
+	ImGui::PushFont(font.first, font.second);
 	ImGui::RenderTextClipped(bb.Min, bb.Max, text, nullptr, nullptr, ImVec2(0.0f, 0.0f), &bb);
 	ImGui::PopFont();
 
@@ -1532,7 +1538,7 @@ bool ImGuiFullscreen::FloatingButton(const char* text, float x, float y, float w
 }
 
 bool ImGuiFullscreen::ToggleButton(
-	const char* title, const char* summary, bool* v, bool enabled, float height, ImFont* font, ImFont* summary_font)
+	const char* title, const char* summary, bool* v, bool enabled, float height, std::pair<ImFont*, float> font, std::pair<ImFont*, float> summary_font)
 {
 	ImRect bb;
 	bool visible, hovered;
@@ -1540,20 +1546,20 @@ bool ImGuiFullscreen::ToggleButton(
 	if (!visible)
 		return false;
 
-	const float midpoint = bb.Min.y + font->FontSize + LayoutScale(4.0f);
+	const float midpoint = bb.Min.y + font.second + LayoutScale(4.0f);
 	const ImRect title_bb(bb.Min, ImVec2(bb.Max.x, midpoint));
 	const ImRect summary_bb(ImVec2(bb.Min.x, midpoint), bb.Max);
 
 	if (!enabled)
 		ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetColorU32(ImGuiCol_TextDisabled));
 
-	ImGui::PushFont(font);
+	ImGui::PushFont(font.first, font.second);
 	ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, title, nullptr, nullptr, ImVec2(0.0f, 0.0f), &title_bb);
 	ImGui::PopFont();
 
 	if (summary)
 	{
-		ImGui::PushFont(summary_font);
+		ImGui::PushFont(summary_font.first, summary_font.second);
 		ImGui::RenderTextClipped(summary_bb.Min, summary_bb.Max, summary, nullptr, nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
 		ImGui::PopFont();
 	}
@@ -1603,7 +1609,7 @@ bool ImGuiFullscreen::ToggleButton(
 }
 
 bool ImGuiFullscreen::ThreeWayToggleButton(
-	const char* title, const char* summary, std::optional<bool>* v, bool enabled, float height, ImFont* font, ImFont* summary_font)
+	const char* title, const char* summary, std::optional<bool>* v, bool enabled, float height, std::pair<ImFont*, float> font, std::pair<ImFont*, float> summary_font)
 {
 	ImRect bb;
 	bool visible, hovered;
@@ -1611,20 +1617,20 @@ bool ImGuiFullscreen::ThreeWayToggleButton(
 	if (!visible)
 		return false;
 
-	const float midpoint = bb.Min.y + font->FontSize + LayoutScale(4.0f);
+	const float midpoint = bb.Min.y + font.second + LayoutScale(4.0f);
 	const ImRect title_bb(bb.Min, ImVec2(bb.Max.x, midpoint));
 	const ImRect summary_bb(ImVec2(bb.Min.x, midpoint), bb.Max);
 
 	if (!enabled)
 		ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetColorU32(ImGuiCol_TextDisabled));
 
-	ImGui::PushFont(font);
+	ImGui::PushFont(font.first, font.second);
 	ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, title, nullptr, nullptr, ImVec2(0.0f, 0.0f), &title_bb);
 	ImGui::PopFont();
 
 	if (summary)
 	{
-		ImGui::PushFont(summary_font);
+		ImGui::PushFont(summary_font.first, summary_font.second);
 		ImGui::RenderTextClipped(summary_bb.Min, summary_bb.Max, summary, nullptr, nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
 		ImGui::PopFont();
 	}
@@ -1680,7 +1686,7 @@ bool ImGuiFullscreen::ThreeWayToggleButton(
 }
 
 bool ImGuiFullscreen::MenuButtonWithValue(
-	const char* title, const char* summary, const char* value, bool enabled, float height, ImFont* font, ImFont* summary_font)
+	const char* title, const char* summary, const char* value, bool enabled, float height, std::pair<ImFont*, float> font, std::pair<ImFont*, float> summary_font)
 {
 	ImRect bb;
 	bool visible, hovered;
@@ -1690,7 +1696,7 @@ bool ImGuiFullscreen::MenuButtonWithValue(
 
 	const ImVec2 value_size(ImGui::CalcTextSize(value));
 
-	const float midpoint = bb.Min.y + font->FontSize + LayoutScale(4.0f);
+	const float midpoint = bb.Min.y + font.second + LayoutScale(4.0f);
 	const float text_end = bb.Max.x - value_size.x;
 	const ImRect title_bb(bb.Min, ImVec2(text_end, midpoint));
 	const ImRect summary_bb(ImVec2(bb.Min.x, midpoint), ImVec2(text_end, bb.Max.y));
@@ -1698,14 +1704,14 @@ bool ImGuiFullscreen::MenuButtonWithValue(
 	if (!enabled)
 		ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetColorU32(ImGuiCol_TextDisabled));
 
-	ImGui::PushFont(font);
+	ImGui::PushFont(font.first, font.second);
 	ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, title, nullptr, nullptr, ImVec2(0.0f, 0.0f), &title_bb);
 	ImGui::RenderTextClipped(bb.Min, bb.Max, value, nullptr, nullptr, ImVec2(1.0f, 0.5f), &bb);
 	ImGui::PopFont();
 
 	if (summary)
 	{
-		ImGui::PushFont(summary_font);
+		ImGui::PushFont(summary_font.first, summary_font.second);
 		ImGui::RenderTextClipped(summary_bb.Min, summary_bb.Max, summary, nullptr, nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
 		ImGui::PopFont();
 	}
@@ -1717,8 +1723,8 @@ bool ImGuiFullscreen::MenuButtonWithValue(
 }
 
 bool ImGuiFullscreen::EnumChoiceButtonImpl(const char* title, const char* summary, s32* value_pointer,
-	const char* (*to_display_name_function)(s32 value, void* opaque), void* opaque, u32 count, bool enabled, float height, ImFont* font,
-	ImFont* summary_font)
+	const char* (*to_display_name_function)(s32 value, void* opaque), void* opaque, u32 count, bool enabled, float height, std::pair<ImFont*, float> font,
+	std::pair<ImFont*, float> summary_font)
 {
 	const bool pressed =
 		MenuButtonWithValue(title, summary, to_display_name_function(*value_pointer, opaque), enabled, height, font, summary_font);
@@ -1774,7 +1780,7 @@ void ImGuiFullscreen::EndNavBar()
 	ImGui::PopStyleVar(4);
 }
 
-void ImGuiFullscreen::NavTitle(const char* title, float height /*= LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY*/, ImFont* font /*= g_large_font*/)
+void ImGuiFullscreen::NavTitle(const char* title, float height /*= LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY*/, std::pair<ImFont*, float> font /*= g_large_font*/)
 {
 	ImGuiWindow* window = ImGui::GetCurrentWindow();
 	if (window->SkipItems)
@@ -1782,7 +1788,7 @@ void ImGuiFullscreen::NavTitle(const char* title, float height /*= LAYOUT_MENU_B
 
 	s_menu_button_index++;
 
-	const ImVec2 text_size(font->CalcTextSizeA(font->FontSize, std::numeric_limits<float>::max(), 0.0f, title));
+	const ImVec2 text_size(font.first->CalcTextSizeA(font.second, std::numeric_limits<float>::max(), 0.0f, title));
 	const ImVec2 pos(window->DC.CursorPos);
 	const ImGuiStyle& style = ImGui::GetStyle();
 	const ImVec2 size = ImVec2(text_size.x, LayoutScale(height) + style.FramePadding.y * 2.0f);
@@ -1797,7 +1803,7 @@ void ImGuiFullscreen::NavTitle(const char* title, float height /*= LAYOUT_MENU_B
 	bb.Min.y += style.FramePadding.y;
 	bb.Max.y -= style.FramePadding.y;
 
-	ImGui::PushFont(font);
+	ImGui::PushFont(font.first, font.second);
 	ImGui::RenderTextClipped(bb.Min, bb.Max, title, nullptr, nullptr, ImVec2(0.0f, 0.0f), &bb);
 	ImGui::PopFont();
 }
@@ -1814,7 +1820,7 @@ void ImGuiFullscreen::RightAlignNavButtons(u32 num_items /*= 0*/, float item_wid
 }
 
 bool ImGuiFullscreen::NavButton(const char* title, bool is_active, bool enabled /* = true */, float width /* = -1.0f */,
-	float height /* = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY */, ImFont* font /* = g_large_font */)
+	float height /* = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY */, std::pair<ImFont*, float> font /* = g_large_font */)
 {
 	ImGuiWindow* window = ImGui::GetCurrentWindow();
 	if (window->SkipItems)
@@ -1822,7 +1828,7 @@ bool ImGuiFullscreen::NavButton(const char* title, bool is_active, bool enabled 
 
 	s_menu_button_index++;
 
-	const ImVec2 text_size(font->CalcTextSizeA(font->FontSize, std::numeric_limits<float>::max(), 0.0f, title));
+	const ImVec2 text_size(font.first->CalcTextSizeA(font.second, std::numeric_limits<float>::max(), 0.0f, title));
 	const ImVec2 pos(window->DC.CursorPos);
 	const ImGuiStyle& style = ImGui::GetStyle();
 	const ImVec2 size = ImVec2(((width < 0.0f) ? text_size.x : LayoutScale(width)) + style.FramePadding.x * 2.0f,
@@ -1871,7 +1877,7 @@ bool ImGuiFullscreen::NavButton(const char* title, bool is_active, bool enabled 
 	ImGui::PushStyleColor(
 		ImGuiCol_Text, ImGui::GetColorU32(enabled ? (is_active ? ImGuiCol_Text : ImGuiCol_TextDisabled) : ImGuiCol_ButtonHovered));
 
-	ImGui::PushFont(font);
+	ImGui::PushFont(font.first, font.second);
 	ImGui::RenderTextClipped(bb.Min, bb.Max, title, nullptr, nullptr, ImVec2(0.0f, 0.0f), &bb);
 	ImGui::PopFont();
 
@@ -1882,7 +1888,7 @@ bool ImGuiFullscreen::NavButton(const char* title, bool is_active, bool enabled 
 
 
 bool ImGuiFullscreen::NavTab(const char* title, bool is_active, bool enabled /* = true */, float width, float height,
-	const ImVec4& background, ImFont* font /* = g_large_font */)
+	const ImVec4& background, std::pair<ImFont*, float> font /* = g_large_font */)
 {
 	ImGuiWindow* window = ImGui::GetCurrentWindow();
 	if (window->SkipItems)
@@ -1890,7 +1896,7 @@ bool ImGuiFullscreen::NavTab(const char* title, bool is_active, bool enabled /* 
 
 	s_menu_button_index++;
 
-	const ImVec2 text_size(font->CalcTextSizeA(font->FontSize, std::numeric_limits<float>::max(), 0.0f, title));
+	const ImVec2 text_size(font.first->CalcTextSizeA(font.second, std::numeric_limits<float>::max(), 0.0f, title));
 	const ImVec2 pos(window->DC.CursorPos);
 	const ImVec2 size = ImVec2(((width < 0.0f) ? text_size.x : LayoutScale(width)), LayoutScale(height));
 
@@ -1953,7 +1959,7 @@ bool ImGuiFullscreen::NavTab(const char* title, bool is_active, bool enabled /* 
 		ImGuiCol_Text,
 		ImGui::GetColorU32(enabled ? (is_active ? ImGuiCol_Text : ImGuiCol_TextDisabled) : ImGuiCol_ButtonHovered));
 
-	ImGui::PushFont(font);
+	ImGui::PushFont(font.first, font.second);
 	ImGui::RenderTextClipped(bb.Min, bb.Max, title, nullptr, nullptr, ImVec2(0.0f, 0.0f), &bb);
 	ImGui::PopFont();
 
@@ -2033,21 +2039,21 @@ bool ImGuiFullscreen::HorizontalMenuItem(GSTexture* icon, const ImVec2& icon_uv0
 	ImDrawList* dl = ImGui::GetWindowDrawList();
 	dl->AddImage(reinterpret_cast<ImTextureID>(icon->GetNativeHandle()), icon_pos, icon_pos + ImVec2(icon_size, icon_size), icon_uv0, icon_uv1);
 
-	ImFont* title_font = g_large_font;
-	const ImVec2 title_size = title_font->CalcTextSizeA(title_font->FontSize, avail_width, 0.0f, title);
+	const std::pair<ImFont*, float> title_font = g_large_font;
+	const ImVec2 title_size = title_font.first->CalcTextSizeA(title_font.second, avail_width, 0.0f, title);
 	const ImVec2 title_pos =
 		ImVec2(bb.Min.x + (avail_width - title_size.x) * 0.5f, icon_pos.y + icon_size + LayoutScale(10.0f));
 	const ImVec4 title_bb = ImVec4(title_pos.x, title_pos.y, title_pos.x + title_size.x, title_pos.y + title_size.y);
 
-	dl->AddText(title_font, title_font->FontSize, title_pos, ImGui::GetColorU32(ImGuiCol_Text), title, nullptr, 0.0f,
+	dl->AddText(title_font.first, title_font.second, title_pos, ImGui::GetColorU32(ImGuiCol_Text), title, nullptr, 0.0f,
 		&title_bb);
 
-	ImFont* desc_font = g_medium_font;
-	const ImVec2 desc_size = desc_font->CalcTextSizeA(desc_font->FontSize, avail_width, avail_width, description);
+	const std::pair<ImFont*, float> desc_font = g_medium_font;
+	const ImVec2 desc_size = desc_font.first->CalcTextSizeA(desc_font.second, avail_width, avail_width, description);
 	const ImVec2 desc_pos = ImVec2(bb.Min.x + (avail_width - desc_size.x) * 0.5f, title_bb.w + LayoutScale(10.0f));
 	const ImVec4 desc_bb = ImVec4(desc_pos.x, desc_pos.y, desc_pos.x + desc_size.x, desc_pos.y + desc_size.y);
 
-	dl->AddText(desc_font, desc_font->FontSize, desc_pos, ImGui::GetColorU32(ImGuiCol_Text), description, nullptr,
+	dl->AddText(desc_font.first, desc_font.second, desc_pos, ImGui::GetColorU32(ImGuiCol_Text), description, nullptr,
 		avail_width, &desc_bb);
 
 	ImGui::SameLine();
@@ -2206,7 +2212,7 @@ void ImGuiFullscreen::DrawFileSelector()
 
 	FileSelectorItem* selected = nullptr;
 
-	ImGui::PushFont(g_large_font);
+	ImGui::PushFont(g_large_font.first, g_large_font.second);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
@@ -2332,7 +2338,7 @@ void ImGuiFullscreen::DrawChoiceDialog()
 	if (!s_choice_dialog_open)
 		return;
 
-	ImGui::PushFont(g_large_font);
+	ImGui::PushFont(g_large_font.first, g_large_font.second);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
@@ -2341,7 +2347,7 @@ void ImGuiFullscreen::DrawChoiceDialog()
 	ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIPrimaryColor);
 
 	const float width = LayoutScale(600.0f);
-	const float title_height = g_large_font->FontSize + ImGui::GetStyle().FramePadding.y * 2.0f + ImGui::GetStyle().WindowPadding.y * 2.0f;
+	const float title_height = g_large_font.second + ImGui::GetStyle().FramePadding.y * 2.0f + ImGui::GetStyle().WindowPadding.y * 2.0f;
 	const float height = std::min(LayoutScale(480.0f), title_height + (LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) +
 																		  LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) *
 																		  static_cast<float>(s_choice_dialog_options.size()));
@@ -2456,7 +2462,7 @@ void ImGuiFullscreen::DrawInputDialog()
 		ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 	ImGui::OpenPopup(s_input_dialog_title.c_str());
 
-	ImGui::PushFont(g_large_font);
+	ImGui::PushFont(g_large_font.first, g_large_font.second);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
@@ -2607,7 +2613,7 @@ void ImGuiFullscreen::DrawMessageDialog()
 	ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 	ImGui::OpenPopup(win_id);
 
-	ImGui::PushFont(g_large_font);
+	ImGui::PushFont(g_large_font.first, g_large_font.second);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
@@ -2772,7 +2778,7 @@ void ImGuiFullscreen::DrawBackgroundProgressDialogs(ImVec2& position, float spac
 	ImGui::PushStyleVar(ImGuiStyleVar_PopupBorderSize, LayoutScale(1.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(10.0f, 10.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, LayoutScale(10.0f, 10.0f));
-	ImGui::PushFont(g_medium_font);
+	ImGui::PushFont(g_medium_font.first, g_medium_font.second);
 
 	ImDrawList* dl = ImGui::GetForegroundDrawList();
 
@@ -2785,8 +2791,8 @@ void ImGuiFullscreen::DrawBackgroundProgressDialogs(ImVec2& position, float spac
 			IM_COL32(0x11, 0x11, 0x11, 200), LayoutScale(10.0f));
 
 		ImVec2 pos(window_pos_x + LayoutScale(10.0f), window_pos_y + LayoutScale(10.0f));
-		dl->AddText(g_medium_font, g_medium_font->FontSize, pos, IM_COL32(255, 255, 255, 255), data.message.c_str(), nullptr, 0.0f);
-		pos.y += g_medium_font->FontSize + LayoutScale(10.0f);
+		dl->AddText(g_medium_font.first, g_medium_font.second, pos, IM_COL32(255, 255, 255, 255), data.message.c_str(), nullptr, 0.0f);
+		pos.y += g_medium_font.second + LayoutScale(10.0f);
 
 		const ImVec2 box_end(pos.x + window_width - LayoutScale(10.0f * 2.0f), pos.y + LayoutScale(25.0f));
 		dl->AddRectFilled(pos, box_end, ImGui::GetColorU32(UIPrimaryDarkColor));
@@ -2800,7 +2806,7 @@ void ImGuiFullscreen::DrawBackgroundProgressDialogs(ImVec2& position, float spac
 			const ImVec2 text_size(ImGui::CalcTextSize(text.c_str()));
 			const ImVec2 text_pos(
 				pos.x + ((box_end.x - pos.x) / 2.0f) - (text_size.x / 2.0f), pos.y + ((box_end.y - pos.y) / 2.0f) - (text_size.y / 2.0f));
-			dl->AddText(g_medium_font, g_medium_font->FontSize, text_pos, ImGui::GetColorU32(UIPrimaryTextColor), text.c_str());
+			dl->AddText(g_medium_font.first, g_medium_font.second, text_pos, ImGui::GetColorU32(UIPrimaryTextColor), text.c_str());
 		}
 		else
 		{
@@ -2888,8 +2894,8 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
 	const float shadow_size = ImGuiFullscreen::LayoutScale(4.0f);
 	const float rounding = ImGuiFullscreen::LayoutScale(4.0f);
 
-	ImFont* const title_font = ImGuiFullscreen::g_large_font;
-	ImFont* const text_font = ImGuiFullscreen::g_medium_font;
+	const std::pair<ImFont*, float> title_font = ImGuiFullscreen::g_large_font;
+	const std::pair<ImFont*, float> text_font = ImGuiFullscreen::g_medium_font;
 
 	const u32 toast_background_color = IM_COL32(0x21, 0x21, 0x21, 255);
 	const u32 toast_border_color = IM_COL32(0x48, 0x48, 0x48, 255);
@@ -2906,10 +2912,10 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
 			continue;
 		}
 
-		const ImVec2 title_size(title_font->CalcTextSizeA(title_font->FontSize, max_text_width, max_text_width,
+		const ImVec2 title_size(title_font.first->CalcTextSizeA(title_font.second, max_text_width, max_text_width,
 			notif.title.c_str(), notif.title.c_str() + notif.title.size()));
 
-		const ImVec2 text_size(text_font->CalcTextSizeA(text_font->FontSize, max_text_width, max_text_width,
+		const ImVec2 text_size(text_font.first->CalcTextSizeA(text_font.second, max_text_width, max_text_width,
 			notif.text.c_str(), notif.text.c_str() + notif.text.size()));
 
 		const float box_width = std::max((horizontal_padding * 2.0f) + badge_size + horizontal_spacing +
@@ -2979,13 +2985,13 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
 		const ImVec2 title_min(badge_max.x + horizontal_spacing, box_min.y + vertical_padding);
 		const ImVec2 title_max(title_min.x + title_size.x, title_min.y + title_size.y);
 		const u32 title_col = (toast_title_color & ~IM_COL32_A_MASK) | (opacity << IM_COL32_A_SHIFT);
-		dl->AddText(title_font, title_font->FontSize, title_min, title_col, notif.title.c_str(),
+		dl->AddText(title_font.first, title_font.second, title_min, title_col, notif.title.c_str(),
 			notif.title.c_str() + notif.title.size(), max_text_width);
 
 		const ImVec2 text_min(badge_max.x + horizontal_spacing, title_max.y + vertical_spacing);
 		const ImVec2 text_max(text_min.x + text_size.x, text_min.y + text_size.y);
 		const u32 text_col = (toast_text_color & ~IM_COL32_A_MASK) | (opacity << IM_COL32_A_SHIFT);
-		dl->AddText(text_font, text_font->FontSize, text_min, text_col, notif.text.c_str(),
+		dl->AddText(text_font.first, text_font.second, text_min, text_col, notif.text.c_str(),
 			notif.text.c_str() + notif.text.size(), max_text_width);
 
 		position.y += s_notification_vertical_direction * (box_height + shadow_size + spacing);
@@ -3026,18 +3032,18 @@ void ImGuiFullscreen::DrawToast()
 
 	const float max_width = LayoutScale(600.0f);
 
-	ImFont* title_font = g_large_font;
-	ImFont* message_font = g_medium_font;
+	const std::pair<ImFont*, float> title_font = g_large_font;
+	const std::pair<ImFont*, float> message_font = g_medium_font;
 	const float padding = LayoutScale(20.0f);
 	const float total_padding = padding * 2.0f;
 	const float margin = LayoutScale(20.0f + (s_fullscreen_footer_text.empty() ? 0.0f : LAYOUT_FOOTER_HEIGHT));
 	const float spacing = s_toast_title.empty() ? 0.0f : LayoutScale(10.0f);
 	const ImVec2 display_size(ImGui::GetIO().DisplaySize);
 	const ImVec2 title_size(s_toast_title.empty() ? ImVec2(0.0f, 0.0f) :
-													title_font->CalcTextSizeA(title_font->FontSize, FLT_MAX, max_width,
+													title_font.first->CalcTextSizeA(title_font.second, FLT_MAX, max_width,
 														s_toast_title.c_str(), s_toast_title.c_str() + s_toast_title.length()));
 	const ImVec2 message_size(s_toast_message.empty() ? ImVec2(0.0f, 0.0f) :
-														message_font->CalcTextSizeA(message_font->FontSize, FLT_MAX, max_width,
+														message_font.first->CalcTextSizeA(message_font.second, FLT_MAX, max_width,
 															s_toast_message.c_str(), s_toast_message.c_str() + s_toast_message.length()));
 	const ImVec2 comb_size(std::max(title_size.x, message_size.x), title_size.y + spacing + message_size.y);
 
@@ -3049,14 +3055,14 @@ void ImGuiFullscreen::DrawToast()
 	if (!s_toast_title.empty())
 	{
 		const float offset = (comb_size.x - title_size.x) * 0.5f;
-		dl->AddText(title_font, title_font->FontSize, box_pos + ImVec2(offset + padding, padding),
+		dl->AddText(title_font.first, title_font.second, box_pos + ImVec2(offset + padding, padding),
 			ImGui::GetColorU32(ModAlpha(UIPrimaryTextColor, alpha)), s_toast_title.c_str(), s_toast_title.c_str() + s_toast_title.length(),
 			max_width);
 	}
 	if (!s_toast_message.empty())
 	{
 		const float offset = (comb_size.x - message_size.x) * 0.5f;
-		dl->AddText(message_font, message_font->FontSize, box_pos + ImVec2(offset + padding, padding + spacing + title_size.y),
+		dl->AddText(message_font.first, message_font.second, box_pos + ImVec2(offset + padding, padding + spacing + title_size.y),
 			ImGui::GetColorU32(ModAlpha(UIPrimaryTextColor, alpha)), s_toast_message.c_str(),
 			s_toast_message.c_str() + s_toast_message.length(), max_width);
 	}
