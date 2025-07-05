@@ -57,7 +57,7 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.palFrameRate, "EmuCore/GS", "FrameratePAL", 50.00f);
 
 	dialog->registerWidgetHelp(m_ui.savestateSelector, tr("Use Save State Selector"), tr("Checked"), 
-			tr("Show a save state selector UI when switching slots instead of showing a notification bubble."));
+		tr("Show a save state selector UI when switching slots instead of showing a notification bubble."));
 
 	SettingWidgetBinder::BindWidgetToIntSetting(
 		sif, m_ui.savestateCompressionMethod, "EmuCore", "SavestateCompressionType", static_cast<int>(SavestateCompressionMethod::Zstandard));
@@ -223,6 +223,6 @@ void AdvancedSettingsWidget::setClampingMode(int vunum, int index)
 void AdvancedSettingsWidget::onSavestateCompressionTypeChanged()
 {
 	const bool uncompressed = (m_dialog->getEffectiveIntValue("EmuCore", "SavestateCompressionType", static_cast<int>(SavestateCompressionMethod::Zstandard)) ==
-							   static_cast<int>(SavestateCompressionMethod::Uncompressed));
+	                           static_cast<int>(SavestateCompressionMethod::Uncompressed));
 	m_ui.savestateCompressionLevel->setDisabled(uncompressed);
 }

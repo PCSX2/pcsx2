@@ -290,7 +290,7 @@ void DEV9SettingsWidget::onEthDeviceChanged(int index)
 void DEV9SettingsWidget::onEthDHCPInterceptChanged(Qt::CheckState state)
 {
 	const bool enabled = (state == Qt::CheckState::PartiallyChecked ? Host::GetBaseBoolSettingValue("DEV9/Eth", "InterceptDHCP", false) : state) ||
-						 ((m_adapter_options & AdapterOptions::DHCP_ForcedOn) == AdapterOptions::DHCP_ForcedOn);
+	                     ((m_adapter_options & AdapterOptions::DHCP_ForcedOn) == AdapterOptions::DHCP_ForcedOn);
 
 	// clang-format off
 	const bool ipOverride = (m_adapter_options & AdapterOptions::DHCP_OverrideIP)     == AdapterOptions::DHCP_OverrideIP;

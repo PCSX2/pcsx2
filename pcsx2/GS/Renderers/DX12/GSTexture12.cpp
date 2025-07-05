@@ -125,7 +125,7 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 			// This is a little annoying. basically, to do mipmap generation, we need to be a render target.
 			// If it's a compressed texture, we won't be generating mips anyway, so this should be fine.
 			desc.Flags = (levels > 1 && !IsCompressedFormat(format)) ? D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET :
-																	   D3D12_RESOURCE_FLAG_NONE;
+			                                                           D3D12_RESOURCE_FLAG_NONE;
 			state = D3D12_RESOURCE_STATE_COPY_DEST;
 		}
 		break;
