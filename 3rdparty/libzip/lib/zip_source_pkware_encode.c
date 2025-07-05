@@ -198,8 +198,10 @@ pkware_encrypt(zip_source_t *src, void *ud, void *data, zip_uint64_t length, zip
             zip_error_set(&ctx->error, ZIP_ER_INVAL, 0);
             return -1;
         }
-        attributes->valid |= ZIP_FILE_ATTRIBUTES_VERSION_NEEDED;
+        attributes->valid |= ZIP_FILE_ATTRIBUTES_VERSION_NEEDED | ZIP_FILE_ATTRIBUTES_GENERAL_PURPOSE_BIT_FLAGS;
         attributes->version_needed = 20;
+        attributes->general_purpose_bit_flags = ZIP_GPBF_DATA_DESCRIPTOR;
+        attributes->general_purpose_bit_mask = ZIP_GPBF_DATA_DESCRIPTOR;
 
         return 0;
     }

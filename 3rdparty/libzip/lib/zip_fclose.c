@@ -41,6 +41,9 @@ ZIP_EXTERN int
 zip_fclose(zip_file_t *zf) {
     int ret;
 
+    if (zf == NULL)
+      return ZIP_ER_INVAL;
+
     if (zf->src)
         zip_source_free(zf->src);
 

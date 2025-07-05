@@ -1,6 +1,6 @@
 /*
-  zip_set_file_compression.c -- set compression for file in archive
-  Copyright (C) 2012-2023 Dieter Baron and Thomas Klausner
+  zip_realloc.c -- reallocate with additional elements
+  Copyright (C) 2009-2025 Dieter Baron and Thomas Klausner
 
   This file is part of libzip, a library to manipulate ZIP archives.
   The authors can be contacted at <info@libzip.org>
@@ -31,50 +31,32 @@
   IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <stdlib.h>
 
 #include "zipint.h"
 
+bool zip_realloc(void **memory, zip_uint64_t *alloced_elements, zip_uint64_t element_size, zip_uint64_t additional_elements, zip_error_t *error) {
+    zip_uint64_t new_alloced_elements;
+    void *new_memory;
 
-ZIP_EXTERN int
-zip_set_file_compression(zip_t *za, zip_uint64_t idx, zip_int32_t method, zip_uint32_t flags) {
-    zip_entry_t *e;
-
-    if (idx >= za->nentry) {
-        zip_error_set(&za->error, ZIP_ER_INVAL, 0);
-        return -1;
+    if (additional_elements == 0) {
+        return true;
     }
 
-    if (ZIP_IS_RDONLY(za)) {
-        zip_error_set(&za->error, ZIP_ER_RDONLY, 0);
-        return -1;
-    }
-    if (ZIP_WANT_TORRENTZIP(za)) {
-        zip_error_set(&za->error, ZIP_ER_NOT_ALLOWED, 0);
-        return -1;
+    new_alloced_elements = *alloced_elements + additional_elements;
+
+    if (new_alloced_elements < additional_elements || new_alloced_elements > SIZE_MAX / element_size) {
+        zip_error_set(error, ZIP_ER_MEMORY, 0);
+        return false;
     }
 
-    if (!zip_compression_method_supported(method, true)) {
-        zip_error_set(&za->error, ZIP_ER_COMPNOTSUPP, 0);
-        return -1;
+    if ((new_memory = realloc(*memory, (size_t)(new_alloced_elements * element_size))) == NULL) {
+        zip_error_set(error, ZIP_ER_MEMORY, 0);
+        return false;
     }
 
-    e = za->entry + idx;
+    *memory = new_memory;
+    *alloced_elements = new_alloced_elements;
 
-    /* TODO: do we want to recompress if level is set? Only if it's
-     * different than what bit flags tell us, but those are not
-     * defined for all compression methods, or not directly mappable
-     * to levels */
-
-    if (e->changes == NULL) {
-        if ((e->changes = _zip_dirent_clone(e->orig)) == NULL) {
-            zip_error_set(&za->error, ZIP_ER_MEMORY, 0);
-            return -1;
-        }
-    }
-
-    e->changes->comp_method = method;
-    e->changes->compression_level = (zip_uint16_t)flags;
-    e->changes->changed |= ZIP_DIRENT_COMP_METHOD;
-
-    return 0;
+    return true;
 }

@@ -345,7 +345,7 @@ window_read(zip_source_t *src, void *_ctx, void *data, zip_uint64_t len, zip_sou
 
 void
 _zip_deregister_source(zip_t *za, zip_source_t *src) {
-    unsigned int i;
+    zip_uint64_t i;
 
     for (i = 0; i < za->nopen_source; i++) {
         if (za->open_source[i] == src) {
@@ -359,18 +359,10 @@ _zip_deregister_source(zip_t *za, zip_source_t *src) {
 
 int
 _zip_register_source(zip_t *za, zip_source_t *src) {
-    zip_source_t **open_source;
-
     if (za->nopen_source + 1 >= za->nopen_source_alloc) {
-        unsigned int n;
-        n = za->nopen_source_alloc + 10;
-        open_source = (zip_source_t **)realloc(za->open_source, n * sizeof(zip_source_t *));
-        if (open_source == NULL) {
-            zip_error_set(&za->error, ZIP_ER_MEMORY, 0);
+        if (!ZIP_REALLOC(za->open_source, za->nopen_source_alloc, 10, &za->error)) {
             return -1;
         }
-        za->nopen_source_alloc = n;
-        za->open_source = open_source;
     }
 
     za->open_source[za->nopen_source++] = src;
