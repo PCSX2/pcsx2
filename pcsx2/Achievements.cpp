@@ -164,6 +164,7 @@ namespace Achievements
 	static void DisplayHardcoreDeferredMessage();
 	static void DisplayAchievementSummary();
 	static void UpdateRichPresence(std::unique_lock<std::recursive_mutex>& lock);
+	static void UpdateNotificationPosition();
 
 	static std::string GetAchievementBadgePath(const rc_client_achievement_t* achievement, int state);
 	static std::string GetUserBadgePath(const std::string_view username);
@@ -444,6 +445,9 @@ bool Achievements::Initialize()
 	if (VMManager::HasValidVM() && IsLoggedInOrLoggingIn() && EmuConfig.Achievements.HardcoreMode)
 		DisplayHardcoreDeferredMessage();
 
+	// Set initial notification position
+	UpdateNotificationPosition();
+
 	return true;
 }
 
@@ -492,6 +496,63 @@ void Achievements::DestroyClient(rc_client_t** client, std::unique_ptr<HTTPDownl
 	*client = nullptr;
 
 	http->reset();
+}
+
+void Achievements::UpdateNotificationPosition()
+{
+	// Set notification position based on achievement settings
+	float horizontal_position, vertical_position, direction;
+	
+	// Determine horizontal alignment
+	switch (EmuConfig.Achievements.NotificationPosition)
+	{
+		case OsdOverlayPos::TopLeft:
+		case OsdOverlayPos::CenterLeft:
+		case OsdOverlayPos::BottomLeft:
+			horizontal_position = 0.0f; // Left
+			break;
+			
+		case OsdOverlayPos::TopCenter:
+		case OsdOverlayPos::Center:
+		case OsdOverlayPos::BottomCenter:
+			horizontal_position = 0.5f; // Center
+			break;
+			
+		case OsdOverlayPos::TopRight:
+		case OsdOverlayPos::CenterRight:
+		case OsdOverlayPos::BottomRight:
+		default:
+			horizontal_position = 1.0f; // Right
+			break;
+	}
+	
+	// Determine vertical alignment and stacking direction
+	switch (EmuConfig.Achievements.NotificationPosition)
+	{
+		case OsdOverlayPos::TopLeft:
+		case OsdOverlayPos::TopCenter:
+		case OsdOverlayPos::TopRight:
+			vertical_position = 0.15f; // Top area
+			direction = 1.0f; // Stack downward
+			break;
+			
+		case OsdOverlayPos::CenterLeft:
+		case OsdOverlayPos::Center:
+		case OsdOverlayPos::CenterRight:
+			vertical_position = 0.5f; // Center
+			direction = 1.0f; // Stack downward
+			break;
+			
+		case OsdOverlayPos::BottomLeft:
+		case OsdOverlayPos::BottomCenter:
+		case OsdOverlayPos::BottomRight:
+		default:
+			vertical_position = 0.85f; // Bottom area
+			direction = -1.0f; // Stack upward
+			break;
+	}
+	
+	ImGuiFullscreen::SetNotificationPosition(horizontal_position, vertical_position, direction);
 }
 
 void Achievements::UpdateSettings(const Pcsx2Config::AchievementsOptions& old_config)
@@ -548,6 +609,10 @@ void Achievements::UpdateSettings(const Pcsx2Config::AchievementsOptions& old_co
 		if (EmuConfig.Achievements.UnofficialTestMode != old_config.UnofficialTestMode)
 			rc_client_set_unofficial_enabled(s_client, EmuConfig.Achievements.UnofficialTestMode);
 	}
+
+	// Update notification position if it changed
+	if (EmuConfig.Achievements.NotificationPosition != old_config.NotificationPosition)
+		UpdateNotificationPosition();
 
 	// in case cache directory changed
 	EnsureCacheDirectoriesExist();
@@ -1915,6 +1980,115 @@ static float IndicatorOpacity(const T& i)
 	return (i.active) ? opacity : (1.0f - opacity);
 }
 
+static ImVec2 CalculateOverlayPosition(const ImGuiIO& io, float padding, AchievementOverlayPosition alignment)
+{
+	switch (alignment)
+	{
+		case AchievementOverlayPosition::TopLeft:
+			return ImVec2(padding, padding);
+		case AchievementOverlayPosition::TopCenter:
+			return ImVec2(io.DisplaySize.x * 0.5f, padding);
+		case AchievementOverlayPosition::TopRight:
+			return ImVec2(io.DisplaySize.x - padding, padding);
+		case AchievementOverlayPosition::CenterLeft:
+			return ImVec2(padding, io.DisplaySize.y * 0.5f);
+		case AchievementOverlayPosition::Center:
+			return ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f);
+		case AchievementOverlayPosition::CenterRight:
+			return ImVec2(io.DisplaySize.x - padding, io.DisplaySize.y * 0.5f);
+		case AchievementOverlayPosition::BottomLeft:
+			return ImVec2(padding, io.DisplaySize.y - padding);
+		case AchievementOverlayPosition::BottomCenter:
+			return ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y - padding);
+		case AchievementOverlayPosition::BottomRight:
+		default:
+			return ImVec2(io.DisplaySize.x - padding, io.DisplaySize.y - padding);
+	}
+}
+
+static ImVec2 AdjustPositionForAlignment(const ImVec2& base_position, const ImVec2& element_size, AchievementOverlayPosition alignment)
+{
+	ImVec2 adjusted = base_position;
+	
+	// Adjust for horizontal alignment
+	switch (alignment)
+	{
+		case AchievementOverlayPosition::TopLeft:
+		case AchievementOverlayPosition::CenterLeft:
+		case AchievementOverlayPosition::BottomLeft:
+			// Left aligned no adjustment needed for x
+			break;
+			
+		case AchievementOverlayPosition::TopCenter:
+		case AchievementOverlayPosition::Center:
+		case AchievementOverlayPosition::BottomCenter:
+			// Center aligned offset by half element width
+			adjusted.x -= element_size.x * 0.5f;
+			break;
+			
+		case AchievementOverlayPosition::TopRight:
+		case AchievementOverlayPosition::CenterRight:
+		case AchievementOverlayPosition::BottomRight:
+		default:
+			// Right aligned offset by full element width
+			adjusted.x -= element_size.x;
+			break;
+	}
+	
+	// Adjust for vertical alignment
+	switch (alignment)
+	{
+		case AchievementOverlayPosition::TopLeft:
+		case AchievementOverlayPosition::TopCenter:
+		case AchievementOverlayPosition::TopRight:
+			// Top aligned no adjustment needed for y
+			break;
+			
+		case AchievementOverlayPosition::CenterLeft:
+		case AchievementOverlayPosition::Center:
+		case AchievementOverlayPosition::CenterRight:
+			// Center aligned offset by half element height
+			adjusted.y -= element_size.y * 0.5f;
+			break;
+			
+		case AchievementOverlayPosition::BottomLeft:
+		case AchievementOverlayPosition::BottomCenter:
+		case AchievementOverlayPosition::BottomRight:
+		default:
+			// Bottom aligned offset by full element height
+			adjusted.y -= element_size.y;
+			break;
+	}
+	
+	return adjusted;
+}
+
+static ImVec2 GetStackingDirection(AchievementOverlayPosition alignment)
+{
+	switch (alignment)
+	{
+		case AchievementOverlayPosition::TopLeft:
+		case AchievementOverlayPosition::TopCenter:
+		case AchievementOverlayPosition::TopRight:
+			return ImVec2(0.0f, 1.0f); // Stack downward
+			
+		case AchievementOverlayPosition::BottomLeft:
+		case AchievementOverlayPosition::BottomCenter:
+		case AchievementOverlayPosition::BottomRight:
+		default:
+			return ImVec2(0.0f, -1.0f); // Stack upward
+			
+		case AchievementOverlayPosition::CenterLeft:
+			return ImVec2(1.0f, 0.0f); // Stack rightward
+			
+		case AchievementOverlayPosition::CenterRight:
+			return ImVec2(-1.0f, 0.0f); // Stack leftward
+			
+		case AchievementOverlayPosition::Center:
+			return ImVec2(0.0f, -1.0f); // Stack upward for center
+	}
+}
+
 
 void Achievements::DrawGameOverlays()
 {
@@ -1930,13 +2104,14 @@ void Achievements::DrawGameOverlays()
 	const float padding = LayoutScale(10.0f);
 	const ImVec2 image_size = LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT);
 	const ImGuiIO& io = ImGui::GetIO();
-	ImVec2 position = ImVec2(io.DisplaySize.x - padding, io.DisplaySize.y - padding);
+	ImVec2 position = CalculateOverlayPosition(io, padding, EmuConfig.Achievements.OverlayPosition);
 	ImDrawList* dl = ImGui::GetBackgroundDrawList();
 
 	if (!s_active_challenge_indicators.empty())
 	{
+		const ImVec2 stack_direction = GetStackingDirection(EmuConfig.Achievements.OverlayPosition);
+		ImVec2 current_position = AdjustPositionForAlignment(position, image_size, EmuConfig.Achievements.OverlayPosition);
 		const float x_advance = image_size.x + spacing;
-		ImVec2 current_position = ImVec2(position.x - image_size.x, position.y - image_size.y);
 
 		for (auto it = s_active_challenge_indicators.begin(); it != s_active_challenge_indicators.end();)
 		{
@@ -1949,7 +2124,26 @@ void Achievements::DrawGameOverlays()
 			{
 				dl->AddImage(reinterpret_cast<ImTextureID>(badge->GetNativeHandle()),
 					current_position, current_position + image_size, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), col);
-				current_position.x -= x_advance;
+				
+				// For horizontal layouts, go horizontally for vertical layouts, stay in the same row
+				if (std::abs(stack_direction.x) > 0.0f)
+				{
+					current_position.x += stack_direction.x * x_advance;
+				}
+				else
+				{
+					// For right-aligned vertical layouts, move left for next indicator
+					switch (EmuConfig.Achievements.OverlayPosition)
+					{
+						case AchievementOverlayPosition::TopRight:
+						case AchievementOverlayPosition::BottomRight:
+							current_position.x -= x_advance;
+							break;
+						default:
+							current_position.x += x_advance;
+							break;
+					}
+				}
 			}
 
 			if (!indicator.active && opacity <= 0.01f)
@@ -1963,7 +2157,9 @@ void Achievements::DrawGameOverlays()
 			}
 		}
 
-		position.y -= image_size.y + padding;
+		// Go to the next row/column for anymore overlays
+		position.x += stack_direction.x * (image_size.x + padding);
+		position.y += stack_direction.y * (image_size.y + padding);
 	}
 
 	if (s_active_progress_indicator.has_value())
@@ -1976,9 +2172,12 @@ void Achievements::DrawGameOverlays()
 		const char* text_end = text_start + std::strlen(text_start);
 		const ImVec2 text_size = g_medium_font->CalcTextSizeA(g_medium_font->FontSize, FLT_MAX, 0.0f, text_start, text_end);
 
-		const ImVec2 box_min =
-			ImVec2(position.x - image_size.x - text_size.x - spacing - padding * 2.0f, position.y - image_size.y - padding * 2.0f);
-		const ImVec2 box_max = position;
+		const ImVec2 progress_box_size = ImVec2(image_size.x + text_size.x + spacing + padding * 2.0f, image_size.y + padding * 2.0f);
+		const ImVec2 stack_direction = GetStackingDirection(EmuConfig.Achievements.OverlayPosition);
+		const ImVec2 box_position = AdjustPositionForAlignment(position, progress_box_size, EmuConfig.Achievements.OverlayPosition);
+		
+		const ImVec2 box_min = box_position;
+		const ImVec2 box_max = box_position + progress_box_size;
 		const float box_rounding = LayoutScale(1.0f);
 
 		dl->AddRectFilled(box_min, box_max, ImGui::GetColorU32(ImVec4(0.13f, 0.13f, 0.13f, opacity * 0.5f)), box_rounding);
@@ -2002,11 +2201,15 @@ void Achievements::DrawGameOverlays()
 			s_active_progress_indicator.reset();
 		}
 
-		position.y -= image_size.y + padding * 3.0f;
+		// Go to the next row/column for anymore overlays
+		position.x += stack_direction.x * (progress_box_size.x + padding);
+		position.y += stack_direction.y * (progress_box_size.y + padding);
 	}
 
 	if (!s_active_leaderboard_trackers.empty())
 	{
+		const ImVec2 stack_direction = GetStackingDirection(EmuConfig.Achievements.OverlayPosition);
+		
 		for (auto it = s_active_leaderboard_trackers.begin(); it != s_active_leaderboard_trackers.end();)
 		{
 			const LeaderboardTrackerIndicator& indicator = *it;
@@ -2019,8 +2222,11 @@ void Achievements::DrawGameOverlays()
 			const ImVec2 size = ImGuiFullscreen::g_medium_font->CalcTextSizeA(
 				ImGuiFullscreen::g_medium_font->FontSize, FLT_MAX, 0.0f, width_string.c_str(), width_string.end_ptr());
 
-			const ImVec2 box_min = ImVec2(position.x - size.x - padding * 2.0f, position.y - size.y - padding * 2.0f);
-			const ImVec2 box_max = position;
+			const ImVec2 tracker_box_size = ImVec2(size.x + padding * 2.0f, size.y + padding * 2.0f);
+			const ImVec2 box_position = AdjustPositionForAlignment(position, tracker_box_size, EmuConfig.Achievements.OverlayPosition);
+			
+			const ImVec2 box_min = box_position;
+			const ImVec2 box_max = box_position + tracker_box_size;
 			const float box_rounding = LayoutScale(1.0f);
 			dl->AddRectFilled(box_min, box_max, ImGui::GetColorU32(ImVec4(0.13f, 0.13f, 0.13f, opacity * 0.5f)), box_rounding);
 			dl->AddRect(box_min, box_max, ImGui::GetColorU32(ImVec4(0.8f, 0.8f, 0.8f, opacity)), box_rounding);
@@ -2048,7 +2254,9 @@ void Achievements::DrawGameOverlays()
 				++it;
 			}
 
-			position.x = box_min.x - padding;
+			// Go to the next position for anymore trackers
+			position.x += stack_direction.x * (tracker_box_size.x + padding);
+			position.y += stack_direction.y * (tracker_box_size.y + padding);
 		}
 
 		// Uncomment if there are any other overlays above this one.

@@ -49,6 +49,71 @@
 
 InputRecordingUI::InputRecordingData g_InputRecordingData;
 
+// OSD positioning funcs
+ImVec2 CalculateOSDPosition(OsdOverlayPos position, float margin, const ImVec2& text_size, float window_width, float window_height)
+{
+	switch (position)
+	{
+		case OsdOverlayPos::TopLeft:
+			return ImVec2(margin, margin);
+		case OsdOverlayPos::TopCenter:
+			return ImVec2((window_width - text_size.x) * 0.5f, margin);
+		case OsdOverlayPos::TopRight:
+			return ImVec2(window_width - margin - text_size.x, margin);
+		case OsdOverlayPos::CenterLeft:
+			return ImVec2(margin, (window_height - text_size.y) * 0.5f);
+		case OsdOverlayPos::Center:
+			return ImVec2((window_width - text_size.x) * 0.5f, (window_height - text_size.y) * 0.5f);
+		case OsdOverlayPos::CenterRight:
+			return ImVec2(window_width - margin - text_size.x, (window_height - text_size.y) * 0.5f);
+		case OsdOverlayPos::BottomLeft:
+			return ImVec2(margin, window_height - margin - text_size.y);
+		case OsdOverlayPos::BottomCenter:
+			return ImVec2((window_width - text_size.x) * 0.5f, window_height - margin - text_size.y);
+		case OsdOverlayPos::BottomRight:
+			return ImVec2(window_width - margin - text_size.x, window_height - margin - text_size.y);
+		case OsdOverlayPos::None:
+		default:
+			return ImVec2(0.0f, 0.0f);
+	}
+}
+
+ImVec2 CalculatePerformanceOverlayTextPosition(OsdOverlayPos position, float margin, const ImVec2& text_size, float window_width, float position_y)
+{
+	const float abs_margin = std::abs(margin);
+	
+	// Get the X position based on horizontal alignment
+	float x_pos;
+	switch (position)
+	{
+		case OsdOverlayPos::TopLeft:
+		case OsdOverlayPos::CenterLeft:
+		case OsdOverlayPos::BottomLeft:
+			x_pos = abs_margin; // Left alignment
+			break;
+			
+		case OsdOverlayPos::TopCenter:
+		case OsdOverlayPos::Center:
+		case OsdOverlayPos::BottomCenter:
+			x_pos = (window_width - text_size.x) * 0.5f; // Center alignment
+			break;
+			
+		case OsdOverlayPos::TopRight:
+		case OsdOverlayPos::CenterRight:
+		case OsdOverlayPos::BottomRight:
+		default:
+			x_pos = window_width - text_size.x - abs_margin; // Right alignment
+			break;
+	}
+	
+	return ImVec2(x_pos, position_y);
+}
+
+bool ShouldUseLeftAlignment(OsdOverlayPos position)
+{
+	return (position == OsdOverlayPos::TopLeft || position == OsdOverlayPos::CenterLeft || position == OsdOverlayPos::BottomLeft);
+}
+
 namespace ImGuiManager
 {
 	static void FormatProcessorStat(SmallStringBase& text, double usage, double time);
@@ -107,17 +172,38 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 	SmallString text;
 	ImVec2 text_size;
 
-	if (GSConfig.OsdPerformancePos == OsdOverlayPos::TopLeft)
-		margin = -margin;
+	// Adjust initial Y position based on vertical alignment
+	switch (GSConfig.OsdPerformancePos)
+	{
+		case OsdOverlayPos::CenterLeft:
+		case OsdOverlayPos::Center:
+		case OsdOverlayPos::CenterRight:
+
+			position_y = (GetWindowHeight() - (fixed_font->FontSize * 8.0f)) * 0.5f;
+			break;
+			
+		case OsdOverlayPos::BottomLeft:
+		case OsdOverlayPos::BottomCenter:
+		case OsdOverlayPos::BottomRight:
+
+			position_y = GetWindowHeight() - margin - (fixed_font->FontSize * 15.0f + spacing * 14.0f);
+			break;
+			
+		case OsdOverlayPos::TopLeft:
+		case OsdOverlayPos::TopCenter:
+		case OsdOverlayPos::TopRight:
+		default:
+			// Top alignment keeps the passed position_y
+			break;
+	}
 
 #define DRAW_LINE(font, text, color) \
 	do \
 	{ \
 		text_size = font->CalcTextSizeA(font->FontSize, std::numeric_limits<float>::max(), -1.0f, (text), nullptr, nullptr); \
-		dl->AddText(font, font->FontSize, \
-			ImVec2((GSConfig.OsdPerformancePos == OsdOverlayPos::TopLeft ? 0 : GetWindowWidth() - text_size.x) - margin + shadow_offset, position_y + shadow_offset), \
-			IM_COL32(0, 0, 0, 100), (text)); \
-		dl->AddText(font, font->FontSize, ImVec2((GSConfig.OsdPerformancePos == OsdOverlayPos::TopLeft ? 0 : GetWindowWidth() - text_size.x) - margin, position_y), color, (text)); \
+		const ImVec2 text_pos = CalculatePerformanceOverlayTextPosition(GSConfig.OsdPerformancePos, margin, text_size, GetWindowWidth(), position_y); \
+		dl->AddText(font, font->FontSize, ImVec2(text_pos.x + shadow_offset, text_pos.y + shadow_offset), IM_COL32(0, 0, 0, 100), (text)); \
+		dl->AddText(font, font->FontSize, text_pos, color, (text)); \
 		position_y += text_size.y + spacing; \
 	} while (0)
 
@@ -299,7 +385,9 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 		{
 			const ImVec2 history_size(200.0f * scale, 50.0f * scale);
 			ImGui::SetNextWindowSize(ImVec2(history_size.x, history_size.y));
-			ImGui::SetNextWindowPos(ImVec2((GSConfig.OsdPerformancePos == OsdOverlayPos::TopLeft ? 0 : GetWindowWidth() - history_size.x) - margin, position_y));
+			
+			const ImVec2 window_pos = CalculatePerformanceOverlayTextPosition(GSConfig.OsdPerformancePos, margin, history_size, GetWindowWidth(), position_y);
+			ImGui::SetNextWindowPos(window_pos);
 			ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.25f));
 			ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
 			ImGui::PushStyleColor(ImGuiCol_PlotLines, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
@@ -336,20 +424,59 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 				text.clear();
 				text.append_format("Max: {:.1f} ms", max);
 				text_size = fixed_font->CalcTextSizeA(fixed_font->FontSize, FLT_MAX, 0.0f, text.c_str(), text.c_str() + text.length());
-				win_dl->AddText(ImVec2((GSConfig.OsdPerformancePos == OsdOverlayPos::TopLeft ? 2.0f * spacing : wpos.x + history_size.x - text_size.x - spacing) + shadow_offset,
-									wpos.y + shadow_offset),
+				
+				float text_x;
+				switch (GSConfig.OsdPerformancePos)
+				{
+					case OsdOverlayPos::TopLeft:
+					case OsdOverlayPos::CenterLeft:
+					case OsdOverlayPos::BottomLeft:
+						text_x = wpos.x + 2.0f * spacing; // Left alignment within window
+						break;
+					case OsdOverlayPos::TopCenter:
+					case OsdOverlayPos::Center:
+					case OsdOverlayPos::BottomCenter:
+						text_x = wpos.x + (history_size.x - text_size.x) * 0.5f; // Center alignment within window
+						break;
+					case OsdOverlayPos::TopRight:
+					case OsdOverlayPos::CenterRight:
+					case OsdOverlayPos::BottomRight:
+					default:
+						text_x = wpos.x + history_size.x - text_size.x - spacing; // Right alignment within window
+						break;
+				}
+				win_dl->AddText(ImVec2(text_x + shadow_offset, wpos.y + shadow_offset),
 					IM_COL32(0, 0, 0, 100), text.c_str(), text.c_str() + text.length());
-				win_dl->AddText(ImVec2((GSConfig.OsdPerformancePos == OsdOverlayPos::TopLeft ? 2.0f * spacing : wpos.x + history_size.x - text_size.x - spacing), wpos.y),
+				win_dl->AddText(ImVec2(text_x, wpos.y),
 					IM_COL32(255, 255, 255, 255), text.c_str(), text.c_str() + text.length());
 
 				text.clear();
 				text.append_format("Min: {:.1f} ms", min);
 				text_size = fixed_font->CalcTextSizeA(fixed_font->FontSize, FLT_MAX, 0.0f, text.c_str(), text.c_str() + text.length());
-				win_dl->AddText(ImVec2((GSConfig.OsdPerformancePos == OsdOverlayPos::TopLeft ? 2.0f * spacing : wpos.x + history_size.x - text_size.x - spacing) + shadow_offset,
-									wpos.y + history_size.y - fixed_font->FontSize + shadow_offset),
+				
+				float min_text_x;
+				switch (GSConfig.OsdPerformancePos)
+				{
+					case OsdOverlayPos::TopLeft:
+					case OsdOverlayPos::CenterLeft:
+					case OsdOverlayPos::BottomLeft:
+						min_text_x = wpos.x + 2.0f * spacing; // Left alignment within window
+						break;
+					case OsdOverlayPos::TopCenter:
+					case OsdOverlayPos::Center:
+					case OsdOverlayPos::BottomCenter:
+						min_text_x = wpos.x + (history_size.x - text_size.x) * 0.5f; // Center alignment within window
+						break;
+					case OsdOverlayPos::TopRight:
+					case OsdOverlayPos::CenterRight:
+					case OsdOverlayPos::BottomRight:
+					default:
+						min_text_x = wpos.x + history_size.x - text_size.x - spacing; // Right alignment within window
+						break;
+				}
+				win_dl->AddText(ImVec2(min_text_x + shadow_offset, wpos.y + history_size.y - fixed_font->FontSize + shadow_offset),
 					IM_COL32(0, 0, 0, 100), text.c_str(), text.c_str() + text.length());
-				win_dl->AddText(ImVec2((GSConfig.OsdPerformancePos == OsdOverlayPos::TopLeft ? 2.0f * spacing : wpos.x + history_size.x - text_size.x - spacing),
-									wpos.y + history_size.y - fixed_font->FontSize),
+				win_dl->AddText(ImVec2(min_text_x, wpos.y + history_size.y - fixed_font->FontSize),
 					IM_COL32(255, 255, 255, 255), text.c_str(), text.c_str() + text.length());
 			}
 			ImGui::End();
@@ -362,7 +489,12 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 	{
 		if (GSConfig.OsdShowIndicators)
 		{
-			DRAW_LINE(standard_font, ICON_FA_PAUSE, IM_COL32(255, 255, 255, 255));
+			// We should put the Pause icon in the top right regardless of performance overlay position
+			text = ICON_FA_PAUSE;
+			text_size = standard_font->CalcTextSizeA(standard_font->FontSize, std::numeric_limits<float>::max(), -1.0f, text.c_str(), nullptr, nullptr);
+			const ImVec2 pause_pos(GetWindowWidth() - margin - text_size.x, margin);
+			dl->AddText(standard_font, standard_font->FontSize, ImVec2(pause_pos.x + shadow_offset, pause_pos.y + shadow_offset), IM_COL32(0, 0, 0, 100), text.c_str());
+			dl->AddText(standard_font, standard_font->FontSize, pause_pos, IM_COL32(255, 255, 255, 255), text.c_str());
 		}
 	}
 
@@ -1147,7 +1279,7 @@ void ImGuiManager::RenderOverlays()
 {
 	const float scale = ImGuiManager::GetGlobalScale();
 	const float margin = std::ceil(10.0f * scale);
-	const float spacing = std::ceil(5.0f * scale);
+	const float spacing = std::ceil(5.0f * scale);	
 	float position_y = margin;
 
 	DrawVideoCaptureOverlay(position_y, scale, margin, spacing);

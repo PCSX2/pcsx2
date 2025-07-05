@@ -341,7 +341,14 @@ enum class OsdOverlayPos : u8
 {
 	None,
 	TopLeft,
+	TopCenter,
 	TopRight,
+	CenterLeft,
+	Center,
+	CenterRight,
+	BottomLeft,
+	BottomCenter,
+	BottomRight,
 };
 
 enum class TexturePreloadingLevel : u8
@@ -449,6 +456,20 @@ enum class GSNativeScaling : u8
 	Off,
 	Normal,
 	Aggressive,
+	MaxCount
+};
+
+enum class AchievementOverlayPosition : u8
+{
+	TopLeft,
+	TopCenter,
+	TopRight,
+	CenterLeft,
+	Center,
+	CenterRight,
+	BottomLeft,
+	BottomCenter,
+	BottomRight,
 	MaxCount
 };
 
@@ -1213,6 +1234,8 @@ struct Pcsx2Config
 		static constexpr const char* DEFAULT_UNLOCK_SOUND_NAME = "sounds/achievements/unlock.wav";
 		static constexpr const char* DEFAULT_LBSUBMIT_SOUND_NAME = "sounds/achievements/lbsubmit.wav";
 
+		static const char* OverlayPositionNames[(size_t)AchievementOverlayPosition::MaxCount + 1];
+
 		BITFIELD32()
 		bool
 			Enabled : 1,
@@ -1231,6 +1254,8 @@ struct Pcsx2Config
 
 		u32 NotificationsDuration = DEFAULT_NOTIFICATION_DURATION;
 		u32 LeaderboardsDuration = DEFAULT_LEADERBOARD_DURATION;
+		AchievementOverlayPosition OverlayPosition = AchievementOverlayPosition::BottomRight;
+		OsdOverlayPos NotificationPosition = OsdOverlayPos::TopLeft;
 
 		std::string InfoSoundName;
 		std::string UnlockSoundName;
