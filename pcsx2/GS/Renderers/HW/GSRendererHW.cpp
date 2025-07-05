@@ -2877,7 +2877,7 @@ void GSRendererHW::Draw()
 			TEX0 = m_cached_ctx.TEX0;
 		}
 
-		tmm = GetTextureMinMax(TEX0, MIP_CLAMP, m_vt.IsLinear(), false);
+		tmm = GetTextureMinMax(TEX0, MIP_CLAMP, m_context->scissor.in, m_vt.IsLinear());
 
 		// Snowblind games set TW/TH to 1024, and use UVs for smaller textures inside that.
 		// Such textures usually contain junk in local memory, so try to make them smaller based on UVs.
@@ -3995,7 +3995,7 @@ void GSRendererHW::Draw()
 				m_vt.m_min.t *= 0.5f;
 				m_vt.m_max.t *= 0.5f;
 
-				tmm = GetTextureMinMax(MIP_TEX0, MIP_CLAMP, m_vt.IsLinear(), true);
+				tmm = GetTextureMinMax(MIP_TEX0, MIP_CLAMP, m_context->scissor.in, m_vt.IsLinear());
 
 				src->UpdateLayer(MIP_TEX0, tmm.coverage, layer - m_lod.x);
 			}
@@ -8064,7 +8064,7 @@ GSRendererHW::CLUTDrawTestResult GSRendererHW::PossibleCLUTDraw()
 	if (m_process_texture)
 	{
 		// If we're using a texture to draw our CLUT/whatever, we need the GPU to write back dirty data we need.
-		const GSVector4i r = GetTextureMinMax(m_cached_ctx.TEX0, m_cached_ctx.CLAMP, m_vt.IsLinear(), false).coverage;
+		const GSVector4i r = GetTextureMinMax(m_cached_ctx.TEX0, m_cached_ctx.CLAMP, m_context->scissor.in, m_vt.IsLinear()).coverage;
 
 		// If we have GPU CLUT enabled, don't do a CPU draw when it would result in a download.
 		if (GSConfig.UserHacks_GPUTargetCLUTMode != GSGPUTargetCLUTMode::Disabled)
@@ -8205,7 +8205,7 @@ bool GSRendererHW::CanUseSwPrimRender(bool no_rt, bool no_ds, bool draw_sprite_t
 			// If the EE has written over our sample area, we're fine to do this on the CPU, despite the target.
 			if (!src_target->m_dirty.empty())
 			{
-				const GSVector4i tr(GetTextureMinMax(m_cached_ctx.TEX0, m_cached_ctx.CLAMP, m_vt.IsLinear(), false).coverage);
+				const GSVector4i tr(GetTextureMinMax(m_cached_ctx.TEX0, m_cached_ctx.CLAMP, m_context->scissor.in, m_vt.IsLinear()).coverage);
 
 				const u32 start_bp = GSLocalMemory::GetStartBlockAddress(m_cached_ctx.TEX0.TBP0, m_cached_ctx.TEX0.TBW, m_cached_ctx.TEX0.PSM, tr);
 				const u32 end_bp = GSLocalMemory::GetEndBlockAddress(m_cached_ctx.TEX0.TBP0, m_cached_ctx.TEX0.TBW, m_cached_ctx.TEX0.PSM, tr);
