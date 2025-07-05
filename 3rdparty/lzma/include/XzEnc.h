@@ -1,5 +1,5 @@
 /* XzEnc.h -- Xz Encode
-2023-04-13 : Igor Pavlov : Public domain */
+: Igor Pavlov : Public domain */
 
 #ifndef ZIP7_INC_XZ_ENC_H
 #define ZIP7_INC_XZ_ENC_H
@@ -31,6 +31,7 @@ typedef struct
   CLzma2EncProps lzma2Props;
   CXzFilterProps filterProps;
   unsigned checkId;
+  unsigned numThreadGroups; // 0 : no groups
   UInt64 blockSize;
   int numBlockThreads_Reduced;
   int numBlockThreads_Max;

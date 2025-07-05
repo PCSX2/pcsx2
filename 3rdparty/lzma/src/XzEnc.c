@@ -1,5 +1,5 @@
 /* XzEnc.c -- Xz Encode
-2024-03-01 : Igor Pavlov : Public domain */
+: Igor Pavlov : Public domain */
 
 #include "Precomp.h"
 
@@ -411,6 +411,7 @@ static SRes SeqInFilter_Read(ISeqInStreamPtr pp, void *data, size_t *size)
   }
 }
 
+Z7_FORCE_INLINE
 static void SeqInFilter_Construct(CSeqInFilter *p)
 {
   p->buf = NULL;
@@ -418,6 +419,7 @@ static void SeqInFilter_Construct(CSeqInFilter *p)
   p->vt.Read = SeqInFilter_Read;
 }
 
+Z7_FORCE_INLINE
 static void SeqInFilter_Free(CSeqInFilter *p, ISzAllocPtr alloc)
 {
   if (p->StateCoder.p)
@@ -507,6 +509,7 @@ void XzFilterProps_Init(CXzFilterProps *p)
 void XzProps_Init(CXzProps *p)
 {
   p->checkId = XZ_CHECK_CRC32;
+  p->numThreadGroups = 0;
   p->blockSize = XZ_PROPS_BLOCK_SIZE_AUTO;
   p->numBlockThreads_Reduced = -1;
   p->numBlockThreads_Max = -1;
@@ -689,6 +692,7 @@ typedef struct
 } CLzma2WithFilters;
 
 
+Z7_FORCE_INLINE
 static void Lzma2WithFilters_Construct(CLzma2WithFilters *p)
 {
   p->lzma2 = NULL;
@@ -712,6 +716,7 @@ static SRes Lzma2WithFilters_Create(CLzma2WithFilters *p, ISzAllocPtr alloc, ISz
 }
 
 
+Z7_FORCE_INLINE
 static void Lzma2WithFilters_Free(CLzma2WithFilters *p, ISzAllocPtr alloc)
 {
   #ifdef USE_SUBBLOCK
@@ -1236,6 +1241,7 @@ SRes XzEnc_Encode(CXzEncHandle p, ISeqOutStreamPtr outStream, ISeqInStreamPtr in
     }
 
     p->mtCoder.numThreadsMax = (unsigned)props->numBlockThreads_Max;
+    p->mtCoder.numThreadGroups = props->numThreadGroups;
     p->mtCoder.expectedDataSize = p->expectedDataSize;
     
     RINOK(MtCoder_Code(&p->mtCoder))

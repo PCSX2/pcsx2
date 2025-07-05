@@ -1,18 +1,11 @@
 /* Sha256Opt.c -- SHA-256 optimized code for SHA-256 hardware instructions
-2024-03-01 : Igor Pavlov : Public domain */
+: Igor Pavlov : Public domain */
 
 #include "Precomp.h"
 #include "Compiler.h"
 #include "CpuArch.h"
 
-#if defined(_MSC_VER)
-#if (_MSC_VER < 1900) && (_MSC_VER >= 1200)
-// #define USE_MY_MM
-#endif
-#endif
-
 // #define Z7_USE_HW_SHA_STUB // for debug
-
 #ifdef MY_CPU_X86_OR_AMD64
   #if defined(__INTEL_COMPILER) && (__INTEL_COMPILER >= 1600) // fix that check
       #define USE_HW_SHA
@@ -20,19 +13,14 @@
      || defined(Z7_APPLE_CLANG_VERSION) && (Z7_APPLE_CLANG_VERSION >= 50100) \
      || defined(Z7_GCC_VERSION)         && (Z7_GCC_VERSION         >= 40900)
       #define USE_HW_SHA
-      #if !defined(_INTEL_COMPILER)
+      #if !defined(__INTEL_COMPILER)
       // icc defines __GNUC__, but icc doesn't support __attribute__(__target__)
       #if !defined(__SHA__) || !defined(__SSSE3__)
         #define ATTRIB_SHA __attribute__((__target__("sha,ssse3")))
       #endif
       #endif
   #elif defined(_MSC_VER)
-    #ifdef USE_MY_MM
-      #define USE_VER_MIN 1300
-    #else
-      #define USE_VER_MIN 1900
-    #endif
-    #if (_MSC_VER >= USE_VER_MIN)
+    #if (_MSC_VER >= 1900)
       #define USE_HW_SHA
     #else
       #define Z7_USE_HW_SHA_STUB
@@ -47,22 +35,19 @@
 
 // #pragma message("Sha256 HW")
 
+
+
+
 // sse/sse2/ssse3:
 #include <tmmintrin.h>
 // sha*:
 #include <immintrin.h>
 
 #if defined (__clang__) && defined(_MSC_VER)
-  // #if !defined(__SSSE3__)
-  // #endif
   #if !defined(__SHA__)
     #include <shaintrin.h>
   #endif
 #else
-
-#ifdef USE_MY_MM
-#include "My_mm.h"
-#endif
 
 #endif
 
@@ -91,60 +76,44 @@ SHA:
 extern
 MY_ALIGN(64)
 const UInt32 SHA256_K_ARRAY[64];
-
 #define K SHA256_K_ARRAY
 
 
 #define ADD_EPI32(dest, src)      dest = _mm_add_epi32(dest, src);
 #define SHA256_MSG1(dest, src)    dest = _mm_sha256msg1_epu32(dest, src);
-#define SHA25G_MSG2(dest, src)    dest = _mm_sha256msg2_epu32(dest, src);
-
+#define SHA256_MSG2(dest, src)    dest = _mm_sha256msg2_epu32(dest, src);
 
 #define LOAD_SHUFFLE(m, k) \
     m = _mm_loadu_si128((const __m128i *)(const void *)(data + (k) * 16)); \
     m = _mm_shuffle_epi8(m, mask); \
 
-#define SM1(g0, g1, g2, g3) \
-    SHA256_MSG1(g3, g0); \
+#define NNN(m0, m1, m2, m3)
 
-#define SM2(g0, g1, g2, g3) \
-    tmp = _mm_alignr_epi8(g1, g0, 4); \
-    ADD_EPI32(g2, tmp) \
-    SHA25G_MSG2(g2, g1); \
+#define SM1(m1, m2, m3, m0) \
+    SHA256_MSG1(m0, m1); \
 
-// #define LS0(k, g0, g1, g2, g3) LOAD_SHUFFLE(g0, k)
-// #define LS1(k, g0, g1, g2, g3) LOAD_SHUFFLE(g1, k+1)
-
-
-#define NNN(g0, g1, g2, g3)
-
+#define SM2(m2, m3, m0, m1) \
+    ADD_EPI32(m0, _mm_alignr_epi8(m3, m2, 4)) \
+    SHA256_MSG2(m0, m3); \
 
 #define RND2(t0, t1) \
     t0 = _mm_sha256rnds2_epu32(t0, t1, msg);
 
-#define RND2_0(m, k) \
-    msg = _mm_add_epi32(m, *(const __m128i *) (const void *) &K[(k) * 4]); \
+
+
+#define R4(k, m0, m1, m2, m3, OP0, OP1) \
+    msg = _mm_add_epi32(m0, *(const __m128i *) (const void *) &K[(k) * 4]); \
     RND2(state0, state1); \
     msg = _mm_shuffle_epi32(msg, 0x0E); \
-
-
-#define RND2_1 \
+    OP0(m0, m1, m2, m3) \
     RND2(state1, state0); \
-
-
-// We use scheme with 3 rounds ahead for SHA256_MSG1 / 2 rounds ahead for SHA256_MSG2
-
-#define R4(k, g0, g1, g2, g3, OP0, OP1) \
-    RND2_0(g0, k) \
-    OP0(g0, g1, g2, g3) \
-    RND2_1 \
-    OP1(g0, g1, g2, g3) \
+    OP1(m0, m1, m2, m3) \
 
 #define R16(k, OP0, OP1, OP2, OP3, OP4, OP5, OP6, OP7) \
-    R4 ( (k)*4+0,        m0,m1,m2,m3, OP0, OP1 ) \
-    R4 ( (k)*4+1,        m1,m2,m3,m0, OP2, OP3 ) \
-    R4 ( (k)*4+2,        m2,m3,m0,m1, OP4, OP5 ) \
-    R4 ( (k)*4+3,        m3,m0,m1,m2, OP6, OP7 ) \
+    R4 ( (k)*4+0, m0,m1,m2,m3, OP0, OP1 ) \
+    R4 ( (k)*4+1, m1,m2,m3,m0, OP2, OP3 ) \
+    R4 ( (k)*4+2, m2,m3,m0,m1, OP4, OP5 ) \
+    R4 ( (k)*4+3, m3,m0,m1,m2, OP6, OP7 ) \
 
 #define PREPARE_STATE \
     tmp    = _mm_shuffle_epi32(state0, 0x1B); /* abcd */ \
@@ -161,8 +130,9 @@ ATTRIB_SHA
 void Z7_FASTCALL Sha256_UpdateBlocks_HW(UInt32 state[8], const Byte *data, size_t numBlocks)
 {
   const __m128i mask = _mm_set_epi32(0x0c0d0e0f, 0x08090a0b, 0x04050607, 0x00010203);
-  __m128i tmp;
-  __m128i state0, state1;
+   
+  
+  __m128i tmp, state0, state1;
 
   if (numBlocks == 0)
     return;
@@ -262,21 +232,9 @@ void Z7_FASTCALL Sha256_UpdateBlocks_HW(UInt32 state[8], const Byte *data, size_
   #define _ARM_USE_NEW_NEON_INTRINSICS
 #endif
 
-
-
-
-
 #if defined(Z7_MSC_VER_ORIGINAL) && defined(MY_CPU_ARM64)
 #include <arm64_neon.h>
 #else
-
-
-
-
-
-
-
-
 
 #if defined(__clang__) && __clang_major__ < 16
 #if !defined(__ARM_FEATURE_SHA2) && \
@@ -324,41 +282,70 @@ typedef uint32x4_t v128;
 // typedef __n128 v128; // MSVC
 
 #ifdef MY_CPU_BE
-  #define MY_rev32_for_LE(x)
+  #define MY_rev32_for_LE(x) x
 #else
-  #define MY_rev32_for_LE(x) x = vreinterpretq_u32_u8(vrev32q_u8(vreinterpretq_u8_u32(x)))
+  #define MY_rev32_for_LE(x) vrev32q_u8(x)
 #endif
 
-#define LOAD_128(_p)      (*(const v128 *)(const void *)(_p))
-#define STORE_128(_p, _v) *(v128 *)(void *)(_p) = (_v)
+#if 1 // 0 for debug
+// for arm32: it works slower by some reason than direct code
+/*
+for arm32 it generates:
+MSVC-2022, GCC-9:
+    vld1.32 {d18,d19}, [r10]
+    vst1.32 {d4,d5}, [r3]
+    vld1.8  {d20-d21}, [r4]
+there is no align hint (like [r10:128]).  So instruction allows unaligned access
+*/
+#define LOAD_128_32(_p)       vld1q_u32(_p)
+#define LOAD_128_8(_p)        vld1q_u8 (_p)
+#define STORE_128_32(_p, _v)  vst1q_u32(_p, _v)
+#else
+/*
+for arm32:
+MSVC-2022:
+    vldm r10,{d18,d19}
+    vstm r3,{d4,d5}
+    does it require strict alignment?
+GCC-9:
+    vld1.64 {d30-d31}, [r0:64]
+    vldr  d28, [r0, #16]
+    vldr  d29, [r0, #24]
+    vst1.64 {d30-d31}, [r0:64]
+    vstr  d28, [r0, #16]
+    vstr  d29, [r0, #24]
+there is hint [r0:64], so does it requires 64-bit alignment.
+*/
+#define LOAD_128_32(_p)       (*(const v128 *)(const void *)(_p))
+#define LOAD_128_8(_p)        vreinterpretq_u8_u32(*(const v128 *)(const void *)(_p))
+#define STORE_128_32(_p, _v)  *(v128 *)(void *)(_p) = (_v)
+#endif
 
 #define LOAD_SHUFFLE(m, k) \
-    m = LOAD_128((data + (k) * 16)); \
-    MY_rev32_for_LE(m); \
+    m = vreinterpretq_u32_u8( \
+        MY_rev32_for_LE( \
+        LOAD_128_8(data + (k) * 16))); \
 
 // K array must be aligned for 16-bytes at least.
 extern
 MY_ALIGN(64)
 const UInt32 SHA256_K_ARRAY[64];
-
 #define K SHA256_K_ARRAY
 
-
 #define SHA256_SU0(dest, src)        dest = vsha256su0q_u32(dest, src);
-#define SHA25G_SU1(dest, src2, src3) dest = vsha256su1q_u32(dest, src2, src3);
+#define SHA256_SU1(dest, src2, src3) dest = vsha256su1q_u32(dest, src2, src3);
 
-#define SM1(g0, g1, g2, g3)  SHA256_SU0(g3, g0)
-#define SM2(g0, g1, g2, g3)  SHA25G_SU1(g2, g0, g1)
-#define NNN(g0, g1, g2, g3)
+#define SM1(m0, m1, m2, m3)  SHA256_SU0(m3, m0)
+#define SM2(m0, m1, m2, m3)  SHA256_SU1(m2, m0, m1)
+#define NNN(m0, m1, m2, m3)
 
-
-#define R4(k, g0, g1, g2, g3, OP0, OP1) \
-    msg = vaddq_u32(g0, *(const v128 *) (const void *) &K[(k) * 4]); \
+#define R4(k, m0, m1, m2, m3, OP0, OP1) \
+    msg = vaddq_u32(m0, *(const v128 *) (const void *) &K[(k) * 4]); \
     tmp = state0; \
     state0 = vsha256hq_u32( state0, state1, msg ); \
     state1 = vsha256h2q_u32( state1, tmp, msg ); \
-    OP0(g0, g1, g2, g3); \
-    OP1(g0, g1, g2, g3); \
+    OP0(m0, m1, m2, m3); \
+    OP1(m0, m1, m2, m3); \
 
 
 #define R16(k, OP0, OP1, OP2, OP3, OP4, OP5, OP6, OP7) \
@@ -379,8 +366,8 @@ void Z7_FASTCALL Sha256_UpdateBlocks_HW(UInt32 state[8], const Byte *data, size_
   if (numBlocks == 0)
     return;
 
-  state0 = LOAD_128(&state[0]);
-  state1 = LOAD_128(&state[4]);
+  state0 = LOAD_128_32(&state[0]);
+  state1 = LOAD_128_32(&state[4]);
   
   do
   {
@@ -408,8 +395,8 @@ void Z7_FASTCALL Sha256_UpdateBlocks_HW(UInt32 state[8], const Byte *data, size_
   }
   while (--numBlocks);
 
-  STORE_128(&state[0], state0);
-  STORE_128(&state[4], state1);
+  STORE_128_32(&state[0], state0);
+  STORE_128_32(&state[4], state1);
 }
 
 #endif // USE_HW_SHA
@@ -443,13 +430,10 @@ void Z7_FASTCALL Sha256_UpdateBlocks_HW(UInt32 state[8], const Byte *data, size_
 #endif
 
 
-
 #undef K
 #undef RND2
-#undef RND2_0
-#undef RND2_1
-
 #undef MY_rev32_for_LE
+
 #undef NNN
 #undef LOAD_128
 #undef STORE_128
@@ -457,7 +441,7 @@ void Z7_FASTCALL Sha256_UpdateBlocks_HW(UInt32 state[8], const Byte *data, size_
 #undef SM1
 #undef SM2
 
-#undef NNN
+
 #undef R4
 #undef R16
 #undef PREPARE_STATE

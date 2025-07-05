@@ -1,5 +1,5 @@
 /* LzFindMt.c -- multithreaded Match finder for LZ algorithms
-2024-01-22 : Igor Pavlov : Public domain */
+: Igor Pavlov : Public domain */
 
 #include "Precomp.h"
 
@@ -82,6 +82,8 @@ extern UInt64 g_NumIters_Bytes;
 Z7_NO_INLINE
 static void MtSync_Construct(CMtSync *p)
 {
+  p->affinityGroup = -1;
+  p->affinityInGroup = 0;
   p->affinity = 0;
   p->wasCreated = False;
   p->csWasInitialized = False;
@@ -259,6 +261,12 @@ static WRes MtSync_Create_WRes(CMtSync *p, THREAD_FUNC_TYPE startAddress, void *
   // return ERROR_TOO_MANY_POSTS; // for debug
   // return EINVAL; // for debug
 
+#ifdef _WIN32
+  if (p->affinityGroup >= 0)
+    wres = Thread_Create_With_Group(&p->thread, startAddress, obj,
+        (unsigned)(UInt32)p->affinityGroup, (CAffinityMask)p->affinityInGroup);
+  else
+#endif
   if (p->affinity != 0)
     wres = Thread_Create_With_Affinity(&p->thread, startAddress, obj, (CAffinityMask)p->affinity);
   else

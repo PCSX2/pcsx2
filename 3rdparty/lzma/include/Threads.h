@@ -1,5 +1,5 @@
 /* Threads.h -- multithreading library
-2024-03-28 : Igor Pavlov : Public domain */
+: Igor Pavlov : Public domain */
 
 #ifndef ZIP7_INC_THREADS_H
 #define ZIP7_INC_THREADS_H
@@ -140,11 +140,21 @@ WRes Thread_Create_With_Affinity(CThread *p, THREAD_FUNC_TYPE func, LPVOID param
 WRes Thread_Wait_Close(CThread *p);
 
 #ifdef _WIN32
+WRes Thread_Create_With_Group(CThread *p, THREAD_FUNC_TYPE func, LPVOID param, unsigned group, CAffinityMask affinityMask);
 #define Thread_Create_With_CpuSet(p, func, param, cs) \
   Thread_Create_With_Affinity(p, func, param, *cs)
 #else
 WRes Thread_Create_With_CpuSet(CThread *p, THREAD_FUNC_TYPE func, LPVOID param, const CCpuSet *cpuSet);
 #endif
+
+typedef struct
+{
+  unsigned NumGroups;
+  unsigned NextGroup;
+} CThreadNextGroup;
+
+void ThreadNextGroup_Init(CThreadNextGroup *p, unsigned numGroups, unsigned startGroup);
+unsigned ThreadNextGroup_GetNext(CThreadNextGroup *p);
 
 
 #ifdef _WIN32
