@@ -239,6 +239,9 @@ namespace QtHost
 	/// Sets application theme according to settings.
 	void UpdateApplicationTheme();
 
+	/// Sets the focus state of the window
+	void setFocusState(Qt::ApplicationState state);
+
 	/// Returns true if the application theme is using dark colours.
 	bool IsDarkApplicationTheme();
 
@@ -253,6 +256,9 @@ namespace QtHost
 
 	/// Executes a function on the UI thread.
 	void RunOnUIThread(const std::function<void()>& func, bool block = false);
+
+	/// Return true if window is focused
+	bool isFocused();
 
 	/// Returns a list of supported languages and codes (suffixes for translation files).
 	std::vector<std::pair<QString, QString>> GetAvailableLanguageList();
