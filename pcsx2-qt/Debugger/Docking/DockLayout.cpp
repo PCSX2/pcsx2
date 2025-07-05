@@ -872,8 +872,7 @@ void DockLayout::setupDefaultLayout()
 
 	for (const DockTables::DefaultDockWidgetDescription& dock_description : base_layout->widgets)
 	{
-		const DockTables::DefaultDockGroupDescription& group =
-			base_layout->groups[static_cast<u32>(dock_description.group)];
+		const DockTables::DefaultDockGroupDescription& group = base_layout->groups.at(dock_description.group);
 
 		DebuggerView* widget = nullptr;
 		for (auto& [unique_name, test_widget] : m_widgets)
@@ -887,19 +886,19 @@ void DockLayout::setupDefaultLayout()
 			KDDockWidgets::Config::self().viewFactory()->createDockWidget(widget->uniqueName()));
 		view->setWidget(widget);
 
-		if (!groups[static_cast<u32>(dock_description.group)])
+		if (!groups.at(dock_description.group))
 		{
 			KDDockWidgets::QtWidgets::DockWidget* parent = nullptr;
-			if (group.parent != DockTables::DefaultDockGroup::ROOT)
-				parent = groups[static_cast<u32>(group.parent)];
+			if (group.parent >= 0 && group.parent < static_cast<s32>(groups.size()))
+				parent = groups.at(group.parent);
 
 			g_debugger_window->addDockWidget(view, group.location, parent);
 
-			groups[static_cast<u32>(dock_description.group)] = view;
+			groups.at(dock_description.group) = view;
 		}
 		else
 		{
-			groups[static_cast<u32>(dock_description.group)]->addDockWidgetAsTab(view);
+			groups.at(dock_description.group)->addDockWidgetAsTab(view);
 		}
 	}
 
