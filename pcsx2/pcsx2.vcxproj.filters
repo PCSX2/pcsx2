@@ -2289,6 +2289,9 @@
     <ClInclude Include="LayeredSettingsInterface.h">
       <Filter>Misc</Filter>
     </ClInclude>
+    <ClInclude Include="ImGui\ImGuiAnimated.h">
+      <Filter>Misc\ImGui</Filter>
+    </ClInclude>
     <ClInclude Include="ImGui\ImGuiManager.h">
       <Filter>Misc\ImGui</Filter>
     </ClInclude>
@@ -2349,7 +2352,6 @@
     <ClInclude Include="SIO\Pad\Pad.h">
       <Filter>System\Ps2\Iop\SIO\PAD</Filter>
     </ClInclude>
-    <ClInclude Include="ImGui\ImGuiAnimated.h" />
     <ClInclude Include="SIO\Pad\PadPopn.h">
       <Filter>System\Ps2\Iop\SIO\PAD</Filter>
     </ClInclude>
