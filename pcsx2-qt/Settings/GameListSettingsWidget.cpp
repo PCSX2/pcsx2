@@ -53,6 +53,11 @@ GameListSettingsWidget::GameListSettingsWidget(SettingsWindow* dialog, QWidget* 
 
 	refreshDirectoryList();
 	refreshExclusionList();
+
+	connect(dialog, &SettingsWindow::externalSettingsChanged, this, [this]() {
+		refreshDirectoryList();
+		refreshExclusionList();
+	});
 }
 
 GameListSettingsWidget::~GameListSettingsWidget() = default;

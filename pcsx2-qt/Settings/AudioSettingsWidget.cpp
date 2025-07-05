@@ -125,6 +125,12 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent
 	dialog->registerWidgetHelp(m_ui.resetFastForwardVolume, tr("Reset Fast Forward Volume"), tr("N/A"),
 		m_dialog->isPerGameSettings() ? tr("Resets fast forward volume back to the global/inherited setting.") :
 										tr("Resets fast forward volume back to the default."));
+	
+	connect(dialog, &SettingsWindow::externalSettingsChanged, this, [this]() {
+		updateLatencyLabel();
+		updateVolumeLabel();
+		updateDriverNames();
+	});					
 }
 
 AudioSettingsWidget::~AudioSettingsWidget() = default;
