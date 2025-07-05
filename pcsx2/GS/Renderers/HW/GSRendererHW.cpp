@@ -1292,10 +1292,10 @@ bool GSRendererHW::IsSplitTextureShuffle(GIFRegTEX0& rt_TEX0, GSVector4i& valid_
 	// "Potential" ones are for Jak3 which does a split shuffle on a 128x128 texture with a width of 256, writing to the lower half then offsetting 2 pages.
 	const u32 expected_next_FBP = (m_cached_ctx.FRAME.FBP + m_split_texture_shuffle_pages) + num_pages;
 	const u32 potential_expected_next_FBP = m_cached_ctx.FRAME.FBP + ((m_context->FRAME.FBW * 64) / aligned_rc.width());
-	const u32 expected_next_TBP0 = (m_cached_ctx.TEX0.TBP0 + (m_split_texture_shuffle_pages + num_pages) * BLOCKS_PER_PAGE);
-	const u32 potential_expected_next_TBP0 = m_cached_ctx.TEX0.TBP0 + (BLOCKS_PER_PAGE * ((m_context->TEX0.TBW * 64) / aligned_rc.width()));
+	const u32 expected_next_TBP0 = (m_cached_ctx.TEX0.TBP0 + (m_split_texture_shuffle_pages + num_pages) * GS_BLOCKS_PER_PAGE);
+	const u32 potential_expected_next_TBP0 = m_cached_ctx.TEX0.TBP0 + (GS_BLOCKS_PER_PAGE * ((m_context->TEX0.TBW * 64) / aligned_rc.width()));
 	GL_CACHE("HW: IsSplitTextureShuffle: Draw covers %ux%u pages, next FRAME %x TEX %x",
-		static_cast<u32>(aligned_rc.width()) / frame_psm.pgs.x, pages_high, expected_next_FBP * BLOCKS_PER_PAGE,
+		static_cast<u32>(aligned_rc.width()) / frame_psm.pgs.x, pages_high, expected_next_FBP * GS_BLOCKS_PER_PAGE,
 		expected_next_TBP0);
 
 	if (next_ctx.TEX0.TBP0 != expected_next_TBP0 && next_ctx.TEX0.TBP0 != potential_expected_next_TBP0 && next_ctx.TEX0.TBP0 != (rt_half << 5))
@@ -1307,8 +1307,8 @@ bool GSRendererHW::IsSplitTextureShuffle(GIFRegTEX0& rt_TEX0, GSVector4i& valid_
 	// Some games don't offset the FBP.
 	if (next_ctx.FRAME.FBP != expected_next_FBP && next_ctx.FRAME.FBP != m_cached_ctx.FRAME.FBP && next_ctx.FRAME.FBP != potential_expected_next_FBP && next_ctx.FRAME.FBP != rt_half)
 	{
-		GL_CACHE("HW: IsSplitTextureShuffle: Mismatch on FBP, expecting %x, got %x", expected_next_FBP * BLOCKS_PER_PAGE,
-			next_ctx.FRAME.FBP * BLOCKS_PER_PAGE);
+		GL_CACHE("HW: IsSplitTextureShuffle: Mismatch on FBP, expecting %x, got %x", expected_next_FBP * GS_BLOCKS_PER_PAGE,
+			next_ctx.FRAME.FBP * GS_BLOCKS_PER_PAGE);
 		return false;
 	}
 
@@ -1437,7 +1437,7 @@ bool GSRendererHW::TryToResolveSinglePageFramebuffer(GIFRegFRAME& FRAME, bool on
 				// Try with Z or FRAME (whichever we're not using).
 				tgt = g_texture_cache->GetTargetWithSharedBits(start_bp, new_psm ^ 0x30);
 			}
-			if (tgt && ((start_bp + (m_split_clear_pages * BLOCKS_PER_PAGE)) - 1) <= tgt->m_end_block)
+			if (tgt && ((start_bp + (m_split_clear_pages * GS_BLOCKS_PER_PAGE)) - 1) <= tgt->m_end_block)
 			{
 				GL_INS("HW: TryToResolveSinglePageWidth(): Using FBW of %u and PSM %s from existing target",
 					tgt->m_TEX0.PSM, GSUtil::GetPSMName(tgt->m_TEX0.PSM));
@@ -1542,9 +1542,9 @@ bool GSRendererHW::CheckNextDrawForSplitClear(const GSVector4i& r, u32* pages_co
 	if (pages_covered_by_this_draw)
 	{
 		if (end_block < m_cached_ctx.FRAME.Block())
-			*pages_covered_by_this_draw = (((MAX_BLOCKS - end_block) + m_cached_ctx.FRAME.Block()) + (BLOCKS_PER_PAGE)) / BLOCKS_PER_PAGE;
+			*pages_covered_by_this_draw = (((GS_MAX_BLOCKS - end_block) + m_cached_ctx.FRAME.Block()) + (GS_BLOCKS_PER_PAGE)) / GS_BLOCKS_PER_PAGE;
 		else
-			*pages_covered_by_this_draw = ((end_block - m_cached_ctx.FRAME.Block()) + (BLOCKS_PER_PAGE)) / BLOCKS_PER_PAGE;
+			*pages_covered_by_this_draw = ((end_block - m_cached_ctx.FRAME.Block()) + (GS_BLOCKS_PER_PAGE)) / GS_BLOCKS_PER_PAGE;
 	}
 
 	// must be changing FRAME
@@ -1557,7 +1557,7 @@ bool GSRendererHW::CheckNextDrawForSplitClear(const GSVector4i& r, u32* pages_co
 
 	// next FBP should point to the end of the rect
 	const GSDrawingContext& next_ctx = m_env.CTXT[m_backed_up_ctx];
-	if (next_ctx.FRAME.Block() != ((end_block + 1) % MAX_BLOCKS) ||
+	if (next_ctx.FRAME.Block() != ((end_block + 1) % GS_MAX_BLOCKS) ||
 		m_context->TEX0.U64 != next_ctx.TEX0.U64 ||
 		m_context->TEX1.U64 != next_ctx.TEX1.U64 || m_context->CLAMP.U64 != next_ctx.CLAMP.U64 ||
 		m_context->TEST.U64 != next_ctx.TEST.U64 || ((m_context->FRAME.U64 ^ next_ctx.FRAME.U64) & (~0x1FF)) != 0 ||
@@ -1571,7 +1571,7 @@ bool GSRendererHW::CheckNextDrawForSplitClear(const GSVector4i& r, u32* pages_co
 	{
 		const u32 end_z_block = GSLocalMemory::GetEndBlockAddress(
 			m_cached_ctx.ZBUF.Block(), m_cached_ctx.FRAME.FBW, m_cached_ctx.ZBUF.PSM, r);
-		if (next_ctx.ZBUF.Block() != ((end_z_block + 1) % MAX_BLOCKS))
+		if (next_ctx.ZBUF.Block() != ((end_z_block + 1) % GS_MAX_BLOCKS))
 			return false;
 	}
 
@@ -2594,7 +2594,7 @@ void GSRendererHW::Draw()
 		const GSVector4i new_r = GetSplitTextureShuffleDrawRect();
 		GL_CACHE(
 			"Split texture shuffle: FBP %x -> %x, TBP0 %x -> %x, draw %d,%d => %d,%d -> %d,%d => %d,%d",
-			m_cached_ctx.FRAME.Block(), m_split_texture_shuffle_start_FBP * BLOCKS_PER_PAGE,
+			m_cached_ctx.FRAME.Block(), m_split_texture_shuffle_start_FBP * GS_BLOCKS_PER_PAGE,
 			m_cached_ctx.TEX0.TBP0, m_split_texture_shuffle_start_TBP,
 			m_r.x, m_r.y, m_r.z, m_r.w,
 			new_r.x, new_r.y, new_r.z, new_r.w);
@@ -3793,7 +3793,7 @@ void GSRendererHW::Draw()
 			m_last_channel_shuffle_tbp = src->m_TEX0.TBP0;
 
 			// If it's a new target, we don't know where the end is as it's starting on a shuffle, so just do every shuffle following.
-			m_last_channel_shuffle_end_block = (rt->m_last_draw >= s_n) ? (MAX_BLOCKS - 1) : (rt->m_end_block < rt->m_TEX0.TBP0 ? (rt->m_end_block + MAX_BLOCKS) : rt->m_end_block);
+			m_last_channel_shuffle_end_block = (rt->m_last_draw >= s_n) ? (GS_MAX_BLOCKS - 1) : (rt->m_end_block < rt->m_TEX0.TBP0 ? (rt->m_end_block + GS_MAX_BLOCKS) : rt->m_end_block);
 		}
 		else
 			m_last_channel_shuffle_end_block = 0xFFFF;
@@ -3936,7 +3936,7 @@ void GSRendererHW::Draw()
 					m_last_channel_shuffle_end_block = (rt->m_TEX0.TBP0 + (src->m_from_target->m_end_block - src->m_from_target_TEX0.TBP0));
 
 				if (m_last_channel_shuffle_end_block < rt->m_TEX0.TBP0)
-					m_last_channel_shuffle_end_block += MAX_BLOCKS;
+					m_last_channel_shuffle_end_block += GS_MAX_BLOCKS;
 
 				// if the RT is bigger, then use that instead.
 				if (m_last_channel_shuffle_end_block < rt->m_end_block)
@@ -8454,17 +8454,17 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 		// path write out FRAME and Z separately, with their associated masks. Limit it to black to avoid false positives.
 		if (write_color == 0)
 		{
-			const GSTextureCache::Target* base_tgt = g_texture_cache->GetExactTarget(base * BLOCKS_PER_PAGE,
+			const GSTextureCache::Target* base_tgt = g_texture_cache->GetExactTarget(base * GS_BLOCKS_PER_PAGE,
 				m_cached_ctx.FRAME.FBW, clear_depth ? GSTextureCache::DepthStencil : GSTextureCache::RenderTarget,
-				GSLocalMemory::GetEndBlockAddress(half * BLOCKS_PER_PAGE, m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM, m_r));
+				GSLocalMemory::GetEndBlockAddress(half * GS_BLOCKS_PER_PAGE, m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM, m_r));
 			if (base_tgt)
 			{
 				GL_INS("HW: DetectDoubleHalfClear(): Invalidating targets at 0x%x/0x%x due to different formats, and clear to black.",
-					base * BLOCKS_PER_PAGE, half * BLOCKS_PER_PAGE);
-				g_texture_cache->InvalidateVideoMemType(GSTextureCache::RenderTarget, base * BLOCKS_PER_PAGE);
-				g_texture_cache->InvalidateVideoMemType(GSTextureCache::RenderTarget, half * BLOCKS_PER_PAGE);
-				g_texture_cache->InvalidateVideoMemType(GSTextureCache::DepthStencil, base * BLOCKS_PER_PAGE);
-				g_texture_cache->InvalidateVideoMemType(GSTextureCache::DepthStencil, half * BLOCKS_PER_PAGE);
+					base * GS_BLOCKS_PER_PAGE, half * GS_BLOCKS_PER_PAGE);
+				g_texture_cache->InvalidateVideoMemType(GSTextureCache::RenderTarget, base * GS_BLOCKS_PER_PAGE);
+				g_texture_cache->InvalidateVideoMemType(GSTextureCache::RenderTarget, half * GS_BLOCKS_PER_PAGE);
+				g_texture_cache->InvalidateVideoMemType(GSTextureCache::DepthStencil, base * GS_BLOCKS_PER_PAGE);
+				g_texture_cache->InvalidateVideoMemType(GSTextureCache::DepthStencil, half * GS_BLOCKS_PER_PAGE);
 			}
 		}
 
@@ -8501,16 +8501,16 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 	{
 		// Check for a target matching the starting point. It might be in Z or FRAME...
 		GSTextureCache::Target* tgt = g_texture_cache->GetTargetWithSharedBits(
-			base * BLOCKS_PER_PAGE, clear_depth ? m_cached_ctx.ZBUF.PSM : m_cached_ctx.FRAME.PSM);
+			base * GS_BLOCKS_PER_PAGE, clear_depth ? m_cached_ctx.ZBUF.PSM : m_cached_ctx.FRAME.PSM);
 		tgt = (tgt && tgt->m_valid_rgb && tgt->HasValidAlpha() == req_valid_alpha) ? tgt : nullptr;
 		if (!tgt)
 		{
 			tgt = g_texture_cache->GetTargetWithSharedBits(
-				base * BLOCKS_PER_PAGE, clear_depth ? m_cached_ctx.FRAME.PSM : m_cached_ctx.ZBUF.PSM);
+				base * GS_BLOCKS_PER_PAGE, clear_depth ? m_cached_ctx.FRAME.PSM : m_cached_ctx.ZBUF.PSM);
 			tgt = (tgt && tgt->m_valid_rgb && tgt->HasValidAlpha() == req_valid_alpha) ? tgt : nullptr;
 		}
 
-		u32 end_block = ((half + written_pages) * BLOCKS_PER_PAGE) - 1;
+		u32 end_block = ((half + written_pages) * GS_BLOCKS_PER_PAGE) - 1;
 
 		if (tgt && tgt->m_age <= 1)
 		{
@@ -8540,7 +8540,7 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 		}
 
 		// Are we clearing over the middle of this target?
-		if ((((half + written_pages) * BLOCKS_PER_PAGE) - 1) > end_block)
+		if ((((half + written_pages) * GS_BLOCKS_PER_PAGE) - 1) > end_block)
 		{
 			return false;
 		}
@@ -8548,7 +8548,7 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 
 	GL_INS("HW: DetectDoubleHalfClear(): Clearing %s %s, fbp=%x, zbp=%x, pages=%u, base=%x, half=%x, rect=(%d,%d=>%d,%d)",
 		clear_depth ? "depth" : "color", horizontal ? "horizontally" : "vertically", m_cached_ctx.FRAME.Block(),
-		m_cached_ctx.ZBUF.Block(), written_pages, base * BLOCKS_PER_PAGE, half * BLOCKS_PER_PAGE, m_r.x, m_r.y, m_r.z,
+		m_cached_ctx.ZBUF.Block(), written_pages, base * GS_BLOCKS_PER_PAGE, half * GS_BLOCKS_PER_PAGE, m_r.x, m_r.y, m_r.z,
 		m_r.w);
 
 	// Double the clear rect.
@@ -8584,22 +8584,22 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 	// Prevent wasting time looking up and creating the target which is getting blown away.
 	if (frame_psm.trbpp >= zbuf_psm.trbpp)
 	{
-		SetNewFRAME(base * BLOCKS_PER_PAGE, m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM);
+		SetNewFRAME(base * GS_BLOCKS_PER_PAGE, m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM);
 		m_cached_ctx.ZBUF.ZMSK = true;
 		no_rt = false;
 		no_ds = true;
 	}
 	else
 	{
-		SetNewZBUF(base * BLOCKS_PER_PAGE, m_cached_ctx.ZBUF.PSM);
+		SetNewZBUF(base * GS_BLOCKS_PER_PAGE, m_cached_ctx.ZBUF.PSM);
 		m_cached_ctx.FRAME.FBMSK = 0xFFFFFFFF;
 		no_rt = true;
 		no_ds = false;
 	}
 
 	// Remove any targets at the half-buffer point, they're getting overwritten.
-	g_texture_cache->InvalidateVideoMemType(GSTextureCache::RenderTarget, half * BLOCKS_PER_PAGE);
-	g_texture_cache->InvalidateVideoMemType(GSTextureCache::DepthStencil, half * BLOCKS_PER_PAGE);
+	g_texture_cache->InvalidateVideoMemType(GSTextureCache::RenderTarget, half * GS_BLOCKS_PER_PAGE);
+	g_texture_cache->InvalidateVideoMemType(GSTextureCache::DepthStencil, half * GS_BLOCKS_PER_PAGE);
 	return true;
 }
 
@@ -8806,11 +8806,11 @@ void GSRendererHW::ClearGSLocalMemory(const GSOffset& off, const GSVector4i& r, 
 		{
 			const GSVector4i vcolor = GSVector4i(vert_color);
 			const u32 iterations_per_page = (pages_wide * pixels_per_page) / 4;
-			pxAssert((off.bp() & (BLOCKS_PER_PAGE - 1)) == 0);
+			pxAssert((off.bp() & (GS_BLOCKS_PER_PAGE - 1)) == 0);
 			for (u32 current_page = off.bp() >> 5; top < page_aligned_bottom; top += pgs.y, current_page += fbw)
 			{
-				current_page &= (MAX_PAGES - 1);
-				GSVector4i* ptr = reinterpret_cast<GSVector4i*>(m_mem.vm8() + current_page * PAGE_SIZE);
+				current_page &= (GS_MAX_PAGES - 1);
+				GSVector4i* ptr = reinterpret_cast<GSVector4i*>(m_mem.vm8() + current_page * GS_PAGE_SIZE);
 				GSVector4i* const ptr_end = ptr + iterations_per_page;
 				while (ptr != ptr_end)
 					*(ptr++) = vcolor;
@@ -8821,11 +8821,11 @@ void GSRendererHW::ClearGSLocalMemory(const GSOffset& off, const GSVector4i& r, 
 			const GSVector4i mask = GSVector4i::xff000000();
 			const GSVector4i vcolor = GSVector4i(vert_color & 0x00ffffffu);
 			const u32 iterations_per_page = (pages_wide * pixels_per_page) / 4;
-			pxAssert((off.bp() & (BLOCKS_PER_PAGE - 1)) == 0);
+			pxAssert((off.bp() & (GS_BLOCKS_PER_PAGE - 1)) == 0);
 			for (u32 current_page = off.bp() >> 5; top < page_aligned_bottom; top += pgs.y, current_page += fbw)
 			{
-				current_page &= (MAX_PAGES - 1);
-				GSVector4i* ptr = reinterpret_cast<GSVector4i*>(m_mem.vm8() + current_page * PAGE_SIZE);
+				current_page &= (GS_MAX_PAGES - 1);
+				GSVector4i* ptr = reinterpret_cast<GSVector4i*>(m_mem.vm8() + current_page * GS_PAGE_SIZE);
 				GSVector4i* const ptr_end = ptr + iterations_per_page;
 				while (ptr != ptr_end)
 				{
@@ -8840,11 +8840,11 @@ void GSRendererHW::ClearGSLocalMemory(const GSOffset& off, const GSVector4i& r, 
 										((vert_color >> 6) & 0x7E0) | ((vert_color >> 3) & 0x1F);
 			const GSVector4i vcolor = GSVector4i::broadcast16(converted_color);
 			const u32 iterations_per_page = (pages_wide * pixels_per_page) / 8;
-			pxAssert((off.bp() & (BLOCKS_PER_PAGE - 1)) == 0);
+			pxAssert((off.bp() & (GS_BLOCKS_PER_PAGE - 1)) == 0);
 			for (u32 current_page = off.bp() >> 5; top < page_aligned_bottom; top += pgs.y, current_page += fbw)
 			{
-				current_page &= (MAX_PAGES - 1);
-				GSVector4i* ptr = reinterpret_cast<GSVector4i*>(m_mem.vm8() + current_page * PAGE_SIZE);
+				current_page &= (GS_MAX_PAGES - 1);
+				GSVector4i* ptr = reinterpret_cast<GSVector4i*>(m_mem.vm8() + current_page * GS_PAGE_SIZE);
 				GSVector4i* const ptr_end = ptr + iterations_per_page;
 				while (ptr != ptr_end)
 					*(ptr++) = vcolor;
