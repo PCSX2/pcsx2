@@ -113,7 +113,7 @@ struct ProcessedVertex
 
 ProcessedVertex load_vertex(uint index)
 {
-	RawVertex rvtx = vertex_buffer[gl_BaseVertexARB + index];
+	RawVertex rvtx = vertex_buffer[index];
 
 	vec2 a_st = rvtx.ST;
 	uvec4 a_c = uvec4(bitfieldExtract(rvtx.RGBA, 0, 8), bitfieldExtract(rvtx.RGBA, 8, 8),
@@ -159,7 +159,7 @@ ProcessedVertex load_vertex(uint index)
 void main()
 {
 	ProcessedVertex vtx;
-	uint vid = uint(gl_VertexIndex - gl_BaseVertexARB);
+	uint vid = uint(gl_VertexIndex);
 
 #if VS_EXPAND == 1 // Point
 
