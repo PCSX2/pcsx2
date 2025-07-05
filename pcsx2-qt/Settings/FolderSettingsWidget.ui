@@ -180,6 +180,13 @@
         </property>
        </widget>
       </item>
+      <item row="2" column="0" colspan="4">
+       <widget class="QCheckBox" name="organizeScreenshotsByGame">
+        <property name="text">
+         <string>Save Screenshots in Game-Specific Folders</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
