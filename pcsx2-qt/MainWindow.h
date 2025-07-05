@@ -275,6 +275,10 @@ private:
 	void clearGameListEntryPlayTime(const GameList::Entry* entry);
 	void goToWikiPage(const GameList::Entry* entry);
 
+#if !defined(__APPLE__)
+	void createDesktopShortcut(const std::string name, const std::string game_path, bool is_desktop);
+#endif
+
 	std::optional<bool> promptForResumeState(const QString& save_state_path);
 	void loadSaveStateSlot(s32 slot, bool load_backup = false);
 	void loadSaveStateFile(const QString& filename, const QString& state_filename);
