@@ -1,5 +1,5 @@
 /* MtCoder.h -- Multi-thread Coder
-2023-04-13 : Igor Pavlov : Public domain */
+: Igor Pavlov : Public domain */
 
 #ifndef ZIP7_INC_MT_CODER_H
 #define ZIP7_INC_MT_CODER_H
@@ -16,7 +16,7 @@ EXTERN_C_BEGIN
 
 #ifndef Z7_ST
   #define MTCODER_GET_NUM_BLOCKS_FROM_THREADS(numThreads) ((numThreads) + (numThreads) / 8 + 1)
-  #define MTCODER_THREADS_MAX 64
+  #define MTCODER_THREADS_MAX 256
   #define MTCODER_BLOCKS_MAX (MTCODER_GET_NUM_BLOCKS_FROM_THREADS(MTCODER_THREADS_MAX) + 3)
 #else
   #define MTCODER_THREADS_MAX 1
@@ -77,6 +77,7 @@ typedef struct CMtCoder_
   
   size_t blockSize;        /* size of input block */
   unsigned numThreadsMax;
+  unsigned numThreadGroups;
   UInt64 expectedDataSize;
 
   ISeqInStreamPtr inStream;
@@ -125,6 +126,8 @@ typedef struct CMtCoder_
   CMtProgress mtProgress;
   CMtCoderBlock blocks[MTCODER_BLOCKS_MAX];
   CMtCoderThread threads[MTCODER_THREADS_MAX];
+
+  CThreadNextGroup nextGroup;
 } CMtCoder;
 
 

@@ -1,5 +1,5 @@
 /* AesOpt.c -- AES optimized code for x86 AES hardware instructions
-2024-03-01 : Igor Pavlov : Public domain */
+Igor Pavlov : Public domain */
 
 #include "Precomp.h"
 
@@ -80,19 +80,39 @@ AES_FUNC_START (name)
 
 #define MM_XOR( dest, src)    MM_OP(_mm_xor_si128,    dest, src)
 
+#if 1
+// use aligned SSE load/store for data.
+// It is required for our Aes functions, that data is aligned for 16-bytes.
+// So we can use this branch of code.
+// and compiler can use fused load-op SSE instructions:
+//   xorps xmm0, XMMWORD PTR [rdx]
+#define LOAD_128(pp)        (*(__m128i *)(void *)(pp))
+#define STORE_128(pp, _v)    *(__m128i *)(void *)(pp) = _v
+// use aligned SSE load/store for data. Alternative code with direct access
+// #define LOAD_128(pp)        _mm_load_si128(pp)
+// #define STORE_128(pp, _v)   _mm_store_si128(pp, _v)
+#else
+// use unaligned load/store for data: movdqu XMMWORD PTR [rdx]
+#define LOAD_128(pp)        _mm_loadu_si128(pp)
+#define STORE_128(pp, _v)   _mm_storeu_si128(pp, _v)
+#endif
+
 AES_FUNC_START2 (AesCbc_Encode_HW)
 {
+  if (numBlocks == 0)
+    return;
+  {
   __m128i *p = (__m128i *)(void *)ivAes;
   __m128i *data = (__m128i *)(void *)data8;
   __m128i m = *p;
   const __m128i k0 = p[2];
   const __m128i k1 = p[3];
   const UInt32 numRounds2 = *(const UInt32 *)(p + 1) - 1;
-  for (; numBlocks != 0; numBlocks--, data++)
+  do
   {
     UInt32 r = numRounds2;
     const __m128i *w = p + 4;
-    __m128i temp = *data;
+    __m128i temp = LOAD_128(data);
     MM_XOR (temp, k0)
     MM_XOR (m, temp)
     MM_OP_m (_mm_aesenc_si128, k1)
@@ -104,9 +124,12 @@ AES_FUNC_START2 (AesCbc_Encode_HW)
     }
     while (--r);
     MM_OP_m (_mm_aesenclast_si128, w[0])
-    *data = m;
+    STORE_128(data, m);
+    data++;
   }
+  while (--numBlocks);
   *p = m;
+  }
 }
 
 
@@ -139,12 +162,12 @@ AES_FUNC_START2 (AesCbc_Encode_HW)
 
 #define WOP(op)  op (m0, 0)  WOP_M1(op)
 
-
 #define DECLARE_VAR(reg, ii)  __m128i reg;
-#define LOAD_data(  reg, ii)  reg = data[ii];
-#define STORE_data( reg, ii)  data[ii] = reg;
+#define LOAD_data_ii(ii)      LOAD_128(data + (ii))
+#define LOAD_data(  reg, ii)  reg = LOAD_data_ii(ii);
+#define STORE_data( reg, ii)  STORE_128(data + (ii), reg);
 #if (NUM_WAYS > 1)
-#define XOR_data_M1(reg, ii)  MM_XOR (reg, data[ii- 1])
+#define XOR_data_M1(reg, ii)  MM_XOR (reg, LOAD_128(data + (ii- 1)))
 #endif
 
 #define MM_OP_key(op, reg)  MM_OP(op, reg, key);
@@ -156,24 +179,21 @@ AES_FUNC_START2 (AesCbc_Encode_HW)
 #define AES_XOR(      reg, ii)   MM_OP_key (_mm_xor_si128,        reg)
 
 #define CTR_START(reg, ii)  MM_OP (_mm_add_epi64, ctr, one)  reg = ctr;
-#define CTR_END(  reg, ii)  MM_XOR (data[ii], reg)
-
+#define CTR_END(  reg, ii)  STORE_128(data + (ii), _mm_xor_si128(reg, \
+                            LOAD_128 (data + (ii))));
 #define WOP_KEY(op, n) { \
     const __m128i key = w[n]; \
-    WOP(op); }
-
+    WOP(op) }
 
 #define WIDE_LOOP_START  \
     dataEnd = data + numBlocks;  \
     if (numBlocks >= NUM_WAYS)  \
     { dataEnd -= NUM_WAYS; do {  \
 
-
 #define WIDE_LOOP_END  \
     data += NUM_WAYS;  \
     } while (data <= dataEnd);  \
     dataEnd += NUM_WAYS; }  \
-
 
 #define SINGLE_LOOP  \
     for (; data < dataEnd; data++)
@@ -184,54 +204,73 @@ AES_FUNC_START2 (AesCbc_Encode_HW)
 
 #define AVX_XOR(dest, src)    MM_OP(_mm256_xor_si256, dest, src)
 #define AVX_DECLARE_VAR(reg, ii)  __m256i reg;
-#define AVX_LOAD_data(  reg, ii)  reg = ((const __m256i *)(const void *)data)[ii];
-#define AVX_STORE_data( reg, ii)  ((__m256i *)(void *)data)[ii] = reg;
+
+#if 1
+// use unaligned AVX load/store for data.
+// It is required for our Aes functions, that data is aligned for 16-bytes.
+// But we need 32-bytes reading.
+// So we use intrinsics for unaligned AVX load/store.
+// notes for _mm256_storeu_si256:
+// msvc2022: uses vmovdqu and keeps the order of instruction sequence.
+// new gcc11 uses vmovdqu
+// old gcc9 could use pair of instructions:
+//   vmovups        %xmm7, -224(%rax)
+//   vextracti128   $0x1, %ymm7, -208(%rax)
+#define AVX_LOAD(p)         _mm256_loadu_si256((const __m256i *)(const void *)(p))
+#define AVX_STORE(p, _v)    _mm256_storeu_si256((__m256i *)(void *)(p), _v);
+#else
+// use aligned AVX load/store for data.
+// for debug: we can use this branch, if we are sure that data is aligned for 32-bytes.
+// msvc2022 uses vmovdqu still
+// gcc      uses vmovdqa (that requires 32-bytes alignment)
+#define AVX_LOAD(p)         (*(const __m256i *)(const void *)(p))
+#define AVX_STORE(p, _v)    (*(__m256i *)(void *)(p)) = _v;
+#endif
+
+#define AVX_LOAD_data(  reg, ii)  reg = AVX_LOAD((const __m256i *)(const void *)data + (ii));
+#define AVX_STORE_data( reg, ii)  AVX_STORE((__m256i *)(void *)data + (ii), reg)
 /*
-AVX_XOR_data_M1() needs unaligned memory load
-if (we don't use _mm256_loadu_si256() here)
-{
-  Most compilers with enabled optimizations generate fused AVX (LOAD + OP)
-  instruction that can load unaligned data.
-  But GCC and CLANG without -O2 or -O1 optimizations can generate separated
-  LOAD-ALIGNED (vmovdqa) instruction that will fail on execution.
-}
-Note: some compilers generate more instructions, if we use _mm256_loadu_si256() here.
-v23.02: we use _mm256_loadu_si256() here, because we need compatibility with any compiler.
+AVX_XOR_data_M1() needs unaligned memory load, even if (data)
+is aligned for 256-bits, because we read 32-bytes chunk that
+crosses (data) position: from (data - 16bytes) to (data + 16bytes).
 */
-#define AVX_XOR_data_M1(reg, ii)  AVX_XOR (reg, _mm256_loadu_si256(&(((const __m256i *)(const void *)(data - 1))[ii])))
-// for debug only: the following code will fail on execution, if compiled by some compilers:
-// #define AVX_XOR_data_M1(reg, ii)  AVX_XOR (reg, (((const __m256i *)(const void *)(data - 1))[ii]))
+#define AVX_XOR_data_M1(reg, ii)  AVX_XOR (reg, _mm256_loadu_si256((const __m256i *)(const void *)(data - 1) + (ii)))
 
 #define AVX_AES_DEC(      reg, ii)   MM_OP_key (_mm256_aesdec_epi128,     reg)
 #define AVX_AES_DEC_LAST( reg, ii)   MM_OP_key (_mm256_aesdeclast_epi128, reg)
 #define AVX_AES_ENC(      reg, ii)   MM_OP_key (_mm256_aesenc_epi128,     reg)
 #define AVX_AES_ENC_LAST( reg, ii)   MM_OP_key (_mm256_aesenclast_epi128, reg)
 #define AVX_AES_XOR(      reg, ii)   MM_OP_key (_mm256_xor_si256,         reg)
-#define AVX_CTR_START(reg, ii)  MM_OP (_mm256_add_epi64, ctr2, two)  reg = _mm256_xor_si256(ctr2, key);
-#define AVX_CTR_END(  reg, ii)  AVX_XOR (((__m256i *)(void *)data)[ii], reg)
+#define AVX_CTR_START(reg, ii)  \
+    MM_OP (_mm256_add_epi64, ctr2, two) \
+    reg = _mm256_xor_si256(ctr2, key);
+
+#define AVX_CTR_END(reg, ii)  \
+    AVX_STORE((__m256i *)(void *)data + (ii), _mm256_xor_si256(reg, \
+    AVX_LOAD ((__m256i *)(void *)data + (ii))));
+
 #define AVX_WOP_KEY(op, n) { \
     const __m256i key = w[n]; \
-    WOP(op); }
+    WOP(op) }
 
 #define NUM_AES_KEYS_MAX 15
 
 #define WIDE_LOOP_START_AVX(OP)  \
     dataEnd = data + numBlocks;  \
     if (numBlocks >= NUM_WAYS * 2)  \
-    { __m256i keys[NUM_AES_KEYS_MAX]; \
-    UInt32 ii; \
-    OP \
-    for (ii = 0; ii < numRounds; ii++) \
-      keys[ii] = _mm256_broadcastsi128_si256(p[ii]); \
-    dataEnd -= NUM_WAYS * 2; do {  \
-
+    { __m256i keys[NUM_AES_KEYS_MAX];  \
+      OP  \
+      { UInt32 ii; for (ii = 0; ii < numRounds; ii++)  \
+        keys[ii] = _mm256_broadcastsi128_si256(p[ii]); }  \
+      dataEnd -= NUM_WAYS * 2; \
+      do {  \
 
 #define WIDE_LOOP_END_AVX(OP)  \
-    data += NUM_WAYS * 2;  \
-    } while (data <= dataEnd);  \
-    dataEnd += NUM_WAYS * 2;  \
-    OP  \
-    _mm256_zeroupper();  \
+        data += NUM_WAYS * 2;  \
+      } while (data <= dataEnd);  \
+      dataEnd += NUM_WAYS * 2;  \
+      OP  \
+      _mm256_zeroupper();  \
     }  \
 
 /* MSVC for x86: If we don't call _mm256_zeroupper(), and -arch:IA32 is not specified,
@@ -246,21 +285,20 @@ AES_FUNC_START2 (AesCbc_Decode_HW)
   __m128i *p = (__m128i *)(void *)ivAes;
   __m128i *data = (__m128i *)(void *)data8;
   __m128i iv = *p;
-  const __m128i *wStart = p + *(const UInt32 *)(p + 1) * 2 + 2 - 1;
+  const __m128i * const wStart = p + (size_t)*(const UInt32 *)(p + 1) * 2 + 2 - 1;
   const __m128i *dataEnd;
   p += 2;
   
   WIDE_LOOP_START
   {
     const __m128i *w = wStart;
-    
     WOP (DECLARE_VAR)
     WOP (LOAD_data)
     WOP_KEY (AES_XOR, 1)
-
     do
     {
       WOP_KEY (AES_DEC, 0)
+
       w--;
     }
     while (w != p);
@@ -268,7 +306,7 @@ AES_FUNC_START2 (AesCbc_Decode_HW)
 
     MM_XOR (m0, iv)
     WOP_M1 (XOR_data_M1)
-    iv = data[NUM_WAYS - 1];
+    LOAD_data(iv, NUM_WAYS - 1)
     WOP (STORE_data)
   }
   WIDE_LOOP_END
@@ -276,7 +314,8 @@ AES_FUNC_START2 (AesCbc_Decode_HW)
   SINGLE_LOOP
   {
     const __m128i *w = wStart - 1;
-    __m128i m = _mm_xor_si128 (w[2], *data);
+    __m128i m = _mm_xor_si128 (w[2], LOAD_data_ii(0));
+    
     do
     {
       MM_OP_m (_mm_aesdec_si128, w[1])
@@ -286,10 +325,9 @@ AES_FUNC_START2 (AesCbc_Decode_HW)
     while (w != p);
     MM_OP_m (_mm_aesdec_si128,     w[1])
     MM_OP_m (_mm_aesdeclast_si128, w[0])
-
     MM_XOR (m, iv)
-    iv = *data;
-    *data = m;
+    LOAD_data(iv, 0)
+    STORE_data(m, 0)
   }
   
   p[-2] = iv;
@@ -301,9 +339,9 @@ AES_FUNC_START2 (AesCtr_Code_HW)
   __m128i *p = (__m128i *)(void *)ivAes;
   __m128i *data = (__m128i *)(void *)data8;
   __m128i ctr = *p;
-  UInt32 numRoundsMinus2 = *(const UInt32 *)(p + 1) * 2 - 1;
+  const UInt32 numRoundsMinus2 = *(const UInt32 *)(p + 1) * 2 - 1;
   const __m128i *dataEnd;
-  __m128i one = _mm_cvtsi32_si128(1);
+  const __m128i one = _mm_cvtsi32_si128(1);
 
   p += 2;
   
@@ -322,7 +360,6 @@ AES_FUNC_START2 (AesCtr_Code_HW)
     }
     while (--r);
     WOP_KEY (AES_ENC_LAST, 0)
-   
     WOP (CTR_END)
   }
   WIDE_LOOP_END
@@ -344,7 +381,7 @@ AES_FUNC_START2 (AesCtr_Code_HW)
     while (--numRounds2);
     MM_OP_m (_mm_aesenc_si128,     w[0])
     MM_OP_m (_mm_aesenclast_si128, w[1])
-    MM_XOR (*data, m)
+    CTR_END (m, 0)
   }
   
   p[-2] = ctr;
@@ -421,7 +458,7 @@ VAES_FUNC_START2 (AesCbc_Decode_HW_256)
   __m128i *data = (__m128i *)(void *)data8;
   __m128i iv = *p;
   const __m128i *dataEnd;
-  UInt32 numRounds = *(const UInt32 *)(p + 1) * 2 + 1;
+  const UInt32 numRounds = *(const UInt32 *)(p + 1) * 2 + 1;
   p += 2;
   
   WIDE_LOOP_START_AVX(;)
@@ -440,17 +477,17 @@ VAES_FUNC_START2 (AesCbc_Decode_HW_256)
     while (w != keys);
     AVX_WOP_KEY (AVX_AES_DEC_LAST, 0)
 
-    AVX_XOR (m0, _mm256_setr_m128i(iv, data[0]))
+    AVX_XOR (m0, _mm256_setr_m128i(iv, LOAD_data_ii(0)))
     WOP_M1 (AVX_XOR_data_M1)
-    iv = data[NUM_WAYS * 2 - 1];
+    LOAD_data (iv, NUM_WAYS * 2 - 1)
     WOP (AVX_STORE_data)
   }
   WIDE_LOOP_END_AVX(;)
 
   SINGLE_LOOP
   {
-    const __m128i *w = p + *(const UInt32 *)(p + 1 - 2) * 2 + 1 - 3;
-    __m128i m = _mm_xor_si128 (w[2], *data);
+    const __m128i *w = p - 2 + (size_t)*(const UInt32 *)(p + 1 - 2) * 2;
+    __m128i m = _mm_xor_si128 (w[2], LOAD_data_ii(0));
     do
     {
       MM_OP_m (_mm_aesdec_si128, w[1])
@@ -462,8 +499,8 @@ VAES_FUNC_START2 (AesCbc_Decode_HW_256)
     MM_OP_m (_mm_aesdeclast_si128, w[0])
 
     MM_XOR (m, iv)
-    iv = *data;
-    *data = m;
+    LOAD_data(iv, 0)
+    STORE_data(m, 0)
   }
   
   p[-2] = iv;
@@ -493,9 +530,9 @@ VAES_FUNC_START2 (AesCtr_Code_HW_256)
   __m128i *p = (__m128i *)(void *)ivAes;
   __m128i *data = (__m128i *)(void *)data8;
   __m128i ctr = *p;
-  UInt32 numRounds = *(const UInt32 *)(p + 1) * 2 + 1;
+  const UInt32 numRounds = *(const UInt32 *)(p + 1) * 2 + 1;
   const __m128i *dataEnd;
-  __m128i one = _mm_cvtsi32_si128(1);
+  const __m128i one = _mm_cvtsi32_si128(1);
   __m256i ctr2, two;
   p += 2;
   
@@ -536,7 +573,7 @@ VAES_FUNC_START2 (AesCtr_Code_HW_256)
     while (--numRounds2);
     MM_OP_m (_mm_aesenc_si128,     w[0])
     MM_OP_m (_mm_aesenclast_si128, w[1])
-    MM_XOR (*data, m)
+    CTR_END (m, 0)
   }
 
   p[-2] = ctr;
@@ -731,9 +768,14 @@ AES_FUNC_START (name)
 
 AES_FUNC_START2 (AesCbc_Encode_HW)
 {
-  v128 * const p = (v128*)(void*)ivAes;
-  v128 *data = (v128*)(void*)data8;
+  if (numBlocks == 0)
+    return;
+  {
+  v128 * const p = (v128 *)(void *)ivAes;
+  v128 *data = (v128 *)(void *)data8;
   v128 m = *p;
+  const UInt32 numRounds2 = *(const UInt32 *)(p + 1);
+  const v128 *w = p + (size_t)numRounds2 * 2;
   const v128 k0 = p[2];
   const v128 k1 = p[3];
   const v128 k2 = p[4];
@@ -744,11 +786,14 @@ AES_FUNC_START2 (AesCbc_Encode_HW)
   const v128 k7 = p[9];
   const v128 k8 = p[10];
   const v128 k9 = p[11];
-  const UInt32 numRounds2 = *(const UInt32 *)(p + 1);
-  const v128 *w = p + ((size_t)numRounds2 * 2);
+  const v128 k_z4 = w[-2];
+  const v128 k_z3 = w[-1];
+  const v128 k_z2 = w[0];
   const v128 k_z1 = w[1];
   const v128 k_z0 = w[2];
-  for (; numBlocks != 0; numBlocks--, data++)
+  // we don't use optimization veorq_u8(*data, k_z0) that can reduce one cycle,
+  // because gcc/clang compilers are not good for that optimization.
+  do
   {
     MM_XOR_m (*data)
     AES_E_MC_m (k0)
@@ -757,24 +802,26 @@ AES_FUNC_START2 (AesCbc_Encode_HW)
     AES_E_MC_m (k3)
     AES_E_MC_m (k4)
     AES_E_MC_m (k5)
-    AES_E_MC_m (k6)
-    AES_E_MC_m (k7)
-    AES_E_MC_m (k8)
     if (numRounds2 >= 6)
     {
-      AES_E_MC_m (k9)
-      AES_E_MC_m (p[12])
+      AES_E_MC_m (k6)
+      AES_E_MC_m (k7)
       if (numRounds2 != 6)
       {
-        AES_E_MC_m (p[13])
-        AES_E_MC_m (p[14])
+        AES_E_MC_m (k8)
+        AES_E_MC_m (k9)
       }
     }
-    AES_E_m  (k_z1)
-    MM_XOR_m (k_z0)
-    *data = m;
+    AES_E_MC_m (k_z4)
+    AES_E_MC_m (k_z3)
+    AES_E_MC_m (k_z2)
+    AES_E_m    (k_z1)
+    MM_XOR_m   (k_z0)
+    *data++ = m;
   }
+  while (--numBlocks);
   *p = m;
+  }
 }
 
 
@@ -834,10 +881,10 @@ AES_FUNC_START2 (AesCbc_Encode_HW)
 
 AES_FUNC_START2 (AesCbc_Decode_HW)
 {
-  v128 *p = (v128*)(void*)ivAes;
-  v128 *data = (v128*)(void*)data8;
+  v128 *p = (v128 *)(void *)ivAes;
+  v128 *data = (v128 *)(void *)data8;
   v128 iv = *p;
-  const v128 *wStart = p + ((size_t)*(const UInt32 *)(p + 1)) * 2;
+  const v128 * const wStart = p + (size_t)*(const UInt32 *)(p + 1) * 2;
   const v128 *dataEnd;
   p += 2;
   
@@ -858,7 +905,7 @@ AES_FUNC_START2 (AesCbc_Decode_HW)
     WOP_KEY (AES_XOR, 0)
     MM_XOR (m0, iv)
     WOP_M1 (XOR_data_M1)
-    iv = data[NUM_WAYS - 1];
+    LOAD_data(iv, NUM_WAYS - 1)
     WOP (STORE_data)
   }
   WIDE_LOOP_END
@@ -866,7 +913,7 @@ AES_FUNC_START2 (AesCbc_Decode_HW)
   SINGLE_LOOP
   {
     const v128 *w = wStart;
-    v128 m = *data;
+    v128 m;  LOAD_data(m, 0)
     AES_D_IMC_m (w[2])
     do
     {
@@ -878,8 +925,8 @@ AES_FUNC_START2 (AesCbc_Decode_HW)
     AES_D_m  (w[1])
     MM_XOR_m (w[0])
     MM_XOR_m (iv)
-    iv = *data;
-    *data = m;
+    LOAD_data(iv, 0)
+    STORE_data(m, 0)
   }
   
   p[-2] = iv;
@@ -888,19 +935,17 @@ AES_FUNC_START2 (AesCbc_Decode_HW)
 
 AES_FUNC_START2 (AesCtr_Code_HW)
 {
-  v128 *p = (v128*)(void*)ivAes;
-  v128 *data = (v128*)(void*)data8;
+  v128 *p = (v128 *)(void *)ivAes;
+  v128 *data = (v128 *)(void *)data8;
   uint64x2_t ctr = vreinterpretq_u64_u8(*p);
-  const v128 *wEnd = p + ((size_t)*(const UInt32 *)(p + 1)) * 2;
+  const v128 * const wEnd = p + (size_t)*(const UInt32 *)(p + 1) * 2;
   const v128 *dataEnd;
-  uint64x2_t one = vdupq_n_u64(0);
-
 // the bug in clang:
 // __builtin_neon_vsetq_lane_i64(__s0, (int8x16_t)__s1, __p2);
 #if defined(__clang__) && (__clang_major__ <= 9)
 #pragma GCC diagnostic ignored "-Wvector-conversion"
 #endif
-  one = vsetq_lane_u64(1, one, 0);
+  const uint64x2_t one = vsetq_lane_u64(1, vdupq_n_u64(0), 0);
   p += 2;
   
   WIDE_LOOP_START

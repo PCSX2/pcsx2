@@ -1,5 +1,5 @@
 /* Threads.c -- multithreading library
-2024-03-28 : Igor Pavlov : Public domain */
+: Igor Pavlov : Public domain */
 
 #include "Precomp.h"
 
@@ -59,6 +59,100 @@ WRes Thread_Wait_Close(CThread *p)
   return (res != 0 ? res : res2);
 }
 
+typedef struct MY_PROCESSOR_NUMBER {
+    WORD  Group;
+    BYTE  Number;
+    BYTE  Reserved;
+} MY_PROCESSOR_NUMBER, *MY_PPROCESSOR_NUMBER;
+
+typedef struct MY_GROUP_AFFINITY {
+#if defined(Z7_GCC_VERSION) && (Z7_GCC_VERSION < 100000)
+    // KAFFINITY is not defined in old mingw
+    ULONG_PTR
+#else
+    KAFFINITY
+#endif
+      Mask;
+    WORD   Group;
+    WORD   Reserved[3];
+} MY_GROUP_AFFINITY, *MY_PGROUP_AFFINITY;
+
+typedef BOOL (WINAPI *Func_SetThreadGroupAffinity)(
+    HANDLE hThread,
+    CONST MY_GROUP_AFFINITY *GroupAffinity,
+    MY_PGROUP_AFFINITY PreviousGroupAffinity);
+
+typedef BOOL (WINAPI *Func_GetThreadGroupAffinity)(
+    HANDLE hThread,
+    MY_PGROUP_AFFINITY GroupAffinity);
+
+typedef BOOL (WINAPI *Func_GetProcessGroupAffinity)(
+    HANDLE hProcess,
+    PUSHORT GroupCount,
+    PUSHORT GroupArray);
+
+Z7_DIAGNOSTIC_IGNORE_CAST_FUNCTION
+
+#if 0
+#include <stdio.h>
+#define PRF(x) x
+/*
+--
+  before call of SetThreadGroupAffinity()
+    GetProcessGroupAffinity return one group.
+  after call of SetThreadGroupAffinity():
+    GetProcessGroupAffinity return more than group,
+    if SetThreadGroupAffinity() was to another group.
+--
+  GetProcessAffinityMask MS DOCs:
+  {
+    If the calling process contains threads in multiple groups,
+    the function returns zero for both affinity masks.
+  }
+  but tests in win10 with 2 groups (less than 64 cores total):
+    GetProcessAffinityMask() still returns non-zero affinity masks
+    even after SetThreadGroupAffinity() calls.
+*/
+static void PrintProcess_Info()
+{
+  {
+    const
+      Func_GetProcessGroupAffinity fn_GetProcessGroupAffinity =
+     (Func_GetProcessGroupAffinity) Z7_CAST_FUNC_C GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")),
+          "GetProcessGroupAffinity");
+    if (fn_GetProcessGroupAffinity)
+    {
+      unsigned i;
+      USHORT GroupCounts[64];
+      USHORT GroupCount = Z7_ARRAY_SIZE(GroupCounts);
+      BOOL boolRes = fn_GetProcessGroupAffinity(GetCurrentProcess(),
+          &GroupCount, GroupCounts);
+      printf("\n====== GetProcessGroupAffinity : "
+          "boolRes=%u GroupCounts = %u :",
+          boolRes, (unsigned)GroupCount);
+      for (i = 0; i < GroupCount; i++)
+        printf(" %u", GroupCounts[i]);
+      printf("\n");
+    }
+  }
+  {
+    DWORD_PTR processAffinityMask, systemAffinityMask;
+    if (GetProcessAffinityMask(GetCurrentProcess(), &processAffinityMask, &systemAffinityMask))
+    {
+      PRF(printf("\n====== GetProcessAffinityMask : "
+        ": processAffinityMask=%x, systemAffinityMask=%x\n",
+        (UInt32)processAffinityMask, (UInt32)systemAffinityMask);)
+    }
+    else
+      printf("\n==GetProcessAffinityMask FAIL");
+  }
+}
+#else
+#ifndef USE_THREADS_CreateThread
+// #define PRF(x)
+#endif
+#endif
+
 WRes Thread_Create(CThread *p, THREAD_FUNC_TYPE func, LPVOID param)
 {
   /* Windows Me/98/95: threadId parameter may not be NULL in _beginthreadex/CreateThread functions */
@@ -72,7 +166,43 @@ WRes Thread_Create(CThread *p, THREAD_FUNC_TYPE func, LPVOID param)
   
   unsigned threadId;
   *p = (HANDLE)(_beginthreadex(NULL, 0, func, param, 0, &threadId));
-  
+
+#if 0 // 1 : for debug
+  {
+      DWORD_PTR prevMask;
+      DWORD_PTR affinity = 1 << 0;
+      prevMask = SetThreadAffinityMask(*p, (DWORD_PTR)affinity);
+      prevMask = prevMask;
+  }
+#endif
+#if 0 // 1 : for debug
+  {
+      /* win10: new thread will be created in same group that is assigned to parent thread
+                but affinity mask will contain all allowed threads of that group,
+                even if affinity mask of parent group is not full
+         win11: what group it will be created, if we have set
+                affinity of parent thread with ThreadGroupAffinity?
+      */
+      const
+         Func_GetThreadGroupAffinity fn =
+        (Func_GetThreadGroupAffinity) Z7_CAST_FUNC_C GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")),
+             "GetThreadGroupAffinity");
+      if (fn)
+      {
+        // BOOL wres2;
+        MY_GROUP_AFFINITY groupAffinity;
+        memset(&groupAffinity, 0, sizeof(groupAffinity));
+        /* wres2 = */ fn(*p, &groupAffinity);
+        PRF(printf("\n==Thread_Create cur = %6u GetThreadGroupAffinity(): "
+            "wres2_BOOL = %u, group=%u mask=%x\n",
+            GetCurrentThreadId(),
+            wres2,
+            groupAffinity.Group,
+            (UInt32)groupAffinity.Mask);)
+      }
+  }
+#endif
+
   #endif
 
   /* maybe we must use errno here, but probably GetLastError() is also OK. */
@@ -110,7 +240,84 @@ WRes Thread_Create_With_Affinity(CThread *p, THREAD_FUNC_TYPE func, LPVOID param
       */
     }
     {
-      DWORD prevSuspendCount = ResumeThread(h);
+      const DWORD prevSuspendCount = ResumeThread(h);
+      /* ResumeThread() returns:
+         0 : was_not_suspended
+         1 : was_resumed
+        -1 : error
+      */
+      if (prevSuspendCount == (DWORD)-1)
+        wres = GetError();
+    }
+  }
+
+  /* maybe we must use errno here, but probably GetLastError() is also OK. */
+  return wres;
+
+  #endif
+}
+
+
+WRes Thread_Create_With_Group(CThread *p, THREAD_FUNC_TYPE func, LPVOID param, unsigned group, CAffinityMask affinityMask)
+{
+#ifdef USE_THREADS_CreateThread
+
+  UNUSED_VAR(group)
+  UNUSED_VAR(affinityMask)
+  return Thread_Create(p, func, param);
+  
+#else
+  
+  /* Windows Me/98/95: threadId parameter may not be NULL in _beginthreadex/CreateThread functions */
+  HANDLE h;
+  WRes wres;
+  unsigned threadId;
+  h = (HANDLE)(_beginthreadex(NULL, 0, func, param, CREATE_SUSPENDED, &threadId));
+  *p = h;
+  wres = HandleToWRes(h);
+  if (h)
+  {
+    // PrintProcess_Info();
+    {
+      const
+         Func_SetThreadGroupAffinity fn =
+        (Func_SetThreadGroupAffinity) Z7_CAST_FUNC_C GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")),
+             "SetThreadGroupAffinity");
+      if (fn)
+      {
+        // WRes wres2;
+        MY_GROUP_AFFINITY groupAffinity, prev_groupAffinity;
+        memset(&groupAffinity, 0, sizeof(groupAffinity));
+        // groupAffinity.Mask must use only bits that supported by current group
+        // (groupAffinity.Mask = 0) means all allowed bits
+        groupAffinity.Mask = affinityMask;
+        groupAffinity.Group = (WORD)group;
+        // wres2 =
+        fn(h, &groupAffinity, &prev_groupAffinity);
+        /*
+        if (groupAffinity.Group == prev_groupAffinity.Group)
+          wres2 = wres2;
+        else
+          wres2 = wres2;
+        if (wres2 == 0)
+        {
+          wres2 = GetError();
+          PRF(printf("\n==SetThreadGroupAffinity error: %u\n", wres2);)
+        }
+        else
+        {
+          PRF(printf("\n==Thread_Create_With_Group::SetThreadGroupAffinity()"
+            " threadId = %6u"
+            " group=%u mask=%x\n",
+            threadId,
+            prev_groupAffinity.Group,
+            (UInt32)prev_groupAffinity.Mask);)
+        }
+        */
+      }
+    }
+    {
+      const DWORD prevSuspendCount = ResumeThread(h);
       /* ResumeThread() returns:
          0 : was_not_suspended
          1 : was_resumed
@@ -297,6 +504,13 @@ WRes Thread_Create(CThread *p, THREAD_FUNC_TYPE func, LPVOID param)
   return Thread_Create_With_CpuSet(p, func, param, NULL);
 }
 
+/*
+WRes Thread_Create_With_Group(CThread *p, THREAD_FUNC_TYPE func, LPVOID param, unsigned group, CAffinityMask affinity)
+{
+  UNUSED_VAR(group)
+  return Thread_Create_With_Affinity(p, func, param, affinity);
+}
+*/
 
 WRes Thread_Create_With_Affinity(CThread *p, THREAD_FUNC_TYPE func, LPVOID param, CAffinityMask affinity)
 {
@@ -575,6 +789,23 @@ WRes AutoResetEvent_OptCreate_And_Reset(CAutoResetEvent *p)
   if (Event_IsCreated(p))
     return Event_Reset(p);
   return AutoResetEvent_CreateNotSignaled(p);
+}
+
+void ThreadNextGroup_Init(CThreadNextGroup *p, UInt32 numGroups, UInt32 startGroup)
+{
+  // printf("\n====== ThreadNextGroup_Init numGroups = %x: startGroup=%x\n", numGroups, startGroup);
+  if (numGroups == 0)
+      numGroups = 1;
+  p->NumGroups = numGroups;
+  p->NextGroup = startGroup % numGroups;
+}
+
+
+UInt32 ThreadNextGroup_GetNext(CThreadNextGroup *p)
+{
+  const UInt32 next = p->NextGroup;
+  p->NextGroup = (next + 1) % p->NumGroups;
+  return next;
 }
 
 #undef PRF
