@@ -112,11 +112,7 @@ struct ProcessedVertex
 
 ProcessedVertex load_vertex(uint index)
 {
-#if defined(GL_ARB_shader_draw_parameters) && GL_ARB_shader_draw_parameters
-	RawVertex rvtx = vertex_buffer[index + gl_BaseVertexARB];
-#else
 	RawVertex rvtx = vertex_buffer[index];
-#endif
 
 	vec2 i_st = rvtx.ST;
 	vec4 i_c = vec4(uvec4(bitfieldExtract(rvtx.RGBA, 0, 8), bitfieldExtract(rvtx.RGBA, 8, 8),
@@ -158,11 +154,7 @@ void main()
 {
 	ProcessedVertex vtx;
 
-#if defined(GL_ARB_shader_draw_parameters) && GL_ARB_shader_draw_parameters
-	uint vid = uint(gl_VertexID - gl_BaseVertexARB);
-#else
 	uint vid = uint(gl_VertexID);
-#endif
 
 #if VS_EXPAND == 1 // Point
 

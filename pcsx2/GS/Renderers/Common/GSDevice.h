@@ -757,6 +757,32 @@ struct alignas(16) GSHWDrawConfig
 	GSVector4i colclip_update_area; ///< Area in the framebuffer which colclip will modify;
 };
 
+static inline u32 GetExpansionFactor(GSHWDrawConfig::VSExpand expand)
+{
+	switch (expand)
+	{
+		case GSHWDrawConfig::VSExpand::Point:
+		case GSHWDrawConfig::VSExpand::Line:
+			return 4;
+		case GSHWDrawConfig::VSExpand::Sprite:
+			return 2;
+		default:
+			return 1;
+	}
+}
+
+static inline u32 GetVertexAlignment(GSHWDrawConfig::VSExpand expand)
+{
+	switch (expand)
+	{
+		case GSHWDrawConfig::VSExpand::Sprite:
+			// Sprite expand does a 2-4 expansion, and relies on the low bit of the vertex ID to figure out if it's the first or second coordinate.
+			return 2;
+		default:
+			return 1;
+	}
+}
+
 class GSDevice : public GSAlignedClass<32>
 {
 public:
