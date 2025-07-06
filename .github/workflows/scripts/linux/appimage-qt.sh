@@ -68,7 +68,7 @@ if [ ! -f "$LINUXDEPLOY_PLUGIN_QT" ]; then
 fi
 
 if [ ! -f "$APPIMAGETOOL" ]; then
-	"$PCSX2DIR/tools/retry.sh" wget -O "$APPIMAGETOOL" https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+	"$PCSX2DIR/tools/retry.sh" wget -O "$APPIMAGETOOL" https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
 	chmod +x "$APPIMAGETOOL"
 fi
 
