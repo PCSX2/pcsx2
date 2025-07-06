@@ -2972,6 +2972,22 @@ bool GSState::TrianglesAreQuads(bool shuffle_check)
 		}
 		else if (m_index.tail == 6)
 		{
+			bool shared_vert_found = false;
+			for (int i = 0; i < 3; i++)
+			{
+				for (int j = 3; j < 6; j++)
+					if (m_vertex.buff[m_index.buff[i]].XYZ.X == m_vertex.buff[m_index.buff[j]].XYZ.X &&
+						m_vertex.buff[m_index.buff[i]].XYZ.Y == m_vertex.buff[m_index.buff[j]].XYZ.Y)
+					{
+						shared_vert_found = true;
+						break;
+					}
+			}
+			
+			// At least one vert should be shared across otherwise it's 2 separate triangles (false positive from Tales of Destiny).
+			if (!shared_vert_found)
+				return false;
+
 			const int first_X = m_vertex.buff[m_index.buff[0]].XYZ.X;
 			const int first_Y = m_vertex.buff[m_index.buff[0]].XYZ.Y;
 			const int second_X = m_vertex.buff[m_index.buff[1]].XYZ.X;
