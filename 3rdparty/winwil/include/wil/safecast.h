@@ -44,6 +44,12 @@ namespace details
     template <typename NewT, typename OldT>
     constexpr bool both_integral_v = wistd::is_integral<NewT>::value && wistd::is_integral<OldT>::value;
 
+    // Helper template to determine that the cast from OldT to NewT is going to sign extend the
+    // value.  This is only true when the size of NewT is larger than OldT and OldT is signed.
+    template <typename NewT, typename OldT>
+    constexpr bool is_sign_extending_cast_v =
+        (sizeof(NewT) >= sizeof(OldT)) && both_integral_v<NewT, OldT> && wistd::is_signed_v<OldT>;
+
     // Note on native wchar_t (__wchar_t):
     //      Intsafe.h does not currently handle native wchar_t. When compiling with /Zc:wchar_t-, this is fine as wchar_t is
     //      typedef'd to unsigned short. However, when compiling with /Zc:wchar_t or wchar_t as a native type, the lack of
@@ -373,6 +379,22 @@ HRESULT safe_cast_nothrow(const OldT var, NewT* newTResult)
         "This cast is always safe; use safe_cast_nothrow<T>(value) to avoid unnecessary error handling.");
     *newTResult = static_cast<NewT>(var);
     return S_OK;
+}
+
+// This conversion takes a signed integer value and grows it with the upper bits set to zero.  This is
+// useful when the resulting value is cast to a pointer type as it prevents the upper bits from being fill
+// which would adjust the pointed-to address.
+//
+// For example:
+//      wil::safe_zero_extending_cast<ULONG_PTR>(-1)
+// will return 0x00000000`FFFFFFFF on a 64-bit system.
+template <typename NewT, typename OldT, wistd::enable_if_t<details::is_sign_extending_cast_v<NewT, OldT>, int> = 0>
+NewT safe_zero_extending_cast(const OldT var)
+{
+    // The first cast is to an unsigned type of the same size as the original.  The second cast is to the
+    // larger type.  Being an unsigned cast, the upper bits are zeroed out.
+    using unsigned_old_t = wistd::make_unsigned_t<OldT>;
+    return static_cast<NewT>(static_cast<unsigned_old_t>(var));
 }
 } // namespace wil
 

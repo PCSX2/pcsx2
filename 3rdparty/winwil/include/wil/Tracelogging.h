@@ -65,7 +65,7 @@
 #define _wiltlg_STRINGIZE_imp(x) #x
 #define _wiltlg_LSTRINGIZE(x) _wiltlg_LSTRINGIZE_imp1(x)
 #define _wiltlg_LSTRINGIZE_imp1(x) _wiltlg_LSTRINGIZE_imp2(#x)
-#define _wiltlg_LSTRINGIZE_imp2(s) L##s
+#define _wiltlg_LSTRINGIZE_imp2(s) L"" #s
 
 /*
 Macro __TRACELOGGING_DEFINE_PROVIDER_STORAGE_LINK(name1, name2):
@@ -261,7 +261,8 @@ namespace details
     public:
         StoredCallContextInfo() WI_NOEXCEPT
         {
-            ::ZeroMemory(this, sizeof(*this));
+            // Suppress '-Wnontrivial-memcall' with 'static_cast'
+            ::ZeroMemory(static_cast<void*>(this), sizeof(*this));
         }
 
         StoredCallContextInfo(StoredCallContextInfo&& other) WI_NOEXCEPT : StoredCallContextInfo()
@@ -1510,7 +1511,7 @@ public: \
 
 #define __IMPLEMENT_CALLCONTEXT_CLASS(ActivityClassName) \
 protected: \
-    ActivityClassName(_In_opt_ void**, PCSTR contextName, _In_opt_ _Printf_format_string_ PCSTR formatString, _In_opt_ va_list argList) : \
+    ActivityClassName(_In_opt_ void**, PCSTR contextName, _In_ _Printf_format_string_ PCSTR formatString, _In_opt_ va_list argList) : \
         ActivityBase(contextName) \
     { \
         GetCallContext()->SetMessage(formatString, argList); \
@@ -6444,7 +6445,13 @@ namespace details
 
                     if (*lastNamespaceNode)
                     {
-                        root.swap((*lastNamespaceNode)->next);
+                        // Delete everything from the current root to the lastNamespaceNode
+                        // (inclusive), considering the possibility that they are the same. Continue
+                        // processing from the node following lastNamespaceNode, if any. root will
+                        // be made to point to that.
+                        auto newRoot = wistd::move((*lastNamespaceNode)->next);
+                        const auto toDelete = wistd::move(root);
+                        root = wistd::move(newRoot);
                     }
                     else
                     {

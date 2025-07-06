@@ -69,15 +69,14 @@
 
 /// @cond
 #if defined(_MSVC_LANG)
-#define __WI_SUPPRESS_4127_S \
-    __pragma(warning(push)) __pragma(warning(disable : 4127)) __pragma(warning(disable : 26498)) __pragma(warning(disable : 4245))
-#define __WI_SUPPRESS_4127_E __pragma(warning(pop))
-#define __WI_SUPPRESS_NULLPTR_ANALYSIS __pragma(warning(suppress : 28285)) __pragma(warning(suppress : 6504))
+#define __WI_SUPPRESS_BREAKING_WARNINGS_S __pragma(warning(push)) __pragma(warning(disable : 4127 26498 4245 26814))
+#define __WI_SUPPRESS_BREAKING_WARNINGS_E __pragma(warning(pop))
+#define __WI_SUPPRESS_NULLPTR_ANALYSIS __pragma(warning(suppress : 28285 6504))
 #define __WI_SUPPRESS_NONINIT_ANALYSIS __pragma(warning(suppress : 26495))
 #define __WI_SUPPRESS_NOEXCEPT_ANALYSIS __pragma(warning(suppress : 26439))
 #else
-#define __WI_SUPPRESS_4127_S
-#define __WI_SUPPRESS_4127_E
+#define __WI_SUPPRESS_BREAKING_WARNINGS_S
+#define __WI_SUPPRESS_BREAKING_WARNINGS_E
 #define __WI_SUPPRESS_NULLPTR_ANALYSIS
 #define __WI_SUPPRESS_NONINIT_ANALYSIS
 #define __WI_SUPPRESS_NOEXCEPT_ANALYSIS
@@ -306,6 +305,29 @@ static_assert(WIL_EXCEPTION_MODE <= 2, "Invalid exception mode");
 #error Must enable exceptions when WIL_EXCEPTION_MODE == 1
 #endif
 
+#ifdef WIL_DOXYGEN
+/** This define is used to control whether or not WIL assumes safe access to the STL.
+This define can be set manually (1 to enable, 0 to disable), otherwise heuristics will be applied in an attempt to
+deduce whether or not the STL is available and can be safely used.
+ */
+#define WIL_USE_STL 1
+#elif !defined(WIL_USE_STL)
+#if !defined(WIL_ENABLE_EXCEPTIONS) || !defined(__has_include)
+// Assume it's not safe to use the STL when:
+//      * Exceptions are not enabled, OR
+//      * We can't check for header presence
+#define WIL_USE_STL 0
+#else
+// Check for several STL headers that have been around since the dawn of time
+#if __has_include(<algorithm>) && __has_include(<exception>) && __has_include(<iterator>) && __has_include(<new>) && \
+    __has_include(<string>) && __has_include(<utility>) && __has_include(<vector>)
+#define WIL_USE_STL 1
+#else
+#define WIL_USE_STL 0
+#endif
+#endif
+#endif
+
 /// @cond
 #ifndef WIL_ITERATOR_DEBUG_LEVEL
 // NOTE: See the definition of 'RESULT_DEBUG' for commentary on the use of 'WIL_KERNEL_MODE' below
@@ -373,19 +395,19 @@ check fails as opposed to the invalid parameter handler that the STL invokes. Th
 #endif
 
 /// @cond
-#if (__cplusplus >= 201703) || (_MSVC_LANG >= 201703)
-#define WIL_HAS_CXX_17 1
-#else
-#define WIL_HAS_CXX_17 0
-#endif
-
 // Until we'll have C++17 enabled in our code base, we're falling back to SAL
 #define WI_NODISCARD __WI_LIBCPP_NODISCARD_ATTRIBUTE
-/// @endcond
 
-/// @cond
 #define __R_ENABLE_IF_IS_CLASS(ptrType) wistd::enable_if_t<wistd::is_class<ptrType>::value, void*> = nullptr
 #define __R_ENABLE_IF_IS_NOT_CLASS(ptrType) wistd::enable_if_t<!wistd::is_class<ptrType>::value, void*> = nullptr
+
+// Uses the __has_include macro, if available. Otherwise uses a user-provided fallback. E.g. the fallback could always
+// default to true or false, or it could do something like a C++ standard version check
+#ifdef __has_include
+#define WI_HAS_INCLUDE(header, fallback) __has_include(header)
+#else
+#define WI_HAS_INCLUDE(header, fallback) (fallback)
+#endif
 /// @endcond
 
 //! @defgroup bitwise Bitwise Inspection and Manipulation
@@ -690,32 +712,32 @@ boolean, BOOLEAN, and classes with an explicit bool cast.
 @param val The logical bool expression
 @return A C++ bool representing the evaluation of `val`. */
 template <typename T, __R_ENABLE_IF_IS_CLASS(T)>
-_Post_satisfies_(return == static_cast<bool>(val)) __forceinline constexpr bool verify_bool(const T& val) WI_NOEXCEPT
+_Post_satisfies_(return == static_cast<bool>(val)) inline constexpr bool verify_bool(const T& val) WI_NOEXCEPT
 {
     return static_cast<bool>(val);
 }
 
 template <typename T, __R_ENABLE_IF_IS_NOT_CLASS(T)>
-__forceinline constexpr bool verify_bool(T /*val*/) WI_NOEXCEPT
+inline constexpr bool verify_bool(T /*val*/) WI_NOEXCEPT
 {
     static_assert(!wistd::is_same<T, T>::value, "Wrong Type: bool/BOOL/BOOLEAN/boolean expected");
     return false;
 }
 
 template <>
-_Post_satisfies_(return == val) __forceinline constexpr bool verify_bool<bool>(bool val) WI_NOEXCEPT
+_Post_satisfies_(return == val) inline constexpr bool verify_bool<bool>(bool val) WI_NOEXCEPT
 {
     return val;
 }
 
 template <>
-_Post_satisfies_(return == (val != 0)) __forceinline constexpr bool verify_bool<int>(int val) WI_NOEXCEPT
+_Post_satisfies_(return == (val != 0)) inline constexpr bool verify_bool<int>(int val) WI_NOEXCEPT
 {
     return (val != 0);
 }
 
 template <>
-_Post_satisfies_(return == (val != 0)) __forceinline constexpr bool verify_bool<unsigned char>(unsigned char val) WI_NOEXCEPT
+_Post_satisfies_(return == (val != 0)) inline constexpr bool verify_bool<unsigned char>(unsigned char val) WI_NOEXCEPT
 {
     return (val != 0);
 }
@@ -726,7 +748,7 @@ accept any `int` value as long as that is the underlying typedef behind `BOOL`.
 @param val The Win32 BOOL returning expression
 @return A Win32 BOOL representing the evaluation of `val`. */
 template <typename T>
-_Post_satisfies_(return == val) __forceinline constexpr int verify_BOOL(T val) WI_NOEXCEPT
+_Post_satisfies_(return == val) inline constexpr int verify_BOOL(T val) WI_NOEXCEPT
 {
     // Note: Written in terms of 'int' as BOOL is actually:  typedef int BOOL;
     static_assert((wistd::is_same<T, int>::value), "Wrong Type: BOOL expected");
@@ -820,7 +842,7 @@ namespace details
         : sizeof(val) == 2 ? static_cast<unsigned short>(val) \
         : sizeof(val) == 4 ? static_cast<unsigned long>(val) \
                            : static_cast<unsigned long long>(val)) __pragma(warning(pop)))
-#define __WI_IS_UNSIGNED_SINGLE_FLAG_SET(val) ((val) && !((val) & ((val)-1)))
+#define __WI_IS_UNSIGNED_SINGLE_FLAG_SET(val) ((val) && !((val) & ((val) - 1)))
 #define __WI_IS_SINGLE_FLAG_SET(val) __WI_IS_UNSIGNED_SINGLE_FLAG_SET(__WI_MAKE_UNSIGNED(val))
 
     template <typename TVal, typename TFlags>

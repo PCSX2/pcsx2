@@ -86,9 +86,7 @@ using conditional_t = typename conditional<_Bp, _If, _Then>::type;
 #endif
 
 template <bool, class _Tp>
-struct __WI_LIBCPP_TEMPLATE_VIS __lazy_enable_if
-{
-};
+struct __WI_LIBCPP_TEMPLATE_VIS __lazy_enable_if{};
 template <class _Tp>
 struct __WI_LIBCPP_TEMPLATE_VIS __lazy_enable_if<true, _Tp>
 {
@@ -96,9 +94,7 @@ struct __WI_LIBCPP_TEMPLATE_VIS __lazy_enable_if<true, _Tp>
 };
 
 template <bool, class _Tp = void>
-struct __WI_LIBCPP_TEMPLATE_VIS enable_if
-{
-};
+struct __WI_LIBCPP_TEMPLATE_VIS enable_if{};
 template <class _Tp>
 struct __WI_LIBCPP_TEMPLATE_VIS enable_if<true, _Tp>
 {
@@ -1194,9 +1190,7 @@ using type_identity_t = typename type_identity<_Tp>::type;
 // is_signed
 
 template <class _Tp, bool = is_integral<_Tp>::value>
-struct __libcpp_is_signed_impl : public __WI_LIBCPP_BOOL_CONSTANT(_Tp(-1) < _Tp(0))
-{
-};
+struct __libcpp_is_signed_impl : public __WI_LIBCPP_BOOL_CONSTANT(_Tp(-1) < _Tp(0)){};
 
 template <class _Tp>
 struct __libcpp_is_signed_impl<_Tp, false> : public true_type
@@ -1226,9 +1220,7 @@ __WI_LIBCPP_INLINE_VAR __WI_LIBCPP_CONSTEXPR bool is_signed_v = is_signed<_Tp>::
 // is_unsigned
 
 template <class _Tp, bool = is_integral<_Tp>::value>
-struct __libcpp_is_unsigned_impl : public __WI_LIBCPP_BOOL_CONSTANT(_Tp(0) < _Tp(-1))
-{
-};
+struct __libcpp_is_unsigned_impl : public __WI_LIBCPP_BOOL_CONSTANT(_Tp(0) < _Tp(-1)){};
 
 template <class _Tp>
 struct __libcpp_is_unsigned_impl<_Tp, false> : public false_type
@@ -2282,9 +2274,7 @@ struct __WI_LIBCPP_TEMPLATE_VIS common_type<_Tp, _Up, void>
 // bullet 1 - sizeof...(Tp) == 0
 
 template <class... _Tp>
-struct __WI_LIBCPP_TEMPLATE_VIS common_type
-{
-};
+struct __WI_LIBCPP_TEMPLATE_VIS common_type{};
 
 // bullet 2 - sizeof...(Tp) == 1
 
@@ -4693,7 +4683,7 @@ namespace __detail
     {
         static const bool value =
 #ifndef __WI_LIBCPP_HAS_NO_NOEXCEPT
-            noexcept(swap_wil(declval<_Tp>(), declval<_Up>()))&& noexcept(swap_wil(declval<_Up>(), declval<_Tp>()));
+            noexcept(swap_wil(declval<_Tp>(), declval<_Up>())) && noexcept(swap_wil(declval<_Up>(), declval<_Tp>()));
 #else
             false;
 #endif

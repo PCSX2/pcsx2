@@ -19,7 +19,7 @@
 // Helpers for return macros
 /// @cond
 #define __NT_RETURN_NTSTATUS(status, str) \
-    __WI_SUPPRESS_4127_S do \
+    __WI_SUPPRESS_BREAKING_WARNINGS_S do \
     { \
         NTSTATUS __status = (status); \
         if (FAILED_NTSTATUS(__status)) \
@@ -28,9 +28,9 @@
         } \
         return __status; \
     } \
-    __WI_SUPPRESS_4127_E while ((void)0, 0)
+    __WI_SUPPRESS_BREAKING_WARNINGS_E while ((void)0, 0)
 #define __NT_RETURN_NTSTATUS_MSG(status, str, fmt, ...) \
-    __WI_SUPPRESS_4127_S do \
+    __WI_SUPPRESS_BREAKING_WARNINGS_S do \
     { \
         NTSTATUS __status = (status); \
         if (FAILED_NTSTATUS(__status)) \
@@ -39,7 +39,7 @@
         } \
         return __status; \
     } \
-    __WI_SUPPRESS_4127_E while ((void)0, 0)
+    __WI_SUPPRESS_BREAKING_WARNINGS_E while ((void)0, 0)
 /// @endcond
 
 //*****************************************************************************
@@ -55,7 +55,7 @@
 
 // Conditionally returns failures (NTSTATUS) - always logs failures
 #define NT_RETURN_IF_NTSTATUS_FAILED(status) \
-    __WI_SUPPRESS_4127_S do \
+    __WI_SUPPRESS_BREAKING_WARNINGS_S do \
     { \
         const auto __statusRet = wil::verify_ntstatus(status); \
         if (FAILED_NTSTATUS(__statusRet)) \
@@ -63,11 +63,11 @@
             __NT_RETURN_NTSTATUS(__statusRet, #status); \
         } \
     } \
-    __WI_SUPPRESS_4127_E while ((void)0, 0)
+    __WI_SUPPRESS_BREAKING_WARNINGS_E while ((void)0, 0)
 
 // Conditionally returns failures (NTSTATUS) - always logs a var-arg message on failure
 #define NT_RETURN_IF_NTSTATUS_FAILED_MSG(status, fmt, ...) \
-    __WI_SUPPRESS_4127_S do \
+    __WI_SUPPRESS_BREAKING_WARNINGS_S do \
     { \
         const auto __statusRet = wil::verify_ntstatus(status); \
         if (FAILED_NTSTATUS(__statusRet)) \
@@ -75,7 +75,7 @@
             __NT_RETURN_NTSTATUS_MSG(__statusRet, #status, fmt, ##__VA_ARGS__); \
         } \
     } \
-    __WI_SUPPRESS_4127_E while ((void)0, 0)
+    __WI_SUPPRESS_BREAKING_WARNINGS_E while ((void)0, 0)
 
 //*****************************************************************************
 // Macros to catch and convert exceptions on failure
@@ -138,11 +138,11 @@ _Always_(_Post_satisfies_(return < 0)) __declspec(noinline) inline NTSTATUS Stat
 namespace details
 {
     template <FailureType>
-    __declspec(noinline) inline NTSTATUS
-        ReportStatus_CaughtException(__R_FN_PARAMS_FULL, SupportedExceptions supported = SupportedExceptions::Default);
+    __declspec(noinline) inline NTSTATUS ReportStatus_CaughtException(
+        __R_FN_PARAMS_FULL, SupportedExceptions supported = SupportedExceptions::Default);
     template <FailureType>
-    __declspec(noinline) inline NTSTATUS
-        ReportStatus_CaughtExceptionMsg(__R_FN_PARAMS_FULL, _Printf_format_string_ PCSTR formatString, va_list argList);
+    __declspec(noinline) inline NTSTATUS ReportStatus_CaughtExceptionMsg(
+        __R_FN_PARAMS_FULL, _Printf_format_string_ PCSTR formatString, va_list argList);
 
     namespace __R_NS_NAME
     {
@@ -191,8 +191,7 @@ namespace details
     }
 
     template <FailureType T>
-    __declspec(noinline) inline NTSTATUS
-        ReportStatus_CaughtExceptionMsg(__R_FN_PARAMS_FULL, _Printf_format_string_ PCSTR formatString, va_list argList)
+    __declspec(noinline) inline NTSTATUS ReportStatus_CaughtExceptionMsg(__R_FN_PARAMS_FULL, _Printf_format_string_ PCSTR formatString, va_list argList)
     {
         // Pre-populate the buffer with our message, the exception message will be added to it...
         wchar_t message[2048];

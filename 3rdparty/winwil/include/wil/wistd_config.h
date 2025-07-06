@@ -76,8 +76,12 @@
 #define __WI_LIBCPP_STD_VER 14
 #elif __WI_CPLUSPLUS <= 201703L
 #define __WI_LIBCPP_STD_VER 17
+#elif __WI_CPLUSPLUS <= 202002L
+#define __WI_LIBCPP_STD_VER 20
+#elif __WI_CPLUSPLUS <= 202302L
+#define __WI_LIBCPP_STD_VER 23
 #else
-#define __WI_LIBCPP_STD_VER 18 // current year, or date of c++2a ratification
+#define __WI_LIBCPP_STD_VER 24 // Newer standard or prerelease standard
 #endif
 #endif // __WI_LIBCPP_STD_VER
 

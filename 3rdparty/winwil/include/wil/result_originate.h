@@ -68,7 +68,7 @@ namespace details
                 wil::unique_hmodule errorModule;
                 if (GetModuleHandleExW(0, L"api-ms-win-core-winrt-error-l1-1-1.dll", &errorModule))
                 {
-                    auto pfn = reinterpret_cast<decltype(&::RoOriginateErrorW)>(GetProcAddress(errorModule.get(), "RoOriginateErrorW"));
+                    auto pfn = details::GetProcAddress<decltype(&::RoOriginateErrorW)>(errorModule.get(), "RoOriginateErrorW");
                     if (pfn != nullptr)
                     {
                         pfn(failure.hr, 0, failure.pszMessage);
