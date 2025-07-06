@@ -2493,6 +2493,7 @@ void GSDeviceMTL::RenderImGui(ImDrawData* data)
 {
 	if (data->CmdListsCount == 0)
 		return;
+	UpdateImGuiTextures();
 	simd::float4 transform;
 	transform.xy = 2.f / simd::make_float2(data->DisplaySize.x, -data->DisplaySize.y);
 	transform.zw = ToSimd(data->DisplayPos) * -transform.xy + simd::make_float2(-1, 1);

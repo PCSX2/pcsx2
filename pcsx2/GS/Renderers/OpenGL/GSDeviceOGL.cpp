@@ -2100,6 +2100,8 @@ void GSDeviceOGL::RenderImGui()
 	if (draw_data->CmdListsCount == 0)
 		return;
 
+	UpdateImGuiTextures();
+
 	constexpr float L = 0.0f;
 	const float R = static_cast<float>(m_window_info.surface_width);
 	constexpr float T = 0.0f;
