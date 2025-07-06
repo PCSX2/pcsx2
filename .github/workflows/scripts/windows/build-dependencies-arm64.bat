@@ -44,7 +44,7 @@ cd "%BUILDDIR%"
 
 set FREETYPE=2.13.3
 set HARFBUZZ=11.2.0
-set LIBJPEGTURBO=3.1.0
+set LIBJPEGTURBO=3.1.1
 set LIBPNG=1648
 set SDL=SDL3-3.2.16
 set QT=6.9.1
@@ -65,8 +65,8 @@ set SHADERC_SPIRVTOOLS=33e02568181e3312f49a3cf33df470bf96ef293a
 
 call :downloadfile "freetype-%FREETYPE%.tar.gz" https://sourceforge.net/projects/freetype/files/freetype2/%FREETYPE%/freetype-%FREETYPE%.tar.gz/download 5c3a8e78f7b24c20b25b54ee575d6daa40007a5f4eea2845861c3409b3021747 || goto error
 call :downloadfile "harfbuzz-%HARFBUZZ%.zip" https://github.com/harfbuzz/harfbuzz/archive/refs/tags/%HARFBUZZ%.zip 850cb5e38e21106c0abba86c5b73f8f74b9a32d7725505901d081080b0d3f0b3 || goto error
-call :downloadfile "lpng%LIBPNG%.zip" https://download.sourceforge.net/libpng/lpng1648.zip 2e5f080360f77376eb2bfa9e2ed773b9c7728159aba47b638ad53ca839379040 || goto error
-call :downloadfile "libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/%LIBJPEGTURBO%/libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" 9564c72b1dfd1d6fe6274c5f95a8d989b59854575d4bbee44ade7bc17aa9bc93 || goto error
+call :downloadfile "lpng%LIBPNG%.zip" https://download.sourceforge.net/libpng/lpng1650.zip 4be6938313b08d5921f9dede13f2789b653c96f4f8595d92ff3f09c9320e51c7 || goto error
+call :downloadfile "libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/%LIBJPEGTURBO%/libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" aadc97ea91f6ef078b0ae3a62bba69e008d9a7db19b34e4ac973b19b71b4217c || goto error
 call :downloadfile "libwebp-%WEBP%.tar.gz" "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-%WEBP%.tar.gz" 7d6fab70cf844bf6769077bd5d7a74893f8ffd4dfb42861745750c63c2a5c92c || goto error
 call :downloadfile "%SDL%.zip" "https://libsdl.org/release/%SDL%.zip" 0cc7430fb827c1f843e31b8b26ba7f083b1eeb8f6315a65d3744fd4d25b6c373 || goto error
 call :downloadfile "qtbase-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtbase-everywhere-src-%QT%.zip" efa6d8ef9f7ae0fd9f7d280fbff574d71882b60a357ae639e516dc173cf26986 || goto error
