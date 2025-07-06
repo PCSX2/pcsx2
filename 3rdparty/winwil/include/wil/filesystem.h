@@ -26,6 +26,10 @@
 #include "win32_helpers.h"
 #include "resource.h"
 
+#if WIL_USE_STL
+#include <iterator>
+#endif
+
 namespace wil
 {
 //! Determines if a path is an extended length path that can be used to access paths longer than MAX_PATH.
@@ -403,7 +407,7 @@ struct next_entry_offset_iterator
     using value_type = T;
     using pointer = const T*;
     using reference = const T&;
-#ifdef _XUTILITY_
+#if WIL_USE_STL
     using iterator_category = ::std::forward_iterator_tag;
 #endif
 

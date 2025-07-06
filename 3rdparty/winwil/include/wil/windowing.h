@@ -14,6 +14,8 @@
 #include <WinUser.h>
 #include <exception>
 
+#include "common.h"
+
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 namespace wil
 {
@@ -28,7 +30,7 @@ namespace details
     BOOL __stdcall EnumWindowsCallbackNoThrow(HWND hwnd, LPARAM lParam)
     {
         auto pCallback = reinterpret_cast<TCallback*>(lParam);
-#ifdef __cpp_if_constexpr
+#if __cpp_if_constexpr >= 201606L
         using result_t = decltype((*pCallback)(hwnd));
         if constexpr (wistd::is_void_v<result_t>)
         {
@@ -74,7 +76,7 @@ namespace details
         try
         {
             auto pCallback = pCallbackData->pCallback;
-#ifdef __cpp_if_constexpr
+#if __cpp_if_constexpr >= 201606L
             using result_t = decltype((*pCallback)(hwnd));
             if constexpr (std::is_void_v<result_t>)
             {

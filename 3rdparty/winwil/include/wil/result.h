@@ -435,7 +435,7 @@ namespace details_abi
     private:
         struct Node
         {
-            DWORD threadId = 0xffffffff; // MAXDWORD
+            DWORD threadId = 0xffffffffu;
             Node* pNext = nullptr;
             T value{};
         };
@@ -1166,8 +1166,8 @@ inline void WilInitialize_Result(WilInitializeCommand state)
 namespace details
 {
 #ifndef RESULT_SUPPRESS_STATIC_INITIALIZERS
-    __declspec(selectany)::wil::details_abi::ProcessLocalStorage<::wil::details_abi::ProcessLocalData> g_processLocalData("WilError_03");
-    __declspec(selectany)::wil::details_abi::ThreadLocalStorage<ThreadFailureCallbackHolder*> g_threadFailureCallbacks;
+    __declspec(selectany) ::wil::details_abi::ProcessLocalStorage<::wil::details_abi::ProcessLocalData> g_processLocalData("WilError_03");
+    __declspec(selectany) ::wil::details_abi::ThreadLocalStorage<ThreadFailureCallbackHolder*> g_threadFailureCallbacks;
 
     WI_HEADER_INITIALIZATION_FUNCTION(InitializeResultHeader, [] {
         g_pfnGetContextAndNotifyFailure = GetContextAndNotifyFailure;
