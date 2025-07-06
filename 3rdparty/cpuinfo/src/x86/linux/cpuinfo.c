@@ -80,11 +80,7 @@ struct proc_cpuinfo_parser_state {
  *	Decode a single line of /proc/cpuinfo information.
  *	Lines have format <words-with-spaces>[ ]*:[ ]<space-separated words>
  */
-static bool parse_line(
-	const char* line_start,
-	const char* line_end,
-	void* context,
-	uint64_t line_number) {
+static bool parse_line(const char* line_start, const char* line_end, void* context, uint64_t line_number) {
 	struct proc_cpuinfo_parser_state* restrict state = context;
 	/* Empty line. Skip. */
 	if (line_start == line_end) {
@@ -215,6 +211,5 @@ bool cpuinfo_x86_linux_parse_proc_cpuinfo(
 		.max_processors_count = max_processors_count,
 		.processors = processors,
 	};
-	return cpuinfo_linux_parse_multiline_file(
-		"/proc/cpuinfo", BUFFER_SIZE, parse_line, &state);
+	return cpuinfo_linux_parse_multiline_file("/proc/cpuinfo", BUFFER_SIZE, parse_line, &state);
 }

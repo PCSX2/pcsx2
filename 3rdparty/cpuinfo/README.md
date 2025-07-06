@@ -9,7 +9,7 @@ cpuinfo is a library to detect essential for performance optimization informatio
 ## Features
 
 - **Cross-platform** availability:
-  - Linux, Windows, macOS, Android, and iOS operating systems
+  - Linux, Windows, macOS, Android, iOS and FreeBSD operating systems
   - x86, x86-64, ARM, and ARM64 architectures
 - Modern **C/C++ interface**
   - Thread-safe
@@ -258,6 +258,8 @@ LDFLAGS+= $(pkg-config --libs libcpuinfo)
   - [x] x86
   - [x] x86-64
   - [x] arm64
+- [x] FreeBSD
+  - [x] x86-64
 
 ## Methods
 
