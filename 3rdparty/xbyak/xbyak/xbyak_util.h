@@ -548,6 +548,12 @@ public:
 	XBYAK_DEFINE_TYPE(88, tSSE4a);
 	XBYAK_DEFINE_TYPE(89, tCLWB);
 	XBYAK_DEFINE_TYPE(90, tTSXLDTRK);
+	XBYAK_DEFINE_TYPE(91, tAMX_TRANSPOSE);
+	XBYAK_DEFINE_TYPE(92, tAMX_TF32);
+	XBYAK_DEFINE_TYPE(93, tAMX_AVX512);
+	XBYAK_DEFINE_TYPE(94, tAMX_MOVRS);
+	XBYAK_DEFINE_TYPE(95, tAMX_FP8);
+	XBYAK_DEFINE_TYPE(96, tMOVRS);
 
 #undef XBYAK_SPLIT_ID
 #undef XBYAK_DEFINE_TYPE
@@ -702,12 +708,20 @@ public:
 				if (EAX & (1U << 7)) type_ |= tCMPCCXADD;
 				if (EAX & (1U << 21)) type_ |= tAMX_FP16;
 				if (EAX & (1U << 23)) type_ |= tAVX_IFMA;
+				if (EAX & (1U << 31)) type_ |= tMOVRS;
 				if (EDX & (1U << 4)) type_ |= tAVX_VNNI_INT8;
 				if (EDX & (1U << 5)) type_ |= tAVX_NE_CONVERT;
 				if (EDX & (1U << 10)) type_ |= tAVX_VNNI_INT16;
 				if (EDX & (1U << 14)) type_ |= tPREFETCHITI;
 				if (EDX & (1U << 19)) type_ |= tAVX10;
 				if (EDX & (1U << 21)) type_ |= tAPX_F;
+
+				getCpuidEx(0x1e, 1, data);
+				if (EAX & (1U << 4)) type_ |= tAMX_FP8;
+				if (EAX & (1U << 5)) type_ |= tAMX_TRANSPOSE;
+				if (EAX & (1U << 6)) type_ |= tAMX_TF32;
+				if (EAX & (1U << 7)) type_ |= tAMX_AVX512;
+				if (EAX & (1U << 8)) type_ |= tAMX_MOVRS;
 			}
 		}
 		if (maxNum >= 0x19) {
@@ -892,17 +906,17 @@ class StackFrame {
 #endif
 	static const int maxRegNum = 14; // maxRegNum = 16 - rsp - rax
 	Xbyak::CodeGenerator *code_;
-	int pNum_;
-	int tNum_;
-	bool useRcx_;
-	bool useRdx_;
-	int saveNum_;
-	int P_;
-	bool makeEpilog_;
 	Xbyak::Reg64 pTbl_[4];
 	Xbyak::Reg64 tTbl_[maxRegNum];
 	Pack p_;
 	Pack t_;
+	int pNum_;
+	int tNum_;
+	int saveNum_;
+	int P_;
+	bool useRcx_;
+	bool useRdx_;
+	bool makeEpilog_;
 	StackFrame(const StackFrame&);
 	void operator=(const StackFrame&);
 public:
@@ -928,10 +942,10 @@ public:
 		: code_(code)
 		, pNum_(pNum)
 		, tNum_(tNum & ~(UseRCX | UseRDX))
-		, useRcx_((tNum & UseRCX) != 0)
-		, useRdx_((tNum & UseRDX) != 0)
 		, saveNum_(0)
 		, P_(0)
+		, useRcx_((tNum & UseRCX) != 0)
+		, useRdx_((tNum & UseRDX) != 0)
 		, makeEpilog_(makeEpilog)
 		, p(p_)
 		, t(t_)
