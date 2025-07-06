@@ -191,4 +191,21 @@ void cpuinfo_arm64_linux_decode_isa_from_proc_cpuinfo(
 		// Mask out the SVE vector length bits
 		isa->svelen = ret & PR_SVE_VL_LEN_MASK;
 	}
+
+#ifndef PR_SME_GET_VL
+#define PR_SME_GET_VL 64
+#endif
+
+#ifndef PR_SME_VL_LEN_MASK
+#define PR_SME_VL_LEN_MASK 0xffff
+#endif
+
+	ret = prctl(PR_SME_GET_VL);
+	if (ret < 0) {
+		cpuinfo_log_warning("No SME support on this machine");
+		isa->smelen = 0; // Assume no SME support if the call fails
+	} else {
+		// Mask out the SME vector length bits
+		isa->smelen = ret & PR_SME_VL_LEN_MASK;
+	}
 }

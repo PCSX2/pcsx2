@@ -27,6 +27,45 @@
 #ifndef CPUFAMILY_ARM_AVALANCHE_BLIZZARD
 #define CPUFAMILY_ARM_AVALANCHE_BLIZZARD 0xDA33D83D
 #endif
+// Following are copied over from ncnn/src/cpu.cpp
+// A16
+#ifndef CPUFAMILY_ARM_EVEREST_SAWTOOTH
+#define CPUFAMILY_ARM_EVEREST_SAWTOOTH 0x8765edea
+#endif
+// A17
+#ifndef CPUFAMILY_ARM_COLL
+#define CPUFAMILY_ARM_COLL 0x2876f5b5
+#endif
+// A18
+#ifndef CPUFAMILY_ARM_TUPAI
+#define CPUFAMILY_ARM_TUPAI 0x204526d0
+#endif
+// A18 Pro
+#ifndef CPUFAMILY_ARM_TAHITI
+#define CPUFAMILY_ARM_TAHITI 0x75d4acb9
+#endif
+// For M3/M4 we need to populate more information about
+// efficiency and perf cores.
+// M3
+#ifndef CPUFAMILY_ARM_IBIZA
+#define CPUFAMILY_ARM_IBIZA 0xfa33415e
+#endif
+// M3 Pro
+#ifndef CPUFAMILY_ARM_LOBOS
+#define CPUFAMILY_ARM_LOBOS 0x5f4dea93
+#endif
+// M3 Max
+#ifndef CPUFAMILY_ARM_PALMA
+#define CPUFAMILY_ARM_PALMA 0x72015832
+#endif
+// M4
+#ifndef CPUFAMILY_ARM_DONAN
+#define CPUFAMILY_ARM_DONAN 0x6f5129ac
+#endif
+// M4 Pro / M4 Max
+#ifndef CPUFAMILY_ARM_BRAVA
+#define CPUFAMILY_ARM_BRAVA 0x17d5b93a
+#endif
 
 struct cpuinfo_arm_isa cpuinfo_isa = {
 	.aes = true,
@@ -93,6 +132,23 @@ static enum cpuinfo_uarch decode_uarch(uint32_t cpu_family, uint32_t core_index,
 		case CPUFAMILY_ARM_AVALANCHE_BLIZZARD:
 			/* Hexa-core: 2x Avalanche + 4x Blizzard */
 			return core_index + 4 < core_count ? cpuinfo_uarch_avalanche : cpuinfo_uarch_blizzard;
+		case CPUFAMILY_ARM_EVEREST_SAWTOOTH:
+			/* Hexa-core: 2x Avalanche + 4x Blizzard */
+			return core_index + 4 < core_count ? cpuinfo_uarch_everest : cpuinfo_uarch_sawtooth;
+			return core_index + 4 < core_count ? cpuinfo_uarch_avalanche : cpuinfo_uarch_blizzard;
+		case CPUFAMILY_ARM_COLL:
+			/* Hexa-core: 2x Avalanche + 4x Blizzard */
+			return core_index + 4 < core_count ? cpuinfo_uarch_coll_everest : cpuinfo_uarch_coll_sawtooth;
+
+		case CPUFAMILY_ARM_TUPAI:
+			/* Hexa-core: 2x Avalanche + 4x Blizzard */
+			return core_index + 4 < core_count ? cpuinfo_uarch_tupai_everest : cpuinfo_uarch_tupai_sawtooth;
+
+		case CPUFAMILY_ARM_TAHITI:
+			/* Hexa-core: 2x Avalanche + 4x Blizzard */
+			return core_index + 4 < core_count ? cpuinfo_uarch_tahiti_everest
+							   : cpuinfo_uarch_tahiti_sawtooth;
+
 		default:
 			/* Use hw.cpusubtype for detection */
 			break;

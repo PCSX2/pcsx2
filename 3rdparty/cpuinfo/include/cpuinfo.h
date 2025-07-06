@@ -353,6 +353,8 @@ enum cpuinfo_uarch {
 	cpuinfo_uarch_palm_cove = 0x0010020B,
 	/** Intel Sunny Cove microarchitecture (10 nm, Ice Lake). */
 	cpuinfo_uarch_sunny_cove = 0x0010020C,
+	/** Intel Willow Cove microarchitecture (10 nm, Tiger Lake). */
+	cpuinfo_uarch_willow_cove = 0x0010020D,
 
 	/** Pentium 4 with Willamette, Northwood, or Foster cores. */
 	cpuinfo_uarch_willamette = 0x00100300,
@@ -371,6 +373,10 @@ enum cpuinfo_uarch {
 	cpuinfo_uarch_goldmont = 0x00100404,
 	/** Intel Goldmont Plus microarchitecture (Gemini Lake). */
 	cpuinfo_uarch_goldmont_plus = 0x00100405,
+	/** Intel Gracemont microarchitecture (Twin Lake). */
+	cpuinfo_uarch_gracemont = 0x00100406,
+	/** Intel Crestmont microarchitecture (Sierra Forest). */
+	cpuinfo_uarch_crestmont = 0x00100407,
 
 	/** Intel Knights Ferry HPC boards. */
 	cpuinfo_uarch_knights_ferry = 0x00100500,
@@ -382,6 +388,8 @@ enum cpuinfo_uarch {
 	cpuinfo_uarch_knights_hill = 0x00100503,
 	/** Intel Knights Mill Xeon Phi. */
 	cpuinfo_uarch_knights_mill = 0x00100504,
+	/** Intel Darkmont microarchitecture (e-core used in Clearwater Forest). */
+	cpuinfo_uarch_darkmont = 0x00100505,
 
 	/** Intel/Marvell XScale series. */
 	cpuinfo_uarch_xscale = 0x00100600,
@@ -581,6 +589,22 @@ enum cpuinfo_uarch {
 	cpuinfo_uarch_avalanche = 0x0070010D,
 	/** Apple A15 / M2 processor (little cores). */
 	cpuinfo_uarch_blizzard = 0x0070010E,
+	/** Apple A16 processor (big cores). */
+	cpuinfo_uarch_everest = 0x00700200,
+	/** Apple A16 processor (little cores). */
+	cpuinfo_uarch_sawtooth = 0x00700201,
+	/** Apple A17 processor (big cores). */
+	cpuinfo_uarch_coll_everest = 0x00700202,
+	/** Apple A17 processor (little cores). */
+	cpuinfo_uarch_coll_sawtooth = 0x00700203,
+	/** Apple A18 processor (big cores). */
+	cpuinfo_uarch_tupai_everest = 0x00700204,
+	/** Apple A18 processor (little cores). */
+	cpuinfo_uarch_tupai_sawtooth = 0x00700205,
+	/** Apple A18 pro processor (big cores). */
+	cpuinfo_uarch_tahiti_everest = 0x00700206,
+	/** Apple A18 pro processor (little cores). */
+	cpuinfo_uarch_tahiti_sawtooth = 0x00700207,
 
 	/** Cavium ThunderX. */
 	cpuinfo_uarch_thunderx = 0x00800100,
@@ -1700,6 +1724,7 @@ struct cpuinfo_arm_isa {
 	bool sme_b16b16;
 	bool sme_f16f16;
 	uint32_t svelen;
+	uint32_t smelen;
 #endif
 	bool rdm;
 	bool fp16arith;
@@ -2076,6 +2101,15 @@ static inline bool cpuinfo_has_arm_sve2(void) {
 static inline uint32_t cpuinfo_get_max_arm_sve_length(void) {
 #if CPUINFO_ARCH_ARM64
 	return cpuinfo_isa.svelen * 8; // bytes * 8 = bit length(vector length)
+#else
+	return 0;
+#endif
+}
+
+// Function to get the max SME vector length on ARM CPU's which support SME.
+static inline uint32_t cpuinfo_get_max_arm_sme_length(void) {
+#if CPUINFO_ARCH_ARM64
+	return cpuinfo_isa.smelen * 8; // bytes * 8 = bit length(vector length)
 #else
 	return 0;
 #endif
