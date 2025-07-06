@@ -1820,7 +1820,7 @@
             <item row="9" column="2">
              <widget class="QLabel" name="label_2">
               <property name="text">
-               <string>Warnings for user</string>
+               <string>Warnings For User</string>
               </property>
              </widget>
             </item>

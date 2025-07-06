@@ -39,7 +39,7 @@
 #include "SIO/Pad/Pad.h"
 #include "SIO/Sio.h"
 
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 #include "IconsPromptFont.h"
 #include "imgui.h"
 #include "imgui_internal.h"
