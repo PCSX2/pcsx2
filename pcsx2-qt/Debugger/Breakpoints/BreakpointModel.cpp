@@ -72,7 +72,7 @@ QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 			switch (index.column())
 			{
 				case BreakpointColumns::ENABLED:
-					return (bp->enabled) ? tr("Enabled") : tr("Disabled");
+					return "";
 				case BreakpointColumns::TYPE:
 					return tr("Execute");
 				case BreakpointColumns::OFFSET:
@@ -95,7 +95,7 @@ QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 			switch (index.column())
 			{
 				case BreakpointColumns::ENABLED:
-					return (mc->result & MEMCHECK_BREAK) ? tr("Enabled") : tr("Disabled");
+					return "";
 				case BreakpointColumns::TYPE:
 				{
 					QString type("");
