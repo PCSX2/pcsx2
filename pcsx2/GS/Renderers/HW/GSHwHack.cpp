@@ -822,6 +822,27 @@ bool GSHwHack::GSC_MetalGearSolid3(GSRendererHW& r, int& skip)
 	return true;
 }
 
+bool GSHwHack::GSC_Turok(GSRendererHW& r, int& skip)
+{
+	// Turok does some very silly clears where it will set the alpha channel with a 512x512 draw, then decides the image is actually 640x448 later, this causes havok for the texture cache and target end blocks.
+	// Since we can't look in to the future to check this, the options are either rearrange all the pages in a target when the width changes
+	// (very slow, could break a ton of stuff which stores different things in the alpha channel), or this. I choose this.
+
+	if (r.m_index.tail == 6 && RPRIM->PRIM == 4 && !RTME && RFBMSK == 0x00FFFFFF && floor(r.m_vt.m_max.p.x) == 512 && r.m_env.CTXT[r.m_backed_up_ctx].FRAME.FBW == 10 && RFRAME.FBW == 8 && RFPSM == PSMCT32 && RTEST.ATE && RTEST.ATST == ATST_GEQUAL)
+	{
+		int num_pages = r.m_cached_ctx.FRAME.FBW * ((floor(r.m_vt.m_max.p.y) + 31) / 32);
+		r.m_cached_ctx.FRAME.FBW = 10;
+		// Round them up to fill the row, it later reads the bottom right corner clamped, but because we can't rearrange it ends up reading the black square.
+		num_pages = ((num_pages + 9) / 10) * 10;
+
+		r.ReplaceVerticesWithSprite(
+			r.GetDrawRectForPages(r.m_cached_ctx.FRAME.FBW, r.m_cached_ctx.FRAME.PSM, num_pages),
+			GSVector2i(1, 1));
+	}
+
+	return true;
+}
+
 bool GSHwHack::OI_PointListPalette(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
 {
 	const u32 n_vertices = r.m_vertex.next;
@@ -1312,6 +1333,7 @@ const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_function
 	CRC_F(GSC_PolyphonyDigitalGames),
 	CRC_F(GSC_MetalGearSolid3),
 	CRC_F(GSC_Battlefield2),
+	CRC_F(GSC_Turok),
 
 	// Channel Effect
 	CRC_F(GSC_NamcoGames),
