@@ -1921,7 +1921,7 @@ void Achievements::DrawGameOverlays()
 	using ImGuiFullscreen::g_medium_font;
 	using ImGuiFullscreen::LayoutScale;
 
-	if (!HasActiveGame() || !EmuConfig.Achievements.Overlays)
+	if (!HasActiveGame() || !(EmuConfig.Achievements.Overlays || EmuConfig.Achievements.LBOverlays))
 		return;
 
 	const auto lock = GetLock();
@@ -1933,7 +1933,7 @@ void Achievements::DrawGameOverlays()
 	ImVec2 position = ImVec2(io.DisplaySize.x - padding, io.DisplaySize.y - padding);
 	ImDrawList* dl = ImGui::GetBackgroundDrawList();
 
-	if (!s_active_challenge_indicators.empty())
+	if (!s_active_challenge_indicators.empty() && EmuConfig.Achievements.Overlays)
 	{
 		const float x_advance = image_size.x + spacing;
 		ImVec2 current_position = ImVec2(position.x - image_size.x, position.y - image_size.y);
@@ -1966,7 +1966,7 @@ void Achievements::DrawGameOverlays()
 		position.y -= image_size.y + padding;
 	}
 
-	if (s_active_progress_indicator.has_value())
+	if (s_active_progress_indicator.has_value() && EmuConfig.Achievements.Overlays)
 	{
 		const AchievementProgressIndicator& indicator = s_active_progress_indicator.value();
 		const float opacity = IndicatorOpacity(indicator);
@@ -2005,7 +2005,7 @@ void Achievements::DrawGameOverlays()
 		position.y -= image_size.y + padding * 3.0f;
 	}
 
-	if (!s_active_leaderboard_trackers.empty())
+	if (!s_active_leaderboard_trackers.empty() && EmuConfig.Achievements.LBOverlays)
 	{
 		for (auto it = s_active_leaderboard_trackers.begin(); it != s_active_leaderboard_trackers.end();)
 		{
