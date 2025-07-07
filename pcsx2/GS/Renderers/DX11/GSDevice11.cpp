@@ -1357,7 +1357,7 @@ void GSDevice11::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	cb.SetSource(sRect, sTex->GetSize());
 	cb.SetTarget(dRect, ds);
 	cb.SetTime(shaderTime);
-	m_ctx->UpdateSubresource(m_present.ps_cb.get(), 0, nullptr, &cb, 0, 0);
+	UpdateSubresource(m_present.ps_cb.get(), &cb, &m_present.cb_uniforms, sizeof(cb));
 
 	// om
 
@@ -1408,7 +1408,7 @@ void GSDevice11::UpdateCLUTTexture(GSTexture* sTex, float sScale, u32 offsetX, u
 		u32 offsetX, offsetY, dOffset;
 	};
 	const Uniforms cb = {sScale, {}, offsetX, offsetY, dOffset};
-	m_ctx->UpdateSubresource(m_merge.cb.get(), 0, nullptr, &cb, 0, 0);
+	UpdateSubresource(m_merge.cb.get(), &cb, &m_merge.cb_uniforms, sizeof(cb));
 
 	const GSVector4 dRect(0, 0, dSize, 1);
 	const ShaderConvert shader = (dSize == 16) ? ShaderConvert::CLUT_4 : ShaderConvert::CLUT_8;
@@ -1426,7 +1426,7 @@ void GSDevice11::ConvertToIndexedTexture(GSTexture* sTex, float sScale, u32 offs
 	};
 
 	const Uniforms cb = {sScale, {}, SBW, DBW, SPSM};
-	m_ctx->UpdateSubresource(m_merge.cb.get(), 0, nullptr, &cb, 0, 0);
+	UpdateSubresource(m_merge.cb.get(), &cb, &m_merge.cb_uniforms, sizeof(cb));
 
 	const GSVector4 dRect(0, 0, dTex->GetWidth(), dTex->GetHeight());
 	const ShaderConvert shader = ((SPSM & 0xE) == 0) ? ShaderConvert::RGBA_TO_8I : ShaderConvert::RGB5A1_TO_8I;
@@ -1446,7 +1446,7 @@ void GSDevice11::FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u32
 
 	const Uniforms cb = {
 		static_cast<float>(downsample_factor * downsample_factor), {}, clamp_min, static_cast<int>(downsample_factor), 0};
-	m_ctx->UpdateSubresource(m_merge.cb.get(), 0, nullptr, &cb, 0, 0);
+	UpdateSubresource(m_merge.cb.get(), &cb, &m_merge.cb_uniforms, sizeof(cb));
 
 	const ShaderConvert shader = ShaderConvert::DOWNSAMPLE_COPY;
 	StretchRect(sTex, GSVector4::zero(), dTex, dRect, m_convert.ps[static_cast<int>(shader)].get(), m_merge.cb.get(), nullptr, false);
@@ -1538,7 +1538,6 @@ void GSDevice11::DoMultiStretchRects(const MultiStretchRect* rects, u32 num_rect
 	DrawIndexedPrimitive();
 }
 
-
 void GSDevice11::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, u32 c, const bool linear)
 {
 	const GSVector4 full_r(0.0f, 0.0f, 1.0f, 1.0f);
@@ -1555,7 +1554,7 @@ void GSDevice11::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 	if (feedback_write_2 || feedback_write_1 || sTex[0])
 	{
 		const MergeConstantBuffer cb = {GSVector4::unorm8(c), EXTBUF.EMODA, EXTBUF.EMODC};
-		m_ctx->UpdateSubresource(m_merge.cb.get(), 0, nullptr, &cb, 0, 0);
+		UpdateSubresource(m_merge.cb.get(), &cb, &m_merge.cb_uniforms, sizeof(cb));
 	}
 
 	if (sTex[1] && (PMODE.SLBG == 0 || feedback_write_2_but_blend_bg))
@@ -1591,7 +1590,7 @@ void GSDevice11::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 
 void GSDevice11::DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderInterlace shader, bool linear, const InterlaceConstantBuffer& cb)
 {
-	m_ctx->UpdateSubresource(m_interlace.cb.get(), 0, nullptr, &cb, 0, 0);
+	UpdateSubresource(m_interlace.cb.get(), &cb, &m_interlace.cb_uniforms, sizeof(cb));
 
 	StretchRect(sTex, sRect, dTex, dRect, m_interlace.ps[static_cast<int>(shader)].get(), m_interlace.cb.get(), linear);
 }
@@ -1629,7 +1628,7 @@ void GSDevice11::DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float para
 	const GSVector4 sRect(0, 0, 1, 1);
 	const GSVector4 dRect(0, 0, s.x, s.y);
 
-	m_ctx->UpdateSubresource(m_shadeboost.cb.get(), 0, nullptr, params, 0, 0);
+	UpdateSubresource(m_shadeboost.cb.get(), &params, &m_shadeboost.cb_uniforms, sizeof(float) * 4);
 
 	StretchRect(sTex, sRect, dTex, dRect, m_shadeboost.ps.get(), m_shadeboost.cb.get(), false);
 }
@@ -2040,7 +2039,7 @@ void GSDevice11::RenderImGui()
 	const float B = static_cast<float>(m_window_info.surface_height);
 
 	// clang-format off
-  const float ortho_projection[4][4] =
+	const float ortho_projection[4][4] =
 	{
 		{ 2.0f/(R-L),   0.0f,           0.0f,       0.0f },
 		{ 0.0f,         2.0f/(T-B),     0.0f,       0.0f },
@@ -2049,7 +2048,7 @@ void GSDevice11::RenderImGui()
 	};
 	// clang-format on
 
-	m_ctx->UpdateSubresource(m_imgui.vs_cb.get(), 0, nullptr, ortho_projection, 0, 0);
+	UpdateSubresource(m_imgui.vs_cb.get(), &ortho_projection, &m_imgui.vs_cb_uniforms, sizeof(ortho_projection));
 
 	const UINT vb_stride = sizeof(ImDrawVert);
 	const UINT vb_offset = 0;
@@ -2521,6 +2520,15 @@ void GSDevice11::SetScissor(const GSVector4i& scissor)
 	{
 		m_state.scissor = scissor;
 		m_ctx->RSSetScissorRects(1, reinterpret_cast<const D3D11_RECT*>(&scissor));
+	}
+}
+
+void GSDevice11::UpdateSubresource(ID3D11Buffer* buffer, const void* cb_uniforms, void* cached_cb_uniforms, size_t cb_uniforms_size)
+{
+	if (memcmp(cb_uniforms, cached_cb_uniforms, cb_uniforms_size) != 0)
+	{
+		memcpy(cached_cb_uniforms, cb_uniforms, cb_uniforms_size);
+		m_ctx->UpdateSubresource(buffer, 0, nullptr, cached_cb_uniforms, 0, 0);
 	}
 }
 
