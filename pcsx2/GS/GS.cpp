@@ -355,10 +355,10 @@ bool GSopen(const Pcsx2Config::GSOptions& config, GSRendererType renderer, u8* b
 
 	if (!res)
 	{
-		Host::ReportErrorAsync(
-			"Error", fmt::format(TRANSLATE_FS("GS","Failed to create render device. This may be due to your GPU not supporting the "
-								 "chosen renderer ({}), or because your graphics drivers need to be updated."),
-						 Pcsx2Config::GSOptions::GetRendererName(GSConfig.Renderer)));
+		Host::ReportErrorAsync("Error",
+			fmt::format(TRANSLATE_FS("GS", "Failed to create render device. This may be due to your GPU not supporting the "
+			                               "chosen renderer ({}), or because your graphics drivers need to be updated."),
+			            Pcsx2Config::GSOptions::GetRendererName(GSConfig.Renderer)));
 		return false;
 	}
 
@@ -500,7 +500,7 @@ void GSEndCapture()
 {
 	if (g_gs_renderer)
 		g_gs_renderer->EndCapture();
-}		
+}
 
 void GSPresentCurrentFrame()
 {
@@ -661,7 +661,7 @@ void GSgetStats(SmallStringBase& info)
 		const double fillrate = pm.Get(GSPerfMon::Fillrate);
 		double pps = fps * fillrate;
 		char prefix = '\0';
-		
+
 		if (pps >= 170000000)
 		{
 			pps /= 1073741824; // Gpps
@@ -689,7 +689,7 @@ void GSgetStats(SmallStringBase& info)
 			(int)pm.Get(GSPerfMon::Draw),
 			pm.Get(GSPerfMon::Swizzle) / 1024,
 			pm.Get(GSPerfMon::Unswizzle) / 1024,
-			pps,prefix);
+			pps, prefix);
 	}
 	else if (GSCurrentRenderer == GSRendererType::Null)
 	{

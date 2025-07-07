@@ -75,7 +75,7 @@ bool MemoryCardConvertWorker::ConvertToFile(const std::string& srcFolderName, co
 	{
 		sourceFolderMemoryCard.Read(sourceBuffer.data() + address, address, FolderMemoryCard::PageSizeRaw);
 		address += FolderMemoryCard::PageSizeRaw;
-		
+
 		// Only report progress every 16 pages. Substantially speeds up the conversion.
 		if (address % (FolderMemoryCard::PageSizeRaw * 16) == 0)
 			this->SetProgressValue(address);
@@ -140,7 +140,7 @@ bool MemoryCardConvertWorker::ConvertToFolder(const std::string& srcFileName, co
 		{
 			targetFolderMemoryCard.Save(sourceBuffer.data() + address, address, FolderMemoryCard::PageSizeRaw);
 			address += FolderMemoryCard::PageSizeRaw;
-			
+
 			// Only report progress every 16 pages. Substantially speeds up the conversion.
 			if (address % (FolderMemoryCard::PageSizeRaw * 16) == 0)
 				this->SetProgressValue(address + (i * sourceBuffer.size()));

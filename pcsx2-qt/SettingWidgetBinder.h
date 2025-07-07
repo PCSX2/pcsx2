@@ -242,8 +242,8 @@ namespace SettingWidgetBinder
 		static std::optional<QString> getNullableStringValue(const QCheckBox* widget)
 		{
 			return (widget->checkState() == Qt::PartiallyChecked) ?
-					   std::nullopt :
-					   std::optional<QString>(widget->isChecked() ? QStringLiteral("1") : QStringLiteral("0"));
+			           std::nullopt :
+			           std::optional<QString>(widget->isChecked() ? QStringLiteral("1") : QStringLiteral("0"));
 		}
 		static void setNullableStringValue(QCheckBox* widget, std::optional<QString> value)
 		{

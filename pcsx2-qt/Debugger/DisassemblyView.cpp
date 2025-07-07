@@ -874,10 +874,10 @@ inline QString DisassemblyView::DisassemblyStringFromAddress(u32 address, QFont 
 	}
 
 	lineString = lineString.leftJustified(4, ' ') // Address / symbol
-					 .arg(line.name.c_str())
-					 .arg(line.params.c_str()) // opcode + arguments
-					 .arg(isConditional ? (isConditionalMet ? "# true" : "# false") : "")
-					 .arg(isCurrentPC ? "<--" : "");
+	                 .arg(line.name.c_str())
+	                 .arg(line.params.c_str()) // opcode + arguments
+	                 .arg(isConditional ? (isConditionalMet ? "# true" : "# false") : "")
+	                 .arg(isCurrentPC ? "<--" : "");
 
 	return lineString;
 }
