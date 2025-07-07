@@ -174,11 +174,7 @@ void main()
 
 	bool is_bottom = (vid & 2u) != 0u;
 	bool is_right = (vid & 1u) != 0u;
-#ifdef VS_PROVOKING_VERTEX_LAST
 	uint vid_other = is_bottom ? vid_base - 1 : vid_base + 1;
-#else
-	uint vid_other = is_bottom ? vid_base + 1 : vid_base - 1;
-#endif
 	
 	vtx = load_vertex(vid_base);
 	ProcessedVertex other = load_vertex(vid_other);

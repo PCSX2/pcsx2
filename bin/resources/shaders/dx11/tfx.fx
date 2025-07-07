@@ -1301,9 +1301,7 @@ VS_OUTPUT vs_main_expand(uint vid : SV_VertexID)
 	uint vid_base = vid >> 2;
 	bool is_bottom = vid & 2;
 	bool is_right = vid & 1;
-	// All lines will be a pair of vertices next to each other
-	// Since DirectX uses provoking vertex first, the bottom point will be the lower of the two
-	uint vid_other = is_bottom ? vid_base + 1 : vid_base - 1;
+	uint vid_other = is_bottom ? vid_base - 1 : vid_base + 1;
 	VS_OUTPUT vtx = vs_main(load_vertex(vid_base));
 	VS_OUTPUT other = vs_main(load_vertex(vid_other));
 

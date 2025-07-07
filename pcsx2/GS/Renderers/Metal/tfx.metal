@@ -233,9 +233,7 @@ vertex MainVSOut vs_main_expand(
 			uint vid_base = vid >> 2;
 			bool is_bottom = vid & 2;
 			bool is_right = vid & 1;
-			// All lines will be a pair of vertices next to each other
-			// Since Metal uses provoking vertex first, the bottom point will be the lower of the two
-			uint vid_other = is_bottom ? vid_base + 1 : vid_base - 1;
+			uint vid_other = is_bottom ? vid_base - 1 : vid_base + 1;
 			MainVSOut point = vs_main_run(load_vertex(vertices[vid_base]), cb);
 			MainVSOut other = vs_main_run(load_vertex(vertices[vid_other]), cb);
 
