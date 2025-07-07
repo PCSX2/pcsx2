@@ -27,11 +27,6 @@ static __fi bool IsAutoFlushEnabled()
 	return GSIsHardwareRenderer() ? (GSConfig.UserHacks_AutoFlush != GSHWAutoFlushLevel::Disabled) : GSConfig.AutoFlushSW;
 }
 
-static __fi bool IsFirstProvokingVertex()
-{
-	return (GSIsHardwareRenderer() && !g_gs_device->Features().provoking_vertex_last);
-}
-
 constexpr int GSState::GetSaveStateSize(int version)
 {
 	int size = 0;
@@ -99,7 +94,7 @@ constexpr int GSState::GetSaveStateSize(int version)
 }
 
 GSState::GSState()
-	: m_vt(this, IsFirstProvokingVertex())
+	: m_vt(this)
 {
 	// m_nativeres seems to be a hack. Unfortunately it impacts draw call number which make debug painful in the replayer.
 	// Let's keep it disabled to ease debug.
@@ -206,29 +201,29 @@ void GSState::Reset(bool hardware_reset)
 	memcpy(&m_prev_env, &m_env, sizeof(m_prev_env));
 }
 
-template<bool auto_flush, bool index_swap>
+template<bool auto_flush>
 void GSState::SetPrimHandlers()
 {
-#define SetHandlerXYZ(P, auto_flush, index_swap) \
-	m_fpGIFPackedRegHandlerXYZ[P][0] = &GSState::GIFPackedRegHandlerXYZF2<P, 0, auto_flush, index_swap>; \
-	m_fpGIFPackedRegHandlerXYZ[P][1] = &GSState::GIFPackedRegHandlerXYZF2<P, 1, auto_flush, index_swap>; \
-	m_fpGIFPackedRegHandlerXYZ[P][2] = &GSState::GIFPackedRegHandlerXYZ2<P, 0, auto_flush, index_swap>; \
-	m_fpGIFPackedRegHandlerXYZ[P][3] = &GSState::GIFPackedRegHandlerXYZ2<P, 1, auto_flush, index_swap>; \
-	m_fpGIFRegHandlerXYZ[P][0] = &GSState::GIFRegHandlerXYZF2<P, 0, auto_flush, index_swap>; \
-	m_fpGIFRegHandlerXYZ[P][1] = &GSState::GIFRegHandlerXYZF2<P, 1, auto_flush, index_swap>; \
-	m_fpGIFRegHandlerXYZ[P][2] = &GSState::GIFRegHandlerXYZ2<P, 0, auto_flush, index_swap>; \
-	m_fpGIFRegHandlerXYZ[P][3] = &GSState::GIFRegHandlerXYZ2<P, 1, auto_flush, index_swap>; \
-	m_fpGIFPackedRegHandlerSTQRGBAXYZF2[P] = &GSState::GIFPackedRegHandlerSTQRGBAXYZF2<P, auto_flush, index_swap>; \
-	m_fpGIFPackedRegHandlerSTQRGBAXYZ2[P] = &GSState::GIFPackedRegHandlerSTQRGBAXYZ2<P, auto_flush, index_swap>;
+#define SetHandlerXYZ(P, auto_flush) \
+	m_fpGIFPackedRegHandlerXYZ[P][0] = &GSState::GIFPackedRegHandlerXYZF2<P, 0, auto_flush>; \
+	m_fpGIFPackedRegHandlerXYZ[P][1] = &GSState::GIFPackedRegHandlerXYZF2<P, 1, auto_flush>; \
+	m_fpGIFPackedRegHandlerXYZ[P][2] = &GSState::GIFPackedRegHandlerXYZ2<P, 0, auto_flush>; \
+	m_fpGIFPackedRegHandlerXYZ[P][3] = &GSState::GIFPackedRegHandlerXYZ2<P, 1, auto_flush>; \
+	m_fpGIFRegHandlerXYZ[P][0] = &GSState::GIFRegHandlerXYZF2<P, 0, auto_flush>; \
+	m_fpGIFRegHandlerXYZ[P][1] = &GSState::GIFRegHandlerXYZF2<P, 1, auto_flush>; \
+	m_fpGIFRegHandlerXYZ[P][2] = &GSState::GIFRegHandlerXYZ2<P, 0, auto_flush>; \
+	m_fpGIFRegHandlerXYZ[P][3] = &GSState::GIFRegHandlerXYZ2<P, 1, auto_flush>; \
+	m_fpGIFPackedRegHandlerSTQRGBAXYZF2[P] = &GSState::GIFPackedRegHandlerSTQRGBAXYZF2<P, auto_flush>; \
+	m_fpGIFPackedRegHandlerSTQRGBAXYZ2[P] = &GSState::GIFPackedRegHandlerSTQRGBAXYZ2<P, auto_flush>;
 
-	SetHandlerXYZ(GS_POINTLIST, true, false);
-	SetHandlerXYZ(GS_LINELIST, auto_flush, index_swap);
-	SetHandlerXYZ(GS_LINESTRIP, auto_flush, index_swap);
-	SetHandlerXYZ(GS_TRIANGLELIST, auto_flush, index_swap);
-	SetHandlerXYZ(GS_TRIANGLESTRIP, auto_flush, index_swap);
-	SetHandlerXYZ(GS_TRIANGLEFAN, auto_flush, index_swap);
-	SetHandlerXYZ(GS_SPRITE, auto_flush, false);
-	SetHandlerXYZ(GS_INVALID, auto_flush, false);
+	SetHandlerXYZ(GS_POINTLIST, true);
+	SetHandlerXYZ(GS_LINELIST, auto_flush);
+	SetHandlerXYZ(GS_LINESTRIP, auto_flush);
+	SetHandlerXYZ(GS_TRIANGLELIST, auto_flush);
+	SetHandlerXYZ(GS_TRIANGLESTRIP, auto_flush);
+	SetHandlerXYZ(GS_TRIANGLEFAN, auto_flush);
+	SetHandlerXYZ(GS_SPRITE, auto_flush);
+	SetHandlerXYZ(GS_INVALID, auto_flush);
 
 #undef SetHandlerXYZ
 }
@@ -249,11 +244,10 @@ void GSState::ResetHandlers()
 	m_fpGIFPackedRegHandlers[GIF_REG_A_D] = &GSState::GIFPackedRegHandlerA_D;
 	m_fpGIFPackedRegHandlers[GIF_REG_NOP] = &GSState::GIFPackedRegHandlerNOP;
 
-	// swap first/last indices when the provoking vertex is the first (D3D/Vulkan)
 	if (IsAutoFlushEnabled())
-		IsFirstProvokingVertex() ? SetPrimHandlers<true, true>() : SetPrimHandlers<true, false>();
+		SetPrimHandlers<true>();
 	else
-		IsFirstProvokingVertex() ? SetPrimHandlers<false, true>() : SetPrimHandlers<false, false>();
+		SetPrimHandlers<false>();
 
 	std::fill(std::begin(m_fpGIFRegHandlers), std::end(m_fpGIFRegHandlers), &GSState::GIFRegHandlerNull);
 
@@ -606,7 +600,7 @@ void GSState::GIFPackedRegHandlerUV_Hack(const GIFPackedReg* RESTRICT r)
 	m_isPackedUV_HackFlag = true;
 }
 
-template <u32 prim, u32 adc, bool auto_flush, bool index_swap>
+template <u32 prim, u32 adc, bool auto_flush>
 void GSState::GIFPackedRegHandlerXYZF2(const GIFPackedReg* RESTRICT r)
 {
 	const bool skip = adc || r->XYZF2.Skip();
@@ -622,10 +616,10 @@ void GSState::GIFPackedRegHandlerXYZF2(const GIFPackedReg* RESTRICT r)
 
 	m_v.m[1] = xy.upl32(zf);
 
-	VertexKick<prim, auto_flush, index_swap>(skip);
+	VertexKick<prim, auto_flush>(skip);
 }
 
-template <u32 prim, u32 adc, bool auto_flush, bool index_swap>
+template <u32 prim, u32 adc, bool auto_flush>
 void GSState::GIFPackedRegHandlerXYZ2(const GIFPackedReg* RESTRICT r)
 {
 	const bool skip = adc || r->XYZ2.Skip();
@@ -639,7 +633,7 @@ void GSState::GIFPackedRegHandlerXYZ2(const GIFPackedReg* RESTRICT r)
 
 	m_v.m[1] = xyz.upl64(GSVector4i::loadl(&m_v.UV));
 
-	VertexKick<prim, auto_flush, index_swap>(skip);
+	VertexKick<prim, auto_flush>(skip);
 }
 
 void GSState::GIFPackedRegHandlerFOG(const GIFPackedReg* RESTRICT r)
@@ -656,7 +650,7 @@ void GSState::GIFPackedRegHandlerNOP(const GIFPackedReg* RESTRICT r)
 {
 }
 
-template <u32 prim, bool auto_flush, bool index_swap>
+template <u32 prim, bool auto_flush>
 void GSState::GIFPackedRegHandlerSTQRGBAXYZF2(const GIFPackedReg* RESTRICT r, u32 size)
 {
 	pxAssert(size > 0 && size % 3 == 0);
@@ -682,7 +676,7 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZF2(const GIFPackedReg* RESTRICT r, u3
 
 		m_v.m[1] = xy.upl32(zf); // TODO: only store the last one
 
-		VertexKick<prim, auto_flush, index_swap>(r[2].XYZF2.Skip());
+		VertexKick<prim, auto_flush>(r[2].XYZF2.Skip());
 
 		r += 3;
 	}
@@ -690,7 +684,7 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZF2(const GIFPackedReg* RESTRICT r, u3
 	m_q = r[-3].STQ.Q; // remember the last one, STQ outputs this to the temp Q each time
 }
 
-template <u32 prim, bool auto_flush, bool index_swap>
+template <u32 prim, bool auto_flush>
 void GSState::GIFPackedRegHandlerSTQRGBAXYZ2(const GIFPackedReg* RESTRICT r, u32 size)
 {
 	pxAssert(size > 0 && size % 3 == 0);
@@ -715,7 +709,7 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZ2(const GIFPackedReg* RESTRICT r, u32
 
 		m_v.m[1] = xyz.upl64(GSVector4i::loadl(&m_v.UV)); // TODO: only store the last one
 
-		VertexKick<prim, auto_flush, index_swap>(r[2].XYZ2.Skip());
+		VertexKick<prim, auto_flush>(r[2].XYZ2.Skip());
 
 		r += 3;
 	}
@@ -749,7 +743,7 @@ __forceinline void GSState::ApplyPRIM(u32 prim)
 
 	UpdateVertexKick();
 
-	pxAssert(m_index.tail == 0 || !g_gs_device->Features().provoking_vertex_last || m_index.buff[m_index.tail - 1] + 1 == m_vertex.next);
+	pxAssert(m_index.tail == 0 || m_index.buff[m_index.tail - 1] + 1 == m_vertex.next);
 
 	if (m_index.tail == 0)
 		m_vertex.next = 0;
@@ -800,7 +794,7 @@ void GSState::GIFRegHandlerUV_Hack(const GIFReg* RESTRICT r)
 	m_isPackedUV_HackFlag = false;
 }
 
-template <u32 prim, u32 adc, bool auto_flush, bool index_swap>
+template <u32 prim, u32 adc, bool auto_flush>
 void GSState::GIFRegHandlerXYZF2(const GIFReg* RESTRICT r)
 {
 	if (!adc || GSUtil::GetPrimClass(m_prev_env.PRIM.PRIM) != GSUtil::GetPrimClass(m_env.PRIM.PRIM) || (m_dirty_gs_regs & (1 << DIRTY_REG_XYOFFSET)))
@@ -812,10 +806,10 @@ void GSState::GIFRegHandlerXYZF2(const GIFReg* RESTRICT r)
 
 	m_v.m[1] = xyz.upl64(uvf);
 
-	VertexKick<prim, auto_flush, index_swap>(adc);
+	VertexKick<prim, auto_flush>(adc);
 }
 
-template <u32 prim, u32 adc, bool auto_flush, bool index_swap>
+template <u32 prim, u32 adc, bool auto_flush>
 void GSState::GIFRegHandlerXYZ2(const GIFReg* RESTRICT r)
 {
 	if (!adc || GSUtil::GetPrimClass(m_prev_env.PRIM.PRIM) != GSUtil::GetPrimClass(m_env.PRIM.PRIM) || (m_dirty_gs_regs & (1 << DIRTY_REG_XYOFFSET)))
@@ -823,7 +817,7 @@ void GSState::GIFRegHandlerXYZ2(const GIFReg* RESTRICT r)
 
 	m_v.m[1] = GSVector4i::load(&r->XYZ, &m_v.UV);
 
-	VertexKick<prim, auto_flush, index_swap>(adc);
+	VertexKick<prim, auto_flush>(adc);
 }
 
 template <int i>
@@ -3381,7 +3375,7 @@ __forceinline void GSState::CheckCLUTValidity(u32 prim)
 	}
 }
 
-template<u32 prim, bool index_swap>
+template<u32 prim>
 __forceinline void GSState::HandleAutoFlush()
 {
 	// Kind of a cheat, making the assumption that 2 consecutive fan/strip triangles won't overlap each other (*should* be safe)
@@ -3477,9 +3471,8 @@ __forceinline void GSState::HandleAutoFlush()
 		if (tex_rect.y == tex_rect.w)
 			tex_rect += GSVector4i::cxpr(0, 0, 0, 1);
 
-		const bool swap_index = index_swap && GSUtil::GetPrimClass(m_prev_env.PRIM.PRIM) != GS_SPRITE_CLASS;
 		// Get the last texture position from the last draw.
-		const GSVertex* v = &m_vertex.buff[m_index.buff[m_index.tail - (swap_index ? n : 1)]];
+		const GSVertex* v = &m_vertex.buff[m_index.buff[m_index.tail - 1]];
 
 		if (PRIM->FST)
 		{
@@ -3657,7 +3650,7 @@ __forceinline void GSState::HandleAutoFlush()
 	}
 }
 
-template <u32 prim, bool auto_flush, bool index_swap>
+template <u32 prim, bool auto_flush>
 __forceinline void GSState::VertexKick(u32 skip)
 {
 	constexpr u32 n = NumIndicesForPrim(prim);
@@ -3673,7 +3666,7 @@ __forceinline void GSState::VertexKick(u32 skip)
 
 	if (auto_flush && skip == 0 && m_index.tail > 0 && ((m_vertex.tail + 1) - m_vertex.head) >= n)
 	{
-		HandleAutoFlush<prim, index_swap>();
+		HandleAutoFlush<prim>();
 	}
 
 	u32 head = m_vertex.head;
@@ -3835,8 +3828,8 @@ __forceinline void GSState::VertexKick(u32 skip)
 			m_index.tail += 1;
 			break;
 		case GS_LINELIST:
-			buff[0] = static_cast<u16>(head + (index_swap ? 1 : 0));
-			buff[1] = static_cast<u16>(head + (index_swap ? 0 : 1));
+			buff[0] = static_cast<u16>(head + 0);
+			buff[1] = static_cast<u16>(head + 1);
 			m_vertex.head = head + 2;
 			m_vertex.next = head + 2;
 			m_index.tail += 2;
@@ -3849,16 +3842,16 @@ __forceinline void GSState::VertexKick(u32 skip)
 				head = next;
 				m_vertex.tail = next + 2;
 			}
-			buff[0] = static_cast<u16>(head + (index_swap ? 1 : 0));
-			buff[1] = static_cast<u16>(head + (index_swap ? 0 : 1));
+			buff[0] = static_cast<u16>(head + 0);
+			buff[1] = static_cast<u16>(head + 1);
 			m_vertex.head = head + 1;
 			m_vertex.next = head + 2;
 			m_index.tail += 2;
 			break;
 		case GS_TRIANGLELIST:
-			buff[0] = static_cast<u16>(head + (index_swap ? 2 : 0));
+			buff[0] = static_cast<u16>(head + 0);
 			buff[1] = static_cast<u16>(head + 1);
-			buff[2] = static_cast<u16>(head + (index_swap ? 0 : 2));
+			buff[2] = static_cast<u16>(head + 2);
 			m_vertex.head = head + 3;
 			m_vertex.next = head + 3;
 			m_index.tail += 3;
@@ -3872,18 +3865,18 @@ __forceinline void GSState::VertexKick(u32 skip)
 				head = next;
 				m_vertex.tail = next + 3;
 			}
-			buff[0] = static_cast<u16>(head + (index_swap ? 2 : 0));
+			buff[0] = static_cast<u16>(head + 0);
 			buff[1] = static_cast<u16>(head + 1);
-			buff[2] = static_cast<u16>(head + (index_swap ? 0 : 2));
+			buff[2] = static_cast<u16>(head + 2);
 			m_vertex.head = head + 1;
 			m_vertex.next = head + 3;
 			m_index.tail += 3;
 			break;
 		case GS_TRIANGLEFAN:
 			// TODO: remove gaps, next == head && head < tail - 3 || next > head && next < tail - 2 (very rare)
-			buff[0] = static_cast<u16>(index_swap ? (tail - 1) : (head + 0));
+			buff[0] = static_cast<u16>(head + 0);
 			buff[1] = static_cast<u16>(tail - 2);
-			buff[2] = static_cast<u16>(index_swap ? (head + 0) : (tail - 1));
+			buff[2] = static_cast<u16>(tail - 1);
 			m_vertex.next = tail;
 			m_index.tail += 3;
 			break;

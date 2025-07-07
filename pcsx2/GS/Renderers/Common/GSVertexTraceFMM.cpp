@@ -9,41 +9,36 @@ class CURRENT_ISA::GSVertexTraceFMM
 {
 	static constexpr GSVector4 s_minmax = GSVector4::cxpr(FLT_MAX, -FLT_MAX, 0.f, 0.f);
 
-	template <GS_PRIM_CLASS primclass, u32 iip, u32 tme, u32 fst, u32 color, bool flat_swapped>
+	template <GS_PRIM_CLASS primclass, u32 iip, u32 tme, u32 fst, u32 color>
 	static void FindMinMax(GSVertexTrace& vt, const void* vertex, const u16* index, int count);
 
 	template <GS_PRIM_CLASS primclass, u32 iip, u32 tme, u32 fst, u32 color>
-	static constexpr GSVertexTrace::FindMinMaxPtr GetFMM(bool provoking_vertex_first);
+	static constexpr GSVertexTrace::FindMinMaxPtr GetFMM();
 
 public:
-	static void Populate(GSVertexTrace& vt, bool provoking_vertex_first);
+	static void Populate(GSVertexTrace& vt);
 };
 
 MULTI_ISA_UNSHARED_IMPL;
 
-void CURRENT_ISA::GSVertexTracePopulateFunctions(GSVertexTrace& vt, bool provoking_vertex_first)
+void CURRENT_ISA::GSVertexTracePopulateFunctions(GSVertexTrace& vt)
 {
-	GSVertexTraceFMM::Populate(vt, provoking_vertex_first);
+	GSVertexTraceFMM::Populate(vt);
 }
 
 template <GS_PRIM_CLASS primclass, u32 iip, u32 tme, u32 fst, u32 color>
-constexpr GSVertexTrace::FindMinMaxPtr GSVertexTraceFMM::GetFMM(bool provoking_vertex_first)
+constexpr GSVertexTrace::FindMinMaxPtr GSVertexTraceFMM::GetFMM()
 {
 	constexpr bool real_iip = primclass == GS_SPRITE_CLASS ? false : iip;
 	constexpr bool real_fst = tme ? fst : false;
-	constexpr bool provoking_vertex_first_class = primclass == GS_LINE_CLASS || primclass == GS_TRIANGLE_CLASS;
-	const bool swap = provoking_vertex_first_class && !iip && provoking_vertex_first;
 
-	if (swap)
-		return FindMinMax<primclass, real_iip, tme, real_fst, color, true>;
-	else
-		return FindMinMax<primclass, real_iip, tme, real_fst, color, false>;
+	return FindMinMax<primclass, real_iip, tme, real_fst, color>;
 }
 
-void GSVertexTraceFMM::Populate(GSVertexTrace& vt, bool provoking_vertex_first)
+void GSVertexTraceFMM::Populate(GSVertexTrace& vt)
 {
 	#define InitUpdate3(P, IIP, TME, FST, COLOR) \
-		vt.m_fmm[COLOR][FST][TME][IIP][P] = GetFMM<P, IIP, TME, FST, COLOR>(provoking_vertex_first);
+		vt.m_fmm[COLOR][FST][TME][IIP][P] = GetFMM<P, IIP, TME, FST, COLOR>();
 
 	#define InitUpdate2(P, IIP, TME) \
 		InitUpdate3(P, IIP, TME, 0, 0) \
@@ -63,7 +58,7 @@ void GSVertexTraceFMM::Populate(GSVertexTrace& vt, bool provoking_vertex_first)
 	InitUpdate(GS_SPRITE_CLASS);
 }
 
-template <GS_PRIM_CLASS primclass, u32 iip, u32 tme, u32 fst, u32 color, bool flat_swapped>
+template <GS_PRIM_CLASS primclass, u32 iip, u32 tme, u32 fst, u32 color>
 void GSVertexTraceFMM::FindMinMax(GSVertexTrace& vt, const void* vertex, const u16* index, int count)
 {
 	const GSDrawingContext* context = vt.m_state->m_context;
@@ -110,7 +105,7 @@ void GSVertexTraceFMM::FindMinMax(GSVertexTrace& vt, const void* vertex, const u
 			{
 				// For even n, we process v1 and v2 of the same prim
 				// (For odd n, we process one vertex from each of two prims)
-				GSVector4i c = flat_swapped ? c0 : c1;
+				GSVector4i c = c1; // second color is provoking in flat-shaded primitives
 				cmin = cmin.min_u8(c);
 				cmax = cmax.max_u8(c);
 			}
@@ -196,26 +191,16 @@ void GSVertexTraceFMM::FindMinMax(GSVertexTrace& vt, const void* vertex, const u
 		int i = 0;
 		for (; i < (count - 3); i += 6)
 		{
-			processVertices(v[index[i + 0]], v[index[i + 3]], flat_swapped);
+			processVertices(v[index[i + 0]], v[index[i + 3]], false);
 			processVertices(v[index[i + 1]], v[index[i + 4]], false);
-			processVertices(v[index[i + 2]], v[index[i + 5]], !flat_swapped);
+			processVertices(v[index[i + 2]], v[index[i + 5]], true);
 		}
 		if (count & 1)
 		{
-			if (flat_swapped)
-			{
-				processVertices(v[index[i + 1]], v[index[i + 2]], false);
-				// Compiler optimizations go!
-				// (And if they don't, it's only one vertex out of many)
-				processVertices(v[index[i + 0]], v[index[i + 0]], true);
-			}
-			else
-			{
-				processVertices(v[index[i + 0]], v[index[i + 1]], false);
-				// Compiler optimizations go!
-				// (And if they don't, it's only one vertex out of many)
-				processVertices(v[index[i + 2]], v[index[i + 2]], true);
-			}
+			processVertices(v[index[i + 0]], v[index[i + 1]], false);
+			// Compiler optimizations go!
+			// (And if they don't, it's only one vertex out of many)
+			processVertices(v[index[i + 2]], v[index[i + 2]], true);
 		}
 	}
 	else
