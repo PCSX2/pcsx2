@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>720</width>
-    <height>594</height>
+    <height>656</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -55,7 +55,7 @@
    <item>
     <widget class="QTabWidget" name="tabs">
      <property name="currentIndex">
-      <number>0</number>
+      <number>7</number>
      </property>
      <property name="documentMode">
       <bool>true</bool>
@@ -663,7 +663,7 @@
           </sizepolicy>
          </property>
          <property name="layoutDirection">
-          <enum>Qt::LayoutDirection::LeftToRight</enum>
+          <enum>Qt::LeftToRight</enum>
          </property>
          <item>
           <property name="text">
@@ -1315,7 +1315,7 @@
        <item>
         <spacer name="verticalSpacer_4">
          <property name="orientation">
-          <enum>Qt::Orientation::Vertical</enum>
+          <enum>Qt::Vertical</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -1471,7 +1471,7 @@
             <item>
              <spacer name="horizontalSpacer">
               <property name="orientation">
-               <enum>Qt::Orientation::Horizontal</enum>
+               <enum>Qt::Vertical</enum>
               </property>
               <property name="sizeHint" stdset="0">
                <size>
@@ -1540,7 +1540,7 @@
        <item>
         <spacer name="verticalSpacer_5">
          <property name="orientation">
-          <enum>Qt::Orientation::Vertical</enum>
+          <enum>Qt::Vertical</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -1562,7 +1562,14 @@
          <property name="title">
           <string>On-Screen Display</string>
          </property>
-         <layout class="QFormLayout" name="formLayout_8">
+         <layout class="QGridLayout" name="gridLayout">
+          <item row="2" column="0">
+           <widget class="QLabel" name="osdPerformancePosLabel">
+            <property name="text">
+             <string>OSD Performance Position:</string>
+            </property>
+           </widget>
+          </item>
           <item row="0" column="0">
            <widget class="QLabel" name="osdScaleLabel">
             <property name="text">
@@ -1572,6 +1579,12 @@
           </item>
           <item row="0" column="1">
            <widget class="QSpinBox" name="osdScale">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="suffix">
              <string>%</string>
             </property>
@@ -1609,13 +1622,6 @@
             </item>
            </widget>
           </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="osdPerformancePosLabel">
-            <property name="text">
-             <string>OSD Performance Position:</string>
-            </property>
-           </widget>
-          </item>
           <item row="2" column="1">
            <widget class="QComboBox" name="osdPerformancePos">
             <item>
@@ -1635,121 +1641,206 @@
             </item>
            </widget>
           </item>
-          <item row="3" column="0" colspan="2">
-           <layout class="QGridLayout" name="osdOptionLayout">
-            <item row="2" column="1">
-             <widget class="QCheckBox" name="osdShowSpeed">
-              <property name="text">
-               <string>Show Speed Percentages</string>
-              </property>
-             </widget>
-            </item>
-            <item row="6" column="1">
-             <widget class="QCheckBox" name="osdShowVideoCapture">
-              <property name="text">
-               <string>Show Video Capture Status</string>
-              </property>
-             </widget>
-            </item>
-            <item row="5" column="1">
-             <widget class="QCheckBox" name="osdShowInputRec">
-              <property name="text">
-               <string>Show Input Recording Status</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="0">
+          <item row="4" column="0" colspan="2">
+           <layout class="QGridLayout" name="osdOptionLayout" rowstretch="0,0,0,0,0,0,0,0,0,0,0">
+            <property name="sizeConstraint">
+             <enum>QLayout::SetDefaultConstraint</enum>
+            </property>
+            <property name="topMargin">
+             <number>10</number>
+            </property>
+            <property name="spacing">
+             <number>7</number>
+            </property>
+            <item row="1" column="2">
              <widget class="QCheckBox" name="osdShowIndicators">
               <property name="text">
                <string>Show Indicators</string>
               </property>
              </widget>
             </item>
-            <item row="0" column="1">
+            <item row="2" column="0">
              <widget class="QCheckBox" name="osdShowFPS">
               <property name="text">
                <string>Show FPS</string>
               </property>
              </widget>
             </item>
-            <item row="0" column="0">
-             <widget class="QCheckBox" name="osdShowVPS">
-              <property name="text">
-               <string>Show VPS</string>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="1">
-             <widget class="QCheckBox" name="osdShowInputs">
-              <property name="text">
-               <string>Show Inputs</string>
-              </property>
-             </widget>
-            </item>
-            <item row="6" column="0">
-             <widget class="QCheckBox" name="osdShowHardwareInfo">
-              <property name="text">
-               <string>Show Hardware Info</string>
-              </property>
-             </widget>
-            </item>
             <item row="1" column="1">
-             <widget class="QCheckBox" name="osdShowGPU">
+             <widget class="QCheckBox" name="osdShowSystemTime">
               <property name="text">
-               <string>Show GPU Usage</string>
+               <string>Show System Time</string>
               </property>
              </widget>
             </item>
-            <item row="1" column="0">
-             <widget class="QCheckBox" name="osdShowCPU">
-              <property name="text">
-               <string>Show CPU Usage</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="1">
+            <item row="2" column="2">
              <widget class="QCheckBox" name="osdShowSettings">
               <property name="text">
                <string>Show Settings</string>
               </property>
              </widget>
             </item>
-            <item row="5" column="0">
-             <widget class="QCheckBox" name="osdShowFrameTimes">
+            <item row="2" column="1">
+             <widget class="QCheckBox" name="osdShowSystemDate">
               <property name="text">
-               <string>Show Frame Times</string>
+               <string>Show System Date</string>
               </property>
              </widget>
             </item>
-            <item row="2" column="0">
-             <widget class="QCheckBox" name="osdShowResolution">
+            <item row="4" column="2">
+             <widget class="QCheckBox" name="osdShowInputs">
               <property name="text">
-               <string>Show Resolution</string>
+               <string>Show Inputs</string>
               </property>
              </widget>
             </item>
-            <item row="4" column="0">
-             <widget class="QCheckBox" name="osdShowGSStats">
+            <item row="1" column="0">
+             <widget class="QCheckBox" name="osdShowSpeed">
               <property name="text">
-               <string>Show Statistics</string>
+               <string>Show Speed Percentages</string>
               </property>
              </widget>
             </item>
-            <item row="8" column="0">
+            <item row="5" column="1">
              <widget class="QCheckBox" name="osdShowVersion">
               <property name="text">
                <string>Show PCSX2 Version</string>
               </property>
              </widget>
             </item>
-            <item row="8" column="1">
+            <item row="10" column="2">
              <widget class="QCheckBox" name="warnAboutUnsafeSettings">
               <property name="text">
                <string>Warn About Unsafe Settings</string>
               </property>
              </widget>
             </item>
+            <item row="5" column="2">
+             <widget class="QCheckBox" name="osdShowVideoCapture">
+              <property name="text">
+               <string>Show Video Capture Status</string>
+              </property>
+             </widget>
+            </item>
+            <item row="10" column="0">
+             <widget class="QCheckBox" name="osdShowGPU">
+              <property name="text">
+               <string>Show GPU Usage</string>
+              </property>
+             </widget>
+            </item>
+            <item row="6" column="2">
+             <widget class="QCheckBox" name="osdShowInputRec">
+              <property name="text">
+               <string>Show Input Recording Status</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QLabel" name="Column1_SystemInformation">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>System Information</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="Column0_PerformanceAndStats">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Performance &amp; Stats</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="2">
+             <widget class="QLabel" name="Column2_SettingsAndInputs">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Settings &amp; Inputs</string>
+              </property>
+             </widget>
+            </item>
+            <item row="6" column="0">
+             <widget class="QCheckBox" name="osdShowGSStats">
+              <property name="text">
+               <string>Show Statistics</string>
+              </property>
+             </widget>
+            </item>
+            <item row="9" column="0">
+             <widget class="QCheckBox" name="osdShowCPU">
+              <property name="text">
+               <string>Show CPU Usage</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="1">
+             <widget class="QCheckBox" name="osdShowHardwareInfo">
+              <property name="text">
+               <string>Show Hardware Info</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QCheckBox" name="osdShowVPS">
+              <property name="text">
+               <string>Show VPS</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="0">
+             <widget class="QCheckBox" name="osdShowResolution">
+              <property name="text">
+               <string>Show Resolution</string>
+              </property>
+             </widget>
+            </item>
+            <item row="8" column="0">
+             <widget class="QCheckBox" name="osdShowFrameTimes">
+              <property name="text">
+               <string>Show Frame Times</string>
+              </property>
+             </widget>
+            </item>
+            <item row="9" column="2">
+             <widget class="QLabel" name="label_2">
+              <property name="text">
+               <string>Warnings For User</string>
+              </property>
+             </widget>
+            </item>
            </layout>
+          </item>
+          <item row="3" column="0" colspan="2">
+           <spacer name="verticalSpacer_7">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Fixed</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
           </item>
          </layout>
         </widget>
@@ -1757,12 +1848,15 @@
        <item>
         <spacer name="verticalSpacer_3">
          <property name="orientation">
-          <enum>Qt::Orientation::Vertical</enum>
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Maximum</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
            <width>20</width>
-           <height>40</height>
+           <height>20</height>
           </size>
          </property>
         </spacer>
@@ -2049,7 +2143,7 @@
        <item>
         <spacer name="verticalSpacer_6">
          <property name="orientation">
-          <enum>Qt::Orientation::Vertical</enum>
+          <enum>Qt::Vertical</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -2293,7 +2387,7 @@
        <item>
         <spacer name="verticalSpacer_2">
          <property name="orientation">
-          <enum>Qt::Orientation::Vertical</enum>
+          <enum>Qt::Vertical</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -2310,7 +2404,7 @@
    <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
-      <enum>Qt::Orientation::Vertical</enum>
+      <enum>Qt::Vertical</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
