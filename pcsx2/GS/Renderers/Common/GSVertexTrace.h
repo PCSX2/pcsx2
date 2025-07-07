@@ -15,7 +15,7 @@ class GSState;
 class GSVertexTrace;
 
 MULTI_ISA_DEF(class GSVertexTraceFMM;)
-MULTI_ISA_DEF(void GSVertexTracePopulateFunctions(GSVertexTrace& vt, bool provoking_vertex_first);)
+MULTI_ISA_DEF(void GSVertexTracePopulateFunctions(GSVertexTrace& vt);)
 
 class alignas(32) GSVertexTrace final : public GSAlignedClass<32>
 {
@@ -63,7 +63,7 @@ public:
 	GSVector2 m_lod = {}; // x = min, y = max
 
 public:
-	GSVertexTrace(const GSState* state, bool provoking_vertex_first);
+	GSVertexTrace(const GSState* state);
 
 	void Update(const void* vertex, const u16* index, int v_count, int i_count, GS_PRIM_CLASS primclass);
 
