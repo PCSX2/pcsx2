@@ -335,7 +335,7 @@ bool Log::SetFileOutputLevel(LOGLEVEL level, std::string path)
 
 	const bool was_enabled = (s_file_level > LOGLEVEL_NONE);
 	const bool new_enabled = (level > LOGLEVEL_NONE && !path.empty());
-	if (was_enabled != new_enabled || (new_enabled && path == s_file_path))
+	if (was_enabled != new_enabled || (new_enabled && path != s_file_path))
 	{
 		if (new_enabled)
 		{

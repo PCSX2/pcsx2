@@ -12,6 +12,9 @@
 #include "common/StringUtil.h"
 #include <bit>
 
+int provokingFirstVertexFixes = 0;
+int provokingTotal;
+
 GSRendererHW::GSRendererHW()
 	: GSRenderer()
 {
@@ -211,6 +214,7 @@ GSTexture* GSRendererHW::GetFeedbackOutput(float& scale)
 	return t;
 }
 
+// FIXME: Shouldn't this be called Sprites 2 Triangles?
 void GSRendererHW::Lines2Sprites()
 {
 	pxAssert(m_vt.m_primclass == GS_SPRITE_CLASS);
@@ -4817,6 +4821,8 @@ void GSRendererHW::HandleProvokingVertexFirst()
 		m_vertex.buff[i].RGBAQ.U32[0] = m_vertex.buff[i + n - 1].RGBAQ.U32[0];
 		m_vertex.buff[i + n - 1].RGBAQ.U32[0] = 0xff; // Make last vertex red for debugging if used improperly
 	}
+
+	provokingFirstVertexFixes++; // FIXME: FOR TESTING; REMOVE
 }
 
 void GSRendererHW::SetupIA(float target_scale, float sx, float sy, bool req_vert_backup)
