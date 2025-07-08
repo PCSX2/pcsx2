@@ -4,7 +4,7 @@
 #include "BiosDebugData.h"
 #include "IopMem.h"
 #include "Memory.h"
-
+#include "VMManager.h"
 
 std::vector<std::unique_ptr<BiosThread>> getEEThreads()
 {
@@ -31,15 +31,18 @@ std::vector<std::unique_ptr<BiosThread>> getEEThreads()
 
 std::vector<std::unique_ptr<BiosThread>> getIOPThreads()
 {
-	std::vector<std::unique_ptr<BiosThread>> threads;
+	if (!VMManager::HasValidVM() || CurrentBiosInformation.iopThreadListAddr == 0)
+		return {};
 
-	if (CurrentBiosInformation.iopThreadListAddr <= 0)
-		return threads;
+	std::vector<std::unique_ptr<BiosThread>> threads;
 
 	u32 item = iopMemRead32(CurrentBiosInformation.iopThreadListAddr);
 
-	while (item != 0)
+	for (int i = 0; item != 0; i++)
 	{
+		if (i > 1000)
+			return {};
+
 		IOPInternalThread data{};
 
 		u16 tag = iopMemRead16(item + 0x8);
@@ -72,14 +75,14 @@ std::vector<std::unique_ptr<BiosThread>> getIOPThreads()
 
 std::vector<IopMod> getIOPModules()
 {
+	if (!VMManager::HasValidVM() || CurrentBiosInformation.iopModListAddr == 0)
+		return {};
+
 	u32 maddr = iopMemRead32(CurrentBiosInformation.iopModListAddr);
 	std::vector<IopMod> modlist;
-	int i = 0;
 
-	while (maddr != 0)
+	for (int i = 0; maddr != 0; i++)
 	{
-		IopMod mod;
-
 		if (maddr >= 0x200000)
 		{
 			// outside of memory
@@ -87,11 +90,10 @@ std::vector<IopMod> getIOPModules()
 			return {};
 		}
 
-		if (i > 200)
-		{
-			// 200 modules? unlikely
+		if (i > 1000)
 			return {};
-		}
+
+		IopMod mod;
 
 		u32 nstr = iopMemRead32(maddr + 4);
 		if (nstr)
@@ -114,7 +116,6 @@ std::vector<IopMod> getIOPModules()
 		modlist.push_back(mod);
 
 		maddr = iopMemRead32(maddr);
-		i++;
 	}
 
 	return modlist;
