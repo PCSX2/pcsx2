@@ -8,6 +8,7 @@
 #include "Elfheader.h"
 #include "PINE.h"
 #include "VMManager.h"
+#include "common/Threading.h"
 
 #include <atomic>
 #include <cstdio>
@@ -392,6 +393,8 @@ bool PINEServer::AcceptClient()
 
 void PINEServer::MainLoop()
 {
+	Threading::SetNameOfCurrentThread("PINE Server");
+
 	while (!m_end.load(std::memory_order_acquire))
 	{
 		if (!AcceptClient())
