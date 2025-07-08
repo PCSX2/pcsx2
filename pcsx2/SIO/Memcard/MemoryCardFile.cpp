@@ -655,9 +655,6 @@ static bool FileMcd_IsAutoEjecting()
 
 void FileMcd_Swap()
 {
-	//Assert that this is called on the CPU thread
-	pxAssert(Host::RunOnCPUThread([]() { return true; }, true) && "FileMcd_Swap must be called under Host::RunOnCPUThread"); 
-
 	if (MemcardBusy::IsBusy())
 	{
 		Host::AddIconOSDMessage("MemoryCardSwap_Busy", ICON_PF_MEMORY_CARD, TRANSLATE_SV("MemoryCardSwap_Busy", "Memory cards are busy. Can't swap right now."));
