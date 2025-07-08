@@ -4834,34 +4834,15 @@ void GSRendererHW::HandleProvokingVertexFirst()
 	if (first_eq_last)
 		return;
 
-	// De-index the vertices either in place or by reallocating the vertex buffer.
-	if (m_vertex.next <= m_index.tail && m_index.tail <= m_vertex.maxcount)
+	// De-index the vertices using the copy buffer
+	while (m_vertex.maxcount < m_index.tail)
+		GrowVertexBuffer();
+	for (int i = static_cast<int>(m_index.tail) - 1; i >= 0; i--)
 	{
-		// De-index in place
-		for (int i = static_cast<int>(m_index.tail) - 1; i >= 0; i--)
-		{
-			// FIXME: This might not hold with a large triangle fan with gaps (since gaps are not
-			// yet removed)!
-			pxAssert(m_index.buff[i] <= i); // At any point, there can never be more vertices than indices
-			m_vertex.buff[i] = m_vertex.buff[m_index.buff[i]];
-			m_index.buff[i] = static_cast<u16>(i);
-		}
+		m_vertex.buff_copy[i] = m_vertex.buff[m_index.buff[i]];
+		m_index.buff[i] = static_cast<u16>(i);
 	}
-	else
-	{
-		// Reallocate the vertex buffer
-		m_vertex.maxcount = std::max(m_vertex.maxcount, m_index.tail);
-		GSVertex* vert_buff = static_cast<GSVertex*>(_aligned_malloc(sizeof(GSVertex) * m_vertex.maxcount, 32));
-
-		// De-index and copy the vertices
-		for (u32 i = 0; i < m_index.tail; i++)
-		{
-			vert_buff[i] = m_vertex.buff[m_index.buff[i]];
-			m_index.buff[i] = static_cast<u16>(i);
-		}
-		std::swap(vert_buff, m_vertex.buff);
-		_aligned_free(vert_buff);
-	}
+	std::swap(m_vertex.buff, m_vertex.buff_copy);
 	m_vertex.head = m_vertex.next = m_vertex.tail = m_index.tail;
 
 	// Put correct color in the first vertex
