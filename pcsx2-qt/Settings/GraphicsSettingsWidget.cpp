@@ -130,7 +130,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.osdShowHardwareInfo, "EmuCore/GS", "OsdShowHardwareInfo", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.osdShowVideoCapture, "EmuCore/GS", "OsdShowVideoCapture", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.osdShowInputRec, "EmuCore/GS", "OsdShowInputRec", true);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.warnAboutUnsafeSettings, "EmuCore", "WarnAboutUnsafeSettings", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.osdWarnAboutUnsafeSettings, "EmuCore", "osdWarnAboutUnsafeSettings", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fxaa, "EmuCore/GS", "fxaa", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.shadeBoost, "EmuCore/GS", "ShadeBoost", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.shadeBoostBrightness, "EmuCore/GS", "ShadeBoost_Brightness", false);
@@ -409,10 +409,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 			m_ui.captureContainer->addItem(name.toUpper(), name);
 		}
 
-		SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.videoDumpingDirectory, m_ui.videoDumpingDirectoryBrowse,
-			m_ui.videoDumpingDirectoryOpen, m_ui.videoDumpingDirectoryReset, "Folders", "Videos",
-			Path::Combine(EmuFolders::DataRoot, "videos"));
-
 		SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.captureContainer, "EmuCore/GS", "CaptureContainer");
 		connect(m_ui.captureContainer, &QComboBox::currentIndexChanged, this, &GraphicsSettingsWidget::onCaptureContainerChanged);
 
@@ -451,18 +447,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 		onVideoCaptureAutoResolutionChanged();
 		onEnableAudioCaptureChanged();
 		onEnableAudioCaptureArgumentsChanged();
-
-		if (m_dialog->isPerGameSettings())
-		{
-			m_ui.recordingTabLayout->removeWidget(m_ui.videoDumpDirectory);
-			m_ui.videoDumpDirectory->deleteLater();
-			m_ui.videoDumpDirectory = nullptr;
-			m_ui.videoDumpLayout = nullptr;
-			m_ui.videoDumpingDirectory = nullptr;
-			m_ui.videoDumpingDirectoryBrowse = nullptr;
-			m_ui.videoDumpingDirectoryOpen = nullptr;
-			m_ui.videoDumpingDirectoryReset = nullptr;
-		}
 	}
 
 	// Display tab
@@ -506,7 +490,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 
 		dialog->registerWidgetHelp(m_ui.interlacing, tr("Deinterlacing"), tr("Automatic (Default)"), tr("Determines the deinterlacing method to be used on the interlaced screen of the emulated console. Automatic should be able to correctly deinterlace most games, but if you see visibly shaky graphics, try one of the other options."));
 
-		dialog->registerWidgetHelp(m_ui.screenshotSize, tr("Screenshot Size"), tr("Screen Resolution"),
+		dialog->registerWidgetHelp(m_ui.screenshotSize, tr("Screenshot Resolution"), tr("Screen Resolution"),
 			tr("Determines the resolution at which screenshots will be saved. Internal resolutions preserve more detail at the cost of "
 			   "file size."));
 
@@ -799,7 +783,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 		dialog->registerWidgetHelp(m_ui.osdShowHardwareInfo, tr("Show Hardware Info"), tr("Unchecked"),
 			tr("Shows the current system hardware information on the OSD."));
 
-		dialog->registerWidgetHelp(m_ui.warnAboutUnsafeSettings, tr("Warn About Unsafe Settings"), tr("Checked"),
+		dialog->registerWidgetHelp(m_ui.osdWarnAboutUnsafeSettings, tr("Warn About Unsafe Settings"), tr("Checked"),
 			tr("Displays warnings when settings are enabled which may break games."));
 	}
 
@@ -957,7 +941,7 @@ void GraphicsSettingsWidget::onMessagesPosChanged()
 {
 	const bool enabled = m_ui.osdMessagesPos->currentIndex() != (m_dialog->isPerGameSettings() ? 1 : 0);
 
-	m_ui.warnAboutUnsafeSettings->setEnabled(enabled);
+	m_ui.osdWarnAboutUnsafeSettings->setEnabled(enabled);
 }
 
 void GraphicsSettingsWidget::onPerformancePosChanged()
