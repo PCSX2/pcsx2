@@ -125,6 +125,8 @@ GSState::~GSState()
 {
 	if (m_vertex.buff)
 		_aligned_free(m_vertex.buff);
+	if (m_vertex.buff2)
+		_aligned_free(m_vertex.buff2);
 	if (m_index.buff)
 		_aligned_free(m_index.buff);
 	if (m_draw_vertex.buff)
@@ -2859,56 +2861,52 @@ void GSState::UpdateVertexKick()
 void GSState::GrowVertexBuffer()
 {
 	const u32 maxcount = std::max<u32>(m_vertex.maxcount * 3 / 2, 10000);
+	const u32 vertex_size = sizeof(GSVertex) * maxcount;
+	const u32 index_size = sizeof(u16) * maxcount * 6; // Worst case index list is a list of points with vs expansion, 6 indices per point
 
-	GSVertex* vertex = static_cast<GSVertex*>(_aligned_malloc(sizeof(GSVertex) * maxcount, 32));
-	GSVertex* draw_vertex = static_cast<GSVertex*>(_aligned_malloc(sizeof(GSVertex) * maxcount, 32));
-	// Worst case index list is a list of points with vs expansion, 6 indices per point
-	u16* index = static_cast<u16*>(_aligned_malloc(sizeof(u16) * maxcount * 6, 32));
-	u16* draw_index = static_cast<u16*>(_aligned_malloc(sizeof(u16) * maxcount * 6, 32));
-
-	if (!vertex || !index)
+	// Array describing buffers to reallocate
+	struct
 	{
-		const u32 vert_byte_count = sizeof(GSVertex) * maxcount;
-		const u32 idx_byte_count = sizeof(u16) * maxcount * 3;
+		void** pbuff;
+		u32 size;
+		bool copy;
+	} alloc_desc[] = {
+		{reinterpret_cast<void**>(&m_vertex.buff),      vertex_size, true},
+		{reinterpret_cast<void**>(&m_vertex.buff2),     vertex_size, false}, // buff2 is a scratch buffer so discard contents
+		{reinterpret_cast<void**>(&m_draw_vertex.buff), vertex_size, true},
+		{reinterpret_cast<void**>(&m_index.buff),       index_size,  true},
+		{reinterpret_cast<void**>(&m_draw_index.buff),  index_size,  true}};
 
-		Console.Error("GS: failed to allocate %zu bytes for vertices and %zu for indices.",
-			vert_byte_count, idx_byte_count);
-		pxFailRel("Memory allocation failed");
+	// For logging
+	u32 total_size = 0;
+	for (u32 i = 0; i < sizeof(alloc_desc) / sizeof(alloc_desc[0]); i++)
+		total_size += alloc_desc[i].size;
+
+	// Reallocate each of the needed buffers
+	for (u32 i = 0; i < sizeof(alloc_desc) / sizeof(alloc_desc[0]); i++)
+	{
+		void** pbuff = alloc_desc[i].pbuff;
+		u32 size = alloc_desc[i].size;
+		bool copy = alloc_desc[i].copy;
+
+		void* new_buff = _aligned_malloc(size, 32);
+		if (!new_buff)
+		{
+			Console.Error("GS: failed to allocate %zu bytes for vertices and indices.", total_size);
+			pxFailRel("Memory allocation failed");
+		}
+		if (*pbuff)
+		{
+			if (copy)
+			{
+				std::memcpy(new_buff, *pbuff, size);
+			}
+			_aligned_free(*pbuff);
+		}
+		*pbuff = new_buff;
 	}
 
-	if (m_vertex.buff)
-	{
-		std::memcpy(vertex, m_vertex.buff, sizeof(GSVertex) * m_vertex.tail);
-
-		_aligned_free(m_vertex.buff);
-	}
-
-	if (m_index.buff)
-	{
-		std::memcpy(index, m_index.buff, sizeof(u16) * m_index.tail);
-
-		_aligned_free(m_index.buff);
-	}
-
-	if (m_draw_vertex.buff)
-	{
-		std::memcpy(draw_vertex, m_draw_vertex.buff, sizeof(GSVertex) * m_vertex.tail);
-
-		_aligned_free(m_draw_vertex.buff);
-	}
-
-	if (m_draw_index.buff)
-	{
-		std::memcpy(draw_index, m_draw_index.buff, sizeof(u16) * m_index.tail);
-
-		_aligned_free(m_draw_index.buff);
-	}
-
-	m_draw_vertex.buff = draw_vertex;
-	m_draw_index.buff = draw_index;
-	m_vertex.buff = vertex;
 	m_vertex.maxcount = maxcount - 3; // -3 to have some space at the end of the buffer before DrawingKick can grow it
-	m_index.buff = index;
 }
 
 bool GSState::TrianglesAreQuads(bool shuffle_check)

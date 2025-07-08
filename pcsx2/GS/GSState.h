@@ -136,6 +136,7 @@ protected:
 	struct
 	{
 		GSVertex* buff;
+		GSVertex* buff2; // same size buffer to copy/modify the original buffer without constantly reallocating
 		u32 head, tail, next, maxcount; // head: first vertex, tail: last vertex + 1, next: last indexed + 1
 		u32 xy_tail;
 		GSVector4i xy[4];
