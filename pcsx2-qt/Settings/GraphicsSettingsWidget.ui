@@ -1264,7 +1264,7 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_5">
        <item>
-        <widget class="QGroupBox" name="sharpeningGrroup">
+        <widget class="QGroupBox" name="sharpeningGroup">
          <property name="title">
           <string>Sharpening/Anti-Aliasing</string>
          </property>
@@ -1277,7 +1277,7 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <layout class="QHBoxLayout" name="horizontalLayout_6">
+           <layout class="QHBoxLayout" name="casLayout">
             <item>
              <widget class="QComboBox" name="casMode">
               <item>
@@ -1298,7 +1298,7 @@
              </widget>
             </item>
             <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_7">
+             <layout class="QHBoxLayout" name="sharpnessLayout">
               <item>
                <widget class="QLabel" name="casSharpnessLabel">
                 <property name="text">
@@ -1334,11 +1334,11 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox_7">
+        <widget class="QGroupBox" name="filtersLayout">
          <property name="title">
           <string>Filters</string>
          </property>
-         <layout class="QFormLayout" name="formLayout_5">
+         <layout class="QGridLayout" name="gridLayout_4">
           <item row="0" column="0">
            <widget class="QLabel" name="tvShaderLabel">
             <property name="text">
@@ -1398,33 +1398,7 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <layout class="QHBoxLayout" name="horizontalLayout_4">
-            <item>
-             <spacer name="horizontalSpacer">
-              <property name="orientation">
-               <enum>Qt::Orientation::Vertical</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item>
-             <spacer name="horizontalSpacer">
-              <property name="orientation">
-               <enum>Qt::Orientation::Vertical</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
+           <layout class="QHBoxLayout" name="shadeBoostLayout">
             <item>
              <widget class="QLabel" name="brightnessLabel">
               <property name="text">
@@ -1482,7 +1456,7 @@
         </widget>
        </item>
        <item>
-        <spacer name="verticalSpacer_5">
+        <spacer name="postSpacer">
          <property name="orientation">
           <enum>Qt::Orientation::Vertical</enum>
          </property>
@@ -1507,46 +1481,6 @@
           <string>On-Screen Display</string>
          </property>
          <layout class="QGridLayout" name="gridLayout">
-          <item row="2" column="0">
-           <widget class="QLabel" name="osdPerformancePosLabel">
-            <property name="text">
-             <string>OSD Performance Position:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="osdScaleLabel">
-            <property name="text">
-             <string>OSD Scale:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QSpinBox" name="osdScale">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="suffix">
-             <string>%</string>
-            </property>
-            <property name="minimum">
-             <number>50</number>
-            </property>
-            <property name="maximum">
-             <number>500</number>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="osdMessagesPosLabel">
-            <property name="text">
-             <string>OSD Messages Position:</string>
-            </property>
-           </widget>
-          </item>
           <item row="1" column="1">
            <widget class="QComboBox" name="osdMessagesPos">
             <item>
@@ -1653,6 +1587,46 @@
               <string>Bottom Right</string>
              </property>
             </item>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="osdMessagesPosLabel">
+            <property name="text">
+             <string>OSD Messages Position:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="osdPerformancePosLabel">
+            <property name="text">
+             <string>OSD Performance Position:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QSpinBox" name="osdScale">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="suffix">
+             <string>%</string>
+            </property>
+            <property name="minimum">
+             <number>50</number>
+            </property>
+            <property name="maximum">
+             <number>500</number>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="osdScaleLabel">
+            <property name="text">
+             <string>OSD Scale:</string>
+            </property>
            </widget>
           </item>
           <item row="4" column="0" colspan="2">
@@ -1804,7 +1778,7 @@
              </widget>
             </item>
             <item row="9" column="2">
-             <widget class="QLabel" name="label_2">
+             <widget class="QLabel" name="osdWarningLabel">
               <property name="text">
                <string>Warnings For User</string>
               </property>
@@ -1827,7 +1801,7 @@
            </layout>
           </item>
           <item row="3" column="0" colspan="2">
-           <spacer name="verticalSpacer_7">
+           <spacer name="osdCheckboxSpacer">
             <property name="orientation">
              <enum>Qt::Orientation::Vertical</enum>
             </property>
@@ -2441,19 +2415,6 @@
       </layout>
      </widget>
     </widget>
-   </item>
-   <item>
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Orientation::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>40</width>
-       <height>60</height>
-      </size>
-     </property>
-    </spacer>
    </item>
   </layout>
  </widget>
