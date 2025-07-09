@@ -380,7 +380,7 @@ void GSDumpReplayer::RenderUI()
 	do \
 	{ \
 		text_size = font->CalcTextSizeA(font->FontSize, std::numeric_limits<float>::max(), -1.0f, (text), nullptr, nullptr); \
-		const ImVec2 text_pos = CalculatePerformanceOverlayTextPosition(GSConfig.OsdPerformancePos, margin, text_size, ImGuiManager::GetWindowWidth(), position_y); \
+		const ImVec2 text_pos = CalculatePerformanceOverlayTextPosition(GSConfig.OsdMessagesPos, margin, text_size, ImGuiManager::GetWindowWidth(), position_y); \
 		dl->AddText(font, font->FontSize, ImVec2(text_pos.x + shadow_offset, text_pos.y + shadow_offset), IM_COL32(0, 0, 0, 100), (text)); \
 		dl->AddText(font, font->FontSize, text_pos, color, (text)); \
 		position_y += text_size.y + spacing; \
