@@ -7641,8 +7641,8 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
 			FSUI_CSTR("Determines where achievement overlays are positioned on the screen."), "Achievements", "OverlayPosition", 
 			8, alignment_options, std::size(alignment_options), true, 0, enabled);
 			
-		const bool notifications_enabled = Host::GetBaseBoolSettingValue("Achievements", "Notifications", true) ||
-											Host::GetBaseBoolSettingValue("Achievements", "LeaderboardNotifications", true);
+		const bool notifications_enabled = GetEffectiveBoolSetting(bsi, "Achievements", "Notifications", true) ||
+											GetEffectiveBoolSetting(bsi, "Achievements", "LeaderboardNotifications", true);
 		if (notifications_enabled)
 		{
 			DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_BELL, "Notification Position"),
