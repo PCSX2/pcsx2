@@ -594,20 +594,6 @@ void GSDevice11::SetFeatures(IDXGIAdapter1* adapter)
 	m_features.vs_expand = (!GSConfig.DisableVertexShaderExpand && m_feature_level >= D3D_FEATURE_LEVEL_11_0);
 	m_features.cas_sharpening = (m_feature_level >= D3D_FEATURE_LEVEL_11_0);
 
-	// NVIDIA GPUs prior to Kepler appear to have broken vertex shader buffer loading.
-	if (m_features.vs_expand && (D3D::GetVendorID(adapter) == D3D::VendorID::Nvidia))
-	{
-		// There's nothing Fermi specific which we can query in DX11. Closest we have is typed UAV loads,
-		// which is Kepler+. Anyone using Kepler should be using Vulkan anyway.
-		D3D11_FEATURE_DATA_D3D11_OPTIONS2 options;
-		if (SUCCEEDED(m_dev->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS2, &options, sizeof(options))) &&
-			!options.TypedUAVLoadAdditionalFormats)
-		{
-			Console.Warning("D3D11: Disabling VS expand due to potentially buggy NVIDIA driver.");
-			m_features.vs_expand = false;
-		}
-	}
-
 	m_max_texture_size = (m_feature_level >= D3D_FEATURE_LEVEL_11_0) ?
 							 D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION :
 							 D3D10_REQ_TEXTURE2D_U_OR_V_DIMENSION;
