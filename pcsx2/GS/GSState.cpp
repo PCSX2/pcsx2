@@ -1858,7 +1858,7 @@ void GSState::CheckWriteOverlap(bool req_write, bool req_read)
 	const GSVector4i write_rect = GSVector4i(m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, m_env.TRXPOS.DSAX + w, m_env.TRXPOS.DSAY + h);
 	const u32 write_start_bp = GSLocalMemory::GetStartBlockAddress(blit.DBP, blit.DBW, blit.DPSM, write_rect);
 	const u32 write_end_bp = ((GSLocalMemory::GetEndBlockAddress(blit.DBP, blit.DBW, blit.DPSM, write_rect) + 1) + (GS_BLOCKS_PER_PAGE - 1)) & ~(GS_BLOCKS_PER_PAGE - 1);
-	const GSVector4i tex_rect = m_prev_env.PRIM.TME ? GetTEX0Rect() : GSVector4i::zero();
+	GSVector4i tex_rect = m_prev_env.PRIM.TME ? GetTEX0Rect() : GSVector4i::zero();
 
 	if (m_index.tail > 0)
 	{
@@ -1870,6 +1870,49 @@ void GSState::CheckWriteOverlap(bool req_write, bool req_read)
 
 		if (req_write && m_prev_env.PRIM.TME)
 		{
+			// Tex rect could be invalid showing 1024x1024 when it isn't. If the frame is only 1 page wide, it's either a big strip or a single page draw.
+			// This large texture causes misdetection of overlapping writes, causing our heuristics in the hardware renderer for future draws to be missing.
+			// Either way if we check the queued up coordinates, it should give us a fair idea. (Cabela's Trophy Bucks)
+			if (prev_ctx.FRAME.FBW == 1 && tex_rect.width() > (prev_ctx.TEX0.TBW * 64))
+			{
+				GSVector4i tex_draw_rect = GSVector4i::zero();
+				for (u32 i = 0; i < m_index.tail; i++)
+				{
+					const GSVertex* v = &m_vertex.buff[m_index.buff[i]];
+					GSVector2i tex_coord;
+					if (PRIM->FST)
+					{
+						tex_coord.x = v->U >> 4;
+						tex_coord.y = v->V >> 4;
+					}
+					else
+					{
+						const float s = std::min((v->ST.S / v->RGBAQ.Q), 1.0f);
+						const float t = std::min((v->ST.T / v->RGBAQ.Q), 1.0f);
+
+						tex_coord.x = static_cast<int>(std::round((1 << m_context->TEX0.TW) * s));
+						tex_coord.y = static_cast<int>(std::round((1 << m_context->TEX0.TH) * t));
+					}
+
+					if (i == 0)
+					{
+						tex_draw_rect.x = tex_coord.x;
+						tex_draw_rect.y = tex_coord.y;
+						tex_draw_rect.z = tex_coord.x;
+						tex_draw_rect.w = tex_coord.y;
+
+						continue;
+					}
+
+					tex_draw_rect.x = std::min(tex_draw_rect.x, tex_coord.x);
+					tex_draw_rect.z = std::max(tex_draw_rect.z, tex_coord.x);
+					tex_draw_rect.y = std::min(tex_draw_rect.y, tex_coord.y);
+					tex_draw_rect.w = std::max(tex_draw_rect.w, tex_coord.y);
+				}
+
+				tex_rect = tex_rect.rintersect(tex_draw_rect);
+			}
+
 			if (GSLocalMemory::HasOverlap(blit.DBP, blit.DBW, blit.DPSM, write_rect, prev_ctx.TEX0.TBP0, prev_ctx.TEX0.TBW, prev_ctx.TEX0.PSM, tex_rect))
 			{
 				
