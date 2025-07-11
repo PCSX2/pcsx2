@@ -24330,6 +24330,7 @@ SLES-53804:
     nativeScaling: 1 # Fixes depth intensity.
     textureInsideRT: 1 # Fixes depth blur.
     estimateTextureRegion: 1 # Massively improves performance in certain situations.
+    getSkipCount: "GSC_SandGrainGames"
 SLES-53805:
   name: "Cocoto Funfair"
   region: "PAL-M5"
@@ -26906,6 +26907,8 @@ SLES-54653:
 SLES-54655:
   name: "Cabela's African Safari"
   region: "PAL-A"
+  gsHWFixes:
+    getSkipCount: "GSC_SandGrainGames"
 SLES-54656:
   name: "EyeToy - Bob the Builder"
   region: "PAL-E"
@@ -28470,9 +28473,12 @@ SLES-55102:
     halfPixelOffset: 5 # Fixes depth alignment.
     nativeScaling: 1 # Fixes depth intensity.
     textureInsideRT: 1 # Fixes depth blur.
+    getSkipCount: "GSC_SandGrainGames"
 SLES-55103:
   name: "Cabela's Big Game Hunter [2007]"
   region: "PAL-E"
+  gsHWFixes:
+    getSkipCount: "GSC_SandGrainGames"
 SLES-55104:
   name: "UEFA Euro 2008 - Austria-Switzerland"
   region: "PAL-E"
@@ -37280,6 +37286,8 @@ SLPM-62286:
   name-sort: "もんすたーばす"
   name-en: "Monster Bass"
   region: "NTSC-J"
+  gsHWFixes:
+    getSkipCount: "GSC_SandGrainGames"
 SLPM-62287:
   name: "ファイヤープロレスリングZ 闘辞苑 同梱BOX"
   name-sort: "ふぁいやーぷろれすりんぐZ とうじえん どうこんBOX"
@@ -69749,6 +69757,7 @@ SLUS-21289:
     nativeScaling: 1 # Fixes depth intensity.
     textureInsideRT: 1 # Fixes depth blur.
     estimateTextureRegion: 1 # Massively improves performance in certain situations.
+    getSkipCount: "GSC_SandGrainGames"
 SLUS-21290:
   name: "Ford Street Racing"
   region: "NTSC-U"
@@ -70376,6 +70385,8 @@ SLUS-21379:
   name: "Cabela's African Safari"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    getSkipCount: "GSC_SandGrainGames"
 SLUS-21380:
   name: "Snoopy vs. the Red Baron"
   region: "NTSC-U"
@@ -71734,10 +71745,14 @@ SLUS-21624:
   name: "Cabela's Trophy Bucks"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    getSkipCount: "GSC_SandGrainGames"
 SLUS-21625:
   name: "Cabela's Big Game Hunter [2007]"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    getSkipCount: "GSC_SandGrainGames"
 SLUS-21626:
   name: "Stuntman - Ignition"
   region: "NTSC-U"
@@ -72217,6 +72232,7 @@ SLUS-21712:
     halfPixelOffset: 5 # Fixes depth alignment.
     nativeScaling: 1 # Fixes depth intensity.
     textureInsideRT: 1 # Fixes depth blur.
+    getSkipCount: "GSC_SandGrainGames"
 SLUS-21713:
   name: "Winter Sports 2008 - The Ultimate Challenge"
   region: "NTSC-U"
@@ -72234,6 +72250,8 @@ SLUS-21715:
   name: "Cabela's Monster Bass"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    getSkipCount: "GSC_SandGrainGames"
 SLUS-21716:
   name: "The Spiderwick Chronicles"
   name-sort: "Spiderwick Chronicles, The"
@@ -72677,6 +72695,8 @@ SLUS-21789:
   name: "Cabela's Legendary Adventures"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    getSkipCount: "GSC_SandGrainGames"
 SLUS-21790:
   name: "DreamWorks Shrek's Carnival Craze - Party Games"
   region: "NTSC-U"
