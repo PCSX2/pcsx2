@@ -41,8 +41,13 @@ BINARY=pcsx2-qt
 APPDIRNAME=PCSX2.AppDir
 STRIP=strip
 
+# Need both libharfbuzz.so and libharfbuzz.so.0 for bundled libs
+
 declare -a MANUAL_LIBS=(
 	"libshaderc_shared.so.1"
+	"libharfbuzz.so.0"
+	"libharfbuzz.so"
+	"libfreetype.so.6"
 )
 
 declare -a REMOVE_LIBS=(
@@ -75,22 +80,29 @@ fi
 OUTDIR=$(realpath "./$APPDIRNAME")
 rm -fr "$OUTDIR"
 
+# Our deps build dosn't create libharfbuzz.so.0, so we have to symlink it here
+hbpath=$(find "$DEPSDIR" -name "libharfbuzz.so")
+if [ ! -f "$hbpath" ]; then
+	echo "Missing harfbuzz. Exiting."
+	exit 1
+fi
+
+if [ ! -f "$hbpath.0" ]; then
+	echo "Symlinking libharfbuzz.so.0"
+	ln -s "$hbpath" "$hbpath.0"
+fi
+
 echo "Locating extra libraries..."
-EXTRA_LIBS_ARGS=""
+EXTRA_LIBS_ARGS=()
 for lib in "${MANUAL_LIBS[@]}"; do
 	srcpath=$(find "$DEPSDIR" -name "$lib")
 	if [ ! -f "$srcpath" ]; then
-		echo "Missinge extra library $lib. Exiting."
+		echo "Missing extra library $lib. Exiting."
 		exit 1
 	fi
 
 	echo "Found $lib at $srcpath."
-
-	if [ "$EXTRA_LIBS_ARGS" == "" ]; then
-		EXTRA_LIBS_ARGS="--library=$srcpath"
-	else
-		EXTRA_LIBS_ARGS="$EXTRA_LIBS_ARGS,$srcpath"
-	fi
+	EXTRA_LIBS_ARGS+=( "--library=$srcpath" )
 done
 
 # Why the nastyness? linuxdeploy strips our main binary, and there's no option to turn it off.
@@ -122,7 +134,7 @@ EXTRA_PLATFORM_PLUGINS="libqwayland-egl.so;libqwayland-generic.so" \
 DEPLOY_PLATFORM_THEMES="1" \
 QMAKE="$DEPSDIR/bin/qmake" \
 NO_STRIP="1" \
-$LINUXDEPLOY --plugin qt --appdir="$OUTDIR" --executable="$BUILDDIR/bin/pcsx2-qt" $EXTRA_LIBS_ARGS \
+$LINUXDEPLOY --plugin qt --appdir="$OUTDIR" --executable="$BUILDDIR/bin/pcsx2-qt" ${EXTRA_LIBS_ARGS[@]} \
 --desktop-file="net.pcsx2.PCSX2.desktop" --icon-file="PCSX2.png"
 
 echo "Copying resources into AppDir..."
