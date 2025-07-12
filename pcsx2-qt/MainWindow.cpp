@@ -34,10 +34,12 @@
 #include "pcsx2/Recording/InputRecording.h"
 #include "pcsx2/Recording/InputRecordingControls.h"
 #include "pcsx2/SIO/Sio.h"
+#include "pcsx2/GS/GSExtra.h"
 
 #include "common/Assertions.h"
 #include "common/CocoaTools.h"
 #include "common/FileSystem.h"
+#include "common/Path.h"
 
 #include <QtCore/QDateTime>
 #include <QtCore/QDir>
@@ -1454,6 +1456,8 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 			connect(menu.addAction(tr("Check Wiki Page")), &QAction::triggered, [this, entry]() { goToWikiPage(entry); });
 		}
 
+		action = menu.addAction(tr("Open Screenshots Folder"));
+		connect(action, &QAction::triggered, [this, entry]() { openScreenshotsFolderForGame(entry); });
 		menu.addSeparator();
 
 		if (!s_vm_valid)
@@ -2903,6 +2907,39 @@ void MainWindow::clearGameListEntryPlayTime(const GameList::Entry* entry)
 void MainWindow::goToWikiPage(const GameList::Entry* entry)
 {
 	QtUtils::OpenURL(this, fmt::format("https://wiki.pcsx2.net/{}", entry->serial).c_str());
+}
+
+void MainWindow::openScreenshotsFolderForGame(const GameList::Entry* entry)
+{
+	if (!entry || entry->title.empty())
+		return;
+
+	// if disabled open the snapshots folder
+	if (!EmuConfig.GS.OrganizeScreenshotsByGame)
+	{
+		QtUtils::OpenURL(this, QUrl::fromLocalFile(QString::fromStdString(EmuFolders::Snapshots)));
+		return;
+	}
+
+	std::string game_name = entry->title;
+	Path::SanitizeFileName(&game_name);
+	if (game_name.length() > 219)
+	{
+		game_name.resize(219);
+	}
+	const std::string game_dir = Path::Combine(EmuFolders::Snapshots, game_name);
+
+	if (!FileSystem::DirectoryExists(game_dir.c_str()))
+	{
+		if (!FileSystem::CreateDirectoryPath(game_dir.c_str(), false))
+		{
+			QMessageBox::critical(this, tr("Error"), tr("Failed to create screenshots directory '%1'.").arg(QString::fromStdString(game_dir)));
+			return;
+		}
+	}
+
+	const QFileInfo fi(QString::fromStdString(game_dir));
+	QtUtils::OpenURL(this, QUrl::fromLocalFile(fi.absoluteFilePath()));	
 }
 
 std::optional<bool> MainWindow::promptForResumeState(const QString& save_state_path)
