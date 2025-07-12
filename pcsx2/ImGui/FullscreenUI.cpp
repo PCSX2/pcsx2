@@ -22,6 +22,13 @@
 #include "USB/USB.h"
 #include "VMManager.h"
 #include "ps2/BiosTools.h"
+#include "DEV9/AdapterUtils.h"
+#include "DEV9/ATA/HddCreate.h"
+#include "DEV9/pcap_io.h"
+#include "DEV9/sockets.h"
+#ifdef _WIN32
+#include "DEV9/Win32/tap.h"
+#endif
 
 #include "common/Console.h"
 #include "common/Error.h"
@@ -48,8 +55,10 @@
 #include "fmt/format.h"
 
 #include <algorithm>
+#include <atomic>
 #include <array>
 #include <bitset>
+#include <set>
 #include <thread>
 #include <utility>
 #include <vector>
@@ -175,6 +184,152 @@ using ImGuiFullscreen::WantsToCloseMenu;
 
 namespace FullscreenUI
 {
+
+	class HddCreateInProgress : public HddCreate
+	{
+	private:
+		std::string m_dialogId;
+		std::atomic_bool m_completed{false};
+		std::atomic_bool m_success{false};
+		int m_reqMiB = 0;
+		std::atomic_bool m_dialogClosed{false}; // Check if dialog was already closed
+
+		static std::vector<std::shared_ptr<HddCreateInProgress>> s_activeOperations;
+		static std::mutex s_operationsMutex;
+		static std::atomic_int s_nextOperationId;
+
+	public:
+		HddCreateInProgress(const std::string& dialogId)
+			: m_dialogId(dialogId)
+		{
+		}
+
+		~HddCreateInProgress()
+		{
+			SafeCloseDialog();
+		}
+
+		void SafeCloseDialog()
+		{
+			bool expected = false;
+			if (m_dialogClosed.compare_exchange_strong(expected, true))
+			{
+				ImGuiFullscreen::CloseBackgroundProgressDialog(m_dialogId.c_str());
+			}
+		}
+
+		static bool StartCreation(const std::string& filePath, int sizeInGB, bool use48BitLBA)
+		{
+			if (filePath.empty() || sizeInGB <= 0)
+				return false;
+
+			std::string dialogId = fmt::format("hdd_create_{}", s_nextOperationId.fetch_add(1, std::memory_order_relaxed));
+
+			std::shared_ptr<HddCreateInProgress> instance = std::make_shared<HddCreateInProgress>(dialogId);
+
+			// Convert GB to bytes
+			const u64 sizeBytes = static_cast<u64>(sizeInGB) * 1024 * 1024 * 1024;
+
+			// Make sure the file doesn't already exist (or delete it if it does)
+			if (FileSystem::FileExists(filePath.c_str()))
+			{
+				if (!FileSystem::DeleteFilePath(filePath.c_str()))
+					return false; // Failed to delete existing file
+			}
+
+			// Setup the creation parameters
+			instance->filePath = filePath;
+			instance->neededSize = sizeBytes;
+
+			// Register the operation
+			{
+				std::lock_guard<std::mutex> lock(s_operationsMutex);
+				s_activeOperations.push_back(instance);
+			}
+
+			// Start the HDD creation
+			std::thread([instance = std::move(instance)]() {
+				instance->Start();
+
+				if (!instance->errored)
+					Host::RunOnCPUThread([size_gb = static_cast<int>(instance->neededSize / (1024 * 1024 * 1024))]() {
+						ShowToast(
+							ICON_FA_CIRCLE_CHECK,
+							fmt::format("HDD image ({} GB) created successfully.", size_gb),
+							3.0f);
+					});
+				else
+					Host::RunOnCPUThread([]() {
+						ShowToast(
+							ICON_FA_TRIANGLE_EXCLAMATION,
+							"Failed to create HDD image.",
+							3.0f);
+					});
+
+				std::lock_guard<std::mutex> lock(s_operationsMutex);
+				for (auto it = s_activeOperations.begin(); it != s_activeOperations.end(); ++it)
+				{
+					if (it->get() == instance.get())
+					{
+						s_activeOperations.erase(it);
+						break;
+					}
+				}
+			}).detach();
+
+			return true;
+		}
+
+	protected:
+		virtual void Init() override
+		{
+			m_reqMiB = static_cast<int>((neededSize + ((1024 * 1024) - 1)) / (1024 * 1024));
+			const std::string message = fmt::format("{} Creating HDD Image\n{} / {} MiB", ICON_FA_HARD_DRIVE, 0, m_reqMiB);
+			ImGuiFullscreen::OpenBackgroundProgressDialog(m_dialogId.c_str(), message, 0, m_reqMiB, 0);
+		}
+
+		virtual void SetFileProgress(u64 currentSize) override
+		{
+			const int writtenMiB = static_cast<int>((currentSize + ((1024 * 1024) - 1)) / (1024 * 1024));
+			const std::string message = fmt::format("{} Creating HDD Image\n{} / {} MiB", ICON_FA_HARD_DRIVE, writtenMiB, m_reqMiB);
+			ImGuiFullscreen::UpdateBackgroundProgressDialog(m_dialogId.c_str(), message, 0, m_reqMiB, writtenMiB);
+		}
+
+		virtual void SetError() override
+		{
+			SafeCloseDialog();
+			HddCreate::SetError();
+		}
+
+		virtual void Cleanup() override
+		{
+			SafeCloseDialog();
+			m_success.store(!errored, std::memory_order_release);
+			m_completed.store(true, std::memory_order_release);
+		}
+	};
+
+	std::vector<std::shared_ptr<HddCreateInProgress>> HddCreateInProgress::s_activeOperations;
+	std::mutex HddCreateInProgress::s_operationsMutex;
+	std::atomic_int HddCreateInProgress::s_nextOperationId{0};
+
+	bool CreateHardDriveWithProgress(const std::string& filePath, int sizeInGB, bool use48BitLBA)
+	{
+		// Validate size limits based on the LBA mode set
+		const int min_size = use48BitLBA ? 100 : 40;
+		const int max_size = use48BitLBA ? 2000 : 120;
+
+		if (sizeInGB < min_size || sizeInGB > max_size)
+		{
+			Host::RunOnCPUThread([min_size, max_size]() {
+				ShowToast(std::string(), fmt::format("Invalid HDD size. Size must be between {} and {} GB.", min_size, max_size).c_str());
+			});
+			return false;
+		}
+
+		return HddCreateInProgress::StartCreation(filePath, sizeInGB, use48BitLBA);
+	}
+
 	enum class MainWindowType
 	{
 		None,
@@ -205,6 +360,7 @@ namespace FullscreenUI
 		Graphics,
 		Audio,
 		MemoryCard,
+		NetworkHDD,
 		Folders,
 		Achievements,
 		Controller,
@@ -331,6 +487,7 @@ namespace FullscreenUI
 	static void DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_advanced_settings);
 	static void DrawAudioSettingsPage();
 	static void DrawMemoryCardSettingsPage();
+	static void DrawNetworkHDDSettingsPage();
 	static void DrawFoldersSettingsPage();
 	static void DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& settings_lock);
 	static void DrawControllerSettingsPage();
@@ -389,6 +546,12 @@ namespace FullscreenUI
 	static void DrawStringListSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section, const char* key,
 		const char* default_value, SettingInfo::GetOptionsCallback options_callback, bool enabled = true,
 		float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, std::pair<ImFont*, float> font = g_large_font, std::pair<ImFont*, float> summary_font = g_medium_font);
+	static void DrawTextSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section, const char* key,
+		const char* default_value, bool enabled = true, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
+		std::pair<ImFont*, float> font = g_large_font, std::pair<ImFont*, float> summary_font = g_medium_font);
+	static void DrawIPAddressSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section, const char* key,
+		const char* default_value, bool enabled = true, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
+		std::pair<ImFont*, float> font = g_large_font, std::pair<ImFont*, float> summary_font = g_medium_font);
 	static void DrawFloatListSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section, const char* key,
 		float default_value, const char* const* options, const float* option_values, size_t option_count, bool translate_options,
 		bool enabled = true, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, std::pair<ImFont*, float> font = g_large_font,
@@ -2867,6 +3030,115 @@ void FullscreenUI::DrawPathSetting(SettingsInterface* bsi, const char* title, co
 	}
 }
 
+void FullscreenUI::DrawTextSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section, const char* key,
+	const char* default_value, bool enabled /* = true */, float height /* = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT */,
+	std::pair<ImFont*, float> font /* = g_large_font */, std::pair<ImFont*, float> summary_font /* = g_medium_font */)
+{
+	const bool game_settings = IsEditingGameSettings(bsi);
+	const std::optional<SmallString> value(
+		bsi->GetOptionalSmallStringValue(section, key, game_settings ? std::nullopt : std::optional<const char*>(default_value)));
+
+	if (MenuButton(title, summary, value.has_value() ? value->c_str() : FSUI_CSTR("Use Global Setting")))
+	{
+		const char* prompt = FSUI_CSTR("Enter a new value:");
+
+		OpenInputStringDialog(title, prompt, value.has_value() ? std::string(value->c_str()) : std::string(default_value), FSUI_ICONSTR(ICON_FA_CHECK, "OK"), [game_settings, section = std::string(section), key = std::string(key)](std::string text) {
+				auto lock = Host::GetSettingsLock();
+				SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+				bsi->SetStringValue(section.c_str(), key.c_str(), text.c_str());
+				SetSettingsChanged(bsi); });
+	}
+}
+
+void FullscreenUI::DrawIPAddressSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
+	const char* key, const char* default_value, bool enabled, float height, std::pair<ImFont*, float> font, std::pair<ImFont*, float> summary_font)
+{
+	const bool game_settings = IsEditingGameSettings(bsi);
+	const std::optional<SmallString> value(
+		bsi->GetOptionalSmallStringValue(section, key, game_settings ? std::nullopt : std::optional<const char*>(default_value)));
+
+	const SmallString value_text = value.has_value() ? value.value() : SmallString(FSUI_VSTR("Use Global Setting"));
+
+	static std::array<int, 4> ip_octets = {0, 0, 0, 0};
+
+	if (MenuButtonWithValue(title, summary, value_text.c_str(), enabled, height, font, summary_font))
+	{
+		const std::string current_ip = value.has_value() ? std::string(value->c_str()) : std::string(default_value);
+		std::istringstream iss(current_ip);
+		std::string segment;
+		int i = 0;
+		while (std::getline(iss, segment, '.') && i < 4)
+		{
+			ip_octets[i] = std::clamp(std::atoi(segment.c_str()), 0, 255);
+			i++;
+		}
+		for (; i < 4; i++)
+			ip_octets[i] = 0;
+
+		ImGui::OpenPopup(title);
+	}
+
+	ImGui::SetNextWindowSize(LayoutScale(550.0f, 200.0f));
+	ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+
+	ImGui::PushFont(g_large_font.first, g_large_font.second);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
+		LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING, ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
+
+	bool is_open = true;
+	if (ImGui::BeginPopupModal(title, &is_open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
+	{
+		BeginMenuButtons();
+
+		bool value_changed = false;
+		char ip_str[16];
+		std::snprintf(ip_str, sizeof(ip_str), "%d.%d.%d.%d", ip_octets[0], ip_octets[1], ip_octets[2], ip_octets[3]);
+
+		const float end = ImGui::GetCurrentWindow()->WorkRect.GetWidth();
+		ImGui::SetNextItemWidth(end);
+		if (ImGui::InputText("##ip", ip_str, sizeof(ip_str), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CallbackCharFilter,
+			[](ImGuiInputTextCallbackData* data) -> int {
+				// Only allow digits and dots
+				return (data->EventChar >= '0' && data->EventChar <= '9') || data->EventChar == '.' ? 0 : 1;
+			}))
+		{
+			std::istringstream iss(ip_str);
+			std::string segment;
+			int i = 0;
+			while (std::getline(iss, segment, '.') && i < 4)
+			{
+				ip_octets[i] = std::clamp(std::atoi(segment.c_str()), 0, 255);
+				i++;
+			}
+			value_changed = true;
+		}
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
+
+		if (value_changed)
+		{
+			std::snprintf(ip_str, sizeof(ip_str), "%d.%d.%d.%d", ip_octets[0], ip_octets[1], ip_octets[2], ip_octets[3]);
+			if (IsEditingGameSettings(bsi) && strcmp(ip_str, default_value) == 0)
+				bsi->DeleteValue(section, key);
+			else
+				bsi->SetStringValue(section, key, ip_str);
+			SetSettingsChanged(bsi);
+		}
+
+		if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, g_large_font, ImVec2(0.5f, 0.0f)))
+		{
+			ImGui::CloseCurrentPopup();
+		}
+		EndMenuButtons();
+		ImGui::EndPopup();
+	}
+
+	ImGui::PopStyleVar(4);
+	ImGui::PopFont();
+}
+
 void FullscreenUI::StartAutomaticBinding(u32 port)
 {
 	// messy because the enumeration has to happen on the input thread
@@ -3097,6 +3369,7 @@ void FullscreenUI::DrawSettingsWindow()
 			ICON_PF_PICTURE,
 			ICON_PF_SOUND,
 			ICON_PF_MEMORY_CARD,
+			ICON_FA_NETWORK_WIRED,
 			ICON_FA_FOLDER_OPEN,
 			ICON_FA_TROPHY,
 			ICON_PF_GAMEPAD_ALT,
@@ -3120,6 +3393,7 @@ void FullscreenUI::DrawSettingsWindow()
 			SettingsPage::Graphics,
 			SettingsPage::Audio,
 			SettingsPage::MemoryCard,
+			SettingsPage::NetworkHDD,
 			SettingsPage::Folders,
 			SettingsPage::Achievements,
 			SettingsPage::Controller,
@@ -3144,6 +3418,7 @@ void FullscreenUI::DrawSettingsWindow()
 			FSUI_NSTR("Graphics Settings"),
 			FSUI_NSTR("Audio Settings"),
 			FSUI_NSTR("Memory Card Settings"),
+			FSUI_NSTR("Network & HDD Settings"),
 			FSUI_NSTR("Folder Settings"),
 			FSUI_NSTR("Achievements Settings"),
 			FSUI_NSTR("Controller Settings"),
@@ -3273,6 +3548,10 @@ void FullscreenUI::DrawSettingsWindow()
 
 			case SettingsPage::MemoryCard:
 				DrawMemoryCardSettingsPage();
+				break;
+
+			case SettingsPage::NetworkHDD:
+				DrawNetworkHDDSettingsPage();
 				break;
 
 			case SettingsPage::Folders:
@@ -3487,7 +3766,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 		FSUI_CSTR("Selects the color style to be used for Big Picture Mode."),
 		"UI", "FullscreenUITheme", "Dark", s_theme_name, s_theme_value, std::size(s_theme_name), true);
 	DrawToggleSetting(
-	bsi, FSUI_ICONSTR(ICON_FA_LIST, "Default To Game List"), FSUI_CSTR("When Big Picture mode is started, the game list will be displayed instead of the main menu."), "UI", "FullscreenUIDefaultToGameList", false);
+		bsi, FSUI_ICONSTR(ICON_FA_LIST, "Default To Game List"), FSUI_CSTR("When Big Picture mode is started, the game list will be displayed instead of the main menu."), "UI", "FullscreenUIDefaultToGameList", false);
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_CIRCLE_INFO, "Use Save State Selector"),
 		FSUI_CSTR("Show a save state selector UI when switching slots instead of showing a notification bubble."),
 		"EmuCore", "UseSavestateSelector", true);
@@ -4635,6 +4914,578 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
 		}
 	}
 
+	EndMenuButtons();
+}
+
+void FullscreenUI::DrawNetworkHDDSettingsPage()
+{
+	static constexpr const char* eth_api_names[] = {
+		FSUI_NSTR("Unset"),
+		FSUI_NSTR("PCAP Bridged"),
+		FSUI_NSTR("PCAP Switched"),
+		FSUI_NSTR("TAP"),
+		FSUI_NSTR("Sockets"),
+	};
+
+	static constexpr const char* eth_api_values[] = {
+		"Unset",
+		"PCAP Bridged",
+		"PCAP Switched",
+		"TAP",
+		"Sockets",
+	};
+
+	static constexpr const char* dns_options[] = {
+		FSUI_NSTR("Manual"),
+		FSUI_NSTR("Auto"),
+		FSUI_NSTR("Internal"),
+	};
+
+	static constexpr const char* dns_values[] = {
+		"Manual",
+		"Auto",
+		"Internal",
+	};
+
+	SettingsInterface* bsi = GetEditingSettingsInterface();
+
+	BeginMenuButtons();
+
+	MenuHeading(FSUI_CSTR("Network Adapter"));
+
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_NETWORK_WIRED, "Enable Network Adapter"),
+		FSUI_CSTR("Enables the network adapter for online functionality and LAN play."), "DEV9/Eth", "EthEnable", false);
+
+	const bool network_enabled = GetEffectiveBoolSetting(bsi, "DEV9/Eth", "EthEnable", false);
+
+	// Get current API to determine which adapters to show
+	const std::string current_api = bsi->GetStringValue("DEV9/Eth", "EthApi", "Unset");
+	
+	static std::vector<std::vector<AdapterEntry>> adapter_lists;
+	static std::vector<Pcsx2Config::DEV9Options::NetApi> api_types;
+	static std::vector<std::string> api_display_names;
+	static bool adapters_loaded = false;
+	
+	if (!adapters_loaded && network_enabled) // Load adapters when network gets enabled
+	{
+		adapter_lists.clear();
+		api_types.clear();
+		api_display_names.clear();
+		
+		// Unset (empty list)
+		adapter_lists.emplace_back();
+		api_types.emplace_back(Pcsx2Config::DEV9Options::NetApi::Unset);
+		api_display_names.emplace_back("Unset");
+		
+		// PCAP adapters
+		std::vector<AdapterEntry> pcap_adapters = PCAPAdapter::GetAdapters();
+		if (!pcap_adapters.empty())
+		{
+			std::vector<AdapterEntry> pcap_bridged_adapters;
+			std::vector<AdapterEntry> pcap_switched_adapters;
+			std::set<std::string> seen_bridged_guids;
+			std::set<std::string> seen_switched_guids;
+			
+			for (const auto& adapter : pcap_adapters)
+			{
+				if (adapter.type == Pcsx2Config::DEV9Options::NetApi::PCAP_Bridged)
+				{
+					if (seen_bridged_guids.find(adapter.guid) == seen_bridged_guids.end())
+					{
+						seen_bridged_guids.insert(adapter.guid);
+						pcap_bridged_adapters.push_back(adapter);
+					}
+				}
+				else if (adapter.type == Pcsx2Config::DEV9Options::NetApi::PCAP_Switched)
+				{
+					if (seen_switched_guids.find(adapter.guid) == seen_switched_guids.end())
+					{
+						seen_switched_guids.insert(adapter.guid);
+						pcap_switched_adapters.push_back(adapter);
+					}
+				}
+			}
+			
+			if (!pcap_bridged_adapters.empty())
+			{
+				adapter_lists.emplace_back(pcap_bridged_adapters);
+				api_types.emplace_back(Pcsx2Config::DEV9Options::NetApi::PCAP_Bridged);
+				api_display_names.emplace_back("PCAP Bridged");
+			}
+			
+			if (!pcap_switched_adapters.empty())
+			{
+				adapter_lists.emplace_back(pcap_switched_adapters);
+				api_types.emplace_back(Pcsx2Config::DEV9Options::NetApi::PCAP_Switched);
+				api_display_names.emplace_back("PCAP Switched");
+			}
+		}
+		
+#ifdef _WIN32
+		// TAP adapters
+		std::vector<AdapterEntry> tap_adapters = TAPAdapter::GetAdapters();
+		if (!tap_adapters.empty())
+		{
+			adapter_lists.emplace_back(tap_adapters);
+			api_types.emplace_back(Pcsx2Config::DEV9Options::NetApi::TAP);
+			api_display_names.emplace_back("TAP");
+		}
+#endif
+		
+		// Socket adapters
+		std::vector<AdapterEntry> socket_adapters = SocketAdapter::GetAdapters();
+		if (!socket_adapters.empty())
+		{
+			adapter_lists.emplace_back(socket_adapters);
+			api_types.emplace_back(Pcsx2Config::DEV9Options::NetApi::Sockets);
+			api_display_names.emplace_back("Sockets");
+		}
+		
+		adapters_loaded = true;
+	}
+
+	// Find current API index for display
+	int current_api_index = 0;
+	for (size_t i = 0; i < api_types.size(); i++)
+	{
+		if (current_api == Pcsx2Config::DEV9Options::NetApiNames[static_cast<int>(api_types[i])])
+		{
+			current_api_index = static_cast<int>(i);
+			break;
+		}
+	}
+
+	if (MenuButtonWithValue(FSUI_ICONSTR(ICON_FA_PLUG, "Ethernet Device Type"),
+			FSUI_CSTR("Determines the simulated Ethernet adapter type."),
+			current_api_index < api_display_names.size() ? api_display_names[current_api_index].c_str() : "Unset",
+			network_enabled))
+	{
+		ImGuiFullscreen::ChoiceDialogOptions options;
+		
+		for (size_t i = 0; i < api_display_names.size(); i++)
+		{
+			options.emplace_back(api_display_names[i], i == current_api_index);
+		}
+
+		std::vector<Pcsx2Config::DEV9Options::NetApi> current_api_types = api_types;
+		std::vector<std::vector<AdapterEntry>> current_adapter_lists = adapter_lists;
+
+		OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_PLUG, "Ethernet Device Type"), false, std::move(options),
+			[bsi, current_api_types, current_adapter_lists](s32 index, const std::string& title, bool checked) {
+				if (index < 0 || index >= static_cast<s32>(current_api_types.size()))
+					return;
+
+				auto lock = Host::GetSettingsLock();
+				const std::string selected_api = Pcsx2Config::DEV9Options::NetApiNames[static_cast<int>(current_api_types[index])];
+				const std::string previous_api = bsi->GetStringValue("DEV9/Eth", "EthApi", "Unset");
+				const std::string previous_device = bsi->GetStringValue("DEV9/Eth", "EthDevice", "");
+				
+				bsi->SetStringValue("DEV9/Eth", "EthApi", selected_api.c_str());
+				
+				std::string new_device = "";
+				if (selected_api == "Sockets")
+				{
+					// For Sockets, default to "Auto"
+					new_device = "Auto";
+				}
+				else if (!previous_device.empty() && index < static_cast<s32>(current_adapter_lists.size()))
+				{
+					const auto& new_adapter_list = current_adapter_lists[index];
+					const auto& old_adapter_list = current_adapter_lists[0];
+					
+					std::string old_adapter_name = "";
+					for (size_t i = 0; i < api_types.size(); i++)
+					{
+						if (previous_api == Pcsx2Config::DEV9Options::NetApiNames[static_cast<int>(api_types[i])])
+						{
+							if (i < current_adapter_lists.size())
+							{
+								const auto& old_list = current_adapter_lists[i];
+								for (const auto& adapter : old_list)
+								{
+									if (adapter.guid == previous_device)
+									{
+										old_adapter_name = adapter.name;
+										break;
+									}
+								}
+							}
+							break;
+						}
+					}
+					
+					if (!old_adapter_name.empty())
+					{
+						for (const auto& adapter : new_adapter_list)
+						{
+							if (adapter.name == old_adapter_name)
+							{
+								new_device = adapter.guid;
+								break;
+							}
+						}
+					}
+				}
+				
+				bsi->SetStringValue("DEV9/Eth", "EthDevice", new_device.c_str());
+				SetSettingsChanged(bsi);
+				
+				CloseChoiceDialog();
+			});
+	}
+
+	// Ethernet Device selection
+	const std::string current_device = bsi->GetStringValue("DEV9/Eth", "EthDevice", "");
+	const bool show_device_setting = (current_api_index > 0 && current_api_index < api_types.size());
+
+	// Get device display name
+	std::string device_display = "Auto";
+	if (show_device_setting && !current_device.empty())
+	{
+		// Get the adapter list for current API type
+		if (current_api_index < adapter_lists.size())
+		{
+			const auto& adapter_list = adapter_lists[current_api_index];
+			for (const auto& adapter : adapter_list)
+			{
+				if (adapter.guid == current_device)
+				{
+					device_display = adapter.name;
+					break;
+				}
+			}
+		}
+		
+		if (device_display == "Auto")
+			device_display = current_device;
+	}
+	else if (show_device_setting && current_device.empty())
+	{
+		const std::string current_api = bsi->GetStringValue("DEV9/Eth", "EthApi", "Unset");
+		if (current_api == "PCAP Bridged" || current_api == "PCAP Switched" || current_api == "TAP")
+		{
+			device_display = "Not Selected";
+		}
+	}
+
+	if (MenuButtonWithValue(FSUI_ICONSTR(ICON_FA_ETHERNET, "Ethernet Device"),
+			FSUI_CSTR("Network adapter to use for PS2 network emulation."),
+			device_display.c_str(),
+			network_enabled && show_device_setting))
+	{
+		ImGuiFullscreen::ChoiceDialogOptions options;
+
+		if (current_api_index > 0 && current_api_index < adapter_lists.size())
+		{
+			const auto& adapter_list = adapter_lists[current_api_index];
+			for (size_t i = 0; i < adapter_list.size(); i++)
+			{
+				const auto& adapter = adapter_list[i];
+				options.emplace_back(adapter.name, adapter.guid == current_device);
+			}
+		}
+
+		if (options.empty())
+		{
+			options.emplace_back("No adapters found", false);
+		}
+
+		std::vector<AdapterEntry> current_adapter_list;
+		if (current_api_index > 0 && current_api_index < adapter_lists.size())
+		{
+			current_adapter_list = adapter_lists[current_api_index];
+		}
+
+		std::string current_api_choice = bsi->GetStringValue("DEV9/Eth", "EthApi", "Unset");
+
+		OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_ETHERNET, "Ethernet Device"), false, std::move(options),
+			[bsi, current_adapter_list, current_api_choice](s32 index, const std::string& title, bool checked) {
+				if (index < 0 || title == "No adapters found")
+					return;
+
+				if (index < static_cast<s32>(current_adapter_list.size()))
+				{
+					const auto& selected_adapter = current_adapter_list[index];
+					
+					auto lock = Host::GetSettingsLock();
+					bsi->SetStringValue("DEV9/Eth", "EthApi", current_api_choice.c_str());
+					bsi->SetStringValue("DEV9/Eth", "EthDevice", selected_adapter.guid.c_str());
+					SetSettingsChanged(bsi);
+				}
+
+				CloseChoiceDialog();
+			});
+	}
+
+	AdapterOptions adapter_options = AdapterOptions::None;
+	const std::string final_api = bsi->GetStringValue("DEV9/Eth", "EthApi", "Unset");
+	if (final_api == "PCAP Bridged" || final_api == "PCAP Switched")
+		adapter_options = PCAPAdapter::GetAdapterOptions();
+#ifdef _WIN32
+	else if (final_api == "TAP")
+		adapter_options = TAPAdapter::GetAdapterOptions();
+#endif
+	else if (final_api == "Sockets")
+		adapter_options = SocketAdapter::GetAdapterOptions();
+
+	const bool dhcp_can_be_disabled = (adapter_options & AdapterOptions::DHCP_ForcedOn) == AdapterOptions::None;
+
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_SHIELD_HALVED, "Intercept DHCP"),
+		FSUI_CSTR("When enabled, DHCP packets will be intercepted and replaced with internal responses."), "DEV9/Eth", "InterceptDHCP", false, network_enabled && dhcp_can_be_disabled);
+
+	MenuHeading(FSUI_CSTR("Network Configuration"));
+
+	const bool intercept_dhcp = GetEffectiveBoolSetting(bsi, "DEV9/Eth", "InterceptDHCP", false);
+	const bool dhcp_forced_on = (adapter_options & AdapterOptions::DHCP_ForcedOn) == AdapterOptions::DHCP_ForcedOn;
+	const bool ip_settings_enabled = network_enabled && (intercept_dhcp || dhcp_forced_on);
+
+	const bool ip_can_be_edited = (adapter_options & AdapterOptions::DHCP_OverrideIP) == AdapterOptions::None;
+	const bool subnet_can_be_edited = (adapter_options & AdapterOptions::DHCP_OverideSubnet) == AdapterOptions::None;
+	const bool gateway_can_be_edited = (adapter_options & AdapterOptions::DHCP_OverideGateway) == AdapterOptions::None;
+
+	// DNS Mode settings
+	DrawStringListSetting(bsi, FSUI_ICONSTR(ICON_FA_SERVER, "DNS1 Mode"),
+		FSUI_CSTR("Determines how primary DNS requests are handled."), "DEV9/Eth", "ModeDNS1", "Auto",
+		dns_options, dns_values, std::size(dns_options), true, ip_settings_enabled);
+
+	DrawStringListSetting(bsi, FSUI_ICONSTR(ICON_FA_SERVER, "DNS2 Mode"),
+		FSUI_CSTR("Determines how secondary DNS requests are handled."), "DEV9/Eth", "ModeDNS2", "Auto",
+		dns_options, dns_values, std::size(dns_options), true, ip_settings_enabled);
+
+	const std::string dns1_mode = bsi->GetStringValue("DEV9/Eth", "ModeDNS1", "Auto");
+	const std::string dns2_mode = bsi->GetStringValue("DEV9/Eth", "ModeDNS2", "Auto");
+	const bool dns1_editable = dns1_mode == "Manual" && ip_settings_enabled;
+	const bool dns2_editable = dns2_mode == "Manual" && ip_settings_enabled;
+
+	DrawIPAddressSetting(bsi, FSUI_ICONSTR(ICON_FA_NETWORK_WIRED, "PS2 IP Address"),
+		FSUI_CSTR("IP address for the PS2 virtual network adapter."), "DEV9/Eth", "PS2IP", "0.0.0.0", 
+		ip_settings_enabled && ip_can_be_edited);
+
+	// Subnet Mask with auto toggle
+	const bool mask_auto = GetEffectiveBoolSetting(bsi, "DEV9/Eth", "AutoMask", true);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_WAND_MAGIC, "Auto Subnet Mask"),
+		FSUI_CSTR("Automatically determine the subnet mask based on the IP address class."),
+		"DEV9/Eth", "AutoMask", true, ip_settings_enabled && subnet_can_be_edited);
+	DrawIPAddressSetting(bsi, FSUI_ICONSTR(ICON_FA_NETWORK_WIRED, "Subnet Mask"),
+		FSUI_CSTR("Subnet mask for the PS2 virtual network adapter."), "DEV9/Eth", "Mask", "0.0.0.0", 
+		ip_settings_enabled && subnet_can_be_edited && !mask_auto);
+
+	// Gateway with auto toggle
+	const bool gateway_auto = GetEffectiveBoolSetting(bsi, "DEV9/Eth", "AutoGateway", true);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_WAND_MAGIC, "Auto Gateway"),
+		FSUI_CSTR("Automatically determine the gateway address based on the IP address."),
+		"DEV9/Eth", "AutoGateway", true, ip_settings_enabled && gateway_can_be_edited);
+	DrawIPAddressSetting(bsi, FSUI_ICONSTR(ICON_FA_NETWORK_WIRED, "Gateway Address"),
+		FSUI_CSTR("Gateway address for the PS2 virtual network adapter."), "DEV9/Eth", "Gateway", "0.0.0.0", 
+		ip_settings_enabled && gateway_can_be_edited && !gateway_auto);
+
+	// DNS addresses
+	DrawIPAddressSetting(bsi, FSUI_ICONSTR(ICON_FA_SERVER, "DNS1 Address"),
+		FSUI_CSTR("Primary DNS server address for the PS2 virtual network adapter."), "DEV9/Eth", "DNS1", "0.0.0.0", 
+		dns1_editable);
+
+	DrawIPAddressSetting(bsi, FSUI_ICONSTR(ICON_FA_SERVER, "DNS2 Address"),
+		FSUI_CSTR("Secondary DNS server address for the PS2 virtual network adapter."), "DEV9/Eth", "DNS2", "0.0.0.0", 
+		dns2_editable);
+
+	MenuHeading(FSUI_CSTR("Internal HDD"));
+
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_FLOPPY_DISK, "Enable HDD"),
+		FSUI_CSTR("Enables the internal Hard Disk Drive for expanded storage."), "DEV9/Hdd", "HddEnable", false);
+
+	const bool hdd_enabled = GetEffectiveBoolSetting(bsi, "DEV9/Hdd", "HddEnable", false);
+
+	const SmallString hdd_selection = GetEditingSettingsInterface()->GetSmallStringValue("DEV9/Hdd", "HddFile", "");
+	const std::string current_display = hdd_selection.empty() ? std::string(FSUI_CSTR("None")) : std::string(Path::GetFileName(hdd_selection.c_str()));
+	if (MenuButtonWithValue(FSUI_ICONSTR(ICON_FA_HARD_DRIVE, "HDD Image Selection"),
+			FSUI_CSTR("Changes the HDD image used for PS2 internal storage."),
+			current_display.c_str(), hdd_enabled))
+	{
+		ImGuiFullscreen::ChoiceDialogOptions choices;
+		choices.emplace_back(FSUI_STR("None"), hdd_selection.empty());
+
+		std::vector<std::string> values;
+		values.push_back("");
+
+		FileSystem::FindResultsArray results;
+		FileSystem::FindFiles(EmuFolders::DataRoot.c_str(), "*.raw", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES, &results);
+		for (const FILESYSTEM_FIND_DATA& fd : results)
+		{
+			const std::string full_path = fd.FileName;
+			const std::string filename = std::string(Path::GetFileName(full_path));
+			
+			// Get file size and determine LBA mode
+			const s64 file_size = FileSystem::GetPathFileSize(full_path.c_str());
+			if (file_size > 0)
+			{
+				const int size_gb = static_cast<int>(file_size / (1024LL * 1024LL * 1024LL));
+				const bool uses_lba48 = (file_size > static_cast<s64>(120) * 1024 * 1024 * 1024);
+				const std::string lba_mode = uses_lba48 ? "LBA48" : "LBA28";
+				
+				choices.emplace_back(fmt::format("{} ({} GB, {})", filename, size_gb, lba_mode), 
+					hdd_selection == full_path);
+				values.emplace_back(full_path);
+			}
+		}
+
+		choices.emplace_back(FSUI_STR("Browse..."), false);
+		values.emplace_back("__browse__");
+
+		choices.emplace_back(FSUI_STR("Create New..."), false);
+		values.emplace_back("__create__");
+
+		OpenChoiceDialog(FSUI_CSTR("HDD Image Selection"), false, std::move(choices),
+			[game_settings = IsEditingGameSettings(bsi), values = std::move(values)](s32 index, const std::string& title, bool checked) {
+				if (index < 0)
+					return;
+
+				if (values[index] == "__browse__")
+				{
+					CloseChoiceDialog();
+					
+					OpenFileSelector(FSUI_ICONSTR(ICON_FA_HARD_DRIVE, "Select HDD Image File"), false,
+						[game_settings](const std::string& path) {
+							if (path.empty())
+								return;
+
+							auto lock = Host::GetSettingsLock();
+							SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+							bsi->SetStringValue("DEV9/Hdd", "HddFile", path.c_str());
+							SetSettingsChanged(bsi);
+							ShowToast(std::string(), fmt::format(FSUI_FSTR("Selected HDD image: {}"), Path::GetFileName(path)));
+						}, {"*.raw", "*"}, EmuFolders::DataRoot);
+				}
+				else if (values[index] == "__create__")
+				{
+					CloseChoiceDialog();
+					
+					std::vector<std::pair<std::string, int>> size_options = {
+						{"40 GB (Recommended)", 40},
+						{"80 GB", 80},
+						{"120 GB (Max LBA28)", 120},
+						{"200 GB", 200},
+						{"500 GB", 500},
+						{"1000 GB (1 TB)", 1000},
+						{"2000 GB (2 TB)", 2000},
+						{"Custom...", -1}
+					};
+
+					ImGuiFullscreen::ChoiceDialogOptions size_choices;
+					std::vector<int> size_values;
+					for (const auto& [label, size] : size_options)
+					{
+						size_choices.emplace_back(label, false);
+						size_values.push_back(size);
+					}
+
+					OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_PLUS, "Select HDD Size"), false, std::move(size_choices),
+						[game_settings, size_values = std::move(size_values)](s32 size_index, const std::string& size_title, bool size_checked) {
+							if (size_index < 0)
+								return;
+
+							if (size_values[size_index] == -1)
+							{
+								CloseChoiceDialog();
+								
+								OpenInputStringDialog(
+									FSUI_ICONSTR(ICON_FA_PEN_TO_SQUARE, "Custom HDD Size"),
+									FSUI_STR("Enter custom HDD size in gigabytes (40-2000):"),
+									"40",
+									FSUI_ICONSTR(ICON_FA_CHECK, "Create"),
+									[game_settings](std::string input) {
+										if (input.empty())
+											return;
+										
+										std::optional<int> custom_size_opt = StringUtil::FromChars<int>(input);
+										if (!custom_size_opt.has_value())
+										{
+											ShowToast(std::string(), FSUI_STR("Invalid size. Please enter a number between 40 and 2000."));
+											return;
+										}
+										int custom_size_gb = custom_size_opt.value();
+										
+										if (custom_size_gb < 40 || custom_size_gb > 2000)
+										{
+											ShowToast(std::string(), FSUI_STR("HDD size must be between 40 GB and 2000 GB."));
+											return;
+										}
+										
+										const bool lba48 = (custom_size_gb > 120);
+										const std::string filename = fmt::format("DEV9hdd_{}GB_{}.raw", custom_size_gb, lba48 ? "LBA48" : "LBA28");
+										const std::string filepath = Path::Combine(EmuFolders::DataRoot, filename);
+										
+										if (FileSystem::FileExists(filepath.c_str()))
+										{
+											OpenConfirmMessageDialog(
+												FSUI_ICONSTR(ICON_FA_TRIANGLE_EXCLAMATION, "File Already Exists"),
+												fmt::format(FSUI_FSTR("HDD image '{}' already exists. Do you want to overwrite it?"), filename),
+												[filepath, custom_size_gb, lba48, game_settings](bool confirmed) {
+													if (confirmed)
+													{
+														auto lock = Host::GetSettingsLock();
+														SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+														bsi->SetStringValue("DEV9/Hdd", "HddFile", filepath.c_str());
+														SetSettingsChanged(bsi);
+														FullscreenUI::CreateHardDriveWithProgress(filepath, custom_size_gb, lba48);
+													}
+												});
+										}
+										else
+										{
+											auto lock = Host::GetSettingsLock();
+											SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+											bsi->SetStringValue("DEV9/Hdd", "HddFile", filepath.c_str());
+											SetSettingsChanged(bsi);
+											FullscreenUI::CreateHardDriveWithProgress(filepath, custom_size_gb, lba48);
+										}
+									});
+								return;
+							}
+
+							const int size_gb = size_values[size_index];
+							const bool lba48 = (size_gb > 120);
+							
+							const std::string filename = fmt::format("DEV9hdd_{}GB_{}.raw", size_gb, lba48 ? "LBA48" : "LBA28");
+							const std::string filepath = Path::Combine(EmuFolders::DataRoot, filename);
+							
+							if (FileSystem::FileExists(filepath.c_str()))
+							{
+								OpenConfirmMessageDialog(
+									FSUI_ICONSTR(ICON_FA_TRIANGLE_EXCLAMATION, "File Already Exists"),
+									fmt::format(FSUI_FSTR("HDD image '{}' already exists. Do you want to overwrite it?"), filename),
+									[filepath, size_gb, lba48, game_settings](bool confirmed) {
+										if (confirmed)
+										{
+											auto lock = Host::GetSettingsLock();
+											SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+											bsi->SetStringValue("DEV9/Hdd", "HddFile", filepath.c_str());
+											SetSettingsChanged(bsi);
+											FullscreenUI::CreateHardDriveWithProgress(filepath, size_gb, lba48);
+										}
+									});
+							}
+							else
+							{
+								auto lock = Host::GetSettingsLock();
+								SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+								bsi->SetStringValue("DEV9/Hdd", "HddFile", filepath.c_str());
+								SetSettingsChanged(bsi);
+								FullscreenUI::CreateHardDriveWithProgress(filepath, size_gb, lba48);
+							}
+							
+							CloseChoiceDialog();
+						});
+				}
+				else
+				{
+					auto lock = Host::GetSettingsLock();
+					SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+					bsi->SetStringValue("DEV9/Hdd", "HddFile", values[index].c_str());
+					SetSettingsChanged(bsi);
+					CloseChoiceDialog();
+				}
+			});
+	}
 
 	EndMenuButtons();
 }
