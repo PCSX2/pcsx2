@@ -3690,7 +3690,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 		s_osd_position_options, s_osd_position_values, std::size(s_osd_position_options), true);
 
 	MenuHeading(FSUI_CSTR("Operations"));
-	if (MenuButton(FSUI_ICONSTR(ICON_FA_DUMPSTER_FIRE, "Reset Settings"),
+	if (MenuButton(FSUI_ICONSTR(u8"🔥", "Reset Settings"),
 			FSUI_CSTR("Resets configuration to defaults (excluding controller settings)."), !IsEditingGameSettings(bsi)))
 	{
 		DoResetSettings();
@@ -4874,7 +4874,7 @@ void FullscreenUI::DoSaveInputProfile()
 
 void FullscreenUI::DoResetSettings()
 {
-	OpenConfirmMessageDialog(FSUI_ICONSTR(ICON_FA_DUMPSTER_FIRE, "Reset Settings"),
+	OpenConfirmMessageDialog(FSUI_ICONSTR(u8"🔥", "Reset Settings"),
 		FSUI_STR("Are you sure you want to restore the default settings? Any preferences will be lost."), [](bool result) {
 			if (result)
 			{
@@ -4902,7 +4902,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 		DoSaveInputProfile();
 	}
 
-	if (MenuButton(FSUI_ICONSTR(ICON_FA_DUMPSTER_FIRE, "Reset Settings"),
+	if (MenuButton(FSUI_ICONSTR(u8"🔥", "Reset Settings"),
 			FSUI_CSTR("Resets all configuration to defaults (including bindings).")))
 	{
 		ResetControllerSettings();
