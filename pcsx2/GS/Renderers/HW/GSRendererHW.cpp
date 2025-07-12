@@ -12,6 +12,9 @@
 #include "common/StringUtil.h"
 #include <bit>
 
+int provokingFirstVertexFixes = 0;
+int provokingTotal;
+
 GSRendererHW::GSRendererHW()
 	: GSRenderer()
 {
@@ -211,6 +214,7 @@ GSTexture* GSRendererHW::GetFeedbackOutput(float& scale)
 	return t;
 }
 
+// FIXME: Shouldn't this be called Sprites 2 Triangles?
 void GSRendererHW::Lines2Sprites()
 {
 	pxAssert(m_vt.m_primclass == GS_SPRITE_CLASS);
@@ -4791,21 +4795,10 @@ bool GSRendererHW::VerifyIndices()
 				return false;
 			// Expect each line to be a pair next to each other
 			// VS expand relies on this!
-			if (g_gs_device->Features().provoking_vertex_last)
+			for (u32 i = 0; i < m_index.tail; i += 2)
 			{
-				for (u32 i = 0; i < m_index.tail; i += 2)
-				{
-					if (m_index.buff[i] + 1 != m_index.buff[i + 1])
-						return false;
-				}
-			}
-			else
-			{
-				for (u32 i = 0; i < m_index.tail; i += 2)
-				{
-					if (m_index.buff[i] != m_index.buff[i + 1] + 1)
-						return false;
-				}
+				if (m_index.buff[i] + 1 != m_index.buff[i + 1])
+					return false;
 			}
 			break;
 		case GS_TRIANGLE_CLASS:
@@ -4816,6 +4809,56 @@ bool GSRendererHW::VerifyIndices()
 			break;
 	}
 	return true;
+}
+
+// Fix the colors in vertices in case the API only supports "provoking firt vertex"
+// (i.e., when using flat shading the color comes form the first vertex, unlike PS2
+//  which is "provoking last vertex").
+void GSRendererHW::HandleProvokingVertexFirst()
+{
+	provokingTotal++; // FIXME: FOR TESTING; REMOVE
+
+	// Early exit conditions:
+	if (g_gs_device->Features().provoking_vertex_last || // device supports provoking last vertex
+		m_conf.vs.iip ||                                   // we are doing Gouraud shading
+		m_vt.m_primclass == GS_POINT_CLASS ||              // drawing points (one vertex per primitive; color is unambiguous)
+		m_vt.m_primclass == GS_SPRITE_CLASS)               // drawing sprites (handled by the sprites -> triangles expand shader)
+		return;
+
+	const int n = GSUtil::GetClassVertexCount(m_vt.m_primclass);
+
+	// If all first/last vertices have the same color there is nothing to do.
+	bool first_eq_last = true;
+	for (u32 i = 0; i < m_index.tail; i += n)
+	{
+		if (m_vertex.buff[m_index.buff[i]].RGBAQ.U32[0] != m_vertex.buff[m_index.buff[i + n - 1]].RGBAQ.U32[0])
+		{
+			first_eq_last = false;
+			break;
+		}
+	}
+	if (first_eq_last)
+		return;
+
+	// De-index the vertices using the scratch buffer
+	while (m_vertex.maxcount < m_index.tail)
+		GrowVertexBuffer();
+	for (int i = static_cast<int>(m_index.tail) - 1; i >= 0; i--)
+	{
+		m_vertex.buff2[i] = m_vertex.buff[m_index.buff[i]];
+		m_index.buff[i] = static_cast<u16>(i);
+	}
+	std::swap(m_vertex.buff, m_vertex.buff2);
+	m_vertex.head = m_vertex.next = m_vertex.tail = m_index.tail;
+
+	// Put correct color in the first vertex
+	for (u32 i = 0; i < m_index.tail; i += n)
+	{
+		m_vertex.buff[i].RGBAQ.U32[0] = m_vertex.buff[i + n - 1].RGBAQ.U32[0];
+		m_vertex.buff[i + n - 1].RGBAQ.U32[0] = 0xff; // Make last vertex red for debugging if used improperly
+	}
+
+	provokingFirstVertexFixes++; // FIXME: FOR TESTING; REMOVE
 }
 
 void GSRendererHW::SetupIA(float target_scale, float sx, float sy, bool req_vert_backup)
@@ -7898,6 +7941,8 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 
 	m_conf.drawarea = m_channel_shuffle ? scissor : scissor.rintersect(ComputeBoundingBox(rtsize, rtscale));
 	m_conf.scissor = (DATE && !DATE_BARRIER) ? m_conf.drawarea : scissor;
+
+	HandleProvokingVertexFirst();
 
 	SetupIA(rtscale, sx, sy, m_channel_shuffle_width != 0);
 
