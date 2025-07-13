@@ -28554,6 +28554,7 @@ SLES-55138:
   region: "PAL-E"
   gsHWFixes:
     halfPixelOffset: 2 # Corrects most vertical lines.
+    getSkipCount: "GSC_BlueTongueGames" # Mipmap rendering on CPU.
 SLES-55143:
   name: "The Chronicles of Narnia - Prince Caspian"
   name-sort: "Chronicles of Narnia, The - Prince Caspian"
@@ -72334,6 +72335,7 @@ SLUS-21732:
   region: "NTSC-U"
   gsHWFixes:
     halfPixelOffset: 2 # Corrects most vertical lines.
+    getSkipCount: "GSC_BlueTongueGames" # Mipmap rendering on CPU.
 SLUS-21733:
   name: "Sega Superstars Tennis"
   region: "NTSC-U"
