@@ -1054,8 +1054,14 @@ void EmuThread::updatePerformanceMetrics(bool force)
 
 		if (gfps != m_last_game_fps || force)
 		{
+			QString text;
+			if (gfps == 0)
+				text = tr("FPS: N/A");
+			else
+				text = tr("FPS: %1").arg(gfps, 0, 'f', 0);
+
 			QMetaObject::invokeMethod(g_main_window->getStatusFPSWidget(), "setText", Qt::QueuedConnection,
-				Q_ARG(const QString&, tr("FPS: %1").arg(gfps, 0, 'f', 0)));
+				Q_ARG(const QString&, text));
 			m_last_game_fps = gfps;
 		}
 
