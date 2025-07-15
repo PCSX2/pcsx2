@@ -3452,8 +3452,9 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 						continue;
 					}
 
-					// could be overwriting a double buffer, so if it's the second half of it, just reduce the size down to half.
-					if (((((t->UnwrappedEndBlock() + 1) - t->m_TEX0.TBP0) >> 1) + t->m_TEX0.TBP0) == dst->m_TEX0.TBP0 && dst->m_TEX0.TBW == t->m_TEX0.TBW)
+					// Could be overwriting a double buffer, so if it's the second half of it, just reduce the size down to half.
+					// Don't split/resize buffer when TBW is 0, textures wrap within a single page.
+					if (((((t->UnwrappedEndBlock() + 1) - t->m_TEX0.TBP0) >> 1) + t->m_TEX0.TBP0) == dst->m_TEX0.TBP0 && dst->m_TEX0.TBW == t->m_TEX0.TBW && dst->m_TEX0.TBW != 0)
 					{
 						GSVector4i new_valid = t->m_valid;
 						new_valid.w /= 2;
