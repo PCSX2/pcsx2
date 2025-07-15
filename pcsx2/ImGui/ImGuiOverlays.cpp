@@ -221,18 +221,16 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 			switch (PerformanceMetrics::GetInternalFPSMethod())
 			{
 				case PerformanceMetrics::InternalFPSMethod::GSPrivilegedRegister:
-					text.append_format("FPS: {:.2f} [P]", PerformanceMetrics::GetInternalFPS(),
-						PerformanceMetrics::GetFPS());
+					text.append_format("FPS: {:.2f} [P]", PerformanceMetrics::GetInternalFPS());
 					break;
 
 				case PerformanceMetrics::InternalFPSMethod::DISPFBBlit:
-					text.append_format("FPS: {:.2f} [B]", PerformanceMetrics::GetInternalFPS(),
-						PerformanceMetrics::GetFPS());
+					text.append_format("FPS: {:.2f} [B]", PerformanceMetrics::GetInternalFPS());
 					break;
 
 				case PerformanceMetrics::InternalFPSMethod::None:
 				default:
-					text.append_format("FPS: {:.2f}", PerformanceMetrics::GetFPS());
+					text.append("FPS: N/A");
 					break;
 			}
 			first = false;
