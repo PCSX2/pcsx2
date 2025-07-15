@@ -1329,7 +1329,8 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 				// If the BP is offset in to a page and the format does not match, trying to match up the correct position is very difficult since we don't swizzle.
 				// Tomb Raider Legends does a block level BP in PSMT8 over a C16 target, which is just a nightmare to get right.
 				// Baldurs Gate used to have this too, but now we can translate HW moves inside targets when the format matches.
-				if (((bp & (GS_BLOCKS_PER_PAGE - 1)) != (t->m_TEX0.TBP0 & (GS_BLOCKS_PER_PAGE))) && (bp & (GS_BLOCKS_PER_PAGE - 1)))
+				constexpr u32 addr_mask = GS_BLOCKS_PER_PAGE - 1;
+				if (((bp & addr_mask) != (t->m_TEX0.TBP0 & addr_mask)) && (bp & addr_mask))
 					continue;
 
 				const bool width_match = (std::max(64U, bw * 64U) >> GSLocalMemory::m_psm[psm].info.pageShiftX()) ==
