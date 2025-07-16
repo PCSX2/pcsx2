@@ -1,0 +1,60 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index bace076..bfb1c66 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -21,6 +21,10 @@ endif ()
+ 
+ find_package(Qt${APNG_QT_VERSION} REQUIRED COMPONENTS Core Gui)
+ 
++set(CMAKE_FIND_FRAMEWORK NEVER)
++find_package(PNG 1.6.40 REQUIRED)
++find_package(ZLIB REQUIRED)
++
+ add_subdirectory(src)
+ 
+ if(APNG_TESTS)
+diff --git a/cmake/FindZLib.cmake b/cmake/FindZLib.cmake
+deleted file mode 100644
+index f8e9220..0000000
+--- a/cmake/FindZLib.cmake
++++ /dev/null
+@@ -1 +0,0 @@
+-add_library(ZLIB::ZLIB ALIAS zlibstatic) # use our zlib
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 697df95..0e89371 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -1,2 +1 @@
+-add_subdirectory(3rdparty EXCLUDE_FROM_ALL)
+ add_subdirectory(plugins)
+diff --git a/src/plugins/imageformats/apng/CMakeLists.txt b/src/plugins/imageformats/apng/CMakeLists.txt
+index e1b3fd9..72164fb 100644
+--- a/src/plugins/imageformats/apng/CMakeLists.txt
++++ b/src/plugins/imageformats/apng/CMakeLists.txt
+@@ -14,13 +14,10 @@ target_sources(ApngImagePlugin PRIVATE ${APNG_SOURCES})
+ target_link_libraries(ApngImagePlugin PRIVATE 
+   Qt${APNG_QT_VERSION}::Core
+   Qt${APNG_QT_VERSION}::Gui
+-  png_static
+-  zlibstatic
++  PNG::PNG
++  ZLIB::ZLIB
+ )
+ 
+-get_target_property(_png_include png_static INCLUDE_DIRECTORIES)
+-target_include_directories(ApngImagePlugin PRIVATE ${_png_include})
+-
+ target_compile_definitions(ApngImagePlugin PRIVATE
+   QT_DEPRECATED_WARNINGS
+   QT_ASCII_CAST_WARNINGS
+@@ -31,3 +28,10 @@ set_target_properties(ApngImagePlugin PROPERTIES
+   LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/plugins/imageformats"
+   LIBRARY_OUTPUT_NAME qapng
+ )
++
++install(TARGETS ApngImagePlugin DESTINATION "plugins/imageformats")
++
++if(WIN32 AND MSVC)
++  set_target_properties(ApngImagePlugin PROPERTIES DEBUG_POSTFIX d)
++  install(FILES $<TARGET_PDB_FILE:ApngImagePlugin> DESTINATION "plugins/imageformats" OPTIONAL)
++endif()

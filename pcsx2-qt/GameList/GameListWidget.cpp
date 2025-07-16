@@ -374,7 +374,12 @@ void GameListWidget::setCustomBackground()
 	// Only try to create background if both 1. path and 2. setting are valid
 	if (!path.empty() && enabled)
 	{
-		QMovie* new_movie = new QMovie(QString::fromStdString(path), QByteArray(), this);
+		QMovie* new_movie;
+		if (Path::GetExtension(path) == "png")
+			// Use apng plugin
+			new_movie = new QMovie(QString::fromStdString(path), "apng" , this);
+		else
+			new_movie = new QMovie(QString::fromStdString(path), QByteArray(), this);
 		if (new_movie->isValid())
 			m_background_movie = new_movie;
 		else
