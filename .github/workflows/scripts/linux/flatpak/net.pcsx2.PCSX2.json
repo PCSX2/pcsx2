@@ -32,6 +32,8 @@
     "modules/23-kddockwidgets.json",
     "modules/24-plutovg.json",
     "modules/25-plutosvg.json",
+    "modules/26-libpng.json",
+    "modules/27-qtapng.json",
     {
       "name": "pcsx2",
       "buildsystem": "cmake-ninja",
@@ -45,6 +47,7 @@
         "cxxflags": "",
         "cxxflags-override": true,
         "config-opts": [
+          "-DCMAKE_PREFIX_PATH=\"${FLATPAK_DEST}\"",
           "-DCMAKE_BUILD_TYPE=Release",
           "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON",
           "-DCMAKE_C_COMPILER=/usr/lib/sdk/llvm18/bin/clang",
