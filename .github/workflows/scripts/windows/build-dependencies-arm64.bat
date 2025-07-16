@@ -48,7 +48,9 @@ set LIBJPEGTURBO=3.1.1
 set LIBPNG=1650
 set SDL=SDL3-3.2.22
 set QT=6.9.2
+set LIBPNGLONG=1.6.50
 set QTMINOR=6.9
+set QTAPNG=1.3.0
 set LZ4=1.10.0
 set WEBP=1.6.0
 set ZLIB=1.3.1
@@ -66,6 +68,7 @@ set SHADERC_SPIRVTOOLS=33e02568181e3312f49a3cf33df470bf96ef293a
 call :downloadfile "freetype-%FREETYPE%.tar.gz" https://sourceforge.net/projects/freetype/files/freetype2/%FREETYPE%/freetype-%FREETYPE%.tar.gz/download 5c3a8e78f7b24c20b25b54ee575d6daa40007a5f4eea2845861c3409b3021747 || goto error
 call :downloadfile "harfbuzz-%HARFBUZZ%.zip" https://github.com/harfbuzz/harfbuzz/archive/refs/tags/%HARFBUZZ%.zip 850cb5e38e21106c0abba86c5b73f8f74b9a32d7725505901d081080b0d3f0b3 || goto error
 call :downloadfile "lpng%LIBPNG%.zip" https://download.sourceforge.net/libpng/lpng1650.zip 4be6938313b08d5921f9dede13f2789b653c96f4f8595d92ff3f09c9320e51c7 || goto error
+call :downloadfile "lpng%LIBPNG%-apng.patch.gz" https://download.sourceforge.net/libpng-apng/libpng-%LIBPNGLONG%-apng.patch.gz 687ddc0c7cb128a3ea58e159b5129252537c27ede0c32a93f11f03127f0c0165 || goto error
 call :downloadfile "libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/%LIBJPEGTURBO%/libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" aadc97ea91f6ef078b0ae3a62bba69e008d9a7db19b34e4ac973b19b71b4217c || goto error
 call :downloadfile "libwebp-%WEBP%.tar.gz" "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-%WEBP%.tar.gz" e4ab7009bf0629fd11982d4c2aa83964cf244cffba7347ecd39019a9e38c4564 || goto error
 call :downloadfile "%SDL%.zip" "https://libsdl.org/release/%SDL%.zip" 3d60068b1e5c83c66bb14c325dfef46f8fcc380735b4591de6f5e7b9738929d1 || goto error
@@ -74,6 +77,7 @@ call :downloadfile "qtimageformats-everywhere-src-%QT%.zip" "https://download.qt
 call :downloadfile "qtsvg-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtsvg-everywhere-src-%QT%.zip" af80bb671ea0f66c0036ce7041a56b0e550fc94fb88d2c77b5b6a3e33e42139b || goto error
 call :downloadfile "qttools-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttools-everywhere-src-%QT%.zip" d2f4c7a4a12630e879702353f944f96a5d8e764771b5a5f04163334ad61b39db || goto error
 call :downloadfile "qttranslations-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttranslations-everywhere-src-%QT%.zip" 3e168d1b081ee3a2175fe1bd97ad03bb40fe7ce38a37e99923a19f0e7ec4d81c || goto error
+call :downloadfile "QtApng-%QTAPNG%.zip" "https://github.com/jurplel/QtApng/archive/refs/tags/%QTAPNG%.zip" 5176082cdd468047a7eb1ec1f106b032f57df207aa318d559b29606b00d159ac || goto error
 call :downloadfile "lz4-%LZ4%.zip" "https://github.com/lz4/lz4/archive/refs/tags/v%LZ4%.zip" 3224b4c80f351f194984526ef396f6079bd6332dd9825c72ac0d7a37b3cdc565 || goto error
 call :downloadfile "zlib%ZLIBSHORT%.zip" "https://zlib.net/zlib%ZLIBSHORT%.zip" 72af66d44fcc14c22013b46b814d5d2514673dda3d115e64b690c1ad636e7b17 || goto error
 call :downloadfile "zstd-%ZSTD%.zip" "https://github.com/facebook/zstd/archive/refs/tags/v%ZSTD%.zip" 7897bc5d620580d9b7cd3539c44b59d78f3657d33663fe97a145e07b4ebd69a4 || goto error
@@ -107,7 +111,10 @@ cd .. || goto error
 echo Building libpng...
 rmdir /S /Q "lpng%LIBPNG%"
 %SEVENZIP% x "lpng%LIBPNG%.zip" || goto error
+rem apng not in released libpng yet
+%SEVENZIP% x "lpng%LIBPNG%-apng.patch.gz" -aoa || goto error
 cd "lpng%LIBPNG%" || goto error
+%PATCH% -p1 < "../libpng-%LIBPNGLONG%-apng.patch" || goto error
 cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=ON -DBUILD_SHARED_LIBS=ON -DPNG_TESTS=OFF -DPNG_STATIC=OFF -DPNG_SHARED=ON -DPNG_TOOLS=OFF -B build -G Ninja || goto error
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
@@ -245,6 +252,22 @@ call "%INSTALLDIR%\bin\qt-configure-module.bat" .. -- %FORCEPDB% || goto error
 cmake --build . --parallel || goto error
 ninja install || goto error
 cd ..\.. || goto error
+
+if %DEBUG%==1 (
+  set QTAPNGBUILDSPEC=-DCMAKE_CONFIGURATION_TYPES="Release;Debug" -DCMAKE_CROSS_CONFIGS=all -DCMAKE_DEFAULT_BUILD_TYPE=Release -DCMAKE_DEFAULT_CONFIGS=all -G "Ninja Multi-Config"
+) else (
+  set QTAPNGBUILDSPEC=-DCMAKE_BUILD_TYPE=Release -G Ninja
+)
+
+echo Building Qt APNG...
+rmdir /S /Q "QtApng-%QTAPNG%"
+%SEVENZIP% x "QtApng-%QTAPNG%.zip" || goto error
+cd "QtApng-%QTAPNG%" || goto error
+%PATCH% -p1 < "%SCRIPTDIR%\..\common\qtapng-cmake.patch" || goto error
+cmake -B build -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" %FORCEPDB% %QTAPNGBUILDSPEC% || goto error
+cmake --build build --parallel || goto error
+ninja -C build install || goto error
+cd .. || goto error
 
 if %DEBUG%==1 (
   set KDDOCKWIDGETSBUILDSPEC=-DCMAKE_CONFIGURATION_TYPES="Release;Debug" -DCMAKE_CROSS_CONFIGS=all -DCMAKE_DEFAULT_BUILD_TYPE=Release -DCMAKE_DEFAULT_CONFIGS=all -G "Ninja Multi-Config"
