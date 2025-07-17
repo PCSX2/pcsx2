@@ -5672,66 +5672,71 @@ Do you want to overwrite?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1058"/>
+        <location filename="../QtHost.cpp" line="1059"/>
+        <source>FPS: N/A</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../QtHost.cpp" line="1061"/>
         <source>FPS: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1065"/>
+        <location filename="../QtHost.cpp" line="1071"/>
         <source>VPS: %1 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1071"/>
+        <location filename="../QtHost.cpp" line="1077"/>
         <source>Speed: %1% </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1126"/>
+        <location filename="../QtHost.cpp" line="1132"/>
         <source>Game: %1 (%2)
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1134"/>
+        <location filename="../QtHost.cpp" line="1140"/>
         <source>Rich presence inactive or unsupported.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1138"/>
+        <location filename="../QtHost.cpp" line="1144"/>
         <source>Game not loaded or no RetroAchievements available.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1557"/>
-        <location filename="../QtHost.cpp" line="1577"/>
-        <location filename="../QtHost.cpp" line="1585"/>
-        <location filename="../QtHost.cpp" line="1619"/>
+        <location filename="../QtHost.cpp" line="1563"/>
+        <location filename="../QtHost.cpp" line="1583"/>
+        <location filename="../QtHost.cpp" line="1591"/>
+        <location filename="../QtHost.cpp" line="1625"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1557"/>
+        <location filename="../QtHost.cpp" line="1563"/>
         <source>Failed to create HTTPDownloader.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1565"/>
+        <location filename="../QtHost.cpp" line="1571"/>
         <source>Downloading %1...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1578"/>
+        <location filename="../QtHost.cpp" line="1584"/>
         <source>Download failed with HTTP status code %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1586"/>
+        <location filename="../QtHost.cpp" line="1592"/>
         <source>Download failed: Data is empty.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1620"/>
+        <location filename="../QtHost.cpp" line="1626"/>
         <source>Failed to write &apos;%1&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15846,7 +15851,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1279"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1277"/>
         <source>Save slot {0} selected ({1}).</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15854,63 +15859,63 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
 <context>
     <name>ImGuiOverlays</name>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="825"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="823"/>
         <source>{} Recording Input</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="829"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="827"/>
         <source>{} Replaying</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="898"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="896"/>
         <source>Saved at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="925"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="923"/>
         <source>Save state selector is unavailable without a valid game serial.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1012"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1010"/>
         <source>Load</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1014"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1012"/>
         <source>Save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1016"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1014"/>
         <source>Select Previous</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1018"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1016"/>
         <source>Select Next</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1020"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1018"/>
         <source>Close Menu</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1073"/>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1095"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1071"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1093"/>
         <source>Save Slot {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1096"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1094"/>
         <source>No save present in this slot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1276"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1274"/>
         <source>no save yet</source>
         <translation type="unfinished"></translation>
     </message>
@@ -19833,45 +19838,45 @@ Ejecting {3} and replacing it with {2}.</source>
 <context>
     <name>QtHost</name>
     <message>
-        <location filename="../QtHost.cpp" line="1106"/>
+        <location filename="../QtHost.cpp" line="1112"/>
         <source>RA: Logged in as %1 (%2 pts, softcore: %3 pts). %4 unread messages.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1527"/>
-        <location filename="../QtHost.cpp" line="1542"/>
+        <location filename="../QtHost.cpp" line="1533"/>
+        <location filename="../QtHost.cpp" line="1548"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1528"/>
+        <location filename="../QtHost.cpp" line="1534"/>
         <source>An error occurred while deleting empty game settings:
 {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1543"/>
+        <location filename="../QtHost.cpp" line="1549"/>
         <source>An error occurred while saving game settings:
 {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1703"/>
+        <location filename="../QtHost.cpp" line="1709"/>
         <source>Controller {} connected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1716"/>
+        <location filename="../QtHost.cpp" line="1722"/>
         <source>System paused because controller {} was disconnected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1729"/>
+        <location filename="../QtHost.cpp" line="1735"/>
         <source>Controller {} disconnected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1957"/>
+        <location filename="../QtHost.cpp" line="1963"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
@@ -21087,7 +21092,7 @@ Rename it to {} to remove this warning.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/ThreadView.cpp" line="66"/>
+        <location filename="../Debugger/ThreadView.cpp" line="67"/>
         <source>Copy all as CSV</source>
         <translation type="unfinished"></translation>
     </message>
