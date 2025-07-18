@@ -16,6 +16,10 @@
 #include "wistd_functional.h"
 #include "wistd_memory.h"
 
+#if WIL_USE_STL
+#include <iterator>
+#endif
+
 #pragma warning(push)
 #pragma warning(disable : 26135 26110) // Missing locking annotation, Caller failing to hold lock
 #pragma warning(disable : 4714)        // __forceinline not honored
@@ -1004,7 +1008,8 @@ private:
 
     void call_init(wistd::true_type)
     {
-        RtlZeroMemory(this, sizeof(*this));
+        // Suppress '-Wnontrivial-memcall' with 'static_cast'
+        RtlZeroMemory(static_cast<void*>(this), sizeof(*this));
     }
 
     void call_init(wistd::false_type)
@@ -3717,6 +3722,14 @@ namespace details
     {
         ::HeapFree(::GetProcessHeap(), 0, p);
     }
+
+    struct heap_allocator
+    {
+        static _Ret_opt_bytecap_(size) void* allocate(size_t size) WI_NOEXCEPT
+        {
+            return ::HeapAlloc(::GetProcessHeap(), HEAP_ZERO_MEMORY, size);
+        }
+    };
 } // namespace details
 /// @endcond
 
@@ -3746,25 +3759,6 @@ struct mapview_deleter
         ::UnmapViewOfFile(p);
     }
 };
-
-template <typename T = void>
-using unique_process_heap_ptr = wistd::unique_ptr<details::ensure_trivially_destructible_t<T>, process_heap_deleter>;
-
-typedef unique_any<PWSTR, decltype(&details::FreeProcessHeap), details::FreeProcessHeap> unique_process_heap_string;
-
-/// @cond
-namespace details
-{
-    template <>
-    struct string_allocator<unique_process_heap_string>
-    {
-        static _Ret_opt_bytecap_(size) void* allocate(size_t size) WI_NOEXCEPT
-        {
-            return ::HeapAlloc(::GetProcessHeap(), HEAP_ZERO_MEMORY, size);
-        }
-    };
-} // namespace details
-/// @endcond
 
 /** Manages a typed pointer allocated with VirtualAlloc
 A specialization of wistd::unique_ptr<> that frees via VirtualFree(p, 0, MEM_RELEASE).
@@ -4060,6 +4054,93 @@ typedef weak_any<shared_hfind_change> weak_hfind_change;
 #endif
 
 #endif // __WIL_WINBASE_STL
+
+#if (defined(_HEAPAPI_H_) && !defined(__WIL__WIL_HEAP_API) && WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM | WINAPI_PARTITION_GAMES) && !defined(WIL_KERNEL_MODE)) || \
+    defined(WIL_DOXYGEN)
+/// @cond
+#define __WIL__WIL_HEAP_API
+/// @endcond
+
+template <typename T = void>
+using unique_process_heap_ptr = wistd::unique_ptr<details::ensure_trivially_destructible_t<T>, process_heap_deleter>;
+typedef unique_any<void*, decltype(&details::FreeProcessHeap), details::FreeProcessHeap> unique_process_heap;
+typedef unique_any<PWSTR, decltype(&details::FreeProcessHeap), details::FreeProcessHeap> unique_process_heap_string;
+
+#ifndef WIL_NO_ANSI_STRINGS
+typedef unique_any<PSTR, decltype(&wil::details::FreeProcessHeap), wil::details::FreeProcessHeap> unique_process_heap_ansistring;
+#endif // WIL_NO_ANSI_STRINGS
+
+/// @cond
+namespace details
+{
+    template <>
+    struct string_allocator<wil::unique_process_heap_string> : heap_allocator
+    {
+    };
+
+#ifndef WIL_NO_ANSI_STRINGS
+    template <>
+    struct string_allocator<unique_process_heap_ansistring> : heap_allocator
+    {
+    };
+#endif
+} // namespace details
+/// @endcond
+
+inline auto make_process_heap_string_nothrow(
+    _When_((source != nullptr) && length != static_cast<size_t>(-1), _In_reads_(length))
+        _When_((source != nullptr) && length == static_cast<size_t>(-1), _In_z_) PCWSTR source,
+    size_t length = static_cast<size_t>(-1)) WI_NOEXCEPT
+{
+    return make_unique_string_nothrow<unique_process_heap_string>(source, length);
+}
+
+inline auto make_process_heap_string_failfast(
+    _When_((source != nullptr) && length != static_cast<size_t>(-1), _In_reads_(length))
+        _When_((source != nullptr) && length == static_cast<size_t>(-1), _In_z_) PCWSTR source,
+    size_t length = static_cast<size_t>(-1)) WI_NOEXCEPT
+{
+    return make_unique_string_failfast<unique_process_heap_string>(source, length);
+}
+
+#ifndef WIL_NO_ANSI_STRINGS
+inline auto make_process_heap_ansistring_nothrow(
+    _When_((source != nullptr) && length != static_cast<size_t>(-1), _In_reads_(length))
+        _When_((source != nullptr) && length == static_cast<size_t>(-1), _In_z_) PCSTR source,
+    size_t length = static_cast<size_t>(-1)) WI_NOEXCEPT
+{
+    return make_unique_ansistring_nothrow<unique_process_heap_ansistring>(source, length);
+}
+
+inline auto make_process_heap_ansistring_failfast(
+    _When_((source != nullptr) && length != static_cast<size_t>(-1), _In_reads_(length))
+        _When_((source != nullptr) && length == static_cast<size_t>(-1), _In_z_) PCSTR source,
+    size_t length = static_cast<size_t>(-1)) WI_NOEXCEPT
+{
+    return make_unique_ansistring_failfast<unique_process_heap_ansistring>(source, length);
+}
+#endif // WIL_NO_ANSI_STRINGS
+
+#ifdef WIL_ENABLE_EXCEPTIONS
+inline auto make_process_heap_string(
+    _When_((source != nullptr) && length != static_cast<size_t>(-1), _In_reads_(length))
+        _When_((source != nullptr) && length == static_cast<size_t>(-1), _In_z_) PCWSTR source,
+    size_t length = static_cast<size_t>(-1))
+{
+    return make_unique_string<unique_process_heap_string>(source, length);
+}
+
+#ifndef WIL_NO_ANSI_STRINGS
+inline auto make_process_heap_ansistring(
+    _When_((source != nullptr) && length != static_cast<size_t>(-1), _In_reads_(length))
+        _When_((source != nullptr) && length == static_cast<size_t>(-1), _In_z_) PCSTR source,
+    size_t length = static_cast<size_t>(-1))
+{
+    return make_unique_ansistring<unique_process_heap_ansistring>(source, length);
+}
+#endif // WIL_NO_ANSI_STRINGS
+#endif // WIL_ENABLE_EXCEPTIONS
+#endif // _HEAPAPI_H_
 
 #if (defined(__WIL_WINBASE_) && defined(__NOTHROW_T_DEFINED) && !defined(__WIL_WINBASE_NOTHROW_T_DEFINED_STL) && defined(WIL_RESOURCE_STL) && WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)) || \
     defined(WIL_DOXYGEN)
@@ -4507,32 +4588,6 @@ namespace details
     };
 } // namespace details
 /// @endcond
-
-inline auto make_process_heap_string_nothrow(
-    _When_((source != nullptr) && length != static_cast<size_t>(-1), _In_reads_(length))
-        _When_((source != nullptr) && length == static_cast<size_t>(-1), _In_z_) PCWSTR source,
-    size_t length = static_cast<size_t>(-1)) WI_NOEXCEPT
-{
-    return make_unique_string_nothrow<unique_process_heap_string>(source, length);
-}
-
-inline auto make_process_heap_string_failfast(
-    _When_((source != nullptr) && length != static_cast<size_t>(-1), _In_reads_(length))
-        _When_((source != nullptr) && length == static_cast<size_t>(-1), _In_z_) PCWSTR source,
-    size_t length = static_cast<size_t>(-1)) WI_NOEXCEPT
-{
-    return make_unique_string_failfast<unique_process_heap_string>(source, length);
-}
-
-#ifdef WIL_ENABLE_EXCEPTIONS
-inline auto make_process_heap_string(
-    _When_((source != nullptr) && length != static_cast<size_t>(-1), _In_reads_(length))
-        _When_((source != nullptr) && length == static_cast<size_t>(-1), _In_z_) PCWSTR source,
-    size_t length = static_cast<size_t>(-1))
-{
-    return make_unique_string<unique_process_heap_string>(source, length);
-}
-#endif // WIL_ENABLE_EXCEPTIONS
 
 typedef unique_any_handle_null<decltype(&::HeapDestroy), ::HeapDestroy> unique_hheap;
 typedef unique_any<DWORD, decltype(&::TlsFree), ::TlsFree, details::pointer_access_all, DWORD, DWORD, TLS_OUT_OF_INDEXES, DWORD> unique_tls;
@@ -7296,7 +7351,7 @@ namespace details
 
         struct iterator
         {
-#if defined(_XUTILITY_) || defined(WIL_DOXYGEN)
+#if WIL_USE_STL || defined(WIL_DOXYGEN)
             // muse be input_iterator_tag as use of one instance invalidates the other.
             typedef ::std::input_iterator_tag iterator_category;
 #endif

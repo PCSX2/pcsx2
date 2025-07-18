@@ -182,7 +182,7 @@ namespace __function
     }
 
     template <class _Ret, class _Class>
-    __WI_LIBCPP_INLINE_VISIBILITY bool __not_null(_Ret _Class::*__ptr)
+    __WI_LIBCPP_INLINE_VISIBILITY bool __not_null(_Ret _Class::* __ptr)
     {
         return __ptr;
     }

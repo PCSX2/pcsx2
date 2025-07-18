@@ -1,5 +1,5 @@
 /* Sha256.h -- SHA-256 Hash
-2023-04-02 : Igor Pavlov : Public domain */
+: Igor Pavlov : Public domain */
 
 #ifndef ZIP7_INC_SHA256_H
 #define ZIP7_INC_SHA256_H
@@ -13,6 +13,9 @@ EXTERN_C_BEGIN
 
 #define SHA256_BLOCK_SIZE   (SHA256_NUM_BLOCK_WORDS * 4)
 #define SHA256_DIGEST_SIZE  (SHA256_NUM_DIGEST_WORDS * 4)
+
+
+
 
 typedef void (Z7_FASTCALL *SHA256_FUNC_UPDATE_BLOCKS)(UInt32 state[8], const Byte *data, size_t numBlocks);
 
@@ -32,9 +35,16 @@ typedef void (Z7_FASTCALL *SHA256_FUNC_UPDATE_BLOCKS)(UInt32 state[8], const Byt
 
 typedef struct
 {
-  SHA256_FUNC_UPDATE_BLOCKS func_UpdateBlocks;
-  UInt64 count;
-  UInt64 _pad_2[2];
+  union
+  {
+    struct
+    {
+      SHA256_FUNC_UPDATE_BLOCKS func_UpdateBlocks;
+      UInt64 count;
+    } vars;
+    UInt64 _pad_64bit[4];
+    void *_pad_align_ptr[2];
+  } v;
   UInt32 state[SHA256_NUM_DIGEST_WORDS];
 
   Byte buffer[SHA256_BLOCK_SIZE];

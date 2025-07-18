@@ -371,27 +371,29 @@ void GSDumpReplayer::RenderUI()
 	float position_y = margin;
 
 	ImDrawList* dl = ImGui::GetBackgroundDrawList();
-	ImFont* font = ImGuiManager::GetFixedFont();
+	ImFont* const font = ImGuiManager::GetFixedFont();
+	const float font_size = ImGuiManager::GetFontSizeStandard();
+
 	std::string text;
 	ImVec2 text_size;
 	text.reserve(128);
 
-#define DRAW_LINE(font, text, color) \
+#define DRAW_LINE(font, size, text, color) \
 	do \
 	{ \
-		text_size = font->CalcTextSizeA(font->FontSize, std::numeric_limits<float>::max(), -1.0f, (text), nullptr, nullptr); \
+		text_size = font->CalcTextSizeA(size, std::numeric_limits<float>::max(), -1.0f, (text), nullptr, nullptr); \
 		const ImVec2 text_pos = CalculatePerformanceOverlayTextPosition(GSConfig.OsdMessagesPos, margin, text_size, ImGuiManager::GetWindowWidth(), position_y); \
-		dl->AddText(font, font->FontSize, ImVec2(text_pos.x + shadow_offset, text_pos.y + shadow_offset), IM_COL32(0, 0, 0, 100), (text)); \
-		dl->AddText(font, font->FontSize, text_pos, color, (text)); \
+		dl->AddText(font, size, ImVec2(text_pos.x + shadow_offset, text_pos.y + shadow_offset), IM_COL32(0, 0, 0, 100), (text)); \
+		dl->AddText(font, size, text_pos, color, (text)); \
 		position_y += text_size.y + spacing; \
 	} while (0)
 
 	fmt::format_to(std::back_inserter(text), "Dump Frame: {}", s_dump_frame_number);
-	DRAW_LINE(font, text.c_str(), IM_COL32(255, 255, 255, 255));
+	DRAW_LINE(font, font_size, text.c_str(), IM_COL32(255, 255, 255, 255));
 
 	text.clear();
 	fmt::format_to(std::back_inserter(text), "Packet Number: {}/{}", s_current_packet, static_cast<u32>(s_dump_file->GetPackets().size()));
-	DRAW_LINE(font, text.c_str(), IM_COL32(255, 255, 255, 255));
+	DRAW_LINE(font, font_size, text.c_str(), IM_COL32(255, 255, 255, 255));
 
 #undef DRAW_LINE
 }

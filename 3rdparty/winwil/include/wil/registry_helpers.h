@@ -13,9 +13,17 @@
 #ifndef __WIL_REGISTRY_HELPERS_INCLUDED
 #define __WIL_REGISTRY_HELPERS_INCLUDED
 
-#if defined(_STRING_) || defined(_VECTOR_) || (defined(__cpp_lib_optional) && defined(_OPTIONAL_)) || defined(WIL_DOXYGEN)
+#include "common.h"
+
+#if WIL_USE_STL
 #include <functional>
 #include <iterator>
+#include <string>
+#include <vector>
+
+#if (__WI_LIBCPP_STD_VER >= 17) && WI_HAS_INCLUDE(<optional>, 1) // Assume present if C++17 or later
+#include <optional>
+#endif
 #endif
 
 #include <stdint.h>
@@ -142,7 +150,7 @@ namespace reg
             }
         }
 
-#if defined(_VECTOR_) && defined(_STRING_) && defined(WIL_ENABLE_EXCEPTIONS)
+#if (WIL_USE_STL && defined(WIL_ENABLE_EXCEPTIONS)) || defined(WIL_DOXYGEN)
         /**
          * @brief A translation function taking iterators referencing std::wstring objects and returns a corresponding
          *        std::vector<wchar_t> to be written to a MULTI_SZ registry value. The translation follows the rules for how
@@ -203,7 +211,7 @@ namespace reg
             });
             return strings;
         }
-#endif // #if defined(_VECTOR_) && defined(_STRING_) && defined(WIL_ENABLE_EXCEPTIONS)
+#endif
 
 #if defined(__WIL_OBJBASE_H_)
         template <size_t C>
@@ -442,7 +450,7 @@ namespace reg
                 return static_cast<DWORD>((::wcslen(value) + 1) * sizeof(wchar_t));
             }
 
-#if defined(_VECTOR_) && defined(WIL_ENABLE_EXCEPTIONS)
+#if (WIL_USE_STL && defined(WIL_ENABLE_EXCEPTIONS)) || defined(WIL_DOXYGEN)
             inline void* get_buffer(const ::std::vector<uint8_t>& buffer) WI_NOEXCEPT
             {
                 return const_cast<uint8_t*>(buffer.data());
@@ -517,9 +525,9 @@ namespace reg
                 }
                 return S_OK;
             }
-#endif // #if defined(_VECTOR_) && defined(WIL_ENABLE_EXCEPTIONS)
+#endif
 
-#if defined(_STRING_) && defined(WIL_ENABLE_EXCEPTIONS)
+#if (WIL_USE_STL && defined(WIL_ENABLE_EXCEPTIONS)) || defined(WIL_DOXYGEN)
             inline void* get_buffer(const ::std::wstring& string) WI_NOEXCEPT
             {
                 return const_cast<wchar_t*>(string.data());
@@ -575,7 +583,7 @@ namespace reg
                 }
                 return buffer.size();
             }
-#endif // #if defined(_STRING_) && defined(WIL_ENABLE_EXCEPTIONS)
+#endif
 
 #if defined(__WIL_OLEAUTO_H_)
             inline void* get_buffer(const BSTR& value) WI_NOEXCEPT
@@ -972,7 +980,7 @@ namespace reg
                 return REG_SZ;
             }
 
-#if defined(_STRING_) && defined(WIL_ENABLE_EXCEPTIONS)
+#if (WIL_USE_STL && defined(WIL_ENABLE_EXCEPTIONS)) || defined(WIL_DOXYGEN)
             template <>
             constexpr DWORD get_value_type<::std::wstring>() WI_NOEXCEPT
             {
@@ -984,7 +992,7 @@ namespace reg
             {
                 return REG_SZ;
             }
-#endif // #if defined(_STRING_) && defined(WIL_ENABLE_EXCEPTIONS)
+#endif
 
 #if defined(__WIL_OLEAUTO_H_)
             template <>
@@ -1052,7 +1060,7 @@ namespace reg
             {
                 return REG_SZ;
             }
-#endif    // #if defined(__WIL_OBJBASE_H_STL)
+#endif // #if defined(__WIL_OBJBASE_H_STL)
         } // namespace reg_value_type_info
 
         template <typename err_policy = ::wil::err_exception_policy>
@@ -1129,7 +1137,7 @@ namespace reg
                 return err_policy::HResult(hr);
             }
 
-#if defined(_OPTIONAL_) && defined(__cpp_lib_optional)
+#if (WIL_USE_STL && (__cpp_lib_optional >= 201606L)) || defined(WIL_DOXYGEN)
             // intended for err_exception_policy as err_returncode_policy will not get an error code
             template <typename R>
             ::std::optional<R> try_get_value(
@@ -1151,7 +1159,7 @@ namespace reg
                 err_policy::HResult(hr);
                 return ::std::nullopt;
             }
-#endif // #if defined (_OPTIONAL_) && defined(__cpp_lib_optional)
+#endif
 
             template <typename R>
             typename err_policy::result set_value(
@@ -1286,8 +1294,8 @@ namespace reg
 #if defined(WIL_ENABLE_EXCEPTIONS)
         using reg_view = ::wil::reg::reg_view_details::reg_view_t<::wil::err_exception_policy>;
 #endif // #if defined(WIL_ENABLE_EXCEPTIONS)
-    }  // namespace reg_view_details
-       /// @endcond
+    } // namespace reg_view_details
+      /// @endcond
 
     /// @cond
     namespace reg_iterator_details
@@ -1313,7 +1321,7 @@ namespace reg
         }
 #endif // #if defined(__WIL_WINREG_STL)
 
-#if defined(WIL_ENABLE_EXCEPTIONS) && defined(_STRING_)
+#if (WIL_USE_STL && defined(WIL_ENABLE_EXCEPTIONS)) || defined(WIL_DOXYGEN)
         // overloads for some of the below string functions - specific for std::wstring
         // these overloads must be declared before the template functions below, as some of those template functions
         // reference these overload functions
@@ -1340,7 +1348,7 @@ namespace reg
         {
             return !name.empty();
         }
-#endif // #if defined(WIL_ENABLE_EXCEPTIONS) && defined(_STRING_)
+#endif
 
         // string manipulation functions needed for iterator functions
         template <typename T>
@@ -1418,8 +1426,8 @@ namespace reg
             return ::wil::unique_bstr{::SysAllocStringLen(name.get(), static_cast<UINT>(length))};
         }
 #endif // #if defined(__WIL_OLEAUTO_H_)
-    }  // namespace reg_iterator_details
-       /// @endcond
+    } // namespace reg_iterator_details
+      /// @endcond
 
     // forward declaration to allow friend-ing the template iterator class
 #if defined(WIL_ENABLE_EXCEPTIONS)
@@ -1730,7 +1738,7 @@ namespace reg
         // Notice this is a forward_iterator
         // - does not support random-access (e.g. vector::iterator)
         // - does not support bidirectional access (e.g. list::iterator)
-#if defined(_ITERATOR_) || defined(WIL_DOXYGEN)
+#if WIL_USE_STL || defined(WIL_DOXYGEN)
         using iterator_category = ::std::forward_iterator_tag;
 #endif
         using value_type = T;

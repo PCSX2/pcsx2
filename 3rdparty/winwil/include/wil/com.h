@@ -16,12 +16,13 @@
 #include <WeakReference.h>
 #include <combaseapi.h>
 #include "result.h"
+#include "win32_helpers.h"
 #include "resource.h" // last to ensure _COMBASEAPI_H_ protected definitions are available
 
-#if __has_include(<tuple>)
+#if WIL_USE_STL && WI_HAS_INCLUDE(<tuple>, 1) // Tuple is C++11... assume available
 #include <tuple>
 #endif
-#if __has_include(<type_traits>)
+#if WIL_USE_STL && WI_HAS_INCLUDE(<type_traits>, 1) // Type traits is old... assume available
 #include <type_traits>
 #endif
 
@@ -2112,7 +2113,7 @@ wil::com_ptr_nothrow<Interface> CoGetClassObjectNoThrow(DWORD dwClsContext = CLS
     return CoGetClassObjectNoThrow<Interface>(__uuidof(Class), dwClsContext);
 }
 
-#if __cpp_lib_apply && __has_include(<type_traits>)
+#if __cpp_lib_apply && WIL_USE_STL && WI_HAS_INCLUDE(<type_traits>, 1)
 /// @cond
 namespace details
 {
@@ -2246,7 +2247,7 @@ auto try_com_multi_query(IUnknown* obj)
 }
 #endif
 
-#endif // __cpp_lib_apply && __has_include(<type_traits>)
+#endif // __cpp_lib_apply && WI_HAS_INCLUDE(<type_traits>, 1)
 
 #pragma endregion
 
@@ -3135,8 +3136,7 @@ void for_each_site(_In_opt_ IUnknown* siteInput, TLambda&& callback)
 
 #endif // __IObjectWithSite_INTERFACE_DEFINED__
 
-// if C++17 or greater
-#if WIL_HAS_CXX_17
+#if __cpp_deduction_guides >= 201703L
 #ifdef WIL_ENABLE_EXCEPTIONS
 /// @cond
 namespace details
@@ -3303,14 +3303,14 @@ WI_NODISCARD auto make_range(IEnumXxx* enumPtr)
 
         using enumerator_type = com_iterator<TActualStoredType, IEnumXxx>;
 
-        IEnumXxx* m_enumerator{};
+        wil::com_ptr<IEnumXxx> m_enumerator{};
         iterator_range(IEnumXxx* enumPtr) : m_enumerator(enumPtr)
         {
         }
 
         WI_NODISCARD auto begin()
         {
-            return enumerator_type(m_enumerator);
+            return enumerator_type(m_enumerator.get());
         }
 
         WI_NODISCARD constexpr auto end() const noexcept
@@ -3322,8 +3322,130 @@ WI_NODISCARD auto make_range(IEnumXxx* enumPtr)
     return iterator_range(enumPtr);
 }
 
-#endif // WIL_HAS_CXX_17
+template <typename TEnum, typename = wistd::enable_if_t<wil::details::has_next_v<TEnum*>>>
+auto make_range(const wil::com_ptr<TEnum>& e)
+{
+    using Enumerated = typename wil::details::com_enumerator_traits<TEnum>::smart_result;
+    return wil::make_range<Enumerated>(e.get());
+}
+
+#ifdef __IShellItemArray_INTERFACE_DEFINED__
+inline auto make_range(IShellItemArray* sia)
+{
+    wil::com_ptr<IEnumShellItems> enumShellItems;
+    THROW_IF_FAILED(sia->EnumItems(&enumShellItems));
+    return make_range(enumShellItems);
+}
+
+inline auto make_range(const wil::com_ptr<IShellItemArray>& sia)
+{
+    return make_range(sia.get());
+}
+#endif // __IShellItemArray_INTERFACE_DEFINED__
+
+#endif // __cpp_deduction_guides >= 201703L
 #endif // WIL_ENABLE_EXCEPTIONS
+
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
+
+namespace details
+{
+    inline void CoDisableCallCancellationNull()
+    {
+        (void)::CoDisableCallCancellation(nullptr);
+    }
+} // namespace details
+
+/** RAII support for making cross-apartment (or cross process) COM calls with a timeout applied to them.
+ * When this is active any timed out calls will fail with an RPC error code such as RPC_E_CALL_CANCELED.
+ * This is a shared timeout that applies to all calls made on the current thread for the lifetime of
+ * the wil::com_timeout object.
+ * A periodic timer is used to cancel calls that have been blocked too long.  If multiple blocking calls
+ * are made, and multiple are timing out, then there may be a total delay of (timeoutInMilliseconds * N)
+ * where N is the number of calls.
+~~~
+{
+  auto timeout = wil::com_timeout(5000);
+  remote_object->BlockingCOMCall();
+  remote_object->AnotherBlockingCOMCall();
+}
+~~~
+*/
+template <typename err_policy>
+class com_timeout_t
+{
+public:
+    com_timeout_t(DWORD timeoutInMilliseconds) : m_threadId(GetCurrentThreadId())
+    {
+        const HRESULT cancelEnablementResult = CoEnableCallCancellation(nullptr);
+        err_policy::HResult(cancelEnablementResult);
+        if (SUCCEEDED(cancelEnablementResult))
+        {
+            m_ensureDisable.activate();
+
+            m_timer.reset(CreateThreadpoolTimer(&com_timeout_t::timer_callback, this, nullptr));
+            err_policy::LastErrorIfFalse(static_cast<bool>(m_timer));
+            if (m_timer)
+            {
+                FILETIME ft = filetime::get_system_time();
+                ft = filetime::add(ft, filetime::convert_msec_to_100ns(timeoutInMilliseconds));
+                SetThreadpoolTimer(m_timer.get(), &ft, timeoutInMilliseconds, 0);
+            }
+        }
+    }
+
+    bool timed_out() const
+    {
+        return m_timedOut;
+    }
+
+    operator bool() const noexcept
+    {
+        // All construction calls must succeed to provide us with a non-null m_timer value.
+        return static_cast<bool>(m_timer);
+    }
+
+private:
+    // Disable use of new as this class should only be declared on the stack, never the heap.
+    void* operator new(size_t) = delete;
+    void* operator new[](size_t) = delete;
+
+    // not copyable or movable because the timer_callback receives "this"
+    com_timeout_t(com_timeout_t const&) = delete;
+    void operator=(com_timeout_t const&) = delete;
+
+    static void __stdcall timer_callback(PTP_CALLBACK_INSTANCE /*instance*/, PVOID context, PTP_TIMER /*timer*/)
+    {
+        // The timer is waited upon during destruction so it is safe to rely on the this pointer in context.
+        com_timeout_t* self = static_cast<com_timeout_t*>(context);
+        if (SUCCEEDED(CoCancelCall(self->m_threadId, 0)))
+        {
+            self->m_timedOut = true;
+        }
+    }
+
+    wil::unique_call<decltype(&details::CoDisableCallCancellationNull), details::CoDisableCallCancellationNull, false> m_ensureDisable{};
+    DWORD m_threadId{};
+    bool m_timedOut{};
+
+    // The threadpool timer goes last so that it destructs first, waiting until the timer callback has completed.
+    wil::unique_threadpool_timer_nocancel m_timer;
+};
+
+// Error-policy driven forms of com_timeout
+
+#ifdef WIL_ENABLE_EXCEPTIONS
+//! COM timeout, errors throw exceptions (see @ref com_timeout_t for details)
+using com_timeout = com_timeout_t<err_exception_policy>;
+#endif
+
+//! COM timeout, errors return error codes (see @ref com_timeout_t for details)
+using com_timeout_nothrow = com_timeout_t<err_returncode_policy>;
+
+//! COM timeout, errors fail-fast (see @ref com_timeout_t for details)
+using com_timeout_failfast = com_timeout_t<err_failfast_policy>;
+
+#endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
 } // namespace wil
 

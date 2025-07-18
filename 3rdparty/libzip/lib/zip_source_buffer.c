@@ -340,6 +340,7 @@ buffer_clone(buffer_t *buffer, zip_uint64_t offset, zip_error_t *error) {
     fragment_offset = offset - buffer->fragment_offsets[fragment];
 
     if (fragment_offset == 0) {
+        /* We can't be at beginning of fragment zero if offset > 0. */
         fragment--;
         fragment_offset = buffer->fragments[fragment].length;
     }
@@ -427,32 +428,23 @@ buffer_free(buffer_t *buffer) {
 
 static bool
 buffer_grow_fragments(buffer_t *buffer, zip_uint64_t capacity, zip_error_t *error) {
-    zip_buffer_fragment_t *fragments;
-    zip_uint64_t *offsets;
+    zip_uint64_t additional_fragments;
+    zip_uint64_t offset_capacity = buffer->fragments_capacity + 1;
 
-    if (capacity < buffer->fragments_capacity) {
+    if (capacity <= buffer->fragments_capacity) {
         return true;
     }
 
-    zip_uint64_t fragments_size = sizeof(buffer->fragments[0]) * capacity;
-    zip_uint64_t offsets_size = sizeof(buffer->fragment_offsets[0]) * (capacity + 1);
+    additional_fragments = capacity - buffer->fragments_capacity;
 
-    if (capacity == ZIP_UINT64_MAX || fragments_size < capacity || fragments_size > SIZE_MAX|| offsets_size < capacity || offsets_size > SIZE_MAX) {
-        zip_error_set(error, ZIP_ER_MEMORY, 0);
+    if (!ZIP_REALLOC(buffer->fragments, buffer->fragments_capacity, additional_fragments, error)) {
         return false;
     }
-
-    if ((fragments = realloc(buffer->fragments, (size_t)fragments_size)) == NULL) {
-        zip_error_set(error, ZIP_ER_MEMORY, 0);
+    /* The size of both buffer->fragments and buffer->fragment_offsets is stored in buffer->fragments_capacity, so use a temporary capacity variable here for reallocating buffer->fragment_offsets. */
+    if (!ZIP_REALLOC(buffer->fragment_offsets, offset_capacity, additional_fragments, error)) {
+        buffer->fragments_capacity -= additional_fragments;
         return false;
     }
-    buffer->fragments = fragments;
-    if ((offsets = realloc(buffer->fragment_offsets, (size_t)offsets_size)) == NULL) {
-        zip_error_set(error, ZIP_ER_MEMORY, 0);
-        return false;
-    }
-    buffer->fragment_offsets = offsets;
-    buffer->fragments_capacity = capacity;
 
     return true;
 }

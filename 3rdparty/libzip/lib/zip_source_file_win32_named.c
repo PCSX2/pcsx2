@@ -33,13 +33,6 @@
 
 #include "zip_source_file_win32.h"
 
-/* ACL is not available when targeting the games API partition */
-#if defined(WINAPI_FAMILY_PARTITION) && defined(WINAPI_PARTITION_GAMES)
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_GAMES)
-#define ACL_UNSUPPORTED
-#endif
-#endif
-
 static zip_int64_t _zip_win32_named_op_commit_write(zip_source_file_context_t *ctx);
 static zip_int64_t _zip_win32_named_op_create_temp_output(zip_source_file_context_t *ctx);
 static bool _zip_win32_named_op_open(zip_source_file_context_t *ctx);
@@ -106,29 +99,24 @@ _zip_win32_named_op_create_temp_output(zip_source_file_context_t *ctx) {
 
     zip_uint32_t value, i;
     HANDLE th = INVALID_HANDLE_VALUE;
-    PSECURITY_DESCRIPTOR psd = NULL;
     PSECURITY_ATTRIBUTES psa = NULL;
+    PSECURITY_DESCRIPTOR psd = NULL;
+#ifdef HAVE_GETSECURITYINFO
     SECURITY_ATTRIBUTES sa;
-    SECURITY_INFORMATION si;
-    DWORD success;
-    PACL dacl = NULL;
+#endif
     char *tempname = NULL;
     size_t tempname_size = 0;
 
+#ifdef HAVE_GETSECURITYINFO
     if ((HANDLE)ctx->f != INVALID_HANDLE_VALUE && GetFileType((HANDLE)ctx->f) == FILE_TYPE_DISK) {
-        si = DACL_SECURITY_INFORMATION | UNPROTECTED_DACL_SECURITY_INFORMATION;
-    #ifdef ACL_UNSUPPORTED
-        success = ERROR_NOT_SUPPORTED;
-    #else
-        success = GetSecurityInfo((HANDLE)ctx->f, SE_FILE_OBJECT, si, NULL, NULL, &dacl, NULL, &psd);
-    #endif
-        if (success == ERROR_SUCCESS) {
+        if (GetSecurityInfo((HANDLE)ctx->f, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION | UNPROTECTED_DACL_SECURITY_INFORMATION, NULL, NULL, NULL, NULL, &psd) == ERROR_SUCCESS) {
             sa.nLength = sizeof(SECURITY_ATTRIBUTES);
             sa.bInheritHandle = FALSE;
             sa.lpSecurityDescriptor = psd;
             psa = &sa;
         }
     }
+#endif
 
 #ifndef MS_UWP
     value = GetTickCount();

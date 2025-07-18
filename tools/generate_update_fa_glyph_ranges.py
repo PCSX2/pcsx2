@@ -32,7 +32,9 @@ all_source_files = list(functools.reduce(lambda prev, src_dir: prev + glob.glob(
     glob.glob(os.path.join(src_dir, "**", "*.h"), recursive=True) + \
     glob.glob(os.path.join(src_dir, "**", "*.inl"), recursive=True), src_dirs, []))
 
-tokens = set()
+# All FA tokens are within a Unicode private area
+# PF, however, needs to replace predefined Unicode characters
+fa_tokens = set()
 pf_tokens = set()
 for filename in all_source_files:
     data = None
@@ -42,11 +44,11 @@ for filename in all_source_files:
         except:
             continue
 
-    tokens = tokens.union(set(re.findall("(ICON_FA_[a-zA-Z0-9_]+)", data)))
+    fa_tokens = fa_tokens.union(set(re.findall("(ICON_FA_[a-zA-Z0-9_]+)", data)))
     pf_tokens = pf_tokens.union(set(re.findall("(ICON_PF_[a-zA-Z0-9_]+)", data)))
 
-print("{}/{} tokens found.".format(len(tokens), len(pf_tokens)))
-if len(tokens) == 0 and len(pf_tokens) == 0:
+print("{}/{} tokens found.".format(len(fa_tokens), len(pf_tokens)))
+if len(pf_tokens) == 0:
     sys.exit(0)
 
 def decode_encoding(value):
@@ -58,57 +60,83 @@ def decode_encoding(value):
 
     return bytes(value, 'utf-8')
 
-u8_encodings = {}
+u8_encodings_fa = {}
 with open(fa_file, "r") as f:
     for line in f.readlines():
         match = re.match("#define (ICON_FA_[^ ]+) \"([^\"]+)\"", line)
         if match is None:
             continue
-        u8_encodings[match[1]] = decode_encoding(match[2])
+        u8_encodings_fa[match[1]] = decode_encoding(match[2])
+u8_encodings_pf = {}
 with open(pf_file, "r") as f:
     for line in f.readlines():
         match = re.match("#define (ICON_PF_[^ ]+) \"([^\"]+)\"", line)
         if match is None:
             continue
-        u8_encodings[match[1]] = decode_encoding(match[2])
+        u8_encodings_pf[match[1]] = decode_encoding(match[2])
 
-out_pattern = "(static constexpr ImWchar range_fa\[\] = \{)[0-9A-Z_a-z, \n]+(\};)"
-out_pf_pattern = "(static constexpr ImWchar range_pf\[\] = \{)[0-9A-Z_a-z, \n]+(\};)"
+# PF also uses the Unicode private area, check for conflicts with FA
+cf_tokens_all = {}
+for pf_token in u8_encodings_pf.keys():
+    for fa_token in u8_encodings_fa.keys():
+        if u8_encodings_pf[pf_token] == u8_encodings_fa[fa_token]:
+            cf_tokens_all[pf_token] = fa_token
 
-def get_pairs(tokens):
+cf_tokens_used = []
+for token in pf_tokens:
+    if token in cf_tokens_all:
+        cf_tokens_used.append(token)
+
+print("{} font conflicts found, of which we use {} of them.".format(len(cf_tokens_all), len(cf_tokens_used)))
+if len(cf_tokens_used) > 0:
+    raise NotImplementedError("A used PF token conflicts with a FA token, generating exclude ranges is not implemented")
+
+out_ex_pattern = r"(static constexpr ImWchar range_exclude_icons\[\] = \{)[0-9A-Z_a-z, \n]+(\};)"
+
+def get_pairs(tokens, limit_pairs=-1):
     codepoints = list()
     for token in tokens:
-        u8_bytes = u8_encodings[token]
+        u8_bytes = u8_encodings_pf[token]
         u8 = str(u8_bytes, "utf-8")
         u16 = u8.encode("utf-16le")
         if len(u16) > 2:
             raise ValueError("{} {} too long".format(u8_bytes, token))
 
         codepoint = int.from_bytes(u16, byteorder="little", signed=False)
+        if codepoint >= 0xe000 and codepoint <= 0xf8ff:
+            continue
         codepoints.append(codepoint)
     codepoints.sort()
     codepoints.append(0) # null terminator
 
-    startc = codepoints[0]
-    endc = None
-    pairs = [startc]
-    for codepoint in codepoints:
-        if endc is not None and (endc + 1) != codepoint:
-            pairs.append(endc)
-            pairs.append(codepoint)
-            startc = codepoint
-            endc = codepoint
-        else:
-            endc = codepoint
-    pairs.append(endc)
+    merge_range = 0
+    while True:
+        merge_range = merge_range + 1
+        startc = codepoints[0]
+        endc = None
+        pairs = [startc]
+        for codepoint in codepoints:
+            if endc is not None and (((endc + merge_range) < codepoint) or (codepoint == 0)):
+                pairs.append(endc)
+                pairs.append(codepoint)
+                startc = codepoint
+                endc = codepoint
+            else:
+                endc = codepoint
+        pairs.append(endc)
 
+        if limit_pairs == -1 or len(pairs) <= (limit_pairs << 1):
+            break
+
+    print("Created {} pairs with a merge range of {}".format(len(pairs) >> 1, merge_range))
     pairs_str = ",".join(list(map("0x{:x}".format, pairs)))
     return pairs_str
 
 with open(dst_file, "r") as f:
     original = f.read()
-    updated = re.sub(out_pattern, "\\1 " + get_pairs(tokens) + " \\2", original)
-    updated = re.sub(out_pf_pattern, "\\1 " + get_pairs(pf_tokens) + " \\2", updated)
+    # ImGui asserts if more than 32 ranges are provided for exclusion
+    # we should also use as few as reasonable for performance reasons
+    updated = re.sub(out_ex_pattern, "\\1 " + get_pairs(pf_tokens, 32) + " \\2", original)
     if original != updated:
         with open(dst_file, "w") as f:
             f.write(updated)

@@ -102,10 +102,13 @@
 /* according to unzip-6.0's zipinfo.c, this corresponds to a directory with rwx permissions for everyone */
 #define ZIP_EXT_ATTRIB_DEFAULT_DIR (0040777u << 16)
 
-#define ZIP_FILE_ATTRIBUTES_GENERAL_PURPOSE_BIT_FLAGS_ALLOWED_MASK 0x0836
+/* Allowed: Encryption specific bits, data descriptor, compression specific, UTF-8 filename */
+#define ZIP_FILE_ATTRIBUTES_GENERAL_PURPOSE_BIT_FLAGS_ALLOWED_MASK 0x083e
 
 #define ZIP_MAX(a, b) ((a) > (b) ? (a) : (b))
 #define ZIP_MIN(a, b) ((a) < (b) ? (a) : (b))
+
+#define ZIP_REALLOC(memory, alloced_elements, additional_elements, error) zip_realloc((void **)&memory, &alloced_elements, sizeof(*memory), additional_elements, error)
 
 /* This section contains API that won't materialize like this.  It's
    placed in the internal section, pending cleanup. */
@@ -152,7 +155,7 @@ struct zip_compression_algorithm {
     bool (*input)(void *ctx, zip_uint8_t *data, zip_uint64_t length);
 
     /* all input data has been provided */
-    void (*end_of_input)(void *ctx);
+    bool (*end_of_input)(void *ctx);
 
     /* process input data, writing to data, which has room for length bytes, update length to number of bytes written */
     zip_compression_status_t (*process)(void *ctx, zip_uint8_t *data, zip_uint64_t *length);
@@ -241,6 +244,7 @@ extern const int _zip_err_details_count;
 #define ZIP_ER_DETAIL_EOCD64_LOCATOR_MISMATCH 22 /* G EOCD64 and EOCD64 locator do not match */
 #define ZIP_ER_DETAIL_UTF8_FILENAME_MISMATCH 23 /* E UTF-8 filename is ASCII and doesn't match filename */
 #define ZIP_ER_DETAIL_UTF8_COMMENT_MISMATCH 24 /* E UTF-8 comment is ASCII and doesn't match comment */
+#define ZIP_ER_DETAIL_COMPRESSED_DATA_TRAILING_GARBAGE 25 /* G garbage at end of compressed data */
 
 /* directory entry: general purpose bit flags */
 
@@ -305,8 +309,8 @@ struct zip {
     zip_uint64_t nentry_alloc; /* number of entries allocated */
     zip_entry_t *entry;        /* entries */
 
-    unsigned int nopen_source;       /* number of open sources using archive */
-    unsigned int nopen_source_alloc; /* number of sources allocated */
+    zip_uint64_t nopen_source;       /* number of open sources using archive */
+    zip_uint64_t nopen_source_alloc; /* number of sources allocated */
     zip_source_t **open_source;      /* open sources using archive */
 
     zip_hash_t *names; /* hash table for name lookup */
@@ -552,13 +556,14 @@ zip_int64_t _zip_cdir_write(zip_t *za, const zip_filelist_t *filelist, zip_uint6
 time_t _zip_d2u_time(const zip_dostime_t*);
 void _zip_deregister_source(zip_t *za, zip_source_t *src);
 
-void _zip_dirent_apply_attributes(zip_dirent_t *, zip_file_attributes_t *, bool, zip_uint32_t);
+bool _zip_dirent_apply_attributes(zip_dirent_t *, zip_file_attributes_t *, bool);
 int zip_dirent_check_consistency(zip_dirent_t *dirent);
 zip_dirent_t *_zip_dirent_clone(const zip_dirent_t *);
 void _zip_dirent_free(zip_dirent_t *);
 void _zip_dirent_finalize(zip_dirent_t *);
 time_t zip_dirent_get_last_mod_mtime(zip_dirent_t *de);
 void _zip_dirent_init(zip_dirent_t *);
+bool _zip_dirent_merge(zip_dirent_t *de, zip_dirent_t *de_orig, bool replacing_data, zip_error_t *error);
 bool _zip_dirent_needs_zip64(const zip_dirent_t *, zip_flags_t);
 zip_dirent_t *_zip_dirent_new(void);
 bool zip_dirent_process_ef_zip64(zip_dirent_t * zde, const zip_uint8_t * ef, zip_uint64_t got_len, bool local, zip_error_t * error);
@@ -617,6 +622,8 @@ void _zip_progress_free(zip_progress_t *progress);
 int _zip_progress_start(zip_progress_t *progress);
 int _zip_progress_subrange(zip_progress_t *progress, double start, double end);
 int _zip_progress_update(zip_progress_t *progress, double value);
+
+bool zip_realloc(void **memory, zip_uint64_t *alloced_elements, zip_uint64_t element_size, zip_uint64_t additional_elements, zip_error_t *error);
 
 /* this symbol is extern so it can be overridden for regression testing */
 ZIP_EXTERN bool zip_secure_random(zip_uint8_t *buffer, zip_uint16_t length);

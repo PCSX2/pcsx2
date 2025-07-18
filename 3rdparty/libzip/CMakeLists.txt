@@ -196,6 +196,7 @@ add_library(zip STATIC
   lib/zip_name_locate.c
   lib/zip_new.c
   lib/zip_open.c
+  lib/zip_realloc.c
   lib/zip_pkware.c
   lib/zip_progress.c
   lib/zip_rename.c

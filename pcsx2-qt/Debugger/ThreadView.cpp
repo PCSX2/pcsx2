@@ -58,7 +58,8 @@ void ThreadView::openContextMenu(QPoint pos)
 		if (!selection_model->hasSelection())
 			return;
 
-		QGuiApplication::clipboard()->setText(m_model->data(selection_model->currentIndex()).toString());
+		auto real_index = m_proxy_model->mapToSource(selection_model->currentIndex());
+		QGuiApplication::clipboard()->setText(m_model->data(real_index).toString());
 	});
 
 	menu->addSeparator();

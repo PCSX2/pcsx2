@@ -1,5 +1,5 @@
 /* Lzma2Enc.c -- LZMA2 Encoder
-2023-04-13 : Igor Pavlov : Public domain */
+: Igor Pavlov : Public domain */
 
 #include "Precomp.h"
 
@@ -235,6 +235,7 @@ void Lzma2EncProps_Init(CLzma2EncProps *p)
   p->numBlockThreads_Reduced = -1;
   p->numBlockThreads_Max = -1;
   p->numTotalThreads = -1;
+  p->numThreadGroups = 0;
 }
 
 void Lzma2EncProps_Normalize(CLzma2EncProps *p)
@@ -781,6 +782,7 @@ SRes Lzma2Enc_Encode2(CLzma2EncHandle p,
     }
 
     p->mtCoder.numThreadsMax = (unsigned)p->props.numBlockThreads_Max;
+    p->mtCoder.numThreadGroups = p->props.numThreadGroups;
     p->mtCoder.expectedDataSize = p->expectedDataSize;
     
     {

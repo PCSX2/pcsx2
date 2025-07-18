@@ -44,10 +44,7 @@ _zip_add_entry(zip_t *za) {
     zip_uint64_t idx;
 
     if (za->nentry + 1 >= za->nentry_alloc) {
-        zip_entry_t *rentries;
-        zip_uint64_t nalloc = za->nentry_alloc;
-        zip_uint64_t additional_entries = 2 * nalloc;
-        zip_uint64_t realloc_size;
+        zip_uint64_t additional_entries = 2 * za->nentry_alloc;
 
         if (additional_entries < 16) {
             additional_entries = 16;
@@ -55,21 +52,10 @@ _zip_add_entry(zip_t *za) {
         else if (additional_entries > 1024) {
             additional_entries = 1024;
         }
-        /* neither + nor * overflows can happen: nentry_alloc * sizeof(struct zip_entry) < UINT64_MAX */
-        nalloc += additional_entries;
-        realloc_size = sizeof(struct zip_entry) * (size_t)nalloc;
 
-        if (sizeof(struct zip_entry) * (size_t)za->nentry_alloc > realloc_size) {
-            zip_error_set(&za->error, ZIP_ER_MEMORY, 0);
+        if (!ZIP_REALLOC(za->entry, za->nentry_alloc, additional_entries, &za->error)) {
             return -1;
         }
-        rentries = (zip_entry_t *)realloc(za->entry, sizeof(struct zip_entry) * (size_t)nalloc);
-        if (rentries == NULL) {
-            zip_error_set(&za->error, ZIP_ER_MEMORY, 0);
-            return -1;
-        }
-        za->entry = rentries;
-        za->nentry_alloc = nalloc;
     }
 
     idx = za->nentry++;

@@ -1,5 +1,5 @@
 /* MtCoder.c -- Multi-thread Coder
-2023-09-07 : Igor Pavlov : Public domain */
+: Igor Pavlov : Public domain */
 
 #include "Precomp.h"
 
@@ -39,14 +39,28 @@ void MtProgressThunk_CreateVTable(CMtProgressThunk *p)
 static THREAD_FUNC_DECL ThreadFunc(void *pp);
 
 
-static SRes MtCoderThread_CreateAndStart(CMtCoderThread *t)
+static SRes MtCoderThread_CreateAndStart(CMtCoderThread *t
+#ifdef _WIN32
+    , CMtCoder * const mtc
+#endif
+    )
 {
   WRes wres = AutoResetEvent_OptCreate_And_Reset(&t->startEvent);
+  // printf("\n====== MtCoderThread_CreateAndStart : \n");
   if (wres == 0)
   {
     t->stop = False;
     if (!Thread_WasCreated(&t->thread))
-      wres = Thread_Create(&t->thread, ThreadFunc, t);
+    {
+#ifdef _WIN32
+      if (mtc->numThreadGroups)
+        wres = Thread_Create_With_Group(&t->thread, ThreadFunc, t,
+            ThreadNextGroup_GetNext(&mtc->nextGroup), // group
+            0); // affinityMask
+      else
+#endif
+        wres = Thread_Create(&t->thread, ThreadFunc, t);
+    }
     if (wres == 0)
       wres = Event_Set(&t->startEvent);
   }
@@ -56,6 +70,7 @@ static SRes MtCoderThread_CreateAndStart(CMtCoderThread *t)
 }
 
 
+Z7_FORCE_INLINE
 static void MtCoderThread_Destruct(CMtCoderThread *t)
 {
   if (Thread_WasCreated(&t->thread))
@@ -85,7 +100,7 @@ static void MtCoderThread_Destruct(CMtCoderThread *t)
 
 static SRes ThreadFunc2(CMtCoderThread *t)
 {
-  CMtCoder *mtc = t->mtCoder;
+  CMtCoder * const mtc = t->mtCoder;
 
   for (;;)
   {
@@ -185,7 +200,11 @@ static SRes ThreadFunc2(CMtCoderThread *t)
       if (mtc->numStartedThreads < mtc->numStartedThreadsLimit
           && mtc->expectedDataSize != readProcessed)
       {
-        res = MtCoderThread_CreateAndStart(&mtc->threads[mtc->numStartedThreads]);
+        res = MtCoderThread_CreateAndStart(&mtc->threads[mtc->numStartedThreads]
+#ifdef _WIN32
+            , mtc
+#endif
+            );
         if (res == SZ_OK)
           mtc->numStartedThreads++;
         else
@@ -221,7 +240,7 @@ static SRes ThreadFunc2(CMtCoderThread *t)
     }
 
     {
-      CMtCoderBlock *block = &mtc->blocks[bi];
+      CMtCoderBlock * const block = &mtc->blocks[bi];
       block->res = res;
       block->bufIndex = bufIndex;
       block->finished = finished;
@@ -311,7 +330,7 @@ static SRes ThreadFunc2(CMtCoderThread *t)
 
 static THREAD_FUNC_DECL ThreadFunc(void *pp)
 {
-  CMtCoderThread *t = (CMtCoderThread *)pp;
+  CMtCoderThread * const t = (CMtCoderThread *)pp;
   for (;;)
   {
     if (Event_Wait(&t->startEvent) != 0)
@@ -319,7 +338,7 @@ static THREAD_FUNC_DECL ThreadFunc(void *pp)
     if (t->stop)
       return 0;
     {
-      SRes res = ThreadFunc2(t);
+      const SRes res = ThreadFunc2(t);
       CMtCoder *mtc = t->mtCoder;
       if (res != SZ_OK)
       {
@@ -328,7 +347,7 @@ static THREAD_FUNC_DECL ThreadFunc(void *pp)
       
       #ifndef MTCODER_USE_WRITE_THREAD
       {
-        unsigned numFinished = (unsigned)InterlockedIncrement(&mtc->numFinishedThreads);
+        const unsigned numFinished = (unsigned)InterlockedIncrement(&mtc->numFinishedThreads);
         if (numFinished == mtc->numStartedThreads)
           if (Event_Set(&mtc->finishedEvent) != 0)
             return (THREAD_FUNC_RET_TYPE)SZ_ERROR_THREAD;
@@ -346,6 +365,7 @@ void MtCoder_Construct(CMtCoder *p)
   
   p->blockSize = 0;
   p->numThreadsMax = 0;
+  p->numThreadGroups = 0;
   p->expectedDataSize = (UInt64)(Int64)-1;
 
   p->inStream = NULL;
@@ -429,6 +449,8 @@ SRes MtCoder_Code(CMtCoder *p)
   unsigned i;
   SRes res = SZ_OK;
 
+  // printf("\n====== MtCoder_Code : \n");
+
   if (numThreads > MTCODER_THREADS_MAX)
       numThreads = MTCODER_THREADS_MAX;
   numBlocksMax = MTCODER_GET_NUM_BLOCKS_FROM_THREADS(numThreads);
@@ -492,11 +514,22 @@ SRes MtCoder_Code(CMtCoder *p)
 
   p->numStartedThreadsLimit = numThreads;
   p->numStartedThreads = 0;
+  ThreadNextGroup_Init(&p->nextGroup, p->numThreadGroups, 0); // startGroup
 
   // for (i = 0; i < numThreads; i++)
   {
+    // here we create new thread for first block.
+    // And each new thread will create another new thread after block reading
+    // until numStartedThreadsLimit is reached.
     CMtCoderThread *nextThread = &p->threads[p->numStartedThreads++];
-    RINOK(MtCoderThread_CreateAndStart(nextThread))
+    {
+      const SRes res2 = MtCoderThread_CreateAndStart(nextThread
+#ifdef _WIN32
+            , p
+#endif
+            );
+      RINOK(res2)
+    }
   }
 
   RINOK_THREAD(Event_Set(&p->readEvent))
@@ -513,9 +546,9 @@ SRes MtCoder_Code(CMtCoder *p)
       RINOK_THREAD(Event_Wait(&p->writeEvents[bi]))
 
       {
-        const CMtCoderBlock *block = &p->blocks[bi];
-        unsigned bufIndex = block->bufIndex;
-        BoolInt finished = block->finished;
+        const CMtCoderBlock * const block = &p->blocks[bi];
+        const unsigned bufIndex = block->bufIndex;
+        const BoolInt finished = block->finished;
         if (res == SZ_OK && block->res != SZ_OK)
           res = block->res;
 
@@ -545,7 +578,7 @@ SRes MtCoder_Code(CMtCoder *p)
   }
   #else
   {
-    WRes wres = Event_Wait(&p->finishedEvent);
+    const WRes wres = Event_Wait(&p->finishedEvent);
     res = MY_SRes_HRESULT_FROM_WRes(wres);
   }
   #endif

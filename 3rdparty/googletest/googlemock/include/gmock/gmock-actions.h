@@ -835,6 +835,10 @@ class Action<R(Args...)> {
     Result operator()(const InArgs&...) const {
       return function_impl();
     }
+    template <typename... InArgs>
+    Result operator()(const InArgs&...) {
+      return function_impl();
+    }
 
     FunctionImpl function_impl;
   };
@@ -1451,6 +1455,30 @@ struct WithArgsAction {
     return OA{std::move(inner_action)};
   }
 
+  // As above, but in the case where we want to create a OnceAction from a const
+  // WithArgsAction. This is fine as long as the inner action doesn't need to
+  // move any of its state to create a OnceAction.
+  template <
+      typename R, typename... Args,
+      typename std::enable_if<
+          std::is_convertible<const InnerAction&,
+                              OnceAction<R(internal::TupleElement<
+                                           I, std::tuple<Args...>>...)>>::value,
+          int>::type = 0>
+  operator OnceAction<R(Args...)>() const& {  // NOLINT
+    struct OA {
+      OnceAction<InnerSignature<R, Args...>> inner_action;
+
+      R operator()(Args&&... args) && {
+        return std::move(inner_action)
+            .Call(std::get<I>(
+                std::forward_as_tuple(std::forward<Args>(args)...))...);
+      }
+    };
+
+    return OA{inner_action};
+  }
+
   template <
       typename R, typename... Args,
       typename std::enable_if<
@@ -1703,9 +1731,8 @@ template <size_t k>
 struct ReturnArgAction {
   template <typename... Args,
             typename = typename std::enable_if<(k < sizeof...(Args))>::type>
-  auto operator()(Args&&... args) const
-      -> decltype(std::get<k>(
-          std::forward_as_tuple(std::forward<Args>(args)...))) {
+  auto operator()(Args&&... args) const -> decltype(std::get<k>(
+      std::forward_as_tuple(std::forward<Args>(args)...))) {
     return std::get<k>(std::forward_as_tuple(std::forward<Args>(args)...));
   }
 };
@@ -1717,6 +1744,16 @@ struct SaveArgAction {
   template <typename... Args>
   void operator()(const Args&... args) const {
     *pointer = std::get<k>(std::tie(args...));
+  }
+};
+
+template <size_t k, typename Ptr>
+struct SaveArgByMoveAction {
+  Ptr pointer;
+
+  template <typename... Args>
+  void operator()(Args&&... args) const {
+    *pointer = std::move(std::get<k>(std::tie(args...)));
   }
 };
 
@@ -2070,6 +2107,13 @@ internal::SaveArgAction<k, Ptr> SaveArg(Ptr pointer) {
   return {pointer};
 }
 
+// Action SaveArgByMove<k>(pointer) moves the k-th (0-based) argument of the
+// mock function into *pointer.
+template <size_t k, typename Ptr>
+internal::SaveArgByMoveAction<k, Ptr> SaveArgByMove(Ptr pointer) {
+  return {pointer};
+}
+
 // Action SaveArgPointee<k>(pointer) saves the value pointed to
 // by the k-th (0-based) argument of the mock function to *pointer.
 template <size_t k, typename Ptr>
@@ -2213,9 +2257,9 @@ template <typename F, typename Impl>
 }
 
 #define GMOCK_INTERNAL_ARG_UNUSED(i, data, el) \
-  , GTEST_INTERNAL_ATTRIBUTE_MAYBE_UNUSED const arg##i##_type& arg##i
-#define GMOCK_ACTION_ARG_TYPES_AND_NAMES_UNUSED_                               \
-  GTEST_INTERNAL_ATTRIBUTE_MAYBE_UNUSED const args_type& args GMOCK_PP_REPEAT( \
+  , [[maybe_unused]] const arg##i##_type& arg##i
+#define GMOCK_ACTION_ARG_TYPES_AND_NAMES_UNUSED_          \
+  [[maybe_unused]] const args_type& args GMOCK_PP_REPEAT( \
       GMOCK_INTERNAL_ARG_UNUSED, , 10)
 
 #define GMOCK_INTERNAL_ARG(i, data, el) , const arg##i##_type& arg##i
@@ -2280,8 +2324,8 @@ template <typename F, typename Impl>
     std::shared_ptr<const gmock_Impl> impl_;                                   \
   };                                                                           \
   template <GMOCK_ACTION_TYPENAME_PARAMS_(params)>                             \
-  inline full_name<GMOCK_ACTION_TYPE_PARAMS_(params)> name(                    \
-      GMOCK_ACTION_TYPE_GVALUE_PARAMS_(params)) GTEST_MUST_USE_RESULT_;        \
+  [[nodiscard]] inline full_name<GMOCK_ACTION_TYPE_PARAMS_(params)> name(      \
+      GMOCK_ACTION_TYPE_GVALUE_PARAMS_(params));                               \
   template <GMOCK_ACTION_TYPENAME_PARAMS_(params)>                             \
   inline full_name<GMOCK_ACTION_TYPE_PARAMS_(params)> name(                    \
       GMOCK_ACTION_TYPE_GVALUE_PARAMS_(params)) {                              \
@@ -2316,7 +2360,7 @@ template <typename F, typename Impl>
       return_type gmock_PerformImpl(GMOCK_ACTION_ARG_TYPES_AND_NAMES_) const; \
     };                                                                        \
   };                                                                          \
-  inline name##Action name() GTEST_MUST_USE_RESULT_;                          \
+  [[nodiscard]] inline name##Action name();                                   \
   inline name##Action name() { return name##Action(); }                       \
   template <typename function_type, typename return_type, typename args_type, \
             GMOCK_ACTION_TEMPLATE_ARGS_NAMES_>                                \

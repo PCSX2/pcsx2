@@ -19,7 +19,7 @@
 // Helpers for return macros
 /// @cond
 #define __WIN32_RETURN_WIN32(error, str) \
-    __WI_SUPPRESS_4127_S do \
+    __WI_SUPPRESS_BREAKING_WARNINGS_S do \
     { \
         const auto __error = (error); \
         if (FAILED_WIN32(__error)) \
@@ -28,7 +28,7 @@
         } \
         return __error; \
     } \
-    __WI_SUPPRESS_4127_E while ((void)0, 0)
+    __WI_SUPPRESS_BREAKING_WARNINGS_E while ((void)0, 0)
 #define __WIN32_RETURN_GLE_FAIL(str) return __R_FN(Win32_Return_GetLastError)(__R_INFO_ONLY(str))
 
 FORCEINLINE long __WIN32_FROM_HRESULT(HRESULT hr)
@@ -51,7 +51,7 @@ FORCEINLINE long __WIN32_FROM_HRESULT(HRESULT hr)
 
 // Conditionally returns failures (WIN32 error code) - always logs failures
 #define WIN32_RETURN_IF_WIN32_ERROR(error) \
-    __WI_SUPPRESS_4127_S do \
+    __WI_SUPPRESS_BREAKING_WARNINGS_S do \
     { \
         const auto __errorRet = wil::verify_win32(error); \
         if (FAILED_WIN32(__errorRet)) \
@@ -59,47 +59,47 @@ FORCEINLINE long __WIN32_FROM_HRESULT(HRESULT hr)
             __WIN32_RETURN_WIN32(__errorRet, #error); \
         } \
     } \
-    __WI_SUPPRESS_4127_E while ((void)0, 0)
+    __WI_SUPPRESS_BREAKING_WARNINGS_E while ((void)0, 0)
 #define WIN32_RETURN_WIN32_IF(error, condition) \
-    __WI_SUPPRESS_4127_S do \
+    __WI_SUPPRESS_BREAKING_WARNINGS_S do \
     { \
         if (wil::verify_bool(condition)) \
         { \
             __WIN32_RETURN_WIN32(wil::verify_win32(error), #condition); \
         } \
     } \
-    __WI_SUPPRESS_4127_E while ((void)0, 0)
+    __WI_SUPPRESS_BREAKING_WARNINGS_E while ((void)0, 0)
 #define WIN32_RETURN_WIN32_IF_NULL(error, ptr) \
-    __WI_SUPPRESS_4127_S do \
+    __WI_SUPPRESS_BREAKING_WARNINGS_S do \
     { \
         if ((ptr) == nullptr) \
         { \
             __WIN32_RETURN_WIN32(wil::verify_win32(error), #ptr); \
         } \
     } \
-    __WI_SUPPRESS_4127_E while ((void)0, 0)
+    __WI_SUPPRESS_BREAKING_WARNINGS_E while ((void)0, 0)
 #define WIN32_RETURN_LAST_ERROR_IF(condition) \
-    __WI_SUPPRESS_4127_S do \
+    __WI_SUPPRESS_BREAKING_WARNINGS_S do \
     { \
         if (wil::verify_bool(condition)) \
         { \
             __WIN32_RETURN_GLE_FAIL(#condition); \
         } \
     } \
-    __WI_SUPPRESS_4127_E while ((void)0, 0)
+    __WI_SUPPRESS_BREAKING_WARNINGS_E while ((void)0, 0)
 #define WIN32_RETURN_LAST_ERROR_IF_NULL(ptr) \
-    __WI_SUPPRESS_4127_S do \
+    __WI_SUPPRESS_BREAKING_WARNINGS_S do \
     { \
         if ((ptr) == nullptr) \
         { \
             __WIN32_RETURN_GLE_FAIL(#ptr); \
         } \
     } \
-    __WI_SUPPRESS_4127_E while ((void)0, 0)
+    __WI_SUPPRESS_BREAKING_WARNINGS_E while ((void)0, 0)
 
 // Conditionally returns failures (WIN32 error code) - use for failures that are expected in common use - failures are not logged - macros are only for control flow pattern
 #define WIN32_RETURN_IF_WIN32_ERROR_EXPECTED(error) \
-    __WI_SUPPRESS_4127_S do \
+    __WI_SUPPRESS_BREAKING_WARNINGS_S do \
     { \
         const auto __errorRet = wil::verify_win32(error); \
         if (FAILED_WIN32(__errorRet)) \
@@ -107,43 +107,43 @@ FORCEINLINE long __WIN32_FROM_HRESULT(HRESULT hr)
             return __errorRet; \
         } \
     } \
-    __WI_SUPPRESS_4127_E while ((void)0, 0)
+    __WI_SUPPRESS_BREAKING_WARNINGS_E while ((void)0, 0)
 #define WIN32_RETURN_WIN32_IF_EXPECTED(error, condition) \
-    __WI_SUPPRESS_4127_S do \
+    __WI_SUPPRESS_BREAKING_WARNINGS_S do \
     { \
         if (wil::verify_bool(condition)) \
         { \
             return wil::verify_win32(error); \
         } \
     } \
-    __WI_SUPPRESS_4127_E while ((void)0, 0)
+    __WI_SUPPRESS_BREAKING_WARNINGS_E while ((void)0, 0)
 #define WIN32_RETURN_WIN32_IF_NULL_EXPECTED(error, ptr) \
-    __WI_SUPPRESS_4127_S do \
+    __WI_SUPPRESS_BREAKING_WARNINGS_S do \
     { \
         if ((ptr) == nullptr) \
         { \
             return wil::verify_win32(error); \
         } \
     } \
-    __WI_SUPPRESS_4127_E while ((void)0, 0)
+    __WI_SUPPRESS_BREAKING_WARNINGS_E while ((void)0, 0)
 #define WIN32_RETURN_LAST_ERROR_IF_EXPECTED(condition) \
-    __WI_SUPPRESS_4127_S do \
+    __WI_SUPPRESS_BREAKING_WARNINGS_S do \
     { \
         if (wil::verify_bool(condition)) \
         { \
             return wil::verify_win32(wil::details::GetLastErrorFail()); \
         } \
     } \
-    __WI_SUPPRESS_4127_E while ((void)0, 0)
+    __WI_SUPPRESS_BREAKING_WARNINGS_E while ((void)0, 0)
 #define WIN32_RETURN_LAST_ERROR_IF_NULL_EXPECTED(ptr) \
-    __WI_SUPPRESS_4127_S do \
+    __WI_SUPPRESS_BREAKING_WARNINGS_S do \
     { \
         if ((ptr) == nullptr) \
         { \
             return wil::verify_win32(wil::details::GetLastErrorFail()); \
         } \
     } \
-    __WI_SUPPRESS_4127_E while ((void)0, 0)
+    __WI_SUPPRESS_BREAKING_WARNINGS_E while ((void)0, 0)
 
 //*****************************************************************************
 // Macros to catch and convert exceptions on failure

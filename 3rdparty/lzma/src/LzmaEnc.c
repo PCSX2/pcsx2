@@ -1,5 +1,5 @@
 /* LzmaEnc.c -- LZMA Encoder
-2024-01-24: Igor Pavlov : Public domain */
+Igor Pavlov : Public domain */
 
 #include "Precomp.h"
 
@@ -62,7 +62,9 @@ void LzmaEncProps_Init(CLzmaEncProps *p)
   p->lc = p->lp = p->pb = p->algo = p->fb = p->btMode = p->numHashBytes = p->numThreads = -1;
   p->numHashOutBits = 0;
   p->writeEndMark = 0;
+  p->affinityGroup = -1;
   p->affinity = 0;
+  p->affinityInGroup = 0;
 }
 
 void LzmaEncProps_Normalize(CLzmaEncProps *p)
@@ -72,11 +74,11 @@ void LzmaEncProps_Normalize(CLzmaEncProps *p)
   p->level = level;
   
   if (p->dictSize == 0)
-    p->dictSize =
-      ( level <= 3 ? ((UInt32)1 << (level * 2 + 16)) :
-      ( level <= 6 ? ((UInt32)1 << (level + 19)) :
-      ( level <= 7 ? ((UInt32)1 << 25) : ((UInt32)1 << 26)
-      )));
+    p->dictSize = (unsigned)level <= 4 ?
+        (UInt32)1 << (level * 2 + 16) :
+        (unsigned)level <= sizeof(size_t) / 2 + 4 ?
+          (UInt32)1 << (level + 20) :
+          (UInt32)1 << (sizeof(size_t) / 2 + 24);
 
   if (p->dictSize > p->reduceSize)
   {
@@ -92,8 +94,8 @@ void LzmaEncProps_Normalize(CLzmaEncProps *p)
   if (p->lp < 0) p->lp = 0;
   if (p->pb < 0) p->pb = 2;
 
-  if (p->algo < 0) p->algo = (level < 5 ? 0 : 1);
-  if (p->fb < 0) p->fb = (level < 7 ? 32 : 64);
+  if (p->algo < 0) p->algo = (unsigned)level < 5 ? 0 : 1;
+  if (p->fb < 0) p->fb = (unsigned)level < 7 ? 32 : 64;
   if (p->btMode < 0) p->btMode = (p->algo == 0 ? 0 : 1);
   if (p->numHashBytes < 0) p->numHashBytes = (p->btMode ? 4 : 5);
   if (p->mc == 0) p->mc = (16 + ((unsigned)p->fb >> 1)) >> (p->btMode ? 0 : 1);
@@ -598,6 +600,10 @@ SRes LzmaEnc_SetProps(CLzmaEncHandle p, const CLzmaEncProps *props2)
   p->multiThread = (props.numThreads > 1);
   p->matchFinderMt.btSync.affinity =
   p->matchFinderMt.hashSync.affinity = props.affinity;
+  p->matchFinderMt.btSync.affinityGroup =
+  p->matchFinderMt.hashSync.affinityGroup = props.affinityGroup;
+  p->matchFinderMt.btSync.affinityInGroup =
+  p->matchFinderMt.hashSync.affinityInGroup = props.affinityInGroup;
   #endif
 
   return SZ_OK;

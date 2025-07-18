@@ -1,5 +1,5 @@
 /* LzFindMt.h -- multithreaded Match finder for LZ algorithms
-2024-01-22 : Igor Pavlov : Public domain */
+: Igor Pavlov : Public domain */
 
 #ifndef ZIP7_INC_LZ_FIND_MT_H
 #define ZIP7_INC_LZ_FIND_MT_H
@@ -12,8 +12,10 @@ EXTERN_C_BEGIN
 typedef struct
 {
   UInt32 numProcessedBlocks;
-  CThread thread;
+  Int32 affinityGroup;
+  UInt64 affinityInGroup;
   UInt64 affinity;
+  CThread thread;
 
   BoolInt wasCreated;
   BoolInt needStart;

@@ -39,8 +39,7 @@ zip_file_attributes_init(zip_file_attributes_t *attributes) {
     attributes->version = 1;
 }
 
-int
-zip_source_get_file_attributes(zip_source_t *src, zip_file_attributes_t *attributes) {
+int zip_source_get_file_attributes(zip_source_t *src, zip_file_attributes_t *attributes) {
     if (src->source_closed) {
         return -1;
     }
