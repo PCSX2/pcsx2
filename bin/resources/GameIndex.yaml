@@ -193,6 +193,8 @@ PAPX-90203:
   region: "NTSC-J"
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
+    halfPixelOffset: 5 # Fixes edge bleed and lines.
+    autoFlush: 1 # Fixes missing lens flare and intensity.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
 PAPX-90204:
   name: "TVDJ ～ティービィーディージェー～ [体験版]"
@@ -17028,9 +17030,10 @@ SLES-51230:
   name: "Minority Report - Everybody Runs"
   region: "PAL-E"
   gsHWFixes:
-    gpuTargetCLUT: 1 # Fixes light bleed through objects.
+    gpuTargetCLUT: 2 # Fixes light bleed through objects.
     halfPixelOffset: 1 # Fixes light bleed through objects.
     autoFlush: 1 # Fixes light bloom intensity.
+    bilinearUpscale: 2 # Fixes jagged light bloom.
 SLES-51232:
   name: "Virtua Tennis 2"
   region: "PAL-M4"
@@ -17298,16 +17301,18 @@ SLES-51317:
   name: "Minority Report - Le Futur vous Rattrape"
   region: "PAL-F"
   gsHWFixes:
-    gpuTargetCLUT: 1 # Fixes light bleed through objects.
+    gpuTargetCLUT: 2 # Fixes light bleed through objects.
     halfPixelOffset: 1 # Fixes light bleed through objects.
     autoFlush: 1 # Fixes light bloom intensity.
+    bilinearUpscale: 2 # Fixes jagged light bloom.
 SLES-51318:
   name: "Minority Report - Everybody Runs"
   region: "PAL-G"
   gsHWFixes:
-    gpuTargetCLUT: 1 # Fixes light bleed through objects.
+    gpuTargetCLUT: 2 # Fixes light bleed through objects.
     halfPixelOffset: 1 # Fixes light bleed through objects.
     autoFlush: 1 # Fixes light bloom intensity.
+    bilinearUpscale: 2 # Fixes jagged light bloom.
 SLES-51322:
   name: "Robotech - Battlecry"
   region: "PAL-M5"
@@ -29498,7 +29503,7 @@ SLES-55451:
   name: "Rock Band 2"
   region: "PAL-M5"
 SLES-55452:
-  name: "Rock Band 2"
+  name: "Shaun White Snowboarding"
   region: "PAL-M5"
 SLES-55453:
   name: "SingStar - Queen"
@@ -64138,9 +64143,10 @@ SLUS-20331:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    gpuTargetCLUT: 1 # Fixes light bleed through objects.
+    gpuTargetCLUT: 2 # Fixes light bleed through objects.
     halfPixelOffset: 1 # Fixes light bleed through objects.
     autoFlush: 1 # Fixes light bloom intensity.
+    bilinearUpscale: 2 # Fixes jagged light bloom.
 SLUS-20332:
   name: "NCAA March Madness 2002"
   region: "NTSC-U"
