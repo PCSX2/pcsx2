@@ -130,7 +130,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.osdShowHardwareInfo, "EmuCore/GS", "OsdShowHardwareInfo", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.osdShowVideoCapture, "EmuCore/GS", "OsdShowVideoCapture", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.osdShowInputRec, "EmuCore/GS", "OsdShowInputRec", true);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.osdWarnAboutUnsafeSettings, "EmuCore", "osdWarnAboutUnsafeSettings", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.osdWarnAboutUnsafeSettings, "EmuCore", "OsdWarnAboutUnsafeSettings", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fxaa, "EmuCore/GS", "fxaa", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.shadeBoost, "EmuCore/GS", "ShadeBoost", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.shadeBoostBrightness, "EmuCore/GS", "ShadeBoost_Brightness", false);
@@ -254,6 +254,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableVertexShaderExpand, "EmuCore/GS", "DisableVertexShaderExpand", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(
 		sif, m_ui.gsDownloadMode, "EmuCore/GS", "HWDownloadMode", static_cast<int>(GSHardwareDownloadMode::Enabled));
+	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.ntscFrameRate, "EmuCore/GS", "FrameRateNTSC", 59.94f);
+	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.palFrameRate, "EmuCore/GS", "FrameRatePAL", 50.00f);
 
 	//////////////////////////////////////////////////////////////////////////
 	// SW Settings
@@ -392,6 +394,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 		m_ui.useBlitSwapChain = nullptr;
 		m_ui.disableMailboxPresentation = nullptr;
 		m_ui.extendedUpscales = nullptr;
+		m_ui.ntscFrameRate = nullptr;
+		m_ui.palFrameRate = nullptr;
 		m_ui.spinCPUDuringReadbacks = nullptr;
 		m_ui.spinGPUDuringReadbacks = nullptr;
 		m_ui.overrideTextureBarriers = nullptr;
@@ -857,6 +861,12 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 			tr("Skips synchronizing with the GS thread and host GPU for GS downloads. "
 			   "Can result in a large speed boost on slower systems, at the cost of many broken graphical effects. "
 			   "If games are broken and you have this option enabled, please disable it first."));
+
+		dialog->registerWidgetHelp(m_ui.ntscFrameRate, tr("NTSC Frame Rate"), tr("59.94 Hz"),
+			tr("Determines what frame rate NTSC games run at."));
+
+		dialog->registerWidgetHelp(m_ui.palFrameRate, tr("PAL Frame Rate"), tr("50.00 Hz"),
+			tr("Determines what frame rate PAL games run at."));
 	}
 }
 
