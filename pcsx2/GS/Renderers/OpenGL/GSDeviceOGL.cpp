@@ -605,7 +605,7 @@ bool GSDeviceOGL::CreateTextureFX()
 bool GSDeviceOGL::CheckFeatures(bool& buggy_pbo)
 {
 	//bool vendor_id_amd = false;
-	bool vendor_id_nvidia = false;
+	//bool vendor_id_nvidia = false;
 	//bool vendor_id_intel = false;
 
 	const char* vendor = (const char*)glGetString(GL_VENDOR);
@@ -618,7 +618,7 @@ bool GSDeviceOGL::CheckFeatures(bool& buggy_pbo)
 	else if (std::strstr(vendor, "NVIDIA Corporation"))
 	{
 		Console.WriteLn(Color_StrongGreen, "GL: NVIDIA GPU detected.");
-		vendor_id_nvidia = true;
+		//vendor_id_nvidia = true;
 	}
 	else if (std::strstr(vendor, "Intel"))
 	{
