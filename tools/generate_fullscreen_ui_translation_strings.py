@@ -25,31 +25,50 @@ for token in ["FSUI_STR", "FSUI_CSTR", "FSUI_FSTR", "FSUI_NSTR", "FSUI_VSTR", "F
 
         if full_source[last_pos + token_len] == '(':
             start_pos = last_pos + token_len + 1
-            end_pos = full_source.find("\")", start_pos)
-            s = full_source[start_pos:end_pos+1]
+            end_pos = full_source.find(")", start_pos)
+            s = full_source[start_pos:end_pos]
 
-            # remove "
+            # Split into sting arguments, removing "
+            string_args = [""]
+            arg = 0;
+            cpos = s.find(',')
             pos = s.find('"')
-            new_s = ""
-            while pos >= 0:
-                if pos == 0 or s[pos - 1] != '\\':
+            while pos >= 0 or cpos >= 0:
+                assert pos == 0 or s[pos - 1] != '\\'
+                if cpos == -1 or pos < cpos:
                     epos = pos
                     while True:
                         epos = s.find('"', epos + 1)
-                        assert epos > pos
+                        # found ')' in string, extend s to next ')'
+                        if epos == -1:
+                            end_pos = full_source.find(")", end_pos + 1)
+                            s = full_source[start_pos:end_pos]
+                            epos = pos
+                            continue
+
                         if s[epos - 1] == '\\':
                             continue
                         else:
                             break
 
                     assert epos > pos
-                    new_s += s[pos+1:epos]
+                    string_args[arg] += s[pos+1:epos]
                     cpos = s.find(',', epos + 1)
                     pos = s.find('"', epos + 1)
-                    if cpos >= 0 and pos >= 0 and cpos < pos:
-                        break
                 else:
-                    pos = s.find('"', pos + 1)
+                    arg += 1
+                    string_args.append("")
+                    cpos = s.find(',', cpos + 1)
+
+            print(string_args)
+
+            # FSUI_ICONSTR and FSUI_ICONSTR_S need to translate the only the second argument
+            # other defines take only a single argument
+            if len(string_args) >= 2:
+                new_s = string_args[1]
+            else:
+                new_s = string_args[0]
+
             assert len(new_s) > 0
 
             #assert (end_pos - start_pos) < 300
