@@ -509,61 +509,6 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="framerateControlSettings">
-         <property name="title">
-          <string>Frame Rate Control</string>
-         </property>
-         <layout class="QGridLayout" name="framerateControlLayout">
-          <item row="1" column="1">
-           <widget class="QDoubleSpinBox" name="palFrameRate">
-            <property name="suffix">
-             <string extracomment="hz=Hertz, as in the measuring unit. Shown after the corresponding number. Those languages who'd need to remove the space or do something in between should do so."> hz</string>
-            </property>
-            <property name="minimum">
-             <double>10.000000000000000</double>
-            </property>
-            <property name="maximum">
-             <double>300.000000000000000</double>
-            </property>
-            <property name="singleStep">
-             <double>0.010000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QDoubleSpinBox" name="ntscFrameRate">
-            <property name="suffix">
-             <string> hz</string>
-            </property>
-            <property name="minimum">
-             <double>10.000000000000000</double>
-            </property>
-            <property name="maximum">
-             <double>300.000000000000000</double>
-            </property>
-            <property name="singleStep">
-             <double>0.010000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="palLabel">
-            <property name="text">
-             <string>PAL Frame Rate:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="ntscLabel">
-            <property name="text">
-             <string>NTSC Frame Rate:</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
         <widget class="QGroupBox" name="pineSettings">
          <property name="title">
           <string>PINE Settings</string>
