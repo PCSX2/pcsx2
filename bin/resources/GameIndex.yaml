@@ -22205,18 +22205,28 @@ SLES-53142:
 SLES-53143:
   name: "Fantastic 4"
   region: "PAL-E"
+  gsHWFixes:
+    halfPixelOffset: 5 # Fixes large depth line.
 SLES-53144:
   name: "4 Fantastiques, Les"
   region: "PAL-F"
+  gsHWFixes:
+    halfPixelOffset: 5 # Fixes large depth line.
 SLES-53145:
   name: "Fantastic 4"
   region: "PAL-G"
+  gsHWFixes:
+    halfPixelOffset: 5 # Fixes large depth line.
 SLES-53146:
   name: "I Fantastici Quattro"
   region: "PAL-I"
+  gsHWFixes:
+    halfPixelOffset: 5 # Fixes large depth line.
 SLES-53147:
   name: "4 Fantásticos, Los"
   region: "PAL-S"
+  gsHWFixes:
+    halfPixelOffset: 5 # Fixes large depth line.
 SLES-53148:
   name: "Fruitfall"
   region: "PAL-E"
@@ -22461,6 +22471,8 @@ SLES-53280:
 SLES-53281:
   name: "Fantastic 4"
   region: "PAL-NL"
+  gsHWFixes:
+    halfPixelOffset: 5 # Fixes large depth line.
 SLES-53282:
   name: "Harvest Fishing"
   region: "PAL-E"
@@ -35029,6 +35041,9 @@ SLPM-60279:
   name-en: "Kamen Rider Kabuto [Trial]"
   region: "NTSC-J"
   gsHWFixes:
+    halfPixelOffset: 5 # Fixes post-processing alignment.
+    nativeScaling: 1 # Fixes post-processing alignment.
+    textureInsideRT: 1 # Fixes garbage and missing effects.
     autoFlush: 1 # Fixes garbage corruptions on the bottom of the screen.
 SLPM-60280:
   name: "電撃PS2 PlayStation 2 SAVE DATA COLLECTION 2007"
@@ -55672,6 +55687,9 @@ SLPS-20483:
   name-en: "Kamen Rider Kabuto"
   region: "NTSC-J"
   gsHWFixes:
+    halfPixelOffset: 5 # Fixes post-processing alignment.
+    nativeScaling: 1 # Fixes post-processing alignment.
+    textureInsideRT: 1 # Fixes garbage and missing effects.
     autoFlush: 1 # Fixes garbage corruptions on the bottom of the screen.
 SLPS-20484:
   name: "SIMPLE2000シリーズ Ultimate Vol.34 魁！！男塾"
@@ -65659,6 +65677,8 @@ SLUS-20615:
   name: "Fantastic 4"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 5 # Fixes large depth line.
 SLUS-20616:
   name: "Virtua Fighter 4 - Evolution"
   region: "NTSC-U"
