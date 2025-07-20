@@ -3,7 +3,6 @@ name: Application Bug Report
 description: Found a problem with the application itself (ie. bad file path handling, UX issue)? Help us improve it.
 title: "[BUG]: "
 labels: [Bug]
-type: [Bug]
 # assignees:
 #   - octocat
 body:
