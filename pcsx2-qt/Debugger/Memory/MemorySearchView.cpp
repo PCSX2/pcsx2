@@ -610,6 +610,7 @@ void MemorySearchView::onSearchButtonClicked()
 	m_searchResults.clear();
 	m_ui.resultsCountLabel->setText(tr("Searching..."));
 	m_ui.resultsCountLabel->setVisible(true);
+	m_ui.btnFilterSearch->setDisabled(true);
 }
 
 void MemorySearchView::onSearchResultsListScroll(u32 value)
