@@ -3,7 +3,6 @@ name: Emulation Bug Report
 description: Problem in a game (ie. graphical artifacts, crashes)? Help us improve it.
 title: "[BUG]: "
 labels: [Bug]
-type: [Bug]
 # assignees:
 #   - octocat
 body:
