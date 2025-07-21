@@ -1277,14 +1277,17 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	GSVector2i ds;
 	if (dTex)
 	{
-		// ps unbind conflicting srvs
-		PSUnbindConflictingSRVs(dTex);
-
 		ds = dTex->GetSize();
 		if (draw_in_depth)
+		{
+			PSUnbindConflictingSRVs(nullptr, dTex);
 			OMSetRenderTargets(nullptr, dTex);
+		}
 		else
+		{
+			PSUnbindConflictingSRVs(dTex, nullptr);
 			OMSetRenderTargets(dTex, nullptr);
+		}
 	}
 	else
 	{
@@ -1342,10 +1345,9 @@ void GSDevice11::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	GSVector2i ds;
 	if (dTex)
 	{
-		// ps unbind conflicting srvs
-		PSUnbindConflictingSRVs(dTex);
-
 		ds = dTex->GetSize();
+
+		PSUnbindConflictingSRVs(dTex, nullptr);
 		OMSetRenderTargets(dTex, nullptr);
 	}
 	else
@@ -1459,7 +1461,7 @@ void GSDevice11::DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_re
 
 	VSSetShader(m_convert.vs.get(), nullptr);
 	PSSetShader(m_convert.ps[static_cast<int>(shader)].get(), nullptr);
-	PSUnbindConflictingSRVs(dTex);
+	PSUnbindConflictingSRVs(dTex->IsRenderTarget() ? dTex : nullptr, dTex->IsDepthStencil() ? dTex : nullptr);
 
 	OMSetDepthStencilState(dTex->IsRenderTarget() ? m_convert.dss.get() : m_convert.dss_write.get(), 0);
 	OMSetRenderTargets(dTex->IsRenderTarget() ? dTex : nullptr, dTex->IsDepthStencil() ? dTex : nullptr);
@@ -2138,9 +2140,7 @@ void GSDevice11::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vert
 
 	m_ctx->ClearDepthStencilView(*static_cast<GSTexture11*>(ds), D3D11_CLEAR_STENCIL, 0.0f, 0);
 
-	// ps unbind conflicting srvs
-
-	PSUnbindConflictingSRVs(ds);
+	PSUnbindConflictingSRVs(nullptr, ds);
 
 	// om
 
@@ -2412,13 +2412,18 @@ void GSDevice11::PSUpdateShaderState(const bool sr_update, const bool ss_update)
 	}
 }
 
-void GSDevice11::PSUnbindConflictingSRVs(GSTexture* tex1, GSTexture* tex2)
+void GSDevice11::PSUnbindConflictingSRVs(GSTexture* rt, GSTexture* ds)
 {
+	if (!rt && !ds)
+		return;
+
 	// Make sure no SRVs are bound using the same texture before binding it to a RTV.
+	// Optimization: Don't check if the rtv or dsv state isn't going to change.
 	bool changed = false;
 	for (size_t i = 0; i < m_state.ps_sr_views.size(); i++)
 	{
-		if ((tex1 && m_state.ps_sr_views[i] == *(GSTexture11*)tex1) || (tex2 && m_state.ps_sr_views[i] == *(GSTexture11*)tex2))
+		if ((rt && m_state.rt_view != *(GSTexture11*)rt && m_state.ps_sr_views[i] == *(GSTexture11*)rt) ||
+			(ds && m_state.dsv != *(GSTexture11*)ds && m_state.ps_sr_views[i] == *(GSTexture11*)ds))
 		{
 			m_state.ps_sr_views[i] = nullptr;
 			changed = true;
