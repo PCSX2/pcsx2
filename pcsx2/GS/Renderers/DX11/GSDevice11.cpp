@@ -1244,7 +1244,7 @@ void GSDevice11::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 	const u32 x = depth ? 0 : destX;
 	const u32 y = depth ? 0 : destY;
 
-	m_ctx->CopySubresourceRegion(*(GSTexture11*)dTex, 0, x, y, 0, *(GSTexture11*)sTex, 0, pBox);
+	m_ctx->CopySubresourceRegion(*static_cast<GSTexture11*>(dTex), 0, x, y, 0, *static_cast<GSTexture11*>(sTex), 0, pBox);
 }
 
 void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader, bool linear)
@@ -2422,8 +2422,8 @@ void GSDevice11::PSUnbindConflictingSRVs(GSTexture* rt, GSTexture* ds)
 	bool changed = false;
 	for (size_t i = 0; i < m_state.ps_sr_views.size(); i++)
 	{
-		if ((rt && m_state.rt_view != *(GSTexture11*)rt && m_state.ps_sr_views[i] == *(GSTexture11*)rt) ||
-			(ds && m_state.dsv != *(GSTexture11*)ds && m_state.ps_sr_views[i] == *(GSTexture11*)ds))
+		if ((rt && m_state.rt_view != *static_cast<GSTexture11*>(rt) && m_state.ps_sr_views[i] == *static_cast<GSTexture11*>(rt)) ||
+			(ds && m_state.dsv != *static_cast<GSTexture11*>(ds) && m_state.ps_sr_views[i] == *static_cast<GSTexture11*>(ds)))
 		{
 			m_state.ps_sr_views[i] = nullptr;
 			changed = true;
@@ -2743,12 +2743,12 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	// Make sure no tex is bound as both rtv and srv at the same time.
 	// All conflicts should've been taken care of by PSUnbindConflictingSRVs.
 	// It is fine to do the optimiation when on slot 0 tex is fb, tex is ds, and slot 2 sw blend as they are copies bound to srv.
-	if (!draw_rt && draw_ds && m_state.rt_view && m_state.cached_rt_view && m_state.rt_view == *(GSTexture11*)m_state.cached_rt_view &&
+	if (!draw_rt && draw_ds && m_state.rt_view && m_state.cached_rt_view && m_state.rt_view == *static_cast<GSTexture11*>(m_state.cached_rt_view) &&
 		m_state.cached_dsv == draw_ds && config.tex != m_state.cached_rt_view && m_state.cached_rt_view->GetSize() == draw_ds->GetSize())
 	{
 		draw_rt = m_state.cached_rt_view;
 	}
-	else if (!draw_ds && draw_rt && m_state.dsv && m_state.cached_dsv && m_state.dsv == *(GSTexture11*)m_state.cached_dsv &&
+	else if (!draw_ds && draw_rt && m_state.dsv && m_state.cached_dsv && m_state.dsv == *static_cast<GSTexture11*>(m_state.cached_dsv) &&
 		m_state.cached_rt_view == draw_rt && config.tex != m_state.cached_dsv && m_state.cached_dsv->GetSize() == draw_rt->GetSize())
 	{
 		draw_ds = m_state.cached_dsv;
