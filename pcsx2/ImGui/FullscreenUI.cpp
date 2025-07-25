@@ -50,6 +50,7 @@
 #include <algorithm>
 #include <array>
 #include <bitset>
+#include <ctime>
 #include <thread>
 #include <utility>
 #include <vector>
@@ -1432,7 +1433,8 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
 		// draw time
 		ImVec2 time_pos;
 		{
-			heading_str.format(FSUI_FSTR("{:%H:%M}"), fmt::localtime(std::time(nullptr)));
+			const std::time_t current_time = std::time(nullptr);
+			heading_str.format(FSUI_FSTR("{:%H:%M}"), *std::localtime(&current_time));
 
 			const ImVec2 time_size = heading_font.first->CalcTextSizeA(heading_font.second, FLT_MAX, 0.0f, "00:00");
 			time_pos = ImVec2(heading_size.x - LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING) - time_size.x,

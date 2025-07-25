@@ -40,6 +40,7 @@
 #include <array>
 #include <chrono>
 #include <cmath>
+#include <ctime>
 #include <deque>
 #include <limits>
 #include <mutex>
@@ -1069,7 +1070,7 @@ void SaveStateSelectorUI::InitializeListEntry(const std::string& serial, u32 crc
 	}
 
 	li->title = fmt::format(TRANSLATE_FS("ImGuiOverlays", "Save Slot {0}"), slot);
-	li->summary = fmt::format(TRANSLATE_FS("ImGuiOverlays", DATE_TIME_FORMAT), fmt::localtime(sd.ModificationTime));
+	li->summary = fmt::format(TRANSLATE_FS("ImGuiOverlays", DATE_TIME_FORMAT), *std::localtime(&sd.ModificationTime));
 	li->filename = Path::GetFileName(path);
 
 	u32 screenshot_width, screenshot_height;
@@ -1269,7 +1270,7 @@ void SaveStateSelectorUI::ShowSlotOSDMessage()
 	FILESYSTEM_STAT_DATA sd;
 	std::string date;
 	if (!filename.empty() && FileSystem::StatFile(filename.c_str(), &sd))
-		date = fmt::format(TRANSLATE_FS("ImGuiOverlays", DATE_TIME_FORMAT), fmt::localtime(sd.ModificationTime));
+		date = fmt::format(TRANSLATE_FS("ImGuiOverlays", DATE_TIME_FORMAT), *std::localtime(&sd.ModificationTime));
 	else
 		date = TRANSLATE_STR("ImGuiOverlays", "no save yet");
 
