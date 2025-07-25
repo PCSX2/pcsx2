@@ -77,7 +77,7 @@ namespace R5900
 			flags, \
 			NULL, \
 			::R5900::Interpreter::OpcodeImpl::name, \
-			nullptr, \
+			nullptr, \ // TODO(WCG847): This is highly dangerous. Create appropriate fallbacks
 			::R5900::OpcodeDisasm::name \
 		}
 

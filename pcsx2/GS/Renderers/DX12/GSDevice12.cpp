@@ -624,6 +624,7 @@ bool GSDevice12::SetGPUTimingEnabled(bool enabled)
 bool GSDevice12::AllocatePreinitializedGPUBuffer(u32 size, ID3D12Resource** gpu_buffer,
 	D3D12MA::Allocation** gpu_allocation, const std::function<void(void*)>& fill_callback)
 {
+	// TODO(WCG847) - There is no proper barriers here. Fix D3D12_RESOURCE_STATE_GENERIC_READ and hardcoded macros
 	// Try to place the fixed index buffer in GPU local memory.
 	// Use the staging buffer to copy into it.
 	const D3D12_RESOURCE_DESC rd = {D3D12_RESOURCE_DIMENSION_BUFFER, 0, size, 1, 1, 1, DXGI_FORMAT_UNKNOWN, {1, 0},

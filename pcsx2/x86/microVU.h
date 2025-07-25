@@ -85,7 +85,6 @@ struct microVU
 	alignas(16) u32 macFlag [4]; // 4 instances of mac    flag (used in execution)
 	alignas(16) u32 clipFlag[4]; // 4 instances of clip   flag (used in execution)
 	alignas(16) u32 xmmCTemp[4];     // Backup used in mVUclamp2()
-	alignas(16) u32 xmmBackup[16][4]; // Backup for xmm0~xmm15
 
 	u32 index;        // VU Index (VU0 or VU1)
 	u32 cop2;         // VU is in COP2 mode?  (No/Yes)

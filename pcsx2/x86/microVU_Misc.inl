@@ -190,8 +190,10 @@ __fi void mVUbackupRegs(microVU& mVU, bool toMemory = false, bool onlyNeeded = f
 	else
 	{
 		// TODO(Stenzek): get rid of xmmbackup
+		// TODO(WCG847): Do some testing on the removal of xMOVAPS.
 		mVU.regAlloc->flushAll(); // Flush Regalloc
-		xMOVAPS(ptr128[&mVU.xmmBackup[xmmPQ.Id][0]], xmmPQ);
+		// [DISABLED](WCG847) Legacy xmmBackup instruction
+		// xMOVAPS(ptr128[&mVU.xmmBackup[xmmPQ.Id][0]], xmmPQ);
 	}
 }
 
@@ -257,7 +259,7 @@ __fi void mVUrestoreRegs(microVU& mVU, bool fromMemory = false, bool onlyNeeded 
 	}
 	else
 	{
-		xMOVAPS(xmmPQ, ptr128[&mVU.xmmBackup[xmmPQ.Id][0]]);
+		// xMOVAPS(xmmPQ, ptr128[&mVU.xmmBackup[xmmPQ.Id][0]]);
 	}
 }
 
