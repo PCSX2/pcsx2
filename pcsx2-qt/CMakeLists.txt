@@ -83,15 +83,15 @@ target_sources(pcsx2-qt PRIVATE
 	Settings/ControllerSettingsWindow.h
 	Settings/ControllerSettingsWindow.ui
 	Settings/ControllerSettingWidgetBinder.h
+	Settings/DebugAnalysisSettingsTab.ui
 	Settings/DebugAnalysisSettingsWidget.cpp
 	Settings/DebugAnalysisSettingsWidget.h
 	Settings/DebugAnalysisSettingsWidget.ui
-	Settings/DebugUserInterfaceSettingsWidget.cpp
-	Settings/DebugUserInterfaceSettingsWidget.h
-	Settings/DebugUserInterfaceSettingsWidget.ui
+	Settings/DebugGSSettingsTab.ui
+	Settings/DebugLoggingSettingsTab.ui
+	Settings/DebugUserInterfaceSettingsTab.ui
 	Settings/DebugSettingsWidget.cpp
 	Settings/DebugSettingsWidget.h
-	Settings/DebugSettingsWidget.ui
 	Settings/EmulationSettingsWidget.cpp
 	Settings/EmulationSettingsWidget.h
 	Settings/EmulationSettingsWidget.ui
@@ -149,6 +149,8 @@ target_sources(pcsx2-qt PRIVATE
 	Settings/HddCreateQt.cpp
 	Settings/HddCreateQt.h
 	Settings/PatchDetailsWidget.ui
+	Settings/SettingsWidget.cpp
+	Settings/SettingsWidget.h
 	Settings/SettingsWindow.cpp
 	Settings/SettingsWindow.h
 	Settings/SettingsWindow.ui
