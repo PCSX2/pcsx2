@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>DebugUserInterfaceSettingsWidget</class>
- <widget class="QWidget" name="DebugUserInterfaceSettingsWidget">
+ <class>DebugUserInterfaceSettingsTab</class>
+ <widget class="QWidget" name="DebugUserInterfaceSettingsTab">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -14,18 +14,6 @@
    <string/>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
-   <property name="leftMargin">
-    <number>0</number>
-   </property>
-   <property name="topMargin">
-    <number>0</number>
-   </property>
-   <property name="rightMargin">
-    <number>0</number>
-   </property>
-   <property name="bottomMargin">
-    <number>0</number>
-   </property>
    <item>
     <widget class="QGroupBox" name="windowGroup">
      <property name="sizePolicy">
