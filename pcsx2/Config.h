@@ -704,6 +704,11 @@ struct Pcsx2Config
 		static constexpr int DEFAULT_AUDIO_CAPTURE_BITRATE = 192;
 		static const char* DEFAULT_CAPTURE_CONTAINER;
 
+		static constexpr int DEFAULT_SHADEBOOST_BRIGHTNESS = 50;
+		static constexpr int DEFAULT_SHADEBOOST_CONTRAST = 50;
+		static constexpr int DEFAULT_SHADEBOOST_GAMMA = 50;
+		static constexpr int DEFAULT_SHADEBOOST_SATURATION = 50;
+
 		union
 		{
 			u64 bitset;
@@ -837,10 +842,10 @@ struct Pcsx2Config
 		s8 OverrideTextureBarriers = -1;
 
 		u8 CAS_Sharpness = 50;
-		u8 ShadeBoost_Brightness = 50;
-		u8 ShadeBoost_Contrast = 50;
-		u8 ShadeBoost_Saturation = 50;
-		u8 ShadeBoost_Gamma = 50;
+		u8 ShadeBoost_Brightness = DEFAULT_SHADEBOOST_BRIGHTNESS;
+		u8 ShadeBoost_Contrast = DEFAULT_SHADEBOOST_CONTRAST;
+		u8 ShadeBoost_Saturation = DEFAULT_SHADEBOOST_SATURATION;
+		u8 ShadeBoost_Gamma = DEFAULT_SHADEBOOST_GAMMA;
 		u8 PNGCompressionLevel = 1;
 
 		u16 SWExtraThreads = 2;
