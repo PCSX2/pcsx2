@@ -131,12 +131,16 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.osdShowVideoCapture, "EmuCore/GS", "OsdShowVideoCapture", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.osdShowInputRec, "EmuCore/GS", "OsdShowInputRec", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.osdWarnAboutUnsafeSettings, "EmuCore", "OsdWarnAboutUnsafeSettings", true);
+
+	//////////////////////////////////////////////////////////////////////////
+	// Post-Processing Settings
+	//////////////////////////////////////////////////////////////////////////
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fxaa, "EmuCore/GS", "fxaa", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.shadeBoost, "EmuCore/GS", "ShadeBoost", false);
-	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.shadeBoostBrightness, "EmuCore/GS", "ShadeBoost_Brightness", false);
-	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.shadeBoostContrast, "EmuCore/GS", "ShadeBoost_Contrast", false);
-	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.shadeBoostGamma, "EmuCore/GS", "ShadeBoost_Gamma", false);
-	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.shadeBoostSaturation, "EmuCore/GS", "ShadeBoost_Saturation", false);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.shadeBoostBrightness, "EmuCore/GS", "ShadeBoost_Brightness", Pcsx2Config::GSOptions::DEFAULT_SHADEBOOST_BRIGHTNESS);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.shadeBoostContrast, "EmuCore/GS", "ShadeBoost_Contrast", Pcsx2Config::GSOptions::DEFAULT_SHADEBOOST_CONTRAST);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.shadeBoostGamma, "EmuCore/GS", "ShadeBoost_Gamma", Pcsx2Config::GSOptions::DEFAULT_SHADEBOOST_GAMMA);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.shadeBoostSaturation, "EmuCore/GS", "ShadeBoost_Saturation", Pcsx2Config::GSOptions::DEFAULT_SHADEBOOST_SATURATION);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.tvShader, "EmuCore/GS", "TVShader", DEFAULT_TV_SHADER_MODE);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.casMode, "EmuCore/GS", "CASMode", static_cast<int>(GSCASMode::Disabled));
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.casSharpness, "EmuCore/GS", "CASSharpness", DEFAULT_CAS_SHARPNESS);
