@@ -2916,14 +2916,14 @@ void GSState::GrowVertexBuffer()
 		u32 old_size;
 		u32 new_size;
 	};
-	std::vector<AllocDesc> alloc_desc = {
+	const std::array<AllocDesc, 5> alloc_desc = {{
 		{reinterpret_cast<void**>(&m_vertex.buff),      old_vertex_size, new_vertex_size},
 		// discard contents of buff_copy by setting old_size = 0
 		{reinterpret_cast<void**>(&m_vertex.buff_copy), 0,               new_vertex_size},
 		{reinterpret_cast<void**>(&m_draw_vertex.buff), old_vertex_size, new_vertex_size},
 		{reinterpret_cast<void**>(&m_index.buff),       old_index_size,  new_index_size},
 		{reinterpret_cast<void**>(&m_draw_index.buff),  old_index_size,  new_index_size}
-	};
+	}};
 
 	// For logging
 	u32 total_size = 0;
