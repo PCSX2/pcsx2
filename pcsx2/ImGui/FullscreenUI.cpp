@@ -1511,19 +1511,16 @@ void FullscreenUI::DrawLandingWindow()
 			QueueResetFocus(FocusResetType::WindowChanged);
 		}
 	}
-	EndHorizontalMenu();
-
 	ImGui::PopStyleColor();
 
-	if (!AreAnyDialogsOpen())
-	{
-		if (ImGui::IsKeyPressed(ImGuiKey_GamepadBack, false) || ImGui::IsKeyPressed(ImGuiKey_F1, false))
-			OpenAboutWindow();
-		if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadInput, false) || ImGui::IsKeyPressed(ImGuiKey_Space, false))
-			SwitchToGameList();
-		else if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false) || ImGui::IsKeyPressed(ImGuiKey_F11, false))
-			DoToggleFullscreen();
-	}
+	if (ImGui::Shortcut(ImGuiKey_GamepadBack) || ImGui::Shortcut(ImGuiKey_F1))
+		OpenAboutWindow();
+	if (ImGui::Shortcut(ImGuiKey_NavGamepadInput) || ImGui::Shortcut(ImGuiKey_Space))
+		SwitchToGameList();
+	else if (ImGui::Shortcut(ImGuiKey_NavGamepadMenu) || ImGui::Shortcut(ImGuiKey_F11))
+		DoToggleFullscreen();
+
+	EndHorizontalMenu();
 
 	if (IsGamepadInputSource())
 	{
@@ -1588,15 +1585,13 @@ void FullscreenUI::DrawStartGameWindow()
 			QueueResetFocus(FocusResetType::WindowChanged);
 		}
 	}
-	EndHorizontalMenu();
 
 	ImGui::PopStyleColor();
 
-	if (!AreAnyDialogsOpen())
-	{
-		if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false) || ImGui::IsKeyPressed(ImGuiKey_F1, false))
-			OpenSaveStateSelector(true);
-	}
+	if (ImGui::Shortcut(ImGuiKey_NavGamepadMenu) || ImGui::Shortcut(ImGuiKey_F1))
+		OpenSaveStateSelector(true);
+
+	EndHorizontalMenu();
 
 	if (IsGamepadInputSource())
 	{
@@ -1819,7 +1814,7 @@ void FullscreenUI::DrawInputBindingButton(
 	{
 		BeginInputBinding(bsi, type, section, name, display_name);
 	}
-	else if (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false))
+	else if (hovered && (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::Shortcut(ImGuiKey_NavGamepadMenu)))
 	{
 		bsi->DeleteValue(section, name);
 		SetSettingsChanged(bsi);
@@ -6267,8 +6262,8 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 					ReturnToMainWindow();
 					break;
 				}
-				else if (hovered && (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false) ||
-										ImGui::IsKeyPressed(ImGuiKey_F1, false)))
+				else if (hovered && (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::Shortcut(ImGuiKey_NavGamepadMenu) ||
+										ImGui::Shortcut(ImGuiKey_F1)))
 				{
 					s_save_state_selector_submenu_index = static_cast<s32>(i);
 				}
@@ -6709,8 +6704,8 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 				selected_entry = entry;
 
 			if (selected_entry &&
-				(ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false) ||
-					ImGui::IsKeyPressed(ImGuiKey_F3, false)))
+				(ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::Shortcut(ImGuiKey_NavGamepadMenu) ||
+					ImGui::Shortcut(ImGuiKey_F3)))
 			{
 				HandleGameListOptions(selected_entry);
 			}
@@ -6935,8 +6930,8 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
 			{
 				HandleGameListActivate(entry);
 			}
-			else if (hovered && (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false) ||
-									ImGui::IsKeyPressed(ImGuiKey_F3, false)))
+			else if (hovered && (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::Shortcut(ImGuiKey_NavGamepadMenu) ||
+									ImGui::Shortcut(ImGuiKey_F3)))
 			{
 				HandleGameListOptions(entry);
 			}
