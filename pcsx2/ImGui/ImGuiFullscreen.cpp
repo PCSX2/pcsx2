@@ -2240,6 +2240,7 @@ void ImGuiFullscreen::DrawFileSelector()
 
 	bool is_open = !WantsToCloseMenu();
 	bool directory_selected = false;
+	bool parent_wanted = false;
 	if (ImGui::BeginPopupModal(
 			s_file_selector_title.c_str(), &is_open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
 	{
@@ -2269,6 +2270,12 @@ void ImGuiFullscreen::DrawFileSelector()
 		EndMenuButtons();
 
 		ImGui::PopStyleColor(1);
+
+		if ((ImGui::Shortcut(ImGuiKey_Backspace, false) || ImGui::Shortcut(ImGuiKey_NavGamepadInput, false)) &&
+			(!s_file_selector_items.empty() && s_file_selector_items.front().display_name == ICON_FA_FOLDER_OPEN " <Parent Directory>"))
+		{
+			parent_wanted = true;
+		}
 
 		ImGui::EndPopup();
 	}
@@ -2306,17 +2313,10 @@ void ImGuiFullscreen::DrawFileSelector()
 		s_file_selector_callback(no_path);
 		CloseFileSelector();
 	}
-	else
+	else if (parent_wanted)
 	{
-		if (ImGui::IsKeyPressed(ImGuiKey_Backspace, false) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false))
-		{
-			if (!s_file_selector_items.empty() && s_file_selector_items.front().display_name == ICON_FA_FOLDER_OPEN
-													  "  <Parent Directory>")
-			{
-				SetFileSelectorDirectory(std::move(s_file_selector_items.front().full_path));
-				QueueResetFocus(FocusResetType::Other);
-			}
-		}
+		SetFileSelectorDirectory(std::move(s_file_selector_items.front().full_path));
+		QueueResetFocus(FocusResetType::Other);
 	}
 }
 
