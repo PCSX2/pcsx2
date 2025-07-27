@@ -6075,7 +6075,6 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 			(static_cast<float>(ImGui::GetWindowWidth()) - (item_width_with_spacing * static_cast<float>(grid_count_x))) * 0.5f;
 
 		u32 grid_x = 0;
-		ImGui::SetCursorPos(ImVec2(start_x, 0.0f));
 		for (u32 i = 0; i < s_save_state_selector_slots.size();)
 		{
 			if (i == 0)
@@ -6198,6 +6197,17 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 				continue;
 			}
 
+			if (grid_x == grid_count_x)
+			{
+				grid_x = 0;
+				ImGui::SetCursorPosX(start_x);
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + item_spacing);
+			}
+			else
+			{
+				ImGui::SameLine(start_x + static_cast<float>(grid_x) * (item_width + item_spacing));
+			}
+
 			const SaveStateListEntry& entry = s_save_state_selector_slots[i];
 			const ImGuiID id = window->GetID(static_cast<int>(i));
 			const ImVec2 pos(window->DC.CursorPos);
@@ -6265,17 +6275,6 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 			}
 
 			grid_x++;
-			if (grid_x == grid_count_x)
-			{
-				grid_x = 0;
-				ImGui::SetCursorPosX(start_x);
-				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + item_spacing);
-			}
-			else
-			{
-				ImGui::SameLine(start_x + static_cast<float>(grid_x) * (item_width + item_spacing));
-			}
-
 			i++;
 		}
 
