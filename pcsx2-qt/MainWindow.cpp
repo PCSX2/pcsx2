@@ -504,10 +504,13 @@ void MainWindow::createRendererSwitchMenu()
 	};
 	const GSRendererType current_renderer = static_cast<GSRendererType>(
 		Host::GetBaseIntSettingValue("EmuCore/GS", "Renderer", static_cast<int>(GSRendererType::Auto)));
+
+	QActionGroup* switch_renderer_group = new QActionGroup(m_ui.menuDebugSwitchRenderer);
+
 	for (const GSRendererType renderer : renderers)
 	{
-		QAction* action = m_ui.menuDebugSwitchRenderer->addAction(
-			QString::fromUtf8(Pcsx2Config::GSOptions::GetRendererName(renderer)));
+		QAction* action = new QAction(
+			QString::fromUtf8(Pcsx2Config::GSOptions::GetRendererName(renderer)), switch_renderer_group);
 		action->setCheckable(true);
 		action->setChecked(current_renderer == renderer);
 		connect(action,
@@ -515,15 +518,10 @@ void MainWindow::createRendererSwitchMenu()
 				Host::SetBaseIntSettingValue("EmuCore/GS", "Renderer", static_cast<int>(renderer));
 				Host::CommitBaseSettingChanges();
 				g_emu_thread->applySettings();
-
-				// clear all others
-				for (QObject* obj : m_ui.menuDebugSwitchRenderer->children())
-				{
-					if (QAction* act = qobject_cast<QAction*>(obj); act && act != action)
-						act->setChecked(false);
-				}
 			});
 	}
+
+	m_ui.menuDebugSwitchRenderer->addActions(switch_renderer_group->actions());
 }
 
 void MainWindow::recreate()
