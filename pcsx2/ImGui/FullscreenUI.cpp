@@ -50,6 +50,7 @@
 #include <algorithm>
 #include <array>
 #include <bitset>
+#include <chrono>
 #include <thread>
 #include <utility>
 #include <vector>
@@ -1440,7 +1441,17 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
 		// draw time
 		ImVec2 time_pos;
 		{
-			heading_str.format(FSUI_FSTR("{:%H:%M}"), fmt::localtime(std::time(nullptr)));
+			// Waiting on (apple)clang support for P0355R7
+			// Migrate to std::chrono::current_zone and zoned_time then
+			const auto utc_now = std::chrono::system_clock::now();
+			const auto utc_time_t = std::chrono::system_clock::to_time_t(utc_now);
+			std::tm tm_local = {};
+#ifdef _MSC_VER
+			localtime_s(&tm_local, &utc_time_t);
+#else
+			localtime_r(&utc_time_t, &tm_local);
+#endif
+			heading_str.format(FSUI_FSTR("{:%H:%M}"), tm_local);
 
 			const ImVec2 time_size = heading_font.first->CalcTextSizeA(heading_font.second, FLT_MAX, 0.0f, "00:00");
 			time_pos = ImVec2(heading_size.x - LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING) - time_size.x,

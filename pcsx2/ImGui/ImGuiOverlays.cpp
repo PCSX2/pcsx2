@@ -1069,7 +1069,14 @@ void SaveStateSelectorUI::InitializeListEntry(const std::string& serial, u32 crc
 	}
 
 	li->title = fmt::format(TRANSLATE_FS("ImGuiOverlays", "Save Slot {0}"), slot);
-	li->summary = fmt::format(TRANSLATE_FS("ImGuiOverlays", DATE_TIME_FORMAT), fmt::localtime(sd.ModificationTime));
+
+	std::tm tm_local = {};
+#ifdef _MSC_VER
+	localtime_s(&tm_local, &sd.ModificationTime);
+#else
+	localtime_r(&sd.ModificationTime, &tm_local);
+#endif
+	li->summary = fmt::format(TRANSLATE_FS("ImGuiOverlays", DATE_TIME_FORMAT), tm_local);
 	li->filename = Path::GetFileName(path);
 
 	u32 screenshot_width, screenshot_height;
@@ -1268,8 +1275,15 @@ void SaveStateSelectorUI::ShowSlotOSDMessage()
 	const std::string filename = VMManager::GetSaveStateFileName(serial.c_str(), crc, slot);
 	FILESYSTEM_STAT_DATA sd;
 	std::string date;
+	
+	std::tm tm_local = {};
+#ifdef _MSC_VER
+	localtime_s(&tm_local, &sd.ModificationTime);
+#else
+	localtime_r(&sd.ModificationTime, &tm_local);
+#endif
 	if (!filename.empty() && FileSystem::StatFile(filename.c_str(), &sd))
-		date = fmt::format(TRANSLATE_FS("ImGuiOverlays", DATE_TIME_FORMAT), fmt::localtime(sd.ModificationTime));
+		date = fmt::format(TRANSLATE_FS("ImGuiOverlays", DATE_TIME_FORMAT), tm_local);
 	else
 		date = TRANSLATE_STR("ImGuiOverlays", "no save yet");
 
