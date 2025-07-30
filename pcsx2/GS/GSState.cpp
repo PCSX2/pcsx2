@@ -701,6 +701,79 @@ void GSState::DumpVertices(const std::string& filename)
 	file << CLOSE_MAP << std::endl;
 }
 
+void GSState::DumpTransfers(const std::string& filename)
+{
+	// Only create the file if there are transfers to dump
+	std::optional<std::ofstream> file;
+
+	constexpr const char* LIST_ITEM = "- ";
+	constexpr const char* DEL = ", ";
+	constexpr const char* INDENT = "  ";
+	constexpr const char* OPEN_MAP = "{";
+	constexpr const char* CLOSE_MAP = "}";
+	constexpr const char* COMMENT = " # ";
+
+	int n_dumped = 0; // Number of transfers dumped for this draw.
+	for (int i = 0; i < static_cast<int>(m_draw_transfers.size()); ++i)
+	{
+		if (m_draw_transfers[i].draw != s_n - 1)
+			continue; // skip transfers that did not start in the previous draw
+
+		if (!file.has_value())
+		{
+			file.emplace(filename);
+			if (!file->is_open())
+				return; // failed to open file
+			file->imbue(std::locale::classic()); // Disable integer separators.
+		}
+
+		const GSUploadQueue& transfer = m_draw_transfers[i];
+
+		if (n_dumped > 0)
+			(*file) << std::endl;
+
+		// EE->GS or GS->GS
+		(*file) << LIST_ITEM << "type: " << (transfer.ee_to_gs ? "EE_to_GS" : "GS_to_GS") << std::endl;
+
+		// Dump BITBLTBUF
+		(*file) << INDENT << "BITBLTBUF: " << OPEN_MAP;
+
+		if (!transfer.ee_to_gs)
+		{
+			// Transferring GS->GS so the source info is relevant
+			(*file) << "SBP: " << std::hex << std::showbase << transfer.blit.SBP << DEL <<
+				"SBW: " << std::dec << transfer.blit.SBW << DEL <<
+				"SPSM: " << std::hex << std::showbase << transfer.blit.SPSM << DEL;
+		}
+
+		(*file) << "DBP: " << std::hex << std::showbase << transfer.blit.DBP << DEL <<
+			"DBW: " << std::dec << transfer.blit.DBW << DEL <<
+			"DPSM: " << std::hex << std::showbase << transfer.blit.DPSM << CLOSE_MAP;
+
+		(*file) << COMMENT; // Write the human-readable PSM in comments
+
+		if (!transfer.ee_to_gs)
+		{
+			// Transferring GS->GS so the source info is relevant
+			(*file) << GSUtil::GetPSMName(transfer.blit.SPSM) << " -> ";
+		}
+
+		(*file) << GSUtil::GetPSMName(transfer.blit.DPSM) << std::endl;
+
+		// Dump rectangle
+		(*file) << INDENT << "rect: [" << std::dec << transfer.rect.x << DEL << transfer.rect.y << DEL <<
+			transfer.rect.z << DEL << transfer.rect.w << "]" << std::endl;
+
+		// Dump draw number
+		(*file) << INDENT << "draw: " << std::dec << transfer.draw << std::endl;
+
+		// Dump zero_clear
+		(*file) << INDENT << "zero_clear: " << (transfer.zero_clear ? "true" : "false") << std::endl;
+
+		n_dumped++;
+	}
+}
+
 __inline void GSState::CheckFlushes()
 {
 	if (m_dirty_gs_regs && m_index.tail > 0)
@@ -2173,7 +2246,7 @@ void GSState::Write(const u8* mem, int len)
 		}
 		else
 		{
-			GSUploadQueue new_transfer = { blit, r, s_n, false };
+			const GSUploadQueue new_transfer = { blit, r, s_n, false, true };
 			m_draw_transfers.push_back(new_transfer);
 		}
 
@@ -2364,7 +2437,7 @@ void GSState::Move()
 	}
 	else
 	{
-		GSUploadQueue new_transfer = { m_env.BITBLTBUF, r, s_n, false };
+		const GSUploadQueue new_transfer = { m_env.BITBLTBUF, r, s_n, false, false };
 		m_draw_transfers.push_back(new_transfer);
 	}
 
