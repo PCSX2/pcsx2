@@ -2330,6 +2330,10 @@ void GSRendererHW::Draw()
 		// Dump vertices
 		s = GetDrawDumpPath("%05d_vertex.txt", s_n);
 		DumpVertices(s);
+
+		// Dump transfers
+		s = GetDrawDumpPath("%05d_transfers.txt", s_n);
+		DumpTransfers(s);
 	}
 
 	static u32 num_skipped_channel_shuffle_draws = 0;

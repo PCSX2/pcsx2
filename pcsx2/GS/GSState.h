@@ -215,6 +215,7 @@ public:
 		GSVector4i rect;
 		int draw;
 		bool zero_clear;
+		bool ee_to_gs;
 	};
 
 	enum NoGapsType
@@ -442,6 +443,7 @@ public:
 	void SetRegsMem(u8* basemem) { m_regs = reinterpret_cast<GSPrivRegSet*>(basemem); }
 
 	void DumpVertices(const std::string& filename);
+	void DumpTransfers(const std::string& filename);
 
 	bool TrianglesAreQuads(bool shuffle_check = false);
 	PRIM_OVERLAP PrimitiveOverlap();

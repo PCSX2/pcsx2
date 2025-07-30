@@ -322,6 +322,10 @@ void GSRendererSW::Draw()
 		// Dump vertices
 		s = GetDrawDumpPath("%05d_vertex.txt", s_n);
 		DumpVertices(s);
+
+		// Dump transfers
+		s = GetDrawDumpPath("%05d_transfers.txt", s_n);
+		DumpTransfers(s);
 	}
 
 	auto data = m_vertex_heap.make_shared<SharedData>().cast<GSRasterizerData>();
