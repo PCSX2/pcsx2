@@ -25,6 +25,7 @@ void GSVertexTrace::Update(const void* vertex, const u16* index, int v_count, in
 	const u32 fst = m_state->PRIM->FST;
 	const u32 color = !(m_state->PRIM->TME && m_state->m_context->TEX0.TFX == TFX_DECAL && m_state->m_context->TEX0.TCC);
 
+	// Call the correct function to find the min/max values
 	m_fmm[color][fst][tme][iip][primclass](*this, vertex, index, i_count);
 
 	// Potential float overflow detected. Better uses the slower division instead
