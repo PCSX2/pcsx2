@@ -29,6 +29,8 @@
 
 #include "fmt/format.h"
 
+#include "GS/GSVector.h"
+
 #include <bit>
 #include <map>
 #include <unordered_set>
@@ -109,16 +111,6 @@ vtlb_private::VTLBVirtual::VTLBVirtual(VTLBPhysical phys, u32 paddr, u32 vaddr)
 	}
 }
 
-#if defined(_M_X86)
-#include <immintrin.h>
-#elif defined(_M_ARM64)
-#if defined(_MSC_VER) && !defined(__clang__)
-#include <arm64_neon.h>
-#else
-#include <arm_neon.h>
-#endif
-#endif
-
 __inline int CheckCache(u32 addr)
 {
 	// Check if the cache is enabled
@@ -130,83 +122,28 @@ __inline int CheckCache(u32 addr)
 	size_t i = 0;
 	const size_t size = cachedTlbs.count;
 
-#if defined(_M_X86)
 	const int stride = 4;
 
-	const __m128i addr_vec = _mm_set1_epi32(addr);
+	const GSVector4i addr_vec = GSVector4i::load(addr);
 
 	for (; i + stride <= size; i += stride)
 	{
-		const __m128i pfn1_vec = _mm_loadu_si128(reinterpret_cast<const __m128i*>(&cachedTlbs.PFN1s[i]));
-		const __m128i pfn0_vec = _mm_loadu_si128(reinterpret_cast<const __m128i*>(&cachedTlbs.PFN0s[i]));
-		const __m128i mask_vec = _mm_loadu_si128(reinterpret_cast<const __m128i*>(&cachedTlbs.PageMasks[i]));
+		const GSVector4i pfn1_vec = GSVector4i::load<true>(&cachedTlbs.PFN1s[i]);
+		const GSVector4i pfn0_vec = GSVector4i::load<true>(&cachedTlbs.PFN0s[i]);
+		const GSVector4i mask_vec = GSVector4i::load<true>(&cachedTlbs.PageMasks[i]);
 
-		const __m128i cached1_vec = _mm_loadu_si128(reinterpret_cast<const __m128i*>(&cachedTlbs.CacheEnabled1[i]));
-		const __m128i cached0_vec = _mm_loadu_si128(reinterpret_cast<const __m128i*>(&cachedTlbs.CacheEnabled0[i]));
+		const GSVector4i cached1_enable_vec = GSVector4i::load<true>(&cachedTlbs.CacheEnabled1[i]);
+		const GSVector4i cached0_enable_vec = GSVector4i::load<true>(&cachedTlbs.CacheEnabled0[i]);
 
-		const __m128i pfn1_end_vec = _mm_add_epi32(pfn1_vec, mask_vec);
-		const __m128i pfn0_end_vec = _mm_add_epi32(pfn0_vec, mask_vec);
+		const GSVector4i cmp1 = addr_vec.ge32(pfn1_vec) & addr_vec.le32(pfn1_vec + mask_vec);
+		const GSVector4i cmp0 = addr_vec.ge32(pfn0_vec) & addr_vec.le32(pfn1_vec + mask_vec);
 
-		// pfn0 <= addr
-		const __m128i gteLowerBound0 = _mm_or_si128(
-			_mm_cmpgt_epi32(addr_vec, pfn0_vec),
-			_mm_cmpeq_epi32(addr_vec, pfn0_vec));
-		// pfn0 + mask >= addr
-		const __m128i gteUpperBound0 = _mm_or_si128(
-			_mm_cmpgt_epi32(pfn0_end_vec, addr_vec),
-			_mm_cmpeq_epi32(pfn0_end_vec, addr_vec));
+		const GSVector4i lanes_enabled = (cmp1 & cached1_enable_vec) | (cmp0 & cached0_enable_vec);
 
-		// pfn1 <= addr
-		const __m128i gteUpperBound1 = _mm_or_si128(
-			_mm_cmpgt_epi32(pfn1_end_vec, addr_vec),
-			_mm_cmpeq_epi32(pfn1_end_vec, addr_vec));
-		// pfn1 + mask >= addr
-		const __m128i gteLowerBound1 = _mm_or_si128(
-			_mm_cmpgt_epi32(addr_vec, pfn1_vec),
-			_mm_cmpeq_epi32(addr_vec, pfn1_vec));
-
-		// pfn0 <= addr <= pfn0 + mask
-		__m128i cmp0 = _mm_and_si128(gteLowerBound0, gteUpperBound0);
-		// pfn1 <= addr <= pfn1 + mask
-		__m128i cmp1 = _mm_and_si128(gteLowerBound1, gteUpperBound1);
-
-		cmp1 = _mm_and_si128(cmp1, cached1_vec);
-		cmp0 = _mm_and_si128(cmp0, cached0_vec);
-
-		const __m128i cmp = _mm_or_si128(cmp1, cmp0);
-
-		if (!_mm_testz_si128(cmp, cmp))
-		{
-			return true;
-		}
-	}
-#elif defined(_M_ARM64)
-	const int stride = 4;
-
-	const uint32x4_t addr_vec = vld1q_dup_u32(&addr);
-
-	for (; i + stride <= size; i += stride)
-	{
-		const uint32x4_t pfn1_vec = vld1q_u32(&cachedTlbs.PFN1s[i]);
-		const uint32x4_t pfn0_vec = vld1q_u32(&cachedTlbs.PFN0s[i]);
-		const uint32x4_t mask_vec = vld1q_u32(&cachedTlbs.PageMasks[i]);
-
-		const uint32x4_t cached1_vec = vld1q_u32(&cachedTlbs.CacheEnabled1[i]);
-		const uint32x4_t cached0_vec = vld1q_u32(&cachedTlbs.CacheEnabled0[i]);
-
-		const uint32x4_t pfn1_end_vec = vaddq_u32(pfn1_vec, mask_vec);
-		const uint32x4_t pfn0_end_vec = vaddq_u32(pfn0_vec, mask_vec);
-
-		const uint32x4_t cmp1 = vandq_u32(vcgeq_u32(addr_vec, pfn1_vec), vcleq_u32(addr_vec, pfn1_end_vec));
-		const uint32x4_t cmp0 = vandq_u32(vcgeq_u32(addr_vec, pfn0_vec), vcleq_u32(addr_vec, pfn0_end_vec));
-
-		const uint32x4_t lanes_enabled = vorrq_u32(vandq_u32(cached1_vec, cmp1), vandq_u32(cached0_vec, cmp0));
-
-		const uint32x2_t tmp = vorr_u32(vget_low_u32(lanes_enabled), vget_high_u32(lanes_enabled));
-		if (vget_lane_u32(vpmax_u32(tmp, tmp), 0))
+		if (!lanes_enabled.allfalse())
 			return true;
 	}
-#endif
+
 	for (; i < size; i++)
 	{
 		const u32 mask = cachedTlbs.PageMasks[i];
@@ -637,7 +574,7 @@ static void TAKES_R128 vtlbUnmappedVWriteLg(u32 addr, r128 data) { vtlb_Miss(add
 template <typename OperandType>
 static OperandType vtlbUnmappedPReadSm(u32 addr) {
 	vtlb_BusError(addr, 0);
-	if(!CHECK_EEREC && CHECK_CACHE && CheckCache(addr)){
+	if (!CHECK_EEREC && CHECK_CACHE && CheckCache(addr)){
 		switch (sizeof(OperandType)) {
 			case 1: return readCache8(addr, false);
 			case 2: return readCache16(addr, false);
