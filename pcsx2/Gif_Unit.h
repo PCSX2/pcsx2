@@ -603,7 +603,7 @@ struct Gif_Unit
 			}
 			if (curSize >= size)
 				return size;
-			if(((flush && gifTag.tag.EOP) || !flush) && (CHECK_XGKICKHACK || !EmuConfig.Cpu.Recompiler.EnableVU1))
+			if(((flush && gifTag.tag.EOP) || !flush) && (CHECK_XGKICKHACK || !REC_VU1))
 			{
 				return curSize | ((u32)gifTag.tag.EOP << 31);
 			}
