@@ -170,7 +170,7 @@ protected:
 	void UpdateVertexKick();
 
 	void GrowVertexBuffer();
-	bool IsAutoFlushDraw(u32 prim);
+	bool IsAutoFlushDraw(u32 prim, int& lod);
 	template<u32 prim> void HandleAutoFlush();
 	void CheckCLUTValidity(u32 prim);
 
@@ -448,6 +448,17 @@ public:
 	bool SpriteDrawWithoutGaps();
 	void CalculatePrimitiveCoversWithoutGaps();
 	GIFRegTEX0 GetTex0Layer(u32 lod);
+
+	GSVector2 GetWindowCoords(const GSVertex& v);
+	GSVector2 GetTexelCoords(const GSVertex& v);
+	template<bool XY, bool UV>
+	auto GetSpriteBBox(const GSVertex* const* v);
+	template <u32 prim, bool XY, bool UV>
+	auto GetPrimBBox(const GSVertex* const* v);
+	GSVector4 DoScissor(GSVector4 xy_rect);
+
+	// Early shuffle detection based on a single sprite in the queue.
+	bool EarlyDetectShuffle(u32 prim);
 };
 
 // We put this in the header because of Multi-ISA.
