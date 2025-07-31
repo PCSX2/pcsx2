@@ -2172,7 +2172,7 @@ bool ImGuiFullscreen::IsFileSelectorOpen()
 }
 
 void ImGuiFullscreen::OpenFileSelector(std::string_view title, bool select_directory, FileSelectorCallback callback,
-	FileSelectorFilters filters, std::string initial_directory)
+	FileSelectorFilters filters, std::string initial_directory, std::string default_filename)
 {
 	if (initial_directory.empty() || !FileSystem::DirectoryExists(initial_directory.c_str()))
 		initial_directory = FileSystem::GetWorkingDirectory();
@@ -2454,13 +2454,14 @@ bool ImGuiFullscreen::IsInputDialogOpen()
 }
 
 void ImGuiFullscreen::OpenInputStringDialog(
-	std::string title, std::string message, std::string caption, std::string ok_button_text, InputStringDialogCallback callback)
+	std::string title, std::string message, std::string caption, std::string ok_button_text, InputStringDialogCallback callback, std::string default_value)
 {
 	s_input_dialog_open = true;
 	s_input_dialog_title = std::move(title);
 	s_input_dialog_message = std::move(message);
 	s_input_dialog_caption = std::move(caption);
 	s_input_dialog_ok_text = std::move(ok_button_text);
+	s_input_dialog_text = std::move(default_value);
 	s_input_dialog_callback = std::move(callback);
 	QueueResetFocus(FocusResetType::PopupOpened);
 }
@@ -2504,7 +2505,75 @@ void ImGuiFullscreen::DrawInputDialog()
 		{
 			ImGui::SetNextItemWidth(ImGui::GetCurrentWindow()->WorkRect.GetWidth());
 		}
-		ImGui::InputText("##input", &s_input_dialog_text);
+
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
+
+		// Create a visible text box with border
+		const float text_height = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0f + LayoutScale(6.0f); // add extra height
+		const ImVec2 text_box_size(ImGui::GetCurrentWindow()->WorkRect.GetWidth(), text_height);
+		const ImVec2 cursor_pos = ImGui::GetCursorPos();
+		
+		// Draw a border and background for the text box
+		ImDrawList* draw_list = ImGui::GetWindowDrawList();
+		ImVec2 screen_pos = ImGui::GetCursorScreenPos();
+		draw_list->AddRectFilled(screen_pos, 
+		                         ImVec2(screen_pos.x + text_box_size.x, screen_pos.y + text_box_size.y), 
+		                         IM_COL32(50, 50, 50, 255), 4.0f);
+		draw_list->AddRect(screen_pos, 
+		                   ImVec2(screen_pos.x + text_box_size.x, screen_pos.y + text_box_size.y), 
+		                   IM_COL32(150, 150, 150, 255), 4.0f);
+		
+		ImGui::SetCursorPos(ImVec2(cursor_pos.x + 5.0f, cursor_pos.y + 5.0f + LayoutScale(2.0f)));
+		ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.2f, 0.2f, 0.2f, 0.0f));
+		ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(ImGui::GetStyle().FramePadding.x, ImGui::GetStyle().FramePadding.y + LayoutScale(2.0f)));
+		ImGui::SetNextItemWidth(text_box_size.x - 10.0f);
+		
+		// Check if we're in an IP address or numeric input field
+		bool is_ip_input = s_input_dialog_message.find("xxx.xxx.xxx.xxx") != std::string::npos;
+		bool is_numeric_input = s_input_dialog_message.find("gigabytes") != std::string::npos;
+		
+		// Filter callback for InputText
+		static auto input_callback = [](ImGuiInputTextCallbackData* data) -> int {
+			int* filter_type = (int*)data->UserData;
+			
+			// If we're adding a character (not deleting)
+			if (data->EventFlag == ImGuiInputTextFlags_CallbackCharFilter) {
+				char c = (char)data->EventChar;
+				
+				// For IP address fields
+				if (*filter_type == 1) {
+					// Only allow digits and dots
+					if (!(std::isdigit(c) || c == '.')) {
+						return 1; // Return 1 to filter out this character
+					}
+				}
+				// For numeric fields
+				else if (*filter_type == 2) {
+					// Only allow digits
+					if (!std::isdigit(c)) {
+						return 1; // Return 1 to filter out this character
+					}
+				}
+			}
+			
+			return 0; // Accept character
+		};
+		
+		// Determine filter type
+		static int filter_type = 0; // 0 = no filter, 1 = IP address, 2 = numeric
+		if (is_ip_input) filter_type = 1;
+		else if (is_numeric_input) filter_type = 2;
+		else filter_type = 0;
+		
+		ImGuiInputTextFlags flags = ImGuiInputTextFlags_CallbackCharFilter;
+		ImGui::InputText("##input", &s_input_dialog_text, flags, input_callback, &filter_type);
+		ImGui::PopStyleColor(2);
+		ImGui::PopStyleVar();
+		ImGui::PopStyleVar(); 
+		
+		ImGui::SetCursorPos(ImVec2(cursor_pos.x, cursor_pos.y + text_box_size.y + LayoutScale(10.0f)));
 
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
 
