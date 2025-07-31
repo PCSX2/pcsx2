@@ -25,38 +25,12 @@
 namespace {
 struct GSUtilMaps
 {
-	u8 PrimClassField[8] = {};
-	u8 VertexCountField[8] = {};
-	u8 ClassVertexCountField[4] = {};
 	u32 CompatibleBitsField[64][2] = {};
 	u32 SharedBitsField[64][2] = {};
 	u32 SwizzleField[64][2] = {};
 
 	constexpr GSUtilMaps()
 	{
-		PrimClassField[GS_POINTLIST] = GS_POINT_CLASS;
-		PrimClassField[GS_LINELIST] = GS_LINE_CLASS;
-		PrimClassField[GS_LINESTRIP] = GS_LINE_CLASS;
-		PrimClassField[GS_TRIANGLELIST] = GS_TRIANGLE_CLASS;
-		PrimClassField[GS_TRIANGLESTRIP] = GS_TRIANGLE_CLASS;
-		PrimClassField[GS_TRIANGLEFAN] = GS_TRIANGLE_CLASS;
-		PrimClassField[GS_SPRITE] = GS_SPRITE_CLASS;
-		PrimClassField[GS_INVALID] = GS_INVALID_CLASS;
-
-		VertexCountField[GS_POINTLIST] = 1;
-		VertexCountField[GS_LINELIST] = 2;
-		VertexCountField[GS_LINESTRIP] = 2;
-		VertexCountField[GS_TRIANGLELIST] = 3;
-		VertexCountField[GS_TRIANGLESTRIP] = 3;
-		VertexCountField[GS_TRIANGLEFAN] = 3;
-		VertexCountField[GS_SPRITE] = 2;
-		VertexCountField[GS_INVALID] = 1;
-
-		ClassVertexCountField[GS_POINT_CLASS] = 1;
-		ClassVertexCountField[GS_LINE_CLASS] = 2;
-		ClassVertexCountField[GS_TRIANGLE_CLASS] = 3;
-		ClassVertexCountField[GS_SPRITE_CLASS] = 2;
-
 		for (int i = 0; i < 64; i++)
 		{
 			CompatibleBitsField[i][i >> 5] |= 1U << (i & 0x1f);
@@ -118,21 +92,6 @@ const char* GSUtil::GetAFAILName(u32 afail)
 {
 	static constexpr const char* names[] = {"KEEP", "FB_ONLY", "ZB_ONLY", "RGB_ONLY"};
 	return (afail < std::size(names)) ? names[afail] : "";
-}
-
-GS_PRIM_CLASS GSUtil::GetPrimClass(u32 prim)
-{
-	return (GS_PRIM_CLASS)s_maps.PrimClassField[prim];
-}
-
-int GSUtil::GetVertexCount(u32 prim)
-{
-	return s_maps.VertexCountField[prim];
-}
-
-int GSUtil::GetClassVertexCount(u32 primclass)
-{
-	return s_maps.ClassVertexCountField[primclass];
 }
 
 const u32* GSUtil::HasSharedBitsPtr(u32 dpsm)
