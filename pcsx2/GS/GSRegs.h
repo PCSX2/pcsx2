@@ -773,6 +773,21 @@ REG64_(GIFReg, TEST)
 	u32 _PAD1 : 13;
 	u32 _PAD2 : 32;
 REG_END2
+	__forceinline bool FrameNotWritten() const
+	{
+		return (ATE && ATST == ATST_NEVER && AFAIL != AFAIL_FB_ONLY && AFAIL != AFAIL_RGB_ONLY) ||
+			(ZTE && ZTST == ZTST_NEVER);
+	}
+	__forceinline bool AlphaNotWritten() const
+	{
+		return (ATE && ATST == ATST_NEVER && AFAIL != AFAIL_FB_ONLY) ||
+			(ZTE && ZTST == ZTST_NEVER);
+	}
+	__forceinline bool DepthNotWritten() const
+	{
+		return (ATE && ATST == ATST_NEVER && AFAIL != AFAIL_ZB_ONLY) ||
+			(ZTE && ZTST == ZTST_NEVER);
+	}
 	__forceinline bool DoFirstPass() const { return !ATE || ATST != ATST_NEVER; } // not all pixels fail automatically
 	__forceinline bool DoSecondPass() const { return ATE && ATST != ATST_ALWAYS && AFAIL != AFAIL_KEEP; } // pixels may fail, write fb/z
 	__forceinline bool NoSecondPass() const { return ATE && ATST != ATST_ALWAYS && AFAIL == AFAIL_KEEP; } // pixels may fail, no output
@@ -845,8 +860,27 @@ REG64_(GIFReg, TEX1)
 	s32  K    : 12; // 1:7:4
 	u32 _PAD4 : 20;
 REG_END2
-	bool IsMinLinear() const { return (MMIN == 1) || (MMIN & 4); }
-	bool IsMagLinear() const { return MMAG; }
+	__forceinline bool IsMinLinear() const { return (MMIN == 1) || (MMIN & 4); }
+	__forceinline bool IsMagLinear() const { return MMAG; }
+	__forceinline bool IsMipMapActive() const { return MXL > 0 && MMIN >= 2 && MMIN <= 5; }
+	__forceinline int MinUsedLOD() const
+	{
+		if (!IsMipMapActive())
+			return 0;
+		if (LCM)
+			return std::clamp(K >> 4, 0, static_cast<int>(MXL)); // Fixed LOD so we can compute exactly
+		else
+			return 0; // Unknown LOD so we must assume smallest is used
+	}
+	__forceinline int MaxUsedLOD() const
+	{
+		if (!IsMipMapActive())
+			return 0;
+		if (LCM)
+			return std::clamp((K + 0xF) >> 4, 0, static_cast<int>(MXL)); // Fixed LOD so we can compute exactly
+		else
+			return static_cast<int>(MXL); // Unknown LOD so we must assume largest is used
+	}
 REG_END2
 
 REG64_(GIFReg, TEX2)

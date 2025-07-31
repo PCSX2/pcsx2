@@ -4576,7 +4576,7 @@ bool GSState::IsOpaque()
 
 bool GSState::IsMipMapDraw()
 {
-	return m_context->TEX1.MXL > 0 && m_context->TEX1.MMIN >= 2 && m_context->TEX1.MMIN <= 5 && m_vt.m_lod.y > 0;
+	return m_context->TEX1.IsMipMapActive() && m_vt.m_lod.y > 0;
 }
 
 bool GSState::IsMipMapActive()
