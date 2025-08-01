@@ -3,25 +3,16 @@
 
 #pragma once
 
-#include <QtCore/QDir>
-#include <QtCore/QPair>
-#include <QtCore/QString>
-#include <QtCore/QThread>
-#include <QtCore/QVector>
-#include <QtWidgets/QWidget>
-#include <string>
-
 #include "ui_BIOSSettingsWidget.h"
 
-class SettingsWindow;
-class QThread;
+#include "SettingsWidget.h"
 
-class BIOSSettingsWidget : public QWidget
+class BIOSSettingsWidget : public SettingsWidget
 {
 	Q_OBJECT
 
 public:
-	BIOSSettingsWidget(SettingsWindow* dialog, QWidget* parent);
+	BIOSSettingsWidget(SettingsWindow* settings_dialog, QWidget* parent);
 	~BIOSSettingsWidget();
 
 	static void populateList(QTreeWidget* list, const std::string& directory);
@@ -35,5 +26,4 @@ private Q_SLOTS:
 
 private:
 	Ui::BIOSSettingsWidget m_ui;
-	SettingsWindow* m_dialog;
 };

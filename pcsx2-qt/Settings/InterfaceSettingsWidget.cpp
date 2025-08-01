@@ -71,12 +71,12 @@ const char* InterfaceSettingsWidget::THEME_VALUES[] = {
 	"Custom",
 	nullptr};
 
-InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget* parent)
-	: QWidget(parent)
+InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* settings_dialog, QWidget* parent)
+	: SettingsWidget(settings_dialog, parent)
 {
-	SettingsInterface* sif = dialog->getSettingsInterface();
+	SettingsInterface* sif = dialog()->getSettingsInterface();
 
-	m_ui.setupUi(this);
+	setupTab(m_ui);
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.inhibitScreensaver, "EmuCore", "InhibitScreensaver", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.confirmShutdown, "UI", "ConfirmShutdown", true);
@@ -110,15 +110,15 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
 	connect(m_ui.language, QOverload<int>::of(&QComboBox::currentIndexChanged), [this]() { emit languageChanged(); });
 
 	// Per-game settings is special, we don't want to bind it if we're editing per-game settings.
-	if (!dialog->isPerGameSettings())
+	if (!dialog()->isPerGameSettings())
 	{
 		SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pauseOnStart, "UI", "StartPaused", false);
 	}
 
-	if (!dialog->isPerGameSettings() && AutoUpdaterDialog::isSupported())
+	if (!dialog()->isPerGameSettings() && AutoUpdaterDialog::isSupported())
 	{
 		SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.autoUpdateEnabled, "AutoUpdater", "CheckAtStartup", true);
-		dialog->registerWidgetHelp(m_ui.autoUpdateEnabled, tr("Enable Automatic Update Check"), tr("Checked"),
+		dialog()->registerWidgetHelp(m_ui.autoUpdateEnabled, tr("Enable Automatic Update Check"), tr("Checked"),
 			tr("Automatically checks for updates to the program on startup. Updates can be deferred "
 			   "until later or skipped entirely."));
 
@@ -136,7 +136,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
 		m_ui.automaticUpdaterGroup->hide();
 	}
 
-	if (dialog->isPerGameSettings())
+	if (dialog()->isPerGameSettings())
 	{
 		// language/theme doesn't make sense to have in per-game settings
 		m_ui.verticalLayout->removeWidget(m_ui.preferencesGroup);
@@ -146,43 +146,43 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
 		m_ui.pauseOnStart->setEnabled(false);
 	}
 
-	dialog->registerWidgetHelp(
+	dialog()->registerWidgetHelp(
 		m_ui.inhibitScreensaver, tr("Inhibit Screensaver"), tr("Checked"),
 		tr("Prevents the screen saver from activating and the host from sleeping while emulation is running."));
-	dialog->registerWidgetHelp(
+	dialog()->registerWidgetHelp(
 		m_ui.confirmShutdown, tr("Confirm Shutdown"), tr("Checked"),
 		tr("Determines whether a prompt will be displayed to confirm shutting down the virtual machine "
 		   "when the hotkey is pressed."));
-	dialog->registerWidgetHelp(m_ui.pauseOnStart, tr("Pause On Start"), tr("Unchecked"),
+	dialog()->registerWidgetHelp(m_ui.pauseOnStart, tr("Pause On Start"), tr("Unchecked"),
 		tr("Pauses the emulator when a game is started."));
-	dialog->registerWidgetHelp(m_ui.pauseOnFocusLoss, tr("Pause On Focus Loss"), tr("Unchecked"),
+	dialog()->registerWidgetHelp(m_ui.pauseOnFocusLoss, tr("Pause On Focus Loss"), tr("Unchecked"),
 		tr("Pauses the emulator when you minimize the window or switch to another application, "
 		   "and unpauses when you switch back."));
-	dialog->registerWidgetHelp(m_ui.pauseOnControllerDisconnection, tr("Pause On Controller Disconnection"),
+	dialog()->registerWidgetHelp(m_ui.pauseOnControllerDisconnection, tr("Pause On Controller Disconnection"),
 		tr("Unchecked"), tr("Pauses the emulator when a controller with bindings is disconnected."));
-	dialog->registerWidgetHelp(m_ui.startFullscreen, tr("Start Fullscreen"), tr("Unchecked"),
+	dialog()->registerWidgetHelp(m_ui.startFullscreen, tr("Start Fullscreen"), tr("Unchecked"),
 		tr("Automatically switches to fullscreen mode when a game is started."));
-	dialog->registerWidgetHelp(m_ui.hideMouseCursor, tr("Hide Cursor In Fullscreen"), tr("Unchecked"),
+	dialog()->registerWidgetHelp(m_ui.hideMouseCursor, tr("Hide Cursor In Fullscreen"), tr("Unchecked"),
 		tr("Hides the mouse pointer/cursor when the emulator is in fullscreen mode."));
-	dialog->registerWidgetHelp(
+	dialog()->registerWidgetHelp(
 		m_ui.renderToSeparateWindow, tr("Render To Separate Window"), tr("Unchecked"),
 		tr("Renders the game to a separate window, instead of the main window. If unchecked, the game will display over the game list."));
-	dialog->registerWidgetHelp(
+	dialog()->registerWidgetHelp(
 		m_ui.hideMainWindow, tr("Hide Main Window When Running"), tr("Unchecked"),
 		tr("Hides the main window (with the game list) when a game is running. Requires Render To Separate Window to be enabled."));
-	dialog->registerWidgetHelp(
+	dialog()->registerWidgetHelp(
 		m_ui.discordPresence, tr("Enable Discord Presence"), tr("Unchecked"),
 		tr("Shows the game you are currently playing as part of your profile in Discord."));
-	dialog->registerWidgetHelp(
+	dialog()->registerWidgetHelp(
 		m_ui.mouseLock, tr("Enable Mouse Lock"), tr("Unchecked"),
 		tr("Locks the mouse cursor to the windows when PCSX2 is in focus and all other windows are closed.<br><b>Unavailable on Linux Wayland.</b><br><b>Requires accessibility permissions on macOS.</b>"));
-	dialog->registerWidgetHelp(
+	dialog()->registerWidgetHelp(
 		m_ui.doubleClickTogglesFullscreen, tr("Double-Click Toggles Fullscreen"), tr("Checked"),
 		tr("Allows switching in and out of fullscreen mode by double-clicking the game window."));
-	dialog->registerWidgetHelp(
+	dialog()->registerWidgetHelp(
 		m_ui.disableWindowResizing, tr("Disable Window Resizing"), tr("Unchecked"),
 		tr("Prevents the main window from being resized."));
-	dialog->registerWidgetHelp(
+	dialog()->registerWidgetHelp(
 		m_ui.startFullscreenUI, tr("Start Big Picture Mode"), tr("Unchecked"),
 		tr("Automatically starts Big Picture Mode instead of the regular Qt interface when PCSX2 launches."));
 

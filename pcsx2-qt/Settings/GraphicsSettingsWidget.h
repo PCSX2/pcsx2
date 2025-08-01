@@ -21,14 +21,12 @@
 
 enum class GSRendererType : s8;
 
-class SettingsWindow;
-
 class GraphicsSettingsWidget : public SettingsWidget
 {
 	Q_OBJECT
 
 public:
-	GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* parent);
+	GraphicsSettingsWidget(SettingsWindow* settings_dialog, QWidget* parent);
 	~GraphicsSettingsWidget();
 
 Q_SIGNALS:

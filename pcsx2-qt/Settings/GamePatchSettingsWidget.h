@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include <QtWidgets/QWidget>
-
 #include "ui_GamePatchDetailsWidget.h"
 #include "ui_GamePatchSettingsWidget.h"
+
+#include "SettingsWidget.h"
 
 #include "pcsx2/Patch.h"
 
@@ -14,8 +14,6 @@ namespace GameList
 {
 	struct Entry;
 }
-
-class SettingsWindow;
 
 class GamePatchDetailsWidget : public QWidget
 {
@@ -35,12 +33,12 @@ private:
 	std::string m_name;
 };
 
-class GamePatchSettingsWidget : public QWidget
+class GamePatchSettingsWidget : public SettingsWidget
 {
 	Q_OBJECT
 
 public:
-	GamePatchSettingsWidget(SettingsWindow* dialog, QWidget* parent);
+	GamePatchSettingsWidget(SettingsWindow* settings_dialog, QWidget* parent);
 	void disableAllPatches();
 	~GamePatchSettingsWidget();
 
@@ -54,5 +52,4 @@ private:
 	void setGlobalNiPatchNoteVisibility(bool visible);
 
 	Ui::GamePatchSettingsWidget m_ui;
-	SettingsWindow* m_dialog;
 };

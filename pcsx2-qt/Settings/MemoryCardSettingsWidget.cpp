@@ -27,13 +27,12 @@ static std::string getSlotFilenameKey(u32 slot)
 	return StringUtil::StdStringFromFormat("Slot%u_Filename", slot + 1);
 }
 
-MemoryCardSettingsWidget::MemoryCardSettingsWidget(SettingsWindow* dialog, QWidget* parent)
-	: QWidget(parent)
-	, m_dialog(dialog)
+MemoryCardSettingsWidget::MemoryCardSettingsWidget(SettingsWindow* settings_dialog, QWidget* parent)
+	: SettingsWidget(settings_dialog, parent)
 {
-	SettingsInterface* sif = m_dialog->getSettingsInterface();
+	SettingsInterface* sif = dialog()->getSettingsInterface();
 
-	m_ui.setupUi(this);
+	setupTab(m_ui);
 
 	// this is a bit lame, but resizeEvent() isn't good enough to autosize our columns,
 	// since the group box hasn't been resized at that point.
@@ -60,7 +59,7 @@ MemoryCardSettingsWidget::MemoryCardSettingsWidget(SettingsWindow* dialog, QWidg
 
 	refresh();
 
-	dialog->registerWidgetHelp(m_ui.automaticManagement, tr("Automatically manage saves based on running game"),
+	dialog()->registerWidgetHelp(m_ui.automaticManagement, tr("Automatically manage saves based on running game"),
 		tr("Checked"),
 		tr("(Folder type only / Card size: Auto) Loads only the relevant booted game saves, ignoring others. Avoids "
 		   "running out of space for saves."));
@@ -98,11 +97,11 @@ void MemoryCardSettingsWidget::setupAdditionalUi()
 
 void MemoryCardSettingsWidget::createSlotWidgets(SlotGroup* port, u32 slot)
 {
-	const bool perGame = m_dialog->isPerGameSettings();
+	const bool perGame = dialog()->isPerGameSettings();
 
 	port->root = new QWidget(m_ui.slotGroupBox);
 
-	SettingsInterface* sif = m_dialog->getSettingsInterface();
+	SettingsInterface* sif = dialog()->getSettingsInterface();
 	port->enable = new QCheckBox(tr("Slot %1").arg(slot + 1), port->root);
 	SettingWidgetBinder::BindWidgetToBoolSetting(
 		sif, port->enable, CONFIG_SECTION, StringUtil::StdStringFromFormat("Slot%u_Enable", slot + 1), true);
@@ -154,14 +153,14 @@ void MemoryCardSettingsWidget::tryInsertCard(u32 slot, const QString& newCard)
 		return;
 	}
 
-	m_dialog->setStringSettingValue(CONFIG_SECTION, getSlotFilenameKey(slot).c_str(), newCardStr.c_str());
+	dialog()->setStringSettingValue(CONFIG_SECTION, getSlotFilenameKey(slot).c_str(), newCardStr.c_str());
 	refresh();
 }
 
 void MemoryCardSettingsWidget::ejectSlot(u32 slot)
 {
-	m_dialog->setStringSettingValue(CONFIG_SECTION, getSlotFilenameKey(slot).c_str(),
-		m_dialog->isPerGameSettings() ? std::nullopt : std::optional<const char*>(""));
+	dialog()->setStringSettingValue(CONFIG_SECTION, getSlotFilenameKey(slot).c_str(),
+		dialog()->isPerGameSettings() ? std::nullopt : std::optional<const char*>(""));
 	refresh();
 }
 
@@ -310,22 +309,22 @@ void MemoryCardSettingsWidget::listContextMenuRequested(const QPoint& pos)
 
 void MemoryCardSettingsWidget::refresh()
 {
-	const bool perGame = m_dialog->isPerGameSettings();
+	const bool perGame = dialog()->isPerGameSettings();
 
 	for (u32 slot = 0; slot < static_cast<u32>(m_slots.size()); slot++)
 	{
 		const bool enabled = m_slots[slot].enable->isChecked();
 		const std::string slotKey = getSlotFilenameKey(slot);
 		const std::optional<std::string> name(
-			m_dialog->getEffectiveStringValue(CONFIG_SECTION, slotKey.c_str(), FileMcd_GetDefaultName(slot).c_str()));
-		const bool inherited = perGame ? !m_dialog->containsSettingValue(CONFIG_SECTION, slotKey.c_str()) : false;
+			dialog()->getEffectiveStringValue(CONFIG_SECTION, slotKey.c_str(), FileMcd_GetDefaultName(slot).c_str()));
+		const bool inherited = perGame ? !dialog()->containsSettingValue(CONFIG_SECTION, slotKey.c_str()) : false;
 
 		m_slots[slot].slot->setCard(name, inherited);
 		m_slots[slot].slot->setEnabled(enabled);
 		m_slots[slot].eject->setEnabled(enabled);
 	}
 
-	m_ui.cardList->refresh(m_dialog);
+	m_ui.cardList->refresh(dialog());
 	updateCardActions();
 }
 
@@ -333,8 +332,8 @@ void MemoryCardSettingsWidget::swapCards()
 {
 	const std::string card1Key = getSlotFilenameKey(0);
 	const std::string card2Key = getSlotFilenameKey(1);
-	std::optional<std::string> card1Name = m_dialog->getStringValue(CONFIG_SECTION, card1Key.c_str(), std::nullopt);
-	std::optional<std::string> card2Name = m_dialog->getStringValue(CONFIG_SECTION, card2Key.c_str(), std::nullopt);
+	std::optional<std::string> card1Name = dialog()->getStringValue(CONFIG_SECTION, card1Key.c_str(), std::nullopt);
+	std::optional<std::string> card2Name = dialog()->getStringValue(CONFIG_SECTION, card2Key.c_str(), std::nullopt);
 	if (!card1Name.has_value() || card1Name->empty() || !card2Name.has_value() || card2Name->empty())
 	{
 		QMessageBox::critical(
@@ -342,8 +341,8 @@ void MemoryCardSettingsWidget::swapCards()
 		return;
 	}
 
-	m_dialog->setStringSettingValue(CONFIG_SECTION, card1Key.c_str(), card2Name->c_str());
-	m_dialog->setStringSettingValue(CONFIG_SECTION, card2Key.c_str(), card1Name->c_str());
+	dialog()->setStringSettingValue(CONFIG_SECTION, card1Key.c_str(), card2Name->c_str());
+	dialog()->setStringSettingValue(CONFIG_SECTION, card2Key.c_str(), card1Name->c_str());
 	refresh();
 }
 
