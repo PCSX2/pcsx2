@@ -87,7 +87,6 @@ namespace ImGuiFullscreen
 	ImVec4 UISecondaryTextColor;
 
 	static u32 s_menu_button_index = 0;
-	static u32 s_close_button_state = 0;
 	static FocusResetType s_focus_reset_queued = FocusResetType::None;
 
 	static LRUCache<std::string, std::shared_ptr<GSTexture>> s_texture_cache(128, true);
@@ -214,7 +213,6 @@ void ImGuiFullscreen::SetFont(ImFont* standard_font)
 bool ImGuiFullscreen::Initialize(const char* placeholder_image_path)
 {
 	s_focus_reset_queued = FocusResetType::WindowChanged;
-	s_close_button_state = 0;
 
 	s_placeholder_texture = LoadTexture(placeholder_image_path);
 	if (!s_placeholder_texture)
@@ -767,7 +765,6 @@ void ImGuiFullscreen::PopResetLayout()
 void ImGuiFullscreen::QueueResetFocus(FocusResetType type)
 {
 	s_focus_reset_queued = type;
-	s_close_button_state = 0;
 }
 
 bool ImGuiFullscreen::ResetFocusHere()
@@ -809,30 +806,7 @@ bool ImGuiFullscreen::WantsToCloseMenu()
 {
 	// Used for the key macros below.
 	ImGuiContext& g = *ImGui::GetCurrentContext();
-
-	// Wait for the Close button to be released, THEN pressed
-	if (s_close_button_state == 0)
-	{
-		if (ImGui::IsKeyPressed(ImGuiKey_Escape, false))
-			s_close_button_state = 1;
-		else if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadCancel, false))
-			s_close_button_state = 2;
-	}
-	else if ((s_close_button_state == 1 && ImGui::IsKeyReleased(ImGuiKey_Escape)) ||
-			 (s_close_button_state == 2 && ImGui::IsKeyReleased(ImGuiKey_NavGamepadCancel)))
-	{
-		s_close_button_state = 3;
-	}
-	return s_close_button_state > 1;
-}
-
-void ImGuiFullscreen::ResetCloseMenuIfNeeded()
-{
-	// If s_close_button_state reached the "Released" state, reset it after the tick
-	if (s_close_button_state > 1)
-	{
-		s_close_button_state = 0;
-	}
+	return ImGui::IsKeyReleased(ImGuiKey_Escape) || ImGui::Shortcut(ImGuiKey_NavGamepadCancel);
 }
 
 void ImGuiFullscreen::PushPrimaryColor()
@@ -2233,8 +2207,9 @@ void ImGuiFullscreen::DrawFileSelector()
 	ImGui::PushStyleColor(ImGuiCol_TitleBg, UIPrimaryDarkColor);
 	ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIPrimaryColor);
 
-	bool is_open = !WantsToCloseMenu();
+	bool is_open = true;
 	bool directory_selected = false;
+	bool parent_wanted = false;
 	if (ImGui::BeginPopupModal(
 			s_file_selector_title.c_str(), &is_open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
 	{
@@ -2264,6 +2239,17 @@ void ImGuiFullscreen::DrawFileSelector()
 		EndMenuButtons();
 
 		ImGui::PopStyleColor(1);
+
+		if ((ImGui::Shortcut(ImGuiKey_Backspace, false) || ImGui::Shortcut(ImGuiKey_NavGamepadInput, false)) &&
+			(!s_file_selector_items.empty() && s_file_selector_items.front().display_name == ICON_FA_FOLDER_OPEN " <Parent Directory>"))
+		{
+			parent_wanted = true;
+		}
+
+		if (WantsToCloseMenu())
+		{
+			is_open = false;
+		}
 
 		ImGui::EndPopup();
 	}
@@ -2301,17 +2287,10 @@ void ImGuiFullscreen::DrawFileSelector()
 		s_file_selector_callback(no_path);
 		CloseFileSelector();
 	}
-	else
+	else if (parent_wanted)
 	{
-		if (ImGui::IsKeyPressed(ImGuiKey_Backspace, false) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false))
-		{
-			if (!s_file_selector_items.empty() && s_file_selector_items.front().display_name == ICON_FA_FOLDER_OPEN
-													  "  <Parent Directory>")
-			{
-				SetFileSelectorDirectory(std::move(s_file_selector_items.front().full_path));
-				QueueResetFocus(FocusResetType::Other);
-			}
-		}
+		SetFileSelectorDirectory(std::move(s_file_selector_items.front().full_path));
+		QueueResetFocus(FocusResetType::Other);
 	}
 }
 
@@ -2369,7 +2348,7 @@ void ImGuiFullscreen::DrawChoiceDialog()
 		ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 	ImGui::OpenPopup(s_choice_dialog_title.c_str());
 
-	bool is_open = !WantsToCloseMenu();
+	bool is_open = true;
 	s32 choice = -1;
 
 	if (ImGui::BeginPopupModal(
@@ -2418,6 +2397,11 @@ void ImGuiFullscreen::DrawChoiceDialog()
 		EndMenuButtons();
 
 		ImGui::PopStyleColor(1);
+
+		if (WantsToCloseMenu())
+		{
+			is_open = false;
+		}
 
 		ImGui::EndPopup();
 	}

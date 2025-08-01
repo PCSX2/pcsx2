@@ -138,7 +138,6 @@ namespace ImGuiFullscreen
 	void ForceKeyNavEnabled();
 
 	bool WantsToCloseMenu();
-	void ResetCloseMenuIfNeeded();
 
 	void PushPrimaryColor();
 	void PopPrimaryColor();
