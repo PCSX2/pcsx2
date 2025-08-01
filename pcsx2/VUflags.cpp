@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "Common.h"
+#include "PS2Float.h"
 
 #include <cmath>
 #include <float.h>
@@ -12,10 +13,10 @@
 /*          NEW FLAGS                    */ //By asadr. Thnkx F|RES :p
 /*****************************************/
 
-static __ri u32 VU_MAC_UPDATE( int shift, VURegs * VU, float f )
+static __ri u32 VU_MAC_UPDATE( s32 shift, VURegs* VU, float f)
 {
 	u32 v = *(u32*)&f;
-	int exp = (v >> 23) & 0xff;
+	s32 exp = (v >> 23) & 0xff;
 	u32 s = v & 0x80000000;
 
 	if (s)
@@ -46,6 +47,32 @@ static __ri u32 VU_MAC_UPDATE( int shift, VURegs * VU, float f )
 	}
 }
 
+static __ri u32 VU_MAC_UPDATE(s32 shift, VURegs* VU, PS2Float f)
+{
+	u32 v = f.raw;
+
+	if (v & PS2Float::SIGNMASK)
+		VU->macflag |= 0x0010 << shift;
+	else
+		VU->macflag &= ~(0x0010 << shift);
+
+	if (f.IsZero())
+	{
+		VU->macflag = (VU->macflag & ~(0x1100 << shift)) | (0x0001 << shift);
+		return v;
+	}
+	else if (f.uf) { VU->macflag = (VU->macflag & ~(0x1000 << shift)) | (0x0101 << shift); }
+	else if (f.of) { VU->macflag = (VU->macflag & ~(0x0101 << shift)) | (0x1000 << shift); }
+	else { VU->macflag = (VU->macflag & ~(0x1101 << shift)); }
+
+	return v;
+}
+
+__fi bool IsOverflowSet(VURegs* VU, s32 shift)
+{
+	return (VU->macflag & (0x1000 << shift));
+}
+
 __fi u32 VU_MACx_UPDATE(VURegs * VU, float x)
 {
 	return VU_MAC_UPDATE(3, VU, x);
@@ -62,6 +89,26 @@ __fi u32 VU_MACz_UPDATE(VURegs * VU, float z)
 }
 
 __fi u32 VU_MACw_UPDATE(VURegs * VU, float w)
+{
+	return VU_MAC_UPDATE(0, VU, w);
+}
+
+__fi u32 VU_MACx_UPDATE(VURegs* VU, PS2Float x)
+{
+	return VU_MAC_UPDATE(3, VU, x);
+}
+
+__fi u32 VU_MACy_UPDATE(VURegs* VU, PS2Float y)
+{
+	return VU_MAC_UPDATE(2, VU, y);
+}
+
+__fi u32 VU_MACz_UPDATE(VURegs* VU, PS2Float z)
+{
+	return VU_MAC_UPDATE(1, VU, z);
+}
+
+__fi u32 VU_MACw_UPDATE(VURegs* VU, PS2Float w)
 {
 	return VU_MAC_UPDATE(0, VU, w);
 }
