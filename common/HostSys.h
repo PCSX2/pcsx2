@@ -204,4 +204,10 @@ namespace Common
 	void SetMousePosition(int x, int y);
 	bool AttachMousePositionCb(std::function<void(int,int)> cb);
 	void DetachMousePositionCb();
+
+#if !defined(__APPLE__)
+	// Create desktop shortcut for games
+	void CreateShortcut(const std::string name, const std::string game_path, const std::string passed_cli_args, bool is_desktop);
+#endif
+
 } // namespace Common
