@@ -14,26 +14,26 @@ class SettingsWidget : public QWidget
 	Q_OBJECT
 
 protected:
-	SettingsWidget(SettingsWindow* dialog, QWidget* parent = nullptr);
+	SettingsWidget(SettingsWindow* settings_dialog, QWidget* parent = nullptr);
 
 	__fi SettingsWindow* dialog() { return m_dialog; }
 	__fi const SettingsWindow* dialog() const { return m_dialog; }
 
 	template <typename HeaderUi>
-	void setupHeader(HeaderUi* header_ui)
+	void setupHeader(HeaderUi& header_ui)
 	{
 		QWidget* header = new QWidget(this);
-		header_ui->setupUi(header);
+		header_ui.setupUi(header);
 
 		addPageHeader(header);
 	}
 
 	// Create a settings tab with a scroll area.
 	template <typename ContentsUi>
-	QWidget* setupTab(QString name, ContentsUi* contents_ui)
+	QWidget* setupTab(ContentsUi& contents_ui, QString name = QString())
 	{
 		QWidget* contents = new QWidget(this);
-		contents_ui->setupUi(contents);
+		contents_ui.setupUi(contents);
 
 		return addTab(name, contents);
 	}

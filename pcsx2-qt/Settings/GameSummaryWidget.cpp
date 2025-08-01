@@ -24,10 +24,10 @@
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMessageBox>
 
-GameSummaryWidget::GameSummaryWidget(const GameList::Entry* entry, SettingsWindow* dialog, QWidget* parent)
-	: m_dialog(dialog)
+GameSummaryWidget::GameSummaryWidget(const GameList::Entry* entry, SettingsWindow* settings_dialog, QWidget* parent)
+	: SettingsWidget(settings_dialog, parent)
 {
-	m_ui.setupUi(this);
+	setupTab(m_ui);
 
 	const QString base_path(QtHost::GetResourcesBasePath());
 	for (int i = 0; i < m_ui.region->count(); i++)
@@ -91,7 +91,7 @@ void GameSummaryWidget::populateDetails(const GameList::Entry* entry)
 	m_ui.detailsFormLayout->getWidgetPosition(m_ui.titleEN, &row, nullptr);
 	m_ui.detailsFormLayout->setRowVisible(row, !entry->title_en.empty());
 
-	std::optional<std::string> profile(m_dialog->getStringValue("EmuCore", "InputProfileName", std::nullopt));
+	std::optional<std::string> profile(dialog()->getStringValue("EmuCore", "InputProfileName", std::nullopt));
 	if (profile.has_value())
 		m_ui.inputProfile->setCurrentIndex(m_ui.inputProfile->findText(QString::fromStdString(profile.value())));
 	else
@@ -120,7 +120,7 @@ void GameSummaryWidget::populateDiscPath(const GameList::Entry* entry)
 {
 	if (entry->type == GameList::EntryType::ELF)
 	{
-		std::optional<std::string> iso_path(m_dialog->getStringValue("EmuCore", "DiscPath", std::nullopt));
+		std::optional<std::string> iso_path(dialog()->getStringValue("EmuCore", "DiscPath", std::nullopt));
 		if (iso_path.has_value() && !iso_path->empty())
 			m_ui.discPath->setText(QString::fromStdString(iso_path.value()));
 
@@ -143,17 +143,17 @@ void GameSummaryWidget::populateDiscPath(const GameList::Entry* entry)
 void GameSummaryWidget::onInputProfileChanged(int index)
 {
 	if (index == 0)
-		m_dialog->setStringSettingValue("EmuCore", "InputProfileName", std::nullopt);
+		dialog()->setStringSettingValue("EmuCore", "InputProfileName", std::nullopt);
 	else
-		m_dialog->setStringSettingValue("EmuCore", "InputProfileName", m_ui.inputProfile->itemText(index).toUtf8());
+		dialog()->setStringSettingValue("EmuCore", "InputProfileName", m_ui.inputProfile->itemText(index).toUtf8());
 }
 
 void GameSummaryWidget::onDiscPathChanged(const QString& value)
 {
 	if (value.isEmpty())
-		m_dialog->removeSettingValue("EmuCore", "DiscPath");
+		dialog()->removeSettingValue("EmuCore", "DiscPath");
 	else
-		m_dialog->setStringSettingValue("EmuCore", "DiscPath", value.toStdString().c_str());
+		dialog()->setStringSettingValue("EmuCore", "DiscPath", value.toStdString().c_str());
 
 	// force rescan of elf to update the serial
 	g_main_window->rescanFile(m_entry_path);
@@ -163,7 +163,7 @@ void GameSummaryWidget::onDiscPathChanged(const QString& value)
 	if (entry)
 	{
 		populateDetails(entry);
-		m_dialog->setSerial(entry->serial);
+		dialog()->setSerial(entry->serial);
 		m_ui.checkWiki->setEnabled(!entry->serial.empty());
 	}
 }
@@ -340,15 +340,15 @@ void GameSummaryWidget::onVerifyClicked()
 		if (!hentry->version.empty())
 		{
 			setVerifyResult(tr("Verified as %1 [%2] (Version %3).")
-					.arg(QString::fromStdString(hentry->name))
-					.arg(QString::fromStdString(hentry->serial))
-					.arg(QString::fromStdString(hentry->version)));
+								.arg(QString::fromStdString(hentry->name))
+								.arg(QString::fromStdString(hentry->serial))
+								.arg(QString::fromStdString(hentry->version)));
 		}
 		else
 		{
 			setVerifyResult(tr("Verified as %1 [%2].")
-					.arg(QString::fromStdString(hentry->name))
-					.arg(QString::fromStdString(hentry->serial)));
+								.arg(QString::fromStdString(hentry->name))
+								.arg(QString::fromStdString(hentry->serial)));
 		}
 	}
 	else
@@ -397,7 +397,7 @@ void GameSummaryWidget::repopulateCurrentDetails()
 	if (entry)
 	{
 		populateDetails(entry);
-		m_dialog->setWindowTitle(QString::fromStdString(entry->title));
+		dialog()->setWindowTitle(QString::fromStdString(entry->title));
 	}
 }
 
