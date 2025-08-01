@@ -5,21 +5,17 @@
 
 #include "ui_AudioSettingsWidget.h"
 
-#include "common/Pcsx2Defs.h"
-
-#include <QtWidgets/QWidget>
+#include "SettingsWidget.h"
 
 enum class AudioBackend : u8;
 enum class AudioExpansionMode : u8;
 
-class SettingsWindow;
-
-class AudioSettingsWidget : public QWidget
+class AudioSettingsWidget : public SettingsWidget
 {
 	Q_OBJECT
 
 public:
-	AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent);
+	AudioSettingsWidget(SettingsWindow* settings_dialog, QWidget* parent);
 	~AudioSettingsWidget();
 
 private Q_SLOTS:
@@ -45,6 +41,5 @@ private:
 	void resetVolume(bool fast_forward);
 
 	Ui::AudioSettingsWidget m_ui;
-	SettingsWindow* m_dialog;
 	u32 m_output_device_latency = 0;
 };

@@ -3,23 +3,21 @@
 
 #pragma once
 
-#include <QtWidgets/QWidget>
-
 #include "ui_GameSummaryWidget.h"
+
+#include "SettingsWidget.h"
 
 namespace GameList
 {
 	struct Entry;
 }
 
-class SettingsWindow;
-
-class GameSummaryWidget : public QWidget
+class GameSummaryWidget : public SettingsWidget
 {
 	Q_OBJECT
 
 public:
-	GameSummaryWidget(const GameList::Entry* entry, SettingsWindow* dialog, QWidget* parent);
+	GameSummaryWidget(const GameList::Entry* entry, SettingsWindow* settings_dialog, QWidget* parent);
 	~GameSummaryWidget();
 
 private Q_SLOTS:
@@ -42,7 +40,6 @@ private:
 	void setCustomRegion(int region);
 
 	Ui::GameSummaryWidget m_ui;
-	SettingsWindow* m_dialog;
 	std::string m_entry_path;
 	std::string m_redump_search_keyword;
 };

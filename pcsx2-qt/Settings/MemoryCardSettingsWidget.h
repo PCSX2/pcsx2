@@ -3,17 +3,16 @@
 
 #pragma once
 
-#include <array>
-#include <optional>
-#include <string>
+#include "SettingsWidget.h"
 
 #include <QtGui/QResizeEvent>
-#include <QtWidgets/QWidget>
 #include <QtWidgets/QTreeWidget>
 #include <QtWidgets/QToolButton>
 #include <QtWidgets/QListWidget>
 
-class SettingsWindow;
+#include <array>
+#include <optional>
+#include <string>
 
 struct AvailableMcdInfo;
 
@@ -56,7 +55,7 @@ protected:
 // Must be included *after* the custom widgets.
 #include "ui_MemoryCardSettingsWidget.h"
 
-class MemoryCardSettingsWidget : public QWidget
+class MemoryCardSettingsWidget : public SettingsWidget
 {
 	Q_OBJECT
 
@@ -66,7 +65,7 @@ public:
 		MAX_SLOTS = 2
 	};
 
-	MemoryCardSettingsWidget(SettingsWindow* dialog, QWidget* parent);
+	MemoryCardSettingsWidget(SettingsWindow* settings_dialog, QWidget* parent);
 	~MemoryCardSettingsWidget();
 
 protected:
@@ -103,7 +102,6 @@ private:
 	void renameCard();
 	void convertCard();
 
-	SettingsWindow* m_dialog;
 	Ui::MemoryCardSettingsWidget m_ui;
 
 	std::array<SlotGroup, MAX_SLOTS> m_slots;

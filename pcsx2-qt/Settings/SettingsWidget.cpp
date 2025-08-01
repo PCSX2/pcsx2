@@ -6,9 +6,9 @@
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QScrollArea>
 
-SettingsWidget::SettingsWidget(SettingsWindow* dialog, QWidget* parent)
+SettingsWidget::SettingsWidget(SettingsWindow* settings_dialog, QWidget* parent)
 	: QWidget(parent)
-	, m_dialog(dialog)
+	, m_dialog(settings_dialog)
 {
 	QVBoxLayout* layout = new QVBoxLayout(this);
 	layout->setContentsMargins(0, 0, 0, 0);

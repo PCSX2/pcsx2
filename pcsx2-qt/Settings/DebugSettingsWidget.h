@@ -10,7 +10,6 @@
 
 #include "SettingsWidget.h"
 
-class SettingsWindow;
 class DebugUserInterfaceSettingsWidget;
 class DebugAnalysisSettingsWidget;
 
@@ -19,7 +18,7 @@ class DebugSettingsWidget : public SettingsWidget
 	Q_OBJECT
 
 public:
-	DebugSettingsWidget(SettingsWindow* dialog, QWidget* parent);
+	DebugSettingsWidget(SettingsWindow* settings_dialog, QWidget* parent);
 	~DebugSettingsWidget();
 
 private Q_SLOTS:
