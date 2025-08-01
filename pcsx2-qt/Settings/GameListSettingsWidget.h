@@ -2,19 +2,19 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
-#include <string>
-#include <QtWidgets/QWidget>
 
 #include "ui_GameListSettingsWidget.h"
 
-class SettingsWindow;
+#include "SettingsWidget.h"
 
-class GameListSettingsWidget : public QWidget
+#include <string>
+
+class GameListSettingsWidget : public SettingsWidget
 {
 	Q_OBJECT
 
 public:
-	GameListSettingsWidget(SettingsWindow* dialog, QWidget* parent);
+	GameListSettingsWidget(SettingsWindow* settings_dialog, QWidget* parent);
 	~GameListSettingsWidget();
 
 	bool addExcludedPath(const std::string& path);

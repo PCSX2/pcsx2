@@ -8,6 +8,8 @@
 
 #include "ui_GameCheatSettingsWidget.h"
 
+#include "SettingsWidget.h"
+
 #include "pcsx2/Patch.h"
 
 #include "common/HeterogeneousContainers.h"
@@ -21,14 +23,12 @@ namespace GameList
 	struct Entry;
 }
 
-class SettingsWindow;
-
-class GameCheatSettingsWidget : public QWidget
+class GameCheatSettingsWidget : public SettingsWidget
 {
 	Q_OBJECT
 
 public:
-	GameCheatSettingsWidget(SettingsWindow* dialog, QWidget* parent);
+	GameCheatSettingsWidget(SettingsWindow* settings_dialog, QWidget* parent);
 	~GameCheatSettingsWidget();
 
 	void disableAllCheats();
@@ -51,7 +51,6 @@ private:
 	void setStateRecursively(QStandardItem* parent, bool enabled);
 
 	Ui::GameCheatSettingsWidget m_ui;
-	SettingsWindow* m_dialog;
 	QStandardItemModel* m_model = nullptr;
 	QSortFilterProxyModel* m_model_proxy = nullptr;
 

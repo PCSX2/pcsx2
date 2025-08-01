@@ -19,13 +19,12 @@
 
 const char* AUDIO_FILE_FILTER = QT_TRANSLATE_NOOP("MainWindow", "Audio Files (*.wav)");
 
-AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWidget* parent)
-	: QWidget(parent)
-	, m_dialog(dialog)
+AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* settings_dialog, QWidget* parent)
+	: SettingsWidget(settings_dialog, parent)
 {
-	SettingsInterface* sif = dialog->getSettingsInterface();
+	SettingsInterface* sif = dialog()->getSettingsInterface();
 
-	m_ui.setupUi(this);
+	setupTab(m_ui);
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enable, "Achievements", "Enabled", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.hardcoreMode, "Achievements", "ChallengeMode", false);
@@ -49,19 +48,19 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
 	SettingWidgetBinder::BindWidgetToFileSetting(sif, m_ui.unlockSoundPath, m_ui.unlockSoundBrowse, m_ui.unlockSoundOpen, m_ui.unlockSoundReset, "Achievements", "UnlockSoundName", Path::Combine(EmuFolders::Resources, EmuConfig.Achievements.DEFAULT_UNLOCK_SOUND_NAME), AUDIO_FILE_FILTER, true, false);
 	SettingWidgetBinder::BindWidgetToFileSetting(sif, m_ui.lbSoundPath, m_ui.lbSoundBrowse, m_ui.lbSoundOpen, m_ui.lbSoundReset, "Achievements", "LBSubmitSoundName", Path::Combine(EmuFolders::Resources, EmuConfig.Achievements.DEFAULT_LBSUBMIT_SOUND_NAME), AUDIO_FILE_FILTER, true, false);
 
-	dialog->registerWidgetHelp(m_ui.enable, tr("Enable Achievements"), tr("Unchecked"), tr("When enabled and logged in, PCSX2 will scan for achievements on startup."));
-	dialog->registerWidgetHelp(m_ui.hardcoreMode, tr("Enable Hardcore Mode"), tr("Unchecked"), tr("\"Challenge\" mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions."));
-	dialog->registerWidgetHelp(m_ui.achievementNotifications, tr("Show Achievement Notifications"), tr("Checked"), tr("Displays popup messages on events such as achievement unlocks and game completion."));
-	dialog->registerWidgetHelp(m_ui.leaderboardNotifications, tr("Show Leaderboard Notifications"), tr("Checked"), tr("Displays popup messages when starting, submitting, or failing a leaderboard challenge."));
-	dialog->registerWidgetHelp(m_ui.soundEffects, tr("Enable Sound Effects"), tr("Checked"), tr("Plays sound effects for events such as achievement unlocks and leaderboard submissions."));
-	dialog->registerWidgetHelp(m_ui.soundEffectsBox, tr("Custom Sound Effect"), tr("Any"), tr("Customize the sound effect that are played whenever you received a notification, earned an achievement or submitted an entry to the leaderboard."));
-	dialog->registerWidgetHelp(m_ui.overlays, tr("Enable In-Game Overlays"), tr("Checked"), tr("Shows icons in the screen when a challenge/primed achievement is active."));
-	dialog->registerWidgetHelp(m_ui.leaderboardOverlays, tr("Enable In-Game Leaderboard Overlays"), tr("Checked"), tr("Shows icons in the screen when leaderboard tracking is active."));
-	dialog->registerWidgetHelp(m_ui.overlayPosition, tr("Overlay Position"), tr("Bottom Right"), tr("Determines where achievement/leaderboard overlays are positioned on the screen."));
-	dialog->registerWidgetHelp(m_ui.notificationPosition, tr("Notification Position"), tr("Top Left"), tr("Determines where achievement/leaderboard notification popups are positioned on the screen."));
-	dialog->registerWidgetHelp(m_ui.encoreMode, tr("Enable Encore Mode"), tr("Unchecked"), tr("When enabled, each session will behave as if no achievements have been unlocked."));
-	dialog->registerWidgetHelp(m_ui.spectatorMode, tr("Enable Spectator Mode"), tr("Unchecked"), tr("When enabled, PCSX2 will assume all achievements are locked and not send any unlock notifications to the server."));
-	dialog->registerWidgetHelp(m_ui.unofficialAchievements, tr("Test Unofficial Achievements"), tr("Unchecked"), tr("When enabled, PCSX2 will list achievements from unofficial sets. Please note that these achievements are not tracked by RetroAchievements, so they unlock every time."));
+	dialog()->registerWidgetHelp(m_ui.enable, tr("Enable Achievements"), tr("Unchecked"), tr("When enabled and logged in, PCSX2 will scan for achievements on startup."));
+	dialog()->registerWidgetHelp(m_ui.hardcoreMode, tr("Enable Hardcore Mode"), tr("Unchecked"), tr("\"Challenge\" mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions."));
+	dialog()->registerWidgetHelp(m_ui.achievementNotifications, tr("Show Achievement Notifications"), tr("Checked"), tr("Displays popup messages on events such as achievement unlocks and game completion."));
+	dialog()->registerWidgetHelp(m_ui.leaderboardNotifications, tr("Show Leaderboard Notifications"), tr("Checked"), tr("Displays popup messages when starting, submitting, or failing a leaderboard challenge."));
+	dialog()->registerWidgetHelp(m_ui.soundEffects, tr("Enable Sound Effects"), tr("Checked"), tr("Plays sound effects for events such as achievement unlocks and leaderboard submissions."));
+	dialog()->registerWidgetHelp(m_ui.soundEffectsBox, tr("Custom Sound Effect"), tr("Any"), tr("Customize the sound effect that are played whenever you received a notification, earned an achievement or submitted an entry to the leaderboard."));
+	dialog()->registerWidgetHelp(m_ui.overlays, tr("Enable In-Game Overlays"), tr("Checked"), tr("Shows icons in the screen when a challenge/primed achievement is active."));
+	dialog()->registerWidgetHelp(m_ui.leaderboardOverlays, tr("Enable In-Game Leaderboard Overlays"), tr("Checked"), tr("Shows icons in the screen when leaderboard tracking is active."));
+	dialog()->registerWidgetHelp(m_ui.overlayPosition, tr("Overlay Position"), tr("Bottom Right"), tr("Determines where achievement/leaderboard overlays are positioned on the screen."));
+	dialog()->registerWidgetHelp(m_ui.notificationPosition, tr("Notification Position"), tr("Top Left"), tr("Determines where achievement/leaderboard notification popups are positioned on the screen."));
+	dialog()->registerWidgetHelp(m_ui.encoreMode, tr("Enable Encore Mode"), tr("Unchecked"), tr("When enabled, each session will behave as if no achievements have been unlocked."));
+	dialog()->registerWidgetHelp(m_ui.spectatorMode, tr("Enable Spectator Mode"), tr("Unchecked"), tr("When enabled, PCSX2 will assume all achievements are locked and not send any unlock notifications to the server."));
+	dialog()->registerWidgetHelp(m_ui.unofficialAchievements, tr("Test Unofficial Achievements"), tr("Unchecked"), tr("When enabled, PCSX2 will list achievements from unofficial sets. Please note that these achievements are not tracked by RetroAchievements, so they unlock every time."));
 
 	connect(m_ui.enable, &QCheckBox::checkStateChanged, this, &AchievementSettingsWidget::updateEnableState);
 	connect(m_ui.hardcoreMode, &QCheckBox::checkStateChanged, this, &AchievementSettingsWidget::updateEnableState);
@@ -76,7 +75,7 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
 	connect(m_ui.achievementNotificationsDuration, &QSlider::valueChanged, this, &AchievementSettingsWidget::onAchievementsNotificationDurationSliderChanged);
 	connect(m_ui.leaderboardNotificationsDuration, &QSlider::valueChanged, this, &AchievementSettingsWidget::onLeaderboardsNotificationDurationSliderChanged);
 
-	if (!m_dialog->isPerGameSettings())
+	if (!dialog()->isPerGameSettings())
 	{
 		connect(m_ui.loginButton, &QPushButton::clicked, this, &AchievementSettingsWidget::onLoginLogoutPressed);
 		connect(m_ui.viewProfile, &QPushButton::clicked, this, &AchievementSettingsWidget::onViewProfilePressed);
@@ -111,13 +110,13 @@ AchievementSettingsWidget::~AchievementSettingsWidget() = default;
 
 void AchievementSettingsWidget::updateEnableState()
 {
-	const bool enabled = m_dialog->getEffectiveBoolValue("Achievements", "Enabled", false);
-	const bool notifications = enabled && m_dialog->getEffectiveBoolValue("Achievements", "Notifications", true);
-	const bool lb_notifications = enabled && m_dialog->getEffectiveBoolValue("Achievements", "LeaderboardNotifications", true);
-	const bool sound = m_dialog->getEffectiveBoolValue("Achievements", "SoundEffects", true);
-	const bool info = enabled && sound && m_dialog->getEffectiveBoolValue("Achievements", "InfoSound", true);
-	const bool unlock = enabled && sound && m_dialog->getEffectiveBoolValue("Achievements", "UnlockSound", true);
-	const bool lbsound = enabled && sound && m_dialog->getEffectiveBoolValue("Achievements", "LBSubmitSound", true);
+	const bool enabled = dialog()->getEffectiveBoolValue("Achievements", "Enabled", false);
+	const bool notifications = enabled && dialog()->getEffectiveBoolValue("Achievements", "Notifications", true);
+	const bool lb_notifications = enabled && dialog()->getEffectiveBoolValue("Achievements", "LeaderboardNotifications", true);
+	const bool sound = dialog()->getEffectiveBoolValue("Achievements", "SoundEffects", true);
+	const bool info = enabled && sound && dialog()->getEffectiveBoolValue("Achievements", "InfoSound", true);
+	const bool unlock = enabled && sound && dialog()->getEffectiveBoolValue("Achievements", "UnlockSound", true);
+	const bool lbsound = enabled && sound && dialog()->getEffectiveBoolValue("Achievements", "LBSubmitSound", true);
 	m_ui.hardcoreMode->setEnabled(enabled);
 	m_ui.achievementNotifications->setEnabled(enabled);
 	m_ui.leaderboardNotifications->setEnabled(enabled);
@@ -126,7 +125,7 @@ void AchievementSettingsWidget::updateEnableState()
 	m_ui.leaderboardNotificationsDuration->setEnabled(lb_notifications);
 	m_ui.leaderboardNotificationsDurationLabel->setEnabled(lb_notifications);
 
-	if (!m_dialog->isPerGameSettings())
+	if (!dialog()->isPerGameSettings())
 	{
 		m_ui.notificationSoundPath->setEnabled(info);
 		m_ui.notificationSoundBrowse->setEnabled(info);
@@ -149,10 +148,10 @@ void AchievementSettingsWidget::updateEnableState()
 	m_ui.overlays->setEnabled(enabled);
 	m_ui.leaderboardOverlays->setEnabled(enabled);
 
-	const bool overlays_enabled = enabled && (m_dialog->getEffectiveBoolValue("Achievements", "Overlays", true) ||
-												m_dialog->getEffectiveBoolValue("Achievements", "LBOverlays", true));
-	const bool notifications_enabled = enabled && (m_dialog->getEffectiveBoolValue("Achievements", "Notifications", true) ||
-													m_dialog->getEffectiveBoolValue("Achievements", "LeaderboardNotifications", true));
+	const bool overlays_enabled = enabled && (dialog()->getEffectiveBoolValue("Achievements", "Overlays", true) ||
+												 dialog()->getEffectiveBoolValue("Achievements", "LBOverlays", true));
+	const bool notifications_enabled = enabled && (dialog()->getEffectiveBoolValue("Achievements", "Notifications", true) ||
+													  dialog()->getEffectiveBoolValue("Achievements", "LeaderboardNotifications", true));
 	m_ui.overlaySettingsBox->setEnabled(overlays_enabled || notifications_enabled);
 	m_ui.overlayPosition->setEnabled(overlays_enabled);
 	m_ui.overlayPositionLabel->setEnabled(overlays_enabled);
@@ -169,8 +168,8 @@ void AchievementSettingsWidget::onHardcoreModeStateChanged()
 	if (!QtHost::IsVMValid())
 		return;
 
-	const bool enabled = m_dialog->getEffectiveBoolValue("Achievements", "Enabled", false);
-	const bool challenge = m_dialog->getEffectiveBoolValue("Achievements", "ChallengeMode", false);
+	const bool enabled = dialog()->getEffectiveBoolValue("Achievements", "Enabled", false);
+	const bool challenge = dialog()->getEffectiveBoolValue("Achievements", "ChallengeMode", false);
 	if (!enabled || !challenge)
 		return;
 
@@ -192,14 +191,14 @@ void AchievementSettingsWidget::onHardcoreModeStateChanged()
 
 void AchievementSettingsWidget::onAchievementsNotificationDurationSliderChanged()
 {
-	const float duration = m_dialog->getEffectiveFloatValue("Achievements", "NotificationsDuration",
+	const float duration = dialog()->getEffectiveFloatValue("Achievements", "NotificationsDuration",
 		Pcsx2Config::AchievementsOptions::DEFAULT_NOTIFICATION_DURATION);
 	m_ui.achievementNotificationsDurationLabel->setText(tr("%n seconds", nullptr, static_cast<int>(duration)));
 }
 
 void AchievementSettingsWidget::onLeaderboardsNotificationDurationSliderChanged()
 {
-	const float duration = m_dialog->getEffectiveFloatValue("Achievements", "LeaderboardsDuration",
+	const float duration = dialog()->getEffectiveFloatValue("Achievements", "LeaderboardsDuration",
 		Pcsx2Config::AchievementsOptions::DEFAULT_LEADERBOARD_DURATION);
 	m_ui.leaderboardNotificationsDurationLabel->setText(tr("%n seconds", nullptr, static_cast<int>(duration)));
 }
@@ -215,8 +214,8 @@ void AchievementSettingsWidget::updateLoginState()
 			StringUtil::FromChars<u64>(Host::GetBaseStringSettingValue("Achievements", "LoginTimestamp", "0")).value_or(0);
 		const QDateTime login_timestamp(QDateTime::fromSecsSinceEpoch(static_cast<qint64>(login_unix_timestamp)));
 		m_ui.loginStatus->setText(tr("Username: %1\nLogin token generated on %2.")
-				.arg(QString::fromStdString(username))
-				.arg(login_timestamp.toString(Qt::TextDate)));
+									  .arg(QString::fromStdString(username))
+									  .arg(login_timestamp.toString(Qt::TextDate)));
 		m_ui.loginButton->setText(tr("Logout"));
 	}
 	else

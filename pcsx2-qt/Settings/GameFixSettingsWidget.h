@@ -3,18 +3,16 @@
 
 #pragma once
 
-#include <QtWidgets/QWidget>
-
 #include "ui_GameFixSettingsWidget.h"
 
-class SettingsWindow;
+#include "SettingsWidget.h"
 
-class GameFixSettingsWidget : public QWidget
+class GameFixSettingsWidget : public SettingsWidget
 {
 	Q_OBJECT
 
 public:
-	GameFixSettingsWidget(SettingsWindow* dialog, QWidget* parent);
+	GameFixSettingsWidget(SettingsWindow* settings_dialog, QWidget* parent);
 	~GameFixSettingsWidget();
 
 private:

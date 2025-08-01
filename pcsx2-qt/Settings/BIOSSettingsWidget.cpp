@@ -14,25 +14,23 @@
 
 #include <QtGui/QIcon>
 #include <QtWidgets/QFileDialog>
-#include <algorithm>
 
-BIOSSettingsWidget::BIOSSettingsWidget(SettingsWindow* dialog, QWidget* parent)
-	: QWidget(parent)
-	, m_dialog(dialog)
+BIOSSettingsWidget::BIOSSettingsWidget(SettingsWindow* settings_dialog, QWidget* parent)
+	: SettingsWidget(settings_dialog, parent)
 {
-	SettingsInterface* sif = dialog->getSettingsInterface();
+	SettingsInterface* sif = dialog()->getSettingsInterface();
 
-	m_ui.setupUi(this);
+	setupTab(m_ui);
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastBoot, "EmuCore", "EnableFastBoot", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastBootFastForward, "EmuCore", "EnableFastBootFastForward", false);
 	SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.searchDirectory, m_ui.browseSearchDirectory, m_ui.openSearchDirectory,
 		m_ui.resetSearchDirectory, "Folders", "Bios", Path::Combine(EmuFolders::DataRoot, "bios"));
 
-	dialog->registerWidgetHelp(m_ui.fastBoot, tr("Fast Boot"), tr("Checked"),
+	dialog()->registerWidgetHelp(m_ui.fastBoot, tr("Fast Boot"), tr("Checked"),
 		tr("Patches the BIOS to skip the console's boot animation."));
 
-	dialog->registerWidgetHelp(m_ui.fastBootFastForward, tr("Fast Forward Boot"), tr("Unchecked"),
+	dialog()->registerWidgetHelp(m_ui.fastBootFastForward, tr("Fast Forward Boot"), tr("Unchecked"),
 		tr("Removes emulation speed throttle until the game starts to reduce startup time."));
 
 	refreshList();
@@ -140,6 +138,6 @@ void BIOSSettingsWidget::listItemChanged(const QTreeWidgetItem* current, const Q
 
 void BIOSSettingsWidget::fastBootChanged()
 {
-	const bool enabled = m_dialog->getEffectiveBoolValue("EmuCore", "EnableFastBoot", true);
+	const bool enabled = dialog()->getEffectiveBoolValue("EmuCore", "EnableFastBoot", true);
 	m_ui.fastBootFastForward->setEnabled(enabled);
 }

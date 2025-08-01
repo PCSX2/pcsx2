@@ -3,18 +3,16 @@
 
 #pragma once
 
-#include <QtWidgets/QWidget>
-
 #include "ui_InterfaceSettingsWidget.h"
 
-class SettingsWindow;
+#include "SettingsWidget.h"
 
-class InterfaceSettingsWidget : public QWidget
+class InterfaceSettingsWidget : public SettingsWidget
 {
 	Q_OBJECT
 
 public:
-	InterfaceSettingsWidget(SettingsWindow* dialog, QWidget* parent);
+	InterfaceSettingsWidget(SettingsWindow* settings_dialog, QWidget* parent);
 	~InterfaceSettingsWidget();
 
 Q_SIGNALS:

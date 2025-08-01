@@ -3,13 +3,11 @@
 
 #pragma once
 
-#include <QtWidgets/QWidget>
-
 #include "ui_FolderSettingsWidget.h"
 
-class SettingsWindow;
+#include "SettingsWidget.h"
 
-class FolderSettingsWidget : public QWidget
+class FolderSettingsWidget : public SettingsWidget
 {
 	Q_OBJECT
 
