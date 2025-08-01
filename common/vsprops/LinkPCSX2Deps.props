@@ -16,6 +16,8 @@
     <DepsDLLs Include="$(DepsBinDir)libpng16.dll" />
     <DepsDLLs Include="$(DepsBinDir)libsharpyuv.dll" />
     <DepsDLLs Include="$(DepsBinDir)libwebp.dll" />
+    <DepsDLLs Include="$(DepsBinDir)libwebpdemux.dll" />
+    <DepsDLLs Include="$(DepsBinDir)libwebpmux.dll" />
     <DepsDLLs Include="$(DepsBinDir)lz4.dll" />
     <DepsDLLs Include="$(DepsBinDir)SDL3.dll" />
     <DepsDLLs Include="$(DepsBinDir)shaderc_shared.dll" />

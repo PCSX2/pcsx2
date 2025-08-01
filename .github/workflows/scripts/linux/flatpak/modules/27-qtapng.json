@@ -1,0 +1,29 @@
+{
+  "name": "qtapng",
+  "buildsystem": "cmake-ninja",
+  "builddir": true,
+  "config-opts": [
+    "-DCMAKE_PREFIX_PATH=\"${FLATPAK_DEST}\""
+  ],
+  "build-options": {
+    "strip": true
+  },
+  "sources": [
+    {
+      "type": "git",
+      "url": "https://github.com/jurplel/QtApng.git",
+      "tag": "1.3.0",
+      "commit": "bd15516b281204e90ecd5b80b00d1274b062f5fc"
+    },
+    {
+        "type": "patch",
+        "path": "../../../common/qtapng-cmake.patch"
+    }
+  ],
+  "cleanup": [
+    "/plugins"
+  ],
+  "post-install": [
+    "mv ${FLATPAK_DEST}/plugins/* ${FLATPAK_DEST}/bin/"
+  ]
+}
