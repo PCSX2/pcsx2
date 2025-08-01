@@ -114,9 +114,19 @@ target_sources(pcsx2-qt PRIVATE
 	Settings/GameSummaryWidget.cpp
 	Settings/GameSummaryWidget.h
 	Settings/GameSummaryWidget.ui
+	Settings/GraphicsAdvancedSettingsTab.ui
+	Settings/GraphicsDisplaySettingsTab.ui
+	Settings/GraphicsHardwareFixesSettingsTab.ui
+	Settings/GraphicsHardwareRenderingSettingsTab.ui
+	Settings/GraphicsMediaCaptureSettingsTab.ui
+	Settings/GraphicsOnScreenDisplaySettingsTab.ui
+	Settings/GraphicsPostProcessingSettingsTab.ui
+	Settings/GraphicsSettingsHeader.ui
 	Settings/GraphicsSettingsWidget.cpp
 	Settings/GraphicsSettingsWidget.h
-	Settings/GraphicsSettingsWidget.ui
+	Settings/GraphicsSoftwareRenderingSettingsTab.ui
+	Settings/GraphicsTextureReplacementSettingsTab.ui
+	Settings/GraphicsUpscalingFixesSettingsTab.ui
 	Settings/HotkeySettingsWidget.cpp
 	Settings/HotkeySettingsWidget.h
 	Settings/InputBindingDialog.cpp

@@ -896,7 +896,37 @@
     <QtUi Include="Settings\GameSummaryWidget.ui">
       <Filter>Settings</Filter>
     </QtUi>
-    <QtUi Include="Settings\GraphicsSettingsWidget.ui">
+    <QtUi Include="Settings\GraphicsAdvancedSettingsTab.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\GraphicsDisplaySettingsTab.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\GraphicsHardwareFixesSettingsTab.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\GraphicsHardwareRenderingSettingsTab.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\GraphicsMediaCaptureSettingsTab.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\GraphicsOnScreenDisplaySettingsTab.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\GraphicsPostProcessingSettingsTab.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\GraphicsSettingsHeader.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\GraphicsSoftwareRenderingSettingsTab.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\GraphicsTextureReplacementSettingsTab.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\GraphicsUpscalingFixesSettingsTab.ui">
       <Filter>Settings</Filter>
     </QtUi>
     <QtUi Include="Settings\InputBindingDialog.ui">
