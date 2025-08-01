@@ -18,12 +18,16 @@ SettingsWidget::SettingsWidget(SettingsWindow* dialog, QWidget* parent)
 	layout->addWidget(m_tab_widget);
 }
 
-void SettingsWidget::addPageHeader(QWidget* header)
+void SettingsWidget::addPageHeader(QWidget* header, bool custom_margins)
 {
-	static_cast<QVBoxLayout*>(layout())->insertWidget(layout()->count() - 1, header);
+	QVBoxLayout* box_layout = static_cast<QVBoxLayout*>(layout());
+	box_layout->insertWidget(layout()->count() - 1, header);
+
+	if (!custom_margins)
+		setWidgetMargins(header, 0);
 }
 
-void SettingsWidget::addTab(QString name, QWidget* contents, bool custom_margins)
+QWidget* SettingsWidget::addTab(QString name, QWidget* contents, bool custom_margins)
 {
 	QScrollArea* scroll_area = new QScrollArea(this);
 	scroll_area->setWidget(contents);
@@ -55,6 +59,25 @@ void SettingsWidget::addTab(QString name, QWidget* contents, bool custom_margins
 
 	if (!custom_margins)
 		m_last_tab_contents = contents;
+
+	return scroll_area;
+}
+
+void SettingsWidget::setTabVisible(QWidget* tab, bool is_visible, QWidget* switch_to)
+{
+	int index = m_tab_widget->indexOf(tab);
+	if (index < 0)
+		return;
+
+	if (!is_visible)
+	{
+		int switch_to_index = m_tab_widget->indexOf(tab);
+		if (switch_to_index == index)
+			m_tab_widget->setCurrentWidget(switch_to);
+	}
+
+	m_tab_widget->setTabEnabled(index, is_visible);
+	m_tab_widget->setTabVisible(index, is_visible);
 }
 
 void SettingsWidget::setWidgetMargins(QWidget* widget, int margin)
