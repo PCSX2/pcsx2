@@ -17,19 +17,30 @@ protected:
 	SettingsWidget(SettingsWindow* dialog, QWidget* parent = nullptr);
 
 	__fi SettingsWindow* dialog() { return m_dialog; }
+	__fi const SettingsWindow* dialog() const { return m_dialog; }
+
+	template <typename HeaderUi>
+	void setupHeader(HeaderUi* header_ui)
+	{
+		QWidget* header = new QWidget(this);
+		header_ui->setupUi(header);
+
+		addPageHeader(header);
+	}
 
 	// Create a settings tab with a scroll area.
 	template <typename ContentsUi>
-	void setupTab(QString name, ContentsUi* contents_ui)
+	QWidget* setupTab(QString name, ContentsUi* contents_ui)
 	{
 		QWidget* contents = new QWidget(this);
 		contents_ui->setupUi(contents);
 
-		addTab(name, contents);
+		return addTab(name, contents);
 	}
 
-	void addPageHeader(QWidget* header);
-	void addTab(QString name, QWidget* contents, bool custom_margins = false);
+	void addPageHeader(QWidget* header, bool custom_margins = false);
+	QWidget* addTab(QString name, QWidget* contents, bool custom_margins = false);
+	void setTabVisible(QWidget* tab, bool is_visible, QWidget* switch_to = nullptr);
 
 private:
 	void setWidgetMargins(QWidget* widget, int margin);
