@@ -5,20 +5,28 @@
 
 #include <QtWidgets/QWidget>
 
-#include "ui_GraphicsSettingsWidget.h"
+#include "ui_GraphicsAdvancedSettingsTab.h"
+#include "ui_GraphicsDisplaySettingsTab.h"
+#include "ui_GraphicsHardwareFixesSettingsTab.h"
+#include "ui_GraphicsHardwareRenderingSettingsTab.h"
+#include "ui_GraphicsMediaCaptureSettingsTab.h"
+#include "ui_GraphicsOnScreenDisplaySettingsTab.h"
+#include "ui_GraphicsPostProcessingSettingsTab.h"
+#include "ui_GraphicsSettingsHeader.h"
+#include "ui_GraphicsSoftwareRenderingSettingsTab.h"
+#include "ui_GraphicsTextureReplacementSettingsTab.h"
+#include "ui_GraphicsUpscalingFixesSettingsTab.h"
 
-#include "common/Pcsx2Defs.h"
+#include "SettingsWidget.h"
 
 enum class GSRendererType : s8;
 
-class SettingsWindow;
-
-class GraphicsSettingsWidget : public QWidget
+class GraphicsSettingsWidget : public SettingsWidget
 {
 	Q_OBJECT
 
 public:
-	GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* parent);
+	GraphicsSettingsWidget(SettingsWindow* settings_dialog, QWidget* parent);
 	~GraphicsSettingsWidget();
 
 Q_SIGNALS:
@@ -53,10 +61,23 @@ private:
 	void populateUpscaleMultipliers(u32 max_upscale_multiplier);
 	void resetManualHardwareFixes();
 
-	SettingsWindow* m_dialog;
+	Ui::GraphicsSettingsHeader m_header;
+	Ui::GraphicsDisplaySettingsTab m_display;
+	Ui::GraphicsHardwareRenderingSettingsTab m_hw;
+	Ui::GraphicsSoftwareRenderingSettingsTab m_sw;
+	Ui::GraphicsHardwareFixesSettingsTab m_fixes;
+	Ui::GraphicsUpscalingFixesSettingsTab m_upscaling;
+	Ui::GraphicsTextureReplacementSettingsTab m_texture;
+	Ui::GraphicsPostProcessingSettingsTab m_post;
+	Ui::GraphicsOnScreenDisplaySettingsTab m_osd;
+	Ui::GraphicsMediaCaptureSettingsTab m_capture;
+	Ui::GraphicsAdvancedSettingsTab m_advanced;
 
-	Ui::GraphicsSettingsWidget m_ui;
-
-	bool m_hardware_renderer_visible = false;
-	bool m_software_renderer_visible = false;
+	QWidget* m_display_tab = nullptr;
+	QWidget* m_hardware_rendering_tab = nullptr;
+	QWidget* m_software_rendering_tab = nullptr;
+	QWidget* m_hardware_fixes_tab = nullptr;
+	QWidget* m_upscaling_fixes_tab = nullptr;
+	QWidget* m_texture_replacement_tab = nullptr;
+	QWidget* m_advanced_tab = nullptr;
 };

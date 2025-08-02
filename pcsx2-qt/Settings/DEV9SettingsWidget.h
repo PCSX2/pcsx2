@@ -3,18 +3,17 @@
 
 #pragma once
 
-#include <QtWidgets/QWidget>
-#include <QtGui/QStandardItemModel>
-
 #include "ui_DEV9SettingsWidget.h"
+
+#include "SettingsWidget.h"
 
 #include "DEV9UiCommon.h"
 #include "DEV9DnsHostDialog.h"
 #include "DEV9/net.h"
 
-class SettingsWindow;
+#include <QtGui/QStandardItemModel>
 
-class DEV9SettingsWidget : public QWidget
+class DEV9SettingsWidget : public SettingsWidget
 {
 	Q_OBJECT
 
@@ -43,7 +42,7 @@ private Q_SLOTS:
 	void onHddCreateClicked();
 
 public:
-	DEV9SettingsWidget(SettingsWindow* dialog, QWidget* parent);
+	DEV9SettingsWidget(SettingsWindow* settings_dialog, QWidget* parent);
 	~DEV9SettingsWidget();
 
 protected:
@@ -62,8 +61,6 @@ private:
 
 	void UpdateHddSizeUIEnabled();
 	void UpdateHddSizeUIValues();
-
-	SettingsWindow* m_dialog;
 
 	Ui::DEV9SettingsWidget m_ui;
 
