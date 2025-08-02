@@ -25,13 +25,16 @@ DebugSettingsWidget::DebugSettingsWidget(SettingsWindow* settings_dialog, QWidge
 {
 	SettingsInterface* sif = dialog()->getSettingsInterface();
 
+	m_user_interface_tab = setupTab(m_user_interface, tr("User Interface"));
+	setupTab(m_analysis, tr("Analysis"));
+	setupTab(m_gs, tr("GS"));
+	m_logging_tab = setupTab(m_logging, tr("Logging"));
+
 	//////////////////////////////////////////////////////////////////////////
 	// User Interface Settings
 	//////////////////////////////////////////////////////////////////////////
 	if (!dialog()->isPerGameSettings())
 	{
-		setupTab(m_user_interface, tr("User Interface"));
-
 		SettingWidgetBinder::BindWidgetToIntSetting(
 			sif, m_user_interface.refreshInterval, "Debugger/UserInterface", "RefreshInterval", 1000);
 		connect(m_user_interface.refreshInterval, &QSpinBox::valueChanged, this, []() {
@@ -69,11 +72,14 @@ DebugSettingsWidget::DebugSettingsWidget(SettingsWindow* settings_dialog, QWidge
 			tr("Choose how the drop indicators that appear when you drag dock windows in the debugger are styled. "
 			   "You will have to restart the debugger for this option to take effect."));
 	}
+	else
+	{
+		setTabVisible(m_user_interface_tab, false);
+	}
 
 	//////////////////////////////////////////////////////////////////////////
 	// Analysis Settings
 	//////////////////////////////////////////////////////////////////////////
-	setupTab(m_analysis, tr("Analysis"));
 
 	SettingWidgetBinder::BindWidgetToEnumSetting(
 		sif, m_analysis.analysisCondition, "Debugger/Analysis", "RunCondition",
@@ -96,8 +102,6 @@ DebugSettingsWidget::DebugSettingsWidget(SettingsWindow* settings_dialog, QWidge
 	//////////////////////////////////////////////////////////////////////////
 	// GS Settings
 	//////////////////////////////////////////////////////////////////////////
-	setupTab(m_gs, tr("GS"));
-
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_gs.dumpGSData, "EmuCore/GS", "DumpGSData", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_gs.saveRT, "EmuCore/GS", "SaveRT", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_gs.saveFrame, "EmuCore/GS", "SaveFrame", false);
@@ -121,8 +125,6 @@ DebugSettingsWidget::DebugSettingsWidget(SettingsWindow* settings_dialog, QWidge
 	//////////////////////////////////////////////////////////////////////////
 	// Logging Settings
 	//////////////////////////////////////////////////////////////////////////
-	setupTab(m_logging, tr("Logging"));
-
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkEnable, "EmuCore/TraceLog", "Enabled", false);
 	dialog()->registerWidgetHelp(m_logging.chkEnable, tr("Enable Trace Logging"), tr("Unchecked"), tr("Globally enable / disable trace logging."));
 
@@ -195,6 +197,8 @@ DebugSettingsWidget::DebugSettingsWidget(SettingsWindow* settings_dialog, QWidge
 
 	connect(m_logging.chkEnable, &QCheckBox::checkStateChanged, this, &DebugSettingsWidget::onLoggingEnableChanged);
 	onLoggingEnableChanged();
+#else
+	setTabVisible(m_logging_tab, false);
 #endif
 }
 

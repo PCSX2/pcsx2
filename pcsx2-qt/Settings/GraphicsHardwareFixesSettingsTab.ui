@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string/>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
+  <layout class="QGridLayout" name="gridLayout" columnstretch="0,1">
    <item row="3" column="1">
     <widget class="QComboBox" name="hwAutoFlush">
      <item>
@@ -73,7 +73,7 @@
     </widget>
    </item>
    <item row="0" column="1">
-    <layout class="QHBoxLayout" name="cpuCLUTRenderLayout" stretch="1,0">
+    <layout class="QHBoxLayout" name="cpuCLUTRenderLayout" stretch="0,0">
      <item>
       <widget class="QComboBox" name="cpuSpriteRenderBW">
        <item>
@@ -313,7 +313,7 @@
      <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
-       <height>40</height>
+       <height>0</height>
       </size>
      </property>
     </spacer>

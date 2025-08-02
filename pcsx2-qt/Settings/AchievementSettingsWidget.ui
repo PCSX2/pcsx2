@@ -60,7 +60,7 @@
      <property name="title">
       <string>Notifications</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout_2" columnstretch="1,0">
+     <layout class="QGridLayout" name="gridLayout_2" columnstretch="1,1">
       <item row="0" column="1">
        <layout class="QHBoxLayout" name="achievementNotificationsDurationSliderContainer" stretch="1,0">
         <item>
