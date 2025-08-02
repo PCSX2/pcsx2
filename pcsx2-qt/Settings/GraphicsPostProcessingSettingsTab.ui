@@ -28,9 +28,15 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <layout class="QHBoxLayout" name="casLayout">
+       <layout class="QHBoxLayout" name="casLayout" stretch="1,0">
         <item>
          <widget class="QComboBox" name="casMode">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <item>
            <property name="text">
             <string>None (Default)</string>
@@ -98,32 +104,15 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <layout class="QHBoxLayout" name="shadeBoostLayout">
-        <item>
+       <layout class="QGridLayout" name="gridLayout" columnstretch="0,1,0,1">
+        <item row="0" column="0">
          <widget class="QLabel" name="brightnessLabel">
           <property name="text">
            <string>Brightness:</string>
           </property>
          </widget>
         </item>
-        <item>
-         <widget class="QSpinBox" name="shadeBoostBrightness">
-          <property name="minimum">
-           <number>1</number>
-          </property>
-          <property name="maximum">
-           <number>100</number>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="contrastLabel">
-          <property name="text">
-           <string>Contrast:</string>
-          </property>
-         </widget>
-        </item>
-        <item>
+        <item row="0" column="3">
          <widget class="QSpinBox" name="shadeBoostContrast">
           <property name="minimum">
            <number>1</number>
@@ -133,14 +122,31 @@
           </property>
          </widget>
         </item>
-        <item>
+        <item row="0" column="2">
+         <widget class="QLabel" name="contrastLabel">
+          <property name="text">
+           <string>Contrast:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QSpinBox" name="shadeBoostBrightness">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>100</number>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
          <widget class="QLabel" name="gammaLabel">
           <property name="text">
            <string>Gamma:</string>
           </property>
          </widget>
         </item>
-        <item>
+        <item row="1" column="1">
          <widget class="QSpinBox" name="shadeBoostGamma">
           <property name="minimum">
            <number>1</number>
@@ -150,14 +156,14 @@
           </property>
          </widget>
         </item>
-        <item>
+        <item row="1" column="2">
          <widget class="QLabel" name="saturationLabel">
           <property name="text">
            <string>Saturation:</string>
           </property>
          </widget>
         </item>
-        <item>
+        <item row="1" column="3">
          <widget class="QSpinBox" name="shadeBoostSaturation">
           <property name="minimum">
            <number>1</number>
@@ -231,7 +237,7 @@
      <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
-       <height>40</height>
+       <height>0</height>
       </size>
      </property>
     </spacer>
