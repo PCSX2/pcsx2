@@ -520,22 +520,27 @@ void GSState::DumpVertices(const std::string& filename)
 
 	file << std::endl;
 
-	file << "TRACER" << std::endl;
+	file << "TRACER" << std::dec << std::endl;
 
 	GSVector4i v = m_vt.m_min.c;
-	file << "\tmin c (x,y,z,w): " << v.x << DEL << v.y << DEL << v.z << DEL << v.w << std::endl;
+	file << "\tmin c (r,g,b,a): " << v.x << DEL << v.y << DEL << v.z << DEL << v.w << std::endl;
 	v = m_vt.m_max.c;
-	file << "\tmax c (x,y,z,w): " << v.x << DEL << v.y << DEL << v.z << DEL << v.w << std::endl;
+	file << "\tmax c (r,g,b,a): " << v.x << DEL << v.y << DEL << v.z << DEL << v.w << std::endl;
 
 	GSVector4 v2 = m_vt.m_min.p;
-	file << "\tmin p (x,y,z,w): " << v2.x << DEL << v2.y << DEL << v2.z << DEL << v2.w << std::endl;
+	file << "\tmin p (x,y,z,f): " << v2.x << DEL << v2.y << DEL << v2.z << DEL << (u32)v2.w << std::endl;
 	v2 = m_vt.m_max.p;
-	file << "\tmax p (x,y,z,w): " << v2.x << DEL << v2.y << DEL << v2.z << DEL << v2.w << std::endl;
-	v2 = m_vt.m_min.t;
-	file << "\tmin t (x,y,z,w): " << v2.x << DEL << v2.y << DEL << v2.z << DEL << v2.w << std::endl;
-	v2 = m_vt.m_max.t;
-	file << "\tmax t (x,y,z,w): " << v2.x << DEL << v2.y << DEL << v2.z << DEL << v2.w << std::endl;
+	file << "\tmax p (x,y,z,f): " << v2.x << DEL << v2.y << DEL << v2.z << DEL << (u32)v2.w << std::endl;
 
+	v2 = m_vt.m_min.t;
+	file << "\tmin t (u,v,q):   " << v2.x << DEL << v2.y << DEL << v2.z << std::endl;
+	v2 = m_vt.m_max.t;
+	file << "\tmax t (u,v,q):   " << v2.x << DEL << v2.y << DEL << v2.z << std::endl;
+
+	file << std::endl;
+	file << "\teq c (r,g,b,a): " << (m_vt.m_eq.r & 1) << DEL << (m_vt.m_eq.g & 1) << DEL << (m_vt.m_eq.b & 1) << DEL << (m_vt.m_eq.a & 1) << std::endl;
+	file << "\teq p (x,y,z,f): " << (m_vt.m_eq.x & 1) << DEL << (m_vt.m_eq.y & 1) << DEL << (m_vt.m_eq.z & 1) << DEL << (m_vt.m_eq.f & 1) << std::endl;
+	file << "\teq t (u,v,q)  : " << (m_vt.m_eq.s & 1) << DEL << (m_vt.m_eq.t & 1) << DEL << (m_vt.m_eq.q & 1) << std::endl;
 	file.close();
 }
 
