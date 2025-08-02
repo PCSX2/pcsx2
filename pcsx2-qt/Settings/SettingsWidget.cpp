@@ -3,8 +3,11 @@
 
 #include "SettingsWidget.h"
 
-#include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QScrollArea>
+#include <QtWidgets/QScrollBar>
+#include <QtWidgets/QTabBar>
+#include <QtWidgets/QTabWidget>
+#include <QtWidgets/QVBoxLayout>
 
 SettingsWidget::SettingsWidget(SettingsWindow* settings_dialog, QWidget* parent)
 	: QWidget(parent)
@@ -23,8 +26,8 @@ void SettingsWidget::addPageHeader(QWidget* header, bool custom_margins)
 	QVBoxLayout* box_layout = static_cast<QVBoxLayout*>(layout());
 	box_layout->insertWidget(layout()->count() - 1, header);
 
-	if (!custom_margins)
-		setWidgetMargins(header, 0);
+	if (!custom_margins && header->layout())
+		header->layout()->setContentsMargins(0, 0, 0, 0);
 }
 
 QWidget* SettingsWidget::addTab(QString name, QWidget* contents, bool custom_margins)
@@ -46,19 +49,29 @@ QWidget* SettingsWidget::addTab(QString name, QWidget* contents, bool custom_mar
 	if (m_tab_widget->count() == 1)
 	{
 		if (!custom_margins)
-			setWidgetMargins(contents, 0);
+			updateTabMargins(scroll_area);
 	}
 	else
 	{
-		if (m_tab_widget->count() == 2)
-			setWidgetMargins(m_last_tab_contents, 9);
+		if (m_tab_widget->count() == 2 && m_last_scroll_area)
+			updateTabMargins(m_last_scroll_area);
 
 		if (!custom_margins)
-			setWidgetMargins(contents, 9);
+			updateTabMargins(scroll_area);
 	}
 
 	if (!custom_margins)
-		m_last_tab_contents = contents;
+	{
+		m_last_scroll_area = scroll_area;
+
+		connect(scroll_area->verticalScrollBar(), &QScrollBar::rangeChanged, this, [this, scroll_area]() {
+			updateTabMargins(scroll_area);
+		});
+
+		connect(scroll_area->horizontalScrollBar(), &QScrollBar::rangeChanged, this, [this, scroll_area]() {
+			updateTabMargins(scroll_area);
+		});
+	}
 
 	return scroll_area;
 }
@@ -80,8 +93,28 @@ void SettingsWidget::setTabVisible(QWidget* tab, bool is_visible, QWidget* switc
 	m_tab_widget->setTabVisible(index, is_visible);
 }
 
-void SettingsWidget::setWidgetMargins(QWidget* widget, int margin)
+void SettingsWidget::updateTabMargins(QScrollArea* scroll_area)
 {
-	if (widget && widget->layout())
-		widget->layout()->setContentsMargins(margin, margin, margin, margin);
+	if (!scroll_area->widget()->layout())
+		return;
+
+	if (m_tab_widget->count() == 1)
+	{
+		int horizontal_margin = 0;
+		if (scroll_area->verticalScrollBar()->minimum() < scroll_area->verticalScrollBar()->maximum())
+			horizontal_margin = -1;
+
+		int vertical_margin = 0;
+		if (scroll_area->horizontalScrollBar()->minimum() < scroll_area->horizontalScrollBar()->maximum())
+			vertical_margin = -1;
+
+		if (layoutDirection() == Qt::RightToLeft)
+			scroll_area->widget()->layout()->setContentsMargins(horizontal_margin, 0, 0, vertical_margin);
+		else
+			scroll_area->widget()->layout()->setContentsMargins(0, 0, horizontal_margin, vertical_margin);
+	}
+	else
+	{
+		scroll_area->widget()->layout()->setContentsMargins(-1, -1, -1, -1);
+	}
 }

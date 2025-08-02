@@ -3,11 +3,14 @@
 
 #pragma once
 
-#include "SettingsWindow.h"
+#include "common/Pcsx2Defs.h"
 
-#include <QtWidgets/QTabWidget>
 #include <QtWidgets/QWidget>
-#include <QtWidgets/QLabel>
+
+class QScrollArea;
+class QTabWidget;
+
+class SettingsWindow;
 
 class SettingsWidget : public QWidget
 {
@@ -43,11 +46,11 @@ protected:
 	void setTabVisible(QWidget* tab, bool is_visible, QWidget* switch_to = nullptr);
 
 private:
-	void setWidgetMargins(QWidget* widget, int margin);
+	void updateTabMargins(QScrollArea* scroll_area);
 
 	SettingsWindow* m_dialog;
 	QWidget* m_page_header;
 	QTabWidget* m_tab_widget;
 
-	QWidget* m_last_tab_contents = nullptr;
+	QScrollArea* m_last_scroll_area = nullptr;
 };
