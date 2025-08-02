@@ -19,85 +19,13 @@
   <property name="windowTitle">
    <string/>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
+  <layout class="QGridLayout" name="gridLayout" columnstretch="0,1">
    <item row="3" column="0">
     <widget class="QLabel" name="interlacingLabel">
      <property name="text">
       <string>Deinterlacing:</string>
      </property>
     </widget>
-   </item>
-   <item row="6" column="1">
-    <layout class="QHBoxLayout" name="cropLayout" stretch="0,1,0,1,0,1,0,0">
-     <item>
-      <widget class="QLabel" name="cropLeftLabel">
-       <property name="text">
-        <string extracomment="Warning: short space constraints. Abbreviate if necessary.">Left:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QSpinBox" name="cropLeft">
-       <property name="suffix">
-        <string>px</string>
-       </property>
-       <property name="maximum">
-        <number>1000</number>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="cropTopLabel">
-       <property name="text">
-        <string extracomment="Warning: short space constraints. Abbreviate if necessary.">Top:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QSpinBox" name="cropTop">
-       <property name="suffix">
-        <string>px</string>
-       </property>
-       <property name="maximum">
-        <number>1000</number>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="cropRightLabel">
-       <property name="text">
-        <string extracomment="Warning: short space constraints. Abbreviate if necessary.">Right:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QSpinBox" name="cropRight">
-       <property name="suffix">
-        <string>px</string>
-       </property>
-       <property name="maximum">
-        <number>1000</number>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="cropBottomLabel">
-       <property name="text">
-        <string extracomment="Warning: short space constraints. Abbreviate if necessary.">Bottom:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QSpinBox" name="cropBottom">
-       <property name="suffix">
-        <string>px</string>
-       </property>
-       <property name="maximum">
-        <number>1000</number>
-       </property>
-      </widget>
-     </item>
-    </layout>
    </item>
    <item row="0" column="1">
     <widget class="QComboBox" name="fullscreenModes"/>
@@ -352,10 +280,82 @@
      <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
-       <height>40</height>
+       <height>0</height>
       </size>
      </property>
     </spacer>
+   </item>
+   <item row="6" column="1">
+    <layout class="QGridLayout" name="gridLayout_2" columnstretch="0,1,0,1">
+     <item row="0" column="3">
+      <widget class="QSpinBox" name="cropTop">
+       <property name="suffix">
+        <string>px</string>
+       </property>
+       <property name="maximum">
+        <number>1000</number>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2">
+      <widget class="QLabel" name="cropTopLabel">
+       <property name="text">
+        <string extracomment="Warning: short space constraints. Abbreviate if necessary.">Top:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="cropLeftLabel">
+       <property name="text">
+        <string extracomment="Warning: short space constraints. Abbreviate if necessary.">Left:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QSpinBox" name="cropLeft">
+       <property name="suffix">
+        <string>px</string>
+       </property>
+       <property name="maximum">
+        <number>1000</number>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="cropRightLabel">
+       <property name="text">
+        <string extracomment="Warning: short space constraints. Abbreviate if necessary.">Right:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QSpinBox" name="cropRight">
+       <property name="suffix">
+        <string>px</string>
+       </property>
+       <property name="maximum">
+        <number>1000</number>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <widget class="QLabel" name="cropBottomLabel">
+       <property name="text">
+        <string extracomment="Warning: short space constraints. Abbreviate if necessary.">Bottom:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="3">
+      <widget class="QSpinBox" name="cropBottom">
+       <property name="suffix">
+        <string>px</string>
+       </property>
+       <property name="maximum">
+        <number>1000</number>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>

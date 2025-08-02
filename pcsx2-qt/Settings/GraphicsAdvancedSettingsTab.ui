@@ -28,12 +28,6 @@
      <layout class="QFormLayout" name="advancedOptionsFormLayout">
       <item row="0" column="0">
        <widget class="QLabel" name="hwDownloadModeLabel">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
         <property name="text">
          <string>Hardware Download Mode:</string>
         </property>
@@ -65,12 +59,6 @@
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="gsDumpCompressionLabel">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
         <property name="text">
          <string>GS Dump Compression:</string>
         </property>
@@ -136,12 +124,6 @@
       </item>
       <item row="6" column="0">
        <widget class="QLabel" name="exclussiveFSLabel">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
         <property name="text">
          <string>Allow Exclusive Fullscreen:</string>
         </property>
@@ -187,12 +169,6 @@
       </item>
       <item row="5" column="0">
        <widget class="QLabel" name="label">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
         <property name="text">
          <string>Texture Preloading:</string>
         </property>
@@ -270,12 +246,6 @@
      <layout class="QFormLayout" name="debuggingOptionsFormLayout">
       <item row="0" column="0">
        <widget class="QLabel" name="barriersLabel">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
         <property name="text">
          <string>Override Texture Barriers:</string>
         </property>
@@ -343,7 +313,7 @@
      <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
-       <height>40</height>
+       <height>0</height>
       </size>
      </property>
     </spacer>

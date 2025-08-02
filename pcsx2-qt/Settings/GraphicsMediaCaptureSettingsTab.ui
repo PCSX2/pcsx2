@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>722</width>
+    <width>700</width>
     <height>500</height>
    </rect>
   </property>
@@ -31,6 +31,12 @@
         </item>
         <item>
          <widget class="QComboBox" name="screenshotSize">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <item>
            <property name="text">
             <string>Window Resolution (Aspect Corrected)</string>
@@ -328,14 +334,14 @@
     </widget>
    </item>
    <item>
-    <spacer name="verticalSpacer_6">
+    <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
-       <width>701</width>
-       <height>70</height>
+       <width>20</width>
+       <height>0</height>
       </size>
      </property>
     </spacer>

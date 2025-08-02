@@ -35,4 +35,7 @@ private:
 	Ui::DebugAnalysisSettingsTab m_analysis;
 	Ui::DebugGSSettingsTab m_gs;
 	Ui::DebugLoggingSettingsTab m_logging;
+
+	QWidget* m_user_interface_tab = nullptr;
+	QWidget* m_logging_tab = nullptr;
 };

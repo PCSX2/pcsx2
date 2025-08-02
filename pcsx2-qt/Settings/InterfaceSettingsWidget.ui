@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>698</width>
-    <height>512</height>
+    <width>700</width>
+    <height>608</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -131,11 +131,11 @@
       </item>
       <item row="3" column="0">
        <widget class="QCheckBox" name="startFullscreenUI">
-         <property name="text">
-          <string>Start Big Picture UI</string>
-         </property>
-        </widget>
-       </item>
+        <property name="text">
+         <string>Start Big Picture UI</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
@@ -222,12 +222,12 @@
    <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
-      <enum>Qt::Orientation::Vertical</enum>
+      <enum>Qt::Vertical</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
-       <height>40</height>
+       <height>0</height>
       </size>
      </property>
     </spacer>

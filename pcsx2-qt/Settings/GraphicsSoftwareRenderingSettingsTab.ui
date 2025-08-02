@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string/>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
+  <layout class="QGridLayout" name="gridLayout" columnstretch="0,1">
    <item row="1" column="0">
     <widget class="QLabel" name="extraSWThreadsLabel">
      <property name="text">
@@ -50,12 +50,6 @@
     <widget class="QComboBox" name="swTextureFiltering">
      <property name="enabled">
       <bool>true</bool>
-     </property>
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
      </property>
      <property name="layoutDirection">
       <enum>Qt::LeftToRight</enum>
@@ -97,7 +91,7 @@
      <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
-       <height>40</height>
+       <height>0</height>
       </size>
      </property>
     </spacer>

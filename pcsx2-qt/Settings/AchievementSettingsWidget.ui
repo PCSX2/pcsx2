@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>600</width>
+    <width>700</width>
     <height>1000</height>
    </rect>
   </property>
@@ -60,7 +60,7 @@
      <property name="title">
       <string>Notifications</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout_2" columnstretch="1,0">
+     <layout class="QGridLayout" name="gridLayout_2" columnstretch="1,1">
       <item row="0" column="1">
        <layout class="QHBoxLayout" name="achievementNotificationsDurationSliderContainer" stretch="1,0">
         <item>
@@ -159,168 +159,6 @@
          <string>Enable Sound Effects</string>
         </property>
        </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="QGroupBox" name="soundEffectsBox">
-     <property name="title">
-      <string>Sound Effects</string>
-     </property>
-     <layout class="QGridLayout" name="gridLayout_6">
-      <item row="5" column="0">
-       <widget class="QLineEdit" name="lbSoundPath"/>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLineEdit" name="notificationSoundPath"/>
-      </item>
-      <item row="3" column="1">
-       <widget class="QPushButton" name="unlockSoundBrowse">
-        <property name="text">
-         <string>Browse...</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="3">
-       <widget class="QPushButton" name="notificationSoundReset">
-        <property name="text">
-         <string>Reset</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QCheckBox" name="unlockSound">
-        <property name="text">
-         <string>Achievement Unlock Sound</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QPushButton" name="notificationSoundBrowse">
-        <property name="text">
-         <string>Browse...</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLineEdit" name="unlockSoundPath"/>
-      </item>
-      <item row="5" column="1">
-       <widget class="QPushButton" name="lbSoundBrowse">
-        <property name="text">
-         <string>Browse...</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="2">
-       <widget class="QPushButton" name="unlockSoundOpen">
-        <property name="text">
-         <string>Preview</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="2">
-       <widget class="QPushButton" name="notificationSoundOpen">
-        <property name="text">
-         <string>Preview</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QCheckBox" name="notificationSound">
-        <property name="text">
-         <string>Notification Sound</string>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="2">
-       <widget class="QPushButton" name="lbSoundOpen">
-        <property name="text">
-         <string>Preview</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="3">
-       <widget class="QPushButton" name="unlockSoundReset">
-        <property name="text">
-         <string>Reset</string>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="3">
-       <widget class="QPushButton" name="lbSoundReset">
-        <property name="text">
-         <string>Reset</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0">
-       <widget class="QCheckBox" name="lbSound">
-        <property name="text">
-         <string>Leaderboard Submit Sound</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="QGroupBox" name="gameInfoBox">
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>75</height>
-      </size>
-     </property>
-     <property name="title">
-      <string>Game Info</string>
-     </property>
-     <layout class="QGridLayout" name="gridLayout_3">
-      <item row="0" column="0">
-       <widget class="QLabel" name="gameInfo">
-        <property name="alignment">
-         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="QGroupBox" name="loginBox">
-     <property name="title">
-      <string>Account</string>
-     </property>
-     <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0">
-      <item>
-       <widget class="QLabel" name="loginStatus">
-        <property name="text">
-         <string>Username:
-Login token generated at:</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="achievementButtons">
-        <item>
-         <widget class="QPushButton" name="viewProfile">
-          <property name="text">
-           <string>View Profile...</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="loginButton">
-          <property name="text">
-           <string>Login...</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
       </item>
      </layout>
     </widget>
@@ -459,6 +297,168 @@ Login token generated at:</string>
     </widget>
    </item>
    <item>
+    <widget class="QGroupBox" name="soundEffectsBox">
+     <property name="title">
+      <string>Sound Effects</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_6">
+      <item row="5" column="0">
+       <widget class="QLineEdit" name="lbSoundPath"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLineEdit" name="notificationSoundPath"/>
+      </item>
+      <item row="3" column="1">
+       <widget class="QPushButton" name="unlockSoundBrowse">
+        <property name="text">
+         <string>Browse...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <widget class="QPushButton" name="notificationSoundReset">
+        <property name="text">
+         <string>Reset</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QCheckBox" name="unlockSound">
+        <property name="text">
+         <string>Achievement Unlock Sound</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QPushButton" name="notificationSoundBrowse">
+        <property name="text">
+         <string>Browse...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLineEdit" name="unlockSoundPath"/>
+      </item>
+      <item row="5" column="1">
+       <widget class="QPushButton" name="lbSoundBrowse">
+        <property name="text">
+         <string>Browse...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="2">
+       <widget class="QPushButton" name="unlockSoundOpen">
+        <property name="text">
+         <string>Preview</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QPushButton" name="notificationSoundOpen">
+        <property name="text">
+         <string>Preview</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QCheckBox" name="notificationSound">
+        <property name="text">
+         <string>Notification Sound</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="2">
+       <widget class="QPushButton" name="lbSoundOpen">
+        <property name="text">
+         <string>Preview</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="3">
+       <widget class="QPushButton" name="unlockSoundReset">
+        <property name="text">
+         <string>Reset</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="3">
+       <widget class="QPushButton" name="lbSoundReset">
+        <property name="text">
+         <string>Reset</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QCheckBox" name="lbSound">
+        <property name="text">
+         <string>Leaderboard Submit Sound</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="loginBox">
+     <property name="title">
+      <string>Account</string>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0">
+      <item>
+       <widget class="QLabel" name="loginStatus">
+        <property name="text">
+         <string>Username:
+Login token generated at:</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="achievementButtons">
+        <item>
+         <widget class="QPushButton" name="viewProfile">
+          <property name="text">
+           <string>View Profile...</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="loginButton">
+          <property name="text">
+           <string>Login...</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="gameInfoBox">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>75</height>
+      </size>
+     </property>
+     <property name="title">
+      <string>Game Info</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_3">
+      <item row="0" column="0">
+       <widget class="QLabel" name="gameInfo">
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <widget class="QLabel" name="rcheevosDisclaimer">
      <property name="text">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;PCSX2 uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;https://retroachievements.org/&quot;&gt;retroachievements.org&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;To view the achievement list in-game, press the hotkey for &lt;span style=&quot; font-weight:600;&quot;&gt;Open Pause Menu&lt;/span&gt; and select &lt;span style=&quot; font-weight:600;&quot;&gt;Achievements&lt;/span&gt; from the menu.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -485,7 +485,7 @@ Login token generated at:</string>
      <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
-       <height>40</height>
+       <height>0</height>
       </size>
      </property>
     </spacer>

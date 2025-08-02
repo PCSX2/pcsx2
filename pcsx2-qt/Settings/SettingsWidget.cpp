@@ -82,12 +82,8 @@ void SettingsWidget::setTabVisible(QWidget* tab, bool is_visible, QWidget* switc
 	if (index < 0)
 		return;
 
-	if (!is_visible)
-	{
-		int switch_to_index = m_tab_widget->indexOf(tab);
-		if (switch_to_index == index)
-			m_tab_widget->setCurrentWidget(switch_to);
-	}
+	if (!is_visible && index == m_tab_widget->currentIndex() && switch_to)
+		m_tab_widget->setCurrentWidget(switch_to);
 
 	m_tab_widget->setTabEnabled(index, is_visible);
 	m_tab_widget->setTabVisible(index, is_visible);
