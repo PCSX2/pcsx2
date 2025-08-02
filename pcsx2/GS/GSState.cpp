@@ -22,6 +22,9 @@ int GSState::s_n = 0;
 int GSState::s_last_transfer_draw_n = 0;
 int GSState::s_transfer_n = 0;
 
+int autoflushes = 0;
+int autoflush_lod = 0;
+
 static __fi bool IsAutoFlushEnabled()
 {
 	return GSIsHardwareRenderer() ? (GSConfig.UserHacks_AutoFlush != GSHWAutoFlushLevel::Disabled) : GSConfig.AutoFlushSW;
@@ -1483,6 +1486,13 @@ void GSState::GIFRegHandlerHWREG(const GIFReg* RESTRICT r)
 void GSState::Flush(GSFlushReason reason)
 {
 	FlushWrite();
+
+	if (reason == GSFlushReason::AUTOFLUSH)
+	{
+		Console.WriteLnFmt("autoflush at {}, {}, {}", s_n, m_index.tail, autoflush_lod);
+		autoflushes++;
+	}
+
 
 	if (m_index.tail > 0)
 	{
@@ -3721,6 +3731,8 @@ __forceinline void GSState::HandleAutoFlush()
 	int lod = 0;
 	if (IsAutoFlushDraw(prim, lod))
 	{
+		autoflush_lod = lod;
+
 		constexpr int n = NumIndicesForPrim(prim);
 		std::array<const GSVertex*, n> buff;
 		const GSVertex* RESTRICT vertex = &m_vertex.buff[0];
@@ -3890,6 +3902,10 @@ __forceinline void GSState::HandleAutoFlush()
 		const int frame_pg_width = (m_context->FRAME.FBW * 64) / frame_psm.pgs.x;
 		const int tex_pg_width = (m_context->TEX0.TBW * 64) / tex_psm.pgs.x;
 		const GSVector4i scissor = m_context->scissor.in;
+		if (s_n == 361 && m_index.tail >= 2)
+		{
+			printf("");
+		}
 
 		// Get the bounding box for the new prim.
 		const GSVector4 new_uv_rect_f = GetPrimBBox<prim, 0, 1>(&buff[0]);
@@ -3897,6 +3913,11 @@ __forceinline void GSState::HandleAutoFlush()
 
 		// Get the XY coords from previous prims in the queue.
 		GSVector4i old_xy_rect = temp_draw_rect;
+
+		if (s_n == 617 && m_index.tail == 80)
+		{
+			//printf("");
+		}
 
 		// Try to prove that a flush is not needed because current prim does not
 		// use the draw area of previous prims.
@@ -3930,7 +3951,6 @@ __forceinline void GSState::HandleAutoFlush()
 
 		// Get the last texture position from the last vertex of the previous prim to
 		// determine whether a page break occurred.
-
 		GSVector4 last_uv_coord_f =
 			GSVector4(GetTexelCoords(vertex[index[m_index.tail - 1]])).xyxy();
 		GSVector4i last_uv_coord = ProcessRawUV(last_uv_coord_f);

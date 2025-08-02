@@ -181,7 +181,8 @@ GSTexture* GSRendererSW::GetOutput(int i, float& scale, int& y_offset)
 
 		if (GSConfig.SaveFrame && GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
 		{
-			m_texture[index]->Save(GetDrawDumpPath("%05d_f%05lld_fr%d_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), i, (int)curFramebuffer.Block(), GSUtil::GetPSMName(curFramebuffer.PSM)));
+			//m_texture[index]->Save(GetDrawDumpPath("%05d_f%05lld_fr%d_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), i, (int)curFramebuffer.Block(), GSUtil::GetPSMName(curFramebuffer.PSM)));
+			m_texture[index]->Save(GetDrawDumpPath("f%05lld_fr%d_%05x_%s.bmp", g_perfmon.GetFrame(), i, (int)curFramebuffer.Block(), GSUtil::GetPSMName(curFramebuffer.PSM)));
 		}
 	}
 
