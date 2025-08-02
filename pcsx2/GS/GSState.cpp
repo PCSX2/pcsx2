@@ -22,6 +22,8 @@ int GSState::s_n = 0;
 int GSState::s_last_transfer_draw_n = 0;
 int GSState::s_transfer_n = 0;
 
+int autoflushes = 0;
+
 static __fi bool IsAutoFlushEnabled()
 {
 	return GSIsHardwareRenderer() ? (GSConfig.UserHacks_AutoFlush != GSHWAutoFlushLevel::Disabled) : GSConfig.AutoFlushSW;
@@ -1483,6 +1485,12 @@ void GSState::GIFRegHandlerHWREG(const GIFReg* RESTRICT r)
 void GSState::Flush(GSFlushReason reason)
 {
 	FlushWrite();
+
+	if (reason == GSFlushReason::AUTOFLUSH)
+	{
+		autoflushes++;
+	}
+
 
 	if (m_index.tail > 0)
 	{

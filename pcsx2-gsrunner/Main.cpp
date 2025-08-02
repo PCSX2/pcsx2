@@ -47,6 +47,8 @@
 
 #include "svnrev.h"
 
+extern int autoflushes;
+
 namespace GSRunner
 {
 	static void InitializeConsole();
@@ -814,6 +816,7 @@ void GSRunner::DumpStats()
 	Console.WriteLn(fmt::format("@HWSTAT@ Uploads: {} (avg {})", s_total_uploads, static_cast<u64>(std::ceil(s_total_uploads / static_cast<double>(s_total_drawn_frames)))));
 	Console.WriteLn(fmt::format("@HWSTAT@ Readbacks: {} (avg {})", s_total_readbacks, static_cast<u64>(std::ceil(s_total_readbacks / static_cast<double>(s_total_drawn_frames)))));
 	Console.WriteLn("============================================");
+	Console.WriteLnFmt("autoflushes: {}", autoflushes);
 }
 
 #ifdef _WIN32
