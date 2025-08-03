@@ -26,6 +26,7 @@
 #include "common/MD5Digest.h"
 #include "common/Path.h"
 #include "common/ScopedGuard.h"
+#include "common/SettingsInterface.h"
 #include "common/SmallString.h"
 #include "common/StringUtil.h"
 #include "common/Timer.h"
@@ -439,7 +440,25 @@ bool Achievements::Initialize()
 		IdentifyGame(VMManager::GetDiscCRC(), VMManager::GetCurrentCRC());
 
 	const std::string username = Host::GetBaseStringSettingValue("Achievements", "Username");
-	const std::string api_token = Host::GetBaseStringSettingValue("Achievements", "Token");
+
+	// Check the base settings file to see if the token is defined inside. Move if found.
+	std::string oldToken = Host::GetBaseStringSettingValue("Achievements", "Token");
+	if (!oldToken.empty())
+	{
+		auto secretsLock = Host::GetSecretsSettingsLock();
+		SettingsInterface* secretsInterface = Host::Internal::GetSecretsSettingsLayer();
+		secretsInterface->SetStringValue("Achievements", "Token", oldToken.c_str());
+		secretsInterface->Save();
+		
+		oldToken.clear();
+		
+		auto baseLock = Host::GetSettingsLock();
+		SettingsInterface* baseInterface = Host::Internal::GetBaseSettingsLayer();
+		baseInterface->DeleteValue("Achievements", "Token");
+		baseInterface->Save();
+	}
+
+	const std::string api_token = Host::GetStringSettingValue("Achievements", "Token");
 	if (!username.empty() && !api_token.empty())
 	{
 		Console.WriteLn("Achievements: Attempting login with user '%s'...", username.c_str());
@@ -1785,9 +1804,12 @@ void Achievements::ClientLoginWithPasswordCallback(int result, const char* error
 
 	// Store configuration.
 	Host::SetBaseStringSettingValue("Achievements", "Username", params->username);
-	Host::SetBaseStringSettingValue("Achievements", "Token", user->token);
 	Host::SetBaseStringSettingValue("Achievements", "LoginTimestamp", fmt::format("{}", std::time(nullptr)).c_str());
 	Host::CommitBaseSettingChanges();
+	
+	SettingsInterface* secretsInterface = Host::Internal::GetSecretsSettingsLayer();
+	secretsInterface->SetStringValue("Achievements", "Token", user->token);
+	secretsInterface->Save();
 
 	ShowLoginSuccess(client);
 }
@@ -1887,9 +1909,13 @@ void Achievements::Logout()
 
 	Console.WriteLn("Achievements: Clearing credentials...");
 	Host::RemoveBaseSettingValue("Achievements", "Username");
-	Host::RemoveBaseSettingValue("Achievements", "Token");
 	Host::RemoveBaseSettingValue("Achievements", "LoginTimestamp");
 	Host::CommitBaseSettingChanges();
+
+	auto secretsLock = Host::GetSecretsSettingsLock();
+	SettingsInterface* secretsInterface = Host::Internal::GetSecretsSettingsLayer();
+	secretsInterface->DeleteValue("Achievements", "Token");
+	secretsInterface->Save();
 }
 
 
