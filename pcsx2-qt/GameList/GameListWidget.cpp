@@ -26,6 +26,7 @@
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QScrollBar>
 #include <QtWidgets/QStyledItemDelegate>
+#include <QShortcut>
 
 static const char* SUPPORTED_FORMATS_STRING = QT_TRANSLATE_NOOP(GameListWidget,
 	".bin/.iso (ISO Disc Images)\n"
@@ -215,6 +216,10 @@ void GameListWidget::initialize()
 	});
 	connect(m_ui.searchText, &QLineEdit::textChanged, this, [this](const QString& text) {
 		m_sort_model->setFilterName(text);
+	});
+
+	connect(new QShortcut(QKeySequence::Find, this), &QShortcut::activated, [this]() {
+		m_ui.searchText->setFocus();
 	});
 
 	m_table_view = new QTableView(m_ui.stack);
