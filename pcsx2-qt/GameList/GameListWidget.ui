@@ -53,12 +53,14 @@
            <height>0</height>
           </size>
          </property>
+         <property name="toolTip">
+          <string>Game List</string>
+         </property>
          <property name="text">
           <string>Game List</string>
          </property>
          <property name="icon">
-          <iconset theme="list-check">
-           <normaloff>.</normaloff>.</iconset>
+          <iconset theme="list-check"/>
          </property>
          <property name="checkable">
           <bool>true</bool>
@@ -76,12 +78,14 @@
            <height>0</height>
           </size>
          </property>
+         <property name="toolTip">
+          <string>Game Grid</string>
+         </property>
          <property name="text">
           <string>Game Grid</string>
          </property>
          <property name="icon">
-          <iconset theme="function-line">
-           <normaloff>.</normaloff>.</iconset>
+          <iconset theme="function-line"/>
          </property>
          <property name="checkable">
           <bool>true</bool>
@@ -99,12 +103,14 @@
            <height>0</height>
           </size>
          </property>
+         <property name="toolTip">
+          <string>Show Titles</string>
+         </property>
          <property name="text">
           <string>Show Titles</string>
          </property>
          <property name="icon">
-          <iconset theme="price-tag-3-line">
-           <normaloff>.</normaloff>.</iconset>
+          <iconset theme="price-tag-3-line"/>
          </property>
          <property name="checkable">
           <bool>true</bool>
@@ -135,7 +141,7 @@
           <number>200</number>
          </property>
          <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+          <enum>Qt::Orientation::Horizontal</enum>
          </property>
         </widget>
        </item>
@@ -144,7 +150,7 @@
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -166,8 +172,7 @@
            <string>All Types</string>
           </property>
           <property name="icon">
-           <iconset theme="filter-line">
-            <normaloff>.</normaloff>.</iconset>
+           <iconset theme="filter-line"/>
           </property>
          </item>
         </widget>
@@ -179,8 +184,7 @@
            <string>All Regions</string>
           </property>
           <property name="icon">
-           <iconset theme="global-line">
-            <normaloff>.</normaloff>.</iconset>
+           <iconset theme="global-line"/>
           </property>
          </item>
         </widget>
