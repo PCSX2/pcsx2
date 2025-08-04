@@ -951,11 +951,11 @@ namespace R3000A
 			char tmp[max_len], tmp2[max_len];
 			char* ptmp = tmp;
 			unsigned int printed_bytes = 0;
-			int remaining_buf = max_len - 1;
 			unsigned int n = 1, i = 0, j = 0;
 
-			while (fmt[i])
+			while (fmt[i] && ptmp < std::end(tmp) - 1)
 			{
+				const int remaining_buf = static_cast<int>(std::end(tmp) - 1 - ptmp);
 				switch (fmt[i])
 				{
 					case '%':
@@ -996,7 +996,6 @@ namespace R3000A
 							case 'f':
 							case 'F':
 								printed_bytes = std::min(remaining_buf, snprintf(ptmp, remaining_buf, tmp2, (float)iopMemRead32(sp + n * 4)));
-								remaining_buf -= printed_bytes;
 								ptmp += printed_bytes;
 								n++;
 								break;
@@ -1008,7 +1007,6 @@ namespace R3000A
 							case 'g':
 							case 'G':
 								printed_bytes = std::min(remaining_buf, snprintf(ptmp, remaining_buf, tmp2, (double)iopMemRead32(sp + n * 4)));
-								remaining_buf -= printed_bytes;
 								ptmp += printed_bytes;
 								n++;
 								break;
@@ -1024,14 +1022,12 @@ namespace R3000A
 							case 'u':
 							case 'U':
 								printed_bytes = std::min(remaining_buf, snprintf(ptmp, remaining_buf, tmp2, (u32)iopMemRead32(sp + n * 4)));
-								remaining_buf -= printed_bytes;
 								ptmp += printed_bytes;
 								n++;
 								break;
 
 							case 'c':
 								printed_bytes = std::min(remaining_buf, snprintf(ptmp, remaining_buf, tmp2, (u8)iopMemRead32(sp + n * 4)));
-								remaining_buf -= printed_bytes;
 								ptmp += printed_bytes;
 								n++;
 								break;
@@ -1040,7 +1036,6 @@ namespace R3000A
 							{
 								std::string s = iopMemReadString(iopMemRead32(sp + n * 4));
 								printed_bytes = std::min(remaining_buf, snprintf(ptmp, remaining_buf, tmp2, s.data()));
-								remaining_buf -= printed_bytes;
 								ptmp += printed_bytes;
 								n++;
 							}
@@ -1061,6 +1056,7 @@ namespace R3000A
 						break;
 				}
 			}
+			pxAssertRel(ptmp >= tmp && ptmp < std::end(tmp), "Overflowed tmp buffer");
 			*ptmp = 0;
 			iopConLog(ShiftJIS_ConvertString(tmp, 1023));
 
