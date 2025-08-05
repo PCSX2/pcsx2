@@ -33,7 +33,7 @@ namespace GameDatabaseSchema
 
 namespace GameDatabase
 {
-	static void parseAndInsert(const std::string_view serial, const c4::yml::NodeRef& node);
+	static void parseAndInsert(const std::string_view serial, const ryml::NodeRef& node);
 	static void initDatabase();
 } // namespace GameDatabase
 
@@ -84,7 +84,7 @@ const char* GameDatabaseSchema::GameEntry::compatAsString() const
 	}
 }
 
-void GameDatabase::parseAndInsert(const std::string_view serial, const c4::yml::NodeRef& node)
+void GameDatabase::parseAndInsert(const std::string_view serial, const ryml::NodeRef& node)
 {
 	GameDatabaseSchema::GameEntry gameEntry;
 	if (node.has_child("name"))
@@ -947,7 +947,7 @@ void GameDatabase::initDatabase()
 			loc.line, loc.col, loc.offset, std::string_view(msg, msg_len)));
 	};
 	ryml::set_callbacks(rymlCallbacks);
-	c4::set_error_callback([](const char* msg, size_t msg_size) {
+	ryml::set_error_callback([](const char* msg, size_t msg_size) {
 		Console.Error(fmt::format("[GameDB YAML] Internal Parsing error: {}", std::string_view(msg, msg_size)));
 	});
 
@@ -958,7 +958,7 @@ void GameDatabase::initDatabase()
 		return;
 	}
 
-	ryml::Tree tree = ryml::parse_in_arena(c4::to_csubstr(buf.value()));
+	ryml::Tree tree = ryml::parse_in_arena(ryml::to_csubstr(buf.value()));
 	ryml::NodeRef root = tree.rootref();
 
 	for (const ryml::NodeRef& n : root.children())
@@ -1049,7 +1049,7 @@ static constexpr char HASHDB_YAML_FILE_NAME[] = "RedumpDatabase.yaml";
 std::unordered_map<GameDatabase::TrackHash, u32, TrackHashHasher> s_track_hash_to_entry_map;
 std::vector<GameDatabase::HashDatabaseEntry> s_hash_database;
 
-static bool parseHashDatabaseEntry(const c4::yml::NodeRef& node)
+static bool parseHashDatabaseEntry(const ryml::NodeRef& node)
 {
 	if (!node.has_child("name") || !node.has_child("hashes"))
 	{
@@ -1106,7 +1106,7 @@ bool GameDatabase::loadHashDatabase()
 			"[HashDatabase YAML] Parsing error at {}:{} (bufpos={}): {}", loc.line, loc.col, loc.offset, msg));
 	};
 	ryml::set_callbacks(rymlCallbacks);
-	c4::set_error_callback([](const char* msg, size_t msg_size) {
+	ryml::set_error_callback([](const char* msg, size_t msg_size) {
 		Console.Error(fmt::format("[HashDatabase YAML] Internal Parsing error: {}", std::string_view(msg, msg_size)));
 	});
 
@@ -1119,7 +1119,7 @@ bool GameDatabase::loadHashDatabase()
 		return false;
 	}
 
-	ryml::Tree tree = ryml::parse_in_arena(c4::to_csubstr(buf.value()));
+	ryml::Tree tree = ryml::parse_in_arena(ryml::to_csubstr(buf.value()));
 	ryml::NodeRef root = tree.rootref();
 
 	bool okay = true;
