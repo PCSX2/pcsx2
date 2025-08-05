@@ -56,6 +56,13 @@ static std::optional<ryml::Tree> loadYamlFile(const char* filePath)
 		return std::nullopt;
 	}
 
+	// Repair damaged memory card entries - file names were saved to the YAML file with trailing \0's
+	// due to a possible rapidyaml bug: https://github.com/biojppm/rapidyaml/issues/531
+	for (ryml::NodeRef node : tree.rootref().children())
+	{
+		node.set_key(node.key().trimr('\0'));
+	}
+
 	return tree;
 }
 
@@ -2075,7 +2082,10 @@ void FileAccessHelper::WriteIndex(const std::string& baseFolderName, MemoryCardF
 	FileAccessHelper::CleanMemcardFilename(cleanName);
 
 	const std::string indexFileName(Path::Combine(folderName, "_pcsx2_index"));
-	const c4::csubstr key = c4::to_csubstr(cleanName);
+
+	// When length isn't passed explicitly, ryml::to_csubstr spans the entire array, incl. the trailing \0's
+	// due to a possible rapidyaml bug: https://github.com/biojppm/rapidyaml/issues/531
+	const ryml::csubstr key = ryml::csubstr(cleanName, std::strlen(cleanName));
 	std::optional<ryml::Tree> yaml = loadYamlFile(indexFileName.c_str());
 
 	if (yaml.has_value() && !yaml.value().empty())
