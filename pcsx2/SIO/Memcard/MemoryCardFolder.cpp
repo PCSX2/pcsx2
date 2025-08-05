@@ -43,12 +43,12 @@ static std::optional<ryml::Tree> loadYamlFile(const char* filePath)
 		errorCount++;
 	};
 	ryml::set_callbacks(rymlCallbacks);
-	c4::set_error_callback([](const char* msg, size_t msg_size) {
+	ryml::set_error_callback([](const char* msg, size_t msg_size) {
 		Console.Error(fmt::format("[YAML] Internal Parsing error: {}", std::string_view(msg, msg_size)));
 		errorCount++;
 	});
 
-	ryml::Tree tree = ryml::parse_in_arena(c4::to_csubstr(buffer.value()));
+	ryml::Tree tree = ryml::parse_in_arena(ryml::to_csubstr(buffer.value()));
 	ryml::reset_callbacks();
 	if (errorCount > 0)
 	{
@@ -1286,8 +1286,8 @@ void FolderMemoryCard::FlushFileEntries(const u32 dirCluster, const u32 remainin
 						// if _pcsx2_index hasn't been made yet, start a new file
 						if (!yaml.has_value())
 						{
-							char initialData[] = "{$ROOT: {timeCreated: 0, timeModified: 0}}";
-							ryml::Tree newYaml = ryml::parse_in_arena(c4::to_csubstr(initialData));
+							const char initialData[] = "{$ROOT: {timeCreated: 0, timeModified: 0}}";
+							ryml::Tree newYaml = ryml::parse_in_arena(ryml::to_csubstr(initialData));
 							ryml::NodeRef newNode = newYaml.rootref()["$ROOT"];
 							newNode["timeCreated"] << entry->entry.data.timeCreated.ToTime();
 							newNode["timeModified"] << entry->entry.data.timeModified.ToTime();
@@ -1751,7 +1751,7 @@ void FolderMemoryCard::AttemptToRecreateIndexFile(const std::string& directory) 
 		}
 
 		root.append_child() << ryml::key(fd.FileName) |= ryml::MAP;
-		ryml::NodeRef newNode = root[c4::to_csubstr(fd.FileName)];
+		ryml::NodeRef newNode = root[ryml::to_csubstr(fd.FileName)];
 		newNode["order"] << currOrder++;
 		newNode["timeCreated"] << currTime++;
 		newNode["timeModified"] << currTime++;
@@ -1812,9 +1812,9 @@ std::vector<FolderMemoryCard::EnumeratedFileEntry> FolderMemoryCard::GetOrderedF
 					{
 						auto key = std::string(n.key().str, n.key().len);
 					}
-					if (index.has_child(c4::to_csubstr(fd.FileName)))
+					if (index.has_child(ryml::to_csubstr(fd.FileName)))
 					{
-						const auto& node = index[c4::to_csubstr(fd.FileName)];
+						const auto& node = index[ryml::to_csubstr(fd.FileName)];
 						if (node.has_child("timeCreated"))
 						{
 							node["timeCreated"] >> entry.m_timeCreated;
@@ -1910,9 +1910,9 @@ void FolderMemoryCard::DeleteFromIndex(const std::string& filePath, const std::s
 	{
 		ryml::NodeRef index = yaml.value().rootref();
 
-		if (index.has_child(c4::csubstr(entry.data(), entry.length())))
+		if (index.has_child(ryml::csubstr(entry.data(), entry.length())))
 		{
-			index.remove_child(c4::csubstr(entry.data(), entry.length()));
+			index.remove_child(ryml::csubstr(entry.data(), entry.length()));
 			// Write out the changes
 			SaveYAMLToFile(indexName.c_str(), index);
 		}
