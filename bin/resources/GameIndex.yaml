@@ -24870,6 +24870,12 @@ SLES-53996:
   name: "Army Men - Major Malfunction"
   region: "PAL-E"
   compat: 5
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing text glow.
+    halfPixelOffset: 5 # Fixes misaligned bloom.
+    nativeScaling: 1 # Fixes misaligned bloom.
+    textureInsideRT: 1 # Fixes bottom half rendering and corrupted shadows.
+    PCRTCOverscan: 1 # Adjusts image upwards to center it correctly.
 SLES-53998:
   name: "OutRun 2006 - Coast 2 Coast"
   region: "PAL-M5"
