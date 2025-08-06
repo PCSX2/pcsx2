@@ -1939,6 +1939,11 @@ bool ImGuiFullscreen::NavTab(const char* title, bool is_active, bool enabled /* 
 	if (enabled)
 	{
 		pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, ImGuiButtonFlags_NoNavFocus);
+		if (hovered)
+		{
+			const ImU32 col = ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered, 1.0f);
+			DrawMenuButtonFrame(bb.Min, bb.Max, col, true, 0.0f);
+		}
 	}
 	else
 	{
@@ -1947,11 +1952,11 @@ bool ImGuiFullscreen::NavTab(const char* title, bool is_active, bool enabled /* 
 		hovered = false;
 	}
 
-	const ImU32 col =
-		hovered ? ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered, 1.0f) :
-				  ImGui::GetColorU32(is_active ? background : ImVec4(background.x, background.y, background.z, 0.5f));
-
-	DrawMenuButtonFrame(bb.Min, bb.Max, col, true, 0.0f);
+	if (!hovered)
+	{
+		const ImU32 col = ImGui::GetColorU32(is_active ? background : ImVec4(background.x, background.y, background.z, 0.5f));
+		ImGui::RenderFrame(bb.Min, bb.Max, col, false, 0.0f);
+	}
 
 #if 0
 	// This looks a bit rubbish... but left it here if someone thinks they can improve it.

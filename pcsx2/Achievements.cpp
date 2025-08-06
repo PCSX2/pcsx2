@@ -2848,8 +2848,14 @@ void Achievements::DrawLeaderboardsWindow()
 				const float tab_width = (ImGui::GetWindowWidth() / ImGuiFullscreen::g_layout_scale) * 0.5f;
 				ImGui::SetCursorPos(ImVec2(0.0f, top + spacing_small));
 
-				if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakSlow, false) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakFast, false))
+				if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakSlow, false) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakFast, false) ||
+					ImGui::IsKeyPressed(ImGuiKey_GamepadDpadLeft, false) || ImGui::IsKeyPressed(ImGuiKey_GamepadDpadRight, false) ||
+					ImGui::IsKeyPressed(ImGuiKey_LeftArrow, false) || ImGui::IsKeyPressed(ImGuiKey_RightArrow, false))
+				{
 					s_is_showing_all_leaderboard_entries = !s_is_showing_all_leaderboard_entries;
+				}
+
+				ImGuiFullscreen::BeginNavBar();
 
 				for (const bool show_all : {false, true})
 				{
@@ -2860,6 +2866,8 @@ void Achievements::DrawLeaderboardsWindow()
 						s_is_showing_all_leaderboard_entries = show_all;
 					}
 				}
+
+				ImGuiFullscreen::EndNavBar();
 
 				const ImVec2 bg_pos = ImVec2(0.0f, ImGui::GetCurrentWindow()->DC.CursorPos.y + LayoutScale(tab_height_unscaled));
 				const ImVec2 bg_size =
@@ -2914,7 +2922,6 @@ void Achievements::DrawLeaderboardsWindow()
 		}
 	}
 	ImGuiFullscreen::EndFullscreenWindow();
-	FullscreenUI::SetStandardSelectionFooterText(true);
 
 	if (!is_leaderboard_open)
 	{
@@ -2935,6 +2942,8 @@ void Achievements::DrawLeaderboardsWindow()
 			ImGuiFullscreen::EndMenuButtons();
 		}
 		ImGuiFullscreen::EndFullscreenWindow();
+
+		FullscreenUI::SetStandardSelectionFooterText(true);
 	}
 	else
 	{
@@ -3001,6 +3010,24 @@ void Achievements::DrawLeaderboardsWindow()
 			ImGuiFullscreen::EndMenuButtons();
 		}
 		ImGuiFullscreen::EndFullscreenWindow();
+
+		if (ImGuiFullscreen::IsGamepadInputSource())
+		{
+			const bool circleOK = ImGui::GetIO().ConfigNavSwapGamepadButtons;
+			ImGuiFullscreen::SetFullscreenFooterText(std::array{
+				std::make_pair(ICON_PF_DPAD_LEFT_RIGHT, TRANSLATE_SV("Achievements", "Switch Rankings")),
+				std::make_pair(ICON_PF_DPAD_UP_DOWN, TRANSLATE_SV("Achievements", "Change Selection")),
+				std::make_pair(circleOK ? ICON_PF_BUTTON_CROSS : ICON_PF_BUTTON_CIRCLE, TRANSLATE_SV("Achievements", "Back")),
+			});
+		}
+		else
+		{
+			ImGuiFullscreen::SetFullscreenFooterText(std::array{
+				std::make_pair(ICON_PF_ARROW_LEFT ICON_PF_ARROW_RIGHT, TRANSLATE_SV("Achievements", "Switch Rankings")),
+				std::make_pair(ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN, TRANSLATE_SV("Achievements", "Change Selection")),
+				std::make_pair(ICON_PF_ESC, TRANSLATE_SV("Achievements", "Back")),
+			});
+		}
 	}
 
 	if (close_leaderboard_on_exit)
