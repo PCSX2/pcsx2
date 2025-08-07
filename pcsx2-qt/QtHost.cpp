@@ -75,6 +75,7 @@ namespace QtHost
 	static bool ParseCommandLineOptions(const QStringList& args, std::shared_ptr<VMBootParameters>& autoboot);
 	static bool InitializeConfig();
 	static void SaveSettings();
+	static void SaveSecretsSettings();
 	static void HookSignals();
 	static void RegisterTypes();
 	static bool RunSetupWizard();
@@ -1439,11 +1440,58 @@ void QtHost::SaveSettings()
 	}
 }
 
+void QtHost::SaveSecretsSettings()
+{
+	pxAssertRel(!g_emu_thread->isOnEmuThread(), "Saving should happen on the UI thread.");
+
+	{
+		Error error;
+		auto lock = Host::GetSettingsLock();
+		if (!s_secrets_settings_interface->Save(&error))
+			Console.ErrorFmt("Failed to save settings: {}", error.GetDescription());
+	}
+
+	if (s_settings_save_timer)
+	{
+		s_settings_save_timer->deleteLater();
+		s_settings_save_timer = nullptr;
+	}
+}
+
 void Host::CommitBaseSettingChanges()
 {
 	if (!QtHost::IsOnUIThread())
 	{
 		QtHost::RunOnUIThread(&Host::CommitBaseSettingChanges);
+		return;
+	}
+
+	auto lock = Host::GetSettingsLock();
+	if (s_settings_save_timer)
+		return;
+
+	s_settings_save_timer = new QTimer;
+	s_settings_save_timer->connect(s_settings_save_timer, &QTimer::timeout, &QtHost::SaveSecretsSettings);
+	s_settings_save_timer->setSingleShot(true);
+	s_settings_save_timer->start(SETTINGS_SAVE_DELAY);
+
+	static bool connected = false;
+	if (!connected)
+	{
+		QObject::connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, []() {
+			delete s_settings_save_timer;
+			s_settings_save_timer = nullptr;
+		});
+
+		connected = true;
+	}
+}
+
+void Host::CommitSecretsSettingChanges()
+{
+	if (!QtHost::IsOnUIThread())
+	{
+		QtHost::RunOnUIThread(&Host::CommitSecretsSettingChanges);
 		return;
 	}
 

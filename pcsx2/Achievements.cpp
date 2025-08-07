@@ -1776,6 +1776,7 @@ void Achievements::ClientLoginWithPasswordCallback(int result, const char* error
 	Host::SetBaseStringSettingValue("Achievements", "LoginTimestamp", fmt::format("{}", std::time(nullptr)).c_str());
 	Host::Internal::GetSecretsSettingsLayer()->SetStringValue("Achievements", "Token", user->token);
 	Host::CommitBaseSettingChanges();
+	Host::CommitSecretsSettingChanges();
 
 	ShowLoginSuccess(client);
 }
