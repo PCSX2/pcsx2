@@ -2437,10 +2437,29 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 					if (!is_shuffle && (!GSUtil::HasSameSwizzleBits(t->m_TEX0.PSM, TEX0.PSM) ||
 										   ((widthpage_offset % std::max(t->m_TEX0.TBW, 1U)) != 0 && ((widthpage_offset + (min_rect.width() + (s_psm.pgs.x - 1)) / s_psm.pgs.x)) > t->m_TEX0.TBW)))
 					{
-						GL_INS("TC: Deleting RT BP 0x%x BW %d PSM %s due to change in target", t->m_TEX0.TBP0, t->m_TEX0.TBW, GSUtil::GetPSMName(t->m_TEX0.PSM));
-						InvalidateSourcesFromTarget(t);
-						i = list.erase(i);
-						delete t;
+						const int page_offset = TEX0.TBP0 - t->m_TEX0.TBP0;
+						const int number_pages = page_offset / 32;
+						const u32 tbw = std::max(t->m_TEX0.TBW, 1u);
+						const int row_offset = number_pages / tbw;
+						const int page_height = GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y;
+						const int vertical_position = row_offset * page_height;
+
+						if (src && src->m_from_target == t && src->m_target_direct && vertical_position >= t->m_valid.w / 2)
+						{
+							// Valids and drawn since last read doesn't match, keep the target but resize it.
+							src->m_valid_rect.w = std::min(vertical_position, src->m_valid_rect.w);
+							t->m_valid.w = std::min(vertical_position, t->m_valid.w);
+							t->ResizeValidity(t->m_valid);
+							t->ResizeDrawn(t->m_valid);
+							++i;
+						}
+						else
+						{
+							GL_INS("TC: Deleting RT BP 0x%x BW %d PSM %s due to change in target", t->m_TEX0.TBP0, t->m_TEX0.TBW, GSUtil::GetPSMName(t->m_TEX0.PSM));
+							InvalidateSourcesFromTarget(t);
+							i = list.erase(i);
+							delete t;
+						}
 
 						continue;
 					}
