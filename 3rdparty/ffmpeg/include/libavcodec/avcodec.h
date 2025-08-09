@@ -420,6 +420,12 @@ typedef struct RcOverride{
 #define AV_CODEC_EXPORT_DATA_FILM_GRAIN (1 << 3)
 
 /**
+ * Decoding only.
+ * Do not apply picture enhancement layers, export them instead.
+ */
+#define AV_CODEC_EXPORT_DATA_ENHANCEMENTS (1 << 4)
+
+/**
  * The decoder will keep a reference to the frame and may reuse it later.
  */
 #define AV_GET_BUFFER_FLAG_REF (1 << 0)
@@ -1175,6 +1181,10 @@ typedef struct AVCodecContext {
      *   this callback and filled with the extra buffers if there are more
      *   buffers than buf[] can hold. extended_buf will be freed in
      *   av_frame_unref().
+     *   Decoders will generally initialize the whole buffer before it is output
+     *   but it can in rare error conditions happen that uninitialized data is passed
+     *   through. \important The buffers returned by get_buffer* should thus not contain sensitive
+     *   data.
      *
      * If AV_CODEC_CAP_DR1 is not set then get_buffer2() must call
      * avcodec_default_get_buffer2() instead of providing buffers allocated by
@@ -1538,6 +1548,7 @@ typedef struct AVCodecContext {
 #define FF_DCT_MMX     3
 #define FF_DCT_ALTIVEC 5
 #define FF_DCT_FAAN    6
+#define FF_DCT_NEON    7
 
     /**
      * IDCT algorithm, see FF_IDCT_* below.
@@ -2071,7 +2082,7 @@ typedef struct AVCodecContext {
      * - encoding: may be set by user before calling avcodec_open2() for
      *             encoder configuration. Afterwards owned and freed by the
      *             encoder.
-     * - decoding: unused
+     * - decoding: may be set by libavcodec in avcodec_open2().
      */
     AVFrameSideData  **decoded_side_data;
     int             nb_decoded_side_data;
@@ -2689,6 +2700,36 @@ int avcodec_get_hw_frames_parameters(AVCodecContext *avctx,
                                      AVBufferRef *device_ref,
                                      enum AVPixelFormat hw_pix_fmt,
                                      AVBufferRef **out_frames_ref);
+
+enum AVCodecConfig {
+    AV_CODEC_CONFIG_PIX_FORMAT,     ///< AVPixelFormat, terminated by AV_PIX_FMT_NONE
+    AV_CODEC_CONFIG_FRAME_RATE,     ///< AVRational, terminated by {0, 0}
+    AV_CODEC_CONFIG_SAMPLE_RATE,    ///< int, terminated by 0
+    AV_CODEC_CONFIG_SAMPLE_FORMAT,  ///< AVSampleFormat, terminated by AV_SAMPLE_FMT_NONE
+    AV_CODEC_CONFIG_CHANNEL_LAYOUT, ///< AVChannelLayout, terminated by {0}
+    AV_CODEC_CONFIG_COLOR_RANGE,    ///< AVColorRange, terminated by AVCOL_RANGE_UNSPECIFIED
+    AV_CODEC_CONFIG_COLOR_SPACE,    ///< AVColorSpace, terminated by AVCOL_SPC_UNSPECIFIED
+};
+
+/**
+ * Retrieve a list of all supported values for a given configuration type.
+ *
+ * @param avctx An optional context to use. Values such as
+ *              `strict_std_compliance` may affect the result. If NULL,
+ *              default values are used.
+ * @param codec The codec to query, or NULL to use avctx->codec.
+ * @param config The configuration to query.
+ * @param flags Currently unused; should be set to zero.
+ * @param out_configs On success, set to a list of configurations, terminated
+ *                    by a config-specific terminator, or NULL if all
+ *                    possible values are supported.
+ * @param out_num_configs On success, set to the number of elements in
+                          *out_configs, excluding the terminator. Optional.
+ */
+int avcodec_get_supported_config(const AVCodecContext *avctx,
+                                 const AVCodec *codec, enum AVCodecConfig config,
+                                 unsigned flags, const void **out_configs,
+                                 int *out_num_configs);
 
 
 
