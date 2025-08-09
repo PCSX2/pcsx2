@@ -123,6 +123,7 @@ done
 
 echo "Copying desktop file..."
 cp "$PCSX2DIR/.github/workflows/scripts/linux/pcsx2-qt.desktop" "net.pcsx2.PCSX2.desktop"
+sed -i "s/StartupWMClass=PCSX2/StartupWMClass=AppRun.wrapped/g" "net.pcsx2.PCSX2.desktop"
 cp "$PCSX2DIR/bin/resources/icons/AppIconLarge.png" "PCSX2.png"
 
 echo "Running linuxdeploy to create AppDir..."
@@ -139,6 +140,7 @@ $LINUXDEPLOY --plugin qt --appdir="$OUTDIR" --executable="$BUILDDIR/bin/pcsx2-qt
 
 echo "Copying resources into AppDir..."
 cp -a "$BUILDDIR/bin/resources" "$OUTDIR/usr/bin"
+cp "$OUTDIR/PCSX2.png" "$OUTDIR/.DirIcon"
 
 # Why do we have to manually remove these libs? Because the linuxdeploy Qt plugin
 # copies them, not the "main" linuxdeploy binary, and plugins don't inherit the
