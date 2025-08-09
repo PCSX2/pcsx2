@@ -137,10 +137,6 @@ bool GSTextureCache::FullRectDirty(Target* target, u32 rgba_mask)
 
 bool GSTextureCache::FullRectDirty(Target* target)
 {
-	// Why?
-	if (target->m_age == 0)
-		return false;
-
 	return FullRectDirty(target, GSUtil::GetChannelMask(target->m_TEX0.PSM));
 }
 
