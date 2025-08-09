@@ -386,8 +386,9 @@ bool ChdFileReader::Open2(std::string filename, Error* error)
 
 	// The file size in the header is incorrect, each track gets padded to a multiple of 4 frames.
 	// (see chdman.cpp from MAME). Instead, we pull the real frame count from the TOC.
+	std::vector<toc_entry> entries;
 	u64 total_frames;
-	if (ParseTOC(&total_frames))
+	if (ParseTOC(&total_frames, entries))
 	{
 		file_size = total_frames * static_cast<u64>(chd_header->unitbytes);
 	}
@@ -407,6 +408,21 @@ bool ChdFileReader::Precache2(ProgressCallback* progress, Error* error)
 		return false;
 
 	return fileWrapper->Precache(progress, error);
+}
+
+std::vector<toc_entry> ChdFileReader::ReadTOC()
+{
+	u64 total_frames;
+	std::vector<toc_entry> entries;
+	if (ParseTOC(&total_frames, entries))
+	{
+		return entries;
+	}
+	else
+	{
+		Console.Warning("Failed to parse CHD TOC, file size may be incorrect.");
+		return {};
+	}
 }
 
 ThreadedFileReader::Chunk ChdFileReader::ChunkForOffset(u64 offset)
@@ -454,11 +470,11 @@ u32 ChdFileReader::GetBlockCount() const
 	return (file_size - m_dataoffset) / m_internalBlockSize;
 }
 
-bool ChdFileReader::ParseTOC(u64* out_frame_count)
+bool ChdFileReader::ParseTOC(u64* out_frame_count, std::vector<toc_entry>& entries)
 {
 	u64 total_frames = 0;
 	int max_found_track = -1;
-
+	u64 total_gap_frames = 0;
 	for (int search_index = 0;; search_index++)
 	{
 		char metadata_str[256];
@@ -498,17 +514,28 @@ bool ChdFileReader::ParseTOC(u64* out_frame_count)
 			}
 		}
 
-		DevCon.WriteLn(fmt::format("CHD Track {}: frames:{} pregap:{} postgap:{} type:{} sub:{} pgtype:{} pgsub:{}",
+		Console.WriteLn(fmt::format("CHD Track {}: frames:{} pregap:{} postgap:{} type:{} sub:{} pgtype:{} pgsub:{}",
 			track_num, frames, pregap_frames, postgap_frames, type_str, subtype_str, pgtype_str, pgsub_str));
 
-		// PCSX2 doesn't currently support multiple tracks for CDs.
-		if (track_num != 1)
+		if (track_num != 0)
 		{
-			Console.Warning(fmt::format("  Ignoring track {} in CHD.", track_num, frames));
-			continue;
+			toc_entry entry{};
+			entry.lba = static_cast<u32>(total_frames) - total_gap_frames;
+			entry.track = static_cast<u8>(track_num);
+			entry.adr = 1;
+			entry.control = 0;
+
+			//FIXME: DATA track?
+			if (strncmp(type_str, "AUDIO", 5) != 0)
+				entry.control |= 0x04;
+
+			entries.push_back(entry);
 		}
 
-		total_frames += static_cast<u64>(pregap_frames) + static_cast<u64>(frames) + static_cast<u64>(postgap_frames);
+		// I have not found a CHD with an audio track with a postgap, consider that untested
+		total_gap_frames += static_cast<u64>(pregap_frames) + static_cast<u64>(postgap_frames);
+		total_frames += total_gap_frames + static_cast<u64>(frames);
+
 		max_found_track = std::max(max_found_track, track_num);
 	}
 
