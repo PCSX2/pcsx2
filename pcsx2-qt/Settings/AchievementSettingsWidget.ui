@@ -180,11 +180,72 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="0">
+          <item row="2" column="0">
            <widget class="QCheckBox" name="soundEffects">
             <property name="text">
              <string>Enable Sound Effects</string>
             </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="notificationPositionLabel">
+            <property name="text">
+             <string>Notification Position:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QComboBox" name="notificationPosition">
+            <item>
+             <property name="text">
+              <string>None</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Top Left (Default)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Top Center</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Top Right</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Center Left</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Center</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Center Right</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Bottom Left</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Bottom Center</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Bottom Right</string>
+             </property>
+            </item>
            </widget>
           </item>
          </layout>
@@ -245,67 +306,6 @@
             </item>
            </widget>
           </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="notificationPositionLabel">
-            <property name="text">
-             <string>Notification Position:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QComboBox" name="notificationPosition">
-            <item>
-             <property name="text">
-              <string>None</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Top Left (Default)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Top Center</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Top Right</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Center Left</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Center</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Center Right</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Bottom Left</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Bottom Center</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Bottom Right</string>
-             </property>
-            </item>
-           </widget>
-          </item>
           <item row="1" column="0">
            <widget class="QLabel" name="overlayPositionLabel">
             <property name="text">
@@ -317,6 +317,13 @@
            <widget class="QCheckBox" name="overlays">
             <property name="text">
              <string>Enable In-Game Overlays</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QCheckBox" name="leaderboardOverlays">
+            <property name="text">
+             <string>Enable In-Game Leaderboard Overlays</string>
             </property>
            </widget>
           </item>

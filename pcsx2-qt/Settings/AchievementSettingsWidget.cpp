@@ -36,6 +36,7 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.unlockSound, "Achievements", "UnlockSound", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.lbSound, "Achievements", "LBSubmitSound", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.overlays, "Achievements", "Overlays", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.leaderboardOverlays, "Achievements", "LBOverlays", true);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.overlayPosition, "Achievements", "OverlayPosition", static_cast<int>(AchievementOverlayPosition::BottomRight));
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.notificationPosition, "Achievements", "NotificationPosition", static_cast<int>(OsdOverlayPos::TopLeft));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.encoreMode, "Achievements", "EncoreMode", false);
@@ -54,9 +55,10 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
 	dialog->registerWidgetHelp(m_ui.leaderboardNotifications, tr("Show Leaderboard Notifications"), tr("Checked"), tr("Displays popup messages when starting, submitting, or failing a leaderboard challenge."));
 	dialog->registerWidgetHelp(m_ui.soundEffects, tr("Enable Sound Effects"), tr("Checked"), tr("Plays sound effects for events such as achievement unlocks and leaderboard submissions."));
 	dialog->registerWidgetHelp(m_ui.soundEffectsBox, tr("Custom Sound Effect"), tr("Any"), tr("Customize the sound effect that are played whenever you received a notification, earned an achievement or submitted an entry to the leaderboard."));
-	dialog->registerWidgetHelp(m_ui.overlays, tr("Enable In-Game Overlays"), tr("Checked"), tr("Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active."));
-	dialog->registerWidgetHelp(m_ui.overlayPosition, tr("Overlay Position"), tr("Bottom Right"), tr("Determines where achievement overlays are positioned on the screen."));
-	dialog->registerWidgetHelp(m_ui.notificationPosition, tr("Notification Position"), tr("Top Left"), tr("Determines where achievement notification popups are positioned on the screen."));
+	dialog->registerWidgetHelp(m_ui.overlays, tr("Enable In-Game Overlays"), tr("Checked"), tr("Shows icons in the screen when a challenge/primed achievement is active."));
+	dialog->registerWidgetHelp(m_ui.leaderboardOverlays, tr("Enable In-Game Leaderboard Overlays"), tr("Checked"), tr("Shows icons in the screen when leaderboard tracking is active."));
+	dialog->registerWidgetHelp(m_ui.overlayPosition, tr("Overlay Position"), tr("Bottom Right"), tr("Determines where achievement/leaderboard overlays are positioned on the screen."));
+	dialog->registerWidgetHelp(m_ui.notificationPosition, tr("Notification Position"), tr("Top Left"), tr("Determines where achievement/leaderboard notification popups are positioned on the screen."));
 	dialog->registerWidgetHelp(m_ui.encoreMode, tr("Enable Encore Mode"), tr("Unchecked"), tr("When enabled, each session will behave as if no achievements have been unlocked."));
 	dialog->registerWidgetHelp(m_ui.spectatorMode, tr("Enable Spectator Mode"), tr("Unchecked"), tr("When enabled, PCSX2 will assume all achievements are locked and not send any unlock notifications to the server."));
 	dialog->registerWidgetHelp(m_ui.unofficialAchievements, tr("Test Unofficial Achievements"), tr("Unchecked"), tr("When enabled, PCSX2 will list achievements from unofficial sets. Please note that these achievements are not tracked by RetroAchievements, so they unlock every time."));
@@ -145,16 +147,18 @@ void AchievementSettingsWidget::updateEnableState()
 
 	m_ui.soundEffects->setEnabled(enabled);
 	m_ui.overlays->setEnabled(enabled);
-	
-	const bool overlays_enabled = enabled && m_dialog->getEffectiveBoolValue("Achievements", "Overlays", true);
-	const bool notifications_enabled = enabled && (m_dialog->getEffectiveBoolValue("Achievements", "Notifications", true) || 
+	m_ui.leaderboardOverlays->setEnabled(enabled);
+
+	const bool overlays_enabled = enabled && (m_dialog->getEffectiveBoolValue("Achievements", "Overlays", true) ||
+												m_dialog->getEffectiveBoolValue("Achievements", "LBOverlays", true));
+	const bool notifications_enabled = enabled && (m_dialog->getEffectiveBoolValue("Achievements", "Notifications", true) ||
 													m_dialog->getEffectiveBoolValue("Achievements", "LeaderboardNotifications", true));
 	m_ui.overlaySettingsBox->setEnabled(overlays_enabled || notifications_enabled);
 	m_ui.overlayPosition->setEnabled(overlays_enabled);
 	m_ui.overlayPositionLabel->setEnabled(overlays_enabled);
 	m_ui.notificationPosition->setEnabled(notifications_enabled);
 	m_ui.notificationPositionLabel->setEnabled(notifications_enabled);
-	
+
 	m_ui.encoreMode->setEnabled(enabled);
 	m_ui.spectatorMode->setEnabled(enabled);
 	m_ui.unofficialAchievements->setEnabled(enabled);
