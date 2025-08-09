@@ -14,13 +14,15 @@ namespace x86Emitter
 	//
 	struct xImplSimd_MovHL
 	{
-		u16 Opcode;
+		SIMDInstructionInfo info;
 
-		void PS(const xRegisterSSE& to, const xIndirectVoid& from) const;
-		void PS(const xIndirectVoid& to, const xRegisterSSE& from) const;
+		void PS(const xRegisterSSE& dst, const xIndirectVoid& src) const { PS(dst, dst, src); }
+		void PS(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirectVoid& src2) const;
+		void PS(const xIndirectVoid& dst, const xRegisterSSE& src) const;
 
-		void PD(const xRegisterSSE& to, const xIndirectVoid& from) const;
-		void PD(const xIndirectVoid& to, const xRegisterSSE& from) const;
+		void PD(const xRegisterSSE& dst, const xIndirectVoid& src) const { PD(dst, dst, src); }
+		void PD(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirectVoid& src2) const;
+		void PD(const xIndirectVoid& dst, const xRegisterSSE& src) const;
 	};
 
 	// --------------------------------------------------------------------------------------
@@ -31,10 +33,12 @@ namespace x86Emitter
 	//
 	struct xImplSimd_MovHL_RtoR
 	{
-		u16 Opcode;
+		SIMDInstructionInfo info;
 
-		void PS(const xRegisterSSE& to, const xRegisterSSE& from) const;
-		void PD(const xRegisterSSE& to, const xRegisterSSE& from) const;
+		void PS(const xRegisterSSE& dst, const xRegisterSSE& src) const { PS(dst, dst, src); }
+		void PD(const xRegisterSSE& dst, const xRegisterSSE& src) const { PD(dst, dst, src); }
+		void PS(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegisterSSE& src2) const;
+		void PD(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegisterSSE& src2) const;
 	};
 
 	// --------------------------------------------------------------------------------------

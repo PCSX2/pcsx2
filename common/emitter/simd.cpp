@@ -628,18 +628,24 @@ namespace x86Emitter
 	const xImplSimd_PInsert xPINSR;
 	const SimdImpl_PExtract xPEXTR;
 
+	static SIMDInstructionInfo nextop(SIMDInstructionInfo op)
+	{
+		op.opcode++;
+		return op;
+	}
+
 	// =====================================================================================================
 	//  SIMD Move And Blend Instructions
 	// =====================================================================================================
 
-	void xImplSimd_MovHL::PS(const xRegisterSSE& to, const xIndirectVoid& from) const { xOpWrite0F(Opcode, to, from); }
-	void xImplSimd_MovHL::PS(const xIndirectVoid& to, const xRegisterSSE& from) const { xOpWrite0F(Opcode + 1, from, to); }
+	void xImplSimd_MovHL::PS(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirectVoid& src2) const { EmitSIMD(info, dst, src1, src2); }
+	void xImplSimd_MovHL::PS(const xIndirectVoid& dst, const xRegisterSSE& src) const { EmitSIMD(nextop(info).mov(), src, src, dst); }
 
-	void xImplSimd_MovHL::PD(const xRegisterSSE& to, const xIndirectVoid& from) const { xOpWrite0F(0x66, Opcode, to, from); }
-	void xImplSimd_MovHL::PD(const xIndirectVoid& to, const xRegisterSSE& from) const { xOpWrite0F(0x66, Opcode + 1, from, to); }
+	void xImplSimd_MovHL::PD(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirectVoid& src2) const { EmitSIMD(info.p66(), dst, src1, src2); }
+	void xImplSimd_MovHL::PD(const xIndirectVoid& dst, const xRegisterSSE& src) const { EmitSIMD(nextop(info).p66().mov(), src, src, dst); }
 
-	void xImplSimd_MovHL_RtoR::PS(const xRegisterSSE& to, const xRegisterSSE& from) const { xOpWrite0F(Opcode, to, from); }
-	void xImplSimd_MovHL_RtoR::PD(const xRegisterSSE& to, const xRegisterSSE& from) const { xOpWrite0F(0x66, Opcode, to, from); }
+	void xImplSimd_MovHL_RtoR::PS(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegisterSSE& src2) const { EmitSIMD(info, dst, src1, src2); }
+	void xImplSimd_MovHL_RtoR::PD(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegisterSSE& src2) const { EmitSIMD(info.p66(), dst, src1, src2); }
 
 	static const u16 MovPS_OpAligned = 0x28; // Aligned [aps] form
 	static const u16 MovPS_OpUnaligned = 0x10; // unaligned [ups] form
@@ -727,11 +733,11 @@ namespace x86Emitter
 #endif
 
 
-	const xImplSimd_MovHL xMOVH = {0x16};
-	const xImplSimd_MovHL xMOVL = {0x12};
+	const xImplSimd_MovHL xMOVH = {SIMDInstructionInfo(0x16)};
+	const xImplSimd_MovHL xMOVL = {SIMDInstructionInfo(0x12)};
 
-	const xImplSimd_MovHL_RtoR xMOVLH = {0x16};
-	const xImplSimd_MovHL_RtoR xMOVHL = {0x12};
+	const xImplSimd_MovHL_RtoR xMOVLH = {SIMDInstructionInfo(0x16)};
+	const xImplSimd_MovHL_RtoR xMOVHL = {SIMDInstructionInfo(0x12)};
 
 	const xImplSimd_PBlend xPBLEND =
 	{
