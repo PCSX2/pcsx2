@@ -19,8 +19,18 @@ public:
 	static bool HasSharedBits(u32 sbp, u32 spsm, u32 dbp, u32 dpsm);
 	static bool HasCompatibleBits(u32 spsm, u32 dpsm);
 	static bool HasSameSwizzleBits(u32 spsm, u32 dpsm);
-	static u32 GetChannelMask(u32 spsm);
-	static u32 GetChannelMask(u32 spsm, u32 fbmsk);
+	static u32 GetChannelMask(u32 spsm, u32 fbmsk = 0);
+
+	// Gives the smallest interval after transforming the interval by swapping half pages.
+	// This is the transformation that converts one format to its equivalent depth format
+	// or the other way (X and Y done separately). Page size must be a power of 2.
+	static GSVector2i ConvertRangeDepthFormat(const GSVector2i range, const int pg_size);
+
+	// Like ConvertRangeDepthFormat() but converts both X and Y ranges separately.
+	static GSVector4i ConvertBBoxDepthFormat(const GSVector4i bbox, const GSVector2i pg_size);
+
+	template <Align_Mode mode>
+	static GSVector4i GetAlignedUnits(GSVector4i rect, const GSVector2i align);
 
 	static GSRendererType GetPreferredRenderer();
 

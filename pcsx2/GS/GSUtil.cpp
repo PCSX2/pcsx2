@@ -4,6 +4,8 @@
 #include "GS/GS.h"
 #include "GS/GSExtra.h"
 #include "GS/GSUtil.h"
+#include "GS/GSLocalMemory.h"
+#include "GS/GSVector.h"
 #include "MultiISA.h"
 #include "common/StringUtil.h"
 
@@ -131,30 +133,77 @@ bool GSUtil::HasSameSwizzleBits(u32 spsm, u32 dpsm)
 	return (s_maps.SwizzleField[spsm][dpsm >> 5] & (1 << (dpsm & 0x1f))) != 0;
 }
 
-u32 GSUtil::GetChannelMask(u32 spsm)
-{
-	switch (spsm)
-	{
-		case PSMCT24:
-		case PSMZ24:
-			return 0x7;
-		case PSMT8H:
-		case PSMT4HH: // This sucks, I'm sorry, but we don't have a way to do half channels
-		case PSMT4HL: // So uuhh TODO I guess.
-			return 0x8;
-		default:
-			return 0xf;
-	}
-}
-
 u32 GSUtil::GetChannelMask(u32 spsm, u32 fbmsk)
 {
-	u32 mask = GetChannelMask(spsm);
-	mask &= ((fbmsk & 0xFF) == 0xFF) ? (~0x1 & 0xf) : 0xf;
-	mask &= ((fbmsk & 0xFF00) == 0xFF00) ? (~0x2 & 0xf) : 0xf;
-	mask &= ((fbmsk & 0xFF0000) == 0xFF0000) ? (~0x4 & 0xf) : 0xf;
-	mask &= ((fbmsk & 0xFF000000) == 0xFF000000) ? (~0x8 & 0xf) : 0xf;
-	return mask;
+	const u32 mask = GSLocalMemory::m_psm[spsm].fmsk & ~fbmsk;
+	return
+		((mask & 0xFF)       ? 1 : 0) |
+		((mask & 0xFF00)     ? 2 : 0) |
+		((mask & 0xFF0000)   ? 4 : 0) |
+		((mask & 0xFF000000) ? 8 : 0);
+}
+
+template <Align_Mode mode>
+GSVector4i GSUtil::GetAlignedUnits(GSVector4i rect, const GSVector2i align)
+{
+	rect = rect.ralign<mode>(align);
+	rect.x /= align.x;
+	rect.y /= align.y;
+	rect.z /= align.x;
+	rect.w /= align.y;
+	return rect;
+}
+
+template GSVector4i GSUtil::GetAlignedUnits<Align_Outside>(GSVector4i rect, const GSVector2i align);
+template GSVector4i GSUtil::GetAlignedUnits<Align_Inside>(GSVector4i rect, const GSVector2i align);
+template GSVector4i GSUtil::GetAlignedUnits<Align_NegInf>(GSVector4i rect, const GSVector2i align);
+template GSVector4i GSUtil::GetAlignedUnits<Align_PosInf>(GSVector4i rect, const GSVector2i align);
+
+GSVector2i GSUtil::ConvertRangeDepthFormat(const GSVector2i range, const int pg_size)
+{
+	const int start = range.x;
+	const int end = range.y;
+	const int half_pg_size = pg_size / 2;
+	const int start_pg = start & ~(pg_size - 1);
+	const int start_mid_pg = start_pg + half_pg_size;
+	const int end_pg = (end + pg_size - 1) & ~(pg_size - 1);
+	const int end_mid_pg = end_pg - half_pg_size;
+
+	if (start_pg == end_pg)
+	{
+		// Empty interval exactly on a page; ambiguous.
+		return GSVector2i(start_pg, end_pg);
+	}
+
+	int new_start;
+	int new_end;
+
+	if (start > start_mid_pg)
+		new_start = start - half_pg_size; // Only upper half of start page covered.
+	else if (end > start_mid_pg)
+		new_start = start_pg; // Interval crosses start half-page.
+	else if (start < start_mid_pg)
+		new_start = start + half_pg_size; // Interval fully inside lower half page.
+	else
+		new_start = start; // Empty interval exactly on a half page; ambiguous.
+
+	if (end < end_mid_pg)
+		new_end = end + half_pg_size; // Only lower half of end page covered.
+	else if (start < end_mid_pg)
+		new_end = end_pg; // Interval crosses end half-page.
+	else if (end > end_mid_pg)
+		new_end = end - half_pg_size; // Interval fully inside upper half page.
+	else
+		new_end = end; // Empty interval exactly on a half page; ambiguous.
+
+	return GSVector2i(new_start, new_end);
+};
+
+GSVector4i GSUtil::ConvertBBoxDepthFormat(const GSVector4i bbox, const GSVector2i pg_size)
+{
+	const GSVector2i pt0 = ConvertRangeDepthFormat(GSVector2i(bbox.x, bbox.z), pg_size.x);
+	const GSVector2i pt1 = ConvertRangeDepthFormat(GSVector2i(bbox.y, bbox.w), pg_size.y);
+	return GSVector4i(pt0.x, pt1.x, pt0.y, pt1.y);
 }
 
 GSRendererType GSUtil::GetPreferredRenderer()

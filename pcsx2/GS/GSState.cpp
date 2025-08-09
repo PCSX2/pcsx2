@@ -22,6 +22,9 @@ int GSState::s_n = 0;
 int GSState::s_last_transfer_draw_n = 0;
 int GSState::s_transfer_n = 0;
 
+int autoflushes = 0;
+int autoflush_lod = 0;
+
 static __fi bool IsAutoFlushEnabled()
 {
 	return GSIsHardwareRenderer() ? (GSConfig.UserHacks_AutoFlush != GSHWAutoFlushLevel::Disabled) : GSConfig.AutoFlushSW;
@@ -1483,6 +1486,13 @@ void GSState::GIFRegHandlerHWREG(const GIFReg* RESTRICT r)
 void GSState::Flush(GSFlushReason reason)
 {
 	FlushWrite();
+
+	if (reason == GSFlushReason::AUTOFLUSH)
+	{
+		Console.WriteLnFmt("autoflush at {}, {}, {}", s_n, m_index.tail, autoflush_lod);
+		autoflushes++;
+	}
+
 
 	if (m_index.tail > 0)
 	{
@@ -3312,37 +3322,156 @@ void GSState::CalculatePrimitiveCoversWithoutGaps()
 	m_primitive_covers_without_gaps = SpriteDrawWithoutGaps() ? (m_primitive_covers_without_gaps == GapsFound ? SpriteNoGaps : m_primitive_covers_without_gaps) : GapsFound;
 }
 
-__forceinline bool GSState::IsAutoFlushDraw(u32 prim)
+__forceinline bool GSState::EarlyDetectShuffle(u32 prim)
+{
+	// We only handle sprites here and need one sprite in the queue.
+	// Texture mapping must be enabled for a shuffle.
+	if (m_index.tail < 2 || prim != GS_SPRITE || !PRIM->TME)
+		return false;
+
+	const GSVertex* RESTRICT vertex = &m_vertex.buff[0];
+	const u16* RESTRICT index = &m_index.buff[0];
+
+	if (GSLocalMemory::m_psm[m_context->FRAME.PSM].bpp == 16 && GSLocalMemory::m_psm[m_context->TEX0.PSM].bpp == 16)
+	{
+		// Handle shuffles where the source and destination are both 16 bits.
+
+		const float x0 = GetWindowCoords(vertex[index[0]]).x;
+		const float x1 = GetWindowCoords(vertex[index[1]]).x;
+		const float xn = GetWindowCoords(m_v).x;
+		const float u0 = GetTexelCoords(vertex[index[0]]).x;
+		const float un = GetTexelCoords(m_v).x;
+
+		// Check that the X-U offsets are the same for the first and current vertex and
+		// that the width of the first sprite is at most 16 pixels.
+		return std::abs(u0 - x0) == std::abs(un - xn) && std::abs(x1 - x0) <= 16.0f;
+	}
+	
+	if (GSLocalMemory::m_psm[m_context->FRAME.PSM].bpp == 16 && GSLocalMemory::m_psm[m_context->TEX0.PSM].bpp == 32)
+	{
+		// Handle shuffles where the source is 32/24 bits and destination is 16 bits.
+		
+		// These shuffles usually mask A and G (lower 10 bits in 16 bit format) so that they
+		// write only to B and A (top 6 bits in 16 bit format).
+		if (GSUtil::GetChannelMask(m_context->FRAME.PSM, m_context->FRAME.FBMSK) != 0xC)
+			return false;
+
+		const GSVector2 p0 = GetWindowCoords(vertex[index[0]]);
+		const GSVector2 p1 = GetWindowCoords(vertex[index[1]]);
+		const GSVector2 t0 = GetTexelCoords(vertex[index[0]]);
+		const GSVector2 t1 = GetTexelCoords(vertex[index[1]]);
+
+		// Check that the source and destination sprite are roughly 8 pixel squares.
+		// We do not use the current vertex in this check because it doesn't have a
+		// clean correspondence with the first shuffle for 32->16 bit shuffles
+		// (the coordinates manually swizzle between 32 and 16 bits).
+		const bool const_spacing =
+			(std::abs(p1.x - p0.x) <= 8.5f) && (std::abs(p1.y - p0.y) <= 8.5f) &&
+			(std::abs(t1.x - t0.x) <= 8.5f) && (std::abs(t1.y - t0.y) <= 8.5f);
+
+		// The purpose of these shuffles is to write the alpha channel,
+		// so the coordinates should write to upper 16 bits regions only.
+		u32 xtl_i = static_cast<int>(std::round(std::min(p0.x, p1.x)));
+		const bool write_ba = (xtl_i & 8) != 0;
+
+		return const_spacing && write_ba;
+	}
+
+	if (m_context->TEX0.PSM == PSMT8)
+	{
+		// Handle channel shuffles.
+
+		// Heuristics to detect channel shuffle based on first sprite and clamp mode.
+		const auto CheckWidthOrClampMode = [this]() -> bool {
+			const GSVertex* v = &m_vertex.buff[0];
+
+			const int draw_width = std::abs(v[1].XYZ.X - v[0].XYZ.X) >> 4;
+			const int draw_height = std::abs(v[1].XYZ.Y - v[0].XYZ.Y) >> 4;
+
+			// Checks if using region clamp or region repeat for U or V.
+			// Might used used when the sprites are 16 pixels wide.
+			const bool clamp_region = ((m_context->CLAMP.WMS | m_context->CLAMP.WMT) & 0x2) != 0;
+
+			// Channel shuffles usually draw 8 x 2 sprites.
+			const bool draw_match = (draw_height == 2) || (draw_width == 8);
+
+			return draw_match || clamp_region;
+		};
+
+		const bool single_page_x = temp_draw_rect.width() <= 64;
+		const bool single_page_y = temp_draw_rect.height() <= 64;
+		if (single_page_x && single_page_y)
+		{
+			return CheckWidthOrClampMode();	
+		}
+		else if (!single_page_x)
+		{
+			// Not a single page in width.
+			return false;
+		}
+
+		// WRC 4 does channel shuffles in vertical strips. So check for page alignment.
+		// Texture TBW should also be twice the framebuffer FBW, because the page is twice as wide.
+		if (m_context->TEX0.TBW == (m_context->FRAME.FBW * 2) &&
+			GSLocalMemory::IsPageAligned(m_context->FRAME.PSM, temp_draw_rect))
+		{
+			return CheckWidthOrClampMode();
+		}
+	}
+
+	return false;
+}
+
+__forceinline bool GSState::IsAutoFlushDraw(u32 prim, int& lod)
 {
 	if (!PRIM->TME || (GSConfig.UserHacks_AutoFlush == GSHWAutoFlushLevel::SpritesOnly && prim != GS_SPRITE))
 		return false;
 
-	// Not using the same channels.
-	if (!(GSUtil::GetChannelMask(m_context->TEX0.PSM) & GSUtil::GetChannelMask(m_context->FRAME.PSM, m_context->FRAME.FBMSK | ~(GSLocalMemory::m_psm[m_context->FRAME.PSM].fmsk))))
+	// Check whether the frame or depth is written to at all.
+	const bool frame_written = !m_context->FrameNotWritten();
+	// There's a strange behavior we need to test on a PS2 here, if the FRAME is a Z format,
+	// like Powerdrome something swaps over, and it seems Alpha Fail of "FB Only" writes to the Z.. it's odd.
+	const bool depth_written = !m_context->DepthNotWritten();
+	const u32 tex_chan = GSUtil::GetChannelMask(m_context->TEX0.PSM);
+	const u32 frame_chan = GSUtil::GetChannelMask(m_context->FRAME.PSM, m_context->FRAME.FBMSK);
+	const u32 depth_chan = GSUtil::GetChannelMask(m_context->ZBUF.PSM);
+	const bool frame_write_match = frame_written && (frame_chan & tex_chan) != 0;
+	const bool depth_write_match = depth_written && (depth_chan & tex_chan) != 0;
+
+	if (!frame_write_match && !depth_write_match)
 		return false;
 
 	// Try to detect shuffles, because these will not autoflush, they by design clash.
-	if (GSLocalMemory::m_psm[m_context->FRAME.PSM].bpp == 16 && GSLocalMemory::m_psm[m_context->TEX0.PSM].bpp == 16)
+	if (EarlyDetectShuffle(prim))
+		return false;
+
+	// In case of mipmapping we may need to check multiple mip layers.
+	// If mipmapping is not enabled min and max LOD will just be set to 0.
+	const int min_lod = m_context->TEX1.MinPossibleLOD();
+	const int max_lod = m_context->TEX1.MaxPossibleLOD();
+
+	// Iterate through the layers and check for a hit.
+	// We might check more layers than are actually used in the draw and get a false
+	// positive but this should hopefully be rare and only give a small perf impact.
+	bool frame_addr_hit = false;
+	bool depth_addr_hit = false;
+	GIFRegTEX0 TEX0_hit;
+	for (lod = min_lod; lod <= max_lod; lod++)
 	{
-		// Pretty confident here...
-		GSVertex* buffer = &m_vertex.buff[0];
-		const bool const_spacing = std::abs(buffer[m_index.buff[0]].U - buffer[m_index.buff[0]].XYZ.X) == std::abs(m_v.U - m_v.XYZ.X) && std::abs(buffer[m_index.buff[1]].XYZ.X - buffer[m_index.buff[0]].XYZ.X) <= 256; // Lequal to 16 pixels apart.
-
-		if (const_spacing)
-			return false;
+		TEX0_hit = GetTex0Layer(lod);
+		if (TEX0_hit.TBP0 == m_context->FRAME.Block())
+		{
+			frame_addr_hit = true;
+			break;
+		}
+		if (TEX0_hit.TBP0 == m_context->ZBUF.Block())
+		{
+			depth_addr_hit = true;
+			break;
+		}
 	}
-	const u32 frame_mask = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmsk;
-	const bool frame_hit = m_context->FRAME.Block() == m_context->TEX0.TBP0 && !(m_context->TEST.ATE && m_context->TEST.ATST == 0 && m_context->TEST.AFAIL == 2) && ((m_context->FRAME.FBMSK & frame_mask) != frame_mask);
-	// There's a strange behaviour we need to test on a PS2 here, if the FRAME is a Z format, like Powerdrome something swaps over, and it seems Alpha Fail of "FB Only" writes to the Z.. it's odd.
-	const bool z_needed = !(m_context->TEST.ATE && m_context->TEST.ATST == 0 && m_context->TEST.AFAIL != 2) && !m_context->ZBUF.ZMSK;
-	const bool zbuf_hit = (m_context->ZBUF.Block() == m_context->TEX0.TBP0) && z_needed;
-	const u32 frame_z_psm = frame_hit ? m_context->FRAME.PSM : m_context->ZBUF.PSM;
-	const u32 frame_z_bp = frame_hit ? m_context->FRAME.Block() : m_context->ZBUF.Block();
 
-	if ((frame_hit || zbuf_hit) && GSUtil::HasSharedBits(frame_z_bp, frame_z_psm, m_context->TEX0.TBP0, m_context->TEX0.PSM))
-		return true;
-
-	return false;
+	return (frame_addr_hit && frame_write_match) || (depth_addr_hit && depth_write_match);
 }
 
 static constexpr u32 NumIndicesForPrim(u32 prim)
@@ -3417,277 +3546,473 @@ __forceinline void GSState::CheckCLUTValidity(u32 prim)
 	}
 }
 
+// Get the window coordinates of XY as floats.
+__forceinline GSVector2 GSState::GetWindowCoords(const GSVertex& v)
+{
+	return GSVector2(
+		(static_cast<float>(v.XYZ.X) - static_cast<float>(m_context->XYOFFSET.OFX)) / 16.0f,
+		(static_cast<float>(v.XYZ.Y) - static_cast<float>(m_context->XYOFFSET.OFY)) / 16.0f);
+}
+
+// Get the texel coordinates (UV) of the vertex as float.
+// ST coords are projected to texel coordinates.
+__forceinline GSVector2 GSState::GetTexelCoords(const GSVertex& v)
+{
+	GSVector2 uv;
+	if (PRIM->FST)
+	{
+		uv.x = static_cast<float>(v.U) / 16.0f;
+		uv.y = static_cast<float>(v.V) / 16.0f;
+	}
+	else
+	{
+		// Special case for Q == 0 to account for PS2 floating point behavior.
+		const float q = v.RGBAQ.Q == 0.0f ? FLT_MIN : v.RGBAQ.Q;
+		uv.x = (1 << m_context->TEX0.TW) * (v.ST.S / q);
+		uv.y = (1 << m_context->TEX0.TH) * (v.ST.T / q);
+	}
+	return uv;
+}
+
+// Get the scissored bounding box of a sprite in 4 bit fixed point.
+// XY is snapped to the nearest pixel centers and UV is interpolated.
+template<bool XY, bool UV>
+auto GSState::GetSpriteBBox(const GSVertex* const* v)
+{
+	static_assert(XY || UV);
+
+	GSVector4 xy = GSVector4(GetWindowCoords(*v[0])).xyxy(GSVector4(GetWindowCoords(*v[1])));
+	GSVector4 uv = GSVector4(GetTexelCoords(*v[0])).xyxy(GSVector4(GetTexelCoords(*v[1])));
+
+	// Make sure top-left and bottom-right are in correct order.
+	if (xy.x > xy.z)
+	{
+		std::swap(xy.x, xy.z);
+		std::swap(uv.x, uv.z);
+	}
+	if (xy.y > xy.w)
+	{
+		std::swap(xy.y, xy.w);
+		std::swap(uv.y, uv.w);
+	}
+
+	// Round XY values to contained pixel centers.
+	GSVector4 xy_interp = xy.ceil().xyzw(xy.floor());
+
+	// Omit right and bottom edges.
+	if (xy_interp.z == xy.z)
+		xy_interp.z -= 1.0f;
+	if (xy_interp.w == xy.w)
+		xy_interp.w -= 1.0f;
+
+	xy_interp.z = std::max(xy_interp.x, xy_interp.z);
+	xy_interp.w = std::max(xy_interp.y, xy_interp.w);
+
+	// Scissor XY.
+	xy_interp = DoScissor(xy_interp);
+
+	// Interpolate UV (if needed).
+	GSVector4 uv_interp;
+	if constexpr (UV)
+	{
+		if (PRIM->TME)
+		{
+			pxAssert(xy.z >= xy.x && xy.w >= xy.y);
+			const float dx = std::max(xy.z - xy.x, 1 / 16.0f);
+			const float dy = std::max(xy.w - xy.y, 1 / 16.0f);
+			uv_interp.x = ((xy.z - xy_interp.x) * uv.x + (xy_interp.x - xy.x) * uv.z) / dx;
+			uv_interp.y = ((xy.w - xy_interp.y) * uv.y + (xy_interp.y - xy.y) * uv.w) / dy;
+			uv_interp.z = ((xy.z - xy_interp.z) * uv.x + (xy_interp.z - xy.x) * uv.z) / dx;
+			uv_interp.w = ((xy.w - xy_interp.w) * uv.y + (xy_interp.w - xy.y) * uv.w) / dy;
+		}
+		else
+		{
+			// Invalid: asking for UV without texture mapping enabled.
+			uv_interp = GSVector4(INFINITY, INFINITY, -INFINITY, -INFINITY);
+		}
+	}
+
+	if constexpr (XY && !UV)
+		return xy_interp;
+	else if constexpr (UV && !XY)
+		return uv_interp;
+	else
+		return std::make_pair(xy_interp, uv_interp);
+}
+
+// Get the scissored bounding box of the primitive in floating point.
+template <u32 prim, bool XY, bool UV>
+auto GSState::GetPrimBBox(const GSVertex* const* v)
+{
+	static_assert(XY || UV);
+
+	if constexpr (prim == GS_SPRITE)
+	{
+		// Special handling for sprites.
+		return GetSpriteBBox<XY, UV>(v);
+	}
+	else
+	{
+		// Initialize bboxes.
+		GSVector4 xy_bbox = GSVector4(FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX);
+		GSVector4 uv_bbox = GSVector4(FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX);
+
+		// Get min/max of position and texture coords.
+		for (int i = 0; i < static_cast<int>(NumIndicesForPrim(prim)); i++)
+		{
+			if constexpr (XY)
+			{
+				GSVector4 xy = GSVector4(GetWindowCoords(*v[i])).xyxy();
+				xy_bbox = xy_bbox.min(xy).xyzw(xy_bbox.max(xy));
+			}
+			if constexpr (UV)
+			{
+				GSVector4 uv = GSVector4(GetTexelCoords(*v[i])).xyxy();
+				uv_bbox = uv_bbox.min(uv).xyzw(uv_bbox.max(uv));
+			}
+		}
+
+		// Scissor XY.
+		if constexpr (XY)
+			xy_bbox = DoScissor(xy_bbox);
+		
+		if constexpr (XY && !UV)
+			return xy_bbox;
+		else if constexpr (UV && !XY)
+			return uv_bbox;
+		else
+			return std::make_pair(xy_bbox, uv_bbox);
+	}
+}
+
+#define EXPAND_GETPRIMBBOX(prim) \
+template auto GSState::GetPrimBBox<prim, 1, 0>(const GSVertex* const* v); \
+template auto GSState::GetPrimBBox<prim, 0, 1>(const GSVertex* const* v); \
+template auto GSState::GetPrimBBox<prim, 1, 1>(const GSVertex* const* v);
+
+EXPAND_GETPRIMBBOX(GS_POINTLIST)
+EXPAND_GETPRIMBBOX(GS_LINELIST)
+EXPAND_GETPRIMBBOX(GS_LINESTRIP)
+EXPAND_GETPRIMBBOX(GS_TRIANGLELIST)
+EXPAND_GETPRIMBBOX(GS_TRIANGLESTRIP)
+EXPAND_GETPRIMBBOX(GS_TRIANGLEFAN)
+
+#undef EXPAND_GETPRIMBBOX
+
+__forceinline GSVector4 GSState::DoScissor(GSVector4 xy_rect)
+{
+	const GSVector4 scissor = GSVector4(
+		static_cast<float>(m_context->SCISSOR.SCAX0),
+		static_cast<float>(m_context->SCISSOR.SCAY0),
+		static_cast<float>(m_context->SCISSOR.SCAX1),
+		static_cast<float>(m_context->SCISSOR.SCAY1));
+	xy_rect.x = std::clamp(xy_rect.x, scissor.x, scissor.z);
+	xy_rect.y = std::clamp(xy_rect.y, scissor.y, scissor.w);
+	xy_rect.z = std::clamp(xy_rect.z, scissor.x, scissor.z);
+	xy_rect.w = std::clamp(xy_rect.w, scissor.y, scissor.w);
+	return xy_rect;
+}
+
 template<u32 prim>
 __forceinline void GSState::HandleAutoFlush()
 {
-	// Kind of a cheat, making the assumption that 2 consecutive fan/strip triangles won't overlap each other (*should* be safe)
+	pxAssert(m_index.tail > 0); // There should be prims already indexed in the buffer.
+
+	// Kind of a cheat, making the assumption that 2 consecutive fan/strip triangles
+	// won't overlap each other (*should* be safe).
 	if ((m_index.tail & 1) && (prim == GS_TRIANGLESTRIP || prim == GS_TRIANGLEFAN) && !m_texflush_flag)
 		return;
 
-	// To briefly explain what's going on here, what we are checking for is draws over a texture when the source and destination are themselves.
-	// Because one page of the texture gets buffered in the Texture Cache (the PS2's one) if any of those pixels are overwritten, you still read the old data.
-	// So we need to calculate if a page boundary is being crossed for the format it is in and if the same part of the texture being written and read inside the draw.
-	if (IsAutoFlushDraw(prim))
+	// To briefly explain what's going on here, what we are checking for is draws over a texture when the
+	// source and destination are themselves. Because one page of the texture gets buffered in the
+	// Texture Cache (the PS2's one) if any of those pixels are overwritten, you still read the old data.
+	// So we need to calculate if a page boundary is being crossed for the format it is in and if the same
+	// part of the texture being written and read inside the draw.
+	int lod = 0;
+	if (IsAutoFlushDraw(prim, lod))
 	{
-		int  n = 1;
-		u32 buff[3];
+		autoflush_lod = lod;
+
+		constexpr int n = NumIndicesForPrim(prim);
+		std::array<const GSVertex*, n> buff;
+		const GSVertex* RESTRICT vertex = &m_vertex.buff[0];
+		const u16* RESTRICT index = &m_index.buff[0];
 		const u32 head = m_vertex.head;
 		const u32 tail = m_vertex.tail;
 
+		// Get the vertices for the new primitive.
 		switch (prim)
 		{
 			case GS_POINTLIST:
-				buff[0] = tail - 1;
-				n = 1;
+				buff[0] = &m_v;
 				break;
 			case GS_LINELIST:
 			case GS_LINESTRIP:
 			case GS_SPRITE:
-				buff[0] = tail - 1;
-				n = 2;
+				buff[0] = &vertex[tail - 1];
+				buff[1] = &m_v;
 				break;
 			case GS_TRIANGLELIST:
 			case GS_TRIANGLESTRIP:
-				buff[0] = tail - 2;
-				buff[1] = tail - 1;
-				n = 3;
+				buff[0] = &vertex[tail - 2];
+				buff[1] = &vertex[tail - 1];
+				buff[2] = &m_v;
 				break;
 			case GS_TRIANGLEFAN:
-				buff[0] = head;
-				buff[1] = tail - 1;
-				n = 3;
+				buff[0] = &vertex[head];
+				buff[1] = &vertex[tail - 1];
+				buff[2] = &m_v;
 				break;
 			case GS_INVALID:
 			default:
 				break;
 		}
 
-		GSVector4i tex_coord;
-		// Prepare the currently processed vertex.
-		if (PRIM->FST)
-		{
-			tex_coord.x = m_v.U >> 4;
-			tex_coord.y = m_v.V >> 4;
-		}
-		else
-		{
-			const float s = std::min((m_v.ST.S / m_v.RGBAQ.Q), 1.0f);
-			const float t = std::min((m_v.ST.T / m_v.RGBAQ.Q), 1.0f);
+		// Make sure rectangle are not empty and go from top-left to bottom-right.
+		const auto FixRectangle = [](GSVector4i r) -> GSVector4i{
+			// Make sure the rectangle is top-left to bottom-right.
+			if (r.z < r.x)
+				std::swap(r.x, r.z);
+			if (r.w < r.y)
+				std::swap(r.y, r.w);
 
-			tex_coord.x = static_cast<int>((1 << m_context->TEX0.TW) * s);
-			tex_coord.y = static_cast<int>((1 << m_context->TEX0.TH) * t);
-		}
+			// Make sure the rectangle is not empty.
+			if (r.x == r.z)
+				r.z++;
+			if (r.y == r.w)
+				r.w++;
 
-		GSVector4i tex_rect = tex_coord.xyxy();
+			return r;
+		};
 
-		const GSLocalMemory::psm_t tex_psm = GSLocalMemory::m_psm[m_context->TEX0.PSM];
-		const GSLocalMemory::psm_t frame_psm = GSLocalMemory::m_psm[m_context->FRAME.PSM];
-		// Get the rest of the rect.
-		for (int i = 0; i < (n - 1); i++)
-		{
-			const GSVertex* v = &m_vertex.buff[buff[i]];
+		// Clamp UV depending on the clamp/wrap mode used.
+		const auto ClampUV = [this](GSVector4i uv_rect) -> GSVector4i {
+			const int clamp_minu = m_context->CLAMP.MINU;
+			const int clamp_maxu = m_context->CLAMP.MAXU;
+			const int clamp_minv = m_context->CLAMP.MINV;
+			const int clamp_maxv = m_context->CLAMP.MAXV;
 
-			if (PRIM->FST)
+			switch (m_context->CLAMP.WMS)
 			{
-				tex_coord.x = v->U >> 4;
-				tex_coord.y = v->V >> 4;
+				case CLAMP_REGION_CLAMP:
+					uv_rect.x = std::clamp(uv_rect.x, clamp_minu, clamp_maxu);
+					uv_rect.z = std::clamp(uv_rect.z, clamp_minu, clamp_maxu);
+					break;
+
+				case CLAMP_REGION_REPEAT:
+					uv_rect.x = std::clamp(uv_rect.x, clamp_maxu, clamp_maxu | clamp_minu);
+					uv_rect.z = std::clamp(uv_rect.z, clamp_maxu, clamp_maxu | clamp_minu);
+					break;
+				default:
+					break;
+			}
+
+			switch (m_context->CLAMP.WMT)
+			{
+				case CLAMP_REGION_CLAMP:
+					uv_rect.y = std::clamp(uv_rect.y, clamp_minv, clamp_maxv);
+					uv_rect.w = std::clamp(uv_rect.w, clamp_minv, clamp_maxv);
+					break;
+				case CLAMP_REGION_REPEAT:
+					uv_rect.y = std::clamp(uv_rect.y, clamp_minv, clamp_maxv | clamp_minv);
+					uv_rect.w = std::clamp(uv_rect.w, clamp_minv, clamp_maxv | clamp_minv);
+					break;
+				default:
+					break;
+			}
+			return uv_rect;
+		};
+
+		// Convert to integer and do processing for the raw UV rectangle.
+		const auto ProcessRawUV =
+			[lod, ClampUV, FixRectangle](const GSVector4& uv_rect_f) -> GSVector4i {
+			GSVector4i uv_rect = GSVector4i(uv_rect_f.floor());
+
+			uv_rect = ClampUV(uv_rect); // Apply the clamping range.
+			
+			// Apply correction for mipmap LOD.
+			uv_rect = GSVector4i(
+				uv_rect.x >> lod, uv_rect.y >> lod, uv_rect.z >> lod, uv_rect.w >> lod);
+
+			return FixRectangle(uv_rect);
+		};
+
+		// Convert to integer and do processing for the raw XY rectangle.
+		const auto ProcessRawXY = [FixRectangle](GSVector4 xy_rect_f) -> GSVector4i {
+			GSVector4i xy_rect;
+			if (prim >= GS_TRIANGLELIST)
+			{
+				// For triangles and sprites, keep only the pixels contained
+				// inside the bounding rectangle.
+				xy_rect = GSVector4i(xy_rect_f.ceil().xyzw(xy_rect_f.floor()));
 			}
 			else
 			{
-				const float s = std::min((v->ST.S / v->RGBAQ.Q), 1.0f);
-				const float t = std::min((v->ST.T / v->RGBAQ.Q), 1.0f);
-
-				tex_coord.x = static_cast<int>(std::round((1 << m_context->TEX0.TW) * s));
-				tex_coord.y = static_cast<int>(std::round((1 << m_context->TEX0.TH) * t));
+				// For points and lines, round the endpoints.
+				xy_rect = GSVector4i(xy_rect_f.round<Round_NearestInt>());
 			}
 
-			tex_rect.x = std::min(tex_rect.x, tex_coord.x);
-			tex_rect.z = std::max(tex_rect.z, tex_coord.x);
-			tex_rect.y = std::min(tex_rect.y, tex_coord.y);
-			tex_rect.w = std::max(tex_rect.w, tex_coord.y);
-		}
+			return FixRectangle(xy_rect);
+		};
 
-		// If the draw was 1 line thick, make it larger as rects are exclusive of ends.
-		if (tex_rect.x == tex_rect.z)
-			tex_rect += GSVector4i::cxpr(0, 0, 1, 0);
-		if (tex_rect.y == tex_rect.w)
-			tex_rect += GSVector4i::cxpr(0, 0, 0, 1);
-
-		// Get the last texture position from the last draw.
-		const GSVertex* v = &m_vertex.buff[m_index.buff[m_index.tail - 1]];
-
-		if (PRIM->FST)
+		// When mipmap is being used we can check whether the LOD range of the
+		// new primitive contains the LOD of the texture being drawn to.
+		// If it turns out that the new primitive's LOD never overlaps with
+		// the texture LOD we can exit without flushing.
+		if (m_context->TEX1.IsMipMapActive())
 		{
-			tex_coord.x = v->U >> 4;
-			tex_coord.y = v->V >> 4;
+			GSVector2 lod_range_f = GSVector2(FLT_MAX, -FLT_MAX);
+			const float K = static_cast<float>(m_context->TEX1.K) / 16;
+
+			// Code from GSVertexTrace.
+			if (m_context->TEX1.LCM == 0 && PRIM->FST == 0)
+			{
+				const float powL = static_cast<float>(1 << m_context->TEX1.L);
+				
+				for (int i = 0; i < n; i++)
+				{
+					const float q = buff[i]->RGBAQ.Q == 0.0f ? FLT_MIN : buff[i]->RGBAQ.Q;
+					float lod = -std::log2(std::abs(q)) * powL + K;
+					lod_range_f.x = std::min(lod, lod_range_f.x);
+					lod_range_f.y = std::max(lod, lod_range_f.y);
+				}
+			}
+			else
+			{
+				lod_range_f.x = K;
+				lod_range_f.y = K;
+			}
+			
+			GSVector2i lod_range = GSVector2i(
+				static_cast<int>(std::floor(lod_range_f.x)),
+				static_cast<int>(std::ceil(lod_range_f.y)));
+
+			// Check that the new primitive LOD range contains the LOD of the texture
+			// being written.
+			if (!(lod_range.x <= lod && lod <= lod_range.y))
+				return;
 		}
-		else
+
+		const u32 tex_psm_id = m_context->TEX0.PSM;
+		const u32 frame_psm_id = m_context->FRAME.PSM;
+		const GSLocalMemory::psm_t& tex_psm = GSLocalMemory::m_psm[tex_psm_id];
+		const GSLocalMemory::psm_t& frame_psm = GSLocalMemory::m_psm[frame_psm_id];
+		const GSVector2i frame_pgs = frame_psm.pgs;
+		const GSVector2i tex_pgs = tex_psm.pgs;
+		const int frame_pg_width = (m_context->FRAME.FBW * 64) / frame_psm.pgs.x;
+		const int tex_pg_width = (m_context->TEX0.TBW * 64) / tex_psm.pgs.x;
+		const GSVector4i scissor = m_context->scissor.in;
+		if (s_n == 361 && m_index.tail >= 2)
 		{
-			const float s = std::min((v->ST.S / v->RGBAQ.Q), 1.0f);
-			const float t = std::min((v->ST.T / v->RGBAQ.Q), 1.0f);
-
-			tex_coord.x = static_cast<int>(std::round((1 << m_context->TEX0.TW) * s));
-			tex_coord.y = static_cast<int>(std::round((1 << m_context->TEX0.TH) * t));
+			printf("");
 		}
 
-		const int clamp_minu = m_context->CLAMP.MINU;
-		const int clamp_maxu = m_context->CLAMP.MAXU;
-		const int clamp_minv = m_context->CLAMP.MINV;
-		const int clamp_maxv = m_context->CLAMP.MAXV;
+		// Get the bounding box for the new prim.
+		const GSVector4 new_uv_rect_f = GetPrimBBox<prim, 0, 1>(&buff[0]);
+		GSVector4i new_uv_rect = ProcessRawUV(new_uv_rect_f);
 
-		switch (m_context->CLAMP.WMS)
+		// Get the XY coords from previous prims in the queue.
+		GSVector4i old_xy_rect = temp_draw_rect;
+
+		if (s_n == 617 && m_index.tail == 80)
 		{
-			case CLAMP_REGION_CLAMP:
-				tex_rect.x = std::max(tex_rect.x, clamp_minu);
-				tex_rect.z = std::max(tex_rect.z, clamp_minu);
-				tex_coord.x = std::max(tex_coord.x, clamp_minu);
-				tex_rect.x = std::min(tex_rect.x, clamp_maxu);
-				tex_rect.z = std::min(tex_rect.z, clamp_maxu);
-				tex_coord.x = std::min(tex_coord.x, clamp_maxu);
-				break;
-
-			case CLAMP_REGION_REPEAT:
-				tex_rect.x = std::max(tex_rect.x, clamp_maxu);
-				tex_rect.z = std::max(tex_rect.z, clamp_maxu);
-				tex_coord.x = std::max(tex_coord.x, clamp_maxu);
-				tex_rect.x = std::min(tex_rect.x, (clamp_maxu | clamp_minu));
-				tex_rect.z = std::min(tex_rect.z, (clamp_maxu | clamp_minu));
-				tex_coord.x = std::min(tex_coord.x, (clamp_maxu | clamp_minu));
-				break;
-			default:
-				break;
+			//printf("");
 		}
 
-		switch (m_context->CLAMP.WMT)
+		// Try to prove that a flush is not needed because current prim does not
+		// use the draw area of previous prims.
+		if ((GSUtil::HasSameSwizzleBits(tex_psm_id, frame_psm_id) &&
+			new_uv_rect.rintersect(old_xy_rect).rintersect(scissor).rempty()))
 		{
-			case CLAMP_REGION_CLAMP:
-				tex_rect.y = std::max(tex_rect.y, clamp_minv);
-				tex_rect.w = std::max(tex_rect.w, clamp_minv);
-				tex_coord.y = std::max(tex_coord.y, clamp_minv);
-				tex_rect.y = std::min(tex_rect.y, clamp_maxv);
-				tex_rect.w = std::min(tex_rect.w, clamp_maxv);
-				tex_coord.y = std::min(tex_coord.y, clamp_maxv);
-				break;
-			case CLAMP_REGION_REPEAT:
-				tex_rect.y = std::max(tex_rect.y, clamp_maxv);
-				tex_rect.w = std::max(tex_rect.w, clamp_maxv);
-				tex_coord.y = std::max(tex_coord.y, clamp_maxv);
-				tex_rect.y = std::min(tex_rect.y, (clamp_maxv | clamp_minv));
-				tex_rect.w = std::min(tex_rect.w, (clamp_maxv | clamp_minv));
-				tex_coord.y = std::min(tex_coord.y, (clamp_maxv | clamp_minv));
-				break;
-			default:
-				break;
-		}
-
-		// Nothing being drawn intersect with the new texture, so no point in checking further.
-		if (tex_psm.depth == frame_psm.depth && tex_rect.rintersect(temp_draw_rect).rempty())
+			// Storage mode are the same swizzle and draw area does not texture lookup area.
 			return;
-		else if (m_texflush_flag)
+		}
+		
+		// When the storage mode are different try we can at least check if there
+		// are no overlaps in the pages.
+		if ((frame_pg_width == tex_pg_width) ||
+			((new_uv_rect.w / tex_psm.pgs.y) <= 1 && frame_pg_width >= tex_pg_width))
 		{
+			const GSVector4i new_uv_rect_pg = GSUtil::GetAlignedUnits<Align_Outside>(new_uv_rect, tex_pgs);
+			const GSVector4i old_xy_rect_pg = GSUtil::GetAlignedUnits<Align_Outside>(old_xy_rect, frame_pgs);
+			if (new_uv_rect_pg.rintersect(old_xy_rect_pg).rempty())
+				return;
+		}
+
+		if (m_texflush_flag)
+		{
+			// TEXFLUSH was accessed and we cannot prove that the flush is not needed.
 			Flush(GSFlushReason::AUTOFLUSH);
 			return;
 		}
 
-		const int tex_page_mask_x = ~(tex_psm.pgs.x - 1);
-		const int tex_page_mask_y = ~(tex_psm.pgs.y - 1);
-		const GSVector4i tex_page_mask = { tex_page_mask_x, tex_page_mask_y, tex_page_mask_x, tex_page_mask_y };
-		const GSVector4i last_tex_page = tex_coord.xyxy() & tex_page_mask;
-		const GSVector4i tex_page = tex_rect.xyxy() & tex_page_mask;
+		// Otherwise flush only if we can determine a page break occurred between
+		// the last texture access and the next one.
 
-		// Crossed page since last draw end
-		if (!tex_page.eq(last_tex_page))
+		// Get the last texture position from the last vertex of the previous prim to
+		// determine whether a page break occurred.
+		GSVector4 last_uv_coord_f =
+			GSVector4(GetTexelCoords(vertex[index[m_index.tail - 1]])).xyxy();
+		GSVector4i last_uv_coord = ProcessRawUV(last_uv_coord_f);
+
+		// Round the top-left corners to the page.
+		const GSVector4i last_uv_coord_pg = last_uv_coord.xyxy().ralign<Align_NegInf>(tex_pgs);
+		const GSVector4i new_uv_coord_pg = new_uv_rect.xyxy().ralign<Align_NegInf>(tex_pgs);
+
+		// Check for a page break between the last UV coordinate and the new one.
+		if (new_uv_coord_pg.eq(last_uv_coord_pg))
 		{
-			// Make sure the format matches, otherwise the coordinates aren't gonna match, so the draws won't intersect.
-			if (tex_psm.bpp == frame_psm.bpp && (m_context->FRAME.FBW == m_context->TEX0.TBW))
+			return; // No page breaks so do not flush.
+		}
+
+		// Same swizzling except for depth <-> color format change, which just swaps
+		// quadrants of pages.
+		bool same_sizzle_nodepth = GSUtil::HasSameSwizzleBits(tex_psm_id & ~0x30, frame_psm_id & ~0x30);
+
+		// Make sure the format matches, otherwise the coordinates aren't gonna match, so the draws won't intersect.
+		if (same_sizzle_nodepth && frame_pg_width == tex_pg_width)
+		{
+			const GSVector2i pgs = frame_pgs;
+			const GSVector4i scissor_conv = GSUtil::ConvertBBoxDepthFormat(scissor, pgs);
+
+			const bool convert_depth = frame_psm.depth != tex_psm.depth;
+			const GSVector4i new_uv_rect_conv = GSUtil::ConvertBBoxDepthFormat(new_uv_rect, pgs);
+
+			// Go through each of the previous prims and check if they
+			// write to positions read by the new prim.
+			for (int prim_start = static_cast<int>(m_index.tail) - n; prim_start >= 0; prim_start -= n)
 			{
-				const GSVector2i offset = GSVector2i(m_context->XYOFFSET.OFX, m_context->XYOFFSET.OFY);
-				const GSVector4i scissor = m_context->scissor.in;
-				GSVector4i old_draw_rect = GSVector4i::zero();
-				int current_draw_end = m_index.tail;
+				// Get pointers to the prim vertices.
+				for (int j = 0; j < n; j++)
+					buff[j] = &vertex[index[prim_start + j]];
 
-				while (current_draw_end >= n)
+				// Get the bounding XY rect of the old prim.
+				GSVector4 old_xy_rect_prim_f = GetPrimBBox<prim, 1, 0>(&buff[0]);
+				const GSVector4i old_xy_rect_prim = ProcessRawXY(old_xy_rect_prim_f);
+				const GSVector4i old_xy_rect_prim_conv = GSUtil::ConvertBBoxDepthFormat(old_xy_rect_prim, pgs);
+				
+				// Find the scissored intersection with the new prim and flush if there is overlap.
+				if (convert_depth)
 				{
-					for (int i = current_draw_end - 1; i >= current_draw_end - n; i--)
-					{
-						const GSVertex* v = &m_vertex.buff[m_index.buff[i]];
-
-						if (prim == GS_SPRITE && (i & 1))
-						{
-							tex_coord.x = ((static_cast<int>(v->XYZ.X) - offset.x) >> 4) - 1;
-							tex_coord.y = ((static_cast<int>(v->XYZ.Y) - offset.y) >> 4) - 1;
-						}
-						else
-						{
-							tex_coord.x = (static_cast<int>(v->XYZ.X) - offset.x) >> 4;
-							tex_coord.y = (static_cast<int>(v->XYZ.Y) - offset.y) >> 4;
-						}
-
-						if (tex_psm.depth != frame_psm.depth)
-						{
-							tex_coord.x ^= (frame_psm.pgs.x / 2);
-							tex_coord.y ^= (frame_psm.pgs.y / 2);
-						}
-
-						if (prim == GS_SPRITE && (i & 1))
-						{
-							tex_coord.x += 1;
-							tex_coord.y += 1;
-						}
-
-						if (i == (current_draw_end - 1))
-						{
-							old_draw_rect = tex_coord.xyxy();
-						}
-						else
-						{
-							old_draw_rect.x = std::min(old_draw_rect.x, tex_coord.x);
-							old_draw_rect.z = std::max(old_draw_rect.z, tex_coord.x);
-							old_draw_rect.y = std::min(old_draw_rect.y, tex_coord.y);
-							old_draw_rect.w = std::max(old_draw_rect.w, tex_coord.y);
-						}
-					}
-
-					if (old_draw_rect.x == old_draw_rect.z)
-						old_draw_rect += GSVector4i::cxpr(0, 0, 1, 0);
-					if (old_draw_rect.y == old_draw_rect.w)
-						old_draw_rect += GSVector4i::cxpr(0, 0, 0, 1);
-
-					old_draw_rect = tex_rect.rintersect(old_draw_rect);
-					if (!old_draw_rect.rintersect(scissor).rempty())
+					// Check both the possible conversions since one might be more conservative.
+					if (!new_uv_rect.rintersect(old_xy_rect_prim_conv).rintersect(scissor_conv).rempty() &&
+						!new_uv_rect_conv.rintersect(old_xy_rect_prim).rintersect(scissor).rempty())
 					{
 						Flush(GSFlushReason::AUTOFLUSH);
 						return;
 					}
-
-					current_draw_end -= n;
 				}
-			}
-			else // Storage of the TEX and FRAME/Z is different, so uhh, just fall back to flushing each page. It's slower, sorry.
-			{
-				const int frame_width = (m_context->FRAME.FBW * 64) / frame_psm.pgs.x;
-				const int tex_width = (m_context->TEX0.TBW * 64) / tex_psm.pgs.x;
-				if ((frame_width == tex_width) || ((tex_rect.w / tex_psm.pgs.y) <= 1 && frame_width >= tex_width))
+				else if (!new_uv_rect.rintersect(old_xy_rect_prim).rintersect(scissor).rempty())
 				{
-					tex_rect += GSVector4i(0, 0, tex_page_mask.z, tex_page_mask.w); // round up to the next page as we will be comparing by page.
-					//We know we've changed page, so let's set the dimension to cover the page they're in (for different pixel orders)
-					tex_rect &= tex_page_mask;
-					tex_rect = GSVector4i(tex_rect.x / tex_psm.pgs.x, tex_rect.y / tex_psm.pgs.y, tex_rect.z / tex_psm.pgs.x, tex_rect.w / tex_psm.pgs.y);
-					
-					const int frame_page_mask_x = ~(frame_psm.pgs.x - 1);
-					const int frame_page_mask_y = ~(frame_psm.pgs.y - 1);
-					const GSVector4i frame_page_mask = { frame_page_mask_x, frame_page_mask_y, frame_page_mask_x, frame_page_mask_y };
-					GSVector4i area_out = temp_draw_rect;
-					area_out += GSVector4i(0, 0, frame_page_mask.z, frame_page_mask.w); // round up to the next page as we will be comparing by page.
-					area_out &= frame_page_mask;
-					area_out = GSVector4i(area_out.x / frame_psm.pgs.x, area_out.y / frame_psm.pgs.y, area_out.z / frame_psm.pgs.x, area_out.w / frame_psm.pgs.y);
-
-					if (!area_out.rintersect(tex_rect).rempty())
-						Flush(GSFlushReason::AUTOFLUSH);
-				}
-				else // Formats are too different so just flush it.
 					Flush(GSFlushReason::AUTOFLUSH);
+					return;
+				}
 			}
+		}
+		else
+		{
+			// Formats are too different so just flush it.
+			Flush(GSFlushReason::AUTOFLUSH);
 		}
 	}
 }
@@ -4576,7 +4901,7 @@ bool GSState::IsOpaque()
 
 bool GSState::IsMipMapDraw()
 {
-	return m_context->TEX1.MXL > 0 && m_context->TEX1.MMIN >= 2 && m_context->TEX1.MMIN <= 5 && m_vt.m_lod.y > 0;
+	return m_context->TEX1.IsMipMapActive() && m_vt.m_lod.y > 0;
 }
 
 bool GSState::IsMipMapActive()

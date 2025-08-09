@@ -289,3 +289,15 @@ void GSDrawingContext::Dump(const std::string& filename)
 
 	fclose(fp);
 }
+
+bool GSDrawingContext::FrameNotWritten() const
+{
+	return
+		(GSLocalMemory::m_psm[FRAME.PSM].fmsk & ~FRAME.FBMSK) == 0 ||
+		TEST.FrameNotWritten();
+}
+
+bool GSDrawingContext::DepthNotWritten() const
+{
+	return ZBUF.ZMSK || TEST.DepthNotWritten();
+}
