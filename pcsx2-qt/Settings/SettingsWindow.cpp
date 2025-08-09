@@ -9,7 +9,6 @@
 #include "Settings/AudioSettingsWidget.h"
 #include "Settings/BIOSSettingsWidget.h"
 #include "Settings/DEV9SettingsWidget.h"
-#include "Settings/DebugSettingsWidget.h"
 #include "Settings/EmulationSettingsWidget.h"
 #include "Settings/FolderSettingsWidget.h"
 #include "Settings/GameCheatSettingsWidget.h"
@@ -21,6 +20,7 @@
 #include "Settings/HotkeySettingsWidget.h"
 #include "Settings/InterfaceSettingsWidget.h"
 #include "Settings/MemoryCardSettingsWidget.h"
+#include "Settings/DebugSettingsWidget.h"
 #include "SettingsWindow.h"
 
 #include "pcsx2/Achievements.h"

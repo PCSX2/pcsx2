@@ -1,0 +1,353 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>GraphicsMediaCaptureSettingsTab</class>
+ <widget class="QWidget" name="GraphicsMediaCaptureSettingsTab">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>700</width>
+    <height>500</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string/>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Screenshot Capture Setup</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_2">
+      <item row="0" column="0">
+       <layout class="QHBoxLayout" name="screenshotLayout" stretch="0,1,0,0,0">
+        <item>
+         <widget class="QLabel" name="screenshotSizeLabel">
+          <property name="text">
+           <string>Resolution:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="screenshotSize">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <item>
+           <property name="text">
+            <string>Window Resolution (Aspect Corrected)</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Internal Resolution (Aspect Corrected)</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Internal Resolution (No Aspect Correction)</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="screenshotFormat">
+          <item>
+           <property name="text">
+            <string>PNG</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>JPEG</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>WebP</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="screenshotQualityLabel">
+          <property name="text">
+           <string>Quality:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="screenshotQuality">
+          <property name="suffix">
+           <string>%</string>
+          </property>
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>100</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="captureTabGroupBox">
+     <property name="statusTip">
+      <string>capture</string>
+     </property>
+     <property name="title">
+      <string>Video Recording Setup</string>
+     </property>
+     <layout class="QFormLayout" name="captureTabGroupBoxLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="captureContainerLabel">
+        <property name="text">
+         <string>Container:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="captureContainer"/>
+      </item>
+      <item row="1" column="0" colspan="2">
+       <layout class="QGridLayout" name="captureOptionLayout" columnstretch="1,1">
+        <property name="horizontalSpacing">
+         <number>20</number>
+        </property>
+        <property name="verticalSpacing">
+         <number>10</number>
+        </property>
+        <item row="1" column="1">
+         <widget class="QWidget" name="audioCaptureOptions" native="true">
+          <layout class="QFormLayout" name="formLayout_10">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item row="0" column="0">
+            <widget class="QLabel" name="audioCaptureCodecLabel">
+             <property name="text">
+              <string>Codec:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QComboBox" name="audioCaptureCodec"/>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="audioCaptureBitrateLabel">
+             <property name="text">
+              <string>Bitrate:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QSpinBox" name="audioCaptureBitrate">
+             <property name="suffix">
+              <string> kbps</string>
+             </property>
+             <property name="minimum">
+              <number>16</number>
+             </property>
+             <property name="maximum">
+              <number>2048</number>
+             </property>
+             <property name="singleStep">
+              <number>1</number>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0" colspan="2">
+            <widget class="QCheckBox" name="enableAudioCaptureArguments">
+             <property name="text">
+              <string>Extra Arguments</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0" colspan="2">
+            <widget class="QLineEdit" name="audioCaptureArguments"/>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QCheckBox" name="enableAudioCapture">
+          <property name="text">
+           <string>Capture Audio</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QWidget" name="videoCaptureOptions" native="true">
+          <layout class="QFormLayout" name="formLayout_6">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item row="0" column="0">
+            <widget class="QLabel" name="videoCaptureCodecLabel">
+             <property name="text">
+              <string>Codec:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QComboBox" name="videoCaptureCodec"/>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="videoCaptureFomatLabel">
+             <property name="text">
+              <string>Format:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QComboBox" name="videoCaptureFormat"/>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="videoCaptureBitrateLabel">
+             <property name="text">
+              <string>Bitrate:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QSpinBox" name="videoCaptureBitrate">
+             <property name="suffix">
+              <string extracomment="Unit that will appear next to a number. Alter the space or whatever is needed before the text depending on your language."> kbps</string>
+             </property>
+             <property name="minimum">
+              <number>100</number>
+             </property>
+             <property name="maximum">
+              <number>200000</number>
+             </property>
+             <property name="singleStep">
+              <number>100</number>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="videoCaptureResolutionLabel">
+             <property name="text">
+              <string>Resolution:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <layout class="QHBoxLayout" name="videoCaptureResolutionLayout" stretch="1,0,1,0">
+             <item>
+              <widget class="QSpinBox" name="videoCaptureWidth">
+               <property name="minimum">
+                <number>320</number>
+               </property>
+               <property name="maximum">
+                <number>32768</number>
+               </property>
+               <property name="singleStep">
+                <number>16</number>
+               </property>
+               <property name="value">
+                <number>640</number>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="xLabel">
+               <property name="text">
+                <string>x</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="videoCaptureHeight">
+               <property name="minimum">
+                <number>240</number>
+               </property>
+               <property name="maximum">
+                <number>32768</number>
+               </property>
+               <property name="singleStep">
+                <number>16</number>
+               </property>
+               <property name="value">
+                <number>240</number>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="videoCaptureResolutionAuto">
+               <property name="text">
+                <string>Auto</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="4" column="0" colspan="2">
+            <widget class="QCheckBox" name="enableVideoCaptureArguments">
+             <property name="text">
+              <string>Extra Arguments</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="0" colspan="2">
+            <widget class="QLineEdit" name="videoCaptureArguments"/>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QCheckBox" name="enableVideoCapture">
+          <property name="text">
+           <string>Capture Video</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>0</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

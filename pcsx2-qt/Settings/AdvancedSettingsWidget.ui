@@ -6,563 +6,523 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>809</width>
-    <height>602</height>
+    <width>700</width>
+    <height>1100</height>
    </rect>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_2">
-   <property name="leftMargin">
-    <number>0</number>
-   </property>
-   <property name="topMargin">
-    <number>0</number>
-   </property>
-   <property name="rightMargin">
-    <number>0</number>
-   </property>
-   <property name="bottomMargin">
-    <number>0</number>
-   </property>
+  <layout class="QVBoxLayout" name="_2">
    <item>
-    <widget class="QScrollArea" name="scrollArea">
-     <property name="widgetResizable">
+    <widget class="QLabel" name="disclaimerLabel">
+     <property name="text">
+      <string>Changing these options may cause games to become non-functional. Modify at your own risk, the PCSX2 team will not provide support for configurations with these settings changed.</string>
+     </property>
+     <property name="wordWrap">
       <bool>true</bool>
      </property>
-     <widget class="QWidget" name="scrollAreaWidgetContents">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>-449</y>
-        <width>790</width>
-        <height>1051</height>
-       </rect>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout">
-       <property name="leftMargin">
-        <number>0</number>
-       </property>
-       <property name="topMargin">
-        <number>0</number>
-       </property>
-       <property name="bottomMargin">
-        <number>0</number>
-       </property>
-       <item>
-        <widget class="QLabel" name="disclaimerLabel">
-         <property name="text">
-          <string>Changing these options may cause games to become non-functional. Modify at your own risk, the PCSX2 team will not provide support for configurations with these settings changed.</string>
-         </property>
-         <property name="wordWrap">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="eeSettings">
-         <property name="title">
-          <string extracomment="Emotion Engine = Commercial name of one of PS2's processors. Leave as-is unless there's an official name (like for Japanese).">EmotionEngine (MIPS-IV)</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_7">
-          <item row="0" column="0">
-           <widget class="QLabel" name="eeRoundingLabel">
-            <property name="text">
-             <string extracomment="Rounding refers here to the mathematical term.">Rounding Mode:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QComboBox" name="eeRoundingMode">
-            <item>
-             <property name="text">
-              <string>Nearest</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Negative</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Positive</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Chop/Zero (Default)</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="eeDivRoundingLabel">
-            <property name="text">
-             <string extracomment="Rounding refers here to the mathematical term.">Division Rounding Mode:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QComboBox" name="eeDivRoundingMode">
-            <item>
-             <property name="text">
-              <string>Nearest (Default)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Negative</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Positive</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Chop/Zero</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="eeClampLabel">
-            <property name="text">
-             <string extracomment="Clamping: Forcing out of bounds things in bounds by changing them to the closest possible value.  In this case, this refers to clamping large PS2 floating point values (which map to infinity or NaN in PCs' IEEE754 floats) to non-infinite ones.">Clamping Mode:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QComboBox" name="eeClampMode">
-            <item>
-             <property name="text">
-              <string comment="ClampMode">None</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Normal (Default)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string extracomment="Sign: refers here to the mathematical meaning (plus/minus).">Extra + Preserve Sign</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Full</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item row="3" column="0" colspan="2">
-           <layout class="QGridLayout" name="eeSettingsMisc">
-            <item row="1" column="0">
-             <widget class="QCheckBox" name="eeWaitLoopDetection">
-              <property name="text">
-               <string>Wait Loop Detection</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="0">
-             <widget class="QCheckBox" name="eeRecompiler">
-              <property name="text">
-               <string>Enable Recompiler</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0">
-             <widget class="QCheckBox" name="eeFastmem">
-              <property name="text">
-               <string>Enable Fast Memory Access</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QCheckBox" name="eeCache">
-              <property name="text">
-               <string>Enable Cache (Slow)</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QCheckBox" name="eeINTCSpinDetection">
-              <property name="text">
-               <string>INTC Spin Detection</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
-             <widget class="QCheckBox" name="pauseOnTLBMiss">
-              <property name="text">
-               <string>Pause On TLB Miss</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="0">
-             <widget class="QCheckBox" name="extraMemory">
-              <property name="text">
-               <string>Enable 128MB RAM (Dev Console)</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="vuSettings">
-         <property name="title">
-          <string extracomment="Vector Unit/VU: refers to two of PS2's processors. Do not translate the full text or do so as a comment. Leave the acronym as-is.">Vector Units (VU)</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_3">
-          <item row="2" column="0">
-           <widget class="QLabel" name="vu1RoundingLabel">
-            <property name="text">
-             <string>VU1 Rounding Mode:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QComboBox" name="vu0RoundingMode">
-            <item>
-             <property name="text">
-              <string>Nearest</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Negative</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Positive</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Chop/Zero (Default)</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item row="4" column="0" colspan="2">
-           <layout class="QGridLayout" name="vuSettingsLayout">
-            <item row="1" column="0">
-             <widget class="QCheckBox" name="vuFlagHack">
-              <property name="text">
-               <string>mVU Flag Hack</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QCheckBox" name="vu1Recompiler">
-              <property name="text">
-               <string>Enable VU1 Recompiler</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="0">
-             <widget class="QCheckBox" name="vu0Recompiler">
-              <property name="text">
-               <string>Enable VU0 Recompiler (Micro Mode)</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QCheckBox" name="instantVU1">
-              <property name="text">
-               <string>Enable Instant VU1</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item row="1" column="1">
-           <widget class="QComboBox" name="vu0ClampMode">
-            <item>
-             <property name="text">
-              <string>None</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Normal (Default)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Extra</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Extra + Preserve Sign</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="vu0ClampLabel">
-            <property name="text">
-             <string>VU0 Clamping Mode:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="vu0RoundingLabel">
-            <property name="text">
-             <string>VU0 Rounding Mode:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="vu1ClampLabel">
-            <property name="text">
-             <string>VU1 Clamping Mode:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QComboBox" name="vu1RoundingMode">
-            <item>
-             <property name="text">
-              <string>Nearest</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Negative</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Positive</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Chop/Zero (Default)</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QComboBox" name="vu1ClampMode">
-            <item>
-             <property name="text">
-              <string>None</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Normal (Default)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Extra</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Extra + Preserve Sign</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="iopSettings">
-         <property name="title">
-          <string>I/O Processor (IOP, MIPS-I)</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_2">
-          <item row="0" column="0">
-           <widget class="QCheckBox" name="iopRecompiler">
-            <property name="text">
-             <string>Enable Recompiler</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="gameSettings">
-         <property name="title">
-          <string>Game Settings</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout">
-          <item row="0" column="0">
-           <widget class="QCheckBox" name="gameFixes">
-            <property name="text">
-             <string>Enable Game Fixes</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QCheckBox" name="patches">
-            <property name="text">
-             <string>Enable Compatibility Patches</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="savestateSettings">
-         <property name="title">
-          <string>Savestate Settings</string>
-         </property>
-         <layout class="QGridLayout" name="savestateSettingsLayout">
-          <item row="3" column="1">
-           <widget class="QCheckBox" name="saveStateOnShutdown">
-            <property name="text">
-             <string>Save State On Shutdown</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QComboBox" name="savestateCompressionLevel">
-            <item>
-             <property name="text">
-              <string>Low (Fast)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Medium (Recommended)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>High</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Very High (Slow, Not Recommended)</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QComboBox" name="savestateCompressionMethod">
-            <item>
-             <property name="text">
-              <string>Uncompressed</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Deflate64</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Zstandard</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>LZMA2</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="savestateCompressionMethodLabel">
-            <property name="text">
-             <string>Compression Level:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QCheckBox" name="backupSaveStates">
-            <property name="text">
-             <string>Create Save State Backups</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="savestateCompressionLabel">
-            <property name="text">
-             <string>Compression Method:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="0">
-           <widget class="QCheckBox" name="savestateSelector">
-            <property name="text">
-             <string>Use Save State Selector</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="pineSettings">
-         <property name="title">
-          <string>PINE Settings</string>
-         </property>
-         <layout class="QGridLayout" name="pineSettingsLayout">
-          <item row="1" column="1">
-           <widget class="QLineEdit" name="pineSlot">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="pineSlotLabel">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Slot:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QCheckBox" name="pineEnable">
-            <property name="text">
-             <string>Enable</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <spacer name="verticalSpacerBottom">
-         <property name="orientation">
-          <enum>Qt::Orientation::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>3</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
-     </widget>
     </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="eeSettings">
+     <property name="title">
+      <string extracomment="Emotion Engine = Commercial name of one of PS2's processors. Leave as-is unless there's an official name (like for Japanese).">EmotionEngine (MIPS-IV)</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_7">
+      <item row="0" column="0">
+       <widget class="QLabel" name="eeRoundingLabel">
+        <property name="text">
+         <string extracomment="Rounding refers here to the mathematical term.">Rounding Mode:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="eeRoundingMode">
+        <item>
+         <property name="text">
+          <string>Nearest</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Negative</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Positive</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Chop/Zero (Default)</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="eeDivRoundingLabel">
+        <property name="text">
+         <string extracomment="Rounding refers here to the mathematical term.">Division Rounding Mode:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="eeDivRoundingMode">
+        <item>
+         <property name="text">
+          <string>Nearest (Default)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Negative</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Positive</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Chop/Zero</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="eeClampLabel">
+        <property name="text">
+         <string extracomment="Clamping: Forcing out of bounds things in bounds by changing them to the closest possible value.  In this case, this refers to clamping large PS2 floating point values (which map to infinity or NaN in PCs' IEEE754 floats) to non-infinite ones.">Clamping Mode:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QComboBox" name="eeClampMode">
+        <item>
+         <property name="text">
+          <string comment="ClampMode">None</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Normal (Default)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string extracomment="Sign: refers here to the mathematical meaning (plus/minus).">Extra + Preserve Sign</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Full</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="3" column="0" colspan="2">
+       <layout class="QGridLayout" name="eeSettingsMisc">
+        <item row="1" column="0">
+         <widget class="QCheckBox" name="eeWaitLoopDetection">
+          <property name="text">
+           <string>Wait Loop Detection</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QCheckBox" name="eeRecompiler">
+          <property name="text">
+           <string>Enable Recompiler</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QCheckBox" name="eeFastmem">
+          <property name="text">
+           <string>Enable Fast Memory Access</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QCheckBox" name="eeCache">
+          <property name="text">
+           <string>Enable Cache (Slow)</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QCheckBox" name="eeINTCSpinDetection">
+          <property name="text">
+           <string>INTC Spin Detection</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QCheckBox" name="pauseOnTLBMiss">
+          <property name="text">
+           <string>Pause On TLB Miss</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QCheckBox" name="extraMemory">
+          <property name="text">
+           <string>Enable 128MB RAM (Dev Console)</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="vuSettings">
+     <property name="title">
+      <string extracomment="Vector Unit/VU: refers to two of PS2's processors. Do not translate the full text or do so as a comment. Leave the acronym as-is.">Vector Units (VU)</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_3">
+      <item row="2" column="0">
+       <widget class="QLabel" name="vu1RoundingLabel">
+        <property name="text">
+         <string>VU1 Rounding Mode:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="vu0RoundingMode">
+        <item>
+         <property name="text">
+          <string>Nearest</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Negative</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Positive</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Chop/Zero (Default)</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="4" column="0" colspan="2">
+       <layout class="QGridLayout" name="vuSettingsLayout">
+        <item row="1" column="0">
+         <widget class="QCheckBox" name="vuFlagHack">
+          <property name="text">
+           <string>mVU Flag Hack</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QCheckBox" name="vu1Recompiler">
+          <property name="text">
+           <string>Enable VU1 Recompiler</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QCheckBox" name="vu0Recompiler">
+          <property name="text">
+           <string>Enable VU0 Recompiler (Micro Mode)</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QCheckBox" name="instantVU1">
+          <property name="text">
+           <string>Enable Instant VU1</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="vu0ClampMode">
+        <item>
+         <property name="text">
+          <string>None</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Normal (Default)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Extra</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Extra + Preserve Sign</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="vu0ClampLabel">
+        <property name="text">
+         <string>VU0 Clamping Mode:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="vu0RoundingLabel">
+        <property name="text">
+         <string>VU0 Rounding Mode:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="vu1ClampLabel">
+        <property name="text">
+         <string>VU1 Clamping Mode:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QComboBox" name="vu1RoundingMode">
+        <item>
+         <property name="text">
+          <string>Nearest</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Negative</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Positive</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Chop/Zero (Default)</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QComboBox" name="vu1ClampMode">
+        <item>
+         <property name="text">
+          <string>None</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Normal (Default)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Extra</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Extra + Preserve Sign</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="iopSettings">
+     <property name="title">
+      <string>I/O Processor (IOP, MIPS-I)</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_2">
+      <item row="0" column="0">
+       <widget class="QCheckBox" name="iopRecompiler">
+        <property name="text">
+         <string>Enable Recompiler</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="gameSettings">
+     <property name="title">
+      <string>Game Settings</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="0" column="0">
+       <widget class="QCheckBox" name="gameFixes">
+        <property name="text">
+         <string>Enable Game Fixes</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QCheckBox" name="patches">
+        <property name="text">
+         <string>Enable Compatibility Patches</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="savestateSettings">
+     <property name="title">
+      <string>Savestate Settings</string>
+     </property>
+     <layout class="QGridLayout" name="savestateSettingsLayout">
+      <item row="3" column="1">
+       <widget class="QCheckBox" name="saveStateOnShutdown">
+        <property name="text">
+         <string>Save State On Shutdown</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="savestateCompressionLevel">
+        <item>
+         <property name="text">
+          <string>Low (Fast)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Medium (Recommended)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>High</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Very High (Slow, Not Recommended)</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="savestateCompressionMethod">
+        <item>
+         <property name="text">
+          <string>Uncompressed</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Deflate64</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Zstandard</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>LZMA2</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="savestateCompressionMethodLabel">
+        <property name="text">
+         <string>Compression Level:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QCheckBox" name="backupSaveStates">
+        <property name="text">
+         <string>Create Save State Backups</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="savestateCompressionLabel">
+        <property name="text">
+         <string>Compression Method:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QCheckBox" name="savestateSelector">
+        <property name="text">
+         <string>Use Save State Selector</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="pineSettings">
+     <property name="title">
+      <string>PINE Settings</string>
+     </property>
+     <layout class="QGridLayout" name="pineSettingsLayout">
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="pineSlot">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="pineSlotLabel">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Slot:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QCheckBox" name="pineEnable">
+        <property name="text">
+         <string>Enable</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>0</height>
+      </size>
+     </property>
+    </spacer>
    </item>
   </layout>
  </widget>

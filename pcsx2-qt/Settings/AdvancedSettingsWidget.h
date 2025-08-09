@@ -3,13 +3,11 @@
 
 #pragma once
 
-#include <QtWidgets/QWidget>
-
 #include "ui_AdvancedSettingsWidget.h"
 
-class SettingsWindow;
+#include "SettingsWidget.h"
 
-class AdvancedSettingsWidget : public QWidget
+class AdvancedSettingsWidget : public SettingsWidget
 {
 	Q_OBJECT
 

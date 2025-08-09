@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>GraphicsUpscalingFixesSettingsTab</class>
+ <widget class="QWidget" name="GraphicsUpscalingFixesSettingsTab">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>700</width>
+    <height>500</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string/>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="5" column="0" colspan="2">
+    <layout class="QGridLayout" name="upscalingFixesLayout_2">
+     <item row="0" column="0">
+      <widget class="QCheckBox" name="alignSprite">
+       <property name="text">
+        <string>Align Sprite</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QCheckBox" name="nativePaletteDraw">
+       <property name="text">
+        <string>Unscaled Palette Texture Draws</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QCheckBox" name="mergeSprite">
+       <property name="text">
+        <string>Merge Sprite</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QCheckBox" name="forceEvenSpritePosition">
+       <property name="text">
+        <string>Force Even Sprite Position</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="halfPixelOffsetLabel">
+     <property name="text">
+      <string>Half Pixel Offset:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QComboBox" name="halfPixelOffset">
+     <item>
+      <property name="text">
+       <string>Off (Default)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Normal (Vertex)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Special (Texture)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Special (Texture - Aggressive)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Align to Native</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Align to Native - with Texture Offset</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="nativeScalingLabel">
+     <property name="text">
+      <string>Native Scaling</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QComboBox" name="bilinearHack">
+     <item>
+      <property name="text">
+       <string>Automatic (Default)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Force Bilinear</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Force Nearest</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QComboBox" name="nativeScaling">
+     <item>
+      <property name="text">
+       <string>Off</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Normal</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Aggressive</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="textureOffsetLabel">
+     <property name="text">
+      <string>Texture Offsets:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
+    <layout class="QHBoxLayout" name="textureOffsetLayout" stretch="0,1,0,1">
+     <item>
+      <widget class="QLabel" name="textureOffsetXLabel">
+       <property name="text">
+        <string>X:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QSpinBox" name="textureOffsetX">
+       <property name="maximum">
+        <number>1000</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="textureOffsetYLabel">
+       <property name="text">
+        <string>Y:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QSpinBox" name="textureOffsetY">
+       <property name="maximum">
+        <number>1000</number>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="bilinearHackLabel">
+     <property name="text">
+      <string>Bilinear Dirty Upscale:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QComboBox" name="roundSprite">
+     <item>
+      <property name="text">
+       <string>Off (Default)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Half</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Full</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="roundSpriteLabel">
+     <property name="text">
+      <string>Round Sprite:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="0">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>0</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

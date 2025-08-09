@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>GraphicsPostProcessingSettingsTab</class>
+ <widget class="QWidget" name="GraphicsPostProcessingSettingsTab">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>703</width>
+    <height>500</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string/>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QGroupBox" name="sharpeningGroup">
+     <property name="title">
+      <string>Sharpening/Anti-Aliasing</string>
+     </property>
+     <layout class="QFormLayout" name="formLayout_2">
+      <item row="0" column="0">
+       <widget class="QLabel" name="casModeLabel">
+        <property name="text">
+         <string extracomment="You might find an official translation for this on AMD's website (Spanish version linked): https://www.amd.com/es/technologies/radeon-software-fidelityfx">Contrast Adaptive Sharpening:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <layout class="QHBoxLayout" name="casLayout" stretch="1,0">
+        <item>
+         <widget class="QComboBox" name="casMode">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <item>
+           <property name="text">
+            <string>None (Default)</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Sharpen Only (Internal Resolution)</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Sharpen and Resize (Display Resolution)</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="sharpnessLayout">
+          <item>
+           <widget class="QLabel" name="casSharpnessLabel">
+            <property name="text">
+             <string>Sharpness:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="casSharpness">
+            <property name="suffix">
+             <string extracomment="Percentage sign that will appear next to a number. Add a space or whatever is needed before depending on your language.">%</string>
+            </property>
+            <property name="maximum">
+             <number>100</number>
+            </property>
+            <property name="value">
+             <number>50</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </item>
+      <item row="1" column="0" colspan="2">
+       <widget class="QCheckBox" name="fxaa">
+        <property name="text">
+         <string>FXAA</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="filtersLayout">
+     <property name="title">
+      <string>Filters</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_4">
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="shadeBoost">
+        <property name="text">
+         <string>Shade Boost</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <layout class="QGridLayout" name="gridLayout" columnstretch="0,1,0,1">
+        <item row="0" column="0">
+         <widget class="QLabel" name="brightnessLabel">
+          <property name="text">
+           <string>Brightness:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="3">
+         <widget class="QSpinBox" name="shadeBoostContrast">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>100</number>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QLabel" name="contrastLabel">
+          <property name="text">
+           <string>Contrast:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QSpinBox" name="shadeBoostBrightness">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>100</number>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="gammaLabel">
+          <property name="text">
+           <string>Gamma:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QSpinBox" name="shadeBoostGamma">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>100</number>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="2">
+         <widget class="QLabel" name="saturationLabel">
+          <property name="text">
+           <string>Saturation:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="3">
+         <widget class="QSpinBox" name="shadeBoostSaturation">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>100</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="tvShaderLabel">
+        <property name="text">
+         <string>TV Shader:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="tvShader">
+        <item>
+         <property name="text">
+          <string>None (Default)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Scanline Filter</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Diagonal Filter</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Triangular Filter</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Wave Filter</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string extracomment="Lottes = Timothy Lottes, the creator of the shader filter. Leave as-is. CRT= Cathode Ray Tube, an old type of television technology.">Lottes CRT</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>4xRGSS downsampling (4x Rotated Grid SuperSampling)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>NxAGSS downsampling (Nx Automatic Grid SuperSampling)</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>0</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

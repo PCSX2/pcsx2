@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>GraphicsAdvancedSettingsTab</class>
+ <widget class="QWidget" name="GraphicsAdvancedSettingsTab">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>700</width>
+    <height>605</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string/>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QGroupBox" name="advancedOptions">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="title">
+      <string>Advanced Options</string>
+     </property>
+     <layout class="QFormLayout" name="advancedOptionsFormLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="hwDownloadModeLabel">
+        <property name="text">
+         <string>Hardware Download Mode:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="gsDownloadMode">
+        <item>
+         <property name="text">
+          <string>Accurate (Recommended)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Disable Readbacks (Synchronize GS Thread)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Unsynchronized (Non-Deterministic)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Disabled (Ignore Transfers)</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="gsDumpCompressionLabel">
+        <property name="text">
+         <string>GS Dump Compression:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="gsDumpCompression">
+        <item>
+         <property name="text">
+          <string>Uncompressed</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>LZMA (xz)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Zstandard (zst)</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="10" column="0" colspan="2">
+       <layout class="QGridLayout" name="advancedLayout">
+        <item row="1" column="1">
+         <widget class="QCheckBox" name="extendedUpscales">
+          <property name="text">
+           <string>Extended Upscaling Multipliers</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QCheckBox" name="disableMailboxPresentation">
+          <property name="text">
+           <string extracomment="Mailbox Presentation: a type of graphics-rendering technique that has not been exposed to the public that often, so chances are you will need to keep the word mailbox in English. It does not have anything to do with postal mailboxes or email inboxes/outboxes.">Disable Mailbox Presentation</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QCheckBox" name="useBlitSwapChain">
+          <property name="text">
+           <string extracomment="Blit = a data operation. You might want to write it as-is, but fully uppercased. More information: https://en.wikipedia.org/wiki/Bit_blit \nSwap chain: see Microsoft's Terminology Portal.">Use Blit Swap Chain</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QCheckBox" name="spinCPUDuringReadbacks">
+          <property name="text">
+           <string>Spin CPU During Readbacks</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QCheckBox" name="spinGPUDuringReadbacks">
+          <property name="text">
+           <string>Spin GPU During Readbacks</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="6" column="0">
+       <widget class="QLabel" name="exclussiveFSLabel">
+        <property name="text">
+         <string>Allow Exclusive Fullscreen:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="1">
+       <widget class="QComboBox" name="exclusiveFullscreenControl">
+        <item>
+         <property name="text">
+          <string>Automatic (Default)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Disallowed</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Allowed</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <widget class="QComboBox" name="texturePreloading">
+        <item>
+         <property name="text">
+          <string>None</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Partial</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Full (Hash Cache)</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Texture Preloading:</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="frameRateOptions">
+     <property name="title">
+      <string>Frame Rate Options</string>
+     </property>
+     <layout class="QGridLayout" name="frameRateOptionsFormLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="ntscLabel">
+        <property name="text">
+         <string>NTSC Frame Rate:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QDoubleSpinBox" name="ntscFrameRate">
+        <property name="suffix">
+         <string extracomment="Hz=Hertz, as in the measuring unit. Shown after the corresponding number. Those languages who'd need to remove the space or do something in between should do so."> Hz</string>
+        </property>
+        <property name="minimum">
+         <double>10.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>300.000000000000000</double>
+        </property>
+        <property name="singleStep">
+         <double>0.010000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="palLabel">
+        <property name="text">
+         <string>PAL Frame Rate:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QDoubleSpinBox" name="palFrameRate">
+        <property name="suffix">
+         <string> Hz</string>
+        </property>
+        <property name="minimum">
+         <double>10.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>300.000000000000000</double>
+        </property>
+        <property name="singleStep">
+         <double>0.010000000000000</double>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="debuggingOptions">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="title">
+      <string>Debugging Options</string>
+     </property>
+     <layout class="QFormLayout" name="debuggingOptionsFormLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="barriersLabel">
+        <property name="text">
+         <string>Override Texture Barriers:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="overrideTextureBarriers">
+        <item>
+         <property name="text">
+          <string>Automatic (Default)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Force Disabled</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Force Enabled</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="2" column="0" colspan="2">
+       <layout class="QGridLayout" name="debuggingOptionsLayout">
+        <item row="0" column="1">
+         <widget class="QCheckBox" name="disableFramebufferFetch">
+          <property name="text">
+           <string>Disable Framebuffer Fetch</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QCheckBox" name="disableShaderCache">
+          <property name="text">
+           <string>Disable Shader Cache</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QCheckBox" name="disableVertexShaderExpand">
+          <property name="text">
+           <string>Disable Vertex Shader Expand</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QCheckBox" name="useDebugDevice">
+          <property name="text">
+           <string>Use Debug Device</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>0</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

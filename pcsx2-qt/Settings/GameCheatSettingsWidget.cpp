@@ -16,10 +16,10 @@
 #include <QtCore/QSortFilterProxyModel>
 #include <QtGui/QStandardItemModel>
 
-GameCheatSettingsWidget::GameCheatSettingsWidget(SettingsWindow* dialog, QWidget* parent)
-	: m_dialog(dialog)
+GameCheatSettingsWidget::GameCheatSettingsWidget(SettingsWindow* settings_dialog, QWidget* parent)
+	: SettingsWidget(settings_dialog, parent)
 {
-	m_ui.setupUi(this);
+	setupTab(m_ui);
 
 	m_model = new QStandardItemModel(this);
 
@@ -40,7 +40,7 @@ GameCheatSettingsWidget::GameCheatSettingsWidget(SettingsWindow* dialog, QWidget
 
 	m_ui.cheatList->expandAll();
 
-	SettingsInterface* sif = m_dialog->getSettingsInterface();
+	SettingsInterface* sif = dialog()->getSettingsInterface();
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableCheats, "EmuCore", "EnableCheats", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.allCRCsCheckbox, "EmuCore", "ShowCheatsForAllCRCs", false);
 	updateListEnabled();
@@ -56,9 +56,9 @@ GameCheatSettingsWidget::GameCheatSettingsWidget(SettingsWindow* dialog, QWidget
 		m_model_proxy->setFilterFixedString(text);
 		m_ui.cheatList->expandAll();
 	});
-	connect(m_dialog, &SettingsWindow::discSerialChanged, this, &GameCheatSettingsWidget::reloadList);
+	connect(dialog(), &SettingsWindow::discSerialChanged, this, &GameCheatSettingsWidget::reloadList);
 
-	dialog->registerWidgetHelp(m_ui.allCRCsCheckbox, tr("Show Cheats For All CRCs"), tr("Checked"),
+	dialog()->registerWidgetHelp(m_ui.allCRCsCheckbox, tr("Show Cheats For All CRCs"), tr("Checked"),
 		tr("Toggles scanning patch files for all CRCs of the game. With this enabled available patches for the game serial with different CRCs will also be loaded."));
 }
 
@@ -120,18 +120,18 @@ void GameCheatSettingsWidget::onReloadClicked()
 
 void GameCheatSettingsWidget::updateListEnabled()
 {
-	const bool cheats_enabled = m_dialog->getEffectiveBoolValue("EmuCore", "EnableCheats", false);
+	const bool cheats_enabled = dialog()->getEffectiveBoolValue("EmuCore", "EnableCheats", false);
 	m_ui.cheatList->setEnabled(cheats_enabled);
 	m_ui.enableAll->setEnabled(cheats_enabled);
 	m_ui.disableAll->setEnabled(cheats_enabled);
 	m_ui.reloadCheats->setEnabled(cheats_enabled);
-	m_ui.allCRCsCheckbox->setEnabled(cheats_enabled && !m_dialog->getSerial().empty());
+	m_ui.allCRCsCheckbox->setEnabled(cheats_enabled && !dialog()->getSerial().empty());
 	m_ui.searchText->setEnabled(cheats_enabled);
 }
 
 void GameCheatSettingsWidget::disableAllCheats()
 {
-	SettingsInterface* si = m_dialog->getSettingsInterface();
+	SettingsInterface* si = dialog()->getSettingsInterface();
 	si->ClearSection(Patch::CHEATS_CONFIG_SECTION);
 	si->Save();
 }
@@ -144,7 +144,7 @@ void GameCheatSettingsWidget::resizeEvent(QResizeEvent* event)
 
 void GameCheatSettingsWidget::setCheatEnabled(std::string name, bool enabled, bool save_and_reload_settings)
 {
-	SettingsInterface* si = m_dialog->getSettingsInterface();
+	SettingsInterface* si = dialog()->getSettingsInterface();
 	auto it = std::find(m_enabled_patches.begin(), m_enabled_patches.end(), name);
 
 	if (enabled)
@@ -173,7 +173,7 @@ void GameCheatSettingsWidget::setStateForAll(bool enabled)
 	disconnect(m_model, &QStandardItemModel::itemChanged, this, &GameCheatSettingsWidget::onCheatListItemChanged);
 
 	setStateRecursively(nullptr, enabled);
-	m_dialog->getSettingsInterface()->Save();
+	dialog()->getSettingsInterface()->Save();
 	g_emu_thread->reloadGameSettings();
 
 	connect(m_model, &QStandardItemModel::itemChanged, this, &GameCheatSettingsWidget::onCheatListItemChanged);
@@ -205,13 +205,13 @@ void GameCheatSettingsWidget::reloadList()
 {
 	u32 num_unlabelled_codes = 0;
 	bool showAllCRCS = m_ui.allCRCsCheckbox->isChecked();
-	m_patches = Patch::GetPatchInfo(m_dialog->getSerial(), m_dialog->getDiscCRC(), true, showAllCRCS, &num_unlabelled_codes);
+	m_patches = Patch::GetPatchInfo(dialog()->getSerial(), dialog()->getDiscCRC(), true, showAllCRCS, &num_unlabelled_codes);
 	m_enabled_patches =
-		m_dialog->getSettingsInterface()->GetStringList(Patch::CHEATS_CONFIG_SECTION, Patch::PATCH_ENABLE_CONFIG_KEY);
+		dialog()->getSettingsInterface()->GetStringList(Patch::CHEATS_CONFIG_SECTION, Patch::PATCH_ENABLE_CONFIG_KEY);
 
 	m_parent_map.clear();
 	m_model->removeRows(0, m_model->rowCount());
-	m_ui.allCRCsCheckbox->setEnabled(!m_dialog->getSerial().empty() && m_ui.cheatList->isEnabled());
+	m_ui.allCRCsCheckbox->setEnabled(!dialog()->getSerial().empty() && m_ui.cheatList->isEnabled());
 
 	for (const Patch::PatchInfo& pi : m_patches)
 	{
