@@ -75,6 +75,7 @@ namespace QtHost
 	static bool ParseCommandLineOptions(const QStringList& args, std::shared_ptr<VMBootParameters>& autoboot);
 	static bool InitializeConfig();
 	static void SaveSettings();
+	static void SaveSecretsSettings();
 	static void HookSignals();
 	static void RegisterTypes();
 	static bool RunSetupWizard();
@@ -86,6 +87,7 @@ namespace QtHost
 //////////////////////////////////////////////////////////////////////////
 static QTimer* s_settings_save_timer = nullptr;
 static std::unique_ptr<INISettingsInterface> s_base_settings_interface;
+static std::unique_ptr<INISettingsInterface> s_secrets_settings_interface;
 static bool s_batch_mode = false;
 static bool s_nogui_mode = false;
 static bool s_start_fullscreen_ui = false;
@@ -1329,6 +1331,7 @@ bool QtHost::InitializeConfig()
 	// Write crash dumps to the data directory, since that'll be accessible for certain.
 	CrashHandler::SetWriteDirectory(EmuFolders::DataRoot);
 
+	// Load main settings ini
 	const std::string path = Path::Combine(EmuFolders::Settings, "PCSX2.ini");
 	const bool settings_exists = FileSystem::FileExists(path.c_str());
 	Console.WriteLnFmt("Loading config from {}.", path);
@@ -1367,6 +1370,29 @@ bool QtHost::InitializeConfig()
 		// Don't save if we're running the setup wizard. We want to run it next time if they don't finish it.
 		if (!s_run_setup_wizard)
 			SaveSettings();
+	}
+
+	// Layer secrets ini on top
+	const std::string secrets_path = Path::Combine(EmuFolders::Settings, "secrets.ini");
+	const bool secrets_settings_exists = FileSystem::FileExists(secrets_path.c_str());
+	Console.WriteLnFmt("Loading secrets from {}.", secrets_path);
+
+	s_secrets_settings_interface = std::make_unique<INISettingsInterface>(std::move(secrets_path));
+	Host::Internal::SetSecretsSettingsLayer(s_secrets_settings_interface.get());
+	if (!secrets_settings_exists || !s_secrets_settings_interface->Load())
+	{
+		if (!s_base_settings_interface->Save(&error))
+		{
+			QMessageBox::critical(
+				nullptr, QStringLiteral("PCSX2"),
+				QStringLiteral(
+					"Failed to save secrets to\n\n%1\n\nThe error was: %2\n\nPlease ensure this directory is writable. You "
+					"can also try portable mode by creating portable.txt in the same directory you installed PCSX2 into.")
+					.arg(QString::fromStdString(s_secrets_settings_interface->GetFileName()))
+					.arg(QString::fromStdString(error.GetDescription())));
+			return false;
+		}
+		
 	}
 
 	// Setup wizard was incomplete last time?
@@ -1414,11 +1440,58 @@ void QtHost::SaveSettings()
 	}
 }
 
+void QtHost::SaveSecretsSettings()
+{
+	pxAssertRel(!g_emu_thread->isOnEmuThread(), "Saving should happen on the UI thread.");
+
+	{
+		Error error;
+		auto lock = Host::GetSettingsLock();
+		if (!s_secrets_settings_interface->Save(&error))
+			Console.ErrorFmt("Failed to save settings: {}", error.GetDescription());
+	}
+
+	if (s_settings_save_timer)
+	{
+		s_settings_save_timer->deleteLater();
+		s_settings_save_timer = nullptr;
+	}
+}
+
 void Host::CommitBaseSettingChanges()
 {
 	if (!QtHost::IsOnUIThread())
 	{
 		QtHost::RunOnUIThread(&Host::CommitBaseSettingChanges);
+		return;
+	}
+
+	auto lock = Host::GetSettingsLock();
+	if (s_settings_save_timer)
+		return;
+
+	s_settings_save_timer = new QTimer;
+	s_settings_save_timer->connect(s_settings_save_timer, &QTimer::timeout, &QtHost::SaveSecretsSettings);
+	s_settings_save_timer->setSingleShot(true);
+	s_settings_save_timer->start(SETTINGS_SAVE_DELAY);
+
+	static bool connected = false;
+	if (!connected)
+	{
+		QObject::connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, []() {
+			delete s_settings_save_timer;
+			s_settings_save_timer = nullptr;
+		});
+
+		connected = true;
+	}
+}
+
+void Host::CommitSecretsSettingChanges()
+{
+	if (!QtHost::IsOnUIThread())
+	{
+		QtHost::RunOnUIThread(&Host::CommitSecretsSettingChanges);
 		return;
 	}
 
