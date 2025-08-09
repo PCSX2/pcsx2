@@ -518,7 +518,7 @@ void MainWindow::createRendererSwitchMenu()
 		action->setCheckable(true);
 		action->setChecked(current_renderer == renderer);
 		connect(action,
-			&QAction::triggered, [this, action, renderer] {
+			&QAction::triggered, [renderer] {
 				Host::SetBaseIntSettingValue("EmuCore/GS", "Renderer", static_cast<int>(renderer));
 				Host::CommitBaseSettingChanges();
 				g_emu_thread->applySettings();
