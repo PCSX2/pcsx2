@@ -1503,13 +1503,13 @@ void FullscreenUI::DrawLandingWindow()
 	{
 		ResetFocusHere();
 
-		if (HorizontalMenuSvgItem("fullscreenui/game-list.svg", FSUI_CSTR("Game List"),
+		if (HorizontalMenuSvgItem("fullscreenui/media-cdrom.svg", FSUI_CSTR("Game List"),
 				FSUI_CSTR("Launch a game from images scanned from your game directories.")))
 		{
 			SwitchToGameList();
 		}
 
-		if (HorizontalMenuSvgItem("fullscreenui/media-cdrom.svg", FSUI_CSTR("Start Game"),
+		if (HorizontalMenuSvgItem("fullscreenui/start-game.svg", FSUI_CSTR("Start Game"),
 				FSUI_CSTR("Launch a game from a file, disc, or starts the console without any disc inserted.")))
 		{
 			s_current_main_window = MainWindowType::StartGame;
