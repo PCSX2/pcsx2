@@ -1503,13 +1503,13 @@ void FullscreenUI::DrawLandingWindow()
 	{
 		ResetFocusHere();
 
-		if (HorizontalMenuSvgItem("fullscreenui/game-list.svg", FSUI_CSTR("Game List"),
+		if (HorizontalMenuSvgItem("fullscreenui/media-cdrom.svg", FSUI_CSTR("Game List"),
 				FSUI_CSTR("Launch a game from images scanned from your game directories.")))
 		{
 			SwitchToGameList();
 		}
 
-		if (HorizontalMenuSvgItem("fullscreenui/media-cdrom.svg", FSUI_CSTR("Start Game"),
+		if (HorizontalMenuSvgItem("fullscreenui/start-game.svg", FSUI_CSTR("Start Game"),
 				FSUI_CSTR("Launch a game from a file, disc, or starts the console without any disc inserted.")))
 		{
 			s_current_main_window = MainWindowType::StartGame;
@@ -4793,12 +4793,21 @@ void FullscreenUI::DoCreateMemoryCard(std::string name, MemoryCardType type, Mem
 
 void FullscreenUI::ResetControllerSettings()
 {
-	SettingsInterface* dsi = GetEditingSettingsInterface();
+	OpenConfirmMessageDialog(FSUI_ICONSTR(u8"🔥", "Reset Controller Settings"),
+		FSUI_STR("Are you sure you want to restore the default controller configuration?\n\n"
+				 "All shared bindings and configuration will be lost, but your input profiles will remain.\n\n"
+				 "You cannot undo this action."),
+		[](bool result) {
+			if (result)
+			{
+				SettingsInterface* dsi = GetEditingSettingsInterface();
 
-	Pad::SetDefaultControllerConfig(*dsi);
-	Pad::SetDefaultHotkeyConfig(*dsi);
-	USB::SetDefaultConfiguration(dsi);
-	ShowToast(std::string(), FSUI_STR("Controller settings reset to default."));
+				Pad::SetDefaultControllerConfig(*dsi);
+				Pad::SetDefaultHotkeyConfig(*dsi);
+				USB::SetDefaultConfiguration(dsi);
+				ShowToast(std::string(), FSUI_STR("Controller settings reset to default."));
+			}
+		});
 }
 
 void FullscreenUI::DoLoadInputProfile()
@@ -4875,7 +4884,10 @@ void FullscreenUI::DoSaveInputProfile()
 			CloseChoiceDialog();
 
 			OpenInputStringDialog(FSUI_ICONSTR(ICON_FA_FLOPPY_DISK, "Save Profile"),
-				FSUI_STR("Enter the name of the input profile you wish to create."), std::string(),
+				FSUI_STR("Custom input profiles are used to override the Shared input profile for specific games.\n\n"
+						 "To apply a custom input profile to a game, go to its Game Properties, then change the 'Input Profile' on the Summary tab.\n\n"
+						 "Enter the name for the new input profile:"),
+				std::string(),
 				FSUI_ICONSTR(ICON_FA_CHECK, "Create"), [](std::string title) {
 					if (!title.empty())
 						DoSaveInputProfile(title);
