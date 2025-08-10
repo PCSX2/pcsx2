@@ -910,4 +910,12 @@ namespace x86Emitter
 	{
 		xOpWrite0F(0, 0xae, 1, src);
 	}
+
+	void xVZEROUPPER()
+	{
+		// rather than dealing with nonexistant operands..
+		xWrite8(0xc5);
+		xWrite8(0xf8);
+		xWrite8(0x77);
+	}
 } // namespace x86Emitter

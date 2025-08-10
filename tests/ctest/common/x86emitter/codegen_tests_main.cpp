@@ -747,96 +747,48 @@ TEST(CodegenTests, AVXTest)
 	CODEGEN_TEST(xPMOVMSKB(eax, xmm2),    "c5 f9 d7 c2");
 	CODEGEN_TEST(xPALIGNR(xmm4, xmm8, 1), "c4 c3 59 0f e0 01");
 	CODEGEN_TEST(xMASKMOV(xmm2, xmm9),    "c4 c1 79 f7 d1");
-
-	CODEGEN_TEST(xVMOVAPS(xmm0, xmm1), "c5 f8 28 c1");
-	CODEGEN_TEST(xVMOVAPS(xmm0, ptr32[rdi]), "c5 f8 28 07");
-	CODEGEN_TEST(xVMOVAPS(ptr32[rdi], xmm0), "c5 f8 29 07");
-	CODEGEN_TEST(xVMOVUPS(xmm0, ptr32[rdi]), "c5 f8 10 07");
-	CODEGEN_TEST(xVMOVUPS(ptr32[rdi], xmm0), "c5 f8 11 07");
-
-	CODEGEN_TEST(xVADD.PS(xmm0, xmm1, xmm2), "c5 f0 58 c2");
-	CODEGEN_TEST(xVADD.PD(xmm0, xmm1, xmm2), "c5 f1 58 c2");
-	CODEGEN_TEST(xVADD.SS(xmm0, xmm1, xmm2), "c5 f2 58 c2");
-	CODEGEN_TEST(xVADD.SD(xmm0, xmm1, xmm2), "c5 f3 58 c2");
-	CODEGEN_TEST(xVSUB.PS(xmm0, xmm1, xmm2), "c5 f0 5c c2");
-	CODEGEN_TEST(xVSUB.PD(xmm0, xmm1, xmm2), "c5 f1 5c c2");
-	CODEGEN_TEST(xVSUB.SS(xmm0, xmm1, xmm2), "c5 f2 5c c2");
-	CODEGEN_TEST(xVSUB.SD(xmm0, xmm1, xmm2), "c5 f3 5c c2");
-	CODEGEN_TEST(xVMUL.PS(xmm0, xmm1, xmm2), "c5 f0 59 c2");
-	CODEGEN_TEST(xVMUL.PD(xmm0, xmm1, xmm2), "c5 f1 59 c2");
-	CODEGEN_TEST(xVMUL.SS(xmm0, xmm1, xmm2), "c5 f2 59 c2");
-	CODEGEN_TEST(xVMUL.SD(xmm0, xmm1, xmm2), "c5 f3 59 c2");
-	CODEGEN_TEST(xVDIV.PS(xmm0, xmm1, xmm2), "c5 f0 5e c2");
-	CODEGEN_TEST(xVDIV.PD(xmm0, xmm1, xmm2), "c5 f1 5e c2");
-	CODEGEN_TEST(xVDIV.SS(xmm0, xmm1, xmm2), "c5 f2 5e c2");
-	CODEGEN_TEST(xVDIV.SD(xmm0, xmm1, xmm2), "c5 f3 5e c2");
-
-	// Don't need to test all variants, since they just change the condition immediate.
-	CODEGEN_TEST(xVCMP.EQ.PS(xmm0, xmm1, xmm2), "c5 f0 c2 c2 00");
-	CODEGEN_TEST(xVCMP.EQ.PD(xmm0, xmm1, xmm2), "c5 f1 c2 c2 00");
-	CODEGEN_TEST(xVCMP.EQ.SS(xmm0, xmm1, xmm2), "c5 f2 c2 c2 00");
-	CODEGEN_TEST(xVCMP.EQ.SD(xmm0, xmm1, xmm2), "c5 f3 c2 c2 00");
-	CODEGEN_TEST(xVCMP.LE.PS(xmm0, xmm1, xmm2), "c5 f0 c2 c2 02");
-	CODEGEN_TEST(xVCMP.LE.PD(xmm0, xmm1, xmm2), "c5 f1 c2 c2 02");
-	CODEGEN_TEST(xVCMP.LE.SS(xmm0, xmm1, xmm2), "c5 f2 c2 c2 02");
-	CODEGEN_TEST(xVCMP.LE.SD(xmm0, xmm1, xmm2), "c5 f3 c2 c2 02");
-
-	CODEGEN_TEST(xVPCMP.EQB(xmm0, xmm1, xmm2), "c5 f1 74 c2");
-	CODEGEN_TEST(xVPCMP.EQW(xmm0, xmm1, xmm2), "c5 f1 75 c2");
-	CODEGEN_TEST(xVPCMP.EQD(xmm0, xmm1, xmm2), "c5 f1 76 c2");
-	CODEGEN_TEST(xVPCMP.GTB(xmm0, xmm1, xmm2), "c5 f1 64 c2");
-	CODEGEN_TEST(xVPCMP.GTW(xmm0, xmm1, xmm2), "c5 f1 65 c2");
-	CODEGEN_TEST(xVPCMP.GTD(xmm0, xmm1, xmm2), "c5 f1 66 c2");
-
-	CODEGEN_TEST(xVPAND(xmm0, xmm1, xmm2), "c5 f1 db c2");
-	CODEGEN_TEST(xVPANDN(xmm0, xmm1, xmm2), "c5 f1 df c2");
-	CODEGEN_TEST(xVPOR(xmm0, xmm1, xmm2), "c5 f1 eb c2");
-	CODEGEN_TEST(xVPXOR(xmm0, xmm1, xmm2), "c5 f1 ef c2");
-
-	CODEGEN_TEST(xVMOVMSKPS(eax, xmm1), "c5 f8 50 c1");
-	CODEGEN_TEST(xVMOVMSKPD(eax, xmm1), "c5 f9 50 c1");
 }
 
 TEST(CodegenTests, AVX256Test)
 {
 	x86Emitter::use_avx = true;
 
-	CODEGEN_TEST(xVMOVAPS(ymm0, ymm1), "c5 fc 28 c1");
-	CODEGEN_TEST(xVMOVAPS(ymm0, ptr32[rdi]), "c5 fc 28 07");
-	CODEGEN_TEST(xVMOVAPS(ptr32[rdi], ymm0), "c5 fc 29 07");
-	CODEGEN_TEST(xVMOVUPS(ymm0, ptr32[rdi]), "c5 fc 10 07");
-	CODEGEN_TEST(xVMOVUPS(ptr32[rdi], ymm0), "c5 fc 11 07");
+	CODEGEN_TEST(xMOVAPS(ymm0, ymm1), "c5 fc 28 c1");
+	CODEGEN_TEST(xMOVAPS(ymm0, ptr32[rdi]), "c5 fc 28 07");
+	CODEGEN_TEST(xMOVAPS(ptr32[rdi], ymm0), "c5 fc 29 07");
+	CODEGEN_TEST(xMOVUPS(ymm0, ptr32[rdi]), "c5 fc 10 07");
+	CODEGEN_TEST(xMOVUPS(ptr32[rdi], ymm0), "c5 fc 11 07");
 
 	CODEGEN_TEST(xVZEROUPPER(), "c5 f8 77");
 
-	CODEGEN_TEST(xVADD.PS(ymm0, ymm1, ymm2), "c5 f4 58 c2");
-	CODEGEN_TEST(xVADD.PD(ymm0, ymm1, ymm2), "c5 f5 58 c2");
-	CODEGEN_TEST(xVSUB.PS(ymm0, ymm1, ymm2), "c5 f4 5c c2");
-	CODEGEN_TEST(xVSUB.PD(ymm0, ymm1, ymm2), "c5 f5 5c c2");
-	CODEGEN_TEST(xVMUL.PS(ymm0, ymm1, ymm2), "c5 f4 59 c2");
-	CODEGEN_TEST(xVMUL.PD(ymm0, ymm1, ymm2), "c5 f5 59 c2");
-	CODEGEN_TEST(xVDIV.PS(ymm0, ymm1, ymm2), "c5 f4 5e c2");
-	CODEGEN_TEST(xVDIV.PD(ymm0, ymm1, ymm2), "c5 f5 5e c2");
+	CODEGEN_TEST(xADD.PS(ymm0, ymm1, ymm2), "c5 f4 58 c2");
+	CODEGEN_TEST(xADD.PD(ymm0, ymm1, ymm2), "c5 f5 58 c2");
+	CODEGEN_TEST(xSUB.PS(ymm0, ymm1, ymm2), "c5 f4 5c c2");
+	CODEGEN_TEST(xSUB.PD(ymm0, ymm1, ymm2), "c5 f5 5c c2");
+	CODEGEN_TEST(xMUL.PS(ymm0, ymm1, ymm2), "c5 f4 59 c2");
+	CODEGEN_TEST(xMUL.PD(ymm0, ymm1, ymm2), "c5 f5 59 c2");
+	CODEGEN_TEST(xDIV.PS(ymm0, ymm1, ymm2), "c5 f4 5e c2");
+	CODEGEN_TEST(xDIV.PD(ymm0, ymm1, ymm2), "c5 f5 5e c2");
 
-	CODEGEN_TEST(xVCMP.EQ.PS(ymm0, ymm1, ymm2), "c5 f4 c2 c2 00");
-	CODEGEN_TEST(xVCMP.EQ.PD(ymm0, ymm1, ymm2), "c5 f5 c2 c2 00");
-	CODEGEN_TEST(xVCMP.LE.PS(ymm0, ymm1, ymm2), "c5 f4 c2 c2 02");
-	CODEGEN_TEST(xVCMP.LE.PD(ymm0, ymm1, ymm2), "c5 f5 c2 c2 02");
+	CODEGEN_TEST(xCMPEQ.PS(ymm0, ymm1, ymm2), "c5 f4 c2 c2 00");
+	CODEGEN_TEST(xCMPEQ.PD(ymm0, ymm1, ymm2), "c5 f5 c2 c2 00");
+	CODEGEN_TEST(xCMPLE.PS(ymm0, ymm1, ymm2), "c5 f4 c2 c2 02");
+	CODEGEN_TEST(xCMPLE.PD(ymm0, ymm1, ymm2), "c5 f5 c2 c2 02");
 
-	CODEGEN_TEST(xVPCMP.EQB(ymm0, ymm1, ymm2), "c5 f5 74 c2");
-	CODEGEN_TEST(xVPCMP.EQW(ymm0, ymm1, ymm2), "c5 f5 75 c2");
-	CODEGEN_TEST(xVPCMP.EQD(ymm0, ymm1, ymm2), "c5 f5 76 c2");
-	CODEGEN_TEST(xVPCMP.GTB(ymm0, ymm1, ymm2), "c5 f5 64 c2");
-	CODEGEN_TEST(xVPCMP.GTW(ymm0, ymm1, ymm2), "c5 f5 65 c2");
-	CODEGEN_TEST(xVPCMP.GTD(ymm0, ymm1, ymm2), "c5 f5 66 c2");
+	CODEGEN_TEST(xPCMP.EQB(ymm0, ymm1, ymm2), "c5 f5 74 c2");
+	CODEGEN_TEST(xPCMP.EQW(ymm0, ymm1, ymm2), "c5 f5 75 c2");
+	CODEGEN_TEST(xPCMP.EQD(ymm0, ymm1, ymm2), "c5 f5 76 c2");
+	CODEGEN_TEST(xPCMP.GTB(ymm0, ymm1, ymm2), "c5 f5 64 c2");
+	CODEGEN_TEST(xPCMP.GTW(ymm0, ymm1, ymm2), "c5 f5 65 c2");
+	CODEGEN_TEST(xPCMP.GTD(ymm0, ymm1, ymm2), "c5 f5 66 c2");
 
-	CODEGEN_TEST(xVPAND(ymm0, ymm1, ymm2), "c5 f5 db c2");
-	CODEGEN_TEST(xVPANDN(ymm0, ymm1, ymm2), "c5 f5 df c2");
-	CODEGEN_TEST(xVPOR(ymm0, ymm1, ymm2), "c5 f5 eb c2");
-	CODEGEN_TEST(xVPXOR(ymm0, ymm1, ymm2), "c5 f5 ef c2");
+	CODEGEN_TEST(xPAND(ymm0, ymm1, ymm2), "c5 f5 db c2");
+	CODEGEN_TEST(xPANDN(ymm0, ymm1, ymm2), "c5 f5 df c2");
+	CODEGEN_TEST(xPOR(ymm0, ymm1, ymm2), "c5 f5 eb c2");
+	CODEGEN_TEST(xPXOR(ymm0, ymm1, ymm2), "c5 f5 ef c2");
 
-	CODEGEN_TEST(xVMOVMSKPS(eax, ymm1), "c5 fc 50 c1");
-	CODEGEN_TEST(xVMOVMSKPD(eax, ymm1), "c5 fd 50 c1");
+	CODEGEN_TEST(xMOVMSKPS(eax, ymm1), "c5 fc 50 c1");
+	CODEGEN_TEST(xMOVMSKPD(eax, ymm1), "c5 fd 50 c1");
 }
 
 TEST(CodegenTests, Extended8BitTest)
