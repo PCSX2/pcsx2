@@ -469,11 +469,11 @@ namespace x86Emitter
 	extern void xMOVSSZX(const xRegisterSSE& dst, const xIndirectVoid& src);
 	extern void xMOVSDZX(const xRegisterSSE& dst, const xIndirectVoid& src);
 
-	extern void xMOVNTDQA(const xRegisterSSE& to, const xIndirectVoid& from);
-	extern void xMOVNTDQA(const xIndirectVoid& to, const xRegisterSSE& from);
+	extern void xMOVNTDQA(const xRegisterSSE& dst, const xIndirectVoid& src);
+	extern void xMOVNTDQA(const xIndirectVoid& dst, const xRegisterSSE& src);
 
-	extern void xMOVNTPD(const xIndirectVoid& to, const xRegisterSSE& from);
-	extern void xMOVNTPS(const xIndirectVoid& to, const xRegisterSSE& from);
+	extern void xMOVNTPD(const xIndirectVoid& dst, const xRegisterSSE& src);
+	extern void xMOVNTPS(const xIndirectVoid& dst, const xRegisterSSE& src);
 
 	extern void xMOVMSKPS(const xRegister32& to, const xRegisterSSE& from);
 	extern void xMOVMSKPD(const xRegister32& to, const xRegisterSSE& from);
