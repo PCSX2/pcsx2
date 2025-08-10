@@ -434,6 +434,14 @@ TEST(CodegenTests, SSETest)
 	CODEGEN_TEST(xPMOVMSKB(eax, xmm2),    "66 0f d7 c2");
 	CODEGEN_TEST(xPALIGNR(xmm4, xmm8, 1), "66 41 0f 3a 0f e0 01");
 	CODEGEN_TEST(xMASKMOV(xmm2, xmm9),    "66 41 0f f7 d1");
+
+	CODEGEN_TEST(xPADD.B(xmm0, xmm1, ptr[r8]), "41 0f 28 00 66 0f fc c1");    // movaps xmm0, [r8]; paddb xmm0, xmm1
+	CODEGEN_TEST(xPSUB.B(xmm0, xmm1, ptr[r8]), "66 0f 6f c1 66 41 0f f8 00"); // movdqa xmm0, xmm1; psubb xmm0, [r8]
+	CODEGEN_TEST(xADD.PS(xmm0, xmm1, ptr[r8]), "41 0f 28 00 0f 58 c1");       // movaps xmm0, [r8]; addps xmm0, xmm1
+	CODEGEN_TEST(xSUB.PS(xmm0, xmm1, ptr[r8]), "0f 28 c1 41 0f 5c 00");       // movaps xmm0, xmm1; subps xmm0, [r8]
+
+	CODEGEN_TEST(xPMAX.SD(xmm2, xmm1, xmm0), "66 0f 6f d1 66 0f 38 3d d0"); // movdqa xmm2, xmm1; pmaxsd xmm2, xmm0
+	CODEGEN_TEST(xPMAX.SD(xmm0, xmm1, xmm0), "66 0f 38 3d c1");             // pmaxsd xmm0, xmm1
 }
 
 TEST(CodegenTests, AVXTest)
@@ -725,6 +733,14 @@ TEST(CodegenTests, AVXTest)
 	CODEGEN_TEST(xPMOVMSKB(eax, xmm2),    "c5 f9 d7 c2");
 	CODEGEN_TEST(xPALIGNR(xmm4, xmm8, 1), "c4 c3 59 0f e0 01");
 	CODEGEN_TEST(xMASKMOV(xmm2, xmm9),    "c4 c1 79 f7 d1");
+
+	CODEGEN_TEST(xPADD.B(xmm0, xmm1, ptr[r8]), "c4 c1 71 fc 00");
+	CODEGEN_TEST(xPSUB.B(xmm0, xmm1, ptr[r8]), "c4 c1 71 f8 00");
+	CODEGEN_TEST(xADD.PS(xmm0, xmm1, ptr[r8]), "c4 c1 70 58 00");
+	CODEGEN_TEST(xSUB.PS(xmm0, xmm1, ptr[r8]), "c4 c1 70 5c 00");
+
+	CODEGEN_TEST(xPMAX.SD(xmm2, xmm1, xmm0), "c4 e2 71 3d d0");
+	CODEGEN_TEST(xPMAX.SD(xmm0, xmm1, xmm0), "c4 e2 71 3d c0");
 }
 
 TEST(CodegenTests, AVX256Test)
