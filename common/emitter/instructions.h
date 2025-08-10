@@ -459,13 +459,15 @@ namespace x86Emitter
 	extern void xMOVQZX(const xRegisterSSE& dst, const xIndirectVoid& src);
 	extern void xMOVQZX(const xRegisterSSE& dst, const xRegisterSSE&  src);
 
-	extern void xMOVSS(const xRegisterSSE& to, const xRegisterSSE& from);
-	extern void xMOVSS(const xIndirectVoid& to, const xRegisterSSE& from);
-	extern void xMOVSD(const xRegisterSSE& to, const xRegisterSSE& from);
-	extern void xMOVSD(const xIndirectVoid& to, const xRegisterSSE& from);
+	extern void xMOVSS(const xRegisterSSE&  dst, const xRegisterSSE& src1, const xRegisterSSE& src2);
+	static void xMOVSS(const xRegisterSSE&  dst, const xRegisterSSE& src) { xMOVSS(dst, dst, src); }
+	extern void xMOVSS(const xIndirectVoid& dst, const xRegisterSSE& src);
+	extern void xMOVSD(const xRegisterSSE&  dst, const xRegisterSSE& src1, const xRegisterSSE& src2);
+	static void xMOVSD(const xRegisterSSE&  dst, const xRegisterSSE& src) { xMOVSD(dst, dst, src); }
+	extern void xMOVSD(const xIndirectVoid& dst, const xRegisterSSE& src);
 
-	extern void xMOVSSZX(const xRegisterSSE& to, const xIndirectVoid& from);
-	extern void xMOVSDZX(const xRegisterSSE& to, const xIndirectVoid& from);
+	extern void xMOVSSZX(const xRegisterSSE& dst, const xIndirectVoid& src);
+	extern void xMOVSDZX(const xRegisterSSE& dst, const xIndirectVoid& src);
 
 	extern void xMOVNTDQA(const xRegisterSSE& to, const xIndirectVoid& from);
 	extern void xMOVNTDQA(const xIndirectVoid& to, const xRegisterSSE& from);

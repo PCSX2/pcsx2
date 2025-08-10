@@ -809,16 +809,25 @@ namespace x86Emitter
 	//
 
 #define IMPLEMENT_xMOVS(ssd, prefix) \
-	__fi void xMOV##ssd(const xRegisterSSE& to, const xRegisterSSE& from) \
+	__fi void xMOV##ssd(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegisterSSE& src2) \
 	{ \
-		if (to != from) \
-			xOpWrite0F(prefix, 0x10, to, from); \
+		if (src1 == src2) \
+			return xMOVAPS(dst, src1); \
+		SIMDInstructionInfo op = SIMDInstructionInfo(0x10).prefix(); \
+		const xRegisterSSE* psrc = &src2; \
+		const xRegisterSSE* pdst = &dst; \
+		if (x86Emitter::use_avx && src2.IsExtended() && !dst.IsExtended()) \
+		{ \
+			op.opcode = 0x11; \
+			std::swap(psrc, pdst); \
+		} \
+		EmitSIMD(op, *pdst, src1, *psrc); \
 	} \
-	__fi void xMOV##ssd##ZX(const xRegisterSSE& to, const xIndirectVoid& from) { xOpWrite0F(prefix, 0x10, to, from); } \
-	__fi void xMOV##ssd(const xIndirectVoid& to, const xRegisterSSE& from) { xOpWrite0F(prefix, 0x11, from, to); }
+	__fi void xMOV##ssd##ZX(const xRegisterSSE& dst, const xIndirectVoid& src) { EmitSIMD(SIMDInstructionInfo(0x10).prefix().mov(), dst, dst, src); } \
+	__fi void xMOV##ssd    (const xIndirectVoid& dst, const xRegisterSSE& src) { EmitSIMD(SIMDInstructionInfo(0x11).prefix().mov(), src, src, dst); }
 
-	IMPLEMENT_xMOVS(SS, 0xf3)
-		IMPLEMENT_xMOVS(SD, 0xf2)
+	IMPLEMENT_xMOVS(SS, pf3)
+	IMPLEMENT_xMOVS(SD, pf2)
 
 		//////////////////////////////////////////////////////////////////////////////////////////
 		// Non-temporal movs only support a register as a target (ie, load form only, no stores)
