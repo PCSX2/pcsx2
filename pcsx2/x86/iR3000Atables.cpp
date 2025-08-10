@@ -454,11 +454,12 @@ namespace
 
 static void rpsxLogicalOp_constv(LogicalOp op, int info, int creg, u32 vreg, int regv)
 {
-	xImpl_G1Logic bad{};
-	const xImpl_G1Logic& xOP = op == LogicalOp::AND ? xAND : op == LogicalOp::OR ? xOR :
-														 op == LogicalOp::XOR    ? xXOR :
-														 op == LogicalOp::NOR    ? xOR :
-                                                                                   bad;
+	xImpl_G1Logic* bad = nullptr;
+	const xImpl_G1Logic& xOP = op == LogicalOp::AND ? xAND
+	                         : op == LogicalOp::OR  ? xOR
+	                         : op == LogicalOp::XOR ? xXOR
+	                         : op == LogicalOp::NOR ? xOR
+	                         : *bad;
 	s32 fixedInput, fixedOutput, identityInput;
 	bool hasFixed = true;
 	switch (op)
@@ -509,12 +510,13 @@ static void rpsxLogicalOp(LogicalOp op, int info)
 {
 	pxAssert(!(info & PROCESS_EE_XMM));
 
-	xImpl_G1Logic bad{};
-	const xImpl_G1Logic& xOP = op == LogicalOp::AND ? xAND : op == LogicalOp::OR ? xOR :
-														 op == LogicalOp::XOR    ? xXOR :
-														 op == LogicalOp::NOR    ? xOR :
-                                                                                   bad;
-	pxAssert(&xOP != &bad);
+	xImpl_G1Logic* bad = nullptr;
+	const xImpl_G1Logic& xOP = op == LogicalOp::AND ? xAND
+	                         : op == LogicalOp::OR  ? xOR
+	                         : op == LogicalOp::XOR ? xXOR
+	                         : op == LogicalOp::NOR ? xOR
+	                         : *bad;
+	pxAssert(&xOP != bad);
 
 	// swap because it's commutative and Rd might be Rt
 	u32 rs = _Rs_, rt = _Rt_;

@@ -165,11 +165,12 @@ enum class LogicalOp
 
 static void recLogicalOpI(int info, LogicalOp op)
 {
-	xImpl_G1Logic bad{};
-	const xImpl_G1Logic& xOP = op == LogicalOp::AND ? xAND : op == LogicalOp::OR ? xOR :
-														 op == LogicalOp::XOR    ? xXOR :
-                                                                                   bad;
-	pxAssert(&xOP != &bad);
+	xImpl_G1Logic* bad = nullptr;
+	const xImpl_G1Logic& xOP = op == LogicalOp::AND ? xAND
+	                         : op == LogicalOp::OR  ? xOR
+	                         : op == LogicalOp::XOR ? xXOR
+	                         : *bad;
+	pxAssert(&xOP != bad);
 
 	if (_ImmU_ != 0)
 	{
