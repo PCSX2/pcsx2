@@ -370,6 +370,19 @@ TEST(CodegenTests, SSETest)
 	CODEGEN_TEST(xPBLEND.W(xmm0, xmm1, 0x55), "66 0f 3a 0e c1 55");
 	CODEGEN_TEST(xPBLEND.VB(xmm1, xmm2),      "66 0f 38 10 ca");
 
+	CODEGEN_TEST(xPMOVSX.BW(xmm0, ptr[rax]), "66 0f 38 20 00");
+	CODEGEN_TEST(xPMOVZX.BW(xmm4, ptr[r8]),  "66 41 0f 38 30 20");
+	CODEGEN_TEST(xPMOVSX.BD(xmm3, xmm4),     "66 0f 38 21 dc");
+	CODEGEN_TEST(xPMOVZX.BD(xmm8, xmm3),     "66 44 0f 38 31 c3");
+	CODEGEN_TEST(xPMOVSX.BQ(xmm2, xmm8),     "66 41 0f 38 22 d0");
+	CODEGEN_TEST(xPMOVZX.BQ(xmm8, ptr[rax]), "66 44 0f 38 32 00");
+	CODEGEN_TEST(xPMOVSX.WD(xmm4, xmm6),     "66 0f 38 23 e6");
+	CODEGEN_TEST(xPMOVZX.WD(xmm6, xmm9),     "66 41 0f 38 33 f1");
+	CODEGEN_TEST(xPMOVSX.WQ(xmm2, ptr[rcx]), "66 0f 38 24 11");
+	CODEGEN_TEST(xPMOVZX.WQ(xmm5, xmm7),     "66 0f 38 34 ef");
+	CODEGEN_TEST(xPMOVSX.DQ(xmm2, xmm3),     "66 0f 38 25 d3");
+	CODEGEN_TEST(xPMOVZX.DQ(xmm4, xmm9),     "66 41 0f 38 35 e1");
+
 	CODEGEN_TEST(xMOVD(eax, xmm1), "66 0f 7e c8");
 	CODEGEN_TEST(xMOVD(eax, xmm10), "66 44 0f 7e d0");
 	CODEGEN_TEST(xMOVD(rax, xmm1), "66 48 0f 7e c8");
@@ -610,6 +623,19 @@ TEST(CodegenTests, AVXTest)
 	CODEGEN_TEST(xBLEND.VPD(xmm1, ptr[base]), "c4 e3 71 4b 0d f6 ff ff ff 00");
 	CODEGEN_TEST(xPBLEND.W(xmm0, xmm1, 0x55), "c4 e3 79 0e c1 55");
 	CODEGEN_TEST(xPBLEND.VB(xmm1, xmm2),      "c4 e3 71 4c ca 00");
+
+	CODEGEN_TEST(xPMOVSX.BW(xmm0, ptr[rax]), "c4 e2 79 20 00");
+	CODEGEN_TEST(xPMOVZX.BW(xmm4, ptr[r8]),  "c4 c2 79 30 20");
+	CODEGEN_TEST(xPMOVSX.BD(xmm3, xmm4),     "c4 e2 79 21 dc");
+	CODEGEN_TEST(xPMOVZX.BD(xmm8, xmm3),     "c4 62 79 31 c3");
+	CODEGEN_TEST(xPMOVSX.BQ(xmm2, xmm8),     "c4 c2 79 22 d0");
+	CODEGEN_TEST(xPMOVZX.BQ(xmm8, ptr[rax]), "c4 62 79 32 00");
+	CODEGEN_TEST(xPMOVSX.WD(xmm4, xmm6),     "c4 e2 79 23 e6");
+	CODEGEN_TEST(xPMOVZX.WD(xmm6, xmm9),     "c4 c2 79 33 f1");
+	CODEGEN_TEST(xPMOVSX.WQ(xmm2, ptr[rcx]), "c4 e2 79 24 11");
+	CODEGEN_TEST(xPMOVZX.WQ(xmm5, xmm7),     "c4 e2 79 34 ef");
+	CODEGEN_TEST(xPMOVSX.DQ(xmm2, xmm3),     "c4 e2 79 25 d3");
+	CODEGEN_TEST(xPMOVZX.DQ(xmm4, xmm9),     "c4 c2 79 35 e1");
 
 	CODEGEN_TEST(xVMOVAPS(xmm0, xmm1), "c5 f8 28 c1");
 	CODEGEN_TEST(xVMOVAPS(xmm0, ptr32[rdi]), "c5 f8 28 07");
