@@ -169,8 +169,7 @@ void ToPS2FPU_Full(int reg, bool flags, int absreg, bool acc, bool addsub)
 	if (flags && acc)
 		xAND(ptr32[&fpuRegs.ACCflag], ~1);
 
-	xMOVAPS(xRegisterSSE(absreg), xRegisterSSE(reg));
-	xAND.PD(xRegisterSSE(absreg), ptr[&s_const.dbl_s_pos]);
+	xAND.PD(xRegisterSSE(absreg), xRegisterSSE(reg), ptr[&s_const.dbl_s_pos]);
 
 	xUCOMI.SD(xRegisterSSE(absreg), ptr[&s_const.dbl_cvt_overflow]);
 	u8* to_complex = JAE8(0);

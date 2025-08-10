@@ -80,8 +80,7 @@ static void mVUupdateFlags(mV, const xmm& reg, const xmm& regT1in = xEmptyReg, c
 	if (sFLAG.doFlag && CHECK_VUOVERFLOWHACK)
 	{
 		//Calculate overflow
-		xMOVAPS(regT1, regT2);
-		xAND.PS(regT1, ptr128[&sse4_compvals[1][0]]); // Remove sign flags (we don't care)
+		xAND.PS(regT1, regT2, ptr128[&sse4_compvals[1][0]]); // Remove sign flags (we don't care)
 		xCMPNLT.PS(regT1, ptr128[&sse4_compvals[0][0]]); // Compare if T1 == FLT_MAX
 		xMOVMSKPS(gprT2, regT1); // Grab sign bits  for equal results
 		xAND(gprT2, AND_XYZW); // Grab "Is FLT_MAX" bits from the previous calculation
@@ -490,8 +489,7 @@ static void mVU_FTOIx(mP, const float* addr, microOpcode opEnum)
 		// So for unrepresentable positive values, xor with 0xffffffff to turn 0x80000000 into 0x7fffffff.
 		if (addr)
 			xMUL.PS(Fs, ptr128[addr]);
-		xMOVAPS(t1, Fs);
-		xPCMP.GTD(t1, ptr128[mVUglob.I32MAXF]);
+		xPCMP.GTD(t1, Fs, ptr128[mVUglob.I32MAXF]);
 		xCVTTPS2DQ(Fs, Fs);
 		xPXOR(Fs, t1);
 
@@ -546,15 +544,13 @@ mVUop(mVU_CLIP)
 		mVUallocCFLAGa(mVU, gprT1, cFLAG.lastWrite);
 		xSHL(gprT1, 6);
 
-		xMOVAPS  (t1, ptr128[mVUglob.exponent]);
-		xPAND    (t1, Fs);
+		xPAND    (t1, Fs, ptr128[mVUglob.exponent]);
 		xPXOR    (t2, t2);
 		xPCMP.EQD(t1, t2); // Denormal check
 		xPANDN   (t1, Fs); // If denormal, set to zero, which can't be greater than any nonnegative denormal in Ft
 		xPAND    (Ft, ptr128[mVUglob.absclip]);
 
-		xMOVAPS  (Fs, ptr128[mVUglob.signbit]);
-		xPXOR    (Fs, t1); // Negate
+		xPXOR    (Fs, t1, ptr128[mVUglob.signbit]); // Negate
 		xPCMP.GTD(t1, Ft); // +w, +z, +y, +x
 		xPCMP.GTD(Fs, Ft); // -w, -z, -y, -x
 
