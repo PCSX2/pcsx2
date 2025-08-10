@@ -475,12 +475,13 @@ namespace x86Emitter
 	extern void xMOVNTPD(const xIndirectVoid& dst, const xRegisterSSE& src);
 	extern void xMOVNTPS(const xIndirectVoid& dst, const xRegisterSSE& src);
 
-	extern void xMOVMSKPS(const xRegister32& to, const xRegisterSSE& from);
-	extern void xMOVMSKPD(const xRegister32& to, const xRegisterSSE& from);
+	extern void xMOVMSKPS(const xRegister32& dst, const xRegisterSSE& src);
+	extern void xMOVMSKPD(const xRegister32& dst, const xRegisterSSE& src);
 
-	extern void xMASKMOV(const xRegisterSSE& to, const xRegisterSSE& from);
-	extern void xPMOVMSKB(const xRegister32or64& to, const xRegisterSSE& from);
-	extern void xPALIGNR(const xRegisterSSE& to, const xRegisterSSE& from, u8 imm8);
+	extern void xMASKMOV(const xRegisterSSE& dst, const xRegisterSSE& src);
+	extern void xPMOVMSKB(const xRegister32or64& dst, const xRegisterSSE& src);
+	extern void xPALIGNR(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegisterSSE& src2, u8 imm8);
+	static void xPALIGNR(const xRegisterSSE& dst, const xRegisterSSE& src, u8 imm8) { xPALIGNR(dst, dst, src, imm8); }
 
 	// ------------------------------------------------------------------------
 

@@ -837,15 +837,15 @@ namespace x86Emitter
 
 	// ------------------------------------------------------------------------
 
-	__fi void xMOVMSKPS(const xRegister32& to, const xRegisterSSE& from) { xOpWrite0F(0x50, to, from); }
-	__fi void xMOVMSKPD(const xRegister32& to, const xRegisterSSE& from) { xOpWrite0F(0x66, 0x50, to, from, true); }
+	__fi void xMOVMSKPS(const xRegister32& dst, const xRegisterSSE& src) { EmitSIMD(SIMDInstructionInfo(0x50).mov(),       dst, dst, src); }
+	__fi void xMOVMSKPD(const xRegister32& dst, const xRegisterSSE& src) { EmitSIMD(SIMDInstructionInfo(0x50).mov().p66(), dst, dst, src); }
 
 	// xMASKMOV:
 	// Selectively write bytes from mm1/xmm1 to memory location using the byte mask in mm2/xmm2.
 	// The default memory location is specified by DS:EDI.  The most significant bit in each byte
 	// of the mask operand determines whether the corresponding byte in the source operand is
 	// written to the corresponding byte location in memory.
-	__fi void xMASKMOV(const xRegisterSSE& to, const xRegisterSSE& from) { xOpWrite0F(0x66, 0xf7, to, from); }
+	__fi void xMASKMOV(const xRegisterSSE& dst, const xRegisterSSE& src) { EmitSIMD(SIMDInstructionInfo(0xf7).mov().p66(), dst, dst, src); }
 
 	// xPMOVMSKB:
 	// Creates a mask made up of the most significant bit of each byte of the source
@@ -855,13 +855,13 @@ namespace x86Emitter
 	// When operating on a 64-bit (MMX) source, the byte mask is 8 bits; when operating on
 	// 128-bit (SSE) source, the byte mask is 16-bits.
 	//
-	__fi void xPMOVMSKB(const xRegister32or64& to, const xRegisterSSE& from) { xOpWrite0F(0x66, 0xd7, to, from); }
+	__fi void xPMOVMSKB(const xRegister32or64& dst, const xRegisterSSE& src) { EmitSIMD(SIMDInstructionInfo(0xd7).mov().p66(), dst, dst, src); }
 
 	// [sSSE-3] Concatenates dest and source operands into an intermediate composite,
 	// shifts the composite at byte granularity to the right by a constant immediate,
 	// and extracts the right-aligned result into the destination.
 	//
-	__fi void xPALIGNR(const xRegisterSSE& to, const xRegisterSSE& from, u8 imm8) { xOpWrite0F(0x66, 0x0f3a, to, from, imm8); }
+	__fi void xPALIGNR(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegisterSSE& src2, u8 imm8) { EmitSIMD(SIMDInstructionInfo(0x0f).i().p66().m0f3a(), dst, src1, src2, imm8); }
 
 
 	// --------------------------------------------------------------------------------------
