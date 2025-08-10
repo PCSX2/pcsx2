@@ -32,10 +32,10 @@ namespace x86Emitter
 	// --------------------------------------------------------------------------------------
 	struct xImpl_iDiv : public xImpl_Group3
 	{
-		const xImplSimd_DestRegSSE PS;
-		const xImplSimd_DestRegSSE PD;
-		const xImplSimd_DestRegSSE SS;
-		const xImplSimd_DestRegSSE SD;
+		const xImplSimd_3Arg PS;
+		const xImplSimd_3Arg PD;
+		const xImplSimd_3Arg SS;
+		const xImplSimd_3Arg SD;
 	};
 
 	// --------------------------------------------------------------------------------------
@@ -58,9 +58,9 @@ namespace x86Emitter
 		void operator()(const xRegister16& to, const xRegister16& from, s16 imm) const;
 		void operator()(const xRegister16& to, const xIndirectVoid& from, s16 imm) const;
 
-		const xImplSimd_DestRegSSE PS;
-		const xImplSimd_DestRegSSE PD;
-		const xImplSimd_DestRegSSE SS;
-		const xImplSimd_DestRegSSE SD;
+		const xImplSimd_3Arg PS;
+		const xImplSimd_3Arg PD;
+		const xImplSimd_3Arg SS;
+		const xImplSimd_3Arg SD;
 	};
 } // namespace x86Emitter
