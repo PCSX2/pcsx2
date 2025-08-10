@@ -25,43 +25,13 @@ namespace x86Emitter
 
 		void operator()(const xRegisterInt& from) const;
 		void operator()(const xIndirect64orLess& from) const;
-
-#if 0
-	template< typename T >
-	void operator()( const xDirectOrIndirect<T>& from ) const
-	{
-		_DoI_helpermess( *this, from );
-	}
-#endif
-	};
-
-	// --------------------------------------------------------------------------------------
-	//  xImpl_MulDivBase
-	// --------------------------------------------------------------------------------------
-	// This class combines x86 and SSE/SSE2 instructions for iMUL and iDIV.
-	//
-	struct xImpl_MulDivBase
-	{
-		G3Type InstType;
-		u16 OpcodeSSE;
-
-		void operator()(const xRegisterInt& from) const;
-		void operator()(const xIndirect64orLess& from) const;
-
-		const xImplSimd_DestRegSSE PS;
-		const xImplSimd_DestRegSSE PD;
-		const xImplSimd_DestRegSSE SS;
-		const xImplSimd_DestRegSSE SD;
 	};
 
 	// --------------------------------------------------------------------------------------
 	//  xImpl_iDiv
 	// --------------------------------------------------------------------------------------
-	struct xImpl_iDiv
+	struct xImpl_iDiv : public xImpl_Group3
 	{
-		void operator()(const xRegisterInt& from) const;
-		void operator()(const xIndirect64orLess& from) const;
-
 		const xImplSimd_DestRegSSE PS;
 		const xImplSimd_DestRegSSE PD;
 		const xImplSimd_DestRegSSE SS;
@@ -72,10 +42,9 @@ namespace x86Emitter
 	//  xImpl_iMul
 	// --------------------------------------------------------------------------------------
 	//
-	struct xImpl_iMul
+	struct xImpl_iMul : public xImpl_Group3
 	{
-		void operator()(const xRegisterInt& from) const;
-		void operator()(const xIndirect64orLess& from) const;
+		using xImpl_Group3::operator();
 
 		// The following iMul-specific forms are valid for 16 and 32 bit register operands only!
 

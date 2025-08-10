@@ -101,7 +101,7 @@ namespace x86Emitter
 		const xRegisterInt& to_ = to.GetNonWide();
 		if (!preserve_flags && (imm == 0))
 		{
-			_g1_EmitOp(G1Type_XOR, to_, to_);
+			xXOR(to_, to_);
 		}
 		else if (imm == (sptr)(u32)imm || !to.IsWide())
 		{

@@ -1066,7 +1066,7 @@ const xRegister32
 						else if (src.Displacement == 0)
 						{
 							_xMovRtoR(to, src.Base.MatchSizeTo(to));
-							_g1_EmitOp(G1Type_ADD, to, src.Index.MatchSizeTo(to));
+							xADD(to, src.Index.MatchSizeTo(to));
 							return;
 						}
 					}
