@@ -829,19 +829,11 @@ namespace x86Emitter
 	IMPLEMENT_xMOVS(SS, pf3)
 	IMPLEMENT_xMOVS(SD, pf2)
 
-		//////////////////////////////////////////////////////////////////////////////////////////
-		// Non-temporal movs only support a register as a target (ie, load form only, no stores)
-		//
+	__fi void xMOVNTDQA(const xRegisterSSE& dst, const xIndirectVoid& src) { EmitSIMD(SIMDInstructionInfo(0x2a).p66().m0f38().mov(), dst, dst, src); }
+	__fi void xMOVNTDQA(const xIndirectVoid& dst, const xRegisterSSE& src) { EmitSIMD(SIMDInstructionInfo(0xe7).p66().mov(),         src, src, dst); }
 
-		__fi void xMOVNTDQA(const xRegisterSSE& to, const xIndirectVoid& from)
-	{
-		xOpWrite0F(0x66, 0x2a38, to.Id, from);
-	}
-
-	__fi void xMOVNTDQA(const xIndirectVoid& to, const xRegisterSSE& from) { xOpWrite0F(0x66, 0xe7, from, to); }
-
-	__fi void xMOVNTPD(const xIndirectVoid& to, const xRegisterSSE& from) { xOpWrite0F(0x66, 0x2b, from, to); }
-	__fi void xMOVNTPS(const xIndirectVoid& to, const xRegisterSSE& from) { xOpWrite0F(0x2b, from, to); }
+	__fi void xMOVNTPD(const xIndirectVoid& dst, const xRegisterSSE& src) { EmitSIMD(SIMDInstructionInfo(0x2b).p66().mov(), src, src, dst); }
+	__fi void xMOVNTPS(const xIndirectVoid& dst, const xRegisterSSE& src) { EmitSIMD(SIMDInstructionInfo(0x2b).mov(),       src, src, dst); }
 
 	// ------------------------------------------------------------------------
 
