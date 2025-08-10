@@ -29,6 +29,7 @@ namespace x86Emitter
 
 	extern const xImpl_Group1 xADC;
 	extern const xImpl_Group1 xSBB;
+	extern const xImpl_Group1 xCMP;
 
 	extern const xImpl_G1Logic xAND;
 	extern const xImpl_G1Logic xOR;
@@ -36,7 +37,6 @@ namespace x86Emitter
 
 	extern const xImpl_G1Arith xADD;
 	extern const xImpl_G1Arith xSUB;
-	extern const xImpl_G1Compare xCMP;
 
 	// ------------------------------------------------------------------------
 	// Group 2 Instruction Class

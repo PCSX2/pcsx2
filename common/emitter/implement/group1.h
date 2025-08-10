@@ -111,21 +111,4 @@ namespace x86Emitter
 		xImplSimd_DestRegSSE SD; // scalar double precision
 	};
 
-	// ------------------------------------------------------------------------
-	struct xImpl_G1Compare
-	{
-		void operator()(const xRegisterInt& to, const xRegisterInt& from) const;
-
-		void operator()(const xIndirectVoid& to, const xRegisterInt& from) const;
-		void operator()(const xRegisterInt& to, const xIndirectVoid& from) const;
-		void operator()(const xRegisterInt& to, int imm) const;
-
-		void operator()(const xIndirect64orLess& to, int imm) const;
-
-		xImplSimd_DestSSE_CmpImm PS;
-		xImplSimd_DestSSE_CmpImm PD;
-		xImplSimd_DestSSE_CmpImm SS;
-		xImplSimd_DestSSE_CmpImm SD;
-	};
-
 } // End namespace x86Emitter
