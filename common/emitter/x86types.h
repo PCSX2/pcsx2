@@ -51,23 +51,6 @@ namespace x86Emitter
 	void xWrite(T val);
 
 // --------------------------------------------------------------------------------------
-//  ALWAYS_USE_MOVAPS [define] / AlwaysUseMovaps [const]
-// --------------------------------------------------------------------------------------
-// This tells the recompiler's emitter to always use movaps instead of movdqa.  Both instructions
-// do the exact same thing, but movaps is 1 byte shorter, and thus results in a cleaner L1 cache
-// and some marginal speed gains as a result.  (it's possible someday in the future the per-
-// formance of the two instructions could change, so this constant is provided to restore MOVDQA
-// use easily at a later time, if needed).
-//
-#define ALWAYS_USE_MOVAPS
-
-#ifdef ALWAYS_USE_MOVAPS
-	static const bool AlwaysUseMovaps = true;
-#else
-	static const bool AlwaysUseMovaps = false;
-#endif
-
-// --------------------------------------------------------------------------------------
 //  __emitline - preprocessors definition
 // --------------------------------------------------------------------------------------
 // This is configured to inline emitter functions appropriately for release builds, and
