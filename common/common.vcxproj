@@ -80,9 +80,6 @@
     <ClCompile Include="Windows\WinThreads.cpp" />
     <ClCompile Include="HostSys.cpp" />
     <ClCompile Include="Semaphore.cpp" />
-    <ClCompile Include="emitter\avx.cpp">
-      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="emitter\bmi.cpp">
       <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
     </ClCompile>

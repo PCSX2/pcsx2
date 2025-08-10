@@ -85,7 +85,6 @@ target_sources(common PRIVATE
 
 if(_M_X86)
 	target_sources(common PRIVATE
-		emitter/avx.cpp
 		emitter/bmi.cpp
 		emitter/fpu.cpp
 		emitter/groups.cpp

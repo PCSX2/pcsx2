@@ -209,13 +209,13 @@ static void mVUGenerateCopyPipelineState(mV)
 
 	if (g_cpu.vectorISA >= ProcessorFeatures::VectorISA::AVX)
 	{
-		xVMOVAPS(ymm0, ptr[rax]);
-		xVMOVAPS(ymm1, ptr[rax + 32u]);
-		xVMOVAPS(ymm2, ptr[rax + 64u]);
+		xMOVAPS(ymm0, ptr[rax]);
+		xMOVAPS(ymm1, ptr[rax + 32u]);
+		xMOVAPS(ymm2, ptr[rax + 64u]);
 
-		xVMOVUPS(ptr[reinterpret_cast<u8*>(&mVU.prog.lpState)], ymm0);
-		xVMOVUPS(ptr[reinterpret_cast<u8*>(&mVU.prog.lpState) + 32u], ymm1);
-		xVMOVUPS(ptr[reinterpret_cast<u8*>(&mVU.prog.lpState) + 64u], ymm2);
+		xMOVUPS(ptr[reinterpret_cast<u8*>(&mVU.prog.lpState)], ymm0);
+		xMOVUPS(ptr[reinterpret_cast<u8*>(&mVU.prog.lpState) + 32u], ymm1);
+		xMOVUPS(ptr[reinterpret_cast<u8*>(&mVU.prog.lpState) + 64u], ymm2);
 
 		xVZEROUPPER();
 	}
@@ -285,19 +285,19 @@ static void mVUGenerateCompareState(mV)
 	else
 	{
 		// We have to use unaligned loads here, because the blocks are only 16 byte aligned.
-		xVMOVUPS(ymm0, ptr[arg1reg]);
-		xVPCMP.EQD(ymm0, ymm0, ptr[arg2reg]);
-		xVPMOVMSKB(eax, ymm0);
+		xMOVUPS(ymm0, ptr[arg1reg]);
+		xPCMP.EQD(ymm0, ymm0, ptr[arg2reg]);
+		xPMOVMSKB(eax, ymm0);
 		xXOR(eax, 0xffffffff);
 		xForwardJNZ8 exitPoint;
 
-		xVMOVUPS(ymm0, ptr[arg1reg + 0x20]);
-		xVMOVUPS(ymm1, ptr[arg1reg + 0x40]);
-		xVPCMP.EQD(ymm0, ymm0, ptr[arg2reg + 0x20]);
-		xVPCMP.EQD(ymm1, ymm1, ptr[arg2reg + 0x40]);
-		xVPAND(ymm0, ymm0, ymm1);
+		xMOVUPS(ymm0, ptr[arg1reg + 0x20]);
+		xMOVUPS(ymm1, ptr[arg1reg + 0x40]);
+		xPCMP.EQD(ymm0, ymm0, ptr[arg2reg + 0x20]);
+		xPCMP.EQD(ymm1, ymm1, ptr[arg2reg + 0x40]);
+		xPAND(ymm0, ymm0, ymm1);
 
-		xVPMOVMSKB(eax, ymm0);
+		xPMOVMSKB(eax, ymm0);
 		xNOT(eax);
 
 		exitPoint.SetTarget();
