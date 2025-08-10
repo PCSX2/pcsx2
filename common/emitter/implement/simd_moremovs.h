@@ -44,7 +44,7 @@ namespace x86Emitter
 	// --------------------------------------------------------------------------------------
 	//  xImplSimd_MoveSSE
 	// --------------------------------------------------------------------------------------
-	// Legends in their own right: MOVAPS / MOVAPD / MOVUPS / MOVUPD
+	// Legends in their own right: MOVAPS / MOVAPD / MOVUPS / MOVUPD / MOVDQA / MOVDQU
 	//
 	// All implementations of Unaligned Movs will, when possible, use aligned movs instead.
 	// This happens when using Mem,Reg or Reg,Mem forms where the address is simple displacement
@@ -52,27 +52,10 @@ namespace x86Emitter
 	//
 	struct xImplSimd_MoveSSE
 	{
-		u8 Prefix;
-		bool isAligned;
-
-		void operator()(const xRegisterSSE& to, const xRegisterSSE& from) const;
-		void operator()(const xRegisterSSE& to, const xIndirectVoid& from) const;
-		void operator()(const xIndirectVoid& to, const xRegisterSSE& from) const;
-	};
-
-	// --------------------------------------------------------------------------------------
-	//  xImplSimd_MoveDQ
-	// --------------------------------------------------------------------------------------
-	// Implementations for MOVDQA / MOVDQU
-	//
-	// All implementations of Unaligned Movs will, when possible, use aligned movs instead.
-	// This happens when using Mem,Reg or Reg,Mem forms where the address is simple displacement
-	// which can be checked for alignment at runtime.
-
-	struct xImplSimd_MoveDQ
-	{
-		u8 Prefix;
-		bool isAligned;
+		SIMDInstructionInfo aligned_load;
+		SIMDInstructionInfo aligned_store;
+		SIMDInstructionInfo unaligned_load;
+		SIMDInstructionInfo unaligned_store;
 
 		void operator()(const xRegisterSSE& to, const xRegisterSSE& from) const;
 		void operator()(const xRegisterSSE& to, const xIndirectVoid& from) const;
