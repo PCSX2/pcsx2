@@ -149,7 +149,8 @@ namespace x86Emitter
 	//
 	struct xImplSimd_4ArgBlend
 	{
-		SIMDInstructionInfo info;
+		SIMDInstructionInfo sse;
+		SIMDInstructionInfo avx;
 
 		void operator()(const xRegisterSSE& dst, const xRegisterSSE& src)  const { (*this)(dst, dst, src, xmm0); }
 		void operator()(const xRegisterSSE& dst, const xIndirectVoid& src) const { (*this)(dst, dst, src, xmm0); }
