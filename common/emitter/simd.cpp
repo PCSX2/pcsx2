@@ -777,10 +777,10 @@ namespace x86Emitter
 	const xImplSimd_PMove xPMOVZX = {SIMDInstructionInfo(0x30).p66().m0f38().mov()};
 
 	// [SSE-3]
-	const xImplSimd_DestRegSSE xMOVSLDUP = {0xf3, 0x12};
+	const xImplSimd_2Arg xMOVSLDUP = {SIMDInstructionInfo(0x12).pf3()};
 
 	// [SSE-3]
-	const xImplSimd_DestRegSSE xMOVSHDUP = {0xf3, 0x16};
+	const xImplSimd_2Arg xMOVSHDUP = {SIMDInstructionInfo(0x16).pf3()};
 
 	//////////////////////////////////////////////////////////////////////////////////////////
 	// MMX Mov Instructions (MOVD, MOVQ, MOVSS).
