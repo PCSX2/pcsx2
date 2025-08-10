@@ -39,8 +39,8 @@ namespace x86Emitter
 	//
 	struct xImpl_G1Logic : public xImpl_Group1
 	{
-		xImplSimd_DestRegSSE PS; // packed single precision
-		xImplSimd_DestRegSSE PD; // packed double precision
+		xImplSimd_3Arg PS; // packed single precision
+		xImplSimd_3Arg PD; // packed double precision
 	};
 
 	// ------------------------------------------------------------------------
@@ -48,10 +48,10 @@ namespace x86Emitter
 	//
 	struct xImpl_G1Arith : public xImpl_Group1
 	{
-		xImplSimd_DestRegSSE PS; // packed single precision
-		xImplSimd_DestRegSSE PD; // packed double precision
-		xImplSimd_DestRegSSE SS; // scalar single precision
-		xImplSimd_DestRegSSE SD; // scalar double precision
+		xImplSimd_3Arg PS; // packed single precision
+		xImplSimd_3Arg PD; // packed double precision
+		xImplSimd_3Arg SS; // scalar single precision
+		xImplSimd_3Arg SD; // scalar double precision
 	};
 
 } // End namespace x86Emitter
