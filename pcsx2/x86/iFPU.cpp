@@ -177,8 +177,7 @@ void recMFC1()
 
 		// both in xmm, sign extend and insert lower bits
 		const int temp = _allocTempXMMreg(XMMT_FPS);
-		xMOVAPS(xRegisterSSE(temp), xRegisterSSE(regs));
-		xPSRA.D(xRegisterSSE(temp), 31);
+		xPSRA.D(xRegisterSSE(temp), xRegisterSSE(regs), 31);
 		xMOVSS(xRegisterSSE(xmmregt), xRegisterSSE(regs));
 		xINSERTPS(xRegisterSSE(xmmregt), xRegisterSSE(temp), _MM_MK_INSERTPS_NDX(0, 1, 0));
 		_freeXMMreg(temp);
@@ -436,8 +435,7 @@ void FPU_ADD_SUB(int regd, int regt, int issub)
 
 	x86SetJ8(j8Ptr[0]);
 	//diff = 25 .. 255 , expt < expd
-	xMOVAPS(xRegisterSSE(xmmtemp), xRegisterSSE(regt));
-	xAND.PS(xRegisterSSE(xmmtemp), ptr[s_neg]);
+	xAND.PS(xRegisterSSE(xmmtemp), xRegisterSSE(regt), ptr[s_neg]);
 	if (issub)
 		xSUB.SS(xRegisterSSE(regd), xRegisterSSE(xmmtemp));
 	else

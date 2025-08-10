@@ -516,13 +516,11 @@ mVUop(mVU_ESIN)
 		SSE_ADDSS(mVU, xmmPQ, Fs); // pq = X + s2 * X^3
 
 		SSE_MULSS(mVU, t2, t1);    // t2 = X^3 * X^2
-		xMOVAPS       (Fs, t2);    // fs = X^5
-		xMUL.SS       (Fs, ptr32[mVUglob.S3]); // ps = s3 * X^5
+		xMUL.SS       (Fs, t2, ptr32[mVUglob.S3]); // ps = s3 * X^5
 		SSE_ADDSS(mVU, xmmPQ, Fs); // pq = X + s2 * X^3 + s3 * X^5
 
 		SSE_MULSS(mVU, t2, t1);    // t2 = X^5 * X^2
-		xMOVAPS       (Fs, t2);    // fs = X^7
-		xMUL.SS       (Fs, ptr32[mVUglob.S4]); // fs = s4 * X^7
+		xMUL.SS       (Fs, t2, ptr32[mVUglob.S4]); // fs = s4 * X^7
 		SSE_ADDSS(mVU, xmmPQ, Fs); // pq = X + s2 * X^3 + s3 * X^5 + s4 * X^7
 
 		SSE_MULSS(mVU, t2, t1);    // t2 = X^7 * X^2
