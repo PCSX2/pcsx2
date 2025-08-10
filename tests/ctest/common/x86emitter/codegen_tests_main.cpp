@@ -365,8 +365,11 @@ TEST(CodegenTests, SSETest)
 
 	CODEGEN_TEST(xBLEND.PS(xmm0, xmm1, 0x55), "66 0f 3a 0c c1 55");
 	CODEGEN_TEST(xBLEND.PD(xmm8, xmm9, 0xaa), "66 45 0f 3a 0d c1 aa");
+	CODEGEN_TEST(xBLEND.VPS(xmm8, ptr[r8]),   "66 45 0f 38 14 00");
+	CODEGEN_TEST(xBLEND.VPD(xmm1, ptr[base]), "66 0f 38 15 0d f7 ff ff ff");
 	CODEGEN_TEST(xPBLEND.W(xmm0, xmm1, 0x55), "66 0f 3a 0e c1 55");
-	CODEGEN_TEST(xPBLEND.VB(xmm1, xmm2), "66 0f 38 10 ca");
+	CODEGEN_TEST(xPBLEND.VB(xmm1, xmm2),      "66 0f 38 10 ca");
+
 	CODEGEN_TEST(xMOVD(eax, xmm1), "66 0f 7e c8");
 	CODEGEN_TEST(xMOVD(eax, xmm10), "66 44 0f 7e d0");
 	CODEGEN_TEST(xMOVD(rax, xmm1), "66 48 0f 7e c8");
@@ -600,6 +603,13 @@ TEST(CodegenTests, AVXTest)
 	CODEGEN_TEST(xMOVDQA(xmm8, ptr[rsi]), "c5 79 6f 06");
 	CODEGEN_TEST(xMOVDQU(xmm7, ptr[rcx]), "c5 fa 6f 39");
 #endif
+
+	CODEGEN_TEST(xBLEND.PS(xmm0, xmm1, 0x55), "c4 e3 79 0c c1 55");
+	CODEGEN_TEST(xBLEND.PD(xmm8, xmm9, 0xaa), "c4 43 39 0d c1 aa");
+	CODEGEN_TEST(xBLEND.VPS(xmm8, ptr[r8]),   "c4 43 39 4a 00 00");
+	CODEGEN_TEST(xBLEND.VPD(xmm1, ptr[base]), "c4 e3 71 4b 0d f6 ff ff ff 00");
+	CODEGEN_TEST(xPBLEND.W(xmm0, xmm1, 0x55), "c4 e3 79 0e c1 55");
+	CODEGEN_TEST(xPBLEND.VB(xmm1, xmm2),      "c4 e3 71 4c ca 00");
 
 	CODEGEN_TEST(xVMOVAPS(xmm0, xmm1), "c5 f8 28 c1");
 	CODEGEN_TEST(xVMOVAPS(xmm0, ptr32[rdi]), "c5 f8 28 07");

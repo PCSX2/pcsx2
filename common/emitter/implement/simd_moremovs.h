@@ -76,7 +76,7 @@ namespace x86Emitter
 		// If a mask bit is 1, then the corresponding dword in the source operand is copied
 		// to dest, else the dword element in dest is left unchanged.
 		//
-		xImplSimd_DestRegImmSSE PS;
+		xImplSimd_3ArgImm PS;
 
 		// [SSE-4.1] Conditionally copies quadword values from src to dest, depending on the
 		// mask bits in the immediate operand (bits [1:0]).  Each mask bit corresponds to a
@@ -85,7 +85,7 @@ namespace x86Emitter
 		// If a mask bit is 1, then the corresponding dword in the source operand is copied
 		// to dest, else the dword element in dest is left unchanged.
 		//
-		xImplSimd_DestRegImmSSE PD;
+		xImplSimd_3ArgImm PD;
 
 		// [SSE-4.1] Conditionally copies dword values from src to dest, depending on the
 		// mask (bits [3:0]) in XMM0 (yes, the fixed register).  Each mask bit corresponds
@@ -94,7 +94,7 @@ namespace x86Emitter
 		// If a mask bit is 1, then the corresponding dword in the source operand is copied
 		// to dest, else the dword element in dest is left unchanged.
 		//
-		xImplSimd_DestRegSSE VPS;
+		xImplSimd_4ArgBlend VPS;
 
 		// [SSE-4.1] Conditionally copies quadword values from src to dest, depending on the
 		// mask (bits [1:0]) in XMM0 (yes, the fixed register).  Each mask bit corresponds
@@ -103,13 +103,13 @@ namespace x86Emitter
 		// If a mask bit is 1, then the corresponding dword in the source operand is copied
 		// to dest, else the dword element in dest is left unchanged.
 		//
-		xImplSimd_DestRegSSE VPD;
+		xImplSimd_4ArgBlend VPD;
 	};
 
 	struct xImplSimd_PBlend
 	{
-		xImplSimd_DestRegImmSSE W;
-		xImplSimd_DestRegSSE VB;
+		xImplSimd_3ArgImm W;
+		xImplSimd_4ArgBlend VB;
 	};
 
 	// --------------------------------------------------------------------------------------

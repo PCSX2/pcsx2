@@ -285,8 +285,8 @@ namespace x86Emitter
 	void xImplSimd_3ArgImm::operator()(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirectVoid& src2, u8 imm) const { EmitSIMD(info, dst, src1, src2, imm); }
 	void xImplSimd_3ArgCmp::operator()(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegisterSSE& src2,  SSE2_ComparisonType imm) const { EmitSIMD(info, dst, src1, src2, imm); }
 	void xImplSimd_3ArgCmp::operator()(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirectVoid& src2, SSE2_ComparisonType imm) const { EmitSIMD(info, dst, src1, src2, imm); }
-	void xImplSimd_4ArgBlend::operator()(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegisterSSE& src2,  const xRegisterSSE& src3) const { EmitSIMD(info, dst, src1, src2, src3); }
-	void xImplSimd_4ArgBlend::operator()(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirectVoid& src2, const xRegisterSSE& src3) const { EmitSIMD(info, dst, src1, src2, src3); }
+	void xImplSimd_4ArgBlend::operator()(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegisterSSE& src2,  const xRegisterSSE& src3) const { EmitSIMD(x86Emitter::use_avx ? avx : sse, dst, src1, src2, src3); }
+	void xImplSimd_4ArgBlend::operator()(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirectVoid& src2, const xRegisterSSE& src3) const { EmitSIMD(x86Emitter::use_avx ? avx : sse, dst, src1, src2, src3); }
 
 	void xImplSimd_DestRegSSE::operator()(const xRegisterSSE& to, const xRegisterSSE& from) const { OpWriteSSE(Prefix, Opcode); }
 	void xImplSimd_DestRegSSE::operator()(const xRegisterSSE& to, const xIndirectVoid& from) const { OpWriteSSE(Prefix, Opcode); }
@@ -761,16 +761,16 @@ namespace x86Emitter
 
 	const xImplSimd_PBlend xPBLEND =
 	{
-		{0x66, 0x0e3a}, // W
-		{0x66, 0x1038}, // VB
+		{SIMDInstructionInfo(0x0e).i().p66().m0f3a()}, // W
+		{SIMDInstructionInfo(0x10).i().p66().m0f38(), SIMDInstructionInfo(0x4c).i().p66().m0f3a()}, // VB
 	};
 
 	const xImplSimd_Blend xBLEND =
 	{
-		{0x66, 0x0c3a}, // PS
-		{0x66, 0x0d3a}, // PD
-		{0x66, 0x1438}, // VPS
-		{0x66, 0x1538}, // VPD
+		{SIMDInstructionInfo(0x0c).p66().f().m0f3a()}, // PS
+		{SIMDInstructionInfo(0x0d).p66().d().m0f3a()}, // PD
+		{SIMDInstructionInfo(0x14).p66().f().m0f38(), SIMDInstructionInfo(0x4a).f().p66().m0f3a()}, // VPS
+		{SIMDInstructionInfo(0x15).p66().d().m0f38(), SIMDInstructionInfo(0x4b).d().p66().m0f3a()}, // VPD
 	};
 
 	const xImplSimd_PMove xPMOVSX = {0x2038};
