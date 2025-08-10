@@ -793,26 +793,17 @@ namespace x86Emitter
 	//  * MOVD has valid forms for MMX and XMM registers.
 	//
 
-	__fi void xMOVDZX(const xRegisterSSE& to, const xRegister32or64& from) { xOpWrite0F(0x66, 0x6e, to, from); }
-	__fi void xMOVDZX(const xRegisterSSE& to, const xIndirectVoid& src) { xOpWrite0F(0x66, 0x6e, to, src); }
+	__fi void xMOVDZX(const xRegisterSSE& dst, const xRegister32or64& src) { EmitSIMD(SIMDInstructionInfo(0x6e).p66().srcw().mov(), dst, dst, src); }
+	__fi void xMOVDZX(const xRegisterSSE& dst, const xIndirectVoid&   src) { EmitSIMD(SIMDInstructionInfo(0x6e).p66().mov(),        dst, dst, src); }
 
-	__fi void xMOVD(const xRegister32or64& to, const xRegisterSSE& from) { xOpWrite0F(0x66, 0x7e, from, to); }
-	__fi void xMOVD(const xIndirectVoid& dest, const xRegisterSSE& from) { xOpWrite0F(0x66, 0x7e, from, dest); }
+	__fi void xMOVD(const xRegister32or64& dst, const xRegisterSSE& src) { EmitSIMD(SIMDInstructionInfo(0x7e).p66().srcw().mov(), src, src, dst); }
+	__fi void xMOVD(const xIndirectVoid&   dst, const xRegisterSSE& src) { EmitSIMD(SIMDInstructionInfo(0x7e).p66().mov(),        src, src, dst); }
 
-	// Moves from XMM to XMM, with the *upper 64 bits* of the destination register
-	// being cleared to zero.
-	__fi void xMOVQZX(const xRegisterSSE& to, const xRegisterSSE& from) { xOpWrite0F(0xf3, 0x7e, to, from); }
-
-	// Moves from XMM to XMM, with the *upper 64 bits* of the destination register
-	// being cleared to zero.
-	__fi void xMOVQZX(const xRegisterSSE& to, const xIndirectVoid& src) { xOpWrite0F(0xf3, 0x7e, to, src); }
-
-	// Moves from XMM to XMM, with the *upper 64 bits* of the destination register
-	// being cleared to zero.
-	__fi void xMOVQZX(const xRegisterSSE& to, const void* src) { xOpWrite0F(0xf3, 0x7e, to, src); }
+	__fi void xMOVQZX(const xRegisterSSE& dst, const xRegisterSSE&  src) { EmitSIMD(SIMDInstructionInfo(0x7e).pf3().mov(), dst, dst, src); }
+	__fi void xMOVQZX(const xRegisterSSE& dst, const xIndirectVoid& src) { EmitSIMD(SIMDInstructionInfo(0x7e).pf3().mov(), dst, dst, src); }
 
 	// Moves lower quad of XMM to ptr64 (no bits are cleared)
-	__fi void xMOVQ(const xIndirectVoid& dest, const xRegisterSSE& from) { xOpWrite0F(0x66, 0xd6, from, dest); }
+	__fi void xMOVQ(const xIndirectVoid& dst, const xRegisterSSE& src) { EmitSIMD(SIMDInstructionInfo(0xd6).p66().mov(), src, src, dst); }
 
 	//////////////////////////////////////////////////////////////////////////////////////////
 	//
