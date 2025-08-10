@@ -481,7 +481,7 @@ namespace x86Emitter
 	const xImplSimd_Compare xCMPEQ = {SSE2_Equal};
 	const xImplSimd_Compare xCMPLT = {SSE2_Less};
 	const xImplSimd_Compare xCMPLE = {SSE2_LessOrEqual};
-	const xImplSimd_Compare xCMPUNORD = {SSE2_LessOrEqual};
+	const xImplSimd_Compare xCMPUNORD = {SSE2_Unordered};
 	const xImplSimd_Compare xCMPNE = {SSE2_NotEqual};
 	const xImplSimd_Compare xCMPNLT = {SSE2_NotLess};
 	const xImplSimd_Compare xCMPNLE = {SSE2_NotLessOrEqual};
