@@ -647,53 +647,55 @@ namespace x86Emitter
 	void xImplSimd_MovHL_RtoR::PS(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegisterSSE& src2) const { EmitSIMD(info, dst, src1, src2); }
 	void xImplSimd_MovHL_RtoR::PD(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegisterSSE& src2) const { EmitSIMD(info.p66(), dst, src1, src2); }
 
-	static const u16 MovPS_OpAligned = 0x28; // Aligned [aps] form
-	static const u16 MovPS_OpUnaligned = 0x10; // unaligned [ups] form
-
-	void xImplSimd_MoveSSE::operator()(const xRegisterSSE& to, const xRegisterSSE& from) const
+	static bool IsAligned(const xRegisterSSE& reg, const xIndirectVoid& mem)
 	{
-		if (to != from)
-			xOpWrite0F(Prefix, MovPS_OpAligned, to, from);
+		u32 mask = reg.GetOperandSize() - 1;
+		// Aligned if it's displacement-only and the displacement is aligned
+		if (mem.Displacement & mask)
+			return false;
+		return mem.Index.IsEmpty() && mem.Base.IsEmpty();
 	}
 
-	void xImplSimd_MoveSSE::operator()(const xRegisterSSE& to, const xIndirectVoid& from) const
+	static const xImplSimd_MoveSSE& GetLoadStoreOp(const xImplSimd_MoveSSE* op)
 	{
-		// ModSib form is aligned if it's displacement-only and the displacement is aligned:
-		bool isReallyAligned = isAligned || (((from.Displacement & 0x0f) == 0) && from.Index.IsEmpty() && from.Base.IsEmpty());
-
-		xOpWrite0F(Prefix, isReallyAligned ? MovPS_OpAligned : MovPS_OpUnaligned, to, from);
+		if (!x86Emitter::use_avx)
+		{
+			// movaps is shorter, and no processor differentiates between the various movs for load/store
+			const bool aligned = std::bit_cast<u32>(op->aligned_load) == std::bit_cast<u32>(op->unaligned_load);
+			return aligned ? xMOVAPS : xMOVUPS;
+		}
+		return *op;
 	}
 
-	void xImplSimd_MoveSSE::operator()(const xIndirectVoid& to, const xRegisterSSE& from) const
+	void xImplSimd_MoveSSE::operator()(const xRegisterSSE& dst, const xRegisterSSE& src) const
 	{
-		// ModSib form is aligned if it's displacement-only and the displacement is aligned:
-		bool isReallyAligned = isAligned || ((to.Displacement & 0x0f) == 0 && to.Index.IsEmpty() && to.Base.IsEmpty());
-		xOpWrite0F(Prefix, isReallyAligned ? MovPS_OpAligned + 1 : MovPS_OpUnaligned + 1, from, to);
+		if (dst.GetId() == src.GetId() && dst.GetOperandSize() == src.GetOperandSize())
+			return;
+		SIMDInstructionInfo info = aligned_load;
+		const xRegisterSSE* arg0 = &dst;
+		const xRegisterSSE* arg1 = &src;
+		if (x86Emitter::use_avx)
+		{
+			if (arg1->IsExtended() && !arg0->IsExtended())
+			{
+				// Can save a byte by using the store opcode
+				info = aligned_store;
+				std::swap(arg0, arg1);
+			}
+		}
+		EmitSIMD(info, *arg0, *arg0, *arg1);
 	}
 
-	static const u8 MovDQ_PrefixAligned = 0x66; // Aligned [dqa] form
-	static const u8 MovDQ_PrefixUnaligned = 0xf3; // unaligned [dqu] form
-
-	void xImplSimd_MoveDQ::operator()(const xRegisterSSE& to, const xRegisterSSE& from) const
+	void xImplSimd_MoveSSE::operator()(const xRegisterSSE& dst, const xIndirectVoid& src) const
 	{
-		if (to != from)
-			xOpWrite0F(MovDQ_PrefixAligned, 0x6f, to, from);
+		const xImplSimd_MoveSSE& op = GetLoadStoreOp(this);
+		EmitSIMD(IsAligned(dst, src) ? op.aligned_load : op.unaligned_load, dst, dst, src);
 	}
 
-	void xImplSimd_MoveDQ::operator()(const xRegisterSSE& to, const xIndirectVoid& from) const
+	void xImplSimd_MoveSSE::operator()(const xIndirectVoid& dst, const xRegisterSSE& src) const
 	{
-		// ModSib form is aligned if it's displacement-only and the displacement is aligned:
-		bool isReallyAligned = isAligned || ((from.Displacement & 0x0f) == 0 && from.Index.IsEmpty() && from.Base.IsEmpty());
-		xOpWrite0F(isReallyAligned ? MovDQ_PrefixAligned : MovDQ_PrefixUnaligned, 0x6f, to, from);
-	}
-
-	void xImplSimd_MoveDQ::operator()(const xIndirectVoid& to, const xRegisterSSE& from) const
-	{
-		// ModSib form is aligned if it's displacement-only and the displacement is aligned:
-		bool isReallyAligned = isAligned || ((to.Displacement & 0x0f) == 0 && to.Index.IsEmpty() && to.Base.IsEmpty());
-
-		// use opcode 0x7f : alternate ModRM encoding (reverse src/dst)
-		xOpWrite0F(isReallyAligned ? MovDQ_PrefixAligned : MovDQ_PrefixUnaligned, 0x7f, from, to);
+		const xImplSimd_MoveSSE& op = GetLoadStoreOp(this);
+		EmitSIMD(IsAligned(src, dst) ? aligned_store : op.unaligned_store, src, src, dst);
 	}
 
 	void xImplSimd_PMove::BW(const xRegisterSSE& to, const xRegisterSSE& from) const { OpWriteSSE(0x66, OpcodeBase); }
@@ -715,21 +717,39 @@ namespace x86Emitter
 	void xImplSimd_PMove::DQ(const xRegisterSSE& to, const xIndirect64& from) const { OpWriteSSE(0x66, OpcodeBase + 0x500); }
 
 
-	const xImplSimd_MoveSSE xMOVAPS = {0x00, true};
-	const xImplSimd_MoveSSE xMOVUPS = {0x00, false};
+	const xImplSimd_MoveSSE xMOVAPS = {
+		SIMDInstructionInfo(0x28).mov(), SIMDInstructionInfo(0x29).mov(),
+		SIMDInstructionInfo(0x28).mov(), SIMDInstructionInfo(0x29).mov(),
+	};
+	const xImplSimd_MoveSSE xMOVUPS = {
+		SIMDInstructionInfo(0x28).mov(), SIMDInstructionInfo(0x29).mov(),
+		SIMDInstructionInfo(0x10).mov(), SIMDInstructionInfo(0x11).mov(),
+	};
 
 #ifdef ALWAYS_USE_MOVAPS
-	const xImplSimd_MoveSSE xMOVDQA = {0x00, true};
-	const xImplSimd_MoveSSE xMOVAPD = {0x00, true};
+	const xImplSimd_MoveSSE xMOVDQA = xMOVAPS;
+	const xImplSimd_MoveSSE xMOVAPD = xMOVAPS;
 
-	const xImplSimd_MoveSSE xMOVDQU = {0x00, false};
-	const xImplSimd_MoveSSE xMOVUPD = {0x00, false};
+	const xImplSimd_MoveSSE xMOVDQU = xMOVUPS;
+	const xImplSimd_MoveSSE xMOVUPD = xMOVUPS;
 #else
-	const xImplSimd_MoveDQ xMOVDQA = {0x66, true};
-	const xImplSimd_MoveSSE xMOVAPD = {0x66, true};
+	const xImplSimd_MoveSSE xMOVDQA = {
+		SIMDInstructionInfo(0x6f).p66().mov(), SIMDInstructionInfo(0x7f).p66().mov(),
+		SIMDInstructionInfo(0x6f).p66().mov(), SIMDInstructionInfo(0x7f).p66().mov(),
+	};
+	const xImplSimd_MoveSSE xMOVDQU = {
+		SIMDInstructionInfo(0x6f).p66().mov(), SIMDInstructionInfo(0x7f).p66().mov(),
+		SIMDInstructionInfo(0x6f).pf3().mov(), SIMDInstructionInfo(0x7f).pf3().mov(),
+	};
 
-	const xImplSimd_MoveDQ xMOVDQU = {0xf3, false};
-	const xImplSimd_MoveSSE xMOVUPD = {0x66, false};
+	const xImplSimd_MoveSSE xMOVAPD = {
+		SIMDInstructionInfo(0x28).p66().mov(), SIMDInstructionInfo(0x29).p66().mov(),
+		SIMDInstructionInfo(0x28).p66().mov(), SIMDInstructionInfo(0x29).p66().mov(),
+	};
+	const xImplSimd_MoveSSE xMOVUPD = {
+		SIMDInstructionInfo(0x28).p66().mov(), SIMDInstructionInfo(0x29).p66().mov(),
+		SIMDInstructionInfo(0x10).p66().mov(), SIMDInstructionInfo(0x11).p66().mov(),
+	};
 #endif
 
 
