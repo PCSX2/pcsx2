@@ -34,12 +34,10 @@ namespace x86Emitter
 	__emitinline static SIMDInstructionInfo getMov(SIMDInstructionInfo::Type type)
 	{
 		switch (type) {
-#ifndef ALWAYS_USE_MOVAPS
 			case SIMDInstructionInfo::Type::Integer:
 				return SIMDInstructionInfo(0x6f).p66().mov();
 			case SIMDInstructionInfo::Type::Double:
 				return SIMDInstructionInfo(0x28).p66().mov();
-#endif
 			default:
 			case SIMDInstructionInfo::Type::Float:
 				return SIMDInstructionInfo(0x28).mov();
@@ -712,13 +710,6 @@ namespace x86Emitter
 		SIMDInstructionInfo(0x10).mov(), SIMDInstructionInfo(0x11).mov(),
 	};
 
-#ifdef ALWAYS_USE_MOVAPS
-	const xImplSimd_MoveSSE xMOVDQA = xMOVAPS;
-	const xImplSimd_MoveSSE xMOVAPD = xMOVAPS;
-
-	const xImplSimd_MoveSSE xMOVDQU = xMOVUPS;
-	const xImplSimd_MoveSSE xMOVUPD = xMOVUPS;
-#else
 	const xImplSimd_MoveSSE xMOVDQA = {
 		SIMDInstructionInfo(0x6f).p66().mov(), SIMDInstructionInfo(0x7f).p66().mov(),
 		SIMDInstructionInfo(0x6f).p66().mov(), SIMDInstructionInfo(0x7f).p66().mov(),
@@ -736,7 +727,6 @@ namespace x86Emitter
 		SIMDInstructionInfo(0x28).p66().mov(), SIMDInstructionInfo(0x29).p66().mov(),
 		SIMDInstructionInfo(0x10).p66().mov(), SIMDInstructionInfo(0x11).p66().mov(),
 	};
-#endif
 
 
 	const xImplSimd_MovHL xMOVH = {SIMDInstructionInfo(0x16)};
