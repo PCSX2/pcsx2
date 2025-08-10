@@ -288,20 +288,6 @@ namespace x86Emitter
 	void xImplSimd_4ArgBlend::operator()(const xRegisterSSE& dst, const xRegisterSSE& src1, const xRegisterSSE& src2,  const xRegisterSSE& src3) const { EmitSIMD(x86Emitter::use_avx ? avx : sse, dst, src1, src2, src3); }
 	void xImplSimd_4ArgBlend::operator()(const xRegisterSSE& dst, const xRegisterSSE& src1, const xIndirectVoid& src2, const xRegisterSSE& src3) const { EmitSIMD(x86Emitter::use_avx ? avx : sse, dst, src1, src2, src3); }
 
-	void xImplSimd_DestRegSSE::operator()(const xRegisterSSE& to, const xRegisterSSE& from) const { OpWriteSSE(Prefix, Opcode); }
-	void xImplSimd_DestRegSSE::operator()(const xRegisterSSE& to, const xIndirectVoid& from) const { OpWriteSSE(Prefix, Opcode); }
-
-	void xImplSimd_DestRegImmSSE::operator()(const xRegisterSSE& to, const xRegisterSSE& from, u8 imm) const { xOpWrite0F(Prefix, Opcode, to, from, imm); }
-	void xImplSimd_DestRegImmSSE::operator()(const xRegisterSSE& to, const xIndirectVoid& from, u8 imm) const { xOpWrite0F(Prefix, Opcode, to, from, imm); }
-
-
-	void xImplSimd_DestRegEither::operator()(const xRegisterSSE& to, const xRegisterSSE& from) const { OpWriteSSE(Prefix, Opcode); }
-	void xImplSimd_DestRegEither::operator()(const xRegisterSSE& to, const xIndirectVoid& from) const { OpWriteSSE(Prefix, Opcode); }
-
-
-	void xImplSimd_DestSSE_CmpImm::operator()(const xRegisterSSE& to, const xRegisterSSE& from, SSE2_ComparisonType imm) const { xOpWrite0F(Prefix, Opcode, to, from, imm); }
-	void xImplSimd_DestSSE_CmpImm::operator()(const xRegisterSSE& to, const xIndirectVoid& from, SSE2_ComparisonType imm) const { xOpWrite0F(Prefix, Opcode, to, from, imm); }
-
 	// =====================================================================================================
 	//  SIMD Arithmetic Instructions
 	// =====================================================================================================
