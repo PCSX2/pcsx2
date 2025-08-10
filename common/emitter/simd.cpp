@@ -628,9 +628,9 @@ namespace x86Emitter
 	const xImplSimd_PInsert xPINSR;
 	const SimdImpl_PExtract xPEXTR;
 
-	static SIMDInstructionInfo nextop(SIMDInstructionInfo op)
+	static SIMDInstructionInfo nextop(SIMDInstructionInfo op, u32 offset = 1)
 	{
-		op.opcode++;
+		op.opcode += offset;
 		return op;
 	}
 
@@ -698,23 +698,23 @@ namespace x86Emitter
 		EmitSIMD(IsAligned(src, dst) ? aligned_store : op.unaligned_store, src, src, dst);
 	}
 
-	void xImplSimd_PMove::BW(const xRegisterSSE& to, const xRegisterSSE& from) const { OpWriteSSE(0x66, OpcodeBase); }
-	void xImplSimd_PMove::BW(const xRegisterSSE& to, const xIndirect64& from) const { OpWriteSSE(0x66, OpcodeBase); }
+	void xImplSimd_PMove::BW(const xRegisterSSE& dst, const xRegisterSSE&  src) const { EmitSIMD(info, dst, dst, src); }
+	void xImplSimd_PMove::BW(const xRegisterSSE& dst, const xIndirectVoid& src) const { EmitSIMD(info, dst, dst, src); }
 
-	void xImplSimd_PMove::BD(const xRegisterSSE& to, const xRegisterSSE& from) const { OpWriteSSE(0x66, OpcodeBase + 0x100); }
-	void xImplSimd_PMove::BD(const xRegisterSSE& to, const xIndirect32& from) const { OpWriteSSE(0x66, OpcodeBase + 0x100); }
+	void xImplSimd_PMove::BD(const xRegisterSSE& dst, const xRegisterSSE&  src) const { EmitSIMD(nextop(info), dst, dst, src); }
+	void xImplSimd_PMove::BD(const xRegisterSSE& dst, const xIndirectVoid& src) const { EmitSIMD(nextop(info), dst, dst, src); }
 
-	void xImplSimd_PMove::BQ(const xRegisterSSE& to, const xRegisterSSE& from) const { OpWriteSSE(0x66, OpcodeBase + 0x200); }
-	void xImplSimd_PMove::BQ(const xRegisterSSE& to, const xIndirect16& from) const { OpWriteSSE(0x66, OpcodeBase + 0x200); }
+	void xImplSimd_PMove::BQ(const xRegisterSSE& dst, const xRegisterSSE&  src) const { EmitSIMD(nextop(info, 2), dst, dst, src); }
+	void xImplSimd_PMove::BQ(const xRegisterSSE& dst, const xIndirectVoid& src) const { EmitSIMD(nextop(info, 2), dst, dst, src); }
 
-	void xImplSimd_PMove::WD(const xRegisterSSE& to, const xRegisterSSE& from) const { OpWriteSSE(0x66, OpcodeBase + 0x300); }
-	void xImplSimd_PMove::WD(const xRegisterSSE& to, const xIndirect64& from) const { OpWriteSSE(0x66, OpcodeBase + 0x300); }
+	void xImplSimd_PMove::WD(const xRegisterSSE& dst, const xRegisterSSE&  src) const { EmitSIMD(nextop(info, 3), dst, dst, src); }
+	void xImplSimd_PMove::WD(const xRegisterSSE& dst, const xIndirectVoid& src) const { EmitSIMD(nextop(info, 3), dst, dst, src); }
 
-	void xImplSimd_PMove::WQ(const xRegisterSSE& to, const xRegisterSSE& from) const { OpWriteSSE(0x66, OpcodeBase + 0x400); }
-	void xImplSimd_PMove::WQ(const xRegisterSSE& to, const xIndirect32& from) const { OpWriteSSE(0x66, OpcodeBase + 0x400); }
+	void xImplSimd_PMove::WQ(const xRegisterSSE& dst, const xRegisterSSE&  src) const { EmitSIMD(nextop(info, 4), dst, dst, src); }
+	void xImplSimd_PMove::WQ(const xRegisterSSE& dst, const xIndirectVoid& src) const { EmitSIMD(nextop(info, 4), dst, dst, src); }
 
-	void xImplSimd_PMove::DQ(const xRegisterSSE& to, const xRegisterSSE& from) const { OpWriteSSE(0x66, OpcodeBase + 0x500); }
-	void xImplSimd_PMove::DQ(const xRegisterSSE& to, const xIndirect64& from) const { OpWriteSSE(0x66, OpcodeBase + 0x500); }
+	void xImplSimd_PMove::DQ(const xRegisterSSE& dst, const xRegisterSSE&  src) const { EmitSIMD(nextop(info, 5), dst, dst, src); }
+	void xImplSimd_PMove::DQ(const xRegisterSSE& dst, const xIndirectVoid& src) const { EmitSIMD(nextop(info, 5), dst, dst, src); }
 
 
 	const xImplSimd_MoveSSE xMOVAPS = {
@@ -773,8 +773,8 @@ namespace x86Emitter
 		{SIMDInstructionInfo(0x15).p66().d().m0f38(), SIMDInstructionInfo(0x4b).d().p66().m0f3a()}, // VPD
 	};
 
-	const xImplSimd_PMove xPMOVSX = {0x2038};
-	const xImplSimd_PMove xPMOVZX = {0x3038};
+	const xImplSimd_PMove xPMOVSX = {SIMDInstructionInfo(0x20).p66().m0f38().mov()};
+	const xImplSimd_PMove xPMOVZX = {SIMDInstructionInfo(0x30).p66().m0f38().mov()};
 
 	// [SSE-3]
 	const xImplSimd_DestRegSSE xMOVSLDUP = {0xf3, 0x12};
