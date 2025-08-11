@@ -170,7 +170,7 @@ protected:
 	void UpdateVertexKick();
 
 	void GrowVertexBuffer();
-	bool IsAutoFlushDraw(u32 prim);
+	bool IsAutoFlushDraw(u32 prim, int& tex_layer);
 	template<u32 prim> void HandleAutoFlush();
 	void CheckCLUTValidity(u32 prim);
 
