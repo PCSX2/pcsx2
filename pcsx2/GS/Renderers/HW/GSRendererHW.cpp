@@ -4296,12 +4296,12 @@ void GSRendererHW::Draw()
 				rt->ResizeDrawn(rt_cover ? update_rect : rt->m_drawn_since_read.rintersect(rt->GetUnscaledRect()));
 			}
 
-			const bool rt_update = can_update_size || (m_texture_shuffle && (src && rt && src->m_from_target != rt));
+			const bool rt_update = can_update_size || (is_possible_mem_clear && m_vt.m_min.c.a > 0) || (m_texture_shuffle && (src && src->m_from_target != rt));
 
 			// If it's updating from a texture shuffle, limit the size to the source size.
 			if (rt_update && !can_update_size)
 			{
-				if (src->m_from_target)
+				if (src && src->m_from_target)
 					update_rect = update_rect.rintersect(src->m_from_target->m_valid);
 
 				update_rect = update_rect.rintersect(GSVector4i::loadh(GSVector2i(new_w, new_h)));
@@ -4383,7 +4383,7 @@ void GSRendererHW::Draw()
 			// Limit to 2x the vertical height of the resolution (for double buffering)
 			// Dark cloud writes to 424 when the buffer is only 416 high, but masks the Z.
 			// Updating the valid causes the Z to overlap the framebuffer, which is obviously incorrect.
-			const bool z_update = can_update_size && !z_masked;
+			const bool z_update = (can_update_size || (is_possible_mem_clear && m_vt.m_min.p.z > 0)) && !z_masked;
 
 			if (rt && m_using_temp_z)
 			{
