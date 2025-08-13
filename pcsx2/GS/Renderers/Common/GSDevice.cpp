@@ -54,6 +54,7 @@ const char* shaderName(ShaderConvert value)
 		case ShaderConvert::FLOAT32_TO_16_BITS:     return "ps_convert_float32_32bits";
 		case ShaderConvert::FLOAT32_TO_32_BITS:     return "ps_convert_float32_32bits";
 		case ShaderConvert::FLOAT32_TO_RGBA8:       return "ps_convert_float32_rgba8";
+		case ShaderConvert::FLOAT32_TO_RGBA8_2:     return "ps_convert_float32_rgba8_2";
 		case ShaderConvert::FLOAT32_TO_RGB8:        return "ps_convert_float32_rgba8";
 		case ShaderConvert::FLOAT16_TO_RGB5A1:      return "ps_convert_float16_rgb5a1";
 		case ShaderConvert::RGBA8_TO_FLOAT32:       return "ps_convert_rgba8_float32";
@@ -66,6 +67,7 @@ const char* shaderName(ShaderConvert value)
 		case ShaderConvert::RGB5A1_TO_FLOAT16_BILN: return "ps_convert_rgb5a1_float16_biln";
 		case ShaderConvert::FLOAT32_TO_FLOAT24:     return "ps_convert_float32_float24";
 		case ShaderConvert::DEPTH_COPY:             return "ps_depth_copy";
+		case ShaderConvert::DEPTH_COPY_2:           return "ps_depth_copy_2";
 		case ShaderConvert::DOWNSAMPLE_COPY:        return "ps_downsample_copy";
 		case ShaderConvert::RGBA_TO_8I:             return "ps_convert_rgba_8i";
 		case ShaderConvert::RGB5A1_TO_8I:           return "ps_convert_rgb5a1_8i";
@@ -609,6 +611,9 @@ void GSDevice::Recycle(GSTexture* t)
 		return;
 
 	t->SetLastFrameUsed(m_frame);
+
+	if (t->HasBackup32BitDepth())
+		t->RemoveBackup32BitDepth();
 
 	FastList<GSTexture*>& pool = m_pool[!t->IsTexture()];
 	pool.push_front(t);
