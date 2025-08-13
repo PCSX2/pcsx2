@@ -7485,8 +7485,9 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	// Not gonna spend too much time with this, it's not likely to be used much, can't be less accurate than it was.
 	if (ds)
 	{
-		ds->m_alpha_max = std::max(static_cast<u32>(ds->m_alpha_max), static_cast<u32>(m_vt.m_max.p.z) >> 24);
-		ds->m_alpha_min = std::min(static_cast<u32>(ds->m_alpha_min), static_cast<u32>(m_vt.m_min.p.z) >> 24);
+		// Clamp to prevent overflow with float -> int conversion.
+		ds->m_alpha_max = std::max(static_cast<u32>(ds->m_alpha_max), std::clamp(static_cast<u32>(m_vt.m_max.p.z * 0x1.0fp-24), 0u, 255u));
+		ds->m_alpha_min = std::min(static_cast<u32>(ds->m_alpha_min), std::clamp(static_cast<u32>(m_vt.m_min.p.z * 0x1.0fp-24), 0u, 255u));
 		GL_INS("HW: New DS Alpha Range: %d-%d", ds->m_alpha_min, ds->m_alpha_max);
 
 		if (GSLocalMemory::m_psm[ds->m_TEX0.PSM].bpp == 16)
