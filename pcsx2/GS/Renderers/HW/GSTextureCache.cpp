@@ -2663,8 +2663,10 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 			for (auto i = list.begin(); i != list.end(); ++i)
 			{
 				Target* t = *i;
+				const bool half_buffer_match = GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets && TEX0.TBW == t->m_TEX0.TBW && TEX0.PSM == t->m_TEX0.PSM &&
+												bp == GSLocalMemory::GetStartBlockAddress(t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM, GSVector4i(0, size.y, size.x, size.y + 1));
 				// Make sure the target is inside the texture
-				if (t->m_TEX0.TBP0 <= bp && bp <= t->m_end_block && t->Inside(bp, TEX0.TBW, TEX0.PSM, GSVector4i::loadh(size)))
+				if (t->m_TEX0.TBP0 <= bp && bp <= t->m_end_block && (half_buffer_match || t->Inside(bp, TEX0.TBW, TEX0.PSM, GSVector4i::loadh(size))))
 				{
 					if (dst && (GSState::s_n - dst->m_last_draw) < (GSState::s_n - t->m_last_draw))
 						continue;
