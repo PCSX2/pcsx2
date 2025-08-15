@@ -340,6 +340,7 @@ void GSRendererHW::ConvertSpriteTextureShuffle(u32& process_rg, u32& process_ba,
 	shuffle_across = (((tex_pos + 8) >> 4) ^ ((pos + 8) >> 4)) & 0x8;
 
 	const bool full_width = ((second_vert.XYZ.X - first_vert.XYZ.X) >> 4) >= 16 && m_r.width() > 8 && tex && tex->m_from_target && rt == tex->m_from_target;
+	const bool width_multiple_16 = (((second_vert.XYZ.X - first_vert.XYZ.X) >> 7) & 1) == 0;
 	process_ba = ((pos > 112 && pos < 136) || full_width) ? SHUFFLE_WRITE : 0;
 	process_rg = (!process_ba || full_width) ? SHUFFLE_WRITE : 0;
 	// "same group" means it can read blue and write alpha using C32 tricks
@@ -578,6 +579,21 @@ void GSRendererHW::ConvertSpriteTextureShuffle(u32& process_rg, u32& process_ba,
 				if (process_ba & SHUFFLE_READ)
 					v[i + reversed_U].U -= 128u;
 				else
+					v[i + 1 - reversed_U].U += 128u;
+			}
+			else if (!width_multiple_16)
+			{
+				// In this case the sprite does not span an exact columns boundary
+				// probably because some of the copied channels are not being used/discarded.
+				// Just align the range to the nearest column boundary and copy all
+				// channels regardless.
+				if ((((v[i + reversed_pos].XYZ.X - o.OFX) + 8) >> 4) & 0x8)
+					v[i + reversed_pos].XYZ.X -= 128u;
+				if ((((v[i + reversed_pos].XYZ.X - o.OFX) + 8) >> 4) & 0x8)
+					v[i + 1 - reversed_pos].XYZ.X += 128u;
+				if (v[i + reversed_U].U & 128)
+					v[i + reversed_U].U -= 128u;
+				if (v[i + 1 - reversed_U].U & 128)
 					v[i + 1 - reversed_U].U += 128u;
 			}
 			else
