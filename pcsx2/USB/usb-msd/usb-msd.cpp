@@ -1139,9 +1139,16 @@ namespace usb_msd
 				break;
 		}
 
-		if (path.empty() || !(s->file = FileSystem::OpenCFile(path.c_str(), "r+b")))
+		if (path.empty())
 		{
-			Host::AddOSDMessage(fmt::format(TRANSLATE_FS("USB", "usb-msd: Could not open image file '{}'"), path),
+			Host::AddOSDMessage(fmt::format(TRANSLATE_FS("USB", "USB mass storage: No image path specified")),
+				Host::OSD_ERROR_DURATION);
+			goto fail;
+		}
+
+		if (!(s->file = FileSystem::OpenCFile(path.c_str(), "r+b")))
+		{
+			Host::AddOSDMessage(fmt::format(TRANSLATE_FS("USB", "USB mass storage: Could not open image file '{}'"), path),
 				Host::OSD_ERROR_DURATION);
 			goto fail;
 		}
