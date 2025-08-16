@@ -1452,7 +1452,9 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 {
 	pxAssert(dTex->IsDepthStencil() == HasDepthOutput(shader));
 	pxAssert(linear ? SupportsBilinear(shader) : SupportsNearest(shader));
-	StretchRect(sTex, sRect, dTex, dRect, m_convert.ps[(int)shader], false, OMColorMaskSelector(ShaderConvertWriteMask(shader)), linear);
+	if (sTex->HasBackup32BitDepth())
+		shader = GetShaderWithBackup32BitDepth(shader);
+	StretchRect(sTex, sRect, dTex, dRect, m_convert.ps[(int)shader], false, OMColorMaskSelector(ShaderConvertWriteMask(shader)), linear, sTex->HasBackup32BitDepth());
 }
 
 void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, const GLProgram& ps, bool linear)
@@ -1469,12 +1471,14 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	cms.wb = blue;
 	cms.wa = alpha;
 
-	StretchRect(sTex, sRect, dTex, dRect, m_convert.ps[(int)shader], false, cms, false);
+	if (sTex->HasBackup32BitDepth())
+		shader = GetShaderWithBackup32BitDepth(shader);
+	StretchRect(sTex, sRect, dTex, dRect, m_convert.ps[(int)shader], false, cms, false, sTex->HasBackup32BitDepth());
 }
 
-void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, const GLProgram& ps, bool alpha_blend, OMColorMaskSelector cms, bool linear)
+void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, const GLProgram& ps, bool alpha_blend, OMColorMaskSelector cms, bool linear, bool useBackup32BitDepth)
 {
-	CommitClear(sTex, true);
+	CommitClear(sTex, true); // FIXME: What to do about clear when have a backup depth?
 
 	const bool draw_in_depth = dTex->IsDepthStencil();
 
@@ -1483,6 +1487,7 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	// ************************************
 
 	GL_PUSH("StretchRect from %d to %d", static_cast<GSTextureOGL*>(sTex)->GetID(), static_cast<GSTextureOGL*>(dTex)->GetID());
+	
 	if (draw_in_depth)
 		OMSetRenderTargets(nullptr, dTex);
 	else
@@ -1507,6 +1512,8 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	// ************************************
 
 	PSSetShaderResource(0, sTex);
+	if (useBackup32BitDepth)
+		PSSetShaderResource(1, sTex->GetBackup32BitDepth());
 	PSSetSamplerState(linear ? m_convert.ln : m_convert.pt);
 
 	// ************************************
