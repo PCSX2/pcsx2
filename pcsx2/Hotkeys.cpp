@@ -35,9 +35,9 @@ static void HotkeyAdjustTargetSpeed(double delta)
 		VMManager::UpdateTargetSpeed();
 
 	Host::AddIconOSDMessage("SpeedChanged", ICON_FA_CLOCK,
-		fmt::format(TRANSLATE_FS("Hotkeys", "Target speed set to {:.0f}%."),
-			std::round(EmuConfig.EmulationSpeed.NominalScalar * 100.0)),
-		Host::OSD_QUICK_DURATION);
+							fmt::format(TRANSLATE_FS("Hotkeys", "Target speed set to {:.0f}%."),
+										std::round(EmuConfig.EmulationSpeed.NominalScalar * 100.0)),
+							Host::OSD_QUICK_DURATION);
 }
 
 static void HotkeyAdjustVolume(s32 fixed, s32 delta)
@@ -47,7 +47,7 @@ static void HotkeyAdjustVolume(s32 fixed, s32 delta)
 
 	const s32 current_vol = static_cast<s32>(SPU2::GetOutputVolume());
 	const s32 new_volume =
-		std::clamp((fixed >= 0) ? fixed : (current_vol + delta), 0, static_cast<s32>(Pcsx2Config::SPU2Options::MAX_VOLUME));
+	std::clamp((fixed >= 0) ? fixed : (current_vol + delta), 0, static_cast<s32>(Pcsx2Config::SPU2Options::MAX_VOLUME));
 	if (current_vol != new_volume)
 		SPU2::SetOutputVolume(static_cast<u32>(new_volume));
 
@@ -58,7 +58,7 @@ static void HotkeyAdjustVolume(s32 fixed, s32 delta)
 	else
 	{
 		Host::AddIconOSDMessage("VolumeChanged", (current_vol < new_volume) ? ICON_FA_VOLUME_HIGH : ICON_FA_VOLUME_LOW,
-			fmt::format(TRANSLATE_FS("Hotkeys", "Volume: {}%"), new_volume));
+								fmt::format(TRANSLATE_FS("Hotkeys", "Volume: {}%"), new_volume));
 	}
 }
 
@@ -69,7 +69,7 @@ static void HotkeyLoadStateSlot(s32 slot)
 		if (!VMManager::HasSaveStateInSlot(VMManager::GetDiscSerial().c_str(), VMManager::GetDiscCRC(), slot))
 		{
 			Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_TRIANGLE_EXCLAMATION,
-				fmt::format(TRANSLATE_FS("Hotkeys", "No save state found in slot {}."), slot), Host::OSD_INFO_DURATION);
+									fmt::format(TRANSLATE_FS("Hotkeys", "No save state found in slot {}."), slot), Host::OSD_INFO_DURATION);
 			return;
 		}
 
@@ -95,9 +95,9 @@ static bool CanPause()
 	if (delta < PAUSE_INTERVAL)
 	{
 		Host::AddIconOSDMessage("PauseCooldown", ICON_FA_CLOCK,
-			TRANSLATE_PLURAL_STR("Hotkeys", "You cannot pause until another %n second(s) have passed.",
-				"", static_cast<int>(std::ceil(PAUSE_INTERVAL - delta))),
-			Host::OSD_QUICK_DURATION);
+								TRANSLATE_PLURAL_STR("Hotkeys", "You cannot pause until another %n second(s) have passed.",
+													 "", static_cast<int>(std::ceil(PAUSE_INTERVAL - delta))),
+								Host::OSD_QUICK_DURATION);
 		return false;
 	}
 
@@ -113,175 +113,150 @@ static bool UseSavestateSelector()
 }
 
 BEGIN_HOTKEY_LIST(g_common_hotkeys)
-DEFINE_HOTKEY("OpenPauseMenu", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Open Pause Menu"),
-	[](s32 pressed) {
-		if (!pressed && VMManager::HasValidVM() && CanPause())
-			FullscreenUI::OpenPauseMenu();
-	})
-DEFINE_HOTKEY("OpenAchievementsList", TRANSLATE_NOOP("Hotkeys", "System"),
-	TRANSLATE_NOOP("Hotkeys", "Open Achievements List"), [](s32 pressed) {
-		if (!pressed && CanPause())
-			FullscreenUI::OpenAchievementsWindow();
-	})
-DEFINE_HOTKEY("OpenLeaderboardsList", TRANSLATE_NOOP("Hotkeys", "System"),
-	TRANSLATE_NOOP("Hotkeys", "Open Leaderboards List"), [](s32 pressed) {
-		if (!pressed && CanPause())
-			FullscreenUI::OpenLeaderboardsWindow();
-	})
+DEFINE_HOTKEY("ToggleFullscreen", TRANSLATE_NOOP("Hotkeys", "Navigation"), TRANSLATE_NOOP("Hotkeys", "Toggle Fullscreen"),
+			  [](s32 pressed) {
+				  if (!pressed)
+					  Host::SetFullscreen(!Host::IsFullscreen());
+			  })
+DEFINE_HOTKEY("OpenPauseMenu", TRANSLATE_NOOP("Hotkeys", "Navigation"), TRANSLATE_NOOP("Hotkeys", "Open Pause Menu"),
+			  [](s32 pressed) {
+				  if (!pressed && VMManager::HasValidVM() && CanPause())
+					  FullscreenUI::OpenPauseMenu();
+			  })
+DEFINE_HOTKEY("OpenAchievementsList", TRANSLATE_NOOP("Hotkeys", "Navigation"),
+			  TRANSLATE_NOOP("Hotkeys", "Open Achievements List"), [](s32 pressed) {
+				  if (!pressed && CanPause())
+					  FullscreenUI::OpenAchievementsWindow();
+			  })
+DEFINE_HOTKEY("OpenLeaderboardsList", TRANSLATE_NOOP("Hotkeys", "Navigation"),
+			  TRANSLATE_NOOP("Hotkeys", "Open Leaderboards List"), [](s32 pressed) {
+				  if (!pressed && CanPause())
+					  FullscreenUI::OpenLeaderboardsWindow();
+			  })
+DEFINE_HOTKEY("ShutdownVM", TRANSLATE_NOOP("Hotkeys", "Navigation"), TRANSLATE_NOOP("Hotkeys", "Shut Down Virtual Machine"),
+			  [](s32 pressed) {
+				  if (!pressed && VMManager::HasValidVM())
+					  Host::RequestVMShutdown(true, true, EmuConfig.SaveStateOnShutdown);
+			  })
+DEFINE_HOTKEY("ResetVM", TRANSLATE_NOOP("Hotkeys", "Navigation"), TRANSLATE_NOOP("Hotkeys", "Reset Virtual Machine"),
+			  [](s32 pressed) {
+				  if (!pressed && VMManager::HasValidVM())
+					  VMManager::Reset();
+			  })
 DEFINE_HOTKEY(
-	"TogglePause", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Toggle Pause"), [](s32 pressed) {
+	"TogglePause", TRANSLATE_NOOP("Hotkeys", "Speed"), TRANSLATE_NOOP("Hotkeys", "Toggle Pause"), [](s32 pressed) {
 		if (!pressed && VMManager::HasValidVM() && CanPause())
 			VMManager::SetPaused(VMManager::GetState() != VMState::Paused);
 	})
-DEFINE_HOTKEY("ToggleFullscreen", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Toggle Fullscreen"),
-	[](s32 pressed) {
-		if (!pressed)
-			Host::SetFullscreen(!Host::IsFullscreen());
-	})
-DEFINE_HOTKEY("ToggleFrameLimit", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Toggle Frame Limit"),
-	[](s32 pressed) {
-		if (!pressed && VMManager::HasValidVM())
-		{
-			VMManager::SetLimiterMode((VMManager::GetLimiterMode() != LimiterModeType::Unlimited) ?
-										  LimiterModeType::Unlimited :
-										  LimiterModeType::Nominal);
-		}
-	})
-DEFINE_HOTKEY("ToggleTurbo", TRANSLATE_NOOP("Hotkeys", "System"),
-	TRANSLATE_NOOP("Hotkeys", "Toggle Turbo / Fast Forward"), [](s32 pressed) {
-		if (!pressed && VMManager::HasValidVM())
-		{
-			VMManager::SetLimiterMode(
-				(VMManager::GetLimiterMode() != LimiterModeType::Turbo) ? LimiterModeType::Turbo : LimiterModeType::Nominal);
-		}
-	})
-DEFINE_HOTKEY("ToggleSlowMotion", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Toggle Slow Motion"),
-	[](s32 pressed) {
-		if (!pressed && VMManager::HasValidVM())
-		{
-			VMManager::SetLimiterMode(
-				(VMManager::GetLimiterMode() != LimiterModeType::Slomo) ? LimiterModeType::Slomo : LimiterModeType::Nominal);
-		}
-	})
-DEFINE_HOTKEY("HoldTurbo", TRANSLATE_NOOP("Hotkeys", "System"),
-	TRANSLATE_NOOP("Hotkeys", "Turbo / Fast Forward (Hold)"), [](s32 pressed) {
-		if (!VMManager::HasValidVM())
-			return;
-		if (pressed > 0 && !s_limiter_mode_prior_to_hold_interaction.has_value())
-		{
-			s_limiter_mode_prior_to_hold_interaction = VMManager::GetLimiterMode();
-			VMManager::SetLimiterMode((s_limiter_mode_prior_to_hold_interaction.value() != LimiterModeType::Turbo) ?
-										  LimiterModeType::Turbo :
-										  LimiterModeType::Nominal);
-		}
-		else if (pressed >= 0 && s_limiter_mode_prior_to_hold_interaction.has_value())
-		{
-			VMManager::SetLimiterMode(s_limiter_mode_prior_to_hold_interaction.value());
-			s_limiter_mode_prior_to_hold_interaction.reset();
-		}
-	})
-DEFINE_HOTKEY("IncreaseSpeed", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Increase Target Speed"),
-	[](s32 pressed) {
-		if (!pressed && VMManager::HasValidVM())
-			HotkeyAdjustTargetSpeed(0.1);
-	})
-DEFINE_HOTKEY("DecreaseSpeed", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Decrease Target Speed"),
-	[](s32 pressed) {
-		if (!pressed && VMManager::HasValidVM())
-			HotkeyAdjustTargetSpeed(-0.1);
-	})
-DEFINE_HOTKEY("IncreaseVolume", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Increase Volume"),
-	[](s32 pressed) {
-		if (!pressed && VMManager::HasValidVM())
-			HotkeyAdjustVolume(-1, 5);
-	})
-DEFINE_HOTKEY("DecreaseVolume", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Decrease Volume"),
-	[](s32 pressed) {
-		if (!pressed && VMManager::HasValidVM())
-			HotkeyAdjustVolume(-1, -5);
-	})
-DEFINE_HOTKEY("Mute", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Toggle Mute"), [](s32 pressed) {
-	if (!pressed && VMManager::HasValidVM())
-		HotkeyAdjustVolume((SPU2::GetOutputVolume() == 0) ? SPU2::GetResetVolume() : 0, 0);
-})
 DEFINE_HOTKEY(
-	"FrameAdvance", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Frame Advance"), [](s32 pressed) {
+	"FrameAdvance", TRANSLATE_NOOP("Hotkeys", "Speed"), TRANSLATE_NOOP("Hotkeys", "Frame Advance"), [](s32 pressed) {
 		if (!pressed && VMManager::HasValidVM())
 			VMManager::FrameAdvance(1);
 	})
-DEFINE_HOTKEY("ShutdownVM", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Shut Down Virtual Machine"),
-	[](s32 pressed) {
-		if (!pressed && VMManager::HasValidVM())
-			Host::RequestVMShutdown(true, true, EmuConfig.SaveStateOnShutdown);
-	})
-DEFINE_HOTKEY("ResetVM", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Reset Virtual Machine"),
-	[](s32 pressed) {
-		if (!pressed && VMManager::HasValidVM())
-			VMManager::Reset();
-	})
-DEFINE_HOTKEY("InputRecToggleMode", TRANSLATE_NOOP("Hotkeys", "System"),
-	TRANSLATE_NOOP("Hotkeys", "Toggle Input Recording Mode"), [](s32 pressed) {
-		if (!pressed && VMManager::HasValidVM())
-			g_InputRecording.getControls().toggleRecordMode();
-	})
-DEFINE_HOTKEY("SwapMemCards", TRANSLATE_NOOP("Hotkeys", "System"),
-	TRANSLATE_NOOP("Hotkeys", "Swap Memory Cards"), [](s32 pressed) {
-		if (!pressed && VMManager::HasValidVM())
-			FileMcd_Swap();
-	})
-
+DEFINE_HOTKEY("ToggleFrameLimit", TRANSLATE_NOOP("Hotkeys", "Speed"), TRANSLATE_NOOP("Hotkeys", "Toggle Frame Limit"),
+			  [](s32 pressed) {
+				  if (!pressed && VMManager::HasValidVM())
+				  {
+					  VMManager::SetLimiterMode((VMManager::GetLimiterMode() != LimiterModeType::Unlimited) ?
+					  LimiterModeType::Unlimited :
+					  LimiterModeType::Nominal);
+				  }
+			  })
+DEFINE_HOTKEY("ToggleTurbo", TRANSLATE_NOOP("Hotkeys", "Speed"),
+			  TRANSLATE_NOOP("Hotkeys", "Toggle Turbo / Fast Forward"), [](s32 pressed) {
+				  if (!pressed && VMManager::HasValidVM())
+				  {
+					  VMManager::SetLimiterMode(
+						  (VMManager::GetLimiterMode() != LimiterModeType::Turbo) ? LimiterModeType::Turbo : LimiterModeType::Nominal);
+				  }
+			  })
+DEFINE_HOTKEY("HoldTurbo", TRANSLATE_NOOP("Hotkeys", "Speed"),
+			  TRANSLATE_NOOP("Hotkeys", "Turbo / Fast Forward (Hold)"), [](s32 pressed) {
+				  if (!VMManager::HasValidVM())
+					  return;
+				  if (pressed > 0 && !s_limiter_mode_prior_to_hold_interaction.has_value())
+				  {
+					  s_limiter_mode_prior_to_hold_interaction = VMManager::GetLimiterMode();
+					  VMManager::SetLimiterMode((s_limiter_mode_prior_to_hold_interaction.value() != LimiterModeType::Turbo) ?
+					  LimiterModeType::Turbo :
+					  LimiterModeType::Nominal);
+				  }
+				  else if (pressed >= 0 && s_limiter_mode_prior_to_hold_interaction.has_value())
+				  {
+					  VMManager::SetLimiterMode(s_limiter_mode_prior_to_hold_interaction.value());
+					  s_limiter_mode_prior_to_hold_interaction.reset();
+				  }
+			  })
+DEFINE_HOTKEY("ToggleSlowMotion", TRANSLATE_NOOP("Hotkeys", "Speed"), TRANSLATE_NOOP("Hotkeys", "Toggle Slow Motion"),
+			  [](s32 pressed) {
+				  if (!pressed && VMManager::HasValidVM())
+				  {
+					  VMManager::SetLimiterMode(
+						  (VMManager::GetLimiterMode() != LimiterModeType::Slomo) ? LimiterModeType::Slomo : LimiterModeType::Nominal);
+				  }
+			  })
+DEFINE_HOTKEY("IncreaseSpeed", TRANSLATE_NOOP("Hotkeys", "Speed"), TRANSLATE_NOOP("Hotkeys", "Increase Target Speed"),
+			  [](s32 pressed) {
+				  if (!pressed && VMManager::HasValidVM())
+					  HotkeyAdjustTargetSpeed(0.1);
+			  })
+DEFINE_HOTKEY("DecreaseSpeed", TRANSLATE_NOOP("Hotkeys", "Speed"), TRANSLATE_NOOP("Hotkeys", "Decrease Target Speed"),
+			  [](s32 pressed) {
+				  if (!pressed && VMManager::HasValidVM())
+					  HotkeyAdjustTargetSpeed(-0.1);
+			  })
 DEFINE_HOTKEY("PreviousSaveStateSlot", TRANSLATE_NOOP("Hotkeys", "Save States"),
-	TRANSLATE_NOOP("Hotkeys", "Select Previous Save Slot"), [](s32 pressed) {
-		if (!pressed && VMManager::HasValidVM())
-			SaveStateSelectorUI::SelectPreviousSlot(UseSavestateSelector());
-	})
+			  TRANSLATE_NOOP("Hotkeys", "Select Previous Save Slot"), [](s32 pressed) {
+				  if (!pressed && VMManager::HasValidVM())
+					  SaveStateSelectorUI::SelectPreviousSlot(UseSavestateSelector());
+			  })
 DEFINE_HOTKEY("NextSaveStateSlot", TRANSLATE_NOOP("Hotkeys", "Save States"),
-	TRANSLATE_NOOP("Hotkeys", "Select Next Save Slot"), [](s32 pressed) {
-		if (!pressed && VMManager::HasValidVM())
-			SaveStateSelectorUI::SelectNextSlot(UseSavestateSelector());
-	})
+			  TRANSLATE_NOOP("Hotkeys", "Select Next Save Slot"), [](s32 pressed) {
+				  if (!pressed && VMManager::HasValidVM())
+					  SaveStateSelectorUI::SelectNextSlot(UseSavestateSelector());
+			  })
 DEFINE_HOTKEY("SaveStateToSlot", TRANSLATE_NOOP("Hotkeys", "Save States"),
-	TRANSLATE_NOOP("Hotkeys", "Save State To Selected Slot"), [](s32 pressed) {
-		if (!pressed && VMManager::HasValidVM())
-			SaveStateSelectorUI::SaveCurrentSlot();
-	})
+			  TRANSLATE_NOOP("Hotkeys", "Save State To Selected Slot"), [](s32 pressed) {
+				  if (!pressed && VMManager::HasValidVM())
+					  SaveStateSelectorUI::SaveCurrentSlot();
+			  })
 DEFINE_HOTKEY("LoadStateFromSlot", TRANSLATE_NOOP("Hotkeys", "Save States"),
-	TRANSLATE_NOOP("Hotkeys", "Load State From Selected Slot"), [](s32 pressed) {
-		if (!pressed && VMManager::HasValidVM())
-			SaveStateSelectorUI::LoadCurrentSlot();
-	})
-	DEFINE_HOTKEY("LoadBackupStateFromSlot", TRANSLATE_NOOP("Hotkeys", "Save States"),
-	TRANSLATE_NOOP("Hotkeys", "Load Backup State From Selected Slot"), [](s32 pressed) {
-		if (!pressed && VMManager::HasValidVM())
-			SaveStateSelectorUI::LoadCurrentBackupSlot();
-	})
+			  TRANSLATE_NOOP("Hotkeys", "Load State From Selected Slot"), [](s32 pressed) {
+				  if (!pressed && VMManager::HasValidVM())
+					  SaveStateSelectorUI::LoadCurrentSlot();
+			  })
+DEFINE_HOTKEY("LoadBackupStateFromSlot", TRANSLATE_NOOP("Hotkeys", "Save States"),
+			  TRANSLATE_NOOP("Hotkeys", "Load Backup State From Selected Slot"), [](s32 pressed) {
+				  if (!pressed && VMManager::HasValidVM())
+					  SaveStateSelectorUI::LoadCurrentBackupSlot();
+			  })
 DEFINE_HOTKEY("SaveStateAndSelectNextSlot", TRANSLATE_NOOP("Hotkeys", "Save States"),
-	TRANSLATE_NOOP("Hotkeys", "Save State and Select Next Slot"), [](s32 pressed) {
-		if (!pressed && VMManager::HasValidVM())
-		{
-			SaveStateSelectorUI::SaveCurrentSlot();
-			SaveStateSelectorUI::SelectNextSlot(false);
-		}
-	})
+			  TRANSLATE_NOOP("Hotkeys", "Save State and Select Next Slot"), [](s32 pressed) {
+				  if (!pressed && VMManager::HasValidVM())
+				  {
+					  SaveStateSelectorUI::SaveCurrentSlot();
+					  SaveStateSelectorUI::SelectNextSlot(false);
+				  }
+			  })
 DEFINE_HOTKEY("SelectNextSlotAndSaveState", TRANSLATE_NOOP("Hotkeys", "Save States"),
-	TRANSLATE_NOOP("Hotkeys", "Select Next Slot and Save State"), [](s32 pressed) {
-		if (!pressed && VMManager::HasValidVM())
-		{
-			SaveStateSelectorUI::SelectNextSlot(false);
-			SaveStateSelectorUI::SaveCurrentSlot();
-		}
-	})
+			  TRANSLATE_NOOP("Hotkeys", "Select Next Slot and Save State"), [](s32 pressed) {
+				  if (!pressed && VMManager::HasValidVM())
+				  {
+					  SaveStateSelectorUI::SelectNextSlot(false);
+					  SaveStateSelectorUI::SaveCurrentSlot();
+				  }
+			  })
 
 #define DEFINE_HOTKEY_SAVESTATE_X(slotnum, title) \
-	DEFINE_HOTKEY("SaveStateToSlot" #slotnum, "Save States", title, [](s32 pressed) { \
-		if (!pressed) \
-			HotkeySaveStateSlot(slotnum); \
-	})
+DEFINE_HOTKEY("SaveStateToSlot" #slotnum, "Save States", title, [](s32 pressed) { \
+	if (!pressed) \
+		HotkeySaveStateSlot(slotnum); \
+})
 #define DEFINE_HOTKEY_LOADSTATE_X(slotnum, title) \
-	DEFINE_HOTKEY("LoadStateFromSlot" #slotnum, "Save States", title, [](s32 pressed) { \
-		if (!pressed) \
-			HotkeyLoadStateSlot(slotnum); \
-	})
+DEFINE_HOTKEY("LoadStateFromSlot" #slotnum, "Save States", title, [](s32 pressed) { \
+	if (!pressed) \
+		HotkeyLoadStateSlot(slotnum); \
+})
 DEFINE_HOTKEY_SAVESTATE_X(1, TRANSLATE_NOOP("Hotkeys", "Save State To Slot 1"))
 DEFINE_HOTKEY_LOADSTATE_X(1, TRANSLATE_NOOP("Hotkeys", "Load State From Slot 1"))
 DEFINE_HOTKEY_SAVESTATE_X(2, TRANSLATE_NOOP("Hotkeys", "Save State To Slot 2"))
@@ -304,4 +279,28 @@ DEFINE_HOTKEY_SAVESTATE_X(10, TRANSLATE_NOOP("Hotkeys", "Save State To Slot 10")
 DEFINE_HOTKEY_LOADSTATE_X(10, TRANSLATE_NOOP("Hotkeys", "Load State From Slot 10"))
 #undef DEFINE_HOTKEY_SAVESTATE_X
 #undef DEFINE_HOTKEY_LOADSTATE_X
+DEFINE_HOTKEY("SwapMemCards", TRANSLATE_NOOP("Hotkeys", "System"),
+			  TRANSLATE_NOOP("Hotkeys", "Swap Memory Cards"), [](s32 pressed) {
+				  if (!pressed && VMManager::HasValidVM())
+					  FileMcd_Swap();
+			  })
+DEFINE_HOTKEY("InputRecToggleMode", TRANSLATE_NOOP("Hotkeys", "System"),
+			  TRANSLATE_NOOP("Hotkeys", "Toggle Input Recording Mode"), [](s32 pressed) {
+				  if (!pressed && VMManager::HasValidVM())
+					  g_InputRecording.getControls().toggleRecordMode();
+			  })
+DEFINE_HOTKEY("Mute", TRANSLATE_NOOP("Hotkeys", "Audio"), TRANSLATE_NOOP("Hotkeys", "Toggle Mute"), [](s32 pressed) {
+	if (!pressed && VMManager::HasValidVM())
+		HotkeyAdjustVolume((SPU2::GetOutputVolume() == 0) ? SPU2::GetResetVolume() : 0, 0);
+})
+DEFINE_HOTKEY("IncreaseVolume", TRANSLATE_NOOP("Hotkeys", "Audio"), TRANSLATE_NOOP("Hotkeys", "Increase Volume"),
+			  [](s32 pressed) {
+				  if (!pressed && VMManager::HasValidVM())
+					  HotkeyAdjustVolume(-1, 5);
+			  })
+DEFINE_HOTKEY("DecreaseVolume", TRANSLATE_NOOP("Hotkeys", "Audio"), TRANSLATE_NOOP("Hotkeys", "Decrease Volume"),
+			  [](s32 pressed) {
+				  if (!pressed && VMManager::HasValidVM())
+					  HotkeyAdjustVolume(-1, -5);
+			  })
 END_HOTKEY_LIST()
