@@ -16,6 +16,7 @@ public:
 		LAYER_GAME,
 		LAYER_INPUT,
 		LAYER_BASE,
+		LAYER_SECRETS,
 		NUM_LAYERS
 	};
 

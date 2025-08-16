@@ -26,6 +26,7 @@
 #include "common/MD5Digest.h"
 #include "common/Path.h"
 #include "common/ScopedGuard.h"
+#include "common/SettingsInterface.h"
 #include "common/SmallString.h"
 #include "common/StringUtil.h"
 #include "common/Timer.h"
@@ -433,7 +434,7 @@ bool Achievements::Initialize()
 		IdentifyGame(VMManager::GetDiscCRC(), VMManager::GetCurrentCRC());
 
 	const std::string username = Host::GetBaseStringSettingValue("Achievements", "Username");
-	const std::string api_token = Host::GetBaseStringSettingValue("Achievements", "Token");
+	const std::string api_token = Host::GetStringSettingValue("Achievements", "Token");
 	if (!username.empty() && !api_token.empty())
 	{
 		Console.WriteLn("Achievements: Attempting login with user '%s'...", username.c_str());
@@ -1772,9 +1773,10 @@ void Achievements::ClientLoginWithPasswordCallback(int result, const char* error
 
 	// Store configuration.
 	Host::SetBaseStringSettingValue("Achievements", "Username", params->username);
-	Host::SetBaseStringSettingValue("Achievements", "Token", user->token);
 	Host::SetBaseStringSettingValue("Achievements", "LoginTimestamp", fmt::format("{}", std::time(nullptr)).c_str());
+	Host::Internal::GetSecretsSettingsLayer()->SetStringValue("Achievements", "Token", user->token);
 	Host::CommitBaseSettingChanges();
+	Host::CommitSecretsSettingChanges();
 
 	ShowLoginSuccess(client);
 }

@@ -124,6 +124,7 @@ namespace Host
 	bool ContainsBaseSettingValue(const char* section, const char* key);
 	void RemoveBaseSettingValue(const char* section, const char* key);
 	void CommitBaseSettingChanges();
+	void CommitSecretsSettingChanges();
 
 	/// Settings access, thread-safe.
 	std::string GetStringSettingValue(const char* section, const char* key, const char* default_value = "");
@@ -151,6 +152,9 @@ namespace Host
 		/// Retrieves the base settings layer. Must call with lock held.
 		SettingsInterface* GetBaseSettingsLayer();
 
+		/// Retrieves the base settings layer. Must call with lock held.
+		SettingsInterface* GetSecretsSettingsLayer();
+
 		/// Retrieves the game settings layer, if present. Must call with lock held.
 		SettingsInterface* GetGameSettingsLayer();
 
@@ -159,6 +163,9 @@ namespace Host
 
 		/// Sets the base settings layer. Should be called by the host at initialization time.
 		void SetBaseSettingsLayer(SettingsInterface* sif);
+
+		/// Sets the secrets settings layer. Should follow call to SetBaseSettingsLayer.
+		void SetSecretsSettingsLayer(SettingsInterface* sif);
 
 		/// Sets the game settings layer. Called by VMManager when the game changes.
 		void SetGameSettingsLayer(SettingsInterface* sif, std::unique_lock<std::mutex>& settings_lock);
