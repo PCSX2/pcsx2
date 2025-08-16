@@ -309,21 +309,6 @@ void GSRendererSW::Draw()
 {
 	const GSDrawingContext* context = m_context;
 
-	if (GSConfig.SaveInfo && GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
-	{
-		std::string s;
-
-		// Dump Register state
-		s = GetDrawDumpPath("%05d_context.txt", s_n);
-
-		m_draw_env->Dump(s);
-		m_context->Dump(s);
-
-		// Dump vertices
-		s = GetDrawDumpPath("%05d_vertex.txt", s_n);
-		DumpVertices(s);
-	}
-
 	auto data = m_vertex_heap.make_shared<SharedData>().cast<GSRasterizerData>();
 	SharedData* sd = static_cast<SharedData*>(data.get());
 
