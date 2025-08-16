@@ -320,27 +320,86 @@ void GSRendererHW::ExpandLineIndices()
 	}
 }
 
+// Return true if the sprite reverses the same 8 pixels between the src and dst.
+// Used by games to corrected reversed pixels in a texture shuffle.
+__fi bool GSRendererHW::Is8PixelReverseSprite(const GSVertex& v0, const GSVertex& v1)
+{
+	pxAssert(m_vt.m_primclass == GS_SPRITE_CLASS);
+
+	const GIFRegXYOFFSET& o = m_context->XYOFFSET;
+	const float tw = static_cast<float>(1u << m_cached_ctx.TEX0.TW);
+
+	int pos0 = std::max(static_cast<int>(v0.XYZ.X) - static_cast<int>(o.OFX), 0);
+	int pos1 = std::max(static_cast<int>(v1.XYZ.X) - static_cast<int>(o.OFX), 0);
+
+	const bool rev_pos = pos0 > pos1;
+	if (rev_pos)
+		std::swap(pos0, pos1);
+
+	int tex0 = (PRIM->FST) ? v0.U : static_cast<int>(tw * v0.ST.S * 16.0f);
+	int tex1 = (PRIM->FST) ? v1.U : static_cast<int>(tw * v1.ST.S * 16.0f);
+
+	const bool rev_tex = tex0 > tex1;
+	if (rev_tex)
+		std::swap(tex0, tex1);
+
+	// Sprite flips a single column and does nothing else.
+	return std::abs(pos1 - pos0) < 136 &&
+	       std::abs(pos0 - tex0) <= 8 && std::abs(pos1 - tex1) <= 8 &&
+	       rev_pos != rev_tex;
+}
+
 // Fix the vertex position/tex_coordinate from 16 bits color to 32 bits color
 void GSRendererHW::ConvertSpriteTextureShuffle(u32& process_rg, u32& process_ba, bool& shuffle_across, GSTextureCache::Target* rt, GSTextureCache::Source* tex)
 {
-	const u32 count = m_vertex.next;
+	pxAssert(m_vertex.next % 2 == 0); // Either sprites or an even number of triangles.
+
+	const bool recursive_draw = m_cached_ctx.FRAME.Block() == m_cached_ctx.TEX0.TBP0;
+	const bool sprites = m_vt.m_primclass == GS_SPRITE_CLASS;
+
+	u32 count = m_vertex.next;
 	GSVertex* v = &m_vertex.buff[0];
 	const GIFRegXYOFFSET& o = m_context->XYOFFSET;
 	// Could be drawing upside down or just back to front on the actual verts.
-	const GSVertex* start_verts = (v[0].XYZ.X <= v[m_vertex.tail - 2].XYZ.X) ? &v[0] : &v[m_vertex.tail - 2];
-	const GSVertex first_vert = (start_verts[0].XYZ.X <= start_verts[1].XYZ.X) ? start_verts[0] : start_verts[1];
-	const GSVertex second_vert = (start_verts[0].XYZ.X <= start_verts[1].XYZ.X) ? start_verts[1] : start_verts[0];
-	// vertex position is 8 to 16 pixels, therefore it is the 16-31 bits of the colors
-	const int pos = (first_vert.XYZ.X - o.OFX) & 0xFF;
+	// Iterate through the sprites in order and find one to infer which channels are being shuffled.
+	const int prim_order = v[0].XYZ.X <= v[count - 2].XYZ.X ? 1 : -1;
+	const int prim_start = prim_order > 0 ? 0 : count - 2;
+	const int prim_end = prim_order > 0 ? count - 2 : 0;
+	int tries = 0;
+	int prim = prim_start;
+	for (prim = prim_start;; prim += 2 * prim_order, tries++)
+	{
+		if (!(recursive_draw && sprites && Is8PixelReverseSprite(v[prim], v[prim + 1])))
+			break; // Found the right prim.
+
+		// Two tries at most, by the second prim we should be able to infer the channels.
+		if (prim == prim_end || tries >= 2) 
+		{
+			prim = prim_start; // Use the first prim in order by default.
+			GL_INS("Warning: ConvertSpriteTextureShuffle: Could not find correct prim for shuffle.");
+			break;
+		}
+	}
+
+	// Get first and second vertex for the prim we will use to infer shuffled channels.
+	const bool rev_pos = v[prim].XYZ.X > v[prim + 1].XYZ.X;
+	const GSVertex& first_vert = rev_pos ? v[prim + 1] : v[prim];
+	const GSVertex& second_vert = rev_pos ? v[prim] : v[prim + 1];
+	const int pos = std::max(static_cast<int>(first_vert.XYZ.X) - static_cast<int>(o.OFX), 0) & 0xFF;
 
 	// Read texture is 8 to 16 pixels (same as above)
 	const float tw = static_cast<float>(1u << m_cached_ctx.TEX0.TW);
-	int tex_pos = (PRIM->FST) ? first_vert.U : static_cast<int>(tw * first_vert.ST.S * 16.0f);
+	const int u0 = PRIM->FST ? v[prim].U : static_cast<int>(tw * v[prim].ST.S * 16.0f);
+	const int u1 = PRIM->FST ? v[prim + 1].U : static_cast<int>(tw * v[prim + 1].ST.S * 16.0f);
+	const bool rev_tex = u0 > u1;
+	int tex_pos = rev_tex ? u1 : u0;
 	tex_pos &= 0xFF;
 	shuffle_across = (((tex_pos + 8) >> 4) ^ ((pos + 8) >> 4)) & 0x8;
 
 	const bool full_width = ((second_vert.XYZ.X - first_vert.XYZ.X) >> 4) >= 16 && m_r.width() > 8 && tex && tex->m_from_target && rt == tex->m_from_target;
 	const bool width_multiple_16 = (((second_vert.XYZ.X - first_vert.XYZ.X) >> 7) & 1) == 0;
+	const bool rev_pixels = rev_pos != rev_tex; // Whether pixels are reversed between src and dst.
+	shuffle_across |= full_width && rev_pixels;
 	process_ba = ((pos > 112 && pos < 136) || full_width) ? SHUFFLE_WRITE : 0;
 	process_rg = (!process_ba || full_width) ? SHUFFLE_WRITE : 0;
 	// "same group" means it can read blue and write alpha using C32 tricks
@@ -561,6 +620,30 @@ void GSRendererHW::ConvertSpriteTextureShuffle(u32& process_rg, u32& process_ba,
 		}
 	}
 
+	// If necessary, cull sprites that only do single column pixels reversal.
+	// Only known game that requires this path is Colin McRae Rally 2005.
+	if (recursive_draw && sprites && rev_pixels)
+	{
+		u32 ri, wi; // read/write index.
+		for (wi = ri = 0; ri < count; ri += 2)
+		{
+			if (!Is8PixelReverseSprite(v[ri], v[ri + 1]))
+			{
+				if (wi != ri)
+				{
+					v[wi] = v[ri];
+					v[wi + 1] = v[ri + 1];
+				}
+				wi += 2;
+			}
+		}
+		if (wi != count)
+		{
+			count = m_vertex.head = m_vertex.tail = m_vertex.next = wi;
+			m_index.tail = wi;
+		}
+	}
+
 	if (PRIM->FST)
 	{
 		GL_INS("HW: First vertex is  P: %d => %d    T: %d => %d", v[0].XYZ.X, v[1].XYZ.X, v[0].U, v[1].U);
@@ -568,7 +651,8 @@ void GSRendererHW::ConvertSpriteTextureShuffle(u32& process_rg, u32& process_ba,
 		const int reversed_U = (v[0].U > v[1].U) ? 1 : 0;
 		for (u32 i = 0; i < count; i += 2)
 		{
-
+			if (rev_pixels)
+				std::swap(v[i].U, v[i + 1].U);
 			if (!full_width)
 			{
 				if (process_ba & SHUFFLE_WRITE)
@@ -658,7 +742,8 @@ void GSRendererHW::ConvertSpriteTextureShuffle(u32& process_rg, u32& process_ba,
 
 		for (u32 i = 0; i < count; i += 2)
 		{
-
+			if (rev_pixels)
+				std::swap(v[i].ST.S, v[i + 1].ST.S);
 			if (!full_width)
 			{
 				if (process_ba & SHUFFLE_WRITE)
@@ -717,6 +802,12 @@ void GSRendererHW::ConvertSpriteTextureShuffle(u32& process_rg, u32& process_ba,
 				}
 			}
 		}
+	}
+
+	if (m_index.tail == 0)
+	{
+		GL_INS("HW: ConvertSpriteTextureShuffle: Culled all vertices; exiting.");
+		return;
 	}
 
 	if (!full_width)
@@ -5108,6 +5199,9 @@ void GSRendererHW::EmulateTextureShuffleAndFbmask(GSTextureCache::Target* rt, GS
 
 		ConvertSpriteTextureShuffle(process_rg, process_ba, shuffle_across, rt, tex);
 
+		if (m_index.tail == 0)
+			return; // Rewriting sprites can result in an empty draw.
+
 		// If date is enabled you need to test the green channel instead of the alpha channel.
 		// Only enable this code in DATE mode to reduce the number of shaders.
 		m_conf.ps.write_rg = (process_rg & SHUFFLE_WRITE) && features.texture_barrier && m_cached_ctx.TEST.DATE;
@@ -7253,7 +7347,14 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	m_prim_overlap = PrimitiveOverlap();
 
 	if (rt)
+	{
 		EmulateTextureShuffleAndFbmask(rt, tex);
+		if (m_index.tail == 0)
+		{
+			GL_INS("HW: DrawPrims: Texture shuffle emulation culled all vertices; exiting.");
+			return;
+		}
+	}
 
 	const GSDevice::FeatureSupport features = g_gs_device->Features();
 

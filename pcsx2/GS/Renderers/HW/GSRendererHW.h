@@ -65,6 +65,7 @@ private:
 	bool IsDiscardingDstRGB();
 	bool IsDiscardingDstAlpha() const;
 	bool TextureCoversWithoutGapsNotEqual();
+	bool Is8PixelReverseSprite(const GSVertex& v0, const GSVertex& v1);
 
 	enum class CLUTDrawTestResult
 	{
