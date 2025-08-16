@@ -86,6 +86,7 @@ namespace QtHost
 // Local variable declarations
 //////////////////////////////////////////////////////////////////////////
 static QTimer* s_settings_save_timer = nullptr;
+static QTimer* s_secrets_settings_save_timer = nullptr;
 static std::unique_ptr<INISettingsInterface> s_base_settings_interface;
 static std::unique_ptr<INISettingsInterface> s_secrets_settings_interface;
 static bool s_batch_mode = false;
@@ -1451,10 +1452,10 @@ void QtHost::SaveSecretsSettings()
 			Console.ErrorFmt("Failed to save settings: {}", error.GetDescription());
 	}
 
-	if (s_settings_save_timer)
+	if (s_secrets_settings_save_timer)
 	{
-		s_settings_save_timer->deleteLater();
-		s_settings_save_timer = nullptr;
+		s_secrets_settings_save_timer->deleteLater();
+		s_secrets_settings_save_timer = nullptr;
 	}
 }
 
@@ -1496,20 +1497,20 @@ void Host::CommitSecretsSettingChanges()
 	}
 
 	auto lock = Host::GetSettingsLock();
-	if (s_settings_save_timer)
+	if (s_secrets_settings_save_timer)
 		return;
 
-	s_settings_save_timer = new QTimer;
-	s_settings_save_timer->connect(s_settings_save_timer, &QTimer::timeout, &QtHost::SaveSettings);
-	s_settings_save_timer->setSingleShot(true);
-	s_settings_save_timer->start(SETTINGS_SAVE_DELAY);
+	s_secrets_settings_save_timer = new QTimer;
+	s_secrets_settings_save_timer->connect(s_secrets_settings_save_timer, &QTimer::timeout, &QtHost::SaveSettings);
+	s_secrets_settings_save_timer->setSingleShot(true);
+	s_secrets_settings_save_timer->start(SETTINGS_SAVE_DELAY);
 
 	static bool connected = false;
 	if (!connected)
 	{
 		QObject::connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, []() {
-			delete s_settings_save_timer;
-			s_settings_save_timer = nullptr;
+			delete s_secrets_settings_save_timer;
+			s_secrets_settings_save_timer = nullptr;
 		});
 
 		connected = true;
