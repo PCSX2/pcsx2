@@ -1,1 +1,1 @@
-ffmpeg-7.0.2 from https://ffmpeg.org/releases/ffmpeg-7.0.2.tar.xz
+ffmpeg-7.1.1 from https://ffmpeg.org/releases/ffmpeg-7.1.1.tar.xz
