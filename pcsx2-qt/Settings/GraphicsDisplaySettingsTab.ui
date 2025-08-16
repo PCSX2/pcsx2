@@ -1,0 +1,364 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>GraphicsDisplaySettingsTab</class>
+ <widget class="QWidget" name="GraphicsDisplaySettingsTab">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>700</width>
+    <height>500</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string/>
+  </property>
+  <layout class="QGridLayout" name="gridLayout" columnstretch="0,1">
+   <item row="3" column="0">
+    <widget class="QLabel" name="interlacingLabel">
+     <property name="text">
+      <string>Deinterlacing:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QComboBox" name="fullscreenModes"/>
+   </item>
+   <item row="7" column="0" colspan="2">
+    <layout class="QGridLayout" name="displayGridLayout">
+     <item row="1" column="1">
+      <widget class="QCheckBox" name="integerScaling">
+       <property name="text">
+        <string>Integer Scaling</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QCheckBox" name="widescreenPatches">
+       <property name="text">
+        <string>Apply Widescreen Patches</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QCheckBox" name="noInterlacingPatches">
+       <property name="text">
+        <string>Apply No-Interlacing Patches</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QCheckBox" name="PCRTCAntiBlur">
+       <property name="text">
+        <string>Anti-Blur</string>
+       </property>
+       <property name="shortcut">
+        <string>Ctrl+S</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QCheckBox" name="DisableInterlaceOffset">
+       <property name="text">
+        <string>Disable Interlace Offset</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QCheckBox" name="PCRTCOffsets">
+       <property name="text">
+        <string>Screen Offsets</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QCheckBox" name="PCRTCOverscan">
+       <property name="text">
+        <string>Show Overscan</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="fmvAspectRatioLabel">
+     <property name="text">
+      <string>FMV Aspect Ratio Override:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QComboBox" name="aspectRatio">
+     <item>
+      <property name="text">
+       <string>Fit to Window / Fullscreen</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Auto Standard (4:3 Interlaced / 3:2 Progressive)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Standard (4:3)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Widescreen (16:9)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Native/Full (10:7)</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="4" column="1">
+    <widget class="QComboBox" name="bilinearFiltering">
+     <item>
+      <property name="text">
+       <string>None</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string extracomment="Smooth: Refers to the texture clarity.">Bilinear (Smooth)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string extracomment="Sharp: Refers to the texture clarity.">Bilinear (Sharp)</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="5" column="0">
+    <widget class="QLabel" name="verticalStretchLabel">
+     <property name="text">
+      <string>Vertical Stretch:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="fsModeLabel">
+     <property name="text">
+      <string>Fullscreen Mode:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="billinearLabel">
+     <property name="text">
+      <string>Bilinear Filtering:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QComboBox" name="fmvAspectRatio">
+     <item>
+      <property name="text">
+       <string>Off (Default)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Auto Standard (4:3 Interlaced / 3:2 Progressive)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Standard (4:3)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Widescreen (16:9)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Native/Full (10:7)</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="6" column="0">
+    <widget class="QLabel" name="cropLabel">
+     <property name="text">
+      <string>Crop:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="aspectRatioLabel">
+     <property name="text">
+      <string>Aspect Ratio:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QComboBox" name="interlacing">
+     <item>
+      <property name="text">
+       <string>Automatic (Default)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>No Deinterlacing</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string extracomment="Weave: deinterlacing method that can be translated or left as-is in English. Sawtooth: refers to the jagged effect weave deinterlacing has on motion.">Weave (Top Field First, Sawtooth)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string extracomment="Weave: deinterlacing method that can be translated or left as-is in English. Sawtooth: refers to the jagged effect weave deinterlacing has on motion.">Weave (Bottom Field First, Sawtooth)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string extracomment="Bob: deinterlacing method that refers to the way it makes video look like it's bobbing up and down.">Bob (Top Field First, Full Frames)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string extracomment="Bob: deinterlacing method that refers to the way it makes video look like it's bobbing up and down.">Bob (Bottom Field First, Full Frames)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string extracomment="Blend: deinterlacing method that blends the colors of the two frames, can be translated or left as-is in English.">Blend (Top Field First, Merge 2 Fields)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string extracomment="Blend: deinterlacing method that blends the colors of the two frames, can be translated or left as-is in English.">Blend (Bottom Field First, Merge 2 Fields)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string extracomment="Adaptive: deinterlacing method that should be translated.">Adaptive (Top Field First, Similar to Bob + Weave)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string extracomment="Adaptive: deinterlacing method that should be translated.">Adaptive (Bottom Field First, Similar to Bob + Weave)</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="5" column="1">
+    <widget class="QSpinBox" name="stretchY">
+     <property name="suffix">
+      <string extracomment="Percentage sign that shows next to a value. You might want to add a space before if your language requires it.">%</string>
+     </property>
+     <property name="minimum">
+      <number>1</number>
+     </property>
+     <property name="maximum">
+      <number>300</number>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="0">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>0</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="6" column="1">
+    <layout class="QGridLayout" name="gridLayout_2" columnstretch="0,1,0,1">
+     <item row="0" column="3">
+      <widget class="QSpinBox" name="cropTop">
+       <property name="suffix">
+        <string>px</string>
+       </property>
+       <property name="maximum">
+        <number>1000</number>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2">
+      <widget class="QLabel" name="cropTopLabel">
+       <property name="text">
+        <string extracomment="Warning: short space constraints. Abbreviate if necessary.">Top:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="cropLeftLabel">
+       <property name="text">
+        <string extracomment="Warning: short space constraints. Abbreviate if necessary.">Left:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QSpinBox" name="cropLeft">
+       <property name="suffix">
+        <string>px</string>
+       </property>
+       <property name="maximum">
+        <number>1000</number>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="cropRightLabel">
+       <property name="text">
+        <string extracomment="Warning: short space constraints. Abbreviate if necessary.">Right:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QSpinBox" name="cropRight">
+       <property name="suffix">
+        <string>px</string>
+       </property>
+       <property name="maximum">
+        <number>1000</number>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <widget class="QLabel" name="cropBottomLabel">
+       <property name="text">
+        <string extracomment="Warning: short space constraints. Abbreviate if necessary.">Bottom:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="3">
+      <widget class="QSpinBox" name="cropBottom">
+       <property name="suffix">
+        <string>px</string>
+       </property>
+       <property name="maximum">
+        <number>1000</number>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

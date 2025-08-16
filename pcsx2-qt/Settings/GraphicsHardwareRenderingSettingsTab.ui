@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>GraphicsHardwareRenderingSettingsTab</class>
+ <widget class="QWidget" name="GraphicsHardwareRenderingSettingsTab">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>700</width>
+    <height>400</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string/>
+  </property>
+  <layout class="QGridLayout" name="gridLayout" columnstretch="0,1">
+   <item row="1" column="0">
+    <widget class="QLabel" name="textureFilteringLabel">
+     <property name="text">
+      <string>Texture Filtering:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
+    <widget class="QComboBox" name="dithering">
+     <item>
+      <property name="text">
+       <string>Off</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Scaled</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Unscaled (Default)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Force 32bit</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="6" column="0" colspan="2">
+    <layout class="QGridLayout" name="hardwareRenderingOptionsLayout">
+     <item row="0" column="1">
+      <widget class="QCheckBox" name="enableHWFixes">
+       <property name="text">
+        <string>Manual Hardware Renderer Fixes</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QCheckBox" name="mipmapping">
+       <property name="text">
+        <string>Mipmapping</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="anisotropicFilteringLabel">
+     <property name="text">
+      <string>Anisotropic Filtering:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QComboBox" name="anisotropicFiltering"/>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="internalResLabel">
+     <property name="text">
+      <string>Internal Resolution:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QComboBox" name="upscaleMultiplier"/>
+   </item>
+   <item row="1" column="1">
+    <widget class="QComboBox" name="textureFiltering">
+     <item>
+      <property name="text">
+       <string>Nearest</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Bilinear (Forced)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Bilinear (PS2)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Bilinear (Forced excluding sprite)</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="ditheringLabel">
+     <property name="text">
+      <string>Dithering:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="1">
+    <widget class="QComboBox" name="blending">
+     <item>
+      <property name="text">
+       <string>Minimum</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Basic (Recommended)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Medium</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>High</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Full (Slow)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Maximum (Very Slow)</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QComboBox" name="trilinearFiltering">
+     <item>
+      <property name="text">
+       <string>Automatic (Default)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Off (None)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Trilinear (PS2)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Trilinear (Forced)</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="5" column="0">
+    <widget class="QLabel" name="blendingLabel">
+     <property name="text">
+      <string>Blending Accuracy:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="trilinearFilterLabel">
+     <property name="text">
+      <string>Trilinear Filtering:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="0">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>0</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>GraphicsTextureReplacementSettingsTab</class>
+ <widget class="QWidget" name="GraphicsTextureReplacementSettingsTab">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>700</width>
+    <height>500</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string/>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QGroupBox" name="textureOptions">
+     <property name="title">
+      <string>Options</string>
+     </property>
+     <layout class="QGridLayout" name="textureOptionLayout">
+      <item row="3" column="0">
+       <widget class="QCheckBox" name="precacheTextureReplacements">
+        <property name="text">
+         <string>Precache Textures</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QCheckBox" name="loadTextureReplacementsAsync">
+        <property name="text">
+         <string>Asynchronous Texture Loading</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="loadTextureReplacements">
+        <property name="text">
+         <string>Load Textures</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QCheckBox" name="dumpReplaceableTextures">
+        <property name="text">
+         <string>Dump Textures</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QCheckBox" name="dumpReplaceableMipmaps">
+        <property name="text">
+         <string>Dump Mipmaps</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QCheckBox" name="dumpTexturesWithFMVActive">
+        <property name="text">
+         <string>Dump FMV Textures</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="texturesDirectoryBox">
+     <property name="title">
+      <string>Search Directory</string>
+     </property>
+     <layout class="QGridLayout" name="textureDirectoryLayout">
+      <item row="1" column="0">
+       <widget class="QLineEdit" name="texturesDirectory"/>
+      </item>
+      <item row="1" column="1">
+       <widget class="QPushButton" name="texturesBrowse">
+        <property name="text">
+         <string>Browse...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QPushButton" name="texturesOpen">
+        <property name="text">
+         <string>Open...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <widget class="QPushButton" name="texturesReset">
+        <property name="text">
+         <string>Reset</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" colspan="4">
+       <widget class="QLabel" name="textureDescriptionText">
+        <property name="text">
+         <string>PCSX2 will dump and load texture replacements from this directory.</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>0</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -3,20 +3,22 @@
 
 #pragma once
 
-#include <QtWidgets/QWidget>
+#include "ui_DebugAnalysisSettingsTab.h"
+#include "ui_DebugGSSettingsTab.h"
+#include "ui_DebugLoggingSettingsTab.h"
+#include "ui_DebugUserInterfaceSettingsTab.h"
 
-#include "ui_DebugSettingsWidget.h"
+#include "SettingsWidget.h"
 
-class SettingsWindow;
 class DebugUserInterfaceSettingsWidget;
 class DebugAnalysisSettingsWidget;
 
-class DebugSettingsWidget : public QWidget
+class DebugSettingsWidget : public SettingsWidget
 {
 	Q_OBJECT
 
 public:
-	DebugSettingsWidget(SettingsWindow* dialog, QWidget* parent);
+	DebugSettingsWidget(SettingsWindow* settings_dialog, QWidget* parent);
 	~DebugSettingsWidget();
 
 private Q_SLOTS:
@@ -26,10 +28,14 @@ private Q_SLOTS:
 #endif
 
 private:
-	SettingsWindow* m_dialog;
-
 	DebugUserInterfaceSettingsWidget* m_user_interface_settings;
 	DebugAnalysisSettingsWidget* m_analysis_settings;
 
-	Ui::DebugSettingsWidget m_ui;
+	Ui::DebugUserInterfaceSettingsTab m_user_interface;
+	Ui::DebugAnalysisSettingsTab m_analysis;
+	Ui::DebugGSSettingsTab m_gs;
+	Ui::DebugLoggingSettingsTab m_logging;
+
+	QWidget* m_user_interface_tab = nullptr;
+	QWidget* m_logging_tab = nullptr;
 };

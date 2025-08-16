@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>GraphicsSoftwareRenderingSettingsTab</class>
+ <widget class="QWidget" name="GraphicsSoftwareRenderingSettingsTab">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>700</width>
+    <height>500</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string/>
+  </property>
+  <layout class="QGridLayout" name="gridLayout" columnstretch="0,1">
+   <item row="1" column="0">
+    <widget class="QLabel" name="extraSWThreadsLabel">
+     <property name="text">
+      <string>Software Rendering Threads:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="swTextureFilteringLabel">
+     <property name="text">
+      <string>Texture Filtering:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0" colspan="2">
+    <layout class="QGridLayout" name="swRenderingLayout">
+     <item row="0" column="1">
+      <widget class="QCheckBox" name="swMipmap">
+       <property name="text">
+        <string>Mipmapping</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QCheckBox" name="swAutoFlush">
+       <property name="text">
+        <string>Auto Flush</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="0" column="1">
+    <widget class="QComboBox" name="swTextureFiltering">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::LeftToRight</enum>
+     </property>
+     <item>
+      <property name="text">
+       <string>Nearest</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Bilinear (Forced)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Bilinear (PS2)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Bilinear (Forced excluding sprite)</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QSpinBox" name="extraSWThreads">
+     <property name="suffix">
+      <string> threads</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>0</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -6,175 +6,123 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>648</width>
-    <height>487</height>
+    <width>700</width>
+    <height>700</height>
    </rect>
   </property>
-  <layout class="QGridLayout" name="gridLayout_6">
-   <item row="0" column="0" rowspan="2">
-    <widget class="QScrollArea" name="scrollArea">
-     <widget class="QWidget" name="scrollAreaWidgetContents">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>0</y>
-        <width>665</width>
-        <height>600</height>
-       </rect>
-      </property>
-      <layout class="QGridLayout" name="gridLayout_8">
-       <item row="0" column="0">
-        <widget class="QGroupBox" name="cacheGroup">
-         <property name="title">
-          <string>Cache Directory</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_3">
-          <item row="1" column="0">
-           <widget class="QLineEdit" name="cache"/>
-          </item>
-          <item row="1" column="1">
-           <widget class="QPushButton" name="cacheBrowse">
-            <property name="text">
-             <string>Browse...</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="2">
-           <widget class="QPushButton" name="cacheOpen">
-            <property name="text">
-             <string>Open...</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="3">
-           <widget class="QPushButton" name="cacheReset">
-            <property name="text">
-             <string>Reset</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0" colspan="4">
-           <widget class="QLabel" name="cacheLabel">
-            <property name="text">
-             <string>Used for storing shaders, game list, and achievement data.</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="4" column="0">
-        <widget class="QGroupBox" name="saveStatesGroup">
-         <property name="title">
-          <string>Save States Directory</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_2">
-          <item row="0" column="0" colspan="4">
-           <widget class="QLabel" name="saveStatesLabel">
-            <property name="text">
-             <string>Used for storing save states.</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QPushButton" name="saveStatesBrowse">
-            <property name="text">
-             <string>Browse...</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="3">
-           <widget class="QPushButton" name="saveStatesReset">
-            <property name="text">
-             <string>Reset</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLineEdit" name="saveStates"/>
-          </item>
-          <item row="1" column="2">
-           <widget class="QPushButton" name="saveStatesOpen">
-            <property name="text">
-             <string>Open...</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QGroupBox" name="cheatsGroup">
-         <property name="title">
-          <string>Cheats Directory</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_5">
-          <item row="1" column="0">
-           <widget class="QLineEdit" name="cheats"/>
-          </item>
-          <item row="1" column="1">
-           <widget class="QPushButton" name="cheatsBrowse">
-            <property name="text">
-             <string>Browse...</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="2">
-           <widget class="QPushButton" name="cheatsOpen">
-            <property name="text">
-             <string>Open...</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="3">
-           <widget class="QPushButton" name="cheatsReset">
-            <property name="text">
-             <string>Reset</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0" colspan="4">
-           <widget class="QLabel" name="cheatsLabel">
-            <property name="text">
-             <string>Used for storing .pnach files containing game cheats.</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QGroupBox" name="snapshotsGroup">
-         <property name="title">
-          <string>Snapshots Directory</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout">
-          <item row="1" column="0">
-           <widget class="QLineEdit" name="snapshots"/>
-          </item>
-          <item row="1" column="1">
-           <widget class="QPushButton" name="snapshotsBrowse">
-            <property name="text">
-             <string>Browse...</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="2">
-           <widget class="QPushButton" name="snapshotsOpen">
-            <property name="text">
-             <string>Open...</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="3">
-           <widget class="QPushButton" name="snapshotsReset">
-            <property name="text">
-             <string>Reset</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0" colspan="4">
-           <widget class="QLabel" name="snaphotsLabel">
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QGroupBox" name="cacheGroup">
+     <property name="title">
+      <string>Cache Directory</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_3">
+      <item row="1" column="0">
+       <widget class="QLineEdit" name="cache"/>
+      </item>
+      <item row="1" column="1">
+       <widget class="QPushButton" name="cacheBrowse">
+        <property name="text">
+         <string>Browse...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QPushButton" name="cacheOpen">
+        <property name="text">
+         <string>Open...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <widget class="QPushButton" name="cacheReset">
+        <property name="text">
+         <string>Reset</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" colspan="4">
+       <widget class="QLabel" name="cacheLabel">
+        <property name="text">
+         <string>Used for storing shaders, game list, and achievement data.</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="cheatsGroup">
+     <property name="title">
+      <string>Cheats Directory</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_5">
+      <item row="1" column="0">
+       <widget class="QLineEdit" name="cheats"/>
+      </item>
+      <item row="1" column="1">
+       <widget class="QPushButton" name="cheatsBrowse">
+        <property name="text">
+         <string>Browse...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QPushButton" name="cheatsOpen">
+        <property name="text">
+         <string>Open...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <widget class="QPushButton" name="cheatsReset">
+        <property name="text">
+         <string>Reset</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" colspan="4">
+       <widget class="QLabel" name="cheatsLabel">
+        <property name="text">
+         <string>Used for storing .pnach files containing game cheats.</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="snapshotsGroup">
+     <property name="title">
+      <string>Snapshots Directory</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="1" column="0">
+       <widget class="QLineEdit" name="snapshots"/>
+      </item>
+      <item row="1" column="1">
+       <widget class="QPushButton" name="snapshotsBrowse">
+        <property name="text">
+         <string>Browse...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QPushButton" name="snapshotsOpen">
+        <property name="text">
+         <string>Open...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <widget class="QPushButton" name="snapshotsReset">
+        <property name="text">
+         <string>Reset</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" colspan="4">
+       <widget class="QLabel" name="snaphotsLabel">
         <property name="text">
          <string>Used for screenshots and saving GS dumps.</string>
         </property>
@@ -188,91 +136,140 @@
        </widget>
       </item>
      </layout>
-        </widget>
-       </item>
-       <item row="3" column="0">
-        <widget class="QGroupBox" name="coversGroup">
-         <property name="title">
-          <string>Covers Directory</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_4">
-          <item row="1" column="0">
-           <widget class="QLineEdit" name="covers"/>
-          </item>
-          <item row="1" column="1">
-           <widget class="QPushButton" name="coversBrowse">
-            <property name="text">
-             <string>Browse...</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="2">
-           <widget class="QPushButton" name="coversOpen">
-            <property name="text">
-             <string>Open...</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="3">
-           <widget class="QPushButton" name="coversReset">
-            <property name="text">
-             <string>Reset</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0" colspan="4">
-           <widget class="QLabel" name="coversLabel">
-            <property name="text">
-             <string>Used for storing covers in the game grid/Big Picture UIs.</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="5" column="0">
-        <widget class="QGroupBox" name="videoDumpDirectory">
-         <property name="title">
-          <string>Video Dumping Directory</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_7">
-          <item row="3" column="2">
-           <widget class="QPushButton" name="videoDumpingDirectoryOpen">
-            <property name="text">
-             <string>Open...</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLineEdit" name="videoDumpingDirectory"/>
-          </item>
-          <item row="3" column="1">
-           <widget class="QPushButton" name="videoDumpingDirectoryBrowse">
-            <property name="text">
-             <string>Browse...</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="3">
-           <widget class="QPushButton" name="videoDumpingDirectoryReset">
-            <property name="text">
-             <string>Reset</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="videoDumpLabel">
-            <property name="text">
-             <string>Used for storing video captures.</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-      </layout>
-     </widget>
     </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="saveStatesGroup">
+     <property name="title">
+      <string>Save States Directory</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_2">
+      <item row="0" column="0" colspan="4">
+       <widget class="QLabel" name="saveStatesLabel">
+        <property name="text">
+         <string>Used for storing save states.</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QPushButton" name="saveStatesBrowse">
+        <property name="text">
+         <string>Browse...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <widget class="QPushButton" name="saveStatesReset">
+        <property name="text">
+         <string>Reset</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLineEdit" name="saveStates"/>
+      </item>
+      <item row="1" column="2">
+       <widget class="QPushButton" name="saveStatesOpen">
+        <property name="text">
+         <string>Open...</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="coversGroup">
+     <property name="title">
+      <string>Covers Directory</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_4">
+      <item row="1" column="0">
+       <widget class="QLineEdit" name="covers"/>
+      </item>
+      <item row="1" column="1">
+       <widget class="QPushButton" name="coversBrowse">
+        <property name="text">
+         <string>Browse...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QPushButton" name="coversOpen">
+        <property name="text">
+         <string>Open...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <widget class="QPushButton" name="coversReset">
+        <property name="text">
+         <string>Reset</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" colspan="4">
+       <widget class="QLabel" name="coversLabel">
+        <property name="text">
+         <string>Used for storing covers in the game grid/Big Picture UIs.</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="videoDumpDirectory">
+     <property name="title">
+      <string>Video Dumping Directory</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_7">
+      <item row="3" column="2">
+       <widget class="QPushButton" name="videoDumpingDirectoryOpen">
+        <property name="text">
+         <string>Open...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLineEdit" name="videoDumpingDirectory"/>
+      </item>
+      <item row="3" column="1">
+       <widget class="QPushButton" name="videoDumpingDirectoryBrowse">
+        <property name="text">
+         <string>Browse...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="3">
+       <widget class="QPushButton" name="videoDumpingDirectoryReset">
+        <property name="text">
+         <string>Reset</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="videoDumpLabel">
+        <property name="text">
+         <string>Used for storing video captures.</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>0</height>
+      </size>
+     </property>
+    </spacer>
    </item>
   </layout>
  </widget>
