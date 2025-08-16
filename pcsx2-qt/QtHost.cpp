@@ -1472,7 +1472,7 @@ void Host::CommitBaseSettingChanges()
 		return;
 
 	s_settings_save_timer = new QTimer;
-	s_settings_save_timer->connect(s_settings_save_timer, &QTimer::timeout, &QtHost::SaveSecretsSettings);
+	s_settings_save_timer->connect(s_settings_save_timer, &QTimer::timeout, &QtHost::SaveSettings);
 	s_settings_save_timer->setSingleShot(true);
 	s_settings_save_timer->start(SETTINGS_SAVE_DELAY);
 
@@ -1501,7 +1501,7 @@ void Host::CommitSecretsSettingChanges()
 		return;
 
 	s_secrets_settings_save_timer = new QTimer;
-	s_secrets_settings_save_timer->connect(s_secrets_settings_save_timer, &QTimer::timeout, &QtHost::SaveSettings);
+	s_secrets_settings_save_timer->connect(s_secrets_settings_save_timer, &QTimer::timeout, &QtHost::SaveSecretsSettings);
 	s_secrets_settings_save_timer->setSingleShot(true);
 	s_secrets_settings_save_timer->start(SETTINGS_SAVE_DELAY);
 
