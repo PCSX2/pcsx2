@@ -689,9 +689,9 @@ __ri void ImGuiManager::DrawInputsOverlay(float scale, float margin, float spaci
 
 		const Pad::ControllerInfo& cinfo = pad->GetInfo();
 		if (cinfo.icon_name)
-			text.format("{} {}", cinfo.icon_name, slot + 1u);
+			text.format("{}{}{} {} | ", cinfo.icon_name, pad->IsAnalogLightEnabled() ? ICON_FA_LIGHTBULB : "", pad->IsAnalogLocked() ? ICON_FA_LOCK : "", slot + 1u);
 		else
-			text.format("{} |", slot + 1u);
+			text.format("{}{} {} | ", pad->IsAnalogLightEnabled() ? ICON_FA_LIGHTBULB : "", pad->IsAnalogLocked() ? ICON_FA_LOCK : "", slot + 1u);
 
 		for (u32 bind = 0; bind < static_cast<u32>(cinfo.bindings.size()); bind++)
 		{
@@ -747,7 +747,7 @@ __ri void ImGuiManager::DrawInputsOverlay(float scale, float margin, float spaci
 		if (bindings.empty())
 			continue;
 
-		text.format("{} {} ", ICON_PF_USB, port + 1u);
+		text.format("{} {} | ", ICON_PF_USB, port + 1u);
 
 		for (const InputBindingInfo& bi : bindings)
 		{
