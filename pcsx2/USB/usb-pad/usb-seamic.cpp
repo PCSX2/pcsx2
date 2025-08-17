@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "Host.h"
+#include "IconsPromptFont.h"
 #include "USB/usb-pad/usb-pad.h"
 #include "USB/qemu-usb/desc.h"
 #include "USB/usb-mic/usb-mic.h"
@@ -339,6 +340,11 @@ namespace usb_pad
 	const char* SeamicDevice::TypeName() const
 	{
 		return "seamic";
+	}
+
+	const char* SeamicDevice::IconName() const
+	{
+		return ICON_PF_SEGA_SEAMIC;
 	}
 
 	std::span<const char*> SeamicDevice::SubTypes() const

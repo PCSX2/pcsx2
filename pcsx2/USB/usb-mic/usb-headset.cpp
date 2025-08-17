@@ -34,6 +34,7 @@
 #include "USB/USB.h"
 #include "StateWrapper.h"
 
+#include "IconsPromptFont.h"
 #include "common/Console.h"
 
 #define BUFFER_FRAMES 200
@@ -960,6 +961,11 @@ namespace usb_mic
 	const char* HeadsetDevice::Name() const
 	{
 		return TRANSLATE_NOOP("USB", "Logitech USB Headset");
+	}
+
+	const char* HeadsetDevice::IconName() const
+	{
+		return ICON_PF_HEADSET;
 	}
 
 	bool HeadsetDevice::Freeze(USBDevice* dev, StateWrapper& sw) const

@@ -32,6 +32,7 @@
 #include "USB/qemu-usb/desc.h"
 #include "USB/usb-hid/usb-hid.h"
 
+#include "IconsPromptFont.h"
 #include "common/Console.h"
 
 namespace usb_hid
@@ -826,6 +827,11 @@ namespace usb_hid
 		return "hidkbd";
 	}
 
+	const char* HIDKbdDevice::IconName() const
+	{
+		return ICON_PF_KEYBOARD_ALT;
+	}
+
 	std::span<const InputBindingInfo> HIDKbdDevice::Bindings(u32 subtype) const
 	{
 		static constexpr const InputBindingInfo info[] = {
@@ -897,6 +903,11 @@ namespace usb_hid
 	const char* HIDMouseDevice::TypeName() const
 	{
 		return "hidmouse";
+	}
+
+	const char* HIDMouseDevice::IconName() const
+	{
+		return ICON_PF_MOUSE;
 	}
 
 	bool HIDMouseDevice::Freeze(USBDevice* dev, StateWrapper& sw) const
