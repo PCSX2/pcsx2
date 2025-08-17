@@ -1896,9 +1896,13 @@ void Achievements::Logout()
 
 	Console.WriteLn("Achievements: Clearing credentials...");
 	Host::RemoveBaseSettingValue("Achievements", "Username");
-	Host::RemoveBaseSettingValue("Achievements", "Token");
 	Host::RemoveBaseSettingValue("Achievements", "LoginTimestamp");
 	Host::CommitBaseSettingChanges();
+
+	auto secretsLock = Host::GetSecretsSettingsLock();
+	SettingsInterface* secretsInterface = Host::Internal::GetSecretsSettingsLayer();
+	secretsInterface->DeleteValue("Achievements", "Token");
+	secretsInterface->Save();
 }
 
 
