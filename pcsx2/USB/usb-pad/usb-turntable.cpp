@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "Host.h"
+#include "IconsFontAwesome6.h"
+#include "IconsPromptFont.h"
 #include "Input/InputManager.h"
 #include "StateWrapper.h"
 #include "USB/USB.h"
@@ -233,6 +235,11 @@ namespace usb_pad
 	const char* DJTurntableDevice::TypeName() const
 	{
 		return "DJTurntable";
+	}
+
+	const char* DJTurntableDevice::IconName() const
+	{
+		return ICON_PF_DJ_HERO_TURNTABLE;
 	}
 
 	USBDevice* DJTurntableDevice::CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const

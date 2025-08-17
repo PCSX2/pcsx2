@@ -12,6 +12,7 @@ namespace usb_lightgun
 		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const override;
 		const char* Name() const override;
 		const char* TypeName() const override;
+		const char* IconName() const override;
 		bool Freeze(USBDevice* dev, StateWrapper& sw) const override;
 		void UpdateSettings(USBDevice* dev, SettingsInterface& si) const override;
 		float GetBindingValue(const USBDevice* dev, u32 bind_index) const override;

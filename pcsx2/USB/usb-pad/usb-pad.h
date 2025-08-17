@@ -72,6 +72,7 @@ namespace usb_pad
 		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const override;
 		const char* Name() const override;
 		const char* TypeName() const override;
+		const char* IconName() const override;
 		bool Freeze(USBDevice* dev, StateWrapper& sw) const override;
 		void UpdateSettings(USBDevice* dev, SettingsInterface& si) const override;
 		float GetBindingValue(const USBDevice* dev, u32 bind_index) const override;
@@ -88,6 +89,7 @@ namespace usb_pad
 	public:
 		const char* Name() const override;
 		const char* TypeName() const override;
+		const char* IconName() const override;
 		std::span<const char*> SubTypes() const override;
 		std::span<const InputBindingInfo> Bindings(u32 subtype) const override;
 		std::span<const SettingInfo> Settings(u32 subtype) const override;
@@ -99,6 +101,7 @@ namespace usb_pad
 	public:
 		const char* Name() const;
 		const char* TypeName() const;
+		const char* IconName() const;
 		std::span<const char*> SubTypes() const;
 		std::span<const InputBindingInfo> Bindings(u32 subtype) const;
 		std::span<const SettingInfo> Settings(u32 subtype) const;
@@ -111,6 +114,7 @@ namespace usb_pad
 	public:
 		const char* Name() const;
 		const char* TypeName() const;
+		const char* IconName() const;
 		std::span<const char*> SubTypes() const;
 		std::span<const InputBindingInfo> Bindings(u32 subtype) const;
 		std::span<const SettingInfo> Settings(u32 subtype) const;
