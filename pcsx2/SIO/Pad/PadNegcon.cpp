@@ -42,7 +42,7 @@ static const SettingInfo s_settings[] = {
 };
 
 const Pad::ControllerInfo PadNegcon::ControllerInfo = {Pad::ControllerType::Negcon, "NeGcon",
-	TRANSLATE_NOOP("Pad", "NeGcon"), ICON_PF_GAMEPAD_ALT, s_bindings, s_settings, Pad::VibrationCapabilities::LargeSmallMotors};
+	TRANSLATE_NOOP("Pad", "NeGcon"), ICON_PF_NEGCON, s_bindings, s_settings, Pad::VibrationCapabilities::LargeSmallMotors};
 
 void PadNegcon::ConfigLog()
 {
