@@ -26,6 +26,8 @@ protected:
 	Pad::Mode currentMode = Pad::Mode::NOT_SET;
 	Pad::Command currentCommand = Pad::Command::NOT_SET;
 	size_t commandBytesReceived = 0;
+	bool analogLight = false;
+	bool analogLocked = false;
 
 public: // Public members
 	PadBase(u8 unifiedSlot, size_t ejectTicks = 0);
@@ -54,6 +56,8 @@ public: // Public members
 	virtual std::tuple<u8, u8> GetRawRightAnalog() const = 0;
 	virtual u32 GetButtons() const = 0;
 	virtual u8 GetPressure(u32 index) const = 0;
+	virtual bool IsAnalogLightEnabled() const = 0;
+	virtual bool IsAnalogLocked() const = 0;
 
 	virtual bool Freeze(StateWrapper& sw);
 
