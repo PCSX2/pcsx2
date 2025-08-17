@@ -1158,8 +1158,8 @@ bool MainWindow::shouldAbortForMemcardBusy(const VMLock& lock)
 	{
 		const QMessageBox::StandardButton res = QMessageBox::critical(
 			lock.getDialogParent(),
-			tr("WARNING: Memory Card Busy"),
-			tr("WARNING: Your memory card is still writing data. Shutting down now <b>WILL IRREVERSIBLY DESTROY YOUR MEMORY CARD.</b> It is strongly recommended to resume your game and let it finish writing to your memory card.<br><br>Do you wish to shutdown anyways and <b>IRREVERSIBLY DESTROY YOUR MEMORY CARD?</b>"), QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+			tr("⚠️ DANGER: Memory Card Busy! ⚠️"),
+			tr("Your memory card is still saving data. Shutting down now will <b>IRREVERSIBLY CORRUPT YOUR MEMORY CARD.</b> You are strongly advised to select 'No' and let the game finish saving.<br><br>Do you want to shut down anyway and <b>IRREVERSIBLY CORRUPT YOUR MEMORY CARD?</b>"), QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
 
 		if (res != QMessageBox::Yes)
 		{

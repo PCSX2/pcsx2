@@ -1389,9 +1389,9 @@ void FullscreenUI::ConfirmShutdownIfMemcardBusy(std::function<void(bool)> callba
 		return;
 	}
 
-	OpenConfirmMessageDialog(FSUI_ICONSTR(ICON_PF_MEMORY_CARD, "WARNING: Memory Card Busy"),
-		FSUI_STR("WARNING: Your memory card is still writing data. Shutting down now will IRREVERSIBLY DESTROY YOUR MEMORY CARD. It is strongly recommended to resume your game and let it finish writing to your memory card.\n\nDo you wish to shutdown anyways and IRREVERSIBLY DESTROY YOUR MEMORY CARD?"),
-		std::move(callback));
+	OpenConfirmMessageDialog(FSUI_ICONSTR(ICON_PF_MEMORY_CARD, "⚠️ DANGER: Memory Card Busy! ⚠️"),
+		FSUI_STR("Your memory card is still saving data. Shutting down now will IRREVERSIBLY CORRUPT YOUR MEMORY CARD. You are strongly advised to select 'No' and let the game finish saving.\n\nDo you want to shut down anyway and IRREVERSIBLY CORRUPT YOUR MEMORY CARD?"),
+		std::move(callback), FSUI_STR("🔥 Yes, corrupt my memory card."), FSUI_STR("💾 No, let the save finish."));
 }
 
 bool FullscreenUI::ShouldDefaultToGameList()
@@ -7960,7 +7960,9 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
 // TRANSLATION-STRING-AREA-BEGIN
 TRANSLATE_NOOP("FullscreenUI", "Error");
 TRANSLATE_NOOP("FullscreenUI", "Could not find any CD/DVD-ROM devices. Please ensure you have a drive connected and sufficient permissions to access it.");
-TRANSLATE_NOOP("FullscreenUI", "WARNING: Your memory card is still writing data. Shutting down now will IRREVERSIBLY DESTROY YOUR MEMORY CARD. It is strongly recommended to resume your game and let it finish writing to your memory card.\n\nDo you wish to shutdown anyways and IRREVERSIBLY DESTROY YOUR MEMORY CARD?");
+TRANSLATE_NOOP("FullscreenUI", "Your memory card is still saving data. Shutting down now will IRREVERSIBLY CORRUPT YOUR MEMORY CARD. You are strongly advised to select 'No' and let the game finish saving.\n\nDo you want to shut down anyway and IRREVERSIBLY CORRUPT YOUR MEMORY CARD?");
+TRANSLATE_NOOP("FullscreenUI", "🔥 Yes, corrupt my memory card.");
+TRANSLATE_NOOP("FullscreenUI", "💾 No, let the save finish.");
 TRANSLATE_NOOP("FullscreenUI", "Use Global Setting");
 TRANSLATE_NOOP("FullscreenUI", "Automatic binding failed, no devices are available.");
 TRANSLATE_NOOP("FullscreenUI", "Game title copied to clipboard.");
@@ -8679,7 +8681,7 @@ TRANSLATE_NOOP("FullscreenUI", "Change View");
 TRANSLATE_NOOP("FullscreenUI", "Launch Options");
 TRANSLATE_NOOP("FullscreenUI", "Select Disc Image");
 TRANSLATE_NOOP("FullscreenUI", "Select Disc Drive");
-TRANSLATE_NOOP("FullscreenUI", "WARNING: Memory Card Busy");
+TRANSLATE_NOOP("FullscreenUI", "⚠️ DANGER: Memory Card Busy! ⚠️");
 TRANSLATE_NOOP("FullscreenUI", "Set Input Binding");
 TRANSLATE_NOOP("FullscreenUI", "Region");
 TRANSLATE_NOOP("FullscreenUI", "Compatibility Rating");
