@@ -16,10 +16,6 @@ void Host::CommitBaseSettingChanges()
 {
 }
 
-void Host::CommitSecretsSettingChanges()
-{
-}
-
 void Host::LoadSettings(SettingsInterface& si, std::unique_lock<std::mutex>& lock)
 {
 }

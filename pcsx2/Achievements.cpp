@@ -1774,9 +1774,11 @@ void Achievements::ClientLoginWithPasswordCallback(int result, const char* error
 	// Store configuration.
 	Host::SetBaseStringSettingValue("Achievements", "Username", params->username);
 	Host::SetBaseStringSettingValue("Achievements", "LoginTimestamp", fmt::format("{}", std::time(nullptr)).c_str());
-	Host::Internal::GetSecretsSettingsLayer()->SetStringValue("Achievements", "Token", user->token);
 	Host::CommitBaseSettingChanges();
-	Host::CommitSecretsSettingChanges();
+	
+	SettingsInterface* secretsInterface = Host::Internal::GetSecretsSettingsLayer();
+	secretsInterface->SetStringValue("Achievements", "Token", user->token);
+	secretsInterface->Save();
 
 	ShowLoginSuccess(client);
 }

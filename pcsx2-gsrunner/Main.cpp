@@ -156,11 +156,6 @@ void Host::CommitBaseSettingChanges()
 	// nothing to save, we're all in memory
 }
 
-void Host::CommitSecretsSettingChanges()
-{
-	// ditto
-}
-
 void Host::LoadSettings(SettingsInterface& si, std::unique_lock<std::mutex>& lock)
 {
 }

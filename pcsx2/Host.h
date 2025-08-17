@@ -124,7 +124,6 @@ namespace Host
 	bool ContainsBaseSettingValue(const char* section, const char* key);
 	void RemoveBaseSettingValue(const char* section, const char* key);
 	void CommitBaseSettingChanges();
-	void CommitSecretsSettingChanges();
 
 	/// Settings access, thread-safe.
 	std::string GetStringSettingValue(const char* section, const char* key, const char* default_value = "");

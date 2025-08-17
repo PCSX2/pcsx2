@@ -1488,35 +1488,6 @@ void Host::CommitBaseSettingChanges()
 	}
 }
 
-void Host::CommitSecretsSettingChanges()
-{
-	if (!QtHost::IsOnUIThread())
-	{
-		QtHost::RunOnUIThread(&Host::CommitSecretsSettingChanges);
-		return;
-	}
-
-	auto lock = Host::GetSettingsLock();
-	if (s_secrets_settings_save_timer)
-		return;
-
-	s_secrets_settings_save_timer = new QTimer;
-	s_secrets_settings_save_timer->connect(s_secrets_settings_save_timer, &QTimer::timeout, &QtHost::SaveSecretsSettings);
-	s_secrets_settings_save_timer->setSingleShot(true);
-	s_secrets_settings_save_timer->start(SETTINGS_SAVE_DELAY);
-
-	static bool connected = false;
-	if (!connected)
-	{
-		QObject::connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, []() {
-			delete s_secrets_settings_save_timer;
-			s_secrets_settings_save_timer = nullptr;
-		});
-
-		connected = true;
-	}
-}
-
 bool Host::InBatchMode()
 {
 	return s_batch_mode;
