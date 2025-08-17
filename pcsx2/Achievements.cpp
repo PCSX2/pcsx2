@@ -434,6 +434,24 @@ bool Achievements::Initialize()
 		IdentifyGame(VMManager::GetDiscCRC(), VMManager::GetCurrentCRC());
 
 	const std::string username = Host::GetBaseStringSettingValue("Achievements", "Username");
+
+	// Check the base settings file to see if the token is defined inside. Move if found.
+	std::string oldToken = Host::GetBaseStringSettingValue("Achievements", "Token");
+	if (!oldToken.empty())
+	{
+		auto secretsLock = Host::GetSecretsSettingsLock();
+		SettingsInterface* secretsInterface = Host::Internal::GetSecretsSettingsLayer();
+		secretsInterface->SetStringValue("Achievements", "Token", oldToken.c_str());
+		secretsInterface->Save();
+		
+		oldToken.clear();
+		
+		auto baseLock = Host::GetSettingsLock();
+		SettingsInterface* baseInterface = Host::Internal::GetBaseSettingsLayer();
+		baseInterface->DeleteValue("Achievements", "Token");
+		baseInterface->Save();
+	}
+
 	const std::string api_token = Host::GetStringSettingValue("Achievements", "Token");
 	if (!username.empty() && !api_token.empty())
 	{
