@@ -688,7 +688,11 @@ __ri void ImGuiManager::DrawInputsOverlay(float scale, float margin, float spaci
 			continue;
 
 		const Pad::ControllerInfo& cinfo = pad->GetInfo();
-		text.format("{} {} • {} |", ICON_FA_GAMEPAD, slot + 1u, cinfo.icon_name ? cinfo.icon_name : ICON_FA_TRIANGLE_EXCLAMATION);
+
+		const bool analog_light = pad->IsAnalogLightEnabled();
+		const bool analog_lock = pad->IsAnalogLocked();
+
+		text.format("{} {} • {} {}{} | ", ICON_FA_GAMEPAD, slot + 1u, cinfo.icon_name ? cinfo.icon_name : ICON_FA_TRIANGLE_EXCLAMATION, analog_light ? ICON_FA_LIGHTBULB : "", analog_lock ? ICON_FA_LOCK : "");
 
 		for (u32 bind = 0; bind < static_cast<u32>(cinfo.bindings.size()); bind++)
 		{
