@@ -402,6 +402,16 @@ u8 PadGuitar::GetPressure(u32 index) const
 	return 0;
 }
 
+bool PadGuitar::IsAnalogLightEnabled() const
+{
+	return this->analogLight;
+}
+
+bool PadGuitar::IsAnalogLocked() const
+{
+	return this->analogLocked;
+}
+
 bool PadGuitar::Freeze(StateWrapper& sw)
 {
 	if (!PadBase::Freeze(sw) || !sw.DoMarker("PadGuitar"))

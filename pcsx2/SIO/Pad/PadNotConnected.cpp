@@ -111,6 +111,16 @@ u8 PadNotConnected::GetPressure(u32 index) const
 	return 0;
 }
 
+bool PadNotConnected::IsAnalogLightEnabled() const
+{
+	return this->analogLight;
+}
+
+bool PadNotConnected::IsAnalogLocked() const
+{
+	return this->analogLocked;
+}
+
 u8 PadNotConnected::SendCommandByte(u8 commandByte)
 {
 	return 0xff;

@@ -63,8 +63,6 @@ private:
 
 	u32 buttons = 0xffffffffu;
 	Analogs analogs;
-	bool analogLight = false;
-	bool analogLocked = false;
 	// Analog button can be held without changing its state.
 	// We track here if it is currently held down, to avoid flipping in
 	// and out of analog mode every frame.
@@ -155,6 +153,8 @@ public:
 	std::tuple<u8, u8> GetRawRightAnalog() const override;
 	u32 GetButtons() const override;
 	u8 GetPressure(u32 index) const override;
+	bool IsAnalogLightEnabled() const override;
+	bool IsAnalogLocked() const override;
 
 	bool Freeze(StateWrapper& sw) override;
 
