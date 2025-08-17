@@ -458,6 +458,16 @@ u8 PadNegcon::GetPressure(u32 index) const
 	return 0;
 }
 
+bool PadNegcon::IsAnalogLightEnabled() const
+{
+	return this->analogLight;
+}
+
+bool PadNegcon::IsAnalogLocked() const
+{
+	return this->analogLocked;
+}
+
 bool PadNegcon::Freeze(StateWrapper& sw)
 {
 	if (!PadBase::Freeze(sw) || !sw.DoMarker("PadNegcon"))
