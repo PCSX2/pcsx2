@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "Host.h"
+#include "IconsPromptFont.h"
 #include "Input/InputManager.h"
 #include "StateWrapper.h"
 #include "USB/USB.h"
@@ -283,6 +284,11 @@ namespace usb_pad
 	const char* RealPlayDevice::TypeName() const
 	{
 		return "RealPlay";
+	}
+
+	const char* RealPlayDevice::IconName() const
+	{
+		return ICON_PF_REALPLAY_BOWLING;
 	}
 
 	USBDevice* RealPlayDevice::CreateDevice(SettingsInterface& si, u32 port, u32 type) const

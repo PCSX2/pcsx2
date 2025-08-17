@@ -27,6 +27,7 @@ namespace USB
 
 	std::vector<std::pair<const char*, const char*>> GetDeviceTypes();
 	const char* GetDeviceName(const std::string_view device);
+	const char* GetDeviceIconName(u32 port);
 	const char* GetDeviceSubtypeName(const std::string_view device, u32 subtype);
 	std::span<const char*> GetDeviceSubtypes(const std::string_view device);
 	std::span<const InputBindingInfo> GetDeviceBindings(const std::string_view device, u32 subtype);

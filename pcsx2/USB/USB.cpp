@@ -561,6 +561,15 @@ const char* USB::GetDeviceName(const std::string_view device)
 	return dev ? dev->Name() : TRANSLATE_NOOP("USB", "Not Connected");
 }
 
+const char* USB::GetDeviceIconName(u32 port)
+{
+    pxAssert(port < NUM_PORTS);
+    if (s_usb_device_proxy[port])
+        return s_usb_device_proxy[port]->IconName();
+    else
+        return nullptr;
+}
+
 const char* USB::GetDeviceSubtypeName(const std::string_view device, u32 subtype)
 {
 	const DeviceProxy* dev = RegisterDevice::instance().Device(device);
