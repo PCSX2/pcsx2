@@ -47,8 +47,6 @@ private:
 	u32 buttons = 0xffffffffu;
 	Analogs analogs;
 
-	bool analogLight = false;
-	bool analogLocked = false;
 	bool commandStage = false;
 	std::array<u8, VIBRATION_MOTORS> vibrationMotors = {};
 	std::array<float, 2> vibrationScale = {1.0f, 1.0f};
@@ -126,6 +124,8 @@ public:
 	std::tuple<u8, u8> GetRawRightAnalog() const override;
 	u32 GetButtons() const override;
 	u8 GetPressure(u32 index) const override;
+	bool IsAnalogLightEnabled() const override;
+	bool IsAnalogLocked() const override;
 
 	bool Freeze(StateWrapper& sw) override;
 

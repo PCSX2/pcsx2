@@ -853,6 +853,16 @@ u8 PadDualshock2::GetPressure(u32 index) const
 	}
 }
 
+bool PadDualshock2::IsAnalogLightEnabled() const
+{
+	return this->analogLight;
+}
+
+bool PadDualshock2::IsAnalogLocked() const
+{
+	return this->analogLocked;
+}
+
 bool PadDualshock2::Freeze(StateWrapper& sw)
 {
 	if (!PadBase::Freeze(sw) || !sw.DoMarker("PadDualshock2"))

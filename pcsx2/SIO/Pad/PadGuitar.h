@@ -27,11 +27,6 @@ public:
 private:
 	u32 buttons = 0xffffffffu;
 	u8 whammy = Pad::ANALOG_NEUTRAL_POSITION;
-	// Technically guitars do not have an analog light, but they still use the same ModeSwitch command
-	// as a DS2, and are told to "turn on their light".
-	bool analogLight = false;
-	// Guitars are also instructed to "lock" their "analog light", despite not having one.
-	bool analogLocked = false;
 	bool commandStage = false;
 	float whammyAxisScale = 1.0f; // Guitars only have 1 axis on the whammy bar.
 	float whammyDeadzone = 0.0f;
@@ -87,6 +82,8 @@ public:
 	std::tuple<u8, u8> GetRawRightAnalog() const override;
 	u32 GetButtons() const override;
 	u8 GetPressure(u32 index) const override;
+	bool IsAnalogLightEnabled() const override;
+	bool IsAnalogLocked() const override;
 
 	bool Freeze(StateWrapper& sw) override;
 
