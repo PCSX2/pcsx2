@@ -26,6 +26,7 @@ namespace Host
 		const std::string_view context, const std::string_view msg);
 
 	static std::mutex s_settings_mutex;
+	static std::mutex s_secrets_settings_mutex;
 	static LayeredSettingsInterface s_layered_settings_interface;
 
 	static constexpr u32 TRANSLATION_STRING_CACHE_SIZE = 4 * 1024 * 1024;
@@ -174,6 +175,11 @@ std::string Host::GetHTTPUserAgent()
 std::unique_lock<std::mutex> Host::GetSettingsLock()
 {
 	return std::unique_lock<std::mutex>(s_settings_mutex);
+}
+
+std::unique_lock<std::mutex> Host::GetSecretsSettingsLock()
+{
+	return std::unique_lock<std::mutex>(s_secrets_settings_mutex);
 }
 
 SettingsInterface* Host::GetSettingsInterface()

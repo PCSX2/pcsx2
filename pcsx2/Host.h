@@ -139,6 +139,8 @@ namespace Host
 
 	/// Direct access to settings interface. Must hold the lock when calling GetSettingsInterface() and while using it.
 	std::unique_lock<std::mutex> GetSettingsLock();
+	/// Ditto for secrets file.
+	std::unique_lock<std::mutex> GetSecretsSettingsLock();
 	SettingsInterface* GetSettingsInterface();
 
 	/// Sets host-specific default settings.
