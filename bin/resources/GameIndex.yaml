@@ -26724,7 +26724,8 @@ SLES-54584:
   name: "Pac-Man Rally"
   region: "PAL-M5"
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes depth line.
+    textureInsideRT: 1 # Fixes Half blackscreen on the splitscreen couch co-op mode.
+    halfPixelOffset: 5 # Fixes depth line.
   clampModes:
     vuClampMode: 3 # Fixes bad geometry.
 SLES-54586:
@@ -70058,7 +70059,7 @@ SLUS-21328:
   clampModes:
     vuClampMode: 3 # Fixes bad geometry.
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes depth line.
+    halfPixelOffset: 5 # Fixes depth line.
   patches:
     default:
       content: |-
