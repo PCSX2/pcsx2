@@ -551,11 +551,6 @@ bool GSHwHack::GSC_UrbanReign(GSRendererHW& r, int& skip)
 {
 	if (skip == 0)
 	{
-		if (RTME && RFBP == 0x0000 && RTBP0 == 0x3980 && RFPSM == RTPSM && RTPSM == PSMCT32 && RFBMSK == 0x0)
-		{
-			skip = 1; // Black shadow
-		}
-
 		// Urban Reign downsamples the framebuffer with page-wide columns at a time, and offsets the TBP0 forward as such,
 		// which would be fine, except their texture coordinates appear to be off by one. Which prevents the page translation
 		// from matching the last column, because it's trying to fit the last 65 columns of a 640x448 (effectively 641x448)
