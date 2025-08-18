@@ -7,6 +7,7 @@
 #include "Debugger/SymbolTree/NewSymbolDialogs.h"
 #include "Debugger/SymbolTree/SymbolTreeDelegates.h"
 
+#include <QtGui/QActionGroup>
 #include <QtGui/QClipboard>
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMenu>
@@ -229,8 +230,8 @@ void SymbolTreeView::setupTree()
 	auto type_delegate = new SymbolTreeTypeDelegate(cpu(), this);
 	m_ui.treeView->setItemDelegateForColumn(SymbolTreeModel::TYPE, type_delegate);
 
-	auto value_delegate = new SymbolTreeValueDelegate(cpu(), this);
-	m_ui.treeView->setItemDelegateForColumn(SymbolTreeModel::VALUE, value_delegate);
+	m_value_delegate = new SymbolTreeValueDelegate(cpu(), this);
+	m_ui.treeView->setItemDelegateForColumn(SymbolTreeModel::VALUE, m_value_delegate);
 
 	m_ui.treeView->setAlternatingRowColors(true);
 	m_ui.treeView->setEditTriggers(QTreeView::AllEditTriggers);
@@ -556,6 +557,42 @@ void SymbolTreeView::openContextMenu(QPoint pos)
 		QAction* change_type_temporarily = menu->addAction(tr("Change Type Temporarily"));
 		change_type_temporarily->setEnabled(node_is_object);
 		connect(change_type_temporarily, &QAction::triggered, this, &SymbolTreeView::onChangeTypeTemporarily);
+
+		struct IntegerDisplayBase
+		{
+			int base;
+			QString name;
+		};
+
+		const std::array<IntegerDisplayBase, 4> bases = {{
+			{2, tr("Binary")},
+			{8, tr("Octal")},
+			{10, tr("Decimal")},
+			{16, tr("Hexadecimal")},
+		}};
+
+		QMenu* integer_base_menu = menu->addMenu(tr("Integer Base"));
+		QActionGroup* base_actions = new QActionGroup(integer_base_menu);
+
+		for (const auto& [base, name] : bases)
+		{
+			QAction* base_action = integer_base_menu->addAction(name);
+			base_action->setCheckable(true);
+			base_action->setChecked(m_integer_base == base);
+			connect(base_action, &QAction::toggled, this, [this, base](bool checked) {
+				m_integer_base = base;
+
+				SymbolTreeNode::DisplayOptions display_options;
+				display_options.integer_base = base;
+				m_model->setDisplayOptions(display_options);
+
+				m_value_delegate->setIntegerBase(base);
+
+				updateVisibleNodes(false);
+			});
+
+			base_actions->addAction(base_action);
+		}
 	}
 
 	menu->popup(m_ui.treeView->viewport()->mapToGlobal(pos));
@@ -855,8 +892,8 @@ std::vector<SymbolTreeView::SymbolWork> GlobalVariableTreeView::getSymbols(
 			function_name = tr("unknown function");
 
 		QString name = QString("%1 (%2)")
-						   .arg(QString::fromStdString(local_variable.name()))
-						   .arg(function_name);
+		                   .arg(QString::fromStdString(local_variable.name()))
+		                   .arg(function_name);
 		if (!testName(name, filter))
 			continue;
 

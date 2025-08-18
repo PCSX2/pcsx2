@@ -47,18 +47,29 @@ public:
 	const QString& display_value() const;
 	std::optional<bool> liveness();
 
+	struct DisplayOptions
+	{
+		int integer_base = 10;
+	};
+
 	// Read the value from the VM memory, update liveness information, and
 	// generate a display string. Returns true if the data changed.
-	bool readFromVM(DebugInterface& cpu, const ccc::SymbolDatabase& database);
+	bool readFromVM(DebugInterface& cpu, const ccc::SymbolDatabase& database, const DisplayOptions& display_options);
 
 	// Write the value back to the VM memory. Returns true on success.
-	bool writeToVM(QVariant value, DebugInterface& cpu, const ccc::SymbolDatabase& database);
+	bool writeToVM(
+		QVariant value, DebugInterface& cpu, const ccc::SymbolDatabase& database, const DisplayOptions& display_options);
 
 	QVariant readValueAsVariant(const ccc::ast::Node& physical_type, DebugInterface& cpu, const ccc::SymbolDatabase& database) const;
 	bool writeValueFromVariant(QVariant value, const ccc::ast::Node& physical_type, DebugInterface& cpu) const;
 
-	bool updateDisplayString(DebugInterface& cpu, const ccc::SymbolDatabase& database);
-	QString generateDisplayString(const ccc::ast::Node& physical_type, DebugInterface& cpu, const ccc::SymbolDatabase& database, s32 depth) const;
+	bool updateDisplayString(DebugInterface& cpu, const ccc::SymbolDatabase& database, const DisplayOptions& display);
+	QString generateDisplayString(
+		const ccc::ast::Node& physical_type,
+		DebugInterface& cpu,
+		const ccc::SymbolDatabase& database,
+		const DisplayOptions& display_options,
+		s32 depth) const;
 
 	bool updateLiveness(DebugInterface& cpu);
 

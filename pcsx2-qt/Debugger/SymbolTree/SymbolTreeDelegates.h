@@ -4,9 +4,9 @@
 #pragma once
 
 #include <QtWidgets/QStyledItemDelegate>
+#include <QtWidgets/QLineEdit>
 
 #include "DebugTools/DebugInterface.h"
-#include "DebugTools/SymbolGuardian.h"
 
 class SymbolTreeValueDelegate : public QStyledItemDelegate
 {
@@ -21,7 +21,9 @@ public:
 	void setEditorData(QWidget* editor, const QModelIndex& index) const override;
 	void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
 
-protected:
+	void setIntegerBase(int base) { m_integer_base = base; }
+
+private:
 	// These make it so the values inputted are written back to memory
 	// immediately when the widgets are interacted with rather than when they
 	// are deselected.
@@ -29,6 +31,7 @@ protected:
 	void onComboBoxIndexChanged(int index);
 
 	DebugInterface& m_cpu;
+	int m_integer_base = 10;
 };
 
 class SymbolTreeLocationDelegate : public QStyledItemDelegate
@@ -45,7 +48,7 @@ public:
 	void setEditorData(QWidget* editor, const QModelIndex& index) const override;
 	void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
 
-protected:
+private:
 	DebugInterface& m_cpu;
 	u32 m_alignment;
 };
@@ -63,6 +66,23 @@ public:
 	void setEditorData(QWidget* editor, const QModelIndex& index) const override;
 	void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
 
-protected:
+private:
 	DebugInterface& m_cpu;
+};
+
+class SymbolTreeIntegerLineEdit : public QLineEdit
+{
+	Q_OBJECT
+
+public:
+	SymbolTreeIntegerLineEdit(int base, QWidget* parent);
+
+	std::optional<u64> unsignedValue();
+	void setUnsignedValue(u64 value);
+
+	std::optional<s64> signedValue();
+	void setSignedValue(s64 value);
+
+private:
+	int m_base;
 };
