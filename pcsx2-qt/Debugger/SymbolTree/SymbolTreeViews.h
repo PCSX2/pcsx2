@@ -96,8 +96,6 @@ protected:
 
 	SymbolTreeModel* m_model = nullptr;
 
-	SymbolTreeValueDelegate* m_value_delegate = nullptr;
-
 	enum Flags
 	{
 		NO_SYMBOL_TREE_FLAGS = 0,
@@ -117,7 +115,7 @@ protected:
 	bool m_group_by_source_file = false;
 	bool m_sort_by_if_type_is_known = false;
 
-	int m_integer_base = 10;
+	SymbolTreeDisplayOptions m_display_options;
 };
 
 class FunctionTreeView : public SymbolTreeView

@@ -21,7 +21,9 @@ std::optional<bool> SymbolTreeNode::liveness()
 }
 
 bool SymbolTreeNode::readFromVM(
-	DebugInterface& cpu, const ccc::SymbolDatabase& database, const DisplayOptions& display_options)
+	DebugInterface& cpu,
+	const ccc::SymbolDatabase& database,
+	const SymbolTreeDisplayOptions& display_options)
 {
 	QVariant new_value;
 
@@ -48,7 +50,10 @@ bool SymbolTreeNode::readFromVM(
 }
 
 bool SymbolTreeNode::writeToVM(
-	QVariant value, DebugInterface& cpu, const ccc::SymbolDatabase& database, const DisplayOptions& display_options)
+	QVariant value,
+	DebugInterface& cpu,
+	const ccc::SymbolDatabase& database,
+	const SymbolTreeDisplayOptions& display_options)
 {
 	bool data_changed = false;
 
@@ -205,7 +210,7 @@ bool SymbolTreeNode::writeValueFromVariant(QVariant value, const ccc::ast::Node&
 }
 
 bool SymbolTreeNode::updateDisplayString(
-	DebugInterface& cpu, const ccc::SymbolDatabase& database, const DisplayOptions& display)
+	DebugInterface& cpu, const ccc::SymbolDatabase& database, const SymbolTreeDisplayOptions& display)
 {
 	QString result;
 
@@ -240,7 +245,7 @@ QString SymbolTreeNode::generateDisplayString(
 	const ccc::ast::Node& physical_type,
 	DebugInterface& cpu,
 	const ccc::SymbolDatabase& database,
-	const DisplayOptions& display_options,
+	const SymbolTreeDisplayOptions& display_options,
 	s32 depth) const
 {
 	s32 max_elements_to_display = 0;
@@ -300,28 +305,28 @@ QString SymbolTreeNode::generateDisplayString(
 			switch (builtIn.bclass)
 			{
 				case ccc::ast::BuiltInClass::UNSIGNED_8:
-					result = QString::number(location.read8(cpu), display_options.integer_base);
+					result = display_options.unsignedIntegerToString(location.read8(cpu), 8);
 					break;
 				case ccc::ast::BuiltInClass::SIGNED_8:
-					result = QString::number((s8)location.read8(cpu), display_options.integer_base);
+					result = display_options.signedIntegerToString(static_cast<s8>(location.read8(cpu)), 8);
 					break;
 				case ccc::ast::BuiltInClass::UNQUALIFIED_8:
-					result = QString::number(location.read8(cpu), display_options.integer_base);
+					result = display_options.unsignedIntegerToString(location.read8(cpu), 8);
 					break;
 				case ccc::ast::BuiltInClass::BOOL_8:
 					result = location.read8(cpu) ? "true" : "false";
 					break;
 				case ccc::ast::BuiltInClass::UNSIGNED_16:
-					result = QString::number(location.read16(cpu), display_options.integer_base);
+					result = display_options.unsignedIntegerToString(location.read16(cpu), 16);
 					break;
 				case ccc::ast::BuiltInClass::SIGNED_16:
-					result = QString::number((s16)location.read16(cpu), display_options.integer_base);
+					result = display_options.signedIntegerToString(static_cast<s16>(location.read16(cpu)), 16);
 					break;
 				case ccc::ast::BuiltInClass::UNSIGNED_32:
-					result = QString::number(location.read32(cpu), display_options.integer_base);
+					result = display_options.unsignedIntegerToString(location.read32(cpu), 32);
 					break;
 				case ccc::ast::BuiltInClass::SIGNED_32:
-					result = QString::number((s32)location.read32(cpu), display_options.integer_base);
+					result = display_options.signedIntegerToString(static_cast<s32>(location.read32(cpu)), 32);
 					break;
 				case ccc::ast::BuiltInClass::FLOAT_32:
 				{
@@ -330,10 +335,10 @@ QString SymbolTreeNode::generateDisplayString(
 					break;
 				}
 				case ccc::ast::BuiltInClass::UNSIGNED_64:
-					result = QString::number(location.read64(cpu), display_options.integer_base);
+					result = display_options.unsignedIntegerToString(location.read64(cpu), 64);
 					break;
 				case ccc::ast::BuiltInClass::SIGNED_64:
-					result = QString::number((s64)location.read64(cpu), display_options.integer_base);
+					result = display_options.signedIntegerToString(static_cast<s64>(location.read64(cpu)), 64);
 					break;
 				case ccc::ast::BuiltInClass::FLOAT_64:
 				{
@@ -715,4 +720,72 @@ void SymbolTreeNode::sortChildrenRecursively(bool sort_by_if_type_is_known)
 
 	for (std::unique_ptr<SymbolTreeNode>& child : m_children)
 		child->sortChildrenRecursively(sort_by_if_type_is_known);
+}
+
+// *****************************************************************************
+
+std::optional<u64> SymbolTreeDisplayOptions::stringToUnsignedInteger(QString string) const
+{
+	bool ok;
+	u64 value = string.toULongLong(&ok, integer_base);
+	if (!ok)
+	{
+		// Try parsing it as a signed integer too, just in case the user tried
+		// to use a minus sign.
+		value = static_cast<u64>(string.toLongLong(&ok, integer_base));
+		if (!ok)
+			return std::nullopt;
+	}
+
+	return value;
+}
+
+QString SymbolTreeDisplayOptions::unsignedIntegerToString(u64 value, s32 size_bits) const
+{
+	int field_width = 0;
+	if (show_leading_zeroes && integer_base > 0)
+		field_width = static_cast<int>(ceilf(size_bits / log2f(integer_base)));
+
+	return QStringLiteral("%1").arg(value, field_width, integer_base, QLatin1Char('0'));
+}
+
+std::optional<s64> SymbolTreeDisplayOptions::stringToSignedInteger(QString string) const
+{
+	bool ok;
+	s64 value = string.toLongLong(&ok, integer_base);
+	if (!ok)
+	{
+		// Try to parse it as an unsigned integer too to handle bases other than
+		// decimal (see below), and to handle the case that the user entered a
+		// value that was too big for a signed integer.
+		value = static_cast<s64>(string.toULongLong(&ok, integer_base));
+		if (!ok)
+			return std::nullopt;
+	}
+
+	return value;
+}
+
+QString SymbolTreeDisplayOptions::signedIntegerToString(s64 value, s32 size_bits) const
+{
+	// For bases other than decimal, the user most likely just wants to view the
+	// underlying representation, so we want to print it as unsigned.
+	if (integer_base != 10)
+	{
+		// Truncate sign extended bits.
+		u64 mask = (static_cast<u64>(1) << size_bits) - 1;
+		return unsignedIntegerToString(static_cast<u64>(value) & mask, size_bits);
+	}
+
+	int field_width = 0;
+	if (show_leading_zeroes && integer_base > 0)
+	{
+		field_width = static_cast<int>(ceilf(size_bits / log2f(integer_base)));
+
+		// An extra character is needed for the minus sign.
+		if (value < 0)
+			field_width++;
+	}
+
+	return QStringLiteral("%1").arg(value, field_width, integer_base, QLatin1Char('0'));
 }

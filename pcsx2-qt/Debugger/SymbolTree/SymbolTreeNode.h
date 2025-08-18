@@ -9,9 +9,10 @@
 #include "SymbolTreeLocation.h"
 
 class DebugInterface;
+struct SymbolTreeDisplayOptions;
 
 // A node in a symbol tree model.
-struct SymbolTreeNode
+class SymbolTreeNode
 {
 public:
 	enum Tag
@@ -47,28 +48,30 @@ public:
 	const QString& display_value() const;
 	std::optional<bool> liveness();
 
-	struct DisplayOptions
-	{
-		int integer_base = 10;
-	};
-
 	// Read the value from the VM memory, update liveness information, and
 	// generate a display string. Returns true if the data changed.
-	bool readFromVM(DebugInterface& cpu, const ccc::SymbolDatabase& database, const DisplayOptions& display_options);
+	bool readFromVM(
+		DebugInterface& cpu,
+		const ccc::SymbolDatabase& database,
+		const SymbolTreeDisplayOptions& display_options);
 
 	// Write the value back to the VM memory. Returns true on success.
 	bool writeToVM(
-		QVariant value, DebugInterface& cpu, const ccc::SymbolDatabase& database, const DisplayOptions& display_options);
+		QVariant value,
+		DebugInterface& cpu,
+		const ccc::SymbolDatabase& database,
+		const SymbolTreeDisplayOptions& display_options);
 
 	QVariant readValueAsVariant(const ccc::ast::Node& physical_type, DebugInterface& cpu, const ccc::SymbolDatabase& database) const;
 	bool writeValueFromVariant(QVariant value, const ccc::ast::Node& physical_type, DebugInterface& cpu) const;
 
-	bool updateDisplayString(DebugInterface& cpu, const ccc::SymbolDatabase& database, const DisplayOptions& display);
+	bool updateDisplayString(
+		DebugInterface& cpu, const ccc::SymbolDatabase& database, const SymbolTreeDisplayOptions& display);
 	QString generateDisplayString(
 		const ccc::ast::Node& physical_type,
 		DebugInterface& cpu,
 		const ccc::SymbolDatabase& database,
-		const DisplayOptions& display_options,
+		const SymbolTreeDisplayOptions& display_options,
 		s32 depth) const;
 
 	bool updateLiveness(DebugInterface& cpu);
@@ -91,7 +94,7 @@ public:
 
 	void sortChildrenRecursively(bool sort_by_if_type_is_known);
 
-protected:
+private:
 	QVariant m_value;
 	QString m_display_value;
 	std::optional<bool> m_liveness;
@@ -100,4 +103,17 @@ protected:
 	SymbolTreeNode* m_parent = nullptr;
 	std::vector<std::unique_ptr<SymbolTreeNode>> m_children;
 	bool m_children_fetched = false;
+};
+
+// Settings that control how text in the edit column is displayed, including for
+// the editor widgets.
+struct SymbolTreeDisplayOptions
+{
+	int integer_base = 10;
+	bool show_leading_zeroes = false;
+
+	std::optional<u64> stringToUnsignedInteger(QString string) const;
+	QString unsignedIntegerToString(u64 value, s32 size_bits) const;
+	std::optional<s64> stringToSignedInteger(QString string) const;
+	QString signedIntegerToString(s64 value, s32 size_bits) const;
 };
