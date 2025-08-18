@@ -56,8 +56,8 @@ QWidget* SymbolTreeValueDelegate::createEditor(QWidget* parent, const QStyleOpti
 					case ccc::ast::BuiltInClass::UNSIGNED_32:
 					case ccc::ast::BuiltInClass::UNSIGNED_64:
 					{
-						QLineEdit* editor = new QLineEdit(parent);
-						editor->setText(QString::number(value.toULongLong()));
+						SymbolTreeIntegerLineEdit* editor = new SymbolTreeIntegerLineEdit(m_integer_base, parent);
+						editor->setUnsignedValue(value.toULongLong());
 						result = editor;
 
 						break;
@@ -67,8 +67,8 @@ QWidget* SymbolTreeValueDelegate::createEditor(QWidget* parent, const QStyleOpti
 					case ccc::ast::BuiltInClass::SIGNED_32:
 					case ccc::ast::BuiltInClass::SIGNED_64:
 					{
-						QLineEdit* editor = new QLineEdit(parent);
-						editor->setText(QString::number(value.toLongLong()));
+						SymbolTreeIntegerLineEdit* editor = new SymbolTreeIntegerLineEdit(m_integer_base, parent);
+						editor->setSignedValue(value.toLongLong());
 						result = editor;
 
 						break;
@@ -178,13 +178,12 @@ void SymbolTreeValueDelegate::setModelData(QWidget* editor, QAbstractItemModel* 
 					case ccc::ast::BuiltInClass::UNSIGNED_32:
 					case ccc::ast::BuiltInClass::UNSIGNED_64:
 					{
-						QLineEdit* line_edit = qobject_cast<QLineEdit*>(editor);
+						auto line_edit = qobject_cast<SymbolTreeIntegerLineEdit*>(editor);
 						Q_ASSERT(line_edit);
 
-						bool ok;
-						qulonglong i = line_edit->text().toULongLong(&ok);
-						if (ok)
-							value = i;
+						std::optional<u64> i = line_edit->unsignedValue();
+						if (i.has_value())
+							value = static_cast<quint64>(*i);
 
 						break;
 					}
@@ -193,13 +192,12 @@ void SymbolTreeValueDelegate::setModelData(QWidget* editor, QAbstractItemModel* 
 					case ccc::ast::BuiltInClass::SIGNED_32:
 					case ccc::ast::BuiltInClass::SIGNED_64:
 					{
-						QLineEdit* line_edit = qobject_cast<QLineEdit*>(editor);
+						auto line_edit = qobject_cast<SymbolTreeIntegerLineEdit*>(editor);
 						Q_ASSERT(line_edit);
 
-						bool ok;
-						qlonglong i = line_edit->text().toLongLong(&ok);
-						if (ok)
-							value = i;
+						std::optional<s64> i = line_edit->signedValue();
+						if (i.has_value())
+							value = static_cast<qint64>(*i);
 
 						break;
 					}
@@ -480,4 +478,42 @@ void SymbolTreeTypeDelegate::setModelData(QWidget* editor, QAbstractItemModel* m
 	}
 	else
 		QMessageBox::warning(editor, tr("Cannot Change Type"), error_message);
+}
+
+// *****************************************************************************
+
+SymbolTreeIntegerLineEdit::SymbolTreeIntegerLineEdit(int base, QWidget* parent)
+	: QLineEdit(parent)
+	, m_base(base)
+{
+}
+
+std::optional<u64> SymbolTreeIntegerLineEdit::unsignedValue()
+{
+	bool ok;
+	u64 value = text().toULongLong(&ok, m_base);
+	if (!ok)
+		return std::nullopt;
+
+	return value;
+}
+
+void SymbolTreeIntegerLineEdit::setUnsignedValue(u64 value)
+{
+	setText(QString::number(value, m_base));
+}
+
+std::optional<s64> SymbolTreeIntegerLineEdit::signedValue()
+{
+	bool ok;
+	s64 value = text().toLongLong(&ok, m_base);
+	if (!ok)
+		return std::nullopt;
+
+	return value;
+}
+
+void SymbolTreeIntegerLineEdit::setSignedValue(s64 value)
+{
+	setText(QString::number(value, m_base));
 }
