@@ -410,7 +410,7 @@ std::vector<std::unique_ptr<SymbolTreeNode>> SymbolTreeModel::populateChildren(
 	ccc::NodeHandle parent_handle,
 	DebugInterface& cpu,
 	const ccc::SymbolDatabase& database,
-	const SymbolTreeNode::DisplayOptions& display_options)
+	const SymbolTreeDisplayOptions& display_options)
 {
 	auto [physical_type, symbol] = logical_type.physical_type(database);
 

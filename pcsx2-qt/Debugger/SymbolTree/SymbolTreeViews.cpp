@@ -222,6 +222,7 @@ void SymbolTreeView::expandGroups(QModelIndex index)
 void SymbolTreeView::setupTree()
 {
 	m_model = new SymbolTreeModel(cpu(), this);
+	m_model->setDisplayOptions(m_display_options);
 	m_ui.treeView->setModel(m_model);
 
 	auto location_delegate = new SymbolTreeLocationDelegate(cpu(), m_symbol_address_alignment, this);
@@ -230,8 +231,8 @@ void SymbolTreeView::setupTree()
 	auto type_delegate = new SymbolTreeTypeDelegate(cpu(), this);
 	m_ui.treeView->setItemDelegateForColumn(SymbolTreeModel::TYPE, type_delegate);
 
-	m_value_delegate = new SymbolTreeValueDelegate(cpu(), this);
-	m_ui.treeView->setItemDelegateForColumn(SymbolTreeModel::VALUE, m_value_delegate);
+	auto value_delegate = new SymbolTreeValueDelegate(cpu(), this);
+	m_ui.treeView->setItemDelegateForColumn(SymbolTreeModel::VALUE, value_delegate);
 
 	m_ui.treeView->setAlternatingRowColors(true);
 	m_ui.treeView->setEditTriggers(QTreeView::AllEditTriggers);
@@ -578,21 +579,26 @@ void SymbolTreeView::openContextMenu(QPoint pos)
 		{
 			QAction* base_action = integer_base_menu->addAction(name);
 			base_action->setCheckable(true);
-			base_action->setChecked(m_integer_base == base);
+			base_action->setChecked(m_model->displayOptions().integer_base == base);
 			connect(base_action, &QAction::toggled, this, [this, base](bool checked) {
-				m_integer_base = base;
-
-				SymbolTreeNode::DisplayOptions display_options;
-				display_options.integer_base = base;
-				m_model->setDisplayOptions(display_options);
-
-				m_value_delegate->setIntegerBase(base);
+				m_display_options.integer_base = base;
+				m_model->setDisplayOptions(m_display_options);
 
 				updateVisibleNodes(false);
 			});
 
 			base_actions->addAction(base_action);
 		}
+
+		QAction* show_leading_zeroes = menu->addAction(tr("Show Leading Zeroes"));
+		show_leading_zeroes->setCheckable(true);
+		show_leading_zeroes->setChecked(m_model->displayOptions().show_leading_zeroes);
+		connect(show_leading_zeroes, &QAction::toggled, this, [this](bool checked) {
+			m_display_options.show_leading_zeroes = checked;
+			m_model->setDisplayOptions(m_display_options);
+
+			updateVisibleNodes(false);
+		});
 	}
 
 	menu->popup(m_ui.treeView->viewport()->mapToGlobal(pos));

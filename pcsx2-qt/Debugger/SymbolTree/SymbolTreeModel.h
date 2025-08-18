@@ -65,7 +65,8 @@ public:
 	std::optional<QString> changeTypeTemporarily(QModelIndex index, std::string_view type_string);
 	std::optional<QString> typeFromModelIndexToString(QModelIndex index);
 
-	void setDisplayOptions(const SymbolTreeNode::DisplayOptions& options) { m_display_options = options; }
+	const SymbolTreeDisplayOptions& displayOptions() const { return m_display_options; }
+	void setDisplayOptions(const SymbolTreeDisplayOptions& options) { m_display_options = options; }
 
 protected:
 	static std::vector<std::unique_ptr<SymbolTreeNode>> populateChildren(
@@ -75,12 +76,12 @@ protected:
 		ccc::NodeHandle parent_handle,
 		DebugInterface& cpu,
 		const ccc::SymbolDatabase& database,
-		const SymbolTreeNode::DisplayOptions& display_options);
+		const SymbolTreeDisplayOptions& display_options);
 
 	static bool nodeHasChildren(const ccc::ast::Node& logical_type, const ccc::SymbolDatabase& database);
 
 	std::unique_ptr<SymbolTreeNode> m_root;
 	QString m_filter;
 	DebugInterface& m_cpu;
-	SymbolTreeNode::DisplayOptions m_display_options;
+	SymbolTreeDisplayOptions m_display_options;
 };

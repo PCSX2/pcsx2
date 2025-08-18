@@ -3,13 +3,14 @@
 
 #include "SymbolTreeDelegates.h"
 
+#include "Debugger/SymbolTree/SymbolTreeModel.h"
+#include "Debugger/SymbolTree/TypeString.h"
+
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QMessageBox>
-#include "Debugger/SymbolTree/SymbolTreeModel.h"
-#include "Debugger/SymbolTree/TypeString.h"
 
 SymbolTreeValueDelegate::SymbolTreeValueDelegate(
 	DebugInterface& cpu,
@@ -27,6 +28,8 @@ QWidget* SymbolTreeValueDelegate::createEditor(QWidget* parent, const QStyleOpti
 	const SymbolTreeModel* tree_model = qobject_cast<const SymbolTreeModel*>(index.model());
 	if (!tree_model)
 		return nullptr;
+
+	const SymbolTreeDisplayOptions& display_options = tree_model->displayOptions();
 
 	SymbolTreeNode* node = tree_model->nodeFromIndex(index);
 	if (!node || !node->type.valid())
@@ -46,9 +49,9 @@ QWidget* SymbolTreeValueDelegate::createEditor(QWidget* parent, const QStyleOpti
 		{
 			case ccc::ast::BUILTIN:
 			{
-				const ccc::ast::BuiltIn& builtIn = type.as<ccc::ast::BuiltIn>();
+				const ccc::ast::BuiltIn& builtin = type.as<ccc::ast::BuiltIn>();
 
-				switch (builtIn.bclass)
+				switch (builtin.bclass)
 				{
 					case ccc::ast::BuiltInClass::UNSIGNED_8:
 					case ccc::ast::BuiltInClass::UNQUALIFIED_8:
@@ -56,7 +59,8 @@ QWidget* SymbolTreeValueDelegate::createEditor(QWidget* parent, const QStyleOpti
 					case ccc::ast::BuiltInClass::UNSIGNED_32:
 					case ccc::ast::BuiltInClass::UNSIGNED_64:
 					{
-						SymbolTreeIntegerLineEdit* editor = new SymbolTreeIntegerLineEdit(m_integer_base, parent);
+						SymbolTreeIntegerLineEdit* editor = new SymbolTreeIntegerLineEdit(
+							display_options, ccc::ast::builtin_class_size(builtin.bclass) * 8, parent);
 						editor->setUnsignedValue(value.toULongLong());
 						result = editor;
 
@@ -67,7 +71,8 @@ QWidget* SymbolTreeValueDelegate::createEditor(QWidget* parent, const QStyleOpti
 					case ccc::ast::BuiltInClass::SIGNED_32:
 					case ccc::ast::BuiltInClass::SIGNED_64:
 					{
-						SymbolTreeIntegerLineEdit* editor = new SymbolTreeIntegerLineEdit(m_integer_base, parent);
+						SymbolTreeIntegerLineEdit* editor = new SymbolTreeIntegerLineEdit(
+							display_options, ccc::ast::builtin_class_size(builtin.bclass) * 8, parent);
 						editor->setSignedValue(value.toLongLong());
 						result = editor;
 
@@ -168,9 +173,9 @@ void SymbolTreeValueDelegate::setModelData(QWidget* editor, QAbstractItemModel* 
 		{
 			case ccc::ast::BUILTIN:
 			{
-				const ccc::ast::BuiltIn& builtIn = type.as<ccc::ast::BuiltIn>();
+				const ccc::ast::BuiltIn& builtin = type.as<ccc::ast::BuiltIn>();
 
-				switch (builtIn.bclass)
+				switch (builtin.bclass)
 				{
 					case ccc::ast::BuiltInClass::UNSIGNED_8:
 					case ccc::ast::BuiltInClass::UNQUALIFIED_8:
@@ -482,38 +487,30 @@ void SymbolTreeTypeDelegate::setModelData(QWidget* editor, QAbstractItemModel* m
 
 // *****************************************************************************
 
-SymbolTreeIntegerLineEdit::SymbolTreeIntegerLineEdit(int base, QWidget* parent)
+SymbolTreeIntegerLineEdit::SymbolTreeIntegerLineEdit(
+	SymbolTreeDisplayOptions display_options, s32 size_bits, QWidget* parent)
 	: QLineEdit(parent)
-	, m_base(base)
+	, m_display_options(display_options)
+	, m_size_bits(size_bits)
 {
 }
 
 std::optional<u64> SymbolTreeIntegerLineEdit::unsignedValue()
 {
-	bool ok;
-	u64 value = text().toULongLong(&ok, m_base);
-	if (!ok)
-		return std::nullopt;
-
-	return value;
+	return m_display_options.stringToUnsignedInteger(text());
 }
 
 void SymbolTreeIntegerLineEdit::setUnsignedValue(u64 value)
 {
-	setText(QString::number(value, m_base));
+	setText(m_display_options.unsignedIntegerToString(value, m_size_bits));
 }
 
 std::optional<s64> SymbolTreeIntegerLineEdit::signedValue()
 {
-	bool ok;
-	s64 value = text().toLongLong(&ok, m_base);
-	if (!ok)
-		return std::nullopt;
-
-	return value;
+	return m_display_options.stringToSignedInteger(text());
 }
 
 void SymbolTreeIntegerLineEdit::setSignedValue(s64 value)
 {
-	setText(QString::number(value, m_base));
+	setText(m_display_options.signedIntegerToString(value, m_size_bits));
 }
