@@ -9,7 +9,7 @@
 #include "SymbolTreeLocation.h"
 
 class DebugInterface;
-struct SymbolTreeDisplayOptions;
+class SymbolTreeDisplayOptions;
 
 // A node in a symbol tree model.
 class SymbolTreeNode
@@ -105,15 +105,24 @@ private:
 	bool m_children_fetched = false;
 };
 
-// Settings that control how text in the edit column is displayed, including for
-// the editor widgets.
-struct SymbolTreeDisplayOptions
+// Settings that control how text in the value column is displayed, including
+// for the editor widgets.
+class SymbolTreeDisplayOptions
 {
-	int integer_base = 10;
-	bool show_leading_zeroes = false;
+public:
+	int integerBase() const;
+	bool setIntegerBase(int base);
+
+	bool showLeadingZeroes() const;
+	bool setShowLeadingZeroes(bool show);
 
 	std::optional<u64> stringToUnsignedInteger(QString string) const;
 	QString unsignedIntegerToString(u64 value, s32 size_bits) const;
+
 	std::optional<s64> stringToSignedInteger(QString string) const;
 	QString signedIntegerToString(s64 value, s32 size_bits) const;
+
+private:
+	int m_integer_base = 10;
+	bool m_show_leading_zeroes = false;
 };

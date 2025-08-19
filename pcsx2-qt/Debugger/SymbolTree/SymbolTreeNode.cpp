@@ -724,15 +724,43 @@ void SymbolTreeNode::sortChildrenRecursively(bool sort_by_if_type_is_known)
 
 // *****************************************************************************
 
+int SymbolTreeDisplayOptions::integerBase() const
+{
+	return m_integer_base;
+}
+
+bool SymbolTreeDisplayOptions::setIntegerBase(int base)
+{
+	if (base == m_integer_base || (base != 2 && base != 8 && base != 10 && base != 16))
+		return false;
+
+	m_integer_base = base;
+	return true;
+}
+
+bool SymbolTreeDisplayOptions::showLeadingZeroes() const
+{
+	return m_show_leading_zeroes;
+}
+
+bool SymbolTreeDisplayOptions::setShowLeadingZeroes(bool show)
+{
+	if (show == m_show_leading_zeroes)
+		return false;
+
+	m_show_leading_zeroes = show;
+	return true;
+}
+
 std::optional<u64> SymbolTreeDisplayOptions::stringToUnsignedInteger(QString string) const
 {
 	bool ok;
-	u64 value = string.toULongLong(&ok, integer_base);
+	u64 value = string.toULongLong(&ok, m_integer_base);
 	if (!ok)
 	{
 		// Try parsing it as a signed integer too, just in case the user tried
 		// to use a minus sign.
-		value = static_cast<u64>(string.toLongLong(&ok, integer_base));
+		value = static_cast<u64>(string.toLongLong(&ok, m_integer_base));
 		if (!ok)
 			return std::nullopt;
 	}
@@ -743,22 +771,22 @@ std::optional<u64> SymbolTreeDisplayOptions::stringToUnsignedInteger(QString str
 QString SymbolTreeDisplayOptions::unsignedIntegerToString(u64 value, s32 size_bits) const
 {
 	int field_width = 0;
-	if (show_leading_zeroes && integer_base > 0)
-		field_width = static_cast<int>(ceilf(size_bits / log2f(integer_base)));
+	if (m_show_leading_zeroes)
+		field_width = static_cast<int>(ceilf(size_bits / log2f(m_integer_base)));
 
-	return QStringLiteral("%1").arg(value, field_width, integer_base, QLatin1Char('0'));
+	return QStringLiteral("%1").arg(value, field_width, m_integer_base, QLatin1Char('0'));
 }
 
 std::optional<s64> SymbolTreeDisplayOptions::stringToSignedInteger(QString string) const
 {
 	bool ok;
-	s64 value = string.toLongLong(&ok, integer_base);
+	s64 value = string.toLongLong(&ok, m_integer_base);
 	if (!ok)
 	{
 		// Try to parse it as an unsigned integer too to handle bases other than
 		// decimal (see below), and to handle the case that the user entered a
 		// value that was too big for a signed integer.
-		value = static_cast<s64>(string.toULongLong(&ok, integer_base));
+		value = static_cast<s64>(string.toULongLong(&ok, m_integer_base));
 		if (!ok)
 			return std::nullopt;
 	}
@@ -769,8 +797,8 @@ std::optional<s64> SymbolTreeDisplayOptions::stringToSignedInteger(QString strin
 QString SymbolTreeDisplayOptions::signedIntegerToString(s64 value, s32 size_bits) const
 {
 	// For bases other than decimal, the user most likely just wants to view the
-	// underlying representation, so we want to print it as unsigned.
-	if (integer_base != 10)
+	// underlying representation, so we want to display it as unsigned.
+	if (m_integer_base != 10)
 	{
 		// Truncate sign extended bits.
 		u64 mask = (static_cast<u64>(1) << size_bits) - 1;
@@ -778,14 +806,14 @@ QString SymbolTreeDisplayOptions::signedIntegerToString(s64 value, s32 size_bits
 	}
 
 	int field_width = 0;
-	if (show_leading_zeroes && integer_base > 0)
+	if (m_show_leading_zeroes)
 	{
-		field_width = static_cast<int>(ceilf(size_bits / log2f(integer_base)));
+		field_width = static_cast<int>(ceilf(size_bits / log2f(m_integer_base)));
 
 		// An extra character is needed for the minus sign.
 		if (value < 0)
 			field_width++;
 	}
 
-	return QStringLiteral("%1").arg(value, field_width, integer_base, QLatin1Char('0'));
+	return QStringLiteral("%1").arg(value, field_width, m_integer_base, QLatin1Char('0'));
 }

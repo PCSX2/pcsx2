@@ -82,6 +82,12 @@ void SymbolTreeView::toJson(JsonValueWrapper& json)
 	{
 		json.value().AddMember("sortByIfTypeIsKnown", m_sort_by_if_type_is_known, json.allocator());
 	}
+
+	if (m_flags & ALLOW_TYPE_ACTIONS)
+	{
+		json.value().AddMember("integerBase", m_display_options.integerBase(), json.allocator());
+		json.value().AddMember("showLeadingZeroes", m_display_options.showLeadingZeroes(), json.allocator());
+	}
 }
 
 bool SymbolTreeView::fromJson(const JsonValueWrapper& json)
@@ -90,6 +96,7 @@ bool SymbolTreeView::fromJson(const JsonValueWrapper& json)
 		return false;
 
 	bool needs_reset = false;
+	bool needs_update = false;
 
 	auto show_size_column = json.value().FindMember("showSizeColumn");
 	if (show_size_column != json.value().MemberEnd() && show_size_column->value.IsBool())
@@ -132,8 +139,26 @@ bool SymbolTreeView::fromJson(const JsonValueWrapper& json)
 		}
 	}
 
+	if (m_flags & ALLOW_TYPE_ACTIONS)
+	{
+		auto integer_base = json.value().FindMember("integerBase");
+		if (integer_base != json.value().MemberEnd() && integer_base->value.IsInt())
+			needs_update |= m_display_options.setIntegerBase(integer_base->value.GetInt());
+
+		auto show_leading_zeroes = json.value().FindMember("showLeadingZeroes");
+		if (show_leading_zeroes != json.value().MemberEnd() && show_leading_zeroes->value.IsBool())
+			needs_update |= m_display_options.setShowLeadingZeroes(show_leading_zeroes->value.GetBool());
+	}
+
 	if (needs_reset)
+	{
 		reset();
+	}
+	else if (needs_update && m_model)
+	{
+		m_model->setDisplayOptions(m_display_options);
+		updateVisibleNodes(false);
+	}
 
 	return true;
 }
@@ -579,9 +604,9 @@ void SymbolTreeView::openContextMenu(QPoint pos)
 		{
 			QAction* base_action = integer_base_menu->addAction(name);
 			base_action->setCheckable(true);
-			base_action->setChecked(m_model->displayOptions().integer_base == base);
+			base_action->setChecked(m_model->displayOptions().integerBase() == base);
 			connect(base_action, &QAction::toggled, this, [this, base](bool checked) {
-				m_display_options.integer_base = base;
+				m_display_options.setIntegerBase(base);
 				m_model->setDisplayOptions(m_display_options);
 
 				updateVisibleNodes(false);
@@ -592,9 +617,9 @@ void SymbolTreeView::openContextMenu(QPoint pos)
 
 		QAction* show_leading_zeroes = menu->addAction(tr("Show Leading Zeroes"));
 		show_leading_zeroes->setCheckable(true);
-		show_leading_zeroes->setChecked(m_model->displayOptions().show_leading_zeroes);
+		show_leading_zeroes->setChecked(m_model->displayOptions().showLeadingZeroes());
 		connect(show_leading_zeroes, &QAction::toggled, this, [this](bool checked) {
-			m_display_options.show_leading_zeroes = checked;
+			m_display_options.setShowLeadingZeroes(checked);
 			m_model->setDisplayOptions(m_display_options);
 
 			updateVisibleNodes(false);
