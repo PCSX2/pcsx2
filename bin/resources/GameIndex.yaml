@@ -30070,13 +30070,19 @@ SLES-55676:
 SLES-82001:
   name: "Summoner"
   region: "PAL-E"
+  clampModes:
+    eeClampMode: 2 # Fixes missing shadows and indicators.
 SLES-82003:
   name: "Summoner"
   region: "PAL-F"
+  clampModes:
+    eeClampMode: 2 # Fixes missing shadows and indicators.
 SLES-82005:
   name: "Summoner"
   region: "PAL-G"
   compat: 5
+  clampModes:
+    eeClampMode: 2 # Fixes missing shadows and indicators.
 SLES-82009:
   name: "Metal Gear Solid 2 - Substance"
   region: "PAL-M5"
@@ -63048,6 +63054,8 @@ SLUS-20074:
   name: "Summoner"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    eeClampMode: 2 # Fixes missing shadows and indicators.
 SLUS-20075:
   name: "Disney's Jungle Book - Rhythm & Groove"
   region: "NTSC-U"
