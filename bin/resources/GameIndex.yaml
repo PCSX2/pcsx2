@@ -1701,6 +1701,8 @@ SCAJ-20074:
 SCAJ-20075:
   name: "Dragon Quest V - Bride of the Sky"
   region: "NTSC-Unk"
+  roundModes:
+    eeDivRoundMode: 3 # Fixes camera issues at the top of mount evil.
 SCAJ-20076:
   name: "Armored Core - Nexus [Disc 1]"
   region: "NTSC-Unk"
@@ -43216,6 +43218,8 @@ SLPM-65555:
   name-en: "Dragon Quest V - Tenkuu no Hanayome"
   region: "NTSC-J"
   compat: 5
+  roundModes:
+    eeDivRoundMode: 3 # Fixes camera issues at the top of mount evil.
 SLPM-65556:
   name: "信長の野望・天下創世"
   name-sort: "のぶながのやぼう てんかそうせい"
@@ -48875,6 +48879,8 @@ SLPM-66480:
   name-en: "Dragon Quest V - Tenkuu no Hanayome [Ultimate Hits]"
   region: "NTSC-J"
   compat: 5
+  roundModes:
+    eeDivRoundMode: 3 # Fixes camera issues at the top of mount evil.
 SLPM-66481:
   name: "ドラゴンクエストⅧ 空と海と大地と呪われし姫君 [Ultimate Hits]"
   name-sort: "どらごんくえすと8 そらとうみとだいちとのろわれしひめぎみ [Ultimate Hits]"
