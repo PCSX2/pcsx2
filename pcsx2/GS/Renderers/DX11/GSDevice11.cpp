@@ -46,6 +46,7 @@ GSDevice11::GSDevice11()
 
 	m_features.primitive_id = true;
 	m_features.texture_barrier = false;
+	m_features.multidraw_fb_copy = GSConfig.OverrideTextureBarriers != 0;
 	m_features.provoking_vertex_last = false;
 	m_features.point_expand = false;
 	m_features.line_expand = false;
@@ -2681,26 +2682,6 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		PSSetShaderResource(1, config.pal);
 	}
 
-	GSTexture* draw_rt_clone = nullptr;
-
-	if (config.require_one_barrier || (config.tex && config.tex == config.rt))
-	{
-		// Requires a copy of the RT.
-		// Used as "bind rt" flag when texture barrier is unsupported for tex is fb.
-		draw_rt_clone = CreateTexture(rtsize.x, rtsize.y, 1, colclip_rt ? GSTexture::Format::ColorClip : GSTexture::Format::Color, true);
-		if (draw_rt_clone)
-		{
-			CopyRect(colclip_rt ? colclip_rt : config.rt, draw_rt_clone, config.drawarea, config.drawarea.left, config.drawarea.top);
-			if (config.require_one_barrier)
-				PSSetShaderResource(2, draw_rt_clone);
-			if (config.tex && config.tex == config.rt)
-				PSSetShaderResource(0, draw_rt_clone);
-		}
-		else
-			Console.Warning("D3D11: Failed to allocate temp texture for RT copy.");
-
-	}
-
 	SetupVS(config.vs, &config.cb_vs);
 	SetupPS(config.ps, &config.cb_ps, config.sampler);
 
@@ -2742,13 +2723,25 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		draw_ds = m_state.cached_dsv;
 	}
 
+	GSTexture* draw_rt_clone = nullptr;
+
+	if (config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy) || (config.tex && config.tex == config.rt))
+	{
+		// Requires a copy of the RT.
+		// Used as "bind rt" flag when texture barrier is unsupported for tex is fb.
+		draw_rt_clone = CreateTexture(rtsize.x, rtsize.y, 1, draw_rt->GetFormat(), true);
+
+		if (!draw_rt_clone)
+			Console.Warning("D3D11: Failed to allocate temp texture for RT copy.");
+	}
+
 	// Update again as it may have changed.
 	if (config.tex && config.tex == config.ds)
 		read_only_dsv = static_cast<GSTexture11*>(draw_ds)->ReadOnlyDepthStencilView();
 
 	OMSetRenderTargets(draw_rt, draw_ds, &config.scissor, read_only_dsv);
 	SetupOM(config.depth, OMBlendSelector(config.colormask, config.blend), config.blend.constant);
-	DrawIndexedPrimitive();
+	SendHWDraw(config, draw_rt_clone, draw_rt, config.require_one_barrier, config.require_full_barrier);
 
 	if (config.blend_multi_pass.enable)
 	{
@@ -2773,7 +2766,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		}
 
 		SetupOM(config.alpha_second_pass.depth, OMBlendSelector(config.alpha_second_pass.colormask, config.blend), config.blend.constant);
-		DrawIndexedPrimitive();
+		SendHWDraw(config, draw_rt_clone, draw_rt, config.alpha_second_pass.require_one_barrier, config.alpha_second_pass.require_full_barrier);
 	}
 
 	if (draw_rt_clone)
@@ -2798,4 +2791,61 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 			g_gs_device->SetColorClipTexture(nullptr);
 		}
 	}
+}
+
+void GSDevice11::SendHWDraw(const GSHWDrawConfig& config, GSTexture* draw_rt_clone, GSTexture* draw_rt, const bool one_barrier, const bool full_barrier)
+{
+	if (draw_rt_clone)
+	{
+#ifdef PCSX2_DEVBUILD
+		if ((one_barrier || full_barrier) && !config.ps.IsFeedbackLoop()) [[unlikely]]
+			Console.Warning("D3D11: Possible unnecessary copy detected.");
+#endif
+
+		const u32 indices_per_prim = config.indices_per_prim;
+
+		auto CopyAndBind = [&]() {
+			CopyRect(draw_rt, draw_rt_clone, config.drawarea, config.drawarea.left, config.drawarea.top);
+			if (one_barrier || full_barrier)
+				PSSetShaderResource(2, draw_rt_clone);
+			if (config.tex && config.tex == config.rt)
+				PSSetShaderResource(0, draw_rt_clone);
+		};
+
+		// Copy once per batch, primitives don't overlap each other.
+		if (m_features.multidraw_fb_copy && full_barrier && config.drawlist)
+		{
+			const u32 draw_list_size = static_cast<u32>(config.drawlist->size());
+
+			for (u32 n = 0, p = 0; n < draw_list_size; n++)
+			{
+				const u32 count = (*config.drawlist)[n] * indices_per_prim;
+
+				CopyAndBind();
+				DrawIndexedPrimitive(p, count);
+				p += count;
+			}
+
+			return;
+		}
+
+		// Copy once per primitive.
+		// TODO: Optimization try to use prim area for copy instead of draw area,
+		// might need current prim and previous prim area due to overlap,
+		// will need to use vertex cords to get the new copy rect.
+		if (m_features.multidraw_fb_copy && full_barrier)
+		{
+			for (u32 p = 0; p < config.nindices; p += indices_per_prim)
+			{
+				CopyAndBind();
+				DrawIndexedPrimitive(p, indices_per_prim);
+			}
+
+			return;
+		}
+
+		CopyAndBind();
+	}
+
+	DrawIndexedPrimitive();
 }
