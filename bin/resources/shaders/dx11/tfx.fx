@@ -82,6 +82,7 @@
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
 #define SW_BLEND_NEEDS_RT (SW_BLEND && (PS_BLEND_A == 1 || PS_BLEND_B == 1 || PS_BLEND_C == 1 || PS_BLEND_D == 1))
 #define SW_AD_TO_HW (PS_BLEND_C == 1 && PS_A_MASKED)
+#define NEEDS_RT_FOR_AFAIL (PS_AFAIL == 3 && PS_NO_COLOR1)
 
 struct VS_INPUT
 {
@@ -1063,6 +1064,36 @@ PS_OUTPUT ps_main(PS_INPUT input)
 		if (C.a < A_one) C.a += A_one;
 	}
 
+#if PS_DATE >= 5
+
+#if PS_WRITE_RG == 1
+	// Pseudo 16 bits access.
+	float rt_a = RtTexture.Load(int3(input.p.xy, 0)).g;
+#else
+	float rt_a = RtTexture.Load(int3(input.p.xy, 0)).a;
+#endif
+
+#if (PS_DATE & 3) == 1
+	// DATM == 0: Pixel with alpha equal to 1 will failed
+	#if PS_RTA_CORRECTION
+		bool bad = (254.5f / 255.0f) < rt_a;
+	#else
+		bool bad = (127.5f / 255.0f) < rt_a;
+	#endif
+#elif (PS_DATE & 3) == 2
+	// DATM == 1: Pixel with alpha equal to 0 will failed
+	#if PS_RTA_CORRECTION
+		bool bad = rt_a < (254.5f / 255.0f);
+	#else
+		bool bad = rt_a < (127.5f / 255.0f);
+	#endif
+#endif
+
+	if (bad)
+		discard;
+
+#endif
+
 #if PS_DATE == 3
 	// Note gl_PrimitiveID == stencil_ceil will be the primitive that will update
 	// the bad alpha value so we must keep it.
@@ -1154,7 +1185,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 
 	ps_fbmask(C, input.p.xy);
 
-#if PS_AFAIL == 3 // RGB_ONLY
+#if PS_AFAIL == 3 && !PS_NO_COLOR1 // RGB_ONLY
 	// Use alpha blend factor to determine whether to update A.
 	alpha_blend.a = float(atst_pass);
 #endif
@@ -1165,6 +1196,14 @@ PS_OUTPUT ps_main(PS_INPUT input)
 #if !PS_NO_COLOR1
 	output.c1 = alpha_blend;
 #endif
+#if PS_AFAIL == 3 && !PS_NO_COLOR1 // RGB_ONLY, no dual src blend
+	if (!atst_pass)
+	{
+		float RTa = NEEDS_RT_FOR_AFAIL ? RtTexture.Load(int3(input.p.xy, 0)).a : 0.0f;
+		output.c0.a = RTa;
+	}
+#endif
+
 #endif // !PS_NO_COLOR
 
 #endif // PS_DATE != 1/2
