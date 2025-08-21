@@ -35,7 +35,7 @@ jobs:
     outputs:
       new_tag: ${{ steps.tag_version.outputs.new_tag }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # Docs - https://github.com/mathieudutour/github-tag-action
       - name: Bump Version and Push Tag
@@ -163,12 +163,12 @@ jobs:
     name: "Upload Artifacts"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Prepare Artifact Folder
         run: mkdir ./ci-artifacts/
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         name: Download all Artifacts
         with:
           path: ./ci-artifacts/

@@ -16,7 +16,7 @@ jobs:
     runs-on: windows-2025
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Verify VS Project Files
         run: .github\workflows\scripts\windows\validate-vs-filters.ps1
 
