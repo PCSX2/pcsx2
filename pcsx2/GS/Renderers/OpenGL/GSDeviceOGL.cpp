@@ -733,6 +733,7 @@ bool GSDeviceOGL::CheckFeatures(bool& buggy_pbo)
 			"GL_ARB_texture_barrier is not supported, blending will not be accurate.", Host::OSD_ERROR_DURATION);
 	}
 
+	m_features.multidraw_fb_copy = false;
 	m_features.provoking_vertex_last = true;
 	m_features.dxt_textures = GLAD_GL_EXT_texture_compression_s3tc;
 	m_features.bptc_textures =

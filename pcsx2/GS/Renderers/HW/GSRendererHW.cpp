@@ -5069,7 +5069,7 @@ void GSRendererHW::EmulateTextureShuffleAndFbmask(GSTextureCache::Target* rt, GS
 
 	bool enable_fbmask_emulation = false;
 	const GSDevice::FeatureSupport features = g_gs_device->Features();
-	if (features.texture_barrier)
+	if (features.texture_barrier || features.multidraw_fb_copy)
 	{
 		enable_fbmask_emulation = GSConfig.AccurateBlendingUnit != AccBlendLevel::Minimum;
 	}
@@ -5241,7 +5241,7 @@ void GSRendererHW::EmulateTextureShuffleAndFbmask(GSTextureCache::Target* rt, GS
 			   have been invalidated before subsequent Draws are executed.
 			 */
 			// No blending so hit unsafe path.
-			if (!PRIM->ABE || !(~ff_fbmask & ~zero_fbmask & 0x7) || !g_gs_device->Features().texture_barrier)
+			if (!PRIM->ABE || !(~ff_fbmask & ~zero_fbmask & 0x7) || !(features.texture_barrier || features.multidraw_fb_copy))
 			{
 				GL_INS("HW: FBMASK Unsafe SW emulated fb_mask:%x on %d bits format", m_cached_ctx.FRAME.FBMSK,
 					(m_conf.ps.dst_fmt == GSLocalMemory::PSM_FMT_16) ? 16 : 32);
@@ -5691,7 +5691,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 	const bool alpha_mask = (m_cached_ctx.FRAME.FBMSK & 0xFF000000) == 0xFF000000;
 	bool blend_ad_alpha_masked = blend_ad && alpha_mask;
 	const bool is_basic_blend = GSConfig.AccurateBlendingUnit >= AccBlendLevel::Basic;
-	if (blend_ad_alpha_masked && (((is_basic_blend || (COLCLAMP.CLAMP == 0)) && features.texture_barrier)
+	if (blend_ad_alpha_masked && (((is_basic_blend || (COLCLAMP.CLAMP == 0)) && (features.texture_barrier || features.multidraw_fb_copy))
 		|| ((GSConfig.AccurateBlendingUnit >= AccBlendLevel::Medium) || m_conf.require_one_barrier)))
 	{
 		// Swap Ad with As for hw blend.
@@ -5746,7 +5746,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 	// HW blend can be done in multiple passes when there's no overlap.
 	// Blend multi pass is only useful when texture barriers aren't supported.
 	// Speed wise Texture barriers > blend multi pass > texture copies.
-	const bool blend_multi_pass_support = !features.texture_barrier && no_prim_overlap && is_basic_blend;
+	const bool blend_multi_pass_support = !features.texture_barrier && no_prim_overlap && is_basic_blend && COLCLAMP.CLAMP;
 	const bool bmix1_multi_pass1 = blend_multi_pass_support && blend_mix1 && (alpha_c0_high_max_one || alpha_c2_high_one) && m_conf.ps.blend_d == 2;
 	const bool bmix1_multi_pass2 = blend_multi_pass_support && (blend_flag & BLEND_MIX1) && m_conf.ps.blend_b == m_conf.ps.blend_d && !m_conf.ps.dither && alpha_high_one;
 	const bool bmix3_multi_pass = blend_multi_pass_support && blend_mix3 && !m_conf.ps.dither && alpha_high_one;
@@ -5758,15 +5758,19 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 	// Condition 2: One barrier is already enabled, prims don't overlap or is a channel shuffle so let's use sw blend instead.
 	// Condition 3: A texture shuffle is unlikely to overlap, so we can prefer full sw blend.
 	// Condition 4: If it's tex in fb draw and there's no overlap prefer sw blend, fb is already being read.
-	const bool prefer_sw_blend = (features.texture_barrier && m_conf.require_full_barrier) || (m_conf.require_one_barrier && (no_prim_overlap || m_channel_shuffle)) || m_conf.ps.shuffle || (no_prim_overlap && (m_conf.tex == m_conf.rt));
+	const bool prefer_sw_blend = ((features.texture_barrier || features.multidraw_fb_copy) && m_conf.require_full_barrier) || (m_conf.require_one_barrier && (no_prim_overlap || m_channel_shuffle)) || m_conf.ps.shuffle || (no_prim_overlap && (m_conf.tex == m_conf.rt));
 	const bool free_blend = blend_non_recursive // Free sw blending, doesn't require barriers or reading fb
 	                        || accumulation_blend; // Mix of hw/sw blending
 
 	// Warning no break on purpose
 	// Note: the [[fallthrough]] attribute tell compilers not to complain about not having breaks.
 	bool sw_blending = false;
-	if (features.texture_barrier)
+	if (features.texture_barrier || features.multidraw_fb_copy)
 	{
+		// Try to lower sw blend on dx11, try to use blend multipass if possible on basic blend.
+		const bool blend_multipass_group = blend_multi_pass_support && !features.texture_barrier && features.multidraw_fb_copy &&
+			(bmix1_multi_pass1 || bmix1_multi_pass2 || bmix3_multi_pass || (blend_flag & (BLEND_HW3 | BLEND_HW4 | BLEND_HW5 | BLEND_HW6 | BLEND_HW7 | BLEND_HW8 | BLEND_HW9)));
+
 		const bool blend_requires_barrier = (blend_flag & BLEND_A_MAX) // Impossible blending
 			// Sw blend, either full barrier or one barrier with no overlap.
 			|| prefer_sw_blend
@@ -5774,9 +5778,9 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 			// On fbfetch, one barrier is like full barrier.
 			|| (one_barrier && (no_prim_overlap || features.framebuffer_fetch))
 			// Blending with alpha > 1 will be wrong, except BLEND_HW2.
-			|| (!(blend_flag & BLEND_HW2) && (alpha_c2_high_one || alpha_c0_high_max_one) && no_prim_overlap)
+			|| (!(blend_flag & BLEND_HW2) && !blend_multipass_group && (alpha_c2_high_one || alpha_c0_high_max_one) && no_prim_overlap)
 			// Ad blends are completely wrong without sw blend (Ad is 0.5 not 1 for 128). We can spare a barrier for it.
-			|| (blend_ad && no_prim_overlap && !new_rt_alpha_scale);
+			|| (blend_ad && !blend_multipass_group && no_prim_overlap && !new_rt_alpha_scale);
 
 		switch (GSConfig.AccurateBlendingUnit)
 		{
@@ -5815,8 +5819,8 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 	}
 	else
 	{
-		const bool ad_second_pass = blend_multi_pass_support && alpha_c1_high_no_rta_correct && COLCLAMP.CLAMP &&
-		                            (blend_flag & (BLEND_HW3 | BLEND_HW5 | BLEND_HW6 | BLEND_HW7 | BLEND_HW9));
+		const bool ad_second_pass = blend_multi_pass_support && alpha_c1_high_no_rta_correct &&
+			(blend_flag & (BLEND_HW3 | BLEND_HW5 | BLEND_HW6 | BLEND_HW7 | BLEND_HW9));
 
 		switch (GSConfig.AccurateBlendingUnit)
 		{
@@ -5956,7 +5960,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 
 				m_conf.ps.pabe = 1;
 			}
-			else if (features.texture_barrier)
+			else if (features.texture_barrier || features.multidraw_fb_copy)
 			{
 				// PABE sw blend:
 				// Disable hw/sw mix and do pure sw blend with reading the framebuffer.
@@ -6130,7 +6134,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 			const bool blend_non_recursive_one_barrier = blend_non_recursive && blend_ad_alpha_masked;
 			if (blend_non_recursive_one_barrier)
 				m_conf.require_one_barrier |= true;
-			else if (features.texture_barrier)
+			else if (features.texture_barrier || features.multidraw_fb_copy)
 				m_conf.require_full_barrier |= !blend_non_recursive;
 			else
 				m_conf.require_one_barrier |= !blend_non_recursive;
@@ -7936,12 +7940,12 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	pxAssert(!m_conf.require_full_barrier || !m_conf.ps.colclip_hw);
 
 	// Swap full barrier for one barrier when there's no overlap, or a shuffle.
-	if (features.texture_barrier && m_conf.require_full_barrier && (m_prim_overlap == PRIM_OVERLAP_NO || m_conf.ps.shuffle || m_channel_shuffle))
+	if ((features.texture_barrier || features.multidraw_fb_copy) && m_conf.require_full_barrier && (m_prim_overlap == PRIM_OVERLAP_NO || m_conf.ps.shuffle || m_channel_shuffle))
 	{
 		m_conf.require_full_barrier = false;
 		m_conf.require_one_barrier = true;
 	}
-	else if (!features.texture_barrier)
+	else if (!(features.texture_barrier || features.multidraw_fb_copy))
 	{
 		// These shouldn't be enabled if texture barriers aren't supported, make sure they are off.
 		m_conf.ps.write_rg = 0;
