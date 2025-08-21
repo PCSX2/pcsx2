@@ -2976,6 +2976,8 @@ SCED-50633:
 SCED-50642:
   name: "Final Fantasy X [Demo] [Final Fantasy VI PS1 - Bonus Disc]"
   region: "PAL-E"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
     eeRoundMode: 2 # Fixes cutscene animations while slightly dislocating a few select meshes. Setting round mode to Chop/Zero or Nearest fixes the issues with meshes at the cost of breaking important cutscenes.
   clampModes:
@@ -4847,6 +4849,8 @@ SCES-50490:
   name: "Final Fantasy X"
   region: "PAL-E"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
     eeRoundMode: 2 # Fixes cutscene animations while slightly dislocating a few select meshes. Setting round mode to Chop/Zero or Nearest fixes the issues with meshes at the cost of breaking important cutscenes.
   clampModes:
@@ -4860,6 +4864,8 @@ SCES-50490:
 SCES-50491:
   name: "Final Fantasy X"
   region: "PAL-F"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
     eeRoundMode: 2 # Fixes cutscene animations while slightly dislocating a few select meshes. Setting round mode to Chop/Zero or Nearest fixes the issues with meshes at the cost of breaking important cutscenes.
   clampModes:
@@ -4873,6 +4879,8 @@ SCES-50491:
 SCES-50492:
   name: "Final Fantasy X"
   region: "PAL-G"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   compat: 5
   roundModes:
     eeRoundMode: 2 # Fixes cutscene animations while slightly dislocating a few select meshes. Setting round mode to Chop/Zero or Nearest fixes the issues with meshes at the cost of breaking important cutscenes.
@@ -4887,6 +4895,8 @@ SCES-50492:
 SCES-50493:
   name: "Final Fantasy X"
   region: "PAL-I"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
     eeRoundMode: 2 # Fixes cutscene animations while slightly dislocating a few select meshes. Setting round mode to Chop/Zero or Nearest fixes the issues with meshes at the cost of breaking important cutscenes.
   clampModes:
@@ -4900,6 +4910,8 @@ SCES-50493:
 SCES-50494:
   name: "Final Fantasy X"
   region: "PAL-S"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
     eeRoundMode: 2 # Fixes cutscene animations while slightly dislocating a few select meshes. Setting round mode to Chop/Zero or Nearest fixes the issues with meshes at the cost of breaking important cutscenes.
   clampModes:
@@ -13856,7 +13868,7 @@ SLED-53731:
   name: "Battlefield 2 - Modern Combat [Demo]"
   region: "PAL-E"
   gsHWFixes:
-    minimumBlendingLevel: 4 # Fixes ground texture rendering.
+    recommendedBlendingLevel: 4 # Fixes ground texture rendering.
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Improves performance.
@@ -24104,7 +24116,7 @@ SLES-53729:
   name: "Battlefield 2 - Modern Combat"
   region: "PAL-M4"
   gsHWFixes:
-    minimumBlendingLevel: 4 # Fixes ground texture rendering.
+    recommendedBlendingLevel: 4 # Fixes ground texture rendering.
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Improves performance.
@@ -24114,7 +24126,7 @@ SLES-53730:
   name: "Battlefield 2 - Modern Combat"
   region: "PAL-M3"
   gsHWFixes:
-    minimumBlendingLevel: 4 # Fixes ground texture rendering.
+    recommendedBlendingLevel: 4 # Fixes ground texture rendering.
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Improves performance.
@@ -32872,7 +32884,7 @@ SLPM-55034:
   name-en: "Battlefield 2 - Modern Combat [EA:SY! 1980]"
   region: "NTSC-J"
   gsHWFixes:
-    minimumBlendingLevel: 4 # Fixes ground texture rendering.
+    recommendedBlendingLevel: 4 # Fixes ground texture rendering.
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Improves performance.
@@ -46582,6 +46594,8 @@ SLPM-66124:
   name-sort: "ふぁいなるふぁんたじー10 [Ultimate Hits]"
   name-en: "Final Fantasy X [Ultimate Hits]"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
     eeRoundMode: 2 # Fixes cutscene animations while slightly dislocating a few select meshes. Setting round mode to Chop/Zero or Nearest fixes the issues with meshes at the cost of breaking important cutscenes.
   clampModes:
@@ -47098,7 +47112,7 @@ SLPM-66206:
   name-en: "Battlefield 2 - Modern Combat"
   region: "NTSC-J"
   gsHWFixes:
-    minimumBlendingLevel: 4 # Fixes ground texture rendering.
+    recommendedBlendingLevel: 4 # Fixes ground texture rendering.
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Improves performance.
@@ -49911,7 +49925,7 @@ SLPM-66651:
   name-en: "Battlefield 2 - Modern Combat [EA Best Hits]"
   region: "NTSC-J"
   gsHWFixes:
-    minimumBlendingLevel: 4 # Fixes ground texture rendering.
+    recommendedBlendingLevel: 4 # Fixes ground texture rendering.
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Improves performance.
@@ -56204,6 +56218,8 @@ SLPS-25050:
   name-en: "Final Fantasy X"
   region: "NTSC-J"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
     eeRoundMode: 2 # Fixes cutscene animations while slightly dislocating a few select meshes. Setting round mode to Chop/Zero or Nearest fixes the issues with meshes at the cost of breaking important cutscenes.
   clampModes:
@@ -61857,6 +61873,8 @@ SLPS-72501:
   name-sort: "ふぁいなるふぁんたじー10 [MEGA HITS!]"
   name-en: "Final Fantasy X [MEGA HITS!]"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
     eeRoundMode: 2 # Fixes cutscene animations while slightly dislocating a few select meshes. Setting round mode to Chop/Zero or Nearest fixes the issues with meshes at the cost of breaking important cutscenes.
   clampModes:
@@ -64083,6 +64101,8 @@ SLUS-20312:
   name: "Final Fantasy X"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
     eeRoundMode: 2 # Fixes cutscene animations while slightly dislocating a few select meshes. Setting round mode to Chop/Zero or Nearest fixes the issues with meshes at the cost of breaking important cutscenes.
   clampModes:
@@ -68087,7 +68107,7 @@ SLUS-21026:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    minimumBlendingLevel: 4 # Fixes ground texture rendering.
+    recommendedBlendingLevel: 4 # Fixes ground texture rendering.
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Improves performance.
@@ -74168,7 +74188,7 @@ SLUS-29117:
   name: "Battlefield 2 - Modern Combat [Public Beta Vol.1.0]"
   region: "NTSC-U"
   gsHWFixes:
-    minimumBlendingLevel: 4 # Fixes ground texture rendering.
+    recommendedBlendingLevel: 4 # Fixes ground texture rendering.
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Improves performance.
@@ -74324,7 +74344,7 @@ SLUS-29152:
   name: "Battlefield 2 - Modern Combat [Regular Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    minimumBlendingLevel: 4 # Fixes ground texture rendering.
+    recommendedBlendingLevel: 4 # Fixes ground texture rendering.
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Improves performance.
@@ -74441,7 +74461,7 @@ SLUS-29172:
   name: "Battlefield 2 - Modern Combat [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    minimumBlendingLevel: 4 # Fixes ground texture rendering.
+    recommendedBlendingLevel: 4 # Fixes ground texture rendering.
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Improves performance.
