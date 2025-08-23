@@ -245,11 +245,21 @@ void DebugAnalysisSettingsWidget::setupSymbolSourceGrid()
 		int i = 0;
 		for (auto& [name, temp] : m_symbol_sources)
 		{
-			temp.check_box = new QCheckBox(QString::fromStdString(name));
+			QString display_name = SymbolGuardian::TranslateSymbolSourceName(name.c_str());
+
+			temp.check_box = new QCheckBox(display_name);
 			temp.check_box->setChecked(temp.previous_value);
 			layout->addWidget(temp.check_box, i / 2, i % 2);
 
-			connect(temp.check_box, &QCheckBox::checkStateChanged, this, &DebugAnalysisSettingsWidget::symbolSourceCheckStateChanged);
+			connect(temp.check_box, &QCheckBox::checkStateChanged, this, [this, name]() {
+				auto temp = m_symbol_sources.find(name);
+				if (temp == m_symbol_sources.end())
+					return;
+
+				temp->second.modified_by_user = true;
+
+				saveSymbolSources();
+			});
 
 			i++;
 		}
@@ -262,21 +272,6 @@ void DebugAnalysisSettingsWidget::setupSymbolSourceGrid()
 	}
 
 	m_ui.symbolSourceErrorMessage->hide();
-}
-
-void DebugAnalysisSettingsWidget::symbolSourceCheckStateChanged()
-{
-	QCheckBox* check_box = qobject_cast<QCheckBox*>(sender());
-	if (!check_box)
-		return;
-
-	auto temp = m_symbol_sources.find(check_box->text().toStdString());
-	if (temp == m_symbol_sources.end())
-		return;
-
-	temp->second.modified_by_user = true;
-
-	saveSymbolSources();
 }
 
 void DebugAnalysisSettingsWidget::saveSymbolSources()

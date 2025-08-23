@@ -158,7 +158,7 @@ Qt::ItemFlags SavedAddressesModel::flags(const QModelIndex& index) const
 
 void SavedAddressesModel::addRow()
 {
-	const SavedAddress defaultNewAddress = {0, "Name", "Description"};
+	const SavedAddress defaultNewAddress = {0, tr("Name"), tr("Description")};
 	addRow(defaultNewAddress);
 }
 

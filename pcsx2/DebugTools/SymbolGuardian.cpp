@@ -4,6 +4,7 @@
 #include "SymbolGuardian.h"
 
 #include "DebugInterface.h"
+#include "Host.h"
 
 SymbolGuardian R5900SymbolGuardian;
 SymbolGuardian R3000SymbolGuardian;
@@ -215,4 +216,24 @@ void SymbolGuardian::ClearIrxModules()
 		for (ccc::ModuleHandle module : irx_modules)
 			m_database.destroy_symbols_from_module(module, false);
 	});
+}
+
+const char* SymbolGuardian::TranslateSymbolSourceName(const char* name)
+{
+	static constexpr std::array<const char*, 8> names = {
+		TRANSLATE_NOOP("SymbolGuardian", "DWARF Symbol Table"),
+		TRANSLATE_NOOP("SymbolGuardian", "ELF Section Headers"),
+		TRANSLATE_NOOP("SymbolGuardian", "ELF Symbol Table"),
+		TRANSLATE_NOOP("SymbolGuardian", "Function Scanner"),
+		TRANSLATE_NOOP("SymbolGuardian", "Nocash Symbols"),
+		TRANSLATE_NOOP("SymbolGuardian", "SNDLL Symbol Table"),
+		TRANSLATE_NOOP("SymbolGuardian", "Symbol Table Importer"),
+		TRANSLATE_NOOP("SymbolGuardian", "User-Defined"),
+	};
+
+	for (const char* test_name : names)
+		if (strcmp(test_name, name) == 0)
+			return TRANSLATE("SymbolGuardian", name);
+
+	return name;
 }
