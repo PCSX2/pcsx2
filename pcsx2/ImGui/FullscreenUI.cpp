@@ -6457,7 +6457,7 @@ void FullscreenUI::DoLoadState(std::string path)
 					{
 						ImGuiFullscreen::OpenInfoMessageDialog(
 							FSUI_ICONSTR(ICON_FA_TRIANGLE_EXCLAMATION, "Incompatible Save State"),
-							FSUI_STR(error_desc));
+							error_desc);
 					});
 				}
 				else
