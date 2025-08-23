@@ -56300,11 +56300,15 @@ SLPS-25060:
   name-sort: "きどうせんしがんだむ めぐりあいそら [げんていばん]"
   name-en: "Mobile Suit Gundam - Meguriai Sora [Limited Edition]"
   region: "NTSC-J"
+  memcardFilters:
+    - "SLPS-25062"
 SLPS-25061:
   name: "機動戦士ガンダムVer.1.5 [限定版]"
   name-sort: "きどうせんしがんだむVer.1.5 [げんていばん]"
   name-en: "Mobile Suit Gundam Ver.1.5 [Limited Edition]"
   region: "NTSC-J"
+  memcardFilters:
+    - "SLPS-25063"
 SLPS-25062:
   name: "機動戦士ガンダム めぐりあい宇宙 [DVD同梱版]"
   name-sort: "きどうせんしがんだむ めぐりあいそら [DVDどうこんばん]"
