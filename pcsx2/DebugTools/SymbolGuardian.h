@@ -88,6 +88,10 @@ public:
 	// Delete all symbols from modules that have the "is_irx" flag set.
 	void ClearIrxModules();
 
+	// Translate the name of a ccc::SymbolSource object, or return it as is if
+	// no translation is available.
+	static const char* TranslateSymbolSourceName(const char* name);
+
 protected:
 	ccc::SymbolDatabase m_database;
 	mutable std::shared_mutex m_big_symbol_lock;

@@ -30,7 +30,6 @@ public:
 
 protected:
 	void setupSymbolSourceGrid();
-	void symbolSourceCheckStateChanged();
 	void saveSymbolSources();
 
 	void setupSymbolFileList();
