@@ -269,7 +269,7 @@ QVariant BreakpointModel::headerData(int section, Qt::Orientation orientation, i
 				//: Warning: limited space available. Abbreviate if needed.
 				return tr("OFFSET");
 			case BreakpointColumns::DESCRIPTION:
-				return "DESCRIPTION";
+				return tr("DESCRIPTION");
 			case BreakpointColumns::SIZE_LABEL:
 				//: Warning: limited space available. Abbreviate if needed.
 				return tr("SIZE / LABEL");
