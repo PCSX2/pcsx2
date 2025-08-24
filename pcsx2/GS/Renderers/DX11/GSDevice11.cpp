@@ -1233,18 +1233,18 @@ void GSDevice11::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 
 	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
-	D3D11_BOX box = {static_cast<UINT>(r.left), static_cast<UINT>(r.top), 0U, static_cast<UINT>(r.right), static_cast<UINT>(r.bottom), 1U};
-
 	// DX11 doesn't support partial depth copy so we need to
 	// either pass a nullptr D3D11_BOX for a full depth copy or use CopyResource instead.
-	// Alternatively use shader copy StretchRect, or full depth copy with
-	// adjusting the scissor and UVs in the shader.
 	const bool depth = (sTex->GetType() == GSTexture::Type::DepthStencil);
-	auto pBox = depth ? nullptr : &box;
-	const u32 x = depth ? 0 : destX;
-	const u32 y = depth ? 0 : destY;
+	// Optimization: Use CopyResource for full texture or depth copies, it's faster than CopySubresourceRegion.
+	if (depth || (r.left == 0 && r.top == 0 && r.right == dTex->GetWidth() && r.bottom == dTex->GetHeight()))
+	{
+		m_ctx->CopyResource(*static_cast<GSTexture11*>(dTex), *static_cast<GSTexture11*>(sTex));
+		return;
+	}
 
-	m_ctx->CopySubresourceRegion(*(GSTexture11*)dTex, 0, x, y, 0, *(GSTexture11*)sTex, 0, pBox);
+	D3D11_BOX box = {static_cast<UINT>(r.left), static_cast<UINT>(r.top), 0U,static_cast<UINT>(r.right), static_cast<UINT>(r.bottom), 1U};
+	m_ctx->CopySubresourceRegion(*static_cast<GSTexture11*>(dTex), 0, destX, destY, 0, *static_cast<GSTexture11*>(sTex), 0, &box);
 }
 
 void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader, bool linear)
