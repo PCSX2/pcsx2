@@ -174,15 +174,8 @@ void GSDrawScanlineCodeGenerator::broadcastGPRToVec(const XYm& vec, const Xbyak:
 
 void GSDrawScanlineCodeGenerator::modulate16(const XYm& a, const Operand& f, u8 shift)
 {
-	if (shift == 0)
-	{
-		pmulhrsw(a, f);
-	}
-	else
-	{
-		psllw(a, shift + 1);
-		pmulhw(a, f);
-	}
+	psllw(a, shift + 1);
+	pmulhw(a, f);
 }
 
 void GSDrawScanlineCodeGenerator::lerp16(const XYm& a, const XYm& b, const XYm& f, u8 shift)

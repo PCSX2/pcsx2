@@ -2352,14 +2352,15 @@ void GSDrawScanlineCodeGenerator::modulate16(const VRegister& a, const VRegister
 
 void GSDrawScanlineCodeGenerator::modulate16(const VRegister& d, const VRegister& a, const VRegister& f, u8 shift)
 {
-	// potentially going to cause issues due to saturation
-	armAsm->Shl(d.V8H(), a.V8H(), shift + 1);
-	if (shift != 0)
-		armAsm->Sqdmulh(a.V8H(), a.V8H(), f.V8H());
+	if (shift)
+	{
+		armAsm->Shl(d.V8H(), a.V8H(), shift);
+		armAsm->Sqdmulh(d.V8H(), d.V8H(), f.V8H());
+	}
 	else
-		armAsm->Sqrdmulh(a.V8H(), a.V8H(), f.V8H());
-
-	armAsm->Sshr(a.V8H(), a.V8H(), 1);
+	{
+		armAsm->Sqdmulh(a.V8H(), d.V8H(), f.V8H());
+	}
 }
 
 void GSDrawScanlineCodeGenerator::lerp16(const VRegister& a, const VRegister& b, const VRegister& f, u8 shift)
