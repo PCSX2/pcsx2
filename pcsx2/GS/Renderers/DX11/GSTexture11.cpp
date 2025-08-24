@@ -225,11 +225,14 @@ void GSDownloadTexture11::CopyFromTexture(
 	if (IsMapped())
 		Unmap();
 
-	// depth textures need to copy the whole thing..
-	if (m_format == GSTexture::Format::DepthStencil)
+	// DX11 doesn't support partial depth copy so we need to
+	// either pass a nullptr D3D11_BOX for a full depth copy or use CopyResource instead.
+	// Optimization: Use CopyResource for full texture or depth copies, it's faster than CopySubresourceRegion.
+	if ((m_format == GSTexture::Format::DepthStencil) ||
+		(src.left == 0 && src.top == 0 && src.right == stex->GetWidth() && src.bottom == stex->GetHeight()))
 	{
-		GSDevice11::GetInstance()->GetD3DContext()->CopySubresourceRegion(
-			m_texture.get(), 0, 0, 0, 0, *static_cast<GSTexture11*>(stex), src_level, nullptr);
+		GSDevice11::GetInstance()->GetD3DContext()->CopyResource(
+			m_texture.get(), *static_cast<GSTexture11*>(stex));
 	}
 	else
 	{
