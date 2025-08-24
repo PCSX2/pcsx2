@@ -127,7 +127,8 @@ public:
 		u32 max_top_level_actions = 5)
 	{
 		return createEventActionsImplementation(
-			menu, max_top_level_actions, skip_self, typeid(Event).name(), Event::ACTION_PREFIX,
+			menu, max_top_level_actions, skip_self, typeid(Event).name(),
+			Event::ACTION_STRING, Event::ACTION_OVERFLOW_STRING,
 			[event_func]() -> DebuggerEvents::Event* {
 				static std::optional<Event> event;
 				event = event_func();
@@ -176,7 +177,8 @@ private:
 		u32 max_top_level_actions,
 		bool skip_self,
 		const char* event_type,
-		const char* action_prefix,
+		const char* action_string,
+		const char* action_overflow_string,
 		std::function<const DebuggerEvents::Event*()> event_func);
 
 	// Used for sorting debugger views that have the same display name. Unique

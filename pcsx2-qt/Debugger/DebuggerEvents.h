@@ -38,7 +38,8 @@ namespace DebuggerEvents
 
 		bool switch_to_tab = true;
 
-		static constexpr const char* ACTION_PREFIX = QT_TRANSLATE_NOOP("DebuggerEvents", "Go to in");
+		static constexpr const char* ACTION_STRING = QT_TRANSLATE_NOOP("DebuggerEvents", "Go to in %1");
+		static constexpr const char* ACTION_OVERFLOW_STRING = QT_TRANSLATE_NOOP("DebuggerEvents", "Go to in...");
 	};
 
 	// The state of the VM has changed and views should be updated to reflect
@@ -53,6 +54,7 @@ namespace DebuggerEvents
 		u32 address = 0;
 		bool switch_to_tab = true;
 
-		static constexpr const char* ACTION_PREFIX = QT_TRANSLATE_NOOP("DebuggerEvents", "Add to");
+		static constexpr const char* ACTION_STRING = QT_TRANSLATE_NOOP("DebuggerEvents", "Add to %1");
+		static constexpr const char* ACTION_OVERFLOW_STRING = QT_TRANSLATE_NOOP("DebuggerEvents", "Add to...");
 	};
 } // namespace DebuggerEvents
