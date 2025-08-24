@@ -26518,8 +26518,11 @@ SLES-54508:
   name: "National Geographic - Safari Adventures Africa"
   region: "PAL-M6"
 SLES-54510:
-  name: "Meet the Robinsons"
+  name: "Walt Disney Pictures Presents Meet the Robinsons"
   region: "PAL-M3"
+  gsHWFixes:
+    halfPixelOffset: 5 # Fixes bloom alignment.
+    nativeScaling: 1 # Fixes bloom effects.
 SLES-54511:
   name: "UEFA Champions League 2006-2007"
   region: "PAL-E"
@@ -27042,8 +27045,11 @@ SLES-54677:
   region: "PAL-E"
   compat: 5
 SLES-54679:
-  name: "Metal Slug - Anthology"
+  name: "Walt Disney Pictures Presents Meet the Robinsons"
   region: "PAL-M3"
+  gsHWFixes:
+    halfPixelOffset: 5 # Fixes bloom alignment.
+    nativeScaling: 1 # Fixes bloom effects.
 SLES-54681:
   name: "Burnout Dominator"
   region: "PAL-E"
@@ -51066,8 +51072,11 @@ SLPM-66829:
 SLPM-66830:
   name: "ルイスと未来泥棒"
   name-sort: "るいすとみらいどろぼう"
-  name-en: "Lewis and the Future Thief"
+  name-en: "Walt Disney Pictures Presents Lewis to Mirai Dorobou - Wilbur no Kiken na Jikan Ryokou"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Fixes bloom alignment.
+    nativeScaling: 1 # Fixes bloom effects.
 SLPM-66832:
   name: "テニスの王子様 ドキドキサバイバル 海辺のSecret [KONAMI The Best]"
   name-sort: "てにすのおうじさま どきどきさばいばる うみべのしーくれっと [KONAMI The Best]"
@@ -70964,9 +70973,12 @@ SLUS-21452:
     roundSprite: 1 # Fixes lines in transitions.
     autoFlush: 2 # Fixes shadow rendering in certain scenarios when using DirectX.
 SLUS-21453:
-  name: "Meet the Robinsons"
+  name: "Walt Disney Pictures Presents Meet the Robinsons"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 5 # Fixes bloom alignment.
+    nativeScaling: 1 # Fixes bloom effects.
 SLUS-21454:
   name: "DreamWorks Shrek the Third"
   region: "NTSC-U"
