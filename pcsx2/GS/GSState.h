@@ -442,6 +442,7 @@ public:
 	u8* GetRegsMem() const { return reinterpret_cast<u8*>(m_regs); }
 	void SetRegsMem(u8* basemem) { m_regs = reinterpret_cast<GSPrivRegSet*>(basemem); }
 
+	void DumpDrawInfo(bool dump_regs, bool dump_verts, bool dump_transfers);
 	void DumpVertices(const std::string& filename);
 	void DumpTransfers(const std::string& filename);
 
