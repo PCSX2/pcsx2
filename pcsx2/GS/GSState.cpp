@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <cfloat>
 #include <fstream>
+#include <sstream>
 #include <iomanip>
 #include <bit>
 
@@ -457,7 +458,7 @@ void GSState::DumpDrawInfo(bool dump_regs, bool dump_verts, bool dump_transfers)
 	if (dump_transfers)
 	{
 		s = GetDrawDumpPath("%05d_transfers.txt", s_n);
-		DumpTransfers(s);
+		DumpTransferList(s);
 	}
 }
 
@@ -729,7 +730,7 @@ void GSState::DumpVertices(const std::string& filename)
 	file << CLOSE_MAP << std::endl;
 }
 
-void GSState::DumpTransfers(const std::string& filename)
+void GSState::DumpTransferList(const std::string& filename)
 {
 	// Only create the file if there are transfers to dump
 	std::optional<std::ofstream> file;
@@ -792,13 +793,45 @@ void GSState::DumpTransfers(const std::string& filename)
 		(*file) << INDENT << "rect: [" << std::dec << transfer.rect.x << DEL << transfer.rect.y << DEL <<
 			transfer.rect.z << DEL << transfer.rect.w << "]" << std::endl;
 
-		// Dump draw number
-		(*file) << INDENT << "draw: " << std::dec << transfer.draw << std::endl;
-
 		// Dump zero_clear
 		(*file) << INDENT << "zero_clear: " << (transfer.zero_clear ? "true" : "false") << std::endl;
 
 		n_dumped++;
+	}
+}
+
+void GSState::DumpTransferImages()
+{
+	// Only create the file if there are transfers to dump
+	std::optional<std::ofstream> file;
+
+	int transfer_n = 0;
+	for (int i = 0; i < static_cast<int>(m_draw_transfers.size()); ++i)
+	{
+		if (m_draw_transfers[i].draw != s_n - 1)
+			continue; // skip transfers that did not start in the previous draw
+
+		const GSUploadQueue& transfer = m_draw_transfers[i];
+
+		std::string filename;
+		if (transfer.ee_to_gs)
+		{
+			// Transferring EE->GS then only the destination info is relevant.
+			filename = GetDrawDumpPath("%05d_transfer%02d_EE_to_GS_%03x_%d_%s_%d_%d_%d_%d.png",
+				s_n, transfer_n++, transfer.blit.DBP, transfer.blit.DBW, GSUtil::GetPSMName(transfer.blit.DPSM),
+				transfer.rect.x, transfer.rect.y, transfer.rect.z, transfer.rect.w);
+		}
+		else
+		{
+			// Transferring GS->GS then the source info is relevant.
+			filename = GetDrawDumpPath("%05d_transfer%02d_GS_to_GS_%03x_%d_%s_%03x_%d_%s_%d_%d_%d_%d.bmp",
+				s_n, transfer_n++, transfer.blit.SBP, transfer.blit.SBW, GSUtil::GetPSMName(transfer.blit.SPSM),
+				transfer.blit.DBP, transfer.blit.DBW, GSUtil::GetPSMName(transfer.blit.DPSM),
+				transfer.rect.x, transfer.rect.y, transfer.rect.z, transfer.rect.w);
+		}
+
+		m_mem.SaveBMP(filename, transfer.blit.DBP, transfer.blit.DBW, transfer.blit.DPSM,
+			transfer.rect.width(), transfer.rect.height(), transfer.rect.x, transfer.rect.y);
 	}
 }
 
@@ -2029,12 +2062,18 @@ void GSState::FlushPrim()
 		const bool skip_draw = (m_context->TEST.ZTE && m_context->TEST.ZTST == ZTST_NEVER);
 		m_quad_check_valid = false;
 
-		if (GSConfig.SaveInfo && GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
+		if (GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
 		{
-			// Only dump registers/vertices if we are drawing.
-			// Always dump the transfers since these are relevant for debugging regardless of
-			// whether the draw is skipped or not.
-			DumpDrawInfo(!skip_draw, !skip_draw, true);
+			if (GSConfig.SaveInfo)
+			{
+				// Only dump registers/vertices if we are drawing.
+				// Always dump the transfers since these are relevant for debugging regardless of
+				// whether the draw is skipped or not.
+				DumpDrawInfo(!skip_draw, !skip_draw, true);
+			}
+
+			if (GSConfig.SaveTransferImages)
+				DumpTransferImages();
 		}
 
 		if (!skip_draw)
