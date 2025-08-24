@@ -109,6 +109,7 @@ DebugSettingsWidget::DebugSettingsWidget(SettingsWindow* settings_dialog, QWidge
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_gs.saveDepth, "EmuCore/GS", "SaveDepth", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_gs.saveAlpha, "EmuCore/GS", "SaveAlpha", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_gs.saveInfo, "EmuCore/GS", "SaveInfo", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_gs.saveTransferImages, "EmuCore/GS", "SaveTransferImages", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_gs.saveDrawStart, "EmuCore/GS", "SaveDrawStart", 0);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_gs.saveDrawCount, "EmuCore/GS", "SaveDrawCount", 5000);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_gs.saveFrameStart, "EmuCore/GS", "SaveFrameStart", 0);
@@ -213,6 +214,7 @@ void DebugSettingsWidget::onDrawDumpingChanged()
 	m_gs.saveDepth->setEnabled(enabled);
 	m_gs.saveAlpha->setEnabled(enabled);
 	m_gs.saveInfo->setEnabled(enabled);
+	m_gs.saveTransferImages->setEnabled(enabled);
 	m_gs.saveDrawStart->setEnabled(enabled);
 	m_gs.saveDrawCount->setEnabled(enabled);
 	m_gs.saveFrameStart->setEnabled(enabled);
