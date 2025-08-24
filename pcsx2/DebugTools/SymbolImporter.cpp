@@ -311,9 +311,10 @@ void SymbolImporter::ClearExistingSymbols(ccc::SymbolDatabase& database, const P
 	{
 		bool should_destroy = ShouldClearSymbolsFromSourceByDefault(source.name());
 
-		for (const DebugSymbolSource& source_config : options.SymbolSources)
-			if (source_config.Name == source.name())
-				should_destroy = source_config.ClearDuringAnalysis;
+		if (!options.AutomaticallySelectSymbolsToClear)
+			for (const DebugSymbolSource& source_config : options.SymbolSources)
+				if (source_config.Name == source.name())
+					should_destroy = source_config.ClearDuringAnalysis;
 
 		if (should_destroy)
 			sources_to_destroy.emplace_back(source.handle());
@@ -326,9 +327,9 @@ void SymbolImporter::ClearExistingSymbols(ccc::SymbolDatabase& database, const P
 bool SymbolImporter::ShouldClearSymbolsFromSourceByDefault(const std::string& source_name)
 {
 	return source_name.find("Symbol Table") != std::string::npos ||
-		   source_name == "ELF Section Headers" ||
-		   source_name == "Function Scanner" ||
-		   source_name == "Nocash Symbols";
+	       source_name == "ELF Section Headers" ||
+	       source_name == "Function Scanner" ||
+	       source_name == "Nocash Symbols";
 }
 
 void SymbolImporter::ImportSymbols(
