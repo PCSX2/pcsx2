@@ -433,6 +433,34 @@ const char* GSState::GetFlushReasonString(GSFlushReason reason)
 	}
 }
 
+void GSState::DumpDrawInfo(bool dump_regs, bool dump_verts, bool dump_transfers)
+{
+	std::string s;
+
+	// Dump Register state
+	if (dump_regs)
+	{
+		s = GetDrawDumpPath("%05d_context.txt", s_n);
+
+		m_draw_env->Dump(s);
+		m_context->Dump(s);
+	}
+
+	// Dump vertices
+	if (dump_verts)
+	{
+		s = GetDrawDumpPath("%05d_vertex.txt", s_n);
+		DumpVertices(s);
+	}
+
+	// Dump transfers
+	if (dump_transfers)
+	{
+		s = GetDrawDumpPath("%05d_transfers.txt", s_n);
+		DumpTransfers(s);
+	}
+}
+
 void GSState::DumpVertices(const std::string& filename)
 {
 	std::ofstream file(filename);
@@ -2000,6 +2028,14 @@ void GSState::FlushPrim()
 		// Skip draw if Z test is enabled, but set to fail all pixels.
 		const bool skip_draw = (m_context->TEST.ZTE && m_context->TEST.ZTST == ZTST_NEVER);
 		m_quad_check_valid = false;
+
+		if (GSConfig.SaveInfo && GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
+		{
+			// Only dump registers/vertices if we are drawing.
+			// Always dump the transfers since these are relevant for debugging regardless of
+			// whether the draw is skipped or not.
+			DumpDrawInfo(!skip_draw, !skip_draw, true);
+		}
 
 		if (!skip_draw)
 			Draw();
