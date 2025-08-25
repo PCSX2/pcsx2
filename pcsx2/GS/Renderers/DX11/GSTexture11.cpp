@@ -173,6 +173,24 @@ GSTexture11::operator ID3D11UnorderedAccessView*()
 	return m_uav.get();
 }
 
+ID3D11DepthStencilView* GSTexture11::ReadOnlyDepthStencilView()
+{
+	if (!m_read_only_dsv)
+	{
+		if (m_desc.Format == DXGI_FORMAT_R32G8X24_TYPELESS || m_desc.Format == DXGI_FORMAT_D32_FLOAT_S8X24_UINT)
+		{
+			D3D11_DEPTH_STENCIL_VIEW_DESC desc = {};
+			desc.Format = DXGI_FORMAT_D32_FLOAT_S8X24_UINT;
+			desc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+			desc.Flags = D3D11_DSV_READ_ONLY_DEPTH;
+
+			GSDevice11::GetInstance()->GetD3DDevice()->CreateDepthStencilView(m_texture.get(), &desc, m_read_only_dsv.put());
+		}
+	}
+
+	return m_read_only_dsv.get();
+}
+
 GSDownloadTexture11::GSDownloadTexture11(wil::com_ptr_nothrow<ID3D11Texture2D> tex, u32 width, u32 height, GSTexture::Format format)
 	: GSDownloadTexture(width, height, format)
 	, m_texture(std::move(tex))

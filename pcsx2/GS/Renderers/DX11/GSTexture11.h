@@ -17,6 +17,7 @@ class GSTexture11 final : public GSTexture
 	wil::com_ptr_nothrow<ID3D11RenderTargetView> m_rtv;
 	wil::com_ptr_nothrow<ID3D11DepthStencilView> m_dsv;
 	wil::com_ptr_nothrow<ID3D11UnorderedAccessView> m_uav;
+	wil::com_ptr_nothrow<ID3D11DepthStencilView> m_read_only_dsv;
 	D3D11_TEXTURE2D_DESC m_desc;
 
 public:
@@ -41,6 +42,8 @@ public:
 	operator ID3D11RenderTargetView*();
 	operator ID3D11DepthStencilView*();
 	operator ID3D11UnorderedAccessView*();
+
+	ID3D11DepthStencilView* ReadOnlyDepthStencilView();
 };
 
 class GSDownloadTexture11 final : public GSDownloadTexture
