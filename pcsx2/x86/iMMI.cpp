@@ -1600,9 +1600,9 @@ void recPMSUBW()
 	int dst = _Rd_ ? EEREC_D : EEREC_HI;
 
 	if (!_Rs_ || !_Rt_)
-		xPXOR(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_HI));
+		xPXOR(xRegisterSSE(dst), xRegisterSSE(dst));
 	else
-		xPMUL.DQ(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_S), xRegisterSSE(EEREC_T));
+		xPMUL.DQ(xRegisterSSE(dst), xRegisterSSE(EEREC_S), xRegisterSSE(EEREC_T));
 
 	// sub from LO/HI
 	if (x86Emitter::use_avx)
@@ -1638,7 +1638,7 @@ void recPMULTW()
 	else
 	{
 		int dst = _Rd_ ? EEREC_D : EEREC_HI;
-		xPMUL.DQ(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_S), xRegisterSSE(EEREC_T));
+		xPMUL.DQ(xRegisterSSE(dst), xRegisterSSE(EEREC_S), xRegisterSSE(EEREC_T));
 
 		// interleave & sign extend
 		xPSHUF.D(xRegisterSSE(EEREC_LO), xRegisterSSE(dst), 0x88);
@@ -2220,7 +2220,7 @@ void recPMADDUW()
 	xSHUF.PS(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_HI), 0x88);
 	xPSHUF.D(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_LO), 0xd8); // LO = {LO[0], HI[0], LO[2], HI[2]}
 	int dst = _Rd_ ? EEREC_D : EEREC_HI;
-	xPMUL.UDQ(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_S), xRegisterSSE(EEREC_T));
+	xPMUL.UDQ(xRegisterSSE(dst), xRegisterSSE(EEREC_S), xRegisterSSE(EEREC_T));
 	xPADD.Q(xRegisterSSE(dst), xRegisterSSE(EEREC_LO));
 	// interleave & sign extend
 	xPSHUF.D(xRegisterSSE(EEREC_LO), xRegisterSSE(dst), 0x88);
