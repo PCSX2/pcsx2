@@ -2368,6 +2368,11 @@ Leaderboard Position: {1} of {2}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="272"/>
+        <source>DESCRIPTION</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="275"/>
         <source>SIZE / LABEL</source>
         <extracomment>Warning: limited space available. Abbreviate if needed.</extracomment>
