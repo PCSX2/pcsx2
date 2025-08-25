@@ -562,8 +562,8 @@ void recPEXT5()
 	xPSLL.D(xRegisterSSE(t1reg), 20);
 	xPOR(xRegisterSSE(t0reg), xRegisterSSE(t1reg));
 
-	xPSLL.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T), 27); // for bit 0..4
 	xPSLL.D(xRegisterSSE(t1reg),   xRegisterSSE(EEREC_T), 17); // for bit 10..14
+	xPSLL.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T), 27); // for bit 0..4
 	xPSRL.D(xRegisterSSE(EEREC_D), 27);
 	xPSRL.W(xRegisterSSE(t1reg),   11);
 	xPOR(xRegisterSSE(EEREC_D), xRegisterSSE(t1reg));
@@ -595,8 +595,8 @@ void recPPAC5()
 	xPSLL.D(xRegisterSSE(t1reg), 15);
 	xPOR(xRegisterSSE(t0reg), xRegisterSSE(t1reg));
 
-	xPSLL.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T), 24); // for bit 0..4
 	xPSRL.D(xRegisterSSE(t1reg),   xRegisterSSE(EEREC_T), 11); // for bit 5..9
+	xPSLL.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T), 24); // for bit 0..4
 	xPSRL.D(xRegisterSSE(EEREC_D), 27);
 	xPSLL.D(xRegisterSSE(t1reg),    5);
 	xPOR(xRegisterSSE(EEREC_D), xRegisterSSE(t1reg));
