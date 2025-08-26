@@ -183,7 +183,7 @@ bool SysMemory::AllocateMemoryMap()
 
 	HostMemoryMap::EEmem = (uptr)(s_data_memory + HostMemoryMap::EEmemOffset);
 	HostMemoryMap::IOPmem = (uptr)(s_data_memory + HostMemoryMap::IOPmemOffset);
-	HostMemoryMap::VUmem = (uptr)(s_data_memory + HostMemoryMap::VUmemSize);
+	HostMemoryMap::VUmem = (uptr)(s_data_memory + HostMemoryMap::VUmemOffset);
 
 	DumpMemoryMap();
 	return true;
