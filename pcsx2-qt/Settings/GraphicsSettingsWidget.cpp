@@ -25,7 +25,7 @@ static constexpr RendererInfo s_renderer_info[] = {
 	//: Graphics backend/engine type. Leave as-is.
 	{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Direct3D 11"), GSRendererType::DX11},
 	//: Graphics backend/engine type. Leave as-is.
-	{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Direct3D 12"), GSRendererType::DX12},
+	{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Direct3D 12 (Not Recommended)"), GSRendererType::DX12},
 #endif
 #ifdef ENABLE_OPENGL
 	//: Graphics backend/engine type. Leave as-is.
@@ -549,7 +549,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 			tr("Control the accuracy level of the GS blending unit emulation.<br> "
 			   "The higher the setting, the more blending is emulated in the shader accurately, and the higher the speed penalty will "
 			   "be.<br> "
-			   "Note that Direct3D's blending is reduced in capability compared to OpenGL/Vulkan."));
+			   "Note that Direct3D 12's blending is reduced in capability compared to OpenGL/Vulkan/Direct3D 11."));
 
 		dialog()->registerWidgetHelp(m_advanced.texturePreloading, tr("Texture Preloading"), tr("Full (Hash Cache)"),
 			tr("Uploads entire textures at once instead of in small pieces, avoiding redundant uploads when possible. "

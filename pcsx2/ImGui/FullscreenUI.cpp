@@ -3970,7 +3970,7 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 		FSUI_NSTR("Automatic (Default)"),
 #ifdef _WIN32
 		FSUI_NSTR("Direct3D 11"),
-		FSUI_NSTR("Direct3D 12"),
+		FSUI_NSTR("Direct3D 12 (Not Recommended)"),
 #endif
 #ifdef ENABLE_OPENGL
 		FSUI_NSTR("OpenGL"),
@@ -8532,7 +8532,7 @@ TRANSLATE_NOOP("FullscreenUI", "Full");
 TRANSLATE_NOOP("FullscreenUI", "Extra");
 TRANSLATE_NOOP("FullscreenUI", "Automatic (Default)");
 TRANSLATE_NOOP("FullscreenUI", "Direct3D 11");
-TRANSLATE_NOOP("FullscreenUI", "Direct3D 12");
+TRANSLATE_NOOP("FullscreenUI", "Direct3D 12 (Not Recommeded)");
 TRANSLATE_NOOP("FullscreenUI", "OpenGL");
 TRANSLATE_NOOP("FullscreenUI", "Vulkan");
 TRANSLATE_NOOP("FullscreenUI", "Metal");
