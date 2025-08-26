@@ -23849,37 +23849,37 @@ Xbox 360 turntables require a 256x multiplier, most other turntables can use the
 <context>
     <name>VMManager</name>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1860"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1865"/>
         <source>Failed to back up old save state {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1028"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1033"/>
         <source>PS2 BIOS ({})</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1089"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1094"/>
         <source>Unknown Game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1252"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1257"/>
         <source>CDVD precaching was cancelled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1258"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1263"/>
         <source>CDVD precaching failed: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1351"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1356"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1352"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1357"/>
         <source>PCSX2 requires a PS2 BIOS in order to run.
 
 For legal reasons, you *must* obtain a BIOS from an actual PS2 unit that you own (borrowing doesn&apos;t count).
@@ -23890,294 +23890,294 @@ Please consult the FAQs and Guides for further instructions.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1443"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1448"/>
         <source>Resuming state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1448"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1453"/>
         <source>Boot and Debug</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="6465"/>
-        <location filename="../../pcsx2/VMManager.cpp" line="1818"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1823"/>
         <source>Failed to load save state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1893"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1898"/>
         <source>State saved to slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1968"/>
-        <location filename="../../pcsx2/VMManager.cpp" line="2005"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1973"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2010"/>
         <source>Loading state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1979"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1984"/>
         <source>Failed to load state (Memory card is busy)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2031"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2036"/>
         <source>Failed to save state (Memory card is busy)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2048"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2053"/>
         <source>Failed to save state to slot {} (Memory card is busy)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2055"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2060"/>
         <source>Saving state to slot {}...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2221"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2226"/>
         <source>Frame advancing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2249"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2254"/>
         <source>Disc removed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2255"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2260"/>
         <source>Disc changed to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2264"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2269"/>
         <source>Failed to open new disc image &apos;{}&apos;. Reverting to old image.
 Error was: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2273"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2278"/>
         <source>Failed to switch back to old disc image. Removing disc.
 Error was: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3076"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3081"/>
         <source>Cheats have been disabled due to achievements hardcore mode.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3129"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3134"/>
         <source>Fast CDVD is enabled, this may break games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3133"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3138"/>
         <source>Cycle rate/skip is not at default, this may crash or make games run too slow.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3143"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3148"/>
         <source>Upscale multiplier is below native, this will break rendering.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3183"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3188"/>
         <source>Mipmapping is disabled. This may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3188"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3193"/>
         <source>Debug device is enabled. This will massively reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3197"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3202"/>
         <source>Renderer is not set to Automatic. This may cause performance problems and graphical issues.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3203"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3208"/>
         <source>Texture filtering is not set to Bilinear (PS2). This will break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3666"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3671"/>
         <source>No Game Running</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3148"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3153"/>
         <source>Trilinear filtering is not set to automatic. This may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1845"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1850"/>
         <source>Failed to save state: {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1900"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1905"/>
         <source>Failed to save state to slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1998"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2003"/>
         <source>There is no saved {} in slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1998"/>
-        <location filename="../../pcsx2/VMManager.cpp" line="2016"/>
-        <location filename="../../pcsx2/VMManager.cpp" line="2022"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2003"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2021"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2027"/>
         <source>backup state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2016"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2021"/>
         <source>Failed to load {} from slot {} (Memory card is busy)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2016"/>
-        <location filename="../../pcsx2/VMManager.cpp" line="2022"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2021"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2027"/>
         <source>state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2022"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2027"/>
         <source>Loading {} from slot {}...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3153"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3158"/>
         <source>Blending Accuracy is below Basic, this may break effects in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3158"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3163"/>
         <source>Hardware Download Mode is not set to Accurate, this may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3209"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3214"/>
         <source>EE FPU Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3215"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3220"/>
         <source>EE FPU Clamp Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3220"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3225"/>
         <source>VU0 Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3225"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3230"/>
         <source>VU1 Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3232"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3237"/>
         <source>VU Clamp Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3237"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3242"/>
         <source>128MB RAM is enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3242"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3247"/>
         <source>Game Fixes are not enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3247"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3252"/>
         <source>Compatibility Patches are not enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3251"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3256"/>
         <source>Frame rate for NTSC is not default. This may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3253"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3258"/>
         <source>Frame rate for PAL is not default. This may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3272"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3277"/>
         <source>EE Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3277"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3282"/>
         <source>VU0 Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3282"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3287"/>
         <source>VU1 Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3287"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3292"/>
         <source>IOP Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3292"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3297"/>
         <source>EE Cache is enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3297"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3302"/>
         <source>EE Wait Loop Detection is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3302"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3307"/>
         <source>INTC Spin Detection is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3305"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3310"/>
         <source>Fastmem is not enabled, this will reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3309"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3314"/>
         <source>Instant VU1 is disabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3314"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3319"/>
         <source>mVU Flag Hack is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3163"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3168"/>
         <source>GPU Palette Conversion is enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3168"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3173"/>
         <source>Texture Preloading is not Full, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3173"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3178"/>
         <source>Estimate texture region is enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3178"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3183"/>
         <source>Texture dumping is enabled, this will continually dump textures to disk.</source>
         <translation type="unfinished"></translation>
     </message>
