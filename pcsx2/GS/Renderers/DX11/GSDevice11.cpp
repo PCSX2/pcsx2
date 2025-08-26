@@ -1235,15 +1235,14 @@ void GSDevice11::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 
 	// DX11 doesn't support partial depth copy so we need to
 	// either pass a nullptr D3D11_BOX for a full depth copy or use CopyResource instead.
-	const bool depth = (sTex->GetType() == GSTexture::Type::DepthStencil);
-	// Optimization: Use CopyResource for full texture or depth copies, it's faster than CopySubresourceRegion.
-	if (depth || (r.left == 0 && r.top == 0 && r.right == dTex->GetWidth() && r.bottom == dTex->GetHeight()))
+	// Optimization: Use CopyResource for depth copies, it's faster than CopySubresourceRegion.
+	if (sTex->GetType() == GSTexture::Type::DepthStencil)
 	{
 		m_ctx->CopyResource(*static_cast<GSTexture11*>(dTex), *static_cast<GSTexture11*>(sTex));
 		return;
 	}
 
-	D3D11_BOX box = {static_cast<UINT>(r.left), static_cast<UINT>(r.top), 0U,static_cast<UINT>(r.right), static_cast<UINT>(r.bottom), 1U};
+	D3D11_BOX box = {static_cast<UINT>(r.left), static_cast<UINT>(r.top), 0U, static_cast<UINT>(r.right), static_cast<UINT>(r.bottom), 1U};
 	m_ctx->CopySubresourceRegion(*static_cast<GSTexture11*>(dTex), 0, destX, destY, 0, *static_cast<GSTexture11*>(sTex), 0, &box);
 }
 
