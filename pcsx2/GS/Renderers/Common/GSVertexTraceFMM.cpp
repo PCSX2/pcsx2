@@ -3,6 +3,7 @@
 
 #include "GSVertexTrace.h"
 #include "GS/GSState.h"
+#include "GS/GSUtil.h"
 #include <cfloat>
 
 class CURRENT_ISA::GSVertexTraceFMM
@@ -63,24 +64,11 @@ void GSVertexTraceFMM::FindMinMax(GSVertexTrace& vt, const void* vertex, const u
 {
 	const GSDrawingContext* context = vt.m_state->m_context;
 
-	int n = 1;
-
-	switch (primclass)
-	{
-		case GS_POINT_CLASS:
-			n = 1;
-			break;
-		case GS_LINE_CLASS:
-		case GS_SPRITE_CLASS:
-			n = 2;
-			break;
-		case GS_TRIANGLE_CLASS:
-			n = 3;
-			break;
-	}
+	constexpr int n = GSUtil::GetClassVertexCount(primclass);
 
 	GSVector4 tmin = s_minmax.xxxx();
 	GSVector4 tmax = s_minmax.yyyy();
+	GSVector4i tnan = GSVector4i::zero();
 	GSVector4i cmin = GSVector4i::xffffffff();
 	GSVector4i cmax = GSVector4i::zero();
 
@@ -90,7 +78,7 @@ void GSVertexTraceFMM::FindMinMax(GSVertexTrace& vt, const void* vertex, const u
 	const GSVertex* RESTRICT v = (GSVertex*)vertex;
 
 	// Process 2 vertices at a time for increased efficiency
-	auto processVertices = [&tmin, &tmax, &cmin, &cmax, &pmin, &pmax, n](const GSVertex& v0, const GSVertex& v1, bool finalVertex)
+	auto processVertices = [&tmin, &tmax, &cmin, &cmax, &pmin, &pmax, &tnan](const GSVertex& v0, const GSVertex& v1, bool finalVertex)
 	{
 		if (color)
 		{
@@ -134,8 +122,16 @@ void GSVertexTraceFMM::FindMinMax(GSVertexTrace& vt, const void* vertex, const u
 				stq0 = st.xyww(primclass == GS_SPRITE_CLASS ? stq1 : stq0);
 				stq1 = st.zwww(stq1);
 
-				tmin = tmin.min(stq0.min(stq1));
-				tmax = tmax.max(stq0.max(stq1));
+				const GSVector4i nan0 = GSVector4i::cast(stq0 != stq0);
+				const GSVector4i nan1 = GSVector4i::cast(stq1 != stq1);
+
+				// Only update entries that are not NaN.
+				tmin = tmin.blend32(tmin.min(stq0), GSVector4::cast(~nan0));
+				tmin = tmin.blend32(tmin.min(stq1), GSVector4::cast(~nan1));
+				tmax = tmax.blend32(tmax.max(stq0), GSVector4::cast(~nan0));
+				tmax = tmax.blend32(tmax.max(stq1), GSVector4::cast(~nan1));
+
+				tnan |= nan0 | nan1;
 			}
 			else
 			{
@@ -231,11 +227,15 @@ void GSVertexTraceFMM::FindMinMax(GSVertexTrace& vt, const void* vertex, const u
 
 		vt.m_min.t = tmin * s;
 		vt.m_max.t = tmax * s;
+
+		if (!fst)
+			vt.nan.value = tnan.mask() & ~4; // Remove pad bit.
 	}
 	else
 	{
 		vt.m_min.t = GSVector4::zero();
 		vt.m_max.t = GSVector4::zero();
+		vt.nan.value = 0;
 	}
 
 	if (color)
