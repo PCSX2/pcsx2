@@ -114,6 +114,61 @@ const char* GSUtil::GetPrimName(u32 prim)
 	return (prim < std::size(names)) ? names[prim] : "";
 }
 
+const char* GSUtil::GetMMAGName(u32 mmag)
+{
+	static constexpr const char* names[] = {"NEAREST", "LINEAR"};
+	return (mmag < std::size(names)) ? names[mmag] : "";
+}
+
+const char* GSUtil::GetMMINName(u32 mmin)
+{
+	static constexpr const char* names[8] = {"NEAREST", "LINEAR", "NEAREST_MIPMAP_NEAREST", "NEAREST_MIPMAP_LINEAR",
+		"LINEAR_MIPMAP_NEAREST", "LINEAR_MIPMAP_LINEAR"};
+	return (mmin < std::size(names)) ? names[mmin] : "";
+}
+
+const char* GSUtil::GetMTBAName(u32 mtba)
+{
+	static constexpr const char* names[] = {"MIPTBP1", "AUTO"};
+	return (mtba < std::size(names)) ? names[mtba] : "";
+}
+
+const char* GSUtil::GetLCMName(u32 lcm)
+{
+	static constexpr const char* names[] = {"Formula", "K"};
+	return (lcm < std::size(names)) ? names[lcm] : "";
+}
+
+const char* GSUtil::GetSCANMSKName(u32 scanmsk)
+{
+	static constexpr const char* names[] = {"Normal", "Reserved", "Even prohibited", "Odd prohibited"};
+	return (scanmsk < std::size(names)) ? names[scanmsk] : "";
+}
+
+const char* GSUtil::GetDATMName(u32 datm)
+{
+	static constexpr const char* names[] = {"0 pass", "1 pass"};
+	return (datm < std::size(names)) ? names[datm] : "";
+}
+
+const char* GSUtil::GetTFXName(u32 tfx)
+{
+	static constexpr const char* names[] = {"MODULATE", "DECAL", "HIGHLIGHT", "HIGHLIGHT2"};
+	return (tfx < std::size(names)) ? names[tfx] : "";
+}
+
+const char* GSUtil::GetTCCName(u32 tcc)
+{
+	static constexpr const char* names[] = {"RGB", "RGBA"};
+	return (tcc < std::size(names)) ? names[tcc] : "";
+}
+
+const char* GSUtil::GetACName(u32 ac)
+{
+	static constexpr const char* names[] = {"PRMODE", "PRIM"};
+	return (ac < std::size(names)) ? names[ac] : "";
+}
+
 const u32* GSUtil::HasSharedBitsPtr(u32 dpsm)
 {
 	return s_maps.SharedBitsField[dpsm];
