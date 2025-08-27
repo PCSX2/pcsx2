@@ -183,7 +183,7 @@ bool SysMemory::AllocateMemoryMap()
 
 	HostMemoryMap::EEmem = (uptr)(s_data_memory + HostMemoryMap::EEmemOffset);
 	HostMemoryMap::IOPmem = (uptr)(s_data_memory + HostMemoryMap::IOPmemOffset);
-	HostMemoryMap::VUmem = (uptr)(s_data_memory + HostMemoryMap::VUmemSize);
+	HostMemoryMap::VUmem = (uptr)(s_data_memory + HostMemoryMap::VUmemOffset);
 
 	DumpMemoryMap();
 	return true;
@@ -198,8 +198,8 @@ void SysMemory::DumpMemoryMap()
 	DUMP_REGION("EE Main Memory", s_data_memory, HostMemoryMap::EEmemOffset, HostMemoryMap::EEmemSize);
 	DUMP_REGION("IOP Main Memory", s_data_memory, HostMemoryMap::IOPmemOffset, HostMemoryMap::IOPmemSize);
 	DUMP_REGION("VU0/1 On-Chip Memory", s_data_memory, HostMemoryMap::VUmemOffset, HostMemoryMap::VUmemSize);
-	DUMP_REGION("VTLB Virtual Map", s_data_memory, HostMemoryMap::VTLBAddressMapOffset, HostMemoryMap::VTLBVirtualMapSize);
-	DUMP_REGION("VTLB Address Map", s_data_memory, HostMemoryMap::VTLBAddressMapSize, HostMemoryMap::VTLBAddressMapSize);
+	DUMP_REGION("VTLB Virtual Map", s_data_memory, HostMemoryMap::VTLBVirtualMapOffset, HostMemoryMap::VTLBVirtualMapSize);
+	DUMP_REGION("VTLB Address Map", s_data_memory, HostMemoryMap::VTLBAddressMapOffset, HostMemoryMap::VTLBAddressMapSize);
 
 	DUMP_REGION("R5900 Recompiler Cache", s_code_memory, HostMemoryMap::EErecOffset, HostMemoryMap::EErecSize);
 	DUMP_REGION("R3000A Recompiler Cache", s_code_memory, HostMemoryMap::IOPrecOffset, HostMemoryMap::IOPrecSize);
