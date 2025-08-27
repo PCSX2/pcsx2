@@ -26082,6 +26082,9 @@ SLES-54382:
   name: "Jumanji"
   region: "PAL-M6"
   compat: 5
+  gsHWFixes:
+    recommendedBlendingLevel: 2 # Fixes blending issues during the intro.
+    textureInsideRT: 1 # Fixes half right.
 SLES-54383:
   name: "Casper and The Ghostly Trio"
   region: "PAL-M6"
@@ -26204,6 +26207,9 @@ SLES-54426:
 SLES-54427:
   name: "Jumanji"
   region: "PAL-M6"
+  gsHWFixes:
+    recommendedBlendingLevel: 2 # Fixes blending issues during the intro.
+    textureInsideRT: 1 # Fixes half right.
 SLES-54430:
   name: "Teen Titans"
   region: "PAL-E-F"
@@ -26238,6 +26244,9 @@ SLES-54435:
 SLES-54436:
   name: "Jumanji"
   region: "PAL-A"
+  gsHWFixes:
+    recommendedBlendingLevel: 2 # Fixes blending issues during the intro.
+    textureInsideRT: 1 # Fixes half right.
 SLES-54437:
   name: "The King of Fighters XI"
   name-sort: "King of Fighters XI, The"
