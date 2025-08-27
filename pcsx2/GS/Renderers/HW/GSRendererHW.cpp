@@ -5814,6 +5814,10 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 	// Primitives don't overlap.
 	const bool no_prim_overlap = (m_prim_overlap == PRIM_OVERLAP_NO);
 
+	// HW blend can handle it, we change the blend formulas and partially do the blend in shader.
+	const bool common_blend_hw_1_2_cond = alpha_eq_less_one || m_conf.ps.dst_fmt != GSLocalMemory::PSM_FMT_16;
+	const bool can_blend_hw = (((blend_flag & BLEND_HW1) && !blend_ad) || (blend_flag & BLEND_HW2)) && common_blend_hw_1_2_cond;
+
 	// HW blend can be done in multiple passes when there's no overlap.
 	// Blend multi pass is only useful when texture barriers aren't supported.
 	// Speed wise Texture barriers > blend multi pass > texture copies.
@@ -5860,16 +5864,16 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 			sw_blending |= true;
 			[[fallthrough]];
 		case AccBlendLevel::Full:
-			sw_blending |= m_conf.ps.blend_a != m_conf.ps.blend_b && alpha_c0_high_max_one;
+			sw_blending |= m_conf.ps.blend_a != m_conf.ps.blend_b && alpha_c0_high_max_one && !can_blend_hw;
 			[[fallthrough]];
 		case AccBlendLevel::High:
-			sw_blending |= (alpha_c1_high_max_one || alpha_c1_high_no_rta_correct) || (m_conf.ps.blend_a != m_conf.ps.blend_b && alpha_c2_high_one);
+			sw_blending |= (alpha_c1_high_max_one || alpha_c1_high_no_rta_correct) || (m_conf.ps.blend_a != m_conf.ps.blend_b && alpha_c2_high_one && !can_blend_hw);
 			[[fallthrough]];
 		case AccBlendLevel::Medium:
 			// Initial idea was to enable accurate blending for sprite rendering to handle
 			// correctly post-processing effect. Some games (ZoE) use tons of sprites as particles.
 			// In order to keep it fast, let's limit it to smaller draw call.
-			sw_blending |= barriers_supported && m_vt.m_primclass == GS_SPRITE_CLASS && ComputeDrawlistGetSize(rt->m_scale) < 100;
+			sw_blending |= barriers_supported && m_vt.m_primclass == GS_SPRITE_CLASS && ComputeDrawlistGetSize(rt->m_scale) < 100 && !can_blend_hw;
 			// We don't want the cases to be enabled if barriers aren't supported so limit it to no overlap.
 			sw_blending &= (no_prim_overlap || barriers_supported);
 			[[fallthrough]];
