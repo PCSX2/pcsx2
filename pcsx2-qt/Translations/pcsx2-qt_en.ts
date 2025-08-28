@@ -4253,27 +4253,27 @@ Do you want to overwrite?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="259"/>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="269"/>
         <source>&lt;i&gt;Start this game to modify the symbol sources list.&lt;/i&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="334"/>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="329"/>
         <source>Path</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="335"/>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="330"/>
         <source>Base Address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="336"/>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="331"/>
         <source>Condition</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="383"/>
+        <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="378"/>
         <source>Add Symbol File</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5039,28 +5039,25 @@ Do you want to overwrite?</source>
     </message>
 </context>
 <context>
-    <name>DebuggerEvent</name>
-    <message>
-        <location filename="../Debugger/DebuggerView.cpp" line="281"/>
-        <source>%1...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Debugger/DebuggerView.cpp" line="293"/>
-        <source>%1 %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>DebuggerEvents</name>
     <message>
         <location filename="../Debugger/DebuggerEvents.h" line="41"/>
-        <source>Go to in</source>
+        <source>Go to in %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DebuggerEvents.h" line="56"/>
-        <source>Add to</source>
+        <location filename="../Debugger/DebuggerEvents.h" line="42"/>
+        <source>Go to in...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Debugger/DebuggerEvents.h" line="57"/>
+        <source>Add to %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Debugger/DebuggerEvents.h" line="58"/>
+        <source>Add to...</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5553,33 +5550,33 @@ Do you want to overwrite?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockManager.cpp" line="581"/>
+        <location filename="../Debugger/Docking/DockManager.cpp" line="584"/>
         <source>Edit Layout</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockManager.cpp" line="586"/>
+        <location filename="../Debugger/Docking/DockManager.cpp" line="589"/>
         <source>Reset Layout</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockManager.cpp" line="636"/>
+        <location filename="../Debugger/Docking/DockManager.cpp" line="639"/>
         <source>Are you sure you want to reset layout &apos;%1&apos;?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockManager.cpp" line="637"/>
-        <location filename="../Debugger/Docking/DockManager.cpp" line="660"/>
+        <location filename="../Debugger/Docking/DockManager.cpp" line="640"/>
+        <location filename="../Debugger/Docking/DockManager.cpp" line="663"/>
         <source>Confirmation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockManager.cpp" line="592"/>
+        <location filename="../Debugger/Docking/DockManager.cpp" line="595"/>
         <source>Delete Layout</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockManager.cpp" line="659"/>
+        <location filename="../Debugger/Docking/DockManager.cpp" line="662"/>
         <source>Are you sure you want to delete layout &apos;%1&apos;?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -20559,6 +20556,16 @@ If you have any unsaved progress on this save state, you can download the compat
         <source>DESCRIPTION</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../Debugger/Memory/SavedAddressesModel.cpp" line="161"/>
+        <source>Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Debugger/Memory/SavedAddressesModel.cpp" line="161"/>
+        <source>Description</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>SavedAddressesView</name>
@@ -21257,6 +21264,49 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../Debugger/StackView.cpp" line="54"/>
         <source>Copy all as CSV</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SymbolGuardian</name>
+    <message>
+        <location filename="../../pcsx2/DebugTools/SymbolGuardian.cpp" line="224"/>
+        <source>DWARF Symbol Table</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/DebugTools/SymbolGuardian.cpp" line="225"/>
+        <source>ELF Section Headers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/DebugTools/SymbolGuardian.cpp" line="226"/>
+        <source>ELF Symbol Table</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/DebugTools/SymbolGuardian.cpp" line="227"/>
+        <source>Function Scanner</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/DebugTools/SymbolGuardian.cpp" line="228"/>
+        <source>Nocash Symbols</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/DebugTools/SymbolGuardian.cpp" line="229"/>
+        <source>SNDLL Symbol Table</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/DebugTools/SymbolGuardian.cpp" line="230"/>
+        <source>Symbol Table Importer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/DebugTools/SymbolGuardian.cpp" line="231"/>
+        <source>User-Defined</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
