@@ -2729,7 +2729,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	{
 		// Requires a copy of the RT.
 		// Used as "bind rt" flag when texture barrier is unsupported for tex is fb.
-		draw_rt_clone = CreateTexture(rtsize.x, rtsize.y, 1, draw_rt->GetFormat(), true);
+		draw_rt_clone = CreateRenderTarget(draw_rt->GetSize().x, draw_rt->GetSize().y, draw_rt->GetFormat(), false, true);
 
 		if (!draw_rt_clone)
 			Console.Warning("D3D11: Failed to allocate temp texture for RT copy.");
@@ -2835,17 +2835,66 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config, GSTexture* draw_rt_clo
 			return;
 		}
 
-		// Copy once per primitive.
-		// TODO: Optimization try to use prim area for copy instead of draw area,
-		// might need current prim and previous prim area due to overlap,
-		// will need to use vertex cords to get the new copy rect.
+		
 		if (m_features.multidraw_fb_copy && full_barrier)
 		{
+			const GSVector2i rtsize = draw_rt->GetSize();
+			GSTexture* draw_rt_clone2 = CreateRenderTarget(rtsize.x, rtsize.y, draw_rt->GetFormat(), false, true);
+			GSTexture* next_draw_tex1 = CreateRenderTarget(rtsize.x, rtsize.y, draw_rt->GetFormat(), false, true);
+			GSTexture* next_draw_tex2 = CreateRenderTarget(rtsize.x, rtsize.y, draw_rt->GetFormat(), false, true);
+
+			// First draw copy
+			CopyRect(draw_rt, draw_rt_clone, config.drawarea, config.drawarea.left, config.drawarea.top);
+			CopyRect(draw_rt, draw_rt_clone2, config.drawarea, config.drawarea.left, config.drawarea.top);
+
 			for (u32 p = 0; p < config.nindices; p += indices_per_prim)
 			{
-				CopyAndBind();
-				DrawIndexedPrimitive(p, indices_per_prim);
+				bool last_prim = (p + indices_per_prim >= config.nindices);
+
+				if (!last_prim)
+				{
+					// Ping-pong draws for intermediate primitives
+					PSUnbindConflictingSRVs(next_draw_tex1);
+					if (one_barrier || full_barrier)
+						PSSetShaderResource(2, draw_rt_clone);
+					if (config.tex && config.tex == config.rt)
+						PSSetShaderResource(0, draw_rt_clone);
+					OMSetRenderTargets(next_draw_tex1, m_state.cached_dsv, &config.scissor);
+					DrawIndexedPrimitive(p, indices_per_prim);
+
+					PSUnbindConflictingSRVs(next_draw_tex2);
+					if (one_barrier || full_barrier)
+						PSSetShaderResource(2, draw_rt_clone2);
+					if (config.tex && config.tex == config.rt)
+						PSSetShaderResource(0, draw_rt_clone2);
+					OMSetRenderTargets(next_draw_tex2, m_state.cached_dsv, &config.scissor);
+					DrawIndexedPrimitive(p, indices_per_prim);
+
+					std::swap(next_draw_tex1, draw_rt_clone);
+					std::swap(next_draw_tex2, draw_rt_clone2);
+
+				}
+				else
+				{
+					// Last draw: only one draw on the original RT
+					PSUnbindConflictingSRVs(draw_rt_clone);
+					if (one_barrier || full_barrier)
+						PSSetShaderResource(2, draw_rt_clone);
+					if (config.tex && config.tex == config.rt)
+						PSSetShaderResource(0, draw_rt_clone);
+					OMSetRenderTargets(draw_rt, m_state.cached_dsv, &config.scissor);
+					DrawIndexedPrimitive(p, indices_per_prim);
+				}
 			}
+
+			if (draw_rt_clone2)
+				Recycle(draw_rt_clone2);
+
+			if (next_draw_tex1)
+				Recycle(next_draw_tex1);
+
+			if (next_draw_tex2)
+				Recycle(next_draw_tex2);
 
 			return;
 		}
