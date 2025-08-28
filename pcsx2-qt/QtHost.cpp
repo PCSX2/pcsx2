@@ -75,7 +75,6 @@ namespace QtHost
 	static bool ParseCommandLineOptions(const QStringList& args, std::shared_ptr<VMBootParameters>& autoboot);
 	static bool InitializeConfig();
 	static void SaveSettings();
-	static void SaveSecretsSettings();
 	static void HookSignals();
 	static void RegisterTypes();
 	static bool RunSetupWizard();
@@ -1438,24 +1437,6 @@ void QtHost::SaveSettings()
 	{
 		s_settings_save_timer->deleteLater();
 		s_settings_save_timer = nullptr;
-	}
-}
-
-void QtHost::SaveSecretsSettings()
-{
-	pxAssertRel(!g_emu_thread->isOnEmuThread(), "Saving should happen on the UI thread.");
-
-	{
-		Error error;
-		auto lock = Host::GetSettingsLock();
-		if (!s_secrets_settings_interface->Save(&error))
-			Console.ErrorFmt("Failed to save settings: {}", error.GetDescription());
-	}
-
-	if (s_secrets_settings_save_timer)
-	{
-		s_secrets_settings_save_timer->deleteLater();
-		s_secrets_settings_save_timer = nullptr;
 	}
 }
 
