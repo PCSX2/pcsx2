@@ -85,7 +85,6 @@ namespace QtHost
 // Local variable declarations
 //////////////////////////////////////////////////////////////////////////
 static QTimer* s_settings_save_timer = nullptr;
-static QTimer* s_secrets_settings_save_timer = nullptr;
 static std::unique_ptr<INISettingsInterface> s_base_settings_interface;
 static std::unique_ptr<INISettingsInterface> s_secrets_settings_interface;
 static bool s_batch_mode = false;
