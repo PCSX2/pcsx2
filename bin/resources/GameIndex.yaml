@@ -4014,7 +4014,7 @@ SCED-52952:
     cpuSpriteRenderBW: 4 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 2 # Fixes lighting.
-    halfPixelOffset: 4 # Aligns post-processing.
+    halfPixelOffset: 5 # Aligns post-processing; HPO 5 fixes desert tile seams
     nativeScaling: 2 # Fixes lighting effects due to upscaling.
 SCED-52969:
   name: "EyeToy - Play 2"
@@ -5735,7 +5735,7 @@ SCES-52460:
     cpuSpriteRenderBW: 4 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 2 # Fixes lighting.
-    halfPixelOffset: 4 # Aligns post-processing.
+    halfPixelOffset: 5 # Aligns post-processing; HPO 5 fixes desert tile seams
     nativeScaling: 2 # Fixes lighting effects due to upscaling.
 SCES-52529:
   name: "Sly 2 - Band of Thieves"
@@ -7324,7 +7324,8 @@ SCKA-20039:
     alignSprite: 1 # Fixes FMV lines.
     textureInsideRT: 1 # Fixes post shuffles.
 SCKA-20040:
-  name: "Jak 3"
+  name: "잭 3"
+  name-en: "Jak 3"
   region: "NTSC-K"
   gameFixes:
     - InstantDMAHack # Fixes holes in face geometry.
@@ -7333,7 +7334,7 @@ SCKA-20040:
     cpuSpriteRenderBW: 4 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 2 # Fixes lighting.
-    halfPixelOffset: 4 # Aligns post-processing.
+    halfPixelOffset: 5 # Aligns post-processing; HPO 5 fixes desert tile seams
     nativeScaling: 2 # Fixes lighting effects due to upscaling.
 SCKA-20041:
   name: "EyeToy - Play 2"
@@ -11578,7 +11579,7 @@ SCUS-97330:
     cpuSpriteRenderBW: 4 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 2 # Fixes lighting.
-    halfPixelOffset: 4 # Aligns post-processing.
+    halfPixelOffset: 5 # Aligns post-processing; HPO 5 fixes desert tile seams
     nativeScaling: 2 # Fixes lighting effects due to upscaling.
 SCUS-97331:
   name: "Official U.S. PlayStation Magazine Demo Disc 078"
@@ -11862,7 +11863,7 @@ SCUS-97412:
     cpuSpriteRenderBW: 4 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 2 # Fixes lighting.
-    halfPixelOffset: 4 # Aligns post-processing.
+    halfPixelOffset: 5 # Aligns post-processing; HPO 5 fixes desert tile seams
     nativeScaling: 2 # Fixes lighting effects due to upscaling.
 SCUS-97413:
   name: "Ratchet & Clank - Up Your Arsenal [Public Beta v1.0]"
@@ -12400,7 +12401,7 @@ SCUS-97516:
     cpuSpriteRenderBW: 4 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 2 # Fixes lighting.
-    halfPixelOffset: 4 # Aligns post-processing.
+    halfPixelOffset: 5 # Aligns post-processing; HPO 5 fixes desert tile seams
     nativeScaling: 2 # Fixes lighting effects due to upscaling.
 SCUS-97517:
   name: "Killzone [Greatest Hits]"
@@ -30110,7 +30111,6 @@ SLES-82013:
   compat: 5
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-    - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     halfPixelOffset: 5 # Aligns depth of field effect.
@@ -30138,7 +30138,6 @@ SLES-82024:
   region: "PAL-I"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-    - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     halfPixelOffset: 5 # Aligns depth of field effect.
@@ -30150,7 +30149,6 @@ SLES-82026:
   region: "PAL-S"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-    - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     halfPixelOffset: 5 # Aligns depth of field effect.
@@ -30202,7 +30200,6 @@ SLES-82032:
   region: "PAL-G"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-    - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     halfPixelOffset: 5 # Aligns depth of field effect.
@@ -30248,7 +30245,6 @@ SLES-82042:
   region: "PAL-E-F"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-    - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
@@ -30260,7 +30256,6 @@ SLES-82043:
   region: "PAL-E-F"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-    - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
@@ -30274,7 +30269,6 @@ SLES-82044:
   region: "PAL-I"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-    - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
@@ -30286,7 +30280,6 @@ SLES-82045:
   region: "PAL-I"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-    - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
@@ -30300,7 +30293,6 @@ SLES-82046:
   region: "PAL-G"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-    - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
@@ -30312,7 +30304,6 @@ SLES-82047:
   region: "PAL-G"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-    - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
@@ -30326,7 +30317,6 @@ SLES-82048:
   region: "PAL-S"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-    - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
@@ -30338,7 +30328,6 @@ SLES-82049:
   region: "PAL-S"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-    - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
@@ -30352,7 +30341,6 @@ SLES-82050:
   region: "PAL-E-F"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-    - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
@@ -30366,7 +30354,6 @@ SLES-82051:
   region: "PAL-I"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-    - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
@@ -30380,7 +30367,6 @@ SLES-82052:
   region: "PAL-G"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-    - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
@@ -30394,7 +30380,6 @@ SLES-82053:
   region: "PAL-S"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-    - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
@@ -31594,7 +31579,6 @@ SLKA-25251:
   region: "NTSC-K"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-    - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     halfPixelOffset: 5 # Aligns depth of field effect.
@@ -32076,7 +32060,6 @@ SLKA-25353:
   compat: 5
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-    - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
@@ -32089,7 +32072,6 @@ SLKA-25354:
   compat: 5
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-    - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
@@ -32104,7 +32086,6 @@ SLKA-25355:
   compat: 5
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-    - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
@@ -33906,7 +33887,6 @@ SLPM-55236:
   region: "NTSC-J"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-    - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     halfPixelOffset: 5 # Aligns depth of field effect.
@@ -44540,7 +44520,6 @@ SLPM-65789:
   region: "NTSC-J"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-    - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     halfPixelOffset: 5 # Aligns depth of field effect.
@@ -44554,7 +44533,6 @@ SLPM-65790:
   region: "NTSC-J"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-    - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     halfPixelOffset: 5 # Aligns depth of field effect.
@@ -46515,7 +46493,6 @@ SLPM-66117:
   region: "NTSC-J"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-    - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
@@ -46529,7 +46506,6 @@ SLPM-66118:
   region: "NTSC-J"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-    - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
@@ -46543,7 +46519,6 @@ SLPM-66119:
   region: "NTSC-J"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-    - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
@@ -47182,7 +47157,6 @@ SLPM-66220:
   region: "NTSC-J"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-    - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
@@ -47198,7 +47172,6 @@ SLPM-66221:
   region: "NTSC-J"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-    - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
@@ -47214,7 +47187,6 @@ SLPM-66222:
   region: "NTSC-J"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-    - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
@@ -47230,7 +47202,6 @@ SLPM-66223:
   region: "NTSC-J"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-    - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
@@ -47246,7 +47217,6 @@ SLPM-66224:
   region: "NTSC-J"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-    - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
@@ -50844,7 +50814,6 @@ SLPM-66794:
   region: "NTSC-J"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-    - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     halfPixelOffset: 5 # Aligns depth of field effect.
@@ -52452,7 +52421,6 @@ SLPM-68516:
   region: "NTSC-J"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-    - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     halfPixelOffset: 5 # Aligns depth of field effect.
@@ -53001,7 +52969,6 @@ SLPM-74257:
   region: "NTSC-J"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-    - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     halfPixelOffset: 5 # Aligns depth of field effect.
@@ -67348,7 +67315,6 @@ SLUS-20915:
   compat: 5
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-    - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     halfPixelOffset: 5 # Aligns depth of field effect.
@@ -69417,7 +69383,6 @@ SLUS-21243:
   compat: 5
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-    - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
@@ -70279,7 +70244,6 @@ SLUS-21359:
   compat: 5
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-    - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
@@ -70291,7 +70255,6 @@ SLUS-21360:
   region: "NTSC-U"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-    - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
@@ -75018,7 +74981,6 @@ TLES-82043:
   region: "PAL-E"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
-    - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
