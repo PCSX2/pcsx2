@@ -5639,7 +5639,7 @@ __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool 
 	return true;
 }
 
-void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const bool DATE, bool& DATE_PRIMID, bool& DATE_BARRIER,
+void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const bool DATE, bool& DATE_one, bool& DATE_PRIMID, bool& DATE_BARRIER,
 	GSTextureCache::Target* rt, bool can_scale_rt_alpha, bool& new_rt_alpha_scale)
 {
 	const GIFRegALPHA& ALPHA = m_context->ALPHA;
@@ -6441,9 +6441,11 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 	// Switch DATE_PRIMID with DATE_BARRIER in such cases to ensure accuracy.
 	// No mix of COLCLIP + sw blend + DATE_PRIMID, neither sw fbmask + DATE_PRIMID.
 	// Note: Do the swap in the end, saves the expensive draw splitting/barriers when mixed software blending is used.
-	if (sw_blending && DATE_PRIMID && m_conf.require_full_barrier)
+	// Optimization: If a draw is sw blended then we can swap any Stencil or PrimID DATE with DATE_BARRIER as it will be faster.
+	if (sw_blending && DATE && !DATE_BARRIER && ((prefer_sw_blend && m_conf.require_one_barrier) || m_conf.require_full_barrier))
 	{
-		GL_PERF("DATE: Swap DATE_PRIMID with DATE_BARRIER");
+		GL_PERF("DATE: Swapping DATE, DATE_one or DATE_PRIMID with DATE_BARRIER");
+		DATE_one = false;
 		DATE_PRIMID = false;
 		DATE_BARRIER = true;
 	}
@@ -7712,7 +7714,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 
 	if ((!IsOpaque() || m_context->ALPHA.IsBlack()) && rt && ((m_conf.colormask.wrgba & 0x7) || (m_texture_shuffle && !m_copy_16bit_to_target_shuffle && !m_same_group_texture_shuffle)))
 	{
-		EmulateBlending(blend_alpha_min, blend_alpha_max, DATE, DATE_PRIMID, DATE_BARRIER, rt, can_scale_rt_alpha, new_scale_rt_alpha);
+		EmulateBlending(blend_alpha_min, blend_alpha_max, DATE, DATE_one, DATE_PRIMID, DATE_BARRIER, rt, can_scale_rt_alpha, new_scale_rt_alpha);
 	}
 	else
 	{
@@ -8050,7 +8052,6 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	else if (!(features.texture_barrier || features.multidraw_fb_copy))
 	{
 		// These shouldn't be enabled if texture barriers aren't supported, make sure they are off.
-		m_conf.ps.write_rg = 0;
 		m_conf.require_full_barrier = false;
 	}
 
