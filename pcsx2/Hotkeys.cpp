@@ -227,9 +227,10 @@ DEFINE_HOTKEY("InputRecToggleMode", TRANSLATE_NOOP("Hotkeys", "System"),
 DEFINE_HOTKEY("SwapMemCards", TRANSLATE_NOOP("Hotkeys", "System"),
 	TRANSLATE_NOOP("Hotkeys", "Swap Memory Cards"), [](s32 pressed) {
 		if (!pressed && VMManager::HasValidVM())
-			FileMcd_Swap();
+			Host::RunOnCPUThread([]() {
+				FileMcd_Swap();
+			});
 	})
-
 DEFINE_HOTKEY("PreviousSaveStateSlot", TRANSLATE_NOOP("Hotkeys", "Save States"),
 	TRANSLATE_NOOP("Hotkeys", "Select Previous Save Slot"), [](s32 pressed) {
 		if (!pressed && VMManager::HasValidVM())
@@ -250,7 +251,7 @@ DEFINE_HOTKEY("LoadStateFromSlot", TRANSLATE_NOOP("Hotkeys", "Save States"),
 		if (!pressed && VMManager::HasValidVM())
 			SaveStateSelectorUI::LoadCurrentSlot();
 	})
-	DEFINE_HOTKEY("LoadBackupStateFromSlot", TRANSLATE_NOOP("Hotkeys", "Save States"),
+DEFINE_HOTKEY("LoadBackupStateFromSlot", TRANSLATE_NOOP("Hotkeys", "Save States"),
 	TRANSLATE_NOOP("Hotkeys", "Load Backup State From Selected Slot"), [](s32 pressed) {
 		if (!pressed && VMManager::HasValidVM())
 			SaveStateSelectorUI::LoadCurrentBackupSlot();
