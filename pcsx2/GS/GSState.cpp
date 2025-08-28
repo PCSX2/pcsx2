@@ -1874,7 +1874,7 @@ void GSState::CheckWriteOverlap(bool req_write, bool req_read)
 			// Tex rect could be invalid showing 1024x1024 when it isn't. If the frame is only 1 page wide, it's either a big strip or a single page draw.
 			// This large texture causes misdetection of overlapping writes, causing our heuristics in the hardware renderer for future draws to be missing.
 			// Either way if we check the queued up coordinates, it should give us a fair idea. (Cabela's Trophy Bucks)
-			if (prev_ctx.FRAME.FBW == 1 && tex_rect.width() > (prev_ctx.TEX0.TBW * 64))
+			if (prev_ctx.FRAME.FBW == 1 && static_cast<u32>(tex_rect.width()) > (prev_ctx.TEX0.TBW * 64))
 			{
 				GSVector4i tex_draw_rect = GSVector4i::zero();
 				for (u32 i = 0; i < m_index.tail; i++)
