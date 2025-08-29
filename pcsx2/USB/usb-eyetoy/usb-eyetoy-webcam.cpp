@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "Host.h"
+#include "IconsPromptFont.h"
 #include "videodev.h"
 #include "usb-eyetoy-webcam.h"
 #include "ov519.h"
@@ -489,6 +490,11 @@ namespace usb_eyetoy
 	const char* EyeToyWebCamDevice::TypeName() const
 	{
 		return "webcam";
+	}
+
+	const char* EyeToyWebCamDevice::IconName() const
+	{
+		return ICON_PF_EYETOY_WEBCAM;
 	}
 
 	bool EyeToyWebCamDevice::Freeze(USBDevice* dev, StateWrapper& sw) const

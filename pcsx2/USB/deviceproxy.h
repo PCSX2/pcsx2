@@ -51,6 +51,7 @@ public:
 
 	virtual const char* Name() const = 0;
 	virtual const char* TypeName() const = 0;
+	virtual const char* IconName() const = 0;
 	virtual std::span<const char*> SubTypes() const;
 	virtual std::span<const InputBindingInfo> Bindings(u32 subtype) const;
 	virtual std::span<const SettingInfo> Settings(u32 subtype) const;

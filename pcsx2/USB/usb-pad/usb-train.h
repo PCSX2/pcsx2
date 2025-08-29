@@ -23,6 +23,7 @@ namespace usb_pad
 		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const override;
 		const char* Name() const override;
 		const char* TypeName() const override;
+		const char* IconName() const override;
 		std::span<const char*> SubTypes() const override;
 		void UpdateSettings(USBDevice* dev, SettingsInterface& si) const override;
 		std::span<const SettingInfo> Settings(u32 subtype) const override;

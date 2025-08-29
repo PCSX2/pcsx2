@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "usb-pad.h"
+#include "IconsFontAwesome6.h"
+#include "IconsPromptFont.h"
 #include "USB/qemu-usb/USBinternal.h"
 #include "USB/usb-pad/usb-pad-sdl-ff.h"
 #include "USB/USB.h"
@@ -814,6 +816,11 @@ namespace usb_pad
 		return "Pad";
 	}
 
+	const char* PadDevice::IconName() const
+	{
+		return ICON_PF_STEERING_WHEEL_ALT;
+	}
+
 	bool PadDevice::Freeze(USBDevice* dev, StateWrapper& sw) const
 	{
 		PadState* s = USB_CONTAINER_OF(dev, PadState, dev);
@@ -887,6 +894,11 @@ namespace usb_pad
 		return "RBDrumKit";
 	}
 
+	const char* RBDrumKitDevice::IconName() const
+	{
+		return ICON_FA_DRUM;
+	}
+
 	USBDevice* RBDrumKitDevice::CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const
 	{
 		PadState* s = new PadState(port, WT_ROCKBAND1_DRUMKIT);
@@ -947,6 +959,11 @@ namespace usb_pad
 	const char* KeyboardmaniaDevice::TypeName() const
 	{
 		return "Keyboardmania";
+	}
+
+	const char* KeyboardmaniaDevice::IconName() const
+	{
+		return ICON_PF_KEYBOARDMANIA;
 	}
 
 	std::span<const char*> KeyboardmaniaDevice::SubTypes() const
