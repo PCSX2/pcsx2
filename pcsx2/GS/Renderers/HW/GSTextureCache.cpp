@@ -2228,7 +2228,7 @@ void GSTextureCache::CombineAlignedInsideTargets(Target* target, GSTextureCache:
 							target->m_valid_alpha_low |= t->m_valid_alpha_low;
 
 							GL_CACHE("Combining %x-%x in to %x-%x draw %d", t->m_TEX0.TBP0, t->m_end_block, target->m_TEX0.TBP0, target->m_end_block, GSState::s_n);
-
+							
 							g_gs_device->StretchRect(t->m_texture, source_rect, target->m_texture, target_drect, valid_color, valid_color, valid_color, valid_alpha, (target->m_type == RenderTarget) ? ShaderConvert::COPY : ShaderConvert::DEPTH_COPY);
 
 							target->UpdateValidity(target_drect_unscaled);
@@ -2888,7 +2888,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 				PreloadTarget(TEX0, size, GSVector2i(dst->m_valid.z, dst->m_valid.w), is_frame, preload,
 					preserve_target, draw_rect, dst, src);
 				g_gs_device->StretchRect(tex, GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f), dst->m_texture,
-					GSVector4(dst->m_texture->GetRect()), false, false, false, true);
+					GSVector4(dst->m_texture->GetRect()), false, false, false, true); 
 				g_gs_device->Recycle(tex);
 				dst->m_valid_rgb = true;
 			}
@@ -3579,6 +3579,7 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 							{
 								const GSVector4 src_rect = GSVector4(0, 0, copy_width, copy_height) / (GSVector4(t->m_texture->GetSize()).xyxy());
 								const GSVector4 dst_rect = GSVector4(dst_offset_scaled_width, dst_offset_scaled_height, dst_offset_scaled_width + copy_width, dst_offset_scaled_height + copy_height);
+
 								g_gs_device->StretchRect(t->m_texture, src_rect, dst->m_texture, dst_rect, t->m_valid_rgb, t->m_valid_rgb, t->m_valid_rgb, t->m_valid_alpha_high || t->m_valid_alpha_low);
 							}
 							else
@@ -4054,8 +4055,8 @@ bool GSTextureCache::CopyRGBFromDepthToColor(Target* dst, Target* depth_src)
 		if (dst->m_valid_alpha_low || dst->m_valid_alpha_high)
 		{
 			const GSVector4 copy_rect = GSVector4(tex->GetRect().rintersect(dst->m_texture->GetRect()));
-			g_gs_device->StretchRect(dst->m_texture, copy_rect / GSVector4(GSVector4i(dst->m_texture->GetSize()).xyxy()), tex,
-				copy_rect, false, false, false, true);
+			g_gs_device->StretchRect(dst->m_texture, copy_rect / GSVector4(GSVector4i(dst->m_texture->GetSize()).xyxy()),
+				tex, copy_rect, false, false, false, true);
 			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 		}
 
