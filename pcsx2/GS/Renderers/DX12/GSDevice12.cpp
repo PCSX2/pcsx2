@@ -1339,75 +1339,64 @@ void GSDevice12::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 {
 	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
-	GSTexture12* const sTexVK = static_cast<GSTexture12*>(sTex);
-	GSTexture12* const dTexVK = static_cast<GSTexture12*>(dTex);
-	const GSVector4i dtex_rc(0, 0, dTexVK->GetWidth(), dTexVK->GetHeight());
+	GSTexture12* const sTex12 = static_cast<GSTexture12*>(sTex);
+	GSTexture12* const dTex12 = static_cast<GSTexture12*>(dTex);
+	const GSVector4i dst_rect(0, 0, dTex12->GetWidth(), dTex12->GetHeight());
+	const bool full_draw_copy = dst_rect.eq(r);
 
-	if (sTexVK->GetState() == GSTexture::State::Cleared)
+	// Source is cleared, if destination is a render target, we can carry the clear forward.
+	if (sTex12->GetState() == GSTexture::State::Cleared)
 	{
-		// source is cleared. if destination is a render target, we can carry the clear forward
-		if (dTexVK->IsRenderTargetOrDepthStencil())
+		if (dTex12->IsRenderTargetOrDepthStencil() && ProcessClearsBeforeCopy(sTex, dTex, full_draw_copy))
+			return;
+
+		// Do an attachment clear.
+		EndRenderPass();
+
+		dTex12->SetState(GSTexture::State::Dirty);
+
+		if (dTex12->GetType() != GSTexture::Type::DepthStencil)
 		{
-			if (dtex_rc.eq(r))
-			{
-				// pass it forward if we're clearing the whole thing
-				if (sTexVK->IsDepthStencil())
-					dTexVK->SetClearDepth(sTexVK->GetClearDepth());
-				else
-					dTexVK->SetClearColor(sTexVK->GetClearColor());
-
-				return;
-			}
-			else
-			{
-				// otherwise we need to do an attachment clear
-				EndRenderPass();
-
-				dTexVK->SetState(GSTexture::State::Dirty);
-
-				if (dTexVK->GetType() != GSTexture::Type::DepthStencil)
-				{
-					dTexVK->TransitionToState(D3D12_RESOURCE_STATE_RENDER_TARGET);
-					GetCommandList()->ClearRenderTargetView(
-						dTexVK->GetWriteDescriptor(), sTexVK->GetUNormClearColor().v, 0, nullptr);
-				}
-				else
-				{
-					dTexVK->TransitionToState(D3D12_RESOURCE_STATE_DEPTH_WRITE);
-					GetCommandList()->ClearDepthStencilView(
-						dTexVK->GetWriteDescriptor(), D3D12_CLEAR_FLAG_DEPTH, sTexVK->GetClearDepth(), 0, 0, nullptr);
-				}
-
-				return;
-			}
+			dTex12->TransitionToState(D3D12_RESOURCE_STATE_RENDER_TARGET);
+			GetCommandList()->ClearRenderTargetView(
+				dTex12->GetWriteDescriptor(), sTex12->GetUNormClearColor().v, 0, nullptr);
+		}
+		else
+		{
+			dTex12->TransitionToState(D3D12_RESOURCE_STATE_DEPTH_WRITE);
+			GetCommandList()->ClearDepthStencilView(
+				dTex12->GetWriteDescriptor(), D3D12_CLEAR_FLAG_DEPTH, sTex12->GetClearDepth(), 0, 0, nullptr);
 		}
 
+		return;
+
+
 		// commit the clear to the source first, then do normal copy
-		sTexVK->CommitClear();
+		sTex12->CommitClear();
 	}
 
 	// if the destination has been cleared, and we're not overwriting the whole thing, commit the clear first
 	// (the area outside of where we're copying to)
-	if (dTexVK->GetState() == GSTexture::State::Cleared && !dtex_rc.eq(r))
-		dTexVK->CommitClear();
+	if (dTex12->GetState() == GSTexture::State::Cleared && !full_draw_copy)
+		dTex12->CommitClear();
 
 	EndRenderPass();
 
-	sTexVK->TransitionToState(D3D12_RESOURCE_STATE_COPY_SOURCE);
-	sTexVK->SetUseFenceCounter(GetCurrentFenceValue());
-	if (m_tfx_textures[0] && sTexVK->GetSRVDescriptor() == m_tfx_textures[0])
+	sTex12->TransitionToState(D3D12_RESOURCE_STATE_COPY_SOURCE);
+	sTex12->SetUseFenceCounter(GetCurrentFenceValue());
+	if (m_tfx_textures[0] && sTex12->GetSRVDescriptor() == m_tfx_textures[0])
 		PSSetShaderResource(0, nullptr, false);
 
-	dTexVK->TransitionToState(D3D12_RESOURCE_STATE_COPY_DEST);
-	dTexVK->SetUseFenceCounter(GetCurrentFenceValue());
+	dTex12->TransitionToState(D3D12_RESOURCE_STATE_COPY_DEST);
+	dTex12->SetUseFenceCounter(GetCurrentFenceValue());
 
 	D3D12_TEXTURE_COPY_LOCATION srcloc;
-	srcloc.pResource = sTexVK->GetResource();
+	srcloc.pResource = sTex12->GetResource();
 	srcloc.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
 	srcloc.SubresourceIndex = 0;
 
 	D3D12_TEXTURE_COPY_LOCATION dstloc;
-	dstloc.pResource = dTexVK->GetResource();
+	dstloc.pResource = dTex12->GetResource();
 	dstloc.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
 	dstloc.SubresourceIndex = 0;
 
@@ -1415,7 +1404,7 @@ void GSDevice12::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 		static_cast<UINT>(r.bottom), 1u};
 	GetCommandList()->CopyTextureRegion(&dstloc, destX, destY, 0, &srcloc, &srcbox);
 
-	dTexVK->SetState(GSTexture::State::Dirty);
+	dTex12->SetState(GSTexture::State::Dirty);
 }
 
 void GSDevice12::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,

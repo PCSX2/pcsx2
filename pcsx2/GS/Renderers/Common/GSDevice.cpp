@@ -397,6 +397,41 @@ void GSDevice::ClearDepth(GSTexture* t, float d)
 	t->SetClearDepth(d);
 }
 
+bool GSDevice::ProcessClearsBeforeCopy(GSTexture* sTex, GSTexture* dTex, const bool full_copy)
+{
+	pxAssert(sTex->GetState() == GSTexture::State::Cleared && dTex->IsRenderTargetOrDepthStencil());
+
+	// Pass it forward if we're clearing the whole thing.
+	if (full_copy)
+	{
+		if (dTex->IsDepthStencil())
+			dTex->SetClearDepth(sTex->GetClearDepth());
+		else
+			dTex->SetClearColor(sTex->GetClearColor());
+
+		dTex->SetState(GSTexture::State::Cleared);
+
+		return true;
+	}
+
+	// Destination is cleared, if it's the same colour and rect, we can just avoid this entirely.
+	if (dTex->GetState() == GSTexture::State::Cleared)
+	{
+		if (dTex->IsDepthStencil())
+		{
+			if (dTex->GetClearDepth() == sTex->GetClearDepth())
+				return true;
+		}
+		else
+		{
+			if (dTex->GetClearColor() == sTex->GetClearColor())
+				return true;
+		}
+	}
+
+	return false;
+}
+
 void GSDevice::InvalidateRenderTarget(GSTexture* t)
 {
 	t->SetState(GSTexture::State::Invalidated);

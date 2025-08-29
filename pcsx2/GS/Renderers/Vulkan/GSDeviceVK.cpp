@@ -2750,57 +2750,32 @@ void GSDeviceVK::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 
 	GSTextureVK* const sTexVK = static_cast<GSTextureVK*>(sTex);
 	GSTextureVK* const dTexVK = static_cast<GSTextureVK*>(dTex);
-	const GSVector4i dtex_rc(0, 0, dTexVK->GetWidth(), dTexVK->GetHeight());
+	const GSVector4i dst_rect(0, 0, dTexVK->GetWidth(), dTexVK->GetHeight());
+	const bool full_draw_copy = dst_rect.eq(r);
 
+	// Source is cleared, if destination is a render target, we can carry the clear forward.
 	if (sTexVK->GetState() == GSTexture::State::Cleared)
 	{
-		// source is cleared. if destination is a render target, we can carry the clear forward
-		if (dTexVK->IsRenderTargetOrDepthStencil())
-		{
-			if (dtex_rc.eq(r))
-			{
-				// pass it forward if we're clearing the whole thing
-				if (sTexVK->IsDepthStencil())
-					dTexVK->SetClearDepth(sTexVK->GetClearDepth());
-				else
-					dTexVK->SetClearColor(sTexVK->GetClearColor());
-
-				return;
-			}
-
-			if (dTexVK->GetState() == GSTexture::State::Cleared)
-			{
-				// destination is cleared, if it's the same colour and rect, we can just avoid this entirely
-				if (dTexVK->IsDepthStencil())
-				{
-					if (dTexVK->GetClearDepth() == sTexVK->GetClearDepth())
-						return;
-				}
-				else
-				{
-					if (dTexVK->GetClearColor() == sTexVK->GetClearColor())
-						return;
-				}
-			}
-
-			// otherwise we need to do an attachment clear
-			const bool depth = (dTexVK->GetType() == GSTexture::Type::DepthStencil);
-			OMSetRenderTargets(depth ? nullptr : dTexVK, depth ? dTexVK : nullptr, dtex_rc);
-			BeginRenderPassForStretchRect(
-				dTexVK, dtex_rc, GSVector4i(destX, destY, destX + r.width(), destY + r.height()));
-
-			// so use an attachment clear
-			VkClearAttachment ca;
-			ca.aspectMask = depth ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-			GSVector4::store<false>(ca.clearValue.color.float32, sTexVK->GetUNormClearColor());
-			ca.clearValue.depthStencil.depth = sTexVK->GetClearDepth();
-			ca.clearValue.depthStencil.stencil = 0;
-			ca.colorAttachment = 0;
-
-			const VkClearRect cr = {{{0, 0}, {static_cast<u32>(r.width()), static_cast<u32>(r.height())}}, 0u, 1u};
-			vkCmdClearAttachments(GetCurrentCommandBuffer(), 1, &ca, 1, &cr);
+		if (dTexVK->IsRenderTargetOrDepthStencil() && ProcessClearsBeforeCopy(sTex, dTex, full_draw_copy))
 			return;
-		}
+
+		// Do an attachment clear.
+		const bool depth = (dTexVK->GetType() == GSTexture::Type::DepthStencil);
+		OMSetRenderTargets(depth ? nullptr : dTexVK, depth ? dTexVK : nullptr, dst_rect);
+		BeginRenderPassForStretchRect(
+			dTexVK, dst_rect, GSVector4i(destX, destY, destX + r.width(), destY + r.height()));
+
+		// so use an attachment clear
+		VkClearAttachment ca;
+		ca.aspectMask = depth ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+		GSVector4::store<false>(ca.clearValue.color.float32, sTexVK->GetUNormClearColor());
+		ca.clearValue.depthStencil.depth = sTexVK->GetClearDepth();
+		ca.clearValue.depthStencil.stencil = 0;
+		ca.colorAttachment = 0;
+
+		const VkClearRect cr = {{{0, 0}, {static_cast<u32>(r.width()), static_cast<u32>(r.height())}}, 0u, 1u};
+		vkCmdClearAttachments(GetCurrentCommandBuffer(), 1, &ca, 1, &cr);
+		return;
 
 		// commit the clear to the source first, then do normal copy
 		sTexVK->CommitClear();
@@ -2808,7 +2783,7 @@ void GSDeviceVK::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 
 	// if the destination has been cleared, and we're not overwriting the whole thing, commit the clear first
 	// (the area outside of where we're copying to)
-	if (dTexVK->GetState() == GSTexture::State::Cleared && !dtex_rc.eq(r))
+	if (dTexVK->GetState() == GSTexture::State::Cleared && !full_draw_copy)
 		dTexVK->CommitClear();
 
 	// *now* we can do a normal image copy.
