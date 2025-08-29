@@ -20,7 +20,10 @@ std::optional<bool> SymbolTreeNode::liveness()
 	return m_liveness;
 }
 
-bool SymbolTreeNode::readFromVM(DebugInterface& cpu, const ccc::SymbolDatabase& database)
+bool SymbolTreeNode::readFromVM(
+	DebugInterface& cpu,
+	const ccc::SymbolDatabase& database,
+	const SymbolTreeDisplayOptions& display_options)
 {
 	QVariant new_value;
 
@@ -39,14 +42,18 @@ bool SymbolTreeNode::readFromVM(DebugInterface& cpu, const ccc::SymbolDatabase& 
 		data_changed = true;
 	}
 
-	data_changed |= updateDisplayString(cpu, database);
+	data_changed |= updateDisplayString(cpu, database, display_options);
 	data_changed |= updateLiveness(cpu);
 	data_changed |= updateMatchesMemory(cpu, database);
 
 	return data_changed;
 }
 
-bool SymbolTreeNode::writeToVM(QVariant value, DebugInterface& cpu, const ccc::SymbolDatabase& database)
+bool SymbolTreeNode::writeToVM(
+	QVariant value,
+	DebugInterface& cpu,
+	const ccc::SymbolDatabase& database,
+	const SymbolTreeDisplayOptions& display_options)
 {
 	bool data_changed = false;
 
@@ -63,7 +70,7 @@ bool SymbolTreeNode::writeToVM(QVariant value, DebugInterface& cpu, const ccc::S
 		writeValueFromVariant(m_value, physical_type, cpu);
 	}
 
-	data_changed |= updateDisplayString(cpu, database);
+	data_changed |= updateDisplayString(cpu, database, display_options);
 	data_changed |= updateLiveness(cpu);
 
 	return data_changed;
@@ -202,7 +209,8 @@ bool SymbolTreeNode::writeValueFromVariant(QVariant value, const ccc::ast::Node&
 	return true;
 }
 
-bool SymbolTreeNode::updateDisplayString(DebugInterface& cpu, const ccc::SymbolDatabase& database)
+bool SymbolTreeNode::updateDisplayString(
+	DebugInterface& cpu, const ccc::SymbolDatabase& database, const SymbolTreeDisplayOptions& display)
 {
 	QString result;
 
@@ -210,7 +218,7 @@ bool SymbolTreeNode::updateDisplayString(DebugInterface& cpu, const ccc::SymbolD
 	if (logical_type)
 	{
 		const ccc::ast::Node& physical_type = *logical_type->physical_type(database).first;
-		result = generateDisplayString(physical_type, cpu, database, 0);
+		result = generateDisplayString(physical_type, cpu, database, display, 0);
 	}
 
 	if (result.isEmpty())
@@ -219,10 +227,10 @@ bool SymbolTreeNode::updateDisplayString(DebugInterface& cpu, const ccc::SymbolD
 		// first 4 bytes of it as a hex dump.
 		u32 value = location.read32(cpu);
 		result = QString("%1 %2 %3 %4")
-					 .arg(value & 0xff, 2, 16, QChar('0'))
-					 .arg((value >> 8) & 0xff, 2, 16, QChar('0'))
-					 .arg((value >> 16) & 0xff, 2, 16, QChar('0'))
-					 .arg((value >> 24) & 0xff, 2, 16, QChar('0'));
+		             .arg(value & 0xff, 2, 16, QChar('0'))
+		             .arg((value >> 8) & 0xff, 2, 16, QChar('0'))
+		             .arg((value >> 16) & 0xff, 2, 16, QChar('0'))
+		             .arg((value >> 24) & 0xff, 2, 16, QChar('0'));
 	}
 
 	if (result == m_display_value)
@@ -234,7 +242,11 @@ bool SymbolTreeNode::updateDisplayString(DebugInterface& cpu, const ccc::SymbolD
 }
 
 QString SymbolTreeNode::generateDisplayString(
-	const ccc::ast::Node& physical_type, DebugInterface& cpu, const ccc::SymbolDatabase& database, s32 depth) const
+	const ccc::ast::Node& physical_type,
+	DebugInterface& cpu,
+	const ccc::SymbolDatabase& database,
+	const SymbolTreeDisplayOptions& display_options,
+	s32 depth) const
 {
 	s32 max_elements_to_display = 0;
 	switch (depth)
@@ -270,7 +282,7 @@ QString SymbolTreeNode::generateDisplayString(
 				SymbolTreeNode node;
 				node.location = location.addOffset(i * array.element_type->size_bytes);
 
-				QString element = node.generateDisplayString(element_type, cpu, database, depth + 1);
+				QString element = node.generateDisplayString(element_type, cpu, database, display_options, depth + 1);
 				if (element.isEmpty())
 					element = QString("(%1)").arg(ccc::ast::node_type_to_string(element_type));
 				result += element;
@@ -293,28 +305,28 @@ QString SymbolTreeNode::generateDisplayString(
 			switch (builtIn.bclass)
 			{
 				case ccc::ast::BuiltInClass::UNSIGNED_8:
-					result = QString::number(location.read8(cpu));
+					result = display_options.unsignedIntegerToString(location.read8(cpu), 8);
 					break;
 				case ccc::ast::BuiltInClass::SIGNED_8:
-					result = QString::number((s8)location.read8(cpu));
+					result = display_options.signedIntegerToString(static_cast<s8>(location.read8(cpu)), 8);
 					break;
 				case ccc::ast::BuiltInClass::UNQUALIFIED_8:
-					result = QString::number(location.read8(cpu));
+					result = display_options.unsignedIntegerToString(location.read8(cpu), 8);
 					break;
 				case ccc::ast::BuiltInClass::BOOL_8:
 					result = location.read8(cpu) ? "true" : "false";
 					break;
 				case ccc::ast::BuiltInClass::UNSIGNED_16:
-					result = QString::number(location.read16(cpu));
+					result = display_options.unsignedIntegerToString(location.read16(cpu), 16);
 					break;
 				case ccc::ast::BuiltInClass::SIGNED_16:
-					result = QString::number((s16)location.read16(cpu));
+					result = display_options.signedIntegerToString(static_cast<s16>(location.read16(cpu)), 16);
 					break;
 				case ccc::ast::BuiltInClass::UNSIGNED_32:
-					result = QString::number(location.read32(cpu));
+					result = display_options.unsignedIntegerToString(location.read32(cpu), 32);
 					break;
 				case ccc::ast::BuiltInClass::SIGNED_32:
-					result = QString::number((s32)location.read32(cpu));
+					result = display_options.signedIntegerToString(static_cast<s32>(location.read32(cpu)), 32);
 					break;
 				case ccc::ast::BuiltInClass::FLOAT_32:
 				{
@@ -323,10 +335,10 @@ QString SymbolTreeNode::generateDisplayString(
 					break;
 				}
 				case ccc::ast::BuiltInClass::UNSIGNED_64:
-					result = QString::number(location.read64(cpu));
+					result = display_options.unsignedIntegerToString(location.read64(cpu), 64);
 					break;
 				case ccc::ast::BuiltInClass::SIGNED_64:
-					result = QString::number((s64)location.read64(cpu));
+					result = display_options.signedIntegerToString(static_cast<s64>(location.read64(cpu)), 64);
 					break;
 				case ccc::ast::BuiltInClass::FLOAT_64:
 				{
@@ -408,7 +420,7 @@ QString SymbolTreeNode::generateDisplayString(
 			}
 			else if (depth == 0)
 			{
-				QString pointee = generateDisplayString(value_type, cpu, database, depth + 1);
+				QString pointee = generateDisplayString(value_type, cpu, database, display_options, depth + 1);
 				if (!pointee.isEmpty())
 					result += QString(" -> %1").arg(pointee);
 			}
@@ -437,7 +449,7 @@ QString SymbolTreeNode::generateDisplayString(
 				node.location = location.addOffset(field.base_offset + field.node->offset_bytes);
 
 				const ccc::ast::Node& field_type = *field.node->physical_type(database).first;
-				QString field_value = node.generateDisplayString(field_type, cpu, database, depth + 1);
+				QString field_value = node.generateDisplayString(field_type, cpu, database, display_options, depth + 1);
 				if (field_value.isEmpty())
 					field_value = QString("(%1)").arg(ccc::ast::node_type_to_string(field_type));
 
@@ -708,4 +720,100 @@ void SymbolTreeNode::sortChildrenRecursively(bool sort_by_if_type_is_known)
 
 	for (std::unique_ptr<SymbolTreeNode>& child : m_children)
 		child->sortChildrenRecursively(sort_by_if_type_is_known);
+}
+
+// *****************************************************************************
+
+int SymbolTreeDisplayOptions::integerBase() const
+{
+	return m_integer_base;
+}
+
+bool SymbolTreeDisplayOptions::setIntegerBase(int base)
+{
+	if (base == m_integer_base || (base != 2 && base != 8 && base != 10 && base != 16))
+		return false;
+
+	m_integer_base = base;
+	return true;
+}
+
+bool SymbolTreeDisplayOptions::showLeadingZeroes() const
+{
+	return m_show_leading_zeroes;
+}
+
+bool SymbolTreeDisplayOptions::setShowLeadingZeroes(bool show)
+{
+	if (show == m_show_leading_zeroes)
+		return false;
+
+	m_show_leading_zeroes = show;
+	return true;
+}
+
+std::optional<u64> SymbolTreeDisplayOptions::stringToUnsignedInteger(QString string) const
+{
+	bool ok;
+	u64 value = string.toULongLong(&ok, m_integer_base);
+	if (!ok)
+	{
+		// Try parsing it as a signed integer too, just in case the user tried
+		// to use a minus sign.
+		value = static_cast<u64>(string.toLongLong(&ok, m_integer_base));
+		if (!ok)
+			return std::nullopt;
+	}
+
+	return value;
+}
+
+QString SymbolTreeDisplayOptions::unsignedIntegerToString(u64 value, s32 size_bits) const
+{
+	int field_width = 0;
+	if (m_show_leading_zeroes)
+		field_width = static_cast<int>(ceilf(size_bits / log2f(m_integer_base)));
+
+	return QStringLiteral("%1").arg(value, field_width, m_integer_base, QLatin1Char('0'));
+}
+
+std::optional<s64> SymbolTreeDisplayOptions::stringToSignedInteger(QString string) const
+{
+	bool ok;
+	s64 value = string.toLongLong(&ok, m_integer_base);
+	if (!ok)
+	{
+		// Try to parse it as an unsigned integer too to handle bases other than
+		// decimal (see below), and to handle the case that the user entered a
+		// value that was too big for a signed integer.
+		value = static_cast<s64>(string.toULongLong(&ok, m_integer_base));
+		if (!ok)
+			return std::nullopt;
+	}
+
+	return value;
+}
+
+QString SymbolTreeDisplayOptions::signedIntegerToString(s64 value, s32 size_bits) const
+{
+	// For bases other than decimal, the user most likely just wants to view the
+	// underlying representation, so we want to display it as unsigned.
+	if (m_integer_base != 10)
+	{
+		// Truncate sign extended bits.
+		u64 mask = (static_cast<u64>(1) << size_bits) - 1;
+		return unsignedIntegerToString(static_cast<u64>(value) & mask, size_bits);
+	}
+
+	int field_width = 0;
+	if (m_show_leading_zeroes)
+	{
+		field_width = static_cast<int>(ceilf(size_bits / log2f(m_integer_base)));
+
+		// An extra character is needed for the minus sign.
+		if (value < 0)
+			field_width++;
+	}
+
+	return QStringLiteral("%1").arg(value, field_width, m_integer_base, QLatin1Char('0'));
 }

@@ -7,6 +7,7 @@
 #include "Debugger/SymbolTree/NewSymbolDialogs.h"
 #include "Debugger/SymbolTree/SymbolTreeDelegates.h"
 
+#include <QtGui/QActionGroup>
 #include <QtGui/QClipboard>
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMenu>
@@ -81,6 +82,12 @@ void SymbolTreeView::toJson(JsonValueWrapper& json)
 	{
 		json.value().AddMember("sortByIfTypeIsKnown", m_sort_by_if_type_is_known, json.allocator());
 	}
+
+	if (m_flags & ALLOW_TYPE_ACTIONS)
+	{
+		json.value().AddMember("integerBase", m_display_options.integerBase(), json.allocator());
+		json.value().AddMember("showLeadingZeroes", m_display_options.showLeadingZeroes(), json.allocator());
+	}
 }
 
 bool SymbolTreeView::fromJson(const JsonValueWrapper& json)
@@ -89,6 +96,7 @@ bool SymbolTreeView::fromJson(const JsonValueWrapper& json)
 		return false;
 
 	bool needs_reset = false;
+	bool needs_update = false;
 
 	auto show_size_column = json.value().FindMember("showSizeColumn");
 	if (show_size_column != json.value().MemberEnd() && show_size_column->value.IsBool())
@@ -131,8 +139,26 @@ bool SymbolTreeView::fromJson(const JsonValueWrapper& json)
 		}
 	}
 
+	if (m_flags & ALLOW_TYPE_ACTIONS)
+	{
+		auto integer_base = json.value().FindMember("integerBase");
+		if (integer_base != json.value().MemberEnd() && integer_base->value.IsInt())
+			needs_update |= m_display_options.setIntegerBase(integer_base->value.GetInt());
+
+		auto show_leading_zeroes = json.value().FindMember("showLeadingZeroes");
+		if (show_leading_zeroes != json.value().MemberEnd() && show_leading_zeroes->value.IsBool())
+			needs_update |= m_display_options.setShowLeadingZeroes(show_leading_zeroes->value.GetBool());
+	}
+
 	if (needs_reset)
+	{
 		reset();
+	}
+	else if (needs_update && m_model)
+	{
+		m_model->setDisplayOptions(m_display_options);
+		updateVisibleNodes(false);
+	}
 
 	return true;
 }
@@ -221,6 +247,7 @@ void SymbolTreeView::expandGroups(QModelIndex index)
 void SymbolTreeView::setupTree()
 {
 	m_model = new SymbolTreeModel(cpu(), this);
+	m_model->setDisplayOptions(m_display_options);
 	m_ui.treeView->setModel(m_model);
 
 	auto location_delegate = new SymbolTreeLocationDelegate(cpu(), m_symbol_address_alignment, this);
@@ -556,6 +583,47 @@ void SymbolTreeView::openContextMenu(QPoint pos)
 		QAction* change_type_temporarily = menu->addAction(tr("Change Type Temporarily"));
 		change_type_temporarily->setEnabled(node_is_object);
 		connect(change_type_temporarily, &QAction::triggered, this, &SymbolTreeView::onChangeTypeTemporarily);
+
+		struct IntegerDisplayBase
+		{
+			int base;
+			QString name;
+		};
+
+		const std::array<IntegerDisplayBase, 4> bases = {{
+			{2, tr("Binary")},
+			{8, tr("Octal")},
+			{10, tr("Decimal")},
+			{16, tr("Hexadecimal")},
+		}};
+
+		QMenu* integer_base_menu = menu->addMenu(tr("Integer Base"));
+		QActionGroup* base_actions = new QActionGroup(integer_base_menu);
+
+		for (const auto& [base, name] : bases)
+		{
+			QAction* base_action = integer_base_menu->addAction(name);
+			base_action->setCheckable(true);
+			base_action->setChecked(m_model->displayOptions().integerBase() == base);
+			connect(base_action, &QAction::toggled, this, [this, base](bool checked) {
+				m_display_options.setIntegerBase(base);
+				m_model->setDisplayOptions(m_display_options);
+
+				updateVisibleNodes(false);
+			});
+
+			base_actions->addAction(base_action);
+		}
+
+		QAction* show_leading_zeroes = menu->addAction(tr("Show Leading Zeroes"));
+		show_leading_zeroes->setCheckable(true);
+		show_leading_zeroes->setChecked(m_model->displayOptions().showLeadingZeroes());
+		connect(show_leading_zeroes, &QAction::toggled, this, [this](bool checked) {
+			m_display_options.setShowLeadingZeroes(checked);
+			m_model->setDisplayOptions(m_display_options);
+
+			updateVisibleNodes(false);
+		});
 	}
 
 	menu->popup(m_ui.treeView->viewport()->mapToGlobal(pos));
@@ -855,8 +923,8 @@ std::vector<SymbolTreeView::SymbolWork> GlobalVariableTreeView::getSymbols(
 			function_name = tr("unknown function");
 
 		QString name = QString("%1 (%2)")
-						   .arg(QString::fromStdString(local_variable.name()))
-						   .arg(function_name);
+		                   .arg(QString::fromStdString(local_variable.name()))
+		                   .arg(function_name);
 		if (!testName(name, filter))
 			continue;
 

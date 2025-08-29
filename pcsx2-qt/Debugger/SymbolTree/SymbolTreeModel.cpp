@@ -183,10 +183,10 @@ bool SymbolTreeModel::setData(const QModelIndex& index, const QVariant& value, i
 		switch (role)
 		{
 			case EDIT_ROLE:
-				data_changed = node->writeToVM(value, m_cpu, database);
+				data_changed = node->writeToVM(value, m_cpu, database, m_display_options);
 				break;
 			case UPDATE_FROM_MEMORY_ROLE:
-				data_changed = node->readFromVM(m_cpu, database);
+				data_changed = node->readFromVM(m_cpu, database, m_display_options);
 				break;
 		}
 	});
@@ -216,7 +216,13 @@ void SymbolTreeModel::fetchMore(const QModelIndex& parent)
 			return;
 
 		children = populateChildren(
-			parent_node->name, parent_node->location, *logical_parent_type, parent_node->type, m_cpu, database);
+			parent_node->name,
+			parent_node->location,
+			*logical_parent_type,
+			parent_node->type,
+			m_cpu,
+			database,
+			m_display_options);
 	});
 
 	bool insert_children = !children.empty();
@@ -403,7 +409,8 @@ std::vector<std::unique_ptr<SymbolTreeNode>> SymbolTreeModel::populateChildren(
 	const ccc::ast::Node& logical_type,
 	ccc::NodeHandle parent_handle,
 	DebugInterface& cpu,
-	const ccc::SymbolDatabase& database)
+	const ccc::SymbolDatabase& database,
+	const SymbolTreeDisplayOptions& display_options)
 {
 	auto [physical_type, symbol] = logical_type.physical_type(database);
 
@@ -485,7 +492,7 @@ std::vector<std::unique_ptr<SymbolTreeNode>> SymbolTreeModel::populateChildren(
 	}
 
 	for (std::unique_ptr<SymbolTreeNode>& child : children)
-		child->readFromVM(cpu, database);
+		child->readFromVM(cpu, database, display_options);
 
 	return children;
 }

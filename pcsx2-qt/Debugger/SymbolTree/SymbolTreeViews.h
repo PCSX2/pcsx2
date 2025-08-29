@@ -8,6 +8,8 @@
 #include "Debugger/DebuggerView.h"
 #include "Debugger/SymbolTree/SymbolTreeModel.h"
 
+class SymbolTreeValueDelegate;
+
 // A symbol tree view with its associated refresh button, filter box and
 // right-click menu. Supports grouping, sorting and various other settings.
 class SymbolTreeView : public DebuggerView
@@ -112,6 +114,8 @@ protected:
 	bool m_group_by_section = false;
 	bool m_group_by_source_file = false;
 	bool m_sort_by_if_type_is_known = false;
+
+	SymbolTreeDisplayOptions m_display_options;
 };
 
 class FunctionTreeView : public SymbolTreeView
