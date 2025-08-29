@@ -1022,6 +1022,7 @@ public:
 
 	void ClearRenderTarget(GSTexture* t, u32 c);
 	void ClearDepth(GSTexture* t, float d);
+	bool ProcessClearsBeforeCopy(GSTexture* sTex, GSTexture* dTex, const bool full_copy);
 	void InvalidateRenderTarget(GSTexture* t);
 
 	virtual void PushDebugGroup(const char* fmt, ...) = 0;
