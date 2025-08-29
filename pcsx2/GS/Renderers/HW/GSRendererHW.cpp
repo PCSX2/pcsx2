@@ -2317,21 +2317,6 @@ void GSRendererHW::RoundSpriteOffset()
 
 void GSRendererHW::Draw()
 {
-	if (GSConfig.SaveInfo && GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
-	{
-		std::string s;
-
-		// Dump Register state
-		s = GetDrawDumpPath("%05d_context.txt", s_n);
-
-		m_draw_env->Dump(s);
-		m_context->Dump(s);
-
-		// Dump vertices
-		s = GetDrawDumpPath("%05d_vertex.txt", s_n);
-		DumpVertices(s);
-	}
-
 	static u32 num_skipped_channel_shuffle_draws = 0;
 
 	// We mess with this state as an optimization, so take a copy and use that instead.
