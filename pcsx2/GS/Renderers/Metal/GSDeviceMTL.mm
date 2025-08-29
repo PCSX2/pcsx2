@@ -1475,8 +1475,20 @@ void GSDeviceMTL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r
 
 	GSTextureMTL* sT = static_cast<GSTextureMTL*>(sTex);
 	GSTextureMTL* dT = static_cast<GSTextureMTL*>(dTex);
+	const GSVector4i dst_rect(0, 0, dT->GetWidth(), dT->GetHeight());
+	const bool full_draw_copy = dst_rect.eq(r);
 
-	// Process clears
+	// Source is cleared, if destination is a render target, we can carry the clear forward.
+	if (sT->GetState() == GSTexture::State::Cleared)
+	{
+		if (dT->IsRenderTargetOrDepthStencil() && ProcessClearsBeforeCopy(sTex, dTex, full_draw_copy))
+			return;
+
+		// Commit clear for the source texture.
+		sT->FlushClears();
+	}
+
+	// Commit clear for the destination texture.
 	GSVector2i dsize = dTex->GetSize();
 	if (r.width() < dsize.x || r.height() < dsize.y)
 		dT->FlushClears();
