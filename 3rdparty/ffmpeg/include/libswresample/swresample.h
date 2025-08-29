@@ -49,8 +49,8 @@
  * matrix). This is using the swr_alloc() function.
  * @code
  * SwrContext *swr = swr_alloc();
- * av_opt_set_channel_layout(swr, "in_channel_layout",  AV_CH_LAYOUT_5POINT1, 0);
- * av_opt_set_channel_layout(swr, "out_channel_layout", AV_CH_LAYOUT_STEREO,  0);
+ * av_opt_set_chlayout(swr, "in_chlayout", &(AVChannelLayout)AV_CHANNEL_LAYOUT_5POINT1, 0);
+ * av_opt_set_chlayout(swr, "out_chlayout", &(AVChannelLayout)AV_CHANNEL_LAYOUT_STEREO, 0);
  * av_opt_set_int(swr, "in_sample_rate",     48000,                0);
  * av_opt_set_int(swr, "out_sample_rate",    44100,                0);
  * av_opt_set_sample_fmt(swr, "in_sample_fmt",  AV_SAMPLE_FMT_FLTP, 0);
@@ -337,7 +337,7 @@ int64_t swr_next_pts(struct SwrContext *s, int64_t pts);
  * @}
  *
  * @name Low-level option setting functions
- * These functons provide a means to set low-level options that is not possible
+ * These functions provide a means to set low-level options that is not possible
  * with the AVOption API.
  * @{
  */
