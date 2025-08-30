@@ -6,6 +6,7 @@ import subprocess
 import multiprocessing
 from pathlib import Path
 from functools import partial
+import platform
 
 def get_gs_name(path):
     lpath = path.lower()
@@ -22,9 +23,11 @@ def run_regression_test(runner, dumpdir, renderer, upscale, renderhacks, paralle
     gsname = get_gs_name(gspath)
 
     real_dumpdir = os.path.join(dumpdir, gsname).strip()
-    if not os.path.exists(real_dumpdir):
-        os.mkdir(real_dumpdir)
-    else:
+    # Safe creation and skip if folder exists
+    try:
+        os.makedirs(real_dumpdir)
+    except FileExistsError:
+        # Folder already exists → skip this game
         return
 
     if renderer is not None:
@@ -54,19 +57,31 @@ def run_regression_test(runner, dumpdir, renderer, upscale, renderhacks, paralle
     environ = os.environ.copy()
     environ["PCSX2_NOCONSOLE"] = "1"
 
+    creationflags = 0
+    # Set low priority by default
+    if platform.system() == "Windows":
+        creationflags = 0x00004000  # BELOW_NORMAL_PRIORITY_CLASS
+    elif platform.system() in ["Linux", "Darwin"]:
+        try:
+            os.nice(10)  # lower priority
+        except OSError:
+            pass
+
     args.append("--")
     args.append(gspath)
 
     #print("Running '%s'" % (" ".join(args)))
-    subprocess.run(args, env=environ, stdin=subprocess.DEVNULL, stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
+    subprocess.run(args, env=environ, stdin=subprocess.DEVNULL, stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL, creationflags=creationflags)
 
 
 def run_regression_tests(runner, gsdir, dumpdir, renderer, upscale, renderhacks, parallel=1):
     paths = glob.glob(gsdir + "/*.*", recursive=True)
     gamepaths = list(filter(lambda x: get_gs_name(x) is not None, paths))
 
-    if not os.path.isdir(dumpdir):
-        os.mkdir(dumpdir)
+    try:
+        os.makedirs(dumpdir)
+    except FileExistsError:
+        pass
 
     print("Found %u GS dumps" % len(gamepaths))
 
@@ -95,7 +110,7 @@ if __name__ == "__main__":
     parser.add_argument("-renderer", action="store", required=False, help="Renderer to use")
     parser.add_argument("-upscale", action="store", type=float, default=1, help="Upscaling multiplier to use")
     parser.add_argument("-renderhacks", action="store", required=False, help="Enable HW Rendering hacks")
-    parser.add_argument("-parallel", action="store", type=int, default=1, help="Number of proceeses to run")
+    parser.add_argument("-parallel", action="store", type=int, default=1, help="Number of processes to run")
 
     args = parser.parse_args()
 
