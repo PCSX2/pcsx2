@@ -173,10 +173,10 @@ cbuffer cb1
 	float RcpScaleFactor;
 };
 
-float4 sample_c(float2 uv, float uv_w)
+float4 sample_c(float2 uv, float uv_w, int2 xy)
 {
 #if PS_TEX_IS_FB == 1
-	return RtTexture.Load(int3(int2(uv * WH.zw), 0));
+	return RtTexture.Load(int3(int2(xy), 0));
 #elif PS_REGION_RECT == 1
 	return Texture.Load(int3(int2(uv), 0));
 #else
@@ -315,26 +315,26 @@ float4 clamp_wrap_uv(float4 uv)
 	return uv;
 }
 
-float4x4 sample_4c(float4 uv, float uv_w)
+float4x4 sample_4c(float4 uv, float uv_w, int2 xy)
 {
 	float4x4 c;
 
-	c[0] = sample_c(uv.xy, uv_w);
-	c[1] = sample_c(uv.zy, uv_w);
-	c[2] = sample_c(uv.xw, uv_w);
-	c[3] = sample_c(uv.zw, uv_w);
+	c[0] = sample_c(uv.xy, uv_w, xy);
+	c[1] = sample_c(uv.zy, uv_w, xy);
+	c[2] = sample_c(uv.xw, uv_w, xy);
+	c[3] = sample_c(uv.zw, uv_w, xy);
 
 	return c;
 }
 
-uint4 sample_4_index(float4 uv, float uv_w)
+uint4 sample_4_index(float4 uv, float uv_w, int2 xy)
 {
 	float4 c;
 
-	c.x = sample_c(uv.xy, uv_w).a;
-	c.y = sample_c(uv.zy, uv_w).a;
-	c.z = sample_c(uv.xw, uv_w).a;
-	c.w = sample_c(uv.zw, uv_w).a;
+	c.x = sample_c(uv.xy, uv_w, xy).a;
+	c.y = sample_c(uv.zy, uv_w, xy).a;
+	c.z = sample_c(uv.xw, uv_w, xy).a;
+	c.w = sample_c(uv.zw, uv_w, xy).a;
 
 	// Denormalize value
 	uint4 i;
@@ -606,7 +606,7 @@ float4 fetch_gXbY(int2 xy)
 	}
 }
 
-float4 sample_color(float2 st, float uv_w)
+float4 sample_color(float2 st, float uv_w, int2 xy)
 {
 	#if PS_TCOFFSETHACK
 	st += TC_OffsetHack.xy;
@@ -618,7 +618,7 @@ float4 sample_color(float2 st, float uv_w)
 
 	if (PS_LTF == 0 && PS_AEM_FMT == FMT_32 && PS_PAL_FMT == 0 && PS_REGION_RECT == 0 && PS_WMS < 2 && PS_WMT < 2)
 	{
-		c[0] = sample_c(st, uv_w);
+		c[0] = sample_c(st, uv_w, xy);
 	}
 	else
 	{
@@ -642,9 +642,9 @@ float4 sample_color(float2 st, float uv_w)
 		uv = clamp_wrap_uv(uv);
 
 #if PS_PAL_FMT != 0
-			c = sample_4p(sample_4_index(uv, uv_w));
+			c = sample_4p(sample_4_index(uv, uv_w, xy));
 #else
-			c = sample_4c(uv, uv_w);
+			c = sample_4c(uv, uv_w, xy);
 #endif
 	}
 
@@ -769,7 +769,7 @@ float4 ps_color(PS_INPUT input)
 #elif PS_DEPTH_FMT > 0
 	float4 T = sample_depth(st_int, input.p.xy);
 #else
-	float4 T = sample_color(st, input.t.w);
+	float4 T = sample_color(st, input.t.w, int2(input.p.xy));
 #endif
 
 	if (PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC && !(PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE))
