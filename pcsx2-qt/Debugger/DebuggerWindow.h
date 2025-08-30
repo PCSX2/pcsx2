@@ -73,7 +73,6 @@ private:
 	QTimer* m_refresh_timer = nullptr;
 
 	int m_font_size;
-	static const constexpr int DEFAULT_FONT_SIZE = 10;
 	static const constexpr int MINIMUM_FONT_SIZE = 5;
 	static const constexpr int MAXIMUM_FONT_SIZE = 30;
 };
