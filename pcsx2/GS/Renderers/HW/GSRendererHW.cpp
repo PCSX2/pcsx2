@@ -6869,7 +6869,7 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 			{
 				m_conf.tex = nullptr;
 				m_conf.ps.tex_is_fb = true;
-				if (m_prim_overlap == PRIM_OVERLAP_NO || !g_gs_device->Features().texture_barrier)
+				if (m_prim_overlap == PRIM_OVERLAP_NO || !(g_gs_device->Features().texture_barrier || g_gs_device->Features().multidraw_fb_copy))
 					m_conf.require_one_barrier = true;
 				else
 					m_conf.require_full_barrier = true;
@@ -7129,21 +7129,14 @@ bool GSRendererHW::CanUseTexIsFB(const GSTextureCache::Target* rt, const GSTextu
 			return false;
 	}
 
-	// If it's a channel shuffle, tex-is-fb should be fine, even on DX.
+	// If it's a channel shuffle, tex-is-fb should be fine.
 	if (m_channel_shuffle)
 	{
 		GL_CACHE("HW: Enabling tex-is-fb for channel shuffle.");
 		return true;
 	}
 
-	// No barriers -> we can't use tex-is-fb.
-	if (!g_gs_device->Features().texture_barrier)
-	{
-		GL_CACHE("HW: Disabling tex-is-fb due to no barriers.");
-		return false;
-	}
-
-	// If it's a channel shuffle, tex-is-fb is always fine, except on DX.
+	// If it's a channel shuffle, tex-is-fb is always fine.
 	if (m_texture_shuffle)
 	{
 		// We can't do tex is FB if the source and destination aren't pointing to the same bit of texture.
@@ -7152,6 +7145,13 @@ bool GSRendererHW::CanUseTexIsFB(const GSTextureCache::Target* rt, const GSTextu
 
 		GL_CACHE("HW: Enabling tex-is-fb for texture shuffle.");
 		return true;
+	}
+
+	// No barriers -> we can't use tex-is-fb when there's overlap.
+	if (!(g_gs_device->Features().texture_barrier || g_gs_device->Features().multidraw_fb_copy) && m_prim_overlap != PRIM_OVERLAP_NO)
+	{
+		GL_CACHE("HW: Disabling tex-is-fb due to no barriers.");
+		return false;
 	}
 
 	static constexpr auto check_clamp = [](u32 clamp, u32 min, u32 max, s32 tmin, s32 tmax) {
@@ -9544,7 +9544,7 @@ void GSRendererHW::EndHLEHardwareDraw(bool force_copy_on_hazard /* = false */)
 	{
 		const GSDevice::FeatureSupport features = g_gs_device->Features();
 
-		if (!force_copy_on_hazard && config.tex == config.rt && features.texture_barrier)
+		if (!force_copy_on_hazard && config.tex == config.rt)
 		{
 			// Sample RT 1:1.
 			config.require_one_barrier = !features.framebuffer_fetch;
