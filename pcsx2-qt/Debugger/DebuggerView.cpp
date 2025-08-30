@@ -203,11 +203,6 @@ void DebuggerView::updateStyleSheet()
 #endif
 	}
 
-	// HACK: Make the font size smaller without applying a stylesheet to the
-	// whole window (which would impact performance).
-	if (g_debugger_window)
-		stylesheet += QString("font-size: %1pt;").arg(g_debugger_window->fontSize());
-
 	setStyleSheet(stylesheet);
 }
 
