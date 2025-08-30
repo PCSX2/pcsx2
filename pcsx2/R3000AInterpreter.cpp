@@ -10,8 +10,6 @@
 #include "DebugTools/Breakpoints.h"
 #include "IopBios.h"
 #include "IopHw.h"
-// For interpreter trace logging 
-#include "DebugTools/Debug.h"
 
 using namespace R3000A;
 
@@ -222,22 +220,7 @@ static __fi void execI()
 
 	psxRegs.code = iopMemRead32(psxRegs.pc);
 
-#if defined(PCSX2_DEVBUILD)
-	// R3000A trace channel is active only when enabled and running in interpreter mode to reduce overhead.
-	if (TraceLogging.IOP.R3000A.IsActive())
-	{
-		// Emulated IOP time in seconds (IOP cycles / PSX clock).
-		const double iop_time_sec = static_cast<double>(psxRegs.cycle) / static_cast<double>(PSXCLK);
-
-		// Capture disassembly into a stable buffer before logging to avoid reuse issues.
-		const char* dis = disR3000AF(psxRegs.code, psxRegs.pc);
-
-		// Unified format:
-		// [  <time>s] PC: <pc> | <opcode> | <disasm>
-		PSXCPU_LOG("[%10.4f] PC: %08X | %08X | %s",
-		           iop_time_sec, psxRegs.pc, psxRegs.code, dis ? dis : "");
-	}
-#endif
+		PSXCPU_LOG("%s", disR3000AF(psxRegs.code, psxRegs.pc));
 
 	psxRegs.pc+= 4;
 	psxRegs.cycle++;

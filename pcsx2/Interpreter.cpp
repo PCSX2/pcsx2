@@ -8,8 +8,6 @@
 #include "Cache.h"
 
 #include "DebugTools/Breakpoints.h"
-// Added: enable R5900 interpreter trace logging
-#include "DebugTools/Debug.h"
 
 #include "common/FastJmp.h"
 
@@ -173,23 +171,7 @@ static void execI()
 	// interprete instruction
 	cpuRegs.code = memRead32( pc );
 
-#if defined(PCSX2_DEVBUILD)
-	// R5900 trace channel is active only when enabled and running in interpreter mode to reduce overhead.
-	if (TraceLogging.EE.R5900.IsActive())
-	{
-		disOut.clear();
-		disR5900Fasm(disOut, cpuRegs.code, pc, false);
-
-		// Emulated EE time in seconds (cycles / PS2 clock).  PS2CLK is the EE base clock frequency.
-		const double ee_time_sec = static_cast<double>(cpuRegs.cycle) / static_cast<double>(PS2CLK);
-
-		// Unified format [  <time>s] PC: <pc> | <opcode> | <disasm>
-		CPU_LOG("[%10.4f] PC: %08X | %08X | %s",
-		        ee_time_sec, pc, cpuRegs.code, disOut.c_str());
-	}
-#endif
-
-    const OPCODE& opcode = GetCurrentInstruction();
+	const OPCODE& opcode = GetCurrentInstruction();
 #if 0
 	static long int runs = 0;
 	//use this to find out what opcodes your game uses. very slow! (rama)
