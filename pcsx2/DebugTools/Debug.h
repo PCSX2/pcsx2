@@ -8,6 +8,7 @@
 #include "Memory.h"
 
 #include <string>
+#include <memory>
 
 extern char* disVU0MicroUF(u32 code, u32 pc);
 extern char* disVU0MicroLF(u32 code, u32 pc);
@@ -55,10 +56,42 @@ struct LogBase
 };
 
 // --------------------------------------------------------------------------------------
+//  TraceLogFile - Helper class for managing individual trace log files
+//  (Extended with IsOpen / FileName accessors and per-channel separate file toggling.)
+// --------------------------------------------------------------------------------------
+class TraceLogFile
+{
+private:
+	std::unique_ptr<std::FILE, int(*)(std::FILE*)> m_file;
+	std::string m_filename;
+	bool m_separate_files_enabled;
+
+public:
+	TraceLogFile();
+	~TraceLogFile();
+
+	bool OpenSeparateFile(const std::string& log_name);
+	void CloseSeparateFile();
+	bool IsUsingSeparateFile() const { return m_separate_files_enabled; }
+	// EDIT: Added helpers so writer can query state without exposing implementation.
+	bool IsOpen() const { return m_file != nullptr; }
+	const std::string& FileName() const { return m_filename; }
+	
+	void Write(const char* text);
+	void SetSeparateFilesEnabled(bool enabled) { m_separate_files_enabled = enabled; }
+};
+
+// --------------------------------------------------------------------------------------
 //  TraceLog
+//  (Extended to lazily open separate file on first write via OpenSeparateFileIfNeeded.)
 // --------------------------------------------------------------------------------------
 struct TraceLog : public LogBase
 {
+private:
+	mutable TraceLogFile m_trace_file;
+	void OpenSeparateFileIfNeeded() const; // EDIT: new helper for lazy separate file creation
+
+public:
 	TraceLog(const LogDescriptor& descriptor, ConsoleColors color = Color_Gray)
 		: LogBase(descriptor, color) {};
 
@@ -68,6 +101,9 @@ struct TraceLog : public LogBase
 	{
 		return EmuConfig.Trace.Enabled && Enabled;
 	}
+	
+	void SetSeparateFilesEnabled(bool enabled) const { m_trace_file.SetSeparateFilesEnabled(enabled); }
+	void CloseSeparateFile() const { m_trace_file.CloseSeparateFile(); }
 };
 
 struct ConsoleLog : public LogBase
@@ -91,6 +127,9 @@ struct ConsoleLog : public LogBase
 // formatting, since anything coming over the EE/IOP consoles should be considered raw
 // string data.  (otherwise %'s would get mis-interpreted).
 //
+// (Unchanged behavior; kept for completeness.)
+// --------------------------------------------------------------------------------------
+
 template< ConsoleColors conColor >
 class ConsoleLogFromVM : public LogBase
 {
@@ -127,6 +166,7 @@ private:
 
 // --------------------------------------------------------------------------------------
 //  TraceLogPack
+//  (Extended: management helpers for per-channel separate files + new IOP.GPU log.)
 // --------------------------------------------------------------------------------------
 struct TraceLogPack
 {
@@ -183,11 +223,16 @@ struct TraceLogPack
 		TraceLog Counters;
 		TraceLog CDVD;
 		TraceLog MDEC;
+		TraceLog GPU; // Added missing GPU TraceLog
 
 		IOP_PACK();
 	} IOP;
 
 	TraceLogPack();
+	
+	// Methods for managing separate files (added in extended logging changes)
+	void SetSeparateFilesEnabled(bool enabled);
+	void CloseAllSeparateFiles();
 };
 
 struct ConsoleLogPack

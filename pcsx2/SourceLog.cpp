@@ -8,10 +8,15 @@
 // Only ASCII versions of these logging functions are provided.  Translated messages are
 // not supported, and typically all logs are written to disk (ASCII), thus making the
 // ASCII versions the more efficient option.
+//
+// EDIT NOTE: File extended to support optional per-channel separate log files and to
+// fully format messages duplicated to those files.
 
 #include "DebugTools/Debug.h"
 #include "R3000A.h"
 #include "R5900.h"
+#include "common/FileSystem.h"
+#include "common/Path.h"
 
 #include "fmt/format.h"
 
@@ -24,28 +29,114 @@
 
 using namespace R5900;
 
-TraceLogPack TraceLogging;
+TraceLogPack TraceLogging; // EDIT: global instances unchanged but now support separate files
 ConsoleLogPack ConsoleLogging;
+
+// -------- TraceLogFile implementation ---------------------------------
+// NOTE: Default 'm_separate_files_enabled' changed to true so that separate channel
+// files are generated without needing an additional configuration toggle. If desired
+// this can be wired to a user setting and default reverted to false later.
+TraceLogFile::TraceLogFile() : m_file(nullptr, [](std::FILE* f){ return f ? std::fclose(f) : 0; }), m_separate_files_enabled(true) {}
+TraceLogFile::~TraceLogFile() { CloseSeparateFile(); }
+
+bool TraceLogFile::OpenSeparateFile(const std::string& log_name)
+{
+	if (!m_separate_files_enabled)
+		return false;
+	if (m_file)
+		return true; // already open
+	// Compose a filename based on log name (prefix) inside logs directory. EDIT: simple sanitation.
+	std::string sanitized = log_name;
+	for (char& c : sanitized) if (!(std::isalnum(static_cast<unsigned char>(c)) || c=='_' || c=='-')) c = '_';
+	m_filename = sanitized + "log.txt"; // e.g. R5900log.txt
+	std::string path = Path::Combine(EmuFolders::Logs, m_filename);
+	std::FILE* fp = FileSystem::OpenCFile(path.c_str(), "wb");
+	if (!fp) return false;
+	m_file.reset(fp);
+	return true;
+}
+
+void TraceLogFile::CloseSeparateFile()
+{
+	m_file.reset();
+	m_filename.clear();
+}
+
+void TraceLogFile::Write(const char* text)
+{
+	if (!m_separate_files_enabled)
+		return;
+	if (!m_file)
+		return; // should have been opened lazily
+	if (text && *text)
+	{
+		std::fputs(text, m_file.get());
+		std::fputc('\n', m_file.get());
+		std::fflush(m_file.get()); // EDIT: immediate flush for debugging convenience
+	}
+}
+
+void TraceLog::OpenSeparateFileIfNeeded() const
+{
+	if (!m_trace_file.IsUsingSeparateFile())
+		return;
+	if (m_trace_file.IsOpen())
+		return;
+	m_trace_file.OpenSeparateFile(Descriptor.Prefix); // EDIT: lazy open on first write
+}
+
+// Helper for formatting variadic args twice (log + per-file) without duplicating prefix logic.
+// EDIT: Added to ensure per-channel file receives fully formatted message text.
+static std::string FormatTraceLine(const LogDescriptor& desc, const char* fmt, va_list args)
+{
+	va_list args_copy;
+	va_copy(args_copy, args);
+#ifdef _WIN32
+	int required = _vscprintf(fmt, args_copy);
+#else
+	int required = std::vsnprintf(nullptr, 0, fmt, args_copy);
+#endif
+	va_end(args_copy);
+	std::string formatted;
+	if (required > 0)
+	{
+		formatted.resize(static_cast<size_t>(required));
+		std::vsnprintf(formatted.data(), static_cast<size_t>(required) + 1, fmt, args); // EDIT: single-pass formatting
+	}
+	else
+	{
+		formatted = fmt; // fallback if vsnprintf fails
+	}
+	return fmt::format("{:<8}: {}", desc.Prefix, formatted);
+}
 
 bool TraceLog::Write(const char* fmt, ...) const
 {
-	auto prefixed_str = fmt::format("{:<8}: {}", Descriptor.Prefix, fmt);
 	va_list args;
 	va_start(args, fmt);
-	Log::Writev(LOGLEVEL_TRACE, Color, prefixed_str.c_str(), args);
+	std::string line = FormatTraceLine(Descriptor, fmt, args);
 	va_end(args);
 
+	Log::Write(LOGLEVEL_TRACE, Color, line); // EDIT: switched to non-va helper since already formatted
+
+	OpenSeparateFileIfNeeded();
+	if (m_trace_file.IsUsingSeparateFile() && m_trace_file.IsOpen())
+		m_trace_file.Write(line.c_str());
 	return false;
 }
 
 bool TraceLog::Write(ConsoleColors color, const char* fmt, ...) const
 {
-	auto prefixed_str = fmt::format("{:<8}: {}", Descriptor.Prefix, fmt);
 	va_list args;
 	va_start(args, fmt);
-	Log::Writev(LOGLEVEL_TRACE, color, prefixed_str.c_str(), args);
+	std::string line = FormatTraceLine(Descriptor, fmt, args);
 	va_end(args);
 
+	Log::Write(LOGLEVEL_TRACE, color, line); // EDIT: consistent formatting path
+
+	OpenSeparateFileIfNeeded();
+	if (m_trace_file.IsUsingSeparateFile() && m_trace_file.IsOpen())
+		m_trace_file.Write(line.c_str());
 	return false;
 }
 
@@ -185,7 +276,9 @@ static const LogDescriptor
 
 	LD_IOP_CDVD = {"CDVD", "CDVD", "Detailed logging of CDVD hardware."},
 
-	LD_IOP_MDEC = {"MDEC", "MDEC", "Detailed logging of the Motion (FMV) Decoder hardware unit."};
+	LD_IOP_MDEC = {"MDEC", "MDEC", "Detailed logging of the Motion (FMV) Decoder hardware unit."},
+
+	LD_IOP_GPU = {"GPU", "GPU", "Detailed logging for the PS1 GPU emulation layer (IOP)."}; // EDIT: Added descriptor for new GPU log
 
 TraceLogPack::TraceLogPack()
 	: SIF(LD_SIF)
@@ -236,5 +329,82 @@ TraceLogPack::IOP_PACK::IOP_PACK()
 	, Counters(LD_IOP_Counters)
 	, CDVD(LD_IOP_CDVD)
 	, MDEC(LD_IOP_MDEC)
+	, GPU(LD_IOP_GPU) // EDIT: initialize new GPU trace log
 {
+}
+
+void TraceLogPack::SetSeparateFilesEnabled(bool enabled)
+{
+	SIF.SetSeparateFilesEnabled(enabled);
+	EE.Bios.SetSeparateFilesEnabled(enabled);
+	EE.Memory.SetSeparateFilesEnabled(enabled);
+	EE.GIFtag.SetSeparateFilesEnabled(enabled);
+	EE.VIFcode.SetSeparateFilesEnabled(enabled);
+	EE.MSKPATH3.SetSeparateFilesEnabled(enabled);
+	EE.R5900.SetSeparateFilesEnabled(enabled);
+	EE.COP0.SetSeparateFilesEnabled(enabled);
+	EE.COP1.SetSeparateFilesEnabled(enabled);
+	EE.COP2.SetSeparateFilesEnabled(enabled);
+	EE.Cache.SetSeparateFilesEnabled(enabled);
+	EE.KnownHw.SetSeparateFilesEnabled(enabled);
+	EE.UnknownHw.SetSeparateFilesEnabled(enabled);
+	EE.DMAhw.SetSeparateFilesEnabled(enabled);
+	EE.IPU.SetSeparateFilesEnabled(enabled);
+	EE.DMAC.SetSeparateFilesEnabled(enabled);
+	EE.Counters.SetSeparateFilesEnabled(enabled);
+	EE.SPR.SetSeparateFilesEnabled(enabled);
+	EE.VIF.SetSeparateFilesEnabled(enabled);
+	EE.GIF.SetSeparateFilesEnabled(enabled);
+	IOP.Bios.SetSeparateFilesEnabled(enabled);
+	IOP.Memcards.SetSeparateFilesEnabled(enabled);
+	IOP.PAD.SetSeparateFilesEnabled(enabled);
+	IOP.R3000A.SetSeparateFilesEnabled(enabled);
+	IOP.COP2.SetSeparateFilesEnabled(enabled);
+	IOP.Memory.SetSeparateFilesEnabled(enabled);
+	IOP.KnownHw.SetSeparateFilesEnabled(enabled);
+	IOP.UnknownHw.SetSeparateFilesEnabled(enabled);
+	IOP.DMAhw.SetSeparateFilesEnabled(enabled);
+	IOP.DMAC.SetSeparateFilesEnabled(enabled);
+	IOP.Counters.SetSeparateFilesEnabled(enabled);
+	IOP.CDVD.SetSeparateFilesEnabled(enabled);
+	IOP.MDEC.SetSeparateFilesEnabled(enabled);
+	IOP.GPU.SetSeparateFilesEnabled(enabled); // EDIT: include GPU in toggle
+}
+
+void TraceLogPack::CloseAllSeparateFiles()
+{
+	SIF.CloseSeparateFile();
+	EE.Bios.CloseSeparateFile();
+	EE.Memory.CloseSeparateFile();
+	EE.GIFtag.CloseSeparateFile();
+	EE.VIFcode.CloseSeparateFile();
+	EE.MSKPATH3.CloseSeparateFile();
+	EE.R5900.CloseSeparateFile();
+	EE.COP0.CloseSeparateFile();
+	EE.COP1.CloseSeparateFile();
+	EE.COP2.CloseSeparateFile();
+	EE.Cache.CloseSeparateFile();
+	EE.KnownHw.CloseSeparateFile();
+	EE.UnknownHw.CloseSeparateFile();
+	EE.DMAhw.CloseSeparateFile();
+	EE.IPU.CloseSeparateFile();
+	EE.DMAC.CloseSeparateFile();
+	EE.Counters.CloseSeparateFile();
+	EE.SPR.CloseSeparateFile();
+	EE.VIF.CloseSeparateFile();
+	EE.GIF.CloseSeparateFile();
+	IOP.Bios.CloseSeparateFile();
+	IOP.Memcards.CloseSeparateFile();
+	IOP.PAD.CloseSeparateFile();
+	IOP.R3000A.CloseSeparateFile();
+	IOP.COP2.CloseSeparateFile();
+	IOP.Memory.CloseSeparateFile();
+	IOP.KnownHw.CloseSeparateFile();
+	IOP.UnknownHw.CloseSeparateFile();
+	IOP.DMAhw.CloseSeparateFile();
+	IOP.DMAC.CloseSeparateFile();
+	IOP.Counters.CloseSeparateFile();
+	IOP.CDVD.CloseSeparateFile();
+	IOP.MDEC.CloseSeparateFile();
+	IOP.GPU.CloseSeparateFile(); // EDIT: include GPU in close
 }
