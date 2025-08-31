@@ -80,21 +80,6 @@
  */
 #define AV_CODEC_CAP_SMALL_LAST_FRAME    (1 <<  6)
 
-#if FF_API_SUBFRAMES
-/**
- * Codec can output multiple frames per AVPacket
- * Normally demuxers return one frame at a time, demuxers which do not do
- * are connected to a parser to split what they return into proper frames.
- * This flag is reserved to the very rare category of codecs which have a
- * bitstream that cannot be split into frames without timeconsuming
- * operations like full decoding. Demuxers carrying such bitstreams thus
- * may return multiple frames in a packet. This has many disadvantages like
- * prohibiting stream copy in many cases thus it should only be considered
- * as a last resort.
- */
-#define AV_CODEC_CAP_SUBFRAMES           (1 <<  8)
-#endif
-
 /**
  * Codec is experimental and is thus avoided in favor of non experimental
  * encoders
@@ -205,10 +190,19 @@ typedef struct AVCodec {
      */
     int capabilities;
     uint8_t max_lowres;                     ///< maximum value for lowres supported by the decoder
-    const AVRational *supported_framerates; ///< array of supported framerates, or NULL if any, array is terminated by {0,0}
-    const enum AVPixelFormat *pix_fmts;     ///< array of supported pixel formats, or NULL if unknown, array is terminated by -1
-    const int *supported_samplerates;       ///< array of supported audio samplerates, or NULL if unknown, array is terminated by 0
-    const enum AVSampleFormat *sample_fmts; ///< array of supported sample formats, or NULL if unknown, array is terminated by -1
+
+    /**
+     * Deprecated codec capabilities.
+     */
+    attribute_deprecated
+    const AVRational *supported_framerates; ///< @deprecated use avcodec_get_supported_config()
+    attribute_deprecated
+    const enum AVPixelFormat *pix_fmts;     ///< @deprecated use avcodec_get_supported_config()
+    attribute_deprecated
+    const int *supported_samplerates;       ///< @deprecated use avcodec_get_supported_config()
+    attribute_deprecated
+    const enum AVSampleFormat *sample_fmts; ///< @deprecated use avcodec_get_supported_config()
+
     const AVClass *priv_class;              ///< AVClass for the private context
     const AVProfile *profiles;              ///< array of recognized profiles, or NULL if unknown, array is terminated by {AV_PROFILE_UNKNOWN}
 
@@ -226,7 +220,9 @@ typedef struct AVCodec {
 
     /**
      * Array of supported channel layouts, terminated with a zeroed layout.
+     * @deprecated use avcodec_get_supported_config()
      */
+    attribute_deprecated
     const AVChannelLayout *ch_layouts;
 } AVCodec;
 

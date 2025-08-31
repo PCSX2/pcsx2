@@ -81,8 +81,12 @@ typedef struct AVColorPrimariesDesc {
 } AVColorPrimariesDesc;
 
 /**
- * Function pointer representing a double -> double transfer function that performs
- * an EOTF transfer inversion. This function outputs linear light.
+ * Function pointer representing a double -> double transfer function that
+ * performs either an OETF transfer function, or alternatively an inverse EOTF
+ * function (in particular, for SMPTE ST 2084 / PQ). This function inputs
+ * linear light, and outputs gamma encoded light.
+ *
+ * See ITU-T H.273 for more information.
  */
 typedef double (*av_csp_trc_function)(double);
 
@@ -110,7 +114,7 @@ const AVColorPrimariesDesc *av_csp_primaries_desc_from_id(enum AVColorPrimaries 
  * @see enum AVColorPrimaries
  * @param prm A description of the colorspace gamut
  * @return The enum constant associated with this gamut, or
- *     AVCOL_PRI_UNSPECIFIED if no clear match can be idenitified.
+ *     AVCOL_PRI_UNSPECIFIED if no clear match can be identified.
  */
 enum AVColorPrimaries av_csp_primaries_id_from_desc(const AVColorPrimariesDesc *prm);
 
@@ -142,6 +146,44 @@ double av_csp_approximate_trc_gamma(enum AVColorTransferCharacteristic trc);
  *         return NULL:
  */
 av_csp_trc_function av_csp_trc_func_from_id(enum AVColorTransferCharacteristic trc);
+
+/**
+ * Returns the mathematical inverse of the corresponding TRC function.
+ */
+av_csp_trc_function av_csp_trc_func_inv_from_id(enum AVColorTransferCharacteristic trc);
+
+/**
+ * Function pointer representing an ITU EOTF transfer for a given reference
+ * display configuration.
+ *
+ * @param Lw The white point luminance of the display, in nits (cd/m^2).
+ * @param Lb The black point luminance of the display, in nits (cd/m^2).
+ */
+typedef void (*av_csp_eotf_function)(double Lw, double Lb, double c[3]);
+
+/**
+ * Returns the ITU EOTF corresponding to a given TRC. This converts from the
+ * signal level [0,1] to the raw output display luminance in nits (cd/m^2).
+ * This is done per channel in RGB space, except for AVCOL_TRC_SMPTE428, which
+ * assumes CIE XYZ in- and output.
+ *
+ * @return A pointer to the function implementing the given TRC, or NULL if no
+ *         such function is defined.
+ *
+ * @note In general, the resulting function is defined (wherever possible) for
+ *       out-of-range values, even though these values do not have a physical
+ *       meaning on the given display. Users should clamp inputs (or outputs)
+ *       if this behavior is not desired.
+ *
+ *       This is also the case for functions like PQ, which are defined over an
+ *       absolute signal range independent of the target display capabilities.
+ */
+av_csp_eotf_function av_csp_itu_eotf(enum AVColorTransferCharacteristic trc);
+
+/**
+ * Returns the mathematical inverse of the corresponding EOTF.
+ */
+av_csp_eotf_function av_csp_itu_eotf_inv(enum AVColorTransferCharacteristic trc);
 
 /**
  * @}

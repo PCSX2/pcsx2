@@ -5204,7 +5204,7 @@ void GSRendererHW::EmulateTextureShuffleAndFbmask(GSTextureCache::Target* rt, GS
 
 		// If date is enabled you need to test the green channel instead of the alpha channel.
 		// Only enable this code in DATE mode to reduce the number of shaders.
-		m_conf.ps.write_rg = (process_rg & SHUFFLE_WRITE) && m_cached_ctx.TEST.DATE;
+		m_conf.ps.write_rg = (process_rg & SHUFFLE_WRITE) && (features.texture_barrier || features.multidraw_fb_copy) && m_cached_ctx.TEST.DATE;
 		m_conf.ps.real16src = m_copy_16bit_to_target_shuffle;
 		m_conf.ps.shuffle_same = m_same_group_texture_shuffle;
 		// Please bang my head against the wall!
@@ -6441,7 +6441,8 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 	// Switch DATE_PRIMID with DATE_BARRIER in such cases to ensure accuracy.
 	// No mix of COLCLIP + sw blend + DATE_PRIMID, neither sw fbmask + DATE_PRIMID.
 	// Note: Do the swap in the end, saves the expensive draw splitting/barriers when mixed software blending is used.
-	if (sw_blending && DATE_PRIMID && m_conf.require_full_barrier)
+	if (sw_blending && DATE_PRIMID && m_conf.require_full_barrier &&
+		(features.texture_barrier || (features.multidraw_fb_copy && !no_prim_overlap)))
 	{
 		GL_PERF("DATE: Swap DATE_PRIMID with DATE_BARRIER");
 		DATE_PRIMID = false;
@@ -6869,7 +6870,7 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 			{
 				m_conf.tex = nullptr;
 				m_conf.ps.tex_is_fb = true;
-				if (m_prim_overlap == PRIM_OVERLAP_NO || !g_gs_device->Features().texture_barrier)
+				if (m_prim_overlap == PRIM_OVERLAP_NO || !(g_gs_device->Features().texture_barrier || g_gs_device->Features().multidraw_fb_copy))
 					m_conf.require_one_barrier = true;
 				else
 					m_conf.require_full_barrier = true;
@@ -7129,21 +7130,14 @@ bool GSRendererHW::CanUseTexIsFB(const GSTextureCache::Target* rt, const GSTextu
 			return false;
 	}
 
-	// If it's a channel shuffle, tex-is-fb should be fine, even on DX.
+	// If it's a channel shuffle, tex-is-fb should be fine.
 	if (m_channel_shuffle)
 	{
 		GL_CACHE("HW: Enabling tex-is-fb for channel shuffle.");
 		return true;
 	}
 
-	// No barriers -> we can't use tex-is-fb.
-	if (!g_gs_device->Features().texture_barrier)
-	{
-		GL_CACHE("HW: Disabling tex-is-fb due to no barriers.");
-		return false;
-	}
-
-	// If it's a channel shuffle, tex-is-fb is always fine, except on DX.
+	// If it's a channel shuffle, tex-is-fb is always fine.
 	if (m_texture_shuffle)
 	{
 		// We can't do tex is FB if the source and destination aren't pointing to the same bit of texture.
@@ -7152,6 +7146,13 @@ bool GSRendererHW::CanUseTexIsFB(const GSTextureCache::Target* rt, const GSTextu
 
 		GL_CACHE("HW: Enabling tex-is-fb for texture shuffle.");
 		return true;
+	}
+
+	// No barriers -> we can't use tex-is-fb when there's overlap.
+	if (!(g_gs_device->Features().texture_barrier || g_gs_device->Features().multidraw_fb_copy) && m_prim_overlap != PRIM_OVERLAP_NO)
+	{
+		GL_CACHE("HW: Disabling tex-is-fb due to no barriers.");
+		return false;
 	}
 
 	static constexpr auto check_clamp = [](u32 clamp, u32 min, u32 max, s32 tmin, s32 tmax) {
@@ -7969,8 +7970,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	}
 	else if (DATE_one)
 	{
-		const bool multidraw_fb_copy = features.multidraw_fb_copy && (m_conf.require_one_barrier || m_conf.require_full_barrier);
-		if (features.texture_barrier || multidraw_fb_copy)
+		if (features.texture_barrier)
 		{
 			m_conf.require_one_barrier = true;
 			m_conf.ps.date = 5 + m_cached_ctx.TEST.DATM;
@@ -9544,7 +9544,7 @@ void GSRendererHW::EndHLEHardwareDraw(bool force_copy_on_hazard /* = false */)
 	{
 		const GSDevice::FeatureSupport features = g_gs_device->Features();
 
-		if (!force_copy_on_hazard && config.tex == config.rt && features.texture_barrier)
+		if (!force_copy_on_hazard && config.tex == config.rt)
 		{
 			// Sample RT 1:1.
 			config.require_one_barrier = !features.framebuffer_fetch;
