@@ -26,6 +26,9 @@ if(USE_VULKAN)
 	find_package(Shaderc REQUIRED)
 endif()
 
+# OpenCL for fog processing pipeline
+find_package(OpenCL REQUIRED)
+
 # Platform-specific dependencies.
 if (WIN32)
 	add_subdirectory(3rdparty/D3D12MemAlloc EXCLUDE_FROM_ALL)

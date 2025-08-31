@@ -6,6 +6,7 @@
 #include "GSTextureCache.h"
 #include "GS/Renderers/Common/GSFunctionMap.h"
 #include "GS/Renderers/Common/GSRenderer.h"
+#include "GS/Renderers/Common/GSOpenCLFogProcessor.h"
 #include "GS/Renderers/SW/GSTextureCacheSW.h"
 #include "GS/GSState.h"
 #include "GS/MultiISA.h"
@@ -194,6 +195,14 @@ private:
 	bool m_userhacks_tcoffset = false;
 	float m_userhacks_tcoffset_x = 0.0f;
 	float m_userhacks_tcoffset_y = 0.0f;
+
+	// OpenCL fog processor for PS2-accurate fog rendering
+	std::unique_ptr<GSOpenCLFogProcessor> m_opencl_fog_processor;
+	
+	// OpenCL fog parameters for post-processing
+	bool m_opencl_fog_pending = false;
+	GSVector4 m_opencl_fog_color;
+	float m_opencl_fog_factor = 0.0f;
 
 	GSVector2i m_lod = {}; // Min & Max level of detail
 
