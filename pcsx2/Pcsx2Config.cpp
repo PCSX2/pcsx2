@@ -249,6 +249,7 @@ void TraceLogFilters::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(EE.spr);
 	SettingsWrapBitBool(EE.vif);
 	SettingsWrapBitBool(EE.gif);
+	SettingsWrapBitBool(EE.r5900regs); // new EE register logging
 
 	SettingsWrapBitBool(IOP.bios);
 	SettingsWrapBitBool(IOP.memcards);
@@ -263,6 +264,7 @@ void TraceLogFilters::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(IOP.counters);
 	SettingsWrapBitBool(IOP.cdvd);
 	SettingsWrapBitBool(IOP.mdec);
+	SettingsWrapBitBool(IOP.r3000aregs); // new IOP register logging
 
 	SettingsWrapBitBool(MISC.sif);
 }
@@ -288,6 +290,8 @@ void TraceLogFilters::SyncToConfig() const
 	ee.SPR.Enabled = EE.spr;
 	ee.VIF.Enabled = EE.vif;
 	ee.GIF.Enabled = EE.gif;
+	// new
+	ee.R5900Regs.Enabled = EE.r5900regs;
 
 	auto& iop = TraceLogging.IOP;
 	iop.Bios.Enabled = IOP.bios;
@@ -303,6 +307,8 @@ void TraceLogFilters::SyncToConfig() const
 	iop.Counters.Enabled = IOP.counters;
 	iop.CDVD.Enabled = IOP.cdvd;
 	iop.MDEC.Enabled = IOP.mdec;
+	// new
+	iop.R3000ARegs.Enabled = IOP.r3000aregs;
 
 	TraceLogging.SIF.Enabled = MISC.sif;
 

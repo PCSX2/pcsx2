@@ -171,6 +171,13 @@
             </property>
            </widget>
           </item>
+          <item row="11" column="0">
+           <widget class="QCheckBox" name="chkEER5900Regs">
+            <property name="text">
+             <string>R5900 Registers</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </item>
         <item>
@@ -278,6 +285,13 @@
            <widget class="QCheckBox" name="chkIOPCOP2">
             <property name="text">
              <string>COP2 (GPU)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="0">
+           <widget class="QCheckBox" name="chkIOPR3000ARegs">
+            <property name="text">
+             <string>R3000A Registers</string>
             </property>
            </widget>
           </item>

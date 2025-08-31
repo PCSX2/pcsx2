@@ -499,7 +499,9 @@ struct TraceLogsEE
 		counters : 1,
 		spr : 1,
 		vif : 1,
-		gif : 1;
+		gif : 1,
+		// New: per-instruction GPR register dump (interpreter only)
+		r5900regs : 1;
 	BITFIELD_END
 
 	TraceLogsEE();
@@ -527,7 +529,9 @@ struct TraceLogsIOP
 		dmac : 1,
 		counters : 1,
 		cdvd : 1,
-		mdec : 1;
+		mdec : 1,
+		// New: per-instruction GPR register dump (interpreter only)
+		r3000aregs : 1;
 	BITFIELD_END
 
 	TraceLogsIOP();

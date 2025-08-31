@@ -166,6 +166,8 @@ DebugSettingsWidget::DebugSettingsWidget(SettingsWindow* settings_dialog, QWidge
 	dialog()->registerWidgetHelp(m_logging.chkEEVIF, tr("EE VIF"), tr("Unchecked"), tr("Log various VIF and VIFcode processing data."));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkEEGIF, "EmuCore/TraceLog", "EE.gif", false);
 	dialog()->registerWidgetHelp(m_logging.chkEEGIF, tr("EE GIF"), tr("Unchecked"), tr("Log various GIF and GIFtag parsing data."));
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkEER5900Regs, "EmuCore/TraceLog", "EE.r5900regs", false);
+	dialog()->registerWidgetHelp(m_logging.chkEER5900Regs, tr("EE R5900 Registers"), tr("Unchecked"), tr("Log per-instruction EE R5900 general-purpose register changes (interpreter only)."));
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkIOPBIOS, "EmuCore/TraceLog", "IOP.Bios", false);
 	dialog()->registerWidgetHelp(m_logging.chkIOPBIOS, tr("IOP BIOS"), tr("Unchecked"), tr("Log SYSCALL and IRX activity."));
@@ -191,6 +193,8 @@ DebugSettingsWidget::DebugSettingsWidget(SettingsWindow* settings_dialog, QWidge
 	dialog()->registerWidgetHelp(m_logging.chkIOPCDVD, tr("IOP CDVD"), tr("Unchecked"), tr("Log CDVD hardware activity."));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkIOPMDEC, "EmuCore/TraceLog", "IOP.mdec", false);
 	dialog()->registerWidgetHelp(m_logging.chkIOPMDEC, tr("IOP MDEC"), tr("Unchecked"), tr("Log Motion (FMV) Decoder hardware unit activity."));
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkIOPR3000ARegs, "EmuCore/TraceLog", "IOP.r3000aregs", false);
+	dialog()->registerWidgetHelp(m_logging.chkIOPR3000ARegs, tr("IOP R3000A Registers"), tr("Unchecked"), tr("Log per-instruction IOP R3000A general-purpose register changes (interpreter only)."));
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkEESIF, "EmuCore/TraceLog", "MISC.sif", false);
 	dialog()->registerWidgetHelp(m_logging.chkEESIF, tr("EE SIF"), tr("Unchecked"), tr("Log SIF (EE <-> IOP) activity."));
@@ -250,6 +254,7 @@ void DebugSettingsWidget::onLoggingEnableChanged()
 	m_logging.chkEEVIF->setEnabled(enabled);
 	m_logging.chkEEGIF->setEnabled(enabled);
 	m_logging.chkEESIF->setEnabled(enabled);
+	m_logging.chkEER5900Regs->setEnabled(enabled);
 
 	m_logging.chkIOPBIOS->setEnabled(enabled);
 	m_logging.chkIOPMemcards->setEnabled(enabled);
@@ -264,6 +269,7 @@ void DebugSettingsWidget::onLoggingEnableChanged()
 	m_logging.chkIOPCounters->setEnabled(enabled);
 	m_logging.chkIOPCDVD->setEnabled(enabled);
 	m_logging.chkIOPMDEC->setEnabled(enabled);
+	m_logging.chkIOPR3000ARegs->setEnabled(enabled);
 
 	g_emu_thread->applySettings();
 }

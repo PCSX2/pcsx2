@@ -10,6 +10,8 @@
 #include "DebugTools/Breakpoints.h"
 #include "IopBios.h"
 #include "IopHw.h"
+// For interpreter trace logging 
+#include "DebugTools/Debug.h"
 
 using namespace R3000A;
 
@@ -19,7 +21,43 @@ bool iopIsDelaySlot = false;
 static bool branch2 = 0;
 static u32 branchPC;
 
-static void doBranch(s32 tar);	// forward declared prototype
+static void doBranch(s32 tar);  // forward declared prototype
+
+#if defined(PCSX2_DEVBUILD)
+static u32 s_prevIOPGPR[32];
+static bool s_prevIOPInit = false;
+static bool s_headerPrintedIOP = false;
+static inline void LogR3000ARegisterChanges()
+{
+	if (!TraceLogging.IOP.R3000ARegs.IsActive())
+		return;
+
+	if (!s_prevIOPInit)
+	{
+		for (int i = 0; i < 32; ++i)
+			s_prevIOPGPR[i] = psxRegs.GPR.r[i];
+		s_prevIOPInit = true;
+		return; // snapshot only
+	}
+
+	const double iop_time_sec = static_cast<double>(psxRegs.cycle) / static_cast<double>(PSXCLK);
+
+	for (int i = 0; i < 32; ++i)
+	{
+		u32 cur = psxRegs.GPR.r[i];
+		if (cur != s_prevIOPGPR[i])
+		{
+			if (!s_headerPrintedIOP)
+			{
+				PSXCPU_REGS_LOG("[Time (s)] $register Value");
+				s_headerPrintedIOP = true;
+			}
+			PSXCPU_REGS_LOG("[%7.4f] | $%-4s | %08X |", iop_time_sec, R3000A::disRNameGPR[i], cur);
+			s_prevIOPGPR[i] = cur;
+		}
+	}
+}
+#endif
 
 /*********************************************************
 * Register branch logic                                  *
@@ -220,12 +258,31 @@ static __fi void execI()
 
 	psxRegs.code = iopMemRead32(psxRegs.pc);
 
-		PSXCPU_LOG("%s", disR3000AF(psxRegs.code, psxRegs.pc));
+#if defined(PCSX2_DEVBUILD)
+	// R3000A trace channel is active only when enabled and running in interpreter mode to reduce overhead.
+	if (TraceLogging.IOP.R3000A.IsActive())
+	{
+		// Emulated IOP time in seconds (IOP cycles / PSX clock).
+		const double iop_time_sec = static_cast<double>(psxRegs.cycle) / static_cast<double>(PSXCLK);
+
+		// Capture disassembly into a stable buffer before logging to avoid reuse issues.
+		const char* dis = disR3000AF(psxRegs.code, psxRegs.pc);
+
+		// Unified format:
+		// [  <time>s] PC: <pc> | <opcode> | <disasm>
+		PSXCPU_LOG("[%10.4f] PC: %08X | %08X | %s",
+			iop_time_sec, psxRegs.pc, psxRegs.code, dis ? dis : "");
+	}
+#endif
 
 	psxRegs.pc+= 4;
 	psxRegs.cycle++;
 
 	psxBSC[psxRegs.code >> 26]();
+
+#if defined(PCSX2_DEVBUILD)
+	LogR3000ARegisterChanges();
+#endif
 }
 
 static void doBranch(s32 tar) {
@@ -259,6 +316,10 @@ static void intAlloc() {
 
 static void intReset() {
 	intAlloc();
+#if defined(PCSX2_DEVBUILD)
+	s_prevIOPInit = false;
+	s_headerPrintedIOP = false;
+#endif
 }
 
 static s32 intExecuteBlock( s32 eeCycles )

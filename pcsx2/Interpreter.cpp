@@ -8,10 +8,14 @@
 #include "Cache.h"
 
 #include "DebugTools/Breakpoints.h"
+#include "DebugTools/Debug.h"
 
 #include "common/FastJmp.h"
 
 #include <float.h>
+
+#include <cstdio>
+#include <inttypes.h>
 
 using namespace R5900;		// for OPCODE and OpcodeImpl
 
@@ -25,6 +29,53 @@ static fastjmp_buf intJmpBuf;
 static u32 intLastBranchTo;
 
 static void intEventTest();
+	
+//----------------------------------------------------------------------------------------
+//Register logging implementation
+//----------------------------------------------------------------------------------------
+
+#if defined(PCSX2_DEVBUILD)
+
+// Dumps full 128-bit (4x32) parts of the architectural GPR (high -> low shown left to right in output)
+static u32 s_prevGPR128[32][4]; // [reg][word]
+static bool s_prevInit = false;
+static bool s_headerPrinted = false;
+static inline void LogR5900RegisterChanges()
+{
+	if (!TraceLogging.EE.R5900Regs.IsActive())
+		return;
+
+	if (!s_prevInit)
+	{
+		for (int r = 0; r < 32; ++r)
+		{
+			s_prevGPR128[r][0] = cpuRegs.GPR.r[r].UL[0];
+			s_prevGPR128[r][1] = cpuRegs.GPR.r[r].UL[1];
+			s_prevGPR128[r][2] = cpuRegs.GPR.r[r].UL[2];
+			s_prevGPR128[r][3] = cpuRegs.GPR.r[r].UL[3];
+		}
+		s_prevInit = true;
+		return; // snapshot only
+	}
+
+	const double ee_time_sec = static_cast<double>(cpuRegs.cycle) / static_cast<double>(PS2CLK);
+
+	for (int r = 0; r < 32; ++r)
+	{
+		u32 w0 = cpuRegs.GPR.r[r].UL[0]; // lowest
+		u32 w1 = cpuRegs.GPR.r[r].UL[1];
+		u32 w2 = cpuRegs.GPR.r[r].UL[2];
+		u32 w3 = cpuRegs.GPR.r[r].UL[3]; // highest
+		if (w0 != s_prevGPR128[r][0] || w1 != s_prevGPR128[r][1] || w2 != s_prevGPR128[r][2] || w3 != s_prevGPR128[r][3])
+		{
+			// Output format example:
+			// [1.5372] | $v0  | FFFFFFFF 00000000 FFFFFFFF 001BC420 |
+			CPU_REGS_LOG("[%7.4f] $%-4s | %08X %08X %08X %08X |", ee_time_sec, R5900::GPR_REG[r], w3, w2, w1, w0);
+			s_prevGPR128[r][0] = w0; s_prevGPR128[r][1] = w1; s_prevGPR128[r][2] = w2; s_prevGPR128[r][3] = w3;
+		}
+	}
+}
+#endif
 
 void intUpdateCPUCycles()
 {
@@ -171,7 +222,24 @@ static void execI()
 	// interprete instruction
 	cpuRegs.code = memRead32( pc );
 
+	#if defined(PCSX2_DEVBUILD)
+	// R5900 trace channel is active only when enabled and running in interpreter mode to reduce overhead.
+	if (TraceLogging.EE.R5900.IsActive())
+	{
+		disOut.clear();
+		disR5900Fasm(disOut, cpuRegs.code, pc, false);
+
+		// Emulated EE time in seconds (cycles / PS2 clock).  PS2CLK is the EE base clock frequency.
+		const double ee_time_sec = static_cast<double>(cpuRegs.cycle) / static_cast<double>(PS2CLK);
+
+		// Unified format [  <time>s] PC: <pc> | <opcode> | <disasm>
+		CPU_LOG("[%10.4f] %08X | %08X | %s",
+			ee_time_sec, pc, cpuRegs.code, disOut.c_str());
+	}
+#endif
+
 	const OPCODE& opcode = GetCurrentInstruction();
+
 #if 0
 	static long int runs = 0;
 	//use this to find out what opcodes your game uses. very slow! (rama)
@@ -209,6 +277,12 @@ static void execI()
 	cpuBlockCycles += opcode.cycles * (2 - ((cpuRegs.CP0.n.Config >> 18) & 0x1));
 
 	opcode.interpret();
+
+#if defined(PCSX2_DEVBUILD)
+	// After instruction has executed, log any register changes
+	// For logging registers in interpreter mode
+	LogR5900RegisterChanges();
+#endif
 }
 
 static __fi void _doBranch_shared(u32 tar)
@@ -546,6 +620,10 @@ static void intReset()
 {
 	cpuRegs.branch = 0;
 	branch2 = 0;
+#if defined(PCSX2_DEVBUILD)
+	s_prevInit = false; // reset snapshot so first log after reset doesn't spam
+	s_headerPrinted = false;
+#endif
 }
 
 static void intEventTest()
