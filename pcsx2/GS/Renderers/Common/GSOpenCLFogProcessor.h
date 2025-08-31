@@ -56,6 +56,12 @@ public:
 	/// Check if OpenCL fog processing is available
 	bool IsAvailable() const { return m_initialized; }
 	
+	/// Get global OpenCL fog enable state
+	static bool IsGloballyEnabled();
+	
+	/// Set global OpenCL fog enable state
+	static void SetGloballyEnabled(bool enabled);
+	
 	/// Cleanup OpenCL resources
 	void Destroy();
 };

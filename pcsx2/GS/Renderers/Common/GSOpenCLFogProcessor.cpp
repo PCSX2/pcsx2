@@ -233,6 +233,19 @@ bool GSOpenCLFogProcessor::ProcessFog(void* input_texture, void* output_texture,
 	return true;
 }
 
+// Global OpenCL fog enable state
+static bool s_opencl_fog_enabled = true; // Default enabled as per CEO instructions
+
+bool GSOpenCLFogProcessor::IsGloballyEnabled()
+{
+	return s_opencl_fog_enabled;
+}
+
+void GSOpenCLFogProcessor::SetGloballyEnabled(bool enabled)
+{
+	s_opencl_fog_enabled = enabled;
+}
+
 void GSOpenCLFogProcessor::Destroy()
 {
 	if (m_initialized)

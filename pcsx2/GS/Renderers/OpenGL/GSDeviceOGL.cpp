@@ -4,6 +4,7 @@
 #include "GS/Renderers/OpenGL/GLContext.h"
 #include "GS/Renderers/OpenGL/GSDeviceOGL.h"
 #include "GS/Renderers/OpenGL/GLState.h"
+#include "GS/Renderers/Common/GSOpenCLFogProcessor.h"
 #include "GS/GSState.h"
 #include "GS/GSGL.h"
 #include "GS/GSPerfMon.h"
@@ -1357,6 +1358,7 @@ std::string GSDeviceOGL::GetPSSource(const PSSelector& sel)
 		+ fmt::format("#define PS_ATST {}\n", sel.atst)
 		+ fmt::format("#define PS_AFAIL {}\n", sel.afail)
 		+ fmt::format("#define PS_FOG {}\n", sel.fog)
+		+ fmt::format("#define USE_OPENCL_FOG {}\n", GSOpenCLFogProcessor::IsGloballyEnabled() ? 1 : 0)
 		+ fmt::format("#define PS_BLEND_HW {}\n", sel.blend_hw)
 		+ fmt::format("#define PS_A_MASKED {}\n", sel.a_masked)
 		+ fmt::format("#define PS_FBA {}\n", sel.fba)

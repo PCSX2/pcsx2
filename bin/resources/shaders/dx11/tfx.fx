@@ -736,7 +736,7 @@ bool atst(float4 C)
 
 float4 fog(float4 c, float f)
 {
-	if(PS_FOG)
+	if(PS_FOG && !defined(USE_OPENCL_FOG))
 	{
 		// Use PS2 hardware-accurate fog calculation: (Color * Fog + FogColor * (256 - Fog)) >> 8
 		// Convert f from [0,1] to [0,255] range and compute without GPU lerp() rounding

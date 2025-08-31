@@ -10,6 +10,7 @@
 #include "GS/Renderers/Vulkan/VKShaderCache.h"
 #include "GS/Renderers/Vulkan/VKSwapChain.h"
 #include "GS/Renderers/Common/GSDevice.h"
+#include "GS/Renderers/Common/GSOpenCLFogProcessor.h"
 
 #include "BuildVersion.h"
 #include "Host.h"
@@ -4735,6 +4736,9 @@ VkShaderModule GSDeviceVK::GetTFXFragmentShader(const GSHWDrawConfig::PSSelector
 	AddMacro(ss, "PS_ATST", sel.atst);
 	AddMacro(ss, "PS_AFAIL", sel.afail);
 	AddMacro(ss, "PS_FOG", sel.fog);
+	// Add OpenCL fog define if globally enabled
+	if (GSOpenCLFogProcessor::IsGloballyEnabled())
+		AddMacro(ss, "USE_OPENCL_FOG", 1);
 	AddMacro(ss, "PS_BLEND_HW", sel.blend_hw);
 	AddMacro(ss, "PS_A_MASKED", sel.a_masked);
 	AddMacro(ss, "PS_FBA", sel.fba);
