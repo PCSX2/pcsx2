@@ -1292,10 +1292,8 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 #endif
 
 				// Use non-rounding interpolation for fog (PS2 hardware doesn't round)
-				// Manual implementation of lerp16<0> without rounding
-				// rb = frb + (rb - frb) * fog / 32768 (equivalent to lerp16<0> but without rounding)
-				rb = frb.add16(rb.sub16(frb).sll16<1>().mul16hs(fog));
-				ga = fga.add16(ga.sub16(fga).sll16<1>().mul16hs(fog)).mix16(ga);
+				rb = frb.lerp16_noround(rb, fog);
+				ga = fga.lerp16_noround(ga, fog).mix16(ga);
 
 				/*
 				fog = fog.srl16<7>();

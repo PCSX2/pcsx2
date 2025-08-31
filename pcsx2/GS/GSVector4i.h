@@ -993,6 +993,18 @@ public:
 		return sll16<shift + 1>().mul16hs(f);
 	}
 
+	__forceinline GSVector4i modulate16_noround(const GSVector4i& f) const
+	{
+		// Non-rounding equivalent of modulate16<0>: ((a << 1) * f) >> 16 = (a * f) >> 15
+		return sll16<1>().mul16hs(f);
+	}
+
+	__forceinline GSVector4i lerp16_noround(const GSVector4i& a, const GSVector4i& f) const
+	{
+		// (a - this) * f (no rounding) + this
+		return add16(a.sub16(*this).modulate16_noround(f));
+	}
+
 	__forceinline bool eq(const GSVector4i& v) const
 	{
 		// pxor, ptest, je
