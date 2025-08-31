@@ -91,7 +91,7 @@ void psxBLTZAL()    // Branch if Rs <  0 and link
 	_SetLink(31);
 	if (_i32(_rRs_) < 0)
 		{
-		doBranch(_BranchTarget_);
+			doBranch(_BranchTarget_);
 		}
 }
 
@@ -251,6 +251,8 @@ static __fi void execI()
 	}
 
 	psxRegs.code = iopMemRead32(psxRegs.pc);
+
+	PSXCPU_LOG("%s", disR3000AF(psxRegs.code, psxRegs.pc));
 
 #if defined(PCSX2_DEVBUILD)
 	// R3000A trace channel is active only when enabled and running in interpreter mode to reduce overhead.

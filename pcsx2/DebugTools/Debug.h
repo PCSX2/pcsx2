@@ -306,11 +306,11 @@ extern ConsoleLogPack ConsoleLogging;
 #define MDEC_LOG		macTrace(IOP.MDEC)
 
 
-#define ELF_LOG			ConsoleLogging.ELF.IsActive() && ConsoleLogging.ELF.Write
-#define eeRecPerfLog	ConsoleLogging.eeRecPerf.IsActive() && ConsoleLogging.eeRecPerf
-#define eeConLog		ConsoleLogging.eeConsole.IsActive() && ConsoleLogging.eeConsole.Write
-#define eeDeci2Log		ConsoleLogging.deci2.IsActive() && ConsoleLogging.deci2.Write
-#define iopConLog		ConsoleLogging.iopConsole.IsActive() && ConsoleLogging.iopConsole.Write
-#define pgifConLog		ConsoleLogging.pgifLog.IsActive() && ConsoleLogging.pgifLog.Write
-#define recordingConLog ConsoleLogging.recordingConsole.IsActive() && ConsoleLogging.recordingConsole.Write
-#define controlLog		ConsoleLogging.controlInfo.IsActive() && ConsoleLogging.controlInfo.Write
+#define ELF_LOG			ConsoleLogging.ELF.IsActive()				&& ConsoleLogging.ELF.Write
+#define eeRecPerfLog	ConsoleLogging.eeRecPerf.IsActive()			&& ConsoleLogging.eeRecPerf
+#define eeConLog		ConsoleLogging.eeConsole.IsActive()			&& ConsoleLogging.eeConsole.Write
+#define eeDeci2Log		ConsoleLogging.deci2.IsActive()				&& ConsoleLogging.deci2.Write
+#define iopConLog		ConsoleLogging.iopConsole.IsActive()		&& ConsoleLogging.iopConsole.Write
+#define pgifConLog		ConsoleLogging.pgifLog.IsActive()			&& ConsoleLogging.pgifLog.Write
+#define recordingConLog ConsoleLogging.recordingConsole.IsActive()	&& ConsoleLogging.recordingConsole.Write
+#define controlLog		ConsoleLogging.controlInfo.IsActive()		&& ConsoleLogging.controlInfo.Write
