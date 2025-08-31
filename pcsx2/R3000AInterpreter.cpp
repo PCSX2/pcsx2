@@ -40,19 +40,13 @@ static inline void LogR3000ARegisterChanges()
 		return; // snapshot only
 	}
 
-	const double iop_time_sec = static_cast<double>(psxRegs.cycle) / static_cast<double>(PSXCLK);
 
 	for (int i = 0; i < 32; ++i)
 	{
 		u32 cur = psxRegs.GPR.r[i];
 		if (cur != s_prevIOPGPR[i])
 		{
-			if (!s_headerPrintedIOP)
-			{
-				PSXCPU_REGS_LOG("[Time (s)] $register Value");
-				s_headerPrintedIOP = true;
-			}
-			PSXCPU_REGS_LOG("[%7.4f] | $%-4s | %08X |", iop_time_sec, R3000A::disRNameGPR[i], cur);
+			PSXCPU_REGS_LOG("$%-4s | %08X |", R3000A::disRNameGPR[i], cur);
 			s_prevIOPGPR[i] = cur;
 		}
 	}
@@ -97,7 +91,7 @@ void psxBLTZAL()    // Branch if Rs <  0 and link
 	_SetLink(31);
 	if (_i32(_rRs_) < 0)
 		{
-			doBranch(_BranchTarget_);
+		doBranch(_BranchTarget_);
 		}
 }
 
@@ -262,16 +256,11 @@ static __fi void execI()
 	// R3000A trace channel is active only when enabled and running in interpreter mode to reduce overhead.
 	if (TraceLogging.IOP.R3000A.IsActive())
 	{
-		// Emulated IOP time in seconds (IOP cycles / PSX clock).
-		const double iop_time_sec = static_cast<double>(psxRegs.cycle) / static_cast<double>(PSXCLK);
-
 		// Capture disassembly into a stable buffer before logging to avoid reuse issues.
 		const char* dis = disR3000AF(psxRegs.code, psxRegs.pc);
 
-		// Unified format:
-		// [  <time>s] PC: <pc> | <opcode> | <disasm>
-		PSXCPU_LOG("[%10.4f] PC: %08X | %08X | %s",
-			iop_time_sec, psxRegs.pc, psxRegs.code, dis ? dis : "");
+
+		PSXCPU_LOG("%08X | %08X | %s", psxRegs.pc, psxRegs.code, dis ? dis : "");
 	}
 #endif
 

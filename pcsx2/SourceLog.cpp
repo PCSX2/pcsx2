@@ -13,6 +13,7 @@
 #include "R3000A.h"
 #include "R5900.h"
 #include "common/FileSystem.h"
+#include "common/Console.h"
 #include "common/Path.h"
 
 #include "fmt/format.h"
@@ -68,16 +69,19 @@ void TraceLogFile::CloseSeparateFile()
 
 void TraceLogFile::Write(const char* text)
 {
-	if (!m_separate_files_enabled)
+	if (!m_separate_files_enabled || !m_file || !text || !*text)
 		return;
-	if (!m_file)
-		return;
-	if (text && *text)
+
+	if (Log::AreTimestampsEnabled())
 	{
-		std::fputs(text, m_file.get());
-		std::fputc('\n', m_file.get());
-		std::fflush(m_file.get());
+		// Match the global emulog timestamp format: "[%10.4f] "
+		std::fprintf(m_file.get(), "[%10.4f] %s\n", Log::GetCurrentMessageTime(), text);
 	}
+	else
+	{
+		std::fprintf(m_file.get(), "%s\n", text);
+	}
+	std::fflush(m_file.get());
 }
 
 void TraceLog::OpenSeparateFileIfNeeded() const
@@ -254,7 +258,7 @@ static const LogDescriptor
 
 	LD_IOP_GPU = {"GPU", "GPU", "Detailed logging for the PS1 GPU emulation layer (IOP)."},
 
-	LD_EE_R5900_REGS = {"Regs", "R5900 Registers", "Per-instruction general-purpose register dump (interpreter only)."};
+	LD_EE_R5900_REGS = {"EEregs", "R5900 Registers", "Per-instruction general-purpose register dump (interpreter only)."};
 
 	// ----------------------------------
 		//   IOP - Input / Output Processor
@@ -287,7 +291,7 @@ static const LogDescriptor
 
 	LD_IOP_MDEC = {"MDEC", "MDEC", "Detailed logging of the Motion (FMV) Decoder hardware unit."},
 
-	LD_IOP_R3000A_REGS = {"Regs", "R3000A Registers", "Per-instruction general-purpose register dump (interpreter only)."};
+	LD_IOP_R3000A_REGS = {"IOPregs", "R3000A Registers", "Per-instruction general-purpose register dump (interpreter only)."};
 
 TraceLogPack::TraceLogPack()
 	: SIF(LD_SIF)
@@ -369,6 +373,7 @@ TraceLogPack::IOP_PACK::IOP_PACK()
 		EE.SPR.SetSeparateFilesEnabled(enabled);
 		EE.VIF.SetSeparateFilesEnabled(enabled);
 		EE.GIF.SetSeparateFilesEnabled(enabled);
+		EE.R5900Regs.SetSeparateFilesEnabled(enabled);
 		IOP.Bios.SetSeparateFilesEnabled(enabled);
 		IOP.Memcards.SetSeparateFilesEnabled(enabled);
 		IOP.PAD.SetSeparateFilesEnabled(enabled);
@@ -383,6 +388,7 @@ TraceLogPack::IOP_PACK::IOP_PACK()
 		IOP.CDVD.SetSeparateFilesEnabled(enabled);
 		IOP.MDEC.SetSeparateFilesEnabled(enabled);
 		IOP.GPU.SetSeparateFilesEnabled(enabled);
+		IOP.R3000ARegs.SetSeparateFilesEnabled(enabled);
 	}
 
 	void TraceLogPack::CloseAllSeparateFiles()
@@ -407,6 +413,7 @@ TraceLogPack::IOP_PACK::IOP_PACK()
 		EE.SPR.CloseSeparateFile();
 		EE.VIF.CloseSeparateFile();
 		EE.GIF.CloseSeparateFile();
+		EE.R5900Regs.CloseSeparateFile(); 
 		IOP.Bios.CloseSeparateFile();
 		IOP.Memcards.CloseSeparateFile();
 		IOP.PAD.CloseSeparateFile();
@@ -421,4 +428,5 @@ TraceLogPack::IOP_PACK::IOP_PACK()
 		IOP.CDVD.CloseSeparateFile();
 		IOP.MDEC.CloseSeparateFile();
 		IOP.GPU.CloseSeparateFile();
+		IOP.R3000ARegs.CloseSeparateFile();
 	}
