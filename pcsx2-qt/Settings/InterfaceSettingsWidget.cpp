@@ -44,8 +44,8 @@ const char* InterfaceSettingsWidget::THEME_NAMES[] = {
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Sapphire (Black/Blue) [Dark]"),
 	//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Emerald (Black/Green) [Dark]"),
-	//: "Custom.qss" must be kept as-is.
-	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Custom.qss [Drop in PCSX2 Folder]"),
+	//: "custom.qss" must be kept as-is.
+	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "custom.qss [Drop in PCSX2 Folder]"),
 	nullptr};
 
 const char* InterfaceSettingsWidget::THEME_VALUES[] = {
