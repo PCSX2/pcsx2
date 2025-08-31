@@ -69,6 +69,38 @@ enum class ShaderInterlace
 	Count
 };
 
+static inline bool HasVariableWriteMask(ShaderConvert shader)
+{
+	switch (shader)
+	{
+		case ShaderConvert::COPY:
+		case ShaderConvert::RTA_CORRECTION:
+			return true;
+		default:
+			return false;
+	}
+}
+
+static inline int GetShaderIndexForMask(ShaderConvert shader, int mask)
+{
+	int index_upper;
+	switch(shader)
+	{
+		case ShaderConvert::COPY:
+			index_upper = 0;
+			break;
+		case ShaderConvert::RTA_CORRECTION:
+			index_upper = 1;
+			break;
+		default:
+			index_upper = -1;
+			pxFail("Shader does not have a variable channel mask.");
+			break;
+	}
+	pxAssertRel(0 <= mask && mask <= 15, "Invalid channel mask");
+	return index_upper * 16 + mask;
+}
+
 static inline bool HasDepthOutput(ShaderConvert shader)
 {
 	switch (shader)
@@ -549,6 +581,7 @@ struct alignas(16) GSHWDrawConfig
 		constexpr ColorMaskSelector(): key(0xF) {}
 		constexpr ColorMaskSelector(u8 c): key(0) { wrgba = c; }
 	};
+
 #pragma pack(pop)
 	struct alignas(16) VSConstantBuffer
 	{
@@ -922,6 +955,11 @@ protected:
 	/// Perform texture operations for ImGui
 	void UpdateImGuiTextures();
 
+protected:
+	// Entry point to the renderer-specific StretchRect code.
+	virtual void DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
+		GSHWDrawConfig::ColorMaskSelector cms, ShaderConvert shader = ShaderConvert::COPY, bool linear = true) = 0;
+
 public:
 	GSDevice();
 	virtual ~GSDevice();
@@ -1037,9 +1075,10 @@ public:
 	virtual std::unique_ptr<GSDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format) = 0;
 
 	virtual void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY) = 0;
-	virtual void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader = ShaderConvert::COPY, bool linear = true) = 0;
-	virtual void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red, bool green, bool blue, bool alpha, ShaderConvert shader = ShaderConvert::COPY) = 0;
 
+	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, GSHWDrawConfig::ColorMaskSelector cms, ShaderConvert shader = ShaderConvert::COPY, bool linear = true);
+	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red, bool green, bool blue, bool alpha, ShaderConvert shader = ShaderConvert::COPY);
+	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader = ShaderConvert::COPY, bool linear = true);
 	void StretchRect(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader = ShaderConvert::COPY, bool linear = true);
 
 	/// Performs a screen blit for display. If dTex is null, it assumes you are writing to the system framebuffer/swap chain.
