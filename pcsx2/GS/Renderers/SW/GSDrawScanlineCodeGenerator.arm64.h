@@ -65,6 +65,7 @@ private:
 
 	void modulate16(const vixl::aarch64::VRegister& d, const vixl::aarch64::VRegister& a, const vixl::aarch64::VRegister& f, u8 shift);
 	void modulate16(const vixl::aarch64::VRegister& a, const vixl::aarch64::VRegister& f, u8 shift);
+	void modulate16_noround(const vixl::aarch64::VRegister& a, const vixl::aarch64::VRegister& f);
 	void lerp16(const vixl::aarch64::VRegister& a, const vixl::aarch64::VRegister& b, const vixl::aarch64::VRegister& f, u8 shift);
 	void lerp16_4(const vixl::aarch64::VRegister& a, const vixl::aarch64::VRegister& b, const vixl::aarch64::VRegister& f);
 	void mix16(const vixl::aarch64::VRegister& a, const vixl::aarch64::VRegister& b, const vixl::aarch64::VRegister& temp);

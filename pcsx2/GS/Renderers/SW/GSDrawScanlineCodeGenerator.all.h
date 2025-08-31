@@ -99,6 +99,7 @@ private:
 	/// Broadcast a 32-bit GPR to a vector register
 	void broadcastGPRToVec(const XYm& vec, const Xbyak::Reg32& gpr);
 	void modulate16(const XYm& a, const Xbyak::Operand& f, u8 shift);
+	void modulate16_noround(const XYm& a, const Xbyak::Operand& f);
 	void lerp16(const XYm& a, const XYm& b, const XYm& f, u8 shift);
 	void lerp16_4(const XYm& a, const XYm& b, const XYm& f);
 	void mix16(const XYm& a, const XYm& b, const XYm& temp);

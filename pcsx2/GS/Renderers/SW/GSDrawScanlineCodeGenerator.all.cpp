@@ -185,6 +185,13 @@ void GSDrawScanlineCodeGenerator::modulate16(const XYm& a, const Operand& f, u8 
 	}
 }
 
+void GSDrawScanlineCodeGenerator::modulate16_noround(const XYm& a, const Operand& f)
+{
+	// Non-rounding equivalent of pmulhrsw: ((a << 1) * f) >> 16 = (a * f) >> 15
+	psllw(a, 1);
+	pmulhw(a, f);
+}
+
 void GSDrawScanlineCodeGenerator::lerp16(const XYm& a, const XYm& b, const XYm& f, u8 shift)
 {
 	psubw(a, b);
@@ -2395,10 +2402,16 @@ void GSDrawScanlineCodeGenerator::Fog()
 	movdqa(xym1, _ga);
 
 	pbroadcastdLocal(tmp, _rip_global(frb));
-	lerp16(_rb, tmp, f, 0);
+	// Use non-rounding interpolation for fog (PS2 hardware doesn't round)
+	psubw(_rb, tmp);
+	modulate16_noround(_rb, f);
+	paddw(_rb, tmp);
 
 	pbroadcastdLocal(tmp, _rip_global(fga));
-	lerp16(_ga, tmp, f, 0);
+	// Use non-rounding interpolation for fog (PS2 hardware doesn't round)
+	psubw(_ga, tmp);
+	modulate16_noround(_ga, f);
+	paddw(_ga, tmp);
 
 	mix16(_ga, xym1, xym0);
 }

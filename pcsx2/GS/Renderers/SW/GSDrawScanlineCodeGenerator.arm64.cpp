@@ -1659,9 +1659,16 @@ void GSDrawScanlineCodeGenerator::Fog()
 	armAsm->Dup(_vscratch2.V4S(), _global_fga);
 	armAsm->Mov(v1, v6);
 
-	lerp16(v5, _vscratch, _temp_f, 0);
+	// Use non-rounding interpolation for fog (PS2 hardware doesn't round)
+	armAsm->Sub(v5.V8H(), v5.V8H(), _vscratch.V8H());
+	modulate16_noround(v5, _temp_f);
+	armAsm->Add(v5.V8H(), v5.V8H(), _vscratch.V8H());
 
-	lerp16(v6, _vscratch2, _temp_f, 0);
+	// Use non-rounding interpolation for fog (PS2 hardware doesn't round)
+	armAsm->Sub(v6.V8H(), v6.V8H(), _vscratch2.V8H());
+	modulate16_noround(v6, _temp_f);
+	armAsm->Add(v6.V8H(), v6.V8H(), _vscratch2.V8H());
+	
 	mix16(v6, v1, v0);
 }
 
@@ -2360,6 +2367,13 @@ void GSDrawScanlineCodeGenerator::modulate16(const VRegister& d, const VRegister
 		armAsm->Sqrdmulh(a.V8H(), a.V8H(), f.V8H());
 
 	armAsm->Sshr(a.V8H(), a.V8H(), 1);
+}
+
+void GSDrawScanlineCodeGenerator::modulate16_noround(const VRegister& a, const VRegister& f)
+{
+	// Non-rounding equivalent of sqrdmulh: use sqdmulh directly after left shift
+	armAsm->Shl(a.V8H(), a.V8H(), 1);
+	armAsm->Sqdmulh(a.V8H(), a.V8H(), f.V8H());
 }
 
 void GSDrawScanlineCodeGenerator::lerp16(const VRegister& a, const VRegister& b, const VRegister& f, u8 shift)
