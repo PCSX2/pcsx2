@@ -9,7 +9,6 @@
 #include "GS/Renderers/DX12/GSDevice12.h"
 #include "GS/Renderers/DX12/D3D12Builders.h"
 #include "GS/Renderers/DX12/D3D12ShaderCache.h"
-#include "GS/Renderers/Common/GSOpenCLFogProcessor.h"
 #include "Host.h"
 #include "ShaderCacheVersion.h"
 
@@ -2885,9 +2884,6 @@ const ID3DBlob* GSDevice12::GetTFXPixelShader(const GSHWDrawConfig::PSSelector& 
 	sm.AddMacro("PS_ATST", sel.atst);
 	sm.AddMacro("PS_AFAIL", sel.afail);
 	sm.AddMacro("PS_FOG", sel.fog);
-	// Add OpenCL fog define if globally enabled
-	if (GSOpenCLFogProcessor::IsGloballyEnabled())
-		sm.AddMacro("USE_OPENCL_FOG", 1);
 	sm.AddMacro("PS_IIP", sel.iip);
 	sm.AddMacro("PS_BLEND_HW", sel.blend_hw);
 	sm.AddMacro("PS_A_MASKED", sel.a_masked);

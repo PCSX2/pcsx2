@@ -4,7 +4,6 @@
 #include "GS.h"
 #include "GSDevice11.h"
 #include "GS/Renderers/DX11/D3D.h"
-#include "GS/Renderers/Common/GSOpenCLFogProcessor.h"
 #include "GS/GSExtra.h"
 #include "GS/GSPerfMon.h"
 #include "GS/GSUtil.h"
@@ -1706,9 +1705,6 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 		sm.AddMacro("PS_ATST", sel.atst);
 		sm.AddMacro("PS_AFAIL", sel.afail);
 		sm.AddMacro("PS_FOG", sel.fog);
-		// Add OpenCL fog define if globally enabled
-		if (GSOpenCLFogProcessor::IsGloballyEnabled())
-			sm.AddMacro("USE_OPENCL_FOG", 1);
 		sm.AddMacro("PS_IIP", sel.iip);
 		sm.AddMacro("PS_BLEND_HW", sel.blend_hw);
 		sm.AddMacro("PS_A_MASKED", sel.a_masked);

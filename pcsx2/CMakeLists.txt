@@ -502,7 +502,6 @@ set(pcsx2GSSources
 	GS/Renderers/Common/GSDevice.cpp
 	GS/Renderers/Common/GSDirtyRect.cpp
 	GS/Renderers/Common/GSFunctionMap.cpp
-	GS/Renderers/Common/GSOpenCLFogProcessor.cpp
 	GS/Renderers/Common/GSRenderer.cpp
 	GS/Renderers/Common/GSTexture.cpp
 	GS/Renderers/Common/GSVertexTrace.cpp
@@ -544,7 +543,6 @@ set(pcsx2GSHeaders
 	GS/Renderers/Common/GSDirtyRect.h
 	GS/Renderers/Common/GSFastList.h
 	GS/Renderers/Common/GSFunctionMap.h
-	GS/Renderers/Common/GSOpenCLFogProcessor.h
 	GS/Renderers/Common/GSRenderer.h
 	GS/Renderers/Common/GSTexture.h
 	GS/Renderers/Common/GSVertex.h
@@ -1162,9 +1160,18 @@ target_link_libraries(PCSX2_FLAGS INTERFACE
 	ccc
 	plutovg::plutovg
 	plutosvg::plutosvg
-	OpenCL::OpenCL
 	${LIBC_LIBRARIES}
 )
+
+# Optional OpenCL support for fog processing
+if(OpenCL_FOUND)
+	target_link_libraries(PCSX2_FLAGS INTERFACE OpenCL::OpenCL)
+	target_compile_definitions(PCSX2_FLAGS INTERFACE USE_OPENCL_FOG=1)
+	target_sources(PCSX2 PRIVATE 
+		GS/Renderers/Common/GSOpenCLFogProcessor.cpp
+		GS/Renderers/Common/GSOpenCLFogProcessor.h
+	)
+endif()
 
 if(WIN32)
 	target_link_libraries(PCSX2_FLAGS INTERFACE

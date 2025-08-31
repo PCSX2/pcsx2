@@ -23,6 +23,7 @@ GSRendererHW::GSRendererHW()
 	g_texture_cache = std::make_unique<GSTextureCache>();
 	GSTextureReplacements::Initialize();
 
+#ifdef USE_OPENCL_FOG
 	// Initialize OpenCL fog processor for enhanced fog rendering
 	m_opencl_fog_processor = std::make_unique<GSOpenCLFogProcessor>();
 	if (!m_opencl_fog_processor->Initialize())
@@ -30,6 +31,7 @@ GSRendererHW::GSRendererHW()
 		Console.Warning("GSRendererHW: OpenCL fog processor initialization failed, falling back to standard fog");
 		m_opencl_fog_processor.reset();
 	}
+#endif
 
 	// Hope nothing requires too many draw calls.
 	m_drawlist.reserve(2048);
@@ -48,7 +50,9 @@ void GSRendererHW::SetTCOffset()
 
 GSRendererHW::~GSRendererHW()
 {
+#ifdef USE_OPENCL_FOG
 	m_opencl_fog_processor.reset();
+#endif
 	g_texture_cache.reset();
 }
 
@@ -8019,6 +8023,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 
 	if (PRIM->FGE)
 	{
+#ifdef USE_OPENCL_FOG
 		// Use OpenCL fog pipeline if available for enhanced accuracy
 		if (m_opencl_fog_processor && m_opencl_fog_processor->IsAvailable())
 		{
@@ -8035,6 +8040,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 			m_conf.ps.fog = 0;
 		}
 		else
+#endif
 		{
 			// Fallback to standard shader fog
 			m_conf.ps.fog = 1;
@@ -8044,10 +8050,12 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 			m_conf.cb_ps.FogColor_AREF = fc.blend32<8>(m_conf.cb_ps.FogColor_AREF);
 		}
 	}
+#ifdef USE_OPENCL_FOG
 	else
 	{
 		m_opencl_fog_pending = false;
 	}
+#endif
 
 
 
@@ -9612,6 +9620,7 @@ void GSRendererHW::EndHLEHardwareDraw(bool force_copy_on_hazard /* = false */)
 
 	g_gs_device->RenderHW(m_conf);
 
+#ifdef USE_OPENCL_FOG
 	// Apply OpenCL fog post-processing if enabled and pending
 	if (m_opencl_fog_pending && m_opencl_fog_processor && m_conf.rt)
 	{
@@ -9642,6 +9651,7 @@ void GSRendererHW::EndHLEHardwareDraw(bool force_copy_on_hazard /* = false */)
 		
 		m_opencl_fog_pending = false;
 	}
+#endif
 
 	if (copy)
 		g_gs_device->Recycle(copy);

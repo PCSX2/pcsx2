@@ -4,6 +4,9 @@
 #pragma once
 
 #include "common/Pcsx2Defs.h"
+
+#ifdef USE_OPENCL_FOG
+
 #include "GS/GSVector.h"
 #include <CL/opencl.h>
 #include <memory>
@@ -65,3 +68,5 @@ public:
 	/// Cleanup OpenCL resources
 	void Destroy();
 };
+
+#endif // USE_OPENCL_FOG

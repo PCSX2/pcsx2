@@ -2,6 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "GSOpenCLFogProcessor.h"
+
+#ifdef USE_OPENCL_FOG
+
 #include "common/Console.h"
 #include <cstring>
 #include <vector>
@@ -271,3 +274,5 @@ void GSOpenCLFogProcessor::Destroy()
 		Console.WriteLn("GSOpenCLFogProcessor: OpenCL fog pipeline destroyed");
 	}
 }
+
+#endif // USE_OPENCL_FOG

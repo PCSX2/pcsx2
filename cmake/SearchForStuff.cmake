@@ -26,8 +26,8 @@ if(USE_VULKAN)
 	find_package(Shaderc REQUIRED)
 endif()
 
-# OpenCL for fog processing pipeline
-find_package(OpenCL REQUIRED)
+# OpenCL for fog processing pipeline (optional)
+find_package(OpenCL)
 
 # Platform-specific dependencies.
 if (WIN32)

@@ -905,7 +905,7 @@ bool atst(vec4 C)
 
 vec4 fog(vec4 c, float f)
 {
-	#if PS_FOG && !defined(USE_OPENCL_FOG)
+	#if PS_FOG
 		// Use PS2 hardware-accurate fog calculation: (Color * Fog + FogColor * (256 - Fog)) >> 8
 		// Convert f from [0,1] to [0,255] range and compute without GPU mix() rounding
 		float fog_factor = f * 255.0;
