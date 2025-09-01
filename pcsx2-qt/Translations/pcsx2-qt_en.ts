@@ -12779,7 +12779,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 <context>
     <name>GlobalVariableTreeView</name>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="855"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="923"/>
         <source>unknown function</source>
         <translation type="unfinished"></translation>
     </message>
@@ -17001,12 +17001,6 @@ Right click to clear binding</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="48"/>
-        <source>Custom.qss [Drop in PCSX2 Folder]</source>
-        <extracomment>&quot;Custom.qss&quot; must be kept as-is.</extracomment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../Settings/InterfaceSettingsWidget.cpp" line="121"/>
         <location filename="../Settings/InterfaceSettingsWidget.cpp" line="150"/>
         <location filename="../Settings/InterfaceSettingsWidget.cpp" line="153"/>
@@ -17093,6 +17087,12 @@ Right click to clear binding</source>
     <message>
         <location filename="../Settings/InterfaceSettingsWidget.cpp" line="18"/>
         <source>Fusion [Light/Dark]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="48"/>
+        <source>custom.qss [Drop in PCSX2 Folder]</source>
+        <extracomment>&quot;custom.qss&quot; must be kept as-is.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -21323,32 +21323,32 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeModel.cpp" line="272"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeModel.cpp" line="278"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeModel.cpp" line="274"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeModel.cpp" line="280"/>
         <source>Value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeModel.cpp" line="276"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeModel.cpp" line="282"/>
         <source>Location</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeModel.cpp" line="278"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeModel.cpp" line="284"/>
         <source>Size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeModel.cpp" line="280"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeModel.cpp" line="286"/>
         <source>Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeModel.cpp" line="282"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeModel.cpp" line="288"/>
         <source>Liveness</source>
         <translation type="unfinished"></translation>
     </message>
@@ -21356,12 +21356,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 <context>
     <name>SymbolTreeTypeDelegate</name>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeDelegates.cpp" line="464"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeDelegates.cpp" line="467"/>
         <source>Symbol no longer exists.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeDelegates.cpp" line="482"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeDelegates.cpp" line="485"/>
         <source>Cannot Change Type</source>
         <translation type="unfinished"></translation>
     </message>
@@ -21394,109 +21394,139 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="355"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="382"/>
         <source>(unknown source file)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="394"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="421"/>
         <source>(unknown section)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="439"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="466"/>
         <source>(unknown module)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="464"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="491"/>
         <source>Copy Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="469"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="496"/>
         <source>Copy Mangled Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="473"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="500"/>
         <source>Copy Location</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="478"/>
-        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="624"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="505"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="692"/>
         <source>Rename Symbol</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="498"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="525"/>
         <source>Show Size Column</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="510"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="537"/>
         <source>Group by Module</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="518"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="545"/>
         <source>Group by Section</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="526"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="553"/>
         <source>Group by Source File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="539"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="566"/>
         <source>Sort by if type is known</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="552"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="579"/>
         <source>Reset Children</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="556"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="583"/>
         <source>Change Type Temporarily</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="578"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="594"/>
+        <source>Binary</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="595"/>
+        <source>Octal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="596"/>
+        <source>Decimal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="597"/>
+        <source>Hexadecimal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="600"/>
+        <source>Integer Base</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="618"/>
+        <source>Show Leading Zeroes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="646"/>
         <source>Confirm Deletion</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="578"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="646"/>
         <source>Delete &apos;%1&apos;?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="625"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="693"/>
         <source>Name:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="667"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="735"/>
         <source>Change Type To</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="668"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="736"/>
         <source>Type:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="672"/>
-        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="683"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="740"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="751"/>
         <source>Cannot Change Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="672"/>
+        <location filename="../Debugger/SymbolTree/SymbolTreeViews.cpp" line="740"/>
         <source>That node cannot have a type.</source>
         <translation type="unfinished"></translation>
     </message>
