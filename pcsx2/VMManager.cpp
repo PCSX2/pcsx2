@@ -3211,7 +3211,7 @@ void VMManager::WarnAboutUnsafeSettings()
 			render_change_warn = true;
 
 			append(ICON_FA_CIRCLE_EXCLAMATION,
-				TRANSLATE_SV("VMManager", "Renderer is not set to Automatic. This may cause performance problems and graphical issues."));
+				TRANSLATE_SV("VMManager", "Graphics API is not set to Automatic. This may cause performance problems and graphical issues."));
 		}
 	}
 	if (EmuConfig.GS.TextureFiltering != BiFiltering::PS2)
