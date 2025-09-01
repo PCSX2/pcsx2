@@ -132,7 +132,7 @@
     </property>
     <widget class="QMenu" name="menuDebugSwitchRenderer">
      <property name="title">
-      <string>&amp;Switch Renderer</string>
+      <string>&amp;Switch Graphics API</string>
      </property>
      <property name="icon">
       <iconset theme="brush-line"/>
