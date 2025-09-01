@@ -2251,8 +2251,15 @@ bool VMManager::ChangeDisc(CDVD_SourceType source, std::string path)
 	{
 		if (source == CDVD_SourceType::NoDisc)
 		{
-			Host::AddIconOSDMessage("ChangeDisc", ICON_FA_COMPACT_DISC, TRANSLATE_SV("VMManager", "Disc removed."),
-				Host::OSD_INFO_DURATION);
+			if (old_path.empty())
+				Host::AddIconOSDMessage("ChangeDisc", ICON_FA_COMPACT_DISC, TRANSLATE_SV("VMManager", "No disc to remove."),
+					Host::OSD_INFO_DURATION);
+			else
+			{
+				Host::AddIconOSDMessage("ChangeDisc", ICON_FA_COMPACT_DISC, TRANSLATE_SV("VMManager", "Disc removed."),
+					Host::OSD_INFO_DURATION);
+				Console.WriteLnFmt("Removed disc: '{}'", old_path);
+			}
 		}
 		else
 		{
