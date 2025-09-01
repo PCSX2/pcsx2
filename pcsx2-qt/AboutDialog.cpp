@@ -39,7 +39,6 @@ AboutDialog::AboutDialog(QWidget* parent)
 	m_ui.setupUi(this);
 
 	setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
-	setFixedSize(geometry().width(), geometry().height());
 
 	m_ui.scmversion->setTextInteractionFlags(Qt::TextSelectableByMouse);
 	m_ui.scmversion->setText(QtHost::GetAppNameAndVersion());
