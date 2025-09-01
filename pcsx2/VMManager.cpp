@@ -3209,6 +3209,11 @@ void VMManager::WarnAboutUnsafeSettings()
 			append(ICON_FA_TV,
 				TRANSLATE_SV("VMManager", "Dithering is disabled. This will cause color banding in some games."));
 		}
+		if (EmuConfig.GS.IntegerScaling)
+		{
+			append(ICON_FA_TV,
+				TRANSLATE_SV("VMManager", "Integer scaling is enabled. This may shrink the image."));
+		}
 		static bool render_change_warn = false;
 		if (EmuConfig.GS.Renderer != GSRendererType::Auto && EmuConfig.GS.Renderer != GSRendererType::SW && !render_change_warn)
 		{
