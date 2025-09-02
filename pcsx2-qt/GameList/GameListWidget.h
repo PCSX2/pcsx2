@@ -49,8 +49,8 @@ public:
 	void refresh(bool invalidate_cache);
 	void cancelRefresh();
 	void reloadThemeSpecificImages();
-	void setCustomBackground();
-	void updateCustomBackgroundState();
+	void setCustomBackground(bool force = false);
+	void updateCustomBackgroundState(bool force_start = false);
 	void processBackgroundFrames();
 
 	bool isShowingGameList() const;
@@ -94,8 +94,6 @@ public Q_SLOTS:
 	void gridZoomOut();
 	void gridIntScale(int int_scale);
 	void refreshGridCovers();
-	void onViewSetGameListBackgroundTriggered();
-	void onViewClearGameListBackgroundTriggered();
 
 protected:
 	void showEvent(QShowEvent* event) override;
