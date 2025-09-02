@@ -3981,7 +3981,7 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 #ifdef __APPLE__
 		FSUI_NSTR("Metal"),
 #endif
-		FSUI_NSTR("Software"),
+		FSUI_NSTR("Software Renderer"),
 		FSUI_NSTR("Null"),
 	};
 	static constexpr const char* s_renderer_values[] = {
@@ -4128,8 +4128,8 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 
 	BeginMenuButtons();
 
-	MenuHeading(FSUI_CSTR("Renderer"));
-	DrawStringListSetting(bsi, FSUI_ICONSTR(ICON_FA_PAINTBRUSH, "Renderer"), FSUI_CSTR("Selects the API used to render the emulated GS."), "EmuCore/GS",
+	MenuHeading(FSUI_CSTR("Graphics API"));
+	DrawStringListSetting(bsi, FSUI_ICONSTR(ICON_FA_PAINTBRUSH, "Graphics API"), FSUI_CSTR("Selects the API used to render the emulated GS."), "EmuCore/GS",
 		"Renderer", "-1", s_renderer_names, s_renderer_values, std::size(s_renderer_names), true);
 
 	MenuHeading(FSUI_CSTR("Display"));
