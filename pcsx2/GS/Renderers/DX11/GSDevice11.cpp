@@ -2803,9 +2803,24 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config, GSTexture* draw_rt_clo
 #endif
 
 		const u32 indices_per_prim = config.indices_per_prim;
+		GSVector4i previous_drawarea(0, 0, 0, 0);
+		bool previous_draw_copy = false;
 
 		auto CopyAndBind = [&]() {
-			CopyRect(draw_rt, draw_rt_clone, config.drawarea, config.drawarea.left, config.drawarea.top);
+			// Optimization: Try to reuse a previous copy if prims/batch doesn't overlap,
+			// if the previous drawarea is larger than the current one means there's overlap so we must copy.
+			// For per prim copies using vertex to check for draw area would be even better.
+			if (!previous_draw_copy || 
+				(config.drawarea.left < previous_drawarea.right &&
+					config.drawarea.right > previous_drawarea.left &&
+					config.drawarea.top < previous_drawarea.bottom &&
+					config.drawarea.bottom > previous_drawarea.top))
+			{
+				CopyRect(draw_rt, draw_rt_clone, config.drawarea, config.drawarea.left, config.drawarea.top);
+				previous_drawarea = config.drawarea;
+				previous_draw_copy = true;
+			}
+
 			if (one_barrier || full_barrier)
 				PSSetShaderResource(2, draw_rt_clone);
 			if (config.tex && config.tex == config.rt)
