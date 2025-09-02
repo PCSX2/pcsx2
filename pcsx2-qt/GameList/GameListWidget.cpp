@@ -12,6 +12,7 @@
 
 #include "common/Assertions.h"
 #include "common/Console.h"
+#include "common/FileSystem.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
 
@@ -347,7 +348,7 @@ static void resizeAndPadImage(QImage* image, int expected_width, int expected_he
 	const float opacity = Host::GetBaseFloatSettingValue("UI", "GameListBackgroundOpacity");
 	if (painter.begin(&padded_image))
 	{
-		painter.setOpacity(opacity);
+		painter.setOpacity((static_cast<float>(opacity / 100.0f))); // Qt expect range from 0.0 to 1.0
 		painter.setCompositionMode(QPainter::CompositionMode_Source);
 		painter.drawImage(xoffs, yoffs, *image);
 		painter.end();
@@ -356,13 +357,10 @@ static void resizeAndPadImage(QImage* image, int expected_width, int expected_he
 	*image = std::move(padded_image);
 }
 
-void GameListWidget::setCustomBackground()
+void GameListWidget::setCustomBackground(bool force_refresh)
 {
 	std::string path = Host::GetBaseStringSettingValue("UI", "GameListBackgroundPath");
 	bool enabled = Host::GetBaseBoolSettingValue("UI", "GameListBackgroundEnabled");
-
-	if (!Path::IsAbsolute(path))
-		path = Path::Combine(EmuFolders::DataRoot, path);
 
 	// Cleanup old animation if it still exists on gamelist
 	if (m_background_movie != nullptr)
@@ -371,15 +369,19 @@ void GameListWidget::setCustomBackground()
 		m_background_movie = nullptr;
 	}
 
-	// Only try to create background if both 1. path and 2. setting are valid
-	if (!path.empty() && enabled)
+	if (!Path::IsAbsolute(path))
+		path = Path::Combine(EmuFolders::DataRoot, path);
+
+	// Only try to create background both if path are valid and custom background are enabled
+	if ((!path.empty() && FileSystem::FileExists(path.c_str())) && enabled)
 	{
 		QMovie* new_movie;
 		if (Path::GetExtension(path) == "png")
 			// Use apng plugin
-			new_movie = new QMovie(QString::fromStdString(path), "apng" , this);
+			new_movie = new QMovie(QString::fromStdString(path), "apng", this);
 		else
 			new_movie = new QMovie(QString::fromStdString(path), QByteArray(), this);
+
 		if (new_movie->isValid())
 			m_background_movie = new_movie;
 		else
@@ -399,16 +401,16 @@ void GameListWidget::setCustomBackground()
 
 	// Background is valid, connect the signals and start animation in gamelist
 	connect(m_background_movie, &QMovie::frameChanged, this, [this]() { processBackgroundFrames(); });
-	updateCustomBackgroundState();
+	updateCustomBackgroundState(force_refresh);
 
 	m_table_view->setAlternatingRowColors(false);
 }
 
-void GameListWidget::updateCustomBackgroundState()
+void GameListWidget::updateCustomBackgroundState(bool force_start)
 {
 	if (m_background_movie)
 	{
-		if ((isVisible() && isActiveWindow()) && qGuiApp->applicationState() == Qt::ApplicationActive)
+		if ((isVisible() && (isActiveWindow() || force_start)) && qGuiApp->applicationState() == Qt::ApplicationActive)
 			m_background_movie->start();
 		else
 			m_background_movie->stop();
@@ -614,33 +616,6 @@ void GameListWidget::refreshGridCovers()
 	m_model->refreshCovers();
 }
 
-void GameListWidget::onViewSetGameListBackgroundTriggered()
-{
-	const QString path = QDir::toNativeSeparators(
-		QFileDialog::getOpenFileName(this, tr("Select Background Image"), QString(), tr("Supported Image Types (*.bmp *.gif *.jpg *.jpeg *.png *.webp)")));
-	if (path.isEmpty())
-		return;
-
-	std::string relative_path = Path::MakeRelative(QDir::toNativeSeparators(path).toStdString(), EmuFolders::DataRoot);
-	Host::SetBaseBoolSettingValue("UI", "GameListBackgroundEnabled", true);
-	Host::SetBaseStringSettingValue("UI", "GameListBackgroundPath", relative_path.c_str());
-
-	if (!Host::ContainsBaseSettingValue("UI", "GameListBackgroundOpacity"))
-		Host::SetBaseFloatSettingValue("UI", "GameListBackgroundOpacity", 1.0f);
-
-	Host::CommitBaseSettingChanges();
-	setCustomBackground();
-}
-
-void GameListWidget::onViewClearGameListBackgroundTriggered()
-{
-	Host::SetBaseBoolSettingValue("UI", "GameListBackgroundEnabled", false);
-	Host::CommitBaseSettingChanges();
-	updateToolbar();
-	resizeTableViewColumnsToFit();
-	setCustomBackground();
-}
-
 void GameListWidget::showGameList()
 {
 	if (m_ui.stack->currentIndex() == 0 || m_model->rowCount() == 0)
@@ -731,7 +706,7 @@ void GameListWidget::resizeEvent(QResizeEvent* event)
 	QWidget::resizeEvent(event);
 	resizeTableViewColumnsToFit();
 	m_model->updateCacheSize(width(), height());
-	updateCustomBackgroundState();
+	setCustomBackground();
 }
 
 bool GameListWidget::event(QEvent* event)
