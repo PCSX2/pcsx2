@@ -547,7 +547,7 @@ fragment float4 ps_shadeboost(float4 p [[position]], DirectReadTextureIn<float> 
 	float3 satColor = mix(intensity, brtColor, sat);
 	float3 conColor = mix(AvgLumin, satColor, con);
 
-	float3 csb = pow(conColor, float3(1.0 / gam));
+	float3 csb = pow(max(conColor, 0.0), float3(1.0 / gam));
 
 	return float4(csb, 1);
 }
