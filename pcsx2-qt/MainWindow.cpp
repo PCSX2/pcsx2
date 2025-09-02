@@ -279,16 +279,6 @@ void MainWindow::setupAdditionalUi()
 		connect(action, &QAction::triggered, [scale]() { g_emu_thread->requestDisplaySize(static_cast<float>(scale)); });
 	}
 
-	for (u32 opacity = 2; opacity <= 10; opacity += 2)
-	{
-		QAction* action = m_ui.menuBackgroundOpacity->addAction(tr("%1% Opacity").arg(opacity * 10));
-		connect(action, &QAction::triggered, [this, opacity]() { 
-			Host::SetBaseFloatSettingValue("UI", "GameListBackgroundOpacity", (static_cast<float>(opacity / 10.0f)));
-			Host::CommitBaseSettingChanges();
-			m_game_list_widget->setCustomBackground();
-		 });
-	}
-
 	updateEmulationActions(false, false, false);
 	updateDisplayRelatedActions(false, false, false);
 
@@ -402,8 +392,6 @@ void MainWindow::connectSignals()
 			m_game_list_widget->gridZoomOut();
 	});
 	connect(m_ui.actionGridViewRefreshCovers, &QAction::triggered, m_game_list_widget, &GameListWidget::refreshGridCovers);
-	connect(m_ui.actionSetGameListBackground, &QAction::triggered, m_game_list_widget, &GameListWidget::onViewSetGameListBackgroundTriggered);
-	connect(m_ui.actionClearGameListBackground, &QAction::triggered, m_game_list_widget, &GameListWidget::onViewClearGameListBackgroundTriggered);
 	connect(m_game_list_widget, &GameListWidget::layoutChange, this, [this]() {
 		QSignalBlocker sb(m_ui.actionGridViewShowTitles);
 		m_ui.actionGridViewShowTitles->setChecked(m_game_list_widget->getShowGridCoverTitles());
@@ -2709,6 +2697,7 @@ SettingsWindow* MainWindow::getSettingsWindow()
 		m_settings_window = new SettingsWindow();
 		connect(m_settings_window->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::themeChanged, this, &MainWindow::onThemeChanged);
 		connect(m_settings_window->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::languageChanged, this, &MainWindow::onLanguageChanged);
+		connect(m_settings_window->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::backgroundChanged, m_game_list_widget, [this] {m_game_list_widget->setCustomBackground(true);});
 		connect(m_settings_window->getGameListSettingsWidget(), &GameListSettingsWidget::preferEnglishGameListChanged, this, [] {
 			g_main_window->m_game_list_widget->refreshGridCovers();
 		});
