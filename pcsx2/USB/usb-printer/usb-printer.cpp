@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
+#include "IconsPromptFont.h"
 #include "USB/qemu-usb/qusb.h"
 #include "USB/qemu-usb/USBinternal.h"
 #include "USB/usb-printer/usb-printer.h"
@@ -329,6 +330,11 @@ namespace usb_printer
 	const char* PrinterDevice::TypeName() const
 	{
 		return "printer";
+	}
+
+	const char* PrinterDevice::IconName() const
+	{
+		return ICON_PF_PRINTER;
 	}
 
 	bool PrinterDevice::Freeze(USBDevice* dev, StateWrapper& sw) const

@@ -26,6 +26,11 @@ namespace usb_pad
 		return "TrainController";
 	}
 
+	const char* TrainDevice::IconName() const
+	{
+		return ICON_FA_TRAIN;
+	}
+
 	std::span<const char*> TrainDevice::SubTypes() const
 	{
 		static const char* subtypes[] = {
