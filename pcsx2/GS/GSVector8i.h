@@ -798,11 +798,6 @@ public:
 	{
 		// a * f << shift
 
-		if (shift == 0)
-		{
-			return mul16hrs(f);
-		}
-
 		return sll16<shift + 1>().mul16hs(f);
 	}
 
