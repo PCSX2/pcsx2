@@ -118,12 +118,17 @@
     <widget class="QComboBox" name="blending">
      <item>
       <property name="text">
+       <string>Automatic (Default)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
        <string>Minimum</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string>Basic (Recommended)</string>
+       <string>Basic</string>
       </property>
      </item>
      <item>
