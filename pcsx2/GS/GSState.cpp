@@ -4349,10 +4349,13 @@ __forceinline void GSState::HandleAutoFlush()
 		const float K = static_cast<float>(m_context->TEX1.K) / 16;
 		const float powL = static_cast<float>(1 << m_context->TEX1.L);
 
+		GSVector4i xy_coord;
 		GSVector4i tex_coord;
 		float vert_lod = K;
 		
 		// Prepare the currently processed vertex.
+		xy_coord.x = (static_cast<int>(m_v.XYZ.X) - static_cast<int>(m_context->XYOFFSET.OFX)) >> 4;
+		xy_coord.y = (static_cast<int>(m_v.XYZ.Y) - static_cast<int>(m_context->XYOFFSET.OFY)) >> 4;
 		if (PRIM->FST)
 		{
 			tex_coord.x = (m_v.U >> 4) >> tex_layer;
@@ -4370,6 +4373,7 @@ __forceinline void GSState::HandleAutoFlush()
 				vert_lod = -std::log2(std::abs(m_v.RGBAQ.Q)) * powL + K;
 		}
 
+		GSVector4i xy_rect = xy_coord.xyxy();
 		GSVector4i tex_rect = tex_coord.xyxy();
 		GSVector2i lod_range = GSVector2i(static_cast<int>(std::floor(vert_lod)), static_cast<int>(std::ceil(vert_lod)));
 
@@ -4380,6 +4384,8 @@ __forceinline void GSState::HandleAutoFlush()
 		{
 			const GSVertex* v = &m_vertex.buff[buff[i]];
 
+			xy_coord.x = (static_cast<int>(v->XYZ.X) - static_cast<int>(m_context->XYOFFSET.OFX)) >> 4;
+			xy_coord.y = (static_cast<int>(v->XYZ.Y) - static_cast<int>(m_context->XYOFFSET.OFY)) >> 4;
 			if (PRIM->FST)
 			{
 				tex_coord.x = (v->U >> 4) >> tex_layer;
@@ -4397,6 +4403,10 @@ __forceinline void GSState::HandleAutoFlush()
 					vert_lod = -std::log2(std::abs(v->RGBAQ.Q)) * powL + K;
 			}
 
+			xy_rect.x = std::min(xy_rect.x, xy_coord.x);
+			xy_rect.z = std::max(xy_rect.z, xy_coord.x);
+			xy_rect.y = std::min(xy_rect.y, xy_coord.y);
+			xy_rect.w = std::max(xy_rect.w, xy_coord.y);
 			tex_rect.x = std::min(tex_rect.x, tex_coord.x);
 			tex_rect.z = std::max(tex_rect.z, tex_coord.x);
 			tex_rect.y = std::min(tex_rect.y, tex_coord.y);
@@ -4410,10 +4420,18 @@ __forceinline void GSState::HandleAutoFlush()
 			return;
 
 		// If the draw was 1 line thick, make it larger as rects are exclusive of ends.
+		if (xy_rect.x == xy_rect.z)
+			xy_rect += GSVector4i::cxpr(0, 0, 1, 0);
+		if (xy_rect.y == xy_rect.w)
+			xy_rect += GSVector4i::cxpr(0, 0, 0, 1);
 		if (tex_rect.x == tex_rect.z)
 			tex_rect += GSVector4i::cxpr(0, 0, 1, 0);
 		if (tex_rect.y == tex_rect.w)
 			tex_rect += GSVector4i::cxpr(0, 0, 0, 1);
+
+		// If the current prim fails the scissor test then we don't need to flush.
+		if (xy_rect.rintersect(m_context->scissor.in).rempty())
+			return;
 
 		// Get the last texture position from the last draw.
 		const GSVertex* v = &m_vertex.buff[m_index.buff[m_index.tail - 1]];
