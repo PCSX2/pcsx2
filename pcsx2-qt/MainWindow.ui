@@ -160,14 +160,6 @@
       <iconset theme="window-2-line"/>
      </property>
     </widget>
-    <widget class="QMenu" name="menuBackgroundOpacity">
-     <property name="title">
-      <string>Background O&amp;pacity</string>
-     </property>
-     <property name="icon">
-      <iconset theme="lightbulb-line"/>
-     </property>
-    </widget>
     <addaction name="actionViewToolbar"/>
     <addaction name="actionViewLockToolbar"/>
     <addaction name="actionViewStatusBar"/>
@@ -184,10 +176,6 @@
     <addaction name="actionGridViewZoomIn"/>
     <addaction name="actionGridViewZoomOut"/>
     <addaction name="actionGridViewRefreshCovers"/>
-    <addaction name="separator"/>
-    <addaction name="actionSetGameListBackground"/>
-    <addaction name="actionClearGameListBackground"/>
-    <addaction name="menuBackgroundOpacity"/>
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">

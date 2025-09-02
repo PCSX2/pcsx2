@@ -4,10 +4,14 @@
 #include "InterfaceSettingsWidget.h"
 #include "AutoUpdaterDialog.h"
 #include "Common.h"
+#include "Host.h"
 #include "MainWindow.h"
 #include "SettingWidgetBinder.h"
 #include "SettingsWindow.h"
 #include "QtHost.h"
+
+static const char* IMAGE_FILE_FILTER = QT_TRANSLATE_NOOP(GameListWidget, 
+	"Supported Image Types (*.bmp *.gif *.jpg *.jpeg *.png *.webp)");
 
 const char* InterfaceSettingsWidget::THEME_NAMES[] = {
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Native"),
@@ -105,6 +109,11 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* settings_dialog
 		QtHost::GetDefaultThemeName(), "InterfaceSettingsWidget");
 	connect(m_ui.theme, QOverload<int>::of(&QComboBox::currentIndexChanged), [this]() { emit themeChanged(); });
 
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.backgroundOpacity, "UI", "GameListBackgroundOpacity", 100);
+	connect(m_ui.backgroundBrowse, &QPushButton::clicked, [this]() { onSetGameListBackgroundTriggered(); });
+	connect(m_ui.backgroundReset, &QPushButton::clicked, [this]() { onClearGameListBackgroundTriggered(); });
+	connect(m_ui.backgroundOpacity, &QSpinBox::valueChanged, [this]() { emit backgroundChanged(); });
+
 	populateLanguages();
 	SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.language, "UI", "Language", QtHost::GetDefaultLanguage());
 	connect(m_ui.language, QOverload<int>::of(&QComboBox::currentIndexChanged), [this]() { emit languageChanged(); });
@@ -139,8 +148,8 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* settings_dialog
 	if (dialog()->isPerGameSettings())
 	{
 		// language/theme doesn't make sense to have in per-game settings
-		m_ui.verticalLayout->removeWidget(m_ui.preferencesGroup);
-		m_ui.preferencesGroup->hide();
+		m_ui.verticalLayout->removeWidget(m_ui.appearancesGroup);
+		m_ui.appearancesGroup->hide();
 
 		// start paused doesn't make sense, because settings are applied after ELF load.
 		m_ui.pauseOnStart->setEnabled(false);
@@ -185,6 +194,10 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* settings_dialog
 	dialog()->registerWidgetHelp(
 		m_ui.startFullscreenUI, tr("Start Big Picture Mode"), tr("Unchecked"),
 		tr("Automatically starts Big Picture Mode instead of the regular Qt interface when PCSX2 launches."));
+	dialog()->registerWidgetHelp(
+		m_ui.backgroundBrowse, tr("Game List Background"), tr("Any"),
+		tr("Enable an animated / static background on the game list (where you launch your games).<br>"
+		"This background is only visible in the library and will be hidden once a game is launched. It will also be paused when it's not in focus."));
 
 	onRenderToSeparateWindowChanged();
 }
@@ -200,4 +213,30 @@ void InterfaceSettingsWidget::populateLanguages()
 {
 	for (const std::pair<QString, QString>& it : QtHost::GetAvailableLanguageList())
 		m_ui.language->addItem(it.first, it.second);
+}
+
+void InterfaceSettingsWidget::onSetGameListBackgroundTriggered()
+{
+	const QString path = QDir::toNativeSeparators(
+		QFileDialog::getOpenFileName(this, tr("Select Background Image"), QString(), IMAGE_FILE_FILTER));
+	if (path.isEmpty())
+		return;
+
+	std::string relative_path = Path::MakeRelative(QDir::toNativeSeparators(path).toStdString(), EmuFolders::DataRoot);
+	Host::SetBaseBoolSettingValue("UI", "GameListBackgroundEnabled", true);
+	Host::SetBaseStringSettingValue("UI", "GameListBackgroundPath", relative_path.c_str());
+
+	if (!Host::ContainsBaseSettingValue("UI", "GameListBackgroundOpacity"))
+		Host::SetBaseFloatSettingValue("UI", "GameListBackgroundOpacity", 100.0f);
+
+	Host::CommitBaseSettingChanges();
+	emit backgroundChanged();
+}
+
+void InterfaceSettingsWidget::onClearGameListBackgroundTriggered()
+{
+	Host::SetBaseBoolSettingValue("UI", "GameListBackgroundEnabled", false);
+	Host::RemoveBaseSettingValue("UI", "GameListBackgroundPath");
+	Host::CommitBaseSettingChanges();
+	emit backgroundChanged();
 }
