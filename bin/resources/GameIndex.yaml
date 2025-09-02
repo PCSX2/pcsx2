@@ -21758,6 +21758,8 @@ SLES-52954:
 SLES-52955:
   name: "Deadly Strike"
   region: "PAL-E"
+  roundModes:
+    eeDivRoundMode: 3 # Fixes grid like pattern.
 SLES-52956:
   name: "Action Girlz Racing"
   region: "PAL-E"
@@ -38928,6 +38930,8 @@ SLPM-62459:
   name-en: "Simple 2000 Series Vol. 16 - Sengoku vs. Gendai"
   region: "NTSC-J"
   compat: 5
+  roundModes:
+    eeDivRoundMode: 3 # Fixes grid like pattern.
 SLPM-62460:
   name: "SuperLite2000 シミュレーション 箱庭鉄道 ～ブルートレイン・特急編～"
   name-sort: "すーぱーらいと 2000 しみゅれーしょん はこにわてつどう ぶるーとれいんとっきゅうへん"
