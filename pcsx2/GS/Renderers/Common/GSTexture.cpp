@@ -14,8 +14,6 @@
 
 GSTexture::GSTexture() = default;
 
-GSTexture::~GSTexture() = default;
-
 bool GSTexture::Save(const std::string& fn)
 {
 	// Depth textures need special treatment - we have a stencil component.
