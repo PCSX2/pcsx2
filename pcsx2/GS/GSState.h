@@ -172,6 +172,7 @@ protected:
 	void GrowVertexBuffer();
 	bool IsAutoFlushDraw(u32 prim, int& tex_layer);
 	template<u32 prim> void HandleAutoFlush();
+	bool EarlyDetectShuffle(u32 prim);
 	void CheckCLUTValidity(u32 prim);
 
 	template <u32 prim, bool auto_flush> void VertexKick(u32 skip);
