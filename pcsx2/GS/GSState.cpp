@@ -3994,6 +3994,187 @@ void GSState::CalculatePrimitiveCoversWithoutGaps()
 	m_primitive_covers_without_gaps = SpriteDrawWithoutGaps() ? (m_primitive_covers_without_gaps == GapsFound ? SpriteNoGaps : m_primitive_covers_without_gaps) : GapsFound;
 }
 
+__forceinline bool GSState::EarlyDetectShuffle(u32 prim)
+{
+	// We only handle sprites here and need one sprite in the queue.
+	// Texture mapping must be enabled for a shuffle.
+	if (m_index.tail < 2 || prim != GS_SPRITE || !PRIM->TME)
+		return false;
+
+	const GSVertex* RESTRICT vertex = &m_vertex.buff[0];
+	const u16* RESTRICT index = &m_index.buff[0];
+	const GSVector4i& o = m_xyof;
+
+	if (GSLocalMemory::m_psm[m_context->FRAME.PSM].bpp == 16 && GSLocalMemory::m_psm[m_context->TEX0.PSM].bpp == 16)
+	{
+		// Handle shuffles where the source and destination are both 16 bits.
+
+		const int x0 = static_cast<int>(vertex[index[0]].XYZ.X) - static_cast<int>(m_context->XYOFFSET.OFX);
+		const int x1 = static_cast<int>(vertex[index[0]].XYZ.X) - static_cast<int>(m_context->XYOFFSET.OFX);
+		const int xn = static_cast<int>(m_v.XYZ.X) - static_cast<int>(static_cast<int>(m_context->XYOFFSET.OFX));
+
+		int u0, un;
+		if (PRIM->FST)
+		{
+			u0 = static_cast<int>(vertex[index[0]].U);
+			un = static_cast<int>(m_v.U);
+		}
+		else
+		{
+			const float q0 = vertex[index[0]].RGBAQ.Q == 0.0f ? FLT_MIN : vertex[index[0]].RGBAQ.Q;
+			u0 = static_cast<int>((1 << m_context->TEX0.TW) * (vertex[index[0]].ST.S / q0) * 16.0f);
+			const float qn = m_v.RGBAQ.Q == 0.0f ? FLT_MIN : m_v.RGBAQ.Q;
+			un = static_cast<int>((1 << m_context->TEX0.TW) * (m_v.ST.S / qn) * 16.0f);
+		}
+		
+		// Check that the X-U offsets are the same for the first and current vertex and
+		// that the width of the first sprite is at most 16 pixels.
+		return std::abs(u0 - x0) == std::abs(un - xn) && std::abs(x1 - x0) <= 0x100;
+	}
+
+	if (GSLocalMemory::m_psm[m_context->FRAME.PSM].bpp == 16 && GSLocalMemory::m_psm[m_context->TEX0.PSM].bpp == 32)
+	{
+		// Handle shuffles where the source is 32/24 bits and destination is 16 bits.
+		// Example: The Godfather.
+
+		// These shuffles usually mask R and G (lower 10 bits in 16 bit format) so that they
+		// write only to B and A (top 6 bits in 16 bit format).
+		if (GSUtil::GetChannelMask(m_context->FRAME.PSM, m_context->FRAME.FBMSK) != 0xC)
+			return false;
+
+		const int x0 = static_cast<int>(vertex[index[0]].XYZ.X) - static_cast<int>(m_context->XYOFFSET.OFX);
+		const int y0 = static_cast<int>(vertex[index[0]].XYZ.Y) - static_cast<int>(m_context->XYOFFSET.OFY);
+		const int x1 = static_cast<int>(vertex[index[1]].XYZ.X) - static_cast<int>(m_context->XYOFFSET.OFX);
+		const int y1 = static_cast<int>(vertex[index[1]].XYZ.Y) - static_cast<int>(m_context->XYOFFSET.OFY);
+
+		int u0, v0, u1, v1;
+
+		if (PRIM->FST)
+		{
+			u0 = static_cast<int>(vertex[index[0]].U);
+			v0 = static_cast<int>(vertex[index[0]].V);
+			u1 = static_cast<int>(vertex[index[1]].U);
+			v1 = static_cast<int>(vertex[index[1]].V);
+		}
+		else
+		{
+			const float q0 = vertex[index[0]].RGBAQ.Q == 0.0f ? FLT_MIN : vertex[index[0]].RGBAQ.Q;
+			u0 = static_cast<int>((1 << m_context->TEX0.TW) * (vertex[index[0]].ST.S / q0) * 16.0f);
+			v0 = static_cast<int>((1 << m_context->TEX0.TH) * (vertex[index[0]].ST.T / q0) * 16.0f);
+			const float q1 = vertex[index[1]].RGBAQ.Q == 0.0f ? FLT_MIN : vertex[index[1]].RGBAQ.Q;
+			u1 = static_cast<int>((1 << m_context->TEX0.TW) * (vertex[index[1]].ST.S / q0) * 16.0f);
+			v1 = static_cast<int>((1 << m_context->TEX0.TH) * (vertex[index[1]].ST.T / q0) * 16.0f);
+		}
+
+		// Check that the source and destination sprite are exactly 8 pixel squares.
+		// We do not use the current vertex in this check because it doesn't have a
+		// clean correspondence with the first shuffle for 32->16 bit shuffles
+		// (the coordinates manually swizzle between 32 and 16 bits).
+		const bool const_spacing =
+			(std::abs(x1 - x0) == 0x80) && (std::abs(y1 - y0) == 0x80) &&
+			(std::abs(u1 - u0) == 0x80) && (std::abs(v1 - v0) == 0x80);
+
+		// The purpose of these shuffles is to write the alpha channel,
+		// so the coordinates should write to upper 16 bits regions only.
+		const bool write_ba = (std::min(x0, x1) & 0x80) != 0;
+
+		return const_spacing && write_ba;
+	}
+
+	if (GSLocalMemory::m_psm[m_context->FRAME.PSM].bpp == 32 && GSLocalMemory::m_psm[m_context->TEX0.PSM].bpp == 16)
+	{
+		// Handle shuffles where the source is 16 bits and destination is 32/16 bits.
+		// Example: DT Racer.
+
+		// These shuffles usually mask RGB (lower 24 bits in 32 bit format) so that they
+		// write only to A.
+		if (GSUtil::GetChannelMask(m_context->FRAME.PSM, m_context->FRAME.FBMSK) != 8)
+			return false;
+
+		const int x0 = static_cast<int>(vertex[index[0]].XYZ.X) - static_cast<int>(m_context->XYOFFSET.OFX);
+		const int y0 = static_cast<int>(vertex[index[0]].XYZ.Y) - static_cast<int>(m_context->XYOFFSET.OFY);
+		const int x1 = static_cast<int>(vertex[index[1]].XYZ.X) - static_cast<int>(m_context->XYOFFSET.OFX);
+		const int y1 = static_cast<int>(vertex[index[1]].XYZ.Y) - static_cast<int>(m_context->XYOFFSET.OFY);
+
+		int u0, v0, u1, v1;
+
+		if (PRIM->FST)
+		{
+			u0 = static_cast<int>(vertex[index[0]].U);
+			v0 = static_cast<int>(vertex[index[0]].V);
+			u1 = static_cast<int>(vertex[index[1]].U);
+			v1 = static_cast<int>(vertex[index[1]].V);
+		}
+		else
+		{
+			const float q0 = vertex[index[0]].RGBAQ.Q == 0.0f ? FLT_MIN : vertex[index[0]].RGBAQ.Q;
+			u0 = static_cast<int>((1 << m_context->TEX0.TW) * (vertex[index[0]].ST.S / q0) * 16.0f);
+			v0 = static_cast<int>((1 << m_context->TEX0.TH) * (vertex[index[0]].ST.T / q0) * 16.0f);
+			const float q1 = vertex[index[1]].RGBAQ.Q == 0.0f ? FLT_MIN : vertex[index[1]].RGBAQ.Q;
+			u1 = static_cast<int>((1 << m_context->TEX0.TW) * (vertex[index[1]].ST.S / q0) * 16.0f);
+			v1 = static_cast<int>((1 << m_context->TEX0.TH) * (vertex[index[1]].ST.T / q0) * 16.0f);
+		}
+
+		// Check that the source and destination sprite are exactly 8 pixel squares.
+		// We do not use the current vertex in this check because it doesn't have a
+		// clean correspondence with the first shuffle for 32->16 bit shuffles
+		// (the coordinates manually swizzle between 32 and 16 bits).
+		const bool const_spacing =
+			(std::abs(x1 - x0) == 0x80) && (std::abs(y1 - y0) == 0x80) &&
+			(std::abs(u1 - u0) == 0x80) && (std::abs(v1 - v0) == 0x80);
+
+		// The purpose of these shuffles is to read the green channel,
+		// so the coordinates should read the lower 16 bits only.
+		const bool read_rg = (std::min(u0, u1) & 0x80) == 0;
+
+		return const_spacing && read_rg;
+	}
+
+	if (m_context->TEX0.PSM == PSMT8)
+	{
+		// Handle channel shuffles.
+
+		// Heuristics to detect channel shuffle based on first sprite and clamp mode.
+		const auto CheckWidthOrClampMode = [this]() -> bool {
+			const GSVertex* v = &m_vertex.buff[0];
+
+			const int draw_width = std::abs(v[1].XYZ.X - v[0].XYZ.X) >> 4;
+			const int draw_height = std::abs(v[1].XYZ.Y - v[0].XYZ.Y) >> 4;
+
+			// Checks if using region clamp or region repeat for U or V.
+			// Might used used when the sprites are 16 pixels wide.
+			const bool clamp_region = ((m_context->CLAMP.WMS | m_context->CLAMP.WMT) & 0x2) != 0;
+
+			// Channel shuffles usually draw 8 x 2 sprites.
+			const bool draw_match = (draw_height == 2) || (draw_width == 8);
+
+			return draw_match || clamp_region;
+		};
+
+		const bool single_page_x = temp_draw_rect.width() <= 64;
+		const bool single_page_y = temp_draw_rect.height() <= 64;
+		if (single_page_x && single_page_y)
+		{
+			return CheckWidthOrClampMode();
+		}
+		else if (!single_page_x)
+		{
+			// Not a single page in width.
+			return false;
+		}
+
+		// WRC 4 does channel shuffles in vertical strips. So check for page alignment.
+		// Texture TBW should also be twice the framebuffer FBW, because the page is twice as wide.
+		if (m_context->TEX0.TBW == (m_context->FRAME.FBW * 2) &&
+			GSLocalMemory::IsPageAligned(m_context->FRAME.PSM, temp_draw_rect))
+		{
+			return CheckWidthOrClampMode();
+		}
+	}
+
+	return false;
+}
+
 __forceinline bool GSState::IsAutoFlushDraw(u32 prim, int& tex_layer)
 {
 	if (!PRIM->TME || (GSConfig.UserHacks_AutoFlush == GSHWAutoFlushLevel::SpritesOnly && prim != GS_SPRITE))
@@ -4004,15 +4185,8 @@ __forceinline bool GSState::IsAutoFlushDraw(u32 prim, int& tex_layer)
 		return false;
 
 	// Try to detect shuffles, because these will not autoflush, they by design clash.
-	if (GSLocalMemory::m_psm[m_context->FRAME.PSM].bpp == 16 && GSLocalMemory::m_psm[m_context->TEX0.PSM].bpp == 16)
-	{
-		// Pretty confident here...
-		GSVertex* buffer = &m_vertex.buff[0];
-		const bool const_spacing = std::abs(buffer[m_index.buff[0]].U - buffer[m_index.buff[0]].XYZ.X) == std::abs(m_v.U - m_v.XYZ.X) && std::abs(buffer[m_index.buff[1]].XYZ.X - buffer[m_index.buff[0]].XYZ.X) <= 256; // Lequal to 16 pixels apart.
-
-		if (const_spacing)
-			return false;
-	}
+	if (EarlyDetectShuffle(prim))
+		return false;
 
 	// Check if one of the texture being used is the same as the FRAME or ZBUF.
 	// In the case of possible mip-mapping, we need to check all possible layers.
