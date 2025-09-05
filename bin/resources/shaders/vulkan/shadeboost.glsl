@@ -61,7 +61,7 @@ vec4 ContrastSaturationBrightness(vec4 color)
     vec3 conColor = mix(AvgLumin, satColor, con);
 
     vec3 csb = conColor;
-    csb = pow(csb, vec3(1.0 / gam));
+    csb = pow(max(csb, 0.0), vec3(1.0 / gam));
     color.rgb = csb;
     return color;
 }
