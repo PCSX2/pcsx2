@@ -258,62 +258,62 @@ void ps_convert_rgb5a1_8i()
 	uvec2 pos = uvec2(gl_FragCoord.xy);
 
 	// Collapse separate R G B A areas into their base pixel
-	uvec2 column = (pos & ~uvec2(0u, 3u)) / uvec2(1,2);
+	uvec2 column = (pos & ~uvec2(0u, 3u)) / uvec2(1u, 2u);
 	uvec2 subcolumn = (pos & uvec2(0u, 1u));
-	column.x -= (column.x / 128) * 64;
-	column.y += (column.y / 32) * 32;
+	column.x -= (column.x / 128u) * 64u;
+	column.y += (column.y / 32u) * 32u;
 	
 	// Deal with swizzling differences
-	if ((PSM & 0x8) != 0) // PSMCT16S
+	if ((PSM & 0x8u) != 0u) // PSMCT16S
 	{
-		if ((pos.x & 32) != 0)
+		if ((pos.x & 32u) != 0u)
 		{
-			column.y += 32; // 4 columns high times 4 to get bottom 4 blocks
-			column.x &= ~32;
+			column.y += 32u; // 4 columns high times 4 to get bottom 4 blocks
+			column.x &= ~32u;
 		}
 		
-		if ((pos.x & 64) != 0)
+		if ((pos.x & 64u) != 0u)
 		{
-			column.x -= 32;
+			column.x -= 32u;
 		}
 		
-		if (((pos.x & 16) != 0) != ((pos.y & 16) != 0))
+		if (((pos.x & 16u) != 0u) != ((pos.y & 16u) != 0u))
 		{
-			column.x ^= 16; 
-			column.y ^= 8;
+			column.x ^= 16u; 
+			column.y ^= 8u;
 		}
 		
-		if ((PSM & 0x30) != 0) // PSMZ16S - Untested but hopefully ok if anything uses it.
+		if ((PSM & 0x30u) != 0u) // PSMZ16S - Untested but hopefully ok if anything uses it.
 		{
-			column.x ^= 32;
-			column.y ^= 16;
+			column.x ^= 32u;
+			column.y ^= 16u;
 		}
 	}
 	else // PSMCT16
 	{
-		if ((pos.y & 32) != 0)
+		if ((pos.y & 32u) != 0u)
 		{
-			column.y -= 16;
-			column.x += 32;
+			column.y -= 16u;
+			column.x += 32u;
 		}
 		
-		if ((pos.x & 96) != 0)
+		if ((pos.x & 96u) != 0u)
 		{
-			uint multi = (pos.x & 96) / 32;
-			column.y += 16 * multi; // 4 columns high times 4 to get bottom 4 blocks
-			column.x -= (pos.x & 96);
+			uint multi = (pos.x & 96u) / 32u;
+			column.y += 16u * multi; // 4 columns high times 4 to get bottom 4 blocks
+			column.x -= (pos.x & 96u);
 		}
 		
-		if (((pos.x & 16) != 0) != ((pos.y & 16) != 0))
+		if (((pos.x & 16u) != 0u) != ((pos.y & 16u) != 0u))
 		{
-			column.x ^= 16; 
-			column.y ^= 8;
+			column.x ^= 16u; 
+			column.y ^= 8u;
 		}
 		
-		if ((PSM & 0x30) != 0) // PSMZ16 - Untested but hopefully ok if anything uses it.
+		if ((PSM & 0x30u) != 0u) // PSMZ16 - Untested but hopefully ok if anything uses it.
 		{
-			column.x ^= 32;
-			column.y ^= 32;
+			column.x ^= 32u;
+			column.y ^= 32u;
 		}
 	}
 	uvec2 coord = column | subcolumn;
@@ -342,18 +342,16 @@ void ps_convert_rgb5a1_8i()
 	{
 		uint red = (denorm_c.r >> 3) & 0x1Fu;
 		uint green = (denorm_c.g >> 3) & 0x1Fu;
-		float sel0 = float(((green << 5) | red) & 0xFF) / 255.0f;
 		
-		SV_Target0 = vec4(sel0);
+		SV_Target0 = vec4(float(((green << 5) | red) & 0xFFu) / 255.0f);
 	}
 	else
 	{
 		uint green = (denorm_c.g >> 3) & 0x1Fu;
 		uint blue = (denorm_c.b >> 3) & 0x1Fu;
 		uint alpha = denorm_c.a & 0x80u;
-		float sel0 = float((alpha | (blue << 2) | (green >> 3)) & 0xFF) / 255.0f;
 
-		SV_Target0 = vec4(sel0);
+		SV_Target0 = vec4(float((alpha | (blue << 2) | (green >> 3)) & 0xFFu) / 255.0f);
 	}
 }
 #endif
