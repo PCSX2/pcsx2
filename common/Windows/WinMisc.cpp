@@ -170,7 +170,7 @@ bool Common::PlaySoundAsync(const char* path)
 	return PlaySoundW(wpath.c_str(), NULL, SND_ASYNC | SND_NODEFAULT);
 }
 
-void Common::CreateShortcut(const std::string name, const std::string game_path, const std::string passed_cli_args, bool is_desktop)
+void Common::CreateShortcut(const std::string name, const std::string game_path, const std::vector<std::string> passed_cli_args, bool is_desktop)
 {
 	if (name.empty())
 	{
@@ -219,7 +219,7 @@ void Common::CreateShortcut(const std::string name, const std::string game_path,
 		return;
 	}
 
-	const std::string final_args = fmt::format(" {} -- \"{}\"", StringUtil::StripWhitespace(passed_cli_args), game_path);
+	const std::string final_args = fmt::format(" {} -- \"{}\"", passed_cli_args, game_path);
 	Console.WriteLnFmt("Creating a shortcut '{}' with arguments '{}'", link_file, final_args);
 	const auto str_error = [](HRESULT hr) -> std::string {
 		_com_error err(hr);

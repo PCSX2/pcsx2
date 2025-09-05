@@ -17,6 +17,7 @@
 
 #include <dbus/dbus.h>
 #include <spawn.h>
+#include <string>
 #include <sys/sysinfo.h>
 #include <sys/time.h>
 #include <sys/wait.h>
@@ -368,7 +369,7 @@ bool Common::PlaySoundAsync(const char* path)
 #endif
 }
 
-void Common::CreateShortcut(const std::string name, const std::string game_path, const std::string passed_cli_args, bool is_desktop)
+void Common::CreateShortcut(const std::string name, const std::string game_path, std::vector<std::string> passed_cli_args, bool is_desktop)
 {
 	if (name.empty())
 	{
@@ -433,19 +434,15 @@ void Common::CreateShortcut(const std::string name, const std::string game_path,
 		return;
 	}
 
-	const std::string final_args = fmt::format(" {} -- '{}'", StringUtil::StripWhitespace(passed_cli_args), clean_path);
-	std::string clean_args;
-
-	for (size_t i = 0; i < final_args.size(); i++)
-	{
-		if (final_args[i] == '\n')
-			clean_args.push_back(' ');
-		else
-			clean_args.push_back(final_args[i]);
-	}
-
 	// Shortcut content
-	Console.WriteLnFmt("Creating a shortcut for '{}' with arguments '{}'", name, passed_cli_args);
+	bool lossless = true;
+	for (std::string& arg : passed_cli_args)
+		lossless &= Path::EscapeCmdLine(&arg);
+
+	std::string final_args = StringUtil::JoinString(passed_cli_args.begin(), passed_cli_args.end(), " ");
+
+	Console.WriteLnFmt("Creating a shortcut for '{}' with arguments '{}'", name, final_args);
+
 	std::string file_content =
 		"[Desktop Entry]\n"
 		"Encoding=UTF-8\n"
@@ -453,7 +450,7 @@ void Common::CreateShortcut(const std::string name, const std::string game_path,
 		"Type=Application\n"
 		"Terminal=false\n"
 		"StartupWMClass=PCSX2\n"
-		"Exec=\'" + executable_path + "'" + clean_args + "\n"
+		"Exec=\'" + executable_path + "' " + final_args + " -- " + game_path + "\n"
 		"Name=" + name + "\n"
 		"Icon=PCSX2\n"
 		"Categories=Game;Emulator;\n";

@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
+#include "common/StringUtil.h"
 #include "ShortcutCreationDialog.h"
 #include "QtUtils.h"
 #include "QtHost.h"
@@ -65,40 +66,49 @@ ShortcutCreationDialog::ShortcutCreationDialog(QWidget* parent, const QString& t
 	m_ui.customArgsInstruction->setOpenExternalLinks(true);
 
 	connect(m_ui.dialogButtons, &QDialogButtonBox::accepted, this, [&]() {
-		std::string args;
+		std::vector<std::string> args;
 
 		if (m_ui.portableModeToggle->isChecked())
-			args += "-portable ";
+			args.push_back("-portable");
 
 		if (m_ui.overrideBootELFToggle->isChecked() && !m_ui.overrideBootELFPath->text().isEmpty())
-			args += fmt::format("-elf \"{}\" ", m_ui.overrideBootELFPath->text().toStdString());
+		{
+			args.push_back("-elf");
+			args.push_back(m_ui.overrideBootELFPath->text().toStdString());
+		}
 
 		if (m_ui.gameArgsToggle->isChecked() && !m_ui.gameArgs->text().isEmpty())
-			args += fmt::format("-gameargs \"{}\" ", m_ui.gameArgs->text().toStdString());
+		{
+			args.push_back("-gameargs");
+			args.push_back(m_ui.gameArgs->text().toStdString());
+		}
 
 		if (m_ui.bootOptionToggle->isChecked() && m_ui.bootOptionDropdown->currentIndex() == 0)
-			args += "-fastboot ";
+			args.push_back("-fastboot");
 		else if (m_ui.bootOptionToggle->isChecked() && m_ui.bootOptionDropdown->currentIndex() == 1)
-			args += "-slowboot ";
+			args.push_back("-slowboot");
 
 		if (m_ui.loadStateIndexToggle->isChecked())
-			args += fmt::format("-state {} ", m_ui.loadStateIndex->value());
+		{
+			args.push_back("-state");
+			args.push_back(StringUtil::ToChars(m_ui.loadStateIndex->value()));
+		}
 		else if (m_ui.loadStateIndexToggle->isChecked() && !m_ui.loadStateFilePath->text().isEmpty())
-			args += fmt::format("-statefile \"{}\" ", m_ui.loadStateFilePath->text().toStdString());
+		{
+			args.push_back("-statefile");
+			args.push_back(m_ui.loadStateFilePath->text().toStdString());
+		}
 
 		if (m_ui.fullscreenMode->isChecked() && m_ui.fullscreenModeDropdown->currentIndex() == 0)
-			args += "-fullscreen ";
+			args.push_back("-fullscreen");
 		else if (m_ui.fullscreenMode->isChecked() && m_ui.fullscreenModeDropdown->currentIndex() == 1)
-			args += "-nofullscreen ";
+			args.push_back("-nofullscreen");
 
 		if (m_ui.bigPictureModeToggle->isChecked())
-			args += "-bigpicture ";
+			args.push_back("-bigpicture");
 
-		if (m_ui.customArgsInput->text().isEmpty())
-			args += m_ui.customArgsInput->text().toStdString() + " ";
-
-		if (!args.empty() && args.back() == ' ')
-			args.pop_back();
+		if (!m_ui.customArgsInput->text().isEmpty())
+			args.push_back(m_ui.customArgsInput->text().toStdString());
 
 		if (m_ui.shortcutDesktop->isChecked())
 			m_desktop = true;
