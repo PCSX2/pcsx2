@@ -85,7 +85,7 @@ static inline bool FileSystemCharacterIsSane(char32_t c, bool strip_slashes)
 	if (c == '*')
 		return false;
 
-		// macos doesn't allow colons, apparently
+	// macos doesn't allow colons, apparently
 #ifdef __APPLE__
 	if (c == U':')
 		return false;
@@ -282,6 +282,66 @@ bool Path::IsAbsolute(const std::string_view path)
 #else
 	return (path.length() >= 1 && path[0] == '/');
 #endif
+}
+
+bool Path::IsCharacterSafeForShell(char c)
+{
+	if (c >= '0' && c <= '9')
+		return true;
+	if (c >= 'a' && c <= 'z')
+		return true;
+	if (c >= 'A' && c <= 'Z')
+		return true;
+	if (c == '-' || c == '/')
+		return true;
+	return false;
+}
+
+bool Path::EscapeCmdLine(std::string* arg)
+{
+	const char* carg = arg->c_str();
+	const char* cend = carg + arg->size();
+	const char* RESERVED_CHARS = " \t\n\\\"'\\\\><~|&;$*?#()"
+								 "\x01\x02\x03\x04\x05\x06\x07\x08\x0b\x0c\x0d\x0e\x0f"
+								 "\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f\x7f";
+	const char* next = carg + std::strcspn(carg, RESERVED_CHARS);
+
+	if (next == cend)
+		return true; // No escaping needed, don't modify
+
+	bool lossless = true;
+	std::string temp = "\"";
+	const char* NOT_VALID_IN_QUOTE = "$\"\\\n"
+									 "\x01\x02\x03\x04\x05\x06\x07\x08\x0b\x0c\x0d\x0e\x0f"
+									 "\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f\x7f";
+
+	while (true)
+	{
+		next = carg + std::strcspn(carg, NOT_VALID_IN_QUOTE);
+		temp.append(carg, next);
+		carg = next;
+
+		if (carg == cend)
+			break;
+
+		switch (*carg)
+		{
+			case '$':
+			case '"':
+			case '\\':
+				temp.push_back('\\');
+				temp.push_back(*carg);
+				break;
+			default:
+				temp.push_back(' ');
+				lossless = false;
+				break;
+		}
+		++carg;
+	}
+	*arg = std::move(temp);
+	arg->push_back('"');
+	return lossless;
 }
 
 std::string Path::RealPath(const std::string_view path)
@@ -2558,6 +2618,19 @@ std::string FileSystem::GetProgramPath()
 #else
 	return {};
 #endif
+}
+
+std::string FileSystem::GetPackagePath()
+{
+	// Check if we are running inside appimage. If so, return the path to the appimage instead.
+	if (const char* appimage_path = getenv("APPIMAGE"))
+		return std::string(appimage_path);
+
+	// TODO: Can probably be expanded to look for Flatpak too
+
+	// Otherwise, find the executable using `GetProgramPath()`
+
+	return GetProgramPath();
 }
 
 std::string FileSystem::GetWorkingDirectory()
