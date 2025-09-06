@@ -774,6 +774,7 @@ struct Pcsx2Config
 					SaveDepth : 1,
 					SaveAlpha : 1,
 					SaveInfo : 1,
+					SaveTransferImages : 1,
 					DumpReplaceableTextures : 1,
 					DumpReplaceableMipmaps : 1,
 					DumpTexturesWithFMVActive : 1,

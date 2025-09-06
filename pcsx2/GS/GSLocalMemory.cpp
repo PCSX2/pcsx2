@@ -651,7 +651,7 @@ void GSLocalMemory::ReadTexture(const GSOffset& off, const GSVector4i& r, u8* ds
 
 //
 
-void GSLocalMemory::SaveBMP(const std::string& fn, u32 bp, u32 bw, u32 psm, int w, int h)
+void GSLocalMemory::SaveBMP(const std::string& fn, u32 bp, u32 bw, u32 psm, int w, int h, int x, int y)
 {
 	int pitch = w * 4;
 	int size = pitch * h;
@@ -671,7 +671,7 @@ void GSLocalMemory::SaveBMP(const std::string& fn, u32 bp, u32 bw, u32 psm, int 
 	{
 		for (int i = 0; i < w; i++)
 		{
-			((u32*)p)[i] = (this->*rp)(i, j, TEX0.TBP0, TEX0.TBW);
+			((u32*)p)[i] = (this->*rp)(x + i, y + j, TEX0.TBP0, TEX0.TBW);
 		}
 	}
 
