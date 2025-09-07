@@ -15,6 +15,7 @@
 #include "pcsx2/Config.h"
 #include "VMManager.h"
 
+#include "common/Console.h"
 #include "common/FileSystem.h"
 #include "common/Image.h"
 #include "common/Path.h"
@@ -52,6 +53,8 @@ static Common::Timer::Value s_last_gpu_reset_time;
 
 // Screen alignment
 static GSDisplayAlignment s_display_alignment = GSDisplayAlignment::Center;
+
+static GSVector2i s_last_capture_resolution{0, 0};
 
 GSRenderer::GSRenderer()
 	: m_shader_time_start(Common::Timer::GetCurrentValue())
@@ -606,6 +609,22 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 	}
 
 	const bool blank_frame = !Merge(field);
+	if (GSCapture::IsCapturingVideo())
+	{
+		GSVector2i current_res = GetInternalResolution();
+		if (current_res != s_last_capture_resolution)
+		{
+			std::string next_filename = GSCapture::GetNextCaptureFileName();
+			Console.Warning(fmt::format("Resolution changed from {}x{} to {}x{}, splitting capture to {}",
+				s_last_capture_resolution.x, s_last_capture_resolution.y,
+				current_res.x, current_res.y,
+				next_filename));
+
+			EndCapture();
+			BeginCapture(std::move(next_filename), current_res);
+			s_last_capture_resolution = current_res;
+		}
+	}
 
 	m_last_draw_n = s_n;
 	m_last_transfer_n = s_transfer_n;
@@ -776,34 +795,19 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 	if (GSCapture::IsCapturingVideo())
 	{
 		const GSVector2i size = GSCapture::GetSize();
-		if (GSTexture* current = g_gs_device->GetCurrent())
+		GSTexture* current = g_gs_device->GetCurrent();
+		if (!current || current->GetSize() != size)
 		{
-			// TODO: Maybe avoid this copy in the future? We can use swscale to fix it up on the dumping thread..
-			if (current->GetSize() != size)
-			{
-				GSTexture* temp = g_gs_device->CreateRenderTarget(size.x, size.y, GSTexture::Format::Color, false);
-				if (temp)
-				{
-					g_gs_device->StretchRect(current, temp, GSVector4(0, 0, size.x, size.y));
-					GSCapture::DeliverVideoFrame(temp);
-					g_gs_device->Recycle(temp);
-				}
-			}
-			else
-			{
-				GSCapture::DeliverVideoFrame(current);
-			}
-		}
-		else
-		{
-			// Bit janky, but unless we want to make variable frame rate files, we need to deliver *a* frame to
-			// the video file, so just grab a blank RT.
 			GSTexture* temp = g_gs_device->CreateRenderTarget(size.x, size.y, GSTexture::Format::Color, true);
 			if (temp)
 			{
 				GSCapture::DeliverVideoFrame(temp);
 				g_gs_device->Recycle(temp);
 			}
+		}
+		else
+		{
+			GSCapture::DeliverVideoFrame(current);
 		}
 	}
 }
@@ -969,6 +973,7 @@ bool GSRenderer::BeginCapture(std::string filename, const GSVector2i& size)
 													  GetInternalResolution() :
 													  GSVector2i(GSConfig.VideoCaptureWidth, GSConfig.VideoCaptureHeight));
 
+	s_last_capture_resolution = (capture_resolution.x == 0 || capture_resolution.y == 0) ? GSVector2i{640, 480} : capture_resolution;
 	return GSCapture::BeginCapture(GetTvRefreshRate(), capture_resolution,
 		GetCurrentAspectRatioFloat(GetVideoMode() == GSVideoMode::SDTV_480P),
 		std::move(filename));
