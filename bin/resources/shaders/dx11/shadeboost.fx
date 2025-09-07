@@ -37,7 +37,7 @@ float4 ContrastSaturationBrightness(float4 color) // Ported to HLSL
 	float3 conColor = lerp(AvgLumin, satColor, con);
 	
 	float3 csb = conColor;
-	csb = pow(csb, 1.0 / gam);
+	csb = exp2(log2(csb) * (1.0 / gam));
 	color.rgb = csb;
 	return color;
 }
