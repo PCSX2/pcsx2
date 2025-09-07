@@ -569,9 +569,17 @@ void GSRenderer::EndPresentFrame()
 
 void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 {
-	if (GSConfig.SaveInfo && GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
+	if (GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
 	{
-		DumpGSPrivRegs(*m_regs, GetDrawDumpPath("%05d_f%05lld_vsync_gs_reg.txt", s_n, g_perfmon.GetFrame()));
+		if (GSConfig.SaveInfo)
+		{
+			DumpGSPrivRegs(*m_regs, GetDrawDumpPath("%05d_f%05lld_vsync_gs_reg.txt", s_n, g_perfmon.GetFrame()));
+
+			DumpDrawInfo(false, false, true);
+		}
+
+		if (GSConfig.SaveTransferImages)
+			DumpTransferImages();
 	}
 
 	const int fb_sprite_blits = g_perfmon.GetDisplayFramebufferSpriteBlits();
