@@ -16095,266 +16095,278 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="116"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="121"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="126"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="132"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="136"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="141"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="150"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="158"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="166"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="183"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="188"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="193"/>
         <location filename="../../pcsx2/Hotkeys.cpp" line="198"/>
         <location filename="../../pcsx2/Hotkeys.cpp" line="203"/>
         <location filename="../../pcsx2/Hotkeys.cpp" line="208"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="212"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="217"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="222"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="227"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="215"/>
         <source>System</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="116"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="121"/>
         <source>Open Pause Menu</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="122"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="127"/>
         <source>Open Achievements List</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="127"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="132"/>
         <source>Open Leaderboards List</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="132"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="137"/>
         <source>Toggle Pause</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="136"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="116"/>
         <source>Toggle Fullscreen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="141"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="146"/>
         <source>Toggle Frame Limit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="151"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="156"/>
         <source>Toggle Turbo / Fast Forward</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="158"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="180"/>
         <source>Toggle Slow Motion</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="167"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="164"/>
         <source>Turbo / Fast Forward (Hold)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="183"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="188"/>
         <source>Increase Target Speed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="188"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="193"/>
         <source>Decrease Target Speed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="193"/>
-        <source>Increase Volume</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="198"/>
-        <source>Decrease Volume</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="203"/>
-        <source>Toggle Mute</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="208"/>
-        <source>Frame Advance</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="212"/>
-        <source>Shut Down Virtual Machine</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="217"/>
-        <source>Reset Virtual Machine</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="223"/>
-        <source>Toggle Input Recording Mode</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="228"/>
-        <source>Swap Memory Cards</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="234"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="239"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="244"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="249"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="254"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="259"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="267"/>
-        <source>Save States</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="235"/>
-        <source>Select Previous Save Slot</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="240"/>
-        <source>Select Next Save Slot</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="245"/>
-        <source>Save State To Selected Slot</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="250"/>
-        <source>Load State From Selected Slot</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="255"/>
-        <source>Load Backup State From Selected Slot</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="260"/>
-        <source>Save State and Select Next Slot</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="268"/>
-        <source>Select Next Slot and Save State</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="286"/>
-        <source>Save State To Slot 1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="287"/>
-        <source>Load State From Slot 1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="288"/>
-        <source>Save State To Slot 2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="289"/>
-        <source>Load State From Slot 2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="290"/>
-        <source>Save State To Slot 3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="291"/>
-        <source>Load State From Slot 3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="292"/>
-        <source>Save State To Slot 4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="293"/>
-        <source>Load State From Slot 4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../pcsx2/Hotkeys.cpp" line="294"/>
-        <source>Save State To Slot 5</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="295"/>
-        <source>Load State From Slot 5</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="296"/>
-        <source>Save State To Slot 6</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="297"/>
-        <source>Load State From Slot 6</source>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="298"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="303"/>
+        <source>Audio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/Hotkeys.cpp" line="298"/>
-        <source>Save State To Slot 7</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="299"/>
-        <source>Load State From Slot 7</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="300"/>
-        <source>Save State To Slot 8</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="301"/>
-        <source>Load State From Slot 8</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="302"/>
-        <source>Save State To Slot 9</source>
+        <source>Increase Volume</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/Hotkeys.cpp" line="303"/>
+        <source>Decrease Volume</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="294"/>
+        <source>Toggle Mute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="142"/>
+        <source>Frame Advance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="198"/>
+        <source>Shut Down Virtual Machine</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="203"/>
+        <source>Reset Virtual Machine</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="216"/>
+        <source>Toggle Input Recording Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="209"/>
+        <source>Swap Memory Cards</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="116"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="121"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="126"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="131"/>
+        <source>Navigation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="137"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="142"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="146"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="155"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="163"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="180"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="188"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="193"/>
+        <source>Speed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="220"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="225"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="230"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="235"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="240"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="245"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="253"/>
+        <source>Save States</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="221"/>
+        <source>Select Previous Save Slot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="226"/>
+        <source>Select Next Save Slot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="231"/>
+        <source>Save State To Selected Slot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="236"/>
+        <source>Load State From Selected Slot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="241"/>
+        <source>Load Backup State From Selected Slot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="246"/>
+        <source>Save State and Select Next Slot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="254"/>
+        <source>Select Next Slot and Save State</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="272"/>
+        <source>Save State To Slot 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="273"/>
+        <source>Load State From Slot 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="274"/>
+        <source>Save State To Slot 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="275"/>
+        <source>Load State From Slot 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="276"/>
+        <source>Save State To Slot 3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="277"/>
+        <source>Load State From Slot 3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="278"/>
+        <source>Save State To Slot 4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="279"/>
+        <source>Load State From Slot 4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="280"/>
+        <source>Save State To Slot 5</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="281"/>
+        <source>Load State From Slot 5</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="282"/>
+        <source>Save State To Slot 6</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="283"/>
+        <source>Load State From Slot 6</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="284"/>
+        <source>Save State To Slot 7</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="285"/>
+        <source>Load State From Slot 7</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="286"/>
+        <source>Save State To Slot 8</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="287"/>
+        <source>Load State From Slot 8</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="288"/>
+        <source>Save State To Slot 9</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="289"/>
         <source>Load State From Slot 9</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="304"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="290"/>
         <source>Save State To Slot 10</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="305"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="291"/>
         <source>Load State From Slot 10</source>
         <translation type="unfinished"></translation>
     </message>
@@ -24022,74 +24034,74 @@ Please consult the FAQs and Guides for further instructions.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2254"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2259"/>
         <source>Disc removed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2260"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2267"/>
         <source>Disc changed to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2269"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2276"/>
         <source>Failed to open new disc image &apos;{}&apos;. Reverting to old image.
 Error was: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2278"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2285"/>
         <source>Failed to switch back to old disc image. Removing disc.
 Error was: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3081"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3088"/>
         <source>Cheats have been disabled due to achievements hardcore mode.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3134"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3141"/>
         <source>Fast CDVD is enabled, this may break games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3138"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3145"/>
         <source>Cycle rate/skip is not at default, this may crash or make games run too slow.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3148"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3155"/>
         <source>Upscale multiplier is below native, this will break rendering.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3188"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3195"/>
         <source>Mipmapping is disabled. This may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3193"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3200"/>
         <source>Debug device is enabled. This will massively reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3202"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3209"/>
         <source>Renderer is not set to Automatic. This may cause performance problems and graphical issues.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3208"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3215"/>
         <source>Texture filtering is not set to Bilinear (PS2). This will break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3671"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3678"/>
         <source>No Game Running</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3153"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3160"/>
         <source>Trilinear filtering is not set to automatic. This may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -24132,132 +24144,137 @@ Error was: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3158"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2255"/>
+        <source>No disc to remove.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/VMManager.cpp" line="3165"/>
         <source>Blending Accuracy is below Basic, this may break effects in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3163"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3170"/>
         <source>Hardware Download Mode is not set to Accurate, this may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3214"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3221"/>
         <source>EE FPU Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3220"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3227"/>
         <source>EE FPU Clamp Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3225"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3232"/>
         <source>VU0 Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3230"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3237"/>
         <source>VU1 Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3237"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3244"/>
         <source>VU Clamp Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3242"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3249"/>
         <source>128MB RAM is enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3247"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3254"/>
         <source>Game Fixes are not enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3252"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3259"/>
         <source>Compatibility Patches are not enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3256"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3263"/>
         <source>Frame rate for NTSC is not default. This may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3258"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3265"/>
         <source>Frame rate for PAL is not default. This may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3277"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3284"/>
         <source>EE Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3282"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3289"/>
         <source>VU0 Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3287"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3294"/>
         <source>VU1 Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3292"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3299"/>
         <source>IOP Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3297"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3304"/>
         <source>EE Cache is enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3302"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3309"/>
         <source>EE Wait Loop Detection is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3307"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3314"/>
         <source>INTC Spin Detection is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3310"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3317"/>
         <source>Fastmem is not enabled, this will reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3314"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3321"/>
         <source>Instant VU1 is disabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3319"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3326"/>
         <source>mVU Flag Hack is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3168"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3175"/>
         <source>GPU Palette Conversion is enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3173"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3180"/>
         <source>Texture Preloading is not Full, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3178"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3185"/>
         <source>Estimate texture region is enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3183"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3190"/>
         <source>Texture dumping is enabled, this will continually dump textures to disk.</source>
         <translation type="unfinished"></translation>
     </message>
