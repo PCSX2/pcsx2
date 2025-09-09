@@ -202,6 +202,14 @@ void Host::ReportErrorAsync(const std::string_view title, const std::string_view
 		ERROR_LOG("ReportErrorAsync: {}", message);
 }
 
+void Host::ReportWarningAsync(const std::string_view title, const std::string_view message)
+{
+	if (!title.empty() && !message.empty())
+		WARNING_LOG("ReportWarningAsync: {}: {}", title, message);
+	else if (!message.empty())
+		WARNING_LOG("ReportWarningAsync: {}", message);
+}
+
 bool Host::ConfirmMessage(const std::string_view title, const std::string_view message)
 {
 	if (!title.empty() && !message.empty())
