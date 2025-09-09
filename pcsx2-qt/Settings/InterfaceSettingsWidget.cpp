@@ -110,9 +110,11 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* settings_dialog
 	connect(m_ui.theme, QOverload<int>::of(&QComboBox::currentIndexChanged), [this]() { emit themeChanged(); });
 
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.backgroundOpacity, "UI", "GameListBackgroundOpacity", 100);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.backgroundFill, "UI", "GameListBackgroundFill", false);
 	connect(m_ui.backgroundBrowse, &QPushButton::clicked, [this]() { onSetGameListBackgroundTriggered(); });
 	connect(m_ui.backgroundReset, &QPushButton::clicked, [this]() { onClearGameListBackgroundTriggered(); });
 	connect(m_ui.backgroundOpacity, &QSpinBox::valueChanged, [this]() { emit backgroundChanged(); });
+	connect(m_ui.backgroundFill, &QCheckBox::checkStateChanged, [this]() {emit backgroundChanged(); });
 
 	populateLanguages();
 	SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.language, "UI", "Language", QtHost::GetDefaultLanguage());
@@ -195,9 +197,18 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* settings_dialog
 		m_ui.startFullscreenUI, tr("Start Big Picture Mode"), tr("Unchecked"),
 		tr("Automatically starts Big Picture Mode instead of the regular Qt interface when PCSX2 launches."));
 	dialog()->registerWidgetHelp(
-		m_ui.backgroundBrowse, tr("Game List Background"), tr("Any"),
+		m_ui.backgroundBrowse, tr("Game List Background"), tr("None"),
 		tr("Enable an animated / static background on the game list (where you launch your games).<br>"
 		"This background is only visible in the library and will be hidden once a game is launched. It will also be paused when it's not in focus."));
+	dialog()->registerWidgetHelp(
+		m_ui.backgroundReset, tr("Disable/Reset Game List Background"), tr("None"),
+		tr("Disable and reset the currently applied game list background."));
+	dialog()->registerWidgetHelp(
+		m_ui.backgroundOpacity, tr("Game List Background Opacity"), tr("100%"),
+		tr("Sets the opacity of the custom background."));
+	dialog()->registerWidgetHelp(
+		m_ui.backgroundFill, tr("Fill Image"), tr("Unchecked"),
+		tr("Expand the image to fill all available background area."));
 
 	onRenderToSeparateWindowChanged();
 }
@@ -219,6 +230,7 @@ void InterfaceSettingsWidget::onSetGameListBackgroundTriggered()
 {
 	const QString path = QDir::toNativeSeparators(
 		QFileDialog::getOpenFileName(this, tr("Select Background Image"), QString(), IMAGE_FILE_FILTER));
+
 	if (path.isEmpty())
 		return;
 
