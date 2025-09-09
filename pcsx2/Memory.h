@@ -22,11 +22,13 @@ namespace HostMemoryMap
 	// Main
 	//////////////////////////////////////////////////////////////////////////
 
-	// PS2 main memory, SPR, and ROMs (approximately 138.5MB, but we round up to 139MB for simplicity).
+	// PS2 main memory, SPR, and ROMs (approximately 142MB, but we round up to 144MB for simplicity).
+	// Needs to be big enough to fit the EEVM_MemoryAllocMess struct
 	static constexpr u32 EEmemOffset = 0x00000000;
-	static constexpr u32 EEmemSize = 0x8B00000;
+	static constexpr u32 EEmemSize = 0x9000000;
 
 	// IOP main memory (2MB + 64K + 256b, rounded up to 3MB for simplicity).
+	// Needs to be big enough to fit the IopVM_MemoryAllocMess struct
 	static constexpr u32 IOPmemOffset = EEmemOffset + EEmemSize;
 	static constexpr u32 IOPmemSize = 0x300000;
 

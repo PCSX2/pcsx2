@@ -29,6 +29,7 @@ typedef u32 mem32_t;
 typedef u64 mem64_t;
 typedef u128 mem128_t;
 
+// Needs to fit within EEmemSize of Memory.h
 struct EEVM_MemoryAllocMess
 {
 	u8 Main[Ps2MemSize::MainRam];         // Main memory (hard-wired to 32MB)
@@ -47,6 +48,7 @@ struct EEVM_MemoryAllocMess
 	u8 ZeroWrite[_1mb];
 };
 
+// Needs to fit within IOPmemSize of Memory.h
 struct IopVM_MemoryAllocMess
 {
 	u8 Main[Ps2MemSize::IopRam]; // Main memory (hard-wired to 2MB)
