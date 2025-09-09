@@ -117,6 +117,7 @@ public Q_SLOTS:
 	void cancelGameListRefresh();
 	void reportInfo(const QString& title, const QString& message);
 	void reportError(const QString& title, const QString& message);
+	void reportWarning(const QString& title, const QString& message);
 	bool confirmMessage(const QString& title, const QString& message);
 	void onStatusMessage(const QString& message);
 
