@@ -51,7 +51,7 @@ public:
 	void reloadThemeSpecificImages();
 	void setCustomBackground(bool force = false);
 	void updateCustomBackgroundState(bool force_start = false);
-	void processBackgroundFrames();
+	void processBackgroundFrames(bool fill_area);
 
 	bool isShowingGameList() const;
 	bool isShowingGameGrid() const;

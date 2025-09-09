@@ -145,10 +145,30 @@
       <string>Appearance</string>
      </property>
      <layout class="QGridLayout" name="gridLayout">
+      <item row="1" column="1">
+       <widget class="QComboBox" name="theme"/>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="languageLabel">
+        <property name="text">
+         <string>Language:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="language"/>
+      </item>
       <item row="1" column="0">
        <widget class="QLabel" name="themeLabel">
         <property name="text">
          <string>Theme:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="backgroundLabel">
+        <property name="text">
+         <string>Game List Background:</string>
         </property>
        </widget>
       </item>
@@ -218,27 +238,14 @@
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QCheckBox" name="backgroundFill">
+          <property name="text">
+           <string>Fill Image</string>
+          </property>
+         </widget>
+        </item>
        </layout>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="backgroundLabel">
-        <property name="text">
-         <string>Game List Background:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QComboBox" name="language"/>
-      </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="languageLabel">
-        <property name="text">
-         <string>Language:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QComboBox" name="theme"/>
       </item>
      </layout>
     </widget>
