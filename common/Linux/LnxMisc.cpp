@@ -439,6 +439,9 @@ void Common::CreateShortcut(const std::string name, const std::string game_path,
 	for (std::string& arg : passed_cli_args)
 		lossless &= Path::EscapeCmdLine(&arg);
 
+	if (!lossless)
+		Host::ReportWarningAsync(TRANSLATE_SV("LnxMisc", "Warning"), TRANSLATE_SV("LnxMisc", "File path contains invalid character(s). The resulting shortcut may not work."));
+
 	std::string final_args = StringUtil::JoinString(passed_cli_args.begin(), passed_cli_args.end(), " ");
 
 	Console.WriteLnFmt("Creating a shortcut for '{}' with arguments '{}'", name, final_args);
