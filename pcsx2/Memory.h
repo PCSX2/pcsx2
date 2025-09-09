@@ -4,6 +4,8 @@
 #pragma once
 
 #include "vtlb.h"
+#include "MemoryTypes.h"
+#include "common/BitUtils.h"
 
 // This is a table of default virtual map addresses for ps2vm components.  These locations
 // are provided and used to assist in debugging and possibly hacking; as it makes it possible
@@ -22,15 +24,15 @@ namespace HostMemoryMap
 	// Main
 	//////////////////////////////////////////////////////////////////////////
 
-	// PS2 main memory, SPR, and ROMs (approximately 142MB, but we round up to 144MB for simplicity).
+	// PS2 main memory, SPR, and ROMs (approximately 143MB).
 	// Needs to be big enough to fit the EEVM_MemoryAllocMess struct
 	static constexpr u32 EEmemOffset = 0x00000000;
-	static constexpr u32 EEmemSize = 0x9000000;
+	static constexpr u32 EEmemSize = Common::AlignUp(sizeof(EEVM_MemoryAllocMess), _1mb);
 
-	// IOP main memory (2MB + 64K + 256b, rounded up to 3MB for simplicity).
+	// IOP main memory (approximately 3MB).
 	// Needs to be big enough to fit the IopVM_MemoryAllocMess struct
 	static constexpr u32 IOPmemOffset = EEmemOffset + EEmemSize;
-	static constexpr u32 IOPmemSize = 0x300000;
+	static constexpr u32 IOPmemSize = Common::AlignUp(sizeof(IopVM_MemoryAllocMess), _1mb);
 
 	// VU0 and VU1 memory (40KB, rounded up to 1MB for simplicity).
 	static constexpr u32 VUmemOffset = IOPmemOffset + IOPmemSize;
