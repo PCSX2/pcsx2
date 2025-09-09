@@ -1238,6 +1238,11 @@ void MainWindow::reportError(const QString& title, const QString& message)
 	QMessageBox::critical(this, title, message);
 }
 
+void MainWindow::reportWarning(const QString& title, const QString& message)
+{
+	QMessageBox::warning(this, title, message);
+}
+
 bool MainWindow::confirmMessage(const QString& title, const QString& message)
 {
 	VMLock lock(pauseAndLockVM());
