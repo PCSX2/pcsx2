@@ -30,6 +30,7 @@ enum class ShaderConvert
 	FLOAT32_TO_16_BITS,
 	FLOAT32_TO_32_BITS,
 	FLOAT32_TO_RGBA8,
+	FLOAT32_TO_RGBA8_2,
 	FLOAT32_TO_RGB8,
 	FLOAT16_TO_RGB5A1,
 	RGBA8_TO_FLOAT32,
@@ -42,6 +43,7 @@ enum class ShaderConvert
 	RGB5A1_TO_FLOAT16_BILN,
 	FLOAT32_TO_FLOAT24,
 	DEPTH_COPY,
+	DEPTH_COPY_2,
 	DOWNSAMPLE_COPY,
 	RGBA_TO_8I,
 	RGB5A1_TO_8I,
@@ -69,6 +71,33 @@ enum class ShaderInterlace
 	Count
 };
 
+// Indicates that the shader takes two sources: the normal depth texture and the backup texture to access the saved upper 8 bits.
+static inline bool NeedsBackup32BitDepth(ShaderConvert shader)
+{
+	switch (shader)
+	{
+		case ShaderConvert::DEPTH_COPY_2:
+		case ShaderConvert::FLOAT32_TO_RGBA8_2:
+			return true;
+		default:
+			return false;
+	}
+}
+
+// Get the equivalent shader that allows restoring the upper 8 bits of depth with the backup texture.
+static inline ShaderConvert GetShaderWithBackup32BitDepth(ShaderConvert shader)
+{
+	switch (shader)
+	{
+		case ShaderConvert::DEPTH_COPY:
+			return ShaderConvert::DEPTH_COPY_2;
+		case ShaderConvert::FLOAT32_TO_RGBA8:
+			return ShaderConvert::FLOAT32_TO_RGBA8_2;
+		default:
+			return shader;
+	}
+}
+
 static inline bool HasDepthOutput(ShaderConvert shader)
 {
 	switch (shader)
@@ -83,6 +112,7 @@ static inline bool HasDepthOutput(ShaderConvert shader)
 		case ShaderConvert::RGB5A1_TO_FLOAT16_BILN:
 		case ShaderConvert::FLOAT32_TO_FLOAT24:
 		case ShaderConvert::DEPTH_COPY:
+		case ShaderConvert::DEPTH_COPY_2:
 			return true;
 		default:
 			return false;
