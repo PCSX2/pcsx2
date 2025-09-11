@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <cfloat>
 #include <fstream>
+#include <sstream>
 #include <iomanip>
 #include <bit>
 
@@ -433,6 +434,34 @@ const char* GSState::GetFlushReasonString(GSFlushReason reason)
 	}
 }
 
+void GSState::DumpDrawInfo(bool dump_regs, bool dump_verts, bool dump_transfers)
+{
+	std::string s;
+
+	// Dump Register state
+	if (dump_regs)
+	{
+		s = GetDrawDumpPath("%05d_context.txt", s_n);
+
+		m_draw_env->Dump(s);
+		m_context->Dump(s);
+	}
+
+	// Dump vertices
+	if (dump_verts)
+	{
+		s = GetDrawDumpPath("%05d_vertex.txt", s_n);
+		DumpVertices(s);
+	}
+
+	// Dump transfers
+	if (dump_transfers)
+	{
+		s = GetDrawDumpPath("%05d_transfers.txt", s_n);
+		DumpTransferList(s);
+	}
+}
+
 void GSState::DumpVertices(const std::string& filename)
 {
 	std::ofstream file(filename);
@@ -440,108 +469,370 @@ void GSState::DumpVertices(const std::string& filename)
 	if (!file.is_open())
 		return;
 
-	file << "FLUSH REASON: " << GetFlushReasonString(m_state_flush_reason);
+	file.imbue(std::locale::classic()); // Disable integer separators.
 
-	if (m_state_flush_reason != GSFlushReason::CONTEXTCHANGE && m_dirty_gs_regs)
-		file << " AND POSSIBLE CONTEXT CHANGE";
+	constexpr const char* DEL = ", ";
+	constexpr const char* INDENT = "  ";
+	constexpr const char* LIST_ITEM = "- ";
+	constexpr const char* OPEN_MAP = "{";
+	constexpr const char* CLOSE_MAP = "}";
+	
+	constexpr int TRACE_INDEX_WIDTH = 10;
+	constexpr int XYUV_WIDTH = 9;
+	constexpr int Z_WIDTH = 10;
+	constexpr int RGBA_WIDTH = 3;
+	constexpr int SCI_FLOAT_WIDTH = 15;
+	constexpr int STQ_BITS_WIDTH = 10;
 
-	file << std::endl << std::endl;
+	auto WriteVertexIndex = [&file](int index) {
+		file << std::left << std::dec << " # " << index;
+	};
 
-	const u32 count = m_index.tail;
-	GSVertex* buffer = &m_vertex.buff[0];
+	auto WriteTraceIndex = [&file](const char* index) {
+		file << std::left << std::dec << std::setw(TRACE_INDEX_WIDTH) << std::setfill(' ') << index;
+	};
 
-	const char* DEL = ", ";
+	auto WriteXYZ_vec = [&file](const GSVector4& v) {
+		file << std::dec << std::right << std::fixed;
+		file << "X: " << std::setprecision(4) << std::setw(XYUV_WIDTH) << std::setfill(' ') << v.x << DEL;
+		file << "Y: " << std::setprecision(4) << std::setw(XYUV_WIDTH) << std::setfill(' ') << v.y << DEL;
+		file << "Z: " << std::setw(Z_WIDTH) << std::setfill(' ') << static_cast<u32>(v.z);
+	};
 
-	file << "VERTEX COORDS (XYZ)" << std::endl;
-	file << std::fixed << std::setprecision(4);
-	for (u32 i = 0; i < count; ++i)
-	{
-		file << "\t" << std::dec << "v" << i << ": ";
-		GSVertex v = buffer[m_index.buff[i]];
+	// Different handler because we have full precision on Z
+	auto WriteXYZ_vert = [this, &file](const GSVertex& v) {
+		const float x = (static_cast<int>(v.XYZ.X) - static_cast<int>(m_context->XYOFFSET.OFX)) / 16.0f;
+		const float y = (static_cast<int>(v.XYZ.Y) - static_cast<int>(m_context->XYOFFSET.OFY)) / 16.0f;
+		file << std::dec << std::right << std::fixed;
+		file << "X: " << std::setprecision(4) << std::setw(XYUV_WIDTH) << std::setfill(' ') << x << DEL;
+		file << "Y: " << std::setprecision(4) << std::setw(XYUV_WIDTH) << std::setfill(' ') << y << DEL;
+		file << "Z: " << std::setw(Z_WIDTH) << std::setfill(' ') << v.XYZ.Z;
+	};
 
-		const float x = (v.XYZ.X - (int)m_context->XYOFFSET.OFX) / 16.0f;
-		const float y = (v.XYZ.Y - (int)m_context->XYOFFSET.OFY) / 16.0f;
-
-		file << x << DEL;
-		file << y << DEL;
-		file << v.XYZ.Z;
-		file << std::endl;
-	}
-
-	file << std::endl;
-
-	file << "VERTEX COLOR (RGBA)" << std::endl;
-	file << std::fixed << std::setprecision(6);
-	for (u32 i = 0; i < count; ++i)
-	{
-		file << "\t" << std::dec << "v" << i << ": ";
-		GSVertex v = buffer[m_index.buff[i]];
-
-		file << std::setfill('0') << std::setw(3) << unsigned(v.RGBAQ.R) << DEL;
-		file << std::setfill('0') << std::setw(3) << unsigned(v.RGBAQ.G) << DEL;
-		file << std::setfill('0') << std::setw(3) << unsigned(v.RGBAQ.B) << DEL;
-		file << std::setfill('0') << std::setw(3) << unsigned(v.RGBAQ.A) << DEL;
-		file << "FOG: " << std::setfill('0') << std::setw(3) << unsigned(v.FOG);
-		file << std::endl;
-	}
-
-	file << std::endl;
-
-	const bool use_uv = PRIM->FST;
-	const std::string qualifier = use_uv ? "UV" : "STQ";
-
-	file << "TEXTURE COORDS (" << qualifier << ")" << std::endl;;
-	for (u32 i = 0; i < count; ++i)
-	{
-		file << "\t" << "v" << std::dec << i << ": ";
-		const GSVertex v = buffer[m_index.buff[i]];
-
-		// note
-		// Yes, technically as far as the GS is concerned Q belongs
-		// to RGBAQ. However, the purpose of this dump is to print
-		// our data in a more human readable format and typically Q
-		// is associated with STQ.
-		if (use_uv)
+	auto WriteUV_vec = [this, &file](const GSVector4& v) {
+		file << std::right;
+		if (PRIM->FST)
 		{
-			const float uv_U = v.U / 16.0f;
-			const float uv_V = v.V / 16.0f;
-
-			file << uv_U << DEL << uv_V;
+			file << std::fixed;
+			file << "U: " << std::setprecision(4) << std::setw(XYUV_WIDTH) << std::setfill(' ') << v.x << DEL;
+			file << "V: " << std::setprecision(4) << std::setw(XYUV_WIDTH) << std::setfill(' ') << v.y;
 		}
 		else
 		{
-			float x = (v.ST.S / v.RGBAQ.Q) * (1 << m_context->TEX0.TW);
-			float y = (v.ST.T / v.RGBAQ.Q) * (1 << m_context->TEX0.TH);
-			file << v.ST.S << "(" << std::hex << std::bit_cast<u32>(v.ST.S) << ")" << DEL << v.ST.T << "(" << std::hex << std::bit_cast<u32>(v.ST.T) << ")" << DEL << v.RGBAQ.Q << "(" << std::hex << std::bit_cast<u32>(v.RGBAQ.Q) << ") - " << x << "," << y;
+			file << std::defaultfloat;
+			file << "U: " << std::setw(SCI_FLOAT_WIDTH) << std::setfill(' ') << v.x << DEL;
+			file << "V: " << std::setw(SCI_FLOAT_WIDTH) << std::setfill(' ') << v.y;
 		}
+	};
+
+	auto WriteUV_vert = [this, WriteUV_vec](const GSVertex& v) {
+		GSVector4 vec;
+		if (PRIM->FST)
+			vec = GSVector4(v.U / 16.0f, v.V / 16.0f);
+		else
+			vec = GSVector4(
+				(v.ST.S / v.RGBAQ.Q) * (1 << m_context->TEX0.TW),
+				(v.ST.T / v.RGBAQ.Q) * (1 << m_context->TEX0.TH)
+			);
+		WriteUV_vec(vec);
+	};
+
+	auto WriteRGBA_vec = [&file](const GSVector4i& v) {
+		file << std::dec << std::right;
+		file << "R: " << std::setw(RGBA_WIDTH) << std::setfill(' ') << v.r << DEL;
+		file << "G: " << std::setw(RGBA_WIDTH) << std::setfill(' ') << v.g << DEL;
+		file << "B: " << std::setw(RGBA_WIDTH) << std::setfill(' ') << v.b << DEL;
+		file << "A: " << std::setw(RGBA_WIDTH) << std::setfill(' ') << v.a;
+	};
+
+	auto WriteRGBA_vert = [WriteRGBA_vec](const GSVertex& v) {
+		GSVector4i vec = GSVector4i(v.RGBAQ.R, v.RGBAQ.G, v.RGBAQ.B, v.RGBAQ.A);
+		WriteRGBA_vec(vec);
+	};
+
+	auto WriteSTQ_vec = [&file](const GSVector4& v) {
+		file << std::defaultfloat << std::right;
+		file << "S: " << std::setw(SCI_FLOAT_WIDTH) << std::setfill(' ') << v.x << DEL;
+		file << "T: " << std::setw(SCI_FLOAT_WIDTH) << std::setfill(' ') << v.y << DEL;
+		file << "Q: " << std::setw(SCI_FLOAT_WIDTH) << std::setfill(' ') << v.z;
+	};
+
+	auto WriteSTQ_bits = [&file](const GSVector4& v) {
+		file << std::hex << std::showbase << std::right;
+		file << "Si: " << std::setw(STQ_BITS_WIDTH) << std::setfill('0') << std::bit_cast<u32>(v.x) << DEL;
+		file << "Ti: " << std::setw(STQ_BITS_WIDTH) << std::setfill('0') << std::bit_cast<u32>(v.y) << DEL;
+		file << "Qi: " << std::setw(STQ_BITS_WIDTH) << std::setfill('0') << std::bit_cast<u32>(v.z);
+	};
+
+	auto WriteSTQ_vert = [&file, WriteSTQ_vec, WriteSTQ_bits](const GSVertex& v) {
+		GSVector4 vec = GSVector4(v.ST.S, v.ST.T, v.RGBAQ.Q, v.RGBAQ.Q);
+		WriteSTQ_vec(vec);
+		file << DEL;
+		WriteSTQ_bits(vec);
+	};
+
+	auto WriteBools = [&file](std::vector<const char*> names, std::vector<u32> values) {
+		for (int i = 0; i < static_cast<int>(names.size()); i++)
+		{
+			if (i > 0)
+				file << DEL;
+			file << names[i] << ": " << static_cast<bool>(values[i]);
+		}
+	};
+
+	// Dump flush reason
+	file << "flush_reason: \"" << GetFlushReasonString(m_state_flush_reason);
+	if (m_state_flush_reason != GSFlushReason::CONTEXTCHANGE && m_dirty_gs_regs)
+		file << " AND POSSIBLE CONTEXT CHANGE";
+	file << "\"" << std::endl;
+
+	file << std::endl;
+
+	// Dump vertices
+	file << "vertex:" << std::endl;
+	const u32 count = m_index.tail;
+	GSVertex* buffer = &m_vertex.buff[0];
+	for (u32 i = 0; i < count; ++i)
+	{
+		GSVertex v = buffer[m_index.buff[i]];
+		
+		file << INDENT << LIST_ITEM << OPEN_MAP;
+		WriteXYZ_vert(v);
+		if (PRIM->TME)
+		{
+			file << DEL;
+			WriteUV_vert(v);
+		}
+		file << DEL;
+		WriteRGBA_vert(v);
+		file << CLOSE_MAP;
+
+		WriteVertexIndex(i);
 
 		file << std::endl;
 	}
 
 	file << std::endl;
 
-	file << "TRACER" << std::dec << std::endl;
+	// Dump extra info for STQ
+	if (PRIM->TME && !PRIM->FST)
+	{
+		file << "vertex_stq:" << std::endl;
+		for (u32 i = 0; i < count; ++i)
+		{
+			file << INDENT << LIST_ITEM << OPEN_MAP;
+			WriteSTQ_vert(buffer[m_index.buff[i]]);
+			file << CLOSE_MAP;
 
-	GSVector4i v = m_vt.m_min.c;
-	file << "\tmin c (r,g,b,a): " << v.x << DEL << v.y << DEL << v.z << DEL << v.w << std::endl;
-	v = m_vt.m_max.c;
-	file << "\tmax c (r,g,b,a): " << v.x << DEL << v.y << DEL << v.z << DEL << v.w << std::endl;
+			WriteVertexIndex(i);
 
-	GSVector4 v2 = m_vt.m_min.p;
-	file << "\tmin p (x,y,z,f): " << v2.x << DEL << v2.y << DEL << v2.z << DEL << (u32)v2.w << std::endl;
-	v2 = m_vt.m_max.p;
-	file << "\tmax p (x,y,z,f): " << v2.x << DEL << v2.y << DEL << v2.z << DEL << (u32)v2.w << std::endl;
-
-	v2 = m_vt.m_min.t;
-	file << "\tmin t (u,v,q):   " << v2.x << DEL << v2.y << DEL << v2.z << std::endl;
-	v2 = m_vt.m_max.t;
-	file << "\tmax t (u,v,q):   " << v2.x << DEL << v2.y << DEL << v2.z << std::endl;
+			file << std::endl;
+		}
+	}
 
 	file << std::endl;
-	file << "\teq c (r,g,b,a): " << (m_vt.m_eq.r & 1) << DEL << (m_vt.m_eq.g & 1) << DEL << (m_vt.m_eq.b & 1) << DEL << (m_vt.m_eq.a & 1) << std::endl;
-	file << "\teq p (x,y,z,f): " << (m_vt.m_eq.x & 1) << DEL << (m_vt.m_eq.y & 1) << DEL << (m_vt.m_eq.z & 1) << DEL << (m_vt.m_eq.f & 1) << std::endl;
-	file << "\teq t (u,v,q)  : " << (m_vt.m_eq.s & 1) << DEL << (m_vt.m_eq.t & 1) << DEL << (m_vt.m_eq.q & 1) << std::endl;
-	file.close();
+
+	// Dump vertex trace
+	file << "vertex_trace:" << std::endl;
+
+	file << INDENT;
+	WriteTraceIndex("min_xyz: ");
+	file << OPEN_MAP;
+	WriteXYZ_vec(m_vt.m_min.p);
+	file << CLOSE_MAP << std::endl;
+
+	file << INDENT;
+	WriteTraceIndex("max_xyz: ");
+	file << OPEN_MAP;
+	WriteXYZ_vec(m_vt.m_max.p);
+	file << CLOSE_MAP << std::endl;
+
+	if (PRIM->TME)
+	{
+		if (PRIM->FST)
+		{
+			file << INDENT;
+			WriteTraceIndex("min_uv: ");
+			file << OPEN_MAP;
+			WriteUV_vec(m_vt.m_min.t);
+			file << CLOSE_MAP << std::endl;
+
+			file << INDENT;
+			WriteTraceIndex("max_uv: ");
+			file << OPEN_MAP;
+			WriteUV_vec(m_vt.m_max.t);
+			file << CLOSE_MAP << std::endl;
+		}
+		else
+		{
+			// Note: The vertex trace does not actually track the min/max of raw ST values
+			// hence the labels "min_uvq" and "max_uvq" are used instead of "min_stq" and "max_stq".
+			file << INDENT;
+			WriteTraceIndex("min_uvq: ");
+			file << OPEN_MAP;
+			WriteSTQ_vec(m_vt.m_min.t);
+			file << CLOSE_MAP << std::endl;
+
+			file << INDENT;
+			WriteTraceIndex("max_uvq: ");
+			file << OPEN_MAP;
+			WriteSTQ_vec(m_vt.m_max.t);
+			file << CLOSE_MAP << std::endl;
+		}
+	}
+	
+	file << INDENT;
+	WriteTraceIndex("min_rgba: ");
+	file << OPEN_MAP;
+	WriteRGBA_vec(m_vt.m_min.c);
+	file << CLOSE_MAP << std::endl;
+
+	file << INDENT;
+	WriteTraceIndex("max_rgba: ");
+	file << OPEN_MAP;
+	WriteRGBA_vec(m_vt.m_max.c);
+	file << CLOSE_MAP << std::endl;
+
+	file << std::endl;
+
+	file << INDENT;
+	WriteTraceIndex("eq_xyz: ");
+	file << OPEN_MAP;
+	WriteBools({"X", "Y", "Z"}, {m_vt.m_eq.x, m_vt.m_eq.y, m_vt.m_eq.z});
+	file << CLOSE_MAP << std::endl;
+
+	if (PRIM->TME)
+	{
+		if (PRIM->FST)
+		{
+			file << INDENT;
+			WriteTraceIndex("eq_uv: ");
+			file << OPEN_MAP;
+			WriteBools({"U", "V"}, {m_vt.m_eq.s, m_vt.m_eq.t});
+			file << CLOSE_MAP << std::endl;
+		}
+		else
+		{
+			// Note: The vertex trace does not actually track the min/max of raw ST values
+			// hence the labels "eq_uvq" is used instead of "eq_stq".
+			file << INDENT;
+			WriteTraceIndex("eq_uvq: ");
+			file << OPEN_MAP;
+			WriteBools({"U", "V", "Q"}, {m_vt.m_eq.s, m_vt.m_eq.t, m_vt.m_eq.q});
+			file << CLOSE_MAP << std::endl;
+		}
+	}
+
+	file << INDENT;
+	WriteTraceIndex("eq_rgba: ");
+	file << OPEN_MAP;
+	WriteBools({"R", "G", "B", "A"}, {m_vt.m_eq.r, m_vt.m_eq.g, m_vt.m_eq.b, m_vt.m_eq.a});
+	file << CLOSE_MAP << std::endl;
+}
+
+void GSState::DumpTransferList(const std::string& filename)
+{
+	// Only create the file if there are transfers to dump
+	std::optional<std::ofstream> file;
+
+	constexpr const char* LIST_ITEM = "- ";
+	constexpr const char* DEL = ", ";
+	constexpr const char* INDENT = "  ";
+	constexpr const char* OPEN_MAP = "{";
+	constexpr const char* CLOSE_MAP = "}";
+	constexpr const char* COMMENT = " # ";
+
+	int n_dumped = 0; // Number of transfers dumped for this draw.
+	for (int i = 0; i < static_cast<int>(m_draw_transfers.size()); ++i)
+	{
+		if (m_draw_transfers[i].draw != s_n - 1)
+			continue; // skip transfers that did not start in the previous draw
+
+		if (!file.has_value())
+		{
+			file.emplace(filename);
+			if (!file->is_open())
+				return; // failed to open file
+			file->imbue(std::locale::classic()); // Disable integer separators.
+		}
+
+		const GSUploadQueue& transfer = m_draw_transfers[i];
+
+		if (n_dumped > 0)
+			(*file) << std::endl;
+
+		// EE->GS or GS->GS
+		(*file) << LIST_ITEM << "type: " << (transfer.ee_to_gs ? "EE_to_GS" : "GS_to_GS") << std::endl;
+
+		// Dump BITBLTBUF
+		(*file) << INDENT << "BITBLTBUF: " << OPEN_MAP;
+
+		if (!transfer.ee_to_gs)
+		{
+			// Transferring GS->GS so the source info is relevant
+			(*file) << "SBP: " << std::hex << std::showbase << transfer.blit.SBP << DEL <<
+				"SBW: " << std::dec << transfer.blit.SBW << DEL <<
+				"SPSM: " << std::hex << std::showbase << transfer.blit.SPSM << DEL;
+		}
+
+		(*file) << "DBP: " << std::hex << std::showbase << transfer.blit.DBP << DEL <<
+			"DBW: " << std::dec << transfer.blit.DBW << DEL <<
+			"DPSM: " << std::hex << std::showbase << transfer.blit.DPSM << CLOSE_MAP;
+
+		(*file) << COMMENT; // Write the human-readable PSM in comments
+
+		if (!transfer.ee_to_gs)
+		{
+			// Transferring GS->GS so the source info is relevant
+			(*file) << GSUtil::GetPSMName(transfer.blit.SPSM) << " -> ";
+		}
+
+		(*file) << GSUtil::GetPSMName(transfer.blit.DPSM) << std::endl;
+
+		// Dump rectangle
+		(*file) << INDENT << "rect: [" << std::dec << transfer.rect.x << DEL << transfer.rect.y << DEL <<
+			transfer.rect.z << DEL << transfer.rect.w << "]" << std::endl;
+
+		// Dump zero_clear
+		(*file) << INDENT << "zero_clear: " << (transfer.zero_clear ? "true" : "false") << std::endl;
+
+		n_dumped++;
+	}
+}
+
+void GSState::DumpTransferImages()
+{
+	// Only create the file if there are transfers to dump
+	std::optional<std::ofstream> file;
+
+	int transfer_n = 0;
+	for (int i = 0; i < static_cast<int>(m_draw_transfers.size()); ++i)
+	{
+		if (m_draw_transfers[i].draw != s_n - 1)
+			continue; // skip transfers that did not start in the previous draw
+
+		const GSUploadQueue& transfer = m_draw_transfers[i];
+
+		std::string filename;
+		if (transfer.ee_to_gs)
+		{
+			// Transferring EE->GS then only the destination info is relevant.
+			filename = GetDrawDumpPath("%05d_transfer%02d_EE_to_GS_%03x_%d_%s_%d_%d_%d_%d.png",
+				s_n, transfer_n++, transfer.blit.DBP, transfer.blit.DBW, GSUtil::GetPSMName(transfer.blit.DPSM),
+				transfer.rect.x, transfer.rect.y, transfer.rect.z, transfer.rect.w);
+		}
+		else
+		{
+			// Transferring GS->GS then the source info is relevant.
+			filename = GetDrawDumpPath("%05d_transfer%02d_GS_to_GS_%03x_%d_%s_%03x_%d_%s_%d_%d_%d_%d.bmp",
+				s_n, transfer_n++, transfer.blit.SBP, transfer.blit.SBW, GSUtil::GetPSMName(transfer.blit.SPSM),
+				transfer.blit.DBP, transfer.blit.DBW, GSUtil::GetPSMName(transfer.blit.DPSM),
+				transfer.rect.x, transfer.rect.y, transfer.rect.z, transfer.rect.w);
+		}
+
+		m_mem.SaveBMP(filename, transfer.blit.DBP, transfer.blit.DBW, transfer.blit.DPSM,
+			transfer.rect.width(), transfer.rect.height(), transfer.rect.x, transfer.rect.y);
+	}
 }
 
 __inline void GSState::CheckFlushes()
@@ -1771,6 +2062,20 @@ void GSState::FlushPrim()
 		const bool skip_draw = (m_context->TEST.ZTE && m_context->TEST.ZTST == ZTST_NEVER);
 		m_quad_check_valid = false;
 
+		if (GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
+		{
+			if (GSConfig.SaveInfo)
+			{
+				// Only dump registers/vertices if we are drawing.
+				// Always dump the transfers since these are relevant for debugging regardless of
+				// whether the draw is skipped or not.
+				DumpDrawInfo(!skip_draw, !skip_draw, true);
+			}
+
+			if (GSConfig.SaveTransferImages)
+				DumpTransferImages();
+		}
+
 		if (!skip_draw)
 			Draw();
 
@@ -2016,7 +2321,7 @@ void GSState::Write(const u8* mem, int len)
 		}
 		else
 		{
-			GSUploadQueue new_transfer = { blit, r, s_n, false };
+			const GSUploadQueue new_transfer = { blit, r, s_n, false, true };
 			m_draw_transfers.push_back(new_transfer);
 		}
 
@@ -2207,7 +2512,7 @@ void GSState::Move()
 	}
 	else
 	{
-		GSUploadQueue new_transfer = { m_env.BITBLTBUF, r, s_n, false };
+		const GSUploadQueue new_transfer = { m_env.BITBLTBUF, r, s_n, false, false };
 		m_draw_transfers.push_back(new_transfer);
 	}
 

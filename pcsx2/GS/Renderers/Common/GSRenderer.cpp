@@ -569,9 +569,17 @@ void GSRenderer::EndPresentFrame()
 
 void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 {
-	if (GSConfig.SaveInfo && GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
+	if (GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
 	{
-		DumpGSPrivRegs(*m_regs, GetDrawDumpPath("%05d_f%05lld_vsync_gs_reg.txt", s_n, g_perfmon.GetFrame()));
+		if (GSConfig.SaveInfo)
+		{
+			DumpGSPrivRegs(*m_regs, GetDrawDumpPath("%05d_f%05lld_vsync_gs_reg.txt", s_n, g_perfmon.GetFrame()));
+
+			DumpDrawInfo(false, false, true);
+		}
+
+		if (GSConfig.SaveTransferImages)
+			DumpTransferImages();
 	}
 
 	const int fb_sprite_blits = g_perfmon.GetDisplayFramebufferSpriteBlits();
@@ -1088,7 +1096,7 @@ void DumpGSPrivRegs(const GSPrivRegSet& r, const std::string& filename)
 		if (i == 1 && !r.PMODE.EN2)
 			continue;
 
-		std::fprintf(fp.get(), "DISPFB[%d] BP=%05x BW=%u PSM=%u DBX=%u DBY=%u\n",
+		std::fprintf(fp.get(), "DISPFB%d: { BP: 0x%05x, BW: %u, PSM: %u, DBX: %u, DBY: %u }\n",
 			i,
 			r.DISP[i].DISPFB.Block(),
 			r.DISP[i].DISPFB.FBW,
@@ -1096,7 +1104,7 @@ void DumpGSPrivRegs(const GSPrivRegSet& r, const std::string& filename)
 			r.DISP[i].DISPFB.DBX,
 			r.DISP[i].DISPFB.DBY);
 
-		std::fprintf(fp.get(), "DISPLAY[%d] DX=%u DY=%u DW=%u DH=%u MAGH=%u MAGV=%u\n",
+		std::fprintf(fp.get(), "DISPLAY%d: { DX: %u, DY: %u, DW: %u, DH: %u, MAGH: %u, MAGV: %u }\n",
 			i,
 			r.DISP[i].DISPLAY.DX,
 			r.DISP[i].DISPLAY.DY,
@@ -1106,7 +1114,7 @@ void DumpGSPrivRegs(const GSPrivRegSet& r, const std::string& filename)
 			r.DISP[i].DISPLAY.MAGV);
 	}
 
-	std::fprintf(fp.get(), "PMODE EN1=%u EN2=%u CRTMD=%u MMOD=%u AMOD=%u SLBG=%u ALP=%u\n",
+	std::fprintf(fp.get(), "PMODE: { EN1: %u, EN2: %u, CRTMD: %u, MMOD: %u, AMOD: %u, SLBG: %u, ALP: %u }\n",
 		r.PMODE.EN1,
 		r.PMODE.EN2,
 		r.PMODE.CRTMD,
@@ -1115,7 +1123,8 @@ void DumpGSPrivRegs(const GSPrivRegSet& r, const std::string& filename)
 		r.PMODE.SLBG,
 		r.PMODE.ALP);
 
-	std::fprintf(fp.get(), "SMODE1 CLKSEL=%u CMOD=%u EX=%u GCONT=%u LC=%u NVCK=%u PCK2=%u PEHS=%u PEVS=%u PHS=%u PRST=%u PVS=%u RC=%u SINT=%u SLCK=%u SLCK2=%u SPML=%u T1248=%u VCKSEL=%u VHP=%u XPCK=%u\n",
+	std::fprintf(fp.get(),
+		"SMODE1: { CLKSEL: %u, CMOD: %u, EX: %u, GCONT: %u, LC: %u, NVCK: %u, PCK2: %u, PEHS: %u, PEVS: %u, PHS: %u, PRST: %u, PVS: %u, RC: %u, SINT: %u, SLCK: %u, SLCK2: %u, SPML: %u, T1248: %u, VCKSEL: %u, VHP: %u, XPCK: %u }\n",
 		r.SMODE1.CLKSEL,
 		r.SMODE1.CMOD,
 		r.SMODE1.EX,
@@ -1138,24 +1147,24 @@ void DumpGSPrivRegs(const GSPrivRegSet& r, const std::string& filename)
 		r.SMODE1.VHP,
 		r.SMODE1.XPCK);
 
-	std::fprintf(fp.get(), "SMODE2 INT=%u FFMD=%u DPMS=%u\n",
+	std::fprintf(fp.get(), "SMODE2: { INT: %u, FFMD: %u, DPMS: %u }\n",
 		r.SMODE2.INT,
 		r.SMODE2.FFMD,
 		r.SMODE2.DPMS);
 
-	std::fprintf(fp.get(), "SRFSH %08x_%08x\n",
+	std::fprintf(fp.get(), "SRFSH: { U32_0: 0x%08x, U32_1: 0x%08x }\n",
 		r.SRFSH.U32[0],
 		r.SRFSH.U32[1]);
 
-	std::fprintf(fp.get(), "SYNCH1 %08x_%08x\n",
+	std::fprintf(fp.get(), "SYNCH1: { U32_0: 0x%08x, U32_1: 0x%08x }\n",
 		r.SYNCH1.U32[0],
 		r.SYNCH1.U32[1]);
 
-	std::fprintf(fp.get(), "SYNCH2 %08x_%08x\n",
+	std::fprintf(fp.get(), "SYNCH2: { U32_0: 0x%08x, U32_1: 0x%08x }\n",
 		r.SYNCH2.U32[0],
 		r.SYNCH2.U32[1]);
 
-	std::fprintf(fp.get(), "SYNCV VBP=%u VBPE=%u VDP=%u VFP=%u VFPE=%u VS=%u\n",
+	std::fprintf(fp.get(), "SYNCV: { VBP: %u, VBPE: %u, VDP: %u, VFP: %u, VFPE: %u, VS: %u }\n",
 		r.SYNCV.VBP,
 		r.SYNCV.VBPE,
 		r.SYNCV.VDP,
@@ -1163,21 +1172,21 @@ void DumpGSPrivRegs(const GSPrivRegSet& r, const std::string& filename)
 		r.SYNCV.VFPE,
 		r.SYNCV.VS);
 
-	std::fprintf(fp.get(), "CSR %08x_%08x\n",
+	std::fprintf(fp.get(), "CSR: { U32_0: 0x%08x, U32_1: 0x%08x }\n",
 		r.CSR.U32[0],
 		r.CSR.U32[1]);
 
-	std::fprintf(fp.get(), "BGCOLOR B=%u G=%u R=%u\n",
+	std::fprintf(fp.get(), "BGCOLOR: { B: %u, G: %u, R: %u }\n",
 		r.BGCOLOR.B,
 		r.BGCOLOR.G,
 		r.BGCOLOR.R);
 
-	std::fprintf(fp.get(), "EXTBUF BP=0x%x BW=%u FBIN=%u WFFMD=%u EMODA=%u EMODC=%u WDX=%u WDY=%u\n",
+	std::fprintf(fp.get(), "EXTBUF: { BP: 0x%05x, BW: %u, FBIN: %u, WFFMD: %u, EMODA: %u, EMODC: %u, WDX: %u, WDY: %u }\n",
 		r.EXTBUF.EXBP, r.EXTBUF.EXBW, r.EXTBUF.FBIN, r.EXTBUF.WFFMD,
 		r.EXTBUF.EMODA, r.EXTBUF.EMODC, r.EXTBUF.WDX, r.EXTBUF.WDY);
 
-	std::fprintf(fp.get(), "EXTDATA SX=%u SY=%u SMPH=%u SMPV=%u WW=%u WH=%u\n",
+	std::fprintf(fp.get(), "EXTDATA: { SX: %u, SY: %u, SMPH: %u, SMPV: %u, WW: %u, WH: %u }\n",
 		r.EXTDATA.SX, r.EXTDATA.SY, r.EXTDATA.SMPH, r.EXTDATA.SMPV, r.EXTDATA.WW, r.EXTDATA.WH);
 
-	std::fprintf(fp.get(), "EXTWRITE EN=%u\n", r.EXTWRITE.WRITE);
+	std::fprintf(fp.get(), "EXTWRITE: { EN: %u }\n", r.EXTWRITE.WRITE);
 }
