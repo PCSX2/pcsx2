@@ -2727,11 +2727,12 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 
 	if (draw_rt && (config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy) || (config.tex && config.tex == config.rt)))
 	{
-		// Requires a copy of the RT.
-		// Used as "bind rt" flag when texture barrier is unsupported for tex is fb.
-		draw_rt_clone = CreateTexture(rtsize.x, rtsize.y, 1, draw_rt->GetFormat(), true);
+		const GSVector2i draw_rt_size = draw_rt->GetSize();
+		const GSTexture::Format draw_rt_format = draw_rt->GetFormat();
+		draw_rt_clone = CreateRenderTarget(draw_rt_size.x, draw_rt_size.y, draw_rt_format, false);
 
-		if (!draw_rt_clone)
+		// Check if texture was created, make sure format and type matches.
+		if (!draw_rt_clone || (draw_rt_clone && (draw_rt_format != draw_rt_clone->GetFormat()) || (draw_rt->GetType() != draw_rt_clone->GetType())))
 			Console.Warning("D3D11: Failed to allocate temp texture for RT copy.");
 	}
 
@@ -2741,7 +2742,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 
 	OMSetRenderTargets(draw_rt, draw_ds, &config.scissor, read_only_dsv);
 	SetupOM(config.depth, OMBlendSelector(config.colormask, config.blend), config.blend.constant);
-	SendHWDraw(config, draw_rt_clone, draw_rt, config.require_one_barrier, config.require_full_barrier, false);
+	SendHWDraw(config, draw_rt, draw_rt_clone, config.require_one_barrier, config.require_full_barrier, false);
 
 	if (config.blend_multi_pass.enable)
 	{
@@ -2766,7 +2767,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		}
 
 		SetupOM(config.alpha_second_pass.depth, OMBlendSelector(config.alpha_second_pass.colormask, config.blend), config.blend.constant);
-		SendHWDraw(config, draw_rt_clone, draw_rt, config.alpha_second_pass.require_one_barrier, config.alpha_second_pass.require_full_barrier, true);
+		SendHWDraw(config, draw_rt, draw_rt_clone, config.alpha_second_pass.require_one_barrier, config.alpha_second_pass.require_full_barrier, true);
 	}
 
 	if (draw_rt_clone)
@@ -2793,61 +2794,66 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	}
 }
 
-void GSDevice11::SendHWDraw(const GSHWDrawConfig& config, GSTexture* draw_rt_clone, GSTexture* draw_rt, const bool one_barrier, const bool full_barrier, const bool skip_first_barrier)
+void GSDevice11::SendHWDraw(const GSHWDrawConfig& config, GSTexture* draw_rt, GSTexture* draw_rt_clone, const bool one_barrier, const bool full_barrier, const bool skip_first_barrier)
 {
-	if (draw_rt_clone)
+	if (!draw_rt_clone)
 	{
-#ifdef PCSX2_DEVBUILD
-		if ((one_barrier || full_barrier) && !config.ps.IsFeedbackLoop()) [[unlikely]]
-			Console.Warning("D3D11: Possible unnecessary copy detected.");
-#endif
-
-		const u32 indices_per_prim = config.indices_per_prim;
-
-		auto CopyAndBind = [&]() {
-			CopyRect(draw_rt, draw_rt_clone, config.drawarea, config.drawarea.left, config.drawarea.top);
-			if (one_barrier || full_barrier)
-				PSSetShaderResource(2, draw_rt_clone);
-			if (config.tex && config.tex == config.rt)
-				PSSetShaderResource(0, draw_rt_clone);
-		};
-
-		// Copy once per batch, primitives don't overlap each other.
-		if (m_features.multidraw_fb_copy && full_barrier && config.drawlist)
-		{
-			const u32 draw_list_size = static_cast<u32>(config.drawlist->size());
-
-			for (u32 n = 0, p = 0; n < draw_list_size; n++)
-			{
-				const u32 count = (*config.drawlist)[n] * indices_per_prim;
-
-				CopyAndBind();
-				DrawIndexedPrimitive(p, count);
-				p += count;
-			}
-
-			return;
-		}
-
-		// Copy once per primitive.
-		// TODO: Optimization try to use prim area for copy instead of draw area,
-		// might need current prim and previous prim area due to overlap,
-		// will need to use vertex cords to get the new copy rect.
-		if (m_features.multidraw_fb_copy && full_barrier)
-		{
-			for (u32 p = 0; p < config.nindices; p += indices_per_prim)
-			{
-				CopyAndBind();
-				DrawIndexedPrimitive(p, indices_per_prim);
-			}
-
-			return;
-		}
-
-		// Optimization: For alpha second pass we can reuse the copy snapshot from the first pass.
-		if (!skip_first_barrier)
-			CopyAndBind();
+		DrawIndexedPrimitive();
+		return;
 	}
 
-	DrawIndexedPrimitive();
+#ifdef PCSX2_DEVBUILD
+	if ((one_barrier || full_barrier) && !config.ps.IsFeedbackLoop()) [[unlikely]]
+		Console.Warning("D3D11: Possible unnecessary copy detected.");
+#endif
+
+	// Bind srv locally, DrawIndexedPrimitive will bind gpu state.
+	if (one_barrier || full_barrier)
+		PSSetShaderResource(2, draw_rt_clone);
+	if (config.tex && config.tex == config.rt)
+		PSSetShaderResource(0, draw_rt_clone);
+
+	const u32 indices_per_prim = config.indices_per_prim;
+	const GSVector4i& rect = config.drawarea;
+	const int left = rect.left;
+	const int top = rect.top;
+
+	// Copy once per batch, primitives don't overlap each other.
+	if (full_barrier && config.drawlist)
+	{
+		const u32 draw_list_size = static_cast<u32>(config.drawlist->size());
+
+		for (u32 n = 0, p = 0; n < draw_list_size; n++)
+		{
+			const u32 count = (*config.drawlist)[n] * indices_per_prim;
+
+			CopyRect(draw_rt, draw_rt_clone, rect, left, top);
+			DrawIndexedPrimitive(p, count);
+			p += count;
+		}
+
+		return;
+	}
+
+	// Copy once per primitive.
+	// TODO: Optimization try to use prim area for copy instead of draw area,
+	// might need current prim and previous prim area due to overlap,
+	// will need to use vertex cords to get the new copy rect.
+	if (full_barrier)
+	{
+		for (u32 p = 0; p < config.nindices; p += indices_per_prim)
+		{
+			CopyRect(draw_rt, draw_rt_clone, rect, left, top);
+			DrawIndexedPrimitive(p, indices_per_prim);
+		}
+
+		return;
+	}
+
+	// Optimization: For alpha second pass we can reuse the copy snapshot from the first pass.
+	if (one_barrier && !skip_first_barrier)
+	{
+		CopyRect(draw_rt, draw_rt_clone, rect, left, top);
+		DrawIndexedPrimitive();
+	}
 }
