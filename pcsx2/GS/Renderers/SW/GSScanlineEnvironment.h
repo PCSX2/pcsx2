@@ -9,6 +9,18 @@
 #include <cstdio>
 #include <string>
 
+#define SCANLINE_LOCAL_DATA_BREAKPOINT 1
+
+#if _M_SSE >= 0x501
+static constexpr int n_step_sizes = 4;
+static constexpr std::array<int, 9> step_size_index = {-1, 3, 2, -1, 1, -1, -1, -1, 0};
+static constexpr std::array<int, 4> step_size_order = {8, 4, 2, 1};
+#else
+static constexpr int n_step_sizes = 3;
+static constexpr std::array<int, 5> step_size_index = {-1, 2, 1, -1, 0};
+static constexpr std::array<int, 3> step_size_order = {4, 2, 1};
+#endif
+
 union GSScanlineSelector
 {
 	struct
@@ -56,7 +68,10 @@ union GSScanlineSelector
 		u32 notest : 1; // 55 (no ztest, no atest, no date, no scissor test, and horizontally aligned to 4 pixels)
 		// TODO: 1D texture flag? could save 2 texture reads and 4 lerps with bilinear, and also the texture coordinate clamp/wrap code in one direction
 		u32 zequal : 1; // 56
-		u32 breakpoint : 1; // Insert a trap to stop the program, helpful to stop debugger on a program
+		
+		u32 sss : 2;  // 57 (Scanline step size: 0 to 3 indicates 8, 4, 2, 1 on AVX2; 0 to 2 indicates 4, 2, 1 otherwise)
+		
+		u32 breakpoint : 1; // 59 Insert a trap to stop the program, helpful to stop debugger on a program
 	};
 
 	struct
@@ -206,6 +221,8 @@ struct alignas(32) GSScanlineLocalData // per prim variables, each thread has it
 		GSVector8i uv_minmax[2];
 		GSVector8i trb, tga;
 		GSVector8i test;
+
+		GSVector8i bp;
 	} temp;
 
 #else
@@ -234,6 +251,9 @@ struct alignas(32) GSScanlineLocalData // per prim variables, each thread has it
 		GSVector4i uv_minmax[2];
 		GSVector4i trb, tga;
 		GSVector4i test;
+#if SCANLINE_LOCAL_DATA_BREAKPOINT
+		GSVector4i bp; // Breakpoint mask for breaking in JIT code.
+#endif
 	} temp;
 
 #endif

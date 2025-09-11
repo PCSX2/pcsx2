@@ -12,7 +12,7 @@ MULTI_ISA_UNSHARED_IMPL;
 
 GSRenderer* CURRENT_ISA::makeGSRendererSW(int threads)
 {
-	return new GSRendererSW(threads);
+	return new GSRendererSW(0);
 }
 
 #define LOG 0

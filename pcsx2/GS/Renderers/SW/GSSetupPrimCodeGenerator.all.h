@@ -30,10 +30,11 @@ class GSSetupPrimCodeGenerator : public GSNewCodeGenerator
 	constexpr static bool isYmm = std::is_same<XYm, Xbyak::Ymm>::value;
 	constexpr static int vecsize = isXmm ? 16 : 32;
 
-	constexpr static int dsize = isXmm ? 4 : 8;
+	constexpr static int vecints = isXmm ? 4 : 8;
 
 	GSScanlineSelector m_sel;
 	bool many_regs;
+	int step_size;
 
 	struct {u32 z:1, f:1, t:1, c:1;} m_en;
 

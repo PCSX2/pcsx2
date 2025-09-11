@@ -57,18 +57,20 @@ class GSDrawScanlineCodeGenerator : public GSNewCodeGenerator
 
 	GSScanlineSelector m_sel;
 	bool use_lod;
+	int step_size;
 
 	const XYm xym0{0}, xym1{1}, xym2{2}, xym3{3}, xym4{4}, xym5{5}, xym6{6}, xym7{7}, xym8{8}, xym9{9}, xym10{10}, xym11{11}, xym12{12}, xym13{13}, xym14{14}, xym15{15};
-	/// Note: a2 and t3 are only available on x86-64
 	/// Outside of Init, usable registers are a0, t0, t1, t2, t3[x64], rax, rbx, rdx, r10+
 	const AddressReg a0, a1, a2, a3, t0, t1, t2, t3;
 	const AddressReg _m_local, _m_local__gd, _m_local__gd__vm, _m_local__gd__clut;
 	// If use_lod, m_local.gd->tex, else m_local.gd->tex[0]
 	const AddressReg _m_local__gd__tex;
-	/// Available on both x86 and x64, not always valid
+	/// Not always valid
 	const XYm _rb, _ga, _fm, _zm, _fd, _test;
-	/// Always valid if needed, x64 only
+	/// Always valid if needed
 	const XYm _z, _f, _s, _t, _q, _f_rb, _f_ga;
+	/// Always valid when step_size != vecints; otherwise unused.
+	const AddressReg _left;
 
 public:
 	GSDrawScanlineCodeGenerator(u64 key, void* code, size_t maxsize);
@@ -164,6 +166,18 @@ private:
 		const Xmm& s2,   const Xmm& s3,
 		int pixels,      int mip_offset);
 	void ReadTexelImpl(const Xmm& dst, const Xmm& addr, u8 i, bool texInA3, bool preserveDst);
+
+	template <int ncases, typename T>
+	void Switch(const T& gencase, const AddressReg& roll);
+
+	void Swap(const XYm& r0, const XYm& r1, const XYm& tmp);
+	void RollVec32(const XYm& dst, const XYm& tmp, int roll);
+	void RollVec64(const XYm& dst0, const XYm& dst1, const XYm& tmp, int roll);
+	void RollVecSwitch(const XYm* dsts, int ndsts, const XYm& tmp, const AddressReg& rollreg, const XYm& z0);
+
+#if SCANLINE_LOCAL_DATA_BREAKPOINT
+	void ConditionalBreakpoint(const Xbyak::Reg32& cond, u32 which);
+#endif
 };
 
 MULTI_ISA_UNSHARED_END

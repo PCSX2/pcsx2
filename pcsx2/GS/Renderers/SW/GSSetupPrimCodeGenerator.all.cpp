@@ -6,6 +6,7 @@
 #include "common/Perf.h"
 
 #include <cstddef>
+#include <bit>
 
 MULTI_ISA_UNSHARED_IMPL;
 using namespace Xbyak;
@@ -54,6 +55,7 @@ GSSetupPrimCodeGenerator::GSSetupPrimCodeGenerator(u64 key, void* code, size_t m
 #endif
 {
 	m_sel.key = key;
+	step_size = step_size_order[m_sel.sss];
 
 	m_en.z = m_sel.zb ? 1 : 0;
 	m_en.f = m_sel.fb && m_sel.fge ? 1 : 0;
@@ -112,6 +114,16 @@ void GSSetupPrimCodeGenerator::Generate()
 		{
 			movaps(XYm(3 + i), ptr[rax + i * vecsize]);
 		}
+
+		if (step_size != vecints)
+		{
+			// step_shift *= static_cast<float>(vlen) / static_cast<float>(step_size);
+
+			mov(eax, std::bit_cast<u32>(static_cast<float>(step_size) / static_cast<float>(vecints)));
+			movd(xmm0, eax);
+			shufps(xmm0, xmm0, 0x00);
+			mulps(xmm3, xmm0);
+		}
 	}
 
 	if (isXmm)
@@ -154,7 +166,7 @@ void GSSetupPrimCodeGenerator::Depth_XMM()
 			// GSVector4 df = t.wwww();
 			broadcastss(xym1, ptr[_dscan + offsetof(GSVertexSW, t.w)]);
 
-			// m_local.d4.f = GSVector4i(df * 4.0f).xxzzlh();
+			// m_local.d4.f = GSVector4i(df * step_shift).xxzzlh();
 
 			THREEARG(mulps, xmm2, xmm1, xmm3);
 			cvttps2dq(xmm2, xmm2);
@@ -179,7 +191,7 @@ void GSSetupPrimCodeGenerator::Depth_XMM()
 			// VectorF dz = VectorF::broadcast64(&dscan.p.z)
 			movddup(xmm0, ptr[_dscan + offsetof(GSVertexSW, p.z)]);
 
-			// m_local.d4.z = dz.mul64(GSVector4::f32to64(shift));
+			// m_local.d4.z = dz.mul64(GSVector4::f32to64(step_shift));
 			cvtps2pd(xmm1, xmm3);
 			mulpd(xmm1, xmm0);
 			movaps(_rip_local_d_p(z), xmm1);
@@ -246,7 +258,7 @@ void GSSetupPrimCodeGenerator::Depth_YMM()
 			cvtps2dq(xmm0, xmm0);
 			movd(_rip_local_d_p(f), xmm0);
 
-			for (int i = 0; i < (m_sel.notest ? 1 : dsize); i++)
+			for (int i = 0; i < (m_sel.notest ? 1 : vecints); i++)
 			{
 				// m_local.d[i].f = GSVectorI(df * m_shift[i]).xxzzlh();
 
@@ -266,7 +278,7 @@ void GSSetupPrimCodeGenerator::Depth_YMM()
 			// const VectorF dz = VectorF::broadcast64(&dscan.p.z);
 			movsd(xmm0, ptr[_dscan + offsetof(GSVertexSW, p.z)]);
 
-			// GSVector4::storel(&local.d8.p.z, dz.extract<0>().mul64(GSVector4::f32to64(shift)));
+			// GSVector4::storel(&local.d8.p.z, dz.extract<0>().mul64(GSVector4::f32to64(step_shift)));
 			vcvtss2sd(xmm1, xmm3, xmm3);
 			vmulsd(xmm1, xmm0, xmm1);
 			movsd(_rip_local_d_p(z), xmm1);
@@ -274,7 +286,7 @@ void GSSetupPrimCodeGenerator::Depth_YMM()
 			cvtsd2ss(xmm0, xmm0);
 			vbroadcastss(ymm0, xmm0);
 
-			for (int i = 0; i < (m_sel.notest ? 1 : dsize); i++)
+			for (int i = 0; i < (m_sel.notest ? 1 : vecints); i++)
 			{
 				// m_local.d[i].z = dzf * shift[i + 1];
 
@@ -328,7 +340,7 @@ void GSSetupPrimCodeGenerator::Texture()
 
 	if (m_sel.fst)
 	{
-		// m_local.d4.stq = GSVector4i(t * 4.0f);
+		// m_local.d4.stq = GSVector4i(t * step_shift);
 
 		cvttps2dq(xmm1, xmm1);
 
@@ -336,7 +348,7 @@ void GSSetupPrimCodeGenerator::Texture()
 	}
 	else
 	{
-		// m_local.d4.stq = t * 4.0f;
+		// m_local.d4.stq = t * step_shift;
 
 		movaps(_rip_local_d(stq), xmm1);
 	}
@@ -349,7 +361,7 @@ void GSSetupPrimCodeGenerator::Texture()
 
 		THREEARG(shufps, xym1, xym0, xym0, _MM_SHUFFLE(j, j, j, j));
 
-		for (int i = 0; i < (m_sel.notest ? 1 : dsize); i++)
+		for (int i = 0; i < (m_sel.notest ? 1 : vecints); i++)
 		{
 			// GSVector4 v = ds/dt * m_shift[i];
 
@@ -398,7 +410,7 @@ void GSSetupPrimCodeGenerator::Color()
 
 		broadcastf128(xym0, ptr[_dscan + offsetof(GSVertexSW, c)]);
 
-		// m_local.d4.c = GSVector4i(c * 4.0f).xzyw().ps32();
+		// m_local.d4.c = GSVector4i(c * step_shift).xzyw().ps32();
 
 		THREEARG(mulps, xmm1, xmm0, xmm3);
 		cvttps2dq(xmm1, xmm1);
@@ -417,7 +429,7 @@ void GSSetupPrimCodeGenerator::Color()
 		THREEARG(shufps, xym2, xym0, xym0, _MM_SHUFFLE(0, 0, 0, 0));
 		THREEARG(shufps, xym3, xym0, xym0, _MM_SHUFFLE(2, 2, 2, 2));
 
-		for (int i = 0; i < (m_sel.notest ? 1 : dsize); i++)
+		for (int i = 0; i < (m_sel.notest ? 1 : vecints); i++)
 		{
 			// GSVector4i r = GSVector4i(dr * m_shift[i]).ps32();
 
@@ -453,7 +465,7 @@ void GSSetupPrimCodeGenerator::Color()
 		THREEARG(shufps, xym2, xym0, xym0, _MM_SHUFFLE(1, 1, 1, 1));
 		THREEARG(shufps, xym3, xym0, xym0, _MM_SHUFFLE(3, 3, 3, 3));
 
-		for (int i = 0; i < (m_sel.notest ? 1 : dsize); i++)
+		for (int i = 0; i < (m_sel.notest ? 1 : vecints); i++)
 		{
 			// GSVector4i g = GSVector4i(dg * m_shift[i]).ps32();
 

@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <array>
 #include "GS/Renderers/SW/GSVertexSW.h"
 #include "GS/Renderers/SW/GSDrawScanline.h"
 #include "GS/GSAlignedClass.h"
@@ -36,9 +37,11 @@ public:
 
 	GSScanlineGlobalData global;
 
-	GSDrawScanline::SetupPrimPtr setup_prim;
-	GSDrawScanline::DrawScanlinePtr draw_scanline;
-	GSDrawScanline::DrawScanlinePtr draw_edge;
+	std::array<GSDrawScanline::SetupPrimPtr, n_step_sizes> setup_prim;
+	std::array<GSDrawScanline::DrawScanlinePtr, n_step_sizes> draw_scanline;
+	std::array<GSDrawScanline::DrawScanlinePtr, n_step_sizes> draw_edge;
+	int min_step_size;
+	int max_step_size;
 
 	GSRasterizerData()
 		: scissor(GSVector4i::zero())
@@ -79,14 +82,16 @@ protected:
 	struct { GSVertexSW* buff; int count; } m_edge;
 	struct { int sum, actual, total; } m_pixels;
 	int m_primcount;
+	int m_min_step_size;
+	int m_max_step_size;
 
 	// For the current draw.
 	GSScanlineLocalData m_local = {};
-	GSDrawScanline::SetupPrimPtr m_setup_prim = nullptr;
-	GSDrawScanline::DrawScanlinePtr m_draw_scanline = nullptr;
-	GSDrawScanline::DrawScanlinePtr m_draw_edge = nullptr;
+	std::array<GSDrawScanline::SetupPrimPtr, n_step_sizes> m_setup_prim = {};
+	std::array<GSDrawScanline::DrawScanlinePtr, n_step_sizes> m_draw_scanline = {};
+	std::array<GSDrawScanline::DrawScanlinePtr, n_step_sizes> m_draw_edge = {};
 
-	__forceinline bool HasEdge() const { return (m_draw_edge != nullptr); }
+	__forceinline bool HasEdge() const { return m_local.gd->sel.aa1; }
 
 	template <bool step_x, bool pos_x, bool pos_y, bool tl, bool side>
 	void DrawEdgeTriangle(const GSVertexSW& v0, const GSVertexSW& v1, const GSVertexSW& dv,
@@ -121,8 +126,23 @@ protected:
 	__forceinline void AddScanline(GSVertexSW* e, int pixels, int left, int top, const GSVertexSW& scan);
 	__forceinline void Flush(const GSVertexSW* vertex, const u16* index, const GSVertexSW& dscan, bool edge = false);
 
-	__forceinline void DrawScanline(int pixels, int left, int top, const GSVertexSW& scan);
-	__forceinline void DrawEdge(int pixels, int left, int top, const GSVertexSW& scan);
+	__forceinline void DrawScanline(int pixels, int left, int top, const GSVertexSW& scan, int step_size);
+	__forceinline void DrawEdge(int pixels, int left, int top, const GSVertexSW& scan, int step_size);
+
+#if _M_SSE >= 0x501
+	static constexpr int vlen = 8;
+	static constexpr float vlenf = static_cast<float>(vlen);
+	static constexpr std::array<int, 9> step_size_round = {1, 1, 2, 2, 4, 4, 4, 4, 8};
+#else
+	static constexpr int vlen = 4;
+	static constexpr float vlenf = static_cast<float>(vlen);
+	static constexpr std::array<int, 5> step_size_round = {1, 1, 2, 2, 4};
+#endif
+	static constexpr GSVector4 tmax = GSVector4::cxpr(static_cast<float>(0x7FFFFF80)); // 1:15:16 fixed point format.
+	static constexpr GSVector4 cmax = GSVector4::cxpr(static_cast<float>(0x7FFF));     // 1: 8: 7 fixed point format.
+
+	static int GetStepSize(const GSVector4& dt, int min_step_size, int max_step_size);
+	static int GetStepSize(const GSVector4& dt, const GSVector4& dc, int min_step_size, int max_step_size);
 
 public:
 	GSRasterizer(GSDrawScanline* ds, int id, int threads);

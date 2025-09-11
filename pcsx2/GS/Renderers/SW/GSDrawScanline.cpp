@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
+#include "GS/GS.h"
 #include "GS/Renderers/SW/GSDrawScanline.h"
 #include "GS/Renderers/SW/GSTextureCacheSW.h"
 #include "GS/Renderers/SW/GSScanlineEnvironment.h"
@@ -124,31 +125,44 @@ bool GSDrawScanline::SetupDraw(GSRasterizerData& data)
 {
 	const GSScanlineGlobalData& global = data.global;
 
+	const int max_index = std::clamp(static_cast<int>(GSConfig.SWVariableStepMax), 0, n_step_sizes - 1);
+	const int min_index = std::clamp(static_cast<int>(GSConfig.SWVariableStepMin), 0, n_step_sizes - 1);
+	data.min_step_size = step_size_order[max_index];
+	data.max_step_size = step_size_order[min_index];
+
 #ifdef ENABLE_JIT_RASTERIZER
-	data.draw_scanline = m_ds_map[global.sel];
-	if (!data.draw_scanline) [[unlikely]]
-		return false;
+	GSScanlineSelector sel;
+
+	sel.key = global.sel.key;
+	for (int i = min_index; i <= max_index; i++)
+	{
+		sel.sss = i;
+		data.draw_scanline[i] = m_ds_map[sel];
+		if (!data.draw_scanline[i]) [[unlikely]]
+			return false;
+	}
 
 	if (global.sel.aa1)
 	{
-		GSScanlineSelector sel;
-
 		sel.key = global.sel.key;
 		sel.zwrite = 0;
 		sel.edge = 1;
 
-		data.draw_edge = m_ds_map[sel];
-		if (!data.draw_edge) [[unlikely]]
-			return false;
+		for (int i = min_index; i <= max_index; i++)
+		{
+			sel.sss = i;
+			data.draw_edge[i] = m_ds_map[sel];
+			if (!data.draw_edge[i]) [[unlikely]]
+				return false;
+		}
 	}
 	else
 	{
-		data.draw_edge = nullptr;
+		for (int i = min_index; i <= max_index; i++)
+			data.draw_edge[i] = nullptr;
 	}
 
 	// doesn't need all bits => less functions generated
-
-	GSScanlineSelector sel;
 
 	sel.key = 0;
 
@@ -164,11 +178,37 @@ bool GSDrawScanline::SetupDraw(GSRasterizerData& data)
 	sel.zequal = global.sel.zequal;
 	sel.notest = global.sel.notest;
 
-	return (data.setup_prim = m_sp_map[sel]) != nullptr;
+	for (int i = min_index; i <= max_index; i++)
+	{
+		sel.sss = i;
+		data.setup_prim[i] = m_sp_map[sel];
+		if (!data.setup_prim[i]) [[unlikely]]
+			return false;
+	}
+
+	for (int i = 0; i < min_index; i++)
+	{
+		data.draw_scanline[i] = nullptr;
+		data.draw_edge[i] = nullptr;
+		data.setup_prim[i] = nullptr;
+	}
+
+	for (int i = max_index + 1; i < n_step_sizes; i++)
+	{
+		data.draw_scanline[i] = nullptr;
+		data.draw_edge[i] = nullptr;
+		data.setup_prim[i] = nullptr;
+	}
+
+	return true;
 #else
-	data.setup_prim = &GSDrawScanline::CSetupPrim;
-	data.draw_scanline = &GSDrawScanline::CDrawScanline;
-	data.draw_edge = global.sel.aa1 ? &GSDrawScanline::CDrawEdge : nullptr;
+	for (int i = min_index; i <= max_index; i++)
+	{
+		data.setup_prim[i] = m_c_setup_prim[i];
+		data.draw_scanline[i] = m_c_draw_scanline[i];
+		data.draw_edge[i] = global.sel.aa1 ? m_c_draw_edge[i] : nullptr;
+	}
+
 	return true;
 #endif
 }
@@ -187,12 +227,15 @@ void GSDrawScanline::PrintStats()
 typedef GSVector8i VectorI;
 typedef GSVector8  VectorF;
 #define LOCAL_STEP local.d8
+static constexpr int vlen = 8;
 #else
 typedef GSVector4i VectorI;
 typedef GSVector4  VectorF;
 #define LOCAL_STEP local.d4
+static constexpr int vlen = 4;
 #endif
 
+template<int step_size>
 void GSDrawScanline::CSetupPrim(const GSVertexSW* vertex, const u16* index, const GSVertexSW& dscan, GSScanlineLocalData& local)
 {
 	const GSScanlineGlobalData& global = GlobalFromLocal(local);
@@ -203,15 +246,20 @@ void GSDrawScanline::CSetupPrim(const GSVertexSW* vertex, const u16* index, cons
 	bool has_t = sel.fb && sel.tfx != TFX_NONE;
 	bool has_c = sel.fb && !(sel.tfx == TFX_DECAL && sel.tcc);
 
-	constexpr int vlen = sizeof(VectorF) / sizeof(float);
+	pxAssert(vlen % step_size == 0);
 
 #if _M_SSE >= 0x501
 	const GSVector8* shift = (GSVector8*)g_const.m_shift_256b;
-	const GSVector4 step_shift = GSVector4::broadcast32(&shift[0]);
+	GSVector4 step_shift = GSVector4::broadcast32(&shift[0]);
 #else
 	const GSVector4* shift = (GSVector4*)g_const.m_shift_128b;
-	const GSVector4 step_shift = shift[0];
+	GSVector4 step_shift = shift[0];
 #endif
+
+	if (step_size != vlen)
+	{
+		step_shift *= static_cast<float>(step_size) / static_cast<float>(vlen);
+	}
 
 	GSVector4 tstep = dscan.t * step_shift;
 
@@ -242,9 +290,9 @@ void GSDrawScanline::CSetupPrim(const GSVertexSW* vertex, const u16* index, cons
 				const GSVector4 dz = GSVector4::broadcast64(&dscan.p.z);
 				const VectorF dzf(static_cast<float>(dscan.p.F64[1]));
 #if _M_SSE >= 0x501
-				GSVector4::storel(&local.d8.p.z, dz.mul64(GSVector4::f32to64(shift)));
+				GSVector4::storel(&local.d8.p.z, dz.mul64(GSVector4::f32to64(step_shift)));
 #else
-				local.d4.z = dz.mul64(GSVector4::f32to64(shift));
+				local.d4.z = dz.mul64(GSVector4::f32to64(step_shift));
 #endif
 				for (int i = 0; i < vlen; i++)
 				{
@@ -482,16 +530,178 @@ __ri static void WritePixel(const T& src, int addr, int i, u32 psm, const GSScan
 	}
 }
 
-void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local)
+template <typename T>
+concept IsVector4 = std::is_same_v<T, GSVector4> || std::is_same_v<T, GSVector4i>;
+template <typename T>
+concept IsVector8 = std::is_same_v<T, GSVector8> || std::is_same_v<T, GSVector8i>;
+
+template <IsVector4 T>
+static inline void RollVec32(T& v, int offset)
 {
-	CDrawScanline(pixels, left, top, scan, local, GlobalFromLocal(local).sel);
+	switch (offset)
+	{
+		case 0:
+			break;
+		case 1:
+			v = v.wxyz();
+			break;
+		case 2:
+			v = v.zwxy();
+			break;
+		case 3:
+			v = v.yzwx();
+			break;
+		default:
+			pxFail("Impossible.");
+			break;
+	}
 }
 
+static inline void RollVec64(GSVector4& v0, GSVector4& v1, int offset)
+{
+	GSVector4 tmp;
+	switch (offset)
+	{
+		case 0:
+			break;
+		case 1:
+			v0 = v0.zwxy();
+			v1 = v1.zwxy();
+			tmp = v0;
+			v0 = v0.template blend32<0x3>(v1);
+			v1 = v1.template blend32<0x3>(tmp);
+			break;
+		case 2:
+			std::swap(v0, v1);
+			break;
+		case 3:
+			v0 = v0.zwxy();
+			v1 = v1.zwxy();
+			tmp = v0;
+			v0 = v0.template blend32<0xC>(v1);
+			v1 = v1.template blend32<0xC>(tmp);
+			break;
+		default:
+			pxFail("Impossible");
+			break;
+	}
+}
+
+#if _M_SSE >= 0x501
+template <IsVector8 T>
+static inline void RollVec32(T& v, int offset)
+{
+	std::remove_reference_t<T> tmp;
+	switch (offset)
+	{
+		case 0:
+			break;
+		case 1:
+			v = v.wxyz();
+			tmp = v.ba();
+			v = v.template blend32<0x11>(tmp);
+			break;
+		case 2:
+			v = v.dabc();
+			break;
+		case 3:
+			v = v.yzwx();
+			tmp = v.ba();
+			v = v.template blend32<0x77>(tmp);
+			break;
+		case 4:
+			v = v.ba();
+			break;
+		case 5:
+			v = v.wxyz();
+			tmp = v.ba();
+			v = v.template blend32<0x77>(tmp);
+			break;
+		case 6:
+			v = v.bcda();
+			break;
+		case 7:
+			v = v.yzwx();
+			tmp = v.ba();
+			v = v.template blend32<0x88>(tmp);
+			break;
+		default:
+			pxFail("Impossible.");
+			break;
+	}
+}
+
+static inline void RollVec64(GSVector8& v0, GSVector8& v1, int offset)
+{
+	GSVector8 tmp;
+	switch (offset)
+	{
+		case 0:
+			break;
+		case 1:
+			v0 = v0.dabc();
+			v1 = v1.dabc();
+			tmp = v0;
+			v0 = v0.template blend32<0x03>(v1);
+			v1 = v1.template blend32<0x03>(tmp);
+			break;
+		case 2:
+			v0 = v0.ba();
+			v1 = v1.ba();
+			tmp = v0;
+			v0 = v0.template blend32<0x0F>(v1);
+			v1 = v1.template blend32<0x0F>(tmp);
+			break;
+		case 3:
+			v0 = v0.bcda();
+			v1 = v1.bcda();
+			tmp = v0;
+			v0 = v0.template blend32<0x3F>(v1);
+			v1 = v1.template blend32<0x3F>(tmp);
+			break;
+		case 4:
+			std::swap(v0, v1);
+			break;
+		case 5:
+			v0 = v0.dabc();
+			v1 = v1.dabc();
+			tmp = v0;
+			v0 = v0.template blend32<0xFC>(v1);
+			v1 = v1.template blend32<0xFC>(tmp);
+			break;
+		case 6:
+			v0 = v0.ba();
+			v1 = v1.ba();
+			tmp = v0;
+			v0 = v0.template blend32<0xF0>(v1);
+			v1 = v1.template blend32<0xF0>(tmp);
+			break;
+		case 7:
+			v0 = v0.bcda();
+			v1 = v1.bcda();
+			tmp = v0;
+			v0 = v0.template blend32<0xC0>(v1);
+			v1 = v1.template blend32<0xC0>(tmp);
+			break;
+		default:
+			pxFail("Impossible");
+			break;
+	}
+}
+#endif
+
+template <int step_size>
+void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local)
+{
+	CDrawScanline<step_size>(pixels, left, top, scan, local, GlobalFromLocal(local).sel);
+}
+
+template<int step_size>
 __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local, GSScanlineSelector sel)
 {
 	const GSScanlineGlobalData& global = GlobalFromLocal(local);
 
-	constexpr int vlen = sizeof(VectorF) / sizeof(float);
+	pxAssert(vlen % step_size == 0);
 
 #if _M_SSE < 0x501
 	const GSVector4i* const_test = (GSVector4i*)g_const.m_test_128b;
@@ -508,27 +718,50 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 
 	int skip, steps;
 
-	if (!sel.notest)
+	if (step_size == vlen)
 	{
-		skip = left & (vlen - 1);
-		steps = pixels + skip - vlen;
+		if (!sel.notest)
+		{
+			skip = left & (vlen - 1);
+			steps = pixels + skip - vlen;
+			left -= skip;
+#if _M_SSE >= 0x501
+			test = GSVector8i::i8to32(g_const.m_test_256b[skip]) | GSVector8i::i8to32(g_const.m_test_256b[15 + (steps & (steps >> 31))]);
+#else
+			test = const_test[skip] | const_test[7 + (steps & (steps >> 31))];
+#endif
+		}
+		else
+		{
+			skip = 0;
+			steps = pixels - vlen;
+		}
+	}
+	else // step_size != vlen
+	{
+		skip = left & (step_size - 1);
+		steps = pixels + skip - step_size;
 		left -= skip;
 #if _M_SSE >= 0x501
-		test = GSVector8i::i8to32(g_const.m_test_256b[skip]) | GSVector8i::i8to32(g_const.m_test_256b[15 + (steps & (steps >> 31))]);
+		test = GSVector8i::i8to32(g_const.m_test_256b[skip]) | GSVector8i::i8to32(g_const.m_test_256b[7 + step_size + (steps & (steps >> 31))]);
 #else
-		test = const_test[skip] | const_test[7 + (steps & (steps >> 31))];
+		test = const_test[skip] | const_test[3 + step_size + (steps & (steps >> 31))];
 #endif
+	}
+
+	pxAssert((left & (step_size - 1)) == 0);
+
+	const GSVector2i* fza_base = &global.fzbr[top];
+	const GSVector2i* fza_offset;
+
+	if (step_size == vlen)
+	{
+		fza_offset = &global.fzbc[left >> 2];
 	}
 	else
 	{
-		skip = 0;
-		steps = pixels - vlen;
+		fza_offset = &global.fzbc[(left & ~(vlen - 1)) >> 2];
 	}
-
-	pxAssert((left & (vlen - 1)) == 0);
-
-	const GSVector2i* fza_base = &global.fzbr[top];
-	const GSVector2i* fza_offset = &global.fzbc[left >> 2];
 
 	if (sel.prim != GS_SPRITE_CLASS)
 	{
@@ -623,6 +856,44 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 			{
 				rbf = local.c.rb;
 				gaf = local.c.ga;
+			}
+		}
+	}
+
+	if (step_size != vlen)
+	{
+		const int roll = left & (vlen - 1);
+		RollVec32(test, roll);
+		if (sel.prim != GS_SPRITE_CLASS)
+		{
+			if (sel.zb && !sel.zequal)
+				RollVec64(z0, z1, roll);
+			if (sel.fwrite && sel.fge)
+				RollVec32(f, roll);
+		}
+		if (sel.fb)
+		{
+			if (sel.edge)
+				RollVec32(cov, roll);
+			if (sel.tfx != TFX_NONE)
+			{
+				if (sel.fst)
+				{
+					RollVec32(s, roll);
+					if (sel.prim != GS_SPRITE_CLASS || sel.mmin)
+						RollVec32(t, roll);
+				}
+				else
+				{
+					RollVec32(s, roll);
+					RollVec32(t, roll);
+					RollVec32(q, roll);
+				}
+			}
+			if (!(sel.tfx == TFX_DECAL && sel.tcc) && sel.iip)
+			{
+				RollVec32(rbf, roll);
+				RollVec32(gaf, roll);
 			}
 		}
 	}
@@ -1349,7 +1620,7 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 
 			int fzm = 0;
 
-			if (!sel.notest)
+			if (!(sel.notest && step_size == vlen))
 			{
 				if (sel.fwrite)
 				{
@@ -1384,9 +1655,9 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 					zs = zs.blend8(zd, zm);
 				}
 
-				bool fast = sel.ztest ? sel.zpsm < 2 : sel.zpsm == 0 && sel.notest;
+				bool fast = sel.ztest ? sel.zpsm < 2 : (sel.zpsm == 0 && sel.notest && step_size == vlen);
 
-				if (sel.notest)
+				if (sel.notest && step_size == vlen)
 				{
 					if (fast)
 					{
@@ -1607,9 +1878,9 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 					fs = fs.blend(fd, fm);
 				}
 
-				bool fast = sel.rfb ? sel.fpsm < 2 : sel.fpsm == 0 && sel.notest;
+				bool fast = sel.rfb ? sel.fpsm < 2 : (sel.fpsm == 0 && sel.notest && step_size == vlen);
 
-				if (sel.notest)
+				if (sel.notest && step_size == vlen)
 				{
 					if (fast)
 					{
@@ -1676,9 +1947,20 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 
 		// Step
 
-		steps -= vlen;
+		if (step_size == vlen)
+		{
+			steps -= vlen;
 
-		fza_offset += vlen / 4;
+			fza_offset += vlen / 4;
+		}
+		else
+		{
+			steps -= step_size;
+			left += step_size;
+
+			if ((left & (vlen - 1)) == 0)
+				fza_offset += vlen / 4;
+		}
 
 		if (sel.prim != GS_SPRITE_CLASS)
 		{
@@ -1743,23 +2025,70 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 			}
 		}
 
-		if (!sel.notest)
+		if (step_size == vlen)
+		{
+			if (!sel.notest)
+			{
+#if _M_SSE >= 0x501
+				test = GSVector8i::i8to32(g_const.m_test_256b[15 + (steps & (steps >> 31))]);
+#else
+				test = const_test[7 + (steps & (steps >> 31))];
+#endif
+			}
+		}
+		else // step_size != vlen
 		{
 #if _M_SSE >= 0x501
-			test = GSVector8i::i8to32(g_const.m_test_256b[15 + (steps & (steps >> 31))]);
+			test = GSVector8i::i8to32(g_const.m_test_256b[7 + step_size + (steps & (steps >> 31))]);
 #else
-			test = const_test[7 + (steps & (steps >> 31))];
+			test = const_test[3 + step_size + (steps & (steps >> 31))];
 #endif
+		}
+
+		if (step_size != vlen)
+		{
+			if (sel.prim != GS_SPRITE_CLASS)
+			{
+				if (sel.zb && !sel.zequal)
+					RollVec64(z0, z1, step_size);
+				if (sel.fwrite && sel.fge)
+					RollVec32(f, step_size);
+			}
+			if (sel.fb)
+			{
+				if (sel.tfx != TFX_NONE)
+				{
+					if (sel.fst)
+					{
+						RollVec32(s, step_size);
+						if (sel.prim != GS_SPRITE_CLASS || sel.mmin)
+							RollVec32(t, step_size);
+					}
+					else
+					{
+						RollVec32(s, step_size);
+						RollVec32(t, step_size);
+						RollVec32(q, step_size);
+					}
+				}
+				if (!(sel.tfx == TFX_DECAL && sel.tcc) && sel.iip)
+				{
+					RollVec32(rbf, step_size);
+					RollVec32(gaf, step_size);
+				}
+			}
+			RollVec32(test, left & (vlen - 1));
 		}
 	}
 }
 
+template<int step_size>
 void GSDrawScanline::CDrawEdge(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local)
 {
 	GSScanlineSelector sel = local.gd->sel;
 	sel.zwrite = 0;
 	sel.edge = 1;
-	CDrawScanline(pixels, left, top, scan, local, sel);
+	CDrawScanline<step_size>(pixels, left, top, scan, local, sel);
 }
 
 template <class T, bool masked>
@@ -1979,3 +2308,30 @@ void GSDrawScanline::DrawRect(const GSVector4i& r, const GSVertexSW& v, GSScanli
 		}
 	}
 }
+
+const std::array<GSDrawScanline::SetupPrimPtr, n_step_sizes> GSDrawScanline::m_c_setup_prim = {
+#if _M_SSE >= 0x501
+	GSDrawScanline::CSetupPrim<8>,
+#endif
+	GSDrawScanline::CSetupPrim<4>,
+	GSDrawScanline::CSetupPrim<2>,
+	GSDrawScanline::CSetupPrim<1>,
+};
+
+const std::array<GSDrawScanline::DrawScanlinePtr, n_step_sizes> GSDrawScanline::m_c_draw_scanline = {
+#if _M_SSE >= 0x501
+	GSDrawScanline::CDrawScanline<8>,
+#endif
+	GSDrawScanline::CDrawScanline<4>,
+	GSDrawScanline::CDrawScanline<2>,
+	GSDrawScanline::CDrawScanline<1>,
+};
+
+const std::array<GSDrawScanline::DrawScanlinePtr, n_step_sizes> GSDrawScanline::m_c_draw_edge = {
+#if _M_SSE >= 0x501
+	GSDrawScanline::CDrawEdge<8>,
+#endif
+	GSDrawScanline::CDrawEdge<4>,
+	GSDrawScanline::CDrawEdge<2>,
+	GSDrawScanline::CDrawEdge<1>,
+};

@@ -192,6 +192,7 @@ public:
 	void align(int x = 16) { return actual.align(x); }
 	void db(int code) { actual.db(code); }
 	void L(const std::string& label) { actual.L(label); }
+	void L(Label& label) { actual.L(label); }
 
 	void cdqe() { actual.cdqe(); }
 	void ret(int imm = 0) { actual.ret(imm); }
@@ -221,6 +222,7 @@ public:
 	FORWARD(2, BASE, test,  ARGS_OI);
 
 	FORWARD_JUMP(je)
+	FORWARD_JUMP(jne)
 	FORWARD_JUMP(jle)
 	FORWARD_JUMP(jmp)
 
@@ -318,6 +320,7 @@ public:
 	AFORWARD(2, xorps,     ARGS_XO)
 
 	FORWARD_SSE_XMM0(pblendvb)
+	FORWARD(4, AVX2, vpblendd, const Ymm&, const Ymm&, const Ymm&, u8);
 
 	FORWARD(2, AVX,  vbroadcastss,   ARGS_XO)
 	FORWARD(2, AVX,  vbroadcastsd,   const Ymm&, const Address&)
@@ -326,6 +329,7 @@ public:
 	FORWARD(3, FMA,  vfmadd213ps,    ARGS_XXO)
 	FORWARD(3, AVX2, vextracti128,   const Operand&, const Ymm&, u8)
 	FORWARD(4, AVX2, vinserti128,    const Ymm&, const Ymm&, const Operand&, u8);
+	FORWARD(4, AVX,  vperm2f128,     const Ymm&, const Ymm&, const Operand&, u8);
 	FORWARD(2, AVX2, vpbroadcastd,   ARGS_XO)
 	FORWARD(2, AVX2, vpbroadcastq,   ARGS_XO)
 	FORWARD(2, AVX2, vpbroadcastw,   ARGS_XO)

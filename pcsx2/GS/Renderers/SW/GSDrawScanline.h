@@ -52,12 +52,20 @@ public:
 	void PrintStats();
 
 private:
+	static const std::array<SetupPrimPtr, n_step_sizes> m_c_setup_prim;
+	static const std::array<DrawScanlinePtr, n_step_sizes> m_c_draw_scanline;
+	static const std::array<DrawScanlinePtr, n_step_sizes> m_c_draw_edge;
+
 	GSCodeGeneratorFunctionMap<GSSetupPrimCodeGenerator, u64, SetupPrimPtr> m_sp_map;
 	GSCodeGeneratorFunctionMap<GSDrawScanlineCodeGenerator, u64, DrawScanlinePtr> m_ds_map;
 
+	template<int step_size>
 	static void CSetupPrim(const GSVertexSW* vertex, const u16* index, const GSVertexSW& dscan, GSScanlineLocalData& local);
+	template<int step_size>
 	static void CDrawScanline(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local);
+	template<int step_size>
 	static void CDrawEdge(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local);
+	template<int step_size>
 	__ri static void CDrawScanline(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local, GSScanlineSelector sel);
 };
 
