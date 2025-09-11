@@ -339,6 +339,8 @@ void MainWindow::connectSignals()
 	connect(m_ui.actionToolbarSettings, &QAction::triggered, this, &MainWindow::onSettingsTriggeredFromToolbar);
 	connect(m_ui.actionToolbarControllerSettings, &QAction::triggered,
 		[this]() { doControllerSettings(ControllerSettingsWindow::Category::GlobalSettings); });
+	connect(m_ui.actionToolbarHotkeySettings, &QAction::triggered,
+		[this]() { doControllerSettings(ControllerSettingsWindow::Category::HotkeySettings); });
 	connect(m_ui.actionToolbarScreenshot, &QAction::triggered, this, &MainWindow::onScreenshotActionTriggered);
 	connect(m_ui.actionExit, &QAction::triggered, this, &MainWindow::close);
 	connect(m_ui.actionScreenshot, &QAction::triggered, this, &MainWindow::onScreenshotActionTriggered);

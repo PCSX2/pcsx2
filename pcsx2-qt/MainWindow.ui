@@ -266,6 +266,7 @@
    <addaction name="separator"/>
    <addaction name="actionToolbarSettings"/>
    <addaction name="actionToolbarControllerSettings"/>
+   <addaction name="actionToolbarHotkeySettings"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionStartFile">
@@ -456,6 +457,14 @@
    </property>
    <property name="text">
     <string>&amp;Hotkeys</string>
+   </property>
+  </action>
+  <action name="actionToolbarHotkeySettings">
+   <property name="icon">
+    <iconset theme="keyboard-line"/>
+   </property>
+   <property name="text">
+    <string comment="In Toolbar">Hotkeys</string>
    </property>
   </action>
   <action name="actionGraphicsSettings">
