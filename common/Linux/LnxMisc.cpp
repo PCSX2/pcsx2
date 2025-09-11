@@ -12,6 +12,7 @@
 #include "common/Threading.h"
 #include "common/WindowInfo.h"
 
+#include "pcsx2/Config.h"
 #include "pcsx2/Host.h"
 #include "fmt/format.h"
 
@@ -371,6 +372,12 @@ bool Common::PlaySoundAsync(const char* path)
 
 void Common::CreateShortcut(const std::string name, const std::string game_path, std::vector<std::string> passed_cli_args, bool is_desktop)
 {
+	if (std::getenv("container"))
+	{
+		Host::ReportErrorAsync(TRANSLATE_SV("LnxMisc", "Failed to create shortcut"), TRANSLATE_SV("LnxMisc", "Game shortcut creation are not supported when running under Flatpak due to insufficient permission."));
+		return;
+	}
+
 	if (name.empty())
 	{
 		Host::ReportErrorAsync(TRANSLATE_SV("LnxMisc", "Failed to create shortcut"), TRANSLATE_SV("LnxMisc", "Cannot create shortcut without a name."));
@@ -396,29 +403,24 @@ void Common::CreateShortcut(const std::string name, const std::string game_path,
 
 	// Find home directory
 	std::string link_path;
-	if (const char* home = getenv("HOME"))
+	const char* home = std::getenv("HOME");
+	const char* xdg_desktop_dir = std::getenv("XDG_DESKTOP_DIR");
+	const char* xdg_data_home = std::getenv("XDG_DATA_HOME");
+	if (home)
 	{
 		if (is_desktop)
 		{
-			if (const char* xdg_desktop_dir = getenv("XDG_DESKTOP_DIR"))
-			{
+			if (xdg_desktop_dir)
 				link_path = fmt::format("{}/{}.desktop", xdg_desktop_dir, clean_name);
-			}
 			else
-			{
 				link_path = fmt::format("{}/Desktop/{}.desktop", home, clean_name);
-			}
 		}
 		else
 		{
-			if (const char* xdg_data_home = getenv("XDG_DATA_HOME"))
-			{
+			if (xdg_data_home)
 				link_path = fmt::format("{}/applications/{}.desktop", xdg_data_home, clean_name);
-			}
 			else
-			{
 				link_path = fmt::format("{}/.local/share/applications/{}.desktop", home, clean_name);
-			}
 		}
 	}
 	else
@@ -442,10 +444,22 @@ void Common::CreateShortcut(const std::string name, const std::string game_path,
 	if (!lossless)
 		Host::ReportWarningAsync(TRANSLATE_SV("LnxMisc", "Warning"), TRANSLATE_SV("LnxMisc", "File path contains invalid character(s). The resulting shortcut may not work."));
 
-	std::string final_args = StringUtil::JoinString(passed_cli_args.begin(), passed_cli_args.end(), " ");
+	std::string cmdline = StringUtil::JoinString(passed_cli_args.begin(), passed_cli_args.end(), " ");
 
-	Console.WriteLnFmt("Creating a shortcut for '{}' with arguments '{}'", name, final_args);
+	// Copy PCSX2 icon
+	std::string icon_dest;
+	if (xdg_data_home)
+		icon_dest = fmt::format("{}/icons/hicolor/scalable/apps/", xdg_data_home);
+	else
+		icon_dest = fmt::format("{}/.local/share/icons/hicolor/scalable/apps/", home);
 
+	std::string icon_name = "PCSX2.svg";
+	std::string icon_path = fmt::format("{}/{}", icon_dest, icon_name).c_str();
+	if (FileSystem::EnsureDirectoryExists(icon_dest.c_str(), True))
+		FileSystem::CopyFilePath(Path::Combine(EmuFolders::Resources, "icons/PCSX2.svg").c_str(), icon_path.c_str(), false);
+
+	std::string final_args;
+	final_args = fmt::format("{} {} -- {}", executable_path, cmdline, clean_path);
 	std::string file_content =
 		"[Desktop Entry]\n"
 		"Encoding=UTF-8\n"
@@ -453,8 +467,8 @@ void Common::CreateShortcut(const std::string name, const std::string game_path,
 		"Type=Application\n"
 		"Terminal=false\n"
 		"StartupWMClass=PCSX2\n"
-		"Exec=\'" + executable_path + "' " + final_args + " -- " + clean_path + "\n"
-		"Name=" + name + "\n"
+		"Exec=" + final_args + "\n"
+		"Name=" + clean_name + "\n"
 		"Icon=PCSX2\n"
 		"Categories=Game;Emulator;\n";
 	std::string_view sv(file_content);
@@ -469,9 +483,7 @@ void Common::CreateShortcut(const std::string name, const std::string game_path,
 	Console.WriteLnFmt(Color_StrongGreen, "{} shortcut for {} has been created succesfully.", is_desktop ? "Desktop" : "Start Menu", clean_name);
 
 	if (chmod(link_path.c_str(), S_IRWXU) != 0) // enables user to execute file
-	{
 		Console.ErrorFmt("Failed to change file permissions for .desktop file: {} ({})", strerror(errno), errno);
-	}
 }
 
 void Threading::Sleep(int ms)
