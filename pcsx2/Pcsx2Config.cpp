@@ -653,6 +653,7 @@ const char* Pcsx2Config::GSOptions::FMVAspectRatioSwitchNames[(size_t)FMVAspectR
 	nullptr};
 
 const char* Pcsx2Config::GSOptions::BlendingLevelNames[] = {
+	"Automatic",
 	"Minimum",
 	"Basic",
 	"Medium",

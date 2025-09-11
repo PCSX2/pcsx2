@@ -327,8 +327,9 @@ enum class TriFiltering : s8
 	Forced,
 };
 
-enum class AccBlendLevel : u8
+enum class AccBlendLevel : s8
 {
+	Automatic = -1,
 	Minimum,
 	Basic,
 	Medium,
@@ -811,7 +812,7 @@ struct Pcsx2Config
 		GSRendererType Renderer = GSRendererType::Auto;
 		float UpscaleMultiplier = 1.0f;
 
-		AccBlendLevel AccurateBlendingUnit = AccBlendLevel::Basic;
+		AccBlendLevel AccurateBlendingUnit = AccBlendLevel::Automatic;
 		BiFiltering TextureFiltering = BiFiltering::PS2;
 		TexturePreloadingLevel TexturePreloading = TexturePreloadingLevel::Full;
 		GSDumpCompressionMethod GSDumpCompression = GSDumpCompressionMethod::Zstandard;
