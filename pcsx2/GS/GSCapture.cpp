@@ -491,11 +491,27 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 			}
 		}
 
+		if (GSConfig.EnableVideoCaptureParameters)
+		{
+			res = wrap_av_dict_parse_string(&s_video_codec_arguments, GSConfig.VideoCaptureParameters.c_str(), "=", ":", 0);
+			if (res < 0)
+			{
+				LogAVError(res, "av_dict_parse_string() for video failed: ");
+				InternalEndCapture(lock);
+				return false;
+			}
+		}
+
 		if (hwconfig)
 		{
-			Console.WriteLn(Color_StrongGreen, fmt::format("Trying to use {} hardware device for video encoding.",
-												   wrap_av_hwdevice_get_type_name(hwconfig->device_type)));
-			res = wrap_av_hwdevice_ctx_create(&s_video_hw_context, hwconfig->device_type, nullptr, nullptr, 0);
+			const char* device = nullptr;
+			if (AVDictionaryEntry* dev = wrap_av_dict_get(s_video_codec_arguments, "vaapi_device", nullptr, 0))
+				device = dev->value;
+			if (AVDictionaryEntry* dev = wrap_av_dict_get(s_video_codec_arguments, "hwaccel_device", nullptr, 0))
+				device = dev->value;
+			Console.WriteLnFmt(Color_StrongGreen, "Trying to use {}:{} for video encoding.",
+			                   wrap_av_hwdevice_get_type_name(hwconfig->device_type), device ? device : "default");
+			res = wrap_av_hwdevice_ctx_create(&s_video_hw_context, hwconfig->device_type, device, nullptr, 0);
 			if (res < 0)
 			{
 				LogAVError(res, "av_hwdevice_ctx_create() failed: ");
@@ -536,17 +552,6 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 				Host::AddIconOSDMessage("GSCaptureHWError", ICON_FA_CAMERA,
 					"Failed to create hardware encoder, using software encoding.", Host::OSD_ERROR_DURATION);
 				hwconfig = nullptr;
-			}
-		}
-
-		if (GSConfig.EnableVideoCaptureParameters)
-		{
-			res = wrap_av_dict_parse_string(&s_video_codec_arguments, GSConfig.VideoCaptureParameters.c_str(), "=", ":", 0);
-			if (res < 0)
-			{
-				LogAVError(res, "av_dict_parse_string() for video failed: ");
-				InternalEndCapture(lock);
-				return false;
 			}
 		}
 
