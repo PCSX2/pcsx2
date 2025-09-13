@@ -40,7 +40,7 @@ static constexpr RendererInfo s_renderer_info[] = {
 	{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Metal"), GSRendererType::Metal},
 #endif
 	//: Graphics backend/engine type (refers to emulating the GS in software, on the CPU). Translate accordingly.
-	{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Software"), GSRendererType::SW},
+	{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Software Renderer"), GSRendererType::SW},
 	//: Null here means that this is a graphics backend that will show nothing.
 	{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Null"), GSRendererType::Null},
 };
@@ -635,7 +635,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 
 		dialog()->registerWidgetHelp(m_fixes.readTCOnClose, tr("Read Targets When Closing"), tr("Unchecked"),
 			tr("Flushes all targets in the texture cache back to local memory when shutting down. Can prevent lost visuals when saving "
-			   "state or switching renderers, but can also cause graphical corruption."));
+			   "state or switching graphics APIs, but can also cause graphical corruption."));
 
 		dialog()->registerWidgetHelp(m_fixes.estimateTextureRegion, tr("Estimate Texture Region"), tr("Unchecked"),
 			tr("Attempts to reduce the texture size when games do not set it themselves (e.g. Snowblind games)."));
@@ -828,7 +828,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 		dialog()->registerWidgetHelp(m_advanced.useBlitSwapChain, tr("Use Blit Swap Chain"), tr("Unchecked"),
 			//: Blit = a data operation. You might want to write it as-is, but fully uppercased. More information: https://en.wikipedia.org/wiki/Bit_blit
 			tr("Uses a blit presentation model instead of flipping when using the Direct3D 11 "
-			   "renderer. This usually results in slower performance, but may be required for some "
+			   "graphics API. This usually results in slower performance, but may be required for some "
 			   "streaming applications, or to uncap framerates on some systems."));
 
 		dialog()->registerWidgetHelp(m_advanced.exclusiveFullscreenControl, tr("Allow Exclusive Fullscreen"), tr("Automatic (Default)"),

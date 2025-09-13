@@ -3199,6 +3199,21 @@ void VMManager::WarnAboutUnsafeSettings()
 			append(ICON_FA_BUG,
 				TRANSLATE_SV("VMManager", "Debug device is enabled. This will massively reduce performance."));
 		}
+		if (EmuConfig.GS.Dithering == 3)
+		{
+			append(ICON_FA_TV,
+				TRANSLATE_SV("VMManager", "Dithering is set to Force 32 bit. This will break rendering in some games."));
+		}
+		if (EmuConfig.GS.Dithering == 0)
+		{
+			append(ICON_FA_TV,
+				TRANSLATE_SV("VMManager", "Dithering is disabled. This will cause color banding in some games."));
+		}
+		if (EmuConfig.GS.IntegerScaling)
+		{
+			append(ICON_FA_TV,
+				TRANSLATE_SV("VMManager", "Integer scaling is enabled. This may shrink the image."));
+		}
 		static bool render_change_warn = false;
 		if (EmuConfig.GS.Renderer != GSRendererType::Auto && EmuConfig.GS.Renderer != GSRendererType::SW && !render_change_warn)
 		{
@@ -3206,7 +3221,7 @@ void VMManager::WarnAboutUnsafeSettings()
 			render_change_warn = true;
 
 			append(ICON_FA_CIRCLE_EXCLAMATION,
-				TRANSLATE_SV("VMManager", "Renderer is not set to Automatic. This may cause performance problems and graphical issues."));
+				TRANSLATE_SV("VMManager", "Graphics API is not set to Automatic. This may cause performance problems and graphical issues."));
 		}
 	}
 	if (EmuConfig.GS.TextureFiltering != BiFiltering::PS2)
