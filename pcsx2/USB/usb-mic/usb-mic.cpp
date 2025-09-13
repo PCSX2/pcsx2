@@ -24,6 +24,7 @@
 
 // Most stuff is based on Qemu 1.7 USB soundcard passthrough code.
 
+#include "IconsPromptFont.h"
 #include "USB/qemu-usb/qusb.h"
 #include "USB/qemu-usb/desc.h"
 #include "USB/qemu-usb/USBinternal.h"
@@ -1202,6 +1203,11 @@ namespace usb_mic
 	const char* MicrophoneDevice::TypeName() const
 	{
 		return "singstar";
+	}
+
+	const char* MicrophoneDevice::IconName() const
+	{
+		return ICON_PF_SINGSTAR_MIC;
 	}
 
 	bool MicrophoneDevice::Freeze(USBDevice* dev, StateWrapper& sw) const

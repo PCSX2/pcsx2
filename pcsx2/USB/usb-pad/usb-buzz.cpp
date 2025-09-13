@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "Host.h"
+#include "IconsPromptFont.h"
 #include "Input/InputManager.h"
 #include "StateWrapper.h"
 #include "USB/USB.h"
@@ -203,6 +204,11 @@ namespace usb_pad
 	const char* BuzzDevice::TypeName() const
 	{
 		return "BuzzDevice";
+	}
+
+	const char* BuzzDevice::IconName() const
+	{
+		return ICON_PF_BUZZ_CONTROLLER;
 	}
 
 	bool BuzzDevice::Freeze(USBDevice* dev, StateWrapper& sw) const

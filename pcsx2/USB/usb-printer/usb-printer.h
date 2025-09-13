@@ -114,6 +114,7 @@ namespace usb_printer
 		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const override;
 		const char* Name() const override;
 		const char* TypeName() const override;
+		const char* IconName() const override;
 
 		bool Freeze(USBDevice* dev, StateWrapper& sw) const override;
 		std::span<const char*> SubTypes() const override;
