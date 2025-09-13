@@ -386,10 +386,10 @@ float GSState::GetTvRefreshRate()
 			return 50;
 		case GSVideoMode::HDTV_720P:
 		case GSVideoMode::HDTV_1080I:
-			return 60;
 		default:
-			Console.Error("GS: Unknown video mode. Please report: https://github.com/PCSX2/pcsx2/issues");
-			return 0;
+			return 60;
+			//Console.Error("GS: Unknown video mode. Please report: https://github.com/PCSX2/pcsx2/issues");
+			//return 0;
 	}
 
 	ASSUME(0); // unreachable
