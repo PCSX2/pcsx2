@@ -5,6 +5,8 @@
 #include "QtUtils.h"
 #include "QtHost.h"
 #include <fmt/format.h>
+#include <qobject.h>
+#include <qstringliteral.h>
 #include "common/Console.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
@@ -12,7 +14,7 @@
 
 #include "pcsx2/Host.h"
 
-#if defined(__WIN32__) 
+#if defined(_WIN32)
 #include <Windows.h>
 #include <shlobj.h>
 #include <winnls.h>
@@ -30,7 +32,6 @@
 #include <qlineedit.h>
 #include <qpushbutton.h>
 
-
 ShortcutCreationDialog::ShortcutCreationDialog(QWidget* parent, const QString& title, const QString& path)
 	: QDialog(parent)
 	, m_title(title)
@@ -40,7 +41,7 @@ ShortcutCreationDialog::ShortcutCreationDialog(QWidget* parent, const QString& t
 	this->setWindowTitle(tr("Creating Shortcut For %1").arg(title));
 	this->setWindowIcon(QtHost::GetAppIcon());
 
-#if defined(__WIN32__) 
+#if defined(_WIN32)
 	m_ui.shortcutStartMenu->setText(tr("Start Menu"));
 #else
 	m_ui.shortcutStartMenu->setText(tr("Application Launcher"));
@@ -140,7 +141,7 @@ ShortcutCreationDialog::ShortcutCreationDialog(QWidget* parent, const QString& t
 
 void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::string game_path, std::vector<std::string> passed_cli_args, bool is_desktop)
 {
-#if defined(__WIN32__) 
+#if defined(_WIN32)
 	if (name.empty())
 	{
 		Console.Error("Cannot create shortcuts without a name.");
@@ -155,7 +156,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 		Host::ReportErrorAsync(TRANSLATE_SV("WinMisc", "Failed to create shortcut"), TRANSLATE_SV("WinMisc", "Filename contains illegal character."));
 		return;
 	}
-	
+
 	// Locate home directory
 	std::string link_file;
 	if (const char* home = std::getenv("USERPROFILE"))
@@ -212,7 +213,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 	if (FAILED(res))
 	{
 		Console.ErrorFmt("Failed to create shortcut: CoInitialize failed ({})", str_error(res));
-		Host::ReportErrorAsync(TRANSLATE_SV("WinMisc", "Failed to create shortcut"), str_error(res));
+		Host::ReportErrorAsync(TRANSLATE_SV("WinMisc", "Failed to create shortcut"), fmt::format("CoInitialize failed ({})", str_error(res)));
 		return;
 	}
 
@@ -296,19 +297,15 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 	Console.WriteLnFmt(Color_StrongGreen, "{} shortcut for {} has been created succesfully.", is_desktop ? "Desktop" : "Start Menu", clean_name);
 	cleanup(true, {});
 
-#elif !defined(__APPLE__)
-
-	if (std::getenv("container"))
-	{
-		Host::ReportErrorAsync(TRANSLATE_SV("LnxMisc", "Failed to create shortcut"), TRANSLATE_SV("LnxMisc", "Game shortcut creation are not supported when running under Flatpak due to insufficient permission."));
-		return;
-	}
+#else
 
 	if (name.empty())
 	{
 		Host::ReportErrorAsync(TRANSLATE_SV("LnxMisc", "Failed to create shortcut"), TRANSLATE_SV("LnxMisc", "Cannot create shortcut without a name."));
 		return;
 	}
+
+	bool is_flatpak = (std::getenv("container"));
 
 	// Sanitize filename and game path
 	const std::string clean_name = Path::SanitizeFileName(name);
@@ -320,11 +317,16 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 	}
 
 	// Find the executable path
-	const std::string executable_path = FileSystem::GetPackagePath();
+	std::string executable_path = FileSystem::GetPackagePath();
 	if (executable_path.empty())
 	{
 		Host::ReportErrorAsync(TRANSLATE_SV("LnxMisc", "Failed to create shortcut"), TRANSLATE_SV("LnxMisc", "Executable path is empty."));
 		return;
+	}
+
+	if (is_flatpak) // Flatpak
+	{
+		executable_path = "flatpak run net.pcsx2.PCSX2";
 	}
 
 	// Find home directory
@@ -372,17 +374,20 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 
 	std::string cmdline = StringUtil::JoinString(passed_cli_args.begin(), passed_cli_args.end(), " ");
 
-	// Copy PCSX2 icon
-	std::string icon_dest;
-	if (xdg_data_home)
-		icon_dest = fmt::format("{}/icons/hicolor/scalable/apps/", xdg_data_home);
-	else
-		icon_dest = fmt::format("{}/.local/share/icons/hicolor/scalable/apps/", home);
+	if (!is_flatpak)
+	{
+		// Copy PCSX2 icon
+		std::string icon_dest;
+		if (xdg_data_home)
+			icon_dest = fmt::format("{}/icons/hicolor/scalable/apps/", xdg_data_home);
+		else
+			icon_dest = fmt::format("{}/.local/share/icons/hicolor/scalable/apps/", home);
 
-	std::string icon_name = "PCSX2.svg";
-	std::string icon_path = fmt::format("{}/{}", icon_dest, icon_name).c_str();
-	if (FileSystem::EnsureDirectoryExists(icon_dest.c_str(), true))
-		FileSystem::CopyFilePath(Path::Combine(EmuFolders::Resources, "icons/PCSX2.svg").c_str(), icon_path.c_str(), false);
+		std::string icon_name = "net.pcsx2.PCSX2.svg";
+		std::string icon_path = fmt::format("{}/{}", icon_dest, icon_name).c_str();
+		if (FileSystem::EnsureDirectoryExists(icon_dest.c_str(), true))
+			FileSystem::CopyFilePath(Path::Combine(EmuFolders::Resources, "icons/PCSX2.svg").c_str(), icon_path.c_str(), false);
+	}
 
 	std::string final_args;
 	final_args = fmt::format("{} {} -- {}", executable_path, cmdline, clean_path);
@@ -395,12 +400,21 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 		"StartupWMClass=PCSX2\n"
 		"Exec=" + final_args + "\n"
 		"Name=" + clean_name + "\n"
-		"Icon=PCSX2\n"
+		"Icon=net.pcsx2.PCSX2\n"
 		"Categories=Game;Emulator;\n";
 	std::string_view sv(file_content);
 
+	// Prompt user for shortcut saving destination
+	QString final_path(QStringLiteral("%1").arg(QString::fromStdString(link_path)));
+	const QString filter(tr("Desktop Shortcut Files (*.desktop)"));
+
+	final_path = QDir::toNativeSeparators(QFileDialog::getSaveFileName(this, tr("Create Game Shortcut"), final_path, filter));
+
+	if (final_path.isEmpty())
+		return;
+
 	// Write to .desktop file
-	if (!FileSystem::WriteStringToFile(link_path.c_str(), sv))
+	if (!FileSystem::WriteStringToFile(final_path.toStdString().c_str(), sv))
 	{
 		Host::ReportErrorAsync(TRANSLATE_SV("LnxMisc", "Error"), TRANSLATE_SV("LnxMisc", "Failed to create .desktop file"));
 		return;
@@ -408,7 +422,8 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 
 	Console.WriteLnFmt(Color_StrongGreen, "{} shortcut for {} has been created succesfully.", is_desktop ? "Desktop" : "Start Menu", clean_name);
 
-	if (chmod(link_path.c_str(), S_IRWXU) != 0) // enables user to execute file
+	if (chmod(final_path.toStdString().c_str(), S_IRWXU) != 0) // enables user to execute file
 		Console.ErrorFmt("Failed to change file permissions for .desktop file: {} ({})", strerror(errno), errno);
+
 #endif
 }
