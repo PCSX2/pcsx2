@@ -15,6 +15,11 @@ public:
 	ShortcutCreationDialog(QWidget* parent, const QString& title, const QString& path);
 	~ShortcutCreationDialog() = default;
 
+#if !defined(__APPLE__)
+	// Create desktop shortcut for games
+	void CreateShortcut(const std::string name, const std::string game_path, std::vector<std::string> passed_cli_args, bool is_desktop);
+#endif
+
 protected:
 	QString m_title;
 	QString m_path;
