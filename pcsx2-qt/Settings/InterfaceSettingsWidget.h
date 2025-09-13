@@ -18,9 +18,12 @@ public:
 Q_SIGNALS:
 	void themeChanged();
 	void languageChanged();
+	void backgroundChanged();
 
 private Q_SLOTS:
 	void onRenderToSeparateWindowChanged();
+	void onSetGameListBackgroundTriggered();
+	void onClearGameListBackgroundTriggered();
 
 private:
 	void populateLanguages();
