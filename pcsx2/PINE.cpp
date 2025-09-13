@@ -19,7 +19,7 @@
 
 #include "fmt/format.h"
 
-#if _WIN32
+#if defined(_WIN32)
 #define read_portable(a, b, c) (recv(a, (char*)b, c, 0))
 #define write_portable(a, b, c) (send(a, (const char*)b, c, 0))
 #define safe_close_portable(a) \
@@ -31,9 +31,23 @@
 			(a) = INVALID_SOCKET; \
 		} \
 	} while (0)
-#define bzero(b, len) (memset((b), '\0', (len)), (void)0)
 #include "common/RedtapeWindows.h"
 #include <WinSock2.h>
+#elif defined(__linux__) || defined(__FreeBSD__)
+#define read_portable(a, b, c) (read(a, b, c))
+#define write_portable(a, b, c) (send(a, b, c, MSG_NOSIGNAL))
+#define safe_close_portable(a) \
+	do \
+	{ \
+		if ((a) >= 0) \
+		{ \
+			close((a)); \
+			(a) = -1; \
+		} \
+	} while (0)
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <unistd.h>
 #else
 #define read_portable(a, b, c) (read(a, b, c))
 #define write_portable(a, b, c) (write(a, b, c))
@@ -374,6 +388,11 @@ bool PINEServer::AcceptClient()
 		Console.WriteLn("PINE: New client with FD %d connected.", (int)m_msgsock);
 		return true;
 	}
+
+#ifdef __APPLE__
+	int nosigpipe = 1;
+	setsockopt(m_msgsock, SOL_SOCKET, SO_NOSIGPIPE, &nosigpipe, sizeof(nosigpipe));
+#endif
 
 	// everything else is non recoverable in our scope
 	// we also mark as recoverable socket errors where it would block a
