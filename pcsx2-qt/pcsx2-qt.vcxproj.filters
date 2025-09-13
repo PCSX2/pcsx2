@@ -240,7 +240,11 @@
     <ClCompile Include="$(IntDir)moc_CoverDownloadDialog.cpp">
       <Filter>moc</Filter>
     </ClCompile>
+    <ClCompile Include="$(IntDir)moc_ShortcutCreationDialog.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
     <ClCompile Include="CoverDownloadDialog.cpp" />
+    <ClCompile Include="ShortcutCreationDialog.cpp" />
     <ClCompile Include="QtProgressCallback.cpp" />
     <ClCompile Include="$(IntDir)moc_QtProgressCallback.cpp">
       <Filter>moc</Filter>
@@ -618,6 +622,7 @@
     <QtMoc Include="QtHost.h" />
     <QtMoc Include="CoverDownloadDialog.h" />
     <QtMoc Include="QtProgressCallback.h" />
+    <QtMoc Include="ShortcutCreationDialog.h" />
     <QtMoc Include="Settings\AchievementLoginDialog.h">
       <Filter>Settings</Filter>
     </QtMoc>
@@ -994,6 +999,7 @@
     <QtUi Include="CoverDownloadDialog.ui" />
     <QtUi Include="MainWindow.ui" />
     <QtUi Include="SetupWizardDialog.ui" />
+    <QtUi Include="ShortcutCreationDialog.ui" />
     <QtUi Include="Debugger\StackView.ui">
       <Filter>Debugger</Filter>
     </QtUi>
