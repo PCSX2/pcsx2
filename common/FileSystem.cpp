@@ -2667,10 +2667,6 @@ std::string FileSystem::GetPackagePath()
 	if (const char* appimage_path = getenv("APPIMAGE"))
 		return std::string(appimage_path);
 
-	// Or flatpak...
-	if (const char* flatpak_path = getenv("container"))
-		return std::string(flatpak_path);
-
 	// Otherwise, find the executable using `GetProgramPath()`
 
 	return GetProgramPath();
