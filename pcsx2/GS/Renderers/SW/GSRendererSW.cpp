@@ -1076,8 +1076,6 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 				if (gd.sel.fst)
 				{
 					pxAssert(gd.sel.lcm == 1);
-					pxAssert(((m_vt.m_min.t.uph(m_vt.m_max.t) == GSVector4::zero()).mask() & 3) == 3); // ratchet and clank (menu)
-
 					gd.sel.lcm = 1;
 				}
 

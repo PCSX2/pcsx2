@@ -1293,15 +1293,6 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 
 				rb = frb.lerp16<0>(rb, fog);
 				ga = fga.lerp16<0>(ga, fog).mix16(ga);
-
-				/*
-				fog = fog.srl16<7>();
-
-				VectorI ifog = VectorI::x00ff().sub16(fog);
-
-				rb = rb.mul16l(fog).add16(frb.mul16l(ifog)).srl16<8>();
-				ga = ga.mul16l(fog).add16(fga.mul16l(ifog)).srl16<8>().mix16(ga);
-				*/
 			}
 
 			// ReadFrame
