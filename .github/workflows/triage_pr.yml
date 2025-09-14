@@ -8,7 +8,7 @@ jobs:
     if: github.repository == 'PCSX2/pcsx2'
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/labeler@v5
+    - uses: actions/labeler@v6
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
 
