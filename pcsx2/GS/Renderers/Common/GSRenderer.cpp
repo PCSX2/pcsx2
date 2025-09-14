@@ -107,9 +107,20 @@ bool GSRenderer::Merge(int field)
 	}
 	else
 	{
-		if (PCRTCDisplays.PCRTCDisplays[0].enabled)
+		const bool use_rc1 =
+			PCRTCDisplays.PCRTCDisplays[0].enabled &&                    // RC1 enabled.
+				(!(m_regs->PMODE.MMOD == 1 && m_regs->PMODE.ALP == 0) || // Blend RC1 with non-zero alpha.
+				(m_regs->PMODE.AMOD == 0) ||                             // Use alpha of RC1.
+				(feedback_merge && m_regs->EXTBUF.FBIN == 0));           // Use RC1 for feedback merge.
+		const bool use_rc2 =
+			PCRTCDisplays.PCRTCDisplays[1].enabled &&          // RC2 enabled.
+				// Blending RC2 and not overwriting completely with RC1.
+				((m_regs->PMODE.SLBG == 0 && !(use_rc1 && m_regs->PMODE.MMOD == 1 && m_regs->PMODE.ALP == 255)) || 
+				(m_regs->PMODE.AMOD == 1) ||                   // Use alpha of RC2.
+				(feedback_merge && m_regs->EXTBUF.FBIN == 1)); // Use RC2 for feedback merge.
+		if (use_rc1)
 			tex[0] = GetOutput(0, tex_scale[0], y_offset[0]);
-		if (PCRTCDisplays.PCRTCDisplays[1].enabled)
+		if (use_rc2)
 			tex[1] = GetOutput(1, tex_scale[1], y_offset[1]);
 		if (feedback_merge)
 			tex[2] = GetFeedbackOutput(tex_scale[2]);
