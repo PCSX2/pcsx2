@@ -83,6 +83,13 @@ ShortcutCreationDialog::ShortcutCreationDialog(QWidget* parent, const QString& t
 	m_ui.customArgsInstruction->setTextInteractionFlags(Qt::TextBrowserInteraction);
 	m_ui.customArgsInstruction->setOpenExternalLinks(true);
 
+	if (std::getenv("container"))
+	{
+		m_ui.portableModeToggle->setEnabled(false);
+		m_ui.shortcutDesktop->setEnabled(false);
+		m_ui.shortcutStartMenu->setEnabled(false);
+	}
+
 	connect(m_ui.dialogButtons, &QDialogButtonBox::accepted, this, [&]() {
 		std::vector<std::string> args;
 
@@ -325,9 +332,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 	}
 
 	if (is_flatpak) // Flatpak
-	{
 		executable_path = "flatpak run net.pcsx2.PCSX2";
-	}
 
 	// Find home directory
 	std::string link_path;
@@ -390,7 +395,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 	}
 
 	std::string final_args;
-	final_args = fmt::format("{} {} -- {}", executable_path, cmdline, clean_path);
+	final_args = fmt::format("{} {} -- '{}'", executable_path, cmdline, clean_path);
 	std::string file_content =
 		"[Desktop Entry]\n"
 		"Encoding=UTF-8\n"
