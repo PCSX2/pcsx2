@@ -340,6 +340,8 @@ void GSRasterizer::DrawLine(const GSVertexSW* vertex, const u16* index)
 			if (m_scissor.top <= p.y && p.y < m_scissor.bottom && IsOneOfMyScanlines(p.y))
 			{
 				GSVector4 lrf = scan.p.upl(v1.p.blend32(v0.p, mask)).ceil();
+				if (mask.mask())
+					lrf += GSVector4(1.0f, 1.0f, 0.0f, 0.0f); // Add bias so that right pixel is included and left pixel is omitted.
 				GSVector4 l = lrf.max(m_fscissor_x);
 				GSVector4 r = lrf.min(m_fscissor_x);
 				GSVector4i lr = GSVector4i(l.xxyy(r));
