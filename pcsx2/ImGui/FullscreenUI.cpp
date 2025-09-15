@@ -6948,14 +6948,19 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
 
 			DrawGameCover(entry, ImGui::GetWindowDrawList(), bb.Min, bb.Min + image_size);
 
-			const ImRect title_bb(ImVec2(bb.Min.x, bb.Min.y + image_height + title_spacing), bb.Max);
-			const std::string_view title(std::string_view(entry->GetTitle(true)).substr(0, 31));
-			draw_title.clear();
-			fmt::format_to(std::back_inserter(draw_title), "{}{}", title, (title.length() == entry->GetTitle(true).length()) ? "" : "...");
-			ImGui::PushFont(g_medium_font.first, g_medium_font.second);
-			ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, draw_title.c_str(), draw_title.c_str() + draw_title.length(), nullptr,
-				ImVec2(0.5f, 0.0f), &title_bb);
-			ImGui::PopFont();
+			const bool show_titles = Host::GetBaseBoolSettingValue("UI", "FullscreenUIShowGameGridTitles", true);
+
+			if (show_titles) 
+			{
+				const ImRect title_bb(ImVec2(bb.Min.x, bb.Min.y + image_height + title_spacing), bb.Max);
+				const std::string_view title(std::string_view(entry->GetTitle(true)).substr(0, 31));
+				draw_title.clear();
+				fmt::format_to(std::back_inserter(draw_title), "{}{}", title, (title.length() == entry->GetTitle(true).length()) ? "" : "...");
+				ImGui::PushFont(g_medium_font.first, g_medium_font.second);
+				ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, draw_title.c_str(), draw_title.c_str() + draw_title.length(), nullptr,
+					ImVec2(0.5f, 0.0f), &title_bb);
+				ImGui::PopFont();
+			}
 
 			if (pressed)
 			{
@@ -7181,6 +7186,9 @@ void FullscreenUI::DrawGameListSettingsWindow()
 		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_ARROW_DOWN_A_Z, "Sort Reversed"),
 			FSUI_CSTR("Reverses the game list sort order from the default (usually ascending to descending)."), "UI",
 			"FullscreenUIGameSortReverse", false);
+		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_TAG, "Show Titles"),
+			FSUI_CSTR("Shows Titles for Games when in Game Grid View Mode"), "UI",
+			"FullscreenUIShowGameGridTitles", true);
 	}
 
 	MenuHeading(FSUI_CSTR("Cover Settings"));
