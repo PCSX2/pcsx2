@@ -42,7 +42,7 @@ cd "%BUILDDIR%"
 
 set FREETYPE=2.14.1
 set HARFBUZZ=11.5.0
-set LIBJPEGTURBO=3.1.1
+set LIBJPEGTURBO=3.1.2
 set LIBPNG=1650
 set SDL=SDL3-3.2.22
 set LIBPNGLONG=1.6.50
@@ -67,7 +67,7 @@ call :downloadfile "freetype-%FREETYPE%.tar.gz" https://sourceforge.net/projects
 call :downloadfile "harfbuzz-%HARFBUZZ%.zip" https://github.com/harfbuzz/harfbuzz/archive/refs/tags/%HARFBUZZ%.zip a7c2412e8fce884d98f67a0c79edf7f0b922adc9cbc177cb4fd4eeeca3fcdbe2 || goto error
 call :downloadfile "lpng%LIBPNG%.zip" https://download.sourceforge.net/libpng/lpng1650.zip 4be6938313b08d5921f9dede13f2789b653c96f4f8595d92ff3f09c9320e51c7 || goto error
 call :downloadfile "lpng%LIBPNG%-apng.patch.gz" https://download.sourceforge.net/libpng-apng/libpng-%LIBPNGLONG%-apng.patch.gz 687ddc0c7cb128a3ea58e159b5129252537c27ede0c32a93f11f03127f0c0165 || goto error
-call :downloadfile "libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/%LIBJPEGTURBO%/libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" aadc97ea91f6ef078b0ae3a62bba69e008d9a7db19b34e4ac973b19b71b4217c || goto error
+call :downloadfile "libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/%LIBJPEGTURBO%/libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" 8f0012234b464ce50890c490f18194f913a7b1f4e6a03d6644179fa0f867d0cf || goto error
 call :downloadfile "libwebp-%WEBP%.tar.gz" "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-%WEBP%.tar.gz" e4ab7009bf0629fd11982d4c2aa83964cf244cffba7347ecd39019a9e38c4564 || goto error
 call :downloadfile "%SDL%.zip" "https://libsdl.org/release/%SDL%.zip" 3d60068b1e5c83c66bb14c325dfef46f8fcc380735b4591de6f5e7b9738929d1 || goto error
 call :downloadfile "qtbase-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtbase-everywhere-src-%QT%.zip" 97d59c78e40b4ddd018738d285a12afc320b57f8265a3f760353739a3619ccdb || goto error
