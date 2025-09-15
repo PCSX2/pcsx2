@@ -18,6 +18,7 @@
 #include "IopMem.h"
 #include "Memory.h"
 #include "Patch.h"
+#include "R5900.h"
 
 #include "IconsFontAwesome6.h"
 #include "fmt/format.h"
@@ -793,6 +794,9 @@ void Patch::UpdateActivePatches(bool reload_enabled_list, bool verbose, bool ver
 				Host::OSD_INFO_DURATION);
 		}
 	}
+
+	if ((!s_active_gamedb_dynamic_patches.empty() || !s_active_pnach_dynamic_patches.empty()) && Cpu)
+		Cpu->Reset();
 }
 
 void Patch::ApplyPatchSettingOverrides()
