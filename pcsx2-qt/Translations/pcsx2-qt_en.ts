@@ -16371,7 +16371,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1296"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1292"/>
         <source>Save slot {0} selected ({1}).</source>
         <translation type="unfinished"></translation>
     </message>
@@ -16379,63 +16379,63 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
 <context>
     <name>ImGuiOverlays</name>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="828"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="824"/>
         <source>{} Recording Input</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="832"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="828"/>
         <source>{} Replaying</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="901"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="897"/>
         <source>Saved at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="928"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="924"/>
         <source>Save state selector is unavailable without a valid game serial.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1015"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1011"/>
         <source>Load</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1017"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1013"/>
         <source>Save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1019"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1015"/>
         <source>Select Previous</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1021"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1017"/>
         <source>Select Next</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1023"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1019"/>
         <source>Close Menu</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1076"/>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1105"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1072"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1101"/>
         <source>Save Slot {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1106"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1102"/>
         <source>No save present in this slot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1293"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1289"/>
         <source>no save yet</source>
         <translation type="unfinished"></translation>
     </message>
@@ -17336,18 +17336,18 @@ Right click to clear binding</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1495"/>
-        <location filename="../MainWindow.cpp" line="1556"/>
+        <location filename="../MainWindow.cpp" line="1497"/>
+        <location filename="../MainWindow.cpp" line="1558"/>
         <source>Change Disc</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2965"/>
+        <location filename="../MainWindow.cpp" line="2967"/>
         <source>Load State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="614"/>
+        <location filename="../MainWindow.ui" line="623"/>
         <source>S&amp;ettings</source>
         <translation type="unfinished"></translation>
     </message>
@@ -17382,139 +17382,139 @@ Right click to clear binding</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="276"/>
+        <location filename="../MainWindow.ui" line="277"/>
         <source>Start &amp;File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="308"/>
+        <location filename="../MainWindow.ui" line="309"/>
         <source>Start &amp;BIOS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="324"/>
+        <location filename="../MainWindow.ui" line="325"/>
         <source>&amp;Scan For New Games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="332"/>
+        <location filename="../MainWindow.ui" line="333"/>
         <source>&amp;Rescan All Games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="340"/>
+        <location filename="../MainWindow.ui" line="341"/>
         <source>Shut &amp;Down</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="356"/>
+        <location filename="../MainWindow.ui" line="357"/>
         <source>Shut Down &amp;Without Saving</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="364"/>
+        <location filename="../MainWindow.ui" line="365"/>
         <source>&amp;Reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="383"/>
+        <location filename="../MainWindow.ui" line="384"/>
         <source>&amp;Pause</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="418"/>
+        <location filename="../MainWindow.ui" line="419"/>
         <source>E&amp;xit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="426"/>
+        <location filename="../MainWindow.ui" line="427"/>
         <source>&amp;BIOS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="442"/>
+        <location filename="../MainWindow.ui" line="443"/>
         <source>&amp;Controllers</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="458"/>
+        <location filename="../MainWindow.ui" line="459"/>
         <source>&amp;Hotkeys</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="466"/>
+        <location filename="../MainWindow.ui" line="475"/>
         <source>&amp;Graphics</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="479"/>
+        <location filename="../MainWindow.ui" line="488"/>
         <source>&amp;Post-Processing Settings...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="500"/>
+        <location filename="../MainWindow.ui" line="509"/>
         <source>Resolution Scale</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="508"/>
+        <location filename="../MainWindow.ui" line="517"/>
         <source>&amp;GitHub Repository...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="516"/>
+        <location filename="../MainWindow.ui" line="525"/>
         <source>Support &amp;Forums...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="540"/>
+        <location filename="../MainWindow.ui" line="549"/>
         <source>&amp;Discord Server...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="548"/>
+        <location filename="../MainWindow.ui" line="557"/>
         <source>Check for &amp;Updates...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="557"/>
+        <location filename="../MainWindow.ui" line="566"/>
         <source>About &amp;Qt...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="566"/>
+        <location filename="../MainWindow.ui" line="575"/>
         <source>&amp;About PCSX2...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="495"/>
+        <location filename="../MainWindow.ui" line="504"/>
         <source>Fullscreen</source>
         <comment>In Toolbar</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="574"/>
+        <location filename="../MainWindow.ui" line="583"/>
         <source>Change Disc...</source>
         <comment>In Toolbar</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="582"/>
+        <location filename="../MainWindow.ui" line="591"/>
         <source>&amp;Audio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="653"/>
+        <location filename="../MainWindow.ui" line="662"/>
         <source>Global State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="661"/>
+        <location filename="../MainWindow.ui" line="670"/>
         <source>&amp;Screenshot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="284"/>
+        <location filename="../MainWindow.ui" line="285"/>
         <source>Start File</source>
         <comment>In Toolbar</comment>
         <translation type="unfinished"></translation>
@@ -17550,380 +17550,386 @@ Right click to clear binding</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="292"/>
+        <location filename="../MainWindow.ui" line="293"/>
         <source>Start D&amp;isc...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="300"/>
+        <location filename="../MainWindow.ui" line="301"/>
         <source>Start Disc</source>
         <comment>In Toolbar</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="316"/>
+        <location filename="../MainWindow.ui" line="317"/>
         <source>Start BIOS</source>
         <comment>In Toolbar</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="348"/>
+        <location filename="../MainWindow.ui" line="349"/>
         <source>Shut Down</source>
         <comment>In Toolbar</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="372"/>
+        <location filename="../MainWindow.ui" line="373"/>
         <source>Reset</source>
         <comment>In Toolbar</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="394"/>
+        <location filename="../MainWindow.ui" line="395"/>
         <source>Pause</source>
         <comment>In Toolbar</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="402"/>
+        <location filename="../MainWindow.ui" line="403"/>
         <source>Load State</source>
         <comment>In Toolbar</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="410"/>
+        <location filename="../MainWindow.ui" line="411"/>
         <source>Save State</source>
         <comment>In Toolbar</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="434"/>
+        <location filename="../MainWindow.ui" line="435"/>
         <source>&amp;Emulation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="450"/>
+        <location filename="../MainWindow.ui" line="451"/>
         <source>Controllers</source>
         <comment>In Toolbar</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="474"/>
+        <location filename="../MainWindow.ui" line="467"/>
+        <source>Hotkeys</source>
+        <comment>In Toolbar</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MainWindow.ui" line="483"/>
         <source>Achie&amp;vements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="487"/>
+        <location filename="../MainWindow.ui" line="496"/>
         <source>&amp;Fullscreen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="524"/>
+        <location filename="../MainWindow.ui" line="533"/>
         <source>PCSX2 &amp;Wiki...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="532"/>
+        <location filename="../MainWindow.ui" line="541"/>
         <source>D&amp;ocumentation...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="598"/>
+        <location filename="../MainWindow.ui" line="607"/>
         <source>&amp;Interface</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="606"/>
+        <location filename="../MainWindow.ui" line="615"/>
         <source>Add Game &amp;Directory...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="625"/>
+        <location filename="../MainWindow.ui" line="634"/>
         <source>Settings</source>
         <comment>In Toolbar</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="633"/>
+        <location filename="../MainWindow.ui" line="642"/>
         <source>&amp;From File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="638"/>
+        <location filename="../MainWindow.ui" line="647"/>
         <source>From &amp;Device...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="643"/>
+        <location filename="../MainWindow.ui" line="652"/>
         <source>From &amp;Game List...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="648"/>
+        <location filename="../MainWindow.ui" line="657"/>
         <source>&amp;Remove Disc</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="669"/>
+        <location filename="../MainWindow.ui" line="678"/>
         <source>Screenshot</source>
         <comment>In Toolbar</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="677"/>
+        <location filename="../MainWindow.ui" line="686"/>
         <source>&amp;Memory Cards</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="685"/>
+        <location filename="../MainWindow.ui" line="694"/>
         <source>&amp;Network &amp;&amp; HDD</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="693"/>
+        <location filename="../MainWindow.ui" line="702"/>
         <source>&amp;Folders</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="704"/>
+        <location filename="../MainWindow.ui" line="713"/>
         <source>&amp;Toolbar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="789"/>
+        <location filename="../MainWindow.ui" line="798"/>
         <source>Show Titl&amp;es (Grid View)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="835"/>
+        <location filename="../MainWindow.ui" line="844"/>
         <source>&amp;Open Data Directory...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="843"/>
+        <location filename="../MainWindow.ui" line="852"/>
         <source>&amp;Toggle Software Rendering</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="851"/>
+        <location filename="../MainWindow.ui" line="860"/>
         <source>&amp;Open Debugger</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="859"/>
+        <location filename="../MainWindow.ui" line="868"/>
         <source>&amp;Reload Cheats/Patches</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="867"/>
+        <location filename="../MainWindow.ui" line="876"/>
         <source>E&amp;nable System Console</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="875"/>
+        <location filename="../MainWindow.ui" line="884"/>
         <source>Enable &amp;Debug Console</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="883"/>
+        <location filename="../MainWindow.ui" line="892"/>
         <source>Enable &amp;Log Window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="891"/>
+        <location filename="../MainWindow.ui" line="900"/>
         <source>Enable &amp;Verbose Logging</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="899"/>
+        <location filename="../MainWindow.ui" line="908"/>
         <source>Enable EE Console &amp;Logging</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="907"/>
+        <location filename="../MainWindow.ui" line="916"/>
         <source>Enable &amp;IOP Console Logging</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="915"/>
+        <location filename="../MainWindow.ui" line="924"/>
         <source>Save Single Frame &amp;GS Dump</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="923"/>
+        <location filename="../MainWindow.ui" line="932"/>
         <source>&amp;New</source>
         <extracomment>This section refers to the Input Recording submenu.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="931"/>
+        <location filename="../MainWindow.ui" line="940"/>
         <source>&amp;Play</source>
         <extracomment>This section refers to the Input Recording submenu.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="939"/>
+        <location filename="../MainWindow.ui" line="948"/>
         <source>&amp;Stop</source>
         <extracomment>This section refers to the Input Recording submenu.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="952"/>
+        <location filename="../MainWindow.ui" line="961"/>
         <source>&amp;Controller Logs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="960"/>
+        <location filename="../MainWindow.ui" line="969"/>
         <source>&amp;Input Recording Logs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="976"/>
+        <location filename="../MainWindow.ui" line="985"/>
         <source>Enable &amp;CDVD Read Logging</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="984"/>
+        <location filename="../MainWindow.ui" line="993"/>
         <source>Save CDVD &amp;Block Dump</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="992"/>
+        <location filename="../MainWindow.ui" line="1001"/>
         <source>&amp;Enable Log Timestamps</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1000"/>
+        <location filename="../MainWindow.ui" line="1009"/>
         <source>Start Big Picture &amp;Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1016"/>
+        <location filename="../MainWindow.ui" line="1025"/>
         <source>&amp;Cover Downloader...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1024"/>
+        <location filename="../MainWindow.ui" line="1033"/>
         <source>&amp;Show Advanced Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1029"/>
+        <location filename="../MainWindow.ui" line="1038"/>
         <source>&amp;Recording Viewer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1040"/>
+        <location filename="../MainWindow.ui" line="1049"/>
         <source>&amp;Video Capture</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1048"/>
+        <location filename="../MainWindow.ui" line="1057"/>
         <source>&amp;Edit Cheats...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1056"/>
+        <location filename="../MainWindow.ui" line="1065"/>
         <source>Edit &amp;Patches...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="726"/>
+        <location filename="../MainWindow.ui" line="735"/>
         <source>&amp;Status Bar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="590"/>
-        <location filename="../MainWindow.ui" line="745"/>
+        <location filename="../MainWindow.ui" line="599"/>
+        <location filename="../MainWindow.ui" line="754"/>
         <source>Game &amp;List</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="715"/>
+        <location filename="../MainWindow.ui" line="724"/>
         <source>Loc&amp;k Toolbar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="737"/>
+        <location filename="../MainWindow.ui" line="746"/>
         <source>&amp;Verbose Status</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="756"/>
+        <location filename="../MainWindow.ui" line="765"/>
         <source>System &amp;Display</source>
         <extracomment>This grayed-out at first option will become available while there is a game emulated and the game list is displayed over the actual emulation, to let users display the system emulation once more.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="767"/>
+        <location filename="../MainWindow.ui" line="776"/>
         <source>Game &amp;Properties</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="775"/>
+        <location filename="../MainWindow.ui" line="784"/>
         <source>Game &amp;Grid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="797"/>
+        <location filename="../MainWindow.ui" line="806"/>
         <source>Zoom &amp;In (Grid View)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="800"/>
+        <location filename="../MainWindow.ui" line="809"/>
         <source>Ctrl++</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="808"/>
+        <location filename="../MainWindow.ui" line="817"/>
         <source>Zoom &amp;Out (Grid View)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="811"/>
+        <location filename="../MainWindow.ui" line="820"/>
         <source>Ctrl+-</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="819"/>
+        <location filename="../MainWindow.ui" line="828"/>
         <source>Refresh &amp;Covers (Grid View)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="827"/>
+        <location filename="../MainWindow.ui" line="836"/>
         <source>Open Memory Card Directory...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="944"/>
+        <location filename="../MainWindow.ui" line="953"/>
         <source>Input Recording Logs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="968"/>
+        <location filename="../MainWindow.ui" line="977"/>
         <source>Enable &amp;File Logging</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1599"/>
+        <location filename="../MainWindow.cpp" line="1601"/>
         <source>Start Big Picture Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1008"/>
-        <location filename="../MainWindow.cpp" line="1600"/>
+        <location filename="../MainWindow.ui" line="1017"/>
+        <location filename="../MainWindow.cpp" line="1602"/>
         <source>Big Picture</source>
         <comment>In Toolbar</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="696"/>
+        <location filename="../MainWindow.cpp" line="698"/>
         <source>Show Advanced Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="767"/>
-        <location filename="../MainWindow.cpp" line="816"/>
+        <location filename="../MainWindow.cpp" line="769"/>
+        <location filename="../MainWindow.cpp" line="818"/>
         <source>Video Capture</source>
         <translation type="unfinished"></translation>
     </message>
@@ -17938,17 +17944,17 @@ Right click to clear binding</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="674"/>
+        <location filename="../MainWindow.cpp" line="676"/>
         <source>Select location to save block dump:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="692"/>
+        <location filename="../MainWindow.cpp" line="694"/>
         <source>Do not show again</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="697"/>
+        <location filename="../MainWindow.cpp" line="699"/>
         <source>Changing advanced settings can have unpredictable effects on games, including graphical glitches, lock-ups, and even corrupted save files. We do not recommend changing advanced settings unless you know what you are doing, and the implications of changing each setting.
 
 The PCSX2 team will not provide any support for configurations that modify these settings, you are on your own.
@@ -17957,327 +17963,327 @@ Are you sure you want to continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="754"/>
-        <location filename="../MainWindow.cpp" line="779"/>
+        <location filename="../MainWindow.cpp" line="756"/>
+        <location filename="../MainWindow.cpp" line="781"/>
         <source>Record On Boot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="756"/>
+        <location filename="../MainWindow.cpp" line="758"/>
         <source>Did you want to start recording on boot?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="764"/>
-        <location filename="../MainWindow.cpp" line="813"/>
+        <location filename="../MainWindow.cpp" line="766"/>
+        <location filename="../MainWindow.cpp" line="815"/>
         <source>%1 Files (*.%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="781"/>
+        <location filename="../MainWindow.cpp" line="783"/>
         <source>Did you want to cancel recording on boot?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="806"/>
+        <location filename="../MainWindow.cpp" line="808"/>
         <source>Recording will start in a moment</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1161"/>
+        <location filename="../MainWindow.cpp" line="1163"/>
         <source>WARNING: Memory Card Busy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1287"/>
+        <location filename="../MainWindow.cpp" line="1289"/>
         <source>Confirm Shutdown</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1290"/>
+        <location filename="../MainWindow.cpp" line="1292"/>
         <source>Are you sure you want to shut down the virtual machine?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1292"/>
+        <location filename="../MainWindow.cpp" line="1294"/>
         <source>Save State For Resume</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1400"/>
-        <location filename="../MainWindow.cpp" line="1772"/>
-        <location filename="../MainWindow.cpp" line="2236"/>
-        <location filename="../MainWindow.cpp" line="2400"/>
-        <location filename="../MainWindow.cpp" line="2837"/>
-        <location filename="../MainWindow.cpp" line="2938"/>
-        <location filename="../MainWindow.cpp" line="2984"/>
+        <location filename="../MainWindow.cpp" line="1402"/>
+        <location filename="../MainWindow.cpp" line="1774"/>
+        <location filename="../MainWindow.cpp" line="2238"/>
+        <location filename="../MainWindow.cpp" line="2402"/>
+        <location filename="../MainWindow.cpp" line="2839"/>
+        <location filename="../MainWindow.cpp" line="2940"/>
+        <location filename="../MainWindow.cpp" line="2986"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1400"/>
+        <location filename="../MainWindow.cpp" line="1402"/>
         <source>You must select a disc to change discs.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1432"/>
+        <location filename="../MainWindow.cpp" line="1434"/>
         <source>Properties...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1448"/>
+        <location filename="../MainWindow.cpp" line="1450"/>
         <source>Set Cover Image...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1451"/>
+        <location filename="../MainWindow.cpp" line="1453"/>
         <source>Exclude From List</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1454"/>
+        <location filename="../MainWindow.cpp" line="1456"/>
         <source>Reset Play Time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1458"/>
+        <location filename="../MainWindow.cpp" line="1460"/>
         <source>Check Wiki Page</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1461"/>
+        <location filename="../MainWindow.cpp" line="1463"/>
         <source>Open Screenshots Folder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1467"/>
+        <location filename="../MainWindow.cpp" line="1469"/>
         <source>Default Boot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1474"/>
+        <location filename="../MainWindow.cpp" line="1476"/>
         <source>Fast Boot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1477"/>
+        <location filename="../MainWindow.cpp" line="1479"/>
         <source>Full Boot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1482"/>
+        <location filename="../MainWindow.cpp" line="1484"/>
         <source>Boot and Debug</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1506"/>
+        <location filename="../MainWindow.cpp" line="1508"/>
         <source>Add Search Directory...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1515"/>
+        <location filename="../MainWindow.cpp" line="1517"/>
         <source>Start File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1524"/>
+        <location filename="../MainWindow.cpp" line="1526"/>
         <source>Start Disc</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1541"/>
+        <location filename="../MainWindow.cpp" line="1543"/>
         <source>Select Disc Image</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1685"/>
+        <location filename="../MainWindow.cpp" line="1687"/>
         <source>Updater Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1691"/>
+        <location filename="../MainWindow.cpp" line="1693"/>
         <source>&lt;p&gt;Sorry, you are trying to update a PCSX2 version which is not an official GitHub release. To prevent incompatibilities, the auto-updater is only enabled on official builds.&lt;/p&gt;&lt;p&gt;To obtain an official build, please download from the link below:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://pcsx2.net/downloads/&quot;&gt;https://pcsx2.net/downloads/&lt;/a&gt;&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1696"/>
+        <location filename="../MainWindow.cpp" line="1698"/>
         <source>Automatic updating is not supported on the current platform.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1762"/>
+        <location filename="../MainWindow.cpp" line="1764"/>
         <source>Confirm File Creation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1763"/>
+        <location filename="../MainWindow.cpp" line="1765"/>
         <source>The pnach file &apos;%1&apos; does not currently exist. Do you want to create it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1772"/>
+        <location filename="../MainWindow.cpp" line="1774"/>
         <source>Failed to create &apos;%1&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1871"/>
+        <location filename="../MainWindow.cpp" line="1873"/>
         <source>Input Recording Failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1872"/>
+        <location filename="../MainWindow.cpp" line="1874"/>
         <source>Failed to create file: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1895"/>
+        <location filename="../MainWindow.cpp" line="1897"/>
         <source>Input Recording Files (*.p2m2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1930"/>
+        <location filename="../MainWindow.cpp" line="1932"/>
         <source>Input Playback Failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1931"/>
+        <location filename="../MainWindow.cpp" line="1933"/>
         <source>Failed to open file: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2017"/>
+        <location filename="../MainWindow.cpp" line="2019"/>
         <source>Paused</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2200"/>
+        <location filename="../MainWindow.cpp" line="2202"/>
         <source>Load State Failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2200"/>
+        <location filename="../MainWindow.cpp" line="2202"/>
         <source>Cannot load a save state without a running VM.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2224"/>
+        <location filename="../MainWindow.cpp" line="2226"/>
         <source>The new ELF cannot be loaded without resetting the virtual machine. Do you want to reset the virtual machine now?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2236"/>
+        <location filename="../MainWindow.cpp" line="2238"/>
         <source>Cannot change from game to GS dump without shutting down first.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2400"/>
+        <location filename="../MainWindow.cpp" line="2402"/>
         <source>Failed to get window info from widget</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1599"/>
+        <location filename="../MainWindow.cpp" line="1601"/>
         <source>Stop Big Picture Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1600"/>
+        <location filename="../MainWindow.cpp" line="1602"/>
         <source>Exit Big Picture</source>
         <comment>In Toolbar</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2743"/>
+        <location filename="../MainWindow.cpp" line="2745"/>
         <source>Game Properties</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2743"/>
+        <location filename="../MainWindow.cpp" line="2745"/>
         <source>Game properties is unavailable for the current game.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2795"/>
+        <location filename="../MainWindow.cpp" line="2797"/>
         <source>Could not find any CD/DVD-ROM devices. Please ensure you have a drive connected and sufficient permissions to access it.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2813"/>
+        <location filename="../MainWindow.cpp" line="2815"/>
         <source>Select disc drive:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2837"/>
+        <location filename="../MainWindow.cpp" line="2839"/>
         <source>This save state does not exist.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2850"/>
+        <location filename="../MainWindow.cpp" line="2852"/>
         <source>Select Cover Image</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2867"/>
+        <location filename="../MainWindow.cpp" line="2869"/>
         <source>Cover Already Exists</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2868"/>
+        <location filename="../MainWindow.cpp" line="2870"/>
         <source>A cover image for this game already exists, do you wish to replace it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2863"/>
-        <location filename="../MainWindow.cpp" line="2877"/>
-        <location filename="../MainWindow.cpp" line="2883"/>
-        <location filename="../MainWindow.cpp" line="2889"/>
+        <location filename="../MainWindow.cpp" line="2865"/>
+        <location filename="../MainWindow.cpp" line="2879"/>
+        <location filename="../MainWindow.cpp" line="2885"/>
+        <location filename="../MainWindow.cpp" line="2891"/>
         <source>Copy Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2877"/>
+        <location filename="../MainWindow.cpp" line="2879"/>
         <source>Failed to remove existing cover &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2883"/>
+        <location filename="../MainWindow.cpp" line="2885"/>
         <source>Failed to copy &apos;%1&apos; to &apos;%2&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2889"/>
+        <location filename="../MainWindow.cpp" line="2891"/>
         <source>Failed to remove &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2223"/>
-        <location filename="../MainWindow.cpp" line="2898"/>
+        <location filename="../MainWindow.cpp" line="2225"/>
+        <location filename="../MainWindow.cpp" line="2900"/>
         <source>Confirm Reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2850"/>
+        <location filename="../MainWindow.cpp" line="2852"/>
         <source>All Cover Image Types (*.jpg *.jpeg *.png *.webp)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2863"/>
+        <location filename="../MainWindow.cpp" line="2865"/>
         <source>You must select a different file to the current cover image.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2899"/>
+        <location filename="../MainWindow.cpp" line="2901"/>
         <source>Are you sure you want to reset the play time for &apos;%1&apos;?
 
 This action cannot be undone.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2959"/>
+        <location filename="../MainWindow.cpp" line="2961"/>
         <source>Load Resume State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2962"/>
+        <location filename="../MainWindow.cpp" line="2964"/>
         <source>A resume save state was found for this game, saved at:
 
 %1.
@@ -18286,48 +18292,48 @@ Do you want to load this state, or start from a fresh boot?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2966"/>
+        <location filename="../MainWindow.cpp" line="2968"/>
         <source>Fresh Boot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2967"/>
+        <location filename="../MainWindow.cpp" line="2969"/>
         <source>Delete And Boot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2984"/>
+        <location filename="../MainWindow.cpp" line="2986"/>
         <source>Failed to delete save state file &apos;%1&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3042"/>
+        <location filename="../MainWindow.cpp" line="3044"/>
         <source>Load State File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3042"/>
+        <location filename="../MainWindow.cpp" line="3044"/>
         <source>Load From File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3045"/>
-        <location filename="../MainWindow.cpp" line="3119"/>
+        <location filename="../MainWindow.cpp" line="3047"/>
+        <location filename="../MainWindow.cpp" line="3121"/>
         <source>Select Save State File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3090"/>
+        <location filename="../MainWindow.cpp" line="3092"/>
         <source>Load Backup Slot %1 (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3119"/>
+        <location filename="../MainWindow.cpp" line="3121"/>
         <source>Save States (*.p2s)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3052"/>
+        <location filename="../MainWindow.cpp" line="3054"/>
         <source>Delete Save States...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -18342,80 +18348,80 @@ Do you want to load this state, or start from a fresh boot?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1162"/>
+        <location filename="../MainWindow.cpp" line="1164"/>
         <source>WARNING: Your memory card is still writing data. Shutting down now &lt;b&gt;WILL IRREVERSIBLY DESTROY YOUR MEMORY CARD.&lt;/b&gt; It is strongly recommended to resume your game and let it finish writing to your memory card.&lt;br&gt;&lt;br&gt;Do you wish to shutdown anyways and &lt;b&gt;IRREVERSIBLY DESTROY YOUR MEMORY CARD?&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2938"/>
+        <location filename="../MainWindow.cpp" line="2940"/>
         <source>Failed to create screenshots directory &apos;%1&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3045"/>
+        <location filename="../MainWindow.cpp" line="3047"/>
         <source>Save States (*.p2s *.p2s.backup)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3062"/>
+        <location filename="../MainWindow.cpp" line="3064"/>
         <source>Resume (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3078"/>
+        <location filename="../MainWindow.cpp" line="3080"/>
         <source>Load Slot %1 (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3099"/>
-        <location filename="../MainWindow.cpp" line="3107"/>
+        <location filename="../MainWindow.cpp" line="3101"/>
+        <location filename="../MainWindow.cpp" line="3109"/>
         <source>Delete Save States</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3100"/>
+        <location filename="../MainWindow.cpp" line="3102"/>
         <source>Are you sure you want to delete all save states for %1?
 
 The saves will not be recoverable.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3107"/>
+        <location filename="../MainWindow.cpp" line="3109"/>
         <source>%1 save states deleted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3117"/>
+        <location filename="../MainWindow.cpp" line="3119"/>
         <source>Save To File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3137"/>
+        <location filename="../MainWindow.cpp" line="3139"/>
         <source>Empty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3139"/>
+        <location filename="../MainWindow.cpp" line="3141"/>
         <source>Save Slot %1 (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3198"/>
+        <location filename="../MainWindow.cpp" line="3200"/>
         <source>Confirm Disc Change</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3199"/>
+        <location filename="../MainWindow.cpp" line="3201"/>
         <source>Do you want to swap discs or boot the new image (via system reset)?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3200"/>
+        <location filename="../MainWindow.cpp" line="3202"/>
         <source>Swap Disc</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3201"/>
+        <location filename="../MainWindow.cpp" line="3203"/>
         <source>Reset</source>
         <translation type="unfinished"></translation>
     </message>
@@ -20147,7 +20153,7 @@ Ejecting {3} and replacing it with {2}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-trance-vibrator.cpp" line="180"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-trance-vibrator.cpp" line="186"/>
         <source>Motor</source>
         <translation type="unfinished"></translation>
     </message>
@@ -21732,1037 +21738,1037 @@ Rename it to {} to remove this warning.</source>
 <context>
     <name>USB</name>
     <message>
-        <location filename="../../pcsx2/USB/usb-eyetoy/usb-eyetoy-webcam.cpp" line="486"/>
+        <location filename="../../pcsx2/USB/usb-eyetoy/usb-eyetoy-webcam.cpp" line="487"/>
         <source>Webcam (EyeToy)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-eyetoy/usb-eyetoy-webcam.cpp" line="517"/>
+        <location filename="../../pcsx2/USB/usb-eyetoy/usb-eyetoy-webcam.cpp" line="523"/>
         <source>Sony EyeToy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-eyetoy/usb-eyetoy-webcam.cpp" line="518"/>
+        <location filename="../../pcsx2/USB/usb-eyetoy/usb-eyetoy-webcam.cpp" line="524"/>
         <source>Konami Capture Eye</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-eyetoy/usb-eyetoy-webcam.cpp" line="530"/>
-        <location filename="../../pcsx2/USB/usb-eyetoy/usb-eyetoy-webcam.cpp" line="545"/>
+        <location filename="../../pcsx2/USB/usb-eyetoy/usb-eyetoy-webcam.cpp" line="536"/>
+        <location filename="../../pcsx2/USB/usb-eyetoy/usb-eyetoy-webcam.cpp" line="551"/>
         <source>Video Device</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-eyetoy/usb-eyetoy-webcam.cpp" line="533"/>
+        <location filename="../../pcsx2/USB/usb-eyetoy/usb-eyetoy-webcam.cpp" line="539"/>
         <source>Audio Device</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-eyetoy/usb-eyetoy-webcam.cpp" line="536"/>
+        <location filename="../../pcsx2/USB/usb-eyetoy/usb-eyetoy-webcam.cpp" line="542"/>
         <source>Audio Latency</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-eyetoy/usb-eyetoy-webcam.cpp" line="531"/>
-        <location filename="../../pcsx2/USB/usb-eyetoy/usb-eyetoy-webcam.cpp" line="546"/>
+        <location filename="../../pcsx2/USB/usb-eyetoy/usb-eyetoy-webcam.cpp" line="537"/>
+        <location filename="../../pcsx2/USB/usb-eyetoy/usb-eyetoy-webcam.cpp" line="552"/>
         <source>Selects the device to capture images from.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-hid/usb-hid.cpp" line="821"/>
+        <location filename="../../pcsx2/USB/usb-hid/usb-hid.cpp" line="822"/>
         <source>HID Keyboard (Konami)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-hid/usb-hid.cpp" line="832"/>
+        <location filename="../../pcsx2/USB/usb-hid/usb-hid.cpp" line="838"/>
         <source>Keyboard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-hid/usb-hid.cpp" line="894"/>
+        <location filename="../../pcsx2/USB/usb-hid/usb-hid.cpp" line="900"/>
         <source>HID Mouse</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-hid/usb-hid.cpp" line="923"/>
+        <location filename="../../pcsx2/USB/usb-hid/usb-hid.cpp" line="934"/>
         <source>Pointer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-hid/usb-hid.cpp" line="924"/>
+        <location filename="../../pcsx2/USB/usb-hid/usb-hid.cpp" line="935"/>
         <source>Left Button</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-hid/usb-hid.cpp" line="925"/>
+        <location filename="../../pcsx2/USB/usb-hid/usb-hid.cpp" line="936"/>
         <source>Right Button</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-hid/usb-hid.cpp" line="926"/>
+        <location filename="../../pcsx2/USB/usb-hid/usb-hid.cpp" line="937"/>
         <source>Middle Button</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="439"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="440"/>
         <source>GunCon 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="576"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="76"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="104"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="926"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="442"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="367"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="74"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="93"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="433"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="582"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="78"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="106"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="938"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="448"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="373"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="79"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="98"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="440"/>
         <source>D-Pad Up</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="577"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="77"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="105"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="928"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="443"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="368"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="75"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="94"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="434"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="583"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="79"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="107"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="940"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="449"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="374"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="80"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="99"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="441"/>
         <source>D-Pad Down</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="578"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="78"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="106"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="929"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="444"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="369"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="76"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="95"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="435"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="584"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="80"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="108"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="941"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="450"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="375"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="81"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="100"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="442"/>
         <source>D-Pad Left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="579"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="79"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="107"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="927"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="445"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="370"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="77"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="96"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="436"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="585"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="81"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="109"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="939"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="451"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="376"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="82"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="101"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="443"/>
         <source>D-Pad Right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="581"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="587"/>
         <source>Trigger</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="582"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="588"/>
         <source>Shoot Offscreen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="584"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="590"/>
         <source>Calibration Shot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="586"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="137"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="357"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="592"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="139"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="363"/>
         <source>A</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="587"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="138"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="358"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="593"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="140"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="364"/>
         <source>B</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="588"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="359"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="594"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="365"/>
         <source>C</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="589"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="88"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="114"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="924"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="986"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="365"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="82"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="102"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="441"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="595"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="90"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="116"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="936"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1003"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="371"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="87"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="107"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="448"/>
         <source>Select</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="590"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="89"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="115"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="925"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="985"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="366"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="83"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="103"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="442"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="596"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="91"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="117"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="937"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1002"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="372"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="88"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="108"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="449"/>
         <source>Start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="591"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="597"/>
         <source>Relative Left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="592"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="598"/>
         <source>Relative Right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="593"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="599"/>
         <source>Relative Up</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="594"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="600"/>
         <source>Relative Down</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="603"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="609"/>
         <source>Cursor Path</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="604"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="610"/>
         <source>Sets the crosshair image that this lightgun will use. Setting a crosshair image will disable the system cursor.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="607"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="613"/>
         <source>Cursor Scale</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="608"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="614"/>
         <source>Scales the crosshair image set above.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="608"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="614"/>
         <source>%.0f%%</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="610"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="616"/>
         <source>Cursor Color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="611"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="617"/>
         <source>Applies a color to the chosen crosshair images, can be used for multiple players. Specify in HTML/CSS format (e.g. #aabbcc)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="614"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="620"/>
         <source>Manual Screen Configuration</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="615"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="621"/>
         <source>Forces the use of the screen parameters below, instead of automatic parameters if available.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="618"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="624"/>
         <source>X Scale (Sensitivity)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="619"/>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="622"/>
-        <source>Scales the position to simulate CRT curvature.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="620"/>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="623"/>
-        <source>%.2f%%</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="621"/>
-        <source>Y Scale (Sensitivity)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="624"/>
-        <source>Center X</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="625"/>
-        <source>Sets the horizontal center position of the simulated screen.</source>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="628"/>
+        <source>Scales the position to simulate CRT curvature.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="626"/>
         <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="629"/>
-        <source>%.0fpx</source>
+        <source>%.2f%%</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="627"/>
-        <source>Center Y</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="628"/>
-        <source>Sets the vertical center position of the simulated screen.</source>
+        <source>Y Scale (Sensitivity)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="630"/>
-        <source>Screen Width</source>
+        <source>Center X</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="631"/>
-        <source>Sets the width of the simulated screen.</source>
+        <source>Sets the horizontal center position of the simulated screen.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="631"/>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="634"/>
-        <source>%dpx</source>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="632"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="635"/>
+        <source>%.0fpx</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="633"/>
-        <source>Screen Height</source>
+        <source>Center Y</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="634"/>
+        <source>Sets the vertical center position of the simulated screen.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="636"/>
+        <source>Screen Width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="637"/>
+        <source>Sets the width of the simulated screen.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="637"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="640"/>
+        <source>%dpx</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="639"/>
+        <source>Screen Height</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="640"/>
         <source>Sets the height of the simulated screen.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-mic/usb-headset.cpp" line="962"/>
+        <location filename="../../pcsx2/USB/usb-mic/usb-headset.cpp" line="963"/>
         <source>Logitech USB Headset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-mic/usb-headset.cpp" line="1001"/>
-        <location filename="../../pcsx2/USB/usb-mic/usb-mic.cpp" line="1271"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="379"/>
+        <location filename="../../pcsx2/USB/usb-mic/usb-headset.cpp" line="1007"/>
+        <location filename="../../pcsx2/USB/usb-mic/usb-mic.cpp" line="1277"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="385"/>
         <source>Input Device</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-eyetoy/usb-eyetoy-webcam.cpp" line="534"/>
-        <location filename="../../pcsx2/USB/usb-mic/usb-headset.cpp" line="1002"/>
-        <location filename="../../pcsx2/USB/usb-mic/usb-mic.cpp" line="1272"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="380"/>
+        <location filename="../../pcsx2/USB/usb-eyetoy/usb-eyetoy-webcam.cpp" line="540"/>
+        <location filename="../../pcsx2/USB/usb-mic/usb-headset.cpp" line="1008"/>
+        <location filename="../../pcsx2/USB/usb-mic/usb-mic.cpp" line="1278"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="386"/>
         <source>Selects the device to read audio from.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-mic/usb-headset.cpp" line="1004"/>
+        <location filename="../../pcsx2/USB/usb-mic/usb-headset.cpp" line="1010"/>
         <source>Output Device</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-mic/usb-headset.cpp" line="1005"/>
+        <location filename="../../pcsx2/USB/usb-mic/usb-headset.cpp" line="1011"/>
         <source>Selects the device to output audio to.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-mic/usb-headset.cpp" line="1007"/>
-        <location filename="../../pcsx2/USB/usb-mic/usb-mic.cpp" line="1260"/>
-        <location filename="../../pcsx2/USB/usb-mic/usb-mic.cpp" line="1274"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="382"/>
+        <location filename="../../pcsx2/USB/usb-mic/usb-headset.cpp" line="1013"/>
+        <location filename="../../pcsx2/USB/usb-mic/usb-mic.cpp" line="1266"/>
+        <location filename="../../pcsx2/USB/usb-mic/usb-mic.cpp" line="1280"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="388"/>
         <source>Input Latency</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-eyetoy/usb-eyetoy-webcam.cpp" line="537"/>
-        <location filename="../../pcsx2/USB/usb-mic/usb-headset.cpp" line="1008"/>
-        <location filename="../../pcsx2/USB/usb-mic/usb-mic.cpp" line="1261"/>
-        <location filename="../../pcsx2/USB/usb-mic/usb-mic.cpp" line="1275"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="383"/>
+        <location filename="../../pcsx2/USB/usb-eyetoy/usb-eyetoy-webcam.cpp" line="543"/>
+        <location filename="../../pcsx2/USB/usb-mic/usb-headset.cpp" line="1014"/>
+        <location filename="../../pcsx2/USB/usb-mic/usb-mic.cpp" line="1267"/>
+        <location filename="../../pcsx2/USB/usb-mic/usb-mic.cpp" line="1281"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="389"/>
         <source>Specifies the latency to the host input device.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-eyetoy/usb-eyetoy-webcam.cpp" line="538"/>
-        <location filename="../../pcsx2/USB/usb-mic/usb-headset.cpp" line="1009"/>
-        <location filename="../../pcsx2/USB/usb-mic/usb-headset.cpp" line="1012"/>
-        <location filename="../../pcsx2/USB/usb-mic/usb-mic.cpp" line="1262"/>
-        <location filename="../../pcsx2/USB/usb-mic/usb-mic.cpp" line="1276"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="384"/>
+        <location filename="../../pcsx2/USB/usb-eyetoy/usb-eyetoy-webcam.cpp" line="544"/>
+        <location filename="../../pcsx2/USB/usb-mic/usb-headset.cpp" line="1015"/>
+        <location filename="../../pcsx2/USB/usb-mic/usb-headset.cpp" line="1018"/>
+        <location filename="../../pcsx2/USB/usb-mic/usb-mic.cpp" line="1268"/>
+        <location filename="../../pcsx2/USB/usb-mic/usb-mic.cpp" line="1282"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="390"/>
         <source>%dms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-mic/usb-headset.cpp" line="1010"/>
+        <location filename="../../pcsx2/USB/usb-mic/usb-headset.cpp" line="1016"/>
         <source>Output Latency</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-mic/usb-headset.cpp" line="1011"/>
+        <location filename="../../pcsx2/USB/usb-mic/usb-headset.cpp" line="1017"/>
         <source>Specifies the latency to the host output device.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-mic/usb-mic.cpp" line="1119"/>
+        <location filename="../../pcsx2/USB/usb-mic/usb-mic.cpp" line="1120"/>
         <source>USB-Mic: Neither player 1 nor 2 is connected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-mic/usb-mic.cpp" line="1136"/>
+        <location filename="../../pcsx2/USB/usb-mic/usb-mic.cpp" line="1137"/>
         <source>USB-Mic: Failed to start player {} audio stream.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-mic/usb-mic.cpp" line="1199"/>
+        <location filename="../../pcsx2/USB/usb-mic/usb-mic.cpp" line="1200"/>
         <source>Microphone</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-mic/usb-mic.cpp" line="1240"/>
+        <location filename="../../pcsx2/USB/usb-mic/usb-mic.cpp" line="1246"/>
         <source>Singstar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-mic/usb-mic.cpp" line="1241"/>
+        <location filename="../../pcsx2/USB/usb-mic/usb-mic.cpp" line="1247"/>
         <source>Logitech</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-mic/usb-mic.cpp" line="1242"/>
+        <location filename="../../pcsx2/USB/usb-mic/usb-mic.cpp" line="1248"/>
         <source>Konami</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-mic/usb-mic.cpp" line="1254"/>
+        <location filename="../../pcsx2/USB/usb-mic/usb-mic.cpp" line="1260"/>
         <source>Player 1 Device</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-mic/usb-mic.cpp" line="1255"/>
+        <location filename="../../pcsx2/USB/usb-mic/usb-mic.cpp" line="1261"/>
         <source>Selects the input for the first player.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-mic/usb-mic.cpp" line="1257"/>
+        <location filename="../../pcsx2/USB/usb-mic/usb-mic.cpp" line="1263"/>
         <source>Player 2 Device</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-mic/usb-mic.cpp" line="1258"/>
+        <location filename="../../pcsx2/USB/usb-mic/usb-mic.cpp" line="1264"/>
         <source>Selects the input for the second player.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-msd/usb-msd.cpp" line="1144"/>
+        <location filename="../../pcsx2/USB/usb-msd/usb-msd.cpp" line="1145"/>
         <source>USB mass storage: No image path specified</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-msd/usb-msd.cpp" line="1151"/>
+        <location filename="../../pcsx2/USB/usb-msd/usb-msd.cpp" line="1152"/>
         <source>USB mass storage: Could not open image file &apos;{}&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-msd/usb-msd.cpp" line="1189"/>
+        <location filename="../../pcsx2/USB/usb-msd/usb-msd.cpp" line="1190"/>
         <source>Mass Storage Device</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-msd/usb-msd.cpp" line="1210"/>
+        <location filename="../../pcsx2/USB/usb-msd/usb-msd.cpp" line="1216"/>
         <source>Modification time to USB mass storage image changed, reattaching.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-msd/usb-msd.cpp" line="1226"/>
+        <location filename="../../pcsx2/USB/usb-msd/usb-msd.cpp" line="1232"/>
         <source>Iomega Zip-100 (Generic)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-msd/usb-msd.cpp" line="1227"/>
+        <location filename="../../pcsx2/USB/usb-msd/usb-msd.cpp" line="1233"/>
         <source>Sony MSAC-US1 (PictureParadise)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-msd/usb-msd.cpp" line="1239"/>
-        <location filename="../../pcsx2/USB/usb-msd/usb-msd.cpp" line="1247"/>
+        <location filename="../../pcsx2/USB/usb-msd/usb-msd.cpp" line="1245"/>
+        <location filename="../../pcsx2/USB/usb-msd/usb-msd.cpp" line="1253"/>
         <source>Image Path</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-msd/usb-msd.cpp" line="1240"/>
-        <location filename="../../pcsx2/USB/usb-msd/usb-msd.cpp" line="1248"/>
+        <location filename="../../pcsx2/USB/usb-msd/usb-msd.cpp" line="1246"/>
+        <location filename="../../pcsx2/USB/usb-msd/usb-msd.cpp" line="1254"/>
         <source>Sets the path to image which will back the virtual mass storage device.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="72"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="100"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="129"/>
-        <source>Steering Left</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="73"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="101"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="130"/>
-        <source>Steering Right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="74"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="102"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="131"/>
-        <source>Throttle</source>
+        <source>Steering Left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="75"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="103"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="132"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="73"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="92"/>
+        <source>Steering Right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="76"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="104"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="133"/>
+        <source>Throttle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="77"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="105"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="134"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="78"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="97"/>
         <source>Brake</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="80"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="108"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="438"/>
-        <source>Cross</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="81"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="109"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="437"/>
-        <source>Square</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="82"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="110"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="439"/>
-        <source>Circle</source>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="445"/>
+        <source>Cross</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="83"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="111"/>
-        <source>Triangle</source>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="444"/>
+        <source>Square</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="84"/>
-        <source>L1</source>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="112"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="446"/>
+        <source>Circle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="85"/>
-        <source>R1</source>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="113"/>
+        <source>Triangle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="86"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="116"/>
-        <source>L2</source>
+        <source>L1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="87"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="117"/>
+        <source>R1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="88"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="118"/>
+        <source>L2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="89"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="119"/>
         <source>R2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="90"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="139"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="92"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="141"/>
         <source>Force Feedback</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="112"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="114"/>
         <source>Shift Up / R1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="113"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="115"/>
         <source>Shift Down / L1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="118"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="120"/>
         <source>L3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="119"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="121"/>
         <source>R3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="133"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="135"/>
         <source>Menu Up</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="134"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="136"/>
         <source>Menu Down</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="135"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="360"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="137"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="366"/>
         <source>X</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="136"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="361"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="138"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="367"/>
         <source>Y</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="156"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="158"/>
         <source>Off</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="156"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="158"/>
         <source>Low</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="156"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="158"/>
         <source>Medium</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="156"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="158"/>
         <source>High</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="158"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="160"/>
         <source>Steering Smoothing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="159"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="161"/>
         <source>Smooths out changes in steering to the specified percentage per poll. Needed for using keyboards.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="160"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="163"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="162"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="165"/>
         <source>%d%%</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="161"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="163"/>
         <source>Steering Deadzone</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="162"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="164"/>
         <source>Steering axis deadzone for pads or non self centering wheels.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="164"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="166"/>
         <source>Steering Damping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="165"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="167"/>
         <source>Applies power curve filter to steering axis values. Dampens small inputs.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="167"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="169"/>
         <source>Workaround for Intermittent FFB Loss</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="168"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="170"/>
         <source>Works around bugs in some wheels&apos; firmware that result in brief interruptions in force. Leave this disabled unless you need it, as it has negative side effects on many wheels.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="809"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="811"/>
         <source>Wheel Device</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="848"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="855"/>
         <source>Driving Force</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="849"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="856"/>
         <source>Driving Force Pro</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="849"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="856"/>
         <source>Driving Force Pro (rev11.02)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="850"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="857"/>
         <source>GT Force</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="882"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="889"/>
         <source>Rock Band Drum Kit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="919"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="449"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="931"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="455"/>
         <source>Blue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="920"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="447"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="932"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="453"/>
         <source>Green</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="921"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="446"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="933"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="452"/>
         <source>Red</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="922"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="448"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="934"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="454"/>
         <source>Yellow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="923"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="935"/>
         <source>Orange</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="200"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="201"/>
         <source>Buzz Controller</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="307"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="313"/>
         <source>Player 1 Red</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="308"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="314"/>
         <source>Player 1 Blue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="309"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="315"/>
         <source>Player 1 Orange</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="310"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="316"/>
         <source>Player 1 Green</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="311"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="317"/>
         <source>Player 1 Yellow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="313"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="319"/>
         <source>Player 2 Red</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="314"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="320"/>
         <source>Player 2 Blue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="315"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="321"/>
         <source>Player 2 Orange</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="316"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="322"/>
         <source>Player 2 Green</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="317"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="323"/>
         <source>Player 2 Yellow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="319"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="325"/>
         <source>Player 3 Red</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="320"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="326"/>
         <source>Player 3 Blue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="321"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="327"/>
         <source>Player 3 Orange</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="322"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="328"/>
         <source>Player 3 Green</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="323"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="329"/>
         <source>Player 3 Yellow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="325"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="331"/>
         <source>Player 4 Red</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="326"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="332"/>
         <source>Player 4 Blue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="327"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="333"/>
         <source>Player 4 Orange</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="328"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="334"/>
         <source>Player 4 Green</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="329"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-buzz.cpp" line="335"/>
         <source>Player 4 Yellow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="944"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="956"/>
         <source>KeyboardMania</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="960"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="977"/>
         <source>C 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="961"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="978"/>
         <source>C# 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="962"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="979"/>
         <source>D 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="963"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="980"/>
         <source>D# 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="964"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="981"/>
         <source>E 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="965"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="982"/>
         <source>F 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="966"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="983"/>
         <source>F# 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="967"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="984"/>
         <source>G 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="968"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="985"/>
         <source>G# 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="969"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="986"/>
         <source>A 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="970"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="987"/>
         <source>A# 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="971"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="988"/>
         <source>B 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="972"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="989"/>
         <source>C 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="973"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="990"/>
         <source>C# 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="974"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="991"/>
         <source>D 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="975"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="992"/>
         <source>D# 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="976"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="993"/>
         <source>E 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="977"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="994"/>
         <source>F 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="978"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="995"/>
         <source>F# 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="979"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="996"/>
         <source>G 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="980"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="997"/>
         <source>G# 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="981"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="998"/>
         <source>A 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="982"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="999"/>
         <source>A# 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="983"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1000"/>
         <source>B 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="987"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1004"/>
         <source>Wheel Up</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="988"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1005"/>
         <source>Wheel Down</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="336"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="337"/>
         <source>Sega Seamic</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="353"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="359"/>
         <source>Stick Left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="354"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="360"/>
         <source>Stick Right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="355"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="361"/>
         <source>Stick Up</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="356"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="362"/>
         <source>Stick Down</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="362"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="368"/>
         <source>Z</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="363"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="369"/>
         <source>L</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="364"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="370"/>
         <source>R</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-printer/usb-printer.cpp" line="92"/>
+        <location filename="../../pcsx2/USB/usb-printer/usb-printer.cpp" line="93"/>
         <source>Failed to open &apos;{}&apos; for printing.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-printer/usb-printer.cpp" line="98"/>
+        <location filename="../../pcsx2/USB/usb-printer/usb-printer.cpp" line="99"/>
         <source>Printer saving to &apos;{}&apos;...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-printer/usb-printer.cpp" line="326"/>
+        <location filename="../../pcsx2/USB/usb-printer/usb-printer.cpp" line="327"/>
         <source>Printer</source>
         <translation type="unfinished"></translation>
     </message>
@@ -22789,212 +22795,212 @@ Rename it to {} to remove this warning.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="230"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="232"/>
         <source>DJ Hero Turntable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="440"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="447"/>
         <source>Triangle / Euphoria</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="443"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="450"/>
         <source>Crossfader Left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="444"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="451"/>
         <source>Crossfader Right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="447"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="454"/>
         <source>Left Turntable Clockwise</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="448"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="455"/>
         <source>Left Turntable Counterclockwise</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="449"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="456"/>
         <source>Right Turntable Clockwise</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="450"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="457"/>
         <source>Right Turntable Counterclockwise</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="451"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="458"/>
         <source>Left Turntable Green</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="452"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="459"/>
         <source>Left Turntable Red</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="453"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="460"/>
         <source>Left Turntable Blue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="454"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="461"/>
         <source>Right Turntable Green</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="455"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="462"/>
         <source>Right Turntable Red </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="456"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="463"/>
         <source>Right Turntable Blue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="467"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="474"/>
         <source>Apply a sensitivity multiplier to turntable rotation.
 Xbox 360 turntables require a 256x multiplier, most other turntables can use the default 1x multiplier.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="445"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="452"/>
         <source>Effects Knob Left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="446"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="453"/>
         <source>Effects Knob Right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="466"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="473"/>
         <source>Turntable Multiplier</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="277"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="278"/>
         <source>Gametrak Device</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="385"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="391"/>
         <source>Foot Pedal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="386"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="392"/>
         <source>Left X</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="387"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="393"/>
         <source>Left Y</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="388"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="394"/>
         <source>Left Z</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="389"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="395"/>
         <source>Right X</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="390"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="396"/>
         <source>Right Y</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="391"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="397"/>
         <source>Right Z</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="400"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="461"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="406"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="467"/>
         <source>Invert X axis</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="401"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="462"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="407"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="468"/>
         <source>Invert Y axis</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="402"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="463"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="408"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="469"/>
         <source>Invert Z axis</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="403"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="409"/>
         <source>Limit Z axis [100-4095]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="404"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="410"/>
         <source>- 4095 for original Gametrak controllers
 - 1790 for standard gamepads</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="405"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="411"/>
         <source>%d</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="280"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="281"/>
         <source>RealPlay Device</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="423"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="429"/>
         <source>RealPlay Racing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="424"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="430"/>
         <source>RealPlay Sphere</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="425"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="431"/>
         <source>RealPlay Golf</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="426"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="432"/>
         <source>RealPlay Pool</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="450"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="456"/>
         <source>Accel X</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="451"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="457"/>
         <source>Accel Y</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="452"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="458"/>
         <source>Accel Z</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-trance-vibrator.cpp" line="124"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-trance-vibrator.cpp" line="125"/>
         <source>Trance Vibrator (Rez)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -23004,78 +23010,78 @@ Xbox 360 turntables require a 256x multiplier, most other turntables can use the
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="32"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="37"/>
         <source>Type 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="33"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="38"/>
         <source>Shinkansen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="34"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="39"/>
         <source>Ryojōhen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="72"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="91"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="77"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="96"/>
         <source>Power</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="78"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="83"/>
         <source>A Button</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="79"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="84"/>
         <source>B Button</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="80"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="85"/>
         <source>C Button</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="81"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="86"/>
         <source>D Button</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="97"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="102"/>
         <source>Announce</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="98"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="103"/>
         <source>Horn</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="99"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="104"/>
         <source>Left Door</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="100"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="105"/>
         <source>Right Door</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="101"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="106"/>
         <source>Camera Button</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="157"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="162"/>
         <source>Axes Passthrough</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="158"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="163"/>
         <source>Passes through the unprocessed input axis to the game. Enable if you are using a compatible Densha De Go! controller. Disable if you are using any other joystick.</source>
         <translation type="unfinished"></translation>
     </message>
