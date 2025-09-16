@@ -3823,7 +3823,7 @@ void GSRendererHW::Draw()
 				{
 					GSVector4 sRect = GSVector4(static_cast<float>(z_horizontal_offset) / static_cast<float>(ds->m_unscaled_size.x), static_cast<float>(z_vertical_offset) / static_cast<float>(ds->m_unscaled_size.y), 1.0f , 1.0f);
 
-					const bool restricted_copy = !(((next_ctx.ZBUF.ZBP == m_context->ZBUF.ZBP && next_ctx.FRAME.FBP == m_context->FRAME.FBP)) && !(IsPossibleChannelShuffle() && src && (!src->m_from_target || EmulateChannelShuffle(src->m_from_target, true)) && !IsPageCopy()));
+					const bool restricted_copy = !(((next_ctx.ZBUF.ZBP == m_context->ZBUF.ZBP && next_ctx.FRAME.FBP == m_context->FRAME.FBP)) && !(IsPossibleChannelShuffle() && src && (!src->m_from_target || EmulateChannelShuffle(src->m_from_target, true, src)) && !IsPageCopy()));
 
 					if (restricted_copy)
 					{
@@ -5347,9 +5347,10 @@ bool GSRendererHW::TestChannelShuffle(GSTextureCache::Target* src)
 	return m_channel_shuffle;
 }
 
-__ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool test_only, GSTextureCache::Target* rt)
+__ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool test_only, GSTextureCache::Source* tex, GSTextureCache::Target* rt)
 {
-	if ((src->m_texture->GetType() == GSTexture::Type::DepthStencil) && !src->m_32_bits_fmt)
+	GSTexture* shuffle_tex = (tex && !tex->m_target_direct && src) ? tex->m_texture : src->m_texture;
+	if ((shuffle_tex->GetType() == GSTexture::Type::DepthStencil) && !src->m_32_bits_fmt)
 	{
 		// So far 2 games hit this code path. Urban Chaos and Tales of Abyss
 		// UC: will copy depth to green channel
@@ -5522,7 +5523,7 @@ __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool 
 	pxAssert(m_channel_shuffle);
 
 	// Effect is really a channel shuffle effect so let's cheat a little
-	m_conf.tex = src->m_texture;
+	m_conf.tex = shuffle_tex;
 
 	// Replace current draw with a fullscreen sprite
 	//
@@ -7329,7 +7330,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	// vertex list (it will interact with PrimitiveOverlap and accurate
 	// blending)
 	if (m_channel_shuffle && tex && tex->m_from_target)
-		EmulateChannelShuffle(tex->m_from_target, false, rt);
+		EmulateChannelShuffle(tex->m_from_target, false, tex, rt);
 
 	// Upscaling hack to avoid various line/grid issues
 	MergeSprite(tex);
