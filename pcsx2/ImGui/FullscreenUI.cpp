@@ -6443,6 +6443,44 @@ void FullscreenUI::DrawResumeStateSelector()
 
 void FullscreenUI::DoLoadState(std::string path)
 {
+	// Check for hardcore mode before loading state
+	if (Achievements::IsHardcoreModeActive())
+	{
+		Achievements::ConfirmHardcoreModeDisableAsync(TRANSLATE("VMManager", "Loading state"),
+			[path = std::move(path)](bool approved) {
+				if (approved)
+					DoLoadState(std::move(path));
+			});
+		return;
+	}
+
+	const std::string filename = std::string(Path::GetFileName(path));
+	s32 slot = -1;
+	bool is_backup = false;
+
+	std::string base_filename = filename;
+	if (filename.length() > 7 && filename.substr(filename.length() - 7) == ".backup")
+	{
+		is_backup = true;
+		base_filename = filename.substr(0, filename.length() - 7);
+	}
+
+	// Get slot number from filename (format: serial.crc.slot.p2s)
+	const size_t last_dot = base_filename.rfind('.');
+	const size_t second_last_dot = base_filename.rfind('.', last_dot - 1);
+	if (last_dot != std::string::npos && second_last_dot != std::string::npos)
+	{
+		const std::string slot_str = base_filename.substr(second_last_dot + 1, last_dot - second_last_dot - 1);
+		if (!slot_str.empty())
+			slot = std::atoi(slot_str.c_str());
+	}
+
+	const std::string message = (slot >= 0) ?
+		fmt::format(TRANSLATE_FS("VMManager", "Loading {} from slot {}..."), is_backup ? TRANSLATE("VMManager", "backup state") : TRANSLATE("VMManager", "state"), slot) :
+		TRANSLATE_STR("VMManager", "Loading save state...");
+
+	Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_FOLDER_OPEN, message, Host::OSD_QUICK_DURATION);
+
 	Host::RunOnCPUThread([path = std::move(path)]()
 	{
 		const std::string boot_path = s_save_state_selector_game_path;
