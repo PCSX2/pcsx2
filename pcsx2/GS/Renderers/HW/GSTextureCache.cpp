@@ -6070,13 +6070,13 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			{
 				if (dst->m_rt_alpha_scale)
 				{
+					g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 					const GSVector4 sRectF = GSVector4(sRect) / GSVector4(1, 1, sTex->GetWidth(), sTex->GetHeight());
 					g_gs_device->StretchRect(
 						sTex, sRectF, dTex, GSVector4(destX, destY, sRect.width(), sRect.height()), ShaderConvert::RTA_DECORRECTION, false);
 				}
 				else
 					g_gs_device->CopyRect(sTex, dTex, sRect, destX, destY);
-				g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
 #ifdef PCSX2_DEVBUILD
 				if (GSConfig.UseDebugDevice)
@@ -7778,12 +7778,14 @@ bool GSTextureCache::Target::ResizeTexture(int new_unscaled_width, int new_unsca
 		{
 			// Can't do partial copies in DirectX for depth textures, and it's probably not ideal in other
 			// APIs either. So use a fullscreen quad setting depth instead.
+			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 			g_gs_device->StretchRect(m_texture, tex, GSVector4(rc), ShaderConvert::DEPTH_COPY, false);
 		}
 		else
 		{
 			if (require_new_rect)
 			{
+				g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 				g_gs_device->StretchRect(m_texture, tex, GSVector4(rc), ShaderConvert::COPY, false);
 			}
 			else
@@ -7792,8 +7794,6 @@ bool GSTextureCache::Target::ResizeTexture(int new_unscaled_width, int new_unsca
 				g_gs_device->CopyRect(m_texture, tex, rc, 0, 0);
 			}
 		}
-
-		g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 	}
 	else if (m_texture->GetState() == GSTexture::State::Cleared)
 	{
