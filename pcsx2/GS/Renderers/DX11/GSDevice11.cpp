@@ -1229,8 +1229,6 @@ std::unique_ptr<GSDownloadTexture> GSDevice11::CreateDownloadTexture(u32 width, 
 
 void GSDevice11::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY)
 {
-	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
-
 	const GSVector4i dst_rect(0, 0, dTex->GetWidth(), dTex->GetHeight());
 	const bool full_draw_copy = sTex->IsDepthStencil() || dst_rect.eq(r);
 
@@ -1244,12 +1242,11 @@ void GSDevice11::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 		CommitClear(sTex);
 	}
 
+	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+
 	// Commit destination clear if partially overwritten (color only).
 	if (dTex->GetState() == GSTexture::State::Cleared && !full_draw_copy)
 		CommitClear(dTex);
-
-	// Mark destination as dirty.
-	dTex->SetState(GSTexture::State::Dirty);
 
 	// DX11 doesn't support partial depth copy so we need to
 	// either pass a nullptr D3D11_BOX for a full depth copy or use CopyResource instead.
@@ -1259,12 +1256,14 @@ void GSDevice11::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 	if (full_rt_copy)
 	{
 		m_ctx->CopyResource(*static_cast<GSTexture11*>(dTex), *static_cast<GSTexture11*>(sTex));
-		return;
+	}
+	else
+	{
+		const D3D11_BOX box = {static_cast<UINT>(r.left), static_cast<UINT>(r.top), 0U, static_cast<UINT>(r.right), static_cast<UINT>(r.bottom), 1U};
+		m_ctx->CopySubresourceRegion(*static_cast<GSTexture11*>(dTex), 0, destX, destY, 0, *static_cast<GSTexture11*>(sTex), 0, &box);
 	}
 
-	// Color copy using CopySubresourceRegion
-	const D3D11_BOX box = {static_cast<UINT>(r.left), static_cast<UINT>(r.top), 0U, static_cast<UINT>(r.right), static_cast<UINT>(r.bottom), 1U};
-	m_ctx->CopySubresourceRegion(*static_cast<GSTexture11*>(dTex), 0, destX, destY, 0, *static_cast<GSTexture11*>(sTex), 0, &box);
+	dTex->SetState(GSTexture::State::Dirty);
 }
 
 void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader, bool linear)
