@@ -72,9 +72,16 @@ protected:
 	bool m_needs_mipmaps_generated = true;
 	ClearValue m_clear_value = {};
 
+	// Used to store full 32 bit range depth for depth textures in case the upper 8 bits
+	// needs to be used later.
+	GSTexture* m_backup_32_bit_depth = nullptr; 
 public:
 	GSTexture();
-	virtual ~GSTexture();
+	virtual ~GSTexture()
+	{
+		if (m_backup_32_bit_depth)
+			delete m_backup_32_bit_depth;
+	}
 
 	// Returns the native handle of a texture.
 	virtual void* GetNativeHandle() const = 0;
@@ -161,6 +168,29 @@ public:
 
 	// Helper routines for formats/types
 	static bool IsCompressedFormat(Format format) { return (format >= Format::BC1 && format <= Format::BC7); }
+
+	bool HasBackup32BitDepth()
+	{
+		return m_backup_32_bit_depth != nullptr;
+	}
+
+	void SetBackup32BitDepth(GSTexture* tex)
+	{
+		pxAssert(m_backup_32_bit_depth == nullptr);
+		m_backup_32_bit_depth = tex;
+	}
+
+	void RemoveBackup32BitDepth()
+	{
+		if (m_backup_32_bit_depth)
+			delete m_backup_32_bit_depth;
+		m_backup_32_bit_depth = nullptr;
+	}
+
+	GSTexture* GetBackup32BitDepth()
+	{
+		return m_backup_32_bit_depth;
+	}
 };
 
 class GSDownloadTexture
