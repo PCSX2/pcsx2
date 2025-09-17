@@ -711,7 +711,7 @@ struct Pcsx2Config
 
 		union
 		{
-			u64 bitset;
+			u64 bitset[2];
 
 			struct
 			{
