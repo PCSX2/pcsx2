@@ -2746,8 +2746,6 @@ std::unique_ptr<GSDownloadTexture> GSDeviceVK::CreateDownloadTexture(u32 width, 
 
 void GSDeviceVK::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY)
 {
-	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
-
 	GSTextureVK* const sTexVK = static_cast<GSTextureVK*>(sTex);
 	GSTextureVK* const dTexVK = static_cast<GSTextureVK*>(dTex);
 	const GSVector4i dst_rect(0, 0, dTexVK->GetWidth(), dTexVK->GetHeight());
@@ -2780,6 +2778,8 @@ void GSDeviceVK::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 		// commit the clear to the source first, then do normal copy
 		sTexVK->CommitClear();
 	}
+
+	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
 	// if the destination has been cleared, and we're not overwriting the whole thing, commit the clear first
 	// (the area outside of where we're copying to)

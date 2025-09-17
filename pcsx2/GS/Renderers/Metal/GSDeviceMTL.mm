@@ -1471,8 +1471,6 @@ void GSDeviceMTL::ClearSamplerCache()
 
 void GSDeviceMTL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY)
 { @autoreleasepool {
-	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
-
 	GSTextureMTL* sT = static_cast<GSTextureMTL*>(sTex);
 	GSTextureMTL* dT = static_cast<GSTextureMTL*>(dTex);
 	const GSVector4i dst_rect(0, 0, dT->GetWidth(), dT->GetHeight());
@@ -1487,6 +1485,8 @@ void GSDeviceMTL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r
 		// Commit clear for the source texture.
 		sT->FlushClears();
 	}
+
+	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
 	// Commit clear for the destination texture.
 	GSVector2i dsize = dTex->GetSize();
