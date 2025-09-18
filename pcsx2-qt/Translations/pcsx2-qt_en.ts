@@ -20306,12 +20306,12 @@ Ejecting {3} and replacing it with {2}.</source>
 <context>
     <name>Pcsx2Config</name>
     <message>
-        <location filename="../../pcsx2/Pcsx2Config.cpp" line="1154"/>
+        <location filename="../../pcsx2/Pcsx2Config.cpp" line="1155"/>
         <source>Disabled (Noisy)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Pcsx2Config.cpp" line="1155"/>
+        <location filename="../../pcsx2/Pcsx2Config.cpp" line="1156"/>
         <source>TimeStretch (Recommended)</source>
         <translation type="unfinished"></translation>
     </message>
