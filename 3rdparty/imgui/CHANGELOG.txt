@@ -36,6 +36,100 @@ HOW TO UPDATE?
 - Please report any issue!
 
 -----------------------------------------------------------------------
+ VERSION 1.92.3 (Released 2025-09-17)
+-----------------------------------------------------------------------
+
+Decorated log and release notes: https://github.com/ocornut/imgui/releases/tag/v1.92.3
+
+Other Changes:
+
+- Fonts: fixed merging a font and specifying a font target in DstFont
+  that's not the last added font (regression in 1.92). (#8912)
+- Fonts: fixed an assertion failure when a rectangle entry has been reused
+  1024 times (e.g. due to constant change of font size). (#8906) [@cfillion]
+- Clipper, Tables: added ImGuiListClipperFlags_NoSetTableRowCounters as a way to
+  disable the assumption that 1 clipper item == 1 table row, which breaks when
+  e.g. using clipper with ItemsHeight=1 in order to clip in pixel units. (#8886)
+- Scrollbar, Style: added configurable style.ScrollbarPadding value and corresponding
+  ImGuiStyleVar_ScrollbarPadding enum, instead of an hard-coded computed default. (#8895)
+- Nav: fixed Ctrl+Tab window appearing as empty when the sole active and focused
+  window has the ImGuiWindowFlags_NoNavFocus flag. (#8914)
+- Nav: fixed a crash that could occur when opening a popup following the processing
+  of a global shortcut while no windows were focused.
+- Bullet: fixed tessellation which looked out of place in very large sizes.
+- InputText: added ImGuiInputTextFlags_WordWrap flag to word-wrap multi-line buffers.
+  (#3237, #952, #1062, #7363). Current caveats:
+  - This is marked as beta because not being tested enough.
+    Please report any incorrect cursor movement, selection behavior etc. bug to #3237.
+  - Wrapping style is not ideal. Wrapping of long words/sections (e.g. words
+    larger than total available width) may be particularly unpleasing.
+  - Wrapping width needs to always account for the possibility of a vertical scrollbar.
+  - It is currently much slower than regular text fields:
+    - Ballpark estimate of cost on my 2019 desktop PC:
+      For a 100 KB text buffer: +~0.3 ms/+~1.0 ms (Optimized vs Debug builds).
+    - The CPU cost is very roughly proportional to text length, so a 10 KB buffer
+      should cost about ten times less.
+- InputText, InputInt, InputFloat: fixed an issue where using Escape to revert
+  would not write back the reverted value during the IsItemDeactivatedAfterEdit()
+  frame if the provided input buffer doesn't store temporary edits.
+  (regression in 1.91.7) (#8915, #8273)
+- InputText: fixed an issue where using Escape with ImGuiInputTextFlags_EscapeClearsAll
+  would not write back the cleared value during the IsItemDeactivatedAfterEdit()
+  frame if the provided input buffer doesn't store temporary edits. (#8915, #8273)
+- InputText: allow passing an empty string with buf_size==0. (#8907)
+  In theory the buffer size should always account for a zero-terminator, but idioms
+  such as using InputTextMultiline() with ImGuiInputTextFlags_ReadOnly to display
+  a text blob are facilitated by allowing this.
+- InputText: refactored internals to simplify and optimizing rendering of selection.
+  Very large selection (e.g. 1 MB) now take less overhead.
+- InputText: revert a change in 1.79 where pressing Down or PageDown on the last line
+  of a multi-line buffer without a trailing carriage return would keep the cursor
+  unmoved. We revert back to move to the end of line in this situation.
+- InputText: fixed pressing End (without Shift) in a multi-line selection from
+  mistakenly moving cursor based on selection start.
+- Focus, InputText: fixed an issue where SetKeyboardFocusHere() did not work
+  on InputTextMultiline() fields with ImGuiInputTextFlags_AllowTabInput, since
+  they normally inhibit activation to allow tabbing through multiple items. (#8928)
+- Selectable: added ImGuiSelectableFlags_SelectOnNav to auto-select an item when
+  moved into, unless Ctrl is held. (automatic when in a BeginMultiSelect() block).
+- TabBar: fixed an issue were forcefully selecting a tab using internal API would
+  be ignored on first/appearing frame before tabs are submitted (#8929, #6681)
+- DrawList: fixed CloneOutput() unnecessarily taking a copy of the ImDrawListSharedData
+  pointer, which could to issue when deleting the cloned list. (#8894, #1860)
+- DrawList: made AddCallback() assert when passing a null callback.
+- Debug Tools: ID Stack Tool: fixed using fixed-size buffers preventing long identifiers
+  from being displayed in the tool. (#8905, #4631)
+- Debug Tools: ID Stack Tool: when ### is used, uncontributing prefix before the ###
+  is now skipped. (#8904, #4631)
+- Debug Tools: ID Stack Tool: added option to hex-encode non-ASCII characters in
+  output path. (#8904, #4631)
+- Debug Tools: ID Stack Tool: fixed a crash when using PushOverrideID(0) during
+  a query. (#8937, #4631)
+- Debug Tools: Fixed assertion failure when opening a combo box while using
+  io.ConfigDebugBeginReturnValueOnce/ConfigDebugBeginReturnValueLoop. (#8931) [@harrymander]
+- Demo: tweaked ShowFontSelector() and ShowStyleSelector() to update selection
+  while navigating and to not close popup automatically.
+- CI: Updates Windows CI to use a more recent VulkanSDK. (#8925, #8778) [@yaz0r]
+- Examples: Android: Android+OpenGL3: update Gradle project (#8888, #8878) [@scribam]
+- Examples: GLFW+OpenGL2, GLFW+Vulkan, GLFW+Metal, Win32+Vulkan: Fixed not applying
+  content scale consistently with other examples. (#8921, #8756)
+- Backends: GLFW: distinguish X11 vs Wayland to fix various scaling issues.
+  (#8920, #8921) [@TheBrokenRail, @pthom, @ocornut]
+  - window/monitor content scales are always reported as 1.0 on Wayland.
+  - framebuffer scales are always reported as 1.0 on X11.
+- Backends: SDL2: window/monitor content scales are always reported as 1.0 on Wayland.
+  (#8920, #8921) [@TheBrokenRail, @pthom, @ocornut]
+- Backends: SDL3: use SDL_GetWindowDisplayScale() on Mac to obtain DisplayFrameBufferScale,
+  fixing incorrect values during resolution changes e.g. going fullscreen.
+  (#8703, #4414) [@jclounge]
+- Backends: SDL_GPU: Added ImGui_ImplSDLGPU3_InitInfo::SwapchainComposition and
+  PresentMode to configure how secondary viewports are created. Currently only used
+  multi-viewport mode. (#8892) [@PTSVU]
+- Backends: Vulkan: added ImGui_ImplVulkan_CreateMainPipeline() to recreate pipeline
+  without reinitializing backend. (#8110, #8111) [@SuperRonan]
+
+
+-----------------------------------------------------------------------
  VERSION 1.92.2b (Released 2025-08-13)
 -----------------------------------------------------------------------
 
@@ -50,7 +144,7 @@ Changes:
   leak between items when the window cannot be moved.
 - Backends: Allegro5: Fixed texture format setup which didn't work on all
   setups/drivers. (#8770, #8465)
-- Backends: Allegro5: Added ImGui_ImplAllegro5_SetDisplay() function to 
+- Backends: Allegro5: Added ImGui_ImplAllegro5_SetDisplay() function to
   change current ALLEGRO_DISPLAY, as Allegro applications often need to do that.
 - Backends: Allegro5: Fixed missing support for ImGuiKey_PrintScreen
   under Windows, as raw Allegro 5 does not receive it.
@@ -312,7 +406,7 @@ Breaking changes:
   to 4096 but that limit isn't necessary anymore, and Renderer_TextureMaxWidth covers this)
   However you may set TexMinWidth = TexMaxWidth for the same effect.
 - Fonts: if you create and manage ImFontAtlas instances yourself (instead of relying on
-  ImGuiContext to create one, you'll need to call ImFontAtlasUpdateNewFrame() yourself.
+  ImGuiContext to create one), you'll need to call ImFontAtlasUpdateNewFrame() yourself.
   An assert will trigger if you don't.
 - Fonts: obsoleted ImGui::SetWindowFontScale() which is not useful anymore. Prefer using
   PushFont(NULL, style.FontSizeBase * factor) or to manipulate other scaling factors.
@@ -1094,7 +1188,7 @@ Breaking changes:
     allows casting any pointer/integer type without warning:
     - May warn:     ImGui::Image((void*)MyTextureData, ...);
     - May warn:     ImGui::Image((void*)(intptr_t)MyTextureData, ...);
-    - Won't warn:   ImGui::Image((ImTextureID)(intptr_t)MyTextureData), ...);
+    - Won't warn:   ImGui::Image((ImTextureID)(intptr_t)MyTextureData, ...);
   - Note that you can always define ImTextureID to be your own high-level structures
     (with dedicated constructors and extra render parameters) if you like.
 - IO: moved ImGuiConfigFlags_NavEnableSetMousePos to standalone io.ConfigNavMoveSetMousePos bool.
@@ -4464,7 +4558,7 @@ Breaking Changes:
   - ShowTestWindow()                    -> use ShowDemoWindow()
   - IsRootWindowFocused()               -> use IsWindowFocused(ImGuiFocusedFlags_RootWindow)
   - IsRootWindowOrAnyChildFocused()     -> use IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)
-  - SetNextWindowContentWidth(w)        -> use SetNextWindowContentSize(ImVec2(w, 0.0f)
+  - SetNextWindowContentWidth(w)        -> use SetNextWindowContentSize(ImVec2(w, 0.0f))
   - GetItemsLineHeightWithSpacing()     -> use GetFrameHeightWithSpacing()
   - ImGuiCol_ChildWindowBg              -> use ImGuiCol_ChildBg
   - ImGuiStyleVar_ChildWindowRounding   -> use ImGuiStyleVar_ChildRounding
