@@ -214,4 +214,5 @@ namespace Common
 	void SetMousePosition(int x, int y);
 	bool AttachMousePositionCb(std::function<void(int,int)> cb);
 	void DetachMousePositionCb();
+
 } // namespace Common
