@@ -7,22 +7,31 @@
     <x>0</x>
     <y>0</y>
     <width>580</width>
-    <height>320</height>
+    <height>300</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>About PCSX2</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="sizeConstraint">
+    <enum>QLayout::SetFixedSize</enum>
+   </property>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
-        <enum>Qt::Orientation::Horizontal</enum>
+        <enum>Qt::Horizontal</enum>
        </property>
        <property name="sizeType">
-        <enum>QSizePolicy::Policy::Preferred</enum>
+        <enum>QSizePolicy::Preferred</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
        </property>
       </spacer>
      </item>
@@ -44,17 +53,23 @@
         <bool>false</bool>
        </property>
        <property name="alignment">
-        <set>Qt::AlignmentFlag::AlignCenter</set>
+        <set>Qt::AlignCenter</set>
        </property>
       </widget>
      </item>
      <item>
       <spacer name="horizontalSpacer_2">
        <property name="orientation">
-        <enum>Qt::Orientation::Horizontal</enum>
+        <enum>Qt::Horizontal</enum>
        </property>
        <property name="sizeType">
-        <enum>QSizePolicy::Policy::Preferred</enum>
+        <enum>QSizePolicy::Preferred</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
        </property>
       </spacer>
      </item>
@@ -66,7 +81,7 @@
       <string extracomment="SCM= Source Code Management">SCM Version</string>
      </property>
      <property name="alignment">
-      <set>Qt::AlignmentFlag::AlignCenter</set>
+      <set>Qt::AlignCenter</set>
      </property>
     </widget>
    </item>
@@ -76,7 +91,7 @@
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;PCSX2 is a free and open-source PlayStation 2 (PS2) emulator. Its purpose is to emulate the PS2's hardware, using a combination of MIPS CPU Interpreters, Recompilers and a Virtual Machine which manages hardware states and PS2 system memory. This allows you to play PS2 games on your PC, with many additional features and benefits.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="alignment">
-      <set>Qt::AlignmentFlag::AlignJustify|Qt::AlignmentFlag::AlignVCenter</set>
+      <set>Qt::AlignJustify|Qt::AlignVCenter</set>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
@@ -86,10 +101,10 @@
    <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
-      <enum>Qt::Orientation::Vertical</enum>
+      <enum>Qt::Vertical</enum>
      </property>
      <property name="sizeType">
-      <enum>QSizePolicy::Policy::Minimum</enum>
+      <enum>QSizePolicy::Minimum</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
@@ -110,7 +125,7 @@
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;PlayStation 2 and PS2 are registered trademarks of Sony Interactive Entertainment. This application is not affiliated in any way with Sony Interactive Entertainment.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="alignment">
-      <set>Qt::AlignmentFlag::AlignJustify|Qt::AlignmentFlag::AlignVCenter</set>
+      <set>Qt::AlignJustify|Qt::AlignVCenter</set>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
@@ -120,10 +135,10 @@
    <item>
     <spacer name="verticalSpacer_2">
      <property name="orientation">
-      <enum>Qt::Orientation::Vertical</enum>
+      <enum>Qt::Vertical</enum>
      </property>
      <property name="sizeType">
-      <enum>QSizePolicy::Policy::Minimum</enum>
+      <enum>QSizePolicy::Minimum</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
@@ -139,17 +154,17 @@
       <string notr="true">TextLabel</string>
      </property>
      <property name="alignment">
-      <set>Qt::AlignmentFlag::AlignCenter</set>
+      <set>Qt::AlignCenter</set>
      </property>
     </widget>
    </item>
    <item>
     <spacer name="verticalSpacer_3">
      <property name="orientation">
-      <enum>Qt::Orientation::Vertical</enum>
+      <enum>Qt::Vertical</enum>
      </property>
      <property name="sizeType">
-      <enum>QSizePolicy::Policy::Minimum</enum>
+      <enum>QSizePolicy::Minimum</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
@@ -162,7 +177,7 @@
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="standardButtons">
-      <set>QDialogButtonBox::StandardButton::Close</set>
+      <set>QDialogButtonBox::Close</set>
      </property>
      <property name="centerButtons">
       <bool>true</bool>
