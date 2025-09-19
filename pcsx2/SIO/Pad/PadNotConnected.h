@@ -30,6 +30,8 @@ public:
 	std::tuple<u8, u8> GetRawRightAnalog() const override;
 	u32 GetButtons() const override;
 	u8 GetPressure(u32 index) const override;
+	bool IsAnalogLightEnabled() const override;
+	bool IsAnalogLocked() const override;
 
 	u8 SendCommandByte(u8 commandByte) override;
 

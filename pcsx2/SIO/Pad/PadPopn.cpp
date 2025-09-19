@@ -475,6 +475,16 @@ u8 PadPopn::GetPressure(u32 index) const
 	return 0;
 }
 
+bool PadPopn::IsAnalogLightEnabled() const
+{
+	return this->analogLight;
+}
+
+bool PadPopn::IsAnalogLocked() const
+{
+	return this->analogLocked;
+}
+
 bool PadPopn::Freeze(StateWrapper& sw)
 {
 	if (!PadBase::Freeze(sw) || !sw.DoMarker("PadPopn"))

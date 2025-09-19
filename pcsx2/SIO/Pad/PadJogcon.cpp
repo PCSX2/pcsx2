@@ -450,6 +450,16 @@ u8 PadJogcon::GetPressure(u32 index) const
 	return 0;
 }
 
+bool PadJogcon::IsAnalogLightEnabled() const
+{
+	return this->analogLight;
+}
+
+bool PadJogcon::IsAnalogLocked() const
+{
+	return this->analogLocked;
+}
+
 bool PadJogcon::Freeze(StateWrapper& sw)
 {
 	if (!PadBase::Freeze(sw) || !sw.DoMarker("PadJogcon"))
