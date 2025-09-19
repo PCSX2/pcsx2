@@ -2148,6 +2148,9 @@ void MainWindow::changeEvent(QEvent* event)
 		QtHost::SetIconThemeFromStyle();
 		reloadThemeSpecificImages();
 	}
+
+	if (event->type() == QEvent::ActivationChange)
+		m_game_list_widget->updateCustomBackgroundState();
 }
 
 static QString getFilenameFromMimeData(const QMimeData* md)
@@ -2694,6 +2697,7 @@ SettingsWindow* MainWindow::getSettingsWindow()
 		m_settings_window = new SettingsWindow();
 		connect(m_settings_window->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::themeChanged, this, &MainWindow::onThemeChanged);
 		connect(m_settings_window->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::languageChanged, this, &MainWindow::onLanguageChanged);
+		connect(m_settings_window->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::backgroundChanged, m_game_list_widget, [this] {m_game_list_widget->setCustomBackground(true);});
 		connect(m_settings_window->getGameListSettingsWidget(), &GameListSettingsWidget::preferEnglishGameListChanged, this, [] {
 			g_main_window->m_game_list_widget->refreshGridCovers();
 		});

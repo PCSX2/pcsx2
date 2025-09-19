@@ -22,6 +22,7 @@ LIBPNG=1.6.50
 LIBWEBP=1.6.0
 SDL=SDL3-3.2.22
 QT=6.9.2
+QTAPNG=1.3.0
 LZ4=1.10.0
 ZSTD=1.5.7
 KDDOCKWIDGETS=2.2.3
@@ -44,6 +45,7 @@ aadc97ea91f6ef078b0ae3a62bba69e008d9a7db19b34e4ac973b19b71b4217c  libjpeg-turbo-
 4df396518620a7aa3651443e87d1b2862e4e88cad135a8b93423e01706232307  libpng-$LIBPNG.tar.xz
 e4ab7009bf0629fd11982d4c2aa83964cf244cffba7347ecd39019a9e38c4564  libwebp-$LIBWEBP.tar.gz
 f29d00cbcee273c0a54f3f32f86bf5c595e8823a96b1d92a145aac40571ebfcc  $SDL.tar.gz
+687ddc0c7cb128a3ea58e159b5129252537c27ede0c32a93f11f03127f0c0165  libpng-$LIBPNG-apng.patch.gz
 537512904744b35e232912055ccf8ec66d768639ff3abe5788d90d792ec5f48b  lz4-$LZ4.tar.gz
 eb33e51f49a15e023950cd7825ca74a4a2b43db8354825ac24fc1b7ee09e6fa3  zstd-$ZSTD.tar.gz
 44be9c9ecfe04129c4dea0a7e1b36ad476c9cc07c292016ac98e7b41514f2440  qtbase-everywhere-src-$QT.tar.xz
@@ -52,6 +54,7 @@ d984cab8f26334aa1c15e5b8f0cd9f1b7c0c1289fe0b68c1c84ab469b75605a5  qtsvg-everywhe
 d8b7f7e8e970cc0b975205fd6d5832ea917ef3e751df69b97439c1cddd67a489  qttools-everywhere-src-$QT.tar.xz
 c73bb6281ed365c0f954f4b1b6e1b13e1b3fefd94854f46fcd9a412f641f7ed6  qttranslations-everywhere-src-$QT.tar.xz
 cad79806565568f12f9983fed69219416abcee9d5deef4abdfcf94aa2eef7781  qtwayland-everywhere-src-$QT.tar.xz
+f1d3be3489f758efe1a8f12118a212febbe611aa670af32e0159fa3c1feab2a6  QtApng-$QTAPNG.tar.gz
 a8e4a25e5c2686fd36981e527ed05e451fcfc226bddf350f4e76181371190937  shaderc-$SHADERC.tar.gz
 9427deccbdf4bde6a269938df38c6bd75247493786a310d8d733a2c82065ef47  shaderc-glslang-$SHADERC_GLSLANG.tar.gz
 c2225a49c3d7efa5c4f4ce4a6b42081e6ea3daca376f3353d9d7c2722d77a28a  shaderc-spirv-headers-$SHADERC_SPIRVHEADERS.tar.gz
@@ -67,6 +70,7 @@ curl -L \
 	-O "https://github.com/ianlancetaylor/libbacktrace/archive/$LIBBACKTRACE.zip" \
 	-O "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/$LIBJPEGTURBO/libjpeg-turbo-$LIBJPEGTURBO.tar.gz" \
 	-O "https://downloads.sourceforge.net/project/libpng/libpng16/$LIBPNG/libpng-$LIBPNG.tar.xz" \
+	-O "https://download.sourceforge.net/libpng-apng/libpng-$LIBPNG-apng.patch.gz" \
 	-O "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-$LIBWEBP.tar.gz" \
 	-O "https://github.com/lz4/lz4/releases/download/v$LZ4/lz4-$LZ4.tar.gz" \
 	-O "https://libsdl.org/release/$SDL.tar.gz" \
@@ -77,6 +81,7 @@ curl -L \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qttools-everywhere-src-$QT.tar.xz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qttranslations-everywhere-src-$QT.tar.xz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtwayland-everywhere-src-$QT.tar.xz" \
+	-o "QtApng-$QTAPNG.tar.gz" "https://github.com/jurplel/QtApng/archive/refs/tags/$QTAPNG.tar.gz" \
 	-o "shaderc-$SHADERC.tar.gz" "https://github.com/google/shaderc/archive/refs/tags/v$SHADERC.tar.gz" \
 	-o "shaderc-glslang-$SHADERC_GLSLANG.tar.gz" "https://github.com/KhronosGroup/glslang/archive/$SHADERC_GLSLANG.tar.gz" \
 	-o "shaderc-spirv-headers-$SHADERC_SPIRVHEADERS.tar.gz" "https://github.com/KhronosGroup/SPIRV-Headers/archive/$SHADERC_SPIRVHEADERS.tar.gz" \
@@ -99,7 +104,9 @@ cd ..
 echo "Building libpng..."
 rm -fr "libpng-$LIBPNG"
 tar xf "libpng-$LIBPNG.tar.xz"
+gunzip -d -f "libpng-$LIBPNG-apng.patch.gz"
 cd "libpng-$LIBPNG"
+patch -p1 < "../libpng-$LIBPNG-apng.patch"
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DBUILD_SHARED_LIBS=ON -DBUILD_SHARED_LIBS=ON -DPNG_TESTS=OFF -DPNG_STATIC=OFF -DPNG_SHARED=ON -DPNG_TOOLS=OFF -B build -G Ninja
 cmake --build build --parallel
 ninja -C build install
@@ -249,6 +256,16 @@ cd build
 cmake --build . --parallel
 ninja install
 cd ../../
+
+echo "Building Qt APNG..."
+rm -fr "QtApng-$QTAPNG"
+tar xf "QtApng-$QTAPNG.tar.gz"
+cd "QtApng-$QTAPNG"
+patch -p1 < "$SCRIPTDIR/../common/qtapng-cmake.patch"
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -B build -G Ninja
+cmake --build build --parallel
+ninja -C build install
+cd ..
 
 echo "Building KDDockWidgets..."
 rm -fr "KDDockWidgets-$KDDOCKWIDGETS"
