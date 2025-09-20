@@ -328,7 +328,7 @@ static float rc_build_float(uint32_t mantissa_bits, int32_t exponent, int sign) 
     if (mantissa_bits == 0) {
       /* infinity */
 #ifdef INFINITY /* INFINITY and NAN #defines require C99 */
-      dbl = INFINITY;
+      dbl = (double)INFINITY;
 #else
       dbl = -log(0.0);
 #endif

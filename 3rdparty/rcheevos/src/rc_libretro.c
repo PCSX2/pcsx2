@@ -78,6 +78,7 @@ static const rc_disallowed_setting_t _rc_disallowed_fbneo_settings[] = {
 };
 
 static const rc_disallowed_setting_t _rc_disallowed_fceumm_settings[] = {
+  { "fceumm_game_genie", "!disabled" },
   { "fceumm_region", ",PAL,Dendy" },
   { NULL, NULL }
 };

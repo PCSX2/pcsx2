@@ -211,6 +211,10 @@ typedef struct rc_client_user_game_summary_t {
 
   uint32_t points_core;
   uint32_t points_unlocked;
+
+  /* minimum version: 12.1 */
+  time_t beaten_time;
+  time_t completed_time;
 } rc_client_user_game_summary_t;
 
 /**
@@ -357,6 +361,8 @@ typedef struct rc_client_subset_t {
 } rc_client_subset_t;
 
 RC_EXPORT const rc_client_subset_t* RC_CCONV rc_client_get_subset_info(rc_client_t* client, uint32_t subset_id);
+
+RC_EXPORT void RC_CCONV rc_client_get_user_subset_summary(const rc_client_t* client, uint32_t subset_id, rc_client_user_game_summary_t* summary);
 
 /*****************************************************************************\
 | Fetch Game Hashes                                                           |
@@ -582,7 +588,7 @@ enum {
 RC_EXPORT rc_client_leaderboard_list_t* RC_CCONV rc_client_create_leaderboard_list(rc_client_t* client, int grouping);
 
 /**
- * Destroys a list allocated by rc_client_get_leaderboard_list.
+ * Destroys a list allocated by rc_client_create_leaderboard_list.
  */
 RC_EXPORT void RC_CCONV rc_client_destroy_leaderboard_list(rc_client_leaderboard_list_t* list);
 

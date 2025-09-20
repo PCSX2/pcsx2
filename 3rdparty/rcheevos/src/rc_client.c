@@ -905,11 +905,22 @@ int rc_client_user_get_image_url(const rc_client_user_t* user, char buffer[], si
   return rc_client_get_image_url(buffer, buffer_size, RC_IMAGE_TYPE_USER, user->display_name);
 }
 
-static void rc_client_subset_get_user_game_summary(const rc_client_subset_info_t* subset,
-    rc_client_user_game_summary_t* summary, const uint8_t unlock_bit)
+static void rc_client_subset_get_user_game_summary(const rc_client_t* client,
+    const rc_client_subset_info_t* subset, rc_client_user_game_summary_t* summary)
 {
   rc_client_achievement_info_t* achievement = subset->achievements;
   rc_client_achievement_info_t* stop = achievement + subset->public_.num_achievements;
+  time_t last_unlock_time = 0;
+  time_t last_progression_time = 0;
+  time_t first_win_time = 0;
+  int num_progression_achievements = 0;
+  int num_win_achievements = 0;
+  int num_unlocked_progression_achievements = 0;
+  const uint8_t unlock_bit = (client->state.hardcore) ?
+    RC_CLIENT_ACHIEVEMENT_UNLOCKED_HARDCORE : RC_CLIENT_ACHIEVEMENT_UNLOCKED_SOFTCORE;
+
+  rc_mutex_lock((rc_mutex_t*)&client->state.mutex); /* remove const cast for mutex access */
+
   for (; achievement < stop; ++achievement) {
     switch (achievement->public_.category) {
       case RC_CLIENT_ACHIEVEMENT_CATEGORY_CORE:
@@ -919,10 +930,28 @@ static void rc_client_subset_get_user_game_summary(const rc_client_subset_info_t
         if (achievement->public_.unlocked & unlock_bit) {
           ++summary->num_unlocked_achievements;
           summary->points_unlocked += achievement->public_.points;
+
+          if (achievement->public_.unlock_time > last_unlock_time)
+            last_unlock_time = achievement->public_.unlock_time;
+
+          if (achievement->public_.type == RC_CLIENT_ACHIEVEMENT_TYPE_PROGRESSION) {
+            ++num_unlocked_progression_achievements;
+            if (achievement->public_.unlock_time > last_progression_time)
+              last_progression_time = achievement->public_.unlock_time;
+          }
+          else if (achievement->public_.type == RC_CLIENT_ACHIEVEMENT_TYPE_WIN) {
+            if (first_win_time == 0 || achievement->public_.unlock_time < first_win_time)
+              first_win_time = achievement->public_.unlock_time;
+          }
         }
-        if (achievement->public_.bucket == RC_CLIENT_ACHIEVEMENT_BUCKET_UNSUPPORTED) {
+
+        if (achievement->public_.type == RC_CLIENT_ACHIEVEMENT_TYPE_PROGRESSION)
+          ++num_progression_achievements;
+        else if (achievement->public_.type == RC_CLIENT_ACHIEVEMENT_TYPE_WIN)
+          ++num_win_achievements;
+
+        if (achievement->public_.bucket == RC_CLIENT_ACHIEVEMENT_BUCKET_UNSUPPORTED)
           ++summary->num_unsupported_achievements;
-        }
 
         break;
 
@@ -934,13 +963,18 @@ static void rc_client_subset_get_user_game_summary(const rc_client_subset_info_t
         continue;
     }
   }
+
+  rc_mutex_unlock((rc_mutex_t*)&client->state.mutex); /* remove const cast for mutex access */
+
+  if (summary->num_unlocked_achievements == summary->num_core_achievements)
+    summary->completed_time = last_unlock_time;
+
+  if ((first_win_time || num_win_achievements == 0) && num_unlocked_progression_achievements == num_progression_achievements)
+    summary->beaten_time = (first_win_time > last_progression_time) ? first_win_time : last_progression_time;
 }
 
 void rc_client_get_user_game_summary(const rc_client_t* client, rc_client_user_game_summary_t* summary)
 {
-  const uint8_t unlock_bit = (client->state.hardcore) ?
-    RC_CLIENT_ACHIEVEMENT_UNLOCKED_HARDCORE : RC_CLIENT_ACHIEVEMENT_UNLOCKED_SOFTCORE;
-
   if (!summary)
     return;
 
@@ -949,20 +983,47 @@ void rc_client_get_user_game_summary(const rc_client_t* client, rc_client_user_g
     return;
 
 #ifdef RC_CLIENT_SUPPORTS_EXTERNAL
-  if (client->state.external_client && client->state.external_client->get_user_game_summary) {
-    client->state.external_client->get_user_game_summary(summary);
+  if (client->state.external_client) {
+    if (client->state.external_client->get_user_game_summary_v5) {
+      client->state.external_client->get_user_game_summary_v5(summary);
+      return;
+    }
+    if (client->state.external_client->get_user_game_summary) {
+      client->state.external_client->get_user_game_summary(summary);
+      return;
+    }
+  }
+#endif
+
+  if (rc_client_is_game_loaded(client))
+    rc_client_subset_get_user_game_summary(client, client->game->subsets, summary);
+}
+
+void rc_client_get_user_subset_summary(const rc_client_t* client, uint32_t subset_id, rc_client_user_game_summary_t* summary)
+{
+  if (!summary)
+    return;
+
+  memset(summary, 0, sizeof(*summary));
+  if (!client || !subset_id)
+    return;
+
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->get_user_subset_summary) {
+    client->state.external_client->get_user_subset_summary(subset_id, summary);
     return;
   }
 #endif
 
-  if (!rc_client_is_game_loaded(client))
-    return;
-
-  rc_mutex_lock((rc_mutex_t*)&client->state.mutex); /* remove const cast for mutex access */
-
-  rc_client_subset_get_user_game_summary(client->game->subsets, summary, unlock_bit);
-
-  rc_mutex_unlock((rc_mutex_t*)&client->state.mutex); /* remove const cast for mutex access */
+  if (rc_client_is_game_loaded(client)) {
+    const rc_client_subset_info_t* subset = client->game->subsets;
+    for (; subset; subset = subset->next) {
+      if (subset->public_.id == subset_id) {
+        rc_client_subset_get_user_game_summary(client, subset, summary);
+        break;
+      }
+    }
+  }
 }
 
 typedef struct rc_client_fetch_all_user_progress_callback_data_t {
@@ -1376,29 +1437,34 @@ static uint32_t rc_client_subset_toggle_hardcore_achievements(rc_client_subset_i
           break;
       }
     }
-    else if (achievement->public_.state == RC_CLIENT_ACHIEVEMENT_STATE_ACTIVE ||
-             achievement->public_.state == RC_CLIENT_ACHIEVEMENT_STATE_INACTIVE) {
-
-      /* if it's active despite being unlocked, and we're in encore mode, leave it active */
-      if (client->state.encore_mode) {
-        ++active_count;
-        continue;
-      }
-
-      achievement->public_.state = RC_CLIENT_ACHIEVEMENT_STATE_UNLOCKED;
+    else {
       achievement->public_.unlock_time = (active_bit == RC_CLIENT_ACHIEVEMENT_UNLOCKED_HARDCORE) ?
-        achievement->unlock_time_hardcore : achievement->unlock_time_softcore;
+          achievement->unlock_time_hardcore : achievement->unlock_time_softcore;
 
-      if (achievement->trigger && achievement->trigger->state == RC_TRIGGER_STATE_PRIMED) {
-        rc_client_event_t client_event;
-        memset(&client_event, 0, sizeof(client_event));
-        client_event.type = RC_CLIENT_EVENT_ACHIEVEMENT_CHALLENGE_INDICATOR_HIDE;
-        client_event.achievement = &achievement->public_;
-        client->callbacks.event_handler(&client_event, client);
+      if (achievement->public_.state == RC_CLIENT_ACHIEVEMENT_STATE_ACTIVE ||
+          achievement->public_.state == RC_CLIENT_ACHIEVEMENT_STATE_INACTIVE) {
+        /* if it's active despite being unlocked, and we're in encore mode, leave it active */
+        if (client->state.encore_mode) {
+          ++active_count;
+          continue;
+        }
+
+        /* switch to inactive */
+        achievement->public_.state = RC_CLIENT_ACHIEVEMENT_STATE_UNLOCKED;
+
+        if (achievement->trigger && rc_trigger_state_active(achievement->trigger->state)) {
+          /* hide any active challenge indicators */
+          if (achievement->trigger->state == RC_TRIGGER_STATE_PRIMED) {
+            rc_client_event_t client_event;
+            memset(&client_event, 0, sizeof(client_event));
+            client_event.type = RC_CLIENT_EVENT_ACHIEVEMENT_CHALLENGE_INDICATOR_HIDE;
+            client_event.achievement = &achievement->public_;
+            client->callbacks.event_handler(&client_event, client);
+          }
+
+          achievement->trigger->state = RC_TRIGGER_STATE_TRIGGERED;
+        }
       }
-
-      if (achievement->trigger && rc_trigger_state_active(achievement->trigger->state))
-        achievement->trigger->state = RC_TRIGGER_STATE_TRIGGERED;
     }
   }
 
@@ -1728,7 +1794,9 @@ static void rc_client_activate_game(rc_client_load_state_t* load_state, rc_api_s
       if (load_state->hash->hash[0] != '[') {
         if (load_state->client->state.spectator_mode != RC_CLIENT_SPECTATOR_MODE_LOCKED) {
           /* schedule the periodic ping */
-          rc_client_scheduled_callback_data_t* callback_data = rc_buffer_alloc(&load_state->game->buffer, sizeof(rc_client_scheduled_callback_data_t));
+          rc_client_scheduled_callback_data_t* callback_data = (rc_client_scheduled_callback_data_t*)
+            rc_buffer_alloc(&load_state->game->buffer, sizeof(rc_client_scheduled_callback_data_t));
+
           memset(callback_data, 0, sizeof(*callback_data));
           callback_data->callback = rc_client_ping;
           callback_data->related_id = load_state->game->public_.id;
@@ -1768,7 +1836,9 @@ static void rc_client_dispatch_activate_game(struct rc_client_scheduled_callback
 
 static void rc_client_queue_activate_game(rc_client_load_state_t* load_state)
 {
-  rc_client_scheduled_callback_data_t* scheduled_callback_data = calloc(1, sizeof(rc_client_scheduled_callback_data_t));
+  rc_client_scheduled_callback_data_t* scheduled_callback_data =
+    (rc_client_scheduled_callback_data_t*)calloc(1, sizeof(rc_client_scheduled_callback_data_t));
+
   if (!scheduled_callback_data) {
     rc_client_load_error(load_state, RC_OUT_OF_MEMORY, rc_error_str(RC_OUT_OF_MEMORY));
     return;
@@ -1805,7 +1875,7 @@ static void rc_client_start_session_callback(const rc_api_server_response_t* ser
   outstanding_requests = rc_client_end_load_state(load_state);
 
   if (error_message) {
-    rc_client_load_error(callback_data, result, error_message);
+    rc_client_load_error(load_state, result, error_message);
   }
   else if (outstanding_requests < 0) {
     /* previous load state was aborted, load_state was free'd */
@@ -1818,7 +1888,7 @@ static void rc_client_start_session_callback(const rc_api_server_response_t* ser
         (rc_api_start_session_response_t*)malloc(sizeof(rc_api_start_session_response_t));
 
     if (!load_state->start_session_response) {
-      rc_client_load_error(callback_data, RC_OUT_OF_MEMORY, rc_error_str(RC_OUT_OF_MEMORY));
+      rc_client_load_error(load_state, RC_OUT_OF_MEMORY, rc_error_str(RC_OUT_OF_MEMORY));
     }
     else {
       /* safer to parse the response again than to try to copy it */
@@ -1911,7 +1981,7 @@ static void rc_client_copy_achievements(rc_client_load_state_t* load_state,
 
   /* allocate the achievement array */
   size = sizeof(rc_client_achievement_info_t) * num_achievements;
-  achievement = achievements = rc_buffer_alloc(buffer, size);
+  achievement = achievements = (rc_client_achievement_info_t*)rc_buffer_alloc(buffer, size);
   memset(achievements, 0, size);
 
   /* copy the achievement data */
@@ -1960,7 +2030,7 @@ static void rc_client_copy_achievements(rc_client_load_state_t* load_state,
         achievement->public_.bucket = RC_CLIENT_ACHIEVEMENT_BUCKET_UNSUPPORTED;
       }
       else {
-        rc_buffer_consume(buffer, preparse.parse.buffer, (uint8_t*)preparse.parse.buffer + preparse.parse.offset);
+        rc_buffer_consume(buffer, (const uint8_t*)preparse.parse.buffer, (uint8_t*)preparse.parse.buffer + preparse.parse.offset);
       }
 
       rc_destroy_preparse_state(&preparse);
@@ -2053,7 +2123,7 @@ static void rc_client_copy_leaderboards(rc_client_load_state_t* load_state,
   /* allocate the achievement array */
   size = sizeof(rc_client_leaderboard_info_t) * num_leaderboards;
   buffer = &load_state->game->buffer;
-  leaderboard = leaderboards = rc_buffer_alloc(buffer, size);
+  leaderboard = leaderboards = (rc_client_leaderboard_info_t*)rc_buffer_alloc(buffer, size);
   memset(leaderboards, 0, size);
 
   /* copy the achievement data */
@@ -2103,7 +2173,7 @@ static void rc_client_copy_leaderboards(rc_client_load_state_t* load_state,
         leaderboard->public_.state = RC_CLIENT_LEADERBOARD_STATE_DISABLED;
       }
       else {
-        rc_buffer_consume(buffer, preparse.parse.buffer, (uint8_t*)preparse.parse.buffer + preparse.parse.offset);
+        rc_buffer_consume(buffer, (const uint8_t*)preparse.parse.buffer, (uint8_t*)preparse.parse.buffer + preparse.parse.offset);
       }
 
       rc_destroy_preparse_state(&preparse);
@@ -2618,7 +2688,7 @@ rc_client_game_hash_t* rc_client_find_game_hash(rc_client_t* client, const char*
   }
 
   if (!game_hash) {
-    game_hash = rc_buffer_alloc(&client->state.buffer, sizeof(rc_client_game_hash_t));
+    game_hash = (rc_client_game_hash_t*)rc_buffer_alloc(&client->state.buffer, sizeof(rc_client_game_hash_t));
     memset(game_hash, 0, sizeof(*game_hash));
     snprintf(game_hash->hash, sizeof(game_hash->hash), "%s", hash);
     game_hash->game_id = RC_CLIENT_UNKNOWN_GAME_ID;
@@ -2796,16 +2866,14 @@ rc_hash_iterator_t* rc_client_get_load_state_hash_iterator(rc_client_t* client)
 
 static void rc_client_log_hash_message_verbose(const char* message, const rc_hash_iterator_t* iterator)
 {
-  rc_client_load_state_t unused;
-  rc_client_load_state_t* load_state = (rc_client_load_state_t*)(((uint8_t*)iterator) - RC_OFFSETOF(unused, hash_iterator));
+  const rc_client_load_state_t* load_state = (const rc_client_load_state_t*)iterator->userdata;
   if (load_state->client->state.log_level >= RC_CLIENT_LOG_LEVEL_INFO)
     rc_client_log_message(load_state->client, message);
 }
 
 static void rc_client_log_hash_message_error(const char* message, const rc_hash_iterator_t* iterator)
 {
-  rc_client_load_state_t unused;
-  rc_client_load_state_t* load_state = (rc_client_load_state_t*)(((uint8_t*)iterator) - RC_OFFSETOF(unused, hash_iterator));
+  const rc_client_load_state_t* load_state = (const rc_client_load_state_t*)iterator->userdata;
   if (load_state->client->state.log_level >= RC_CLIENT_LOG_LEVEL_ERROR)
     rc_client_log_message(load_state->client, message);
 }
@@ -2875,6 +2943,7 @@ rc_client_async_handle_t* rc_client_begin_identify_and_load_game(rc_client_t* cl
   /* initialize the iterator */
   rc_hash_initialize_iterator(&load_state->hash_iterator, file_path, data, data_size);
   rc_hash_merge_callbacks(&load_state->hash_iterator, &client->callbacks.hash);
+  load_state->hash_iterator.userdata = load_state;
 
   if (!load_state->hash_iterator.callbacks.verbose_message)
     load_state->hash_iterator.callbacks.verbose_message = rc_client_log_hash_message_verbose;
@@ -3114,7 +3183,8 @@ static rc_client_async_handle_t* rc_client_begin_change_media_internal(rc_client
   rc_api_request_t request;
   int result;
 
-  if (game_hash->game_id != RC_CLIENT_UNKNOWN_GAME_ID) {
+  if (game_hash->game_id != RC_CLIENT_UNKNOWN_GAME_ID || /* previously looked up */
+      game_hash->hash[0] == '[') { /* internal use - don't try to look up */
     rc_client_change_media_internal(client, game_hash, callback, callback_userdata);
     return NULL;
   }
@@ -3207,7 +3277,7 @@ static rc_client_game_info_t* rc_client_check_pending_media(rc_client_t* client,
   }
 
   /* still waiting for game data - don't call callback - it's queued */
-  if (pending_media) 
+  if (pending_media)
     return NULL;
 
   return game;
@@ -3364,7 +3434,7 @@ const rc_client_game_t* rc_client_get_game_info(const rc_client_t* client)
 
     if (client->state.external_client->get_game_info)
       return rc_client_external_convert_v1_game(client, client->state.external_client->get_game_info());
-  } 
+  }
 #endif
 
   return client->game ? &client->game->public_ : NULL;
@@ -4130,7 +4200,7 @@ static void rc_client_award_achievement_callback(const rc_api_server_response_t*
 }
 
 static void rc_client_award_achievement_server_call(rc_client_award_achievement_callback_data_t* ach_data)
-{ 
+{
   rc_api_award_achievement_request_t api_params;
   rc_api_request_t request;
   int result;
@@ -4284,7 +4354,7 @@ const rc_client_leaderboard_t* rc_client_get_leaderboard_info(const rc_client_t*
     if (leaderboard != NULL)
       return &leaderboard->public_;
   }
- 
+
   return NULL;
 }
 
@@ -4368,7 +4438,7 @@ rc_client_leaderboard_list_t* rc_client_create_leaderboard_list(rc_client_t* cli
   };
 
   if (!client)
-    return calloc(1, sizeof(rc_client_leaderboard_list_t));
+    return (rc_client_leaderboard_list_t*)calloc(1, list_size);
 
 #ifdef RC_CLIENT_SUPPORTS_EXTERNAL
   if (client->state.external_client && client->state.external_client->create_leaderboard_list)
@@ -4376,7 +4446,7 @@ rc_client_leaderboard_list_t* rc_client_create_leaderboard_list(rc_client_t* cli
 #endif
 
   if (!client->game)
-    return calloc(1, sizeof(rc_client_leaderboard_list_t));
+    return (rc_client_leaderboard_list_t*)calloc(1, list_size);
 
   memset(&bucket_counts, 0, sizeof(bucket_counts));
 
