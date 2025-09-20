@@ -7545,6 +7545,13 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 				m_conf.require_full_barrier = true;
 				DATE_BARRIER = true;
 			}
+			else if ((features.texture_barrier || features.multidraw_fb_copy) && m_conf.require_full_barrier)
+			{
+				// Full barrier is enabled (likely sw fbmask), we need to use date barrier.
+				GL_PERF("DATE: Accurate with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
+				m_conf.require_full_barrier = true;
+				DATE_BARRIER = true;
+			}
 			else if (features.primitive_id)
 			{
 				GL_PERF("DATE: Accurate with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
