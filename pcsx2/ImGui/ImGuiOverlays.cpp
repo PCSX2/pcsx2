@@ -1004,6 +1004,8 @@ void SaveStateSelectorUI::RefreshHotkeyLegend()
 {
 	auto format_legend_entry = [](SmallString binding, std::string_view caption) {
 		InputManager::PrettifyInputBinding(binding);
+		if (binding.empty())
+			binding.append(TRANSLATE_STR("ImGuiOverlays", "Empty"));
 		return fmt::format("{} - {}", binding, caption);
 	};
 
