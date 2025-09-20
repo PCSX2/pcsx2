@@ -6915,11 +6915,6 @@ Do you wish to shutdown anyways and IRREVERSIBLY DESTROY YOUR MEMORY CARD?</sour
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8143"/>
-        <source>Renderer</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8144"/>
         <source>Selects the API used to render the emulated GS.</source>
         <translation type="unfinished"></translation>
@@ -7864,6 +7859,11 @@ Enter the name for the new input profile:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8143"/>
+        <source>Graphics API</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8429"/>
         <source>Version: %s</source>
         <translation type="unfinished"></translation>
@@ -7999,6 +7999,11 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8573"/>
         <source>Direct3D 12 (Not Recommended)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8577"/>
+        <source>Software Renderer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -9862,11 +9867,6 @@ Do you want to load this save and continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8577"/>
-        <source>Software</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8578"/>
         <source>Null</source>
         <translation type="unfinished"></translation>
@@ -11343,7 +11343,7 @@ To use the Vulkan renderer, you should remove this app package.</source>
     </message>
     <message>
         <location filename="../../pcsx2/GS/Renderers/DX11/D3D.cpp" line="411"/>
-        <source>The Vulkan renderer was automatically selected, but no compatible devices were found.
+        <source>The Vulkan graphics API was automatically selected, but no compatible devices were found.
        You should update all graphics drivers in your system, including any integrated GPUs
        to use the Vulkan renderer.</source>
         <translation type="unfinished"></translation>
@@ -13965,7 +13965,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <name>GraphicsSettingsHeader</name>
     <message>
         <location filename="../Settings/GraphicsSettingsHeader.ui" line="26"/>
-        <source>Renderer:</source>
+        <source>Graphics API:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -14385,12 +14385,6 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="43"/>
-        <source>Software</source>
-        <extracomment>Graphics backend/engine type (refers to emulating the GS in software, on the CPU). Translate accordingly.</extracomment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="45"/>
         <source>Null</source>
         <extracomment>Null here means that this is a graphics backend that will show nothing.</extracomment>
@@ -14642,11 +14636,6 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="637"/>
-        <source>Flushes all targets in the texture cache back to local memory when shutting down. Can prevent lost visuals when saving state or switching renderers, but can also cause graphical corruption.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="641"/>
         <source>Attempts to reduce the texture size when games do not set it themselves (e.g. Snowblind games).</source>
         <translation type="unfinished"></translation>
@@ -14835,6 +14824,12 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     <message>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="816"/>
         <source>Extra Audio Arguments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="830"/>
+        <source>Uses a blit presentation model instead of flipping when using the Direct3D 11 graphics API. This usually results in slower performance, but may be required for some streaming applications, or to uncap framerates on some systems.</source>
+        <extracomment>Blit = a data operation. You might want to write it as-is, but fully uppercased. More information: https://en.wikipedia.org/wiki/Bit_blit</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -15115,6 +15110,12 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="43"/>
+        <source>Software Renderer</source>
+        <extracomment>Graphics backend/engine type (refers to emulating the GS in software, on the CPU). Translate accordingly.</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="482"/>
         <source>Screenshot Resolution</source>
         <translation type="unfinished"></translation>
@@ -15302,6 +15303,11 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     <message>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="631"/>
         <source>Uploads GS data when rendering a new frame to reproduce some effects accurately.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="637"/>
+        <source>Flushes all targets in the texture cache back to local memory when shutting down. Can prevent lost visuals when saving state or switching graphics APIs, but can also cause graphical corruption.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -15535,12 +15541,6 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     <message>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="825"/>
         <source>Change the compression algorithm used when creating a GS dump.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="830"/>
-        <source>Uses a blit presentation model instead of flipping when using the Direct3D 11 renderer. This usually results in slower performance, but may be required for some streaming applications, or to uncap framerates on some systems.</source>
-        <extracomment>Blit = a data operation. You might want to write it as-is, but fully uppercased. More information: https://en.wikipedia.org/wiki/Bit_blit</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -17367,6 +17367,11 @@ Right click to clear binding</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../MainWindow.ui" line="135"/>
+        <source>&amp;Switch Graphics API</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../MainWindow.ui" line="153"/>
         <source>&amp;View</source>
         <translation type="unfinished"></translation>
@@ -17542,11 +17547,6 @@ Right click to clear binding</source>
     <message>
         <location filename="../MainWindow.ui" line="93"/>
         <source>Setti&amp;ngs</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../MainWindow.ui" line="135"/>
-        <source>&amp;Switch Renderer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -24098,17 +24098,12 @@ Error was: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3209"/>
-        <source>Renderer is not set to Automatic. This may cause performance problems and graphical issues.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3215"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3230"/>
         <source>Texture filtering is not set to Bilinear (PS2). This will break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3678"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3693"/>
         <source>No Game Running</source>
         <translation type="unfinished"></translation>
     </message>
@@ -24179,102 +24174,122 @@ Error was: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3221"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3205"/>
+        <source>Dithering is set to Force 32 bit. This will break rendering in some games.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/VMManager.cpp" line="3210"/>
+        <source>Dithering is disabled. This will cause color banding in some games.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/VMManager.cpp" line="3215"/>
+        <source>Integer scaling is enabled. This may shrink the image.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/VMManager.cpp" line="3224"/>
+        <source>Graphics API is not set to Automatic. This may cause performance problems and graphical issues.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/VMManager.cpp" line="3236"/>
         <source>EE FPU Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3227"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3242"/>
         <source>EE FPU Clamp Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3232"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3247"/>
         <source>VU0 Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3237"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3252"/>
         <source>VU1 Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3244"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3259"/>
         <source>VU Clamp Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3249"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3264"/>
         <source>128MB RAM is enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3254"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3269"/>
         <source>Game Fixes are not enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3259"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3274"/>
         <source>Compatibility Patches are not enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3263"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3278"/>
         <source>Frame rate for NTSC is not default. This may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3265"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3280"/>
         <source>Frame rate for PAL is not default. This may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3284"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3299"/>
         <source>EE Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3289"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3304"/>
         <source>VU0 Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3294"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3309"/>
         <source>VU1 Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3299"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3314"/>
         <source>IOP Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3304"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3319"/>
         <source>EE Cache is enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3309"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3324"/>
         <source>EE Wait Loop Detection is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3314"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3329"/>
         <source>INTC Spin Detection is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3317"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3332"/>
         <source>Fastmem is not enabled, this will reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3321"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3336"/>
         <source>Instant VU1 is disabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3326"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3341"/>
         <source>mVU Flag Hack is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
