@@ -144,6 +144,28 @@ typedef struct v3_rc_client_achievement_list_info_t {
   rc_client_destroy_achievement_list_func_t destroy_func;
 } v3_rc_client_achievement_list_info_t;
 
+/* user_game_summary */
+
+typedef struct v1_rc_client_user_game_summary_t {
+  uint32_t num_core_achievements;
+  uint32_t num_unofficial_achievements;
+  uint32_t num_unlocked_achievements;
+  uint32_t num_unsupported_achievements;
+  uint32_t points_core;
+  uint32_t points_unlocked;
+} v1_rc_client_user_game_summary_t;
+
+typedef struct v5_rc_client_user_game_summary_t {
+  uint32_t num_core_achievements;
+  uint32_t num_unofficial_achievements;
+  uint32_t num_unlocked_achievements;
+  uint32_t num_unsupported_achievements;
+  uint32_t points_core;
+  uint32_t points_unlocked;
+  time_t beaten_time;
+  time_t completed_time;
+} v5_rc_client_user_game_summary_t;
+
 RC_END_C_DECLS
 
 #endif /* RC_CLIENT_EXTERNAL_CONVERSIONS_H */

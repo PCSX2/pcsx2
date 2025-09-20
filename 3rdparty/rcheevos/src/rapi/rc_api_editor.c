@@ -100,7 +100,7 @@ int rc_api_process_fetch_code_notes_server_response(rc_api_fetch_code_notes_resp
 
       if (!rc_json_get_required_string(&address_str, &response->response, &note_fields[0], "Address"))
         return RC_MISSING_VALUE;
-      note->address = (unsigned)strtol(address_str, NULL, 16);
+      note->address = (uint32_t)strtoul(address_str, NULL, 16);
       if (!rc_json_get_required_string(&note->note, &response->response, &note_fields[2], "Note"))
         return RC_MISSING_VALUE;
 
@@ -417,6 +417,60 @@ int rc_api_process_update_leaderboard_server_response(rc_api_update_leaderboard_
 
 void rc_api_destroy_update_leaderboard_response(rc_api_update_leaderboard_response_t* response) {
     rc_buffer_destroy(&response->response.buffer);
+}
+
+/* --- Update Rich Presence --- */
+
+int rc_api_init_update_rich_presence_request(rc_api_request_t* request, const rc_api_update_rich_presence_request_t* api_params) {
+  return rc_api_init_update_rich_presence_request_hosted(request, api_params, &g_host);
+}
+
+int rc_api_init_update_rich_presence_request_hosted(rc_api_request_t* request,
+  const rc_api_update_rich_presence_request_t* api_params,
+  const rc_api_host_t* host) {
+  rc_api_url_builder_t builder;
+
+  rc_api_url_build_dorequest_url(request, host);
+
+  if (api_params->game_id == 0)
+    return RC_INVALID_STATE;
+  if (!api_params->script)
+    return RC_INVALID_STATE;
+
+  rc_url_builder_init(&builder, &request->buffer, 128);
+  if (!rc_api_url_build_dorequest(&builder, "submitrichpresence", api_params->username, api_params->api_token))
+    return builder.result;
+
+  rc_url_builder_append_unum_param(&builder, "g", api_params->game_id);
+  rc_url_builder_append_str_param(&builder, "d", api_params->script);
+
+  request->post_data = rc_url_builder_finalize(&builder);
+  request->content_type = RC_CONTENT_TYPE_URLENCODED;
+
+  return builder.result;
+}
+
+int rc_api_process_update_rich_presence_server_response(rc_api_update_rich_presence_response_t* response, const rc_api_server_response_t* server_response) {
+  int result;
+
+  rc_json_field_t fields[] = {
+    RC_JSON_NEW_FIELD("Success"),
+    RC_JSON_NEW_FIELD("Error"),
+    RC_JSON_NEW_FIELD("Code"),
+  };
+
+  memset(response, 0, sizeof(*response));
+  rc_buffer_init(&response->response.buffer);
+
+  result = rc_json_parse_server_response(&response->response, server_response, fields, sizeof(fields) / sizeof(fields[0]));
+  if (result != RC_OK || !response->response.succeeded)
+    return result;
+
+  return RC_OK;
+}
+
+void rc_api_destroy_update_rich_presence_response(rc_api_update_rich_presence_response_t* response) {
+  rc_buffer_destroy(&response->response.buffer);
 }
 
 /* --- Fetch Badge Range --- */

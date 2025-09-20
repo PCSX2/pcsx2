@@ -480,6 +480,7 @@ static int rc_hash_file_from_buffer(char hash[33], uint32_t console_id, const rc
   rc_hash_iterator_t buffered_file_iterator;
   memset(&buffered_file_iterator, 0, sizeof(buffered_file_iterator));
   memcpy(&buffered_file_iterator.callbacks, &iterator->callbacks, sizeof(iterator->callbacks));
+  buffered_file_iterator.userdata = iterator->userdata;
 
   buffered_file_iterator.callbacks.filereader.open = rc_file_open_buffered_file;
   buffered_file_iterator.callbacks.filereader.close = rc_file_close_buffered_file;
@@ -650,6 +651,7 @@ int rc_hash_buffered_file(char hash[33], uint32_t console_id, const rc_hash_iter
     rc_hash_iterator_t buffer_iterator;
     memset(&buffer_iterator, 0, sizeof(buffer_iterator));
     memcpy(&buffer_iterator.callbacks, &iterator->callbacks, sizeof(iterator->callbacks));
+    buffer_iterator.userdata = iterator->userdata;
     buffer_iterator.path = iterator->path;
     buffer_iterator.buffer = buffer;
     buffer_iterator.buffer_size = (size_t)size;
@@ -773,6 +775,7 @@ static int rc_hash_generate_from_playlist(char hash[33], uint32_t console_id, co
 
   memset(&first_file_iterator, 0, sizeof(first_file_iterator));
   memcpy(&first_file_iterator.callbacks, &iterator->callbacks, sizeof(iterator->callbacks));
+  first_file_iterator.userdata = iterator->userdata;
   first_file_iterator.path = disc_path; /* rc_hash_destory_iterator will free */
 
   result = rc_hash_from_file(hash, console_id, &first_file_iterator);
@@ -1293,7 +1296,8 @@ static void rc_hash_initialize_iterator_from_path(rc_hash_iterator_t* iterator, 
   }
 
   /* find the handler for the extension */
-  handler = bsearch(&search, handlers, num_handlers, sizeof(*handler), rc_hash_iterator_find_handler);
+  handler = (const rc_hash_iterator_ext_handler_entry_t*)
+    bsearch(&search, handlers, num_handlers, sizeof(*handler), rc_hash_iterator_find_handler);
   if (handler) {
     handler->handler(iterator, handler->data);
   } else {

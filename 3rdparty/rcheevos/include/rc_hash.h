@@ -154,6 +154,7 @@ typedef struct rc_hash_iterator {
   uint8_t consoles[12];
   int index;
   const char* path;
+  void* userdata;
 
   rc_hash_callbacks_t callbacks;
 } rc_hash_iterator_t;

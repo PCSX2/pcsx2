@@ -971,9 +971,10 @@ static const rc_memory_regions_t rc_memory_regions_wasm4 = { _rc_memory_regions_
 /* https://wiibrew.org/wiki/Memory_map */
 static const rc_memory_region_t _rc_memory_regions_wii[] = {
     { 0x00000000U, 0x017FFFFF, 0x80000000U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" },
-    { 0x01800000U, 0x057FFFFF, 0x90000000U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" }
+    { 0x01800000U, 0x0FFFFFFF, 0x81800000U, RC_MEMORY_TYPE_UNUSED, "Unused" },
+    { 0x10000000U, 0x13FFFFFF, 0x90000000U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" }
 };
-static const rc_memory_regions_t rc_memory_regions_wii = { _rc_memory_regions_wii, 2 };
+static const rc_memory_regions_t rc_memory_regions_wii = { _rc_memory_regions_wii, 3 };
 
 /* ===== WonderSwan ===== */
 /* http://daifukkat.su/docs/wsman/#ovr_memmap */

@@ -920,7 +920,7 @@ uint32_t rc_runtime_progress_size(const rc_runtime_t* runtime, void* unused_L)
 
 int rc_runtime_serialize_progress(void* buffer, const rc_runtime_t* runtime, void* unused_L)
 {
-  return rc_runtime_serialize_progress_sized(buffer, 0xFFFFFFFF, runtime, unused_L);
+  return rc_runtime_serialize_progress_sized((uint8_t*)buffer, 0xFFFFFFFF, runtime, unused_L);
 }
 
 int rc_runtime_serialize_progress_sized(uint8_t* buffer, uint32_t buffer_size, const rc_runtime_t* runtime, void* unused_L)

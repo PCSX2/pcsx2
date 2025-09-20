@@ -380,9 +380,6 @@ int rc_operand_is_float_memref(const rc_operand_t* self) {
   if (!rc_operand_is_memref(self))
     return 0;
 
-  if (self->type == RC_OPERAND_RECALL)
-    return rc_memsize_is_float(self->memref_access_type);
-
   if (self->value.memref->value.memref_type == RC_MEMREF_TYPE_MODIFIED_MEMREF) {
     const rc_modified_memref_t* memref = (const rc_modified_memref_t*)self->value.memref;
     if (memref->modifier_type != RC_OPERATOR_INDIRECT_READ)
@@ -433,6 +430,9 @@ int rc_operand_is_recall(const rc_operand_t* self) {
 int rc_operand_is_float(const rc_operand_t* self) {
   if (self->type == RC_OPERAND_FP)
     return 1;
+
+  if (self->type == RC_OPERAND_RECALL)
+    return rc_memsize_is_float(self->size);
 
   return rc_operand_is_float_memref(self);
 }

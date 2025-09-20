@@ -37,7 +37,7 @@
  * #endif
  */
 
-#ifdef __cplusplus
+#if defined(__cplusplus) && !defined(CXX_BUILD)
   #define RC_BEGIN_C_DECLS extern "C" {
   #define RC_END_C_DECLS }
 #else

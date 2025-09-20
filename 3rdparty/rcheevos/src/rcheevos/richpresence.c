@@ -48,8 +48,9 @@ static void rc_alloc_helper_variable_memref_value(rc_richpresence_display_part_t
 
   condset = value->conditions;
   if (condset && !condset->next) {
-    /* single value - if it's only "measured" and "indirect" conditions, we can simplify to a memref */
-    if (condset->num_measured_conditions &&
+    /* single value - if it's a single Measured clause (including any AddSource/AddAddress helpers), we can
+     * simplify to a memref. If there are supporting clauses like MeasuredIf or ResetIf, we can't */
+    if (condset->num_measured_conditions == 1 &&
         !condset->num_pause_conditions && !condset->num_reset_conditions &&
         !condset->num_other_conditions && !condset->num_hittarget_conditions) {
       rc_condition_t* condition = condset->conditions;

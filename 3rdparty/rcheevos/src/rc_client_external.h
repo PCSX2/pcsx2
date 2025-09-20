@@ -35,6 +35,7 @@ typedef rc_client_async_handle_t* (RC_CCONV *rc_client_external_begin_load_subse
   uint32_t subset_id, rc_client_callback_t callback, void* callback_userdata);
 typedef const rc_client_game_t* (RC_CCONV *rc_client_external_get_game_info_func_t)(void);
 typedef const rc_client_subset_t* (RC_CCONV *rc_client_external_get_subset_info_func_t)(uint32_t subset_id);
+typedef void (RC_CCONV* rc_client_external_get_user_subset_summary_func_t)(uint32_t subset_id, rc_client_user_game_summary_t* summary);
 typedef void (RC_CCONV *rc_client_external_get_user_game_summary_func_t)(rc_client_user_game_summary_t* summary);
 typedef rc_client_async_handle_t* (RC_CCONV *rc_client_external_begin_change_media_func_t)(rc_client_t* client, const char* file_path,
   const uint8_t* data, size_t data_size, rc_client_callback_t callback, void* callback_userdata);
@@ -139,9 +140,13 @@ typedef struct rc_client_external_t
   /* VERSION 4 */
   rc_client_external_set_int_func_t set_allow_background_memory_reads;
 
+  /* VERSION 5 */
+  rc_client_external_get_user_game_summary_func_t get_user_game_summary_v5;
+  rc_client_external_get_user_subset_summary_func_t get_user_subset_summary;
+
 } rc_client_external_t;
 
-#define RC_CLIENT_EXTERNAL_VERSION 4
+#define RC_CLIENT_EXTERNAL_VERSION 5
 
 void rc_client_add_game_hash(rc_client_t* client, const char* hash, uint32_t game_id);
 void rc_client_load_unknown_game(rc_client_t* client, const char* hash);
