@@ -11,7 +11,6 @@ add_library(rcheevos
 	include/rc_hash.h
 	include/rc_runtime.h
 	include/rc_runtime_types.h
-	include/rc_url.h
 	include/rc_util.h
 	src/rapi/rc_api_common.c
 	src/rapi/rc_api_common.h
@@ -47,5 +46,5 @@ add_library(rcheevos
 
 target_include_directories(rcheevos PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include")
 target_include_directories(rcheevos INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include")
-target_compile_definitions(rcheevos PRIVATE "RC_DISABLE_LUA=1" "RCHEEVOS_URL_SSL=1" "RC_NO_THREADS=1" "RC_HASH_NO_DISC" "RC_HASH_NO_ENCRYPTED" "RC_HASH_NO_ROM" "RC_HASH_NO_ZIP")
+target_compile_definitions(rcheevos PRIVATE "RC_NO_THREADS=1" "RC_HASH_NO_DISC" "RC_HASH_NO_ENCRYPTED" "RC_HASH_NO_ROM" "RC_HASH_NO_ZIP")
 

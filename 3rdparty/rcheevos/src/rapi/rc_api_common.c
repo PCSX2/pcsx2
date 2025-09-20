@@ -273,17 +273,17 @@ static int rc_json_extract_html_error(rc_api_response_t* response, const rc_api_
   iterator.json = server_response->body;
   iterator.end = server_response->body + server_response->body_length;
 
-  /* if the title contains an HTTP status code(i.e "404 Not Found"), return the title */
+  /* assume the title contains the most appropriate message to display to the user */
   if (rc_json_find_substring(&iterator, "<title>")) {
     const char* title_start = iterator.json + 7;
-    if (isdigit((int)*title_start) && rc_json_find_substring(&iterator, "</title>")) {
+    if (rc_json_find_substring(&iterator, "</title>")) {
       response->error_message = rc_buffer_strncpy(&response->buffer, title_start, iterator.json - title_start);
       response->succeeded = 0;
       return RC_INVALID_JSON;
     }
   }
 
-  /* title not found, or did not start with an error code, return the first line of the response */
+  /* title not found, return the first line of the response (up to 200 characters) */
   iterator.json = server_response->body;
 
   while (iterator.json < iterator.end && *iterator.json != '\n' &&

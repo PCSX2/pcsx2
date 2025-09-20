@@ -61,27 +61,41 @@ static void rc_parse_legacy_value(rc_value_t* self, const char** memaddr, rc_par
   char buffer[64] = "A:";
   const char* buffer_ptr;
   char* ptr;
-  char c;
+  int done;
 
   /* convert legacy format into condset */
   next_clause = &self->conditions;
   do {
-    num_measured_conditions = 0;
-
     /* count the number of joiners and add one to determine the number of clauses.  */
+    done = 0;
     num_measured_conditions = 1;
     buffer_ptr = *memaddr;
-    while ((c = *buffer_ptr++) && c != '$') {
-      if (c == '_') {
-        ++num_measured_conditions;
-        buffer[0] = 'A'; /* reset to AddSource */
+    do {
+      switch (*buffer_ptr++) {
+        case '_': /* add next */
+          ++num_measured_conditions;
+          buffer[0] = 'A'; /* reset to AddSource */
+          break;
+
+        case '*': /* multiply */
+          if (*buffer_ptr == '-') {
+            /* multiplication by a negative number will convert to SubSource */
+            ++buffer_ptr;
+            buffer[0] = 'B';
+          }
+          break;
+
+        case '\0': /* end of string */
+        case '$': /* maximum of */
+        case ':': /* end of leaderboard clause */
+        case ')': /* end of rich presence macro */
+          done = 1;
+          break;
+
+        default: /* assume everything else is valid - bad stuff will be filtered out later */
+          break;
       }
-      else if (c == '*' && *buffer_ptr == '-') {
-        /* multiplication by a negative number will convert to SubSource */
-        ++buffer_ptr;
-        buffer[0] = 'B';
-      }
-    }
+    } while (!done);
 
     /* if last condition is SubSource, we'll need to add a dummy condition for the Measured */
     if (buffer[0] == 'B')

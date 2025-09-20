@@ -174,8 +174,8 @@ static uint32_t rc_scale_value(uint32_t value, uint8_t oper, const rc_operand_t*
 
     case RC_OPERATOR_SUB:
     {
-      const uint32_t op_max = (operand->type == RC_OPERAND_CONST) ? operand->value.num : rc_max_value(operand);
-      if (value > op_max)
+      const uint32_t op_max = (operand->type == RC_OPERAND_CONST) ? operand->value.num : 0;
+      if (value >= op_max)
         return value - op_max;
 
       return 0xFFFFFFFF;
@@ -351,11 +351,11 @@ static int rc_validate_condset_internal(const rc_condset_t* condset, char result
           snprintf(result, result_size, "Condition %d: Using pointer from previous frame", index);
           return 0;
         }
-        if (rc_operand_is_float(&cond->operand1) || rc_operand_is_float(&cond->operand2)) {
+        if (rc_operand_is_float(operand1) || rc_operand_is_float(&cond->operand2)) {
           snprintf(result, result_size, "Condition %d: Using non-integer value in AddAddress calcuation", index);
           return 0;
         }
-        if (rc_operand_type_is_transform(cond->operand1.type)) {
+        if (rc_operand_type_is_transform(operand1->type) && cond->oper != RC_OPERATOR_MULT) {
           snprintf(result, result_size, "Condition %d: Using transformed value in AddAddress calcuation", index);
           return 0;
         }
@@ -721,7 +721,7 @@ static int rc_validate_comparison_overlap(int comparison1, uint32_t value1, int 
 }
 
 static int rc_validate_conflicting_conditions(const rc_condset_t* conditions, const rc_condset_t* compare_conditions,
-    const char* prefix, const char* compare_prefix, char result[], const size_t result_size)
+    int has_hits, const char* prefix, const char* compare_prefix, char result[], const size_t result_size)
 {
   int comparison1, comparison2;
   uint32_t value1, value2;
@@ -895,7 +895,15 @@ static int rc_validate_conflicting_conditions(const rc_condset_t* conditions, co
           {
             /* only ever report the redundancy on the non-ResetIf condition. The ResetIf is allowed to
              * fire when the non-ResetIf condition is not true. */
-            continue;
+            if (has_hits)
+              continue;
+          }
+          else if (condition->type == RC_CONDITION_RESET_IF && compare_condition->type != RC_CONDITION_RESET_IF)
+          {
+            /* if the ResetIf condition is more restrictive than the non-ResetIf condition,
+               and there aren't any hits to clear, ignore it */
+            if (has_hits)
+              continue;
           }
           else if (compare_condition->type == RC_CONDITION_MEASURED_IF || condition->type == RC_CONDITION_MEASURED_IF)
           {
@@ -947,12 +955,21 @@ static int rc_validate_trigger_internal(const rc_trigger_t* trigger, char result
 {
   const rc_condset_t* alt;
   int index;
+  int has_hits = (trigger->requirement && trigger->requirement->num_hittarget_conditions > 0);
+  if (!has_hits) {
+    for (alt = trigger->alternative; alt; alt = alt->next) {
+      if (alt->num_hittarget_conditions > 0) {
+        has_hits = 1;
+        break;
+      }
+    }
+  }
 
   if (!trigger->alternative) {
     if (!rc_validate_condset_internal(trigger->requirement, result, result_size, console_id, max_address))
       return 0;
 
-    return rc_validate_conflicting_conditions(trigger->requirement, trigger->requirement, "", "", result, result_size);
+    return rc_validate_conflicting_conditions(trigger->requirement, trigger->requirement, has_hits, "", "", result, result_size);
   }
 
   snprintf(result, result_size, "Core ");
@@ -960,7 +977,7 @@ static int rc_validate_trigger_internal(const rc_trigger_t* trigger, char result
     return 0;
 
   /* compare core to itself */
-  if (!rc_validate_conflicting_conditions(trigger->requirement, trigger->requirement, "Core", "Core", result, result_size))
+  if (!rc_validate_conflicting_conditions(trigger->requirement, trigger->requirement, has_hits, "Core", "Core", result, result_size))
     return 0;
 
   index = 1;
@@ -972,15 +989,15 @@ static int rc_validate_trigger_internal(const rc_trigger_t* trigger, char result
 
     /* compare alt to itself */
     snprintf(altname, sizeof(altname), "Alt%d", index);
-    if (!rc_validate_conflicting_conditions(alt, alt, altname, altname, result, result_size))
+    if (!rc_validate_conflicting_conditions(alt, alt, has_hits, altname, altname, result, result_size))
       return 0;
 
     /* compare alt to core */
-    if (!rc_validate_conflicting_conditions(trigger->requirement, alt, "Core", altname, result, result_size))
+    if (!rc_validate_conflicting_conditions(trigger->requirement, alt, has_hits, "Core", altname, result, result_size))
       return 0;
 
     /* compare core to alt */
-    if (!rc_validate_conflicting_conditions(alt, trigger->requirement, altname, "Core", result, result_size))
+    if (!rc_validate_conflicting_conditions(alt, trigger->requirement, has_hits, altname, "Core", result, result_size))
       return 0;
   }
 

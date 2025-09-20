@@ -343,8 +343,12 @@ rc_condset_t* rc_parse_condset(const char** memaddr, rc_parse_state_t* parse) {
     if (parse->buffer) {
       classification = rc_classify_condition(&condition);
       if (classification == RC_CONDITION_CLASSIFICATION_COMBINING) {
-        if (combining_classification == RC_CONDITION_CLASSIFICATION_COMBINING)
-          combining_classification = rc_find_next_classification(&(*memaddr)[1]); /* skip over '_' */
+        if (combining_classification == RC_CONDITION_CLASSIFICATION_COMBINING) {
+          if (**memaddr == '_')
+            combining_classification = rc_find_next_classification(&(*memaddr)[1]); /* skip over '_' */
+          else
+            combining_classification = RC_CONDITION_CLASSIFICATION_OTHER;
+        }
 
         classification = combining_classification;
       }

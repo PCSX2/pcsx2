@@ -186,6 +186,37 @@ RC_EXPORT int RC_CCONV rc_api_process_update_leaderboard_response(rc_api_update_
 RC_EXPORT int RC_CCONV rc_api_process_update_leaderboard_server_response(rc_api_update_leaderboard_response_t* response, const rc_api_server_response_t* server_response);
 RC_EXPORT void RC_CCONV rc_api_destroy_update_leaderboard_response(rc_api_update_leaderboard_response_t* response);
 
+/* --- Update Rich Presence --- */
+
+/**
+ * API parameters for an update rich presence request.
+ */
+typedef struct rc_api_update_rich_presence_request_t {
+  /* The username of the developer */
+  const char* username;
+  /* The API token from the login request */
+  const char* api_token;
+  /* The unique identifier of the game */
+  uint32_t game_id;
+  /* The script for the rich_presence */
+  const char* script;
+}
+rc_api_update_rich_presence_request_t;
+
+/**
+ * Response data for an update rich presence request.
+ */
+typedef struct rc_api_update_rich_presence_response_t {
+  /* Common server-provided response information */
+  rc_api_response_t response;
+}
+rc_api_update_rich_presence_response_t;
+
+RC_EXPORT int RC_CCONV rc_api_init_update_rich_presence_request(rc_api_request_t* request, const rc_api_update_rich_presence_request_t* api_params);
+RC_EXPORT int RC_CCONV rc_api_init_update_rich_presence_request_hosted(rc_api_request_t* request, const rc_api_update_rich_presence_request_t* api_params, const rc_api_host_t* host);
+RC_EXPORT int RC_CCONV rc_api_process_update_rich_presence_server_response(rc_api_update_rich_presence_response_t* response, const rc_api_server_response_t* server_response);
+RC_EXPORT void RC_CCONV rc_api_destroy_update_rich_presence_response(rc_api_update_rich_presence_response_t* response);
+
 /* --- Fetch Badge Range --- */
 
 /**
