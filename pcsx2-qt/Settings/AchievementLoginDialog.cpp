@@ -9,6 +9,7 @@
 
 #include "common/Error.h"
 
+#include <QtCore/QPointer>
 #include <QtWidgets/QMessageBox>
 
 AchievementLoginDialog::AchievementLoginDialog(QWidget* parent, Achievements::LoginRequestReason reason)
@@ -44,11 +45,18 @@ void AchievementLoginDialog::loginClicked()
 	m_ui.status->setText(tr("Logging in..."));
 	enableUI(false);
 
-	Host::RunOnCPUThread([this, username = std::move(username), password = std::move(password)]() {
+	const QPointer<AchievementLoginDialog> dialog(this);
+	Host::RunOnCPUThread([dialog, username = std::move(username), password = std::move(password)]() {
 		Error error;
 		const bool result = Achievements::Login(username.c_str(), password.c_str(), &error);
 		const QString message = QString::fromStdString(error.GetDescription());
-		QMetaObject::invokeMethod(this, "processLoginResult", Qt::QueuedConnection, Q_ARG(bool, result), Q_ARG(const QString&, message));
+
+		QtHost::RunOnUIThread([dialog, result, message = std::move(message)]() {
+			if (!dialog)
+				return;
+
+			dialog->processLoginResult(result, message);
+		});
 	});
 }
 
