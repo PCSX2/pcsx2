@@ -93,7 +93,7 @@ jobs:
 
       - name: Build Flatpak (beta)
         if: ${{ inputs.stableBuild == false || inputs.stableBuild == 'false' }}
-        uses: flatpak/flatpak-github-actions/flatpak-builder@10a3c29f0162516f0f68006be14c92f34bd4fa6c
+        uses: flatpak/flatpak-github-actions/flatpak-builder@92ae9851ad316786193b1fd3f40c4b51eb5cb101
         with:
           bundle: ${{ steps.artifact-metadata.outputs.artifact-name }}.flatpak
           upload-artifact: false
@@ -109,7 +109,7 @@ jobs:
 
       - name: Build Flatpak (stable)
         if: ${{ inputs.stableBuild == true || inputs.stableBuild == 'true' }}
-        uses: flatpak/flatpak-github-actions/flatpak-builder@10a3c29f0162516f0f68006be14c92f34bd4fa6c
+        uses: flatpak/flatpak-github-actions/flatpak-builder@92ae9851ad316786193b1fd3f40c4b51eb5cb101
         with:
           bundle: ${{ steps.artifact-metadata.outputs.artifact-name }}.flatpak
           upload-artifact: false
