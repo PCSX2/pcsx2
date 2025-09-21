@@ -31,7 +31,7 @@
      <x>0</x>
      <y>0</y>
      <width>1050</width>
-     <height>28</height>
+     <height>27</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuSystem">
@@ -1063,22 +1063,6 @@
    </property>
    <property name="text">
     <string>Edit &amp;Patches...</string>
-   </property>
-  </action>
-  <action name="actionSetGameListBackground">
-   <property name="icon">
-    <iconset theme="artboard-2-line"/>
-   </property>
-   <property name="text">
-    <string>Set Custom Background</string>
-   </property>
-  </action>
-  <action name="actionClearGameListBackground">
-   <property name="icon">
-    <iconset theme="trash-fill"/>
-   </property>
-   <property name="text">
-    <string>Clear Custom Background</string>
    </property>
   </action>
  </widget>
