@@ -478,11 +478,13 @@ void GSState::DumpVertices(const std::string& filename)
 	constexpr const char* CLOSE_MAP = "}";
 	
 	constexpr int TRACE_INDEX_WIDTH = 10;
-	constexpr int XYUV_WIDTH = 9;
+	constexpr int XYUV_WIDTH = 10;
 	constexpr int Z_WIDTH = 10;
 	constexpr int RGBA_WIDTH = 3;
 	constexpr int SCI_FLOAT_WIDTH = 15;
 	constexpr int STQ_BITS_WIDTH = 10;
+
+	const int n = GSUtil::GetClassVertexCount(m_vt.m_primclass);
 
 	auto WriteVertexIndex = [&file](int index) {
 		file << std::left << std::dec << " # " << index;
@@ -599,6 +601,9 @@ void GSState::DumpVertices(const std::string& filename)
 	for (u32 i = 0; i < count; ++i)
 	{
 		GSVertex v = buffer[m_index.buff[i]];
+
+		if ((n > 1) && (i > 0) && ((i % n) == 0))
+			file << std::endl;
 		
 		file << INDENT << LIST_ITEM << OPEN_MAP;
 		WriteXYZ_vert(v);
@@ -629,6 +634,9 @@ void GSState::DumpVertices(const std::string& filename)
 		file << "vertex_stq:" << std::endl;
 		for (u32 i = 0; i < count; ++i)
 		{
+			if ((n > 1) && (i > 0) && ((i % n) == 0))
+				file << std::endl;
+
 			file << INDENT << LIST_ITEM << OPEN_MAP;
 			WriteSTQ_vert(buffer[m_index.buff[i]]);
 			file << CLOSE_MAP;
@@ -637,9 +645,9 @@ void GSState::DumpVertices(const std::string& filename)
 
 			file << std::endl;
 		}
+		
+		file << std::endl;
 	}
-
-	file << std::endl;
 
 	// Dump vertex trace
 	file << "vertex_trace:" << std::endl;
