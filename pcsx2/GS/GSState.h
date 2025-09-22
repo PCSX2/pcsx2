@@ -130,8 +130,6 @@ protected:
 
 	GSVertex m_v = {};
 	float m_q = 1.0f;
-	GSVector4i m_scissor_cull_min = {};
-	GSVector4i m_scissor_cull_max = {};
 	GSVector4i m_xyof = {};
 
 	struct
