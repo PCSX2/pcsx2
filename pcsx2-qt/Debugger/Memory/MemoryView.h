@@ -26,8 +26,10 @@ enum class MemoryViewType
 	DWORD = 8,
 };
 
-class MemoryViewTable
+class MemoryViewTable : public QObject
 {
+	Q_OBJECT
+private:
 	QWidget* parent;
 	MemoryViewType displayType = MemoryViewType::BYTE;
 	bool littleEndian = true;
@@ -60,8 +62,8 @@ class MemoryViewTable
 		}
 	}
 
-	u32 nextAddress(u32 addr);
-	u32 prevAddress(u32 addr);
+	static u32 nextAddress(u32 addr, u32 selected_address, MemoryViewType display_type, bool little_endian);
+	static u32 prevAddress(u32 addr, u32 selected_address, MemoryViewType display_type, bool little_endian);
 
 public:
 	MemoryViewTable(QWidget* parent)

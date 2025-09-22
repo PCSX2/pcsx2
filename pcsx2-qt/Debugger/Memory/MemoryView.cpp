@@ -8,6 +8,7 @@
 #include "QtHost.h"
 #include "QtUtils.h"
 #include <QtCore/QObject>
+#include <QtCore/QPointer>
 #include <QtGui/QActionGroup>
 #include <QtGui/QClipboard>
 #include <QtGui/QMouseEvent>
@@ -246,9 +247,16 @@ void MemoryViewTable::InsertIntoSelectedHexView(u8 value, DebugInterface& cpu)
 	u8 newVal = value << (selectedNibbleHI ? 4 : 0);
 	curVal |= newVal;
 
-	Host::RunOnCPUThread([this, address = selectedAddress, &cpu, val = curVal] {
+	const QPointer<MemoryViewTable> table(this);
+	Host::RunOnCPUThread([table, address = selectedAddress, &cpu, val = curVal] {
 		cpu.write8(address, val);
-		QtHost::RunOnUIThread([this] { parent->update(); });
+
+		QtHost::RunOnUIThread([table] {
+			if (!table)
+				return;
+
+			table->parent->update();
+		});
 	});
 }
 
@@ -261,46 +269,57 @@ void MemoryViewTable::InsertAtCurrentSelection(const QString& text, DebugInterfa
 	// This approach prevents one from pasting on a nibble boundary, but that is almost always
 	// user error, and we don't have an undo function in this view, so best to stay conservative.
 	QByteArray input = selectedText ? text.toUtf8() : QByteArray::fromHex(text.toUtf8());
-	Host::RunOnCPUThread([this, address = selectedAddress, &cpu, inBytes = input] {
+
+	const QPointer<MemoryViewTable> table(this);
+	const MemoryViewType display_type = displayType;
+	const bool little_endian = littleEndian;
+	Host::RunOnCPUThread([table, address = selectedAddress, &cpu, input, display_type, little_endian] {
 		u32 currAddr = address;
-		for (int i = 0; i < inBytes.size(); i++)
+		for (int i = 0; i < input.size(); i++)
 		{
-			cpu.write8(currAddr, inBytes[i]);
-			currAddr = nextAddress(currAddr);
-			QtHost::RunOnUIThread([this] { parent->update(); });
+			cpu.write8(currAddr, input[i]);
+			currAddr = nextAddress(currAddr, address, display_type, little_endian);
 		}
-		QtHost::RunOnUIThread([this, inBytes] { UpdateSelectedAddress(selectedAddress + inBytes.size()); parent->update(); });
+
+		u32 end_address = address + input.size();
+		QtHost::RunOnUIThread([table, end_address] {
+			if (!table)
+				return;
+
+			table->UpdateSelectedAddress(end_address);
+			table->parent->update();
+		});
 	});
 }
 
-u32 MemoryViewTable::nextAddress(u32 addr)
+u32 MemoryViewTable::nextAddress(u32 addr, u32 selected_address, MemoryViewType display_type, bool little_endian)
 {
-	if (!littleEndian)
+	if (!little_endian)
 	{
 		return addr + 1;
 	}
 	else
 	{
-		if (selectedAddress % static_cast<s32>(displayType) == 0)
-			return addr + (static_cast<s32>(displayType) * 2 - 1);
+		if (selected_address % static_cast<s32>(display_type) == 0)
+			return addr + (static_cast<s32>(display_type) * 2 - 1);
 		else
 			return addr - 1;
 	}
 }
 
-u32 MemoryViewTable::prevAddress(u32 addr)
+u32 MemoryViewTable::prevAddress(u32 addr, u32 selected_address, MemoryViewType display_type, bool little_endian)
 {
-	if (!littleEndian)
+	if (!little_endian)
 	{
 		return addr - 1;
 	}
 	else
 	{
 		// It works
-		if ((addr & (static_cast<u32>(displayType) - 1)) == (static_cast<u32>(displayType) - 1))
-			return addr - (static_cast<s32>(displayType) * 2 - 1);
+		if ((addr & (static_cast<u32>(display_type) - 1)) == (static_cast<u32>(display_type) - 1))
+			return addr - (static_cast<s32>(display_type) * 2 - 1);
 		else
-			return selectedAddress + 1;
+			return selected_address + 1;
 	}
 }
 
@@ -358,9 +377,17 @@ bool MemoryViewTable::KeyPress(int key, QChar keychar, DebugInterface& cpu)
 	{
 		if (keyCharIsText || (!keychar.isNonCharacter() && keychar.category() != QChar::Other_Control))
 		{
-			Host::RunOnCPUThread([this, address = selectedAddress, &cpu, val = keychar.toLatin1()] {
+			const QPointer<MemoryViewTable> table(this);
+			Host::RunOnCPUThread([table, address = selectedAddress, &cpu, val = keychar.toLatin1()] {
 				cpu.write8(address, val);
-				QtHost::RunOnUIThread([this] { UpdateSelectedAddress(selectedAddress + 1); parent->update(); });
+
+				QtHost::RunOnUIThread([table, address]() {
+					if (!table)
+						return;
+
+					table->UpdateSelectedAddress(address + 1);
+					table->parent->update();
+				});
 			});
 			pressHandled = true;
 		}
@@ -369,12 +396,22 @@ bool MemoryViewTable::KeyPress(int key, QChar keychar, DebugInterface& cpu)
 		{
 			case Qt::Key::Key_Backspace:
 			case Qt::Key::Key_Escape:
-				Host::RunOnCPUThread([this, address = selectedAddress, &cpu] {
+			{
+				const QPointer<MemoryViewTable> table(this);
+				Host::RunOnCPUThread([table, address = selectedAddress, &cpu] {
 					cpu.write8(address, 0);
-					QtHost::RunOnUIThread([this] {BackwardSelection(); parent->update(); });
+
+					QtHost::RunOnUIThread([table] {
+						if (!table)
+							return;
+
+						table->BackwardSelection();
+						table->parent->update();
+					});
 				});
 				pressHandled = true;
 				break;
+			}
 			case Qt::Key::Key_Right:
 				ForwardSelection();
 				pressHandled = true;
