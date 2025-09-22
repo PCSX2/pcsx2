@@ -550,6 +550,10 @@ void GSState::DumpVertices(const std::string& filename)
 		WriteRGBA_vec(vec);
 	};
 
+	auto WriteF = [&file](const int f) {
+		file << "F: " << std::setw(RGBA_WIDTH) << std::setfill(' ') << f;
+	};
+
 	auto WriteSTQ_vec = [&file](const GSVector4& v) {
 		file << std::defaultfloat << std::right;
 		file << "S: " << std::setw(SCI_FLOAT_WIDTH) << std::setfill(' ') << v.x << DEL;
@@ -605,6 +609,11 @@ void GSState::DumpVertices(const std::string& filename)
 		}
 		file << DEL;
 		WriteRGBA_vert(v);
+		if (PRIM->FGE)
+		{
+			file << DEL;
+			WriteF(v.FOG);
+		}
 		file << CLOSE_MAP;
 
 		WriteVertexIndex(i);
@@ -693,6 +702,21 @@ void GSState::DumpVertices(const std::string& filename)
 	WriteRGBA_vec(m_vt.m_max.c);
 	file << CLOSE_MAP << std::endl;
 
+	if (PRIM->FGE)
+	{
+		file << INDENT;
+		WriteTraceIndex("min_f: ");
+		file << OPEN_MAP;
+		WriteF(m_vt.m_min.p.w);
+		file << CLOSE_MAP << std::endl;
+
+		file << INDENT;
+		WriteTraceIndex("max_f: ");
+		file << OPEN_MAP;
+		WriteF(m_vt.m_max.p.w);
+		file << CLOSE_MAP << std::endl;
+	}
+
 	file << std::endl;
 
 	file << INDENT;
@@ -728,6 +752,15 @@ void GSState::DumpVertices(const std::string& filename)
 	file << OPEN_MAP;
 	WriteBools({"R", "G", "B", "A"}, {m_vt.m_eq.r, m_vt.m_eq.g, m_vt.m_eq.b, m_vt.m_eq.a});
 	file << CLOSE_MAP << std::endl;
+
+	if (PRIM->FGE)
+	{
+		file << INDENT;
+		WriteTraceIndex("eq_f: ");
+		file << OPEN_MAP;
+		WriteBools({"F"}, {m_vt.m_eq.f});
+		file << CLOSE_MAP << std::endl;
+	}
 }
 
 void GSState::DumpTransferList(const std::string& filename)
