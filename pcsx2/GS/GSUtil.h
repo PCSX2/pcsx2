@@ -15,6 +15,7 @@ public:
 	static const char* GetWMName(u32 wm);
 	static const char* GetZTSTName(u32 ztst);
 	static const char* GetPrimName(u32 prim);
+	static const char* GetPrimClassName(u32 primclass);
 	static const char* GetMMAGName(u32 mmag);
 	static const char* GetMMINName(u32 mmin);
 	static const char* GetMTBAName(u32 mtba);

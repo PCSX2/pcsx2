@@ -114,6 +114,13 @@ const char* GSUtil::GetPrimName(u32 prim)
 	return (prim < std::size(names)) ? names[prim] : "";
 }
 
+const char* GSUtil::GetPrimClassName(u32 primclass)
+{
+	static constexpr const char* names[] = {
+		"POINT", "LINE", "TRIANGLE", "SPRITE", "INVALID"};
+	return (primclass < std::size(names)) ? names[primclass] : "";
+}
+
 const char* GSUtil::GetMMAGName(u32 mmag)
 {
 	static constexpr const char* names[] = {"NEAREST", "LINEAR"};
