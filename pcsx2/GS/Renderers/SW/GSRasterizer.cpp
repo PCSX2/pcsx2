@@ -260,7 +260,7 @@ void GSRasterizer::DrawPoint(const GSVertexSW* vertex, int vertex_count, const u
 		{
 			const GSVertexSW& v = vertex[*index];
 
-			GSVector4i p(v.p);
+			GSVector4i p(v.p + GSVector4(0.5f));
 
 			if (!scissor_test || (m_scissor.left <= p.x && p.x < m_scissor.right && m_scissor.top <= p.y && p.y < m_scissor.bottom))
 			{
@@ -281,7 +281,7 @@ void GSRasterizer::DrawPoint(const GSVertexSW* vertex, int vertex_count, const u
 		{
 			const GSVertexSW& v = vertex[0];
 
-			GSVector4i p(v.p);
+			GSVector4i p(v.p + GSVector4(0.5f));
 
 			if (!scissor_test || (m_scissor.left <= p.x && p.x < m_scissor.right && m_scissor.top <= p.y && p.y < m_scissor.bottom))
 			{
