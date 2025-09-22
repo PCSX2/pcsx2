@@ -595,7 +595,7 @@ void GSState::DumpVertices(const std::string& filename)
 	file << std::endl;
 
 	// Dump vertices
-	file << "vertex:" << std::endl;
+	file << "vertex: # " << GSUtil::GetPrimClassName(m_vt.m_primclass) << std::endl;
 	const u32 count = m_index.tail;
 	GSVertex* buffer = &m_vertex.buff[0];
 	for (u32 i = 0; i < count; ++i)
@@ -631,7 +631,7 @@ void GSState::DumpVertices(const std::string& filename)
 	// Dump extra info for STQ
 	if (PRIM->TME && !PRIM->FST)
 	{
-		file << "vertex_stq:" << std::endl;
+		file << "vertex_stq: # " << GSUtil::GetPrimClassName(m_vt.m_primclass) << std::endl;
 		for (u32 i = 0; i < count; ++i)
 		{
 			if ((n > 1) && (i > 0) && ((i % n) == 0))
