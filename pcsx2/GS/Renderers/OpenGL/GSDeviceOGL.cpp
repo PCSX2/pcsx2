@@ -1428,6 +1428,10 @@ void GSDeviceOGL::BlitRect(GSTexture* sTex, const GSVector4i& r, const GSVector2
 // Copy a sub part of a texture into another
 void GSDeviceOGL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY)
 {
+	// Empty rect, abort copy.
+	if (r.rempty())
+		return;
+
 	const GLuint& sid = static_cast<GSTextureOGL*>(sTex)->GetID();
 	const GLuint& did = static_cast<GSTextureOGL*>(dTex)->GetID();
 	const GSVector4i dst_rect(0, 0, dTex->GetWidth(), dTex->GetHeight());

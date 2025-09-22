@@ -1471,6 +1471,10 @@ void GSDeviceMTL::ClearSamplerCache()
 
 void GSDeviceMTL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY)
 { @autoreleasepool {
+	// Empty rect, abort copy.
+	if (r.rempty())
+		return;
+	
 	GSTextureMTL* sT = static_cast<GSTextureMTL*>(sTex);
 	GSTextureMTL* dT = static_cast<GSTextureMTL*>(dTex);
 	const GSVector4i dst_rect(0, 0, dT->GetWidth(), dT->GetHeight());
