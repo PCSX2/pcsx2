@@ -1229,6 +1229,10 @@ std::unique_ptr<GSDownloadTexture> GSDevice11::CreateDownloadTexture(u32 width, 
 
 void GSDevice11::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY)
 {
+	// Empty rect, abort copy.
+	if (r.rempty())
+		return;
+
 	const GSVector4i dst_rect(0, 0, dTex->GetWidth(), dTex->GetHeight());
 	const bool full_draw_copy = sTex->IsDepthStencil() || dst_rect.eq(r);
 
