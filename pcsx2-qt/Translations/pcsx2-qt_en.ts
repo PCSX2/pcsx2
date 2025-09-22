@@ -11330,7 +11330,7 @@ Do you want to load this save and continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="5044"/>
+        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="5019"/>
         <source>Spin GPU During Readbacks is enabled, but calibrated timestamps are unavailable.  This might be really slow.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -16795,43 +16795,43 @@ Right click to clear binding</source>
     </message>
     <message>
         <location filename="../Settings/InterfaceSettingsWidget.ui" line="77"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="158"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="169"/>
         <source>Pause On Focus Loss</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/InterfaceSettingsWidget.ui" line="35"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="150"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="161"/>
         <source>Inhibit Screensaver</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/InterfaceSettingsWidget.ui" line="63"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="156"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="167"/>
         <source>Pause On Start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/InterfaceSettingsWidget.ui" line="42"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="153"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="164"/>
         <source>Confirm Shutdown</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/InterfaceSettingsWidget.ui" line="49"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="174"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="185"/>
         <source>Enable Discord Presence</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/InterfaceSettingsWidget.ui" line="56"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="177"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="188"/>
         <source>Enable Mouse Lock</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/InterfaceSettingsWidget.ui" line="70"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="161"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="172"/>
         <source>Pause On Controller Disconnection</source>
         <translation type="unfinished"></translation>
     </message>
@@ -16842,37 +16842,37 @@ Right click to clear binding</source>
     </message>
     <message>
         <location filename="../Settings/InterfaceSettingsWidget.ui" line="93"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="163"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="174"/>
         <source>Start Fullscreen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/InterfaceSettingsWidget.ui" line="100"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="180"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="191"/>
         <source>Double-Click Toggles Fullscreen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/InterfaceSettingsWidget.ui" line="107"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="168"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="179"/>
         <source>Render To Separate Window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/InterfaceSettingsWidget.ui" line="114"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="171"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="182"/>
         <source>Hide Main Window When Running</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/InterfaceSettingsWidget.ui" line="121"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="183"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="194"/>
         <source>Disable Window Resizing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/InterfaceSettingsWidget.ui" line="128"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="165"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="176"/>
         <source>Hide Cursor In Fullscreen</source>
         <translation type="unfinished"></translation>
     </message>
@@ -16883,257 +16883,335 @@ Right click to clear binding</source>
     </message>
     <message>
         <location filename="../Settings/InterfaceSettingsWidget.ui" line="145"/>
-        <source>Preferences</source>
+        <source>Appearance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="151"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="154"/>
         <source>Language:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="161"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="164"/>
         <source>Theme:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="174"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="171"/>
+        <source>Game List Background:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="186"/>
+        <source>Browse...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="193"/>
+        <source>Reset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="209"/>
+        <source>Opacity:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="244"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="210"/>
+        <source>Fill Image</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="256"/>
         <source>Automatic Updater</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="187"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="262"/>
         <source>Update Channel:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="194"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="279"/>
         <source>Current Version:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="206"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="121"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="288"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="132"/>
         <source>Enable Automatic Update Check</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="213"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="295"/>
         <source>Check for Updates...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="13"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="17"/>
         <source>Native</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="16"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="20"/>
         <source>Classic Windows</source>
         <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="20"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="24"/>
         <source>Dark Fusion (Gray) [Dark]</source>
         <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="22"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="26"/>
         <source>Dark Fusion (Blue) [Dark]</source>
         <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="24"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="28"/>
         <source>Grey Matter (Gray) [Dark]</source>
         <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="26"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="30"/>
         <source>Untouched Lagoon (Grayish Green/-Blue ) [Light]</source>
         <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="28"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="32"/>
         <source>Baby Pastel (Pink) [Light]</source>
         <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="30"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="34"/>
         <source>Pizza Time! (Brown-ish/Creamy White) [Light]</source>
         <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="32"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="36"/>
         <source>PCSX2 (White/Blue) [Light]</source>
         <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="34"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="38"/>
         <source>Scarlet Devil (Red/Purple) [Dark]</source>
         <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="36"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="40"/>
         <source>Violet Angel (Blue/Purple) [Dark]</source>
         <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="38"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="42"/>
         <source>Cobalt Sky (Blue) [Dark]</source>
         <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="40"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="44"/>
         <source>AMOLED (Black) [Dark]</source>
         <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="42"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="46"/>
         <source>Ruby (Black/Red) [Dark]</source>
         <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="44"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="48"/>
         <source>Sapphire (Black/Blue) [Dark]</source>
         <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="46"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="50"/>
         <source>Emerald (Black/Green) [Dark]</source>
         <extracomment>Ignore what Crowdin says in this string about &quot;[Light]/[Dark]&quot; being untouchable here, these are not variables in this case and must be translated.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="121"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="150"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="153"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="180"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="132"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="161"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="164"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="191"/>
         <source>Checked</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="122"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="133"/>
         <source>Automatically checks for updates to the program on startup. Updates can be deferred until later or skipped entirely.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="130"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="141"/>
         <source>%1 (%2)</source>
         <extracomment>Variable %1 shows the version number and variable %2 shows a timestamp.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="151"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="162"/>
         <source>Prevents the screen saver from activating and the host from sleeping while emulation is running.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="154"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="165"/>
         <source>Determines whether a prompt will be displayed to confirm shutting down the virtual machine when the hotkey is pressed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="162"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="173"/>
         <source>Pauses the emulator when a controller with bindings is disconnected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="169"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="180"/>
         <source>Renders the game to a separate window, instead of the main window. If unchecked, the game will display over the game list.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="172"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="183"/>
         <source>Hides the main window (with the game list) when a game is running. Requires Render To Separate Window to be enabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="178"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="189"/>
         <source>Locks the mouse cursor to the windows when PCSX2 is in focus and all other windows are closed.&lt;br&gt;&lt;b&gt;Unavailable on Linux Wayland.&lt;/b&gt;&lt;br&gt;&lt;b&gt;Requires accessibility permissions on macOS.&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="181"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="192"/>
         <source>Allows switching in and out of fullscreen mode by double-clicking the game window.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="184"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="195"/>
         <source>Prevents the main window from being resized.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="186"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="197"/>
         <source>Start Big Picture Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="187"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="198"/>
         <source>Automatically starts Big Picture Mode instead of the regular Qt interface when PCSX2 launches.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="156"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="158"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="162"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="163"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="165"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="168"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="171"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="200"/>
+        <source>Game List Background</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="200"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="204"/>
+        <source>None</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="201"/>
+        <source>Enable an animated / static background on the game list (where you launch your games).&lt;br&gt;This background is only visible in the library and will be hidden once a game is launched. It will also be paused when it&apos;s not in focus.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="204"/>
+        <source>Disable/Reset Game List Background</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="205"/>
+        <source>Disable and reset the currently applied game list background.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="207"/>
+        <source>Game List Background Opacity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="207"/>
+        <source>100%</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="208"/>
+        <source>Sets the opacity of the custom background.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="211"/>
+        <source>Expand the image to fill all available background area.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="232"/>
+        <source>Select Background Image</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="167"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="169"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="173"/>
         <location filename="../Settings/InterfaceSettingsWidget.cpp" line="174"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="177"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="183"/>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="186"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="176"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="179"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="182"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="185"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="188"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="194"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="197"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="210"/>
         <source>Unchecked</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="18"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="22"/>
         <source>Fusion [Light/Dark]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="48"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="52"/>
         <source>custom.qss [Drop in PCSX2 Folder]</source>
         <extracomment>&quot;custom.qss&quot; must be kept as-is.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="157"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="168"/>
         <source>Pauses the emulator when a game is started.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="159"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="170"/>
         <source>Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="164"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="175"/>
         <source>Automatically switches to fullscreen mode when a game is started.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="166"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="177"/>
         <source>Hides the mouse pointer/cursor when the emulator is in fullscreen mode.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="175"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="186"/>
         <source>Shows the game you are currently playing as part of your profile in Discord.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -17347,7 +17425,7 @@ Right click to clear binding</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2967"/>
+        <location filename="../MainWindow.cpp" line="2971"/>
         <source>Load State</source>
         <translation type="unfinished"></translation>
     </message>
@@ -18017,11 +18095,11 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../MainWindow.cpp" line="1402"/>
         <location filename="../MainWindow.cpp" line="1774"/>
-        <location filename="../MainWindow.cpp" line="2238"/>
-        <location filename="../MainWindow.cpp" line="2402"/>
-        <location filename="../MainWindow.cpp" line="2839"/>
-        <location filename="../MainWindow.cpp" line="2940"/>
-        <location filename="../MainWindow.cpp" line="2986"/>
+        <location filename="../MainWindow.cpp" line="2241"/>
+        <location filename="../MainWindow.cpp" line="2405"/>
+        <location filename="../MainWindow.cpp" line="2843"/>
+        <location filename="../MainWindow.cpp" line="2944"/>
+        <location filename="../MainWindow.cpp" line="2990"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
@@ -18161,27 +18239,27 @@ Are you sure you want to continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2202"/>
+        <location filename="../MainWindow.cpp" line="2205"/>
         <source>Load State Failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2202"/>
+        <location filename="../MainWindow.cpp" line="2205"/>
         <source>Cannot load a save state without a running VM.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2226"/>
+        <location filename="../MainWindow.cpp" line="2229"/>
         <source>The new ELF cannot be loaded without resetting the virtual machine. Do you want to reset the virtual machine now?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2238"/>
+        <location filename="../MainWindow.cpp" line="2241"/>
         <source>Cannot change from game to GS dump without shutting down first.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2402"/>
+        <location filename="../MainWindow.cpp" line="2405"/>
         <source>Failed to get window info from widget</source>
         <translation type="unfinished"></translation>
     </message>
@@ -18197,98 +18275,98 @@ Are you sure you want to continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2745"/>
+        <location filename="../MainWindow.cpp" line="2749"/>
         <source>Game Properties</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2745"/>
+        <location filename="../MainWindow.cpp" line="2749"/>
         <source>Game properties is unavailable for the current game.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2797"/>
+        <location filename="../MainWindow.cpp" line="2801"/>
         <source>Could not find any CD/DVD-ROM devices. Please ensure you have a drive connected and sufficient permissions to access it.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2815"/>
+        <location filename="../MainWindow.cpp" line="2819"/>
         <source>Select disc drive:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2839"/>
+        <location filename="../MainWindow.cpp" line="2843"/>
         <source>This save state does not exist.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2852"/>
+        <location filename="../MainWindow.cpp" line="2856"/>
         <source>Select Cover Image</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2869"/>
+        <location filename="../MainWindow.cpp" line="2873"/>
         <source>Cover Already Exists</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2870"/>
+        <location filename="../MainWindow.cpp" line="2874"/>
         <source>A cover image for this game already exists, do you wish to replace it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2865"/>
-        <location filename="../MainWindow.cpp" line="2879"/>
-        <location filename="../MainWindow.cpp" line="2885"/>
-        <location filename="../MainWindow.cpp" line="2891"/>
+        <location filename="../MainWindow.cpp" line="2869"/>
+        <location filename="../MainWindow.cpp" line="2883"/>
+        <location filename="../MainWindow.cpp" line="2889"/>
+        <location filename="../MainWindow.cpp" line="2895"/>
         <source>Copy Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2879"/>
+        <location filename="../MainWindow.cpp" line="2883"/>
         <source>Failed to remove existing cover &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2885"/>
+        <location filename="../MainWindow.cpp" line="2889"/>
         <source>Failed to copy &apos;%1&apos; to &apos;%2&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2891"/>
+        <location filename="../MainWindow.cpp" line="2895"/>
         <source>Failed to remove &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2225"/>
-        <location filename="../MainWindow.cpp" line="2900"/>
+        <location filename="../MainWindow.cpp" line="2228"/>
+        <location filename="../MainWindow.cpp" line="2904"/>
         <source>Confirm Reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2852"/>
+        <location filename="../MainWindow.cpp" line="2856"/>
         <source>All Cover Image Types (*.jpg *.jpeg *.png *.webp)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2865"/>
+        <location filename="../MainWindow.cpp" line="2869"/>
         <source>You must select a different file to the current cover image.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2901"/>
+        <location filename="../MainWindow.cpp" line="2905"/>
         <source>Are you sure you want to reset the play time for &apos;%1&apos;?
 
 This action cannot be undone.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2961"/>
+        <location filename="../MainWindow.cpp" line="2965"/>
         <source>Load Resume State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2964"/>
+        <location filename="../MainWindow.cpp" line="2968"/>
         <source>A resume save state was found for this game, saved at:
 
 %1.
@@ -18297,48 +18375,48 @@ Do you want to load this state, or start from a fresh boot?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2968"/>
+        <location filename="../MainWindow.cpp" line="2972"/>
         <source>Fresh Boot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2969"/>
+        <location filename="../MainWindow.cpp" line="2973"/>
         <source>Delete And Boot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2986"/>
+        <location filename="../MainWindow.cpp" line="2990"/>
         <source>Failed to delete save state file &apos;%1&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3044"/>
+        <location filename="../MainWindow.cpp" line="3048"/>
         <source>Load State File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3044"/>
+        <location filename="../MainWindow.cpp" line="3048"/>
         <source>Load From File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3047"/>
-        <location filename="../MainWindow.cpp" line="3121"/>
+        <location filename="../MainWindow.cpp" line="3051"/>
+        <location filename="../MainWindow.cpp" line="3125"/>
         <source>Select Save State File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3092"/>
+        <location filename="../MainWindow.cpp" line="3096"/>
         <source>Load Backup Slot %1 (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3121"/>
+        <location filename="../MainWindow.cpp" line="3125"/>
         <source>Save States (*.p2s)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3054"/>
+        <location filename="../MainWindow.cpp" line="3058"/>
         <source>Delete Save States...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -18358,75 +18436,75 @@ Do you want to load this state, or start from a fresh boot?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2940"/>
+        <location filename="../MainWindow.cpp" line="2944"/>
         <source>Failed to create screenshots directory &apos;%1&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3047"/>
+        <location filename="../MainWindow.cpp" line="3051"/>
         <source>Save States (*.p2s *.p2s.backup)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3064"/>
+        <location filename="../MainWindow.cpp" line="3068"/>
         <source>Resume (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3080"/>
+        <location filename="../MainWindow.cpp" line="3084"/>
         <source>Load Slot %1 (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3101"/>
-        <location filename="../MainWindow.cpp" line="3109"/>
+        <location filename="../MainWindow.cpp" line="3105"/>
+        <location filename="../MainWindow.cpp" line="3113"/>
         <source>Delete Save States</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3102"/>
+        <location filename="../MainWindow.cpp" line="3106"/>
         <source>Are you sure you want to delete all save states for %1?
 
 The saves will not be recoverable.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3109"/>
+        <location filename="../MainWindow.cpp" line="3113"/>
         <source>%1 save states deleted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3119"/>
+        <location filename="../MainWindow.cpp" line="3123"/>
         <source>Save To File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3139"/>
+        <location filename="../MainWindow.cpp" line="3143"/>
         <source>Empty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3141"/>
+        <location filename="../MainWindow.cpp" line="3145"/>
         <source>Save Slot %1 (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3200"/>
+        <location filename="../MainWindow.cpp" line="3204"/>
         <source>Confirm Disc Change</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3201"/>
+        <location filename="../MainWindow.cpp" line="3205"/>
         <source>Do you want to swap discs or boot the new image (via system reset)?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3202"/>
+        <location filename="../MainWindow.cpp" line="3206"/>
         <source>Swap Disc</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3203"/>
+        <location filename="../MainWindow.cpp" line="3207"/>
         <source>Reset</source>
         <translation type="unfinished"></translation>
     </message>
