@@ -154,7 +154,7 @@ void MainWindow::initialize()
 		});
 	});
 	// The cocoa backing isn't initialized yet, delay this until stuff is set up with a `RunOnUIThread` call
-	QtHost::RunOnUIThread([this]{
+	QtHost::RunOnUIThread([this] {
 		CocoaTools::MarkHelpMenu(m_ui.menuHelp->toNSMenu());
 	});
 #endif
@@ -1856,15 +1856,15 @@ void MainWindow::onInputRecNewActionTriggered()
 	if (result == QDialog::Accepted)
 	{
 		Host::RunOnCPUThread(
-			[&, filePath = dlg.getFilePath(), fromSavestate = dlg.getInputRecType() == InputRecording::Type::FROM_SAVESTATE,
+			[filePath = dlg.getFilePath(), fromSavestate = dlg.getInputRecType() == InputRecording::Type::FROM_SAVESTATE,
 				authorName = dlg.getAuthorName()]() {
 				if (g_InputRecording.create(filePath, fromSavestate, authorName))
 				{
-					QtHost::RunOnUIThread([&]() {
-						m_ui.actionInputRecNew->setEnabled(false);
-						m_ui.actionInputRecStop->setEnabled(true);
-						m_ui.actionReset->setEnabled(!g_InputRecording.isTypeSavestate());
-						m_ui.actionToolbarReset->setEnabled(!g_InputRecording.isTypeSavestate());
+					QtHost::RunOnUIThread([]() {
+						g_main_window->m_ui.actionInputRecNew->setEnabled(false);
+						g_main_window->m_ui.actionInputRecStop->setEnabled(true);
+						g_main_window->m_ui.actionReset->setEnabled(!g_InputRecording.isTypeSavestate());
+						g_main_window->m_ui.actionToolbarReset->setEnabled(!g_InputRecording.isTypeSavestate());
 					});
 				}
 				else
@@ -1916,14 +1916,14 @@ void MainWindow::onInputRecPlayActionTriggered()
 			Host::RunOnCPUThread([]() { g_InputRecording.stop(); });
 			m_ui.actionInputRecStop->setEnabled(false);
 		}
-		Host::RunOnCPUThread([&, filename = QDir::toNativeSeparators(fileNames.first()).toStdString()]() {
+		Host::RunOnCPUThread([filename = QDir::toNativeSeparators(fileNames.first()).toStdString()]() {
 			if (g_InputRecording.play(filename))
 			{
-				QtHost::RunOnUIThread([&]() {
-					m_ui.actionInputRecNew->setEnabled(false);
-					m_ui.actionInputRecStop->setEnabled(true);
-					m_ui.actionReset->setEnabled(!g_InputRecording.isTypeSavestate());
-					m_ui.actionToolbarReset->setEnabled(!g_InputRecording.isTypeSavestate());
+				QtHost::RunOnUIThread([]() {
+					g_main_window->m_ui.actionInputRecNew->setEnabled(false);
+					g_main_window->m_ui.actionInputRecStop->setEnabled(true);
+					g_main_window->m_ui.actionReset->setEnabled(!g_InputRecording.isTypeSavestate());
+					g_main_window->m_ui.actionToolbarReset->setEnabled(!g_InputRecording.isTypeSavestate());
 				});
 			}
 			else
@@ -1940,13 +1940,13 @@ void MainWindow::onInputRecStopActionTriggered()
 {
 	if (g_InputRecording.isActive())
 	{
-		Host::RunOnCPUThread([&]() {
+		Host::RunOnCPUThread([]() {
 			g_InputRecording.stop();
-			QtHost::RunOnUIThread([&]() {
-				m_ui.actionInputRecNew->setEnabled(true);
-				m_ui.actionInputRecStop->setEnabled(false);
-				m_ui.actionReset->setEnabled(true);
-				m_ui.actionToolbarReset->setEnabled(true);
+			QtHost::RunOnUIThread([]() {
+				g_main_window->m_ui.actionInputRecNew->setEnabled(true);
+				g_main_window->m_ui.actionInputRecStop->setEnabled(false);
+				g_main_window->m_ui.actionReset->setEnabled(true);
+				g_main_window->m_ui.actionToolbarReset->setEnabled(true);
 			});
 		});
 	}
@@ -2226,7 +2226,7 @@ bool MainWindow::startFile(const QString& filename)
 		const auto lock = pauseAndLockVM();
 
 		if (QMessageBox::Yes != QMessageBox::question(this, tr("Confirm Reset"),
-				tr("The new ELF cannot be loaded without resetting the virtual machine. Do you want to reset the virtual machine now?")))
+									tr("The new ELF cannot be loaded without resetting the virtual machine. Do you want to reset the virtual machine now?")))
 		{
 			return true;
 		}
@@ -2697,7 +2697,7 @@ SettingsWindow* MainWindow::getSettingsWindow()
 		m_settings_window = new SettingsWindow();
 		connect(m_settings_window->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::themeChanged, this, &MainWindow::onThemeChanged);
 		connect(m_settings_window->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::languageChanged, this, &MainWindow::onLanguageChanged);
-		connect(m_settings_window->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::backgroundChanged, m_game_list_widget, [this] {m_game_list_widget->setCustomBackground(true);});
+		connect(m_settings_window->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::backgroundChanged, m_game_list_widget, [this] { m_game_list_widget->setCustomBackground(true); });
 		connect(m_settings_window->getGameListSettingsWidget(), &GameListSettingsWidget::preferEnglishGameListChanged, this, [] {
 			g_main_window->m_game_list_widget->refreshGridCovers();
 		});
@@ -2947,7 +2947,7 @@ void MainWindow::openScreenshotsFolderForGame(const GameList::Entry* entry)
 	}
 
 	const QFileInfo fi(QString::fromStdString(game_dir));
-	QtUtils::OpenURL(this, QUrl::fromLocalFile(fi.absoluteFilePath()));	
+	QtUtils::OpenURL(this, QUrl::fromLocalFile(fi.absoluteFilePath()));
 }
 
 std::optional<bool> MainWindow::promptForResumeState(const QString& save_state_path)
