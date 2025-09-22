@@ -12,6 +12,7 @@
 #include "DebugTools/DisassemblyManager.h"
 #include "common/Console.h"
 
+#include <QtCore/QPointer>
 #include <QtWidgets/QMessageBox>
 
 #include <algorithm>
@@ -538,15 +539,20 @@ bool BreakpointModel::insertBreakpointRows(int row, int count, std::vector<Break
 
 void BreakpointModel::refreshData()
 {
-	Host::RunOnCPUThread([this]() mutable {
+	const QPointer<BreakpointModel> model(this);
+	const BreakPointCpu cpu_type = m_cpu.getCpuType();
+	Host::RunOnCPUThread([model, cpu_type]() mutable {
 		std::vector<BreakpointMemcheck> all_breakpoints;
-		std::ranges::move(CBreakPoints::GetBreakpoints(m_cpu.getCpuType(), false), std::back_inserter(all_breakpoints));
-		std::ranges::move(CBreakPoints::GetMemChecks(m_cpu.getCpuType()), std::back_inserter(all_breakpoints));
+		std::ranges::move(CBreakPoints::GetBreakpoints(cpu_type, false), std::back_inserter(all_breakpoints));
+		std::ranges::move(CBreakPoints::GetMemChecks(cpu_type), std::back_inserter(all_breakpoints));
 
-		QtHost::RunOnUIThread([this, breakpoints = std::move(all_breakpoints)]() mutable {
-			beginResetModel();
-			m_breakpoints = std::move(breakpoints);
-			endResetModel();
+		QtHost::RunOnUIThread([model, breakpoints = std::move(all_breakpoints)]() mutable {
+			if (!model)
+				return;
+
+			model->beginResetModel();
+			model->m_breakpoints = std::move(breakpoints);
+			model->endResetModel();
 		});
 	});
 }
