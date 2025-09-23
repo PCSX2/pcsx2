@@ -50,13 +50,13 @@ ShortcutCreationDialog::ShortcutCreationDialog(QWidget* parent, const QString& t
 	connect(m_ui.overrideBootELFButton, &QPushButton::clicked, [&]() {
 		const QString path = QFileDialog::getOpenFileName(this, tr("Select ELF File"), QString(), tr("ELF Files (*.elf);;All Files (*.*)"));
 		if (!path.isEmpty())
-			m_ui.overrideBootELFPath->setText(path);
+			m_ui.overrideBootELFPath->setText(Path::ToNativePath(path.toStdString()).c_str());
 	});
 
 	connect(m_ui.loadStateFileBrowse, &QPushButton::clicked, [&]() {
 		const QString path = QFileDialog::getOpenFileName(this, tr("Select Save State File"), QString(), tr("Save States (*.p2s);;All Files (*.*)"));
 		if (!path.isEmpty())
-			m_ui.loadStateFileToggle->setText(path);
+			m_ui.loadStateFilePath->setText(Path::ToNativePath(path.toStdString()).c_str());
 	});
 
 	connect(m_ui.overrideBootELFToggle, &QCheckBox::toggled, m_ui.overrideBootELFPath, &QLineEdit::setEnabled);
@@ -113,7 +113,7 @@ ShortcutCreationDialog::ShortcutCreationDialog(QWidget* parent, const QString& t
 		else if (m_ui.bootOptionToggle->isChecked() && m_ui.bootOptionDropdown->currentIndex() == 1)
 			args.push_back("-slowboot");
 
-		if (m_ui.loadStateIndexToggle->isChecked())
+		if (m_ui.loadStateIndexToggle->isChecked() && (m_ui.loadStateIndex->value() >= 1 && m_ui.loadStateIndex->value() <= 10))
 		{
 			args.push_back("-state");
 			args.push_back(StringUtil::ToChars(m_ui.loadStateIndex->value()));
@@ -157,7 +157,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 
 	// Sanitize filename
 	const std::string clean_name = Path::SanitizeFileName(name).c_str();
-	const std::string clean_path = Path::ToNativePath(Path::RealPath(game_path)).c_str();
+	std::string clean_path = Path::ToNativePath(Path::RealPath(game_path)).c_str();
 	if (!Path::IsValidFileName(clean_name))
 	{
 		Host::ReportErrorAsync(TRANSLATE_SV("WinMisc", "Failed to create shortcut"), TRANSLATE_SV("WinMisc", "Filename contains illegal character."));
@@ -203,6 +203,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 	if (!lossless)
 		Host::ReportWarningAsync(TRANSLATE_SV("WinMisc", "Warning"), TRANSLATE_SV("WinMisc", "File path contains invalid character(s). The resulting shortcut may not work."));
 
+	Path::EscapeCmdLine(&clean_path);
 	std::string combined_args = StringUtil::JoinString(passed_cli_args.begin(), passed_cli_args.end(), " ");
 	std::string final_args = fmt::format("{} -- {}", combined_args, clean_path);
 
@@ -316,7 +317,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 
 	// Sanitize filename and game path
 	const std::string clean_name = Path::SanitizeFileName(name);
-	const std::string clean_path = Path::Canonicalize(Path::RealPath(game_path));
+	std::string clean_path = Path::Canonicalize(Path::RealPath(game_path));
 	if (!Path::IsValidFileName(clean_name))
 	{
 		Host::ReportErrorAsync(TRANSLATE_SV("LnxMisc", "Failed to create shortcut"), TRANSLATE_SV("LnxMisc", "Filename contains illegal character."));
@@ -397,12 +398,11 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 	// Further string sanitization
 	if (!is_flatpak)
 		Path::EscapeCmdLine(&executable_path);
-
 	Path::EscapeCmdLine(&clean_path);
 
 	// Assembling the .desktop file
 	std::string final_args;
-	final_args = fmt::format("{} {} -- '{}'", executable_path, cmdline, clean_path);
+	final_args = fmt::format("{} {} -- {}", executable_path, cmdline, clean_path);
 	std::string file_content =
 		"[Desktop Entry]\n"
 		"Encoding=UTF-8\n"
