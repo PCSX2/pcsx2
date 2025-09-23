@@ -2102,6 +2102,7 @@ void GSState::FlushPrim()
 		// Skip draw if Z test is enabled, but set to fail all pixels.
 		const bool skip_draw = (m_context->TEST.ZTE && m_context->TEST.ZTST == ZTST_NEVER);
 		m_quad_check_valid = false;
+		m_quad_check_valid_shuffle = false;
 		m_drawlist.clear();
 		m_drawlist_bbox.clear();
 
@@ -3306,134 +3307,397 @@ void GSState::GrowVertexBuffer()
 	m_vertex.maxcount = maxcount - 3; // -3 to have some space at the end of the buffer before DrawingKick can grow it
 }
 
-bool GSState::TrianglesAreQuads(bool shuffle_check)
+// For returning order of vertices to form a right triangle
+struct TriangleOrdering
 {
-	// If this is a quad, there should only be two distinct values for both X and Y, which
-	// also happen to be the minimum/maximum bounds of the primitive.
-	if (!shuffle_check && m_quad_check_valid)
-		return m_are_quads;
+	// Describes a right triangle laid out in one of the following orientations
+	// b   c | c  b | a     |     a
+	// a     |    a | b   c | c   b
+	u32 a; // Same x as b
+	u32 b; // Same x as a, same y as c
+	u32 c; // Same y as b
+};
 
-	const GSVertex* const v = m_vertex.buff;
-	m_are_quads = false;
-	m_quad_check_valid = !shuffle_check;
+struct alignas(2) TriangleOrderingBC
+{
+	u8 b;
+	u8 c;
+};
 
-	for (u32 idx = 0; idx < m_index.tail; idx += 6)
+alignas(16) static constexpr TriangleOrderingBC triangle_order_lut[6] =
+{
+		TriangleOrderingBC{/*a=0,*/ 1, 2},
+		TriangleOrderingBC{/*a=0,*/ 2, 1},
+		TriangleOrderingBC{/*a=1,*/ 0, 2},
+		TriangleOrderingBC{/*a=1,*/ 2, 0},
+		TriangleOrderingBC{/*a=2,*/ 0, 1},
+		TriangleOrderingBC{/*a=2,*/ 1, 0},
+};
+
+// Helper struct for IsTriangleRight and AreTrianglesRight
+static constexpr u8 TriangleFinalCmp(u8 value) { return value & 3; }
+
+static constexpr TriangleOrdering TriangleFinalOrder(u8 value)
+{
+	u32 order = static_cast<u32>(value) >> 2;
+	TriangleOrderingBC bc = triangle_order_lut[order];
+	return {order >> 1, bc.b, bc.c};
+}
+
+// Helper table for IsTriangleRight/AreTrianglesRight functions
+static constexpr u8 triangle_comparison_lut[16] =
 	{
-		const u16* const i = m_index.buff + idx;
+		0 | (0 << 2), // 0000 => None equal, no sprite possible
+		2 | (0 << 2), // 0001 => x0 = x1, requires y1 = y2
+		1 | (5 << 2), // 0010 => y0 = y1, requires x1 = x2
+		2 | (0 << 2), // 0011 => x0 = x1, y0 = y1, (no area) requires x1 = x2 or y1 = y2
+		2 | (1 << 2), // 0100 => x0 = x2, requires y1 = y2
+		2 | (0 << 2), // 0101 => x0 = x1, x0 = x2, (no area) requires y1 = y2
+		0 | (4 << 2), // 0110 => y0 = y1, x0 = x2, requires nothing
+		0 | (4 << 2), // 0111 => x0 = y1, y0 = y1, x0 = x2, (no area) requires nothing
+		1 | (3 << 2), // 1000 => y0 = y2, requires x1 = x2
+		0 | (2 << 2), // 1001 => x0 = x1, y0 = y2, requires nothing
+		1 | (3 << 2), // 1010 => y0 = y1, y0 = y2, (no area) requires x1 = x2
+		0 | (2 << 2), // 1011 => x0 = x1, y0 = y1, y0 = y2, (unlikely) requires nothing
+		2 | (1 << 2), // 1100 => x0 = x2, y0 = y2, (no area) requires x1 = x2 or y1 = y2
+		0 | (2 << 2), // 1101 => x0 = x1, x0 = x2, y0 = y2, (no area) requires nothing
+		0 | (4 << 2), // 1110 => y0 = y1, x0 = x2, y0 = y2, (no area) requires nothing
+		0 | (2 << 2), // 1111 => x0 = x1, y0 = y1, x0 = x2, y0 = y2, (no area) requires nothing
+};
 
-		// Make sure the next set of triangles matches an edge of the previous triangle.
-		if (idx > 0)
+// Determines ordering of two triangles in parallel if both are right.
+// More efficient than calling IsTriangleRight twice.
+template <u32 tme, u32 fst>
+__forceinline bool AreTrianglesRight(const GSVertex* RESTRICT vin, const u16* RESTRICT index0, const u16* RESTRICT index1,
+	TriangleOrdering* out_triangle0, TriangleOrdering* out_triangle1)
+{
+	GSVector4i mask;
+	if (tme && fst)
+	{
+		// Compare xy and uv together
+		mask = GSVector4i::cxpr8(
+			(s8)0, (s8)1, (s8)8, (s8)9,
+			(s8)2, (s8)3, (s8)10, (s8)11,
+			(s8)0, (s8)1, (s8)8, (s8)9,
+			(s8)2, (s8)3, (s8)10, (s8)11);
+	}
+	else
+	{
+		// ignore uv, compare st instead later
+		mask = GSVector4i::cxpr8(
+			(s8)0, (s8)1, (s8)0x80, (s8)0x80,
+			(s8)2, (s8)3, (s8)0x80, (s8)0x80,
+			(s8)0, (s8)1, (s8)0x80, (s8)0x80,
+			(s8)2, (s8)3, (s8)0x80, (s8)0x80);
+	}
+	GSVector4i xy0 = GSVector4i(vin[index0[0]].m[1]).shuffle8(mask); // Triangle 0 vertex 0
+	GSVector4i xy1 = GSVector4i(vin[index0[1]].m[1]).shuffle8(mask); // Triangle 0 vertex 1
+	GSVector4i xy2 = GSVector4i(vin[index0[2]].m[1]).shuffle8(mask); // Triangle 0 vertex 2
+	GSVector4i xy3 = GSVector4i(vin[index1[0]].m[1]).shuffle8(mask); // Triangle 1 vertex 0
+	GSVector4i xy4 = GSVector4i(vin[index1[1]].m[1]).shuffle8(mask); // Triangle 1 vertex 1
+	GSVector4i xy5 = GSVector4i(vin[index1[2]].m[1]).shuffle8(mask); // Triangle 1 vertex 2
+	GSVector4i vcmp0 = xy0.eq32(xy1.upl64(xy2));
+	GSVector4i vcmp1 = xy3.eq32(xy4.upl64(xy5));
+	GSVector4i vcmp2 = xy1.upl64(xy4).eq32(xy2.upl64(xy5));
+	if (tme && !fst)
+	{
+		// do the st comparisons
+		GSVector4 st0 = GSVector4::cast(GSVector4i(vin[index0[0]].m[0]));
+		GSVector4 st1 = GSVector4::cast(GSVector4i(vin[index0[1]].m[0]));
+		GSVector4 st2 = GSVector4::cast(GSVector4i(vin[index0[2]].m[0]));
+		GSVector4 st3 = GSVector4::cast(GSVector4i(vin[index1[0]].m[0]));
+		GSVector4 st4 = GSVector4::cast(GSVector4i(vin[index1[1]].m[0]));
+		GSVector4 st5 = GSVector4::cast(GSVector4i(vin[index1[2]].m[0]));
+
+		vcmp0 = vcmp0 & GSVector4i::cast(st0.xyxy() == st1.upld(st2));
+		vcmp1 = vcmp1 & GSVector4i::cast(st3.xyxy() == st4.upld(st5));
+		vcmp2 = vcmp2 & GSVector4i::cast(st1.upld(st4) == st2.upld(st5));
+	}
+	int cmp0 = GSVector4::cast(vcmp0).mask();
+	int cmp1 = GSVector4::cast(vcmp1).mask();
+	int cmp2 = GSVector4::cast(vcmp2).mask();
+	if (!cmp0 || !cmp1) // Either triangle 0 or triangle 1 isn't a right triangle
+		return false;
+	u8 triangle0cmp = triangle_comparison_lut[cmp0];
+	u8 triangle1cmp = triangle_comparison_lut[cmp1];
+	int required_cmp2 = TriangleFinalCmp(triangle0cmp) | (TriangleFinalCmp(triangle1cmp) << 2);
+	if ((cmp2 & required_cmp2) != required_cmp2)
+		return false;
+	// Both t0 and t1 are right triangles!
+	*out_triangle0 = TriangleFinalOrder(triangle0cmp);
+	*out_triangle1 = TriangleFinalOrder(triangle1cmp);
+	return true;
+}
+
+template <u32 tme, u32 fst>
+__forceinline bool IsTriangleRight(const GSVertex* RESTRICT vin, const u16* RESTRICT index, TriangleOrdering* out_triangle)
+{
+	GSVector4i mask;
+	if (tme && fst)
+	{
+		// Compare xy and uv together
+		mask = GSVector4i::cxpr8(
+			(s8)0, (s8)1, (s8)8, (s8)9,
+			(s8)2, (s8)3, (s8)10, (s8)11,
+			(s8)0, (s8)1, (s8)8, (s8)9,
+			(s8)2, (s8)3, (s8)10, (s8)11);
+	}
+	else
+	{
+		// ignore uv, compare st instead later
+		mask = GSVector4i::cxpr8(
+			(s8)0, (s8)1, (s8)0x80, (s8)0x80,
+			(s8)2, (s8)3, (s8)0x80, (s8)0x80,
+			(s8)0, (s8)1, (s8)0x80, (s8)0x80,
+			(s8)2, (s8)3, (s8)0x80, (s8)0x80);
+	}
+	GSVector4i xy0 = GSVector4i(vin[index[0]].m[1]).shuffle8(mask); // Triangle 0 vertex 0
+	GSVector4i xy1 = GSVector4i(vin[index[1]].m[1]).shuffle8(mask); // Triangle 0 vertex 1
+	GSVector4i xy2 = GSVector4i(vin[index[2]].m[1]).shuffle8(mask); // Triangle 0 vertex 2
+	GSVector4i vcmp0 = xy0.eq32(xy1.upl64(xy2));
+	GSVector4i vcmp1 = xy1.eq32(xy2); // ignore top 64 bits
+	if (tme && !fst)
+	{
+		// do the st comparisons
+		GSVector4 st0 = GSVector4::cast(GSVector4i(vin[index[0]].m[0]));
+		GSVector4 st1 = GSVector4::cast(GSVector4i(vin[index[1]].m[0]));
+		GSVector4 st2 = GSVector4::cast(GSVector4i(vin[index[2]].m[0]));
+
+		vcmp0 = vcmp0 & GSVector4i::cast(st0.xyxy() == st1.upld(st2));
+		vcmp1 = vcmp1 & GSVector4i::cast(st1 == st2); // ignore top 64 bits
+	}
+	int cmp0 = GSVector4::cast(vcmp0).mask();
+	int cmp1 = GSVector4::cast(vcmp1).mask() & 0x3;
+	if (!cmp0) // Either triangle 0 or triangle 1 isn't a right triangle
+		return false;
+	u8 trianglecmp = triangle_comparison_lut[cmp0];
+	int required_cmp1 = TriangleFinalCmp(trianglecmp);
+	if (cmp1 != required_cmp1)
+		return false;
+	// Both t0 and t1 are right triangles!
+	*out_triangle = TriangleFinalOrder(trianglecmp);
+	return true;
+}
+
+// Determines whether the triangle are right and form a quad
+template <u32 tme, u32 fst>
+__forceinline bool AreTrianglesQuad(const GSVertex* RESTRICT vin, const u16* RESTRICT index0, const u16* RESTRICT index1,
+	TriangleOrdering* out_triangle0, TriangleOrdering* out_triangle1)
+{
+	if (!AreTrianglesRight<tme, fst>(vin, index0, index1, out_triangle0, out_triangle1))
+		return false;
+
+	// The two triangles are now laid out in one of these four orderings:
+	// b   c | c  b | a     |     a
+	// a     |    a | b   c | c   b
+	// To form a quad we must have a0 == c1 and a1 == c0
+	bool are_quad = vin[index0[out_triangle0->a]].XYZ.U32[0] == vin[index1[out_triangle1->c]].XYZ.U32[0] &&
+	                vin[index0[out_triangle0->c]].XYZ.U32[0] == vin[index1[out_triangle1->a]].XYZ.U32[0];
+
+	if (tme)
+	{
+		if (fst)
 		{
-			const u16* const prev_tri= m_index.buff + (idx - 3);
-			GIFRegXYZ new_verts[3] = {v[i[0]].XYZ, v[i[1]].XYZ, v[i[2]].XYZ};
-
-			if (shuffle_check)
-			{
-				new_verts[0].X -= 8 << 4;
-				new_verts[1].X -= 8 << 4;
-				new_verts[2].X -= 8 << 4;
-			}
-			u32 match_vert_count = 0;
-
-			if (!(new_verts[0] != m_vertex.buff[prev_tri[0]].XYZ && new_verts[0] != m_vertex.buff[prev_tri[1]].XYZ && new_verts[0] != m_vertex.buff[prev_tri[2]].XYZ))
-				match_vert_count++;
-			if (!(new_verts[1] != m_vertex.buff[prev_tri[0]].XYZ && new_verts[1] != m_vertex.buff[prev_tri[1]].XYZ && new_verts[1] != m_vertex.buff[prev_tri[2]].XYZ))
-				match_vert_count++;
-			if (!(new_verts[2] != m_vertex.buff[prev_tri[0]].XYZ && new_verts[2] != m_vertex.buff[prev_tri[1]].XYZ && new_verts[2] != m_vertex.buff[prev_tri[2]].XYZ))
-				match_vert_count++;
-
-			if (match_vert_count != 2)
-				return false;
+			const u32 uv_a0 = vin[index0[out_triangle0->a]].UV;
+			const u32 uv_c0 = vin[index0[out_triangle0->c]].UV;
+			const u32 uv_a1 = vin[index1[out_triangle1->a]].UV;
+			const u32 uv_c1 = vin[index1[out_triangle1->c]].UV;
+			are_quad = are_quad && uv_a0 == uv_c1 && uv_c0 == uv_a1;
 		}
-		// Degenerate triangles should've been culled already, so we can check indices.
-		// This doesn't really make much sense when it's a triangle strip as it will always have 1 extra vert, so check for distinct values for them.
-		if (PRIM->PRIM != GS_TRIANGLESTRIP)
+		else
 		{
-			u32 extra_verts = 0;
-			for (u32 j = 3; j < 6; j++)
-			{
-				const u16 tri2_idx = i[j];
-				if (tri2_idx != i[0] && tri2_idx != i[1] && tri2_idx != i[2])
-					extra_verts++;
-			}
-			if (extra_verts == 1)
-				continue;
+			const u64 st_a0 = vin[index0[out_triangle0->a]].ST.U64;
+			const u64 st_c0 = vin[index0[out_triangle0->c]].ST.U64;
+			const u64 st_a1 = vin[index1[out_triangle1->a]].ST.U64;
+			const u64 st_c1 = vin[index1[out_triangle1->c]].ST.U64;
+			are_quad = are_quad && st_a0 == st_c1 && st_c0 == st_a1;
 		}
-		else if (m_index.tail == 6)
+	}
+	return are_quad;
+}
+
+__forceinline bool AreTrianglesQuadNonAA(const GSVertex* RESTRICT vin, const u16* RESTRICT index0, const u16* RESTRICT index1)
+{
+	u32 v0[3] = {
+		vin[index0[0]].XYZ.U32[0],
+		vin[index0[1]].XYZ.U32[0],
+		vin[index0[2]].XYZ.U32[0],
+	};
+
+	u32 v1[3] = {
+		vin[index1[0]].XYZ.U32[0],
+		vin[index1[1]].XYZ.U32[0],
+		vin[index1[2]].XYZ.U32[0],
+	};
+
+	// Pack vertices to represent edges XY are stored in a single u32. Reverse the order
+	// for some of the fields to allow checking for different vertex order in the same instruction.
+	GSVector4i e0[3] = {
+		GSVector4i(v0[0], v0[1]).xyxy(),
+		GSVector4i(v0[1], v0[2]).xyxy(),
+		GSVector4i(v0[2], v0[0]).xyxy(),
+	};
+	GSVector4i e1[3] = {
+		GSVector4i(v1[0], v1[1]).xyyx(),
+		GSVector4i(v1[1], v1[2]).xyyx(),
+		GSVector4i(v1[2], v1[0]).xyyx(),
+	};
+
+	// Hope this is unrolled.
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 3; j++)
 		{
-			bool shared_vert_found = false;
-			for (int i = 0; i < 3; i++)
+			const int m = (e0[i] == e1[j]).mask();
+			if (m == 0x00FF || m == 0xFF00)
 			{
-				for (int j = 3; j < 6; j++)
-					if (m_vertex.buff[m_index.buff[i]].XYZ.X == m_vertex.buff[m_index.buff[j]].XYZ.X &&
-						m_vertex.buff[m_index.buff[i]].XYZ.Y == m_vertex.buff[m_index.buff[j]].XYZ.Y)
-					{
-						shared_vert_found = true;
-						break;
-					}
-			}
-			
-			// At least one vert should be shared across otherwise it's 2 separate triangles (false positive from Tales of Destiny).
-			if (!shared_vert_found)
-				return false;
+				// Shared vertices
+				const int xs0 = static_cast<int>((v0[(i + 0) % 3] >> 0) & 0xFFFF);
+				const int ys0 = static_cast<int>((v0[(i + 0) % 3] >> 16) & 0xFFFF);
+				const int xs1 = static_cast<int>((v0[(i + 1) % 3] >> 0) & 0xFFFF);
+				const int ys1 = static_cast<int>((v0[(i + 1) % 3] >> 16) & 0xFFFF);
 
-			const int first_X = m_vertex.buff[m_index.buff[0]].XYZ.X;
-			const int first_Y = m_vertex.buff[m_index.buff[0]].XYZ.Y;
-			const int second_X = m_vertex.buff[m_index.buff[1]].XYZ.X;
-			const int second_Y = m_vertex.buff[m_index.buff[1]].XYZ.Y;
-			const int third_X = m_vertex.buff[m_index.buff[2]].XYZ.X;
-			const int third_Y = m_vertex.buff[m_index.buff[2]].XYZ.Y;
-			const int new_X = m_vertex.buff[m_index.buff[5]].XYZ.X;
-			const int new_Y = m_vertex.buff[m_index.buff[5]].XYZ.Y;
+				// Non-shared vertices
+				const int xn0 = static_cast<int>((v0[(i + 2) % 3] >> 0) & 0xFFFF);
+				const int yn0 = static_cast<int>((v0[(i + 2) % 3] >> 16) & 0xFFFF);
+				const int xn1 = static_cast<int>((v1[(j + 2) % 3] >> 0) & 0xFFFF);
+				const int yn1 = static_cast<int>((v1[(j + 2) % 3] >> 16) & 0xFFFF);
 
-			const int middle_Y = (second_Y >= third_Y) ? (third_Y + ((second_Y - third_Y) / 2)) : (second_Y + ((third_Y - second_Y) / 2));
-			const int middle_X = (second_X >= third_X) ? (third_X + ((second_X - third_X) / 2)) : (second_X + ((third_X - second_X) / 2));
-			const bool first_lt_X = first_X <= middle_X;
-			const bool first_lt_Y = first_Y <= middle_Y;
-			const bool new_lt_X = new_X <= middle_X;
-			const bool new_lt_Y = new_Y <= middle_Y;
+				// Deltas of the edges
+				const int dxs = xs1 - xs0;
+				const int dys = ys1 - ys0;
 
-			// Check if verts are on the same side. Not totally accurate, but should be good enough.
-			if (first_lt_X == new_lt_X && new_lt_Y == first_lt_Y)
-					return false;
+				const int dx0 = xn0 - xs0;
+				const int dy0 = yn0 - ys0;
 
-			m_prim_overlap = PRIM_OVERLAP_NO;
-			break;
-		}
+				const int dx1 = xn1 - xs0;
+				const int dy1 = yn1 - ys0;
 
-		// As a fallback, they might've used different vertices with a tri list, not strip.
-		// Note that this won't work unless the quad is axis-aligned.
-		u16 distinct_x_values[2] = {v[i[0]].XYZ.X};
-		u16 distinct_y_values[2] = {v[i[0]].XYZ.Y};
-		u32 num_distinct_x_values = 1, num_distinct_y_values = 1;
-		for (u32 j = 1; j < 6; j++)
-		{
-			const GSVertex& jv = v[i[j]];
-			if (jv.XYZ.X != distinct_x_values[0] && jv.XYZ.X != distinct_x_values[1])
-			{
-				if (num_distinct_x_values > 1)
-					return false;
+				// Cross products
+				const int cross0 = dx0 * dys - dy0 * dxs;
+				const int cross1 = dx1 * dys - dy1 * dxs;
 
-				distinct_x_values[num_distinct_x_values++] = jv.XYZ.X;
-			}
-
-			if (jv.XYZ.Y != distinct_y_values[0] && jv.XYZ.Y != distinct_y_values[1])
-			{
-				if (num_distinct_y_values > 1)
-					return false;
-
-				distinct_y_values[num_distinct_y_values++] = jv.XYZ.Y;
+				// Check if opposite sides of the shared edge
+				return (cross0 < 0) != (cross1 < 0);
 			}
 		}
 	}
 
-	m_are_quads = true;
-	return true;
+	return false;
+}
+
+template<bool shuffle_check>
+bool GSState::TrianglesAreQuadsImpl()
+{
+	// are_quads: triangles form axis-aligned quads and they line up end-to-end.
+	// In a shuffle check we want the bboxes
+	// to line up end-to-end when we shift the coordinates by 8 pixels horizontally.
+	// Special case: when only 2 triangles, the quad need not be axis aligned.
+	
+	bool& quad_check_valid = shuffle_check ? m_quad_check_valid_shuffle : m_quad_check_valid;
+	bool& are_quads = shuffle_check ? m_are_quads_shuffle : m_are_quads;
+
+	// Check if the result is cached.
+	if (quad_check_valid)
+		return are_quads;
+
+	quad_check_valid = true;
+	are_quads = true;
+
+	if (m_index.tail % 6 != 0)
+	{
+		are_quads = false;
+		return false;
+	}
+
+	constexpr GSVector4i offset = shuffle_check ? GSVector4i::cxpr(8 << 4, 0, 8 << 4, 0) : GSVector4i::cxpr(0);
+
+	const GSVertex* RESTRICT v = m_vertex.buff;
+	const u16* RESTRICT index = m_index.buff;
+	const size_t count = m_index.tail;
+
+	if (m_index.tail == 6)
+	{
+		// Non-axis aligned check when only two triangles
+		are_quads = AreTrianglesQuadNonAA(v, &index[0], &index[3]);
+	}
+	else
+	{
+		GSVector4i prev_bbox;
+
+		for (u32 i = 0; i < count; i += 6)
+		{
+			const u16* RESTRICT idx0 = &index[i + 0];
+			const u16* RESTRICT idx1 = &index[i + 3];
+			TriangleOrdering tri0;
+			TriangleOrdering tri1;
+
+			if (!AreTrianglesQuad<0, 0>(v, idx0, idx1, &tri0, &tri1))
+			{
+				are_quads = false;
+				break;
+			}
+
+			// tri.b is right angle corner
+			GSVector4i corner0 = GSVector4i(v[idx0[tri0.b]].m[1]).upl16().xyxy();
+			GSVector4i corner1 = GSVector4i(v[idx1[tri1.b]].m[1]).upl16().xyxy();
+			GSVector4i bbox = corner0.runion(corner1);
+
+			if (are_quads && i > 0)
+			{
+				GSVector4i bbox_offset = bbox - offset;
+
+				// Check that the two bboxes have exactly 1 edge in common.
+				int m = GSVector4::cast(bbox_offset == prev_bbox).mask();
+				bool valign = (m & 0b0101) == 0b0101; // X-range identical.
+				bool halign = (m & 0b1010) == 0b1010; // Y-range identical.
+				int vadj = GSVector4::cast(bbox_offset.ywyw() == prev_bbox.wywy()).mask() & 3;
+				int hadj = GSVector4::cast(bbox_offset.xzxz() == prev_bbox.zxzx()).mask() & 3;
+
+				bool adjacent =
+					(halign && (hadj == 0b01 || hadj == 0b10)) || // Quads share vertical edge.
+					(valign && (vadj == 0b01 || vadj == 0b10)); // Quads share horizontal edge.
+
+				if (!adjacent)
+				{
+					are_quads = false;
+				}
+			}
+
+			if (!are_quads)
+				break;
+
+			prev_bbox = bbox;
+		}
+	}
+
+	return are_quads;
+}
+
+bool GSState::TrianglesAreQuads(bool shuffle_check)
+{
+	return shuffle_check ? TrianglesAreQuadsImpl<true>() : TrianglesAreQuadsImpl<false>();
 }
 
 template<u32 primclass>
 GSState::PRIM_OVERLAP GSState::GetPrimitiveOverlapDrawlistImpl(bool save_drawlist, bool save_bbox, float bbox_scale)
 {
+	const GSVector4i xyof = m_context->scissor.xyof.xyxy();
+
+	// Process the bbox to be in window coordinates and scaled appropriately.
+	const auto ProcessBBox = [&xyof, bbox_scale](GSVector4i bbox) {
+		bbox -= xyof;
+		if (bbox_scale != 1.0f)
+		{
+			GSVector4 bboxf = GSVector4(bbox) * bbox_scale;
+			bboxf = bboxf.floor().xyzw(bboxf.ceil());
+			bbox = GSVector4i(bboxf);
+		}
+		// floor min, ceil max, and +1 on all sides for bilinear.
+		bbox = (bbox + GSVector4i(-0x10, -0x10, 0x1F, 0x1F)).sra32<4>();
+		return bbox;
+	};
+
 	constexpr int n = GSUtil::GetClassVertexCount(primclass);
 
 	// We should should only have to compute the drawlist/bboxes once per draw.
@@ -3458,33 +3722,85 @@ GSState::PRIM_OVERLAP GSState::GetPrimitiveOverlapDrawlistImpl(bool save_drawlis
 	// Allows faster comparison than using O(n^2) for full pairwise intersections.
 	// Check Virtua Fighter for example.
 
+	if (primclass == GS_TRIANGLE_CLASS && m_quad_check_valid && m_are_quads)
+	{
+		// The triangles-are-quads check already ensures that there is no overlap.
+		m_drawlist.push_back(m_index.tail / n);
+		if (save_bbox)
+		{
+			const GSVector4i draw_area = GSVector4i(m_vt.m_min.p.upld(m_vt.m_max.p) * GSVector4(16.0f)) + xyof;
+			m_drawlist_bbox.push_back(ProcessBBox(draw_area));
+		}
+		return PRIM_OVERLAP_NO;
+	}
+
 	PRIM_OVERLAP overlap = PRIM_OVERLAP_NO;
+	bool check_quads = primclass == GS_TRIANGLE_CLASS;
 
 	u32 i = 0;
+	u32 skip = 0; // Number of indices to skip if we have the bbox from the previous iteration.
+
+	GSVector4i all(INT_MAX, INT_MAX, -INT_MAX, -INT_MAX);
+
 	while (i < count)
 	{
-		constexpr GSVector4i null = GSVector4i::cxpr(INT_MAX, INT_MAX, -INT_MAX, -INT_MAX);
-		GSVector4i all = null;
+		u32 j = i + skip;
 
-		u32 j = i;
+		GSVector4i bbox(INT_MAX, INT_MAX, -INT_MAX, -INT_MAX);
+
 		while (j < count)
 		{
-			GSVector4i prim = GSVector4i(v[GetIndex(j + 0)].m[1]).upl16().xyxy();
-			for (int k = 1; k < n; k++) // Unroll
-				prim = prim.runion(GSVector4i(v[GetIndex(j + k)].m[1]).upl16().xyxy());
+			if (check_quads && j + 3 < count)
+			{
+				const u16* RESTRICT idx0 = &index[j + 0];
+				const u16* RESTRICT idx1 = &index[j + 3];
+				TriangleOrdering tri0;
+				TriangleOrdering tri1;
+
+				if (AreTrianglesQuad<0, 0>(v, idx0, idx1, &tri0, &tri1))
+				{
+					// tri.b is right angle corner
+					GSVector4i corner0 = GSVector4i(v[idx0[tri0.b]].m[1]).upl16().xyxy();
+					GSVector4i corner1 = GSVector4i(v[idx1[tri1.b]].m[1]).upl16().xyxy();
+					bbox = corner0.runion(corner1);
+					
+					skip = 6;
+				}
+				else
+				{
+					bbox = GSVector4i(v[index[j + 0]].m[1]).upl16().xyxy();
+					bbox = bbox.runion(GSVector4i(v[index[j + 1]].m[1]).upl16().xyxy());
+					bbox = bbox.runion(GSVector4i(v[index[j + 2]].m[1]).upl16().xyxy());
+
+					skip = 3;
+
+					// If we fail a quad check assume the rest are not quads.
+					check_quads = false;
+				}
+			}
+			else
+			{
+				bbox = GSVector4i(v[GetIndex(j)].m[1]).upl16().xyxy();
+				for (int k = 1; k < n; k++) // Unroll
+					bbox = bbox.runion(GSVector4i(v[GetIndex(j + k)].m[1]).upl16().xyxy());
+
+				skip = n;
+			}
 
 			// Avoid degenerate bbox.
-			prim = prim.blend(prim + GSVector4i(0, 0, 1, 1), prim.xyxy() == prim.zwzw());
+			bbox = bbox.blend(bbox + GSVector4i(0, 0, 1, 1), bbox.xyxy() == bbox.zwzw());
 
-			if (all.rintersects(prim))
+			if (all.rintersects(bbox))
 			{
 				overlap = PRIM_OVERLAP_YES;
 				break;
 			}
 
-			all = all.runion(prim);
+			all = all.runion(bbox);
 
-			j += n;
+			j += skip;
+
+			skip = 0;
 		}
 
 		if (save_drawlist)
@@ -3494,17 +3810,10 @@ GSState::PRIM_OVERLAP GSState::GetPrimitiveOverlapDrawlistImpl(bool save_drawlis
 
 		if (save_bbox)
 		{
-			GSVector4i bbox = all - m_context->scissor.xyof;
-			if (bbox_scale != 1.0f)
-			{
-				GSVector4 bboxf = GSVector4(bbox) * bbox_scale;
-				bboxf = bboxf.floor().xyzw(bboxf.ceil());
-				bbox = GSVector4i(bboxf);
-			}
-			// floor min, ceil max, and +1 on all sides for bilinear.
-			bbox = (bbox + GSVector4i(-0x10, -0x10, 0x1F, 0x1F)).sra32<4>(); 
-			m_drawlist_bbox.push_back(bbox);
+			m_drawlist_bbox.push_back(ProcessBBox(all));
 		}
+
+		all = bbox;
 
 		i = j;
 	}
@@ -3525,7 +3834,7 @@ GSState::PRIM_OVERLAP GSState::GetPrimitiveOverlapDrawlist(bool save_drawlist, b
 		case GS_SPRITE_CLASS:
 			return GetPrimitiveOverlapDrawlistImpl<GS_SPRITE_CLASS>(save_drawlist, save_bbox, bbox_scale);
 		default:
-			pxFail("Invalid prim class."); // Impossible.
+			pxFail("Invalid primclass."); // Impossible.
 			return PRIM_OVERLAP_UNKNOW;
 	}
 }
