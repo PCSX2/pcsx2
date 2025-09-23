@@ -49,18 +49,6 @@ void GSDrawingEnvironment::Dump(const std::string& filename) const
 	            "    FIX: %u\n\n",
 		PRIM.PRIM, GSUtil::GetPrimName(PRIM.PRIM), PRIM.IIP, PRIM.TME, PRIM.FGE, PRIM.ABE, PRIM.AA1, PRIM.FST, PRIM.CTXT, PRIM.FIX);
 
-	fprintf(fp, "PRMODE: # when AC=0\n"
-	            "    _PRIM: %u # %s\n"
-	            "    IIP: %u\n"
-	            "    TME: %u\n"
-	            "    FGE: %u\n"
-	            "    ABE: %u\n"
-	            "    AA1: %u\n"
-	            "    FST: %u\n"
-	            "    CTXT: %u\n"
-	            "    FIX: %u\n\n",
-		PRMODE._PRIM, GSUtil::GetPrimName(PRMODE._PRIM), PRMODE.IIP, PRMODE.TME, PRMODE.FGE, PRMODE.ABE, PRMODE.AA1, PRMODE.FST, PRMODE.CTXT, PRMODE.FIX);
-
 	fprintf(fp, "PRMODECONT:\n"
 	            "    AC: %u # %s\n\n",
 		PRMODECONT.AC, GSUtil::GetACName(PRMODECONT.AC));
