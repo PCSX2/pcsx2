@@ -126,47 +126,49 @@ void DisassemblyView::contextAssembleInstruction()
 	u32 encodedInstruction;
 	std::string errorText;
 	bool valid = MipsAssembleOpcode(instruction.toLocal8Bit().constData(), &cpu(), m_selectedAddressStart, encodedInstruction, errorText);
-
 	if (!valid)
 	{
 		QMessageBox::warning(this, tr("Assemble Error"), QString::fromStdString(errorText));
 		return;
 	}
-	else
-	{
-		Host::RunOnCPUThread([this, start = m_selectedAddressStart, end = m_selectedAddressEnd, cpu = &cpu(), val = encodedInstruction] {
-			for (u32 i = start; i <= end; i += 4)
-			{
-				this->m_nopedInstructions.insert({i, cpu->read32(i)});
-				cpu->write32(i, val);
-			}
-			DebuggerView::broadcastEvent(DebuggerEvents::VMUpdate());
-		});
-	}
+
+	setInstructions(m_selectedAddressStart, m_selectedAddressEnd, encodedInstruction);
 }
 
 void DisassemblyView::contextNoopInstruction()
 {
-	Host::RunOnCPUThread([this, start = m_selectedAddressStart, end = m_selectedAddressEnd, cpu = &cpu()] {
-		for (u32 i = start; i <= end; i += 4)
-		{
-			this->m_nopedInstructions.insert({i, cpu->read32(i)});
-			cpu->write32(i, 0x00);
-		}
-		DebuggerView::broadcastEvent(DebuggerEvents::VMUpdate());
-	});
+	setInstructions(m_selectedAddressStart, m_selectedAddressEnd, 0);
 }
 
 void DisassemblyView::contextRestoreInstruction()
 {
-	Host::RunOnCPUThread([this, start = m_selectedAddressStart, end = m_selectedAddressEnd, cpu = &cpu()] {
-		for (u32 i = start; i <= end; i += 4)
+	const u32 start = m_selectedAddressStart;
+	const u32 count = (m_selectedAddressEnd - start) / 4 + 1;
+
+	std::vector<std::optional<u32>> original_instructions;
+	original_instructions.reserve(count);
+	for (u32 i = 0; i < count; i++)
+	{
+		const u32 address = start + i * 4;
+		const auto instruction = m_nopedInstructions.find(address);
+		if (instruction != m_nopedInstructions.end())
 		{
-			if (this->m_nopedInstructions.find(i) != this->m_nopedInstructions.end())
-			{
-				cpu->write32(i, this->m_nopedInstructions[i]);
-				this->m_nopedInstructions.erase(i);
-			}
+			original_instructions.emplace_back(instruction->second);
+			m_nopedInstructions.erase(instruction);
+		}
+		else
+		{
+			original_instructions.emplace_back(std::nullopt);
+		}
+	}
+
+	const QPointer<DisassemblyView> view(this);
+	Host::RunOnCPUThread([view, start, count, original_instructions = std::move(original_instructions), cpu = &cpu()] {
+		for (u32 i = 0; i < count; i++)
+		{
+			u32 address = start + i * 4;
+			if (original_instructions[i].has_value())
+				cpu->write32(address, *original_instructions[i]);
 		}
 		DebuggerView::broadcastEvent(DebuggerEvents::VMUpdate());
 	});
@@ -294,11 +296,21 @@ void DisassemblyView::contextStubFunction()
 	FunctionInfo function = cpu().GetSymbolGuardian().FunctionOverlappingAddress(m_selectedAddressStart);
 	u32 address = function.address.valid() ? function.address.value : m_selectedAddressStart;
 
-	Host::RunOnCPUThread([this, address, cpu = &cpu()] {
-		this->m_stubbedFunctions.insert({address, {cpu->read32(address), cpu->read32(address + 4)}});
+	const QPointer<DisassemblyView> view(this);
+	Host::RunOnCPUThread([view, address, cpu = &cpu()] {
+		const u32 first_instruction = cpu->read32(address);
+		const u32 second_instruction = cpu->read32(address + 4);
+
 		cpu->write32(address, 0x03E00008); // jr ra
 		cpu->write32(address + 4, 0x00000000); // nop
-		DebuggerView::broadcastEvent(DebuggerEvents::VMUpdate());
+
+		QtHost::RunOnUIThread([view, address, first_instruction, second_instruction]() {
+			if (!view)
+				return;
+
+			view->m_stubbedFunctions.emplace(address, std::make_tuple(first_instruction, second_instruction));
+			DebuggerView::broadcastEvent(DebuggerEvents::VMUpdate());
+		});
 	});
 }
 
@@ -314,11 +326,12 @@ void DisassemblyView::contextRestoreFunction()
 	auto stub = m_stubbedFunctions.find(address);
 	if (stub != m_stubbedFunctions.end())
 	{
-		Host::RunOnCPUThread([this, address, cpu = &cpu(), stub] {
-			auto [first_instruction, second_instruction] = stub->second;
+		const auto [first_instruction, second_instruction] = stub->second;
+		m_stubbedFunctions.erase(stub);
+
+		Host::RunOnCPUThread([address, cpu = &cpu(), first_instruction, second_instruction] {
 			cpu->write32(address, first_instruction);
 			cpu->write32(address + 4, second_instruction);
-			this->m_stubbedFunctions.erase(address);
 			DebuggerView::broadcastEvent(DebuggerEvents::VMUpdate());
 		});
 	}
@@ -974,18 +987,47 @@ void DisassemblyView::toggleBreakpoint(u32 address)
 	if (!cpu().isAlive())
 		return;
 
-	QPointer<DisassemblyView> disassembly_widget(this);
-
-	Host::RunOnCPUThread([cpu = &cpu(), address, disassembly_widget] {
+	const QPointer<DisassemblyView> view(this);
+	Host::RunOnCPUThread([view, cpu = &cpu(), address] {
 		if (!CBreakPoints::IsAddressBreakPoint(cpu->getCpuType(), address))
 			CBreakPoints::AddBreakPoint(cpu->getCpuType(), address);
 		else
 			CBreakPoints::RemoveBreakPoint(cpu->getCpuType(), address);
 
-		QtHost::RunOnUIThread([cpu, disassembly_widget]() {
+		QtHost::RunOnUIThread([view, cpu]() {
 			BreakpointModel::getInstance(*cpu)->refreshData();
-			if (disassembly_widget)
-				disassembly_widget->repaint();
+			if (view)
+				view->repaint();
+		});
+	});
+}
+
+void DisassemblyView::setInstructions(u32 start, u32 end, u32 value)
+{
+	const u32 count = (end - start) / 4 + 1;
+
+	const QPointer<DisassemblyView> view(this);
+	Host::RunOnCPUThread([view, start, count, cpu = &cpu(), value] {
+		std::vector<u32> original_instructions;
+		original_instructions.reserve(count);
+		for (u32 i = 0; i < count; i++)
+		{
+			const u32 address = start + i * 4;
+			original_instructions.emplace_back(cpu->read32(address));
+			cpu->write32(address, value);
+		}
+
+		QtHost::RunOnUIThread([view, start, count, original_instructions = std::move(original_instructions)]() {
+			if (!view)
+				return;
+
+			for (u32 i = 0; i < count; i++)
+			{
+				const u32 address = start + i * 4;
+				view->m_nopedInstructions.emplace(address, original_instructions[i]);
+			}
+
+			DebuggerView::broadcastEvent(DebuggerEvents::VMUpdate());
 		});
 	});
 }
