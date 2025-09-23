@@ -270,4 +270,7 @@ public:
 
 	/// Submits a previously set up HLE hardware draw, copying any textures as needed if there's hazards.
 	void EndHLEHardwareDraw(bool force_copy_on_hazard = false);
+
+	/// Compute the drawlist (if not already present) and bounding boxes for the current draw.
+	std::size_t ComputeDrawlistGetSize(float scale);
 };
