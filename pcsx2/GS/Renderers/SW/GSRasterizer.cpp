@@ -377,8 +377,6 @@ void GSRasterizer::DrawEdgeTriangle(const GSVertexSW& v0, const GSVertexSW& v1, 
 	while (D < -scaleD / 2)
 		StepDependent.template operator()<-1>();
 
-	pxAssert(-scaleD / 2 <= D && D < scaleD / 2);
-
 	while (true)
 	{
 		const float d = static_cast<float>(D) / scaleDf;
@@ -396,13 +394,13 @@ void GSRasterizer::DrawEdgeTriangle(const GSVertexSW& v0, const GSVertexSW& v1, 
 		if (d > 0.0f)
 		{
 			cov = static_cast<int>(0xffff * (side ? 1.0 - d : d));
-			constexpr int offset = (side ? 0 : 1);
+			[[maybe_unused]] constexpr int offset = (side ? 0 : 1);
 			GetOffsetVars.template operator()<offset>();
 		}
 		else if (d < 0.0f)
 		{
 			cov = static_cast<int>(0xffff * (side ? -d : 1.0 + d));
-			constexpr int offset = (side ? -1 : 0);
+			[[maybe_unused]] constexpr int offset = (side ? -1 : 0);
 			GetOffsetVars.template operator()<offset>();
 		}
 		else // d == 0.0f
@@ -410,7 +408,7 @@ void GSRasterizer::DrawEdgeTriangle(const GSVertexSW& v0, const GSVertexSW& v1, 
 			// When exactly on the pixel center, top-left edges can create 0 coverage points and
 			// bottom-right edges can create full coverage points (with some rounding error).
 			cov = tl ? 0 : 0xffff;
-			constexpr int offset = tl ? (side ? -1 : 1) : 0;
+			[[maybe_unused]] constexpr int offset = tl ? (side ? -1 : 1) : 0;
 			GetOffsetVars.template operator()<offset>();
 		}
 
@@ -546,8 +544,6 @@ void GSRasterizer::DrawEdgeLine(const GSVertexSW& v0, const GSVertexSW& v1, cons
 	
 	while (D < -scaleD / 2)
 		StepDependent.template operator()<-1>();
-
-	pxAssert(-scaleD / 2 <= D && D < scaleD / 2);
 
 	const auto AddScanlineStepEdge = [&](int x, int y, int cov = 0) {
 		if (m_scissor.left <= x && x < m_scissor.right &&
