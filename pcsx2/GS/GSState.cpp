@@ -2102,6 +2102,7 @@ void GSState::FlushPrim()
 		// Skip draw if Z test is enabled, but set to fail all pixels.
 		const bool skip_draw = (m_context->TEST.ZTE && m_context->TEST.ZTST == ZTST_NEVER);
 		m_quad_check_valid = false;
+		m_quad_check_valid_shuffle = false;
 		m_drawlist.clear();
 		m_drawlist_bbox.clear();
 
@@ -3306,135 +3307,149 @@ void GSState::GrowVertexBuffer()
 	m_vertex.maxcount = maxcount - 3; // -3 to have some space at the end of the buffer before DrawingKick can grow it
 }
 
-bool GSState::TrianglesAreQuads(bool shuffle_check)
+template<bool shuffle_check>
+bool GSState::TrianglesAreQuadsImpl()
 {
-	// If this is a quad, there should only be two distinct values for both X and Y, which
-	// also happen to be the minimum/maximum bounds of the primitive.
-	if (!shuffle_check && m_quad_check_valid)
-		return m_are_quads;
+	// are_quads: triangles form axis-aligned quads and they line up end-to-end.
+	// are_quads_indiv: every 2 triangles forms an axis-aligned quad (any overlap between quads).
+	// When doing shuffle check, are_quads_indiv is not considered. In a shuffle check we want the bboxes
+	// to line up end-to-end when we shift the coordinates by 8 pixels horizontally.
+	// Special case: when only 2 triangles, the quad need not be axis aligned.
+	
+	bool& quad_check_valid = shuffle_check ? m_quad_check_valid_shuffle : m_quad_check_valid;
+	bool& are_quads = shuffle_check ? m_are_quads_shuffle : m_are_quads;
+	bool& are_quads_indiv = m_are_quads_indiv;
 
-	const GSVertex* const v = m_vertex.buff;
-	m_are_quads = false;
-	m_quad_check_valid = !shuffle_check;
+	// Check if the result is cached.
+	if (quad_check_valid)
+		return are_quads;
 
-	for (u32 idx = 0; idx < m_index.tail; idx += 6)
+	quad_check_valid = true;
+	are_quads = true;
+	if constexpr (!shuffle_check)
+		are_quads_indiv = true;
+
+	if (m_index.tail % 6 != 0)
 	{
-		const u16* const i = m_index.buff + idx;
+		are_quads = false;
+		if constexpr (!shuffle_check)
+			are_quads_indiv = false;
+		return false;
+	}
 
-		// Make sure the next set of triangles matches an edge of the previous triangle.
-		if (idx > 0)
+	constexpr GSVector4i offset = shuffle_check ? GSVector4i::cxpr(8 << 4, 0, 8 << 4, 0) : GSVector4i::cxpr(0);
+
+	const GSVertex* RESTRICT v = m_vertex.buff;
+	const u16* RESTRICT index = m_index.buff;
+	const size_t count = m_index.tail;
+
+	if (m_index.tail == 6)
+	{
+		// Non-axis aligned check when only two triangles
+		are_quads = GSUtil::AreTrianglesQuadNonAA(v, &index[0], &index[3]);
+		if constexpr (!shuffle_check)
+			are_quads_indiv = are_quads;
+	}
+	else
+	{
+		GSVector4i prev_bbox;
+
+		for (u32 i = 0; i < count; i += 6)
 		{
-			const u16* const prev_tri= m_index.buff + (idx - 3);
-			GIFRegXYZ new_verts[3] = {v[i[0]].XYZ, v[i[1]].XYZ, v[i[2]].XYZ};
+			const u16* RESTRICT idx0 = &index[i + 0];
+			const u16* RESTRICT idx1 = &index[i + 3];
+			GSUtil::TriangleOrdering tri0;
+			GSUtil::TriangleOrdering tri1;
 
-			if (shuffle_check)
+			GSVector4i bbox;
+
+			// If the first 2 pairs of triangles form axis-aligned quads, assume the rest do also.
+			if (i < 12)
 			{
-				new_verts[0].X -= 8 << 4;
-				new_verts[1].X -= 8 << 4;
-				new_verts[2].X -= 8 << 4;
+
+				if (!GSUtil::AreTrianglesQuad<0, 0>(v, idx0, idx1, &tri0, &tri1))
+				{
+					are_quads = false;
+					if constexpr (!shuffle_check)
+						are_quads_indiv = false;
+					break;
+				}
+
+				// tri.b is right angle corner
+				GSVector4i corner0 = GSVector4i(v[idx0[tri0.b]].m[1]).upl16().xyxy();
+				GSVector4i corner1 = GSVector4i(v[idx1[tri1.b]].m[1]).upl16().xyxy();
+				bbox = corner0.runion(corner1);
 			}
-			u32 match_vert_count = 0;
-
-			if (!(new_verts[0] != m_vertex.buff[prev_tri[0]].XYZ && new_verts[0] != m_vertex.buff[prev_tri[1]].XYZ && new_verts[0] != m_vertex.buff[prev_tri[2]].XYZ))
-				match_vert_count++;
-			if (!(new_verts[1] != m_vertex.buff[prev_tri[0]].XYZ && new_verts[1] != m_vertex.buff[prev_tri[1]].XYZ && new_verts[1] != m_vertex.buff[prev_tri[2]].XYZ))
-				match_vert_count++;
-			if (!(new_verts[2] != m_vertex.buff[prev_tri[0]].XYZ && new_verts[2] != m_vertex.buff[prev_tri[1]].XYZ && new_verts[2] != m_vertex.buff[prev_tri[2]].XYZ))
-				match_vert_count++;
-
-			if (match_vert_count != 2)
-				return false;
-		}
-		// Degenerate triangles should've been culled already, so we can check indices.
-		// This doesn't really make much sense when it's a triangle strip as it will always have 1 extra vert, so check for distinct values for them.
-		if (PRIM->PRIM != GS_TRIANGLESTRIP)
-		{
-			u32 extra_verts = 0;
-			for (u32 j = 3; j < 6; j++)
+			else if (are_quads)
 			{
-				const u16 tri2_idx = i[j];
-				if (tri2_idx != i[0] && tri2_idx != i[1] && tri2_idx != i[2])
-					extra_verts++;
+				// Two quads are already encountered so just get the bbox here.
+				bbox = GSVector4i(v[idx0[0]].m[1]).upl16().xyxy();
+				bbox = bbox.runion(GSVector4i(v[idx0[1]].m[1]).upl16().xyxy());
+				bbox = bbox.runion(GSVector4i(v[idx0[2]].m[1]).upl16().xyxy());
 			}
-			if (extra_verts == 1)
-				continue;
-		}
-		else if (m_index.tail == 6)
-		{
-			bool shared_vert_found = false;
-			for (int i = 0; i < 3; i++)
+			else
 			{
-				for (int j = 3; j < 6; j++)
-					if (m_vertex.buff[m_index.buff[i]].XYZ.X == m_vertex.buff[m_index.buff[j]].XYZ.X &&
-						m_vertex.buff[m_index.buff[i]].XYZ.Y == m_vertex.buff[m_index.buff[j]].XYZ.Y)
+				// Early exit if are_quads already failed and the first 2 pairs of triangles are quads.
+				// Means that are_quads_indiv will be true.
+				break; 
+			}
+
+			if (are_quads && i > 0)
+			{
+				GSVector4i bbox_offset = bbox - offset;
+
+				// Consider two quads exactly on top of each other to be non-overlapping.
+				// This is technically incorrect but it does not seems to affect anything
+				// negatively and allows mem-clears with redundant quads to be detected.
+				if (GSVector4::cast(bbox_offset == prev_bbox).mask() != 0xF)
+				{
+					// Check that the two bboxes have exactly 1 edge in common.
+					int m = GSVector4::cast(bbox_offset == prev_bbox).mask();
+					bool valign = (m & 0b0101) == 0b0101; // X-range identical.
+					bool halign = (m & 0b1010) == 0b1010; // Y-range identical.
+					int vadj = GSVector4::cast(bbox_offset.ywyw() == prev_bbox.wywy()).mask() & 3;
+					int hadj = GSVector4::cast(bbox_offset.xzxz() == prev_bbox.zxzx()).mask() & 3;
+
+					bool adjacent =
+						(halign && (hadj == 0b01 || hadj == 0b10)) || // Quads share vertical edge.
+						(valign && (vadj == 0b01 || vadj == 0b10)); // Quads share horizontal edge.
+
+					if (!adjacent)
 					{
-						shared_vert_found = true;
-						break;
+						are_quads = false;
 					}
-			}
-			
-			// At least one vert should be shared across otherwise it's 2 separate triangles (false positive from Tales of Destiny).
-			if (!shared_vert_found)
-				return false;
-
-			const int first_X = m_vertex.buff[m_index.buff[0]].XYZ.X;
-			const int first_Y = m_vertex.buff[m_index.buff[0]].XYZ.Y;
-			const int second_X = m_vertex.buff[m_index.buff[1]].XYZ.X;
-			const int second_Y = m_vertex.buff[m_index.buff[1]].XYZ.Y;
-			const int third_X = m_vertex.buff[m_index.buff[2]].XYZ.X;
-			const int third_Y = m_vertex.buff[m_index.buff[2]].XYZ.Y;
-			const int new_X = m_vertex.buff[m_index.buff[5]].XYZ.X;
-			const int new_Y = m_vertex.buff[m_index.buff[5]].XYZ.Y;
-
-			const int middle_Y = (second_Y >= third_Y) ? (third_Y + ((second_Y - third_Y) / 2)) : (second_Y + ((third_Y - second_Y) / 2));
-			const int middle_X = (second_X >= third_X) ? (third_X + ((second_X - third_X) / 2)) : (second_X + ((third_X - second_X) / 2));
-			const bool first_lt_X = first_X <= middle_X;
-			const bool first_lt_Y = first_Y <= middle_Y;
-			const bool new_lt_X = new_X <= middle_X;
-			const bool new_lt_Y = new_Y <= middle_Y;
-
-			// Check if verts are on the same side. Not totally accurate, but should be good enough.
-			if (first_lt_X == new_lt_X && new_lt_Y == first_lt_Y)
-					return false;
-
-			m_prim_overlap = PRIM_OVERLAP_NO;
-			break;
-		}
-
-		// As a fallback, they might've used different vertices with a tri list, not strip.
-		// Note that this won't work unless the quad is axis-aligned.
-		u16 distinct_x_values[2] = {v[i[0]].XYZ.X};
-		u16 distinct_y_values[2] = {v[i[0]].XYZ.Y};
-		u32 num_distinct_x_values = 1, num_distinct_y_values = 1;
-		for (u32 j = 1; j < 6; j++)
-		{
-			const GSVertex& jv = v[i[j]];
-			if (jv.XYZ.X != distinct_x_values[0] && jv.XYZ.X != distinct_x_values[1])
-			{
-				if (num_distinct_x_values > 1)
-					return false;
-
-				distinct_x_values[num_distinct_x_values++] = jv.XYZ.X;
+				}
 			}
 
-			if (jv.XYZ.Y != distinct_y_values[0] && jv.XYZ.Y != distinct_y_values[1])
-			{
-				if (num_distinct_y_values > 1)
-					return false;
+			if (!are_quads && (shuffle_check || !are_quads_indiv))
+				break;
 
-				distinct_y_values[num_distinct_y_values++] = jv.XYZ.Y;
-			}
+			prev_bbox = bbox;
 		}
 	}
 
-	m_are_quads = true;
-	return true;
+	return are_quads;
 }
 
-template<u32 primclass>
+bool GSState::TrianglesAreQuads(bool shuffle_check)
+{
+	return shuffle_check ? TrianglesAreQuadsImpl<true>() : TrianglesAreQuadsImpl<false>();
+}
+
+bool GSState::TrianglesAreQuadsIndiv()
+{
+	TrianglesAreQuadsImpl<false>();
+
+	return m_are_quads_indiv;
+}
+
+template<u32 primclass, bool quads>
 GSState::PRIM_OVERLAP GSState::GetPrimitiveOverlapDrawlistImpl(bool save_drawlist, bool save_bbox, float bbox_scale)
 {
+	static_assert(primclass == GS_TRIANGLE_CLASS || !quads); // quads only valid for triangles.
+
 	constexpr int n = GSUtil::GetClassVertexCount(primclass);
+	constexpr int quad_factor = quads ? 2 : 1; // Skip every other triangle when they are quads.
 
 	// We should should only have to compute the drawlist/bboxes once per draw.
 	pxAssert(!save_drawlist || m_drawlist.empty());
@@ -3484,7 +3499,7 @@ GSState::PRIM_OVERLAP GSState::GetPrimitiveOverlapDrawlistImpl(bool save_drawlis
 
 			all = all.runion(prim);
 
-			j += n;
+			j += quad_factor * n;
 		}
 
 		if (save_drawlist)
@@ -3521,11 +3536,14 @@ GSState::PRIM_OVERLAP GSState::GetPrimitiveOverlapDrawlist(bool save_drawlist, b
 		case GS_LINE_CLASS:
 			return GetPrimitiveOverlapDrawlistImpl<GS_LINE_CLASS>(save_drawlist, save_bbox, bbox_scale);
 		case GS_TRIANGLE_CLASS:
-			return GetPrimitiveOverlapDrawlistImpl<GS_TRIANGLE_CLASS>(save_drawlist, save_bbox, bbox_scale);
+			if (m_quad_check_valid && m_are_quads_indiv)
+				return GetPrimitiveOverlapDrawlistImpl<GS_TRIANGLE_CLASS, true>(save_drawlist, save_bbox, bbox_scale);
+			else
+				return GetPrimitiveOverlapDrawlistImpl<GS_TRIANGLE_CLASS, false>(save_drawlist, save_bbox, bbox_scale);
 		case GS_SPRITE_CLASS:
 			return GetPrimitiveOverlapDrawlistImpl<GS_SPRITE_CLASS>(save_drawlist, save_bbox, bbox_scale);
 		default:
-			pxFail("Invalid prim class."); // Impossible.
+			pxFail("Invalid primclass."); // Impossible.
 			return PRIM_OVERLAP_UNKNOW;
 	}
 }

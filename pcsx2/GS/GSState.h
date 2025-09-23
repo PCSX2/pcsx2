@@ -238,7 +238,10 @@ public:
 	std::unique_ptr<GSDumpBase> m_dump;
 	bool m_scissor_invalid = false;
 	bool m_quad_check_valid = false;
+	bool m_quad_check_valid_shuffle = false;
 	bool m_are_quads = false;
+	bool m_are_quads_indiv = false;
+	bool m_are_quads_shuffle = false;
 	bool m_nativeres = false;
 	bool m_mipmap = false;
 	bool m_texflush_flag = false;
@@ -447,9 +450,13 @@ public:
 	void DumpVertices(const std::string& filename);
 	void DumpTransferList(const std::string& filename);
 	void DumpTransferImages();
-
+	
+	template<bool shuffle_check>
+	bool TrianglesAreQuadsImpl();
+	bool TrianglesAreQuads0(bool shuffle_check = false);
 	bool TrianglesAreQuads(bool shuffle_check = false);
-	template <u32 primclass>
+	bool TrianglesAreQuadsIndiv();
+	template <u32 primclass, bool quads = false>
 	PRIM_OVERLAP GetPrimitiveOverlapDrawlistImpl(bool save_drawlist = false, bool save_bbox = false, float bbox_scale = 1.0f);
 	PRIM_OVERLAP GetPrimitiveOverlapDrawlist(bool save_drawlist = false, bool save_bbox = false, float bbox_scale = 1.0f);
 	PRIM_OVERLAP PrimitiveOverlap(bool save_drawlist = false);
