@@ -394,6 +394,13 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 			FileSystem::CopyFilePath(Path::Combine(EmuFolders::Resources, "icons/PCSX2.svg").c_str(), icon_path.c_str(), false);
 	}
 
+	// Further string sanitization
+	if (!is_flatpak)
+		Path::EscapeCmdLine(&executable_path);
+
+	Path::EscapeCmdLine(&clean_path);
+
+	// Assembling the .desktop file
 	std::string final_args;
 	final_args = fmt::format("{} {} -- '{}'", executable_path, cmdline, clean_path);
 	std::string file_content =
