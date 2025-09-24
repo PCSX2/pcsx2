@@ -2831,24 +2831,29 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config, GSTexture* draw_rt_clo
 
 		const u32 indices_per_prim = config.indices_per_prim;
 
-		auto CopyAndBind = [&]() {
-			CopyRect(draw_rt, draw_rt_clone, config.drawarea, config.drawarea.left, config.drawarea.top);
+		auto CopyAndBind = [&](GSVector4i drawarea) {
+			CopyRect(draw_rt, draw_rt_clone, drawarea, drawarea.left, drawarea.top);
 			if (one_barrier || full_barrier)
 				PSSetShaderResource(2, draw_rt_clone);
 			if (config.tex && config.tex == config.rt)
 				PSSetShaderResource(0, draw_rt_clone);
 		};
 
-		// Copy once per batch, primitives don't overlap each other.
-		if (m_features.multidraw_fb_copy && full_barrier && config.drawlist)
+		if (m_features.multidraw_fb_copy && full_barrier)
 		{
 			const u32 draw_list_size = static_cast<u32>(config.drawlist->size());
+
+			pxAssert(config.drawlist_bbox && static_cast<u32>(config.drawlist_bbox->size()) == draw_list_size);
 
 			for (u32 n = 0, p = 0; n < draw_list_size; n++)
 			{
 				const u32 count = (*config.drawlist)[n] * indices_per_prim;
 
-				CopyAndBind();
+				GSVector4i bbox = (*config.drawlist_bbox)[n].rintersect(config.drawarea);
+
+				// Copy only the part needed by the draw.
+				CopyAndBind(bbox);
+
 				DrawIndexedPrimitive(p, count);
 				p += count;
 			}
@@ -2856,24 +2861,9 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config, GSTexture* draw_rt_clo
 			return;
 		}
 
-		// Copy once per primitive.
-		// TODO: Optimization try to use prim area for copy instead of draw area,
-		// might need current prim and previous prim area due to overlap,
-		// will need to use vertex cords to get the new copy rect.
-		if (m_features.multidraw_fb_copy && full_barrier)
-		{
-			for (u32 p = 0; p < config.nindices; p += indices_per_prim)
-			{
-				CopyAndBind();
-				DrawIndexedPrimitive(p, indices_per_prim);
-			}
-
-			return;
-		}
-
 		// Optimization: For alpha second pass we can reuse the copy snapshot from the first pass.
 		if (!skip_first_barrier)
-			CopyAndBind();
+			CopyAndBind(config.drawarea);
 	}
 
 	DrawIndexedPrimitive();
