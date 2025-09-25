@@ -6052,59 +6052,35 @@ void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt,
 	const VkDependencyFlags barrier_flags = GetColorBufferBarrierFlags();
 	if (full_barrier)
 	{
+		pxAssert(config.drawlist && !config.drawlist->empty());
+
 		const VkImageMemoryBarrier barrier = GetColorBufferBarrier(draw_rt);
 		const u32 indices_per_prim = config.indices_per_prim;
+		const u32 draw_list_size = static_cast<u32>(config.drawlist->size());
 
-		if (config.drawlist)
+		GL_PUSH("Split the draw");
+		g_perfmon.Put(
+			GSPerfMon::Barriers, static_cast<u32>(draw_list_size) - static_cast<u32>(skip_first_barrier));
+
+		u32 p = 0;
+		u32 n = 0;
+
+		if (skip_first_barrier)
 		{
-			GL_PUSH("Split the draw (SPRITE)");
-			g_perfmon.Put(
-				GSPerfMon::Barriers, static_cast<u32>(config.drawlist->size()) - static_cast<u32>(skip_first_barrier));
-
-			const u32 indices_per_prim = config.indices_per_prim;
-			const u32 draw_list_size = static_cast<u32>(config.drawlist->size());
-			const VkImageMemoryBarrier barrier = GetColorBufferBarrier(draw_rt);
-			u32 p = 0;
-			u32 n = 0;
-
-			if (skip_first_barrier)
-			{
-				const u32 count = (*config.drawlist)[n] * indices_per_prim;
-				DrawIndexedPrimitive(p, count);
-				p += count;
-				++n;
-			}
-
-			for (; n < draw_list_size; n++)
-			{
-				vkCmdPipelineBarrier(GetCurrentCommandBuffer(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-					VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, barrier_flags, 0, nullptr, 0, nullptr, 1, &barrier);
-
-				const u32 count = (*config.drawlist)[n] * indices_per_prim;
-				DrawIndexedPrimitive(p, count);
-				p += count;
-			}
+			const u32 count = (*config.drawlist)[n] * indices_per_prim;
+			DrawIndexedPrimitive(p, count);
+			p += count;
+			++n;
 		}
-		else
+
+		for (; n < draw_list_size; n++)
 		{
-			GL_PUSH("Split single draw in %d draw", config.nindices / indices_per_prim);
-			g_perfmon.Put(
-				GSPerfMon::Barriers, (config.nindices / indices_per_prim) - static_cast<u32>(skip_first_barrier));
+			vkCmdPipelineBarrier(GetCurrentCommandBuffer(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, barrier_flags, 0, nullptr, 0, nullptr, 1, &barrier);
 
-			u32 p = 0;
-			if (skip_first_barrier)
-			{
-				DrawIndexedPrimitive(p, indices_per_prim);
-				p += indices_per_prim;
-			}
-
-			for (; p < config.nindices; p += indices_per_prim)
-			{
-				vkCmdPipelineBarrier(GetCurrentCommandBuffer(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-					VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, barrier_flags, 0, nullptr, 0, nullptr, 1, &barrier);
-
-				DrawIndexedPrimitive(p, indices_per_prim);
-			}
+			const u32 count = (*config.drawlist)[n] * indices_per_prim;
+			DrawIndexedPrimitive(p, count);
+			p += count;
 		}
 
 		return;

@@ -2838,11 +2838,12 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config, GSTexture* draw_rt_clo
 			if (config.tex && config.tex == config.rt)
 				PSSetShaderResource(0, draw_rt_clone);
 		};
-
+		
 		if (m_features.multidraw_fb_copy && full_barrier)
 		{
 			const u32 draw_list_size = static_cast<u32>(config.drawlist->size());
 
+			pxAssert(config.drawlist && !config.drawlist->empty());
 			pxAssert(config.drawlist_bbox && static_cast<u32>(config.drawlist_bbox->size()) == draw_list_size);
 
 			for (u32 n = 0, p = 0; n < draw_list_size; n++)
