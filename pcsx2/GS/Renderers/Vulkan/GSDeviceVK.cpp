@@ -2748,7 +2748,10 @@ void GSDeviceVK::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 {
 	// Empty rect, abort copy.
 	if (r.rempty())
+	{
+		GL_INS("VK: CopyRect rect empty.");
 		return;
+	}
 
 	GSTextureVK* const sTexVK = static_cast<GSTextureVK*>(sTex);
 	GSTextureVK* const dTexVK = static_cast<GSTextureVK*>(dTex);
