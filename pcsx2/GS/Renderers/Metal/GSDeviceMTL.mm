@@ -2247,7 +2247,7 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 			pxAssert(config.require_full_barrier == false && config.drawlist == nullptr);
 			MRESetHWPipelineState(config.vs, config.ps, {}, {});
 			MREInitHWDraw(config, allocation);
-			SendHWDraw(config, m_current_render.encoder, index_buffer, index_buffer_offset);
+			SendHWDraw(config, m_current_render.encoder, index_buffer, index_buffer_offset, false, false);
 			config.ps.date = 3;
 			break;
 		}
@@ -2294,7 +2294,7 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 	MRESetHWPipelineState(config.vs, config.ps, config.blend, config.colormask);
 	MRESetDSS(config.depth);
 
-	SendHWDraw(config, mtlenc, index_buffer, index_buffer_offset);
+	SendHWDraw(config, mtlenc, index_buffer, index_buffer_offset, config.require_one_barrier, config.require_full_barrier);
 
 	if (config.alpha_second_pass.enable)
 	{
@@ -2305,7 +2305,7 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 		}
 		MRESetHWPipelineState(config.vs, config.alpha_second_pass.ps, config.blend, config.alpha_second_pass.colormask);
 		MRESetDSS(config.alpha_second_pass.depth);
-		SendHWDraw(config, mtlenc, index_buffer, index_buffer_offset);
+		SendHWDraw(config, mtlenc, index_buffer, index_buffer_offset, config.alpha_second_pass.require_one_barrier, config.alpha_second_pass.require_full_barrier);
 	}
 
 	if (colclip_rt)
@@ -2328,7 +2328,7 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 		Recycle(primid_tex);
 }}
 
-void GSDeviceMTL::SendHWDraw(GSHWDrawConfig& config, id<MTLRenderCommandEncoder> enc, id<MTLBuffer> buffer, size_t off)
+void GSDeviceMTL::SendHWDraw(GSHWDrawConfig& config, id<MTLRenderCommandEncoder> enc, id<MTLBuffer> buffer, size_t off, bool one_barrier, bool full_barrier)
 {
 	MTLPrimitiveType topology;
 	switch (config.topology)
@@ -2338,9 +2338,25 @@ void GSDeviceMTL::SendHWDraw(GSHWDrawConfig& config, id<MTLRenderCommandEncoder>
 		case GSHWDrawConfig::Topology::Triangle: topology = MTLPrimitiveTypeTriangle; break;
 	}
 
-	if (config.drawlist)
+	if (!m_features.texture_barrier) [[unlikely]]
 	{
-		[enc pushDebugGroup:[NSString stringWithFormat:@"Full barrier split draw (%d sprites in %zu groups)", config.nindices / config.indices_per_prim, config.drawlist->size()]];
+		[enc drawIndexedPrimitives:topology
+		                indexCount:config.nindices
+		                 indexType:MTLIndexTypeUInt16
+		               indexBuffer:buffer
+		         indexBufferOffset:off];
+
+		g_perfmon.Put(GSPerfMon::DrawCalls, 1);
+		
+		return;
+	}
+
+
+	if (full_barrier)
+	{
+		pxAssert(config.drawlist && !config.drawlist->empty());
+
+		[enc pushDebugGroup:[NSString stringWithFormat:@"Full barrier split draw (%d primitives in %zu groups)", config.nindices / config.indices_per_prim, config.drawlist->size()]];
 #if defined(_DEBUG)
 		// Check how draw call is split.
 		std::map<size_t, size_t> frequency;
@@ -2351,7 +2367,7 @@ void GSDeviceMTL::SendHWDraw(GSHWDrawConfig& config, id<MTLRenderCommandEncoder>
 		for (const auto& it : frequency)
 			message += " " + std::to_string(it.first) + "(" + std::to_string(it.second) + ")";
 
-		[enc insertDebugSignpost:[NSString stringWithFormat:@"Split single draw (%d sprites) into %zu draws: consecutive draws(frequency):%s",
+		[enc insertDebugSignpost:[NSString stringWithFormat:@"Split single draw (%d primitives) into %zu draws: consecutive draws(frequency):%s",
 			config.nindices / config.indices_per_prim, config.drawlist->size(), message.c_str()]];
 #endif
 
@@ -2377,28 +2393,7 @@ void GSDeviceMTL::SendHWDraw(GSHWDrawConfig& config, id<MTLRenderCommandEncoder>
 		[enc popDebugGroup];
 		return;
 	}
-	else if (config.require_full_barrier)
-	{
-		const u32 indices_per_prim = config.indices_per_prim;
-		const u32 ndraws = config.nindices / indices_per_prim;
-		g_perfmon.Put(GSPerfMon::DrawCalls, ndraws);
-		g_perfmon.Put(GSPerfMon::Barriers, ndraws);
-		[enc pushDebugGroup:[NSString stringWithFormat:@"Full barrier split draw (%d prims)", ndraws]];
-
-		for (u32 p = 0; p < config.nindices; p += indices_per_prim)
-		{
-			textureBarrier(enc);
-			[enc drawIndexedPrimitives:topology
-			                indexCount:config.indices_per_prim
-			                 indexType:MTLIndexTypeUInt16
-			               indexBuffer:buffer
-			         indexBufferOffset:off + p * sizeof(*config.indices)];
-		}
-
-		[enc popDebugGroup];
-		return;
-	}
-	else if (config.require_one_barrier)
+	else if (one_barrier)
 	{
 		// One barrier needed
 		textureBarrier(enc);
