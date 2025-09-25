@@ -8134,14 +8134,11 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		m_conf.alpha_second_pass.enable = false;
 	}
 
-	if (m_conf.require_full_barrier)
+	if (m_conf.require_full_barrier && (g_gs_device->Features().texture_barrier || g_gs_device->Features().multidraw_fb_copy))
 	{
-		if (m_vt.m_primclass == GS_SPRITE_CLASS || (!g_gs_device->Features().texture_barrier && g_gs_device->Features().multidraw_fb_copy))
-		{
-			ComputeDrawlistGetSize(rt->m_scale); // Make sure drawlist is computed for any primitive type.
-			m_conf.drawlist = &m_drawlist;
-			m_conf.drawlist_bbox = &m_drawlist_bbox;
-		}
+		ComputeDrawlistGetSize(rt->m_scale);
+		m_conf.drawlist = &m_drawlist;
+		m_conf.drawlist_bbox = &m_drawlist_bbox;
 	}
 
 	if (!m_channel_shuffle_width)
@@ -9581,7 +9578,7 @@ std::size_t GSRendererHW::ComputeDrawlistGetSize(float scale)
 {
 	if (m_drawlist.empty())
 	{
-		bool save_bbox = !g_gs_device->Features().texture_barrier && g_gs_device->Features().multidraw_fb_copy;
+		const bool save_bbox = !g_gs_device->Features().texture_barrier && g_gs_device->Features().multidraw_fb_copy;
 		GetPrimitiveOverlapDrawlist(true, save_bbox, scale);
 	}
 	return m_drawlist.size();
