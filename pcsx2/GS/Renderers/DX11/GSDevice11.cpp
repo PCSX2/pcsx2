@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "GS.h"
+#include "GS/GSGL.h"
 #include "GSDevice11.h"
 #include "GS/Renderers/DX11/D3D.h"
 #include "GS/GSExtra.h"
@@ -1231,7 +1232,10 @@ void GSDevice11::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 {
 	// Empty rect, abort copy.
 	if (r.rempty())
+	{
+		GL_INS("D3D11: CopyRect rect empty.");
 		return;
+	}
 
 	const GSVector4i dst_rect(0, 0, dTex->GetWidth(), dTex->GetHeight());
 	const bool full_draw_copy = sTex->IsDepthStencil() || dst_rect.eq(r);

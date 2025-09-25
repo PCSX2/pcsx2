@@ -1339,7 +1339,10 @@ void GSDevice12::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 {
 	// Empty rect, abort copy.
 	if (r.rempty())
+	{
+		GL_INS("D3D12: CopyRect rect empty.");
 		return;
+	}
 
 	GSTexture12* const sTex12 = static_cast<GSTexture12*>(sTex);
 	GSTexture12* const dTex12 = static_cast<GSTexture12*>(dTex);

@@ -1430,7 +1430,10 @@ void GSDeviceOGL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r
 {
 	// Empty rect, abort copy.
 	if (r.rempty())
+	{
+		GL_INS("GL: CopyRect rect empty.");
 		return;
+	}
 
 	const GLuint& sid = static_cast<GSTextureOGL*>(sTex)->GetID();
 	const GLuint& did = static_cast<GSTextureOGL*>(dTex)->GetID();
