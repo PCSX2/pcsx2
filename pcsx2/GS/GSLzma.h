@@ -8,6 +8,9 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <thread>
+#include <condition_variable>
+#include <type_traits>
 
 class Error;
 
@@ -293,6 +296,12 @@ public:
 	virtual ~GSDumpFile();
 
 	static std::unique_ptr<GSDumpFile> OpenGSDump(const char* filename, Error* error = nullptr);
+
+	// We modify the GSDumpFile in place to avoid having to reallocate if frequently.
+	// Warning: The GSDumpFile does not copy the data--it must be fully read before the
+	// caller deallocates it. The GSDumpFile must make been opened with this function
+	// to be reused in this way.
+	static void OpenGSDumpMemory(std::unique_ptr<GSDumpFile>& dump, const void* ptr, const size_t size);
 	static bool GetPreviewImageFromDump(const char* filename, u32* width, u32* height, std::vector<u32>* pixels);
 
 	__fi const std::string& GetSerial() const { return m_serial; }
@@ -303,16 +312,19 @@ public:
 	__fi const GSDataArray& GetPackets() const { return m_dump_packets; }
 
 	bool ReadFile(Error* error);
+	bool ReadFile(std::vector<u8>& dst, size_t max_size, Error* error);
 
+	virtual s64 GetFileSize() = 0;
 protected:
-	GSDumpFile();
+	GSDumpFile();	
 
 	virtual bool Open(FileSystem::ManagedCFilePtr fp, Error* error) = 0;
 	virtual bool IsEof() = 0;
 	virtual size_t Read(void* ptr, size_t size) = 0;
-
 protected:
 	FileSystem::ManagedCFilePtr m_fp;
+	s64 m_size = -1;
+	s64 m_size_compressed = -1;
 
 private:
 	std::string m_serial;
@@ -323,7 +335,94 @@ private:
 	std::vector<u8> m_packet_data;
 
 	GSDataArray m_dump_packets;
+
+	void Clear();
 };
 
 // Initializes CRC tables used by LZMA SDK.
 void GSInit7ZCRCTables();
+
+// Must define outside class declaration for MSVC.
+template <typename T>
+concept GSDumpFileLoader_IsDstType = std::same_as<T, std::unique_ptr<GSDumpFile>> || std::same_as<T, std::vector<u8>>;
+
+struct GSDumpFileLoader
+{
+	enum SlotState
+	{
+		WRITEABLE = 0,
+		READABLE
+	};
+
+	enum ReturnValue
+	{
+		EMPTY,
+		ERROR_,
+		SUCCESS,
+		FINISHED
+	};
+
+	// Stays constant after construction.
+	size_t num_threads = 0;
+	size_t num_dumps_buffered = 0;
+	size_t max_file_size = 0;
+	std::vector<std::string> filenames;
+	std::vector<std::vector<u8>> dumps_avail_list; // One vector for each dump being buffered to prevent too many reallocations.
+	std::vector<std::vector<u8>*> dumps; // Data for each dump buffered. Only valid until consume, then set to null.
+
+	// Threads.
+	std::vector<std::thread> threads;
+
+	bool started = false; // Started flag. Only used by consumer.
+
+	// Synchronization. 
+	std::mutex mut;
+	std::condition_variable cond_read; // For consumer to wait on.
+	std::condition_variable cond_write; // For producer to wait on.
+
+	// Following member should only be modified with the mutex held.
+	size_t read = 0; // Read index.
+	size_t write = 0; // Write index.
+	bool stopped = false; // Stopped flag.
+
+	// Per-file data. Only access by owner.
+	std::vector<SlotState> state; // State of file.
+	std::vector<double> loading_time; // Load time in seconds.
+	std::vector<std::string> error_list; // Error for reporting asynchronously.
+	
+	// Stats. Modified by consumer with or without mutex.
+	std::atomic<size_t> num_loaded = 0;
+	std::atomic<size_t> num_errored = 0;
+
+	GSDumpFileLoader(size_t nthreads = 1, size_t num_dumps_buffered = 1, size_t max_file_size = UINT64_MAX);
+	~GSDumpFileLoader();
+
+	void Start(const std::vector<std::string>& files, const std::string& from = "");
+
+	template<typename T>
+		requires GSDumpFileLoader_IsDstType<T>
+	ReturnValue Get(
+		T& dst,
+		std::string* name = nullptr,
+		std::string* error = nullptr,
+		double* block_time = nullptr,
+		double* load_time = nullptr,
+		bool block = true);
+	void Stop();
+	static void LoaderFunc(GSDumpFileLoader* parent);
+
+	// Call any time by consumer.
+	bool Started();
+	bool Finished();
+
+	// Private - call only with mut locked.
+	bool Full();
+	bool Empty();
+	bool DoneWrite();
+	bool DoneRead();
+	bool Stopped();
+	void DebugCheck();
+
+	// Unsafe
+	void DebugPrint();
+};

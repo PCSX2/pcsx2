@@ -977,6 +977,7 @@ public:
 
 	virtual bool Create(GSVSyncMode vsync_mode, bool allow_present_throttle);
 	virtual void Destroy();
+	virtual void ResetRenderState();
 
 	/// Returns the graphics API used by this device.
 	virtual RenderAPI GetRenderAPI() const = 0;

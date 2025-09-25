@@ -4,6 +4,7 @@
 #pragma once
 
 #include "GS/GSVector.h"
+#include "GSRegressionTester.h"
 
 #include <string>
 #include <string_view>
@@ -88,7 +89,7 @@ public:
 	virtual void SetDebugName(std::string_view name) = 0;
 #endif
 
-	bool Save(const std::string& fn);
+	bool Save(const std::string& fn, GSRegressionBuffer* rpb = nullptr);
 
 	__fi int GetWidth() const { return m_size.x; }
 	__fi int GetHeight() const { return m_size.y; }
