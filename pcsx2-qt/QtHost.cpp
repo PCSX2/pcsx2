@@ -991,30 +991,33 @@ void Host::OnGameChanged(const std::string& title, const std::string& elf_overri
 
 void EmuThread::updatePerformanceMetrics(bool force)
 {
-	if (m_verbose_status && VMManager::HasValidVM())
+	if (VMManager::HasValidVM())
 	{
-		std::string gs_stat_str;
-		GSgetTitleStats(gs_stat_str);
-
 		QString gs_stat;
-		if (THREAD_VU1)
+		if (m_verbose_status)
 		{
-			gs_stat = tr("Slot: %1 | Volume: %2% | %3 | EE: %4% | VU: %5% | GS: %6%")
-			              .arg(SaveStateSelectorUI::GetCurrentSlot())
-			              .arg(SPU2::GetOutputVolume())
-			              .arg(gs_stat_str.c_str())
-			              .arg(PerformanceMetrics::GetCPUThreadUsage(), 0, 'f', 0)
-			              .arg(PerformanceMetrics::GetVUThreadUsage(), 0, 'f', 0)
-			              .arg(PerformanceMetrics::GetGSThreadUsage(), 0, 'f', 0);
-		}
-		else
-		{
-			gs_stat = tr("Slot: %1 | Volume: %2% | %3 | EE: %4% | GS: %5%")
-			              .arg(SaveStateSelectorUI::GetCurrentSlot())
-			              .arg(SPU2::GetOutputVolume())
-			              .arg(gs_stat_str.c_str())
-			              .arg(PerformanceMetrics::GetCPUThreadUsage(), 0, 'f', 0)
-			              .arg(PerformanceMetrics::GetGSThreadUsage(), 0, 'f', 0);
+			std::string gs_stat_str;
+			GSgetTitleStats(gs_stat_str);
+
+			if (THREAD_VU1)
+			{
+				gs_stat = tr("Slot: %1 | Volume: %2% | %3 | EE: %4% | VU: %5% | GS: %6%")
+				              .arg(SaveStateSelectorUI::GetCurrentSlot())
+				              .arg(SPU2::GetOutputVolume())
+				              .arg(gs_stat_str.c_str())
+				              .arg(PerformanceMetrics::GetCPUThreadUsage(), 0, 'f', 0)
+				              .arg(PerformanceMetrics::GetVUThreadUsage(), 0, 'f', 0)
+				              .arg(PerformanceMetrics::GetGSThreadUsage(), 0, 'f', 0);
+			}
+			else
+			{
+				gs_stat = tr("Slot: %1 | Volume: %2% | %3 | EE: %4% | GS: %5%")
+				              .arg(SaveStateSelectorUI::GetCurrentSlot())
+				              .arg(SPU2::GetOutputVolume())
+				              .arg(gs_stat_str.c_str())
+				              .arg(PerformanceMetrics::GetCPUThreadUsage(), 0, 'f', 0)
+				              .arg(PerformanceMetrics::GetGSThreadUsage(), 0, 'f', 0);
+			}
 		}
 
 		QMetaObject::invokeMethod(g_main_window->getStatusVerboseWidget(), "setText", Qt::QueuedConnection, Q_ARG(const QString&, gs_stat));
@@ -2333,11 +2336,13 @@ bool QtHost::RunSetupWizard()
 	return true;
 }
 
-class PCSX2MainApplication : public QApplication {
+class PCSX2MainApplication : public QApplication
+{
 public:
 	using QApplication::QApplication;
 
-	bool event(QEvent* event) override {
+	bool event(QEvent* event) override
+	{
 		if (event->type() == QEvent::FileOpen)
 		{
 			QFileOpenEvent* open = static_cast<QFileOpenEvent*>(event);
