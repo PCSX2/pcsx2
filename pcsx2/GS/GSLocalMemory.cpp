@@ -1,10 +1,14 @@
 // SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
+#include "common/Console.h"
+#include "common/ScopedGuard.h"
+
 #include "GS/GS.h"
 #include "GS/GSLocalMemory.h"
 #include "GS/GSExtra.h"
 #include "GS/GSPng.h"
+#include "GSDumpReplayer.h"
 #include <unordered_set>
 
 template <typename Fn>
@@ -651,11 +655,41 @@ void GSLocalMemory::ReadTexture(const GSOffset& off, const GSVector4i& r, u8* ds
 
 //
 
-void GSLocalMemory::SaveBMP(const std::string& fn, u32 bp, u32 bw, u32 psm, int w, int h, int x, int y)
+void GSLocalMemory::SaveBMP(const std::string& fn, u32 bp, u32 bw, u32 psm, int w, int h, int x, int y,
+	GSRegressionBuffer* rbp)
 {
 	int pitch = w * 4;
 	int size = pitch * h;
-	void* bits = _aligned_malloc(size, VECTOR_ALIGNMENT);
+
+	GSRegressionPacket* packet = nullptr;
+
+	ScopedGuard sg([&]() {
+		if (rbp)
+		{
+			rbp->SetStateRunner(GSRegressionBuffer::DEFAULT);
+			if (packet)
+				rbp->DonePacketWrite();
+		}
+	});
+	
+	void* bits;
+	if (rbp)
+	{
+		rbp->SetStateRunner(GSRegressionBuffer::WRITE_DATA);
+
+		packet = rbp->GetPacketWrite(std::bind(GSCheckTesterStatus, true, false));
+		if (!packet)
+		{
+			Console.ErrorFmt("(GSRunner/{}) Failed to get regression packet.", GSDumpReplayer::GetRunnerName());
+			return;
+		}
+		
+		bits = packet->GetData();
+	}
+	else
+	{
+		bits = _aligned_malloc(size, VECTOR_ALIGNMENT);
+	}
 
 	GIFRegTEX0 TEX0;
 
@@ -675,9 +709,23 @@ void GSLocalMemory::SaveBMP(const std::string& fn, u32 bp, u32 bw, u32 psm, int 
 		}
 	}
 
-	GSPng::Save((IsDevBuild || GSConfig.SaveAlpha) ? GSPng::RGB_A_PNG : GSPng::RGB_PNG, fn, static_cast<u8*>(bits), w, h, pitch, GSConfig.PNGCompressionLevel, false);
-
-	_aligned_free(bits);
+	if (packet)
+	{
+		packet->SetNameDump(rbp->GetNameDump());
+		packet->SetNamePacket(fn.c_str());
+		packet->SetImage(nullptr, w, h, pitch, 4); // Image data is already written so pass null.
+		if (GSDumpReplayer::IsVerboseLogging())
+		{
+			Console.WriteLnFmt("(GSRunner/{}) New regression packet: {} / {}",
+				GSDumpReplayer::GetRunnerName(), packet->GetNameDump(), packet->GetNamePacket());
+		}
+	}
+	else
+	{
+		GSPng::Save((IsDevBuild || GSConfig.SaveAlpha) ? GSPng::RGB_A_PNG : GSPng::RGB_PNG, fn, static_cast<u8*>(bits), w, h, pitch, GSConfig.PNGCompressionLevel, false);
+		
+		_aligned_free(bits);
+	}
 }
 
 // GSOffset

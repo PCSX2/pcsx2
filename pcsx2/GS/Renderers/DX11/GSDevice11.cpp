@@ -521,6 +521,61 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	return true;
 }
 
+void GSDevice11::ResetRenderState()
+{
+	// Wait for all rendering to finish.
+	FlushCommands();
+
+	// Clear caches.
+	GSDevice::ResetRenderState();
+
+	m_vs.clear();
+	m_gs.clear();
+	m_ps.clear();
+	m_ps_ss.clear();
+	m_om_dss.clear();
+	m_om_bs.clear();
+
+	// Set default state.
+	PSUnbindShaderResources();
+
+	const VSSelector vs_sel;
+	const GSHWDrawConfig::VSConstantBuffer vs_cb;
+	SetupVS(vs_sel, &vs_cb);
+
+	const PSSelector ps_sel;
+	const GSHWDrawConfig::PSConstantBuffer ps_cb;
+	const PSSamplerSelector ps_sampler_sel;
+	SetupPS(ps_sel, &ps_cb, ps_sampler_sel);
+
+	OMDepthStencilSelector ds_sel;
+	OMBlendSelector bsel;
+	SetupOM(ds_sel, bsel, 0);
+}
+
+void GSDevice11::FlushCommands()
+{
+	D3D11_QUERY_DESC queryDesc = {};
+	queryDesc.Query = D3D11_QUERY_EVENT;
+	queryDesc.MiscFlags = 0;
+
+	wil::com_ptr_nothrow<ID3D11Query> query;
+	HRESULT hr = m_dev->CreateQuery(&queryDesc, &query);
+
+	if (FAILED(hr))
+	{
+		Console.Error("D3D11: CreateQuery failed: 0x%08X", hr);
+		return;
+	}
+
+	m_ctx->End(query.get());
+
+	m_ctx->Flush();
+
+	while (m_ctx->GetData(query.get(), nullptr, 0, 0) == S_FALSE)
+		ShortSpin();
+}
+
 void GSDevice11::Destroy()
 {
 	GSDevice::Destroy();
@@ -2396,6 +2451,15 @@ void GSDevice11::PSSetShader(ID3D11PixelShader* ps, ID3D11Buffer* ps_cb)
 
 		m_ctx->PSSetConstantBuffers(0, 1, &ps_cb);
 	}
+}
+
+void GSDevice11::PSUnbindShaderResources()
+{
+	for (size_t i = 0; i < m_state.ps_sr_views.size(); ++i)
+	{
+		m_state.ps_cached_sr_views[i] = m_state.ps_sr_views[i] = nullptr;
+	}
+	m_ctx->PSSetShaderResources(0, m_state.ps_sr_views.size(), m_state.ps_sr_views.data());
 }
 
 void GSDevice11::PSUpdateShaderState(const bool sr_update, const bool ss_update)

@@ -16,6 +16,7 @@
 #include "SIO/Memcard/MemoryCardFile.h"
 #include "SIO/Pad/Pad.h"
 #include "USB/USB.h"
+#include "GSRegressionTester.h"
 
 #include "fmt/format.h"
 #ifdef _WIN32
@@ -1077,7 +1078,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 		SWDumpDirectory = Path::Combine(EmuFolders::DataRoot, SWDumpDirectory);
 
 	// Sanity check: don't dump a bunch of crap in the current working directory.
-	if (DumpGSData && (HWDumpDirectory.empty() || SWDumpDirectory.empty()))
+	if (DumpGSData && (HWDumpDirectory.empty() || SWDumpDirectory.empty()) && !GSIsRegressionTesting())
 	{
 		Console.Error("Draw dumping is enabled but directory is unconfigured, please set one.");
 		DumpGSData = false;

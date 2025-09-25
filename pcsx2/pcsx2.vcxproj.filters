@@ -1449,6 +1449,9 @@
     <ClCompile Include="GS\GSDrawingEnvironment.cpp">
       <Filter>System\Ps2\GS\Renderers\Software</Filter>
     </ClCompile>
+    <ClCompile Include="GSRegressionTester.cpp">
+      <Filter>System\Ps2\GS</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -2409,6 +2412,9 @@
     </ClInclude>
     <ClInclude Include="SIO\Pad\PadNegcon.h">
       <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="GSRegressionTester.h">
+      <Filter>System\Ps2\GS</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

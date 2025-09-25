@@ -570,6 +570,45 @@ void GSDeviceOGL::Destroy()
 	}
 }
 
+void GSDeviceOGL::ResetRenderState()
+{
+	// Wait for all rendering to finish.
+	FlushCommands();
+
+	// Clear caches.
+	GSDevice::ResetRenderState();
+
+	m_programs.clear();
+
+	// Force UBOs to be uploaded on first use.
+	std::memset(&m_vs_cb_cache, 0xFF, sizeof(m_vs_cb_cache));
+	std::memset(&m_ps_cb_cache, 0xFF, sizeof(m_ps_cb_cache));
+
+	// Set default state.
+	PSUnbindResources();
+
+	OMDepthStencilSelector dssel;
+	SetupOM(dssel);
+
+	OMSetBlendState(true);
+	OMSetBlendState(false);
+	OMAttachRt();
+	OMAttachDs();
+	OMSetFBO(0);
+	OMSetColorMaskState();
+
+	PSSamplerSelector pssel;
+	SetupSampler(pssel);
+
+	ProgramSelector psel;
+	SetupPipeline(psel);
+}
+
+void GSDeviceOGL::FlushCommands()
+{
+	glFinish();
+}
+
 bool GSDeviceOGL::CreateTextureFX()
 {
 	GL_PUSH("GSDeviceOGL::CreateTextureFX");
@@ -1995,6 +2034,15 @@ void GSDeviceOGL::PSSetSamplerState(GLuint ss)
 	{
 		GLState::ps_ss = ss;
 		glBindSampler(0, ss);
+	}
+}
+
+void GSDeviceOGL::PSUnbindResources()
+{
+	for (int i = 0; i < std::size(GLState::tex_unit); i++)
+	{
+		GLState::tex_unit[i] = 0;
+		glBindTextureUnit(i, 0);
 	}
 }
 

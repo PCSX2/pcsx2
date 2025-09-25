@@ -335,6 +335,12 @@ void GSDevice::Destroy()
 	PurgePool();
 }
 
+void GSDevice::ResetRenderState()
+{
+	ClearCurrent();
+	PurgePool();
+}
+
 bool GSDevice::AcquireWindow(bool recreate_window)
 {
 	std::optional<WindowInfo> wi = Host::AcquireRenderWindow(recreate_window);

@@ -20,6 +20,8 @@
 #include "common/Path.h"
 #include "common/StringUtil.h"
 #include "common/Timer.h"
+#include "common/ScopedGuard.h"
+#include "common/Console.h"
 
 #include "fmt/format.h"
 #include "IconsFontAwesome6.h"
@@ -764,8 +766,42 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 			aspect_correct, true,
 			&screenshot_width, &screenshot_height, &screenshot_pixels))
 		{
-			CompressAndWriteScreenshot(fmt::format("{}.{}", m_snapshot, GetScreenshotSuffix()),
-				screenshot_width, screenshot_height, std::move(screenshot_pixels));
+			if (GSIsRegressionTesting())
+			{
+				GSRegressionBuffer* rbp = GSGetRegressionBuffer();
+				
+				rbp->SetStateRunner(GSRegressionBuffer::WRITE_DATA);
+				GSRegressionPacket* packet = nullptr;
+				ScopedGuard sg([&]() {
+					rbp->SetStateRunner(GSRegressionBuffer::DEFAULT);
+					if (packet)
+						rbp->DonePacketWrite();
+					screenshot_pixels.clear();
+				});
+
+				if (packet = rbp->GetPacketWrite(std::bind(GSCheckTesterStatus, true, false)))
+				{
+					packet->SetNameDump(rbp->GetNameDump());
+					packet->SetNamePacket(m_snapshot);
+					packet->SetImage(screenshot_pixels.data(), screenshot_width, screenshot_height,
+						screenshot_width * sizeof(u32), sizeof(u32));
+					if (GSDumpReplayer::IsVerboseLogging())
+					{
+						Console.WriteLnFmt("(GSRunner/{}) New regression packet: {} / {}",
+							GSDumpReplayer::GetRunnerName(), packet->GetNameDump(), packet->GetNamePacket());
+					}
+				}
+				else
+				{
+					Console.ErrorFmt("(GSRunner/{}) Failed to get regression packet for image ('{}').",
+						GSDumpReplayer::GetRunnerName(), Path::GetFileName(m_snapshot));
+				}
+			}
+			else
+			{
+				CompressAndWriteScreenshot(fmt::format("{}.{}", m_snapshot, GetScreenshotSuffix()),
+					screenshot_width, screenshot_height, std::move(screenshot_pixels));
+			}
 		}
 		else
 		{

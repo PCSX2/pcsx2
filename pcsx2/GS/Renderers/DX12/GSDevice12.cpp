@@ -764,6 +764,37 @@ void GSDevice12::Destroy()
 	DestroyResources();
 }
 
+void GSDevice12::ResetRenderState()
+{
+	// Wait for all command lists to finish.
+	if (GetCommandList())
+	{
+		EndRenderPass();
+		ExecuteCommandList(true);
+	}
+
+	// Clear caches.
+	GSDevice::ResetRenderState();
+
+	m_tfx_pipelines.clear();
+	m_tfx_pixel_shaders.clear();
+	m_tfx_vertex_shaders.clear();
+
+	ClearSamplerCache();
+	
+	// Set default state.
+	InitializeState();
+
+	GSHWDrawConfig::VSConstantBuffer vs_cb;
+	SetVSConstantBuffer(vs_cb);
+
+	GSHWDrawConfig::PSConstantBuffer ps_cb;
+	SetPSConstantBuffer(ps_cb);
+
+	PipelineSelector p_sel;
+	BindDrawPipeline(p_sel);
+}
+
 void GSDevice12::SetVSyncMode(GSVSyncMode mode, bool allow_present_throttle)
 {
 	m_allow_present_throttle = allow_present_throttle;

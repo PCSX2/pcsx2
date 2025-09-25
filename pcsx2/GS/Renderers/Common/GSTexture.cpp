@@ -4,10 +4,12 @@
 #include "GS/Renderers/Common/GSTexture.h"
 #include "GS/Renderers/Common/GSDevice.h"
 #include "GS/GSPng.h"
+#include "GSDumpReplayer.h"
 
 #include "common/Console.h"
 #include "common/BitUtils.h"
 #include "common/StringUtil.h"
+#include "common/ScopedGuard.h"
 
 #include <bit>
 #include <bitset>
@@ -16,7 +18,7 @@ GSTexture::GSTexture() = default;
 
 GSTexture::~GSTexture() = default;
 
-bool GSTexture::Save(const std::string& fn)
+bool GSTexture::Save(const std::string& fn, GSRegressionBuffer* rbp)
 {
 	// Depth textures need special treatment - we have a stencil component.
 	// Just re-use the existing conversion shader instead.
@@ -30,7 +32,7 @@ bool GSTexture::Save(const std::string& fn)
 		}
 
 		g_gs_device->StretchRect(this, GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f), temp, GSVector4(GetRect()), ShaderConvert::FLOAT32_TO_RGBA8, false);
-		const bool res = temp->Save(fn);
+		const bool res = temp->Save(fn, rbp);
 		g_gs_device->Recycle(temp);
 		return res;
 	}
@@ -58,6 +60,35 @@ bool GSTexture::Save(const std::string& fn)
 	}
 
 	const int compression = GSConfig.PNGCompressionLevel;
+
+	if (rbp)
+	{
+		rbp->SetStateRunner(GSRegressionBuffer::WRITE_DATA);
+		GSRegressionPacket* packet = nullptr;
+		ScopedGuard sg([&]() {
+			rbp->SetStateRunner(GSRegressionBuffer::DEFAULT);
+			if (packet)
+				rbp->DonePacketWrite();
+		});
+
+		if (packet = rbp->GetPacketWrite(std::bind(GSCheckTesterStatus, true, false)))
+		{
+			packet->SetNameDump(rbp->GetNameDump());
+			packet->SetNamePacket(fn);
+			packet->SetImage(dl->GetMapPointer(), m_size.x, m_size.y, dl->GetMapPitch(), GSPng::pixel[format].bytes_per_pixel_in);
+			if (GSDumpReplayer::IsVerboseLogging())
+			{
+				Console.WriteLnFmt("(GSRunner/{}) New regression packet: {} / {}",
+					GSDumpReplayer::GetRunnerName(), packet->GetNameDump(), packet->GetNamePacket());
+			}
+			return true;
+		}
+		else
+		{
+			Console.ErrorFmt("(GSRunner/{}) Failed to get regression packet for image.", GSDumpReplayer::GetRunnerName());
+		}
+	}
+
 	return GSPng::Save(format, fn, dl->GetMapPointer(), m_size.x, m_size.y, dl->GetMapPitch(), compression, false);
 }
 
