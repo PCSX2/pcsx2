@@ -59,6 +59,7 @@ namespace GSRunner
 {
 	static void InitializeConsole();
 	static bool InitializeConfig();
+	static void SettingsOverride();
 	static bool ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& params);
 	static void DumpStats();
 
@@ -118,42 +119,6 @@ bool GSRunner::InitializeConfig()
 	Host::Internal::SetBaseSettingsLayer(&si);
 
 	VMManager::SetDefaultSettings(si, true, true, true, true, true);
-
-	// complete as quickly as possible
-	si.SetBoolValue("EmuCore/GS", "FrameLimitEnable", false);
-	si.SetIntValue("EmuCore/GS", "VsyncEnable", false);
-
-	// Force screenshot quality settings to something more performant, overriding any defaults good for users.
-	si.SetIntValue("EmuCore/GS", "ScreenshotFormat", static_cast<int>(GSScreenshotFormat::PNG));
-	si.SetIntValue("EmuCore/GS", "ScreenshotQuality", 10);
-
-	// ensure all input sources are disabled, we're not using them
-	si.SetBoolValue("InputSources", "SDL", false);
-	si.SetBoolValue("InputSources", "XInput", false);
-
-	// we don't need any sound output
-	si.SetStringValue("SPU2/Output", "OutputModule", "nullout");
-
-	// none of the bindings are going to resolve to anything
-	Pad::ClearPortBindings(si, 0);
-	si.ClearSection("Hotkeys");
-
-	// force logging
-	si.SetBoolValue("Logging", "EnableSystemConsole", !s_no_console);
-	si.SetBoolValue("Logging", "EnableTimestamps", true);
-	si.SetBoolValue("Logging", "EnableVerbose", true);
-
-	// and show some stats :)
-	si.SetBoolValue("EmuCore/GS", "OsdShowFPS", true);
-	si.SetBoolValue("EmuCore/GS", "OsdShowResolution", true);
-	si.SetBoolValue("EmuCore/GS", "OsdShowGSStats", true);
-
-	// remove memory cards, so we don't have sharing violations
-	for (u32 i = 0; i < 2; i++)
-	{
-		si.SetBoolValue("MemoryCards", fmt::format("Slot{}_Enable", i + 1).c_str(), false);
-		si.SetStringValue("MemoryCards", fmt::format("Slot{}_Filename", i + 1).c_str(), "");
-	}
 
 	VMManager::Internal::LoadStartupSettings();
 	return true;
@@ -709,6 +674,28 @@ bool GSRunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& pa
 
 				continue;
 			}
+			else if (CHECK_ARG_PARAM("-ini"))
+			{
+				std::string path = std::string(StringUtil::StripWhitespace(argv[++i]));
+				if (!FileSystem::FileExists(path.c_str()))
+				{
+					Console.ErrorFmt("INI file {} does not exit.", path);
+					return false;
+				}
+
+				INISettingsInterface si_ini(path);
+
+				if (!si_ini.Load())
+				{
+					Console.ErrorFmt("Unable to load INI settings from {}.", path);
+					return false;
+				}
+
+				for (const auto& [key, value] : si_ini.GetKeyValueList("EmuCore/GS"))
+					s_settings_interface.SetStringValue("EmuCore/GS", key.c_str(), value.c_str());
+
+				continue;
+			}
 			else if (CHECK_ARG_PARAM("-upscale"))
 			{
 				const float upscale = StringUtil::FromChars<float>(argv[++i]).value_or(0.0f);
@@ -813,6 +800,45 @@ bool GSRunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& pa
 	return true;
 }
 
+void GSRunner::SettingsOverride()
+{
+	// complete as quickly as possible
+	s_settings_interface.SetBoolValue("EmuCore/GS", "FrameLimitEnable", false);
+	s_settings_interface.SetIntValue("EmuCore/GS", "VsyncEnable", false);
+
+	// Force screenshot quality settings to something more performant, overriding any defaults good for users.
+	s_settings_interface.SetIntValue("EmuCore/GS", "ScreenshotFormat", static_cast<int>(GSScreenshotFormat::PNG));
+	s_settings_interface.SetIntValue("EmuCore/GS", "ScreenshotQuality", 10);
+
+	// ensure all input sources are disabled, we're not using them
+	s_settings_interface.SetBoolValue("InputSources", "SDL", false);
+	s_settings_interface.SetBoolValue("InputSources", "XInput", false);
+
+	// we don't need any sound output
+	s_settings_interface.SetStringValue("SPU2/Output", "OutputModule", "nullout");
+
+	// none of the bindings are going to resolve to anything
+	Pad::ClearPortBindings(s_settings_interface, 0);
+	s_settings_interface.ClearSection("Hotkeys");
+
+	// force logging
+	s_settings_interface.SetBoolValue("Logging", "EnableSystemConsole", !s_no_console);
+	s_settings_interface.SetBoolValue("Logging", "EnableTimestamps", true);
+	s_settings_interface.SetBoolValue("Logging", "EnableVerbose", true);
+
+	// and show some stats :)
+	s_settings_interface.SetBoolValue("EmuCore/GS", "OsdShowFPS", true);
+	s_settings_interface.SetBoolValue("EmuCore/GS", "OsdShowResolution", true);
+	s_settings_interface.SetBoolValue("EmuCore/GS", "OsdShowGSStats", true);
+
+	// remove memory cards, so we don't have sharing violations
+	for (u32 i = 0; i < 2; i++)
+	{
+		s_settings_interface.SetBoolValue("MemoryCards", fmt::format("Slot{}_Enable", i + 1).c_str(), false);
+		s_settings_interface.SetStringValue("MemoryCards", fmt::format("Slot{}_Filename", i + 1).c_str(), "");
+	}
+}
+
 void GSRunner::DumpStats()
 {
 	std::atomic_thread_fence(std::memory_order_acquire);
@@ -870,6 +896,9 @@ int main(int argc, char* argv[])
 		Console.Error("Failed to create window.");
 		return EXIT_FAILURE;
 	}
+
+	// Override settings that shouldn't be picked up from defaults or INIs.
+	GSRunner::SettingsOverride();
 
 	// apply new settings (e.g. pick up renderer change)
 	VMManager::ApplySettings();
