@@ -1936,6 +1936,8 @@ SCAJ-20112:
   region: "NTSC-Unk"
   speedHacks:
     mvuFlag: 0 # Fixes graphical corruptions.
+  gsHWFixes:
+    estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
 SCAJ-20113:
   name: "Dragon Quest & Final Fantasy in Itadaki Street"
   region: "NTSC-Unk"
@@ -59388,6 +59390,8 @@ SLPS-25450:
   compat: 5
   speedHacks:
     mvuFlag: 0 # Fixes graphical corruptions.
+  gsHWFixes:
+    estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
 SLPS-25451:
   name: "花と太陽と雨と Super Best Collection"
   name-sort: "はなとたいようとあめと Super Best Collection"
@@ -66129,6 +66133,8 @@ SLUS-20545:
   name: "Zone of the Enders - The 2nd Runner"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - InstantDMAHack # Fixes cut-off text.
   gsHWFixes:
     halfPixelOffset: 4 # Aligns post effects.
     nativeScaling: 2 # Fixes post effects.
