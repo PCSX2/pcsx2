@@ -57,6 +57,19 @@ public:
 
 	union
 	{
+		struct
+		{
+			u32 s : 1;
+			u32 t : 1;
+			u32 _pad : 1;
+			u32 q : 1;
+			u32 _pad2 : 28;
+		};
+		u32 value;
+	} nan = {};
+
+	union
+	{
 		struct { u32 mmag:1, mmin:1, linear:1, opt_linear:1; };
 	} m_filter = {};
 
