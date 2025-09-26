@@ -95,27 +95,27 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="26"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="27"/>
         <source>&lt;strong&gt;Your RetroAchievements login token is no longer valid.&lt;/strong&gt; You must re-enter your credentials for achievements to be tracked. Your password will not be saved in PCSX2, an access token will be generated and used instead.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="31"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="32"/>
         <source>&amp;Login</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="44"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="45"/>
         <source>Logging in...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="74"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="82"/>
         <source>Login Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="75"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="83"/>
         <source>Login failed.
 Error: %1
 
@@ -123,29 +123,29 @@ Please check your username and password, and try again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="76"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="84"/>
         <source>Login failed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="84"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="92"/>
         <source>Enable Achievements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="85"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="93"/>
         <source>Achievement tracking is not currently enabled. Your login will have no effect until after tracking is enabled.
 
 Do you want to enable tracking now?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="96"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="104"/>
         <source>Enable Hardcore Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="97"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="105"/>
         <source>Hardcore mode is not currently enabled. Enabling hardcore mode allows you to set times, scores, and participate in game-specific leaderboards.
 
 However, hardcore mode also prevents the usage of save states, cheats and slowdown functionality.
@@ -154,12 +154,12 @@ Do you want to enable hardcore mode?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="113"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="121"/>
         <source>Reset System</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="114"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="122"/>
         <source>Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2329,75 +2329,75 @@ Leaderboard Position: {1} of {2}</source>
 <context>
     <name>BreakpointModel</name>
     <message>
-        <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="77"/>
+        <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="78"/>
         <source>Execute</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="90"/>
-        <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="115"/>
+        <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="91"/>
+        <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="116"/>
         <source>--</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="102"/>
+        <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="103"/>
         <source>Read</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="105"/>
+        <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="106"/>
         <source>Write(C)</source>
         <extracomment>(C) = changes, as in &quot;look for changes&quot;.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="105"/>
+        <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="106"/>
         <source>Write</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="267"/>
+        <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="268"/>
         <source>TYPE</source>
         <extracomment>Warning: limited space available. Abbreviate if needed.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="270"/>
+        <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="271"/>
         <source>OFFSET</source>
         <extracomment>Warning: limited space available. Abbreviate if needed.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="272"/>
+        <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="273"/>
         <source>DESCRIPTION</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="275"/>
+        <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="276"/>
         <source>SIZE / LABEL</source>
         <extracomment>Warning: limited space available. Abbreviate if needed.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="278"/>
+        <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="279"/>
         <source>INSTRUCTION</source>
         <extracomment>Warning: limited space available. Abbreviate if needed.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="281"/>
+        <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="282"/>
         <source>CONDITION</source>
         <extracomment>Warning: limited space available. Abbreviate if needed.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="284"/>
+        <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="285"/>
         <source>HITS</source>
         <extracomment>Warning: limited space available. Abbreviate if needed.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="287"/>
+        <location filename="../Debugger/Breakpoints/BreakpointModel.cpp" line="288"/>
         <source>X</source>
         <extracomment>Warning: limited space available. Abbreviate if needed.</extracomment>
         <translation type="unfinished"></translation>
@@ -5204,7 +5204,7 @@ Do you want to overwrite?</source>
     </message>
     <message>
         <location filename="../Debugger/DebuggerWindow.ui" line="159"/>
-        <location filename="../Debugger/DebuggerWindow.cpp" line="319"/>
+        <location filename="../Debugger/DebuggerWindow.cpp" line="317"/>
         <source>Run</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5330,7 +5330,7 @@ Do you want to overwrite?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DebuggerWindow.cpp" line="359"/>
+        <location filename="../Debugger/DebuggerWindow.cpp" line="357"/>
         <source>Pause</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5344,7 +5344,7 @@ Do you want to overwrite?</source>
     </message>
     <message>
         <location filename="../Debugger/DisassemblyView.cpp" line="113"/>
-        <location filename="../Debugger/DisassemblyView.cpp" line="132"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="131"/>
         <source>Assemble Error</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5359,144 +5359,144 @@ Do you want to overwrite?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="213"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="215"/>
         <source>Go To In Disassembly</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="223"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="225"/>
         <source>Cannot Go To</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="270"/>
-        <location filename="../Debugger/DisassemblyView.cpp" line="283"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="272"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="285"/>
         <source>Rename Function Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="270"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="272"/>
         <source>No function / symbol is currently selected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="277"/>
-        <location filename="../Debugger/DisassemblyView.cpp" line="750"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="279"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="763"/>
         <source>Rename Function</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="277"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="279"/>
         <source>Function name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="283"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="285"/>
         <source>Function name cannot be nothing.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="327"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="340"/>
         <source>Restore Function Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="327"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="340"/>
         <source>Unable to stub selected address.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="680"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="693"/>
         <source>Copy Address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="683"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="696"/>
         <source>Copy Instruction Hex</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="686"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="699"/>
         <source>&amp;Copy Instruction Text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="692"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="705"/>
         <source>Copy Function Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="700"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="713"/>
         <source>Restore Instruction(s)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="704"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="717"/>
         <source>Asse&amp;mble new Instruction(s)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="708"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="721"/>
         <source>NOP Instruction(s)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="713"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="726"/>
         <source>Run to Cursor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="716"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="729"/>
         <source>&amp;Jump to Cursor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="720"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="733"/>
         <source>Toggle &amp;Breakpoint</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="724"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="737"/>
         <source>Follow Branch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="729"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="742"/>
         <source>&amp;Go to Address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="739"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="752"/>
         <source>Go to PC on Pause</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="747"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="760"/>
         <source>Add Function</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="753"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="766"/>
         <source>Remove Function</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="759"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="772"/>
         <source>Restore Function</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="764"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="777"/>
         <source>Stub (NOP) Function</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="770"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="783"/>
         <source>Show &amp;Instruction Bytes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="829"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="842"/>
         <source>%1 NOT VALID ADDRESS</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5504,27 +5504,27 @@ Do you want to overwrite?</source>
 <context>
     <name>DisassemblyViewColumnTitle</name>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="788"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="801"/>
         <source> %1 %2 %3  %4</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="792"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="805"/>
         <source> %1 %2  %3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="800"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="813"/>
         <source>Location</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="805"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="818"/>
         <source>Bytes   </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="809"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="822"/>
         <source>Instruction</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5683,91 +5683,91 @@ Do you want to overwrite?</source>
 <context>
     <name>EmuThread</name>
     <message>
-        <location filename="../QtHost.cpp" line="1002"/>
+        <location filename="../QtHost.cpp" line="1004"/>
         <source>Slot: %1 | Volume: %2% | %3 | EE: %4% | VU: %5% | GS: %6%</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1012"/>
+        <location filename="../QtHost.cpp" line="1014"/>
         <source>Slot: %1 | Volume: %2% | %3 | EE: %4% | GS: %5%</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1044"/>
+        <location filename="../QtHost.cpp" line="1047"/>
         <source>No Image</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1046"/>
+        <location filename="../QtHost.cpp" line="1049"/>
         <source>%1x%2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1059"/>
+        <location filename="../QtHost.cpp" line="1062"/>
         <source>FPS: N/A</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1061"/>
+        <location filename="../QtHost.cpp" line="1064"/>
         <source>FPS: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1071"/>
+        <location filename="../QtHost.cpp" line="1074"/>
         <source>VPS: %1 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1077"/>
+        <location filename="../QtHost.cpp" line="1080"/>
         <source>Speed: %1% </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1132"/>
+        <location filename="../QtHost.cpp" line="1135"/>
         <source>Game: %1 (%2)
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1140"/>
+        <location filename="../QtHost.cpp" line="1143"/>
         <source>Rich presence inactive or unsupported.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1144"/>
+        <location filename="../QtHost.cpp" line="1147"/>
         <source>Game not loaded or no RetroAchievements available.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1563"/>
-        <location filename="../QtHost.cpp" line="1583"/>
-        <location filename="../QtHost.cpp" line="1591"/>
-        <location filename="../QtHost.cpp" line="1625"/>
+        <location filename="../QtHost.cpp" line="1566"/>
+        <location filename="../QtHost.cpp" line="1586"/>
+        <location filename="../QtHost.cpp" line="1594"/>
+        <location filename="../QtHost.cpp" line="1628"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1563"/>
+        <location filename="../QtHost.cpp" line="1566"/>
         <source>Failed to create HTTPDownloader.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1571"/>
+        <location filename="../QtHost.cpp" line="1574"/>
         <source>Downloading %1...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1584"/>
+        <location filename="../QtHost.cpp" line="1587"/>
         <source>Download failed with HTTP status code %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1592"/>
+        <location filename="../QtHost.cpp" line="1595"/>
         <source>Download failed: Data is empty.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1626"/>
+        <location filename="../QtHost.cpp" line="1629"/>
         <source>Failed to write &apos;%1&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11340,7 +11340,7 @@ Do you want to load this save and continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="5019"/>
+        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="5026"/>
         <source>Spin GPU During Readbacks is enabled, but calibrated timestamps are unavailable.  This might be really slow.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11369,12 +11369,12 @@ To use the Vulkan renderer, you should remove this app package.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/DX11/GSDevice11.cpp" line="116"/>
+        <location filename="../../pcsx2/GS/Renderers/DX11/GSDevice11.cpp" line="117"/>
         <source>Failed to create D3D11 device: 0x{:08X}. A GPU which supports Direct3D Feature Level 10.0 is required.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/DX11/GSDevice11.cpp" line="515"/>
+        <location filename="../../pcsx2/GS/Renderers/DX11/GSDevice11.cpp" line="516"/>
         <source>The Direct3D11 renderer is running at feature level 10.0. This is an UNSUPPORTED configuration.
 Do not request support, please upgrade your hardware/drivers first.</source>
         <translation type="unfinished"></translation>
@@ -11415,17 +11415,17 @@ Please see our official documentation for more information.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GSCapture.cpp" line="835"/>
+        <location filename="../../pcsx2/GS/GSCapture.cpp" line="840"/>
         <source>Starting {} to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GSCapture.cpp" line="1252"/>
+        <location filename="../../pcsx2/GS/GSCapture.cpp" line="1257"/>
         <source>Stopped {} to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GSCapture.cpp" line="1258"/>
+        <location filename="../../pcsx2/GS/GSCapture.cpp" line="1263"/>
         <source>Aborted {} due to encoding error in &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -19354,72 +19354,72 @@ Slot 2: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Memory/MemoryView.cpp" line="557"/>
+        <location filename="../Debugger/Memory/MemoryView.cpp" line="594"/>
         <source>Copy Address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Memory/MemoryView.cpp" line="568"/>
+        <location filename="../Debugger/Memory/MemoryView.cpp" line="605"/>
         <source>Go to Address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Memory/MemoryView.cpp" line="571"/>
+        <location filename="../Debugger/Memory/MemoryView.cpp" line="608"/>
         <source>Follow Address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Memory/MemoryView.cpp" line="576"/>
+        <location filename="../Debugger/Memory/MemoryView.cpp" line="613"/>
         <source>Show as Little Endian</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Memory/MemoryView.cpp" line="589"/>
+        <location filename="../Debugger/Memory/MemoryView.cpp" line="626"/>
         <source>Show as 1 byte</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Memory/MemoryView.cpp" line="595"/>
+        <location filename="../Debugger/Memory/MemoryView.cpp" line="632"/>
         <source>Show as 2 bytes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Memory/MemoryView.cpp" line="601"/>
+        <location filename="../Debugger/Memory/MemoryView.cpp" line="638"/>
         <source>Show as 4 bytes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Memory/MemoryView.cpp" line="607"/>
+        <location filename="../Debugger/Memory/MemoryView.cpp" line="644"/>
         <source>Show as 8 bytes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Memory/MemoryView.cpp" line="621"/>
+        <location filename="../Debugger/Memory/MemoryView.cpp" line="658"/>
         <source>Copy Byte</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Memory/MemoryView.cpp" line="622"/>
+        <location filename="../Debugger/Memory/MemoryView.cpp" line="659"/>
         <source>Copy Segment</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Memory/MemoryView.cpp" line="623"/>
+        <location filename="../Debugger/Memory/MemoryView.cpp" line="660"/>
         <source>Copy Character</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Memory/MemoryView.cpp" line="624"/>
+        <location filename="../Debugger/Memory/MemoryView.cpp" line="661"/>
         <source>Paste</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Memory/MemoryView.cpp" line="655"/>
+        <location filename="../Debugger/Memory/MemoryView.cpp" line="692"/>
         <source>Go To In Memory View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Memory/MemoryView.cpp" line="665"/>
+        <location filename="../Debugger/Memory/MemoryView.cpp" line="702"/>
         <source>Cannot Go To</source>
         <translation type="unfinished"></translation>
     </message>
@@ -20359,12 +20359,12 @@ Ejecting {3} and replacing it with {2}.</source>
 <context>
     <name>Patch</name>
     <message>
-        <location filename="../../pcsx2/Patch.cpp" line="352"/>
+        <location filename="../../pcsx2/Patch.cpp" line="353"/>
         <source>Failed to open {}. Built-in game patches are not available.</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../../pcsx2/Patch.cpp" line="762"/>
+        <location filename="../../pcsx2/Patch.cpp" line="763"/>
         <source>%n GameDB patches are active.</source>
         <comment>OSD Message</comment>
         <translation type="unfinished">
@@ -20373,7 +20373,7 @@ Ejecting {3} and replacing it with {2}.</source>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../pcsx2/Patch.cpp" line="769"/>
+        <location filename="../../pcsx2/Patch.cpp" line="770"/>
         <source>%n game patches are active.</source>
         <comment>OSD Message</comment>
         <translation type="unfinished">
@@ -20382,7 +20382,7 @@ Ejecting {3} and replacing it with {2}.</source>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../pcsx2/Patch.cpp" line="776"/>
+        <location filename="../../pcsx2/Patch.cpp" line="777"/>
         <source>%n cheat patches are active.</source>
         <comment>OSD Message</comment>
         <translation type="unfinished">
@@ -20391,7 +20391,7 @@ Ejecting {3} and replacing it with {2}.</source>
         </translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Patch.cpp" line="791"/>
+        <location filename="../../pcsx2/Patch.cpp" line="792"/>
         <source>No cheats or patches (widescreen, compatibility or others) are found / enabled.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -20473,45 +20473,45 @@ Ejecting {3} and replacing it with {2}.</source>
 <context>
     <name>QtHost</name>
     <message>
-        <location filename="../QtHost.cpp" line="1112"/>
+        <location filename="../QtHost.cpp" line="1115"/>
         <source>RA: Logged in as %1 (%2 pts, softcore: %3 pts). %4 unread messages.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1533"/>
-        <location filename="../QtHost.cpp" line="1548"/>
+        <location filename="../QtHost.cpp" line="1536"/>
+        <location filename="../QtHost.cpp" line="1551"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1534"/>
+        <location filename="../QtHost.cpp" line="1537"/>
         <source>An error occurred while deleting empty game settings:
 {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1549"/>
+        <location filename="../QtHost.cpp" line="1552"/>
         <source>An error occurred while saving game settings:
 {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1709"/>
+        <location filename="../QtHost.cpp" line="1712"/>
         <source>Controller {} connected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1722"/>
+        <location filename="../QtHost.cpp" line="1725"/>
         <source>System paused because controller {} was disconnected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1735"/>
+        <location filename="../QtHost.cpp" line="1738"/>
         <source>Controller {} disconnected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1963"/>
+        <location filename="../QtHost.cpp" line="1966"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
