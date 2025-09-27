@@ -28,10 +28,12 @@ u32 lClocks = 0;
 
 static bool s_audio_capture_active = false;
 static bool s_psxmode = false;
+static bool s_output_muted = false;
 
 static std::unique_ptr<AudioStream> s_output_stream;
 static std::array<s16, AudioStream::CHUNK_SIZE * 2> s_current_chunk;
 static u32 s_current_chunk_pos;
+static u32 s_unmute_volume = 0;
 
 u32 SPU2::GetConsoleSampleRate()
 {
@@ -97,6 +99,10 @@ void SPU2writeDMA7Mem(u16* pMem, u32 size)
 
 void SPU2::CreateOutputStream()
 {
+	// Initialize mute settings.
+	s_unmute_volume = GetResetVolume();
+	s_output_muted = EmuConfig.SPU2.OutputMuted;
+
 	// Persist volume through stream recreates.
 	const u32 volume = s_output_stream ? s_output_stream->GetOutputVolume() : GetResetVolume();
 	const u32 sample_rate = GetConsoleSampleRate();
@@ -146,16 +152,48 @@ void SPU2::SetOutputVolume(u32 volume)
 
 u32 SPU2::GetResetVolume()
 {
-	return EmuConfig.SPU2.OutputMuted ? 0 :
-										((VMManager::GetTargetSpeed() != 1.0f) ?
-												EmuConfig.SPU2.FastForwardVolume :
-												EmuConfig.SPU2.OutputVolume);
+	return s_output_muted ? 0 :
+	                        ((VMManager::GetTargetSpeed() != 1.0f) ?
+									EmuConfig.SPU2.FastForwardVolume :
+									EmuConfig.SPU2.OutputVolume);
 }
 
 float SPU2::GetNominalRate()
 {
 	// Adjust nominal rate when syncing to host.
 	return VMManager::IsTargetSpeedAdjustedToHost() ? VMManager::GetTargetSpeed() : 1.0f;
+}
+
+bool SPU2::SetOutputMuted(const bool muted)
+{
+	// User setting takes precedence. Unmute not guaranteed by design.
+	if (!muted && EmuConfig.SPU2.OutputMuted)
+		return false;
+
+	if (muted == s_output_muted)
+		return true;
+
+	// Save restore volume if muting.
+	if (muted)
+	{
+		s_unmute_volume = SPU2::GetOutputVolume();
+		SPU2::SetOutputVolume(0);
+	}
+	else
+		SPU2::SetOutputVolume(s_unmute_volume);
+
+	s_output_muted = muted;
+	return true;
+}
+
+bool SPU2::IsOutputMuted()
+{
+	return s_output_muted;
+}
+
+u32 SPU2::GetUnmuteVolume()
+{
+	return s_unmute_volume;
 }
 
 void SPU2::SetOutputPaused(bool paused)
@@ -210,7 +248,7 @@ void SPU2::OnTargetSpeedChanged()
 
 	s_output_stream->SetNominalRate(GetNominalRate());
 
-	if (EmuConfig.SPU2.OutputVolume != EmuConfig.SPU2.FastForwardVolume && !EmuConfig.SPU2.OutputMuted)
+	if (EmuConfig.SPU2.OutputVolume != EmuConfig.SPU2.FastForwardVolume && !s_output_muted)
 		s_output_stream->SetOutputVolume(GetResetVolume());
 }
 
@@ -269,7 +307,10 @@ void SPU2::CheckForConfigChanges(const Pcsx2Config& old_config)
 		(opts.FastForwardVolume != oldopts.FastForwardVolume && VMManager::GetTargetSpeed() != 1.0f) ||
 		opts.OutputMuted != oldopts.OutputMuted)
 	{
-		SetOutputVolume(GetResetVolume());
+		if (opts.OutputMuted != oldopts.OutputMuted)
+			SPU2::SetOutputMuted(opts.OutputMuted);
+		else
+			SetOutputVolume(GetResetVolume());
 	}
 
 	// Things which require re-initialzing the output.
