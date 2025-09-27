@@ -1104,3 +1104,18 @@ const std::array<HWBlend, 3*3*3*3> GSDevice::m_blendMap =
 	{ BLEND_CD                 , OP_ADD          , CONST_ZERO      , CONST_ONE}       , // 2221: (0  -  0)*F  + Cd ==> Cd
 	{ BLEND_NO_REC             , OP_ADD          , CONST_ZERO      , CONST_ZERO}      , // 2222: (0  -  0)*F  +  0 ==> 0
 }};
+
+void GSDevice::DebugDrawlist(const GSHWDrawConfig& config)
+{
+	// Check how draw call is split.
+	std::map<size_t, size_t> frequency;
+	for (const auto& it : *config.drawlist)
+		++frequency[it];
+
+	std::string message;
+	for (const auto& it : frequency)
+		message += " " + std::to_string(it.first) + "(" + std::to_string(it.second) + ")";
+
+	GL_PERF("Split single draw (%d prims) into %zu draws: consecutive draws(frequency):%s",
+			config.nindices / config.indices_per_prim, config.drawlist->size(), message.c_str());
+}

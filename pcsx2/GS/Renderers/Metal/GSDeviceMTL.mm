@@ -2342,17 +2342,8 @@ void GSDeviceMTL::SendHWDraw(GSHWDrawConfig& config, id<MTLRenderCommandEncoder>
 	{
 		[enc pushDebugGroup:[NSString stringWithFormat:@"Full barrier split draw (%d sprites in %zu groups)", config.nindices / config.indices_per_prim, config.drawlist->size()]];
 #if defined(_DEBUG)
-		// Check how draw call is split.
-		std::map<size_t, size_t> frequency;
-		for (const auto& it : *config.drawlist)
-			++frequency[it];
-
-		std::string message;
-		for (const auto& it : frequency)
-			message += " " + std::to_string(it.first) + "(" + std::to_string(it.second) + ")";
-
-		[enc insertDebugSignpost:[NSString stringWithFormat:@"Split single draw (%d sprites) into %zu draws: consecutive draws(frequency):%s",
-			config.nindices / config.indices_per_prim, config.drawlist->size(), message.c_str()]];
+		DebugDrawlist(config.drawlist);
+		FlushDebugEntries(enc);
 #endif
 
 
@@ -2372,27 +2363,6 @@ void GSDeviceMTL::SendHWDraw(GSHWDrawConfig& config, id<MTLRenderCommandEncoder>
 			               indexBuffer:buffer
 			         indexBufferOffset:off + p * sizeof(*config.indices)];
 			p += count;
-		}
-
-		[enc popDebugGroup];
-		return;
-	}
-	else if (config.require_full_barrier)
-	{
-		const u32 indices_per_prim = config.indices_per_prim;
-		const u32 ndraws = config.nindices / indices_per_prim;
-		g_perfmon.Put(GSPerfMon::DrawCalls, ndraws);
-		g_perfmon.Put(GSPerfMon::Barriers, ndraws);
-		[enc pushDebugGroup:[NSString stringWithFormat:@"Full barrier split draw (%d prims)", ndraws]];
-
-		for (u32 p = 0; p < config.nindices; p += indices_per_prim)
-		{
-			textureBarrier(enc);
-			[enc drawIndexedPrimitives:topology
-			                indexCount:config.indices_per_prim
-			                 indexType:MTLIndexTypeUInt16
-			               indexBuffer:buffer
-			         indexBufferOffset:off + p * sizeof(*config.indices)];
 		}
 
 		[enc popDebugGroup];

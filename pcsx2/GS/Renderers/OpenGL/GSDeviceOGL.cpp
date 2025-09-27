@@ -2663,7 +2663,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		glClearBufferiv(GL_STENCIL, 0, &clear_color);
 	}
 
-	SendHWDraw(config, psel.ps.IsFeedbackLoop());
+	SendHWDraw(config, config.require_one_barrier, config.require_full_barrier);
 
 	if (config.blend_multi_pass.enable)
 	{
@@ -2681,7 +2681,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		psel.ps.blend_hw = config.blend_multi_pass.blend_hw;
 		psel.ps.dither = config.blend_multi_pass.dither;
 		SetupPipeline(psel);
-		SendHWDraw(config, psel.ps.IsFeedbackLoop());
+		SendHWDraw(config, config.require_one_barrier, config.require_full_barrier);
 	}
 
 	if (config.alpha_second_pass.enable)
@@ -2709,7 +2709,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 			OMSetBlendState();
 		}
 		SetupOM(config.alpha_second_pass.depth);
-		SendHWDraw(config, psel.ps.IsFeedbackLoop());
+		SendHWDraw(config, config.alpha_second_pass.require_full_barrier, config.alpha_second_pass.require_one_barrier);
 	}
 
 	if (primid_texture)
@@ -2735,23 +2735,25 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	}
 }
 
-void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config, bool needs_barrier)
+void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config, bool one_barrier, bool full_barrier)
 {
+	if (!m_features.texture_barrier) [[unlikely]]
+	{
+		DrawIndexedPrimitive();
+		return;
+	}
+
+#ifdef PCSX2_DEVBUILD
+	if ((one_barrier || full_barrier) && !config.ps.IsFeedbackLoop()) [[unlikely]]
+		Console.Warning("OpenGL: Possible unnecessary barrier detected.");
+#endif
+
 	if (config.drawlist)
 	{
-		GL_PUSH("Split the draw (SPRITE)");
+		GL_PUSH("Split the draw");
+		
 #if defined(_DEBUG)
-		// Check how draw call is split.
-		std::map<size_t, size_t> frequency;
-		for (const auto& it : *config.drawlist)
-			++frequency[it];
-
-		std::string message;
-		for (const auto& it : frequency)
-			message += " " + std::to_string(it.first) + "(" + std::to_string(it.second) + ")";
-
-		GL_PERF("Split single draw (%d sprites) into %zu draws: consecutive draws(frequency):%s",
-		        config.nindices / config.indices_per_prim, config.drawlist->size(), message.c_str());
+		DebugDrawlist(config);
 #endif
 
 		g_perfmon.Put(GSPerfMon::Barriers, static_cast<u32>(config.drawlist->size()));
@@ -2770,29 +2772,10 @@ void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config, bool needs_barrier)
 		return;
 	}
 
-	if (needs_barrier && m_features.texture_barrier)
+	if (one_barrier)
 	{
-		if (config.require_full_barrier)
-		{
-			const u32 indices_per_prim = config.indices_per_prim;
-
-			GL_PUSH("Split single draw in %d draw", config.nindices / indices_per_prim);
-			g_perfmon.Put(GSPerfMon::Barriers, config.nindices / config.indices_per_prim);
-
-			for (u32 p = 0; p < config.nindices; p += indices_per_prim)
-			{
-				glTextureBarrier();
-				DrawIndexedPrimitive(p, indices_per_prim);
-			}
-
-			return;
-		}
-
-		if (config.require_one_barrier)
-		{
-			g_perfmon.Put(GSPerfMon::Barriers, 1);
-			glTextureBarrier();
-		}
+		g_perfmon.Put(GSPerfMon::Barriers, 1);
+		glTextureBarrier();
 	}
 
 	DrawIndexedPrimitive();
