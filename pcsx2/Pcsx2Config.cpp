@@ -749,6 +749,7 @@ Pcsx2Config::GSOptions::GSOptions()
 	PreloadFrameWithGSData = false;
 	Mipmap = true;
 	HWMipmap = true;
+	PreRoundSprites = false;
 
 	ManualUserHacks = false;
 	UserHacks_AlignSpriteX = false;
@@ -957,6 +958,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(OsdShowHardwareInfo);
 	SettingsWrapBitBool(OsdShowVideoCapture);
 	SettingsWrapBitBool(OsdShowInputRec);
+	SettingsWrapBitBoolEx(PreRoundSprites, "preround_sprites");
 
 	SettingsWrapBitBool(HWSpinGPUForReadbacks);
 	SettingsWrapBitBool(HWSpinCPUForReadbacks);
