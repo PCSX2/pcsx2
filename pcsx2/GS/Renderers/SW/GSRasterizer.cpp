@@ -296,6 +296,18 @@ void GSRasterizer::DrawPoint(const GSVertexSW* vertex, int vertex_count, const u
 	}
 }
 
+// Note: this should only be used for the edge drawing functions.
+__forceinline static GSVertexSW ClampVertex(GSVertexSW v, int zpsm)
+{
+	v.c = v.c.sat(255.0f * 128.0f); // RGBA
+
+	v.t = v.t.blend32<8>(v.t.sat(255.0f * 128.0f)); // F
+
+	v.p.F64[1] = std::clamp(v.p.F64[1], 0.0, zpsm ? 0xFFFFFF.0p0 : 0xFFFFFFFF.0p0); // Z
+
+	return v;
+}
+
 template <bool step_x, bool pos_x, bool pos_y, bool tl, bool side>
 void GSRasterizer::DrawEdgeTriangle(const GSVertexSW& v0, const GSVertexSW& v1, const GSVertexSW& dv,
 	const GSVector4i& efun1, const GSVector4i& efun2)
@@ -377,6 +389,8 @@ void GSRasterizer::DrawEdgeTriangle(const GSVertexSW& v0, const GSVertexSW& v1, 
 	while (D < -scaleD / 2)
 		StepDependent.template operator()<-1>();
 
+	const int zpsm = m_local.gd->sel.zpsm;
+
 	while (true)
 	{
 		const float d = static_cast<float>(D) / scaleDf;
@@ -417,13 +431,16 @@ void GSRasterizer::DrawEdgeTriangle(const GSVertexSW& v0, const GSVertexSW& v1, 
 			byi0 <= yi2 && yi2 <= byi1 &&
 			IsOneOfMyScanlines(yi2))
 		{
-			AddScanline(e, 1, xi2, yi2, edge);
+			// Clamping here as some values may be extrapolated outside
+			// the allowed ranges. This is suggested by hardware tests though it
+			// may not be totally accurate to do it here.
+			AddScanline(e, 1, xi2, yi2, ClampVertex(edge, zpsm));
 
 			e->p.U32[0] = std::clamp(cov, 0, 0xffff);
 
 			e++;
 		}
-
+		
 		if (step_x ? (xi == rxi1) : (yi == ryi1))
 			break;
 
@@ -545,12 +562,17 @@ void GSRasterizer::DrawEdgeLine(const GSVertexSW& v0, const GSVertexSW& v1, cons
 	while (D < -scaleD / 2)
 		StepDependent.template operator()<-1>();
 
+	const int zpsm = m_local.gd->sel.zpsm;
+
 	const auto AddScanlineStepEdge = [&](int x, int y, int cov = 0) {
 		if (m_scissor.left <= x && x < m_scissor.right &&
 			m_scissor.top <= y && y < m_scissor.bottom &&
 			IsOneOfMyScanlines(y))
 		{
-			AddScanline(e, 1, x, y, edge);
+			// Clamping here as some values may be extrapolated outside
+			// the allowed ranges. This is suggested by hardware tests though it
+			// may not be totally accurate to do it here.
+			AddScanline(e, 1, x, y, ClampVertex(edge, zpsm));
 
 			if constexpr (aa)
 				e->p.U32[0] = cov;
