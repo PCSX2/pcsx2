@@ -27,9 +27,9 @@ private Q_SLOTS:
 	void updateLatencyLabel();
 	void updateVolumeLabel();
 	void onMinimalOutputLatencyChanged();
-	void onOutputVolumeChanged(int new_value);
-	void onFastForwardVolumeChanged(int new_value);
-	void onOutputMutedChanged(int new_state);
+	void onStandardVolumeChanged(const int new_value);
+	void onFastForwardVolumeChanged(const int new_value);
+	void onOutputMutedChanged(const int new_state);
 
 	void onExpansionSettingsClicked();
 	void onStretchSettingsClicked();
