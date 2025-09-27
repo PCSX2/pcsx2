@@ -260,7 +260,7 @@ void GSRasterizer::DrawPoint(const GSVertexSW* vertex, int vertex_count, const u
 		{
 			const GSVertexSW& v = vertex[*index];
 
-			GSVector4i p(v.p);
+			GSVector4i p(v.p + GSVector4(0.5f));
 
 			if (!scissor_test || (m_scissor.left <= p.x && p.x < m_scissor.right && m_scissor.top <= p.y && p.y < m_scissor.bottom))
 			{
@@ -281,7 +281,7 @@ void GSRasterizer::DrawPoint(const GSVertexSW* vertex, int vertex_count, const u
 		{
 			const GSVertexSW& v = vertex[0];
 
-			GSVector4i p(v.p);
+			GSVector4i p(v.p + GSVector4(0.5f));
 
 			if (!scissor_test || (m_scissor.left <= p.x && p.x < m_scissor.right && m_scissor.top <= p.y && p.y < m_scissor.bottom))
 			{
@@ -296,6 +296,356 @@ void GSRasterizer::DrawPoint(const GSVertexSW* vertex, int vertex_count, const u
 	}
 }
 
+// Note: this should only be used for the edge drawing functions.
+__forceinline static GSVertexSW ClampVertex(GSVertexSW v, int zpsm)
+{
+	v.c = v.c.sat(255.0f * 128.0f); // RGBA
+
+	v.t = v.t.blend32<8>(v.t.sat(255.0f * 128.0f)); // F
+
+	v.p.F64[1] = std::clamp(v.p.F64[1], 0.0, zpsm ? 0xFFFFFF.0p0 : 0xFFFFFFFF.0p0); // Z
+
+	return v;
+}
+
+template <bool step_x, bool pos_x, bool pos_y, bool tl, bool side>
+void GSRasterizer::DrawEdgeTriangle(const GSVertexSW& v0, const GSVertexSW& v1, const GSVertexSW& dv,
+	const GSVector4i& efun1, const GSVector4i& efun2)
+{
+	constexpr int dxi = pos_x ? 1 : -1;
+	constexpr int dyi = pos_y ? 1 : -1;
+
+	const float delta_x = dv.p.x;
+	const float delta_y = dv.p.y;
+
+	if (delta_x == 0.0f && delta_y == 0.0f)
+		return;
+
+	const float x0 = v0.p.x;
+	const float y0 = v0.p.y;
+	const float x1 = v1.p.x;
+	const float y1 = v1.p.y;
+
+	const float rx0 = pos_x ? std::ceil(x0 - 1.0f) : std::floor(x0 + 1.0f);
+	const float ry0 = pos_y ? std::ceil(y0 - 1.0f) : std::floor(y0 + 1.0f);
+	const float rx1 = pos_x ? std::floor(x1 + 1.0f) : std::ceil(x1 - 1.0f);
+	const float ry1 = pos_y ? std::floor(y1 + 1.0f) : std::ceil(y1 - 1.0f);
+
+	const int rxi0 = static_cast<int>(rx0);
+	const int ryi0 = static_cast<int>(ry0);
+	const int rxi1 = static_cast<int>(rx1);
+	const int ryi1 = static_cast<int>(ry1);
+
+	// Note: appears to be asymmetry in how x bound and y bound is handled. Y bounds checking
+	// seems to be accurate here but not x. PS2 sometimes allows antialiased pixel to be +/-1 away
+	// from min/max x values and sometimes not. Not sure the reason so just arbitrarily pick the following for x.
+	int bxi0 = static_cast<int>(std::floor(std::min(x0, x1)));
+	int byi0 = static_cast<int>(std::ceil(std::min(y0, y1) - 1.0f));
+	int bxi1 = static_cast<int>(std::ceil(std::max(x0, x1)));
+	int byi1 = static_cast<int>(std::floor(std::max(y0, y1) + 1.0f));
+
+	// Combine with scissor region.
+	bxi0 = std::max(bxi0, m_scissor.x);
+	byi0 = std::max(byi0, m_scissor.y);
+	bxi1 = std::min(bxi1, m_scissor.z - 1); // b has inclusive coordinates.
+	byi1 = std::min(byi1, m_scissor.w - 1); // b has inclusive coordinates.
+
+	const GSVertexSW dedge = dv / GSVector4(std::abs(step_x ? delta_x : delta_y));
+
+	GSVertexSW edge(v0);
+
+	GSVertexSW* RESTRICT e = &m_edge.buff[m_edge.count];
+
+	// Decision value for stepping the dependent direction.
+	// D is the fractional part of dependent coordinate scaled by scaleD.
+	constexpr bool pos_D = step_x ? pos_y : pos_x;
+	const int scaleD = static_cast<int>(2 * 16 * 16 * std::abs(step_x ? delta_x : delta_y));
+	const float scaleDf = static_cast<float>(scaleD);
+	const int dD = static_cast<int>(2 * 16 * 16 * (step_x ? delta_y : delta_x));
+	int D = static_cast<int>(scaleD * (step_x ? (y0 - ry0) : (x0 - rx0)));
+
+	// Stepping variables
+	int xi = rxi0;
+	int yi = ryi0;
+	int e1 = efun1.x * xi + efun1.y * yi + efun1.z;
+	int e2 = efun2.x * xi + efun2.y * yi + efun2.z;
+
+	const auto StepDependent = [&]<int sign>() {
+		D -= scaleD * sign;
+		xi += (step_x ? 0 : 1) * sign;
+		yi += (step_x ? 1 : 0) * sign;
+		e1 += (step_x ? efun1.y : efun1.x) * sign;
+		e2 += (step_x ? efun2.y : efun2.x) * sign;
+	};
+
+	// Pre-steps
+	const float prestep = step_x ? dxi * (rx0 - x0) : dyi * (ry0 - y0);
+	edge += dedge * GSVector4(prestep);
+	D += static_cast<int>(dD * prestep);
+	
+	while (D >= scaleD / 2)
+		StepDependent.template operator()<1>();
+
+	while (D < -scaleD / 2)
+		StepDependent.template operator()<-1>();
+
+	const int zpsm = m_local.gd->sel.zpsm;
+
+	while (true)
+	{
+		const float d = static_cast<float>(D) / scaleDf;
+
+		// Coverage and coordinates for anti-aliased point.
+		int cov, xi2, yi2, e12, e22;
+
+		const auto GetOffsetVars = [&]<int offset>() {
+			xi2 = xi + (step_x ? 0 : offset);
+			yi2 = yi + (step_x ? offset : 0);
+			e12 = e1 + (step_x ? efun1.y : efun1.x) * offset;
+			e22 = e2 + (step_x ? efun2.y : efun2.x) * offset;
+		};
+
+		if (d > 0.0f)
+		{
+			cov = static_cast<int>(0xffff * (side ? 1.0 - d : d));
+			[[maybe_unused]] constexpr int offset = (side ? 0 : 1);
+			GetOffsetVars.template operator()<offset>();
+		}
+		else if (d < 0.0f)
+		{
+			cov = static_cast<int>(0xffff * (side ? -d : 1.0 + d));
+			[[maybe_unused]] constexpr int offset = (side ? -1 : 0);
+			GetOffsetVars.template operator()<offset>();
+		}
+		else // d == 0.0f
+		{
+			// When exactly on the pixel center, top-left edges can create 0 coverage points and
+			// bottom-right edges can create full coverage points (with some rounding error).
+			cov = tl ? 0 : 0xffff;
+			[[maybe_unused]] constexpr int offset = tl ? (side ? -1 : 1) : 0;
+			GetOffsetVars.template operator()<offset>();
+		}
+
+		if (e12 > 0 && e22 > 0 &&
+			bxi0 <= xi2 && xi2 <= bxi1 &&
+			byi0 <= yi2 && yi2 <= byi1 &&
+			IsOneOfMyScanlines(yi2))
+		{
+			// Clamping here as some values may be extrapolated outside
+			// the allowed ranges. This is suggested by hardware tests though it
+			// may not be totally accurate to do it here.
+			AddScanline(e, 1, xi2, yi2, ClampVertex(edge, zpsm));
+
+			e->p.U32[0] = std::clamp(cov, 0, 0xffff);
+
+			e++;
+		}
+		
+		if (step_x ? (xi == rxi1) : (yi == ryi1))
+			break;
+
+		// Step driving axis.
+		edge += dedge;
+		D += dD;
+		xi += step_x ? dxi : 0;
+		yi += step_x ? 0 : dyi;
+		e1 += step_x ? (dxi * efun1.x) : (dyi * efun1.y);
+		e2 += step_x ? (dxi * efun2.x) : (dyi * efun2.y);
+
+		// Step dependent axis.
+		if constexpr (pos_D)
+		{
+			if (D >= scaleD / 2)
+				StepDependent.template operator()<1>();
+		}
+		else
+		{
+			if (D < -scaleD / 2)
+				StepDependent.template operator()<-1>();
+		}
+	}
+
+	m_edge.count += e - &m_edge.buff[m_edge.count];
+}
+
+template <bool step_x, bool pos_x, bool pos_y, bool aa>
+void GSRasterizer::DrawEdgeLine(const GSVertexSW& v0, const GSVertexSW& v1, const GSVertexSW& dv)
+{
+	constexpr int dxi = pos_x ? 1 : -1;
+	constexpr int dyi = pos_y ? 1 : -1;
+
+	const float delta_x = dv.p.x;
+	const float delta_y = dv.p.y;
+
+	const float x0 = v0.p.x;
+	const float y0 = v0.p.y;
+	const float x1 = v1.p.x;
+	const float y1 = v1.p.y;
+
+	float rx0 = std::floor(x0 + 0.5f);
+	float ry0 = std::floor(y0 + 0.5f);
+	float rx1 = std::floor(x1 + 0.5f);
+	float ry1 = std::floor(y1 + 0.5f);
+
+	// Diamond exit rule for determining coverage of first/last pixel.
+	const auto TestEndpoint = [](float dx, float dy) -> bool {
+		float dist = std::abs(dx) + std::abs(dy);
+		if (dist < 0.5f)
+			return false;
+		if constexpr (step_x)
+		{
+			const bool x_good = pos_x ? (dx > 0.0f) : (dx < 0.0f);
+			return x_good && (dist > 0.5f || dy >= 0.0f);
+		}
+		else
+		{
+			const bool y_good = pos_y ? (dy > 0.0f) : (dy < 0.0f);
+			return y_good && (dist > 0.5f || dx >= 0.0f);
+		}
+	};
+
+	const bool draw_first = !TestEndpoint(x0 - rx0, y0 - ry0);
+	const bool draw_last = TestEndpoint(x1 - rx1, y1 - ry1);
+
+	if (!draw_first)
+	{
+		rx0 += step_x ? dxi : 0.0f;
+		ry0 += step_x ? 0.0f : dyi;
+	}
+
+	if (!draw_last)
+	{
+		rx1 -= step_x ? dxi : 0.0f;
+		ry1 -= step_x ? 0.0f : dyi;
+	}
+
+	if ((step_x ? (dxi * (rx1 - rx0)) : (dyi * (ry1 - ry0))) < 0.0f)
+		return;
+
+	const int rxi0 = static_cast<int>(rx0);
+	const int ryi0 = static_cast<int>(ry0);
+	const int rxi1 = static_cast<int>(rx1);
+	const int ryi1 = static_cast<int>(ry1);
+
+	const GSVertexSW dedge = dv / GSVector4(std::abs(step_x ? delta_x : delta_y));
+	
+	GSVertexSW edge(v0);
+
+	GSVertexSW* RESTRICT e = &m_edge.buff[m_edge.count];
+
+	// Decision value for stepping the dependent direction.
+	// D is the fractional part of dependent coordinate scaled by scaleD.
+	constexpr bool pos_D = step_x ? pos_y : pos_x;
+	const int scaleD = static_cast<int>(2 * 16 * 16 * std::abs(step_x ? delta_x : delta_y));
+	const float scaleDf = static_cast<float>(scaleD);
+	const int dD = static_cast<int>(2 * 16 * 16 * (step_x ? delta_y : delta_x));
+	int D = static_cast<int>(scaleD * (step_x ? (y0 - ry0) : (x0 - rx0)));
+
+	// Stepping variables
+	int xi = rxi0;
+	int yi = ryi0;
+
+	const auto StepDependent = [&]<int sign>() {
+		D -= scaleD * sign;
+		xi += (step_x ? 0 : 1) * sign;
+		yi += (step_x ? 1 : 0) * sign;
+	};
+
+	// Pre-steps
+	const float prestep = step_x ? dxi * (rx0 - x0) : dyi * (ry0 - y0);
+	edge += dedge * GSVector4(prestep);
+	D += static_cast<int>(dD * prestep);
+
+	while (D >= scaleD / 2)
+		StepDependent.template operator()<1>();
+	
+	while (D < -scaleD / 2)
+		StepDependent.template operator()<-1>();
+
+	const int zpsm = m_local.gd->sel.zpsm;
+
+	const auto AddScanlineStepEdge = [&](int x, int y, int cov = 0) {
+		if (m_scissor.left <= x && x < m_scissor.right &&
+			m_scissor.top <= y && y < m_scissor.bottom &&
+			IsOneOfMyScanlines(y))
+		{
+			// Clamping here as some values may be extrapolated outside
+			// the allowed ranges. This is suggested by hardware tests though it
+			// may not be totally accurate to do it here.
+			AddScanline(e, 1, x, y, ClampVertex(edge, zpsm));
+
+			if constexpr (aa)
+				e->p.U32[0] = cov;
+
+			e++;
+		}
+	};
+
+	while (true)
+	{
+		if constexpr (aa)
+		{
+			const float cov = 0xffff * std::abs(static_cast<float>(D) / scaleDf);
+			const int covi = std::clamp(static_cast<int>(cov), 0, 0xffff);
+			const int offset = D >= 0 ? 1 : -1;
+
+			AddScanlineStepEdge(xi, yi, 0xffff - covi);
+			AddScanlineStepEdge(xi + (step_x ? 0 : offset), yi + (step_x ? offset : 0), covi);
+		}
+		else
+		{
+			AddScanlineStepEdge(xi, yi);
+		}
+
+		if (step_x ? (xi == rxi1) : (yi == ryi1))
+			break;
+
+		// Step driving axis.
+		edge += dedge;
+		D += dD;
+		xi += step_x ? dxi : 0;
+		yi += step_x ? 0 : dyi;
+
+		// Step dependent axis.
+		if constexpr (pos_D)
+		{
+			if (D >= scaleD / 2)
+				StepDependent.template operator()<1>();
+		}
+		else
+		{
+			if (D < -scaleD / 2)
+				StepDependent.template operator()<-1>();
+		}
+	}
+
+	m_edge.count += e - &m_edge.buff[m_edge.count];
+}
+
+void GSRasterizer::DrawEdgeTriangle(const GSVertexSW& v0, const GSVertexSW& v1, const GSVertexSW& dv, const GSVector4i& efun1, const GSVector4i& efun2, bool tl)
+{
+	const bool step_x = std::abs(dv.p.x) >= std::abs(dv.p.y);
+	const bool pos_x = dv.p.x >= 0.0f;
+	const bool pos_y = dv.p.y >= 0.0f;
+	
+	// side == true => outside of triangle is towards top or left.
+	// side == false => outside of triangle is towards bottom or right.
+	const bool side = tl ^ (step_x && (dv.p.y != 0.0f) && (pos_x == pos_y));
+
+	(this->*m_draw_edge_triangle[step_x][pos_x][pos_y][tl][side])(v0, v1, dv, efun1, efun2);
+}
+
+void GSRasterizer::DrawEdgeLine(const GSVertexSW& v0, const GSVertexSW& v1, const GSVertexSW& dv, bool has_edge)
+{
+	const bool step_x = std::abs(dv.p.x) >= std::abs(dv.p.y);
+	const bool pos_x = dv.p.x >= 0.0f;
+	const bool pos_y = dv.p.y >= 0.0f;
+
+	(this->*m_draw_edge_line[step_x][pos_x][pos_y][has_edge])(v0, v1, dv);
+
+	return;
+}
+
 void GSRasterizer::DrawLine(const GSVertexSW* vertex, const u16* index)
 {
 	m_primcount++;
@@ -305,99 +655,11 @@ void GSRasterizer::DrawLine(const GSVertexSW* vertex, const u16* index)
 
 	GSVertexSW dv = v1 - v0;
 
-	GSVector4 dp = dv.p.abs();
+	DrawEdgeLine(v0, v1, dv, HasEdge());
 
-	int i = (dp < dp.yxwz()).mask() & 1; // |dx| <= |dy|
+	Flush(vertex, index, GSVertexSW::zero(), HasEdge());
 
-	if (HasEdge())
-	{
-		DrawEdge(v0, v1, dv, i, 0);
-		DrawEdge(v0, v1, dv, i, 1);
-
-		Flush(vertex, index, GSVertexSW::zero(), true);
-
-		return;
-	}
-
-	GSVector4i dpi(dp);
-
-	if (dpi.y == 0)
-	{
-		if (dpi.x > 0)
-		{
-			// shortcut for horizontal lines
-
-			GSVector4 mask = (v0.p > v1.p).xxxx();
-
-			GSVertexSW scan;
-
-			scan.p = v0.p.blend32(v1.p, mask);
-			scan.t = v0.t.blend32(v1.t, mask);
-			scan.c = v0.c.blend32(v1.c, mask);
-
-			GSVector4i p(scan.p);
-
-			if (m_scissor.top <= p.y && p.y < m_scissor.bottom && IsOneOfMyScanlines(p.y))
-			{
-				GSVector4 lrf = scan.p.upl(v1.p.blend32(v0.p, mask)).ceil();
-				GSVector4 l = lrf.max(m_fscissor_x);
-				GSVector4 r = lrf.min(m_fscissor_x);
-				GSVector4i lr = GSVector4i(l.xxyy(r));
-
-				int left = lr.extract32<0>();
-				int right = lr.extract32<2>();
-
-				int pixels = right - left;
-
-				if (pixels > 0)
-				{
-					GSVertexSW dscan = dv / dv.p.xxxx();
-
-					scan += dscan * (l - scan.p).xxxx();
-
-					m_setup_prim(vertex, index, dscan, m_local);
-
-					DrawScanline(pixels, left, p.y, scan);
-				}
-			}
-		}
-
-		return;
-	}
-
-	int steps = dpi.v[i];
-
-	if (steps > 0)
-	{
-		GSVertexSW edge = v0;
-		GSVertexSW dedge = dv / GSVector4(dp.v[i]);
-
-		GSVertexSW* RESTRICT e = m_edge.buff;
-
-		while (1)
-		{
-			GSVector4i p(edge.p);
-
-			if (m_scissor.left <= p.x && p.x < m_scissor.right && m_scissor.top <= p.y && p.y < m_scissor.bottom)
-			{
-				if (IsOneOfMyScanlines(p.y))
-				{
-					AddScanline(e, 1, p.x, p.y, edge);
-
-					e++;
-				}
-			}
-
-			if (--steps == 0)
-				break;
-
-			edge += dedge;
-		}
-
-		m_edge.count = e - m_edge.buff;
-
-		Flush(vertex, index, GSVertexSW::zero());
-	}
+	return;
 }
 
 static const u8 s_ysort[8][4] =
@@ -528,16 +790,39 @@ void GSRasterizer::DrawTriangle(const GSVertexSW* vertex, const u16* index)
 
 	if (HasEdge())
 	{
-		GSVector4 a = dx.abs() < dy.abs();       // |dx| <= |dy|
-		GSVector4 b = dx < GSVector4::zero();    // dx < 0
-		GSVector4 c = cross < GSVector4::zero(); // longest.p.x < 0
+		const bool clockwise = (cross < GSVector4::zero()).mask();
 
-		int orientation = a.mask();
-		int side = ((a | b) ^ c).mask() ^ 2; // evil
+		const bool tl0 = (v0.p.y == v1.p.y) || !clockwise;
+		const bool tl1 = clockwise;
+		const bool tl2 = (v1.p.y != v2.p.y) && !clockwise;
 
-		DrawEdge((GSVertexSW&)v0, (GSVertexSW&)v1, (GSVertexSW&)dv0, orientation & 1, side & 1);
-		DrawEdge((GSVertexSW&)v0, (GSVertexSW&)v2, (GSVertexSW&)dv1, orientation & 2, side & 2);
-		DrawEdge((GSVertexSW&)v1, (GSVertexSW&)v2, (GSVertexSW&)dv2, orientation & 4, side & 4);
+		const GSVector4i xy0 = GSVector4i(v0.p * GSVector4::cxpr(16.0f));
+		const GSVector4i xy1 = GSVector4i(v1.p * GSVector4::cxpr(16.0f));
+		const GSVector4i xy2 = GSVector4i(v2.p * GSVector4::cxpr(16.0f));
+
+		GSVector4i f0 = (xy1 - xy0).yxyx().upl32(xy0 - xy1).sll32<4>();
+		GSVector4i f1 = (xy0 - xy2).yxyx().upl32(xy2 - xy0).sll32<4>();
+		GSVector4i f2 = (xy2 - xy1).yxyx().upl32(xy1 - xy2).sll32<4>();
+
+		f0 = f0.insert32<2>(xy1.x * xy0.y - xy0.x * xy1.y);
+		f1 = f1.insert32<2>(xy0.x * xy2.y - xy2.x * xy0.y);
+		f2 = f2.insert32<2>(xy2.x * xy1.y - xy1.x * xy2.y);
+
+		if (clockwise)
+		{
+			f0 = GSVector4i::cxpr(0) - f0;
+			f1 = GSVector4i::cxpr(0) - f1;
+			f2 = GSVector4i::cxpr(0) - f2;
+		}
+
+		// Bias for top-left edges.
+		f0 += GSVector4i(0, 0, tl0, 0);
+		f1 += GSVector4i(0, 0, tl1, 0);
+		f2 += GSVector4i(0, 0, tl2, 0);
+
+		DrawEdgeTriangle((GSVertexSW&)v0, (GSVertexSW&)v1, (GSVertexSW&)dv0, f1, f2, tl0);
+		DrawEdgeTriangle((GSVertexSW&)v0, (GSVertexSW&)v2, (GSVertexSW&)dv1, f2, f0, tl1);
+		DrawEdgeTriangle((GSVertexSW&)v1, (GSVertexSW&)v2, (GSVertexSW&)dv2, f0, f1, tl2);
 
 		Flush(vertex, index, GSVertexSW::zero(), true);
 	}
@@ -707,16 +992,39 @@ void GSRasterizer::DrawTriangle(const GSVertexSW* vertex, const u16* index)
 
 	if (HasEdge())
 	{
-		GSVector4 a = dx.abs() < dy.abs();       // |dx| <= |dy|
-		GSVector4 b = dx < GSVector4::zero();    // dx < 0
-		GSVector4 c = cross < GSVector4::zero(); // longest.p.x < 0
+		const bool clockwise = (cross < GSVector4::zero()).mask();
 
-		int orientation = a.mask();
-		int side = ((a | b) ^ c).mask() ^ 2; // evil
+		const bool tl0 = (v0.p.y == v1.p.y) || !clockwise;
+		const bool tl1 = clockwise;
+		const bool tl2 = (v1.p.y != v2.p.y) && !clockwise;
 
-		DrawEdge(v0, v1, dv0, orientation & 1, side & 1);
-		DrawEdge(v0, v2, dv1, orientation & 2, side & 2);
-		DrawEdge(v1, v2, dv2, orientation & 4, side & 4);
+		const GSVector4i xy0 = GSVector4i(v0.p * GSVector4::cxpr(16.0f));
+		const GSVector4i xy1 = GSVector4i(v1.p * GSVector4::cxpr(16.0f));
+		const GSVector4i xy2 = GSVector4i(v2.p * GSVector4::cxpr(16.0f));
+
+		GSVector4i f0 = (xy1 - xy0).yxyx().upl32(xy0 - xy1).sll32<4>();
+		GSVector4i f1 = (xy0 - xy2).yxyx().upl32(xy2 - xy0).sll32<4>();
+		GSVector4i f2 = (xy2 - xy1).yxyx().upl32(xy1 - xy2).sll32<4>();
+
+		f0 = f0.insert32<2>(xy1.x * xy0.y - xy0.x * xy1.y);
+		f1 = f1.insert32<2>(xy0.x * xy2.y - xy2.x * xy0.y);
+		f2 = f2.insert32<2>(xy2.x * xy1.y - xy1.x * xy2.y);
+
+		if (clockwise)
+		{
+			f0 = GSVector4i::cxpr(0) - f0;
+			f1 = GSVector4i::cxpr(0) - f1;
+			f2 = GSVector4i::cxpr(0) - f2;
+		}
+
+		// Bias for top-left edges.
+		f0 += GSVector4i(0, 0, tl0, 0);
+		f1 += GSVector4i(0, 0, tl1, 0);
+		f2 += GSVector4i(0, 0, tl2, 0);
+
+		DrawEdgeTriangle(v0, v1, dv0, f1, f2, tl0);
+		DrawEdgeTriangle(v0, v2, dv1, f2, f0, tl1);
+		DrawEdgeTriangle(v1, v2, dv2, f0, f1, tl2);
 
 		Flush(vertex, index, GSVertexSW::zero(), true);
 	}
@@ -1320,3 +1628,35 @@ std::unique_ptr<IRasterizer> GSRasterizerList::Create(int threads)
 void GSRasterizerList::PrintStats()
 {
 }
+
+#define INIT4(x0, x1, x2, x3, x4) static_cast<DrawEdgeTrianglePtr>(&GSRasterizer::DrawEdgeTriangle<x0, x1, x2, x3, x4>)
+#define INIT3(x0, x1, x2, x3) { INIT4(x0, x1, x2, x3, false)    , INIT4(x0, x1, x2, x3, true) } 
+#define INIT2(x0, x1, x2)     { INIT3(x0, x1, x2, false)        , INIT3(x0, x1, x2, true)     } 
+#define INIT1(x0, x1)         { INIT2(x0, x1, false)            , INIT2(x0, x1, true)         }
+#define INIT0(x0)             { INIT1(x0, false)                , INIT1(x0, true)             }
+
+const GSRasterizer::DrawEdgeTrianglePtr GSRasterizer::m_draw_edge_triangle[2][2][2][2][2] = {
+	INIT0(false),
+	INIT0(true)
+};
+
+#undef INIT0
+#undef INIT1
+#undef INIT2
+#undef INIT3
+#undef INIT4
+
+#define INIT3(x0, x1, x2, x3) static_cast<DrawEdgeLinePtr>(&GSRasterizer::DrawEdgeLine<x0, x1, x2, x3>)
+#define INIT2(x0, x1, x2)     { INIT3(x0, x1, x2, false)        , INIT3(x0, x1, x2, true)     } 
+#define INIT1(x0, x1)         { INIT2(x0, x1, false)            , INIT2(x0, x1, true)         }
+#define INIT0(x0)             { INIT1(x0, false)                , INIT1(x0, true)             }
+
+const GSRasterizer::DrawEdgeLinePtr GSRasterizer::m_draw_edge_line[2][2][2][2] = {
+	INIT0(false),
+	INIT0(true)
+};
+
+#undef INIT0
+#undef INIT1
+#undef INIT2
+#undef INIT3
