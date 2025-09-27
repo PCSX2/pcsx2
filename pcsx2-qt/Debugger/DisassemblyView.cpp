@@ -135,6 +135,31 @@ void DisassemblyView::contextAssembleInstruction()
 	setInstructions(m_selectedAddressStart, m_selectedAddressEnd, encodedInstruction);
 }
 
+void DisassemblyView::contextPasteInstructionText()
+{
+	if (!cpu().isCpuPaused())
+	{
+		QMessageBox::warning(this, tr("Assemble Error"), tr("Unable to change assembly while core is running"));
+		return;
+	}
+
+    std::vector<std::string> newInstructions = StringUtil::splitOnNewLine(QApplication::clipboard()->text());
+    for (int instructionIdx = 0; instructionIdx < newInstructions.size(); instructionIdx++)
+    {
+        u32 replaceAddress = m_selectedAddressStart + instructionIdx * 4;
+        u32 encodedInstruction;
+        std::string errorText;
+        bool valid = MipsAssembleOpcode(newInstructions[instructionIdx].c_str(), &cpu(), replaceAddress, encodedInstruction, errorText);
+        if (!valid)
+        {
+            QMessageBox::warning(this, tr("Assemble Error"), QString::fromStdString(errorText));
+            return;
+        }
+        
+        setInstructions(replaceAddress, replaceAddress + 4, encodedInstruction);
+    }
+}
+
 void DisassemblyView::contextNoopInstruction()
 {
 	setInstructions(m_selectedAddressStart, m_selectedAddressEnd, 0);
