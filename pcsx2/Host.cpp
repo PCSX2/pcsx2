@@ -156,6 +156,15 @@ void Host::ReportFormattedErrorAsync(const std::string_view title, const char* f
 	ReportErrorAsync(title, message);
 }
 
+void Host::ReportFormattedWarningAsync(const std::string_view title, const char* format, ...)
+{
+	std::va_list ap;
+	va_start(ap, format);
+	std::string message(StringUtil::StdStringFromFormatV(format, ap));
+	va_end(ap);
+	ReportWarningAsync(title, message);
+}
+
 bool Host::ConfirmFormattedMessage(const std::string_view title, const char* format, ...)
 {
 	std::va_list ap;

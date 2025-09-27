@@ -3,6 +3,7 @@
 
 #include "common/Pcsx2Types.h"
 #include "common/Console.h"
+#include "common/FileSystem.h"
 #include "common/HostSys.h"
 #include "common/Path.h"
 #include "common/ScopedGuard.h"
@@ -11,10 +12,13 @@
 #include "common/Threading.h"
 #include "common/WindowInfo.h"
 
+#include "pcsx2/Config.h"
+#include "pcsx2/Host.h"
 #include "fmt/format.h"
 
 #include <dbus/dbus.h>
 #include <spawn.h>
+#include <string>
 #include <sys/sysinfo.h>
 #include <sys/time.h>
 #include <sys/wait.h>
