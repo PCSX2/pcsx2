@@ -785,10 +785,11 @@ endif()
 
 # DebugTools sources
 set(pcsx2DebugToolsSources
-	DebugTools/DebugInterface.cpp
-	DebugTools/DisassemblyManager.cpp
-	DebugTools/ExpressionParser.cpp
-	DebugTools/MIPSAnalyst.cpp
+        DebugTools/DebugInterface.cpp
+        DebugTools/DisassemblyManager.cpp
+        DebugTools/ExpressionParser.cpp
+        DebugTools/MCPServer.cpp
+        DebugTools/MIPSAnalyst.cpp
 	DebugTools/MipsAssembler.cpp
 	DebugTools/MipsAssemblerTables.cpp
 	DebugTools/MipsStackWalk.cpp
@@ -803,10 +804,11 @@ set(pcsx2DebugToolsSources
 
 # DebugTools headers
 set(pcsx2DebugToolsHeaders
-	DebugTools/DebugInterface.h
-	DebugTools/DisassemblyManager.h
-	DebugTools/ExpressionParser.h
-	DebugTools/MIPSAnalyst.h
+        DebugTools/DebugInterface.h
+        DebugTools/DisassemblyManager.h
+        DebugTools/ExpressionParser.h
+        DebugTools/MCPServer.h
+        DebugTools/MIPSAnalyst.h
 	DebugTools/MipsAssembler.h
 	DebugTools/MipsAssemblerTables.h
 	DebugTools/MipsStackWalk.h
