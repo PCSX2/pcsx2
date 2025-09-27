@@ -21,6 +21,7 @@
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMessageBox>
 #include "SymbolTree/NewSymbolDialogs.h"
+#include "common/StringUtil.h"
 
 using namespace QtUtils;
 
@@ -106,6 +107,32 @@ void DisassemblyView::contextCopyInstructionText()
 	QGuiApplication::clipboard()->setText(FetchSelectionInfo(SelectionInfo::INSTRUCTIONTEXT));
 }
 
+void DisassemblyView::contextPasteInstructionText()
+{
+	if (!cpu().isCpuPaused())
+	{
+		QMessageBox::warning(this, tr("Assemble Error"), tr("Unable to change assembly while core is running"));
+		return;
+	}
+
+	QString clipboardText = QApplication::clipboard()->text();
+    std::vector<std::string> newInstructions = StringUtil::splitOnNewLine(clipboardText.toLocal8Bit().constData());
+	int newInstructionsSize = newInstructions.size();
+    for (int instructionIdx = 0; instructionIdx < newInstructionsSize; instructionIdx++)
+    {
+        u32 replaceAddress = m_selectedAddressStart + instructionIdx * 4;
+        u32 encodedInstruction;
+        std::string errorText;
+        bool valid = MipsAssembleOpcode(newInstructions[instructionIdx].c_str(), &cpu(), replaceAddress, encodedInstruction, errorText);
+        if (!valid)
+        {
+            QMessageBox::warning(this, tr("Assemble Error"), QString::fromStdString(errorText));
+            return;
+        }
+        setInstructions(replaceAddress, replaceAddress, encodedInstruction);
+    }
+}
+
 void DisassemblyView::contextAssembleInstruction()
 {
 	if (!cpu().isCpuPaused())
@@ -133,31 +160,6 @@ void DisassemblyView::contextAssembleInstruction()
 	}
 
 	setInstructions(m_selectedAddressStart, m_selectedAddressEnd, encodedInstruction);
-}
-
-void DisassemblyView::contextPasteInstructionText()
-{
-	if (!cpu().isCpuPaused())
-	{
-		QMessageBox::warning(this, tr("Assemble Error"), tr("Unable to change assembly while core is running"));
-		return;
-	}
-
-    std::vector<std::string> newInstructions = StringUtil::splitOnNewLine(QApplication::clipboard()->text());
-    for (int instructionIdx = 0; instructionIdx < newInstructions.size(); instructionIdx++)
-    {
-        u32 replaceAddress = m_selectedAddressStart + instructionIdx * 4;
-        u32 encodedInstruction;
-        std::string errorText;
-        bool valid = MipsAssembleOpcode(newInstructions[instructionIdx].c_str(), &cpu(), replaceAddress, encodedInstruction, errorText);
-        if (!valid)
-        {
-            QMessageBox::warning(this, tr("Assemble Error"), QString::fromStdString(errorText));
-            return;
-        }
-        
-        setInstructions(replaceAddress, replaceAddress + 4, encodedInstruction);
-    }
 }
 
 void DisassemblyView::contextNoopInstruction()
@@ -730,6 +732,9 @@ void DisassemblyView::openContextMenu(QPoint pos)
 		QAction* copy_function_name_action = menu->addAction(tr("Copy Function Name"));
 		connect(copy_function_name_action, &QAction::triggered, this, &DisassemblyView::contextCopyFunctionName);
 	}
+
+	QAction* paste_instruction_text_action = menu->addAction(tr("Paste Instruction Text"));
+	connect(paste_instruction_text_action, &QAction::triggered, this, &DisassemblyView::contextPasteInstructionText);
 
 	menu->addSeparator();
 
