@@ -14,13 +14,9 @@
     {
       "type": "git",
       "url": "https://github.com/KDAB/KDDockWidgets.git",
-      "tag": "v2.2.3",
-      "commit": "28d16d0431d7cdc9f36cb619d22621146fdfab44",
+      "tag": "v2.3.0",
+      "commit": "c38711026e17e34916dd82c6fcbdcc0d2342f541",
       "disable-submodules": true
-    },
-    {
-      "type": "patch",
-      "path": "../../../common/kddockwidgets-dodgy-include.patch"
     }
   ],
   "cleanup": [
