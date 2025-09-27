@@ -5753,7 +5753,8 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 			case PauseSubMenu::None:
 			{
 				// NOTE: Menu close must come first, because otherwise VM destruction options will race.
-				const bool can_load_or_save_state = s_current_disc_crc != 0;
+				const bool can_load_state = s_current_disc_crc != 0 && !Achievements::IsHardcoreModeActive();
+				const bool can_save_state = s_current_disc_crc != 0;
 
 				if (just_focused)
 					ImGui::SetFocusID(ImGui::GetID(FSUI_ICONSTR(ICON_FA_PLAY, "Resume Game")), ImGui::GetCurrentWindow());
@@ -5767,19 +5768,19 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 					DoToggleFrameLimit();
 				}
 
-				if (ActiveButton(FSUI_ICONSTR(ICON_FA_ARROW_ROTATE_LEFT, "Load State"), false, can_load_or_save_state))
+				if (ActiveButton(FSUI_ICONSTR(ICON_FA_ARROW_ROTATE_LEFT, "Load State"), false, can_load_state))
 				{
 					if (OpenSaveStateSelector(true))
 						s_current_main_window = MainWindowType::None;
 				}
 
-				if (ActiveButton(FSUI_ICONSTR(ICON_FA_DOWNLOAD, "Save State"), false, can_load_or_save_state))
+				if (ActiveButton(FSUI_ICONSTR(ICON_FA_DOWNLOAD, "Save State"), false, can_save_state))
 				{
 					if (OpenSaveStateSelector(false))
 						s_current_main_window = MainWindowType::None;
 				}
 
-				if (ActiveButton(FSUI_ICONSTR(ICON_FA_WRENCH, "Game Properties"), false, can_load_or_save_state))
+				if (ActiveButton(FSUI_ICONSTR(ICON_FA_WRENCH, "Game Properties"), false, can_save_state))
 				{
 					SwitchToGameSettings();
 				}
@@ -5819,7 +5820,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 				if (ActiveButton(FSUI_ICONSTR(ICON_FA_POWER_OFF, "Close Game"), false))
 				{
 					// skip submenu when we can't save anyway
-					if (!can_load_or_save_state)
+					if (!can_save_state)
 						RequestShutdown(false);
 					else
 						OpenPauseSubMenu(PauseSubMenu::Exit);
@@ -6144,7 +6145,7 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 
 					if (ActiveButton(
 							is_loading ? FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Load State") : FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Save State"),
-							false, true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
+							false, is_loading ? !Achievements::IsHardcoreModeActive() : true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
 					{
 						if (is_loading)
 							DoLoadState(std::move(entry.path));

@@ -1970,11 +1970,9 @@ bool VMManager::LoadState(const char* filename)
 {
 	if (Achievements::IsHardcoreModeActive())
 	{
-		Achievements::ConfirmHardcoreModeDisableAsync(TRANSLATE("VMManager", "Loading state"),
-			[filename = std::string(filename)](bool approved) {
-				if (approved)
-					LoadState(filename.c_str());
-			});
+		Host::AddIconOSDMessage("LoadStateHardcoreBlocked", ICON_FA_TRIANGLE_EXCLAMATION,
+			TRANSLATE_SV("VMManager", "Cannot load save state while RetroAchievements Hardcore Mode is active."),
+			Host::OSD_WARNING_DURATION);
 		return false;
 	}
 
@@ -2007,11 +2005,9 @@ bool VMManager::LoadStateFromSlot(s32 slot, bool backup)
 
 	if (Achievements::IsHardcoreModeActive())
 	{
-		Achievements::ConfirmHardcoreModeDisableAsync(TRANSLATE("VMManager", "Loading state"),
-			[slot](bool approved) {
-				if (approved)
-					LoadStateFromSlot(slot);
-			});
+		Host::AddIconOSDMessage("LoadStateHardcoreBlocked", ICON_FA_TRIANGLE_EXCLAMATION,
+			fmt::format(TRANSLATE_FS("VMManager", "Cannot load save {} from slot {} while RetroAchievements Hardcore Mode is active."), backup ? TRANSLATE("VMManager", "backup state") : TRANSLATE("VMManager", "state"), slot),
+			Host::OSD_WARNING_DURATION);
 		return false;
 	}
 
@@ -2223,12 +2219,9 @@ void VMManager::FrameAdvance(u32 num_frames /*= 1*/)
 
 	if (Achievements::IsHardcoreModeActive())
 	{
-		Achievements::ConfirmHardcoreModeDisableAsync(TRANSLATE("VMManager", "Frame advancing"),
-			[num_frames](bool approved) {
-				if (approved)
-					FrameAdvance(num_frames);
-			});
-
+		Host::AddIconOSDMessage("FrameAdvanceHardcoreBlocked", ICON_FA_TRIANGLE_EXCLAMATION,
+			TRANSLATE_SV("VMManager", "Cannot frame advance while RetroAchievements Hardcore Mode is active."),
+			Host::OSD_WARNING_DURATION);
 		return;
 	}
 
@@ -3067,7 +3060,6 @@ void VMManager::EnforceAchievementsChallengeModeSettings()
 {
 	if (!Achievements::IsHardcoreModeActive())
 	{
-		Host::RemoveKeyedOSDMessage("ChallengeDisableCheats");
 		return;
 	}
 
@@ -3084,8 +3076,8 @@ void VMManager::EnforceAchievementsChallengeModeSettings()
 	// Can't use cheats.
 	if (EmuConfig.EnableCheats)
 	{
-		Host::AddKeyedOSDMessage("ChallengeDisableCheats",
-			TRANSLATE_STR("VMManager", "Cheats have been disabled due to achievements hardcore mode."),
+		Host::AddIconOSDMessage("ChallengeDisableCheats", ICON_FA_TRIANGLE_EXCLAMATION,
+			TRANSLATE_SV("VMManager", "Cheats have been disabled due to RetroAchievements Hardcore Mode."),
 			Host::OSD_WARNING_DURATION);
 		EmuConfig.EnableCheats = false;
 	}
