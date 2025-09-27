@@ -544,7 +544,7 @@ void EmuThread::reloadGameSettings()
 		return;
 	}
 
-	// this will skip applying settings when they're not active
+	// This will skip applying settings when they're not active.
 	VMManager::ReloadGameSettings();
 }
 
@@ -908,7 +908,7 @@ void EmuThread::setAudioOutputMuted(bool muted)
 		return;
 
 	EmuConfig.SPU2.OutputMuted = muted;
-	SPU2::SetOutputVolume(SPU2::GetResetVolume());
+	SPU2::SetOutputMuted(muted);
 }
 
 std::optional<WindowInfo> EmuThread::acquireRenderWindow(bool recreate_window)
