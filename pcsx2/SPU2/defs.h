@@ -229,12 +229,6 @@ public:
 
 struct V_Voice
 {
-	u32 PlayCycle; // SPU2 cycle where the Playing started
-	u32 LoopCycle; // SPU2 cycle where it last set its own Loop
-
-	u32 PendingLoopStartA;
-	bool PendingLoopStart;
-
 	V_VolumeSlideLR Volume;
 
 	// Envelope
@@ -490,7 +484,8 @@ struct V_Core
 	u32 ReadSize;
 	bool IsDMARead;
 
-	u32 KeyOn; // not the KON register (though maybe it is)
+	u32 KeyOn;
+	u32 KeyOff;
 
 	// psxmode caches
 	u16 psxSoundDataTransferControl;
