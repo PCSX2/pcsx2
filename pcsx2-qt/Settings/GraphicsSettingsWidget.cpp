@@ -243,6 +243,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_osd.showGSStats, "EmuCore/GS", "OsdShowGSStats", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_osd.showIndicators, "EmuCore/GS", "OsdShowIndicators", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_osd.showSettings, "EmuCore/GS", "OsdShowSettings", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_osd.showPatches, "EmuCore/GS", "OsdshowPatches", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_osd.showInputs, "EmuCore/GS", "OsdShowInputs", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_osd.showFrameTimes, "EmuCore/GS", "OsdShowFrameTimes", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_osd.showVersion, "EmuCore/GS", "OsdShowVersion", false);
@@ -756,6 +757,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 		dialog()->registerWidgetHelp(m_osd.showSettings, tr("Show Settings"), tr("Unchecked"),
 			tr("Displays various settings and the current values of those settings, useful for debugging."));
 
+		dialog()->registerWidgetHelp(m_osd.showPatches, tr("Show Patches"), tr("Unchecked"),
+			tr("Shows the amount of currently active patches/cheats on the bottom-right corner of the display."));
+
 		dialog()->registerWidgetHelp(m_osd.showInputs, tr("Show Inputs"), tr("Unchecked"),
 			tr("Shows the current controller state of the system in the bottom-left corner of the display."));
 
@@ -776,6 +780,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 
 		dialog()->registerWidgetHelp(m_osd.warnAboutUnsafeSettings, tr("Warn About Unsafe Settings"), tr("Checked"),
 			tr("Displays warnings when settings are enabled which may break games."));
+
+		connect(m_osd.showSettings, &QCheckBox::checkStateChanged, this,
+			&GraphicsSettingsWidget::onOsdShowSettingsToggled);
 	}
 
 	// Recording tab
@@ -1037,6 +1044,12 @@ void GraphicsSettingsWidget::onEnableVideoCaptureChanged()
 {
 	const bool enabled = dialog()->getEffectiveBoolValue("EmuCore/GS", "EnableVideoCapture", true);
 	m_capture.videoCaptureOptions->setEnabled(enabled);
+}
+
+void GraphicsSettingsWidget::onOsdShowSettingsToggled()
+{
+	const bool enabled = dialog()->getEffectiveBoolValue("EmuCore/GS", "OsdShowSettings", false);
+	m_osd.showPatches->setEnabled(enabled);
 }
 
 void GraphicsSettingsWidget::onEnableVideoCaptureArgumentsChanged()
