@@ -115,22 +115,34 @@ void DisassemblyView::contextPasteInstructionText()
 		return;
 	}
 
+	// split text in clipboard by new lines
 	QString clipboardText = QApplication::clipboard()->text();
-    std::vector<std::string> newInstructions = StringUtil::splitOnNewLine(clipboardText.toLocal8Bit().constData());
+	std::vector<std::string> newInstructions = StringUtil::splitOnNewLine(clipboardText.toLocal8Bit().constData());
 	int newInstructionsSize = newInstructions.size();
-    for (int instructionIdx = 0; instructionIdx < newInstructionsSize; instructionIdx++)
-    {
-        u32 replaceAddress = m_selectedAddressStart + instructionIdx * 4;
-        u32 encodedInstruction;
-        std::string errorText;
-        bool valid = MipsAssembleOpcode(newInstructions[instructionIdx].c_str(), &cpu(), replaceAddress, encodedInstruction, errorText);
-        if (!valid)
-        {
-            QMessageBox::warning(this, tr("Assemble Error"), QString::fromStdString(errorText));
-            return;
-        }
-        setInstructions(replaceAddress, replaceAddress, encodedInstruction);
-    }
+
+	// validate new instructions before pasting them
+	for (int instructionIdx = 0; instructionIdx < newInstructionsSize; instructionIdx++)
+	{
+		u32 replaceAddress = m_selectedAddressStart + instructionIdx * 4;
+		u32 encodedInstruction;
+		std::string errorText;
+		bool valid = MipsAssembleOpcode(newInstructions[instructionIdx].c_str(), &cpu(), replaceAddress, encodedInstruction, errorText);
+		if (!valid)
+		{
+			QMessageBox::warning(this, tr("Assemble Error"), QString("%1 %2").arg(errorText.c_str()).arg(newInstructions[instructionIdx].c_str()));
+			return;
+		}
+	}
+
+	// paste validated instructions
+	for (int instructionIdx = 0; instructionIdx < newInstructionsSize; instructionIdx++)
+	{
+		u32 replaceAddress = m_selectedAddressStart + instructionIdx * 4;
+		u32 encodedInstruction;
+		std::string errorText;
+		MipsAssembleOpcode(newInstructions[instructionIdx].c_str(), &cpu(), replaceAddress, encodedInstruction, errorText);
+		setInstructions(replaceAddress, replaceAddress, encodedInstruction);
+	}
 }
 
 void DisassemblyView::contextAssembleInstruction()
