@@ -1989,6 +1989,32 @@ void GSDeviceOGL::PSSetShaderResource(int i, GSTexture* sr)
 	}
 }
 
+void GSDeviceOGL::PSSetShaderResources(GSTexture* srvs[])
+{
+	std::array<GLuint, MAX_TEXTURES> tex_id{};
+	int changed_slots = 0;
+	int last_changed_slot = -1;
+
+	for (int i = 0; i < MAX_TEXTURES; i++)
+	{
+		tex_id[i] = srvs[i] ? static_cast<GSTextureOGL*>(srvs[i])->GetID() : 0;
+
+		if (GLState::tex_unit[i] != tex_id[i])
+		{
+			GLState::tex_unit[i] = tex_id[i];
+			changed_slots++;
+			last_changed_slot = i;
+		}
+	}
+
+	if (changed_slots == 0)
+		return;
+	else if (changed_slots == 1)
+		glBindTextureUnit(last_changed_slot, tex_id[last_changed_slot]);
+	else
+		glBindTextures(0, MAX_TEXTURES, tex_id.data());
+}
+
 void GSDeviceOGL::PSSetSamplerState(GLuint ss)
 {
 	if (GLState::ps_ss != ss)
@@ -2543,14 +2569,14 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	}
 	IASetPrimitiveTopology(topology);
 
-	if (config.tex)
-		PSSetShaderResource(0, config.tex);
-	if (config.pal)
-		PSSetShaderResource(1, config.pal);
+	GSTexture* sr_textures[MAX_TEXTURES] = {nullptr};
+	sr_textures[0] = config.tex;
+	sr_textures[1] = config.pal;
 	if (draw_rt_clone)
-		PSSetShaderResource(2, draw_rt_clone);
+		sr_textures[2] = draw_rt_clone;
 	else if (config.require_one_barrier || config.require_full_barrier)
-		PSSetShaderResource(2, colclip_rt ? colclip_rt : config.rt);
+		sr_textures[2] = colclip_rt ? colclip_rt : config.rt;
+	PSSetShaderResources(sr_textures);
 
 	SetupSampler(config.sampler);
 
