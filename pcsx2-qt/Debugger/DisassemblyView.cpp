@@ -121,6 +121,7 @@ void DisassemblyView::contextPasteInstructionText()
 	int newInstructionsSize = newInstructions.size();
 
 	// validate new instructions before pasting them
+	std::vector<u32> encodedInstructions;
 	for (int instructionIdx = 0; instructionIdx < newInstructionsSize; instructionIdx++)
 	{
 		u32 replaceAddress = m_selectedAddressStart + instructionIdx * 4;
@@ -132,16 +133,14 @@ void DisassemblyView::contextPasteInstructionText()
 			QMessageBox::warning(this, tr("Assemble Error"), QString("%1 %2").arg(errorText.c_str()).arg(newInstructions[instructionIdx].c_str()));
 			return;
 		}
+		encodedInstructions.push_back(encodedInstruction);
 	}
 
 	// paste validated instructions
 	for (int instructionIdx = 0; instructionIdx < newInstructionsSize; instructionIdx++)
 	{
 		u32 replaceAddress = m_selectedAddressStart + instructionIdx * 4;
-		u32 encodedInstruction;
-		std::string errorText;
-		MipsAssembleOpcode(newInstructions[instructionIdx].c_str(), &cpu(), replaceAddress, encodedInstruction, errorText);
-		setInstructions(replaceAddress, replaceAddress, encodedInstruction);
+		setInstructions(replaceAddress, replaceAddress, encodedInstructions[instructionIdx]);
 	}
 }
 
