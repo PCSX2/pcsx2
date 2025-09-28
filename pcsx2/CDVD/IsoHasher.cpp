@@ -150,6 +150,7 @@ bool IsoHasher::ComputeTrackHash(Track& track, ProgressCallback* callback)
 
 	const u32 update_interval = std::max<u32>(track.sectors / 100u, 1u);
 	callback->SetStatusText(
+		fmt::format(TRANSLATE_FS("CDVD", "Calculating checksum for track {}..."), track.number).c_str());
     fmt::format(TRANSLATE_FS("CDVD", "Calculating checksum for track {}..."), track.number).c_str()
     );
 	callback->SetProgressRange(track.sectors);
