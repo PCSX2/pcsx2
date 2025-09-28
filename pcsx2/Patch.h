@@ -105,5 +105,11 @@ namespace Patch
 	// (this happens at AppCoreThread::ApplySettings(...) )
 	extern void ApplyLoadedPatches(patch_place_type place);
 
+	// Get the total counts of the active game patches.
+	extern u32 GetActiveGameDBPatchesCount();
+	extern u32 GetActivePatchesCount();
+	extern u32 GetActiveCheatsCount();
+	extern u32 GetAllActivePatchesCount();
+
 	extern bool IsGloballyToggleablePatch(const PatchInfo& patch_info);
 } // namespace Patch

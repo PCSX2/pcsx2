@@ -179,6 +179,10 @@ namespace Patch
 	static PatchList s_game_patches;
 	static PatchList s_cheat_patches;
 
+	static u32 s_gamedb_counts = 0;
+	static u32 s_patches_counts = 0;
+	static u32 s_cheats_counts = 0;
+
 	static ActivePatchList s_active_patches;
 	static std::vector<DynamicPatch> s_active_gamedb_dynamic_patches;
 	static std::vector<DynamicPatch> s_active_pnach_dynamic_patches;
@@ -759,23 +763,22 @@ void Patch::UpdateActivePatches(bool reload_enabled_list, bool verbose, bool ver
 	if (EmuConfig.EnablePatches)
 	{
 		gp_count = EnablePatches(s_gamedb_patches, EnablePatchList(), EnablePatchList());
+		s_gamedb_counts = gp_count;
 		if (gp_count > 0)
 			message.append(TRANSLATE_PLURAL_STR("Patch", "%n GameDB patches are active.", "OSD Message", gp_count));
 	}
 
 	const u32 p_count = EnablePatches(s_game_patches, s_enabled_patches, apply_new_patches ? s_just_enabled_patches : EnablePatchList());
+	s_patches_counts = p_count;
 	if (p_count > 0)
-	{
 		message.append_format("{}{}", message.empty() ? "" : "\n",
 			TRANSLATE_PLURAL_STR("Patch", "%n game patches are active.", "OSD Message", p_count));
-	}
 
 	const u32 c_count = EmuConfig.EnableCheats ? EnablePatches(s_cheat_patches, s_enabled_cheats, apply_new_patches ? s_just_enabled_cheats : EnablePatchList()) : 0;
+	s_cheats_counts = c_count;
 	if (c_count > 0)
-	{
 		message.append_format("{}{}", message.empty() ? "" : "\n",
 			TRANSLATE_PLURAL_STR("Patch", "%n cheat patches are active.", "OSD Message", c_count));
-	}
 
 	// Display message on first boot when we load patches.
 	// Except when it's just GameDB.
@@ -1088,6 +1091,26 @@ void Patch::ApplyLoadedPatches(patch_place_type place)
 		if (i->placetopatch == place)
 			ApplyPatch(i);
 	}
+}
+
+u32 Patch::GetActiveGameDBPatchesCount()
+{
+	return s_gamedb_counts;
+}
+
+u32 Patch::GetActivePatchesCount()
+{
+	return s_patches_counts;
+}
+
+u32 Patch::GetActiveCheatsCount()
+{
+	return s_cheats_counts;
+}
+
+u32 Patch::GetAllActivePatchesCount()
+{
+	return s_gamedb_counts + s_patches_counts + s_cheats_counts;
 }
 
 bool Patch::IsGloballyToggleablePatch(const PatchInfo& patch_info)

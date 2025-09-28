@@ -19,6 +19,7 @@
 #include "ImGui/ImGuiOverlays.h"
 #include "Input/InputManager.h"
 #include "MTGS.h"
+#include "Patch.h"
 #include "PerformanceMetrics.h"
 #include "Recording/InputRecording.h"
 #include "SIO/Pad/Pad.h"
@@ -520,6 +521,12 @@ __ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spa
 		fmt::format_to(std::back_inserter(text), __VA_ARGS__); \
 	} while (0)
 
+	if (Patch::GetAllActivePatchesCount() > 0 && EmuConfig.GS.OsdshowPatches)
+	APPEND("DB={} P={} C={} | ",
+		Patch::GetActiveGameDBPatchesCount(),
+		Patch::GetActivePatchesCount(),
+		Patch::GetActiveCheatsCount());
+
 	if (EmuConfig.Speedhacks.EECycleRate != 0)
 		APPEND("CR={} ", EmuConfig.Speedhacks.EECycleRate);
 	if (EmuConfig.Speedhacks.EECycleSkip != 0)
@@ -536,12 +543,6 @@ __ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spa
 	APPEND("EER={} EEC={} VUR={} VUC={} VQS={} ", static_cast<unsigned>(EmuConfig.Cpu.FPUFPCR.GetRoundMode()),
 		EmuConfig.Cpu.Recompiler.GetEEClampMode(), static_cast<unsigned>(EmuConfig.Cpu.VU0FPCR.GetRoundMode()),
 		EmuConfig.Cpu.Recompiler.GetVUClampMode(), EmuConfig.GS.VsyncQueueSize);
-
-	if (EmuConfig.EnableCheats || EmuConfig.EnableWideScreenPatches || EmuConfig.EnableNoInterlacingPatches)
-	{
-		APPEND("C={}{}{} ", EmuConfig.EnableCheats ? "C" : "", EmuConfig.EnableWideScreenPatches ? "W" : "",
-			EmuConfig.EnableNoInterlacingPatches ? "N" : "");
-	}
 
 	if (GSIsHardwareRenderer())
 	{

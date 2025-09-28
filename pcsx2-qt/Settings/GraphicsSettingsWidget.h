@@ -54,6 +54,7 @@ private Q_SLOTS:
 	void onVideoCaptureAutoResolutionChanged();
 	void onEnableAudioCaptureChanged();
 	void onEnableAudioCaptureArgumentsChanged();
+	void onOsdShowSettingsToggled();
 
 private:
 	GSRendererType getEffectiveRenderer() const;
