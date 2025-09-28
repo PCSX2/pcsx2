@@ -149,8 +149,8 @@ bool IsoHasher::ComputeTrackHash(Track& track, ProgressCallback* callback)
 	std::vector<u8> sector_buffer(sector_size);
 
 	const u32 update_interval = std::max<u32>(track.sectors / 100u, 1u);
-	callback->SetFormattedStatusText(
-    TRANSLATE_FS("ProgressDialog", "Calculating checksum for track %u..."), track.number);
+	progress_callback->SetStatusText(
+    fmt::format(TRANSLATE_FS("CDVD", "Calculating checksum for track {}..."), track.number).c_str();
 	callback->SetProgressRange(track.sectors);
 
 	MD5Digest md5;
