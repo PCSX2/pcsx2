@@ -1,0 +1,17 @@
+name: 🖥️ 📦 Dispatch Windows Deps Build
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  trigger:
+    if: github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'requires-win-deps-build')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch to windows-dependencies repo
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.DEPS_REPO_DISPATCH_ACCESS_TOKEN }}
+          repository: pcsx2/pcsx2-windows-dependencies
+          event-type: deps-update
