@@ -10,7 +10,7 @@
 #include "SettingsWindow.h"
 #include "QtHost.h"
 
-static const char* IMAGE_FILE_FILTER = QT_TRANSLATE_NOOP(GameListWidget, 
+static const char* IMAGE_FILE_FILTER = QT_TRANSLATE_NOOP(InterfaceSettingsWidget, 
 	"Supported Image Types (*.bmp *.gif *.jpg *.jpeg *.png *.webp)");
 
 const char* InterfaceSettingsWidget::THEME_NAMES[] = {
@@ -229,7 +229,7 @@ void InterfaceSettingsWidget::populateLanguages()
 void InterfaceSettingsWidget::onSetGameListBackgroundTriggered()
 {
 	const QString path = QDir::toNativeSeparators(
-		QFileDialog::getOpenFileName(this, tr("Select Background Image"), QString(), IMAGE_FILE_FILTER));
+		QFileDialog::getOpenFileName(this, tr("Select Background Image"), QString(), tr(IMAGE_FILE_FILTER)));
 
 	if (path.isEmpty())
 		return;

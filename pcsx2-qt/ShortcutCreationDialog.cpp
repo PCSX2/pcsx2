@@ -160,7 +160,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 	std::string clean_path = Path::ToNativePath(Path::RealPath(game_path)).c_str();
 	if (!Path::IsValidFileName(clean_name))
 	{
-		Host::ReportErrorAsync(TRANSLATE_SV("WinMisc", "Failed to create shortcut"), TRANSLATE_SV("WinMisc", "Filename contains illegal character."));
+		Host::ReportErrorAsync(TRANSLATE_SV("ShortcutCreationDialog", "Failed to create shortcut"), TRANSLATE_SV("ShortcutCreationDialog", "Filename contains illegal character."));
 		return;
 	}
 
@@ -175,7 +175,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 			const std::string start_menu_dir = Path::ToNativePath(fmt::format("{}/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/PCSX2", home));
 			if (!FileSystem::EnsureDirectoryExists(start_menu_dir.c_str(), false))
 			{
-				Host::ReportErrorAsync(TRANSLATE_SV("WinMisc", "Failed to create shortcut"), TRANSLATE_SV("WinMisc", "Could not create start menu directory."));
+				Host::ReportErrorAsync(TRANSLATE_SV("ShortcutCreationDialog", "Failed to create shortcut"), TRANSLATE_SV("ShortcutCreationDialog", "Could not create start menu directory."));
 				return;
 			}
 
@@ -184,14 +184,14 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 	}
 	else
 	{
-		Host::ReportErrorAsync(TRANSLATE_SV("WinMisc", "Failed to create shortcut"), TRANSLATE_SV("WinMisc", "Home path is empty."));
+		Host::ReportErrorAsync(TRANSLATE_SV("ShortcutCreationDialog", "Failed to create shortcut"), TRANSLATE_SV("ShortcutCreationDialog", "Home path is empty."));
 		return;
 	}
 
 	// Check if the same shortcut already exists
 	if (FileSystem::FileExists(link_file.c_str()))
 	{
-		Host::ReportErrorAsync(TRANSLATE_SV("WinMisc", "Failed to create shortcut"), TRANSLATE_SV("WinMisc", "A shortcut with the same name already exist."));
+		Host::ReportErrorAsync(TRANSLATE_SV("ShortcutCreationDialog", "Failed to create shortcut"), TRANSLATE_SV("ShortcutCreationDialog", "A shortcut with the same name already exist."));
 		return;
 	}
 
@@ -201,7 +201,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 		lossless &= Path::EscapeCmdLine(&arg);
 
 	if (!lossless)
-		Host::ReportWarningAsync(TRANSLATE_SV("WinMisc", "Warning"), TRANSLATE_SV("WinMisc", "File path contains invalid character(s). The resulting shortcut may not work."));
+		Host::ReportWarningAsync(TRANSLATE_SV("ShortcutCreationDialog", "Warning"), TRANSLATE_SV("ShortcutCreationDialog", "File path contains invalid character(s). The resulting shortcut may not work."));
 
 	Path::EscapeCmdLine(&clean_path);
 	std::string combined_args = StringUtil::JoinString(passed_cli_args.begin(), passed_cli_args.end(), " ");
@@ -221,7 +221,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 	if (FAILED(res))
 	{
 		Console.ErrorFmt("Failed to create shortcut: CoInitialize failed ({})", str_error(res));
-		Host::ReportErrorAsync(TRANSLATE_SV("WinMisc", "Failed to create shortcut"), fmt::format("CoInitialize failed ({})", str_error(res)));
+		Host::ReportErrorAsync(TRANSLATE_SV("ShortcutCreationDialog", "Failed to create shortcut"), fmt::format("CoInitialize failed ({})", str_error(res)));
 		return;
 	}
 
@@ -232,7 +232,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 		if (!return_value)
 		{
 			Console.ErrorFmt("Failed to create shortcut: {}", fail_reason);
-			Host::ReportErrorAsync(TRANSLATE_SV("WinMisc", "Failed to create shortcut"), fail_reason);
+			Host::ReportErrorAsync(TRANSLATE_SV("ShortcutCreationDialog", "Failed to create shortcut"), fail_reason);
 		}
 		CoUninitialize();
 		return return_value;
@@ -309,7 +309,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 
 	if (name.empty())
 	{
-		Host::ReportErrorAsync(TRANSLATE_SV("LnxMisc", "Failed to create shortcut"), TRANSLATE_SV("LnxMisc", "Cannot create shortcut without a name."));
+		Host::ReportErrorAsync(TRANSLATE_SV("ShortcutCreationDialog", "Failed to create shortcut"), TRANSLATE_SV("ShortcutCreationDialog", "Cannot create shortcut without a name."));
 		return;
 	}
 
@@ -320,7 +320,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 	std::string clean_path = Path::Canonicalize(Path::RealPath(game_path));
 	if (!Path::IsValidFileName(clean_name))
 	{
-		Host::ReportErrorAsync(TRANSLATE_SV("LnxMisc", "Failed to create shortcut"), TRANSLATE_SV("LnxMisc", "Filename contains illegal character."));
+		Host::ReportErrorAsync(TRANSLATE_SV("ShortcutCreationDialog", "Failed to create shortcut"), TRANSLATE_SV("ShortcutCreationDialog", "Filename contains illegal character."));
 		return;
 	}
 
@@ -328,7 +328,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 	std::string executable_path = FileSystem::GetPackagePath();
 	if (executable_path.empty())
 	{
-		Host::ReportErrorAsync(TRANSLATE_SV("LnxMisc", "Failed to create shortcut"), TRANSLATE_SV("LnxMisc", "Executable path is empty."));
+		Host::ReportErrorAsync(TRANSLATE_SV("ShortcutCreationDialog", "Failed to create shortcut"), TRANSLATE_SV("ShortcutCreationDialog", "Executable path is empty."));
 		return;
 	}
 
@@ -359,14 +359,14 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 	}
 	else
 	{
-		Host::ReportErrorAsync(TRANSLATE_SV("LnxMisc", "Failed to create shortcut"), TRANSLATE_SV("LnxMisc", "Home path is empty."));
+		Host::ReportErrorAsync(TRANSLATE_SV("ShortcutCreationDialog", "Failed to create shortcut"), TRANSLATE_SV("ShortcutCreationDialog", "Home path is empty."));
 		return;
 	}
 
 	// Checks if a shortcut already exist
 	if (FileSystem::FileExists(link_path.c_str()))
 	{
-		Host::ReportErrorAsync(TRANSLATE_SV("LnxMisc", "Failed to create shortcut"), TRANSLATE_SV("LnxMisc", "A shortcut with the same name already exist."));
+		Host::ReportErrorAsync(TRANSLATE_SV("ShortcutCreationDialog", "Failed to create shortcut"), TRANSLATE_SV("ShortcutCreationDialog", "A shortcut with the same name already exist."));
 		return;
 	}
 
@@ -376,7 +376,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 		lossless &= Path::EscapeCmdLine(&arg);
 
 	if (!lossless)
-		Host::ReportWarningAsync(TRANSLATE_SV("LnxMisc", "Warning"), TRANSLATE_SV("LnxMisc", "File path contains invalid character(s). The resulting shortcut may not work."));
+		Host::ReportWarningAsync(TRANSLATE_SV("ShortcutCreationDialog", "Warning"), TRANSLATE_SV("ShortcutCreationDialog", "File path contains invalid character(s). The resulting shortcut may not work."));
 
 	std::string cmdline = StringUtil::JoinString(passed_cli_args.begin(), passed_cli_args.end(), " ");
 
@@ -428,7 +428,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 	// Write to .desktop file
 	if (!FileSystem::WriteStringToFile(final_path.toStdString().c_str(), sv))
 	{
-		Host::ReportErrorAsync(TRANSLATE_SV("LnxMisc", "Error"), TRANSLATE_SV("LnxMisc", "Failed to create .desktop file"));
+		Host::ReportErrorAsync(TRANSLATE_SV("ShortcutCreationDialog", "Error"), TRANSLATE_SV("ShortcutCreationDialog", "Failed to create .desktop file"));
 		return;
 	}
 
