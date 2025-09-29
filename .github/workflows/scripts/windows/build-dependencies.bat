@@ -41,7 +41,7 @@ set "PATH=%PATH%;%INSTALLDIR%\bin"
 cd "%BUILDDIR%"
 
 set FREETYPE=2.14.1
-set HARFBUZZ=11.5.0
+set HARFBUZZ=12.0.0
 set LIBJPEGTURBO=3.1.2
 set LIBPNG=1650
 set SDL=SDL3-3.2.22
@@ -64,7 +64,7 @@ set SHADERC_SPIRVHEADERS=2a611a970fdbc41ac2e3e328802aed9985352dca
 set SHADERC_SPIRVTOOLS=33e02568181e3312f49a3cf33df470bf96ef293a
 
 call :downloadfile "freetype-%FREETYPE%.tar.gz" https://sourceforge.net/projects/freetype/files/freetype2/%FREETYPE%/freetype-%FREETYPE%.tar.gz/download 174d9e53402e1bf9ec7277e22ec199ba3e55a6be2c0740cb18c0ee9850fc8c34 || goto error
-call :downloadfile "harfbuzz-%HARFBUZZ%.zip" https://github.com/harfbuzz/harfbuzz/archive/refs/tags/%HARFBUZZ%.zip a7c2412e8fce884d98f67a0c79edf7f0b922adc9cbc177cb4fd4eeeca3fcdbe2 || goto error
+call :downloadfile "harfbuzz-%HARFBUZZ%.zip" https://github.com/harfbuzz/harfbuzz/archive/refs/tags/%HARFBUZZ%.zip 0f3e036294974736982d8ec00f0bed763cd9f75ab9eacf8effe413af5d78ef06 || goto error
 call :downloadfile "lpng%LIBPNG%.zip" https://download.sourceforge.net/libpng/lpng1650.zip 4be6938313b08d5921f9dede13f2789b653c96f4f8595d92ff3f09c9320e51c7 || goto error
 call :downloadfile "lpng%LIBPNG%-apng.patch.gz" https://download.sourceforge.net/libpng-apng/libpng-%LIBPNGLONG%-apng.patch.gz 687ddc0c7cb128a3ea58e159b5129252537c27ede0c32a93f11f03127f0c0165 || goto error
 call :downloadfile "libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/%LIBJPEGTURBO%/libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" 8f0012234b464ce50890c490f18194f913a7b1f4e6a03d6644179fa0f867d0cf || goto error
