@@ -12,6 +12,5 @@ jobs:
       - name: Dispatch to windows-dependencies repo
         uses: peter-evans/repository-dispatch@v3
         with:
-          token: ${{ secrets.DEPS_REPO_DISPATCH_ACCESS_TOKEN }}
           repository: pcsx2/pcsx2-windows-dependencies
           event-type: deps-update
