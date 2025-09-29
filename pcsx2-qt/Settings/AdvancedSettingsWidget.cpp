@@ -47,14 +47,14 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* settings_dialog, 
 	connect(m_ui.vu1ClampMode, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) { setClampingMode(1, index); });
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.eeSoftAddSub, "EmuCore/CPU/Recompiler", "fpuSoftAddSub", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.eeSoftMulDiv, "EmuCore/CPU/Recompiler", "fpuSoftMulDiv", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.eeSoftSqrt, "EmuCore/CPU/Recompiler", "fpuSoftSqrt", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.eeSoftMul, "EmuCore/CPU/Recompiler", "fpuSoftMul", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.eeSoftDivSqrt, "EmuCore/CPU/Recompiler", "fpuSoftDivSqrt", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vu0SoftAddSub, "EmuCore/CPU/Recompiler", "vu0SoftAddSub", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vu0SoftMulDiv, "EmuCore/CPU/Recompiler", "vu0SoftMulDiv", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vu0SoftSqrt, "EmuCore/CPU/Recompiler", "vu0SoftSqrt", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vu0SoftMul, "EmuCore/CPU/Recompiler", "vu0SoftMul", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vu0SoftDivSqrt, "EmuCore/CPU/Recompiler", "vu0SoftDivSqrt", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vu1SoftAddSub, "EmuCore/CPU/Recompiler", "vu1SoftAddSub", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vu1SoftMulDiv, "EmuCore/CPU/Recompiler", "vu1SoftMulDiv", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vu1SoftSqrt, "EmuCore/CPU/Recompiler", "vu1SoftSqrt", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vu1SoftMul, "EmuCore/CPU/Recompiler", "vu1SoftMul", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vu1SoftDivSqrt, "EmuCore/CPU/Recompiler", "vu1SoftDivSqrt", false);
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.iopRecompiler, "EmuCore/CPU/Recompiler", "EnableIOP", true);
 
