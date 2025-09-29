@@ -710,7 +710,7 @@ static __fi PS2Float _vuAccurateOpMUL(u32 fs, u32 ft)
 
 static __fi void _vuMUL(VURegs* VU)
 {
-	if (CHECK_VU_SOFT_MULDIV((VU == &VU1) ? 1 : 0))
+	if (CHECK_VU_SOFT_MUL((VU == &VU1) ? 1 : 0))
 		applyAccurateBinaryMACOp<_vuAccurateOpMUL, MACOpDst::Fd>(VU);
 	else
 		applyBinaryMACOp<_vuOpMUL, MACOpDst::Fd>(VU);
@@ -718,7 +718,7 @@ static __fi void _vuMUL(VURegs* VU)
 
 static __fi void vuMULbc(VURegs* VU, u32 bc)
 {
-	if (CHECK_VU_SOFT_MULDIV((VU == &VU1) ? 1 : 0))
+	if (CHECK_VU_SOFT_MUL((VU == &VU1) ? 1 : 0))
 		applyAccurateBinaryMACOpBroadcast<_vuAccurateOpMUL, MACOpDst::Fd>(VU, bc);
 	else
 		applyBinaryMACOpBroadcast<_vuOpMUL, MACOpDst::Fd>(VU, bc);
@@ -734,7 +734,7 @@ static __fi void _vuMULw(VURegs* VU) { vuMULbc(VU, VU->VF[_Ft_].i.w); }
 
 static __fi void _vuMULA(VURegs* VU)
 {
-	if (CHECK_VU_SOFT_MULDIV((VU == &VU1) ? 1 : 0))
+	if (CHECK_VU_SOFT_MUL((VU == &VU1) ? 1 : 0))
 		applyAccurateBinaryMACOp<_vuAccurateOpMUL, MACOpDst::Acc>(VU);
 	else
 		applyBinaryMACOp<_vuOpMUL, MACOpDst::Acc>(VU);
@@ -742,7 +742,7 @@ static __fi void _vuMULA(VURegs* VU)
 
 static __fi void vuMULAbc(VURegs* VU, u32 bc)
 {
-	if (CHECK_VU_SOFT_MULDIV((VU == &VU1) ? 1 : 0))
+	if (CHECK_VU_SOFT_MUL((VU == &VU1) ? 1 : 0))
 		applyAccurateBinaryMACOpBroadcast<_vuAccurateOpMUL, MACOpDst::Acc>(VU, bc);
 	else
 		applyBinaryMACOpBroadcast<_vuOpMUL, MACOpDst::Acc>(VU, bc);
@@ -840,7 +840,7 @@ static __fi PS2Float _vuAccurateOpMADDA(u32 acc, u32 fs, u32 ft, bool oflw)
 
 static __fi void _vuMADD(VURegs* VU)
 {
-	if (CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_MULDIV((VU == &VU1) ? 1 : 0))
+	if (CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_MUL((VU == &VU1) ? 1 : 0))
 		applyAccurateTernaryMACOp<_vuAccurateOpMADD, MACOpDst::Fd>(VU);
 	else
 		applyTernaryMACOp<_vuOpMADD, MACOpDst::Fd>(VU);
@@ -848,7 +848,7 @@ static __fi void _vuMADD(VURegs* VU)
 
 static __fi void vuMADDbc(VURegs* VU, u32 bc)
 {
-	if (CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_MULDIV((VU == &VU1) ? 1 : 0))
+	if (CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_MUL((VU == &VU1) ? 1 : 0))
 		applyAccurateTernaryMACOpBroadcast<_vuAccurateOpMADD, MACOpDst::Fd>(VU, bc);
 	else
 		applyTernaryMACOpBroadcast<_vuOpMADD, MACOpDst::Fd>(VU, bc);
@@ -863,7 +863,7 @@ static __fi void _vuMADDw(VURegs* VU) { vuMADDbc(VU, VU->VF[_Ft_].i.w); }
 
 static __fi void _vuMADDA(VURegs* VU)
 {
-	if (CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_MULDIV((VU == &VU1) ? 1 : 0))
+	if (CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_MUL((VU == &VU1) ? 1 : 0))
 		applyAccurateAccumulatorTernaryMACOp<_vuAccurateOpMADDA, MACOpDst::Acc>(VU);
 	else
 		applyTernaryMACOp<_vuOpMADD, MACOpDst::Acc>(VU);
@@ -871,7 +871,7 @@ static __fi void _vuMADDA(VURegs* VU)
 
 static __fi void vuMADDAbc(VURegs* VU, u32 bc)
 {
-	if (CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_MULDIV((VU == &VU1) ? 1 : 0))
+	if (CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_MUL((VU == &VU1) ? 1 : 0))
 		applyAccurateAccumulatorTernaryMACOpBroadcast<_vuAccurateOpMADDA, MACOpDst::Acc>(VU, bc);
 	else
 		applyTernaryMACOpBroadcast<_vuOpMADD, MACOpDst::Acc>(VU, bc);
@@ -903,7 +903,7 @@ static __fi PS2Float _vuAccurateOpMSUBA(u32 acc, u32 fs, u32 ft, bool oflw)
 
 static __fi void _vuMSUB(VURegs* VU)
 {
-	if (CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_MULDIV((VU == &VU1) ? 1 : 0))
+	if (CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_MUL((VU == &VU1) ? 1 : 0))
 		applyAccurateTernaryMACOp<_vuAccurateOpMSUB, MACOpDst::Fd>(VU);
 	else
 		applyTernaryMACOp<_vuOpMSUB, MACOpDst::Fd>(VU);
@@ -911,7 +911,7 @@ static __fi void _vuMSUB(VURegs* VU)
 
 static __fi void vuMSUBbc(VURegs* VU, u32 bc)
 {
-	if (CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_MULDIV((VU == &VU1) ? 1 : 0))
+	if (CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_MUL((VU == &VU1) ? 1 : 0))
 		applyAccurateTernaryMACOpBroadcast<_vuAccurateOpMSUB, MACOpDst::Fd>(VU, bc);
 	else
 		applyTernaryMACOpBroadcast<_vuOpMSUB, MACOpDst::Fd>(VU, bc);
@@ -926,7 +926,7 @@ static __fi void _vuMSUBw(VURegs* VU) { vuMSUBbc(VU, VU->VF[_Ft_].i.w); }
 
 static __fi void _vuMSUBA(VURegs* VU)
 {
-	if (CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_MULDIV((VU == &VU1) ? 1 : 0))
+	if (CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_MUL((VU == &VU1) ? 1 : 0))
 		applyAccurateAccumulatorTernaryMACOp<_vuAccurateOpMSUBA, MACOpDst::Acc>(VU);
 	else
 		applyTernaryMACOp<_vuOpMSUB, MACOpDst::Acc>(VU);
@@ -934,7 +934,7 @@ static __fi void _vuMSUBA(VURegs* VU)
 
 static __fi void vuMSUBAbc(VURegs* VU, u32 bc)
 {
-	if (CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_MULDIV((VU == &VU1) ? 1 : 0))
+	if (CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_MUL((VU == &VU1) ? 1 : 0))
 		applyAccurateAccumulatorTernaryMACOpBroadcast<_vuAccurateOpMSUBA, MACOpDst::Acc>(VU, bc);
 	else
 		applyTernaryMACOpBroadcast<_vuOpMSUB, MACOpDst::Acc>(VU, bc);
@@ -1008,7 +1008,7 @@ static __fi void _vuMINIw(VURegs* VU) { applyMinMaxBroadcast<fp_min>(VU, VU->VF[
 
 static __fi void _vuOPMULA(VURegs* VU)
 {
-	if (CHECK_VU_SOFT_MULDIV((VU == &VU1) ? 1 : 0))
+	if (CHECK_VU_SOFT_MUL((VU == &VU1) ? 1 : 0))
 	{
 		VU->ACC.i.x = VU_MACx_UPDATE(VU, vuAccurateMul(VU->VF[_Fs_].i.y, VU->VF[_Ft_].i.z));
 		VU->ACC.i.y = VU_MACy_UPDATE(VU, vuAccurateMul(VU->VF[_Fs_].i.z, VU->VF[_Ft_].i.x));
@@ -1031,7 +1031,7 @@ static __fi void _vuOPMSUB(VURegs* VU)
 	else
 		dst = &VU->VF[_Fd_];
 
-	if (CHECK_VU_SOFT_MULDIV((VU == &VU1) ? 1 : 0))
+	if (CHECK_VU_SOFT_MUL((VU == &VU1) ? 1 : 0))
 	{
 		u32 ftx = VU->VF[_Ft_].i.x;
 		u32 fty = VU->VF[_Ft_].i.y;
@@ -1121,7 +1121,7 @@ static __fi void _vuCLIP(VURegs* VU)
 
 static __fi void _vuDIV(VURegs* VU)
 {
-	if (CHECK_VU_SOFT_MULDIV((VU == &VU1) ? 1 : 0))
+	if (CHECK_VU_SOFT_DIVSQRT((VU == &VU1) ? 1 : 0))
 	{
 		PS2Float ft = PS2Float(VU->VF[_Ft_].UL[_Ftf_]);
 		PS2Float fs = PS2Float(VU->VF[_Fs_].UL[_Fsf_]);
@@ -1176,7 +1176,7 @@ static __fi void _vuDIV(VURegs* VU)
 
 static __fi void _vuSQRT(VURegs* VU)
 {
-	if (CHECK_VU_SOFT_SQRT((VU == &VU1) ? 1 : 0))
+	if (CHECK_VU_SOFT_DIVSQRT((VU == &VU1) ? 1 : 0))
 	{
 		PS2Float ft = PS2Float(VU->VF[_Ft_].UL[_Ftf_]);
 
@@ -1201,7 +1201,7 @@ static __fi void _vuSQRT(VURegs* VU)
 
 static __fi void _vuRSQRT(VURegs* VU)
 {
-	if (CHECK_VU_SOFT_SQRT((VU == &VU1) ? 1 : 0))
+	if (CHECK_VU_SOFT_DIVSQRT((VU == &VU1) ? 1 : 0))
 	{
 		PS2Float ft = PS2Float(VU->VF[_Ft_].UL[_Ftf_]);
 		PS2Float fs = PS2Float(VU->VF[_Fs_].UL[_Fsf_]);
@@ -1922,7 +1922,7 @@ static __ri void _vuWAITP(VURegs* VU)
 
 static __ri void _vuESADD(VURegs* VU)
 {
-	if (CHECK_VU_SOFT_MULDIV((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0)) { VU->p.UL = PS2Float(VU->VF[_Fs_].i.x).ESADD(PS2Float(VU->VF[_Fs_].i.y), PS2Float(VU->VF[_Fs_].i.z)).raw; }
+	if (CHECK_VU_SOFT_MUL((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0)) { VU->p.UL = PS2Float(VU->VF[_Fs_].i.x).ESADD(PS2Float(VU->VF[_Fs_].i.y), PS2Float(VU->VF[_Fs_].i.z)).raw; }
 	else
 	{
 		float p = vuDouble(VU->VF[_Fs_].i.x) * vuDouble(VU->VF[_Fs_].i.x) + vuDouble(VU->VF[_Fs_].i.y) * vuDouble(VU->VF[_Fs_].i.y) + vuDouble(VU->VF[_Fs_].i.z) * vuDouble(VU->VF[_Fs_].i.z);
@@ -1933,7 +1933,7 @@ static __ri void _vuESADD(VURegs* VU)
 
 static __ri void _vuERSADD(VURegs* VU)
 {
-	if (CHECK_VU_SOFT_MULDIV((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0)) { VU->p.UL = PS2Float(VU->VF[_Fs_].i.x).ERSADD(PS2Float(VU->VF[_Fs_].i.y), PS2Float(VU->VF[_Fs_].i.z)).raw; }
+	if (CHECK_VU_SOFT_MUL((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_DIVSQRT((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0)) { VU->p.UL = PS2Float(VU->VF[_Fs_].i.x).ERSADD(PS2Float(VU->VF[_Fs_].i.y), PS2Float(VU->VF[_Fs_].i.z)).raw; }
 	else
 	{
 		float p = (vuDouble(VU->VF[_Fs_].i.x) * vuDouble(VU->VF[_Fs_].i.x)) + (vuDouble(VU->VF[_Fs_].i.y) * vuDouble(VU->VF[_Fs_].i.y)) + (vuDouble(VU->VF[_Fs_].i.z) * vuDouble(VU->VF[_Fs_].i.z));
@@ -1947,7 +1947,7 @@ static __ri void _vuERSADD(VURegs* VU)
 
 static __ri void _vuELENG(VURegs* VU)
 {
-	if (CHECK_VU_SOFT_MULDIV((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0)) { VU->p.UL = PS2Float(VU->VF[_Fs_].i.x).ELENG(PS2Float(VU->VF[_Fs_].i.y), PS2Float(VU->VF[_Fs_].i.z)).raw; }
+	if (CHECK_VU_SOFT_MUL((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_DIVSQRT((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0)) { VU->p.UL = PS2Float(VU->VF[_Fs_].i.x).ELENG(PS2Float(VU->VF[_Fs_].i.y), PS2Float(VU->VF[_Fs_].i.z)).raw; }
 	else
 	{
 		float p = vuDouble(VU->VF[_Fs_].i.x) * vuDouble(VU->VF[_Fs_].i.x) + vuDouble(VU->VF[_Fs_].i.y) * vuDouble(VU->VF[_Fs_].i.y) + vuDouble(VU->VF[_Fs_].i.z) * vuDouble(VU->VF[_Fs_].i.z);
@@ -1962,7 +1962,7 @@ static __ri void _vuELENG(VURegs* VU)
 
 static __ri void _vuERLENG(VURegs* VU)
 {
-	if (CHECK_VU_SOFT_MULDIV((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0)) { VU->p.UL = PS2Float(VU->VF[_Fs_].i.x).ERLENG(PS2Float(VU->VF[_Fs_].i.y), PS2Float(VU->VF[_Fs_].i.z)).raw; }
+	if (CHECK_VU_SOFT_MUL((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_DIVSQRT((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0)) { VU->p.UL = PS2Float(VU->VF[_Fs_].i.x).ERLENG(PS2Float(VU->VF[_Fs_].i.y), PS2Float(VU->VF[_Fs_].i.z)).raw; }
 	else
 	{
 		float p = vuDouble(VU->VF[_Fs_].i.x) * vuDouble(VU->VF[_Fs_].i.x) + vuDouble(VU->VF[_Fs_].i.y) * vuDouble(VU->VF[_Fs_].i.y) + vuDouble(VU->VF[_Fs_].i.z) * vuDouble(VU->VF[_Fs_].i.z);
@@ -2003,7 +2003,7 @@ static __ri PS2Float _vuCalculateAccurateEATAN(PS2Float inputvalue)
 
 static __ri void _vuEATAN(VURegs* VU)
 {
-	if (CHECK_VU_SOFT_MULDIV((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0)) { VU->p.UL = _vuCalculateAccurateEATAN(PS2Float(VU->VF[_Fs_].UL[_Fsf_])).raw; }
+	if (CHECK_VU_SOFT_MUL((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0)) { VU->p.UL = _vuCalculateAccurateEATAN(PS2Float(VU->VF[_Fs_].UL[_Fsf_])).raw; }
 	else
 	{
 		float p = _vuCalculateEATAN(vuDouble(VU->VF[_Fs_].UL[_Fsf_]));
@@ -2013,7 +2013,7 @@ static __ri void _vuEATAN(VURegs* VU)
 
 static __ri void _vuEATANxy(VURegs* VU)
 {
-	if (CHECK_VU_SOFT_MULDIV((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0)) { VU->p.UL = _vuCalculateAccurateEATAN(PS2Float(VU->VF[_Fs_].i.y).Div(PS2Float(VU->VF[_Fs_].i.x))).raw; }
+	if (CHECK_VU_SOFT_MUL((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_DIVSQRT((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0)) { VU->p.UL = _vuCalculateAccurateEATAN(PS2Float(VU->VF[_Fs_].i.y).Div(PS2Float(VU->VF[_Fs_].i.x))).raw; }
 	else
 	{
 		float p = 0;
@@ -2027,7 +2027,7 @@ static __ri void _vuEATANxy(VURegs* VU)
 
 static __ri void _vuEATANxz(VURegs* VU)
 {
-	if (CHECK_VU_SOFT_MULDIV((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0)) { VU->p.UL = _vuCalculateAccurateEATAN(PS2Float(VU->VF[_Fs_].i.z).Div(PS2Float(VU->VF[_Fs_].i.x))).raw; }
+	if (CHECK_VU_SOFT_MUL((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_DIVSQRT((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0)) { VU->p.UL = _vuCalculateAccurateEATAN(PS2Float(VU->VF[_Fs_].i.z).Div(PS2Float(VU->VF[_Fs_].i.x))).raw; }
 	else
 	{
 		float p = 0;
@@ -2051,7 +2051,7 @@ static __ri void _vuESUM(VURegs* VU)
 
 static __ri void _vuERCPR(VURegs* VU)
 {
-	if (CHECK_VU_SOFT_MULDIV((VU == &VU1) ? 1 : 0)) { VU->p.UL = PS2Float(VU->VF[_Fs_].UL[_Fsf_]).ERCPR().raw; }
+	if (CHECK_VU_SOFT_DIVSQRT((VU == &VU1) ? 1 : 0)) { VU->p.UL = PS2Float(VU->VF[_Fs_].UL[_Fsf_]).ERCPR().raw; }
 	else
 	{
 		float p = vuDouble(VU->VF[_Fs_].UL[_Fsf_]);
@@ -2067,7 +2067,7 @@ static __ri void _vuERCPR(VURegs* VU)
 
 static __ri void _vuESQRT(VURegs* VU)
 {
-	if (CHECK_VU_SOFT_SQRT((VU == &VU1) ? 1 : 0)) { VU->p.UL = PS2Float(VU->VF[_Fs_].UL[_Fsf_]).ESQRT().raw; }
+	if (CHECK_VU_SOFT_DIVSQRT((VU == &VU1) ? 1 : 0)) { VU->p.UL = PS2Float(VU->VF[_Fs_].UL[_Fsf_]).ESQRT().raw; }
 	else
 	{
 		float p = vuDouble(VU->VF[_Fs_].UL[_Fsf_]);
@@ -2083,7 +2083,7 @@ static __ri void _vuESQRT(VURegs* VU)
 
 static __ri void _vuERSQRT(VURegs* VU)
 {
-	if (CHECK_VU_SOFT_SQRT((VU == &VU1) ? 1 : 0)) { VU->p.UL = PS2Float(VU->VF[_Fs_].UL[_Fsf_]).ERSQRT().raw; }
+	if (CHECK_VU_SOFT_DIVSQRT((VU == &VU1) ? 1 : 0)) { VU->p.UL = PS2Float(VU->VF[_Fs_].UL[_Fsf_]).ERSQRT().raw; }
 	else
 	{
 		float p = vuDouble(VU->VF[_Fs_].UL[_Fsf_]);
@@ -2103,7 +2103,7 @@ static __ri void _vuERSQRT(VURegs* VU)
 
 static __ri void _vuESIN(VURegs* VU)
 {
-	if (CHECK_VU_SOFT_MULDIV((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0)) { VU->p.UL = PS2Float(VU->VF[_Fs_].UL[_Fsf_]).ESIN().raw; }
+	if (CHECK_VU_SOFT_MUL((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0)) { VU->p.UL = PS2Float(VU->VF[_Fs_].UL[_Fsf_]).ESIN().raw; }
 	else
 	{
 		float sinconsts[5] = {1.0f, -0.166666567325592f, 0.008333025500178f, -0.000198074136279f, 0.000002601886990f};
@@ -2116,7 +2116,7 @@ static __ri void _vuESIN(VURegs* VU)
 
 static __ri void _vuEEXP(VURegs* VU)
 {
-	if (CHECK_VU_SOFT_MULDIV((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0)) { VU->p.UL = PS2Float(VU->VF[_Fs_].UL[_Fsf_]).EEXP().raw; }
+	if (CHECK_VU_SOFT_MUL((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_DIVSQRT((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0)) { VU->p.UL = PS2Float(VU->VF[_Fs_].UL[_Fsf_]).EEXP().raw; }
 	else
 	{
 		float consts[6] = {0.249998688697815f, 0.031257584691048f, 0.002591371303424f,

@@ -338,7 +338,7 @@ void CTC1() {
 }
 
 void CVT_S() {
-	if (CHECK_FPU_SOFT_ADDSUB || CHECK_FPU_SOFT_MULDIV || CHECK_FPU_SOFT_SQRT) { _FdValUl_ = PS2Float::Itof(0, _FsValSl_).raw; }
+	if (CHECK_FPU_SOFT_ADDSUB || CHECK_FPU_SOFT_MUL || CHECK_FPU_SOFT_DIVSQRT) { _FdValUl_ = PS2Float::Itof(0, _FsValSl_).raw; }
 	else
 	{
 		_FdValf_ = (float)_FsValSl_;
@@ -347,14 +347,14 @@ void CVT_S() {
 }
 
 void CVT_W() {
-	if (CHECK_FPU_SOFT_ADDSUB || CHECK_FPU_SOFT_MULDIV || CHECK_FPU_SOFT_SQRT) { _FdValSl_ = PS2Float::Ftoi(0, _FsValUl_); }
+	if (CHECK_FPU_SOFT_ADDSUB || CHECK_FPU_SOFT_MUL || CHECK_FPU_SOFT_DIVSQRT) { _FdValSl_ = PS2Float::Ftoi(0, _FsValUl_); }
 	else if ( ( _FsValUl_ & 0x7F800000 ) <= 0x4E800000 ) { _FdValSl_ = (s32)_FsValf_; }
 	else if ( ( _FsValUl_ & 0x80000000 ) == 0 ) { _FdValUl_ = 0x7fffffff; }
 	else { _FdValUl_ = 0x80000000; }
 }
 
 void DIV_S() {
-	if (CHECK_FPU_SOFT_MULDIV)
+	if (CHECK_FPU_SOFT_DIVSQRT)
 	{
 		PS2Float divres = fpuAccurateDiv(_FsValUl_, _FtValUl_);
 		_FdValUl_ = divres.raw;
@@ -376,7 +376,7 @@ void DIV_S() {
 	method provides a similar outcome and is faster. (cottonvibes)
 */
 void MADD_S() {
-	if (CHECK_FPU_SOFT_ADDSUB && CHECK_FPU_SOFT_MULDIV)
+	if (CHECK_FPU_SOFT_ADDSUB && CHECK_FPU_SOFT_MUL)
 	{
 		PS2Float fmacres = fpuAccurateMulAdd(_FAValUl_, _FsValUl_, _FtValUl_);
 		_FdValUl_ = fmacres.raw;
@@ -394,7 +394,7 @@ void MADD_S() {
 }
 
 void MADDA_S() {
-	if (CHECK_FPU_SOFT_ADDSUB && CHECK_FPU_SOFT_MULDIV)
+	if (CHECK_FPU_SOFT_ADDSUB && CHECK_FPU_SOFT_MUL)
 	{
 		PS2Float fmacres = fpuAccurateMulAdd(_FAValUl_, _FsValUl_, _FtValUl_);
 		_FAValUl_ = fmacres.raw;
@@ -429,7 +429,7 @@ void MOV_S() {
 }
 
 void MSUB_S() {
-	if (CHECK_FPU_SOFT_ADDSUB && CHECK_FPU_SOFT_MULDIV)
+	if (CHECK_FPU_SOFT_ADDSUB && CHECK_FPU_SOFT_MUL)
 	{
 		PS2Float fmacres = fpuAccurateMulSub(_FAValUl_, _FsValUl_, _FtValUl_);
 		_FdValUl_ = fmacres.raw;
@@ -447,7 +447,7 @@ void MSUB_S() {
 }
 
 void MSUBA_S() {
-	if (CHECK_FPU_SOFT_ADDSUB && CHECK_FPU_SOFT_MULDIV)
+	if (CHECK_FPU_SOFT_ADDSUB && CHECK_FPU_SOFT_MUL)
 	{
 		PS2Float fmacres = fpuAccurateMulSub(_FAValUl_, _FsValUl_, _FtValUl_);
 		_FAValUl_ = fmacres.raw;
@@ -467,7 +467,7 @@ void MTC1() {
 }
 
 void MUL_S() {
-	if (CHECK_FPU_SOFT_MULDIV)
+	if (CHECK_FPU_SOFT_MUL)
 	{
 		PS2Float mulres = fpuAccurateMul(_FsValUl_, _FtValUl_);
 		_FdValUl_ = mulres.raw;
@@ -483,7 +483,7 @@ void MUL_S() {
 }
 
 void MULA_S() {
-	if (CHECK_FPU_SOFT_MULDIV)
+	if (CHECK_FPU_SOFT_MUL)
 	{
 		PS2Float mulres = fpuAccurateMul(_FsValUl_, _FtValUl_);
 		_FAValUl_ = mulres.raw;
@@ -506,7 +506,7 @@ void NEG_S() {
 void RSQRT_S() {
 	clearFPUFlags(FPUflagD | FPUflagI);
 
-	if (CHECK_FPU_SOFT_SQRT)
+	if (CHECK_FPU_SOFT_DIVSQRT)
 	{
 		PS2Float rsqrtres = PS2Float(_FsValUl_).Rsqrt(_FtValUl_);
 		_FdValUl_ = rsqrtres.raw;
@@ -538,7 +538,7 @@ void RSQRT_S() {
 void SQRT_S() {
 	clearFPUFlags(FPUflagI | FPUflagD);
 
-	if (CHECK_FPU_SOFT_SQRT)
+	if (CHECK_FPU_SOFT_DIVSQRT)
 	{
 		PS2Float sqrtres = PS2Float(_FtValUl_).Sqrt();
 		_FdValUl_ = sqrtres.raw;
