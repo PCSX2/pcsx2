@@ -308,12 +308,13 @@ GSVector4i GSTextureCache::TranslateAlignedRectByPage(u32 tbp, u32 tebp, u32 tbw
 		if (block_matched_format)
 		{
 			GSVector4i b2a_offset = GSVector4i::zero();
-			const GSVector4i target_rect = GSVector4i(0, 0, src_bw, 2048);
+			const int y_page_offset = (page_offset / (src_bw / s_psm.pgs.x)) * s_psm.pgs.y;
+			const GSVector4i target_rect = GSVector4i(0, y_page_offset, src_bw, 2048);
 			bool offset_found = false;
 
-			for (b2a_offset.x = target_rect.x; b2a_offset.x < target_rect.z; b2a_offset.x += s_psm.bs.x)
+			for (b2a_offset.y = target_rect.y; b2a_offset.y < target_rect.w; b2a_offset.y += s_psm.bs.y)
 			{
-				for (b2a_offset.y = target_rect.y; b2a_offset.y < target_rect.w; b2a_offset.y += s_psm.bs.y)
+				for (b2a_offset.x = target_rect.x; b2a_offset.x < target_rect.z; b2a_offset.x += s_psm.bs.x)
 				{
 					const u32 a_candidate_bp = s_psm.info.bn(b2a_offset.x, b2a_offset.y, tbp, sbw);
 					if (sbp == a_candidate_bp)
@@ -778,12 +779,12 @@ void GSTextureCache::DirtyRectByPage(u32 sbp, u32 spsm, u32 sbw, Target* t, GSVe
 			if ((xblocks <= (src_info->pgs.x / src_info->bs.x) && yblocks <= (src_info->pgs.y / src_info->bs.y)) || req_depth_offset)
 			{
 				GSVector4i b2a_offset = GSVector4i::zero();
-				const GSVector4i target_rect = GSVector4i(0, 0, src_width, 2048);
+				const GSVector4i target_rect = GSVector4i(0, 0, src_info->pgs.x, src_info->pgs.y);
 				bool offset_found = false;
 
-				for (b2a_offset.x = target_rect.x; b2a_offset.x < target_rect.z; b2a_offset.x += src_info->bs.x)
+				for (b2a_offset.y = target_rect.y; b2a_offset.y < target_rect.w; b2a_offset.y += src_info->bs.y)
 				{
-					for (b2a_offset.y = target_rect.y; b2a_offset.y < target_rect.w; b2a_offset.y += src_info->bs.y)
+					for (b2a_offset.x = target_rect.x; b2a_offset.x < target_rect.z; b2a_offset.x += src_info->bs.x)
 					{
 						const u32 a_candidate_bp = src_info->info.bn(b2a_offset.x, b2a_offset.y, target_bp, src_pg_width);
 						if (sbp == a_candidate_bp)
