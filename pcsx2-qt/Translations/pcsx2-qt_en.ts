@@ -2489,6 +2489,11 @@ Leaderboard Position: {1} of {2}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/CDVD/IsoHasher.cpp" line="153"/>
+        <source>Calculating checksum for track {}...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../../pcsx2/CDVD/CDVDdiscReader.cpp" line="201"/>
         <source>Precaching is not supported for discs.</source>
         <translation type="unfinished"></translation>
