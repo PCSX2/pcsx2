@@ -4,8 +4,12 @@
  * This program is made available under an ISC-style license.  See the
  * accompanying file LICENSE for details.
  */
+#ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0603
+#endif // !_WIN32_WINNT
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif // !NOMINMAX
 
 #include <algorithm>
 #include <atomic>
@@ -36,31 +40,6 @@
 #include "cubeb_strings.h"
 #include "cubeb_tracing.h"
 #include "cubeb_utils.h"
-
-// Some people have reported glitches with IAudioClient3 capture streams:
-// http://blog.nirbheek.in/2018/03/low-latency-audio-on-windows-with.html
-// https://bugzilla.mozilla.org/show_bug.cgi?id=1590902
-#define ALLOW_AUDIO_CLIENT_3_FOR_INPUT 0
-// IAudioClient3::GetSharedModeEnginePeriod() seem to return min latencies
-// bigger than IAudioClient::GetDevicePeriod(), which is confusing (10ms vs
-// 3ms), though the default latency is usually the same and we should use the
-// IAudioClient3 function anyway, as it's more correct
-#define USE_AUDIO_CLIENT_3_MIN_PERIOD 1
-// If this is true, we allow IAudioClient3 the creation of sessions with a
-// latency above the default one (usually 10ms).
-// Whether we should default this to true or false depend on many things:
-// -Does creating a shared IAudioClient3 session (not locked to a format)
-//  actually forces all the IAudioClient(1) sessions to have the same latency?
-//  I could find no proof of that.
-// -Does creating a shared IAudioClient3 session with a latency >= the default
-//  one actually improve the latency (as in how late the audio is) at all?
-// -Maybe we could expose this as cubeb stream pref
-//  (e.g. take priority over other apps)?
-#define ALLOW_AUDIO_CLIENT_3_LATENCY_OVER_DEFAULT 1
-// If this is true and the user specified a target latency >= the IAudioClient3
-// max one, then we reject it and fall back to IAudioClient(1). There wouldn't
-// be much point in having a low latency if that's not what the user wants.
-#define REJECT_AUDIO_CLIENT_3_LATENCY_OVER_MAX 0
 
 // Windows 10 exposes the IAudioClient3 interface to create low-latency streams.
 // Copy the interface definition from audioclient.h here to make the code
@@ -229,11 +208,6 @@ struct auto_stream_ref {
   cubeb_stream * stm;
 };
 
-using set_mm_thread_characteristics_function =
-    decltype(&AvSetMmThreadCharacteristicsW);
-using revert_mm_thread_characteristics_function =
-    decltype(&AvRevertMmThreadCharacteristics);
-
 extern cubeb_ops const wasapi_ops;
 
 static com_heap_ptr<wchar_t>
@@ -304,8 +278,8 @@ wasapi_enumerate_devices_internal(cubeb * context, cubeb_device_type type,
 static int
 wasapi_device_collection_destroy(cubeb * ctx,
                                  cubeb_device_collection * collection);
-static char const *
-wstr_to_utf8(wchar_t const * str);
+static std::unique_ptr<char const[]>
+wstr_to_utf8(LPCWSTR str);
 static std::unique_ptr<wchar_t const[]>
 utf8_to_wstr(char const * str);
 
@@ -313,6 +287,15 @@ utf8_to_wstr(char const * str);
 
 class wasapi_collection_notification_client;
 class monitor_device_notifications;
+
+typedef enum {
+  /* Clear options */
+  CUBEB_AUDIO_CLIENT2_NONE,
+  /* Use AUDCLNT_STREAMOPTIONS_RAW  */
+  CUBEB_AUDIO_CLIENT2_RAW,
+  /* Use CUBEB_STREAM_PREF_COMMUNICATIONS */
+  CUBEB_AUDIO_CLIENT2_VOICE
+} AudioClient2Option;
 
 struct cubeb {
   cubeb_ops const * ops = &wasapi_ops;
@@ -331,13 +314,6 @@ struct cubeb {
       nullptr;
   void * output_collection_changed_user_ptr = nullptr;
   UINT64 performance_counter_frequency;
-  /* Library dynamically opened to increase the render thread priority, and
-     the two function pointers we need. */
-  HMODULE mmcss_module = nullptr;
-  set_mm_thread_characteristics_function set_mm_thread_characteristics =
-      nullptr;
-  revert_mm_thread_characteristics_function revert_mm_thread_characteristics =
-      nullptr;
 };
 
 class wasapi_endpoint_notification_client;
@@ -360,20 +336,33 @@ struct cubeb_stream {
   /* Mixer pameters. We need to convert the input stream to this
      samplerate/channel layout, as WASAPI does not resample nor upmix
      itself. */
-  cubeb_stream_params input_mix_params = {CUBEB_SAMPLE_FLOAT32NE, 0, 0,
+  cubeb_stream_params input_mix_params = {CUBEB_SAMPLE_FLOAT32NE,
+                                          0,
+                                          0,
                                           CUBEB_LAYOUT_UNDEFINED,
-                                          CUBEB_STREAM_PREF_NONE};
-  cubeb_stream_params output_mix_params = {CUBEB_SAMPLE_FLOAT32NE, 0, 0,
+                                          CUBEB_STREAM_PREF_NONE,
+                                          CUBEB_INPUT_PROCESSING_PARAM_NONE};
+  cubeb_stream_params output_mix_params = {CUBEB_SAMPLE_FLOAT32NE,
+                                           0,
+                                           0,
                                            CUBEB_LAYOUT_UNDEFINED,
-                                           CUBEB_STREAM_PREF_NONE};
+                                           CUBEB_STREAM_PREF_NONE,
+                                           CUBEB_INPUT_PROCESSING_PARAM_NONE};
   /* Stream parameters. This is what the client requested,
    * and what will be presented in the callback. */
-  cubeb_stream_params input_stream_params = {CUBEB_SAMPLE_FLOAT32NE, 0, 0,
+  cubeb_stream_params input_stream_params = {CUBEB_SAMPLE_FLOAT32NE,
+                                             0,
+                                             0,
                                              CUBEB_LAYOUT_UNDEFINED,
-                                             CUBEB_STREAM_PREF_NONE};
-  cubeb_stream_params output_stream_params = {CUBEB_SAMPLE_FLOAT32NE, 0, 0,
-                                              CUBEB_LAYOUT_UNDEFINED,
-                                              CUBEB_STREAM_PREF_NONE};
+                                             CUBEB_STREAM_PREF_NONE,
+                                             CUBEB_INPUT_PROCESSING_PARAM_NONE};
+  cubeb_stream_params output_stream_params = {
+      CUBEB_SAMPLE_FLOAT32NE,
+      0,
+      0,
+      CUBEB_LAYOUT_UNDEFINED,
+      CUBEB_STREAM_PREF_NONE,
+      CUBEB_INPUT_PROCESSING_PARAM_NONE};
   /* A MMDevice role for this stream: either communication or console here. */
   ERole role;
   /* True if this stream will transport voice-data. */
@@ -662,6 +651,10 @@ public:
                                                    LPCWSTR device_id)
   {
     LOG("collection: Audio device default changed, id = %S.", device_id);
+
+    /* Default device changes count as device collection changes */
+    monitor_notifications.notify(flow);
+
     return S_OK;
   }
 
@@ -772,7 +765,7 @@ public:
                                                    LPCWSTR device_id)
   {
     LOG("endpoint: Audio device default changed flow=%d role=%d "
-        "new_device_id=%ws.",
+        "new_device_id=%S.",
         flow, role, device_id);
 
     /* we only support a single stream type for now. */
@@ -783,11 +776,13 @@ public:
     DWORD last_change_ms = timeGetTime() - last_device_change;
     bool same_device = default_device_id && device_id &&
                        wcscmp(default_device_id.get(), device_id) == 0;
-    LOG("endpoint: Audio device default changed last_change=%u same_device=%d",
+    LOG("endpoint: Audio device default changed last_change=%lu same_device=%d",
         last_change_ms, same_device);
     if (last_change_ms > DEVICE_CHANGE_DEBOUNCE_MS || !same_device) {
       if (device_id) {
-        default_device_id.reset(_wcsdup(device_id));
+        wchar_t * new_device_id = new wchar_t[wcslen(device_id) + 1];
+        wcscpy(new_device_id, device_id);
+        default_device_id.reset(new_device_id);
       } else {
         default_device_id.reset();
       }
@@ -863,16 +858,12 @@ intern_device_id(cubeb * ctx, wchar_t const * id)
 
   auto_lock lock(ctx->lock);
 
-  char const * tmp = wstr_to_utf8(id);
+  std::unique_ptr<char const[]> tmp = wstr_to_utf8(id);
   if (!tmp) {
     return nullptr;
   }
 
-  char const * interned = cubeb_strings_intern(ctx->device_ids, tmp);
-
-  free((void *)tmp);
-
-  return interned;
+  return cubeb_strings_intern(ctx->device_ids, tmp.get());
 }
 
 bool
@@ -977,7 +968,7 @@ refill(cubeb_stream * stm, void * input_buffer, long input_frames_count,
       cubeb_resampler_fill(stm->resampler.get(), input_buffer,
                            &input_frames_count, dest, output_frames_needed);
   if (out_frames < 0) {
-    ALOGV("Callback refill error: %d", out_frames);
+    ALOGV("Callback refill error: %ld", out_frames);
     wasapi_state_callback(stm, stm->user_ptr, CUBEB_STATE_ERROR);
     return out_frames;
   }
@@ -1263,8 +1254,8 @@ refill_callback_duplex(cubeb_stream * stm)
   XASSERT(has_input(stm) && has_output(stm));
 
   if (stm->input_stream_params.prefs & CUBEB_STREAM_PREF_LOOPBACK) {
-    HRESULT rv = get_input_buffer(stm);
-    if (FAILED(rv)) {
+    rv = get_input_buffer(stm);
+    if (!rv) {
       return rv;
     }
   }
@@ -1274,7 +1265,6 @@ refill_callback_duplex(cubeb_stream * stm)
 
   rv = get_output_buffer(stm, output_buffer, output_frames);
   if (!rv) {
-    hr = stm->render_client->ReleaseBuffer(output_frames, 0);
     return rv;
   }
 
@@ -1291,9 +1281,11 @@ refill_callback_duplex(cubeb_stream * stm)
 
   stm->total_output_frames += output_frames;
 
-  ALOGV("in: %zu, out: %zu, missing: %ld, ratio: %f", stm->total_input_frames,
-        stm->total_output_frames,
-        static_cast<long>(stm->total_output_frames) - stm->total_input_frames,
+  ALOGV("in: %llu, out: %llu, missing: %ld, ratio: %f",
+        (unsigned long long)stm->total_input_frames,
+        (unsigned long long)stm->total_output_frames,
+        static_cast<long long>(stm->total_output_frames) -
+            static_cast<long long>(stm->total_input_frames),
         static_cast<float>(stm->total_output_frames) / stm->total_input_frames);
 
   long got;
@@ -1438,8 +1430,7 @@ static unsigned int __stdcall wasapi_stream_render_loop(LPVOID stream)
 
   /* We could consider using "Pro Audio" here for WebAudio and
      maybe WebRTC. */
-  mmcss_handle =
-      stm->context->set_mm_thread_characteristics(L"Audio", &mmcss_task_index);
+  mmcss_handle = AvSetMmThreadCharacteristicsA("Audio", &mmcss_task_index);
   if (!mmcss_handle) {
     /* This is not fatal, but we might glitch under heavy load. */
     LOG("Unable to use mmcss to bump the render thread priority: %lx",
@@ -1519,8 +1510,8 @@ static unsigned int __stdcall wasapi_stream_render_loop(LPVOID stream)
       is_playing = stm->refill_callback(stm);
       break;
     case WAIT_OBJECT_0 + 3: { /* input available */
-      HRESULT rv = get_input_buffer(stm);
-      if (FAILED(rv)) {
+      bool rv = get_input_buffer(stm);
+      if (!rv) {
         is_playing = false;
         continue;
       }
@@ -1532,8 +1523,11 @@ static unsigned int __stdcall wasapi_stream_render_loop(LPVOID stream)
       break;
     }
     default:
-      LOG("case %lu not handled in render loop.", waitResult);
-      XASSERT(false);
+      LOG("render_loop: waitResult=%lu (lastError=%lu) unhandled, exiting",
+          waitResult, GetLastError());
+      is_playing = false;
+      hr = E_FAIL;
+      continue;
     }
   }
 
@@ -1547,7 +1541,7 @@ static unsigned int __stdcall wasapi_stream_render_loop(LPVOID stream)
   }
 
   if (mmcss_handle) {
-    stm->context->revert_mm_thread_characteristics(mmcss_handle);
+    AvRevertMmThreadCharacteristics(mmcss_handle);
   }
 
   if (FAILED(hr)) {
@@ -1559,18 +1553,6 @@ static unsigned int __stdcall wasapi_stream_render_loop(LPVOID stream)
 
 void
 wasapi_destroy(cubeb * context);
-
-HANDLE WINAPI
-set_mm_thread_characteristics_noop(LPCWSTR, LPDWORD mmcss_task_index)
-{
-  return (HANDLE)1;
-}
-
-BOOL WINAPI
-revert_mm_thread_characteristics_noop(HANDLE mmcss_handle)
-{
-  return true;
-}
 
 HRESULT
 register_notification_client(cubeb_stream * stm)
@@ -1807,31 +1789,6 @@ wasapi_init(cubeb ** context, char const * context_name)
     ctx->performance_counter_frequency = 0;
   }
 
-  ctx->mmcss_module = LoadLibraryW(L"Avrt.dll");
-
-  bool success = false;
-  if (ctx->mmcss_module) {
-    ctx->set_mm_thread_characteristics =
-        reinterpret_cast<set_mm_thread_characteristics_function>(
-            GetProcAddress(ctx->mmcss_module, "AvSetMmThreadCharacteristicsW"));
-    ctx->revert_mm_thread_characteristics =
-        reinterpret_cast<revert_mm_thread_characteristics_function>(
-            GetProcAddress(ctx->mmcss_module,
-                           "AvRevertMmThreadCharacteristics"));
-    success = ctx->set_mm_thread_characteristics &&
-              ctx->revert_mm_thread_characteristics;
-  }
-  if (!success) {
-    // This is not a fatal error, but we might end up glitching when
-    // the system is under high load.
-    LOG("Could not load avrt.dll or fetch AvSetMmThreadCharacteristicsW "
-        "AvRevertMmThreadCharacteristics: %lx",
-        GetLastError());
-    ctx->set_mm_thread_characteristics = &set_mm_thread_characteristics_noop;
-    ctx->revert_mm_thread_characteristics =
-        &revert_mm_thread_characteristics_noop;
-  }
-
   *context = ctx;
 
   return CUBEB_OK;
@@ -1839,7 +1796,6 @@ wasapi_init(cubeb ** context, char const * context_name)
 }
 
 namespace {
-enum ShutdownPhase { OnStop, OnDestroy };
 
 bool
 stop_and_join_render_thread(cubeb_stream * stm)
@@ -1855,16 +1811,7 @@ stop_and_join_render_thread(cubeb_stream * stm)
     return false;
   }
 
-  /* Wait five seconds for the rendering thread to return. It's supposed to
-   * check its event loop very often, five seconds is rather conservative.
-   * Note: 5*1s loop to work around timer sleep issues on pre-Windows 8. */
-  DWORD r;
-  for (int i = 0; i < 5; ++i) {
-    r = WaitForSingleObject(stm->thread, 1000);
-    if (r == WAIT_OBJECT_0) {
-      break;
-    }
-  }
+  DWORD r = WaitForSingleObject(stm->thread, INFINITE);
   if (r != WAIT_OBJECT_0) {
     LOG("stop_and_join_render_thread: WaitForSingleObject on thread failed: "
         "%lx, %lx",
@@ -1886,10 +1833,6 @@ wasapi_destroy(cubeb * context)
     if (context->device_ids) {
       cubeb_strings_destroy(context->device_ids);
     }
-  }
-
-  if (context->mmcss_module) {
-    FreeLibrary(context->mmcss_module);
   }
 
   delete context;
@@ -1949,44 +1892,6 @@ wasapi_get_min_latency(cubeb * ctx, cubeb_stream_params params,
     return CUBEB_ERROR;
   }
 
-#if USE_AUDIO_CLIENT_3_MIN_PERIOD
-  // This is unreliable as we can't know the actual mixer format cubeb will
-  // ask for later on (nor we can branch on ALLOW_AUDIO_CLIENT_3_FOR_INPUT),
-  // and the min latency can change based on that.
-  com_ptr<IAudioClient3> client3;
-  hr = device->Activate(__uuidof(IAudioClient3), CLSCTX_INPROC_SERVER, NULL,
-                        client3.receive_vpp());
-  if (SUCCEEDED(hr)) {
-    WAVEFORMATEX * mix_format = nullptr;
-    hr = client3->GetMixFormat(&mix_format);
-
-    if (SUCCEEDED(hr)) {
-      uint32_t default_period = 0, fundamental_period = 0, min_period = 0,
-               max_period = 0;
-      hr = client3->GetSharedModeEnginePeriod(mix_format, &default_period,
-                                              &fundamental_period, &min_period,
-                                              &max_period);
-
-      auto sample_rate = mix_format->nSamplesPerSec;
-      CoTaskMemFree(mix_format);
-      if (SUCCEEDED(hr)) {
-        // Print values in the same format as IAudioDevice::GetDevicePeriod()
-        REFERENCE_TIME min_period_rt(frames_to_hns(sample_rate, min_period));
-        REFERENCE_TIME default_period_rt(
-            frames_to_hns(sample_rate, default_period));
-        LOG("default device period: %I64d, minimum device period: %I64d",
-            default_period_rt, min_period_rt);
-
-        *latency_frames = hns_to_frames(params.rate, min_period_rt);
-
-        LOG("Minimum latency in frames: %u", *latency_frames);
-
-        return CUBEB_OK;
-      }
-    }
-  }
-#endif
-
   com_ptr<IAudioClient> client;
   hr = device->Activate(__uuidof(IAudioClient), CLSCTX_INPROC_SERVER, NULL,
                         client.receive_vpp());
@@ -2006,8 +1911,18 @@ wasapi_get_min_latency(cubeb * ctx, cubeb_stream_params params,
   LOG("default device period: %I64d, minimum device period: %I64d",
       default_period, minimum_period);
 
-  // The minimum_period is only relevant in exclusive streams.
+  /* If we're on Windows 10, we can use IAudioClient3 to get minimal latency.
+     Otherwise, according to the docs, the best latency we can achieve is by
+     synchronizing the stream and the engine.
+     http://msdn.microsoft.com/en-us/library/windows/desktop/dd370871%28v=vs.85%29.aspx
+   */
+
+  // #ifdef _WIN32_WINNT_WIN10
+#if 0
+     *latency_frames = hns_to_frames(params.rate, minimum_period);
+#else
   *latency_frames = hns_to_frames(params.rate, default_period);
+#endif
 
   LOG("Minimum latency in frames: %u", *latency_frames);
 
@@ -2041,6 +1956,21 @@ wasapi_get_preferred_sample_rate(cubeb * ctx, uint32_t * rate)
 
   LOG("Preferred sample rate for output: %u", *rate);
 
+  return CUBEB_OK;
+}
+
+int
+wasapi_get_supported_input_processing_params(
+    cubeb * ctx, cubeb_input_processing_params * params)
+{
+  // This is not entirely accurate -- windows doesn't document precisely what
+  // AudioCategory_Communications does -- but assume that we can set all or none
+  // of them.
+  *params = static_cast<cubeb_input_processing_params>(
+      CUBEB_INPUT_PROCESSING_PARAM_ECHO_CANCELLATION |
+      CUBEB_INPUT_PROCESSING_PARAM_NOISE_SUPPRESSION |
+      CUBEB_INPUT_PROCESSING_PARAM_AUTOMATIC_GAIN_CONTROL |
+      CUBEB_INPUT_PROCESSING_PARAM_VOICE_ISOLATION);
   return CUBEB_OK;
 }
 
@@ -2097,10 +2027,7 @@ handle_channel_layout(cubeb_stream * stm, EDataFlow direction,
   if (hr == S_FALSE) {
     /* Channel layout not supported, but WASAPI gives us a suggestion. Use it,
        and handle the eventual upmix/downmix ourselves. Ignore the subformat of
-       the suggestion, since it seems to always be IEEE_FLOAT.
-       This fallback doesn't update the bit depth, so if a device
-       only supported bit depths cubeb doesn't support, so IAudioClient3
-       streams might fail */
+       the suggestion, since it seems to always be IEEE_FLOAT. */
     LOG("Using WASAPI suggested format: channels: %d", closest->nChannels);
     XASSERT(closest->wFormatTag == WAVE_FORMAT_EXTENSIBLE);
     WAVEFORMATEXTENSIBLE * closest_pcm =
@@ -2122,7 +2049,8 @@ handle_channel_layout(cubeb_stream * stm, EDataFlow direction,
 }
 
 static int
-initialize_iaudioclient2(com_ptr<IAudioClient> & audio_client)
+initialize_iaudioclient2(com_ptr<IAudioClient> & audio_client,
+                         AudioClient2Option option)
 {
   com_ptr<IAudioClient2> audio_client2;
   audio_client->QueryInterface<IAudioClient2>(audio_client2.receive());
@@ -2131,10 +2059,14 @@ initialize_iaudioclient2(com_ptr<IAudioClient> & audio_client)
         "AUDCLNT_STREAMOPTIONS_RAW.");
     return CUBEB_OK;
   }
-  AudioClientProperties properties = {0};
+  AudioClientProperties properties = {};
   properties.cbSize = sizeof(AudioClientProperties);
 #ifndef __MINGW32__
-  properties.Options |= AUDCLNT_STREAMOPTIONS_RAW;
+  if (option == CUBEB_AUDIO_CLIENT2_RAW) {
+    properties.Options |= AUDCLNT_STREAMOPTIONS_RAW;
+  } else if (option == CUBEB_AUDIO_CLIENT2_VOICE) {
+    properties.eCategory = AudioCategory_Communications;
+  }
 #endif
   HRESULT hr = audio_client2->SetClientProperties(&properties);
   if (FAILED(hr)) {
@@ -2144,12 +2076,12 @@ initialize_iaudioclient2(com_ptr<IAudioClient> & audio_client)
   return CUBEB_OK;
 }
 
+#if 0
 bool
 initialize_iaudioclient3(com_ptr<IAudioClient> & audio_client,
                          cubeb_stream * stm,
                          const com_heap_ptr<WAVEFORMATEX> & mix_format,
-                         DWORD flags, EDataFlow direction,
-                         REFERENCE_TIME latency_hns)
+                         DWORD flags, EDataFlow direction)
 {
   com_ptr<IAudioClient3> audio_client3;
   audio_client->QueryInterface<IAudioClient3>(audio_client3.receive());
@@ -2165,22 +2097,24 @@ initialize_iaudioclient3(com_ptr<IAudioClient> & audio_client,
     return false;
   }
 
+  // Some people have reported glitches with capture streams:
+  // http://blog.nirbheek.in/2018/03/low-latency-audio-on-windows-with.html
+  if (direction == eCapture) {
+    LOG("Audio stream is capture, not using IAudioClient3");
+    return false;
+  }
+
   // Possibly initialize a shared-mode stream using IAudioClient3. Initializing
   // a stream this way lets you request lower latencies, but also locks the
   // global WASAPI engine at that latency.
   // - If we request a shared-mode stream, streams created with IAudioClient
-  //   might have their latency adjusted to match. When the shared-mode stream
-  //   is closed, they'll go back to normal.
-  // - If there's already a shared-mode stream running, if it created with the
-  //   AUDCLNT_STREAMOPTIONS_MATCH_FORMAT option, the audio engine would be
-  //   locked to that format, so we have to match it (a custom one would fail).
-  // - We don't lock the WASAPI engine to a format, as it's antisocial towards
-  //   other apps, especially if we locked to a latency >= than its default.
-  // - If the user requested latency is >= the default one, we might still
-  //   accept it (without locking the format) depending on
-  //   ALLOW_AUDIO_CLIENT_3_LATENCY_OVER_DEFAULT, as we might want to prioritize
-  //   to lower our latency over other apps
-  //   (there might still be latency advantages compared to IAudioDevice(1)).
+  // will
+  //   have their latency adjusted to match. When  the shared-mode stream is
+  //   closed, they'll go back to normal.
+  // - If there's already a shared-mode stream running, then we cannot request
+  //   the engine change to a different latency - we have to match it.
+  // - It's antisocial to lock the WASAPI engine at its default latency. If we
+  //   would do this, then stop and use IAudioClient instead.
 
   HRESULT hr;
   uint32_t default_period = 0, fundamental_period = 0, min_period = 0,
@@ -2192,59 +2126,28 @@ initialize_iaudioclient3(com_ptr<IAudioClient> & audio_client,
     LOG("Could not get shared mode engine period: error: %lx", hr);
     return false;
   }
-  uint32_t requested_latency =
-      hns_to_frames(mix_format->nSamplesPerSec, latency_hns);
-#if !ALLOW_AUDIO_CLIENT_3_LATENCY_OVER_DEFAULT
+  uint32_t requested_latency = stm->latency;
   if (requested_latency >= default_period) {
-    LOG("Requested latency %i equal or greater than default latency %i,"
-        " not using IAudioClient3",
+    LOG("Requested latency %i greater than default latency %i, not using "
+        "IAudioClient3",
         requested_latency, default_period);
     return false;
   }
-#elif REJECT_AUDIO_CLIENT_3_LATENCY_OVER_MAX
-  if (requested_latency > max_period) {
-    // Fallback to IAudioClient(1) as it's more accepting of large latencies
-    LOG("Requested latency %i greater than max latency %i,"
-        " not using IAudioClient3",
-        requested_latency, max_period);
-    return false;
-  }
-#endif
   LOG("Got shared mode engine period: default=%i fundamental=%i min=%i max=%i",
       default_period, fundamental_period, min_period, max_period);
   // Snap requested latency to a valid value
   uint32_t old_requested_latency = requested_latency;
-  // The period is required to be a multiple of the fundamental period
-  // (and >= min and <= max, which should still be true)
-  requested_latency -= requested_latency % fundamental_period;
   if (requested_latency < min_period) {
     requested_latency = min_period;
   }
-  // Likely unnecessary, but won't hurt
-  if (requested_latency > max_period) {
-    requested_latency = max_period;
-  }
+  requested_latency -= (requested_latency - min_period) % fundamental_period;
   if (requested_latency != old_requested_latency) {
     LOG("Requested latency %i was adjusted to %i", old_requested_latency,
         requested_latency);
   }
 
-  DWORD new_flags = flags;
-  // Always add these flags to IAudioClient3, they might help
-  // if the stream doesn't have the same format as the audio engine.
-  new_flags |= AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM;
-  new_flags |= AUDCLNT_STREAMFLAGS_SRC_DEFAULT_QUALITY;
-
-  hr = audio_client3->InitializeSharedAudioStream(new_flags, requested_latency,
+  hr = audio_client3->InitializeSharedAudioStream(flags, requested_latency,
                                                   mix_format.get(), NULL);
-  // This error should be returned first even if
-  // the period was locked (AUDCLNT_E_ENGINE_PERIODICITY_LOCKED)
-  if (hr == AUDCLNT_E_INVALID_STREAM_FLAG) {
-    LOG("Got AUDCLNT_E_INVALID_STREAM_FLAG, removing some flags");
-    hr = audio_client3->InitializeSharedAudioStream(flags, requested_latency,
-                                                    mix_format.get(), NULL);
-  }
-
   if (SUCCEEDED(hr)) {
     return true;
   } else if (hr == AUDCLNT_E_ENGINE_PERIODICITY_LOCKED) {
@@ -2256,37 +2159,22 @@ initialize_iaudioclient3(com_ptr<IAudioClient> & audio_client,
   }
 
   uint32_t current_period = 0;
-  WAVEFORMATEX * current_format_ptr = nullptr;
+  WAVEFORMATEX * current_format = nullptr;
   // We have to pass a valid WAVEFORMATEX** and not nullptr, otherwise
   // GetCurrentSharedModeEnginePeriod will return E_POINTER
-  hr = audio_client3->GetCurrentSharedModeEnginePeriod(&current_format_ptr,
+  hr = audio_client3->GetCurrentSharedModeEnginePeriod(&current_format,
                                                        &current_period);
+  CoTaskMemFree(current_format);
   if (FAILED(hr)) {
     LOG("Could not get current shared mode engine period: error: %lx", hr);
     return false;
   }
-  com_heap_ptr<WAVEFORMATEX> current_format(current_format_ptr);
-  if (current_format->nSamplesPerSec != mix_format->nSamplesPerSec) {
-    // Unless some other external app locked the shared mode engine period
-    // within our audio initialization, this is unlikely to happen, though we
-    // can't respect the user selected latency, so we fallback on IAudioClient
-    LOG("IAudioClient3::GetCurrentSharedModeEnginePeriod() returned a "
-        "different mixer format (nSamplesPerSec) from "
-        "IAudioClient::GetMixFormat(); not using IAudioClient3");
-    return false;
-  }
 
-#if REJECT_AUDIO_CLIENT_3_LATENCY_OVER_MAX
-  // Reject IAudioClient3 if we can't respect the user target latency.
-  // We don't need to check against default_latency anymore,
-  // as the current_period is already the best one we could get.
-  if (old_requested_latency > current_period) {
-    LOG("Requested latency %i greater than currently locked shared mode "
-        "latency %i, not using IAudioClient3",
-        old_requested_latency, current_period);
+  if (current_period >= default_period) {
+    LOG("Current shared mode engine period %i too high, not using IAudioClient",
+        current_period);
     return false;
   }
-#endif
 
   hr = audio_client3->InitializeSharedAudioStream(flags, current_period,
                                                   mix_format.get(), NULL);
@@ -2299,6 +2187,7 @@ initialize_iaudioclient3(com_ptr<IAudioClient> & audio_client,
   LOG("Could not initialize shared stream with IAudioClient3: error: %lx", hr);
   return false;
 }
+#endif
 
 #define DIRECTION_NAME (direction == eCapture ? "capture" : "render")
 
@@ -2321,12 +2210,6 @@ setup_wasapi_stream_one_side(cubeb_stream * stm,
     LOG("Loopback pref can only be used with capture streams!\n");
     return CUBEB_ERROR;
   }
-
-#if ALLOW_AUDIO_CLIENT_3_FOR_INPUT
-  constexpr bool allow_audio_client_3 = true;
-#else
-  const bool allow_audio_client_3 = direction == eRender;
-#endif
 
   stm->stream_reset_lock.assert_current_thread_owns();
   // If user doesn't specify a particular device, we can choose another one when
@@ -2364,14 +2247,17 @@ setup_wasapi_stream_one_side(cubeb_stream * stm,
 
     /* Get a client. We will get all other interfaces we need from
      * this pointer. */
-    if (allow_audio_client_3) {
-      hr = device->Activate(__uuidof(IAudioClient3), CLSCTX_INPROC_SERVER, NULL,
-                            audio_client.receive_vpp());
+#if 0 // See https://bugzilla.mozilla.org/show_bug.cgi?id=1590902
+    hr = device->Activate(__uuidof(IAudioClient3),
+                          CLSCTX_INPROC_SERVER,
+                          NULL, audio_client.receive_vpp());
+    if (hr == E_NOINTERFACE) {
+#endif
+    hr = device->Activate(__uuidof(IAudioClient), CLSCTX_INPROC_SERVER, NULL,
+                          audio_client.receive_vpp());
+#if 0
     }
-    if (!allow_audio_client_3 || hr == E_NOINTERFACE) {
-      hr = device->Activate(__uuidof(IAudioClient), CLSCTX_INPROC_SERVER, NULL,
-                            audio_client.receive_vpp());
-    }
+#endif
 
     if (FAILED(hr)) {
       LOG("Could not activate the device to get an audio"
@@ -2494,21 +2380,41 @@ setup_wasapi_stream_one_side(cubeb_stream * stm,
   }
 
   if (stream_params->prefs & CUBEB_STREAM_PREF_RAW) {
-    if (initialize_iaudioclient2(audio_client) != CUBEB_OK) {
+    if (initialize_iaudioclient2(audio_client, CUBEB_AUDIO_CLIENT2_RAW) !=
+        CUBEB_OK) {
       LOG("Can't initialize an IAudioClient2, error: %lx", GetLastError());
       // This is not fatal.
     }
+  } else if (direction == eCapture &&
+             (stream_params->prefs & CUBEB_STREAM_PREF_VOICE) &&
+             stream_params->input_params != CUBEB_INPUT_PROCESSING_PARAM_NONE) {
+    if (stream_params->input_params ==
+        (CUBEB_INPUT_PROCESSING_PARAM_ECHO_CANCELLATION |
+         CUBEB_INPUT_PROCESSING_PARAM_NOISE_SUPPRESSION |
+         CUBEB_INPUT_PROCESSING_PARAM_AUTOMATIC_GAIN_CONTROL |
+         CUBEB_INPUT_PROCESSING_PARAM_VOICE_ISOLATION)) {
+      if (initialize_iaudioclient2(audio_client, CUBEB_AUDIO_CLIENT2_VOICE) !=
+          CUBEB_OK) {
+        LOG("Can't initialize an IAudioClient2, error: %lx", GetLastError());
+        // This is not fatal.
+      }
+    } else {
+      LOG("Invalid combination of input processing params %#x",
+          stream_params->input_params);
+      return CUBEB_ERROR;
+    }
   }
 
-  if (allow_audio_client_3 &&
-      initialize_iaudioclient3(audio_client, stm, mix_format, flags, direction,
-                               latency_hns)) {
+#if 0 // See https://bugzilla.mozilla.org/show_bug.cgi?id=1590902
+  if (initialize_iaudioclient3(audio_client, stm, mix_format, flags, direction)) {
     LOG("Initialized with IAudioClient3");
   } else {
-    hr = audio_client->Initialize(AUDCLNT_SHAREMODE_SHARED, flags, latency_hns,
-                                  0, mix_format.get(), NULL);
+#endif
+  hr = audio_client->Initialize(AUDCLNT_SHAREMODE_SHARED, flags, latency_hns, 0,
+                                mix_format.get(), NULL);
+#if 0
   }
-
+#endif
   if (FAILED(hr)) {
     LOG("Unable to initialize audio client for %s: %lx.", DIRECTION_NAME, hr);
     return CUBEB_ERROR;
@@ -2970,6 +2876,7 @@ wasapi_stream_init(cubeb * context, cubeb_stream ** stream,
     }
   }
 
+  cubeb_async_log_reset_threads();
   stm->thread =
       (HANDLE)_beginthreadex(NULL, 512 * 1024, wasapi_stream_render_loop, stm,
                              STACK_SIZE_PARAM_IS_A_RESERVATION, NULL);
@@ -3031,7 +2938,7 @@ wasapi_stream_add_ref(cubeb_stream * stm)
 {
   XASSERT(stm);
   LONG result = InterlockedIncrement(&stm->ref_count);
-  LOGV("Stream ref count incremented = %i (%p)", result, stm);
+  LOGV("Stream ref count incremented = %ld (%p)", result, stm);
   return result;
 }
 
@@ -3041,7 +2948,7 @@ wasapi_stream_release(cubeb_stream * stm)
   XASSERT(stm);
 
   LONG result = InterlockedDecrement(&stm->ref_count);
-  LOGV("Stream ref count decremented = %i (%p)", result, stm);
+  LOGV("Stream ref count decremented = %ld (%p)", result, stm);
   if (result == 0) {
     LOG("Stream ref count hit zero, destroying (%p)", stm);
 
@@ -3303,7 +3210,7 @@ wasapi_stream_set_volume(cubeb_stream * stm, float volume)
   return CUBEB_OK;
 }
 
-static char const *
+static std::unique_ptr<char const[]>
 wstr_to_utf8(LPCWSTR str)
 {
   int size = ::WideCharToMultiByte(CP_UTF8, 0, str, -1, nullptr, 0, NULL, NULL);
@@ -3311,8 +3218,8 @@ wstr_to_utf8(LPCWSTR str)
     return nullptr;
   }
 
-  char * ret = static_cast<char *>(malloc(size));
-  ::WideCharToMultiByte(CP_UTF8, 0, str, -1, ret, size, NULL, NULL);
+  std::unique_ptr<char[]> ret(new char[size]);
+  ::WideCharToMultiByte(CP_UTF8, 0, str, -1, ret.get(), size, NULL, NULL);
   return ret;
 }
 
@@ -3440,7 +3347,7 @@ wasapi_create_device(cubeb * ctx, cubeb_device_info & ret,
   prop_variant namevar;
   hr = propstore->GetValue(PKEY_Device_FriendlyName, &namevar);
   if (SUCCEEDED(hr) && namevar.vt == VT_LPWSTR) {
-    ret.friendly_name = wstr_to_utf8(namevar.pwszVal);
+    ret.friendly_name = wstr_to_utf8(namevar.pwszVal).release();
   }
   if (!ret.friendly_name) {
     // This is not fatal, but a valid string is expected in all cases.
@@ -3461,7 +3368,7 @@ wasapi_create_device(cubeb * ctx, cubeb_device_info & ret,
     prop_variant instancevar;
     hr = ps->GetValue(PKEY_Device_InstanceId, &instancevar);
     if (SUCCEEDED(hr) && instancevar.vt == VT_LPWSTR) {
-      ret.group_id = wstr_to_utf8(instancevar.pwszVal);
+      ret.group_id = wstr_to_utf8(instancevar.pwszVal).release();
     }
   }
 
@@ -3477,7 +3384,8 @@ wasapi_create_device(cubeb * ctx, cubeb_device_info & ret,
     ret.preferred =
         (cubeb_device_pref)(ret.preferred | CUBEB_DEVICE_PREF_MULTIMEDIA |
                             CUBEB_DEVICE_PREF_NOTIFICATION);
-  } else if (defaults->is_default(flow, eCommunications, device_id.get())) {
+  }
+  if (defaults->is_default(flow, eCommunications, device_id.get())) {
     ret.preferred =
         (cubeb_device_pref)(ret.preferred | CUBEB_DEVICE_PREF_VOICE);
   }
@@ -3504,7 +3412,6 @@ wasapi_create_device(cubeb * ctx, cubeb_device_info & ret,
                                              CUBEB_DEVICE_FMT_S16NE);
   ret.default_format = CUBEB_DEVICE_FMT_F32NE;
   prop_variant fmtvar;
-  WAVEFORMATEX * wfx = NULL;
   hr = propstore->GetValue(PKEY_AudioEngine_DeviceFormat, &fmtvar);
   if (SUCCEEDED(hr) && fmtvar.vt == VT_BLOB) {
     if (fmtvar.blob.cbSize == sizeof(PCMWAVEFORMAT)) {
@@ -3514,7 +3421,8 @@ wasapi_create_device(cubeb * ctx, cubeb_device_info & ret,
       ret.max_rate = ret.min_rate = ret.default_rate = pcm->wf.nSamplesPerSec;
       ret.max_channels = pcm->wf.nChannels;
     } else if (fmtvar.blob.cbSize >= sizeof(WAVEFORMATEX)) {
-      wfx = reinterpret_cast<WAVEFORMATEX *>(fmtvar.blob.pBlobData);
+      WAVEFORMATEX * wfx =
+          reinterpret_cast<WAVEFORMATEX *>(fmtvar.blob.pBlobData);
 
       if (fmtvar.blob.cbSize >= sizeof(WAVEFORMATEX) + wfx->cbSize ||
           wfx->wFormatTag == WAVE_FORMAT_PCM) {
@@ -3524,30 +3432,9 @@ wasapi_create_device(cubeb * ctx, cubeb_device_info & ret,
     }
   }
 
-#if USE_AUDIO_CLIENT_3_MIN_PERIOD
-  // Here we assume an IAudioClient3 stream will successfully
-  // be initialized later (it might fail)
-#if ALLOW_AUDIO_CLIENT_3_FOR_INPUT
-  constexpr bool allow_audio_client_3 = true;
-#else
-  const bool allow_audio_client_3 = flow == eRender;
-#endif
-  com_ptr<IAudioClient3> client3;
-  uint32_t def, fun, min, max;
-  if (allow_audio_client_3 && wfx &&
-      SUCCEEDED(dev->Activate(__uuidof(IAudioClient3), CLSCTX_INPROC_SERVER,
-                              NULL, client3.receive_vpp())) &&
-      SUCCEEDED(
-          client3->GetSharedModeEnginePeriod(wfx, &def, &fun, &min, &max))) {
-    ret.latency_lo = min;
-    // This latency might actually be used as "default" and not "max" later on,
-    // so we return the default (we never really want to use the max anyway)
-    ret.latency_hi = def;
-  } else
-#endif
-      if (SUCCEEDED(dev->Activate(__uuidof(IAudioClient), CLSCTX_INPROC_SERVER,
-                                  NULL, client.receive_vpp())) &&
-          SUCCEEDED(client->GetDevicePeriod(&def_period, &min_period))) {
+  if (SUCCEEDED(dev->Activate(__uuidof(IAudioClient), CLSCTX_INPROC_SERVER,
+                              NULL, client.receive_vpp())) &&
+      SUCCEEDED(client->GetDevicePeriod(&def_period, &min_period))) {
     ret.latency_lo = hns_to_frames(ret.default_rate, min_period);
     ret.latency_hi = hns_to_frames(ret.default_rate, def_period);
   } else {
@@ -3638,7 +3525,7 @@ wasapi_enumerate_devices(cubeb * context, cubeb_device_type type,
 {
   return wasapi_enumerate_devices_internal(
       context, type, out,
-      DEVICE_STATE_ACTIVE /*| DEVICE_STATE_DISABLED | DEVICE_STATE_UNPLUGGED*/);
+      DEVICE_STATE_ACTIVE | DEVICE_STATE_DISABLED | DEVICE_STATE_UNPLUGGED);
 }
 
 static int
@@ -3654,6 +3541,14 @@ wasapi_device_collection_destroy(cubeb * /*ctx*/,
 
   delete[] collection->device;
   return CUBEB_OK;
+}
+
+int
+wasapi_set_input_processing_params(cubeb_stream * stream,
+                                   cubeb_input_processing_params params)
+{
+  LOG("Cannot set voice processing params after init. Use cubeb_stream_init.");
+  return CUBEB_ERROR_NOT_SUPPORTED;
 }
 
 static int
@@ -3736,7 +3631,8 @@ cubeb_ops const wasapi_ops = {
     /*.get_max_channel_count =*/wasapi_get_max_channel_count,
     /*.get_min_latency =*/wasapi_get_min_latency,
     /*.get_preferred_sample_rate =*/wasapi_get_preferred_sample_rate,
-    /*.get_supported_input_processing_params =*/NULL,
+    /*.get_supported_input_processing_params =*/
+    wasapi_get_supported_input_processing_params,
     /*.enumerate_devices =*/wasapi_enumerate_devices,
     /*.device_collection_destroy =*/wasapi_device_collection_destroy,
     /*.destroy =*/wasapi_destroy,
@@ -3751,7 +3647,7 @@ cubeb_ops const wasapi_ops = {
     /*.stream_set_name =*/NULL,
     /*.stream_get_current_device =*/NULL,
     /*.stream_set_input_mute =*/NULL,
-    /*.stream_set_input_processing_params =*/NULL,
+    /*.stream_set_input_processing_params =*/wasapi_set_input_processing_params,
     /*.stream_device_destroy =*/NULL,
     /*.stream_register_device_changed_callback =*/NULL,
     /*.register_device_collection_changed =*/

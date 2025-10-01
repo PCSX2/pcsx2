@@ -41,10 +41,10 @@
 #ifdef FLOATING_POINT
 #error You cannot compile as floating point and fixed point at the same time
 #endif
-#ifdef _USE_SSE
+#ifdef USE_SSE
 #error SSE is only for floating-point
 #endif
-#if ((defined (ARM4_ASM)||defined (ARM4_ASM)) && defined(BFIN_ASM)) || (defined (ARM4_ASM)&&defined(ARM5E_ASM))
+#if defined(ARM4_ASM) + defined(ARM5E_ASM) + defined(BFIN_ASM) > 1
 #error Make up your mind. What CPU do you have?
 #endif
 #ifdef VORBIS_PSYCHO
@@ -56,10 +56,10 @@
 #ifndef FLOATING_POINT
 #error You now need to define either FIXED_POINT or FLOATING_POINT
 #endif
-#if defined (ARM4_ASM) || defined(ARM5E_ASM) || defined(BFIN_ASM)
+#if defined(ARM4_ASM) || defined(ARM5E_ASM) || defined(BFIN_ASM)
 #error I suppose you can have a [ARM4/ARM5E/Blackfin] that has float instructions?
 #endif
-#ifdef FIXED_POINT_DEBUG
+#ifdef FIXED_DEBUG
 #error "Don't you think enabling fixed-point is a good thing to do if you want to debug that?"
 #endif
 
@@ -117,9 +117,9 @@ typedef spx_word32_t spx_sig_t;
 
 #ifdef ARM5E_ASM
 #include "fixed_arm5e.h"
-#elif defined (ARM4_ASM)
+#elif defined(ARM4_ASM)
 #include "fixed_arm4.h"
-#elif defined (BFIN_ASM)
+#elif defined(BFIN_ASM)
 #include "fixed_bfin.h"
 #endif
 
@@ -177,16 +177,13 @@ typedef float spx_word32_t;
 #define ADD32(a,b) ((a)+(b))
 #define SUB32(a,b) ((a)-(b))
 #define MULT16_16_16(a,b)     ((a)*(b))
+#define MULT16_32_32(a,b)     ((a)*(b))
 #define MULT16_16(a,b)     ((spx_word32_t)(a)*(spx_word32_t)(b))
 #define MAC16_16(c,a,b)     ((c)+(spx_word32_t)(a)*(spx_word32_t)(b))
 
-#define MULT16_32_Q11(a,b)     ((a)*(b))
-#define MULT16_32_Q13(a,b)     ((a)*(b))
-#define MULT16_32_Q14(a,b)     ((a)*(b))
 #define MULT16_32_Q15(a,b)     ((a)*(b))
 #define MULT16_32_P15(a,b)     ((a)*(b))
 
-#define MAC16_32_Q11(c,a,b)     ((c)+(a)*(b))
 #define MAC16_32_Q15(c,a,b)     ((c)+(a)*(b))
 
 #define MAC16_16_Q11(c,a,b)     ((c)+(a)*(b))
@@ -210,7 +207,7 @@ typedef float spx_word32_t;
 #endif
 
 
-#if defined (CONFIG_TI_C54X) || defined (CONFIG_TI_C55X)
+#if defined(CONFIG_TI_C54X) || defined(CONFIG_TI_C55X)
 
 /* 2 on TI C5x DSP */
 #define BYTES_PER_CHAR 2

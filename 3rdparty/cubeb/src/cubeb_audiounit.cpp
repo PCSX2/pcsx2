@@ -213,12 +213,19 @@ struct cubeb_stream {
   cubeb_device_changed_callback device_changed_callback = nullptr;
   owned_critical_section device_changed_callback_lock;
   /* Stream creation parameters */
-  cubeb_stream_params input_stream_params = {CUBEB_SAMPLE_FLOAT32NE, 0, 0,
+  cubeb_stream_params input_stream_params = {CUBEB_SAMPLE_FLOAT32NE,
+                                             0,
+                                             0,
                                              CUBEB_LAYOUT_UNDEFINED,
-                                             CUBEB_STREAM_PREF_NONE};
-  cubeb_stream_params output_stream_params = {CUBEB_SAMPLE_FLOAT32NE, 0, 0,
-                                              CUBEB_LAYOUT_UNDEFINED,
-                                              CUBEB_STREAM_PREF_NONE};
+                                             CUBEB_STREAM_PREF_NONE,
+                                             CUBEB_INPUT_PROCESSING_PARAM_NONE};
+  cubeb_stream_params output_stream_params = {
+      CUBEB_SAMPLE_FLOAT32NE,
+      0,
+      0,
+      CUBEB_LAYOUT_UNDEFINED,
+      CUBEB_STREAM_PREF_NONE,
+      CUBEB_INPUT_PROCESSING_PARAM_NONE};
   device_info input_device;
   device_info output_device;
   /* Format descriptions */

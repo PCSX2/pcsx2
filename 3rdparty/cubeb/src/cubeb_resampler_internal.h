@@ -56,6 +56,7 @@ struct cubeb_resampler {
   virtual long fill(void * input_buffer, long * input_frames_count,
                     void * output_buffer, long frames_needed) = 0;
   virtual long latency() = 0;
+  virtual cubeb_resampler_stats stats() = 0;
   virtual ~cubeb_resampler() {}
 };
 
@@ -85,6 +86,16 @@ public:
                     void * output_buffer, long output_frames);
 
   virtual long latency() { return 0; }
+
+  virtual cubeb_resampler_stats stats()
+  {
+    cubeb_resampler_stats stats;
+    stats.input_input_buffer_size = internal_input_buffer.length();
+    stats.input_output_buffer_size = 0;
+    stats.output_input_buffer_size = 0;
+    stats.output_output_buffer_size = 0;
+    return stats;
+  }
 
   void drop_audio_if_needed()
   {
@@ -121,6 +132,20 @@ public:
 
   virtual long fill(void * input_buffer, long * input_frames_count,
                     void * output_buffer, long output_frames_needed);
+
+  virtual cubeb_resampler_stats stats()
+  {
+    cubeb_resampler_stats stats = {};
+    if (input_processor) {
+      stats.input_input_buffer_size = input_processor->input_buffer_size();
+      stats.input_output_buffer_size = input_processor->output_buffer_size();
+    }
+    if (output_processor) {
+      stats.output_input_buffer_size = output_processor->input_buffer_size();
+      stats.output_output_buffer_size = output_processor->output_buffer_size();
+    }
+    return stats;
+  }
 
   virtual long latency()
   {
@@ -280,29 +305,28 @@ public:
   }
 
   /** Returns the number of frames to pass in the input of the resampler to have
-   * exactly `output_frame_count` resampled frames. This can return a number
-   * slightly bigger than what is strictly necessary, but it guaranteed that the
-   * number of output frames will be exactly equal. */
+   * at least `output_frame_count` resampled frames. */
   uint32_t input_needed_for_output(int32_t output_frame_count) const
   {
     assert(output_frame_count >= 0); // Check overflow
     int32_t unresampled_frames_left =
         samples_to_frames(resampling_in_buffer.length());
-    int32_t resampled_frames_left =
-        samples_to_frames(resampling_out_buffer.length());
-    float input_frames_needed =
-        (output_frame_count - unresampled_frames_left) * resampling_ratio -
-        resampled_frames_left;
-    if (input_frames_needed < 0) {
-      return 0;
-    }
-    return (uint32_t)ceilf(input_frames_needed);
+    float input_frames_needed_frac =
+        static_cast<float>(output_frame_count) * resampling_ratio;
+    // speex_resample()` can be irregular in its consumption of input samples.
+    // Provide one more frame than the number that would be required with
+    // regular consumption, to make the speex resampler behave more regularly,
+    // and so predictably.
+    auto input_frame_needed =
+        1 + static_cast<int32_t>(ceilf(input_frames_needed_frac));
+    input_frame_needed -= std::min(unresampled_frames_left, input_frame_needed);
+    return input_frame_needed;
   }
 
   /** Returns a pointer to the input buffer, that contains empty space for at
-   * least `frame_count` elements. This is useful so that consumer can directly
-   * write into the input buffer of the resampler. The pointer returned is
-   * adjusted so that leftover data are not overwritten.
+   * least `frame_count` elements. This is useful so that consumer can
+   * directly write into the input buffer of the resampler. The pointer
+   * returned is adjusted so that leftover data are not overwritten.
    */
   T * input_buffer(size_t frame_count)
   {
@@ -312,8 +336,8 @@ public:
     return resampling_in_buffer.data() + leftover_samples;
   }
 
-  /** This method works with `input_buffer`, and allows to inform the processor
-      how much frames have been written in the provided buffer. */
+  /** This method works with `input_buffer`, and allows to inform the
+     processor how much frames have been written in the provided buffer. */
   void written(size_t written_frames)
   {
     resampling_in_buffer.set_length(leftover_samples +
@@ -330,6 +354,9 @@ public:
       resampling_in_buffer.pop(nullptr, frames_to_samples(available - to_keep));
     }
   }
+
+  size_t input_buffer_size() const { return resampling_in_buffer.length(); }
+  size_t output_buffer_size() const { return resampling_out_buffer.length(); }
 
 private:
   /** Wrapper for the speex resampling functions to have a typed
@@ -359,6 +386,7 @@ private:
             output_frame_count);
     assert(rv == RESAMPLER_ERR_SUCCESS);
   }
+
   /** The state for the speex resampler used internaly. */
   SpeexResamplerState * speex_resampler;
   /** Source rate / target rate. */
@@ -371,8 +399,8 @@ private:
   auto_array<T> resampling_out_buffer;
   /** Additional latency inserted into the pipeline for synchronisation. */
   uint32_t additional_latency;
-  /** When `input_buffer` is called, this allows tracking the number of samples
-      that were in the buffer. */
+  /** When `input_buffer` is called, this allows tracking the number of
+     samples that were in the buffer. */
   uint32_t leftover_samples;
 };
 
@@ -417,8 +445,8 @@ public:
     return delay_output_buffer.data();
   }
   /** Get a pointer to the first writable location in the input buffer>
-   * @parameter frames_needed the number of frames the user needs to write into
-   * the buffer.
+   * @parameter frames_needed the number of frames the user needs to write
+   * into the buffer.
    * @returns a pointer to a location in the input buffer where #frames_needed
    * can be writen. */
   T * input_buffer(uint32_t frames_needed)
@@ -428,8 +456,8 @@ public:
                                frames_to_samples(frames_needed));
     return delay_input_buffer.data() + leftover_samples;
   }
-  /** This method works with `input_buffer`, and allows to inform the processor
-      how much frames have been written in the provided buffer. */
+  /** This method works with `input_buffer`, and allows to inform the
+     processor how much frames have been written in the provided buffer. */
   void written(size_t frames_written)
   {
     delay_input_buffer.set_length(leftover_samples +
@@ -450,8 +478,8 @@ public:
 
     return to_pop;
   }
-  /** Returns the number of frames one needs to input into the delay line to get
-   * #frames_needed frames back.
+  /** Returns the number of frames one needs to input into the delay line to
+   * get #frames_needed frames back.
    * @parameter frames_needed the number of frames one want to write into the
    * delay_line
    * @returns the number of frames one will get. */
@@ -469,19 +497,23 @@ public:
 
   void drop_audio_if_needed()
   {
-    size_t available = samples_to_frames(delay_input_buffer.length());
+    uint32_t available = samples_to_frames(delay_input_buffer.length());
     uint32_t to_keep = min_buffered_audio_frame(sample_rate);
     if (available > to_keep) {
       ALOGV("Dropping %u frames", available - to_keep);
+
       delay_input_buffer.pop(nullptr, frames_to_samples(available - to_keep));
     }
   }
 
+  size_t input_buffer_size() const { return delay_input_buffer.length(); }
+  size_t output_buffer_size() const { return delay_output_buffer.length(); }
+
 private:
   /** The length, in frames, of this delay line */
   uint32_t length;
-  /** When `input_buffer` is called, this allows tracking the number of samples
-      that where in the buffer. */
+  /** When `input_buffer` is called, this allows tracking the number of
+     samples that where in the buffer. */
   uint32_t leftover_samples;
   /** The input buffer, where the delay is applied. */
   auto_array<T> delay_input_buffer;
@@ -511,8 +543,8 @@ cubeb_resampler_create_internal(cubeb_stream * stream,
          "need at least one valid parameter pointer.");
 
   /* All the streams we have have a sample rate that matches the target
-     sample rate, use a no-op resampler, that simply forwards the buffers to the
-     callback. */
+     sample rate, use a no-op resampler, that simply forwards the buffers to
+     the callback. */
   if (((input_params && input_params->rate == target_rate) &&
        (output_params && output_params->rate == target_rate)) ||
       (input_params && !output_params && (input_params->rate == target_rate)) ||
