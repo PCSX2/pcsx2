@@ -31,6 +31,10 @@ struct cubeb_stream {
 int
 pulse_init(cubeb ** context, char const * context_name);
 #endif
+#if defined(USE_PULSE_RUST)
+int
+pulse_rust_init(cubeb ** contet, char const * context_name);
+#endif
 #if defined(USE_JACK)
 int
 jack_init(cubeb ** context, char const * context_name);
@@ -42,6 +46,10 @@ alsa_init(cubeb ** context, char const * context_name);
 #if defined(USE_AUDIOUNIT)
 int
 audiounit_init(cubeb ** context, char const * context_name);
+#endif
+#if defined(USE_AUDIOUNIT_RUST)
+int
+audiounit_rust_init(cubeb ** contet, char const * context_name);
 #endif
 #if defined(USE_WINMM)
 int
@@ -55,9 +63,29 @@ wasapi_init(cubeb ** context, char const * context_name);
 int
 sndio_init(cubeb ** context, char const * context_name);
 #endif
+#if defined(USE_SUN)
+int
+sun_init(cubeb ** context, char const * context_name);
+#endif
+#if defined(USE_OPENSL)
+int
+opensl_init(cubeb ** context, char const * context_name);
+#endif
 #if defined(USE_OSS)
 int
 oss_init(cubeb ** context, char const * context_name);
+#endif
+#if defined(USE_AAUDIO)
+int
+aaudio_init(cubeb ** context, char const * context_name);
+#endif
+#if defined(USE_AUDIOTRACK)
+int
+audiotrack_init(cubeb ** context, char const * context_name);
+#endif
+#if defined(USE_KAI)
+int
+kai_init(cubeb ** context, char const * context_name);
 #endif
 
 static int
@@ -124,6 +152,10 @@ cubeb_init(cubeb ** context, char const * context_name,
 #if defined(USE_PULSE)
       init_oneshot = pulse_init;
 #endif
+    } else if (!strcmp(backend_name, "pulse-rust")) {
+#if defined(USE_PULSE_RUST)
+      init_oneshot = pulse_rust_init;
+#endif
     } else if (!strcmp(backend_name, "jack")) {
 #if defined(USE_JACK)
       init_oneshot = jack_init;
@@ -135,6 +167,10 @@ cubeb_init(cubeb ** context, char const * context_name,
     } else if (!strcmp(backend_name, "audiounit")) {
 #if defined(USE_AUDIOUNIT)
       init_oneshot = audiounit_init;
+#endif
+    } else if (!strcmp(backend_name, "audiounit-rust")) {
+#if defined(USE_AUDIOUNIT_RUST)
+      init_oneshot = audiounit_rust_init;
 #endif
     } else if (!strcmp(backend_name, "wasapi")) {
 #if defined(USE_WASAPI)
@@ -148,9 +184,29 @@ cubeb_init(cubeb ** context, char const * context_name,
 #if defined(USE_SNDIO)
       init_oneshot = sndio_init;
 #endif
+    } else if (!strcmp(backend_name, "sun")) {
+#if defined(USE_SUN)
+      init_oneshot = sun_init;
+#endif
+    } else if (!strcmp(backend_name, "opensl")) {
+#if defined(USE_OPENSL)
+      init_oneshot = opensl_init;
+#endif
     } else if (!strcmp(backend_name, "oss")) {
 #if defined(USE_OSS)
       init_oneshot = oss_init;
+#endif
+    } else if (!strcmp(backend_name, "aaudio")) {
+#if defined(USE_AAUDIO)
+      init_oneshot = aaudio_init;
+#endif
+    } else if (!strcmp(backend_name, "audiotrack")) {
+#if defined(USE_AUDIOTRACK)
+      init_oneshot = audiotrack_init;
+#endif
+    } else if (!strcmp(backend_name, "kai")) {
+#if defined(USE_KAI)
+      init_oneshot = kai_init;
 #endif
     } else {
       /* Already set */
@@ -163,6 +219,9 @@ cubeb_init(cubeb ** context, char const * context_name,
      * to override all other choices
      */
     init_oneshot,
+#if defined(USE_PULSE_RUST)
+    pulse_rust_init,
+#endif
 #if defined(USE_PULSE)
     pulse_init,
 #endif
@@ -178,6 +237,9 @@ cubeb_init(cubeb ** context, char const * context_name,
 #if defined(USE_OSS)
     oss_init,
 #endif
+#if defined(USE_AUDIOUNIT_RUST)
+    audiounit_rust_init,
+#endif
 #if defined(USE_AUDIOUNIT)
     audiounit_init,
 #endif
@@ -189,6 +251,18 @@ cubeb_init(cubeb ** context, char const * context_name,
 #endif
 #if defined(USE_SUN)
     sun_init,
+#endif
+#if defined(USE_AAUDIO)
+    aaudio_init,
+#endif
+#if defined(USE_OPENSL)
+    opensl_init,
+#endif
+#if defined(USE_AUDIOTRACK)
+    audiotrack_init,
+#endif
+#if defined(USE_KAI)
+    kai_init,
 #endif
   };
   int i;
@@ -214,12 +288,25 @@ cubeb_init(cubeb ** context, char const * context_name,
   return CUBEB_ERROR;
 }
 
-const char**
+char const *
+cubeb_get_backend_id(cubeb * context)
+{
+  if (!context) {
+    return NULL;
+  }
+
+  return context->ops->get_backend_id(context);
+}
+
+cubeb_backend_names
 cubeb_get_backend_names()
 {
-  static const char* backend_names[] = {
+  static const char * const backend_names[] = {
 #if defined(USE_PULSE)
     "pulse",
+#endif
+#if defined(USE_PULSE_RUST)
+    "pulse-rust",
 #endif
 #if defined(USE_JACK)
     "jack",
@@ -230,6 +317,9 @@ cubeb_get_backend_names()
 #if defined(USE_AUDIOUNIT)
     "audiounit",
 #endif
+#if defined(USE_AUDIOUNIT_RUST)
+    "audiounit-rust",
+#endif
 #if defined(USE_WASAPI)
     "wasapi",
 #endif
@@ -239,23 +329,30 @@ cubeb_get_backend_names()
 #if defined(USE_SNDIO)
     "sndio",
 #endif
+#if defined(USE_SUN)
+    "sun",
+#endif
+#if defined(USE_OPENSL)
+    "opensl",
+#endif
 #if defined(USE_OSS)
     "oss",
 #endif
-    NULL,
+#if defined(USE_AAUDIO)
+    "aaudio",
+#endif
+#if defined(USE_AUDIOTRACK)
+    "audiotrack",
+#endif
+#if defined(USE_KAI)
+    "kai",
+#endif
   };
 
-  return backend_names;
-}
-
-char const *
-cubeb_get_backend_id(cubeb * context)
-{
-  if (!context) {
-    return NULL;
-  }
-
-  return context->ops->get_backend_id(context);
+  return (cubeb_backend_names){
+      .names = backend_names,
+      .count = NELEMS(backend_names),
+  };
 }
 
 int

@@ -39,7 +39,12 @@ cubeb_log_get_callback(void);
 void
 cubeb_log_internal_no_format(const char * msg);
 void
-cubeb_log_internal(const char * filename, uint32_t line, const char * fmt, ...);
+cubeb_log_internal(const char * filename, uint32_t line, const char * fmt, ...)
+    PRINTF_FORMAT(3, 4);
+void
+cubeb_async_log(const char * fmt, ...) PRINTF_FORMAT(1, 2);
+void
+cubeb_async_log_reset_threads(void);
 
 #ifdef __cplusplus
 }
@@ -55,9 +60,16 @@ cubeb_log_internal(const char * filename, uint32_t line, const char * fmt, ...);
     }                                                                          \
   } while (0)
 
+#define ALOG_INTERNAL(level, fmt, ...)                                         \
+  do {                                                                         \
+    if (cubeb_log_get_level() >= level && cubeb_log_get_callback()) {          \
+      cubeb_async_log(fmt, ##__VA_ARGS__);                                     \
+    }                                                                          \
+  } while (0)
+
 /* Asynchronous logging macros to log in real-time callbacks. */
 /* Should not be used on android due to the use of global/static variables. */
-#define ALOGV(msg, ...) LOG_INTERNAL(CUBEB_LOG_VERBOSE, msg, ##__VA_ARGS__)
-#define ALOG(msg, ...) LOG_INTERNAL(CUBEB_LOG_NORMAL, msg, ##__VA_ARGS__)
+#define ALOGV(msg, ...) ALOG_INTERNAL(CUBEB_LOG_VERBOSE, msg, ##__VA_ARGS__)
+#define ALOG(msg, ...) ALOG_INTERNAL(CUBEB_LOG_NORMAL, msg, ##__VA_ARGS__)
 
 #endif // CUBEB_LOG

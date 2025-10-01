@@ -49,6 +49,7 @@ extern "C" {
     output_params.channels = 2;
     output_params.layout = CUBEB_LAYOUT_UNDEFINED;
     output_params.prefs = CUBEB_STREAM_PREF_NONE;
+    output_params.input_params = CUBEB_INPUT_PROCESSING_PARAM_NONE;
 
     rv = cubeb_get_min_latency(app_ctx, &output_params, &latency_frames);
     if (rv != CUBEB_OK) {
@@ -62,6 +63,7 @@ extern "C" {
     input_params.channels = 1;
     input_params.layout = CUBEB_LAYOUT_UNDEFINED;
     input_params.prefs = CUBEB_STREAM_PREF_NONE;
+    input_params.input_params = CUBEB_INPUT_PROCESSING_PARAM_NONE;
 
     cubeb_stream * stm;
     rv = cubeb_stream_init(app_ctx, &stm, "Example Stream 1",
@@ -193,39 +195,39 @@ typedef uint32_t cubeb_channel_layout;
 // Some common layout definitions.
 enum {
   CUBEB_LAYOUT_UNDEFINED = 0, // Indicate the speaker's layout is undefined.
-  CUBEB_LAYOUT_MONO = (uint32_t)CHANNEL_FRONT_CENTER,
-  CUBEB_LAYOUT_MONO_LFE = (uint32_t)CUBEB_LAYOUT_MONO | (uint32_t)CHANNEL_LOW_FREQUENCY,
-  CUBEB_LAYOUT_STEREO = (uint32_t)CHANNEL_FRONT_LEFT | (uint32_t)CHANNEL_FRONT_RIGHT,
-  CUBEB_LAYOUT_STEREO_LFE = (uint32_t)CUBEB_LAYOUT_STEREO | (uint32_t)CHANNEL_LOW_FREQUENCY,
+  CUBEB_LAYOUT_MONO = CHANNEL_FRONT_CENTER,
+  CUBEB_LAYOUT_MONO_LFE = CUBEB_LAYOUT_MONO | CHANNEL_LOW_FREQUENCY,
+  CUBEB_LAYOUT_STEREO = CHANNEL_FRONT_LEFT | CHANNEL_FRONT_RIGHT,
+  CUBEB_LAYOUT_STEREO_LFE = CUBEB_LAYOUT_STEREO | CHANNEL_LOW_FREQUENCY,
   CUBEB_LAYOUT_3F =
-      (uint32_t)CHANNEL_FRONT_LEFT | (uint32_t)CHANNEL_FRONT_RIGHT | (uint32_t)CHANNEL_FRONT_CENTER,
-  CUBEB_LAYOUT_3F_LFE = (uint32_t)CUBEB_LAYOUT_3F | (uint32_t)CHANNEL_LOW_FREQUENCY,
+      CHANNEL_FRONT_LEFT | CHANNEL_FRONT_RIGHT | CHANNEL_FRONT_CENTER,
+  CUBEB_LAYOUT_3F_LFE = CUBEB_LAYOUT_3F | CHANNEL_LOW_FREQUENCY,
   CUBEB_LAYOUT_2F1 =
-      (uint32_t)CHANNEL_FRONT_LEFT | (uint32_t)CHANNEL_FRONT_RIGHT | (uint32_t)CHANNEL_BACK_CENTER,
-  CUBEB_LAYOUT_2F1_LFE = (uint32_t)CUBEB_LAYOUT_2F1 | (uint32_t)CHANNEL_LOW_FREQUENCY,
-  CUBEB_LAYOUT_3F1 = (uint32_t)CHANNEL_FRONT_LEFT | (uint32_t)CHANNEL_FRONT_RIGHT |
-                     (uint32_t)CHANNEL_FRONT_CENTER | (uint32_t)CHANNEL_BACK_CENTER,
-  CUBEB_LAYOUT_3F1_LFE = (uint32_t)CUBEB_LAYOUT_3F1 | (uint32_t)CHANNEL_LOW_FREQUENCY,
-  CUBEB_LAYOUT_2F2 = (uint32_t)CHANNEL_FRONT_LEFT | (uint32_t)CHANNEL_FRONT_RIGHT |
-                     (uint32_t)CHANNEL_SIDE_LEFT | (uint32_t)CHANNEL_SIDE_RIGHT,
-  CUBEB_LAYOUT_2F2_LFE = (uint32_t)CUBEB_LAYOUT_2F2 | (uint32_t)CHANNEL_LOW_FREQUENCY,
-  CUBEB_LAYOUT_QUAD = (uint32_t)CHANNEL_FRONT_LEFT | (uint32_t)CHANNEL_FRONT_RIGHT |
-                      (uint32_t)CHANNEL_BACK_LEFT | (uint32_t)CHANNEL_BACK_RIGHT,
-  CUBEB_LAYOUT_QUAD_LFE = (uint32_t)CUBEB_LAYOUT_QUAD | (uint32_t)CHANNEL_LOW_FREQUENCY,
-  CUBEB_LAYOUT_3F2 = (uint32_t)CHANNEL_FRONT_LEFT | (uint32_t)CHANNEL_FRONT_RIGHT |
-                     (uint32_t)CHANNEL_FRONT_CENTER | (uint32_t)CHANNEL_SIDE_LEFT |
-                     (uint32_t)CHANNEL_SIDE_RIGHT,
-  CUBEB_LAYOUT_3F2_LFE = (uint32_t)CUBEB_LAYOUT_3F2 | (uint32_t)CHANNEL_LOW_FREQUENCY,
-  CUBEB_LAYOUT_3F2_BACK = (uint32_t)CUBEB_LAYOUT_QUAD | (uint32_t)CHANNEL_FRONT_CENTER,
-  CUBEB_LAYOUT_3F2_LFE_BACK = (uint32_t)CUBEB_LAYOUT_3F2_BACK | (uint32_t)CHANNEL_LOW_FREQUENCY,
-  CUBEB_LAYOUT_3F3R_LFE = (uint32_t)CHANNEL_FRONT_LEFT | (uint32_t)CHANNEL_FRONT_RIGHT |
-                          (uint32_t)CHANNEL_FRONT_CENTER | (uint32_t)CHANNEL_LOW_FREQUENCY |
-                          (uint32_t)CHANNEL_BACK_CENTER | (uint32_t)CHANNEL_SIDE_LEFT |
-                          (uint32_t)CHANNEL_SIDE_RIGHT,
-  CUBEB_LAYOUT_3F4_LFE = (uint32_t)CHANNEL_FRONT_LEFT | (uint32_t)CHANNEL_FRONT_RIGHT |
-                         (uint32_t)CHANNEL_FRONT_CENTER | (uint32_t)CHANNEL_LOW_FREQUENCY |
-                         (uint32_t)CHANNEL_BACK_LEFT | (uint32_t)CHANNEL_BACK_RIGHT |
-                         (uint32_t)CHANNEL_SIDE_LEFT | (uint32_t)CHANNEL_SIDE_RIGHT,
+      CHANNEL_FRONT_LEFT | CHANNEL_FRONT_RIGHT | CHANNEL_BACK_CENTER,
+  CUBEB_LAYOUT_2F1_LFE = CUBEB_LAYOUT_2F1 | CHANNEL_LOW_FREQUENCY,
+  CUBEB_LAYOUT_3F1 = CHANNEL_FRONT_LEFT | CHANNEL_FRONT_RIGHT |
+                     CHANNEL_FRONT_CENTER | CHANNEL_BACK_CENTER,
+  CUBEB_LAYOUT_3F1_LFE = CUBEB_LAYOUT_3F1 | CHANNEL_LOW_FREQUENCY,
+  CUBEB_LAYOUT_2F2 = CHANNEL_FRONT_LEFT | CHANNEL_FRONT_RIGHT |
+                     CHANNEL_SIDE_LEFT | CHANNEL_SIDE_RIGHT,
+  CUBEB_LAYOUT_2F2_LFE = CUBEB_LAYOUT_2F2 | CHANNEL_LOW_FREQUENCY,
+  CUBEB_LAYOUT_QUAD = CHANNEL_FRONT_LEFT | CHANNEL_FRONT_RIGHT |
+                      CHANNEL_BACK_LEFT | CHANNEL_BACK_RIGHT,
+  CUBEB_LAYOUT_QUAD_LFE = CUBEB_LAYOUT_QUAD | CHANNEL_LOW_FREQUENCY,
+  CUBEB_LAYOUT_3F2 = CHANNEL_FRONT_LEFT | CHANNEL_FRONT_RIGHT |
+                     CHANNEL_FRONT_CENTER | CHANNEL_SIDE_LEFT |
+                     CHANNEL_SIDE_RIGHT,
+  CUBEB_LAYOUT_3F2_LFE = CUBEB_LAYOUT_3F2 | CHANNEL_LOW_FREQUENCY,
+  CUBEB_LAYOUT_3F2_BACK = CUBEB_LAYOUT_QUAD | CHANNEL_FRONT_CENTER,
+  CUBEB_LAYOUT_3F2_LFE_BACK = CUBEB_LAYOUT_3F2_BACK | CHANNEL_LOW_FREQUENCY,
+  CUBEB_LAYOUT_3F3R_LFE = CHANNEL_FRONT_LEFT | CHANNEL_FRONT_RIGHT |
+                          CHANNEL_FRONT_CENTER | CHANNEL_LOW_FREQUENCY |
+                          CHANNEL_BACK_CENTER | CHANNEL_SIDE_LEFT |
+                          CHANNEL_SIDE_RIGHT,
+  CUBEB_LAYOUT_3F4_LFE = CHANNEL_FRONT_LEFT | CHANNEL_FRONT_RIGHT |
+                         CHANNEL_FRONT_CENTER | CHANNEL_LOW_FREQUENCY |
+                         CHANNEL_BACK_LEFT | CHANNEL_BACK_RIGHT |
+                         CHANNEL_SIDE_LEFT | CHANNEL_SIDE_RIGHT,
 };
 
 /** Miscellaneous stream preferences. */
@@ -279,7 +281,10 @@ typedef struct {
   cubeb_channel_layout
       layout; /**< Requested channel layout. This must be consistent with the
                  provided channels. CUBEB_LAYOUT_UNDEFINED if unknown */
-  cubeb_stream_prefs prefs; /**< Requested preferences. */
+  cubeb_stream_prefs prefs;                   /**< Requested preferences. */
+  cubeb_input_processing_params input_params; /**< Requested input processing
+     params. Ignored for output streams. At present, only supported on the
+     WASAPI backend; others should use cubeb_set_input_processing_params.  */
 } cubeb_stream_params;
 
 /** Audio device description */
@@ -414,6 +419,13 @@ typedef struct {
   size_t count;               /**< Device count in collection. */
 } cubeb_device_collection;
 
+/** Array of compiled backends returned by `cubeb_get_backend_names`. */
+typedef struct {
+  const char * const *
+      names;    /**< Array of strings representing backend names. */
+  size_t count; /**< Length of the array. */
+} cubeb_backend_names;
+
 /** User supplied data callback.
     - Calling other cubeb functions from this callback is unsafe.
     - The code in the callback should be non-blocking.
@@ -454,6 +466,8 @@ typedef void (*cubeb_device_changed_callback)(void * user_ptr);
 
 /**
  * User supplied callback called when the underlying device collection changed.
+ * This callback will be called when devices are added or removed from the
+ * system, or when the default device changes for the specified device type.
  * @param context A pointer to the cubeb context.
  * @param user_ptr The pointer passed to
  * cubeb_register_device_collection_changed. */
@@ -485,16 +499,17 @@ CUBEB_EXPORT int
 cubeb_init(cubeb ** context, char const * context_name,
            char const * backend_name);
 
-/** Returns a list of backend names which can be supplid to cubeb_init().
-    Array is null-terminated. */
-CUBEB_EXPORT const char**
-cubeb_get_backend_names();
-
 /** Get a read-only string identifying this context's current backend.
     @param context A pointer to the cubeb context.
     @retval Read-only string identifying current backend. */
 CUBEB_EXPORT char const *
 cubeb_get_backend_id(cubeb * context);
+
+/** Get a read-only array of strings identifying available backends.
+    These can be passed as `backend_name` parameter to `cubeb_init`.
+    @retval Struct containing the array with backend names. */
+CUBEB_EXPORT cubeb_backend_names
+cubeb_get_backend_names();
 
 /** Get the maximum possible number of channels.
     @param context A pointer to the cubeb context.
@@ -674,7 +689,7 @@ cubeb_stream_get_current_device(cubeb_stream * stm,
     application is accessing audio input. When all inputs are muted they can
     prove to the user that the application is not actively capturing any input.
     @param stream the stream for which to set input mute state
-    @param muted whether the input should mute or not
+    @param mute whether the input should mute or not
     @retval CUBEB_OK
     @retval CUBEB_ERROR_INVALID_PARAMETER if this stream does not have an input
             device
@@ -745,14 +760,16 @@ cubeb_device_collection_destroy(cubeb * context,
                                 cubeb_device_collection * collection);
 
 /** Registers a callback which is called when the system detects
-    a new device or a device is removed.
+    a new device or a device is removed, or when the default device
+    changes for the specified device type.
     @param context
     @param devtype device type to include. Different callbacks and user pointers
            can be registered for each devtype. The hybrid devtype
            `CUBEB_DEVICE_TYPE_INPUT | CUBEB_DEVICE_TYPE_OUTPUT` is also valid
            and will register the provided callback and user pointer in both
    sides.
-    @param callback a function called whenever the system device list changes.
+    @param callback a function called whenever the system device list changes,
+           including when default devices change.
            Passing NULL allow to unregister a function. You have to unregister
            first before you register a new callback.
     @param user_ptr pointer to user specified data which will be present in

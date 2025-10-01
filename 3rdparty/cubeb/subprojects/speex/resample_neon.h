@@ -36,14 +36,26 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <arm_neon.h>
+#include <stdint.h>
 
 #ifdef FIXED_POINT
-#ifdef __thumb2__
+#if defined(__aarch64__)
+static inline int32_t saturate_32bit_to_16bit(int32_t a) {
+    int32_t ret;
+    asm ("fmov s0, %w[a]\n"
+         "sqxtn h0, s0\n"
+         "sxtl v0.4s, v0.4h\n"
+         "fmov %w[ret], s0\n"
+         : [ret] "=r" (ret)
+         : [a] "r" (a)
+         : "v0" );
+    return ret;
+}
+#elif defined(__thumb2__)
 static inline int32_t saturate_32bit_to_16bit(int32_t a) {
     int32_t ret;
     asm ("ssat %[ret], #16, %[a]"
-         : [ret] "=&r" (ret)
+         : [ret] "=r" (ret)
          : [a] "r" (a)
          : );
     return ret;
@@ -54,7 +66,7 @@ static inline int32_t saturate_32bit_to_16bit(int32_t a) {
     asm ("vmov.s32 d0[0], %[a]\n"
          "vqmovn.s32 d0, q0\n"
          "vmov.s16 %[ret], d0[0]\n"
-         : [ret] "=&r" (ret)
+         : [ret] "=r" (ret)
          : [a] "r" (a)
          : "q0");
     return ret;
@@ -64,7 +76,63 @@ static inline int32_t saturate_32bit_to_16bit(int32_t a) {
 #define WORD2INT(x) (saturate_32bit_to_16bit(x))
 
 #define OVERRIDE_INNER_PRODUCT_SINGLE
-/* Only works when len % 4 == 0 */
+/* Only works when len % 4 == 0 and len >= 4 */
+#if defined(__aarch64__)
+static inline int32_t inner_product_single(const int16_t *a, const int16_t *b, unsigned int len)
+{
+    int32_t ret;
+    uint32_t remainder = len % 16;
+    len = len - remainder;
+
+    asm volatile ("	 cmp %w[len], #0\n"
+		  "	 b.ne 1f\n"
+		  "	 ld1 {v16.4h}, [%[b]], #8\n"
+		  "	 ld1 {v20.4h}, [%[a]], #8\n"
+		  "	 subs %w[remainder], %w[remainder], #4\n"
+		  "	 smull v0.4s, v16.4h, v20.4h\n"
+		  "      b.ne 4f\n"
+		  "	 b 5f\n"
+		  "1:"
+		  "	 ld1 {v16.4h, v17.4h, v18.4h, v19.4h}, [%[b]], #32\n"
+		  "	 ld1 {v20.4h, v21.4h, v22.4h, v23.4h}, [%[a]], #32\n"
+		  "	 subs %w[len], %w[len], #16\n"
+		  "	 smull v0.4s, v16.4h, v20.4h\n"
+		  "	 smlal v0.4s, v17.4h, v21.4h\n"
+		  "	 smlal v0.4s, v18.4h, v22.4h\n"
+		  "	 smlal v0.4s, v19.4h, v23.4h\n"
+		  "	 b.eq 3f\n"
+		  "2:"
+		  "	 ld1 {v16.4h, v17.4h, v18.4h, v19.4h}, [%[b]], #32\n"
+		  "	 ld1 {v20.4h, v21.4h, v22.4h, v23.4h}, [%[a]], #32\n"
+		  "	 subs %w[len], %w[len], #16\n"
+		  "	 smlal v0.4s, v16.4h, v20.4h\n"
+		  "	 smlal v0.4s, v17.4h, v21.4h\n"
+		  "	 smlal v0.4s, v18.4h, v22.4h\n"
+		  "	 smlal v0.4s, v19.4h, v23.4h\n"
+		  "	 b.ne 2b\n"
+		  "3:"
+		  "	 cmp %w[remainder], #0\n"
+		  "	 b.eq 5f\n"
+		  "4:"
+		  "	 ld1 {v18.4h}, [%[b]], #8\n"
+		  "	 ld1 {v22.4h}, [%[a]], #8\n"
+		  "	 subs %w[remainder], %w[remainder], #4\n"
+		  "	 smlal v0.4s, v18.4h, v22.4h\n"
+		  "	 b.ne 4b\n"
+		  "5:"
+		  "	 saddlv d0, v0.4s\n"
+		  "	 sqxtn s0, d0\n"
+		  "	 sqrshrn h0, s0, #15\n"
+		  "	 sxtl v0.4s, v0.4h\n"
+		  "	 fmov %w[ret], s0\n"
+		  : [ret] "=r" (ret), [a] "+r" (a), [b] "+r" (b),
+		    [len] "+r" (len), [remainder] "+r" (remainder)
+		  :
+		  : "cc", "v0",
+		    "v16", "v17", "v18", "v19", "v20", "v21", "v22", "v23");
+    return ret;
+}
+#else
 static inline int32_t inner_product_single(const int16_t *a, const int16_t *b, unsigned int len)
 {
     int32_t ret;
@@ -112,33 +180,104 @@ static inline int32_t inner_product_single(const int16_t *a, const int16_t *b, u
 		  "	 vqmovn.s64 d0, q0\n"
 		  "	 vqrshrn.s32 d0, q0, #15\n"
 		  "	 vmov.s16 %[ret], d0[0]\n"
-		  : [ret] "=&r" (ret), [a] "+r" (a), [b] "+r" (b),
+		  : [ret] "=r" (ret), [a] "+r" (a), [b] "+r" (b),
 		    [len] "+r" (len), [remainder] "+r" (remainder)
 		  :
 		  : "cc", "q0",
-		    "d16", "d17", "d18", "d19",
-		    "d20", "d21", "d22", "d23");
+		    "d16", "d17", "d18", "d19", "d20", "d21", "d22", "d23");
 
     return ret;
 }
-#elif defined(FLOATING_POINT)
+#endif  // !defined(__aarch64__)
 
+#elif defined(FLOATING_POINT)
+#if defined(__aarch64__)
+static inline int32_t saturate_float_to_16bit(float a) {
+    int32_t ret;
+    asm ("fcvtas s1, %s[a]\n"
+         "sqxtn h1, s1\n"
+         "sxtl v1.4s, v1.4h\n"
+         "fmov %w[ret], s1\n"
+         : [ret] "=r" (ret)
+         : [a] "w" (a)
+         : "v1");
+    return ret;
+}
+#else
 static inline int32_t saturate_float_to_16bit(float a) {
     int32_t ret;
     asm ("vmov.f32 d0[0], %[a]\n"
          "vcvt.s32.f32 d0, d0, #15\n"
          "vqrshrn.s32 d0, q0, #15\n"
          "vmov.s16 %[ret], d0[0]\n"
-         : [ret] "=&r" (ret)
+         : [ret] "=r" (ret)
          : [a] "r" (a)
          : "q0");
     return ret;
 }
+#endif
+
 #undef WORD2INT
 #define WORD2INT(x) (saturate_float_to_16bit(x))
 
 #define OVERRIDE_INNER_PRODUCT_SINGLE
-/* Only works when len % 4 == 0 */
+/* Only works when len % 4 == 0 and len >= 4 */
+#if defined(__aarch64__)
+static inline float inner_product_single(const float *a, const float *b, unsigned int len)
+{
+    float ret;
+    uint32_t remainder = len % 16;
+    len = len - remainder;
+
+    asm volatile ("	 cmp %w[len], #0\n"
+		  "	 b.ne 1f\n"
+		  "	 ld1 {v16.4s}, [%[b]], #16\n"
+		  "	 ld1 {v20.4s}, [%[a]], #16\n"
+		  "	 subs %w[remainder], %w[remainder], #4\n"
+		  "	 fmul v1.4s, v16.4s, v20.4s\n"
+		  "      b.ne 4f\n"
+		  "	 b 5f\n"
+		  "1:"
+		  "	 ld1 {v16.4s, v17.4s, v18.4s, v19.4s}, [%[b]], #64\n"
+		  "	 ld1 {v20.4s, v21.4s, v22.4s, v23.4s}, [%[a]], #64\n"
+		  "	 subs %w[len], %w[len], #16\n"
+		  "	 fmul v1.4s, v16.4s, v20.4s\n"
+		  "	 fmul v2.4s, v17.4s, v21.4s\n"
+		  "	 fmul v3.4s, v18.4s, v22.4s\n"
+		  "	 fmul v4.4s, v19.4s, v23.4s\n"
+		  "	 b.eq 3f\n"
+		  "2:"
+		  "	 ld1 {v16.4s, v17.4s, v18.4s, v19.4s}, [%[b]], #64\n"
+		  "	 ld1 {v20.4s, v21.4s, v22.4s, v23.4s}, [%[a]], #64\n"
+		  "	 subs %w[len], %w[len], #16\n"
+		  "	 fmla v1.4s, v16.4s, v20.4s\n"
+		  "	 fmla v2.4s, v17.4s, v21.4s\n"
+		  "	 fmla v3.4s, v18.4s, v22.4s\n"
+		  "	 fmla v4.4s, v19.4s, v23.4s\n"
+		  "	 b.ne 2b\n"
+		  "3:"
+		  "	 fadd v16.4s, v1.4s, v2.4s\n"
+		  "	 fadd v17.4s, v3.4s, v4.4s\n"
+		  "	 cmp %w[remainder], #0\n"
+		  "	 fadd v1.4s, v16.4s, v17.4s\n"
+		  "	 b.eq 5f\n"
+		  "4:"
+		  "	 ld1 {v18.4s}, [%[b]], #16\n"
+		  "	 ld1 {v22.4s}, [%[a]], #16\n"
+		  "	 subs %w[remainder], %w[remainder], #4\n"
+		  "	 fmla v1.4s, v18.4s, v22.4s\n"
+		  "	 b.ne 4b\n"
+		  "5:"
+		  "	 faddp v1.4s, v1.4s, v1.4s\n"
+		  "	 faddp %[ret].4s, v1.4s, v1.4s\n"
+		  : [ret] "=w" (ret), [a] "+r" (a), [b] "+r" (b),
+		    [len] "+r" (len), [remainder] "+r" (remainder)
+		  :
+		  : "cc", "v1", "v2", "v3", "v4",
+		    "v16", "v17", "v18", "v19", "v20", "v21", "v22", "v23");
+    return ret;
+}
+#else
 static inline float inner_product_single(const float *a, const float *b, unsigned int len)
 {
     float ret;
@@ -191,11 +330,12 @@ static inline float inner_product_single(const float *a, const float *b, unsigne
 		  "	 vadd.f32 d0, d0, d1\n"
 		  "	 vpadd.f32 d0, d0, d0\n"
 		  "	 vmov.f32 %[ret], d0[0]\n"
-		  : [ret] "=&r" (ret), [a] "+r" (a), [b] "+r" (b),
+		  : [ret] "=r" (ret), [a] "+r" (a), [b] "+r" (b),
 		    [len] "+l" (len), [remainder] "+l" (remainder)
 		  :
-		  : "cc", "q0", "q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8",
-                    "q9", "q10", "q11");
+		  : "cc", "q0", "q1", "q2", "q3",
+		    "q4", "q5", "q6", "q7", "q8", "q9", "q10", "q11");
     return ret;
 }
+#endif  // defined(__aarch64__)
 #endif

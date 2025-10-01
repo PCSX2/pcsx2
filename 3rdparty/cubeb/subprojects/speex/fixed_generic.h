@@ -69,22 +69,18 @@
 
 
 /* result fits in 16 bits */
-#define MULT16_16_16(a,b)     ((((spx_word16_t)(a))*((spx_word16_t)(b))))
+#define MULT16_16_16(a,b)     (((spx_word16_t)(a))*((spx_word16_t)(b)))
+/* result fits in 32 bits */
+#define MULT16_32_32(a,b)     (((spx_word16_t)(a))*((spx_word32_t)(b)))
 
 /* (spx_word32_t)(spx_word16_t) gives TI compiler a hint that it's 16x16->32 multiply */
 #define MULT16_16(a,b)     (((spx_word32_t)(spx_word16_t)(a))*((spx_word32_t)(spx_word16_t)(b)))
 
 #define MAC16_16(c,a,b) (ADD32((c),MULT16_16((a),(b))))
-#define MULT16_32_Q12(a,b) ADD32(MULT16_16((a),SHR((b),12)), SHR(MULT16_16((a),((b)&0x00000fff)),12))
-#define MULT16_32_Q13(a,b) ADD32(MULT16_16((a),SHR((b),13)), SHR(MULT16_16((a),((b)&0x00001fff)),13))
-#define MULT16_32_Q14(a,b) ADD32(MULT16_16((a),SHR((b),14)), SHR(MULT16_16((a),((b)&0x00003fff)),14))
 
-#define MULT16_32_Q11(a,b) ADD32(MULT16_16((a),SHR((b),11)), SHR(MULT16_16((a),((b)&0x000007ff)),11))
-#define MAC16_32_Q11(c,a,b) ADD32(c,ADD32(MULT16_16((a),SHR((b),11)), SHR(MULT16_16((a),((b)&0x000007ff)),11)))
-
-#define MULT16_32_P15(a,b) ADD32(MULT16_16((a),SHR((b),15)), PSHR(MULT16_16((a),((b)&0x00007fff)),15))
-#define MULT16_32_Q15(a,b) ADD32(MULT16_16((a),SHR((b),15)), SHR(MULT16_16((a),((b)&0x00007fff)),15))
-#define MAC16_32_Q15(c,a,b) ADD32(c,ADD32(MULT16_16((a),SHR((b),15)), SHR(MULT16_16((a),((b)&0x00007fff)),15)))
+#define MULT16_32_P15(a,b) ADD32(MULT16_32_32(a,SHR((b),15)), PSHR(MULT16_16((a),((b)&0x00007fff)),15))
+#define MULT16_32_Q15(a,b) ADD32(MULT16_32_32(a,SHR((b),15)), SHR(MULT16_16((a),((b)&0x00007fff)),15))
+#define MAC16_32_Q15(c,a,b) ADD32(c,MULT16_32_Q15(a,b))
 
 
 #define MAC16_16_Q11(c,a,b)     (ADD32((c),SHR(MULT16_16((a),(b)),11)))

@@ -84,6 +84,20 @@ cubeb_resampler_destroy(cubeb_resampler * resampler);
 long
 cubeb_resampler_latency(cubeb_resampler * resampler);
 
+/**
+ * Test-only introspection API to ensure that there is no buffering
+ * buildup when resampling.
+ */
+typedef struct {
+  size_t input_input_buffer_size;
+  size_t input_output_buffer_size;
+  size_t output_input_buffer_size;
+  size_t output_output_buffer_size;
+} cubeb_resampler_stats;
+
+cubeb_resampler_stats
+cubeb_resampler_stats_get(cubeb_resampler * resampler);
+
 #if defined(__cplusplus)
 }
 #endif
