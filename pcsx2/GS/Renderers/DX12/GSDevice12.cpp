@@ -3950,6 +3950,9 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 			{
 				Console.Warning("D3D12: Failed to allocate ColorClip render target, aborting draw.");
 
+				if (draw_rt_clone)
+					Recycle(draw_rt_clone);
+
 				if (date_image)
 					Recycle(date_image);
 
