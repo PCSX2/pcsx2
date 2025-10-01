@@ -73,7 +73,6 @@ def run_regression_test(runner, dumpdir, renderer, upscale, renderhacks, paralle
     #print("Running '%s'" % (" ".join(args)))
     subprocess.run(args, env=environ, stdin=subprocess.DEVNULL, stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL, creationflags=creationflags)
 
-
 def run_regression_tests(runner, gsdir, dumpdir, renderer, upscale, renderhacks, parallel=1):
     paths = glob.glob(gsdir + "/*.*", recursive=True)
     gamepaths = list(filter(lambda x: get_gs_name(x) is not None, paths))
@@ -104,12 +103,12 @@ def run_regression_tests(runner, gsdir, dumpdir, renderer, upscale, renderhacks,
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate frame dump images for regression tests")
-    parser.add_argument("-runner", action="store", required=True, help="Path to PCSX2 GS runner")
-    parser.add_argument("-gsdir", action="store", required=True, help="Directory containing GS dumps")
-    parser.add_argument("-dumpdir", action="store", required=True, help="Base directory to dump frames to")
-    parser.add_argument("-renderer", action="store", required=False, help="Renderer to use")
+    parser.add_argument("-runner", action="store", required=True, type=str.strip, help="Path to PCSX2 GS runner")
+    parser.add_argument("-gsdir", action="store", required=True, type=str.strip, help="Directory containing GS dumps")
+    parser.add_argument("-dumpdir", action="store", required=True, type=str.strip, help="Base directory to dump frames to")
+    parser.add_argument("-renderer", action="store", required=False, type=str.strip, help="Renderer to use")
     parser.add_argument("-upscale", action="store", type=float, default=1, help="Upscaling multiplier to use")
-    parser.add_argument("-renderhacks", action="store", required=False, help="Enable HW Rendering hacks")
+    parser.add_argument("-renderhacks", action="store", required=False, type=str.strip, help="Enable HW Rendering hacks")
     parser.add_argument("-parallel", action="store", type=int, default=1, help="Number of processes to run")
 
     args = parser.parse_args()
