@@ -1235,7 +1235,7 @@ bool GSDevice12::CheckFeatures(const u32& vendor_id)
 	m_features.framebuffer_fetch = false;
 	m_features.stencil_buffer = true;
 	m_features.cas_sharpening = true;
-	m_features.test_and_sample_depth = false;
+	m_features.test_and_sample_depth = true;
 	m_features.vs_expand = !GSConfig.DisableVertexShaderExpand;
 
 	m_features.dxt_textures = SupportsTextureFormat(DXGI_FORMAT_BC1_UNORM) &&
@@ -3825,7 +3825,6 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	GSTexture12* draw_rt = static_cast<GSTexture12*>(config.rt);
 	GSTexture12* draw_ds = static_cast<GSTexture12*>(config.ds);
 	GSTexture12* draw_rt_clone = nullptr;
-	GSTexture12* draw_ds_clone = nullptr;
 
 	// Align the render area to 128x128, hopefully avoiding render pass restarts for small render area changes (e.g. Ratchet and Clank).
 	const GSVector2i rtsize(config.rt ? config.rt->GetSize() : config.ds->GetSize());
@@ -3890,6 +3889,15 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	if (config.blend.constant_enable)
 		SetBlendConstants(config.blend.constant);
 
+	// Depth testing and sampling, bind resource as dsv read only and srv at the same time without the need of a copy.
+	if (config.tex && config.tex == config.ds)
+	{
+		EndRenderPass();
+
+		// Transition dsv as read only.
+		draw_ds->TransitionToState(D3D12_RESOURCE_STATE_DEPTH_READ);
+	}
+
 	// Primitive ID tracking DATE setup.
 	GSTexture12* date_image = nullptr;
 	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking)
@@ -3905,7 +3913,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		}
 	}
 
-	if (config.require_one_barrier || (config.tex && config.tex == config.rt))
+	if (draw_rt && (config.require_one_barrier || (config.tex && config.tex == config.rt)))
 	{
 		// Requires a copy of the RT.
 		// Used as "bind rt" flag when texture barrier is unsupported for tex is fb.
@@ -3926,25 +3934,6 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		}
 		else
 			Console.Warning("D3D12: Failed to allocate temp texture for RT copy.");
-	}
-
-	if (config.tex && config.tex == config.ds)
-	{
-		// DX requires a copy when sampling the depth buffer.
-		draw_ds_clone = static_cast<GSTexture12*>(CreateDepthStencil(rtsize.x, rtsize.y, config.ds->GetFormat(), false));
-		if (draw_ds_clone)
-		{
-			EndRenderPass();
-
-			GL_PUSH("D3D12: Copy DS to temp texture {%d,%d %dx%d}", config.drawarea.left, config.drawarea.top,
-				config.drawarea.width(), config.drawarea.height());
-
-			draw_ds_clone->SetState(GSTexture::State::Invalidated);
-			CopyRect(config.ds, draw_ds_clone, config.drawarea, config.drawarea.left, config.drawarea.top);
-			PSSetShaderResource(0, draw_ds_clone, true);
-		}
-		else
-			Console.Warning("D3D12: Failed to allocate temp texture for DS copy.");
 	}
 
 	// Switch to colclip target for colclip hw rendering
@@ -3989,12 +3978,9 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		draw_rt = colclip_rt;
 	}
 
-	// clear texture binding when it's bound to RT or DS
-	if (((draw_rt && static_cast<GSTexture12*>(draw_rt)->GetSRVDescriptor() == m_tfx_textures[0]) ||
-			(config.ds && static_cast<GSTexture12*>(config.ds)->GetSRVDescriptor() == m_tfx_textures[0])))
-	{
+	// Clear texture binding when it's bound to RT, DSV will be read only.
+	if (draw_rt && static_cast<GSTexture12*>(draw_rt)->GetSRVDescriptor() == m_tfx_textures[0])
 		PSSetShaderResource(0, nullptr, false);
-	}
 
 	if (m_in_render_pass && (m_current_render_target == draw_rt || m_current_depth_target == draw_ds))
 	{
@@ -4095,9 +4081,6 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 
 	if (draw_rt_clone)
 		Recycle(draw_rt_clone);
-
-	if (draw_ds_clone)
-		Recycle(draw_ds_clone);
 
 	if (date_image)
 		Recycle(date_image);
