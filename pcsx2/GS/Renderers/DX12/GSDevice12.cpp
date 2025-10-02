@@ -1352,29 +1352,31 @@ void GSDevice12::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 	// Source is cleared, if destination is a render target, we can carry the clear forward.
 	if (sTex12->GetState() == GSTexture::State::Cleared)
 	{
-		if (dTex12->IsRenderTargetOrDepthStencil() && ProcessClearsBeforeCopy(sTex, dTex, full_draw_copy))
+		if (dTex12->IsRenderTargetOrDepthStencil())
+		{
+			if (ProcessClearsBeforeCopy(sTex, dTex, full_draw_copy))
+				return;
+
+			// Do an attachment clear.
+			EndRenderPass();
+
+			dTex12->SetState(GSTexture::State::Dirty);
+
+			if (dTex12->GetType() != GSTexture::Type::DepthStencil)
+			{
+				dTex12->TransitionToState(D3D12_RESOURCE_STATE_RENDER_TARGET);
+				GetCommandList()->ClearRenderTargetView(
+					dTex12->GetWriteDescriptor(), sTex12->GetUNormClearColor().v, 0, nullptr);
+			}
+			else
+			{
+				dTex12->TransitionToState(D3D12_RESOURCE_STATE_DEPTH_WRITE);
+				GetCommandList()->ClearDepthStencilView(
+					dTex12->GetWriteDescriptor(), D3D12_CLEAR_FLAG_DEPTH, sTex12->GetClearDepth(), 0, 0, nullptr);
+			}
+
 			return;
-
-		// Do an attachment clear.
-		EndRenderPass();
-
-		dTex12->SetState(GSTexture::State::Dirty);
-
-		if (dTex12->GetType() != GSTexture::Type::DepthStencil)
-		{
-			dTex12->TransitionToState(D3D12_RESOURCE_STATE_RENDER_TARGET);
-			GetCommandList()->ClearRenderTargetView(
-				dTex12->GetWriteDescriptor(), sTex12->GetUNormClearColor().v, 0, nullptr);
 		}
-		else
-		{
-			dTex12->TransitionToState(D3D12_RESOURCE_STATE_DEPTH_WRITE);
-			GetCommandList()->ClearDepthStencilView(
-				dTex12->GetWriteDescriptor(), D3D12_CLEAR_FLAG_DEPTH, sTex12->GetClearDepth(), 0, 0, nullptr);
-		}
-
-		return;
-
 
 		// commit the clear to the source first, then do normal copy
 		sTex12->CommitClear();
