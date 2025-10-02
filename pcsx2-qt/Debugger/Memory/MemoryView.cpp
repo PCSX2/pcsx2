@@ -139,6 +139,16 @@ void MemoryViewTable::DrawTable(QPainter& painter, const QPalette& palette, s32 
 					painter.drawText(valX, y + (rowHeight * i), valid ? FilledQStringFromValue(val, 16) : "????????????????");
 					break;
 				}
+				case MemoryViewType::FLOAT:
+				{
+					const u32 intVal = convertEndian<u32>(cpu.read32(thisSegmentsStart, valid));
+					float val;
+					std::memcpy(&val, &intVal, sizeof(val));
+					if (penDefault && val == 0.0)
+						painter.setPen(QColor::fromRgb(145, 145, 155)); // ZERO BYTE COLOUR
+					painter.drawText(valX, y + (rowHeight * i), valid ? FilledQStringFromValue(val, 16) : "?.???????");
+					break;
+				}				
 			}
 			valX += charWidth * 2 * static_cast<s32>(displayType);
 		}
@@ -236,6 +246,9 @@ u128 MemoryViewTable::GetSelectedSegment(DebugInterface& cpu)
 		case MemoryViewType::DWORD:
 			val._u64[0] = convertEndian(cpu.read64(selectedAddress & ~7));
 			break;
+		case MemoryViewType::FLOAT:
+			val.lo[0] = convertEndian(cpu.read32(selectedAddress & ~7));
+			break;			
 	}
 	return val;
 }
@@ -549,7 +562,8 @@ bool MemoryView::fromJson(const JsonValueWrapper& json)
 		if (type == MemoryViewType::BYTE ||
 			type == MemoryViewType::BYTEHW ||
 			type == MemoryViewType::WORD ||
-			type == MemoryViewType::DWORD)
+			type == MemoryViewType::DWORD ||
+		    type == MemoryViewType::FLOAT)
 			m_table.SetViewType(type);
 	}
 
@@ -646,6 +660,12 @@ void MemoryView::openContextMenu(QPoint pos)
 	dword_action->setChecked(current_view_type == MemoryViewType::DWORD);
 	connect(dword_action, &QAction::triggered, this, [this]() { m_table.SetViewType(MemoryViewType::DWORD); });
 	view_type_group->addAction(dword_action);
+
+	QAction* float_action = menu->addAction(tr("Show as float"));
+	float_action->setCheckable(true);
+	float_action->setChecked(current_view_type == MemoryViewType::FLOAT);
+	connect(float_action, &QAction::triggered, this, [this]() { m_table.SetViewType(MemoryViewType::FLOAT); });
+	view_type_group->addAction(float_action);	
 
 	menu->addSeparator();
 
