@@ -49,6 +49,7 @@
 #define PS_PROCESS_RG 0
 #define PS_SHUFFLE_ACROSS 0
 #define PS_READ16_SRC 0
+#define PS_WRITE_RG 0
 #define PS_DST_FMT 0
 #define PS_DEPTH_FMT 0
 #define PS_PAL_FMT 0
