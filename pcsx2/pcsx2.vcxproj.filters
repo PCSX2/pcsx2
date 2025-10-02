@@ -1451,6 +1451,7 @@
     </ClCompile>
     <ClCompile Include="GS\GSDrawingEnvironment.cpp">
       <Filter>System\Ps2\GS\Renderers\Software</Filter>
+    </ClCompile>
     <ClCompile Include="PS2Float.cpp">
       <Filter>System\Ps2\EmotionEngine\Shared</Filter>
     </ClCompile>
