@@ -3,7 +3,6 @@
 
 #include "common/Pcsx2Types.h"
 #include "common/Console.h"
-#include "common/FileSystem.h"
 #include "common/HostSys.h"
 #include "common/Path.h"
 #include "common/ScopedGuard.h"
