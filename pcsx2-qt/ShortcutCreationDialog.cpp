@@ -118,7 +118,7 @@ ShortcutCreationDialog::ShortcutCreationDialog(QWidget* parent, const QString& t
 			args.push_back("-state");
 			args.push_back(StringUtil::ToChars(m_ui.loadStateIndex->value()));
 		}
-		else if (m_ui.loadStateIndexToggle->isChecked() && !m_ui.loadStateFilePath->text().isEmpty())
+		else if (m_ui.loadStateFileToggle->isChecked() && !m_ui.loadStateFilePath->text().isEmpty())
 		{
 			args.push_back("-statefile");
 			args.push_back(m_ui.loadStateFilePath->text().toStdString());
