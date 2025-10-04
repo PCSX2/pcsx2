@@ -176,6 +176,44 @@ const char* GSUtil::GetACName(u32 ac)
 	return (ac < std::size(names)) ? names[ac] : "";
 }
 
+const char* GSUtil::GetPerfMonCounterName(GSPerfMon::counter_t counter, bool hw)
+{
+	if (hw)
+	{
+		static constexpr const char* names_hw[] = {
+			"Prim",
+			"Draw",
+			"DrawCalls",
+			"Readbacks",
+			"Swizzle",
+			"Unswizzle",
+			"TextureCopies",
+			"TextureUploads",
+			"Barriers",
+			"RenderPasses",
+			"CounterLast",
+		};
+		return counter < std::size(names_hw) ? names_hw[counter] : "";
+	}
+	else
+	{
+		static constexpr const char* names_sw[] = {
+			"Prim",
+			"Draw",
+			"DrawCalls",
+			"Readbacks",
+			"Swizzle",
+			"Unswizzle",
+			"Fillrate",
+			"SyncPoint",
+			"Barriers",
+			"RenderPasses",
+			"CounterLast",
+		};
+		return counter < std::size(names_sw) ? names_sw[counter] : "";
+	}
+}
+
 const u32* GSUtil::HasSharedBitsPtr(u32 dpsm)
 {
 	return s_maps.SharedBitsField[dpsm];

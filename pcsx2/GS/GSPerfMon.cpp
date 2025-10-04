@@ -3,6 +3,7 @@
 
 #include "GSPerfMon.h"
 #include "GS.h"
+#include "GSUtil.h"
 
 #include <cstring>
 
@@ -40,4 +41,28 @@ void GSPerfMon::Update()
 	}
 
 	memset(m_counters, 0, sizeof(m_counters));
+}
+
+GSPerfMon GSPerfMon::operator-(const GSPerfMon& other)
+{
+	GSPerfMon diff;
+	for (std::size_t i = 0; i < std::size(diff.m_counters); i++)
+	{
+		diff.m_counters[i] = m_counters[i] - other.m_counters[i];
+	}
+	return diff;
+}
+
+void GSPerfMon::Dump(const std::string& filename, bool hw)
+{
+	FILE* fp = fopen(filename.c_str(), "w");
+	if (!fp)
+		return;
+
+	for (std::size_t i = 0; i < std::size(m_counters); i++)
+	{
+		fprintf(fp, "%s: %lu\n", GSUtil::GetPerfMonCounterName(static_cast<counter_t>(i), hw), static_cast<u64>(m_counters[i]));
+	}
+
+	fclose(fp);
 }
