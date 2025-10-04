@@ -8122,6 +8122,7 @@ TRANSLATE_NOOP("FullscreenUI", "Shows indicators when fast forwarding, pausing, 
 TRANSLATE_NOOP("FullscreenUI", "Shows the currently active input recording status.");
 TRANSLATE_NOOP("FullscreenUI", "Shows the currently active video capture status.");
 TRANSLATE_NOOP("FullscreenUI", "Shows the current configuration in the bottom-right corner of the display.");
+TRANSLATE_NOOP("FullscreenUI", "Shows the amount of currently active patches/cheats on the bottom-right corner of the display.");
 TRANSLATE_NOOP("FullscreenUI", "Shows the current controller state of the system in the bottom-left corner of the display.");
 TRANSLATE_NOOP("FullscreenUI", "Shows a visual history of frame times in the upper-left corner of the display.");
 TRANSLATE_NOOP("FullscreenUI", "Shows the current system hardware information on the OSD.");
@@ -8773,6 +8774,7 @@ TRANSLATE_NOOP("FullscreenUI", "Show Status Indicators");
 TRANSLATE_NOOP("FullscreenUI", "Show Input Recording Status");
 TRANSLATE_NOOP("FullscreenUI", "Show Video Capture Status");
 TRANSLATE_NOOP("FullscreenUI", "Show Settings");
+TRANSLATE_NOOP("FullscreenUI", "Show Patches");
 TRANSLATE_NOOP("FullscreenUI", "Show Inputs");
 TRANSLATE_NOOP("FullscreenUI", "Show Frame Times");
 TRANSLATE_NOOP("FullscreenUI", "Show Hardware Info");
