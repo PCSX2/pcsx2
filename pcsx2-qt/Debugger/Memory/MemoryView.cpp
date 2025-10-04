@@ -147,10 +147,6 @@ void MemoryViewTable::DrawTable(QPainter& painter, const QPalette& palette, s32 
 					if (penDefault && val == 0.0)
 						painter.setPen(QColor::fromRgb(145, 145, 155)); // ZERO BYTE COLOUR
 					QString floatStr = QString::number(val, 'g');
-					if (floatStr.length() > MemoryViewTypeVisualWidth[static_cast<s32>(displayType)])
-					{
-						floatStr = floatStr.left(MemoryViewTypeVisualWidth[static_cast<s32>(displayType)] - 1) + "+";
-					}
 					painter.drawText(valX, y + (rowHeight * i), valid ? QString("%1").arg(floatStr, 14) : "??????????????");
 					break;
 				}										
@@ -680,9 +676,16 @@ void MemoryView::openContextMenu(QPoint pos)
 		return std::optional(event);
 	});
 
-	connect(menu->addAction(tr("Copy Byte")), &QAction::triggered, this, &MemoryView::contextCopyByte);
+	QAction* copy_byte_action = menu->addAction(tr("Copy Byte"));
+	copy_byte_action->setEnabled(current_view_type != MemoryViewType::FLOAT);
+	connect(copy_byte_action, &QAction::triggered, this, &MemoryView::contextCopyByte);
+
 	connect(menu->addAction(tr("Copy Segment")), &QAction::triggered, this, &MemoryView::contextCopySegment);
-	connect(menu->addAction(tr("Copy Character")), &QAction::triggered, this, &MemoryView::contextCopyCharacter);
+
+	QAction* copy_char_action = menu->addAction(tr("Copy Character"));
+	copy_char_action->setEnabled(current_view_type != MemoryViewType::FLOAT);	
+	connect(copy_char_action, &QAction::triggered, this, &MemoryView::contextCopyCharacter);
+
 	connect(menu->addAction(tr("Paste")), &QAction::triggered, this, &MemoryView::contextPaste);
 
 	menu->popup(this->mapToGlobal(pos));
@@ -698,7 +701,17 @@ void MemoryView::contextCopyByte()
 
 void MemoryView::contextCopySegment()
 {
-	QApplication::clipboard()->setText(QString::number(m_table.GetSelectedSegment(cpu()).lo, 16).toUpper());
+	if (m_table.GetViewType() == MemoryViewType::FLOAT)
+	{
+		u32 intVal = m_table.GetSelectedSegment(cpu()).lo;		
+		float val;
+		std::memcpy(&val, &intVal, sizeof(val));		
+		QApplication::clipboard()->setText(QString::number(val, 'g'));		
+	}
+	else
+	{
+		QApplication::clipboard()->setText(QString::number(m_table.GetSelectedSegment(cpu()).lo, 16).toUpper());
+	}
 }
 
 void MemoryView::contextCopyCharacter()
