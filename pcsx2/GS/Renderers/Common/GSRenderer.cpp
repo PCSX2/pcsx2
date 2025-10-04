@@ -591,6 +591,13 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 
 		if (GSConfig.SaveTransferImages)
 			DumpTransferImages();
+
+		if (GSConfig.SaveFrameStats)
+		{
+			m_perfmon_frame = g_perfmon - m_perfmon_frame;
+			m_perfmon_frame.Dump(GetDrawDumpPath("%05d_f%05lld_frame_stats.txt", s_n, g_perfmon.GetFrame()), GSIsHardwareRenderer());
+			m_perfmon_frame = g_perfmon;
+		}
 	}
 
 	const int fb_sprite_blits = g_perfmon.GetDisplayFramebufferSpriteBlits();
