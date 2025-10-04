@@ -6,6 +6,7 @@
 #include "common/Pcsx2Defs.h"
 
 #include <ctime>
+#include <string>
 
 class GSPerfMon
 {
@@ -27,6 +28,9 @@ public:
 		// Reused counters for HW.
 		TextureCopies = Fillrate,
 		TextureUploads = SyncPoint,
+
+		CounterLastHW = CounterLast,
+		CounterLastSW = SyncPoint + 1
 	};
 
 protected:
@@ -58,6 +62,10 @@ public:
 		m_disp_fb_sprite_blits = 0;
 		return blits;
 	}
+
+	GSPerfMon operator-(const GSPerfMon& other);
+
+	void Dump(const std::string& filename, bool hw);
 };
 
 extern GSPerfMon g_perfmon;
