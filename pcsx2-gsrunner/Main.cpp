@@ -49,7 +49,6 @@
 
 // Down here because X11 has a lot of defines that can conflict
 #if defined(__linux__)
-#include <SDL2/SDL.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <sys/select.h>
