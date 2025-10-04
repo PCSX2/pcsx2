@@ -20,11 +20,11 @@
 
 enum class MemoryViewType
 {
-	BYTE,
-	BYTEHW,
-	WORD,
-	DWORD,
-	FLOAT
+	BYTE = 0,
+	BYTEHW = 1,
+	WORD = 2,
+	DWORD = 3,
+	FLOAT = 4,
 };
 
 const s32 MemoryViewTypeWidth[] =

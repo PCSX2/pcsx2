@@ -69,23 +69,23 @@ void MemoryViewTable::DrawTable(QPainter& painter, const QPalette& palette, s32 
 		const u32 currentRowAddress = startAddress + (i * 0x10);
 		s32 valX = valuexAxis;
 		segmentXAxis[0] = valX;
-		for (int j = 0; j < 16 / static_cast<s32>(displayType); j++)
+		for (int j = 0; j < 16 / MemoryViewTypeWidth[static_cast<s32>(displayType)]; j++)
 		{
 			valX += charWidth;
-			const u32 thisSegmentsStart = currentRowAddress + (j * static_cast<s32>(displayType));
+			const u32 thisSegmentsStart = currentRowAddress + (j * MemoryViewTypeWidth[static_cast<s32>(displayType)]);
 
 			segmentXAxis[j] = valX;
 
 			bool penDefault = false;
 			if ((selectedAddress & ~0xF) == currentRowAddress)
 			{
-				if (selectedAddress >= thisSegmentsStart && selectedAddress < (thisSegmentsStart + static_cast<s32>(displayType)))
+				if (selectedAddress >= thisSegmentsStart && selectedAddress < (thisSegmentsStart + MemoryViewTypeWidth[static_cast<s32>(displayType)]))
 				{ // If the current byte and row we are drawing is selected
 					if (!selectedText)
 					{
 						s32 charsIntoSegment = ((selectedAddress - thisSegmentsStart) * 2) + ((selectedNibbleHI ? 0 : 1) ^ littleEndian);
 						if (littleEndian)
-							charsIntoSegment = (static_cast<s32>(displayType) * 2) - charsIntoSegment - 1;
+							charsIntoSegment = MemoryViewTypeVisualWidth[static_cast<s32>(displayType)] - charsIntoSegment - 1;
 						painter.setPen(QColor::fromRgb(205, 165, 0)); // SELECTED NIBBLE LINE COLOUR
 						const QPoint lineStart(valX + (charsIntoSegment * charWidth) + 1, y + (rowHeight * i));
 						painter.drawLine(lineStart, lineStart + QPoint(charWidth - 3, 0));
@@ -146,11 +146,16 @@ void MemoryViewTable::DrawTable(QPainter& painter, const QPalette& palette, s32 
 					std::memcpy(&val, &intVal, sizeof(val));
 					if (penDefault && val == 0.0)
 						painter.setPen(QColor::fromRgb(145, 145, 155)); // ZERO BYTE COLOUR
-					painter.drawText(valX, y + (rowHeight * i), valid ? FilledQStringFromValue(val, 16) : "?.???????");
+					QString floatStr = QString::number(val, 'g');
+					if (floatStr.length() > MemoryViewTypeVisualWidth[static_cast<s32>(displayType)])
+					{
+						floatStr = floatStr.left(MemoryViewTypeVisualWidth[static_cast<s32>(displayType)] - 1) + "+";
+					}
+					painter.drawText(valX, y + (rowHeight * i), valid ? QString("%1").arg(floatStr, 14) : "??????????????");
 					break;
-				}				
+				}										
 			}
-			valX += charWidth * 2 * static_cast<s32>(displayType);
+			valX += charWidth * MemoryViewTypeVisualWidth[static_cast<s32>(displayType)];
 		}
 
 		// valX is our new X position after the hex values
@@ -189,11 +194,11 @@ void MemoryViewTable::SelectAt(QPoint pos)
 	// Check if SelectAt was called before DrawTable.
 	if (rowHeight == 0)
 		return;
-
+	
 	const u32 selectedRow = (pos.y() - 2) / (rowHeight);
 	const s32 x = pos.x();
 	const s32 avgSegmentWidth = segmentXAxis[1] - segmentXAxis[0];
-	const u32 nibbleWidth = (avgSegmentWidth / (2 * (s32)displayType));
+	const u32 nibbleWidth = (avgSegmentWidth / MemoryViewTypeVisualWidth[static_cast<s32>(displayType)]);
 	selectedAddress = (selectedRow * 0x10) + startAddress;
 
 	if (x <= segmentXAxis[0])
@@ -201,7 +206,7 @@ void MemoryViewTable::SelectAt(QPoint pos)
 		// The user clicked before the first segment
 		selectedText = false;
 		if (littleEndian)
-			selectedAddress += static_cast<s32>(displayType) - 1;
+			selectedAddress += MemoryViewTypeWidth[static_cast<s32>(displayType)] - 1;
 		selectedNibbleHI = true;
 	}
 	else if (x > valuexAxis && x < textXAxis)
@@ -210,12 +215,12 @@ void MemoryViewTable::SelectAt(QPoint pos)
 		// The user clicked inside of the hexadecimal area
 		for (s32 i = 0; i < 16; i++)
 		{
-			if (i == ((16 / static_cast<s32>(displayType)) - 1) || (x >= segmentXAxis[i] && x < (segmentXAxis[i + 1])))
+			if (i == ((16 / MemoryViewTypeWidth[static_cast<s32>(displayType)]) - 1) || (x >= segmentXAxis[i] && x < (segmentXAxis[i + 1])))
 			{
 				u32 indexInSegment = (x - segmentXAxis[i]) / nibbleWidth;
 				if (littleEndian)
-					indexInSegment = (static_cast<s32>(displayType) * 2) - indexInSegment - 1;
-				selectedAddress = selectedAddress + i * static_cast<s32>(displayType) + (indexInSegment / 2);
+					indexInSegment = MemoryViewTypeVisualWidth[static_cast<s32>(displayType)] - indexInSegment - 1;
+				selectedAddress = selectedAddress + i * MemoryViewTypeWidth[static_cast<s32>(displayType)] + (indexInSegment / 2);
 				selectedNibbleHI = littleEndian ? indexInSegment & 1 : !(indexInSegment & 1);
 				break;
 			}
@@ -247,7 +252,7 @@ u128 MemoryViewTable::GetSelectedSegment(DebugInterface& cpu)
 			val._u64[0] = convertEndian(cpu.read64(selectedAddress & ~7));
 			break;
 		case MemoryViewType::FLOAT:
-			val.lo[0] = convertEndian(cpu.read32(selectedAddress & ~7));
+			val.lo = convertEndian(cpu.read32(selectedAddress & ~3));
 			break;			
 	}
 	return val;
@@ -313,8 +318,8 @@ u32 MemoryViewTable::nextAddress(u32 addr, u32 selected_address, MemoryViewType 
 	}
 	else
 	{
-		if (selected_address % static_cast<s32>(display_type) == 0)
-			return addr + (static_cast<s32>(display_type) * 2 - 1);
+		if (selected_address % MemoryViewTypeWidth[static_cast<s32>(display_type)] == 0)
+			return addr + (MemoryViewTypeWidth[static_cast<s32>(display_type)] * 2 - 1);
 		else
 			return addr - 1;
 	}
@@ -330,7 +335,7 @@ u32 MemoryViewTable::prevAddress(u32 addr, u32 selected_address, MemoryViewType 
 	{
 		// It works
 		if ((addr & (static_cast<u32>(display_type) - 1)) == (static_cast<u32>(display_type) - 1))
-			return addr - (static_cast<s32>(display_type) * 2 - 1);
+			return addr - (MemoryViewTypeWidth[static_cast<s32>(display_type)] * 2 - 1);
 		else
 			return selected_address + 1;
 	}
@@ -347,8 +352,8 @@ void MemoryViewTable::ForwardSelection()
 	{
 		if ((selectedNibbleHI = !selectedNibbleHI))
 		{
-			if (selectedAddress % static_cast<s32>(displayType) == 0)
-				UpdateSelectedAddress(selectedAddress + (static_cast<s32>(displayType) * 2 - 1));
+			if (selectedAddress % MemoryViewTypeWidth[static_cast<s32>(displayType)] == 0)
+				UpdateSelectedAddress(selectedAddress + (MemoryViewTypeWidth[static_cast<s32>(displayType)] * 2 - 1));
 			else
 				UpdateSelectedAddress(selectedAddress - 1);
 		}
@@ -368,7 +373,7 @@ void MemoryViewTable::BackwardSelection()
 		{
 			// It works
 			if ((selectedAddress & (static_cast<u32>(displayType) - 1)) == (static_cast<u32>(displayType) - 1))
-				UpdateSelectedAddress(selectedAddress - (static_cast<s32>(displayType) * 2 - 1));
+				UpdateSelectedAddress(selectedAddress - (MemoryViewTypeWidth[static_cast<s32>(displayType)] * 2 - 1));
 			else
 				UpdateSelectedAddress(selectedAddress + 1);
 		}
