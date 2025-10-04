@@ -216,8 +216,16 @@ void MemoryViewTable::SelectAt(QPoint pos)
 				u32 indexInSegment = (x - segmentXAxis[i]) / nibbleWidth;
 				if (littleEndian)
 					indexInSegment = MemoryViewTypeVisualWidth[static_cast<s32>(displayType)] - indexInSegment - 1;
-				selectedAddress = selectedAddress + i * MemoryViewTypeWidth[static_cast<s32>(displayType)] + (indexInSegment / 2);
-				selectedNibbleHI = littleEndian ? indexInSegment & 1 : !(indexInSegment & 1);
+				if (displayType == MemoryViewType::FLOAT)
+				{
+					selectedAddress = selectedAddress + i * MemoryViewTypeWidth[static_cast<s32>(displayType)];
+					selectedNibbleHI = false;
+				}
+				else 
+				{
+					selectedAddress = selectedAddress + i * MemoryViewTypeWidth[static_cast<s32>(displayType)] + (indexInSegment / 2);
+					selectedNibbleHI = littleEndian ? indexInSegment & 1 : !(indexInSegment & 1);
+				}
 				break;
 			}
 		}
