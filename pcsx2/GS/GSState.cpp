@@ -202,6 +202,9 @@ void GSState::Reset(bool hardware_reset)
 	m_backed_up_ctx = -1;
 
 	memcpy(&m_prev_env, &m_env, sizeof(m_prev_env));
+
+	m_perfmon_draw.Reset();
+	m_perfmon_frame.Reset();
 }
 
 template<bool auto_flush>
@@ -2124,6 +2127,16 @@ void GSState::FlushPrim()
 
 		g_perfmon.Put(GSPerfMon::Draw, 1);
 		g_perfmon.Put(GSPerfMon::Prim, m_index.tail / GSUtil::GetVertexCount(PRIM->PRIM));
+
+		if (GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
+		{
+			if (GSConfig.SaveDrawStats)
+			{
+				m_perfmon_draw = g_perfmon - m_perfmon_draw;
+				m_perfmon_draw.Dump(GetDrawDumpPath("%05d_draw_stats.txt", s_n), GSIsHardwareRenderer());
+				m_perfmon_draw = g_perfmon;
+			}
+		}
 
 		m_index.tail = 0;
 		m_vertex.head = 0;
