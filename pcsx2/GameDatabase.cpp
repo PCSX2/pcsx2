@@ -664,10 +664,10 @@ bool GameDatabaseSchema::GameEntry::configMatchesHWFix(const Pcsx2Config::GSOpti
 			return (config.GPUPaletteConversion == ((value > 1) ? (config.TexturePreloading == TexturePreloadingLevel::Full) : (value != 0)));
 
 		case GSHWFixId::MinimumBlendingLevel:
-			return (static_cast<int>(config.AccurateBlendingUnit) >= value);
+			return (config.AccurateBlendingUnit == AccBlendLevel::Automatic || static_cast<int>(config.AccurateBlendingUnit) >= value);
 
 		case GSHWFixId::MaximumBlendingLevel:
-			return (static_cast<int>(config.AccurateBlendingUnit) <= value);
+			return (config.AccurateBlendingUnit == AccBlendLevel::Automatic || static_cast<int>(config.AccurateBlendingUnit) <= value);
 
 		case GSHWFixId::RecommendedBlendingLevel:
 			return true;
@@ -868,21 +868,23 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 
 			case GSHWFixId::MinimumBlendingLevel:
 			{
-				if (value >= 0 && value <= static_cast<int>(AccBlendLevel::Maximum))
-					config.AccurateBlendingUnit = std::max(config.AccurateBlendingUnit, static_cast<AccBlendLevel>(value));
+				if (value >= 0 && value <= static_cast<int>(AccBlendLevel::Maximum) && config.AccurateBlendingUnit == AccBlendLevel::Automatic)
+					config.AccurateBlendingUnit = static_cast<AccBlendLevel>(value);
 			}
 			break;
 
 			case GSHWFixId::MaximumBlendingLevel:
 			{
-				if (value >= 0 && value <= static_cast<int>(AccBlendLevel::Maximum))
-					config.AccurateBlendingUnit = std::min(config.AccurateBlendingUnit, static_cast<AccBlendLevel>(value));
+				if (value >= 0 && value <= static_cast<int>(AccBlendLevel::Maximum) && config.AccurateBlendingUnit == AccBlendLevel::Automatic)
+					config.AccurateBlendingUnit = static_cast<AccBlendLevel>(value);
 			}
 			break;
 
 			case GSHWFixId::RecommendedBlendingLevel:
 			{
-				if (!is_sw_renderer && value >= 0 && value <= static_cast<int>(AccBlendLevel::Maximum) && static_cast<int>(EmuConfig.GS.AccurateBlendingUnit) < value)
+				// Need to increment by 1 because Automatic is -1.
+				const int blend_level = static_cast<int>(config.AccurateBlendingUnit) + 1;
+				if (!is_sw_renderer && value >= static_cast<int>(AccBlendLevel::Automatic) && value <= static_cast<int>(AccBlendLevel::Maximum) && blend_level < value)
 				{
 					Host::AddKeyedOSDMessage("HWBlendingWarning",
 						fmt::format(TRANSLATE_FS("GameDatabase",
@@ -891,8 +893,7 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 										"You can adjust the blending level in Game Properties to improve\n"
 										"graphical quality, but this will increase system requirements."),
 							ICON_FA_PAINTBRUSH,
-							Pcsx2Config::GSOptions::BlendingLevelNames[static_cast<int>(
-								EmuConfig.GS.AccurateBlendingUnit)],
+							Pcsx2Config::GSOptions::BlendingLevelNames[blend_level],
 							Pcsx2Config::GSOptions::BlendingLevelNames[value]),
 						Host::OSD_WARNING_DURATION);
 				}
