@@ -17,7 +17,7 @@ public:
 
 #if !defined(__APPLE__)
 	// Create desktop shortcut for games
-	void CreateShortcut(const std::string name, const std::string game_path, std::vector<std::string> passed_cli_args, bool is_desktop);
+	void CreateShortcut(const std::string name, const std::string game_path, std::vector<std::string> passed_cli_args, std::string custom_args, bool is_desktop);
 #endif
 
 protected:

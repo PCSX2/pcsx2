@@ -132,21 +132,21 @@ ShortcutCreationDialog::ShortcutCreationDialog(QWidget* parent, const QString& t
 		if (m_ui.bigPictureModeToggle->isChecked())
 			args.push_back("-bigpicture");
 
-		if (!m_ui.customArgsInput->text().isEmpty())
-			args.push_back(m_ui.customArgsInput->text().toStdString());
-
 		if (m_ui.shortcutDesktop->isChecked())
 			m_desktop = true;
 		else if (m_ui.shortcutStartMenu->isChecked())
 			m_desktop = false;
 
-		ShortcutCreationDialog::CreateShortcut(title.toStdString(), path.toStdString(), args, m_desktop);
+		std::string custom_args = m_ui.customArgsInput->text().toStdString();
+
+		ShortcutCreationDialog::CreateShortcut(title.toStdString(), path.toStdString(), args, custom_args, m_desktop);
+
 		accept();
 	});
 	connect(m_ui.dialogButtons, &QDialogButtonBox::rejected, this, &QDialog::reject);
 }
 
-void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::string game_path, std::vector<std::string> passed_cli_args, bool is_desktop)
+void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::string game_path, std::vector<std::string> passed_cli_args, std::string custom_args, bool is_desktop)
 {
 #if defined(_WIN32)
 	if (name.empty())
@@ -205,7 +205,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 
 	Path::EscapeCmdLine(&clean_path);
 	std::string combined_args = StringUtil::JoinString(passed_cli_args.begin(), passed_cli_args.end(), " ");
-	std::string final_args = fmt::format("{} -- {}", combined_args, clean_path);
+	std::string final_args = fmt::format("{} {} -- {}", combined_args, custom_args, clean_path);
 
 	Console.WriteLnFmt("Creating a shortcut '{}' with arguments '{}'", link_file, final_args);
 
@@ -402,7 +402,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 
 	// Assembling the .desktop file
 	std::string final_args;
-	final_args = fmt::format("{} {} -- {}", executable_path, cmdline, clean_path);
+	final_args = fmt::format("{} {} {} -- {}", executable_path, cmdline, custom_args, clean_path);
 	std::string file_content =
 		"[Desktop Entry]\n"
 		"Encoding=UTF-8\n"
