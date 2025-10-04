@@ -233,7 +233,13 @@ public:
 			const u64 quick64 = pState->quick64[0];
 			for (const microBlockLinkRef& ref : quickLookup)
 			{
-				if (ref.quick != quick64) continue;
+				// if we're using the flag hack, ignore the mac flags going in to the new block too if an exact match wasn't requested.
+				if (mVUsFlagHack)
+				{
+					if ((ref.quick & ~0x0C04) != (quick64 & ~0x0C04)) continue;
+				}
+				else if (ref.quick != quick64) continue;
+
 				if (doConstProp && (ref.pBlock->pState.vi15 != pState->vi15))  continue;
 				if (doConstProp && (ref.pBlock->pState.vi15v != pState->vi15v)) continue;
 				return ref.pBlock;
