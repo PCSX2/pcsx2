@@ -989,6 +989,8 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBoolEx(SaveAlpha, "SaveAlpha");
 	SettingsWrapBitBoolEx(SaveInfo, "SaveInfo");
 	SettingsWrapBitBoolEx(SaveTransferImages, "SaveTransferImages");
+	SettingsWrapBitBoolEx(SaveDrawStats, "SaveDrawStats");
+	SettingsWrapBitBoolEx(SaveFrameStats, "SaveFrameStats");
 	SettingsWrapBitBool(DumpReplaceableTextures);
 	SettingsWrapBitBool(DumpReplaceableMipmaps);
 	SettingsWrapBitBool(DumpTexturesWithFMVActive);
