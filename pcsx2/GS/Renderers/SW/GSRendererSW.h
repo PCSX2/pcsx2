@@ -79,6 +79,9 @@ protected:
 
 	bool GetScanlineGlobalData(SharedData* data);
 
+	template <u32 primclass>
+	void RewriteVerticesIfSTOverflow();
+
 public:
 	GSRendererSW(int threads);
 	~GSRendererSW() override;
