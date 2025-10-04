@@ -2310,6 +2310,7 @@ void GSTextureCache::CombineAlignedInsideTargets(Target* target, GSTextureCache:
 					if (src && src->m_from_target == t)
 					{
 						src->m_texture = t->m_texture;
+						src->m_from_target = target;
 						src->m_shared_texture = false;
 						src->m_target_direct = false;
 						t->m_texture = nullptr;
