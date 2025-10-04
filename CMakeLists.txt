@@ -47,7 +47,10 @@ add_subdirectory(common)
 
 # make pcsx2
 add_subdirectory(pcsx2)
-add_subdirectory(pcsx2-qt)
+
+if(ENABLE_QT_UI)
+	add_subdirectory(pcsx2-qt)
+endif()
 
 # Updater is Windows only for now.
 if (WIN32)
@@ -62,9 +65,6 @@ endif()
 
 # gsrunner
 if(ENABLE_GSRUNNER)
-	if (NOT WIN32 AND NOT APPLE)
-		message(WARNING "GSRunner is only supported on Windows and macOS and may not build on your system")
-	endif()
 	add_subdirectory(pcsx2-gsrunner)
 else()
 	add_subdirectory(pcsx2-gsrunner EXCLUDE_FROM_ALL)

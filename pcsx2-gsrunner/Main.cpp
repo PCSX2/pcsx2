@@ -47,6 +47,14 @@
 
 #include "svnrev.h"
 
+// Down here because X11 has a lot of defines that can conflict
+#if defined(__linux__)
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <sys/select.h>
+#include <unistd.h>
+#endif
+
 namespace GSRunner
 {
 	static void InitializeConsole();
@@ -1086,4 +1094,118 @@ void GSRunner::StopPlatformMessagePump()
 	CocoaTools::StopMainThreadEventLoop();
 }
 
+#elif defined(__linux__)
+static Display* s_display = nullptr;
+static Window s_window = None;
+static WindowInfo s_wi;
+static std::atomic<bool> s_shutdown_requested{false};
+
+bool GSRunner::CreatePlatformWindow()
+{
+	pxAssertRel(!s_display && s_window == None, "Tried to create window when there already was one!");
+
+	s_display = XOpenDisplay(nullptr);
+	if (!s_display)
+	{
+		Console.Error("Failed to open X11 display");
+		return false;
+	}
+
+	int screen = DefaultScreen(s_display);
+	Window root = RootWindow(s_display, screen);
+
+	s_window = XCreateSimpleWindow(s_display, root, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 1,
+		BlackPixel(s_display, screen), WhitePixel(s_display, screen));
+
+	if (s_window == None)
+	{
+		Console.Error("Failed to create X11 window");
+		XCloseDisplay(s_display);
+		s_display = nullptr;
+		return false;
+	}
+
+	XStoreName(s_display, s_window, "PCSX2 GS Runner");
+	XSelectInput(s_display, s_window, StructureNotifyMask);
+	XMapWindow(s_display, s_window);
+
+	s_wi.type = WindowInfo::Type::X11;
+	s_wi.display_connection = s_display;
+	s_wi.window_handle = reinterpret_cast<void*>(s_window);
+	s_wi.surface_width = WINDOW_WIDTH;
+	s_wi.surface_height = WINDOW_HEIGHT;
+	s_wi.surface_scale = 1.0f;
+
+	XFlush(s_display);
+	PumpPlatformMessages();
+	return true;
+}
+
+void GSRunner::DestroyPlatformWindow()
+{
+	if (s_display && s_window != None)
+	{
+		XDestroyWindow(s_display, s_window);
+		s_window = None;
+	}
+
+	if (s_display)
+	{
+		XCloseDisplay(s_display);
+		s_display = nullptr;
+	}
+}
+
+std::optional<WindowInfo> GSRunner::GetPlatformWindowInfo()
+{
+	WindowInfo wi;
+	if (s_display && s_window != None)
+		wi = s_wi;
+	else
+		wi.type = WindowInfo::Type::Surfaceless;
+	return wi;
+}
+
+void GSRunner::PumpPlatformMessages(bool forever)
+{
+	if (!s_display)
+		return;
+
+	do
+	{
+		while (XPending(s_display) > 0)
+		{
+			XEvent event;
+			XNextEvent(s_display, &event);
+
+			switch (event.type)
+			{
+				case ConfigureNotify:
+				{
+					const XConfigureEvent& configure = event.xconfigure;
+					s_wi.surface_width = static_cast<u32>(configure.width);
+					s_wi.surface_height = static_cast<u32>(configure.height);
+					break;
+				}
+				case DestroyNotify:
+					return;
+				default:
+					break;
+			}
+		}
+
+		if (s_shutdown_requested.load())
+			return;
+
+		if (forever)
+		{
+			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+		}
+	} while (forever && !s_shutdown_requested.load());
+}
+
+void GSRunner::StopPlatformMessagePump()
+{
+	s_shutdown_requested.store(true);
+}
 #endif // _WIN32 / __APPLE__
