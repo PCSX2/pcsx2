@@ -503,6 +503,7 @@ public:
 
 	Target* FindTargetOverlap(Target* target, int type, int psm);
 	void CombineAlignedInsideTargets(Target* target, GSTextureCache::Source* src = nullptr);
+	bool CheckAndResizeTargetValids(GIFRegTEX0 TEX0, GSTextureCache::Target* t, GSTextureCache::Source* src);
 	Target* LookupTarget(GIFRegTEX0 TEX0, const GSVector2i& size, float scale, int type, bool used = true, u32 fbmask = 0,
 		bool is_frame = false, bool preload = GSConfig.PreloadFrameWithGSData, bool preserve_rgb = true, bool preserve_alpha = true,
 		const GSVector4i draw_rc = GSVector4i::zero(), bool is_shuffle = false, bool possible_clear = false, bool preserve_scale = false, GSTextureCache::Source* src = nullptr, GSTextureCache::Target* ds = nullptr, int offset = -1);
