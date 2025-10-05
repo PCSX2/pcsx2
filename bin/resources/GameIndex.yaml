@@ -28187,6 +28187,8 @@ SLES-54964:
 SLES-54971:
   name: "Hot Wheels - Beat That!"
   region: "PAL-M4"
+  clampModes:
+    eeClampMode: 3 # Fixes various car physics issues.
   gsHWFixes:
     roundSprite: 1 # Fixes font artifacts.
 SLES-54972:
@@ -72657,6 +72659,8 @@ SLUS-21628:
   name: "Hot Wheels - Beat That!"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    eeClampMode: 3 # Fixes various car physics issues.
   gsHWFixes:
     roundSprite: 1 # Fixes font artifacts.
 SLUS-21629:
