@@ -92,6 +92,7 @@ public:
 
 	u32 startAddress;
 	u32 selectedAddress;
+	s32 selectedIndex;
 
 	void UpdateStartAddress(u32 start);
 	void UpdateSelectedAddress(u32 selected, bool page = false);
