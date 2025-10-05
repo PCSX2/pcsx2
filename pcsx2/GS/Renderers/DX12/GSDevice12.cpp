@@ -1225,7 +1225,7 @@ bool GSDevice12::CheckFeatures(const u32& vendor_id)
 	const bool isAMD = (vendor_id == 0x1002 || vendor_id == 0x1022);
 
 	m_features.texture_barrier = false;
-	m_features.multidraw_fb_copy = false;
+	m_features.multidraw_fb_copy = GSConfig.OverrideTextureBarriers != 0;
 	m_features.broken_point_sampler = isAMD;
 	m_features.primitive_id = true;
 	m_features.prefer_new_textures = true;
@@ -2906,6 +2906,7 @@ const ID3DBlob* GSDevice12::GetTFXPixelShader(const GSHWDrawConfig::PSSelector& 
 	sm.AddMacro("PS_PROCESS_RG", sel.process_rg);
 	sm.AddMacro("PS_SHUFFLE_ACROSS", sel.shuffle_across);
 	sm.AddMacro("PS_READ16_SRC", sel.real16src);
+	sm.AddMacro("PS_WRITE_RG", sel.write_rg);
 	sm.AddMacro("PS_CHANNEL_FETCH", sel.channel);
 	sm.AddMacro("PS_TALES_OF_ABYSS_HLE", sel.tales_of_abyss_hle);
 	sm.AddMacro("PS_URBAN_CHAOS_HLE", sel.urban_chaos_hle);
@@ -3924,29 +3925,6 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		}
 	}
 
-	if (draw_rt && (config.require_one_barrier || (config.tex && config.tex == config.rt)))
-	{
-		// Requires a copy of the RT.
-		// Used as "bind rt" flag when texture barrier is unsupported for tex is fb.
-		draw_rt_clone = static_cast<GSTexture12*>(CreateTexture(rtsize.x, rtsize.y, 1, colclip_rt ? GSTexture::Format::ColorClip : GSTexture::Format::Color, true));
-		if (draw_rt_clone)
-		{
-			EndRenderPass();
-
-			GL_PUSH("D3D12: Copy RT to temp texture {%d,%d %dx%d}", config.drawarea.left, config.drawarea.top,
-				config.drawarea.width(), config.drawarea.height());
-
-			draw_rt_clone->SetState(GSTexture::State::Invalidated);
-			CopyRect(draw_rt, draw_rt_clone, config.drawarea, config.drawarea.left, config.drawarea.top);
-			if (config.require_one_barrier)
-				PSSetShaderResource(2, draw_rt_clone, true);
-			if (config.tex && config.tex == config.rt)
-				PSSetShaderResource(0, draw_rt_clone, true);
-		}
-		else
-			Console.Warning("D3D12: Failed to allocate temp texture for RT copy.");
-	}
-
 	// Switch to colclip target for colclip hw rendering
 	if (pipe.ps.colclip_hw)
 	{
@@ -4014,6 +3992,15 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		m_pipeline_selector.ds = true;
 	}
 
+	if (draw_rt && (config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy) || (config.tex && config.tex == config.rt)))
+	{
+		// Requires a copy of the RT.
+		// Used as "bind rt" flag when texture barrier is unsupported for tex is fb.
+		draw_rt_clone = static_cast<GSTexture12*>(CreateTexture(rtsize.x, rtsize.y, 1, draw_rt->GetFormat(), true));
+		if (!draw_rt_clone)
+			Console.Warning("D3D12: Failed to allocate temp texture for RT copy.");
+	}
+
 	OMSetRenderTargets(draw_rt, draw_ds, config.scissor);
 
 	// Begin render pass if new target or out of the area.
@@ -4059,8 +4046,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		UploadHWDrawVerticesAndIndices(config);
 
 	// now we can do the actual draw
-	if (BindDrawPipeline(pipe))
-		DrawIndexedPrimitive();
+	SendHWDraw(pipe, config, draw_rt_clone, draw_rt, config.require_one_barrier, config.require_full_barrier, false);
 
 	// blend second pass
 	if (config.blend_multi_pass.enable)
@@ -4089,8 +4075,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		pipe.cms = config.alpha_second_pass.colormask;
 		pipe.dss = config.alpha_second_pass.depth;
 		pipe.bs = config.blend;
-		if (BindDrawPipeline(pipe))
-			DrawIndexedPrimitive();
+		SendHWDraw(pipe, config, draw_rt_clone, draw_rt, config.alpha_second_pass.require_one_barrier, config.alpha_second_pass.require_full_barrier, true);
 	}
 
 	if (draw_rt_clone)
@@ -4131,6 +4116,61 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 			g_gs_device->SetColorClipTexture(nullptr);
 		}
 	}
+}
+
+void GSDevice12::SendHWDraw(const PipelineSelector& pipe, const GSHWDrawConfig& config, GSTexture12* draw_rt_clone, GSTexture12* draw_rt, const bool one_barrier, const bool full_barrier, const bool skip_first_barrier)
+{
+	if (draw_rt_clone)
+	{
+
+#ifdef PCSX2_DEVBUILD
+		if ((one_barrier || full_barrier) && !config.ps.IsFeedbackLoop()) [[unlikely]]
+			Console.Warning("D3D12: Possible unnecessary copy detected.");
+#endif
+		auto CopyAndBind = [&](GSVector4i drawarea) {
+			EndRenderPass();
+
+			CopyRect(draw_rt, draw_rt_clone, drawarea, drawarea.left, drawarea.top);
+			draw_rt->TransitionToState(D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+			if (one_barrier || full_barrier)
+				PSSetShaderResource(2, draw_rt_clone, true);
+			if (config.tex && config.tex == config.rt)
+				PSSetShaderResource(0, draw_rt_clone, true);
+		};
+
+		if (m_features.multidraw_fb_copy && full_barrier)
+		{
+			const u32 draw_list_size = static_cast<u32>(config.drawlist->size());
+			const u32 indices_per_prim = config.indices_per_prim;
+
+			pxAssert(config.drawlist && !config.drawlist->empty());
+			pxAssert(config.drawlist_bbox && static_cast<u32>(config.drawlist_bbox->size()) == draw_list_size);
+
+			for (u32 n = 0, p = 0; n < draw_list_size; n++)
+			{
+				const u32 count = (*config.drawlist)[n] * indices_per_prim;
+
+				GSVector4i bbox = (*config.drawlist_bbox)[n].rintersect(config.drawarea);
+
+				// Copy only the part needed by the draw.
+				CopyAndBind(bbox);
+				if (BindDrawPipeline(pipe))
+					DrawIndexedPrimitive(p, count);
+				p += count;
+			}
+
+			return;
+		}
+
+
+		// Optimization: For alpha second pass we can reuse the copy snapshot from the first pass.
+		if (!skip_first_barrier)
+			CopyAndBind(config.drawarea);
+	}
+
+	if (BindDrawPipeline(pipe))
+		DrawIndexedPrimitive();
 }
 
 void GSDevice12::UpdateHWPipelineSelector(GSHWDrawConfig& config)
