@@ -1747,6 +1747,7 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 		sm.AddMacro("PS_PROCESS_RG", sel.process_rg);
 		sm.AddMacro("PS_SHUFFLE_ACROSS", sel.shuffle_across);
 		sm.AddMacro("PS_READ16_SRC", sel.real16src);
+		sm.AddMacro("PS_WRITE_RG", sel.write_rg);
 		sm.AddMacro("PS_CHANNEL_FETCH", sel.channel);
 		sm.AddMacro("PS_TALES_OF_ABYSS_HLE", sel.tales_of_abyss_hle);
 		sm.AddMacro("PS_URBAN_CHAOS_HLE", sel.urban_chaos_hle);
@@ -2606,7 +2607,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		{
 			config.colclip_update_area = config.drawarea;
 
-			colclip_rt = CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::ColorClip);
+			colclip_rt = CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::ColorClip, false);
 			if (!colclip_rt)
 			{
 				Console.Warning("D3D11: Failed to allocate ColorClip render target, aborting draw.");
@@ -2762,10 +2763,6 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 			Console.Warning("D3D11: Failed to allocate temp texture for RT copy.");
 	}
 
-	// Update again as it may have changed.
-	if (config.tex && config.tex == config.ds)
-		read_only_dsv = static_cast<GSTexture11*>(draw_ds)->ReadOnlyDepthStencilView();
-
 	OMSetRenderTargets(draw_rt, draw_ds, &config.scissor, read_only_dsv);
 	SetupOM(config.depth, OMBlendSelector(config.colormask, config.blend), config.blend.constant);
 	SendHWDraw(config, draw_rt_clone, draw_rt, config.require_one_barrier, config.require_full_barrier, false);
@@ -2829,8 +2826,6 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config, GSTexture* draw_rt_clo
 			Console.Warning("D3D11: Possible unnecessary copy detected.");
 #endif
 
-		const u32 indices_per_prim = config.indices_per_prim;
-
 		auto CopyAndBind = [&](GSVector4i drawarea) {
 			CopyRect(draw_rt, draw_rt_clone, drawarea, drawarea.left, drawarea.top);
 			if (one_barrier || full_barrier)
@@ -2838,10 +2833,11 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config, GSTexture* draw_rt_clo
 			if (config.tex && config.tex == config.rt)
 				PSSetShaderResource(0, draw_rt_clone);
 		};
-		
+
 		if (m_features.multidraw_fb_copy && full_barrier)
 		{
 			const u32 draw_list_size = static_cast<u32>(config.drawlist->size());
+			const u32 indices_per_prim = config.indices_per_prim;
 
 			pxAssert(config.drawlist && !config.drawlist->empty());
 			pxAssert(config.drawlist_bbox && static_cast<u32>(config.drawlist_bbox->size()) == draw_list_size);

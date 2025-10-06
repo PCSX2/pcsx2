@@ -2767,10 +2767,10 @@ void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config, bool one_barrier, boo
 		        config.nindices / config.indices_per_prim, config.drawlist->size(), message.c_str());
 #endif
 
-		g_perfmon.Put(GSPerfMon::Barriers, static_cast<u32>(config.drawlist->size()));
-
 		const u32 indices_per_prim = config.indices_per_prim;
 		const u32 draw_list_size = static_cast<u32>(config.drawlist->size());
+
+		g_perfmon.Put(GSPerfMon::Barriers, static_cast<u32>(draw_list_size));
 
 		for (u32 n = 0, p = 0; n < draw_list_size; n++)
 		{

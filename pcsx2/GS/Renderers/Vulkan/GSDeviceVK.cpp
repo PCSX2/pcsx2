@@ -2761,26 +2761,30 @@ void GSDeviceVK::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 	// Source is cleared, if destination is a render target, we can carry the clear forward.
 	if (sTexVK->GetState() == GSTexture::State::Cleared)
 	{
-		if (dTexVK->IsRenderTargetOrDepthStencil() && ProcessClearsBeforeCopy(sTex, dTex, full_draw_copy))
+		if (dTexVK->IsRenderTargetOrDepthStencil())
+		{
+			if (ProcessClearsBeforeCopy(sTex, dTex, full_draw_copy))
+				return;
+
+			// Do an attachment clear.
+			const bool depth = (dTexVK->GetType() == GSTexture::Type::DepthStencil);
+			OMSetRenderTargets(depth ? nullptr : dTexVK, depth ? dTexVK : nullptr, dst_rect);
+			BeginRenderPassForStretchRect(
+				dTexVK, dst_rect, GSVector4i(destX, destY, destX + r.width(), destY + r.height()));
+
+			// so use an attachment clear
+			VkClearAttachment ca;
+			ca.aspectMask = depth ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+			GSVector4::store<false>(ca.clearValue.color.float32, sTexVK->GetUNormClearColor());
+			ca.clearValue.depthStencil.depth = sTexVK->GetClearDepth();
+			ca.clearValue.depthStencil.stencil = 0;
+			ca.colorAttachment = 0;
+
+			const VkClearRect cr = {{{0, 0}, {static_cast<u32>(r.width()), static_cast<u32>(r.height())}}, 0u, 1u};
+			vkCmdClearAttachments(GetCurrentCommandBuffer(), 1, &ca, 1, &cr);
+
 			return;
-
-		// Do an attachment clear.
-		const bool depth = (dTexVK->GetType() == GSTexture::Type::DepthStencil);
-		OMSetRenderTargets(depth ? nullptr : dTexVK, depth ? dTexVK : nullptr, dst_rect);
-		BeginRenderPassForStretchRect(
-			dTexVK, dst_rect, GSVector4i(destX, destY, destX + r.width(), destY + r.height()));
-
-		// so use an attachment clear
-		VkClearAttachment ca;
-		ca.aspectMask = depth ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-		GSVector4::store<false>(ca.clearValue.color.float32, sTexVK->GetUNormClearColor());
-		ca.clearValue.depthStencil.depth = sTexVK->GetClearDepth();
-		ca.clearValue.depthStencil.stencil = 0;
-		ca.colorAttachment = 0;
-
-		const VkClearRect cr = {{{0, 0}, {static_cast<u32>(r.width()), static_cast<u32>(r.height())}}, 0u, 1u};
-		vkCmdClearAttachments(GetCurrentCommandBuffer(), 1, &ca, 1, &cr);
-		return;
+		}
 
 		// commit the clear to the source first, then do normal copy
 		sTexVK->CommitClear();

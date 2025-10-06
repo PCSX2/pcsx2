@@ -257,8 +257,7 @@ bool GSTextureCache::CanTranslate(u32 bp, u32 bw, u32 spsm, GSVector4i r, u32 db
 	}
 }
 
-
-GSVector4i GSTextureCache::TranslateAlignedRectByPage(u32 tbp, u32 tebp, u32 tbw, u32 tpsm, u32 sbp, u32 spsm, u32 sbw, GSVector4i src_r, bool is_invalidation)
+GSVector4i GSTextureCache::TranslateAlignedRectByPage(u32 tbp, u32 tebp, u32 tbw, u32 tpsm, GSVector4i t_r, u32 sbp, u32 spsm, u32 sbw, GSVector4i src_r, bool is_invalidation)
 {
 	const GSVector2i src_page_size = GSLocalMemory::m_psm[spsm].pgs;
 	const GSVector2i dst_page_size = GSLocalMemory::m_psm[tpsm].pgs;
@@ -277,7 +276,7 @@ GSVector4i GSTextureCache::TranslateAlignedRectByPage(u32 tbp, u32 tebp, u32 tbw
 	// DST = the target we're trying to fit in to.
 	// SRC = the format being requested, so we want to from SRC to DST.
 	int page_offset = (static_cast<int>(sbp) - static_cast<int>(tbp)) >> 5;
-	int block_offset = (static_cast<int>(sbp) - static_cast<int>(tbp)) & 0x1F;
+	const int block_offset = (static_cast<int>(sbp) - static_cast<int>(tbp)) & 0x1F;
 
 	if (!(s_psm.bpp == t_psm.bpp) || block_offset)
 	{
@@ -308,27 +307,61 @@ GSVector4i GSTextureCache::TranslateAlignedRectByPage(u32 tbp, u32 tebp, u32 tbw
 		if (block_matched_format)
 		{
 			GSVector4i b2a_offset = GSVector4i::zero();
-			const int y_page_offset = (page_offset / (src_bw / s_psm.pgs.x)) * s_psm.pgs.y;
-			const GSVector4i target_rect = GSVector4i(0, y_page_offset, src_bw, 2048);
-			bool offset_found = false;
 
-			for (b2a_offset.y = target_rect.y; b2a_offset.y < target_rect.w; b2a_offset.y += s_psm.bs.y)
+			// Compute surface offset elements used for caching.
+			SurfaceOffsetKey sok;
+			sok.elems[0].bp = sbp;
+			sok.elems[0].bw = sbw;
+			sok.elems[0].psm = spsm;
+			sok.elems[0].rect = src_r;
+			sok.elems[1].bp = tbp;
+			sok.elems[1].bw = tbw;
+			sok.elems[1].psm = tpsm;
+			sok.elems[1].rect = t_r;
+
+			// Check cache if we have an offset, if we do use that, otherwise create a new one.
+			const auto it = m_surface_offset_cache.find(sok);
+			if (it != m_surface_offset_cache.end())
 			{
-				for (b2a_offset.x = target_rect.x; b2a_offset.x < target_rect.z; b2a_offset.x += s_psm.bs.x)
-				{
-					const u32 a_candidate_bp = s_psm.info.bn(b2a_offset.x, b2a_offset.y, tbp, sbw);
-					if (sbp == a_candidate_bp)
-					{
-						offset_found = true;
-						break;
-					}
-				}
-				if (offset_found)
-					break;
-			}
-
-			if (offset_found)
+				b2a_offset = it->second.b2a_offset;
 				in_rect = (in_rect + b2a_offset.xyxy()).max_i32(GSVector4i(0));
+			}
+			else
+			{
+				// No offset found, create a new one.
+				const int y_page_offset = (page_offset / (src_bw / s_psm.pgs.x)) * s_psm.pgs.y;
+				const GSVector4i target_rect = GSVector4i(0, y_page_offset, src_bw, 2048);
+				bool new_b2a_offset_found = false;
+				for (b2a_offset.y = target_rect.y; b2a_offset.y < target_rect.w; b2a_offset.y += s_psm.bs.y)
+				{
+					for (b2a_offset.x = target_rect.x; b2a_offset.x < target_rect.z; b2a_offset.x += s_psm.bs.x)
+					{
+						const u32 a_candidate_bp = s_psm.info.bn(b2a_offset.x, b2a_offset.y, tbp, sbw);
+						if (sbp == a_candidate_bp)
+						{
+							new_b2a_offset_found = true;
+							break;
+						}
+					}
+					if (new_b2a_offset_found)
+						break;
+				}
+
+				// Offset found/created, add it to cache then update the in_rect with the offset.
+				if (new_b2a_offset_found)
+				{
+					SurfaceOffset so;
+					so.is_valid = true;
+					so.b2a_offset = b2a_offset;
+
+					// Clear cache if size too big.
+					if (m_surface_offset_cache.size() + 1 > S_SURFACE_OFFSET_CACHE_MAX_SIZE)
+						m_surface_offset_cache.clear();
+
+					m_surface_offset_cache.emplace(std::make_pair(sok, so));
+					in_rect = (in_rect + b2a_offset.xyxy()).max_i32(GSVector4i(0));
+				}
+			}
 		}
 	}
 
@@ -618,7 +651,7 @@ GSVector4i GSTextureCache::TranslateAlignedRectByPage(u32 tbp, u32 tebp, u32 tbw
 
 GSVector4i GSTextureCache::TranslateAlignedRectByPage(Target* t, u32 sbp, u32 spsm, u32 sbw, GSVector4i src_r, bool is_invalidation)
 {
-	return TranslateAlignedRectByPage(t->m_TEX0.TBP0, t->m_end_block, t->m_TEX0.TBW, t->m_TEX0.PSM, sbp, spsm, sbw, src_r, is_invalidation);
+	return TranslateAlignedRectByPage(t->m_TEX0.TBP0, t->m_end_block, t->m_TEX0.TBW, t->m_TEX0.PSM, t->m_valid, sbp, spsm, sbw, src_r, is_invalidation);
 }
 
 void GSTextureCache::DirtyRectByPage(u32 sbp, u32 spsm, u32 sbw, Target* t, GSVector4i src_r)
@@ -780,25 +813,63 @@ void GSTextureCache::DirtyRectByPage(u32 sbp, u32 spsm, u32 sbw, Target* t, GSVe
 			{
 				GSVector4i b2a_offset = GSVector4i::zero();
 				const GSVector4i target_rect = GSVector4i(0, 0, src_info->pgs.x, src_info->pgs.y);
-				bool offset_found = false;
+				bool new_b2a_offset_found = false;
+				bool cache_b2a_offset_found = false;
 
-				for (b2a_offset.y = target_rect.y; b2a_offset.y < target_rect.w; b2a_offset.y += src_info->bs.y)
+				// Compute surface offset elements used for caching.
+				SurfaceOffsetKey sok;
+				sok.elems[0].bp = sbp;
+				sok.elems[0].bw = sbw;
+				sok.elems[0].psm = spsm;
+				sok.elems[0].rect = src_r;
+				sok.elems[1].bp = t->m_TEX0.TBP0;
+				sok.elems[1].bw = t->m_TEX0.TBW;
+				sok.elems[1].psm = t->m_TEX0.PSM;
+				sok.elems[1].rect = t->m_valid;
+
+				// Check cache if we have an offset, if we do use that, otherwise create a new one.
+				const auto it = m_surface_offset_cache.find(sok);
+				if (it != m_surface_offset_cache.end())
 				{
-					for (b2a_offset.x = target_rect.x; b2a_offset.x < target_rect.z; b2a_offset.x += src_info->bs.x)
+					b2a_offset = it->second.b2a_offset;
+					cache_b2a_offset_found = true;
+				}
+				else
+				{
+					// No offset found, create a new one.
+					for (b2a_offset.y = target_rect.y; b2a_offset.y < target_rect.w; b2a_offset.y += src_info->bs.y)
 					{
-						const u32 a_candidate_bp = src_info->info.bn(b2a_offset.x, b2a_offset.y, target_bp, src_pg_width);
-						if (sbp == a_candidate_bp)
+						for (b2a_offset.x = target_rect.x; b2a_offset.x < target_rect.z; b2a_offset.x += src_info->bs.x)
 						{
-							offset_found = true;
-							break;
+							const u32 a_candidate_bp = src_info->info.bn(b2a_offset.x, b2a_offset.y, target_bp, src_pg_width);
+							if (sbp == a_candidate_bp)
+							{
+								new_b2a_offset_found = true;
+								break;
+							}
 						}
+						if (new_b2a_offset_found)
+							break;
 					}
-					if (offset_found)
-						break;
 				}
 
-				if (offset_found)
+				// Offset found/created.
+				if (cache_b2a_offset_found || new_b2a_offset_found)
 				{
+					// Add it to cache then update the in_rect with the offset.
+					if (!cache_b2a_offset_found)
+					{
+						SurfaceOffset so;
+						so.is_valid = true;
+						so.b2a_offset = b2a_offset;
+
+						// Clear cache if size too big.
+						if (m_surface_offset_cache.size() + 1 > S_SURFACE_OFFSET_CACHE_MAX_SIZE)
+							m_surface_offset_cache.clear();
+
+						m_surface_offset_cache.emplace(std::make_pair(sok, so));
+					}
+
 					if (b2a_offset.x && (b2a_offset.x + in_rect.z) > src_width)
 					{
 						if ((b2a_offset.x + in_rect.z) <= dst_width)
@@ -1769,7 +1840,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 
 							if (swizzle_match)
 							{
-								rect = TranslateAlignedRectByPage(t->m_TEX0.TBP0, t->m_end_block, rt_tbw, t->m_TEX0.PSM, bp, src_psm, bw, new_rect);
+								rect = TranslateAlignedRectByPage(t->m_TEX0.TBP0, t->m_end_block, rt_tbw, t->m_TEX0.PSM, t->m_valid, bp, src_psm, bw, new_rect);
 								rect.x -= new_rect.x;
 								rect.y -= new_rect.y;
 							}
@@ -4889,7 +4960,7 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 	if (m_expected_src_bp == static_cast<int>(SBP) && m_expected_dst_bp == static_cast<int>(DBP))
 	{
 		// Get the new position so we can work out the offset.
-		GSVector4i rect_offset = TranslateAlignedRectByPage(m_remembered_src_bp, m_remembered_src_bp + 1, SBW, SPSM, SBP, SPSM, SBW, GSVector4i(sx, sy, sx + w, sy + h), false);
+		GSVector4i rect_offset = TranslateAlignedRectByPage(m_remembered_src_bp, m_remembered_src_bp + 1, SBW, SPSM, GSVector4i(0, 0, SBW * 64, dy + h), SBP, SPSM, SBW, GSVector4i(sx, sy, sx + w, sy + h), false);
 		rect_offset.x = rect_offset.x - sx;
 		rect_offset.y = rect_offset.y - sy;
 		sx += rect_offset.x;
@@ -8014,9 +8085,11 @@ GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const Surface
 	if (a_el.bp >= b_el.bp)
 	{
 		// A starts after B, search <x,y> offset from B to A in B coords.
-		for (b2a_offset.x = b_rect.x; b2a_offset.x < b_rect.z; b2a_offset.x += dx)
+		const u32 b_bw = b_psm_s.trbpp > 8 ? std::max(1U, b_el.bw) : std::max(1U, b_el.bw / 2);
+		const int y_page_offset = std::max(b_rect.y, static_cast<int>((((a_el.bp >= b_el.bp) >> 5) / b_bw) * b_psm_s.pgs.y));
+		for (b2a_offset.y = y_page_offset; b2a_offset.y < b_rect.w; b2a_offset.y += dy)
 		{
-			for (b2a_offset.y = b_rect.y; b2a_offset.y < b_rect.w; b2a_offset.y += dy)
+			for (b2a_offset.x = b_rect.x; b2a_offset.x < b_rect.z; b2a_offset.x += dx)
 			{
 				const u32 a_candidate_bp = b_psm_s.info.bn(b2a_offset.x, b2a_offset.y, b_el.bp, b_el.bw);
 				if (a_el.bp == a_candidate_bp)
@@ -8055,9 +8128,9 @@ GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const Surface
 		{
 			// B ends after A, sweep search <z,w> offset in B coordinates.
 			so.is_valid = false;
-			for (b2a_offset.z = b2a_offset.x; b2a_offset.z <= b_rect.z; b2a_offset.z += dx)
+			for (b2a_offset.w = b2a_offset.y; b2a_offset.w <= b_rect.w; b2a_offset.w += dy)
 			{
-				for (b2a_offset.w = b2a_offset.y; b2a_offset.w <= b_rect.w; b2a_offset.w += dy)
+				for (b2a_offset.z = b2a_offset.x; b2a_offset.z <= b_rect.z; b2a_offset.z += dx)
 				{
 					const u32 a_candidate_bp_end = b_psm_s.info.bn(b2a_offset.z - 1, b2a_offset.w - 1, b_el.bp, b_el.bw);
 					if (a_bp_end == a_candidate_bp_end)

@@ -1082,6 +1082,7 @@ static void HotkeyAdjustUpscaleMultiplier(s32 delta)
 static void HotkeyToggleOSD()
 {
 	GSConfig.OsdShowSettings ^= EmuConfig.GS.OsdShowSettings;
+	GSConfig.OsdshowPatches ^= EmuConfig.GS.OsdshowPatches;
 	GSConfig.OsdShowInputs ^= EmuConfig.GS.OsdShowInputs;
 	GSConfig.OsdShowInputRec ^= EmuConfig.GS.OsdShowInputRec;
 	GSConfig.OsdShowVideoCapture ^= EmuConfig.GS.OsdShowVideoCapture;
