@@ -90,7 +90,7 @@ void MemoryViewTable::DrawTable(QPainter& painter, const QPalette& palette, s32 
 								charsIntoSegment = MemoryViewTypeVisualWidth[static_cast<s32>(displayType)] - charsIntoSegment - 1;
 							painter.setPen(QColor::fromRgb(205, 165, 0)); // SELECTED NIBBLE LINE COLOUR
 							const QPoint lineStart(valX + (charsIntoSegment * charWidth) + 1, y + (rowHeight * i));
-							painter.drawLine(lineStart, lineStart + QPoint(charWidth - 3, 0));							
+							painter.drawLine(lineStart, lineStart + QPoint(charWidth - 3, 0));
 						}
 						else
 						{
@@ -161,7 +161,7 @@ void MemoryViewTable::DrawTable(QPainter& painter, const QPalette& palette, s32 
 					QString floatStr = QString::number(val, 'g');
 					painter.drawText(valX, y + (rowHeight * i), valid ? QString("%1").arg(floatStr, 14) : "??????????????");
 					break;
-				}										
+				}
 			}
 			valX += charWidth * MemoryViewTypeVisualWidth[static_cast<s32>(displayType)];
 		}
@@ -202,7 +202,7 @@ void MemoryViewTable::SelectAt(QPoint pos)
 	// Check if SelectAt was called before DrawTable.
 	if (rowHeight == 0)
 		return;
-	
+
 	const u32 selectedRow = (pos.y() - 2) / (rowHeight);
 	const s32 x = pos.x();
 	const s32 avgSegmentWidth = segmentXAxis[1] - segmentXAxis[0];
@@ -234,7 +234,7 @@ void MemoryViewTable::SelectAt(QPoint pos)
 					selectedAddress = selectedAddress + i * MemoryViewTypeWidth[static_cast<s32>(displayType)];
 					selectedNibbleHI = false;
 				}
-				else 
+				else
 				{
 					selectedAddress = selectedAddress + i * MemoryViewTypeWidth[static_cast<s32>(displayType)] + (indexInSegment / 2);
 					selectedNibbleHI = littleEndian ? indexInSegment & 1 : !(indexInSegment & 1);
@@ -270,7 +270,7 @@ u128 MemoryViewTable::GetSelectedSegment(DebugInterface& cpu)
 			break;
 		case MemoryViewType::FLOAT:
 			val.lo = convertEndian(cpu.read32(selectedAddress & ~3));
-			break;			
+			break;
 	}
 	return val;
 }
@@ -295,36 +295,111 @@ void MemoryViewTable::InsertIntoSelectedHexView(u8 value, DebugInterface& cpu)
 	});
 }
 
+bool MemoryViewTable::InsertFloatIntoSelectedHexView(DebugInterface& cpu)
+{
+	// Get currently selected float as string
+	const u32 currentIntVal = GetSelectedSegment(cpu).lo;
+	float currentFloatVal;
+	std::memcpy(&currentFloatVal, &currentIntVal, sizeof(currentFloatVal));
+	const QString floatStrQ = QString("%1").arg(QString::number(currentFloatVal, 'g'), 14).trimmed();
+
+	// Prompt user to enter a new float value
+	bool isValidInput;
+	QString floatStr = QInputDialog::getText(parent, tr("Input New Float"), "",
+		QLineEdit::Normal, floatStrQ, &isValidInput);
+	if (!isValidInput)
+		return false;
+
+	// Convert string into float value
+	bool isValidFloat = false;
+	const float newFloatVal = floatStr.toFloat(&isValidFloat);
+	if (!isValidFloat)
+	{
+		QMessageBox::warning(parent, tr("Input Error"), tr("Invalid float value"));
+		return false;
+	}
+
+	// Write new float value back to memory
+	u32 newIntVal;
+	std::memcpy(&newIntVal, &newFloatVal, sizeof(newIntVal));
+	newIntVal = convertEndian(newIntVal);
+
+	const QPointer<MemoryViewTable> table(this);
+	Host::RunOnCPUThread([table, address = selectedAddress, &cpu, val = newIntVal] {
+		cpu.write32(address, val);
+
+		QtHost::RunOnUIThread([table] {
+			if (!table)
+				return;
+
+			table->parent->update();
+		});
+	});
+
+	return true;
+}
+
 void MemoryViewTable::InsertAtCurrentSelection(const QString& text, DebugInterface& cpu)
 {
 	if (!cpu.isValidAddress(selectedAddress))
 		return;
 
-	// If pasting into the hex view, also decode the input as hex bytes.
-	// This approach prevents one from pasting on a nibble boundary, but that is almost always
-	// user error, and we don't have an undo function in this view, so best to stay conservative.
-	QByteArray input = selectedText ? text.toUtf8() : QByteArray::fromHex(text.toUtf8());
-
-	const QPointer<MemoryViewTable> table(this);
-	const MemoryViewType display_type = displayType;
-	const bool little_endian = littleEndian;
-	Host::RunOnCPUThread([table, address = selectedAddress, &cpu, input, display_type, little_endian] {
-		u32 currAddr = address;
-		for (int i = 0; i < input.size(); i++)
+	if (displayType == MemoryViewType::FLOAT)
+	{
+		// Convert string into float value
+		bool isValidFloat = false;
+		const float newFloatVal = text.toFloat(&isValidFloat);
+		if (!isValidFloat)
 		{
-			cpu.write8(currAddr, input[i]);
-			currAddr = nextAddress(currAddr, address, display_type, little_endian);
+			QMessageBox::warning(parent, tr("Input Error"), tr("Invalid float value"));
+			return;
 		}
 
-		u32 end_address = address + input.size();
-		QtHost::RunOnUIThread([table, end_address] {
-			if (!table)
-				return;
+		// Write new float value back to memory
+		u32 newIntVal;
+		std::memcpy(&newIntVal, &newFloatVal, sizeof(newIntVal));
+		newIntVal = convertEndian(newIntVal);
 
-			table->UpdateSelectedAddress(end_address);
-			table->parent->update();
+		const QPointer<MemoryViewTable> table(this);
+		Host::RunOnCPUThread([table, address = selectedAddress, &cpu, val = newIntVal] {
+			cpu.write32(address, val);
+
+			QtHost::RunOnUIThread([table] {
+				if (!table)
+					return;
+
+				table->parent->update();
+			});
 		});
-	});
+	}
+	else
+	{
+		// If pasting into the hex view, also decode the input as hex bytes.
+		// This approach prevents one from pasting on a nibble boundary, but that is almost always
+		// user error, and we don't have an undo function in this view, so best to stay conservative.
+		QByteArray input = selectedText ? text.toUtf8() : QByteArray::fromHex(text.toUtf8());
+
+		const QPointer<MemoryViewTable> table(this);
+		const MemoryViewType display_type = displayType;
+		const bool little_endian = littleEndian;
+		Host::RunOnCPUThread([table, address = selectedAddress, &cpu, input, display_type, little_endian] {
+			u32 currAddr = address;
+			for (int i = 0; i < input.size(); i++)
+			{
+				cpu.write8(currAddr, input[i]);
+				currAddr = nextAddress(currAddr, address, display_type, little_endian);
+			}
+
+			u32 end_address = address + input.size();
+			QtHost::RunOnUIThread([table, end_address] {
+				if (!table)
+					return;
+
+				table->UpdateSelectedAddress(end_address);
+				table->parent->update();
+			});
+		});
+	}
 }
 
 u32 MemoryViewTable::nextAddress(u32 addr, u32 selected_address, MemoryViewType display_type, bool little_endian)
@@ -386,7 +461,7 @@ void MemoryViewTable::ForwardSelection()
 			else
 			{
 				selectedIndex--;
-			}			
+			}
 		}
 		return;
 	}
@@ -425,7 +500,7 @@ void MemoryViewTable::BackwardSelection()
 				selectedIndex--;
 			}
 		}
-		else 
+		else
 		{
 			if (selectedIndex >= MemoryViewTypeVisualWidth[static_cast<s32>(MemoryViewType::FLOAT)] - 1)
 			{
@@ -436,8 +511,8 @@ void MemoryViewTable::BackwardSelection()
 			else
 			{
 				selectedIndex++;
-			}			
-		}		
+			}
+		}
 		return;
 	}
 
@@ -552,6 +627,13 @@ bool MemoryViewTable::KeyPress(int key, QChar keychar, DebugInterface& cpu)
 				BackwardSelection();
 				pressHandled = true;
 				break;
+			case Qt::Key::Key_Return:
+			case Qt::Key::Key_Enter:
+				if (displayType == MemoryViewType::FLOAT)
+				{
+					pressHandled = InsertFloatIntoSelectedHexView(cpu);
+				}
+				break;
 			default:
 				break;
 		}
@@ -647,7 +729,7 @@ bool MemoryView::fromJson(const JsonValueWrapper& json)
 			type == MemoryViewType::BYTEHW ||
 			type == MemoryViewType::WORD ||
 			type == MemoryViewType::DWORD ||
-		    type == MemoryViewType::FLOAT)
+			type == MemoryViewType::FLOAT)
 			m_table.SetViewType(type);
 	}
 
@@ -749,7 +831,7 @@ void MemoryView::openContextMenu(QPoint pos)
 	float_action->setCheckable(true);
 	float_action->setChecked(current_view_type == MemoryViewType::FLOAT);
 	connect(float_action, &QAction::triggered, this, [this]() { m_table.SetViewType(MemoryViewType::FLOAT); });
-	view_type_group->addAction(float_action);	
+	view_type_group->addAction(float_action);
 
 	menu->addSeparator();
 
@@ -766,7 +848,7 @@ void MemoryView::openContextMenu(QPoint pos)
 	connect(menu->addAction(tr("Copy Segment")), &QAction::triggered, this, &MemoryView::contextCopySegment);
 
 	QAction* copy_char_action = menu->addAction(tr("Copy Character"));
-	copy_char_action->setEnabled(current_view_type != MemoryViewType::FLOAT);	
+	copy_char_action->setEnabled(current_view_type != MemoryViewType::FLOAT);
 	connect(copy_char_action, &QAction::triggered, this, &MemoryView::contextCopyCharacter);
 
 	connect(menu->addAction(tr("Paste")), &QAction::triggered, this, &MemoryView::contextPaste);
@@ -786,10 +868,10 @@ void MemoryView::contextCopySegment()
 {
 	if (m_table.GetViewType() == MemoryViewType::FLOAT)
 	{
-		u32 intVal = m_table.GetSelectedSegment(cpu()).lo;		
+		u32 intVal = m_table.GetSelectedSegment(cpu()).lo;
 		float val;
-		std::memcpy(&val, &intVal, sizeof(val));		
-		QApplication::clipboard()->setText(QString::number(val, 'g'));		
+		std::memcpy(&val, &intVal, sizeof(val));
+		QApplication::clipboard()->setText(QString::number(val, 'g'));
 	}
 	else
 	{

@@ -67,6 +67,7 @@ private:
 	bool selectedNibbleHI = false;
 
 	void InsertIntoSelectedHexView(u8 value, DebugInterface& cpu);
+	bool InsertFloatIntoSelectedHexView(DebugInterface& cpu);
 
 	template <class T>
 	T convertEndian(T in)
