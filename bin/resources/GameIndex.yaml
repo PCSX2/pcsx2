@@ -21613,21 +21613,29 @@ SLES-52909:
   region: "PAL-E-G"
   gameFixes:
     - EETimingHack # Fixes graphical corruption.
+  gsHWFixes:
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-52910:
   name: "UEFA Champions League 2005"
   region: "PAL-F-G"
   gameFixes:
     - EETimingHack # Fixes graphical corruption.
+  gsHWFixes:
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-52911:
   name: "UEFA Champions League 2005"
   region: "PAL-I-S"
   gameFixes:
     - EETimingHack # Fixes graphical corruption.
+  gsHWFixes:
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-52912:
   name: "UEFA Champions League 2005"
   region: "PAL-E-DU"
   gameFixes:
     - EETimingHack # Fixes graphical corruption.
+  gsHWFixes:
+    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-52913:
   name: "Suikoden IV"
   region: "PAL-M5"
@@ -26934,8 +26942,10 @@ SLES-54569:
   region: "PAL-E"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 1 # Needed to remove part of red box.
-    roundSprite: 2 #  Fully remove red box when upscaling .
+    halfPixelOffset: 5 # Aligns bloom outlines.
+    nativeScaling: 2 # Softens and aligns bloom outlines.
+    cpuSpriteRenderBW: 4 # Fixes bloom softness.
+    cpuSpriteRenderLevel: 1 # Needed for above.
   gameFixes:
     - XGKickHack # Fixes blank textures.
 SLES-54579:
@@ -27342,6 +27352,8 @@ SLES-54713:
 SLES-54714:
   name: "Tony Hawk's Downhill Jam"
   region: "PAL-E"
+  speedHacks:
+    mtvu: 0 # Fixes tutorial crashing.
   roundModes:
     vu1RoundMode: 0 # Crashes without.
   gsHWFixes:
@@ -27352,6 +27364,8 @@ SLES-54714:
 SLES-54715:
   name: "Tony Hawk's Downhill Jam"
   region: "PAL-M4"
+  speedHacks:
+    mtvu: 0 # Fixes tutorial crashing.
   roundModes:
     vu1RoundMode: 0 # Crashes without.
   gsHWFixes:
@@ -29711,7 +29725,7 @@ SLES-55421:
   region: "PAL-SWI"
 SLES-55428:
   name: "Disney Bolt"
-  region: "PAL-M4"
+  region: "PAL-SC"
 SLES-55429:
   name: "Disney Bolt"
   region: "PAL-M3"
@@ -56430,8 +56444,10 @@ SLPS-20466:
   name-en: "Simple 2000 Series Vol.101 - The OneeChanpon - OneeChan 2 Special Edition"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 1 # Needed to remove part of red box.
-    roundSprite: 2 #  Fully remove red box when upscaling .
+    halfPixelOffset: 5 # Aligns bloom outlines.
+    nativeScaling: 2 # Softens and aligns bloom outlines.
+    cpuSpriteRenderBW: 4 # Fixes bloom softness.
+    cpuSpriteRenderLevel: 1 # Needed for above.
   gameFixes:
     - XGKickHack # Fixes blank textures.
 SLPS-20467:
@@ -71796,6 +71812,8 @@ SLUS-21456:
   name: "Tony Hawk's Downhill Jam"
   region: "NTSC-U"
   compat: 5
+  speedHacks:
+    mtvu: 0 # Fixes tutorial crashing.
   roundModes:
     vu1RoundMode: 0 # Crashes without.
   gsHWFixes:
