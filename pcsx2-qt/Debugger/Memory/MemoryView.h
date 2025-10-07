@@ -27,22 +27,20 @@ enum class MemoryViewType
 	FLOAT = 4,
 };
 
-const s32 MemoryViewTypeWidth[] =
-{
-	1,	//	BYTE
-	2,	//	BYTEHW
-	4,	//	WORD
-	8,	//	DWORD
-	4,	//	FLOAT
+const s32 MemoryViewTypeWidth[] = {
+	1, //	BYTE
+	2, //	BYTEHW
+	4, //	WORD
+	8, //	DWORD
+	4, //	FLOAT
 };
 
-const s32 MemoryViewTypeVisualWidth[] =
-{
-	2,	//	BYTE
-	4,	//	BYTEHW
-	8,	//	WORD
-	16,	//	DWORD
-	14,	//	FLOAT
+const s32 MemoryViewTypeVisualWidth[] = {
+	2, //	BYTE
+	4, //	BYTEHW
+	8, //	WORD
+	16, //	DWORD
+	14, //	FLOAT
 };
 
 class MemoryViewTable : public QObject
