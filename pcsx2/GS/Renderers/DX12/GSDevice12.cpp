@@ -1409,9 +1409,18 @@ void GSDevice12::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 	dstloc.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
 	dstloc.SubresourceIndex = 0;
 
-	const D3D12_BOX srcbox{static_cast<UINT>(r.left), static_cast<UINT>(r.top), 0u, static_cast<UINT>(r.right),
-		static_cast<UINT>(r.bottom), 1u};
-	GetCommandList()->CopyTextureRegion(&dstloc, destX, destY, 0, &srcloc, &srcbox);
+	const GSVector4i src_rect(0, 0, sTex->GetWidth(), sTex->GetHeight());
+	const bool full_rt_copy = destX == 0 && destY == 0 && r.eq(src_rect) && src_rect.eq(dst_rect);
+	if (full_rt_copy)
+	{
+		GetCommandList()->CopyResource(dTex12->GetResource(), sTex12->GetResource());
+	}
+	else
+	{
+		const D3D12_BOX srcbox{static_cast<UINT>(r.left), static_cast<UINT>(r.top), 0u, static_cast<UINT>(r.right),
+			static_cast<UINT>(r.bottom), 1u};
+		GetCommandList()->CopyTextureRegion(&dstloc, destX, destY, 0, &srcloc, &srcbox);
+	}
 
 	dTex12->SetState(GSTexture::State::Dirty);
 }
