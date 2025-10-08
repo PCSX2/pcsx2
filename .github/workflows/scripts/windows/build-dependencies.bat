@@ -70,6 +70,7 @@ call :downloadfile "lpng%LIBPNG%-apng.patch.gz" https://download.sourceforge.net
 call :downloadfile "libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/%LIBJPEGTURBO%/libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" 8f0012234b464ce50890c490f18194f913a7b1f4e6a03d6644179fa0f867d0cf || goto error
 call :downloadfile "libwebp-%WEBP%.tar.gz" "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-%WEBP%.tar.gz" e4ab7009bf0629fd11982d4c2aa83964cf244cffba7347ecd39019a9e38c4564 || goto error
 call :downloadfile "%SDL%.zip" "https://libsdl.org/release/%SDL%.zip" ca7fe2ca54a97e047f5eff236e62ae87546e862f509f0a62fc6e564ded3c6a95 || goto error
+call :downloadfile "SDL-7914bdb7ea14ee5109d50df857c8dfc69a28a62d.patch" https://github.com/libsdl-org/SDL/commit/7914bdb7ea14ee5109d50df857c8dfc69a28a62d.patch 5c09a29a9cac87a85ec3b8f5a68ff0e5c6c47229f3e2282241b9c32166f26977 || goto error
 call :downloadfile "qtbase-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtbase-everywhere-src-%QT%.zip" 97d59c78e40b4ddd018738d285a12afc320b57f8265a3f760353739a3619ccdb || goto error
 call :downloadfile "qtimageformats-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtimageformats-everywhere-src-%QT%.zip" f2fc6ff382c6f3af79493d0709dbd64847d0356313518f094f9096315f2fdb30 || goto error
 call :downloadfile "qtsvg-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtsvg-everywhere-src-%QT%.zip" af80bb671ea0f66c0036ce7041a56b0e550fc94fb88d2c77b5b6a3e33e42139b || goto error
@@ -185,6 +186,7 @@ echo Building SDL...
 rmdir /S /Q "%SDL%"
 %SEVENZIP% x "%SDL%.zip" || goto error
 cd "%SDL%" || goto error
+%PATCH% -p1 < "..\SDL-7914bdb7ea14ee5109d50df857c8dfc69a28a62d.patch" || goto error
 cmake -B build -DCMAKE_BUILD_TYPE=Release %FORCEPDB% -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=ON -DSDL_SHARED=ON -DSDL_STATIC=OFF -G Ninja || goto error
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
