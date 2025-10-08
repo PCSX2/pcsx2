@@ -5,66 +5,24 @@
 #include "GS/GSGL.h"
 #include "GS/GS.h"
 #include "GS/GSUtil.h"
+#include "GS/GSState.h"
 
-static int findmax(int tl, int br, int limit, int wm, int minuv, int maxuv)
+// SIZE: TW or TW
+// WM, MIN, MAX : Correspondng field of TEX0
+// min, max: Range that U or V coordintes take on.
+static int GetMaxUV(int SIZE, int WM, int MIN, int MAX, int min, int max)
 {
-	// return max possible texcoord.
-	int uv = br;
+	// Confirmed on hardware if SIZE > 10 (or pixel size > 1024),
+	// it basically gets masked so you end up with a 1x1 pixel (Except Region Clamp).
+	if (SIZE > 10 && (WM != CLAMP_REGION_CLAMP))
+		return 0;
 
-	// Confirmed on hardware if the size exceeds 1024, it basically gets masked so you end up with a 1x1 pixel (Except Region Clamp).
-	if (limit > 1024)
-		limit = 0;
+	int min_out, max_out; // ignore min_out
+	bool min_boundary, max_boundary; // ignore both
+	
+	GSState::GetClampWrapMinMaxUV(SIZE, WM, MIN, MAX, min, max, &min_out, &max_out, &min_boundary, &max_boundary);
 
-	if (wm == CLAMP_CLAMP)
-	{
-		if (uv > limit)
-			uv = limit;
-	}
-	else if (wm == CLAMP_REPEAT)
-	{
-		if (tl < 0)
-			uv = limit; // wrap around
-		else if (uv > limit)
-			uv = limit;
-	}
-	else if (wm == CLAMP_REGION_CLAMP)
-	{
-		if (uv < minuv)
-			uv = minuv;
-		if (uv > maxuv)
-			uv = maxuv;
-	}
-	else if (wm == CLAMP_REGION_REPEAT)
-	{
-		// REGION_REPEAT adhears to the original texture size, even if offset outside the texture (with MAXUV).
-		minuv &= limit;
-		if (tl < 0)
-			uv = minuv | maxuv; // wrap around, just use (any & mask) | fix.
-		else
-			uv = std::min(uv, minuv) | maxuv; // (any & mask) cannot be larger than mask, select br if that is smaller (not br & mask because there might be a larger value between tl and br when &'ed with the mask).
-	}
-
-	return uv;
-}
-
-static int reduce(int uv, int size)
-{
-	while (size > 3 && (1 << (size - 1)) >= uv)
-	{
-		size--;
-	}
-
-	return size;
-}
-
-static int extend(int uv, int size)
-{
-	while (size < 10 && (1 << size) < uv)
-	{
-		size++;
-	}
-
-	return size;
+	return max_out;
 }
 
 void GSDrawingContext::Reset()
@@ -98,65 +56,69 @@ void GSDrawingContext::UpdateScissor()
 	scissor.xyof = GSVector4i::loadl(&XYOFFSET.U64).xyxy().sub32(GSVector4i::cxpr(0, 0, 15, 15));
 }
 
-GIFRegTEX0 GSDrawingContext::GetSizeFixedTEX0(const GSVector4& st, bool linear, bool mipmap) const
+// Find the optimal value for TW/TH by analyzing vertex trace and clamping values,
+// extending only for region modes where uv may be outside.
+// uv_rect has rectangle bounding effecive UV coordinate (u0, v0, u1, v1) (u1 v1 endpoints exclusive)
+GIFRegTEX0 GSDrawingContext::GetSizeFixedTEX0(GSVector4i uv_rect, bool linear, bool mipmap) const
 {
 	if (mipmap)
 		return TEX0; // no mipmaping allowed
 
-	// find the optimal value for TW/TH by analyzing vertex trace and clamping values, extending only for region modes where uv may be outside
+	const int WMS = (int)CLAMP.WMS;
+	const int WMT = (int)CLAMP.WMT;
 
-	int tw = TEX0.TW;
-	int th = TEX0.TH;
+	const int MINU = (int)CLAMP.MINU;
+	const int MINV = (int)CLAMP.MINV;
+	const int MAXU = (int)CLAMP.MAXU;
+	const int MAXV = (int)CLAMP.MAXV;
 
-	int wms = (int)CLAMP.WMS;
-	int wmt = (int)CLAMP.WMT;
+	int TW = TEX0.TW;
+	int TH = TEX0.TH;
 
-	int minu = (int)CLAMP.MINU;
-	int minv = (int)CLAMP.MINV;
-	int maxu = (int)CLAMP.MAXU;
-	int maxv = (int)CLAMP.MAXV;
+	const int min_width = uv_rect.right;
+	const int min_height = uv_rect.bottom;
 
-	GSVector4 uvf = st;
+	auto ExtendLog2Size = [](int min_size, int log2_size) {
+		while (log2_size < 10 && (1 << log2_size) < min_size)
+			log2_size++;
+		return log2_size;
+	};
 
-	if (linear)
+	auto ReduceLog2Size = [](int min_size, int log2_size) {
+		while (log2_size > 3 && (1 << (log2_size - 1)) >= min_size)
+			log2_size--;
+		return log2_size;
+	};
+
+	if (TW + TH >= 19) // smaller sizes aren't worth, they just create multiple entries in the textue cache and the saved memory is less
 	{
-		uvf += GSVector4(-0.5f, 0.5f).xxyy();
+		TW = ReduceLog2Size(min_width, TW);
+		TH = ReduceLog2Size(min_height, TH);
 	}
 
-	GSVector4i uv = GSVector4i(uvf.floor().xyzw(uvf.ceil()));
-
-	uv.x = findmax(uv.x, uv.z, (1 << tw) - 1, wms, minu, maxu);
-	uv.y = findmax(uv.y, uv.w, (1 << th) - 1, wmt, minv, maxv);
-
-	if (tw + th >= 19) // smaller sizes aren't worth, they just create multiple entries in the textue cache and the saved memory is less
+	if (WMS == CLAMP_REGION_CLAMP || WMS == CLAMP_REGION_REPEAT)
 	{
-		tw = reduce(uv.x, tw);
-		th = reduce(uv.y, th);
+		TW = ExtendLog2Size(min_width, TW);
 	}
 
-	if (wms == CLAMP_REGION_CLAMP || wms == CLAMP_REGION_REPEAT)
+	if (WMT == CLAMP_REGION_CLAMP || WMT == CLAMP_REGION_REPEAT)
 	{
-		tw = extend(uv.x, tw);
-	}
-
-	if (wmt == CLAMP_REGION_CLAMP || wmt == CLAMP_REGION_REPEAT)
-	{
-		th = extend(uv.y, th);
+		TH = ExtendLog2Size(min_height, TH);
 	}
 
 	GIFRegTEX0 res = TEX0;
 
-	res.TW = tw > 10 ? 0 : tw;
-	res.TH = th > 10 ? 0 : th;
+	res.TW = TW > 10 ? 0 : TW;
+	res.TH = TH > 10 ? 0 : TH;
 
 	if (TEX0.TW != res.TW || TEX0.TH != res.TH)
 	{
-		GL_DBG("FixedTEX0 %05x %d %d tw %d=>%d th %d=>%d st (%.0f,%.0f,%.0f,%.0f) uvmax %d,%d wm %d,%d (%d,%d,%d,%d)",
+		GL_DBG("FixedTEX0 %05x %d %d tw %d=>%d th %d=>%d uv (%d,%d,%d,%d) uvmax %d,%d wm %d,%d (%d,%d,%d,%d)",
 			(int)TEX0.TBP0, (int)TEX0.TBW, (int)TEX0.PSM,
-			(int)TEX0.TW, tw, (int)TEX0.TH, th,
-			uvf.x, uvf.y, uvf.z, uvf.w,
-			uv.x, uv.y,
-			wms, wmt, minu, maxu, minv, maxv);
+			(int)TEX0.TW, TW, (int)TEX0.TH, TH,
+			uv_rect.left, uv_rect.top, uv_rect.right, uv_rect.bottom,
+			min_width - 1, min_height - 1,
+			WMS, WMT, MINU, MAXU, MINV, MAXV);
 	}
 
 	return res;
