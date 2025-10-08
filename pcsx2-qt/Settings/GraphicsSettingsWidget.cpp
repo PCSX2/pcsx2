@@ -71,15 +71,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	setupTab(m_capture, tr("Media Capture"));
 	m_advanced_tab = setupTab(m_advanced, tr("Advanced"));
 
-#ifndef PCSX2_DEVBUILD
-	if (!dialog()->isPerGameSettings())
-	{
-		// We removed hardware fixes from global settings, but people in the past did set this stuff globally.
-		// So, just reset it all. We can remove this code at some point in the future.
-		resetManualHardwareFixes();
-	}
-#endif
-
 	//////////////////////////////////////////////////////////////////////////
 	// Display Settings
 	//////////////////////////////////////////////////////////////////////////
@@ -1314,59 +1305,4 @@ void GraphicsSettingsWidget::onUpscaleMultiplierChanged()
 	const QVariant data = m_hw.upscaleMultiplier->currentData();
 	dialog()->setFloatSettingValue("EmuCore/GS", "upscale_multiplier",
 		data.isValid() ? std::optional<float>(data.toFloat()) : std::optional<float>());
-}
-
-void GraphicsSettingsWidget::resetManualHardwareFixes()
-{
-	bool changed = false;
-	{
-		auto lock = Host::GetSettingsLock();
-		SettingsInterface* const si = Host::Internal::GetBaseSettingsLayer();
-
-		auto check_bool = [&](const char* section, const char* key, bool expected) {
-			if (si->GetBoolValue(section, key, expected) != expected)
-			{
-				si->SetBoolValue(section, key, expected);
-				changed = true;
-			}
-		};
-		auto check_int = [&](const char* section, const char* key, s32 expected) {
-			if (si->GetIntValue(section, key, expected) != expected)
-			{
-				si->SetIntValue(section, key, expected);
-				changed = true;
-			}
-		};
-
-		check_bool("EmuCore/GS", "UserHacks", false);
-
-		check_int("EmuCore/GS", "UserHacks_CPUSpriteRenderBW", 0);
-		check_int("EmuCore/GS", "UserHacks_CPUCLUTRender", 0);
-		check_int("EmuCore/GS", "UserHacks_GPUTargetCLUTMode", 0);
-		check_int("EmuCore/GS", "UserHacks_SkipDraw_Start", 0);
-		check_int("EmuCore/GS", "UserHacks_SkipDraw_End", 0);
-		check_bool("EmuCore/GS", "UserHacks_AutoFlush", false);
-		check_bool("EmuCore/GS", "UserHacks_CPU_FB_Conversion", false);
-		check_bool("EmuCore/GS", "UserHacks_DisableDepthSupport", false);
-		check_bool("EmuCore/GS", "UserHacks_Disable_Safe_Features", false);
-		check_bool("EmuCore/GS", "UserHacks_DisableRenderFixes", false);
-		check_bool("EmuCore/GS", "preload_frame_with_gs_data", false);
-		check_bool("EmuCore/GS", "UserHacks_DisablePartialInvalidation", false);
-		check_int("EmuCore/GS", "UserHacks_TextureInsideRt", static_cast<int>(GSTextureInRtMode::Disabled));
-		check_bool("EmuCore/GS", "UserHacks_ReadTCOnClose", false);
-		check_bool("EmuCore/GS", "UserHacks_EstimateTextureRegion", false);
-		check_bool("EmuCore/GS", "paltex", false);
-		check_int("EmuCore/GS", "UserHacks_HalfPixelOffset", 0);
-		check_int("EmuCore/GS", "UserHacks_native_scaling", static_cast<int>(GSNativeScaling::Off));
-		check_int("EmuCore/GS", "UserHacks_round_sprite_offset", 0);
-		check_int("EmuCore/GS", "UserHacks_TCOffsetX", 0);
-		check_int("EmuCore/GS", "UserHacks_TCOffsetY", 0);
-		check_bool("EmuCore/GS", "UserHacks_align_sprite_X", false);
-		check_bool("EmuCore/GS", "UserHacks_merge_pp_sprite", false);
-		check_bool("EmuCore/GS", "UserHacks_ForceEvenSpritePosition", false);
-		check_bool("EmuCore/GS", "UserHacks_BilinearHack", false);
-	}
-
-	if (changed)
-		Host::CommitBaseSettingChanges();
 }
