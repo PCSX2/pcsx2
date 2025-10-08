@@ -857,16 +857,27 @@ void GSRunner::DumpStats()
 #define main real_main
 #endif
 
-static void CPUThreadMain(VMBootParameters* params) {
-	if (VMManager::Initialize(*params))
+static void CPUThreadMain(VMBootParameters* params, std::atomic<int>* ret)
+{
+	ret->store(EXIT_FAILURE);
+
+	if (VMManager::Internal::CPUThreadInitialize())
 	{
-		// run until end
-		GSDumpReplayer::SetLoopCount(s_loop_count);
-		VMManager::SetState(VMState::Running);
-		while (VMManager::GetState() == VMState::Running)
-			VMManager::Execute();
-		VMManager::Shutdown(false);
-		GSRunner::DumpStats();
+		// apply new settings (e.g. pick up renderer change)
+		VMManager::ApplySettings();
+		GSDumpReplayer::SetIsDumpRunner(true);
+
+		if (VMManager::Initialize(*params))
+		{
+			// run until end
+			GSDumpReplayer::SetLoopCount(s_loop_count);
+			VMManager::SetState(VMState::Running);
+			while (VMManager::GetState() == VMState::Running)
+				VMManager::Execute();
+			VMManager::Shutdown(false);
+			GSRunner::DumpStats();
+			ret->store(EXIT_SUCCESS);
+		}
 	}
 
 	VMManager::Internal::CPUThreadShutdown();
@@ -888,9 +899,6 @@ int main(int argc, char* argv[])
 	if (!GSRunner::ParseCommandLineArgs(argc, argv, params))
 		return EXIT_FAILURE;
 
-	if (!VMManager::Internal::CPUThreadInitialize())
-		return EXIT_FAILURE;
-
 	if (s_use_window.value_or(true) && !GSRunner::CreatePlatformWindow())
 	{
 		Console.Error("Failed to create window.");
@@ -900,18 +908,14 @@ int main(int argc, char* argv[])
 	// Override settings that shouldn't be picked up from defaults or INIs.
 	GSRunner::SettingsOverride();
 
-	// apply new settings (e.g. pick up renderer change)
-	VMManager::ApplySettings();
-	GSDumpReplayer::SetIsDumpRunner(true);
-
-	std::thread cputhread(CPUThreadMain, &params);
+	std::atomic<int> thread_ret;
+	std::thread cputhread(CPUThreadMain, &params, &thread_ret);
 	GSRunner::PumpPlatformMessages(/*forever=*/true);
 	cputhread.join();
 
-	VMManager::Internal::CPUThreadShutdown();
 	GSRunner::DestroyPlatformWindow();
 
-	return EXIT_SUCCESS;
+	return thread_ret.load();
 }
 
 void Host::PumpMessagesOnCPUThread()
