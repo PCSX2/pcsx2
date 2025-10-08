@@ -8,6 +8,7 @@ if [ "$#" -ne 1 ]; then
 fi
 
 SCRIPTDIR=$(realpath $(dirname "${BASH_SOURCE[0]}"))
+NPROCS="$(getconf _NPROCESSORS_ONLN)"
 INSTALLDIR="$1"
 if [ "${INSTALLDIR:0:1}" != "/" ]; then
         INSTALLDIR="$PWD/$INSTALLDIR"
