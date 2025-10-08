@@ -111,6 +111,12 @@ bool CubebAudioStream::Initialize(const char* driver_name, const char* device_na
 {
 	cubeb_set_log_callback(CUBEB_LOG_NORMAL, LogCallback);
 
+	#ifdef _WIN32
+
+	CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+
+	#endif
+
 	int rv = cubeb_init(&m_context, "PCSX2", (driver_name && *driver_name) ? driver_name : nullptr);
 	if (rv != CUBEB_OK)
 	{
