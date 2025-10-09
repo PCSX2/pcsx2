@@ -131,6 +131,10 @@ namespace
 			// Fetch icon pixmap
 			const QRect r = option.rect;
 			const QPixmap pix = qvariant_cast<QPixmap>(index.data(Qt::DecorationRole));
+
+			if (pix.isNull())
+				return;
+
 			const int pix_width = static_cast<int>(pix.width() / pix.devicePixelRatio());
 			const int pix_height = static_cast<int>(pix.height() / pix.devicePixelRatio());
 
