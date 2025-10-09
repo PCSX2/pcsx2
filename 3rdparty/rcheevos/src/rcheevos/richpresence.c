@@ -723,14 +723,19 @@ rc_memrefs_t* rc_richpresence_get_memrefs(rc_richpresence_t* self) {
 }
 
 void rc_update_richpresence(rc_richpresence_t* richpresence, rc_peek_t peek, void* peek_ud, void* unused_L) {
-  rc_richpresence_display_t* display;
+  (void)unused_L;
 
   rc_update_richpresence_memrefs(richpresence, peek, peek_ud);
   rc_update_values(richpresence->values, peek, peek_ud);
+  rc_update_richpresence_internal(richpresence, peek, peek_ud);
+}
+
+void rc_update_richpresence_internal(rc_richpresence_t* richpresence, rc_peek_t peek, void* peek_ud) {
+  rc_richpresence_display_t* display;
 
   for (display = richpresence->first_display; display; display = display->next) {
     if (display->has_required_hits)
-      rc_test_trigger(&display->trigger, peek, peek_ud, unused_L);
+      rc_test_trigger(&display->trigger, peek, peek_ud, NULL);
   }
 }
 

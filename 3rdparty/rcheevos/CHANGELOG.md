@@ -1,3 +1,19 @@
+# v12.1.0
+* add rc_client_get_user_subset_summary
+* add validation warning for using MeasuredIf without Measured
+* add validation warning for using ResetIf without hit targets
+* add rapi function for update_rich_presence
+* add gap to RC_CONSOLE_WII memory map to make it easier to convert pointers
+* improve range validation logic
+* fix error Remembering float value
+* fix MeasuredIf evaluation in rich presence
+* fix parsing of code notes with addresses above 0x7FFFFFFF
+* fix double evaluation of rich presence parameters
+* fix validation of SubSource chain
+* fix error if rc_client_allow_background_memory_reads called before calling rc_client_begin_load_raintegration
+* fix memory corruption when mixing legacy and new-format macros in rich presence
+* fix invalid pointer reference when iterator gets cloned
+
 # v12.0.0
 * rc_client changes
   * add RC_CLIENT_EVENT_SUBSET_COMPLETED event
