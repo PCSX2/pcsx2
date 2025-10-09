@@ -367,6 +367,7 @@ bool Path::EscapeCmdLine(std::string* arg)
 		{
 			case '$':
 			case '"':
+			case '`':
 			case '\\':
 				temp.push_back('\\');
 				temp.push_back(*carg);
