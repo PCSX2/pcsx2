@@ -223,6 +223,8 @@ static void rc_client_init_raintegration(rc_client_t* client,
         external_client->set_encore_mode_enabled(rc_client_get_encore_mode_enabled(client));
       if (external_client->set_spectator_mode_enabled)
         external_client->set_spectator_mode_enabled(rc_client_get_spectator_mode_enabled(client));
+      if (external_client->set_allow_background_memory_reads)
+        external_client->set_allow_background_memory_reads(client->state.allow_background_memory_reads);
 
       /* attach the external client and call the callback */
       client->state.external_client = external_client;

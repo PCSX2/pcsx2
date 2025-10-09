@@ -5880,7 +5880,7 @@ void rc_client_do_frame(rc_client_t* client)
 
     richpresence = client->game->runtime.richpresence;
     if (richpresence && richpresence->richpresence)
-      rc_update_richpresence(richpresence->richpresence, client->state.legacy_peek, client, NULL);
+      rc_update_richpresence_internal(richpresence->richpresence, client->state.legacy_peek, client);
 
     rc_mutex_unlock(&client->state.mutex);
 

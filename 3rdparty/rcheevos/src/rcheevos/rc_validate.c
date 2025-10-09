@@ -133,79 +133,93 @@ static uint32_t rc_max_value(const rc_operand_t* operand)
   }
 }
 
-static uint32_t rc_scale_value(uint32_t value, uint8_t oper, const rc_operand_t* operand)
+static void rc_combine_ranges(uint32_t* min_val, uint32_t* max_val, uint8_t oper, uint32_t oper_min_val, uint32_t oper_max_val)
 {
   switch (oper) {
     case RC_OPERATOR_MULT:
     {
-      unsigned long long scaled = ((unsigned long long)value) * rc_max_value(operand);
-      if (scaled > 0xFFFFFFFF)
-        return 0xFFFFFFFF;
+      unsigned long long scaled = ((unsigned long long)*min_val) * oper_min_val;
+      *min_val = (scaled > 0xFFFFFFFF) ? 0xFFFFFFFF : (uint32_t)scaled;
 
-      return (uint32_t)scaled;
+      scaled = ((unsigned long long)*max_val) * oper_max_val;
+      *max_val = (scaled > 0xFFFFFFFF) ? 0xFFFFFFFF : (uint32_t)scaled;
+      break;
     }
 
     case RC_OPERATOR_DIV:
-    {
-      const uint32_t min_val = (operand->type == RC_OPERAND_CONST) ? operand->value.num : 1;
-      return value / min_val;
-    }
+      *min_val = (oper_max_val == 0) ? *min_val : (*min_val / oper_max_val);
+      *max_val = (oper_min_val == 0) ? *max_val : (*max_val / oper_min_val);
+      break;
 
     case RC_OPERATOR_AND:
-      return rc_max_value(operand);
+      *min_val = 0;
+      *max_val &= oper_max_val;
+      break;
 
     case RC_OPERATOR_XOR:
-      return value | rc_max_value(operand);
+      *min_val = 0;
+      *max_val |= oper_max_val;
+      break;
 
     case RC_OPERATOR_MOD:
-    {
-      const uint32_t divisor = (operand->type == RC_OPERAND_CONST) ? operand->value.num : 1;
-      return (divisor >= value) ? (divisor - 1) : value;
-    }
+      *min_val = 0;
+      *max_val = (*max_val >= oper_max_val) ? oper_max_val - 1 : *max_val;
+      break;
 
     case RC_OPERATOR_ADD:
-    {
-      unsigned long scaled = ((unsigned long)value) + rc_max_value(operand);
-      if (scaled > 0xFFFFFFFF)
-        return 0xFFFFFFFF;
+      if (*min_val > *max_val) { /* underflow occurred */
+        *max_val += oper_max_val;
+      }
+      else {
+        unsigned long scaled = ((unsigned long)*max_val) + oper_max_val;
+        *max_val = (scaled > 0xFFFFFFFF) ? 0xFFFFFFFF : (uint32_t)scaled;
+      }
 
-      return (uint32_t)scaled;
-    }
+      *min_val += oper_min_val;
+      break;
 
     case RC_OPERATOR_SUB:
-    {
-      const uint32_t op_max = (operand->type == RC_OPERAND_CONST) ? operand->value.num : 0;
-      if (value >= op_max)
-        return value - op_max;
-
-      return 0xFFFFFFFF;
-    }
+      *min_val -= oper_max_val;
+      *max_val -= oper_min_val;
+      break;
 
     case RC_OPERATOR_SUB_PARENT:
     {
-      const uint32_t op_max = (operand->type == RC_OPERAND_CONST) ? operand->value.num : rc_max_value(operand);
-      if (op_max > value)
-        return op_max - value;
-
-      return 0xFFFFFFFF;
+      uint32_t temp = oper_min_val - *max_val;
+      *max_val = oper_max_val - *min_val;
+      *min_val = temp;
+      break;
     }
 
     default:
-      return value;
+      break;
   }
 }
 
-static uint32_t rc_max_chain_value(const rc_operand_t* operand)
+static void rc_chain_get_value_range(const rc_operand_t* operand, uint32_t* min_val, uint32_t* max_val)
 {
   if (rc_operand_is_memref(operand) && operand->value.memref->value.memref_type == RC_MEMREF_TYPE_MODIFIED_MEMREF) {
     const rc_modified_memref_t* modified_memref = (const rc_modified_memref_t*)operand->value.memref;
     if (modified_memref->modifier_type != RC_OPERATOR_INDIRECT_READ) {
-      const uint32_t op_max = rc_max_chain_value(&modified_memref->parent);
-      return rc_scale_value(op_max, modified_memref->modifier_type, &modified_memref->modifier);
+      if (modified_memref->modifier_type == RC_OPERATOR_DIV &&
+          rc_operand_is_memref(&modified_memref->modifier) &&
+          rc_operands_are_equal(&modified_memref->modifier, &modified_memref->parent)) {
+        /* division by self can only return 0 or 1. */
+        *min_val = 0;
+        *max_val = 1;
+      }
+      else {
+        uint32_t modifier_min_val, modifier_max_val;
+        rc_chain_get_value_range(&modified_memref->parent, min_val, max_val);
+        rc_chain_get_value_range(&modified_memref->modifier, &modifier_min_val, &modifier_max_val);
+        rc_combine_ranges(min_val, max_val, modified_memref->modifier_type, modifier_min_val, modifier_max_val);
+      }
+      return;
     }
   }
 
-  return rc_max_value(operand);
+  *min_val = (operand->type == RC_OPERAND_CONST) ? operand->value.num : 0;
+  *max_val = rc_max_value(operand);
 }
 
 static int rc_validate_get_condition_index(const rc_condset_t* condset, const rc_condition_t* condition)
@@ -291,7 +305,7 @@ static int rc_validate_range(uint32_t min_val, uint32_t max_val, char oper, uint
   return 1;
 }
 
-static int rc_validate_condset_internal(const rc_condset_t* condset, char result[], const size_t result_size, uint32_t console_id, uint32_t max_address)
+static int rc_validate_condset_internal(const rc_condset_t* condset, char result[], const size_t result_size, uint32_t console_id, uint32_t max_address, int has_hits)
 {
   const rc_condition_t* cond;
   char buffer[128];
@@ -299,6 +313,8 @@ static int rc_validate_condset_internal(const rc_condset_t* condset, char result
   int in_add_hits = 0;
   int in_add_address = 0;
   int is_combining = 0;
+  int has_measured = 0;
+  int measuredif_index = -1;
 
   if (!condset) {
     *result = '\0';
@@ -383,6 +399,10 @@ static int rc_validate_condset_internal(const rc_condset_t* condset, char result
           is_combining = 0;
           break;
         }
+        if (!has_hits) {
+          snprintf(result, result_size, "Condition %d: No captured hits to reset", index);
+          return 0;
+        }
         if (cond->required_hits == 1) {
           snprintf(result, result_size, "Condition %d: Hit target of 1 is redundant on ResetIf", index);
           return 0;
@@ -397,6 +417,10 @@ static int rc_validate_condset_internal(const rc_condset_t* condset, char result
 
           in_add_hits = 0;
         }
+
+        has_measured |= (cond->type == RC_CONDITION_MEASURED);
+        if (cond->type == RC_CONDITION_MEASURED_IF && measuredif_index == -1)
+          measuredif_index = index;
 
         is_combining = 0;
         break;
@@ -424,9 +448,15 @@ static int rc_validate_condset_internal(const rc_condset_t* condset, char result
       const size_t prefix_length = snprintf(result, result_size, "Condition %d: ", index);
       const rc_operand_t* operand2 = &cond->operand2;
       uint8_t oper = cond->oper;
-      uint32_t max = rc_max_chain_value(operand1);
+      uint32_t min, max;
       uint32_t max_val = rc_max_value(operand2);
       uint32_t min_val;
+
+      rc_chain_get_value_range(operand1, &min, &max);
+      if (min > max) { /* underflow */
+        min = 0;
+        max = 0xFFFFFFFF;
+      }
 
       if (!is_memref1) {
         /* pretend constant was on right side */
@@ -477,6 +507,7 @@ static int rc_validate_condset_internal(const rc_condset_t* condset, char result
           break;
       }
 
+      /* min_val and max_val are the range allowed by operand2. max is the upper value from operand1. */
       if (!rc_validate_range(min_val, max_val, oper, max, result + prefix_length, result_size - prefix_length))
         return 0;
     }
@@ -487,19 +518,48 @@ static int rc_validate_condset_internal(const rc_condset_t* condset, char result
     return 0;
   }
 
+  if (measuredif_index != -1 && !has_measured) {
+    snprintf(result, result_size, "Condition %d: MeasuredIf without Measured", measuredif_index);
+    return 0;
+  }
+
   *result = '\0';
   return 1;
 }
 
+static int rc_condset_has_hittargets(const rc_condset_t* condset)
+{
+  if (condset->num_hittarget_conditions > 0)
+    return 1;
+
+  /* pause and reset conditions may have hittargets and won't be classified as hittarget conditions.
+   * measured conditions may also have hittargets.
+   */
+  if (condset->num_pause_conditions || condset->num_reset_conditions || condset->num_measured_conditions) {
+    const rc_condition_t* condition = rc_condset_get_conditions((rc_condset_t*)condset);
+    /* ASSERT: don't need to add num_hittarget_conditions because it must be 0 per earlier check */
+    const rc_condition_t* stop = condition + condset->num_pause_conditions
+        + condset->num_reset_conditions + condset->num_measured_conditions;
+    for (; condition < stop; ++condition) {
+      if (condition->required_hits)
+        return 1;
+    }
+  }
+
+  return 0;
+}
+
 int rc_validate_condset(const rc_condset_t* condset, char result[], const size_t result_size, uint32_t max_address)
 {
-  return rc_validate_condset_internal(condset, result, result_size, 0, max_address);
+  int has_hits = rc_condset_has_hittargets(condset);
+  return rc_validate_condset_internal(condset, result, result_size, 0, max_address, has_hits);
 }
 
 int rc_validate_condset_for_console(const rc_condset_t* condset, char result[], const size_t result_size, uint32_t console_id)
 {
   const uint32_t max_address = rc_console_max_address(console_id);
-  return rc_validate_condset_internal(condset, result, result_size, console_id, max_address);
+  int has_hits = rc_condset_has_hittargets(condset);
+  return rc_validate_condset_internal(condset, result, result_size, console_id, max_address, has_hits);
 }
 
 static int rc_validate_is_combining_condition(const rc_condition_t* condition)
@@ -845,7 +905,7 @@ static int rc_validate_conflicting_conditions(const rc_condset_t* conditions, co
       switch (compare_condition->type)
       {
         case RC_CONDITION_PAUSE_IF:
-          if (conditions != compare_conditions)
+          if (conditions != compare_conditions) /* PauseIf only affects conditions in same group */
             break;
           /* fallthrough */
         case RC_CONDITION_RESET_IF:
@@ -955,10 +1015,10 @@ static int rc_validate_trigger_internal(const rc_trigger_t* trigger, char result
 {
   const rc_condset_t* alt;
   int index;
-  int has_hits = (trigger->requirement && trigger->requirement->num_hittarget_conditions > 0);
+  int has_hits = trigger->requirement && rc_condset_has_hittargets(trigger->requirement);
   if (!has_hits) {
     for (alt = trigger->alternative; alt; alt = alt->next) {
-      if (alt->num_hittarget_conditions > 0) {
+      if (rc_condset_has_hittargets(alt)) {
         has_hits = 1;
         break;
       }
@@ -966,14 +1026,14 @@ static int rc_validate_trigger_internal(const rc_trigger_t* trigger, char result
   }
 
   if (!trigger->alternative) {
-    if (!rc_validate_condset_internal(trigger->requirement, result, result_size, console_id, max_address))
+    if (!rc_validate_condset_internal(trigger->requirement, result, result_size, console_id, max_address, has_hits))
       return 0;
 
     return rc_validate_conflicting_conditions(trigger->requirement, trigger->requirement, has_hits, "", "", result, result_size);
   }
 
   snprintf(result, result_size, "Core ");
-  if (!rc_validate_condset_internal(trigger->requirement, result + 5, result_size - 5, console_id, max_address))
+  if (!rc_validate_condset_internal(trigger->requirement, result + 5, result_size - 5, console_id, max_address, has_hits))
     return 0;
 
   /* compare core to itself */
@@ -984,7 +1044,7 @@ static int rc_validate_trigger_internal(const rc_trigger_t* trigger, char result
   for (alt = trigger->alternative; alt; alt = alt->next, ++index) {
     char altname[16];
     const size_t prefix_length = snprintf(result, result_size, "Alt%d ", index);
-    if (!rc_validate_condset_internal(alt, result + prefix_length, result_size - prefix_length, console_id, max_address))
+    if (!rc_validate_condset_internal(alt, result + prefix_length, result_size - prefix_length, console_id, max_address, has_hits))
       return 0;
 
     /* compare alt to itself */

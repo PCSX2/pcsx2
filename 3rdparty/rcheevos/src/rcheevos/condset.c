@@ -607,8 +607,8 @@ static void rc_condset_evaluate_or_next(rc_condition_t* condition, rc_eval_state
   eval_state->or_next = rc_condset_evaluate_condition_no_add_hits(condition, eval_state);
 }
 
-static void rc_test_condset_internal(rc_condition_t* condition, uint32_t num_conditions,
-                                     rc_eval_state_t* eval_state, int can_short_circuit) {
+void rc_test_condset_internal(rc_condition_t* condition, uint32_t num_conditions,
+                              rc_eval_state_t* eval_state, int can_short_circuit) {
   const rc_condition_t* condition_end = condition + num_conditions;
   for (; condition < condition_end; ++condition) {
     switch (condition->type) {
