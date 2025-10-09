@@ -271,7 +271,7 @@ patch -u src/tools/macdeployqt/shared/shared.cpp <<EOF
  
      // Platforminputcontext plugins if QtGui is in use
 EOF
-cmake -B build "${CMAKE_COMMON[@]}" -DFEATURE_dbus=OFF -DFEATURE_framework=OFF -DFEATURE_icu=OFF -DFEATURE_opengl=OFF -DFEATURE_sql=OFF -DFEATURE_gssapi=OFF -DFEATURE_system_png=ON -DFEATURE_system_jpeg=ON -DFEATURE_system_zlib=ON -DFEATURE_system_freetype=ON -DFEATURE_system_harfbuzz=ON
+cmake -B build "${CMAKE_COMMON[@]}" -DCMAKE_BUILD_TYPE=MinSizeRel -DFEATURE_dbus=OFF -DFEATURE_framework=OFF -DFEATURE_icu=OFF -DFEATURE_opengl=OFF -DFEATURE_sql=OFF -DFEATURE_gssapi=OFF -DFEATURE_system_png=ON -DFEATURE_system_jpeg=ON -DFEATURE_system_zlib=ON -DFEATURE_system_freetype=ON -DFEATURE_system_harfbuzz=ON
 make -C build "-j$NPROCS"
 make -C build install
 cd ..
