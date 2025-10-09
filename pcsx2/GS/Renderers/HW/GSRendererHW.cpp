@@ -1825,7 +1825,7 @@ void GSRendererHW::HandleManualDeswizzle()
 			const u32 x = abs(((v[index_last].ST.S / v[index_last].RGBAQ.Q) * (1 << m_context->TEX0.TW)) - ((v[index_first].ST.S / v[index_first].RGBAQ.Q) * (1 << m_context->TEX0.TW)));
 			const u32 y = abs(((v[index_last].ST.T / v[index_last].RGBAQ.Q) * (1 << m_context->TEX0.TH)) - ((v[index_first].ST.T / v[index_first].RGBAQ.Q) * (1 << m_context->TEX0.TH)));
 
-			if (x != page_quadrant.x || y != page_quadrant.y)
+			if (x != static_cast<u32>(page_quadrant.x) || y != static_cast<u32>(page_quadrant.y))
 				return;
 		}
 	}
