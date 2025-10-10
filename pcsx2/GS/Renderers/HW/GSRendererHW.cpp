@@ -5740,13 +5740,16 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 		m_conf.ps.blend_d = 2;
 	}
 
+	// TODO: blend_ad_alpha_masked, as well as other blend cases can be optimized on dx11/dx12/gl to use
+	// blend multipass more which might be faster, vk likely won't benefit as barriers are already fast.
+
 	// Ad cases, alpha write is masked, one barrier is enough, for d3d11 read the fb
 	// Replace Ad with As, blend flags will be used from As since we are chaging the blend_index value.
 	// Must be done before index calculation, after blending equation optimizations
 	const bool blend_ad = m_conf.ps.blend_c == 1;
 	const bool alpha_mask = (m_cached_ctx.FRAME.FBMSK & 0xFF000000) == 0xFF000000;
 	bool blend_ad_alpha_masked = blend_ad && alpha_mask;
-	const bool is_basic_blend = GSConfig.AccurateBlendingUnit >= AccBlendLevel::Basic;
+	const bool is_basic_blend = GSConfig.AccurateBlendingUnit != AccBlendLevel::Minimum;
 	if (blend_ad_alpha_masked && (((is_basic_blend || (COLCLAMP.CLAMP == 0)) && (features.texture_barrier || features.multidraw_fb_copy))
 		|| ((GSConfig.AccurateBlendingUnit >= AccBlendLevel::Medium) || m_conf.require_one_barrier)))
 	{
@@ -5821,98 +5824,60 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 	// Warning no break on purpose
 	// Note: the [[fallthrough]] attribute tell compilers not to complain about not having breaks.
 	bool sw_blending = false;
-	if (features.texture_barrier || features.multidraw_fb_copy)
+	// Try to lower sw blend on dx11, try to use blend multipass if possible on basic blend.
+	const bool blend_multipass_group = blend_multi_pass_support && !features.texture_barrier &&
+		(bmix1_multi_pass1 || bmix1_multi_pass2 || bmix3_multi_pass || (blend_flag & (BLEND_HW3 | BLEND_HW4 | BLEND_HW5 | BLEND_HW6 | BLEND_HW7 | BLEND_HW8 | BLEND_HW9)));
+
+	const bool barriers_supported = features.texture_barrier || features.multidraw_fb_copy;
+	const bool blend_requires_barrier =
+		// We don't want the cases to be enabled if barriers aren't supported so limit it to no overlap.
+		(no_prim_overlap || barriers_supported)
+		// Impossible blending.
+		&& ((blend_flag & BLEND_A_MAX)
+		// Blend can be done in a single draw, and we already need a barrier.
+		// On fbfetch, one barrier is like full barrier.
+		|| (one_barrier && (no_prim_overlap || features.framebuffer_fetch))
+		// Blending with alpha > 1 will be wrong, except BLEND_HW2.
+		|| (!(blend_flag & BLEND_HW2) && !blend_multipass_group && (alpha_c2_high_one || alpha_c0_high_max_one) && no_prim_overlap)
+		// Ad blends are completely wrong without sw blend (Ad is 0.5 not 1 for 128). We can spare a barrier for it.
+		|| (blend_ad && !blend_multipass_group && no_prim_overlap && !new_rt_alpha_scale));
+
+	switch (GSConfig.AccurateBlendingUnit)
 	{
-		// Try to lower sw blend on dx11, try to use blend multipass if possible on basic blend.
-		const bool blend_multipass_group = blend_multi_pass_support && !features.texture_barrier && features.multidraw_fb_copy &&
-			(bmix1_multi_pass1 || bmix1_multi_pass2 || bmix3_multi_pass || (blend_flag & (BLEND_HW3 | BLEND_HW4 | BLEND_HW5 | BLEND_HW6 | BLEND_HW7 | BLEND_HW8 | BLEND_HW9)));
-
-		const bool blend_requires_barrier = (blend_flag & BLEND_A_MAX) // Impossible blending
-			// Sw blend, either full barrier or one barrier with no overlap.
-			|| prefer_sw_blend
-			// Blend can be done in a single draw, and we already need a barrier.
-			// On fbfetch, one barrier is like full barrier.
-			|| (one_barrier && (no_prim_overlap || features.framebuffer_fetch))
-			// Blending with alpha > 1 will be wrong, except BLEND_HW2.
-			|| (!(blend_flag & BLEND_HW2) && !blend_multipass_group && (alpha_c2_high_one || alpha_c0_high_max_one) && no_prim_overlap)
-			// Ad blends are completely wrong without sw blend (Ad is 0.5 not 1 for 128). We can spare a barrier for it.
-			|| (blend_ad && !blend_multipass_group && no_prim_overlap && !new_rt_alpha_scale);
-
-		switch (GSConfig.AccurateBlendingUnit)
-		{
-			case AccBlendLevel::Maximum:
-				sw_blending |= true;
-				[[fallthrough]];
-			case AccBlendLevel::Full:
-				sw_blending |= m_conf.ps.blend_a != m_conf.ps.blend_b && alpha_c0_high_max_one;
-				[[fallthrough]];
-			case AccBlendLevel::High:
-				sw_blending |= (alpha_c1_high_max_one || alpha_c1_high_no_rta_correct) || (m_conf.ps.blend_a != m_conf.ps.blend_b && alpha_c2_high_one);
-				[[fallthrough]];
-			case AccBlendLevel::Medium:
-				// Initial idea was to enable accurate blending for sprite rendering to handle
-				// correctly post-processing effect. Some games (ZoE) use tons of sprites as particles.
-				// In order to keep it fast, let's limit it to smaller draw call.
-				sw_blending |= m_vt.m_primclass == GS_SPRITE_CLASS && ComputeDrawlistGetSize(rt->m_scale) < 100;
-				[[fallthrough]];
-			case AccBlendLevel::Basic:
-				// Prefer sw blend if possible.
-				color_dest_blend &= !prefer_sw_blend;
-				color_dest_blend2 &= !prefer_sw_blend;
-				blend_zero_to_one_range &= !prefer_sw_blend;
-				accumulation_blend &= !prefer_sw_blend;
-				// Enable sw blending for barriers.
-				sw_blending |= blend_requires_barrier;
-				// Enable sw blending for free blending.
-				sw_blending |= free_blend;
-				// Do not run BLEND MIX if sw blending is already present, it's less accurate.
-				blend_mix &= !sw_blending;
-				sw_blending |= blend_mix;
-				[[fallthrough]];
-			case AccBlendLevel::Minimum:
-				break;
-		}
-	}
-	else
-	{
-		const bool ad_second_pass = blend_multi_pass_support && alpha_c1_high_no_rta_correct &&
-			(blend_flag & (BLEND_HW3 | BLEND_HW5 | BLEND_HW6 | BLEND_HW7 | BLEND_HW9));
-
-		switch (GSConfig.AccurateBlendingUnit)
-		{
-			case AccBlendLevel::Maximum:
-				// Enable sw blend when prims don't overlap.
-				sw_blending |= no_prim_overlap;
-				[[fallthrough]];
-			case AccBlendLevel::Full:
-				// Enable sw blend on cases where Alpha > 128 when prims don't overlap.
-				sw_blending |= (alpha_c0_high_max_one || alpha_c1_high_max_one || alpha_c2_high_one) && no_prim_overlap;
-				[[fallthrough]];
-			case AccBlendLevel::High:
-				// Enable sw blend on Cd*(Alpha + 1) cases where prims don't overlap.
-				sw_blending |= (m_conf.ps.blend_a == m_conf.ps.blend_d == 1) && no_prim_overlap;
-				[[fallthrough]];
-			case AccBlendLevel::Medium:
-				// Enable sw blend on Ad cases where prims don't overlap, blend_ad_alpha_masked, rta correction or ad_second_pass isn't possible.
-				sw_blending |= !(blend_ad_alpha_masked || ad_second_pass) && (alpha_c1_high_max_one || alpha_c1_high_no_rta_correct) && no_prim_overlap;
-				[[fallthrough]];
-			case AccBlendLevel::Basic:
-				// Prefer sw blend if possible.
-				color_dest_blend &= !prefer_sw_blend;
-				color_dest_blend2 &= !prefer_sw_blend;
-				blend_zero_to_one_range &= !prefer_sw_blend;
-				accumulation_blend &= !prefer_sw_blend;
-				// Enable sw blending for reading fb.
-				sw_blending |= prefer_sw_blend;
-				// Enable sw blending for free blending.
-				sw_blending |= free_blend;
-				// Do not run BLEND MIX if sw blending is already present, it's less accurate.
-				blend_mix &= !sw_blending;
-				sw_blending |= blend_mix;
-				[[fallthrough]];
-			case AccBlendLevel::Minimum:
-				break;
-		}
+		case AccBlendLevel::Maximum:
+			sw_blending |= true;
+			[[fallthrough]];
+		case AccBlendLevel::Full:
+			sw_blending |= m_conf.ps.blend_a != m_conf.ps.blend_b && alpha_c0_high_max_one;
+			[[fallthrough]];
+		case AccBlendLevel::High:
+			sw_blending |= (alpha_c1_high_max_one || alpha_c1_high_no_rta_correct) || (m_conf.ps.blend_a != m_conf.ps.blend_b && alpha_c2_high_one);
+			[[fallthrough]];
+		case AccBlendLevel::Medium:
+			// Initial idea was to enable accurate blending for sprite rendering to handle
+			// correctly post-processing effect. Some games (ZoE) use tons of sprites as particles.
+			// In order to keep it fast, let's limit it to smaller draw call.
+			sw_blending |= barriers_supported && m_vt.m_primclass == GS_SPRITE_CLASS && ComputeDrawlistGetSize(rt->m_scale) < 100;
+			// We don't want the cases to be enabled if barriers aren't supported so limit it to no overlap.
+			sw_blending &= (no_prim_overlap || barriers_supported);
+			[[fallthrough]];
+		case AccBlendLevel::Basic:
+		default:
+			// Prefer sw blend if possible.
+			color_dest_blend &= !prefer_sw_blend;
+			color_dest_blend2 &= !prefer_sw_blend;
+			blend_zero_to_one_range &= !prefer_sw_blend;
+			accumulation_blend &= !prefer_sw_blend;
+			// Enable sw blending for barriers.
+			sw_blending |= blend_requires_barrier || prefer_sw_blend;
+			// Enable sw blending for free blending.
+			sw_blending |= free_blend;
+			// Do not run BLEND MIX if sw blending is already present, it's less accurate.
+			blend_mix &= !sw_blending;
+			sw_blending |= blend_mix;
+			[[fallthrough]];
+		case AccBlendLevel::Minimum:
+			break;
 	}
 
 	if (features.framebuffer_fetch)
