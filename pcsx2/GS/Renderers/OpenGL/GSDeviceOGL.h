@@ -137,6 +137,7 @@ public:
 	};
 
 private:
+	static constexpr u8 MAX_TEXTURES = 4;
 	static constexpr u8 NUM_TIMESTAMP_QUERIES = 5;
 
 	std::unique_ptr<GLContext> m_gl_context;
@@ -340,6 +341,7 @@ public:
 	void IASetIndexBuffer(const void* index, size_t count);
 
 	void PSSetShaderResource(int i, GSTexture* sr);
+	void PSSetShaderResources(GSTexture* srvs[]);
 	void PSSetSamplerState(GLuint ss);
 	void ClearSamplerCache() override;
 
