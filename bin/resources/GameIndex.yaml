@@ -13064,6 +13064,8 @@ SLAJ-25008:
 SLAJ-25011:
   name: "Shin Sangoku Musou 3"
   region: "NTSC-Unk"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes missing graphics.
 SLAJ-25012:
   name: "Final Fantasy X-2"
   region: "NTSC-Unk"
@@ -13326,7 +13328,7 @@ SLAJ-25078:
   gsHWFixes:
     recommendedBlendingLevel: 4 # Improves lighting on buildings and objects.
     autoFlush: 2 # Properly diffuses light instead of strips of light.
-    halfPixelOffset: 4 # Mostly aligns post-processing.
+    halfPixelOffset: 5 # Mostly aligns post-processing.
     nativeScaling: 2 # Improves post-processing smoothness.
     getSkipCount: "GSC_BlackAndBurnoutSky"
     beforeDraw: "OI_BurnoutGames"
@@ -14133,7 +14135,7 @@ SLED-53937:
   gsHWFixes:
     recommendedBlendingLevel: 4 # Improves lighting on buildings and objects.
     autoFlush: 2 # Properly diffuses light instead of strips of light.
-    halfPixelOffset: 4 # Mostly aligns post-processing.
+    halfPixelOffset: 5 # Mostly aligns post-processing.
     nativeScaling: 2 # Improves post-processing smoothness.
     getSkipCount: "GSC_BlackAndBurnoutSky"
     beforeDraw: "OI_BurnoutGames"
@@ -18201,18 +18203,28 @@ SLES-51660:
 SLES-51661:
   name: "Dynasty Warriors 4"
   region: "PAL-E"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes missing graphics.
 SLES-51662:
   name: "Dynasty Warriors 4"
   region: "PAL-F"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes missing graphics.
 SLES-51663:
   name: "Dynasty Warriors 4"
   region: "PAL-G"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes missing graphics.
 SLES-51664:
   name: "Dynasty Warriors 4"
   region: "PAL-I"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes missing graphics.
 SLES-51665:
   name: "Dynasty Warriors 4"
   region: "PAL-S"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes missing graphics.
 SLES-51666:
   name: "Piglet - El Gran Juego de Disney"
   name-en: "Piglet's Big Game"
@@ -24805,7 +24817,7 @@ SLES-53886:
   gsHWFixes:
     recommendedBlendingLevel: 4 # Improves lighting on buildings and objects.
     autoFlush: 2 # Properly diffuses light instead of strips of light.
-    halfPixelOffset: 4 # Mostly aligns post-processing.
+    halfPixelOffset: 5 # Mostly aligns post-processing.
     nativeScaling: 2 # Improves post-processing smoothness.
     getSkipCount: "GSC_BlackAndBurnoutSky"
     beforeDraw: "OI_BurnoutGames"
@@ -25242,7 +25254,7 @@ SLES-54030:
   gsHWFixes:
     recommendedBlendingLevel: 4 # Improves lighting on buildings and objects.
     autoFlush: 2 # Properly diffuses light instead of strips of light.
-    halfPixelOffset: 4 # Mostly aligns post-processing.
+    halfPixelOffset: 5 # Mostly aligns post-processing.
     nativeScaling: 2 # Improves post-processing smoothness.
     getSkipCount: "GSC_BlackAndBurnoutSky"
     beforeDraw: "OI_BurnoutGames"
@@ -31091,6 +31103,8 @@ SLKA-25050:
   name: "진・삼국무쌍 3" # Undumped on ReDump as of 2025-08-28
   name-en: "Jin Samguk Mussang 3"
   region: "NTSC-K"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes missing graphics.
 SLKA-25051:
   name: "클락 타워 3"
   name-en: "Clock Tower 3"
@@ -42255,6 +42269,8 @@ SLPM-65248:
   name-sort: "しんさんごくむそう3"
   name-en: "Shin Sangoku Musou 3"
   region: "NTSC-J"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes missing graphics.
 SLPM-65249:
   name: "CHAOS LEGION"
   name-sort: "かおす れぎおん"
@@ -48866,7 +48882,7 @@ SLPM-66354:
   gsHWFixes:
     recommendedBlendingLevel: 4 # Improves lighting on buildings and objects.
     autoFlush: 2 # Properly diffuses light instead of strips of light.
-    halfPixelOffset: 4 # Mostly aligns post-processing.
+    halfPixelOffset: 5 # Mostly aligns post-processing.
     nativeScaling: 2 # Improves post-processing smoothness.
     getSkipCount: "GSC_BlackAndBurnoutSky"
     beforeDraw: "OI_BurnoutGames"
@@ -49932,6 +49948,8 @@ SLPM-66522:
   name-sort: "しんさんごくむそう3 [こーえーていばんしりーず]"
   name-en: "Shin Sangoku Musou 3 [KOEI Selection]"
   region: "NTSC-J"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes missing graphics.
 SLPM-66523:
   name: "三國志Ⅸ with パワーアップキット [KOEI The Best]"
   name-sort: "さんごくし 9 with ぱわーあっぷきっと [KOEI The Best]"
@@ -51212,7 +51230,7 @@ SLPM-66731:
   gsHWFixes:
     recommendedBlendingLevel: 4 # Improves lighting on buildings and objects.
     autoFlush: 2 # Properly diffuses light instead of strips of light.
-    halfPixelOffset: 4 # Mostly aligns post-processing.
+    halfPixelOffset: 5 # Mostly aligns post-processing.
     nativeScaling: 2 # Improves post-processing smoothness.
     getSkipCount: "GSC_BlackAndBurnoutSky"
     beforeDraw: "OI_BurnoutGames"
@@ -52565,7 +52583,7 @@ SLPM-66961:
   gsHWFixes:
     recommendedBlendingLevel: 4 # Improves lighting on buildings and objects.
     autoFlush: 2 # Properly diffuses light instead of strips of light.
-    halfPixelOffset: 4 # Mostly aligns post-processing.
+    halfPixelOffset: 5 # Mostly aligns post-processing.
     nativeScaling: 2 # Improves post-processing smoothness.
     getSkipCount: "GSC_BlackAndBurnoutSky"
     beforeDraw: "OI_BurnoutGames"
@@ -53504,16 +53522,22 @@ SLPM-74215:
   name-sort: "しんさんごくむそう3 [PlayStation2 the Best]"
   name-en: "Shin Sangoku Musou 3 [PlayStation2 the Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes missing graphics.
 SLPM-74216:
   name: "真・三國無双3 猛将伝 [PlayStation2 the Best]"
   name-sort: "しんさんごくむそう3 もうしょうでん [PlayStation2 the Best]"
   name-en: "Shin Sangoku Musou 3 - Moushouden [PlayStation2 the Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes missing graphics.
 SLPM-74217:
   name: "真・三國無双3 [PlayStation2 the Best] [メガパック]"
   name-sort: "しんさんごくむそう3 [PlayStation2 the Best] [めがぱっく]"
   name-en: "Shin Sangoku Musou 3 [PlayStation2 the Best] [Mega Pack]"
   region: "NTSC-J"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes missing graphics.
 SLPM-74218:
   name: "シャイニング・ティアーズ [PlayStation2 the Best]"
   name-sort: "しゃいにんぐ・てぃあーず [PlayStation2 the Best]"
@@ -66759,6 +66783,8 @@ SLUS-20653:
   name: "Dynasty Warriors 4"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes missing graphics.
 SLUS-20655:
   name: "The Hobbit - The Prelude to the Lord of the Rings"
   name-sort: "Hobbit, The - The Prelude to the Lord of the Rings"
@@ -71263,7 +71289,7 @@ SLUS-21376:
   gsHWFixes:
     recommendedBlendingLevel: 4 # Improves lighting on buildings and objects.
     autoFlush: 2 # Properly diffuses light instead of strips of light.
-    halfPixelOffset: 4 # Mostly aligns post-processing.
+    halfPixelOffset: 5 # Mostly aligns post-processing.
     nativeScaling: 2 # Improves post-processing smoothness.
     getSkipCount: "GSC_BlackAndBurnoutSky"
     beforeDraw: "OI_BurnoutGames"
@@ -75339,7 +75365,7 @@ SLUS-29180:
   gsHWFixes:
     recommendedBlendingLevel: 4 # Improves lighting on buildings and objects.
     autoFlush: 2 # Properly diffuses light instead of strips of light.
-    halfPixelOffset: 4 # Mostly aligns post-processing.
+    halfPixelOffset: 5 # Mostly aligns post-processing.
     nativeScaling: 2 # Improves post-processing smoothness.
     getSkipCount: "GSC_BlackAndBurnoutSky"
     beforeDraw: "OI_BurnoutGames"
