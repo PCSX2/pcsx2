@@ -5147,35 +5147,8 @@ void GSRendererHW::EmulateTextureShuffleAndFbmask(GSTextureCache::Target* rt, GS
 	// Uncomment to disable texture shuffle emulation.
 	// m_texture_shuffle = false;
 
-	bool enable_fbmask_emulation = false;
+	const bool enable_fbmask_emulation = GSConfig.AccurateBlendingUnit != AccBlendLevel::Minimum;
 	const GSDevice::FeatureSupport features = g_gs_device->Features();
-	if (features.texture_barrier || features.multidraw_fb_copy)
-	{
-		enable_fbmask_emulation = GSConfig.AccurateBlendingUnit != AccBlendLevel::Minimum;
-	}
-	else
-	{
-		// FBmask blend level selection.
-		// We do this becaue:
-		// 1. D3D sucks.
-		// 2. FB copy is slow, especially on triangle primitives which is unplayable with some games.
-		// 3. SW blending isn't implemented yet.
-		switch (GSConfig.AccurateBlendingUnit)
-		{
-			case AccBlendLevel::Maximum:
-			case AccBlendLevel::Full:
-			case AccBlendLevel::High:
-			case AccBlendLevel::Medium:
-				enable_fbmask_emulation = true;
-				break;
-			case AccBlendLevel::Basic:
-				// Enable Fbmask emulation excluding triangle class because it is quite slow.
-				enable_fbmask_emulation = (m_vt.m_primclass != GS_TRIANGLE_CLASS);
-				break;
-			case AccBlendLevel::Minimum:
-				break;
-		}
-	}
 
 	if (m_texture_shuffle)
 	{
