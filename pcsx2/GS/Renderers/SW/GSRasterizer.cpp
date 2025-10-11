@@ -527,6 +527,10 @@ void GSRasterizer::DrawEdgeLine(const GSVertexSW& v0, const GSVertexSW& v1, cons
 	const int rxi1 = static_cast<int>(rx1);
 	const int ryi1 = static_cast<int>(ry1);
 
+	// Early exit for horizontal lines.
+	if (delta_y == 0.0f && !IsOneOfMyScanlines(ryi0))
+		return;
+
 	const GSVertexSW dedge = dv / GSVector4(std::abs(step_x ? delta_x : delta_y));
 	
 	GSVertexSW edge(v0);
