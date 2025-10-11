@@ -533,18 +533,34 @@ void Pcsx2Config::RecompilerOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(EnableFastmem);
 	SettingsWrapBitBool(PauseOnTLBMiss);
 
+	// clang-format off
+	static constexpr std::pair<int, const char*> s_softfloat_variables[] = {
+		{SOFT_FLOAT_ADDSUB,  "SoftAddSub"},
+		{SOFT_FLOAT_MUL,     "SoftMul"},
+		{SOFT_FLOAT_DIVSQRT, "SoftDivSqrt"},
+		{0,                  nullptr},
+	};
+	// clang-format on
+
 	SettingsWrapBitBool(vu0Overflow);
 	SettingsWrapBitBool(vu0ExtraOverflow);
 	SettingsWrapBitBool(vu0SignOverflow);
 	SettingsWrapBitBool(vu0Underflow);
+
+	vu0SoftFloat = wrap.EntryFlagsBitfield(CURRENT_SETTINGS_SECTION, "vu0", vu0SoftFloat, s_softfloat_variables);
+
 	SettingsWrapBitBool(vu1Overflow);
 	SettingsWrapBitBool(vu1ExtraOverflow);
 	SettingsWrapBitBool(vu1SignOverflow);
 	SettingsWrapBitBool(vu1Underflow);
 
+	vu1SoftFloat = wrap.EntryFlagsBitfield(CURRENT_SETTINGS_SECTION, "vu1", vu1SoftFloat, s_softfloat_variables);
+
 	SettingsWrapBitBool(fpuOverflow);
 	SettingsWrapBitBool(fpuExtraOverflow);
 	SettingsWrapBitBool(fpuFullMode);
+
+	fpuSoftFloat = wrap.EntryFlagsBitfield(CURRENT_SETTINGS_SECTION, "fpu", fpuSoftFloat, s_softfloat_variables);
 }
 
 u32 Pcsx2Config::RecompilerOptions::GetEEClampMode() const
