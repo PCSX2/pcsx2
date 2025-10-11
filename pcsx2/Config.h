@@ -942,7 +942,7 @@ struct Pcsx2Config
 			VisualDebugEnabled : 1;
 		BITFIELD_END
 
-		u32 OutputVolume = 100;
+		u32 StandardVolume = 100;
 		u32 FastForwardVolume = 100;
 		bool OutputMuted = false;
 
