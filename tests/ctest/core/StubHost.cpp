@@ -46,6 +46,10 @@ void Host::ReportErrorAsync(const std::string_view title, const std::string_view
 {
 }
 
+void Host::ReportWarningAsync(const std::string_view title, const std::string_view message)
+{
+}
+
 bool Host::ConfirmMessage(const std::string_view title, const std::string_view message)
 {
 	return true;
