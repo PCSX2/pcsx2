@@ -42,6 +42,7 @@ urlcolor: "cyan"
 -   `Ctrl+Mouse Wheel`   -   zoom memory view
 -   `Esc`   -   return to previous goto address
 -   `Ctrl+V`   -   paste a hex string into memory
+-   `Enter/Return`   -   edit selected float
 
 ## Breakpoint List
 

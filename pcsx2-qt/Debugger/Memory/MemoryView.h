@@ -20,10 +20,27 @@
 
 enum class MemoryViewType
 {
-	BYTE = 1,
-	BYTEHW = 2,
-	WORD = 4,
-	DWORD = 8,
+	BYTE = 0,
+	BYTEHW = 1,
+	WORD = 2,
+	DWORD = 3,
+	FLOAT = 4,
+};
+
+const s32 MemoryViewTypeWidth[] = {
+	1, //	BYTE
+	2, //	BYTEHW
+	4, //	WORD
+	8, //	DWORD
+	4, //	FLOAT
+};
+
+const s32 MemoryViewTypeVisualWidth[] = {
+	2, //	BYTE
+	4, //	BYTEHW
+	8, //	WORD
+	16, //	DWORD
+	14, //	FLOAT
 };
 
 class MemoryViewTable : public QObject
@@ -48,6 +65,7 @@ private:
 	bool selectedNibbleHI = false;
 
 	void InsertIntoSelectedHexView(u8 value, DebugInterface& cpu);
+	bool InsertFloatIntoSelectedHexView(DebugInterface& cpu);
 
 	template <class T>
 	T convertEndian(T in)
@@ -73,6 +91,7 @@ public:
 
 	u32 startAddress;
 	u32 selectedAddress;
+	s32 selectedIndex;
 
 	void UpdateStartAddress(u32 start);
 	void UpdateSelectedAddress(u32 selected, bool page = false);
