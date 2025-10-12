@@ -939,7 +939,7 @@ inline QString DisassemblyView::DisassemblyStringFromAddress(u32 address, QFont 
 QColor DisassemblyView::GetAddressFunctionColor(u32 address)
 {
 	std::array<QColor, 6> colors;
-	if (QtUtils::IsLightTheme(palette()))
+	if (!QtHost::IsDarkApplicationTheme())
 	{
 		colors = {
 			QColor::fromRgba(0xFFFA3434),

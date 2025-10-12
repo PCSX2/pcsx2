@@ -15,10 +15,6 @@ namespace CocoaTools
 	void DestroyMetalLayer(WindowInfo* wi);
 	std::optional<float> GetViewRefreshRate(const WindowInfo& wi);
 
-	/// Add a handler to be run when macOS changes between dark and light themes
-	void AddThemeChangeHandler(void* ctx, void(handler)(void* ctx));
-	/// Remove a handler previously added using AddThemeChangeHandler with the given context
-	void RemoveThemeChangeHandler(void* ctx);
 	/// Mark an NSMenu as the help menu
 	void MarkHelpMenu(void* menu);
 	/// Returns the bundle path.
@@ -44,6 +40,6 @@ namespace CocoaTools
 	void RunCocoaEventLoop(bool wait_forever = false);
 	/// Posts an event to the main telling `RunCocoaEventLoop(true)` to exit
 	void StopMainThreadEventLoop();
-}
+} // namespace CocoaTools
 
 #endif // __APPLE__

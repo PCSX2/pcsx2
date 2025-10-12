@@ -85,63 +85,7 @@ std::optional<float> CocoaTools::GetViewRefreshRate(const WindowInfo& wi)
 	return ret;
 }
 
-// MARK: - Theme Change Handlers
-
-@interface PCSX2KVOHelper : NSObject
-
-- (void)addCallback:(void*)ctx run:(void(*)(void*))callback;
-- (void)removeCallback:(void*)ctx;
-
-@end
-
-@implementation PCSX2KVOHelper
-{
-	std::vector<std::pair<void*, void(*)(void*)>> _callbacks;
-}
-
-- (void)addCallback:(void*)ctx run:(void(*)(void*))callback
-{
-	_callbacks.push_back(std::make_pair(ctx, callback));
-}
-
-- (void)removeCallback:(void*)ctx
-{
-	auto new_end = std::remove_if(_callbacks.begin(), _callbacks.end(), [ctx](const auto& entry){
-		return ctx == entry.first;
-	});
-	_callbacks.erase(new_end, _callbacks.end());
-}
-
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context
-{
-	for (const auto& callback : _callbacks)
-		callback.second(callback.first);
-}
-
-@end
-
-static PCSX2KVOHelper* s_themeChangeHandler;
-
-void CocoaTools::AddThemeChangeHandler(void* ctx, void(handler)(void* ctx))
-{
-	assert([NSThread isMainThread]);
-	if (!s_themeChangeHandler)
-	{
-		s_themeChangeHandler = [[PCSX2KVOHelper alloc] init];
-		NSApplication* app = [NSApplication sharedApplication];
-		[app addObserver:s_themeChangeHandler
-		      forKeyPath:@"effectiveAppearance"
-		         options:0
-		         context:nil];
-	}
-	[s_themeChangeHandler addCallback:ctx run:handler];
-}
-
-void CocoaTools::RemoveThemeChangeHandler(void* ctx)
-{
-	assert([NSThread isMainThread]);
-	[s_themeChangeHandler removeCallback:ctx];
-}
+// MARK: - Help menu
 
 void CocoaTools::MarkHelpMenu(void* menu)
 {
