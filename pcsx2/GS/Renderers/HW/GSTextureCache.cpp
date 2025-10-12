@@ -30,9 +30,6 @@ std::unique_ptr<GSTextureCache> g_texture_cache;
 
 static u8* s_unswizzle_buffer;
 
-/// List of candidates for purging when the hash cache gets too large.
-static std::vector<std::pair<GSTextureCache::HashCacheMap::iterator, s32>> s_hash_cache_purge_list;
-
 #ifdef PCSX2_DEVBUILD
 // We can only set one texture name per command buffer, which would break our fancy texture cache RT/DS/texture naming.
 // So, when debug device is enabled, don't reuse any textures that are drawable.
@@ -62,7 +59,6 @@ GSTextureCache::~GSTextureCache()
 {
 	RemoveAll(true, true, true);
 
-	s_hash_cache_purge_list = {};
 	_aligned_free(s_unswizzle_buffer);
 }
 
@@ -109,6 +105,8 @@ void GSTextureCache::RemoveAll(bool sources, bool targets, bool hash_cache)
 		m_hash_cache.clear();
 		m_hash_cache_memory_usage = 0;
 		m_hash_cache_replacement_memory_usage = 0;
+
+		m_hash_cache_purge_list.clear();
 	}
 }
 
@@ -6811,7 +6809,7 @@ void GSTextureCache::AgeHashCache()
 
 	bool might_need_cache_purge = (m_hash_cache.size() > MAX_HASH_CACHE_SIZE);
 	if (might_need_cache_purge)
-		s_hash_cache_purge_list.clear();
+		m_hash_cache_purge_list.clear();
 
 	for (auto it = m_hash_cache.begin(); it != m_hash_cache.end();)
 	{
@@ -6833,7 +6831,7 @@ void GSTextureCache::AgeHashCache()
 		{
 			might_need_cache_purge = (m_hash_cache.size() > MAX_HASH_CACHE_SIZE);
 			if (might_need_cache_purge)
-				s_hash_cache_purge_list.emplace_back(it, static_cast<s32>(e.age));
+				m_hash_cache_purge_list.emplace_back(it, static_cast<s32>(e.age));
 		}
 
 		++it;
@@ -6842,13 +6840,13 @@ void GSTextureCache::AgeHashCache()
 	// Pushing to a list, sorting, and removing ends up faster than re-iterating the map.
 	if (might_need_cache_purge)
 	{
-		std::sort(s_hash_cache_purge_list.begin(), s_hash_cache_purge_list.end(),
+		std::sort(m_hash_cache_purge_list.begin(), m_hash_cache_purge_list.end(),
 			[](const auto& lhs, const auto& rhs) { return lhs.second > rhs.second; });
 
 		const u32 entries_to_purge = std::min(static_cast<u32>(m_hash_cache.size() - MAX_HASH_CACHE_SIZE),
-			static_cast<u32>(s_hash_cache_purge_list.size()));
+			static_cast<u32>(m_hash_cache_purge_list.size()));
 		for (u32 i = 0; i < entries_to_purge; i++)
-			RemoveFromHashCache(s_hash_cache_purge_list[i].first);
+			RemoveFromHashCache(m_hash_cache_purge_list[i].first);
 	}
 }
 

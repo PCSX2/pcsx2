@@ -183,6 +183,7 @@ private:
 	u32 m_channel_shuffle_width = 0;
 	GSVector4i m_channel_shuffle_src_valid = GSVector4i::zero();
 	bool m_full_screen_shuffle = false;
+	u32 num_skipped_channel_shuffle_draws = 0;
 
 	GSTextureCache::Target* m_last_rt;
 
@@ -204,6 +205,10 @@ private:
 	std::vector<GSVertexSW> m_sw_vertex_buffer;
 	std::unique_ptr<GSTextureCacheSW::Texture> m_sw_texture[7 + 1];
 	std::unique_ptr<GSVirtualAlignedClass<32>> m_sw_rasterizer;
+
+	// HLE state
+	GSVertex m_hle_vertices[4] = {};
+	static constexpr u16 m_hle_indices[6] = {0, 1, 2, 2, 1, 3};
 
 public:
 	GSRendererHW();

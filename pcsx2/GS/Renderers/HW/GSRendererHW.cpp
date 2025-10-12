@@ -2322,8 +2322,6 @@ void GSRendererHW::RoundSpriteOffset()
 
 void GSRendererHW::Draw()
 {
-	static u32 num_skipped_channel_shuffle_draws = 0;
-
 	// We mess with this state as an optimization, so take a copy and use that instead.
 	const GSDrawingContext* context = m_context;
 	m_cached_ctx.TEX0 = context->TEX0;
@@ -9464,17 +9462,13 @@ GSHWDrawConfig& GSRendererHW::BeginHLEHardwareDraw(
 	std::memset(&config.cb_vs, 0, sizeof(config.cb_vs));
 	std::memset(&config.cb_ps, 0, sizeof(config.cb_ps));
 
-	// Reused between draws, since the draw config is shared, you can't have multiple draws in flight anyway.
-	static GSVertex vertices[4];
-	static constexpr u16 indices[6] = {0, 1, 2, 2, 1, 3};
-
 #define V(i, x, y, u, v) \
 	do \
 	{ \
-		vertices[i].XYZ.X = x; \
-		vertices[i].XYZ.Y = y; \
-		vertices[i].U = u; \
-		vertices[i].V = v; \
+		m_hle_vertices[i].XYZ.X = x; \
+		m_hle_vertices[i].XYZ.Y = y; \
+		m_hle_vertices[i].U = u; \
+		m_hle_vertices[i].V = v; \
 	} while (0)
 
 	const GSVector4i fp_rect = unscaled_rect.sll32<4>();
@@ -9490,10 +9484,10 @@ GSHWDrawConfig& GSRendererHW::BeginHLEHardwareDraw(
 	config.ds = ds;
 	config.tex = tex;
 	config.pal = nullptr;
-	config.indices = indices;
-	config.verts = vertices;
-	config.nverts = static_cast<u32>(std::size(vertices));
-	config.nindices = static_cast<u32>(std::size(indices));
+	config.indices = m_hle_indices;
+	config.verts = m_hle_vertices;
+	config.nverts = static_cast<u32>(std::size(m_hle_vertices));
+	config.nindices = static_cast<u32>(std::size(m_hle_indices));
 	config.indices_per_prim = 3;
 	config.drawlist = nullptr;
 	config.scissor = rt_or_ds->GetRect();
