@@ -40,26 +40,56 @@ static void HotkeyAdjustTargetSpeed(double delta)
 		Host::OSD_QUICK_DURATION);
 }
 
-static void HotkeyAdjustVolume(s32 fixed, s32 delta)
+static void HotkeyAdjustVolume(const s32 delta)
 {
 	if (!VMManager::HasValidVM())
 		return;
 
-	const s32 current_vol = static_cast<s32>(SPU2::GetOutputVolume());
-	const s32 new_volume =
-		std::clamp((fixed >= 0) ? fixed : (current_vol + delta), 0, static_cast<s32>(Pcsx2Config::SPU2Options::MAX_VOLUME));
-	if (current_vol != new_volume)
+	// Volume-adjusting hotkeys override mute toggle hotkey. EmuConfig.SPU2.OutputMuted overrides hotkeys.
+	if (!SPU2::SetOutputMuted(false))
+	{
+		Host::AddIconOSDMessage("VolumeChanged", ICON_FA_VOLUME_XMARK, TRANSLATE_STR("Hotkeys", "Volume: Muted in Settings"));
+		return;
+	}
+
+	const s32 current_volume = static_cast<s32>(SPU2::GetOutputVolume());
+	const s32 maximum_volume = static_cast<s32>(Pcsx2Config::SPU2Options::MAX_VOLUME);
+	const s32 new_volume = std::clamp(current_volume + delta, 0, maximum_volume);
+
+	if (current_volume != new_volume)
 		SPU2::SetOutputVolume(static_cast<u32>(new_volume));
 
-	if (new_volume == 0)
+	if (new_volume > 0 && new_volume < maximum_volume)
 	{
-		Host::AddIconOSDMessage("VolumeChanged", ICON_FA_VOLUME_XMARK, TRANSLATE_STR("Hotkeys", "Volume: Muted"));
+		Host::AddIconOSDMessage("VolumeChanged", new_volume < 100 ? ICON_FA_VOLUME_LOW : ICON_FA_VOLUME_HIGH,
+			fmt::format(TRANSLATE_FS("Hotkeys", "Volume: {} to {}%"), delta < 0 ? TRANSLATE_STR("Hotkeys", "Decreased") : TRANSLATE_STR("Hotkeys", "Increased"), new_volume));
 	}
 	else
 	{
-		Host::AddIconOSDMessage("VolumeChanged", (current_vol < new_volume) ? ICON_FA_VOLUME_HIGH : ICON_FA_VOLUME_LOW,
-			fmt::format(TRANSLATE_FS("Hotkeys", "Volume: {}%"), new_volume));
+		Host::AddIconOSDMessage("VolumeChanged", delta < 0 ? ICON_FA_VOLUME_OFF : ICON_FA_VOLUME_HIGH,
+			fmt::format(TRANSLATE_FS("Hotkeys", "Volume: {} {}% Reached"), delta < 0 ? TRANSLATE_STR("Hotkeys", "Minimum") : TRANSLATE_STR("Hotkeys", "Maximum"), new_volume));
 	}
+}
+
+static void HotkeyToggleMute()
+{
+	if (!VMManager::HasValidVM())
+		return;
+
+	// Attempt to toggle output muting. EmuConfig.SPU2.OutputMuted overrides hotkeys.
+	if (SPU2::SetOutputMuted(!SPU2::IsOutputMuted()))
+	{
+		if (SPU2::IsOutputMuted())
+			Host::AddIconOSDMessage("VolumeChanged", ICON_FA_VOLUME_XMARK, TRANSLATE_STR("Hotkeys", "Volume: Muted"));
+		else
+		{
+			const u32 current_volume = SPU2::GetOutputVolume();
+			Host::AddIconOSDMessage("VolumeChanged", current_volume < 100 ? (current_volume == 0 ? ICON_FA_VOLUME_OFF : ICON_FA_VOLUME_LOW) : ICON_FA_VOLUME_HIGH,
+				fmt::format(TRANSLATE_FS("Hotkeys", "Volume: Unmuted to {}%"), current_volume));
+		}
+	}
+	else
+		Host::AddIconOSDMessage("VolumeChanged", ICON_FA_VOLUME_XMARK, TRANSLATE_STR("Hotkeys", "Volume: Muted in Settings"));
 }
 
 static void HotkeyLoadStateSlot(s32 slot)
@@ -293,16 +323,16 @@ DEFINE_HOTKEY_LOADSTATE_X(10, TRANSLATE_NOOP("Hotkeys", "Load State From Slot 10
 #undef DEFINE_HOTKEY_LOADSTATE_X
 DEFINE_HOTKEY("Mute", TRANSLATE_NOOP("Hotkeys", "Audio"), TRANSLATE_NOOP("Hotkeys", "Toggle Mute"), [](s32 pressed) {
 	if (!pressed && VMManager::HasValidVM())
-		HotkeyAdjustVolume((SPU2::GetOutputVolume() == 0) ? SPU2::GetResetVolume() : 0, 0);
+		HotkeyToggleMute();
 })
 DEFINE_HOTKEY("IncreaseVolume", TRANSLATE_NOOP("Hotkeys", "Audio"), TRANSLATE_NOOP("Hotkeys", "Increase Volume"),
 	[](s32 pressed) {
 		if (!pressed && VMManager::HasValidVM())
-			HotkeyAdjustVolume(-1, 5);
+			HotkeyAdjustVolume(5);
 	})
 DEFINE_HOTKEY("DecreaseVolume", TRANSLATE_NOOP("Hotkeys", "Audio"), TRANSLATE_NOOP("Hotkeys", "Decrease Volume"),
 	[](s32 pressed) {
 		if (!pressed && VMManager::HasValidVM())
-			HotkeyAdjustVolume(-1, -5);
+			HotkeyAdjustVolume(-5);
 	})
 END_HOTKEY_LIST()
