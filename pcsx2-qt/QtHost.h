@@ -237,9 +237,6 @@ namespace QtHost
 	/// Sets application theme according to settings.
 	void UpdateApplicationTheme();
 
-	/// Returns true if the application theme is using dark colours.
-	bool IsDarkApplicationTheme();
-
 	/// Sets the icon theme, based on the current style (light/dark).
 	void SetIconThemeFromStyle();
 

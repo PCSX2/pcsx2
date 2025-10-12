@@ -9,6 +9,7 @@
 #include <QtCore/QLatin1StringView>
 #include <QtCore/QUtf8StringView>
 #include <QtGui/QIcon>
+#include <QtGui/QStyleHints>
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QScrollBar>
 
@@ -336,10 +337,10 @@ void LogWindow::appendMessage(quint32 level, quint32 color, const QString& messa
 			temp_cursor.insertText(qtimestamp);
 		}
 
-		const bool dark = static_cast<u32>(QtHost::IsDarkApplicationTheme());
+		const u32 palette = static_cast<u32>(qApp->styleHints()->colorScheme() == Qt::ColorScheme::Dark);
 
 		// message has \n already
-		format.setForeground(QBrush(qcolors[static_cast<u32>(dark)][color]));
+		format.setForeground(QBrush(qcolors[palette][color]));
 		temp_cursor.setCharFormat(format);
 		temp_cursor.insertText(message);
 	}

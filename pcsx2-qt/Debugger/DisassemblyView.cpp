@@ -16,6 +16,7 @@
 #include "QtHost.h"
 #include <QtCore/QPointer>
 #include <QtGui/QMouseEvent>
+#include <QtGui/QStyleHints>
 #include <QtWidgets/QMenu>
 #include <QtGui/QClipboard>
 #include <QtWidgets/QInputDialog>
@@ -939,7 +940,7 @@ inline QString DisassemblyView::DisassemblyStringFromAddress(u32 address, QFont 
 QColor DisassemblyView::GetAddressFunctionColor(u32 address)
 {
 	std::array<QColor, 6> colors;
-	if (QtUtils::IsLightTheme(palette()))
+	if (qApp->styleHints()->colorScheme() == Qt::ColorScheme::Light)
 	{
 		colors = {
 			QColor::fromRgba(0xFFFA3434),

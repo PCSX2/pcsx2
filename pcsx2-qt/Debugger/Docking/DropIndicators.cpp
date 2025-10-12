@@ -3,6 +3,7 @@
 
 #include "DropIndicators.h"
 
+#include "QtHost.h"
 #include "QtUtils.h"
 #include "Debugger/Docking/DockViews.h"
 
@@ -15,13 +16,14 @@
 #include <kddockwidgets/qtwidgets/ViewFactory.h>
 
 #include <QtGui/QPainter>
+#include <QtGui/QStyleHints>
 
 static std::pair<QColor, QColor> pickNiceColours(const QPalette& palette, bool hovered)
 {
 	QColor fill = palette.highlight().color();
 	QColor outline = palette.highlight().color();
 
-	if (QtUtils::IsLightTheme(palette))
+	if (qApp->styleHints()->colorScheme() == Qt::ColorScheme::Light)
 	{
 		fill = fill.darker(200);
 		outline = outline.darker(200);
@@ -197,7 +199,7 @@ static const constexpr int INDICATOR_MARGIN = 10;
 static bool isWayland()
 {
 	return KDDockWidgets::Core::Platform::instance()->displayType() ==
-		   KDDockWidgets::Core::Platform::DisplayType::Wayland;
+	       KDDockWidgets::Core::Platform::DisplayType::Wayland;
 }
 
 static QWidget* parentForIndicatorWindow(KDDockWidgets::Core::ClassicDropIndicatorOverlay* classic_indicators)
