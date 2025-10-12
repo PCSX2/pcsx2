@@ -11,8 +11,6 @@
 #include "common/Threading.h"
 #include "common/WindowInfo.h"
 
-#include "pcsx2/Config.h"
-#include "pcsx2/Host.h"
 #include "fmt/format.h"
 
 #include <dbus/dbus.h>

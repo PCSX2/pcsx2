@@ -284,19 +284,6 @@ bool Path::IsAbsolute(const std::string_view path)
 #endif
 }
 
-bool Path::IsCharacterSafeForShell(char c)
-{
-	if (c >= '0' && c <= '9')
-		return true;
-	if (c >= 'a' && c <= 'z')
-		return true;
-	if (c >= 'A' && c <= 'Z')
-		return true;
-	if (c == '-' || c == '/')
-		return true;
-	return false;
-}
-
 bool Path::EscapeCmdLine(std::string* arg)
 {
 #ifdef _WIN32
@@ -340,7 +327,7 @@ bool Path::EscapeCmdLine(std::string* arg)
 #else
 	const char* carg = arg->c_str();
 	const char* cend = carg + arg->size();
-	const char* RESERVED_CHARS = " \t\n\\\"'\\\\><~|&;$*?#()"
+	const char* RESERVED_CHARS = " \t\n\\\"'\\\\><~|&;$*?#()`"
 								 "\x01\x02\x03\x04\x05\x06\x07\x08\x0b\x0c\x0d\x0e\x0f"
 								 "\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f\x7f";
 	const char* next = carg + std::strcspn(carg, RESERVED_CHARS);
@@ -350,7 +337,7 @@ bool Path::EscapeCmdLine(std::string* arg)
 
 	bool lossless = true;
 	std::string temp = "\"";
-	const char* NOT_VALID_IN_QUOTE = "$\"\\\n"
+	const char* NOT_VALID_IN_QUOTE = "`$\"\\\n"
 									 "\x01\x02\x03\x04\x05\x06\x07\x08\x0b\x0c\x0d\x0e\x0f"
 									 "\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f\x7f";
 

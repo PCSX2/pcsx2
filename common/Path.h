@@ -35,9 +35,6 @@ namespace Path
 	/// Returns true if the specified path is an absolute path (C:\Path on Windows or /path on Unix).
 	bool IsAbsolute(const std::string_view path);
 
-	/// Checks if the given character is safe to be parsed on the shell.
-	bool IsCharacterSafeForShell(char c);
-
 	/// Escapes the given list of strings for use with command line arguments.
 	bool EscapeCmdLine(std::string* cmdline);
 
