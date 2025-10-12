@@ -36,8 +36,17 @@ u32 GetOutputVolume();
 /// Directly updates the output volume without going through the configuration.
 void SetOutputVolume(u32 volume);
 
-/// Returns the volume that we would reset the output to on startup.
-u32 GetResetVolume();
+/// Sets up muting and unmuting and reports success or failure.
+bool SetOutputMuted(const bool muted);
+
+/// Returns true if the output is muted (distinct from 0%).
+bool IsOutputMuted();
+
+/// Updates the current volume based on running state.
+void UpdateOutputVolume();
+
+/// Saves the current volume based on running state.
+void SaveOutputVolume();
 
 /// Pauses/resumes the output stream.
 void SetOutputPaused(bool paused);
@@ -74,4 +83,3 @@ extern u32 lClocks;
 extern void TimeUpdate(u32 cClocks);
 extern void SPU2_FastWrite(u32 rmem, u16 value);
 
-//#define PCM24_S1_INTERLEAVE

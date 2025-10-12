@@ -28,10 +28,13 @@ u32 lClocks = 0;
 
 static bool s_audio_capture_active = false;
 static bool s_psxmode = false;
+static bool s_output_muted = false;
 
 static std::unique_ptr<AudioStream> s_output_stream;
 static std::array<s16, AudioStream::CHUNK_SIZE * 2> s_current_chunk;
 static u32 s_current_chunk_pos;
+static u32 s_standard_volume = 0;
+static u32 s_fast_forward_volume = 0;
 
 u32 SPU2::GetConsoleSampleRate()
 {
@@ -97,8 +100,17 @@ void SPU2writeDMA7Mem(u16* pMem, u32 size)
 
 void SPU2::CreateOutputStream()
 {
-	// Persist volume through stream recreates.
-	const u32 volume = s_output_stream ? s_output_stream->GetOutputVolume() : GetResetVolume();
+	// Initialize volume and mute settings on new session.
+	if (!s_output_stream)
+	{
+		s_standard_volume = EmuConfig.SPU2.OutputVolume;
+		s_fast_forward_volume = EmuConfig.SPU2.FastForwardVolume;
+		s_output_muted = EmuConfig.SPU2.OutputMuted;
+	}
+	// Else persist volume through stream recreates.
+	else if (!s_output_muted)
+		SPU2::SaveOutputVolume();
+
 	const u32 sample_rate = GetConsoleSampleRate();
 	s_output_stream.reset();
 
@@ -114,7 +126,7 @@ void SPU2::CreateOutputStream()
 		s_output_stream = AudioStream::CreateNullStream(sample_rate, EmuConfig.SPU2.StreamParameters.buffer_ms);
 	}
 
-	s_output_stream->SetOutputVolume(volume);
+	SPU2::UpdateOutputVolume();
 	s_output_stream->SetNominalRate(GetNominalRate());
 	s_output_stream->SetPaused(VMManager::GetState() == VMState::Paused);
 }
@@ -144,18 +156,50 @@ void SPU2::SetOutputVolume(u32 volume)
 	s_output_stream->SetOutputVolume(volume);
 }
 
-u32 SPU2::GetResetVolume()
-{
-	return EmuConfig.SPU2.OutputMuted ? 0 :
-										((VMManager::GetTargetSpeed() != 1.0f) ?
-												EmuConfig.SPU2.FastForwardVolume :
-												EmuConfig.SPU2.OutputVolume);
-}
-
 float SPU2::GetNominalRate()
 {
 	// Adjust nominal rate when syncing to host.
 	return VMManager::IsTargetSpeedAdjustedToHost() ? VMManager::GetTargetSpeed() : 1.0f;
+}
+
+bool SPU2::SetOutputMuted(const bool muted)
+{
+	// User setting takes precedence. Unmute not guaranteed by design.
+	if (!s_output_stream || (!muted && EmuConfig.SPU2.OutputMuted))
+		return false;
+
+	if (muted == s_output_muted)
+		return true;
+
+	if (muted)
+		SPU2::SaveOutputVolume();
+
+	s_output_muted = muted;
+	SPU2::UpdateOutputVolume();
+	return true;
+}
+
+bool SPU2::IsOutputMuted()
+{
+	return s_output_muted;
+}
+
+void SPU2::UpdateOutputVolume()
+{
+	s_output_stream->SetOutputVolume(s_output_muted ?
+										 0 : (VMManager::GetTargetSpeed() == 1.0f ?
+										 	s_standard_volume : s_fast_forward_volume));
+}
+
+void SPU2::SaveOutputVolume()
+{
+	if (!s_output_muted)
+	{
+		if (VMManager::GetTargetSpeed() == 1.0f)
+			s_standard_volume = s_output_stream->GetOutputVolume();
+		else
+			s_fast_forward_volume = s_output_stream->GetOutputVolume();
+	}
 }
 
 void SPU2::SetOutputPaused(bool paused)
@@ -210,8 +254,20 @@ void SPU2::OnTargetSpeedChanged()
 
 	s_output_stream->SetNominalRate(GetNominalRate());
 
-	if (EmuConfig.SPU2.OutputVolume != EmuConfig.SPU2.FastForwardVolume && !EmuConfig.SPU2.OutputMuted)
-		s_output_stream->SetOutputVolume(GetResetVolume());
+	// Flipped save as speed has already changed.
+	if (!s_output_muted)
+	{
+		if (VMManager::GetTargetSpeed() == 1.0f)
+		{
+			s_fast_forward_volume = s_output_stream->GetOutputVolume();
+			s_output_stream->SetOutputVolume(s_standard_volume);
+		}
+		else
+		{
+			s_standard_volume = s_output_stream->GetOutputVolume();
+			s_output_stream->SetOutputVolume(s_fast_forward_volume);
+		}
+	}
 }
 
 bool SPU2::Open()
@@ -265,12 +321,24 @@ void SPU2::CheckForConfigChanges(const Pcsx2Config& old_config)
 	const Pcsx2Config::SPU2Options& oldopts = old_config.SPU2;
 
 	// No need to reinit for volume change.
-	if ((opts.OutputVolume != oldopts.OutputVolume && VMManager::GetTargetSpeed() == 1.0f) ||
-		(opts.FastForwardVolume != oldopts.FastForwardVolume && VMManager::GetTargetSpeed() != 1.0f) ||
-		opts.OutputMuted != oldopts.OutputMuted)
+	if (opts.OutputMuted != oldopts.OutputMuted)
+		SPU2::SetOutputMuted(opts.OutputMuted);
+
+	bool volume_settings_changed = false;
+	if (opts.OutputVolume != oldopts.OutputVolume)
 	{
-		SetOutputVolume(GetResetVolume());
+		s_standard_volume = opts.OutputVolume;
+		volume_settings_changed = true;
 	}
+
+	if (opts.FastForwardVolume != oldopts.FastForwardVolume)
+	{
+		s_fast_forward_volume = opts.FastForwardVolume;
+		volume_settings_changed = true;
+	}
+
+	if (volume_settings_changed)
+		SPU2::UpdateOutputVolume();
 
 	// Things which require re-initialzing the output.
 	if (opts.Backend != oldopts.Backend ||
