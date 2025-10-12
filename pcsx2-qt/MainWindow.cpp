@@ -138,21 +138,11 @@ MainWindow::~MainWindow()
 #ifdef _WIN32
 	unregisterForDeviceNotifications();
 #endif
-#ifdef __APPLE__
-	CocoaTools::RemoveThemeChangeHandler(this);
-#endif
 }
 
 void MainWindow::initialize()
 {
 #ifdef __APPLE__
-	CocoaTools::AddThemeChangeHandler(this, [](void* ctx) {
-		// This handler is called *before* the style change has propagated far enough for Qt to see it
-		// Use RunOnUIThread to delay until it has
-		QtHost::RunOnUIThread([ctx = static_cast<MainWindow*>(ctx)] {
-			ctx->updateTheme(); // Qt won't notice the style change without us touching the palette in some way
-		});
-	});
 	// The cocoa backing isn't initialized yet, delay this until stuff is set up with a `RunOnUIThread` call
 	QtHost::RunOnUIThread([this] {
 		CocoaTools::MarkHelpMenu(m_ui.menuHelp->toNSMenu());
