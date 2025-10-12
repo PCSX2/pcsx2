@@ -1028,7 +1028,7 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
 
 	if (const std::string_view badge_name = info->badge_name; !badge_name.empty())
 	{
-		s_game_icon = Path::Combine(s_image_directory, fmt::format("game_{}.png", info->id));
+		s_game_icon = Path::Combine(s_image_directory, fmt::format("game_{}.png", badge_name));
 		if (!s_game_icon.empty() && !s_game_icon_url.empty() && !FileSystem::FileExists(s_game_icon.c_str()))
 			DownloadImage(s_game_icon_url, s_game_icon);
 	}
@@ -1633,16 +1633,16 @@ void Achievements::SaveState(SaveStateBase& writer)
 
 std::string Achievements::GetAchievementBadgePath(const rc_client_achievement_t* achievement, int state)
 {
-	static constexpr std::array<const char*, NUM_RC_CLIENT_ACHIEVEMENT_STATES> s_achievement_state_strings = {
-		{"inactive", "active", "unlocked", "disabled"}};
-
 	std::string path;
 
-	if (achievement->badge_name[0] == 0)
+	const std::string_view badge_name(achievement->badge_name);
+	if (badge_name.empty())
 		return path;
 
+	const std::string_view suffix = state == RC_CLIENT_ACHIEVEMENT_STATE_UNLOCKED ? "" : "_lock";
+
 	path = Path::Combine(s_image_directory,
-		TinyString::from_format("achievement_{}_{}_{}.png", s_game_id, achievement->id, s_achievement_state_strings[state]));
+		TinyString::from_format("achievement_{}{}.png", badge_name, suffix));
 
 	if (!FileSystem::FileExists(path.c_str()))
 	{
