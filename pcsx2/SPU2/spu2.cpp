@@ -103,7 +103,7 @@ void SPU2::CreateOutputStream()
 	// Initialize volume and mute settings on new session.
 	if (!s_output_stream)
 	{
-		s_standard_volume = EmuConfig.SPU2.OutputVolume;
+		s_standard_volume = EmuConfig.SPU2.StandardVolume;
 		s_fast_forward_volume = EmuConfig.SPU2.FastForwardVolume;
 		s_output_muted = EmuConfig.SPU2.OutputMuted;
 	}
@@ -318,20 +318,20 @@ bool SPU2::IsRunningPSXMode()
 void SPU2::CheckForConfigChanges(const Pcsx2Config& old_config)
 {
 	const Pcsx2Config::SPU2Options& opts = EmuConfig.SPU2;
-	const Pcsx2Config::SPU2Options& oldopts = old_config.SPU2;
+	const Pcsx2Config::SPU2Options& old_opts = old_config.SPU2;
 
 	// No need to reinit for volume change.
-	if (opts.OutputMuted != oldopts.OutputMuted)
+	if (opts.OutputMuted != old_opts.OutputMuted)
 		SPU2::SetOutputMuted(opts.OutputMuted);
 
 	bool volume_settings_changed = false;
-	if (opts.OutputVolume != oldopts.OutputVolume)
+	if (opts.StandardVolume != old_opts.StandardVolume)
 	{
-		s_standard_volume = opts.OutputVolume;
+		s_standard_volume = opts.StandardVolume;
 		volume_settings_changed = true;
 	}
 
-	if (opts.FastForwardVolume != oldopts.FastForwardVolume)
+	if (opts.FastForwardVolume != old_opts.FastForwardVolume)
 	{
 		s_fast_forward_volume = opts.FastForwardVolume;
 		volume_settings_changed = true;
@@ -341,21 +341,21 @@ void SPU2::CheckForConfigChanges(const Pcsx2Config& old_config)
 		SPU2::UpdateOutputVolume();
 
 	// Things which require re-initialzing the output.
-	if (opts.Backend != oldopts.Backend ||
-		opts.StreamParameters != oldopts.StreamParameters ||
-		opts.DriverName != oldopts.DriverName ||
-		opts.DeviceName != oldopts.DeviceName)
+	if (opts.Backend != old_opts.Backend ||
+		opts.StreamParameters != old_opts.StreamParameters ||
+		opts.DriverName != old_opts.DriverName ||
+		opts.DeviceName != old_opts.DeviceName)
 	{
 		CreateOutputStream();
 	}
-	else if (opts.IsTimeStretchEnabled() != oldopts.IsTimeStretchEnabled())
+	else if (opts.IsTimeStretchEnabled() != old_opts.IsTimeStretchEnabled())
 	{
 		s_output_stream->SetStretchEnabled(opts.IsTimeStretchEnabled());
 	}
 
 #ifdef PCSX2_DEVBUILD
 	// AccessLog controls file output.
-	if (opts.AccessLog != oldopts.AccessLog)
+	if (opts.AccessLog != old_opts.AccessLog)
 	{
 		if (AccessLog())
 			OpenFileLog();
