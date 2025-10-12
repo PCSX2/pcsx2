@@ -1268,7 +1268,7 @@ GSDepthStencilOGL* GSDeviceOGL::CreateDepthStencil(OMDepthStencilSelector dssel)
 
 	if (dssel.ztst != ZTST_ALWAYS || dssel.zwe)
 	{
-		static const GLenum ztst[] =
+		static constexpr GLenum ztst[] =
 		{
 			GL_NEVER,
 			GL_ALWAYS,
@@ -2101,7 +2101,7 @@ bool GSDeviceOGL::DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, con
 	PSSetShaderResource(0, sTex);
 	glBindImageTexture(0, static_cast<GSTextureOGL*>(dTex)->GetID(), 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
 
-	static const int threadGroupWorkRegionDim = 16;
+	static constexpr int threadGroupWorkRegionDim = 16;
 	const int dispatchX = (dTex->GetWidth() + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;
 	const int dispatchY = (dTex->GetHeight() + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;
 	glDispatchCompute(dispatchX, dispatchY, 1);

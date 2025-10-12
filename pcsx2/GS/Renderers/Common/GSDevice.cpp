@@ -339,6 +339,10 @@ void GSDevice::ResetRenderState()
 {
 	ClearCurrent();
 	PurgePool();
+
+#ifdef PCSX2_DEVBUILD
+	s_texture_counts.fill(0);
+#endif
 }
 
 bool GSDevice::AcquireWindow(bool recreate_window)
@@ -790,7 +794,6 @@ void GSDevice::Merge(GSTexture* sTex[3], GSVector4* sRect, GSVector4* dRect, con
 
 void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffset)
 {
-	static int bufIdx = 0;
 	float offset = yoffset * static_cast<float>(field);
 	offset = GSConfig.DisableInterlaceOffset ? 0.0f : offset;
 
@@ -840,14 +843,14 @@ void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffse
 			m_current = m_blend;
 			break;
 		case 3: // FastMAD Motion Adaptive Deinterlacing
-			bufIdx++;
-			bufIdx &= ~1;
-			bufIdx |= field;
-			bufIdx &= 3;
+			m_interlace_bufIdx++;
+			m_interlace_bufIdx &= ~1;
+			m_interlace_bufIdx |= field;
+			m_interlace_bufIdx &= 3;
 			ResizeRenderTarget(&m_mad, ds.x, ds.y * 2.0f, true, false);
-			do_interlace(m_merge, m_mad, ShaderInterlace::MAD_BUFFER, false, offset, bufIdx);
+			do_interlace(m_merge, m_mad, ShaderInterlace::MAD_BUFFER, false, offset, m_interlace_bufIdx);
 			ResizeRenderTarget(&m_weavebob, ds.x, ds.y, true, false);
-			do_interlace(m_mad, m_weavebob, ShaderInterlace::MAD_RECONSTRUCT, false, 0, bufIdx);
+			do_interlace(m_mad, m_weavebob, ShaderInterlace::MAD_RECONSTRUCT, false, 0, m_interlace_bufIdx);
 			m_current = m_weavebob;
 			break;
 		default:

@@ -597,7 +597,7 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 	// Enable debug layer on debug builds
 	if (enable_validation_layer)
 	{
-		static const char* layer_names[] = {"VK_LAYER_LUNARG_standard_validation"};
+		static constexpr const char* layer_names[] = {"VK_LAYER_LUNARG_standard_validation"};
 		device_info.enabledLayerCount = 1;
 		device_info.ppEnabledLayerNames = layer_names;
 	}
@@ -4520,7 +4520,7 @@ bool GSDeviceVK::DoCAS(
 	dsub.PushUpdate(cmdbuf, VK_PIPELINE_BIND_POINT_COMPUTE, m_cas_pipeline_layout, 0, false);
 
 	// the actual meat and potatoes! only four commands.
-	static const int threadGroupWorkRegionDim = 16;
+	static constexpr int threadGroupWorkRegionDim = 16;
 	const int dispatchX = (dTex->GetWidth() + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;
 	const int dispatchY = (dTex->GetHeight() + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;
 
@@ -4877,7 +4877,7 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 	}
 
 	// DepthStencil
-	static const VkCompareOp ztst[] = {
+	static constexpr VkCompareOp ztst[] = {
 		VK_COMPARE_OP_NEVER, VK_COMPARE_OP_ALWAYS, VK_COMPARE_OP_GREATER_OR_EQUAL, VK_COMPARE_OP_GREATER};
 	gpb.SetDepthState((p.dss.ztst != ZTST_ALWAYS || p.dss.zwe), p.dss.zwe, ztst[p.dss.ztst]);
 	if (p.dss.date)

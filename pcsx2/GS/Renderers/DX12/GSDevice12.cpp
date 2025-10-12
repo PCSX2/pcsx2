@@ -3030,7 +3030,7 @@ GSDevice12::ComPtr<ID3D12PipelineState> GSDevice12::CreateTFXPipeline(const Pipe
 	// DepthStencil
 	if (p.ds)
 	{
-		static const D3D12_COMPARISON_FUNC ztst[] = {D3D12_COMPARISON_FUNC_NEVER, D3D12_COMPARISON_FUNC_ALWAYS,
+		static constexpr D3D12_COMPARISON_FUNC ztst[] = {D3D12_COMPARISON_FUNC_NEVER, D3D12_COMPARISON_FUNC_ALWAYS,
 			D3D12_COMPARISON_FUNC_GREATER_EQUAL, D3D12_COMPARISON_FUNC_GREATER};
 		gpb.SetDepthState((p.dss.ztst != ZTST_ALWAYS || p.dss.zwe), p.dss.zwe, ztst[p.dss.ztst]);
 		if (p.dss.date)

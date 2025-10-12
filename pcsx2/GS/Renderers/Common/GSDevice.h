@@ -903,6 +903,8 @@ protected:
 	GSTexture* m_cas = nullptr;
 	GSTexture* m_colclip_rt = nullptr; ///< Temp hw colclip texture
 
+	int m_interlace_bufIdx = 0;
+
 	bool AcquireWindow(bool recreate_window);
 
 	virtual GSTexture* CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format) = 0;

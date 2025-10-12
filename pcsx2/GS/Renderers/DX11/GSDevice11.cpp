@@ -1929,12 +1929,12 @@ void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, u8 
 
 		if (dssel.ztst != ZTST_ALWAYS || dssel.zwe)
 		{
-			static const D3D11_COMPARISON_FUNC ztst[] =
+			static constexpr D3D11_COMPARISON_FUNC ztst[] =
 			{
-					D3D11_COMPARISON_NEVER,
-					D3D11_COMPARISON_ALWAYS,
-					D3D11_COMPARISON_GREATER_EQUAL,
-					D3D11_COMPARISON_GREATER
+				D3D11_COMPARISON_NEVER,
+				D3D11_COMPARISON_ALWAYS,
+				D3D11_COMPARISON_GREATER_EQUAL,
+				D3D11_COMPARISON_GREATER
 			};
 
 			dsd.DepthEnable = true;
@@ -2027,7 +2027,7 @@ bool GSDevice11::CreateCASShaders()
 
 bool GSDevice11::DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, const std::array<u32, NUM_CAS_CONSTANTS>& constants)
 {
-	static const int threadGroupWorkRegionDim = 16;
+	static constexpr int threadGroupWorkRegionDim = 16;
 	const int dispatchX = (dTex->GetWidth() + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;
 	const int dispatchY = (dTex->GetHeight() + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;
 
