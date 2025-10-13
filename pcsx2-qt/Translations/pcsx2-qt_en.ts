@@ -1675,6 +1675,11 @@ Leaderboard Position: {1} of {2}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="222"/>
+        <source>Standard Volume:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../Settings/AudioSettingsWidget.ui" line="92"/>
         <location filename="../Settings/AudioSettingsWidget.ui" line="163"/>
         <source>0 ms</source>
@@ -1686,14 +1691,15 @@ Leaderboard Position: {1} of {2}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="222"/>
-        <source>Output Volume:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../Settings/AudioSettingsWidget.ui" line="256"/>
         <location filename="../Settings/AudioSettingsWidget.ui" line="305"/>
         <source>100%</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="266"/>
+        <location filename="../Settings/AudioSettingsWidget.cpp" line="121"/>
+        <source>Reset Standard Volume</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1748,6 +1754,16 @@ Leaderboard Position: {1} of {2}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../Settings/AudioSettingsWidget.cpp" line="122"/>
+        <source>Resets standard volume back to the global/inherited setting.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/AudioSettingsWidget.cpp" line="123"/>
+        <source>Resets standard volume back to the default.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../Settings/AudioSettingsWidget.cpp" line="187"/>
         <location filename="../Settings/AudioSettingsWidget.cpp" line="217"/>
         <source>Default</source>
@@ -1766,16 +1782,6 @@ Leaderboard Position: {1} of {2}</source>
     <message>
         <location filename="../Settings/AudioSettingsWidget.cpp" line="104"/>
         <source>Determines the latency from the buffer to the host audio output. This can be set lower than the target latency to reduce audio delay.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/AudioSettingsWidget.cpp" line="122"/>
-        <source>Resets output volume back to the global/inherited setting.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/AudioSettingsWidget.cpp" line="123"/>
-        <source>Resets output volume back to the default.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1836,12 +1842,12 @@ Leaderboard Position: {1} of {2}</source>
     </message>
     <message>
         <location filename="../Settings/AudioSettingsWidget.cpp" line="106"/>
-        <source>Output Volume</source>
+        <source>Standard Volume</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/AudioSettingsWidget.cpp" line="107"/>
-        <source>Controls the volume of the audio played on the host.</source>
+        <source>Controls the volume of the audio played on the host at normal speed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1887,12 +1893,6 @@ Leaderboard Position: {1} of {2}</source>
     <message>
         <location filename="../Settings/AudioSettingsWidget.cpp" line="120"/>
         <source>These settings fine-tune the behavior of the SoundTouch audio time stretcher when running outside of 100% speed.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="266"/>
-        <location filename="../Settings/AudioSettingsWidget.cpp" line="121"/>
-        <source>Reset Volume</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -5696,91 +5696,91 @@ Do you want to overwrite?</source>
 <context>
     <name>EmuThread</name>
     <message>
-        <location filename="../QtHost.cpp" line="1004"/>
+        <location filename="../QtHost.cpp" line="972"/>
         <source>Slot: %1 | Volume: %2% | %3 | EE: %4% | VU: %5% | GS: %6%</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1014"/>
+        <location filename="../QtHost.cpp" line="982"/>
         <source>Slot: %1 | Volume: %2% | %3 | EE: %4% | GS: %5%</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1047"/>
+        <location filename="../QtHost.cpp" line="1015"/>
         <source>No Image</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1049"/>
+        <location filename="../QtHost.cpp" line="1017"/>
         <source>%1x%2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1062"/>
+        <location filename="../QtHost.cpp" line="1030"/>
         <source>FPS: N/A</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1064"/>
+        <location filename="../QtHost.cpp" line="1032"/>
         <source>FPS: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1074"/>
+        <location filename="../QtHost.cpp" line="1042"/>
         <source>VPS: %1 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1080"/>
+        <location filename="../QtHost.cpp" line="1048"/>
         <source>Speed: %1% </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1135"/>
+        <location filename="../QtHost.cpp" line="1103"/>
         <source>Game: %1 (%2)
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1143"/>
+        <location filename="../QtHost.cpp" line="1111"/>
         <source>Rich presence inactive or unsupported.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1147"/>
+        <location filename="../QtHost.cpp" line="1115"/>
         <source>Game not loaded or no RetroAchievements available.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1566"/>
-        <location filename="../QtHost.cpp" line="1586"/>
-        <location filename="../QtHost.cpp" line="1594"/>
-        <location filename="../QtHost.cpp" line="1628"/>
+        <location filename="../QtHost.cpp" line="1534"/>
+        <location filename="../QtHost.cpp" line="1554"/>
+        <location filename="../QtHost.cpp" line="1562"/>
+        <location filename="../QtHost.cpp" line="1596"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1566"/>
+        <location filename="../QtHost.cpp" line="1534"/>
         <source>Failed to create HTTPDownloader.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1574"/>
+        <location filename="../QtHost.cpp" line="1542"/>
         <source>Downloading %1...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1587"/>
+        <location filename="../QtHost.cpp" line="1555"/>
         <source>Download failed with HTTP status code %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1595"/>
+        <location filename="../QtHost.cpp" line="1563"/>
         <source>Download failed: Data is empty.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1629"/>
+        <location filename="../QtHost.cpp" line="1597"/>
         <source>Failed to write &apos;%1&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -9147,11 +9147,6 @@ Do you want to load this save and continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8291"/>
-        <source>Controls the volume of the audio played on the host.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8843"/>
         <source>Fast Forward Volume</source>
         <translation type="unfinished"></translation>
@@ -9832,6 +9827,11 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8289"/>
         <source>Determines what frame rate PAL games run at.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8291"/>
+        <source>Controls the volume of the audio played on the host at normal speed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -10730,11 +10730,6 @@ Do you want to load this save and continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8842"/>
-        <source>Output Volume</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8852"/>
         <source>Memory Card Directory</source>
         <translation type="unfinished"></translation>
@@ -10842,6 +10837,11 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8759"/>
         <source>Use Legacy Nintendo Layout in Big Picture Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="8842"/>
+        <source>Standard Volume</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -16134,293 +16134,329 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="56"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="83"/>
         <source>Volume: Muted</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="61"/>
-        <source>Volume: {}%</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="72"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="102"/>
         <source>No save state found in slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="198"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="203"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="208"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="215"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="228"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="233"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="238"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="245"/>
         <source>System</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="121"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="151"/>
         <source>Open Pause Menu</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="127"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="157"/>
         <source>Open Achievements List</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="132"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="162"/>
         <source>Open Leaderboards List</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="137"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="167"/>
         <source>Toggle Pause</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="116"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="146"/>
         <source>Toggle Fullscreen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="146"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="176"/>
         <source>Toggle Frame Limit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="156"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="186"/>
         <source>Toggle Turbo / Fast Forward</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="180"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="210"/>
         <source>Toggle Slow Motion</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="164"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="194"/>
         <source>Turbo / Fast Forward (Hold)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="188"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="218"/>
         <source>Increase Target Speed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="193"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="223"/>
         <source>Decrease Target Speed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="294"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="298"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="303"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="324"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="328"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="333"/>
         <source>Audio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="298"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="328"/>
         <source>Increase Volume</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="303"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="333"/>
         <source>Decrease Volume</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="294"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="324"/>
         <source>Toggle Mute</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="142"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="172"/>
         <source>Frame Advance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="198"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="228"/>
         <source>Shut Down Virtual Machine</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="203"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="233"/>
         <source>Reset Virtual Machine</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="216"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="246"/>
         <source>Toggle Input Recording Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="209"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="239"/>
         <source>Swap Memory Cards</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="116"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="121"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="126"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="131"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="51"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="92"/>
+        <source>Volume: Muted in Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="65"/>
+        <source>Volume: {} to {}%</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="65"/>
+        <source>Decreased</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="65"/>
+        <source>Increased</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="70"/>
+        <source>Volume: {} {}% Reached</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="70"/>
+        <source>Minimum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="70"/>
+        <source>Maximum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="88"/>
+        <source>Volume: Unmuted to {}%</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="146"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="151"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="156"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="161"/>
         <source>Navigation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="137"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="142"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="146"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="155"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="163"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="180"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="188"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="167"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="172"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="176"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="185"/>
         <location filename="../../pcsx2/Hotkeys.cpp" line="193"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="210"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="218"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="223"/>
         <source>Speed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="220"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="225"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="230"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="235"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="240"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="245"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="253"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="250"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="255"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="260"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="265"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="270"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="275"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="283"/>
         <source>Save States</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="221"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="251"/>
         <source>Select Previous Save Slot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="226"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="256"/>
         <source>Select Next Save Slot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="231"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="261"/>
         <source>Save State To Selected Slot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="236"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="266"/>
         <source>Load State From Selected Slot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="241"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="271"/>
         <source>Load Backup State From Selected Slot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="246"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="276"/>
         <source>Save State and Select Next Slot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="254"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="284"/>
         <source>Select Next Slot and Save State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="272"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="302"/>
         <source>Save State To Slot 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="273"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="303"/>
         <source>Load State From Slot 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="274"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="304"/>
         <source>Save State To Slot 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="275"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="305"/>
         <source>Load State From Slot 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="276"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="306"/>
         <source>Save State To Slot 3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="277"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="307"/>
         <source>Load State From Slot 3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="278"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="308"/>
         <source>Save State To Slot 4</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="279"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="309"/>
         <source>Load State From Slot 4</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="280"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="310"/>
         <source>Save State To Slot 5</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="281"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="311"/>
         <source>Load State From Slot 5</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="282"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="312"/>
         <source>Save State To Slot 6</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="283"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="313"/>
         <source>Load State From Slot 6</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="284"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="314"/>
         <source>Save State To Slot 7</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="285"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="315"/>
         <source>Load State From Slot 7</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="286"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="316"/>
         <source>Save State To Slot 8</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="287"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="317"/>
         <source>Load State From Slot 8</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="288"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="318"/>
         <source>Save State To Slot 9</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="289"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="319"/>
         <source>Load State From Slot 9</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="290"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="320"/>
         <source>Save State To Slot 10</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="291"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="321"/>
         <source>Load State From Slot 10</source>
         <translation type="unfinished"></translation>
     </message>
@@ -20512,45 +20548,45 @@ Ejecting {3} and replacing it with {2}.</source>
 <context>
     <name>QtHost</name>
     <message>
-        <location filename="../QtHost.cpp" line="1115"/>
+        <location filename="../QtHost.cpp" line="1083"/>
         <source>RA: Logged in as %1 (%2 pts, softcore: %3 pts). %4 unread messages.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1536"/>
-        <location filename="../QtHost.cpp" line="1551"/>
+        <location filename="../QtHost.cpp" line="1504"/>
+        <location filename="../QtHost.cpp" line="1519"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1537"/>
+        <location filename="../QtHost.cpp" line="1505"/>
         <source>An error occurred while deleting empty game settings:
 {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1552"/>
+        <location filename="../QtHost.cpp" line="1520"/>
         <source>An error occurred while saving game settings:
 {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1712"/>
+        <location filename="../QtHost.cpp" line="1680"/>
         <source>Controller {} connected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1725"/>
+        <location filename="../QtHost.cpp" line="1693"/>
         <source>System paused because controller {} was disconnected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1738"/>
+        <location filename="../QtHost.cpp" line="1706"/>
         <source>Controller {} disconnected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1966"/>
+        <location filename="../QtHost.cpp" line="1934"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
