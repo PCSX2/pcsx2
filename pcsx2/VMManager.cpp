@@ -3149,12 +3149,12 @@ void VMManager::WarnAboutUnsafeSettings()
 		if (EmuConfig.GS.TriFilter != TriFiltering::Automatic)
 		{
 			append(ICON_FA_PAGER,
-				TRANSLATE_SV("VMManager", "Trilinear filtering is not set to automatic. This may break rendering in some games."));
+				TRANSLATE_SV("VMManager", "Trilinear filtering is not set to Automatic. This may break rendering in some games."));
 		}
-		if (EmuConfig.GS.AccurateBlendingUnit <= AccBlendLevel::Minimum)
+		if (EmuConfig.GS.AccurateBlendingUnit == AccBlendLevel::Minimum)
 		{
 			append(ICON_FA_PAINTBRUSH,
-				TRANSLATE_SV("VMManager", "Blending Accuracy is below Basic, this may break effects in some games."));
+				TRANSLATE_SV("VMManager", "Blending Accuracy is set to Minimum. This may break rendering in some games."));
 		}
 		if (EmuConfig.GS.HWDownloadMode != GSHardwareDownloadMode::Enabled)
 		{

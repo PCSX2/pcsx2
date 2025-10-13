@@ -5169,6 +5169,8 @@ void GSRendererHW::EmulateTextureShuffleAndFbmask(GSTextureCache::Target* rt, GS
 				enable_fbmask_emulation = true;
 				break;
 			case AccBlendLevel::Basic:
+			case AccBlendLevel::Automatic:
+			default:
 				// Enable Fbmask emulation excluding triangle class because it is quite slow.
 				enable_fbmask_emulation = (m_vt.m_primclass != GS_TRIANGLE_CLASS);
 				break;
@@ -5773,7 +5775,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 	const bool blend_ad = m_conf.ps.blend_c == 1;
 	const bool alpha_mask = (m_cached_ctx.FRAME.FBMSK & 0xFF000000) == 0xFF000000;
 	bool blend_ad_alpha_masked = blend_ad && alpha_mask;
-	const bool is_basic_blend = GSConfig.AccurateBlendingUnit >= AccBlendLevel::Basic;
+	const bool is_basic_blend = GSConfig.AccurateBlendingUnit != AccBlendLevel::Minimum;
 	if (blend_ad_alpha_masked && (((is_basic_blend || (COLCLAMP.CLAMP == 0)) && (features.texture_barrier || features.multidraw_fb_copy))
 		|| ((GSConfig.AccurateBlendingUnit >= AccBlendLevel::Medium) || m_conf.require_one_barrier)))
 	{
@@ -5883,6 +5885,8 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 				sw_blending |= m_vt.m_primclass == GS_SPRITE_CLASS && ComputeDrawlistGetSize(rt->m_scale) < 100;
 				[[fallthrough]];
 			case AccBlendLevel::Basic:
+			case AccBlendLevel::Automatic:
+			default:
 				// Prefer sw blend if possible.
 				color_dest_blend &= !prefer_sw_blend;
 				color_dest_blend2 &= !prefer_sw_blend;
@@ -5924,6 +5928,8 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 				sw_blending |= !(blend_ad_alpha_masked || ad_second_pass) && (alpha_c1_high_max_one || alpha_c1_high_no_rta_correct) && no_prim_overlap;
 				[[fallthrough]];
 			case AccBlendLevel::Basic:
+			case AccBlendLevel::Automatic:
+			default:
 				// Prefer sw blend if possible.
 				color_dest_blend &= !prefer_sw_blend;
 				color_dest_blend2 &= !prefer_sw_blend;
