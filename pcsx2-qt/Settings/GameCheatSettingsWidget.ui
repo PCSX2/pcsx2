@@ -54,13 +54,13 @@
    <item>
     <widget class="QTreeView" name="cheatList">
      <property name="editTriggers">
-      <set>QAbstractItemView::NoEditTriggers</set>
+      <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
      </property>
      <property name="selectionMode">
-      <enum>QAbstractItemView::NoSelection</enum>
+      <enum>QAbstractItemView::SelectionMode::NoSelection</enum>
      </property>
      <property name="selectionBehavior">
-      <enum>QAbstractItemView::SelectItems</enum>
+      <enum>QAbstractItemView::SelectionBehavior::SelectItems</enum>
      </property>
     </widget>
    </item>
@@ -93,7 +93,7 @@
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -114,6 +114,15 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>enableCheats</tabstop>
+  <tabstop>searchText</tabstop>
+  <tabstop>cheatList</tabstop>
+  <tabstop>enableAll</tabstop>
+  <tabstop>disableAll</tabstop>
+  <tabstop>allCRCsCheckbox</tabstop>
+  <tabstop>reloadCheats</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

@@ -57,7 +57,7 @@
      <item>
       <widget class="QGroupBox" name="groupBox_32">
        <property name="title">
-	    <string extracomment="Power refers to the train's accelerator which causes the train to increase speed.">Power Lever</string>
+        <string extracomment="Power refers to the train's accelerator which causes the train to increase speed.">Power Lever</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_31">
         <property name="leftMargin">
@@ -730,6 +730,20 @@
    <header>Settings/InputBindingWidget.h</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>Power</tabstop>
+  <tabstop>Brake</tabstop>
+  <tabstop>Up</tabstop>
+  <tabstop>Down</tabstop>
+  <tabstop>Left</tabstop>
+  <tabstop>Right</tabstop>
+  <tabstop>D</tabstop>
+  <tabstop>B</tabstop>
+  <tabstop>A</tabstop>
+  <tabstop>C</tabstop>
+  <tabstop>Select</tabstop>
+  <tabstop>Start</tabstop>
+ </tabstops>
  <resources>
   <include location="../resources/resources.qrc"/>
  </resources>

@@ -176,7 +176,7 @@
         <item>
          <spacer name="eeLoggingSpacer">
           <property name="orientation">
-           <enum>Qt::Vertical</enum>
+           <enum>Qt::Orientation::Vertical</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
@@ -286,7 +286,7 @@
         <item>
          <spacer name="iopLoggingSpacer">
           <property name="orientation">
-           <enum>Qt::Vertical</enum>
+           <enum>Qt::Orientation::Vertical</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
@@ -304,7 +304,7 @@
    <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
-      <enum>Qt::Vertical</enum>
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
@@ -316,6 +316,41 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>chkEnable</tabstop>
+  <tabstop>chkEECOP0</tabstop>
+  <tabstop>chkEECOP1</tabstop>
+  <tabstop>chkEECOP2</tabstop>
+  <tabstop>chkEER5900</tabstop>
+  <tabstop>chkEECache</tabstop>
+  <tabstop>chkEEMemory</tabstop>
+  <tabstop>chkEEMMIO</tabstop>
+  <tabstop>chkEEUNKNWNMMIO</tabstop>
+  <tabstop>chkEEDMARegs</tabstop>
+  <tabstop>chkEEDMACTRL</tabstop>
+  <tabstop>chkEEMSKPATH3</tabstop>
+  <tabstop>chkEEMFIFO</tabstop>
+  <tabstop>chkEEIPU</tabstop>
+  <tabstop>chkEECounters</tabstop>
+  <tabstop>chkEEVIFCodes</tabstop>
+  <tabstop>chkEEGIFTags</tabstop>
+  <tabstop>chkEEVIF</tabstop>
+  <tabstop>chkEEGIF</tabstop>
+  <tabstop>chkEEBIOS</tabstop>
+  <tabstop>chkEESIF</tabstop>
+  <tabstop>chkIOPCOP2</tabstop>
+  <tabstop>chkIOPR3000A</tabstop>
+  <tabstop>chkIOPMemcards</tabstop>
+  <tabstop>chkIOPPad</tabstop>
+  <tabstop>chkIOPDMARegs</tabstop>
+  <tabstop>chkIOPDMACTRL</tabstop>
+  <tabstop>chkIOPMMIO</tabstop>
+  <tabstop>chkIOPUNKNWNMMIO</tabstop>
+  <tabstop>chkIOPCounters</tabstop>
+  <tabstop>chkIOPCDVD</tabstop>
+  <tabstop>chkIOPMDEC</tabstop>
+  <tabstop>chkIOPBIOS</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

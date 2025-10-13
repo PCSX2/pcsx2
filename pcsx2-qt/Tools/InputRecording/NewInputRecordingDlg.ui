@@ -76,6 +76,9 @@
        <property name="text">
         <string>Select File Path</string>
        </property>
+       <property name="buddy">
+        <cstring>m_filePathInput</cstring>
+       </property>
       </widget>
      </item>
      <item>
@@ -97,6 +100,9 @@
        <property name="text">
         <string>Enter Author Name</string>
        </property>
+       <property name="buddy">
+        <cstring>m_authorInput</cstring>
+       </property>
       </widget>
      </item>
      <item>
@@ -111,10 +117,10 @@
         </sizepolicy>
        </property>
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="standardButtons">
-        <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+        <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
        </property>
        <property name="centerButtons">
         <bool>true</bool>
@@ -125,6 +131,13 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>m_recTypePowerOn</tabstop>
+  <tabstop>m_recTypeSaveState</tabstop>
+  <tabstop>m_filePathInput</tabstop>
+  <tabstop>m_filePathBrowseBtn</tabstop>
+  <tabstop>m_authorInput</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

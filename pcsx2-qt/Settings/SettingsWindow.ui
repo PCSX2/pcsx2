@@ -135,6 +135,14 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>settingsCategory</tabstop>
+  <tabstop>helpText</tabstop>
+  <tabstop>restoreDefaultsButton</tabstop>
+  <tabstop>copyGlobalSettingsButton</tabstop>
+  <tabstop>clearGameSettingsButton</tabstop>
+  <tabstop>closeButton</tabstop>
+ </tabstops>
  <resources>
   <include location="../resources/resources.qrc"/>
  </resources>

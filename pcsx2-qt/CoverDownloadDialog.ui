@@ -28,7 +28,7 @@
         <pixmap resource="resources/resources.qrc">:/icons/black/svg/artboard-2-line.svg</pixmap>
        </property>
        <property name="alignment">
-        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+        <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
        </property>
       </widget>
      </item>
@@ -39,6 +39,9 @@
        </property>
        <property name="wordWrap">
         <bool>true</bool>
+       </property>
+       <property name="buddy">
+        <cstring>label</cstring>
        </property>
       </widget>
      </item>
@@ -52,6 +55,9 @@
      <property name="wordWrap">
       <bool>true</bool>
      </property>
+     <property name="buddy">
+      <cstring>urls</cstring>
+     </property>
     </widget>
    </item>
    <item>
@@ -64,6 +70,9 @@
      </property>
      <property name="wordWrap">
       <bool>true</bool>
+     </property>
+     <property name="buddy">
+      <cstring>useTitleFileNames</cstring>
      </property>
     </widget>
    </item>
@@ -110,6 +119,12 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>urls</tabstop>
+  <tabstop>useTitleFileNames</tabstop>
+  <tabstop>start</tabstop>
+  <tabstop>close</tabstop>
+ </tabstops>
  <resources>
   <include location="resources/resources.qrc"/>
  </resources>

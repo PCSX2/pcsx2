@@ -19,6 +19,9 @@
      <property name="text">
       <string>Sequence Length:</string>
      </property>
+     <property name="buddy">
+      <cstring>sequenceLength</cstring>
+     </property>
     </widget>
    </item>
    <item row="1" column="1">
@@ -59,6 +62,9 @@
      <property name="text">
       <string>Seekwindow Size:</string>
      </property>
+     <property name="buddy">
+      <cstring>seekWindowSize</cstring>
+     </property>
     </widget>
    </item>
    <item row="2" column="1">
@@ -98,6 +104,9 @@
     <widget class="QLabel" name="label_8">
      <property name="text">
       <string>Overlap:</string>
+     </property>
+     <property name="buddy">
+      <cstring>overlap</cstring>
      </property>
     </widget>
    </item>
@@ -199,6 +208,13 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>sequenceLength</tabstop>
+  <tabstop>seekWindowSize</tabstop>
+  <tabstop>overlap</tabstop>
+  <tabstop>useQuickSeek</tabstop>
+  <tabstop>useAAFilter</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

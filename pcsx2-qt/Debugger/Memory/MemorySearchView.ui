@@ -21,6 +21,9 @@
        <property name="text">
         <string>Value</string>
        </property>
+       <property name="buddy">
+        <cstring>txtSearchValue</cstring>
+       </property>
       </widget>
      </item>
      <item row="0" column="1">
@@ -30,6 +33,9 @@
       <widget class="QLabel" name="typeLabel">
        <property name="text">
         <string>Type</string>
+       </property>
+       <property name="buddy">
+        <cstring>cmbSearchType</cstring>
        </property>
       </widget>
      </item>
@@ -81,6 +87,9 @@
       <widget class="QLabel" name="hexLabel">
        <property name="text">
         <string>Hex</string>
+       </property>
+       <property name="buddy">
+        <cstring>chkSearchHex</cstring>
        </property>
       </widget>
      </item>
@@ -155,20 +164,26 @@
        <property name="text">
         <string>Comparison</string>
        </property>
+       <property name="buddy">
+        <cstring>cmbSearchComparison</cstring>
+       </property>
       </widget>
      </item>
     </layout>
    </item>
    <item>
     <layout class="QGridLayout" name="gridLayout_3">
-     <item row="0" column="0" alignment="Qt::AlignLeft">
+     <item row="0" column="0" alignment="Qt::AlignmentFlag::AlignLeft">
       <widget class="QLabel" name="startLabel">
        <property name="text">
         <string>Start</string>
        </property>
+       <property name="buddy">
+        <cstring>txtSearchStart</cstring>
+       </property>
       </widget>
      </item>
-     <item row="0" column="1" alignment="Qt::AlignLeft">
+     <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignLeft">
       <widget class="QLineEdit" name="txtSearchStart">
        <property name="text">
         <string notr="true">0x00</string>
@@ -179,6 +194,9 @@
       <widget class="QLabel" name="endLabel">
        <property name="text">
         <string>End</string>
+       </property>
+       <property name="buddy">
+        <cstring>txtSearchEnd</cstring>
        </property>
       </widget>
      </item>
@@ -206,6 +224,17 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>txtSearchValue</tabstop>
+  <tabstop>cmbSearchComparison</tabstop>
+  <tabstop>cmbSearchType</tabstop>
+  <tabstop>chkSearchHex</tabstop>
+  <tabstop>txtSearchStart</tabstop>
+  <tabstop>txtSearchEnd</tabstop>
+  <tabstop>btnSearch</tabstop>
+  <tabstop>btnFilterSearch</tabstop>
+  <tabstop>listSearchResults</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

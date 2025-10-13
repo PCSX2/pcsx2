@@ -3,7 +3,7 @@
  <class>InputBindingDialog</class>
  <widget class="QDialog" name="InputBindingDialog">
   <property name="windowModality">
-   <enum>Qt::WindowModal</enum>
+   <enum>Qt::WindowModality::WindowModal</enum>
   </property>
   <property name="geometry">
    <rect>
@@ -24,6 +24,9 @@
     <widget class="QLabel" name="title">
      <property name="text">
       <string>Bindings for Controller0/ButtonCircle</string>
+     </property>
+     <property name="buddy">
+      <cstring>bindingList</cstring>
      </property>
     </widget>
    </item>
@@ -50,6 +53,9 @@
         <property name="text">
          <string>Sensitivity:</string>
         </property>
+        <property name="buddy">
+         <cstring>sensitivity</cstring>
+        </property>
        </widget>
       </item>
       <item row="0" column="1">
@@ -64,10 +70,10 @@
          <number>100</number>
         </property>
         <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+         <enum>Qt::Orientation::Horizontal</enum>
         </property>
         <property name="tickPosition">
-         <enum>QSlider::TicksBelow</enum>
+         <enum>QSlider::TickPosition::TicksBelow</enum>
         </property>
        </widget>
       </item>
@@ -83,6 +89,9 @@
         <property name="text">
          <string>Deadzone:</string>
         </property>
+        <property name="buddy">
+         <cstring>deadzone</cstring>
+        </property>
        </widget>
       </item>
       <item row="1" column="1">
@@ -97,10 +106,10 @@
          <number>1</number>
         </property>
         <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+         <enum>Qt::Orientation::Horizontal</enum>
         </property>
         <property name="tickPosition">
-         <enum>QSlider::TicksBelow</enum>
+         <enum>QSlider::TickPosition::TicksBelow</enum>
         </property>
         <property name="tickInterval">
          <number>5</number>
@@ -150,7 +159,7 @@
      <item>
       <widget class="QDialogButtonBox" name="buttonBox">
        <property name="standardButtons">
-        <set>QDialogButtonBox::Close</set>
+        <set>QDialogButtonBox::StandardButton::Close</set>
        </property>
       </widget>
      </item>
@@ -158,6 +167,14 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>bindingList</tabstop>
+  <tabstop>sensitivity</tabstop>
+  <tabstop>deadzone</tabstop>
+  <tabstop>addBinding</tabstop>
+  <tabstop>removeBinding</tabstop>
+  <tabstop>clearBindings</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

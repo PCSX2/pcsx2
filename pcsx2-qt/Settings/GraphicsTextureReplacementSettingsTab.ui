@@ -100,6 +100,9 @@
         <property name="text">
          <string>PCSX2 will dump and load texture replacements from this directory.</string>
         </property>
+        <property name="buddy">
+         <cstring>texturesDirectory</cstring>
+        </property>
        </widget>
       </item>
      </layout>
@@ -108,7 +111,7 @@
    <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
-      <enum>Qt::Vertical</enum>
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
@@ -120,6 +123,18 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>loadTextureReplacements</tabstop>
+  <tabstop>dumpReplaceableTextures</tabstop>
+  <tabstop>loadTextureReplacementsAsync</tabstop>
+  <tabstop>dumpReplaceableMipmaps</tabstop>
+  <tabstop>precacheTextureReplacements</tabstop>
+  <tabstop>dumpTexturesWithFMVActive</tabstop>
+  <tabstop>texturesDirectory</tabstop>
+  <tabstop>texturesBrowse</tabstop>
+  <tabstop>texturesOpen</tabstop>
+  <tabstop>texturesReset</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

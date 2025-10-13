@@ -65,7 +65,7 @@
    <item row="3" column="0" colspan="4">
     <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0">
      <property name="sizeConstraint">
-      <enum>QLayout::SetDefaultConstraint</enum>
+      <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
      </property>
      <property name="bottomMargin">
       <number>0</number>
@@ -92,7 +92,7 @@
         </sizepolicy>
        </property>
        <property name="standardButtons">
-        <set>QDialogButtonBox::Close</set>
+        <set>QDialogButtonBox::StandardButton::Close</set>
        </property>
       </widget>
      </item>
@@ -107,6 +107,13 @@
    <header>ColorPickerButton.h</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>SDL0LED</tabstop>
+  <tabstop>SDL1LED</tabstop>
+  <tabstop>SDL2LED</tabstop>
+  <tabstop>SDL3LED</tabstop>
+  <tabstop>enableSDLPS5PlayerLED</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
