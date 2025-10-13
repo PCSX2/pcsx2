@@ -32,7 +32,13 @@
    <item row="0" column="0">
     <spacer name="horizontalSpacer0">
      <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt::Orientation::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
      </property>
     </spacer>
    </item>
@@ -891,14 +897,26 @@
    <item row="0" column="5">
     <spacer name="horizontalSpacer5">
      <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt::Orientation::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
      </property>
     </spacer>
    </item>
    <item row="1" column="1" colspan="4">
     <spacer name="verticalSpacer">
      <property name="orientation">
-      <enum>Qt::Vertical</enum>
+      <enum>Qt::Orientation::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
      </property>
     </spacer>
    </item>
@@ -911,6 +929,28 @@
    <header>Settings/InputBindingWidget.h</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>Red1</tabstop>
+  <tabstop>Blue1</tabstop>
+  <tabstop>Orange1</tabstop>
+  <tabstop>Green1</tabstop>
+  <tabstop>Yellow1</tabstop>
+  <tabstop>Red2</tabstop>
+  <tabstop>Blue2</tabstop>
+  <tabstop>Orange2</tabstop>
+  <tabstop>Green2</tabstop>
+  <tabstop>Yellow2</tabstop>
+  <tabstop>Red3</tabstop>
+  <tabstop>Blue3</tabstop>
+  <tabstop>Orange3</tabstop>
+  <tabstop>Green3</tabstop>
+  <tabstop>Yellow3</tabstop>
+  <tabstop>Red4</tabstop>
+  <tabstop>Blue4</tabstop>
+  <tabstop>Orange4</tabstop>
+  <tabstop>Green4</tabstop>
+  <tabstop>Yellow4</tabstop>
+ </tabstops>
  <resources>
   <include location="../resources/resources.qrc"/>
  </resources>

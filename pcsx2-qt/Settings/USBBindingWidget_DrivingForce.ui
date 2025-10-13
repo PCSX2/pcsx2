@@ -346,7 +346,7 @@
      <item>
       <spacer name="verticalSpacer_2">
        <property name="orientation">
-        <enum>Qt::Vertical</enum>
+        <enum>Qt::Orientation::Vertical</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -399,7 +399,7 @@
      <item>
       <spacer name="verticalSpacer_5">
        <property name="orientation">
-        <enum>Qt::Vertical</enum>
+        <enum>Qt::Orientation::Vertical</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -502,7 +502,7 @@
        <item>
         <spacer name="horizontalSpacer">
          <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+          <enum>Qt::Orientation::Horizontal</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -546,7 +546,7 @@
        <item>
         <spacer name="horizontalSpacer_2">
          <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+          <enum>Qt::Orientation::Horizontal</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -642,7 +642,7 @@
      <item>
       <spacer name="verticalSpacer">
        <property name="orientation">
-        <enum>Qt::Vertical</enum>
+        <enum>Qt::Orientation::Vertical</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -908,7 +908,7 @@
      <item>
       <spacer name="verticalSpacer_7">
        <property name="orientation">
-        <enum>Qt::Vertical</enum>
+        <enum>Qt::Orientation::Vertical</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -961,7 +961,7 @@
      <item>
       <spacer name="verticalSpacer_4">
        <property name="orientation">
-        <enum>Qt::Vertical</enum>
+        <enum>Qt::Orientation::Vertical</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -982,6 +982,27 @@
    <header>Settings/InputBindingWidget.h</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>SteeringLeft</tabstop>
+  <tabstop>SteeringRight</tabstop>
+  <tabstop>Brake</tabstop>
+  <tabstop>Throttle</tabstop>
+  <tabstop>DPadUp</tabstop>
+  <tabstop>DPadDown</tabstop>
+  <tabstop>DPadLeft</tabstop>
+  <tabstop>DPadRight</tabstop>
+  <tabstop>Triangle</tabstop>
+  <tabstop>Cross</tabstop>
+  <tabstop>Square</tabstop>
+  <tabstop>Circle</tabstop>
+  <tabstop>L1</tabstop>
+  <tabstop>L2</tabstop>
+  <tabstop>R1</tabstop>
+  <tabstop>R2</tabstop>
+  <tabstop>Select</tabstop>
+  <tabstop>Start</tabstop>
+  <tabstop>FFDevice</tabstop>
+ </tabstops>
  <resources>
   <include location="../resources/resources.qrc"/>
  </resources>

@@ -23,7 +23,7 @@
     <item>
      <spacer name="horizontalSpacer">
       <property name="orientation">
-       <enum>Qt::Horizontal</enum>
+       <enum>Qt::Orientation::Horizontal</enum>
       </property>
       <property name="sizeHint" stdset="0">
        <size>
@@ -55,7 +55,7 @@
     <item>
      <spacer name="horizontalSpacer_2">
       <property name="orientation">
-       <enum>Qt::Horizontal</enum>
+       <enum>Qt::Orientation::Horizontal</enum>
       </property>
       <property name="sizeHint" stdset="0">
        <size>
@@ -307,6 +307,19 @@
    <header>Settings/InputBindingWidget.h</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>Start</tabstop>
+  <tabstop>Select</tabstop>
+  <tabstop>Up</tabstop>
+  <tabstop>Down</tabstop>
+  <tabstop>Orange</tabstop>
+  <tabstop>Blue</tabstop>
+  <tabstop>Yellow</tabstop>
+  <tabstop>Red</tabstop>
+  <tabstop>Green</tabstop>
+  <tabstop>Whammy</tabstop>
+  <tabstop>Tilt</tabstop>
+ </tabstops>
  <resources>
   <include location="../resources/resources.qrc"/>
  </resources>

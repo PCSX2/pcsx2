@@ -17,7 +17,7 @@
    <item row="5" column="1">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="standardButtons">
-      <set>QDialogButtonBox::Close</set>
+      <set>QDialogButtonBox::StandardButton::Close</set>
      </property>
     </widget>
    </item>
@@ -39,6 +39,9 @@
        </property>
        <property name="text">
         <string>Y Speed</string>
+       </property>
+       <property name="buddy">
+        <cstring>pointerYSpeedSlider</cstring>
        </property>
       </widget>
      </item>
@@ -63,7 +66,7 @@
         <number>100</number>
        </property>
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
       </widget>
      </item>
@@ -107,6 +110,9 @@
        <property name="text">
         <string>X Speed</string>
        </property>
+       <property name="buddy">
+        <cstring>pointerXSpeedSlider</cstring>
+       </property>
       </widget>
      </item>
      <item>
@@ -130,7 +136,7 @@
         <number>100</number>
        </property>
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
       </widget>
      </item>
@@ -182,10 +188,10 @@
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Mouse Mapping Settings&lt;/span&gt;&lt;br/&gt;These settings fine-tune the behavior when mapping a mouse to the emulated controller.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="textFormat">
-        <enum>Qt::RichText</enum>
+        <enum>Qt::TextFormat::RichText</enum>
        </property>
        <property name="alignment">
-        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+        <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
        </property>
        <property name="wordWrap">
         <bool>true</bool>
@@ -197,7 +203,7 @@
    <item row="4" column="0" colspan="2">
     <spacer name="verticalSpacer">
      <property name="orientation">
-      <enum>Qt::Vertical</enum>
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
@@ -226,6 +232,9 @@
        <property name="text">
         <string>Inertia</string>
        </property>
+       <property name="buddy">
+        <cstring>pointerInertiaSlider</cstring>
+       </property>
       </widget>
      </item>
      <item>
@@ -249,7 +258,7 @@
         <number>100</number>
        </property>
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
       </widget>
      </item>
@@ -293,6 +302,9 @@
        <property name="text">
         <string>X Dead Zone</string>
        </property>
+       <property name="buddy">
+        <cstring>pointerXDeadZoneSlider</cstring>
+       </property>
       </widget>
      </item>
      <item>
@@ -316,7 +328,7 @@
         <number>100</number>
        </property>
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
       </widget>
      </item>
@@ -360,6 +372,9 @@
        <property name="text">
         <string>Y Dead Zone</string>
        </property>
+       <property name="buddy">
+        <cstring>pointerYDeadZoneSlider</cstring>
+       </property>
       </widget>
      </item>
      <item>
@@ -383,7 +398,7 @@
         <number>100</number>
        </property>
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
       </widget>
      </item>
@@ -410,6 +425,13 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>pointerXSpeedSlider</tabstop>
+  <tabstop>pointerXDeadZoneSlider</tabstop>
+  <tabstop>pointerYSpeedSlider</tabstop>
+  <tabstop>pointerYDeadZoneSlider</tabstop>
+  <tabstop>pointerInertiaSlider</tabstop>
+ </tabstops>
  <resources>
   <include location="../resources/resources.qrc"/>
  </resources>

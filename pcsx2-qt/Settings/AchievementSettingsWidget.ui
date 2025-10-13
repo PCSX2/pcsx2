@@ -78,13 +78,13 @@
            <number>5</number>
           </property>
           <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+           <enum>Qt::Orientation::Horizontal</enum>
           </property>
           <property name="invertedAppearance">
            <bool>false</bool>
           </property>
           <property name="tickPosition">
-           <enum>QSlider::TicksBelow</enum>
+           <enum>QSlider::TickPosition::TicksBelow</enum>
           </property>
           <property name="tickInterval">
            <number>1</number>
@@ -124,13 +124,13 @@
            <number>5</number>
           </property>
           <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+           <enum>Qt::Orientation::Horizontal</enum>
           </property>
           <property name="invertedAppearance">
            <bool>false</bool>
           </property>
           <property name="tickPosition">
-           <enum>QSlider::TicksBelow</enum>
+           <enum>QSlider::TickPosition::TicksBelow</enum>
           </property>
           <property name="tickInterval">
            <number>1</number>
@@ -164,6 +164,9 @@
        <widget class="QLabel" name="notificationPositionLabel">
         <property name="text">
          <string>Notification Position:</string>
+        </property>
+        <property name="buddy">
+         <cstring>notificationPosition</cstring>
         </property>
        </widget>
       </item>
@@ -283,6 +286,9 @@
        <widget class="QLabel" name="overlayPositionLabel">
         <property name="text">
          <string>Overlay Position:</string>
+        </property>
+        <property name="buddy">
+         <cstring>overlayPosition</cstring>
         </property>
        </widget>
       </item>
@@ -418,7 +424,10 @@
 Login token generated at:</string>
         </property>
         <property name="alignment">
-         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+         <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
+        </property>
+        <property name="buddy">
+         <cstring>viewProfile</cstring>
         </property>
        </widget>
       </item>
@@ -458,7 +467,7 @@ Login token generated at:</string>
       <item row="0" column="0">
        <widget class="QLabel" name="gameInfo">
         <property name="alignment">
-         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+         <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
         </property>
        </widget>
       </item>
@@ -471,7 +480,7 @@ Login token generated at:</string>
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;PCSX2 uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;https://retroachievements.org/&quot;&gt;retroachievements.org&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;To view the achievement list in-game, press the hotkey for &lt;span style=&quot; font-weight:600;&quot;&gt;Open Pause Menu&lt;/span&gt; and select &lt;span style=&quot; font-weight:600;&quot;&gt;Achievements&lt;/span&gt; from the menu.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="textFormat">
-      <enum>Qt::RichText</enum>
+      <enum>Qt::TextFormat::RichText</enum>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
@@ -487,7 +496,7 @@ Login token generated at:</string>
    <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
-      <enum>Qt::Vertical</enum>
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
@@ -499,6 +508,39 @@ Login token generated at:</string>
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>enable</tabstop>
+  <tabstop>hardcoreMode</tabstop>
+  <tabstop>encoreMode</tabstop>
+  <tabstop>spectatorMode</tabstop>
+  <tabstop>unofficialAchievements</tabstop>
+  <tabstop>achievementNotifications</tabstop>
+  <tabstop>achievementNotificationsDuration</tabstop>
+  <tabstop>leaderboardNotifications</tabstop>
+  <tabstop>leaderboardNotificationsDuration</tabstop>
+  <tabstop>soundEffects</tabstop>
+  <tabstop>notificationPosition</tabstop>
+  <tabstop>overlays</tabstop>
+  <tabstop>leaderboardOverlays</tabstop>
+  <tabstop>overlayPosition</tabstop>
+  <tabstop>notificationSound</tabstop>
+  <tabstop>notificationSoundPath</tabstop>
+  <tabstop>notificationSoundBrowse</tabstop>
+  <tabstop>notificationSoundOpen</tabstop>
+  <tabstop>notificationSoundReset</tabstop>
+  <tabstop>unlockSound</tabstop>
+  <tabstop>unlockSoundPath</tabstop>
+  <tabstop>unlockSoundBrowse</tabstop>
+  <tabstop>unlockSoundOpen</tabstop>
+  <tabstop>unlockSoundReset</tabstop>
+  <tabstop>lbSound</tabstop>
+  <tabstop>lbSoundPath</tabstop>
+  <tabstop>lbSoundBrowse</tabstop>
+  <tabstop>lbSoundOpen</tabstop>
+  <tabstop>lbSoundReset</tabstop>
+  <tabstop>viewProfile</tabstop>
+  <tabstop>loginButton</tabstop>
+ </tabstops>
  <resources>
   <include location="../resources/resources.qrc"/>
  </resources>

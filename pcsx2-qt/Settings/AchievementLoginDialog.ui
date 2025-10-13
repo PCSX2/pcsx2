@@ -3,7 +3,7 @@
  <class>AchievementLoginDialog</class>
  <widget class="QDialog" name="AchievementLoginDialog">
   <property name="windowModality">
-   <enum>Qt::WindowModal</enum>
+   <enum>Qt::WindowModality::WindowModal</enum>
   </property>
   <property name="geometry">
    <rect>
@@ -44,7 +44,7 @@
         <string comment="Header text">RetroAchievements Login</string>
        </property>
        <property name="alignment">
-        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+        <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
        </property>
       </widget>
      </item>
@@ -63,7 +63,7 @@
    <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
-      <enum>Qt::Vertical</enum>
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
@@ -80,6 +80,9 @@
        <property name="text">
         <string>User Name:</string>
        </property>
+       <property name="buddy">
+        <cstring>userName</cstring>
+       </property>
       </widget>
      </item>
      <item row="0" column="1">
@@ -90,12 +93,15 @@
        <property name="text">
         <string>Password:</string>
        </property>
+       <property name="buddy">
+        <cstring>password</cstring>
+       </property>
       </widget>
      </item>
      <item row="1" column="1">
       <widget class="QLineEdit" name="password">
        <property name="echoMode">
-        <enum>QLineEdit::Password</enum>
+        <enum>QLineEdit::EchoMode::Password</enum>
        </property>
       </widget>
      </item>
@@ -113,7 +119,7 @@
      <item>
       <widget class="QDialogButtonBox" name="buttonBox">
        <property name="standardButtons">
-        <set>QDialogButtonBox::Cancel</set>
+        <set>QDialogButtonBox::StandardButton::Cancel</set>
        </property>
       </widget>
      </item>
@@ -121,6 +127,10 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>userName</tabstop>
+  <tabstop>password</tabstop>
+ </tabstops>
  <resources>
   <include location="../resources/resources.qrc"/>
  </resources>

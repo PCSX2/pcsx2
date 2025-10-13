@@ -34,6 +34,9 @@
         <property name="text">
          <string>Driver:</string>
         </property>
+        <property name="buddy">
+         <cstring>driver</cstring>
+        </property>
        </widget>
       </item>
       <item row="1" column="1">
@@ -76,10 +79,10 @@
            <number>50</number>
           </property>
           <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+           <enum>Qt::Orientation::Horizontal</enum>
           </property>
           <property name="tickPosition">
-           <enum>QSlider::TicksBothSides</enum>
+           <enum>QSlider::TickPosition::TicksBothSides</enum>
           </property>
           <property name="tickInterval">
            <number>20</number>
@@ -117,6 +120,9 @@
         <property name="text">
          <string>Buffer Size:</string>
         </property>
+        <property name="buddy">
+         <cstring>bufferMS</cstring>
+        </property>
        </widget>
       </item>
       <item row="7" column="0" colspan="2">
@@ -125,7 +131,7 @@
          <string>Maximum latency: 0 frames (0.00ms)</string>
         </property>
         <property name="alignment">
-         <set>Qt::AlignCenter</set>
+         <set>Qt::AlignmentFlag::AlignCenter</set>
         </property>
        </widget>
       </item>
@@ -133,6 +139,9 @@
        <widget class="QLabel" name="label">
         <property name="text">
          <string>Backend:</string>
+        </property>
+        <property name="buddy">
+         <cstring>audioBackend</cstring>
         </property>
        </widget>
       </item>
@@ -147,10 +156,10 @@
            <number>200</number>
           </property>
           <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+           <enum>Qt::Orientation::Horizontal</enum>
           </property>
           <property name="tickPosition">
-           <enum>QSlider::TicksBothSides</enum>
+           <enum>QSlider::TickPosition::TicksBothSides</enum>
           </property>
           <property name="tickInterval">
            <number>20</number>
@@ -181,6 +190,9 @@
         <property name="text">
          <string>Output Latency:</string>
         </property>
+        <property name="buddy">
+         <cstring>outputLatencyMS</cstring>
+        </property>
        </widget>
       </item>
       <item row="2" column="1">
@@ -191,6 +203,9 @@
         <property name="text">
          <string>Output Device:</string>
         </property>
+        <property name="buddy">
+         <cstring>outputDevice</cstring>
+        </property>
        </widget>
       </item>
       <item row="3" column="0">
@@ -198,12 +213,18 @@
         <property name="text">
          <string>Expansion:</string>
         </property>
+        <property name="buddy">
+         <cstring>expansionMode</cstring>
+        </property>
        </widget>
       </item>
       <item row="4" column="0">
        <widget class="QLabel" name="label_7">
         <property name="text">
          <string>Synchronization:</string>
+        </property>
+        <property name="buddy">
+         <cstring>syncMode</cstring>
         </property>
        </widget>
       </item>
@@ -221,6 +242,9 @@
         <property name="text">
          <string>Standard Volume:</string>
         </property>
+        <property name="buddy">
+         <cstring>standardVolume</cstring>
+        </property>
        </widget>
       </item>
       <item row="0" column="1">
@@ -234,10 +258,10 @@
            <number>100</number>
           </property>
           <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+           <enum>Qt::Orientation::Horizontal</enum>
           </property>
           <property name="tickPosition">
-           <enum>QSlider::TicksBothSides</enum>
+           <enum>QSlider::TickPosition::TicksBothSides</enum>
           </property>
           <property name="tickInterval">
            <number>10</number>
@@ -256,7 +280,7 @@
            <string>100%</string>
           </property>
           <property name="alignment">
-           <set>Qt::AlignCenter</set>
+           <set>Qt::AlignmentFlag::AlignCenter</set>
           </property>
          </widget>
         </item>
@@ -283,10 +307,10 @@
            <number>100</number>
           </property>
           <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+           <enum>Qt::Orientation::Horizontal</enum>
           </property>
           <property name="tickPosition">
-           <enum>QSlider::TicksBothSides</enum>
+           <enum>QSlider::TickPosition::TicksBothSides</enum>
           </property>
           <property name="tickInterval">
            <number>10</number>
@@ -305,7 +329,7 @@
            <string>100%</string>
           </property>
           <property name="alignment">
-           <set>Qt::AlignCenter</set>
+           <set>Qt::AlignmentFlag::AlignCenter</set>
           </property>
          </widget>
         </item>
@@ -326,6 +350,9 @@
         <property name="text">
          <string>Fast Forward Volume:</string>
         </property>
+        <property name="buddy">
+         <cstring>fastForwardVolume</cstring>
+        </property>
        </widget>
       </item>
       <item row="2" column="0">
@@ -341,7 +368,7 @@
    <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
-      <enum>Qt::Vertical</enum>
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
@@ -353,6 +380,23 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>audioBackend</tabstop>
+  <tabstop>driver</tabstop>
+  <tabstop>outputDevice</tabstop>
+  <tabstop>expansionMode</tabstop>
+  <tabstop>expansionSettings</tabstop>
+  <tabstop>syncMode</tabstop>
+  <tabstop>stretchSettings</tabstop>
+  <tabstop>bufferMS</tabstop>
+  <tabstop>outputLatencyMS</tabstop>
+  <tabstop>outputLatencyMinimal</tabstop>
+  <tabstop>standardVolume</tabstop>
+  <tabstop>resetStandardVolume</tabstop>
+  <tabstop>fastForwardVolume</tabstop>
+  <tabstop>resetFastForwardVolume</tabstop>
+  <tabstop>muted</tabstop>
+ </tabstops>
  <resources>
   <include location="../resources/resources.qrc"/>
  </resources>

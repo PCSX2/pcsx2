@@ -755,6 +755,21 @@
    <header>Settings/InputBindingWidget.h</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>Power</tabstop>
+  <tabstop>LeftDoor</tabstop>
+  <tabstop>RightDoor</tabstop>
+  <tabstop>Brake</tabstop>
+  <tabstop>Up</tabstop>
+  <tabstop>Down</tabstop>
+  <tabstop>Left</tabstop>
+  <tabstop>Right</tabstop>
+  <tabstop>Select</tabstop>
+  <tabstop>Start</tabstop>
+  <tabstop>Camera</tabstop>
+  <tabstop>Announce</tabstop>
+  <tabstop>Horn</tabstop>
+ </tabstops>
  <resources>
   <include location="../resources/resources.qrc"/>
  </resources>

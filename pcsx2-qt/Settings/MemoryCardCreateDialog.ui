@@ -43,7 +43,7 @@
         <pixmap resource="../resources/resources.qrc">:/icons/black/svg/memcard-line.svg</pixmap>
        </property>
        <property name="alignment">
-        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+        <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
        </property>
       </widget>
      </item>
@@ -53,10 +53,10 @@
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Create Memory Card&lt;/span&gt;&lt;br /&gt;Enter the name of the Memory Card you wish to create, and choose a size. We recommend either using 8MB Memory Cards, or folder Memory Cards for best compatibility.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="textFormat">
-        <enum>Qt::RichText</enum>
+        <enum>Qt::TextFormat::RichText</enum>
        </property>
        <property name="alignment">
-        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+        <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
        </property>
        <property name="wordWrap">
         <bool>true</bool>
@@ -71,6 +71,9 @@
       <widget class="QLabel" name="label_3">
        <property name="text">
         <string>Memory Card Name:</string>
+       </property>
+       <property name="buddy">
+        <cstring>name</cstring>
        </property>
       </widget>
      </item>
@@ -97,10 +100,13 @@
         <string>This is the standard Sony-provisioned size, and is supported by all games and BIOS versions.</string>
        </property>
        <property name="alignment">
-        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+        <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
        </property>
        <property name="wordWrap">
         <bool>true</bool>
+       </property>
+       <property name="buddy">
+        <cstring>size8MB</cstring>
        </property>
       </widget>
      </item>
@@ -121,10 +127,13 @@
         <string>A typical size for third-party Memory Cards which should work with most games.</string>
        </property>
        <property name="alignment">
-        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+        <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
        </property>
        <property name="wordWrap">
         <bool>true</bool>
+       </property>
+       <property name="buddy">
+        <cstring>size16MB</cstring>
        </property>
       </widget>
      </item>
@@ -145,10 +154,13 @@
         <string>A typical size for third-party Memory Cards which should work with most games.</string>
        </property>
        <property name="alignment">
-        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+        <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
        </property>
        <property name="wordWrap">
         <bool>true</bool>
+       </property>
+       <property name="buddy">
+        <cstring>size32MB</cstring>
        </property>
       </widget>
      </item>
@@ -169,10 +181,13 @@
         <string>Low compatibility warning: yes, it's very big, but may not work with many games.</string>
        </property>
        <property name="alignment">
-        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+        <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
        </property>
        <property name="wordWrap">
         <bool>true</bool>
+       </property>
+       <property name="buddy">
+        <cstring>size64MB</cstring>
        </property>
       </widget>
      </item>
@@ -193,10 +208,13 @@
         <string>Store Memory Card contents in the host filesystem instead of a file.</string>
        </property>
        <property name="alignment">
-        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+        <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
        </property>
        <property name="wordWrap">
         <bool>true</bool>
+       </property>
+       <property name="buddy">
+        <cstring>sizeFolder</cstring>
        </property>
       </widget>
      </item>
@@ -217,10 +235,13 @@
         <string>This is the standard Sony-provisioned size PS1 Memory Card, and only compatible with PS1 games.</string>
        </property>
        <property name="alignment">
-        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+        <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
        </property>
        <property name="wordWrap">
         <bool>true</bool>
+       </property>
+       <property name="buddy">
+        <cstring>size128KB</cstring>
        </property>
       </widget>
      </item>
@@ -244,7 +265,7 @@
         <string>NTFS compression is built-in, fast, and completely reliable. Typically compresses Memory Cards (highly recommended).</string>
        </property>
        <property name="alignment">
-        <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+        <set>Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft</set>
        </property>
        <property name="wordWrap">
         <bool>true</bool>
@@ -256,7 +277,7 @@
    <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
-      <enum>Qt::Vertical</enum>
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
@@ -269,15 +290,25 @@
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok|QDialogButtonBox::RestoreDefaults</set>
+      <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok|QDialogButtonBox::StandardButton::RestoreDefaults</set>
      </property>
     </widget>
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>name</tabstop>
+  <tabstop>size8MB</tabstop>
+  <tabstop>size16MB</tabstop>
+  <tabstop>size32MB</tabstop>
+  <tabstop>size64MB</tabstop>
+  <tabstop>sizeFolder</tabstop>
+  <tabstop>size128KB</tabstop>
+  <tabstop>ntfsCompression</tabstop>
+ </tabstops>
  <resources>
   <include location="../resources/resources.qrc"/>
  </resources>

@@ -25,6 +25,9 @@
         <property name="text">
          <string extracomment="You might find an official translation for this on AMD's website (Spanish version linked): https://www.amd.com/es/technologies/radeon-software-fidelityfx">Contrast Adaptive Sharpening:</string>
         </property>
+        <property name="buddy">
+         <cstring>casMode</cstring>
+        </property>
        </widget>
       </item>
       <item row="0" column="1">
@@ -60,6 +63,9 @@
            <widget class="QLabel" name="casSharpnessLabel">
             <property name="text">
              <string>Sharpness:</string>
+            </property>
+            <property name="buddy">
+             <cstring>casSharpness</cstring>
             </property>
            </widget>
           </item>
@@ -110,6 +116,9 @@
           <property name="text">
            <string>Brightness:</string>
           </property>
+          <property name="buddy">
+           <cstring>shadeBoostBrightness</cstring>
+          </property>
          </widget>
         </item>
         <item row="0" column="3">
@@ -126,6 +135,9 @@
          <widget class="QLabel" name="contrastLabel">
           <property name="text">
            <string>Contrast:</string>
+          </property>
+          <property name="buddy">
+           <cstring>shadeBoostContrast</cstring>
           </property>
          </widget>
         </item>
@@ -144,6 +156,9 @@
           <property name="text">
            <string>Gamma:</string>
           </property>
+          <property name="buddy">
+           <cstring>shadeBoostGamma</cstring>
+          </property>
          </widget>
         </item>
         <item row="1" column="1">
@@ -160,6 +175,9 @@
          <widget class="QLabel" name="saturationLabel">
           <property name="text">
            <string>Saturation:</string>
+          </property>
+          <property name="buddy">
+           <cstring>shadeBoostSaturation</cstring>
           </property>
          </widget>
         </item>
@@ -179,6 +197,9 @@
        <widget class="QLabel" name="tvShaderLabel">
         <property name="text">
          <string>TV Shader:</string>
+        </property>
+        <property name="buddy">
+         <cstring>tvShader</cstring>
         </property>
        </widget>
       </item>
@@ -232,7 +253,7 @@
    <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
-      <enum>Qt::Vertical</enum>
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
@@ -244,6 +265,17 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>casMode</tabstop>
+  <tabstop>casSharpness</tabstop>
+  <tabstop>fxaa</tabstop>
+  <tabstop>tvShader</tabstop>
+  <tabstop>shadeBoost</tabstop>
+  <tabstop>shadeBoostBrightness</tabstop>
+  <tabstop>shadeBoostContrast</tabstop>
+  <tabstop>shadeBoostGamma</tabstop>
+  <tabstop>shadeBoostSaturation</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

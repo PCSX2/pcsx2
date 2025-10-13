@@ -21,6 +21,9 @@
        <property name="text">
         <string>Name</string>
        </property>
+       <property name="buddy">
+        <cstring>nameEditor</cstring>
+       </property>
       </widget>
      </item>
      <item row="1" column="0">
@@ -28,12 +31,18 @@
        <property name="text">
         <string>Target</string>
        </property>
+       <property name="buddy">
+        <cstring>cpuEditor</cstring>
+       </property>
       </widget>
      </item>
      <item row="2" column="0">
       <widget class="QLabel" name="initialStateLabel">
        <property name="text">
         <string>Initial State</string>
+       </property>
+       <property name="buddy">
+        <cstring>initialStateEditor</cstring>
        </property>
       </widget>
      </item>
@@ -66,10 +75,10 @@
      <item>
       <widget class="QDialogButtonBox" name="buttonBox">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="standardButtons">
-        <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+        <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
        </property>
       </widget>
      </item>
@@ -77,6 +86,11 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>nameEditor</tabstop>
+  <tabstop>cpuEditor</tabstop>
+  <tabstop>initialStateEditor</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>
