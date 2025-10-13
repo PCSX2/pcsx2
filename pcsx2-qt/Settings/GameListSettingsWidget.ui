@@ -36,12 +36,15 @@
           <property name="text">
            <string>Search Directories (will be scanned for games)</string>
           </property>
+          <property name="buddy">
+           <cstring>searchDirectoryList</cstring>
+          </property>
          </widget>
         </item>
         <item>
          <spacer name="horizontalSpacer_2">
           <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+           <enum>Qt::Orientation::Horizontal</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
@@ -66,7 +69,7 @@
            <iconset theme="folder-add-line"/>
           </property>
           <property name="toolButtonStyle">
-           <enum>Qt::ToolButtonTextBesideIcon</enum>
+           <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
           </property>
          </widget>
         </item>
@@ -85,7 +88,7 @@
            <iconset theme="folder-reduce-line"/>
           </property>
           <property name="toolButtonStyle">
-           <enum>Qt::ToolButtonTextBesideIcon</enum>
+           <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
           </property>
          </widget>
         </item>
@@ -112,12 +115,15 @@
           <property name="text">
            <string>Excluded Paths (will not be scanned)</string>
           </property>
+          <property name="buddy">
+           <cstring>excludedPaths</cstring>
+          </property>
          </widget>
         </item>
         <item>
          <spacer name="horizontalSpacer_3">
           <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+           <enum>Qt::Orientation::Horizontal</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
@@ -142,7 +148,7 @@
            <iconset theme="folder-add-line"/>
           </property>
           <property name="toolButtonStyle">
-           <enum>Qt::ToolButtonTextBesideIcon</enum>
+           <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
           </property>
          </widget>
         </item>
@@ -161,7 +167,7 @@
            <iconset theme="file-add-line"/>
           </property>
           <property name="toolButtonStyle">
-           <enum>Qt::ToolButtonTextBesideIcon</enum>
+           <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
           </property>
          </widget>
         </item>
@@ -180,7 +186,7 @@
            <iconset theme="file-reduce-line"/>
           </property>
           <property name="toolButtonStyle">
-           <enum>Qt::ToolButtonTextBesideIcon</enum>
+           <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
           </property>
          </widget>
         </item>
@@ -194,7 +200,7 @@
         <item>
          <spacer name="horizontalSpacer">
           <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+           <enum>Qt::Orientation::Horizontal</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
@@ -259,6 +265,18 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>addSearchDirectoryButton</tabstop>
+  <tabstop>removeSearchDirectoryButton</tabstop>
+  <tabstop>searchDirectoryList</tabstop>
+  <tabstop>addExcludedPath</tabstop>
+  <tabstop>addExcludedFile</tabstop>
+  <tabstop>removeExcludedPath</tabstop>
+  <tabstop>excludedPaths</tabstop>
+  <tabstop>scanForNewGames</tabstop>
+  <tabstop>rescanAllGames</tabstop>
+  <tabstop>preferEnglishGameList</tabstop>
+ </tabstops>
  <resources>
   <include location="../resources/resources.qrc"/>
  </resources>

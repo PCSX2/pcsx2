@@ -149,7 +149,7 @@
    <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
-      <enum>Qt::Vertical</enum>
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
@@ -161,6 +161,26 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>FpuMulHack</tabstop>
+  <tabstop>SoftwareRendererFMVHack</tabstop>
+  <tabstop>SkipMPEGHack</tabstop>
+  <tabstop>GoemonTlbHack</tabstop>
+  <tabstop>EETimingHack</tabstop>
+  <tabstop>InstantDMAHack</tabstop>
+  <tabstop>OPHFlagHack</tabstop>
+  <tabstop>GIFFIFOHack</tabstop>
+  <tabstop>DMABusyHack</tabstop>
+  <tabstop>VIF1StallHack</tabstop>
+  <tabstop>VIFFIFOHack</tabstop>
+  <tabstop>FullVU0SyncHack</tabstop>
+  <tabstop>IbitHack</tabstop>
+  <tabstop>VuAddSubHack</tabstop>
+  <tabstop>VUOverflowHack</tabstop>
+  <tabstop>VUSyncHack</tabstop>
+  <tabstop>XgKickHack</tabstop>
+  <tabstop>BlitInternalFPSHack</tabstop>
+ </tabstops>
  <resources>
   <include location="../resources/resources.qrc"/>
  </resources>

@@ -12,7 +12,7 @@
   </property>
   <layout class="QFormLayout" name="detailsFormLayout">
    <property name="fieldGrowthPolicy">
-    <enum>QFormLayout::ExpandingFieldsGrow</enum>
+    <enum>QFormLayout::FieldGrowthPolicy::ExpandingFieldsGrow</enum>
    </property>
    <property name="leftMargin">
     <number>0</number>
@@ -30,6 +30,9 @@
     <widget class="QLabel" name="label_title">
      <property name="text">
       <string>Title:</string>
+     </property>
+     <property name="buddy">
+      <cstring>title</cstring>
      </property>
     </widget>
    </item>
@@ -59,6 +62,9 @@
      <property name="text">
       <string extracomment="Name for use in sorting (e.g. &quot;XXX, The&quot; for a game called &quot;The XXX&quot;)">Sorting Title:</string>
      </property>
+     <property name="buddy">
+      <cstring>titleSort</cstring>
+     </property>
     </widget>
    </item>
    <item row="1" column="1">
@@ -72,6 +78,9 @@
     <widget class="QLabel" name="label_titleEN">
      <property name="text">
       <string>English Title:</string>
+     </property>
+     <property name="buddy">
+      <cstring>titleEN</cstring>
      </property>
     </widget>
    </item>
@@ -87,6 +96,9 @@
      <property name="text">
       <string>Path:</string>
      </property>
+     <property name="buddy">
+      <cstring>path</cstring>
+     </property>
     </widget>
    </item>
    <item row="3" column="1">
@@ -100,6 +112,9 @@
     <widget class="QLabel" name="label_serial">
      <property name="text">
       <string>Serial:</string>
+     </property>
+     <property name="buddy">
+      <cstring>serial</cstring>
      </property>
     </widget>
    </item>
@@ -129,6 +144,9 @@
      <property name="text">
       <string>CRC:</string>
      </property>
+     <property name="buddy">
+      <cstring>crc</cstring>
+     </property>
     </widget>
    </item>
    <item row="5" column="1">
@@ -142,6 +160,9 @@
     <widget class="QLabel" name="label_type">
      <property name="text">
       <string>Type:</string>
+     </property>
+     <property name="buddy">
+      <cstring>type</cstring>
      </property>
     </widget>
    </item>
@@ -189,6 +210,9 @@
     <widget class="QLabel" name="label_region">
      <property name="text">
       <string>Region:</string>
+     </property>
+     <property name="buddy">
+      <cstring>region</cstring>
      </property>
     </widget>
    </item>
@@ -371,6 +395,9 @@
      <property name="text">
       <string>Compatibility:</string>
      </property>
+     <property name="buddy">
+      <cstring>compatibility</cstring>
+     </property>
     </widget>
    </item>
    <item row="8" column="1">
@@ -384,6 +411,9 @@
     <widget class="QLabel" name="label_profile">
      <property name="text">
       <string>Input Profile:</string>
+     </property>
+     <property name="buddy">
+      <cstring>inputProfile</cstring>
      </property>
     </widget>
    </item>
@@ -406,6 +436,9 @@
     <widget class="QLabel" name="label_discPath">
      <property name="text">
       <string>Disc Path:</string>
+     </property>
+     <property name="buddy">
+      <cstring>discPath</cstring>
      </property>
     </widget>
    </item>
@@ -433,7 +466,7 @@
    <item row="11" column="0" colspan="2">
     <spacer name="verticalSpacer">
      <property name="orientation">
-      <enum>Qt::Vertical</enum>
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
@@ -448,7 +481,7 @@
      <item>
       <widget class="QTableWidget" name="tracks">
        <property name="editTriggers">
-        <set>QAbstractItemView::NoEditTriggers</set>
+        <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
        </property>
        <property name="cornerButtonEnabled">
         <bool>false</bool>
@@ -463,7 +496,7 @@
        <item>
         <spacer name="verifyButtonSpacer">
          <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+          <enum>Qt::Orientation::Horizontal</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -487,7 +520,7 @@
        <item row="2" column="2">
         <spacer name="verticalSpacer_2">
          <property name="orientation">
-          <enum>Qt::Vertical</enum>
+          <enum>Qt::Orientation::Vertical</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -529,6 +562,26 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>title</tabstop>
+  <tabstop>restoreTitle</tabstop>
+  <tabstop>titleSort</tabstop>
+  <tabstop>titleEN</tabstop>
+  <tabstop>path</tabstop>
+  <tabstop>serial</tabstop>
+  <tabstop>checkWiki</tabstop>
+  <tabstop>crc</tabstop>
+  <tabstop>type</tabstop>
+  <tabstop>region</tabstop>
+  <tabstop>restoreRegion</tabstop>
+  <tabstop>compatibility</tabstop>
+  <tabstop>inputProfile</tabstop>
+  <tabstop>discPath</tabstop>
+  <tabstop>discPathBrowse</tabstop>
+  <tabstop>discPathClear</tabstop>
+  <tabstop>tracks</tabstop>
+  <tabstop>verify</tabstop>
+ </tabstops>
  <resources>
   <include location="../resources/resources.qrc"/>
  </resources>

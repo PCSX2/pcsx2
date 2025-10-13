@@ -748,6 +748,20 @@
    <header>Settings/InputBindingWidget.h</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>Power</tabstop>
+  <tabstop>Brake</tabstop>
+  <tabstop>Up</tabstop>
+  <tabstop>Down</tabstop>
+  <tabstop>Left</tabstop>
+  <tabstop>Right</tabstop>
+  <tabstop>D</tabstop>
+  <tabstop>B</tabstop>
+  <tabstop>A</tabstop>
+  <tabstop>C</tabstop>
+  <tabstop>Select</tabstop>
+  <tabstop>Start</tabstop>
+ </tabstops>
  <resources>
   <include location="../resources/resources.qrc"/>
  </resources>

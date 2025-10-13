@@ -249,7 +249,7 @@
      <item>
       <spacer name="verticalSpacer_5">
        <property name="orientation">
-        <enum>Qt::Vertical</enum>
+        <enum>Qt::Orientation::Vertical</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -581,7 +581,7 @@
      <item>
       <spacer name="verticalSpacer_4">
        <property name="orientation">
-        <enum>Qt::Vertical</enum>
+        <enum>Qt::Orientation::Vertical</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -598,7 +598,7 @@
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -636,7 +636,7 @@
      <item>
       <spacer name="horizontalSpacer_2">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -697,7 +697,7 @@
      <item row="1" column="0" colspan="4">
       <spacer name="verticalSpacer">
        <property name="orientation">
-        <enum>Qt::Vertical</enum>
+        <enum>Qt::Orientation::Vertical</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -723,6 +723,23 @@
    <header>Settings/InputBindingWidget.h</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>Up</tabstop>
+  <tabstop>Down</tabstop>
+  <tabstop>Left</tabstop>
+  <tabstop>Right</tabstop>
+  <tabstop>I</tabstop>
+  <tabstop>II</tabstop>
+  <tabstop>A</tabstop>
+  <tabstop>B</tabstop>
+  <tabstop>L</tabstop>
+  <tabstop>R</tabstop>
+  <tabstop>TwistLeft</tabstop>
+  <tabstop>TwistRight</tabstop>
+  <tabstop>Start</tabstop>
+  <tabstop>LargeMotor</tabstop>
+  <tabstop>SmallMotor</tabstop>
+ </tabstops>
  <resources>
   <include location="../resources/resources.qrc"/>
  </resources>

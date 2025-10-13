@@ -27,6 +27,9 @@
           <property name="text">
            <string>Resolution:</string>
           </property>
+          <property name="buddy">
+           <cstring>screenshotSize</cstring>
+          </property>
          </widget>
         </item>
         <item>
@@ -78,6 +81,9 @@
           <property name="text">
            <string>Quality:</string>
           </property>
+          <property name="buddy">
+           <cstring>screenshotQuality</cstring>
+          </property>
          </widget>
         </item>
         <item>
@@ -112,6 +118,9 @@
         <property name="text">
          <string>Container:</string>
         </property>
+        <property name="buddy">
+         <cstring>captureContainer</cstring>
+        </property>
        </widget>
       </item>
       <item row="0" column="1">
@@ -145,6 +154,9 @@
              <property name="text">
               <string>Codec:</string>
              </property>
+             <property name="buddy">
+              <cstring>audioCaptureCodec</cstring>
+             </property>
             </widget>
            </item>
            <item row="0" column="1">
@@ -154,6 +166,9 @@
             <widget class="QLabel" name="audioCaptureBitrateLabel">
              <property name="text">
               <string>Bitrate:</string>
+             </property>
+             <property name="buddy">
+              <cstring>audioCaptureBitrate</cstring>
              </property>
             </widget>
            </item>
@@ -213,6 +228,9 @@
              <property name="text">
               <string>Codec:</string>
              </property>
+             <property name="buddy">
+              <cstring>videoCaptureCodec</cstring>
+             </property>
             </widget>
            </item>
            <item row="0" column="1">
@@ -223,6 +241,9 @@
              <property name="text">
               <string>Format:</string>
              </property>
+             <property name="buddy">
+              <cstring>videoCaptureFormat</cstring>
+             </property>
             </widget>
            </item>
            <item row="1" column="1">
@@ -232,6 +253,9 @@
             <widget class="QLabel" name="videoCaptureBitrateLabel">
              <property name="text">
               <string>Bitrate:</string>
+             </property>
+             <property name="buddy">
+              <cstring>videoCaptureBitrate</cstring>
              </property>
             </widget>
            </item>
@@ -255,6 +279,9 @@
             <widget class="QLabel" name="videoCaptureResolutionLabel">
              <property name="text">
               <string>Resolution:</string>
+             </property>
+             <property name="buddy">
+              <cstring>videoCaptureWidth</cstring>
              </property>
             </widget>
            </item>
@@ -280,6 +307,9 @@
               <widget class="QLabel" name="xLabel">
                <property name="text">
                 <string>x</string>
+               </property>
+               <property name="buddy">
+                <cstring>videoCaptureHeight</cstring>
                </property>
               </widget>
              </item>
@@ -336,7 +366,7 @@
    <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
-      <enum>Qt::Vertical</enum>
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
@@ -348,6 +378,26 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>screenshotSize</tabstop>
+  <tabstop>screenshotFormat</tabstop>
+  <tabstop>screenshotQuality</tabstop>
+  <tabstop>captureContainer</tabstop>
+  <tabstop>enableVideoCapture</tabstop>
+  <tabstop>videoCaptureCodec</tabstop>
+  <tabstop>videoCaptureFormat</tabstop>
+  <tabstop>videoCaptureBitrate</tabstop>
+  <tabstop>videoCaptureWidth</tabstop>
+  <tabstop>videoCaptureHeight</tabstop>
+  <tabstop>videoCaptureResolutionAuto</tabstop>
+  <tabstop>enableVideoCaptureArguments</tabstop>
+  <tabstop>videoCaptureArguments</tabstop>
+  <tabstop>enableAudioCapture</tabstop>
+  <tabstop>audioCaptureCodec</tabstop>
+  <tabstop>audioCaptureBitrate</tabstop>
+  <tabstop>enableAudioCaptureArguments</tabstop>
+  <tabstop>audioCaptureArguments</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

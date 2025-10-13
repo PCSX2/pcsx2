@@ -3,7 +3,7 @@
  <class>AutoUpdaterDialog</class>
  <widget class="QDialog" name="AutoUpdaterDialog">
   <property name="windowModality">
-   <enum>Qt::ApplicationModal</enum>
+   <enum>Qt::WindowModality::ApplicationModal</enum>
   </property>
   <property name="geometry">
    <rect>
@@ -91,7 +91,7 @@
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -132,6 +132,12 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>updateNotes</tabstop>
+  <tabstop>downloadAndInstall</tabstop>
+  <tabstop>skipThisUpdate</tabstop>
+  <tabstop>remindMeLater</tabstop>
+ </tabstops>
  <resources>
   <include location="resources/resources.qrc"/>
  </resources>

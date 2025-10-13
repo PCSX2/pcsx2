@@ -214,6 +214,15 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>viewGameList</tabstop>
+  <tabstop>viewGameGrid</tabstop>
+  <tabstop>viewGridTitles</tabstop>
+  <tabstop>gridScale</tabstop>
+  <tabstop>filterType</tabstop>
+  <tabstop>filterRegion</tabstop>
+  <tabstop>searchText</tabstop>
+ </tabstops>
  <resources>
   <include location="../resources/resources.qrc"/>
  </resources>

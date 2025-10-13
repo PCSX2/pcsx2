@@ -31,6 +31,9 @@
         <property name="text">
          <string>Hardware Download Mode:</string>
         </property>
+        <property name="buddy">
+         <cstring>gsDownloadMode</cstring>
+        </property>
        </widget>
       </item>
       <item row="0" column="1">
@@ -61,6 +64,9 @@
        <widget class="QLabel" name="gsDumpCompressionLabel">
         <property name="text">
          <string>GS Dump Compression:</string>
+        </property>
+        <property name="buddy">
+         <cstring>gsDumpCompression</cstring>
         </property>
        </widget>
       </item>
@@ -127,6 +133,9 @@
         <property name="text">
          <string>Allow Exclusive Fullscreen:</string>
         </property>
+        <property name="buddy">
+         <cstring>exclusiveFullscreenControl</cstring>
+        </property>
        </widget>
       </item>
       <item row="6" column="1">
@@ -172,6 +181,9 @@
         <property name="text">
          <string>Texture Preloading:</string>
         </property>
+        <property name="buddy">
+         <cstring>texturePreloading</cstring>
+        </property>
        </widget>
       </item>
      </layout>
@@ -187,6 +199,9 @@
        <widget class="QLabel" name="ntscLabel">
         <property name="text">
          <string>NTSC Frame Rate:</string>
+        </property>
+        <property name="buddy">
+         <cstring>ntscFrameRate</cstring>
         </property>
        </widget>
       </item>
@@ -210,6 +225,9 @@
        <widget class="QLabel" name="palLabel">
         <property name="text">
          <string>PAL Frame Rate:</string>
+        </property>
+        <property name="buddy">
+         <cstring>palFrameRate</cstring>
         </property>
        </widget>
       </item>
@@ -248,6 +266,9 @@
        <widget class="QLabel" name="barriersLabel">
         <property name="text">
          <string>Override Texture Barriers:</string>
+        </property>
+        <property name="buddy">
+         <cstring>overrideTextureBarriers</cstring>
         </property>
        </widget>
       </item>
@@ -308,7 +329,7 @@
    <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
-      <enum>Qt::Vertical</enum>
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
@@ -320,6 +341,24 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>gsDownloadMode</tabstop>
+  <tabstop>gsDumpCompression</tabstop>
+  <tabstop>texturePreloading</tabstop>
+  <tabstop>exclusiveFullscreenControl</tabstop>
+  <tabstop>useBlitSwapChain</tabstop>
+  <tabstop>extendedUpscales</tabstop>
+  <tabstop>disableMailboxPresentation</tabstop>
+  <tabstop>spinCPUDuringReadbacks</tabstop>
+  <tabstop>spinGPUDuringReadbacks</tabstop>
+  <tabstop>ntscFrameRate</tabstop>
+  <tabstop>palFrameRate</tabstop>
+  <tabstop>overrideTextureBarriers</tabstop>
+  <tabstop>useDebugDevice</tabstop>
+  <tabstop>disableFramebufferFetch</tabstop>
+  <tabstop>disableShaderCache</tabstop>
+  <tabstop>disableVertexShaderExpand</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

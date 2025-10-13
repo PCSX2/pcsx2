@@ -19,6 +19,9 @@
      <property name="text">
       <string>Select Hosts</string>
      </property>
+     <property name="buddy">
+      <cstring>hostList</cstring>
+     </property>
     </widget>
    </item>
    <item>
@@ -36,7 +39,7 @@
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -64,6 +67,11 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>hostList</tabstop>
+  <tabstop>btnOK</tabstop>
+  <tabstop>btnCancel</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
