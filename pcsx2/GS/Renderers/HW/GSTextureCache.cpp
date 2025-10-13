@@ -2486,9 +2486,10 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 					// 896 is just 448 * 2,just gives the buffer chance to be larger than normal, in case they do something like 640x640, or something ridiculous.
 					if (!is_shuffle && (ds && offset == 0 && (t->m_valid.w >= 896) && ((((t->m_end_block + 1) - t->m_TEX0.TBP0) >> 1) + t->m_TEX0.TBP0) <= bp))
 					{
-						u32 offset = (((bp - t->m_TEX0.TBP0) >> 5) / std::max(t->m_TEX0.TBW, 1U)) * s_psm.pgs.y;
-						dst = CreateTarget(TEX0, GSVector2i(t->m_valid.z, t->m_valid.w - offset), GSVector2i(t->m_valid.z, t->m_valid.w - offset), scale, type, true, fbmask, false, false, preserve_rgb || preserve_alpha, GSVector4i::zero(), src);
-						dst->m_32_bits_fmt |= (psm_s.bpp != 16);
+						const u32 local_offset = (((bp - t->m_TEX0.TBP0) >> 5) / std::max(t->m_TEX0.TBW, 1U)) * s_psm.pgs.y;
+						if ((dst = CreateTarget(TEX0, GSVector2i(t->m_valid.z, t->m_valid.w - local_offset), GSVector2i(t->m_valid.z, t->m_valid.w - local_offset), scale, type, true, fbmask, false, false, preserve_rgb || preserve_alpha, GSVector4i::zero(), src)))
+							dst->m_32_bits_fmt |= (psm_s.bpp != 16);
+
 						break;
 					}
 
