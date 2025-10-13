@@ -413,6 +413,7 @@ PAPX-90504:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
 PAPX-90505:
   name: "2002 夏のオススメソフト おためしDisc"
@@ -446,6 +447,7 @@ PAPX-90508:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
 PAPX-90511:
   name: "SIREN [体験版]"
@@ -466,6 +468,7 @@ PAPX-90512:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
 PAPX-90514:
   name: "冬のオススメソフト おためしDISC"
@@ -522,6 +525,7 @@ PAPX-90523:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
 PAPX-90524:
   name: "ワイルドアームズ ザ フィフスヴァンガード [体験版]"
@@ -1101,6 +1105,7 @@ PCPX-96634:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
 PCPX-96635:
   name: "プレプレ2 VOLUME.8"
@@ -1143,6 +1148,7 @@ PCPX-96649:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
 PCPX-96653:
   name: "ラチェット&クランク3 突撃！ガラクチック★レンジャーズ [店頭体験版]"
@@ -2419,6 +2425,7 @@ SCAJ-20179:
     halfPixelOffset: 4 # Fixes lighting misalignment.
     nativeScaling: 2 # Fixes lighting smoothness.
     textureInsideRT: 1 # Fixes broken crystalline surface textures.
+    bilinearUpscale: 2 # Fixes off axis texture corruption in some areas.
 SCAJ-20180:
   name: "Xenosaga Episode III - Also Sprach Zarathustra [Disc 2 of 2]"
   region: "NTSC-Unk"
@@ -2427,6 +2434,7 @@ SCAJ-20180:
     halfPixelOffset: 4 # Fixes lighting misalignment.
     nativeScaling: 2 # Fixes lighting smoothness.
     textureInsideRT: 1 # Fixes broken crystalline surface textures.
+    bilinearUpscale: 2 # Fixes off axis texture corruption in some areas.
 SCAJ-20181:
   name: "Minna no Tennis"
   region: "NTSC-Unk"
@@ -3231,6 +3239,7 @@ SCED-51352:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
 SCED-51359:
   name: "Official PlayStation 2 Magazine Demo 27"
@@ -3820,6 +3829,7 @@ SCED-52578:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
 SCED-52580:
   name: "Magazine Ufficiale PlayStation 2 Italia 06/04"
@@ -3836,6 +3846,7 @@ SCED-52681:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
 SCED-52687:
   name: "Formula One 04 [Demo]"
@@ -4019,7 +4030,7 @@ SCED-52952:
     cpuSpriteRenderBW: 4 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 2 # Fixes lighting.
-    halfPixelOffset: 4 # Aligns post-processing.
+    halfPixelOffset: 5 # Aligns post-processing and fixes desert tiles.
     nativeScaling: 2 # Fixes lighting effects due to upscaling.
 SCED-52969:
   name: "EyeToy - Play 2"
@@ -5745,7 +5756,7 @@ SCES-52460:
     cpuSpriteRenderBW: 4 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 2 # Fixes lighting.
-    halfPixelOffset: 4 # Aligns post-processing.
+    halfPixelOffset: 5 # Aligns post-processing and fixes desert tiles.
     nativeScaling: 2 # Fixes lighting effects due to upscaling.
 SCES-52529:
   name: "Sly 2 - Band of Thieves"
@@ -7386,7 +7397,7 @@ SCKA-20040:
     cpuSpriteRenderBW: 4 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 2 # Fixes lighting.
-    halfPixelOffset: 4 # Aligns post-processing.
+    halfPixelOffset: 5 # Aligns post-processing and fixes desert tiles.
     nativeScaling: 2 # Fixes lighting effects due to upscaling.
 SCKA-20041:
   name: "아이토이 - 플레이 2"
@@ -8283,6 +8294,7 @@ SCPM-85301:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
 SCPM-85302:
   name: "みんなのGOLF オンライン"
@@ -8302,6 +8314,7 @@ SCPM-85304:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
 SCPN-60101:
   name: "PlayStation BB Navigator - Version 0.10 [Prerelease] [Disc 1]"
@@ -11798,7 +11811,7 @@ SCUS-97330:
     cpuSpriteRenderBW: 4 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 2 # Fixes lighting.
-    halfPixelOffset: 4 # Aligns post-processing.
+    halfPixelOffset: 5 # Aligns post-processing and fixes desert tiles.
     nativeScaling: 2 # Fixes lighting effects due to upscaling.
 SCUS-97331:
   name: "Official U.S. PlayStation Magazine Demo Disc 078"
@@ -11976,6 +11989,7 @@ SCUS-97384:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
 SCUS-97392:
   name: "NBA '06 featuring The Life Vol.1 [Demo]"
@@ -12082,7 +12096,7 @@ SCUS-97412:
     cpuSpriteRenderBW: 4 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 2 # Fixes lighting.
-    halfPixelOffset: 4 # Aligns post-processing.
+    halfPixelOffset: 5 # Aligns post-processing and fixes desert tiles.
     nativeScaling: 2 # Fixes lighting effects due to upscaling.
 SCUS-97413:
   name: "Ratchet & Clank - Up Your Arsenal [Public Beta v1.0]"
@@ -12188,6 +12202,7 @@ SCUS-97436:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
   memcardFilters:
     - "SCUS-97328"
@@ -12410,6 +12425,7 @@ SCUS-97483:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
 SCUS-97484:
   name: "Sly 3 - Honor Among Thieves [E3 Demo]"
@@ -12620,7 +12636,7 @@ SCUS-97516:
     cpuSpriteRenderBW: 4 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 2 # Fixes lighting.
-    halfPixelOffset: 4 # Aligns post-processing.
+    halfPixelOffset: 5 # Aligns post-processing and fixes desert tiles.
     nativeScaling: 2 # Fixes lighting effects due to upscaling.
 SCUS-97517:
   name: "Killzone [Greatest Hits]"
@@ -15495,6 +15511,8 @@ SLES-50510:
 SLES-50511:
   name: "G-Surfers"
   region: "PAL-M3"
+  gsHWFixes:
+    recommendedBlendingLevel: 2 # Improves character portraits.
 SLES-50512:
   name: "Bass Strike"
   region: "PAL-E"
@@ -36597,6 +36615,7 @@ SLPM-61147:
     halfPixelOffset: 4 # Fixes lighting misalignment.
     nativeScaling: 2 # Fixes lighting smoothness.
     textureInsideRT: 1 # Fixes broken crystalline surface textures.
+    bilinearUpscale: 2 # Fixes off axis texture corruption in some areas.
 SLPM-61148:
   name: "グローランサーⅤ ジェネレーションズ [体験版]"
   name-sort: "ぐろーらんさー5 じぇねれーしょんず [たいけんばん]"
@@ -60557,6 +60576,7 @@ SLPS-25640:
     halfPixelOffset: 4 # Fixes lighting misalignment.
     nativeScaling: 2 # Fixes lighting smoothness.
     textureInsideRT: 1 # Fixes broken crystalline surface textures.
+    bilinearUpscale: 2 # Fixes off axis texture corruption in some areas.
   memcardFilters: # Allows import of Xenosaga II save data.
     - "SLPS-25640"
     - "SLPS-25368"
@@ -60571,6 +60591,7 @@ SLPS-25641:
     halfPixelOffset: 4 # Fixes lighting misalignment.
     nativeScaling: 2 # Fixes lighting smoothness.
     textureInsideRT: 1 # Fixes broken crystalline surface textures.
+    bilinearUpscale: 2 # Fixes off axis texture corruption in some areas.
   memcardFilters:
     - "SLPS-25640"
     - "SLPS-25368"
@@ -66457,9 +66478,11 @@ SLUS-20591:
     halfPixelOffset: 4 # Aligns post effects.
     nativeScaling: 2 # Fixes post-processing and lighting smoothness and position.
 SLUS-20592:
-  name: "HyperSonic Xtreme - HSX"
+  name: "HSX - HyperSonic - Xtreme"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    recommendedBlendingLevel: 2 # Improves character portraits.
 SLUS-20593:
   name: "Magic Pengel - The Quest for Color"
   region: "NTSC-U"
@@ -67544,6 +67567,8 @@ SLUS-20789:
   name: "Jeopardy!"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 5 # Fixes menus.
 SLUS-20790:
   name: "Wheel of Fortune"
   region: "NTSC-U"
@@ -71390,6 +71415,7 @@ SLUS-21389:
     halfPixelOffset: 4 # Fixes lighting misalignment.
     nativeScaling: 2 # Fixes lighting smoothness.
     textureInsideRT: 1 # Fixes broken crystalline surface textures.
+    bilinearUpscale: 2 # Fixes off axis texture corruption in some areas.
   memcardFilters: # Allows import of Xenosaga II save data.
     - "SLUS-21389"
     - "SLUS-20892"
@@ -71560,6 +71586,7 @@ SLUS-21417:
     halfPixelOffset: 4 # Fixes lighting misalignment.
     nativeScaling: 2 # Fixes lighting smoothness.
     textureInsideRT: 1 # Fixes broken crystalline surface textures.
+    bilinearUpscale: 2 # Fixes off axis texture corruption in some areas.
   memcardFilters:
     - "SLUS-21389"
     - "SLUS-20892"
