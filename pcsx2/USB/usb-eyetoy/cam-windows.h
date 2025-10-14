@@ -83,7 +83,7 @@ namespace usb_eyetoy
 			int InitializeDevice(const std::wstring& selectedDevice);
 
 		private:
-			wil::unique_couninitialize_call dshowCoInitialize;
+			wil::unique_couninitialize_call dshowCoInitialize{false};
 			ICaptureGraphBuilder2* pGraphBuilder;
 			IFilterGraph2* pGraph;
 			IMediaControl* pControl;
