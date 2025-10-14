@@ -1,7 +1,10 @@
 // SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
+#include <QtWidgets/QApplication>
 #include <QtWidgets/QLineEdit>
+#include <QtWidgets/QComboBox>
+#include <QtWidgets/QSpinBox>
 
 #include "DEV9UiCommon.h"
 
@@ -65,6 +68,76 @@ void IPItemDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, co
 }
 
 void IPItemDelegate::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+	editor->setGeometry(option.rect);
+}
+
+ComboBoxItemDelegate::ComboBoxItemDelegate(QObject* parent, const char** items, const char* translation_ctx)
+	: QStyledItemDelegate(parent)
+	, m_items{items}
+	, m_translation_ctx{translation_ctx}
+{
+}
+
+QWidget* ComboBoxItemDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+	QComboBox* editor = new QComboBox(parent);
+
+	for (int i = 0; m_items[i] != nullptr; i++)
+		editor->addItem(m_translation_ctx ? qApp->translate(m_translation_ctx, m_items[i]) : QString::fromUtf8(m_items[i]));
+
+	return editor;
+}
+
+void ComboBoxItemDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
+{
+	QString value = index.model()->data(index, Qt::EditRole).toString();
+	QComboBox* cBox = static_cast<QComboBox*>(editor);
+	cBox->setCurrentIndex(cBox->findText(value));
+}
+
+void ComboBoxItemDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
+{
+	QComboBox* cBox = static_cast<QComboBox*>(editor);
+	QString value = cBox->currentText();
+	model->setData(index, value, Qt::EditRole);
+}
+
+void ComboBoxItemDelegate::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+	editor->setGeometry(option.rect);
+}
+
+SpinBoxItemDelegate::SpinBoxItemDelegate(QObject* parent, int min, int max)
+	: QStyledItemDelegate(parent)
+	, m_min{min}
+	, m_max{max}
+{
+}
+
+QWidget* SpinBoxItemDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+	QSpinBox* editor = new QSpinBox(parent);
+	editor->setMinimum(m_min);
+	editor->setMaximum(m_max);
+	return editor;
+}
+
+void SpinBoxItemDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
+{
+	int value = index.model()->data(index, Qt::EditRole).toInt();
+	QSpinBox* sBox = static_cast<QSpinBox*>(editor);
+	sBox->setValue(value);
+}
+
+void SpinBoxItemDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
+{
+	QSpinBox* sBox = static_cast<QSpinBox*>(editor);
+	int value = sBox->value();
+	model->setData(index, value, Qt::EditRole);
+}
+
+void SpinBoxItemDelegate::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
 	editor->setGeometry(option.rect);
 }

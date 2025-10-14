@@ -137,12 +137,12 @@ DEV9SettingsWidget::DEV9SettingsWidget(SettingsWindow* settings_dialog, QWidget*
 	//////////////////////////////////////////////////////////////////////////
 	m_ethHost_model = new QStandardItemModel(0, 4, m_ui.ethHosts);
 
-	QStringList headers;
-	headers.push_back(tr("Name"));
-	headers.push_back(tr("Url"));
-	headers.push_back(tr("Address"));
-	headers.push_back(tr("Enabled"));
-	m_ethHost_model->setHorizontalHeaderLabels(headers);
+	QStringList hostHeaders;
+	hostHeaders.push_back(tr("Name"));
+	hostHeaders.push_back(tr("Url"));
+	hostHeaders.push_back(tr("Address"));
+	hostHeaders.push_back(tr("Enabled"));
+	m_ethHost_model->setHorizontalHeaderLabels(hostHeaders);
 
 	connect(m_ethHost_model, QOverload<QStandardItem*>::of(&QStandardItemModel::itemChanged), this, &DEV9SettingsWidget::onEthHostEdit);
 
@@ -163,6 +163,36 @@ DEV9SettingsWidget::DEV9SettingsWidget(SettingsWindow* settings_dialog, QWidget*
 	connect(m_ui.ethHostImport, &QPushButton::clicked, this, &DEV9SettingsWidget::onEthHostImport);
 
 	connect(m_ui.ethHostPerGame, &QPushButton::clicked, this, &DEV9SettingsWidget::onEthHostPerGame);
+
+	//////////////////////////////////////////////////////////////////////////
+	// Port Settings
+	//////////////////////////////////////////////////////////////////////////
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.ethLanMode, "DEV9/Eth", "LanMode", false);
+
+	m_ethPort_model = new QStandardItemModel(0, 4, m_ui.ethOpenPorts);
+
+	QStringList portHeaders;
+	portHeaders.push_back(tr("Name"));
+	portHeaders.push_back(tr("Protocol"));
+	portHeaders.push_back(tr("Port"));
+	portHeaders.push_back(tr("Enabled"));
+	m_ethPort_model->setHorizontalHeaderLabels(portHeaders);
+
+	connect(m_ethPort_model, QOverload<QStandardItem*>::of(&QStandardItemModel::itemChanged), this, &DEV9SettingsWidget::onEthPortEdit);
+
+	m_ethPorts_proxy = new QSortFilterProxyModel(m_ui.ethOpenPorts);
+	m_ethPorts_proxy->setSourceModel(m_ethPort_model);
+
+	m_ui.ethOpenPorts->setModel(m_ethPorts_proxy);
+	m_ui.ethOpenPorts->setItemDelegateForColumn(1, new ComboBoxItemDelegate(m_ui.ethOpenPorts, Pcsx2Config::DEV9Options::PortModeNames, "DEV9SettingsWidget"));
+	m_ui.ethOpenPorts->setItemDelegateForColumn(2, new SpinBoxItemDelegate(m_ui.ethOpenPorts, 0, UINT16_MAX));
+
+	RefreshPortList();
+
+	m_ui.ethOpenPorts->installEventFilter(this);
+
+	connect(m_ui.ethPortAdd, &QPushButton::clicked, this, &DEV9SettingsWidget::onEthPortAdd);
+	connect(m_ui.ethPortDel, &QPushButton::clicked, this, &DEV9SettingsWidget::onEthPortDel);
 
 	//////////////////////////////////////////////////////////////////////////
 	// HDD Settings
@@ -268,6 +298,8 @@ void DEV9SettingsWidget::onEthDeviceTypeChanged(int index)
 	m_ui.ethInterceptDHCPLabel->setEnabled((m_adapter_options & AdapterOptions::DHCP_ForcedOn) == AdapterOptions::None);
 	m_ui.ethInterceptDHCP->setEnabled((m_adapter_options & AdapterOptions::DHCP_ForcedOn) == AdapterOptions::None);
 	onEthDHCPInterceptChanged(m_ui.ethInterceptDHCP->checkState());
+	
+	m_ui.ethTabWidget->setTabVisible(2, (m_adapter_options & AdapterOptions::HasPortForwarding) == AdapterOptions::HasPortForwarding);
 }
 
 void DEV9SettingsWidget::onEthDeviceChanged(int index)
@@ -591,6 +623,102 @@ void DEV9SettingsWidget::onEthHostEdit(QStandardItem* item)
 	}
 }
 
+void DEV9SettingsWidget::onEthPortAdd()
+{
+	PortEntryUi port;
+	port.Desc = "New Port";
+	port.Protocol = "UDP";
+	port.Enabled = false;
+	AddNewPortConfig(port);
+
+	//Select new Item
+	const QModelIndex viewIndex = m_ethPorts_proxy->mapFromSource(m_ethPort_model->index(m_ethPort_model->rowCount() - 1, 1));
+	m_ui.ethOpenPorts->scrollTo(viewIndex, QAbstractItemView::EnsureVisible);
+	m_ui.ethOpenPorts->selectionModel()->setCurrentIndex(viewIndex, QItemSelectionModel::ClearAndSelect);
+}
+
+void DEV9SettingsWidget::onEthPortDel()
+{
+	if (m_ui.ethOpenPorts->selectionModel()->hasSelection())
+	{
+		const QModelIndex selectedIndex = m_ui.ethOpenPorts->selectionModel()->currentIndex();
+		const int modelRow = m_ethPorts_proxy->mapToSource(selectedIndex).row();
+		DeletePortConfig(modelRow);
+	}
+}
+
+void DEV9SettingsWidget::onEthPortPerGame()
+{
+	const std::optional<int> portLengthOpt = dialog()->getIntValue("DEV9/Eth/Ports", "Count", std::nullopt);
+	if (!portLengthOpt.has_value())
+	{
+		QMessageBox::StandardButton ret = QMessageBox::question(this, tr("Per Game Port list"),
+			tr("Copy global settings?"),
+			QMessageBox::StandardButton::Yes | QMessageBox::StandardButton::No | QMessageBox::StandardButton::Cancel, QMessageBox::StandardButton::Yes);
+
+		switch (ret)
+		{
+			case QMessageBox::StandardButton::No:
+				dialog()->setIntSettingValue("DEV9/Eth/Ports", "Count", 0);
+				break;
+
+			case QMessageBox::StandardButton::Yes:
+			{
+				dialog()->setIntSettingValue("DEV9/Eth/Ports", "Count", 0);
+				std::vector<PortEntryUi> ports = ListBasePortsConfig();
+				for (size_t i = 0; i < ports.size(); i++)
+					AddNewPortConfig(ports[i]);
+				break;
+			}
+
+			case QMessageBox::StandardButton::Cancel:
+				return;
+
+			default:
+				return;
+		}
+	}
+	else
+	{
+		QMessageBox::StandardButton ret = QMessageBox::question(this, tr("Per Game Port list"),
+			tr("Delete per game port list?"),
+			QMessageBox::StandardButton::Yes | QMessageBox::StandardButton::Cancel, QMessageBox::StandardButton::Yes);
+
+		if (ret == QMessageBox::StandardButton::Yes)
+		{
+			const int hostLength = CountPortsConfig();
+			for (int i = hostLength - 1; i >= 0; i--)
+				DeletePortConfig(i);
+		}
+		dialog()->setIntSettingValue("DEV9/Eth/Ports", nullptr, std::nullopt);
+	}
+
+	RefreshHostList();
+}
+
+void DEV9SettingsWidget::onEthPortEdit(QStandardItem* item)
+{
+	const int row = item->row();
+	std::string section = "DEV9/Eth/Ports/Port" + std::to_string(row);
+	switch (item->column())
+	{
+		case 0: //Name
+			dialog()->setStringSettingValue(section.c_str(), "Desc", item->text().toUtf8().constData());
+			break;
+		case 1: //Protocol
+			dialog()->setStringSettingValue(section.c_str(), "Protocol", item->text().toUtf8().constData());
+			break;
+		case 2: //Port
+			dialog()->setIntSettingValue(section.c_str(), "Port", item->data(Qt::EditRole).toInt());
+			break;
+		case 3: //Enabled
+			dialog()->setBoolSettingValue(section.c_str(), "Enabled", item->checkState() == Qt::CheckState::Checked);
+			break;
+		default:
+			break;
+	}
+}
+
 void DEV9SettingsWidget::onHddEnabledChanged(Qt::CheckState state)
 {
 	const bool enabled = state == Qt::CheckState::PartiallyChecked ? Host::GetBaseBoolSettingValue("DEV9/Hdd", "HddEnable", false) : state;
@@ -806,6 +934,14 @@ bool DEV9SettingsWidget::eventFilter(QObject* object, QEvent* event)
 			QtUtils::ResizeColumnsForTableView(m_ui.ethHosts, {-1, 170, 90, 80});
 		else if (event->type() == QEvent::Show)
 			QtUtils::ResizeColumnsForTableView(m_ui.ethHosts, {-1, 170, 90, 80});
+	}
+	if (object == m_ui.ethOpenPorts)
+	{
+		//Check isVisible to avoind an unnessecery call to ResizeColumnsForTableView()
+		if (event->type() == QEvent::Resize && m_ui.ethOpenPorts->isVisible())
+			QtUtils::ResizeColumnsForTableView(m_ui.ethOpenPorts, {-1, 90, 170, 80});
+		else if (event->type() == QEvent::Show)
+			QtUtils::ResizeColumnsForTableView(m_ui.ethOpenPorts, {-1, 90, 170, 80});
 	}
 	return false;
 }
@@ -1080,6 +1216,173 @@ void DEV9SettingsWidget::DeleteHostConfig(int index)
 
 	dialog()->setIntSettingValue("DEV9/Eth/Hosts", "Count", hostLength - 1);
 	RefreshHostList();
+}
+
+void DEV9SettingsWidget::RefreshPortList()
+{
+	while (m_ethPort_model->rowCount() > 0)
+		m_ethPort_model->removeRow(0);
+
+	bool enableHostsUi;
+
+	std::vector<PortEntryUi> ports;
+
+	if (dialog()->isPerGameSettings())
+	{
+		m_ui.ethPortPerGame->setVisible(true);
+
+		std::optional<std::vector<PortEntryUi>> portOpt = ListPortsConfig();
+		if (portOpt.has_value())
+		{
+			m_ui.ethPortPerGame->setText(tr("Use Global"));
+			ports = portOpt.value();
+			enableHostsUi = true;
+		}
+		else
+		{
+			m_ui.ethPortPerGame->setText(tr("Override"));
+			ports = ListBasePortsConfig();
+			enableHostsUi = false;
+		}
+	}
+	else
+	{
+		m_ui.ethPortPerGame->setVisible(false);
+		ports = ListPortsConfig().value();
+		enableHostsUi = true;
+	}
+
+	m_ui.ethOpenPorts->setEnabled(enableHostsUi);
+	m_ui.ethPortAdd->setEnabled(enableHostsUi);
+	m_ui.ethPortDel->setEnabled(enableHostsUi);
+
+	//Load list
+	for (size_t i = 0; i < ports.size(); i++)
+	{
+		PortEntryUi entry = ports[i];
+		const int row = m_ethPort_model->rowCount();
+		m_ethPort_model->insertRow(row);
+
+		QSignalBlocker sb(m_ethPort_model);
+
+		QStandardItem* nameItem = new QStandardItem();
+		nameItem->setText(QString::fromStdString(entry.Desc));
+		m_ethPort_model->setItem(row, 0, nameItem);
+
+		QStandardItem* protocolItem = new QStandardItem();
+		protocolItem->setText(QString::fromStdString(entry.Protocol));
+		protocolItem->setEditable(false); // Only UDP Supported
+		m_ethPort_model->setItem(row, 1, protocolItem);
+
+		QStandardItem* addressItem = new QStandardItem();
+		addressItem->setData(entry.Port, Qt::EditRole);
+		m_ethPort_model->setItem(row, 2, addressItem);
+
+		QStandardItem* enabledItem = new QStandardItem();
+		enabledItem->setEditable(false);
+		enabledItem->setCheckable(true);
+		enabledItem->setCheckState(entry.Enabled ? Qt::CheckState::Checked : Qt::CheckState::Unchecked);
+		m_ethPort_model->setItem(row, 3, enabledItem);
+	}
+
+	m_ui.ethOpenPorts->sortByColumn(0, Qt::AscendingOrder);
+}
+
+int DEV9SettingsWidget::CountPortsConfig()
+{
+	return dialog()->getIntValue("DEV9/Eth/Ports", "Count", 0).value();
+}
+
+std::optional<std::vector<PortEntryUi>> DEV9SettingsWidget::ListPortsConfig()
+{
+	std::vector<PortEntryUi> ports;
+
+	std::optional<int> hostLengthOpt;
+	if (dialog()->isPerGameSettings())
+	{
+		hostLengthOpt = dialog()->getIntValue("DEV9/Eth/Ports", "Count", std::nullopt);
+		if (!hostLengthOpt.has_value())
+			return std::nullopt;
+	}
+	else
+		hostLengthOpt = dialog()->getIntValue("DEV9/Eth/Ports", "Count", 0);
+
+	const int hostLength = hostLengthOpt.value();
+	for (int i = 0; i < hostLength; i++)
+	{
+		std::string section = "DEV9/Eth/Ports/Port" + std::to_string(i);
+
+		PortEntryUi entry;
+		entry.Protocol = dialog()->getStringValue(section.c_str(), "Protocol", "UDP").value();
+		entry.Desc = dialog()->getStringValue(section.c_str(), "Desc", "").value();
+		entry.Port = dialog()->getIntValue(section.c_str(), "Port", 0).value();
+		entry.Enabled = dialog()->getBoolValue(section.c_str(), "Enabled", false).value();
+		ports.push_back(entry);
+	}
+
+	return ports;
+}
+
+std::vector<PortEntryUi> DEV9SettingsWidget::ListBasePortsConfig()
+{
+	std::vector<PortEntryUi> hosts;
+
+	const int hostLength = Host::GetBaseIntSettingValue("DEV9/Eth/Ports", "Count", 0);
+	for (int i = 0; i < hostLength; i++)
+	{
+		std::string section = "DEV9/Eth/Ports/Port" + std::to_string(i);
+
+		PortEntryUi entry;
+		entry.Protocol = Host::GetBaseStringSettingValue(section.c_str(), "Protocol", "UDP");
+		entry.Desc = Host::GetBaseStringSettingValue(section.c_str(), "Desc", "");
+		entry.Port = Host::GetBaseIntSettingValue(section.c_str(), "Address", 0);
+		entry.Enabled = Host::GetBaseBoolSettingValue(section.c_str(), "Enabled", false);
+		hosts.push_back(entry);
+	}
+
+	return hosts;
+}
+
+void DEV9SettingsWidget::AddNewPortConfig(const PortEntryUi& port)
+{
+	const int portLength = CountPortsConfig();
+	std::string section = "DEV9/Eth/Ports/Port" + std::to_string(portLength);
+	// clang-format off
+	dialog()->setIntSettingValue   (section.c_str(), "Port",     port.Port);
+	dialog()->setStringSettingValue(section.c_str(), "Desc",     port.Desc.c_str());
+	dialog()->setStringSettingValue(section.c_str(), "Protocol", port.Protocol.c_str());
+	dialog()->setBoolSettingValue  (section.c_str(), "Enabled",  port.Enabled);
+	// clang-format on
+	dialog()->setIntSettingValue("DEV9/Eth/Ports", "Count", portLength + 1);
+	RefreshPortList();
+}
+
+void DEV9SettingsWidget::DeletePortConfig(int index)
+{
+	const int portLength = CountPortsConfig();
+
+	//Shuffle entries down to ovewrite deleted entry
+	for (int i = index; i < portLength - 1; i++)
+	{
+		std::string section = "DEV9/Eth/Ports/Port" + std::to_string(i);
+		std::string sectionAhead = "DEV9/Eth/Ports/Port" + std::to_string(i + 1);
+
+		// clang-format off
+		dialog()->setIntSettingValue   (section.c_str(), "Port",     dialog()->getIntValue   (sectionAhead.c_str(), "Url",     0).value());
+		dialog()->setStringSettingValue(section.c_str(), "Desc",     dialog()->getStringValue(sectionAhead.c_str(), "Desc",    "").value().c_str());
+		dialog()->setStringSettingValue(section.c_str(), "Protocol", dialog()->getStringValue(sectionAhead.c_str(), "Address", "UDP").value().c_str());
+		dialog()->setBoolSettingValue  (section.c_str(), "Enabled",	 dialog()->getBoolValue  (sectionAhead.c_str(), "Enabled", false).value());
+		// clang-format on
+	}
+
+	//Delete last entry
+	std::string section = "DEV9/Eth/Ports/Port" + std::to_string(portLength - 1);
+	//Specifying a value of nullopt will delete the key
+	//if the key is a nullptr, the whole section is deleted
+	dialog()->setStringSettingValue(section.c_str(), nullptr, std::nullopt);
+
+	dialog()->setIntSettingValue("DEV9/Eth/Ports", "Count", portLength - 1);
+	RefreshPortList();
 }
 
 DEV9SettingsWidget::~DEV9SettingsWidget() = default;
