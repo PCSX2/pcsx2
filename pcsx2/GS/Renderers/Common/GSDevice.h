@@ -881,7 +881,9 @@ private:
 
 protected:
 	static constexpr int NUM_INTERLACE_SHADERS = 5;
-	static constexpr float MAD_SENSITIVITY = 0.08f;
+	static constexpr float LOW_MAD_SENSITIVITY = 0.08f;
+	static constexpr float DEFAULT_MAD_SENSITIVITY = 0.02f;
+	static constexpr float HIGH_MAD_SENSITIVITY = 0.0035f;
 	static constexpr u32 MAX_POOLED_TARGETS = 300;
 	static constexpr u32 MAX_TARGET_AGE = 20;
 	static constexpr u32 MAX_POOLED_TEXTURES = 300;
