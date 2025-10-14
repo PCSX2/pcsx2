@@ -788,7 +788,7 @@ void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffse
 	float offset = yoffset * static_cast<float>(field);
 	offset = GSConfig.DisableInterlaceOffset ? 0.0f : offset;
 
-	auto do_interlace = [this](GSTexture* sTex, GSTexture* dTex, ShaderInterlace shader, bool linear, float yoffset, int bufIdx) {
+	auto do_interlace = [this](GSTexture* sTex, GSTexture* dTex, ShaderInterlace shader, bool linear, float yoffset, int bufIdx, float sensitivity) {
 		const GSVector2i ds_i = dTex->GetSize();
 		const GSVector2 ds = GSVector2(static_cast<float>(ds_i.x), static_cast<float>(ds_i.y));
 
@@ -806,7 +806,7 @@ void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffse
 		}
 
 		const InterlaceConstantBuffer cb = {
-			GSVector4(static_cast<float>(bufIdx), 1.0f / ds.y, ds.y, MAD_SENSITIVITY)
+			GSVector4(static_cast<float>(bufIdx), 1.0f / ds.y, ds.y, sensitivity)
 		};
 
 		GL_PUSH("DoInterlace %dx%d Shader:%d Linear:%d", ds_i.x, ds_i.y, static_cast<int>(shader), linear);
@@ -817,33 +817,49 @@ void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffse
 	{
 		case 0: // Weave
 			ResizeRenderTarget(&m_weavebob, ds.x, ds.y, true, false);
-			do_interlace(m_merge, m_weavebob, ShaderInterlace::WEAVE, false, offset, field);
+			do_interlace(m_merge, m_weavebob, ShaderInterlace::WEAVE, false, offset, field, 0.0f);
 			m_current = m_weavebob;
 			break;
 		case 1: // Bob
 			// Field is reversed here as we are countering the bounce.
 			ResizeRenderTarget(&m_weavebob, ds.x, ds.y, true, false);
-			do_interlace(m_merge, m_weavebob, ShaderInterlace::BOB, true, yoffset * (1 - field), 0);
+			do_interlace(m_merge, m_weavebob, ShaderInterlace::BOB, true, yoffset * (1 - field), 0, 0.0f);
 			m_current = m_weavebob;
 			break;
 		case 2: // Blend
 			ResizeRenderTarget(&m_weavebob, ds.x, ds.y, true, false);
-			do_interlace(m_merge, m_weavebob, ShaderInterlace::WEAVE, false, offset, field);
+			do_interlace(m_merge, m_weavebob, ShaderInterlace::WEAVE, false, offset, field, 0.0f);
 			ResizeRenderTarget(&m_blend, ds.x, ds.y, true, false);
-			do_interlace(m_weavebob, m_blend, ShaderInterlace::BLEND, false, 0, 0);
+			do_interlace(m_weavebob, m_blend, ShaderInterlace::BLEND, false, 0, 0, 0.0f);
 			m_current = m_blend;
 			break;
 		case 3: // FastMAD Motion Adaptive Deinterlacing
+		{
+			float sensitivity = DEFAULT_MAD_SENSITIVITY;
+
+			switch (GSConfig.MADMode)
+			{
+				case GSMADMode::Low:
+					sensitivity = LOW_MAD_SENSITIVITY;
+					break;
+				case GSMADMode::High:
+					sensitivity = HIGH_MAD_SENSITIVITY;
+					break;
+				default:
+					break;
+			}
+
 			bufIdx++;
 			bufIdx &= ~1;
 			bufIdx |= field;
 			bufIdx &= 3;
 			ResizeRenderTarget(&m_mad, ds.x, ds.y * 2.0f, true, false);
-			do_interlace(m_merge, m_mad, ShaderInterlace::MAD_BUFFER, false, offset, bufIdx);
+			do_interlace(m_merge, m_mad, ShaderInterlace::MAD_BUFFER, false, offset, bufIdx, sensitivity);
 			ResizeRenderTarget(&m_weavebob, ds.x, ds.y, true, false);
-			do_interlace(m_mad, m_weavebob, ShaderInterlace::MAD_RECONSTRUCT, false, 0, bufIdx);
+			do_interlace(m_mad, m_weavebob, ShaderInterlace::MAD_RECONSTRUCT, false, 0, bufIdx, sensitivity);
 			m_current = m_weavebob;
 			break;
+		}
 		default:
 			m_current = m_merge;
 			break;
