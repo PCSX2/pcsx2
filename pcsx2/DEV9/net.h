@@ -66,6 +66,7 @@ enum struct AdapterOptions : int
 	DHCP_OverrideIP = 1 << 1,
 	DHCP_OverideSubnet = 1 << 2,
 	DHCP_OverideGateway = 1 << 3,
+	HasPortForwarding = 1 << 4,
 };
 
 constexpr enum AdapterOptions operator|(const enum AdapterOptions selfValue, const enum AdapterOptions inValue)
