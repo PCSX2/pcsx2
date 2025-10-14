@@ -1134,7 +1134,7 @@ void ps_main()
 	#else
 		SV_Target0.rgb = C.rgb / 255.0f;
 	#endif
-	#if PS_AFAIL == 3 && !PS_NO_COLOR1 // RGB_ONLY, no dual src blend
+	#if PS_AFAIL == 3 && PS_NO_COLOR1 // RGB_ONLY, no dual src blend
 		if (!atst_pass)
 			SV_Target0.a = sample_from_rt().a;
 	#endif

@@ -1197,7 +1197,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 #if !PS_NO_COLOR1
 	output.c1 = alpha_blend;
 #endif
-#if PS_AFAIL == 3 && !PS_NO_COLOR1 // RGB_ONLY, no dual src blend
+#if PS_AFAIL == 3 && PS_NO_COLOR1 // RGB_ONLY, no dual src blend
 	if (!atst_pass)
 	{
 		float RTa = NEEDS_RT_FOR_AFAIL ? RtTexture.Load(int3(input.p.xy, 0)).a : 0.0f;
