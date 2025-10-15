@@ -235,7 +235,7 @@ ninja install || goto error
 cd ..\.. || goto error
 
 echo Building Qt Tools...
-rmdir /S /Q "qtimageformats-everywhere-src-%QT%"
+rmdir /S /Q "qttools-everywhere-src-%QT%"
 %SEVENZIP% x "qttools-everywhere-src-%QT%.zip" || goto error
 cd "qttools-everywhere-src-%QT%" || goto error
 mkdir build || goto error
