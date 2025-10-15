@@ -51,14 +51,13 @@ namespace ImGuiFullscreen
 	static void DrawChoiceDialog();
 	static void DrawInputDialog();
 	static void DrawMessageDialog();
-	static void DrawBackgroundProgressDialogs(ImVec2& position, float spacing);
+	static void DrawProgressDialogs(ImVec2& position, float spacing);
 	static void DrawNotifications(ImVec2& position, float spacing);
 	static void DrawToast();
 	static bool MenuButtonFrame(const char* str_id, bool enabled, float height, bool* visible, bool* hovered, ImRect* bb,
 		ImGuiButtonFlags flags = 0, float hover_alpha = 1.0f);
 	static void PopulateFileSelectorItems();
 	static void SetFileSelectorDirectory(std::string dir);
-	static ImGuiID GetBackgroundProgressID(const char* str_id);
 
 	std::pair<ImFont*, float> g_standard_font{};
 	std::pair<ImFont*, float> g_medium_font{};
@@ -191,7 +190,7 @@ namespace ImGuiFullscreen
 	static Common::Timer::Value s_toast_start_time;
 	static float s_toast_duration;
 
-	struct BackgroundProgressDialogData
+	struct ProgressDialogData
 	{
 		std::string message;
 		ImGuiID id;
@@ -200,8 +199,8 @@ namespace ImGuiFullscreen
 		s32 value;
 	};
 
-	static std::vector<BackgroundProgressDialogData> s_background_progress_dialogs;
-	static std::mutex s_background_progress_lock;
+	static std::vector<ProgressDialogData> s_progress_dialogs;
+	static std::mutex s_progress_dialog_lock;
 
 	static InputLayout s_gamepad_layout = InputLayout::Unknown;
 } // namespace ImGuiFullscreen
@@ -254,7 +253,7 @@ void ImGuiFullscreen::Shutdown(bool clear_state)
 	if (clear_state)
 	{
 		s_notifications.clear();
-		s_background_progress_dialogs.clear();
+		s_progress_dialogs.clear();
 		s_fullscreen_footer_text.clear();
 		s_last_fullscreen_footer_text.clear();
 		s_fullscreen_text_change_time = 0.0f;
@@ -721,7 +720,7 @@ void ImGuiFullscreen::EndLayout()
 	
 	ImVec2 position(horizontal_pos, notification_vertical_pos * ImGui::GetIO().DisplaySize.y +
 											 ((notification_vertical_pos >= 0.5f) ? -notification_margin : notification_margin));
-	DrawBackgroundProgressDialogs(position, spacing);
+	DrawProgressDialogs(position, spacing);
 	DrawNotifications(position, spacing);
 	DrawToast();
 
@@ -2767,40 +2766,35 @@ void ImGuiFullscreen::SetNotificationPosition(float horizontal_position, float v
 	s_notification_vertical_direction = direction;
 }
 
-ImGuiID ImGuiFullscreen::GetBackgroundProgressID(const char* str_id)
+void ImGuiFullscreen::OpenProgressDialog(const char* str_id, std::string message, s32 min, s32 max, s32 value)
 {
-	return ImHashStr(str_id);
-}
+	const ImGuiID id = ImHashStr(str_id);
 
-void ImGuiFullscreen::OpenBackgroundProgressDialog(const char* str_id, std::string message, s32 min, s32 max, s32 value)
-{
-	const ImGuiID id = GetBackgroundProgressID(str_id);
-
-	std::unique_lock<std::mutex> lock(s_background_progress_lock);
+	std::unique_lock<std::mutex> lock(s_progress_dialog_lock);
 
 #ifdef PCSX2_DEVBUILD
-	for (const BackgroundProgressDialogData& data : s_background_progress_dialogs)
+	for (const ProgressDialogData& data : s_progress_dialogs)
 	{
-		pxAssertMsg(data.id != id, "Duplicate background progress dialog open");
+		pxAssertMsg(data.id != id, "Duplicate progress dialog open");
 	}
 #endif
 
-	BackgroundProgressDialogData data;
+	ProgressDialogData data;
 	data.id = id;
 	data.message = std::move(message);
 	data.min = min;
 	data.max = max;
 	data.value = value;
-	s_background_progress_dialogs.push_back(std::move(data));
+	s_progress_dialogs.push_back(std::move(data));
 }
 
-void ImGuiFullscreen::UpdateBackgroundProgressDialog(const char* str_id, std::string message, s32 min, s32 max, s32 value)
+void ImGuiFullscreen::UpdateProgressDialog(const char* str_id, std::string message, s32 min, s32 max, s32 value)
 {
-	const ImGuiID id = GetBackgroundProgressID(str_id);
+	const ImGuiID id = ImHashStr(str_id);
 
-	std::unique_lock<std::mutex> lock(s_background_progress_lock);
+	std::unique_lock<std::mutex> lock(s_progress_dialog_lock);
 
-	for (BackgroundProgressDialogData& data : s_background_progress_dialogs)
+	for (ProgressDialogData& data : s_progress_dialogs)
 	{
 		if (data.id == id)
 		{
@@ -2815,17 +2809,17 @@ void ImGuiFullscreen::UpdateBackgroundProgressDialog(const char* str_id, std::st
 	pxFailRel("Updating unknown progress entry.");
 }
 
-void ImGuiFullscreen::CloseBackgroundProgressDialog(const char* str_id)
+void ImGuiFullscreen::CloseProgressDialog(const char* str_id)
 {
-	const ImGuiID id = GetBackgroundProgressID(str_id);
+	const ImGuiID id = ImHashStr(str_id);
 
-	std::unique_lock<std::mutex> lock(s_background_progress_lock);
+	std::unique_lock<std::mutex> lock(s_progress_dialog_lock);
 
-	for (auto it = s_background_progress_dialogs.begin(); it != s_background_progress_dialogs.end(); ++it)
+	for (auto it = s_progress_dialogs.begin(); it != s_progress_dialogs.end(); ++it)
 	{
 		if (it->id == id)
 		{
-			s_background_progress_dialogs.erase(it);
+			s_progress_dialogs.erase(it);
 			return;
 		}
 	}
@@ -2833,15 +2827,15 @@ void ImGuiFullscreen::CloseBackgroundProgressDialog(const char* str_id)
 	pxFailRel("Closing unknown progress entry.");
 }
 
-void ImGuiFullscreen::DrawBackgroundProgressDialogs(ImVec2& position, float spacing)
+void ImGuiFullscreen::DrawProgressDialogs(ImVec2& position, float spacing)
 {
-	std::unique_lock<std::mutex> lock(s_background_progress_lock);
-	if (s_background_progress_dialogs.empty())
+	std::unique_lock<std::mutex> lock(s_progress_dialog_lock);
+	if (s_progress_dialogs.empty())
 		return;
 
-	for (const BackgroundProgressDialogData& data : s_background_progress_dialogs)
+	for (const ProgressDialogData& data : s_progress_dialogs)
 	{
-		const std::string popup_id = fmt::format("##background_progress_dialog_{}", data.id);
+		const std::string popup_id = fmt::format("##progress_dialog_{}", data.id);
 		ImGui::SetNextWindowSize(LayoutScale(600.0f, 0.0f));
 		ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 		ImGui::OpenPopup(popup_id.c_str());
