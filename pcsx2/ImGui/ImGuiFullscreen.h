@@ -286,9 +286,9 @@ namespace ImGuiFullscreen
 	void SetNotificationVerticalPosition(float position, float direction);
 	void SetNotificationPosition(float horizontal_position, float vertical_position, float direction);
 
-	void OpenBackgroundProgressDialog(const char* str_id, std::string message, s32 min, s32 max, s32 value);
-	void UpdateBackgroundProgressDialog(const char* str_id, std::string message, s32 min, s32 max, s32 value);
-	void CloseBackgroundProgressDialog(const char* str_id);
+	void OpenProgressDialog(const char* str_id, std::string message, s32 min, s32 max, s32 value);
+	void UpdateProgressDialog(const char* str_id, std::string message, s32 min, s32 max, s32 value);
+	void CloseProgressDialog(const char* str_id);
 
 	void AddNotification(std::string key, float duration, std::string title, std::string text, std::string image_path);
 	void ClearNotifications();
