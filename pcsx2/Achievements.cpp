@@ -234,12 +234,12 @@ std::unique_lock<std::recursive_mutex> Achievements::GetLock()
 void Achievements::BeginLoadingScreen(const char* text, bool* was_running_idle)
 {
 	MTGS::RunOnGSThread(&ImGuiManager::InitializeFullscreenUI);
-	ImGuiFullscreen::OpenBackgroundProgressDialog("achievements_loading", text, 0, 0, 0);
+	ImGuiFullscreen::OpenProgressDialog("achievements_loading", text, 0, 0, 0);
 }
 
 void Achievements::EndLoadingScreen(bool was_running_idle)
 {
-	ImGuiFullscreen::CloseBackgroundProgressDialog("achievements_loading");
+	ImGuiFullscreen::CloseProgressDialog("achievements_loading");
 }
 
 void Achievements::ReportError(const std::string_view sv)
