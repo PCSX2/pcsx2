@@ -51,7 +51,10 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* settings_dialog
 		m_ui.rtcDateTime->setDateRange(QDate(2000, 1, 1), QDate(2099, 12, 31));
 		SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.manuallySetRealTimeClock, "EmuCore", "ManuallySetRealTimeClock", false);
 		connect(m_ui.manuallySetRealTimeClock, &QCheckBox::checkStateChanged, this, &EmulationSettingsWidget::onManuallySetRealTimeClockChanged);
+		SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.rtcUseSystemLocaleFormat, "EmuCore", "UseSystemLocaleFormat", false);
+		connect(m_ui.rtcUseSystemLocaleFormat, &QCheckBox::checkStateChanged, this, &EmulationSettingsWidget::onUseSystemLocaleFormatChanged);
 		EmulationSettingsWidget::onManuallySetRealTimeClockChanged();
+		EmulationSettingsWidget::onUseSystemLocaleFormatChanged();
 
 		m_ui.eeCycleRate->insertItem(0,
 			tr("Use Global Setting [%1]")
@@ -159,10 +162,12 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* settings_dialog
 	dialog()->registerWidgetHelp(m_ui.manuallySetRealTimeClock, tr("Manually Set Real-Time Clock"), tr("Unchecked"),
 		tr("Manually set a real-time clock to use for the virtual PlayStation 2 instead of using your OS' system clock."));
 	dialog()->registerWidgetHelp(m_ui.rtcDateTime, tr("Real-Time Clock"), tr("Current date and time"),
-		tr("Real-time clock (RTC) used by the virtual PlayStation 2. Date format is the same as the one used by your OS. "
-		   "This time is only applied upon booting the PS2; changing it while in-game will have no effect. "
-		   "NOTE: This assumes you have your PS2 set to the default timezone of GMT+0 and default DST of Summer Time. "
+		tr("Real-time clock (RTC) used by the virtual PlayStation 2.<br>"
+		   "This time is only applied upon booting the PS2; changing it while in-game will have no effect.<br>"
+		   "NOTE: This assumes you have your PS2 set to the default timezone of GMT+0 and default DST of Summer Time.<br>"
 		   "Some games require an RTC date/time set after their release date."));
+	dialog()->registerWidgetHelp(m_ui.rtcUseSystemLocaleFormat, tr("Use System Locale Format"), tr("User Preference"),
+		tr("Uses the operating system's date/time format rather than \"yyyy-MM-dd HH:mm:ss\". May exclude seconds."));
 
 	updateOptimalFramePacing();
 	updateUseVSyncForTimingEnabled();
@@ -314,4 +319,11 @@ void EmulationSettingsWidget::onManuallySetRealTimeClockChanged()
 {
 	const bool enabled = dialog()->getEffectiveBoolValue("EmuCore", "ManuallySetRealTimeClock", false);
 	m_ui.rtcDateTime->setEnabled(enabled);
+	m_ui.rtcUseSystemLocaleFormat->setEnabled(enabled);
+}
+
+void EmulationSettingsWidget::onUseSystemLocaleFormatChanged()
+{
+	const bool enabled = dialog()->getEffectiveBoolValue("EmuCore", "UseSystemLocaleFormat", false);
+	m_ui.rtcDateTime->setDisplayFormat(enabled ? QLocale::system().dateTimeFormat(QLocale::ShortFormat) : "yyyy-MM-dd HH:mm:ss");
 }
