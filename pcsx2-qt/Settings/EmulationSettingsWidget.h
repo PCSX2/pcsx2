@@ -24,6 +24,7 @@ private:
 	void updateOptimalFramePacing();
 	void updateUseVSyncForTimingEnabled();
 	void onManuallySetRealTimeClockChanged();
+	void onUseSystemLocaleFormatChanged();
 
 	Ui::EmulationSettingsWidget m_ui;
 };
