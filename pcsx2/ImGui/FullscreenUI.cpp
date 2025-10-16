@@ -1390,8 +1390,14 @@ void FullscreenUI::ConfirmShutdownIfMemcardBusy(std::function<void(bool)> callba
 	}
 
 	OpenConfirmMessageDialog(FSUI_ICONSTR(ICON_PF_MEMORY_CARD, "WARNING: Memory Card Busy"),
-		FSUI_STR("WARNING: Your memory card is still writing data. Shutting down now will IRREVERSIBLY DESTROY YOUR MEMORY CARD. It is strongly recommended to resume your game and let it finish writing to your memory card.\n\nDo you wish to shutdown anyways and IRREVERSIBLY DESTROY YOUR MEMORY CARD?"),
-		std::move(callback));
+		FSUI_STR("Your memory card is still saving data.\n\n"
+			"WARNING: Shutting down now can IRREVERSIBLY CORRUPT YOUR MEMORY CARD.\n\n"
+			"You are strongly advised to select 'No' and let the save finish.\n\n"
+			"Do you want to shutdown anyway and IRREVERSIBLY CORRUPT YOUR MEMORY CARD?"),
+		[callback = std::move(callback)](bool result) {
+			callback(!result);
+		},
+		FSUI_ICONSTR(ICON_FA_XMARK, "No"), FSUI_ICONSTR(ICON_FA_CHECK, "Yes"));
 }
 
 bool FullscreenUI::ShouldDefaultToGameList()
