@@ -1394,10 +1394,7 @@ void FullscreenUI::ConfirmShutdownIfMemcardBusy(std::function<void(bool)> callba
 			"WARNING: Shutting down now can IRREVERSIBLY CORRUPT YOUR MEMORY CARD.\n\n"
 			"You are strongly advised to select 'No' and let the save finish.\n\n"
 			"Do you want to shutdown anyway and IRREVERSIBLY CORRUPT YOUR MEMORY CARD?"),
-		[callback = std::move(callback)](bool result) {
-			callback(!result);
-		},
-		FSUI_ICONSTR(ICON_FA_XMARK, "No"), FSUI_ICONSTR(ICON_FA_CHECK, "Yes"));
+		std::move(callback), false);
 }
 
 bool FullscreenUI::ShouldDefaultToGameList()
