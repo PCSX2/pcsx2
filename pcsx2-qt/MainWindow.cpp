@@ -2323,19 +2323,24 @@ bool MainWindow::nativeEvent(const QByteArray& eventType, void* message, qintptr
 
 		if (msg->message == WM_INPUT)
 		{
-			UINT dwSize = 40;
-			static BYTE lpb[40];
-			if (GetRawInputData((HRAWINPUT)msg->lParam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)))
+			UINT dwSize = 0;
+			GetRawInputData((HRAWINPUT)msg->lParam, RID_INPUT, nullptr, &dwSize, sizeof(RAWINPUTHEADER));
+
+			if (dwSize > 0)
 			{
-				const RAWINPUT* raw = (RAWINPUT*)lpb;
-				if (raw->header.dwType == RIM_TYPEMOUSE)
+				std::vector<BYTE> lpb(dwSize);
+				if (GetRawInputData((HRAWINPUT)msg->lParam, RID_INPUT, lpb.data(), &dwSize, sizeof(RAWINPUTHEADER)) == dwSize)
 				{
-					const RAWMOUSE& mouse = raw->data.mouse;
-					if (mouse.usFlags == MOUSE_MOVE_ABSOLUTE || mouse.usFlags == MOUSE_MOVE_RELATIVE)
+					const RAWINPUT* raw = reinterpret_cast<const RAWINPUT*>(lpb.data());
+					if (raw->header.dwType == RIM_TYPEMOUSE)
 					{
-						POINT cursorPos;
-						GetCursorPos(&cursorPos);
-						checkMousePosition(cursorPos.x, cursorPos.y);
+						const RAWMOUSE& mouse = raw->data.mouse;
+						if (mouse.usFlags == MOUSE_MOVE_ABSOLUTE || mouse.usFlags == MOUSE_MOVE_RELATIVE)
+						{
+							POINT cursorPos;
+							if (GetCursorPos(&cursorPos))
+								checkMousePosition(cursorPos.x, cursorPos.y);
+						}
 					}
 				}
 			}
@@ -2639,30 +2644,26 @@ void MainWindow::checkMousePosition(int x, int y)
 	if (!shouldMouseLock())
 		return;
 
-	const QPoint globalCursorPos = {x, y};
-	QRect windowBounds = isRenderingFullscreen() ? screen()->geometry() : geometry();
-	if (windowBounds.contains(globalCursorPos))
+	// physical mouse position
+	const QPoint physicalPos(x, y);
+
+	// logical (DIP) frame rect
+	QRectF logicalBounds = isRenderingFullscreen() ? screen()->geometry() : geometry();
+
+	// physical frame rect
+	const qreal scale = window()->devicePixelRatioF();
+	QRectF physicalBounds(
+		logicalBounds.x() * scale,
+		logicalBounds.y() * scale,
+		logicalBounds.width() * scale,
+		logicalBounds.height() * scale);
+
+	if (physicalBounds.contains(physicalPos))
 		return;
 
 	Common::SetMousePosition(
-		std::clamp(globalCursorPos.x(), windowBounds.left(), windowBounds.right()),
-		std::clamp(globalCursorPos.y(), windowBounds.top(), windowBounds.bottom()));
-
-	/*
-		Provided below is how we would handle this if we were using low level hooks (What is used in Common::AttachMouseCb)
-		We currently use rawmouse on Windows, so Common::SetMousePosition called directly works fine.
-	*/
-#if 0
-		// We are currently in a low level hook. SetCursorPos here (what is in Common::SetMousePosition) will not work!
-		// Let's (a)buse Qt's event loop to dispatch the call at a later time, outside of the hook.
-		QMetaObject::invokeMethod(
-			this, [=]() {
-				Common::SetMousePosition(
-					std::clamp(globalCursorPos.x(), windowBounds.left(), windowBounds.right()),
-					std::clamp(globalCursorPos.y(), windowBounds.top(), windowBounds.bottom()));
-			},
-			Qt::QueuedConnection);
-#endif
+		std::clamp(physicalPos.x(), (int)physicalBounds.left(), (int)physicalBounds.right()),
+		std::clamp(physicalPos.y(), (int)physicalBounds.top(), (int)physicalBounds.bottom()));
 }
 
 void MainWindow::saveDisplayWindowGeometryToConfig()
