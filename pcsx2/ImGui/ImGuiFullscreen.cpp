@@ -127,6 +127,7 @@ namespace ImGuiFullscreen
 	static std::string s_message_dialog_message;
 	static std::array<std::string, 3> s_message_dialog_buttons;
 	static MessageDialogCallbackVariant s_message_dialog_callback;
+	static s32 s_message_dialog_default_index = 0;
 
 	static ImAnimatedVec2 s_menu_button_frame_min_animated;
 	static ImAnimatedVec2 s_menu_button_frame_max_animated;
@@ -278,6 +279,7 @@ void ImGuiFullscreen::Shutdown(bool clear_state)
 		s_message_dialog_message = {};
 		s_message_dialog_buttons = {};
 		s_message_dialog_callback = {};
+		s_message_dialog_default_index = 0;
 	}
 }
 
@@ -2566,7 +2568,7 @@ bool ImGuiFullscreen::IsMessageBoxDialogOpen()
 }
 
 void ImGuiFullscreen::OpenConfirmMessageDialog(
-	std::string title, std::string message, ConfirmMessageDialogCallback callback, std::string yes_button_text, std::string no_button_text)
+	std::string title, std::string message, ConfirmMessageDialogCallback callback, bool default_yes, std::string yes_button_text, std::string no_button_text)
 {
 	CloseMessageDialog();
 
@@ -2576,6 +2578,7 @@ void ImGuiFullscreen::OpenConfirmMessageDialog(
 	s_message_dialog_callback = std::move(callback);
 	s_message_dialog_buttons[0] = std::move(yes_button_text);
 	s_message_dialog_buttons[1] = std::move(no_button_text);
+	s_message_dialog_default_index = default_yes ? 0 : 1;
 	QueueResetFocus(FocusResetType::PopupOpened);
 }
 
@@ -2589,10 +2592,11 @@ void ImGuiFullscreen::OpenInfoMessageDialog(
 	s_message_dialog_message = std::move(message);
 	s_message_dialog_callback = std::move(callback);
 	s_message_dialog_buttons[0] = std::move(button_text);
+	s_message_dialog_default_index = 0;
 	QueueResetFocus(FocusResetType::PopupOpened);
 }
 
-void ImGuiFullscreen::OpenMessageDialog(std::string title, std::string message, MessageDialogCallback callback,
+void ImGuiFullscreen::OpenMessageDialog(std::string title, std::string message, MessageDialogCallback callback, s32 default_index,
 	std::string first_button_text, std::string second_button_text, std::string third_button_text)
 {
 	CloseMessageDialog();
@@ -2604,6 +2608,8 @@ void ImGuiFullscreen::OpenMessageDialog(std::string title, std::string message, 
 	s_message_dialog_buttons[0] = std::move(first_button_text);
 	s_message_dialog_buttons[1] = std::move(second_button_text);
 	s_message_dialog_buttons[2] = std::move(third_button_text);
+	pxAssert(default_index < 3);
+	s_message_dialog_default_index = default_index;
 	QueueResetFocus(FocusResetType::PopupOpened);
 }
 
@@ -2617,6 +2623,7 @@ void ImGuiFullscreen::CloseMessageDialog()
 	s_message_dialog_message = {};
 	s_message_dialog_buttons = {};
 	s_message_dialog_callback = {};
+	s_message_dialog_default_index = 0;
 	QueueResetFocus(FocusResetType::PopupClosed);
 }
 
@@ -2660,6 +2667,8 @@ void ImGuiFullscreen::DrawMessageDialog()
 				result = button_index;
 				ImGui::CloseCurrentPopup();
 			}
+			if (button_index == s_message_dialog_default_index)
+				ImGui::SetItemDefaultFocus();
 		}
 
 		EndMenuButtons();

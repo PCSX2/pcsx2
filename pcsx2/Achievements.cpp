@@ -1943,7 +1943,7 @@ void Achievements::ConfirmHardcoreModeDisableAsync(const char* trigger, std::fun
 			fmt::format(TRANSLATE_FS("Achievements", "{0} cannot be performed while hardcore mode is active. Do you "
 													 "want to disable hardcore mode? {0} will be cancelled if you select No."),
 				trigger),
-			std::move(real_callback), fmt::format(ICON_FA_CHECK " {}", TRANSLATE_SV("Achievements", "Yes")),
+			std::move(real_callback), true, fmt::format(ICON_FA_CHECK " {}", TRANSLATE_SV("Achievements", "Yes")),
 			fmt::format(ICON_FA_XMARK " {}", TRANSLATE_SV("Achievements", "No")));
 	});
 }
