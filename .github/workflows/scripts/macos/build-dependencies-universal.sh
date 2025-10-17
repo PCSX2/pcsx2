@@ -391,8 +391,8 @@ rm -fr "KDDockWidgets-$KDDOCKWIDGETS"
 tar xf "KDDockWidgets-$KDDOCKWIDGETS.tar.gz"
 cd "KDDockWidgets-$KDDOCKWIDGETS"
 cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DKDDockWidgets_QT6=true -DKDDockWidgets_EXAMPLES=false -DKDDockWidgets_FRONTENDS=qtwidgets -B build
-cmake --build build --parallel
-cmake --install build
+make -C build "-j$NPROCS"
+make -C build install
 cd ..
 
 echo "Building PlutoVG..."
