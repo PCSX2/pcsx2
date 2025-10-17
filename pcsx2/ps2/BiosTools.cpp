@@ -382,3 +382,21 @@ void CopyBIOSToMemory()
 
 	CurrentBiosInformation.eeThreadListAddr = 0;
 }
+
+// Summer = True; Winter = False
+bool GetDaylightSavings()
+{
+	return configParams2.UC[1] & 0x10 ? true : false;
+}
+
+// 12-Hour = True; 24-Hour = False
+bool GetTimeFormat()
+{
+	return configParams2.UC[1] & 0x20 ? true : false;
+}
+
+// DD/MM/YYYY = 2; MM/DD/YYYY = 1; YYYY/MM/DD = 0
+u8 GetDateFormat()
+{
+	return configParams2.UC[1] & 0x80 ? 2 : (configParams2.UC[1] & 0x40 ? 1 : 0);
+}
