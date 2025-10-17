@@ -43,7 +43,7 @@ typedef struct
 			/** LANGUAGE_??? value */
 			/*16*/ u32 language : 5;
 			/** timezone minutes offset from gmt */
-			/*21*/ u32 timezoneOffset : 11;
+			/*21*/ s32 timezoneOffset : 11;
 		};
 
 		u8  UC[4];
@@ -63,7 +63,7 @@ typedef struct
 
 			/*00*/ u8 reserved : 4;
 			/** 0=standard(winter), 1=daylight savings(summer) */
-			/*04*/ u8 daylightSaving : 1;
+			/*04*/ u8 daylightSavings : 1;
 			/** 0=24 hour, 1=12 hour */
 			/*05*/ u8 timeFormat : 1;
 			/** 0=YYYYMMDD, 1=MMDDYYYY, 2=DDMMYYYY */

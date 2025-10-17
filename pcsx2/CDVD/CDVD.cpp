@@ -37,6 +37,8 @@ cdvdStruct cdvd;
 
 s64 PSXCLK = 36864000;
 
+static constexpr s32 GMT9_OFFSET_SECONDS = 9 * 60 * 60; // 32400
+
 static constexpr u8 monthmap[13] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
 static constexpr u8 cdvdParamLength[16] = { 0, 0, 0, 0, 0, 4, 11, 11, 11, 1, 255, 255, 7, 2, 11, 1 };
@@ -920,68 +922,91 @@ void cdvdReset()
 	cdvd.ReadTime = cdvdBlockReadTime(MODE_DVDROM);
 	cdvd.RotSpeed = cdvdRotationTime(MODE_DVDROM);
 
+	ReadOSDConfigParames();
+
+	// Print time zone offset, DST, time format, date format, and system time basis.
+	DevCon.WriteLn(Color_StrongGreen, configParams1.timezoneOffset < 0 ? "Time Zone Offset: GMT%03d:%02d" : "Time Zone Offset: GMT+%02d:%02d",
+				   configParams1.timezoneOffset / 60, std::abs(configParams1.timezoneOffset % 60));
+	DevCon.WriteLn(Color_StrongGreen, "DST: %s Time", configParams2.daylightSavings ? "Summer" : "Winter");
+	DevCon.WriteLn(Color_StrongGreen, "Time Format: %s-Hour", configParams2.timeFormat ? "12" : "24");
+ 	DevCon.WriteLn(Color_StrongGreen, "Date Format: %s", configParams2.dateFormat ? (configParams2.dateFormat == 2 ? "DD/MM/YYYY" : "MM/DD/YYYY") : "YYYY/MM/DD");
+	DevCon.WriteLn(Color_StrongGreen, "System Time Basis: %s",
+				   EmuConfig.ManuallySetRealTimeClock ? "Manual RTC" : g_InputRecording.isActive() ? "Default Input Recording Time" : "Operating System Time");
+
+	std::tm input_tm{};
+	std::tm resulting_tm{};
+
+	const int bios_settings_offset_seconds = 60 * (configParams1.timezoneOffset + configParams2.daylightSavings * 60);
+
+	// CDVD internally uses GMT+9, 1-indexed months, and year offset of 2000 instead of 1900.
+	// tm struct uses 0-indexed months and year offset of 1900.
 	if (EmuConfig.ManuallySetRealTimeClock)
 	{
-		// Convert to GMT+9 (assumes GMT+0)
-		std::tm tm{};
-		tm.tm_sec = EmuConfig.RtcSecond;
-		tm.tm_min = EmuConfig.RtcMinute;
-		tm.tm_hour = EmuConfig.RtcHour;
-		tm.tm_mday = EmuConfig.RtcDay;
-		tm.tm_mon = EmuConfig.RtcMonth - 1;
-		tm.tm_year = EmuConfig.RtcYear + 100; // 2000 - 1900
-		tm.tm_isdst = 1;
+		resulting_tm.tm_sec = EmuConfig.RtcSecond;
+		resulting_tm.tm_min = EmuConfig.RtcMinute;
+		resulting_tm.tm_hour = EmuConfig.RtcHour;
+		resulting_tm.tm_mday = EmuConfig.RtcDay;
+		resulting_tm.tm_mon = EmuConfig.RtcMonth - 1;
+		resulting_tm.tm_year = EmuConfig.RtcYear + 100;
+		resulting_tm.tm_isdst = 0;
 
-		// Need this instead of mktime for timezone independence
-		std::time_t t = 0;
-		#if defined(_WIN32)
-			t = _mkgmtime(&tm) + 32400; //60 * 60 * 9 for GMT+9
-			gmtime_s(&tm, &t);
-		#else
-			t = timegm(&tm) + 32400;
-			gmtime_r(&t, &tm);
-		#endif
-
-		cdvd.RTC.second = tm.tm_sec;
-		cdvd.RTC.minute = tm.tm_min;
-		cdvd.RTC.hour = tm.tm_hour;
-		cdvd.RTC.day = tm.tm_mday;
-		cdvd.RTC.month = tm.tm_mon + 1;
-		cdvd.RTC.year = tm.tm_year - 100;
+		// Work backwards to input time by accounting for BIOS settings and GMT+9 defaultism.
+#if defined(_WIN32)
+		const std::time_t input_time = _mkgmtime(&resulting_tm) + GMT9_OFFSET_SECONDS - bios_settings_offset_seconds;
+		gmtime_s(&input_tm, &input_time);
+#else
+		const std::time_t input_time = timegm(&resulting_tm) + GMT9_OFFSET_SECONDS - bios_settings_offset_seconds;
+		gmtime_r(&input_time, &input_tm);
+#endif
 	}
-	// If we are recording, always use the same RTC setting
-	// for games that use the RTC to seed their RNG -- this is very important to be the same everytime!
 	else if (g_InputRecording.isActive())
 	{
-		Console.WriteLn("Input Recording Active - Using Constant RTC of 04-03-2020 (DD-MM-YYYY)");
-		// Why not just 0 everything? Some games apparently require the date to be valid in terms of when
-		// the PS2 / Game actually came out. (MGS3).  So set it to a value well beyond any PS2 game's release date.
-		cdvd.RTC.second = 0;
-		cdvd.RTC.minute = 0;
-		cdvd.RTC.hour = 0;
-		cdvd.RTC.day = 4;
-		cdvd.RTC.month = 3;
-		cdvd.RTC.year = 20;
+		// Default input recording value (2020-03-04 00:00:00) if manual RTC is off. Well beyond any PS2 game's release date.
+		// Some games require a valid date in terms of when the PS2 / game actually came out (see: MGS3).
+		// Changing this will ruin compat with old input recordings (RNG seeding).
+		input_tm.tm_sec = 0;
+		input_tm.tm_min = 0;
+		input_tm.tm_hour = 0;
+		input_tm.tm_mday = 4;
+		input_tm.tm_mon = 2;
+		input_tm.tm_year = 120;
+		input_tm.tm_isdst = 0;
+
+#if defined(_WIN32)
+		const std::time_t resulting_time = _mkgmtime(&input_tm) - GMT9_OFFSET_SECONDS + bios_settings_offset_seconds;
+		gmtime_s(&resulting_tm, &resulting_time);
+#else
+		const std::time_t resulting_time = timegm(&input_tm) - GMT9_OFFSET_SECONDS + bios_settings_offset_seconds;
+		gmtime_r(&resulting_time, &resulting_tm);
+#endif
 	}
 	else
 	{
-		// CDVD internally uses GMT+9.  If you think the time's wrong, you're wrong.
-		// Set up your time zone and winter/summer in the BIOS.  No PS2 BIOS I know of features automatic DST.
-		const std::time_t utc_time = std::time(nullptr);
-		const std::time_t gmt9_time = (utc_time + 32400); //60 * 60 * 9
-		struct tm curtime = {};
+		// User must set time zone and winter/summer DST in the BIOS for correct time.
+		const std::time_t input_time = std::time(nullptr) + GMT9_OFFSET_SECONDS;
+		const std::time_t resulting_time = input_time - GMT9_OFFSET_SECONDS + bios_settings_offset_seconds;
+
 #ifdef _MSC_VER
-		gmtime_s(&curtime, &gmt9_time);
+		gmtime_s(&input_tm, &input_time);
+		gmtime_s(&resulting_tm, &resulting_time);
 #else
-		gmtime_r(&gmt9_time, &curtime);
+		gmtime_r(&input_time, &input_tm);
+		gmtime_r(&resulting_time, &resulting_tm);
 #endif
-		cdvd.RTC.second = static_cast<u8>(curtime.tm_sec);
-		cdvd.RTC.minute = static_cast<u8>(curtime.tm_min);
-		cdvd.RTC.hour = static_cast<u8>(curtime.tm_hour);
-		cdvd.RTC.day = static_cast<u8>(curtime.tm_mday);
-		cdvd.RTC.month = static_cast<u8>(curtime.tm_mon + 1); // WX returns Jan as "0"
-		cdvd.RTC.year = static_cast<u8>(curtime.tm_year - 100); // offset from 2000
 	}
+
+	// Send completed input time to the CDVD.
+	cdvd.RTC.second = static_cast<u8>(input_tm.tm_sec);
+	cdvd.RTC.minute = static_cast<u8>(input_tm.tm_min);
+	cdvd.RTC.hour = static_cast<u8>(input_tm.tm_hour);
+	cdvd.RTC.day = static_cast<u8>(input_tm.tm_mday);
+	cdvd.RTC.month = static_cast<u8>(input_tm.tm_mon + 1);
+	cdvd.RTC.year = static_cast<u8>(input_tm.tm_year - 100);
+
+	// Print time that will appear in the user's BIOS rather than input time.
+	DevCon.WriteLn(Color_StrongGreen, "Resulting System Time: 20%02u-%02u-%02u %02u:%02u:%02u",
+				   resulting_tm.tm_year - 100, resulting_tm.tm_mon + 1, resulting_tm.tm_mday,
+				   resulting_tm.tm_hour, resulting_tm.tm_min, resulting_tm.tm_sec);
 
 	cdvdCtrlTrayClose();
 }
