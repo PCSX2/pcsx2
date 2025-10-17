@@ -488,6 +488,7 @@ namespace FullscreenUI
 	static ImGuiFullscreen::FileSelectorFilters GetOpenFileFilters();
 	static ImGuiFullscreen::FileSelectorFilters GetDiscImageFilters();
 	static ImGuiFullscreen::FileSelectorFilters GetAudioFileFilters();
+	static ImGuiFullscreen::FileSelectorFilters GetImageFileFilters();
 	static void DoStartPath(
 		const std::string& path, std::optional<s32> state_index = std::nullopt, std::optional<bool> fast_boot = std::nullopt);
 	static void DoStartFile();
@@ -700,6 +701,16 @@ namespace FullscreenUI
 	static std::unordered_map<std::string, std::string> s_cover_image_map;
 	static std::vector<const GameList::Entry*> s_game_list_sorted_entries;
 	static GameListView s_game_list_view = GameListView::Grid;
+
+	//////////////////////////////////////////////////////////////////////////
+	// Background
+	//////////////////////////////////////////////////////////////////////////
+	static void LoadCustomBackground();
+	static void DrawCustomBackground();
+
+	static std::shared_ptr<GSTexture> s_custom_background_texture;
+	static std::string s_custom_background_path;
+	static bool s_custom_background_enabled = false;
 
 	//////////////////////////////////////////////////////////////////////////
 	// Achievements
@@ -980,6 +991,8 @@ bool FullscreenUI::Initialize()
 	s_hotkey_list_cache = InputManager::GetHotkeyList();
 	MTGS::SetRunIdle(true);
 
+	LoadCustomBackground();
+
 	if (VMManager::HasValidVM())
 	{
 		UpdateGameDetails(VMManager::GetDiscPath(), VMManager::GetDiscSerial(), VMManager::GetTitle(true), VMManager::GetDiscCRC(),
@@ -1024,6 +1037,8 @@ void FullscreenUI::CheckForConfigChanges(const Pcsx2Config& old_config)
 		return;
 
 	ImGuiFullscreen::SetTheme(Host::GetBaseStringSettingValue("UI", "FullscreenUITheme", "Dark"));
+
+	LoadCustomBackground();
 
 	// If achievements got disabled, we might have the menu open...
 	// That means we're going to be reaching achievement state.
@@ -1184,6 +1199,11 @@ void FullscreenUI::Shutdown(bool clear_state)
 		s_about_window_open = false;
 	}
 	s_hotkey_list_cache = {};
+	
+	s_custom_background_texture.reset();
+	s_custom_background_path.clear();
+	s_custom_background_enabled = false;
+	
 	DestroyResources();
 	ImGuiFullscreen::Shutdown(clear_state);
 	s_initialized = false;
@@ -1195,12 +1215,35 @@ void FullscreenUI::Render()
 	if (!s_initialized)
 		return;
 
+	// see if background setting changed
+	static std::string s_last_background_path;
+	std::string current_path = Host::GetBaseStringSettingValue("UI", "GameListBackgroundPath");
+	if (s_last_background_path != current_path)
+	{
+		s_last_background_path = current_path;
+		LoadCustomBackground();
+	}
+
 	for (std::unique_ptr<GSTexture>& tex : s_cleanup_textures)
 		g_gs_device->Recycle(tex.release());
 	s_cleanup_textures.clear();
 	ImGuiFullscreen::UploadAsyncTextures();
 
 	ImGuiFullscreen::BeginLayout();
+
+	const bool should_draw_background = (s_current_main_window == MainWindowType::Landing ||
+		s_current_main_window == MainWindowType::StartGame ||
+		s_current_main_window == MainWindowType::Exit ||
+		s_current_main_window == MainWindowType::GameList ||
+		s_current_main_window == MainWindowType::GameListSettings ||
+		s_current_main_window == MainWindowType::Settings) && s_custom_background_enabled && s_custom_background_texture;
+	
+	ImVec4 original_background_color;
+	if (should_draw_background)
+	{
+		original_background_color = ImGuiFullscreen::UIBackgroundColor;
+		DrawCustomBackground();
+	}
 
 	// Primed achievements must come first, because we don't want the pause screen to be behind them.
 	if (s_current_main_window == MainWindowType::None && (EmuConfig.Achievements.Overlays || EmuConfig.Achievements.LBOverlays))
@@ -1297,6 +1340,9 @@ void FullscreenUI::Render()
 		s_game_settings_changed.store(false, std::memory_order_release);
 	}
 
+	if (should_draw_background)
+		ImGuiFullscreen::UIBackgroundColor = original_background_color;
+
 	ImGuiFullscreen::ResetCloseMenuIfNeeded();
 }
 
@@ -1381,6 +1427,11 @@ ImGuiFullscreen::FileSelectorFilters FullscreenUI::GetDiscImageFilters()
 ImGuiFullscreen::FileSelectorFilters FullscreenUI::GetAudioFileFilters()
 {
 	return {"*.wav"};
+}
+
+ImGuiFullscreen::FileSelectorFilters FullscreenUI::GetImageFileFilters()
+{
+	return {"*.png", "*.jpg", "*.jpeg", "*.bmp"};
 }
 
 void FullscreenUI::DoStartPath(const std::string& path, std::optional<s32> state_index, std::optional<bool> fast_boot)
@@ -1596,6 +1647,158 @@ void FullscreenUI::ConfirmShutdownIfMemcardBusy(std::function<void(bool)> callba
 bool FullscreenUI::ShouldDefaultToGameList()
 {
 	return Host::GetBaseBoolSettingValue("UI", "FullscreenUIDefaultToGameList", false);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Custom Background
+//////////////////////////////////////////////////////////////////////////
+
+void FullscreenUI::LoadCustomBackground()
+{
+	std::string path = Host::GetBaseStringSettingValue("UI", "GameListBackgroundPath");
+	
+	if (path.empty())
+	{
+		s_custom_background_texture.reset();
+		s_custom_background_path.clear();
+		s_custom_background_enabled = false;
+		return;
+	}
+
+	if (s_custom_background_path == path && s_custom_background_texture)
+	{
+		s_custom_background_enabled = true;
+		return;
+	}
+
+	if (!Path::IsAbsolute(path))
+		path = Path::Combine(EmuFolders::DataRoot, path);
+
+	if (!FileSystem::FileExists(path.c_str()))
+	{
+		Console.Warning("Custom background file not found: %s", path.c_str());
+		s_custom_background_texture.reset();
+		s_custom_background_path.clear();
+		s_custom_background_enabled = false;
+		return;
+	}
+
+	if (StringUtil::EndsWithNoCase(path, ".gif"))
+	{
+		Console.Warning("GIF files aren't supported as backgrounds: %s", path.c_str());
+		s_custom_background_texture.reset();
+		s_custom_background_path.clear();
+		s_custom_background_enabled = false;
+		return;
+	}
+
+	if (StringUtil::EndsWithNoCase(path, ".webp"))
+	{
+		Console.Warning("WebP files aren't supported as backgrounds: %s", path.c_str());
+		s_custom_background_texture.reset();
+		s_custom_background_path.clear();
+		s_custom_background_enabled = false;
+		return;
+	}
+
+	s_custom_background_texture = LoadTexture(path.c_str());
+	if (s_custom_background_texture)
+	{
+		s_custom_background_path = std::move(path);
+		s_custom_background_enabled = true;
+	}
+	else
+	{
+		Console.Error("Failed to load custom background: %s", path.c_str());
+		s_custom_background_path.clear();
+		s_custom_background_enabled = false;
+	}
+}
+
+void FullscreenUI::DrawCustomBackground()
+{
+	if (!s_custom_background_enabled || !s_custom_background_texture)
+		return;
+
+	const ImGuiIO& io = ImGui::GetIO();
+	const ImVec2 display_size = io.DisplaySize;
+	
+	const float opacity = Host::GetBaseFloatSettingValue("UI", "GameListBackgroundOpacity", 100.0f) / 100.0f;
+	const std::string mode = Host::GetBaseStringSettingValue("UI", "GameListBackgroundMode", "fit");
+
+	const float tex_width = static_cast<float>(s_custom_background_texture->GetWidth());
+	const float tex_height = static_cast<float>(s_custom_background_texture->GetHeight());
+	
+	ImVec2 img_min, img_max;
+	
+	if (mode == "stretch")
+	{
+		// stretch to fill entire display (ignores aspect ratio)
+		img_min = ImVec2(0.0f, 0.0f);
+		img_max = display_size;
+	}
+	else if (mode == "fill")
+	{
+		// Fill display while preserving aspect ratio (could crop edges)
+		const float display_aspect = display_size.x / display_size.y;
+		const float tex_aspect = tex_width / tex_height;
+		
+		float scale;
+		if (tex_aspect > display_aspect)
+		{
+			// Image is wider scale to height and crop sides
+			scale = display_size.y / tex_height;
+		}
+		else
+		{
+			// Image is taller scale to width and crop top/bottom
+			scale = display_size.x / tex_width;
+		}
+		
+		const float scaled_width = tex_width * scale;
+		const float scaled_height = tex_height * scale;
+		const float offset_x = (display_size.x - scaled_width) * 0.5f;
+		const float offset_y = (display_size.y - scaled_height) * 0.5f;
+		
+		img_min = ImVec2(offset_x, offset_y);
+		img_max = ImVec2(offset_x + scaled_width, offset_y + scaled_height);
+	}
+	else // "fit" or default
+	{
+		// Fit on screen while preserving aspect ratio (no cropping)
+		const float display_aspect = display_size.x / display_size.y;
+		const float tex_aspect = tex_width / tex_height;
+		
+		float scale;
+		if (tex_aspect > display_aspect)
+		{
+			// Image is wider than display
+			scale = display_size.x / tex_width;
+		}
+		else
+		{
+			// Image is taller than display
+			scale = display_size.y / tex_height;
+		}
+		
+		const float scaled_width = tex_width * scale;
+		const float scaled_height = tex_height * scale;
+		const float offset_x = (display_size.x - scaled_width) * 0.5f;
+		const float offset_y = (display_size.y - scaled_height) * 0.5f;
+		
+		img_min = ImVec2(offset_x, offset_y);
+		img_max = ImVec2(offset_x + scaled_width, offset_y + scaled_height);
+	}
+
+	// Override the UIBackgroundColor that windows use
+	// We need to make windows transparent so our background image shows through
+	const ImVec4 transparent_bg = ImVec4(UIBackgroundColor.x, UIBackgroundColor.y, UIBackgroundColor.z, 0.0f);
+	ImGuiFullscreen::UIBackgroundColor = transparent_bg;
+	
+	ImDrawList* bg_draw_list = ImGui::GetBackgroundDrawList();
+	const ImU32 col = IM_COL32(255, 255, 255, static_cast<u8>(opacity * 255.0f));
+	bg_draw_list->AddImage(reinterpret_cast<ImTextureID>(s_custom_background_texture->GetNativeHandle()),
+		img_min, img_max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), col);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -3391,13 +3594,15 @@ void FullscreenUI::DrawSettingsWindow()
 		ImVec2(io.DisplaySize.x, LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) +
 									 (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) + LayoutScale(2.0f));
 
-	const float bg_alpha = VMManager::HasValidVM() ? 0.90f : 1.0f;
+	const bool using_custom_bg = s_custom_background_enabled && s_custom_background_texture;
+	const float header_bg_alpha = VMManager::HasValidVM() ? 0.90f : 1.0f;
+	const float content_bg_alpha = using_custom_bg ? 0.0f : (VMManager::HasValidVM() ? 0.90f : 1.0f);
 	SettingsInterface* bsi = GetEditingSettingsInterface();
 	const bool game_settings = IsEditingGameSettings(bsi);
 	const bool show_advanced_settings = ShouldShowAdvancedSettings(bsi);
 
 	if (BeginFullscreenWindow(
-			ImVec2(0.0f, 0.0f), heading_size, "settings_category", ImVec4(UIPrimaryColor.x, UIPrimaryColor.y, UIPrimaryColor.z, bg_alpha)))
+			ImVec2(0.0f, 0.0f), heading_size, "settings_category", ImVec4(UIPrimaryColor.x, UIPrimaryColor.y, UIPrimaryColor.z, header_bg_alpha)))
 	{
 		static constexpr float ITEM_WIDTH = 25.0f;
 
@@ -3549,7 +3754,7 @@ void FullscreenUI::DrawSettingsWindow()
 			ImVec2(0.0f, heading_size.y),
 			ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y - LayoutScale(LAYOUT_FOOTER_HEIGHT)),
 			TinyString::from_format("settings_page_{}", static_cast<u32>(s_settings_page)).c_str(),
-			ImVec4(UIBackgroundColor.x, UIBackgroundColor.y, UIBackgroundColor.z, bg_alpha), 0.0f,
+			ImVec4(UIBackgroundColor.x, UIBackgroundColor.y, UIBackgroundColor.z, content_bg_alpha), 0.0f,
 			ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, 0.0f)))
 	{
 		ResetFocusHere();
@@ -3809,6 +4014,72 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_CIRCLE_INFO, "Use Save State Selector"),
 		FSUI_CSTR("Show a save state selector UI when switching slots instead of showing a notification bubble."),
 		"EmuCore", "UseSavestateSelector", true);
+
+	MenuHeading(FSUI_CSTR("Background"));
+	
+	std::string background_path = bsi->GetStringValue("UI", "GameListBackgroundPath", "");
+	const bool background_enabled = bsi->GetBoolValue("UI", "GameListBackgroundEnabled", false);
+	
+	std::string background_display = FSUI_STR("None");
+	if (!background_path.empty() && background_enabled)
+	{
+		background_display = Path::GetFileName(background_path);
+	}
+	
+	if (MenuButtonWithValue(FSUI_ICONSTR(ICON_FA_IMAGE, "Background Image"),
+			FSUI_CSTR("Select a custom background image to use in Big Picture Mode menus."),
+			background_display.c_str()))
+	{
+		OpenFileSelector(FSUI_ICONSTR(ICON_FA_IMAGE, "Select Background Image"), false,
+			[](const std::string& path) {
+				if (!path.empty())
+				{
+					auto lock = Host::GetSettingsLock();
+					SettingsInterface* bsi = GetEditingSettingsInterface(false);
+					
+					std::string relative_path = Path::MakeRelative(path, EmuFolders::DataRoot);
+					bsi->SetStringValue("UI", "GameListBackgroundPath", relative_path.c_str());
+					bsi->SetBoolValue("UI", "GameListBackgroundEnabled", true);
+					SetSettingsChanged(bsi);
+					
+					Host::RunOnCPUThread([]() {
+						LoadCustomBackground();
+					});
+				}
+				CloseFileSelector();
+			},
+			GetImageFileFilters());
+	}
+	
+	if (MenuButton(FSUI_ICONSTR(ICON_FA_XMARK, "Clear Background Image"),
+			FSUI_CSTR("Removes the custom background image.")))
+	{
+		bsi->DeleteValue("UI", "GameListBackgroundPath");
+		bsi->SetBoolValue("UI", "GameListBackgroundEnabled", false);
+		SetSettingsChanged(bsi);
+		
+		s_custom_background_texture.reset();
+		s_custom_background_path.clear();
+		s_custom_background_enabled = false;
+	}
+	
+	DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_DROPLET, "Background Opacity"),
+		FSUI_CSTR("Sets the transparency of the custom background image."),
+		"UI", "GameListBackgroundOpacity", 100, 0, 100, "%d%%");
+	
+	static constexpr const char* s_background_mode_names[] = {
+		FSUI_NSTR("Fit"),
+		FSUI_NSTR("Fill"),
+		FSUI_NSTR("Stretch"),
+	};
+	static constexpr const char* s_background_mode_values[] = {
+		"fit",
+		"fill",
+		"stretch",
+	};
+	DrawStringListSetting(bsi, FSUI_ICONSTR(ICON_FA_EXPAND, "Background Mode"),
+		FSUI_CSTR("Select how to display the background image."),
+		"UI", "GameListBackgroundMode", "fit", s_background_mode_names, s_background_mode_values, std::size(s_background_mode_names), true);
 
 	MenuHeading(FSUI_CSTR("Behaviour"));
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_PF_SNOOZE, "Inhibit Screensaver"),
@@ -7554,9 +7825,12 @@ void FullscreenUI::DrawGameListWindow()
 
 void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 {
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, UIBackgroundColor);
+	
 	if (!BeginFullscreenColumns(nullptr, heading_size.y, true, true))
 	{
 		EndFullscreenColumns();
+		ImGui::PopStyleColor();
 		return;
 	}
 
@@ -7753,6 +8027,8 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 	}
 	EndFullscreenColumnWindow();
 	EndFullscreenColumns();
+
+	ImGui::PopStyleColor();
 }
 
 void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
