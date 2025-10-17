@@ -164,7 +164,6 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* settings_dialog
 	dialog()->registerWidgetHelp(m_ui.rtcDateTime, tr("Real-Time Clock"), tr("Current date and time"),
 		tr("Real-time clock (RTC) used by the virtual PlayStation 2.<br>"
 		   "This time is only applied upon booting the PS2; changing it while in-game will have no effect.<br>"
-		   "NOTE: This assumes you have your PS2 set to the default timezone of GMT+0 and default DST of Summer Time.<br>"
 		   "Some games require an RTC date/time set after their release date."));
 	dialog()->registerWidgetHelp(m_ui.rtcUseSystemLocaleFormat, tr("Use System Locale Format"), tr("User Preference"),
 		tr("Uses the operating system's date/time format rather than \"yyyy-MM-dd HH:mm:ss\". May exclude seconds."));
