@@ -532,6 +532,8 @@ PAPX-90524:
   name-sort: "わいるどあーむず ざ ふぃふすゔぁんがーど [たいけんばん]"
   name-en: "Wild Arms - The Vth Vanguard [Trial]"
   region: "NTSC-J"
+  clampModes:
+    vu1ClampMode: 3 # Fixes SPS on shell worm enemies.
   gsHWFixes:
     roundSprite: 1 # Fixes font sizes and lines in UI.
     textureInsideRT: 1 # Fixes sepia-tone flashback sequences.
@@ -2450,6 +2452,8 @@ SCAJ-20183:
   name-sort: "わいるどあーむず ざ ふぃふすゔぁんがーど"
   name-en: "Wild Arms - The Vth Vanguard"
   region: "NTSC-J"
+  clampModes:
+    vu1ClampMode: 3 # Fixes SPS on shell worm enemies.
   gsHWFixes:
     roundSprite: 1 # Fixes font sizes and lines in UI.
     textureInsideRT: 1 # Fixes sepia-tone flashback sequences.
@@ -9566,6 +9570,8 @@ SCPS-15118:
   name-sort: "わいるどあーむず ざ ふぃふすゔぁんがーど"
   name-en: "Wild ARMs - The Vth Vanguard"
   region: "NTSC-J"
+  clampModes:
+    vu1ClampMode: 3 # Fixes SPS on shell worm enemies.
   gsHWFixes:
     roundSprite: 1 # Fixes font sizes and lines in UI.
     textureInsideRT: 1 # Fixes sepia-tone flashback sequences.
@@ -10276,6 +10282,8 @@ SCPS-19333:
   name-sort: "わいるどあーむず ざ ふぃふすゔぁんがーど [PlayStation2 the Best]"
   name-en: "Wild ARMs - The Vth Vanguard [PlayStation2 the Best]"
   region: "NTSC-J"
+  clampModes:
+    vu1ClampMode: 3 # Fixes SPS on shell worm enemies.
   gsHWFixes:
     roundSprite: 1 # Fixes font sizes and lines in UI.
     textureInsideRT: 1 # Fixes sepia-tone flashback sequences.
@@ -28238,6 +28246,8 @@ SLES-54971:
 SLES-54972:
   name: "Wild Arms 5"
   region: "PAL-M3"
+  clampModes:
+    vu1ClampMode: 3 # Fixes SPS on shell worm enemies.
   gsHWFixes:
     roundSprite: 1 # Fixes font sizes and lines in UI.
     textureInsideRT: 1 # Fixes sepia-tone flashback sequences.
@@ -72635,6 +72645,8 @@ SLUS-21615:
   name: "Wild ARMs 5"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    vu1ClampMode: 3 # Fixes SPS on shell worm enemies.
   gsHWFixes:
     roundSprite: 1 # Fixes font sizes and lines in UI.
     textureInsideRT: 1 # Fixes sepia-tone flashback sequences.
