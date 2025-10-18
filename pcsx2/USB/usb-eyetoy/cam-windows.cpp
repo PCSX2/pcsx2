@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "common/Console.h"
+#include "common/Error.h"
 #include "common/StringUtil.h"
 
 #include "videodev.h"
@@ -527,7 +528,13 @@ namespace usb_eyetoy
 
 		int DirectShow::Open(int width, int height, FrameFormat format, int mirror)
 		{
-			dshowCoInitialize = wil::CoInitializeEx_failfast(COINIT_MULTITHREADED);
+			const HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+			if (FAILED(hr))
+			{
+				Console.ErrorFmt("CoInitializeEx failed: {}", Error::CreateHResult(hr).GetDescription());
+				return -1;
+			}
+			wil::unique_couninitialize_call uninit;
 
 			frame_width = width;
 			frame_height = height;
@@ -545,7 +552,7 @@ namespace usb_eyetoy
 			int ret = InitializeDevice(StringUtil::UTF8StringToWideString(mHostDevice));
 			if (ret < 0)
 			{
-				Console.Warning("Camera: cannot find '%s'", mHostDevice.c_str());
+				Console.WarningFmt("Camera: cannot find '{}'", mHostDevice);
 				return -1;
 			}
 
@@ -559,6 +566,7 @@ namespace usb_eyetoy
 				return -1;
 			}
 
+			dshowCoInitialize = std::move(uninit);
 			return 0;
 		};
 

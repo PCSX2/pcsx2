@@ -6,9 +6,17 @@
 #include "Host.h"
 #include "common/Assertions.h"
 #include "common/Console.h"
+#include "common/Error.h"
 
 #include "cubeb/cubeb.h"
 #include "fmt/format.h"
+
+#ifdef _WIN32
+#include "common/RedtapeWindows.h"
+#include <objbase.h>
+
+#include "wil/resource.h"
+#endif
 
 // Since the context gets used to populate the device list, that unfortunately means
 // we need locking around it, since the UI thread's gonna be saying hi. The settings
@@ -22,7 +30,24 @@ static std::mutex s_cubeb_context_mutex;
 
 static cubeb* GetCubebContext(const char* backend = nullptr)
 {
-	std::unique_lock lock(s_cubeb_context_mutex);
+	std::lock_guard lock(s_cubeb_context_mutex);
+
+#ifdef _WIN32
+	// For enumeration, we need *any* COM context. multi- or single-threaded.
+	// As COM is per-thread, initialize and tear it down every time.
+	// Doing it only on 0 refcount is a bad idea, because the Cubeb context could be created on one thread, and destroyed on another.
+	HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+	if (hr == RPC_E_CHANGED_MODE)
+	{
+		hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+	}
+	if (FAILED(hr))
+	{
+		Console.ErrorFmt("CoInitializeEx failed: {}", Error::CreateHResult(hr).GetDescription());
+		return nullptr;
+	}
+	wil::unique_couninitialize_call uninit;
+#endif
 
 	if (!s_cubeb_context)
 	{
@@ -41,12 +66,17 @@ static cubeb* GetCubebContext(const char* backend = nullptr)
 	if (s_cubeb_context)
 		s_cubeb_refcount++;
 
+#ifdef _WIN32
+	// ReleaseCubebContext will call CoUninitialize
+	uninit.release();
+#endif
+
 	return s_cubeb_context;
 }
 
 static void ReleaseCubebContext()
 {
-	std::unique_lock lock(s_cubeb_context_mutex);
+	std::lock_guard lock(s_cubeb_context_mutex);
 
 	pxAssert(s_cubeb_refcount > 0);
 	if ((--s_cubeb_refcount) == 0)
@@ -59,6 +89,10 @@ static void ReleaseCubebContext()
 		cubeb_destroy(s_cubeb_context);
 		s_cubeb_context = nullptr;
 	}
+
+#ifdef _WIN32
+	CoUninitialize();
+#endif
 }
 
 static cubeb_devid FindCubebDevice(const char* devname, bool input)
