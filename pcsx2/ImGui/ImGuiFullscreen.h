@@ -255,8 +255,16 @@ namespace ImGuiFullscreen
 
 	using InputStringDialogCallback = std::function<void(std::string text)>;
 	bool IsInputDialogOpen();
+	enum class InputFilterType : u8
+	{
+		None,
+		Numeric,
+		IPAddress
+	};
+
 	void OpenInputStringDialog(
-		std::string title, std::string message, std::string caption, std::string ok_button_text, InputStringDialogCallback callback);
+		std::string title, std::string message, std::string caption, std::string ok_button_text, InputStringDialogCallback callback,
+		std::string default_value = std::string(), InputFilterType filter_type = InputFilterType::None);
 	void CloseInputDialog();
 
 	using ConfirmMessageDialogCallback = std::function<void(bool)>;
@@ -276,9 +284,9 @@ namespace ImGuiFullscreen
 	void SetNotificationVerticalPosition(float position, float direction);
 	void SetNotificationPosition(float horizontal_position, float vertical_position, float direction);
 
-	void OpenBackgroundProgressDialog(const char* str_id, std::string message, s32 min, s32 max, s32 value);
-	void UpdateBackgroundProgressDialog(const char* str_id, std::string message, s32 min, s32 max, s32 value);
-	void CloseBackgroundProgressDialog(const char* str_id);
+	void OpenProgressDialog(const char* str_id, std::string message, s32 min, s32 max, s32 value);
+	void UpdateProgressDialog(const char* str_id, std::string message, s32 min, s32 max, s32 value);
+	void CloseProgressDialog(const char* str_id);
 
 	void AddNotification(std::string key, float duration, std::string title, std::string text, std::string image_path);
 	void ClearNotifications();
