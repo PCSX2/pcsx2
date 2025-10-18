@@ -75,6 +75,18 @@ const char* InterfaceSettingsWidget::THEME_VALUES[] = {
 	"Custom",
 	nullptr};
 
+const char* InterfaceSettingsWidget::BACKGROUND_MODE_NAMES[] = {
+	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Fit"),
+	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Fill"),
+	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Stretch"),
+	nullptr};
+
+const char* InterfaceSettingsWidget::BACKGROUND_MODE_VALUES[] = {
+	"fit",
+	"fill",
+	"stretch",
+	nullptr};
+
 InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* settings_dialog, QWidget* parent)
 	: SettingsWidget(settings_dialog, parent)
 {
@@ -110,11 +122,13 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* settings_dialog
 	connect(m_ui.theme, QOverload<int>::of(&QComboBox::currentIndexChanged), [this]() { emit themeChanged(); });
 
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.backgroundOpacity, "UI", "GameListBackgroundOpacity", 100);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.backgroundFill, "UI", "GameListBackgroundFill", false);
+	SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.backgroundMode, "UI", "GameListBackgroundMode",
+		BACKGROUND_MODE_NAMES, BACKGROUND_MODE_VALUES, "fit", "InterfaceSettingsWidget");
+
 	connect(m_ui.backgroundBrowse, &QPushButton::clicked, [this]() { onSetGameListBackgroundTriggered(); });
 	connect(m_ui.backgroundReset, &QPushButton::clicked, [this]() { onClearGameListBackgroundTriggered(); });
 	connect(m_ui.backgroundOpacity, &QSpinBox::valueChanged, [this]() { emit backgroundChanged(); });
-	connect(m_ui.backgroundFill, &QCheckBox::checkStateChanged, [this]() {emit backgroundChanged(); });
+	connect(m_ui.backgroundMode, QOverload<int>::of(&QComboBox::currentIndexChanged), [this]() { emit backgroundChanged(); });
 
 	populateLanguages();
 	SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.language, "UI", "Language", QtHost::GetDefaultLanguage());
@@ -207,8 +221,8 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* settings_dialog
 		m_ui.backgroundOpacity, tr("Game List Background Opacity"), tr("100%"),
 		tr("Sets the opacity of the custom background."));
 	dialog()->registerWidgetHelp(
-		m_ui.backgroundFill, tr("Fill Image"), tr("Unchecked"),
-		tr("Expand the image to fill all available background area."));
+		m_ui.backgroundMode, tr("Background Mode"), tr("Fit"),
+		tr("Select how to display the background image: Fit (preserve aspect, fit on screen), Fill (preserve aspect, fill screen), or Stretch (ignore aspect)."));
 
 	onRenderToSeparateWindowChanged();
 }
