@@ -38,7 +38,7 @@ if(NOT "${CMAKE_BUILD_TYPE}" MATCHES "Debug")
 	if(MSVC)
 		target_compile_options(pcsx2-soundtouch PRIVATE /O2 /fp:fast)
 	else()
-		target_compile_options(pcsx2-soundtouch PRIVATE -Ofast)
+		target_compile_options(pcsx2-soundtouch PRIVATE -O3 -ffast-math)
 	endif()
 endif()
 
