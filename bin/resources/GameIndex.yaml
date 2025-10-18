@@ -1840,6 +1840,8 @@ SCAJ-20095:
   region: "NTSC-Unk"
   gameFixes:
     - EETimingHack
+  gsHWFixes:
+    halfPixelOffset: 4 # Aligns shadows to prevent artefacts.
 SCAJ-20096:
   name: "Guilty Gear Isuka"
   region: "NTSC-Unk"
@@ -3821,9 +3823,13 @@ SCED-52491:
 SCED-52496:
   name: "This Is Football 2004 [Demo]"
   region: "PAL-M4"
+  gsHWFixes:
+    PCRTCOffsets: 1 # Fixes boot videos screen size.
 SCED-52497:
   name: "This Is Football 2004 [Demo]"
   region: "PAL-M4"
+  gsHWFixes:
+    PCRTCOffsets: 1 # Fixes boot videos screen size.
 SCED-52549:
   name: "Official PlayStation 2 Magazine Demo 47"
   region: "PAL-M5"
@@ -5391,18 +5397,28 @@ SCES-51608:
 SCES-51610:
   name: "This is Football 2004 [Red Devils 2004]"
   region: "PAL-BE"
+  gsHWFixes:
+    PCRTCOffsets: 1 # Fixes boot videos screen size.
 SCES-51611:
   name: "This is Football 2004"
   region: "PAL-M4"
+  gsHWFixes:
+    PCRTCOffsets: 1 # Fixes boot videos screen size.
 SCES-51612:
-  name: "This is Football 5"
+  name: "This Is Football 2004"
   region: "PAL-E-N"
+  gsHWFixes:
+    PCRTCOffsets: 1 # Fixes boot videos screen size.
 SCES-51613:
   name: "This is Football 2004"
   region: "PAL-M4"
+  gsHWFixes:
+    PCRTCOffsets: 1 # Fixes boot videos screen size.
 SCES-51614:
   name: "Monde des Bleus 2004, Le - Nouvelle Generation"
   region: "PAL-F"
+  gsHWFixes:
+    PCRTCOffsets: 1 # Fixes boot videos screen size.
 SCES-51618:
   name: "SOCOM - U.S. Navy SEALs"
   region: "PAL-M5"
@@ -11908,6 +11924,8 @@ SCUS-97362:
 SCUS-97365:
   name: "World Tour Soccer 2005"
   region: "NTSC-U"
+  gsHWFixes:
+    PCRTCOffsets: 1 # Fixes boot videos screen size.
 SCUS-97366:
   name: "SOCOM II - U.S. Navy SEALs [Public Beta v1.0]"
   region: "NTSC-U"
@@ -12011,6 +12029,8 @@ SCUS-97395:
 SCUS-97396:
   name: "World Tour Soccer 2005 [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    PCRTCOffsets: 1 # Fixes boot videos screen size.
 SCUS-97397:
   name: "Syphon Filter - The Omega Strain"
   region: "NTSC-U"
@@ -19970,6 +19990,10 @@ SLES-52342:
   name: "Worms Forts - Under Siege"
   region: "PAL-E-F"
   compat: 5
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
+  gsHWFixes:
+    PCRTCOverscan: 1 # Centers game output.
 SLES-52343:
   name: "Midway Arcade Treasures"
   region: "PAL-E"
@@ -21168,6 +21192,10 @@ SLES-52733:
 SLES-52734:
   name: "Worms Forts - Under Siege"
   region: "PAL-M5"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
+  gsHWFixes:
+    PCRTCOverscan: 1 # Centers game output.
 SLES-52737:
   name: "Obscure"
   region: "PAL-E"
@@ -23268,6 +23296,8 @@ SLES-53458:
   name: "Shin Megami Tensei - Digital Devil Saga"
   region: "PAL-E"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 4 # Aligns shadows to prevent artefacts.
 SLES-53459:
   name: "Marc Ecko's Getting Up - Contents Under Pressure"
   region: "PAL-M5"
@@ -32381,6 +32411,8 @@ SLKA-25300:
   compat: 5
   gameFixes:
     - EETimingHack
+  gsHWFixes:
+    halfPixelOffset: 4 # Aligns shadows to prevent artefacts.
 SLKA-25301:
   name: "디지털 데빌 사가: 아바탈 튜너 2" # Undumped on ReDump as of 2025-08-28
   name-en: "Digital Devil Saga - Avatar Tuner 2"
@@ -44249,6 +44281,8 @@ SLPM-65597:
   region: "NTSC-J"
   gameFixes:
     - EETimingHack
+  gsHWFixes:
+    halfPixelOffset: 4 # Aligns shadows to prevent artefacts.
 SLPM-65598:
   name: "転生學園 幻蒼録"
   name-sort: "てんしょうがくえん げんそうろく"
@@ -48995,6 +49029,8 @@ SLPM-66372:
   region: "NTSC-J"
   gameFixes:
     - EETimingHack
+  gsHWFixes:
+    halfPixelOffset: 4 # Aligns shadows to prevent artefacts.
 SLPM-66373:
   name: "DIGITAL DEVIL SAGA ～アバタール・チューナー2～ [ATLUS BEST COLLECTION]"
   name-sort: "でじたるでびるさーが あばたーるちゅーなー2 [ATLUS BEST COLLECTION]"
@@ -68653,6 +68689,8 @@ SLUS-20974:
   name: "Shin Megami Tensei - Digital Devil Saga"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 4 # Aligns shadows to prevent artefacts.
 SLUS-20975:
   name: "One Piece - Grand Battle"
   region: "NTSC-U"
@@ -69376,6 +69414,8 @@ SLUS-21093:
   name: "Worms Forts - Under Siege"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
 SLUS-21094:
   name: "Midway Arcade Treasures 3"
   region: "NTSC-U"
@@ -73867,7 +73907,7 @@ SLUS-21831:
   region: "NTSC-U"
   compat: 5
 SLUS-21834:
-  name: "Goosebumps Horrorland - Happy Halloween"
+  name: "Goosebumps Horrorland"
   region: "NTSC-U"
   compat: 5
   clampModes:
@@ -74623,6 +74663,8 @@ SLUS-28046:
 SLUS-28049:
   name: "Shin Megami Tensei - Digital Devil Saga [Trade Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 4 # Aligns shadows to prevent artefacts.
 SLUS-28050:
   name: "Stella Deus - The Gate of Eternity [Trade Demo]"
   region: "NTSC-U"
@@ -75524,7 +75566,9 @@ TCES-10001:
   region: "PAL-E"
 TCES-51613:
   name: "This Is Football 2004 Beta Trial Code"
-  region: "PAL-E-S"
+  region: "PAL-E"
+  gsHWFixes:
+    PCRTCOffsets: 1 # Fixes boot videos screen size.
 TCES-51904:
   name: "SOCOM II - U.S. Navy SEALs Beta Trial Code"
   region: "PAL-M5"
