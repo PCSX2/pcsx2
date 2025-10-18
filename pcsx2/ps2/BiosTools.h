@@ -43,7 +43,7 @@ typedef struct
 			/** LANGUAGE_??? value */
 			/*16*/ u32 language : 5;
 			/** timezone minutes offset from gmt */
-			/*21*/ u32 timezoneOffset : 11;
+			/*21*/ s32 timezoneOffset : 11;
 		};
 
 		u8  UC[4];
@@ -117,3 +117,7 @@ extern bool IsBIOSAvailable(const std::string& full_path);
 
 extern bool LoadBIOS();
 extern void CopyBIOSToMemory();
+
+extern bool GetDaylightSavings();
+extern bool GetTimeFormat();
+extern u8 GetDateFormat();
