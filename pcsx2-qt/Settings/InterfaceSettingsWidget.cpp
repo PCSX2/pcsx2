@@ -88,13 +88,27 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* settings_dialog
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pauseOnControllerDisconnection, "UI", "PauseOnControllerDisconnection", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.discordPresence, "EmuCore", "EnableDiscordPresence", false);
 
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.mouseLock, "EmuCore", "EnableMouseLock", false);
-	connect(m_ui.mouseLock, &QCheckBox::checkStateChanged, [](Qt::CheckState state) {
-		if (state == Qt::Checked)
-			Common::AttachMousePositionCb([](int x, int y) { g_main_window->checkMousePosition(x, y); });
-		else
-			Common::DetachMousePositionCb();
-	});
+#ifdef __linux__ 	// Mouse locking is only supported on X11
+	const bool mouse_lock_supported = QGuiApplication::platformName().toLower() == "xcb";
+#else
+	const bool mouse_lock_supported = true;
+#endif
+
+	if(mouse_lock_supported)
+	{
+		SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.mouseLock, "EmuCore", "EnableMouseLock", false);
+		connect(m_ui.mouseLock, &QCheckBox::checkStateChanged, [](Qt::CheckState state) {
+			if (state == Qt::Checked)
+				Common::AttachMousePositionCb([](int x, int y) { g_main_window->checkMousePosition(x, y); });
+			else
+				Common::DetachMousePositionCb();
+		});
+	}
+	else
+	{
+		m_ui.mouseLock->setEnabled(false);
+	}
+
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.startFullscreen, "UI", "StartFullscreen", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.doubleClickTogglesFullscreen, "UI", "DoubleClickTogglesFullscreen",
 		true);
