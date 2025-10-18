@@ -708,8 +708,8 @@ std::optional<bool> Pcsx2Config::GSOptions::TriStateToOptionalBoolean(int value)
 
 Pcsx2Config::GSOptions::GSOptions()
 {
-	bitset[0] = 0;
-	bitset[1] = 0;
+	bitsets[0] = 0;
+	bitsets[1] = 0;
 
 	PCRTCAntiBlur = true;
 	DisableInterlaceOffset = false;
@@ -798,7 +798,8 @@ bool Pcsx2Config::GSOptions::operator==(const GSOptions& right) const
 bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 {
 	return (
-		OpEqu(bitset) &&
+		OpEqu(bitsets[0]) &&
+		OpEqu(bitsets[1]) &&
 
 		OpEqu(InterlaceMode) &&
 		OpEqu(LinearPresent) &&
