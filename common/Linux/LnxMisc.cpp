@@ -15,6 +15,7 @@
 
 #include <dbus/dbus.h>
 #include <spawn.h>
+#include <string>
 #include <sys/sysinfo.h>
 #include <sys/time.h>
 #include <sys/wait.h>

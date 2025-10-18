@@ -169,6 +169,9 @@ namespace FileSystem
 	/// Returns the path to the current executable.
 	std::string GetProgramPath();
 
+	/// Returns the path to the current package (Linux AppImage).
+	std::string GetPackagePath();
+
 	/// Retrieves the current working directory.
 	std::string GetWorkingDirectory();
 

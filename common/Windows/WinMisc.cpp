@@ -4,14 +4,28 @@
 #include "common/Console.h"
 #include "common/FileSystem.h"
 #include "common/HostSys.h"
+#include "common/Path.h"
 #include "common/RedtapeWindows.h"
 #include "common/StringUtil.h"
 #include "common/Threading.h"
 #include "common/WindowInfo.h"
 
+#include "pcsx2/Host.h"
+#include "fmt/format.h"
+
+#include <Windows.h>
+#include <shlobj.h>
+#include <winnls.h>
+#include <shobjidl.h>
+#include <objbase.h>
+#include <objidl.h>
+#include <shlguid.h>
+#include <comdef.h>
 #include <mmsystem.h>
 #include <timeapi.h>
 #include <VersionHelpers.h>
+
+#include <wrl/client.h>
 
 // If anything tries to read this as an initializer, we're in trouble.
 static const LARGE_INTEGER lfreq = []() {
