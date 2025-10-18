@@ -14,9 +14,6 @@
 #include <webp/decode.h>
 #include <webp/encode.h>
 
-// Compute the address of a base type given a field offset.
-#define BASE_FROM_RECORD_FIELD(ptr, base_type, field) ((base_type*)(((char*)ptr) - offsetof(base_type, field)))
-
 static bool PNGBufferLoader(RGBA8Image* image, const void* buffer, size_t buffer_size);
 static bool PNGBufferSaver(const RGBA8Image& image, std::vector<u8>* buffer, u8 quality);
 static bool PNGFileLoader(RGBA8Image* image, const char* filename, std::FILE* fp);
@@ -491,6 +488,8 @@ bool JPEGFileLoader(RGBA8Image* image, const char* filename, std::FILE* fp)
 
 	struct FileCallback
 	{
+		// Must be the first member (&this == &mgr)
+		// We pass a pointer of mgr to libjpeg, and we need to be able to cast it back to FileCallback.
 		jpeg_source_mgr mgr;
 
 		std::FILE* fp;
@@ -502,7 +501,7 @@ bool JPEGFileLoader(RGBA8Image* image, const char* filename, std::FILE* fp)
 		.mgr = {
 			.init_source = [](j_decompress_ptr cinfo) {},
 			.fill_input_buffer = [](j_decompress_ptr cinfo) -> boolean {
-				FileCallback* cb = BASE_FROM_RECORD_FIELD(cinfo->src, FileCallback, mgr);
+				FileCallback* cb = reinterpret_cast<FileCallback*>(cinfo->src);
 				cb->mgr.next_input_byte = cb->buffer.get();
 				if (cb->end_of_file)
 				{
@@ -519,7 +518,7 @@ bool JPEGFileLoader(RGBA8Image* image, const char* filename, std::FILE* fp)
 			},
 			.skip_input_data =
 				[](j_decompress_ptr cinfo, long num_bytes) {
-					FileCallback* cb = BASE_FROM_RECORD_FIELD(cinfo->src, FileCallback, mgr);
+					FileCallback* cb = reinterpret_cast<FileCallback*>(cinfo->src);
 					const size_t skip_in_buffer = std::min<size_t>(cb->mgr.bytes_in_buffer, static_cast<size_t>(num_bytes));
 					cb->mgr.next_input_byte += skip_in_buffer;
 					cb->mgr.bytes_in_buffer -= skip_in_buffer;
@@ -656,12 +655,12 @@ bool JPEGFileSaver(const RGBA8Image& image, const char* filename, std::FILE* fp,
 		.mgr = {
 			.init_destination =
 				[](j_compress_ptr cinfo) {
-					FileCallback* cb = BASE_FROM_RECORD_FIELD(cinfo->dest, FileCallback, mgr);
+					FileCallback* cb = reinterpret_cast<FileCallback*>(cinfo->dest);
 					cb->mgr.next_output_byte = cb->buffer.get();
 					cb->mgr.free_in_buffer = BUFFER_SIZE;
 				},
 			.empty_output_buffer = [](j_compress_ptr cinfo) -> boolean {
-				FileCallback* cb = BASE_FROM_RECORD_FIELD(cinfo->dest, FileCallback, mgr);
+				FileCallback* cb = reinterpret_cast<FileCallback*>(cinfo->dest);
 				if (!cb->write_error)
 					cb->write_error |= (std::fwrite(cb->buffer.get(), 1, BUFFER_SIZE, cb->fp) != BUFFER_SIZE);
 
@@ -671,7 +670,7 @@ bool JPEGFileSaver(const RGBA8Image& image, const char* filename, std::FILE* fp,
 			},
 			.term_destination =
 				[](j_compress_ptr cinfo) {
-					FileCallback* cb = BASE_FROM_RECORD_FIELD(cinfo->dest, FileCallback, mgr);
+					FileCallback* cb = reinterpret_cast<FileCallback*>(cinfo->dest);
 					const size_t left = BUFFER_SIZE - cb->mgr.free_in_buffer;
 					if (left > 0 && !cb->write_error)
 						cb->write_error |= (std::fwrite(cb->buffer.get(), 1, left, cb->fp) != left);
