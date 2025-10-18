@@ -32,6 +32,9 @@
         <property name="text">
          <string extracomment="Rounding refers here to the mathematical term.">Rounding Mode:</string>
         </property>
+        <property name="buddy">
+         <cstring>eeRoundingMode</cstring>
+        </property>
        </widget>
       </item>
       <item row="0" column="1">
@@ -63,6 +66,9 @@
         <property name="text">
          <string extracomment="Rounding refers here to the mathematical term.">Division Rounding Mode:</string>
         </property>
+        <property name="buddy">
+         <cstring>eeDivRoundingMode</cstring>
+        </property>
        </widget>
       </item>
       <item row="1" column="1">
@@ -93,6 +99,9 @@
        <widget class="QLabel" name="eeClampLabel">
         <property name="text">
          <string extracomment="Clamping: Forcing out of bounds things in bounds by changing them to the closest possible value.  In this case, this refers to clamping large PS2 floating point values (which map to infinity or NaN in PCs' IEEE754 floats) to non-infinite ones.">Clamping Mode:</string>
+        </property>
+        <property name="buddy">
+         <cstring>eeClampMode</cstring>
         </property>
        </widget>
       </item>
@@ -187,6 +196,9 @@
         <property name="text">
          <string>VU1 Rounding Mode:</string>
         </property>
+        <property name="buddy">
+         <cstring>vu1RoundingMode</cstring>
+        </property>
        </widget>
       </item>
       <item row="0" column="1">
@@ -274,6 +286,9 @@
         <property name="text">
          <string>VU0 Clamping Mode:</string>
         </property>
+        <property name="buddy">
+         <cstring>vu0ClampMode</cstring>
+        </property>
        </widget>
       </item>
       <item row="0" column="0">
@@ -281,12 +296,18 @@
         <property name="text">
          <string>VU0 Rounding Mode:</string>
         </property>
+        <property name="buddy">
+         <cstring>vu0RoundingMode</cstring>
+        </property>
        </widget>
       </item>
       <item row="3" column="0">
        <widget class="QLabel" name="vu1ClampLabel">
         <property name="text">
          <string>VU1 Clamping Mode:</string>
+        </property>
+        <property name="buddy">
+         <cstring>vu1ClampMode</cstring>
         </property>
        </widget>
       </item>
@@ -446,6 +467,9 @@
         <property name="text">
          <string>Compression Level:</string>
         </property>
+        <property name="buddy">
+         <cstring>savestateCompressionLevel</cstring>
+        </property>
        </widget>
       </item>
       <item row="3" column="0">
@@ -459,6 +483,9 @@
        <widget class="QLabel" name="savestateCompressionLabel">
         <property name="text">
          <string>Compression Method:</string>
+        </property>
+        <property name="buddy">
+         <cstring>savestateCompressionMethod</cstring>
         </property>
        </widget>
       </item>
@@ -499,6 +526,9 @@
         <property name="text">
          <string>Slot:</string>
         </property>
+        <property name="buddy">
+         <cstring>pineSlot</cstring>
+        </property>
        </widget>
       </item>
       <item row="0" column="0">
@@ -514,7 +544,7 @@
    <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
-      <enum>Qt::Vertical</enum>
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
@@ -526,6 +556,36 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>eeRoundingMode</tabstop>
+  <tabstop>eeDivRoundingMode</tabstop>
+  <tabstop>eeClampMode</tabstop>
+  <tabstop>eeRecompiler</tabstop>
+  <tabstop>eeCache</tabstop>
+  <tabstop>eeWaitLoopDetection</tabstop>
+  <tabstop>eeINTCSpinDetection</tabstop>
+  <tabstop>eeFastmem</tabstop>
+  <tabstop>pauseOnTLBMiss</tabstop>
+  <tabstop>extraMemory</tabstop>
+  <tabstop>vu0RoundingMode</tabstop>
+  <tabstop>vu0ClampMode</tabstop>
+  <tabstop>vu1RoundingMode</tabstop>
+  <tabstop>vu1ClampMode</tabstop>
+  <tabstop>vu0Recompiler</tabstop>
+  <tabstop>vu1Recompiler</tabstop>
+  <tabstop>vuFlagHack</tabstop>
+  <tabstop>instantVU1</tabstop>
+  <tabstop>iopRecompiler</tabstop>
+  <tabstop>gameFixes</tabstop>
+  <tabstop>patches</tabstop>
+  <tabstop>savestateCompressionMethod</tabstop>
+  <tabstop>savestateCompressionLevel</tabstop>
+  <tabstop>backupSaveStates</tabstop>
+  <tabstop>saveStateOnShutdown</tabstop>
+  <tabstop>savestateSelector</tabstop>
+  <tabstop>pineEnable</tabstop>
+  <tabstop>pineSlot</tabstop>
+ </tabstops>
  <resources>
   <include location="../resources/resources.qrc"/>
  </resources>

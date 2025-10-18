@@ -43,14 +43,13 @@
            <string>Bindings</string>
           </property>
           <property name="icon">
-           <iconset theme="controller-line">
-            <normaloff>.</normaloff>.</iconset>
+           <iconset theme="controller-line"/>
           </property>
           <property name="checkable">
            <bool>true</bool>
           </property>
           <property name="toolButtonStyle">
-           <enum>Qt::ToolButtonTextBesideIcon</enum>
+           <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
           </property>
           <property name="autoRaise">
            <bool>true</bool>
@@ -63,14 +62,13 @@
            <string>Settings</string>
           </property>
           <property name="icon">
-           <iconset theme="checkbox-multiple-blank-line">
-            <normaloff>.</normaloff>.</iconset>
+           <iconset theme="checkbox-multiple-blank-line"/>
           </property>
           <property name="checkable">
            <bool>true</bool>
           </property>
           <property name="toolButtonStyle">
-           <enum>Qt::ToolButtonTextBesideIcon</enum>
+           <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
           </property>
           <property name="autoRaise">
            <bool>true</bool>
@@ -82,7 +80,7 @@
       <item>
        <spacer name="horizontalSpacer">
         <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+         <enum>Qt::Orientation::Horizontal</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
@@ -100,11 +98,10 @@
            <string>Automatic Mapping</string>
           </property>
           <property name="icon">
-           <iconset theme="controller-line">
-            <normaloff>.</normaloff>.</iconset>
+           <iconset theme="controller-line"/>
           </property>
           <property name="toolButtonStyle">
-           <enum>Qt::ToolButtonTextBesideIcon</enum>
+           <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
           </property>
          </widget>
         </item>
@@ -114,11 +111,10 @@
            <string>Clear Mapping</string>
           </property>
           <property name="icon">
-           <iconset theme="trash-fill">
-            <normaloff>.</normaloff>.</iconset>
+           <iconset theme="trash-fill"/>
           </property>
           <property name="toolButtonStyle">
-           <enum>Qt::ToolButtonTextBesideIcon</enum>
+           <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
           </property>
          </widget>
         </item>
@@ -132,6 +128,14 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>deviceType</tabstop>
+  <tabstop>deviceSubtype</tabstop>
+  <tabstop>bindings</tabstop>
+  <tabstop>settings</tabstop>
+  <tabstop>automaticBinding</tabstop>
+  <tabstop>clearBindings</tabstop>
+ </tabstops>
  <resources>
   <include location="../resources/resources.qrc"/>
  </resources>

@@ -25,6 +25,9 @@
         <property name="text">
          <string>Graphics API:</string>
         </property>
+        <property name="buddy">
+         <cstring>rendererDropdown</cstring>
+        </property>
        </widget>
       </item>
       <item row="0" column="1">
@@ -34,6 +37,9 @@
        <widget class="QLabel" name="adapterText">
         <property name="text">
          <string>Adapter:</string>
+        </property>
+        <property name="buddy">
+         <cstring>adapterDropdown</cstring>
         </property>
        </widget>
       </item>
@@ -45,6 +51,10 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>rendererDropdown</tabstop>
+  <tabstop>adapterDropdown</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

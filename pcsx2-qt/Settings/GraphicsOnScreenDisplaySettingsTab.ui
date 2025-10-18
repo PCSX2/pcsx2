@@ -25,6 +25,9 @@
         <property name="text">
          <string>OSD Messages Position:</string>
         </property>
+        <property name="buddy">
+         <cstring>messagesPos</cstring>
+        </property>
        </widget>
       </item>
       <item row="0" column="1">
@@ -265,6 +268,9 @@
         <property name="text">
          <string>OSD Scale:</string>
         </property>
+        <property name="buddy">
+         <cstring>scale</cstring>
+        </property>
        </widget>
       </item>
       <item row="2" column="1">
@@ -342,6 +348,9 @@
         <property name="text">
          <string>OSD Performance Position:</string>
         </property>
+        <property name="buddy">
+         <cstring>performancePos</cstring>
+        </property>
        </widget>
       </item>
      </layout>
@@ -362,6 +371,28 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>scale</tabstop>
+  <tabstop>messagesPos</tabstop>
+  <tabstop>performancePos</tabstop>
+  <tabstop>showSpeed</tabstop>
+  <tabstop>showFPS</tabstop>
+  <tabstop>showVPS</tabstop>
+  <tabstop>showResolution</tabstop>
+  <tabstop>showGSStats</tabstop>
+  <tabstop>showFrameTimes</tabstop>
+  <tabstop>showCPU</tabstop>
+  <tabstop>showGPU</tabstop>
+  <tabstop>showHardwareInfo</tabstop>
+  <tabstop>showVersion</tabstop>
+  <tabstop>showIndicators</tabstop>
+  <tabstop>showSettings</tabstop>
+  <tabstop>showPatches</tabstop>
+  <tabstop>showInputs</tabstop>
+  <tabstop>showVideoCapture</tabstop>
+  <tabstop>showInputRec</tabstop>
+  <tabstop>warnAboutUnsafeSettings</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
