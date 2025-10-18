@@ -90,7 +90,9 @@ namespace QtUtils
 
 		const int min_column_width = header->minimumSectionSize();
 		const int scrollbar_width = ((view->verticalScrollBar() && view->verticalScrollBar()->isVisible()) ||
-			view->verticalScrollBarPolicy() == Qt::ScrollBarAlwaysOn) ? view->verticalScrollBar()->width() : 0;
+										view->verticalScrollBarPolicy() == Qt::ScrollBarAlwaysOn) ?
+		                                view->verticalScrollBar()->width() :
+		                                0;
 		int num_flex_items = 0;
 		int total_width = 0;
 		int column_index = 0;
@@ -344,11 +346,6 @@ namespace QtUtils
 			csv += "\n";
 		}
 		return csv;
-	}
-
-	bool IsLightTheme(const QPalette& palette)
-	{
-		return palette.text().color().lightnessF() < 0.5;
 	}
 
 	bool IsCompositorManagerRunning()

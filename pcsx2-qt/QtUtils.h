@@ -96,9 +96,7 @@ namespace QtUtils
 	/// Converts an abstract item model to a CSV string.
 	QString AbstractItemModelToCSV(QAbstractItemModel* model, int role = Qt::DisplayRole, bool useQuotes = false);
 
-	// Heuristic to check if the current theme is a light or dark theme.
-	bool IsLightTheme(const QPalette& palette);
-
+	/// Checks if we can use transparency effects e.g. for dock drop indicators.
 	bool IsCompositorManagerRunning();
 
 	/// Sets the scalable icon to a given label (svg icons, or icons with multiple size pixmaps)
