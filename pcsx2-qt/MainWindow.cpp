@@ -1151,11 +1151,19 @@ bool MainWindow::shouldMouseLock() const
 	if (!Host::GetBoolSettingValue("EmuCore", "EnableMouseLock", false))
 		return false;
 
+	if(m_display_created == false || m_display_widget == nullptr && !isRenderingToMain())
+		return false;
+
 	bool windowsHidden = (!g_debugger_window || g_debugger_window->isHidden()) &&
 	                     (!m_controller_settings_window || m_controller_settings_window->isHidden()) &&
 	                     (!m_settings_window || m_settings_window->isHidden());
 
-	return windowsHidden && (isActiveWindow() || isRenderingFullscreen());
+	auto* displayWindow = isRenderingToMain() ? window() : m_display_widget->window();
+
+	if(displayWindow == nullptr)
+		return false;
+
+	return windowsHidden && (displayWindow->isActiveWindow() || displayWindow->isFullScreen());
 }
 
 bool MainWindow::shouldAbortForMemcardBusy(const VMLock& lock)
@@ -2640,29 +2648,35 @@ void MainWindow::setupMouseMoveHandler()
 
 void MainWindow::checkMousePosition(int x, int y)
 {
-	if (!shouldMouseLock())
-		return;
+	// This function is called from a different thread on Linux/macOS
+	// kaboom can happen when the widget is destroyed after shouldMouseLock is called, so queue everything to the UI thread
+	QtHost::RunOnUIThread([this, x, y]() {
+		if (!shouldMouseLock())
+			return;
 
-	// physical mouse position
-	const QPoint physicalPos(x, y);
+		// physical mouse position
+		const QPoint physicalPos(x, y);
 
-	// logical (DIP) frame rect
-	QRectF logicalBounds = isRenderingFullscreen() ? screen()->geometry() : geometry();
+		const auto* displayWindow = getDisplayContainer()->window();
 
-	// physical frame rect
-	const qreal scale = window()->devicePixelRatioF();
-	QRectF physicalBounds(
-		logicalBounds.x() * scale,
-		logicalBounds.y() * scale,
-		logicalBounds.width() * scale,
-		logicalBounds.height() * scale);
+		// logical (DIP) frame rect
+		QRectF logicalBounds = displayWindow->geometry();
 
-	if (physicalBounds.contains(physicalPos))
-		return;
+		// physical frame rect
+		const qreal scale = displayWindow->devicePixelRatioF();
+		QRectF physicalBounds(
+			logicalBounds.x() * scale,
+			logicalBounds.y() * scale,
+			logicalBounds.width() * scale,
+			logicalBounds.height() * scale);
 
-	Common::SetMousePosition(
-		std::clamp(physicalPos.x(), (int)physicalBounds.left(), (int)physicalBounds.right()),
-		std::clamp(physicalPos.y(), (int)physicalBounds.top(), (int)physicalBounds.bottom()));
+		if (physicalBounds.contains(physicalPos))
+			return;
+
+		Common::SetMousePosition(
+			std::clamp(physicalPos.x(), (int)physicalBounds.left(), (int)physicalBounds.right()),
+			std::clamp(physicalPos.y(), (int)physicalBounds.top(), (int)physicalBounds.bottom()));
+	});
 }
 
 void MainWindow::saveDisplayWindowGeometryToConfig()
