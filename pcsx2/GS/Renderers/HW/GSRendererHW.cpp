@@ -26,7 +26,7 @@ GSRendererHW::GSRendererHW()
 	// Hope nothing requires too many draw calls.
 	m_drawlist.reserve(2048);
 
-	memset(&m_conf, 0, sizeof(m_conf));
+	memset(static_cast<void*>(&m_conf), 0, sizeof(m_conf));
 
 	ResetStates();
 }
@@ -7251,7 +7251,7 @@ void GSRendererHW::ResetStates()
 {
 	// We don't want to zero out the constant buffers, since fields used by the current draw could result in redundant uploads.
 	// This memset should be pretty efficient - the struct is 16 byte aligned, as is the cb_vs offset.
-	memset(&m_conf, 0, reinterpret_cast<const char*>(&m_conf.cb_vs) - reinterpret_cast<const char*>(&m_conf));
+	memset(static_cast<void*>(&m_conf), 0, reinterpret_cast<const char*>(&m_conf.cb_vs) - reinterpret_cast<const char*>(&m_conf));
 }
 
 __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Target* ds, GSTextureCache::Source* tex, const TextureMinMaxResult& tmm)
@@ -9430,8 +9430,8 @@ GSHWDrawConfig& GSRendererHW::BeginHLEHardwareDraw(
 
 	// Bit gross, but really no other way to ensure there's nothing of the last draw left over.
 	GSHWDrawConfig& config = m_conf;
-	std::memset(&config.cb_vs, 0, sizeof(config.cb_vs));
-	std::memset(&config.cb_ps, 0, sizeof(config.cb_ps));
+	std::memset(static_cast<void*>(&config.cb_vs), 0, sizeof(config.cb_vs));
+	std::memset(static_cast<void*>(&config.cb_ps), 0, sizeof(config.cb_ps));
 
 	// Reused between draws, since the draw config is shared, you can't have multiple draws in flight anyway.
 	static GSVertex vertices[4];
