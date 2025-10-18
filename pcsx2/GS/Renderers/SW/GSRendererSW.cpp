@@ -5,6 +5,7 @@
 #include "GS/GSGL.h"
 #include "GS/GSPng.h"
 #include "GS/GSUtil.h"
+#include "GSRegressionTester.h"
 
 #include "common/StringUtil.h"
 
@@ -181,7 +182,7 @@ GSTexture* GSRendererSW::GetOutput(int i, float& scale, int& y_offset)
 
 		if (GSConfig.SaveFrame && GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
 		{
-			m_texture[index]->Save(GetDrawDumpPath("%05d_f%05lld_fr%d_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), i, (int)curFramebuffer.Block(), GSUtil::GetPSMName(curFramebuffer.PSM)));
+			m_texture[index]->Save(GetDrawDumpPath("%05d_f%05lld_fr%d_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), i, (int)curFramebuffer.Block(), GSUtil::GetPSMName(curFramebuffer.PSM)), GSGetRegressionBuffer());
 		}
 	}
 
@@ -575,7 +576,7 @@ void GSRendererSW::Draw()
 			}
 
 			s = GetDrawDumpPath("%05d_f%05lld_rt0_%05x_%s.bmp", s_n, frame, m_context->FRAME.Block(), GSUtil::GetPSMName(m_context->FRAME.PSM));
-			m_mem.SaveBMP(s, m_context->FRAME.Block(), m_context->FRAME.FBW, m_context->FRAME.PSM, r.z, r.w);
+			m_mem.SaveBMP(s, m_context->FRAME.Block(), m_context->FRAME.FBW, m_context->FRAME.PSM, r.z, r.w, 0, 0, GSGetRegressionBuffer());
 		}
 
 		if (GSConfig.SaveDepth)
@@ -599,7 +600,7 @@ void GSRendererSW::Draw()
 			}
 
 			s = GetDrawDumpPath("%05d_f%05lld_rt1_%05x_%s.bmp", s_n, frame, m_context->FRAME.Block(), GSUtil::GetPSMName(m_context->FRAME.PSM));
-			m_mem.SaveBMP(s, m_context->FRAME.Block(), m_context->FRAME.FBW, m_context->FRAME.PSM, r.z, r.w);
+			m_mem.SaveBMP(s, m_context->FRAME.Block(), m_context->FRAME.FBW, m_context->FRAME.PSM, r.z, r.w, 0, 0, GSGetRegressionBuffer());
 		}
 
 		if (GSConfig.SaveDepth)

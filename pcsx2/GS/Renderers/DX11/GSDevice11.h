@@ -265,6 +265,8 @@ public:
 
 	bool Create(GSVSyncMode vsync_mode, bool allow_present_throttle) override;
 	void Destroy() override;
+	void ResetRenderState() override;
+	void FlushCommands();
 
 	RenderAPI GetRenderAPI() const override;
 
@@ -330,6 +332,7 @@ public:
 	void PSSetShader(ID3D11PixelShader* ps, ID3D11Buffer* ps_cb);
 	void PSUpdateShaderState(const bool sr_update, const bool ss_update);
 	void PSUnbindConflictingSRVs(GSTexture* tex1 = nullptr, GSTexture* tex2 = nullptr);
+	void PSUnbindShaderResources();
 	void PSSetSamplerState(ID3D11SamplerState* ss0);
 
 	void OMSetDepthStencilState(ID3D11DepthStencilState* dss, u8 sref);

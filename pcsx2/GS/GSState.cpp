@@ -204,6 +204,20 @@ void GSState::Reset(bool hardware_reset)
 	memcpy(&m_prev_env, &m_env, sizeof(m_prev_env));
 }
 
+void GSState::ResetVertexQueue()
+{
+	// Reset vertex queue state. No need to reallocate buffers.
+	memset(&m_v, 0, sizeof(m_v));
+	m_v.RGBAQ.Q = 1.0f;
+
+	m_vertex.head = 0;
+	m_vertex.tail = 0;
+	m_vertex.next = 0;
+	m_vertex.xy_tail = 0;
+
+	m_index.tail = 0;
+}
+
 template<bool auto_flush>
 void GSState::SetPrimHandlers()
 {
@@ -1819,6 +1833,11 @@ void GSState::GIFRegHandlerHWREG(const GIFReg* RESTRICT r)
 
 void GSState::Flush(GSFlushReason reason)
 {
+	if (GSIsRegressionTesting() && ((s_n & 0x3FF) == 0))
+	{
+		GSSignalRunnerHeartbeat(); // Let tester know we are not deadlocked.
+	}
+
 	FlushWrite();
 
 	if (m_index.tail > 0)
