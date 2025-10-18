@@ -1315,6 +1315,7 @@ struct Pcsx2Config
 		BackupSavestate : 1,
 		McdFolderAutoManage : 1,
 		ManuallySetRealTimeClock : 1,
+		UseSystemLocaleFormat : 1,
 
 		HostFs : 1,
 
