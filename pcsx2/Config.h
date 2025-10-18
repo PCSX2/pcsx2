@@ -1128,8 +1128,6 @@ struct Pcsx2Config
 		bool GenerateFunctionHashes = true;
 
 		void LoadSave(SettingsWrapper& wrap);
-
-		friend auto operator<=>(const DebugAnalysisOptions& lhs, const DebugAnalysisOptions& rhs) = default;
 	};
 
 	// ------------------------------------------------------------------------
