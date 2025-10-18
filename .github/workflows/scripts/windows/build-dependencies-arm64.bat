@@ -97,7 +97,7 @@ if %DEBUG%==1 (
   echo Building release libraries...
 )
 
-set FORCEPDB=-DCMAKE_SHARED_LINKER_FLAGS_RELEASE="/DEBUG"
+set FORCEPDB=-DCMAKE_SHARED_LINKER_FLAGS_RELEASE="/DEBUG" -DCMAKE_SHARED_LINKER_FLAGS_MINSIZEREL="/DEBUG"
 set ARM64TOOLCHAIN=-DCMAKE_TOOLCHAIN_FILE="%SCRIPTDIR%\cmake-toolchain-windows-arm64.cmake"
 
 echo Building Zlib...
@@ -199,7 +199,7 @@ cd .. || goto error
 if %DEBUG%==1 (
   set QTBUILDSPEC=-DCMAKE_CONFIGURATION_TYPES="Release;Debug" -G "Ninja Multi-Config"
 ) else (
-  set QTBUILDSPEC=-DCMAKE_BUILD_TYPE=Release -G Ninja
+  set QTBUILDSPEC=-DCMAKE_BUILD_TYPE=MinSizeRel -G Ninja
 )
 
 echo Building Qt base...
