@@ -802,13 +802,15 @@ void GSState::DumpTransferList(const std::string& filename)
 		if (n_dumped > 0)
 			(*file) << std::endl;
 
-		// EE->GS or GS->GS
-		(*file) << LIST_ITEM << "type: " << (transfer.ee_to_gs ? "EE_to_GS" : "GS_to_GS") << std::endl;
+		// clear, EE->GS, or GS->GS
+		(*file) << LIST_ITEM << "type: " << (transfer.zero_clear ? "clear" : (transfer.ee_to_gs ? "EE_to_GS" : "GS_to_GS")) << std::endl;
 
 		// Dump BITBLTBUF
 		(*file) << INDENT << "BITBLTBUF: " << OPEN_MAP;
 
-		if (!transfer.ee_to_gs)
+		const bool gs_to_gs = !transfer.ee_to_gs && !transfer.zero_clear;
+
+		if (gs_to_gs)
 		{
 			// Transferring GS->GS so the source info is relevant
 			(*file) << "SBP: " << std::hex << std::showbase << transfer.blit.SBP << DEL <<
@@ -822,7 +824,7 @@ void GSState::DumpTransferList(const std::string& filename)
 
 		(*file) << COMMENT; // Write the human-readable PSM in comments
 
-		if (!transfer.ee_to_gs)
+		if (gs_to_gs)
 		{
 			// Transferring GS->GS so the source info is relevant
 			(*file) << GSUtil::GetPSMName(transfer.blit.SPSM) << " -> ";
@@ -833,9 +835,6 @@ void GSState::DumpTransferList(const std::string& filename)
 		// Dump rectangle
 		(*file) << INDENT << "rect: [" << std::dec << transfer.rect.x << DEL << transfer.rect.y << DEL <<
 			transfer.rect.z << DEL << transfer.rect.w << "]" << std::endl;
-
-		// Dump zero_clear
-		(*file) << INDENT << "zero_clear: " << (transfer.zero_clear ? "true" : "false") << std::endl;
 
 		n_dumped++;
 	}
@@ -855,17 +854,17 @@ void GSState::DumpTransferImages()
 		const GSUploadQueue& transfer = m_draw_transfers[i];
 
 		std::string filename;
-		if (transfer.ee_to_gs)
+		if (transfer.ee_to_gs || transfer.zero_clear)
 		{
-			// Transferring EE->GS then only the destination info is relevant.
-			filename = GetDrawDumpPath("%05d_transfer%02d_EE_to_GS_%03x_%d_%s_%d_%d_%d_%d.png",
-				s_n, transfer_n++, transfer.blit.DBP, transfer.blit.DBW, GSUtil::GetPSMName(transfer.blit.DPSM),
-				transfer.rect.x, transfer.rect.y, transfer.rect.z, transfer.rect.w);
+			// clear or EE->GS: only the destination info is relevant.
+			filename = GetDrawDumpPath("%05d_transfer%02d_%s_%04x_%d_%s_%d_%d_%d_%d.png",
+				s_n, transfer_n++, (transfer.zero_clear ? "clear" : "EE_to_GS"), transfer.blit.DBP, transfer.blit.DBW,
+				GSUtil::GetPSMName(transfer.blit.DPSM), transfer.rect.x, transfer.rect.y, transfer.rect.z, transfer.rect.w);
 		}
 		else
 		{
-			// Transferring GS->GS then the source info is relevant.
-			filename = GetDrawDumpPath("%05d_transfer%02d_GS_to_GS_%03x_%d_%s_%03x_%d_%s_%d_%d_%d_%d.bmp",
+			// GS->GS: the source and destination info are both relevant.
+			filename = GetDrawDumpPath("%05d_transfer%02d_GS_to_GS_%04x_%d_%s_%04x_%d_%s_%d_%d_%d_%d.bmp",
 				s_n, transfer_n++, transfer.blit.SBP, transfer.blit.SBW, GSUtil::GetPSMName(transfer.blit.SPSM),
 				transfer.blit.DBP, transfer.blit.DBW, GSUtil::GetPSMName(transfer.blit.DPSM),
 				transfer.rect.x, transfer.rect.y, transfer.rect.z, transfer.rect.w);
