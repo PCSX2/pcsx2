@@ -165,6 +165,8 @@ namespace ImGuiFullscreen
 	void CreateFooterTextString(SmallStringBase& dest, std::span<const std::pair<const char*, std::string_view>> items);
 	void SetFullscreenFooterText(std::string_view text);
 	void SetFullscreenFooterText(std::span<const std::pair<const char*, std::string_view>> items);
+	void AppendToFullscreenFooterText(std::span<const std::pair<const char*, std::string_view>> items);
+	void QueueFooterHint(std::span<const std::pair<const char*, std::string_view>> items);
 	void DrawFullscreenFooter();
 
 	void PrerenderMenuButtonBorder();

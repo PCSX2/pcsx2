@@ -992,9 +992,40 @@ void ImGuiFullscreen::SetFullscreenFooterText(std::span<const std::pair<const ch
 	CreateFooterTextString(s_fullscreen_footer_text, items);
 }
 
+void ImGuiFullscreen::AppendToFullscreenFooterText(std::span<const std::pair<const char*, std::string_view>> items)
+{
+	if (s_fullscreen_footer_text.empty())
+	{
+		CreateFooterTextString(s_fullscreen_footer_text, items);
+		return;
+	}
+
+	SmallStringBase& dest = s_fullscreen_footer_text;
+	for (const auto& [icon, text] : items)
+	{
+		dest.append("    ");
+		dest.append(icon);
+		dest.append(' ');
+		dest.append(text);
+	}
+}
+
+static std::vector<std::pair<const char*, std::string_view>> s_footer_hint_queue;
+void ImGuiFullscreen::QueueFooterHint(std::span<const std::pair<const char*, std::string_view>> items)
+{
+	for (const auto& it : items)
+		s_footer_hint_queue.push_back(it);
+}
+
 void ImGuiFullscreen::DrawFullscreenFooter()
 {
 	const ImGuiIO& io = ImGui::GetIO();
+	// Apply any queued hints before drawing.
+	if (!s_footer_hint_queue.empty())
+	{
+		AppendToFullscreenFooterText(s_footer_hint_queue);
+		s_footer_hint_queue.clear();
+	}
 	if (s_fullscreen_footer_text.empty())
 	{
 		s_last_fullscreen_footer_text.clear();
