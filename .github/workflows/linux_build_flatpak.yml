@@ -129,7 +129,7 @@ jobs:
 
       - name: Push to Flathub (beta)
         if: ${{ inputs.publish == true && (inputs.stableBuild == false || inputs.stableBuild == 'false') }}
-        uses: flatpak/flatpak-github-actions/flat-manager@10a3c29f0162516f0f68006be14c92f34bd4fa6c
+        uses: flatpak/flatpak-github-actions/flat-manager@92ae9851ad316786193b1fd3f40c4b51eb5cb101
         with:
           flat-manager-url: https://hub.flathub.org/
           repository: beta
@@ -138,7 +138,7 @@ jobs:
 
       - name: Push to Flathub (stable)
         if: ${{ inputs.publish == true && (inputs.stableBuild == true || inputs.stableBuild == 'true') }}
-        uses: flatpak/flatpak-github-actions/flat-manager@10a3c29f0162516f0f68006be14c92f34bd4fa6c
+        uses: flatpak/flatpak-github-actions/flat-manager@92ae9851ad316786193b1fd3f40c4b51eb5cb101
         with:
           flat-manager-url: https://hub.flathub.org/
           repository: stable
