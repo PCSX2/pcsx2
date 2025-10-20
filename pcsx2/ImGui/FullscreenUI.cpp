@@ -3621,10 +3621,30 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 	MenuHeading(FSUI_CSTR("On-Screen Display"));
 	DrawIntSpinBoxSetting(bsi, FSUI_ICONSTR(ICON_FA_MAGNIFYING_GLASS, "OSD Scale"),
 		FSUI_CSTR("Determines how large the on-screen messages and monitor are."), "EmuCore/GS", "OsdScale", 100, 25, 500, 1, FSUI_CSTR("%d%%"));
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LIST, "Show Messages"),
-		FSUI_CSTR(
-			"Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc."),
-		"EmuCore/GS", "OsdShowMessages", true);
+
+	// OSD Positioning Options
+	static constexpr const char* s_osd_position_options[] = {
+		FSUI_NSTR("None"),
+		FSUI_NSTR("Top Left"),
+		FSUI_NSTR("Top Center"),
+		FSUI_NSTR("Top Right"),
+		FSUI_NSTR("Center Left"),
+		FSUI_NSTR("Center"),
+		FSUI_NSTR("Center Right"),
+		FSUI_NSTR("Bottom Left"),
+		FSUI_NSTR("Bottom Center"),
+		FSUI_NSTR("Bottom Right"),
+	};
+	static constexpr const char* s_osd_position_values[] = {
+		"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
+	};
+	
+	DrawStringListSetting(bsi, FSUI_ICONSTR(ICON_FA_COMMENT, "OSD Messages Position"),
+		FSUI_CSTR("Determines where on-screen display messages are positioned."), "EmuCore/GS", "OsdMessagesPos", "1",
+		s_osd_position_options, s_osd_position_values, std::size(s_osd_position_options), true);
+	DrawStringListSetting(bsi, FSUI_ICONSTR(ICON_FA_CHART_BAR, "OSD Performance Position"),
+		FSUI_CSTR("Determines where performance statistics are positioned."), "EmuCore/GS", "OsdPerformancePos", "3",
+		s_osd_position_options, s_osd_position_values, std::size(s_osd_position_options), true);
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_INFO, "Show PCSX2 Version"),
 		FSUI_CSTR("Shows the current PCSX2 version on the top-right corner of the display."), "EmuCore/GS",
 		"OsdShowVersion", false);
@@ -3672,30 +3692,6 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 		false);
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_TRIANGLE_EXCLAMATION, "Warn About Unsafe Settings"),
 		FSUI_CSTR("Displays warnings when settings are enabled which may break games."), "EmuCore", "WarnAboutUnsafeSettings", true);
-
-	// OSD Positioning Options
-	static constexpr const char* s_osd_position_options[] = {
-		FSUI_NSTR("None"),
-		FSUI_NSTR("Top Left"),
-		FSUI_NSTR("Top Center"),
-		FSUI_NSTR("Top Right"),
-		FSUI_NSTR("Center Left"),
-		FSUI_NSTR("Center"),
-		FSUI_NSTR("Center Right"),
-		FSUI_NSTR("Bottom Left"),
-		FSUI_NSTR("Bottom Center"),
-		FSUI_NSTR("Bottom Right"),
-	};
-	static constexpr const char* s_osd_position_values[] = {
-		"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
-	};
-
-	DrawStringListSetting(bsi, FSUI_ICONSTR(ICON_FA_COMMENT, "OSD Messages Position"),
-		FSUI_CSTR("Determines where on-screen display messages are positioned."), "EmuCore/GS", "OsdMessagesPos", "1",
-		s_osd_position_options, s_osd_position_values, std::size(s_osd_position_options), true);
-	DrawStringListSetting(bsi, FSUI_ICONSTR(ICON_FA_CHART_BAR, "OSD Performance Position"),
-		FSUI_CSTR("Determines where performance statistics are positioned."), "EmuCore/GS", "OsdPerformancePos", "3",
-		s_osd_position_options, s_osd_position_values, std::size(s_osd_position_options), true);
 
 	MenuHeading(FSUI_CSTR("Operations"));
 	if (MenuButton(FSUI_ICONSTR(u8"🔥", "Reset Settings"),
@@ -8113,7 +8109,6 @@ TRANSLATE_NOOP("FullscreenUI", "Hides the mouse pointer/cursor when the emulator
 TRANSLATE_NOOP("FullscreenUI", "On-Screen Display");
 TRANSLATE_NOOP("FullscreenUI", "Determines how large the on-screen messages and monitor are.");
 TRANSLATE_NOOP("FullscreenUI", "%d%%");
-TRANSLATE_NOOP("FullscreenUI", "Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc.");
 TRANSLATE_NOOP("FullscreenUI", "Shows the current PCSX2 version on the top-right corner of the display.");
 TRANSLATE_NOOP("FullscreenUI", "Shows the current emulation speed of the system in the top-right corner of the display as a percentage.");
 TRANSLATE_NOOP("FullscreenUI", "Shows the number of video frames (or v-syncs) displayed per second by the system in the top-right corner of the display.");
@@ -8765,7 +8760,6 @@ TRANSLATE_NOOP("FullscreenUI", "Start Fullscreen");
 TRANSLATE_NOOP("FullscreenUI", "Double-Click Toggles Fullscreen");
 TRANSLATE_NOOP("FullscreenUI", "Hide Cursor In Fullscreen");
 TRANSLATE_NOOP("FullscreenUI", "OSD Scale");
-TRANSLATE_NOOP("FullscreenUI", "Show Messages");
 TRANSLATE_NOOP("FullscreenUI", "Show PCSX2 Version");
 TRANSLATE_NOOP("FullscreenUI", "Show Speed");
 TRANSLATE_NOOP("FullscreenUI", "Show FPS");
