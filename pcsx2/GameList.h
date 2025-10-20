@@ -145,7 +145,7 @@ namespace GameList
 	std::string FormatTimestamp(std::time_t timestamp);
 
 	/// Formats a timespan to something human readable (e.g. 1h2m3s or 1 hour).
-	std::string FormatTimespan(std::time_t timespan, bool long_format = false);
+	std::string FormatTimespan(const std::time_t timespan, const bool long_format = false);
 
 	std::string GetCoverImagePathForEntry(const Entry* entry);
 	std::string GetNewCoverImagePathForEntry(const Entry* entry, const char* new_filename, bool use_serial = false);
