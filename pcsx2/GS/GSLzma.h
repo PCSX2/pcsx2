@@ -348,10 +348,11 @@ concept GSDumpFileLoader_IsDstType = std::same_as<T, std::unique_ptr<GSDumpFile>
 
 struct GSDumpFileLoader
 {
-	enum SlotState
+	enum DumpState
 	{
 		WRITEABLE = 0,
-		READABLE
+		READABLE,
+		DONE
 	};
 
 	enum ReturnValue
@@ -362,13 +363,23 @@ struct GSDumpFileLoader
 		FINISHED
 	};
 
+	struct DumpInfo
+	{
+		std::string filename;
+		DumpState state = WRITEABLE;
+		double load_time = 0.0;
+		double block_time_read = 0.0;
+		double block_time_write = 0.0;
+		std::string error;
+		std::vector<u8>* data = nullptr;
+	};
+
 	// Stays constant after construction.
 	size_t num_threads = 0;
 	size_t num_dumps_buffered = 0;
 	size_t max_file_size = 0;
-	std::vector<std::string> filenames;
-	std::vector<std::vector<u8>> dumps_avail_list; // One vector for each dump being buffered to prevent too many reallocations.
-	std::vector<std::vector<u8>*> dumps; // Data for each dump buffered. Only valid until consume, then set to null.
+	std::vector<DumpInfo> dump_list; // Slots for consumers to acquire and work on.
+	std::vector<std::vector<u8>> dumps_avail_list; // One vector for each dump being buffered.
 
 	// Threads.
 	std::vector<std::thread> threads;
@@ -384,11 +395,6 @@ struct GSDumpFileLoader
 	size_t read = 0; // Read index.
 	size_t write = 0; // Write index.
 	bool stopped = false; // Stopped flag.
-
-	// Per-file data. Only access by owner.
-	std::vector<SlotState> state; // State of file.
-	std::vector<double> loading_time; // Load time in seconds.
-	std::vector<std::string> error_list; // Error for reporting asynchronously.
 	
 	// Stats. Modified by consumer with or without mutex.
 	std::atomic<size_t> num_loaded = 0;
@@ -401,27 +407,23 @@ struct GSDumpFileLoader
 
 	template<typename T>
 		requires GSDumpFileLoader_IsDstType<T>
-	ReturnValue Get(
-		T& dst,
-		std::string* name = nullptr,
-		std::string* error = nullptr,
-		double* block_time = nullptr,
-		double* load_time = nullptr,
-		bool block = true);
+	ReturnValue Get(T& dst, DumpInfo* info_out, bool block = true);
 	void Stop();
 	static void LoaderFunc(GSDumpFileLoader* parent);
 
 	// Call any time by consumer.
 	bool Started();
 	bool Finished();
+	size_t DumpsRemaining();
+	void AddFile(const std::string& file);
 
 	// Private - call only with mut locked.
-	bool Full();
-	bool Empty();
-	bool DoneWrite();
-	bool DoneRead();
-	bool Stopped();
-	void DebugCheck();
+	bool _Full();
+	bool _Empty();
+	bool _DoneWrite();
+	bool _DoneRead();
+	bool _Stopped();
+	void _DebugCheck();
 
 	// Unsafe
 	void DebugPrint();

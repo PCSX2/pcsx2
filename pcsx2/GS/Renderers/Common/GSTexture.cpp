@@ -71,7 +71,7 @@ bool GSTexture::Save(const std::string& fn, GSRegressionBuffer* rbp)
 				rbp->DonePacketWrite();
 		});
 
-		if (packet = rbp->GetPacketWrite(std::bind(GSCheckTesterStatus, true, false)))
+		if (packet = rbp->GetPacketWrite(std::bind(GSCheckTesterStatus_RegressionTest, true, false)))
 		{
 			packet->SetNameDump(rbp->GetNameDump());
 			packet->SetNamePacket(fn);

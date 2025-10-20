@@ -1,37 +1,42 @@
 #pragma once
 #include "common/Pcsx2Defs.h"
 
+#include <map>
 #include <mutex>
 #include <functional>
 #include <array>
 #include <atomic>
 #include <cstring>
 
-#ifdef __WIN32__
-#include <windows.h>
+#ifdef _WIN32
+#include "common/RedtapeWindows.h"
+#else
+#include <sys/types.h>
 #endif
 
 // Atomic integer for inter-process shared memory since std::atomic is not guaranteed across processes.
 struct GSIntSharedMemory
 {
 
-#ifdef __WIN32__
+#ifdef _WIN32
+	static_assert(sizeof(LONG) == sizeof(int));
 	using ValType = LONG;
 	ValType val;
 #else
-	using ValType = long;
+	using ValType = int;
 	std::atomic<ValType> val;
 #endif
 	ValType CompareExchange(ValType expected, ValType desired);
 	ValType Get();
 	void Set(ValType i);
-	void Init();
+	ValType FetchAdd(); // Return value before increment.
+	void Init(bool reset = false);
 	static std::size_t GetTotalSize();
 };
 
 struct GSEvent
 {
-#ifdef __WIN32__
+#ifdef _WIN32
 	HANDLE handle = NULL;
 	std::string name;
 
@@ -58,23 +63,6 @@ struct GSSpinlockSharedMemory
 		READABLE = 1
 	};
 
-	static constexpr std::array<const char*, 2> STATE_STR_WR = {
-		"WRITEABLE",
-		"READABLE"
-	};
-
-	GSIntSharedMemory lock;
-
-	GSSpinlockSharedMemory();
-
-	void Init();
-	bool LockWrite(GSEvent* event, std::function<bool()> cond);
-	bool LockRead(GSEvent* event, std::function<bool()> cond);
-	bool UnlockWrite();
-	bool UnlockRead();
-	bool Writeable();
-	bool Readable();
-
 	// For lock/unlock.
 	enum : GSIntSharedMemory::ValType
 	{
@@ -82,11 +70,37 @@ struct GSSpinlockSharedMemory
 		LOCKED = 1
 	};
 
-	static constexpr std::array<const char*, 2> STATE_STR_LOCK = {
-		"UNLOCKED",
-		"LOCKED"
-	};
+	static constexpr const char* GetStateStrRW(GSIntSharedMemory::ValType state)
+	{
+		switch (state)
+		{
+		case WRITEABLE: return "WRITEABLE";
+		case READABLE: return "READABLE";
+		default: return "UNKNOWN";
+		}
+	}
 
+	static constexpr const char* GetStateStrLock(GSIntSharedMemory::ValType state)
+	{
+		switch (state)
+		{
+		case UNLOCKED: return "UNLOCKED";
+		case LOCKED: return "LOCKED";
+		default: return "UNKNOWN";
+		}
+	}
+
+	GSIntSharedMemory lock;
+
+	GSSpinlockSharedMemory();
+
+	void Init(bool reset = false);
+	bool LockWrite(GSEvent* event, std::function<bool()> cond);
+	bool LockRead(GSEvent* event, std::function<bool()> cond);
+	bool UnlockWrite();
+	bool UnlockRead();
+	bool Writeable();
+	bool Readable();
 	bool Lock(GSEvent* event, std::function<bool()> cond);
 	bool Unlock();
 };
@@ -99,6 +113,7 @@ struct GSRegressionPacket
 
 	enum : u32
 	{
+		NONE = 0,
 		IMAGE,
 		HWSTAT,
 		DONE_DUMP
@@ -160,7 +175,7 @@ struct GSRegressionPacket
 	const void* GetData() const;
 
 	// Call only once before sharing. Not thread safe.
-	void Init(std::size_t packet_size);
+	void Init(std::size_t packet_size, bool reset = false);
 
 	// Static
 	static std::size_t GetTotalSize(std::size_t packet_size);
@@ -172,11 +187,13 @@ struct GSSharedMemoryFile
 	std::string name = "";
 	void* data = nullptr;
 	std::size_t size;
-#ifdef __WIN32__
-	HANDLE handle; // Handle to shared memory.
+#ifdef _WIN32
+	using Handle_t = HANDLE;
 #else
-	// Not implemented.
+	bool main = false;
+	using Handle_t = int;
 #endif
+	Handle_t handle; // Shared memory file handle.
 
 	// Windows defines CreateFile as a macro so use CreateFile_.
 	bool CreateFile_(const std::string& name, std::size_t size);
@@ -199,7 +216,7 @@ struct GSDumpFileSharedMemory
 	std::size_t dump_size;
 
 	// Call only once before sharing. Not thread safe.
-	void Init(std::size_t dump_size);
+	void Init(std::size_t dump_size, bool reset = false);
 
 	// Call by owner.
 	void* GetPtrDump();
@@ -224,7 +241,7 @@ struct GSRegressionBuffer
 		RUNNER_HEARTBEAT
 	};
 
-	enum : u32
+	enum ProcessState
 	{
 		DEFAULT = 0, // Both
 		ALIVE, // Runner
@@ -236,17 +253,20 @@ struct GSRegressionBuffer
 		NUM_STATE_TYPES
 	};
 
-	static constexpr std::array<const char*, NUM_STATE_TYPES> STATE_STR = []() {
-		std::array<const char*, NUM_STATE_TYPES> arr;
-		arr[DEFAULT] = "DEFAULT";
-		arr[ALIVE] = "ALIVE";
-		arr[WRITE_DATA] = "WRITE_DATA";
-		arr[WAIT_DUMP] = "WAIT_DUMP";
-		arr[DONE_RUNNING] = "DONE_RUNNING";
-		arr[DONE_UPLOADING] = "DONE_UPLOADING";
-		arr[EXIT] = "EXIT";
-		return arr;
-	}();
+	static constexpr const char* GetStateStr(ProcessState state)
+	{
+		switch (state)
+		{
+		case DEFAULT: return "DEFAULT";
+		case ALIVE: return "ALIVE";
+		case WRITE_DATA: return "WRITE_DATA";
+		case WAIT_DUMP: return "WAIT_DUMP";
+		case DONE_RUNNING: return "DONE_RUNNING";
+		case DONE_UPLOADING: return "DONE_UPLOADING";
+		case EXIT: return "EXIT";
+		default: return "UNKNOWN";
+		}
+	}
 
 	GSSharedMemoryFile shm;
 
@@ -272,6 +292,13 @@ struct GSRegressionBuffer
 	static constexpr std::size_t num_states = 3;
 	GSIntSharedMemory* state; // Two states owned by runner and tester.
 
+	// Private - set pointer/sizes. Only after shared memory file is opened/created.
+	void SetSizesPointers(
+		std::size_t num_packets,
+		std::size_t packet_size,
+		std::size_t num_dumps,
+		std::size_t dump_size);
+
 	// Call only once before sharing.
 	bool CreateFile_(
 		const std::string& name,
@@ -293,6 +320,9 @@ struct GSRegressionBuffer
 		std::size_t dump_size);
 
 	// Call only once by parent.
+	void DestroySharedMemory();
+
+	// Call when done with file.
 	bool CloseFile();
 
 	// Call only once to initialize.
@@ -325,12 +355,12 @@ struct GSRegressionBuffer
 	void DoneDumpRead();
 
 	// Thread safe.
-	u32 GetState(u32 which);
-	void SetState(u32 which, u32 state);
-	u32 GetStateRunner();
-	u32 GetStateTester();
-	void SetStateRunner(u32 state); // (Runner) GS thread only.
-	void SetStateTester(u32 state);
+	ProcessState GetState(u32 which);
+	void SetState(u32 which, ProcessState state);
+	ProcessState GetStateRunner();
+	ProcessState GetStateTester();
+	void SetStateRunner(ProcessState state); // (Runner) GS thread only.
+	void SetStateTester(ProcessState state); // (Tester) Main thread only.
 
 	// Local copy of dump name.
 	void SetNameDump(const std::string& name); // (Runner) main thread only.
@@ -354,9 +384,170 @@ struct GSRegressionBuffer
 	void DebugState();
 };
 
-// To be call by the runner process when in regression test mode.
+// Cross-platform process.
+struct GSProcess
+{
+#ifdef _WIN32
+	using PID_t = DWORD;
+	using Handle_t = HANDLE;
+	using Time_t = DWORD;
+	static constexpr double infinite = static_cast<double>(0xFFFFFFFF);
+#else
+	using PID_t = pid_t;
+	using Handle_t = pid_t;
+	using Time_t = time_t;
+	static constexpr double infinite = static_cast<double>(0x7FFFFFFF);
+#endif
+
+	static PID_t current_pid;
+	static PID_t parent_pid;
+	static Handle_t parent_h;
+
+	std::string command;
+#ifdef _WIN32
+	STARTUPINFO si;
+	PROCESS_INFORMATION pi;
+#else
+	PID_t pid = 0;
+	int status = 0;
+#endif
+	static bool IsRunning(Handle_t handle, bool reap_child = false, int* status = nullptr); // private
+	
+	bool Start(const std::vector<std::string>& commands, bool detached);
+
+	bool IsRunning(bool reap_child = false);
+	bool ExitedNormally();
+	bool Close();
+	void Terminate();
+	PID_t GetPID();
+	static bool SetParentPID(PID_t pid);
+	static PID_t GetParentPID();
+	static bool IsParentRunning();
+	static PID_t GetCurrentPID();
+};
+
+// Simple, read-only queue in shared memory.
+struct GSBatchRunBuffer
+{
+	enum RunnerHeartbeat : GSIntSharedMemory::ValType
+	{
+		DEFAULT_RH = 0,
+		ALIVE
+	};
+
+	enum ProcessState : GSIntSharedMemory::ValType
+	{
+		DEFAULT_PS = 0,
+		RUNNING,
+		DONE_RUNNING,
+		EXIT,
+		ERROR_PS
+	};
+
+	// For file status.
+	enum FileStatus : GSIntSharedMemory::ValType
+	{
+		NOT_STARTED = 0,
+		STARTED,
+		COMPLETED,
+		ERROR_FS
+	};
+
+	static constexpr const char* GetRunnerHeartbeatStr(RunnerHeartbeat state)
+	{
+		switch (state)
+		{
+		case DEFAULT_RH: return "DEFAULT";
+		case ALIVE: return "ALIVE";
+		default: return "UNKNOWN";
+		}
+	};
+
+	static constexpr const char* GetProcessStateStr(ProcessState state)
+	{
+		switch (state)
+		{
+		case DEFAULT_PS: return "DEFAULT";
+		case RUNNING: return "RUNNING";
+		case DONE_RUNNING: return "DONE_RUNNING";
+		case EXIT: return "EXIT";
+		case ERROR_PS: return "ERROR";
+		default: return "UNKNOWN";
+		}
+	};
+
+	static constexpr const char* GetFileStatusStr(FileStatus status)
+	{
+		switch (status)
+		{
+		case NOT_STARTED: return "NOT_STARTED";
+		case STARTED: return "STARTED";
+		case COMPLETED: return "COMPLETED";
+		case ERROR_FS: return "ERROR";
+		default: return "UNKNOWN";
+		}
+	};
+
+	GSSharedMemoryFile shm;
+
+	GSIntSharedMemory* head;
+	
+	char* filenames;
+	std::size_t num_files;
+	static constexpr std::size_t filename_size = 8192;
+
+	GSIntSharedMemory* file_status;
+	
+	GSIntSharedMemory* state_parent;
+	GSIntSharedMemory* state_runner;
+	GSIntSharedMemory* state_runner_heartbeat;
+	std::size_t num_runners;
+
+	std::map<std::string, std::size_t> filename_to_index;
+
+	// Private - only call once after creating/opening shared memory.
+	void SetSizesPointers(std::size_t num_files, std::size_t num_runners);
+
+	bool CreateFile_(const std::string& name, std::size_t num_files, std::size_t num_runners);
+	bool OpenFile(const std::string& name, std::size_t num_files, std::size_t num_runners);
+	void DestroySharedMemory(); // Only use by creator.
+	bool CloseFile();
+	void Init(); // Private
+	bool Reset(std::size_t i); // Only use by parent.
+	bool PopulateFilenames(const std::vector<std::string>& filenames);
+	bool AcquireFile(std::string& filename);
+
+	void CreateFileIndexMap(); // Private
+	
+	// Call only by owner of slot.
+	FileStatus GetFileStatus(const std::string& filename);
+	FileStatus GetFileStatus(std::size_t file_index);
+	void SetFileStatus(const std::string& filename, FileStatus status);
+	void SetFileStatus(std::size_t file_index, FileStatus status);
+
+	// Private - only call by owner of slot.
+	std::string GetFilename(std::size_t i);
+
+	// Call any time.
+	void SignalRunnerHeartbeat(std::size_t i); // Child only.
+	bool CheckRunnerHeartbeat(std::size_t i); // Parent only.
+	void ResetRunnerHeartbeat(std::size_t i); // Parent only.
+	void SetStateParent(std::size_t i, ProcessState state); // Parent only.
+	void SetStateChild(std::size_t i, ProcessState state); // Child only.
+	ProcessState GetStateParent(std::size_t i); // Child only.
+	ProcessState GetStateChild(std::size_t i); // Parent only.
+
+	// Private - helper.
+	bool CheckRunnerIndex(std::size_t i);
+	bool CheckFileIndex(std::size_t i);
+
+	// Static.
+	static std::size_t GetTotalSize(std::size_t num_files, std::size_t num_runners);
+};
+
+/// Interface for runner process in regression test mode.
 bool GSIsRegressionTesting();
-void GSStartRegressionTest(
+bool GSStartRegressionTest(
 	GSRegressionBuffer* rpb,
 	const std::string& fn,
 	const std::string& event_name_runner,
@@ -367,49 +558,22 @@ void GSStartRegressionTest(
 	std::size_t dump_size);
 void GSEndRegressionTest();
 GSRegressionBuffer* GSGetRegressionBuffer();
-bool GSCheckTesterStatus(bool exit, bool done_uploading);
-void GSSignalRunnerHeartbeat();
-
-// Used by the tester process to compare images.
+bool GSCheckTesterStatus_RegressionTest(bool exit, bool done_uploading);
+void GSSignalRunnerHeartbeat_RegressionTest();
 int GSRegressionImageMemCmp(const GSRegressionPacket* p1, const GSRegressionPacket* p2);
 
-// Cross-platform process.
-struct GSProcess
-{
-#ifdef __WIN32__
-	using PID_t = DWORD;
-	using Handle_t = HANDLE;
-	using Time_t = DWORD;
-	static constexpr double infinite = static_cast<double>(0xFFFFFFFF);
-#else
-	using PID_t = int;
-	using Handle_t = int;
-	using Time_t = u32;
-	static constexpr double infinite = static_cast<double>(0x7FFFFFFF);
-#endif
-
-	static PID_t current_pid;
-	static PID_t parent_pid;
-	static Handle_t parent_h;
-
-	std::string command;
-#ifdef __WIN32__
-	STARTUPINFO si;
-	PROCESS_INFORMATION pi;
-#else
-	// Not implemented.
-#endif
-	static bool IsRunning(Handle_t handle, double seconds = 0.0); // private
-	
-	bool Start(const std::string& command, bool detached);
-
-	bool IsRunning(double seconds = 0.0);
-	bool WaitForExit(double seconds = infinite);
-	bool Close();
-	void Terminate();
-	PID_t GetPID();
-	static bool SetParentPID(PID_t pid);
-	static PID_t GetParentPID();
-	static bool IsParentRunning(double seconds = 0.0);
-	static PID_t GetCurrentPID();
-};
+// Interface for runner process in batch run mode.
+bool GSIsBatchRunning();
+bool GSStartBatchRun(
+	GSBatchRunBuffer* buffer,
+	const std::string& fn,
+	std::size_t num_files,
+	std::size_t num_runners,
+	std::size_t runner_index
+);
+void GSEndBatchRun();
+GSBatchRunBuffer* GSGetBatchRunBuffer();
+bool GSCheckParentStatus_BatchRun();
+void GSSignalRunnerHeartbeat_BatchRun();
+void GSSetChildState_BatchRun(GSBatchRunBuffer::ProcessState state);
+bool GSBatchRunAcquireFile(std::string& filename);

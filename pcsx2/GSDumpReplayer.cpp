@@ -48,6 +48,7 @@ static std::unique_ptr<GSDumpFile> s_dump_file;
 static std::string s_runner_name;
 static std::string s_dump_dir;
 static std::string s_dump_name;
+static std::string s_dump_filename;
 static std::vector<std::string> s_dump_file_list;
 static u32 s_current_packet = 0;
 static u32 s_dump_frame_number_max = 0;
@@ -110,7 +111,8 @@ std::string GSDumpReplayer::GetRunnerName()
 	if (GSIsRegressionTesting())
 		name += "/" + std::to_string(GSProcess::GetCurrentPID());
 	if (s_batch_mode)
-		name += "/" + std::to_string(s_batch_id);
+		//name += "/" + std::to_string(s_batch_id);
+		name += "/" + std::to_string(GSProcess::GetCurrentPID()); // FIXME!!! PURGE OLD CODE OR MAKE SURE BOTH WORK CORRECTLY
 	return name;
 }
 
@@ -199,7 +201,7 @@ void GSDumpReplayer::EndDumpRegressionTest()
 						rbp->DonePacketWrite();
 				});
 
-				if (packet_hwstat = rbp->GetPacketWrite(std::bind(GSCheckTesterStatus, true, false)))
+				if (packet_hwstat = rbp->GetPacketWrite(std::bind(GSCheckTesterStatus_RegressionTest, true, false)))
 				{
 					const std::string name_dump = rbp->GetNameDump();
 					packet_hwstat->SetNameDump(name_dump);
@@ -236,7 +238,7 @@ void GSDumpReplayer::EndDumpRegressionTest()
 					rbp->DonePacketWrite();
 			});
 
-			if (packet_done_dump = rbp->GetPacketWrite(std::bind(GSCheckTesterStatus, true, false)))
+			if (packet_done_dump = rbp->GetPacketWrite(std::bind(GSCheckTesterStatus_RegressionTest, true, false)))
 			{
 				const std::string name_dump = rbp->GetNameDump();
 				packet_done_dump->SetNameDump(name_dump);
@@ -328,6 +330,13 @@ bool GSDumpReplayer::Initialize(const char* filename)
 		if (!ChangeDump())
 			return false;
 	}
+	else if (GSIsBatchRunning())
+	{
+		if (!ChangeDump())
+			return false;
+
+		GSSetChildState_BatchRun(GSBatchRunBuffer::RUNNING);
+	}
 	else if (IsBatchMode())
 	{
 		if (!GetDumpFileList(filename, s_dump_file_list, s_num_batches, s_batch_id, s_batch_start_from_dump))
@@ -415,7 +424,7 @@ bool GSDumpReplayer::ChangeDump(const char* filename)
 		dump = rbp->GetDumpRead(); // First, one non-blocking check since otherwise the done uploading status is polled too early.
 		if (!dump)
 		{
-			dump = rbp->GetDumpRead(std::bind(GSCheckTesterStatus, true, true));
+			dump = rbp->GetDumpRead(std::bind(GSCheckTesterStatus_RegressionTest, true, true));
 		}
 
 		if (!dump)
@@ -453,7 +462,7 @@ bool GSDumpReplayer::ChangeDump(const char* filename)
 		}
 
 		MTGS::RunOnGSThread([runner_name = GetRunnerName(), sec = timer.GetTimeSeconds()]() {
-			Console.WriteLnFmt("(GSRunner/{}) Waited {:.2} seconds for dump.", runner_name, sec);
+			Console.WriteLnFmt("(GSRunner/{}) Waited {:.2} sec for dump.", runner_name, sec);
 		});
 
 		s_dump_name = dump->GetNameDump();
@@ -479,10 +488,91 @@ bool GSDumpReplayer::ChangeDump(const char* filename)
 		}
 
 		MTGS::RunOnGSThread([runner_name = GetRunnerName(), dump_name = s_dump_name, sec = timer.GetTimeSeconds()]() {
-			Console.WriteLnFmt("(GSDumpReplayer/{}) Read GS dump in '{}' ({:.2} seconds)", runner_name, dump_name, sec);
+			Console.WriteLnFmt("(GSDumpReplayer/{}) Read GS dump in '{}' ({:.2} sec)", runner_name, dump_name, sec);
 		});
 
-		GSSignalRunnerHeartbeat();
+		GSSignalRunnerHeartbeat_RegressionTest();
+	}
+	else if (GSIsBatchRunning())
+	{
+		pxAssert(filename == nullptr);
+
+		if (!s_dump_file_loader.Started())
+		{
+			s_dump_file_loader.Start(std::vector<std::string>());
+		}
+
+		GSDumpFileLoader::DumpInfo dump;
+
+		const auto AcquireAndAddToLoader = [](GSDumpFileLoader& loader) {
+			std::string file_str;
+			if (GSBatchRunAcquireFile(file_str))
+			{
+				loader.AddFile(file_str);
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		};
+
+		// FIXME: Code duplication with other batch mode....
+		// Get/read the next available ready dump, skipping any that errored.
+		
+		// Fill up the dump loader queue.
+		while (s_dump_file_loader.DumpsRemaining() < s_dump_file_loader.num_dumps_buffered)
+		{
+			if (!AcquireAndAddToLoader(s_dump_file_loader))
+				break;
+		}
+
+		while (true)
+		{
+			// This reads the dump file as well.
+			GSDumpFileLoader::ReturnValue ret = s_dump_file_loader.Get(s_dump_file, &dump);
+			
+			AcquireAndAddToLoader(s_dump_file_loader); // Add one more after getting one.
+
+			if (ret == GSDumpFileLoader::SUCCESS)
+			{
+				break;
+			}
+			else if (ret == GSDumpFileLoader::FINISHED)
+			{
+				Console.WriteLnFmt("(GSRunner/{}) Finished all dumps", GetRunnerName());
+				GSSetChildState_BatchRun(GSBatchRunBuffer::DONE_RUNNING);
+				return false;
+			}
+			else if (ret == GSDumpFileLoader::ERROR_)
+			{
+				MTGS::RunOnGSThread([error = dump.error]() {
+					Console.ErrorFmt("(GSRunner/{}) Error loading/reading dump: {}.", GetRunnerName(),
+						error.empty() ? std::string("Unspecified reason") : error);
+				});
+			}
+			else
+			{
+				pxFail("Unknown return value."); // Impossible.
+			}
+		}
+
+		s_dump_filename = dump.filename;
+		s_dump_name = Path::GetFileName(dump.filename);
+		GSGetBatchRunBuffer()->SetFileStatus(dump.filename, GSBatchRunBuffer::STARTED);
+
+		MTGS::RunOnGSThread(
+			[name = s_dump_name,
+				block_time_write = dump.block_time_write,
+				block_time_read = dump.block_time_read,
+				load_time = dump.load_time,
+				size = s_dump_file->GetFileSize()]() {
+				Console.WriteLnFmt(
+					"(GSRunner/{}) Loaded dump '{}' (size: {:.2} MB; block time write: {:.2} sec; block time read: {:.2} sec, load time: {:.2} sec)",
+					GetRunnerName(), name, static_cast<double>(size) / _1mb, block_time_write, block_time_read, load_time);
+			});
+
+		GSSignalRunnerHeartbeat_BatchRun();
 	}
 	else if (IsBatchMode())
 	{
@@ -495,16 +585,13 @@ bool GSDumpReplayer::ChangeDump(const char* filename)
 			s_dump_file_loader.Start(s_dump_file_list);
 		}
 
-		std::string filename;
-		std::string error;
-		double block_time;
-		double load_time;
+		GSDumpFileLoader::DumpInfo dump;
 
 		// Get/read the next available ready dump, skipping any that errored.
 		while (true)
 		{
 			// This reads the dump file as well.
-			GSDumpFileLoader::ReturnValue ret = s_dump_file_loader.Get(s_dump_file, &filename, &error, &block_time, &load_time);
+			GSDumpFileLoader::ReturnValue ret = s_dump_file_loader.Get(s_dump_file, &dump);
 
 			if (ret == GSDumpFileLoader::SUCCESS)
 			{
@@ -516,7 +603,7 @@ bool GSDumpReplayer::ChangeDump(const char* filename)
 			}
 			else if (ret == GSDumpFileLoader::ERROR_)
 			{
-				MTGS::RunOnGSThread([error]() {
+				MTGS::RunOnGSThread([error = dump.error]() {
 					Console.ErrorFmt("(GSRunner/{}) Error loading/reading dump: {}.", GetRunnerName(),
 						error.empty() ? std::string("Unspecified reason") : error);
 				});
@@ -529,9 +616,16 @@ bool GSDumpReplayer::ChangeDump(const char* filename)
 
 		s_dump_name = Path::GetFileName(filename);
 
-		MTGS::RunOnGSThread([name = s_dump_name, block_time, load_time, size = s_dump_file->GetFileSize()]() {
-			Console.WriteLnFmt("(GSRunner/{}) Loaded dump '{}' (size: {:.2} MB; block time: {:.2} seconds; load time: {:.2} seconds)",
-				GetRunnerName(), name, static_cast<double>(size) / _1mb, block_time, load_time);
+		MTGS::RunOnGSThread(
+			[name = s_dump_name,
+			block_time_write = dump.block_time_write,
+			block_time_read = dump.block_time_read,
+			load_time = dump.load_time,
+			size = s_dump_file->GetFileSize()]() {
+
+			Console.WriteLnFmt(
+				"(GSRunner/{}) Loaded dump '{}' (size: {:.2} MB; block time write: {:.2} sec; block time read: {:.2} sec, load time: {:.2} sec)",
+				GetRunnerName(), name, static_cast<double>(size) / _1mb, block_time_write, block_time_read, load_time);
 		});
 	}
 	else
@@ -693,7 +787,7 @@ static void GSDumpReplayerLoadInitialState()
 				s_batch_recreate_device ? "renderer and device" : "renderer only", sec);
 
 			if (GSIsRegressionTesting())
-				GSSignalRunnerHeartbeat();
+				GSSignalRunnerHeartbeat_RegressionTest();
 		});
 	}
 
@@ -835,7 +929,14 @@ void GSDumpReplayerCpuStep()
 
 	done_dump = done_dump || (s_dump_frame_number_max > 0 && s_dump_frame_number >= s_dump_frame_number_max);
 
-	if (GSIsRegressionTesting() && GSCheckTesterStatus(true, false))
+	if (GSIsRegressionTesting() && GSCheckTesterStatus_RegressionTest(true, false))
+	{
+		MTGS::RunOnGSThread([runner_name = GSDumpReplayer::GetRunnerName()]() {
+			Console.WarningFmt("(GSDumpReplayer/{}) Got exit status from tester.", runner_name);
+		});
+		done_all_dumps = true;
+	}
+	else if (GSIsBatchRunning() && GSCheckParentStatus_BatchRun())
 	{
 		MTGS::RunOnGSThread([runner_name = GSDumpReplayer::GetRunnerName()]() {
 			Console.WarningFmt("(GSDumpReplayer/{}) Got exit status from tester.", runner_name);
@@ -848,6 +949,11 @@ void GSDumpReplayerCpuStep()
 
 		if (GSDumpReplayer::IsBatchMode())
 		{
+			if (GSIsBatchRunning())
+			{
+				GSGetBatchRunBuffer()->SetFileStatus(s_dump_filename, GSBatchRunBuffer::COMPLETED);
+			}
+
 			Host::OnBatchDumpEnd(s_dump_name); // Dump stats
 
 			// Send HW stats and done packet if needed.
