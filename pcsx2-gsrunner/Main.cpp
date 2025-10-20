@@ -75,6 +75,17 @@ static constexpr const char* LIST_ITEM = "- ";
 static constexpr const char* OPEN_LIST = "[";
 static constexpr const char* CLOSE_LIST = "]";
 
+__forceinline static std::string VecToString(const std::vector<std::string>& v) {
+	std::string str;
+	for (std::size_t i = 0; i < v.size(); i++)
+	{
+		if (i > 0)
+			str += ", ";
+		str += "\"" + v[i] + "\"";
+	}
+	return "{ " + str + " }";
+};
+
 struct GSTester
 {
 	struct DumpInfo
@@ -109,7 +120,7 @@ struct GSTester
 	};
 
 	static void PrintCommandLineHelp(const char* progname);
-	bool ParseCommandLineArgs(int argc, char* argv[]);
+	bool ParseCommandLineArgs(int argc, const char* argv[]);
 	bool GetDumpInfo();
 	ReturnValue CopyDumpToSharedMemory(const std::vector<u8>& data, const std::string& name);
 	ReturnValue ProcessPackets();
@@ -117,12 +128,12 @@ struct GSTester
 	bool EndRunners();
 	bool RestartRunners();
 	std::string GetTesterName();
-	int MainThread(int argc, char* argv[], u32 nthreads, u32 thread_id);
+	int MainThread(int argc, const char* argv[], u32 nthreads, u32 thread_id);
 	
 	static std::string GetEventNameRunner(GSProcess::PID_t tester_pid, const std::string& runner_name);
 	static std::string GetEventNameTester(GSProcess::PID_t tester_pid);
 	
-	static int main_tester(int argc, char* argv[]);
+	static int main_tester(int argc, const char* argv[]);
 
 	enum
 	{
@@ -145,11 +156,11 @@ struct GSTester
 	std::string regression_dump_last_completed;
 	std::string regression_output_dir;
 	std::string regression_output_dir_runner[2];
-	std::string regression_runner_args;
+	std::vector<std::string> regression_runner_args;
 	GSRegressionBuffer regression_buffer[2];
 	GSEvent regression_event_tester;
 	std::string regression_runner_path[2];
-	std::string regression_runner_command[2];
+	std::vector<std::string> regression_runner_command[2];
 	std::string regression_runner_name[2];
 	std::string regression_shared_file[2];
 	std::string regression_dump_dir;
@@ -183,7 +194,7 @@ namespace GSRunner
 	static void InitializeConsole();
 	static bool InitializeConfig();
 	static void SettingsOverride();
-	static bool ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& params);
+	static bool ParseCommandLineArgs(int argc, const char* argv[], VMBootParameters& params);
 	static void PrintCommandLineHelp(const char* progname);
 	static void DumpStats();
 
@@ -195,7 +206,7 @@ namespace GSRunner
 	static std::string GetDumpTitle(const std::string& path);
 	static std::string GetBatchDumpTitle();
 
-	int main_runner(int argc, char* argv[]);
+	static int main_runner(int argc, const char* argv[]);
 
 	static constexpr u32 WINDOW_WIDTH = 640;
 	static constexpr u32 WINDOW_HEIGHT = 480;
@@ -223,6 +234,15 @@ namespace GSRunner
 	static std::string s_batch_start_from_dump;
 	static bool s_verbose_logging = 0;
 
+	static std::string s_batch_runner_shared_file;
+	static s32 s_batch_runner_num_files = -1;
+	static s32 s_batch_runner_num_threads = -1;
+	static s32 s_batch_runner_index = -1;
+	static GSBatchRunBuffer s_batch_runner_buffer;
+	static GSProcess::PID_t s_batch_runner_ppid = 0;
+	static bool s_batch_runner_single_log = false;
+	static u32 s_batch_runner_dump_buffer_size = UINT32_MAX; // infinite
+
 	// Owned by the GS thread.
 	static u32 s_dump_frame_number = 0;
 	static u32 s_loop_number = -1; // Invalid until initialized on first vsync.
@@ -247,6 +267,40 @@ namespace GSRunner
 	static std::string s_batch_dump_name;
 	static Common::Timer s_batch_dump_timer;
 } // namespace GSRunner
+
+namespace GSRunnerBatch
+{
+	static void PrintCommandLineHelp(const char* progname);
+	static bool ParseCommandLineArgs(int argc, const char* argv[]);
+	static void GetRunnerArgs(std::size_t i, std::vector<std::string>& args);
+	static bool StartRunner(std::size_t i, bool restart = false);
+	static void EndRunner(std::size_t i);
+	static bool StartRunnersAll();
+	static bool EndRunnersAll();
+
+	static int main_batch(int argc, const char* argv[]);
+
+	static std::string batch_dump_dir;
+	static std::string batch_output_dir;
+	static std::string batch_runner_path;
+	static std::size_t batch_num_threads = 1;
+	static std::vector<std::string> batch_runner_args;
+	static std::vector<std::vector<std::string>> batch_runner_command;
+	static std::string batch_shared_file;
+	static std::vector<std::string> batch_dump_list;
+	static GSBatchRunBuffer batch_runner_buffer;
+	static std::vector<GSProcess> batch_runner_proc;
+	static std::vector<Common::Timer> batch_deadlock_timer;
+	static std::vector<bool> batch_runner_exiting;
+	static std::vector<Common::Timer> batch_exiting_timer;
+	static std::size_t batch_failure_restarts = 0;
+	static double batch_total_time_sec = 0.0;
+	static std::size_t batch_dumps_num_completed = 0;
+	static std::size_t batch_dumps_num_not_completed = 0;
+
+	static constexpr double batch_deadlock_timeout = 60.0;
+	static constexpr double batch_start_exit_timeout = 30.0;
+};
 
 bool GSRunner::InitializeConfig()
 {
@@ -399,7 +453,7 @@ void Host::BeginPresentFrame()
 			if (!GSIsRegressionTesting())
 			{
 				Error error;
-				if (FileSystem::EnsureDirectoryExists(dir.c_str(), &error))
+				if (FileSystem::EnsureDirectoryExists(dir.c_str(), false, &error))
 				{
 					dump_file = Path::Combine(dir, fmt::format("{}_frame{:05}.png", title, GSRunner::s_dump_frame_number));
 				}
@@ -505,7 +559,7 @@ void Host::OnBatchDumpStart(const std::string& dump_name)
 
 			std::string dump_title(GSRunner::GetBatchDumpTitle());
 
-			if (!GSRunner::s_logfile.empty())
+			if (!GSRunner::s_batch_runner_single_log && !GSRunner::s_logfile.empty())
 			{
 				std::string log_dir = Path::Combine(GSRunner::s_logfile, dump_title);
 
@@ -725,6 +779,16 @@ static void GSRunner::PrintCommandLineHelp(const char* progname)
 	std::fprintf(stderr, "\n");
 }
 
+static void GSRunnerBatch::PrintCommandLineHelp(const char* progname)
+{
+	PrintCommandLineVersion();
+	std::fprintf(stderr, "Usage: %s [parameters] [--] [filename]\n", progname);
+	std::fprintf(stderr, "\n");
+	std::fprintf(stderr, "  -help: Displays this information and exits.\n");
+	std::fprintf(stderr, "  -version: Displays version information and exits.\n");
+	std::fprintf(stderr, "\n");
+}
+
 void GSTester::PrintCommandLineHelp(const char* progname)
 {
 	PrintCommandLineVersion();
@@ -755,7 +819,7 @@ static std::string GSRunner::GetBatchDumpTitle()
 	return GetDumpTitle(s_batch_dump_name);
 }
 
-bool GSRunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& params)
+bool GSRunner::ParseCommandLineArgs(int argc, const char* argv[], VMBootParameters& params)
 {
 	std::string dumpdir; // Save from argument -dumpdir for creating sub-directories
 	bool no_more_args = false;
@@ -1065,9 +1129,69 @@ bool GSRunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& pa
 				s_batch_recreate_device = false;
 				continue;
 			}
-			else if (CHECK_ARG("-batch-start-from"))
+			else if (CHECK_ARG_PARAM("-batch-start-from"))
 			{
 				s_batch_start_from_dump = StringUtil::StripWhitespace(argv[++i]);
+				continue;
+			}
+			else if (CHECK_ARG_PARAM("-batch-runner-shared-file"))
+			{
+				s_batch_runner_shared_file = StringUtil::StripWhitespace(argv[++i]);
+				s_batch_mode = true;
+				continue;
+			}
+			else if (CHECK_ARG_PARAM("-batch-runner-ppid"))
+			{
+				s_batch_runner_ppid = StringUtil::FromChars<GSProcess::PID_t>(argv[++i]).value_or(0);
+				continue;
+			}
+			else if (CHECK_ARG_PARAM("-batch-runner-index"))
+			{
+				std::optional<u32> index = StringUtil::FromChars<u32>(argv[++i]);
+				if (!index.has_value())
+				{
+					Console.ErrorFmt("(GSRunner) Malformed argument batch index: {}", argv[i]);
+					return false;
+				}
+				s_batch_runner_index = static_cast<s32>(index.value());
+				continue;
+			}
+			else if (CHECK_ARG_PARAM("-batch-runner-nthreads"))
+			{
+				std::optional<u32> nthreads = StringUtil::FromChars<u32>(argv[++i]);
+				if (!nthreads.has_value())
+				{
+					Console.ErrorFmt("(GSRunner) Malformed argument nthreads: {}", argv[i]);
+					return false;
+				}
+				s_batch_runner_num_threads = static_cast<s32>(nthreads.value());
+				continue;
+			}
+			else if (CHECK_ARG_PARAM("-batch-runner-nfiles"))
+			{
+				std::optional<u32> nfiles = StringUtil::FromChars<u32>(argv[++i]);
+				if (!nfiles.has_value())
+				{
+					Console.ErrorFmt("(GSRunner) Malformed argument nthreads: {}", argv[i]);
+					return false;
+				}
+				s_batch_runner_num_files = static_cast<s32>(nfiles.value());
+				continue;
+			}
+			else if (CHECK_ARG_PARAM("-batch-runner-dump-buffer-size"))
+			{
+				std::optional<u32> size = StringUtil::FromChars<u32>(argv[++i]);
+				if (!size.has_value())
+				{
+					Console.ErrorFmt("(GSRunner) Malformed argument dump buffer size: {}", argv[i]);
+					return false;
+				}
+				s_batch_runner_dump_buffer_size = size.value() * _1mb;
+				continue;
+			}
+			else if (CHECK_ARG("-batch-runner-single-log"))
+			{
+				s_batch_runner_single_log = true;
 				continue;
 			}
 			else if (CHECK_ARG("-noshadercache"))
@@ -1134,22 +1258,32 @@ bool GSRunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& pa
 			VMManager::Internal::SetFileLogPath(s_logfile);
 		}
 		
-		Console.WriteLn("Logging to %s...", s_logfile);
+		Console.WriteLnFmt("Logging to {}...", s_logfile);
 		
 		// disable timestamps, since we want to be able to diff the logs
 		s_settings_interface.SetBoolValue("Logging", "EnableTimestamps", false);
 	}
 
 	if (!s_regression_file.empty())
-		return true; // Remaining arguments/checks are not needed if doing regression testing.
-
-	if (params.filename.empty())
 	{
-		Console.Error("No dump filename provided and not in regression testing mode.");
+		Console.WriteLnFmt("(GSTester) Running in regression test mode.");
+		return true; // Remaining arguments/checks are not needed if doing regression testing.
+	}
+	else if (!s_batch_runner_shared_file.empty())
+	{
+		Console.WriteLnFmt("(GSTester) Running in batch runner mode.");
+	}
+	else if (params.filename.empty())
+	{
+		Console.Error("No dump filename provided.");
 		return false;
 	}
 
-	if (s_batch_mode)
+	if (!s_batch_runner_shared_file.empty())
+	{
+		// Dump files are read from shared memory.
+	}
+	else if (s_batch_mode)
 	{
 		if (!FileSystem::DirectoryExists(params.filename.c_str()))
 		{
@@ -1157,6 +1291,7 @@ bool GSRunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& pa
 			return false;
 		}
 
+		// FIXME: Might not be relevant anymore.
 		s_num_batches = std::max(s_num_batches, 1u);
 		s_batch_id = s_batch_id % s_num_batches;
 	}
@@ -1194,18 +1329,122 @@ bool GSRunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& pa
 				title = Path::GetFileTitle(title);
 
 			s_output_prefix = Path::Combine(s_output_prefix, StringUtil::StripWhitespace(title));
-			Console.WriteLn(fmt::format("Saving dumps as {}_frameN.png", s_output_prefix));
+			Console.WriteLnFmt("Saving dumps as {}_frameN.png", s_output_prefix);
 		}
 		else
 		{
-			Console.WriteLn(fmt::format("Saving dumps to {}", s_output_prefix));
+			Console.WriteLnFmt("Saving dumps to {}", s_output_prefix);
 		}
 	}
 
 	return true;
 }
 
-bool GSTester::ParseCommandLineArgs(int argc, char* argv[])
+bool GSRunnerBatch::ParseCommandLineArgs(int argc, const char* argv[])
+{
+	pxAssert(argc >= 1);
+
+	if (!FileSystem::FileExists(argv[0]))
+	{
+		// Should be impossible.
+		Console.ErrorFmt("(GSRunnerBatch) '{}' does not exist.", argv[0]);
+		return false;
+	}
+
+	batch_runner_path = argv[0];
+
+	for (int i = 1; i < argc; i++)
+	{
+#define CHECK_ARG(str) !std::strcmp(argv[i], str)
+#define ENSURE_ARG_COUNT(str, n) \
+	do \
+	{ \
+		if (i + n >= argc) \
+		{ \
+			Console.Error("Not enough arguments for " str " (need " #n ")"); \
+			return false; \
+		} \
+	} while (0)
+
+		if (i == 1 && CHECK_ARG("batch"))
+		{
+			continue;
+		}
+		else if (CHECK_ARG("-help"))
+		{
+			PrintCommandLineHelp(argv[0]);
+			return false;
+		}
+		else if (CHECK_ARG("-version"))
+		{
+			PrintCommandLineVersion();
+			return false;
+		}
+		else if (CHECK_ARG("-input"))
+		{
+			ENSURE_ARG_COUNT("-input", 1);
+
+			batch_dump_dir = StringUtil::StripWhitespace(argv[++i]);
+			if (batch_dump_dir.empty())
+			{
+				Console.Error("Invalid input directory/file specified.");
+				return false;
+			}
+
+			if (!FileSystem::DirectoryExists(batch_dump_dir.c_str()) && !FileSystem::FileExists(batch_dump_dir.c_str()))
+			{
+				Console.Error("Input directory/file does not exist.");
+				return false;
+			}
+
+			continue;
+		}
+		else if (CHECK_ARG("-output"))
+		{
+			ENSURE_ARG_COUNT("-output", 1);
+
+			batch_output_dir = StringUtil::StripWhitespace(argv[++i]);
+			if (batch_output_dir.empty())
+			{
+				Console.Error("Invalid output directory specified.");
+				return false;
+			}
+
+			Error e;
+			if (!FileSystem::EnsureDirectoryExists(batch_output_dir.c_str(), true, &e))
+			{
+				Console.ErrorFmt("Error creating/checking directory: {}", e.GetDescription());
+				return false;
+			}
+
+			continue;
+		}
+		else if (CHECK_ARG("-nthreads"))
+		{
+			ENSURE_ARG_COUNT("-nthreads", 1);
+
+			batch_num_threads = StringUtil::FromChars<int>(argv[++i]).value_or(1);
+
+			continue;
+		}
+		else
+		{
+			batch_runner_args.push_back(argv[i]);
+			continue;
+		}
+#undef CHECK_ARG
+	}
+
+	if (batch_dump_dir.empty())
+	{
+		Console.Error("(GSRunnerBatch) Dump directory/file not provided.");
+		return false;
+	}
+	
+	return true;
+}
+
+bool GSTester::ParseCommandLineArgs(int argc, const char* argv[])
 {
 	for (int i = 1; i < argc; i++)
 	{
@@ -1361,8 +1600,8 @@ bool GSTester::ParseCommandLineArgs(int argc, char* argv[])
 		}
 		else
 		{
-			regression_runner_args.append(argv[i]);
-			regression_runner_args.append(" ");
+			// Args passed to the runner.
+			regression_runner_args.push_back(argv[i]);
 			continue;
 		}
 
@@ -1701,7 +1940,7 @@ GSTester::ReturnValue GSTester::ProcessPackets()
 	}
 }
 
-int GSRunner::main_runner(int argc, char* argv[])
+int GSRunner::main_runner(int argc, const char* argv[])
 {
 	if (!InitializeConfig())
 	{
@@ -1727,22 +1966,24 @@ int GSRunner::main_runner(int argc, char* argv[])
 	// (regression test data is dumped to memory).
 	if (!s_regression_file.empty())
 	{
-
 		if (s_parent_pid == 0)
 		{
 			Console.ErrorFmt("(GSRunner/{}/{}) Regression testing without a valid parent PID.", s_runner_name, GSProcess::GetCurrentPID());
 			return EXIT_FAILURE;
 		}
 
-		GSStartRegressionTest(
-			&s_regression_buffer,
-			s_regression_file,
-			GSTester::GetEventNameRunner(s_parent_pid, s_runner_name),
-			GSTester::GetEventNameTester(s_parent_pid),
-			s_regression_num_packets,
-			s_regression_packet_size,
-			s_regression_num_dumps,
-			s_regression_dump_size);
+		if (!GSStartRegressionTest(
+				&s_regression_buffer,
+				s_regression_file,
+				GSTester::GetEventNameRunner(s_parent_pid, s_runner_name),
+				GSTester::GetEventNameTester(s_parent_pid),
+				s_regression_num_packets,
+				s_regression_packet_size,
+				s_regression_num_dumps,
+				s_regression_dump_size))
+		{
+			return EXIT_FAILURE;
+		}
 
 		if (!GSProcess::SetParentPID(s_parent_pid))
 		{
@@ -1751,6 +1992,30 @@ int GSRunner::main_runner(int argc, char* argv[])
 		}
 
 		Console.WriteLnFmt("(GSRunner/{}/{}) Opened parent PID {}.", s_runner_name, GSProcess::GetCurrentPID(), s_parent_pid);
+	}
+	else if (!s_batch_runner_shared_file.empty())
+	{
+		if (s_batch_runner_ppid == 0)
+		{
+			Console.ErrorFmt("(GSRunner/{}/{}) Regression testing without a valid parent PID.", s_runner_name, GSProcess::GetCurrentPID());
+			return EXIT_FAILURE;
+		}
+
+		if (!GSStartBatchRun(
+				&s_batch_runner_buffer,
+				s_batch_runner_shared_file,
+				s_batch_runner_num_files,
+				s_batch_runner_num_threads,
+				s_batch_runner_index))
+		{
+			return EXIT_FAILURE;
+		}
+
+		if (!GSProcess::SetParentPID(s_batch_runner_ppid))
+		{
+			Console.ErrorFmt("(GSRunner/{}/{}) Unable to open parent PID {}.", s_runner_name, GSProcess::GetCurrentPID(), s_parent_pid);
+			return EXIT_FAILURE;
+		}
 	}
 	
 	// Override settings that shouldn't be picked up from defaults or INIs.
@@ -1763,12 +2028,18 @@ int GSRunner::main_runner(int argc, char* argv[])
 	GSDumpReplayer::SetVerboseLogging(s_verbose_logging);
 	if (s_batch_mode)
 	{
+		if (s_batch_runner_single_log && !s_logfile.empty())
+		{
+			VMManager::Internal::SetFileLogPath(
+				Path::Combine(s_logfile, "emulog-" + std::to_string(s_batch_runner_index) + "-" + std::to_string(GSProcess::GetCurrentPID()) + ".txt"));
+		}
 		GSDumpReplayer::SetIsBatchMode(true);
 		GSDumpReplayer::SetNumBatches(s_num_batches);
 		GSDumpReplayer::SetBatchID(s_batch_id);
 		GSDumpReplayer::SetLoopCountStart(s_loop_count);
 		GSDumpReplayer::SetBatchDefaultGSOptions(EmuConfig.GS);
 		GSDumpReplayer::SetBatchRecreateDevice(s_batch_recreate_device);
+		GSDumpReplayer::SetDumpBufferSize(s_batch_runner_dump_buffer_size);
 		if (!s_batch_start_from_dump.empty())
 		{
 			GSDumpReplayer::SetBatchStartFromDump(s_batch_start_from_dump);
@@ -1788,7 +2059,207 @@ int GSRunner::main_runner(int argc, char* argv[])
 	DestroyPlatformWindow();
 	if (GSIsRegressionTesting())
 		GSEndRegressionTest();
+	if (GSIsBatchRunning())
+		GSEndBatchRun();
 	return EXIT_SUCCESS;
+}
+
+int GSRunnerBatch::main_batch(int argc, const char* argv[])
+{
+	Common::Timer timer_total;
+	
+	if (!ParseCommandLineArgs(argc, argv))
+		return EXIT_FAILURE;
+
+	if (!GSDumpReplayer::GetDumpFileList(batch_dump_dir, batch_dump_list, 1, 0))
+		return EXIT_FAILURE;
+
+	std::string logfile = Path::Combine(batch_output_dir, "batch-log.txt");
+	VMManager::Internal::SetFileLogPath(logfile);
+
+	batch_num_threads = std::clamp<std::size_t>(batch_num_threads, 1, 8);
+	Console.WriteLnFmt("(GSRunnerBatch) Batch running with {} threads.", batch_num_threads);
+
+	batch_shared_file = std::string("batch-shared-file-") + std::to_string(GSProcess::GetCurrentPID());
+	if (!batch_runner_buffer.CreateFile_(batch_shared_file, batch_dump_list.size(), batch_num_threads))
+	{
+		Console.ErrorFmt("(GSRunnerBatch) Unable to create shared file: {}", batch_shared_file);
+		return EXIT_FAILURE;
+	}
+
+	// FIXME: Use this for regression testing also.
+	ScopedGuard cleanup_buffer([]() {
+		batch_runner_buffer.DestroySharedMemory();
+		batch_runner_buffer.CloseFile();
+	});
+
+	Console.WriteLnFmt("(GSRunnerBatch) Created batch file: {}", batch_shared_file);
+
+	batch_runner_buffer.PopulateFilenames(batch_dump_list);
+
+	// FIXME: Remove 1 thread speical case
+	if (batch_num_threads == 1 && 0)
+	{
+		std::vector<std::string> args;
+		GetRunnerArgs(0, args);
+
+		std::vector<const char*> args_cstr;
+		for (std::size_t i = 0; i < args.size(); i++)
+			args_cstr.push_back(args[i].c_str());
+
+		return GSRunner::main_runner(args.size(), args_cstr.data());
+	}
+	else
+	{
+		if (!StartRunnersAll())
+		{
+			EndRunnersAll();
+			return EXIT_FAILURE;
+		}
+
+		// Wait for all processes to begin dump running.
+		Common::Timer start_timer;
+		bool all_started;
+		while (true)
+		{
+			all_started = true;
+			for (std::size_t i = 0; i < batch_num_threads; i++)
+			{
+				bool running = batch_runner_buffer.GetStateChild(i) == GSBatchRunBuffer::RUNNING;
+				bool done_running = batch_runner_buffer.GetStateChild(i) == GSBatchRunBuffer::DONE_RUNNING;
+				if (!(running || done_running))
+				{
+					all_started = false;
+					break;
+				}
+			}
+			if (all_started || start_timer.GetTimeSeconds() >= batch_start_exit_timeout)
+				break;
+		}
+		if (!all_started)
+		{
+			Console.ErrorFmt("(GSRunnerBatch/Parent) Failed to get initialization signal from all processes after {} seconds.",
+				batch_start_exit_timeout);
+			EndRunnersAll();
+			return EXIT_FAILURE;
+		}
+		Console.WriteLn("(GSRunnerBatch/Parent) All runners started successfully.");
+	}
+	
+	batch_deadlock_timer.resize(batch_num_threads);
+	batch_exiting_timer.resize(batch_num_threads);
+	batch_runner_exiting.resize(batch_num_threads);
+
+	// Main parent loop.
+	while (true)
+	{
+		// Check for all processes exiting.
+		bool all_done = true;
+		for (std::size_t i = 0; i < batch_num_threads; i++)
+		{
+			if (batch_runner_buffer.GetStateChild(i) != GSBatchRunBuffer::DONE_RUNNING)
+			{
+				all_done = false;
+				break;
+			}
+		}
+
+		if (all_done)
+		{
+			break;
+		}
+
+		// Check for heartbeat signals.
+		for (std::size_t i = 0; i < batch_num_threads; i++)
+		{
+			if (batch_runner_buffer.CheckRunnerHeartbeat(i))
+			{
+				batch_runner_buffer.ResetRunnerHeartbeat(i);
+				batch_deadlock_timer[i].Reset();
+				batch_runner_exiting[i] = false;
+			}
+			else if (batch_runner_exiting[i])
+			{
+				if (!batch_runner_proc[i].IsRunning(true))
+				{
+					Console.WriteLnFmt("(GSRunnerBatch/Parent) Runner {} safely exited. Restarting.", i);
+					
+					if (!StartRunner(i, true))
+						Console.ErrorFmt("(GSRunnerBatch/Parent) Could not restart runner {}.", i);
+					
+					batch_failure_restarts++;
+					batch_runner_exiting[i] = false;
+					batch_deadlock_timer[i].Reset();
+					batch_exiting_timer[i].Reset();
+				}
+				else if (batch_exiting_timer[i].GetTimeSeconds() >= batch_start_exit_timeout)
+				{
+					Console.ErrorFmt("(GSRunnerBatch/Parent) Unable to safely exit runner {}. Terminating.", i);
+
+					batch_runner_proc[i].Terminate();
+					if (!StartRunner(i, true))
+						Console.ErrorFmt("(GSRunnerBatch/Parent) Could not restart runner {}.", i);
+					
+					batch_failure_restarts++;
+					batch_runner_exiting[i] = false;
+					batch_deadlock_timer[i].Reset();
+					batch_exiting_timer[i].Reset();
+				}
+			}
+			else if (!batch_runner_proc[i].IsRunning(true) && batch_runner_buffer.GetStateChild(i) != GSBatchRunBuffer::DONE_RUNNING)
+			{
+				Console.ErrorFmt("(GSRunnerBatch/Parent) Runner {} exited unexpectedly. Attempting restart.", i);
+				batch_runner_exiting[i] = true;
+			}
+			else if (batch_deadlock_timer[i].GetTimeSeconds() >= batch_deadlock_timeout)
+			{
+				Console.ErrorFmt("(GSRunnerBatch/Parent) Runner {} appears deadlocked...attempting safe exit.", i);
+				EndRunner(i);
+				batch_runner_exiting[i] = true;
+				batch_exiting_timer[i].Reset();
+			}
+		}
+
+		std::this_thread::sleep_for(std::chrono::seconds(1));
+	}
+
+	// End all runner processes.
+	EndRunnersAll();
+
+	// Cleanup the process handles and/or reap zombies.
+	for (std::size_t i = 0; i < batch_num_threads; i++)
+	{
+		batch_runner_proc[i].Close();
+	}
+
+	batch_total_time_sec = timer_total.GetTimeSeconds();
+	batch_dumps_num_completed = 0;
+	batch_dumps_num_not_completed = 0;
+
+	for (std::size_t i = 0; i < batch_dump_list.size(); i++)
+	{
+		GSBatchRunBuffer::FileStatus status = batch_runner_buffer.GetFileStatus(i);
+		if (status != GSBatchRunBuffer::COMPLETED)
+		{
+			Console.ErrorFmt("(GSRunnerBatch/Parent) Dump file '{}' did not complete successfully (status: {}).",
+				batch_dump_list[i], GSBatchRunBuffer::GetFileStatusStr(status));
+			batch_dumps_num_not_completed++;
+		}
+		else
+		{
+			batch_dumps_num_completed++;
+		}
+	}
+
+	Console.WriteLnFmt("(GSRunnerBatch/Parent) Finished batch running in {:.2} seconds.", batch_total_time_sec);
+	Console.WriteLnFmt("(GSRunnerBatch/Parent) Total dumps completed: {} / {} (Avg: {:.2} seconds)", batch_dumps_num_completed, batch_dump_list.size(), batch_total_time_sec / batch_dumps_num_completed);
+	if (batch_dumps_num_not_completed > 0)
+		Console.ErrorFmt("(GSRunnerBatch/Parent) Total dumps not completed: {} / {}",
+			batch_dumps_num_not_completed, batch_dump_list.size());
+	if (batch_failure_restarts > 0)
+		Console.ErrorFmt("(GSRunnerBatch/Parent) Total failure restarts: {}", batch_failure_restarts);
+
+	return (batch_dumps_num_not_completed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 std::string GSTester::GetTesterName()
@@ -1796,51 +2267,193 @@ std::string GSTester::GetTesterName()
 	return std::to_string(regression_thread_id);
 }
 
+void GSRunnerBatch::GetRunnerArgs(std::size_t i, std::vector<std::string>& args)
+{
+	args.clear();
+
+	args.push_back(batch_runner_path);
+
+	args.push_back("-batch-runner-ppid");
+	args.push_back(std::to_string(GSProcess::GetCurrentPID()));
+
+	args.push_back(std::string("-batch-runner-shared-file"));
+	args.push_back(batch_shared_file);
+
+	args.push_back(std::string("-batch-runner-index"));
+	args.push_back(std::to_string(i));
+
+	args.push_back(std::string("-batch-runner-nthreads"));
+	args.push_back(std::to_string(batch_num_threads));
+
+	args.push_back(std::string("-batch-runner-nfiles"));
+	args.push_back(std::to_string(batch_dump_list.size()));
+
+	args.push_back(std::string("-dumpdir"));
+	args.push_back(batch_output_dir);
+
+	args.push_back(std::string("-surfaceless"));
+
+	args.insert(args.end(), batch_runner_args.begin(), batch_runner_args.end());
+}
+
+bool GSRunnerBatch::StartRunner(std::size_t i, bool restart)
+{
+	// Start the runners in batch running mode.
+
+	if (restart)
+		batch_runner_buffer.Reset(i);
+	
+	if (batch_runner_command[i].empty())
+	{
+		std::vector<std::string> args;
+		GetRunnerArgs(i, batch_runner_command[i]);
+	}
+
+	if (!batch_runner_proc[i].Start(batch_runner_command[i], false))
+	{
+		Console.ErrorFmt("(GSRunnerBatch) Unable to start runner: {} (command: {})", i, VecToString(batch_runner_command[i]));
+		return false;
+	}
+
+	Console.WriteLnFmt("(GSRunnerBatch) Created runner process (PID: {}) with command: '{}'",
+		batch_runner_proc[i].GetPID(), VecToString(batch_runner_command[i]));
+
+	return true;
+}
+
+bool GSRunnerBatch::StartRunnersAll()
+{
+	Console.WriteLnFmt("(GSRunnerBatch) Starting runner processes...");
+	batch_runner_command.resize(batch_num_threads);
+	batch_runner_proc.resize(batch_num_threads);
+	for (std::size_t i = 0; i < batch_num_threads; i++)
+	{
+		if (!StartRunner(i))
+		{
+			Console.ErrorFmt("(GSRunnerBatch) Unable to start runner processes. Exiting.");
+			return false;
+		}
+	}
+	Console.WriteLnFmt("(GSRunnerBatch) Runners processes are started.");
+	return true;
+}
+
+void GSRunnerBatch::EndRunner(std::size_t i)
+{
+	batch_runner_buffer.SetStateParent(i, GSBatchRunBuffer::EXIT);
+}
+
+bool GSRunnerBatch::EndRunnersAll()
+{
+	// Signal exit to runners.
+	for (std::size_t i = 0; i < batch_num_threads; i++)
+		EndRunner(i);
+
+	Common::Timer exit_timer;
+	while (true)
+	{
+		bool all_exited = true;
+		for (std::size_t i = 0; i < batch_num_threads; i++)
+		{
+			if (batch_runner_proc[i].IsRunning(true))
+			{
+				all_exited = false;
+				break;
+			}
+		}
+
+		if (all_exited)
+		{
+			Console.WriteLn("(GSRunnerBatch/Parent) All runners exited safely.");
+			return true;
+		}
+
+		if (exit_timer.GetTimeSeconds() >= batch_start_exit_timeout)
+		{
+			Console.ErrorFmt("(GSRunnerBatch/Parent) Runners did not exit after {} seconds...terminating.",
+				batch_start_exit_timeout);
+			for (std::size_t i = 0; i < batch_num_threads; i++)
+			{
+				if (batch_runner_proc[i].IsRunning(true))
+					batch_runner_proc[i].Terminate();
+			}
+			return false;
+		}
+
+		std::this_thread::sleep_for(std::chrono::seconds(1));
+
+		Console.WriteLnFmt("(GSRunnerBatch/Parent) Waiting for runner processes to exit...");
+	}
+
+	return false; // Unreachable
+}
+
 bool GSTester::StartRunners()
 {
-	const auto quote = [](std::string x) { return "\"" + x + "\""; };
+	GSProcess::PID_t pid = GSProcess::GetCurrentPID();
 
 	// Start the runner processes in regression testing mode.
 	for (int i = 0; i < 2; i++)
 	{
-		GSProcess::PID_t pid = GSProcess::GetCurrentPID();
-
 		if (regression_runner_command[i].empty())
 		{
-			regression_runner_command[i] =
-				quote(regression_runner_path[i]) +
-				std::string(" runner ") +
-				std::string(" -surfaceless ") +
-				std::string(" -noshadercache ") +
-				std::string(" -loop 1 ") +
-				(regression_logging ?
-					std::string(" -logfile ") + quote(regression_output_dir_runner[i]) :
-					"") +
-				std::string(" -regression-test ") + quote(regression_shared_file[i]) +
-				std::string(" -name ") + quote(regression_runner_name[i]) +
-				std::string(" -regression-npackets-buffer ") + std::to_string(regression_num_packets) +
-				std::string(" -regression-packet-size ") + std::to_string(regression_packet_size / _1mb) +
-				std::string(" -batch-ndumps-buffer ") + std::to_string(regression_num_dumps) +
-				std::string(" -regression-dump-size ") + std::to_string(regression_dump_size / _1mb) +
-				std::string(" -regression-ppid ") + std::to_string(pid) +
-				std::string(" -batch ") +
-				std::string(" -nbatches ") + std::to_string(regression_nthreads) +
-				std::string(" -batch-id ") + std::to_string(regression_thread_id) +
-				(regression_verbose_level >= VERBOSE_TESTER_AND_RUNNER ?
-					std::string(" -verbose ") :
-					"") +
-				" " + regression_runner_args;
+			regression_runner_command[i].push_back(regression_runner_path[i]);
+			regression_runner_command[i].push_back("runner");
+			regression_runner_command[i].push_back("-surfaceless");
+			regression_runner_command[i].push_back("-noshadercache");
+			regression_runner_command[i].push_back("-loop 1");
+			if (regression_logging)
+			{
+				regression_runner_command[i].push_back("-logfile");
+				regression_runner_command[i].push_back(regression_output_dir_runner[i]);
+			}
+			regression_runner_command[i].push_back("-regression-test");
+			regression_runner_command[i].push_back(regression_shared_file[i]);
+
+			regression_runner_command[i].push_back("-name");
+			regression_runner_command[i].push_back(regression_runner_name[i]);
+
+			regression_runner_command[i].push_back("-regression-npackets-buffer");
+			regression_runner_command[i].push_back(std::to_string(regression_num_packets));
+
+			regression_runner_command[i].push_back("-regression-packet-size");
+			regression_runner_command[i].push_back(std::to_string(regression_packet_size / _1mb));
+
+			regression_runner_command[i].push_back("-batch-ndumps-buffer");
+			regression_runner_command[i].push_back(std::to_string(regression_num_dumps));
+
+			regression_runner_command[i].push_back("-regression-dump-size");
+			regression_runner_command[i].push_back(std::to_string(regression_dump_size / _1mb));
+
+			regression_runner_command[i].push_back("-regression-ppid");
+			regression_runner_command[i].push_back(std::to_string(pid));
+
+			regression_runner_command[i].push_back("-batch ");
+
+			regression_runner_command[i].push_back("-nbatches ");
+			regression_runner_command[i].push_back(std::to_string(regression_nthreads));
+
+			regression_runner_command[i].push_back("-batch-id ");
+			regression_runner_command[i].push_back(std::to_string(regression_thread_id));
+
+			if (regression_verbose_level >= VERBOSE_TESTER_AND_RUNNER)
+				regression_runner_command[i].push_back(std::string(" -verbose "));
+
+			regression_runner_command[i].insert(
+				regression_runner_command[i].end(),
+				regression_runner_args.begin(),
+				regression_runner_args.end());
 		}
 
 		if (!regression_runner_proc[i].Start(regression_runner_command[i], regression_verbose_level < VERBOSE_TESTER_AND_RUNNER))
 		{
-			Console.ErrorFmt("(GSTester/{}) Unable to start runner: {} (command: {})", GetTesterName(), regression_runner_name[i],
-				regression_runner_command[i]);
+			Console.ErrorFmt("(GSTester/{}) Unable to start runner: {} with args: {}", GetTesterName(), regression_runner_name[i],
+				VecToString(regression_runner_command[i]));
 			return false;
 		}
 
-		Console.WriteLnFmt("(GSTester/{}) Created runner process (PID: {}) with command: '{}'", GetTesterName(),
-			regression_runner_proc[i].GetPID(), regression_runner_command[i]);
+		Console.WriteLnFmt("(GSTester/{}) Created runner process (PID: {}) with args: {}", GetTesterName(),
+			regression_runner_proc[i].GetPID(), VecToString(regression_runner_command[i]));
 	}
 
 	// Wait until the runners initialize and hit the dump waiting loop.
@@ -1862,7 +2475,7 @@ bool GSTester::StartRunners()
 
 		std::this_thread::sleep_for(std::chrono::seconds(1));
 
-		Console.WriteLnFmt("(GSTester/{}) Waiting for runner processes...", GetTesterName());
+		Console.WriteLnFmt("(GSTester/{}) Waiting for runner processes to start...", GetTesterName());
 	}
 
 	return false; // Unreachable
@@ -1879,7 +2492,7 @@ bool GSTester::EndRunners()
 	double sec;
 	while (true)
 	{
-		if (!regression_runner_proc[0].IsRunning() && !regression_runner_proc[1].IsRunning())
+		if (!regression_runner_proc[0].IsRunning(true) && !regression_runner_proc[1].IsRunning(true))
 		{
 			Console.WriteLnFmt("(GSTester/{}) Both runners exited in {:.2} seconds.", GetTesterName(), timer.GetTimeSeconds());
 			break;
@@ -1896,14 +2509,14 @@ bool GSTester::EndRunners()
 		Console.WriteLnFmt("(GSTester/{}) Waiting for runners to exit...", GetTesterName());
 	}
 
-	if (regression_runner_proc[0].IsRunning() || regression_runner_proc[1].IsRunning())
+	if (regression_runner_proc[0].IsRunning(true) || regression_runner_proc[1].IsRunning(true))
 	{
 		Console.ErrorFmt("(GSTester/{}) Unable to safely end runner processes...terminating.", GetTesterName());
 		for (int i = 0; i < 2; i++)
 			regression_runner_proc[i].Terminate();
 	}
 
-	return !regression_runner_proc[0].IsRunning() && !regression_runner_proc[1].IsRunning();
+	return !regression_runner_proc[0].IsRunning(true) && !regression_runner_proc[1].IsRunning(true);
 }
 
 bool GSTester::RestartRunners()
@@ -1947,7 +2560,7 @@ bool GSTester::GetDumpInfo()
 	return true;
 }
 
-int GSTester::MainThread(int argc, char* argv[], u32 nthreads, u32 thread_id)
+int GSTester::MainThread(int argc, const char* argv[], u32 nthreads, u32 thread_id)
 {
 	regression_nthreads = nthreads;
 	regression_thread_id = thread_id;
@@ -1967,16 +2580,16 @@ int GSTester::MainThread(int argc, char* argv[], u32 nthreads, u32 thread_id)
 	for (int i = 0; i < 2; i++)
 	{
 		regression_shared_file[i] = "regression-test-file-" + std::to_string(GSProcess::GetCurrentPID()) +
-			"-" + std::to_string(thread_id) + "-" + std::to_string(i);
+		                            "-" + std::to_string(thread_id) + "-" + std::to_string(i);
 
 		if (!regression_buffer[i].CreateFile_(
-			regression_shared_file[i],
-			GetEventNameRunner(GSProcess::GetCurrentPID(), regression_runner_name[i]),
-			regression_event_tester.GetName(),
-			regression_num_packets,
-			regression_packet_size,
-			regression_num_dumps,
-			regression_dump_size))
+				regression_shared_file[i],
+				GetEventNameRunner(GSProcess::GetCurrentPID(), regression_runner_name[i]),
+				regression_event_tester.GetName(),
+				regression_num_packets,
+				regression_packet_size,
+				regression_num_dumps,
+				regression_dump_size))
 		{
 			Console.ErrorFmt("(GSTester) Unable to create regression shared file: {}", regression_shared_file[i]);
 			return EXIT_FAILURE;
@@ -1996,8 +2609,6 @@ int GSTester::MainThread(int argc, char* argv[], u32 nthreads, u32 thread_id)
 	std::size_t dump_index = 0; // Current dump that should be written to dump buffer.
 	Common::Timer deadlock_timer; // Time since seeing both runners' heartbeats.
 	Common::Timer activity_timer; // Time since uploading a dump or reading a packet.
-	constexpr std::size_t max_failure_restarts = 10; // Max times to attempt restarting before giving up.
-	std::size_t failure_restarts = 0; // Current number of failure restarts.
 	std::size_t loop_counter = 0; // Number of main loop iterations.
 
 	std::optional<GSDumpFileLoader> dump_loader;
@@ -2094,18 +2705,17 @@ int GSTester::MainThread(int argc, char* argv[], u32 nthreads, u32 thread_id)
 			{
 				if (dump_data.empty())
 				{
-					double block_time;
-					double load_time;
+					GSDumpFileLoader::DumpInfo dump;
 
-					retval = dump_loader->Get(dump_data, &dump_name, &error, &block_time, &load_time, false);
+					retval = dump_loader->Get(dump_data, &dump, false);
 
 					if (retval == GSDumpFileLoader::SUCCESS || retval == GSDumpFileLoader::ERROR_)
 					{
-						dump_name = Path::GetFileName(dump_name);
+						dump_name = Path::GetFileName(dump.filename);
 						info = &regression_dumps[regression_dumps_map.at(dump_name)];
 
-						info->load_time = load_time;
-						info->block_time = block_time;
+						info->load_time = dump.load_time;
+						info->block_time = dump.block_time_read;
 					}
 				}
 				else
@@ -2113,7 +2723,7 @@ int GSTester::MainThread(int argc, char* argv[], u32 nthreads, u32 thread_id)
 					info = &regression_dumps[regression_dumps_map.at(dump_name)];
 					retval = GSDumpFileLoader::SUCCESS;
 				}
-				
+
 				if (retval == GSDumpFileLoader::SUCCESS)
 				{
 					pxAssert(!dump_data.empty());
@@ -2202,7 +2812,7 @@ int GSTester::MainThread(int argc, char* argv[], u32 nthreads, u32 thread_id)
 			std::size_t i =
 				regression_dump_last_completed.empty() ?
 					0 :
-			        regression_dumps_map.at(regression_dump_last_completed) + 1;
+					regression_dumps_map.at(regression_dump_last_completed) + 1;
 			while (i < regression_dumps.size() && regression_dumps[i].state == DumpInfo::SKIPPED)
 			{
 				i++;
@@ -2221,7 +2831,7 @@ int GSTester::MainThread(int argc, char* argv[], u32 nthreads, u32 thread_id)
 			int num_exited = 0;
 			for (int i = 0; i < 2; i++)
 			{
-				bool running = regression_runner_proc[i].IsRunning();
+				bool running = regression_runner_proc[i].IsRunning(true);
 				u32 state = regression_buffer[i].GetStateRunner();
 				if (!running)
 				{
@@ -2283,7 +2893,7 @@ int GSTester::MainThread(int argc, char* argv[], u32 nthreads, u32 thread_id)
 
 	for (int i = 0; i < 2; i++)
 	{
-		if (regression_runner_proc[i].WaitForExit() != 0)
+		if (!regression_runner_proc[i].ExitedNormally())
 		{
 			Console.WarningFmt("(GSTester/{}) Runner {} exited abnormally.", GetTesterName(), regression_runner_name[i]);
 		}
@@ -2295,7 +2905,10 @@ int GSTester::MainThread(int argc, char* argv[], u32 nthreads, u32 thread_id)
 	}
 
 	for (int i = 0; i < 2; i++)
+	{
+		regression_buffer[i].DestroySharedMemory();
 		regression_buffer[i].CloseFile();
+	}
 
 	// Get stats for main thread.
 	regression_dumps_completed = 0;
@@ -2321,7 +2934,7 @@ int GSTester::MainThread(int argc, char* argv[], u32 nthreads, u32 thread_id)
 	return EXIT_SUCCESS;
 }
 
-int GSTester::main_tester(int argc, char* argv[])
+int GSTester::main_tester(int argc, const char* argv[])
 {
 	Common::Timer timer_total;
 	std::string output_dir;
@@ -2455,7 +3068,7 @@ int GSTester::main_tester(int argc, char* argv[])
 	return EXIT_SUCCESS;
 }
 
-int main(int argc, char* argv[])
+int main(int argc, const char* argv[])
 {
 	CrashHandler::Install();
 	GSRunner::InitializeConsole();
@@ -2471,6 +3084,10 @@ int main(int argc, char* argv[])
 	if (mode == "tester")
 	{
 		return GSTester::main_tester(argc, argv);
+	}
+	else if (mode == "batch")
+	{
+		return GSRunnerBatch::main_batch(argc, argv);
 	}
 	else
 	{
@@ -2638,7 +3255,7 @@ int wmain(int argc, wchar_t** argv)
 	for (int i = 0; i < argc; i++)
 		u8_args.push_back(StringUtil::WideStringToUTF8String(argv[i]));
 
-	std::vector<char*> u8_argptrs;
+	std::vector<const char*> u8_argptrs;
 	u8_argptrs.reserve(u8_args.size());
 	for (int i = 0; i < argc; i++)
 		u8_argptrs.push_back(u8_args[i].data());

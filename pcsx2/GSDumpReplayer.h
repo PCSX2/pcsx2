@@ -21,6 +21,7 @@ namespace GSDumpReplayer
 	void SetVerboseLogging(bool verbose);
 	bool IsVerboseLogging();
 
+	void SetBatchRunnerIndex(std::size_t index);
 	void SetIsBatchMode(bool batch_mode); // Batch mode
 	void SetNumBatches(u32 n_batches); // Batch mode
 	void SetBatchID(u32 batch_id); // Batch mode
@@ -28,6 +29,7 @@ namespace GSDumpReplayer
 	void SetBatchRecreateDevice(bool recreate);
 	void SetBatchStartFromDump(const std::string& start_from_dump);
 	void SetRegressionSendHWSTAT(bool send_hwstat);
+	void SetDumpBufferSize(std::size_t size);
 	
 	void UpdateBatchGameSettings();
 	bool Initialize(const char* filename);

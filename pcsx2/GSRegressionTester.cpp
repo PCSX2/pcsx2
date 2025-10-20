@@ -8,8 +8,36 @@
 
 #include <thread>
 #include <atomic>
+#include <algorithm>
+#include <string>
+
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <sys/mman.h>
+#include <signal.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <sys/stat.h>
+#include <cerrno>
+#endif
 
 static GSRegressionBuffer* regression_buffer; // Used by GS runner processes.
+static GSBatchRunBuffer* batch_run_buffer; // Used by GS runner processes.
+static std::size_t batch_run_index; // What number child this is in a batch run.
+
+__forceinline static std::string VecToString(const std::vector<std::string>& v) {
+	std::string str;
+	for (std::size_t i = 0; i < v.size(); i++)
+	{
+		if (i > 0)
+			str += ", ";
+		str += "\"" + v[i] + "\"";
+	}
+	return "{ " + str + " }";
+};
 
 __forceinline static void CopyStringToBuffer(char* dst, std::size_t dst_size, const std::string& src)
 {
@@ -25,34 +53,50 @@ __forceinline static void CopyStringToBuffer(char* dst, std::size_t dst_size, co
 
 GSIntSharedMemory::ValType GSIntSharedMemory::CompareExchange(ValType expected, ValType desired)
 {
-#ifdef __WIN32__
+#ifdef _WIN32
 	return InterlockedCompareExchange(&val, desired, expected);
 #else
-	val.compare_exchange_strong(expected, desired, std::memory_order_acq_rel, std::memory_order_relaxed);
+	val.compare_exchange_strong(expected, desired, std::memory_order_seq_cst, std::memory_order_seq_cst);
 	return expected;
 #endif
 }
 
 GSIntSharedMemory::ValType GSIntSharedMemory::Get()
 {
-#ifdef __WIN32__
+#ifdef _WIN32
 	return InterlockedCompareExchange(&val, 0, 0);
 #else
-	return val.load(std::memory_order_acquire);
+	return val.load(std::memory_order_seq_cst);
 #endif
 }
 
 void GSIntSharedMemory::Set(ValType i)
 {
-#ifdef __WIN32__
+#ifdef _WIN32
 	InterlockedExchange(&val, i);
 #else
-	val.store(i, std::memory_order_release);
+	val.store(i, std::memory_order_seq_cst);
 #endif
 }
 
-void GSIntSharedMemory::Init()
+GSIntSharedMemory::ValType GSIntSharedMemory::FetchAdd()
 {
+#ifdef _WIN32
+	return InterlockedIncrement(&val) - 1;
+#else
+	return val.fetch_add(1, std::memory_order_seq_cst);
+#endif
+}
+
+void GSIntSharedMemory::Init(bool reset)
+{
+	// Need correct alignment.
+	pxAssertRel(reinterpret_cast<size_t>(&val) % sizeof(ValType) == 0, "Atomic not aligned correctly");
+#ifndef _WIN32
+	if (!reset)
+		new (&val) std::atomic<ValType>;
+	pxAssertRel(std::atomic_is_lock_free(&val), "Atomic must be lock free.");
+#endif
 	Set(0);
 }
 
@@ -61,13 +105,9 @@ std::size_t GSIntSharedMemory::GetTotalSize()
 	return sizeof(GSIntSharedMemory);
 }
 
-GSSpinlockSharedMemory::GSSpinlockSharedMemory()
+void GSSpinlockSharedMemory::Init(bool reset)
 {
-	Init();
-}
-
-void GSSpinlockSharedMemory::Init()
-{
+	lock.Init(reset);
 	lock.Set(WRITEABLE);
 }
 
@@ -313,10 +353,13 @@ void GSRegressionPacket::SetDoneDump()
 	this->type = DONE_DUMP;
 }
 
-void GSRegressionPacket::Init(std::size_t packet_size)
+void GSRegressionPacket::Init(std::size_t packet_size, bool reset)
 {
-	memset(this, 0, GetTotalSize(packet_size));
-	lock.Init();
+	std::memset(GetData(), 0, packet_size);
+	lock.Init(reset);
+	this->type = NONE;
+	std::memset(name_dump, 0, sizeof(name_dump));
+	std::memset(name_packet, 0, sizeof(name_packet));
 	this->packet_size = packet_size;
 };
 
@@ -350,11 +393,12 @@ const void* GSRegressionPacket::GetData() const
 }
 
 // Only once before sharing. Not thread safe.
-void GSDumpFileSharedMemory::Init(std::size_t dump_size)
+void GSDumpFileSharedMemory::Init(std::size_t dump_size, bool reset)
 {
-	lock.Init();
+	lock.Init(reset);
+	std::memset(name, 0, sizeof(name));
 	this->dump_size = dump_size;
-	memset(GetPtrDump(), 0, dump_size);
+	std::memset(GetPtrDump(), 0, dump_size);
 }
 
 static std::size_t GetTotalSize(std::size_t dump_size)
@@ -396,51 +440,7 @@ std::size_t GSRegressionBuffer::GetTotalSize(std::size_t num_packets, std::size_
 		num_states * GSIntSharedMemory::GetTotalSize();
 }
 
-bool GSRegressionBuffer::CreateFile_(
-	const std::string& name,
-	const std::string& event_runner_name,
-	const std::string& event_tester_name,
-	std::size_t num_packets,
-	std::size_t packet_size,
-	std::size_t num_dumps,
-	std::size_t dump_size)
-{
-	if (!shm.CreateFile_(name, GetTotalSize(num_packets, packet_size, num_dumps, dump_size)))
-		return false;
-
-	if (!event[RUNNER].Create(event_runner_name))
-	{
-		CloseFile();
-		return false;
-	}
-
-	// Should be created by tester process before.
-	if (!event[TESTER].Open_(event_tester_name))
-	{
-		CloseFile();
-		return false;
-	}
-
-	// Set constant state.
-	Init(
-		name,
-		num_packets,
-		packet_size,
-		num_dumps,
-		dump_size);
-
-	// Set transient state.
-	Reset();
-
-	return true;
-}
-
-void GSRegressionBuffer::Init(
-	const std::string& name,
-	std::size_t num_packets,
-	std::size_t packet_size,
-	std::size_t num_dumps,
-	std::size_t dump_size)
+void GSRegressionBuffer::SetSizesPointers(std::size_t num_packets, std::size_t packet_size, std::size_t num_dumps, std::size_t dump_size)
 {
 	std::size_t packet_offset;
 	std::size_t dump_file_offset;
@@ -470,6 +470,57 @@ void GSRegressionBuffer::Init(
 	this->dump_size = dump_size;
 }
 
+bool GSRegressionBuffer::CreateFile_(
+	const std::string& name,
+	const std::string& event_runner_name,
+	const std::string& event_tester_name,
+	std::size_t num_packets,
+	std::size_t packet_size,
+	std::size_t num_dumps,
+	std::size_t dump_size)
+{
+	if (!shm.CreateFile_(name, GetTotalSize(num_packets, packet_size, num_dumps, dump_size)))
+		return false;
+
+	if (!event[RUNNER].Create(event_runner_name))
+	{
+		CloseFile();
+		return false;
+	}
+
+	// Should be created by tester process before.
+	if (!event[TESTER].Open_(event_tester_name))
+	{
+		CloseFile();
+		return false;
+	}
+
+	SetSizesPointers(num_packets, packet_size, num_dumps, dump_size);
+
+	Init(name, num_packets, packet_size, num_dumps, dump_size);
+
+	Reset();
+
+	return true;
+}
+
+void GSRegressionBuffer::Init(
+	const std::string& name,
+	std::size_t num_packets,
+	std::size_t packet_size,
+	std::size_t num_dumps,
+	std::size_t dump_size)
+{
+	for (std::size_t i = 0; i < num_packets; i++)
+		GetPacket(i)->Init(packet_size);
+	for (std::size_t i = 0; i < num_dumps; i++)
+		GetDump(i)->Init(dump_size);
+	for (std::size_t i = 0; i < num_states; i++)
+		state[i].Init();
+	for (std::size_t i = 0; i < num_events; i++)
+		event[i].Reset();
+}
+
 void GSRegressionBuffer::Reset()
 {
 	this->packet_write = 0;
@@ -479,9 +530,9 @@ void GSRegressionBuffer::Reset()
 	this->dump_name.clear();
 
 	for (std::size_t i = 0; i < num_packets; i++)
-		GetPacket(i)->Init(packet_size);
+		GetPacket(i)->Init(packet_size, true);
 	for (std::size_t i = 0; i < num_dumps; i++)
-		GetDump(i)->Init(dump_size);
+		GetDump(i)->Init(dump_size, true);
 	for (std::size_t i = 0; i < num_states; i++)
 		state[i].Set(DEFAULT);
 	for (std::size_t i = 0; i < num_events; i++)
@@ -512,54 +563,73 @@ bool GSRegressionBuffer::OpenFile(
 		return false;
 	}
 
-	Init(name, num_packets, packet_size, num_dumps, dump_size);
+	SetSizesPointers(num_packets, packet_size, num_dumps, dump_size);
 
 	return true;
 }
 
+void GSRegressionBuffer::DestroySharedMemory()
+{
+	for (std::size_t i = 0; i < num_packets; i++)
+		GetPacket(i)->~GSRegressionPacket();
+
+	for (std::size_t i = 0; i < num_dumps; i++)
+		GetDump(i)->~GSDumpFileSharedMemory();
+
+	for (std::size_t i = 0; i < num_states; i++)
+		state[i].~GSIntSharedMemory();
+}
+
 bool GSRegressionBuffer::CloseFile()
 {
-	packets = nullptr;
-	dumps = nullptr;
-	state = nullptr;
-	num_packets = 0;
-	num_dumps = 0;
-
 	for (std::size_t i = 0; i < num_events; i++)
 		event[i].Close();
 
 	if (!shm.CloseFile())
 		return false;
 
+	packets = nullptr;
+	dumps = nullptr;
+	state = nullptr;
+	packet_size = 0;
+	num_packets = 0;
+	dump_size = 0;
+	num_dumps = 0;
+	packet_write = 0;
+	packet_read = 0;
+	dump_write = 0;
+	dump_read = 0;
+	dump_name.clear();
+
 	return true;
 }
 
-void GSRegressionBuffer::SetState(u32 which, u32 s)
+void GSRegressionBuffer::SetState(u32 which, GSRegressionBuffer::ProcessState s)
 {
 	state[which].Set(static_cast<GSIntSharedMemory::ValType>(s));
 }
 
-void GSRegressionBuffer::SetStateRunner(u32 s)
+void GSRegressionBuffer::SetStateRunner(GSRegressionBuffer::ProcessState s)
 {
 	SetState(RUNNER, s);
 }
 
-void GSRegressionBuffer::SetStateTester(u32 s)
+void GSRegressionBuffer::SetStateTester(GSRegressionBuffer::ProcessState s)
 {
 	SetState(TESTER, s);
 }
 
-u32 GSRegressionBuffer::GetState(u32 which)
+GSRegressionBuffer::ProcessState GSRegressionBuffer::GetState(u32 which)
 {
-	return static_cast<u32>(state[which].Get());
+	return static_cast<ProcessState>(state[which].Get());
 };
 
-u32 GSRegressionBuffer::GetStateRunner()
+GSRegressionBuffer::ProcessState GSRegressionBuffer::GetStateRunner()
 {
 	return GetState(RUNNER);
 };
 
-u32 GSRegressionBuffer::GetStateTester()
+GSRegressionBuffer::ProcessState GSRegressionBuffer::GetStateTester()
 {
 	return GetState(TESTER);
 };
@@ -609,7 +679,7 @@ void GSRegressionBuffer::DebugDumpBuffer()
 		GSDumpFileSharedMemory* dump = GetDump(i);
 		std::size_t name_size = strnlen(dump->name, std::size(dump->name));
 		std::string name(dump->name, name_size);
-		Console.WarningFmt("    {}: lock={} name='{}' size={}", i, GSSpinlockSharedMemory::STATE_STR_WR.at(dump->lock.lock.Get()), name, dump->dump_size);
+		Console.WarningFmt("    {}: lock={} name='{}' size={}", i, GSSpinlockSharedMemory::GetStateStrLock(dump->lock.lock.Get()), name, dump->dump_size);
 	}
 }
 
@@ -626,115 +696,32 @@ void GSRegressionBuffer::DebugPacketBuffer()
 		std::string name_packet(packet->name_packet, name_packet_size);
 		std::string name_dump(packet->name_dump, name_dump_size);
 
-		Console.WarningFmt("    {}: lock={} name_dump='{}' name_packet='{}'", i, GSSpinlockSharedMemory::STATE_STR_WR.at(packet->lock.lock.Get()), name_dump, name_packet);
+		Console.WarningFmt("    {}: lock={} name_dump='{}' name_packet='{}'", i, GSSpinlockSharedMemory::GetStateStrRW(packet->lock.lock.Get()), name_dump, name_packet);
 	}
 }
 
 void GSRegressionBuffer::DebugState()
 {
-	Console.WarningFmt("runner_state={} tester_state={}", STATE_STR.at(state[RUNNER].Get()), STATE_STR.at(state[TESTER].Get()));
+	Console.WarningFmt("runner_state={} tester_state={}", GetStateStr(GetStateRunner()), GetStateStr(GetStateTester()));
 }
 
-bool GSIsRegressionTesting()
+bool GSProcess::Start(const std::vector<std::string>& args, bool detached)
 {
-	return regression_buffer != nullptr;
-}
-
-/// Start regression testing within the producer/GS runner process.
-void GSStartRegressionTest(
-	GSRegressionBuffer* rbp,
-	const std::string& fn,
-	const std::string& event_name_runner,
-	const std::string& event_name_tester,
-	std::size_t num_packets,
-	std::size_t packet_size,
-	std::size_t num_dumps,
-	std::size_t dump_size)
-{
-	if (!rbp->OpenFile(
-		fn,
-		event_name_runner,
-		event_name_tester,
-		num_packets,
-		packet_size,
-		num_dumps,
-		dump_size))
-	{
-		pxFail("Unable to start regression test.");
-		return;
-	}
-
-	Console.WriteLnFmt("Opened {} for regression testing.", fn);
-
-	regression_buffer = rbp;
-}
-
-void GSEndRegressionTest()
-{
-	if (!regression_buffer)
-	{
-		pxFail("No regression buffer to close.");
-		return;
-	}
-
-	if (!regression_buffer->CloseFile())
-	{
-		pxFail("Unable to end regression test.");
-		return;
-	}
-}
-
-GSRegressionBuffer* GSGetRegressionBuffer()
-{
-	return regression_buffer;
-}
-
-void GSSignalRunnerHeartbeat()
-{
-	if (regression_buffer)
-		regression_buffer->SignalRunnerHeartbeat();
-	else
-		Console.ErrorFmt("Not regression testing.");
-}
-
-int GSRegressionImageMemCmp(const GSRegressionPacket* p1, const GSRegressionPacket* p2)
-{
-	const GSRegressionPacket::ImageHeader& img1 = p1->image_header;
-	const GSRegressionPacket::ImageHeader& img2 = p2->image_header;
-
-	if (img1.w != img2.w || img1.h != img2.h || img1.bytes_per_pixel != img2.bytes_per_pixel)
-		return INT_MAX; // Formats are different.
-
-	int w = img1.w;
-	int h = img2.h;
-	int bytes_per_pixel = img1.bytes_per_pixel;
-	return StringUtil::StrideMemCmp(p1->GetData(), img1.pitch, p2->GetData(), img2.pitch, w * bytes_per_pixel, h);
-}
-
-bool GSCheckTesterStatus(bool exit, bool done_uploading)
-{
-	if (regression_buffer)
-	{
-		u32 state = regression_buffer->GetStateTester();
-		return
-			(exit && state == GSRegressionBuffer::EXIT) ||
-			(exit && !GSProcess::IsParentRunning()) ||
-			(done_uploading && state == GSRegressionBuffer::DONE_UPLOADING);
-	}
-	else
-	{
-		Console.ErrorFmt("Not regression testing.");
-		return false;
-	}
-}
-
-bool GSProcess::Start(const std::string& command, bool detached)
-{
-#ifdef __WIN32__
+#ifdef _WIN32
 	std::memset(&si, 0, sizeof(STARTUPINFO));
 	si.cb = sizeof(STARTUPINFO);
 	std::memset(&pi, 0, sizeof(PROCESS_INFORMATION));
 
+	std::vector<std::string> args_quoted;
+	for (const std::string& arg : args)
+	{
+		// Only quote args with spaces.
+		if (arg.find(' ') != std::string::npos)
+			args_quoted.push_back("\"" + arg + "\"");
+		else
+			args_quoted.push_back(arg);
+	}
+	std::string command = StringUtil::JoinString(args_quoted.begin(), args_quoted.end(), " ");
 	std::wstring wcommand = StringUtil::UTF8StringToWideString(command);
 	std::vector<wchar_t> wcommand_buf(wcommand.begin(), wcommand.end());
 	wcommand_buf.push_back(L'\0');
@@ -771,126 +758,193 @@ bool GSProcess::Start(const std::string& command, bool detached)
 		si.hStdInput = hNull;
 	}
 
-	if (!CreateProcess(
+	if (!CreateProcessW(
 			NULL,
 			wcommand_buf.data(),
 			NULL,
 			NULL,
 			TRUE,
-			(DWORD)0,
+			(detached ? (DETACHED_PROCESS | CREATE_NO_WINDOW) : (DWORD)0),
 			NULL,
 			NULL,
 			&si,
 			&pi))
 	{
-		Console.ErrorFmt("Unable to create runner process with command: '{}'", command);
+		Console.ErrorFmt("Unable to create runner process with args: {}", VecToString(args));
 		return false;
-	}
-
-		
-	if (detached)
-	{
-		// Redirect stdout/err to null.
-
-		HANDLE null = INVALID_HANDLE_VALUE;
-
-		ScopedGuard close_null([&]() {
-			if (null != INVALID_HANDLE_VALUE)
-				CloseHandle(null);
-		});
-
-		null = CreateFileA(
-			"NUL",
-			GENERIC_WRITE,
-			FILE_SHARE_WRITE,
-			NULL,
-			OPEN_EXISTING,
-			FILE_ATTRIBUTE_NORMAL,
-			NULL);
-
-		if (null == INVALID_HANDLE_VALUE)
-		{
-			Console.Error("Unable to open null handle");
-			return false;
-		}
 	}
 
 	this->command = command;
 
 	return true;
 #else
-	// Not implemented.
+	pid = fork();
+	if (pid == -1)
+	{
+		pid = 0;
+		Console.Error("Unable to fork.");
+		return false;
+	}
+	else if (pid == 0)
+	{
+		// Child
+
+		// Detach from console if needed.
+		if (detached)
+		{
+			if (setsid() < 0)
+				Console.ErrorFmt("Unable to detach console.");
+			int fd = open("/dev/null", O_RDWR);
+			if (fd >= 0)
+			{
+				if (dup2(fd, STDIN_FILENO) < 0)
+					Console.ErrorFmt("Failed to redirect stdin to /dev/null.");
+				if (dup2(fd, STDOUT_FILENO) < 0)
+					Console.ErrorFmt("Failed to redirect stdout to /dev/null.");
+				if (dup2(fd, STDERR_FILENO) < 0)
+					Console.ErrorFmt("Failed to redirect stderr to /dev/null.");
+			}
+			else
+			{
+				Console.ErrorFmt("Unable to open /dev/null.");
+			}
+
+			if (fd > STDERR_FILENO)
+				close(fd);
+		}
+
+		// Get args
+		std::vector<const char*> args_cstr;
+		for (const std::string& arg : args)
+			args_cstr.push_back(arg.c_str());
+		args_cstr.push_back(nullptr);
+
+		// Execute
+		if (execvp(args_cstr[0], const_cast<char *const *>(args_cstr.data())) < 0)
+		{
+			Console.ErrorFmt("Unable to execute child process with args {}.", VecToString(args));
+			_exit(1);
+		}
+	}
+	else
+	{
+		this->command = args[0];
+		return true;
+	}
 	return false;
 #endif
 }
 
-bool GSProcess::IsRunning(Handle_t handle, double seconds)
+bool GSProcess::IsRunning(Handle_t handle, bool reap_child, int* status)
 {
-#ifdef __WIN32__
-	DWORD status = WaitForSingleObject(handle, static_cast<DWORD>(seconds * 1000.0));
-
-	if (status == WAIT_FAILED)
+#ifdef _WIN32
+	DWORD ret = WaitForSingleObject(handle, 0);
+	if (ret == WAIT_FAILED)
 	{
-		Console.ErrorFmt("Waiting for process {} failed.", handle);
+		Console.ErrorFmt("WaitForSingleObject for handle failed (error: {}).", GetLastError());
 		return false;
 	}
-
-	return status == WAIT_TIMEOUT;
+	return ret == WAIT_TIMEOUT;
 #else
-	return false; // Not implemented
+	if (reap_child)
+	{
+    pid_t r = waitpid(handle, status, WNOHANG);
+    if (r == 0)
+			return true; // child still running
+    else if (r == handle)
+			return false; // child exited and reaped
+		// fallthrough
+	}
+	if (kill(handle, 0) == 0)
+	{
+		return true;
+	}
+	else if (errno == ESRCH)
+	{
+		return false;
+	}
+	else if (errno == EPERM)
+	{
+		Console.ErrorFmt("IsRunning: Do not have permissions for process {}.", handle);
+		return true;
+	}
+	return false;
 #endif
 }
 
-bool GSProcess::IsRunning(double seconds)
+bool GSProcess::IsRunning(bool reap_child)
 {
-#ifdef __WIN32__
+#ifdef _WIN32
 	if (!pi.hProcess)
 	{
-		Console.ErrorFmt("Do not have a valid handle.");
+		Console.ErrorFmt("IsRunning: Do not have a valid handle.");
 		return false;
 	}
-	return IsRunning(pi.hProcess, seconds);
+	return IsRunning(pi.hProcess);
 #else
-	// Not implemented
-	return false;
+	if (!pid)
+	{
+		Console.ErrorFmt("IsRunning: Do not have a valid PID.");
+		return false;
+	}
+	return IsRunning(pid, reap_child, &status);
 #endif
 }
 
-bool GSProcess::WaitForExit(double seconds)
+bool GSProcess::ExitedNormally()
 {
-#ifdef __WIN32__
-	return IsRunning(pi.hProcess, seconds);
+#ifdef _WIN32
+	DWORD exit_code = 0;
+	if (!GetExitCodeProcess(pi.hProcess, &exit_code))
+	{
+		Console.ErrorFmt("GetExitCodeProcess for process {} failed.", pi.hProcess);
+		return false;
+	}
+	return exit_code == EXIT_SUCCESS;
 #else
-	// Not implemented
-	return false;
+	if (IsRunning())
+		return false;
+	waitpid(pid, &status, WNOHANG);
+	if (WIFEXITED(status))
+		return WEXITSTATUS(status) == EXIT_SUCCESS;
+	else
+		return false;
 #endif
 }
 
 bool GSProcess::Close()
 {
-#ifdef __WIN32__
-	return CloseHandle(pi.hProcess) && CloseHandle(pi.hThread);
+#ifdef _WIN32
+	bool b1 = CloseHandle(pi.hProcess);
+	bool b2 = CloseHandle(pi.hThread);
+	pi.hProcess = nullptr;
+	pi.hThread = nullptr;
+	return b1 && b2;
 #else
-	// Not implemented
-	return false;
+	waitpid(pid, &status, WNOHANG);
+	pid = 0;
+	status = 0;
+	return true;
 #endif
 }
 
 void GSProcess::Terminate()
 {
-#ifdef __WIN32__
-	TerminateProcess(pi.hProcess, EXIT_FAILURE);
+#ifdef _WIN32
+	if (!TerminateProcess(pi.hProcess, EXIT_FAILURE))
+		Console.ErrorFmt("Unable to terminate process {}.", GetPID());
 #else
-	// Not implemented
+	if (kill(pid, SIGKILL) < 0)
+		Console.ErrorFmt("Unable to terminate process {}.", GetPID());
 #endif
 }
 
 GSProcess::PID_t GSProcess::GetPID()
 {
-#ifdef __WIN32__
+#ifdef _WIN32
 	return pi.dwProcessId;
 #else
-	return 0; // Not implemented.
+	return pid;
 #endif
 }
 
@@ -900,12 +954,22 @@ GSProcess::Handle_t GSProcess::parent_h = 0;
 
 bool GSProcess::SetParentPID(PID_t pid)
 {
-#ifdef __WIN32__
+#ifdef _WIN32
 	parent_pid = pid;
 	parent_h = OpenProcess(SYNCHRONIZE, FALSE, pid);
-	return parent_h != 0;
+
+	if (!parent_h)
+	{
+		Console.ErrorFmt("Unable to open handle to parent PID {}.", parent_pid);
+		parent_pid = 0;
+		return false;
+	}
+
+	return IsRunning(parent_h);
 #else
-	return false; // Not implemented
+	parent_pid = pid;
+	parent_h = pid;
+	return IsRunning(parent_pid);
 #endif
 }
 
@@ -918,29 +982,29 @@ GSProcess::PID_t GSProcess::GetCurrentPID()
 {
 	if (current_pid == 0)
 	{
-#ifdef __WIN32__
+#ifdef _WIN32
 		current_pid = GetCurrentProcessId();
 #else
-		// Not implemented.
+		current_pid = getpid();
 #endif
 	}
 	return current_pid;
 }
 
-bool GSProcess::IsParentRunning(double seconds)
+bool GSProcess::IsParentRunning()
 {
 	if (!parent_pid || !parent_h)
 	{
 		Console.ErrorFmt("Do not have a valid parent PID and/or handle.");
 		return false;
 	}
-	return IsRunning(parent_h, seconds);
+	return IsRunning(parent_h);
 }
 
 // Windows defines CreateFile as a macro so use CreateFile_.
 bool GSSharedMemoryFile::CreateFile_(const std::string& name, std::size_t size)
 {
-#ifdef __WIN32__
+#ifdef _WIN32
 	handle = CreateFileMappingA(
 		INVALID_HANDLE_VALUE,
 		NULL,
@@ -951,7 +1015,7 @@ bool GSSharedMemoryFile::CreateFile_(const std::string& name, std::size_t size)
 
 	if (!handle)
 	{
-		Console.ErrorFmt("Failed to create regression packets file: {}", name);
+		Console.ErrorFmt("Failed to create shared memory file: {}", name);
 		return false;
 	}
 
@@ -965,87 +1029,146 @@ bool GSSharedMemoryFile::CreateFile_(const std::string& name, std::size_t size)
 
 	if (!data)
 	{
-		Console.ErrorFmt("Failed to map view of regressions packet file: {}", name);
+		Console.ErrorFmt("Failed to map view of shared memory file: {}", name);
 		CloseHandle(handle);
 		return false;
 	}
+#else
+	handle = shm_open(name.c_str(), O_CREAT | O_RDWR, 0666);
+	if (handle < 0)
+	{
+		Console.ErrorFmt("Failed to create shared memory file: {}", name);
+		return false;
+	}
+	if (ftruncate(handle, size) < 0)
+	{
+		Console.ErrorFmt("Faile to set size of shared memory file: {}", name);
+		close(handle);
+		return false;
+	}
+
+	data = mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_SHARED, handle, 0);
+
+	if (data == MAP_FAILED)
+	{
+		Console.ErrorFmt("Failed to map view of shared memory file: {}", name);
+		close(handle);
+		return false;
+	}
+
+	main = true;
+#endif
 
 	this->name = name;
 	this->size = size;
 
 	return true;
-#else
-	// Not implemented.
-#endif
 }
 
 bool GSSharedMemoryFile::OpenFile(const std::string& name, std::size_t size)
 {
 	// Note: num_packets must match the value used in creation!
-#ifdef __WIN32__
+#ifdef _WIN32
 	handle = OpenFileMappingA(FILE_MAP_WRITE, FALSE, name.c_str());
 	if (!handle)
 	{
-		Console.ErrorFmt("Not able to open file for regression packets: {}", name);
+		Console.ErrorFmt("Failed to open shared memory: {}", name);
 		return false;
 	}
 
 	data = static_cast<GSRegressionPacket*>(MapViewOfFile(handle, FILE_MAP_WRITE, 0, 0, size));
 	if (!data)
 	{
-		Console.ErrorFmt("Unable to map regression packet file to memory: {}", name);
+		Console.ErrorFmt("Failed to map shared memory file: {}", name);
 		CloseHandle(handle);
 		return false;
 	}
 
-	Console.WriteLnFmt("Opened/mapped regression packet file: {}", name);
+	Console.WriteLnFmt("Opened/mapped shared memory file: {}", name);
+#else
+	handle = shm_open(name.c_str(), O_RDWR, 0666);
+	if (handle < 0)
+	{
+		Console.ErrorFmt("Failed to open shared memory file: {}", name);
+		return false;
+	}
+
+	data = mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_SHARED, handle, 0);
+
+	if (data == MAP_FAILED)
+	{
+		Console.ErrorFmt("Failed to map shared memory file: {}", name);
+		close(handle);
+		return false;
+	}
+
+	main = false;
+#endif
 
 	this->name = name;
 	this->size = size;
 
 	return true;
-#else
-	return false; // Not implemented.
-#endif
 }
 
 bool GSSharedMemoryFile::CloseFile()
 {
-#ifdef __WIN32__
-	if (!handle)
+	bool success = true;
+#ifdef _WIN32
+	if (data)
 	{
-		Console.Error("There is no handle to close.");
-		return false;
+		if (!UnmapViewOfFile(data))
+		{
+			success = false;
+			Console.ErrorFmt("Failed to unmap shared memory file: {}", name);
+		}
 	}
 
-	if (!CloseHandle(handle))
+	if (handle)
 	{
-		Console.Error("Failed to close file handle.");
-		return false;
+		if (!CloseHandle(handle))
+		{
+			success = false;
+			Console.ErrorFmt("Failed to close shared memory file: {}.", name);
+		}
+	}
+#else
+	if (data)
+	{
+		if (munmap(data, size) < 0)
+		{
+			success = false;
+			Console.ErrorFmt("Failed to unmap shared memory file {}", name);
+		}
 	}
 
-	if (!data)
+	if (handle)
 	{
-		Console.Error("There is no file view to unmap.");
-		return false;
+		if (close(handle) < 0)
+		{
+			success = false;
+			Console.ErrorFmt("Failed to close shared memory file: {}.", name);
+		}
 	}
 
-	if (!UnmapViewOfFile(data))
+	if (main)
 	{
-		Console.Error("Failed to unmap file view.");
-		return false;
+		if (shm_unlink(name.c_str()) < 0)
+		{
+			success = false;
+			Console.ErrorFmt("Failed to unlink shared memory file: {}.", name);
+		}
+		main = false;
 	}
-
-	Console.WriteLnFmt("Closed/unmapped shared memory file: {}", name);
+#endif
+	if (success)
+		Console.WriteLnFmt("Closed/unmapped shared memory file: {}", name);
 
 	name = "";
 	handle = 0;
 	data = nullptr;
 
-	return true;
-#else
-	return false; // Not implemented.
-#endif
+	return success;
 }
 
 void GSSharedMemoryFile::ResetFile()
@@ -1053,7 +1176,7 @@ void GSSharedMemoryFile::ResetFile()
 	std::memset(data, 0, size);
 }
 
-#ifdef __WIN32__
+#ifdef _WIN32
 std::wstring GSEvent::GetGlobalName(const std::string& name)
 {
 	return StringUtil::UTF8StringToWideString("Global\\" + name);
@@ -1062,7 +1185,7 @@ std::wstring GSEvent::GetGlobalName(const std::string& name)
 
 bool GSEvent::Create(const std::string& name)
 {
-#ifdef __WIN32__
+#ifdef _WIN32
 	std::wstring name_global = GetGlobalName(name);
 
 	handle = CreateEvent(
@@ -1087,7 +1210,7 @@ bool GSEvent::Create(const std::string& name)
 
 std::string GSEvent::GetName()
 {
-#ifdef __WIN32__
+#ifdef _WIN32
 	return name;
 #else
 	return ""; // Not implemented.
@@ -1096,7 +1219,7 @@ std::string GSEvent::GetName()
 
 bool GSEvent::Open_(const std::string& name)
 {
-#ifdef __WIN32__
+#ifdef _WIN32
 	std::wstring name_global = GetGlobalName(name);
 
 	handle = OpenEvent(
@@ -1120,7 +1243,7 @@ bool GSEvent::Open_(const std::string& name)
 
 bool GSEvent::Close() const
 {
-#ifdef __WIN32__
+#ifdef _WIN32
 	return CloseHandle(handle);
 #else
 	return false; // Not implemented.
@@ -1129,7 +1252,7 @@ bool GSEvent::Close() const
 
 bool GSEvent::Signal() const
 {
-#ifdef __WIN32__
+#ifdef _WIN32
 	if (!SetEvent(handle))
 	{
 		Console.ErrorFmt("Set event {} failed (Windows error: {}).", name, GetLastError());
@@ -1144,7 +1267,7 @@ bool GSEvent::Signal() const
 
 bool GSEvent::Wait(double seconds) const
 {
-#ifdef __WIN32__
+#ifdef _WIN32
 	DWORD status = WaitForSingleObject(handle, static_cast<DWORD>(seconds * 1000.0));
 
 	if (status == WAIT_FAILED)
@@ -1161,7 +1284,7 @@ bool GSEvent::Wait(double seconds) const
 
 bool GSEvent::Reset() const
 {
-#ifdef __WIN32__
+#ifdef _WIN32
 	if (!ResetEvent(handle))
 	{
 		Console.ErrorFmt("Set event {} failed (Windows error: {}).", name, GetLastError());
@@ -1172,4 +1295,494 @@ bool GSEvent::Reset() const
 #else
 	return false; // Not implemented.
 #endif
+}
+
+void GSBatchRunBuffer::SetSizesPointers(std::size_t num_files, std::size_t num_runners)
+{
+	std::size_t head_offset;
+	std::size_t file_status_offset;
+	std::size_t filenames_offset;
+	std::size_t state_parent_offset;
+	std::size_t state_runner_offset;
+	std::size_t runner_heartbeats_offset;
+
+	std::size_t start_offset = reinterpret_cast<std::size_t>(shm.data);
+	std::size_t curr_offset = start_offset;
+
+	head_offset = curr_offset;
+	curr_offset += sizeof(GSIntSharedMemory);
+
+	file_status_offset = curr_offset;
+	curr_offset += num_files * sizeof(GSIntSharedMemory);
+
+	filenames_offset = curr_offset;
+	curr_offset += num_files * filename_size;
+
+	state_parent_offset = curr_offset;
+	curr_offset += num_runners * sizeof(GSIntSharedMemory);
+
+	state_runner_offset = curr_offset;
+	curr_offset += num_runners * sizeof(GSIntSharedMemory);
+
+	runner_heartbeats_offset = curr_offset;
+	curr_offset += num_runners * sizeof(GSIntSharedMemory);
+
+	pxAssert(curr_offset - start_offset == GetTotalSize(num_files, num_runners));
+
+	head = reinterpret_cast<GSIntSharedMemory*>(head_offset);
+	file_status = reinterpret_cast<GSIntSharedMemory*>(file_status_offset);
+	filenames = reinterpret_cast<char*>(filenames_offset);
+	state_parent = reinterpret_cast<GSIntSharedMemory*>(state_parent_offset);
+	state_runner = reinterpret_cast<GSIntSharedMemory*>(state_runner_offset);
+	state_runner_heartbeat = reinterpret_cast<GSIntSharedMemory*>(runner_heartbeats_offset);
+
+	this->num_files = num_files;
+	this->num_runners = num_runners;
+}
+
+bool GSBatchRunBuffer::CreateFile_(const std::string& name, std::size_t num_files, std::size_t num_runners)
+{
+	if (!shm.CreateFile_(name, GetTotalSize(num_files, num_runners)))
+		return false;
+
+	SetSizesPointers(num_files, num_runners);
+
+	Init();
+	return true;
+}
+
+bool GSBatchRunBuffer::OpenFile(const std::string& name, std::size_t num_files, std::size_t num_runners)
+{
+	if (!shm.OpenFile(name, GetTotalSize(num_files, num_runners)))
+		return false;
+
+	SetSizesPointers(num_files, num_runners);
+	CreateFileIndexMap();
+	return true;
+}
+
+void GSBatchRunBuffer::DestroySharedMemory()
+{
+	for (std::size_t i = 0; i < num_files; i++)
+		file_status[i].~GSIntSharedMemory();
+
+	for (std::size_t i = 0; i < num_runners; i++)
+	{
+		state_parent[i].~GSIntSharedMemory();
+		state_runner[i].~GSIntSharedMemory();
+		state_runner_heartbeat[i].~GSIntSharedMemory();
+	}
+}
+
+bool GSBatchRunBuffer::CloseFile()
+{
+	if (!shm.CloseFile())
+		return false;
+
+	head = nullptr;
+	filenames = nullptr;
+	num_files = 0;
+	file_status = nullptr;
+	state_parent = nullptr;
+	state_runner = nullptr;
+	state_runner_heartbeat = nullptr;
+	num_runners = 0;
+	filename_to_index.clear();
+
+	return true;
+}
+
+bool GSBatchRunBuffer::Reset(std::size_t i)
+{
+	if (!CheckRunnerIndex(i))
+		return false;
+
+	state_parent[i].Init();
+	state_runner[i].Init();
+	state_runner_heartbeat[i].Init();
+
+	return true;
+}
+
+void GSBatchRunBuffer::Init()
+{
+	head->Init();
+
+	for (std::size_t i = 0; i < num_files; i++)
+	{
+		file_status[i].Init();
+	}
+
+	for (std::size_t i = 0; i < num_runners; i++)
+	{
+		state_parent[i].Init();
+		state_runner[i].Init();
+		state_runner_heartbeat[i].Init();
+	}
+}
+
+bool GSBatchRunBuffer::AcquireFile(std::string& filename)
+{
+	std::size_t i = head->FetchAdd();
+
+	if (i >= num_files)
+	{
+		head->Set(num_files);
+		filename.clear();
+		return false;
+	}
+	else
+	{
+		filename = GetFilename(i);
+		return true;
+	}
+}
+
+bool GSBatchRunBuffer::CheckRunnerIndex(std::size_t i)
+{
+	if (i >= num_runners)
+	{
+		Console.ErrorFmt("GSBatchRunBuffer: Runner index out of bounds ({} / {}).", i, num_runners);
+		pxFail("");
+		return false;
+	}
+
+	return true;
+}
+
+bool GSBatchRunBuffer::CheckFileIndex(std::size_t i)
+{
+	if (i >= num_files)
+	{
+		Console.ErrorFmt("GSBatchRunBuffer: File index out of bounds ({} / {}).", i, num_files);
+		pxFail("");
+		return false;
+	}
+
+	return true;
+}
+
+GSBatchRunBuffer::FileStatus GSBatchRunBuffer::GetFileStatus(const std::size_t file_index)
+{
+	if (!CheckFileIndex(file_index))
+		return ERROR_FS;
+
+	return static_cast<FileStatus>(file_status[file_index].Get());
+}
+
+GSBatchRunBuffer::FileStatus GSBatchRunBuffer::GetFileStatus(const std::string& filename)
+{
+	auto it = filename_to_index.find(filename);
+	if (it == filename_to_index.end())
+		return ERROR_FS;
+
+	return GetFileStatus(it->second);
+}
+
+void GSBatchRunBuffer::SetFileStatus(std::size_t file_index, FileStatus status)
+{
+	if (!CheckFileIndex(file_index))
+		return;
+
+	file_status[file_index].Set(static_cast<GSIntSharedMemory::ValType>(status));
+}
+
+void GSBatchRunBuffer::SetFileStatus(const std::string& filename, FileStatus status)
+{
+	auto it = filename_to_index.find(filename);
+	if (it == filename_to_index.end())
+	{
+		Console.ErrorFmt("GSBatchRunBuffer: SetFileStatus() filename not found: {}.", filename);
+		return;
+	}
+	SetFileStatus(it->second, status);
+}
+
+std::string GSBatchRunBuffer::GetFilename(std::size_t i)
+{
+	if (!CheckFileIndex(i))
+		return "";
+
+	char* s = filenames + i * filename_size;
+	s[filename_size - 1] = '\0';
+	return std::string(s);
+}
+
+bool GSBatchRunBuffer::PopulateFilenames(const std::vector<std::string>& filenames_in)
+{
+	if (filenames_in.size() != num_files)
+	{
+		Console.ErrorFmt("GSBatchRunBuffer: PopulateFilenames() incorrect number of strings ({} / {})", filenames_in.size(), num_files);
+		return false;
+	}
+	for (std::size_t i = 0; i < num_files; i++)
+	{
+		char* s = filenames + i * filename_size;
+		CopyStringToBuffer(s, filename_size, filenames_in[i]);
+	}
+	CreateFileIndexMap();
+	return true;
+}
+
+void GSBatchRunBuffer::CreateFileIndexMap()
+{
+	filename_to_index.clear();
+	for (std::size_t i = 0; i < num_files; i++)
+	{
+		std::string filename = GetFilename(i);
+		filename_to_index[filename] = i;
+	}
+}
+
+void GSBatchRunBuffer::SignalRunnerHeartbeat(std::size_t i)
+{
+	if (!CheckRunnerIndex(i))
+		return;
+
+	state_runner_heartbeat[i].Set(ALIVE);
+}
+
+bool GSBatchRunBuffer::CheckRunnerHeartbeat(std::size_t i)
+{
+	if (!CheckRunnerIndex(i))
+		return false;
+
+	return state_runner_heartbeat[i].Get() == ALIVE;
+}
+
+void GSBatchRunBuffer::ResetRunnerHeartbeat(std::size_t i)
+{
+	if (!CheckRunnerIndex(i))
+		return;
+
+	state_runner_heartbeat[i].Set(DEFAULT_RH);
+}
+
+void GSBatchRunBuffer::SetStateChild(std::size_t i, ProcessState state)
+{
+	if (!CheckRunnerIndex(i))
+		return;
+
+	state_runner[i].Set(static_cast<GSIntSharedMemory::ValType>(state));
+}
+
+void GSBatchRunBuffer::SetStateParent(std::size_t i, ProcessState state)
+{
+	if (!CheckRunnerIndex(i))
+		return;
+
+	state_parent[i].Set(static_cast<GSIntSharedMemory::ValType>(state));
+}
+
+GSBatchRunBuffer::ProcessState GSBatchRunBuffer::GetStateChild(std::size_t i)
+{
+	if (!CheckRunnerIndex(i))
+		return ERROR_PS;
+
+	return static_cast<ProcessState>(state_runner[i].Get());
+}
+
+GSBatchRunBuffer::ProcessState GSBatchRunBuffer::GetStateParent(std::size_t i)
+{
+	if (!CheckRunnerIndex(i))
+		return ERROR_PS;
+
+	return static_cast<ProcessState>(state_parent[i].Get());
+}
+
+std::size_t GSBatchRunBuffer::GetTotalSize(std::size_t num_files, std::size_t num_runners)
+{
+	return
+		(filename_size + sizeof(GSIntSharedMemory)) * num_files + // File status and names.
+		sizeof(GSIntSharedMemory) * (3 * num_runners + 1); // Runner parent/child/child-heartbeat status and head.
+}
+
+bool GSIsRegressionTesting()
+{
+	return regression_buffer != nullptr;
+}
+
+// Start regression testing within the producer/GS runner process.
+bool GSStartRegressionTest(
+	GSRegressionBuffer* rbp,
+	const std::string& fn,
+	const std::string& event_name_runner,
+	const std::string& event_name_tester,
+	std::size_t num_packets,
+	std::size_t packet_size,
+	std::size_t num_dumps,
+	std::size_t dump_size)
+{
+	if (!rbp->OpenFile(
+		fn,
+		event_name_runner,
+		event_name_tester,
+		num_packets,
+		packet_size,
+		num_dumps,
+		dump_size))
+	{
+		return false;
+	}
+
+	Console.WriteLnFmt("Opened {} for regression testing.", fn);
+
+	regression_buffer = rbp;
+	
+	return true;
+}
+
+void GSEndRegressionTest()
+{
+	if (!regression_buffer)
+	{
+		pxFail("No regression buffer to close.");
+		return;
+	}
+
+	if (!regression_buffer->CloseFile())
+	{
+		pxFail("Unable to end regression test.");
+		return;
+	}
+}
+
+GSRegressionBuffer* GSGetRegressionBuffer()
+{
+	return regression_buffer;
+}
+
+void GSSignalRunnerHeartbeat_RegressionTest()
+{
+	if (regression_buffer)
+		regression_buffer->SignalRunnerHeartbeat();
+	else
+		Console.ErrorFmt("Not regression testing.");
+}
+
+int GSRegressionImageMemCmp(const GSRegressionPacket* p1, const GSRegressionPacket* p2)
+{
+	const GSRegressionPacket::ImageHeader& img1 = p1->image_header;
+	const GSRegressionPacket::ImageHeader& img2 = p2->image_header;
+
+	if (img1.w != img2.w || img1.h != img2.h || img1.bytes_per_pixel != img2.bytes_per_pixel)
+		return INT_MAX; // Formats are different.
+
+	int w = img1.w;
+	int h = img2.h;
+	int bytes_per_pixel = img1.bytes_per_pixel;
+	return StringUtil::StrideMemCmp(p1->GetData(), img1.pitch, p2->GetData(), img2.pitch, w * bytes_per_pixel, h);
+}
+
+bool GSCheckTesterStatus_RegressionTest(bool exit, bool done_uploading)
+{
+	if (regression_buffer)
+	{
+		u32 state = regression_buffer->GetStateTester();
+		return (exit && state == GSRegressionBuffer::EXIT) ||
+		       (exit && !GSProcess::IsParentRunning()) ||
+		       (done_uploading && state == GSRegressionBuffer::DONE_UPLOADING);
+	}
+	else
+	{
+		Console.ErrorFmt("Not regression testing.");
+		return false;
+	}
+}
+
+bool GSIsBatchRunning()
+{
+	return batch_run_buffer != nullptr;
+}
+
+GSBatchRunBuffer* GSGetBatchRunBuffer()
+{
+	if (!batch_run_buffer)
+	{
+		Console.ErrorFmt("Not batch running.");
+	}
+	return batch_run_buffer;
+}
+
+bool GSStartBatchRun(
+	GSBatchRunBuffer* bbp,
+	const std::string& fn,
+	std::size_t num_files,
+	std::size_t num_runners,
+	std::size_t runner_index)
+{
+	if (runner_index >= num_runners)
+	{
+		Console.ErrorFmt("Runner index out of range ({} / {})", runner_index, num_runners);
+		return false;
+	}
+
+	if (!bbp->OpenFile(fn, num_files, num_runners))
+	{
+		Console.ErrorFmt("Unable to open {} for batch running.", fn);
+		return false;
+	}
+
+	Console.WriteLnFmt("Opened {} for batch running.", fn);
+
+	batch_run_buffer = bbp;
+	batch_run_index = runner_index;
+
+	return true;
+}
+
+void GSEndBatchRun()
+{
+	if (!batch_run_buffer)
+	{
+		pxFail("No batch run buffer to close.");
+		return;
+	}
+
+	if (!batch_run_buffer->CloseFile())
+	{
+		pxFail("Unable to end batch run.");
+		return;
+	}
+}
+
+bool GSCheckParentStatus_BatchRun()
+{
+	if (!batch_run_buffer)
+	{
+		Console.ErrorFmt("Not batch running.");
+		return false;
+	}
+
+	return !GSProcess::IsParentRunning() ||
+		batch_run_buffer->GetStateParent(batch_run_index) == GSBatchRunBuffer::EXIT;
+}
+
+void GSSignalRunnerHeartbeat_BatchRun()
+{
+	if (batch_run_buffer)
+		batch_run_buffer->SignalRunnerHeartbeat(batch_run_index);
+	else
+		Console.ErrorFmt("Not batch running.");
+}
+
+void GSSetChildState_BatchRun(GSBatchRunBuffer::ProcessState state)
+{
+	if (batch_run_buffer)
+		batch_run_buffer->SetStateChild(batch_run_index, state);
+	else
+		Console.ErrorFmt("Not batch running.");
+}
+
+bool GSBatchRunAcquireFile(std::string& filename)
+{
+	if (batch_run_buffer)
+	{
+		return batch_run_buffer->AcquireFile(filename);
+	}
+	else
+	{
+		Console.ErrorFmt("Not batch running.");
+		return false;
+	}
 }
