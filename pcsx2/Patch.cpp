@@ -902,12 +902,12 @@ void Patch::PatchFunc::patch(PatchGroup* group, const std::string_view cmd, cons
 	}
 	if (!cpu.has_value())
 	{
-		PATCH_ERROR("Unrecognized CPU Target: '%.*s'", pieces[1]);
+		PATCH_ERROR("Unrecognized CPU Target: '{}'", pieces[1]);
 		return;
 	}
 	if (!type.has_value())
 	{
-		PATCH_ERROR("Unrecognized Operand Size: '%.*s'", pieces[3]);
+		PATCH_ERROR("Unrecognized Operand Size: '{}'", pieces[3]);
 		return;
 	}
 	if (type.value() != BYTES_T)
