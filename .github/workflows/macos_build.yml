@@ -42,7 +42,7 @@ jobs:
       CCACHE_DIR: ${{ github.workspace }}/.ccache
       CCACHE_COMPRESS: true
       CCACHE_COMPRESSLEVEL: 9
-      CCACHE_MAXSIZE: 500M
+      CCACHE_MAXSIZE: 100M
       # Only way to use a secret in an if statement
       SIGN_KEY: ${{ secrets.APPLE_SIGN_P12_B64 }}
 
