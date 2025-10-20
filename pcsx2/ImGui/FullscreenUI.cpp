@@ -7880,13 +7880,17 @@ void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
 		{FSUI_ICONSTR(ICON_PF_STAR, "Default Boot"), false},
 		{FSUI_ICONSTR(ICON_FA_FORWARD_FAST, "Fast Boot"), false},
 		{FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Full Boot"), false},
-		{FSUI_ICONSTR(ICON_FA_STOPWATCH, "Reset Play Time"), false},
-		{FSUI_ICONSTR(ICON_FA_SQUARE_XMARK, "Close Menu"), false},
 	};
+
+	const time_t entry_played_time = GameList::GetCachedPlayedTimeForSerial(entry->serial);
+	if (entry_played_time)
+		options.emplace_back(FSUI_ICONSTR(ICON_FA_STOPWATCH, "Reset Play Time"), false);
+	options.emplace_back(FSUI_ICONSTR(ICON_FA_SQUARE_XMARK, "Close Menu"), false);
 
 	const bool has_resume_state = VMManager::HasSaveStateInSlot(entry->serial.c_str(), entry->crc, -1);
 	OpenChoiceDialog(entry->GetTitle(true).c_str(), false, std::move(options),
-		[has_resume_state, entry_path = entry->path, entry_serial = entry->serial](s32 index, const std::string& title, bool checked) {
+		[has_resume_state, entry_path = entry->path, entry_serial = entry->serial, entry_title = entry->title, entry_played_time]
+		(s32 index, const std::string& title, bool checked) {
 			switch (index)
 			{
 				case 0: // Open Game Properties
@@ -7907,10 +7911,26 @@ void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
 				case 5: // Full Boot
 					DoStartPath(entry_path, std::nullopt, false);
 					break;
-				case 6: // Reset Play Time
-					GameList::ClearPlayedTimeForSerial(entry_serial);
+				case 6:
+					{
+						// Close Menu
+						if (!entry_played_time)
+							break;
+
+						// Reset Play Time
+						OpenConfirmMessageDialog(FSUI_ICONSTR(ICON_FA_STOPWATCH, "Confirm Reset"),
+							fmt::format(FSUI_FSTR("Are you sure you want to reset the play time for '{}' ({})?\n\n"
+												  "Your current play time is {}.\n\nThis action cannot be undone."),
+											entry_title.empty() ? FSUI_STR("empty title") : entry_title,
+											entry_serial.empty() ? FSUI_STR("no serial") : entry_serial,
+											GameList::FormatTimespan(entry_played_time, true)),
+							[entry_serial](bool result) {
+								if (result)
+									GameList::ClearPlayedTimeForSerial(entry_serial);
+							}, false);
+					}
 					break;
-				default:
+				default: // Close Menu
 					break;
 			}
 

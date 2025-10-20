@@ -1174,7 +1174,7 @@ std::string GameList::FormatTimestamp(std::time_t timestamp)
 	return ret;
 }
 
-std::string GameList::FormatTimespan(std::time_t timespan, bool long_format)
+std::string GameList::FormatTimespan(const std::time_t timespan, const bool long_format)
 {
 	const u32 hours = static_cast<u32>(timespan / 3600);
 	const u32 minutes = static_cast<u32>((timespan % 3600) / 60);
@@ -1198,8 +1198,10 @@ std::string GameList::FormatTimespan(std::time_t timespan, bool long_format)
 	{
 		if (hours > 0)
 			ret.assign(TRANSLATE_PLURAL_STR("GameList", "%n hours", "", hours));
-		else
+		else if (minutes > 0)
 			ret.assign(TRANSLATE_PLURAL_STR("GameList", "%n minutes", "", minutes));
+		else
+			ret.assign(TRANSLATE_PLURAL_STR("GameList", "%n seconds", "", seconds));
 	}
 
 	return ret;

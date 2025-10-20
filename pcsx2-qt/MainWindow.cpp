@@ -1455,12 +1455,15 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 		connect(menu.addAction(tr("Exclude From List")), &QAction::triggered,
 			[this, entry]() { getSettingsWindow()->getGameListSettingsWidget()->addExcludedPath(entry->path); });
 
-		connect(menu.addAction(tr("Reset Play Time")), &QAction::triggered, [this, entry]() { clearGameListEntryPlayTime(entry); });
+		const time_t entry_played_time = GameList::GetCachedPlayedTimeForSerial(entry->serial);
+		// Best two options given zero play time are to grey this out or to not show it at all.
+		if (entry_played_time)
+			connect(menu.addAction(tr("Reset Play Time")), &QAction::triggered, [this, entry, entry_played_time]()
+				{ clearGameListEntryPlayTime(entry, entry_played_time); });
 
+		// Check Wiki Page functionality is based on a serial redirect.
 		if (!entry->serial.empty())
-		{
 			connect(menu.addAction(tr("Check Wiki Page")), &QAction::triggered, [this, entry]() { goToWikiPage(entry); });
-		}
 
 		action = menu.addAction(tr("Open Screenshots Folder"));
 		connect(action, &QAction::triggered, [this, entry]() { openScreenshotsFolderForGame(entry); });
@@ -2901,17 +2904,18 @@ void MainWindow::setGameListEntryCoverImage(const GameList::Entry* entry)
 	m_game_list_widget->refreshGridCovers();
 }
 
-void MainWindow::clearGameListEntryPlayTime(const GameList::Entry* entry)
+void MainWindow::clearGameListEntryPlayTime(const GameList::Entry* entry, const time_t entry_played_time)
 {
 	if (QMessageBox::question(this, tr("Confirm Reset"),
-			tr("Are you sure you want to reset the play time for '%1'?\n\nThis action cannot be undone.")
-				.arg(QString::fromStdString(entry->title))) != QMessageBox::Yes)
+			tr("Are you sure you want to reset the play time for '%1' (%2)?\n\nYour current play time is %3.\n\nThis action cannot be undone.")
+				.arg(entry->title.empty() ? tr("empty title") : QString::fromStdString(entry->title),
+					 entry->serial.empty() ? tr("no serial") : QString::fromStdString(entry->serial),
+					 QString::fromStdString(GameList::FormatTimespan(entry_played_time, true))),
+					 (QMessageBox::Yes | QMessageBox::No), QMessageBox::No) == QMessageBox::Yes)
 	{
-		return;
+		GameList::ClearPlayedTimeForSerial(entry->serial);
+		m_game_list_widget->refresh(false);
 	}
-
-	GameList::ClearPlayedTimeForSerial(entry->serial);
-	m_game_list_widget->refresh(false);
 }
 
 void MainWindow::goToWikiPage(const GameList::Entry* entry)

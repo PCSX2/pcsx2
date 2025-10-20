@@ -271,15 +271,18 @@ int GameListModel::columnCount(const QModelIndex& parent) const
 	return Column_Count;
 }
 
-QString GameListModel::formatTimespan(time_t timespan)
+QString GameListModel::formatTimespan(const time_t timespan)
 {
-	// avoid an extra string conversion
+	// Avoid an extra string conversion over calling QString::fromStdString(GameList::FormatTimespan).
 	const u32 hours = static_cast<u32>(timespan / 3600);
-	const u32 minutes = static_cast<u32>((timespan % 3600) / 60);
 	if (hours > 0)
 		return qApp->translate("GameList", "%n hours", "", hours);
-	else
+	
+	const u32 minutes = static_cast<u32>((timespan % 3600) / 60);
+	if (minutes > 0)
 		return qApp->translate("GameList", "%n minutes", "", minutes);
+	else
+		return qApp->translate("GameList", "%n seconds", "", static_cast<u32>((timespan % 3600) % 60));
 }
 
 QVariant GameListModel::data(const QModelIndex& index, int role) const
