@@ -4760,9 +4760,6 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 		{
 			Target* t = *it;
 
-			if (t->m_32_bits_fmt && t->m_TEX0.PSM > PSMCT24)
-				t->m_TEX0.PSM = PSMCT32;
-
 			const bool exact_bp = t->m_TEX0.TBP0 == bp;
 			// pass 0 == Exact match, pass 1 == partial match
 			if (pass == 0)

@@ -2429,8 +2429,8 @@ void GSState::InitReadFIFO(u8* mem, int len)
 	if (GSConfig.SaveRT && GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
 	{
 		const std::string s(GetDrawDumpPath(
-			"%05d_read_%05x_%d_%d_%d_%d_%d_%d.bmp",
-			s_n, (int)m_env.BITBLTBUF.SBP, (int)m_env.BITBLTBUF.SBW, (int)m_env.BITBLTBUF.SPSM,
+			"%05d_read_%05x_%d_%s_%d_%d_%d_%d.bmp",
+			s_n, (int)m_env.BITBLTBUF.SBP, (int)m_env.BITBLTBUF.SBW, GSUtil::GetPSMName(m_env.BITBLTBUF.SPSM),
 			r.left, r.top, r.right, r.bottom));
 
 		m_mem.SaveBMP(s, m_env.BITBLTBUF.SBP, m_env.BITBLTBUF.SBW, m_env.BITBLTBUF.SPSM, r.right, r.bottom);
