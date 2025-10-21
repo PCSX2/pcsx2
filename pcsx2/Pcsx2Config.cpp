@@ -716,6 +716,8 @@ Pcsx2Config::GSOptions::GSOptions()
 	PCRTCOffsets = false;
 	PCRTCOverscan = false;
 	IntegerScaling = false;
+	InterlaceMode = GSInterlaceMode::Automatic;
+	MADMode = GSMADMode::Default;
 	LinearPresent = GSPostBilinearMode::BilinearSmooth;
 	UseDebugDevice = false;
 	UseBlitSwapChain = false;
@@ -723,6 +725,7 @@ Pcsx2Config::GSOptions::GSOptions()
 	DisableFramebufferFetch = false;
 	DisableVertexShaderExpand = false;
 	SkipDuplicateFrames = false;
+
 	OsdMessagesPos = OsdOverlayPos::TopLeft;
 	OsdPerformancePos = OsdOverlayPos::TopRight;
 	OsdShowSpeed = false;
@@ -798,10 +801,12 @@ bool Pcsx2Config::GSOptions::operator==(const GSOptions& right) const
 bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 {
 	return (
-		OpEqu(bitset) &&
+		OpEqu(bitset[0]) &&
+		OpEqu(bitset[1]) &&
 
 		OpEqu(InterlaceMode) &&
 		OpEqu(LinearPresent) &&
+		OpEqu(MADMode) &&
 
 		OpEqu(StretchY) &&
 		OpEqu(Crop[0]) &&
@@ -943,6 +948,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(DisableFramebufferFetch);
 	SettingsWrapBitBool(DisableVertexShaderExpand);
 	SettingsWrapBitBool(SkipDuplicateFrames);
+
 	SettingsWrapBitBool(OsdShowSpeed);
 	SettingsWrapBitBool(OsdShowFPS);
 	SettingsWrapBitBool(OsdShowVPS);
@@ -1005,8 +1011,9 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(EnableAudioCapture);
 	SettingsWrapBitBool(EnableAudioCaptureParameters);
 
-	SettingsWrapIntEnumEx(LinearPresent, "linear_present_mode");
 	SettingsWrapIntEnumEx(InterlaceMode, "deinterlace_mode");
+	SettingsWrapIntEnumEx(MADMode, "MADMode");
+	SettingsWrapIntEnumEx(LinearPresent, "linear_present_mode");
 
 	SettingsWrapEntry(OsdScale);
 	SettingsWrapIntEnumEx(OsdMessagesPos, "OsdMessagesPos");

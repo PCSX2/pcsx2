@@ -303,6 +303,13 @@ enum class GSInterlaceMode : u8
 	Count
 };
 
+enum class GSMADMode : u8
+{
+	Low,
+	Default,
+	High,
+};
+
 enum class GSPostBilinearMode : u8
 {
 	Off,
@@ -801,6 +808,7 @@ struct Pcsx2Config
 		AspectRatioType AspectRatio = DEFAULT_ASPECT_RATIO;
 		FMVAspectRatioSwitchType FMVAspectRatioSwitch = FMVAspectRatioSwitchType::Off;
 		GSInterlaceMode InterlaceMode = DEFAULT_INTERLACE_MODE;
+		GSMADMode MADMode = GSMADMode::Default;
 		GSPostBilinearMode LinearPresent = GSPostBilinearMode::BilinearSmooth;
 
 		float StretchY = 100.0f;
