@@ -238,6 +238,12 @@ int DebuggerWindow::fontSize()
 
 void DebuggerWindow::updateTheme()
 {
+	// Detect recursive StyleChange events caused by updating the stylesheet.
+	if (m_is_updating_theme)
+		return;
+
+	m_is_updating_theme = true;
+
 	// TODO: Migrate away from stylesheets to improve performance.
 	setStyleSheet(QString("font-size: %1pt;").arg(m_font_size));
 
@@ -248,6 +254,8 @@ void DebuggerWindow::updateTheme()
 		setStyleSheet(QString());
 
 	dockManager().updateTheme();
+
+	m_is_updating_theme = false;
 }
 
 void DebuggerWindow::saveWindowGeometry()
@@ -533,6 +541,12 @@ void DebuggerWindow::onStepOut()
 	});
 
 	this->repaint();
+}
+
+void DebuggerWindow::changeEvent(QEvent* event)
+{
+	if (event->type() == QEvent::PaletteChange || event->type() == QEvent::StyleChange)
+		updateTheme();
 }
 
 void DebuggerWindow::closeEvent(QCloseEvent* event)
