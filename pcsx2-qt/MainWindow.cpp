@@ -1796,9 +1796,6 @@ void MainWindow::updateTheme()
 {
 	QtHost::UpdateApplicationTheme();
 	reloadThemeSpecificImages();
-
-	if (g_debugger_window)
-		g_debugger_window->updateTheme();
 }
 
 void MainWindow::reloadThemeSpecificImages()
