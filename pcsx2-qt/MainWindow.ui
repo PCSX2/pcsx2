@@ -104,6 +104,7 @@
     <addaction name="actionDEV9Settings"/>
     <addaction name="actionFolderSettings"/>
     <addaction name="actionAchievementSettings"/>
+    <addaction name="separator"/>
     <addaction name="actionControllerSettings"/>
     <addaction name="actionHotkeySettings"/>
     <addaction name="separator"/>
