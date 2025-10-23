@@ -23,6 +23,12 @@ static constexpr std::array<const char*, GameListModel::Column_Count> s_column_n
 static constexpr int COVER_ART_WIDTH = 350;
 static constexpr int COVER_ART_HEIGHT = 512;
 static constexpr int COVER_ART_SPACING = 32;
+
+// Scaling these is not a linear transform due to float conversions; add them together here.
+static constexpr int SIZE_HINT_WIDTH = COVER_ART_WIDTH + (COVER_ART_SPACING / 2);
+static constexpr int SIZE_HINT_HEIGHT = COVER_ART_HEIGHT + (COVER_ART_SPACING / 2);
+static constexpr int SIZE_HINT_HEIGHT_TITLES = SIZE_HINT_HEIGHT + COVER_ART_SPACING;
+
 static constexpr int MIN_COVER_CACHE_SIZE = 256;
 
 static int DPRScale(int size, qreal dpr)
@@ -279,17 +285,18 @@ QString GameListModel::formatTimespan(time_t timespan)
 QVariant GameListModel::data(const QModelIndex& index, int role) const
 {
 	if (!index.isValid())
-		return {};
+		return QVariant();
 
 	const int row = index.row();
 	if (row < 0 || row >= static_cast<int>(GameList::GetEntryCount()))
-		return {};
+		return QVariant();
 
 	const auto lock = GameList::GetLock();
 	const GameList::Entry* ge = GameList::GetEntryByIndex(row);
 	if (!ge)
-		return {};
+		return QVariant();
 
+	// See: https://doc.qt.io/qt-6/qt.html#ItemDataRole-enum
 	switch (role)
 	{
 		case Qt::DisplayRole:
@@ -309,12 +316,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
 					return QString::fromStdString(fmt::format("{:08X}", ge->crc));
 
 				case Column_TimePlayed:
-				{
-					if (ge->total_played_time == 0)
-						return {};
-					else
-						return formatTimespan(ge->total_played_time);
-				}
+					return ge->total_played_time ? formatTimespan(ge->total_played_time) : QVariant();
 
 				case Column_LastPlayed:
 					return QString::fromStdString(GameList::FormatTimestamp(ge->last_played_time));
@@ -323,15 +325,10 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
 					return QString("%1 MB").arg(static_cast<double>(ge->total_size) / 1048576.0, 0, 'f', 2);
 
 				case Column_Cover:
-				{
-					if (m_show_titles_for_covers)
-						return QString::fromStdString(ge->GetTitle(m_prefer_english_titles));
-					else
-						return {};
-				}
+					return m_show_titles_for_covers ? QString::fromStdString(ge->GetTitle(m_prefer_english_titles)) : QVariant();
 
 				default:
-					return {};
+					return QVariant();
 			}
 		}
 
@@ -340,22 +337,16 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
 			switch (index.column())
 			{
 				case Column_Type:
-				{
 					return m_type_pixmaps[static_cast<u32>(ge->type)];
-				}
 
 				case Column_Region:
-				{
 					return m_region_pixmaps[static_cast<u32>(ge->region)];
-				}
 
 				case Column_Compatibility:
-				{
 					return m_compatibility_pixmaps[static_cast<u32>(
 						(static_cast<u32>(ge->compatibility_rating) >= GameList::CompatibilityRatingCount) ?
 							GameList::CompatibilityRating::Unknown :
 							ge->compatibility_rating)];
-				}
 
 				case Column_Cover:
 				{
@@ -368,22 +359,34 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
 					const_cast<GameListModel*>(this)->loadOrGenerateCover(ge);
 					return *m_cover_pixmap_cache.Insert(ge->path, m_loading_pixmap);
 				}
-				break;
 
 				default:
-					return {};
+					return QVariant();
 			}
 		}
-		
+
+		case Qt::SizeHintRole:
+		{
+			switch (index.column())
+			{
+				case Column_Cover:
+					return QSize(static_cast<int>(static_cast<float>(SIZE_HINT_WIDTH) * m_cover_scale),
+						static_cast<int>(static_cast<float>(m_show_titles_for_covers ? SIZE_HINT_HEIGHT_TITLES : SIZE_HINT_HEIGHT) * m_cover_scale));
+
+				default:
+					return QVariant();
+			}
+		}
+
 		default:
-			return {};
+			return QVariant();
 	}
 }
 
 QVariant GameListModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
 	if (orientation != Qt::Horizontal || role != Qt::DisplayRole || section < 0 || section >= Column_Count)
-		return {};
+		return QVariant();
 
 	return m_column_display_names[section];
 }
