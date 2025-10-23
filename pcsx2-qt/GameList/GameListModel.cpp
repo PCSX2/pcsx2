@@ -335,46 +335,6 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
 			}
 		}
 
-		case Qt::InitialSortOrderRole:
-		{
-			switch (index.column())
-			{
-				case Column_Type:
-					return static_cast<int>(ge->type);
-
-				case Column_Serial:
-					return QString::fromStdString(ge->serial);
-
-				case Column_Title:
-				case Column_Cover:
-					return QString::fromStdString(ge->GetTitleSort(m_prefer_english_titles));
-
-				case Column_FileTitle:
-					return QtUtils::StringViewToQString(Path::GetFileTitle(ge->path));
-
-				case Column_CRC:
-					return static_cast<int>(ge->crc);
-
-				case Column_TimePlayed:
-					return static_cast<qlonglong>(ge->total_played_time);
-
-				case Column_LastPlayed:
-					return static_cast<qlonglong>(ge->last_played_time);
-
-				case Column_Region:
-					return static_cast<int>(ge->region);
-
-				case Column_Compatibility:
-					return static_cast<int>(ge->compatibility_rating);
-
-				case Column_Size:
-					return static_cast<qulonglong>(ge->total_size);
-
-				default:
-					return {};
-			}
-		}
-
 		case Qt::DecorationRole:
 		{
 			switch (index.column())
@@ -413,10 +373,10 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
 				default:
 					return {};
 			}
-
-			default:
-				return {};
 		}
+		
+		default:
+			return {};
 	}
 }
 

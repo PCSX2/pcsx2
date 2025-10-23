@@ -81,7 +81,6 @@ private Q_SLOTS:
 	void onTableViewItemActivated(const QModelIndex& index);
 	void onTableViewContextMenuRequested(const QPoint& point);
 	void onTableViewHeaderContextMenuRequested(const QPoint& point);
-	void onTableViewHeaderSortIndicatorChanged(int, Qt::SortOrder);
 	void onListViewItemActivated(const QModelIndex& index);
 	void onListViewContextMenuRequested(const QPoint& point);
 	void onCoverScaleChanged();
@@ -106,7 +105,7 @@ private:
 	void saveTableViewColumnVisibilitySettings();
 	void saveTableViewColumnVisibilitySettings(int column);
 	void loadTableViewColumnSortSettings();
-	void saveTableViewColumnSortSettings();
+	void saveTableViewColumnSortSettings(const int sort_column, const Qt::SortOrder sort_order);
 	void listZoom(float delta);
 	void updateToolbar();
 

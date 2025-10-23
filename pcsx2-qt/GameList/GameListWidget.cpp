@@ -260,7 +260,7 @@ void GameListWidget::initialize()
 	connect(m_table_view->horizontalHeader(), &QHeaderView::customContextMenuRequested, this,
 		&GameListWidget::onTableViewHeaderContextMenuRequested);
 	connect(m_table_view->horizontalHeader(), &QHeaderView::sortIndicatorChanged, this,
-		&GameListWidget::onTableViewHeaderSortIndicatorChanged);
+		&GameListWidget::saveTableViewColumnSortSettings);
 
 	m_ui.stack->insertWidget(0, m_table_view);
 
@@ -571,11 +571,6 @@ void GameListWidget::onTableViewHeaderContextMenuRequested(const QPoint& point)
 	menu.exec(m_table_view->mapToGlobal(point));
 }
 
-void GameListWidget::onTableViewHeaderSortIndicatorChanged(int, Qt::SortOrder)
-{
-	saveTableViewColumnSortSettings();
-}
-
 void GameListWidget::onCoverScaleChanged()
 {
 	m_model->updateCacheSize(width(), height());
@@ -804,18 +799,15 @@ void GameListWidget::loadTableViewColumnSortSettings()
 		hv->setSortIndicator(sort_column, sort_order);
 }
 
-void GameListWidget::saveTableViewColumnSortSettings()
+void GameListWidget::saveTableViewColumnSortSettings(const int sort_column, const Qt::SortOrder sort_order)
 {
-	const int sort_column = m_table_view->horizontalHeader()->sortIndicatorSection();
-	const bool sort_descending = (m_table_view->horizontalHeader()->sortIndicatorOrder() == Qt::DescendingOrder);
-
 	if (sort_column >= 0 && sort_column < GameListModel::Column_Count)
 	{
 		Host::SetBaseStringSettingValue(
 			"GameListTableView", "SortColumn", GameListModel::getColumnName(static_cast<GameListModel::Column>(sort_column)));
 	}
 
-	Host::SetBaseBoolSettingValue("GameListTableView", "SortDescending", sort_descending);
+	Host::SetBaseBoolSettingValue("GameListTableView", "SortDescending", sort_order == Qt::DescendingOrder);
 	Host::CommitBaseSettingChanges();
 }
 
