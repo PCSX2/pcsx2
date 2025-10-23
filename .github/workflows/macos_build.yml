@@ -65,6 +65,9 @@ jobs:
       - name: Use Xcode 26.0.1
         run: sudo xcode-select -s /Applications/Xcode_26.0.1.app
 
+      - name: Install Metal Toolchain
+        run: xcodebuild -downloadComponent MetalToolchain
+
       - name: Prepare Artifact Metadata
         id: artifact-metadata
         shell: bash
