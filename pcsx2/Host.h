@@ -55,13 +55,17 @@ namespace Host
 	void RemoveKeyedOSDMessage(std::string key);
 	void ClearOSDMessages();
 
-	/// Displays an asynchronous error on the UI thread, i.e. doesn't block the caller.
+	/// Displays an asynchronous info message box on the UI thread, i.e. doesn't block the caller.
 	void ReportInfoAsync(const std::string_view title, const std::string_view message);
 	void ReportFormattedInfoAsync(const std::string_view title, const char* format, ...);
 
-	/// Displays an asynchronous error on the UI thread, i.e. doesn't block the caller.
+	/// Displays an asynchronous error message box on the UI thread, i.e. doesn't block the caller.
 	void ReportErrorAsync(const std::string_view title, const std::string_view message);
 	void ReportFormattedErrorAsync(const std::string_view title, const char* format, ...);
+
+	/// Displays an asynchronous warning message box on the UI thread, i.e. doesn't block the caller.
+	void ReportWarningAsync(const std::string_view title, const std::string_view message);
+	void ReportFormattedWarningAsync(const std::string_view title, const char* format, ...);
 
 	/// Displays a synchronous confirmation on the UI thread, i.e. blocks the caller.
 	bool ConfirmMessage(const std::string_view title, const std::string_view message);

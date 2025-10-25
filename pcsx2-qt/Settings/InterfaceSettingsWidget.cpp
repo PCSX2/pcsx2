@@ -10,7 +10,7 @@
 #include "SettingsWindow.h"
 #include "QtHost.h"
 
-static const char* IMAGE_FILE_FILTER = QT_TRANSLATE_NOOP(GameListWidget, 
+static const char* IMAGE_FILE_FILTER = QT_TRANSLATE_NOOP(InterfaceSettingsWidget, 
 	"Supported Image Types (*.bmp *.gif *.jpg *.jpeg *.png *.webp)");
 
 const char* InterfaceSettingsWidget::THEME_NAMES[] = {

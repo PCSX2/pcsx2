@@ -85,7 +85,7 @@ static inline bool FileSystemCharacterIsSane(char32_t c, bool strip_slashes)
 	if (c == '*')
 		return false;
 
-		// macos doesn't allow colons, apparently
+	// macos doesn't allow colons, apparently
 #ifdef __APPLE__
 	if (c == U':')
 		return false;
@@ -2558,6 +2558,17 @@ std::string FileSystem::GetProgramPath()
 #else
 	return {};
 #endif
+}
+
+std::string FileSystem::GetPackagePath()
+{
+	// Check if we are running inside appimage. If so, return the path to the appimage instead.
+	if (const char* appimage_path = getenv("APPIMAGE"))
+		return std::string(appimage_path);
+
+	// Otherwise, find the executable using `GetProgramPath()`
+
+	return GetProgramPath();
 }
 
 std::string FileSystem::GetWorkingDirectory()

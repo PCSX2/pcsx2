@@ -1625,6 +1625,18 @@ void Host::ReportErrorAsync(const std::string_view title, const std::string_view
 		Q_ARG(const QString&, message.empty() ? QString() : QString::fromUtf8(message.data(), message.size())));
 }
 
+void Host::ReportWarningAsync(const std::string_view title, const std::string_view message)
+{
+	if (!title.empty() && !message.empty())
+		WARNING_LOG("ReportWarningAsync: {}: {}", title, message);
+	else if (!message.empty())
+		WARNING_LOG("ReportWarningAsync: {}", message);
+
+	QMetaObject::invokeMethod(g_main_window, "reportWarning", Qt::QueuedConnection,
+		Q_ARG(const QString&, title.empty() ? QString() : QString::fromUtf8(title.data(), title.size())),
+		Q_ARG(const QString&, message.empty() ? QString() : QString::fromUtf8(message.data(), message.size())));
+}
+
 bool Host::ConfirmMessage(const std::string_view title, const std::string_view message)
 {
 	const QString qtitle(QString::fromUtf8(title.data(), title.size()));
