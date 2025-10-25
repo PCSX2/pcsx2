@@ -33,4 +33,6 @@ private:
 public:
 	static const char* THEME_NAMES[];
 	static const char* THEME_VALUES[];
+	static const char* BACKGROUND_MODE_NAMES[];
+	static const char* BACKGROUND_MODE_VALUES[];
 };
