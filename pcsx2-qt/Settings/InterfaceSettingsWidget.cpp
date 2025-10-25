@@ -88,13 +88,27 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* settings_dialog
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pauseOnControllerDisconnection, "UI", "PauseOnControllerDisconnection", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.discordPresence, "EmuCore", "EnableDiscordPresence", false);
 
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.mouseLock, "EmuCore", "EnableMouseLock", false);
-	connect(m_ui.mouseLock, &QCheckBox::checkStateChanged, [](Qt::CheckState state) {
-		if (state == Qt::Checked)
-			Common::AttachMousePositionCb([](int x, int y) { g_main_window->checkMousePosition(x, y); });
-		else
-			Common::DetachMousePositionCb();
-	});
+#ifdef __linux__ 	// Mouse locking is only supported on X11
+	const bool mouse_lock_supported = QGuiApplication::platformName().toLower() == "xcb";
+#else
+	const bool mouse_lock_supported = true;
+#endif
+
+	if(mouse_lock_supported)
+	{
+		SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.mouseLock, "EmuCore", "EnableMouseLock", false);
+		connect(m_ui.mouseLock, &QCheckBox::checkStateChanged, [](Qt::CheckState state) {
+			if (state == Qt::Checked)
+				Common::AttachMousePositionCb([](int x, int y) { g_main_window->checkMousePosition(x, y); });
+			else
+				Common::DetachMousePositionCb();
+		});
+	}
+	else
+	{
+		m_ui.mouseLock->setEnabled(false);
+	}
+
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.startFullscreen, "UI", "StartFullscreen", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.doubleClickTogglesFullscreen, "UI", "DoubleClickTogglesFullscreen",
 		true);
@@ -186,7 +200,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* settings_dialog
 		tr("Shows the game you are currently playing as part of your profile in Discord."));
 	dialog()->registerWidgetHelp(
 		m_ui.mouseLock, tr("Enable Mouse Lock"), tr("Unchecked"),
-		tr("Locks the mouse cursor to the windows when PCSX2 is in focus and all other windows are closed.<br><b>Unavailable on Linux Wayland.</b><br><b>Requires accessibility permissions on macOS.</b>"));
+		tr("Locks the mouse cursor to the windows when PCSX2 is in focus and all other windows are closed.<br><b>Unavailable on Linux Wayland.</b><br><b>Requires accessibility permissions on macOS.</b><br><b>Limited support for mixed-resolution with non-100% DPI configurations.</b>"));
 	dialog()->registerWidgetHelp(
 		m_ui.doubleClickTogglesFullscreen, tr("Double-Click Toggles Fullscreen"), tr("Checked"),
 		tr("Allows switching in and out of fullscreen mode by double-clicking the game window."));
