@@ -35,7 +35,7 @@
 
 cdvdStruct cdvd;
 
-s64 PSXCLK = 36864000;
+u32 PSXCLK = 36864000;
 
 static constexpr u8 monthmap[13] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 

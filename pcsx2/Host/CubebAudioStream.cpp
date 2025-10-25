@@ -312,7 +312,7 @@ std::vector<std::pair<std::string, std::string>> AudioStream::GetCubebDriverName
 	names.emplace_back(std::string(), TRANSLATE_STR("AudioStream", "Default"));
 
 	auto cubeb_names = cubeb_get_backend_names();
-	for (int i = 0; i < cubeb_names.count; i++)
+	for (size_t i = 0; i < cubeb_names.count; i++)
 		names.emplace_back(cubeb_names.names[i], cubeb_names.names[i]);
 
 	return names;

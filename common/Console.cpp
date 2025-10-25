@@ -99,7 +99,7 @@ __ri void Log::WriteToConsole(LOGLEVEL level, ConsoleColors color, std::string_v
 	static constexpr size_t BUFFER_SIZE = 512;
 
 	SmallStackString<BUFFER_SIZE> buffer;
-	buffer.reserve(32 + message.length());
+	buffer.reserve(static_cast<u32>(32 + message.length()));
 	buffer.append(s_ansi_color_codes[color]);
 
 	if (s_log_timestamps)
