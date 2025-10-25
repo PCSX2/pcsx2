@@ -2328,7 +2328,12 @@ int main(int argc, char* argv[])
 {
 	CrashHandler::Install();
 
+// Exceptions are disabled, so we can't try/catch this.
+// Timestamps in some locales showed up wrong on Windows.
+// Qt already applies the user locale on Unix-like systems.
+#ifdef _WIN32
 	std::locale::global(std::locale(""));
+#endif
 
 	QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 	QtHost::RegisterTypes();
