@@ -133,7 +133,7 @@ void QtHost::InstallTranslator(QWidget* dialog_parent)
 	if (!has_base_ts)
 	{
 		// Try without the country suffix.
-		const int index = language.lastIndexOf('-');
+		const qsizetype index = language.lastIndexOf('-');
 		if (index > 0)
 		{
 			base_path = QStringLiteral("%1/qt_%2.qm").arg(base_dir).arg(language.left(index));
