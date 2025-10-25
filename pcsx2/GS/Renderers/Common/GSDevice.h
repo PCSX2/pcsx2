@@ -903,6 +903,8 @@ protected:
 	GSTexture* m_cas = nullptr;
 	GSTexture* m_colclip_rt = nullptr; ///< Temp hw colclip texture
 
+	int m_interlace_bufIdx = 0;
+
 	bool AcquireWindow(bool recreate_window);
 
 	virtual GSTexture* CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format) = 0;
@@ -977,6 +979,7 @@ public:
 
 	virtual bool Create(GSVSyncMode vsync_mode, bool allow_present_throttle);
 	virtual void Destroy();
+	virtual void ResetRenderState();
 
 	/// Returns the graphics API used by this device.
 	virtual RenderAPI GetRenderAPI() const = 0;

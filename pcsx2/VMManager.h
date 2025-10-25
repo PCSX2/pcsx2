@@ -335,6 +335,10 @@ namespace Host
 	void OnGameChanged(const std::string& title, const std::string& elf_override, const std::string& disc_path,
 		const std::string& disc_serial, u32 disc_crc, u32 current_crc);
 
+	/// Called when the currently running dump is ended. Only used by GSRunner in batch mode.
+	void OnBatchDumpStart(const std::string& dump_name);
+	void OnBatchDumpEnd(const std::string& dump_name);
+
 	/// Provided by the host; called once per frame at guest vsync.
 	void PumpMessagesOnCPUThread();
 } // namespace Host

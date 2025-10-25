@@ -285,6 +285,8 @@ public:
 
 	bool Create(GSVSyncMode vsync_mode, bool allow_present_throttle) override;
 	void Destroy() override;
+	void ResetRenderState();
+	void FlushCommands();
 
 	bool UpdateWindow() override;
 	void ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale) override;
@@ -341,6 +343,7 @@ public:
 
 	void PSSetShaderResource(int i, GSTexture* sr);
 	void PSSetSamplerState(GLuint ss);
+	void PSUnbindResources();
 	void ClearSamplerCache() override;
 
 	void OMSetDepthStencilState(GSDepthStencilOGL* dss);

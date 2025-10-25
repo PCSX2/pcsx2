@@ -8,6 +8,8 @@
 #include "common/BitUtils.h"
 #include "common/Error.h"
 #include "common/HeapArray.h"
+#include "common/Timer.h"
+#include "common/Path.h"
 
 #include "GS/GSDump.h"
 #include "GS/GSLzma.h"
@@ -20,6 +22,15 @@
 #include <zstd.h>
 
 #include <mutex>
+
+static s64 GetFileSizeFP(FileSystem::ManagedCFilePtr& fp)
+{
+	s64 size = -1;
+	if (fseek(fp.get(), 0, SEEK_END) == 0)
+		size = ftell(fp.get());
+	fseek(fp.get(), 0, SEEK_SET);
+	return size;
+}
 
 using namespace GSDumpTypes;
 
@@ -126,26 +137,50 @@ bool GSDumpFile::ReadFile(Error* error)
 		return false;
 	}
 
-	// read all the packet data in
-	// TODO: make this suck less by getting the full/extracted size and preallocating
-	for (;;)
+	if (m_size >= 0)
 	{
-		const size_t packet_data_size = m_packet_data.size();
-		m_packet_data.resize(std::max<size_t>(packet_data_size * 2, 8 * _1mb));
+		// Know the full size beforehand.
 
-		const size_t read_size = m_packet_data.size() - packet_data_size;
-		const size_t read = Read(m_packet_data.data() + packet_data_size, read_size);
-		if (read != read_size)
+		const s64 try_read = m_size - static_cast<s64>(m_state_data.size()) - static_cast<s64>(m_regs_data.size());
+
+		pxAssert(try_read > 0);
+
+		m_packet_data.resize(try_read);
+		const size_t read = Read(m_packet_data.data(), try_read);
+
+		if (!IsEof())
 		{
-			if (!IsEof())
-			{
-				Error::SetString(error, "Failed to read packet");
-				return false;
-			}
+			Error::SetString(error, "Failed to read packet");
+			return false;
+		}
 
-			m_packet_data.resize(packet_data_size + read);
-			m_packet_data.shrink_to_fit();
-			break;
+		m_packet_data.resize(read);
+	}
+	else
+	{
+		// read all the packet data in
+		// TODO: make this suck less by getting the full/extracted size and preallocating
+
+		const size_t min_packet_data_size = m_size_compressed >= 0 ? 4 * m_size_compressed : 8 * _1mb;
+		for (;;)
+		{
+
+			const size_t packet_data_size = m_packet_data.size();
+			m_packet_data.resize(std::max<size_t>(packet_data_size * 2, min_packet_data_size));
+
+			const size_t read_size = m_packet_data.size() - packet_data_size;
+			const size_t read = Read(m_packet_data.data() + packet_data_size, read_size);
+			if (read != read_size)
+			{
+				if (!IsEof())
+				{
+					Error::SetString(error, "Failed to read packet");
+					return false;
+				}
+
+				m_packet_data.resize(packet_data_size + read);
+				break;
+			}
 		}
 	}
 
@@ -229,6 +264,79 @@ bool GSDumpFile::ReadFile(Error* error)
 	return true;
 }
 
+bool GSDumpFile::ReadFile(std::vector<u8>& dst, size_t max_size, Error* error)
+{
+	if (m_size >= 0)
+	{
+		if (static_cast<size_t>(m_size) > max_size)
+		{
+			Error::SetStringFmt(error, "Buffer out of memory (got {}; expected {})", m_size, max_size);
+			return false;
+		}
+
+		dst.resize(m_size);
+
+		size_t read_size = Read(dst.data(), m_size);
+
+		if (read_size != static_cast<size_t>(m_size) || !IsEof())
+		{
+			Error::SetStringFmt(error, "Did not read full contents (read {} bytes; expected {} bytes)", read_size, m_size);
+			return false;
+		}
+
+		return true;
+	}
+	else
+	{
+		const size_t min_size = m_size_compressed >= 0 ? 4 * m_size_compressed : 8 * _1mb;
+
+		dst.clear();
+
+		while (true)
+		{
+			const size_t old_size = dst.size();
+			dst.resize(std::max<size_t>(std::min(old_size * 2, max_size), min_size));
+
+			const size_t read_size = dst.size() - old_size;
+			const size_t read = Read(dst.data() + old_size, read_size);
+			if (read != read_size)
+			{
+				std::size_t final_size = old_size + read;
+
+				if (!IsEof())
+				{
+					Error::SetStringFmt(error, "Failed to read all data (read {} bytes)", final_size);
+					return false;
+				}
+
+				dst.resize(final_size);
+				return true;
+			}
+
+			if (dst.size() >= max_size)
+				break;
+		}
+
+		if (dst.size() >= max_size)
+		{
+			Error::SetStringFmt(error, "Dump too large (read {} bytes; expected {} bytes)", dst.size(), max_size - 1);
+			return false;
+		}
+
+		return true;
+	}
+}
+
+void GSDumpFile::Clear()
+{
+	m_serial.clear();
+	m_crc = 0;
+	m_regs_data.clear();
+	m_state_data.clear();
+	m_packet_data.clear();
+	m_dump_packets.clear();
+}
+
 /******************************************************************/
 
 static std::once_flag s_lzma_crc_table_init;
@@ -253,6 +361,7 @@ namespace
 		bool Open(FileSystem::ManagedCFilePtr fp, Error* error) override;
 		bool IsEof() override;
 		size_t Read(void* ptr, size_t size) override;
+		s64 GetFileSize() override;
 
 	private:
 		static constexpr size_t kInputBufSize = static_cast<size_t>(1) << 18;
@@ -291,6 +400,7 @@ namespace
 	bool GSDumpLzma::Open(FileSystem::ManagedCFilePtr fp, Error* error)
 	{
 		m_fp = std::move(fp);
+		m_size_compressed = GetFileSizeFP(m_fp);
 
 		GSInit7ZCRCTables();
 
@@ -463,6 +573,11 @@ namespace
 		return size - remain;
 	}
 
+	s64 GSDumpLzma::GetFileSize()
+	{
+		return m_size_compressed;
+	}
+
 	/******************************************************************/
 
 	class GSDumpDecompressZst final : public GSDumpFile
@@ -487,6 +602,7 @@ namespace
 		bool Open(FileSystem::ManagedCFilePtr fp, Error* error) override;
 		bool IsEof() override;
 		size_t Read(void* ptr, size_t size) override;
+		s64 GetFileSize() override;
 	};
 
 	GSDumpDecompressZst::GSDumpDecompressZst() = default;
@@ -506,6 +622,7 @@ namespace
 	{
 		m_fp = std::move(fp);
 		m_strm = ZSTD_createDStream();
+		m_size_compressed = GetFileSizeFP(m_fp);
 
 		m_area = static_cast<uint8_t*>(_aligned_malloc(OUTPUT_BUFFER_SIZE, 32));
 		m_inbuf.src = static_cast<uint8_t*>(_aligned_malloc(INPUT_BUFFER_SIZE, 32));
@@ -575,6 +692,11 @@ namespace
 		return off;
 	}
 
+	s64 GSDumpDecompressZst::GetFileSize()
+	{
+		return m_size_compressed;
+	}
+
 	/******************************************************************/
 
 	class GSDumpRaw final : public GSDumpFile
@@ -586,6 +708,7 @@ namespace
 		bool Open(FileSystem::ManagedCFilePtr fp, Error* error) override;
 		bool IsEof() override;
 		size_t Read(void* ptr, size_t size) override;
+		s64 GetFileSize() override;
 	};
 
 	GSDumpRaw::GSDumpRaw() = default;
@@ -595,6 +718,7 @@ namespace
 	bool GSDumpRaw::Open(FileSystem::ManagedCFilePtr fp, Error* error)
 	{
 		m_fp = std::move(fp);
+		m_size = GetFileSizeFP(m_fp);
 		return true;
 	}
 
@@ -612,6 +736,71 @@ namespace
 		}
 
 		return ret;
+	}
+
+	s64 GSDumpRaw::GetFileSize()
+	{
+		return m_size;
+	}
+
+	class GSDumpMemory final : public GSDumpFile
+	{
+		friend class GSDumpFile;
+	private:
+		const u8* data;
+		size_t curr = 0;
+
+		void Init(const u8* data, size_t curr);
+	public:
+		GSDumpMemory(const u8* data, size_t size);
+		~GSDumpMemory() override;
+
+		bool Open(FileSystem::ManagedCFilePtr fp, Error* error) override;
+		bool IsEof() override;
+		size_t Read(void* ptr, size_t size) override;
+		s64 GetFileSize() override;
+	};
+
+	void GSDumpMemory::Init(const u8* data, size_t size)
+	{
+		this->data = data;
+		m_size = static_cast<s64>(size);
+		curr = 0;
+
+	}
+
+	GSDumpMemory::GSDumpMemory(const u8* data, size_t size)
+	{
+		Init(data, size);
+	}
+
+	GSDumpMemory::~GSDumpMemory() = default;
+
+	bool GSDumpMemory::Open(FileSystem::ManagedCFilePtr fp, Error* error)
+	{
+		pxFail("Not implemented.");
+		return false;
+	}
+
+	bool GSDumpMemory::IsEof()
+	{
+		return curr >= static_cast<size_t>(m_size);
+	}
+
+	size_t GSDumpMemory::Read(void* ptr, size_t size)
+	{
+		if (IsEof())
+			size = 0;
+		else
+			size = std::min(size, static_cast<size_t>(m_size) - curr);
+		memcpy(ptr, &data[curr], size);
+		curr += size;
+		return size;
+	}
+
+	s64 GSDumpMemory::GetFileSize()
+	{
+		return m_size;
 	}
 } // namespace
 
@@ -635,4 +824,348 @@ std::unique_ptr<GSDumpFile> GSDumpFile::OpenGSDump(const char* filename, Error* 
 		file = {};
 
 	return file;
+}
+
+void GSDumpFile::OpenGSDumpMemory(std::unique_ptr<GSDumpFile>& dump_, const void* ptr, const size_t size)
+{
+	if (!dump_)
+	{
+		dump_ = std::make_unique<GSDumpMemory>(static_cast<const u8*>(ptr), size);
+	}
+	else
+	{
+		GSDumpMemory* dump = static_cast<GSDumpMemory*>(dump_.get());
+		dump->Clear();
+		dump->Init(static_cast<const u8*>(ptr), size);
+	}
+}
+
+GSDumpFileLoader::GSDumpFileLoader(size_t num_threads, size_t num_dumps_buffered, size_t max_file_size)
+	: num_threads(num_threads)
+	, num_dumps_buffered(num_dumps_buffered)
+	, max_file_size(max_file_size)
+	, dumps_avail_list(num_dumps_buffered)
+{
+	pxAssert(1 <= num_threads && num_threads <= num_dumps_buffered && num_dumps_buffered <= 8);
+}
+
+GSDumpFileLoader::~GSDumpFileLoader()
+{
+	Stop();
+}
+
+void GSDumpFileLoader::Start(const std::vector<std::string>& files, const std::string& from)
+{
+	std::vector <std::string> filenames = files;
+	
+	if (!from.empty())
+	{
+		std::erase_if(filenames, [&](const std::string& x) { return Path::GetFileName(x) < from; });
+	}
+
+	dump_list.resize(filenames.size());
+	for (std::size_t i = 0; i < filenames.size(); i++)
+		dump_list[i].filename = filenames[i];
+
+	// Start threads
+	for (size_t i = 0; i < num_threads; i++)
+		threads.emplace_back(LoaderFunc, this);
+
+	started = true;
+}
+
+bool GSDumpFileLoader::Started()
+{
+	return started;
+}
+
+bool GSDumpFileLoader::Finished()
+{
+	std::unique_lock lock(mut);
+
+	return _DoneRead();
+}
+
+size_t GSDumpFileLoader::DumpsRemaining()
+{
+	std::unique_lock lock(mut);
+
+	return dump_list.size() - read;
+}
+
+void GSDumpFileLoader::AddFile(const std::string& file)
+{
+	std::unique_lock lock(mut);
+
+	dump_list.push_back(DumpInfo());
+	dump_list.back().filename = file;
+
+	cond_write.notify_one();
+}
+
+void GSDumpFileLoader::_DebugCheck()
+{
+	// Must have mutex locked!
+	pxAssertRel(
+		read <= dump_list.size() &&
+		read <= write &&
+		write <= dump_list.size() &&
+		write <= read + num_dumps_buffered,
+		"Dump loader is in an inconsistent state.");
+}
+
+bool GSDumpFileLoader::_Full()
+{
+	// Must have mutex locked!
+
+	_DebugCheck();
+
+	return write >= read + num_dumps_buffered;
+}
+
+bool GSDumpFileLoader::_Empty()
+{
+	// Must have mutex locked!
+
+	_DebugCheck();
+
+	return read == write || (read < write && dump_list[read].state == WRITEABLE);
+}
+
+bool GSDumpFileLoader::_DoneRead()
+{
+	// Must have mutex locked!
+
+	_DebugCheck();
+
+	return read >= dump_list.size();
+}
+
+bool GSDumpFileLoader::_DoneWrite()
+{
+	// Must have mutex locked!
+
+	_DebugCheck();
+
+	return write >= dump_list.size();
+}
+
+bool GSDumpFileLoader::_Stopped()
+{
+	return stopped;
+}
+
+template <typename T>
+	requires GSDumpFileLoader_IsDstType<T>
+GSDumpFileLoader::ReturnValue GSDumpFileLoader::Get(T& dst, DumpInfo* info_out, bool block)
+{
+	size_t i; // Copy of read index.
+	DumpInfo dump; // Copy of dump info.
+	
+	// Acquire the slot.
+	Common::Timer block_timer;
+	{
+		std::unique_lock<std::mutex> lock(mut);
+
+		cond_read.wait(lock, [&]() { return !block || !_Empty() || _DoneRead() || _Stopped(); });
+
+		if (_DoneRead() || _Stopped())
+		{
+			cond_write.notify_all();
+
+			return FINISHED;
+		}
+
+		if (_Empty())
+		{
+			return EMPTY;
+		}
+
+		i = read;
+		dump = dump_list[i];
+
+		pxAssert(dump.state == READABLE);
+	}
+	dump.block_time_read = block_timer.GetTimeSeconds();
+	
+	ReturnValue ret;
+
+	// Error checking and writing to destination buffer.
+	if (dump.error.empty())
+	{
+		if constexpr (std::same_as<T, std::unique_ptr<GSDumpFile>>)
+		{
+			GSDumpFile::OpenGSDumpMemory(dst, dump.data->data(), dump.data->size());
+
+			Error error2;
+			if (!dst->ReadFile(&error2))
+			{
+				dump.error = error2.GetDescription();
+				ret = ERROR_;
+			}
+			else
+			{
+				ret = SUCCESS;
+			}
+		}
+		else if constexpr (std::same_as<T, std::vector<u8>>)
+		{
+			dst.resize(dump.data->size());
+			std::memcpy(dst.data(), dump.data->data(), dump.data->size());
+			ret = SUCCESS;
+		}
+		else
+		{
+			static_assert(!std::is_same_v<T, T>, "Wrong type for Get()"); // Impossible.
+		}
+	}
+	else
+	{
+		ret = ERROR_;
+	}
+
+	// Return info if needed.
+	if (info_out)
+	{
+		*info_out = dump;
+	}
+
+	// Cleanup the allocated data.
+	dump.data->clear();
+	dump.data = nullptr;
+
+	// Release the slot.
+	{
+		std::unique_lock<std::mutex> lock(mut);
+
+		dump.state = DONE;
+		dump_list[i] = std::move(dump);
+
+		read = i + 1;
+	}
+
+	cond_write.notify_one();
+
+	return ret;
+}
+
+// Instantiate templates.
+template
+GSDumpFileLoader::ReturnValue GSDumpFileLoader::Get<std::unique_ptr<GSDumpFile>>(
+	std::unique_ptr<GSDumpFile>& dst,
+	DumpInfo* info_out,
+	bool block);
+
+template
+GSDumpFileLoader::ReturnValue GSDumpFileLoader::Get<std::vector<u8>>(
+	std::vector<u8>& dst,
+	DumpInfo* info_out,
+	bool block);
+
+void GSDumpFileLoader::LoaderFunc(GSDumpFileLoader* parent)
+{
+	while (true)
+	{
+		size_t i; // Copy of write index.
+		DumpInfo dump; // Copy of dump info.
+
+		// Acquire the slot.
+		Common::Timer block_timer;
+		{
+			std::unique_lock<std::mutex> lock(parent->mut);
+
+			parent->cond_write.wait(lock, [&]() { return (!parent->_Full() && !parent->_DoneWrite()) || parent->_Stopped(); });
+
+			if (parent->_Stopped())
+				return;
+
+			i = parent->write;
+			dump = parent->dump_list[i];
+
+			pxAssert(dump.state == WRITEABLE);
+
+			dump.data = &parent->dumps_avail_list[i % parent->num_dumps_buffered];
+
+			pxAssert(dump.data->empty()); // Or something went wrong...
+		}
+		dump.block_time_write = block_timer.GetTimeSeconds();
+
+		Common::Timer load_timer;
+		Error error;
+		std::unique_ptr<GSDumpFile> dump_file = GSDumpFile::OpenGSDump(dump.filename.c_str(), &error);
+
+		if (!dump_file)
+		{
+			dump.error = fmt::format("Unable to open GS dump '{}' (error: {})",
+				dump.filename, error.GetDescription());
+
+			parent->num_errored.fetch_add(1, std::memory_order_seq_cst);
+		}
+		else if (!dump_file->ReadFile(*dump.data, parent->max_file_size, &error))
+		{
+			dump.error = fmt::format("Unable to read GS dump '{}' (error: {})", dump.filename, error.GetDescription());
+
+			parent->num_errored.fetch_add(1, std::memory_order_seq_cst);
+		}
+		else
+		{
+			dump.load_time = load_timer.GetTimeSeconds();
+
+			parent->num_loaded.fetch_add(1, std::memory_order_seq_cst);
+		}
+
+		// Release the slot.
+		{
+			std::unique_lock<std::mutex> lock(parent->mut);
+
+			dump.state = READABLE;
+			parent->dump_list[i] = dump;
+
+			parent->write = i + 1;
+		}
+			
+		parent->cond_read.notify_one();
+	}
+}
+
+void GSDumpFileLoader::Stop()
+{
+	{
+		std::unique_lock<std::mutex> lock(mut);
+
+		stopped = true;
+	}
+
+	cond_read.notify_all();
+	cond_write.notify_all();
+
+	for (std::thread& t : threads)
+	{
+		if (t.joinable())
+			t.join();
+	}
+}
+
+void GSDumpFileLoader::DebugPrint()
+{
+	Console.WarningFmt("GSDumpFileLoader debug");
+	Console.WarningFmt("   Total dumps    = {}", dump_list.size());
+	Console.WarningFmt("   Threads        = {}", num_threads);
+	Console.WarningFmt("   Dumps buffered = {}", num_dumps_buffered);
+	Console.WarningFmt("   Max file size  = {}", max_file_size);
+	Console.WarningFmt("   Started        = {}", started);
+	Console.WarningFmt("   Stopped        = {}", stopped);
+	Console.WarningFmt("   Read           = {}", read);
+	Console.WarningFmt("   Write          = {}", write);
+	Console.WarningFmt("   Loaded         = {}", num_loaded.load());
+	Console.WarningFmt("   Errored        = {}", num_errored.load());
+	Console.WarningFmt("");
+	for (size_t i = 0; i < dump_list.size(); i++)
+	{
+		if (!dump_list[i].error.empty())
+		{
+			Console.WarningFmt("   Error: {}: '{}': '{}'",
+				i, Path::GetFileName(dump_list[i].filename), dump_list[i].error);
+		}
+	}
 }

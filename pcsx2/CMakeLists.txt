@@ -71,6 +71,7 @@ set(pcsx2Sources
 	Gif_Unit.cpp
 	GS.cpp
 	GSDumpReplayer.cpp
+	GSRegressionTester.cpp
 	Host.cpp
 	Hotkeys.cpp
 	Hw.cpp
@@ -156,6 +157,7 @@ set(pcsx2Headers
 	Gif_Unit.h
 	GS.h
 	GSDumpReplayer.h
+	GSRegressionTester.h
 	Hardware.h
 	Host.h
 	Hw.h

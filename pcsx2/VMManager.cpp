@@ -1198,6 +1198,12 @@ bool VMManager::HasBootedELF()
 
 bool VMManager::AutoDetectSource(const std::string& filename)
 {
+	if (GSDumpReplayer::IsBatchMode())
+	{
+		CDVDsys_ChangeSource(CDVD_SourceType::NoDisc);
+		return true; // Initialize the actual GS dump runner later after GS settings are loaded.
+	}
+
 	if (!filename.empty())
 	{
 		if (!FileSystem::FileExists(filename.c_str()))
@@ -1476,6 +1482,12 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 		// we assume GS is going to report its own error
 		Console.WriteLn("Failed to open GS.");
 		return false;
+	}
+
+	if (GSDumpReplayer::IsBatchMode())
+	{
+		if (!GSDumpReplayer::Initialize(GSIsRegressionTesting() ? nullptr : boot_params.filename.c_str()))
+			return false;
 	}
 
 	ScopedGuard close_gs = []() {
