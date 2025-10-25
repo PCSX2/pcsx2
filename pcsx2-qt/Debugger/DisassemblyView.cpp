@@ -118,11 +118,11 @@ void DisassemblyView::contextPasteInstructionText()
 	// split text in clipboard by new lines
 	QString clipboardText = QApplication::clipboard()->text();
 	std::vector<std::string> newInstructions = StringUtil::splitOnNewLine(clipboardText.toLocal8Bit().constData());
-	int newInstructionsSize = newInstructions.size();
+	u32 newInstructionsSize = static_cast<u32>(newInstructions.size());
 
 	// validate new instructions before pasting them
 	std::vector<u32> encodedInstructions;
-	for (int instructionIdx = 0; instructionIdx < newInstructionsSize; instructionIdx++)
+	for (u32 instructionIdx = 0; instructionIdx < newInstructionsSize; instructionIdx++)
 	{
 		u32 replaceAddress = m_selectedAddressStart + instructionIdx * 4;
 		u32 encodedInstruction;
@@ -137,7 +137,7 @@ void DisassemblyView::contextPasteInstructionText()
 	}
 
 	// paste validated instructions
-	for (int instructionIdx = 0; instructionIdx < newInstructionsSize; instructionIdx++)
+	for (u32 instructionIdx = 0; instructionIdx < newInstructionsSize; instructionIdx++)
 	{
 		u32 replaceAddress = m_selectedAddressStart + instructionIdx * 4;
 		setInstructions(replaceAddress, replaceAddress, encodedInstructions[instructionIdx]);
