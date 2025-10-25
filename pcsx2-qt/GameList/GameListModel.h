@@ -37,41 +37,41 @@ public:
 		Column_Count
 	};
 
-	static std::optional<Column> getColumnIdForName(std::string_view name);
-	static const char* getColumnName(Column col);
+	static std::optional<Column> getColumnIdForName(const std::string_view name);
+	static const char* getColumnName(const Column col);
 
-	static QIcon getIconForType(GameList::EntryType type);
-	static QIcon getIconForRegion(GameList::Region region);
+	static QIcon getIconForType(const GameList::EntryType type);
+	static QIcon getIconForRegion(const GameList::Region region);
 
-	GameListModel(float cover_scale, bool show_cover_titles, qreal dpr, QObject* parent = nullptr);
+	GameListModel(const float cover_scale, const bool show_cover_titles, const qreal dpr, QObject* parent = nullptr);
 	~GameListModel();
 
 	int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 	int columnCount(const QModelIndex& parent = QModelIndex()) const override;
-	QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-	QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+	QVariant data(const QModelIndex& index, const int role = Qt::DisplayRole) const override;
+	QVariant headerData(const int section, const Qt::Orientation orientation, const int role = Qt::DisplayRole) const override;
 
-	__fi const QString& getColumnDisplayName(int column) { return m_column_display_names[column]; }
+	__fi const QString& getColumnDisplayName(const int column) { return m_column_display_names[column]; }
 
 	void refresh();
 	void reloadThemeSpecificImages();
 
-	bool titlesLessThan(int left_row, int right_row) const;
+	bool titlesLessThan(const int left_row, const int right_row) const;
 
-	bool lessThan(const QModelIndex& left_index, const QModelIndex& right_index, int column) const;
+	bool lessThan(const QModelIndex& left_index, const QModelIndex& right_index, const int column) const;
 
 	bool getShowCoverTitles() const { return m_show_titles_for_covers; }
-	void setShowCoverTitles(bool enabled) { m_show_titles_for_covers = enabled; }
+	void setShowCoverTitles(const bool enabled) { m_show_titles_for_covers = enabled; }
 
 	float getCoverScale() const { return m_cover_scale; }
-	void setCoverScale(float scale);
+	void setCoverScale(const float scale);
 	int getCoverArtWidth() const;
 	int getCoverArtHeight() const;
 	int getCoverArtSpacing() const;
 	void refreshCovers();
-	void updateCacheSize(int width, int height);
+	void updateCacheSize(const int width, const int height);
 
-	void setDevicePixelRatio(qreal dpr);
+	void setDevicePixelRatio(const qreal dpr);
 
 Q_SIGNALS:
 	void coverScaleChanged();
