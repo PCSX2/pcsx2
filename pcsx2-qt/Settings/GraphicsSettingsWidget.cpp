@@ -86,12 +86,14 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_display.integerScaling, "EmuCore/GS", "IntegerScaling", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_display.PCRTCOffsets, "EmuCore/GS", "pcrtc_offsets", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_display.PCRTCOverscan, "EmuCore/GS", "pcrtc_overscan", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_display.PreRoundSprites, "EmuCore/GS", "preround_sprites", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_display.PCRTCAntiBlur, "EmuCore/GS", "pcrtc_antiblur", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_display.disableInterlaceOffset, "EmuCore/GS", "disable_interlace_offset", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(
 		sif, m_capture.screenshotSize, "EmuCore/GS", "ScreenshotSize", static_cast<int>(GSScreenshotSize::WindowResolution));
 	SettingWidgetBinder::BindWidgetToIntSetting(
 		sif, m_capture.screenshotFormat, "EmuCore/GS", "ScreenshotFormat", static_cast<int>(GSScreenshotFormat::PNG));
+
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_display.stretchY, "EmuCore/GS", "StretchY", 100.0f);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_display.cropLeft, "EmuCore/GS", "CropLeft", 0);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_display.cropTop, "EmuCore/GS", "CropTop", 0);
