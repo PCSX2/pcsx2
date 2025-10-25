@@ -686,12 +686,13 @@ void MainWindow::onShowAdvancedSettingsToggled(bool checked)
 		mb.setWindowIcon(QtHost::GetAppIcon());
 		mb.setWindowModality(Qt::WindowModal);
 		mb.setWindowTitle(tr("Show Advanced Settings"));
-		mb.setText(tr("Changing advanced settings can have unpredictable effects on games, including graphical glitches, lock-ups, and "
+		mb.setText(tr("%sChanging advanced settings can have unpredictable effects on games, including graphical glitches, lock-ups, and "
 					  "even corrupted save files. "
 					  "We do not recommend changing advanced settings unless you know what you are doing, and the implications of changing "
 					  "each setting.\n\n"
 					  "The PCSX2 team will not provide any support for configurations that modify these settings, you are on your own.\n\n"
-					  "Are you sure you want to continue?"));
+					  "Are you sure you want to continue?")
+					  .arg(time(NULL) % 8192 != 0 ? "" : "Look at you, hacker, a pathetic creature of meat and bone.\nHow can you challenge a perfect, immortal machine?\n\n"));
 		mb.setIcon(QMessageBox::Warning);
 		mb.addButton(QMessageBox::Yes);
 		mb.addButton(QMessageBox::No);
