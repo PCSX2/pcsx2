@@ -742,45 +742,37 @@ void MainWindow::onVideoCaptureToggled(bool checked)
 {
 	if (!s_vm_valid)
 	{
+		QMessageBox msgbox(this);
+		msgbox.setIcon(QMessageBox::Question);
+		msgbox.setWindowIcon(QtHost::GetAppIcon());
+		msgbox.setWindowTitle(tr("Record On Boot"));
+		msgbox.setWindowModality(Qt::WindowModal);
+		msgbox.addButton(QMessageBox::Yes);
+		msgbox.addButton(QMessageBox::No);
+		msgbox.setDefaultButton(QMessageBox::Yes);
+
 		if (!s_record_on_start)
 		{
-			QMessageBox msgbox(this);
-			msgbox.setIcon(QMessageBox::Question);
-			msgbox.setWindowIcon(QtHost::GetAppIcon());
-			msgbox.setWindowTitle(tr("Record On Boot"));
-			msgbox.setWindowModality(Qt::WindowModal);
 			msgbox.setText(tr("Did you want to start recording on boot?"));
-			msgbox.addButton(QMessageBox::Yes);
-			msgbox.addButton(QMessageBox::No);
-			msgbox.setDefaultButton(QMessageBox::Yes);
 			if (msgbox.exec() == QMessageBox::Yes)
 			{
 				const QString container(QString::fromStdString(
 					Host::GetStringSettingValue("EmuCore/GS", "CaptureContainer", Pcsx2Config::GSOptions::DEFAULT_CAPTURE_CONTAINER)));
 				const QString filter(tr("%1 Files (*.%2)").arg(container.toUpper()).arg(container));
 
-				QString temp(QStringLiteral("%1.%2").arg(QString::fromStdString(GSGetBaseVideoFilename())).arg(container));
-				temp = QDir::toNativeSeparators(QFileDialog::getSaveFileName(this, tr("Video Capture"), temp, filter));
-				s_path_to_recording_for_record_on_start = temp;
-				if (s_path_to_recording_for_record_on_start.isEmpty())
-					return;
-				s_record_on_start = true;
+				const QString base_video_filename(QStringLiteral("%1.%2").arg(QString::fromStdString(GSGetBaseVideoFilename())).arg(container));
+				s_path_to_recording_for_record_on_start = QDir::toNativeSeparators(QFileDialog::getSaveFileName(this, tr("Video Capture"), base_video_filename, filter));
+				s_record_on_start = !s_path_to_recording_for_record_on_start.isEmpty();
 			}
 		}
 		else
 		{
-			QMessageBox msgbox(this);
-			msgbox.setIcon(QMessageBox::Question);
-			msgbox.setWindowIcon(QtHost::GetAppIcon());
-			msgbox.setWindowTitle(tr("Record On Boot"));
-			msgbox.setWindowModality(Qt::WindowModal);
 			msgbox.setText(tr("Did you want to cancel recording on boot?"));
-			msgbox.addButton(QMessageBox::Yes);
-			msgbox.addButton(QMessageBox::No);
-			msgbox.setDefaultButton(QMessageBox::Yes);
 			if (msgbox.exec() == QMessageBox::Yes)
 				s_record_on_start = false;
 		}
+		QSignalBlocker sb(m_ui.actionVideoCapture);
+		m_ui.actionVideoCapture->setChecked(s_record_on_start);
 		return;
 	}
 
