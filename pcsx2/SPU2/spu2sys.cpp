@@ -227,7 +227,6 @@ void V_Voice::Start()
 
 	PV1 = PV2 = 0;
 	PV3 = PV4 = 0;
-	NextCrest = -0x8000;
 }
 
 void V_Voice::Stop()
