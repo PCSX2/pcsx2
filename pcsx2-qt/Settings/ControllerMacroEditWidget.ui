@@ -33,12 +33,18 @@
        <widget class="QListWidget" name="bindList"/>
       </item>
       <item row="0" column="0">
-       <widget class="QLabel" name="label_2">
+       <widget class="QLabel" name="bindListLabel">
         <property name="text">
          <string>Select the buttons which you want to trigger with this macro. All buttons are activated concurrently.</string>
         </property>
         <property name="wordWrap">
          <bool>true</bool>
+        </property>
+        <property name="textInteractionFlags">
+         <set>Qt::TextBrowserInteraction</set>
+        </property>
+        <property name="buddy">
+         <cstring>bindList</cstring>
         </property>
        </widget>
       </item>
@@ -52,12 +58,18 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
-       <widget class="QLabel" name="label_3">
+       <widget class="QLabel" name="pressureLabel">
         <property name="text">
          <string>For buttons which are pressure sensitive, this slider controls how much force will be simulated when the macro is active.</string>
         </property>
         <property name="wordWrap">
          <bool>true</bool>
+        </property>
+        <property name="textInteractionFlags">
+         <set>Qt::TextBrowserInteraction</set>
+        </property>
+        <property name="buddy">
+         <cstring>pressure</cstring>
         </property>
        </widget>
       </item>
@@ -116,6 +128,9 @@
           <property name="wordWrap">
            <bool>true</bool>
           </property>
+          <property name="textInteractionFlags">
+           <set>Qt::TextBrowserInteraction</set>
+          </property>
          </widget>
         </item>
         <item>
@@ -137,9 +152,12 @@
       <item row="2" column="0">
        <layout class="QHBoxLayout" name="deadzoneLayout" stretch="0,1,0">
         <item>
-         <widget class="QLabel" name="label_4">
+         <widget class="QLabel" name="deadzoneLabel">
           <property name="text">
            <string>Deadzone:</string>
+          </property>
+          <property name="buddy">
+           <cstring>deadzone</cstring>
           </property>
          </widget>
         </item>
@@ -189,6 +207,9 @@
          <widget class="QLabel" name="frequencyText">
           <property name="text">
            <string>Macro will toggle every N frames.</string>
+          </property>
+          <property name="textInteractionFlags">
+           <set>Qt::TextBrowserInteraction</set>
           </property>
          </widget>
         </item>

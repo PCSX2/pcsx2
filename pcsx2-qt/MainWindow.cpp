@@ -1753,7 +1753,7 @@ void MainWindow::onToolsCoverDownloaderTriggered()
 {
 	// This can be invoked via big picture, so exit fullscreen.
 	VMLock lock(pauseAndLockVM());
-	CoverDownloadDialog dlg(lock.getDialogParent());
+	CoverDownloadDialog dlg(this);
 	connect(&dlg, &CoverDownloadDialog::coverRefreshRequested, m_game_list_widget, &GameListWidget::refreshGridCovers);
 	dlg.exec();
 }

@@ -103,6 +103,9 @@
         <property name="buddy">
          <cstring>texturesDirectory</cstring>
         </property>
+        <property name="textInteractionFlags">
+         <set>Qt::TextBrowserInteraction</set>
+        </property>
        </widget>
       </item>
      </layout>

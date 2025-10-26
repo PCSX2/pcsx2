@@ -49,6 +49,9 @@
         <property name="buddy">
          <cstring>cache</cstring>
         </property>
+        <property name="textInteractionFlags">
+         <set>Qt::TextBrowserInteraction</set>
+        </property>
        </widget>
       </item>
      </layout>
@@ -92,6 +95,9 @@
         <property name="buddy">
          <cstring>cheats</cstring>
         </property>
+        <property name="textInteractionFlags">
+         <set>Qt::TextBrowserInteraction</set>
+        </property>
        </widget>
       </item>
      </layout>
@@ -130,7 +136,10 @@
       <item row="0" column="0" colspan="4">
        <widget class="QLabel" name="snaphotsLabel">
         <property name="text">
-         <string>Used for screenshots and saving GS dumps.</string>
+         <string>Used for saving screenshots and GS dumps.</string>
+        </property>
+        <property name="textInteractionFlags">
+         <set>Qt::TextBrowserInteraction</set>
         </property>
         <property name="buddy">
          <cstring>snapshots</cstring>
@@ -160,6 +169,9 @@
         </property>
         <property name="buddy">
          <cstring>saveStates</cstring>
+        </property>
+        <property name="textInteractionFlags">
+         <set>Qt::TextBrowserInteraction</set>
         </property>
        </widget>
       </item>
@@ -228,6 +240,9 @@
         <property name="buddy">
          <cstring>covers</cstring>
         </property>
+        <property name="textInteractionFlags">
+         <set>Qt::TextBrowserInteraction</set>
+        </property>
        </widget>
       </item>
      </layout>
@@ -270,6 +285,9 @@
         </property>
         <property name="buddy">
          <cstring>videoDumpingDirectory</cstring>
+        </property>
+        <property name="textInteractionFlags">
+         <set>Qt::TextBrowserInteraction</set>
         </property>
        </widget>
       </item>

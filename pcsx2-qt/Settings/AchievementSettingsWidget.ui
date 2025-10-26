@@ -429,6 +429,9 @@ Login token generated at:</string>
         <property name="buddy">
          <cstring>viewProfile</cstring>
         </property>
+        <property name="textInteractionFlags">
+         <set>Qt::TextBrowserInteraction</set>
+        </property>
        </widget>
       </item>
       <item>
@@ -468,6 +471,9 @@ Login token generated at:</string>
        <widget class="QLabel" name="gameInfo">
         <property name="alignment">
          <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
+        </property>
+        <property name="textInteractionFlags">
+         <set>Qt::TextBrowserInteraction</set>
         </property>
        </widget>
       </item>
