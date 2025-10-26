@@ -147,7 +147,7 @@
        </widget>
       </item>
       <item row="2" column="0" colspan="4">
-       <widget class="QCheckBox" name="organizeScreenshotsByGame">
+       <widget class="QCheckBox" name="organizeSnapshotsByGame">
         <property name="text">
          <string>Save Snapshots in Game-Specific Folders</string>
         </property>
@@ -322,7 +322,7 @@
   <tabstop>snapshotsBrowse</tabstop>
   <tabstop>snapshotsOpen</tabstop>
   <tabstop>snapshotsReset</tabstop>
-  <tabstop>organizeScreenshotsByGame</tabstop>
+  <tabstop>organizeSnapshotsByGame</tabstop>
   <tabstop>saveStates</tabstop>
   <tabstop>saveStatesBrowse</tabstop>
   <tabstop>saveStatesOpen</tabstop>
