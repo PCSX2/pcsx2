@@ -827,20 +827,16 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 	}
 }
 
-void GSRenderer::QueueSnapshot(const std::string& path, u32 gsdump_frames)
+void GSRenderer::QueueSnapshot(const std::string& path, const u32 gsdump_frames)
 {
 	if (!m_snapshot.empty())
 		return;
 
 	// Allows for providing a complete path
 	if (path.size() > 4 && StringUtil::EndsWithNoCase(path, ".png"))
-	{
 		m_snapshot = path.substr(0, path.size() - 4);
-	}
 	else
-	{
 		m_snapshot = GSGetBaseSnapshotFilename();
-	}
 
 	// this is really gross, but wx we get the snapshot request after shift...
 	m_dump_frames = gsdump_frames;
@@ -894,31 +890,22 @@ static std::string GSGetBaseFilename()
 
 std::string GSGetBaseSnapshotFilename()
 {
-	// prepend snapshots directory
-	std::string base_path = EmuFolders::Snapshots;
-
-	// If organize by game is enabled, create a game-specific folder
-	if (GSConfig.OrganizeScreenshotsByGame)
+	// If organize by game is enabled, use or create a game-specific folder.
+	if (GSConfig.OrganizeSnapshotsByGame)
 	{
 		std::string game_name = VMManager::GetTitle(true);
 		if (!game_name.empty())
 		{
 			Path::SanitizeFileName(&game_name);
-			if (game_name.length() > 219)
-			{
-				game_name.resize(219);
-			}
-			const std::string game_dir = Path::Combine(base_path, game_name);
-			if (!FileSystem::DirectoryExists(game_dir.c_str()))
-			{
-				FileSystem::CreateDirectoryPath(game_dir.c_str(), false);
-			}
+			const std::string game_dir = Path::Combine(EmuFolders::Snapshots, game_name);
 
-			base_path = game_dir;
+			// Make sure the per-game directory exists or that we can successfully create it.
+			if (FileSystem::DirectoryExists(game_dir.c_str()) || FileSystem::CreateDirectoryPath(game_dir.c_str(), false))
+				return Path::Combine(game_dir, GSGetBaseFilename());
 		}
 	}
 
-	return Path::Combine(base_path, GSGetBaseFilename());
+	return Path::Combine(EmuFolders::Snapshots, GSGetBaseFilename());
 }
 
 std::string GSGetBaseVideoFilename()

@@ -1465,8 +1465,8 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 		if (!entry->serial.empty())
 			connect(menu.addAction(tr("Check Wiki Page")), &QAction::triggered, [this, entry]() { goToWikiPage(entry); });
 
-		action = menu.addAction(tr("Open Screenshots Folder"));
-		connect(action, &QAction::triggered, [this, entry]() { openScreenshotsFolderForGame(entry); });
+		action = menu.addAction(tr("Open Snapshots Folder"));
+		connect(action, &QAction::triggered, [this, entry]() { openSnapshotsFolderForGame(entry); });
 		menu.addSeparator();
 
 		if (!s_vm_valid)
@@ -2920,37 +2920,28 @@ void MainWindow::goToWikiPage(const GameList::Entry* entry)
 	QtUtils::OpenURL(this, fmt::format("https://wiki.pcsx2.net/{}", entry->serial).c_str());
 }
 
-void MainWindow::openScreenshotsFolderForGame(const GameList::Entry* entry)
+void MainWindow::openSnapshotsFolderForGame(const GameList::Entry* entry)
 {
-	if (!entry || entry->title.empty())
-		return;
-
-	// if disabled open the snapshots folder
-	if (!EmuConfig.GS.OrganizeScreenshotsByGame)
+	// Go to top-level snapshots directory if not organizing by game.
+	if (EmuConfig.GS.OrganizeSnapshotsByGame && entry && !entry->title.empty())
 	{
-		QtUtils::OpenURL(this, QUrl::fromLocalFile(QString::fromStdString(EmuFolders::Snapshots)));
-		return;
-	}
+		std::string game_name = entry->title;
+		Path::SanitizeFileName(&game_name);
 
-	std::string game_name = entry->title;
-	Path::SanitizeFileName(&game_name);
-	if (game_name.length() > 219)
-	{
-		game_name.resize(219);
-	}
-	const std::string game_dir = Path::Combine(EmuFolders::Snapshots, game_name);
+		const std::string game_dir = Path::Combine(EmuFolders::Snapshots, game_name);
 
-	if (!FileSystem::DirectoryExists(game_dir.c_str()))
-	{
-		if (!FileSystem::CreateDirectoryPath(game_dir.c_str(), false))
+		// Make sure the per-game directory exists or that we can successfully create it.
+		if (FileSystem::DirectoryExists(game_dir.c_str()) || FileSystem::CreateDirectoryPath(game_dir.c_str(), false))
 		{
-			QMessageBox::critical(this, tr("Error"), tr("Failed to create screenshots directory '%1'.").arg(QString::fromStdString(game_dir)));
+			const QFileInfo fi(QString::fromStdString(game_dir));
+			QtUtils::OpenURL(this, QUrl::fromLocalFile(fi.absoluteFilePath()));
 			return;
 		}
+
+		QMessageBox::critical(this, tr("Error"), tr("Failed to create snapshots directory '%1'\n\nOpening default directory.").arg(QString::fromStdString(game_dir)));
 	}
 
-	const QFileInfo fi(QString::fromStdString(game_dir));
-	QtUtils::OpenURL(this, QUrl::fromLocalFile(fi.absoluteFilePath()));
+	QtUtils::OpenURL(this, QUrl::fromLocalFile(QString::fromStdString(EmuFolders::Snapshots)));
 }
 
 std::optional<bool> MainWindow::promptForResumeState(const QString& save_state_path)
