@@ -430,10 +430,10 @@ static __forceinline void MixCoreVoices(VoiceMixSet& dest, const uint coreidx)
 
 		// Note: Results from MixVoice are ranged at 16 bits.
 
-		dest.Dry.Left += VVal.Left & VoiceGates[vc].DryL;
-		dest.Dry.Right += VVal.Right & VoiceGates[vc].DryR;
-		dest.Wet.Left += VVal.Left & VoiceGates[vc].WetL;
-		dest.Wet.Right += VVal.Right & VoiceGates[vc].WetR;
+		dest.Dry.Left += VVal.Left & VoiceData.DryL[vc];
+		dest.Dry.Right += VVal.Right & VoiceData.DryR[vc];
+		dest.Wet.Left += VVal.Left & VoiceData.WetL[vc];
+		dest.Wet.Right += VVal.Right & VoiceData.WetR[vc];
 	}
 }
 

@@ -193,10 +193,10 @@ void SPU2::DoFullDump()
 				fprintf(dump, "  - Pitch:     %x\n", Voices[v].Pitch);
 				fprintf(dump, "  - Modulated: %s\n", Voices[v].Modulated ? "Yes" : "No");
 				fprintf(dump, "  - Source:    %s\n", Voices[v].Noise ? "Noise" : "Wave");
-				fprintf(dump, "  - Direct Output for Left Channel:   %s\n", VoiceGates[v].DryL ? "Yes" : "No");
-				fprintf(dump, "  - Direct Output for Right Channel:  %s\n", VoiceGates[v].DryR ? "Yes" : "No");
-				fprintf(dump, "  - Effects Output for Left Channel:  %s\n", VoiceGates[v].WetL ? "Yes" : "No");
-				fprintf(dump, "  - Effects Output for Right Channel: %s\n", VoiceGates[v].WetR ? "Yes" : "No");
+				fprintf(dump, "  - Direct Output for Left Channel:   %s\n", VoiceData.DryL[v] ? "Yes" : "No");
+				fprintf(dump, "  - Direct Output for Right Channel:  %s\n", VoiceData.DryR[v] ? "Yes" : "No");
+				fprintf(dump, "  - Effects Output for Left Channel:  %s\n", VoiceData.WetL[v] ? "Yes" : "No");
+				fprintf(dump, "  - Effects Output for Right Channel: %s\n", VoiceData.WetR[v] ? "Yes" : "No");
 				fprintf(dump, "  - Loop Start Address:  %x\n", Voices[v].LoopStartA);
 				fprintf(dump, "  - Sound Start Address: %x\n", Voices[v].StartA);
 				fprintf(dump, "  - Next Data Address:   %x\n", Voices[v].NextA);

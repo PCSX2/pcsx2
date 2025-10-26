@@ -23,7 +23,7 @@ s16 spu2regs[0x010000 / sizeof(s16)];
 s16 _spu2mem[0x200000 / sizeof(s16)];
 
 V_CoreDebug DebugCores[2];
-V_VoiceGates VoiceGates[48];
+V_VoiceData VoiceData;
 V_Voice Voices[48];
 V_VoiceDebug DebugVoices[48];
 V_Core Cores[2];
@@ -177,10 +177,10 @@ void V_Core::Init(int index)
 
 	for (uint v = 0; v < 48; ++v)
 	{
-		VoiceGates[v].DryL = -1;
-		VoiceGates[v].DryR = -1;
-		VoiceGates[v].WetL = -1;
-		VoiceGates[v].WetR = -1;
+		VoiceData.DryL[v] = -1;
+		VoiceData.DryR[v] = -1;
+		VoiceData.WetL[v] = -1;
+		VoiceData.WetR[v] = -1;
 
 		Voices[v].Volume = V_VolumeSlideLR(0, 0); // V_VolumeSlideLR::Max;
 
@@ -284,7 +284,7 @@ __forceinline void TimeUpdate(u32 cClocks)
 		lClocks += TickInterval;
 		Cycles++;
 
-		for(int c = 0; c < 2; c++)
+		for (int c = 0; c < 2; c++)
 		{
 			if (Cores[c].KeyOff)
 			{
@@ -1153,7 +1153,7 @@ static void RegWrite_Core(u16 value)
 		const uint end_bit = (hiword) ? 24 : 16; \
 		const uint start_voice = core ? 24 : 0; \
 		for (uint vc = start_bit, vx = 1; vc < end_bit; ++vc, vx <<= 1) \
-			VoiceGates[start_voice + vc].mask_out = (value & vx) ? -1 : 0; \
+			VoiceData.mask_out[start_voice + vc] = (value & vx) ? -1 : 0; \
 	}
 
 		case REG_S_VMIXL:
@@ -1645,8 +1645,8 @@ void StartVoices(int core, u32 value)
 
 				SPU2::ConLog("* SPU2: KeyOn: C%dV%02d: SSA: %8x; M: %s%s%s%s; H: %04x; P: %04x V: %04x/%04x; ADSR: %04x%04x\n",
 					core, bit, thisvc.StartA,
-					(VoiceGates[vc].DryL) ? "+" : "-", (VoiceGates[vc].DryR) ? "+" : "-",
-					(VoiceGates[vc].WetL) ? "+" : "-", (VoiceGates[vc].WetR) ? "+" : "-",
+					(VoiceData.DryL[vc]) ? "+" : "-", (VoiceData.DryR[vc]) ? "+" : "-",
+					(VoiceData.WetL[vc]) ? "+" : "-", (VoiceData.WetR[vc]) ? "+" : "-",
 					*(u16*)GetMemPtr(thisvc.StartA),
 					thisvc.Pitch,
 					thisvc.Volume.Left.Value, thisvc.Volume.Right.Value,

@@ -227,6 +227,14 @@ public:
 	void Release();
 };
 
+// SOA representation of voices
+struct V_VoiceData
+{
+	s32 DryL[48]; // 'AND Gate' for Direct Output to Left Channel
+	s32 DryR[48]; // 'AND Gate' for Direct Output for Right Channel
+	s32 WetL[48]; // 'AND Gate' for Effect Output for Left Channel
+	s32 WetR[48]; // 'AND Gate' for Effect Output for Right Channel
+};
 
 struct V_Voice
 {
@@ -369,14 +377,6 @@ struct V_CoreRegs
 	u16 STATX;
 	u16 ATTR;
 	u16 _1AC;
-};
-
-struct V_VoiceGates
-{
-	s32 DryL; // 'AND Gate' for Direct Output to Left Channel
-	s32 DryR; // 'AND Gate' for Direct Output for Right Channel
-	s32 WetL; // 'AND Gate' for Effect Output for Left Channel
-	s32 WetR; // 'AND Gate' for Effect Output for Right Channel
 };
 
 struct V_CoreGates
@@ -554,7 +554,7 @@ extern StereoOut32 (*ReverbUpsample)(V_Core& core);
 extern s32 (*ReverbDownsample)(V_Core& core, bool right);
 
 extern V_Core Cores[2];
-extern V_VoiceGates VoiceGates[48];
+extern V_VoiceData VoiceData;
 extern V_Voice Voices[48];
 extern V_VoiceDebug DebugVoices[48];
 extern V_SPDIF Spdif;

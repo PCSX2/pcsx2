@@ -30,7 +30,7 @@ struct SPU2Savestate::DataBlock
 
 	u32 version; // SPU2 version identifier
 	V_Core Cores[2];
-	V_VoiceGates VoiceGates[48];
+	V_VoiceData VoiceData;
 	V_Voice Voices[48];
 	V_SPDIF Spdif;
 	u16 OutPos;
@@ -49,7 +49,7 @@ s32 SPU2Savestate::FreezeIt(DataBlock& spud)
 	memcpy(spud.mem, _spu2mem, sizeof(spud.mem));
 
 	memcpy(spud.Cores, Cores, sizeof(Cores));
-	memcpy(spud.VoiceGates, VoiceGates, sizeof(VoiceGates));
+	memcpy(&spud.VoiceData, &VoiceData, sizeof(VoiceData));
 	memcpy(spud.Voices, Voices, sizeof(Voices));
 	memcpy(&spud.Spdif, &Spdif, sizeof(Spdif));
 
@@ -117,7 +117,7 @@ s32 SPU2Savestate::ThawIt(DataBlock& spud)
 		memcpy(spu2regs, spud.unkregs, sizeof(spud.unkregs));
 		memcpy(_spu2mem, spud.mem, sizeof(spud.mem));
 
-		memcpy(VoiceGates, spud.VoiceGates, sizeof(VoiceGates));
+		memcpy(&VoiceData, &spud.VoiceData, sizeof(VoiceData));
 		memcpy(Voices, spud.Voices, sizeof(Voices));
 		memcpy(Cores, spud.Cores, sizeof(Cores));
 		memcpy(&Spdif, &spud.Spdif, sizeof(Spdif));
