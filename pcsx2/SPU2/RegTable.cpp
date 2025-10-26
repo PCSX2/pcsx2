@@ -13,7 +13,7 @@
 	U16P(Cores[c].p)
 
 #define PVCP(c, v, p) \
-	PCORE(c, Voices[v].p)
+	U16P(Voices[v + (c * 24)].p)
 
 #define PVC(c, v)                          \
 		PVCP(c, v, Volume.Left.Reg_VOL),   \

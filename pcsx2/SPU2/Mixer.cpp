@@ -73,7 +73,7 @@ static void __forceinline XA_decode_block(s16* buffer, const s16* block, s32& pr
 
 static void __forceinline IncrementNextA(V_Core& thiscore, uint voiceidx)
 {
-	V_Voice& vc(thiscore.Voices[voiceidx]);
+	V_Voice& vc(Voices[voiceidx]);
 
 	// Important!  Both cores signal IRQ when an address is read, regardless of
 	// which core actually reads the address.
@@ -95,7 +95,7 @@ static void __forceinline IncrementNextA(V_Core& thiscore, uint voiceidx)
 
 static __forceinline void GetNextDataBuffered(V_Core& thiscore, uint voiceidx)
 {
-	V_Voice& vc(thiscore.Voices[voiceidx]);
+	V_Voice& vc(Voices[voiceidx]);
 
 	if (vc.SBuffer == nullptr)
 	{
@@ -173,7 +173,7 @@ static __forceinline StereoOut32 ApplyVolume(const StereoOut32& data, const V_Vo
 
 static __forceinline void UpdateBlockHeader(V_Core& thiscore, uint voiceidx)
 {
-	V_Voice& vc(thiscore.Voices[voiceidx]);
+	V_Voice& vc(Voices[voiceidx]);
 
 	for (int i = 0; i < 2; i++)
 		if (Cores[i].IRQEnable && Cores[i].IRQA == (vc.NextA & 0xFFFF8))
@@ -191,7 +191,7 @@ static __forceinline void UpdateBlockHeader(V_Core& thiscore, uint voiceidx)
 static __forceinline void DecodeSamples(uint coreidx, uint voiceidx)
 {
 	V_Core& thiscore(Cores[coreidx]);
-	V_Voice& vc(thiscore.Voices[voiceidx]);
+	V_Voice& vc(Voices[voiceidx]);
 
 	// Update the block header on every audio frame
 	UpdateBlockHeader(thiscore, voiceidx);
@@ -236,17 +236,17 @@ static __forceinline void DecodeSamples(uint coreidx, uint voiceidx)
 
 static void __forceinline UpdatePitch(uint coreidx, uint voiceidx)
 {
-	V_Voice& vc(Cores[coreidx].Voices[voiceidx]);
+	V_Voice& vc(Voices[voiceidx]);
 	s32 pitch;
 
 	// [Air] : re-ordered comparisons: Modulated is much more likely to be zero than voice,
 	//   and so the way it was before it's have to check both voice and modulated values
 	//   most of the time.  Now it'll just check Modulated and short-circuit past the voice
 	//   check (not that it amounts to much, but eh every little bit helps).
-	if ((vc.Modulated == 0) || (voiceidx == 0))
+	if ((vc.Modulated == 0) || (voiceidx == 0) || (voiceidx == 24))
 		pitch = vc.Pitch;
 	else
-		pitch = std::clamp((vc.Pitch * (32768 + Cores[coreidx].Voices[voiceidx - 1].OutX)) >> 15, 0, 0x3fff);
+		pitch = std::clamp((vc.Pitch * (32768 + Voices[voiceidx - 1].OutX)) >> 15, 0, 0x3fff);
 
 	pitch = std::min(pitch, 0x3FFF);
 	vc.SP += pitch;
@@ -254,7 +254,7 @@ static void __forceinline UpdatePitch(uint coreidx, uint voiceidx)
 
 static __forceinline void CalculateADSR(V_Core& thiscore, uint voiceidx)
 {
-	V_Voice& vc(thiscore.Voices[voiceidx]);
+	V_Voice& vc(Voices[voiceidx]);
 
 	if (vc.ADSR.Phase == V_ADSR::PHASE_STOPPED)
 	{
@@ -277,7 +277,7 @@ static __forceinline void CalculateADSR(V_Core& thiscore, uint voiceidx)
 
 static __forceinline void ConsumeSamples(V_Core& thiscore, uint voiceidx)
 {
-	V_Voice& vc(thiscore.Voices[voiceidx]);
+	V_Voice& vc(Voices[voiceidx]);
 
 	int consumed = vc.SP >> 12;
 	vc.SP &= 0xfff;
@@ -286,7 +286,7 @@ static __forceinline void ConsumeSamples(V_Core& thiscore, uint voiceidx)
 
 static __forceinline s32 GetVoiceValues(V_Core& thiscore, uint voiceidx)
 {
-	V_Voice& vc(thiscore.Voices[voiceidx]);
+	V_Voice& vc(Voices[voiceidx]);
 
 	int phase = (vc.SP & 0x0ff0) >> 4;
 	s32 out = 0;
@@ -371,7 +371,7 @@ static __forceinline void spu2M_WriteFast(u32 addr, s16 value)
 static __forceinline StereoOut32 MixVoice(uint coreidx, uint voiceidx)
 {
 	V_Core& thiscore(Cores[coreidx]);
-	V_Voice& vc(thiscore.Voices[voiceidx]);
+	V_Voice& vc(Voices[voiceidx]);
 
 	// Most games don't use much volume slide effects.  So only call the UpdateVolume
 	// methods when needed by checking the flag outside the method here...
@@ -398,7 +398,7 @@ static __forceinline StereoOut32 MixVoice(uint coreidx, uint voiceidx)
 		vc.OutX = Value;
 
 		if (IsDevBuild)
-			DebugCores[coreidx].Voices[voiceidx].displayPeak = std::max(DebugCores[coreidx].Voices[voiceidx].displayPeak, (s32)vc.OutX);
+			DebugVoices[voiceidx].displayPeak = std::max(DebugVoices[voiceidx].displayPeak, (s32)vc.OutX);
 
 		voiceOut = ApplyVolume(StereoOut32(Value, Value), vc.Volume);
 	}
@@ -422,18 +422,18 @@ static __forceinline StereoOut32 MixVoice(uint coreidx, uint voiceidx)
 
 static __forceinline void MixCoreVoices(VoiceMixSet& dest, const uint coreidx)
 {
-	V_Core& thiscore(Cores[coreidx]);
 
 	for (uint voiceidx = 0; voiceidx < V_Core::NumVoices; ++voiceidx)
 	{
-		StereoOut32 VVal(MixVoice(coreidx, voiceidx));
+		int vc = voiceidx + (coreidx * 24);
+		StereoOut32 VVal(MixVoice(coreidx, vc));
 
 		// Note: Results from MixVoice are ranged at 16 bits.
 
-		dest.Dry.Left += VVal.Left & thiscore.VoiceGates[voiceidx].DryL;
-		dest.Dry.Right += VVal.Right & thiscore.VoiceGates[voiceidx].DryR;
-		dest.Wet.Left += VVal.Left & thiscore.VoiceGates[voiceidx].WetL;
-		dest.Wet.Right += VVal.Right & thiscore.VoiceGates[voiceidx].WetR;
+		dest.Dry.Left += VVal.Left & VoiceGates[vc].DryL;
+		dest.Dry.Right += VVal.Right & VoiceGates[vc].DryR;
+		dest.Wet.Left += VVal.Left & VoiceGates[vc].WetL;
+		dest.Wet.Right += VVal.Right & VoiceGates[vc].WetR;
 	}
 }
 

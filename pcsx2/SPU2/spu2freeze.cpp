@@ -24,12 +24,14 @@ namespace SPU2Savestate
 
 struct SPU2Savestate::DataBlock
 {
-	u32 spu2id;          // SPU2 state identifier lets ZeroGS/PeopsSPU2 know this isn't their state)
+	u32 spu2id; // SPU2 state identifier lets ZeroGS/PeopsSPU2 know this isn't their state)
 	u8 unkregs[0x10000]; // SPU2 raw register memory
-	u8 mem[0x200000];    // SPU2 raw sample memory
+	u8 mem[0x200000]; // SPU2 raw sample memory
 
 	u32 version; // SPU2 version identifier
 	V_Core Cores[2];
+	V_VoiceGates VoiceGates[48];
+	V_Voice Voices[48];
 	V_SPDIF Spdif;
 	u16 OutPos;
 	u16 InputPos;
@@ -47,6 +49,8 @@ s32 SPU2Savestate::FreezeIt(DataBlock& spud)
 	memcpy(spud.mem, _spu2mem, sizeof(spud.mem));
 
 	memcpy(spud.Cores, Cores, sizeof(Cores));
+	memcpy(spud.VoiceGates, VoiceGates, sizeof(VoiceGates));
+	memcpy(spud.Voices, Voices, sizeof(Voices));
 	memcpy(&spud.Spdif, &Spdif, sizeof(Spdif));
 
 	// Convert pointers to offsets so we can safely restore them when loading.
@@ -96,8 +100,8 @@ s32 SPU2Savestate::ThawIt(DataBlock& spud)
 			fprintf(stderr, "\tThe savestate you are trying to load is incorrect or corrupted.\n");
 
 		fprintf(stderr,
-				"\tAudio may not recover correctly.  Save your game to memorycard, reset,\n\n"
-				"\tand then continue from there.\n\n");
+			"\tAudio may not recover correctly.  Save your game to memorycard, reset,\n\n"
+			"\tand then continue from there.\n\n");
 
 		// Do *not* reset the cores.
 		// We'll need some "hints" as to how the cores should be initialized, and the
@@ -113,6 +117,8 @@ s32 SPU2Savestate::ThawIt(DataBlock& spud)
 		memcpy(spu2regs, spud.unkregs, sizeof(spud.unkregs));
 		memcpy(_spu2mem, spud.mem, sizeof(spud.mem));
 
+		memcpy(VoiceGates, spud.VoiceGates, sizeof(VoiceGates));
+		memcpy(Voices, spud.Voices, sizeof(Voices));
 		memcpy(Cores, spud.Cores, sizeof(Cores));
 		memcpy(&Spdif, &spud.Spdif, sizeof(Spdif));
 
@@ -148,13 +154,10 @@ s32 SPU2Savestate::ThawIt(DataBlock& spud)
 		// Go through the V_Voice structs and recalculate SBuffer pointer from
 		// the NextA setting.
 
-		for (int c = 0; c < 2; c++)
+		for (int v = 0; v < 48; v++)
 		{
-			for (int v = 0; v < 24; v++)
-			{
-				const int cacheIdx = Cores[c].Voices[v].NextA / pcm_WordsPerBlock;
-				Cores[c].Voices[v].SBuffer = pcm_cache_data[cacheIdx].Sampledata;
-			}
+			const int cacheIdx = Voices[v].NextA / pcm_WordsPerBlock;
+			Voices[v].SBuffer = pcm_cache_data[cacheIdx].Sampledata;
 		}
 	}
 	return 0;

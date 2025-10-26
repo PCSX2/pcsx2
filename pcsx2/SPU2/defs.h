@@ -287,7 +287,6 @@ struct V_VoiceDebug
 
 struct V_CoreDebug
 {
-	V_VoiceDebug Voices[24];
 	// Last Transfer Size
 	u32 lastsize;
 
@@ -408,10 +407,6 @@ struct V_Core
 
 	u32 Index; // Core index identifier.
 
-	// Voice Gates -- These are SSE-related values, and must always be
-	// first to ensure 16 byte alignment
-
-	V_VoiceGates VoiceGates[NumVoices];
 	V_CoreGates DryGate;
 	V_CoreGates WetGate;
 
@@ -419,8 +414,6 @@ struct V_Core
 	V_VolumeLR ExtVol; // Volume for External Data Input
 	V_VolumeLR InpVol; // Volume for Sound Data Input
 	V_VolumeLR FxVol; // Volume for Output from Effects
-
-	V_Voice Voices[NumVoices];
 
 	u32 IRQA; // Interrupt Address
 	u32 TSA; // DMA Transfer Start Address
@@ -561,6 +554,9 @@ extern StereoOut32 (*ReverbUpsample)(V_Core& core);
 extern s32 (*ReverbDownsample)(V_Core& core, bool right);
 
 extern V_Core Cores[2];
+extern V_VoiceGates VoiceGates[48];
+extern V_Voice Voices[48];
+extern V_VoiceDebug DebugVoices[48];
 extern V_SPDIF Spdif;
 
 // Output Buffer Writing Position (the same for all data);
