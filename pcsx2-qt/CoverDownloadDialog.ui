@@ -43,6 +43,9 @@
        <property name="buddy">
         <cstring>label</cstring>
        </property>
+       <property name="textInteractionFlags">
+        <set>Qt::TextBrowserInteraction</set>
+       </property>
       </widget>
      </item>
     </layout>
@@ -57,6 +60,9 @@
      </property>
      <property name="buddy">
       <cstring>urls</cstring>
+     </property>
+     <property name="textInteractionFlags">
+      <set>Qt::TextBrowserInteraction</set>
      </property>
     </widget>
    </item>
@@ -73,6 +79,9 @@
      </property>
      <property name="buddy">
       <cstring>useTitleFileNames</cstring>
+     </property>
+     <property name="textInteractionFlags">
+      <set>Qt::TextBrowserInteraction</set>
      </property>
     </widget>
    </item>

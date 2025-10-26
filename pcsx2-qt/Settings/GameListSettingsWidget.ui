@@ -39,6 +39,9 @@
           <property name="buddy">
            <cstring>searchDirectoryList</cstring>
           </property>
+          <property name="textInteractionFlags">
+           <set>Qt::TextBrowserInteraction</set>
+          </property>
          </widget>
         </item>
         <item>
@@ -117,6 +120,9 @@
           </property>
           <property name="buddy">
            <cstring>excludedPaths</cstring>
+          </property>
+          <property name="textInteractionFlags">
+           <set>Qt::TextBrowserInteraction</set>
           </property>
          </widget>
         </item>
