@@ -106,6 +106,7 @@ private:
 
 namespace
 {
+	// Used for Type, Region, and Compatibility columns to center icons; Qt::AlignCenter only works on DisplayRole (text).
 	class GameListIconStyleDelegate final : public QStyledItemDelegate
 	{
 	public:
@@ -115,62 +116,61 @@ namespace
 		}
 		~GameListIconStyleDelegate() = default;
 
+		// See: QStyledItemDelegate::paint(), QItemDelegate::drawDecoration(), and Qt::QStyleOptionViewItem.
 		void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override
 		{
-			// https://stackoverflow.com/questions/32216568/how-to-set-icon-center-in-qtableview
 			Q_ASSERT(index.isValid());
 
-			// Draw the base item, with a blank icon
-			QStyleOptionViewItem opt = option;
-			initStyleOption(&opt, index);
-			opt.icon = QIcon();
-			// Based on QStyledItemDelegate::paint()
-			const QStyle* style = option.widget ? option.widget->style() : QApplication::style();
-			style->drawControl(QStyle::CE_ItemViewItem, &opt, painter, option.widget);
+			// Draw highlight for cell.
+			QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &option, painter, option.widget);
 
-			// Fetch icon pixmap
-			const QRect r = option.rect;
-			const QPixmap pix = qvariant_cast<QPixmap>(index.data(Qt::DecorationRole));
+			// Fetch icon pixmap and stop if no icon exists
+			const QPixmap icon = qvariant_cast<QPixmap>(index.data(Qt::DecorationRole));
 
-			if (pix.isNull())
+			if (icon.isNull())
 				return;
 
-			const int pix_width = static_cast<int>(pix.width() / pix.devicePixelRatio());
-			const int pix_height = static_cast<int>(pix.height() / pix.devicePixelRatio());
-
-			// Clip the pixmaps so they don't extend outside the column
+			// Save painter state and restore later so clip setting doesn't persist across cell draws.
 			painter->save();
-			painter->setClipRect(option.rect);
 
-			// Draw the icon, using code derived from QItemDelegate::drawDecoration()
-			const bool enabled = option.state & QStyle::State_Enabled;
-			const QPoint p = QPoint((r.width() - pix_width) / 2, (r.height() - pix_height) / 2);
+			// Clip pixmap so it doesn't extend outside the cell.
+			const QRect rect = option.rect;
+			painter->setClipRect(rect);
+
+			// Determine starting location of icon (Qt uses top-left origin).
+			const int icon_width = static_cast<int>(static_cast<qreal>(icon.width()) / icon.devicePixelRatio());
+			const int icon_height = static_cast<int>(static_cast<qreal>(icon.height()) / icon.devicePixelRatio());
+			const QPoint icon_top_left = QPoint((rect.width() - icon_width) / 2, (rect.height() - icon_height) / 2);
+
+			// Change palette if the item is selected.
 			if (option.state & QStyle::State_Selected)
 			{
-				// See QItemDelegate::selectedPixmap()
+				// Set color based on whether cell is enabled.
+				const bool enabled = option.state & QStyle::State_Enabled;
 				QColor color = option.palette.color(enabled ? QPalette::Normal : QPalette::Disabled, QPalette::Highlight);
 				color.setAlphaF(0.3f);
 
-				QString key = QString::fromStdString(fmt::format("{:016X}-{:d}-{:08X}", pix.cacheKey(), enabled, color.rgba()));
-				QPixmap pm;
-				if (!QPixmapCache::find(key, &pm))
+				// Fetch pixmap from cache or construct a new one.
+				const QString key = QString::fromStdString(fmt::format("{:016X}-{:d}-{:08X}", icon.cacheKey(), enabled, color.rgba()));
+				QPixmap highlighted_icon;
+				if (!QPixmapCache::find(key, &highlighted_icon))
 				{
-					QImage img = pix.toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied);
+					QImage img = icon.toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied);
 
 					QPainter tinted_painter(&img);
 					tinted_painter.setCompositionMode(QPainter::CompositionMode_SourceAtop);
 					tinted_painter.fillRect(0, 0, img.width(), img.height(), color);
 					tinted_painter.end();
 
-					pm = QPixmap(QPixmap::fromImage(img));
-					QPixmapCache::insert(key, pm);
+					highlighted_icon = QPixmap(QPixmap::fromImage(img));
+					QPixmapCache::insert(key, highlighted_icon);
 				}
 
-				painter->drawPixmap(r.topLeft() + p, pm);
+				painter->drawPixmap(rect.topLeft() + icon_top_left, highlighted_icon);
 			}
 			else
 			{
-				painter->drawPixmap(r.topLeft() + p, pix);
+				painter->drawPixmap(rect.topLeft() + icon_top_left, icon);
 			}
 
 			// Restore the old clip path.
@@ -240,11 +240,13 @@ void GameListWidget::initialize()
 	m_table_view->setAlternatingRowColors(true);
 	m_table_view->setMouseTracking(true);
 	m_table_view->setShowGrid(false);
-	m_table_view->setCurrentIndex({});
+	m_table_view->setCurrentIndex(QModelIndex());
 	m_table_view->horizontalHeader()->setHighlightSections(false);
 	m_table_view->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
 	m_table_view->verticalHeader()->hide();
 	m_table_view->setVerticalScrollMode(QAbstractItemView::ScrollMode::ScrollPerPixel);
+
+	// Custom painter to center-align DisplayRoles (icons)
 	m_table_view->setItemDelegateForColumn(0, new GameListIconStyleDelegate(this));
 	m_table_view->setItemDelegateForColumn(8, new GameListIconStyleDelegate(this));
 	m_table_view->setItemDelegateForColumn(9, new GameListIconStyleDelegate(this));
@@ -724,16 +726,16 @@ bool GameListWidget::event(QEvent* event)
 void GameListWidget::resizeTableViewColumnsToFit()
 {
 	QtUtils::ResizeColumnsForTableView(m_table_view, {
-														 45, // type
-														 80, // code
+														 55, // type
+														 85, // code
 														 -1, // title
 														 -1, // file title
-														 65, // crc
-														 80, // time played
-														 80, // last played
+														 75, // crc
+														 95, // time played
+														 90, // last played
 														 80, // size
 														 60, // region
-														 120 // compatibility
+														 120, // compatibility
 													 });
 }
 
