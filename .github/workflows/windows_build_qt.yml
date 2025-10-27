@@ -154,7 +154,7 @@ jobs:
           cmake --build build --config Release --target unittests
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ steps.artifact-metadata.outputs.artifact-name }}
           path: |
@@ -186,7 +186,7 @@ jobs:
           }
 
       - name: Upload artifact - with symbols
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ steps.artifact-metadata.outputs.artifact-name }}-symbols
           path: |
