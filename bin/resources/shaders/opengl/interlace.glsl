@@ -173,8 +173,32 @@ void ps_main4()
 			// high motion -> interpolate pixels above and below
 			SV_Target0 = (hn + ln) / 2.0f;
 		else
-			// low motion -> weave
-			SV_Target0 = cn;
+		{
+			// Check if it's completely static first, we don't need to mess with any of that.
+			if((mh_max != -motion_thr.x) || (ml_max != -motion_thr.x) || (mc_max != -motion_thr.x))
+			{
+				// Check the diff with the above and below lines, if the difference is smaller between the new high and low lines
+				// compared to the new centre line and the high line (with some threshold of about 25 color steps), then reconstruct.
+				vec3 mhln = hn.rgb - ln.rgb;
+				vec3 mchn = hn.rgb - cn.rgb;
+				
+				mhln = max(mhln, -mhln) - motion_thr;
+				mchn = max(mchn, -mchn) - motion_thr;
+				
+				float mhln_max = max(max(mhln.x, mhln.y), mhln.z);
+				float mchn_max = max(max(mchn.x, mchn.y), mchn.z);
+
+				// The new centre line is a fair chunk different from those surrounding it, so quite likely incorrect.
+				if (mhln_max < 0.0f && mchn_max >= (mhln_max * 0.90f))
+					SV_Target0 = (hn + ln) / 2.0f;
+				else
+					// low motion -> weave
+					SV_Target0 = cn;
+			}
+			else
+				// low motion -> weave
+				SV_Target0 = cn;
+		}
 	}
 }
 
