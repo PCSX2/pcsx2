@@ -20,7 +20,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../AboutDialog.ui" line="110"/>
+        <location filename="../AboutDialog.ui" line="113"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;PlayStation 2 and PS2 are registered trademarks of Sony Interactive Entertainment. This application is not affiliated in any way with Sony Interactive Entertainment.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -207,13 +207,13 @@ Do you want to enable hardcore mode?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="446"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="449"/>
         <location filename="../Settings/AchievementSettingsWidget.cpp" line="224"/>
         <source>Login...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="439"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="442"/>
         <source>View Profile...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -390,12 +390,12 @@ Login token generated at:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="464"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="467"/>
         <source>Game Info</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="480"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="486"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;PCSX2 uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;https://retroachievements.org/&quot;&gt;retroachievements.org&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;To view the achievement list in-game, press the hotkey for &lt;span style=&quot; font-weight:600;&quot;&gt;Open Pause Menu&lt;/span&gt; and select &lt;span style=&quot; font-weight:600;&quot;&gt;Achievements&lt;/span&gt; from the menu.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1535,17 +1535,17 @@ Leaderboard Position: {1} of {2}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/AnalysisOptionsDialog.ui" line="73"/>
+        <location filename="../Debugger/AnalysisOptionsDialog.ui" line="76"/>
         <source>Close dialog after analysis has started</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/AnalysisOptionsDialog.ui" line="96"/>
+        <location filename="../Debugger/AnalysisOptionsDialog.ui" line="99"/>
         <source>Analyze</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/AnalysisOptionsDialog.ui" line="103"/>
+        <location filename="../Debugger/AnalysisOptionsDialog.ui" line="106"/>
         <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1670,51 +1670,51 @@ Leaderboard Position: {1} of {2}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="141"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="144"/>
         <source>Backend:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="243"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="246"/>
         <source>Standard Volume:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/AudioSettingsWidget.ui" line="95"/>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="172"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="175"/>
         <source>0 ms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="237"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="240"/>
         <source>Controls</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="280"/>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="329"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="283"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="332"/>
         <source>100%</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="290"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="293"/>
         <location filename="../Settings/AudioSettingsWidget.cpp" line="121"/>
         <source>Reset Standard Volume</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="351"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="354"/>
         <source>Fast Forward Volume:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="361"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="364"/>
         <location filename="../Settings/AudioSettingsWidget.cpp" line="110"/>
         <source>Mute All Sound</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="224"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="227"/>
         <source>Synchronization:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1724,22 +1724,22 @@ Leaderboard Position: {1} of {2}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="214"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="217"/>
         <source>Expansion:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="191"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="194"/>
         <source>Output Latency:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="179"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="182"/>
         <source>Minimal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="204"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="207"/>
         <source>Output Device:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1896,7 +1896,7 @@ Leaderboard Position: {1} of {2}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="339"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="342"/>
         <location filename="../Settings/AudioSettingsWidget.cpp" line="124"/>
         <source>Reset Fast Forward Volume</source>
         <translation type="unfinished"></translation>
@@ -2158,53 +2158,53 @@ Leaderboard Position: {1} of {2}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/BIOSSettingsWidget.ui" line="53"/>
+        <location filename="../Settings/BIOSSettingsWidget.ui" line="56"/>
         <source>Browse...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/BIOSSettingsWidget.ui" line="60"/>
+        <location filename="../Settings/BIOSSettingsWidget.ui" line="63"/>
         <source>Reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/BIOSSettingsWidget.ui" line="72"/>
+        <location filename="../Settings/BIOSSettingsWidget.ui" line="75"/>
         <source>BIOS Selection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/BIOSSettingsWidget.ui" line="93"/>
+        <location filename="../Settings/BIOSSettingsWidget.ui" line="96"/>
         <source>Open BIOS Folder...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/BIOSSettingsWidget.ui" line="100"/>
+        <location filename="../Settings/BIOSSettingsWidget.ui" line="103"/>
         <source>Refresh List</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/BIOSSettingsWidget.ui" line="119"/>
+        <location filename="../Settings/BIOSSettingsWidget.ui" line="122"/>
         <source>Filename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/BIOSSettingsWidget.ui" line="124"/>
+        <location filename="../Settings/BIOSSettingsWidget.ui" line="127"/>
         <source>Version</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/BIOSSettingsWidget.ui" line="135"/>
+        <location filename="../Settings/BIOSSettingsWidget.ui" line="138"/>
         <source>Options and Patches</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/BIOSSettingsWidget.ui" line="143"/>
+        <location filename="../Settings/BIOSSettingsWidget.ui" line="146"/>
         <location filename="../Settings/BIOSSettingsWidget.cpp" line="30"/>
         <source>Fast Boot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/BIOSSettingsWidget.ui" line="150"/>
+        <location filename="../Settings/BIOSSettingsWidget.ui" line="153"/>
         <location filename="../Settings/BIOSSettingsWidget.cpp" line="33"/>
         <source>Fast Forward Boot</source>
         <translation type="unfinished"></translation>
@@ -3079,88 +3079,88 @@ Leaderboard Position: {1} of {2}</source>
 <context>
     <name>ControllerGlobalSettingsWidget</name>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="127"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="136"/>
         <source>SDL Input Source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="140"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="149"/>
         <source>The SDL input source supports most controllers, and provides advanced functionality for DualShock 4 / DualSense pads in Bluetooth mode (Vibration / LED Control).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="133"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="142"/>
         <source>Enable SDL Input Source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="152"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="164"/>
         <source>DualShock 4 / DualSense Enhanced Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="235"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="253"/>
         <source>XInput Source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="251"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="272"/>
         <source>Enable XInput Input Source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="75"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="78"/>
         <source>DInput Source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="88"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="91"/>
         <source>The DInput source provides support for legacy controllers which do not support XInput. Accessing these controllers via SDL instead is recommended, but DirectInput can be used if they are not compatible with SDL.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="81"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="84"/>
         <source>Enable DInput Input Source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="101"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="107"/>
         <source>Profile Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="107"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="113"/>
         <source>When this option is enabled, hotkeys can be set in this input profile, and will be used instead of the global hotkeys. By default, hotkeys are always shared between all profiles.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="117"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="126"/>
         <source>Use Per-Profile Hotkeys</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="159"/>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="220"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="171"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="238"/>
         <source>Controller LED Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="171"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="183"/>
         <source>Enable SDL Raw Input</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="178"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="190"/>
         <source>Enable IOKit Driver</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="185"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="197"/>
         <source>Enable MFI Driver</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="241"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="259"/>
         <source>The XInput source provides support for Xbox 360 / Xbox One / Xbox Series controllers, and third party controllers which implement the XInput protocol.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3185,27 +3185,27 @@ Leaderboard Position: {1} of {2}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="195"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="207"/>
         <source>Mouse/Pointer Source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="201"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="213"/>
         <source>PCSX2 allows you to use your mouse to simulate analog stick movement.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="223"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="241"/>
         <source>Settings...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="213"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="231"/>
         <source>Enable Mouse Mapping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="261"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="282"/>
         <source>Detected Devices</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3256,53 +3256,53 @@ Leaderboard Position: {1} of {2}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerMacroEditWidget.ui" line="51"/>
+        <location filename="../Settings/ControllerMacroEditWidget.ui" line="57"/>
         <source>Pressure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerMacroEditWidget.ui" line="57"/>
+        <location filename="../Settings/ControllerMacroEditWidget.ui" line="63"/>
         <source>For buttons which are pressure sensitive, this slider controls how much force will be simulated when the macro is active.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerMacroEditWidget.ui" line="91"/>
-        <location filename="../Settings/ControllerMacroEditWidget.ui" line="171"/>
+        <location filename="../Settings/ControllerMacroEditWidget.ui" line="103"/>
+        <location filename="../Settings/ControllerMacroEditWidget.ui" line="189"/>
         <source>100%</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerMacroEditWidget.ui" line="103"/>
+        <location filename="../Settings/ControllerMacroEditWidget.ui" line="115"/>
         <source>Trigger</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerMacroEditWidget.ui" line="111"/>
+        <location filename="../Settings/ControllerMacroEditWidget.ui" line="123"/>
         <source>Select the trigger to activate this macro. This can be a single button, or combination of buttons (chord). Shift-click for multiple triggers.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerMacroEditWidget.ui" line="124"/>
+        <location filename="../Settings/ControllerMacroEditWidget.ui" line="139"/>
         <source>Press To Toggle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerMacroEditWidget.ui" line="142"/>
+        <location filename="../Settings/ControllerMacroEditWidget.ui" line="157"/>
         <source>Deadzone:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerMacroEditWidget.ui" line="183"/>
+        <location filename="../Settings/ControllerMacroEditWidget.ui" line="201"/>
         <source>Frequency</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerMacroEditWidget.ui" line="191"/>
+        <location filename="../Settings/ControllerMacroEditWidget.ui" line="209"/>
         <source>Macro will toggle every N frames.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerMacroEditWidget.ui" line="198"/>
+        <location filename="../Settings/ControllerMacroEditWidget.ui" line="219"/>
         <source>Set...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3627,33 +3627,33 @@ You cannot undo this action.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../CoverDownloadDialog.ui" line="53"/>
+        <location filename="../CoverDownloadDialog.ui" line="56"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../CoverDownloadDialog.ui" line="69"/>
+        <location filename="../CoverDownloadDialog.ui" line="75"/>
         <source>By default, the downloaded covers will be saved with the game&apos;s serial to ensure covers do not break with GameDB changes and that titles with multiple regions do not conflict. If this is not desired, you can check the &quot;Use Title File Names&quot; box below.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../CoverDownloadDialog.ui" line="82"/>
+        <location filename="../CoverDownloadDialog.ui" line="91"/>
         <source>Use Title File Names</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../CoverDownloadDialog.ui" line="89"/>
+        <location filename="../CoverDownloadDialog.ui" line="98"/>
         <source>Waiting to start...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../CoverDownloadDialog.ui" line="104"/>
+        <location filename="../CoverDownloadDialog.ui" line="113"/>
         <location filename="../CoverDownloadDialog.cpp" line="87"/>
         <source>Start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../CoverDownloadDialog.ui" line="114"/>
+        <location filename="../CoverDownloadDialog.ui" line="123"/>
         <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4043,32 +4043,32 @@ Do you want to overwrite?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugAnalysisSettingsTab.ui" line="42"/>
+        <location filename="../Settings/DebugAnalysisSettingsTab.ui" line="45"/>
         <source>Analysis</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugAnalysisSettingsTab.ui" line="50"/>
+        <location filename="../Settings/DebugAnalysisSettingsTab.ui" line="53"/>
         <source>Automatically Analyze Program:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugAnalysisSettingsTab.ui" line="61"/>
+        <location filename="../Settings/DebugAnalysisSettingsTab.ui" line="64"/>
         <source>Always</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugAnalysisSettingsTab.ui" line="66"/>
+        <location filename="../Settings/DebugAnalysisSettingsTab.ui" line="69"/>
         <source>If Debugger Is Open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugAnalysisSettingsTab.ui" line="71"/>
+        <location filename="../Settings/DebugAnalysisSettingsTab.ui" line="74"/>
         <source>Never</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugAnalysisSettingsTab.ui" line="81"/>
+        <location filename="../Settings/DebugAnalysisSettingsTab.ui" line="84"/>
         <source>Generate Symbols For IRX Exports</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6336,31 +6336,31 @@ The URL was: %1</source>
     </message>
     <message>
         <location filename="../Settings/FolderSettingsWidget.ui" line="26"/>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="69"/>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="112"/>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="169"/>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="205"/>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="255"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="72"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="118"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="181"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="217"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="270"/>
         <source>Browse...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/FolderSettingsWidget.ui" line="33"/>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="76"/>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="119"/>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="186"/>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="212"/>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="245"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="79"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="125"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="198"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="224"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="260"/>
         <source>Open...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/FolderSettingsWidget.ui" line="40"/>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="83"/>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="126"/>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="176"/>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="219"/>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="262"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="86"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="132"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="188"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="231"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="277"/>
         <source>Reset</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6370,57 +6370,57 @@ The URL was: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="60"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="63"/>
         <source>Cheats Directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="90"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="93"/>
         <source>Used for storing .pnach files containing game cheats.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="196"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="139"/>
+        <source>Used for saving screenshots and GS dumps.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="208"/>
         <source>Covers Directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="226"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="238"/>
         <source>Used for storing covers in the game grid/Big Picture UIs.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="239"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="254"/>
         <source>Video Dumping Directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="269"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="284"/>
         <source>Used for storing video captures.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="103"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="109"/>
         <source>Snapshots Directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="133"/>
-        <source>Used for screenshots and saving GS dumps.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="143"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="152"/>
         <source>Save Snapshots in Game-Specific Folders</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="153"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="162"/>
         <source>Save States Directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="159"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="168"/>
         <source>Used for storing save states.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12488,59 +12488,59 @@ graphical quality, but this will increase system requirements.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameListSettingsWidget.ui" line="66"/>
+        <location filename="../Settings/GameListSettingsWidget.ui" line="69"/>
         <source>Add...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameListSettingsWidget.ui" line="85"/>
-        <location filename="../Settings/GameListSettingsWidget.ui" line="183"/>
+        <location filename="../Settings/GameListSettingsWidget.ui" line="88"/>
+        <location filename="../Settings/GameListSettingsWidget.ui" line="189"/>
         <location filename="../Settings/GameListSettingsWidget.cpp" line="181"/>
         <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameListSettingsWidget.ui" line="101"/>
+        <location filename="../Settings/GameListSettingsWidget.ui" line="104"/>
         <source>Search Directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameListSettingsWidget.ui" line="106"/>
+        <location filename="../Settings/GameListSettingsWidget.ui" line="109"/>
         <source>Scan Recursively</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameListSettingsWidget.ui" line="116"/>
+        <location filename="../Settings/GameListSettingsWidget.ui" line="119"/>
         <source>Excluded Paths (will not be scanned)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameListSettingsWidget.ui" line="145"/>
+        <location filename="../Settings/GameListSettingsWidget.ui" line="151"/>
         <source>Directory...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameListSettingsWidget.ui" line="164"/>
+        <location filename="../Settings/GameListSettingsWidget.ui" line="170"/>
         <source>File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameListSettingsWidget.ui" line="222"/>
+        <location filename="../Settings/GameListSettingsWidget.ui" line="228"/>
         <source>Scan For New Games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameListSettingsWidget.ui" line="238"/>
+        <location filename="../Settings/GameListSettingsWidget.ui" line="244"/>
         <source>Rescan All Games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameListSettingsWidget.ui" line="253"/>
+        <location filename="../Settings/GameListSettingsWidget.ui" line="259"/>
         <source>Display</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameListSettingsWidget.ui" line="259"/>
+        <location filename="../Settings/GameListSettingsWidget.ui" line="265"/>
         <location filename="../Settings/GameListSettingsWidget.cpp" line="30"/>
         <source>Prefer English Titles</source>
         <translation type="unfinished"></translation>
@@ -17818,7 +17818,7 @@ Right click to clear binding</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2974"/>
+        <location filename="../MainWindow.cpp" line="2985"/>
         <source>Load State</source>
         <translation type="unfinished"></translation>
     </message>
@@ -18399,38 +18399,38 @@ Right click to clear binding</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="688"/>
+        <location filename="../MainWindow.cpp" line="692"/>
         <source>Show Advanced Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="759"/>
-        <location filename="../MainWindow.cpp" line="808"/>
+        <location filename="../MainWindow.cpp" line="764"/>
+        <location filename="../MainWindow.cpp" line="804"/>
         <source>Video Capture</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="268"/>
+        <location filename="../MainWindow.cpp" line="272"/>
         <source>Internal Resolution</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="268"/>
+        <location filename="../MainWindow.cpp" line="272"/>
         <source>%1x Scale</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="666"/>
+        <location filename="../MainWindow.cpp" line="670"/>
         <source>Select location to save block dump:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="684"/>
+        <location filename="../MainWindow.cpp" line="688"/>
         <source>Do not show again</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="689"/>
+        <location filename="../MainWindow.cpp" line="693"/>
         <source>Changing advanced settings can have unpredictable effects on games, including graphical glitches, lock-ups, and even corrupted save files. We do not recommend changing advanced settings unless you know what you are doing, and the implications of changing each setting.
 
 The PCSX2 team will not provide any support for configurations that modify these settings, you are on your own.
@@ -18439,86 +18439,90 @@ Are you sure you want to continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="746"/>
-        <location filename="../MainWindow.cpp" line="771"/>
+        <location filename="../MainWindow.cpp" line="748"/>
         <source>Record On Boot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="748"/>
+        <location filename="../MainWindow.cpp" line="756"/>
         <source>Did you want to start recording on boot?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="756"/>
-        <location filename="../MainWindow.cpp" line="805"/>
+        <location filename="../MainWindow.cpp" line="761"/>
+        <location filename="../MainWindow.cpp" line="801"/>
         <source>%1 Files (*.%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="773"/>
+        <location filename="../MainWindow.cpp" line="770"/>
         <source>Did you want to cancel recording on boot?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="798"/>
+        <location filename="../MainWindow.cpp" line="794"/>
         <source>Recording will start in a moment</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1157"/>
+        <location filename="../MainWindow.cpp" line="1153"/>
         <source>WARNING: Memory Card Busy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1161"/>
+        <location filename="../MainWindow.cpp" line="1157"/>
         <source>Your memory card is still saving data.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1162"/>
+        <location filename="../MainWindow.cpp" line="1158"/>
         <source>WARNING: Shutting down now can &lt;b&gt;IRREVERSIBLY CORRUPT YOUR MEMORY CARD.&lt;/b&gt;&lt;br&gt;&lt;br&gt;You are strongly advised to select &apos;No&apos; and let the save finish.&lt;br&gt;&lt;br&gt;Do you want to shutdown anyway and &lt;b&gt;IRREVERSIBLY CORRUPT YOUR MEMORY CARD&lt;/b&gt;?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1291"/>
+        <location filename="../MainWindow.cpp" line="1287"/>
         <source>Confirm Shutdown</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1294"/>
+        <location filename="../MainWindow.cpp" line="1290"/>
         <source>Are you sure you want to shut down the virtual machine?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1296"/>
+        <location filename="../MainWindow.cpp" line="1292"/>
         <source>Save State For Resume</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1404"/>
-        <location filename="../MainWindow.cpp" line="1779"/>
-        <location filename="../MainWindow.cpp" line="2243"/>
-        <location filename="../MainWindow.cpp" line="2407"/>
-        <location filename="../MainWindow.cpp" line="2845"/>
-        <location filename="../MainWindow.cpp" line="2947"/>
-        <location filename="../MainWindow.cpp" line="2993"/>
+        <location filename="../MainWindow.cpp" line="1400"/>
+        <location filename="../MainWindow.cpp" line="1790"/>
+        <location filename="../MainWindow.cpp" line="2254"/>
+        <location filename="../MainWindow.cpp" line="2418"/>
+        <location filename="../MainWindow.cpp" line="2856"/>
+        <location filename="../MainWindow.cpp" line="2958"/>
+        <location filename="../MainWindow.cpp" line="3004"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1404"/>
+        <location filename="../MainWindow.cpp" line="1400"/>
         <source>You must select a disc to change discs.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1436"/>
+        <location filename="../MainWindow.cpp" line="1432"/>
         <source>Properties...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1452"/>
+        <location filename="../MainWindow.cpp" line="1448"/>
         <source>Set Cover Image...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MainWindow.cpp" line="1452"/>
+        <source>Create Game Shortcut...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -18597,72 +18601,72 @@ Are you sure you want to continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1769"/>
+        <location filename="../MainWindow.cpp" line="1780"/>
         <source>Confirm File Creation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1770"/>
+        <location filename="../MainWindow.cpp" line="1781"/>
         <source>The pnach file &apos;%1&apos; does not currently exist. Do you want to create it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1779"/>
+        <location filename="../MainWindow.cpp" line="1790"/>
         <source>Failed to create &apos;%1&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1875"/>
+        <location filename="../MainWindow.cpp" line="1886"/>
         <source>Input Recording Failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1876"/>
+        <location filename="../MainWindow.cpp" line="1887"/>
         <source>Failed to create file: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1899"/>
+        <location filename="../MainWindow.cpp" line="1910"/>
         <source>Input Recording Files (*.p2m2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1934"/>
+        <location filename="../MainWindow.cpp" line="1945"/>
         <source>Input Playback Failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1935"/>
+        <location filename="../MainWindow.cpp" line="1946"/>
         <source>Failed to open file: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2021"/>
+        <location filename="../MainWindow.cpp" line="2032"/>
         <source>Paused</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2207"/>
+        <location filename="../MainWindow.cpp" line="2218"/>
         <source>Load State Failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2207"/>
+        <location filename="../MainWindow.cpp" line="2218"/>
         <source>Cannot load a save state without a running VM.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2231"/>
+        <location filename="../MainWindow.cpp" line="2242"/>
         <source>The new ELF cannot be loaded without resetting the virtual machine. Do you want to reset the virtual machine now?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2243"/>
+        <location filename="../MainWindow.cpp" line="2254"/>
         <source>Cannot change from game to GS dump without shutting down first.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2407"/>
+        <location filename="../MainWindow.cpp" line="2418"/>
         <source>Failed to get window info from widget</source>
         <translation type="unfinished"></translation>
     </message>
@@ -18678,91 +18682,91 @@ Are you sure you want to continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2751"/>
+        <location filename="../MainWindow.cpp" line="2762"/>
         <source>Game Properties</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2751"/>
+        <location filename="../MainWindow.cpp" line="2762"/>
         <source>Game properties is unavailable for the current game.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2803"/>
+        <location filename="../MainWindow.cpp" line="2814"/>
         <source>Could not find any CD/DVD-ROM devices. Please ensure you have a drive connected and sufficient permissions to access it.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2821"/>
+        <location filename="../MainWindow.cpp" line="2832"/>
         <source>Select disc drive:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2845"/>
+        <location filename="../MainWindow.cpp" line="2856"/>
         <source>This save state does not exist.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2858"/>
+        <location filename="../MainWindow.cpp" line="2869"/>
         <source>Select Cover Image</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2875"/>
+        <location filename="../MainWindow.cpp" line="2886"/>
         <source>Cover Already Exists</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2876"/>
+        <location filename="../MainWindow.cpp" line="2887"/>
         <source>A cover image for this game already exists, do you wish to replace it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2871"/>
-        <location filename="../MainWindow.cpp" line="2885"/>
-        <location filename="../MainWindow.cpp" line="2891"/>
-        <location filename="../MainWindow.cpp" line="2897"/>
+        <location filename="../MainWindow.cpp" line="2882"/>
+        <location filename="../MainWindow.cpp" line="2896"/>
+        <location filename="../MainWindow.cpp" line="2902"/>
+        <location filename="../MainWindow.cpp" line="2908"/>
         <source>Copy Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2885"/>
+        <location filename="../MainWindow.cpp" line="2896"/>
         <source>Failed to remove existing cover &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2891"/>
+        <location filename="../MainWindow.cpp" line="2902"/>
         <source>Failed to copy &apos;%1&apos; to &apos;%2&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2897"/>
+        <location filename="../MainWindow.cpp" line="2908"/>
         <source>Failed to remove &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2230"/>
-        <location filename="../MainWindow.cpp" line="2906"/>
+        <location filename="../MainWindow.cpp" line="2241"/>
+        <location filename="../MainWindow.cpp" line="2917"/>
         <source>Confirm Reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2858"/>
+        <location filename="../MainWindow.cpp" line="2869"/>
         <source>All Cover Image Types (*.jpg *.jpeg *.png *.webp)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2871"/>
+        <location filename="../MainWindow.cpp" line="2882"/>
         <source>You must select a different file to the current cover image.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2968"/>
+        <location filename="../MainWindow.cpp" line="2979"/>
         <source>Load Resume State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2971"/>
+        <location filename="../MainWindow.cpp" line="2982"/>
         <source>A resume save state was found for this game, saved at:
 
 %1.
@@ -18771,63 +18775,63 @@ Do you want to load this state, or start from a fresh boot?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2975"/>
+        <location filename="../MainWindow.cpp" line="2986"/>
         <source>Fresh Boot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2976"/>
+        <location filename="../MainWindow.cpp" line="2987"/>
         <source>Delete And Boot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2993"/>
+        <location filename="../MainWindow.cpp" line="3004"/>
         <source>Failed to delete save state file &apos;%1&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3051"/>
+        <location filename="../MainWindow.cpp" line="3062"/>
         <source>Load State File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3051"/>
+        <location filename="../MainWindow.cpp" line="3062"/>
         <source>Load From File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3054"/>
-        <location filename="../MainWindow.cpp" line="3128"/>
+        <location filename="../MainWindow.cpp" line="3065"/>
+        <location filename="../MainWindow.cpp" line="3139"/>
         <source>Select Save State File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3099"/>
+        <location filename="../MainWindow.cpp" line="3110"/>
         <source>Load Backup Slot %1 (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3128"/>
+        <location filename="../MainWindow.cpp" line="3139"/>
         <source>Save States (*.p2s)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3061"/>
+        <location filename="../MainWindow.cpp" line="3072"/>
         <source>Delete Save States...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="60"/>
+        <location filename="../MainWindow.cpp" line="64"/>
         <source>All File Types (*.bin *.iso *.cue *.mdf *.chd *.cso *.zso *.gz *.elf *.irx *.gs *.gs.xz *.gs.zst *.dump);;Single-Track Raw Images (*.bin *.iso);;Cue Sheets (*.cue);;Media Descriptor File (*.mdf);;MAME CHD Images (*.chd);;CSO Images (*.cso);;ZSO Images (*.zso);;GZ Images (*.gz);;ELF Executables (*.elf);;IRX Executables (*.irx);;GS Dumps (*.gs *.gs.xz *.gs.zst);;Block Dumps (*.dump)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="73"/>
+        <location filename="../MainWindow.cpp" line="77"/>
         <source>All File Types (*.bin *.iso *.cue *.mdf *.chd *.cso *.zso *.gz *.dump);;Single-Track Raw Images (*.bin *.iso);;Cue Sheets (*.cue);;Media Descriptor File (*.mdf);;MAME CHD Images (*.chd);;CSO Images (*.cso);;ZSO Images (*.zso);;GZ Images (*.gz);;Block Dumps (*.dump)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2907"/>
+        <location filename="../MainWindow.cpp" line="2918"/>
         <source>Are you sure you want to reset the play time for &apos;%1&apos; (%2)?
 
 Your current play time is %3.
@@ -18836,85 +18840,85 @@ This action cannot be undone.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2908"/>
+        <location filename="../MainWindow.cpp" line="2919"/>
         <source>empty title</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2909"/>
+        <location filename="../MainWindow.cpp" line="2920"/>
         <source>no serial</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2947"/>
+        <location filename="../MainWindow.cpp" line="2958"/>
         <source>Failed to create screenshots directory &apos;%1&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3054"/>
+        <location filename="../MainWindow.cpp" line="3065"/>
         <source>Save States (*.p2s *.p2s.backup)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3071"/>
+        <location filename="../MainWindow.cpp" line="3082"/>
         <source>Resume (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3087"/>
+        <location filename="../MainWindow.cpp" line="3098"/>
         <source>Load Slot %1 (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3108"/>
-        <location filename="../MainWindow.cpp" line="3116"/>
+        <location filename="../MainWindow.cpp" line="3119"/>
+        <location filename="../MainWindow.cpp" line="3127"/>
         <source>Delete Save States</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3109"/>
+        <location filename="../MainWindow.cpp" line="3120"/>
         <source>Are you sure you want to delete all save states for %1?
 
 The saves will not be recoverable.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3116"/>
+        <location filename="../MainWindow.cpp" line="3127"/>
         <source>%1 save states deleted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3126"/>
+        <location filename="../MainWindow.cpp" line="3137"/>
         <source>Save To File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3146"/>
+        <location filename="../MainWindow.cpp" line="3157"/>
         <source>Empty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3148"/>
+        <location filename="../MainWindow.cpp" line="3159"/>
         <source>Save Slot %1 (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3207"/>
+        <location filename="../MainWindow.cpp" line="3218"/>
         <source>Confirm Disc Change</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3208"/>
+        <location filename="../MainWindow.cpp" line="3219"/>
         <source>Do you want to swap discs or boot the new image (via system reset)?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3209"/>
+        <location filename="../MainWindow.cpp" line="3220"/>
         <source>Swap Disc</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3210"/>
+        <location filename="../MainWindow.cpp" line="3221"/>
         <source>Reset</source>
         <translation type="unfinished"></translation>
     </message>
@@ -21743,6 +21747,267 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../SetupWizardDialog.cpp" line="433"/>
         <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ShortcutCreationDialog</name>
+    <message>
+        <location filename="../ShortcutCreationDialog.ui" line="26"/>
+        <source>Display Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.ui" line="33"/>
+        <source>Override boot ELF:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.ui" line="40"/>
+        <source>Custom Arguments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.ui" line="56"/>
+        <source>Fullscreen mode:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.ui" line="64"/>
+        <source>Force Enable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.ui" line="69"/>
+        <source>Force Disable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.ui" line="77"/>
+        <source>Use Big Picture mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.ui" line="91"/>
+        <source>Fast Boot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.ui" line="96"/>
+        <source>Full Boot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.ui" line="104"/>
+        <source>Boot mode:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.ui" line="111"/>
+        <location filename="../ShortcutCreationDialog.ui" line="164"/>
+        <source>Browse...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.ui" line="140"/>
+        <source>Do not load save state</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.ui" line="150"/>
+        <source>Load save state by slot:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.ui" line="157"/>
+        <source>Load save state from file:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.ui" line="174"/>
+        <source>Save State Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.ui" line="181"/>
+        <source>Game arguments:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.ui" line="197"/>
+        <source>You may add additional (space-separated) &lt;a href=&quot;https://pcsx2.net/docs/post/cli/&quot;&gt;custom arguments&lt;/a&gt; that are not listed above here:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.ui" line="222"/>
+        <source>Portable Mode (Stores data in local PCSX2 directory)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.ui" line="232"/>
+        <source>Shortcut Type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.ui" line="249"/>
+        <source>Launch Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.ui" line="262"/>
+        <source>Launcher</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.ui" line="269"/>
+        <source>Desktop</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.cpp" line="34"/>
+        <source>Create Shortcut For %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.cpp" line="38"/>
+        <source>Start Menu</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.cpp" line="40"/>
+        <source>Application Launcher</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.cpp" line="44"/>
+        <source>Select ELF File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.cpp" line="44"/>
+        <source>ELF Files (*.elf);;All Files (*.*)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.cpp" line="50"/>
+        <source>Select Save State File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.cpp" line="50"/>
+        <source>Save States (*.p2s);;All Files (*.*)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.cpp" line="145"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="160"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="169"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="176"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="186"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="206"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="217"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="293"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="304"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="312"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="343"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="350"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="360"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="412"/>
+        <source>Failed to create shortcut</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.cpp" line="145"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="304"/>
+        <source>Filename contains illegal character.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.cpp" line="160"/>
+        <source>Could not create start menu directory.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.cpp" line="169"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="343"/>
+        <source>Home path is empty.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.cpp" line="176"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="350"/>
+        <source>A shortcut with the same name already exists.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.cpp" line="186"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="360"/>
+        <source>File path contains invalid character(s). The resulting shortcut may not work.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.cpp" line="206"/>
+        <source>CoInitialize failed (%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.cpp" line="226"/>
+        <source>CoCreateInstance failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.cpp" line="235"/>
+        <source>SetPath failed (%1)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.cpp" line="244"/>
+        <source>SetWorkingDirectory failed (%1)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.cpp" line="255"/>
+        <source>SetArguments failed (%1)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.cpp" line="266"/>
+        <source>SetIconLocation failed (%1)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.cpp" line="274"/>
+        <source>QueryInterface failed (%1)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.cpp" line="283"/>
+        <source>Failed to save the shortcut (%1)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.cpp" line="293"/>
+        <source>Cannot create a shortcut without a title.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.cpp" line="312"/>
+        <source>Executable path is empty.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.cpp" line="402"/>
+        <source>Desktop Shortcut Files (*.desktop)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.cpp" line="404"/>
+        <source>Select Shortcut Save Destination</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.cpp" line="412"/>
+        <source>Failed to create .desktop file</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
