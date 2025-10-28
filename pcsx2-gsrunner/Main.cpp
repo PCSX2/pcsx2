@@ -242,6 +242,8 @@ namespace GSRunner
 	static GSProcess::PID_t s_batch_runner_ppid = 0;
 	static bool s_batch_runner_single_log = false;
 	static u32 s_batch_runner_dump_buffer_size = UINT32_MAX; // infinite
+	static bool s_batch_runner_lazy_dump = false;
+	static u32 s_batch_runner_lazy_dump_buffer_size = _1mb * 256;
 
 	// Owned by the GS thread.
 	static u32 s_dump_frame_number = 0;
@@ -1183,10 +1185,26 @@ bool GSRunner::ParseCommandLineArgs(int argc, const char* argv[], VMBootParamete
 				std::optional<u32> size = StringUtil::FromChars<u32>(argv[++i]);
 				if (!size.has_value())
 				{
-					Console.ErrorFmt("(GSRunner) Malformed argument dump buffer size: {}", argv[i]);
+					Console.ErrorFmt("(GSRunner) Malformed argument lazy dump buffer size: {}", argv[i]);
 					return false;
 				}
 				s_batch_runner_dump_buffer_size = size.value() * _1mb;
+				continue;
+			}
+			else if (CHECK_ARG_PARAM("-batch-runner-lazy-dump-buffer-size"))
+			{
+				std::optional<u32> size = StringUtil::FromChars<u32>(argv[++i]);
+				if (!size.has_value())
+				{
+					Console.ErrorFmt("(GSRunner) Malformed argument dump buffer size: {}", argv[i]);
+					return false;
+				}
+				s_batch_runner_lazy_dump_buffer_size = size.value() * _1mb;
+				continue;
+			}
+			else if (CHECK_ARG("-batch-runner-lazy-dump"))
+			{
+				s_batch_runner_lazy_dump = true;
 				continue;
 			}
 			else if (CHECK_ARG("-batch-runner-single-log"))
@@ -2033,6 +2051,8 @@ int GSRunner::main_runner(int argc, const char* argv[])
 			VMManager::Internal::SetFileLogPath(
 				Path::Combine(s_logfile, "emulog-" + std::to_string(s_batch_runner_index) + "-" + std::to_string(GSProcess::GetCurrentPID()) + ".txt"));
 		}
+		if (s_batch_runner_lazy_dump)
+			GSDumpReplayer::SetBatchRunnerLazyDump(s_batch_runner_lazy_dump_buffer_size);
 		GSDumpReplayer::SetIsBatchMode(true);
 		GSDumpReplayer::SetNumBatches(s_num_batches);
 		GSDumpReplayer::SetBatchID(s_batch_id);
@@ -2097,8 +2117,8 @@ int GSRunnerBatch::main_batch(int argc, const char* argv[])
 
 	batch_runner_buffer.PopulateFilenames(batch_dump_list);
 
-	// FIXME: Remove 1 thread speical case
-	if (batch_num_threads == 1 && 0)
+	constexpr bool debug_one_thread = true;
+	if (batch_num_threads == 1 && debug_one_thread)
 	{
 		std::vector<std::string> args;
 		GetRunnerArgs(0, args);

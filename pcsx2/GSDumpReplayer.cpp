@@ -70,6 +70,9 @@ static bool s_regression_test_send_hwstats = false; // Only send HWSTAT packets 
 static bool s_verbose_logging = false;
 static GSDumpFileLoader s_dump_file_loader; // For batch mode.
 static std::size_t s_dump_buffer_size = SIZE_MAX; // For batch mode.
+static bool s_lazy_dump = false;
+static u32 s_lazy_dump_buffer_size = _1mb * 256;
+static GSDumpFileLoaderLazy s_dump_file_loader_lazy;
 
 R5900cpu GSDumpReplayerCpu = {
 	GSDumpReplayerCpuReserve,
@@ -155,6 +158,12 @@ void GSDumpReplayer::SetBatchRecreateDevice(bool recreate)
 void GSDumpReplayer::SetBatchStartFromDump(const std::string& start_from_dump)
 {
 	s_batch_start_from_dump = start_from_dump;
+}
+
+void GSDumpReplayer::SetBatchRunnerLazyDump(size_t size)
+{
+	s_lazy_dump = true;
+	s_lazy_dump_buffer_size = size;
 }
 
 void GSDumpReplayer::SetRegressionSendHWSTAT(bool send_hwstat)
@@ -503,86 +512,180 @@ bool GSDumpReplayer::ChangeDump(const char* filename)
 	{
 		pxAssert(filename == nullptr);
 
-		if (!s_dump_file_loader.Started())
+		if (s_lazy_dump)
 		{
-			s_dump_file_loader.SetMaxFileSize(s_dump_buffer_size);
-			s_dump_file_loader.Start(std::vector<std::string>());
-		}
+			if (!s_dump_file_loader_lazy.Started())
+				s_dump_file_loader_lazy.Start(2, s_lazy_dump_buffer_size);
 
-		GSDumpFileLoader::DumpInfo dump;
-
-		const auto AcquireAndAddToLoader = [](GSDumpFileLoader& loader) {
-			std::string file_str;
-			if (GSBatchRunAcquireFile(file_str))
-			{
-				loader.AddFile(file_str);
-				return true;
-			}
-			else
-			{
+			const auto AcquireAndAddToLoader = [](GSDumpFileLoaderLazy& loader) {
+				while (!loader.Full())
+				{
+					std::string file_str;
+					if (!GSBatchRunAcquireFile(file_str))
+						return false;
+					Error error;
+					GSDumpFileLoaderLazy::RetVal ret = loader.AddFile(file_str, &error);
+					if (ret == GSDumpFileLoaderLazy::SUCCESS)
+					{
+						return true;
+					}
+					else if (ret == GSDumpFileLoaderLazy::FAILURE)
+					{
+						MTGS::RunOnGSThread([err = error.GetDescription(), runner_name = GetRunnerName()]() {
+							Console.ErrorFmt("(GSRunner/{}) Error loading/reading dump: {}.", runner_name,
+								err.empty() ? std::string("Unspecified reason") : err);
+						});
+						continue;
+					}
+					else if (ret == GSDumpFileLoaderLazy::FULL)
+					{
+						// Should be impossible.
+						MTGS::RunOnGSThread([runner_name = GetRunnerName()]() {
+							Console.ErrorFmt("(GSRunner/{}) Attempting to add to full dump loader.", runner_name);
+						});
+						return false;
+					}
+					else
+					{
+						MTGS::RunOnGSThread([err = error.GetDescription(), runner_name = GetRunnerName(), ret]() {
+							Console.ErrorFmt("(GSRunner/{}) Unknown return value from loader: {}.", runner_name,
+								static_cast<int>(ret));
+						});
+						continue;
+					}
+				}
 				return false;
-			}
-		};
+			};
 
-		// FIXME: Code duplication with other batch mode....
-		// Get/read the next available ready dump, skipping any that errored.
-		
-		// Fill up the dump loader queue.
-		while (s_dump_file_loader.DumpsRemaining() < s_dump_file_loader.num_dumps_buffered)
-		{
-			if (!AcquireAndAddToLoader(s_dump_file_loader))
-				break;
-		}
+			while (AcquireAndAddToLoader(s_dump_file_loader_lazy))
+				;
 
-		while (true)
-		{
-			// This reads the dump file as well.
-			GSDumpFileLoader::ReturnValue ret = s_dump_file_loader.Get(s_dump_file, &dump);
-			
-			AcquireAndAddToLoader(s_dump_file_loader); // Add one more after getting one.
+			while (true)
+			{
+				GSDumpFileLoaderLazy::RetVal ret = s_dump_file_loader_lazy.Get(s_dump_file, s_dump_filename);
 
-			if (ret == GSDumpFileLoader::SUCCESS)
-			{
-				break;
+				AcquireAndAddToLoader(s_dump_file_loader_lazy); // Add one more after getting one.
+
+				if (ret == GSDumpFileLoaderLazy::SUCCESS)
+				{
+					break;
+				}
+				else if (ret == GSDumpFileLoaderLazy::EMPTY)
+				{
+					MTGS::RunOnGSThread([runner_name = GetRunnerName()]() {
+						Console.WriteLnFmt("(GSRunner/{}) Finished all dumps", runner_name);
+					});
+					GSSetChildState_BatchRun(GSBatchRunBuffer::DONE_RUNNING);
+					return false;
+				}
+				else if (ret == GSDumpFileLoaderLazy::FAILURE)
+				{
+					MTGS::RunOnGSThread([filename = s_dump_filename, runner_name = GetRunnerName()]() {
+						Console.ErrorFmt("(GSRunner/{}) Error loading/reading dump: {}.", runner_name, filename);
+					});
+				}
+				else
+				{
+					pxFail("Unknown return value."); // Impossible.
+				}
 			}
-			else if (ret == GSDumpFileLoader::FINISHED)
-			{
-				Console.WriteLnFmt("(GSRunner/{}) Finished all dumps", GetRunnerName());
-				GSSetChildState_BatchRun(GSBatchRunBuffer::DONE_RUNNING);
-				return false;
-			}
-			else if (ret == GSDumpFileLoader::ERROR_)
-			{
-				MTGS::RunOnGSThread([error = dump.error]() {
-					Console.ErrorFmt("(GSRunner/{}) Error loading/reading dump: {}.", GetRunnerName(),
-						error.empty() ? std::string("Unspecified reason") : error);
+
+			s_dump_name = Path::GetFileName(s_dump_filename);
+			GSGetBatchRunBuffer()->SetFileStatus(s_dump_filename, GSBatchRunBuffer::STARTED);
+
+			MTGS::RunOnGSThread(
+				[name = s_dump_name, size = s_dump_file->GetFileSize(), runner_name = GetRunnerName()]() {
+					Console.WriteLnFmt("(GSRunner/{}) Loaded dump '{}' ({:.2} MB)", runner_name, name, static_cast<double>(size) / _1mb);
 				});
-			}
-			else
-			{
-				pxFail("Unknown return value."); // Impossible.
-			}
+
+			GSSignalRunnerHeartbeat_BatchRun();
 		}
+		else
+		{
+			if (!s_dump_file_loader.Started())
+			{
+				s_dump_file_loader.SetMaxFileSize(s_dump_buffer_size);
+				s_dump_file_loader.Start(std::vector<std::string>());
+			}
 
-		s_dump_filename = dump.filename;
-		s_dump_name = Path::GetFileName(dump.filename);
-		GSGetBatchRunBuffer()->SetFileStatus(dump.filename, GSBatchRunBuffer::STARTED);
+			GSDumpFileLoader::DumpInfo dump;
 
-		MTGS::RunOnGSThread(
-			[name = s_dump_name,
-				block_time_write = dump.block_time_write,
-				block_time_read = dump.block_time_read,
-				load_time = dump.load_time,
-				size = s_dump_file->GetFileSize()]() {
-				Console.WriteLnFmt(
-					"(GSRunner/{}) Loaded dump '{}' (size: {:.2} MB; block time write: {:.2} sec; block time read: {:.2} sec, load time: {:.2} sec)",
-					GetRunnerName(), name, static_cast<double>(size) / _1mb, block_time_write, block_time_read, load_time);
-			});
+			const auto AcquireAndAddToLoader = [](GSDumpFileLoader& loader) {
+				std::string file_str;
+				if (GSBatchRunAcquireFile(file_str))
+				{
+					loader.AddFile(file_str);
+					return true;
+				}
+				else
+				{
+					return false;
+				}
+			};
+
+			// FIXME: Code duplication with other batch mode....
+			// Get/read the next available ready dump, skipping any that errored.
+
+			// Fill up the dump loader queue.
+			while (s_dump_file_loader.DumpsRemaining() < s_dump_file_loader.num_dumps_buffered)
+			{
+				if (!AcquireAndAddToLoader(s_dump_file_loader))
+					break;
+			}
+
+			while (true)
+			{
+				// This reads the dump file as well.
+				GSDumpFileLoader::ReturnValue ret = s_dump_file_loader.Get(s_dump_file, &dump);
+
+				AcquireAndAddToLoader(s_dump_file_loader); // Add one more after getting one.
+
+				if (ret == GSDumpFileLoader::SUCCESS)
+				{
+					break;
+				}
+				else if (ret == GSDumpFileLoader::FINISHED)
+				{
+					Console.WriteLnFmt("(GSRunner/{}) Finished all dumps", GetRunnerName());
+					GSSetChildState_BatchRun(GSBatchRunBuffer::DONE_RUNNING);
+					return false;
+				}
+				else if (ret == GSDumpFileLoader::ERROR_)
+				{
+					MTGS::RunOnGSThread([error = dump.error]() {
+						Console.ErrorFmt("(GSRunner/{}) Error loading/reading dump: {}.", GetRunnerName(),
+							error.empty() ? std::string("Unspecified reason") : error);
+					});
+				}
+				else
+				{
+					pxFail("Unknown return value."); // Impossible.
+				}
+			}
+
+			s_dump_filename = dump.filename;
+			s_dump_name = Path::GetFileName(dump.filename);
+			GSGetBatchRunBuffer()->SetFileStatus(dump.filename, GSBatchRunBuffer::STARTED);
+
+			MTGS::RunOnGSThread(
+				[
+					name = s_dump_name,
+					block_time_write = dump.block_time_write,
+					block_time_read = dump.block_time_read,
+					load_time = dump.load_time,
+					size = s_dump_file->GetFileSize()
+				]() {
+					Console.WriteLnFmt(
+						"(GSRunner/{}) Loaded dump '{}' (size: {:.2} MB; block time write: {:.2} sec; block time read: {:.2} sec, load time: {:.2} sec)",
+						GetRunnerName(), name, static_cast<double>(size) / _1mb, block_time_write, block_time_read, load_time);
+				});
+		}
 
 		GSSignalRunnerHeartbeat_BatchRun();
 	}
 	else if (IsBatchMode())
 	{
+		// FIXME: Removee if not needed any more.
 		// Batch mode but not regression testing; asynchronous dump loading.
 
 		pxAssert(filename == nullptr);
@@ -860,78 +963,87 @@ void GSDumpReplayerCpuStep()
 	bool done_all_dumps = false;
 	bool done_dump = false;
 
-	const GSDumpFile::GSData& packet = s_dump_file->GetPackets()[s_current_packet];
-	s_current_packet = (s_current_packet + 1) % static_cast<u32>(s_dump_file->GetPackets().size());
-	if (s_current_packet == 0)
+	GSDumpFile::GSData packet;
+	Error error;
+	s64 ret;
+	if ((ret = s_dump_file->GetPacket(s_current_packet, packet, &error)) > 0)
 	{
-		s_dump_frame_number = 0;
-		if (s_dump_loop_count > 0)
-			s_dump_loop_count--;
-		else if (s_dump_loop_count == 0)
+		s_current_packet++;
+		if (s_dump_file->DonePackets(s_current_packet))
 		{
-			done_dump = true;
+			s_current_packet = 0;
+			s_dump_frame_number = 0;
+			if (s_dump_loop_count > 0)
+				s_dump_loop_count--;
+			else if (s_dump_loop_count == 0)
+				done_dump = true;
 		}
-	}
 
-	switch (packet.id)
-	{
-		case GSDumpTypes::GSType::Transfer:
+		switch (packet.id)
 		{
-			switch (packet.path)
+			case GSDumpTypes::GSType::Transfer:
 			{
-				case GSDumpTypes::GSTransferPath::Path1Old:
+				switch (packet.path)
 				{
-					std::unique_ptr<u8[]> data(new u8[16384]);
-					const s32 addr = 16384 - packet.length;
-					std::memcpy(data.get(), packet.data + addr, packet.length);
-					GSDumpReplayerSendPacketToMTGS(GIF_PATH_1, data.get(), packet.length);
-				}
-				break;
-
-				case GSDumpTypes::GSTransferPath::Path1New:
-				case GSDumpTypes::GSTransferPath::Path2:
-				case GSDumpTypes::GSTransferPath::Path3:
-				{
-					GSDumpReplayerSendPacketToMTGS(static_cast<GIF_PATH>(static_cast<u8>(packet.path) - 1),
-						packet.data, packet.length);
-				}
-				break;
-
-				default:
+					case GSDumpTypes::GSTransferPath::Path1Old:
+					{
+						std::unique_ptr<u8[]> data(new u8[16384]);
+						const s32 addr = 16384 - packet.length;
+						std::memcpy(data.get(), packet.data + addr, packet.length);
+						GSDumpReplayerSendPacketToMTGS(GIF_PATH_1, data.get(), packet.length);
+					}
 					break;
+
+					case GSDumpTypes::GSTransferPath::Path1New:
+					case GSDumpTypes::GSTransferPath::Path2:
+					case GSDumpTypes::GSTransferPath::Path3:
+					{
+						GSDumpReplayerSendPacketToMTGS(static_cast<GIF_PATH>(static_cast<u8>(packet.path) - 1),
+							packet.data, packet.length);
+					}
+					break;
+
+					default:
+						break;
+				}
+				break;
+			}
+
+			case GSDumpTypes::GSType::VSync:
+			{
+				s_dump_frame_number++;
+				GSDumpReplayerUpdateFrameLimit();
+				GSDumpReplayerFrameLimit();
+				MTGS::PostVsyncStart(false);
+				VMManager::Internal::VSyncOnCPUThread();
+				if (VMManager::Internal::IsExecutionInterrupted())
+					GSDumpReplayerExitExecution();
+				Host::PumpMessagesOnCPUThread();
+			}
+			break;
+
+			case GSDumpTypes::GSType::ReadFIFO2:
+			{
+				u32 size;
+				std::memcpy(&size, packet.data, sizeof(size));
+
+				// Allocate an extra quadword, some transfers write too much (e.g. Lego Racers 2 with Z24 downloads).
+				std::unique_ptr<u8[]> arr(new u8[(size + 1) * 16]);
+				MTGS::InitAndReadFIFO(arr.get(), size);
+			}
+			break;
+
+			case GSDumpTypes::GSType::Registers:
+			{
+				std::memcpy(PS2MEM_GS, packet.data, std::min<s32>(packet.length, Ps2MemSize::GSregs));
 			}
 			break;
 		}
-
-		case GSDumpTypes::GSType::VSync:
-		{
-			s_dump_frame_number++;
-			GSDumpReplayerUpdateFrameLimit();
-			GSDumpReplayerFrameLimit();
-			MTGS::PostVsyncStart(false);
-			VMManager::Internal::VSyncOnCPUThread();
-			if (VMManager::Internal::IsExecutionInterrupted())
-				GSDumpReplayerExitExecution();
-			Host::PumpMessagesOnCPUThread();
-		}
-		break;
-
-		case GSDumpTypes::GSType::ReadFIFO2:
-		{
-			u32 size;
-			std::memcpy(&size, packet.data, sizeof(size));
-
-			// Allocate an extra quadword, some transfers write too much (e.g. Lego Racers 2 with Z24 downloads).
-			std::unique_ptr<u8[]> arr(new u8[(size + 1) * 16]);
-			MTGS::InitAndReadFIFO(arr.get(), size);
-		}
-		break;
-
-		case GSDumpTypes::GSType::Registers:
-		{
-			std::memcpy(PS2MEM_GS, packet.data, std::min<s32>(packet.length, Ps2MemSize::GSregs));
-		}
-		break;
+	}
+	else
+	{
+		Console.ErrorFmt("(GSDumpReplayer) Error getting packet: '{}'", error.GetDescription());
+		done_dump = true;
 	}
 
 	done_dump = done_dump || (s_dump_frame_number_max > 0 && s_dump_frame_number >= s_dump_frame_number_max);

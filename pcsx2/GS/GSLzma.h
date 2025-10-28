@@ -4,6 +4,7 @@
 #pragma once
 
 #include "common/FileSystem.h"
+#include "common/Error.h"
 
 #include <memory>
 #include <string>
@@ -282,11 +283,18 @@ namespace GSDumpTypes
 class GSDumpFile
 {
 public:
+	static constexpr s64 PACKET_OUT_OF_DATA = -1;
+	static constexpr s64 PACKET_FAILURE     = -2;
+	static constexpr s64 PACKET_EOF         = -3;
+	static constexpr s64 PACKET_STOP        = -4;
+
+	friend class GSDumpLazy;
+
 	struct GSData
 	{
 		GSDumpTypes::GSType id;
 		const u8* data;
-		size_t length;
+		u32 length;
 		GSDumpTypes::GSTransferPath path;
 	};
 
@@ -295,13 +303,17 @@ public:
 
 	virtual ~GSDumpFile();
 
+	static size_t GetPacketSize(const GSData& data);
+
 	static std::unique_ptr<GSDumpFile> OpenGSDump(const char* filename, Error* error = nullptr);
 
 	// We modify the GSDumpFile in place to avoid having to reallocate if frequently.
 	// Warning: The GSDumpFile does not copy the data--it must be fully read before the
-	// caller deallocates it. The GSDumpFile must make been opened with this function
-	// to be reused in this way.
+	// caller deallocates it. The dump should have been opened with this function to be reused with it.
 	static void OpenGSDumpMemory(std::unique_ptr<GSDumpFile>& dump, const void* ptr, const size_t size);
+
+	static bool OpenGSDumpLazy(std::unique_ptr<GSDumpLazy>& dump, size_t buffer_size, const char* filename, Error* error = nullptr);
+
 	static bool GetPreviewImageFromDump(const char* filename, u32* width, u32* height, std::vector<u32>* pixels);
 
 	__fi const std::string& GetSerial() const { return m_serial; }
@@ -310,13 +322,21 @@ public:
 	__fi const ByteArray& GetRegsData() const { return m_regs_data; }
 	__fi const ByteArray& GetStateData() const { return m_state_data; }
 	__fi const GSDataArray& GetPackets() const { return m_dump_packets; }
+	__fi virtual s64 GetPacket(size_t i, GSData& data, Error* error = nullptr);
+	__fi virtual size_t GetPacketsSize() const { return m_dump_packets.size(); }
+	__fi virtual bool DonePackets(size_t i) const { return i >= m_dump_packets.size(); }
 
 	bool ReadFile(Error* error);
 	bool ReadFile(std::vector<u8>& dst, size_t max_size, Error* error);
 
 	virtual s64 GetFileSize() = 0;
 protected:
-	GSDumpFile();	
+	GSDumpFile();
+
+	bool ReadHeaderStateRegs(Error* error);
+	bool ReadPackets(Error* error);
+	bool ReadPacketData(Error* error);
+	static s64 ReadOnePacket(u8* data_start, u8* data_end, GSData& packet, Error* error);
 
 	virtual bool Open(FileSystem::ManagedCFilePtr fp, Error* error) = 0;
 	virtual bool IsEof() = 0;
@@ -428,4 +448,105 @@ struct GSDumpFileLoader
 
 	// Unsafe
 	void DebugPrint();
+};
+
+class GSDumpLazy final : public GSDumpFile
+{
+	friend class GSDumpFile;
+	friend struct GSDumpFileLoaderLazy;
+
+private:
+	struct PacketInfo
+	{
+		GSData data;
+		size_t packet_num;
+		size_t buffer_start;
+		size_t buffer_end;
+	};
+
+	static constexpr size_t pad_size = 4 * _1mb + 16;
+
+	const size_t buffer_size;
+
+	std::thread thread;
+
+	// State protected by mutex.
+	mutable std::mutex mut;
+	std::unique_ptr<GSDumpFile> actual_dump;
+	std::string filename;
+	std::vector<u8> buffer;
+	size_t read_buffer = 0;
+	size_t parse_buffer = 0;
+	size_t write_buffer = 0;
+	bool eof_actual = false;
+	bool parse_error = false;
+	Error error;
+	bool reading_packet = false;
+	std::vector<PacketInfo> packets;
+	size_t read_packet;
+	size_t write_packet;
+	bool stop = false;
+
+	// Condition variables.
+	std::condition_variable cond_read;
+	std::condition_variable cond_write;
+
+	// Call only once before starting thread.
+	void Init();
+
+	bool OpenNext(const std::string& filename, Error* error);
+	void Stop();
+	bool DonePackets(size_t i) const override;
+
+	static void _LoaderFunc(GSDumpLazy* dump); // Private.
+
+	// Helpers - call only with mutex locked.
+	bool _OpenNext(const std::string& filename, Error* error);
+	void _ResetState();
+	bool _Eof() const;
+	bool _LoadCond() const;
+	bool _FullBuffer() const;
+	bool _FullPackets() const;
+	bool _EmptyBuffer() const;
+	bool _EmptyPackets() const;
+	void _DebugCheck() const;
+
+public:
+	GSDumpLazy(size_t buffer_size)
+		: buffer_size(buffer_size)
+	{
+	}
+	~GSDumpLazy() override;
+
+	bool Open(FileSystem::ManagedCFilePtr fp, Error* error) override;
+	bool IsEof() override;
+	size_t Read(void* ptr, size_t size) override;
+	s64 GetFileSize() override;
+
+	s64 GetPacket(size_t i, GSData& packet, Error* error = nullptr) override;
+};
+
+struct GSDumpFileLoaderLazy
+{
+	enum RetVal
+	{
+		SUCCESS,
+		FAILURE,
+		FULL,
+		EMPTY
+	};
+
+	std::vector<std::unique_ptr<GSDumpLazy>> dumps;
+	std::vector<std::string> filenames;
+	size_t buffer_size;
+	size_t read = 0;
+	size_t write = 0;
+	GSDumpLazy* reading_dump = nullptr;
+
+	bool Started();
+	void Start(size_t num_dumps, size_t buffer_size);
+	bool Full();
+	bool Empty();
+	RetVal AddFile(const std::string& filename, Error* error);
+	RetVal Get(std::unique_ptr<GSDumpFile>& dump, std::string& filename);
 };

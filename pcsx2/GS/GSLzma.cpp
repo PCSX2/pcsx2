@@ -81,6 +81,15 @@ bool GSDumpFile::GetPreviewImageFromDump(const char* filename, u32* width, u32* 
 
 bool GSDumpFile::ReadFile(Error* error)
 {
+	if (!ReadHeaderStateRegs(error))
+		return false;
+	if (!ReadPackets(error))
+		return false;
+	return true;
+}
+
+bool GSDumpFile::ReadHeaderStateRegs(Error* error)
+{
 	u32 ss;
 	if (Read(&m_crc, sizeof(m_crc)) != sizeof(m_crc) || Read(&ss, sizeof(ss)) != sizeof(ss))
 	{
@@ -137,6 +146,36 @@ bool GSDumpFile::ReadFile(Error* error)
 		return false;
 	}
 
+	return true;
+}
+
+bool GSDumpFile::ReadPackets(Error* error)
+{
+	if (!ReadPacketData(error))
+		return false;
+
+	u8* data = m_packet_data.data();
+	u8* data_end = m_packet_data.data() + m_packet_data.size();
+
+	while (data < data_end)
+	{
+		GSData packet = {};
+		packet.path = GSTransferPath::Dummy;
+		s64 n = ReadOnePacket(data, data_end, packet, error);
+		if (n == PACKET_FAILURE)
+			return false;
+		if (n == PACKET_OUT_OF_DATA)
+			break;
+		pxAssert(n > 0);
+		m_dump_packets.push_back(std::move(packet));
+		data += n;
+	}
+
+	return true;
+}
+
+bool GSDumpFile::ReadPacketData(Error* error)
+{
 	if (m_size >= 0)
 	{
 		// Know the full size beforehand.
@@ -184,84 +223,68 @@ bool GSDumpFile::ReadFile(Error* error)
 		}
 	}
 
-	u8* data = m_packet_data.data();
-	size_t remaining = m_packet_data.size();
+	return true;
+}
 
-#define GET_BYTE(dst) \
-	do \
-	{ \
-		if (remaining < sizeof(u8)) \
-		{ \
-			Error::SetString(error, "Failed to read byte"); \
-			return false; \
-		} \
-		std::memcpy(dst, data, sizeof(u8)); \
-		data++; \
-		remaining--; \
-	} while (0)
-#define GET_WORD(dst) \
-	do \
-	{ \
-		if (remaining < sizeof(u32)) \
-		{ \
-			Error::SetString(error, "Failed to read word"); \
-			return false; \
-		} \
-		std::memcpy(dst, data, sizeof(u32)); \
-		data += sizeof(u32); \
-		remaining -= sizeof(u32); \
-	} while (0)
+s64 GSDumpFile::ReadOnePacket(u8* data_start, u8* data_end, GSData& packet, Error* error)
+{
+	u8* data = data_start;
 
-	while (remaining > 0)
+	const auto GetBytes = [&]<size_t bytes>(void* dst) {
+		if (data + bytes > data_end)
+		{
+			Error::SetStringFmt(error, "Failed to read {} bytes", bytes);
+			return false;
+		}
+		std::memcpy(dst, data, bytes);
+		data += bytes;
+		return true;
+	};
+
+	packet = {};
+	packet.path = GSTransferPath::Dummy;
+	if (!GetBytes.operator()<1>(&packet.id))
+		return PACKET_OUT_OF_DATA;
+
+	switch (packet.id)
 	{
-		GSData packet = {};
-		packet.path = GSTransferPath::Dummy;
-		GET_BYTE(&packet.id);
-
-		switch (packet.id)
-		{
-			case GSType::Transfer:
-				GET_BYTE(&packet.path);
-				GET_WORD(&packet.length);
-				break;
-			case GSType::VSync:
-				packet.length = 1;
-				break;
-			case GSType::ReadFIFO2:
-				packet.length = 4;
-				break;
-			case GSType::Registers:
-				packet.length = 8192;
-				break;
-			default:
-				Error::SetString(error, fmt::format("Unknown packet type {}", static_cast<u32>(packet.id)));
-				return false;
-		}
-
-		if (packet.length > 0)
-		{
-			if (remaining < packet.length)
-			{
-				// There's apparently some "bad" dumps out there that are missing bytes on the end..
-				// The "safest" option here is to discard the last packet, since that has less risk
-				// of leaving the GS in the middle of a command.
-				Console.Error("(GSDump) Dropping last packet of %u bytes (we only have %u bytes)",
-					static_cast<u32>(packet.length), static_cast<u32>(remaining));
-				break;
-			}
-
-			packet.data = data;
-			data += packet.length;
-			remaining -= packet.length;
-		}
-
-		m_dump_packets.push_back(std::move(packet));
+		case GSType::Transfer:
+			if (!GetBytes.operator()<1>(&packet.path))
+				return PACKET_OUT_OF_DATA;
+			if (!GetBytes.operator()<4>(&packet.length))
+				return PACKET_OUT_OF_DATA;
+			break;
+		case GSType::VSync:
+			packet.length = 1;
+			break;
+		case GSType::ReadFIFO2:
+			packet.length = 4;
+			break;
+		case GSType::Registers:
+			packet.length = 8192;
+			break;
+		default:
+			Error::SetString(error, fmt::format("Unknown packet type {}", static_cast<u32>(packet.id)));
+			return PACKET_FAILURE;
 	}
 
-#undef GET_WORD
-#undef GET_BYTE
+	if (packet.length > 0)
+	{
+		if (data + packet.length > data_end)
+		{
+			// There's apparently some "bad" dumps out there that are missing bytes on the end..
+			// The "safest" option here is to discard the last packet, since that has less risk
+			// of leaving the GS in the middle of a command.
+			Console.Error("(GSDump) Dropping last packet of %u bytes (we only have %u bytes)",
+				static_cast<u32>(packet.length), static_cast<u32>(data_end - data));
+			return PACKET_OUT_OF_DATA;
+		}
 
-	return true;
+		packet.data = data;
+		data += packet.length;
+	}
+
+	return data - data_start;
 }
 
 bool GSDumpFile::ReadFile(std::vector<u8>& dst, size_t max_size, Error* error)
@@ -335,6 +358,19 @@ void GSDumpFile::Clear()
 	m_state_data.clear();
 	m_packet_data.clear();
 	m_dump_packets.clear();
+}
+
+s64 GSDumpFile::GetPacket(size_t i, GSData& data, Error* error)
+{
+	if (i < m_dump_packets.size())
+	{
+		data = m_dump_packets[i];
+		return static_cast<s64>(GetPacketSize(data));
+	}
+	else
+	{
+		return PACKET_EOF;
+	}
 }
 
 /******************************************************************/
@@ -766,7 +802,6 @@ namespace
 		this->data = data;
 		m_size = static_cast<s64>(size);
 		curr = 0;
-
 	}
 
 	GSDumpMemory::GSDumpMemory(const u8* data, size_t size)
@@ -804,7 +839,413 @@ namespace
 	}
 } // namespace
 
+void GSDumpLazy::_ResetState()
+{
+	read_buffer = 0;
+	parse_buffer = 0;
+	write_buffer = 0;
+	read_packet = 0;
+	write_packet = 0;
+
+	reading_packet = false;
+
+	parse_error = false;
+	eof_actual = false;
+	stop = false;
+}
+
+void GSDumpLazy::Init()
+{
+	buffer.resize(buffer_size + pad_size);
+	packets.resize(buffer_size / 128);
+
+	_ResetState();
+
+	this->thread = std::thread(&GSDumpLazy::_LoaderFunc, this);
+}
+
+bool GSDumpLazy::OpenNext(const std::string& filename, Error* error)
+{
+	std::unique_lock lock(mut);
+
+	return _OpenNext(filename, error);
+}
+
+bool GSDumpLazy::_OpenNext(const std::string& filename, Error* error)
+{
+	this->filename = filename;
+
+	_ResetState();
+
+	actual_dump = GSDumpFile::OpenGSDump(filename.c_str(), error);
+
+	if (!actual_dump->ReadHeaderStateRegs(error))
+		return false;
+	m_regs_data = std::move(actual_dump->m_regs_data);
+	m_state_data = std::move(actual_dump->m_state_data);
+
+	cond_write.notify_one();
+	return static_cast<bool>(actual_dump);
+}
+
+GSDumpLazy::~GSDumpLazy()
+{
+	Stop();
+}
+
+void GSDumpLazy::_DebugCheck() const
+{
+	pxAssert(
+		read_buffer <= write_buffer && write_buffer <= read_buffer + buffer_size &&
+		read_buffer <= parse_buffer && parse_buffer <= write_buffer &&
+		read_packet <= write_packet && write_packet <= read_packet + packets.size());
+}
+
+bool GSDumpLazy::_Eof() const
+{
+	_DebugCheck();
+	return eof_actual && _EmptyPackets();
+}
+
+bool GSDumpLazy::_FullBuffer() const
+{
+	_DebugCheck();
+	return (write_buffer - read_buffer) >= buffer_size;
+}
+
+bool GSDumpLazy::_FullPackets() const
+{
+	_DebugCheck();
+	return (write_packet - read_packet) >= packets.size();
+}
+
+bool GSDumpLazy::_EmptyBuffer() const
+{
+	_DebugCheck();
+	return write_buffer == read_buffer;
+}
+
+bool GSDumpLazy::_EmptyPackets() const
+{
+	_DebugCheck();
+	return write_packet == read_packet;
+}
+
+bool GSDumpLazy::_LoadCond() const
+{
+	_DebugCheck();
+	// Want more data when the buffer is less than half full or there packet buffer is empty.
+	// The latter condition makes it more likely that EOFs are detected correctly in case there
+	// is an incomplete packet at the end.
+	bool want_more_data = ((write_buffer - read_buffer) <= (buffer_size / 2)) || _EmptyPackets();
+	return want_more_data && !eof_actual && !parse_error && !_FullPackets() && actual_dump;
+}
+
+void GSDumpLazy::Stop()
+{
+	{
+		std::unique_lock lock(mut);
+
+		stop = true;
+	}
+
+	cond_write.notify_all();
+	cond_read.notify_all();
+
+	if (thread.joinable())
+		thread.join();
+}
+
+bool GSDumpLazy::DonePackets(size_t i) const
+{
+	std::unique_lock lock(mut);
+
+	if (reading_packet)
+	{
+		if (i != read_packet + 1)
+			Console.ErrorFmt("GSDumpLazy: Incorrect index in DonePackets (got {}; expected {})", i, read_packet + 1);
+		return write_packet == read_packet + 1;
+	}
+	else
+	{
+		if (i != read_packet)
+			Console.ErrorFmt("GSDumpLazy: Incorrect index in DonePackets (got {}; expected {})", i, read_packet);
+		return write_packet == read_packet;
+	}
+}
+
+void GSDumpLazy::_LoaderFunc(GSDumpLazy* dump)
+{
+	std::mutex& mut = dump->mut;
+	std::unique_ptr<GSDumpFile>& actual_dump = dump->actual_dump;
+	const size_t buffer_size = dump->buffer_size;
+	std::vector<u8>& buffer = dump->buffer;
+	std::vector<PacketInfo>& packets = dump->packets;
+	std::condition_variable& cond_write = dump->cond_write;
+	std::condition_variable& cond_read = dump->cond_read;
+
+	while (true)
+	{
+		size_t read_buffer;
+		size_t parse_buffer;
+		size_t write_buffer;
+		size_t read_packet;
+		size_t write_packet;
+		Error error;
+		bool parse_error = false;
+		bool eof_actual = false;
+
+		// Acquire the range.
+		{
+			std::unique_lock lock(dump->mut);
+
+			dump->cond_write.wait(lock, [&] { return dump->_LoadCond() || dump->stop; });
+
+			if (dump->stop)
+				return;
+
+			read_buffer = dump->read_buffer;
+			parse_buffer = dump->parse_buffer;
+			write_buffer = dump->write_buffer;
+			read_packet = dump->read_packet;
+			write_packet = dump->write_packet;
+		}
+
+		size_t mod_write = write_buffer % dump->buffer_size;
+		size_t mod_read = read_buffer % dump->buffer_size;
+		size_t pad_start = (mod_write >= mod_read) ? 0 : std::min(mod_write, pad_size);
+
+		if (mod_write >= mod_read)
+		{
+			// Fill up to the buffer end.
+			size_t try_read_size = buffer_size - mod_write;
+			size_t read_size = actual_dump->Read(&buffer[mod_write], buffer_size - mod_write);
+
+			// Copy pad bytes if needed.
+			if (mod_write <= pad_size)
+				std::memcpy(&buffer[buffer_size + mod_write], &buffer[mod_write], std::min(read_size, pad_size - mod_write));
+
+			write_buffer += read_size;
+			mod_write = write_buffer % buffer_size;
+
+			if (read_size < try_read_size)
+				eof_actual = true;
+		}
+
+		if (!eof_actual && mod_write < mod_read)
+		{
+			// Fill up to the read index.
+
+			pxAssert(mod_write < mod_read);
+
+			size_t try_read_size = mod_read - mod_write;
+			size_t read_size = actual_dump->Read(buffer.data() + mod_write, try_read_size);
+
+			// Copy pad bytes if needed.
+			if (mod_write <= pad_size)
+				std::memcpy(buffer.data() + buffer_size + mod_write, buffer.data() + mod_write, std::min(read_size, pad_size - mod_write));
+
+			write_buffer += read_size;
+
+			if (read_size < try_read_size)
+				eof_actual = true;
+		}
+
+		// Parse as many packets as possible.
+		while (write_packet - read_packet < packets.size() && parse_buffer < write_buffer)
+		{
+			size_t mod_parse = parse_buffer % buffer_size;
+			size_t bytes = write_buffer - parse_buffer;
+			size_t bytes_to_padding = buffer_size - mod_parse + pad_size;
+			size_t available = std::min(bytes_to_padding, bytes);
+			size_t mod_packet = write_packet % packets.size();
+			s64 packet_size = actual_dump->ReadOnePacket(
+				buffer.data() + mod_parse,
+				buffer.data() + mod_parse + available,
+				packets[mod_packet].data,
+				&error);
+			if (packet_size == PACKET_FAILURE)
+			{
+				parse_error = true;
+				break;
+			}
+			if (packet_size == PACKET_OUT_OF_DATA)
+			{
+				if (bytes_to_padding <= bytes)
+				{
+					Error::SetStringFmt(&error, "GSDumpLazy: Packet exceeded the pad region (> {} bytes).", bytes_to_padding);
+					parse_error = true;
+					break;
+				}
+				else
+				{
+					// Ran out of bytes to read a single packet.
+					break;
+				}
+			}
+			pxAssert(packet_size > 0);
+
+			packets[mod_packet].packet_num = write_packet;
+			packets[mod_packet].buffer_start = parse_buffer;
+			packets[mod_packet].buffer_end = parse_buffer + static_cast<size_t>(packet_size);
+
+			parse_buffer += static_cast<size_t>(packet_size);
+			write_packet++;
+		}
+
+		// Should not really happen.
+		if (write_packet - read_packet >= packets.size())
+			Console.WarningFmt("GSDumpLazy: Packet buffer is full when loading new data.");
+
+		// Release the range.
+		{
+			std::unique_lock lock(mut);
+
+			dump->parse_buffer = parse_buffer;
+			dump->write_buffer = write_buffer;
+			dump->write_packet = write_packet;
+			dump->parse_error = parse_error;
+			if (dump->parse_error)
+				dump->error = error;
+			dump->eof_actual = eof_actual;
+
+			cond_read.notify_one();
+		}
+	}
+}
+
+s64 GSDumpLazy::GetPacket(size_t i, GSData& data, Error* error)
+{
+	std::unique_lock lock(mut);
+
+	// Handle errors/stop.
+	if (parse_error)
+	{
+		if (error)
+			*error = this->error;
+		return PACKET_FAILURE;
+	}
+	
+	if (stop)
+		return PACKET_STOP;
+
+	// Release the currently reading packet if any.
+	if (reading_packet)
+	{
+		const PacketInfo& info = packets[read_packet % packets.size()];
+		read_buffer += info.buffer_end - info.buffer_start;
+		read_packet++;
+		reading_packet = false;
+
+		cond_write.notify_one();
+	}
+
+	// Special case for i == 0. We must loop back to the beginning.
+	if (i == 0 && read_packet > 0)
+	{
+		// Make sure the packet is still available in the buffer.
+		size_t valid_start = write_buffer > buffer_size ? write_buffer - buffer_size : 0;
+		size_t valid_end = write_buffer;
+		if (packets[0].packet_num == 0 && valid_start <= packets[0].buffer_start && packets[0].buffer_end <= valid_end)
+		{
+			// The 0 packet is already in memory.
+			read_packet = 0;
+			read_buffer = 0;
+			pxAssert(packets[0].buffer_start == 0);
+		}
+		else
+		{
+			// The 0 packet is not in memory so we must reopen the file.
+			if (!_OpenNext(filename, error))
+				return PACKET_FAILURE;
+		}
+	}
+
+	if (_Eof())
+		return PACKET_EOF;
+
+	// Let producer do it's thing.
+	cond_read.wait(lock, [&]() { return !_EmptyPackets() || parse_error || stop || _Eof(); });
+
+	if (parse_error)
+	{
+		if (error)
+			*error = this->error;
+		return PACKET_FAILURE;
+	}
+	if (_Eof())
+		return PACKET_EOF;
+	if (stop)
+		return PACKET_STOP;
+
+	if (i != read_packet)
+	{
+		// We only support reading packets sequentially (other than looping).
+		Console.Error("GSDumpLazy: Incorrect GetPacket() index (got {}; expected {})", i, read_packet);
+		return false;
+	}
+
+	// Get the next packet in the buffer.
+	const PacketInfo& info = packets[read_packet % packets.size()];
+	data = info.data;
+	size_t size = info.buffer_end - info.buffer_start;
+	reading_packet = true;
+
+	if (_LoadCond())
+		cond_write.notify_one();
+
+	return size;
+}
+
+bool GSDumpLazy::Open(FileSystem::ManagedCFilePtr fp, Error* error)
+{
+	constexpr const char* err = "GSDumpLazy::Open() not implemented";
+	if (error)
+		Error::SetString(error, err);
+	pxFail(error->GetDescription().c_str());
+	return false;
+}
+
+bool GSDumpLazy::IsEof()
+{
+	Console.Error("GSDumpLazy::IsEof() not implemented");
+	return false;
+}
+
+size_t GSDumpLazy::Read(void* ptr, size_t size)
+{
+	Console.Error("GSDumpLazy::Read() not implemented");
+	return 0;
+}
+
+s64 GSDumpLazy::GetFileSize()
+{
+	if (!actual_dump)
+	{
+		Console.Error("GSDumpLazy::GetFileSize() no dump to get size.");
+		return 0;
+	}
+	return actual_dump->GetFileSize();
+}
+
 /******************************************************************/
+
+size_t GSDumpFile::GetPacketSize(const GSData& data)
+{
+	switch (data.id)
+	{
+		case GSType::Transfer:
+			return 6 + data.length;
+		case GSType::VSync:
+		case GSType::ReadFIFO2:
+		case GSType::Registers:
+			return 1 + data.length;
+		default:
+			Console.ErrorFmt("GSDumpLazy: Unknown packet type {}", static_cast<int>(data.id)); // Impossible.
+			pxFail("");
+			return 0;
+	}
+}
 
 std::unique_ptr<GSDumpFile> GSDumpFile::OpenGSDump(const char* filename, Error* error)
 {
@@ -834,10 +1275,20 @@ void GSDumpFile::OpenGSDumpMemory(std::unique_ptr<GSDumpFile>& dump_, const void
 	}
 	else
 	{
-		GSDumpMemory* dump = static_cast<GSDumpMemory*>(dump_.get());
+		GSDumpMemory* dump = reinterpret_cast<GSDumpMemory*>(dump_.get());
 		dump->Clear();
 		dump->Init(static_cast<const u8*>(ptr), size);
 	}
+}
+
+bool GSDumpFile::OpenGSDumpLazy(std::unique_ptr<GSDumpLazy>& dump, size_t buffer_size, const char* filename, Error* error)
+{
+	if (!dump)
+	{
+		dump = std::make_unique<GSDumpLazy>(buffer_size);
+		dump->Init();
+	}
+	return dump->OpenNext(filename, error);
 }
 
 GSDumpFileLoader::GSDumpFileLoader(size_t num_threads, size_t num_dumps_buffered, size_t max_file_size)
@@ -1175,4 +1626,86 @@ void GSDumpFileLoader::DebugPrint()
 				i, Path::GetFileName(dump_list[i].filename), dump_list[i].error);
 		}
 	}
+}
+
+void GSDumpFileLoaderLazy::Start(size_t num_dumps, size_t buffer_size)
+{
+	dumps.resize(num_dumps);
+	filenames.resize(num_dumps);
+	this->buffer_size = buffer_size;
+}
+
+bool GSDumpFileLoaderLazy::Started()
+{
+	return dumps.size() > 0;
+}
+
+bool GSDumpFileLoaderLazy::Full()
+{
+	if (write - read > dumps.size())
+		Console.ErrorFmt("(GSDumpFileLoaderLazy) Write/read pointers overlapped incorrectly.");
+	return write - read >= dumps.size();
+}
+
+bool GSDumpFileLoaderLazy::Empty()
+{
+	if (write < read)
+		Console.ErrorFmt("(GSDumpFileLoaderLazy) Write/read pointers incorrect order.");
+	return write - read == 0;
+}
+
+GSDumpFileLoaderLazy::RetVal GSDumpFileLoaderLazy::AddFile(const std::string& filename, Error* error)
+{
+	if (!Started())
+	{
+		if (error)
+			Error::SetString(error, "(GSDumpFileLoaderLazy) Not started.");
+		return FAILURE;
+	}
+	if (Full())
+		return FULL;
+	if (!GSDumpFile::OpenGSDumpLazy(dumps[write % dumps.size()], buffer_size, filename.c_str(), error))
+		return FAILURE;
+	filenames[write % dumps.size()] = filename;
+	write++;
+	return SUCCESS;
+}
+
+GSDumpFileLoaderLazy::RetVal GSDumpFileLoaderLazy::Get(std::unique_ptr<GSDumpFile>& dump, std::string& filename)
+{
+	if (!Started())
+	{
+		Console.Error("(GSDumpFileLoaderLazy) Not started.");
+		return FAILURE;
+	}
+	if (Empty())
+		return EMPTY;
+	if (reading_dump)
+	{
+		if (reading_dump != dump.get())
+		{
+			Console.ErrorFmt("(GSDumpFileLoaderLazy) Incorrect dump being recycled.");
+			return FAILURE;
+		}
+		pxAssert(dumps[read % dumps.size()] == nullptr);
+
+		// Reacquire ownership of the previous lazy dump.
+		dumps[read % dumps.size()].reset(reinterpret_cast<GSDumpLazy*>(dump.release()));
+		reading_dump = nullptr;
+		read++;
+	}
+
+	if (dump != nullptr)
+	{
+		Console.ErrorFmt("(GSDumpFileLoaderLazy) Attempting to acquire into a non-empty pointer.");
+		return FAILURE;
+	}
+
+	// Release the next dump.
+	dump.reset(dumps[read % dumps.size()].release());
+	reading_dump = reinterpret_cast<GSDumpLazy*>(dump.get());
+
+	filename = filenames[read % filenames.size()];
+
+	return SUCCESS;
 }
