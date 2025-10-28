@@ -12,53 +12,40 @@
 #include "IconsPromptFont.h"
 
 #include "common/Console.h"
+#include "common/Error.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
 #include "common/Timer.h"
+#include "common/YAML.h"
 
 #include "fmt/format.h"
-#include "ryml_std.hpp"
-#include "ryml.hpp"
 
-#include <sstream>
-#include <mutex>
 #include <optional>
 #include <chrono>
 
 // A helper function to parse the YAML file
 static std::optional<ryml::Tree> loadYamlFile(const char* filePath)
 {
-	std::optional<std::string> buffer = FileSystem::ReadFileToString(filePath);
+	const std::optional<std::string> buffer = FileSystem::ReadFileToString(filePath);
 	if (!buffer.has_value())
 		return std::nullopt;
 
-	static u32 errorCount;
-	errorCount = 0;
+	const ryml::csubstr yaml(ryml::to_csubstr(buffer.value()));
+	const std::string file_name(Path::GetFileName(filePath));
 
-	ryml::Callbacks rymlCallbacks = ryml::get_callbacks();
-	rymlCallbacks.m_error = [](const char* msg, size_t msg_len, ryml::Location loc, void* userdata) {
-		Console.Error(fmt::format("[YAML] Parsing error at {}:{} (bufpos={}): {}",
-			loc.line, loc.col, loc.offset, std::string_view(msg, msg_len)));
-		errorCount++;
-	};
-	ryml::set_callbacks(rymlCallbacks);
-	ryml::set_error_callback([](const char* msg, size_t msg_size) {
-		Console.Error(fmt::format("[YAML] Internal Parsing error: {}", std::string_view(msg, msg_size)));
-		errorCount++;
-	});
-
-	ryml::Tree tree = ryml::parse_in_arena(ryml::to_csubstr(buffer.value()));
-	ryml::reset_callbacks();
-	if (errorCount > 0)
+	Error error;
+	std::optional<ryml::Tree> tree = ParseYAMLFromString(yaml, ryml::to_csubstr(file_name), &error);
+	if (!tree.has_value())
 	{
-		Console.Error(fmt::format("[MemoryCard] Error occured when parsing folder memory card at path '{}'.", filePath));
+		Console.ErrorFmt("[MemoryCard] Failed to parse folder memory card file '{}':", filePath);
+		Console.Error(error.GetDescription());
 		return std::nullopt;
 	}
 
 	// Repair damaged memory card entries - file names were saved to the YAML file with trailing \0's
 	// due to a possible rapidyaml bug: https://github.com/biojppm/rapidyaml/issues/531
-	for (ryml::NodeRef node : tree.rootref().children())
+	for (ryml::NodeRef node : tree->rootref().children())
 	{
 		node.set_key(node.key().trimr('\0'));
 	}
