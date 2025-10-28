@@ -200,6 +200,7 @@
     </widget>
     <addaction name="actionOpenDataDirectory"/>
     <addaction name="actionCoverDownloader"/>
+    <addaction name="actionControllerTest"/>
     <addaction name="actionToggleSoftwareRendering"/>
     <addaction name="separator"/>
     <addaction name="actionEditCheats"/>
@@ -1064,6 +1065,14 @@
    </property>
    <property name="text">
     <string>Edit &amp;Patches...</string>
+   </property>
+  </action>
+  <action name="actionControllerTest">
+   <property name="icon">
+    <iconset theme="controller-line"/>
+   </property>
+   <property name="text">
+    <string>Controller Test</string>
    </property>
   </action>
  </widget>

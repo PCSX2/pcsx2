@@ -879,6 +879,47 @@ void EmuThread::endCapture()
 	MTGS::RunOnGSThread(&GSEndCapture);
 }
 
+void EmuThread::startControllerTest()
+{
+	static constexpr const char* PADTEST_URL = "https://github.com/PCSX2/tools/releases/download/tests/pad/padtest_ps2.elf";
+
+	if (!isCurrentThread())
+	{
+		QMetaObject::invokeMethod(this, "startControllerTest", Qt::QueuedConnection);
+		return;
+	}
+
+	if (VMManager::HasValidVM())
+		return;
+
+	std::string path = Path::Combine(EmuFolders::UserResources, "padtest_ps2.elf");
+	if (FileSystem::FileExists(path.c_str()))
+	{
+		std::shared_ptr<VMBootParameters> params = std::make_shared<VMBootParameters>();
+		params->filename = std::move(path);
+		g_emu_thread->startVM(std::move(params));
+		return;
+	}
+
+	QtHost::RunOnUIThread([path = std::move(path)]() mutable {
+		{
+			auto lock = g_main_window->pauseAndLockVM();
+			if (QMessageBox::question(
+				lock.getDialogParent(), tr("Confirm Download"),
+				tr("Your PCSX2 installation does not have the padtest application available.\n\n"
+					"This file is approximately 195KB, do you want to download it now?")) != QMessageBox::Yes)
+			{
+				return;
+			}
+
+			if (!QtHost::DownloadFile(lock.getDialogParent(), tr("File Download"), PADTEST_URL, path.c_str()))
+				return;
+		}
+
+		g_emu_thread->startControllerTest();
+	});
+}
+
 std::optional<WindowInfo> EmuThread::acquireRenderWindow(bool recreate_window)
 {
 	// Check if we're wanting to get exclusive fullscreen. This should be safe to read, since we're going to be calling from the GS thread.

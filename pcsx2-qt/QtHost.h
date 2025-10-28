@@ -112,6 +112,7 @@ public Q_SLOTS:
 	void queueSnapshot(quint32 gsdump_frames);
 	void beginCapture(const QString& path);
 	void endCapture();
+	void startControllerTest();
 
 Q_SIGNALS:
 	bool messageConfirmed(const QString& title, const QString& message);
