@@ -14,6 +14,7 @@
 #include "common/Path.h"
 #include "common/StringUtil.h"
 #include "common/Timer.h"
+#include "common/YAML.h"
 
 #include <sstream>
 #include "ryml_std.hpp"
@@ -357,8 +358,7 @@ static const char* s_round_modes[static_cast<u32>(FPRoundMode::MaxCount)] = {
 	"Nearest",
 	"NegativeInfinity",
 	"PositiveInfinity",
-	"Chop"
-};
+	"Chop"};
 
 static const char* s_gs_hw_fix_names[] = {
 	"autoFlush",
@@ -930,7 +930,7 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 		Host::AddKeyedOSDMessage("HWFixesWarning",
 			fmt::format(ICON_FA_WAND_MAGIC_SPARKLES " {}\n{}",
 				TRANSLATE_SV("GameDatabase", "Manual GS hardware renderer fixes are enabled, automatic fixes were not applied:"),
-					disabled_fixes),
+				disabled_fixes),
 			Host::OSD_ERROR_DURATION);
 	}
 	else
@@ -941,25 +941,28 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 
 void GameDatabase::initDatabase()
 {
-	ryml::Callbacks rymlCallbacks = ryml::get_callbacks();
-	rymlCallbacks.m_error = [](const char* msg, size_t msg_len, ryml::Location loc, void* userdata) {
-		Console.Error(fmt::format("[GameDB YAML] Parsing error at {}:{} (bufpos={}): {}",
-			loc.line, loc.col, loc.offset, std::string_view(msg, msg_len)));
-	};
-	ryml::set_callbacks(rymlCallbacks);
-	ryml::set_error_callback([](const char* msg, size_t msg_size) {
-		Console.Error(fmt::format("[GameDB YAML] Internal Parsing error: {}", std::string_view(msg, msg_size)));
-	});
+	const std::string path(Path::Combine(EmuFolders::Resources, GAMEDB_YAML_FILE_NAME));
+	const std::string name(GAMEDB_YAML_FILE_NAME);
 
-	auto buf = FileSystem::ReadFileToString(Path::Combine(EmuFolders::Resources, GAMEDB_YAML_FILE_NAME).c_str());
-	if (!buf.has_value())
+	const std::optional<std::string> buffer = FileSystem::ReadFileToString(path.c_str());
+	if (!buffer.has_value())
 	{
 		Console.Error("GameDB: Unable to open GameDB file, file does not exist.");
 		return;
 	}
 
-	ryml::Tree tree = ryml::parse_in_arena(ryml::to_csubstr(buf.value()));
-	ryml::NodeRef root = tree.rootref();
+	const ryml::csubstr yaml = ryml::to_csubstr(*buffer);
+
+	Error error;
+	std::optional<ryml::Tree> tree = ParseYAMLFromString(yaml, ryml::to_csubstr(name), &error);
+	if (!tree.has_value())
+	{
+		Console.ErrorFmt("GameDB: Failed to parse game database file {}:", path);
+		Console.Error(error.GetDescription());
+		return;
+	}
+
+	ryml::NodeRef root = tree->rootref();
 
 	for (const ryml::NodeRef& n : root.children())
 	{
@@ -971,7 +974,7 @@ void GameDatabase::initDatabase()
 		// However, YAML's keys are as expected case-sensitive, so we have to explicitly do our own duplicate checking
 		if (s_game_db.count(serial) == 1)
 		{
-			Console.Error(fmt::format("GameDB: Duplicate serial '{}' found in GameDB. Skipping, Serials are case-insensitive!", serial));
+			Console.ErrorFmt("GameDB: Duplicate serial '{}' found in GameDB. Skipping, Serials are case-insensitive!", serial);
 			continue;
 		}
 
@@ -980,8 +983,6 @@ void GameDatabase::initDatabase()
 			parseAndInsert(serial, n);
 		}
 	}
-
-	ryml::reset_callbacks();
 }
 
 void GameDatabase::ensureLoaded()
@@ -1069,7 +1070,7 @@ static bool parseHashDatabaseEntry(const ryml::NodeRef& node)
 	{
 		if (!n.is_map() || !n.has_child("size") || !n.has_child("md5"))
 		{
-			Console.Error(fmt::format("[HashDatabase] Incomplete hash definition in {}", entry.name));
+			Console.ErrorFmt("[HashDatabase] Incomplete hash definition in {}", entry.name);
 			return false;
 		}
 
@@ -1080,12 +1081,12 @@ static bool parseHashDatabaseEntry(const ryml::NodeRef& node)
 
 		if (!th.parseHash(md5))
 		{
-			Console.Error(fmt::format("[HashDatabase] Failed to parse hash in {}: '{}'", entry.name, md5));
+			Console.ErrorFmt("[HashDatabase] Failed to parse hash in {}: '{}'", entry.name, md5);
 			return false;
 		}
 
 		if (entry.tracks.empty() && s_track_hash_to_entry_map.find(th) != s_track_hash_to_entry_map.end())
-			Console.Warning(fmt::format("[HashDatabase] Duplicate first track hash in {}", entry.name));
+			Console.WarningFmt("[HashDatabase] Duplicate first track hash in {}", entry.name);
 
 		entry.tracks.push_back(th);
 		s_track_hash_to_entry_map.emplace(th, index);
@@ -1100,27 +1101,30 @@ bool GameDatabase::loadHashDatabase()
 	if (!s_hash_database.empty())
 		return true;
 
-	ryml::Callbacks rymlCallbacks = ryml::get_callbacks();
-	rymlCallbacks.m_error = [](const char* msg, size_t msg_len, ryml::Location loc, void*) {
-		Console.Error(fmt::format(
-			"[HashDatabase YAML] Parsing error at {}:{} (bufpos={}): {}", loc.line, loc.col, loc.offset, msg));
-	};
-	ryml::set_callbacks(rymlCallbacks);
-	ryml::set_error_callback([](const char* msg, size_t msg_size) {
-		Console.Error(fmt::format("[HashDatabase YAML] Internal Parsing error: {}", std::string_view(msg, msg_size)));
-	});
-
 	Common::Timer load_timer;
 
-	auto buf = FileSystem::ReadFileToString(Path::Combine(EmuFolders::Resources, HASHDB_YAML_FILE_NAME).c_str());
-	if (!buf.has_value())
+	const std::string path(Path::Combine(EmuFolders::Resources, HASHDB_YAML_FILE_NAME));
+	const std::string name(HASHDB_YAML_FILE_NAME);
+
+	std::optional<std::string> buffer = FileSystem::ReadFileToString(path.c_str());
+	if (!buffer.has_value())
 	{
-		Console.Error("GameDB: Unable to open hash database file, file does not exist.");
+		Console.Error("[HashDatabase] Unable to open hash database file, file does not exist.");
 		return false;
 	}
 
-	ryml::Tree tree = ryml::parse_in_arena(ryml::to_csubstr(buf.value()));
-	ryml::NodeRef root = tree.rootref();
+	ryml::csubstr yaml = ryml::to_csubstr(*buffer);
+
+	Error error;
+	std::optional<ryml::Tree> tree = ParseYAMLFromString(yaml, ryml::to_csubstr(name), &error);
+	if (!tree.has_value())
+	{
+		Console.ErrorFmt("[HashDatabase] Failed to parse hash database file {}:", path);
+		Console.Error(error.GetDescription());
+		return false;
+	}
+
+	ryml::NodeRef root = tree->rootref();
 
 	bool okay = true;
 	for (const ryml::NodeRef& n : root.children())
@@ -1132,7 +1136,6 @@ bool GameDatabase::loadHashDatabase()
 		}
 	}
 
-	ryml::reset_callbacks();
 	if (!okay)
 	{
 		s_track_hash_to_entry_map.clear();
