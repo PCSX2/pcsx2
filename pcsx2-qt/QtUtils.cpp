@@ -12,6 +12,7 @@
 #include <QtGui/QDesktopServices>
 #include <QtGui/QKeyEvent>
 #include <QtGui/QScreen>
+#include <QtGui/QPainter>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QHeaderView>
@@ -137,6 +138,65 @@ namespace QtUtils
 	void ResizeColumnsForTreeView(QTreeView* view, const std::initializer_list<int>& widths)
 	{
 		ResizeColumnsForView(view, widths);
+	}
+
+	static int DPRScale(int size, qreal dpr)
+	{
+		return static_cast<int>(static_cast<qreal>(size) * dpr);
+	}
+
+	static int DPRUnscale(int size, qreal dpr)
+	{
+		return static_cast<int>(static_cast<qreal>(size) / dpr);
+	}
+
+	void resizeAndPadPixmap(QPixmap* pm, const int expected_width, const int expected_height, const qreal dpr, const ScalingMode aspect_ratio, const float opacity)
+	{
+		const int dpr_expected_width = DPRScale(expected_width, dpr);
+		const int dpr_expected_height = DPRScale(expected_height, dpr);
+		if (pm->width() == dpr_expected_width && pm->height() == dpr_expected_height)
+			return;
+
+		switch (aspect_ratio)
+		{
+			case ScalingMode::Fit:
+				*pm = pm->scaled(dpr_expected_width, dpr_expected_height,
+					Qt::KeepAspectRatio, Qt::SmoothTransformation);
+				break;
+			case ScalingMode::Fill:
+				*pm = pm->scaled(dpr_expected_width, dpr_expected_height,
+					Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+				break;
+			case ScalingMode::Stretch:
+				*pm = pm->scaled(dpr_expected_width, dpr_expected_height,
+					Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+				break;
+			default:
+				return;
+		}
+
+		QPixmap resized_image(dpr_expected_width, dpr_expected_height);
+		resized_image.setDevicePixelRatio(dpr);
+		resized_image.fill(Qt::transparent);
+
+		int x_offset = DPRUnscale((dpr_expected_width - pm->width()) / 2, dpr);
+		int y_offset = DPRUnscale((dpr_expected_height - pm->height()) / 2, dpr);
+
+		QPainter painter;
+		if (painter.begin(&resized_image))
+		{
+			painter.setRenderHint(QPainter::SmoothPixmapTransform);
+			painter.setRenderHint(QPainter::Antialiasing);
+			painter.setOpacity(opacity / 100.0f);
+			painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+
+			painter.drawPixmap(x_offset, y_offset, *pm);
+
+			painter.setCompositionMode(QPainter::CompositionMode_Destination);
+			painter.fillRect(resized_image.rect(), QColor(0, 0, 0, 0));
+			painter.end();
+		}
+		*pm = std::move(resized_image);
 	}
 
 	void ShowInFileExplorer(QWidget* parent, const QFileInfo& file)
