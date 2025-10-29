@@ -31,51 +31,6 @@ static constexpr int SIZE_HINT_HEIGHT_TITLES = SIZE_HINT_HEIGHT + COVER_ART_SPAC
 
 static constexpr int MIN_COVER_CACHE_SIZE = 256;
 
-static int DPRScale(int size, qreal dpr)
-{
-	return static_cast<int>(static_cast<qreal>(size) * dpr);
-}
-
-static int DPRUnscale(int size, qreal dpr)
-{
-	return static_cast<int>(static_cast<qreal>(size) / dpr);
-}
-
-static void resizeAndPadPixmap(QPixmap* pm, int expected_width, int expected_height, qreal dpr)
-{
-	const int dpr_expected_width = DPRScale(expected_width, dpr);
-	const int dpr_expected_height = DPRScale(expected_height, dpr);
-	if (pm->width() == dpr_expected_width && pm->height() == dpr_expected_height)
-		return;
-
-	*pm = pm->scaled(dpr_expected_width, dpr_expected_height, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-	if (pm->width() == dpr_expected_width && pm->height() == dpr_expected_height)
-		return;
-
-	// QPainter works in unscaled coordinates.
-	int xoffs = 0;
-	int yoffs = 0;
-	if (pm->width() < dpr_expected_width)
-		xoffs = DPRUnscale((dpr_expected_width - pm->width()) / 2, dpr);
-	if (pm->height() < dpr_expected_height)
-		yoffs = DPRUnscale((dpr_expected_height - pm->height()) / 2, dpr);
-
-	QPixmap padded_image(dpr_expected_width, dpr_expected_height);
-	padded_image.setDevicePixelRatio(dpr);
-	padded_image.fill(Qt::transparent);
-	QPainter painter;
-	if (painter.begin(&padded_image))
-	{
-		painter.setCompositionMode(QPainter::CompositionMode_Source);
-		painter.drawPixmap(xoffs, yoffs, *pm);
-		painter.setCompositionMode(QPainter::CompositionMode_Destination);
-		painter.fillRect(padded_image.rect(), QColor(0, 0, 0, 0));
-		painter.end();
-	}
-
-	*pm = padded_image;
-}
-
 static QPixmap createPlaceholderImage(const QPixmap& placeholder_pixmap, int width, int height, float scale,
 	qreal dpr, const std::string& title)
 {
@@ -84,7 +39,7 @@ static QPixmap createPlaceholderImage(const QPixmap& placeholder_pixmap, int wid
 	if (pm.isNull())
 		return QPixmap();
 
-	resizeAndPadPixmap(&pm, width, height, dpr);
+	QtUtils::resizeAndPadPixmap(&pm, width, height, dpr, QtUtils::ScalingMode::Fit, 100);
 	QPainter painter;
 	if (painter.begin(&pm))
 	{
@@ -190,7 +145,7 @@ void GameListModel::loadOrGenerateCover(const GameList::Entry* ge)
 				if (!image.isNull())
 				{
 					image.setDevicePixelRatio(m_dpr);
-					resizeAndPadPixmap(&image, getCoverArtWidth(), getCoverArtHeight(), m_dpr);
+					QtUtils::resizeAndPadPixmap(&image, getCoverArtWidth(), getCoverArtHeight(), m_dpr, QtUtils::ScalingMode::Fit, 100);
 				}
 			}
 		}

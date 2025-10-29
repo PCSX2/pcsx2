@@ -12,6 +12,7 @@
 #include <QtGui/QDesktopServices>
 #include <QtGui/QKeyEvent>
 #include <QtGui/QScreen>
+#include <QtGui/QPainter>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QHeaderView>
@@ -137,6 +138,90 @@ namespace QtUtils
 	void ResizeColumnsForTreeView(QTreeView* view, const std::initializer_list<int>& widths)
 	{
 		ResizeColumnsForView(view, widths);
+	}
+
+
+	static int DPRScale(int size, qreal dpr)
+	{
+		return static_cast<int>(static_cast<qreal>(size) * dpr);
+	}
+
+	static int DPRUnscale(int size, qreal dpr)
+	{
+		return static_cast<int>(static_cast<qreal>(size) / dpr);
+	}
+
+	void resizeAndPadPixmap(QPixmap* pm, int expected_width, int expected_height, qreal dpr, ScalingMode aspect_ratio, const float opacity)
+	{
+		const int dpr_expected_width = DPRScale(expected_width, dpr);
+		const int dpr_expected_height = DPRScale(expected_height, dpr);
+		if (pm->width() == dpr_expected_width && pm->height() == dpr_expected_height)
+			return;
+
+		switch (aspect_ratio)
+		{
+			case ScalingMode::Fit:
+			{
+				*pm = pm->scaledToHeight(dpr_expected_height, Qt::SmoothTransformation);
+				break;
+			}
+			case ScalingMode::Fill:
+			{
+				*pm = pm->scaledToWidth(dpr_expected_width, Qt::SmoothTransformation);
+				break;
+			}
+			case ScalingMode::Stretch:
+			{
+				QPixmap stretched_image(dpr_expected_width, dpr_expected_height);
+				stretched_image.setDevicePixelRatio(dpr);
+				stretched_image.fill(Qt::transparent);
+
+				QPainter painter;
+				if (painter.begin(&stretched_image))
+				{
+					painter.setRenderHint(QPainter::SmoothPixmapTransform);
+					painter.setRenderHint(QPainter::Antialiasing);
+					painter.setOpacity(opacity / 100.0f);
+					painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+
+					QRect target_rect(0, 0, dpr_expected_width, dpr_expected_height);
+					QRect source_rect(0, 0, pm->width(), pm->height());
+
+					painter.drawPixmap(target_rect, *pm, source_rect);
+					painter.end();
+				}
+
+				*pm = std::move(stretched_image);
+				return;
+			}
+		};
+
+		// QPainter works in unscaled coordinates.
+		int xoffs = 0;
+		int yoffs = 0;
+		if ((pm->width() < dpr_expected_width) != (aspect_ratio == ScalingMode::Fill))
+			xoffs = DPRUnscale((dpr_expected_width - pm->width()) / 2, dpr);
+		if ((pm->height() < dpr_expected_height) != (aspect_ratio == ScalingMode::Fill))
+			yoffs = DPRUnscale((dpr_expected_height - pm->height()) / 2, dpr);
+
+		QPixmap padded_image(dpr_expected_width, dpr_expected_height);
+		padded_image.setDevicePixelRatio(dpr);
+		padded_image.fill(Qt::transparent);
+		QPainter painter;
+		if (painter.begin(&padded_image))
+		{
+			painter.setRenderHint(QPainter::SmoothPixmapTransform);
+			painter.setRenderHint(QPainter::Antialiasing);
+			painter.setOpacity(opacity / 100.0f);
+			painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+
+			painter.drawPixmap(xoffs, yoffs, *pm);
+
+			painter.setCompositionMode(QPainter::CompositionMode_Destination);
+			painter.fillRect(padded_image.rect(), QColor(0, 0, 0, 0));
+			painter.end();
+		}
+		*pm = padded_image;
 	}
 
 	void ShowInFileExplorer(QWidget* parent, const QFileInfo& file)

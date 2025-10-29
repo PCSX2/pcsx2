@@ -25,5 +25,7 @@ protected:
 	QString m_title;
 	QString m_path;
 	bool m_desktop;
+
+private:
 	Ui::ShortcutCreationDialog m_ui;
 };
