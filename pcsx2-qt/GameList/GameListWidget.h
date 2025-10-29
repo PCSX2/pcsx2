@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "QtUtils.h"
 #include "ui_EmptyGameListWidget.h"
 #include "ui_GameListWidget.h"
 
@@ -49,9 +50,9 @@ public:
 	void refresh(bool invalidate_cache, bool popup_on_error);
 	void cancelRefresh();
 	void reloadThemeSpecificImages();
-	void setCustomBackground(bool force = false);
-	void updateCustomBackgroundState(bool force_start = false);
-	void processBackgroundFrames(bool fill_area);
+	void setCustomBackground();
+	void updateCustomBackgroundState(const bool force_start = false);
+	void processBackgroundFrames();
 
 	bool isShowingGameList() const;
 	bool isShowingGameGrid() const;
@@ -122,4 +123,6 @@ private:
 	GameListRefreshThread* m_refresh_thread = nullptr;
 
 	QMovie* m_background_movie = nullptr;
+	QtUtils::ScalingMode m_background_scaling = QtUtils::ScalingMode::Fit;
+	float m_background_opacity = 100.0f;
 };

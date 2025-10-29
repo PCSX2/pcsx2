@@ -10,6 +10,7 @@
 #include <QtGui/QAction>
 #include <QtGui/QDesktopServices>
 #include <QtGui/QKeyEvent>
+#include <QtGui/QPainter>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QHeaderView>
@@ -133,6 +134,126 @@ namespace QtUtils
 	void ResizeColumnsForTreeView(QTreeView* view, const std::initializer_list<int>& widths)
 	{
 		ResizeColumnsForView(view, widths);
+	}
+
+	void resizeAndScalePixmap(QPixmap* pm, const int expected_width, const int expected_height, const qreal dpr, const ScalingMode scaling_mode, const float opacity)
+	{
+		if (!pm || pm->isNull() || pm->width() <= 0 || pm->height() <= 0)
+			return;
+
+		const int dpr_expected_width = qRound(expected_width * dpr);
+		const int dpr_expected_height = qRound(expected_height * dpr);
+
+		if (pm->width() == dpr_expected_width &&
+			pm->height() == dpr_expected_height &&
+			pm->devicePixelRatio() == dpr &&
+			opacity == 100.0f)
+		{
+			switch (scaling_mode)
+			{
+				case ScalingMode::Fit:
+				case ScalingMode::Stretch:
+				case ScalingMode::Center:
+					return;
+
+				case ScalingMode::Fill:
+				case ScalingMode::Tile:
+				default:
+					break;
+			}
+		}
+
+		QPixmap final_pixmap(dpr_expected_width, dpr_expected_height);
+		final_pixmap.setDevicePixelRatio(dpr);
+		final_pixmap.fill(Qt::transparent);
+
+		QPainter painter;
+		painter.begin(&final_pixmap);
+		painter.setRenderHint(QPainter::Antialiasing, true);
+		painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
+		painter.setOpacity(opacity / 100.0f);
+		painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+
+		const QRectF srcRect(0, 0, pm->width(), pm->height());
+		const QRectF painterRect(0, 0, expected_width, expected_height);
+
+		switch (scaling_mode)
+		{
+			case ScalingMode::Fit:
+			case ScalingMode::Fill:
+			{
+				auto const aspect_mode = (scaling_mode == ScalingMode::Fit) ?
+				                             Qt::KeepAspectRatio :
+				                             Qt::KeepAspectRatioByExpanding;
+
+				QSizeF scaledSize(pm->width(), pm->height());
+				scaledSize.scale(dpr_expected_width, dpr_expected_height, aspect_mode);
+
+				*pm = pm->scaled(
+					qRound(scaledSize.width()),
+					qRound(scaledSize.height()),
+					Qt::IgnoreAspectRatio,
+					Qt::SmoothTransformation
+				);
+
+				const QRectF scaledSrcRect(0, 0, pm->width(), pm->height());
+
+				QSizeF logicalSize = pm->size() / dpr;
+				QRectF destRect(QPointF(0, 0), logicalSize);
+
+				destRect.moveCenter(painterRect.center());
+
+				painter.drawPixmap(destRect, *pm, scaledSrcRect);
+				break;
+			}
+			case ScalingMode::Stretch:
+			{
+				*pm = pm->scaled(
+					dpr_expected_width,
+					dpr_expected_height,
+					Qt::IgnoreAspectRatio,
+					Qt::SmoothTransformation
+				);
+
+				const QRectF scaledSrcRect(0, 0, pm->width(), pm->height());
+
+				painter.drawPixmap(painterRect, *pm, scaledSrcRect);
+				break;
+			}
+			case ScalingMode::Center:
+			{
+				const qreal pmWidth = pm->width() / dpr;
+				const qreal pmHeight = pm->height() / dpr;
+
+				QRectF destRect(0, 0, pmWidth, pmHeight);
+
+				destRect.moveCenter(painterRect.center());
+
+				painter.drawPixmap(destRect, *pm, srcRect);
+				break;
+			}
+			case ScalingMode::Tile:
+			{
+				const qreal tileWidth = pm->width() / dpr;
+				const qreal tileHeight = pm->height() / dpr;
+
+				if (tileWidth <= 0 || tileHeight <= 0)
+					break;
+
+				QPixmap tileSource = pm->scaled(tileWidth, tileHeight, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+				tileSource.setDevicePixelRatio(dpr);
+
+				QBrush tileBrush(tileSource);
+				tileBrush.setTextureImage(tileSource.toImage());
+
+				painter.fillRect(painterRect, tileBrush);
+				break;
+			}
+			default:
+				break;
+		}
+		painter.end();
+		*pm = std::move(final_pixmap);
 	}
 
 	void ShowInFileExplorer(QWidget* parent, const QFileInfo& file)
