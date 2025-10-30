@@ -319,9 +319,9 @@ public:
 	__fi const std::string& GetSerial() const { return m_serial; }
 	__fi u32 GetCRC() const { return m_crc; }
 
-	__fi const ByteArray& GetRegsData() const { return m_regs_data; }
-	__fi const ByteArray& GetStateData() const { return m_state_data; }
-	__fi const GSDataArray& GetPackets() const { return m_dump_packets; }
+	__fi virtual const ByteArray& GetRegsData() const { return m_regs_data; }
+	__fi virtual const ByteArray& GetStateData() const { return m_state_data; }
+	__fi virtual const GSDataArray& GetPackets() const { return m_dump_packets; }
 	__fi virtual s64 GetPacket(size_t i, GSData& data, Error* error = nullptr);
 	__fi virtual size_t GetPacketsSize() const { return m_dump_packets.size(); }
 	__fi virtual bool DonePackets(size_t i) const { return i >= m_dump_packets.size(); }
@@ -464,7 +464,7 @@ private:
 		size_t buffer_end;
 	};
 
-	static constexpr size_t pad_size = 4 * _1mb + 16;
+	static constexpr size_t pad_size = 4 * _1mb;
 
 	const size_t buffer_size;
 
@@ -473,7 +473,9 @@ private:
 	// State protected by mutex.
 	mutable std::mutex mut;
 	std::unique_ptr<GSDumpFile> actual_dump;
+	std::unique_ptr<GSDumpFile> actual_dump_next;
 	std::string filename;
+	std::string filename_next;
 	std::vector<u8> buffer;
 	size_t read_buffer = 0;
 	size_t parse_buffer = 0;
@@ -488,8 +490,8 @@ private:
 	bool stop = false;
 
 	// Condition variables.
-	std::condition_variable cond_read;
-	std::condition_variable cond_write;
+	mutable std::condition_variable cond_read;
+	mutable std::condition_variable cond_write;
 
 	// Call only once before starting thread.
 	void Init();
@@ -498,10 +500,14 @@ private:
 	void Stop();
 	bool DonePackets(size_t i) const override;
 
+	__fi const GSDumpFile::ByteArray& GetRegsData() const override;
+	__fi const GSDumpFile::ByteArray& GetStateData() const override;
+	__fi const GSDumpFile::GSDataArray& GetPackets() const override;
+
 	static void _LoaderFunc(GSDumpLazy* dump); // Private.
 
 	// Helpers - call only with mutex locked.
-	bool _OpenNext(const std::string& filename, Error* error);
+	bool _OpenNext(const std::string& filename, Error* error, std::unique_lock<std::mutex>& lock);
 	void _ResetState();
 	bool _Eof() const;
 	bool _LoadCond() const;
@@ -509,13 +515,13 @@ private:
 	bool _FullPackets() const;
 	bool _EmptyBuffer() const;
 	bool _EmptyPackets() const;
+	bool _NotLoading() const;
+	bool _Stopped() const;
+	bool _HasNext() const;
 	void _DebugCheck() const;
 
 public:
-	GSDumpLazy(size_t buffer_size)
-		: buffer_size(buffer_size)
-	{
-	}
+	GSDumpLazy(size_t buffer_size);
 	~GSDumpLazy() override;
 
 	bool Open(FileSystem::ManagedCFilePtr fp, Error* error) override;

@@ -965,8 +965,8 @@ void GSDumpReplayerCpuStep()
 
 	GSDumpFile::GSData packet;
 	Error error;
-	s64 ret;
-	if ((ret = s_dump_file->GetPacket(s_current_packet, packet, &error)) > 0)
+	s64 ret = s_dump_file->GetPacket(s_current_packet, packet, &error);
+	if (ret > 0)
 	{
 		s_current_packet++;
 		if (s_dump_file->DonePackets(s_current_packet))
