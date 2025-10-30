@@ -12,6 +12,7 @@
 #include "pcsx2/CDVD/IsoHasher.h"
 #include "pcsx2/GameDatabase.h"
 #include "pcsx2/GameList.h"
+#include "pcsx2/VMManager.h"
 
 #include "common/Error.h"
 #include "common/MD5Digest.h"
@@ -269,91 +270,96 @@ void GameSummaryWidget::populateTrackList(const GameList::Entry* entry)
 
 void GameSummaryWidget::onVerifyClicked()
 {
-	// Can't do this while a VM is running because of stupid CDVD.
+	// Check if a game is currently running
 	if (QtHost::IsVMValid())
 	{
-		QMessageBox::critical(QtUtils::GetRootWidget(this), tr("Error"), tr("Cannot verify image while a game is running."));
+		QMessageBox::critical(QtUtils::GetRootWidget(this), tr("Cannot Verify Hash"),
+			tr("A game is currently running. Please close the game before verifying the hash."));
 		return;
 	}
 
-	IsoHasher hasher;
-	Error error;
-	if (!hasher.Open(m_entry_path, &error))
 	{
-		setVerifyResult(QString::fromStdString(error.GetDescription()));
-		return;
-	}
-
-	QtModalProgressCallback callback(this);
-	hasher.ComputeHashes(&callback);
-	if (callback.IsCancelled())
-		return;
-
-	const int hash_column = hasher.IsCD() ? 5 : 4;
-	int row = 0;
-
-	// convert to database format
-	std::vector<GameDatabase::TrackHash> thashes;
-	thashes.reserve(hasher.GetTrackCount());
-	for (const IsoHasher::Track& track : hasher.GetTracks())
-	{
-		GameDatabase::TrackHash thash;
-		thash.size = track.size;
-		if (track.hash.empty() || !thash.parseHash(track.hash))
+		IsoHasher hasher;
+		Error error;
+		if (!hasher.Open(m_entry_path, &error))
 		{
-			m_ui.verify->setEnabled(false);
-			m_ui.verifyResult->setPlainText(tr("One or more tracks is missing."));
+			hasher.Close();
+			setVerifyResult(QString::fromStdString(error.GetDescription()));
 			return;
 		}
 
-		// Use the first track's hash as the redump search term.
-		if (m_redump_search_keyword.empty())
-			m_redump_search_keyword = thash.toString();
+		QtModalProgressCallback callback(this);
+		hasher.ComputeHashes(&callback);
 
-		thashes.push_back(thash);
-	}
+		if (callback.IsCancelled())
+			return;
 
-	// match the hashes. can't use vector<bool> here because it's not an actual array
-	std::unique_ptr<bool[]> val_results = std::make_unique<bool[]>(hasher.GetTrackCount());
-	std::string match_error;
-	const GameDatabase::HashDatabaseEntry* hentry =
-		GameDatabase::lookupHash(thashes.data(), thashes.size(), val_results.get(), &match_error);
+		const int hash_column = hasher.IsCD() ? 5 : 4;
+		int row = 0;
 
-	// fill the UI with both the hashes and validation results
-	for (u32 i = 0; i < hasher.GetTrackCount(); i++)
-	{
-		QTableWidgetItem* const hash_item = m_ui.tracks->item(row, hash_column);
-		QTableWidgetItem* const status_item = m_ui.tracks->item(row, hash_column + 1);
-
-		const bool result = val_results[i];
-		const QBrush brush(result ? QColor(0, 200, 0) : QColor(200, 0, 0));
-
-		hash_item->setText(QString::fromStdString(hasher.GetTrack(i).hash));
-		hash_item->setForeground(brush);
-		status_item->setText(result ? QStringLiteral("\u2713") : QStringLiteral("\u2715"));
-		status_item->setForeground(brush);
-		row++;
-	}
-
-	if (hentry)
-	{
-		if (!hentry->version.empty())
+		// convert to database format
+		std::vector<GameDatabase::TrackHash> thashes;
+		thashes.reserve(hasher.GetTrackCount());
+		for (const IsoHasher::Track& track : hasher.GetTracks())
 		{
-			setVerifyResult(tr("Verified as %1 [%2] (Version %3).")
+			GameDatabase::TrackHash thash;
+			thash.size = track.size;
+			if (track.hash.empty() || !thash.parseHash(track.hash))
+			{
+				m_ui.verify->setEnabled(false);
+				m_ui.verifyResult->setPlainText(tr("One or more tracks is missing."));
+				return;
+			}
+
+			// Use the first track's hash as the redump search term.
+			if (m_redump_search_keyword.empty())
+				m_redump_search_keyword = thash.toString();
+
+			thashes.push_back(thash);
+		}
+
+		// match the hashes. can't use vector<bool> here because it's not an actual array
+		std::unique_ptr<bool[]> val_results = std::make_unique<bool[]>(hasher.GetTrackCount());
+		std::string match_error;
+		const GameDatabase::HashDatabaseEntry* hentry =
+			GameDatabase::lookupHash(thashes.data(), thashes.size(), val_results.get(), &match_error);
+
+		// fill the UI with both the hashes and validation results
+		for (u32 i = 0; i < hasher.GetTrackCount(); i++)
+		{
+			QTableWidgetItem* const hash_item = m_ui.tracks->item(row, hash_column);
+			QTableWidgetItem* const status_item = m_ui.tracks->item(row, hash_column + 1);
+
+			const bool result = val_results[i];
+			const QBrush brush(result ? QColor(0, 200, 0) : QColor(200, 0, 0));
+
+			hash_item->setText(QString::fromStdString(hasher.GetTrack(i).hash));
+			hash_item->setForeground(brush);
+			status_item->setText(result ? QStringLiteral("\u2713") : QStringLiteral("\u2715"));
+			status_item->setForeground(brush);
+			row++;
+		}
+
+		if (hentry)
+		{
+			if (!hentry->version.empty())
+			{
+				setVerifyResult(tr("Verified as %1 [%2] (Version %3).")
 								.arg(QString::fromStdString(hentry->name))
 								.arg(QString::fromStdString(hentry->serial))
 								.arg(QString::fromStdString(hentry->version)));
+			}
+			else
+			{
+				setVerifyResult(tr("Verified as %1 [%2].")
+								.arg(QString::fromStdString(hentry->name))
+								.arg(QString::fromStdString(hentry->serial)));
+			}
 		}
 		else
 		{
-			setVerifyResult(tr("Verified as %1 [%2].")
-								.arg(QString::fromStdString(hentry->name))
-								.arg(QString::fromStdString(hentry->serial)));
+			setVerifyResult(QString::fromStdString(match_error));
 		}
-	}
-	else
-	{
-		setVerifyResult(QString::fromStdString(match_error));
 	}
 }
 

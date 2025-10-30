@@ -5,6 +5,7 @@
 #include "BuildVersion.h"
 #include "CDVD/CDVD.h"
 #include "CDVD/IsoReader.h"
+#include "CDVD/IsoHasher.h"
 #include "Counters.h"
 #include "DEV9/DEV9.h"
 #include "DebugTools/DebugInterface.h"
@@ -1275,6 +1276,29 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	// TODO: we can get rid of this once, we make CDVD not use globals...
 	// (or make it thread-local, but that seems silly.)
 	Host::CancelGameListRefresh();
+
+	static bool s_hash_error_dialog_shown = false;
+	static bool s_was_computing_hash = false;
+	const bool is_computing_hash = IsoHasher::IsComputingHash();
+
+	if (s_was_computing_hash && !is_computing_hash)
+		s_hash_error_dialog_shown = false;
+
+	s_was_computing_hash = is_computing_hash;
+
+	// Check if hash verification is in progress and coordinate with it
+	if (is_computing_hash)
+	{
+		// Hash computation is in progress we can't initialize the VM yet
+		// Inform the host that we need to wait for the hash to complete.
+		if (!s_hash_error_dialog_shown)
+		{
+			Host::ReportErrorAsync("Hash Verification In Progress",
+				"Hash verification is currently in progress on the selected ISO. Please wait for it to complete before launching a game, or cancel the verification.");
+			s_hash_error_dialog_shown = true;
+		}
+		return false;
+	}
 
 	s_state.store(VMState::Initializing, std::memory_order_release);
 	s_vm_thread_handle = Threading::ThreadHandle::GetForCallingThread();
