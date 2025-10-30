@@ -20,7 +20,7 @@
 class QProgressBar;
 
 class AutoUpdaterDialog;
-class DisplayWidget;
+class DisplaySurface;
 class DisplayContainer;
 class GameListWidget;
 class ControllerSettingsWindow;
@@ -257,7 +257,6 @@ private:
 	bool shouldAbortForMemcardBusy(const VMLock& lock);
 
 	QWidget* getContentParent();
-	QWidget* getDisplayContainer() const;
 	void saveDisplayWindowGeometryToConfig();
 	void restoreDisplayWindowGeometryFromConfig();
 	void createDisplayWidget(bool fullscreen, bool render_to_main);
@@ -291,8 +290,8 @@ private:
 	Ui::MainWindow m_ui;
 
 	GameListWidget* m_game_list_widget = nullptr;
-	DisplayWidget* m_display_widget = nullptr;
-	DisplayContainer* m_display_container = nullptr;
+	DisplaySurface* m_display_surface = nullptr;
+	QWidget* m_display_container = nullptr;
 
 	SettingsWindow* m_settings_window = nullptr;
 	ControllerSettingsWindow* m_controller_settings_window = nullptr;
