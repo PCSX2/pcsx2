@@ -116,7 +116,9 @@ echo "Building libjpegturbo..."
 rm -fr "libjpeg-turbo-$LIBJPEGTURBO"
 tar xf "libjpeg-turbo-$LIBJPEGTURBO.tar.gz"
 cd "libjpeg-turbo-$LIBJPEGTURBO"
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DENABLE_STATIC=OFF -DENABLE_SHARED=ON -B build -G Ninja
+# On non debian or debian based Linux systems, libjpeg-turbo will set CMAKE_INSTALL_DEFAULT_LIBDIR "lib64" (or libx32)
+# That will prevent CMake from finding the deps libjpeg later on. if we set CMAKE_INSTALL_DEFAULT_LIBDIR, libjpeg-turbo will leave it as is, so set it to "lib"
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DENABLE_STATIC=OFF -DENABLE_SHARED=ON -DCMAKE_INSTALL_DEFAULT_LIBDIR="lib" -B build -G Ninja
 cmake --build build --parallel
 ninja -C build install
 cd ..
