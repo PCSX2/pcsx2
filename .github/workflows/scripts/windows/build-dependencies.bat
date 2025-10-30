@@ -44,7 +44,7 @@ set FREETYPE=2.14.1
 set HARFBUZZ=12.0.0
 set LIBJPEGTURBO=3.1.2
 set LIBPNG=1650
-set SDL=SDL3-3.2.24
+set SDL=SDL3-3.2.26
 set LIBPNGLONG=1.6.50
 set QT=6.10.0
 set QTMINOR=6.10
@@ -69,8 +69,7 @@ call :downloadfile "lpng%LIBPNG%.zip" https://download.sourceforge.net/libpng/lp
 call :downloadfile "lpng%LIBPNG%-apng.patch.gz" https://download.sourceforge.net/libpng-apng/libpng-%LIBPNGLONG%-apng.patch.gz 687ddc0c7cb128a3ea58e159b5129252537c27ede0c32a93f11f03127f0c0165 || goto error
 call :downloadfile "libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/%LIBJPEGTURBO%/libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" 8f0012234b464ce50890c490f18194f913a7b1f4e6a03d6644179fa0f867d0cf || goto error
 call :downloadfile "libwebp-%WEBP%.tar.gz" "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-%WEBP%.tar.gz" e4ab7009bf0629fd11982d4c2aa83964cf244cffba7347ecd39019a9e38c4564 || goto error
-call :downloadfile "%SDL%.zip" "https://libsdl.org/release/%SDL%.zip" ca7fe2ca54a97e047f5eff236e62ae87546e862f509f0a62fc6e564ded3c6a95 || goto error
-call :downloadfile "SDL-7914bdb7ea14ee5109d50df857c8dfc69a28a62d.patch" https://github.com/libsdl-org/SDL/commit/7914bdb7ea14ee5109d50df857c8dfc69a28a62d.patch 5c09a29a9cac87a85ec3b8f5a68ff0e5c6c47229f3e2282241b9c32166f26977 || goto error
+call :downloadfile "%SDL%.zip" "https://libsdl.org/release/%SDL%.zip" 739356eef1192fff9d641c320a8f5ef4a10506b8927def4b9ceb764c7e947369 || goto error
 call :downloadfile "qtbase-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtbase-everywhere-src-%QT%.zip" d3b5379edcace266273d789249b6d68ae9495ec1b0b562ba6d039034cd315d8e || goto error
 call :downloadfile "qtimageformats-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtimageformats-everywhere-src-%QT%.zip" ac2fe34a9f1c1451b6785474e9b1b64eb59edef6553be3d630240f16a730456d || goto error
 call :downloadfile "qtsvg-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtsvg-everywhere-src-%QT%.zip" c12f8bfb617e4a03da104be36f6966ba7f64bee331f0095da1a649a1149796d2 || goto error
@@ -186,7 +185,6 @@ echo Building SDL...
 rmdir /S /Q "%SDL%"
 %SEVENZIP% x "%SDL%.zip" || goto error
 cd "%SDL%" || goto error
-%PATCH% -p1 < "..\SDL-7914bdb7ea14ee5109d50df857c8dfc69a28a62d.patch" || goto error
 cmake -B build -DCMAKE_BUILD_TYPE=Release %FORCEPDB% -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=ON -DSDL_SHARED=ON -DSDL_STATIC=OFF -G Ninja || goto error
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
