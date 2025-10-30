@@ -8,10 +8,8 @@
 #include <QtCore/QtGlobal>
 #include <QtCore/QMetaObject>
 #include <QtGui/QAction>
-#include <QtGui/QGuiApplication>
 #include <QtGui/QDesktopServices>
 #include <QtGui/QKeyEvent>
-#include <QtGui/QScreen>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QHeaderView>
@@ -40,8 +38,6 @@
 #if defined(_WIN32)
 #include "common/RedtapeWindows.h"
 #include <Shlobj.h>
-#elif !defined(APPLE)
-#include <qpa/qplatformnativeinterface.h>
 #endif
 
 namespace QtUtils
@@ -252,68 +248,6 @@ namespace QtUtils
 			widget->setFixedSize(width, height);
 
 		widget->resize(width, height);
-	}
-
-	std::optional<WindowInfo> GetWindowInfoForWidget(QWidget* widget)
-	{
-		WindowInfo wi;
-
-		// Windows and Apple are easy here since there's no display connection.
-#if defined(_WIN32)
-		wi.type = WindowInfo::Type::Win32;
-		wi.window_handle = reinterpret_cast<void*>(widget->winId());
-#elif defined(__APPLE__)
-		wi.type = WindowInfo::Type::MacOS;
-		wi.window_handle = reinterpret_cast<void*>(widget->winId());
-#else
-		QPlatformNativeInterface* pni = QGuiApplication::platformNativeInterface();
-		const QString platform_name = QGuiApplication::platformName();
-		if (platform_name == QStringLiteral("xcb"))
-		{
-			// Can't get a handle for an unmapped window in X, it doesn't like it.
-			if (!widget->isVisible())
-			{
-				Console.WriteLn("Returning null window info for widget because it is not visible.");
-				return std::nullopt;
-			}
-
-			wi.type = WindowInfo::Type::X11;
-			wi.display_connection = pni->nativeResourceForWindow("display", widget->windowHandle());
-			wi.window_handle = reinterpret_cast<void*>(widget->winId());
-		}
-		else if (platform_name == QStringLiteral("wayland"))
-		{
-			wi.type = WindowInfo::Type::Wayland;
-			wi.display_connection = pni->nativeResourceForWindow("display", widget->windowHandle());
-			wi.window_handle = pni->nativeResourceForWindow("surface", widget->windowHandle());
-		}
-		else
-		{
-			Console.WriteLn("Unknown PNI platform '%s'.", platform_name.toUtf8().constData());
-			return std::nullopt;
-		}
-#endif
-
-		const qreal dpr = widget->devicePixelRatioF();
-		wi.surface_width = static_cast<u32>(static_cast<qreal>(widget->width()) * dpr);
-		wi.surface_height = static_cast<u32>(static_cast<qreal>(widget->height()) * dpr);
-		wi.surface_scale = static_cast<float>(dpr);
-
-		// Query refresh rate, we need it for sync.
-		std::optional<float> surface_refresh_rate = WindowInfo::QueryRefreshRateForWindow(wi);
-		if (!surface_refresh_rate.has_value())
-		{
-			// Fallback to using the screen, getting the rate for Wayland is an utter mess otherwise.
-			const QScreen* widget_screen = widget->screen();
-			if (!widget_screen)
-				widget_screen = QGuiApplication::primaryScreen();
-			surface_refresh_rate = widget_screen ? static_cast<float>(widget_screen->refreshRate()) : 0.0f;
-		}
-
-		wi.surface_refresh_rate = surface_refresh_rate.value();
-		INFO_LOG("Surface refresh rate: {} hz", wi.surface_refresh_rate);
-
-		return wi;
 	}
 
 	QString AbstractItemModelToCSV(QAbstractItemModel* model, int role, bool useQuotes)
