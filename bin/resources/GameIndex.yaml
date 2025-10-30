@@ -11027,7 +11027,7 @@ SCUS-97115:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
 SCUS-97116:
-  name: "Kiosk Demo Disc 2.01"
+  name: "Kiosk Disc 2.1"
   region: "NTSC-U"
 SCUS-97117:
   name: "PlayStation 2 Demo Disc Version 2.1 [Need for Speed - Underground]"
@@ -11065,7 +11065,7 @@ SCUS-97126:
   name: "PlayStation 2 Demo Disc Version 2.2"
   region: "NTSC-U"
 SCUS-97127:
-  name: "Kiosk Demo Disc 2.02"
+  name: "Kiosk Disc 2.2"
   region: "NTSC-U"
 SCUS-97128:
   name: "Drakan - The Ancients' Gates"
@@ -11136,7 +11136,7 @@ SCUS-97140:
         patch=0,EE,0032940C,word,48459000
         patch=0,EE,00329420,word,4BDAD1FF
 SCUS-97142:
-  name: "Primal - Civilization Is Only Skin Deep"
+  name: "Primal"
   region: "NTSC-U"
   compat: 5
   roundModes:
@@ -11182,7 +11182,7 @@ SCUS-97155:
   name: "PlayStation 2 Demo Disc Version 2.3"
   region: "NTSC-U"
 SCUS-97156:
-  name: "Kiosk Demo Disc 2.03"
+  name: "Kiosk Demo Disc 2.3"
   region: "NTSC-U"
 SCUS-97157:
   name: "Frequency [Demo]"
@@ -11263,7 +11263,7 @@ SCUS-97173:
   region: "NTSC-U"
   compat: 5
 SCUS-97174:
-  name: "Kiosk Demo Disc 2.04"
+  name: "Kiosk Demo Disc 2.4"
   region: "NTSC-U"
 SCUS-97175:
   name: "NCAA Final Four 2002 [Demo]"
@@ -11361,7 +11361,7 @@ SCUS-97199:
     halfPixelOffset: 4 # Aligns post bloom.
     nativeScaling: 1 # Fixes light blooms.
 SCUS-97200:
-  name: "Kiosk Demo Disc 2.05"
+  name: "Kiosk Demo Disc 2.5"
   region: "NTSC-U"
 SCUS-97201:
   name: "The Mark of Kri"
@@ -11441,7 +11441,7 @@ SCUS-97216:
   name: "PlayStation Underground Summer Sampler"
   region: "NTSC-U"
 SCUS-97217:
-  name: "NBA Shootout 2003"
+  name: "NBA ShootOut 2003"
   region: "NTSC-U"
   gameFixes:
     - EETimingHack # Fixes an issue with loading screens which cause the game to return on the Bios.
@@ -11449,7 +11449,7 @@ SCUS-97217:
     cpuSpriteRenderBW: 2 # Fixes broken player rendering and skin flashing.
     cpuSpriteRenderLevel: 2 # Needed for above.
 SCUS-97218:
-  name: "Kiosk Demo Disc 2.06"
+  name: "Kiosk Demo Disc 2.6"
   region: "NTSC-U"
 SCUS-97219:
   name: "Gran Turismo 3 - A-Spec - Nissan 350Z Edition"
@@ -11487,7 +11487,7 @@ SCUS-97226:
   name: "NCAA GameBreaker 2003 [Demo]"
   region: "NTSC-U"
 SCUS-97227:
-  name: "Kiosk Demo Disc 2.07"
+  name: "Kiosk Demo Disc 2.7"
   region: "NTSC-U"
 SCUS-97229:
   name: "Dark Cloud 2 [Demo]"
@@ -11590,7 +11590,7 @@ SCUS-97252:
   name: "Official U.S. PlayStation Magazine Demo Disc 077"
   region: "NTSC-U"
 SCUS-97253:
-  name: "NBA Shootout 2003 [Demo]"
+  name: "NBA ShootOut 2003 [Demo]"
   region: "NTSC-U"
   gameFixes:
     - EETimingHack # Fixes an issue with loading screens which cause the game to return on the Bios.
@@ -11614,7 +11614,7 @@ SCUS-97260:
   name: "War of the Monsters [Demo]"
   region: "NTSC-U"
 SCUS-97261:
-  name: "Kiosk Demo Disc 2.08"
+  name: "Kiosk Demo Disc 2.8"
   region: "NTSC-U"
 SCUS-97262:
   name: "Amplitude [Demo]"
@@ -11674,7 +11674,7 @@ SCUS-97269:
   region: "NTSC-U"
   compat: 3
 SCUS-97270:
-  name: "Kiosk Demo Disc 2.09"
+  name: "Kiosk Demo Disc 2.9"
   region: "NTSC-U"
 SCUS-97271:
   name: "Final Fantasy XI - Online [Beta Version] [Disc 1 of 2]"
@@ -11734,9 +11734,6 @@ SCUS-97282:
     halfPixelOffset: 4 # Fixes post-processing alignment.
     nativeScaling: 1 # Fixes depth blur intensity.
     textureInsideRT: 1 # Fixes on screen garbage.
-SCUS-97292:
-  name: "Amplitude [Demo]"
-  region: "NTSC-U"
 SCUS-97312:
   name: "Jampack Demo Disc - Winter 2003 [T-Rated]"
   region: "NTSC-U"
@@ -11766,7 +11763,7 @@ SCUS-97319:
   region: "NTSC-U"
   compat: 5
 SCUS-97321:
-  name: "Kiosk Demo Disc 2.10"
+  name: "Kiosk June·July·August 2003" # Kiosk Demo Disc 2.10 or "PS2-10"
   region: "NTSC-U"
 SCUS-97322:
   name: "Ratchet & Clank 2 - Going Commando [Regular Demo]"
@@ -11787,10 +11784,10 @@ SCUS-97323:
     halfPixelOffset: 4 # Aligns post bloom.
     nativeScaling: 1 # Fixes light blooms.
 SCUS-97324:
-  name: "Kiosk Demo Disc 2.11"
+  name: "Kiosk 2-11 Winter 2003" # Kiosk Demo Disc 2.11
   region: "NTSC-U"
 SCUS-97325:
-  name: "NBA Shootout 2004 [Demo]"
+  name: "NBA ShootOut 2004 [Demo]"
   region: "NTSC-U"
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes broken player rendering and skin flashing.
@@ -12001,13 +11998,13 @@ SCUS-97381:
     halfPixelOffset: 4 # Aligns post bloom.
     nativeScaling: 1 # Fixes light blooms.
 SCUS-97382:
-  name: "NBA Shootout 2004 [Demo]"
+  name: "NBA ShootOut 2004 [Demo]"
   region: "NTSC-U"
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes broken player rendering and skin flashing.
     cpuSpriteRenderLevel: 2 # Needed for above.
 SCUS-97383:
-  name: "Kiosk Demo Disc 2.12"
+  name: "Kiosk 2-12 Spring 2004" # Kiosk Demo Disc 2.12
   region: "NTSC-U"
 SCUS-97384:
   name: "Gran Turismo Special Edition 2004 Toyota [Demo]"
@@ -18879,7 +18876,7 @@ SLES-51879:
   name: "Hot Wheels World Race"
   region: "PAL-E"
 SLES-51881:
-  name: "Mercedes Bens World Racing"
+  name: "World Racing"
   region: "PAL-F-G"
 SLES-51883:
   name: "Scooby-Doo! Mystery Mayhem"
@@ -29790,9 +29787,6 @@ SLES-55415:
 SLES-55418:
   name: "Tube Mania"
   region: "PAL-F-DU"
-SLES-55421:
-  name: "Buzz! Brain of Switzerland"
-  region: "PAL-SWI"
 SLES-55428:
   name: "Disney Bolt"
   region: "PAL-SC"
@@ -34395,7 +34389,7 @@ SLPM-55163:
 SLPM-55164:
   name: "Myself;Yourself [Yeti Best]"
   name-sort: "まいせるふ ゆあせるふ [Yeti Best]"
-  name-en: "Myself, Yourself [Yeti Best]"
+  name-en: "Myself; Yourself [Yeti Best]"
   region: "NTSC-J"
 SLPM-55165:
   name: "SuperLite 2000 アドベンチャー アオイシロ"
@@ -37659,7 +37653,7 @@ SLPM-62188:
 SLPM-62190:
   name: "ハイヒートメジャーリーグベースボール 2003"
   name-sort: "はいひーとめじゃーりーぐべーすぼーる 2003"
-  name-en: "High Heat - Major League Baseball 2003"
+  name-en: "High Heat Major League Baseball 2003"
   region: "NTSC-J"
 SLPM-62192:
   name: "実況パワフルプロ野球 9"
@@ -52265,12 +52259,12 @@ SLPM-66890:
 SLPM-66891:
   name: "Myself;Yourself [初回限定版]"
   name-sort: "まいせるふ ゆあせるふ [しょかいげんていばん]"
-  name-en: "Myself, Yourself [First Limited Edition]"
+  name-en: "Myself; Yourself [First Limited Edition]"
   region: "NTSC-J"
 SLPM-66892:
   name: "Myself;Yourself [通常版]"
   name-sort: "まいせるふ ゆあせるふ [つうじょうばん]"
-  name-en: "Myself, Yourself [Standard Edition]"
+  name-en: "Myself; Yourself [Standard Edition]"
   region: "NTSC-J"
 SLPM-66893:
   name: "ファイナルファンタジーⅪ ヴァナ・ディール コレクション [プレイオンライン]"
@@ -59077,7 +59071,7 @@ SLPS-25381:
 SLPS-25382:
   name: "ワンピース ランドランド！"
   name-sort: "わんぴーす らんどらんど！"
-  name-en: "One Piece - Land Land"
+  name-en: "One Piece - Land Land!"
   region: "NTSC-J"
 SLPS-25383:
   name: "デジモンバトルクロニクル"
@@ -64177,7 +64171,7 @@ SLUS-20132:
   region: "NTSC-U"
   compat: 5
 SLUS-20133:
-  name: "High Heat Baseball 2002"
+  name: "High Heat Major League Baseball 2002"
   region: "NTSC-U"
 SLUS-20134:
   name: "Sky Odyssey"
@@ -64411,10 +64405,6 @@ SLUS-20182:
   gsHWFixes:
     halfPixelOffset: 4 # Aligns post effects.
     autoFlush: 1 # Fixes ghosting.
-SLUS-20183:
-  name: "Tiny Toon Adventures - Defenders of the Universe"
-  region: "NTSC-U"
-  compat: 5
 SLUS-20184:
   name: "Resident Evil - CODE Veronica X"
   region: "NTSC-U"
@@ -64949,7 +64939,7 @@ SLUS-20297:
   region: "NTSC-U"
   compat: 5
 SLUS-20298:
-  name: "High Heat - Major League Baseball 2003"
+  name: "High Heat Major League Baseball 2003"
   region: "NTSC-U"
 SLUS-20299:
   name: "Street Hoops - King of the Court"
@@ -65728,9 +65718,6 @@ SLUS-20443:
   name: "Rugrats - Royal Ransom"
   region: "NTSC-U"
   compat: 5
-SLUS-20444:
-  name: "Tankers - Smoking Barrels"
-  region: "NTSC-U"
 SLUS-20445:
   name: "Robot Alchemic Drive - R.A.D."
   region: "NTSC-U"
@@ -66587,7 +66574,7 @@ SLUS-20601:
   gsHWFixes:
     autoFlush: 1 # Fixes missing blur layer on reflections and surfaces.
 SLUS-20602:
-  name: "High Heat - Major League Baseball 2004"
+  name: "High Heat Major League Baseball 2004"
   region: "NTSC-U"
 SLUS-20603:
   name: "Mary-Kate & Ashley - Sweet Sixteen - Licensed to Drive"
@@ -66868,7 +66855,7 @@ SLUS-20657:
   region: "NTSC-U"
   compat: 5
 SLUS-20658:
-  name: "Freedom Fighters - The Battle for Liberty Island"
+  name: "Freedom Fighters" # Originally Freedom – The Battle for Liberty Island
   region: "NTSC-U"
   compat: 5
 SLUS-20659:
@@ -67106,9 +67093,6 @@ SLUS-20698:
   compat: 5
   clampModes:
     eeClampMode: 2 # Needed for SPS on some characters.
-SLUS-20699:
-  name: "Cowboy Bebop"
-  region: "NTSC-U"
 SLUS-20701:
   name: "Scooby-Doo! Mystery Mayhem"
   region: "NTSC-U"
@@ -67654,9 +67638,6 @@ SLUS-20797:
   gsHWFixes:
     halfPixelOffset: 4 # Fixes misaligned bloom.
     autoFlush: 2 # Fixes sun occlusion and heat radiosity.
-SLUS-20798:
-  name: "Starcraft - Ghost"
-  region: "NTSC-U"
 SLUS-20799:
   name: "Terminator 3 - Rise of the Machines"
   region: "NTSC-U"
@@ -67719,9 +67700,6 @@ SLUS-20812:
   name: "Dynasty Warriors 4 - Xtreme Legends"
   region: "NTSC-U"
   compat: 5
-SLUS-20813:
-  name: "Plague of Darkness"
-  region: "NTSC-U"
 SLUS-20814:
   name: "Max Payne 2 - The Fall of Max Payne"
   region: "NTSC-U"
@@ -68190,9 +68168,6 @@ SLUS-20896:
     vuClampMode: 3 # Fixes lighting on character models as caves and other locations don't turn mobs into glow-in-the-dark creatures by themselves.
   gsHWFixes:
     maximumBlendingLevel: 0 # Fixes unnecessary load on the GPU.
-SLUS-20897:
-  name: "Swords of Yi"
-  region: "NTSC-U"
 SLUS-20898:
   name: "Star Wars - Battlefront"
   region: "NTSC-U"
@@ -68279,7 +68254,7 @@ SLUS-20911:
   gsHWFixes:
     halfPixelOffset: 4 # Fixes bilinear on lighting effects.
 SLUS-20912:
-  name: "Superbikes TT"
+  name: "Suzuki TT Superbikes - Real Road Racing"
   region: "NTSC-U"
   compat: 5
 SLUS-20913:
@@ -71984,9 +71959,6 @@ SLUS-21467:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 4 # Aligns post effects.
-SLUS-21468:
-  name: "Charlie Brown's All-Stars [Cancelled]"
-  region: "NTSC-U"
 SLUS-21469:
   name: "Nicktoons - Battle for Volcano Island"
   region: "NTSC-U"
@@ -74605,7 +74577,7 @@ SLUS-28027:
   name: "Black & Bruised [Trade Demo]"
   region: "NTSC-U"
 SLUS-28029:
-  name: "High Heat - Major League Baseball 2004 [Trade Demo]"
+  name: "High Heat Major League Baseball 2004 [Trade Demo]"
   region: "NTSC-U"
 SLUS-28031:
   name: "Auto Modellista - Public Beta Volume 2.0"
@@ -74793,7 +74765,7 @@ SLUS-29017:
   name: "AirBlade [Demo]"
   region: "NTSC-U"
 SLUS-29019:
-  name: "High Heat - Major League Baseball 2003 [Demo]"
+  name: "High Heat Major League Baseball 2003 [Demo]"
   region: "NTSC-U"
 SLUS-29020:
   name: "Sky Gunner [Regular Demo]"
@@ -75547,12 +75519,6 @@ SLUS-29201:
     halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
     nativeScaling: 1 # Fixes misaligned bloom.
     mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
-SLUS-80421:
-  name: "Resident Evil 2 [Demo]"
-  region: "NTSC-U"
-SLUS-90009:
-  name: "Resident Evil 2 [Trade Demo]"
-  region: "NTSC-U"
 SLUS-97405:
   name: "ATV Offroad Fury 3"
   region: "NTSC-U"
