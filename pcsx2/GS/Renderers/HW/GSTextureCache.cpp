@@ -6919,7 +6919,7 @@ GSTextureCache::HashCacheEntry* GSTextureCache::LookupHashCache(const GIFRegTEX0
 	return &m_hash_cache.emplace(key, entry).first->second;
 }
 
-void GSTextureCache::RemoveFromHashCache(HashCacheMap::iterator it)
+GSTextureCache::HashCacheMap::iterator GSTextureCache::RemoveFromHashCache(HashCacheMap::iterator it)
 {
 	HashCacheEntry& e = it->second;
 	const u32 mem_usage = e.texture->GetMemUsage();
@@ -6928,7 +6928,7 @@ void GSTextureCache::RemoveFromHashCache(HashCacheMap::iterator it)
 	else
 		m_hash_cache_memory_usage -= mem_usage;
 	g_gs_device->Recycle(e.texture);
-	m_hash_cache.erase(it);
+	return m_hash_cache.erase(it);
 }
 
 void GSTextureCache::AgeHashCache()
@@ -6955,7 +6955,7 @@ void GSTextureCache::AgeHashCache()
 
 		if (++e.age > MAX_HASH_CACHE_AGE)
 		{
-			RemoveFromHashCache(it++);
+			it = RemoveFromHashCache(it);
 			continue;
 		}
 
