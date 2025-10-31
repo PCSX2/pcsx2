@@ -3,6 +3,7 @@
 
 #pragma once
 #include "HeterogeneousContainers.h"
+#include <algorithm>
 #include <cstdint>
 #include <map>
 
@@ -75,12 +76,9 @@ public:
 	{
 		while (!m_items.empty() && count > 0)
 		{
-			typename MapType::iterator lowest = m_items.end();
-			for (auto iter = m_items.begin(); iter != m_items.end(); ++iter)
-			{
-				if (lowest == m_items.end() || iter->second.last_access < lowest->second.last_access)
-					lowest = iter;
-			}
+			auto lowest = std::min_element(m_items.begin(), m_items.end(), [](const auto& a, const auto& b) {
+				return a.second.last_access < b.second.last_access;
+			});
 			m_items.erase(lowest);
 			count--;
 		}
