@@ -359,6 +359,34 @@ private:
 	void Clear();
 };
 
+class GSStream
+{
+public:
+	static constexpr s64 READ_EOF   = -1;
+	static constexpr s64 READ_ERROR = -2;
+
+	enum Type
+	{
+		RAW,
+		LZMA,
+		ZSTD
+	};
+
+protected:
+	FileSystem::ManagedCFilePtr m_fp;
+	size_t m_size_compressed = 0;
+
+public:
+	virtual ~GSStream() = default;
+	virtual bool Open(FileSystem::ManagedCFilePtr fp, Error* error) = 0;
+	virtual s64 Read(void* ptr, size_t size, Error* error) = 0;
+	virtual bool IsEof() = 0;
+	virtual Type GetType() = 0;
+	size_t GetSizeCompressed() { return m_size_compressed; }
+
+	static bool OpenStream(std::unique_ptr<GSStream>& stream, const char* filename, Error* error = nullptr);
+};
+
 // Initializes CRC tables used by LZMA SDK.
 void GSInit7ZCRCTables();
 
@@ -472,21 +500,20 @@ private:
 
 	// State protected by mutex.
 	mutable std::mutex mut;
-	std::unique_ptr<GSDumpFile> actual_dump;
-	std::unique_ptr<GSDumpFile> actual_dump_next;
+	std::unique_ptr<GSStream> stream;
 	std::string filename;
 	std::string filename_next;
 	std::vector<u8> buffer;
 	size_t read_buffer = 0;
 	size_t parse_buffer = 0;
 	size_t write_buffer = 0;
-	bool eof_actual = false;
+	bool eof_stream = false;
 	bool parse_error = false;
 	Error error;
 	bool reading_packet = false;
 	std::vector<PacketInfo> packets;
-	size_t read_packet;
-	size_t write_packet;
+	size_t read_packet = 0;
+	size_t write_packet = 0;
 	bool stop = false;
 
 	// Condition variables.
@@ -508,8 +535,19 @@ private:
 
 	// Helpers - call only with mutex locked.
 	bool _OpenNext(const std::string& filename, Error* error, std::unique_lock<std::mutex>& lock);
+	
+	static bool _FillBytesRaw(std::unique_ptr<GSStream>& stream, std::vector<u8>& buffer,
+		size_t buffer_size, size_t& _write_buffer, size_t& _read_buffer, Error* error); // Producer
+	
+	static size_t _CopyPadBytes(std::vector<u8>& buffer, size_t buffer_size, size_t _write_buffer, size_t _read_buffer);
+	
+	static bool _ParsePackets(std::vector<u8>& buffer, size_t buffer_size, std::vector<PacketInfo>& packets,
+		size_t& _write_buffer, size_t& _read_buffer, size_t& _parse_buffer, size_t& _write_packet,
+		size_t& _read_packet, size_t use_pad_size, bool eof_stream, Error* _error);
+	
 	void _ResetState();
 	bool _Eof() const;
+	bool _EofStream() const;
 	bool _LoadCond() const;
 	bool _FullBuffer() const;
 	bool _FullPackets() const;

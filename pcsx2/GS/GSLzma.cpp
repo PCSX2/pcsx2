@@ -387,6 +387,266 @@ void GSInit7ZCRCTables()
 
 namespace
 {
+	// Unbuffered Lzma stream
+	class GSStreamLzma final : public GSStream
+	{
+	public:
+		~GSStreamLzma();
+		bool Open(FileSystem::ManagedCFilePtr fp, Error* error) override;
+		s64 Read(void* ptr, size_t size, Error* error) override;
+		bool IsEof() override;
+		Type GetType() override;
+
+	private:
+		s64 ReadBlock(void* ptr, size_t size, Error* error);
+
+		static constexpr size_t kInputBufSize = static_cast<size_t>(1) << 18;
+
+		struct Block
+		{
+			bool loading = false;
+			size_t file_offset = 0;
+			size_t stream_offset = 0;
+			size_t compressed_size = 0;
+			size_t uncompressed_size = 0;
+			CXzStreamFlags stream_flags = 0;
+			size_t read_offset = 0;
+			size_t write_offset = 0;
+		};
+
+		std::vector<Block> m_blocks;
+		size_t m_stream_size = 0;
+		size_t m_block_index = 0;
+
+		DynamicHeapArray<u8, 64> m_block_read_buffer;
+		alignas(__cachelinesize) CXzUnpacker m_unpacker = {};
+		bool unpacker_constructed = false;
+	};
+
+	GSStreamLzma::~GSStreamLzma()
+	{
+		if (unpacker_constructed)
+			XzUnpacker_Free(&m_unpacker);
+	}
+
+	GSStream::Type GSStreamLzma::GetType()
+	{
+		return LZMA;
+	}
+
+	bool GSStreamLzma::Open(FileSystem::ManagedCFilePtr fp, Error* error)
+	{
+		m_fp = std::move(fp);
+		m_size_compressed = FileSystem::FSize64(m_fp.get());
+
+		GSInit7ZCRCTables();
+
+		// Reset state for multiple opens
+		m_blocks.clear();
+		m_stream_size = 0;
+		m_block_index = 0;
+
+		struct MyFileInStream
+		{
+			ISeekInStream vt;
+			std::FILE* fp;
+		};
+
+		MyFileInStream fis = {
+			{.Read = [](const ISeekInStream* p, void* buf, size_t* size) -> SRes {
+				 MyFileInStream* fis = Z7_CONTAINER_FROM_VTBL(p, MyFileInStream, vt);
+				 const size_t size_to_read = *size;
+				 const auto bytes_read = std::fread(buf, 1, size_to_read, fis->fp);
+				 *size = (bytes_read >= 0) ? bytes_read : 0;
+				 return (bytes_read == size_to_read) ? SZ_OK : SZ_ERROR_READ;
+			 },
+				.Seek = [](const ISeekInStream* p, Int64* pos, ESzSeek origin) -> SRes {
+					MyFileInStream* fis = Z7_CONTAINER_FROM_VTBL(p, MyFileInStream, vt);
+					static_assert(SZ_SEEK_CUR == SEEK_CUR && SZ_SEEK_SET == SEEK_SET && SZ_SEEK_END == SEEK_END);
+					if (FileSystem::FSeek64(fis->fp, *pos, static_cast<int>(origin)) != 0)
+						return SZ_ERROR_READ;
+
+					const s64 new_pos = FileSystem::FTell64(fis->fp);
+					if (new_pos < 0)
+						return SZ_ERROR_READ;
+
+					*pos = new_pos;
+					return SZ_OK;
+				}},
+			m_fp.get()};
+
+		CLookToRead2 look_stream = {};
+		LookToRead2_INIT(&look_stream);
+		LookToRead2_CreateVTable(&look_stream, False);
+		look_stream.realStream = &fis.vt;
+		look_stream.bufSize = kInputBufSize;
+		look_stream.buf = static_cast<Byte*>(ISzAlloc_Alloc(&g_Alloc, kInputBufSize));
+		if (!look_stream.buf)
+		{
+			Error::SetString(error, "Failed to allocate lookahead buffer");
+			return false;
+		}
+		ScopedGuard guard = [&look_stream]() {
+			if (look_stream.buf)
+				ISzAlloc_Free(&g_Alloc, look_stream.buf);
+		};
+
+		// Read blocks
+		CXzs xzs;
+		Xzs_Construct(&xzs);
+		const ScopedGuard xzs_guard([&xzs]() {
+			Xzs_Free(&xzs, &g_Alloc);
+		});
+
+		const s64 file_size = FileSystem::FSize64(m_fp.get());
+		Int64 start_pos = file_size;
+		SRes res = Xzs_ReadBackward(&xzs, &look_stream.vt, &start_pos, nullptr, &g_Alloc);
+		if (res != SZ_OK)
+		{
+			Error::SetString(error, fmt::format("Xzs_ReadBackward() failed: {}", res));
+			return false;
+		}
+
+		const size_t num_blocks = Xzs_GetNumBlocks(&xzs);
+		if (num_blocks == 0)
+		{
+			Error::SetString(error, "Stream has no blocks.");
+			return false;
+		}
+
+		m_blocks.reserve(num_blocks);
+		for (int sn = xzs.num - 1; sn >= 0; sn--)
+		{
+			const CXzStream& stream = xzs.streams[sn];
+			size_t src_offset = stream.startOffset + XZ_STREAM_HEADER_SIZE;
+			for (size_t bn = 0; bn < stream.numBlocks; bn++)
+			{
+				const CXzBlockSizes& block = stream.blocks[bn];
+
+				Block out_block;
+				out_block.file_offset = src_offset;
+				out_block.stream_offset = m_stream_size;
+				out_block.compressed_size = std::min<size_t>(Common::AlignUpPow2(block.totalSize, 4),
+					static_cast<size_t>(file_size - static_cast<s64>(src_offset))); // LZMA blocks are 4 byte aligned?
+				out_block.uncompressed_size = block.unpackSize;
+				out_block.stream_flags = stream.flags;
+
+				m_stream_size += out_block.uncompressed_size;
+				src_offset += out_block.compressed_size;
+				m_blocks.push_back(std::move(out_block));
+			}
+		}
+
+		DevCon.WriteLnFmt("XZ stream is {} bytes across {} blocks", m_stream_size, m_blocks.size());
+
+		if (unpacker_constructed)
+			XzUnpacker_Free(&m_unpacker);
+		XzUnpacker_Construct(&m_unpacker, &g_Alloc);
+		unpacker_constructed = true;
+		return true;
+	}
+
+	s64 GSStreamLzma::ReadBlock(void* ptr, size_t size, Error* error)
+	{
+		if (IsEof())
+			return READ_EOF;
+
+		Block& block = m_blocks[m_block_index];
+
+		if (!block.loading)
+		{
+			if (block.compressed_size > m_block_read_buffer.size())
+				m_block_read_buffer.resize(Common::AlignUpPow2(block.compressed_size, _128kb));
+
+			if (FileSystem::FSeek64(m_fp.get(), static_cast<s64>(block.file_offset), SEEK_SET) != 0 ||
+				std::fread(m_block_read_buffer.data(), block.compressed_size, 1, m_fp.get()) != 1)
+			{
+				Error::SetStringFmt(error, "Failed to read {} bytes from offset {}", block.file_offset, block.compressed_size);
+				return READ_ERROR;
+			}
+
+			XzUnpacker_Init(&m_unpacker);
+			m_unpacker.streamFlags = block.stream_flags;
+			XzUnpacker_PrepareToRandomBlockDecoding(&m_unpacker);
+			
+			block.loading = true;
+		}
+
+		pxAssert(block.read_offset < block.compressed_size);
+
+		SizeT uncompressed_available = size;
+		SizeT compressed_available = block.compressed_size - block.read_offset;
+
+		ECoderStatus status;
+		const SRes res = XzUnpacker_Code(&m_unpacker, static_cast<Byte*>(ptr), &uncompressed_available,
+			m_block_read_buffer.data() + block.read_offset, &compressed_available, true, CODER_FINISH_ANY, &status);
+		if (res != SZ_OK) [[unlikely]]
+		{
+			Error::SetStringFmt(error, "XzUnpacker_Code() failed: {} (status {})", res, static_cast<unsigned>(status));
+			return READ_ERROR;
+		}
+
+		block.read_offset += compressed_available;
+		block.write_offset += uncompressed_available;
+
+		if (status == CODER_STATUS_FINISHED_WITH_MARK)
+		{
+			if (block.read_offset != block.compressed_size || block.write_offset != block.uncompressed_size)
+			{
+				Console.WarningFmt("Decompress size mismatch: {}/{} vs {}/{}", block.read_offset, block.write_offset,
+					block.compressed_size, block.uncompressed_size);
+			}
+			block.loading = false;
+			block.read_offset = 0;
+			block.write_offset = 0;
+			m_block_index++;
+		}
+		return static_cast<s64>(uncompressed_available);
+	}
+
+	s64 GSStreamLzma::Read(void* ptr, size_t size, Error* error)
+	{
+		if (IsEof())
+		{
+			Error::SetString(error, "(GSStreamLzma) EOF");
+			return READ_EOF;
+		}
+		Byte* p = static_cast<Byte*>(ptr);
+		while (size > 0 && !IsEof())
+		{
+			s64 ret = ReadBlock(p, size, error);
+			if (ret == READ_ERROR)
+				return READ_ERROR;
+			if (ret == READ_EOF)
+				break;
+			p += ret;
+			size -= ret;
+		}
+		return p - static_cast<Byte*>(ptr);
+	}
+
+	bool GSStreamLzma::IsEof()
+	{
+		return m_block_index >= m_blocks.size();
+	}
+
+	//class GSDumpStreamed final : public GSDumpFile
+	//{
+	//public:
+	//	GSDumpStreamed(size_t buffer_size);
+	//	~GSDumpStreamed() override;
+
+	//protected:
+	//	bool Open(FileSystem::ManagedCFilePtr fp, Error* error) override;
+	//	bool IsEof() override;
+	//	size_t Read(void* ptr, size_t size) override;
+	//	s64 GetFileSize() override;
+
+	//private:
+	//	std::unique_ptr<GSStream> m_stream;
+	//	std::vector<u8> buffer;
+	//};
+
 	class GSDumpLzma final : public GSDumpFile
 	{
 	public:
@@ -850,11 +1110,9 @@ void GSDumpLazy::_ResetState()
 	write_buffer = 0;
 	read_packet = 0;
 	write_packet = 0;
-
 	reading_packet = false;
-
+	eof_stream = false;
 	parse_error = false;
-	eof_actual = false;
 }
 
 void GSDumpLazy::Init()
@@ -879,19 +1137,12 @@ bool GSDumpLazy::_OpenNext(const std::string& filename, Error* error, std::uniqu
 	cond_read.wait(lock, [&]() { return _Stopped() || !_HasNext(); });
 
 	if (_Stopped())
-		return false;
-
-	actual_dump_next = GSDumpFile::OpenGSDump(filename.c_str(), error);
-	if (!actual_dump_next)
-		return false;
-	filename_next = filename;
-
-	if (!actual_dump_next->ReadHeaderStateRegs(error))
 	{
-		actual_dump_next.reset();
+		Error::SetString(error, "(GSDumpLazy) Cannot open next when stopped.");
 		return false;
 	}
 
+	filename_next = filename;
 	cond_write.notify_one();
 	return true;
 }
@@ -911,7 +1162,7 @@ void GSDumpLazy::_DebugCheck() const
 
 bool GSDumpLazy::_NotLoading() const
 {
-	return !actual_dump && !actual_dump_next;
+	return !stream && !_HasNext();
 }
 
 bool GSDumpLazy::_Stopped() const
@@ -921,13 +1172,18 @@ bool GSDumpLazy::_Stopped() const
 
 bool GSDumpLazy::_HasNext() const
 {
-	return static_cast<bool>(actual_dump_next);
+	return !filename_next.empty();
+}
+
+bool GSDumpLazy::_EofStream() const
+{
+	return !stream || eof_stream;
 }
 
 bool GSDumpLazy::_Eof() const
 {
 	_DebugCheck();
-	return _EmptyPackets() && eof_actual;
+	return _EmptyBuffer() && _EmptyPackets() && _EofStream();
 }
 
 bool GSDumpLazy::_FullBuffer() const
@@ -960,8 +1216,9 @@ bool GSDumpLazy::_LoadCond() const
 	// Want more data when the buffer is less than half full or there packet buffer is empty.
 	// The latter condition makes it more likely that EOFs are detected correctly in case there
 	// is an incomplete packet at the end.
-	bool want_more_data = ((write_buffer - read_buffer) <= (buffer_size / 2)) || _EmptyPackets();
-	return want_more_data && !eof_actual && !parse_error && !_FullPackets() && actual_dump;
+	bool load_data = ((write_buffer - read_buffer) <= (buffer_size / 2)) && !_EofStream();
+	bool parse_packets = _EmptyPackets() && !_EmptyBuffer() && !_FullPackets();
+	return load_data || parse_packets;
 }
 
 void GSDumpLazy::Stop()
@@ -997,13 +1254,106 @@ bool GSDumpLazy::DonePackets(size_t i) const
 	}
 }
 
+bool GSDumpLazy::_FillBytesRaw(std::unique_ptr<GSStream>& stream, std::vector<u8>& buffer, size_t buffer_size,
+	size_t& _write_buffer, size_t& _read_buffer, Error* error)
+{
+	// First iteration: fill to buffer end.
+	// Second iteration: fill to read index.
+	for (int i = 0; i < 2 && !stream->IsEof(); i++)
+	{
+		size_t mod_write = _write_buffer % buffer_size;
+		size_t mod_read = _read_buffer % buffer_size;
+		size_t try_read_size;
+		if (i == 0 && mod_write >= mod_read)
+		{
+			// Fill up to the buffer end.
+			try_read_size = buffer_size - mod_write;
+		}
+		else if (i == 1 && mod_write < mod_read)
+		{
+			// Fill up to the read index.
+			try_read_size = mod_read - mod_write;
+		}
+		else
+		{
+			continue;
+		}
+		s64 read_size = stream->Read(buffer.data() + mod_write, try_read_size, error);
+
+		if (read_size == GSStream::READ_ERROR)
+			return false;
+
+		_write_buffer += read_size;
+	}
+	return true;
+}
+
+size_t GSDumpLazy::_CopyPadBytes(std::vector<u8>& buffer, size_t buffer_size, size_t _write_buffer, size_t _read_buffer)
+{
+	// Copy pad bytes if the range wraps.
+	size_t mod_write = _write_buffer % buffer_size;
+	size_t mod_read = _read_buffer % buffer_size;
+	if (_read_buffer < _write_buffer && mod_write <= mod_read)
+	{
+		size_t use_pad_size = std::min(mod_write, pad_size);
+		std::memcpy(buffer.data() + buffer_size, buffer.data(), use_pad_size);
+		return use_pad_size;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+bool GSDumpLazy::_ParsePackets(std::vector<u8>& buffer, size_t buffer_size, std::vector<PacketInfo>& packets,
+	size_t& _write_buffer, size_t& _read_buffer, size_t& _parse_buffer, size_t& _write_packet,
+	size_t& _read_packet, size_t use_pad_size, bool eof_stream, Error* _error)
+{
+	while (_write_packet - _read_packet < packets.size() && _parse_buffer < _write_buffer)
+	{
+		size_t mod_parse = _parse_buffer % buffer_size;
+		size_t bytes_unparsed = _write_buffer - _parse_buffer;
+		size_t bytes_padding = buffer_size + use_pad_size - mod_parse;
+		size_t bytes_available = std::min(bytes_padding, bytes_unparsed);
+		size_t mod_packet = _write_packet % packets.size();
+		s64 packet_size = GSDumpFile::ReadOnePacket(
+			buffer.data() + mod_parse,
+			buffer.data() + mod_parse + bytes_available,
+			packets[mod_packet].data,
+			_error);
+		if (packet_size == PACKET_FAILURE)
+			return false;
+
+		if (packet_size == PACKET_OUT_OF_DATA)
+		{
+			if (bytes_padding <= bytes_unparsed && use_pad_size >= pad_size)
+			{
+				Error::SetStringFmt(_error, "GSDumpLazy: Packet exceeded the pad region ({} bytes).", pad_size);
+				return false;
+			}
+			if (eof_stream) // Skip any incomplete last packets.
+				_parse_buffer = _write_buffer;
+			return true;
+		}
+		pxAssert(packet_size > 0);
+
+		packets[mod_packet].packet_num = _write_packet;
+
+		packets[mod_packet].buffer_start = _parse_buffer;
+		_parse_buffer += static_cast<size_t>(packet_size);
+		packets[mod_packet].buffer_end = _parse_buffer;
+
+		_write_packet++;
+	}
+	return true;
+}
+
 void GSDumpLazy::_LoaderFunc(GSDumpLazy* dump)
 {
 	std::mutex& mut = dump->mut;
+	std::unique_ptr<GSStream>& stream = dump->stream;
 	std::string& filename = dump->filename;
 	std::string& filename_next = dump->filename_next;
-	std::unique_ptr<GSDumpFile>& actual_dump = dump->actual_dump;
-	std::unique_ptr<GSDumpFile>& actual_dump_next = dump->actual_dump_next;
 	const size_t buffer_size = dump->buffer_size;
 	std::vector<u8>& buffer = dump->buffer;
 	std::vector<PacketInfo>& packets = dump->packets;
@@ -1048,10 +1398,14 @@ void GSDumpLazy::_LoaderFunc(GSDumpLazy* dump)
 				_ResetState();
 				filename = filename_next;
 				filename_next.clear();
-				actual_dump = std::move(actual_dump_next);
-				m_regs_data = std::move(actual_dump->m_regs_data);
-				m_state_data = std::move(actual_dump->m_state_data);
 				dump->parse_error = false;
+				if (!GSStream::OpenStream(stream, filename.c_str(), &dump->error))
+					dump->parse_error = true;
+				if (!dump->parse_error &&
+					!_FillBytesRaw(stream, buffer, buffer_size, dump->write_buffer, dump->read_buffer, &dump->error))
+					_parse_error = true;
+				if (!dump->parse_error && !dump->ReadHeaderStateRegs(&_error))
+					dump->parse_error = true;
 				cond_read.notify_one();
 				continue;
 			}
@@ -1064,84 +1418,18 @@ void GSDumpLazy::_LoaderFunc(GSDumpLazy* dump)
 			_write_packet = dump->write_packet;
 		}
 
-		// First iteration: fill to buffer end.
-		// Second iteration: fill to read index.
-		for (int i = 0; i < 2 && !_eof_actual; i++)
-		{
-			size_t mod_write = _write_buffer % buffer_size;
-			size_t mod_read = _read_buffer % buffer_size;
-			size_t try_read_size;
-			if (i == 0 && mod_write >= mod_read)
-			{
-				// Fill up to the buffer end.
-				try_read_size = buffer_size - mod_write;
-			}
-			else if (i == 1 && mod_write < mod_read)
-			{
-				// Fill up to the read index.
-				try_read_size = mod_read - mod_write;
-			}
-			else
-			{
-				continue;
-			}
-			size_t read_size = actual_dump->Read(buffer.data() + mod_write, try_read_size);
+		if (!_FillBytesRaw(stream, buffer, buffer_size, _write_buffer, _read_buffer, &_error))
+			_parse_error = true;
 
-			_write_buffer += read_size;
-
-			if (read_size < try_read_size)
-				_eof_actual = true;
-		}
-
-		// Copy pad bytes if the range wraps.
 		size_t use_pad_size = 0;
-		{
-			size_t mod_write = _write_buffer % buffer_size;
-			size_t mod_read = _read_buffer % buffer_size;
-			if (_read_buffer < _write_buffer && mod_write <= mod_read)
-			{
-				use_pad_size = std::min(mod_write, pad_size);
-				std::memcpy(buffer.data() + buffer_size, buffer.data(), use_pad_size);
-			}
-		}
+		if (!_parse_error)
+			use_pad_size = _CopyPadBytes(buffer, buffer_size, _write_buffer, _read_buffer);
 
 		// Parse as many packets as possible.
-		while (_write_packet - _read_packet < packets.size() && _parse_buffer < _write_buffer)
-		{
-			size_t mod_parse = _parse_buffer % buffer_size;
-			size_t bytes_unparsed = _write_buffer - _parse_buffer;
-			size_t bytes_padding = buffer_size + use_pad_size - mod_parse;
-			size_t bytes_available = std::min(bytes_padding, bytes_unparsed);
-			size_t mod_packet = _write_packet % packets.size();
-			s64 packet_size = actual_dump->ReadOnePacket(
-				buffer.data() + mod_parse,
-				buffer.data() + mod_parse + bytes_available,
-				packets[mod_packet].data,
-				&_error);
-			if (packet_size == PACKET_FAILURE)
-			{
-				_parse_error = true;
-				break;
-			}
-			if (packet_size == PACKET_OUT_OF_DATA)
-			{
-				if (bytes_padding <= bytes_unparsed && use_pad_size >= pad_size)
-				{
-					Error::SetStringFmt(&_error, "GSDumpLazy: Packet exceeded the pad region ({} bytes).", pad_size);
-					_parse_error = true;
-				}
-				break;
-			}
-			pxAssert(packet_size > 0);
-
-			packets[mod_packet].packet_num = _write_packet;
-			_write_packet++;
-
-			packets[mod_packet].buffer_start = _parse_buffer;
-			_parse_buffer += static_cast<size_t>(packet_size);
-
-			packets[mod_packet].buffer_end = _parse_buffer;
-		}
+		if (!_parse_error &&
+			!_ParsePackets(buffer, buffer_size, packets, _write_buffer, _read_buffer, _parse_buffer,
+				_write_packet, _read_packet, use_pad_size, stream->IsEof(), &_error))
+			_parse_error = true;
 
 		// Should not really happen.
 		if (_write_packet - _read_packet >= packets.size())
@@ -1154,12 +1442,12 @@ void GSDumpLazy::_LoaderFunc(GSDumpLazy* dump)
 			dump->parse_buffer = _parse_buffer;
 			dump->write_buffer = _write_buffer;
 			dump->write_packet = _write_packet;
+			dump->eof_stream = stream->IsEof();
 			if (_parse_error)
 			{
 				dump->parse_error = true;
 				dump->error = _error;
 			}
-			dump->eof_actual = _eof_actual;
 
 			cond_read.notify_one();
 		}
@@ -1205,12 +1493,11 @@ s64 GSDumpLazy::GetPacket(size_t i, GSData& data, Error* error)
 	bool reopen = false;
 	if (loop)
 	{
-		if (eof_actual && packets[0].packet_num == 0 && write_buffer <= buffer_size)
+		if (_EofStream() && packets[0].packet_num == 0 && write_buffer <= buffer_size)
 		{
 			// Safe to rewind.
 			read_packet = 0;
-			read_buffer = 0;
-			pxAssert(packets[0].buffer_start == 0);
+			read_buffer = packets[0].buffer_start;
 		}
 		else
 		{
@@ -1294,16 +1581,38 @@ bool GSDumpLazy::IsEof()
 
 size_t GSDumpLazy::Read(void* ptr, size_t size)
 {
-	Console.Error("GSDumpLazy::Read() not implemented");
-	pxFail("GSDumpLazy::Read() not implemented");
-	return 0;
+	// Only call by the producer with the lock held!
+	if (parse_error || _Eof() || !_EmptyPackets() || _NotLoading() || _Stopped())
+		return 0;
+
+	if (read_buffer + size > write_buffer)
+		return 0;
+
+	size_t read_size = 0;
+	for (int i = 0; i < 2 && read_size < size; i++)
+	{
+		size_t mod_read = read_buffer % buffer_size;
+		size_t mod_write = write_buffer % buffer_size;
+		size_t copy_size;
+		if (mod_read < mod_write)
+			copy_size = mod_write - mod_read;
+		else
+			copy_size = buffer_size - mod_read;
+		copy_size = std::min(size, copy_size);
+		std::memcpy(ptr, buffer.data() + mod_read, copy_size);
+		read_size += copy_size;
+		read_buffer += copy_size;
+		parse_buffer += copy_size;
+	}
+	pxAssert(read_size == size);
+	return read_size;
 }
 
 s64 GSDumpLazy::GetFileSize()
 {
 	std::unique_lock lock(mut);
 
-	cond_read.wait(lock, [&]() { return _Stopped() || _NotLoading() || actual_dump; });
+	cond_read.wait(lock, [&]() { return _Stopped() || _NotLoading() || stream; });
 
 	if (_Stopped())
 	{
@@ -1317,7 +1626,7 @@ s64 GSDumpLazy::GetFileSize()
 		return 0;
 	}
 
-	return actual_dump->GetFileSize();
+	return stream->GetSizeCompressed();
 }
 
 const GSDumpFile::ByteArray& GSDumpLazy::GetRegsData() const
@@ -1386,6 +1695,33 @@ size_t GSDumpFile::GetPacketSize(const GSData& data)
 			pxFail("GSDumpLazy: Unknown packet type");
 			return 0;
 	}
+}
+
+bool GSStream::OpenStream(std::unique_ptr<GSStream>& stream, const char* filename, Error* error)
+{
+	FileSystem::ManagedCFilePtr fp = FileSystem::OpenManagedCFile(filename, "rb", error);
+	if (!fp)
+		return false;
+
+	Type file_type;
+	if (StringUtil::EndsWithNoCase(filename, ".xz"))
+		file_type = LZMA;
+	else if (StringUtil::EndsWithNoCase(filename, ".zst"))
+		file_type = ZSTD;
+	else
+		file_type = RAW;
+
+	if (!stream || stream->GetType() != file_type)
+	{
+		if (file_type == LZMA)
+			stream = std::make_unique<GSStreamLzma>();
+		else if (file_type == ZSTD)
+			return false;
+		else if (file_type == RAW)
+			return false;
+	}
+
+	return stream->Open(std::move(fp), error);
 }
 
 std::unique_ptr<GSDumpFile> GSDumpFile::OpenGSDump(const char* filename, Error* error)
