@@ -280,6 +280,8 @@ namespace GSDumpTypes
 	}
 } // namespace GSDumpTypes
 
+class GSDumpLazy;
+
 class GSDumpFile
 {
 public:
