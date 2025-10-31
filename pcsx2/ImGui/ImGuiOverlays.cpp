@@ -1281,15 +1281,20 @@ void SaveStateSelectorUI::ShowSlotOSDMessage()
 	std::string date;
 	
 	std::tm tm_local = {};
-#ifdef _MSC_VER
-	localtime_s(&tm_local, &sd.ModificationTime);
-#else
-	localtime_r(&sd.ModificationTime, &tm_local);
-#endif
+
 	if (!filename.empty() && FileSystem::StatFile(filename.c_str(), &sd))
+	{
+#ifdef _MSC_VER
+		localtime_s(&tm_local, &sd.ModificationTime);
+#else
+		localtime_r(&sd.ModificationTime, &tm_local);
+#endif
 		date = fmt::format(TRANSLATE_FS("ImGuiOverlays", DATE_TIME_FORMAT), tm_local);
+	}
 	else
+	{
 		date = TRANSLATE_STR("ImGuiOverlays", "no save yet");
+	}
 
 	Host::AddIconOSDMessage("ShowSlotOSDMessage", ICON_FA_MAGNIFYING_GLASS,
 		fmt::format(TRANSLATE_FS("Hotkeys", "Save slot {0} selected ({1})."), slot, date),
