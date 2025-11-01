@@ -1832,15 +1832,6 @@ void GSState::GIFRegHandlerHWREG(const GIFReg* RESTRICT r)
 
 void GSState::Flush(GSFlushReason reason)
 {
-	if ((s_n & 0x3FF) == 0)
-	{
-		// Let parent process know we are not deadlocked.
-		if (GSIsRegressionTesting())
-			GSSignalRunnerHeartbeat_RegressionTest();
-		if (GSIsBatchRunning())
-			GSSignalRunnerHeartbeat_BatchRun();
-	}
-
 	FlushWrite();
 
 	if (m_index.tail > 0)

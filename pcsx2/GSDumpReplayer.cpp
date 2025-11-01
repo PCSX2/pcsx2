@@ -957,6 +957,15 @@ static void GSDumpReplayerFrameLimit()
 
 void GSDumpReplayerCpuStep()
 {
+	if ((s_current_packet & 0xFF) == 0)
+	{
+		// Let parent process know we are not deadlocked.
+		if (GSIsRegressionTesting())
+			GSSignalRunnerHeartbeat_RegressionTest();
+		if (GSIsBatchRunning())
+			GSSignalRunnerHeartbeat_BatchRun();
+	}
+
 	if (s_needs_state_loaded)
 	{
 		GSDumpReplayerLoadInitialState();
