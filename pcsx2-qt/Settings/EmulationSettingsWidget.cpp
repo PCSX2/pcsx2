@@ -103,70 +103,70 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* settings_dialog
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.hostFilesystem, "EmuCore", "HostFs", false);
 
-	dialog()->registerWidgetHelp(m_ui.normalSpeed, tr("Normal Speed"), tr("100%"),
+	dialog()->registerWidgetHelp(m_ui.normalSpeed, tr("Normal Speed"),
 		tr("Sets the target emulation speed. It is not guaranteed that this speed will be reached, "
-		   "and if not, the emulator will run as fast as it can manage."));
+		   "and if not, the emulator will run as fast as it can manage."), tr("100%"));
 	//: The "User Preference" string will appear after the text "Recommended Value:"
-	dialog()->registerWidgetHelp(m_ui.fastForwardSpeed, tr("Fast-Forward Speed"), tr("User Preference"),
-		tr("Sets the fast-forward speed. This speed will be used when the fast-forward hotkey is pressed/toggled."));
+	dialog()->registerWidgetHelp(m_ui.fastForwardSpeed, tr("Fast-Forward Speed"),
+		tr("Sets the fast-forward speed. This speed will be used when the fast-forward hotkey is pressed/toggled."), tr("User Preference"));
 	//: The "User Preference" string will appear after the text "Recommended Value:"
-	dialog()->registerWidgetHelp(m_ui.slowMotionSpeed, tr("Slow-Motion Speed"), tr("User Preference"),
-		tr("Sets the slow-motion speed. This speed will be used when the slow-motion hotkey is pressed/toggled."));
+	dialog()->registerWidgetHelp(m_ui.slowMotionSpeed, tr("Slow-Motion Speed"),
+		tr("Sets the slow-motion speed. This speed will be used when the slow-motion hotkey is pressed/toggled."), tr("User Preference"));
 
-	dialog()->registerWidgetHelp(m_ui.eeCycleRate, tr("EE Cycle Rate"), tr("100% (Normal Speed)"),
+	dialog()->registerWidgetHelp(m_ui.eeCycleRate, tr("EE Cycle Rate"),
 		tr("Higher values may increase internal framerate in games, but will increase CPU requirements substantially. "
-		   "Lower values will reduce the CPU load allowing lightweight games to run full speed on weaker CPUs."));
-	dialog()->registerWidgetHelp(m_ui.eeCycleSkipping, tr("EE Cycle Skip"), tr("Disabled"),
+		   "Lower values will reduce the CPU load allowing lightweight games to run full speed on weaker CPUs."), tr("100% (Normal Speed)"));
+	dialog()->registerWidgetHelp(m_ui.eeCycleSkipping, tr("EE Cycle Skip"),
 		tr("Makes the emulated Emotion Engine skip cycles. "
 		   //: SOTC = Shadow of the Colossus. A game's title, should not be translated unless an official translation exists.
-		   "Helps a small subset of games like SOTC. Most of the time it's harmful to performance."));
-	dialog()->registerWidgetHelp(m_ui.threadPinning, tr("Enable Thread Pinning"), tr("Unchecked"),
+		   "Helps a small subset of games like SOTC. Most of the time it's harmful to performance."), tr("Disabled"));
+	dialog()->registerWidgetHelp(m_ui.threadPinning, tr("Enable Thread Pinning"),
 		tr("Sets the priority for specific threads in a specific order ignoring the system scheduler. "
 		   //: P-Core = Performance Core, E-Core = Efficiency Core. See if Intel has official translations for these terms.
-		   "May help CPUs with big (P) and little (E) cores (e.g., Intel 12th or newer generation CPUs or other vendors such as AMD)."));
-	dialog()->registerWidgetHelp(m_ui.MTVU, tr("Enable Multithreaded VU1 (MTVU1)"), tr("Checked"),
+		   "May help CPUs with big (P) and little (E) cores (e.g., Intel 12th or newer generation CPUs or other vendors such as AMD)."), tr("Unchecked"));
+	dialog()->registerWidgetHelp(m_ui.MTVU, tr("Enable Multithreaded VU1 (MTVU1)"),
 		tr("Generally a speedup on CPUs with 4 or more cores. "
-		   "Safe for most games, but a few are incompatible and may hang."));
-	dialog()->registerWidgetHelp(m_ui.fastCDVD, tr("Enable Fast CDVD"), tr("Unchecked"),
-		tr("Fast disc access, shorter loading times. Check HDLoader compatibility lists for games that are known to have issues with this."));
-	dialog()->registerWidgetHelp(m_ui.precacheCDVD, tr("Enable CDVD Precaching"), tr("Unchecked"),
+		   "Safe for most games, but a few are incompatible and may hang."), tr("Checked"));
+	dialog()->registerWidgetHelp(m_ui.fastCDVD, tr("Enable Fast CDVD"),
+		tr("Fast disc access, shorter loading times. Check HDLoader compatibility lists for games that are known to have issues with this."), tr("Unchecked"));
+	dialog()->registerWidgetHelp(m_ui.precacheCDVD, tr("Enable CDVD Precaching"),
 		tr("Loads the disc image into RAM before starting the virtual machine. Can reduce stutter on systems with hard drives that "
-		   "have long wake times, but significantly increases boot times."));
-	dialog()->registerWidgetHelp(m_ui.cheats, tr("Enable Cheats"), tr("Unchecked"),
-		tr("Automatically loads and applies cheats on game start."));
-	dialog()->registerWidgetHelp(m_ui.hostFilesystem, tr("Enable Host Filesystem"), tr("Unchecked"),
-		tr("Allows games and homebrew to access files / folders directly on the host computer."));
+		   "have long wake times, but significantly increases boot times."), tr("Unchecked"));
+	dialog()->registerWidgetHelp(m_ui.cheats, tr("Enable Cheats"),
+		tr("Automatically loads and applies cheats on game start."), tr("Unchecked"));
+	dialog()->registerWidgetHelp(m_ui.hostFilesystem, tr("Enable Host Filesystem"),
+		tr("Allows games and homebrew to access files / folders directly on the host computer."), tr("Unchecked"));
 
-	dialog()->registerWidgetHelp(m_ui.optimalFramePacing, tr("Optimal Frame Pacing"), tr("Unchecked"),
+	dialog()->registerWidgetHelp(m_ui.optimalFramePacing, tr("Optimal Frame Pacing"),
 		tr("Sets the VSync queue size to 0, making every frame be completed and presented by the GS before input is polled and the next frame begins. "
-		   "Using this setting can reduce input lag at the cost of measurably higher CPU and GPU requirements."));
-	dialog()->registerWidgetHelp(m_ui.maxFrameLatency, tr("Maximum Frame Latency"), tr("2 Frames"),
+		   "Using this setting can reduce input lag at the cost of measurably higher CPU and GPU requirements."), tr("Unchecked"));
+	dialog()->registerWidgetHelp(m_ui.maxFrameLatency, tr("Maximum Frame Latency"),
 		tr("Sets the maximum number of frames that can be queued up to the GS, before the CPU thread will wait for one of them to complete before continuing. "
-		   "Higher values can assist with smoothing out irregular frame times, but increase input lag."));
-	dialog()->registerWidgetHelp(m_ui.syncToHostRefreshRate, tr("Sync to Host Refresh Rate"), tr("Unchecked"),
+		   "Higher values can assist with smoothing out irregular frame times, but increase input lag."), tr("2 Frames"));
+	dialog()->registerWidgetHelp(m_ui.syncToHostRefreshRate, tr("Sync to Host Refresh Rate"),
 		tr("Speeds up emulation so that the guest refresh rate matches the host. This results in the smoothest animations possible, at the cost of "
 		   "potentially increasing the emulation speed by less than 1%. Sync to Host Refresh Rate will not take effect if "
 		   "the console's refresh rate is too far from the host's refresh rate. Users with variable refresh rate displays "
-		   "should disable this option."));
-	dialog()->registerWidgetHelp(m_ui.vsync, tr("Vertical Sync (VSync)"), tr("Unchecked"),
+		   "should disable this option."), tr("Unchecked"));
+	dialog()->registerWidgetHelp(m_ui.vsync, tr("Vertical Sync (VSync)"),
 		tr("Enable this option to match PCSX2's refresh rate with your current monitor or screen. VSync is automatically disabled when "
-		   "it is not possible (e.g., running at non-100% speed)."));
-	dialog()->registerWidgetHelp(m_ui.useVSyncForTiming, tr("Use Host VSync Timing"), tr("Unchecked"),
+		   "it is not possible (e.g., running at non-100% speed)."), tr("Unchecked"));
+	dialog()->registerWidgetHelp(m_ui.useVSyncForTiming, tr("Use Host VSync Timing"),
 		tr("When synchronizing with the host refresh rate, this option disables PCSX2's internal frame timing and uses the host instead. "
-		   "Can result in smoother frame pacing, <strong>but at the cost of increased input latency</strong>."));
-	dialog()->registerWidgetHelp(m_ui.skipPresentingDuplicateFrames, tr("Skip Presenting Duplicate Frames"), tr("Unchecked"),
+		   "Can result in smoother frame pacing, <strong>but at the cost of increased input latency</strong>."), tr("Unchecked"));
+	dialog()->registerWidgetHelp(m_ui.skipPresentingDuplicateFrames, tr("Skip Presenting Duplicate Frames"),
 		tr("Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still "
 		   "rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth out frame time "
 		   "fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase "
-		   "input lag. Helps when using frame generation on 25/30fps games."));
-	dialog()->registerWidgetHelp(m_ui.manuallySetRealTimeClock, tr("Manually Set Real-Time Clock"), tr("Unchecked"),
-		tr("Manually set a real-time clock to use for the virtual PlayStation 2 instead of using your OS' system clock."));
-	dialog()->registerWidgetHelp(m_ui.rtcDateTime, tr("Real-Time Clock"), tr("Current date and time"),
+		   "input lag. Helps when using frame generation on 25/30fps games."), tr("Unchecked"));
+	dialog()->registerWidgetHelp(m_ui.manuallySetRealTimeClock, tr("Manually Set Real-Time Clock"),
+		tr("Manually set a real-time clock to use for the virtual PlayStation 2 instead of using your OS' system clock."), tr("Unchecked"));
+	dialog()->registerWidgetHelp(m_ui.rtcDateTime, tr("Real-Time Clock"),
 		tr("Real-time clock (RTC) used by the virtual PlayStation 2.<br>"
 		   "This time is only applied upon booting the PS2; changing it while in-game will have no effect.<br>"
-		   "Some games require an RTC date/time set after their release date."));
-	dialog()->registerWidgetHelp(m_ui.rtcUseSystemLocaleFormat, tr("Use System Locale Format"), tr("User Preference"),
-		tr("Uses the operating system's date/time format rather than \"yyyy-MM-dd HH:mm:ss\". May exclude seconds."));
+		   "Some games require an RTC date/time set after their release date."), tr("Current date and time"));
+	dialog()->registerWidgetHelp(m_ui.rtcUseSystemLocaleFormat, tr("Use System Locale Format"),
+		tr("Uses the operating system's date/time format rather than \"yyyy-MM-dd HH:mm:ss\". May exclude seconds."), tr("User Preference"));
 
 	updateOptimalFramePacing();
 	updateUseVSyncForTimingEnabled();
