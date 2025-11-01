@@ -44,6 +44,8 @@ typedef struct
 			/*16*/ u32 language : 5;
 			/** timezone minutes offset from gmt */
 			/*21*/ u32 timezoneOffset : 11;
+ 			/** timezone location ID */
+			/*32*/ u8 timeZoneID : 7;
 		};
 
 		u8  UC[4];
@@ -117,3 +119,109 @@ extern bool IsBIOSAvailable(const std::string& full_path);
 
 extern bool LoadBIOS();
 extern void CopyBIOSToMemory();
+
+constexpr const char* TimeZoneLocations[128] = {
+    "Kabul",  												// Afghanistan				[0]
+    "Tirana", 												// Albania					[1]
+    "Algiers", 												// Algeria					[2]	
+	"Andorra la Vella", 									// Andorra					[3]
+	"Yerevan", 												// Armenia					[4]
+	"Perth", "Adelaide", "Sydney", "Lord Howe Island", 	 	// Australia				[5, 6, 7, 8]
+	"Vienna",												// Austria					[9]
+	"Baku",													// Azerbaijan				[10]
+	"Manama",												// Bahrain					[11]
+	"Dhaka",												// Bangladesh				[12]
+	"Minsk",												// Belarus					[13]
+	"Brussels",												// Belgium					[14]
+	"Sarajevo",												// Bosnia and Herzegovina	[15]
+	"Sofia",												// Bulgaria					[16]
+	"Pacific (Canada)", "Mountain (Canada)",
+	"Central (Canada)", "Eastern (Canada)",
+	"Atlantic (Canada)", "Newfoundland",					// Canada					[17, 18, 19, 20, 21, 22]
+	"Praia",												// Cape Verde				[23]
+	"Santiago", "Easter Island",							// Chile					[24, 25]
+	"Beijing",												// China					[26]
+	"Zagreb",												// Croatia					[27]
+	"Nicosia",												// Cyprus					[28]
+	"Prague",												// Czech Republic			[29]
+	"Copenhagen",											// Denmark					[30]
+	"Cairo",												// Egypt					[31]
+	"Tallinn",												// Estonia					[32]
+	"Suva",													// Fiji						[33]
+	"Helsinki",												// Finland					[34]
+	"Paris",												// France					[35]
+	"Tbilisi",												// Georgia					[36]
+	"Berlin",												// Germany					[37]
+	"Gibraltar",											// Gibraltar				[38]
+	"Athens",												// Greece					[39]
+	"Northwestern Greenland", "Southwestern Greenland",
+	"Eastern Greenland",									// Greenland				[40, 41, 42]
+	"Budapest",												// Hungary					[43]
+	"Reykjavik",											// Iceland					[44]
+	"Calcutta",												// India					[45]
+	"Tehran",												// Iran						[46]
+	"Baghdad",												// Iraq						[47]
+	"Dublin",												// Ireland					[48]
+	"Jerusalem",											// Israel					[49]
+	"Rome",													// Italy					[50]
+	"Tokyo",												// Japan					[51]
+	"Amman",												// Jordan					[52]
+	"Western Kazakhstan", "Central Kazakhstan",
+	"Eastern Kazakhstan",									// Kazakhstan				[53, 54, 55]
+	"Kuwait City",											// Kuwait					[56]
+	"Bishkek",												// Kyrgyzstan				[57]
+	"Riga",													// Latvia					[58]
+	"Beirut",												// Lebanon					[59]
+	"Vaduz",												// Liechtenstein			[60]
+	"Vilnius",												// Lithuania				[61]
+	"Luxembourg",											// Luxembourg				[62]
+	"Skopje",												// Macedonia				[63]
+	"Valletta",												// Malta					[64]
+	"Tijuana", "Chihuahua", "Mexico City",					// Mexico					[65, 66, 67]
+	"Midway Islands",										// Midway Islands			[68]
+	"Monaco",												// Monaco					[69]
+	"Casablanca",											// Morocco					[70]
+	"Windhoek",												// Namibia					[71]
+	"Kathmandu",											// Nepal					[72]
+	"Amsterdam",											// Netherlands, The			[73]
+	"New Caledonia",										// New Caledonia			[74]
+	"Wellington",											// New Zealand				[75]
+	"Oslo",													// Norway					[76]
+	"Muscat",												// Oman						[77]
+	"Karachi",												// Pakistan					[78]
+	"Panama City",											// Panama					[79]
+	"Warsaw",												// Poland					[80]
+	"Azores", "Lisbon",										// Portugal					[81, 82]
+	"Puerto Rico",											// Puerto Rico				[83]
+	"Reunion",												// Réunion					[84]
+	"Bucharest",											// Romania					[85]
+	"Kaliningrad", "Moscow", "Izhevsk", "Perm", "Omsk",
+	"Norilsk", "Bratsk", "Yakutsk", "Vladivostok",
+	"Magadan", "Petropavlovsk-Kamchatsky",					// Russia 					[86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96]
+	"Samoa Islands",										// Samoa Islands 			[97]
+	"San Marino",											// San Marino 				[98]
+	"Riyadh",												// Saudi Arabia 			[99]
+	"Bratislava",											// Slovakia 				[100]
+	"Ljubljana",											// Slovenia 				[101]
+	"Johannesburg",											// South Africa 			[102]
+	"Canary Islands", "Madrid",								// Spain 					[103, 104]
+	"Stockholm",											// Sweden 					[105]
+	"Bern",													// Switzerland 				[106]
+	"Damascus",												// Syria					[107]
+	"Tunis",												// Tunisia					[108]
+	"Istanbul",												// Turkey					[109]
+	"Kiev",													// Ukraine					[110]
+	"Abu Dhabi",											// United Arab Emirates		[111]
+	"London",												// United Kingdom			[112]
+	"Hawaii", "Alaska", "Pacific (USA)", "Mountain (USA)",
+	"Central (USA)", "Eastern (USA)",						// United States of America [113, 114, 115, 116, 117, 118]
+	"Tashkent",												// Uzbekistan				[119]
+	"Caracas",												// Venezuela 				[120]
+	"Belgrade",												// Yugoslavia 				[121]
+	"Bangkok",												// Thailand 				[122]
+	"Hong Kong",											// Hong Kong 				[123]
+	"Kuala Lumpur",											// Malaysia					[124]
+	"Singapore",											// Singapore				[125]
+	"Taipei",												// Taiwan					[126]
+	"Seoul",												// South Korea				[127]
+};

@@ -920,6 +920,11 @@ void cdvdReset()
 	cdvd.ReadTime = cdvdBlockReadTime(MODE_DVDROM);
 	cdvd.RotSpeed = cdvdRotationTime(MODE_DVDROM);
 
+	ReadOSDConfigParames();
+
+	DevCon.WriteLn(Color_StrongGreen, "Time Zone Location: %s (ID: %d)",
+				   TimeZoneLocations[configParams1.timeZoneID], configParams1.timeZoneID);
+
 	if (EmuConfig.ManuallySetRealTimeClock)
 	{
 		// Convert to GMT+9 (assumes GMT+0)
