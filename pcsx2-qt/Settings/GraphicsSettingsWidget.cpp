@@ -263,6 +263,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_advanced.spinGPUDuringReadbacks, "EmuCore/GS", "HWSpinGPUForReadbacks", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_advanced.texturePreloading, "EmuCore/GS", "texture_preloading", static_cast<int>(TexturePreloadingLevel::Off));
 
+	connect(m_advanced.texturePreloading, &QComboBox::currentIndexChanged, this, &GraphicsSettingsWidget::onTexturePreloadingChanged);
 	setTabVisible(m_advanced_tab, QtHost::ShouldShowAdvancedSettings());
 
 	//////////////////////////////////////////////////////////////////////////
@@ -1078,6 +1079,22 @@ void GraphicsSettingsWidget::onCPUSpriteRenderBWChanged()
 {
 	const int value = dialog()->getEffectiveIntValue("EmuCore/GS", "UserHacks_CPUSpriteRenderBW", 0);
 	m_fixes.cpuSpriteRenderLevel->setEnabled(value != 0);
+}
+
+void GraphicsSettingsWidget::onTexturePreloadingChanged()
+{
+	// Loading and dumping textures only works with hash cache.
+	const bool texture_preloading_full = dialog()->getEffectiveIntValue("EmuCore/GS", "texture_preloading", 2) == 2;
+	const bool texture_replacements_enabled = m_texture.loadTextureReplacements->isChecked();
+	const bool texture_dumping_enabled = m_texture.dumpReplaceableTextures->isChecked();
+
+	m_texture.loadTextureReplacements->setEnabled(texture_preloading_full);
+	m_texture.loadTextureReplacementsAsync->setEnabled(texture_preloading_full && texture_replacements_enabled);
+	m_texture.precacheTextureReplacements->setEnabled(texture_preloading_full && texture_replacements_enabled);
+
+	m_texture.dumpReplaceableTextures->setEnabled(texture_preloading_full);
+	m_texture.dumpReplaceableMipmaps->setEnabled(texture_preloading_full && texture_dumping_enabled);
+	m_texture.dumpTexturesWithFMVActive->setEnabled(texture_preloading_full && texture_dumping_enabled);
 }
 
 GSRendererType GraphicsSettingsWidget::getEffectiveRenderer() const
