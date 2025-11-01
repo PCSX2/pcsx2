@@ -251,11 +251,14 @@
          </widget>
         </item>
         <item>
-         <widget class="QCheckBox" name="backgroundFill">
+         <widget class="QLabel" name="backgroundModeLabel">
           <property name="text">
-           <string>Fill Image</string>
+           <string>Mode:</string>
           </property>
          </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="backgroundMode"/>
         </item>
        </layout>
       </item>
