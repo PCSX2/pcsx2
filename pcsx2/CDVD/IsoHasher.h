@@ -8,6 +8,7 @@
 
 #include <string>
 #include <vector>
+#include <atomic>
 
 class Error;
 
@@ -40,10 +41,14 @@ public:
 
 	void ComputeHashes(ProgressCallback* callback = ProgressCallback::NullProgressCallback);
 
+	static bool IsComputingHash() { return s_is_computing_hash; }
+
 private:
 	bool ComputeTrackHash(Track& track, ProgressCallback* callback);
 
 	std::vector<Track> m_tracks;
 	bool m_is_open = false;
 	bool m_is_cd = false;
+
+	static std::atomic<bool> s_is_computing_hash;
 };

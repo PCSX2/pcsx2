@@ -15,6 +15,8 @@
 
 IsoHasher::IsoHasher() = default;
 
+std::atomic<bool> IsoHasher::s_is_computing_hash(false);
+
 IsoHasher::~IsoHasher()
 {
 	Close();
@@ -39,12 +41,18 @@ bool IsoHasher::Open(std::string iso_path, Error* error)
 {
 	Close();
 
+	// Set atomic flag before first CDVD call
+	s_is_computing_hash = true;
+
 	CDVDsys_SetFile(CDVD_SourceType::Iso, std::move(iso_path));
 	CDVDsys_ChangeSource(CDVD_SourceType::Iso);
 
 	m_is_open = DoCDVDopen(error);
 	if (!m_is_open)
+	{
+		s_is_computing_hash = false;
 		return false;
+	}
 
 	const s32 type = DoCDVDdetectDiskType();
 	switch (type)
@@ -62,13 +70,15 @@ bool IsoHasher::Open(std::string iso_path, Error* error)
 
 		default:
 			Error::SetString(error, fmt::format("Unknown CDVD disk type {}", type));
+			Close();
 			return false;
-	}
+		}
 
 	cdvdTN tn;
 	if (CDVD->getTN(&tn) < 0)
 	{
 		Error::SetString(error, "Failed to get track count.");
+		Close();
 		return false;
 	}
 
@@ -78,6 +88,7 @@ bool IsoHasher::Open(std::string iso_path, Error* error)
 		if (CDVD->getTD(track, &td) < 0 || CDVD->getTD((track == tn.etrack) ? 0 : (track + 1), &next_td) < 0)
 		{
 			Error::SetString(error, fmt::format("Failed to get track range for {}", static_cast<unsigned>(track)));
+			Close();
 			return false;
 		}
 
@@ -86,6 +97,7 @@ bool IsoHasher::Open(std::string iso_path, Error* error)
 		{
 			Error::SetString(error,
 				fmt::format("Invalid track range for {} ({},{})", static_cast<unsigned>(track), td.lsn, next_td.lsn));
+			Close();
 			return false;
 		}
 
@@ -107,6 +119,7 @@ void IsoHasher::Close()
 		return;
 
 	DoCDVDclose();
+	s_is_computing_hash = false;
 	m_tracks.clear();
 	m_is_cd = false;
 	m_is_open = false;
@@ -137,8 +150,6 @@ void IsoHasher::ComputeHashes(ProgressCallback* callback)
 		callback->SetProgressValue(index + 1);
 		callback->IncrementProgressValue();
 	}
-
-	callback->SetProgressValue(GetTrackCount());
 }
 
 bool IsoHasher::ComputeTrackHash(Track& track, ProgressCallback* callback)
