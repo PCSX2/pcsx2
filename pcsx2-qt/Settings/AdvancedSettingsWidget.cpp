@@ -33,12 +33,14 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.eeDivRoundingMode, "EmuCore/CPU", "FPUDiv.Roundmode", static_cast<int>(FPRoundMode::Nearest));
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.vu0RoundingMode, "EmuCore/CPU", "VU0.Roundmode", static_cast<int>(FPRoundMode::ChopZero));
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.vu1RoundingMode, "EmuCore/CPU", "VU1.Roundmode", static_cast<int>(FPRoundMode::ChopZero));
+
 	if (dialog()->isPerGameSettings())
 	{
 		m_ui.eeClampMode->insertItem(0, tr("Use Global Setting [%1]").arg(m_ui.eeClampMode->itemText(getGlobalClampingModeIndex(-1))));
 		m_ui.vu0ClampMode->insertItem(0, tr("Use Global Setting [%1]").arg(m_ui.vu0ClampMode->itemText(getGlobalClampingModeIndex(0))));
 		m_ui.vu1ClampMode->insertItem(0, tr("Use Global Setting [%1]").arg(m_ui.vu1ClampMode->itemText(getGlobalClampingModeIndex(1))));
 	}
+
 	m_ui.eeClampMode->setCurrentIndex(getClampingModeIndex(-1));
 	m_ui.vu0ClampMode->setCurrentIndex(getClampingModeIndex(0));
 	m_ui.vu1ClampMode->setCurrentIndex(getClampingModeIndex(1));
@@ -50,9 +52,6 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* settings_dialog, 
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.gameFixes, "EmuCore", "EnableGameFixes", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.patches, "EmuCore", "EnablePatches", true);
-
-	dialog()->registerWidgetHelp(m_ui.savestateSelector, tr("Use Save State Selector"), tr("Checked"),
-		tr("Show a save state selector UI when switching slots instead of showing a notification bubble."));
 
 	SettingWidgetBinder::BindWidgetToIntSetting(
 		sif, m_ui.savestateCompressionMethod, "EmuCore", "SavestateCompressionType", static_cast<int>(SavestateCompressionMethod::Zstandard));
@@ -70,88 +69,104 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pineEnable, "EmuCore", "EnablePINE", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.pineSlot, "EmuCore", "PINESlot", 28011);
 
-	dialog()->registerWidgetHelp(m_ui.eeRoundingMode, tr("Rounding Mode"), tr("Chop/Zero (Default)"), tr("Changes how PCSX2 handles rounding while emulating the Emotion Engine's Floating Point Unit (EE FPU). "
-																										 "Because the various FPUs in the PS2 are non-compliant with international standards, some games may need different modes to do math correctly. The default value handles the vast majority of games; <b>modifying this setting when a game is not having a visible problem can cause instability.</b>"));
-	dialog()->registerWidgetHelp(m_ui.eeDivRoundingMode, tr("Division Rounding Mode"), tr("Nearest (Default)"), tr("Determines how the results of floating-point division are rounded. Some games need specific settings; <b>modifying this setting when a game is not having a visible problem can cause instability.</b>"));
+	dialog()->registerWidgetHelp(m_ui.eeRoundingMode, tr("Rounding Mode"),
+		tr("Changes how PCSX2 handles rounding while emulating the Emotion Engine's Floating Point Unit (EE FPU). "
+			"Because the various FPUs in the PS2 are non-compliant with international standards, some games may need different modes to do math correctly. "
+			"The default value handles the vast majority of games; <b>modifying this setting when a game is not having a visible problem can cause instability.</b>"), tr("Chop/Zero (Default)"));
 
-	dialog()->registerWidgetHelp(m_ui.eeClampMode, tr("Clamping Mode"), tr("Normal (Default)"),
+	dialog()->registerWidgetHelp(m_ui.eeDivRoundingMode, tr("Division Rounding Mode"),
+		tr("Determines how the results of floating-point division are rounded. Some games need specific settings; "
+			"<b>modifying this setting when a game is not having a visible problem can cause instability.</b>"), tr("Nearest (Default)"));
+
+	dialog()->registerWidgetHelp(m_ui.eeClampMode, tr("Clamping Mode"),
 		tr("Changes how PCSX2 handles keeping floats in a standard x86 range. "
-		   "The default value handles the vast majority of games; <b>modifying this setting when a game is not having a visible problem can cause instability.</b>"));
+		   "The default value handles the vast majority of games; <b>modifying this setting when a game is not having a visible problem can cause instability.</b>"), tr("Normal (Default)"));
 
-	dialog()->registerWidgetHelp(m_ui.eeRecompiler, tr("Enable Recompiler"), tr("Checked"),
-		tr("Performs just-in-time binary translation of 64-bit MIPS-IV machine code to x86."));
+	dialog()->registerWidgetHelp(m_ui.eeRecompiler, tr("Enable Recompiler"),
+		tr("Performs just-in-time binary translation of 64-bit MIPS-IV machine code to x86."), tr("Checked"));
 
 	//: Wait loop: When the game makes the CPU do nothing (loop/spin) while it waits for something to happen (usually an interrupt).
-	dialog()->registerWidgetHelp(m_ui.eeWaitLoopDetection, tr("Wait Loop Detection"), tr("Checked"),
-		tr("Moderate speedup for some games, with no known side effects."));
+	dialog()->registerWidgetHelp(m_ui.eeWaitLoopDetection, tr("Wait Loop Detection"),
+		tr("Moderate speedup for some games, with no known side effects."), tr("Checked"));
 
-	dialog()->registerWidgetHelp(m_ui.eeCache, tr("Enable Cache (Slow)"), tr("Unchecked"), tr("Interpreter only, provided for diagnostic."));
+	dialog()->registerWidgetHelp(m_ui.eeCache, tr("Enable Cache (Slow)"), tr("Interpreter only, provided for diagnostic."), tr("Unchecked"));
 
 	//: INTC = Name of a PS2 register, leave as-is. "spin" = to make a cpu (or gpu) actively do nothing while you wait for something.  Like spinning in a circle, you're moving but not actually going anywhere.
-	dialog()->registerWidgetHelp(m_ui.eeINTCSpinDetection, tr("INTC Spin Detection"), tr("Checked"),
-		tr("Huge speedup for some games, with almost no compatibility side effects."));
+	dialog()->registerWidgetHelp(m_ui.eeINTCSpinDetection, tr("INTC Spin Detection"),
+		tr("Huge speedup for some games, with almost no compatibility side effects."), tr("Checked"));
 
-	dialog()->registerWidgetHelp(m_ui.eeFastmem, tr("Enable Fast Memory Access"), tr("Checked"),
+	dialog()->registerWidgetHelp(m_ui.eeFastmem, tr("Enable Fast Memory Access"),
 		//: "Backpatching" = To edit previously generated code to change what it does (in this case, we generate direct memory accesses, then backpatch them to jump to a fancier handler function when we realize they need the fancier handler function)
-		tr("Uses backpatching to avoid register flushing on every memory access."));
+		tr("Uses backpatching to avoid register flushing on every memory access."), tr("Checked"));
 
-	dialog()->registerWidgetHelp(m_ui.pauseOnTLBMiss, tr("Pause On TLB Miss"), tr("Unchecked"),
+	dialog()->registerWidgetHelp(m_ui.pauseOnTLBMiss, tr("Pause On TLB Miss"),
 		tr("Pauses the virtual machine when a TLB miss occurs, instead of ignoring it and continuing. Note that the VM will pause after the "
 		   "end of the block, not on the instruction which caused the exception. Refer to the console to see the address where the invalid "
-		   "access occurred."));
+		   "access occurred."), tr("Unchecked"));
 
-	dialog()->registerWidgetHelp(m_ui.extraMemory, tr("Enable 128MB RAM (Dev Console)"), tr("Unchecked"),
-		tr("Exposes an additional 96MB of memory to the virtual machine."));
+	dialog()->registerWidgetHelp(m_ui.extraMemory, tr("Enable 128MB RAM (Dev Console)"),
+		tr("Exposes an additional 96MB of memory to the virtual machine."), tr("Unchecked"));
 
-	dialog()->registerWidgetHelp(m_ui.vu0RoundingMode, tr("VU0 Rounding Mode"), tr("Chop/Zero (Default)"), tr("Changes how PCSX2 handles rounding while emulating the Emotion Engine's Vector Unit 0 (EE VU0). "
-																											  "The default value handles the vast majority of games; <b>modifying this setting when a game is not having a visible problem will cause stability issues and/or crashes.</b>"));
+	dialog()->registerWidgetHelp(m_ui.vu0RoundingMode, tr("VU0 Rounding Mode"),
+		tr("Changes how PCSX2 handles rounding while emulating the Emotion Engine's Vector Unit 0 (EE VU0). "
+		   "The default value handles the vast majority of games; "
+		   "<b>modifying this setting when a game is not having a visible problem will cause stability issues and/or crashes.</b>"), tr("Chop/Zero (Default)"));
 
-	dialog()->registerWidgetHelp(m_ui.vu1RoundingMode, tr("VU1 Rounding Mode"), tr("Chop/Zero (Default)"), tr("Changes how PCSX2 handles rounding while emulating the Emotion Engine's Vector Unit 1 (EE VU1). "
-																											  "The default value handles the vast majority of games; <b>modifying this setting when a game is not having a visible problem will cause stability issues and/or crashes.</b>"));
+	dialog()->registerWidgetHelp(m_ui.vu1RoundingMode, tr("VU1 Rounding Mode"),
+		tr("Changes how PCSX2 handles rounding while emulating the Emotion Engine's Vector Unit 1 (EE VU1). "
+		   "The default value handles the vast majority of games; "
+		   "<b>modifying this setting when a game is not having a visible problem will cause stability issues and/or crashes.</b>"), tr("Chop/Zero (Default)"));
 
-	dialog()->registerWidgetHelp(m_ui.vu0ClampMode, tr("VU0 Clamping Mode"), tr("Normal (Default)"),
+	dialog()->registerWidgetHelp(m_ui.vu0ClampMode, tr("VU0 Clamping Mode"),
 		tr("Changes how PCSX2 handles keeping floats in a standard x86 range in the Emotion Engine's Vector Unit 0 (EE VU0). "
-		   "The default value handles the vast majority of games; <b>modifying this setting when a game is not having a visible problem can cause instability.</b>"));
-	dialog()->registerWidgetHelp(m_ui.vu1ClampMode, tr("VU1 Clamping Mode"), tr("Normal (Default)"),
+		   "The default value handles the vast majority of games; <b>modifying this setting when a game is not having a visible problem can cause instability.</b>"), tr("Normal (Default)"));
+	dialog()->registerWidgetHelp(m_ui.vu1ClampMode, tr("VU1 Clamping Mode"),
 		tr("Changes how PCSX2 handles keeping floats in a standard x86 range in the Emotion Engine's Vector Unit 1 (EE VU1). "
-		   "The default value handles the vast majority of games; <b>modifying this setting when a game is not having a visible problem can cause instability.</b>"));
+		   "The default value handles the vast majority of games; <b>modifying this setting when a game is not having a visible problem can cause instability.</b>"), tr("Normal (Default)"));
 
-	dialog()->registerWidgetHelp(m_ui.instantVU1, tr("Enable Instant VU1"), tr("Checked"),
+	dialog()->registerWidgetHelp(m_ui.instantVU1, tr("Enable Instant VU1"),
 		tr("Runs VU1 instantly. Provides a modest speed improvement in most games. "
-		   "Safe for most games, but a few games may exhibit graphical errors."));
+		   "Safe for most games, but a few games may exhibit graphical errors."), tr("Checked"));
 
 	//: VU0 = Vector Unit 0. One of the PS2's processors.
-	dialog()->registerWidgetHelp(m_ui.vu0Recompiler, tr("Enable VU0 Recompiler (Micro Mode)"), tr("Checked"), tr("Enables VU0 Recompiler."));
+	dialog()->registerWidgetHelp(m_ui.vu0Recompiler, tr("Enable VU0 Recompiler (Micro Mode)"), tr("Enables VU0 Recompiler."), tr("Checked"));
 
 	//: VU1 = Vector Unit 1. One of the PS2's processors.
-	dialog()->registerWidgetHelp(m_ui.vu1Recompiler, tr("Enable VU1 Recompiler"), tr("Checked"), tr("Enables VU1 Recompiler."));
+	dialog()->registerWidgetHelp(m_ui.vu1Recompiler, tr("Enable VU1 Recompiler"), tr("Enables VU1 Recompiler."), tr("Checked"));
 
 	dialog()->registerWidgetHelp(
 		//: mVU = PCSX2's recompiler for VU (Vector Unit) code (full name: microVU)
-		m_ui.vuFlagHack, tr("mVU Flag Hack"), tr("Checked"), tr("Good speedup and high compatibility, may cause graphical errors."));
+		m_ui.vuFlagHack, tr("mVU Flag Hack"), tr("Good speedup and high compatibility, may cause graphical errors."), tr("Checked"));
 
-	dialog()->registerWidgetHelp(m_ui.iopRecompiler, tr("Enable Recompiler"), tr("Checked"),
-		tr("Performs just-in-time binary translation of 32-bit MIPS-I machine code to x86."));
+	dialog()->registerWidgetHelp(m_ui.iopRecompiler, tr("Enable Recompiler"),
+		tr("Performs just-in-time binary translation of 32-bit MIPS-I machine code to x86."), tr("Checked"));
 
-	dialog()->registerWidgetHelp(m_ui.gameFixes, tr("Enable Game Fixes"), tr("Checked"),
-		tr("Automatically loads and applies fixes to known problematic games on game start."));
+	dialog()->registerWidgetHelp(m_ui.gameFixes, tr("Enable Game Fixes"),
+		tr("Automatically loads and applies fixes to known problematic games on game start."), tr("Checked"));
 
-	dialog()->registerWidgetHelp(m_ui.patches, tr("Enable Compatibility Patches"), tr("Checked"),
-		tr("Automatically loads and applies compatibility patches to known problematic games."));
+	dialog()->registerWidgetHelp(m_ui.patches, tr("Enable Compatibility Patches"),
+		tr("Automatically loads and applies compatibility patches to known problematic games."), tr("Checked"));
 
-	dialog()->registerWidgetHelp(m_ui.savestateCompressionMethod, tr("Savestate Compression Method"), tr("Zstandard"),
-		tr("Determines the algorithm to be used when compressing savestates."));
+	dialog()->registerWidgetHelp(m_ui.savestateCompressionMethod, tr("Savestate Compression Method"),
+		tr("Determines the algorithm to be used when compressing savestates."), tr("Zstandard"));
 
-	dialog()->registerWidgetHelp(m_ui.savestateCompressionLevel, tr("Savestate Compression Level"), tr("Medium"),
-		tr("Determines the level to be used when compressing savestates."));
+	dialog()->registerWidgetHelp(m_ui.savestateCompressionLevel, tr("Savestate Compression Level"),
+		tr("Determines the level to be used when compressing savestates."), tr("Medium"));
 
-	dialog()->registerWidgetHelp(m_ui.saveStateOnShutdown, tr("Save State On Shutdown"), tr("Unchecked"),
+	dialog()->registerWidgetHelp(m_ui.saveStateOnShutdown, tr("Save State On Shutdown"),
 		tr("Automatically saves the emulator state when powering down or exiting. You can then "
-		   "resume directly from where you left off next time."));
+		   "resume directly from where you left off next time."), tr("Unchecked"));
 
-	dialog()->registerWidgetHelp(m_ui.backupSaveStates, tr("Create Save State Backups"), tr("Checked"),
+	dialog()->registerWidgetHelp(m_ui.backupSaveStates, tr("Create Save State Backups"),
 		//: Do not translate the ".backup" extension.
-		tr("Creates a backup copy of a save state if it already exists when the save is created. The backup copy has a .backup suffix."));
+		tr("Creates a backup copy of a save state if it already exists when the save is created. The backup copy has a .backup suffix."), tr("Checked"));
+
+	dialog()->registerWidgetHelp(m_ui.savestateSelector, tr("Use Save State Selector"),
+		tr("Shows a save state selector UI when switching slots instead of showing a notification bubble."), tr("Checked"));
+
+	dialog()->registerWidgetHelp(m_ui.pineEnable, tr("Enable PINE"), tr("Enables the PINE slot."), tr("Unchecked"));
+
+	dialog()->registerWidgetHelp(m_ui.pineSlot, tr("PINE Slot"), tr("Determines the slot PINE will use."), tr("28011"));
 }
 
 AdvancedSettingsWidget::~AdvancedSettingsWidget() = default;
