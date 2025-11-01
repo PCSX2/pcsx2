@@ -251,11 +251,17 @@
          </widget>
         </item>
         <item>
-         <widget class="QCheckBox" name="backgroundFill">
+         <widget class="QLabel" name="backgroundScaleLabel">
           <property name="text">
-           <string>Fill Image</string>
+           <string>Scaling:</string>
+          </property>
+          <property name="buddy">
+           <cstring>backgroundScale</cstring>
           </property>
          </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="backgroundScale"/>
         </item>
        </layout>
       </item>
@@ -351,7 +357,7 @@
   <tabstop>backgroundBrowse</tabstop>
   <tabstop>backgroundReset</tabstop>
   <tabstop>backgroundOpacity</tabstop>
-  <tabstop>backgroundFill</tabstop>
+  <tabstop>backgroundScale</tabstop>
   <tabstop>autoUpdateTag</tabstop>
   <tabstop>autoUpdateEnabled</tabstop>
   <tabstop>checkForUpdates</tabstop>

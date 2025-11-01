@@ -7,6 +7,7 @@
 #include "QtHost.h"
 #include "QtUtils.h"
 
+#include "Settings/InterfaceSettingsWidget.h"
 #include "pcsx2/GameList.h"
 #include "pcsx2/Host.h"
 
@@ -308,64 +309,9 @@ void GameListWidget::initialize()
 	setCustomBackground();
 }
 
-static void resizeAndPadImage(QImage* image, int expected_width, int expected_height, bool fill_with_top_left, bool expand_to_fill)
-{
-	const qreal dpr = image->devicePixelRatio();
-	const int dpr_expected_width = static_cast<int>(static_cast<qreal>(expected_width) * dpr);
-	const int dpr_expected_height = static_cast<int>(static_cast<qreal>(expected_height) * dpr);
-	if (image->width() == dpr_expected_width && image->height() == dpr_expected_height)
-		return;
-
-	// Resize
-	if (((static_cast<float>(image->width()) / static_cast<float>(image->height())) >=
-		(static_cast<float>(dpr_expected_width) / static_cast<float>(dpr_expected_height))) != expand_to_fill)
-	{
-		*image = image->scaledToWidth(dpr_expected_width, Qt::SmoothTransformation);
-	}
-	else
-	{
-		*image = image->scaledToHeight(dpr_expected_height, Qt::SmoothTransformation);
-	}
-
-	if (image->width() == dpr_expected_width && image->height() == dpr_expected_height)
-		return;
-
-	// Padding
-	int xoffs = 0;
-	int yoffs = 0;
-	const int image_width = image->width();
-	const int image_height = image->height();
-	if ((image_width < dpr_expected_width) != expand_to_fill)
-		xoffs = static_cast<int>(static_cast<qreal>((dpr_expected_width - image_width) / 2) / dpr);
-	if ((image_height < dpr_expected_height) != expand_to_fill)
-		yoffs = static_cast<int>(static_cast<qreal>((dpr_expected_height - image_height) / 2) / dpr);
-
-	QImage padded_image(dpr_expected_width, dpr_expected_height, QImage::Format_ARGB32);
-	padded_image.setDevicePixelRatio(dpr);
-	if (fill_with_top_left)
-		padded_image.fill(image->pixel(0, 0));
-	else
-		padded_image.fill(Qt::transparent);
-
-	// Painting
-	QPainter painter;
-	const float opacity = Host::GetBaseFloatSettingValue("UI", "GameListBackgroundOpacity");
-	if (painter.begin(&padded_image))
-	{
-		painter.setOpacity((static_cast<float>(opacity / 100.0f))); // Qt expects the range to be from 0.0 to 1.0
-		painter.setCompositionMode(QPainter::CompositionMode_Source);
-		painter.drawImage(xoffs, yoffs, *image);
-		painter.end();
-	}
-
-	*image = std::move(padded_image);
-}
-
 void GameListWidget::setCustomBackground(bool force_refresh)
 {
 	std::string path = Host::GetBaseStringSettingValue("UI", "GameListBackgroundPath");
-	bool enabled = Host::GetBaseBoolSettingValue("UI", "GameListBackgroundEnabled");
-	bool fill = Host::GetBaseBoolSettingValue("UI", "GameListBackgroundFill");
 
 	// Cleanup old animation if it still exists on gamelist
 	if (m_background_movie != nullptr)
@@ -377,8 +323,8 @@ void GameListWidget::setCustomBackground(bool force_refresh)
 	if (!Path::IsAbsolute(path))
 		path = Path::Combine(EmuFolders::DataRoot, path);
 
-	// Only try to create background both if path are valid and custom background are enabled
-	if ((!path.empty() && FileSystem::FileExists(path.c_str())) && enabled)
+	// Only try to create background both if path are valid
+	if (!path.empty() && FileSystem::FileExists(path.c_str()))
 	{
 		QMovie* new_movie;
 		if (Path::GetExtension(path) == "png")
@@ -405,7 +351,7 @@ void GameListWidget::setCustomBackground(bool force_refresh)
 	}
 
 	// Background is valid, connect the signals and start animation in gamelist
-	connect(m_background_movie, &QMovie::frameChanged, this, [this, fill]() { processBackgroundFrames(fill); });
+	connect(m_background_movie, &QMovie::frameChanged, this, [this]() { processBackgroundFrames(); });
 	updateCustomBackgroundState(force_refresh);
 
 	m_table_view->setAlternatingRowColors(false);
@@ -422,17 +368,34 @@ void GameListWidget::updateCustomBackgroundState(bool force_start)
 	}
 }
 
-void GameListWidget::processBackgroundFrames(bool fill_area)
+void GameListWidget::processBackgroundFrames()
 {
-	QImage img = m_background_movie->currentImage();
-	img.setDevicePixelRatio(devicePixelRatioF());
+	QtUtils::ScalingMode scaling;
+	const std::string ar_value = Host::GetBaseStringSettingValue("UI", "GameListBackgroundMode", InterfaceSettingsWidget::BACKGROUND_SCALE_VALUES[static_cast<u8>(QtUtils::ScalingMode::Fit)]);
+
+		for (int i = 0; InterfaceSettingsWidget::BACKGROUND_SCALE_VALUES[i] != nullptr; i++)
+		{
+			if (ar_value == InterfaceSettingsWidget::BACKGROUND_SCALE_VALUES[i])
+			{
+				scaling = static_cast<QtUtils::ScalingMode>(i);
+				break;
+			}
+		}
+
+	const float opacity = Host::GetBaseFloatSettingValue("UI", "GameListBackgroundOpacity", 100.0f);
+
+	QPixmap pm = m_background_movie->currentPixmap();
+	const qreal dpr = devicePixelRatioF();
 	const int widget_width = m_ui.stack->width();
 	const int widget_height = m_ui.stack->height();
 
-	resizeAndPadImage(&img, widget_width, widget_height, false, fill_area);
+	if (widget_width <= 0 || widget_height <= 0)
+		return;
+
+	QtUtils::resizeAndPadPixmap(&pm, widget_width, widget_height, dpr, scaling, opacity);
 
 	QPalette new_palette(m_ui.stack->palette());
-	new_palette.setBrush(QPalette::Base, img);
+	new_palette.setBrush(QPalette::Base, pm);
 	m_ui.stack->setPalette(new_palette);
 }
 
@@ -706,7 +669,10 @@ void GameListWidget::resizeEvent(QResizeEvent* event)
 	QWidget::resizeEvent(event);
 	resizeTableViewColumnsToFit();
 	m_model->updateCacheSize(width(), height());
-	setCustomBackground();
+	if (m_background_movie)
+	{
+		processBackgroundFrames();
+	}
 }
 
 bool GameListWidget::event(QEvent* event)

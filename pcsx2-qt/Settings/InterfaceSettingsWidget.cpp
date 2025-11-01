@@ -10,7 +10,7 @@
 #include "SettingsWindow.h"
 #include "QtHost.h"
 
-static const char* IMAGE_FILE_FILTER = QT_TRANSLATE_NOOP(InterfaceSettingsWidget, 
+static const char* IMAGE_FILE_FILTER = QT_TRANSLATE_NOOP(InterfaceSettingsWidget,
 	"Supported Image Types (*.bmp *.gif *.jpg *.jpeg *.png *.webp)");
 
 const char* InterfaceSettingsWidget::THEME_NAMES[] = {
@@ -75,6 +75,18 @@ const char* InterfaceSettingsWidget::THEME_VALUES[] = {
 	"Custom",
 	nullptr};
 
+const char* InterfaceSettingsWidget::BACKGROUND_SCALE_NAMES[] = {
+	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Fit"),
+	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Fill"),
+	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Stretch"),
+	nullptr};
+
+const char* InterfaceSettingsWidget::BACKGROUND_SCALE_VALUES[] = {
+	"fit",
+	"fill",
+	"stretch",
+	nullptr};
+
 InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* settings_dialog, QWidget* parent)
 	: SettingsWidget(settings_dialog, parent)
 {
@@ -123,12 +135,13 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* settings_dialog
 		QtHost::GetDefaultThemeName(), "InterfaceSettingsWidget");
 	connect(m_ui.theme, QOverload<int>::of(&QComboBox::currentIndexChanged), [this]() { emit themeChanged(); });
 
-	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.backgroundOpacity, "UI", "GameListBackgroundOpacity", 100);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.backgroundFill, "UI", "GameListBackgroundFill", false);
+	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.backgroundOpacity, "UI", "GameListBackgroundOpacity", 100.0f);
+	SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.backgroundScale, "UI", "GameListBackgroundMode",
+		BACKGROUND_SCALE_NAMES, BACKGROUND_SCALE_VALUES, BACKGROUND_SCALE_VALUES[static_cast<int>(QtUtils::ScalingMode::Fit)], "InterfaceSettingsWidget");
 	connect(m_ui.backgroundBrowse, &QPushButton::clicked, [this]() { onSetGameListBackgroundTriggered(); });
 	connect(m_ui.backgroundReset, &QPushButton::clicked, [this]() { onClearGameListBackgroundTriggered(); });
 	connect(m_ui.backgroundOpacity, &QSpinBox::valueChanged, [this]() { emit backgroundChanged(); });
-	connect(m_ui.backgroundFill, &QCheckBox::checkStateChanged, [this]() {emit backgroundChanged(); });
+	connect(m_ui.backgroundScale, QOverload<int>::of(&QComboBox::currentIndexChanged), [this]() { emit backgroundChanged(); });
 
 	populateLanguages();
 	SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.language, "UI", "Language", QtHost::GetDefaultLanguage());
@@ -221,8 +234,9 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* settings_dialog
 		m_ui.backgroundOpacity, tr("Game List Background Opacity"), tr("100%"),
 		tr("Sets the opacity of the custom background."));
 	dialog()->registerWidgetHelp(
-		m_ui.backgroundFill, tr("Fill Image"), tr("Unchecked"),
-		tr("Expand the image to fill all available background area."));
+		m_ui.backgroundScale, tr("Background Image Scaling"), tr("Fit"),
+		tr("Select how to display the background image: <br><br>Fit (Preserve aspect ratio, fit to screen)"
+		"<br>Fill (Preserve aspect ratio, fill the screen) <br>Stretch (Ignore aspect ratio)"));
 
 	onRenderToSeparateWindowChanged();
 }
@@ -249,11 +263,7 @@ void InterfaceSettingsWidget::onSetGameListBackgroundTriggered()
 		return;
 
 	std::string relative_path = Path::MakeRelative(QDir::toNativeSeparators(path).toStdString(), EmuFolders::DataRoot);
-	Host::SetBaseBoolSettingValue("UI", "GameListBackgroundEnabled", true);
 	Host::SetBaseStringSettingValue("UI", "GameListBackgroundPath", relative_path.c_str());
-
-	if (!Host::ContainsBaseSettingValue("UI", "GameListBackgroundOpacity"))
-		Host::SetBaseFloatSettingValue("UI", "GameListBackgroundOpacity", 100.0f);
 
 	Host::CommitBaseSettingChanges();
 	emit backgroundChanged();
@@ -261,7 +271,6 @@ void InterfaceSettingsWidget::onSetGameListBackgroundTriggered()
 
 void InterfaceSettingsWidget::onClearGameListBackgroundTriggered()
 {
-	Host::SetBaseBoolSettingValue("UI", "GameListBackgroundEnabled", false);
 	Host::RemoveBaseSettingValue("UI", "GameListBackgroundPath");
 	Host::CommitBaseSettingChanges();
 	emit backgroundChanged();
