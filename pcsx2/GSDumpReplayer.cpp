@@ -515,7 +515,7 @@ bool GSDumpReplayer::ChangeDump(const char* filename)
 		if (s_lazy_dump)
 		{
 			if (!s_dump_file_loader_lazy.Started())
-				s_dump_file_loader_lazy.Start(2, s_lazy_dump_buffer_size);
+				s_dump_file_loader_lazy.Start(1, s_lazy_dump_buffer_size);
 
 			const auto AcquireAndAddToLoader = [](GSDumpFileLoaderLazy& loader) {
 				while (!loader.Full())
@@ -562,7 +562,8 @@ bool GSDumpReplayer::ChangeDump(const char* filename)
 
 			while (true)
 			{
-				GSDumpFileLoaderLazy::RetVal ret = s_dump_file_loader_lazy.Get(s_dump_file, s_dump_filename);
+				Error error;
+				GSDumpFileLoaderLazy::RetVal ret = s_dump_file_loader_lazy.GetFile(s_dump_file, s_dump_filename, &error);
 
 				AcquireAndAddToLoader(s_dump_file_loader_lazy); // Add one more after getting one.
 
@@ -580,8 +581,8 @@ bool GSDumpReplayer::ChangeDump(const char* filename)
 				}
 				else if (ret == GSDumpFileLoaderLazy::FAILURE)
 				{
-					MTGS::RunOnGSThread([filename = s_dump_filename, runner_name = GetRunnerName()]() {
-						Console.ErrorFmt("(GSRunner/{}) Error loading/reading dump: {}.", runner_name, filename);
+					MTGS::RunOnGSThread([filename = s_dump_filename, runner_name = GetRunnerName(), err = error.GetDescription()]() {
+						Console.ErrorFmt("(GSRunner/{}) Error loading/reading dump: {} (error: {}).", runner_name, filename, err);
 					});
 				}
 				else

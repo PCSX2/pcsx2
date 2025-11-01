@@ -2117,18 +2117,27 @@ bool GSDumpFileLoaderLazy::Started()
 	return dumps.size() > 0;
 }
 
+bool GSDumpFileLoaderLazy::_HasNext()
+{
+	return !filename_next.empty();
+}
+
 bool GSDumpFileLoaderLazy::Full()
 {
-	if (write - read > dumps.size())
+	size_t real_read = reading_dump ? read + 1 : read;
+	size_t real_write = _HasNext() ? write + 1 : write;
+	if (real_write - real_read > dumps.size())
 		Console.ErrorFmt("(GSDumpFileLoaderLazy) Write/read pointers overlapped incorrectly.");
-	return write - read >= dumps.size();
+	return real_write - real_read == dumps.size();
 }
 
 bool GSDumpFileLoaderLazy::Empty()
 {
-	if (write < read)
+	size_t real_read = reading_dump ? read + 1 : read;
+	size_t real_write = _HasNext() ? write + 1 : write;
+	if (real_write < real_read)
 		Console.ErrorFmt("(GSDumpFileLoaderLazy) Write/read pointers incorrect order.");
-	return write - read == 0;
+	return real_write - real_read == 0;
 }
 
 GSDumpFileLoaderLazy::RetVal GSDumpFileLoaderLazy::AddFile(const std::string& filename, Error* error)
@@ -2141,6 +2150,12 @@ GSDumpFileLoaderLazy::RetVal GSDumpFileLoaderLazy::AddFile(const std::string& fi
 	}
 	if (Full())
 		return FULL;
+	if (reading_dump && (write - read == dumps.size()))
+	{
+		// Place filename in temporary slot.
+		filename_next = filename;
+		return SUCCESS;
+	}
 	if (!GSDumpFile::OpenGSDumpLazy(dumps[write % dumps.size()], buffer_size, filename.c_str(), error))
 		return FAILURE;
 	filenames[write % dumps.size()] = filename;
@@ -2148,11 +2163,12 @@ GSDumpFileLoaderLazy::RetVal GSDumpFileLoaderLazy::AddFile(const std::string& fi
 	return SUCCESS;
 }
 
-GSDumpFileLoaderLazy::RetVal GSDumpFileLoaderLazy::Get(std::unique_ptr<GSDumpFile>& dump, std::string& filename)
+GSDumpFileLoaderLazy::RetVal GSDumpFileLoaderLazy::GetFile(
+	std::unique_ptr<GSDumpFile>& dump, std::string& filename, Error* error)
 {
 	if (!Started())
 	{
-		Console.Error("(GSDumpFileLoaderLazy) Not started.");
+		Error::SetString(error, "(GSDumpFileLoaderLazy) Not started.");
 		return FAILURE;
 	}
 
@@ -2169,6 +2185,16 @@ GSDumpFileLoaderLazy::RetVal GSDumpFileLoaderLazy::Get(std::unique_ptr<GSDumpFil
 		dumps[read % dumps.size()].reset(reinterpret_cast<GSDumpLazy*>(dump.release()));
 		reading_dump = nullptr;
 		read++;
+
+		// Add any file in the temporary slot.
+		if (_HasNext())
+		{
+			std::string filename_next_tmp = filename_next;
+			filename_next.clear();
+			RetVal ret = AddFile(filename_next_tmp, error);
+			if (ret != SUCCESS)
+				return ret;
+		}
 	}
 
 	if (Empty())

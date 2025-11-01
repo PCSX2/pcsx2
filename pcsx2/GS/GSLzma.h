@@ -588,11 +588,14 @@ struct GSDumpFileLoaderLazy
 	size_t read = 0;
 	size_t write = 0;
 	GSDumpLazy* reading_dump = nullptr;
+	std::string filename_next;
 
 	bool Started();
 	void Start(size_t num_dumps, size_t buffer_size);
 	bool Full();
 	bool Empty();
 	RetVal AddFile(const std::string& filename, Error* error);
-	RetVal Get(std::unique_ptr<GSDumpFile>& dump, std::string& filename);
+	RetVal GetFile(std::unique_ptr<GSDumpFile>& dump, std::string& filename, Error* error);
+
+	bool _HasNext();
 };
