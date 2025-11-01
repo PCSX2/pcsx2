@@ -244,6 +244,7 @@ namespace GSRunner
 	static u32 s_batch_runner_dump_buffer_size = UINT32_MAX; // infinite
 	static bool s_batch_runner_lazy_dump = false;
 	static u32 s_batch_runner_lazy_dump_buffer_size = _1mb * 256;
+	static u32 s_batch_runner_lazy_dump_buffer_num_dumps = 1;
 
 	// Owned by the GS thread.
 	static u32 s_dump_frame_number = 0;
@@ -1202,6 +1203,17 @@ bool GSRunner::ParseCommandLineArgs(int argc, const char* argv[], VMBootParamete
 				s_batch_runner_lazy_dump_buffer_size = size.value() * _1mb;
 				continue;
 			}
+			else if (CHECK_ARG_PARAM("-batch-runner-lazy-dump-buffer-ndumps"))
+			{
+				std::optional<u32> num_dumps = StringUtil::FromChars<u32>(argv[++i]);
+				if (!num_dumps.has_value())
+				{
+					Console.ErrorFmt("(GSRunner) Malformed argument num dumps: {}", argv[i]);
+					return false;
+				}
+				s_batch_runner_lazy_dump_buffer_num_dumps = num_dumps.value();
+				continue;
+			}
 			else if (CHECK_ARG("-batch-runner-lazy-dump"))
 			{
 				s_batch_runner_lazy_dump = true;
@@ -2052,7 +2064,8 @@ int GSRunner::main_runner(int argc, const char* argv[])
 				Path::Combine(s_logfile, "emulog-" + std::to_string(s_batch_runner_index) + "-" + std::to_string(GSProcess::GetCurrentPID()) + ".txt"));
 		}
 		if (s_batch_runner_lazy_dump)
-			GSDumpReplayer::SetBatchRunnerLazyDump(s_batch_runner_lazy_dump_buffer_size);
+			GSDumpReplayer::SetBatchRunnerLazyDump(
+				s_batch_runner_lazy_dump_buffer_size, s_batch_runner_lazy_dump_buffer_num_dumps);
 		GSDumpReplayer::SetIsBatchMode(true);
 		GSDumpReplayer::SetNumBatches(s_num_batches);
 		GSDumpReplayer::SetBatchID(s_batch_id);

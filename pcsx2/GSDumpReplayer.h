@@ -21,7 +21,7 @@ namespace GSDumpReplayer
 	void SetVerboseLogging(bool verbose);
 	bool IsVerboseLogging();
 
-	void SetBatchRunnerLazyDump(std::size_t size);
+	void SetBatchRunnerLazyDump(std::size_t size, std::size_t num_dumps);
 	void SetBatchRunnerIndex(std::size_t index);
 	void SetIsBatchMode(bool batch_mode); // Batch mode
 	void SetNumBatches(u32 n_batches); // Batch mode

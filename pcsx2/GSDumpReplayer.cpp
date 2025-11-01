@@ -72,6 +72,7 @@ static GSDumpFileLoader s_dump_file_loader; // For batch mode.
 static std::size_t s_dump_buffer_size = SIZE_MAX; // For batch mode.
 static bool s_lazy_dump = false;
 static u32 s_lazy_dump_buffer_size = _1mb * 256;
+static u32 s_lazy_dump_buffer_num_dumps = 1;
 static GSDumpFileLoaderLazy s_dump_file_loader_lazy;
 
 R5900cpu GSDumpReplayerCpu = {
@@ -160,10 +161,11 @@ void GSDumpReplayer::SetBatchStartFromDump(const std::string& start_from_dump)
 	s_batch_start_from_dump = start_from_dump;
 }
 
-void GSDumpReplayer::SetBatchRunnerLazyDump(size_t size)
+void GSDumpReplayer::SetBatchRunnerLazyDump(size_t size, size_t num_dumps)
 {
 	s_lazy_dump = true;
 	s_lazy_dump_buffer_size = size;
+	s_lazy_dump_buffer_num_dumps = num_dumps;
 }
 
 void GSDumpReplayer::SetRegressionSendHWSTAT(bool send_hwstat)
@@ -515,7 +517,7 @@ bool GSDumpReplayer::ChangeDump(const char* filename)
 		if (s_lazy_dump)
 		{
 			if (!s_dump_file_loader_lazy.Started())
-				s_dump_file_loader_lazy.Start(1, s_lazy_dump_buffer_size);
+				s_dump_file_loader_lazy.Start(s_lazy_dump_buffer_num_dumps, s_lazy_dump_buffer_size);
 
 			const auto AcquireAndAddToLoader = [](GSDumpFileLoaderLazy& loader) {
 				while (!loader.Full())
