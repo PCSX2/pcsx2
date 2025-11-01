@@ -60,9 +60,8 @@ MemoryCardSettingsWidget::MemoryCardSettingsWidget(SettingsWindow* settings_dial
 	refresh();
 
 	dialog()->registerWidgetHelp(m_ui.automaticManagement, tr("Automatically manage saves based on running game"),
-		tr("Checked"),
 		tr("(Folder type only / Card size: Auto) Loads only the relevant booted game saves, ignoring others. Avoids "
-		   "running out of space for saves."));
+		   "running out of space for saves."), tr("Checked"));
 }
 
 MemoryCardSettingsWidget::~MemoryCardSettingsWidget() = default;

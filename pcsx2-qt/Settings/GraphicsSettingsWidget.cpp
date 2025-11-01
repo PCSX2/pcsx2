@@ -432,343 +432,349 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 
 	// Display tab
 	{
-		dialog()->registerWidgetHelp(m_display.widescreenPatches, tr("Enable Widescreen Patches"), tr("Unchecked"),
-			tr("Automatically loads and applies widescreen patches on game start. Can cause issues."));
+		dialog()->registerWidgetHelp(m_display.widescreenPatches, tr("Enable Widescreen Patches"),
+			tr("Automatically loads and applies widescreen patches on game start. Can cause issues."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_display.noInterlacingPatches, tr("Enable No-Interlacing Patches"), tr("Unchecked"),
-			tr("Automatically loads and applies no-interlacing patches on game start. Can cause issues."));
+		dialog()->registerWidgetHelp(m_display.noInterlacingPatches, tr("Enable No-Interlacing Patches"),
+			tr("Automatically loads and applies no-interlacing patches on game start. Can cause issues."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_display.disableInterlaceOffset, tr("Disable Interlace Offset"), tr("Unchecked"),
-			tr("Disables interlacing offset which may reduce blurring in some situations."));
+		dialog()->registerWidgetHelp(m_display.disableInterlaceOffset, tr("Disable Interlace Offset"),
+			tr("Disables interlacing offset which may reduce blurring in some situations."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_display.bilinearFiltering, tr("Bilinear Filtering"), tr("Bilinear (Smooth)"),
+		dialog()->registerWidgetHelp(m_display.bilinearFiltering, tr("Bilinear Filtering"),
 			tr("Enables bilinear post processing filter. Smooths the overall picture as it is displayed on the screen. Corrects "
-			   "positioning between pixels."));
+			   "positioning between pixels."), tr("Bilinear (Smooth)"));
 
-		dialog()->registerWidgetHelp(m_display.PCRTCOffsets, tr("Screen Offsets"), tr("Unchecked"),
+		dialog()->registerWidgetHelp(m_display.PCRTCOffsets, tr("Screen Offsets"),
 			//: PCRTC: Programmable CRT (Cathode Ray Tube) Controller.
 			tr("Enables PCRTC Offsets which position the screen as the game requests. Useful for some games such as WipEout Fusion for its "
-			   "screen shake effect, but can make the picture blurry."));
+			   "screen shake effect, but can make the picture blurry."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_display.PCRTCOverscan, tr("Show Overscan"), tr("Unchecked"),
-			tr("Enables the option to show the overscan area on games which draw more than the safe area of the screen."));
+		dialog()->registerWidgetHelp(m_display.PCRTCOverscan, tr("Show Overscan"),
+			tr("Enables the option to show the overscan area on games which draw more than the safe area of the screen."), tr("Unchecked"));
 
 		dialog()->registerWidgetHelp(
-			m_display.fmvAspectRatio, tr("FMV Aspect Ratio Override"), tr("Off (Default)"),
+			m_display.fmvAspectRatio, tr("FMV Aspect Ratio Override"),
 			tr("Overrides the full-motion video (FMV) aspect ratio. "
-			   "If disabled, the FMV Aspect Ratio will match the same value as the general Aspect Ratio setting."));
+			   "If disabled, the FMV Aspect Ratio will match the same value as the general Aspect Ratio setting."), tr("Off (Default)"));
 
-		dialog()->registerWidgetHelp(m_display.PCRTCAntiBlur, tr("Anti-Blur"), tr("Checked"),
-			tr("Enables internal Anti-Blur hacks. Less accurate than PS2 rendering but will make a lot of games look less blurry."));
+		dialog()->registerWidgetHelp(m_display.PCRTCAntiBlur, tr("Anti-Blur"),
+			tr("Enables internal Anti-Blur hacks. Less accurate than PS2 rendering but will make a lot of games look less blurry."), tr("Checked"));
 
-		dialog()->registerWidgetHelp(m_display.integerScaling, tr("Integer Scaling"), tr("Unchecked"),
+		dialog()->registerWidgetHelp(m_display.integerScaling, tr("Integer Scaling"),
 			tr("Adds padding to the display area to ensure that the ratio between pixels on the host to pixels in the console is an "
-			   "integer number. May result in a sharper image in some 2D games."));
+			   "integer number. May result in a sharper image in some 2D games."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_display.aspectRatio, tr("Aspect Ratio"), tr("Auto Standard (4:3/3:2 Progressive)"),
+		dialog()->registerWidgetHelp(m_display.aspectRatio, tr("Aspect Ratio"),
 			tr("Changes the aspect ratio used to display the console's output to the screen. The default is Auto Standard (4:3/3:2 "
-			   "Progressive) which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era, and adapts to widescreen/ultrawide game patches."));
+			   "Progressive) which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era, "
+			   "and adapts to widescreen/ultrawide game patches."), tr("Auto Standard (4:3/3:2 Progressive)"));
 
-		dialog()->registerWidgetHelp(m_display.interlacing, tr("Deinterlacing"), tr("Automatic (Default)"), tr("Determines the deinterlacing method to be used on the interlaced screen of the emulated console. Automatic should be able to correctly deinterlace most games, but if you see visibly shaky graphics, try one of the other options."));
+		dialog()->registerWidgetHelp(m_display.interlacing, tr("Deinterlacing"),
+			tr("Determines the deinterlacing method to be used on the interlaced screen of the emulated console. "
+			   "Automatic should be able to correctly deinterlace most games, but if you see visibly shaky graphics, try one of the other options."), tr("Automatic (Default)"));
 
-		dialog()->registerWidgetHelp(m_capture.screenshotSize, tr("Screenshot Resolution"), tr("Screen Resolution"),
+		dialog()->registerWidgetHelp(m_capture.screenshotSize, tr("Screenshot Resolution"),
 			tr("Determines the resolution at which screenshots will be saved. Internal resolutions preserve more detail at the cost of "
-			   "file size."));
+			   "file size."), tr("Screen Resolution"));
 
-		dialog()->registerWidgetHelp(m_capture.screenshotFormat, tr("Screenshot Format"), tr("PNG"),
-			tr("Selects the format which will be used to save screenshots. JPEG produces smaller files, but loses detail."));
+		dialog()->registerWidgetHelp(m_capture.screenshotFormat, tr("Screenshot Format"),
+			tr("Selects the format which will be used to save screenshots. JPEG produces smaller files, but loses detail."), tr("PNG"));
 
-		dialog()->registerWidgetHelp(m_capture.screenshotQuality, tr("Screenshot Quality"), tr("90%"),
+		dialog()->registerWidgetHelp(m_capture.screenshotQuality, tr("Screenshot Quality"),
 			tr("Selects the quality at which screenshots will be compressed. Higher values preserve more detail for JPEG and WebP, and reduce file "
-			   "size for PNG."));
+			   "size for PNG."), tr("90%"));
 
-		dialog()->registerWidgetHelp(m_display.stretchY, tr("Vertical Stretch"), tr("100%"),
+		dialog()->registerWidgetHelp(m_display.stretchY, tr("Vertical Stretch"),
 			// Characters </> need to be converted into entities in order to be shown correctly.
-			tr("Stretches (&lt; 100%) or squashes (&gt; 100%) the vertical component of the display."));
+			tr("Stretches (&lt; 100%) or squashes (&gt; 100%) the vertical component of the display."), tr("100%"));
 
-		dialog()->registerWidgetHelp(m_display.fullscreenModes, tr("Fullscreen Mode"), tr("Borderless Fullscreen"),
-			tr("Chooses the fullscreen resolution and frequency."));
-
-		dialog()->registerWidgetHelp(
-			m_display.cropLeft, tr("Left"), tr("0px"), tr("Changes the number of pixels cropped from the left side of the display."));
+		dialog()->registerWidgetHelp(m_display.fullscreenModes, tr("Fullscreen Mode"),
+			tr("Chooses the fullscreen resolution and frequency."), tr("Borderless Fullscreen"));
 
 		dialog()->registerWidgetHelp(
-			m_display.cropTop, tr("Top"), tr("0px"), tr("Changes the number of pixels cropped from the top of the display."));
+			m_display.cropLeft, tr("Left"), tr("Changes the number of pixels cropped from the left side of the display."), tr("0px"));
 
 		dialog()->registerWidgetHelp(
-			m_display.cropRight, tr("Right"), tr("0px"), tr("Changes the number of pixels cropped from the right side of the display."));
+			m_display.cropTop, tr("Top"), tr("Changes the number of pixels cropped from the top of the display."), tr("0px"));
 
 		dialog()->registerWidgetHelp(
-			m_display.cropBottom, tr("Bottom"), tr("0px"), tr("Changes the number of pixels cropped from the bottom of the display."));
+			m_display.cropRight, tr("Right"), tr("Changes the number of pixels cropped from the right side of the display."), tr("0px"));
+
+		dialog()->registerWidgetHelp(
+			m_display.cropBottom, tr("Bottom"), tr("Changes the number of pixels cropped from the bottom of the display."), tr("0px"));
 	}
 
 	// Rendering tab
 	{
 		// Hardware
-		dialog()->registerWidgetHelp(m_hw.upscaleMultiplier, tr("Internal Resolution"), tr("Native (PS2) (Default)"),
+		dialog()->registerWidgetHelp(m_hw.upscaleMultiplier, tr("Internal Resolution"),
 			tr("Control the resolution at which games are rendered. High resolutions can impact performance on "
 			   "older or lower-end GPUs.<br>Non-native resolution may cause minor graphical issues in some games.<br>"
-			   "FMV resolution will remain unchanged, as the video files are pre-rendered."));
+			   "FMV resolution will remain unchanged, as the video files are pre-rendered."), tr("Native (PS2) (Default)"));
 
 		dialog()->registerWidgetHelp(
-			m_hw.mipmapping, tr("Mipmapping"), tr("Checked"), tr("Enables mipmapping, which some games require to render correctly. Mipmapping uses progressively lower resolution variants of textures at progressively further distances to reduce processing load and avoid visual artifacts."));
+			m_hw.mipmapping, tr("Mipmapping"),
+			tr("Enables mipmapping, which some games require to render correctly. Mipmapping uses progressively lower resolution variants of "
+			   "textures at progressively further distances to reduce processing load and avoid visual artifacts."), tr("Checked"));
 
 		dialog()->registerWidgetHelp(
-			m_hw.textureFiltering, tr("Texture Filtering"), tr("Bilinear (PS2)"),
+			m_hw.textureFiltering, tr("Texture Filtering"),
 			tr("Changes what filtering algorithm is used to map textures to surfaces.<br> "
 			   "Nearest: Makes no attempt to blend colors.<br> "
 			   "Bilinear (Forced): Will blend colors together to remove harsh edges between different colored pixels even if the game told the PS2 not to.<br> "
 			   "Bilinear (PS2): Will apply filtering to all surfaces that a game instructs the PS2 to filter.<br> "
-			   "Bilinear (Forced Excluding Sprites): Will apply filtering to all surfaces, even if the game told the PS2 not to, except sprites."));
+			   "Bilinear (Forced Excluding Sprites): Will apply filtering to all surfaces, even if the game told the PS2 not to, except sprites."), tr("Bilinear (PS2)"));
 
-		dialog()->registerWidgetHelp(m_hw.trilinearFiltering, tr("Trilinear Filtering"), tr("Automatic (Default)"),
+		dialog()->registerWidgetHelp(m_hw.trilinearFiltering, tr("Trilinear Filtering"),
 			tr("Reduces blurriness of large textures applied to small, steeply angled surfaces by sampling colors from the two nearest Mipmaps. Requires Mipmapping to be 'on'.<br> "
 			   "Off: Disables the feature.<br> "
 			   "Trilinear (PS2): Applies Trilinear filtering to all surfaces that a game instructs the PS2 to.<br> "
-			   "Trilinear (Forced): Applies Trilinear filtering to all surfaces, even if the game told the PS2 not to."));
+			   "Trilinear (Forced): Applies Trilinear filtering to all surfaces, even if the game told the PS2 not to."), tr("Automatic (Default)"));
 
-		dialog()->registerWidgetHelp(m_hw.anisotropicFiltering, tr("Anisotropic Filtering"), tr("Off (Default)"),
-			tr("Reduces texture aliasing at extreme viewing angles."));
+		dialog()->registerWidgetHelp(m_hw.anisotropicFiltering, tr("Anisotropic Filtering"),
+			tr("Reduces texture aliasing at extreme viewing angles."), tr("Off (Default)"));
 
-		dialog()->registerWidgetHelp(m_hw.dithering, tr("Dithering"), tr("Unscaled (Default)"),
+		dialog()->registerWidgetHelp(m_hw.dithering, tr("Dithering"),
 			tr("Reduces banding between colors and improves the perceived color depth.<br> "
 			   "Off: Disables any dithering.<br> "
 			   "Scaled: Upscaling-aware / Highest dithering effect.<br> "
 			   "Unscaled: Native dithering / Lowest dithering effect, does not increase size of squares when upscaling.<br> "
-			   "Force 32bit: Treats all draws as if they were 32bit to avoid banding and dithering."));
+			   "Force 32bit: Treats all draws as if they were 32bit to avoid banding and dithering."), tr("Unscaled (Default)"));
 
-		dialog()->registerWidgetHelp(m_hw.blending, tr("Blending Accuracy"), tr("Basic (Recommended)"),
+		dialog()->registerWidgetHelp(m_hw.blending, tr("Blending Accuracy"),
 			tr("Control the accuracy level of the GS blending unit emulation.<br> "
-			   "The higher the setting, the more blending is emulated in the shader accurately, and the higher the speed penalty will be."));
+			   "The higher the setting, the more blending is emulated in the shader accurately, and the higher the speed penalty will be."), tr("Basic (Recommended)"));
 
-		dialog()->registerWidgetHelp(m_advanced.texturePreloading, tr("Texture Preloading"), tr("Full (Hash Cache)"),
+		dialog()->registerWidgetHelp(m_advanced.texturePreloading, tr("Texture Preloading"),
 			tr("Uploads entire textures at once instead of in small pieces, avoiding redundant uploads when possible. "
-			   "Improves performance in most games, but can make a small selection slower."));
+			   "Improves performance in most games, but can make a small selection slower."), tr("Full (Hash Cache)"));
 
-		dialog()->registerWidgetHelp(m_fixes.gpuPaletteConversion, tr("GPU Palette Conversion"), tr("Unchecked"),
+		dialog()->registerWidgetHelp(m_fixes.gpuPaletteConversion, tr("GPU Palette Conversion"),
 			tr("When enabled the GPU will convert colormap textures, otherwise the CPU will. "
-			   "It is a trade-off between GPU and CPU."));
+			   "It is a trade-off between GPU and CPU."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_hw.enableHWFixes, tr("Manual Hardware Renderer Fixes"), tr("Unchecked"),
+		dialog()->registerWidgetHelp(m_hw.enableHWFixes, tr("Manual Hardware Renderer Fixes"),
 			tr("Enabling this option gives you the ability to change the renderer and upscaling fixes "
 			   "to your games. However IF you have ENABLED this, you WILL DISABLE AUTOMATIC "
-			   "SETTINGS and you can re-enable automatic settings by unchecking this option."));
+			   "SETTINGS and you can re-enable automatic settings by unchecking this option."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_advanced.spinCPUDuringReadbacks, tr("Spin CPU During Readbacks"), tr("Unchecked"),
+		dialog()->registerWidgetHelp(m_advanced.spinCPUDuringReadbacks, tr("Spin CPU During Readbacks"),
 			tr("Does useless work on the CPU during readbacks to prevent it from going to into powersave modes. "
-			   "May improve performance during readbacks but with a significant increase in power usage."));
+			   "May improve performance during readbacks but with a significant increase in power usage."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_advanced.spinGPUDuringReadbacks, tr("Spin GPU During Readbacks"), tr("Unchecked"),
+		dialog()->registerWidgetHelp(m_advanced.spinGPUDuringReadbacks, tr("Spin GPU During Readbacks"),
 			tr("Submits useless work to the GPU during readbacks to prevent it from going into powersave modes. "
-			   "May improve performance during readbacks but with a significant increase in power usage."));
+			   "May improve performance during readbacks but with a significant increase in power usage."), tr("Unchecked"));
 
 		// Software
-		dialog()->registerWidgetHelp(m_sw.extraSWThreads, tr("Software Rendering Threads"), tr("2 threads"),
+		dialog()->registerWidgetHelp(m_sw.extraSWThreads, tr("Software Rendering Threads"),
 			tr("Number of rendering threads: 0 for single thread, 2 or more for multithread (1 is for debugging). "
-			   "2 to 4 threads is recommended, any more than that is likely to be slower instead of faster."));
+			   "2 to 4 threads is recommended, any more than that is likely to be slower instead of faster."), tr("2 threads"));
 
-		dialog()->registerWidgetHelp(m_sw.swAutoFlush, tr("Auto Flush"), tr("Checked"),
+		dialog()->registerWidgetHelp(m_sw.swAutoFlush, tr("Auto Flush"),
 			tr("Forces a primitive flush when a framebuffer is also an input texture. "
-			   "Fixes some processing effects such as the shadows in the Jak series and radiosity in GTA:SA."));
+			   "Fixes some processing effects such as the shadows in the Jak series and radiosity in GTA:SA."), tr("Checked"));
 
 		dialog()->registerWidgetHelp(
-			m_sw.swMipmap, tr("Mipmapping"), tr("Checked"), tr("Enables mipmapping, which some games require to render correctly."));
+			m_sw.swMipmap, tr("Mipmapping"), tr("Enables mipmapping, which some games require to render correctly."), tr("Checked"));
 	}
 
 	// Hardware Fixes tab
 	{
-		dialog()->registerWidgetHelp(m_fixes.cpuSpriteRenderBW, tr("CPU Sprite Render Size"), tr("0 (Disabled)"),
-			tr("The maximum target memory width that will allow the CPU Sprite Renderer to activate on."));
+		dialog()->registerWidgetHelp(m_fixes.cpuSpriteRenderBW, tr("CPU Sprite Render Size"),
+			tr("The maximum target memory width that will allow the CPU Sprite Renderer to activate on."), tr("0 (Disabled)"));
 
-		dialog()->registerWidgetHelp(m_fixes.cpuCLUTRender, tr("Software CLUT Render"), tr("0 (Disabled)"),
-			tr("Tries to detect when a game is drawing its own color palette and then renders it in software, instead of on the GPU."));
+		dialog()->registerWidgetHelp(m_fixes.cpuCLUTRender, tr("Software CLUT Render"),
+			tr("Tries to detect when a game is drawing its own color palette and then renders it in software, instead of on the GPU."), tr("0 (Disabled)"));
 
-		dialog()->registerWidgetHelp(m_fixes.gpuTargetCLUTMode, tr("GPU Target CLUT"), tr("Disabled"),
-			tr("Tries to detect when a game is drawing its own color palette and then renders it on the GPU with special handling."));
+		dialog()->registerWidgetHelp(m_fixes.gpuTargetCLUTMode, tr("GPU Target CLUT"),
+			tr("Tries to detect when a game is drawing its own color palette and then renders it on the GPU with special handling."), tr("Disabled"));
 
-		dialog()->registerWidgetHelp(m_fixes.skipDrawStart, tr("Skipdraw Range Start"), tr("0"),
-			tr("Completely skips drawing surfaces from the surface in the left box up to the surface specified in the box on the right."));
+		dialog()->registerWidgetHelp(m_fixes.skipDrawStart, tr("Skipdraw Range Start"),
+			tr("Completely skips drawing surfaces from the surface in the left box up to the surface specified in the box on the right."), tr("0"));
 
-		dialog()->registerWidgetHelp(m_fixes.skipDrawEnd, tr("Skipdraw Range End"), tr("0"),
-			tr("Completely skips drawing surfaces from the surface in the left box up to the surface specified in the box on the right."));
+		dialog()->registerWidgetHelp(m_fixes.skipDrawEnd, tr("Skipdraw Range End"),
+			tr("Completely skips drawing surfaces from the surface in the left box up to the surface specified in the box on the right."), tr("0"));
 
-		dialog()->registerWidgetHelp(m_fixes.hwAutoFlush, tr("Auto Flush"), tr("Unchecked"),
+		dialog()->registerWidgetHelp(m_fixes.hwAutoFlush, tr("Auto Flush"),
 			tr("Forces a primitive flush when a framebuffer is also an input texture. "
-			   "Fixes some processing effects such as the shadows in the Jak series and radiosity in GTA:SA."));
+			   "Fixes some processing effects such as the shadows in the Jak series and radiosity in GTA:SA."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_fixes.disableDepthEmulation, tr("Disable Depth Conversion"), tr("Unchecked"),
+		dialog()->registerWidgetHelp(m_fixes.disableDepthEmulation, tr("Disable Depth Conversion"),
 			tr("Disables the support of depth buffers in the texture cache. "
-			   "Will likely create various glitches and is only useful for debugging."));
+			   "Will likely create various glitches and is only useful for debugging."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_fixes.disableSafeFeatures, tr("Disable Safe Features"), tr("Unchecked"),
+		dialog()->registerWidgetHelp(m_fixes.disableSafeFeatures, tr("Disable Safe Features"),
 			tr("This option disables multiple safe features. "
 			   "Disables accurate Unscale Point and Line rendering which can help Xenosaga games. "
 			   "Disables accurate GS Memory Clearing to be done on the CPU, and lets the GPU handle it, which can help Kingdom Hearts "
-			   "games."));
+			   "games."), tr("Unchecked"));
 
 		dialog()->registerWidgetHelp(
-			m_fixes.disableRenderFixes, tr("Disable Render Fixes"), tr("Unchecked"), tr("This option disables game-specific render fixes."));
+			m_fixes.disableRenderFixes, tr("Disable Render Fixes"), tr("This option disables game-specific render fixes."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_fixes.disablePartialInvalidation, tr("Disable Partial Source Invalidation"), tr("Unchecked"),
+		dialog()->registerWidgetHelp(m_fixes.disablePartialInvalidation, tr("Disable Partial Source Invalidation"),
 			tr("By default, the texture cache handles partial invalidations. Unfortunately it is very costly to compute CPU wise. "
 			   "This hack replaces the partial invalidation with a complete deletion of the texture to reduce the CPU load. "
-			   "It helps with the Snowblind engine games."));
-		dialog()->registerWidgetHelp(m_fixes.frameBufferConversion, tr("Framebuffer Conversion"), tr("Unchecked"),
+			   "It helps with the Snowblind engine games."), tr("Unchecked"));
+		dialog()->registerWidgetHelp(m_fixes.frameBufferConversion, tr("Framebuffer Conversion"),
 			tr("Convert 4-bit and 8-bit framebuffer on the CPU instead of the GPU. "
-			   "Helps Harry Potter and Stuntman games. It has a big impact on performance."));
+			   "Helps Harry Potter and Stuntman games. It has a big impact on performance."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_fixes.preloadFrameData, tr("Preload Frame Data"), tr("Unchecked"),
-			tr("Uploads GS data when rendering a new frame to reproduce some effects accurately."));
+		dialog()->registerWidgetHelp(m_fixes.preloadFrameData, tr("Preload Frame Data"),
+			tr("Uploads GS data when rendering a new frame to reproduce some effects accurately."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_fixes.textureInsideRt, tr("Texture Inside RT"), tr("Disabled"),
-			tr("Allows the texture cache to reuse as an input texture the inner portion of a previous framebuffer."));
+		dialog()->registerWidgetHelp(m_fixes.textureInsideRt, tr("Texture Inside RT"),
+			tr("Allows the texture cache to reuse as an input texture the inner portion of a previous framebuffer."), tr("Disabled"));
 
-		dialog()->registerWidgetHelp(m_fixes.readTCOnClose, tr("Read Targets When Closing"), tr("Unchecked"),
+		dialog()->registerWidgetHelp(m_fixes.readTCOnClose, tr("Read Targets When Closing"),
 			tr("Flushes all targets in the texture cache back to local memory when shutting down. Can prevent lost visuals when saving "
-			   "state or switching graphics APIs, but can also cause graphical corruption."));
+			   "state or switching graphics APIs, but can also cause graphical corruption."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_fixes.estimateTextureRegion, tr("Estimate Texture Region"), tr("Unchecked"),
-			tr("Attempts to reduce the texture size when games do not set it themselves (e.g. Snowblind games)."));
+		dialog()->registerWidgetHelp(m_fixes.estimateTextureRegion, tr("Estimate Texture Region"),
+			tr("Attempts to reduce the texture size when games do not set it themselves (e.g. Snowblind games)."), tr("Unchecked"));
 	}
 
 	// Upscaling Fixes tab
 	{
-		dialog()->registerWidgetHelp(m_upscaling.halfPixelOffset, tr("Half Pixel Offset"), tr("Off (Default)"),
-			tr("Might fix some misaligned fog, bloom, or blend effect."));
+		dialog()->registerWidgetHelp(m_upscaling.halfPixelOffset, tr("Half Pixel Offset"),
+			tr("Might fix some misaligned fog, bloom, or blend effect."), tr("Off (Default)"));
 
-		dialog()->registerWidgetHelp(m_upscaling.roundSprite, tr("Round Sprite"), tr("Off (Default)"),
+		dialog()->registerWidgetHelp(m_upscaling.roundSprite, tr("Round Sprite"),
 			tr("Corrects the sampling of 2D sprite textures when upscaling. "
 			   "Fixes lines in sprites of games like Ar tonelico when upscaling. Half option is for flat sprites, Full is for all "
-			   "sprites."));
+			   "sprites."), tr("Off (Default)"));
 
-		dialog()->registerWidgetHelp(m_upscaling.textureOffsetX, tr("Texture Offsets X"), tr("0"),
+		dialog()->registerWidgetHelp(m_upscaling.textureOffsetX, tr("Texture Offsets X"),
 			//: ST and UV are different types of texture coordinates, like XY would be spatial coordinates.
 			tr("Offset for the ST/UV texture coordinates. Fixes some odd texture issues and might fix some post processing alignment "
-			   "too."));
+			   "too."), tr("0"));
 
-		dialog()->registerWidgetHelp(m_upscaling.textureOffsetY, tr("Texture Offsets Y"), tr("0"),
+		dialog()->registerWidgetHelp(m_upscaling.textureOffsetY, tr("Texture Offsets Y"),
 			//: ST and UV are different types of texture coordinates, like XY would be spatial coordinates.
 			tr("Offset for the ST/UV texture coordinates. Fixes some odd texture issues and might fix some post processing alignment "
-			   "too."));
+			   "too."), tr("0"));
 
-		dialog()->registerWidgetHelp(m_upscaling.alignSprite, tr("Align Sprite"), tr("Unchecked"),
+		dialog()->registerWidgetHelp(m_upscaling.alignSprite, tr("Align Sprite"),
 			//: Namco: a game publisher and development company. Leave the name as-is. Ace Combat, Tekken, Soul Calibur: game names. Leave as-is or use official translations.
-			tr("Fixes issues with upscaling (vertical lines) in Namco games like Ace Combat, Tekken, Soul Calibur, etc."));
+			tr("Fixes issues with upscaling (vertical lines) in Namco games like Ace Combat, Tekken, Soul Calibur, etc."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_upscaling.forceEvenSpritePosition, tr("Force Even Sprite Position"), tr("Unchecked"),
+		dialog()->registerWidgetHelp(m_upscaling.forceEvenSpritePosition, tr("Force Even Sprite Position"),
 			//: Wild Arms: name of a game series. Leave as-is or use an official translation.
-			tr("Lowers the GS precision to avoid gaps between pixels when upscaling. Fixes the text on Wild Arms games."));
+			tr("Lowers the GS precision to avoid gaps between pixels when upscaling. Fixes the text on Wild Arms games."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_upscaling.bilinearHack, tr("Bilinear Upscale"), tr("Unchecked"),
-			tr("Can smooth out textures due to be bilinear filtered when upscaling. E.g. Brave sun glare."));
+		dialog()->registerWidgetHelp(m_upscaling.bilinearHack, tr("Bilinear Upscale"),
+			tr("Can smooth out textures due to be bilinear filtered when upscaling. E.g. Brave sun glare."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_upscaling.mergeSprite, tr("Merge Sprite"), tr("Unchecked"),
-			tr("Replaces post-processing multiple paving sprites by a single fat sprite. It reduces various upscaling lines."));
+		dialog()->registerWidgetHelp(m_upscaling.mergeSprite, tr("Merge Sprite"),
+			tr("Replaces post-processing multiple paving sprites by a single fat sprite. It reduces various upscaling lines."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_upscaling.nativePaletteDraw, tr("Unscaled Palette Texture Draws"), tr("Unchecked"),
-			tr("Forces palette texture draws to render at native resolution."));
+		dialog()->registerWidgetHelp(m_upscaling.nativePaletteDraw, tr("Unscaled Palette Texture Draws"),
+			tr("Forces palette texture draws to render at native resolution."), tr("Unchecked"));
 	}
 
 	// Texture Replacement tab
 	{
-		dialog()->registerWidgetHelp(m_texture.dumpReplaceableTextures, tr("Dump Textures"), tr("Unchecked"), tr("Dumps replaceable textures to disk. Will reduce performance."));
+		dialog()->registerWidgetHelp(m_texture.dumpReplaceableTextures, tr("Dump Textures"), tr("Dumps replaceable textures to disk. Will reduce performance."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_texture.dumpReplaceableMipmaps, tr("Dump Mipmaps"), tr("Unchecked"), tr("Includes mipmaps when dumping textures."));
+		dialog()->registerWidgetHelp(m_texture.dumpReplaceableMipmaps, tr("Dump Mipmaps"), tr("Includes mipmaps when dumping textures."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_texture.dumpTexturesWithFMVActive, tr("Dump FMV Textures"), tr("Unchecked"), tr("Allows texture dumping when FMVs are active. You should not enable this."));
+		dialog()->registerWidgetHelp(m_texture.dumpTexturesWithFMVActive, tr("Dump FMV Textures"),
+			tr("Allows texture dumping when FMVs are active. You should not enable this."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_texture.loadTextureReplacementsAsync, tr("Asynchronous Texture Loading"), tr("Checked"), tr("Loads replacement textures on a worker thread, reducing microstutter when replacements are enabled."));
+		dialog()->registerWidgetHelp(m_texture.loadTextureReplacementsAsync, tr("Asynchronous Texture Loading"),
+			tr("Loads replacement textures on a worker thread, reducing microstutter when replacements are enabled."), tr("Checked"));
 
-		dialog()->registerWidgetHelp(m_texture.loadTextureReplacements, tr("Load Textures"), tr("Unchecked"), tr("Loads replacement textures where available and user-provided."));
+		dialog()->registerWidgetHelp(m_texture.loadTextureReplacements, tr("Load Textures"), tr("Loads replacement textures where available and user-provided."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_texture.precacheTextureReplacements, tr("Precache Textures"), tr("Unchecked"), tr("Preloads all replacement textures to memory. Not necessary with asynchronous loading."));
+		dialog()->registerWidgetHelp(m_texture.precacheTextureReplacements, tr("Precache Textures"),
+			tr("Preloads all replacement textures to memory. Not necessary with asynchronous loading."), tr("Unchecked"));
 	}
 
 	// Post Processing tab
 	{
 		//: You might find an official translation for this on AMD's website (Spanish version linked): https://www.amd.com/es/technologies/radeon-software-fidelityfx
-		dialog()->registerWidgetHelp(m_post.casMode, tr("Contrast Adaptive Sharpening"), tr("None (Default)"), tr("Enables FidelityFX Contrast Adaptive Sharpening."));
+		dialog()->registerWidgetHelp(m_post.casMode, tr("Contrast Adaptive Sharpening"), tr("Enables FidelityFX Contrast Adaptive Sharpening."), tr("None (Default)"));
 
-		dialog()->registerWidgetHelp(m_post.casSharpness, tr("Sharpness"), tr("50%"), tr("Determines the intensity the sharpening effect in CAS post-processing."));
+		dialog()->registerWidgetHelp(m_post.casSharpness, tr("Sharpness"), tr("Determines the intensity the sharpening effect in CAS post-processing."), tr("50%"));
 
-		dialog()->registerWidgetHelp(m_post.shadeBoost, tr("Shade Boost"), tr("Unchecked"),
-			tr("Enables saturation, contrast, and brightness to be adjusted. Values of brightness, saturation, and contrast are at default "
-			   "50."));
+		dialog()->registerWidgetHelp(m_post.shadeBoost, tr("Shade Boost"),
+			tr("Enables saturation, contrast, and brightness to be adjusted. Values of brightness, saturation, and contrast are at default 50."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(
-			m_post.fxaa, tr("FXAA"), tr("Unchecked"), tr("Applies the FXAA anti-aliasing algorithm to improve the visual quality of games."));
+		dialog()->registerWidgetHelp(m_post.fxaa, tr("FXAA"), tr("Applies the FXAA anti-aliasing algorithm to improve the visual quality of games."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_post.shadeBoostBrightness, tr("Brightness"), tr("50"), tr("Adjusts brightness. 50 is normal."));
+		dialog()->registerWidgetHelp(m_post.shadeBoostBrightness, tr("Brightness"), tr("Adjusts brightness. 50 is normal."), tr("50"));
 
-		dialog()->registerWidgetHelp(m_post.shadeBoostContrast, tr("Contrast"), tr("50"), tr("Adjusts contrast. 50 is normal."));
+		dialog()->registerWidgetHelp(m_post.shadeBoostContrast, tr("Contrast"), tr("Adjusts contrast. 50 is normal."), tr("50"));
 
-		dialog()->registerWidgetHelp(m_post.shadeBoostGamma, tr("Gamma"), tr("50"), tr("Adjusts gamma. 50 is normal."));
+		dialog()->registerWidgetHelp(m_post.shadeBoostGamma, tr("Gamma"), tr("Adjusts gamma. 50 is normal."), tr("50"));
 
-		dialog()->registerWidgetHelp(m_post.shadeBoostSaturation, tr("Saturation"), tr("50"), tr("Adjusts saturation. 50 is normal."));
+		dialog()->registerWidgetHelp(m_post.shadeBoostSaturation, tr("Saturation"), tr("Adjusts saturation. 50 is normal."), tr("50"));
 
-		dialog()->registerWidgetHelp(m_post.tvShader, tr("TV Shader"), tr("None (Default)"),
-			tr("Applies a shader which replicates the visual effects of different styles of television sets."));
+		dialog()->registerWidgetHelp(m_post.tvShader, tr("TV Shader"),
+			tr("Applies a shader which replicates the visual effects of different styles of television sets."), tr("None (Default)"));
 	}
 
 	// OSD tab
 	{
-		dialog()->registerWidgetHelp(m_osd.scale, tr("OSD Scale"), tr("100%"), tr("Scales the size of the onscreen OSD from 50% to 500%."));
+		dialog()->registerWidgetHelp(m_osd.scale, tr("OSD Scale"), tr("Scales the size of the onscreen OSD from 50% to 500%."), tr("100%"));
 
-		dialog()->registerWidgetHelp(m_osd.messagesPos, tr("OSD Messages Position"), tr("Left (Default)"),
+		dialog()->registerWidgetHelp(m_osd.messagesPos, tr("OSD Messages Position"),
 			tr("Shows on-screen-display messages when events occur such as save states being "
-			   "created/loaded, screenshots being taken, etc."));
+			   "created/loaded, screenshots being taken, etc."), tr("Left (Default)"));
 
-		dialog()->registerWidgetHelp(m_osd.performancePos, tr("OSD Statistics Position"), tr("Right (Default)"),
-			tr("Shows a variety of on-screen performance data points as selected by the user."));
+		dialog()->registerWidgetHelp(m_osd.performancePos, tr("OSD Statistics Position"),
+			tr("Shows a variety of on-screen performance data points as selected by the user."), tr("Right (Default)"));
 
-		dialog()->registerWidgetHelp(m_osd.showFPS, tr("Show FPS"), tr("Unchecked"),
-			tr("Shows the internal frame rate of the game in the top-right corner of the display."));
+		dialog()->registerWidgetHelp(m_osd.showFPS, tr("Show FPS"),
+			tr("Shows the internal frame rate of the game in the top-right corner of the display."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_osd.showVPS, tr("Show VPS"), tr("Unchecked"),
-			tr("Shows the vsync rate of the emulator in the top-right corner of the display."));
+		dialog()->registerWidgetHelp(m_osd.showVPS, tr("Show VPS"),
+			tr("Shows the vsync rate of the emulator in the top-right corner of the display."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_osd.showSpeed, tr("Show Speed Percentages"), tr("Unchecked"),
-			tr("Shows the current emulation speed of the system in the top-right corner of the display as a percentage."));
+		dialog()->registerWidgetHelp(m_osd.showSpeed, tr("Show Speed Percentages"),
+			tr("Shows the current emulation speed of the system in the top-right corner of the display as a percentage."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_osd.showResolution, tr("Show Resolution"), tr("Unchecked"),
-			tr("Shows the resolution of the game in the top-right corner of the display."));
+		dialog()->registerWidgetHelp(m_osd.showResolution, tr("Show Resolution"),
+			tr("Shows the resolution of the game in the top-right corner of the display."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_osd.showCPU, tr("Show CPU Usage"), tr("Unchecked"), tr("Shows host's CPU utilization."));
+		dialog()->registerWidgetHelp(m_osd.showCPU, tr("Show CPU Usage"), tr("Shows host's CPU utilization."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_osd.showGPU, tr("Show GPU Usage"), tr("Unchecked"), tr("Shows host's GPU utilization."));
+		dialog()->registerWidgetHelp(m_osd.showGPU, tr("Show GPU Usage"), tr("Shows host's GPU utilization."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_osd.showGSStats, tr("Show Statistics"), tr("Unchecked"),
-			tr("Shows counters for internal graphical utilization, useful for debugging."));
+		dialog()->registerWidgetHelp(m_osd.showGSStats, tr("Show Statistics"),
+			tr("Shows counters for internal graphical utilization, useful for debugging."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_osd.showIndicators, tr("Show Indicators"), tr("Checked"),
-			tr("Shows OSD icon indicators for emulation states such as Pausing, Turbo, Fast-Forward, and Slow-Motion."));
+		dialog()->registerWidgetHelp(m_osd.showIndicators, tr("Show Indicators"),
+			tr("Shows OSD icon indicators for emulation states such as Pausing, Turbo, Fast-Forward, and Slow-Motion."), tr("Checked"));
 
-		dialog()->registerWidgetHelp(m_osd.showSettings, tr("Show Settings"), tr("Unchecked"),
-			tr("Displays various settings and the current values of those settings, useful for debugging."));
+		dialog()->registerWidgetHelp(m_osd.showSettings, tr("Show Settings"),
+			tr("Displays various settings and the current values of those settings, useful for debugging."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_osd.showPatches, tr("Show Patches"), tr("Unchecked"),
-			tr("Shows the amount of currently active patches/cheats on the bottom-right corner of the display."));
+		dialog()->registerWidgetHelp(m_osd.showPatches, tr("Show Patches"),
+			tr("Shows the amount of currently active patches/cheats on the bottom-right corner of the display."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_osd.showInputs, tr("Show Inputs"), tr("Unchecked"),
-			tr("Shows the current controller state of the system in the bottom-left corner of the display."));
+		dialog()->registerWidgetHelp(m_osd.showInputs, tr("Show Inputs"),
+			tr("Shows the current controller state of the system in the bottom-left corner of the display."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_osd.showFrameTimes, tr("Show Frame Times"), tr("Unchecked"),
-			tr("Displays a graph showing the average frametimes."));
+		dialog()->registerWidgetHelp(m_osd.showFrameTimes, tr("Show Frame Times"),
+			tr("Displays a graph showing the average frametimes."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_osd.showVersion, tr("Show PCSX2 Version"), tr("Unchecked"),
-			tr("Shows the current PCSX2 version on the top-right corner of the display."));
+		dialog()->registerWidgetHelp(m_osd.showVersion, tr("Show PCSX2 Version"),
+			tr("Shows the current PCSX2 version on the top-right corner of the display."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_osd.showVideoCapture, tr("Show Video Capture Status"), tr("Checked"),
-			tr("Shows the currently active video capture status."));
+		dialog()->registerWidgetHelp(m_osd.showVideoCapture, tr("Show Video Capture Status"),
+			tr("Shows the currently active video capture status."), tr("Checked"));
 
-		dialog()->registerWidgetHelp(m_osd.showInputRec, tr("Show Input Recording Status"), tr("Checked"),
-			tr("Shows the currently active input recording status."));
+		dialog()->registerWidgetHelp(m_osd.showInputRec, tr("Show Input Recording Status"),
+			tr("Shows the currently active input recording status."), tr("Checked"));
 
-		dialog()->registerWidgetHelp(m_osd.showHardwareInfo, tr("Show Hardware Info"), tr("Unchecked"),
-			tr("Shows the current system hardware information on the OSD."));
+		dialog()->registerWidgetHelp(m_osd.showHardwareInfo, tr("Show Hardware Info"),
+			tr("Shows the current system hardware information on the OSD."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_osd.warnAboutUnsafeSettings, tr("Warn About Unsafe Settings"), tr("Checked"),
-			tr("Displays warnings when settings are enabled which may break games."));
+		dialog()->registerWidgetHelp(m_osd.warnAboutUnsafeSettings, tr("Warn About Unsafe Settings"),
+			tr("Displays warnings when settings are enabled which may break games."), tr("Checked"));
 
 		connect(m_osd.showSettings, &QCheckBox::checkStateChanged, this,
 			&GraphicsSettingsWidget::onOsdShowSettingsToggled);
@@ -776,81 +782,83 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 
 	// Recording tab
 	{
-		dialog()->registerWidgetHelp(m_capture.videoCaptureCodec, tr("Video Codec"), tr("Default"),
+		dialog()->registerWidgetHelp(m_capture.videoCaptureCodec, tr("Video Codec"),
 			tr("Selects the Video Codec to be used for Video Capture. "
-			   "<b>If unsure, leave it on default.<b>"));
+			   "<b>If unsure, leave it on default.<b>"), tr("Default"));
 
-		dialog()->registerWidgetHelp(m_capture.videoCaptureFormat, tr("Video Format"), tr("Default"),
+		dialog()->registerWidgetHelp(m_capture.videoCaptureFormat, tr("Video Format"),
 			tr("Selects the Video Format to be used for Video Capture. If by chance the codec does not support the format, the first format available will be used. "
-			   "<b>If unsure, leave it on default.<b>"));
+			   "<b>If unsure, leave it on default.<b>"), tr("Default"));
 
-		dialog()->registerWidgetHelp(m_capture.videoCaptureBitrate, tr("Video Bitrate"), tr("6000 kbps"),
+		dialog()->registerWidgetHelp(m_capture.videoCaptureBitrate, tr("Video Bitrate"),
 			tr("Sets the video bitrate to be used. "
-			   "Higher bitrates generally yield better video quality at the cost of larger resulting file sizes."));
+			   "Higher bitrates generally yield better video quality at the cost of larger resulting file sizes."), tr("6000 kbps"));
 
-		dialog()->registerWidgetHelp(m_capture.videoCaptureResolutionAuto, tr("Automatic Resolution"), tr("Unchecked"),
+		dialog()->registerWidgetHelp(m_capture.videoCaptureResolutionAuto, tr("Automatic Resolution"),
 			tr("When checked, the video capture resolution will follow the internal resolution of the running game.<br><br>"
+			   "<b>Be careful when using this setting especially when you are upscaling, as higher internal resolutions (above 4x) can "
+			   "result in very large video capture and can cause system overload.</b>"), tr("Unchecked"));
 
-			   "<b>Be careful when using this setting especially when you are upscaling, as higher internal resolutions (above 4x) can result in very large video capture and can cause system overload.</b>"));
 
+		dialog()->registerWidgetHelp(m_capture.enableVideoCaptureArguments, tr("Enable Extra Video Arguments"),
+			tr("Allows you to pass arguments to the selected video codec."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_capture.enableVideoCaptureArguments, tr("Enable Extra Video Arguments"), tr("Unchecked"), tr("Allows you to pass arguments to the selected video codec."));
-
-		dialog()->registerWidgetHelp(m_capture.videoCaptureArguments, tr("Extra Video Arguments"), tr("Leave It Blank"),
+		dialog()->registerWidgetHelp(m_capture.videoCaptureArguments, tr("Extra Video Arguments"),
 			tr("Parameters passed to the selected video codec.<br>"
 			   "<b>You must use '=' to separate key from value and ':' to separate two pairs from each other.</b><br>"
-			   "For example: \"crf = 21 : preset = veryfast\""));
+			   "For example: \"crf = 21 : preset = veryfast\""), tr("Blank"));
 
-		dialog()->registerWidgetHelp(m_capture.audioCaptureCodec, tr("Audio Codec"), tr("Default"),
+		dialog()->registerWidgetHelp(m_capture.audioCaptureCodec, tr("Audio Codec"),
 			tr("Selects the Audio Codec to be used for Video Capture. "
-			   "<b>If unsure, leave it on default.<b>"));
+			   "<b>If unsure, leave it on default.<b>"), tr("Default"));
 
-		dialog()->registerWidgetHelp(m_capture.audioCaptureBitrate, tr("Audio Bitrate"), tr("192 kbps"), tr("Sets the audio bitrate to be used."));
+		dialog()->registerWidgetHelp(m_capture.audioCaptureBitrate, tr("Audio Bitrate"), tr("Sets the audio bitrate to be used."), tr("192 kbps"));
 
-		dialog()->registerWidgetHelp(m_capture.enableAudioCaptureArguments, tr("Enable Extra Audio Arguments"), tr("Unchecked"), tr("Allows you to pass arguments to the selected audio codec."));
+		dialog()->registerWidgetHelp(m_capture.enableAudioCaptureArguments, tr("Enable Extra Audio Arguments"),
+			tr("Allows you to pass arguments to the selected audio codec."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_capture.audioCaptureArguments, tr("Extra Audio Arguments"), tr("Leave It Blank"),
+		dialog()->registerWidgetHelp(m_capture.audioCaptureArguments, tr("Extra Audio Arguments"),
 			tr("Parameters passed to the selected audio codec.<br>"
 			   "<b>You must use '=' to separate key from value and ':' to separate two pairs from each other.</b><br>"
-			   "For example: \"compression_level = 4 : joint_stereo = 1\""));
+			   "For example: \"compression_level = 4 : joint_stereo = 1\""), tr("Blank"));
 	}
 
 	// Advanced tab
 	{
-		dialog()->registerWidgetHelp(m_advanced.gsDumpCompression, tr("GS Dump Compression"), tr("Zstandard (zst)"),
-			tr("Change the compression algorithm used when creating a GS dump."));
+		dialog()->registerWidgetHelp(m_advanced.gsDumpCompression, tr("GS Dump Compression"),
+			tr("Change the compression algorithm used when creating a GS dump."), tr("Zstandard (zst)"));
 
 		//: Blit = a data operation. You might want to write it as-is, but fully uppercased. More information: https://en.wikipedia.org/wiki/Bit_blit \nSwap chain: see Microsoft's Terminology Portal.
-		dialog()->registerWidgetHelp(m_advanced.useBlitSwapChain, tr("Use Blit Swap Chain"), tr("Unchecked"),
+		dialog()->registerWidgetHelp(m_advanced.useBlitSwapChain, tr("Use Blit Swap Chain"),
 			//: Blit = a data operation. You might want to write it as-is, but fully uppercased. More information: https://en.wikipedia.org/wiki/Bit_blit
 			tr("Uses a blit presentation model instead of flipping when using the Direct3D 11 "
 			   "graphics API. This usually results in slower performance, but may be required for some "
-			   "streaming applications, or to uncap framerates on some systems."));
+			   "streaming applications, or to uncap framerates on some systems."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_advanced.exclusiveFullscreenControl, tr("Allow Exclusive Fullscreen"), tr("Automatic (Default)"),
+		dialog()->registerWidgetHelp(m_advanced.exclusiveFullscreenControl, tr("Allow Exclusive Fullscreen"),
 			tr("Overrides the driver's heuristics for enabling exclusive fullscreen, or direct flip/scanout.<br>"
-			   "Disallowing exclusive fullscreen may enable smoother task switching and overlays, but increase input latency."));
+			   "Disallowing exclusive fullscreen may enable smoother task switching and overlays, but increase input latency."), tr("Automatic (Default)"));
 
-		dialog()->registerWidgetHelp(m_advanced.disableMailboxPresentation, tr("Disable Mailbox Presentation"), tr("Unchecked"),
+		dialog()->registerWidgetHelp(m_advanced.disableMailboxPresentation, tr("Disable Mailbox Presentation"),
 			tr("Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. "
-			   "Usually results in worse frame pacing."));
+			   "Usually results in worse frame pacing."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_advanced.extendedUpscales, tr("Extended Upscaling Multipliers"), tr("Unchecked"),
-			tr("Displays additional, very high upscaling multipliers dependent on GPU capability."));
+		dialog()->registerWidgetHelp(m_advanced.extendedUpscales, tr("Extended Upscaling Multipliers"),
+			tr("Displays additional, very high upscaling multipliers dependent on GPU capability."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_advanced.useDebugDevice, tr("Enable Debug Device"), tr("Unchecked"),
-			tr("Enables API-level validation of graphics commands."));
+		dialog()->registerWidgetHelp(m_advanced.useDebugDevice, tr("Enable Debug Device"),
+			tr("Enables API-level validation of graphics commands."), tr("Unchecked"));
 
-		dialog()->registerWidgetHelp(m_advanced.gsDownloadMode, tr("GS Download Mode"), tr("Accurate"),
+		dialog()->registerWidgetHelp(m_advanced.gsDownloadMode, tr("GS Download Mode"),
 			tr("Skips synchronizing with the GS thread and host GPU for GS downloads. "
 			   "Can result in a large speed boost on slower systems, at the cost of many broken graphical effects. "
-			   "If games are broken and you have this option enabled, please disable it first."));
+			   "If games are broken and you have this option enabled, please disable it first."), tr("Accurate"));
 
-		dialog()->registerWidgetHelp(m_advanced.ntscFrameRate, tr("NTSC Frame Rate"), tr("59.94 Hz"),
-			tr("Determines what frame rate NTSC games run at."));
+		dialog()->registerWidgetHelp(m_advanced.ntscFrameRate, tr("NTSC Frame Rate"),
+			tr("Determines what frame rate NTSC games run at."), tr("59.94 Hz"));
 
-		dialog()->registerWidgetHelp(m_advanced.palFrameRate, tr("PAL Frame Rate"), tr("50.00 Hz"),
-			tr("Determines what frame rate PAL games run at."));
+		dialog()->registerWidgetHelp(m_advanced.palFrameRate, tr("PAL Frame Rate"),
+			tr("Determines what frame rate PAL games run at."), tr("50.00 Hz"));
 	}
 }
 

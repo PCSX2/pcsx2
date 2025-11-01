@@ -72,7 +72,7 @@ public:
 	__fi AchievementSettingsWidget* getAchievementSettingsWidget() const { return m_achievement_settings; }
 	__fi AdvancedSettingsWidget* getAdvancedSettingsWidget() const { return m_advanced_settings; }
 
-	void registerWidgetHelp(QObject* object, QString title, QString recommended_value, QString text);
+	void registerWidgetHelp(QObject* object, const QString& title, const QString& text, const QString& recommended_value = "");
 	bool eventFilter(QObject* object, QEvent* event) override;
 
 	void setWindowTitle(const QString& title);
