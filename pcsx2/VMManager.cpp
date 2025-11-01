@@ -37,6 +37,7 @@
 #include "SIO/Sio0.h"
 #include "SIO/Sio2.h"
 #include "SPU2/spu2.h"
+#include "SupportURLs.h"
 #include "USB/USB.h"
 #include "Vif_Dynarec.h"
 #include "VMManager.h"
@@ -1353,14 +1354,13 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 		Console.WriteLn("Loading BIOS...");
 		if (!LoadBIOS())
 		{
-			Host::ReportErrorAsync(TRANSLATE_SV("VMManager", "Error"),
-				TRANSLATE_SV("VMManager",
-					"PCSX2 requires a PS2 BIOS in order to run.\n\n"
-					"For legal reasons, you *must* obtain a BIOS from an actual PS2 unit that you own (borrowing "
-					"doesn't count).\n\n"
-					"Once dumped, this BIOS image should be placed in the bios folder within the data directory "
-					"(Tools Menu -> Open Data Directory).\n\n"
-					"Please consult the FAQs and Guides for further instructions."));
+			Host::ReportErrorAsync(TRANSLATE_SV("VMManager", "Error – No BIOS Present"),
+				fmt::format(TRANSLATE_FS("VMManager",
+					"PCSX2 requires a PlayStation 2 BIOS in order to run.\n\n"
+					"For legal reasons, you will need to obtain this BIOS from a PlayStation 2 unit which you own.\n\n"
+					"For step-by-step help with this process, please consult the setup guide at {}.\n\n"
+					"PCSX2 will be able to run once you've placed your BIOS image inside the folder named \"bios\" within the data directory "
+					"(Tools Menu -> Open Data Directory)."), PCSX2_DOCUMENTATION_BIOS_URL_SHORTENED));
 			return false;
 		}
 
