@@ -84,7 +84,7 @@ void intBreakpoint(bool memcheck)
 void intMemcheck(u32 op, u32 bits, bool store)
 {
 	// compute accessed address
-	u32 start = cpuRegs.GPR.r[(op >> 21) & 0x1F].UD[0];
+	u32 start = cpuRegs.GPR.r[(op >> 21) & 0x1F].UL[0];
 	if (static_cast<s16>(op) != 0)
 		start += static_cast<s16>(op);
 	if (bits == 128)

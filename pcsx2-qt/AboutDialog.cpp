@@ -12,6 +12,7 @@
 #include "common/SmallString.h"
 
 #include <QtCore/QFile>
+#include <QtCore/QFileInfo>
 #include <QtCore/QString>
 #include <QtGui/QDesktopServices>
 #include <QtWidgets/QDialog>
@@ -134,12 +135,16 @@ void AboutDialog::showHTMLDialog(QWidget* parent, const QString& title, const QS
 	tb->setOpenExternalLinks(true);
 
 	QFile file(path);
-	file.open(QIODevice::ReadOnly);
-	if (const QByteArray data = file.readAll(); !data.isEmpty())
-		tb->setText(QString::fromUtf8(data));
-	else
+	QFileInfo fi(path);
+	if (!fi.exists() || !fi.isReadable())
+	{
 		tb->setText(tr("File not found: %1").arg(path));
-
+	}
+	else
+	{
+		tb->setSource(QUrl::fromLocalFile(path));
+	}
+	
 	layout->addWidget(tb, 1);
 
 	QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Close, &dialog);

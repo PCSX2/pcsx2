@@ -77,11 +77,11 @@ namespace Patch
 		u8* data_ptr;
 
 		// needed because of the pointer
-		PatchCommand() { std::memset(this, 0, sizeof(*this)); }
+		PatchCommand() { std::memset(static_cast<void*>(this), 0, sizeof(*this)); }
 		PatchCommand(const PatchCommand& p) = delete;
 		PatchCommand(PatchCommand&& p)
 		{
-			std::memcpy(this, &p, sizeof(*this));
+			std::memcpy(static_cast<void*>(this), &p, sizeof(*this));
 			p.data_ptr = nullptr;
 		}
 		~PatchCommand()
@@ -93,7 +93,7 @@ namespace Patch
 		PatchCommand& operator=(const PatchCommand& p) = delete;
 		PatchCommand& operator=(PatchCommand&& p)
 		{
-			std::memcpy(this, &p, sizeof(*this));
+			std::memcpy(static_cast<void*>(this), &p, sizeof(*this));
 			p.data_ptr = nullptr;
 			return *this;
 		}
