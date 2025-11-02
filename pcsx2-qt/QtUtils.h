@@ -148,8 +148,8 @@ namespace QtUtils
 		else
 			dpr = window->devicePixelRatio();
 
-		wi.surface_width = static_cast<u32>(static_cast<qreal>(window->width()) * dpr);
-		wi.surface_height = static_cast<u32>(static_cast<qreal>(window->height()) * dpr);
+		wi.surface_width = static_cast<u32>(std::max(static_cast<int>(std::round(static_cast<qreal>(window->width()) * dpr)), 1));
+		wi.surface_height = static_cast<u32>(std::max(static_cast<int>(std::round(static_cast<qreal>(window->height()) * dpr)), 1));
 		wi.surface_scale = static_cast<float>(dpr);
 
 		// Query refresh rate, we need it for sync.
