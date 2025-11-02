@@ -23,9 +23,6 @@ public:
 	// Thus, we always need a container widget.
 	QWidget* createWindowContainer(QWidget* parent = nullptr);
 
-	int scaledWindowWidth() const;
-	int scaledWindowHeight() const;
-
 	std::optional<WindowInfo> getWindowInfo();
 
 	void updateRelativeMode(bool enabled);
