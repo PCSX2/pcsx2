@@ -597,8 +597,9 @@ bool GSDumpReplayer::ChangeDump(const char* filename)
 			GSGetBatchRunBuffer()->SetFileStatus(s_dump_filename, GSBatchRunBuffer::STARTED);
 
 			MTGS::RunOnGSThread(
-				[name = s_dump_name, size = s_dump_file->GetFileSize(), runner_name = GetRunnerName()]() {
+				[name = s_dump_name, size = s_dump_file->GetFileSize(), runner_name = GetRunnerName(), memory = GSProcess::GetMemoryUsageBytes()]() {
 					Console.WriteLnFmt("(GSRunner/{}) Loaded dump '{}' ({:.2} MB)", runner_name, name, static_cast<double>(size) / _1mb);
+					Console.WriteLnFmt("(GSRunner/{}) Current memory usage: {:.2} MB", runner_name, name, static_cast<double>(memory) / _1mb);
 				});
 
 			GSSignalRunnerHeartbeat_BatchRun();
@@ -991,6 +992,8 @@ void GSDumpReplayerCpuStep()
 				done_dump = true;
 		}
 
+		constexpr bool DRY_RUN = true;
+
 		switch (packet.id)
 		{
 			case GSDumpTypes::GSType::Transfer:
@@ -998,6 +1001,7 @@ void GSDumpReplayerCpuStep()
 				switch (packet.path)
 				{
 					case GSDumpTypes::GSTransferPath::Path1Old:
+					if (!DRY_RUN)
 					{
 						std::unique_ptr<u8[]> data(new u8[16384]);
 						const s32 addr = 16384 - packet.length;
@@ -1009,6 +1013,7 @@ void GSDumpReplayerCpuStep()
 					case GSDumpTypes::GSTransferPath::Path1New:
 					case GSDumpTypes::GSTransferPath::Path2:
 					case GSDumpTypes::GSTransferPath::Path3:
+					if (!DRY_RUN)
 					{
 						GSDumpReplayerSendPacketToMTGS(static_cast<GIF_PATH>(static_cast<u8>(packet.path) - 1),
 							packet.data, packet.length);
@@ -1024,12 +1029,15 @@ void GSDumpReplayerCpuStep()
 			case GSDumpTypes::GSType::VSync:
 			{
 				s_dump_frame_number++;
-				GSDumpReplayerUpdateFrameLimit();
-				GSDumpReplayerFrameLimit();
-				MTGS::PostVsyncStart(false);
-				VMManager::Internal::VSyncOnCPUThread();
-				if (VMManager::Internal::IsExecutionInterrupted())
-					GSDumpReplayerExitExecution();
+				if (!DRY_RUN)
+				{
+					GSDumpReplayerUpdateFrameLimit();
+					GSDumpReplayerFrameLimit();
+					MTGS::PostVsyncStart(false);
+					VMManager::Internal::VSyncOnCPUThread();
+					if (VMManager::Internal::IsExecutionInterrupted())
+						GSDumpReplayerExitExecution();
+				}
 				Host::PumpMessagesOnCPUThread();
 			}
 			break;
@@ -1054,7 +1062,9 @@ void GSDumpReplayerCpuStep()
 	}
 	else
 	{
-		Console.ErrorFmt("(GSDumpReplayer) Error getting packet: '{}'", error.GetDescription());
+		MTGS::RunOnGSThread([runner_name = GSDumpReplayer::GetRunnerName(), err = error.GetDescription()]() {
+			Console.ErrorFmt("(GSDumpReplayer/{}) Error getting packet: '{}'", runner_name, err);
+		});
 		done_dump = true;
 	}
 
@@ -1100,8 +1110,8 @@ void GSDumpReplayerCpuStep()
 			}
 			else
 			{
-				MTGS::RunOnGSThread([]() {
-					Console.WriteLnFmt("(GSDumpReplayer/{}) Batch mode has no more dumps.", GSDumpReplayer::GetRunnerName());
+				MTGS::RunOnGSThread([runner_name = GSDumpReplayer::GetRunnerName()]() {
+					Console.WriteLnFmt("(GSDumpReplayer/{}) Batch mode has no more dumps.", runner_name);
 				});
 				done_all_dumps = true;
 			}

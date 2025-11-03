@@ -64,16 +64,6 @@
 #include <sys/select.h>
 #include <unistd.h>
 #endif
-// For writing YAML files.
-static constexpr const char* INDENT = "    ";
-static constexpr const char* OPEN_MAP = "{";
-static constexpr const char* CLOSE_MAP = "}";
-static constexpr const char* QUOTE = "\"";
-static constexpr const char* KEY_VAL_DEL = ": ";
-static constexpr const char* LIST_DEL = ", ";
-static constexpr const char* LIST_ITEM = "- ";
-static constexpr const char* OPEN_LIST = "[";
-static constexpr const char* CLOSE_LIST = "]";
 
 __forceinline static std::string VecToString(const std::vector<std::string>& v) {
 	std::string str;
@@ -302,7 +292,7 @@ namespace GSRunnerBatch
 	static std::size_t batch_dumps_num_not_completed = 0;
 
 	static constexpr double batch_deadlock_timeout = 60.0;
-	static constexpr double batch_start_exit_timeout = 30.0;
+	static constexpr double batch_start_exit_timeout = 60.0;
 };
 
 bool GSRunner::InitializeConfig()
@@ -1913,13 +1903,13 @@ GSTester::ReturnValue GSTester::ProcessPackets()
 								return ERROR_;
 							}
 
-							oss << "frames" << KEY_VAL_DEL << packets[i]->hwstat.frames << std::endl;
-							oss << "draws" << KEY_VAL_DEL << packets[i]->hwstat.draws << std::endl;
-							oss << "render_passes" << KEY_VAL_DEL << packets[i]->hwstat.render_passes << std::endl;
-							oss << "barriers" << KEY_VAL_DEL << packets[i]->hwstat.barriers << std::endl;
-							oss << "copies" << KEY_VAL_DEL << packets[i]->hwstat.copies << std::endl;
-							oss << "uploads" << KEY_VAL_DEL << packets[i]->hwstat.uploads << std::endl;
-							oss << "readbacks" << KEY_VAL_DEL << packets[i]->hwstat.readbacks << std::endl;
+							oss << "frames: " << packets[i]->hwstat.frames << std::endl;
+							oss << "draws: " << packets[i]->hwstat.draws << std::endl;
+							oss << "render_passes: " << packets[i]->hwstat.render_passes << std::endl;
+							oss << "barriers: " << packets[i]->hwstat.barriers << std::endl;
+							oss << "copies: " << packets[i]->hwstat.copies << std::endl;
+							oss << "uploads: " << packets[i]->hwstat.uploads << std::endl;
+							oss << "readbacks: " << packets[i]->hwstat.readbacks << std::endl;
 
 							oss.close();
 						}
@@ -2207,7 +2197,8 @@ int GSRunnerBatch::main_batch(int argc, const char* argv[])
 		// Check for heartbeat signals.
 		for (std::size_t i = 0; i < batch_num_threads; i++)
 		{
-			if (batch_runner_buffer.CheckRunnerHeartbeat(i))
+			if (batch_runner_buffer.CheckRunnerHeartbeat(i) ||
+				batch_runner_buffer.GetStateChild(i) == GSBatchRunBuffer::DONE_RUNNING)
 			{
 				batch_runner_buffer.ResetRunnerHeartbeat(i);
 				batch_deadlock_timer[i].Reset();
@@ -2241,7 +2232,7 @@ int GSRunnerBatch::main_batch(int argc, const char* argv[])
 					batch_exiting_timer[i].Reset();
 				}
 			}
-			else if (!batch_runner_proc[i].IsRunning(true) && batch_runner_buffer.GetStateChild(i) != GSBatchRunBuffer::DONE_RUNNING)
+			else if (!batch_runner_proc[i].IsRunning(true))
 			{
 				Console.ErrorFmt("(GSRunnerBatch/Parent) Runner {} exited unexpectedly. Attempting restart.", i);
 				batch_runner_exiting[i] = true;
@@ -2291,7 +2282,9 @@ int GSRunnerBatch::main_batch(int argc, const char* argv[])
 		}
 	}
 
-	Console.WriteLnFmt("(GSRunnerBatch/Parent) Finished batch running in {:.2} seconds.", batch_total_time_sec);
+	double time_min = std::floor(batch_total_time_sec / 60.0);
+	double time_sec = batch_total_time_sec - 60.0 * time_min;
+	Console.WriteLnFmt("(GSRunnerBatch/Parent) Finished batch running in {:.2} minutes {:.2} seconds.", time_min, time_sec);
 	Console.WriteLnFmt("(GSRunnerBatch/Parent) Total dumps completed: {} / {} (Avg: {:.2} seconds)", batch_dumps_num_completed, batch_dump_list.size(), batch_total_time_sec / batch_dumps_num_completed);
 	if (batch_dumps_num_not_completed > 0)
 		Console.ErrorFmt("(GSRunnerBatch/Parent) Total dumps not completed: {} / {}",

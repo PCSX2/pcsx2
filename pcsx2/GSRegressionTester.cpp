@@ -10,9 +10,11 @@
 #include <atomic>
 #include <algorithm>
 #include <string>
+#include <cstddef>
 
 #ifdef _WIN32
 #include <windows.h>
+#include <psapi.h>
 #else
 #include <sys/mman.h>
 #include <signal.h>
@@ -22,6 +24,11 @@
 #include <sys/wait.h>
 #include <sys/stat.h>
 #include <cerrno>
+#include <fstream>
+#endif
+
+#ifdef __APPLE__
+#include <mach/mach.h>
 #endif
 
 static GSRegressionBuffer* regression_buffer; // Used by GS runner processes.
@@ -989,6 +996,37 @@ GSProcess::PID_t GSProcess::GetCurrentPID()
 #endif
 	}
 	return current_pid;
+}
+
+std::size_t GSProcess::GetMemoryUsageBytes()
+{
+#if defined(_WIN32)
+	PROCESS_MEMORY_COUNTERS_EX pmc;
+	if (GetProcessMemoryInfo(GetCurrentProcess(),
+		reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&pmc),
+		sizeof(pmc)))
+	{
+		return static_cast<std::size_t>(pmc.WorkingSetSize);
+	}
+	return 0;
+#elif defined(__APPLE__)
+	task_basic_info info;
+	mach_msg_type_number_t infoCount = TASK_BASIC_INFO_COUNT;
+	if (task_info(mach_task_self(),
+		TASK_BASIC_INFO,
+		reinterpret_cast<task_info_t>(&info),
+		&infoCount) == KERN_SUCCESS)
+	{
+		return static_cast<std::size_t>(info.resident_size);
+	}
+	return 0;
+#else
+	std::ifstream statm("/proc/self/statm");
+	long rss_pages = 0;
+	statm >> rss_pages >> rss_pages; // skip total, read resident
+	long page_size = sysconf(_SC_PAGESIZE);
+	return static_cast<std::size_t>(rss_pages) * page_size;
+#endif
 }
 
 bool GSProcess::IsParentRunning()

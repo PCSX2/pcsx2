@@ -424,6 +424,7 @@ struct GSProcess
 	static PID_t GetParentPID();
 	static bool IsParentRunning();
 	static PID_t GetCurrentPID();
+	static std::size_t GetMemoryUsageBytes();
 };
 
 // Simple, read-only queue in shared memory.

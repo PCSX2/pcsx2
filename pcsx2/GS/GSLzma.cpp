@@ -23,15 +23,6 @@
 
 #include <mutex>
 
-static s64 GetFileSizeFP(FileSystem::ManagedCFilePtr& fp)
-{
-	s64 size = -1;
-	if (fseek(fp.get(), 0, SEEK_END) == 0)
-		size = ftell(fp.get());
-	fseek(fp.get(), 0, SEEK_SET);
-	return size;
-}
-
 using namespace GSDumpTypes;
 
 GSDumpFile::GSDumpFile() = default;
@@ -630,23 +621,6 @@ namespace
 		return m_block_index >= m_blocks.size();
 	}
 
-	//class GSDumpStreamed final : public GSDumpFile
-	//{
-	//public:
-	//	GSDumpStreamed(size_t buffer_size);
-	//	~GSDumpStreamed() override;
-
-	//protected:
-	//	bool Open(FileSystem::ManagedCFilePtr fp, Error* error) override;
-	//	bool IsEof() override;
-	//	size_t Read(void* ptr, size_t size) override;
-	//	s64 GetFileSize() override;
-
-	//private:
-	//	std::unique_ptr<GSStream> m_stream;
-	//	std::vector<u8> buffer;
-	//};
-
 	class GSDumpLzma final : public GSDumpFile
 	{
 	public:
@@ -696,7 +670,7 @@ namespace
 	bool GSDumpLzma::Open(FileSystem::ManagedCFilePtr fp, Error* error)
 	{
 		m_fp = std::move(fp);
-		m_size_compressed = GetFileSizeFP(m_fp);
+		m_size_compressed = FileSystem::FSize64(m_fp.get());
 
 		GSInit7ZCRCTables();
 
@@ -918,7 +892,7 @@ namespace
 	{
 		m_fp = std::move(fp);
 		m_strm = ZSTD_createDStream();
-		m_size_compressed = GetFileSizeFP(m_fp);
+		m_size_compressed = FileSystem::FSize64(m_fp.get());
 
 		m_area = static_cast<uint8_t*>(_aligned_malloc(OUTPUT_BUFFER_SIZE, 32));
 		m_inbuf.src = static_cast<uint8_t*>(_aligned_malloc(INPUT_BUFFER_SIZE, 32));
@@ -1014,7 +988,7 @@ namespace
 	bool GSDumpRaw::Open(FileSystem::ManagedCFilePtr fp, Error* error)
 	{
 		m_fp = std::move(fp);
-		m_size = GetFileSizeFP(m_fp);
+		m_size = FileSystem::FSize64(m_fp.get());
 		return true;
 	}
 
