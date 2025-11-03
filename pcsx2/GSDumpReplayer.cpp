@@ -599,7 +599,7 @@ bool GSDumpReplayer::ChangeDump(const char* filename)
 			MTGS::RunOnGSThread(
 				[name = s_dump_name, size = s_dump_file->GetFileSize(), runner_name = GetRunnerName(), memory = GSProcess::GetMemoryUsageBytes()]() {
 					Console.WriteLnFmt("(GSRunner/{}) Loaded dump '{}' ({:.2} MB)", runner_name, name, static_cast<double>(size) / _1mb);
-					Console.WriteLnFmt("(GSRunner/{}) Current memory usage: {:.2} MB", runner_name, name, static_cast<double>(memory) / _1mb);
+					Console.WriteLnFmt("(GSRunner/{}) Current memory usage: {:.2} MB", runner_name, static_cast<double>(memory) / _1mb);
 				});
 
 			GSSignalRunnerHeartbeat_BatchRun();
