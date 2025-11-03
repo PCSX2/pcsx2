@@ -1043,6 +1043,7 @@ void GSDumpReplayerCpuStep()
 			break;
 
 			case GSDumpTypes::GSType::ReadFIFO2:
+			if (!DRY_RUN)
 			{
 				u32 size;
 				std::memcpy(&size, packet.data, sizeof(size));
@@ -1054,6 +1055,7 @@ void GSDumpReplayerCpuStep()
 			break;
 
 			case GSDumpTypes::GSType::Registers:
+			if (!DRY_RUN)
 			{
 				std::memcpy(PS2MEM_GS, packet.data, std::min<s32>(packet.length, Ps2MemSize::GSregs));
 			}
