@@ -5,7 +5,6 @@
 #include <vector>
 #include <string>
 #include "..\net.h"
-using namespace std;
 
 class TAPAdapter : public NetAdapter
 {
