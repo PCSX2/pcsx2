@@ -1034,6 +1034,19 @@ static void RegWrite_Core(u16 value)
 
 	switch (omem)
 	{
+		// Cannot use the default case for these as they are cumulative triggers.
+		case REG_S_KON:
+			thiscore.KeyOn |= value;
+			break;
+		case REG_S_KON + 2:
+			thiscore.KeyOn |= value << 16;
+			break;
+		case REG_S_KOFF:
+			thiscore.KeyOff |= value;
+			break;
+		case REG_S_KOFF + 2:
+			thiscore.KeyOff |= value << 16;
+			break;
 		case REG__1AC:
 			// ----------------------------------------------------------------------------
 			// 0x1ac / 0x5ac : direct-write to DMA address : special register (undocumented)
