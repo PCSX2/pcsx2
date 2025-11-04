@@ -267,6 +267,9 @@ struct V_Voice
 	u32 DecPosWrite;
 	u32 DecPosRead;
 
+	// Delay after key on before starting voice playback
+	s32 PlayDelay;
+
 	// it takes a few ticks for voices to start on the real SPU2?
 	void Start();
 	void Stop();

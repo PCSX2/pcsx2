@@ -227,12 +227,16 @@ void V_Voice::Start()
 	SBuffer = nullptr;
 	DecPosRead = 0;
 	DecPosWrite = 0;
+	PlayDelay = 4;
 }
 
 void V_Voice::Stop()
 {
-	ADSR.Value = 0;
-	ADSR.Phase = V_ADSR::PHASE_STOPPED;
+	if (PlayDelay <= 2)
+	{
+		ADSR.Value = 0;
+		ADSR.Phase = V_ADSR::PHASE_STOPPED;
+	}
 }
 
 static constexpr uint TickInterval = 768;

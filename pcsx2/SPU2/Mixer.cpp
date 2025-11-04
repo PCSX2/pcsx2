@@ -377,6 +377,13 @@ static __forceinline StereoOut32 MixVoice(uint coreidx, uint voiceidx)
 
 	DecodeSamples(coreidx, voiceidx);
 
+	if (vc.PlayDelay)
+	{
+		vc.LoopMode = 0;
+		vc.PlayDelay--;
+		return {};
+	}
+
 	StereoOut32 voiceOut(0, 0);
 	s32 Value = 0;
 
