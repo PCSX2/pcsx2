@@ -185,8 +185,8 @@ static void GSClampUpscaleMultiplier(Pcsx2Config::GSOptions& config)
 	if (config.UpscaleMultiplier <= static_cast<float>(max_upscale_multiplier))
 	{
 		// Shouldn't happen, but just in case.
-		if (config.UpscaleMultiplier < 1.0f)
-			config.UpscaleMultiplier = 1.0f;
+		if (config.UpscaleMultiplier < 0.0f)
+			config.UpscaleMultiplier = 0.0f;
 		return;
 	}
 
@@ -1067,15 +1067,52 @@ std::pair<u8, u8> GSGetRGBA8AlphaMinMax(const void* data, u32 width, u32 height,
 		static_cast<u8>(maxc.maxv_u32() >> 24));
 }
 
-static void HotkeyAdjustUpscaleMultiplier(s32 delta)
+static void HotkeyAdjustUpscaleMultiplier(const float delta)
 {
-	const u32 new_multiplier = static_cast<u32>(std::clamp(static_cast<s32>(EmuConfig.GS.UpscaleMultiplier) + delta, 1, 8));
-	Host::AddKeyedOSDMessage("UpscaleMultiplierChanged",
-		fmt::format(TRANSLATE_FS("GS", "Upscale multiplier set to {}x."), new_multiplier), Host::OSD_QUICK_DURATION);
-	EmuConfig.GS.UpscaleMultiplier = new_multiplier;
+	if (!g_gs_renderer)
+		return;
 
-	// this is pretty slow. we only really need to flush the TC and recompile shaders.
+	if (GSCurrentRenderer == GSRendererType::SW || GSCurrentRenderer == GSRendererType::Null)
+	{
+		Host::AddIconOSDMessage("UpscaleMultiplierChanged", ICON_FA_ARROW_UP_RIGHT_FROM_SQUARE,
+								TRANSLATE_STR("GS", "Upscaling can only be changed while using the Hardware Renderer."), Host::OSD_QUICK_DURATION);
+		return;
+	}
+
+	// Clamp logic mirrors GraphicsSettingsWidget::populateUpscaleMultipliers().
+	float candidate_multiplier = EmuConfig.GS.UpscaleMultiplier + delta;
+	const float max_multiplier = static_cast<float>(std::clamp(GSGetMaxUpscaleMultiplier(g_gs_device->GetMaxTextureSize()),
+													10u, EmuConfig.GS.ExtendedUpscalingMultipliers ? 25u : 12u));
+
+	std::string osd_message;
+	if (candidate_multiplier <= 1)
+	{
+		candidate_multiplier = 1;
+		osd_message = TRANSLATE_STR("GS", "Upscale multiplier set to native resolution.");
+	}
+	else if (candidate_multiplier >= max_multiplier)
+	{
+		candidate_multiplier = max_multiplier;
+		osd_message = fmt::format(TRANSLATE_FS("GS", "Upscale multiplier maximized to {}x."), max_multiplier);
+	}
+	else
+	{
+		osd_message = fmt::format(TRANSLATE_FS("GS", "Upscale multiplier {} to {}x."),
+							  delta > 0 ? TRANSLATE_STR("GS", "increased") : TRANSLATE_STR("GS", "decreased"), candidate_multiplier);
+	}
+
+	// Need to calculate our own target resolution. Reading after applying settings is a race condition.
+	const GSVector2i base_resolution = g_gs_renderer ? g_gs_renderer->PCRTCDisplays.GetResolution() : GSVector2i(0, 0);
+	const int target_iwidth = static_cast<int>(std::round(static_cast<float>(base_resolution.x) * candidate_multiplier));
+	const int target_iheight = static_cast<int>(std::round(static_cast<float>(base_resolution.y) * candidate_multiplier));
+
+	//: Leftmost value is an OSD message about the upscale multiplier. Values in parentheses are a resolution width (left) and height (right).
+	Host::AddIconOSDMessage("UpscaleMultiplierChanged", ICON_FA_ARROW_UP_RIGHT_FROM_SQUARE,
+							fmt::format(TRANSLATE_FS("GS", "{} ({} x {})"), osd_message, target_iwidth, target_iheight), Host::OSD_QUICK_DURATION);
+
+	// This is pretty slow. We only really need to flush the TC and recompile shaders.
 	// TODO(Stenzek): Make it faster at some point in the future.
+	EmuConfig.GS.UpscaleMultiplier = candidate_multiplier;
 	MTGS::ApplySettings();
 }
 
@@ -1147,13 +1184,13 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphic
 		TRANSLATE_NOOP("Hotkeys", "Increase Upscale Multiplier"),
 		[](s32 pressed) {
 			if (!pressed)
-				HotkeyAdjustUpscaleMultiplier(1);
+				HotkeyAdjustUpscaleMultiplier(1.0f);
 		}},
 	{"DecreaseUpscaleMultiplier", TRANSLATE_NOOP("Hotkeys", "Graphics"),
 		TRANSLATE_NOOP("Hotkeys", "Decrease Upscale Multiplier"),
 		[](s32 pressed) {
 			if (!pressed)
-				HotkeyAdjustUpscaleMultiplier(-1);
+				HotkeyAdjustUpscaleMultiplier(-1.0f);
 		}},
 	{"ToggleOSD", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Toggle On-Screen Display"),
 		[](s32 pressed) {

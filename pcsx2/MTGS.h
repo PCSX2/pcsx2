@@ -54,7 +54,7 @@ namespace MTGS
 	/// the current frame with the correct proportions. Should only be called from the CPU thread.
 	void PresentCurrentFrame();
 
-	// Waits for the GS to empty out the entire ring buffer contents.
+	/// Waits for the GS to empty out the entire ring buffer contents.
 	void WaitGS(bool syncRegs = true, bool weakWait = false, bool isMTVU = false);
 	void ResetGS(bool hardware_reset);
 
