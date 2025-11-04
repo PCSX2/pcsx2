@@ -2399,8 +2399,11 @@ int main(int argc, char* argv[])
 
 	// Initialize big picture mode if requested by command line or settings.
 	if (s_start_fullscreen_ui || Host::GetBaseBoolSettingValue("UI", "StartBigPictureMode", false))
-		g_emu_thread->startFullscreenUI(s_start_fullscreen_ui_fullscreen);
-
+	{
+		// Get start fullscreen flag to make sure whether we want the big picture mode to run with full screen mode
+		const bool start_fullscreen = s_start_fullscreen_ui_fullscreen || Host::GetBaseBoolSettingValue("UI", "StartFullscreen", false);
+		g_emu_thread->startFullscreenUI(start_fullscreen);
+	}
 	if (s_boot_and_debug || DebuggerWindow::shouldShowOnStartup())
 	{
 		DebugInterface::setPauseOnEntry(s_boot_and_debug);
