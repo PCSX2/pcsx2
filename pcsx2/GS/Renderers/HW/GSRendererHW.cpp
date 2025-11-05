@@ -5457,7 +5457,9 @@ __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool 
 		// Adjust it back to the page boundary
 		min_uv.x -= block_offset.x * t_psm.bs.x;
 		min_uv.y -= block_offset.y * t_psm.bs.y;
-
+		// Mask the channel.
+		min_uv.y &= 2;
+		min_uv.x &= 8;
 		//if (/*GSLocalMemory::IsPageAligned(src->m_TEX0.PSM, m_r) &&*/
 		//	block_offset.eq(m_r_block_offset))
 		{
