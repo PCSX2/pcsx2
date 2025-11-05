@@ -45,7 +45,8 @@ GameSummaryWidget::GameSummaryWidget(const GameList::Entry* entry, SettingsWindo
 	connect(m_ui.inputProfile, &QComboBox::currentIndexChanged, this, &GameSummaryWidget::onInputProfileChanged);
 	connect(m_ui.verify, &QAbstractButton::clicked, this, &GameSummaryWidget::onVerifyClicked);
 	connect(m_ui.searchHash, &QAbstractButton::clicked, this, &GameSummaryWidget::onSearchHashClicked);
-	connect(m_ui.checkWiki, &QAbstractButton::clicked, this, [this, entry]() { onCheckWikiClicked(entry); });
+	connect(m_ui.checkWiki, &QAbstractButton::clicked, this,
+		[this, serial = entry->serial]() { onCheckWikiClicked(serial); });
 
 	bool has_custom_title = false, has_custom_region = false;
 	GameList::CheckCustomAttributesForPath(m_entry_path, has_custom_title, has_custom_region);
@@ -366,9 +367,9 @@ void GameSummaryWidget::onSearchHashClicked()
 	QtUtils::OpenURL(this, fmt::format("http://redump.org/discs/quicksearch/{}", m_redump_search_keyword).c_str());
 }
 
-void GameSummaryWidget::onCheckWikiClicked(const GameList::Entry* entry)
+void GameSummaryWidget::onCheckWikiClicked(const std::string& serial)
 {
-	QtUtils::OpenURL(this, fmt::format("https://wiki.pcsx2.net/{}", entry->serial).c_str());
+	QtUtils::OpenURL(this, fmt::format("https://wiki.pcsx2.net/{}", serial).c_str());
 }
 
 void GameSummaryWidget::setVerifyResult(QString error)
