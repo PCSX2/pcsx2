@@ -239,6 +239,9 @@ target_sources(pcsx2-qt PRIVATE
 	Debugger/Memory/SavedAddressesView.cpp
 	Debugger/Memory/SavedAddressesView.h
 	Debugger/Memory/SavedAddressesView.ui
+	Debugger/Trace/InstructionTraceView.cpp
+	Debugger/Trace/InstructionTraceView.h
+	Debugger/Trace/InstructionTraceView.ui
 	Debugger/SymbolTree/NewSymbolDialogs.cpp
 	Debugger/SymbolTree/NewSymbolDialogs.h
 	Debugger/SymbolTree/NewSymbolDialog.ui
