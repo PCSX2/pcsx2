@@ -27,6 +27,8 @@
 #include "DebugInterface.h"
 #include "Host.h"
 #include "VMManager.h"
+#include "InstructionTracer.h"
+#include "MemoryScanner.h"
 #include "common/Pcsx2Defs.h"
 
 namespace DebugTools::MCPServer
@@ -588,17 +590,80 @@ void HandleRegsGet(const rapidjson::Value* id, const rapidjson::Value& params)
 
 void HandleScanMemory(const rapidjson::Value* id, const rapidjson::Value& params)
 {
-	WriteErrorResponse(id, ERROR_CODE_UNSUPPORTED, "scan_memory depends on MemoryScanner component (not yet implemented)");
+	if (!params.IsObject())
+	{
+		WriteErrorResponse(id, ERROR_CODE_INVALID_REQUEST, "params must be an object");
+		return;
+	}
+
+	// For v1: Return basic implementation that uses existing MemoryScanner
+	// Full implementation requires async scanning support
+
+	if (!params.HasMember("space") || !params["space"].IsString())
+	{
+		WriteErrorResponse(id, ERROR_CODE_INVALID_REQUEST, "Missing or invalid 'space' parameter");
+		return;
+	}
+
+	if (!params.HasMember("type") || !params["type"].IsString())
+	{
+		WriteErrorResponse(id, ERROR_CODE_INVALID_REQUEST, "Missing or invalid 'type' parameter");
+		return;
+	}
+
+	if (!params.HasMember("query") || !params["query"].IsString())
+	{
+		WriteErrorResponse(id, ERROR_CODE_INVALID_REQUEST, "Missing or invalid 'query' parameter");
+		return;
+	}
+
+	// For now, return not_implemented with informative message
+	// Full implementation requires MemoryScanner UI integration
+	WriteErrorResponse(id, ERROR_CODE_UNSUPPORTED,
+		"scan_memory requires MemoryScanner UI integration - use UI Memory Search for now");
 }
 
 void HandleTraceStart(const rapidjson::Value* id, const rapidjson::Value& params)
 {
-	WriteErrorResponse(id, ERROR_CODE_UNSUPPORTED, "trace_start depends on InstructionTracer component (not yet implemented)");
+	if (!params.IsObject())
+	{
+		WriteErrorResponse(id, ERROR_CODE_INVALID_REQUEST, "params must be an object");
+		return;
+	}
+
+	if (!params.HasMember("cpu") || !params["cpu"].IsString())
+	{
+		WriteErrorResponse(id, ERROR_CODE_INVALID_REQUEST, "Missing or invalid 'cpu' parameter");
+		return;
+	}
+
+	const char* cpu_str = params["cpu"].GetString();
+	BreakPointCpu cpu;
+
+	if (strcmp(cpu_str, "EE") == 0)
+		cpu = BREAKPOINT_EE;
+	else if (strcmp(cpu_str, "IOP") == 0)
+		cpu = BREAKPOINT_IOP;
+	else
+	{
+		WriteErrorResponse(id, ERROR_CODE_INVALID_REQUEST, "cpu must be 'EE' or 'IOP'");
+		return;
+	}
+
+	Host::RunOnCPUThread([cpu, id]() {
+		Tracer::Enable(cpu, true);
+		WriteSuccessResponse(id, nullptr);
+	}, true);
 }
 
 void HandleTraceStop(const rapidjson::Value* id, const rapidjson::Value& params)
 {
-	WriteErrorResponse(id, ERROR_CODE_UNSUPPORTED, "trace_stop depends on InstructionTracer component (not yet implemented)");
+	Host::RunOnCPUThread([id]() {
+		// Disable tracing on both CPUs
+		Tracer::Enable(BREAKPOINT_EE, false);
+		Tracer::Enable(BREAKPOINT_IOP, false);
+		WriteSuccessResponse(id, nullptr);
+	}, true);
 }
 
 void HandleDumpMemory(const rapidjson::Value* id, const rapidjson::Value& params)
