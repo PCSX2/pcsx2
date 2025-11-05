@@ -4,6 +4,7 @@
 #include "InstructionTraceView.h"
 
 #include "DebugTools/DebugInterface.h"
+#include "DebugTools/InstructionTracer.h"
 
 #include "QtUtils.h"
 #include "QtHost.h"
@@ -85,9 +86,8 @@ void InstructionTraceView::startTracing()
 	const int cpuIndex = m_ui.cmbCpu->currentIndex();
 
 	// Start tracing on CPU thread
-	Host::RunOnCPUThread([this, cpuIndex]() {
-		// TODO: Call InstructionTracer::Enable(cpuIndex, m_maxBufferSize)
-		Console.WriteLn("InstructionTracer: Would enable tracing for CPU %d with buffer size %d", cpuIndex, m_maxBufferSize);
+	Host::RunOnCPUThread([cpuIndex]() {
+		Tracer::Enable(static_cast<BreakPointCpu>(cpuIndex), true);
 	});
 
 	// Start polling timer
@@ -106,8 +106,7 @@ void InstructionTraceView::stopTracing()
 
 	// Stop tracing on CPU thread
 	Host::RunOnCPUThread([cpuIndex]() {
-		// TODO: Call InstructionTracer::Disable(cpuIndex)
-		Console.WriteLn("InstructionTracer: Would disable tracing for CPU %d", cpuIndex);
+		Tracer::Enable(static_cast<BreakPointCpu>(cpuIndex), false);
 	});
 }
 
@@ -127,8 +126,9 @@ void InstructionTraceView::clearBuffer()
 
 	// Clear on CPU thread
 	Host::RunOnCPUThread([cpuIndex]() {
-		// TODO: Call InstructionTracer::Clear(cpuIndex)
-		Console.WriteLn("InstructionTracer: Would clear buffer for CPU %d", cpuIndex);
+		// Clear buffer by draining all events
+		std::vector<Tracer::TraceEvent> dummy;
+		Tracer::Drain(static_cast<BreakPointCpu>(cpuIndex), SIZE_MAX, std::back_inserter(dummy));
 	});
 }
 
@@ -233,39 +233,45 @@ void InstructionTraceView::onPollTraceData()
 
 	// Poll for new trace data on CPU thread, then update UI
 	Host::RunOnCPUThread([this, cpuIndex]() {
-		// TODO: Get trace entries from InstructionTracer::Drain(cpuIndex)
-		// For now, generate stub data for testing
-		std::vector<TraceEntry> newEntries;
+		// Get trace entries from tracer
+		std::vector<Tracer::TraceEvent> events;
+		size_t drained = Tracer::Drain(
+			static_cast<BreakPointCpu>(cpuIndex),
+			100, // drain up to 100 events per poll
+			std::back_inserter(events)
+		);
 
-		// Stub: Generate some fake trace entries
-		static u64 stubTimestamp = 0;
-		if (m_traceBuffer.size() < 100) // Limit stub data
+		// Convert and add to UI buffer
+		if (!events.empty())
 		{
-			for (int i = 0; i < 5; i++)
-			{
-				TraceEntry entry;
-				entry.timestamp = stubTimestamp++;
-				entry.cpu = cpuIndex;
-				entry.pc = 0x00100000 + (m_traceBuffer.size() * 4);
-				entry.disasm = QString("nop ; stub instruction %1").arg(m_traceBuffer.size());
-				entry.cycles = 1;
-				entry.memAccess = "";
-				newEntries.push_back(entry);
-			}
-		}
-
-		// Update UI on UI thread
-		if (!newEntries.empty())
-		{
-			QtHost::RunOnUIThread([this, newEntries = std::move(newEntries)]() {
-				// Add to buffer
-				for (const auto& entry : newEntries)
+			QtHost::RunOnUIThread([this, events = std::move(events)]() {
+				for (const auto& ev : events)
 				{
+					TraceEntry entry;
+					entry.timestamp = ev.timestamp_ns / 1000000; // ns to ms
+					entry.cpu = ev.cpu;
+					entry.pc = static_cast<u32>(ev.pc);
+					entry.disasm = QString::fromStdString(ev.disasm);
+					entry.cycles = static_cast<u32>(ev.cycles);
+
+					// Convert memory accesses
+					if (!ev.mem_r.empty() || !ev.mem_w.empty())
+					{
+						QString memStr;
+						for (const auto& [addr, size] : ev.mem_r)
+							memStr += QString("R[0x%1] ").arg(addr, 8, 16, QChar('0'));
+						for (const auto& [addr, size] : ev.mem_w)
+							memStr += QString("W[0x%1] ").arg(addr, 8, 16, QChar('0'));
+						entry.memAccess = memStr.trimmed();
+					}
+
 					m_traceBuffer.push_back(entry);
+
+					// Enforce buffer size limit
 					if (m_traceBuffer.size() > m_maxBufferSize)
 					{
-						// Remove oldest entries if buffer exceeds max size
-						m_traceBuffer.erase(m_traceBuffer.begin(), m_traceBuffer.begin() + (m_traceBuffer.size() - m_maxBufferSize));
+						m_traceBuffer.erase(m_traceBuffer.begin(),
+											m_traceBuffer.begin() + (m_traceBuffer.size() - m_maxBufferSize));
 					}
 				}
 				updateTable();
@@ -335,7 +341,7 @@ void InstructionTraceView::updateTable()
 		// Symbol filter (would need symbol lookup - stub for now)
 		if (!m_symbolFilter.isEmpty())
 		{
-			// TODO: Look up symbol for PC and filter by name
+			// Symbol filtering not implemented yet - accept all for now
 		}
 
 		// Opcode filter
