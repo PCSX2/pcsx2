@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>InstructionTraceView</class>
+ <widget class="QWidget" name="InstructionTraceView">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string/>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QGridLayout" name="controlsLayout">
+     <item row="0" column="0">
+      <widget class="QLabel" name="cpuLabel">
+       <property name="text">
+        <string>CPU:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QComboBox" name="cmbCpu">
+       <item>
+        <property name="text">
+         <string>EE (R5900)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>IOP (R3000)</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="0" column="2">
+      <widget class="QPushButton" name="btnStartStop">
+       <property name="text">
+        <string>Start Tracing</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="3">
+      <widget class="QPushButton" name="btnClear">
+       <property name="text">
+        <string>Clear Buffer</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="4">
+      <widget class="QPushButton" name="btnDumpToFile">
+       <property name="text">
+        <string>Dump to File</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="bufferSizeLabel">
+       <property name="text">
+        <string>Buffer Size:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1" colspan="2">
+      <widget class="QSpinBox" name="spinBufferSize">
+       <property name="minimum">
+        <number>100</number>
+       </property>
+       <property name="maximum">
+        <number>1000000</number>
+       </property>
+       <property name="value">
+        <number>10000</number>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="3" colspan="2">
+      <widget class="QLabel" name="statusLabel">
+       <property name="text">
+        <string>Status: Stopped</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="filtersGroup">
+     <property name="title">
+      <string>Filters</string>
+     </property>
+     <layout class="QGridLayout" name="filtersLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="cpuFilterLabel">
+        <property name="text">
+         <string>CPU Filter:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="cmbCpuFilter">
+        <item>
+         <property name="text">
+          <string>All CPUs</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>EE Only</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>IOP Only</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QLabel" name="addressRangeLabel">
+        <property name="text">
+         <string>Address Range:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="3">
+       <widget class="QLineEdit" name="txtAddressStart">
+        <property name="placeholderText">
+         <string>Start (hex)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="4">
+       <widget class="QLineEdit" name="txtAddressEnd">
+        <property name="placeholderText">
+         <string>End (hex)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="symbolFilterLabel">
+        <property name="text">
+         <string>Symbol Filter:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1" colspan="2">
+       <widget class="QLineEdit" name="txtSymbolFilter">
+        <property name="placeholderText">
+         <string>Symbol name pattern</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3" colspan="2">
+       <widget class="QLineEdit" name="txtOpcodeFilter">
+        <property name="placeholderText">
+         <string>Opcode pattern (e.g., lw, sw, jal)</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QTableWidget" name="tableTrace">
+     <property name="editTriggers">
+      <set>QAbstractItemView::NoEditTriggers</set>
+     </property>
+     <property name="selectionMode">
+      <enum>QAbstractItemView::SingleSelection</enum>
+     </property>
+     <property name="selectionBehavior">
+      <enum>QAbstractItemView::SelectRows</enum>
+     </property>
+     <property name="sortingEnabled">
+      <bool>false</bool>
+     </property>
+     <column>
+      <property name="text">
+       <string>Timestamp</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>CPU</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>PC</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Disassembly</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Cycles</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Memory Access</string>
+      </property>
+     </column>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

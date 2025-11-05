@@ -14,6 +14,7 @@
 #include "Debugger/Memory/MemoryView.h"
 #include "Debugger/Memory/SavedAddressesView.h"
 #include "Debugger/SymbolTree/SymbolTreeViews.h"
+#include "Debugger/Trace/InstructionTraceView.h"
 
 using namespace DockUtils;
 
@@ -42,6 +43,7 @@ const std::map<std::string, DockTables::DebuggerViewDescription> DockTables::DEB
 	DEBUGGER_VIEW(DisassemblyView, QT_TRANSLATE_NOOP("DebuggerView", "Disassembly"), TOP_RIGHT),
 	DEBUGGER_VIEW(FunctionTreeView, QT_TRANSLATE_NOOP("DebuggerView", "Functions"), TOP_LEFT),
 	DEBUGGER_VIEW(GlobalVariableTreeView, QT_TRANSLATE_NOOP("DebuggerView", "Globals"), BOTTOM_MIDDLE),
+	DEBUGGER_VIEW(InstructionTraceView, QT_TRANSLATE_NOOP("DebuggerView", "Instruction Trace"), BOTTOM_MIDDLE),
 	DEBUGGER_VIEW(LocalVariableTreeView, QT_TRANSLATE_NOOP("DebuggerView", "Locals"), BOTTOM_MIDDLE),
 	DEBUGGER_VIEW(MemorySearchView, QT_TRANSLATE_NOOP("DebuggerView", "Memory Search"), TOP_LEFT),
 	DEBUGGER_VIEW(MemoryView, QT_TRANSLATE_NOOP("DebuggerView", "Memory"), BOTTOM_MIDDLE),
@@ -73,6 +75,7 @@ const std::vector<DockTables::DefaultDockLayout> DockTables::DEFAULT_DOCK_LAYOUT
 			{"ThreadView", DefaultDockGroup::BOTTOM},
 			{"StackView", DefaultDockGroup::BOTTOM},
 			{"SavedAddressesView", DefaultDockGroup::BOTTOM},
+			{"InstructionTraceView", DefaultDockGroup::BOTTOM},
 			{"GlobalVariableTreeView", DefaultDockGroup::BOTTOM},
 			{"LocalVariableTreeView", DefaultDockGroup::BOTTOM},
 			{"ParameterVariableTreeView", DefaultDockGroup::BOTTOM},
@@ -104,6 +107,7 @@ const std::vector<DockTables::DefaultDockLayout> DockTables::DEFAULT_DOCK_LAYOUT
 			{"ModuleView", DefaultDockGroup::BOTTOM},
 			{"StackView", DefaultDockGroup::BOTTOM},
 			{"SavedAddressesView", DefaultDockGroup::BOTTOM},
+			{"InstructionTraceView", DefaultDockGroup::BOTTOM},
 			{"GlobalVariableTreeView", DefaultDockGroup::BOTTOM},
 			{"LocalVariableTreeView", DefaultDockGroup::BOTTOM},
 			{"ParameterVariableTreeView", DefaultDockGroup::BOTTOM},
