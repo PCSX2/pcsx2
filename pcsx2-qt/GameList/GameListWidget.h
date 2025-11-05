@@ -57,7 +57,7 @@ public:
 	bool isShowingGameGrid() const;
 	bool getShowGridCoverTitles() const;
 
-	const GameList::Entry* getSelectedEntry() const;
+	std::optional<GameList::Entry> getSelectedEntry() const;
 
 	/// Rescans a single file. NOTE: Happens on UI thread.
 	void rescanFile(const std::string& path);

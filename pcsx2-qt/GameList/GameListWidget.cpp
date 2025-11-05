@@ -320,7 +320,7 @@ static void resizeAndPadImage(QImage* image, int expected_width, int expected_he
 
 	// Resize
 	if (((static_cast<float>(image->width()) / static_cast<float>(image->height())) >=
-		(static_cast<float>(dpr_expected_width) / static_cast<float>(dpr_expected_height))) != expand_to_fill)
+			(static_cast<float>(dpr_expected_width) / static_cast<float>(dpr_expected_height))) != expand_to_fill)
 	{
 		*image = image->scaledToWidth(dpr_expected_width, Qt::SmoothTransformation);
 	}
@@ -813,36 +813,45 @@ void GameListWidget::saveTableViewColumnSortSettings(const int sort_column, cons
 	Host::CommitBaseSettingChanges();
 }
 
-const GameList::Entry* GameListWidget::getSelectedEntry() const
+std::optional<GameList::Entry> GameListWidget::getSelectedEntry() const
 {
+	auto lock = GameList::GetLock();
+
+	const GameList::Entry* entry;
 	if (m_ui.stack->currentIndex() == 0)
 	{
 		const QItemSelectionModel* selection_model = m_table_view->selectionModel();
 		if (!selection_model->hasSelection())
-			return nullptr;
+			return std::nullopt;
 
 		const QModelIndexList selected_rows = selection_model->selectedRows();
 		if (selected_rows.empty())
-			return nullptr;
+			return std::nullopt;
 
 		const QModelIndex source_index = m_sort_model->mapToSource(selected_rows[0]);
 		if (!source_index.isValid())
-			return nullptr;
+			return std::nullopt;
 
-		return GameList::GetEntryByIndex(source_index.row());
+		entry = GameList::GetEntryByIndex(source_index.row());
 	}
 	else
 	{
 		const QItemSelectionModel* selection_model = m_list_view->selectionModel();
 		if (!selection_model->hasSelection())
-			return nullptr;
+			return std::nullopt;
 
 		const QModelIndex source_index = m_sort_model->mapToSource(selection_model->currentIndex());
 		if (!source_index.isValid())
-			return nullptr;
+			return std::nullopt;
 
-		return GameList::GetEntryByIndex(source_index.row());
+		entry = GameList::GetEntryByIndex(source_index.row());
 	}
+
+	if (!entry)
+		return std::nullopt;
+
+	// Copy the entry here instead of keeping the lock held to avoid deadlocks.
+	return *entry;
 }
 
 void GameListWidget::rescanFile(const std::string& path)
