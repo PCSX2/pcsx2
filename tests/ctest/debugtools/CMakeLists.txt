@@ -7,3 +7,19 @@ target_include_directories(debugtools_mcp_server_tests PRIVATE
         ${CMAKE_SOURCE_DIR}/pcsx2
         ${CMAKE_SOURCE_DIR}/3rdparty/rapidjson/include
 )
+
+add_pcsx2_test(debugtools_memory_scanner_tests
+        memory_scanner_tests.cpp
+        ../../../pcsx2/DebugTools/MemoryScanner.cpp
+        ../../../pcsx2/DebugTools/DebugInterface.cpp
+        ../../../pcsx2/DebugTools/Breakpoints.cpp
+        ../../../pcsx2/DebugTools/SymbolGuardian.cpp
+        ../../../pcsx2/DebugTools/SymbolImporter.cpp
+        ../../../pcsx2/DebugTools/ExpressionParser.cpp
+        ../../../pcsx2/DebugTools/MIPSAnalyst.cpp
+)
+
+target_include_directories(debugtools_memory_scanner_tests PRIVATE
+        ${CMAKE_SOURCE_DIR}/pcsx2
+        ${CMAKE_SOURCE_DIR}/common
+)
