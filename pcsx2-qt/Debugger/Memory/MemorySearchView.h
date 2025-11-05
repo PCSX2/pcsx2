@@ -133,6 +133,12 @@ public slots:
 	void contextCopySearchResultAddress();
 	void onListSearchResultsContextMenu(QPoint pos);
 
+	// New slots for extended functionality
+	void onRescanButtonClicked();
+	void onClearScanButtonClicked();
+	void onWatchDumpOnChangeToggled(bool checked);
+	void onBrowseDumpPathClicked();
+
 private:
 	std::vector<SearchResult> m_searchResults;
 	SearchComparisonLabelMap m_searchComparisonLabelMap;
@@ -142,9 +148,23 @@ private:
 	u32 m_initialResultsLoadLimit = 20000;
 	u32 m_numResultsAddedPerLoad = 10000;
 
+	// Rescan tracking
+	u32 m_rescanCount = 0;
+	u64 m_currentScanId = 0;
+
+	// Watch and dump state
+	bool m_watchEnabled = false;
+	std::vector<u32> m_watchedAddresses;
+
 	void updateSearchComparisonSelections();
 	std::vector<SearchComparison> getValidSearchComparisonsForState(SearchType type, std::vector<SearchResult>& existingResults);
 	SearchType getCurrentSearchType();
 	SearchComparison getCurrentSearchComparison();
 	bool doesSearchComparisonTakeInput(SearchComparison comparison);
+
+	// New helper methods
+	void updateResultsLabel();
+	void clearScan();
+	void setupWatchOnResults();
+	void removeWatchOnResults();
 };

@@ -4,6 +4,8 @@
 #include "MemorySearchView.h"
 
 #include "DebugTools/DebugInterface.h"
+#include "DebugTools/MemoryScanner.h"
+#include "DebugTools/Breakpoints.h"
 
 #include "QtUtils.h"
 
@@ -13,6 +15,7 @@
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QScrollBar>
 #include <QtWidgets/QMessageBox>
+#include <QtWidgets/QFileDialog>
 #include <QtConcurrent/QtConcurrent>
 #include <QtCore/QFutureWatcher>
 #include <QtGui/QPainter>
@@ -39,6 +42,12 @@ MemorySearchView::MemorySearchView(const DebuggerViewParameters& parameters)
 	connect(m_ui.listSearchResults, &QListView::customContextMenuRequested, this, &MemorySearchView::onListSearchResultsContextMenu);
 	connect(m_ui.cmbSearchType, &QComboBox::currentIndexChanged, this, &MemorySearchView::onSearchTypeChanged);
 	connect(m_ui.cmbSearchComparison, &QComboBox::currentIndexChanged, this, &MemorySearchView::onSearchComparisonChanged);
+
+	// Connect new buttons
+	connect(m_ui.btnRescan, &QPushButton::clicked, this, &MemorySearchView::onRescanButtonClicked);
+	connect(m_ui.btnClearScan, &QPushButton::clicked, this, &MemorySearchView::onClearScanButtonClicked);
+	connect(m_ui.chkWatchDumpOnChange, &QCheckBox::toggled, this, &MemorySearchView::onWatchDumpOnChangeToggled);
+	connect(m_ui.btnBrowseDumpPath, &QPushButton::clicked, this, &MemorySearchView::onBrowseDumpPathClicked);
 
 	// Ensures we don't retrigger the load results function unintentionally
 	m_resultsLoadTimer.setInterval(100);
@@ -583,7 +592,7 @@ void MemorySearchView::onSearchButtonClicked()
 	}
 
 	QFutureWatcher<std::vector<SearchResult>>* workerWatcher = new QFutureWatcher<std::vector<SearchResult>>();
-	auto onSearchFinished = [this, workerWatcher] {
+	auto onSearchFinished = [this, workerWatcher, isFilterSearch] {
 		m_ui.btnSearch->setDisabled(false);
 
 		m_ui.listSearchResults->clear();
@@ -591,8 +600,21 @@ void MemorySearchView::onSearchButtonClicked()
 
 		m_searchResults = std::move(results);
 		loadSearchResults();
-		m_ui.resultsCountLabel->setText(QString(tr("%0 results found")).arg(m_searchResults.size()));
-		m_ui.btnFilterSearch->setDisabled(m_ui.listSearchResults->count() == 0);
+
+		// Update rescan count for filter searches
+		if (isFilterSearch)
+		{
+			m_rescanCount++;
+		}
+		else
+		{
+			m_rescanCount = 0;
+		}
+
+		updateResultsLabel();
+		const bool hasResults = m_ui.listSearchResults->count() > 0;
+		m_ui.btnFilterSearch->setDisabled(!hasResults);
+		m_ui.btnRescan->setDisabled(!hasResults);
 		updateSearchComparisonSelections();
 		delete workerWatcher;
 	};
@@ -600,9 +622,11 @@ void MemorySearchView::onSearchButtonClicked()
 
 	m_ui.btnSearch->setDisabled(true);
 	m_ui.btnFilterSearch->setDisabled(true);
+	m_ui.btnRescan->setDisabled(true);
 	if (!isFilterSearch)
 	{
 		m_searchResults.clear();
+		m_rescanCount = 0;
 	}
 
 	QFuture<std::vector<SearchResult>> workerFuture = QtConcurrent::run(startWorker, &cpu(), searchType, searchComparison, std::move(m_searchResults), searchStart, searchEnd, searchValue, searchHex ? 16 : 10);
@@ -684,8 +708,11 @@ void MemorySearchView::onSearchTypeChanged(int newIndex)
 	if (m_searchResults.size() > 0 && (int)(m_searchResults.front().getType()) != newIndex)
 	{
 		m_searchResults.clear();
+		m_rescanCount = 0;
 		m_ui.btnSearch->setDisabled(false);
 		m_ui.btnFilterSearch->setDisabled(true);
+		m_ui.btnRescan->setDisabled(true);
+		updateResultsLabel();
 	}
 	updateSearchComparisonSelections();
 }
@@ -752,4 +779,174 @@ std::vector<SearchComparison> MemorySearchView::getValidSearchComparisonsForStat
 	}
 
 	return comparisons;
+}
+
+// ============================================================================
+// New methods for extended functionality
+// ============================================================================
+
+void MemorySearchView::updateResultsLabel()
+{
+	if (m_searchResults.empty())
+	{
+		m_ui.resultsCountLabel->setText(QString(tr("No results")));
+		m_ui.resultsCountLabel->setVisible(false);
+	}
+	else
+	{
+		QString labelText = QString(tr("%0 results found")).arg(m_searchResults.size());
+		if (m_rescanCount > 0)
+		{
+			labelText += QString(tr(" (after %0 rescans)")).arg(m_rescanCount);
+		}
+		m_ui.resultsCountLabel->setText(labelText);
+		m_ui.resultsCountLabel->setVisible(true);
+	}
+}
+
+void MemorySearchView::clearScan()
+{
+	m_searchResults.clear();
+	m_rescanCount = 0;
+	m_currentScanId = 0;
+	m_ui.listSearchResults->clear();
+	m_ui.btnFilterSearch->setDisabled(true);
+	m_ui.btnRescan->setDisabled(true);
+	m_ui.resultsCountLabel->setVisible(false);
+	updateSearchComparisonSelections();
+
+	// Clear watch if enabled
+	if (m_watchEnabled)
+	{
+		m_ui.chkWatchDumpOnChange->setChecked(false);
+	}
+}
+
+void MemorySearchView::onRescanButtonClicked()
+{
+	if (!cpu().isAlive() || m_searchResults.empty())
+		return;
+
+	// Rescan is essentially a filter search that uses the MemoryScanner API
+	// For now, we'll use the same mechanism as filter search but track it as a rescan
+	// When MemoryScanner is implemented, this will call SubmitRescan()
+
+	const SearchType searchType = getCurrentSearchType();
+	const SearchComparison searchComparison = getCurrentSearchComparison();
+
+	if (!doesSearchComparisonTakeInput(searchComparison) ||
+		searchComparison == SearchComparison::Changed ||
+		searchComparison == SearchComparison::NotChanged ||
+		searchComparison == SearchComparison::Increased ||
+		searchComparison == SearchComparison::Decreased)
+	{
+		// These comparisons don't need input value, just compare against previous results
+		// Trigger the filter search logic
+		onSearchButtonClicked();
+		return;
+	}
+
+	// For comparisons that need input, just call the normal search button handler
+	onSearchButtonClicked();
+
+	// TODO: When MemoryScanner is fully implemented, replace with:
+	// MemoryScanner::Query query;
+	// query.cpu = parameters().cpu;
+	// query.type = convertToScannerValueType(searchType);
+	// query.cmp = convertToScannerComparison(searchComparison);
+	// query.value = m_ui.txtSearchValue->text().toStdString();
+	// m_currentScanId = MemoryScanner::SubmitRescan(m_currentScanId, query);
+}
+
+void MemorySearchView::onClearScanButtonClicked()
+{
+	clearScan();
+	QMessageBox::information(this, tr("Memory Search"), tr("Search results cleared"));
+}
+
+void MemorySearchView::setupWatchOnResults()
+{
+	if (!cpu().isAlive() || m_searchResults.empty())
+		return;
+
+	const QString dumpPath = m_ui.txtDumpPath->text();
+	if (dumpPath.isEmpty())
+	{
+		QMessageBox::warning(this, tr("Memory Search"), tr("Please specify a dump file path"));
+		m_ui.chkWatchDumpOnChange->setChecked(false);
+		return;
+	}
+
+	// Store addresses we're watching
+	m_watchedAddresses.clear();
+	for (const auto& result : m_searchResults)
+	{
+		m_watchedAddresses.push_back(result.getAddress());
+	}
+
+	// TODO: When MemoryScanner is fully implemented, set up memchecks:
+	// for (u32 addr : m_watchedAddresses)
+	// {
+	//     MemoryScanner::DumpSpec spec;
+	//     spec.includeDisasm = false;
+	//     spec.includeRegisters = false;
+	//     spec.contextBytes = 64;
+	//     MemoryScanner::DumpOnChange(parameters().cpu, addr, dumpPath.toStdString(), spec);
+	// }
+
+	Console.WriteLn("Memory Search: Watch enabled on %zu addresses (stub - MemoryScanner not implemented)",
+		m_watchedAddresses.size());
+
+	QMessageBox::information(this, tr("Memory Search"),
+		tr("Watch enabled on %0 addresses. Dumps will be written to:\n%1\n\n(Note: MemoryScanner API not yet implemented)")
+			.arg(m_watchedAddresses.size())
+			.arg(dumpPath));
+}
+
+void MemorySearchView::removeWatchOnResults()
+{
+	// TODO: When MemoryScanner is fully implemented, remove memchecks:
+	// for (u32 addr : m_watchedAddresses)
+	// {
+	//     MemoryScanner::RemoveDumpOnChange(parameters().cpu, addr);
+	// }
+
+	Console.WriteLn("Memory Search: Watch disabled (stub - MemoryScanner not implemented)");
+	m_watchedAddresses.clear();
+}
+
+void MemorySearchView::onWatchDumpOnChangeToggled(bool checked)
+{
+	m_watchEnabled = checked;
+	m_ui.txtDumpPath->setEnabled(checked);
+	m_ui.btnBrowseDumpPath->setEnabled(checked);
+
+	if (checked)
+	{
+		setupWatchOnResults();
+	}
+	else
+	{
+		removeWatchOnResults();
+	}
+}
+
+void MemorySearchView::onBrowseDumpPathClicked()
+{
+	QString defaultPath = m_ui.txtDumpPath->text();
+	if (defaultPath.isEmpty())
+	{
+		defaultPath = "memory_dump.bin";
+	}
+
+	QString filePath = QFileDialog::getSaveFileName(
+		this,
+		tr("Select Dump File"),
+		defaultPath,
+		tr("Binary Files (*.bin);;All Files (*.*)"));
+
+	if (!filePath.isEmpty())
+	{
+		m_ui.txtDumpPath->setText(filePath);
+	}
 }

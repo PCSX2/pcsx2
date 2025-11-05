@@ -808,6 +808,7 @@ set(pcsx2DebugToolsHeaders
         DebugTools/DisassemblyManager.h
         DebugTools/ExpressionParser.h
         DebugTools/MCPServer.h
+        DebugTools/MemoryScanner.h
         DebugTools/MIPSAnalyst.h
 	DebugTools/MipsAssembler.h
 	DebugTools/MipsAssemblerTables.h

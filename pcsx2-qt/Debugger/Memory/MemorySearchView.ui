@@ -94,20 +94,37 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="2" colspan="2">
+     <item row="0" column="2">
       <widget class="QPushButton" name="btnSearch">
        <property name="text">
         <string>Search</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="2" colspan="2">
+     <item row="0" column="3">
+      <widget class="QPushButton" name="btnClearScan">
+       <property name="text">
+        <string>Clear</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
       <widget class="QPushButton" name="btnFilterSearch">
        <property name="enabled">
         <bool>false</bool>
        </property>
        <property name="text">
         <string>Filter Search</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="3">
+      <widget class="QPushButton" name="btnRescan">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Rescan</string>
        </property>
       </widget>
      </item>
@@ -190,6 +207,49 @@
       </widget>
      </item>
     </layout>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="watchGroupBox">
+     <property name="title">
+      <string>Watch and Dump</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_4">
+      <item row="0" column="0">
+       <widget class="QCheckBox" name="chkWatchDumpOnChange">
+        <property name="text">
+         <string>Watch and dump on change</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="lblDumpPath">
+        <property name="text">
+         <string>Dump file:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="txtDumpPath">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="placeholderText">
+         <string>Select dump file path...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QPushButton" name="btnBrowseDumpPath">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Browse...</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
    </item>
    <item>
     <widget class="QListWidget" name="listSearchResults"/>
