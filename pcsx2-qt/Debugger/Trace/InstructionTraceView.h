@@ -21,10 +21,12 @@ struct TraceEntry
 	QString disasm;    // Disassembled instruction
 	u32 cycles;        // Cycles for this instruction
 	QString memAccess; // Memory access info (if any)
+	u8 subsystem;      // Subsystem::Type enum value
+	QString subsystem_detail; // Detailed subsystem description
 
-	TraceEntry() : timestamp(0), cpu(0), pc(0), cycles(0) {}
-	TraceEntry(u64 ts, u8 c, u32 p, const QString& d, u32 cy, const QString& m)
-		: timestamp(ts), cpu(c), pc(p), disasm(d), cycles(cy), memAccess(m) {}
+	TraceEntry() : timestamp(0), cpu(0), pc(0), cycles(0), subsystem(0) {}
+	TraceEntry(u64 ts, u8 c, u32 p, const QString& d, u32 cy, const QString& m, u8 sub = 0, const QString& sub_detail = "")
+		: timestamp(ts), cpu(c), pc(p), disasm(d), cycles(cy), memAccess(m), subsystem(sub), subsystem_detail(sub_detail) {}
 };
 
 class InstructionTraceView final : public DebuggerView
@@ -66,4 +68,5 @@ private:
 	u32 m_addressRangeEnd = 0xFFFFFFFF;
 	QString m_symbolFilter;
 	QString m_opcodeFilter;
+	int m_subsystemFilter = -1; // -1 = all, else Subsystem::Type value
 };

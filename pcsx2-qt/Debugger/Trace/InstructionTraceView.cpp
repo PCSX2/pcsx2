@@ -5,6 +5,7 @@
 
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/InstructionTracer.h"
+#include "DebugTools/Subsystems.h"
 
 #include "QtUtils.h"
 #include "QtHost.h"
@@ -265,6 +266,10 @@ void InstructionTraceView::onPollTraceData()
 						entry.memAccess = memStr.trimmed();
 					}
 
+					// Subsystem context
+					entry.subsystem = ev.subsystem;
+					entry.subsystem_detail = QString::fromStdString(ev.subsystem_detail);
+
 					m_traceBuffer.push_back(entry);
 
 					// Enforce buffer size limit
@@ -351,6 +356,10 @@ void InstructionTraceView::updateTable()
 				continue;
 		}
 
+		// Subsystem filter
+		if (m_subsystemFilter >= 0 && entry.subsystem != static_cast<u8>(m_subsystemFilter))
+			continue;
+
 		// Add row
 		int row = m_ui.tableTrace->rowCount();
 		m_ui.tableTrace->insertRow(row);
@@ -361,6 +370,51 @@ void InstructionTraceView::updateTable()
 		m_ui.tableTrace->setItem(row, 3, new QTableWidgetItem(entry.disasm));
 		m_ui.tableTrace->setItem(row, 4, new QTableWidgetItem(QString::number(entry.cycles)));
 		m_ui.tableTrace->setItem(row, 5, new QTableWidgetItem(entry.memAccess));
+
+		// Subsystem column with color coding
+		QString subsys_str = entry.subsystem_detail.isEmpty()
+			? QString::fromStdString(Subsystem::GetName(static_cast<Subsystem::Type>(entry.subsystem)))
+			: entry.subsystem_detail;
+		QTableWidgetItem* subsysItem = new QTableWidgetItem(subsys_str);
+
+		// Color code based on subsystem type
+		if (entry.subsystem > 0)
+		{
+			const Subsystem::Type sub = static_cast<Subsystem::Type>(entry.subsystem);
+			QColor bgColor;
+			switch (sub)
+			{
+				case Subsystem::Type::GS:
+				case Subsystem::Type::GIF:
+				case Subsystem::Type::VIF0:
+				case Subsystem::Type::VIF1:
+				case Subsystem::Type::VU0:
+				case Subsystem::Type::VU1:
+				case Subsystem::Type::IPU:
+					bgColor = QColor(200, 255, 200);  // Light green - Graphics
+					break;
+				case Subsystem::Type::SPU2:
+					bgColor = QColor(255, 200, 255);  // Light magenta - Audio
+					break;
+				case Subsystem::Type::CDVD:
+				case Subsystem::Type::USB:
+				case Subsystem::Type::DEV9:
+					bgColor = QColor(200, 200, 255);  // Light blue - I/O
+					break;
+				case Subsystem::Type::BIOS:
+					bgColor = QColor(255, 255, 200);  // Light yellow - System
+					break;
+				case Subsystem::Type::DMA:
+				case Subsystem::Type::DMAC:
+					bgColor = QColor(255, 220, 200);  // Light orange - DMA
+					break;
+				default:
+					bgColor = QColor(240, 240, 240);  // Light gray - Other
+					break;
+			}
+			subsysItem->setBackground(bgColor);
+		}
+		m_ui.tableTrace->setItem(row, 6, subsysItem);
 	}
 
 	// Restore scroll position or scroll to bottom
