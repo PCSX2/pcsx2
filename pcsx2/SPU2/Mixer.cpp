@@ -281,7 +281,7 @@ static __forceinline void CalculateADSR(V_Core& thiscore, uint voiceidx)
 __forceinline static s32 GaussianInterpolate(s32 pv4, s32 pv3, s32 pv2, s32 pv1, s32 i)
 {
 	s32 out = 0;
-	out =  (interpTable[i][0] * pv4) >> 15;
+	out += (interpTable[i][0] * pv4) >> 15;
 	out += (interpTable[i][1] * pv3) >> 15;
 	out += (interpTable[i][2] * pv2) >> 15;
 	out += (interpTable[i][3] * pv1) >> 15;
@@ -533,7 +533,8 @@ StereoOut32 V_Core::Mix(const VoiceMixSet& inVoices, const StereoOut32& Input, c
 	return TD + ApplyVolume(RV, FxVol);
 }
 
-static StereoOut32 DCFilter(StereoOut32 input) {
+static StereoOut32 DCFilter(StereoOut32 input)
+{
 	// A simple DC blocking high-pass filter
 	// Implementation from http://peabody.sapp.org/class/dmp2/lab/dcblock/
 	// The magic number 0x7f5c is ceil(INT16_MAX * 0.995)
@@ -634,9 +635,9 @@ __forceinline void spu2Mix()
 			if (SPU2::MsgCache())
 			{
 				SPU2::ConLog(" * SPU2 > CacheStats > Hits: %d  Misses: %d  Ignores: %d\n",
-					   g_counter_cache_hits,
-					   g_counter_cache_misses,
-					   g_counter_cache_ignores);
+					g_counter_cache_hits,
+					g_counter_cache_misses,
+					g_counter_cache_ignores);
 			}
 
 			g_counter_cache_hits =
