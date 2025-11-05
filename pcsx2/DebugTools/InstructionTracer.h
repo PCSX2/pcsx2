@@ -29,6 +29,10 @@ struct TraceEvent
 	// Optional memory access summaries (addr, size) to keep overhead bounded
 	std::vector<std::pair<u64, u8>> mem_r;  // reads
 	std::vector<std::pair<u64, u8>> mem_w;  // writes
+
+	// Subsystem context (for high-level flow visualization)
+	u8 subsystem;             // Subsystem::Type enum value (0 = None)
+	std::string subsystem_detail; // Optional detailed description (e.g., "DMA CH2 (GIF)")
 };
 
 /// Bounds specification for dumping trace events to file

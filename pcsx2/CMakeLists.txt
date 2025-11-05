@@ -802,7 +802,8 @@ set(pcsx2DebugToolsSources
 	DebugTools/DisVU0Micro.cpp
 	DebugTools/DisVU1Micro.cpp
 	DebugTools/BiosDebugData.cpp
-	DebugTools/MemoryScanner.cpp)
+	DebugTools/MemoryScanner.cpp
+	DebugTools/Subsystems.cpp)
 
 # DebugTools headers
 set(pcsx2DebugToolsHeaders
@@ -824,7 +825,8 @@ set(pcsx2DebugToolsHeaders
 	DebugTools/DisVUmicro.h
 	DebugTools/DisVUops.h
 	DebugTools/BiosDebugData.h
-	DebugTools/MemoryScanner.h)
+	DebugTools/MemoryScanner.h
+	DebugTools/Subsystems.h)
 
 set(pcsx2HostSources
 	Host/AudioStream.cpp

@@ -24,6 +24,8 @@
 // Only for MOVQ workaround.
 #include "common/emitter/internal.h"
 #include "DebugTools/InstructionTracer.h"
+#include "DebugTools/Subsystems.h"
+#include "R5900.h"
 #include <chrono>
 
 //#define DUMP_BLOCKS 1
@@ -1538,6 +1540,51 @@ void dynarecCheckBreakpoint()
 		ev.disasm = disasm_str;
 		ev.cycles = cpuRegs.cycle;
 		ev.timestamp_ns = std::chrono::steady_clock::now().time_since_epoch().count();
+
+		// Detect subsystem context from instruction and memory accesses
+		ev.subsystem = static_cast<u8>(Subsystem::Type::None);
+		ev.subsystem_detail = "";
+
+		// Check for syscall instruction (BIOS subsystem)
+		const u32 v1_reg = cpuRegs.GPR.r[3].UD[0];  // v1 register for syscall number
+		Subsystem::Type syscall_subsys = Subsystem::DetectFromSyscall(opcode, v1_reg);
+		if (syscall_subsys != Subsystem::Type::None)
+		{
+			ev.subsystem = static_cast<u8>(syscall_subsys);
+			Subsystem::DetectionContext ctx{0, opcode, v1_reg, false};
+			ev.subsystem_detail = Subsystem::GetDetailString(syscall_subsys, ctx);
+		}
+		else
+		{
+			// Check memory accesses for subsystem detection (writes first, then reads)
+			for (const auto& [addr, size] : ev.mem_w)
+			{
+				Subsystem::Type sub = Subsystem::DetectFromMemoryAddress(addr, true);
+				if (sub != Subsystem::Type::None)
+				{
+					ev.subsystem = static_cast<u8>(sub);
+					Subsystem::DetectionContext ctx{addr, opcode, v1_reg, true};
+					ev.subsystem_detail = Subsystem::GetDetailString(sub, ctx);
+					break;  // First subsystem match wins
+				}
+			}
+
+			// If no write-side subsystem, check reads
+			if (ev.subsystem == static_cast<u8>(Subsystem::Type::None))
+			{
+				for (const auto& [addr, size] : ev.mem_r)
+				{
+					Subsystem::Type sub = Subsystem::DetectFromMemoryAddress(addr, false);
+					if (sub != Subsystem::Type::None)
+					{
+						ev.subsystem = static_cast<u8>(sub);
+						Subsystem::DetectionContext ctx{addr, opcode, v1_reg, false};
+						ev.subsystem_detail = Subsystem::GetDetailString(sub, ctx);
+						break;
+					}
+				}
+			}
+		}
 
 		Tracer::Record(BREAKPOINT_EE, ev);
 	}
