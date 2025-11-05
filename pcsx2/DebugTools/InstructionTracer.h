@@ -50,12 +50,6 @@ bool IsEnabled(BreakPointCpu cpu);
 /// If the ring is full, the oldest event is overwritten (drop-oldest policy)
 void Record(BreakPointCpu cpu, const TraceEvent& ev);
 
-/// Drain up to 'n' events from the ring buffer
-/// OutputIt must be an output iterator accepting TraceEvent
-/// Returns the number of events actually drained
-template<typename OutputIt>
-size_t Drain(BreakPointCpu cpu, size_t n, OutputIt it);
-
 /// Dump trace events to a file in NDJSON format
 /// Returns true on success, false on error
 /// This operation runs on the calling thread and may block for I/O
@@ -63,8 +57,52 @@ bool DumpToFile(BreakPointCpu cpu, const std::string& path, const DumpBounds& bo
 
 namespace detail
 {
-	// Forward declaration for ring buffer implementation
-	class RingBuffer;
+	/// Lock-free ring buffer for trace events
+	/// Uses atomic operations for thread-safe producer-consumer pattern
+	class RingBuffer
+	{
+	public:
+		static constexpr size_t DEFAULT_CAPACITY = 65536; // 64K events
+
+		RingBuffer(size_t capacity = DEFAULT_CAPACITY);
+		~RingBuffer() = default;
+
+		// Enable or disable recording
+		void SetEnabled(bool enabled);
+		bool IsEnabled() const;
+
+		// Record an event (lock-free, may overwrite oldest if full)
+		void Record(const TraceEvent& ev);
+
+		// Drain up to n events into output iterator
+		template<typename OutputIt>
+		size_t Drain(size_t n, OutputIt it);
+
+		// Get all available events
+		std::vector<TraceEvent> GetAll();
+
+		// Clear all events
+		void Clear();
+
+	private:
+		size_t m_capacity;
+		std::unique_ptr<TraceEvent[]> m_buffer;
+		std::atomic<size_t> m_write_pos;
+		std::atomic<size_t> m_read_pos;
+		std::atomic<bool> m_enabled;
+	};
+
+	// Get the ring buffer for a specific CPU
+	RingBuffer& GetBuffer(BreakPointCpu cpu);
 }
+
+/// Drain up to 'n' events from the ring buffer
+/// OutputIt must be an output iterator accepting TraceEvent
+/// Returns the number of events actually drained
+template<typename OutputIt>
+size_t Drain(BreakPointCpu cpu, size_t n, OutputIt it);
+
+// Include template implementation
+#include "InstructionTracer.inl"
 
 } // namespace Tracer
