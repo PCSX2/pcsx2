@@ -305,7 +305,6 @@ QSize DockMenuBarStyle::sizeFromContents(
 {
 	QSize size = QProxyStyle::sizeFromContents(type, option, contents_size, widget);
 
-#ifdef Q_OS_WIN32
 	// Adjust the sizes of the layout switcher tabs depending on the theme.
 	if (type == CT_TabBarTab)
 	{
@@ -336,7 +335,6 @@ QSize DockMenuBarStyle::sizeFromContents(
 				size.setWidth(size.height());
 		}
 	}
-#endif
 
 	return size;
 }
