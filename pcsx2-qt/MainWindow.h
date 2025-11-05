@@ -274,11 +274,11 @@ private:
 	QString getDiscDevicePath(const QString& title);
 
 	void startGameListEntry(
-		const GameList::Entry* entry, std::optional<s32> save_slot = std::nullopt, std::optional<bool> fast_boot = std::nullopt, bool load_backup = false);
-	void setGameListEntryCoverImage(const GameList::Entry* entry);
-	void clearGameListEntryPlayTime(const GameList::Entry* entry, const time_t entry_played_time);
-	void goToWikiPage(const GameList::Entry* entry);
-	void openSnapshotsFolderForGame(const GameList::Entry* entry);
+		const GameList::Entry& entry, std::optional<s32> save_slot = std::nullopt, std::optional<bool> fast_boot = std::nullopt, bool load_backup = false);
+	void setGameListEntryCoverImage(const GameList::Entry& entry);
+	void clearGameListEntryPlayTime(const GameList::Entry& entry, const time_t entry_played_time);
+	void goToWikiPage(const GameList::Entry& entry);
+	void openSnapshotsFolderForGame(const GameList::Entry& entry);
 
 	std::optional<bool> promptForResumeState(const QString& save_state_path);
 	void loadSaveStateSlot(s32 slot, bool load_backup = false);

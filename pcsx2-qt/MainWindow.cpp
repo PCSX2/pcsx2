@@ -1381,9 +1381,8 @@ void MainWindow::onGameListRefreshComplete()
 
 void MainWindow::onGameListSelectionChanged()
 {
-	auto lock = GameList::GetLock();
-	const GameList::Entry* entry = m_game_list_widget->getSelectedEntry();
-	if (!entry)
+	const std::optional<GameList::Entry> entry = m_game_list_widget->getSelectedEntry();
+	if (!entry.has_value())
 		return;
 
 	m_ui.statusBar->showMessage(QString::fromStdString(entry->path));
@@ -1391,9 +1390,8 @@ void MainWindow::onGameListSelectionChanged()
 
 void MainWindow::onGameListEntryActivated()
 {
-	auto lock = GameList::GetLock();
-	const GameList::Entry* entry = m_game_list_widget->getSelectedEntry();
-	if (!entry)
+	const std::optional<GameList::Entry> entry = m_game_list_widget->getSelectedEntry();
+	if (!entry.has_value())
 		return;
 
 	if (s_vm_valid)
@@ -1421,24 +1419,23 @@ void MainWindow::onGameListEntryActivated()
 	}
 
 	// only resume if the option is enabled, and we have one for this game
-	startGameListEntry(entry, resume.value() ? std::optional<s32>(-1) : std::optional<s32>(), std::nullopt);
+	startGameListEntry(*entry, resume.value() ? std::optional<s32>(-1) : std::optional<s32>(), std::nullopt);
 }
 
 void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 {
-	auto lock = GameList::GetLock();
-	const GameList::Entry* entry = m_game_list_widget->getSelectedEntry();
+	const std::optional<GameList::Entry> entry = m_game_list_widget->getSelectedEntry();
 
 	QMenu menu;
 
-	if (entry)
+	if (entry.has_value())
 	{
 		QAction* action = menu.addAction(tr("Properties..."));
 		action->setEnabled(!entry->serial.empty() || entry->type == GameList::EntryType::ELF);
 		if (action->isEnabled())
 		{
 			connect(action, &QAction::triggered, [entry]() {
-				SettingsWindow::openGamePropertiesDialog(entry,
+				SettingsWindow::openGamePropertiesDialog(&*entry,
 					entry->title, entry->serial, entry->crc, entry->type == GameList::EntryType::ELF, nullptr);
 			});
 		}
@@ -1450,7 +1447,7 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 		});
 
 		action = menu.addAction(tr("Set Cover Image..."));
-		connect(action, &QAction::triggered, [this, entry]() { setGameListEntryCoverImage(entry); });
+		connect(action, &QAction::triggered, [this, entry]() { setGameListEntryCoverImage(*entry); });
 
 #if !defined(__APPLE__)
 		connect(menu.addAction(tr("Create Game Shortcut...")), &QAction::triggered, [this]() { MainWindow::onCreateGameShortcutTriggered(); });
@@ -1462,37 +1459,37 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 		const time_t entry_played_time = GameList::GetCachedPlayedTimeForSerial(entry->serial);
 		// Best two options given zero play time are to grey this out or to not show it at all.
 		if (entry_played_time)
-			connect(menu.addAction(tr("Reset Play Time")), &QAction::triggered, [this, entry, entry_played_time]() { clearGameListEntryPlayTime(entry, entry_played_time); });
+			connect(menu.addAction(tr("Reset Play Time")), &QAction::triggered, [this, entry, entry_played_time]() { clearGameListEntryPlayTime(*entry, entry_played_time); });
 
 		// Check Wiki Page functionality is based on a serial redirect.
 		if (!entry->serial.empty())
-			connect(menu.addAction(tr("Check Wiki Page")), &QAction::triggered, [this, entry]() { goToWikiPage(entry); });
+			connect(menu.addAction(tr("Check Wiki Page")), &QAction::triggered, [this, entry]() { goToWikiPage(*entry); });
 
 		action = menu.addAction(tr("Open Snapshots Folder"));
-		connect(action, &QAction::triggered, [this, entry]() { openSnapshotsFolderForGame(entry); });
+		connect(action, &QAction::triggered, [this, entry]() { openSnapshotsFolderForGame(*entry); });
 		menu.addSeparator();
 
 		if (!s_vm_valid)
 		{
 			action = menu.addAction(tr("Default Boot"));
-			connect(action, &QAction::triggered, [this, entry]() { startGameListEntry(entry); });
+			connect(action, &QAction::triggered, [this, entry]() { startGameListEntry(*entry); });
 
 			// Make bold to indicate it's the default choice when double-clicking
 			if (!VMManager::HasSaveStateInSlot(entry->serial.c_str(), entry->crc, -1))
 				QtUtils::MarkActionAsDefault(action);
 
 			action = menu.addAction(tr("Fast Boot"));
-			connect(action, &QAction::triggered, [this, entry]() { startGameListEntry(entry, std::nullopt, true); });
+			connect(action, &QAction::triggered, [this, entry]() { startGameListEntry(*entry, std::nullopt, true); });
 
 			action = menu.addAction(tr("Full Boot"));
-			connect(action, &QAction::triggered, [this, entry]() { startGameListEntry(entry, std::nullopt, false); });
+			connect(action, &QAction::triggered, [this, entry]() { startGameListEntry(*entry, std::nullopt, false); });
 
 			if (m_ui.menuDebug->menuAction()->isVisible())
 			{
 				action = menu.addAction(tr("Boot and Debug"));
 				connect(action, &QAction::triggered, [this, entry]() {
 					DebugInterface::setPauseOnEntry(true);
-					startGameListEntry(entry);
+					startGameListEntry(*entry);
 					DebuggerWindow::getInstance()->show();
 				});
 			}
@@ -1764,7 +1761,10 @@ void MainWindow::onToolsCoverDownloaderTriggered()
 #if !defined(__APPLE__)
 void MainWindow::onCreateGameShortcutTriggered()
 {
-	const GameList::Entry* entry = m_game_list_widget->getSelectedEntry();
+	const std::optional<GameList::Entry> entry = m_game_list_widget->getSelectedEntry();
+	if (!entry.has_value())
+		return;
+
 	const QString title = QString::fromStdString(entry->GetTitle());
 	const QString path = QString::fromStdString(entry->path);
 	VMLock lock(pauseAndLockVM());
@@ -2755,13 +2755,21 @@ void MainWindow::doGameSettings(const char* category)
 	// prefer to use a game list entry, if we have one, that way the summary is populated
 	if (!s_current_disc_path.isEmpty() || !s_current_elf_override.isEmpty())
 	{
-		auto lock = GameList::GetLock();
 		const QString& path = (s_current_elf_override.isEmpty() ? s_current_disc_path : s_current_elf_override);
-		const GameList::Entry* entry = GameList::GetEntryForPath(path.toUtf8().constData());
-		if (entry)
+
+		std::optional<GameList::Entry> entry;
+
+		{
+			auto lock = GameList::GetLock();
+			const GameList::Entry* entry_ptr = GameList::GetEntryForPath(path.toUtf8().constData());
+			if (entry_ptr)
+				entry = *entry_ptr;
+		}
+
+		if (entry.has_value())
 		{
 			SettingsWindow::openGamePropertiesDialog(
-				entry, entry->title, entry->serial, entry->crc, !s_current_elf_override.isEmpty(), category);
+				&*entry, entry->title, entry->serial, entry->crc, !s_current_elf_override.isEmpty(), category);
 			return;
 		}
 	}
@@ -2851,16 +2859,16 @@ QString MainWindow::getDiscDevicePath(const QString& title)
 	return ret;
 }
 
-void MainWindow::startGameListEntry(const GameList::Entry* entry, std::optional<s32> save_slot, std::optional<bool> fast_boot, bool load_backup)
+void MainWindow::startGameListEntry(const GameList::Entry& entry, std::optional<s32> save_slot, std::optional<bool> fast_boot, bool load_backup)
 {
 	std::shared_ptr<VMBootParameters> params = std::make_shared<VMBootParameters>();
 	params->fast_boot = fast_boot;
 
-	GameList::FillBootParametersForEntry(params.get(), entry);
+	GameList::FillBootParametersForEntry(params.get(), &entry);
 
-	if (save_slot.has_value() && !entry->serial.empty())
+	if (save_slot.has_value() && !entry.serial.empty())
 	{
-		std::string state_filename = VMManager::GetSaveStateFileName(entry->serial.c_str(), entry->crc, save_slot.value(), load_backup);
+		std::string state_filename = VMManager::GetSaveStateFileName(entry.serial.c_str(), entry.crc, save_slot.value(), load_backup);
 		if (!FileSystem::FileExists(state_filename.c_str()))
 		{
 			QMessageBox::critical(this, tr("Error"), tr("This save state does not exist."));
@@ -2873,15 +2881,15 @@ void MainWindow::startGameListEntry(const GameList::Entry* entry, std::optional<
 	g_emu_thread->startVM(std::move(params));
 }
 
-void MainWindow::setGameListEntryCoverImage(const GameList::Entry* entry)
+void MainWindow::setGameListEntryCoverImage(const GameList::Entry& entry)
 {
 	const QString filename = QDir::toNativeSeparators(
 		QFileDialog::getOpenFileName(this, tr("Select Cover Image"), QString(), tr("All Cover Image Types (*.jpg *.jpeg *.png *.webp)")));
 	if (filename.isEmpty())
 		return;
 
-	const QString old_filename = QString::fromStdString(GameList::GetCoverImagePathForEntry(entry));
-	const QString new_filename = QString::fromStdString(GameList::GetNewCoverImagePathForEntry(entry, filename.toUtf8().constData(), true));
+	const QString old_filename = QString::fromStdString(GameList::GetCoverImagePathForEntry(&entry));
+	const QString new_filename = QString::fromStdString(GameList::GetNewCoverImagePathForEntry(&entry, filename.toUtf8().constData(), true));
 	if (new_filename.isEmpty())
 		return;
 
@@ -2922,31 +2930,31 @@ void MainWindow::setGameListEntryCoverImage(const GameList::Entry* entry)
 	m_game_list_widget->refreshGridCovers();
 }
 
-void MainWindow::clearGameListEntryPlayTime(const GameList::Entry* entry, const time_t entry_played_time)
+void MainWindow::clearGameListEntryPlayTime(const GameList::Entry& entry, const time_t entry_played_time)
 {
 	if (QMessageBox::question(this, tr("Confirm Reset"),
 			tr("Are you sure you want to reset the play time for '%1' (%2)?\n\nYour current play time is %3.\n\nThis action cannot be undone.")
-				.arg(entry->title.empty() ? tr("empty title") : QString::fromStdString(entry->title),
-					entry->serial.empty() ? tr("no serial") : QString::fromStdString(entry->serial),
+				.arg(entry.title.empty() ? tr("empty title") : QString::fromStdString(entry.title),
+					entry.serial.empty() ? tr("no serial") : QString::fromStdString(entry.serial),
 					QString::fromStdString(GameList::FormatTimespan(entry_played_time, true))),
 			(QMessageBox::Yes | QMessageBox::No), QMessageBox::No) == QMessageBox::Yes)
 	{
-		GameList::ClearPlayedTimeForSerial(entry->serial);
+		GameList::ClearPlayedTimeForSerial(entry.serial);
 		m_game_list_widget->refresh(false, false);
 	}
 }
 
-void MainWindow::goToWikiPage(const GameList::Entry* entry)
+void MainWindow::goToWikiPage(const GameList::Entry& entry)
 {
-	QtUtils::OpenURL(this, fmt::format("https://wiki.pcsx2.net/{}", entry->serial).c_str());
+	QtUtils::OpenURL(this, fmt::format("https://wiki.pcsx2.net/{}", entry.serial).c_str());
 }
 
-void MainWindow::openSnapshotsFolderForGame(const GameList::Entry* entry)
+void MainWindow::openSnapshotsFolderForGame(const GameList::Entry& entry)
 {
 	// Go to top-level snapshots directory if not organizing by game.
-	if (EmuConfig.GS.OrganizeSnapshotsByGame && entry && !entry->title.empty())
+	if (EmuConfig.GS.OrganizeSnapshotsByGame && !entry.title.empty())
 	{
-		std::string game_name = entry->title;
+		std::string game_name = entry.title;
 		Path::SanitizeFileName(&game_name);
 
 		const std::string game_dir = Path::Combine(EmuFolders::Snapshots, game_name);
@@ -3021,11 +3029,11 @@ void MainWindow::loadSaveStateSlot(s32 slot, bool load_backup)
 	else
 	{
 		// we're not currently running, therefore we must've right clicked in the game list
-		const GameList::Entry* entry = m_game_list_widget->getSelectedEntry();
-		if (!entry)
+		const std::optional<GameList::Entry> entry = m_game_list_widget->getSelectedEntry();
+		if (!entry.has_value())
 			return;
 
-		startGameListEntry(entry, slot, std::nullopt, load_backup);
+		startGameListEntry(*entry, slot, std::nullopt, load_backup);
 	}
 }
 
