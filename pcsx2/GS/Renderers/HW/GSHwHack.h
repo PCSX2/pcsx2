@@ -6,6 +6,7 @@
 class GSHwHack
 {
 public:
+	static bool GSC_IRem(GSRendererHW& r, int& skip);
 	static bool GSC_Manhunt2(GSRendererHW& r, int& skip);
 	static bool GSC_SacredBlaze(GSRendererHW& r, int& skip);
 	static bool GSC_GuitarHero(GSRendererHW& r, int& skip);
