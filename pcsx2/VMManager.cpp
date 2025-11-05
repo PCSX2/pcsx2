@@ -42,6 +42,8 @@
 #include "VMManager.h"
 #include "ps2/BiosTools.h"
 
+#include "DebugTools/MCPServer.h"
+
 #include "common/Console.h"
 #include "common/Error.h"
 #include "common/FileSystem.h"
@@ -424,11 +426,20 @@ bool VMManager::Internal::CPUThreadInitialize()
 	if (Host::GetBaseBoolSettingValue("UI", "ShowAdvancedSettings", false))
 		Console.Warning("Settings: Advanced Settings are enabled; only proceed if you know what you're doing! No support will be provided if you have the option enabled.");
 
+	// Initialize MCP Server for remote debugging/AI agent integration
+	if (!DebugTools::MCPServer::Initialize())
+	{
+		Console.Warning("MCPServer: Failed to initialize MCP server");
+	}
+
 	return true;
 }
 
 void VMManager::Internal::CPUThreadShutdown()
 {
+	// Shutdown MCP Server
+	DebugTools::MCPServer::Shutdown();
+
 	ShutdownDiscordPresence();
 
 	PINEServer::Deinitialize();
