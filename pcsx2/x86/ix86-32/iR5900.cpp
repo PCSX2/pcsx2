@@ -23,6 +23,8 @@
 
 // Only for MOVQ workaround.
 #include "common/emitter/internal.h"
+#include "DebugTools/InstructionTracer.h"
+#include <chrono>
 
 //#define DUMP_BLOCKS 1
 //#define TRACE_BLOCKS 1
@@ -1521,6 +1523,24 @@ void dynarecCheckBreakpoint()
 
 	if (!hit)
 		return;
+
+	// Record trace event if instruction tracing is enabled
+	if (Tracer::IsEnabled(BREAKPOINT_EE))
+	{
+		const u32 opcode = memRead32(pc);
+		std::string disasm_str;
+		R5900::disR5900Fasm(disasm_str, opcode, pc, false);
+
+		Tracer::TraceEvent ev;
+		ev.cpu = BREAKPOINT_EE;
+		ev.pc = pc;
+		ev.opcode = opcode;
+		ev.disasm = disasm_str;
+		ev.cycles = cpuRegs.cycle;
+		ev.timestamp_ns = std::chrono::steady_clock::now().time_since_epoch().count();
+
+		Tracer::Record(BREAKPOINT_EE, ev);
+	}
 
 	CBreakPoints::SetBreakpointTriggered(true, BREAKPOINT_EE);
 	VMManager::SetPaused(true);
