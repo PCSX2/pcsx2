@@ -19,6 +19,8 @@
 #include "iCore.h"
 
 #include "Config.h"
+#include "DebugTools/InstructionTracer.h"
+#include <chrono>
 
 #include "common/AlignedMalloc.h"
 #include "common/FileSystem.h"
@@ -1282,6 +1284,24 @@ static bool psxDynarecCheckBreakpoint()
 
 	if (!hit)
 		return false;
+
+	// Record trace event if instruction tracing is enabled
+	if (Tracer::IsEnabled(BREAKPOINT_IOP))
+	{
+		const u32 opcode = iopMemRead32(psxRegs.pc);
+		std::string disasm_str;
+		R3000A::disR3000Fasm(disasm_str, opcode, psxRegs.pc, false);
+
+		Tracer::TraceEvent ev;
+		ev.cpu = BREAKPOINT_IOP;
+		ev.pc = psxRegs.pc;
+		ev.opcode = opcode;
+		ev.disasm = disasm_str;
+		ev.cycles = psxRegs.cycle;
+		ev.timestamp_ns = std::chrono::steady_clock::now().time_since_epoch().count();
+
+		Tracer::Record(BREAKPOINT_IOP, ev);
+	}
 
 	CBreakPoints::SetBreakpointTriggered(true, BREAKPOINT_IOP);
 	VMManager::SetPaused(true);
