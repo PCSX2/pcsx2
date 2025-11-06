@@ -4573,9 +4573,11 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 				FSUI_NSTR("Align to Native - with Texture Offset"),
 			};
 			static constexpr const char* s_native_scaling_options[] = {
-				FSUI_NSTR("Normal (Default)"),
+				FSUI_NSTR("Off (Default)"),
+				FSUI_NSTR("Normal"),
 				FSUI_NSTR("Aggressive"),
-				FSUI_NSTR("Off"),
+				FSUI_NSTR("Normal (Maintain Upscale)"),
+				FSUI_NSTR("Aggressive (Maintain Upscale)"),
 			};
 			static constexpr const char* s_round_sprite_options[] = {
 				FSUI_NSTR("Off (Default)"),

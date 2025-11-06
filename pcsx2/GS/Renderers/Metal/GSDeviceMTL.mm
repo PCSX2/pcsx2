@@ -1754,7 +1754,7 @@ void GSDeviceMTL::FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u3
 		[NSException raise:@"StretchRect Missing Pipeline" format:@"No pipeline for %d", static_cast<int>(shader)];
 
 	GSMTLDownsamplePSUniform uniform = { {static_cast<uint>(clamp_min.x), static_cast<uint>(clamp_min.x)}, downsample_factor,
-	  static_cast<float>(downsample_factor * downsample_factor) };
+	  static_cast<float>(downsample_factor * downsample_factor), (GSConfig.UserHacks_NativeScaling > GSNativeScaling::Aggressive) ? 2.0f : 1.0f };
 
 	DoStretchRect(sTex, GSVector4::zero(), dTex, dRect, pipeline, false, LoadAction::DontCareIfFull, &uniform, sizeof(uniform));
 }}
