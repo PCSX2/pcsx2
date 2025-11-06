@@ -280,7 +280,8 @@ void GameSummaryWidget::onVerifyClicked()
 	Error error;
 	if (!hasher.Open(m_entry_path, &error))
 	{
-		setVerifyResult(QString::fromStdString(error.GetDescription()));
+		QString message(QString::fromStdString(error.GetDescription()));
+		QMessageBox::critical(QtUtils::GetRootWidget(this), tr("Error"), message);
 		return;
 	}
 

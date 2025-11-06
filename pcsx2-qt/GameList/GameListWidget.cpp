@@ -294,7 +294,7 @@ void GameListWidget::initialize()
 	m_empty_ui.setupUi(m_empty_widget);
 	m_empty_ui.supportedFormats->setText(qApp->translate("GameListWidget", SUPPORTED_FORMATS_STRING));
 	connect(m_empty_ui.addGameDirectory, &QPushButton::clicked, this, [this]() { emit addGameDirectoryRequested(); });
-	connect(m_empty_ui.scanForNewGames, &QPushButton::clicked, this, [this]() { refresh(false); });
+	connect(m_empty_ui.scanForNewGames, &QPushButton::clicked, this, [this]() { refresh(false, true); });
 	connect(qApp, &QGuiApplication::applicationStateChanged, this, [this]() { GameListWidget::updateCustomBackgroundState(); });
 	m_ui.stack->insertWidget(2, m_empty_widget);
 
@@ -453,11 +453,11 @@ bool GameListWidget::getShowGridCoverTitles() const
 	return m_model->getShowCoverTitles();
 }
 
-void GameListWidget::refresh(bool invalidate_cache)
+void GameListWidget::refresh(bool invalidate_cache, bool popup_on_error)
 {
 	cancelRefresh();
 
-	m_refresh_thread = new GameListRefreshThread(invalidate_cache);
+	m_refresh_thread = new GameListRefreshThread(invalidate_cache, popup_on_error);
 	connect(m_refresh_thread, &GameListRefreshThread::refreshProgress, this, &GameListWidget::onRefreshProgress,
 		Qt::QueuedConnection);
 	connect(m_refresh_thread, &GameListRefreshThread::refreshComplete, this, &GameListWidget::onRefreshComplete,

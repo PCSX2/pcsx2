@@ -63,7 +63,7 @@ bool GameListSettingsWidget::addExcludedPath(const std::string& path)
 
 	Host::CommitBaseSettingChanges();
 	m_ui.excludedPaths->addItem(QString::fromStdString(path));
-	g_main_window->refreshGameList(false);
+	g_main_window->refreshGameList(false, true);
 	return true;
 }
 
@@ -152,7 +152,7 @@ void GameListSettingsWidget::addSearchDirectory(const QString& path, bool recurs
 	Host::AddBaseValueToStringList("GameList", recursive ? "RecursivePaths" : "Paths", spath.c_str());
 	Host::CommitBaseSettingChanges();
 	refreshDirectoryList();
-	g_main_window->refreshGameList(false);
+	g_main_window->refreshGameList(false, true);
 }
 
 void GameListSettingsWidget::removeSearchDirectory(const QString& path)
@@ -166,7 +166,7 @@ void GameListSettingsWidget::removeSearchDirectory(const QString& path)
 
 	Host::CommitBaseSettingChanges();
 	refreshDirectoryList();
-	g_main_window->refreshGameList(false);
+	g_main_window->refreshGameList(false, true);
 }
 
 void GameListSettingsWidget::onDirectoryListContextMenuRequested(const QPoint& point)
@@ -261,7 +261,7 @@ void GameListSettingsWidget::onRemoveExcludedPathButtonClicked()
 
 	delete item;
 
-	g_main_window->refreshGameList(false);
+	g_main_window->refreshGameList(false, true);
 }
 
 void GameListSettingsWidget::onExcludedPathsSelectionChanged()
@@ -271,10 +271,10 @@ void GameListSettingsWidget::onExcludedPathsSelectionChanged()
 
 void GameListSettingsWidget::onRescanAllGamesClicked()
 {
-	g_main_window->refreshGameList(true);
+	g_main_window->refreshGameList(true, true);
 }
 
 void GameListSettingsWidget::onScanForNewGamesClicked()
 {
-	g_main_window->refreshGameList(false);
+	g_main_window->refreshGameList(false, true);
 }

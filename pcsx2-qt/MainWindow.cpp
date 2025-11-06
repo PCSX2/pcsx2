@@ -357,8 +357,8 @@ void MainWindow::connectSignals()
 		[this]() { doControllerSettings(ControllerSettingsWindow::Category::HotkeySettings); });
 	connect(m_ui.actionAddGameDirectory, &QAction::triggered,
 		[this]() { getSettingsWindow()->getGameListSettingsWidget()->addSearchDirectory(this); });
-	connect(m_ui.actionScanForNewGames, &QAction::triggered, [this]() { refreshGameList(false); });
-	connect(m_ui.actionRescanAllGames, &QAction::triggered, [this]() { refreshGameList(true); });
+	connect(m_ui.actionScanForNewGames, &QAction::triggered, [this]() { refreshGameList(false, true); });
+	connect(m_ui.actionRescanAllGames, &QAction::triggered, [this]() { refreshGameList(true, true); });
 	connect(m_ui.actionViewToolbar, &QAction::toggled, this, &MainWindow::onViewToolbarActionToggled);
 	connect(m_ui.actionViewLockToolbar, &QAction::toggled, this, &MainWindow::onViewLockToolbarActionToggled);
 	connect(m_ui.actionViewStatusBar, &QAction::toggled, this, &MainWindow::onViewStatusBarActionToggled);
@@ -547,7 +547,7 @@ void MainWindow::recreate()
 	MainWindow* new_main_window = new MainWindow();
 	pxAssert(g_main_window == new_main_window);
 	new_main_window->initialize();
-	new_main_window->refreshGameList(false);
+	new_main_window->refreshGameList(false, false);
 	new_main_window->show();
 	deleteLater();
 
@@ -1137,7 +1137,7 @@ bool MainWindow::shouldMouseLock() const
 	if (!Host::GetBoolSettingValue("EmuCore", "EnableMouseLock", false))
 		return false;
 
-	if(m_display_created == false || m_display_widget == nullptr && !isRenderingToMain())
+	if (m_display_created == false || m_display_widget == nullptr && !isRenderingToMain())
 		return false;
 
 	bool windowsHidden = (!g_debugger_window || g_debugger_window->isHidden()) &&
@@ -1146,7 +1146,7 @@ bool MainWindow::shouldMouseLock() const
 
 	auto* displayWindow = isRenderingToMain() ? window() : m_display_widget->window();
 
-	if(displayWindow == nullptr)
+	if (displayWindow == nullptr)
 		return false;
 
 	return windowsHidden && (displayWindow->isActiveWindow() || displayWindow->isFullScreen());
@@ -1215,13 +1215,9 @@ void MainWindow::switchToEmulationView()
 		m_display_widget->setFocus();
 }
 
-void MainWindow::refreshGameList(bool invalidate_cache)
+void MainWindow::refreshGameList(bool invalidate_cache, bool popup_on_error)
 {
-	// can't do this while the VM is running because of CDVD
-	if (s_vm_valid)
-		return;
-
-	m_game_list_widget->refresh(invalidate_cache);
+	m_game_list_widget->refresh(invalidate_cache, popup_on_error);
 }
 
 void MainWindow::cancelGameListRefresh()
@@ -1466,8 +1462,7 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 		const time_t entry_played_time = GameList::GetCachedPlayedTimeForSerial(entry->serial);
 		// Best two options given zero play time are to grey this out or to not show it at all.
 		if (entry_played_time)
-			connect(menu.addAction(tr("Reset Play Time")), &QAction::triggered, [this, entry, entry_played_time]()
-				{ clearGameListEntryPlayTime(entry, entry_played_time); });
+			connect(menu.addAction(tr("Reset Play Time")), &QAction::triggered, [this, entry, entry_played_time]() { clearGameListEntryPlayTime(entry, entry_played_time); });
 
 		// Check Wiki Page functionality is based on a serial redirect.
 		if (!entry->serial.empty())
@@ -2102,7 +2097,7 @@ void MainWindow::onVMStopped()
 
 	// reload played time
 	if (m_game_list_widget->isShowingGameList())
-		m_game_list_widget->refresh(false);
+		m_game_list_widget->refresh(false, false);
 }
 
 void MainWindow::onGameChanged(const QString& title, const QString& elf_override, const QString& disc_path,
@@ -2932,12 +2927,12 @@ void MainWindow::clearGameListEntryPlayTime(const GameList::Entry* entry, const 
 	if (QMessageBox::question(this, tr("Confirm Reset"),
 			tr("Are you sure you want to reset the play time for '%1' (%2)?\n\nYour current play time is %3.\n\nThis action cannot be undone.")
 				.arg(entry->title.empty() ? tr("empty title") : QString::fromStdString(entry->title),
-					 entry->serial.empty() ? tr("no serial") : QString::fromStdString(entry->serial),
-					 QString::fromStdString(GameList::FormatTimespan(entry_played_time, true))),
-					 (QMessageBox::Yes | QMessageBox::No), QMessageBox::No) == QMessageBox::Yes)
+					entry->serial.empty() ? tr("no serial") : QString::fromStdString(entry->serial),
+					QString::fromStdString(GameList::FormatTimespan(entry_played_time, true))),
+			(QMessageBox::Yes | QMessageBox::No), QMessageBox::No) == QMessageBox::Yes)
 	{
 		GameList::ClearPlayedTimeForSerial(entry->serial);
-		m_game_list_widget->refresh(false);
+		m_game_list_widget->refresh(false, false);
 	}
 }
 

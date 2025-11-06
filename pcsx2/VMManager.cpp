@@ -485,7 +485,7 @@ void VMManager::UpdateLoggingSettings(SettingsInterface& si)
 	if (system_console_enabled != Log::IsConsoleOutputEnabled())
 		Log::SetConsoleOutputLevel(system_console_enabled ? level : LOGLEVEL_NONE);
 
-	// Debug console only exists on Windows.
+		// Debug console only exists on Windows.
 #ifdef _WIN32
 	const bool debug_console_enabled = IsDebuggerPresent() && si.GetBoolValue("Logging", "EnableDebugConsole", false);
 	Log::SetDebugOutputLevel(debug_console_enabled ? level : LOGLEVEL_NONE);
@@ -776,8 +776,8 @@ std::string VMManager::GetGameSettingsPath(const std::string_view game_serial, u
 	std::string sanitized_serial(Path::SanitizeFileName(game_serial));
 
 	return game_serial.empty() ?
-			   Path::Combine(EmuFolders::GameSettings, fmt::format("{:08X}.ini", game_crc)) :
-			   Path::Combine(EmuFolders::GameSettings, fmt::format("{}_{:08X}.ini", sanitized_serial, game_crc));
+	           Path::Combine(EmuFolders::GameSettings, fmt::format("{:08X}.ini", game_crc)) :
+	           Path::Combine(EmuFolders::GameSettings, fmt::format("{}_{:08X}.ini", sanitized_serial, game_crc));
 }
 
 std::string VMManager::GetDiscOverrideFromGameSettings(const std::string& elf_path)
@@ -1324,6 +1324,15 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 		}
 	}
 
+	Error cdvd_lock_error;
+	if (!cdvdLock(&cdvd_lock_error))
+	{
+		Host::ReportErrorAsync("Startup Error", cdvd_lock_error.GetDescription());
+		return false;
+	}
+
+	ScopedGuard unlock_cdvd = &cdvdUnlock;
+
 	// resolve source type
 	if (boot_params.source_type.has_value())
 	{
@@ -1355,12 +1364,14 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 		if (!LoadBIOS())
 		{
 			Host::ReportErrorAsync(TRANSLATE_SV("VMManager", "Error – No BIOS Present"),
-				fmt::format(TRANSLATE_FS("VMManager",
-					"PCSX2 requires a PlayStation 2 BIOS in order to run.\n\n"
-					"For legal reasons, you will need to obtain this BIOS from a PlayStation 2 unit which you own.\n\n"
-					"For step-by-step help with this process, please consult the setup guide at {}.\n\n"
-					"PCSX2 will be able to run once you've placed your BIOS image inside the folder named \"bios\" within the data directory "
-					"(Tools Menu -> Open Data Directory)."), PCSX2_DOCUMENTATION_BIOS_URL_SHORTENED));
+				fmt::format(
+					TRANSLATE_FS("VMManager",
+						"PCSX2 requires a PlayStation 2 BIOS in order to run.\n\n"
+						"For legal reasons, you will need to obtain this BIOS from a PlayStation 2 unit which you own.\n\n"
+						"For step-by-step help with this process, please consult the setup guide at {}.\n\n"
+						"PCSX2 will be able to run once you've placed your BIOS image inside the folder named \"bios\" within the data directory "
+						"(Tools Menu -> Open Data Directory)."),
+					PCSX2_DOCUMENTATION_BIOS_URL_SHORTENED));
 			return false;
 		}
 
@@ -1559,6 +1570,7 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	close_memcards.Cancel();
 	close_cdvd.Cancel();
 	close_cdvd_files.Cancel();
+	unlock_cdvd.Cancel();
 	close_state.Cancel();
 
 	if (EmuConfig.CdvdPrecache)
@@ -1666,6 +1678,8 @@ void VMManager::Shutdown(bool save_resume_state)
 		GSDumpReplayer::Shutdown();
 	else
 		cdvdSaveNVRAM();
+
+	cdvdUnlock();
 
 	s_state.store(VMState::Shutdown, std::memory_order_release);
 	FullscreenUI::OnVMDestroyed();

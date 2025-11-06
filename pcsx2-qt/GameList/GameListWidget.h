@@ -46,7 +46,7 @@ public:
 	void initialize();
 	void resizeTableViewColumnsToFit();
 
-	void refresh(bool invalidate_cache);
+	void refresh(bool invalidate_cache, bool popup_on_error);
 	void cancelRefresh();
 	void reloadThemeSpecificImages();
 	void setCustomBackground(bool force = false);

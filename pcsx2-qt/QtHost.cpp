@@ -1152,7 +1152,7 @@ void Host::OpenHostFileSelectorAsync(std::string_view title, bool select_directo
 	if (!filters.empty())
 	{
 		filters_str.append(QStringLiteral("All File Types (%1)")
-				.arg(QString::fromStdString(StringUtil::JoinString(filters.begin(), filters.end(), " "))));
+							   .arg(QString::fromStdString(StringUtil::JoinString(filters.begin(), filters.end(), " "))));
 		for (const std::string& filter : filters)
 		{
 			filters_str.append(
@@ -2385,7 +2385,7 @@ int main(int argc, char* argv[])
 
 	// When running in batch mode, ensure game list is loaded, but don't scan for any new files.
 	if (!s_batch_mode)
-		g_main_window->refreshGameList(false);
+		g_main_window->refreshGameList(false, false);
 	else
 		GameList::Refresh(false, true);
 

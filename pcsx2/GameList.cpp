@@ -16,6 +16,7 @@
 #include "common/HeterogeneousContainers.h"
 #include "common/Path.h"
 #include "common/ProgressCallback.h"
+#include "common/ScopedGuard.h"
 #include "common/StringUtil.h"
 
 #include <algorithm>
@@ -825,6 +826,15 @@ void GameList::Refresh(bool invalidate_cache, bool only_cache, ProgressCallback*
 {
 	if (!progress)
 		progress = ProgressCallback::NullProgressCallback;
+
+	Error cdvd_lock_error;
+	if (!cdvdLock(&cdvd_lock_error))
+	{
+		progress->DisplayError(cdvd_lock_error.GetDescription().c_str());
+		return;
+	}
+
+	ScopedGuard unlock_cdvd = &cdvdUnlock;
 
 	if (invalidate_cache)
 		DeleteCacheFile();

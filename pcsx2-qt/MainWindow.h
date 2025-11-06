@@ -113,7 +113,7 @@ public:
 	void checkMousePosition(int x, int y);
 public Q_SLOTS:
 	void checkForUpdates(bool display_message, bool force_check);
-	void refreshGameList(bool invalidate_cache);
+	void refreshGameList(bool invalidate_cache, bool popup_on_error);
 	void cancelGameListRefresh();
 	void reportInfo(const QString& title, const QString& message);
 	void reportError(const QString& title, const QString& message);

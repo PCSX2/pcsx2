@@ -7,7 +7,6 @@
 
 #include "common/Error.h"
 #include "common/MD5Digest.h"
-#include "common/StringUtil.h"
 
 #include "fmt/format.h"
 
@@ -38,6 +37,10 @@ std::string_view IsoHasher::GetTrackTypeString(u32 type)
 bool IsoHasher::Open(std::string iso_path, Error* error)
 {
 	Close();
+
+	m_is_locked = cdvdLock(error);
+	if (!m_is_locked)
+		return false;
 
 	CDVDsys_SetFile(CDVD_SourceType::Iso, std::move(iso_path));
 	CDVDsys_ChangeSource(CDVD_SourceType::Iso);
@@ -103,6 +106,12 @@ bool IsoHasher::Open(std::string iso_path, Error* error)
 
 void IsoHasher::Close()
 {
+	if (!m_is_locked)
+		return;
+
+	cdvdUnlock();
+	m_is_locked = false;
+
 	if (!m_is_open)
 		return;
 
@@ -151,7 +160,7 @@ bool IsoHasher::ComputeTrackHash(Track& track, ProgressCallback* callback)
 	const u32 update_interval = std::max<u32>(track.sectors / 100u, 1u);
 	callback->SetStatusText(
 		fmt::format(TRANSLATE_FS("CDVD", "Calculating checksum for track {}..."), track.number).c_str());
-    callback->SetProgressRange(track.sectors);
+	callback->SetProgressRange(track.sectors);
 
 	MD5Digest md5;
 	for (u32 i = 0; i < track.sectors; i++)

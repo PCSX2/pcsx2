@@ -14,7 +14,7 @@ class GameListRefreshThread;
 class AsyncRefreshProgressCallback : public BaseProgressCallback
 {
 public:
-	AsyncRefreshProgressCallback(GameListRefreshThread* parent);
+	AsyncRefreshProgressCallback(bool popup_on_error, GameListRefreshThread* parent);
 
 	void Cancel();
 
@@ -38,6 +38,7 @@ private:
 	QString m_status_text;
 	int m_last_range = 1;
 	int m_last_value = 0;
+	bool m_popup_on_error = false;
 };
 
 class GameListRefreshThread final : public QThread
@@ -45,7 +46,7 @@ class GameListRefreshThread final : public QThread
 	Q_OBJECT
 
 public:
-	GameListRefreshThread(bool invalidate_cache);
+	GameListRefreshThread(bool invalidate_cache, bool popup_on_error);
 	~GameListRefreshThread();
 
 	void cancel();
@@ -60,4 +61,5 @@ protected:
 private:
 	AsyncRefreshProgressCallback m_progress;
 	bool m_invalidate_cache;
+	bool m_popup_on_error;
 };

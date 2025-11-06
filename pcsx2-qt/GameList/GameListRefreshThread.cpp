@@ -4,14 +4,17 @@
 #include "GameListRefreshThread.h"
 
 #include "pcsx2/GameList.h"
+#include "pcsx2/Host.h"
 
+#include "common/Assertions.h"
+#include "common/Console.h"
 #include "common/ProgressCallback.h"
-#include "common/Timer.h"
 
 #include <QtWidgets/QMessageBox>
 
-AsyncRefreshProgressCallback::AsyncRefreshProgressCallback(GameListRefreshThread* parent)
+AsyncRefreshProgressCallback::AsyncRefreshProgressCallback(bool popup_on_error, GameListRefreshThread* parent)
 	: m_parent(parent)
+	, m_popup_on_error(popup_on_error)
 {
 }
 
@@ -57,17 +60,20 @@ void AsyncRefreshProgressCallback::SetTitle(const char* title)
 
 void AsyncRefreshProgressCallback::DisplayError(const char* message)
 {
-	QMessageBox::critical(nullptr, QStringLiteral("Error"), QString::fromUtf8(message));
+	if (m_popup_on_error)
+		Host::ReportErrorAsync(TRANSLATE_SV("GameListRefreshThread", "Error"), message);
+	else
+		ERROR_LOG("{}", message);
 }
 
 void AsyncRefreshProgressCallback::DisplayWarning(const char* message)
 {
-	QMessageBox::warning(nullptr, QStringLiteral("Warning"), QString::fromUtf8(message));
+	pxFailRel("Not implemented.");
 }
 
 void AsyncRefreshProgressCallback::DisplayInformation(const char* message)
 {
-	QMessageBox::information(nullptr, QStringLiteral("Information"), QString::fromUtf8(message));
+	pxFailRel("Not implemented.");
 }
 
 void AsyncRefreshProgressCallback::DisplayDebugMessage(const char* message)
@@ -77,17 +83,18 @@ void AsyncRefreshProgressCallback::DisplayDebugMessage(const char* message)
 
 void AsyncRefreshProgressCallback::ModalError(const char* message)
 {
-	QMessageBox::critical(nullptr, QStringLiteral("Error"), QString::fromUtf8(message));
+	pxFailRel("Not implemented.");
 }
 
 bool AsyncRefreshProgressCallback::ModalConfirmation(const char* message)
 {
-	return QMessageBox::question(nullptr, QStringLiteral("Question"), QString::fromUtf8(message)) == QMessageBox::Yes;
+	pxFailRel("Not implemented.");
+	return false;
 }
 
 void AsyncRefreshProgressCallback::ModalInformation(const char* message)
 {
-	QMessageBox::information(nullptr, QStringLiteral("Information"), QString::fromUtf8(message));
+	pxFailRel("Not implemented.");
 }
 
 void AsyncRefreshProgressCallback::fireUpdate()
@@ -95,9 +102,9 @@ void AsyncRefreshProgressCallback::fireUpdate()
 	m_parent->refreshProgress(m_status_text, m_last_value, m_last_range);
 }
 
-GameListRefreshThread::GameListRefreshThread(bool invalidate_cache)
+GameListRefreshThread::GameListRefreshThread(bool invalidate_cache, bool popup_on_error)
 	: QThread()
-	, m_progress(this)
+	, m_progress(popup_on_error, this)
 	, m_invalidate_cache(invalidate_cache)
 {
 }
