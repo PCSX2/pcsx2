@@ -219,6 +219,8 @@ bool SPU2::IsAudioCaptureActive()
 
 void SPU2::InternalReset(bool psxmode)
 {
+	spu2Mix = MULTI_ISA_SELECT(spu2Mix);
+
 	s_current_chunk_pos = 0;
 	s_psxmode = psxmode;
 	if (!s_psxmode)

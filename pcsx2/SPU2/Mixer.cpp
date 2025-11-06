@@ -18,6 +18,7 @@
 #define XAFLAG_LOOP (1ul << 1)
 #define XAFLAG_LOOP_START (1ul << 2)
 
+#if MULTI_ISA_COMPILE_ONCE
 // decoded pcm data, used to cache the decoded data so that it needn't be decoded
 // multiple times.  Cache chunks are decoded when the mixer requests the blocks, and
 // invalided when DMA transfers and memory writes are performed.
@@ -26,6 +27,9 @@ PcmCacheEntry pcm_cache_data[pcm_BlockCount];
 int g_counter_cache_hits = 0;
 int g_counter_cache_misses = 0;
 int g_counter_cache_ignores = 0;
+#endif
+
+MULTI_ISA_UNSHARED_START
 
 static const s32 tbl_XA_Factor[16][2] =
 	{
@@ -416,8 +420,6 @@ static __forceinline StereoOut32 MixVoice(uint coreidx, uint voiceidx)
 	return voiceOut;
 }
 
-const VoiceMixSet VoiceMixSet::Empty((StereoOut32()), (StereoOut32())); // Don't use SteroOut32::Empty because C++ doesn't make any dep/order checks on global initializers.
-
 static __forceinline void MixCoreVoices(VoiceMixSet& dest, const uint coreidx)
 {
 	V_Core& thiscore(Cores[coreidx]);
@@ -531,7 +533,7 @@ static StereoOut32 DCFilter(StereoOut32 input)
 	return output;
 }
 
-__forceinline void spu2Mix()
+void spu2Mix()
 {
 	// Note: Playmode 4 is SPDIF, which overrides other inputs.
 	StereoOut32 InputData[2] =
@@ -551,7 +553,8 @@ __forceinline void spu2Mix()
 #endif
 
 	// Todo: Replace me with memzero initializer!
-	VoiceMixSet VoiceData[2] = {VoiceMixSet::Empty, VoiceMixSet::Empty}; // mixed voice data for each core.
+	VoiceMixSet VoiceData[2] = {{StereoOut32(), StereoOut32()}, {StereoOut32(), StereoOut32()}}; // mixed voice data for each core.
+
 	MixCoreVoices(VoiceData[0], 0);
 	MixCoreVoices(VoiceData[1], 1);
 
@@ -630,3 +633,5 @@ __forceinline void spu2Mix()
 		}
 	}
 }
+
+MULTI_ISA_UNSHARED_END
