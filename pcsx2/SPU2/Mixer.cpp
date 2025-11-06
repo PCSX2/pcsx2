@@ -9,6 +9,24 @@
 
 #include "common/Assertions.h"
 
+// LOOP/END sets the ENDX bit and sets NAX to LSA, and the voice is muted if LOOP is not set
+// LOOP seems to only have any effect on the block with LOOP/END set, where it prevents muting the voice
+// (the documented requirement that every block in a loop has the LOOP bit set is nonsense according to tests)
+// LOOP/START sets LSA to NAX unless LSA was written manually since sound generation started
+// (see LoopMode, the method by which this is achieved on the real SPU2 is unknown)
+#define XAFLAG_LOOP_END (1ul << 0)
+#define XAFLAG_LOOP (1ul << 1)
+#define XAFLAG_LOOP_START (1ul << 2)
+
+// decoded pcm data, used to cache the decoded data so that it needn't be decoded
+// multiple times.  Cache chunks are decoded when the mixer requests the blocks, and
+// invalided when DMA transfers and memory writes are performed.
+PcmCacheEntry pcm_cache_data[pcm_BlockCount];
+
+int g_counter_cache_hits = 0;
+int g_counter_cache_misses = 0;
+int g_counter_cache_ignores = 0;
+
 static const s32 tbl_XA_Factor[16][2] =
 	{
 		{0, 0},
@@ -70,24 +88,6 @@ static void __forceinline IncrementNextA(V_Core& thiscore, uint voiceidx)
 	vc.NextA++;
 	vc.NextA &= 0xFFFFF;
 }
-
-// decoded pcm data, used to cache the decoded data so that it needn't be decoded
-// multiple times.  Cache chunks are decoded when the mixer requests the blocks, and
-// invalided when DMA transfers and memory writes are performed.
-PcmCacheEntry pcm_cache_data[pcm_BlockCount];
-
-int g_counter_cache_hits = 0;
-int g_counter_cache_misses = 0;
-int g_counter_cache_ignores = 0;
-
-// LOOP/END sets the ENDX bit and sets NAX to LSA, and the voice is muted if LOOP is not set
-// LOOP seems to only have any effect on the block with LOOP/END set, where it prevents muting the voice
-// (the documented requirement that every block in a loop has the LOOP bit set is nonsense according to tests)
-// LOOP/START sets LSA to NAX unless LSA was written manually since sound generation started
-// (see LoopMode, the method by which this is achieved on the real SPU2 is unknown)
-#define XAFLAG_LOOP_END (1ul << 0)
-#define XAFLAG_LOOP (1ul << 1)
-#define XAFLAG_LOOP_START (1ul << 2)
 
 static __forceinline void GetNextDataBuffered(V_Core& thiscore, uint voiceidx)
 {
