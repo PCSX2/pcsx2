@@ -20,7 +20,6 @@ struct cdvdTrackIndex
 	u8 discM; // current minute location on the disc (BCD encoded)
 	u8 discS; // current sector location on the disc (BCD encoded)
 	u8 discF; // current frame location on the disc (BCD encoded)
-
 };
 
 struct cdvdTrack
@@ -187,6 +186,13 @@ extern const CDVD_API CDVDapi_NoDisc;
 extern u8 strack;
 extern u8 etrack;
 extern std::array<cdvdTrack, 100> tracks;
+
+/// Try to take the CDVD lock, return false if it's already in use.
+/// Must be called before your first CDVD call.
+extern bool cdvdLock(Error* error = nullptr);
+
+/// Release the CDVD lock. Must be called after you're done with CDVD.
+extern void cdvdUnlock();
 
 extern void CDVDsys_ChangeSource(CDVD_SourceType type);
 extern void CDVDsys_SetFile(CDVD_SourceType srctype, std::string newfile);
