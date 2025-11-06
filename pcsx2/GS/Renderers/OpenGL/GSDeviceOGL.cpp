@@ -365,6 +365,7 @@ bool GSDeviceOGL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 				m_convert.ps[i].RegisterUniform("ClampMin");
 				m_convert.ps[i].RegisterUniform("DownsampleFactor");
 				m_convert.ps[i].RegisterUniform("Weight");
+				m_convert.ps[i].RegisterUniform("StepMultiplier");
 			}
 		}
 
@@ -1632,6 +1633,7 @@ void GSDeviceOGL::FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u3
 	prog.Uniform2iv(0, clamp_min.v);
 	prog.Uniform1i(1, downsample_factor);
 	prog.Uniform1f(2, static_cast<float>(downsample_factor * downsample_factor));
+	prog.Uniform1f(3, (GSConfig.UserHacks_NativeScaling > GSNativeScaling::Aggressive) ? 2.0f : 1.0f);
 
 	OMSetDepthStencilState(m_convert.dss);
 	OMSetBlendState(false);

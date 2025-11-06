@@ -66,7 +66,8 @@ layout(push_constant) uniform cb10
 	int DownsampleFactor;
 	int pad0;
 	float Weight;
-	vec3 pad1;
+	float step_multiplier;
+	vec2 pad1;
 };
 void ps_downsample_copy()
 {
@@ -75,7 +76,9 @@ void ps_downsample_copy()
 	for (int yoff = 0; yoff < DownsampleFactor; yoff++)
 	{
 		for (int xoff = 0; xoff < DownsampleFactor; xoff++)
-			result += texelFetch(samp0, coord + ivec2(xoff, yoff), 0);
+		{
+			result += texelFetch(samp0, coord + ivec2(xoff * step_multiplier, yoff * step_multiplier), 0);
+		}
 	}
 	o_col0 = result / Weight;
 }

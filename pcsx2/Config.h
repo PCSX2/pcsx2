@@ -456,6 +456,8 @@ enum class GSNativeScaling : u8
 	Off,
 	Normal,
 	Aggressive,
+	NormalUpscaled,
+	AggressiveUpscaled,
 	MaxCount
 };
 
