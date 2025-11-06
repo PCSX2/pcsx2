@@ -220,7 +220,6 @@ void V_Voice::Start()
 	SP = 0;
 
 	LoopFlags = 0;
-	NextA = StartA | 1;
 	Prev1 = 0;
 	Prev2 = 0;
 

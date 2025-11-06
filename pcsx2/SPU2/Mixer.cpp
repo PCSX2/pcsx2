@@ -230,6 +230,30 @@ static __forceinline void DecodeSamples(uint coreidx, uint voiceidx)
 	}
 }
 
+static __forceinline void ProcessPlayDelay(uint coreidx, uint voiceidx)
+{
+	V_Core& thiscore(Cores[coreidx]);
+	V_Voice& vc(thiscore.Voices[voiceidx]);
+
+	switch (vc.PlayDelay) {
+	  case 4:
+		break;
+	  case 3:
+		vc.NextA = vc.StartA | 1;
+		DecodeSamples(coreidx, voiceidx);
+		break;
+	  case 2:
+		break;
+	  case 1:
+		DecodeSamples(coreidx, voiceidx);
+		break;
+	}
+
+	vc.LoopMode = 0;
+
+	vc.PlayDelay--;
+}
+
 static void __forceinline UpdatePitch(uint coreidx, uint voiceidx)
 {
 	V_Voice& vc(Cores[coreidx].Voices[voiceidx]);
@@ -375,14 +399,14 @@ static __forceinline StereoOut32 MixVoice(uint coreidx, uint voiceidx)
 
 	vc.Volume.Update();
 
-	DecodeSamples(coreidx, voiceidx);
 
 	if (vc.PlayDelay)
 	{
-		vc.LoopMode = 0;
-		vc.PlayDelay--;
+		ProcessPlayDelay(coreidx, voiceidx);
 		return {};
 	}
+
+	DecodeSamples(coreidx, voiceidx);
 
 	StereoOut32 voiceOut(0, 0);
 	s32 Value = 0;
