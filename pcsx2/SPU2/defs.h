@@ -63,11 +63,12 @@ struct StereoOut32
 	}
 };
 
+extern void (*spu2Mix)();
 extern s16* GetMemPtr(u32 addr);
 extern s16 spu2M_Read(u32 addr);
 extern void spu2M_Write(u32 addr, s16 value);
 extern void spu2M_Write(u32 addr, u16 value);
-extern void spu2Mix();
+MULTI_ISA_DEF(void spu2Mix();)
 extern void spu2Output(StereoOut32 out);
 
 static __forceinline s16 SignExtend16(u16 v)
@@ -391,7 +392,6 @@ struct V_CoreGates
 
 struct VoiceMixSet
 {
-	static const VoiceMixSet Empty;
 	StereoOut32 Dry, Wet;
 
 	VoiceMixSet() {}
@@ -624,3 +624,6 @@ struct PcmCacheEntry
 };
 
 extern PcmCacheEntry pcm_cache_data[pcm_BlockCount];
+extern int g_counter_cache_hits;
+extern int g_counter_cache_misses;
+extern int g_counter_cache_ignores;
