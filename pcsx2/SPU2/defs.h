@@ -501,7 +501,6 @@ struct V_Core
 	//  Mixer Section
 	// --------------------------------------------------------------------------------------
 
-	StereoOut32 Mix(const VoiceMixSet& inVoices, const StereoOut32& Input, const StereoOut32& Ext);
 	StereoOut32 DoReverb(StereoOut32 Input);
 	s32 RevbGetIndexer(s32 offset);
 
