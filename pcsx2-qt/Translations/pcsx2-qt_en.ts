@@ -5620,57 +5620,57 @@ Do you want to overwrite?</source>
 <context>
     <name>DockTabBar</name>
     <message>
-        <location filename="../Debugger/Docking/DockViews.cpp" line="177"/>
+        <location filename="../Debugger/Docking/DockViews.cpp" line="170"/>
         <source>Rename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockViews.cpp" line="188"/>
+        <location filename="../Debugger/Docking/DockViews.cpp" line="181"/>
         <source>Rename Window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockViews.cpp" line="188"/>
+        <location filename="../Debugger/Docking/DockViews.cpp" line="181"/>
         <source>New name:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockViews.cpp" line="194"/>
+        <location filename="../Debugger/Docking/DockViews.cpp" line="187"/>
         <source>Invalid Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockViews.cpp" line="194"/>
+        <location filename="../Debugger/Docking/DockViews.cpp" line="187"/>
         <source>The specified name is too long.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockViews.cpp" line="201"/>
+        <location filename="../Debugger/Docking/DockViews.cpp" line="194"/>
         <source>Reset Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockViews.cpp" line="215"/>
+        <location filename="../Debugger/Docking/DockViews.cpp" line="208"/>
         <source>Primary</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockViews.cpp" line="230"/>
+        <location filename="../Debugger/Docking/DockViews.cpp" line="223"/>
         <source>Set Target</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockViews.cpp" line="238"/>
+        <location filename="../Debugger/Docking/DockViews.cpp" line="231"/>
         <source>%1 (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockViews.cpp" line="251"/>
+        <location filename="../Debugger/Docking/DockViews.cpp" line="244"/>
         <source>Inherit From Layout</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Docking/DockViews.cpp" line="259"/>
+        <location filename="../Debugger/Docking/DockViews.cpp" line="252"/>
         <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
@@ -24737,39 +24737,23 @@ Xbox 360 turntables require a 256x multiplier, most other turntables can use the
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1033"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1034"/>
         <source>PS2 BIOS ({})</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1094"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1095"/>
         <source>Unknown Game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1257"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1258"/>
         <source>CDVD precaching was cancelled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1263"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1264"/>
         <source>CDVD precaching failed: {}</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1356"/>
-        <source>Error</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1357"/>
-        <source>PCSX2 requires a PS2 BIOS in order to run.
-
-For legal reasons, you *must* obtain a BIOS from an actual PS2 unit that you own (borrowing doesn&apos;t count).
-
-Once dumped, this BIOS image should be placed in the bios folder within the data directory (Tools Menu -&gt; Open Data Directory).
-
-Please consult the FAQs and Guides for further instructions.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -24883,6 +24867,22 @@ Error was: {}</source>
     <message>
         <location filename="../../pcsx2/VMManager.cpp" line="3152"/>
         <source>Trilinear filtering is not set to automatic. This may break rendering in some games.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/VMManager.cpp" line="1357"/>
+        <source>Error – No BIOS Present</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/VMManager.cpp" line="1358"/>
+        <source>PCSX2 requires a PlayStation 2 BIOS in order to run.
+
+For legal reasons, you will need to obtain this BIOS from a PlayStation 2 unit which you own.
+
+For step-by-step help with this process, please consult the setup guide at {}.
+
+PCSX2 will be able to run once you&apos;ve placed your BIOS image inside the folder named &quot;bios&quot; within the data directory (Tools Menu -&gt; Open Data Directory).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
