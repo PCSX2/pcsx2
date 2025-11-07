@@ -290,6 +290,41 @@ struct HWBlend
 	BlendFactor src, dst;
 };
 
+struct alignas(16) AccuratePrimsEdgeData
+{
+	// Interpolated attributes
+	GSVector4 t_float0; // 0
+	GSVector4 t_float1; // 16
+	GSVector4 t_int0; // 32
+	GSVector4 t_int1; // 48
+	GSVector4 c0; // 64
+	GSVector4 c1; // 80
+	GSVector4 p0; // 96
+	GSVector4 p1; // 112
+	GSVector4i edge0; // 128
+	GSVector4i edge1; // 144
+	GSVector2i xy0; // 160
+	GSVector2i xy1; // 168
+	u32 step_x; // 176
+	u32 draw0; // 180
+	u32 draw1; // 184
+	u32 top_left; // 188
+	u32 side; // 192
+	u32 _pad0; // 196
+	u32 _pad1; // 200
+	u32 _pad2; // 204
+	// Total 208
+};
+
+static_assert(sizeof(AccuratePrimsEdgeData) == 208);
+
+enum
+{
+	ACCURATE_PRIMS_DISABLE = 0,
+	ACCURATE_PRIMS_LINE = 1,
+	ACCURATE_PRIMS_TRIANGLE = 2
+};
+
 struct alignas(16) GSHWDrawConfig
 {
 	enum class Topology: u8
@@ -317,7 +352,7 @@ struct alignas(16) GSHWDrawConfig
 				u8 iip : 1;
 				u8 point_size : 1;		///< Set when points need to be expanded without VS expanding.
 				VSExpand expand : 2;
-				u8 _free : 2;
+				u8 accurate_prims : 2; // 0 - disables; 1 - lines; 2 - triangles.
 			};
 			u8 key;
 		};
@@ -355,6 +390,7 @@ struct alignas(16) GSHWDrawConfig
 				u32 date : 3;
 				u32 atst : 3;
 				u32 afail : 2;
+				u32 ztst : 2;
 				// Color sampling
 				u32 fst : 1; // Investigate to do it on the VS
 				u32 tfx : 3;
@@ -415,6 +451,11 @@ struct alignas(16) GSHWDrawConfig
 
 				// Scan mask
 				u32 scanmsk : 2;
+
+				// Accurate lines
+				u32 accurate_prims : 2; // 0 - disabled; 1 - lines; 2 - triangles
+				u32 accurate_prims_aa : 1;
+				u32 accurate_prims_aa_abe : 1;
 			};
 
 			struct
@@ -434,6 +475,13 @@ struct alignas(16) GSHWDrawConfig
 			const u32 sw_blend_bits = blend_a | blend_b | blend_d;
 			const bool sw_blend_needs_rt = (sw_blend_bits != 0 && ((sw_blend_bits | blend_c) & 1u)) || ((a_masked & blend_c) != 0);
 			return channel_fb || tex_is_fb || fbmask || (date > 0 && date != 3) || sw_blend_needs_rt;
+		}
+
+		__fi bool IsFeedbackLoopDepth() const
+		{
+			// Note: Manual depth testing/interpolation for accurate prims is bundled with zclamp to reduce pipeline combinations.
+			// The zclamp is used to indicate that either Z write of Z testing is enabled.
+			return (accurate_prims == ACCURATE_PRIMS_TRIANGLE) && accurate_prims_aa && zclamp;
 		}
 
 		/// Disables color output from the pixel shader, this is done when all channels are masked.
@@ -580,6 +628,7 @@ struct alignas(16) GSHWDrawConfig
 		GSVector2 texture_offset;
 		GSVector2 point_size;
 		GSVector2i max_depth;
+		GSVector2i base_vertex;
 		__fi VSConstantBuffer()
 		{
 			memset(static_cast<void*>(this), 0, sizeof(*this));
@@ -628,6 +677,8 @@ struct alignas(16) GSHWDrawConfig
 		GSVector4 DitherMatrix[4];
 
 		GSVector4 ScaleFactor;
+
+		GSVector4i accurate_prims_base_index;
 
 		__fi PSConstantBuffer()
 		{
@@ -746,6 +797,9 @@ struct alignas(16) GSHWDrawConfig
 	SetDATM datm : 2;
 	bool line_expand : 1;
 
+	bool accurate_prims;
+	std::vector<AccuratePrimsEdgeData>* accurate_prims_edge_data;
+
 	struct AlphaPass
 	{
 		alignas(8) PSSelector ps;
@@ -843,6 +897,7 @@ public:
 		bool stencil_buffer       : 1; ///< Supports stencil buffer, and can use for DATE.
 		bool cas_sharpening       : 1; ///< Supports sufficient functionality for contrast adaptive sharpening.
 		bool test_and_sample_depth: 1; ///< Supports concurrently binding the depth-stencil buffer for sampling and depth testing.
+		bool accurate_prims       : 1; ///< Supports AA1 triangles/lines and accurate lines shaders.
 		FeatureSupport()
 		{
 			memset(this, 0, sizeof(*this));

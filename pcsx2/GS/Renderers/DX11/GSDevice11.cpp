@@ -14,6 +14,7 @@
 #include "common/Error.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
+#include "common/ScopedGuard.h"
 
 #include "imgui.h"
 #include "IconsFontAwesome6.h"
@@ -395,6 +396,32 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		}
 	}
 
+	if (m_features.accurate_prims)
+	{
+		bd.ByteWidth = ACCURATE_PRIMS_BUFFER_SIZE;
+		bd.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+		bd.StructureByteStride = sizeof(AccuratePrimsEdgeData);
+		bd.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+
+		if (FAILED(m_dev->CreateBuffer(&bd, nullptr, m_accurate_prims_b.put())))
+		{
+			Console.Error("D3D11: Failed to create accurate prims buffer.");
+			return false;
+		}
+
+		const CD3D11_SHADER_RESOURCE_VIEW_DESC accurate_prims_b_srv_desc(
+			D3D11_SRV_DIMENSION_BUFFER, DXGI_FORMAT_UNKNOWN, 0, ACCURATE_PRIMS_BUFFER_SIZE / sizeof(AccuratePrimsEdgeData));
+		if (FAILED(m_dev->CreateShaderResourceView(m_accurate_prims_b.get(), &accurate_prims_b_srv_desc, m_accurate_prims_b_srv.put())))
+		{
+			Console.Error("D3D11: Failed to create accurate prims buffer SRV.");
+			return false;
+		}
+
+		// If MAX_TEXTURES changes, please change the register for this buffer in the shader.
+		static_assert(MAX_TEXTURES == 5);
+		m_ctx->PSSetShaderResources(MAX_TEXTURES, 1, m_accurate_prims_b_srv.addressof());
+	}
+
 	// rasterizer
 
 	memset(&rd, 0, sizeof(rd));
@@ -541,6 +568,8 @@ void GSDevice11::Destroy()
 	m_expand_vb_srv.reset();
 	m_expand_vb.reset();
 	m_expand_ib.reset();
+	m_accurate_prims_b.reset();
+	m_accurate_prims_b_srv.reset();
 
 	m_vs.clear();
 	m_vs_cb.reset();
@@ -599,6 +628,8 @@ void GSDevice11::SetFeatures(IDXGIAdapter1* adapter)
 	m_max_texture_size = (m_feature_level >= D3D_FEATURE_LEVEL_11_0) ?
 	                         D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION :
 	                         D3D10_REQ_TEXTURE2D_U_OR_V_DIMENSION;
+
+	m_features.accurate_prims = GSConfig.HWAccuratePrims;
 }
 
 bool GSDevice11::HasSurface() const
@@ -1665,6 +1696,7 @@ void GSDevice11::SetupVS(VSSelector sel, const GSHWDrawConfig::VSConstantBuffer*
 		sm.AddMacro("VS_FST", sel.fst);
 		sm.AddMacro("VS_IIP", sel.iip);
 		sm.AddMacro("VS_EXPAND", static_cast<int>(sel.expand));
+		sm.AddMacro("VS_ACCURATE_PRIMS", static_cast<int>(sel.accurate_prims));
 
 		static constexpr const D3D11_INPUT_ELEMENT_DESC layout[] =
 			{
@@ -1766,6 +1798,10 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 		sm.AddMacro("PS_TEX_IS_FB", sel.tex_is_fb);
 		sm.AddMacro("PS_NO_COLOR", sel.no_color);
 		sm.AddMacro("PS_NO_COLOR1", sel.no_color1);
+		sm.AddMacro("PS_ACCURATE_PRIMS", sel.accurate_prims);
+		sm.AddMacro("PS_ACCURATE_PRIMS_AA", sel.accurate_prims_aa);
+		sm.AddMacro("PS_ACCURATE_PRIMS_AA_ABE", sel.accurate_prims_aa_abe);
+		sm.AddMacro("PS_ZTST", sel.ztst);
 
 		wil::com_ptr_nothrow<ID3D11PixelShader> ps = m_shader_cache.GetPixelShader(m_dev.get(), m_tfx_source, sm.GetPtr(), "ps_main");
 		i = m_ps.try_emplace(sel, std::move(ps)).first;
@@ -2280,6 +2316,43 @@ bool GSDevice11::IASetExpandVertexBuffer(const void* vertex, u32 stride, u32 cou
 	return true;
 }
 
+bool GSDevice11::SetupAccuratePrims(GSHWDrawConfig& config)
+{
+	if (config.accurate_prims)
+	{
+		const u32 count = config.accurate_prims_edge_data->size();
+		const u32 size = count * sizeof(AccuratePrimsEdgeData);
+
+		if (size > ACCURATE_PRIMS_BUFFER_SIZE)
+			return false;
+
+		D3D11_MAP type = D3D11_MAP_WRITE_NO_OVERWRITE;
+
+		pxAssert(m_accurate_prims_b_pos % sizeof(AccuratePrimsEdgeData) == 0);
+
+		if (m_accurate_prims_b_pos + size > ACCURATE_PRIMS_BUFFER_SIZE)
+		{
+			m_accurate_prims_b_pos = 0;
+			type = D3D11_MAP_WRITE_DISCARD;
+		}
+
+		D3D11_MAPPED_SUBRESOURCE m;
+		if (FAILED(m_ctx->Map(m_accurate_prims_b.get(), 0, type, 0, &m)))
+			return false;
+
+		void* map = static_cast<u8*>(m.pData) + m_accurate_prims_b_pos;
+
+		GSVector4i::storent(map, config.accurate_prims_edge_data->data(), size);
+
+		m_ctx->Unmap(m_accurate_prims_b.get(), 0);
+
+		config.cb_ps.accurate_prims_base_index.x = m_accurate_prims_b_pos / sizeof(AccuratePrimsEdgeData);
+		
+		m_accurate_prims_b_pos += size;
+	}
+	return true;
+}
+
 u16* GSDevice11::IAMapIndexBuffer(u32 count)
 {
 	if (count > (INDEX_BUFFER_SIZE / sizeof(u16)))
@@ -2583,6 +2656,18 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 {
 	const GSVector2i rtsize = (config.rt ? config.rt : config.ds)->GetSize();
 	GSTexture* colclip_rt = g_gs_device->GetColorClipTexture();
+	GSTexture* draw_rt_clone = nullptr;
+	GSTexture* draw_ds_clone = nullptr;
+	GSTexture* primid_texture = nullptr;
+	
+	ScopedGuard recycle_temp_textures([&]() {
+		if (draw_rt_clone)
+			Recycle(draw_rt_clone);
+		if (draw_ds_clone)
+			Recycle(draw_ds_clone);
+		if (primid_texture)
+			Recycle(primid_texture);
+	});
 
 	if (colclip_rt)
 	{
@@ -2627,7 +2712,6 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 
 	// Destination Alpha Setup
 	const bool multidraw_fb_copy = m_features.multidraw_fb_copy && (config.require_one_barrier || config.require_full_barrier);
-	GSTexture* primid_texture = nullptr;
 	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking)
 	{
 		primid_texture = CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::PrimID, false);
@@ -2652,7 +2736,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 			return;
 		}
 
-		config.cb_vs.max_depth.y = m_vertex.start;
+		config.cb_vs.base_vertex = m_vertex.start;
 	}
 	else
 	{
@@ -2661,6 +2745,12 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 			Console.Error("D3D11: Failed to upload vertices (%u)", config.nverts);
 			return;
 		}
+	}
+
+	if (!SetupAccuratePrims(config))
+	{
+		Console.Error("D3D11: Failed to setup accurate prims");
+		return;
 	}
 
 	if (config.vs.UseExpandIndexBuffer())
@@ -2742,8 +2832,6 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		draw_ds = m_state.cached_dsv;
 	}
 
-	GSTexture* draw_rt_clone = nullptr;
-
 	if (draw_rt && (config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy) || (config.tex && config.tex == config.rt)))
 	{
 		// Requires a copy of the RT.
@@ -2754,6 +2842,15 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 			Console.Warning("D3D11: Failed to allocate temp texture for RT copy.");
 	}
 
+	if (draw_ds && config.require_full_barrier && m_features.multidraw_fb_copy && config.ps.IsFeedbackLoopDepth())
+	{
+		// Requires a copy of the DS.
+		// Used as "bind ds" flag when texture barrier is unsupported for tex is fb.
+		draw_ds_clone = CreateTexture(rtsize.x, rtsize.y, 1, draw_ds->GetFormat(), true);
+		if (!draw_rt_clone)
+			Console.Warning("D3D11: Failed to allocate temp texture for DS copy.");
+	}
+
 	OMSetRenderTargets(draw_rt, draw_ds, &config.scissor, read_only_dsv);
 	SetupOM(config.depth, OMBlendSelector(config.colormask, config.blend), config.blend.constant);
 
@@ -2761,7 +2858,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne && multidraw_fb_copy)
 		m_ctx->ClearDepthStencilView(*static_cast<GSTexture11*>(draw_ds), D3D11_CLEAR_STENCIL, 0.0f, 1);
 
-	SendHWDraw(config, draw_rt_clone, draw_rt, config.require_one_barrier, config.require_full_barrier, false);
+	SendHWDraw(config, draw_rt_clone, draw_rt, draw_ds_clone, draw_ds, config.require_one_barrier, config.require_full_barrier, false);
 
 	if (config.blend_multi_pass.enable)
 	{
@@ -2786,14 +2883,9 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		}
 
 		SetupOM(config.alpha_second_pass.depth, OMBlendSelector(config.alpha_second_pass.colormask, config.blend), config.blend.constant);
-		SendHWDraw(config, draw_rt_clone, draw_rt, config.alpha_second_pass.require_one_barrier, config.alpha_second_pass.require_full_barrier, true);
+		SendHWDraw(config, draw_rt_clone, draw_rt, draw_ds_clone, draw_ds,
+			config.alpha_second_pass.require_one_barrier, config.alpha_second_pass.require_full_barrier, true);
 	}
-
-	if (draw_rt_clone)
-		Recycle(draw_rt_clone);
-
-	if (primid_texture)
-		Recycle(primid_texture);
 
 	if (colclip_rt)
 	{
@@ -2813,19 +2905,29 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	}
 }
 
-void GSDevice11::SendHWDraw(const GSHWDrawConfig& config, GSTexture* draw_rt_clone, GSTexture* draw_rt, const bool one_barrier, const bool full_barrier, const bool skip_first_barrier)
+void GSDevice11::SendHWDraw(const GSHWDrawConfig& config,
+	GSTexture* draw_rt_clone, GSTexture* draw_rt, GSTexture* draw_ds_clone, GSTexture* draw_ds,
+	const bool one_barrier, const bool full_barrier, const bool skip_first_barrier)
 {
-	if (draw_rt_clone)
+	if (draw_rt_clone || draw_ds_clone)
 	{
 #ifdef PCSX2_DEVBUILD
-		if ((one_barrier || full_barrier) && !config.ps.IsFeedbackLoop()) [[unlikely]]
+		if ((one_barrier || full_barrier) && !(config.ps.IsFeedbackLoop() || config.ps.IsFeedbackLoopDepth())) [[unlikely]]
 			Console.Warning("D3D11: Possible unnecessary copy detected.");
 #endif
 
 		auto CopyAndBind = [&](GSVector4i drawarea) {
-			CopyRect(draw_rt, draw_rt_clone, drawarea, drawarea.left, drawarea.top);
+			if (draw_rt_clone)
+				CopyRect(draw_rt, draw_rt_clone, drawarea, drawarea.left, drawarea.top);
+			if (draw_ds_clone)
+				CopyRect(draw_ds, draw_ds_clone, drawarea, drawarea.left, drawarea.top);
 			if (one_barrier || full_barrier)
-				PSSetShaderResource(2, draw_rt_clone);
+			{
+				if (draw_rt_clone)
+					PSSetShaderResource(2, draw_rt_clone);
+				if (draw_ds_clone)
+					PSSetShaderResource(4, draw_ds_clone);
+			}
 			if (config.tex && config.tex == config.rt)
 				PSSetShaderResource(0, draw_rt_clone);
 		};

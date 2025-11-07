@@ -1,11 +1,22 @@
 // SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
+#define ACCURATE_LINES 1
+#define ACCURATE_TRIANGLES 2
+
 //////////////////////////////////////////////////////////////////////
 // Vertex Shader
 //////////////////////////////////////////////////////////////////////
 
+
 #if defined(VERTEX_SHADER)
+
+#if VS_ACCURATE_PRIMS
+layout(location = 7) flat out uint accurate_prims_index;
+#if VS_ACCURATE_PRIMS == ACCURATE_TRIANGLES
+layout(location = 8) flat out uint accurate_triangles_interior;
+#endif
+#endif
 
 layout(std140, set = 0, binding = 0) uniform cb0
 {
@@ -16,6 +27,8 @@ layout(std140, set = 0, binding = 0) uniform cb0
 	vec2 PointSize;
 	uint MaxDepth;
 	uint pad_cb0;
+	uint BaseVertex;
+	uint pad_cb0_2;
 };
 
 layout(location = 0) out VSOutput
@@ -54,6 +67,28 @@ void main()
 	gl_Position.xy = gl_Position.xy * vec2(VertexScale.x, -VertexScale.y) - vec2(VertexOffset.x, -VertexOffset.y);
 	gl_Position.z *= exp2(-32.0f);		// integer->float depth
 	gl_Position.y = -gl_Position.y;
+
+	#if VS_ACCURATE_PRIMS == ACCURATE_LINES
+		accurate_prims_index = (gl_VertexIndex - BaseVertex) / 6;
+		vsOut.t = vec4(0.0f);
+		vsOut.ti = vec4(0.0f);
+		vsOut.c = vec4(0.0f);
+		return; // Don't send line vertex attributes - they are interpolated manually in the fragment shader.
+	#elif VS_ACCURATE_PRIMS == ACCURATE_TRIANGLES
+		uint vertex_id = gl_VertexIndex - BaseVertex;
+		uint prim_id = vertex_id / 21;
+		accurate_triangles_interior = uint((vertex_id - 21 * prim_id) < 3); // First 3 vertices in each group of 21 is interior.
+		if (!bool(accurate_triangles_interior))
+		{
+			uint edge = (vertex_id - 21 * prim_id - 3) / 6; // Each group of 6 vertices after first 3 is one edge.
+			accurate_prims_index = 3 * prim_id + edge;
+			vsOut.t = vec4(0.0f);
+			vsOut.ti = vec4(0.0f);
+			vsOut.c = vec4(0.0f);
+			return; // Don't send edge vertex attributes - they are interpolated manually in the fragment shader.
+		}
+		// Send the interior vertex attributes for fixed function interpolation.
+	#endif
 
 	#if VS_TME
 		vec2 uv = a_uv - TextureOffset;
@@ -245,6 +280,11 @@ void main()
 #define GS_LINE 0
 #endif
 
+#ifndef ZTST_GEQUAL
+#define ZTST_GEQUAL 2
+#define ZTST_GREATER 3
+#endif
+
 #ifndef PS_FST
 #define PS_FST 0
 #define PS_WMS 0
@@ -298,8 +338,11 @@ void main()
 #define AFAIL_NEEDS_RT (PS_AFAIL == 3 && PS_NO_COLOR1)
 
 #define PS_FEEDBACK_LOOP_IS_NEEDED (PS_TEX_IS_FB == 1 || AFAIL_NEEDS_RT || PS_FBMASK || SW_BLEND_NEEDS_RT || SW_AD_TO_HW || (PS_DATE >= 5))
+#define PS_FEEDBACK_LOOP_IS_NEEDED_DEPTH ((PS_ACCURATE_PRIMS == ACCURATE_TRIANGLES) && PS_ACCURATE_PRIMS_AA && PS_ZCLAMP)
 
 #define NEEDS_TEX (PS_TFX != 4)
+
+vec4 FragCoord;
 
 layout(std140, set = 0, binding = 1) uniform cb1
 {
@@ -320,7 +363,70 @@ layout(std140, set = 0, binding = 1) uniform cb1
 	mat4 DitherMatrix;
 	float ScaledScaleFactor;
 	float RcpScaleFactor;
+	uint _pad0;
+	uint _pad1;
+
+	uint accurate_prims_base_index;
+	uint _pad2;
+	uint _pad3;
+	uint _pad4;
 };
+
+#if PS_ACCURATE_PRIMS
+struct
+{
+	vec4 t;
+	vec4 ti;
+	vec4 c;
+} vsIn;
+
+layout(location = 0) in VSOutput
+{
+	vec4 t;
+	vec4 ti;
+	#if PS_IIP != 0
+		vec4 c;
+	#else
+		flat vec4 c;
+	#endif
+} vsInReal;
+
+layout(location = 7) flat in uint accurate_prims_index;
+#if PS_ACCURATE_PRIMS == ACCURATE_TRIANGLES
+layout(location = 8) flat in uint accurate_triangles_interior;
+#endif
+
+struct AccuratePrimsEdgeData
+{
+	// Interpolated attributes
+	vec4 t_float0; // 0
+	vec4 t_float1; // 16
+	vec4 t_int0; // 32
+	vec4 t_int1; // 48
+	vec4 c0; // 64
+	vec4 c1; // 80
+	vec4 p0; // 96
+	vec4 p1; // 112
+	ivec4 edge0; // 128
+	ivec4 edge1; // 144
+	ivec2 xy0; // 160
+	ivec2 xy1; // 168
+	uint step_x; // 176
+	uint draw0; // 180
+	uint draw1; // 184
+	uint top_left; // 188
+	uint side; // 192
+	uint _pad0; // 196
+	uint _pad1; // 200
+	uint _pad2; // 204
+	// Total 208
+};
+
+layout (std140, set = 0, binding = 3) readonly buffer AccuratePrimsEdgeDataBuffer {
+	AccuratePrimsEdgeData accurate_prims_data[];
+};
+
+#else // PS_ACCURATE_PRIMS
 
 layout(location = 0) in VSOutput
 {
@@ -332,6 +438,8 @@ layout(location = 0) in VSOutput
 		flat vec4 c;
 	#endif
 } vsIn;
+
+#endif
 
 #if !PS_NO_COLOR && !PS_NO_COLOR1
 layout(location = 0, index = 0) out vec4 o_col0;
@@ -345,13 +453,21 @@ layout(set = 1, binding = 0) uniform sampler2D Texture;
 layout(set = 1, binding = 1) uniform texture2D Palette;
 #endif
 
-#if PS_FEEDBACK_LOOP_IS_NEEDED
+#if PS_FEEDBACK_LOOP_IS_NEEDED || PS_FEEDBACK_LOOP_IS_NEEDED_DEPTH
 	#if defined(DISABLE_TEXTURE_BARRIER) || defined(HAS_FEEDBACK_LOOP_LAYOUT)
 		layout(set = 1, binding = 2) uniform texture2D RtSampler;
-		vec4 sample_from_rt() { return texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0); }
+		vec4 sample_from_rt() { return texelFetch(RtSampler, ivec2(FragCoord.xy), 0); }
+		#if PS_FEEDBACK_LOOP_IS_NEEDED_DEPTH
+			layout(set = 1, binding = 4) uniform texture2D DepthSampler;
+			vec4 sample_from_depth() { return texelFetch(DepthSampler, ivec2(FragCoord.xy), 0); }
+		#endif
 	#else
 		layout(input_attachment_index = 0, set = 1, binding = 2) uniform subpassInput RtSampler;
 		vec4 sample_from_rt() { return subpassLoad(RtSampler); }
+		#if PS_FEEDBACK_LOOP_IS_NEEDED_DEPTH
+			layout(input_attachment_index = 1, set = 1, binding = 4) uniform subpassInput DepthSampler;
+			vec4 sample_from_depth() { return subpassLoad(DepthSampler); }
+		#endif
 	#endif
 #endif
 
@@ -925,19 +1041,19 @@ vec4 ps_color()
 #if !NEEDS_TEX
 	vec4 T = vec4(0.0f);
 #elif PS_CHANNEL_FETCH == 1
-	vec4 T = fetch_red(ivec2(gl_FragCoord.xy));
+	vec4 T = fetch_red(ivec2(FragCoord.xy));
 #elif PS_CHANNEL_FETCH == 2
-	vec4 T = fetch_green(ivec2(gl_FragCoord.xy));
+	vec4 T = fetch_green(ivec2(FragCoord.xy));
 #elif PS_CHANNEL_FETCH == 3
-	vec4 T = fetch_blue(ivec2(gl_FragCoord.xy));
+	vec4 T = fetch_blue(ivec2(FragCoord.xy));
 #elif PS_CHANNEL_FETCH == 4
-	vec4 T = fetch_alpha(ivec2(gl_FragCoord.xy));
+	vec4 T = fetch_alpha(ivec2(FragCoord.xy));
 #elif PS_CHANNEL_FETCH == 5
-	vec4 T = fetch_rgb(ivec2(gl_FragCoord.xy));
+	vec4 T = fetch_rgb(ivec2(FragCoord.xy));
 #elif PS_CHANNEL_FETCH == 6
-	vec4 T = fetch_gXbY(ivec2(gl_FragCoord.xy));
+	vec4 T = fetch_gXbY(ivec2(FragCoord.xy));
 #elif PS_DEPTH_FMT > 0
-	vec4 T = sample_depth(st_int, ivec2(gl_FragCoord.xy));
+	vec4 T = sample_depth(st_int, ivec2(FragCoord.xy));
 #else
 	vec4 T = sample_color(st);
 #endif
@@ -985,9 +1101,9 @@ void ps_dither(inout vec3 C, float As)
 		ivec2 fpos;
 
 		#if PS_DITHER == 2
-			fpos = ivec2(gl_FragCoord.xy);
+			fpos = ivec2(FragCoord.xy);
 		#else
-			fpos = ivec2(gl_FragCoord.xy * RcpScaleFactor);
+			fpos = ivec2(FragCoord.xy * RcpScaleFactor);
 		#endif
 
 		float value = DitherMatrix[fpos.y & 3][fpos.x & 3];
@@ -1228,11 +1344,232 @@ void ps_blend(inout vec4 Color, inout vec4 As_rgba)
 	#endif
 }
 
+#if PS_ACCURATE_PRIMS
+// Interpolate vertex attributes over a line/edge manually.
+void InterpolateAttributesManual(AccuratePrimsEdgeData data, int weight0, int weight1)
+{
+	float weight0_f = float(weight0);
+	float weight1_f = float(weight1);
+	float weight_total = float(weight0 + weight1);
+
+	vec4 t_float_interp = (weight1_f * data.t_float1 + weight0_f * data.t_float0) / weight_total;
+	vec4 t_int_interp = (weight1_f * data.t_int1 + weight0_f * data.t_int0) / weight_total;
+	vec4 c_interp = (weight1_f * data.c1 + weight0_f * data.c0) / weight_total;
+	float z_interp = (weight1_f * data.p1.z + weight0_f * data.p0.z) / weight_total;
+
+	// No interpolation for constant attributes.
+	vsIn.t = mix(t_float_interp, data.t_float1, equal(data.t_float1, data.t_float0));
+	vsIn.ti = mix(t_int_interp, data.t_int1, equal(data.t_int1, data.t_int0));
+	vsIn.c = mix(c_interp, data.c1, equal(data.c1, data.c0));
+	FragCoord.z = (data.p1.z == data.p0.z) ? data.p1.z : z_interp;
+
+	// Clamp attributes. Fog/Z are normalized.
+	vsIn.c = clamp(vsIn.c, 0.0f, 255.0f);
+	vsIn.t.z = clamp(vsIn.t.z, 0.0f, 1.0f);
+	FragCoord.z = clamp(FragCoord.z, 0.0f, 1.0f);
+}
+#endif
+
+#if PS_ACCURATE_PRIMS == ACCURATE_LINES
+void HandleAccurateLines(out float alpha_coverage)
+{
+	AccuratePrimsEdgeData data = accurate_prims_data[accurate_prims_base_index + accurate_prims_index];
+
+	ivec2 xy0 = data.xy0;
+	ivec2 xy1 = data.xy1;
+	ivec2 dxy = xy1 - xy0;
+	ivec2 xy0_i = (xy0 + 8) & ~0xF;
+	ivec2 xy1_i = (xy1 + 8) & ~0xF;
+	bool step_x = bool(data.step_x);
+	bool draw0 = bool(data.draw0);
+	bool draw1 = bool(data.draw1);
+
+	// 4-bit fixed point: 16 subpixels per pixel
+	ivec2 xy_i = 16 * ivec2(floor(FragCoord.xy)); // Subtract half-integer pixel center.
+
+	// Determine major/minor axes
+	int major0 = step_x ? xy0.x : xy0.y;
+	int major1 = step_x ? xy1.x : xy1.y;
+	int minor0 = step_x ? xy0.y : xy0.x;
+	int minor1 = step_x ? xy1.y : xy1.x;
+	int major_i = step_x ? xy_i.x : xy_i.y;
+	int minor_i = step_x ? xy_i.y : xy_i.x;
+	int d_major = step_x ? dxy.x : dxy.y;
+	int d_major_scaled = 16 * d_major;
+
+	int major0_i = step_x ? xy0_i.x : xy0_i.y;
+	int major1_i = step_x ? xy1_i.x : xy1_i.y;
+
+	// Discard if outside line range
+	if (major_i < min(major0_i, major1_i) ||
+		major_i > max(major0_i, major1_i))
+		discard;
+
+	if ((major_i == major0_i && !draw0) ||
+		(major_i == major1_i && !draw1))
+		discard;
+
+	int weight0 = major1 - major_i;
+	int weight1 = major_i - major0;
+
+	// Compute minor axis line in fixed-point
+	int minor_line = weight1 * minor1 + weight0 * minor0;
+
+#if PS_ACCURATE_PRIMS_AA
+	// Proper fixed-point AA rounding
+	int minor_i_expected_0 = (minor_line / d_major) & ~0xF;
+	int minor_i_expected_1 = minor_i_expected_0 + 16;
+	int alpha_i_0 = d_major_scaled - (minor_line - d_major * minor_i_expected_0);
+	int alpha_i_1 = d_major_scaled - alpha_i_0;
+
+	int alpha_i;
+	if (minor_i == minor_i_expected_0)
+		alpha_i = alpha_i_0;
+	else if (minor_i == minor_i_expected_1)
+		alpha_i = alpha_i_1;
+	else
+		discard;
+	// Make sure that the output alpha is always <= 127 for AA.
+	alpha_coverage = floor(clamp(128.0f * float(alpha_i) / float(d_major_scaled), 0.0f, 127.0f));
+#else
+	// Non-AA: fixed-point rounding and 4-bit alignment
+	int minor_i_expected = ((2 * minor_line + d_major_scaled) / (2 * d_major)) & ~0xF;
+	if (minor_i != minor_i_expected)
+		discard;
+	alpha_coverage = 128.0f;
+#endif
+
+	// Interpolate attributes
+	InterpolateAttributesManual(data, weight0, weight1);
+}
+#endif
+
+#if PS_ACCURATE_PRIMS == ACCURATE_TRIANGLES
+void HandleAccurateTrianglesEdge(out float alpha_coverage)
+{
+	AccuratePrimsEdgeData data = accurate_prims_data[accurate_prims_base_index + accurate_prims_index];
+
+	ivec2 xy0 = data.xy0;
+	ivec2 xy1 = data.xy1;
+	ivec2 dxy = xy1 - xy0;
+	ivec2 xy0_i = (xy0 + 8) & ~0xF;
+	ivec2 xy1_i = (xy1 + 8) & ~0xF;
+	bool step_x = bool(data.step_x);
+	bool side = bool(data.side);
+	bool top_left = bool(data.top_left);
+
+	// 4-bit fixed point: 16 subpixels per pixel
+	ivec2 xy_i = 16 * ivec2(floor(FragCoord.xy)); // Subtract half-integer pixel center.
+
+	// Determine major/minor axes
+	int major0 = step_x ? xy0.x : xy0.y;
+	int major1 = step_x ? xy1.x : xy1.y;
+	int minor0 = step_x ? xy0.y : xy0.x;
+	int minor1 = step_x ? xy1.y : xy1.x;
+	int major_i = step_x ? xy_i.x : xy_i.y;
+	int minor_i = step_x ? xy_i.y : xy_i.x;
+	int d_major = step_x ? dxy.x : dxy.y;
+	int d_major_scaled = 16 * d_major;
+
+	int major0_i = step_x ? xy0_i.x : xy0_i.y;
+	int major1_i = step_x ? xy1_i.x : xy1_i.y;
+
+	// Discard if outside edge range.
+	// Note: this is not exactly what the SW rasterizer does.
+	// See the note in GSRasterizer::DrawEdgeTriangle() about the asymmetry in X and Y bounds checking.
+	if (major_i < min(major0_i, major1_i) ||
+		major_i > max(major0_i, major1_i))
+		discard;
+
+	// Discard if on wrong side of other edges
+	if (dot(data.edge0, ivec4(xy_i, 1, 0)) <= 0 ||
+		dot(data.edge1, ivec4(xy_i, 1, 0)) <= 0)
+		discard;
+
+	int weight0 = major1 - major_i;
+	int weight1 = major_i - major0;
+
+	// Compute minor axis line in fixed-point
+	int minor_line = weight1 * minor1 + weight0 * minor0;
+	int minor_i_expected = minor_line / d_major;
+	int minor_i_expected_0 = minor_i_expected & ~0xF;
+	int minor_i_expected_1 = minor_i_expected_0 + 16;
+	int alpha_i_0 = d_major_scaled - (minor_line - d_major * minor_i_expected_0);
+	int alpha_i_1 = d_major_scaled - alpha_i_0;
+
+	// Proper fixed-point AA rounding
+	int alpha_i;
+	if ((minor_i_expected & 0xF) == 0)
+	{
+		// On a pixel center
+		alpha_i = top_left ? 0 : d_major_scaled;
+		minor_i_expected += top_left ? (side ? -16 : 16) : 0;
+	}
+	else if (side)
+	{
+		minor_i_expected = minor_i_expected_0;
+		alpha_i = alpha_i_0;
+	}
+	else
+	{
+		minor_i_expected = minor_i_expected_1;
+		alpha_i = alpha_i_1;
+	}
+	if (minor_i != minor_i_expected)
+		discard;
+	
+#if PS_ACCURATE_PRIMS_AA
+	// Make sure that the output alpha is always <= 127 for AA.
+	alpha_coverage = floor(clamp(128.0f * float(alpha_i) / float(d_major_scaled), 0.0f, 127.0f));
+#else
+	alpha_coverage = 128.0f;
+#endif
+
+	// Interpolate attributes
+	InterpolateAttributesManual(data, weight0, weight1);
+}
+#endif
+
 void main()
 {
+	FragCoord = gl_FragCoord;
+
+#if PS_ACCURATE_PRIMS
+	float alpha_coverage;
+#if PS_ACCURATE_PRIMS == ACCURATE_LINES
+	HandleAccurateLines(alpha_coverage);
+#elif PS_ACCURATE_PRIMS == ACCURATE_TRIANGLES
+	if (bool(accurate_triangles_interior))
+	{
+		alpha_coverage = 128.0f;
+		vsIn.t = vsInReal.t;
+		vsIn.ti = vsInReal.ti;
+		vsIn.c = vsInReal.c;
+	}
+	else
+	{
+		HandleAccurateTrianglesEdge(alpha_coverage);
+	}
+#endif
+#endif // PS_ACCURATE_PRIMS
+
+#if PS_FEEDBACK_LOOP_IS_NEEDED_DEPTH
+	float current_depth = sample_from_depth().r;
+#endif
+
+#if PS_ZCLAMP && (PS_ZTST == ZTST_GEQUAL || PS_ZTST == ZTST_GREATER)
+	#if PS_ZTST == ZTST_GEQUAL
+		if (FragCoord.z < current_depth)
+			discard;
+	#elif PS_ZTST == ZTST_GREATER
+		if (FragCoord.z <= current_depth)
+			discard;
+	#endif
+#endif // PS_ZTST
+
 #if PS_SCANMSK & 2
 	// fail depth test on prohibited lines
-	if ((int(gl_FragCoord.y) & 1) == (PS_SCANMSK & 1))
+	if ((int(FragCoord.y) & 1) == (PS_SCANMSK & 1))
 		discard;
 #endif
 #if PS_DATE >= 5
@@ -1267,7 +1604,7 @@ void main()
 #endif		// PS_DATE >= 5
 
 #if PS_DATE == 3
-	int stencil_ceil = int(texelFetch(PrimMinTexture, ivec2(gl_FragCoord.xy), 0).r);
+	int stencil_ceil = int(texelFetch(PrimMinTexture, ivec2(FragCoord.xy), 0).r);
 	// Note gl_PrimitiveID == stencil_ceil will be the primitive that will update
 	// the bad alpha value so we must keep it.
 
@@ -1277,18 +1614,25 @@ void main()
 #endif
 
 	vec4 C = ps_color();
+
+#if PS_FIXED_ONE_A
+	// AA (Fixed one) will output a coverage of 1.0 as alpha
+	C.a = 128.0f;
+#elif PS_ACCURATE_PRIMS_AA
+	// AA: coverage is computed in alpha_coverage
+	#if PS_ACCURATE_PRIMS_AA_ABE
+		if (floor(C.a) == 128.0f) // According to manual & hardware tests the coverage is only used if the fragment alpha is 128.
+			C.a = alpha_coverage;
+	#else
+		C.a = alpha_coverage;
+	#endif
+#endif
+
 	bool atst_pass = atst(C);
 
 #if PS_AFAIL == 0 // KEEP or ATST off
 	if (!atst_pass)
 		discard;
-#endif
-
-	// Must be done before alpha correction
-
-	// AA (Fixed one) will output a coverage of 1.0 as alpha
-#if PS_FIXED_ONE_A
-	C.a = 128.0f;
 #endif
 
 #if SW_AD_TO_HW
@@ -1327,7 +1671,7 @@ void main()
 #else
 	ps_blend(C, alpha_blend);
 
-#if PS_SHUFFLE
+	#if PS_SHUFFLE
 		#if !PS_READ16_SRC && !PS_SHUFFLE_SAME && !(PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE)
 			uvec4 denorm_c_after = uvec4(C);
 			#if (PS_PROCESS_BA & SHUFFLE_READ)
@@ -1401,9 +1745,15 @@ void main()
 	#endif
 
 	#if PS_ZCLAMP
-		gl_FragDepth = min(gl_FragCoord.z, MaxDepthPS);
+		#if PS_ACCURATE_PRIMS == ACCURATE_TRIANGLES
+			if (bool(accurate_triangles_interior))
+				gl_FragDepth = min(FragCoord.z, MaxDepthPS);
+			else
+				gl_FragDepth = current_depth; // No depth update for triangle edges.
+		#else
+			gl_FragDepth = min(FragCoord.z, MaxDepthPS);
+		#endif
 	#endif
-
 #endif // PS_DATE
 }
 

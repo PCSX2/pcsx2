@@ -431,6 +431,10 @@ const char* GSState::GetFlushReasonString(GSFlushReason reason)
 			return "VSYNC";
 		case GSFlushReason::GSREOPEN:
 			return "GS REOPEN";
+		case GSFlushReason::VERTEXCOUNT:
+			return "VERTEX COUNT";
+		case GSFlushReason::VERTEXCOUNTEXPANDED:
+			return "VERTEX COUNT EXPANDED";
 		case GSFlushReason::UNKNOWN:
 		default:
 			return "UNKNOWN";
@@ -3265,6 +3269,20 @@ void GSState::UpdateVertexKick()
 
 	m_fpGIFPackedRegHandlersC[GIF_REG_STQRGBAXYZF2] = m_fpGIFPackedRegHandlerSTQRGBAXYZF2[prim];
 	m_fpGIFPackedRegHandlersC[GIF_REG_STQRGBAXYZ2] = m_fpGIFPackedRegHandlerSTQRGBAXYZ2[prim];
+
+	if (UsingAccuratePrims())
+	{
+		if (GSUtil::GetPrimClass(prim) == GS_LINE_CLASS)
+			m_vertex_expansion_factor = 3;
+		else if (GSUtil::GetPrimClass(prim) == GS_TRIANGLE_CLASS)
+			m_vertex_expansion_factor = 7;
+		else
+			pxFail("Wrong primitive class."); // Impossible.
+	}
+	else
+	{
+		m_vertex_expansion_factor = 1;
+	}
 }
 
 void GSState::GrowVertexBuffer()
@@ -4632,6 +4650,12 @@ __forceinline void GSState::VertexKick(u32 skip)
 	constexpr u32 max_vertices = MaxVerticesForPrim(prim);
 	if (max_vertices != 0 && m_vertex.tail >= max_vertices)
 		Flush(VERTEXCOUNT);
+	
+	if (m_vertex_expansion_factor != 1)
+	{
+		if (max_vertices != 0 && (m_vertex_expansion_factor * m_index.tail) >= max_vertices)
+			Flush(VERTEXCOUNTEXPANDED);
+	}
 }
 
 /// Checks if region repeat is used (applying it does something to at least one of the values in min...max)
@@ -4968,12 +4992,15 @@ void GSState::CalcAlphaMinMax(const int tex_alpha_min, const int tex_alpha_max)
 	// Limit max to 255 as we send 500 when we don't know, makes calculating 24/16bit easier.
 	int min = tex_alpha_min, max = std::min(tex_alpha_max, 255);
 
-	if (IsCoverageAlpha())
+	if (IsCoverageAlphaFixedOne())
 	{
-		// HW renderer doesn't currently support AA, so its min is 128.
-		// If we add AA support to the HW renderer, this will need to be changed.
-		// (Will probably only be supported with ROV/FBFetch so we would want to check for that.)
-		min = GSIsHardwareRenderer() ? 128 : 0;
+		// HW renderer doesn't support AA1, assume alpha is constant 128.
+		min = 128;
+		max = 128;
+	}
+	else if (IsCoverageAlphaSupported())
+	{
+		min = 0;
 		max = 128;
 	}
 	else
@@ -5268,7 +5295,24 @@ bool GSState::IsMipMapActive()
 
 bool GSState::IsCoverageAlpha()
 {
-	return !PRIM->ABE && PRIM->AA1 && (m_vt.m_primclass == GS_LINE_CLASS || m_vt.m_primclass == GS_TRIANGLE_CLASS);
+	return PRIM->AA1 && (m_vt.m_primclass == GS_LINE_CLASS || m_vt.m_primclass == GS_TRIANGLE_CLASS);
+}
+
+bool GSState::IsCoverageAlphaFixedOne()
+{
+	return IsCoverageAlpha() && !PRIM->ABE && !IsCoverageAlphaSupported();
+}
+
+bool GSState::IsCoverageAlphaSupported()
+{
+	return false;
+}
+
+bool GSState::UsingAccuratePrims()
+{
+	return g_gs_device->Features().accurate_prims &&
+	       (GSUtil::GetPrimClass(PRIM->PRIM) == GS_LINE_CLASS ||
+			   (GSUtil::GetPrimClass(PRIM->PRIM) == GS_TRIANGLE_CLASS && PRIM->AA1));
 }
 
 GIFRegTEX0 GSState::GetTex0Layer(u32 lod)

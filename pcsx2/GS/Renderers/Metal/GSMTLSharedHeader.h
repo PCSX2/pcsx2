@@ -94,6 +94,11 @@ struct GSMTLMainVSUniform
 	vector_float2 texture_offset;
 	vector_float2 point_size;
 	uint max_depth;
+	uint _pad0;
+	uint base_vertex;
+	uint _pad1;
+	uint _pad2;
+	uint _pad3;
 };
 
 struct GSMTLMainPSUniform
@@ -134,6 +139,8 @@ struct GSMTLMainPSUniform
 	matrix_float4x4 dither_matrix;
 
 	vector_float4 scale_factor;
+
+	vector_uint4 accurate_prims_base_index;
 };
 
 enum GSMTLAttributes

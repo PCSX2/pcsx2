@@ -256,7 +256,8 @@ public:
 		NUM_TFX_CONSTANT_BUFFERS = 2,
 		NUM_TFX_TEXTURES = 2,
 		NUM_TFX_RT_TEXTURES = 2,
-		NUM_TOTAL_TFX_TEXTURES = NUM_TFX_TEXTURES + NUM_TFX_RT_TEXTURES,
+		NUM_TFX_DEPTH_TEXTURES = 1,
+		NUM_TOTAL_TFX_TEXTURES = NUM_TFX_TEXTURES + NUM_TFX_RT_TEXTURES + NUM_TFX_DEPTH_TEXTURES,
 		NUM_TFX_SAMPLERS = 1,
 		NUM_UTILITY_TEXTURES = 1,
 		NUM_UTILITY_SAMPLERS = 1,
@@ -264,6 +265,10 @@ public:
 
 		VERTEX_BUFFER_SIZE = 32 * 1024 * 1024,
 		INDEX_BUFFER_SIZE = 16 * 1024 * 1024,
+
+		// Structured buffer size must be multiple of element size.
+		ACCURATE_PRIMS_BUFFER_SIZE = (32 * 1024 * 1024 / sizeof(AccuratePrimsEdgeData)) * sizeof(AccuratePrimsEdgeData),
+
 		VERTEX_UNIFORM_BUFFER_SIZE = 8 * 1024 * 1024,
 		FRAGMENT_UNIFORM_BUFFER_SIZE = 8 * 1024 * 1024,
 
@@ -273,6 +278,8 @@ public:
 		TFX_ROOT_SIGNATURE_PARAM_PS_TEXTURES = 3,
 		TFX_ROOT_SIGNATURE_PARAM_PS_SAMPLERS = 4,
 		TFX_ROOT_SIGNATURE_PARAM_PS_RT_TEXTURES = 5,
+		TFX_ROOT_SIGNATURE_PARAM_PS_DEPTH_TEXTURES = 6,
+		TFX_ROOT_SIGNATURE_PARAM_PS_ACCURATE_PRIMS_SRV = 7,
 
 		UTILITY_ROOT_SIGNATURE_PARAM_PUSH_CONSTANTS = 0,
 		UTILITY_ROOT_SIGNATURE_PARAM_PS_TEXTURES = 1,
@@ -299,6 +306,9 @@ private:
 
 	D3D12StreamBuffer m_vertex_stream_buffer;
 	D3D12StreamBuffer m_index_stream_buffer;
+	D3D12StreamBuffer m_accurate_prims_stream_buffer;
+	D3D12DescriptorHandle m_accurate_prims_srv_descriptor_cpu;
+	D3D12DescriptorHandle m_accurate_prims_srv_descriptor_gpu;
 	D3D12StreamBuffer m_vertex_constant_buffer;
 	D3D12StreamBuffer m_pixel_constant_buffer;
 	D3D12StreamBuffer m_texture_stream_buffer;
@@ -455,6 +465,7 @@ public:
 
 	void IASetVertexBuffer(const void* vertex, size_t stride, size_t count);
 	void IASetIndexBuffer(const void* index, size_t count);
+	void SetupAccuratePrims(GSHWDrawConfig& config);
 
 	void PSSetShaderResource(int i, GSTexture* sr, bool check_state);
 	void PSSetSampler(GSHWDrawConfig::SamplerSelector sel);
@@ -466,10 +477,13 @@ public:
 	bool BindDrawPipeline(const PipelineSelector& p);
 
 	void RenderHW(GSHWDrawConfig& config) override;
-	void SendHWDraw(const PipelineSelector& pipe, const GSHWDrawConfig& config, GSTexture12* draw_rt_clone, GSTexture12* draw_rt, const bool one_barrier, const bool full_barrier, const bool skip_first_barrier);
+	void SendHWDraw(const PipelineSelector& pipe, const GSHWDrawConfig& config,
+		GSTexture12* draw_rt_clone, GSTexture12* draw_rt,
+		GSTexture12* draw_ds_clone, GSTexture12* draw_ds,
+		const bool one_barrier, const bool full_barrier, const bool skip_first_barrier);
 
 	void UpdateHWPipelineSelector(GSHWDrawConfig& config);
-	void UploadHWDrawVerticesAndIndices(const GSHWDrawConfig& config);
+	void UploadHWDrawVerticesAndIndices(GSHWDrawConfig& config);
 
 public:
 	/// Ends any render pass, executes the command buffer, and invalidates cached state.
@@ -527,33 +541,37 @@ private:
 		DIRTY_FLAG_TFX_TEXTURES = (1 << 2),
 		DIRTY_FLAG_TFX_SAMPLERS = (1 << 3),
 		DIRTY_FLAG_TFX_RT_TEXTURES = (1 << 4),
+		DIRTY_FLAG_TFX_DEPTH_TEXTURES = (1 << 5),
 
-		DIRTY_FLAG_VS_CONSTANT_BUFFER_BINDING = (1 << 5),
-		DIRTY_FLAG_PS_CONSTANT_BUFFER_BINDING = (1 << 6),
-		DIRTY_FLAG_VS_VERTEX_BUFFER_BINDING = (1 << 7),
-		DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE = (1 << 8),
-		DIRTY_FLAG_SAMPLERS_DESCRIPTOR_TABLE = (1 << 9),
-		DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE_2 = (1 << 10),
+		DIRTY_FLAG_VS_CONSTANT_BUFFER_BINDING = (1 << 6),
+		DIRTY_FLAG_PS_CONSTANT_BUFFER_BINDING = (1 << 7),
+		DIRTY_FLAG_VS_VERTEX_BUFFER_BINDING = (1 << 8),
+		DIRTY_FLAG_PS_ACCURATE_PRIMS_BUFFER_BINDING = (1 << 9),
+		DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE = (1 << 10),
+		DIRTY_FLAG_SAMPLERS_DESCRIPTOR_TABLE = (1 << 11),
+		DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE_2 = (1 << 12),
+		DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE_3 = (1 << 13),
 
-		DIRTY_FLAG_VERTEX_BUFFER = (1 << 11),
-		DIRTY_FLAG_INDEX_BUFFER = (1 << 12),
-		DIRTY_FLAG_PRIMITIVE_TOPOLOGY = (1 << 13),
-		DIRTY_FLAG_VIEWPORT = (1 << 14),
-		DIRTY_FLAG_SCISSOR = (1 << 15),
-		DIRTY_FLAG_RENDER_TARGET = (1 << 16),
-		DIRTY_FLAG_PIPELINE = (1 << 17),
-		DIRTY_FLAG_BLEND_CONSTANTS = (1 << 18),
-		DIRTY_FLAG_STENCIL_REF = (1 << 19),
+		DIRTY_FLAG_VERTEX_BUFFER = (1 << 14),
+		DIRTY_FLAG_INDEX_BUFFER = (1 << 15),
+		DIRTY_FLAG_PRIMITIVE_TOPOLOGY = (1 << 16),
+		DIRTY_FLAG_VIEWPORT = (1 << 17),
+		DIRTY_FLAG_SCISSOR = (1 << 18),
+		DIRTY_FLAG_RENDER_TARGET = (1 << 19),
+		DIRTY_FLAG_PIPELINE = (1 << 20),
+		DIRTY_FLAG_BLEND_CONSTANTS = (1 << 21),
+		DIRTY_FLAG_STENCIL_REF = (1 << 22),
 
 		DIRTY_BASE_STATE = DIRTY_FLAG_VS_CONSTANT_BUFFER_BINDING | DIRTY_FLAG_PS_CONSTANT_BUFFER_BINDING |
-		                   DIRTY_FLAG_VS_VERTEX_BUFFER_BINDING | DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE |
-		                   DIRTY_FLAG_SAMPLERS_DESCRIPTOR_TABLE | DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE_2 |
+		                   DIRTY_FLAG_VS_VERTEX_BUFFER_BINDING | DIRTY_FLAG_PS_ACCURATE_PRIMS_BUFFER_BINDING |
+		                   DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE | DIRTY_FLAG_SAMPLERS_DESCRIPTOR_TABLE | 
+		                   DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE_2 | DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE_3 |
 		                   DIRTY_FLAG_VERTEX_BUFFER | DIRTY_FLAG_INDEX_BUFFER | DIRTY_FLAG_PRIMITIVE_TOPOLOGY |
 		                   DIRTY_FLAG_VIEWPORT | DIRTY_FLAG_SCISSOR | DIRTY_FLAG_RENDER_TARGET | DIRTY_FLAG_PIPELINE |
 		                   DIRTY_FLAG_BLEND_CONSTANTS | DIRTY_FLAG_STENCIL_REF,
 
-		DIRTY_TFX_STATE =
-			DIRTY_BASE_STATE | DIRTY_FLAG_TFX_TEXTURES | DIRTY_FLAG_TFX_SAMPLERS | DIRTY_FLAG_TFX_RT_TEXTURES,
+		DIRTY_TFX_STATE = DIRTY_BASE_STATE | DIRTY_FLAG_TFX_TEXTURES | DIRTY_FLAG_TFX_SAMPLERS |
+		                  DIRTY_FLAG_TFX_RT_TEXTURES | DIRTY_FLAG_TFX_DEPTH_TEXTURES,
 		DIRTY_UTILITY_STATE = DIRTY_BASE_STATE,
 		DIRTY_CONSTANT_BUFFER_STATE = DIRTY_FLAG_VS_CONSTANT_BUFFER | DIRTY_FLAG_PS_CONSTANT_BUFFER,
 	};
@@ -594,6 +612,7 @@ private:
 	D3D12DescriptorHandle m_tfx_textures_handle_gpu;
 	D3D12DescriptorHandle m_tfx_samplers_handle_gpu;
 	D3D12DescriptorHandle m_tfx_rt_textures_handle_gpu;
+	D3D12DescriptorHandle m_tfx_depth_textures_handle_gpu;
 
 	D3D12DescriptorHandle m_utility_texture_cpu;
 	D3D12DescriptorHandle m_utility_texture_gpu;

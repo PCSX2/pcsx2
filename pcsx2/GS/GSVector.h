@@ -57,6 +57,16 @@ public:
 		return (std::memcmp(this, &v, sizeof(*this)) != 0);
 	}
 
+	constexpr GSVector2T operator+(const GSVector2T& v) const
+	{
+		return {x + v.x, y + v.y};
+	}
+
+	constexpr GSVector2T operator-(const GSVector2T& v) const
+	{
+		return {x - v.x, y - v.y};
+	}
+
 	constexpr GSVector2T operator*(const GSVector2T& v) const
 	{
 		return { x * v.x, y * v.y };
@@ -80,6 +90,11 @@ public:
 
 typedef GSVector2T<float> GSVector2;
 typedef GSVector2T<int> GSVector2i;
+
+constexpr GSVector2i operator&(const GSVector2i& v0, const GSVector2i& v1)
+{
+	return {v0.x & v1.x, v0.y & v1.y};
+}
 
 class GSVector4;
 class GSVector4i;

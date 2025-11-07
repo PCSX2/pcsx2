@@ -83,10 +83,14 @@ public:
 private:
 	enum : u32
 	{
-		MAX_TEXTURES = 4,
+		MAX_TEXTURES = 5,
 		MAX_SAMPLERS = 1,
 		VERTEX_BUFFER_SIZE = 32 * 1024 * 1024,
 		INDEX_BUFFER_SIZE = 16 * 1024 * 1024,
+
+		// Structured buffer size must be multiple of element size.
+		ACCURATE_PRIMS_BUFFER_SIZE = (32 * 1024 * 1024 / sizeof(AccuratePrimsEdgeData)) * sizeof(AccuratePrimsEdgeData),
+		
 		NUM_TIMESTAMP_QUERIES = 5,
 	};
 
@@ -126,11 +130,14 @@ private:
 	wil::com_ptr_nothrow<ID3D11Buffer> m_expand_vb;
 	wil::com_ptr_nothrow<ID3D11Buffer> m_expand_ib;
 	wil::com_ptr_nothrow<ID3D11ShaderResourceView> m_expand_vb_srv;
+	wil::com_ptr_nothrow<ID3D11Buffer> m_accurate_prims_b;
+	wil::com_ptr_nothrow<ID3D11ShaderResourceView> m_accurate_prims_b_srv;
 
 	D3D_FEATURE_LEVEL m_feature_level = D3D_FEATURE_LEVEL_10_0;
 	u32 m_vb_pos = 0; // bytes
 	u32 m_ib_pos = 0; // indices/sizeof(u32)
 	u32 m_structured_vb_pos = 0; // bytes
+	u32 m_accurate_prims_b_pos = 0; // bytes/sizeof(AccuratePrimsEdgeData)
 
 	bool m_allow_tearing_supported = false;
 	bool m_using_flip_model_swap_chain = true;
@@ -317,6 +324,7 @@ public:
 	void IAUnmapVertexBuffer(u32 stride, u32 count);
 	bool IASetVertexBuffer(const void* vertex, u32 stride, u32 count);
 	bool IASetExpandVertexBuffer(const void* vertex, u32 stride, u32 count);
+	bool SetupAccuratePrims(GSHWDrawConfig& config);
 
 	u16* IAMapIndexBuffer(u32 count);
 	void IAUnmapIndexBuffer(u32 count);
@@ -345,7 +353,9 @@ public:
 	void SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, u8 afix);
 
 	void RenderHW(GSHWDrawConfig& config) override;
-	void SendHWDraw(const GSHWDrawConfig& config, GSTexture* draw_rt_clone, GSTexture* draw_rt, const bool one_barrier, const bool full_barrier, const bool skip_first_barrier);
+	void SendHWDraw(const GSHWDrawConfig& config,
+		GSTexture* draw_rt_clone, GSTexture* draw_rt, GSTexture* draw_ds_clone, GSTexture* draw_ds,
+		const bool one_barrier, const bool full_barrier, const bool skip_first_barrier);
 
 	void ClearSamplerCache() override;
 
