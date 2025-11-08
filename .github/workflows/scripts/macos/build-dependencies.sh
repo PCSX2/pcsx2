@@ -237,6 +237,9 @@ cd "qtbase-everywhere-src-$QT"
 # Patch Qt to support macOS 11
 patch -p1 < "$SCRIPTDIR/qt-macos11compat.patch"
 
+# Patch Qt to fix a bug with message boxes on Tahoe
+patch -p1 < "$SCRIPTDIR/clickbutton.patch"
+
 # since we don't have a direct reference to QtSvg, it doesn't deployed directly from the main binary
 # (only indirectly from iconengines), and the libqsvg.dylib imageformat plugin does not get deployed.
 # We could run macdeployqt twice, but that's even more janky than patching it.
