@@ -22,6 +22,7 @@
 #include <zstd.h>
 
 #include <mutex>
+#include <functional>
 
 using namespace GSDumpTypes;
 
@@ -1350,7 +1351,6 @@ void GSDumpLazy::_LoaderFunc(GSDumpLazy* dump)
 		size_t _write_packet;
 		Error _error;
 		bool _parse_error = false;
-		bool _eof_actual = false;
 
 		// Acquire the range.
 		{
