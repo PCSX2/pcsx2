@@ -71,7 +71,7 @@ static void __forceinline XA_decode_block(s16* buffer, const s16* block, s32& pr
 	}
 }
 
-static void __forceinline IncrementNextA(V_Core& thiscore, uint voiceidx)
+static void __forceinline IncrementNextA(uint voiceidx)
 {
 	V_Voice& vc(Voices[voiceidx]);
 
@@ -93,7 +93,7 @@ static void __forceinline IncrementNextA(V_Core& thiscore, uint voiceidx)
 	vc.NextA &= 0xFFFFF;
 }
 
-static __forceinline void GetNextDataBuffered(V_Core& thiscore, uint voiceidx)
+static __forceinline void GetNextDataBuffered(uint voiceidx)
 {
 	V_Voice& vc(Voices[voiceidx]);
 
@@ -171,7 +171,7 @@ static __forceinline StereoOut32 ApplyVolume(const StereoOut32& data, const V_Vo
 		ApplyVolume(data.Right, volume.Right.Value));
 }
 
-static __forceinline void UpdateBlockHeader(V_Core& thiscore, uint voiceidx)
+static __forceinline void UpdateBlockHeader(uint voiceidx)
 {
 	V_Voice& vc(Voices[voiceidx]);
 
@@ -188,13 +188,13 @@ static __forceinline void UpdateBlockHeader(V_Core& thiscore, uint voiceidx)
 	}
 }
 
-static __forceinline void DecodeSamples(uint coreidx, uint voiceidx)
+static __forceinline void DecodeSamples(uint voiceidx)
 {
-	V_Core& thiscore(Cores[coreidx]);
+	V_Core& thiscore(Cores[voiceidx / 24]);
 	V_Voice& vc(Voices[voiceidx]);
 
 	// Update the block header on every audio frame
-	UpdateBlockHeader(thiscore, voiceidx);
+	UpdateBlockHeader(voiceidx);
 
 	// When a voice is started at 0 pitch, NAX quickly advances to SSA + 5
 	// So that would mean the decode buffer holds around 12 samples
@@ -205,12 +205,12 @@ static __forceinline void DecodeSamples(uint coreidx, uint voiceidx)
 
 	if (vc.ADSR.Phase > V_ADSR::PHASE_STOPPED)
 	{
-		GetNextDataBuffered(thiscore, voiceidx);
+		GetNextDataBuffered(voiceidx);
 	}
 
 	vc.DecPosWrite += 4;
 
-	IncrementNextA(thiscore, voiceidx);
+	IncrementNextA(voiceidx);
 	if ((vc.NextA & 7) == 0)
 	{
 		if (vc.LoopFlags & XAFLAG_LOOP_END)
@@ -229,12 +229,12 @@ static __forceinline void DecodeSamples(uint coreidx, uint voiceidx)
 			}
 		}
 
-		IncrementNextA(thiscore, voiceidx);
+		IncrementNextA(voiceidx);
 		vc.SBuffer = nullptr;
 	}
 }
 
-static void __forceinline UpdatePitch(uint coreidx, uint voiceidx)
+static void __forceinline UpdatePitch(uint voiceidx)
 {
 	V_Voice& vc(Voices[voiceidx]);
 	s32 pitch;
@@ -246,13 +246,13 @@ static void __forceinline UpdatePitch(uint coreidx, uint voiceidx)
 	if ((vc.Modulated == 0) || (voiceidx == 0) || (voiceidx == 24))
 		pitch = vc.Pitch;
 	else
-		pitch = std::clamp((vc.Pitch * (32768 + Voices[voiceidx - 1].OutX)) >> 15, 0, 0x3fff);
+		pitch = std::clamp((vc.Pitch * (32768 + VoiceData.OutX[voiceidx - 1])) >> 15, 0, 0x3fff);
 
 	pitch = std::min(pitch, 0x3FFF);
 	vc.SP += pitch;
 }
 
-static __forceinline void CalculateADSR(V_Core& thiscore, uint voiceidx)
+static __forceinline void CalculateADSR(uint voiceidx)
 {
 	V_Voice& vc(Voices[voiceidx]);
 
@@ -262,7 +262,7 @@ static __forceinline void CalculateADSR(V_Core& thiscore, uint voiceidx)
 		return;
 	}
 
-	if (!vc.ADSR.Calculate(thiscore.Index | (voiceidx << 1)))
+	if (!vc.ADSR.Calculate())
 	{
 		if (IsDevBuild)
 		{
@@ -275,7 +275,7 @@ static __forceinline void CalculateADSR(V_Core& thiscore, uint voiceidx)
 	pxAssume(vc.ADSR.Value >= 0); // ADSR should never be negative...
 }
 
-static __forceinline void ConsumeSamples(V_Core& thiscore, uint voiceidx)
+static __forceinline void ConsumeSamples(uint voiceidx)
 {
 	V_Voice& vc(Voices[voiceidx]);
 
@@ -284,7 +284,7 @@ static __forceinline void ConsumeSamples(V_Core& thiscore, uint voiceidx)
 	vc.DecPosRead += consumed;
 }
 
-static __forceinline s32 GetVoiceValues(V_Core& thiscore, uint voiceidx)
+static __forceinline s32 GetVoiceValues(uint voiceidx)
 {
 	V_Voice& vc(Voices[voiceidx]);
 
@@ -368,9 +368,9 @@ static __forceinline void spu2M_WriteFast(u32 addr, s16 value)
 }
 
 
-static __forceinline StereoOut32 MixVoice(uint coreidx, uint voiceidx)
+static __forceinline void RunVoice(uint voiceidx)
 {
-	V_Core& thiscore(Cores[coreidx]);
+	V_Core& thiscore(Cores[voiceidx / 24]);
 	V_Voice& vc(Voices[voiceidx]);
 
 	// Most games don't use much volume slide effects.  So only call the UpdateVolume
@@ -379,61 +379,75 @@ static __forceinline StereoOut32 MixVoice(uint coreidx, uint voiceidx)
 
 	vc.Volume.Update();
 
-	DecodeSamples(coreidx, voiceidx);
+	DecodeSamples(voiceidx);
 
-	StereoOut32 voiceOut(0, 0);
 	s32 Value = 0;
-
 	if (vc.ADSR.Phase > V_ADSR::PHASE_STOPPED)
 	{
 		if (vc.Noise)
 			Value = GetNoiseValues(thiscore);
 		else
-			Value = GetVoiceValues(thiscore, voiceidx);
+			Value = GetVoiceValues(voiceidx);
 
 		// Update and Apply ADSR  (applies to normal and noise sources)
 
-		CalculateADSR(thiscore, voiceidx);
+		CalculateADSR(voiceidx);
 		Value = ApplyVolume(Value, vc.ADSR.Value);
-		vc.OutX = Value;
 
 		if (IsDevBuild)
-			DebugVoices[voiceidx].displayPeak = std::max(DebugVoices[voiceidx].displayPeak, (s32)vc.OutX);
-
-		voiceOut = ApplyVolume(StereoOut32(Value, Value), vc.Volume);
+			DebugVoices[voiceidx].displayPeak = std::max(DebugVoices[voiceidx].displayPeak, (s32)Value);
 	}
+
+	VoiceData.OutX[voiceidx] = Value;
 
 	// SPU2 Note: The spu2 continues to process voices for eternity, always, so we
 	// have to run through all the motions of updating the voice regardless of it's
 	// audible status.  Otherwise IRQs might not trigger and emulation might fail.
 
-	UpdatePitch(coreidx, voiceidx);
+	UpdatePitch(voiceidx);
 
-	ConsumeSamples(thiscore, voiceidx);
-
-	// Write-back of raw voice data (post ADSR applied)
-	if (voiceidx == 1)
-		spu2M_WriteFast(((0 == coreidx) ? 0x400 : 0xc00) + OutPos, Value);
-	else if (voiceidx == 3)
-		spu2M_WriteFast(((0 == coreidx) ? 0x600 : 0xe00) + OutPos, Value);
-
-	return voiceOut;
+	ConsumeSamples(voiceidx);
 }
 
-static __forceinline void MixCoreVoices(VoiceMixSet& dest, const uint coreidx)
+void MixCoreVoices(VoiceMixSet* dest, const uint coreidx)
 {
-
-	for (uint voiceidx = 0; voiceidx < V_Core::NumVoices; ++voiceidx)
+	for (int i = 0; i < 48; ++i)
 	{
-		int vc = voiceidx + (coreidx * 24);
-		StereoOut32 VVal(MixVoice(coreidx, vc));
+		RunVoice(i);
+	}
 
-		// Note: Results from MixVoice are ranged at 16 bits.
+	// Write-back of raw voice data (post ADSR applied)
+	spu2M_WriteFast(0x400 + OutPos, VoiceData.OutX[1]);
+	spu2M_WriteFast(0x600 + OutPos, VoiceData.OutX[3]);
+	spu2M_WriteFast(0xc00 + OutPos, VoiceData.OutX[24 + 1]);
+	spu2M_WriteFast(0xe00 + OutPos, VoiceData.OutX[24 + 3]);
 
-		dest.Dry.Left += VVal.Left & VoiceData.DryL[vc];
-		dest.Dry.Right += VVal.Right & VoiceData.DryR[vc];
-		dest.Wet.Left += VVal.Left & VoiceData.WetL[vc];
-		dest.Wet.Right += VVal.Right & VoiceData.WetR[vc];
+	s32 dryL[48], dryR[48], wetL[48], wetR[48];
+
+	for (int i = 0; i < 48; ++i)
+	{
+		s32 sample = VoiceData.OutX[i];
+
+		dryL[i] = ApplyVolume(sample, Voices[i].Volume.Left.Value) & VoiceData.DryL[i];
+		dryR[i] = ApplyVolume(sample, Voices[i].Volume.Right.Value) & VoiceData.DryR[i];
+		wetL[i] = ApplyVolume(sample, Voices[i].Volume.Left.Value) & VoiceData.WetL[i];
+		wetR[i] = ApplyVolume(sample, Voices[i].Volume.Right.Value) & VoiceData.WetR[i];
+	}
+
+	for (int i = 0; i < 24; i++)
+	{
+		dest[0].Dry.Left += dryL[i];
+		dest[0].Dry.Right += dryR[i];
+		dest[0].Wet.Left += wetL[i];
+		dest[0].Wet.Right += wetR[i];
+	}
+
+	for (int i = 24; i < 48; i++)
+	{
+		dest[1].Dry.Left += dryL[i];
+		dest[1].Dry.Right += dryR[i];
+		dest[1].Wet.Left += wetL[i];
+		dest[1].Wet.Right += wetR[i];
 	}
 }
 
@@ -555,8 +569,7 @@ void spu2Mix()
 	// Todo: Replace me with memzero initializer!
 	VoiceMixSet VoiceData[2] = {{StereoOut32(), StereoOut32()}, {StereoOut32(), StereoOut32()}}; // mixed voice data for each core.
 
-	MixCoreVoices(VoiceData[0], 0);
-	MixCoreVoices(VoiceData[1], 1);
+	MixCoreVoices(VoiceData, 0);
 
 	StereoOut32 Ext(MixCore(0, VoiceData[0], InputData[0], StereoOut32::Empty));
 

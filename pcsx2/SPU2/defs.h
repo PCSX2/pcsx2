@@ -222,7 +222,7 @@ struct V_ADSR
 
 public:
 	void UpdateCache();
-	bool Calculate(int voiceidx);
+	bool Calculate();
 	void Attack();
 	void Release();
 };
@@ -230,6 +230,9 @@ public:
 // SOA representation of voices
 struct V_VoiceData
 {
+	// Last outputted audio value, used for voice modulation.
+	s32 OutX[48];
+
 	s32 DryL[48]; // 'AND Gate' for Direct Output to Left Channel
 	s32 DryR[48]; // 'AND Gate' for Direct Output for Right Channel
 	s32 WetL[48]; // 'AND Gate' for Effect Output for Left Channel
@@ -264,9 +267,6 @@ struct V_Voice
 
 	// Sample pointer (19:12 bit fixed point)
 	s32 SP;
-
-	// Last outputted audio value, used for voice modulation.
-	s32 OutX;
 
 	// SBuffer now points directly to an ADPCM cache entry.
 	s16* SBuffer;
