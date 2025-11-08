@@ -525,6 +525,9 @@ bool GSDumpReplayer::ChangeDump(const char* filename)
 					std::string file_str;
 					if (!GSBatchRunAcquireFile(file_str))
 						return false;
+					MTGS::RunOnGSThread([runner_name = GetRunnerName(), file_str]() {
+						Console.WriteLnFmt("(GSRunner/{}) Acquired: '{}'.", runner_name, file_str);
+					});
 					Error error;
 					GSDumpFileLoaderLazy::RetVal ret = loader.AddFile(file_str, &error);
 					if (ret == GSDumpFileLoaderLazy::SUCCESS)
