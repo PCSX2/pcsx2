@@ -61582,8 +61582,11 @@ SLPS-25795:
 SLPS-25796:
   name: "俺の下でAGAKE"
   name-sort: "おれのしたであがけ"
-  name-en: "Ore no Shite Agake"
+  name-en: "Ore no Shita de Agake"
   region: "NTSC-J"
+  gsHWFixes:
+    gpuTargetCLUT: 1 # Fixes incorrect rendering and some missing text.
+    cpuCLUTRender: 1 # Fixes the rest of the incorrect rendering and missing text.
 SLPS-25797:
   name: "一騎当千 Shining Dragon [限定爆裂パック]"
   name-sort: "いっきとうせん Shining Dragon [げんていばくれつぱっく]"
