@@ -230,6 +230,9 @@ public:
 // SOA representation of voices
 struct V_VoiceData
 {
+	// Next Read Data address (also Reg_NAXH/L)
+	u32 NextA[48];
+
 	// Last outputted audio value, used for voice modulation.
 	s32 OutX[48];
 
@@ -251,8 +254,6 @@ struct V_Voice
 	u32 LoopStartA;
 	// Sound Start address (also Reg_SSAH/L)
 	u32 StartA;
-	// Next Read Data address (also Reg_NAXH/L)
-	u32 NextA;
 	// Voice Decoding State
 	s32 Prev1;
 	s32 Prev2;
@@ -275,11 +276,10 @@ struct V_Voice
 	s32 DecodeFifo[32];
 	u32 DecPosWrite;
 	u32 DecPosRead;
-
-	// it takes a few ticks for voices to start on the real SPU2?
-	void Start();
-	void Stop();
 };
+
+void VoiceStart(int voiceidx);
+void VoiceStop(int voiceidx);
 
 // ** Begin Debug-only variables section **
 // Separated from the V_Voice struct to improve cache performance of

@@ -73,24 +73,8 @@ static void __forceinline XA_decode_block(s16* buffer, const s16* block, s32& pr
 
 static void __forceinline IncrementNextA(uint voiceidx)
 {
-	V_Voice& vc(Voices[voiceidx]);
-
-	// Important!  Both cores signal IRQ when an address is read, regardless of
-	// which core actually reads the address.
-
-	for (int i = 0; i < 2; i++)
-	{
-		if (Cores[i].IRQEnable && (vc.NextA == Cores[i].IRQA))
-		{
-			//if( IsDevBuild )
-			//	ConLog(" * SPU2 Core %d: IRQ Requested (IRQA (%05X) passed; voice %d).\n", i, Cores[i].IRQA, thiscore.Index * 24 + voiceidx);
-
-			SetIrqCall(i);
-		}
-	}
-
-	vc.NextA++;
-	vc.NextA &= 0xFFFFF;
+	VoiceData.NextA[voiceidx]++;
+	VoiceData.NextA[voiceidx] &= 0xFFFFF;
 }
 
 static __forceinline void GetNextDataBuffered(uint voiceidx)
@@ -99,7 +83,7 @@ static __forceinline void GetNextDataBuffered(uint voiceidx)
 
 	if (vc.SBuffer == nullptr)
 	{
-		const int cacheIdx = (vc.NextA & 0xFFFF8) / pcm_WordsPerBlock;
+		const int cacheIdx = (VoiceData.NextA[voiceidx] & 0xFFFF8) / pcm_WordsPerBlock;
 		PcmCacheEntry& cacheLine = pcm_cache_data[cacheIdx];
 		vc.SBuffer = cacheLine.Sampledata;
 
@@ -119,7 +103,7 @@ static __forceinline void GetNextDataBuffered(uint voiceidx)
 		else
 		{
 			// Only flag the cache if it's a non-dynamic memory range.
-			if (vc.NextA >= SPU2_DYN_MEMLINE)
+			if (VoiceData.NextA[voiceidx] >= SPU2_DYN_MEMLINE)
 			{
 				cacheLine.Validated = true;
 				cacheLine.Prev1 = vc.Prev1;
@@ -128,20 +112,20 @@ static __forceinline void GetNextDataBuffered(uint voiceidx)
 
 			if (IsDevBuild)
 			{
-				if (vc.NextA < SPU2_DYN_MEMLINE)
+				if (VoiceData.NextA[voiceidx] < SPU2_DYN_MEMLINE)
 					g_counter_cache_ignores++;
 				else
 					g_counter_cache_misses++;
 			}
 
 
-			s16* memptr = GetMemPtr(vc.NextA & 0xFFFF8);
+			s16* memptr = GetMemPtr(VoiceData.NextA[voiceidx] & 0xFFFF8);
 			XA_decode_block(vc.SBuffer, memptr, vc.Prev1, vc.Prev2);
 		}
 	}
 
 	// Get the sample index for NextA, we have to subtract 1 to ignore the loop header
-	int sampleIdx = ((vc.NextA % pcm_WordsPerBlock) - 1) * 4;
+	int sampleIdx = ((VoiceData.NextA[voiceidx] % pcm_WordsPerBlock) - 1) * 4;
 	for (int i = 0; i < 4; i++)
 	{
 		vc.DecodeFifo[(vc.DecPosWrite + i) % 32] = vc.SBuffer[sampleIdx + i];
@@ -175,16 +159,12 @@ static __forceinline void UpdateBlockHeader(uint voiceidx)
 {
 	V_Voice& vc(Voices[voiceidx]);
 
-	for (int i = 0; i < 2; i++)
-		if (Cores[i].IRQEnable && Cores[i].IRQA == (vc.NextA & 0xFFFF8))
-			SetIrqCall(i);
-
-	s16* memptr = GetMemPtr(vc.NextA & 0xFFFF8);
+	s16* memptr = GetMemPtr(VoiceData.NextA[voiceidx] & 0xFFFF8);
 	vc.LoopFlags = *memptr >> 8; // grab loop flags from the upper byte.
 
 	if ((vc.LoopFlags & XAFLAG_LOOP_START) && !vc.LoopMode)
 	{
-		vc.LoopStartA = vc.NextA & 0xFFFF8;
+		vc.LoopStartA = VoiceData.NextA[voiceidx] & 0xFFFF8;
 	}
 }
 
@@ -211,15 +191,15 @@ static __forceinline void DecodeSamples(uint voiceidx)
 	vc.DecPosWrite += 4;
 
 	IncrementNextA(voiceidx);
-	if ((vc.NextA & 7) == 0)
+	if ((VoiceData.NextA[voiceidx] & 7) == 0)
 	{
 		if (vc.LoopFlags & XAFLAG_LOOP_END)
 		{
 			thiscore.Regs.ENDX |= (1 << voiceidx);
-			vc.NextA = vc.LoopStartA;
+			VoiceData.NextA[voiceidx] = vc.LoopStartA;
 			if (!(vc.LoopFlags & XAFLAG_LOOP))
 			{
-				vc.Stop();
+				VoiceStop(voiceidx);
 
 				if (IsDevBuild)
 				{
@@ -269,7 +249,7 @@ static __forceinline void CalculateADSR(uint voiceidx)
 			if (SPU2::MsgVoiceOff())
 				SPU2::ConLog("* SPU2: Voice Off by ADSR: %d \n", voiceidx);
 		}
-		vc.Stop();
+		VoiceStop(voiceidx);
 	}
 
 	pxAssume(vc.ADSR.Value >= 0); // ADSR should never be negative...
@@ -411,6 +391,31 @@ static __forceinline void RunVoice(uint voiceidx)
 
 void MixCoreVoices(VoiceMixSet* dest, const uint coreidx)
 {
+	// Batch the voice address IRQ tests
+
+	for (int i = 0; i < 2; i++)
+	{
+		if (!Cores[i].IRQEnable)
+		{
+			continue;
+		}
+
+		int irq = 0;
+		for (int v = 0; v < 48; v++)
+		{
+			u32 addr1 = VoiceData.NextA[v];
+			u32 addr2 = VoiceData.NextA[v] & 0xFFFF8;
+			irq |= Cores[i].IRQA == addr1;
+			irq |= Cores[i].IRQA == addr2;
+		}
+
+		if (irq)
+		{
+			SetIrqCall(i);
+		}
+	}
+
+
 	for (int i = 0; i < 48; ++i)
 	{
 		RunVoice(i);

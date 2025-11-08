@@ -199,7 +199,7 @@ void SPU2::DoFullDump()
 				fprintf(dump, "  - Effects Output for Right Channel: %s\n", VoiceData.WetR[v] ? "Yes" : "No");
 				fprintf(dump, "  - Loop Start Address:  %x\n", Voices[v].LoopStartA);
 				fprintf(dump, "  - Sound Start Address: %x\n", Voices[v].StartA);
-				fprintf(dump, "  - Next Data Address:   %x\n", Voices[v].NextA);
+				fprintf(dump, "  - Next Data Address:   %x\n", VoiceData.NextA[v]);
 				fprintf(dump, "  - Play Status:         %s\n", (Voices[v].ADSR.Phase > 0) ? "Playing" : "Not Playing");
 			}
 			fprintf(dump, "#### END OF DUMP.\n\n");

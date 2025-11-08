@@ -156,7 +156,7 @@ s32 SPU2Savestate::ThawIt(DataBlock& spud)
 
 		for (int v = 0; v < 48; v++)
 		{
-			const int cacheIdx = Voices[v].NextA / pcm_WordsPerBlock;
+			const int cacheIdx = VoiceData.NextA[v] / pcm_WordsPerBlock;
 			Voices[v].SBuffer = pcm_cache_data[cacheIdx].Sampledata;
 		}
 	}

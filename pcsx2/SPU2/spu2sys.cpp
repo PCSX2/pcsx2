@@ -188,7 +188,7 @@ void V_Core::Init(int index)
 		Voices[v].ADSR.Value = 0;
 		Voices[v].ADSR.Phase = 0;
 		Voices[v].Pitch = 0x3FFF;
-		Voices[v].NextA = 0x2801;
+		VoiceData.NextA[v] = 0x2801;
 		Voices[v].StartA = 0x2800;
 		Voices[v].LoopStartA = 0x2800;
 
@@ -208,33 +208,37 @@ void V_Core::Init(int index)
 	memset(RevbUpBuf, 0, sizeof(RevbUpBuf));
 }
 
-void V_Voice::Start()
+void VoiceStart(int voiceidx)
 {
-	if (StartA & 7)
+	V_Voice& vc(Voices[voiceidx]);
+
+	if (vc.StartA & 7)
 	{
-		fprintf(stderr, " *** Misaligned StartA %05x!\n", StartA);
-		StartA = (StartA + 0xFFFF8) + 0x8;
+		fprintf(stderr, " *** Misaligned StartA %05x!\n", vc.StartA);
+		vc.StartA = (vc.StartA + 0xFFFF8) + 0x8;
 	}
 
-	ADSR.Attack();
-	LoopMode = 0;
+	vc.ADSR.Attack();
+	vc.LoopMode = 0;
 
-	SP = 0;
+	vc.SP = 0;
 
-	LoopFlags = 0;
-	NextA = StartA | 1;
-	Prev1 = 0;
-	Prev2 = 0;
+	vc.LoopFlags = 0;
+	VoiceData.NextA[voiceidx] = vc.StartA | 1;
+	vc.Prev1 = 0;
+	vc.Prev2 = 0;
 
-	SBuffer = nullptr;
-	DecPosRead = 0;
-	DecPosWrite = 0;
+	vc.SBuffer = nullptr;
+	vc.DecPosRead = 0;
+	vc.DecPosWrite = 0;
 }
 
-void V_Voice::Stop()
+void VoiceStop(int voiceidx)
 {
-	ADSR.Value = 0;
-	ADSR.Phase = V_ADSR::PHASE_STOPPED;
+	V_Voice& vc(Voices[voiceidx]);
+
+	vc.ADSR.Value = 0;
+	vc.ADSR.Phase = V_ADSR::PHASE_STOPPED;
 }
 
 static constexpr uint TickInterval = 768;
@@ -1014,11 +1018,11 @@ static void RegWrite_VoiceAddr(u16 value)
 			// Soul Reaver 2
 			// Wallace And Gromit: Curse Of The Were-Rabbit.
 
-			thisvoice.NextA = ((u32)(value & 0x0F) << 16) | (thisvoice.NextA & 0xFFF8) | 1;
+			VoiceData.NextA[voice] = ((u32)(value & 0x0F) << 16) | (VoiceData.NextA[voice] & 0xFFF8) | 1;
 			break;
 
 		case 5:
-			thisvoice.NextA = (thisvoice.NextA & 0x0F0000) | (value & 0xFFF8) | 1;
+			VoiceData.NextA[voice] = (VoiceData.NextA[voice] & 0x0F0000) | (value & 0xFFF8) | 1;
 			break;
 	}
 }
@@ -1242,7 +1246,7 @@ static void RegWrite_Core(u16 value)
 					Voices[v].ADSR.Value = 0;
 					Voices[v].ADSR.Phase = 0;
 					Voices[v].Pitch = 0x0;
-					Voices[v].NextA = 0x6FFFF;
+					VoiceData.NextA[v] = 0x6FFFF;
 					Voices[v].StartA = 0x6FFFF;
 					Voices[v].LoopStartA = 0x6FFFF;
 					Voices[v].Modulated = 0;
@@ -1635,7 +1639,7 @@ void StartVoices(int core, u32 value)
 		if (!((value >> bit) & 1))
 			continue;
 
-		Voices[vc].Start();
+		VoiceStart(vc);
 
 		if (IsDevBuild)
 		{
