@@ -240,8 +240,6 @@ void EmuThread::startVM(std::shared_ptr<VMBootParameters> boot_params)
 		return;
 	}
 
-	pxAssertRel(!VMManager::HasValidVM(), "VM is shut down");
-
 	// Determine whether to start fullscreen or not.
 	m_is_rendering_to_main = shouldRenderToMain();
 	if (boot_params->fullscreen.has_value())
@@ -249,22 +247,35 @@ void EmuThread::startVM(std::shared_ptr<VMBootParameters> boot_params)
 	else
 		m_is_fullscreen = Host::GetBaseBoolSettingValue("UI", "StartFullscreen", false);
 
-	if (!VMManager::Initialize(*boot_params))
-		return;
+	auto hardcore_disable_callback = [](std::string reason, VMBootRestartCallback restart_callback) {
+		QtHost::RunOnUIThread([reason = std::move(reason), restart_callback = std::move(restart_callback)]() {
+			QString title(Achievements::GetHardcoreModeDisableTitle());
+			QString text(QString::fromStdString(Achievements::GetHardcoreModeDisableText(reason.c_str())));
+			if (g_main_window->confirmMessage(title, text))
+				Host::RunOnCPUThread(restart_callback);
+		});
+	};
 
-	if (!Host::GetBoolSettingValue("UI", "StartPaused", false))
-	{
-		// This will come back and call OnVMResumed().
-		VMManager::SetState(VMState::Running);
-	}
-	else
-	{
-		// When starting paused, redraw the window, so there's at least something there.
-		redrawDisplayWindow();
-		Host::OnVMPaused();
-	}
+	auto done_callback = [](VMBootResult result) {
+		if (result != VMBootResult::StartupSuccess)
+			return;
 
-	m_event_loop->quit();
+		if (!Host::GetBoolSettingValue("UI", "StartPaused", false))
+		{
+			// This will come back and call OnVMResumed().
+			VMManager::SetState(VMState::Running);
+		}
+		else
+		{
+			// When starting paused, redraw the window, so there's at least something there.
+			g_emu_thread->redrawDisplayWindow();
+			Host::OnVMPaused();
+		}
+
+		g_emu_thread->getEventLoop()->quit();
+	};
+
+	VMManager::InitializeAsync(*boot_params, std::move(hardcore_disable_callback), std::move(done_callback));
 }
 
 void EmuThread::resetVM()

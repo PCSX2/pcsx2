@@ -1903,62 +1903,19 @@ bool Achievements::ConfirmSystemReset()
 	return true;
 }
 
-bool Achievements::ConfirmHardcoreModeDisable(const char* trigger)
+const char* Achievements::GetHardcoreModeDisableTitle()
 {
-#ifdef ENABLE_RAINTEGRATION
-	if (IsUsingRAIntegration())
-		return (RA_WarnDisableHardcore(trigger) != 0);
-#endif
-
-	// I really hope this doesn't deadlock :/
-	const bool confirmed = Host::ConfirmMessage(TRANSLATE("Achievements", "Confirm Hardcore Mode"),
-		fmt::format(TRANSLATE_FS("Achievements", "{0} cannot be performed while hardcore mode is active. Do you "
-												 "want to disable hardcore mode? {0} will be cancelled if you select No."),
-			trigger));
-	if (!confirmed)
-		return false;
-
-	DisableHardcoreMode();
-	return true;
+	return TRANSLATE("Achievements", "Confirm Hardcore Mode");
 }
 
-void Achievements::ConfirmHardcoreModeDisableAsync(const char* trigger, std::function<void(bool)> callback)
+std::string Achievements::GetHardcoreModeDisableText(const char* reason)
 {
-#ifdef ENABLE_RAINTEGRATION
-	if (IsUsingRAIntegration())
-	{
-		const bool result = (RA_WarnDisableHardcore(trigger) != 0);
-		callback(result);
-		return;
-	}
-#endif
-
-	MTGS::RunOnGSThread([trigger = TinyString(trigger), callback = std::move(callback)]() {
-		if (!FullscreenUI::Initialize())
-		{
-			Host::AddOSDMessage(fmt::format(TRANSLATE_FS("Cannot {} while hardcore mode is active.", trigger)),
-				Host::OSD_WARNING_DURATION);
-			callback(false);
-			return;
-		}
-
-		auto real_callback = [callback = std::move(callback)](bool res) mutable {
-			// don't run the callback in the middle of rendering the UI
-			Host::RunOnCPUThread([callback = std::move(callback), res]() {
-				if (res)
-					DisableHardcoreMode();
-				callback(res);
-			});
-		};
-
-		ImGuiFullscreen::OpenConfirmMessageDialog(
-			TRANSLATE_STR("Achievements", "Confirm Hardcore Mode"),
-			fmt::format(TRANSLATE_FS("Achievements", "{0} cannot be performed while hardcore mode is active. Do you "
-													 "want to disable hardcore mode? {0} will be cancelled if you select No."),
-				trigger),
-			std::move(real_callback), true, fmt::format(ICON_FA_CHECK " {}", TRANSLATE_SV("Achievements", "Yes")),
-			fmt::format(ICON_FA_XMARK " {}", TRANSLATE_SV("Achievements", "No")));
-	});
+	return fmt::format(
+		TRANSLATE_FS("Achievements",
+			"{0} cannot be performed while hardcore mode is active. "
+			"Do you want to disable hardcore mode? "
+			"{0} will be cancelled if you select No."),
+		reason);
 }
 
 void Achievements::ClearUIState()
