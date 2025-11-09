@@ -1446,7 +1446,7 @@ void FullscreenUI::DoStartPath(const std::string& path, std::optional<s32> state
 		if (VMManager::HasValidVM())
 			return;
 
-		if (VMManager::Initialize(std::move(params)))
+		if (VMManager::Initialize(params))
 			VMManager::SetState(VMState::Running);
 	});
 }
@@ -1470,7 +1470,7 @@ void FullscreenUI::DoStartBIOS()
 			return;
 
 		VMBootParameters params;
-		if (VMManager::Initialize(std::move(params)))
+		if (VMManager::Initialize(params))
 			VMManager::SetState(VMState::Running);
 		else
 			SwitchToLanding();
@@ -7632,7 +7632,7 @@ void FullscreenUI::DoLoadState(std::string path)
 			VMBootParameters params;
 			params.filename = std::move(boot_path);
 			params.save_state = std::move(path);
-			if (VMManager::Initialize(std::move(params)))
+			if (VMManager::Initialize(params))
 				VMManager::SetState(VMState::Running);
 		}
 	});
