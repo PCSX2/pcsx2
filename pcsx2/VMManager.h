@@ -84,7 +84,7 @@ namespace VMManager
 	const std::string& GetCurrentELF();
 
 	/// Initializes all system components.
-	bool Initialize(VMBootParameters boot_params);
+	bool Initialize(const VMBootParameters& boot_params);
 
 	/// Destroys all system components.
 	void Shutdown(bool save_resume_state);

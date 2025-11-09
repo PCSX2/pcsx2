@@ -1267,7 +1267,7 @@ void VMManager::PrecacheCDVDFile()
 	}
 }
 
-bool VMManager::Initialize(VMBootParameters boot_params)
+bool VMManager::Initialize(const VMBootParameters& boot_params)
 {
 	const Common::Timer init_timer;
 	pxAssertRel(s_state.load(std::memory_order_acquire) == VMState::Shutdown, "VM is shutdown");
@@ -1303,9 +1303,9 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 
 	std::string state_to_load;
 
-	s_elf_override = std::move(boot_params.elf_override);
+	s_elf_override = boot_params.elf_override;
 	if (!boot_params.save_state.empty())
-		state_to_load = std::move(boot_params.save_state);
+		state_to_load = boot_params.save_state;
 
 	// if we're loading an indexed save state, we need to get the serial/crc from the disc.
 	if (boot_params.state_index.has_value())
@@ -1345,7 +1345,7 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 		}
 
 		// Use specified source type.
-		CDVDsys_SetFile(boot_params.source_type.value(), std::move(boot_params.filename));
+		CDVDsys_SetFile(boot_params.source_type.value(), boot_params.filename);
 		CDVDsys_ChangeSource(boot_params.source_type.value());
 	}
 	else
@@ -1431,17 +1431,17 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 		Achievements::ResetHardcoreMode(true);
 	if (Achievements::IsHardcoreModeActive())
 	{
-		auto confirm_hc_mode_disable = [&boot_params, &state_to_load](const char* trigger) mutable {
+		auto confirm_hc_mode_disable = [&boot_params](const char* trigger) mutable {
 			if (FullscreenUI::IsInitialized())
 			{
-				boot_params.elf_override = std::move(s_elf_override);
-				boot_params.save_state = std::move(state_to_load);
-				boot_params.disable_achievements_hardcore_mode = true;
 				s_elf_override = {};
 
+				VMBootParameters new_boot_params = boot_params;
+				new_boot_params.disable_achievements_hardcore_mode = true;
+
 				Achievements::ConfirmHardcoreModeDisableAsync(trigger,
-					[boot_params = std::move(boot_params)](bool approved) mutable {
-						if (approved && Initialize(std::move(boot_params)))
+					[new_boot_params = std::move(new_boot_params)](bool approved) mutable {
+						if (approved && Initialize(new_boot_params))
 							SetState(VMState::Running);
 					});
 
