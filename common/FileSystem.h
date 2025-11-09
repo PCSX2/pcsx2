@@ -9,6 +9,7 @@
 #include <ctime>
 #include <memory>
 #include <optional>
+#include <span>
 #include <string>
 #include <vector>
 #include <sys/stat.h>
@@ -146,6 +147,9 @@ namespace FileSystem
 		Error* error = nullptr, size_t chunk_size = 16 * 1024 * 1024);
 	size_t ReadFileWithPartialProgress(std::FILE* fp, void* dst, size_t length, ProgressCallback* progress,
 		int startPercent, int endPercent, Error* error = nullptr, size_t chunk_size = 16 * 1024 * 1024);
+	std::span<const u8> MapBinaryFileForRead(const char* filename);
+	std::span<const u8> MapBinaryFileForRead(std::FILE* fp);
+	void UnmapFile(std::span<const u8> file);
 
 	/// creates a directory in the local filesystem
 	/// if the directory already exists, the return value will be true.
