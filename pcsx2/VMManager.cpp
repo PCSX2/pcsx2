@@ -1267,10 +1267,42 @@ void VMManager::PrecacheCDVDFile()
 	}
 }
 
-bool VMManager::Initialize(const VMBootParameters& boot_params)
+void VMManager::InitializeAsync(
+	const VMBootParameters& boot_params,
+	VMBootHardcoreDisableCallback hardcore_disable_callback,
+	VMBootDoneCallback done_callback)
+{
+	VMBootResult result = VMManager::Initialize(boot_params);
+
+	if (result == VMBootResult::PromptDisableHardcoreMode)
+	{
+		std::string reason;
+		if (DebugInterface::getPauseOnEntry())
+			reason = TRANSLATE_STR("VMManager", "Boot and Debug");
+		else
+			reason = TRANSLATE_STR("VMManager", "Resuming state");
+
+		hardcore_disable_callback(reason,
+			[boot_params, done_callback = std::move(done_callback)]() {
+				VMBootParameters new_boot_params = std::move(boot_params);
+				new_boot_params.disable_achievements_hardcore_mode = true;
+				done_callback(VMManager::Initialize(new_boot_params));
+			});
+
+		return;
+	}
+
+	done_callback(result);
+}
+
+VMBootResult VMManager::Initialize(const VMBootParameters& boot_params)
 {
 	const Common::Timer init_timer;
-	pxAssertRel(s_state.load(std::memory_order_acquire) == VMState::Shutdown, "VM is shutdown");
+	if (s_state.load(std::memory_order_acquire) != VMState::Shutdown)
+	{
+		Host::ReportErrorAsync("Error", "The virtual machine is already running.");
+		return VMBootResult::StartupFailure;
+	}
 
 	// cancel any game list scanning, we need to use CDVD!
 	// TODO: we can get rid of this once, we make CDVD not use globals...
@@ -1313,14 +1345,14 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 		if (boot_params.filename.empty())
 		{
 			Host::ReportErrorAsync("Error", "Cannot load an indexed save state without a boot filename.");
-			return false;
+			return VMBootResult::StartupFailure;
 		}
 
 		state_to_load = GetSaveStateFileName(boot_params.filename.c_str(), boot_params.state_index.value());
 		if (state_to_load.empty())
 		{
 			Host::ReportErrorAsync("Error", "Could not resolve path indexed save state load.");
-			return false;
+			return VMBootResult::StartupFailure;
 		}
 	}
 
@@ -1328,7 +1360,7 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 	if (!cdvdLock(&cdvd_lock_error))
 	{
 		Host::ReportErrorAsync("Startup Error", cdvd_lock_error.GetDescription());
-		return false;
+		return VMBootResult::StartupFailure;
 	}
 
 	ScopedGuard unlock_cdvd = &cdvdUnlock;
@@ -1341,7 +1373,7 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 		{
 			Host::ReportErrorAsync(
 				"Error", fmt::format("Requested filename '{}' does not exist.", boot_params.filename));
-			return false;
+			return VMBootResult::StartupFailure;
 		}
 
 		// Use specified source type.
@@ -1352,7 +1384,7 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 	{
 		// Automatic type detection of boot parameter based on filename.
 		if (!AutoDetectSource(boot_params.filename))
-			return false;
+			return VMBootResult::StartupFailure;
 	}
 
 	ScopedGuard close_cdvd_files(&CDVDsys_ClearFiles);
@@ -1372,7 +1404,7 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 						"PCSX2 will be able to run once you've placed your BIOS image inside the folder named \"bios\" within the data directory "
 						"(Tools Menu -> Open Data Directory)."),
 					PCSX2_DOCUMENTATION_BIOS_URL_SHORTENED));
-			return false;
+			return VMBootResult::StartupFailure;
 		}
 
 		// Must happen after BIOS load, depends on BIOS version.
@@ -1386,7 +1418,7 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 		Host::ReportErrorAsync("Startup Error", fmt::format("Failed to open CDVD '{}': {}.",
 													Path::GetFileName(CDVDsys_GetFile(CDVDsys_GetSourceType())),
 													error.GetDescription()));
-		return false;
+		return VMBootResult::StartupFailure;
 	}
 	ScopedGuard close_cdvd(&DoCDVDclose);
 
@@ -1407,7 +1439,7 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 		if (!FileSystem::FileExists(s_elf_override.c_str()))
 		{
 			Host::ReportErrorAsync("Error", fmt::format("Requested boot ELF '{}' does not exist.", s_elf_override));
-			return false;
+			return VMBootResult::StartupFailure;
 		}
 
 		Hle_SetHostRoot(s_elf_override.c_str());
@@ -1429,42 +1461,9 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 		Achievements::DisableHardcoreMode();
 	else
 		Achievements::ResetHardcoreMode(true);
-	if (Achievements::IsHardcoreModeActive())
-	{
-		auto confirm_hc_mode_disable = [&boot_params](const char* trigger) mutable {
-			if (FullscreenUI::IsInitialized())
-			{
-				s_elf_override = {};
 
-				VMBootParameters new_boot_params = boot_params;
-				new_boot_params.disable_achievements_hardcore_mode = true;
-
-				Achievements::ConfirmHardcoreModeDisableAsync(trigger,
-					[new_boot_params = std::move(new_boot_params)](bool approved) mutable {
-						if (approved && Initialize(new_boot_params))
-							SetState(VMState::Running);
-					});
-
-				return false;
-			}
-			else if (!Achievements::ConfirmHardcoreModeDisable(trigger))
-			{
-				return false;
-			}
-			return true;
-		};
-
-		if (!state_to_load.empty())
-		{
-			if (!confirm_hc_mode_disable(TRANSLATE("VMManager", "Resuming state")))
-				return false;
-		}
-		if (DebugInterface::getPauseOnEntry())
-		{
-			if (!confirm_hc_mode_disable(TRANSLATE("VMManager", "Boot and Debug")))
-				return false;
-		}
-	}
+	if (Achievements::IsHardcoreModeActive() && (!state_to_load.empty() || DebugInterface::getPauseOnEntry()))
+		return VMBootResult::PromptDisableHardcoreMode;
 
 	s_limiter_mode = LimiterModeType::Nominal;
 	s_target_speed = GetTargetSpeedForLimiterMode(s_limiter_mode);
@@ -1486,7 +1485,7 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 	{
 		// we assume GS is going to report its own error
 		Console.WriteLn("Failed to open GS.");
-		return false;
+		return VMBootResult::StartupFailure;
 	}
 
 	ScopedGuard close_gs = []() {
@@ -1498,7 +1497,7 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 	if (!SPU2::Open())
 	{
 		Host::ReportErrorAsync("Startup Error", "Failed to initialize SPU2.");
-		return false;
+		return VMBootResult::StartupFailure;
 	}
 	ScopedGuard close_spu2(&SPU2::Close);
 
@@ -1507,7 +1506,7 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 	if (!Pad::Initialize())
 	{
 		Host::ReportErrorAsync("Startup Error", "Failed to initialize PAD");
-		return false;
+		return VMBootResult::StartupFailure;
 	}
 	ScopedGuard close_pad = &Pad::Shutdown;
 
@@ -1515,7 +1514,7 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 	if (!g_Sio2.Initialize())
 	{
 		Host::ReportErrorAsync("Startup Error", "Failed to initialize SIO2");
-		return false;
+		return VMBootResult::StartupFailure;
 	}
 	ScopedGuard close_sio2 = []() {
 		g_Sio2.Shutdown();
@@ -1525,7 +1524,7 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 	if (!g_Sio0.Initialize())
 	{
 		Host::ReportErrorAsync("Startup Error", "Failed to initialize SIO0");
-		return false;
+		return VMBootResult::StartupFailure;
 	}
 	ScopedGuard close_sio0 = []() {
 		g_Sio0.Shutdown();
@@ -1535,7 +1534,7 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 	if (DEV9init() != 0 || DEV9open() != 0)
 	{
 		Host::ReportErrorAsync("Startup Error", "Failed to initialize DEV9.");
-		return false;
+		return VMBootResult::StartupFailure;
 	}
 	ScopedGuard close_dev9 = []() {
 		DEV9close();
@@ -1546,7 +1545,7 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 	if (!USBopen())
 	{
 		Host::ReportErrorAsync("Startup Error", "Failed to initialize USB.");
-		return false;
+		return VMBootResult::StartupFailure;
 	}
 	ScopedGuard close_usb = []() { USBclose(); };
 
@@ -1554,7 +1553,7 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 	if (FWopen() != 0)
 	{
 		Host::ReportErrorAsync("Startup Error", "Failed to initialize FW.");
-		return false;
+		return VMBootResult::StartupFailure;
 	}
 	ScopedGuard close_fw = []() { FWclose(); };
 
@@ -1594,12 +1593,12 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 		{
 			Host::ReportErrorAsync(TRANSLATE_SV("VMManager", "Failed to load save state."), state_error.GetDescription());
 			Shutdown(false);
-			return false;
+			return VMBootResult::StartupFailure;
 		}
 	}
 
 	PerformanceMetrics::Clear();
-	return true;
+	return VMBootResult::StartupSuccess;
 }
 
 void VMManager::Shutdown(bool save_resume_state)
