@@ -871,7 +871,7 @@ static void CPUThreadMain(VMBootParameters* params, std::atomic<int>* ret)
 		VMManager::ApplySettings();
 		GSDumpReplayer::SetIsDumpRunner(true);
 
-		if (VMManager::Initialize(*params))
+		if (VMManager::Initialize(*params) == VMBootResult::StartupSuccess)
 		{
 			// run until end
 			GSDumpReplayer::SetLoopCount(s_loop_count);
