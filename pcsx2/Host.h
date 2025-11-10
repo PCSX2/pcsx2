@@ -63,10 +63,6 @@ namespace Host
 	void ReportErrorAsync(const std::string_view title, const std::string_view message);
 	void ReportFormattedErrorAsync(const std::string_view title, const char* format, ...);
 
-	/// Displays a synchronous confirmation on the UI thread, i.e. blocks the caller.
-	bool ConfirmMessage(const std::string_view title, const std::string_view message);
-	bool ConfirmFormattedMessage(const std::string_view title, const char* format, ...);
-
 	/// Sets batch mode (exit after game shutdown).
 	bool InBatchMode();
 

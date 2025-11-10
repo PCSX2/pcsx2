@@ -46,11 +46,6 @@ void Host::ReportErrorAsync(const std::string_view title, const std::string_view
 {
 }
 
-bool Host::ConfirmMessage(const std::string_view title, const std::string_view message)
-{
-	return true;
-}
-
 void Host::OpenURL(const std::string_view url)
 {
 }
