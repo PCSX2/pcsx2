@@ -102,7 +102,7 @@ namespace VMManager
 	static void LogUnsafeSettingsToConsole(const std::string& messages);
 	static void WarnAboutUnsafeSettings();
 
-	static bool AutoDetectSource(const std::string& filename);
+	static bool AutoDetectSource(const std::string& filename, Error* error = nullptr);
 	static void UpdateDiscDetails(bool booting);
 	static void ClearDiscDetails();
 	static void HandleELFChange(bool verbose_patches_if_changed);
@@ -1197,20 +1197,20 @@ bool VMManager::HasBootedELF()
 	return s_current_crc != 0 && s_elf_executed;
 }
 
-bool VMManager::AutoDetectSource(const std::string& filename)
+bool VMManager::AutoDetectSource(const std::string& filename, Error* error)
 {
 	if (!filename.empty())
 	{
 		if (!FileSystem::FileExists(filename.c_str()))
 		{
-			Host::ReportErrorAsync("Error", fmt::format("Requested filename '{}' does not exist.", filename));
+			Error::SetStringFmt(error, TRANSLATE_FS("VMManager", "Requested filename '{}' does not exist."), filename);
 			return false;
 		}
 
 		if (IsGSDumpFileName(filename))
 		{
 			CDVDsys_ChangeSource(CDVD_SourceType::NoDisc);
-			return GSDumpReplayer::Initialize(filename.c_str());
+			return GSDumpReplayer::Initialize(filename.c_str(), error);
 		}
 		else if (IsElfFileName(filename))
 		{
@@ -1272,7 +1272,8 @@ void VMManager::InitializeAsync(
 	VMBootHardcoreDisableCallback hardcore_disable_callback,
 	VMBootDoneCallback done_callback)
 {
-	VMBootResult result = VMManager::Initialize(boot_params);
+	Error error;
+	VMBootResult result = VMManager::Initialize(boot_params, &error);
 
 	if (result == VMBootResult::PromptDisableHardcoreMode)
 	{
@@ -1286,21 +1287,24 @@ void VMManager::InitializeAsync(
 			[boot_params, done_callback = std::move(done_callback)]() {
 				VMBootParameters new_boot_params = std::move(boot_params);
 				new_boot_params.disable_achievements_hardcore_mode = true;
-				done_callback(VMManager::Initialize(new_boot_params));
+
+				Error error;
+				VMBootResult result = VMManager::Initialize(new_boot_params, &error);
+				done_callback(result, error);
 			});
 
 		return;
 	}
 
-	done_callback(result);
+	done_callback(result, error);
 }
 
-VMBootResult VMManager::Initialize(const VMBootParameters& boot_params)
+VMBootResult VMManager::Initialize(const VMBootParameters& boot_params, Error* error)
 {
 	const Common::Timer init_timer;
 	if (s_state.load(std::memory_order_acquire) != VMState::Shutdown)
 	{
-		Host::ReportErrorAsync("Error", "The virtual machine is already running.");
+		Error::SetString(error, TRANSLATE_STR("VMManager", "The virtual machine is already running."));
 		return VMBootResult::StartupFailure;
 	}
 
@@ -1344,24 +1348,22 @@ VMBootResult VMManager::Initialize(const VMBootParameters& boot_params)
 	{
 		if (boot_params.filename.empty())
 		{
-			Host::ReportErrorAsync("Error", "Cannot load an indexed save state without a boot filename.");
+			Error::SetString(error,
+				TRANSLATE_STR("VMManager", "Cannot load an indexed save state without a boot filename."));
 			return VMBootResult::StartupFailure;
 		}
 
 		state_to_load = GetSaveStateFileName(boot_params.filename.c_str(), boot_params.state_index.value());
 		if (state_to_load.empty())
 		{
-			Host::ReportErrorAsync("Error", "Could not resolve path indexed save state load.");
+			Error::SetString(error,
+				TRANSLATE_STR("VMManager", "Could not resolve path for indexed save state load."));
 			return VMBootResult::StartupFailure;
 		}
 	}
 
-	Error cdvd_lock_error;
-	if (!cdvdLock(&cdvd_lock_error))
-	{
-		Host::ReportErrorAsync("Startup Error", cdvd_lock_error.GetDescription());
+	if (!cdvdLock(error))
 		return VMBootResult::StartupFailure;
-	}
 
 	ScopedGuard unlock_cdvd = &cdvdUnlock;
 
@@ -1371,8 +1373,8 @@ VMBootResult VMManager::Initialize(const VMBootParameters& boot_params)
 		if (boot_params.source_type.value() == CDVD_SourceType::Iso &&
 			!FileSystem::FileExists(boot_params.filename.c_str()))
 		{
-			Host::ReportErrorAsync(
-				"Error", fmt::format("Requested filename '{}' does not exist.", boot_params.filename));
+			Error::SetStringFmt(error,
+				TRANSLATE_FS("VMManager", "Requested filename '{}' does not exist."), boot_params.filename);
 			return VMBootResult::StartupFailure;
 		}
 
@@ -1383,7 +1385,7 @@ VMBootResult VMManager::Initialize(const VMBootParameters& boot_params)
 	else
 	{
 		// Automatic type detection of boot parameter based on filename.
-		if (!AutoDetectSource(boot_params.filename))
+		if (!AutoDetectSource(boot_params.filename, error))
 			return VMBootResult::StartupFailure;
 	}
 
@@ -1395,15 +1397,14 @@ VMBootResult VMManager::Initialize(const VMBootParameters& boot_params)
 		Console.WriteLn("Loading BIOS...");
 		if (!LoadBIOS())
 		{
-			Host::ReportErrorAsync(TRANSLATE_SV("VMManager", "Error – No BIOS Present"),
-				fmt::format(
-					TRANSLATE_FS("VMManager",
-						"PCSX2 requires a PlayStation 2 BIOS in order to run.\n\n"
-						"For legal reasons, you will need to obtain this BIOS from a PlayStation 2 unit which you own.\n\n"
-						"For step-by-step help with this process, please consult the setup guide at {}.\n\n"
-						"PCSX2 will be able to run once you've placed your BIOS image inside the folder named \"bios\" within the data directory "
-						"(Tools Menu -> Open Data Directory)."),
-					PCSX2_DOCUMENTATION_BIOS_URL_SHORTENED));
+			Error::SetStringFmt(error,
+				TRANSLATE_FS("VMManager",
+					"PCSX2 requires a PlayStation 2 BIOS in order to run.\n\n"
+					"For legal reasons, you will need to obtain this BIOS from a PlayStation 2 unit which you own.\n\n"
+					"For step-by-step help with this process, please consult the setup guide at {}.\n\n"
+					"PCSX2 will be able to run once you've placed your BIOS image inside the folder named \"bios\" within the data directory "
+					"(Tools Menu -> Open Data Directory)."),
+				PCSX2_DOCUMENTATION_BIOS_URL_SHORTENED);
 			return VMBootResult::StartupFailure;
 		}
 
@@ -1411,13 +1412,13 @@ VMBootResult VMManager::Initialize(const VMBootParameters& boot_params)
 		cdvdLoadNVRAM();
 	}
 
-	Error error;
+	Error cdvd_error;
 	Console.WriteLn("Opening CDVD...");
-	if (!DoCDVDopen(&error))
+	if (!DoCDVDopen(&cdvd_error))
 	{
-		Host::ReportErrorAsync("Startup Error", fmt::format("Failed to open CDVD '{}': {}.",
-													Path::GetFileName(CDVDsys_GetFile(CDVDsys_GetSourceType())),
-													error.GetDescription()));
+		Error::SetStringFmt(error, TRANSLATE_FS("VMManager", "Failed to open CDVD '{}': {}."),
+			Path::GetFileName(CDVDsys_GetFile(CDVDsys_GetSourceType())),
+			cdvd_error.GetDescription());
 		return VMBootResult::StartupFailure;
 	}
 	ScopedGuard close_cdvd(&DoCDVDclose);
@@ -1438,7 +1439,8 @@ VMBootResult VMManager::Initialize(const VMBootParameters& boot_params)
 	{
 		if (!FileSystem::FileExists(s_elf_override.c_str()))
 		{
-			Host::ReportErrorAsync("Error", fmt::format("Requested boot ELF '{}' does not exist.", s_elf_override));
+			Error::SetStringFmt(error,
+				TRANSLATE_FS("VMManager", "Requested boot ELF '{}' does not exist."), s_elf_override);
 			return VMBootResult::StartupFailure;
 		}
 
@@ -1484,7 +1486,7 @@ VMBootResult VMManager::Initialize(const VMBootParameters& boot_params)
 	if (!s_gs_open_on_initialize && !MTGS::WaitForOpen())
 	{
 		// we assume GS is going to report its own error
-		Console.WriteLn("Failed to open GS.");
+		Error::SetString(error, TRANSLATE_STR("VMManager", "Failed to initialize GS."));
 		return VMBootResult::StartupFailure;
 	}
 
@@ -1496,7 +1498,7 @@ VMBootResult VMManager::Initialize(const VMBootParameters& boot_params)
 	Console.WriteLn("Opening SPU2...");
 	if (!SPU2::Open())
 	{
-		Host::ReportErrorAsync("Startup Error", "Failed to initialize SPU2.");
+		Error::SetString(error, TRANSLATE_STR("VMManager", "Failed to initialize SPU2."));
 		return VMBootResult::StartupFailure;
 	}
 	ScopedGuard close_spu2(&SPU2::Close);
@@ -1505,7 +1507,7 @@ VMBootResult VMManager::Initialize(const VMBootParameters& boot_params)
 	Console.WriteLn("Initializing Pad...");
 	if (!Pad::Initialize())
 	{
-		Host::ReportErrorAsync("Startup Error", "Failed to initialize PAD");
+		Error::SetString(error, TRANSLATE_STR("VMManager", "Failed to initialize PAD."));
 		return VMBootResult::StartupFailure;
 	}
 	ScopedGuard close_pad = &Pad::Shutdown;
@@ -1513,7 +1515,7 @@ VMBootResult VMManager::Initialize(const VMBootParameters& boot_params)
 	Console.WriteLn("Initializing SIO2...");
 	if (!g_Sio2.Initialize())
 	{
-		Host::ReportErrorAsync("Startup Error", "Failed to initialize SIO2");
+		Error::SetString(error, TRANSLATE_STR("VMManager", "Failed to initialize SIO2."));
 		return VMBootResult::StartupFailure;
 	}
 	ScopedGuard close_sio2 = []() {
@@ -1523,7 +1525,7 @@ VMBootResult VMManager::Initialize(const VMBootParameters& boot_params)
 	Console.WriteLn("Initializing SIO0...");
 	if (!g_Sio0.Initialize())
 	{
-		Host::ReportErrorAsync("Startup Error", "Failed to initialize SIO0");
+		Error::SetString(error, TRANSLATE_STR("VMManager", "Failed to initialize SIO0."));
 		return VMBootResult::StartupFailure;
 	}
 	ScopedGuard close_sio0 = []() {
@@ -1533,7 +1535,7 @@ VMBootResult VMManager::Initialize(const VMBootParameters& boot_params)
 	Console.WriteLn("Opening DEV9...");
 	if (DEV9init() != 0 || DEV9open() != 0)
 	{
-		Host::ReportErrorAsync("Startup Error", "Failed to initialize DEV9.");
+		Error::SetString(error, TRANSLATE_STR("VMManager", "Failed to initialize DEV9."));
 		return VMBootResult::StartupFailure;
 	}
 	ScopedGuard close_dev9 = []() {
@@ -1544,7 +1546,7 @@ VMBootResult VMManager::Initialize(const VMBootParameters& boot_params)
 	Console.WriteLn("Opening USB...");
 	if (!USBopen())
 	{
-		Host::ReportErrorAsync("Startup Error", "Failed to initialize USB.");
+		Error::SetString(error, TRANSLATE_STR("VMManager", "Failed to initialize USB."));
 		return VMBootResult::StartupFailure;
 	}
 	ScopedGuard close_usb = []() { USBclose(); };
@@ -1552,7 +1554,7 @@ VMBootResult VMManager::Initialize(const VMBootParameters& boot_params)
 	Console.WriteLn("Opening FW...");
 	if (FWopen() != 0)
 	{
-		Host::ReportErrorAsync("Startup Error", "Failed to initialize FW.");
+		Error::SetString(error, TRANSLATE_STR("VMManager", "Failed to initialize FW."));
 		return VMBootResult::StartupFailure;
 	}
 	ScopedGuard close_fw = []() { FWclose(); };
@@ -1588,10 +1590,8 @@ VMBootResult VMManager::Initialize(const VMBootParameters& boot_params)
 	// do we want to load state?
 	if (!GSDumpReplayer::IsReplayingDump() && !state_to_load.empty())
 	{
-		Error state_error;
-		if (!DoLoadState(state_to_load.c_str(), &state_error))
+		if (!DoLoadState(state_to_load.c_str(), error))
 		{
-			Host::ReportErrorAsync(TRANSLATE_SV("VMManager", "Failed to load save state."), state_error.GetDescription());
 			Shutdown(false);
 			return VMBootResult::StartupFailure;
 		}
