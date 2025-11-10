@@ -1461,11 +1461,19 @@ void FullscreenUI::DoVMInitialize(const VMBootParameters& boot_params, bool swit
 		});
 	};
 
-	auto done_callback = [switch_to_landing_on_failure](VMBootResult result) {
-		if (result == VMBootResult::StartupSuccess)
-			VMManager::SetState(VMState::Running);
-		else if (switch_to_landing_on_failure)
-			MTGS::RunOnGSThread(SwitchToLanding);
+	auto done_callback = [switch_to_landing_on_failure](VMBootResult result, const Error& error) {
+		if (result != VMBootResult::StartupSuccess)
+		{
+			ImGuiFullscreen::OpenInfoMessageDialog(
+				FSUI_ICONSTR(ICON_FA_TRIANGLE_EXCLAMATION, "Startup Error"), error.GetDescription());
+
+			if (switch_to_landing_on_failure)
+				MTGS::RunOnGSThread(SwitchToLanding);
+			
+			return;
+		}
+
+		VMManager::SetState(VMState::Running);
 	};
 
 	VMManager::InitializeAsync(boot_params, std::move(hardcore_disable_callback), std::move(done_callback));

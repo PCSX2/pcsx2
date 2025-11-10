@@ -85,17 +85,17 @@ int GSDumpReplayer::GetLoopCount()
 	return s_dump_loop_count;
 }
 
-bool GSDumpReplayer::Initialize(const char* filename)
+bool GSDumpReplayer::Initialize(const char* filename, Error* error)
 {
 	Common::Timer timer;
 	Console.WriteLn("(GSDumpReplayer) Reading file '%s'...", filename);
 
-	Error error;
-	s_dump_file = GSDumpFile::OpenGSDump(filename, &error);
-	if (!s_dump_file || !s_dump_file->ReadFile(&error))
+	Error dump_error;
+	s_dump_file = GSDumpFile::OpenGSDump(filename, &dump_error);
+	if (!s_dump_file || !s_dump_file->ReadFile(&dump_error))
 	{
-		Host::ReportErrorAsync("GSDumpReplayer", fmt::format("Failed to open or read '{}': {}",
-													 Path::GetFileName(filename), error.GetDescription()));
+		Error::SetStringFmt(error, TRANSLATE_FS("GSDumpReplayer", "Failed to open or read '{}': {}"),
+			Path::GetFileName(filename), dump_error.GetDescription());
 		s_dump_file.reset();
 		return false;
 	}
