@@ -13,6 +13,8 @@
 #include "GS/GSLzma.h"
 #include "GS/GSExtra.h"
 
+#include "Host.h"
+
 #include <Alloc.h>
 #include <7zCrc.h>
 #include <Xz.h>
@@ -73,14 +75,14 @@ bool GSDumpFile::ReadFile(Error* error)
 	u32 ss;
 	if (Read(&m_crc, sizeof(m_crc)) != sizeof(m_crc) || Read(&ss, sizeof(ss)) != sizeof(ss))
 	{
-		Error::SetString(error, "Failed to read header");
+		Error::SetString(error, TRANSLATE_STR("GSDumpFile", "Failed to read header."));
 		return false;
 	}
 
 	m_state_data.resize(ss);
 	if (Read(m_state_data.data(), ss) != ss)
 	{
-		Error::SetString(error, "Failed to read state data");
+		Error::SetString(error, TRANSLATE_STR("GSDumpFile", "Failed to read state data."));
 		return false;
 	}
 
@@ -90,7 +92,7 @@ bool GSDumpFile::ReadFile(Error* error)
 		GSDumpHeader header;
 		if (m_state_data.size() < sizeof(header))
 		{
-			Error::SetString(error, "GSDump header is corrupted.");
+			Error::SetString(error, TRANSLATE_STR("GSDumpFile", "GSDump header is corrupted."));
 			return false;
 		}
 
@@ -102,7 +104,7 @@ bool GSDumpFile::ReadFile(Error* error)
 		{
 			if (header.serial_offset > ss || (static_cast<u64>(header.serial_offset) + header.serial_size) > ss)
 			{
-				Error::SetString(error, "GSDump header is corrupted.");
+				Error::SetString(error, TRANSLATE_STR("GSDumpFile", "GSDump header is corrupted."));
 				return false;
 			}
 
@@ -114,7 +116,7 @@ bool GSDumpFile::ReadFile(Error* error)
 		m_state_data.resize(header.state_size);
 		if (Read(m_state_data.data(), header.state_size) != header.state_size)
 		{
-			Error::SetString(error, "Failed to read real state data");
+			Error::SetString(error, TRANSLATE_STR("GSDumpFile", "Failed to read real state data"));
 			return false;
 		}
 	}
@@ -122,7 +124,7 @@ bool GSDumpFile::ReadFile(Error* error)
 	m_regs_data.resize(8192);
 	if (Read(m_regs_data.data(), m_regs_data.size()) != m_regs_data.size())
 	{
-		Error::SetString(error, "Failed to read regs data");
+		Error::SetString(error, TRANSLATE_STR("GSDumpFile", "Failed to read regs data."));
 		return false;
 	}
 
@@ -139,7 +141,7 @@ bool GSDumpFile::ReadFile(Error* error)
 		{
 			if (!IsEof())
 			{
-				Error::SetString(error, "Failed to read packet");
+				Error::SetString(error, TRANSLATE_STR("GSDumpFile", "Failed to read packet."));
 				return false;
 			}
 
@@ -157,7 +159,7 @@ bool GSDumpFile::ReadFile(Error* error)
 	{ \
 		if (remaining < sizeof(u8)) \
 		{ \
-			Error::SetString(error, "Failed to read byte"); \
+			Error::SetString(error, TRANSLATE_STR("GSDumpFile", "Failed to read byte.")); \
 			return false; \
 		} \
 		std::memcpy(dst, data, sizeof(u8)); \
@@ -169,7 +171,7 @@ bool GSDumpFile::ReadFile(Error* error)
 	{ \
 		if (remaining < sizeof(u32)) \
 		{ \
-			Error::SetString(error, "Failed to read word"); \
+			Error::SetString(error, TRANSLATE_STR("GSDumpFile", "Failed to read word.")); \
 			return false; \
 		} \
 		std::memcpy(dst, data, sizeof(u32)); \
@@ -199,7 +201,8 @@ bool GSDumpFile::ReadFile(Error* error)
 				packet.length = 8192;
 				break;
 			default:
-				Error::SetString(error, fmt::format("Unknown packet type {}", static_cast<u32>(packet.id)));
+				Error::SetStringFmt(error,
+					TRANSLATE_FS("GSDumpFile", "Unknown packet type {}"), static_cast<u32>(packet.id));
 				return false;
 		}
 
@@ -331,7 +334,7 @@ namespace
 		look_stream.buf = static_cast<Byte*>(ISzAlloc_Alloc(&g_Alloc, kInputBufSize));
 		if (!look_stream.buf)
 		{
-			Error::SetString(error, "Failed to allocate lookahead buffer");
+			Error::SetString(error, TRANSLATE_STR("GSDumpLzma", "Failed to allocate lookahead buffer."));
 			return false;
 		}
 		ScopedGuard guard = [&look_stream]() {
@@ -351,14 +354,14 @@ namespace
 		SRes res = Xzs_ReadBackward(&xzs, &look_stream.vt, &start_pos, nullptr, &g_Alloc);
 		if (res != SZ_OK)
 		{
-			Error::SetString(error, fmt::format("Xzs_ReadBackward() failed: {}", res));
+			Error::SetStringFmt(error, TRANSLATE_FS("GSDumpLzma", "Xzs_ReadBackward() failed: {}."), res);
 			return false;
 		}
 
 		const size_t num_blocks = Xzs_GetNumBlocks(&xzs);
 		if (num_blocks == 0)
 		{
-			Error::SetString(error, "Stream has no blocks.");
+			Error::SetString(error, TRANSLATE_STR("GSDumpLzma", "Stream has no blocks."));
 			return false;
 		}
 
