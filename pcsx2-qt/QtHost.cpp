@@ -221,9 +221,12 @@ void EmuThread::startVM(std::shared_ptr<VMBootParameters> boot_params)
 		});
 	};
 
-	auto done_callback = [](VMBootResult result) {
+	auto done_callback = [](VMBootResult result, const Error& error) {
 		if (result != VMBootResult::StartupSuccess)
+		{
+			Host::ReportErrorAsync(TRANSLATE_STR("QtHost", "Startup Error"), error.GetDescription());
 			return;
+		}
 
 		if (!Host::GetBoolSettingValue("UI", "StartPaused", false))
 		{

@@ -61,7 +61,7 @@ using VMBootHardcoreDisableCallback = std::function<void(std::string reason, VMB
 
 /// Callback used when the VM boot process has finished. This may be called
 /// asynchronously after the user has been prompted to disable hardcore mode.
-using VMBootDoneCallback = std::function<void(VMBootResult result)>;
+using VMBootDoneCallback = std::function<void(VMBootResult result, const Error& error)>;
 
 namespace VMManager
 {
@@ -116,7 +116,7 @@ namespace VMManager
 		VMBootDoneCallback done_callback);
 
 	/// Initializes all system components. Will not attempt to restart itself.
-	VMBootResult Initialize(const VMBootParameters& boot_params);
+	VMBootResult Initialize(const VMBootParameters& boot_params, Error* error = nullptr);
 
 	/// Destroys all system components.
 	void Shutdown(bool save_resume_state);
