@@ -2454,42 +2454,47 @@ Leaderboard Position: {1} of {2}</source>
 <context>
     <name>CDVD</name>
     <message>
-        <location filename="../../pcsx2/CDVD/CDVDcommon.cpp" line="287"/>
+        <location filename="../../pcsx2/CDVD/CDVDcommon.cpp" line="280"/>
+        <source>The CDVD system is currently in use.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/CDVD/CDVDcommon.cpp" line="305"/>
         <source>Game disc location is on a removable drive, performance issues such as jittering and freezing may occur.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/CDVD/CDVDcommon.cpp" line="382"/>
+        <location filename="../../pcsx2/CDVD/CDVDcommon.cpp" line="400"/>
         <source>Saving CDVD block dump to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/CDVD/CDVDcommon.cpp" line="412"/>
+        <location filename="../../pcsx2/CDVD/CDVDcommon.cpp" line="430"/>
         <source>Precaching CDVD</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/CDVD/IsoHasher.cpp" line="28"/>
+        <location filename="../../pcsx2/CDVD/IsoHasher.cpp" line="27"/>
         <source>Audio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/CDVD/IsoHasher.cpp" line="30"/>
+        <location filename="../../pcsx2/CDVD/IsoHasher.cpp" line="29"/>
         <source>Mode 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/CDVD/IsoHasher.cpp" line="32"/>
+        <location filename="../../pcsx2/CDVD/IsoHasher.cpp" line="31"/>
         <source>Mode 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/CDVD/IsoHasher.cpp" line="34"/>
+        <location filename="../../pcsx2/CDVD/IsoHasher.cpp" line="33"/>
         <source>Unknown</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/CDVD/IsoHasher.cpp" line="153"/>
+        <location filename="../../pcsx2/CDVD/IsoHasher.cpp" line="162"/>
         <source>Calculating checksum for track {}...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12167,262 +12172,262 @@ graphical quality, but this will increase system requirements.</source>
 <context>
     <name>GameList</name>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="97"/>
+        <location filename="../../pcsx2/GameList.cpp" line="98"/>
         <source>PS2 Disc</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="98"/>
+        <location filename="../../pcsx2/GameList.cpp" line="99"/>
         <source>PS1 Disc</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="99"/>
+        <location filename="../../pcsx2/GameList.cpp" line="100"/>
         <source>ELF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="100"/>
+        <location filename="../../pcsx2/GameList.cpp" line="101"/>
         <source>Invalid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="113"/>
+        <location filename="../../pcsx2/GameList.cpp" line="114"/>
         <source>NTSC-B</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="114"/>
+        <location filename="../../pcsx2/GameList.cpp" line="115"/>
         <source>NTSC-C</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="115"/>
+        <location filename="../../pcsx2/GameList.cpp" line="116"/>
         <source>NTSC-HK</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="116"/>
+        <location filename="../../pcsx2/GameList.cpp" line="117"/>
         <source>NTSC-J</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="117"/>
+        <location filename="../../pcsx2/GameList.cpp" line="118"/>
         <source>NTSC-K</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="118"/>
+        <location filename="../../pcsx2/GameList.cpp" line="119"/>
         <source>NTSC-T</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="119"/>
+        <location filename="../../pcsx2/GameList.cpp" line="120"/>
         <source>NTSC-U</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="120"/>
+        <location filename="../../pcsx2/GameList.cpp" line="121"/>
         <source>Other</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="121"/>
+        <location filename="../../pcsx2/GameList.cpp" line="122"/>
         <source>PAL-A</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="122"/>
+        <location filename="../../pcsx2/GameList.cpp" line="123"/>
         <source>PAL-AF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="123"/>
+        <location filename="../../pcsx2/GameList.cpp" line="124"/>
         <source>PAL-AU</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="124"/>
+        <location filename="../../pcsx2/GameList.cpp" line="125"/>
         <source>PAL-BE</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="125"/>
+        <location filename="../../pcsx2/GameList.cpp" line="126"/>
         <source>PAL-E</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="126"/>
+        <location filename="../../pcsx2/GameList.cpp" line="127"/>
         <source>PAL-F</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="127"/>
+        <location filename="../../pcsx2/GameList.cpp" line="128"/>
         <source>PAL-FI</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="128"/>
+        <location filename="../../pcsx2/GameList.cpp" line="129"/>
         <source>PAL-G</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="129"/>
+        <location filename="../../pcsx2/GameList.cpp" line="130"/>
         <source>PAL-GR</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="130"/>
+        <location filename="../../pcsx2/GameList.cpp" line="131"/>
         <source>PAL-I</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="131"/>
+        <location filename="../../pcsx2/GameList.cpp" line="132"/>
         <source>PAL-IN</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="132"/>
+        <location filename="../../pcsx2/GameList.cpp" line="133"/>
         <source>PAL-M</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="133"/>
+        <location filename="../../pcsx2/GameList.cpp" line="134"/>
         <source>PAL-NL</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="134"/>
+        <location filename="../../pcsx2/GameList.cpp" line="135"/>
         <source>PAL-NO</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="135"/>
+        <location filename="../../pcsx2/GameList.cpp" line="136"/>
         <source>PAL-P</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="136"/>
+        <location filename="../../pcsx2/GameList.cpp" line="137"/>
         <source>PAL-PL</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="137"/>
+        <location filename="../../pcsx2/GameList.cpp" line="138"/>
         <source>PAL-R</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="138"/>
+        <location filename="../../pcsx2/GameList.cpp" line="139"/>
         <source>PAL-S</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="139"/>
+        <location filename="../../pcsx2/GameList.cpp" line="140"/>
         <source>PAL-SC</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="140"/>
+        <location filename="../../pcsx2/GameList.cpp" line="141"/>
         <source>PAL-SW</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="141"/>
+        <location filename="../../pcsx2/GameList.cpp" line="142"/>
         <source>PAL-SWI</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="142"/>
+        <location filename="../../pcsx2/GameList.cpp" line="143"/>
         <source>PAL-UK</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="158"/>
+        <location filename="../../pcsx2/GameList.cpp" line="159"/>
         <source>Unknown</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="161"/>
+        <location filename="../../pcsx2/GameList.cpp" line="162"/>
         <source>Nothing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="164"/>
+        <location filename="../../pcsx2/GameList.cpp" line="165"/>
         <source>Intro</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="167"/>
+        <location filename="../../pcsx2/GameList.cpp" line="168"/>
         <source>Menu</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="170"/>
+        <location filename="../../pcsx2/GameList.cpp" line="171"/>
         <source>In-Game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="173"/>
+        <location filename="../../pcsx2/GameList.cpp" line="174"/>
         <source>Playable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="176"/>
+        <location filename="../../pcsx2/GameList.cpp" line="177"/>
         <source>Perfect</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="653"/>
+        <location filename="../../pcsx2/GameList.cpp" line="654"/>
         <source>Scanning directory {} (recursively)...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="656"/>
+        <location filename="../../pcsx2/GameList.cpp" line="657"/>
         <source>Scanning directory {}...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="684"/>
+        <location filename="../../pcsx2/GameList.cpp" line="685"/>
         <source>Scanning {}...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="1142"/>
+        <location filename="../../pcsx2/GameList.cpp" line="1152"/>
         <source>Never</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="1159"/>
+        <location filename="../../pcsx2/GameList.cpp" line="1169"/>
         <source>Today</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="1164"/>
+        <location filename="../../pcsx2/GameList.cpp" line="1174"/>
         <source>Yesterday</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="1187"/>
+        <location filename="../../pcsx2/GameList.cpp" line="1197"/>
         <source>{}h {}m</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="1189"/>
+        <location filename="../../pcsx2/GameList.cpp" line="1199"/>
         <source>{}h {}m {}s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="1191"/>
+        <location filename="../../pcsx2/GameList.cpp" line="1201"/>
         <source>{}m {}s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="1193"/>
+        <location filename="../../pcsx2/GameList.cpp" line="1203"/>
         <source>{}s</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../../pcsx2/GameList.cpp" line="1204"/>
+        <location filename="../../pcsx2/GameList.cpp" line="1214"/>
         <source>%n seconds</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -12431,7 +12436,7 @@ graphical quality, but this will increase system requirements.</source>
     </message>
     <message numerus="yes">
         <location filename="../GameList/GameListModel.cpp" line="268"/>
-        <location filename="../../pcsx2/GameList.cpp" line="1200"/>
+        <location filename="../../pcsx2/GameList.cpp" line="1210"/>
         <source>%n hours</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -12440,7 +12445,7 @@ graphical quality, but this will increase system requirements.</source>
     </message>
     <message numerus="yes">
         <location filename="../GameList/GameListModel.cpp" line="272"/>
-        <location filename="../../pcsx2/GameList.cpp" line="1202"/>
+        <location filename="../../pcsx2/GameList.cpp" line="1212"/>
         <source>%n minutes</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -12448,7 +12453,7 @@ graphical quality, but this will increase system requirements.</source>
         </translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="1364"/>
+        <location filename="../../pcsx2/GameList.cpp" line="1374"/>
         <source>Downloading cover for {0} [{1}]...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12503,6 +12508,14 @@ graphical quality, but this will increase system requirements.</source>
     <message>
         <location filename="../GameList/GameListModel.cpp" line="566"/>
         <source>Compatibility</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>GameListRefreshThread</name>
+    <message>
+        <location filename="../GameList/GameListRefreshThread.cpp" line="64"/>
+        <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -13124,6 +13137,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <location filename="../Settings/GameSummaryWidget.cpp" line="275"/>
+        <location filename="../Settings/GameSummaryWidget.cpp" line="284"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13133,17 +13147,17 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameSummaryWidget.cpp" line="305"/>
+        <location filename="../Settings/GameSummaryWidget.cpp" line="306"/>
         <source>One or more tracks is missing.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameSummaryWidget.cpp" line="342"/>
+        <location filename="../Settings/GameSummaryWidget.cpp" line="343"/>
         <source>Verified as %1 [%2] (Version %3).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameSummaryWidget.cpp" line="349"/>
+        <location filename="../Settings/GameSummaryWidget.cpp" line="350"/>
         <source>Verified as %1 [%2].</source>
         <translation type="unfinished"></translation>
     </message>
@@ -17843,13 +17857,13 @@ Right click to clear binding</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1510"/>
-        <location filename="../MainWindow.cpp" line="1571"/>
+        <location filename="../MainWindow.cpp" line="1505"/>
+        <location filename="../MainWindow.cpp" line="1566"/>
         <source>Change Disc</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2991"/>
+        <location filename="../MainWindow.cpp" line="2986"/>
         <source>Load State</source>
         <translation type="unfinished"></translation>
     </message>
@@ -18418,13 +18432,13 @@ Right click to clear binding</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1614"/>
+        <location filename="../MainWindow.cpp" line="1609"/>
         <source>Start Big Picture Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../MainWindow.ui" line="1018"/>
-        <location filename="../MainWindow.cpp" line="1615"/>
+        <location filename="../MainWindow.cpp" line="1610"/>
         <source>Big Picture</source>
         <comment>In Toolbar</comment>
         <translation type="unfinished"></translation>
@@ -18511,300 +18525,300 @@ Are you sure you want to continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1295"/>
+        <location filename="../MainWindow.cpp" line="1291"/>
         <source>Confirm Shutdown</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1298"/>
+        <location filename="../MainWindow.cpp" line="1294"/>
         <source>Are you sure you want to shut down the virtual machine?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1300"/>
+        <location filename="../MainWindow.cpp" line="1296"/>
         <source>Save State For Resume</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1408"/>
-        <location filename="../MainWindow.cpp" line="1798"/>
-        <location filename="../MainWindow.cpp" line="2262"/>
-        <location filename="../MainWindow.cpp" line="2431"/>
-        <location filename="../MainWindow.cpp" line="2871"/>
-        <location filename="../MainWindow.cpp" line="2967"/>
-        <location filename="../MainWindow.cpp" line="3010"/>
+        <location filename="../MainWindow.cpp" line="1404"/>
+        <location filename="../MainWindow.cpp" line="1793"/>
+        <location filename="../MainWindow.cpp" line="2257"/>
+        <location filename="../MainWindow.cpp" line="2426"/>
+        <location filename="../MainWindow.cpp" line="2866"/>
+        <location filename="../MainWindow.cpp" line="2962"/>
+        <location filename="../MainWindow.cpp" line="3005"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1408"/>
+        <location filename="../MainWindow.cpp" line="1404"/>
         <source>You must select a disc to change discs.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1440"/>
+        <location filename="../MainWindow.cpp" line="1436"/>
         <source>Properties...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1456"/>
+        <location filename="../MainWindow.cpp" line="1452"/>
         <source>Set Cover Image...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1460"/>
+        <location filename="../MainWindow.cpp" line="1456"/>
         <source>Create Game Shortcut...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1463"/>
+        <location filename="../MainWindow.cpp" line="1459"/>
         <source>Exclude From List</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1469"/>
+        <location filename="../MainWindow.cpp" line="1465"/>
         <source>Reset Play Time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1474"/>
+        <location filename="../MainWindow.cpp" line="1469"/>
         <source>Check Wiki Page</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1482"/>
+        <location filename="../MainWindow.cpp" line="1477"/>
         <source>Default Boot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1489"/>
+        <location filename="../MainWindow.cpp" line="1484"/>
         <source>Fast Boot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1492"/>
+        <location filename="../MainWindow.cpp" line="1487"/>
         <source>Full Boot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1497"/>
+        <location filename="../MainWindow.cpp" line="1492"/>
         <source>Boot and Debug</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1521"/>
+        <location filename="../MainWindow.cpp" line="1516"/>
         <source>Add Search Directory...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1530"/>
+        <location filename="../MainWindow.cpp" line="1525"/>
         <source>Start File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1539"/>
+        <location filename="../MainWindow.cpp" line="1534"/>
         <source>Start Disc</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1556"/>
+        <location filename="../MainWindow.cpp" line="1551"/>
         <source>Select Disc Image</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1700"/>
+        <location filename="../MainWindow.cpp" line="1695"/>
         <source>Updater Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1706"/>
+        <location filename="../MainWindow.cpp" line="1701"/>
         <source>&lt;p&gt;Sorry, you are trying to update a PCSX2 version which is not an official GitHub release. To prevent incompatibilities, the auto-updater is only enabled on official builds.&lt;/p&gt;&lt;p&gt;To obtain an official build, please download from the link below:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://pcsx2.net/downloads/&quot;&gt;https://pcsx2.net/downloads/&lt;/a&gt;&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1711"/>
+        <location filename="../MainWindow.cpp" line="1706"/>
         <source>Automatic updating is not supported on the current platform.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1788"/>
+        <location filename="../MainWindow.cpp" line="1783"/>
         <source>Confirm File Creation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1789"/>
+        <location filename="../MainWindow.cpp" line="1784"/>
         <source>The pnach file &apos;%1&apos; does not currently exist. Do you want to create it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1798"/>
+        <location filename="../MainWindow.cpp" line="1793"/>
         <source>Failed to create &apos;%1&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1894"/>
+        <location filename="../MainWindow.cpp" line="1889"/>
         <source>Input Recording Failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1895"/>
+        <location filename="../MainWindow.cpp" line="1890"/>
         <source>Failed to create file: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1918"/>
+        <location filename="../MainWindow.cpp" line="1913"/>
         <source>Input Recording Files (*.p2m2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1953"/>
+        <location filename="../MainWindow.cpp" line="1948"/>
         <source>Input Playback Failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1954"/>
+        <location filename="../MainWindow.cpp" line="1949"/>
         <source>Failed to open file: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2040"/>
+        <location filename="../MainWindow.cpp" line="2035"/>
         <source>Paused</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2226"/>
+        <location filename="../MainWindow.cpp" line="2221"/>
         <source>Load State Failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2226"/>
+        <location filename="../MainWindow.cpp" line="2221"/>
         <source>Cannot load a save state without a running VM.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2250"/>
+        <location filename="../MainWindow.cpp" line="2245"/>
         <source>The new ELF cannot be loaded without resetting the virtual machine. Do you want to reset the virtual machine now?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2262"/>
+        <location filename="../MainWindow.cpp" line="2257"/>
         <source>Cannot change from game to GS dump without shutting down first.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2431"/>
+        <location filename="../MainWindow.cpp" line="2426"/>
         <source>Failed to get window info from widget</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1614"/>
+        <location filename="../MainWindow.cpp" line="1609"/>
         <source>Stop Big Picture Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1615"/>
+        <location filename="../MainWindow.cpp" line="1610"/>
         <source>Exit Big Picture</source>
         <comment>In Toolbar</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2777"/>
+        <location filename="../MainWindow.cpp" line="2772"/>
         <source>Game Properties</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2777"/>
+        <location filename="../MainWindow.cpp" line="2772"/>
         <source>Game properties is unavailable for the current game.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2829"/>
+        <location filename="../MainWindow.cpp" line="2824"/>
         <source>Could not find any CD/DVD-ROM devices. Please ensure you have a drive connected and sufficient permissions to access it.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2847"/>
+        <location filename="../MainWindow.cpp" line="2842"/>
         <source>Select disc drive:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2871"/>
+        <location filename="../MainWindow.cpp" line="2866"/>
         <source>This save state does not exist.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2884"/>
+        <location filename="../MainWindow.cpp" line="2879"/>
         <source>Select Cover Image</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2901"/>
+        <location filename="../MainWindow.cpp" line="2896"/>
         <source>Cover Already Exists</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2902"/>
+        <location filename="../MainWindow.cpp" line="2897"/>
         <source>A cover image for this game already exists, do you wish to replace it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2897"/>
-        <location filename="../MainWindow.cpp" line="2911"/>
-        <location filename="../MainWindow.cpp" line="2917"/>
-        <location filename="../MainWindow.cpp" line="2923"/>
+        <location filename="../MainWindow.cpp" line="2892"/>
+        <location filename="../MainWindow.cpp" line="2906"/>
+        <location filename="../MainWindow.cpp" line="2912"/>
+        <location filename="../MainWindow.cpp" line="2918"/>
         <source>Copy Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2911"/>
+        <location filename="../MainWindow.cpp" line="2906"/>
         <source>Failed to remove existing cover &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2917"/>
+        <location filename="../MainWindow.cpp" line="2912"/>
         <source>Failed to copy &apos;%1&apos; to &apos;%2&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2923"/>
+        <location filename="../MainWindow.cpp" line="2918"/>
         <source>Failed to remove &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2249"/>
-        <location filename="../MainWindow.cpp" line="2932"/>
+        <location filename="../MainWindow.cpp" line="2244"/>
+        <location filename="../MainWindow.cpp" line="2927"/>
         <source>Confirm Reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1476"/>
+        <location filename="../MainWindow.cpp" line="1471"/>
         <source>Open Snapshots Folder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2884"/>
+        <location filename="../MainWindow.cpp" line="2879"/>
         <source>All Cover Image Types (*.jpg *.jpeg *.png *.webp)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2897"/>
+        <location filename="../MainWindow.cpp" line="2892"/>
         <source>You must select a different file to the current cover image.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2967"/>
+        <location filename="../MainWindow.cpp" line="2962"/>
         <source>Failed to create snapshots directory &apos;%1&apos;
 
 Opening default directory.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2985"/>
+        <location filename="../MainWindow.cpp" line="2980"/>
         <source>Load Resume State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2988"/>
+        <location filename="../MainWindow.cpp" line="2983"/>
         <source>A resume save state was found for this game, saved at:
 
 %1.
@@ -18813,48 +18827,48 @@ Do you want to load this state, or start from a fresh boot?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2992"/>
+        <location filename="../MainWindow.cpp" line="2987"/>
         <source>Fresh Boot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2993"/>
+        <location filename="../MainWindow.cpp" line="2988"/>
         <source>Delete And Boot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3010"/>
+        <location filename="../MainWindow.cpp" line="3005"/>
         <source>Failed to delete save state file &apos;%1&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3068"/>
+        <location filename="../MainWindow.cpp" line="3063"/>
         <source>Load State File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3068"/>
+        <location filename="../MainWindow.cpp" line="3063"/>
         <source>Load From File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3071"/>
-        <location filename="../MainWindow.cpp" line="3145"/>
+        <location filename="../MainWindow.cpp" line="3066"/>
+        <location filename="../MainWindow.cpp" line="3140"/>
         <source>Select Save State File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3116"/>
+        <location filename="../MainWindow.cpp" line="3111"/>
         <source>Load Backup Slot %1 (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3145"/>
+        <location filename="../MainWindow.cpp" line="3140"/>
         <source>Save States (*.p2s)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3078"/>
+        <location filename="../MainWindow.cpp" line="3073"/>
         <source>Delete Save States...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -18869,7 +18883,7 @@ Do you want to load this state, or start from a fresh boot?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2933"/>
+        <location filename="../MainWindow.cpp" line="2928"/>
         <source>Are you sure you want to reset the play time for &apos;%1&apos; (%2)?
 
 Your current play time is %3.
@@ -18878,80 +18892,80 @@ This action cannot be undone.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2934"/>
+        <location filename="../MainWindow.cpp" line="2929"/>
         <source>empty title</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2935"/>
+        <location filename="../MainWindow.cpp" line="2930"/>
         <source>no serial</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3071"/>
+        <location filename="../MainWindow.cpp" line="3066"/>
         <source>Save States (*.p2s *.p2s.backup)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3088"/>
+        <location filename="../MainWindow.cpp" line="3083"/>
         <source>Resume (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3104"/>
+        <location filename="../MainWindow.cpp" line="3099"/>
         <source>Load Slot %1 (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3125"/>
-        <location filename="../MainWindow.cpp" line="3133"/>
+        <location filename="../MainWindow.cpp" line="3120"/>
+        <location filename="../MainWindow.cpp" line="3128"/>
         <source>Delete Save States</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3126"/>
+        <location filename="../MainWindow.cpp" line="3121"/>
         <source>Are you sure you want to delete all save states for %1?
 
 The saves will not be recoverable.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3133"/>
+        <location filename="../MainWindow.cpp" line="3128"/>
         <source>%1 save states deleted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3143"/>
+        <location filename="../MainWindow.cpp" line="3138"/>
         <source>Save To File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3163"/>
+        <location filename="../MainWindow.cpp" line="3158"/>
         <source>Empty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3165"/>
+        <location filename="../MainWindow.cpp" line="3160"/>
         <source>Save Slot %1 (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3224"/>
+        <location filename="../MainWindow.cpp" line="3219"/>
         <source>Confirm Disc Change</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3225"/>
+        <location filename="../MainWindow.cpp" line="3220"/>
         <source>Do you want to swap discs or boot the new image (via system reset)?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3226"/>
+        <location filename="../MainWindow.cpp" line="3221"/>
         <source>Swap Disc</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3227"/>
+        <location filename="../MainWindow.cpp" line="3222"/>
         <source>Reset</source>
         <translation type="unfinished"></translation>
     </message>
@@ -24763,7 +24777,7 @@ Xbox 360 turntables require a 256x multiplier, most other turntables can use the
 <context>
     <name>VMManager</name>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1865"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1879"/>
         <source>Failed to back up old save state {}.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -24788,23 +24802,23 @@ Xbox 360 turntables require a 256x multiplier, most other turntables can use the
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1448"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1459"/>
         <source>Resuming state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1453"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1464"/>
         <source>Boot and Debug</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7349"/>
-        <location filename="../../pcsx2/VMManager.cpp" line="1823"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1837"/>
         <source>Failed to load save state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1898"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1912"/>
         <source>State saved to slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -24814,99 +24828,99 @@ Xbox 360 turntables require a 256x multiplier, most other turntables can use the
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1982"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1996"/>
         <source>Failed to load state (Memory card is busy)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2009"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2023"/>
         <source>Cannot load save {} from slot {} while RetroAchievements Hardcore Mode is active.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2032"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2046"/>
         <source>Failed to save state (Memory card is busy)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2049"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2063"/>
         <source>Failed to save state to slot {} (Memory card is busy)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2056"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2070"/>
         <source>Saving state to slot {}...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2252"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2266"/>
         <source>Disc removed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2260"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2274"/>
         <source>Disc changed to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2269"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2283"/>
         <source>Failed to open new disc image &apos;{}&apos;. Reverting to old image.
 Error was: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2278"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2292"/>
         <source>Failed to switch back to old disc image. Removing disc.
 Error was: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3133"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3147"/>
         <source>Fast CDVD is enabled, this may break games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3137"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3151"/>
         <source>Cycle rate/skip is not at default, this may crash or make games run too slow.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3147"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3161"/>
         <source>Upscale multiplier is below native, this will break rendering.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3187"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3201"/>
         <source>Mipmapping is disabled. This may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3192"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3206"/>
         <source>Debug device is enabled. This will massively reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3222"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3236"/>
         <source>Texture filtering is not set to Bilinear (PS2). This will break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3685"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3699"/>
         <source>No Game Running</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3152"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3166"/>
         <source>Trilinear filtering is not set to automatic. This may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1357"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1366"/>
         <source>Error – No BIOS Present</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1358"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1368"/>
         <source>PCSX2 requires a PlayStation 2 BIOS in order to run.
 
 For legal reasons, you will need to obtain this BIOS from a PlayStation 2 unit which you own.
@@ -24917,50 +24931,50 @@ PCSX2 will be able to run once you&apos;ve placed your BIOS image inside the fol
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1850"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1864"/>
         <source>Failed to save state: {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1905"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1919"/>
         <source>Failed to save state to slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1974"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1988"/>
         <source>Cannot load save state while RetroAchievements Hardcore Mode is active.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2001"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2015"/>
         <source>There is no saved {} in slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7325"/>
-        <location filename="../../pcsx2/VMManager.cpp" line="2001"/>
-        <location filename="../../pcsx2/VMManager.cpp" line="2009"/>
-        <location filename="../../pcsx2/VMManager.cpp" line="2017"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2015"/>
         <location filename="../../pcsx2/VMManager.cpp" line="2023"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2031"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2037"/>
         <source>backup state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2017"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2031"/>
         <source>Failed to load {} from slot {} (Memory card is busy)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7325"/>
-        <location filename="../../pcsx2/VMManager.cpp" line="2009"/>
-        <location filename="../../pcsx2/VMManager.cpp" line="2017"/>
         <location filename="../../pcsx2/VMManager.cpp" line="2023"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2031"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2037"/>
         <source>state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7325"/>
-        <location filename="../../pcsx2/VMManager.cpp" line="2023"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2037"/>
         <source>Loading {} from slot {}...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -24970,167 +24984,167 @@ PCSX2 will be able to run once you&apos;ve placed your BIOS image inside the fol
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2248"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2262"/>
         <source>No disc to remove.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3080"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3094"/>
         <source>Cheats have been disabled due to RetroAchievements Hardcore Mode.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3157"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3171"/>
         <source>Blending Accuracy is below Basic, this may break effects in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3162"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3176"/>
         <source>Hardware Download Mode is not set to Accurate, this may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3197"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3211"/>
         <source>Dithering is set to Force 32 bit. This will break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3202"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3216"/>
         <source>Dithering is disabled. This will cause color banding in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3207"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3221"/>
         <source>Integer scaling is enabled. This may shrink the image.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3216"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3230"/>
         <source>Graphics API is not set to Automatic. This may cause performance problems and graphical issues.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3228"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3242"/>
         <source>EE FPU Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3234"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3248"/>
         <source>EE FPU Clamp Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3239"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3253"/>
         <source>VU0 Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3244"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3258"/>
         <source>VU1 Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3251"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3265"/>
         <source>VU Clamp Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3256"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3270"/>
         <source>128MB RAM is enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3261"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3275"/>
         <source>Game Fixes are not enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3266"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3280"/>
         <source>Compatibility Patches are not enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3270"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3284"/>
         <source>Frame rate for NTSC is not default. This may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3272"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3286"/>
         <source>Frame rate for PAL is not default. This may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3291"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3305"/>
         <source>EE Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3296"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3310"/>
         <source>VU0 Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3301"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3315"/>
         <source>VU1 Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3306"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3320"/>
         <source>IOP Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3311"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3325"/>
         <source>EE Cache is enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3316"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3330"/>
         <source>EE Wait Loop Detection is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3321"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3335"/>
         <source>INTC Spin Detection is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3324"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3338"/>
         <source>Fastmem is not enabled, this will reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3328"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3342"/>
         <source>Instant VU1 is disabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3333"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3347"/>
         <source>mVU Flag Hack is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3167"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3181"/>
         <source>GPU Palette Conversion is enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2223"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2237"/>
         <source>Cannot frame advance while RetroAchievements Hardcore Mode is active.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3172"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3186"/>
         <source>Texture Preloading is not Full, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3177"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3191"/>
         <source>Estimate texture region is enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3182"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3196"/>
         <source>Texture dumping is enabled, this will continually dump textures to disk.</source>
         <translation type="unfinished"></translation>
     </message>
