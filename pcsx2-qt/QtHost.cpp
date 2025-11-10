@@ -141,41 +141,6 @@ void EmuThread::stopInThread()
 	m_shutdown_flag.store(true);
 }
 
-bool EmuThread::confirmMessage(const QString& title, const QString& message)
-{
-	if (!isOnEmuThread())
-	{
-		// This is definitely deadlock risky, but unlikely to happen (why would GS be confirming?).
-		bool result = false;
-		QMetaObject::invokeMethod(g_emu_thread, "confirmMessage", Qt::BlockingQueuedConnection, Q_RETURN_ARG(bool, result),
-			Q_ARG(const QString&, title), Q_ARG(const QString&, message));
-		return result;
-	}
-
-	// Easy if there's no VM.
-	if (!VMManager::HasValidVM())
-		return emit messageConfirmed(title, message);
-
-	// Preemptively pause/set surfaceless on the emu thread, because it can't run while the popup is open.
-	const bool was_paused = (VMManager::GetState() == VMState::Paused);
-	const bool was_fullscreen = isFullscreen();
-	if (!was_paused)
-		VMManager::SetPaused(true);
-	if (was_fullscreen)
-		setSurfaceless(true);
-
-	// This won't return until the user confirms one way or another.
-	const bool result = emit messageConfirmed(title, message);
-
-	// Resume VM after confirming.
-	if (was_fullscreen)
-		setSurfaceless(false);
-	if (!was_paused)
-		VMManager::SetPaused(false);
-
-	return result;
-}
-
 void EmuThread::startFullscreenUI(bool fullscreen)
 {
 	if (!isOnEmuThread())
@@ -1647,13 +1612,6 @@ void Host::ReportErrorAsync(const std::string_view title, const std::string_view
 	QMetaObject::invokeMethod(g_main_window, "reportError", Qt::QueuedConnection,
 		Q_ARG(const QString&, title.empty() ? QString() : QString::fromUtf8(title.data(), title.size())),
 		Q_ARG(const QString&, message.empty() ? QString() : QString::fromUtf8(message.data(), message.size())));
-}
-
-bool Host::ConfirmMessage(const std::string_view title, const std::string_view message)
-{
-	const QString qtitle(QString::fromUtf8(title.data(), title.size()));
-	const QString qmessage(QString::fromUtf8(message.data(), message.size()));
-	return g_emu_thread->confirmMessage(qtitle, qmessage);
 }
 
 void Host::OpenURL(const std::string_view url)
