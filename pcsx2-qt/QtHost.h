@@ -77,7 +77,6 @@ public:
 	void updatePerformanceMetrics(bool force);
 
 public Q_SLOTS:
-	bool confirmMessage(const QString& title, const QString& message);
 	void loadSettings(SettingsInterface& si, std::unique_lock<std::mutex>& lock);
 	void checkForSettingChanges(const Pcsx2Config& old_config);
 	void startFullscreenUI(bool fullscreen);
@@ -114,7 +113,6 @@ public Q_SLOTS:
 	void endCapture();
 
 Q_SIGNALS:
-	bool messageConfirmed(const QString& title, const QString& message);
 	void statusMessage(const QString& message);
 
 	std::optional<WindowInfo> onAcquireRenderWindowRequested(bool recreate_window, bool fullscreen, bool render_to_main, bool surfaceless);
