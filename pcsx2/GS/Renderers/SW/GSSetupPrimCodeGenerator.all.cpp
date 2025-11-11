@@ -89,7 +89,7 @@ void GSSetupPrimCodeGenerator::Generate()
 	many_regs = isYmm && !m_sel.notest && needs_shift;
 
 #ifdef _WIN64
-	int needs_saving = many_regs ? 6 : m_sel.notest ? 0 : 2;
+	int needs_saving = many_regs ? 7 : m_sel.notest ? 1 : 3;
 	if (needs_saving)
 	{
 		sub(rsp, 8 + 16 * needs_saving);
@@ -398,12 +398,17 @@ void GSSetupPrimCodeGenerator::Color()
 
 		broadcastf128(xym0, ptr[_dscan + offsetof(GSVertexSW, c)]);
 
-		// m_local.d4.c = GSVector4i(c * 4.0f).xzyw().ps32();
+		// constexpr VectorI mask16 = VectorI::cxpr(0xFFFF);
+		XYm mask16 = XYm(many_regs ? 12 : m_sel.notest ? 6 : 8);
+		pcmpeqd(mask16, mask16);
+		psrld(mask16, 16);
 
+		// local.d4.c = (GSVector4i(dscan.c * step_shift) & mask16).xzyw().pu32();
 		THREEARG(mulps, xmm1, xmm0, xmm3);
 		cvttps2dq(xmm1, xmm1);
 		pshufd(xmm1, xmm1, _MM_SHUFFLE(3, 1, 2, 0));
-		packssdw(xmm1, xmm1);
+		pand(xym1, mask16);
+		packusdw(xmm1, xmm1);
 		if (isXmm)
 			movdqa(_rip_local_d(c), xmm1);
 		else
@@ -419,23 +424,25 @@ void GSSetupPrimCodeGenerator::Color()
 
 		for (int i = 0; i < (m_sel.notest ? 1 : dsize); i++)
 		{
-			// GSVector4i r = GSVector4i(dr * m_shift[i]).ps32();
+			// VectorI r = (VectorI(dr * shift[1 + i]) & mask16).pu32();
 
 			if (i < 4 || many_regs)
 				THREEARG(mulps, xym0, XYm(4 + i), xym2);
 			else
 				vmulps(ymm0, ymm2, ptr[g_const.m_shift_256b[i + 1]]);
 			cvttps2dq(xym0, xym0);
-			packssdw(xym0, xym0);
+			pand(xym0, mask16);
+			packusdw(xym0, xym0);
 
-			// GSVector4i b = GSVector4i(db * m_shift[i]).ps32();
+			// VectorI b = (VectorI(db * shift[1 + i]) & mask16).pu32();
 
 			if (i < 4 || many_regs)
 				THREEARG(mulps, xym1, XYm(4 + i), xym3);
 			else
 				vmulps(ymm1, ymm3, ptr[g_const.m_shift_256b[i + 1]]);
 			cvttps2dq(xym1, xym1);
-			packssdw(xym1, xym1);
+			pand(xym1, mask16);
+			packusdw(xym1, xym1);
 
 			// m_local.d[i].rb = r.upl16(b);
 
@@ -455,23 +462,25 @@ void GSSetupPrimCodeGenerator::Color()
 
 		for (int i = 0; i < (m_sel.notest ? 1 : dsize); i++)
 		{
-			// GSVector4i g = GSVector4i(dg * m_shift[i]).ps32();
+			// VectorI g = (VectorI(dg * shift[1 + i]) & mask16).pu32();
 
 			if (i < 4 || many_regs)
 				THREEARG(mulps, xym0, XYm(4 + i), xym2);
 			else
 				vmulps(ymm0, ymm2, ptr[g_const.m_shift_256b[i + 1]]);
 			cvttps2dq(xym0, xym0);
-			packssdw(xym0, xym0);
+			pand(xym0, mask16);
+			packusdw(xym0, xym1);
 
-			// GSVector4i a = GSVector4i(da * m_shift[i]).ps32();
+			// VectorI a = (VectorI(da * shift[1 + i]) & mask16).pu32();
 
 			if (i < 4 || many_regs)
 				THREEARG(mulps, xym1, XYm(4 + i), xym3);
 			else
 				vmulps(ymm1, ymm3, ptr[g_const.m_shift_256b[i + 1]]);
 			cvttps2dq(xym1, xym1);
-			packssdw(xym1, xym1);
+			pand(xym1, mask16);
+			packusdw(xym1, xym1);
 
 			// m_local.d[i].ga = g.upl16(a);
 
