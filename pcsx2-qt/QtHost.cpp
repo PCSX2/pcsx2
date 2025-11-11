@@ -2384,6 +2384,8 @@ int main(int argc, char* argv[])
 	if (!QtHost::ParseCommandLineOptions(app.arguments(), autoboot))
 		return EXIT_FAILURE;
 
+	SysMemory::ReserveMemory();
+
 	// Bail out if we can't find any config.
 	if (!QtHost::InitializeConfig())
 		return EXIT_FAILURE;
