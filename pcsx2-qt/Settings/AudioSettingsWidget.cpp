@@ -91,37 +91,37 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* settings_dialog, QWidge
 	connect(m_ui.resetFastForwardVolume, &QToolButton::clicked, this, [this]() { resetVolume(true); });
 
 	dialog()->registerWidgetHelp(
-		m_ui.audioBackend, tr("Audio Backend"), QStringLiteral("Cubeb"),
+		m_ui.audioBackend, tr("Audio Backend"),
 		tr("The audio backend determines how frames produced by the emulator are submitted to the host. Cubeb provides the "
 		   "lowest latency, if you encounter issues, try the SDL backend. The null backend disables all host audio "
-		   "output."));
+		   "output."), QStringLiteral("Cubeb"));
 	dialog()->registerWidgetHelp(
-		m_ui.bufferMS, tr("Buffer Size"), tr("%1 ms").arg(AudioStreamParameters::DEFAULT_BUFFER_MS),
+		m_ui.bufferMS, tr("Buffer Size"),
 		tr("Determines the buffer size which the time stretcher will try to keep filled. It effectively selects the "
-		   "average latency, as audio will be stretched/shrunk to keep the buffer size within check."));
+		   "average latency, as audio will be stretched/shrunk to keep the buffer size within check."), tr("%1 ms").arg(AudioStreamParameters::DEFAULT_BUFFER_MS));
 	dialog()->registerWidgetHelp(
-		m_ui.outputLatencyMS, tr("Output Latency"), tr("%1 ms").arg(AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MS),
+		m_ui.outputLatencyMS, tr("Output Latency"),
 		tr("Determines the latency from the buffer to the host audio output. This can be set lower than the target latency "
-		   "to reduce audio delay."));
-	dialog()->registerWidgetHelp(m_ui.standardVolume, tr("Standard Volume"), "100%",
-		tr("Controls the volume of the audio played on the host at normal speed."));
-	dialog()->registerWidgetHelp(m_ui.fastForwardVolume, tr("Fast Forward Volume"), "100%",
-		tr("Controls the volume of the audio played on the host when fast forwarding."));
-	dialog()->registerWidgetHelp(m_ui.muted, tr("Mute All Sound"), tr("Unchecked"),
-		tr("Prevents the emulator from producing any audible sound."));
-	dialog()->registerWidgetHelp(m_ui.expansionMode, tr("Expansion Mode"), tr("Disabled (Stereo)"),
+		   "to reduce audio delay."), tr("%1 ms").arg(AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MS));
+	dialog()->registerWidgetHelp(m_ui.standardVolume, tr("Standard Volume"),
+		tr("Controls the volume of the audio played on the host at normal speed."), tr("100%"));
+	dialog()->registerWidgetHelp(m_ui.fastForwardVolume, tr("Fast Forward Volume"),
+		tr("Controls the volume of the audio played on the host when fast forwarding."), tr("100%"));
+	dialog()->registerWidgetHelp(m_ui.muted, tr("Mute All Sound"),
+		tr("Prevents the emulator from producing any audible sound."), tr("Unchecked"));
+	dialog()->registerWidgetHelp(m_ui.expansionMode, tr("Expansion Mode"),
 		tr("Determines how audio is expanded from stereo to surround for supported games. This "
-		   "includes games that support Dolby Pro Logic/Pro Logic II."));
-	dialog()->registerWidgetHelp(m_ui.expansionSettings, tr("Expansion Settings"), tr("N/A"),
+		   "includes games that support Dolby Pro Logic/Pro Logic II."), tr("Disabled (Stereo)"));
+	dialog()->registerWidgetHelp(m_ui.expansionSettings, tr("Expansion Settings"),
 		tr("These settings fine-tune the behavior of the FreeSurround-based channel expander."));
-	dialog()->registerWidgetHelp(m_ui.syncMode, tr("Synchronization"), tr("TimeStretch (Recommended)"),
-		tr("When running outside of 100% speed, adjusts the tempo on audio instead of dropping frames. Produces much nicer fast-forward/slowdown audio."));
-	dialog()->registerWidgetHelp(m_ui.stretchSettings, tr("Stretch Settings"), tr("N/A"),
+	dialog()->registerWidgetHelp(m_ui.syncMode, tr("Synchronization"),
+		tr("When running outside of 100% speed, adjusts the tempo on audio instead of dropping frames. Produces much nicer fast-forward/slowdown audio."), tr("TimeStretch (Recommended)"));
+	dialog()->registerWidgetHelp(m_ui.stretchSettings, tr("Stretch Settings"),
 		tr("These settings fine-tune the behavior of the SoundTouch audio time stretcher when running outside of 100% speed."));
-	dialog()->registerWidgetHelp(m_ui.resetStandardVolume, tr("Reset Standard Volume"), tr("N/A"),
+	dialog()->registerWidgetHelp(m_ui.resetStandardVolume, tr("Reset Standard Volume"),
 		dialog()->isPerGameSettings() ? tr("Resets standard volume back to the global/inherited setting.") :
 										tr("Resets standard volume back to the default."));
-	dialog()->registerWidgetHelp(m_ui.resetFastForwardVolume, tr("Reset Fast Forward Volume"), tr("N/A"),
+	dialog()->registerWidgetHelp(m_ui.resetFastForwardVolume, tr("Reset Fast Forward Volume"),
 		dialog()->isPerGameSettings() ? tr("Resets fast forward volume back to the global/inherited setting.") :
 										tr("Resets fast forward volume back to the default."));
 }

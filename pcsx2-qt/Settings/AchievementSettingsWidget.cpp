@@ -48,19 +48,32 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* settings_di
 	SettingWidgetBinder::BindWidgetToFileSetting(sif, m_ui.unlockSoundPath, m_ui.unlockSoundBrowse, m_ui.unlockSoundOpen, m_ui.unlockSoundReset, "Achievements", "UnlockSoundName", Path::Combine(EmuFolders::Resources, EmuConfig.Achievements.DEFAULT_UNLOCK_SOUND_NAME), AUDIO_FILE_FILTER, true, false);
 	SettingWidgetBinder::BindWidgetToFileSetting(sif, m_ui.lbSoundPath, m_ui.lbSoundBrowse, m_ui.lbSoundOpen, m_ui.lbSoundReset, "Achievements", "LBSubmitSoundName", Path::Combine(EmuFolders::Resources, EmuConfig.Achievements.DEFAULT_LBSUBMIT_SOUND_NAME), AUDIO_FILE_FILTER, true, false);
 
-	dialog()->registerWidgetHelp(m_ui.enable, tr("Enable Achievements"), tr("Unchecked"), tr("When enabled and logged in, PCSX2 will scan for achievements on startup."));
-	dialog()->registerWidgetHelp(m_ui.hardcoreMode, tr("Enable Hardcore Mode"), tr("Unchecked"), tr("\"Challenge\" mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions."));
-	dialog()->registerWidgetHelp(m_ui.achievementNotifications, tr("Show Achievement Notifications"), tr("Checked"), tr("Displays popup messages on events such as achievement unlocks and game completion."));
-	dialog()->registerWidgetHelp(m_ui.leaderboardNotifications, tr("Show Leaderboard Notifications"), tr("Checked"), tr("Displays popup messages when starting, submitting, or failing a leaderboard challenge."));
-	dialog()->registerWidgetHelp(m_ui.soundEffects, tr("Enable Sound Effects"), tr("Checked"), tr("Plays sound effects for events such as achievement unlocks and leaderboard submissions."));
-	dialog()->registerWidgetHelp(m_ui.soundEffectsBox, tr("Custom Sound Effect"), tr("Any"), tr("Customize the sound effect that are played whenever you received a notification, earned an achievement or submitted an entry to the leaderboard."));
-	dialog()->registerWidgetHelp(m_ui.overlays, tr("Enable In-Game Overlays"), tr("Checked"), tr("Shows icons in the screen when a challenge/primed achievement is active."));
-	dialog()->registerWidgetHelp(m_ui.leaderboardOverlays, tr("Enable In-Game Leaderboard Overlays"), tr("Checked"), tr("Shows icons in the screen when leaderboard tracking is active."));
-	dialog()->registerWidgetHelp(m_ui.overlayPosition, tr("Overlay Position"), tr("Bottom Right"), tr("Determines where achievement/leaderboard overlays are positioned on the screen."));
-	dialog()->registerWidgetHelp(m_ui.notificationPosition, tr("Notification Position"), tr("Top Left"), tr("Determines where achievement/leaderboard notification popups are positioned on the screen."));
-	dialog()->registerWidgetHelp(m_ui.encoreMode, tr("Enable Encore Mode"), tr("Unchecked"), tr("When enabled, each session will behave as if no achievements have been unlocked."));
-	dialog()->registerWidgetHelp(m_ui.spectatorMode, tr("Enable Spectator Mode"), tr("Unchecked"), tr("When enabled, PCSX2 will assume all achievements are locked and not send any unlock notifications to the server."));
-	dialog()->registerWidgetHelp(m_ui.unofficialAchievements, tr("Test Unofficial Achievements"), tr("Unchecked"), tr("When enabled, PCSX2 will list achievements from unofficial sets. Please note that these achievements are not tracked by RetroAchievements, so they unlock every time."));
+	dialog()->registerWidgetHelp(m_ui.enable, tr("Enable Achievements"),
+		tr("When enabled and logged in, PCSX2 will scan for achievements on startup."), tr("Unchecked"));
+	dialog()->registerWidgetHelp(m_ui.hardcoreMode, tr("Enable Hardcore Mode"),
+		tr("\"Challenge\" mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions."), tr("Unchecked"));
+	dialog()->registerWidgetHelp(m_ui.achievementNotifications, tr("Show Achievement Notifications"),
+		tr("Displays popup messages on events such as achievement unlocks and game completion."), tr("Checked"));
+	dialog()->registerWidgetHelp(m_ui.leaderboardNotifications, tr("Show Leaderboard Notifications"),
+		tr("Displays popup messages when starting, submitting, or failing a leaderboard challenge."), tr("Checked"));
+	dialog()->registerWidgetHelp(m_ui.soundEffects, tr("Enable Sound Effects"),
+		tr("Plays sound effects for events such as achievement unlocks and leaderboard submissions."), tr("Checked"));
+	dialog()->registerWidgetHelp(m_ui.soundEffectsBox, tr("Custom Sound Effect"),
+		tr("Customize the sound effect that are played whenever you received a notification, earned an achievement or submitted an entry to the leaderboard."), tr("Any"));
+	dialog()->registerWidgetHelp(m_ui.overlays, tr("Enable In-Game Overlays"),
+		tr("Shows icons in the screen when a challenge/primed achievement is active."), tr("Checked"));
+	dialog()->registerWidgetHelp(m_ui.leaderboardOverlays, tr("Enable In-Game Leaderboard Overlays"),
+		tr("Shows icons in the screen when leaderboard tracking is active."), tr("Checked"));
+	dialog()->registerWidgetHelp(m_ui.overlayPosition, tr("Overlay Position"),
+		tr("Determines where achievement/leaderboard overlays are positioned on the screen."), tr("Bottom Right"));
+	dialog()->registerWidgetHelp(m_ui.notificationPosition, tr("Notification Position"),
+		tr("Determines where achievement/leaderboard notification popups are positioned on the screen."), tr("Top Left"));
+	dialog()->registerWidgetHelp(m_ui.encoreMode, tr("Enable Encore Mode"),
+		tr("When enabled, each session will behave as if no achievements have been unlocked."), tr("Unchecked"));
+	dialog()->registerWidgetHelp(m_ui.spectatorMode, tr("Enable Spectator Mode"),
+		tr("When enabled, PCSX2 will assume all achievements are locked and not send any unlock notifications to the server."), tr("Unchecked"));
+	dialog()->registerWidgetHelp(m_ui.unofficialAchievements, tr("Test Unofficial Achievements"),
+		tr("When enabled, PCSX2 will list achievements from unofficial sets. These achievements are not tracked by RetroAchievements, so they unlock every time."), tr("Unchecked"));
 
 	connect(m_ui.enable, &QCheckBox::checkStateChanged, this, &AchievementSettingsWidget::updateEnableState);
 	connect(m_ui.hardcoreMode, &QCheckBox::checkStateChanged, this, &AchievementSettingsWidget::updateEnableState);

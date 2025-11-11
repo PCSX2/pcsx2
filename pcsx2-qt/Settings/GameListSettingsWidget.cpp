@@ -27,8 +27,8 @@ GameListSettingsWidget::GameListSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.preferEnglishGameList, "UI", "PreferEnglishGameList", false);
 	connect(m_ui.preferEnglishGameList, &QCheckBox::checkStateChanged, this, [this] { emit preferEnglishGameListChanged(); });
 
-	dialog()->registerWidgetHelp(m_ui.preferEnglishGameList, tr("Prefer English Titles"), tr("Unchecked"),
-		tr("For games with both a title in the game's native language and one in English, prefer the English title."));
+	dialog()->registerWidgetHelp(m_ui.preferEnglishGameList, tr("Prefer English Titles"),
+		tr("For games with both a title in the game's native language and one in English, prefer the English title."), tr("Unchecked"));
 
 	m_ui.searchDirectoryList->setSelectionMode(QAbstractItemView::SingleSelection);
 	m_ui.searchDirectoryList->setSelectionBehavior(QAbstractItemView::SelectRows);

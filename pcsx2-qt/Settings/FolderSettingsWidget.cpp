@@ -24,8 +24,8 @@ FolderSettingsWidget::FolderSettingsWidget(SettingsWindow* settings_dialog, QWid
 		"Folders", "SaveStates", Path::Combine(EmuFolders::DataRoot, "sstates"));
 	SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.videoDumpingDirectory, m_ui.videoDumpingDirectoryBrowse, m_ui.videoDumpingDirectoryOpen, m_ui.videoDumpingDirectoryReset,
 		"Folders", "Videos", Path::Combine(EmuFolders::DataRoot, "videos"));
-	dialog()->registerWidgetHelp(m_ui.organizeSnapshotsByGame, tr("Organize Snapshots by Game"), tr("Unchecked"),
- 		tr("Saves snapshots to per-game subfolders instead of a shared folder."));
+	dialog()->registerWidgetHelp(m_ui.organizeSnapshotsByGame, tr("Organize Snapshots by Game"),
+ 		tr("Saves snapshots to per-game subfolders instead of a shared folder."), tr("Unchecked"));
 }
 
 FolderSettingsWidget::~FolderSettingsWidget() = default;

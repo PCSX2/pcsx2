@@ -42,21 +42,21 @@ DebugSettingsWidget::DebugSettingsWidget(SettingsWindow* settings_dialog, QWidge
 				g_debugger_window->updateFromSettings();
 		});
 		dialog()->registerWidgetHelp(
-			m_user_interface.refreshInterval, tr("Refresh Interval"), tr("1000ms"),
+			m_user_interface.refreshInterval, tr("Refresh Interval"),
 			tr("The amount of time to wait between subsequent attempts to update the user interface to reflect the state "
-			   "of the virtual machine."));
+			   "of the virtual machine."), tr("1000 ms"));
 
 		SettingWidgetBinder::BindWidgetToBoolSetting(
 			sif, m_user_interface.showOnStartup, "Debugger/UserInterface", "ShowOnStartup", false);
 		dialog()->registerWidgetHelp(
-			m_user_interface.showOnStartup, tr("Show On Startup"), tr("Unchecked"),
-			tr("Open the debugger window automatically when PCSX2 starts."));
+			m_user_interface.showOnStartup, tr("Show On Startup"),
+			tr("Open the debugger window automatically when PCSX2 starts."), tr("Unchecked"));
 
 		SettingWidgetBinder::BindWidgetToBoolSetting(
 			sif, m_user_interface.saveWindowGeometry, "Debugger/UserInterface", "SaveWindowGeometry", true);
 		dialog()->registerWidgetHelp(
-			m_user_interface.saveWindowGeometry, tr("Save Window Geometry"), tr("Checked"),
-			tr("Save the position and size of the debugger window when it is closed so that it can be restored later."));
+			m_user_interface.saveWindowGeometry, tr("Save Window Geometry"),
+			tr("Save the position and size of the debugger window when it is closed so that it can be restored later."), tr("Checked"));
 
 		SettingWidgetBinder::BindWidgetToEnumSetting(
 			sif,
@@ -68,9 +68,9 @@ DebugSettingsWidget::DebugSettingsWidget(SettingsWindow* settings_dialog, QWidge
 			s_drop_indicators[0],
 			"DebugUserInterfaceSettingsWidget");
 		dialog()->registerWidgetHelp(
-			m_user_interface.dropIndicator, tr("Drop Indicator Style"), tr("Classic"),
+			m_user_interface.dropIndicator, tr("Drop Indicator Style"),
 			tr("Choose how the drop indicators that appear when you drag dock windows in the debugger are styled. "
-			   "You will have to restart the debugger for this option to take effect."));
+			   "You will have to restart the debugger for this option to take effect."), tr("Classic"));
 	}
 	else
 	{
@@ -87,11 +87,11 @@ DebugSettingsWidget::DebugSettingsWidget(SettingsWindow* settings_dialog, QWidge
 	SettingWidgetBinder::BindWidgetToBoolSetting(
 		sif, m_analysis.generateSymbolsForIRXExportTables, "Debugger/Analysis", "GenerateSymbolsForIRXExports", true);
 
-	dialog()->registerWidgetHelp(m_analysis.analysisCondition, tr("Analyze Program"), tr("If Debugger Is Open"),
+	dialog()->registerWidgetHelp(m_analysis.analysisCondition, tr("Analyze Program"),
 		tr("Choose when the analysis passes should be run: Always (to save time when opening the debugger), If "
-		   "Debugger Is Open (to save memory if you never open the debugger), or Never."));
-	dialog()->registerWidgetHelp(m_analysis.generateSymbolsForIRXExportTables, tr("Generate Symbols for IRX Export Tables"), tr("Checked"),
-		tr("Hook IRX module loading/unloading and generate symbols for exported functions on the fly."));
+		   "Debugger Is Open (to save memory if you never open the debugger), or Never."), tr("If Debugger Is Open"));
+	dialog()->registerWidgetHelp(m_analysis.generateSymbolsForIRXExportTables, tr("Generate Symbols for IRX Export Tables"),
+		tr("Hook IRX module loading/unloading and generate symbols for exported functions on the fly."), tr("Checked"));
 
 	m_analysis_settings = new DebugAnalysisSettingsWidget(dialog());
 
@@ -127,74 +127,74 @@ DebugSettingsWidget::DebugSettingsWidget(SettingsWindow* settings_dialog, QWidge
 	// Logging Settings
 	//////////////////////////////////////////////////////////////////////////
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkEnable, "EmuCore/TraceLog", "Enabled", false);
-	dialog()->registerWidgetHelp(m_logging.chkEnable, tr("Enable Trace Logging"), tr("Unchecked"), tr("Globally enable / disable trace logging."));
+	dialog()->registerWidgetHelp(m_logging.chkEnable, tr("Enable Trace Logging"), tr("Globally enable / disable trace logging."), tr("Unchecked"));
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkEEBIOS, "EmuCore/TraceLog", "EE.bios", false);
-	dialog()->registerWidgetHelp(m_logging.chkEEBIOS, tr("EE BIOS"), tr("Unchecked"), tr("Log SYSCALL and DECI2 activity."));
+	dialog()->registerWidgetHelp(m_logging.chkEEBIOS, tr("EE BIOS"), tr("Log SYSCALL and DECI2 activity."), tr("Unchecked"));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkEEMemory, "EmuCore/TraceLog", "EE.memory", false);
-	dialog()->registerWidgetHelp(m_logging.chkEEMemory, tr("EE Memory"), tr("Unchecked"), tr("Log memory access to unknown or unmapped EE memory."));
+	dialog()->registerWidgetHelp(m_logging.chkEEMemory, tr("EE Memory"), tr("Log memory access to unknown or unmapped EE memory."), tr("Unchecked"));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkEER5900, "EmuCore/TraceLog", "EE.r5900", false);
-	dialog()->registerWidgetHelp(m_logging.chkEER5900, tr("EE R5900"), tr("Unchecked"), tr("Log R5900 core instructions (excluding COPs). Requires modifying the PCSX2 source and enabling the interpreter."));
+	dialog()->registerWidgetHelp(m_logging.chkEER5900, tr("EE R5900"), tr("Log R5900 core instructions (excluding COPs). Requires modifying the PCSX2 source and enabling the interpreter."), tr("Unchecked"));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkEECOP0, "EmuCore/TraceLog", "EE.cop0", false);
-	dialog()->registerWidgetHelp(m_logging.chkEECOP0, tr("EE COP0"), tr("Unchecked"), tr("Log COP0 (MMU, CPU status, etc) instructions."));
+	dialog()->registerWidgetHelp(m_logging.chkEECOP0, tr("EE COP0"), tr("Log COP0 (MMU, CPU status, etc) instructions."), tr("Unchecked"));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkEECOP1, "EmuCore/TraceLog", "EE.cop1", false);
-	dialog()->registerWidgetHelp(m_logging.chkEECOP1, tr("EE COP1"), tr("Unchecked"), tr("Log COP1 (FPU) instructions."));
+	dialog()->registerWidgetHelp(m_logging.chkEECOP1, tr("EE COP1"), tr("Log COP1 (FPU) instructions."), tr("Unchecked"));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkEECOP2, "EmuCore/TraceLog", "EE.cop2", false);
-	dialog()->registerWidgetHelp(m_logging.chkEECOP2, tr("EE COP2"), tr("Unchecked"), tr("Log COP2 (VU0 Macro mode) instructions."));
+	dialog()->registerWidgetHelp(m_logging.chkEECOP2, tr("EE COP2"), tr("Log COP2 (VU0 Macro mode) instructions."), tr("Unchecked"));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkEECache, "EmuCore/TraceLog", "EE.cache", false);
-	dialog()->registerWidgetHelp(m_logging.chkEECache, tr("EE Cache"), tr("Unchecked"), tr("Log EE cache activity."));
+	dialog()->registerWidgetHelp(m_logging.chkEECache, tr("EE Cache"), tr("Log EE cache activity."), tr("Unchecked"));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkEEMMIO, "EmuCore/TraceLog", "EE.knownhw", false);
-	dialog()->registerWidgetHelp(m_logging.chkEEMMIO, tr("EE Known MMIO"), tr("Unchecked"), tr("Log known MMIO accesses."));
+	dialog()->registerWidgetHelp(m_logging.chkEEMMIO, tr("EE Known MMIO"), tr("Log known MMIO accesses."), tr("Unchecked"));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkEEUNKNWNMMIO, "EmuCore/TraceLog", "EE.unknownhw", false);
-	dialog()->registerWidgetHelp(m_logging.chkEEUNKNWNMMIO, tr("EE Unknown MMIO"), tr("Unchecked"), tr("Log unknown or unimplemented MMIO accesses."));
+	dialog()->registerWidgetHelp(m_logging.chkEEUNKNWNMMIO, tr("EE Unknown MMIO"), tr("Log unknown or unimplemented MMIO accesses."), tr("Unchecked"));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkEEDMARegs, "EmuCore/TraceLog", "EE.dmahw", false);
-	dialog()->registerWidgetHelp(m_logging.chkEEDMARegs, tr("EE DMA Registers"), tr("Unchecked"), tr("Log DMA-related MMIO accesses."));
+	dialog()->registerWidgetHelp(m_logging.chkEEDMARegs, tr("EE DMA Registers"), tr("Log DMA-related MMIO accesses."), tr("Unchecked"));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkEEIPU, "EmuCore/TraceLog", "EE.ipu", false);
-	dialog()->registerWidgetHelp(m_logging.chkEEIPU, tr("EE IPU"), tr("Unchecked"), tr("Log IPU activity; MMIO, decoding operations, DMA status, etc."));
+	dialog()->registerWidgetHelp(m_logging.chkEEIPU, tr("EE IPU"), tr("Log IPU activity; MMIO, decoding operations, DMA status, etc."), tr("Unchecked"));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkEEGIFTags, "EmuCore/TraceLog", "EE.giftag", false);
-	dialog()->registerWidgetHelp(m_logging.chkEEGIFTags, tr("EE GIF Tags"), tr("Unchecked"), tr("Log GIFtag parsing activity."));
+	dialog()->registerWidgetHelp(m_logging.chkEEGIFTags, tr("EE GIF Tags"), tr("Log GIFtag parsing activity."), tr("Unchecked"));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkEEVIFCodes, "EmuCore/TraceLog", "EE.vifcode", false);
-	dialog()->registerWidgetHelp(m_logging.chkEEVIFCodes, tr("EE VIF Codes"), tr("Unchecked"), tr("Log VIFcode processing; command, tag style, interrupts."));
+	dialog()->registerWidgetHelp(m_logging.chkEEVIFCodes, tr("EE VIF Codes"), tr("Log VIFcode processing; command, tag style, interrupts."), tr("Unchecked"));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkEEMSKPATH3, "EmuCore/TraceLog", "EE.mskpath3", false);
-	dialog()->registerWidgetHelp(m_logging.chkEEMSKPATH3, tr("EE MSKPATH3"), tr("Unchecked"), tr("Log Path3 Masking processing."));
+	dialog()->registerWidgetHelp(m_logging.chkEEMSKPATH3, tr("EE MSKPATH3"), tr("Log Path3 Masking processing."), tr("Unchecked"));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkEEMFIFO, "EmuCore/TraceLog", "EE.spr", false);
-	dialog()->registerWidgetHelp(m_logging.chkEEMFIFO, tr("EE MFIFO"), tr("Unchecked"), tr("Log Scratchpad MFIFO activity."));
+	dialog()->registerWidgetHelp(m_logging.chkEEMFIFO, tr("EE MFIFO"), tr("Log Scratchpad MFIFO activity."), tr("Unchecked"));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkEEDMACTRL, "EmuCore/TraceLog", "EE.dmac", false);
-	dialog()->registerWidgetHelp(m_logging.chkEEDMACTRL, tr("EE DMA Controller"), tr("Unchecked"), tr("Log DMA transfer activity. Stalls, bus right arbitration, etc."));
+	dialog()->registerWidgetHelp(m_logging.chkEEDMACTRL, tr("EE DMA Controller"), tr("Log DMA transfer activity. Stalls, bus right arbitration, etc."), tr("Unchecked"));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkEECounters, "EmuCore/TraceLog", "EE.counters", false);
-	dialog()->registerWidgetHelp(m_logging.chkEECounters, tr("EE Counters"), tr("Unchecked"), tr("Log all EE counters events and some counter register activity."));
+	dialog()->registerWidgetHelp(m_logging.chkEECounters, tr("EE Counters"), tr("Log all EE counters events and some counter register activity."), tr("Unchecked"));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkEEVIF, "EmuCore/TraceLog", "EE.vif", false);
-	dialog()->registerWidgetHelp(m_logging.chkEEVIF, tr("EE VIF"), tr("Unchecked"), tr("Log various VIF and VIFcode processing data."));
+	dialog()->registerWidgetHelp(m_logging.chkEEVIF, tr("EE VIF"), tr("Log various VIF and VIFcode processing data."), tr("Unchecked"));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkEEGIF, "EmuCore/TraceLog", "EE.gif", false);
-	dialog()->registerWidgetHelp(m_logging.chkEEGIF, tr("EE GIF"), tr("Unchecked"), tr("Log various GIF and GIFtag parsing data."));
+	dialog()->registerWidgetHelp(m_logging.chkEEGIF, tr("EE GIF"), tr("Log various GIF and GIFtag parsing data."), tr("Unchecked"));
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkIOPBIOS, "EmuCore/TraceLog", "IOP.Bios", false);
-	dialog()->registerWidgetHelp(m_logging.chkIOPBIOS, tr("IOP BIOS"), tr("Unchecked"), tr("Log SYSCALL and IRX activity."));
+	dialog()->registerWidgetHelp(m_logging.chkIOPBIOS, tr("IOP BIOS"), tr("Log SYSCALL and IRX activity."), tr("Unchecked"));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkIOPMemcards, "EmuCore/TraceLog", "IOP.memcards", false);
-	dialog()->registerWidgetHelp(m_logging.chkIOPMemcards, tr("IOP Memcards"), tr("Unchecked"), tr("Log memory card activity. Reads, Writes, erases, etc."));
+	dialog()->registerWidgetHelp(m_logging.chkIOPMemcards, tr("IOP Memcards"), tr("Log memory card activity. Reads, Writes, erases, etc."), tr("Unchecked"));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkIOPR3000A, "EmuCore/TraceLog", "IOP.r3000a", false);
-	dialog()->registerWidgetHelp(m_logging.chkIOPR3000A, tr("IOP R3000A"), tr("Unchecked"), tr("Log R3000A core instructions (excluding COPs)."));
+	dialog()->registerWidgetHelp(m_logging.chkIOPR3000A, tr("IOP R3000A"), tr("Log R3000A core instructions (excluding COPs)."), tr("Unchecked"));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkIOPCOP2, "EmuCore/TraceLog", "IOP.cop2", false);
-	dialog()->registerWidgetHelp(m_logging.chkIOPCOP2, tr("IOP COP2"), tr("Unchecked"), tr("Log IOP GPU co-processor instructions."));
+	dialog()->registerWidgetHelp(m_logging.chkIOPCOP2, tr("IOP COP2"), tr("Log IOP GPU co-processor instructions."), tr("Unchecked"));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkIOPMMIO, "EmuCore/TraceLog", "IOP.knownhw", false);
-	dialog()->registerWidgetHelp(m_logging.chkIOPMMIO, tr("IOP Known MMIO"), tr("Unchecked"), tr("Log known MMIO accesses."));
+	dialog()->registerWidgetHelp(m_logging.chkIOPMMIO, tr("IOP Known MMIO"), tr("Log known MMIO accesses."), tr("Unchecked"));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkIOPUNKNWNMMIO, "EmuCore/TraceLog", "IOP.unknownhw", false);
-	dialog()->registerWidgetHelp(m_logging.chkIOPUNKNWNMMIO, tr("IOP Unknown MMIO"), tr("Unchecked"), tr("Log unknown or unimplemented MMIO accesses."));
+	dialog()->registerWidgetHelp(m_logging.chkIOPUNKNWNMMIO, tr("IOP Unknown MMIO"), tr("Log unknown or unimplemented MMIO accesses."), tr("Unchecked"));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkIOPDMARegs, "EmuCore/TraceLog", "IOP.dmahw", false);
-	dialog()->registerWidgetHelp(m_logging.chkIOPDMARegs, tr("IOP DMA Registers"), tr("Unchecked"), tr("Log DMA-related MMIO accesses."));
+	dialog()->registerWidgetHelp(m_logging.chkIOPDMARegs, tr("IOP DMA Registers"), tr("Log DMA-related MMIO accesses."), tr("Unchecked"));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkIOPPad, "EmuCore/TraceLog", "IOP.pad", false);
-	dialog()->registerWidgetHelp(m_logging.chkIOPPad, tr("IOP PAD"), tr("Unchecked"), tr("Log PAD activity."));
+	dialog()->registerWidgetHelp(m_logging.chkIOPPad, tr("IOP PAD"), tr("Log PAD activity."), tr("Unchecked"));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkIOPDMACTRL, "EmuCore/TraceLog", "IOP.dmac", false);
-	dialog()->registerWidgetHelp(m_logging.chkIOPDMACTRL, tr("IOP DMA Controller"), tr("Unchecked"), tr("Log DMA transfer activity. Stalls, bus right arbitration, etc."));
+	dialog()->registerWidgetHelp(m_logging.chkIOPDMACTRL, tr("IOP DMA Controller"), tr("Log DMA transfer activity. Stalls, bus right arbitration, etc."), tr("Unchecked"));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkIOPCounters, "EmuCore/TraceLog", "IOP.counters", false);
-	dialog()->registerWidgetHelp(m_logging.chkIOPCounters, tr("IOP Counters"), tr("Unchecked"), tr("Log all IOP counters events and some counter register activity."));
+	dialog()->registerWidgetHelp(m_logging.chkIOPCounters, tr("IOP Counters"), tr("Log all IOP counters events and some counter register activity."), tr("Unchecked"));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkIOPCDVD, "EmuCore/TraceLog", "IOP.cdvd", false);
-	dialog()->registerWidgetHelp(m_logging.chkIOPCDVD, tr("IOP CDVD"), tr("Unchecked"), tr("Log CDVD hardware activity."));
+	dialog()->registerWidgetHelp(m_logging.chkIOPCDVD, tr("IOP CDVD"), tr("Log CDVD hardware activity."), tr("Unchecked"));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkIOPMDEC, "EmuCore/TraceLog", "IOP.mdec", false);
-	dialog()->registerWidgetHelp(m_logging.chkIOPMDEC, tr("IOP MDEC"), tr("Unchecked"), tr("Log Motion (FMV) Decoder hardware unit activity."));
+	dialog()->registerWidgetHelp(m_logging.chkIOPMDEC, tr("IOP MDEC"), tr("Log Motion (FMV) Decoder hardware unit activity."), tr("Unchecked"));
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_logging.chkEESIF, "EmuCore/TraceLog", "MISC.sif", false);
-	dialog()->registerWidgetHelp(m_logging.chkEESIF, tr("EE SIF"), tr("Unchecked"), tr("Log SIF (EE <-> IOP) activity."));
+	dialog()->registerWidgetHelp(m_logging.chkEESIF, tr("EE SIF"), tr("Log SIF (EE <-> IOP) activity."), tr("Unchecked"));
 
 	connect(m_logging.chkEnable, &QCheckBox::checkStateChanged, this, &DebugSettingsWidget::onLoggingEnableChanged);
 	onLoggingEnableChanged();

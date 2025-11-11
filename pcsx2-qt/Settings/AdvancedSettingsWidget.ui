@@ -534,7 +534,7 @@
       <item row="0" column="0">
        <widget class="QCheckBox" name="pineEnable">
         <property name="text">
-         <string>Enable</string>
+         <string>Enable PINE</string>
         </property>
        </widget>
       </item>
