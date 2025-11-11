@@ -888,6 +888,8 @@ int main(int argc, char* argv[])
 	if (!GSRunner::ParseCommandLineArgs(argc, argv, params))
 		return EXIT_FAILURE;
 
+	SysMemory::ReserveMemory();
+
 	if (!VMManager::Internal::CPUThreadInitialize())
 		return EXIT_FAILURE;
 
