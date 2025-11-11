@@ -551,55 +551,6 @@ bool GSHwHack::GSC_TalesOfLegendia(GSRendererHW& r, int& skip)
 	return true;
 }
 
-bool GSHwHack::GSC_ZettaiZetsumeiToshi2(GSRendererHW& r, int& skip)
-{
-	if (skip == 0)
-	{
-		if (RTME && RTPSM == PSMCT16S && (RFBMSK >= 0x6FFFFFFF || RFBMSK == 0))
-		{
-			skip = 1000;
-		}
-		else if (RTME && RTPSM == PSMCT32 && RFBMSK == 0xFF000000)
-		{
-			skip = 2; // Fog
-		}
-		else if ((RFBP | RTBP0) && RFPSM == RTPSM && RTPSM == PSMCT16 && RFBMSK == 0x3FFF)
-		{
-			// Note start of the effect (texture shuffle) is fixed but maybe not the extra draw call
-			skip = 1000;
-		}
-	}
-	else
-	{
-		if (!RTME && RTPSM == PSMCT32 && RFBP == 0x1180 && RTBP0 == 0x1180 && (RFBMSK == 0))
-		{
-			skip = 0;
-		}
-		if (RTME && RTPSM == PSMT4 && RFBP && (RTBP0 != 0x3753))
-		{
-			skip = 0;
-		}
-		if (RTME && RTPSM == PSMT8H && RFBP == 0x22e0 && RTBP0 == 0x36e0)
-		{
-			skip = 0;
-		}
-		if (!RTME && RTPSM == PSMT8H && RFBP == 0x22e0)
-		{
-			skip = 0;
-		}
-		if (RTME && RTPSM == PSMT8 && (RFBP == 0x1180 || RFBP == 0) && (RTBP0 != 0x3764 && RTBP0 != 0x370f))
-		{
-			skip = 0;
-		}
-		if (RTME && RTPSM == PSMCT16S && (RFBP == 0x1180))
-		{
-			skip = 2;
-		}
-	}
-
-	return true;
-}
-
 bool GSHwHack::GSC_UltramanFightingEvolution(GSRendererHW& r, int& skip)
 {
 	if (skip == 0)
@@ -645,27 +596,6 @@ bool GSHwHack::GSC_UrbanReign(GSRendererHW& r, int& skip)
 		{
 			GL_CACHE("GSC_UrbanReign: Fix region clamp to 64 wide");
 			RCLAMP.MAXU = 63;
-		}
-	}
-
-	return true;
-}
-
-bool GSHwHack::GSC_SteambotChronicles(GSRendererHW& r, int& skip)
-{
-	if (skip == 0)
-	{
-		// Author: miseru99 on forums.pcsx2.net
-		if (RTME && RTPSM == PSMCT16S)
-		{
-			if (RFBP == 0x1180)
-			{
-				skip = 1; // 1 deletes some of the glitched effects
-			}
-			else if (RFBP == 0)
-			{
-				skip = 100; // deletes most others(too high deletes the buggy sea completely;c, too low causes glitches to be visible)
-			}
 		}
 	}
 
@@ -1476,7 +1406,6 @@ const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_function
 	CRC_F(GSC_TalesOfLegendia),
 	CRC_F(GSC_TalesofSymphonia),
 	CRC_F(GSC_UrbanReign),
-	CRC_F(GSC_ZettaiZetsumeiToshi2),
 	CRC_F(GSC_BlackAndBurnoutSky),
 	CRC_F(GSC_BlueTongueGames),
 	CRC_F(GSC_NFSUndercover),
@@ -1488,7 +1417,6 @@ const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_function
 	// Channel Effect
 	CRC_F(GSC_NamcoGames),
 	CRC_F(GSC_SandGrainGames),
-	CRC_F(GSC_SteambotChronicles),
 
 	// Depth Issue
 	CRC_F(GSC_BurnoutGames),
