@@ -964,9 +964,20 @@ namespace SaveStateSelectorUI
 	static void RefreshHotkeyLegend();
 	static void Draw();
 	static void ShowSlotOSDMessage();
+	static std::string GetSaveStateTimestampSummary(const std::time_t& modification_time);
 	bool IsOpen();
 
-	static constexpr const char* DATE_TIME_FORMAT = TRANSLATE_NOOP("ImGuiOverlays", "Saved at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}.");
+	static constexpr const char* SAVED_AGO_DAYS_TIME_DATE =
+		TRANSLATE_NOOP("ImGuiOverlays", "Saved {0} days ago at {1:%H:%M} on {1:%a} {1:%Y/%m/%d}");
+	static constexpr const char* SAVED_FUTURE_TIME_DATE =
+		TRANSLATE_NOOP("ImGuiOverlays", "Saved in the future at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}");
+	static constexpr const char* SAVED_AGO_HOURS_MINUTES =
+		TRANSLATE_NOOP("ImGuiOverlays", "Saved {0} hours, {1} minutes ago at {2:%H:%M}");
+	static constexpr const char* SAVED_AGO_MINUTES = TRANSLATE_NOOP("ImGuiOverlays", "Saved {0} minutes ago at {1:%H:%M}");
+	static constexpr const char* SAVED_AGO_SECONDS = TRANSLATE_NOOP("ImGuiOverlays", "Saved {} seconds ago");
+	static constexpr const char* SAVED_AGO_NOW = TRANSLATE_NOOP("ImGuiOverlays", "Saved just now");
+	static constexpr std::time_t ONE_HOUR = 60 * 60; // 3600
+	static constexpr std::time_t TWENTY_FOUR_HOURS = ONE_HOUR * 24; // 86400
 
 	static std::shared_ptr<GSTexture> s_placeholder_texture;
 	static std::string s_load_legend;
@@ -1144,14 +1155,7 @@ void SaveStateSelectorUI::InitializeListEntry(const std::string& serial, u32 crc
 	}
 
 	li->title = fmt::format(TRANSLATE_FS("ImGuiOverlays", "Save Slot {0}"), slot);
-
-	std::tm tm_local = {};
-#ifdef _MSC_VER
-	localtime_s(&tm_local, &sd.ModificationTime);
-#else
-	localtime_r(&sd.ModificationTime, &tm_local);
-#endif
-	li->summary = fmt::format(TRANSLATE_FS("ImGuiOverlays", DATE_TIME_FORMAT), tm_local);
+	li->summary = GetSaveStateTimestampSummary(sd.ModificationTime);
 	li->filename = Path::GetFileName(path);
 
 	u32 screenshot_width, screenshot_height;
@@ -1173,7 +1177,7 @@ void SaveStateSelectorUI::InitializeListEntry(const std::string& serial, u32 crc
 void SaveStateSelectorUI::InitializePlaceholderListEntry(ListEntry* li, std::string path, s32 slot)
 {
 	li->title = fmt::format(TRANSLATE_FS("ImGuiOverlays", "Save Slot {0}"), slot);
-	li->summary = TRANSLATE_STR("ImGuiOverlays", "No save present in this slot.");
+	li->summary = TRANSLATE_STR("ImGuiOverlays", "No save present in this slot");
 	li->filename = Path::GetFileName(path);
 }
 
@@ -1349,26 +1353,15 @@ void SaveStateSelectorUI::ShowSlotOSDMessage()
 	const std::string serial = VMManager::GetDiscSerial();
 	const std::string filename = VMManager::GetSaveStateFileName(serial.c_str(), crc, slot);
 	FILESYSTEM_STAT_DATA sd;
-	std::string date;
-	
-	std::tm tm_local = {};
+	std::string timestamp_summary;
 
 	if (!filename.empty() && FileSystem::StatFile(filename.c_str(), &sd))
-	{
-#ifdef _MSC_VER
-		localtime_s(&tm_local, &sd.ModificationTime);
-#else
-		localtime_r(&sd.ModificationTime, &tm_local);
-#endif
-		date = fmt::format(TRANSLATE_FS("ImGuiOverlays", DATE_TIME_FORMAT), tm_local);
-	}
+		timestamp_summary = GetSaveStateTimestampSummary(sd.ModificationTime);
 	else
-	{
-		date = TRANSLATE_STR("ImGuiOverlays", "no save yet");
-	}
+		timestamp_summary = TRANSLATE_STR("ImGuiOverlays", "no save yet");
 
 	Host::AddIconOSDMessage("ShowSlotOSDMessage", ICON_FA_MAGNIFYING_GLASS,
-		fmt::format(TRANSLATE_FS("Hotkeys", "Save slot {0} selected ({1})."), slot, date),
+		fmt::format(TRANSLATE_FS("Hotkeys", "Save slot {0} selected ({1})."), slot, timestamp_summary),
 		Host::OSD_QUICK_DURATION);
 }
 
@@ -1387,4 +1380,48 @@ void ImGuiManager::RenderOverlays()
 	DrawInputsOverlay(scale, margin, spacing);
 	if (SaveStateSelectorUI::s_open)
 		SaveStateSelectorUI::Draw();
+}
+
+std::string SaveStateSelectorUI::GetSaveStateTimestampSummary(const std::time_t& modification_time)
+{
+
+	std::tm tm_modification_local = {};
+#ifdef _MSC_VER
+	localtime_s(&tm_modification_local, &modification_time);
+#else
+	localtime_r(&modification_time, &tm_modification_local);
+#endif
+
+	const std::time_t current_time = std::time(nullptr);
+	const std::time_t time_since_save = current_time - std::mktime(&tm_modification_local);
+
+	if (time_since_save >= TWENTY_FOUR_HOURS)
+	{
+		return fmt::format(TRANSLATE_FS("ImGuiOverlays", SAVED_AGO_DAYS_TIME_DATE),
+			time_since_save / TWENTY_FOUR_HOURS, tm_modification_local);
+	}
+	else if (time_since_save >= ONE_HOUR)
+	{
+		return fmt::format(TRANSLATE_FS("ImGuiOverlays", SAVED_AGO_HOURS_MINUTES),
+			time_since_save / ONE_HOUR, (time_since_save / 60) % 60, tm_modification_local);
+	}
+	else if (time_since_save >= 60)
+	{
+		return fmt::format(TRANSLATE_FS("ImGuiOverlays", SAVED_AGO_MINUTES),
+			time_since_save / 60, tm_modification_local);
+	}
+	else if (time_since_save >= 5)
+	{
+		return fmt::format(TRANSLATE_FS("ImGuiOverlays", SAVED_AGO_SECONDS),
+			time_since_save);
+	}
+	else if (time_since_save >= 0)
+	{
+		return TRANSLATE_STR("ImGuiOverlays", SAVED_AGO_NOW);
+	}
+	else
+	{
+		return fmt::format(TRANSLATE_FS("ImGuiOverlays", SAVED_FUTURE_TIME_DATE),
+			tm_modification_local);
+	}
 }
