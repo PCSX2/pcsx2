@@ -1760,7 +1760,7 @@ bool GSRendererHW::IsUsingAsInBlend()
 }
 bool GSRendererHW::ChannelsSharedTEX0FRAME()
 {
-	if (!IsRTWritten() && !m_cached_ctx.TEST.DATE)
+	if (!m_cached_ctx.TEST.DATE && !IsRTWritten())
 		return false;
 
 	return GSUtil::GetChannelMask(m_cached_ctx.FRAME.PSM, m_cached_ctx.FRAME.FBMSK) & GSUtil::GetChannelMask(m_cached_ctx.TEX0.PSM);
@@ -1778,7 +1778,7 @@ bool GSRendererHW::IsTBPFrameOrZ(u32 tbp, bool frame_only)
 	const u32 fm_mask = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk;
 
 	const u32 max_z = (0xFFFFFFFF >> (GSLocalMemory::m_psm[m_cached_ctx.ZBUF.PSM].fmt * 8));
-	const bool no_rt = (!IsRTWritten() && !m_cached_ctx.TEST.DATE);
+	const bool no_rt = (!m_cached_ctx.TEST.DATE && !IsRTWritten());
 	const bool no_ds = (
 	                       // Depth is always pass/fail (no read) and write are discarded.
 	                       (zm != 0 && m_cached_ctx.TEST.ZTST <= ZTST_ALWAYS) ||
@@ -2517,7 +2517,7 @@ void GSRendererHW::Draw()
 	// 2/ SuperMan really draws (0,0,0,0) color and a (0) 32-bits depth
 	// 3/ 50cents really draws (0,0,0,128) color and a (0) 24 bits depth
 	// Note: FF DoC has both buffer at same location but disable the depth test (write?) with ZTE = 0
-	bool no_rt = (!IsRTWritten() && !m_cached_ctx.TEST.DATE);
+	bool no_rt = (!m_cached_ctx.TEST.DATE && !IsRTWritten());
 	const bool all_depth_tests_pass = IsDepthAlwaysPassing();
 	bool no_ds = (zm != 0 && all_depth_tests_pass) ||
 	             // No color or Z being written.
@@ -3151,18 +3151,28 @@ void GSRendererHW::Draw()
 					m_cached_ctx.ZBUF.ZMSK = (new_zm != 0);
 					fm = new_fm;
 					zm = new_zm;
-					no_rt = no_rt || (!IsRTWritten() && !m_cached_ctx.TEST.DATE);
+					no_rt = no_rt || (!m_cached_ctx.TEST.DATE && !IsRTWritten());
 					no_ds = no_ds || (zm != 0 && all_depth_tests_pass) ||
 					        // Depth will be written through the RT
 					        (!no_rt && m_cached_ctx.FRAME.FBP == m_cached_ctx.ZBUF.ZBP && !PRIM->TME && zm == 0 && (fm & fm_mask) == 0 && m_cached_ctx.TEST.ZTE) ||
 					        // No color or Z being written.
 					        (no_rt && zm != 0);
-					if (no_rt && no_ds)
-					{
-						GL_INS("HW: Late draw cancel because no pixels pass alpha test.");
-						CleanupDraw(true);
-						return;
-					}
+				}
+				else
+				{
+					no_rt = no_rt || (!m_cached_ctx.TEST.DATE && !IsRTWritten());
+					no_ds = no_ds ||
+					        // Depth will be written through the RT
+					        (!no_rt && m_cached_ctx.FRAME.FBP == m_cached_ctx.ZBUF.ZBP && !PRIM->TME && zm == 0 && (fm & fm_mask) == 0 && m_cached_ctx.TEST.ZTE) ||
+					        // No color or Z being written.
+					        (no_rt && zm != 0);
+				}
+
+				if (no_rt && no_ds)
+				{
+					GL_INS("HW: Late draw cancel.");
+					CleanupDraw(true);
+					return;
 				}
 			}
 		}
