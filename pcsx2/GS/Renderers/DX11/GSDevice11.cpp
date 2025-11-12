@@ -2624,34 +2624,46 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		}
 	}
 
+	// Destination Alpha Setup
 	GSTexture* primid_texture = nullptr;
-	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking)
+	const bool multidraw_fb_copy = m_features.multidraw_fb_copy && (config.require_one_barrier || config.require_full_barrier);
+	switch (config.destination_alpha)
 	{
-		primid_texture = CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::PrimID, false);
-		if (!primid_texture)
+		case GSHWDrawConfig::DestinationAlphaMode::Off:
+		case GSHWDrawConfig::DestinationAlphaMode::Full:
+			break; // No setup
+		case GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking:
+			primid_texture = CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::PrimID, false);
+			if (!primid_texture)
+			{
+				Console.Warning("D3D11: Failed to allocate DATE image, aborting draw.");
+				return;
+			}
+
+			StretchRect(colclip_rt ? colclip_rt : config.rt, GSVector4(config.drawarea) / GSVector4(rtsize).xyxy(),
+				primid_texture, GSVector4(config.drawarea), m_date.primid_init_ps[static_cast<u8>(config.datm)].get(), nullptr, false);
+
+			break;
+		case GSHWDrawConfig::DestinationAlphaMode::StencilOne:
+			if (multidraw_fb_copy)
+			{
+				// Cleared after RT bind.
+				break;
+			}
+			[[fallthrough]];
+		case GSHWDrawConfig::DestinationAlphaMode::Stencil:
 		{
-			Console.Warning("D3D11: Failed to allocate DATE image, aborting draw.");
-			return;
+			const GSVector4 src = GSVector4(config.drawarea) / GSVector4(config.ds->GetSize()).xyxy();
+			const GSVector4 dst = src * 2.0f - 1.0f;
+			GSVertexPT1 vertices[] =
+				{
+					{GSVector4(dst.x, -dst.y, 0.5f, 1.0f), GSVector2(src.x, src.y)},
+					{GSVector4(dst.z, -dst.y, 0.5f, 1.0f), GSVector2(src.z, src.y)},
+					{GSVector4(dst.x, -dst.w, 0.5f, 1.0f), GSVector2(src.x, src.w)},
+					{GSVector4(dst.z, -dst.w, 0.5f, 1.0f), GSVector2(src.z, src.w)},
+				};
+			SetupDATE(colclip_rt ? colclip_rt : config.rt, config.ds, vertices, config.datm);
 		}
-
-		StretchRect(colclip_rt ? colclip_rt : config.rt, GSVector4(config.drawarea) / GSVector4(rtsize).xyxy(),
-			primid_texture, GSVector4(config.drawarea), m_date.primid_init_ps[static_cast<u8>(config.datm)].get(), nullptr, false);
-	}
-	else if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::Stencil ||
-			 config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne)
-	{
-		const GSVector4 src = GSVector4(config.drawarea) / GSVector4(config.ds->GetSize()).xyxy();
-		const GSVector4 dst = src * 2.0f - 1.0f;
-
-		GSVertexPT1 vertices[] =
-		{
-			{GSVector4(dst.x, -dst.y, 0.5f, 1.0f), GSVector2(src.x, src.y)},
-			{GSVector4(dst.z, -dst.y, 0.5f, 1.0f), GSVector2(src.z, src.y)},
-			{GSVector4(dst.x, -dst.w, 0.5f, 1.0f), GSVector2(src.x, src.w)},
-			{GSVector4(dst.z, -dst.w, 0.5f, 1.0f), GSVector2(src.z, src.w)},
-		};
-
-		SetupDATE(colclip_rt ? colclip_rt : config.rt, config.ds, vertices, config.datm);
 	}
 
 	if (config.vs.expand != GSHWDrawConfig::VSExpand::None)
@@ -2766,6 +2778,11 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 
 	OMSetRenderTargets(draw_rt, draw_ds, &config.scissor, read_only_dsv);
 	SetupOM(config.depth, OMBlendSelector(config.colormask, config.blend), config.blend.constant);
+
+	// Clear stencil as close as possible to the RT bind, to avoid framebuffer swaps.
+	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne && multidraw_fb_copy)
+		m_ctx->ClearDepthStencilView(*static_cast<GSTexture11*>(draw_ds), D3D11_CLEAR_STENCIL, 0.0f, 1);
+
 	SendHWDraw(config, draw_rt_clone, draw_rt, config.require_one_barrier, config.require_full_barrier, false);
 
 	if (config.blend_multi_pass.enable)
