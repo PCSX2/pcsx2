@@ -622,7 +622,7 @@ __ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spa
 		else
 			APPEND("IR={} ", static_cast<unsigned>(GSConfig.UpscaleMultiplier));
 
-		APPEND("B={} PL={} ", static_cast<unsigned>(GSConfig.AccurateBlendingUnit), static_cast<unsigned>(GSConfig.TexturePreloading));
+		APPEND("BL={} TPL={} ", static_cast<unsigned>(GSConfig.AccurateBlendingUnit), static_cast<unsigned>(GSConfig.TexturePreloading));
 		if (GSConfig.GPUPaletteConversion)
 			APPEND("PLTX ");
 

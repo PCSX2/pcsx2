@@ -674,11 +674,11 @@ void GSgetStats(SmallStringBase& info)
 		}
 		else if (pps >= _1kb)
 		{
-			pps /= _1kb; // Kpps
-			prefix = 'K';
+			pps /= _1kb; // kpps
+			prefix = 'k';
 		}
 
-		info.format("{} SW | {} SP | {} P | {} D | {:.2f} S | {:.2f} U | {:.2f} {}pps",
+		info.format("{} SW | {} SYNP | {} PRIM | {} DRW | {:.2f} SWIZ | {:.2f} UNSWIZ | {:.2f} {}pps",
 			api_name,
 			(int)pm.Get(GSPerfMon::SyncPoint),
 			(int)pm.Get(GSPerfMon::Prim),
@@ -693,7 +693,7 @@ void GSgetStats(SmallStringBase& info)
 	}
 	else
 	{
-		info.format("{} HW | {} P | {} D | {} DC | {} B | {} RP | {} RB | {} TC | {} TU",
+		info.format("{} HW | {} PRIM | {} DRW | {} DRWC | {} BAR | {} RP | {} RB | {} TC | {} TU",
 			api_name,
 			(int)pm.Get(GSPerfMon::Prim),
 			(int)pm.Get(GSPerfMon::Draw),
@@ -733,7 +733,7 @@ void GSgetMemoryStats(SmallStringBase& info)
 	{
 		const double hashcache_MB = get_MB(static_cast<double>(g_texture_cache->GetHashCacheMemoryUsage()));
 		const double total_MB = targets_MB + sources_MB + hashcache_MB + pool_MB;
-		info.format("VRAM: {} MB | T: {} MB | S: {} MB | H: {} MB | P: {} MB",
+		info.format("VRAM: {} MB | TGT: {} MB | SRC: {} MB | HC: {} MB | PL: {} MB",
 			format_precision(total_MB),
 			format_precision(targets_MB),
 			format_precision(sources_MB),
@@ -743,7 +743,7 @@ void GSgetMemoryStats(SmallStringBase& info)
 	else
 	{
 		const double total_MB = targets_MB + sources_MB + pool_MB;
-		info.format("VRAM: {} MB | T: {} MB | S: {} MB | P: {} MB",
+		info.format("VRAM: {} MB | TGT: {} MB | SRC: {} MB | PL: {} MB",
 			format_precision(total_MB),
 			format_precision(targets_MB),
 			format_precision(sources_MB),
