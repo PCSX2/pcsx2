@@ -9,6 +9,7 @@
 #include <QtWidgets/QProxyStyle>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QTabBar>
+#include <QtWidgets/QBoxLayout>
 #include <QtWidgets/QWidget>
 
 class DockMenuBarStyle;
@@ -36,8 +37,6 @@ public:
 	void updateBlink();
 	void stopBlink();
 
-	int innerHeight() const;
-
 Q_SIGNALS:
 	void currentLayoutChanged(DockLayout::Index layout_index);
 	void newButtonClicked();
@@ -54,6 +53,7 @@ private:
 
 	QWidget* m_original_menu_bar;
 
+	QVBoxLayout* m_layout_switcher_layout;
 	QTabBar* m_layout_switcher;
 	QMetaObject::Connection m_tab_connection;
 	int m_plus_tab_index = -1;
@@ -70,8 +70,7 @@ private:
 	DockMenuBarStyle* m_style = nullptr;
 };
 
-// Fixes some theming issues relating to the menu bar, the layout switcher and
-// the layout locked/unlocked toggle button.
+// Fixes some theming issues relating to the menu bar and the layout switcher.
 class DockMenuBarStyle : public QProxyStyle
 {
 	Q_OBJECT
@@ -83,11 +82,11 @@ public:
 		ControlElement element,
 		const QStyleOption* option,
 		QPainter* painter,
-		const QWidget* widget = nullptr) const override;
+		const QWidget* widget) const override;
 
 	QSize sizeFromContents(
 		QStyle::ContentsType type,
 		const QStyleOption* option,
 		const QSize& contents_size,
-		const QWidget* widget = nullptr) const override;
+		const QWidget* widget) const override;
 };
