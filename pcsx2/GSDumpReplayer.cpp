@@ -959,6 +959,8 @@ static void GSDumpReplayerFrameLimit()
 	s_next_frame_time = std::max(now, s_next_frame_time + s_frame_ticks);
 }
 
+u8 packet_buf[5 * 1024 * 1024];
+
 void GSDumpReplayerCpuStep()
 {
 	if ((s_current_packet & 0xFF) == 0)
@@ -980,6 +982,7 @@ void GSDumpReplayerCpuStep()
 	bool done_dump = false;
 
 	GSDumpFile::GSData packet;
+	packet.data = packet_buf; // FIXME: TEMP CODE!
 	Error error;
 	s64 ret = s_dump_file->GetPacket(s_current_packet, packet, &error);
 	if (ret > 0)
@@ -995,7 +998,7 @@ void GSDumpReplayerCpuStep()
 				done_dump = true;
 		}
 
-		constexpr bool DRY_RUN = true;
+		constexpr bool DRY_RUN = false;
 
 		switch (packet.id)
 		{

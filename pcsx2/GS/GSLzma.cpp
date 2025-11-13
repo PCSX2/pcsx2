@@ -1528,9 +1528,15 @@ s64 GSDumpLazy::GetPacket(size_t i, GSData& data, Error* error)
 	// Get the next packet in the buffer.
 	const PacketInfo& info = packets[read_packet % packets.size()];
 	pxAssert(read_buffer == info.buffer_start);
+	void* dat = (void*)data.data; // FIXME: TEMP!
 	data = info.data;
+	std::memcpy(dat, data.data, data.length); // FIXME: TEMP!
+	data.data = (u8*)dat; // FIXME: TEMP!
 	size_t size = info.buffer_end - info.buffer_start;
-	reading_packet = true;
+	read_buffer = info.buffer_end; // FIXME: TEMP
+	read_packet++; // FIXME: TEMP
+	reading_packet = false; // FIXME: TEMP!
+	// reading_packet = true; // FIXME: TEMP! (UNCOMMENT!)
 
 	if (_LoadCond())
 		cond_write.notify_one();
