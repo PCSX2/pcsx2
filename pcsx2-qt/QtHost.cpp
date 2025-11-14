@@ -88,8 +88,8 @@ static QTimer* s_settings_save_timer = nullptr;
 static std::unique_ptr<INISettingsInterface> s_base_settings_interface;
 static bool s_batch_mode = false;
 static bool s_nogui_mode = false;
-static bool s_start_fullscreen_ui = false;
-static bool s_start_fullscreen_ui_fullscreen = false;
+static bool s_start_big_picture_mode = false;
+static bool s_start_fullscreen = false;
 static bool s_test_config_and_exit = false;
 static bool s_run_setup_wizard = false;
 static bool s_cleanup_after_update = false;
@@ -2168,7 +2168,7 @@ bool QtHost::ParseCommandLineOptions(const QStringList& args, std::shared_ptr<VM
 			else if (CHECK_ARG(QStringLiteral("-fullscreen")))
 			{
 				AutoBoot(autoboot)->fullscreen = true;
-				s_start_fullscreen_ui_fullscreen = true;
+				s_start_fullscreen = true;
 				continue;
 			}
 			else if (CHECK_ARG(QStringLiteral("-nofullscreen")))
@@ -2183,7 +2183,7 @@ bool QtHost::ParseCommandLineOptions(const QStringList& args, std::shared_ptr<VM
 			}
 			else if (CHECK_ARG(QStringLiteral("-bigpicture")))
 			{
-				s_start_fullscreen_ui = true;
+				s_start_big_picture_mode = true;
 				continue;
 			}
 			else if (CHECK_ARG(QStringLiteral("-testconfig")))
@@ -2244,7 +2244,7 @@ bool QtHost::ParseCommandLineOptions(const QStringList& args, std::shared_ptr<VM
 
 	// if we don't have autoboot, we definitely don't want batch mode (because that'll skip
 	// scanning the game list).
-	if (s_batch_mode && !s_start_fullscreen_ui && !autoboot)
+	if (s_batch_mode && !s_start_big_picture_mode && !autoboot)
 	{
 		QMessageBox::critical(nullptr, QStringLiteral("Error"),
 			s_nogui_mode ? QStringLiteral("Cannot use no-gui mode, because no boot filename was specified.") :
@@ -2398,8 +2398,9 @@ int main(int argc, char* argv[])
 	}
 
 	// Initialize big picture mode if requested by command line or settings.
-	if (s_start_fullscreen_ui || Host::GetBaseBoolSettingValue("UI", "StartBigPictureMode", false))
-		g_emu_thread->startFullscreenUI(s_start_fullscreen_ui_fullscreen);
+	// As CLI arguments are baked-in, they're tracked separately from settings which can be changed during runtime.
+	if (s_start_big_picture_mode || Host::GetBaseBoolSettingValue("UI", "StartBigPictureMode", false))
+		g_emu_thread->startFullscreenUI(s_start_fullscreen || Host::GetBaseBoolSettingValue("UI", "StartFullscreen", false));
 
 	if (s_boot_and_debug || DebuggerWindow::shouldShowOnStartup())
 	{
