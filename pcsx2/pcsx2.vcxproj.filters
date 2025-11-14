@@ -1859,6 +1859,9 @@
     <ClInclude Include="DEV9\Sessions\UDP_Session\UDP_BaseSession.h">
       <Filter>System\Ps2\DEV9\Sessions\UDP_Session</Filter>
     </ClInclude>
+    <ClInclude Include="DEV9\Sessions\UDP_Session\UDP_ServerSession.h">
+      <Filter>System\Ps2\DEV9\Sessions\UDP_Session</Filter>
+    </ClInclude>
     <ClInclude Include="DEV9\Sessions\UDP_Session\UDP_Session.h">
       <Filter>System\Ps2\DEV9\Sessions\UDP_Session</Filter>
     </ClInclude>
