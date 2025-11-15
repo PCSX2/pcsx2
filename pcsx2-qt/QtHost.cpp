@@ -94,6 +94,7 @@ static bool s_test_config_and_exit = false;
 static bool s_run_setup_wizard = false;
 static bool s_cleanup_after_update = false;
 static bool s_boot_and_debug = false;
+static std::atomic_int s_vm_locked_with_dialog = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // CPU Thread
@@ -494,6 +495,11 @@ void EmuThread::setFullscreen(bool fullscreen, bool allow_render_to_main)
 		QMetaObject::invokeMethod(this, "setFullscreen", Qt::QueuedConnection, Q_ARG(bool, fullscreen), Q_ARG(bool, allow_render_to_main));
 		return;
 	}
+
+	// HACK: Prevent entering/exiting fullscreen mode when a dialog is shown, so
+	// that we don't destroy the dialog while inside its exec function.
+	if (s_vm_locked_with_dialog > 0)
+		return;
 
 	if (!MTGS::IsOpen() || m_is_fullscreen == fullscreen)
 		return;
@@ -1711,6 +1717,16 @@ void Host::OnInputDeviceDisconnected(const InputBindingKey key, const std::strin
 void Host::SetMouseMode(bool relative_mode, bool hide_cursor)
 {
 	emit g_emu_thread->onMouseModeRequested(relative_mode, hide_cursor);
+}
+
+void QtHost::LockVMWithDialog()
+{
+	s_vm_locked_with_dialog++;
+}
+
+void QtHost::UnlockVMWithDialog()
+{
+	s_vm_locked_with_dialog--;
 }
 
 namespace

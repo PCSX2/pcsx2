@@ -69,6 +69,7 @@ public:
 		friend MainWindow;
 
 		QWidget* m_dialog_parent;
+		bool m_has_lock;
 		bool m_was_paused;
 		bool m_was_fullscreen;
 	};

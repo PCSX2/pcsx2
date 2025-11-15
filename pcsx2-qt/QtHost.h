@@ -290,4 +290,10 @@ namespace QtHost
 
 	/// Compare strings in the locale of the current UI language
 	int LocaleSensitiveCompare(QStringView lhs, QStringView rhs);
+
+	/// Determines whether or not requests to enter/exit fullscreen mode should
+	/// be ignored. This is a hack so that we don't destroy a dialog box while
+	/// inside its exec function, which would cause a crash.
+	void LockVMWithDialog();
+	void UnlockVMWithDialog();
 } // namespace QtHost
