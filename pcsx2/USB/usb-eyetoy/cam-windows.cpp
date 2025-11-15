@@ -336,21 +336,21 @@ namespace usb_eyetoy
 			HRESULT hr = nullrenderer->Run(0);
 			if (FAILED(hr))
 			{
-				Console.Error("nullrenderer->Run() failed: %08X", hr);
+				Console.Error("Camera: nullrenderer->Run() failed: %08X", hr);
 				return false;
 			}
 
 			hr = samplegrabberfilter->Run(0);
 			if (FAILED(hr))
 			{
-				Console.Error("samplegrabberfilter->Run() failed: %08X", hr);
+				Console.Error("Camera: samplegrabberfilter->Run() failed: %08X", hr);
 				return false;
 			}
 
 			hr = sourcefilter->Run(0);
 			if (FAILED(hr))
 			{
-				Console.Error("sourcefilter->Run() failed: %08X", hr);
+				Console.Error("Camera: sourcefilter->Run() failed: %08X", hr);
 				return false;
 			}
 
@@ -361,15 +361,15 @@ namespace usb_eyetoy
 		{
 			HRESULT hr = sourcefilter->Stop();
 			if (FAILED(hr))
-				Console.Error("sourcefilter->Stop() failed: %08X", hr);
+				Console.Error("Camera: sourcefilter->Stop() failed: %08X", hr);
 
 			hr = samplegrabberfilter->Stop();
 			if (FAILED(hr))
-				Console.Error("samplegrabberfilter->Stop() failed: %08X", hr);
+				Console.Error("Camera: samplegrabberfilter->Stop() failed: %08X", hr);
 
 			hr = nullrenderer->Stop();
 			if (FAILED(hr))
-				Console.Error("nullrenderer->Stop() failed: %08X", hr);
+				Console.Error("Camera: nullrenderer->Stop() failed: %08X", hr);
 		}
 
 		void store_mpeg_frame(const unsigned char* data, const unsigned int len)
@@ -381,12 +381,12 @@ namespace usb_eyetoy
 			mpeg_mutex.unlock();
 		}
 
-		void dshow_callback(unsigned char* data, int len, int bitsperpixel)
+		void dshow_callback(unsigned char* data, int len, int bits_per_pixel)
 		{
-			if (bitsperpixel == 24)
+			if (bits_per_pixel == 24)
 			{
-				const int bytesPerPixel = 3;
-				const size_t comprBufSize = frame_width * frame_height * bytesPerPixel;
+				constexpr unsigned int bytes_per_pixel = 3;
+				const size_t comprBufSize = frame_width * frame_height * bytes_per_pixel;
 				std::vector<u8> comprBuf(comprBufSize);
 				if (frame_format == format_mpeg)
 				{
@@ -398,12 +398,17 @@ namespace usb_eyetoy
 				{
 					// flip Y - always required on windows
 					unsigned char* data2 = (unsigned char*)calloc(1, comprBufSize);
+					if (!data2)
+					{
+						Console.Error("Camera: dshow_callback call to calloc failed to get %zu bytes.", comprBufSize);
+						return;
+					}
 					for (int y = 0; y < frame_height; y++)
 					{
 						for (int x = 0; x < frame_width; x++)
 						{
-							unsigned char* src = data + (y * frame_width + x) * bytesPerPixel;
-							unsigned char* dst = data2 + ((frame_height - y - 1) * frame_width + x) * bytesPerPixel;
+							unsigned char* src = data + (y * frame_width + x) * bytes_per_pixel;
+							unsigned char* dst = data2 + ((frame_height - y - 1) * frame_width + x) * bytes_per_pixel;
 							dst[0] = src[2];
 							dst[1] = src[1];
 							dst[2] = src[0];
@@ -425,7 +430,7 @@ namespace usb_eyetoy
 								{
 									int srcx = 4 * (8 * mx + x);
 									int srcy = frame_height - 4 * (8 * my + y) - 1;
-									unsigned char* src = data + (srcy * frame_width + srcx) * bytesPerPixel;
+									unsigned char* src = data + (srcy * frame_width + srcx) * bytes_per_pixel;
 									if (srcy < 0)
 									{
 										comprBuf[in_pos++] = 0x01;
@@ -448,20 +453,25 @@ namespace usb_eyetoy
 			}
 			else
 			{
-				Console.Warning("Camera: dshow_callback: unknown format: len=%d bpp=%d", len, bitsperpixel);
+				Console.Warning("Camera: dshow_callback: unknown format: len=%d bpp=%d", len, bits_per_pixel);
 			}
 		}
 
 		void create_dummy_frame_eyetoy()
 		{
-			constexpr int bytesPerPixel = 3;
-			const int comprBufSize = frame_width * frame_height * bytesPerPixel;
+			constexpr unsigned int bytes_per_pixel = 3;
+			const size_t comprBufSize = frame_width * frame_height * bytes_per_pixel;
 			unsigned char* rgbData = (unsigned char*)calloc(1, comprBufSize);
+			if (!rgbData)
+			{
+				Console.Error("Camera: create_dummy_frame_eyetoy call to calloc failed to get %zu bytes.", comprBufSize);
+				return;
+			}
 			for (int y = 0; y < frame_height; y++)
 			{
 				for (int x = 0; x < frame_width; x++)
 				{
-					unsigned char* ptr = rgbData + (y * frame_width + x) * bytesPerPixel;
+					unsigned char* ptr = rgbData + (y * frame_width + x) * bytes_per_pixel;
 					ptr[0] = 255 * y / frame_height;
 					ptr[1] = 255 * x / frame_width;
 					ptr[2] = 255 * y / frame_height;
@@ -490,8 +500,13 @@ namespace usb_eyetoy
 
 		void create_dummy_frame_ov511p()
 		{
-			int comprBufSize = 80 * 64;
+			const size_t comprBufSize = 80 * 64;
 			unsigned char* comprBuf = (unsigned char*)calloc(1, comprBufSize);
+			if (!comprBuf)
+			{
+				Console.Error("Camera: create_dummy_frame_ov511p call to calloc failed to get %zu bytes.", comprBufSize);
+				return;
+			}
 			if (frame_format == format_yuv400)
 			{
 				for (int y = 0; y < 64; y++)
@@ -531,7 +546,7 @@ namespace usb_eyetoy
 			const HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 			if (FAILED(hr))
 			{
-				Console.ErrorFmt("CoInitializeEx failed: {}", Error::CreateHResult(hr).GetDescription());
+				Console.ErrorFmt("Camera: CoInitializeEx failed: {}", Error::CreateHResult(hr).GetDescription());
 				return -1;
 			}
 			wil::unique_couninitialize_call uninit;
