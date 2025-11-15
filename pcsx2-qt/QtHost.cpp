@@ -770,12 +770,12 @@ void EmuThread::enumerateVibrationMotors()
 	onVibrationMotorsEnumerated(qmotors);
 }
 
-void EmuThread::connectDisplaySignals(DisplayWidget* widget)
+void EmuThread::connectDisplaySignals(DisplaySurface* widget)
 {
 	widget->disconnect(this);
 
-	connect(widget, &DisplayWidget::windowResizedEvent, this, &EmuThread::onDisplayWindowResized);
-	connect(widget, &DisplayWidget::windowRestoredEvent, this, &EmuThread::redrawDisplayWindow);
+	connect(widget, &DisplaySurface::windowResizedEvent, this, &EmuThread::onDisplayWindowResized);
+	connect(widget, &DisplaySurface::windowRestoredEvent, this, &EmuThread::redrawDisplayWindow);
 }
 
 void EmuThread::onDisplayWindowResized(int width, int height, float scale)

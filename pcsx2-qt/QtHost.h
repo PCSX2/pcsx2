@@ -28,7 +28,7 @@
 
 class SettingsInterface;
 
-class DisplayWidget;
+class DisplaySurface;
 struct VMBootParameters;
 
 enum class CDVD_SourceType : uint8_t;
@@ -69,7 +69,7 @@ public:
 
 	/// Called back from the GS thread when the display state changes (e.g. fullscreen, render to main).
 	std::optional<WindowInfo> acquireRenderWindow(bool recreate_window);
-	void connectDisplaySignals(DisplayWidget* widget);
+	void connectDisplaySignals(DisplaySurface* widget);
 	void releaseRenderWindow();
 
 	void startBackgroundControllerPollTimer();
