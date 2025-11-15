@@ -306,7 +306,7 @@ bool GSDumpReplayer::GetDumpFileList(const std::string& dir, std::vector<std::st
 	});
 
 	std::erase_if(files, [](const auto& f) {
-		return !VMManager::IsGSDumpFileName(f.FileName);
+		return !VMManager::IsGSDumpFileName(f.FileName) || (f.FileName.find("Call of Duty - World at War - Final Fronts_SLUS") != std::string_view::npos);
 	});
 
 	if (files.empty())
