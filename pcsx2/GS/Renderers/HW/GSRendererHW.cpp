@@ -6727,7 +6727,9 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 		// Bigger problem when WH is 1024x1024 and the target is only small.
 		// This "fixes" a lot of the rainbow garbage in games when upscaling (and xenosaga shadows + VP2 forest seem quite happy).
 		// Note that this is done on the original texture scale, during upscales it can mess up otherwise.
-		const GSVector4 region_clamp_offset = GSVector4::cxpr(0.5f, 0.5f, 0.1f, 0.1f);
+		const GSVector4 region_clamp_offset = ((GSConfig.UserHacks_HalfPixelOffset == GSHalfPixelOffset::Native && tex->GetScale() > 1.0f) && !m_channel_shuffle) ? 
+												(GSVector4::cxpr(1.0f, 1.0f, 0.1f, 0.1f) + (GSVector4::cxpr(0.1f, 0.1f, 0.0f, 0.0f) * tex->GetScale())) :
+		                                         GSVector4::cxpr(0.5f, 0.5f, 0.1f, 0.1f);
 
 		const GSVector4 region_clamp = (GSVector4(clamp) + region_clamp_offset) / WH.xyxy();
 		if (wms >= CLAMP_REGION_CLAMP)
