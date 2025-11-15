@@ -106,6 +106,11 @@ namespace Common
 		Reset();
 	}
 
+	Timer::Timer(Value start_value)
+	{
+		m_tvStartValue = start_value;
+	}
+
 	void Timer::Reset()
 	{
 		m_tvStartValue = GetCurrentValue();

@@ -12,6 +12,7 @@ namespace Common
 		using Value = std::uint64_t;
 
 		Timer();
+		Timer (Value start_value);
 
 		static Value GetCurrentValue();
 		static double ConvertValueToSeconds(Value value);

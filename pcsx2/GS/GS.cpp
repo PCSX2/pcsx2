@@ -664,22 +664,18 @@ void GSgetStats(SmallStringBase& info)
 
 		if (pps >= 170000000)
 		{
-			pps /= 1073741824; // Gpps
+			pps /= _1gb; // Gpps
 			prefix = 'G';
 		}
 		else if (pps >= 35000000)
 		{
-			pps /= 1048576; // Mpps
+			pps /= _1mb; // Mpps
 			prefix = 'M';
 		}
-		else if (pps >= 1024)
+		else if (pps >= _1kb)
 		{
-			pps /= 1024;
+			pps /= _1kb; // Kpps
 			prefix = 'K';
-		}
-		else
-		{
-			prefix = '\0';
 		}
 
 		info.format("{} SW | {} SP | {} P | {} D | {:.2f} S | {:.2f} U | {:.2f} {}pps",
@@ -687,13 +683,13 @@ void GSgetStats(SmallStringBase& info)
 			(int)pm.Get(GSPerfMon::SyncPoint),
 			(int)pm.Get(GSPerfMon::Prim),
 			(int)pm.Get(GSPerfMon::Draw),
-			pm.Get(GSPerfMon::Swizzle) / 1024,
-			pm.Get(GSPerfMon::Unswizzle) / 1024,
+			pm.Get(GSPerfMon::Swizzle) / _1kb,
+			pm.Get(GSPerfMon::Unswizzle) / _1kb,
 			pps, prefix);
 	}
 	else if (GSCurrentRenderer == GSRendererType::Null)
 	{
-		fmt::format_to(std::back_inserter(info), "{} Null", api_name);
+		info.format("{} Null", api_name);
 	}
 	else
 	{
@@ -713,30 +709,45 @@ void GSgetStats(SmallStringBase& info)
 void GSgetMemoryStats(SmallStringBase& info)
 {
 	if (!g_texture_cache)
+	{
+		info.assign("");
 		return;
+	}
 
-	const u64 targets = g_texture_cache->GetTargetMemoryUsage();
-	const u64 sources = g_texture_cache->GetSourceMemoryUsage();
-	const u64 hashcache = g_texture_cache->GetHashCacheMemoryUsage();
-	const u64 pool = g_gs_device->GetPoolMemoryUsage();
-	const u64 total = targets + sources + hashcache + pool;
+	// Get megabyte values. Round negligible values to 0.1 MB to avoid swamping.
+	const auto get_MB = [](const double bytes) {
+		return (bytes <= 0.0 ? bytes : std::max(0.1, bytes / static_cast<double>(_1mb)));
+	};
+
+	const auto format_precision = [](const double megabytes) -> std::string {
+		return (megabytes < 10.0 ?
+			fmt::format("{:.1f}", megabytes) :
+			fmt::format("{:.0f}", std::round(megabytes)));
+	};
+
+	const double targets_MB = get_MB(static_cast<double>(g_texture_cache->GetTargetMemoryUsage()));
+	const double sources_MB = get_MB(static_cast<double>(g_texture_cache->GetSourceMemoryUsage()));
+	const double pool_MB = get_MB(static_cast<double>(g_gs_device->GetPoolMemoryUsage()));
 
 	if (GSConfig.TexturePreloading == TexturePreloadingLevel::Full)
 	{
-		fmt::format_to(std::back_inserter(info), "VRAM: {} MB | T: {} MB | S: {} MB | H: {} MB | P: {} MB",
-			(int)std::ceil(total / 1048576.0f),
-			(int)std::ceil(targets / 1048576.0f),
-			(int)std::ceil(sources / 1048576.0f),
-			(int)std::ceil(hashcache / 1048576.0f),
-			(int)std::ceil(pool / 1048576.0f));
+		const double hashcache_MB = get_MB(static_cast<double>(g_texture_cache->GetHashCacheMemoryUsage()));
+		const double total_MB = targets_MB + sources_MB + hashcache_MB + pool_MB;
+		info.format("VRAM: {} MB | T: {} MB | S: {} MB | H: {} MB | P: {} MB",
+			format_precision(total_MB),
+			format_precision(targets_MB),
+			format_precision(sources_MB),
+			format_precision(hashcache_MB),
+			format_precision(pool_MB));
 	}
 	else
 	{
-		fmt::format_to(std::back_inserter(info), "VRAM: {} MB | T: {} MB | S: {} MB | P: {} MB",
-			(int)std::ceil(total / 1048576.0f),
-			(int)std::ceil(targets / 1048576.0f),
-			(int)std::ceil(sources / 1048576.0f),
-			(int)std::ceil(pool / 1048576.0f));
+		const double total_MB = targets_MB + sources_MB + pool_MB;
+		info.format("VRAM: {} MB | T: {} MB | S: {} MB | P: {} MB",
+			format_precision(total_MB),
+			format_precision(targets_MB),
+			format_precision(sources_MB),
+			format_precision(pool_MB));
 	}
 }
 
