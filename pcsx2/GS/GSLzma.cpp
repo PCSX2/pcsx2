@@ -106,8 +106,7 @@ bool GSDumpFile::ReadFile(Error* error)
 				return false;
 			}
 
-			if (header.serial_size > 0)
-				m_serial.assign(reinterpret_cast<const char*>(m_state_data.data()) + header.serial_offset, header.serial_size);
+			m_serial.assign(reinterpret_cast<const char*>(m_state_data.data()) + header.serial_offset, header.serial_size);
 		}
 
 		// Read the real state data

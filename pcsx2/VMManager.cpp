@@ -1763,14 +1763,14 @@ bool SaveStateBase::vmFreeze()
 		{
 			if (s_elf_path.empty())
 			{
-				// Shouldn't have executed a non-existant ELF.. unless you load state created from a deleted ELF override I guess.
+				// Shouldn't have executed a non-existent ELF... unless you load state created from a deleted ELF override I guess.
 				if (s_elf_executed)
-					Console.Error("Somehow executed a non-existant ELF");
+					Console.Error("Somehow executed a non-existent ELF");
 				VMManager::ClearELFInfo();
 			}
 			else
 			{
-				VMManager::UpdateELFInfo(std::move(s_elf_path));
+				VMManager::UpdateELFInfo(s_elf_path);
 			}
 		}
 
