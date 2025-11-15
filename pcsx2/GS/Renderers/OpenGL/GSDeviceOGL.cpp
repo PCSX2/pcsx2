@@ -272,8 +272,8 @@ bool GSDeviceOGL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		m_index_stream_buffer->Bind();
 
 		// Force UBOs to be uploaded on first use.
-		std::memset(&m_vs_cb_cache, 0xFF, sizeof(m_vs_cb_cache));
-		std::memset(&m_ps_cb_cache, 0xFF, sizeof(m_ps_cb_cache));
+		std::memset(static_cast<void*>(&m_vs_cb_cache), 0xFF, sizeof(m_vs_cb_cache));
+		std::memset(static_cast<void*>(&m_ps_cb_cache), 0xFF, sizeof(m_ps_cb_cache));
 
 		static_assert(sizeof(GSVertexPT1) == sizeof(GSVertex), "wrong GSVertex size");
 		for (u32 i = 0; i < 8; i++)

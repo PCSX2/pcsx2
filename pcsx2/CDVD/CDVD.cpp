@@ -35,7 +35,7 @@
 
 cdvdStruct cdvd;
 
-s64 PSXCLK = 36864000;
+u32 PSXCLK = 36864000;
 
 static constexpr s32 GMT9_OFFSET_SECONDS = 9 * 60 * 60; // 32400
 

@@ -108,7 +108,7 @@ namespace MipsStackWalk
 
 		if (entry == INVALIDTARGET)
 		{
-			stop = std::max<s64>(0, (s64)start - LONGEST_FUNCTION);
+			stop = static_cast<u32>(std::max<s64>(0, (s64)start - LONGEST_FUNCTION));
 		}
 
 		for (u32 pc = start; cpu->isValidAddress(pc) && pc >= stop; pc -= 4)
