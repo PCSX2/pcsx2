@@ -63,11 +63,12 @@ struct StereoOut32
 	}
 };
 
+extern void (*spu2Mix)();
 extern s16* GetMemPtr(u32 addr);
 extern s16 spu2M_Read(u32 addr);
 extern void spu2M_Write(u32 addr, s16 value);
 extern void spu2M_Write(u32 addr, u16 value);
-extern void spu2Mix();
+MULTI_ISA_DEF(void spu2Mix();)
 extern void spu2Output(StereoOut32 out);
 
 static __forceinline s16 SignExtend16(u16 v)
@@ -404,7 +405,6 @@ struct V_CoreGates
 
 struct VoiceMixSet
 {
-	static const VoiceMixSet Empty;
 	StereoOut32 Dry, Wet;
 
 	VoiceMixSet() {}
@@ -491,11 +491,6 @@ struct V_Core
 	u16 psxSoundDataTransferControl;
 	u16 psxSPUSTAT;
 
-	// HACK -- This is a temp buffer which is (or isn't?) used to circumvent some memory
-	// corruption that originates elsewhere. >_<  The actual ADMA buffer
-	// is an area mapped to SPU2 main memory.
-	//s16				ADMATempBuffer[0x1000];
-
 	// ----------------------------------------------------------------------------------
 	//  V_Core Methods
 	// ----------------------------------------------------------------------------------
@@ -519,7 +514,6 @@ struct V_Core
 	//  Mixer Section
 	// --------------------------------------------------------------------------------------
 
-	StereoOut32 Mix(const VoiceMixSet& inVoices, const StereoOut32& Input, const StereoOut32& Ext);
 	StereoOut32 DoReverb(StereoOut32 Input);
 	s32 RevbGetIndexer(s32 offset);
 
@@ -643,3 +637,6 @@ struct PcmCacheEntry
 };
 
 extern PcmCacheEntry pcm_cache_data[pcm_BlockCount];
+extern int g_counter_cache_hits;
+extern int g_counter_cache_misses;
+extern int g_counter_cache_ignores;
