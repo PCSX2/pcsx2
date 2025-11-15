@@ -3306,23 +3306,30 @@ void MainWindow::rescanFile(const std::string& path)
 
 MainWindow::VMLock::VMLock(QWidget* dialog_parent, bool was_paused, bool was_fullscreen)
 	: m_dialog_parent(dialog_parent)
+	, m_has_lock(true)
 	, m_was_paused(was_paused)
 	, m_was_fullscreen(was_fullscreen)
 {
+	QtHost::LockVMWithDialog();
 }
 
 MainWindow::VMLock::VMLock(VMLock&& lock)
 	: m_dialog_parent(lock.m_dialog_parent)
+	, m_has_lock(lock.m_has_lock)
 	, m_was_paused(lock.m_was_paused)
 	, m_was_fullscreen(lock.m_was_fullscreen)
 {
 	lock.m_dialog_parent = nullptr;
+	lock.m_has_lock = false;
 	lock.m_was_paused = true;
 	lock.m_was_fullscreen = false;
 }
 
 MainWindow::VMLock::~VMLock()
 {
+	if (m_has_lock)
+		QtHost::UnlockVMWithDialog();
+
 	if (m_was_fullscreen)
 	{
 		g_main_window->m_is_temporarily_windowed = false;
@@ -3335,10 +3342,15 @@ MainWindow::VMLock::~VMLock()
 
 MainWindow::VMLock& MainWindow::VMLock::operator=(VMLock&& lock)
 {
+	if (m_has_lock)
+		QtHost::UnlockVMWithDialog();
+
+	m_has_lock = lock.m_has_lock;
 	m_dialog_parent = lock.m_dialog_parent;
 	m_was_paused = lock.m_was_paused;
 	m_was_fullscreen = lock.m_was_fullscreen;
 
+	lock.m_has_lock = false;
 	lock.m_dialog_parent = nullptr;
 	lock.m_was_paused = true;
 	lock.m_was_fullscreen = false;
