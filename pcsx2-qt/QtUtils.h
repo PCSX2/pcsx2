@@ -49,6 +49,18 @@ namespace QtUtils
 	void ResizeColumnsForTableView(QTableView* view, const std::initializer_list<int>& widths);
 	void ResizeColumnsForTreeView(QTreeView* view, const std::initializer_list<int>& widths);
 
+	enum struct ScalingMode
+	{
+		Fit,
+		Fill,
+		Stretch,
+
+		MaxCount
+	};
+
+	/// Resize and scale a given Pixmap (and optionally adjust opacity)
+	void resizeAndPadPixmap(QPixmap* pm, const int expected_width, const int expected_height, const qreal dpr, const ScalingMode aspect_ratio, const float opacity);
+
 	/// Returns a key id for a key event, including any modifiers that we need (e.g. Keypad).
 	/// NOTE: Defined in QtKeyCodes.cpp, not QtUtils.cpp.
 	u32 KeyEventToCode(const QKeyEvent* ev);
