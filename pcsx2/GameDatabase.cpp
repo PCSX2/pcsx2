@@ -939,6 +939,26 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 	}
 }
 
+std::optional<s32> GameDatabaseSchema::GameEntry::getSpeedHackValue(const SpeedHack queried_speed_hack) const
+{
+	for (const auto& speed_hack : speedHacks)
+	{
+        if (speed_hack.first == queried_speed_hack)
+			return speed_hack.second;
+	}
+	return std::nullopt;
+}
+
+std::optional<s32> GameDatabaseSchema::GameEntry::getGSHWFixValue(const GSHWFixId queried_hardware_fix) const
+{
+	for (const auto& hardware_fix : gsHWFixes)
+	{
+        if (hardware_fix.first == queried_hardware_fix)
+			return hardware_fix.second;
+	}
+	return std::nullopt;
+}
+
 void GameDatabase::initDatabase()
 {
 	const std::string path(Path::Combine(EmuFolders::Resources, GAMEDB_YAML_FILE_NAME));
