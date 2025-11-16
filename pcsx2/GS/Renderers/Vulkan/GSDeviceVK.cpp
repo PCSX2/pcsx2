@@ -597,7 +597,7 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 	// Enable debug layer on debug builds
 	if (enable_validation_layer)
 	{
-		static const char* layer_names[] = {"VK_LAYER_LUNARG_standard_validation"};
+		static constexpr const char* layer_names[] = {"VK_LAYER_LUNARG_standard_validation"};
 		device_info.enabledLayerCount = 1;
 		device_info.ppEnabledLayerNames = layer_names;
 	}
@@ -4521,7 +4521,7 @@ bool GSDeviceVK::DoCAS(
 	dsub.PushUpdate(cmdbuf, VK_PIPELINE_BIND_POINT_COMPUTE, m_cas_pipeline_layout, 0, false);
 
 	// the actual meat and potatoes! only four commands.
-	static const int threadGroupWorkRegionDim = 16;
+	static constexpr int threadGroupWorkRegionDim = 16;
 	const int dispatchX = (dTex->GetWidth() + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;
 	const int dispatchY = (dTex->GetHeight() + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;
 
@@ -4668,6 +4668,45 @@ void GSDeviceVK::DestroyResources()
 
 	if (m_allocator != VK_NULL_HANDLE)
 		vmaDestroyAllocator(m_allocator);
+}
+
+void GSDeviceVK::ResetRenderState()
+{
+	// Wait for all commands to finish.
+	EndRenderPass();
+	if (GetCurrentCommandBuffer() != VK_NULL_HANDLE)
+	{
+		ExecuteCommandBuffer(false);
+		WaitForGPUIdle();
+	}
+
+	// Clear caches.
+	GSDevice::ResetRenderState();
+
+	for (auto& it : m_tfx_pipelines)
+		vkDestroyPipeline(m_device, it.second, nullptr);
+	for (auto& it : m_tfx_fragment_shaders)
+		vkDestroyShaderModule(m_device, it.second, nullptr);
+	for (auto& it : m_tfx_vertex_shaders)
+		vkDestroyShaderModule(m_device, it.second, nullptr);
+
+	m_tfx_pipelines.clear();
+	m_tfx_fragment_shaders.clear();
+	m_tfx_vertex_shaders.clear();
+
+	ClearSamplerCache();
+
+	// Set default state.
+	InitializeState();
+
+	GSHWDrawConfig::VSConstantBuffer vs_cb;
+	SetVSConstantBuffer(vs_cb);
+
+	GSHWDrawConfig::PSConstantBuffer ps_cb;
+	SetPSConstantBuffer(ps_cb);
+
+	PipelineSelector p_sel;
+	BindDrawPipeline(p_sel);
 }
 
 VkShaderModule GSDeviceVK::GetTFXVertexShader(GSHWDrawConfig::VSSelector sel)
@@ -4839,7 +4878,7 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 	}
 
 	// DepthStencil
-	static const VkCompareOp ztst[] = {
+	static constexpr VkCompareOp ztst[] = {
 		VK_COMPARE_OP_NEVER, VK_COMPARE_OP_ALWAYS, VK_COMPARE_OP_GREATER_OR_EQUAL, VK_COMPARE_OP_GREATER};
 	gpb.SetDepthState((p.dss.ztst != ZTST_ALWAYS || p.dss.zwe), p.dss.zwe, ztst[p.dss.ztst]);
 	if (p.dss.date)

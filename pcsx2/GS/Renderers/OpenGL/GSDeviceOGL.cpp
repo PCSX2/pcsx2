@@ -571,6 +571,45 @@ void GSDeviceOGL::Destroy()
 	}
 }
 
+void GSDeviceOGL::ResetRenderState()
+{
+	// Wait for all rendering to finish.
+	FlushCommands();
+
+	// Clear caches.
+	GSDevice::ResetRenderState();
+
+	m_programs.clear();
+
+	// Force UBOs to be uploaded on first use.
+	std::memset(&m_vs_cb_cache, 0xFF, sizeof(m_vs_cb_cache));
+	std::memset(&m_ps_cb_cache, 0xFF, sizeof(m_ps_cb_cache));
+
+	// Set default state.
+	PSUnbindResources();
+
+	OMDepthStencilSelector dssel;
+	SetupOM(dssel);
+
+	OMSetBlendState(true);
+	OMSetBlendState(false);
+	OMAttachRt();
+	OMAttachDs();
+	OMSetFBO(0);
+	OMSetColorMaskState();
+
+	PSSamplerSelector pssel;
+	SetupSampler(pssel);
+
+	ProgramSelector psel;
+	SetupPipeline(psel);
+}
+
+void GSDeviceOGL::FlushCommands()
+{
+	glFinish();
+}
+
 bool GSDeviceOGL::CreateTextureFX()
 {
 	GL_PUSH("GSDeviceOGL::CreateTextureFX");
@@ -1230,7 +1269,7 @@ GSDepthStencilOGL* GSDeviceOGL::CreateDepthStencil(OMDepthStencilSelector dssel)
 
 	if (dssel.ztst != ZTST_ALWAYS || dssel.zwe)
 	{
-		static const GLenum ztst[] =
+		static constexpr GLenum ztst[] =
 		{
 			GL_NEVER,
 			GL_ALWAYS,
@@ -2000,6 +2039,15 @@ void GSDeviceOGL::PSSetSamplerState(GLuint ss)
 	}
 }
 
+void GSDeviceOGL::PSUnbindResources()
+{
+	for (int i = 0; i < std::size(GLState::tex_unit); i++)
+	{
+		GLState::tex_unit[i] = 0;
+		glBindTextureUnit(i, 0);
+	}
+}
+
 void GSDeviceOGL::ClearSamplerCache()
 {
 	glDeleteSamplers(std::size(m_ps_ss), m_ps_ss);
@@ -2055,7 +2103,7 @@ bool GSDeviceOGL::DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, con
 	PSSetShaderResource(0, sTex);
 	glBindImageTexture(0, static_cast<GSTextureOGL*>(dTex)->GetID(), 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
 
-	static const int threadGroupWorkRegionDim = 16;
+	static constexpr int threadGroupWorkRegionDim = 16;
 	const int dispatchX = (dTex->GetWidth() + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;
 	const int dispatchY = (dTex->GetHeight() + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;
 	glDispatchCompute(dispatchX, dispatchY, 1);

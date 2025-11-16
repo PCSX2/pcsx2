@@ -374,6 +374,7 @@ public:
 	MRCOwned<id<MTLComputePipelineState>> MakeComputePipeline(id<MTLFunction> compute, NSString* name);
 	bool Create(GSVSyncMode vsync_mode, bool allow_present_throttle) override;
 	void Destroy() override;
+	void ResetRenderState() override;
 
 	void AttachSurfaceOnMainThread();
 	void DetachSurfaceOnMainThread();

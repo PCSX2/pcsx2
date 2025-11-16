@@ -6,6 +6,7 @@
 #include "GS/GSGL.h"
 #include "GS/GSPerfMon.h"
 #include "GS/GSUtil.h"
+#include "GSRegressionTester.h"
 #include "Host.h"
 #include "common/Console.h"
 #include "common/BitUtils.h"
@@ -180,7 +181,7 @@ GSTexture* GSRendererHW::GetOutput(int i, float& scale, int& y_offset)
 
 		if (GSConfig.SaveFrame && GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
 		{
-			t->Save(GetDrawDumpPath("%05d_f%05lld_fr%d_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), i, static_cast<int>(TEX0.TBP0), GSUtil::GetPSMName(TEX0.PSM)));
+			t->Save(GetDrawDumpPath("%05d_f%05lld_fr%d_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), i, static_cast<int>(TEX0.TBP0), GSUtil::GetPSMName(TEX0.PSM)), GSGetRegressionBuffer());
 		}
 	}
 
@@ -206,7 +207,7 @@ GSTexture* GSRendererHW::GetFeedbackOutput(float& scale)
 	scale = rt->m_scale;
 
 	if (GSConfig.SaveFrame && GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
-		t->Save(GetDrawDumpPath("%05d_f%05lld_fr%d_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), 3, static_cast<int>(TEX0.TBP0), GSUtil::GetPSMName(TEX0.PSM)));
+		t->Save(GetDrawDumpPath("%05d_f%05lld_fr%d_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), 3, static_cast<int>(TEX0.TBP0), GSUtil::GetPSMName(TEX0.PSM)), GSGetRegressionBuffer());
 
 	return t;
 }
@@ -2321,8 +2322,6 @@ void GSRendererHW::RoundSpriteOffset()
 
 void GSRendererHW::Draw()
 {
-	static u32 num_skipped_channel_shuffle_draws = 0;
-
 	// We mess with this state as an optimization, so take a copy and use that instead.
 	const GSDrawingContext* context = m_context;
 	m_cached_ctx.TEX0 = context->TEX0;
@@ -2407,7 +2406,7 @@ void GSRendererHW::Draw()
 
 							std::string s = GetDrawDumpPath("%05d_f%05lld_rt1_%05x_(%05x)_%s.bmp", s_n - 1, frame, m_last_channel_shuffle_fbp, m_last_rt->m_TEX0.TBP0, GSUtil::GetPSMName(m_cached_ctx.FRAME.PSM));
 
-							m_last_rt->m_texture->Save(s);
+							m_last_rt->m_texture->Save(s, GSGetRegressionBuffer());
 						}
 					}
 				}
@@ -4629,7 +4628,7 @@ void GSRendererHW::Draw()
 			s = GetDrawDumpPath("%05d_f%05lld_rt0_%05x_(%05x)_%s.bmp", s_n, frame, m_cached_ctx.FRAME.Block(), rt->m_TEX0.TBP0, GSUtil::GetPSMName(m_cached_ctx.FRAME.PSM));
 
 			if (rt->m_texture)
-				rt->m_texture->Save(s);
+				rt->m_texture->Save(s, GSGetRegressionBuffer());
 		}
 
 		if (ds && GSConfig.SaveDepth)
@@ -4827,7 +4826,7 @@ void GSRendererHW::Draw()
 		{
 			s = GetDrawDumpPath("%05d_f%05lld_rt1_%05x_(%05x)_%s.bmp", s_n, frame, m_cached_ctx.FRAME.Block(), rt->m_TEX0.TBP0, GSUtil::GetPSMName(m_cached_ctx.FRAME.PSM));
 
-			rt->m_texture->Save(s);
+			rt->m_texture->Save(s, GSGetRegressionBuffer());
 		}
 
 		if (ds && GSConfig.SaveDepth)
@@ -9429,17 +9428,13 @@ GSHWDrawConfig& GSRendererHW::BeginHLEHardwareDraw(
 	std::memset(&config.cb_vs, 0, sizeof(config.cb_vs));
 	std::memset(&config.cb_ps, 0, sizeof(config.cb_ps));
 
-	// Reused between draws, since the draw config is shared, you can't have multiple draws in flight anyway.
-	static GSVertex vertices[4];
-	static constexpr u16 indices[6] = {0, 1, 2, 2, 1, 3};
-
 #define V(i, x, y, u, v) \
 	do \
 	{ \
-		vertices[i].XYZ.X = x; \
-		vertices[i].XYZ.Y = y; \
-		vertices[i].U = u; \
-		vertices[i].V = v; \
+		m_hle_vertices[i].XYZ.X = x; \
+		m_hle_vertices[i].XYZ.Y = y; \
+		m_hle_vertices[i].U = u; \
+		m_hle_vertices[i].V = v; \
 	} while (0)
 
 	const GSVector4i fp_rect = unscaled_rect.sll32<4>();
@@ -9455,10 +9450,10 @@ GSHWDrawConfig& GSRendererHW::BeginHLEHardwareDraw(
 	config.ds = ds;
 	config.tex = tex;
 	config.pal = nullptr;
-	config.indices = indices;
-	config.verts = vertices;
-	config.nverts = static_cast<u32>(std::size(vertices));
-	config.nindices = static_cast<u32>(std::size(indices));
+	config.indices = m_hle_indices;
+	config.verts = m_hle_vertices;
+	config.nverts = static_cast<u32>(std::size(m_hle_vertices));
+	config.nindices = static_cast<u32>(std::size(m_hle_indices));
 	config.indices_per_prim = 3;
 	config.drawlist = nullptr;
 	config.scissor = rt_or_ds->GetRect();

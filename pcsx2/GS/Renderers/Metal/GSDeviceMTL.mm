@@ -1231,6 +1231,23 @@ void GSDeviceMTL::Destroy()
 	m_dev.Reset();
 }}
 
+void GSDeviceMTL::ResetRenderState()
+{
+	// Wait for all rendering to finish.
+	FlushEncoders();
+
+	// Clear caches.
+	GSDevice::ResetRenderState();
+
+	m_hw_ps.clear();
+	m_hw_pipeline.clear();
+
+	// Set default state.
+	// Offset must match clear line in m_current_render (see header declaration).
+	memset(&m_current_render, 0, offsetof(MainRenderEncoder, depth_sel));
+	m_current_render.depth_sel = DepthStencilSelector::NoDepth();
+}
+
 void GSDeviceMTL::DestroySurface()
 {
 	if (!m_layer)

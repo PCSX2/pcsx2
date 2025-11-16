@@ -424,6 +424,8 @@ protected:
 	HashCacheMap m_hash_cache;
 	u64 m_hash_cache_memory_usage = 0;
 	u64 m_hash_cache_replacement_memory_usage = 0;
+	/// List of candidates for purging when the hash cache gets too large.
+	std::vector<std::pair<GSTextureCache::HashCacheMap::iterator, s32>> m_hash_cache_purge_list = {};
 
 	FastList<Target*> m_dst[2];
 	FastList<TargetHeightElem> m_target_heights;
