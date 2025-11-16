@@ -40,6 +40,10 @@ in vec4 PSin_c;
 
 layout(binding = 0) uniform sampler2D TextureSampler;
 
+#if defined(ps_convert_float32_rgba8_2) || defined(ps_depth_copy_2)
+layout(binding = 1) uniform sampler2D TextureSampler2;
+#endif
+
 // Give a different name so I remember there is a special case!
 #if defined(ps_convert_rgba8_16bits) || defined(ps_convert_float32_32bits)
 layout(location = 0) out uint SV_Target1;
@@ -52,6 +56,13 @@ vec4 sample_c()
 	return texture(TextureSampler, PSin_t);
 }
 
+#if defined(ps_convert_float32_rgba8_2) || defined(ps_depth_copy_2)
+vec4 sample_c2()
+{
+	return texture(TextureSampler2, PSin_t);
+}
+#endif
+
 #ifdef ps_copy
 void ps_copy()
 {
@@ -63,6 +74,15 @@ void ps_copy()
 void ps_depth_copy()
 {
   gl_FragDepth = sample_c().r;
+}
+#endif
+
+#ifdef ps_depth_copy_2
+void ps_depth_copy_2()
+{
+  uint d = clamp(uint(sample_c().r * exp2(32.0f)), 0u, 0xFFFFFFu);
+  uint d2 = clamp(uint(sample_c2().r * exp2(8.0f)), 0u, 0xFFu) << 24;
+  gl_FragDepth = float(d | d2) * exp2(-32.0f);
 }
 #endif
 
@@ -109,6 +129,16 @@ void ps_convert_float32_rgba8()
 	// Convert a GL_FLOAT32 depth texture into a RGBA color texture
 	uint d = uint(sample_c().r * exp2(32.0f));
 	SV_Target0 = vec4(uvec4((d & 0xFFu), ((d >> 8) & 0xFFu), ((d >> 16) & 0xFFu), (d >> 24))) / vec4(255.0);
+}
+#endif
+
+#ifdef ps_convert_float32_rgba8_2
+void ps_convert_float32_rgba8_2()
+{
+	// Convert a GL_FLOAT32 depth texture into a RGBA color texture
+	uint d = uint(sample_c().r * exp2(32.0f));
+	uint d2 = uint(sample_c2().r * exp2(8.0f));
+	SV_Target0 = vec4(uvec4((d & 0xFFu), ((d >> 8) & 0xFFu), ((d >> 16) & 0xFFu), clamp(d2, 0u, 0xFFu))) / vec4(255.0);
 }
 #endif
 
