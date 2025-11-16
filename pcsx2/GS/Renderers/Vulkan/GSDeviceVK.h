@@ -54,7 +54,7 @@ public:
 	__fi VmaAllocator GetAllocator() const { return m_allocator; }
 	__fi u32 GetGraphicsQueueFamilyIndex() const { return m_graphics_queue_family_index; }
 	__fi u32 GetPresentQueueFamilyIndex() const { return m_present_queue_family_index; }
-	__fi const VkPhysicalDeviceProperties& GetDeviceProperties() const { return m_device_properties; }
+	__fi const VkPhysicalDeviceProperties2& GetDeviceProperties() const { return m_device_properties2; }
 	__fi const OptionalExtensions& GetOptionalExtensions() const { return m_optional_extensions; }
 
 	// The interaction between raster order attachment access and fbfetch is unclear.
@@ -67,18 +67,18 @@ public:
 	// Helpers for getting constants
 	__fi u32 GetBufferCopyOffsetAlignment() const
 	{
-		return static_cast<u32>(m_device_properties.limits.optimalBufferCopyOffsetAlignment);
+		return static_cast<u32>(m_device_properties2.properties.limits.optimalBufferCopyOffsetAlignment);
 	}
 	__fi u32 GetBufferCopyRowPitchAlignment() const
 	{
-		return static_cast<u32>(m_device_properties.limits.optimalBufferCopyRowPitchAlignment);
+		return static_cast<u32>(m_device_properties2.properties.limits.optimalBufferCopyRowPitchAlignment);
 	}
 
 	/// Returns true if running on an NVIDIA GPU.
-	__fi bool IsDeviceNVIDIA() const { return (m_device_properties.vendorID == 0x10DE); }
+	__fi bool IsDeviceNVIDIA() const { return (m_device_properties2.properties.vendorID == 0x10DE); }
 
 	/// Returns true if running on an AMD GPU.
-	__fi bool IsDeviceAMD() const { return (m_device_properties.vendorID == 0x1002); }
+	__fi bool IsDeviceAMD() const { return (m_device_properties2.properties.vendorID == 0x1002); }
 
 	// Creates a simple render pass.
 	VkRenderPass GetRenderPass(VkFormat color_format, VkFormat depth_format,
@@ -284,8 +284,8 @@ private:
 
 	VkDebugUtilsMessengerEXT m_debug_messenger_callback = VK_NULL_HANDLE;
 
-	VkPhysicalDeviceFeatures m_device_features = {};
-	VkPhysicalDeviceProperties m_device_properties = {};
+	VkPhysicalDeviceFeatures2 m_device_features2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2, nullptr, {}};
+	VkPhysicalDeviceProperties2 m_device_properties2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2, nullptr, {}};
 	VkPhysicalDeviceDriverPropertiesKHR m_device_driver_properties = {};
 	OptionalExtensions m_optional_extensions = {};
 
