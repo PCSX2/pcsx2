@@ -7,6 +7,10 @@ if [ "$#" -ne 1 ]; then
     exit 1
 fi
 
+# The bundled ffmpeg has a lot of things disabled to reduce code size.
+# Users may want to use system ffmpeg for additional features
+: ${BUILD_FFMPEG:=0}
+
 SCRIPTDIR=$(realpath $(dirname "${BASH_SOURCE[0]}"))
 NPROCS="$(getconf _NPROCESSORS_ONLN)"
 INSTALLDIR="$1"
@@ -14,16 +18,19 @@ if [ "${INSTALLDIR:0:1}" != "/" ]; then
 	INSTALLDIR="$PWD/$INSTALLDIR"
 fi
 
+FFMPEG=8.0
 FREETYPE=2.14.1
 HARFBUZZ=12.0.0
 LIBBACKTRACE=ad106d5fdd5d960bd33fae1c48a351af567fd075
 LIBJPEGTURBO=3.1.2
 LIBPNG=1.6.50
 LIBWEBP=1.6.0
+NVENC=11.1.5.3
 SDL=SDL3-3.2.26
 QT=6.10.0
 QTAPNG=1.3.0
 LZ4=1.10.0
+VULKAN=1.4.328.1
 ZSTD=1.5.7
 KDDOCKWIDGETS=2.4.0
 PLUTOVG=1.3.1
@@ -40,6 +47,7 @@ cd deps-build
 export PKG_CONFIG_PATH="$INSTALLDIR/lib/pkgconfig:$PKG_CONFIG_PATH"
 
 cat > SHASUMS <<EOF
+b2751fccb6cc4c77708113cd78b561059b6fa904b24162fa0be2d60273d27b8e  ffmpeg-$FFMPEG.tar.xz
 32427e8c471ac095853212a37aef816c60b42052d4d9e48230bab3bdf2936ccc  freetype-$FREETYPE.tar.xz
 c4a398539c3e0fdc9a82dfe7824d0438cae78c1e2124e7c6ada3dfa600cdb6c8  harfbuzz-$HARFBUZZ.tar.gz
 fd6f417fe9e3a071cf1424a5152d926a34c4a3c5070745470be6cf12a404ed79  $LIBBACKTRACE.zip
@@ -49,6 +57,8 @@ e4ab7009bf0629fd11982d4c2aa83964cf244cffba7347ecd39019a9e38c4564  libwebp-$LIBWE
 dad488474a51a0b01d547cd2834893d6299328d2e30f479a3564088b5476bae2  $SDL.tar.gz
 687ddc0c7cb128a3ea58e159b5129252537c27ede0c32a93f11f03127f0c0165  libpng-$LIBPNG-apng.patch.gz
 537512904744b35e232912055ccf8ec66d768639ff3abe5788d90d792ec5f48b  lz4-$LZ4.tar.gz
+2974b91062197e0527dffa3aadd8fe3bfa6681ae45f5ff9181bc0ca6479abd59  nv-codec-headers-$NVENC.tar.gz
+c465aa56757e7746ac707f582b6e2d51546569a4a2488c1172fb543aa5fdfc2c  vulkan-sdk-$VULKAN.tar.gz
 eb33e51f49a15e023950cd7825ca74a4a2b43db8354825ac24fc1b7ee09e6fa3  zstd-$ZSTD.tar.gz
 ead4623bcb54a32257c5b3e3a5aec6d16ec96f4cda58d2e003f5a0c16f72046d  qtbase-everywhere-src-$QT.tar.xz
 64450a52507c540de53616ed5e516df0e0905a99d3035ddfaa690f2b3f7c0cea  qtimageformats-everywhere-src-$QT.tar.xz
@@ -77,6 +87,9 @@ curl -L \
 	-O "https://github.com/lz4/lz4/releases/download/v$LZ4/lz4-$LZ4.tar.gz" \
 	-O "https://libsdl.org/release/$SDL.tar.gz" \
 	-O "https://github.com/facebook/zstd/releases/download/v$ZSTD/zstd-$ZSTD.tar.gz" \
+	-O "https://github.com/KhronosGroup/Vulkan-Headers/archive/refs/tags/vulkan-sdk-$VULKAN.tar.gz" \
+	-O "https://github.com/FFmpeg/nv-codec-headers/releases/download/n$NVENC/nv-codec-headers-$NVENC.tar.gz" \
+	-O "https://ffmpeg.org/releases/ffmpeg-$FFMPEG.tar.xz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtbase-everywhere-src-$QT.tar.xz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtimageformats-everywhere-src-$QT.tar.xz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtsvg-everywhere-src-$QT.tar.xz" \
@@ -93,6 +106,37 @@ curl -L \
 	-o "plutosvg-$PLUTOSVG.tar.gz" "https://github.com/sammycage/plutosvg/archive/v$PLUTOSVG.tar.gz"
 
 shasum -a 256 --check SHASUMS
+
+if [ "$BUILD_FFMPEG" -ne 0 ]; then
+	echo "Installing vulkan headers..."
+	rm -fr "Vulkan-Headers-vulkan-sdk-$VULKAN"
+	tar xf "vulkan-sdk-$VULKAN.tar.gz"
+	cd "Vulkan-Headers-vulkan-sdk-$VULKAN"
+	cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR"
+	make -C build install
+	cd ..
+
+	echo "Installing nvenc headers..."
+	rm -fr "nv-codec-headers-$NVENC"
+	tar xf "nv-codec-headers-$NVENC.tar.gz"
+	make -C "nv-codec-headers-$NVENC" PREFIX="$INSTALLDIR" install
+
+	echo "Installing FFmpeg..."
+	rm -fr "ffmpeg-$FFMPEG"
+	tar xf "ffmpeg-$FFMPEG.tar.xz"
+	cd "ffmpeg-$FFMPEG"
+	CFLAGS="-Os $CFLAGS" CXXFLAGS="-Os $CXXFLAGS" \
+		./configure --prefix="$INSTALLDIR" \
+		--disable-all --disable-autodetect --disable-static --enable-shared \
+		--enable-avcodec --enable-avformat --enable-avutil --enable-swresample --enable-swscale \
+		--enable-gpl --enable-libx264 --enable-libopus --enable-vulkan --enable-ffnvcodec --enable-nvenc --enable-vaapi --enable-libvpl \
+		--enable-encoder=ffv1,qtrle,libx264*,aac,flac,libopus,pcm_s16be,pcm_s16le,*_vulkan,*_qsv,*_nvenc,*_vaapi \
+		--enable-muxer=avi,matroska,mov,mp3,mp4,wav \
+		--enable-protocol=file
+	make "-j$NPROCS"
+	make install
+	cd ..
+fi
 
 echo "Building libbacktrace..."
 rm -fr "libbacktrace-$LIBBACKTRACE"
