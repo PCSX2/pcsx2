@@ -488,6 +488,7 @@ namespace FullscreenUI
 	static ImGuiFullscreen::FileSelectorFilters GetOpenFileFilters();
 	static ImGuiFullscreen::FileSelectorFilters GetDiscImageFilters();
 	static ImGuiFullscreen::FileSelectorFilters GetAudioFileFilters();
+	static void DoVMInitialize(const VMBootParameters& boot_params, bool switch_to_landing_on_failure);
 	static void DoStartPath(
 		const std::string& path, std::optional<s32> state_index = std::nullopt, std::optional<bool> fast_boot = std::nullopt);
 	static void DoStartFile();
@@ -668,7 +669,7 @@ namespace FullscreenUI
 	static void DrawSaveStateSelector(bool is_loading);
 	static bool OpenLoadStateSelectorForGameResume(const GameList::Entry* entry);
 	static void DrawResumeStateSelector();
-	static void DoLoadState(std::string path);
+	static void DoLoadState(std::string path, bool hardcore_mode_prompt_shown = false);
 
 	static std::vector<SaveStateListEntry> s_save_state_selector_slots;
 	static std::string s_save_state_selector_game_path;
@@ -1383,6 +1384,48 @@ ImGuiFullscreen::FileSelectorFilters FullscreenUI::GetAudioFileFilters()
 	return {"*.wav"};
 }
 
+void FullscreenUI::DoVMInitialize(const VMBootParameters& boot_params, bool switch_to_landing_on_failure)
+{
+	const auto hardcore_disable_callback = [switch_to_landing_on_failure](
+											   std::string reason, VMBootRestartCallback restart_callback) {
+		MTGS::RunOnGSThread([reason = std::move(reason),
+								restart_callback = std::move(restart_callback),
+								switch_to_landing_on_failure]() {
+			const auto callback = [restart_callback = std::move(restart_callback),
+									  switch_to_landing_on_failure](bool confirmed) {
+				if (confirmed)
+					Host::RunOnCPUThread(restart_callback);
+				else if (switch_to_landing_on_failure)
+					SwitchToLanding();
+			};
+
+			ImGuiFullscreen::OpenConfirmMessageDialog(
+				Achievements::GetHardcoreModeDisableTitle(),
+				Achievements::GetHardcoreModeDisableText(reason.c_str()),
+				std::move(callback), true,
+				fmt::format(ICON_FA_CHECK " {}", TRANSLATE_SV("Achievements", "Yes")),
+				fmt::format(ICON_FA_XMARK " {}", TRANSLATE_SV("Achievements", "No")));
+		});
+	};
+
+	const auto done_callback = [switch_to_landing_on_failure](VMBootResult result, const Error& error) {
+		if (result != VMBootResult::StartupSuccess)
+		{
+			ImGuiFullscreen::OpenInfoMessageDialog(
+				FSUI_ICONSTR(ICON_FA_TRIANGLE_EXCLAMATION, "Startup Error"), error.GetDescription());
+
+			if (switch_to_landing_on_failure)
+				MTGS::RunOnGSThread(SwitchToLanding);
+			
+			return;
+		}
+
+		VMManager::SetState(VMState::Running);
+	};
+
+	VMManager::InitializeAsync(boot_params, std::move(hardcore_disable_callback), std::move(done_callback));
+}
+
 void FullscreenUI::DoStartPath(const std::string& path, std::optional<s32> state_index, std::optional<bool> fast_boot)
 {
 	VMBootParameters params;
@@ -1392,11 +1435,7 @@ void FullscreenUI::DoStartPath(const std::string& path, std::optional<s32> state
 
 	// switch to nothing, we'll get brought back if init fails
 	Host::RunOnCPUThread([params = std::move(params)]() {
-		if (VMManager::HasValidVM())
-			return;
-
-		if (VMManager::Initialize(std::move(params)))
-			VMManager::SetState(VMState::Running);
+		DoVMInitialize(std::move(params), false);
 	});
 }
 
@@ -1419,10 +1458,7 @@ void FullscreenUI::DoStartBIOS()
 			return;
 
 		VMBootParameters params;
-		if (VMManager::Initialize(std::move(params)))
-			VMManager::SetState(VMState::Running);
-		else
-			SwitchToLanding();
+		DoVMInitialize(std::move(params), true);
 	});
 
 	// switch to nothing, we'll get brought back if init fails
@@ -1438,10 +1474,7 @@ void FullscreenUI::DoStartDisc(const std::string& drive)
 		VMBootParameters params;
 		params.filename = std::move(drive);
 		params.source_type = CDVD_SourceType::Disc;
-		if (VMManager::Initialize(params))
-			VMManager::SetState(VMState::Running);
-		else
-			SwitchToLanding();
+		DoVMInitialize(std::move(params), true);
 	});
 }
 
@@ -7289,15 +7322,15 @@ void FullscreenUI::DrawResumeStateSelector()
 	}
 }
 
-void FullscreenUI::DoLoadState(std::string path)
+void FullscreenUI::DoLoadState(std::string path, bool hardcore_mode_prompt_shown)
 {
 	// Check for hardcore mode before loading state
 	if (Achievements::IsHardcoreModeActive())
 	{
-		Achievements::ConfirmHardcoreModeDisableAsync(TRANSLATE("VMManager", "Loading state"),
+		Achievements::ConfirmHardcoreModeDisable(TRANSLATE("VMManager", "Loading state"),
 			[path = std::move(path)](bool approved) {
 				if (approved)
-					DoLoadState(std::move(path));
+					DoLoadState(std::move(path), true);
 			});
 		return;
 	}
@@ -7329,7 +7362,7 @@ void FullscreenUI::DoLoadState(std::string path)
 
 	Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_FOLDER_OPEN, message, Host::OSD_QUICK_DURATION);
 
-	Host::RunOnCPUThread([path = std::move(path)]()
+	Host::RunOnCPUThread([path = std::move(path), hardcore_mode_prompt_shown]()
 	{
 		const std::string boot_path = s_save_state_selector_game_path;
 		if (VMManager::HasValidVM())
@@ -7361,8 +7394,8 @@ void FullscreenUI::DoLoadState(std::string path)
 			VMBootParameters params;
 			params.filename = std::move(boot_path);
 			params.save_state = std::move(path);
-			if (VMManager::Initialize(std::move(params)))
-				VMManager::SetState(VMState::Running);
+			params.disable_achievements_hardcore_mode = hardcore_mode_prompt_shown;
+			DoVMInitialize(params, false);
 		}
 	});
 }

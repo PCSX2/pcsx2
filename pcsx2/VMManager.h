@@ -39,6 +39,30 @@ struct VMBootParameters
 	bool disable_achievements_hardcore_mode = false;
 };
 
+enum class VMBootResult
+{
+	/// The boot succeeded.
+	StartupSuccess,
+	/// The boot failed and an error should be displayed in the UI.
+	StartupFailure,
+	/// The boot failed because the user needs to be prompted to disable
+	/// hardcore mode. If the user agrees, VMManager::Initialize should be
+	/// called again with disable_achievements_hardcore_mode set to true.
+	PromptDisableHardcoreMode
+};
+
+/// Callback used to restart the VM boot process after the user has consented
+/// to hardcore mode being disabled.
+using VMBootRestartCallback = std::function<void()>;
+
+/// Callback used when the VM boot process has been interrupted because the user
+/// needs to be prompted to disable hardcore mode.
+using VMBootHardcoreDisableCallback = std::function<void(std::string reason, VMBootRestartCallback restart_callback)>;
+
+/// Callback used when the VM boot process has finished. This may be called
+/// asynchronously after the user has been prompted to disable hardcore mode.
+using VMBootDoneCallback = std::function<void(VMBootResult result, const Error& error)>;
+
 namespace VMManager
 {
 	/// The number of usable save state slots.
@@ -83,8 +107,16 @@ namespace VMManager
 	/// Returns the path to the ELF which is currently running. Only safe to read on the EE thread.
 	const std::string& GetCurrentELF();
 
-	/// Initializes all system components.
-	bool Initialize(VMBootParameters boot_params);
+	/// Initializes all system components. May restart itself asynchronously
+	/// using the provided hardcore_disable_callback function. Will call the
+	/// done_callback function on either success or failure.
+	void InitializeAsync(
+		const VMBootParameters& boot_params,
+		VMBootHardcoreDisableCallback hardcore_disable_callback,
+		VMBootDoneCallback done_callback);
+
+	/// Initializes all system components. Will not attempt to restart itself.
+	VMBootResult Initialize(const VMBootParameters& boot_params, Error* error = nullptr);
 
 	/// Destroys all system components.
 	void Shutdown(bool save_resume_state);
