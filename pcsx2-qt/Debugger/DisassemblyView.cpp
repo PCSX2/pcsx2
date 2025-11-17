@@ -424,7 +424,7 @@ void DisassemblyView::paintEvent(QPaintEvent* event)
 	bool alternate = m_visibleStart % 8;
 
 	// Draw visible disassembly rows
-	for (u32 i = 0; i <= m_visibleRows; i++)
+	for (u32 i = 0; i < m_visibleRows + 1; i++)
 	{
 		// Address of instruction being displayed on row
 		const u32 rowAddress = (i * 4) + m_visibleStart;
@@ -977,18 +977,18 @@ QColor DisassemblyView::GetAddressFunctionColor(u32 address)
 QString DisassemblyView::FetchSelectionInfo(SelectionInfo selInfo)
 {
 	QString infoBlock;
-	for (u32 i = m_selectedAddressStart; i <= m_selectedAddressEnd; i += 4)
+	for (u64 i = m_selectedAddressStart; i <= m_selectedAddressEnd; i += 4)
 	{
 		if (i != m_selectedAddressStart)
 			infoBlock += '\n';
 		if (selInfo == SelectionInfo::ADDRESS)
 		{
-			infoBlock += FilledQStringFromValue(i, 16);
+			infoBlock += FilledQStringFromValue(static_cast<u32>(i), 16);
 		}
 		else if (selInfo == SelectionInfo::INSTRUCTIONTEXT)
 		{
 			DisassemblyLineInfo line;
-			m_disassemblyManager.getLine(i, true, line);
+			m_disassemblyManager.getLine(static_cast<u32>(i), true, line);
 			infoBlock += QString("%1 %2").arg(line.name.c_str()).arg(line.params.c_str());
 		}
 		else // INSTRUCTIONHEX
@@ -1075,9 +1075,9 @@ void DisassemblyView::setInstructions(u32 start, u32 end, u32 value)
 
 bool DisassemblyView::AddressCanRestore(u32 start, u32 end)
 {
-	for (u32 i = start; i <= end; i += 4)
+	for (u64 i = start; i <= end; i += 4)
 	{
-		if (this->m_nopedInstructions.find(i) != this->m_nopedInstructions.end())
+		if (this->m_nopedInstructions.find(static_cast<u32>(i)) != this->m_nopedInstructions.end())
 		{
 			return true;
 		}
