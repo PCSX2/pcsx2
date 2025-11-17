@@ -365,6 +365,16 @@ bool DisplaySurface::event(QEvent* event)
 			return true;
 		}
 
+		case QEvent::DragEnter:
+			QWindow::event(event);
+			emit dragEnterEvent(static_cast<QDragEnterEvent*>(event));
+			return event->isAccepted();
+
+		case QEvent::Drop:
+			QWindow::event(event);
+			emit dropEvent(static_cast<QDropEvent*>(event));
+			return event->isAccepted();
+
 		case QEvent::Move:
 		{
 			updateCenterPos();

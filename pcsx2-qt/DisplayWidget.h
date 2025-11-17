@@ -3,6 +3,7 @@
 
 #pragma once
 #include "common/WindowInfo.h"
+#include <QtGui/QDragMoveEvent>
 #include <QtGui/QWindow>
 #include <optional>
 #include <vector>
@@ -31,6 +32,9 @@ public:
 Q_SIGNALS:
 	void windowResizedEvent(int width, int height, float scale);
 	void windowRestoredEvent();
+
+	void dragEnterEvent(QDragEnterEvent* event);
+	void dropEvent(QDropEvent* event);
 
 protected:
 	void handleCloseEvent(QCloseEvent* event);
