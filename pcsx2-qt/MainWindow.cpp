@@ -2441,6 +2441,10 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
 		m_ui.mainContainer->setCurrentIndex(1);
 	}
 
+	// Attatch drag and drop signals
+	connect(m_display_surface, &DisplaySurface::dragEnterEvent, this, &MainWindow::dragEnterEvent);
+	connect(m_display_surface, &DisplaySurface::dropEvent, this, &MainWindow::dropEvent);
+
 	updateDisplayRelatedActions(true, render_to_main, fullscreen);
 
 	// We need the surface visible.
