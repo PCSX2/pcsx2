@@ -85,6 +85,7 @@ private Q_SLOTS:
 	void onListViewItemActivated(const QModelIndex& index);
 	void onListViewContextMenuRequested(const QPoint& point);
 	void onCoverScaleChanged();
+	void onTableHeaderStateChanged();
 
 public Q_SLOTS:
 	void showGameList();
@@ -102,11 +103,10 @@ protected:
 	bool event(QEvent* event) override;
 
 private:
-	void loadTableViewColumnVisibilitySettings();
-	void saveTableViewColumnVisibilitySettings();
-	void saveTableViewColumnVisibilitySettings(int column);
-	void loadTableViewColumnSortSettings();
-	void saveTableViewColumnSortSettings(const int sort_column, const Qt::SortOrder sort_order);
+	void loadTableHeaderState();
+	void applyTableHeaderDefaults();
+	void resetTableHeaderToDefault();
+	void saveSortSettings(int column, Qt::SortOrder sort_order);
 	void listZoom(float delta);
 	void updateToolbar();
 
