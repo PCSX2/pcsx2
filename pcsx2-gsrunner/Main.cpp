@@ -730,7 +730,7 @@ bool GSRunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& pa
 			else if (CHECK_ARG("-noshadercache"))
 			{
 				Console.WriteLn("Disabling shader cache");
-				s_settings_interface.SetBoolValue("EmuCore/GS", "disable_shader_cache", true);
+				s_settings_interface.SetBoolValue("EmuCore/GS", "DisableShaderCache", true);
 				continue;
 			}
 			else if (CHECK_ARG("-window"))
