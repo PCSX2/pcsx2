@@ -1192,6 +1192,12 @@ void MainWindow::cancelGameListRefresh()
 	m_game_list_widget->cancelRefresh();
 }
 
+void MainWindow::updateGameListBackground()
+{
+	if (m_game_list_widget)
+		m_game_list_widget->setCustomBackground();
+}
+
 void MainWindow::reportInfo(const QString& title, const QString& message)
 {
 	QMessageBox::information(this, title, message);
