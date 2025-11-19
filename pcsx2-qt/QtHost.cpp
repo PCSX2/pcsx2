@@ -965,6 +965,9 @@ void Host::OnGameChanged(const std::string& title, const std::string& elf_overri
 
 void EmuThread::updatePerformanceMetrics(bool force)
 {
+	if (!g_main_window)
+		return;
+
 	if (VMManager::HasValidVM())
 	{
 		QString gs_stat;
