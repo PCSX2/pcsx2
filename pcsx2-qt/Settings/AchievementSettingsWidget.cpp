@@ -3,6 +3,7 @@
 
 #include "AchievementSettingsWidget.h"
 #include "AchievementLoginDialog.h"
+#include "GuardedDialog.h"
 #include "MainWindow.h"
 #include "SettingsWindow.h"
 #include "SettingWidgetBinder.h"
@@ -15,7 +16,6 @@
 #include "common/StringUtil.h"
 
 #include <QtCore/QDateTime>
-#include <QtWidgets/QMessageBox>
 
 const char* AUDIO_FILE_FILTER = QT_TRANSLATE_NOOP("MainWindow", "Audio Files (*.wav)");
 
@@ -178,7 +178,7 @@ void AchievementSettingsWidget::onHardcoreModeStateChanged()
 	if (!Achievements::HasActiveGame() || !Achievements::HasAchievementsOrLeaderboards())
 		return;
 
-	if (QMessageBox::question(
+	if (GuardedMessageBox::question(
 			QtUtils::GetRootWidget(this), tr("Reset System"),
 			tr("Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?")) !=
 		QMessageBox::Yes)

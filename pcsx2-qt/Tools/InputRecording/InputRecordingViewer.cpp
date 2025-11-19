@@ -3,11 +3,11 @@
 
 #include "InputRecordingViewer.h"
 
+#include "GuardedDialog.h"
 #include "QtUtils.h"
 #include <QtCore/QDir>
 #include <QtCore/QString>
 #include <QtWidgets/QDialog>
-#include <QtWidgets/QMessageBox>
 #include <QtWidgets/qfiledialog.h>
 
 // TODO - for now this uses a very naive implementation that fills the entire table
@@ -100,7 +100,7 @@ void InputRecordingViewer::openFile()
 		}
 		else
 		{
-			QMessageBox::critical(this, tr("Opening Recording Failed"), tr("Failed to open file: %1").arg(QString::fromUtf8(fileName.c_str())));
+			GuardedMessageBox::critical(this, tr("Opening Recording Failed"), tr("Failed to open file: %1").arg(QString::fromUtf8(fileName.c_str())));
 		}
 	}
 }

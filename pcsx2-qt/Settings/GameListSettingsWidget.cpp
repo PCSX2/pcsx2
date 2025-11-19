@@ -9,9 +9,9 @@
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QMenu>
-#include <QtWidgets/QMessageBox>
 
 #include "GameListSettingsWidget.h"
+#include "GuardedDialog.h"
 #include "MainWindow.h"
 #include "QtHost.h"
 #include "QtUtils.h"
@@ -200,7 +200,7 @@ void GameListSettingsWidget::addSearchDirectory(QWidget* parent_widget)
 		return;
 
 	QMessageBox::StandardButton selection =
-		QMessageBox::question(this, tr("Scan Recursively?"),
+		GuardedMessageBox::question(this, tr("Scan Recursively?"),
 			tr("Would you like to scan the directory \"%1\" recursively?\n\nScanning recursively takes "
 			   "more time, but will identify files in subdirectories.")
 				.arg(dir),

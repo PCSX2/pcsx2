@@ -4,7 +4,6 @@
 #include <QtCore/QDir>
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMenu>
-#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QScrollArea>
 #include <algorithm>
 #include "fmt/format.h"
@@ -19,6 +18,7 @@
 #include "Settings/ControllerSettingsWindow.h"
 #include "Settings/ControllerSettingWidgetBinder.h"
 #include "Settings/SettingsWindow.h"
+#include "GuardedDialog.h"
 #include "QtHost.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
@@ -220,7 +220,7 @@ void ControllerBindingWidget::onAutomaticBindingClicked()
 void ControllerBindingWidget::onClearBindingsClicked()
 {
 	//: Binding: A pair of (host button, target button); Mapping: A list of bindings covering an entire controller. These are two different things (which might be the same in your language, please make sure to verify this).
-	if (QMessageBox::question(QtUtils::GetRootWidget(this), tr("Clear Bindings"),
+	if (GuardedMessageBox::question(QtUtils::GetRootWidget(this), tr("Clear Bindings"),
 			//: Binding: A pair of (host button, target button); Mapping: A list of bindings covering an entire controller. These are two different things (which might be the same in your language, please make sure to verify this).
 			tr("Are you sure you want to clear all bindings for this controller? This action cannot be undone.")) != QMessageBox::Yes)
 	{
@@ -251,7 +251,7 @@ void ControllerBindingWidget::doDeviceAutomaticBinding(const QString& device)
 	std::vector<std::pair<GenericInputBinding, std::string>> mapping = InputManager::GetGenericBindingMapping(device.toStdString());
 	if (mapping.empty())
 	{
-		QMessageBox::critical(QtUtils::GetRootWidget(this), tr("Automatic Binding"),
+		GuardedMessageBox::critical(QtUtils::GetRootWidget(this), tr("Automatic Binding"),
 			tr("No generic bindings were generated for device '%1'. The controller/source may not support automatic mapping.").arg(device));
 		return;
 	}
@@ -1169,7 +1169,7 @@ void USBDeviceWidget::onAutomaticBindingClicked()
 
 void USBDeviceWidget::onClearBindingsClicked()
 {
-	if (QMessageBox::question(QtUtils::GetRootWidget(this), tr("Clear Bindings"),
+	if (GuardedMessageBox::question(QtUtils::GetRootWidget(this), tr("Clear Bindings"),
 			tr("Are you sure you want to clear all bindings for this device? This action cannot be undone.")) != QMessageBox::Yes)
 	{
 		return;
@@ -1199,7 +1199,7 @@ void USBDeviceWidget::doDeviceAutomaticBinding(const QString& device)
 	std::vector<std::pair<GenericInputBinding, std::string>> mapping = InputManager::GetGenericBindingMapping(device.toStdString());
 	if (mapping.empty())
 	{
-		QMessageBox::critical(QtUtils::GetRootWidget(this), tr("Automatic Binding"),
+		GuardedMessageBox::critical(QtUtils::GetRootWidget(this), tr("Automatic Binding"),
 			tr("No generic bindings were generated for device '%1'. The controller/source may not support automatic mapping.").arg(device));
 		return;
 	}

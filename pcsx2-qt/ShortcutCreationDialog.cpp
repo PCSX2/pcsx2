@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "ShortcutCreationDialog.h"
+#include "GuardedDialog.h"
 #include "QtHost.h"
 #include <fmt/format.h>
 #include <QtWidgets/QFileDialog>
-#include <QtWidgets/QMessageBox>
 #include "common/Console.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
@@ -142,7 +142,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 	std::string clean_path = Path::ToNativePath(Path::RealPath(game_path)).c_str();
 	if (!Path::IsValidFileName(clean_name))
 	{
-		QMessageBox::critical(this, tr("Failed to create shortcut"), tr("Filename contains illegal character."), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
+		GuardedMessageBox::critical(this, tr("Failed to create shortcut"), tr("Filename contains illegal character."), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
 		return;
 	}
 
@@ -157,7 +157,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 			const std::string start_menu_dir = Path::ToNativePath(fmt::format("{}/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/PCSX2", home));
 			if (!FileSystem::EnsureDirectoryExists(start_menu_dir.c_str(), false))
 			{
-				QMessageBox::critical(this, tr("Failed to create shortcut"), tr("Could not create start menu directory."), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
+				GuardedMessageBox::critical(this, tr("Failed to create shortcut"), tr("Could not create start menu directory."), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
 				return;
 			}
 
@@ -166,14 +166,14 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 	}
 	else
 	{
-		QMessageBox::critical(this, tr("Failed to create shortcut"), tr("Home path is empty."), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
+		GuardedMessageBox::critical(this, tr("Failed to create shortcut"), tr("Home path is empty."), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
 		return;
 	}
 
 	// Check if the same shortcut already exists
 	if (FileSystem::FileExists(link_file.c_str()))
 	{
-		QMessageBox::critical(this, tr("Failed to create shortcut"), tr("A shortcut with the same name already exists."), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
+		GuardedMessageBox::critical(this, tr("Failed to create shortcut"), tr("A shortcut with the same name already exists."), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
 		return;
 	}
 
@@ -183,7 +183,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 		lossless &= ShortcutCreationDialog::EscapeShortcutCommandLine(&arg);
 
 	if (!lossless)
-		QMessageBox::warning(this, tr("Failed to create shortcut"), tr("File path contains invalid character(s). The resulting shortcut may not work."), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
+		GuardedMessageBox::warning(this, tr("Failed to create shortcut"), tr("File path contains invalid character(s). The resulting shortcut may not work."), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
 
 	ShortcutCreationDialog::EscapeShortcutCommandLine(&clean_path);
 	std::string combined_args = StringUtil::JoinString(passed_cli_args.begin(), passed_cli_args.end(), " ");
@@ -203,7 +203,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 	if (FAILED(res))
 	{
 		Console.ErrorFmt("Failed to create shortcut: CoInitialize failed ({})", str_error(res));
-		QMessageBox::critical(this, tr("Failed to create shortcut"), tr("CoInitialize failed (%1").arg(str_error(res)), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
+		GuardedMessageBox::critical(this, tr("Failed to create shortcut"), tr("CoInitialize failed (%1").arg(str_error(res)), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
 		return;
 	}
 
@@ -214,7 +214,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 		if (!return_value)
 		{
 			Console.ErrorFmt("Failed to create shortcut: {}", fail_reason.toStdString());
-			QMessageBox::critical(this, tr("Failed to create shortcut"), fail_reason, QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
+			GuardedMessageBox::critical(this, tr("Failed to create shortcut"), fail_reason, QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
 		}
 		CoUninitialize();
 		return return_value;
@@ -290,7 +290,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 
 	if (name.empty())
 	{
-		QMessageBox::critical(this, tr("Failed to create shortcut"), tr("Cannot create a shortcut without a title."), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
+		GuardedMessageBox::critical(this, tr("Failed to create shortcut"), tr("Cannot create a shortcut without a title."), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
 		return;
 	}
 
@@ -301,7 +301,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 	std::string clean_path = Path::Canonicalize(Path::RealPath(game_path));
 	if (!Path::IsValidFileName(clean_name))
 	{
-		QMessageBox::critical(this, tr("Failed to create shortcut"), tr("Filename contains illegal character."), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
+		GuardedMessageBox::critical(this, tr("Failed to create shortcut"), tr("Filename contains illegal character."), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
 		return;
 	}
 
@@ -309,7 +309,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 	std::string executable_path = FileSystem::GetPackagePath();
 	if (executable_path.empty())
 	{
-		QMessageBox::critical(this, tr("Failed to create shortcut"), tr("Executable path is empty."), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
+		GuardedMessageBox::critical(this, tr("Failed to create shortcut"), tr("Executable path is empty."), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
 		return;
 	}
 
@@ -340,14 +340,14 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 	}
 	else
 	{
-		QMessageBox::critical(this, tr("Failed to create shortcut"), tr("Home path is empty."), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
+		GuardedMessageBox::critical(this, tr("Failed to create shortcut"), tr("Home path is empty."), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
 		return;
 	}
 
 	// Checks if a shortcut already exist
 	if (FileSystem::FileExists(link_path.c_str()))
 	{
-		QMessageBox::critical(this, tr("Failed to create shortcut"), tr("A shortcut with the same name already exists."), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
+		GuardedMessageBox::critical(this, tr("Failed to create shortcut"), tr("A shortcut with the same name already exists."), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
 		return;
 	}
 
@@ -357,7 +357,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 		lossless &= ShortcutCreationDialog::EscapeShortcutCommandLine(&arg);
 
 	if (!lossless)
-		QMessageBox::warning(this, tr("Failed to create shortcut"), tr("File path contains invalid character(s). The resulting shortcut may not work."), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
+		GuardedMessageBox::warning(this, tr("Failed to create shortcut"), tr("File path contains invalid character(s). The resulting shortcut may not work."), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
 
 	std::string cmdline = StringUtil::JoinString(passed_cli_args.begin(), passed_cli_args.end(), " ");
 
@@ -409,7 +409,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 	// Write to .desktop file
 	if (!FileSystem::WriteStringToFile(final_path.toStdString().c_str(), sv))
 	{
-		QMessageBox::critical(this, tr("Failed to create shortcut"), tr("Failed to create .desktop file"), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
+		GuardedMessageBox::critical(this, tr("Failed to create shortcut"), tr("Failed to create .desktop file"), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
 		return;
 	}
 

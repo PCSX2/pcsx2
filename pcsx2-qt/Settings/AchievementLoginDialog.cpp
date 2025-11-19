@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "AchievementLoginDialog.h"
+#include "GuardedDialog.h"
 #include "QtHost.h"
 #include "QtUtils.h"
 
@@ -10,7 +11,6 @@
 #include "common/Error.h"
 
 #include <QtCore/QPointer>
-#include <QtWidgets/QMessageBox>
 
 AchievementLoginDialog::AchievementLoginDialog(QWidget* parent, Achievements::LoginRequestReason reason)
 	: QDialog(parent)
@@ -78,7 +78,7 @@ void AchievementLoginDialog::processLoginResult(bool result, const QString& mess
 {
 	if (!result)
 	{
-		QMessageBox::critical(
+		GuardedMessageBox::critical(
 			this, tr("Login Error"),
 			tr("Login failed.\nError: %1\n\nPlease check your username and password, and try again.").arg(message));
 		m_ui.status->setText(tr("Login failed."));
@@ -89,7 +89,7 @@ void AchievementLoginDialog::processLoginResult(bool result, const QString& mess
 	if (m_reason == Achievements::LoginRequestReason::UserInitiated)
 	{
 		if (!Host::GetBaseBoolSettingValue("Achievements", "Enabled", false) &&
-			QMessageBox::question(this, tr("Enable Achievements"),
+			GuardedMessageBox::question(this, tr("Enable Achievements"),
 				tr("Achievement tracking is not currently enabled. Your login will have no effect until "
 				   "after tracking is enabled.\n\nDo you want to enable tracking now?"),
 				QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes)
@@ -100,7 +100,7 @@ void AchievementLoginDialog::processLoginResult(bool result, const QString& mess
 		}
 
 		if (!Host::GetBaseBoolSettingValue("Achievements", "ChallengeMode", false) &&
-			QMessageBox::question(
+			GuardedMessageBox::question(
 				this, tr("Enable Hardcore Mode"),
 				tr("Hardcore mode is not currently enabled. Enabling hardcore mode allows you to set times, scores, and "
 				   "participate in game-specific leaderboards.\n\nHowever, hardcore mode also prevents the usage of save "
@@ -118,7 +118,7 @@ void AchievementLoginDialog::processLoginResult(bool result, const QString& mess
 			}
 
 			if (has_active_game &&
-				QMessageBox::question(this, tr("Reset System"),
+				GuardedMessageBox::question(this, tr("Reset System"),
 					tr("Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?")) ==
 					QMessageBox::Yes)
 			{

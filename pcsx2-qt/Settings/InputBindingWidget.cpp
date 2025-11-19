@@ -6,13 +6,13 @@
 #include <QtGui/QMouseEvent>
 #include <QtGui/QWheelEvent>
 #include <QtWidgets/QInputDialog>
-#include <QtWidgets/QMessageBox>
 #include <bit>
 #include <cmath>
 #include <sstream>
 
 #include "pcsx2/Host.h"
 
+#include "GuardedDialog.h"
 #include "QtHost.h"
 #include "QtUtils.h"
 #include "Settings/ControllerSettingsWindow.h"
@@ -486,7 +486,7 @@ void InputVibrationBindingWidget::onClicked()
 	}
 	else if (input_setting_options.isEmpty())
 	{
-		QMessageBox::critical(QtUtils::GetRootWidget(this), tr("Error"), tr("No devices with vibration motors were detected."));
+		GuardedMessageBox::critical(QtUtils::GetRootWidget(this), tr("Error"), tr("No devices with vibration motors were detected."));
 		return;
 	}
 

@@ -3,6 +3,7 @@
 
 #include "pcsx2/SIO/Pad/Pad.h"
 #include "GameSummaryWidget.h"
+#include "GuardedDialog.h"
 #include "SettingsWindow.h"
 #include "MainWindow.h"
 #include "QtHost.h"
@@ -22,7 +23,6 @@
 
 #include <QtCore/QDir>
 #include <QtWidgets/QFileDialog>
-#include <QtWidgets/QMessageBox>
 
 GameSummaryWidget::GameSummaryWidget(const GameList::Entry* entry, SettingsWindow* settings_dialog, QWidget* parent)
 	: SettingsWidget(settings_dialog, parent)
@@ -273,7 +273,7 @@ void GameSummaryWidget::onVerifyClicked()
 	// Can't do this while a VM is running because of stupid CDVD.
 	if (QtHost::IsVMValid())
 	{
-		QMessageBox::critical(QtUtils::GetRootWidget(this), tr("Error"), tr("Cannot verify image while a game is running."));
+		GuardedMessageBox::critical(QtUtils::GetRootWidget(this), tr("Error"), tr("Cannot verify image while a game is running."));
 		return;
 	}
 
@@ -282,7 +282,7 @@ void GameSummaryWidget::onVerifyClicked()
 	if (!hasher.Open(m_entry_path, &error))
 	{
 		QString message(QString::fromStdString(error.GetDescription()));
-		QMessageBox::critical(QtUtils::GetRootWidget(this), tr("Error"), message);
+		GuardedMessageBox::critical(QtUtils::GetRootWidget(this), tr("Error"), message);
 		return;
 	}
 

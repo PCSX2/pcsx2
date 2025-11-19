@@ -3,6 +3,7 @@
 
 #include "DockViews.h"
 
+#include "GuardedDialog.h"
 #include "QtUtils.h"
 #include "Debugger/DebuggerView.h"
 #include "Debugger/DebuggerWindow.h"
@@ -18,7 +19,6 @@
 #include <QtGui/QActionGroup>
 #include <QtGui/QPalette>
 #include <QtWidgets/QInputDialog>
-#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QStyleFactory>
 
@@ -184,7 +184,7 @@ void DockTabBar::openContextMenu(QPoint pos)
 
 		if (!widget->setCustomDisplayName(new_name))
 		{
-			QMessageBox::warning(this, tr("Invalid Name"), tr("The specified name is too long."));
+			GuardedMessageBox::warning(this, tr("Invalid Name"), tr("The specified name is too long."));
 			return;
 		}
 

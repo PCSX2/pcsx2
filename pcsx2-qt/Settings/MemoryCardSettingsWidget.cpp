@@ -5,11 +5,11 @@
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMenu>
-#include <QtWidgets/QMessageBox>
 #include <algorithm>
 
 #include "common/StringUtil.h"
 
+#include "GuardedDialog.h"
 #include "MemoryCardConvertDialog.h"
 #include "MemoryCardCreateDialog.h"
 #include "MemoryCardSettingsWidget.h"
@@ -149,7 +149,7 @@ void MemoryCardSettingsWidget::tryInsertCard(u32 slot, const QString& newCard)
 	if (std::none_of(
 			mcds.begin(), mcds.end(), [&newCardStr](const AvailableMcdInfo& mcd) { return mcd.name == newCardStr; }))
 	{
-		QMessageBox::critical(this, tr("Error"), tr("This Memory Card cannot be recognized or is not a valid file type."));
+		GuardedMessageBox::critical(this, tr("Error"), tr("This Memory Card cannot be recognized or is not a valid file type."));
 		return;
 	}
 
@@ -209,7 +209,7 @@ void MemoryCardSettingsWidget::deleteCard()
 	if (selectedCard.isEmpty())
 		return;
 
-	if (QMessageBox::question(QtUtils::GetRootWidget(this), tr("Delete Memory Card"),
+	if (GuardedMessageBox::question(QtUtils::GetRootWidget(this), tr("Delete Memory Card"),
 			tr("Are you sure you wish to delete the Memory Card '%1'?\n\n"
 			   "This action cannot be reversed, and you will lose any saves on the card.")
 				.arg(selectedCard)) != QMessageBox::Yes)
@@ -219,7 +219,7 @@ void MemoryCardSettingsWidget::deleteCard()
 
 	if (!FileMcd_DeleteCard(selectedCard.toStdString()))
 	{
-		QMessageBox::critical(QtUtils::GetRootWidget(this), tr("Delete Memory Card"),
+		GuardedMessageBox::critical(QtUtils::GetRootWidget(this), tr("Delete Memory Card"),
 			tr("Failed to delete the Memory Card. The log may have more information."));
 		return;
 	}
@@ -240,7 +240,7 @@ void MemoryCardSettingsWidget::renameCard()
 
 	if (!newName.endsWith(QStringLiteral(".ps2")) || newName.length() <= 4)
 	{
-		QMessageBox::critical(
+		GuardedMessageBox::critical(
 			QtUtils::GetRootWidget(this), tr("Rename Memory Card"), tr("New name is invalid, it must end with .ps2"));
 		return;
 	}
@@ -248,14 +248,14 @@ void MemoryCardSettingsWidget::renameCard()
 	const std::string newNameStr(newName.toStdString());
 	if (FileMcd_GetCardInfo(newNameStr).has_value())
 	{
-		QMessageBox::critical(QtUtils::GetRootWidget(this), tr("Rename Memory Card"),
+		GuardedMessageBox::critical(QtUtils::GetRootWidget(this), tr("Rename Memory Card"),
 			tr("New name is invalid, a card with this name already exists."));
 		return;
 	}
 
 	if (!FileMcd_RenameCard(selectedCard.toStdString(), newNameStr))
 	{
-		QMessageBox::critical(QtUtils::GetRootWidget(this), tr("Rename Memory Card"),
+		GuardedMessageBox::critical(QtUtils::GetRootWidget(this), tr("Rename Memory Card"),
 			tr("Failed to rename Memory Card. The log may contain more information."));
 		return;
 	}
@@ -272,7 +272,7 @@ void MemoryCardSettingsWidget::convertCard()
 
 	if (!isSelectedCardFormatted())
 	{
-		QMessageBox::critical(this, tr("Error"), tr("Cannot convert an unformatted memory card."));
+		GuardedMessageBox::critical(this, tr("Error"), tr("Cannot convert an unformatted memory card."));
 		return;
 	}
 
@@ -336,7 +336,7 @@ void MemoryCardSettingsWidget::swapCards()
 	std::optional<std::string> card2Name = dialog()->getStringValue(CONFIG_SECTION, card2Key.c_str(), std::nullopt);
 	if (!card1Name.has_value() || card1Name->empty() || !card2Name.has_value() || card2Name->empty())
 	{
-		QMessageBox::critical(
+		GuardedMessageBox::critical(
 			QtUtils::GetRootWidget(this), tr("Error"), tr("Both slots must have a card selected to swap."));
 		return;
 	}

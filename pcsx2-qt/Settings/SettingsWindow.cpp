@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
+#include "GuardedDialog.h"
 #include "MainWindow.h"
 #include "QtHost.h"
 #include "QtUtils.h"
@@ -288,7 +289,7 @@ void SettingsWindow::onCopyGlobalSettingsClicked()
 	if (!isPerGameSettings())
 		return;
 
-	if (QMessageBox::question(this, tr("PCSX2 Settings"),
+	if (GuardedMessageBox::question(this, tr("PCSX2 Settings"),
 			tr("The configuration for this game will be replaced by the current global settings.\n\nAny current setting values will be "
 			   "overwritten.\n\nDo you want to continue?"),
 			QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
@@ -312,7 +313,7 @@ void SettingsWindow::onClearSettingsClicked()
 	if (!isPerGameSettings())
 		return;
 
-	if (QMessageBox::question(this, tr("PCSX2 Settings"),
+	if (GuardedMessageBox::question(this, tr("PCSX2 Settings"),
 			tr("The configuration for this game will be cleared.\n\nAny current setting values will be lost.\n\nDo you want to continue?"),
 			QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
 	{
@@ -350,7 +351,7 @@ void SettingsWindow::reopen(const QString& message)
 		close();
 		dlg->show();
 		if (!message.isEmpty())
-			QMessageBox::information(dlg, tr("PCSX2 Settings"), message);
+			GuardedMessageBox::information(dlg, tr("PCSX2 Settings"), message);
 	});
 }
 

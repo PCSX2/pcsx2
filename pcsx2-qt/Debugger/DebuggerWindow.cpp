@@ -3,6 +3,7 @@
 
 #include "DebuggerWindow.h"
 
+#include "GuardedDialog.h"
 #include "Debugger/DebuggerView.h"
 #include "Debugger/Docking/DockManager.h"
 
@@ -14,8 +15,6 @@
 #include "QtHost.h"
 #include "MainWindow.h"
 #include "AnalysisOptionsDialog.h"
-
-#include <QtWidgets/QMessageBox>
 
 DebuggerWindow* g_debugger_window = nullptr;
 
@@ -71,7 +70,7 @@ DebuggerWindow::DebuggerWindow(QWidget* parent)
 
 	connect(m_ui.actionResetAllLayouts, &QAction::triggered, this, [this]() {
 		QString text = tr("Are you sure you want to reset all layouts?");
-		if (QMessageBox::question(g_debugger_window, tr("Confirmation"), text) != QMessageBox::Yes)
+		if (GuardedMessageBox::question(g_debugger_window, tr("Confirmation"), text) != QMessageBox::Yes)
 			return;
 
 		m_dock_manager->resetAllLayouts();
@@ -79,7 +78,7 @@ DebuggerWindow::DebuggerWindow(QWidget* parent)
 
 	connect(m_ui.actionResetDefaultLayouts, &QAction::triggered, this, [this]() {
 		QString text = tr("Are you sure you want to reset the default layouts?");
-		if (QMessageBox::question(g_debugger_window, tr("Confirmation"), text) != QMessageBox::Yes)
+		if (GuardedMessageBox::question(g_debugger_window, tr("Confirmation"), text) != QMessageBox::Yes)
 			return;
 
 		m_dock_manager->resetDefaultLayouts();

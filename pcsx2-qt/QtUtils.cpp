@@ -3,6 +3,8 @@
 
 #include "QtUtils.h"
 
+#include "GuardedDialog.h"
+
 #include <QtCore/QCoreApplication>
 #include <QtCore/QFileInfo>
 #include <QtCore/QtGlobal>
@@ -17,7 +19,6 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMainWindow>
-#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QScrollBar>
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QSlider>
@@ -273,7 +274,7 @@ namespace QtUtils
 #endif
 		if (!ok)
 		{
-			QMessageBox::critical(parent, QCoreApplication::translate("FileOperations", "Failed to show file"),
+			GuardedMessageBox::critical(parent, QCoreApplication::translate("FileOperations", "Failed to show file"),
 				QCoreApplication::translate("FileOperations", "Failed to show file in file explorer.\n\nThe file was: %1").arg(file.absoluteFilePath()));
 		}
 	}
@@ -296,7 +297,7 @@ namespace QtUtils
 	{
 		if (!QDesktopServices::openUrl(qurl))
 		{
-			QMessageBox::critical(parent, QCoreApplication::translate("FileOperations", "Failed to open URL"),
+			GuardedMessageBox::critical(parent, QCoreApplication::translate("FileOperations", "Failed to open URL"),
 				QCoreApplication::translate("FileOperations", "Failed to open URL.\n\nThe URL was: %1").arg(qurl.toString()));
 		}
 	}

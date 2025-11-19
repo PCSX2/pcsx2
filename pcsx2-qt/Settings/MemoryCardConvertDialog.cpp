@@ -3,7 +3,8 @@
 
 #include "MemoryCardConvertDialog.h"
 
-#include <QtWidgets/QMessageBox>
+#include "GuardedDialog.h"
+
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QProgressDialog>
 
@@ -61,13 +62,13 @@ MemoryCardConvertDialog::MemoryCardConvertDialog(QWidget* parent, QString select
 							break;
 						default:
 							//: MemoryCardType should be left as-is.
-							QMessageBox::critical(this, tr("Convert Memory Card Failed"), tr("Invalid MemoryCardType"));
+							GuardedMessageBox::critical(this, tr("Convert Memory Card Failed"), tr("Invalid MemoryCardType"));
 							return;
 					}
 					break;
 				default:
 					//: MemoryCardType should be left as-is.
-					QMessageBox::critical(this, tr("Convert Memory Card Failed"), tr("Invalid MemoryCardType"));
+					GuardedMessageBox::critical(this, tr("Convert Memory Card Failed"), tr("Invalid MemoryCardType"));
 					return;
 			}
 		}
@@ -99,7 +100,7 @@ void MemoryCardConvertDialog::onProgressUpdated(int value, int range)
 
 void MemoryCardConvertDialog::onThreadFinished()
 {
-	QMessageBox::information(this, tr("Conversion Complete"), tr("Memory Card \"%1\" converted to \"%2\"").arg(m_selectedCard).arg(m_destCardName));
+	GuardedMessageBox::information(this, tr("Conversion Complete"), tr("Memory Card \"%1\" converted to \"%2\"").arg(m_selectedCard).arg(m_destCardName));
 	accept();
 }
 
@@ -220,14 +221,14 @@ bool MemoryCardConvertDialog::SetupPicklist()
 
 			if (!typeSet)
 			{
-				QMessageBox::critical(this, tr("Cannot Convert Memory Card"), tr("Your folder Memory Card has too much data inside it to be converted to a file Memory Card. The largest supported file Memory Card has a capacity of 64 MB. To convert your folder Memory Card, you must remove game folders until its size is 64 MB or less."));
+				GuardedMessageBox::critical(this, tr("Cannot Convert Memory Card"), tr("Your folder Memory Card has too much data inside it to be converted to a file Memory Card. The largest supported file Memory Card has a capacity of 64 MB. To convert your folder Memory Card, you must remove game folders until its size is 64 MB or less."));
 				return false;
 			}
 
 			break;
 		default:
 			//: MemoryCardType should be left as-is.
-			QMessageBox::critical(this, tr("Convert Memory Card Failed"), tr("Invalid MemoryCardType"));
+			GuardedMessageBox::critical(this, tr("Convert Memory Card Failed"), tr("Invalid MemoryCardType"));
 			return false;
 	}
 
@@ -322,5 +323,5 @@ void MemoryCardConvertDialog::SetType_Folder()
 
 void MemoryCardConvertDialog::FileOpenError(const QString errmsg)
 {
-	QMessageBox::critical(this, tr("Cannot Convert Memory Card"), tr("There was an error when accessing the memory card directory. Error message: %0").arg(errmsg));
+	GuardedMessageBox::critical(this, tr("Cannot Convert Memory Card"), tr("There was an error when accessing the memory card directory. Error message: %0").arg(errmsg));
 }

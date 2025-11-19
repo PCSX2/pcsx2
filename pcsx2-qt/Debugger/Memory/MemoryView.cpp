@@ -3,6 +3,7 @@
 
 #include "MemoryView.h"
 
+#include "GuardedDialog.h"
 #include "Debugger/JsonValueWrapper.h"
 
 #include "QtHost.h"
@@ -13,7 +14,6 @@
 #include <QtGui/QClipboard>
 #include <QtGui/QMouseEvent>
 #include <QtWidgets/QInputDialog>
-#include <QtWidgets/QMessageBox>
 
 using namespace QtUtils;
 
@@ -317,7 +317,7 @@ bool MemoryViewTable::InsertFloatIntoSelectedHexView(DebugInterface& cpu)
 	const float newFloatVal = newFloatStr.toFloat(&isValidFloat);
 	if (!isValidFloat)
 	{
-		QMessageBox::warning(parent, tr("Input Error"), tr("Invalid float value"));
+		GuardedMessageBox::warning(parent, tr("Input Error"), tr("Invalid float value"));
 		return false;
 	}
 
@@ -353,7 +353,7 @@ void MemoryViewTable::InsertAtCurrentSelection(const QString& text, DebugInterfa
 		const float newFloatVal = text.toFloat(&isValidFloat);
 		if (!isValidFloat)
 		{
-			QMessageBox::warning(parent, tr("Input Error"), tr("Invalid float value"));
+			GuardedMessageBox::warning(parent, tr("Input Error"), tr("Invalid float value"));
 			return;
 		}
 
@@ -910,7 +910,7 @@ void MemoryView::contextGoToAddress()
 	std::string error;
 	if (!cpu().evaluateExpression(targetString.toStdString().c_str(), address, error))
 	{
-		QMessageBox::warning(this, tr("Cannot Go To"), QString::fromStdString(error));
+		GuardedMessageBox::warning(this, tr("Cannot Go To"), QString::fromStdString(error));
 		return;
 	}
 

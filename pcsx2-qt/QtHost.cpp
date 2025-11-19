@@ -5,6 +5,7 @@
 #include "Debugger/DebuggerWindow.h"
 #include "DisplayWidget.h"
 #include "GameList/GameListWidget.h"
+#include "GuardedDialog.h"
 #include "LogWindow.h"
 #include "MainWindow.h"
 #include "QtHost.h"
@@ -47,7 +48,6 @@
 
 #include <QtCore/QTimer>
 #include <QtWidgets/QApplication>
-#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QFileDialog>
 #include <QtGui/QClipboard>
 #include <QtGui/QInputMethod>
@@ -1287,7 +1287,7 @@ bool QtHost::InitializeConfig()
 
 	if (!EmuFolders::SetResourcesDirectory())
 	{
-		QMessageBox::critical(nullptr, QStringLiteral("PCSX2"),
+		GuardedMessageBox::critical(nullptr, QStringLiteral("PCSX2"),
 			QStringLiteral("Resources directory is missing, your installation is incomplete."));
 		return false;
 	}
@@ -1295,7 +1295,7 @@ bool QtHost::InitializeConfig()
 	if (!EmuFolders::SetDataDirectory(&error))
 	{
 		// no point translating, config isn't loaded
-		QMessageBox::critical(
+		GuardedMessageBox::critical(
 			nullptr, QStringLiteral("PCSX2"),
 			QStringLiteral("Failed to create data directory at path\n\n%1\n\n"
 						   "The error was: %2\n"
@@ -1319,7 +1319,7 @@ bool QtHost::InitializeConfig()
 	{
 		// If the config file doesn't exist, assume this is a new install and don't prompt to overwrite.
 		if (FileSystem::FileExists(s_base_settings_interface->GetFileName().c_str()) &&
-			QMessageBox::question(nullptr, QStringLiteral("PCSX2"),
+			GuardedMessageBox::question(nullptr, QStringLiteral("PCSX2"),
 				QStringLiteral("Settings failed to load, or are the incorrect version. Clicking Yes will reset all settings to defaults. "
 							   "Do you want to continue?")) != QMessageBox::Yes)
 		{
@@ -1334,7 +1334,7 @@ bool QtHost::InitializeConfig()
 		// Make sure we can actually save the config, and the user doesn't have some permission issue.
 		if (!s_base_settings_interface->Save(&error))
 		{
-			QMessageBox::critical(
+			GuardedMessageBox::critical(
 				nullptr, QStringLiteral("PCSX2"),
 				QStringLiteral(
 					"Failed to save configuration to\n\n%1\n\nThe error was: %2\n\nPlease ensure this directory is writable. You "
@@ -1540,7 +1540,7 @@ std::optional<bool> QtHost::DownloadFile(QWidget* parent, const QString& title, 
 	std::unique_ptr<HTTPDownloader> http = HTTPDownloader::Create(Host::GetHTTPUserAgent());
 	if (!http)
 	{
-		QMessageBox::critical(parent, qApp->translate("EmuThread", "Error"), qApp->translate("EmuThread", "Failed to create HTTPDownloader."));
+		GuardedMessageBox::critical(parent, qApp->translate("EmuThread", "Error"), qApp->translate("EmuThread", "Failed to create HTTPDownloader."));
 		return false;
 	}
 
@@ -1560,7 +1560,7 @@ std::optional<bool> QtHost::DownloadFile(QWidget* parent, const QString& title, 
 
 			if (status_code != HTTPDownloader::HTTP_STATUS_OK)
 			{
-				QMessageBox::critical(parent, qApp->translate("EmuThread", "Error"),
+				GuardedMessageBox::critical(parent, qApp->translate("EmuThread", "Error"),
 					qApp->translate("EmuThread", "Download failed with HTTP status code %1.").arg(status_code));
 				download_result = false;
 				return;
@@ -1568,7 +1568,7 @@ std::optional<bool> QtHost::DownloadFile(QWidget* parent, const QString& title, 
 
 			if (hdata.empty())
 			{
-				QMessageBox::critical(parent, qApp->translate("EmuThread", "Error"),
+				GuardedMessageBox::critical(parent, qApp->translate("EmuThread", "Error"),
 					qApp->translate("EmuThread", "Download failed: Data is empty.").arg(status_code));
 
 				download_result = false;
@@ -1602,7 +1602,7 @@ bool QtHost::DownloadFile(QWidget* parent, const QString& title, std::string url
 			!FileSystem::CreateDirectoryPath(directory.c_str(), true)) ||
 		!FileSystem::WriteBinaryFile(path.c_str(), data.data(), data.size()))
 	{
-		QMessageBox::critical(parent, qApp->translate("EmuThread", "Error"),
+		GuardedMessageBox::critical(parent, qApp->translate("EmuThread", "Error"),
 			qApp->translate("EmuThread", "Failed to write '%1'.").arg(QString::fromStdString(path)));
 		return false;
 	}
@@ -2239,7 +2239,7 @@ bool QtHost::ParseCommandLineOptions(const QStringList& args, std::shared_ptr<VM
 			}
 			else if ((*it)[0] == '-')
 			{
-				QMessageBox::critical(nullptr, QStringLiteral("Error"), QStringLiteral("Unknown parameter: '%1'").arg(*it));
+				GuardedMessageBox::critical(nullptr, QStringLiteral("Error"), QStringLiteral("Unknown parameter: '%1'").arg(*it));
 				return false;
 			}
 
@@ -2265,7 +2265,7 @@ bool QtHost::ParseCommandLineOptions(const QStringList& args, std::shared_ptr<VM
 	// scanning the game list).
 	if (s_batch_mode && !s_start_big_picture_mode && !autoboot)
 	{
-		QMessageBox::critical(nullptr, QStringLiteral("Error"),
+		GuardedMessageBox::critical(nullptr, QStringLiteral("Error"),
 			s_nogui_mode ? QStringLiteral("Cannot use no-gui mode, because no boot filename was specified.") :
 						   QStringLiteral("Cannot use batch mode, because no boot filename was specified."));
 		return false;
@@ -2285,7 +2285,7 @@ static bool PerformEarlyHardwareChecks()
 	if (VMManager::PerformEarlyHardwareChecks(&error))
 		return true;
 
-	QMessageBox::critical(nullptr, QStringLiteral("Hardware Check Failed"), QString::fromUtf8(error));
+	GuardedMessageBox::critical(nullptr, QStringLiteral("Hardware Check Failed"), QString::fromUtf8(error));
 	return false;
 }
 

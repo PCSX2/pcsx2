@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "pcsx2/SIO/Pad/Pad.h"
+#include "GuardedDialog.h"
 #include "QtHost.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
@@ -9,8 +10,6 @@
 #include "Settings/ControllerSettingWidgetBinder.h"
 #include "Settings/InterfaceSettingsWidget.h"
 #include "SetupWizardDialog.h"
-
-#include <QtWidgets/QMessageBox>
 
 SetupWizardDialog::SetupWizardDialog()
 {
@@ -37,7 +36,7 @@ bool SetupWizardDialog::canShowNextPage()
 		{
 			if (!m_ui.biosList->currentItem())
 			{
-				if (QMessageBox::question(this, tr("Warning"),
+				if (GuardedMessageBox::question(this, tr("Warning"),
 						tr("A BIOS image has not been selected. PCSX2 <strong>will not</strong> be able to run games "
 						   "without a BIOS image.<br><br>Are you sure you wish to continue without selecting a BIOS "
 						   "image?")) != QMessageBox::Yes)
@@ -52,7 +51,7 @@ bool SetupWizardDialog::canShowNextPage()
 		{
 			if (m_ui.searchDirectoryList->rowCount() == 0)
 			{
-				if (QMessageBox::question(this, tr("Warning"),
+				if (GuardedMessageBox::question(this, tr("Warning"),
 						tr("No game directories have been selected. You will have to manually open any game dumps you "
 						   "want to play, PCSX2's list will be empty.\n\nAre you sure you want to continue?")) !=
 					QMessageBox::Yes)
@@ -137,7 +136,7 @@ void SetupWizardDialog::updatePageButtons()
 
 void SetupWizardDialog::confirmCancel()
 {
-	if (QMessageBox::question(this, tr("Cancel Setup"),
+	if (GuardedMessageBox::question(this, tr("Cancel Setup"),
 			tr("Are you sure you want to cancel PCSX2 setup?\n\nAny changes have been saved, and the wizard will run "
 			   "again next time you start PCSX2.")) != QMessageBox::Yes)
 	{
@@ -273,7 +272,7 @@ void SetupWizardDialog::onAddSearchDirectoryButtonClicked()
 	if (dir.isEmpty())
 		return;
 
-	QMessageBox::StandardButton selection = QMessageBox::question(this, tr("Scan Recursively?"),
+	QMessageBox::StandardButton selection = GuardedMessageBox::question(this, tr("Scan Recursively?"),
 		tr("Would you like to scan the directory \"%1\" recursively?\n\nScanning recursively takes "
 		   "more time, but will identify files in subdirectories.")
 			.arg(dir),
@@ -429,7 +428,7 @@ void SetupWizardDialog::doDeviceAutomaticBinding(u32 port, QLabel* update_label,
 		InputManager::GetGenericBindingMapping(device.toStdString());
 	if (mapping.empty())
 	{
-		QMessageBox::critical(this, tr("Automatic Binding"),
+		GuardedMessageBox::critical(this, tr("Automatic Binding"),
 			tr("No generic bindings were generated for device '%1'. The controller/source may not support automatic "
 			   "mapping.")
 				.arg(device));

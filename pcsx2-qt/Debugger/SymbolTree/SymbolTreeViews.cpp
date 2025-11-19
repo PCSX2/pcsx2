@@ -3,6 +3,7 @@
 
 #include "SymbolTreeViews.h"
 
+#include "GuardedDialog.h"
 #include "Debugger/JsonValueWrapper.h"
 #include "Debugger/SymbolTree/NewSymbolDialogs.h"
 #include "Debugger/SymbolTree/SymbolTreeDelegates.h"
@@ -11,7 +12,6 @@
 #include <QtGui/QClipboard>
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMenu>
-#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QScrollBar>
 
 static bool testName(const QString& name, const QString& filter);
@@ -643,7 +643,7 @@ void SymbolTreeView::onDeleteButtonPressed()
 	if (!node->symbol.valid())
 		return;
 
-	if (QMessageBox::question(this, tr("Confirm Deletion"), tr("Delete '%1'?").arg(node->name)) != QMessageBox::Yes)
+	if (GuardedMessageBox::question(this, tr("Confirm Deletion"), tr("Delete '%1'?").arg(node->name)) != QMessageBox::Yes)
 		return;
 
 	cpu().GetSymbolGuardian().ReadWrite([&](ccc::SymbolDatabase& database) {
@@ -737,7 +737,7 @@ void SymbolTreeView::onChangeTypeTemporarily()
 	std::optional<QString> old_type = m_model->typeFromModelIndexToString(index);
 	if (!old_type.has_value())
 	{
-		QMessageBox::warning(this, tr("Cannot Change Type"), tr("That node cannot have a type."));
+		GuardedMessageBox::warning(this, tr("Cannot Change Type"), tr("That node cannot have a type."));
 		return;
 	}
 
@@ -748,7 +748,7 @@ void SymbolTreeView::onChangeTypeTemporarily()
 
 	std::optional<QString> error_message = m_model->changeTypeTemporarily(index, type_string.toStdString());
 	if (error_message.has_value() && !error_message->isEmpty())
-		QMessageBox::warning(this, tr("Cannot Change Type"), *error_message);
+		GuardedMessageBox::warning(this, tr("Cannot Change Type"), *error_message);
 }
 
 void SymbolTreeView::onTreeViewClicked(const QModelIndex& index)

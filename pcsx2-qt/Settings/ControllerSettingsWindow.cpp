@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
+#include "GuardedDialog.h"
 #include "QtHost.h"
 #include "Settings/ControllerSettingsWindow.h"
 #include "Settings/ControllerGlobalSettingsWidget.h"
@@ -99,11 +100,11 @@ void ControllerSettingsWindow::onNewProfileClicked()
 	std::string profile_path(VMManager::GetInputProfilePath(profile_name.toStdString()));
 	if (FileSystem::FileExists(profile_path.c_str()))
 	{
-		QMessageBox::critical(this, tr("Error"), tr("A profile with the name '%1' already exists.").arg(profile_name));
+		GuardedMessageBox::critical(this, tr("Error"), tr("A profile with the name '%1' already exists.").arg(profile_name));
 		return;
 	}
 
-	const int res = QMessageBox::question(this, tr("Create Input Profile"),
+	const int res = GuardedMessageBox::question(this, tr("Create Input Profile"),
 		tr("Do you want to copy all bindings from the currently-selected profile to the new profile? Selecting No will create a completely "
 		   "empty profile."),
 		QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
@@ -116,7 +117,7 @@ void ControllerSettingsWindow::onNewProfileClicked()
 		// copy from global or the current profile
 		if (!m_profile_interface)
 		{
-			const int hkres = QMessageBox::question(this, tr("Create Input Profile"),
+			const int hkres = GuardedMessageBox::question(this, tr("Create Input Profile"),
 				tr("Do you want to copy the current hotkey bindings from global settings to the new input profile?"),
 				QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
 			if (hkres == QMessageBox::Cancel)
@@ -143,7 +144,7 @@ void ControllerSettingsWindow::onNewProfileClicked()
 
 	if (!temp_si.Save())
 	{
-		QMessageBox::critical(
+		GuardedMessageBox::critical(
 			this, tr("Error"), tr("Failed to save the new profile to '%1'.").arg(QString::fromStdString(temp_si.GetFileName())));
 		return;
 	}
@@ -154,7 +155,7 @@ void ControllerSettingsWindow::onNewProfileClicked()
 
 void ControllerSettingsWindow::onApplyProfileClicked()
 {
-	if (QMessageBox::question(this, tr("Load Input Profile"),
+	if (GuardedMessageBox::question(this, tr("Load Input Profile"),
 			tr("Are you sure you want to load the input profile named '%1'?\n\n"
 			   "All current global bindings will be removed, and the profile bindings loaded.\n\n"
 			   "You cannot undo this action.")
@@ -190,13 +191,13 @@ void ControllerSettingsWindow::onRenameProfileClicked()
 	std::string profile_path(VMManager::GetInputProfilePath(profile_name.toStdString()));
 	if (FileSystem::FileExists(profile_path.c_str()))
 	{
-		QMessageBox::critical(this, tr("Error"), tr("A profile with the name '%1' already exists.").arg(profile_name));
+		GuardedMessageBox::critical(this, tr("Error"), tr("A profile with the name '%1' already exists.").arg(profile_name));
 		return;
 	}
 
 	if (!FileSystem::RenamePath(old_profile_path.c_str(), profile_path.c_str()))
 	{
-		QMessageBox::critical(this, tr("Error"), tr("Failed to rename '%1'.").arg(QString::fromStdString(old_profile_path)));
+		GuardedMessageBox::critical(this, tr("Error"), tr("Failed to rename '%1'.").arg(QString::fromStdString(old_profile_path)));
 		return;
 	}
 
@@ -221,7 +222,7 @@ void ControllerSettingsWindow::onRenameProfileClicked()
 
 void ControllerSettingsWindow::onDeleteProfileClicked()
 {
-	if (QMessageBox::question(this, tr("Delete Input Profile"),
+	if (GuardedMessageBox::question(this, tr("Delete Input Profile"),
 			tr("Are you sure you want to delete the input profile named '%1'?\n\n"
 			   "You cannot undo this action.")
 				.arg(m_profile_name)) != QMessageBox::Yes)
@@ -232,7 +233,7 @@ void ControllerSettingsWindow::onDeleteProfileClicked()
 	std::string profile_path(VMManager::GetInputProfilePath(m_profile_name.toStdString()));
 	if (!FileSystem::DeleteFilePath(profile_path.c_str()))
 	{
-		QMessageBox::critical(this, tr("Error"), tr("Failed to delete '%1'.").arg(QString::fromStdString(profile_path)));
+		GuardedMessageBox::critical(this, tr("Error"), tr("Failed to delete '%1'.").arg(QString::fromStdString(profile_path)));
 		return;
 	}
 
@@ -249,7 +250,7 @@ void ControllerSettingsWindow::onMappingSettingsClicked()
 
 void ControllerSettingsWindow::onRestoreDefaultsClicked()
 {
-	if (QMessageBox::question(this, tr("Restore Defaults"),
+	if (GuardedMessageBox::question(this, tr("Restore Defaults"),
 			tr("Are you sure you want to restore the default controller configuration?\n\n"
 			   "All shared bindings and configuration will be lost, but your input profiles will remain.\n\n"
 			   "You cannot undo this action.")) != QMessageBox::Yes)
@@ -570,7 +571,7 @@ void ControllerSettingsWindow::switchProfile(const QString& name)
 		std::string path(VMManager::GetInputProfilePath(name.toStdString()));
 		if (!FileSystem::FileExists(path.c_str()))
 		{
-			QMessageBox::critical(this, tr("Error"), tr("The input profile named '%1' cannot be found.").arg(name));
+			GuardedMessageBox::critical(this, tr("Error"), tr("The input profile named '%1' cannot be found.").arg(name));
 			return;
 		}
 

@@ -3,6 +3,7 @@
 
 #include "DockManager.h"
 
+#include "GuardedDialog.h"
 #include "Debugger/DebuggerView.h"
 #include "Debugger/DebuggerWindow.h"
 #include "Debugger/Docking/DockTables.h"
@@ -24,7 +25,6 @@
 
 #include <QtCore/QTimer>
 #include <QtCore/QtTranslation>
-#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QProxyStyle>
 #include <QtWidgets/QStyleFactory>
 
@@ -637,7 +637,7 @@ void DockManager::resetLayoutClicked(DockLayout::Index layout_index)
 		return;
 
 	QString text = tr("Are you sure you want to reset layout '%1'?").arg(layout.name());
-	if (QMessageBox::question(g_debugger_window, tr("Confirmation"), text) != QMessageBox::Yes)
+	if (GuardedMessageBox::question(g_debugger_window, tr("Confirmation"), text) != QMessageBox::Yes)
 		return;
 
 	bool current_layout = layout_index == m_current_layout;
@@ -660,7 +660,7 @@ void DockManager::deleteLayoutClicked(DockLayout::Index layout_index)
 	DockLayout& layout = m_layouts[layout_index];
 
 	QString text = tr("Are you sure you want to delete layout '%1'?").arg(layout.name());
-	if (QMessageBox::question(g_debugger_window, tr("Confirmation"), text) != QMessageBox::Yes)
+	if (GuardedMessageBox::question(g_debugger_window, tr("Confirmation"), text) != QMessageBox::Yes)
 		return;
 
 	deleteLayout(layout_index);

@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
-#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QFileDialog>
 #include <algorithm>
 
@@ -13,6 +12,7 @@
 #include "pcsx2/INISettingsInterface.h"
 
 #include "DEV9SettingsWidget.h"
+#include "GuardedDialog.h"
 #include "QtHost.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
@@ -444,7 +444,7 @@ void DEV9SettingsWidget::onEthHostExport()
 
 	exportFile->Save();
 
-	QMessageBox::information(this, tr("DNS Hosts"),
+	GuardedMessageBox::information(this, tr("DNS Hosts"),
 		tr("Exported Successfully"),
 		QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
 }
@@ -464,7 +464,7 @@ void DEV9SettingsWidget::onEthHostImport()
 
 	if (!importFile->Load())
 	{
-		QMessageBox::warning(this, tr("DNS Hosts"),
+		GuardedMessageBox::warning(this, tr("DNS Hosts"),
 			tr("Failed to open file"),
 			QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
 		return;
@@ -493,7 +493,7 @@ void DEV9SettingsWidget::onEthHostImport()
 
 	if (hosts.size() == 0)
 	{
-		QMessageBox::warning(this, tr("DNS Hosts"),
+		GuardedMessageBox::warning(this, tr("DNS Hosts"),
 			tr("No Hosts in file"),
 			QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
 		return;
@@ -514,7 +514,7 @@ void DEV9SettingsWidget::onEthHostImport()
 	for (size_t i = 0; i < hosts.size(); i++)
 		AddNewHostConfig(hosts[i]);
 
-	QMessageBox::information(this, tr("DNS Hosts"),
+	GuardedMessageBox::information(this, tr("DNS Hosts"),
 		tr("Imported Successfully"),
 		QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
 }
@@ -524,7 +524,7 @@ void DEV9SettingsWidget::onEthHostPerGame()
 	const std::optional<int> hostLengthOpt = dialog()->getIntValue("DEV9/Eth/Hosts", "Count", std::nullopt);
 	if (!hostLengthOpt.has_value())
 	{
-		QMessageBox::StandardButton ret = QMessageBox::question(this, tr("Per Game Host list"),
+		QMessageBox::StandardButton ret = GuardedMessageBox::question(this, tr("Per Game Host list"),
 			tr("Copy global settings?"),
 			QMessageBox::StandardButton::Yes | QMessageBox::StandardButton::No | QMessageBox::StandardButton::Cancel, QMessageBox::StandardButton::Yes);
 
@@ -552,7 +552,7 @@ void DEV9SettingsWidget::onEthHostPerGame()
 	}
 	else
 	{
-		QMessageBox::StandardButton ret = QMessageBox::question(this, tr("Per Game Host list"),
+		QMessageBox::StandardButton ret = GuardedMessageBox::question(this, tr("Per Game Host list"),
 			tr("Delete per game host list?"),
 			QMessageBox::StandardButton::Yes | QMessageBox::StandardButton::Cancel, QMessageBox::StandardButton::Yes);
 
@@ -674,7 +674,7 @@ void DEV9SettingsWidget::onHddCreateClicked()
 
 	if (sizeBytes == 0 || hddPath.empty())
 	{
-		QMessageBox::warning(this, QObject::tr("HDD Creator"),
+		GuardedMessageBox::warning(this, QObject::tr("HDD Creator"),
 			QObject::tr("Failed to create HDD image"),
 			QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
 		return;
@@ -686,7 +686,7 @@ void DEV9SettingsWidget::onHddCreateClicked()
 	if (FileSystem::FileExists(hddPath.c_str()))
 	{
 		QMessageBox::StandardButton selection =
-			QMessageBox::question(this, tr("Overwrite File?"),
+			GuardedMessageBox::question(this, tr("Overwrite File?"),
 				tr("HDD image \"%1\" already exists.\n\n"
 				   "Do you want to overwrite?")
 					.arg(QString::fromStdString(hddPath)),
@@ -704,7 +704,7 @@ void DEV9SettingsWidget::onHddCreateClicked()
 
 	if (!hddCreator.errored)
 	{
-		QMessageBox::information(this, tr("HDD Creator"),
+		GuardedMessageBox::information(this, tr("HDD Creator"),
 			tr("HDD image created"),
 			QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
 	}

@@ -1,11 +1,12 @@
 // SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
+#include "GuardedDialog.h"
+
 #include "common/FileSystem.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
 
-#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QPushButton>
 
 #include "Settings/MemoryCardCreateDialog.h"
@@ -104,21 +105,21 @@ void MemoryCardCreateDialog::createCard()
 		.toStdString();
 	if (!Path::IsValidFileName(name_str, false))
 	{
-		QMessageBox::critical(this, tr("Create Memory Card"),
+		GuardedMessageBox::critical(this, tr("Create Memory Card"),
 			tr("Failed to create the Memory Card, because the name '%1' contains one or more invalid characters.").arg(name));
 		return;
 	}
 
 	if (FileMcd_GetCardInfo(name_str).has_value())
 	{
-		QMessageBox::critical(this, tr("Create Memory Card"),
+		GuardedMessageBox::critical(this, tr("Create Memory Card"),
 			tr("Failed to create the Memory Card, because another card with the name '%1' already exists.").arg(name));
 		return;
 	}
 
 	if (!FileMcd_CreateNewCard(name_str, m_type, m_fileType))
 	{
-		QMessageBox::critical(this, tr("Create Memory Card"),
+		GuardedMessageBox::critical(this, tr("Create Memory Card"),
 			tr("Failed to create the Memory Card, the log may contain more information."));
 		return;
 	}
@@ -131,6 +132,6 @@ void MemoryCardCreateDialog::createCard()
 	}
 #endif
 
-	QMessageBox::information(this, tr("Create Memory Card"), tr("Memory Card '%1' created.").arg(name));
+	GuardedMessageBox::information(this, tr("Create Memory Card"), tr("Memory Card '%1' created.").arg(name));
 	accept();
 }

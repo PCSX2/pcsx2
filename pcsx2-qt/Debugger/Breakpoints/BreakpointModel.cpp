@@ -3,6 +3,7 @@
 
 #include "BreakpointModel.h"
 
+#include "GuardedDialog.h"
 #include "QtHost.h"
 #include "QtUtils.h"
 #include "Debugger/DebuggerSettingsManager.h"
@@ -13,7 +14,6 @@
 #include "common/Console.h"
 
 #include <QtCore/QPointer>
-#include <QtWidgets/QMessageBox>
 
 #include <algorithm>
 
@@ -385,7 +385,7 @@ bool BreakpointModel::setData(const QModelIndex& index, const QVariant& value, i
 				std::string error;
 				if (!m_cpu.initExpression(condValue.toLocal8Bit().constData(), expr, error))
 				{
-					QMessageBox::warning(nullptr, "Condition Error", QString::fromStdString(error));
+					GuardedMessageBox::warning(nullptr, "Condition Error", QString::fromStdString(error));
 					return false;
 				}
 
@@ -419,7 +419,7 @@ bool BreakpointModel::setData(const QModelIndex& index, const QVariant& value, i
 				std::string error;
 				if (!m_cpu.initExpression(condValue.toLocal8Bit().constData(), expr, error))
 				{
-					QMessageBox::warning(nullptr, "Condition Error", QString::fromStdString(error));
+					GuardedMessageBox::warning(nullptr, "Condition Error", QString::fromStdString(error));
 					return false;
 				}
 

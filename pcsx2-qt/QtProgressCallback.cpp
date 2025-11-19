@@ -3,11 +3,11 @@
 
 #include "common/Assertions.h"
 
+#include "GuardedDialog.h"
 #include "QtProgressCallback.h"
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDebug>
-#include <QtWidgets/QMessageBox>
 #include <array>
 
 QtModalProgressCallback::QtModalProgressCallback(QWidget* parent_widget, float show_delay)
@@ -91,18 +91,18 @@ void QtModalProgressCallback::DisplayDebugMessage(const char* message)
 
 void QtModalProgressCallback::ModalError(const char* message)
 {
-	QMessageBox::critical(&m_dialog, tr("Error"), QString::fromUtf8(message));
+	GuardedMessageBox::critical(&m_dialog, tr("Error"), QString::fromUtf8(message));
 }
 
 bool QtModalProgressCallback::ModalConfirmation(const char* message)
 {
-	return (QMessageBox::question(&m_dialog, tr("Question"), QString::fromUtf8(message), QMessageBox::Yes,
+	return (GuardedMessageBox::question(&m_dialog, tr("Question"), QString::fromUtf8(message), QMessageBox::Yes,
 				QMessageBox::No) == QMessageBox::Yes);
 }
 
 void QtModalProgressCallback::ModalInformation(const char* message)
 {
-	QMessageBox::information(&m_dialog, tr("Information"), QString::fromUtf8(message));
+	GuardedMessageBox::information(&m_dialog, tr("Information"), QString::fromUtf8(message));
 }
 
 void QtModalProgressCallback::dialogCancelled()
@@ -189,18 +189,18 @@ void QtAsyncProgressThread::DisplayDebugMessage(const char* message)
 
 void QtAsyncProgressThread::ModalError(const char* message)
 {
-	QMessageBox::critical(parentWidget(), tr("Error"), QString::fromUtf8(message));
+	GuardedMessageBox::critical(parentWidget(), tr("Error"), QString::fromUtf8(message));
 }
 
 bool QtAsyncProgressThread::ModalConfirmation(const char* message)
 {
-	return (QMessageBox::question(parentWidget(), tr("Question"), QString::fromUtf8(message), QMessageBox::Yes,
+	return (GuardedMessageBox::question(parentWidget(), tr("Question"), QString::fromUtf8(message), QMessageBox::Yes,
 				QMessageBox::No) == QMessageBox::Yes);
 }
 
 void QtAsyncProgressThread::ModalInformation(const char* message)
 {
-	QMessageBox::information(parentWidget(), tr("Information"), QString::fromUtf8(message));
+	GuardedMessageBox::information(parentWidget(), tr("Information"), QString::fromUtf8(message));
 }
 
 void QtAsyncProgressThread::start()

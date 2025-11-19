@@ -3,6 +3,7 @@
 
 #include "RegisterView.h"
 
+#include "GuardedDialog.h"
 #include "Debugger/JsonValueWrapper.h"
 
 #include "QtUtils.h"
@@ -13,7 +14,6 @@
 #include <QtGui/QClipboard>
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QProxyStyle>
-#include <QtWidgets/QMessageBox>
 
 #include <bit>
 
@@ -377,7 +377,7 @@ bool RegisterView::contextFetchNewValue(u64& out, u64 currentValue, bool segment
 		out = input.toULongLong(&ok, 16);
 		if (!ok)
 		{
-			QMessageBox::warning(this, tr("Invalid register value"), tr("Invalid hexadecimal register value."));
+			GuardedMessageBox::warning(this, tr("Invalid register value"), tr("Invalid hexadecimal register value."));
 			return false;
 		}
 	}
@@ -386,7 +386,7 @@ bool RegisterView::contextFetchNewValue(u64& out, u64 currentValue, bool segment
 		out = std::bit_cast<u32>(input.toFloat(&ok));
 		if (!ok)
 		{
-			QMessageBox::warning(this, tr("Invalid register value"), tr("Invalid floating-point register value."));
+			GuardedMessageBox::warning(this, tr("Invalid register value"), tr("Invalid floating-point register value."));
 			return false;
 		}
 	}
@@ -454,7 +454,7 @@ std::optional<DebuggerEvents::GoToAddress> RegisterView::contextCreateGotoEvent(
 
 	if (!cpu().isValidAddress(addr))
 	{
-		QMessageBox::warning(
+		GuardedMessageBox::warning(
 			this,
 			tr("Invalid target address"),
 			tr("This register holds an invalid address."));

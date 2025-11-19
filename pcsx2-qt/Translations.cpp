@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
+#include "GuardedDialog.h"
 #include "MainWindow.h"
 #include "QtHost.h"
 
@@ -146,7 +147,7 @@ void QtHost::InstallTranslator(QWidget* dialog_parent)
 		QTranslator* base_translator = new QTranslator(qApp);
 		if (!base_translator->load(base_path))
 		{
-			QMessageBox::warning(nullptr, QStringLiteral("Translation Error"),
+			GuardedMessageBox::warning(nullptr, QStringLiteral("Translation Error"),
 				QStringLiteral("Failed to find load base translation file for '%1':\n%2").arg(language).arg(base_path));
 			delete base_translator;
 		}
@@ -169,7 +170,7 @@ void QtHost::InstallTranslator(QWidget* dialog_parent)
 		}
 		else
 		{
-			QMessageBox::warning(nullptr, QStringLiteral("Translation Error"),
+			GuardedMessageBox::warning(nullptr, QStringLiteral("Translation Error"),
 				QStringLiteral("Failed to load translation file for language '%1':\n%2").arg(language).arg(path));
 			delete translator;
 			translator = nullptr;
@@ -179,7 +180,7 @@ void QtHost::InstallTranslator(QWidget* dialog_parent)
 	{
 #ifdef PCSX2_DEVBUILD
 		// For now, until we're sure this works on all platforms, we won't block users from starting if they're missing.
-		QMessageBox::warning(nullptr, QStringLiteral("Translation Error"),
+		GuardedMessageBox::warning(nullptr, QStringLiteral("Translation Error"),
 			QStringLiteral("Failed to find translation file for language '%1':\n%2").arg(language).arg(path));
 #endif
 	}

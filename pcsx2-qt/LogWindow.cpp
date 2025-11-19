@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
+#include "GuardedDialog.h"
 #include "LogWindow.h"
 #include "MainWindow.h"
 #include "QtHost.h"
@@ -211,7 +212,7 @@ void LogWindow::onSaveTriggered()
 	QFile file(path);
 	if (!file.open(QFile::WriteOnly | QFile::Text))
 	{
-		QMessageBox::critical(this, tr("Error"), tr("Failed to open file for writing."));
+		GuardedMessageBox::critical(this, tr("Error"), tr("Failed to open file for writing."));
 		return;
 	}
 

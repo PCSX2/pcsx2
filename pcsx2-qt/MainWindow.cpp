@@ -7,6 +7,7 @@
 #include "DisplayWidget.h"
 #include "GameList/GameListRefreshThread.h"
 #include "GameList/GameListWidget.h"
+#include "GuardedDialog.h"
 #include "LogWindow.h"
 #include "MainWindow.h"
 #include "QtHost.h"
@@ -1189,18 +1190,18 @@ void MainWindow::cancelGameListRefresh()
 
 void MainWindow::reportInfo(const QString& title, const QString& message)
 {
-	QMessageBox::information(this, title, message);
+	GuardedMessageBox::information(this, title, message);
 }
 
 void MainWindow::reportError(const QString& title, const QString& message)
 {
-	QMessageBox::critical(this, title, message);
+	GuardedMessageBox::critical(this, title, message);
 }
 
 bool MainWindow::confirmMessage(const QString& title, const QString& message)
 {
 	VMLock lock(pauseAndLockVM());
-	return (QMessageBox::question(this, title, message) == QMessageBox::Yes);
+	return (GuardedMessageBox::question(this, title, message) == QMessageBox::Yes);
 }
 
 void MainWindow::onStatusMessage(const QString& message)
@@ -1361,7 +1362,7 @@ void MainWindow::onGameListEntryActivated()
 		// change disc on double click
 		if (!entry->IsDisc())
 		{
-			QMessageBox::critical(this, tr("Error"), tr("You must select a disc to change discs."));
+			GuardedMessageBox::critical(this, tr("Error"), tr("You must select a disc to change discs."));
 			return;
 		}
 
@@ -1742,7 +1743,7 @@ void MainWindow::onToolsEditCheatsPatchesTriggered(bool cheats)
 	const std::string path = Patch::GetPnachFilename(s_current_disc_serial.toStdString(), s_current_running_crc, cheats);
 	if (!FileSystem::FileExists(path.c_str()))
 	{
-		if (QMessageBox::question(this, tr("Confirm File Creation"),
+		if (GuardedMessageBox::question(this, tr("Confirm File Creation"),
 				tr("The pnach file '%1' does not currently exist. Do you want to create it?")
 					.arg(QtUtils::StringViewToQString(Path::GetFileName(path))),
 				QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
@@ -1752,7 +1753,7 @@ void MainWindow::onToolsEditCheatsPatchesTriggered(bool cheats)
 
 		if (!FileSystem::WriteStringToFile(path.c_str(), std::string_view()))
 		{
-			QMessageBox::critical(this, tr("Error"), tr("Failed to create '%1'.").arg(QString::fromStdString(path)));
+			GuardedMessageBox::critical(this, tr("Error"), tr("Failed to create '%1'.").arg(QString::fromStdString(path)));
 			return;
 		}
 	}
@@ -2180,7 +2181,7 @@ bool MainWindow::startFile(const QString& filename)
 		if (s_vm_valid)
 			g_emu_thread->loadState(filename);
 		else
-			QMessageBox::critical(this, tr("Load State Failed"), tr("Cannot load a save state without a running VM."));
+			GuardedMessageBox::critical(this, tr("Load State Failed"), tr("Cannot load a save state without a running VM."));
 
 		return true;
 	}
@@ -2203,7 +2204,7 @@ bool MainWindow::startFile(const QString& filename)
 	{
 		const auto lock = pauseAndLockVM();
 
-		if (QMessageBox::Yes != QMessageBox::question(this, tr("Confirm Reset"),
+		if (QMessageBox::Yes != GuardedMessageBox::question(this, tr("Confirm Reset"),
 									tr("The new ELF cannot be loaded without resetting the virtual machine. Do you want to reset the virtual machine now?")))
 		{
 			return true;
@@ -2216,7 +2217,7 @@ bool MainWindow::startFile(const QString& filename)
 	{
 		if (!GSDumpReplayer::IsReplayingDump())
 		{
-			QMessageBox::critical(this, tr("Error"), tr("Cannot change from game to GS dump without shutting down first."));
+			GuardedMessageBox::critical(this, tr("Error"), tr("Cannot change from game to GS dump without shutting down first."));
 		}
 
 		g_emu_thread->changeGSDump(filename);
@@ -2380,7 +2381,7 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(bool recreate_window, 
 	std::optional<WindowInfo> wi = m_display_surface->getWindowInfo();
 	if (!wi.has_value())
 	{
-		QMessageBox::critical(this, tr("Error"), tr("Failed to get window info from widget"));
+		GuardedMessageBox::critical(this, tr("Error"), tr("Failed to get window info from widget"));
 		destroyDisplayWidget(true);
 		return std::nullopt;
 	}
@@ -2687,7 +2688,7 @@ void MainWindow::doGameSettings(const char* category)
 	// open properties for the current running file (isn't in the game list)
 	if (s_current_disc_crc == 0)
 	{
-		QMessageBox::critical(this, tr("Game Properties"), tr("Game properties is unavailable for the current game."));
+		GuardedMessageBox::critical(this, tr("Game Properties"), tr("Game properties is unavailable for the current game."));
 		return;
 	}
 
@@ -2738,7 +2739,7 @@ QString MainWindow::getDiscDevicePath(const QString& title)
 	const std::vector<std::string> devices(GetOpticalDriveList());
 	if (devices.empty())
 	{
-		QMessageBox::critical(this, title,
+		GuardedMessageBox::critical(this, title,
 			tr("Could not find any CD/DVD-ROM devices. Please ensure you have a drive connected and "
 			   "sufficient permissions to access it."));
 		return ret;
@@ -2781,7 +2782,7 @@ void MainWindow::startGameListEntry(const GameList::Entry& entry, std::optional<
 		std::string state_filename = VMManager::GetSaveStateFileName(entry.serial.c_str(), entry.crc, save_slot.value(), load_backup);
 		if (!FileSystem::FileExists(state_filename.c_str()))
 		{
-			QMessageBox::critical(this, tr("Error"), tr("This save state does not exist."));
+			GuardedMessageBox::critical(this, tr("Error"), tr("This save state does not exist."));
 			return;
 		}
 
@@ -2807,11 +2808,11 @@ void MainWindow::setGameListEntryCoverImage(const GameList::Entry& entry)
 	{
 		if (QFileInfo(old_filename) == QFileInfo(filename))
 		{
-			QMessageBox::critical(this, tr("Copy Error"), tr("You must select a different file to the current cover image."));
+			GuardedMessageBox::critical(this, tr("Copy Error"), tr("You must select a different file to the current cover image."));
 			return;
 		}
 
-		if (QMessageBox::question(this, tr("Cover Already Exists"),
+		if (GuardedMessageBox::question(this, tr("Cover Already Exists"),
 				tr("A cover image for this game already exists, do you wish to replace it?"), QMessageBox::Yes,
 				QMessageBox::No) != QMessageBox::Yes)
 		{
@@ -2821,19 +2822,19 @@ void MainWindow::setGameListEntryCoverImage(const GameList::Entry& entry)
 
 	if (QFile::exists(new_filename) && !QFile::remove(new_filename))
 	{
-		QMessageBox::critical(this, tr("Copy Error"), tr("Failed to remove existing cover '%1'").arg(new_filename));
+		GuardedMessageBox::critical(this, tr("Copy Error"), tr("Failed to remove existing cover '%1'").arg(new_filename));
 		return;
 	}
 
 	if (!QFile::copy(filename, new_filename))
 	{
-		QMessageBox::critical(this, tr("Copy Error"), tr("Failed to copy '%1' to '%2'").arg(filename).arg(new_filename));
+		GuardedMessageBox::critical(this, tr("Copy Error"), tr("Failed to copy '%1' to '%2'").arg(filename).arg(new_filename));
 		return;
 	}
 
 	if (!old_filename.isEmpty() && old_filename != new_filename && !QFile::remove(old_filename))
 	{
-		QMessageBox::critical(this, tr("Copy Error"), tr("Failed to remove '%1'").arg(old_filename));
+		GuardedMessageBox::critical(this, tr("Copy Error"), tr("Failed to remove '%1'").arg(old_filename));
 		return;
 	}
 
@@ -2842,7 +2843,7 @@ void MainWindow::setGameListEntryCoverImage(const GameList::Entry& entry)
 
 void MainWindow::clearGameListEntryPlayTime(const GameList::Entry& entry, const time_t entry_played_time)
 {
-	if (QMessageBox::question(this, tr("Confirm Reset"),
+	if (GuardedMessageBox::question(this, tr("Confirm Reset"),
 			tr("Are you sure you want to reset the play time for '%1' (%2)?\n\nYour current play time is %3.\n\nThis action cannot be undone.")
 				.arg(entry.title.empty() ? tr("empty title") : QString::fromStdString(entry.title),
 					entry.serial.empty() ? tr("no serial") : QString::fromStdString(entry.serial),
@@ -2877,7 +2878,7 @@ void MainWindow::openSnapshotsFolderForGame(const GameList::Entry& entry)
 			return;
 		}
 
-		QMessageBox::critical(this, tr("Error"), tr("Failed to create snapshots directory '%1'\n\nOpening default directory.").arg(QString::fromStdString(game_dir)));
+		GuardedMessageBox::critical(this, tr("Error"), tr("Failed to create snapshots directory '%1'\n\nOpening default directory.").arg(QString::fromStdString(game_dir)));
 	}
 
 	QtUtils::OpenURL(this, QUrl::fromLocalFile(QString::fromStdString(EmuFolders::Snapshots)));
@@ -2920,7 +2921,7 @@ std::optional<bool> MainWindow::promptForResumeState(const QString& save_state_p
 	else if (delboot == clicked)
 	{
 		if (!QFile::remove(save_state_path))
-			QMessageBox::critical(this, tr("Error"), tr("Failed to delete save state file '%1'.").arg(save_state_path));
+			GuardedMessageBox::critical(this, tr("Error"), tr("Failed to delete save state file '%1'.").arg(save_state_path));
 
 		return false;
 	}
@@ -3035,7 +3036,7 @@ void MainWindow::populateLoadStateMenu(QMenu* menu, const QString& filename, con
 	if (has_any_states)
 	{
 		connect(delete_save_states_action, &QAction::triggered, this, [this, serial, crc] {
-			if (QMessageBox::warning(this, tr("Delete Save States"),
+			if (GuardedMessageBox::warning(this, tr("Delete Save States"),
 					tr("Are you sure you want to delete all save states for %1?\n\nThe saves will not be recoverable.").arg(serial),
 					QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
 			{
@@ -3043,7 +3044,7 @@ void MainWindow::populateLoadStateMenu(QMenu* menu, const QString& filename, con
 			}
 
 			const u32 deleted = VMManager::DeleteSaveStates(serial.toUtf8().constData(), crc, true);
-			QMessageBox::information(this, tr("Delete Save States"), tr("%1 save states deleted.").arg(deleted));
+			GuardedMessageBox::information(this, tr("Delete Save States"), tr("%1 save states deleted.").arg(deleted));
 		});
 	}
 }

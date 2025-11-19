@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
-#include <QtWidgets/QMessageBox>
+#include "GuardedDialog.h"
 #include "HddCreateQt.h"
 
 HddCreateQt::HddCreateQt(QWidget* parent)
@@ -31,7 +31,7 @@ void HddCreateQt::SetFileProgress(u64 currentSize)
 
 void HddCreateQt::SetError()
 {
-	QMessageBox::warning(progressDialog, QObject::tr("HDD Creator"),
+	GuardedMessageBox::warning(progressDialog, QObject::tr("HDD Creator"),
 		QObject::tr("Failed to create HDD image"),
 		QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
 }

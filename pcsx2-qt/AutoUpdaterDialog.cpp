@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "AutoUpdaterDialog.h"
+#include "GuardedDialog.h"
 #include "MainWindow.h"
 #include "QtHost.h"
 #include "QtProgressCallback.h"
@@ -36,7 +37,6 @@
 #include <QtCore/QString>
 #include <QtCore/QTemporaryDir>
 #include <QtWidgets/QDialog>
-#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QProgressDialog>
 
 #ifdef _WIN32
@@ -163,7 +163,7 @@ void AutoUpdaterDialog::reportError(const char* msg, ...)
 	// don't display errors when we're doing an automatic background check, it's just annoying
 	Console.Error("Updater Error: %s", full_msg.c_str());
 	if (m_display_messages)
-		QMessageBox::critical(this, tr("Updater Error"), QString::fromStdString(full_msg));
+		GuardedMessageBox::critical(this, tr("Updater Error"), QString::fromStdString(full_msg));
 }
 
 bool AutoUpdaterDialog::ensureHttpReady()
@@ -545,7 +545,7 @@ void AutoUpdaterDialog::checkIfUpdateNeeded()
 
 		if (m_display_messages)
 		{
-			QMessageBox::information(this, tr("Automatic Updater"),
+			GuardedMessageBox::information(this, tr("Automatic Updater"),
 				tr("No updates are currently available. Please try again later."));
 		}
 
@@ -674,7 +674,7 @@ void AutoUpdaterDialog::cleanupAfterUpdate()
 
 	if (!FileSystem::DeleteFilePath(updater_path.c_str()))
 	{
-		QMessageBox::critical(nullptr, tr("Updater Error"), tr("Failed to remove updater exe after update."));
+		GuardedMessageBox::critical(nullptr, tr("Updater Error"), tr("Failed to remove updater exe after update."));
 		return;
 	}
 }

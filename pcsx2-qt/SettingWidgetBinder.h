@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "GuardedDialog.h"
+
 #include <optional>
 #include <type_traits>
 
@@ -18,7 +20,6 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QMenu>
-#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QSlider>
 #include <QtWidgets/QSpinBox>
 
@@ -1191,7 +1192,7 @@ namespace SettingWidgetBinder
 			if (!new_value.empty())
 			{
 				if (FileSystem::DirectoryExists(new_value.c_str()) ||
-					QMessageBox::question(QtUtils::GetRootWidget(widget), qApp->translate("SettingWidgetBinder", "Confirm Folder"),
+					GuardedMessageBox::question(QtUtils::GetRootWidget(widget), qApp->translate("SettingWidgetBinder", "Confirm Folder"),
 						qApp->translate("SettingWidgetBinder",
 								"The chosen directory does not currently exist:\n\n%1\n\nDo you want to create this directory?")
 							.arg(QString::fromStdString(new_value)),
@@ -1214,7 +1215,7 @@ namespace SettingWidgetBinder
 			}
 			else
 			{
-				QMessageBox::critical(QtUtils::GetRootWidget(widget), qApp->translate("SettingWidgetBinder", "Error"),
+				GuardedMessageBox::critical(QtUtils::GetRootWidget(widget), qApp->translate("SettingWidgetBinder", "Error"),
 					qApp->translate("SettingWidgetBinder", "Folder path cannot be empty."));
 			}
 
@@ -1302,7 +1303,7 @@ namespace SettingWidgetBinder
 
 				if (!FileSystem::FileExists(new_value.c_str()))
 				{
-					QMessageBox::critical(QtUtils::GetRootWidget(widget), qApp->translate("SettingWidgetBinder", "Error"),
+					GuardedMessageBox::critical(QtUtils::GetRootWidget(widget), qApp->translate("SettingWidgetBinder", "Error"),
 						qApp->translate("SettingWidgetBinder", "File cannot be found."));
 				}
 
@@ -1311,7 +1312,7 @@ namespace SettingWidgetBinder
 			}
 			else
 			{
-				QMessageBox::critical(QtUtils::GetRootWidget(widget), qApp->translate("SettingWidgetBinder", "Error"),
+				GuardedMessageBox::critical(QtUtils::GetRootWidget(widget), qApp->translate("SettingWidgetBinder", "Error"),
 					qApp->translate("SettingWidgetBinder", "File path cannot be empty."));
 			}
 
