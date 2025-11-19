@@ -98,6 +98,7 @@
     <ClCompile Include="Debugger\SymbolTree\SymbolTreeViews.cpp" />
     <ClCompile Include="Debugger\SymbolTree\TypeString.cpp" />
     <ClCompile Include="EarlyHardwareCheck.cpp" />
+    <ClCompile Include="GuardedDialog.cpp" />
     <ClCompile Include="LogWindow.cpp" />
     <ClCompile Include="QtProgressCallback.cpp" />
     <ClCompile Include="Settings\DebugAnalysisSettingsWidget.cpp" />
@@ -205,6 +206,7 @@
     <QtMoc Include="Settings\DEV9UiCommon.h" />
     <QtMoc Include="QtProgressCallback.h" />
     <QtMoc Include="ColorPickerButton.h" />
+    <QtMoc Include="GuardedDialog.h" />
     <QtMoc Include="LogWindow.h" />
     <QtMoc Include="Debugger\SymbolTree\NewSymbolDialogs.h" />
     <QtMoc Include="Debugger\SymbolTree\SymbolTreeDelegates.h" />
