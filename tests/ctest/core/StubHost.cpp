@@ -243,14 +243,6 @@ void Host::OnAchievementsHardcoreModeChanged(bool enabled)
 {
 }
 
-void Host::OnCoverDownloaderOpenRequested()
-{
-}
-
-void Host::OnCreateMemoryCardOpenRequested()
-{
-}
-
 bool Host::LocaleCircleConfirm()
 {
 	return false;
