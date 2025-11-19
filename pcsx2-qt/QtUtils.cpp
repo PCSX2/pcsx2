@@ -138,15 +138,16 @@ namespace QtUtils
 
 	void resizeAndScalePixmap(QPixmap* pm, const int expected_width, const int expected_height, const qreal dpr, const ScalingMode scaling_mode, const float opacity)
 	{
-		if (!pm || pm->isNull() || pm->width() <= 0 || pm->height() <= 0)
+		if (!pm || pm->width() <= 0 || pm->height() <= 0)
 			return;
 
-		const int dpr_expected_width = qRound(expected_width * dpr);
-		const int dpr_expected_height = qRound(expected_height * dpr);
+		const qreal safe_dpr = (dpr > 0.0) ? dpr : 1.0;
+		const int dpr_expected_width = qRound(expected_width * safe_dpr);
+		const int dpr_expected_height = qRound(expected_height * safe_dpr);
 
 		if (pm->width() == dpr_expected_width &&
 			pm->height() == dpr_expected_height &&
-			pm->devicePixelRatio() == dpr &&
+			pm->devicePixelRatio() == safe_dpr &&
 			opacity == 100.0f)
 		{
 			switch (scaling_mode)
@@ -164,7 +165,7 @@ namespace QtUtils
 		}
 
 		QPixmap final_pixmap(dpr_expected_width, dpr_expected_height);
-		final_pixmap.setDevicePixelRatio(dpr);
+		final_pixmap.setDevicePixelRatio(safe_dpr);
 		final_pixmap.fill(Qt::transparent);
 
 		QPainter painter;
@@ -193,12 +194,11 @@ namespace QtUtils
 					qRound(scaledSize.width()),
 					qRound(scaledSize.height()),
 					Qt::IgnoreAspectRatio,
-					Qt::SmoothTransformation
-				);
+					Qt::SmoothTransformation);
 
 				const QRectF scaledSrcRect(0, 0, pm->width(), pm->height());
 
-				QSizeF logicalSize = pm->size() / dpr;
+				QSizeF logicalSize = pm->size() / safe_dpr;
 				QRectF destRect(QPointF(0, 0), logicalSize);
 
 				destRect.moveCenter(painterRect.center());
@@ -208,25 +208,15 @@ namespace QtUtils
 			}
 			case ScalingMode::Stretch:
 			{
-				*pm = pm->scaled(
-					dpr_expected_width,
-					dpr_expected_height,
-					Qt::IgnoreAspectRatio,
-					Qt::SmoothTransformation
-				);
-
-				const QRectF scaledSrcRect(0, 0, pm->width(), pm->height());
-
-				painter.drawPixmap(painterRect, *pm, scaledSrcRect);
+				painter.drawPixmap(painterRect, *pm, srcRect);
 				break;
 			}
 			case ScalingMode::Center:
 			{
-				const qreal pmWidth = pm->width() / dpr;
-				const qreal pmHeight = pm->height() / dpr;
+				const qreal pmWidth = pm->width() / safe_dpr;
+				const qreal pmHeight = pm->height() / safe_dpr;
 
 				QRectF destRect(0, 0, pmWidth, pmHeight);
-
 				destRect.moveCenter(painterRect.center());
 
 				painter.drawPixmap(destRect, *pm, srcRect);
@@ -234,19 +224,24 @@ namespace QtUtils
 			}
 			case ScalingMode::Tile:
 			{
-				const qreal tileWidth = pm->width() / dpr;
-				const qreal tileHeight = pm->height() / dpr;
+				const qreal tileWidth = pm->width() / safe_dpr;
+				const qreal tileHeight = pm->height() / safe_dpr;
 
 				if (tileWidth <= 0 || tileHeight <= 0)
 					break;
 
-				QPixmap tileSource = pm->scaled(tileWidth, tileHeight, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-				tileSource.setDevicePixelRatio(dpr);
-
-				QBrush tileBrush(tileSource);
-				tileBrush.setTextureImage(tileSource.toImage());
-
-				painter.fillRect(painterRect, tileBrush);
+				if (pm->devicePixelRatio() == safe_dpr)
+				{
+					QBrush tileBrush(*pm);
+					painter.fillRect(painterRect, tileBrush);
+				}
+				else
+				{
+					QPixmap tileSource = pm->scaled(tileWidth, tileHeight, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+					tileSource.setDevicePixelRatio(safe_dpr);
+					QBrush tileBrush(tileSource);
+					painter.fillRect(painterRect, tileBrush);
+				}
 				break;
 			}
 			default:
