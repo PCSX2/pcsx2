@@ -88,13 +88,8 @@ DEV9DnsHostDialog::DEV9DnsHostDialog(std::vector<HostEntryUi> hosts, QWidget* pa
 	m_hosts = hosts;
 }
 
-std::optional<std::vector<HostEntryUi>> DEV9DnsHostDialog::PromptList()
+std::vector<HostEntryUi> DEV9DnsHostDialog::GetSelectedHosts()
 {
-	int ret = exec();
-
-	if (ret != Accepted)
-		return std::nullopt;
-
 	std::vector<HostEntryUi> selectedList;
 
 	for (int i = 0; i < m_ethHost_model->rowCount(); i++)

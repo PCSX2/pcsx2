@@ -524,50 +524,52 @@ void DockManager::newLayoutClicked()
 
 	bool can_clone_current_layout = m_current_layout != DockLayout::INVALID_INDEX;
 
-	QPointer<LayoutEditorDialog> dialog = new LayoutEditorDialog(
-		name_validator, can_clone_current_layout, g_debugger_window);
+	GuardedDialog<LayoutEditorDialog> dialog(name_validator, can_clone_current_layout, g_debugger_window);
+	if (dialog.execute() != QDialog::Accepted)
+		return;
 
-	if (dialog->exec() == QDialog::Accepted && name_validator(dialog->name()))
+	if (!name_validator(dialog->name()))
 	{
-		DockLayout::Index new_layout = DockLayout::INVALID_INDEX;
+		// We shouldn't really get here.
+		return;
+	}
 
-		const auto [mode, index] = dialog->initialState();
-		switch (mode)
+	DockLayout::Index new_layout = DockLayout::INVALID_INDEX;
+
+	const auto [mode, index] = dialog->initialState();
+	switch (mode)
+	{
+		case LayoutEditorDialog::DEFAULT_LAYOUT:
 		{
-			case LayoutEditorDialog::DEFAULT_LAYOUT:
-			{
-				const DockTables::DefaultDockLayout& default_layout = DockTables::DEFAULT_DOCK_LAYOUTS.at(index);
-				new_layout = createLayout(dialog->name(), dialog->cpu(), false, default_layout.name);
-				break;
-			}
-			case LayoutEditorDialog::BLANK_LAYOUT:
-			{
-				new_layout = createLayout(dialog->name(), dialog->cpu(), false);
-				break;
-			}
-			case LayoutEditorDialog::CLONE_LAYOUT:
-			{
-				if (m_current_layout == DockLayout::INVALID_INDEX)
-					break;
-
-				DockLayout::Index old_layout = m_current_layout;
-
-				// Freeze the current layout so we can copy the geometry.
-				switchToLayout(DockLayout::INVALID_INDEX);
-
-				new_layout = createLayout(dialog->name(), dialog->cpu(), false, m_layouts.at(old_layout));
-				break;
-			}
+			const DockTables::DefaultDockLayout& default_layout = DockTables::DEFAULT_DOCK_LAYOUTS.at(index);
+			new_layout = createLayout(dialog->name(), dialog->cpu(), false, default_layout.name);
+			break;
 		}
-
-		if (new_layout != DockLayout::INVALID_INDEX)
+		case LayoutEditorDialog::BLANK_LAYOUT:
 		{
-			updateLayoutSwitcher();
-			switchToLayout(new_layout);
+			new_layout = createLayout(dialog->name(), dialog->cpu(), false);
+			break;
+		}
+		case LayoutEditorDialog::CLONE_LAYOUT:
+		{
+			if (m_current_layout == DockLayout::INVALID_INDEX)
+				break;
+
+			DockLayout::Index old_layout = m_current_layout;
+
+			// Freeze the current layout so we can copy the geometry.
+			switchToLayout(DockLayout::INVALID_INDEX);
+
+			new_layout = createLayout(dialog->name(), dialog->cpu(), false, m_layouts.at(old_layout));
+			break;
 		}
 	}
 
-	delete dialog.get();
+	if (new_layout != DockLayout::INVALID_INDEX)
+	{
+		updateLayoutSwitcher();
+		switchToLayout(new_layout);
+	}
 }
 
 void DockManager::openLayoutSwitcherContextMenu(const QPoint& pos, QTabBar* layout_switcher)
@@ -611,18 +613,20 @@ void DockManager::editLayoutClicked(DockLayout::Index layout_index)
 		return !hasNameConflict(name, layout_index);
 	};
 
-	QPointer<LayoutEditorDialog> dialog = new LayoutEditorDialog(
-		layout.name(), layout.cpu(), name_validator, g_debugger_window);
-
-	if (dialog->exec() != QDialog::Accepted || !name_validator(dialog->name()))
+	GuardedDialog<LayoutEditorDialog> dialog(layout.name(), layout.cpu(), name_validator, g_debugger_window);
+	if (dialog.execute() != QDialog::Accepted)
 		return;
+
+	if (!!name_validator(dialog->name()))
+	{
+		// We shouldn't really get here.
+		return;
+	}
 
 	layout.setName(dialog->name());
 	layout.setCpu(dialog->cpu());
 
 	layout.save(layout_index);
-
-	delete dialog.get();
 
 	updateLayoutSwitcher();
 }

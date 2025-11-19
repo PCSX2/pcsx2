@@ -25,7 +25,7 @@ public:
 	DEV9DnsHostDialog(std::vector<HostEntryUi> hosts, QWidget* parent);
 	~DEV9DnsHostDialog();
 
-	std::optional<std::vector<HostEntryUi>> PromptList();
+	std::vector<HostEntryUi> GetSelectedHosts();
 
 protected:
 	bool eventFilter(QObject* object, QEvent* event);

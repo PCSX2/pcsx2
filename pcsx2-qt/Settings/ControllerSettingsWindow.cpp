@@ -244,8 +244,8 @@ void ControllerSettingsWindow::onDeleteProfileClicked()
 
 void ControllerSettingsWindow::onMappingSettingsClicked()
 {
-	ControllerMappingSettingsDialog dialog(this);
-	dialog.exec();
+	GuardedDialog<ControllerMappingSettingsDialog> dialog(this);
+	dialog.execute();
 }
 
 void ControllerSettingsWindow::onRestoreDefaultsClicked()

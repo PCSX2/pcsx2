@@ -80,14 +80,17 @@ void InputRecordingViewer::loadTable()
 
 void InputRecordingViewer::openFile()
 {
-	QFileDialog dialog(this);
-	dialog.setFileMode(QFileDialog::ExistingFile);
-	dialog.setWindowTitle("Select a File");
-	dialog.setNameFilter(tr("Input Recording Files (*.p2m2)"));
+	GuardedDialog<QFileDialog> dialog(this);
+	dialog->setFileMode(QFileDialog::ExistingFile);
+	dialog->setWindowTitle("Select a File");
+	dialog->setNameFilter(tr("Input Recording Files (*.p2m2)"));
 	QStringList fileNames;
-	if (dialog.exec())
+
+	std::optional<int> result = dialog.execute();
+
+	if (result.has_value() && *result)
 	{
-		fileNames = dialog.selectedFiles();
+		fileNames = dialog->selectedFiles();
 	}
 	if (!fileNames.isEmpty())
 	{

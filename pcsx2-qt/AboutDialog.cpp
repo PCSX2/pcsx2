@@ -4,6 +4,7 @@
 #include "pcsx2/SupportURLs.h"
 
 #include "AboutDialog.h"
+#include "GuardedDialog.h"
 #include "QtHost.h"
 #include "QtUtils.h"
 
@@ -121,14 +122,14 @@ void AboutDialog::linksLinkActivated(const QString& link)
 
 void AboutDialog::showHTMLDialog(QWidget* parent, const QString& title, const QString& path)
 {
-	QDialog dialog(parent);
-	dialog.setMinimumSize(700, 400);
-	dialog.setWindowTitle(title);
-	dialog.setWindowIcon(QtHost::GetAppIcon());
+	GuardedDialog<QDialog> dialog(parent);
+	dialog->setMinimumSize(700, 400);
+	dialog->setWindowTitle(title);
+	dialog->setWindowIcon(QtHost::GetAppIcon());
 
-	QVBoxLayout* layout = new QVBoxLayout(&dialog);
+	QVBoxLayout* layout = new QVBoxLayout(dialog.get());
 
-	QTextBrowser* tb = new QTextBrowser(&dialog);
+	QTextBrowser* tb = new QTextBrowser(dialog.get());
 	tb->setAcceptRichText(true);
 	tb->setReadOnly(true);
 	tb->setOpenExternalLinks(true);
@@ -142,9 +143,9 @@ void AboutDialog::showHTMLDialog(QWidget* parent, const QString& title, const QS
 
 	layout->addWidget(tb, 1);
 
-	QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Close, &dialog);
-	connect(bb->button(QDialogButtonBox::Close), &QPushButton::clicked, &dialog, &QDialog::done);
+	QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Close, dialog.get());
+	connect(bb->button(QDialogButtonBox::Close), &QPushButton::clicked, dialog.get(), &QDialog::done);
 	layout->addWidget(bb, 0);
 
-	dialog.exec();
+	dialog.execute();
 }

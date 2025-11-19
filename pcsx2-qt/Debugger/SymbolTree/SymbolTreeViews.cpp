@@ -860,9 +860,8 @@ void FunctionTreeView::configureColumns()
 
 void FunctionTreeView::onNewButtonPressed()
 {
-	NewFunctionDialog* dialog = new NewFunctionDialog(cpu(), this);
-	dialog->setAttribute(Qt::WA_DeleteOnClose);
-	if (dialog->exec() == QDialog::Accepted)
+	GuardedDialog<NewFunctionDialog> dialog(cpu(), this);
+	if (dialog.execute() == QDialog::Accepted)
 		reset();
 }
 
@@ -1003,9 +1002,8 @@ void GlobalVariableTreeView::configureColumns()
 
 void GlobalVariableTreeView::onNewButtonPressed()
 {
-	NewGlobalVariableDialog* dialog = new NewGlobalVariableDialog(cpu(), this);
-	dialog->setAttribute(Qt::WA_DeleteOnClose);
-	if (dialog->exec() == QDialog::Accepted)
+	GuardedDialog<NewGlobalVariableDialog> dialog(cpu(), this);
+	if (dialog.execute() == QDialog::Accepted)
 		reset();
 }
 
@@ -1132,9 +1130,8 @@ void LocalVariableTreeView::configureColumns()
 
 void LocalVariableTreeView::onNewButtonPressed()
 {
-	NewLocalVariableDialog* dialog = new NewLocalVariableDialog(cpu(), this);
-	dialog->setAttribute(Qt::WA_DeleteOnClose);
-	if (dialog->exec() == QDialog::Accepted)
+	GuardedDialog<NewLocalVariableDialog> dialog(cpu(), this);
+	if (dialog.execute() == QDialog::Accepted)
 		reset();
 }
 
@@ -1259,9 +1256,8 @@ void ParameterVariableTreeView::configureColumns()
 
 void ParameterVariableTreeView::onNewButtonPressed()
 {
-	NewParameterVariableDialog* dialog = new NewParameterVariableDialog(cpu(), this);
-	dialog->setAttribute(Qt::WA_DeleteOnClose);
-	if (dialog->exec() == QDialog::Accepted)
+	GuardedDialog<NewParameterVariableDialog> dialog(cpu(), this);
+	if (dialog.execute() == QDialog::Accepted)
 		reset();
 }
 

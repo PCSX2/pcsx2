@@ -236,9 +236,9 @@ void AchievementSettingsWidget::onLoginLogoutPressed()
 		return;
 	}
 
-	AchievementLoginDialog login(this, Achievements::LoginRequestReason::UserInitiated);
-	int res = login.exec();
-	if (res != 0)
+	GuardedDialog<AchievementLoginDialog> login(this, Achievements::LoginRequestReason::UserInitiated);
+	std::optional<int> result = login.execute();
+	if (!result.has_value() || *result != 0)
 		return;
 
 	updateLoginState();

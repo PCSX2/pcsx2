@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
+#include "GuardedDialog.h"
 #include "Settings/ControllerGlobalSettingsWidget.h"
 #include "Settings/ControllerSettingsWindow.h"
 #include "Settings/ControllerSettingWidgetBinder.h"
@@ -123,14 +124,14 @@ void ControllerGlobalSettingsWidget::updateSDLOptionsEnabled()
 
 void ControllerGlobalSettingsWidget::ledSettingsClicked()
 {
-	ControllerLEDSettingsDialog dialog(this, m_dialog);
-	dialog.exec();
+	GuardedDialog<ControllerLEDSettingsDialog> dialog(this, m_dialog);
+	dialog.execute();
 }
 
 void ControllerGlobalSettingsWidget::mouseSettingsClicked()
 {
-	ControllerMouseSettingsDialog dialog(this, m_dialog);
-	dialog.exec();
+	GuardedDialog<ControllerMouseSettingsDialog> dialog(this, m_dialog);
+	dialog.execute();
 }
 
 ControllerLEDSettingsDialog::ControllerLEDSettingsDialog(QWidget* parent, ControllerSettingsWindow* dialog)

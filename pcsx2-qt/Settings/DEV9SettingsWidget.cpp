@@ -405,17 +405,15 @@ void DEV9SettingsWidget::onEthHostDel()
 
 void DEV9SettingsWidget::onEthHostExport()
 {
-	std::vector<HostEntryUi> hosts = ListHostsConfig().value();
+	std::vector<HostEntryUi> allHosts = ListHostsConfig().value();
 
-	DEV9DnsHostDialog exportDialog(hosts, this);
+	GuardedDialog<DEV9DnsHostDialog> exportDialog(allHosts, this);
 
-	std::optional<std::vector<HostEntryUi>> selectedHosts = exportDialog.PromptList();
-
-	if (!selectedHosts.has_value())
+	std::optional<int> result = exportDialog.execute();
+	if (!result.has_value() || result != QDialog::Accepted)
 		return;
 
-	hosts = selectedHosts.value();
-
+	std::vector<HostEntryUi> hosts = exportDialog->GetSelectedHosts();
 	if (hosts.size() == 0)
 		return;
 
@@ -451,7 +449,7 @@ void DEV9SettingsWidget::onEthHostExport()
 
 void DEV9SettingsWidget::onEthHostImport()
 {
-	std::vector<HostEntryUi> hosts;
+	std::vector<HostEntryUi> allHosts;
 
 	QString path =
 		QDir::toNativeSeparators(QFileDialog::getOpenFileName(QtUtils::GetRootWidget(this), tr("Hosts File"),
@@ -487,11 +485,11 @@ void DEV9SettingsWidget::onEthHostImport()
 		entry.Enabled = importFile->GetBoolValue  (section.c_str(), "Enabled");
 		// clang-format on
 
-		hosts.push_back(entry);
+		allHosts.push_back(entry);
 		count++;
 	}
 
-	if (hosts.size() == 0)
+	if (allHosts.size() == 0)
 	{
 		GuardedMessageBox::warning(this, tr("DNS Hosts"),
 			tr("No Hosts in file"),
@@ -499,14 +497,13 @@ void DEV9SettingsWidget::onEthHostImport()
 		return;
 	}
 
-	DEV9DnsHostDialog exportDialog(hosts, this);
+	GuardedDialog<DEV9DnsHostDialog> exportDialog(allHosts, this);
 
-	std::optional<std::vector<HostEntryUi>> selectedHosts = exportDialog.PromptList();
-
-	if (!selectedHosts.has_value())
+	std::optional<int> result = exportDialog.execute();
+	if (!result.has_value() || *result != QDialog::Accepted)
 		return;
 
-	hosts = selectedHosts.value();
+	std::vector<HostEntryUi> hosts = exportDialog->GetSelectedHosts();
 
 	if (hosts.size() == 0)
 		return;

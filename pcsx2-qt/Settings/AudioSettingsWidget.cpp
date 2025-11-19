@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "AudioSettingsWidget.h"
+#include "GuardedDialog.h"
 #include "QtHost.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
@@ -338,9 +339,9 @@ void AudioSettingsWidget::onOutputMutedChanged(const int new_state)
 
 void AudioSettingsWidget::onExpansionSettingsClicked()
 {
-	QDialog dlg(QtUtils::GetRootWidget(this));
+	GuardedDialog<QDialog> dlg(QtUtils::GetRootWidget(this));
 	Ui::AudioExpansionSettingsDialog dlgui;
-	dlgui.setupUi(&dlg);
+	dlgui.setupUi(dlg.get());
 	QtUtils::SetScalableIcon(dlgui.icon, QIcon::fromTheme(QStringLiteral("volume-up-line")), QSize(32, 32));
 
 	SettingsInterface* sif = dialog()->getSettingsInterface();
@@ -375,7 +376,7 @@ void AudioSettingsWidget::onExpansionSettingsClicked()
 		AudioStreamParameters::DEFAULT_EXPAND_HIGH_CUTOFF);
 	QtUtils::BindLabelToSlider(dlgui.highCutoff, dlgui.highCutoffLabel);
 
-	connect(dlgui.buttonBox->button(QDialogButtonBox::Close), &QPushButton::clicked, &dlg, &QDialog::accept);
+	connect(dlgui.buttonBox->button(QDialogButtonBox::Close), &QPushButton::clicked, dlg.get(), &QDialog::accept);
 	connect(dlgui.buttonBox->button(QDialogButtonBox::RestoreDefaults), &QPushButton::clicked, this, [this, &dlg]() {
 		dialog()->setIntSettingValue("SPU2/Output", "ExpandBlockSize",
 			dialog()->isPerGameSettings() ?
@@ -416,20 +417,20 @@ void AudioSettingsWidget::onExpansionSettingsClicked()
 				std::nullopt :
 				std::optional<int>(AudioStreamParameters::DEFAULT_EXPAND_HIGH_CUTOFF));
 
-		dlg.done(0);
+		dlg->done(0);
 
 		QMetaObject::invokeMethod(this, &AudioSettingsWidget::onExpansionSettingsClicked, Qt::QueuedConnection);
 	});
 
-	dlg.exec();
+	dlg.execute();
 	updateLatencyLabel();
 }
 
 void AudioSettingsWidget::onStretchSettingsClicked()
 {
-	QDialog dlg(QtUtils::GetRootWidget(this));
+	GuardedDialog<QDialog> dlg(QtUtils::GetRootWidget(this));
 	Ui::AudioStretchSettingsDialog dlgui;
-	dlgui.setupUi(&dlg);
+	dlgui.setupUi(dlg.get());
 	QtUtils::SetScalableIcon(dlgui.icon, QIcon::fromTheme(QStringLiteral("volume-up-line")), QSize(32, 32));
 
 	SettingsInterface* sif = dialog()->getSettingsInterface();
@@ -447,7 +448,7 @@ void AudioSettingsWidget::onStretchSettingsClicked()
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, dlgui.useAAFilter, "SPU2/Output", "StretchUseAAFilter",
 		AudioStreamParameters::DEFAULT_STRETCH_USE_AA_FILTER);
 
-	connect(dlgui.buttonBox->button(QDialogButtonBox::Close), &QPushButton::clicked, &dlg, &QDialog::accept);
+	connect(dlgui.buttonBox->button(QDialogButtonBox::Close), &QPushButton::clicked, dlg.get(), &QDialog::accept);
 	connect(dlgui.buttonBox->button(QDialogButtonBox::RestoreDefaults), &QPushButton::clicked, this, [this, &dlg]() {
 		dialog()->setIntSettingValue("SPU2/Output", "StretchSequenceLengthMS",
 			dialog()->isPerGameSettings() ?
@@ -470,12 +471,12 @@ void AudioSettingsWidget::onStretchSettingsClicked()
 				std::nullopt :
 				std::optional<bool>(AudioStreamParameters::DEFAULT_STRETCH_USE_AA_FILTER));
 
-		dlg.done(0);
+		dlg->done(0);
 
 		QMetaObject::invokeMethod(this, &AudioSettingsWidget::onStretchSettingsClicked, Qt::QueuedConnection);
 	});
 
-	dlg.exec();
+	dlg.execute();
 }
 
 void AudioSettingsWidget::resetVolume(const bool fast_forward)

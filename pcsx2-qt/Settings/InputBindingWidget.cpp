@@ -414,8 +414,8 @@ void InputBindingWidget::unhookInputManager()
 
 void InputBindingWidget::openDialog()
 {
-	InputBindingDialog binding_dialog(m_sif, m_bind_type, m_section_name, m_key_name, m_bindings_settings, m_bindings_ui, QtUtils::GetRootWidget(this));
-	binding_dialog.exec();
+	GuardedDialog<InputBindingDialog> binding_dialog(m_sif, m_bind_type, m_section_name, m_key_name, m_bindings_settings, m_bindings_ui, QtUtils::GetRootWidget(this));
+	binding_dialog.execute();
 	reloadBinding();
 }
 
@@ -490,20 +490,22 @@ void InputVibrationBindingWidget::onClicked()
 		return;
 	}
 
-	QInputDialog input_dialog(this);
-	input_dialog.setWindowTitle(full_key);
-	input_dialog.setLabelText(tr("Select vibration motor for %1.").arg(full_key));
-	input_dialog.setInputMode(QInputDialog::TextInput);
-	input_dialog.setOptions(QInputDialog::UseListViewForComboBoxItems);
-	input_dialog.setComboBoxEditable(false);
-	input_dialog.setComboBoxItems(std::move(input_ui_options));
-	input_dialog.setTextValue(current);
-	if (input_dialog.exec() == 0)
+	GuardedDialog<QInputDialog> input_dialog(this);
+	input_dialog->setWindowTitle(full_key);
+	input_dialog->setLabelText(tr("Select vibration motor for %1.").arg(full_key));
+	input_dialog->setInputMode(QInputDialog::TextInput);
+	input_dialog->setOptions(QInputDialog::UseListViewForComboBoxItems);
+	input_dialog->setComboBoxEditable(false);
+	input_dialog->setComboBoxItems(std::move(input_ui_options));
+	input_dialog->setTextValue(current);
+
+	std::optional<int> result = input_dialog.execute();
+	if (!result.has_value() || *result == 0)
 		return;
 
 	// If a controller is unplugged, we won't have the setting string to save
 	// Skip saving if selected is an existing bind from an unplugged controller
-	const int selected = input_ui_options.indexOf(input_dialog.textValue());
+	const int selected = input_ui_options.indexOf(input_dialog->textValue());
 	if (selected >= 0 && selected < input_setting_options.size())
 	{
 		// Update config
@@ -511,7 +513,7 @@ void InputVibrationBindingWidget::onClicked()
 		Host::SetBaseStringSettingValue(m_section_name.c_str(), m_key_name.c_str(), new_setting_value.c_str());
 		Host::CommitBaseSettingChanges();
 		// Update ui
-		const QString new_ui_value(input_dialog.textValue());
+		const QString new_ui_value(input_dialog->textValue());
 		m_binding = new_ui_value.toStdString();
 		setText(new_ui_value);
 	}

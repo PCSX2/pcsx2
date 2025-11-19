@@ -656,23 +656,24 @@ void MainWindow::onShowAdvancedSettingsToggled(bool checked)
 	if (checked && !Host::GetBaseBoolSettingValue("UI", "AdvancedSettingsWarningShown", false))
 	{
 		QCheckBox* cb = new QCheckBox(tr("Do not show again"));
-		QMessageBox mb(this);
-		mb.setWindowIcon(QtHost::GetAppIcon());
-		mb.setWindowModality(Qt::WindowModal);
-		mb.setWindowTitle(tr("Show Advanced Settings"));
-		mb.setText(tr("Changing advanced settings can have unpredictable effects on games, including graphical glitches, lock-ups, and "
-					  "even corrupted save files. "
-					  "We do not recommend changing advanced settings unless you know what you are doing, and the implications of changing "
-					  "each setting.\n\n"
-					  "The PCSX2 team will not provide any support for configurations that modify these settings, you are on your own.\n\n"
-					  "Are you sure you want to continue?"));
-		mb.setIcon(QMessageBox::Warning);
-		mb.addButton(QMessageBox::Yes);
-		mb.addButton(QMessageBox::No);
-		mb.setDefaultButton(QMessageBox::No);
-		mb.setCheckBox(cb);
+		GuardedDialog<QMessageBox> mb(this);
+		mb->setWindowIcon(QtHost::GetAppIcon());
+		mb->setWindowModality(Qt::WindowModal);
+		mb->setWindowTitle(tr("Show Advanced Settings"));
+		mb->setText(tr("Changing advanced settings can have unpredictable effects on games, including graphical glitches, lock-ups, and "
+					   "even corrupted save files. "
+					   "We do not recommend changing advanced settings unless you know what you are doing, and the implications of changing "
+					   "each setting.\n\n"
+					   "The PCSX2 team will not provide any support for configurations that modify these settings, you are on your own.\n\n"
+					   "Are you sure you want to continue?"));
+		mb->setIcon(QMessageBox::Warning);
+		mb->addButton(QMessageBox::Yes);
+		mb->addButton(QMessageBox::No);
+		mb->setDefaultButton(QMessageBox::No);
+		mb->setCheckBox(cb);
 
-		if (mb.exec() == QMessageBox::No)
+		std::optional<int> result = mb.execute();
+		if (!result.has_value() || *result != QMessageBox::Yes)
 		{
 			QSignalBlocker sb(m_ui.actionShowAdvancedSettings);
 			m_ui.actionShowAdvancedSettings->setChecked(false);
@@ -712,19 +713,20 @@ void MainWindow::onVideoCaptureToggled(bool checked)
 {
 	if (!s_vm_valid)
 	{
-		QMessageBox msgbox(this);
-		msgbox.setIcon(QMessageBox::Question);
-		msgbox.setWindowIcon(QtHost::GetAppIcon());
-		msgbox.setWindowTitle(tr("Record On Boot"));
-		msgbox.setWindowModality(Qt::WindowModal);
-		msgbox.addButton(QMessageBox::Yes);
-		msgbox.addButton(QMessageBox::No);
-		msgbox.setDefaultButton(QMessageBox::Yes);
+		GuardedDialog<QMessageBox> msgbox(this);
+		msgbox->setIcon(QMessageBox::Question);
+		msgbox->setWindowIcon(QtHost::GetAppIcon());
+		msgbox->setWindowTitle(tr("Record On Boot"));
+		msgbox->setWindowModality(Qt::WindowModal);
+		msgbox->addButton(QMessageBox::Yes);
+		msgbox->addButton(QMessageBox::No);
+		msgbox->setDefaultButton(QMessageBox::Yes);
 
 		if (!s_record_on_start)
 		{
-			msgbox.setText(tr("Did you want to start recording on boot?"));
-			if (msgbox.exec() == QMessageBox::Yes)
+			msgbox->setText(tr("Did you want to start recording on boot?"));
+			std::optional<int> result = msgbox.execute();
+			if (result.has_value() && *result == QMessageBox::Yes)
 			{
 				const QString container(QString::fromStdString(
 					Host::GetStringSettingValue("EmuCore/GS", "CaptureContainer", Pcsx2Config::GSOptions::DEFAULT_CAPTURE_CONTAINER)));
@@ -737,8 +739,9 @@ void MainWindow::onVideoCaptureToggled(bool checked)
 		}
 		else
 		{
-			msgbox.setText(tr("Did you want to cancel recording on boot?"));
-			if (msgbox.exec() == QMessageBox::Yes)
+			msgbox->setText(tr("Did you want to cancel recording on boot?"));
+			std::optional<int> result = msgbox.execute();
+			if (result.has_value() && *result == QMessageBox::Yes)
 				s_record_on_start = false;
 		}
 		QSignalBlocker sb(m_ui.actionVideoCapture);
@@ -800,8 +803,8 @@ void MainWindow::onAchievementsLoginRequested(Achievements::LoginRequestReason r
 {
 	auto lock = pauseAndLockVM();
 
-	AchievementLoginDialog dlg(lock.getDialogParent(), reason);
-	dlg.exec();
+	GuardedDialog<AchievementLoginDialog> dlg(lock.getDialogParent(), reason);
+	dlg.execute();
 }
 
 void MainWindow::onAchievementsHardcoreModeChanged(bool enabled)
@@ -1119,23 +1122,22 @@ bool MainWindow::shouldAbortForMemcardBusy(const VMLock& lock)
 {
 	if (MemcardBusy::IsBusy() && !GSDumpReplayer::IsReplayingDump())
 	{
-		QMessageBox msgbox(lock.getDialogParent());
-		msgbox.setIcon(QMessageBox::Warning);
-		msgbox.setWindowTitle(tr("WARNING: Memory Card Busy"));
-		msgbox.setWindowIcon(QtHost::GetAppIcon());
-		msgbox.setWindowModality(Qt::WindowModal);
-		msgbox.setTextFormat(Qt::RichText);
-		msgbox.setText(tr("Your memory card is still saving data."));
-		msgbox.setInformativeText(tr("WARNING: Shutting down now can <b>IRREVERSIBLY CORRUPT YOUR MEMORY CARD.</b><br><br>"
-									 "You are strongly advised to select 'No' and let the save finish.<br><br>"
-									 "Do you want to shutdown anyway and <b>IRREVERSIBLY CORRUPT YOUR MEMORY CARD</b>?"));
-		msgbox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-		msgbox.setDefaultButton(QMessageBox::No);
+		GuardedDialog<QMessageBox> msgbox(lock.getDialogParent());
+		msgbox->setIcon(QMessageBox::Warning);
+		msgbox->setWindowTitle(tr("WARNING: Memory Card Busy"));
+		msgbox->setWindowIcon(QtHost::GetAppIcon());
+		msgbox->setWindowModality(Qt::WindowModal);
+		msgbox->setTextFormat(Qt::RichText);
+		msgbox->setText(tr("Your memory card is still saving data."));
+		msgbox->setInformativeText(tr("WARNING: Shutting down now can <b>IRREVERSIBLY CORRUPT YOUR MEMORY CARD.</b><br><br>"
+									  "You are strongly advised to select 'No' and let the save finish.<br><br>"
+									  "Do you want to shutdown anyway and <b>IRREVERSIBLY CORRUPT YOUR MEMORY CARD</b>?"));
+		msgbox->setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+		msgbox->setDefaultButton(QMessageBox::No);
 
-		if (msgbox.exec() != QMessageBox::Yes)
-		{
+		std::optional<int> result = msgbox.execute();
+		if (!result.has_value() || *result != QMessageBox::Yes)
 			return true;
-		}
 	}
 
 	return false;
@@ -1249,21 +1251,23 @@ bool MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, b
 	// Only confirm on UI thread because we need to display a msgbox.
 	if (!m_is_closing && allow_confirm && !GSDumpReplayer::IsReplayingDump() && Host::GetBoolSettingValue("UI", "ConfirmShutdown", true))
 	{
-		QMessageBox msgbox(lock.getDialogParent());
-		msgbox.setIcon(QMessageBox::Question);
-		msgbox.setWindowTitle(tr("Confirm Shutdown"));
-		msgbox.setWindowModality(Qt::WindowModal);
-		msgbox.setWindowIcon(QtHost::GetAppIcon());
-		msgbox.setText(tr("Are you sure you want to shut down the virtual machine?"));
+		GuardedDialog<QMessageBox> msgbox(lock.getDialogParent());
+		msgbox->setIcon(QMessageBox::Question);
+		msgbox->setWindowTitle(tr("Confirm Shutdown"));
+		msgbox->setWindowModality(Qt::WindowModal);
+		msgbox->setWindowIcon(QtHost::GetAppIcon());
+		msgbox->setText(tr("Are you sure you want to shut down the virtual machine?"));
 
-		QCheckBox* save_cb = new QCheckBox(tr("Save State For Resume"), &msgbox);
+		QCheckBox* save_cb = new QCheckBox(tr("Save State For Resume"));
 		save_cb->setChecked(save_state);
 		save_cb->setEnabled(allow_save_to_state);
-		msgbox.setCheckBox(save_cb);
-		msgbox.addButton(QMessageBox::Yes);
-		msgbox.addButton(QMessageBox::No);
-		msgbox.setDefaultButton(QMessageBox::Yes);
-		if (msgbox.exec() != QMessageBox::Yes)
+		msgbox->setCheckBox(save_cb);
+		msgbox->addButton(QMessageBox::Yes);
+		msgbox->addButton(QMessageBox::No);
+		msgbox->setDefaultButton(QMessageBox::Yes);
+
+		std::optional<int> result = msgbox.execute();
+		if (!result.has_value() || *result != QMessageBox::Yes)
 			return false;
 
 		save_state = save_cb->isChecked();
@@ -1641,8 +1645,8 @@ void MainWindow::onDiscordServerActionTriggered()
 
 void MainWindow::onAboutActionTriggered()
 {
-	AboutDialog about(this);
-	about.exec();
+	GuardedDialog<AboutDialog> about(this);
+	about.execute();
 }
 
 void MainWindow::checkForUpdates(bool display_message, bool force_check)
@@ -1651,10 +1655,10 @@ void MainWindow::checkForUpdates(bool display_message, bool force_check)
 	{
 		if (display_message)
 		{
-			QMessageBox mbox(this);
-			mbox.setWindowTitle(tr("Updater Error"));
-			mbox.setWindowIcon(QtHost::GetAppIcon());
-			mbox.setTextFormat(Qt::RichText);
+			GuardedDialog<QMessageBox> mbox(this);
+			mbox->setWindowTitle(tr("Updater Error"));
+			mbox->setWindowIcon(QtHost::GetAppIcon());
+			mbox->setTextFormat(Qt::RichText);
 
 			QString message;
 #ifdef _WIN32
@@ -1666,9 +1670,9 @@ void MainWindow::checkForUpdates(bool display_message, bool force_check)
 			message = tr("Automatic updating is not supported on the current platform.");
 #endif
 
-			mbox.setText(message);
-			mbox.setIcon(QMessageBox::Critical);
-			mbox.exec();
+			mbox->setText(message);
+			mbox->setIcon(QMessageBox::Critical);
+			mbox.execute();
 		}
 
 		return;
@@ -1716,9 +1720,9 @@ void MainWindow::onToolsCoverDownloaderTriggered()
 {
 	// This can be invoked via big picture, so exit fullscreen.
 	VMLock lock(pauseAndLockVM());
-	CoverDownloadDialog dlg(this);
-	connect(&dlg, &CoverDownloadDialog::coverRefreshRequested, m_game_list_widget, &GameListWidget::refreshGridCovers);
-	dlg.exec();
+	GuardedDialog<CoverDownloadDialog> dlg(this);
+	connect(dlg.get(), &CoverDownloadDialog::coverRefreshRequested, m_game_list_widget, &GameListWidget::refreshGridCovers);
+	dlg.execute();
 }
 
 #if !defined(__APPLE__)
@@ -1731,8 +1735,8 @@ void MainWindow::onCreateGameShortcutTriggered()
 	const QString title = QString::fromStdString(entry->GetTitle());
 	const QString path = QString::fromStdString(entry->path);
 	VMLock lock(pauseAndLockVM());
-	ShortcutCreationDialog dlg(lock.getDialogParent(), title, path);
-	dlg.exec();
+	GuardedDialog<ShortcutCreationDialog> dlg(lock.getDialogParent(), title, path);
+	dlg.execute();
 }
 #endif
 void MainWindow::onToolsEditCheatsPatchesTriggered(bool cheats)
@@ -1765,8 +1769,8 @@ void MainWindow::onCreateMemoryCardOpenRequested()
 {
 	// This can be invoked via big picture, so exit fullscreen.
 	VMLock lock(pauseAndLockVM());
-	MemoryCardCreateDialog dlg(lock.getDialogParent());
-	dlg.exec();
+	GuardedDialog<MemoryCardCreateDialog> dlg(lock.getDialogParent());
+	dlg.execute();
 }
 
 void MainWindow::updateTheme()
@@ -1829,14 +1833,14 @@ void MainWindow::onInputRecNewActionTriggered()
 		g_emu_thread->setVMPaused(true);
 	}
 
-	NewInputRecordingDlg dlg(this);
-	const auto result = dlg.exec();
+	GuardedDialog<NewInputRecordingDlg> dlg(this);
+	const std::optional<int> result = dlg.execute();
 
-	if (result == QDialog::Accepted)
+	if (result.has_value() && *result == QDialog::Accepted)
 	{
 		Host::RunOnCPUThread(
-			[filePath = dlg.getFilePath(), fromSavestate = dlg.getInputRecType() == InputRecording::Type::FROM_SAVESTATE,
-				authorName = dlg.getAuthorName()]() {
+			[filePath = dlg->getFilePath(), fromSavestate = dlg->getInputRecType() == InputRecording::Type::FROM_SAVESTATE,
+				authorName = dlg->getAuthorName()]() {
 				if (g_InputRecording.create(filePath, fromSavestate, authorName))
 				{
 					QtHost::RunOnUIThread([]() {
@@ -1870,14 +1874,16 @@ void MainWindow::onInputRecPlayActionTriggered()
 		g_emu_thread->setVMPaused(true);
 	}
 
-	QFileDialog dialog(this);
-	dialog.setFileMode(QFileDialog::ExistingFile);
-	dialog.setWindowTitle("Select a File");
-	dialog.setNameFilter(tr("Input Recording Files (*.p2m2)"));
+	GuardedDialog<QFileDialog> dialog(this);
+	dialog->setFileMode(QFileDialog::ExistingFile);
+	dialog->setWindowTitle("Select a File");
+	dialog->setNameFilter(tr("Input Recording Files (*.p2m2)"));
 	QStringList fileNames;
-	if (dialog.exec())
+
+	std::optional<int> result = dialog.execute();
+	if (result.has_value() && *result)
 	{
-		fileNames = dialog.selectedFiles();
+		fileNames = dialog->selectedFiles();
 	}
 	else
 	{
@@ -2756,17 +2762,19 @@ QString MainWindow::getDiscDevicePath(const QString& title)
 	for (const std::string& name : devices)
 		input_options.append(QString::fromStdString(name));
 
-	QInputDialog input_dialog(this);
-	input_dialog.setWindowTitle(title);
-	input_dialog.setLabelText(tr("Select disc drive:"));
-	input_dialog.setInputMode(QInputDialog::TextInput);
-	input_dialog.setOptions(QInputDialog::UseListViewForComboBoxItems);
-	input_dialog.setComboBoxEditable(false);
-	input_dialog.setComboBoxItems(std::move(input_options));
-	if (input_dialog.exec() == 0)
+	GuardedDialog<QInputDialog> input_dialog(this);
+	input_dialog->setWindowTitle(title);
+	input_dialog->setLabelText(tr("Select disc drive:"));
+	input_dialog->setInputMode(QInputDialog::TextInput);
+	input_dialog->setOptions(QInputDialog::UseListViewForComboBoxItems);
+	input_dialog->setComboBoxEditable(false);
+	input_dialog->setComboBoxItems(std::move(input_options));
+
+	std::optional<int> result = input_dialog.execute();
+	if (!result.has_value() || *result == 0)
 		return ret;
 
-	ret = input_dialog.textValue();
+	ret = input_dialog->textValue();
 	return ret;
 }
 
@@ -2893,23 +2901,24 @@ std::optional<bool> MainWindow::promptForResumeState(const QString& save_state_p
 	if (!fi.exists())
 		return false;
 
-	QMessageBox msgbox(this);
-	msgbox.setIcon(QMessageBox::Question);
-	msgbox.setWindowIcon(QtHost::GetAppIcon());
-	msgbox.setWindowTitle(tr("Load Resume State"));
-	msgbox.setWindowModality(Qt::WindowModal);
-	msgbox.setText(
+	GuardedDialog<QMessageBox> msgbox(this);
+	msgbox->setIcon(QMessageBox::Question);
+	msgbox->setWindowIcon(QtHost::GetAppIcon());
+	msgbox->setWindowTitle(tr("Load Resume State"));
+	msgbox->setWindowModality(Qt::WindowModal);
+	msgbox->setText(
 		tr("A resume save state was found for this game, saved at:\n\n%1.\n\nDo you want to load this state, or start from a fresh boot?")
 			.arg(fi.lastModified().toLocalTime().toString()));
 
-	QPushButton* load = msgbox.addButton(tr("Load State"), QMessageBox::AcceptRole);
-	QPushButton* boot = msgbox.addButton(tr("Fresh Boot"), QMessageBox::RejectRole);
-	QPushButton* delboot = msgbox.addButton(tr("Delete And Boot"), QMessageBox::RejectRole);
-	msgbox.addButton(QMessageBox::Cancel);
-	msgbox.setDefaultButton(load);
-	msgbox.exec();
+	QPushButton* load = msgbox->addButton(tr("Load State"), QMessageBox::AcceptRole);
+	QPushButton* boot = msgbox->addButton(tr("Fresh Boot"), QMessageBox::RejectRole);
+	QPushButton* delboot = msgbox->addButton(tr("Delete And Boot"), QMessageBox::RejectRole);
+	msgbox->addButton(QMessageBox::Cancel);
+	msgbox->setDefaultButton(load);
+	if (!msgbox.execute().has_value())
+		return false;
 
-	QAbstractButton* clicked = msgbox.clickedButton();
+	QAbstractButton* clicked = msgbox->clickedButton();
 	if (load == clicked)
 	{
 		return true;
@@ -3135,17 +3144,19 @@ void MainWindow::doDiscChange(CDVD_SourceType source, const QString& path)
 	bool reset_system = false;
 	if (!m_was_disc_change_request)
 	{
-		QMessageBox message(QMessageBox::Question, tr("Confirm Disc Change"),
+		GuardedDialog<QMessageBox> message(QMessageBox::Question, tr("Confirm Disc Change"),
 			tr("Do you want to swap discs or boot the new image (via system reset)?"), QMessageBox::NoButton, this);
-		message.addButton(tr("Swap Disc"), QMessageBox::ActionRole);
-		QPushButton* reset_button = message.addButton(tr("Reset"), QMessageBox::ActionRole);
-		QPushButton* cancel_button = message.addButton(QMessageBox::Cancel);
-		message.setDefaultButton(cancel_button);
-		message.exec();
+		message->addButton(tr("Swap Disc"), QMessageBox::ActionRole);
+		QPushButton* reset_button = message->addButton(tr("Reset"), QMessageBox::ActionRole);
+		QPushButton* cancel_button = message->addButton(QMessageBox::Cancel);
+		message->setDefaultButton(cancel_button);
 
-		if (message.clickedButton() == cancel_button)
+		if (!message.execute().has_value())
 			return;
-		reset_system = (message.clickedButton() == reset_button);
+
+		if (message->clickedButton() == cancel_button)
+			return;
+		reset_system = (message->clickedButton() == reset_button);
 	}
 
 	switchToEmulationView();

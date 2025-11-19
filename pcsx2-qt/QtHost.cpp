@@ -2313,8 +2313,8 @@ void QtHost::RegisterTypes()
 
 bool QtHost::RunSetupWizard()
 {
-	SetupWizardDialog dialog;
-	if (dialog.exec() == QDialog::Rejected)
+	GuardedDialog<SetupWizardDialog> dialog;
+	if (dialog.execute() == QDialog::Rejected)
 		return false;
 
 	// Remove the flag.

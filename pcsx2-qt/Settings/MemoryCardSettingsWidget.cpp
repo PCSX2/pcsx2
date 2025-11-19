@@ -166,8 +166,10 @@ void MemoryCardSettingsWidget::ejectSlot(u32 slot)
 
 void MemoryCardSettingsWidget::createCard()
 {
-	MemoryCardCreateDialog dialog(QtUtils::GetRootWidget(this));
-	if (dialog.exec() == QDialog::Accepted)
+	GuardedDialog<MemoryCardCreateDialog> dialog(QtUtils::GetRootWidget(this));
+
+	std::optional<int> result = dialog.execute();
+	if (result.has_value() && *result == QDialog::Accepted)
 		refresh();
 }
 
@@ -276,9 +278,12 @@ void MemoryCardSettingsWidget::convertCard()
 		return;
 	}
 
-	MemoryCardConvertDialog dialog(QtUtils::GetRootWidget(this), selectedCard);
+	GuardedDialog<MemoryCardConvertDialog> dialog(QtUtils::GetRootWidget(this), selectedCard);
+	if (!dialog->IsSetup())
+		return;
 
-	if (dialog.IsSetup() && dialog.exec() == QDialog::Accepted)
+	std::optional<int> result = dialog.execute();
+	if (result.has_value() && *result == QDialog::Accepted)
 		refresh();
 }
 

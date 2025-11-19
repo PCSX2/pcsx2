@@ -267,18 +267,20 @@ void SettingsWindow::onCategoryCurrentRowChanged(int row)
 
 void SettingsWindow::onRestoreDefaultsClicked()
 {
-	QMessageBox msgbox(this);
-	msgbox.setWindowIcon(QtHost::GetAppIcon());
-	msgbox.setIcon(QMessageBox::Question);
-	msgbox.setWindowTitle(tr("Confirm Restore Defaults"));
-	msgbox.setText(tr("Are you sure you want to restore the default settings? Any existing preferences will be lost."));
+	GuardedDialog<QMessageBox> msgbox(this);
+	msgbox->setWindowIcon(QtHost::GetAppIcon());
+	msgbox->setIcon(QMessageBox::Question);
+	msgbox->setWindowTitle(tr("Confirm Restore Defaults"));
+	msgbox->setText(tr("Are you sure you want to restore the default settings? Any existing preferences will be lost."));
 
-	QCheckBox* ui_cb = new QCheckBox(tr("Reset UI Settings"), &msgbox);
-	msgbox.setCheckBox(ui_cb);
-	msgbox.addButton(QMessageBox::Yes);
-	msgbox.addButton(QMessageBox::No);
-	msgbox.setDefaultButton(QMessageBox::Yes);
-	if (msgbox.exec() != QMessageBox::Yes)
+	QCheckBox* ui_cb = new QCheckBox(tr("Reset UI Settings"));
+	msgbox->setCheckBox(ui_cb);
+	msgbox->addButton(QMessageBox::Yes);
+	msgbox->addButton(QMessageBox::No);
+	msgbox->setDefaultButton(QMessageBox::Yes);
+
+	std::optional<int> result = msgbox.execute();
+	if (!result.has_value() || *result != QMessageBox::Yes)
 		return;
 
 	g_main_window->resetSettings(ui_cb->isChecked());
