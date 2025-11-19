@@ -353,6 +353,7 @@ void GameListWidget::setCustomBackground()
 		m_background_movie = nullptr;
 	}
 
+	// Get the path to the custom background
 	std::string path = Host::GetBaseStringSettingValue("UI", "GameListBackgroundPath");
 	if (!Path::IsAbsolute(path))
 		path = Path::Combine(EmuFolders::DataRoot, path);
@@ -360,26 +361,21 @@ void GameListWidget::setCustomBackground()
 	// Only try to create background if path are valid
 	if (!path.empty() && FileSystem::FileExists(path.c_str()))
 	{
-		QMovie* new_movie;
 		QString img_path = QString::fromStdString(path);
-		if (img_path.endsWith(".png", Qt::CaseInsensitive))
-			// Use apng plugin
-			new_movie = new QMovie(img_path, "apng", this);
-		else
-			new_movie = new QMovie(img_path, QByteArray(), this);
-
-		if (new_movie->isValid())
-			m_background_movie = new_movie;
-		else
+		const QByteArray format = (img_path.endsWith(".png", Qt::CaseInsensitive)) ? QByteArray("apng") : QByteArray();
+		m_background_movie = new QMovie(img_path, format, this);
+		if (!m_background_movie->isValid())
 		{
 			Console.Warning("Failed to load background movie from: %s", path.c_str());
-			delete new_movie;
+			delete m_background_movie;
+			m_background_movie = nullptr;
 		}
 	}
 
 	// If there is no valid background then reset fallback to default UI state
 	if (!m_background_movie)
 	{
+		m_ui.stack->setAutoFillBackground(false);
 		m_ui.stack->setPalette(QApplication::palette());
 		m_table_view->setAlternatingRowColors(true);
 		return;
@@ -390,7 +386,7 @@ void GameListWidget::setCustomBackground()
 	const std::string ar_value = Host::GetBaseStringSettingValue("UI", "GameListBackgroundMode", InterfaceSettingsWidget::BACKGROUND_SCALE_NAMES[static_cast<u8>(QtUtils::ScalingMode::Fit)]);
 	for (u8 i = 0; i < static_cast<u8>(QtUtils::ScalingMode::MaxCount); i++)
 	{
-		if (!(InterfaceSettingsWidget::BACKGROUND_SCALE_NAMES[i] == nullptr))
+		if (InterfaceSettingsWidget::BACKGROUND_SCALE_NAMES[i] != nullptr)
 		{
 			if (ar_value == InterfaceSettingsWidget::BACKGROUND_SCALE_NAMES[i])
 			{
@@ -422,7 +418,7 @@ void GameListWidget::updateCustomBackgroundState(const bool force_start)
 
 void GameListWidget::processBackgroundFrames()
 {
-	if (m_background_movie && m_background_movie->isValid())
+	if ((m_background_movie && m_background_movie->isValid()) && isVisible())
 	{
 		const int widget_width = m_ui.stack->width();
 		const int widget_height = m_ui.stack->height();
@@ -436,7 +432,9 @@ void GameListWidget::processBackgroundFrames()
 		QtUtils::resizeAndScalePixmap(&pm, widget_width, widget_height, dpr, m_background_scaling, m_background_opacity);
 
 		QPalette bg_palette(m_ui.stack->palette());
-		bg_palette.setBrush(QPalette::Base, pm);
+		bg_palette.setBrush(QPalette::Window, pm);
+		bg_palette.setBrush(QPalette::Base, Qt::transparent);
+		m_ui.stack->setAutoFillBackground(true);
 		m_ui.stack->setPalette(bg_palette);
 	}
 }
