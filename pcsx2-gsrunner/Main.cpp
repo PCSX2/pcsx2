@@ -419,16 +419,6 @@ void Host::OnAchievementsRefreshed()
 	// noop
 }
 
-void Host::OnCoverDownloaderOpenRequested()
-{
-	// noop
-}
-
-void Host::OnCreateMemoryCardOpenRequested()
-{
-	// noop
-}
-
 bool Host::InBatchMode()
 {
 	return false;
