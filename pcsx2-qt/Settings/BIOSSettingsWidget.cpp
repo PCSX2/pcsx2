@@ -27,11 +27,11 @@ BIOSSettingsWidget::BIOSSettingsWidget(SettingsWindow* settings_dialog, QWidget*
 	SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.searchDirectory, m_ui.browseSearchDirectory, m_ui.openSearchDirectory,
 		m_ui.resetSearchDirectory, "Folders", "Bios", Path::Combine(EmuFolders::DataRoot, "bios"));
 
-	dialog()->registerWidgetHelp(m_ui.fastBoot, tr("Fast Boot"), tr("Checked"),
-		tr("Patches the BIOS to skip the console's boot animation."));
+	dialog()->registerWidgetHelp(m_ui.fastBoot, tr("Fast Boot"),
+		tr("Patches the BIOS to skip the console's boot animation."), tr("Checked"));
 
-	dialog()->registerWidgetHelp(m_ui.fastBootFastForward, tr("Fast Forward Boot"), tr("Unchecked"),
-		tr("Removes emulation speed throttle until the game starts to reduce startup time."));
+	dialog()->registerWidgetHelp(m_ui.fastBootFastForward, tr("Fast Forward Boot"),
+		tr("Removes emulation speed throttle until the game starts to reduce startup time."), tr("Unchecked"));
 
 	refreshList();
 

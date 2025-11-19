@@ -143,9 +143,9 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* settings_dialog
 	if (!dialog()->isPerGameSettings() && AutoUpdaterDialog::isSupported())
 	{
 		SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.autoUpdateEnabled, "AutoUpdater", "CheckAtStartup", true);
-		dialog()->registerWidgetHelp(m_ui.autoUpdateEnabled, tr("Enable Automatic Update Check"), tr("Checked"),
+		dialog()->registerWidgetHelp(m_ui.autoUpdateEnabled, tr("Enable Automatic Update Check"),
 			tr("Automatically checks for updates to the program on startup. Updates can be deferred "
-			   "until later or skipped entirely."));
+			   "until later or skipped entirely."), tr("Checked"));
 
 		m_ui.autoUpdateTag->addItems(AutoUpdaterDialog::getTagList());
 		SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.autoUpdateTag, "AutoUpdater", "UpdateTag",
@@ -172,57 +172,59 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* settings_dialog
 	}
 
 	dialog()->registerWidgetHelp(
-		m_ui.inhibitScreensaver, tr("Inhibit Screensaver"), tr("Checked"),
-		tr("Prevents the screen saver from activating and the host from sleeping while emulation is running."));
+		m_ui.inhibitScreensaver, tr("Inhibit Screensaver"),
+		tr("Prevents the screen saver from activating and the host from sleeping while emulation is running."), tr("Checked"));
 	dialog()->registerWidgetHelp(
-		m_ui.confirmShutdown, tr("Confirm Shutdown"), tr("Checked"),
+		m_ui.confirmShutdown, tr("Confirm Shutdown"),
 		tr("Determines whether a prompt will be displayed to confirm shutting down the virtual machine "
-		   "when the hotkey is pressed."));
-	dialog()->registerWidgetHelp(m_ui.pauseOnStart, tr("Pause On Start"), tr("Unchecked"),
-		tr("Pauses the emulator when a game is started."));
-	dialog()->registerWidgetHelp(m_ui.pauseOnFocusLoss, tr("Pause On Focus Loss"), tr("Unchecked"),
+		   "when the hotkey is pressed."), tr("Checked"));
+	dialog()->registerWidgetHelp(m_ui.pauseOnStart, tr("Pause On Start"),
+		tr("Pauses the emulator when a game is started."), tr("Unchecked"));
+	dialog()->registerWidgetHelp(m_ui.pauseOnFocusLoss, tr("Pause On Focus Loss"),
 		tr("Pauses the emulator when you minimize the window or switch to another application, "
-		   "and unpauses when you switch back."));
+		   "and unpauses when you switch back."), tr("Unchecked"));
 	dialog()->registerWidgetHelp(m_ui.pauseOnControllerDisconnection, tr("Pause On Controller Disconnection"),
-		tr("Unchecked"), tr("Pauses the emulator when a controller with bindings is disconnected."));
-	dialog()->registerWidgetHelp(m_ui.startFullscreen, tr("Start Fullscreen"), tr("Unchecked"),
-		tr("Automatically switches to fullscreen mode when a game is started."));
-	dialog()->registerWidgetHelp(m_ui.hideMouseCursor, tr("Hide Cursor In Fullscreen"), tr("Unchecked"),
-		tr("Hides the mouse pointer/cursor when the emulator is in fullscreen mode."));
+		tr("Pauses the emulator when a controller with bindings is disconnected."), tr("Unchecked"));
+	dialog()->registerWidgetHelp(m_ui.startFullscreen, tr("Start Fullscreen"),
+		tr("Automatically switches to fullscreen mode when a game is started."), tr("Unchecked"));
+	dialog()->registerWidgetHelp(m_ui.hideMouseCursor, tr("Hide Cursor In Fullscreen"),
+		tr("Hides the mouse pointer/cursor when the emulator is in fullscreen mode."), tr("Unchecked"));
 	dialog()->registerWidgetHelp(
-		m_ui.renderToSeparateWindow, tr("Render To Separate Window"), tr("Unchecked"),
-		tr("Renders the game to a separate window, instead of the main window. If unchecked, the game will display over the game list."));
+		m_ui.renderToSeparateWindow, tr("Render To Separate Window"),
+		tr("Renders the game to a separate window, instead of the main window. If unchecked, the game will display over the game list."), tr("Unchecked"));
 	dialog()->registerWidgetHelp(
-		m_ui.hideMainWindow, tr("Hide Main Window When Running"), tr("Unchecked"),
-		tr("Hides the main window (with the game list) when a game is running. Requires Render To Separate Window to be enabled."));
+		m_ui.hideMainWindow, tr("Hide Main Window When Running"),
+		tr("Hides the main window (with the game list) when a game is running. Requires Render To Separate Window to be enabled."), tr("Unchecked"));
 	dialog()->registerWidgetHelp(
-		m_ui.discordPresence, tr("Enable Discord Presence"), tr("Unchecked"),
-		tr("Shows the game you are currently playing as part of your profile in Discord."));
+		m_ui.discordPresence, tr("Enable Discord Presence"),
+		tr("Shows the game you are currently playing as part of your profile in Discord."), tr("Unchecked"));
 	dialog()->registerWidgetHelp(
-		m_ui.mouseLock, tr("Enable Mouse Lock"), tr("Unchecked"),
-		tr("Locks the mouse cursor to the windows when PCSX2 is in focus and all other windows are closed.<br><b>Unavailable on Linux Wayland.</b><br><b>Requires accessibility permissions on macOS.</b><br><b>Limited support for mixed-resolution with non-100% DPI configurations.</b>"));
+		m_ui.mouseLock, tr("Enable Mouse Lock"),
+		tr("Locks the mouse cursor to the windows when PCSX2 is in focus and all other windows are closed.<br>"
+		   "<b>Unavailable on Linux Wayland.</b><br><b>Requires accessibility permissions on macOS.</b><br>"
+		   "<b>Limited support for mixed-resolution with non-100% DPI configurations.</b>"), tr("Unchecked"));
 	dialog()->registerWidgetHelp(
-		m_ui.doubleClickTogglesFullscreen, tr("Double-Click Toggles Fullscreen"), tr("Checked"),
-		tr("Allows switching in and out of fullscreen mode by double-clicking the game window."));
+		m_ui.doubleClickTogglesFullscreen, tr("Double-Click Toggles Fullscreen"),
+		tr("Allows switching in and out of fullscreen mode by double-clicking the game window."), tr("Checked"));
 	dialog()->registerWidgetHelp(
-		m_ui.disableWindowResizing, tr("Disable Window Resizing"), tr("Unchecked"),
-		tr("Prevents the main window from being resized."));
+		m_ui.disableWindowResizing, tr("Disable Window Resizing"),
+		tr("Prevents the main window from being resized."), tr("Unchecked"));
 	dialog()->registerWidgetHelp(
-		m_ui.startFullscreenUI, tr("Start Big Picture Mode"), tr("Unchecked"),
-		tr("Automatically starts Big Picture Mode instead of the regular Qt interface when PCSX2 launches."));
+		m_ui.startFullscreenUI, tr("Start Big Picture Mode"),
+		tr("Automatically starts Big Picture Mode instead of the regular Qt interface when PCSX2 launches."), tr("Unchecked"));
 	dialog()->registerWidgetHelp(
-		m_ui.backgroundBrowse, tr("Game List Background"), tr("None"),
+		m_ui.backgroundBrowse, tr("Game List Background"),
 		tr("Enable an animated / static background on the game list (where you launch your games).<br>"
 		"This background is only visible in the library and will be hidden once a game is launched. It will also be paused when it's not in focus."));
 	dialog()->registerWidgetHelp(
-		m_ui.backgroundReset, tr("Disable/Reset Game List Background"), tr("None"),
+		m_ui.backgroundReset, tr("Disable/Reset Game List Background"),
 		tr("Disable and reset the currently applied game list background."));
 	dialog()->registerWidgetHelp(
-		m_ui.backgroundOpacity, tr("Game List Background Opacity"), tr("100%"),
-		tr("Sets the opacity of the custom background."));
+		m_ui.backgroundOpacity, tr("Game List Background Opacity"),
+		tr("Sets the opacity of the custom background."), tr("100%"));
 	dialog()->registerWidgetHelp(
-		m_ui.backgroundFill, tr("Fill Image"), tr("Unchecked"),
-		tr("Expand the image to fill all available background area."));
+		m_ui.backgroundFill, tr("Fill Image"),
+		tr("Expand the image to fill all available background area."), tr("Unchecked"));
 
 	onRenderToSeparateWindowChanged();
 }

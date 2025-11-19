@@ -253,7 +253,7 @@ void SettingsWindow::setCategory(const char* category)
 		{
 			// will also update the visible widget
 			m_ui.settingsCategory->setCurrentRow(i);
-			break;
+			return;
 		}
 	}
 }
@@ -368,19 +368,25 @@ void SettingsWindow::addWidget(QWidget* widget, QString title, QString icon, QSt
 	m_category_help_text[index] = std::move(help_text);
 }
 
-void SettingsWindow::registerWidgetHelp(QObject* object, QString title, QString recommended_value, QString text)
+void SettingsWindow::registerWidgetHelp(QObject* object, const QString& title, const QString& text, const QString& recommended_value)
 {
 	if (!object)
 		return;
 
-	// construct rich text with formatted description
+	// Construct rich text with formatted description.
 	QString full_text;
 	full_text += "<table width='100%' cellpadding='0' cellspacing='0'><tr><td><strong>";
 	full_text += title;
-	full_text += "</strong></td><td align='right'><strong>";
-	full_text += tr("Recommended Value");
-	full_text += ": </strong>";
-	full_text += recommended_value;
+	full_text += "</strong></td>";
+
+	if (!recommended_value.isEmpty())
+	{
+		full_text += "<td align='right'><strong>";
+		full_text += tr("Recommended Value");
+		full_text += ": </strong>";
+		full_text += recommended_value;
+	}
+
 	full_text += "</td></table><hr>";
 	full_text += text;
 
