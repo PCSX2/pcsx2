@@ -10,7 +10,9 @@
 #include "pcsx2/GameList.h"
 
 #include <QtGui/QMovie>
+#include <QtGui/QPixmap>
 #include <QtWidgets/QListView>
+#include <QtWidgets/QStackedWidget>
 #include <QtWidgets/QTableView>
 
 Q_DECLARE_METATYPE(const GameList::Entry*);
@@ -101,6 +103,7 @@ protected:
 	void hideEvent(QHideEvent* event) override;
 	void resizeEvent(QResizeEvent* event) override;
 	bool event(QEvent* event) override;
+	bool eventFilter(QObject* watched, QEvent* event) override;
 
 private:
 	void loadTableHeaderState();
@@ -123,6 +126,7 @@ private:
 	GameListRefreshThread* m_refresh_thread = nullptr;
 
 	QMovie* m_background_movie = nullptr;
+	QPixmap m_background_pixmap;
 	QtUtils::ScalingMode m_background_scaling = QtUtils::ScalingMode::Fit;
 	float m_background_opacity = 100.0f;
 };
