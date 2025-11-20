@@ -10,6 +10,7 @@
 #include "Settings/InterfaceSettingsWidget.h"
 #include "SetupWizardDialog.h"
 
+#include <QtCore/QLocale>
 #include <QtWidgets/QMessageBox>
 
 SetupWizardDialog::SetupWizardDialog()
@@ -178,7 +179,13 @@ void SetupWizardDialog::setupLanguagePage()
 	connect(m_ui.theme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SetupWizardDialog::themeChanged);
 
 	for (const std::pair<QString, QString>& it : QtHost::GetAvailableLanguageList())
-		m_ui.language->addItem(it.first, it.second);
+	{
+		QIcon flag_icon = QtUtils::GetFlagIconForLanguage(it.second);
+		if (!flag_icon.isNull())
+			m_ui.language->addItem(flag_icon, it.first, it.second);
+		else
+			m_ui.language->addItem(it.first, it.second);
+	}
 	SettingWidgetBinder::BindWidgetToStringSetting(
 		nullptr, m_ui.language, "UI", "Language", QtHost::GetDefaultLanguage());
 	connect(

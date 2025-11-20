@@ -11,6 +11,8 @@
 #include "SettingsWindow.h"
 #include "QtHost.h"
 
+#include <QtCore/QLocale>
+
 const char* InterfaceSettingsWidget::THEME_NAMES[] = {
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Native"),
 //: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
@@ -247,7 +249,13 @@ void InterfaceSettingsWidget::onRenderToSeparateWindowChanged()
 void InterfaceSettingsWidget::populateLanguages()
 {
 	for (const std::pair<QString, QString>& it : QtHost::GetAvailableLanguageList())
-		m_ui.language->addItem(it.first, it.second);
+	{
+		QIcon flag_icon = QtUtils::GetFlagIconForLanguage(it.second);
+		if (!flag_icon.isNull())
+			m_ui.language->addItem(flag_icon, it.first, it.second);
+		else
+			m_ui.language->addItem(it.first, it.second);
+	}
 }
 
 void InterfaceSettingsWidget::onSetGameListBackgroundTriggered()
