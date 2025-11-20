@@ -1236,7 +1236,7 @@ void FullscreenUI::Render()
 		s_current_main_window == MainWindowType::Exit ||
 		s_current_main_window == MainWindowType::GameList ||
 		s_current_main_window == MainWindowType::GameListSettings ||
-		s_current_main_window == MainWindowType::Settings) && s_custom_background_enabled && s_custom_background_texture;
+		s_current_main_window == MainWindowType::Settings) && !VMManager::HasValidVM() && s_custom_background_enabled && s_custom_background_texture;
 	
 	ImVec4 original_background_color;
 	if (should_draw_background)
