@@ -33,7 +33,7 @@ GameSummaryWidget::GameSummaryWidget(const GameList::Entry* entry, SettingsWindo
 	for (int i = 0; i < m_ui.region->count(); i++)
 	{
 		m_ui.region->setItemIcon(i,
-			QIcon(QStringLiteral("%1/icons/flags/%2.svg").arg(base_path).arg(GameList::RegionToString(static_cast<GameList::Region>(i), false))));
+			QIcon(QStringLiteral("%1/icons/flags/%2.svg").arg(base_path).arg(GameList::RegionToFlagFilename(static_cast<GameList::Region>(i)))));
 	}
 
 	m_entry_path = entry->path;
