@@ -41,12 +41,9 @@ BINARY=pcsx2-qt
 APPDIRNAME=PCSX2.AppDir
 STRIP=strip
 
-# Need both libharfbuzz.so and libharfbuzz.so.0 for bundled libs
-
 declare -a MANUAL_LIBS=(
 	"libshaderc_shared.so.1"
 	"libharfbuzz.so.0"
-	"libharfbuzz.so"
 	"libfreetype.so.6"
 )
 
@@ -73,18 +70,6 @@ fi
 
 OUTDIR=$(realpath "./$APPDIRNAME")
 rm -fr "$OUTDIR"
-
-# Our deps build dosn't create libharfbuzz.so.0, so we have to symlink it here
-hbpath=$(find "$DEPSDIR" -name "libharfbuzz.so")
-if [ ! -f "$hbpath" ]; then
-	echo "Missing harfbuzz. Exiting."
-	exit 1
-fi
-
-if [ ! -f "$hbpath.0" ]; then
-	echo "Symlinking libharfbuzz.so.0"
-	ln -s "$hbpath" "$hbpath.0"
-fi
 
 echo "Locating extra libraries..."
 EXTRA_LIBS_ARGS=()
