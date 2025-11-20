@@ -1,0 +1,485 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Debug" />
+    <BuildType Name="Debug AVX2" />
+    <BuildType Name="Debug Clang" />
+    <BuildType Name="Debug Clang AVX2" />
+    <BuildType Name="Devel" />
+    <BuildType Name="Devel AVX2" />
+    <BuildType Name="Devel Clang" />
+    <BuildType Name="Devel Clang AVX2" />
+    <BuildType Name="Release" />
+    <BuildType Name="Release AVX2" />
+    <BuildType Name="Release Clang" />
+    <BuildType Name="Release Clang AVX2" />
+    <Platform Name="ARM64" />
+    <Platform Name="x64" />
+  </Configurations>
+  <Folder Name="/3rdparty/">
+    <Project Path="3rdparty/ccc/ccc.vcxproj" Id="2589f8ce-ea77-4b73-911e-64074569795b">
+      <BuildType Solution="Debug AVX2|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Debug Clang AVX2|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Debug|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Devel AVX2|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Devel Clang AVX2|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Devel|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Release AVX2|ARM64" Project="Release Clang" />
+      <BuildType Solution="Release Clang AVX2|ARM64" Project="Release Clang" />
+      <BuildType Solution="Release|ARM64" Project="Release Clang" />
+      <Build Solution="Debug AVX2|ARM64" Project="false" />
+      <Build Solution="Debug Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Debug|ARM64" Project="false" />
+      <Build Solution="Devel AVX2|ARM64" Project="false" />
+      <Build Solution="Devel Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Devel|ARM64" Project="false" />
+      <Build Solution="Release AVX2|ARM64" Project="false" />
+      <Build Solution="Release Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Release|ARM64" Project="false" />
+    </Project>
+    <Project Path="3rdparty/cpuinfo/cpuinfo.vcxproj" Id="7e183337-a7e9-460c-9d3d-568bc9f9bcc1">
+      <BuildType Solution="Debug AVX2|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Debug Clang AVX2|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Debug|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Devel AVX2|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Devel Clang AVX2|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Devel|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Release AVX2|ARM64" Project="Release Clang" />
+      <BuildType Solution="Release Clang AVX2|ARM64" Project="Release Clang" />
+      <BuildType Solution="Release|ARM64" Project="Release Clang" />
+      <Build Solution="Debug AVX2|ARM64" Project="false" />
+      <Build Solution="Debug Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Debug|ARM64" Project="false" />
+      <Build Solution="Devel AVX2|ARM64" Project="false" />
+      <Build Solution="Devel Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Devel|ARM64" Project="false" />
+      <Build Solution="Release AVX2|ARM64" Project="false" />
+      <Build Solution="Release Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Release|ARM64" Project="false" />
+    </Project>
+    <Project Path="3rdparty/cubeb/cubeb.vcxproj" Id="bf74c473-dc04-44b3-92e8-4145f4e77342">
+      <BuildType Solution="Debug AVX2|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Debug Clang AVX2|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Debug|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Devel AVX2|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Devel Clang AVX2|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Devel|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Release AVX2|ARM64" Project="Release Clang" />
+      <BuildType Solution="Release Clang AVX2|ARM64" Project="Release Clang" />
+      <BuildType Solution="Release|ARM64" Project="Release Clang" />
+      <Build Solution="Debug AVX2|ARM64" Project="false" />
+      <Build Solution="Debug Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Debug|ARM64" Project="false" />
+      <Build Solution="Devel AVX2|ARM64" Project="false" />
+      <Build Solution="Devel Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Devel|ARM64" Project="false" />
+      <Build Solution="Release AVX2|ARM64" Project="false" />
+      <Build Solution="Release Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Release|ARM64" Project="false" />
+    </Project>
+    <Project Path="3rdparty/d3d12memalloc/d3d12memalloc.vcxproj" Id="d45cec7a-3171-40dd-975d-e1544cf16139">
+      <BuildType Solution="Debug AVX2|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Debug Clang AVX2|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Debug|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Devel AVX2|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Devel Clang AVX2|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Devel|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Release AVX2|ARM64" Project="Release Clang" />
+      <BuildType Solution="Release Clang AVX2|ARM64" Project="Release Clang" />
+      <BuildType Solution="Release|ARM64" Project="Release Clang" />
+      <Build Solution="Debug AVX2|ARM64" Project="false" />
+      <Build Solution="Debug Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Debug|ARM64" Project="false" />
+      <Build Solution="Devel AVX2|ARM64" Project="false" />
+      <Build Solution="Devel Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Devel|ARM64" Project="false" />
+      <Build Solution="Release AVX2|ARM64" Project="false" />
+      <Build Solution="Release Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Release|ARM64" Project="false" />
+    </Project>
+    <Project Path="3rdparty/demangler/demangler.vcxproj" Id="d31a6dd1-99ca-41d8-a230-1fae913c8989">
+      <BuildType Solution="Debug AVX2|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Debug Clang AVX2|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Debug|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Devel AVX2|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Devel Clang AVX2|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Devel|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Release AVX2|ARM64" Project="Release Clang" />
+      <BuildType Solution="Release Clang AVX2|ARM64" Project="Release Clang" />
+      <BuildType Solution="Release|ARM64" Project="Release Clang" />
+      <Build Solution="Debug AVX2|ARM64" Project="false" />
+      <Build Solution="Debug Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Debug|ARM64" Project="false" />
+      <Build Solution="Devel AVX2|ARM64" Project="false" />
+      <Build Solution="Devel Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Devel|ARM64" Project="false" />
+      <Build Solution="Release AVX2|ARM64" Project="false" />
+      <Build Solution="Release Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Release|ARM64" Project="false" />
+    </Project>
+    <Project Path="3rdparty/discord-rpc/discord-rpc.vcxproj" Id="e960dfdf-1bd3-4c29-b251-d1a0919c9b09">
+      <BuildType Solution="Debug AVX2|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Debug Clang AVX2|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Debug|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Devel AVX2|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Devel Clang AVX2|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Devel|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Release AVX2|ARM64" Project="Release Clang" />
+      <BuildType Solution="Release Clang AVX2|ARM64" Project="Release Clang" />
+      <BuildType Solution="Release|ARM64" Project="Release Clang" />
+      <Build Solution="Debug AVX2|ARM64" Project="false" />
+      <Build Solution="Debug Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Debug|ARM64" Project="false" />
+      <Build Solution="Devel AVX2|ARM64" Project="false" />
+      <Build Solution="Devel Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Devel|ARM64" Project="false" />
+      <Build Solution="Release AVX2|ARM64" Project="false" />
+      <Build Solution="Release Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Release|ARM64" Project="false" />
+    </Project>
+    <Project Path="3rdparty/fmt/fmt.vcxproj" Id="449ad25e-424a-4714-babc-68706cdcc33b">
+      <BuildType Solution="Debug AVX2|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Debug Clang AVX2|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Debug|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Devel AVX2|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Devel Clang AVX2|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Devel|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Release AVX2|ARM64" Project="Release Clang" />
+      <BuildType Solution="Release Clang AVX2|ARM64" Project="Release Clang" />
+      <BuildType Solution="Release|ARM64" Project="Release Clang" />
+      <Build Solution="Debug AVX2|ARM64" Project="false" />
+      <Build Solution="Debug Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Debug|ARM64" Project="false" />
+      <Build Solution="Devel AVX2|ARM64" Project="false" />
+      <Build Solution="Devel Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Devel|ARM64" Project="false" />
+      <Build Solution="Release AVX2|ARM64" Project="false" />
+      <Build Solution="Release Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Release|ARM64" Project="false" />
+    </Project>
+    <Project Path="3rdparty/freesurround/freesurround.vcxproj" Id="1dd0b31f-37f0-4a36-a521-74133aca4737">
+      <BuildType Solution="Debug AVX2|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Debug Clang AVX2|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Debug|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Devel AVX2|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Devel Clang AVX2|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Devel|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Release AVX2|ARM64" Project="Release Clang" />
+      <BuildType Solution="Release Clang AVX2|ARM64" Project="Release Clang" />
+      <BuildType Solution="Release|ARM64" Project="Release Clang" />
+      <Build Solution="Debug AVX2|ARM64" Project="false" />
+      <Build Solution="Debug Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Debug|ARM64" Project="false" />
+      <Build Solution="Devel AVX2|ARM64" Project="false" />
+      <Build Solution="Devel Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Devel|ARM64" Project="false" />
+      <Build Solution="Release AVX2|ARM64" Project="false" />
+      <Build Solution="Release Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Release|ARM64" Project="false" />
+    </Project>
+    <Project Path="3rdparty/glad/glad.vcxproj" Id="c0293b32-5acf-40f0-aa6c-e6da6f3bf33a">
+      <BuildType Solution="Debug AVX2|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Debug Clang AVX2|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Debug|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Devel AVX2|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Devel Clang AVX2|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Devel|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Release AVX2|ARM64" Project="Release Clang" />
+      <BuildType Solution="Release Clang AVX2|ARM64" Project="Release Clang" />
+      <BuildType Solution="Release|ARM64" Project="Release Clang" />
+      <Build Solution="Debug AVX2|ARM64" Project="false" />
+      <Build Solution="Debug Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Debug|ARM64" Project="false" />
+      <Build Solution="Devel AVX2|ARM64" Project="false" />
+      <Build Solution="Devel Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Devel|ARM64" Project="false" />
+      <Build Solution="Release AVX2|ARM64" Project="false" />
+      <Build Solution="Release Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Release|ARM64" Project="false" />
+    </Project>
+    <Project Path="3rdparty/imgui/imgui.vcxproj" Id="88fb34ec-845e-4f21-a552-f1573b9ed167">
+      <BuildType Solution="Debug AVX2|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Debug Clang AVX2|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Debug|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Devel AVX2|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Devel Clang AVX2|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Devel|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Release AVX2|ARM64" Project="Release Clang" />
+      <BuildType Solution="Release Clang AVX2|ARM64" Project="Release Clang" />
+      <BuildType Solution="Release|ARM64" Project="Release Clang" />
+      <Build Solution="Debug AVX2|ARM64" Project="false" />
+      <Build Solution="Debug Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Debug|ARM64" Project="false" />
+      <Build Solution="Devel AVX2|ARM64" Project="false" />
+      <Build Solution="Devel Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Devel|ARM64" Project="false" />
+      <Build Solution="Release AVX2|ARM64" Project="false" />
+      <Build Solution="Release Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Release|ARM64" Project="false" />
+    </Project>
+    <Project Path="3rdparty/libchdr/libchdr.vcxproj" Id="a0d2b3ad-1f72-4ee3-8b5c-f2c358da35f0">
+      <BuildType Solution="Debug AVX2|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Debug Clang AVX2|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Debug|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Devel AVX2|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Devel Clang AVX2|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Devel|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Release AVX2|ARM64" Project="Release Clang" />
+      <BuildType Solution="Release Clang AVX2|ARM64" Project="Release Clang" />
+      <BuildType Solution="Release|ARM64" Project="Release Clang" />
+      <Build Solution="Debug AVX2|ARM64" Project="false" />
+      <Build Solution="Debug Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Debug|ARM64" Project="false" />
+      <Build Solution="Devel AVX2|ARM64" Project="false" />
+      <Build Solution="Devel Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Devel|ARM64" Project="false" />
+      <Build Solution="Release AVX2|ARM64" Project="false" />
+      <Build Solution="Release Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Release|ARM64" Project="false" />
+    </Project>
+    <Project Path="3rdparty/libzip/libzip.vcxproj" Id="20b2e9fe-f020-42a0-b324-956f5b06ea68">
+      <BuildType Solution="Debug AVX2|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Debug Clang AVX2|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Debug|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Devel AVX2|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Devel Clang AVX2|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Devel|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Release AVX2|ARM64" Project="Release Clang" />
+      <BuildType Solution="Release Clang AVX2|ARM64" Project="Release Clang" />
+      <BuildType Solution="Release|ARM64" Project="Release Clang" />
+      <Build Solution="Debug AVX2|ARM64" Project="false" />
+      <Build Solution="Debug Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Debug|ARM64" Project="false" />
+      <Build Solution="Devel AVX2|ARM64" Project="false" />
+      <Build Solution="Devel Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Devel|ARM64" Project="false" />
+      <Build Solution="Release AVX2|ARM64" Project="false" />
+      <Build Solution="Release Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Release|ARM64" Project="false" />
+    </Project>
+    <Project Path="3rdparty/lzma/lzma.vcxproj" Id="a4323327-3f2b-4271-83d9-7f9a3c66b6b2">
+      <BuildType Solution="Debug AVX2|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Debug Clang AVX2|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Debug|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Devel AVX2|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Devel Clang AVX2|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Devel|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Release AVX2|ARM64" Project="Release Clang" />
+      <BuildType Solution="Release Clang AVX2|ARM64" Project="Release Clang" />
+      <BuildType Solution="Release|ARM64" Project="Release Clang" />
+      <Build Solution="Debug AVX2|ARM64" Project="false" />
+      <Build Solution="Debug Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Debug|ARM64" Project="false" />
+      <Build Solution="Devel AVX2|ARM64" Project="false" />
+      <Build Solution="Devel Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Devel|ARM64" Project="false" />
+      <Build Solution="Release AVX2|ARM64" Project="false" />
+      <Build Solution="Release Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Release|ARM64" Project="false" />
+    </Project>
+    <Project Path="3rdparty/rainterface/rainterface.vcxproj" Id="95dd0a0c-d14d-4cff-a593-820ef26efcc8">
+      <BuildType Solution="Debug AVX2|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Debug Clang AVX2|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Debug|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Devel AVX2|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Devel Clang AVX2|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Devel|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Release AVX2|ARM64" Project="Release Clang" />
+      <BuildType Solution="Release Clang AVX2|ARM64" Project="Release Clang" />
+      <BuildType Solution="Release|ARM64" Project="Release Clang" />
+      <Build Solution="Debug AVX2|ARM64" Project="false" />
+      <Build Solution="Debug Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Debug|ARM64" Project="false" />
+      <Build Solution="Devel AVX2|ARM64" Project="false" />
+      <Build Solution="Devel Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Devel|ARM64" Project="false" />
+      <Build Solution="Release AVX2|ARM64" Project="false" />
+      <Build Solution="Release Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Release|ARM64" Project="false" />
+    </Project>
+    <Project Path="3rdparty/rcheevos/rcheevos.vcxproj" Id="6d5b5ad9-1525-459b-939f-a5e1082af6b3">
+      <BuildType Solution="Debug AVX2|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Debug Clang AVX2|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Debug|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Devel AVX2|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Devel Clang AVX2|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Devel|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Release AVX2|ARM64" Project="Release Clang" />
+      <BuildType Solution="Release Clang AVX2|ARM64" Project="Release Clang" />
+      <BuildType Solution="Release|ARM64" Project="Release Clang" />
+      <Build Solution="Debug AVX2|ARM64" Project="false" />
+      <Build Solution="Debug Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Debug|ARM64" Project="false" />
+      <Build Solution="Devel AVX2|ARM64" Project="false" />
+      <Build Solution="Devel Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Devel|ARM64" Project="false" />
+      <Build Solution="Release AVX2|ARM64" Project="false" />
+      <Build Solution="Release Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Release|ARM64" Project="false" />
+    </Project>
+    <Project Path="3rdparty/simpleini/simpleini.vcxproj" Id="1ec8b3c0-8fb3-46de-a2e0-a9121203f266">
+      <BuildType Solution="Debug AVX2|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Debug Clang AVX2|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Debug|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Devel AVX2|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Devel Clang AVX2|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Devel|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Release AVX2|ARM64" Project="Release Clang" />
+      <BuildType Solution="Release Clang AVX2|ARM64" Project="Release Clang" />
+      <BuildType Solution="Release|ARM64" Project="Release Clang" />
+      <Build Solution="Debug AVX2|ARM64" Project="false" />
+      <Build Solution="Debug Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Debug|ARM64" Project="false" />
+      <Build Solution="Devel AVX2|ARM64" Project="false" />
+      <Build Solution="Devel Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Devel|ARM64" Project="false" />
+      <Build Solution="Release AVX2|ARM64" Project="false" />
+      <Build Solution="Release Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Release|ARM64" Project="false" />
+    </Project>
+    <Project Path="3rdparty/soundtouch/SoundTouch.vcxproj" Id="e9b51944-7e6d-4bcd-83f2-7bbd5a46182d">
+      <BuildType Solution="Debug AVX2|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Debug Clang AVX2|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Debug|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Devel AVX2|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Devel Clang AVX2|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Devel|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Release AVX2|ARM64" Project="Release Clang" />
+      <BuildType Solution="Release Clang AVX2|ARM64" Project="Release Clang" />
+      <BuildType Solution="Release|ARM64" Project="Release Clang" />
+      <Build Solution="Debug AVX2|ARM64" Project="false" />
+      <Build Solution="Debug Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Debug|ARM64" Project="false" />
+      <Build Solution="Devel AVX2|ARM64" Project="false" />
+      <Build Solution="Devel Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Devel|ARM64" Project="false" />
+      <Build Solution="Release AVX2|ARM64" Project="false" />
+      <Build Solution="Release Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Release|ARM64" Project="false" />
+    </Project>
+    <Project Path="3rdparty/vixl/vixl.vcxproj" Id="8906836e-f06e-46e8-b11a-74e5e8c7b8fb">
+      <BuildType Solution="Debug AVX2|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Debug Clang AVX2|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Debug|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Devel AVX2|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Devel Clang AVX2|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Devel|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Release AVX2|ARM64" Project="Release Clang" />
+      <BuildType Solution="Release Clang AVX2|ARM64" Project="Release Clang" />
+      <BuildType Solution="Release|ARM64" Project="Release Clang" />
+      <Build Solution="*|x64" Project="false" />
+      <Build Solution="Debug AVX2|ARM64" Project="false" />
+      <Build Solution="Debug Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Debug|ARM64" Project="false" />
+      <Build Solution="Devel AVX2|ARM64" Project="false" />
+      <Build Solution="Devel Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Devel|ARM64" Project="false" />
+      <Build Solution="Release AVX2|ARM64" Project="false" />
+      <Build Solution="Release Clang AVX2|ARM64" Project="false" />
+      <Build Solution="Release|ARM64" Project="false" />
+    </Project>
+    <Project Path="3rdparty/zydis/zydis.vcxproj" Id="67d0160c-0fe4-44b9-ac2e-82bbcf4104df">
+      <BuildType Solution="Debug AVX2|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Debug Clang AVX2|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Debug|ARM64" Project="Debug Clang" />
+      <BuildType Solution="Devel AVX2|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Devel Clang AVX2|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Devel|ARM64" Project="Devel Clang" />
+      <BuildType Solution="Release AVX2|ARM64" Project="Release Clang" />
+      <BuildType Solution="Release Clang AVX2|ARM64" Project="Release Clang" />
+      <BuildType Solution="Release|ARM64" Project="Release Clang" />
+      <Build Solution="*|ARM64" Project="false" />
+    </Project>
+  </Folder>
+  <Project Path="common/common.vcxproj" Id="4639972e-424e-4e13-8b07-ca403c481346">
+    <BuildType Solution="Debug AVX2|ARM64" Project="Debug Clang" />
+    <BuildType Solution="Debug Clang AVX2|ARM64" Project="Debug Clang" />
+    <BuildType Solution="Debug|ARM64" Project="Debug Clang" />
+    <BuildType Solution="Devel AVX2|ARM64" Project="Devel Clang" />
+    <BuildType Solution="Devel Clang AVX2|ARM64" Project="Devel Clang" />
+    <BuildType Solution="Devel|ARM64" Project="Devel Clang" />
+    <BuildType Solution="Release AVX2|ARM64" Project="Release Clang" />
+    <BuildType Solution="Release Clang AVX2|ARM64" Project="Release Clang" />
+    <BuildType Solution="Release|ARM64" Project="Release Clang" />
+    <Build Solution="Debug AVX2|ARM64" Project="false" />
+    <Build Solution="Debug Clang AVX2|ARM64" Project="false" />
+    <Build Solution="Debug|ARM64" Project="false" />
+    <Build Solution="Devel AVX2|ARM64" Project="false" />
+    <Build Solution="Devel Clang AVX2|ARM64" Project="false" />
+    <Build Solution="Devel|ARM64" Project="false" />
+    <Build Solution="Release AVX2|ARM64" Project="false" />
+    <Build Solution="Release Clang AVX2|ARM64" Project="false" />
+    <Build Solution="Release|ARM64" Project="false" />
+  </Project>
+  <Project Path="pcsx2-gsrunner/pcsx2-gsrunner.vcxproj" Id="bb98bf81-a132-444a-bb81-96d510f433a8">
+    <BuildType Solution="Debug AVX2|ARM64" Project="Debug Clang" />
+    <BuildType Solution="Debug Clang AVX2|ARM64" Project="Debug Clang" />
+    <BuildType Solution="Debug|ARM64" Project="Debug Clang" />
+    <BuildType Solution="Devel AVX2|ARM64" Project="Devel Clang" />
+    <BuildType Solution="Devel Clang AVX2|ARM64" Project="Devel Clang" />
+    <BuildType Solution="Devel|ARM64" Project="Devel Clang" />
+    <BuildType Solution="Release AVX2|ARM64" Project="Release Clang" />
+    <BuildType Solution="Release Clang AVX2|ARM64" Project="Release Clang" />
+    <BuildType Solution="Release|ARM64" Project="Release Clang" />
+    <Build Project="false" />
+  </Project>
+  <Project Path="pcsx2-qt/pcsx2-qt.vcxproj" Id="2a016f21-87ae-4154-8271-1f57e91408e9">
+    <BuildType Solution="Debug AVX2|ARM64" Project="Debug Clang" />
+    <BuildType Solution="Debug Clang AVX2|ARM64" Project="Debug Clang" />
+    <BuildType Solution="Debug|ARM64" Project="Debug Clang" />
+    <BuildType Solution="Devel AVX2|ARM64" Project="Devel Clang" />
+    <BuildType Solution="Devel Clang AVX2|ARM64" Project="Devel Clang" />
+    <BuildType Solution="Devel|ARM64" Project="Devel Clang" />
+    <BuildType Solution="Release AVX2|ARM64" Project="Release Clang" />
+    <BuildType Solution="Release Clang AVX2|ARM64" Project="Release Clang" />
+    <BuildType Solution="Release|ARM64" Project="Release Clang" />
+    <Build Solution="Debug AVX2|ARM64" Project="false" />
+    <Build Solution="Debug Clang AVX2|ARM64" Project="false" />
+    <Build Solution="Debug|ARM64" Project="false" />
+    <Build Solution="Devel AVX2|ARM64" Project="false" />
+    <Build Solution="Devel Clang AVX2|ARM64" Project="false" />
+    <Build Solution="Devel|ARM64" Project="false" />
+    <Build Solution="Release AVX2|ARM64" Project="false" />
+    <Build Solution="Release Clang AVX2|ARM64" Project="false" />
+    <Build Solution="Release|ARM64" Project="false" />
+  </Project>
+  <Project Path="pcsx2/pcsx2.vcxproj" Id="6c7986c4-3e4d-4dcc-b3c6-6bb12b238995">
+    <BuildType Solution="Debug AVX2|ARM64" Project="Debug Clang" />
+    <BuildType Solution="Debug Clang AVX2|ARM64" Project="Debug Clang" />
+    <BuildType Solution="Debug|ARM64" Project="Debug Clang" />
+    <BuildType Solution="Devel AVX2|ARM64" Project="Devel Clang" />
+    <BuildType Solution="Devel Clang AVX2|ARM64" Project="Devel Clang" />
+    <BuildType Solution="Devel|ARM64" Project="Devel Clang" />
+    <BuildType Solution="Release AVX2|ARM64" Project="Release Clang" />
+    <BuildType Solution="Release Clang AVX2|ARM64" Project="Release Clang" />
+    <BuildType Solution="Release|ARM64" Project="Release Clang" />
+    <Build Solution="Debug AVX2|ARM64" Project="false" />
+    <Build Solution="Debug Clang AVX2|ARM64" Project="false" />
+    <Build Solution="Debug|ARM64" Project="false" />
+    <Build Solution="Devel AVX2|ARM64" Project="false" />
+    <Build Solution="Devel Clang AVX2|ARM64" Project="false" />
+    <Build Solution="Devel|ARM64" Project="false" />
+    <Build Solution="Release AVX2|ARM64" Project="false" />
+    <Build Solution="Release Clang AVX2|ARM64" Project="false" />
+    <Build Solution="Release|ARM64" Project="false" />
+  </Project>
+  <Project Path="updater/updater.vcxproj" Id="90bbdc04-cc44-4006-b893-06a4fea8ed47">
+    <BuildType Solution="Debug AVX2|ARM64" Project="Debug Clang" />
+    <BuildType Solution="Debug Clang AVX2|ARM64" Project="Debug Clang" />
+    <BuildType Solution="Debug|ARM64" Project="Debug Clang" />
+    <BuildType Solution="Devel AVX2|ARM64" Project="Devel Clang" />
+    <BuildType Solution="Devel Clang AVX2|ARM64" Project="Devel Clang" />
+    <BuildType Solution="Devel|ARM64" Project="Devel Clang" />
+    <BuildType Solution="Release AVX2|ARM64" Project="Release Clang" />
+    <BuildType Solution="Release Clang AVX2|ARM64" Project="Release Clang" />
+    <BuildType Solution="Release|ARM64" Project="Release Clang" />
+    <Build Solution="Debug AVX2|ARM64" Project="false" />
+    <Build Solution="Debug Clang AVX2|ARM64" Project="false" />
+    <Build Solution="Debug|ARM64" Project="false" />
+    <Build Solution="Devel AVX2|ARM64" Project="false" />
+    <Build Solution="Devel Clang AVX2|ARM64" Project="false" />
+    <Build Solution="Devel|ARM64" Project="false" />
+    <Build Solution="Release AVX2|ARM64" Project="false" />
+    <Build Solution="Release Clang AVX2|ARM64" Project="false" />
+    <Build Solution="Release|ARM64" Project="false" />
+  </Project>
+</Solution>
