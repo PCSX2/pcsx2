@@ -332,7 +332,7 @@ public:
 	void RenderHW(GSHWDrawConfig& config) override;
 	void SendHWDraw(const GSHWDrawConfig& config, bool one_barrier, bool full_barrier);
 
-	void SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vertices, SetDATM datm);
+	void SetupDATE(GSTexture* rt, GSTexture* ds, SetDATM datm, const GSVector4i& bbox);
 
 	void IASetVAO(GLuint vao);
 	void IASetPrimitiveTopology(GLenum topology);
