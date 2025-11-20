@@ -6866,6 +6866,46 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 		BeginMenuButtons(submenu_item_count[static_cast<u32>(s_current_pause_submenu)], 1.0f, ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
 			ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 
+		if (!ImGui::IsPopupOpen(0u, ImGuiPopupFlags_AnyPopup))
+		{
+			const bool up_pressed = ImGui::IsKeyPressed(ImGuiKey_GamepadDpadUp, ImGuiInputFlags_Repeat, ImGuiKeyOwner_NoOwner) ||
+									ImGui::IsKeyPressed(ImGuiKey_UpArrow, ImGuiInputFlags_Repeat, ImGuiKeyOwner_NoOwner);
+			const bool down_pressed = ImGui::IsKeyPressed(ImGuiKey_GamepadDpadDown, ImGuiInputFlags_Repeat, ImGuiKeyOwner_NoOwner) ||
+									  ImGui::IsKeyPressed(ImGuiKey_DownArrow, ImGuiInputFlags_Repeat, ImGuiKeyOwner_NoOwner);
+
+			if (up_pressed || down_pressed)
+			{
+				const ImGuiID current_focus_id = ImGui::GetFocusID();
+				ImGuiWindow* window = ImGui::GetCurrentWindow();
+				ImGuiID first_id = 0;
+				ImGuiID last_id = 0;
+
+				switch (s_current_pause_submenu)
+				{
+					case PauseSubMenu::None:
+						first_id = ImGui::GetID(FSUI_ICONSTR(ICON_FA_PLAY, "Resume Game"));
+						last_id = ImGui::GetID(FSUI_ICONSTR(ICON_FA_POWER_OFF, "Close Game"));
+						break;
+					case PauseSubMenu::Exit:
+						first_id = ImGui::GetID(FSUI_ICONSTR(ICON_PF_BACKWARD, "Back To Pause Menu"));
+						last_id = ImGui::GetID(FSUI_ICONSTR(ICON_FA_POWER_OFF, "Exit Without Saving"));
+						break;
+					case PauseSubMenu::Achievements:
+						first_id = ImGui::GetID(FSUI_ICONSTR(ICON_PF_BACKWARD, "Back To Pause Menu"));
+						last_id = ImGui::GetID(FSUI_ICONSTR(ICON_FA_STOPWATCH, "Leaderboards"));
+						break;
+				}
+
+				if (first_id != 0 && last_id != 0)
+				{
+					if (up_pressed && current_focus_id == first_id)
+						ImGui::SetFocusID(last_id, window);
+					else if (down_pressed && current_focus_id == last_id)
+						ImGui::SetFocusID(first_id, window);
+				}
+			}
+		}
+
 		switch (s_current_pause_submenu)
 		{
 			case PauseSubMenu::None:
