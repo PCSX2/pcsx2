@@ -5,6 +5,7 @@
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QFileInfo>
+#include <QtCore/QLocale>
 #include <QtCore/QtGlobal>
 #include <QtCore/QMetaObject>
 #include <QtGui/QAction>
@@ -35,6 +36,7 @@
 
 #include "common/CocoaTools.h"
 #include "common/Console.h"
+#include "QtHost.h"
 
 #if defined(_WIN32)
 #include "common/RedtapeWindows.h"
@@ -447,5 +449,28 @@ namespace QtUtils
 	void SetScalableIcon(QLabel* lbl, const QIcon& icon, const QSize& size)
 	{
 		new IconVariableDpiFilter(lbl, icon, size, lbl);
+	}
+
+	QString GetSystemLanguageCode()
+	{
+		std::vector<std::pair<QString, QString>> available = QtHost::GetAvailableLanguageList();
+		QString locale = QLocale::system().name();
+		locale.replace('_', '-');
+		for (const std::pair<QString, QString>& entry : available)
+		{
+			if (entry.second == locale)
+				return locale;
+		}
+		QStringView lang = QStringView(locale);
+		lang = lang.left(lang.indexOf('-'));
+		for (const std::pair<QString, QString>& entry : available)
+		{
+			QStringView avail = QStringView(entry.second);
+			avail = avail.left(avail.indexOf('-'));
+			if (avail == lang)
+				return entry.second;
+		}
+		// No matches, default to English
+		return QStringLiteral("en-US");
 	}
 } // namespace QtUtils
