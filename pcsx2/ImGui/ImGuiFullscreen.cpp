@@ -2396,6 +2396,7 @@ void ImGuiFullscreen::DrawChoiceDialog()
 	ImGui::PushStyleColor(ImGuiCol_Text, UIPrimaryTextColor);
 	ImGui::PushStyleColor(ImGuiCol_TitleBg, UIPrimaryDarkColor);
 	ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIPrimaryColor);
+	ImGui::PushStyleColor(ImGuiCol_PopupBg, UIPopupBackgroundColor);
 
 	const float width = LayoutScale(600.0f);
 	const float title_height = g_large_font.second + ImGui::GetStyle().FramePadding.y * 2.0f + ImGui::GetStyle().WindowPadding.y * 2.0f;
@@ -2464,7 +2465,7 @@ void ImGuiFullscreen::DrawChoiceDialog()
 		is_open = false;
 	}
 
-	ImGui::PopStyleColor(3);
+	ImGui::PopStyleColor(4);
 	ImGui::PopStyleVar(3);
 	ImGui::PopFont();
 
@@ -2523,7 +2524,7 @@ void ImGuiFullscreen::DrawInputDialog()
 	ImGui::PushStyleColor(ImGuiCol_Text, UIPrimaryTextColor);
 	ImGui::PushStyleColor(ImGuiCol_TitleBg, UIPrimaryDarkColor);
 	ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIPrimaryColor);
-	ImGui::PushStyleColor(ImGuiCol_PopupBg, UIBackgroundColor);
+	ImGui::PushStyleColor(ImGuiCol_PopupBg, UIPopupBackgroundColor);
 
 	bool is_open = true;
 	if (ImGui::BeginPopupModal(s_input_dialog_title.c_str(), &is_open,
@@ -2715,6 +2716,7 @@ void ImGuiFullscreen::DrawMessageDialog()
 	ImGui::PushStyleColor(ImGuiCol_Text, UIPrimaryTextColor);
 	ImGui::PushStyleColor(ImGuiCol_TitleBg, UIPrimaryDarkColor);
 	ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIPrimaryColor);
+	ImGui::PushStyleColor(ImGuiCol_PopupBg, UIPopupBackgroundColor);
 
 	bool is_open = true;
 	const u32 flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
@@ -2745,7 +2747,7 @@ void ImGuiFullscreen::DrawMessageDialog()
 		ImGui::EndPopup();
 	}
 
-	ImGui::PopStyleColor(3);
+	ImGui::PopStyleColor(4);
 	ImGui::PopStyleVar(4);
 	ImGui::PopFont();
 
