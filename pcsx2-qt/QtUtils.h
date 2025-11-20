@@ -199,4 +199,12 @@ namespace QtUtils
 	/// Sets the scalable icon to a given label (svg icons, or icons with multiple size pixmaps)
 	/// The icon will then be reloaded on DPR changes using an event filter
 	void SetScalableIcon(QLabel* lbl, const QIcon& icon, const QSize& size);
+
+	/// Gets the system language code, matching it against available languages
+	/// Returns the best matching language code, or "en-US" if no match is found
+	QString GetSystemLanguageCode();
+
+	/// Gets a flag icon for a given language code
+	/// Returns an empty QIcon if no flag is available for the language
+	QIcon GetFlagIconForLanguage(const QString& language_code);
 } // namespace QtUtils

@@ -484,7 +484,7 @@ QIcon GameListModel::getIconForType(const GameList::EntryType type)
 QIcon GameListModel::getIconForRegion(const GameList::Region region)
 {
 	return QIcon(
-		QStringLiteral("%1/icons/flags/%2.svg").arg(QtHost::GetResourcesBasePath()).arg(GameList::RegionToString(region, false)));
+		QStringLiteral("%1/icons/flags/%2.svg").arg(QtHost::GetResourcesBasePath()).arg(GameList::RegionToFlagFilename(region)));
 }
 
 void GameListModel::loadThemeSpecificImages()
