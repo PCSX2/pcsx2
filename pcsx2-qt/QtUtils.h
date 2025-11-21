@@ -102,9 +102,11 @@ namespace QtUtils
 
 	/// Changes whether a window is resizable.
 	void SetWindowResizeable(QWidget* widget, bool resizeable);
+	void SetWindowResizeable(QWindow* window, bool resizeable);
 
 	/// Adjusts the fixed size for a window if it's not resizeable.
 	void ResizePotentiallyFixedSizeWindow(QWidget* widget, int width, int height);
+	void ResizePotentiallyFixedSizeWindow(QWindow* window, int width, int height);
 
 	/// Returns the common window info structure for a Qt Window/Widget.
 	template <class T>
