@@ -144,6 +144,8 @@ jobs:
           ) else (
             msbuild "PCSX2_qt.sln" /m /v:m /p:Configuration="${{ inputs.configuration }}" /p:Platform="${{ inputs.platform }}"
           )
+          REM We can use Segoe UI Emoji so we don't need to bundle this
+          del bin\resources\fonts\NotoColorEmoji*
 
       - name: Run Tests
         if: inputs.configuration == 'CMake'
