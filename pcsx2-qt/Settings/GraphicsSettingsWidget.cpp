@@ -415,6 +415,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 		SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_capture.enableAudioCapture, "EmuCore/GS", "EnableAudioCapture", true);
 		SettingWidgetBinder::BindWidgetToIntSetting(
 			sif, m_capture.audioCaptureBitrate, "EmuCore/GS", "AudioCaptureBitrate", Pcsx2Config::GSOptions::DEFAULT_AUDIO_CAPTURE_BITRATE);
+		SettingWidgetBinder::BindWidgetAndLabelToIntSetting(
+			sif, m_capture.audioCaptureVolume, m_capture.audioCaptureVolumeValue, "%", "EmuCore/GS", "AudioCaptureVolume", Pcsx2Config::GSOptions::DEFAULT_AUDIO_CAPTURE_VOLUME);
 		SettingWidgetBinder::BindWidgetToBoolSetting(
 			sif, m_capture.enableAudioCaptureArguments, "EmuCore/GS", "EnableAudioCaptureParameters", false);
 		SettingWidgetBinder::BindWidgetToStringSetting(sif, m_capture.audioCaptureArguments, "EmuCore/GS", "AudioCaptureParameters");
@@ -812,6 +814,10 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 			   "<b>If unsure, leave it on default.<b>"));
 
 		dialog()->registerWidgetHelp(m_capture.audioCaptureBitrate, tr("Audio Bitrate"), tr("192 kbps"), tr("Sets the audio bitrate to be used."));
+
+		dialog()->registerWidgetHelp(
+			m_capture.audioCaptureVolume, tr("Audio Volume"), QStringLiteral("100%"),
+			tr("Sets the volume level for recorded audio. 100% is full volume, lower values reduce the volume."));
 
 		dialog()->registerWidgetHelp(m_capture.enableAudioCaptureArguments, tr("Enable Extra Audio Arguments"), tr("Unchecked"), tr("Allows you to pass arguments to the selected audio codec."));
 
