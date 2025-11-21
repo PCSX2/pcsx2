@@ -2091,17 +2091,15 @@ bool ImGuiFullscreen::HorizontalMenuItem(GSTexture* icon, const ImVec2& icon_uv0
 	dl->AddImage(reinterpret_cast<ImTextureID>(icon->GetNativeHandle()), icon_pos, icon_pos + ImVec2(icon_size, icon_size), icon_uv0, icon_uv1);
 
 	const std::pair<ImFont*, float> title_font = g_large_font;
-	const ImVec2 title_size = title_font.first->CalcTextSizeA(title_font.second, avail_width, 0.0f, title);
+	const ImVec2 title_size = title_font.first->CalcTextSizeA(title_font.second, size.x, 0.0f, title);
 	const ImVec2 title_pos =
 		ImVec2(bb.Min.x + (avail_width - title_size.x) * 0.5f, icon_pos.y + icon_size + LayoutScale(10.0f));
-	const ImVec4 title_bb = ImVec4(title_pos.x, title_pos.y, title_pos.x + title_size.x, title_pos.y + title_size.y);
 
-	dl->AddText(title_font.first, title_font.second, title_pos, ImGui::GetColorU32(ImGuiCol_Text), title, nullptr, 0.0f,
-		&title_bb);
+	dl->AddText(title_font.first, title_font.second, title_pos, ImGui::GetColorU32(ImGuiCol_Text), title, nullptr, 0.0f);
 
 	const std::pair<ImFont*, float> desc_font = g_medium_font;
 	const ImVec2 desc_size = desc_font.first->CalcTextSizeA(desc_font.second, avail_width, avail_width, description);
-	const ImVec2 desc_pos = ImVec2(bb.Min.x + (avail_width - desc_size.x) * 0.5f, title_bb.w + LayoutScale(10.0f));
+	const ImVec2 desc_pos = ImVec2(bb.Min.x + (avail_width - desc_size.x) * 0.5f, title_pos.y + title_size.y + LayoutScale(10.0f));
 	const ImVec4 desc_bb = ImVec4(desc_pos.x, desc_pos.y, desc_pos.x + desc_size.x, desc_pos.y + desc_size.y);
 
 	dl->AddText(desc_font.first, desc_font.second, desc_pos, ImGui::GetColorU32(ImGuiCol_Text), description, nullptr,
