@@ -65,13 +65,14 @@ public:
 		void cancelResume();
 
 	private:
-		VMLock(QWidget* dialog_parent, bool was_paused, bool was_exclusive_fullscreen);
+		VMLock(QWidget* dialog_parent, bool was_paused, bool was_exclusive_fullscreen, bool owns_parent);
 		friend MainWindow;
 
 		QWidget* m_dialog_parent;
 		bool m_has_lock;
 		bool m_was_paused;
 		bool m_was_fullscreen;
+		bool m_owns_dialog_parent;
 	};
 
 	/// Default filter for opening a file.
@@ -138,7 +139,6 @@ private Q_SLOTS:
 	void displayResizeRequested(qint32 width, qint32 height);
 	void mouseModeRequested(bool relative_mode, bool hide_cursor);
 	void releaseRenderWindow();
-	void focusDisplayWidget();
 	void setupMouseMoveHandler();
 	void onGameListRefreshComplete();
 	void onGameListRefreshProgress(const QString& status, int current, int total);

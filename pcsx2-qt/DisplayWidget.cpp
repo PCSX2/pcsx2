@@ -133,7 +133,7 @@ void DisplaySurface::handleCloseEvent(QCloseEvent* event)
 	// In the latter case, it's going to destroy us, so don't let Qt do it first.
 	// Treat a close event while fullscreen as an exit, that way ALT+F4 closes PCSX2,
 	// rather than just the game.
-	if (QtHost::IsVMValid() && !isActuallyFullscreen())
+	if (QtHost::IsVMValid() && !isFullScreen())
 	{
 		QMetaObject::invokeMethod(g_main_window, "requestShutdown", Q_ARG(bool, true),
 			Q_ARG(bool, true), Q_ARG(bool, false));
@@ -147,10 +147,44 @@ void DisplaySurface::handleCloseEvent(QCloseEvent* event)
 	event->ignore();
 }
 
-bool DisplaySurface::isActuallyFullscreen() const
+bool DisplaySurface::isFullScreen() const
 {
-	// DisplaySurface is always in a container, so we need to check parent window
-	return parent()->windowState() & Qt::WindowFullScreen;
+	// DisplaySurface may be in a container
+	return (parent() ? parent()->windowState() : windowState()) & Qt::WindowFullScreen;
+}
+
+void DisplaySurface::setFocus()
+{
+	if (m_container)
+		m_container->setFocus();
+	else
+		requestActivate();
+}
+
+QByteArray DisplaySurface::saveGeometry() const
+{
+	if (m_container)
+		return m_container->saveGeometry();
+	else
+	{
+		// QWindow lacks saveGeometry, so create a dummy widget and copy geometry across.
+		QWidget dummy = QWidget();
+		dummy.setGeometry(geometry());
+		return dummy.saveGeometry();
+	}
+}
+
+void DisplaySurface::restoreGeometry(const QByteArray& geometry)
+{
+	if (m_container)
+		m_container->restoreGeometry(geometry);
+	else
+	{
+		// QWindow lacks restoreGeometry, so create a dummy widget and copy geometry across.
+		QWidget dummy = QWidget();
+		dummy.restoreGeometry(geometry);
+		setGeometry(dummy.geometry());
+	}
 }
 
 void DisplaySurface::updateCenterPos()
@@ -393,10 +427,18 @@ bool DisplaySurface::event(QEvent* event)
 			return event->isAccepted();
 
 		case QEvent::Move:
-		{
 			updateCenterPos();
 			return true;
-		}
+
+		// These events only work on the top level control.
+		// Which is this container when render to seperate or fullscreen is active (Windows).
+		case QEvent::Close:
+			handleCloseEvent(static_cast<QCloseEvent*>(event));
+			return true;
+		case QEvent::WindowStateChange:
+			if (static_cast<QWindowStateChangeEvent*>(event)->oldState() & Qt::WindowMinimized)
+				emit windowRestoredEvent();
+			return false;
 
 		default:
 			return QWindow::event(event);
@@ -418,7 +460,7 @@ bool DisplaySurface::eventFilter(QObject* object, QEvent* event)
 			return true;
 
 		// These events only work on the top level control.
-		// Which is this container when render to seperate or fullscreen is active.
+		// Which is this container when render to seperate or fullscreen is active (Non-Windows).
 		case QEvent::Close:
 			handleCloseEvent(static_cast<QCloseEvent*>(event));
 			return true;
@@ -427,8 +469,8 @@ bool DisplaySurface::eventFilter(QObject* object, QEvent* event)
 				emit windowRestoredEvent();
 			return false;
 
-		case QEvent::ChildRemoved:
-			if (static_cast<QChildEvent*>(event)->child() == m_container)
+		case QEvent::ChildWindowRemoved:
+			if (static_cast<QChildWindowEvent*>(event)->child() == this)
 			{
 				object->removeEventFilter(this);
 				m_container = nullptr;
