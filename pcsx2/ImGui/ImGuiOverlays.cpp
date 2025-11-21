@@ -479,9 +479,9 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 						min_text_x = wpos.x + history_size.x - text_size.x - spacing; // Right alignment within window
 						break;
 				}
-				win_dl->AddText(ImVec2(min_text_x + shadow_offset, wpos.y + history_size.y - font_size + shadow_offset),
+				win_dl->AddText(ImVec2(min_text_x + shadow_offset, wpos.y + history_size.y - text_size.y + shadow_offset),
 					IM_COL32(0, 0, 0, 100), text.c_str(), text.c_str() + text.length());
-				win_dl->AddText(ImVec2(min_text_x, wpos.y + history_size.y - font_size),
+				win_dl->AddText(ImVec2(min_text_x, wpos.y + history_size.y - text_size.y),
 					IM_COL32(255, 255, 255, 255), text.c_str(), text.c_str() + text.length());
 			}
 			ImGui::End();
