@@ -291,7 +291,7 @@ void FullscreenUI::DrawInputBindingButton(
 		}
 	}
 
-	const float midpoint = bb.Min.y + g_large_font.second + LayoutScale(4.0f);
+	const float midpoint = bb.Min.y + GetLineHeight(g_large_font) + LayoutScale(4.0f);
 
 	if (oneline)
 	{
