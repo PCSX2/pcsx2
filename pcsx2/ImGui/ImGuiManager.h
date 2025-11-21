@@ -5,6 +5,7 @@
 
 #include "common/Pcsx2Defs.h"
 
+#include <span>
 #include <string>
 #include <vector>
 
@@ -16,8 +17,16 @@ enum class InputLayout : u8;
 
 namespace ImGuiManager
 {
-	/// Sets the path to the font to use. Empty string means to use the default.
-	void SetFontPath(std::string path);
+	struct FontInfo
+	{
+		std::span<const u8> data;
+		std::span<const u32> exclude_ranges;
+		const char* face_name;
+		bool is_emoji_font;
+	};
+
+	/// Sets a list of fonts to use.
+	void SetFonts(std::vector<FontInfo> info);
 
 	/// Initializes ImGui, creates fonts, etc.
 	bool Initialize();

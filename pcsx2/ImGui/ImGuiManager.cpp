@@ -35,6 +35,10 @@
 #include <mutex>
 #include <unordered_map>
 
+#include <ft2build.h>
+#include FT_FREETYPE_H
+#include FT_MODULE_H
+
 namespace ImGuiManager
 {
 	struct SoftwareCursor
@@ -71,12 +75,13 @@ static float s_global_scale = 1.0f;
 
 static std::string s_font_path;
 
+static FT_Library s_ft_lib = nullptr;
+
 static ImFont* s_standard_font;
 static ImFont* s_fixed_font;
 
-static std::vector<u8> s_standard_font_data;
+static std::vector<ImGuiManager::FontInfo> s_font_info;
 static std::vector<u8> s_fixed_font_data;
-static std::vector<u8> s_emoji_font_data;
 static std::vector<u8> s_icon_fa_font_data;
 static std::vector<u8> s_icon_pf_font_data;
 
@@ -103,14 +108,9 @@ static bool s_scale_changed = false;
 
 static std::array<ImGuiManager::SoftwareCursor, InputManager::MAX_SOFTWARE_CURSORS> s_software_cursors = {};
 
-void ImGuiManager::SetFontPath(std::string path)
+void ImGuiManager::SetFonts(std::vector<FontInfo> info)
 {
-	if (s_font_path == path)
-		return;
-
-	s_font_path = std::move(path);
-	s_standard_font_data = {};
-
+	s_font_info = std::move(info);
 	if (ImGui::GetCurrentContext())
 	{
 		ImGui::EndFrame();
@@ -398,16 +398,6 @@ void ImGuiManager::SetKeyMap()
 
 bool ImGuiManager::LoadFontData()
 {
-	if (s_standard_font_data.empty())
-	{
-		pxAssertRel(!s_font_path.empty(), "Font path has not been set.");
-		std::optional<std::vector<u8>> font_data = FileSystem::ReadBinaryFile(s_font_path.c_str());
-		if (!font_data.has_value())
-			return false;
-
-		s_standard_font_data = std::move(font_data.value());
-	}
-
 	if (s_fixed_font_data.empty())
 	{
 		std::optional<std::vector<u8>> font_data = FileSystem::ReadBinaryFile(
@@ -416,16 +406,6 @@ bool ImGuiManager::LoadFontData()
 			return false;
 
 		s_fixed_font_data = std::move(font_data.value());
-	}
-
-	if (s_emoji_font_data.empty())
-	{
-		std::optional<std::vector<u8>> font_data = FileSystem::ReadBinaryFile(
-			EmuFolders::GetOverridableResourcePath("fonts" FS_OSPATH_SEPARATOR_STR "NotoColorEmoji-Regular.ttf").c_str());
-		if (!font_data.has_value())
-			return false;
-
-		s_emoji_font_data = std::move(font_data.value());
 	}
 
 	if (s_icon_fa_font_data.empty())
@@ -453,11 +433,59 @@ bool ImGuiManager::LoadFontData()
 
 void ImGuiManager::UnloadFontData()
 {
-	std::vector<u8>().swap(s_standard_font_data);
 	std::vector<u8>().swap(s_fixed_font_data);
-	std::vector<u8>().swap(s_emoji_font_data);
 	std::vector<u8>().swap(s_icon_fa_font_data);
 	std::vector<u8>().swap(s_icon_pf_font_data);
+}
+
+static u16 Load16BE(const u8* data)
+{
+	return (data[0] << 8) | data[1];
+}
+
+static u32 Load32BE(const u8* data)
+{
+	return (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3];
+}
+
+// Attempt to find the font index for the given font in its font file
+static u32 GetFontIndex(const ImGuiManager::FontInfo& font)
+{
+	if (!font.face_name)
+		return 0; // No face name selected
+#define RET_IF_ERR(x) do { if ((x) != FT_Err_Ok) [[unlikely]] { assert(0); return 0; } } while (0)
+	if (!s_ft_lib)
+		RET_IF_ERR(FT_Init_FreeType(&s_ft_lib));
+	u32 face_idx = 0;
+	FT_Face face;
+	RET_IF_ERR(FT_New_Memory_Face(s_ft_lib, font.data.data(), font.data.size(), face_idx, &face));
+	FT_Long nfaces = face->num_faces;
+	while (face_idx < nfaces)
+	{
+		if (0 == strcmp(face->family_name, font.face_name))
+			break;
+		FT_Done_Face(face);
+		RET_IF_ERR(FT_New_Memory_Face(s_ft_lib, font.data.data(), font.data.size(), ++face_idx, &face));
+	}
+	FT_Done_Face(face);
+	if (face_idx == nfaces)
+		return 0; // Couldn't find face, just use first one
+
+	// For fonts with variations, try to find one named "Regular"
+	// Getting a list of variation names with FT is painful, easier to just try to load variations until one fails
+	u32 variation = 1 << 16;
+	for (;; variation += 1 << 16)
+	{
+		FT_Error err = FT_New_Memory_Face(s_ft_lib, font.data.data(), font.data.size(), face_idx | variation, &face);
+		if (err != FT_Err_Ok)
+			break;
+		bool found = 0 == strcmp(face->style_name, "Regular");
+		FT_Done_Face(face);
+		if (found)
+			return face_idx | variation;
+	}
+	return face_idx;
+#undef RET_IF_ERR
 }
 
 // A resonable default font size is recommended
@@ -470,11 +498,36 @@ ImFont* ImGuiManager::AddTextFont()
 	static constexpr ImWchar range_exclude_icons[] = { 0x2198,0x2199,0x219e,0x21a7,0x21b0,0x21b3,0x21ba,0x21c3,0x21ce,0x21d4,0x21dc,0x21e8,0x21f3,0x21f3,0x21f7,0x21fb,0x2206,0x2208,0x221a,0x221a,0x227a,0x227d,0x22bf,0x22c8,0x2349,0x2349,0x235a,0x2367,0x237a,0x237f,0x23b2,0x23b5,0x23cc,0x23cc,0x23f4,0x23f7,0x2427,0x2452,0x2460,0x246b,0x248f,0x248f,0x24f5,0x24ff,0x2605,0x2605,0x2699,0x2699,0x278a,0x278e,0x27f6,0x27f6,0xff21,0xff3a,0x0,0x0 };
 	// clang-format on
 
+	std::vector<ImWchar> exclude;
 	ImFontConfig cfg;
 	cfg.FontDataOwnedByAtlas = false;
-	cfg.GlyphExcludeRanges = range_exclude_icons;
-	return ImGui::GetIO().Fonts->AddFontFromMemoryTTF(
-		s_standard_font_data.data(), static_cast<int>(s_standard_font_data.size()), FONT_BASE_SIZE, &cfg, nullptr);
+	ImFont* res = nullptr;
+	for (const FontInfo& info : s_font_info)
+	{
+		if (info.is_emoji_font)
+			continue;
+		if (info.exclude_ranges.empty())
+		{
+			cfg.GlyphExcludeRanges = range_exclude_icons;
+		}
+		else
+		{
+			exclude.clear();
+			exclude.reserve(info.exclude_ranges.size() + std::size(range_exclude_icons));
+			exclude.insert(exclude.end(), info.exclude_ranges.begin(), info.exclude_ranges.end());
+			exclude.insert(exclude.end(), std::begin(range_exclude_icons), std::end(range_exclude_icons));
+			cfg.GlyphExcludeRanges = exclude.data();
+		}
+		cfg.FontNo = GetFontIndex(info);
+		cfg.SizePixels = FONT_BASE_SIZE;
+		ImFont* font = ImGui::GetIO().Fonts->AddFontFromMemoryTTF(const_cast<u8*>(info.data.data()), static_cast<int>(info.data.size()), 0, &cfg, nullptr);
+		if (!cfg.MergeMode)
+		{
+			cfg.MergeMode = true;
+			res = font;
+		}
+	}
+	return res;
 }
 
 ImFont* ImGuiManager::AddFixedFont()
@@ -578,10 +631,13 @@ bool ImGuiManager::AddEmojiFont()
 		cfg.FontLoaderFlags |= ImGuiFreeTypeLoaderFlags_LoadColor;
 		cfg.FontDataOwnedByAtlas = false;
 
-		if (!ImGui::GetIO().Fonts->AddFontFromMemoryTTF(
-				s_emoji_font_data.data(), static_cast<int>(s_emoji_font_data.size()), FONT_BASE_SIZE, &cfg, nullptr))
+		for (const FontInfo& info : s_font_info)
 		{
-			return false;
+			if (!info.is_emoji_font)
+				continue;
+			cfg.FontNo = GetFontIndex(info);
+			if (!ImGui::GetIO().Fonts->AddFontFromMemoryTTF(const_cast<u8*>(info.data.data()), static_cast<int>(info.data.size()), FONT_BASE_SIZE, &cfg, nullptr))
+				return false;
 		}
 	}
 	return true;
