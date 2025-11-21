@@ -193,6 +193,7 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 	ImFont* const fixed_font = ImGuiManager::GetFixedFont();
 	ImFont* const standard_font = ImGuiManager::GetStandardFont();
 	const float font_size = ImGuiManager::GetFontSizeStandard();
+	const float line_height = ImGuiFullscreen::GetLineHeight({ fixed_font, font_size });
 
 	ImDrawList* dl = ImGui::GetBackgroundDrawList();
 	ImVec2 text_size;
@@ -204,14 +205,14 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 		case OsdOverlayPos::Center:
 		case OsdOverlayPos::CenterRight:
 
-			position_y = (GetWindowHeight() - (font_size * 8.0f)) * 0.5f;
+			position_y = (GetWindowHeight() - (line_height * 8.0f)) * 0.5f;
 			break;
 			
 		case OsdOverlayPos::BottomLeft:
 		case OsdOverlayPos::BottomCenter:
 		case OsdOverlayPos::BottomRight:
 
-			position_y = GetWindowHeight() - margin - (font_size * 15.0f + spacing * 14.0f);
+			position_y = GetWindowHeight() - margin - (line_height * 15.0f + spacing * 14.0f);
 			break;
 			
 		case OsdOverlayPos::TopLeft:
@@ -551,9 +552,9 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 						min_text_x = wpos.x + history_size.x - text_size.x - spacing; // Right alignment within window
 						break;
 				}
-				win_dl->AddText(ImVec2(min_text_x + shadow_offset, wpos.y + history_size.y - font_size + shadow_offset),
+				win_dl->AddText(ImVec2(min_text_x + shadow_offset, wpos.y + history_size.y - text_size.y + shadow_offset),
 					IM_COL32(0, 0, 0, 100), frame_times_text.c_str(), frame_times_text.c_str() + frame_times_text.length());
-				win_dl->AddText(ImVec2(min_text_x, wpos.y + history_size.y - font_size),
+				win_dl->AddText(ImVec2(min_text_x, wpos.y + history_size.y - text_size.y),
 					white_color, frame_times_text.c_str(), frame_times_text.c_str() + frame_times_text.length());
 			}
 			ImGui::End();
@@ -725,6 +726,7 @@ __ri void ImGuiManager::DrawInputsOverlay(float scale, float margin, float spaci
 	const float shadow_offset = std::ceil(scale);
 	ImFont* const font = ImGuiManager::GetStandardFont();
 	const float font_size = ImGuiManager::GetFontSizeStandard();
+	const float line_height = ImGuiFullscreen::GetLineHeight({ font, font_size });
 
 	static constexpr u32 text_color = IM_COL32(0xff, 0xff, 0xff, 255);
 	static constexpr u32 shadow_color = IM_COL32(0x00, 0x00, 0x00, 100);
@@ -747,7 +749,7 @@ __ri void ImGuiManager::DrawInputsOverlay(float scale, float margin, float spaci
 	}
 
 	float current_x = ImFloor(margin);
-	float current_y = ImFloor(display_size.y - margin - ((static_cast<float>(num_ports) * (font_size + spacing)) - spacing));
+	float current_y = ImFloor(display_size.y - margin - ((static_cast<float>(num_ports) * (line_height + spacing)) - spacing));
 	const ImVec4 clip_rect(current_x, current_y, display_size.x - margin, display_size.y);
 
 	SmallString text;
@@ -799,12 +801,12 @@ __ri void ImGuiManager::DrawInputsOverlay(float scale, float margin, float spaci
 			}
 		}
 
-		dl->AddText(font, font_size, ImVec2(current_x + shadow_offset, current_y + shadow_offset), shadow_color, text.c_str(),
-			text.c_str() + text.length(), 0.0f, &clip_rect);
-		dl->AddText(
-			font, font_size, ImVec2(current_x, current_y), text_color, text.c_str(), text.c_str() + text.length(), 0.0f, &clip_rect);
+		dl->AddText(font, font_size, ImVec2(current_x + shadow_offset, current_y + shadow_offset), shadow_color,
+			text.c_str(), text.c_str() + text.length(), 0.0f, &clip_rect);
+		dl->AddText(font, font_size, ImVec2(current_x, current_y), text_color,
+			text.c_str(), text.c_str() + text.length(), 0.0f, &clip_rect);
 
-		current_y += font_size + spacing;
+		current_y += line_height + spacing;
 	}
 
 	for (u32 port = 0; port < USB::NUM_PORTS; port++)
@@ -852,12 +854,12 @@ __ri void ImGuiManager::DrawInputsOverlay(float scale, float margin, float spaci
 			}
 		}
 
-		dl->AddText(font, font_size, ImVec2(current_x + shadow_offset, current_y + shadow_offset), shadow_color, text.c_str(),
-			text.c_str() + text.length(), 0.0f, &clip_rect);
-		dl->AddText(
-			font, font_size, ImVec2(current_x, current_y), text_color, text.c_str(), text.c_str() + text.length(), 0.0f, &clip_rect);
+		dl->AddText(font, font_size, ImVec2(current_x + shadow_offset, current_y + shadow_offset), shadow_color,
+			text.c_str(), text.c_str() + text.length(), 0.0f, &clip_rect);
+		dl->AddText(font, font_size, ImVec2(current_x, current_y), text_color,
+			text.c_str(), text.c_str() + text.length(), 0.0f, &clip_rect);
 
-		current_y += font_size + spacing;
+		current_y += line_height + spacing;
 	}
 }
 

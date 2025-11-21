@@ -154,6 +154,7 @@ using ImGuiFullscreen::GetCachedSvgTexture;
 using ImGuiFullscreen::GetCachedSvgTextureAsync;
 using ImGuiFullscreen::GetCachedTexture;
 using ImGuiFullscreen::GetCachedTextureAsync;
+using ImGuiFullscreen::GetLineHeight;
 using ImGuiFullscreen::GetPlaceholderTexture;
 using ImGuiFullscreen::GetQueuedFocusResetType;
 using ImGuiFullscreen::HorizontalMenuItem;
@@ -2199,7 +2200,7 @@ void FullscreenUI::DrawInputBindingButton(
 		}
 	}
 
-	const float midpoint = bb.Min.y + g_large_font.second + LayoutScale(4.0f);
+	const float midpoint = bb.Min.y + GetLineHeight(g_large_font) + LayoutScale(4.0f);
 
 	if (oneline)
 	{
@@ -7909,7 +7910,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 
 			DrawGameCover(entry, ImGui::GetWindowDrawList(), bb.Min, bb.Min + image_size);
 
-			const float midpoint = bb.Min.y + g_large_font.second + LayoutScale(4.0f);
+			const float midpoint = bb.Min.y + GetLineHeight(g_large_font) + LayoutScale(4.0f);
 			const float text_start_x = bb.Min.x + image_size.x + LayoutScale(15.0f);
 			const ImRect title_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
 			const ImRect summary_bb(ImVec2(text_start_x, midpoint), bb.Max);

@@ -490,6 +490,8 @@ static u32 GetFontIndex(const ImGuiManager::FontInfo& font)
 
 // A resonable default font size is recommended
 #define FONT_BASE_SIZE 15.0f
+#define FONT_LINE_HEIGHT 1.25f
+#define FONT_ICON_SIZE (FONT_BASE_SIZE * 1.2f)
 
 ImFont* ImGuiManager::AddTextFont()
 {
@@ -500,6 +502,7 @@ ImFont* ImGuiManager::AddTextFont()
 
 	std::vector<ImWchar> exclude;
 	ImFontConfig cfg;
+	cfg.LineHeight = FONT_LINE_HEIGHT;
 	cfg.FontDataOwnedByAtlas = false;
 	ImFont* res = nullptr;
 	for (const FontInfo& info : s_font_info)
@@ -533,6 +536,7 @@ ImFont* ImGuiManager::AddTextFont()
 ImFont* ImGuiManager::AddFixedFont()
 {
 	ImFontConfig cfg;
+	cfg.LineHeight = FONT_LINE_HEIGHT;
 	cfg.FontDataOwnedByAtlas = false;
 	return ImGui::GetIO().Fonts->AddFontFromMemoryTTF(
 		s_fixed_font_data.data(), static_cast<int>(s_fixed_font_data.size()), FONT_BASE_SIZE, &cfg, nullptr);
@@ -548,8 +552,8 @@ bool ImGuiManager::AddIconFonts()
 		ImFontConfig cfg;
 		cfg.MergeMode = true;
 		cfg.PixelSnapH = true;
-		cfg.GlyphMinAdvanceX = FONT_BASE_SIZE;
-		cfg.GlyphMaxAdvanceX = FONT_BASE_SIZE;
+		cfg.GlyphMinAdvanceX = FONT_ICON_SIZE;
+		cfg.GlyphMaxAdvanceX = FONT_ICON_SIZE;
 		cfg.GlyphExcludeRanges = range_exclude_emojis;
 		cfg.FontDataOwnedByAtlas = false;
 
@@ -567,13 +571,13 @@ bool ImGuiManager::AddIconFonts()
 		ImFontConfig cfg;
 		cfg.MergeMode = true;
 		cfg.PixelSnapH = true;
-		cfg.GlyphMinAdvanceX = FONT_BASE_SIZE;
-		cfg.GlyphMaxAdvanceX = FONT_BASE_SIZE;
+		cfg.GlyphMinAdvanceX = FONT_ICON_SIZE;
+		cfg.GlyphMaxAdvanceX = FONT_ICON_SIZE;
 		cfg.GlyphExcludeRanges = range_exclude_non_bmp;
 		cfg.FontDataOwnedByAtlas = false;
 
 		if (!ImGui::GetIO().Fonts->AddFontFromMemoryTTF(
-				s_icon_fa_font_data.data(), static_cast<int>(s_icon_fa_font_data.size()), FONT_BASE_SIZE * 0.75f, &cfg, nullptr))
+				s_icon_fa_font_data.data(), static_cast<int>(s_icon_fa_font_data.size()), FONT_BASE_SIZE * 0.9f, &cfg, nullptr))
 		{
 			return false;
 		}
@@ -626,8 +630,8 @@ bool ImGuiManager::AddEmojiFont()
 		ImFontConfig cfg;
 		cfg.MergeMode = true;
 		// Set GlyphMin/MaxAdvanceX to allow replacing FA/PF icons.
-		cfg.GlyphMinAdvanceX = FONT_BASE_SIZE;
-		cfg.GlyphMaxAdvanceX = FONT_BASE_SIZE;
+		cfg.GlyphMinAdvanceX = FONT_ICON_SIZE;
+		cfg.GlyphMaxAdvanceX = FONT_ICON_SIZE;
 		cfg.FontLoaderFlags |= ImGuiFreeTypeLoaderFlags_LoadColor;
 		cfg.FontDataOwnedByAtlas = false;
 
@@ -960,7 +964,7 @@ ImFont* ImGuiManager::GetFixedFont()
 
 float ImGuiManager::GetFontSizeStandard()
 {
-	return std::ceil(15.0f * s_global_scale);
+	return std::ceil(12.0f * s_global_scale);
 }
 
 float ImGuiManager::GetFontSizeMedium()

@@ -2275,6 +2275,7 @@ void Achievements::DrawPauseMenuOverlays()
 {
 	using ImGuiFullscreen::g_large_font;
 	using ImGuiFullscreen::g_medium_font;
+	using ImGuiFullscreen::GetLineHeight;
 	using ImGuiFullscreen::LayoutScale;
 
 	if (!HasActiveGame())
@@ -2290,14 +2291,14 @@ void Achievements::DrawPauseMenuOverlays()
 
 	const ImVec2 image_size(
 		LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY));
-	const float start_y = LayoutScale(10.0f + 4.0f + 4.0f) + g_large_font.second + (g_medium_font.second * 2.0f);
+	const float start_y = LayoutScale(10.0f + 4.0f + 4.0f) + GetLineHeight(g_large_font) + (GetLineHeight(g_medium_font) * 2.0f);
 	const float margin = LayoutScale(10.0f);
 	const float spacing = LayoutScale(10.0f);
 	const float padding = LayoutScale(10.0f);
 
 	const float max_text_width = ImGuiFullscreen::LayoutScale(300.0f);
 	const float row_width = max_text_width + padding + padding + image_size.x + spacing;
-	const float title_height = padding + font.second + padding;
+	const float title_height = padding + GetLineHeight(font) + padding;
 
 	if (!s_active_challenge_indicators.empty())
 	{
@@ -2311,7 +2312,7 @@ void Achievements::DrawPauseMenuOverlays()
 			TRANSLATE("Achievements", "Active Challenge Achievements"));
 
 		const float y_advance = image_size.y + spacing;
-		const float acheivement_name_offset = (image_size.y - font.second) / 2.0f;
+		const float acheivement_name_offset = (image_size.y - GetLineHeight(font)) / 2.0f;
 		const float max_non_ellipised_text_width = max_text_width - LayoutScale(10.0f);
 		ImVec2 position(box_min.x + padding, box_min.y + title_height);
 
@@ -2371,6 +2372,7 @@ void Achievements::DrawAchievementsWindow()
 {
 	using ImGuiFullscreen::g_large_font;
 	using ImGuiFullscreen::g_medium_font;
+	using ImGuiFullscreen::GetLineHeight;
 	using ImGuiFullscreen::LayoutScale;
 
 	if (!s_achievement_list)
@@ -2429,19 +2431,19 @@ void Achievements::DrawAchievementsWindow()
 				FullscreenUI::ReturnToPreviousWindow();
 			}
 
-			const ImRect title_bb(ImVec2(left, top), ImVec2(right, top + g_large_font.second));
+			const ImRect title_bb(ImVec2(left, top), ImVec2(right, top + GetLineHeight(g_large_font)));
 			text.assign(s_game_title);
 
 			if (s_hardcore_mode)
 				text.append(TRANSLATE_SV("Achievements", " (Hardcore Mode)"));
 
-			top += g_large_font.second + spacing;
+			top += GetLineHeight(g_large_font) + spacing;
 
 			ImGui::PushFont(g_large_font.first, g_large_font.second);
 			ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, text.c_str(), text.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), &title_bb);
 			ImGui::PopFont();
 
-			const ImRect summary_bb(ImVec2(left, top), ImVec2(right, top + g_medium_font.second));
+			const ImRect summary_bb(ImVec2(left, top), ImVec2(right, top + GetLineHeight(g_medium_font)));
 			if (s_game_summary.num_core_achievements > 0)
 			{
 				if (s_game_summary.num_unlocked_achievements == s_game_summary.num_core_achievements)
@@ -2461,7 +2463,7 @@ void Achievements::DrawAchievementsWindow()
 				text.assign(TRANSLATE_SV("Achievements", "This game has no achievements."));
 			}
 
-			top += g_medium_font.second + spacing;
+			top += GetLineHeight(g_medium_font) + spacing;
 
 			ImGui::PushFont(g_medium_font.first, g_medium_font.second);
 			ImGui::RenderTextClipped(
@@ -2548,6 +2550,7 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
 {
 	using ImGuiFullscreen::g_large_font;
 	using ImGuiFullscreen::g_medium_font;
+	using ImGuiFullscreen::GetLineHeight;
 	using ImGuiFullscreen::LayoutScale;
 	using ImGuiFullscreen::LayoutUnscale;
 
@@ -2571,7 +2574,7 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
 		cheevo->description + summary_length));
 
 	// Messy, but need to undo LayoutScale in MenuButtonFrame()...
-	const float extra_summary_height = LayoutUnscale(std::max(summary_text_size.y - g_medium_font.second, 0.0f));
+	const float extra_summary_height = LayoutUnscale(std::max(summary_text_size.y - GetLineHeight(g_medium_font), 0.0f));
 
 	ImRect bb;
 	bool visible, hovered;
@@ -2609,7 +2612,7 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
 
 	SmallString text;
 
-	const float midpoint = bb.Min.y + g_large_font.second + spacing;
+	const float midpoint = bb.Min.y + GetLineHeight(g_large_font) + spacing;
 	text.format((cheevo->points != 1) ? TRANSLATE_FS("Achievements", "{} points") : TRANSLATE_FS("Achievements", "{} point"), cheevo->points);
 
 	const ImVec2 points_size(g_medium_font.first->CalcTextSizeA(g_medium_font.second, FLT_MAX, 0.0f, text.c_str(), text.end_ptr()));
@@ -2642,7 +2645,7 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
 
 	const float text_start_x = bb.Min.x + image_size.x + LayoutScale(15.0f);
 	const ImRect title_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(points_start, midpoint));
-	const ImRect summary_bb(ImVec2(text_start_x, midpoint), ImVec2(points_start, midpoint + g_medium_font.second + extra_summary_height));
+	const ImRect summary_bb(ImVec2(text_start_x, midpoint), ImVec2(points_start, midpoint + GetLineHeight(g_medium_font) + extra_summary_height));
 	const ImRect points_bb(ImVec2(points_start, midpoint), bb.Max);
 	const ImRect lock_bb(
 		ImVec2(points_template_start + ((points_template_size.x - right_icon_size.x) * 0.5f), bb.Min.y), ImVec2(bb.Max.x, midpoint));
@@ -2671,7 +2674,7 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
 		ImDrawList* dl = ImGui::GetWindowDrawList();
 		const float progress_height = LayoutScale(progress_height_unscaled);
 		const float progress_spacing = LayoutScale(progress_spacing_unscaled);
-		const float top = midpoint + g_medium_font.second + progress_spacing;
+		const float top = midpoint + GetLineHeight(g_medium_font) + progress_spacing;
 		const ImRect progress_bb(ImVec2(text_start_x, top), ImVec2(bb.Max.x, top + progress_height));
 		const float fraction = cheevo->measured_percent * 0.01f;
 		dl->AddRectFilled(progress_bb.Min, progress_bb.Max, ImGui::GetColorU32(ImGuiFullscreen::UIPrimaryDarkColor));
@@ -2711,6 +2714,7 @@ void Achievements::DrawLeaderboardsWindow()
 {
 	using ImGuiFullscreen::g_large_font;
 	using ImGuiFullscreen::g_medium_font;
+	using ImGuiFullscreen::GetLineHeight;
 	using ImGuiFullscreen::LayoutScale;
 
 	static constexpr float alpha = 0.8f;
@@ -2800,10 +2804,10 @@ void Achievements::DrawLeaderboardsWindow()
 				}
 			}
 
-			const ImRect title_bb(ImVec2(left, top), ImVec2(right, top + g_large_font.second));
+			const ImRect title_bb(ImVec2(left, top), ImVec2(right, top + GetLineHeight(g_large_font)));
 			text.assign(Achievements::GetGameTitle());
 
-			top += g_large_font.second + spacing;
+			top += GetLineHeight(g_large_font) + spacing;
 
 			ImGui::PushFont(g_large_font.first, g_large_font.second);
 			ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, text.c_str(), text.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), &title_bb);
@@ -2811,10 +2815,10 @@ void Achievements::DrawLeaderboardsWindow()
 
 			if (is_leaderboard_open)
 			{
-				const ImRect subtitle_bb(ImVec2(left, top), ImVec2(right, top + g_large_font.second));
+				const ImRect subtitle_bb(ImVec2(left, top), ImVec2(right, top + GetLineHeight(g_large_font)));
 				text.assign(s_open_leaderboard->title);
 
-				top += g_large_font.second + spacing_small;
+				top += GetLineHeight(g_large_font) + spacing_small;
 
 				ImGui::PushFont(g_large_font.first, g_large_font.second);
 				ImGui::RenderTextClipped(
@@ -2831,8 +2835,8 @@ void Achievements::DrawLeaderboardsWindow()
 				text.format(TRANSLATE_FS("Achievements", "This game has {} leaderboards."), count);
 			}
 
-			const ImRect summary_bb(ImVec2(left, top), ImVec2(right, top + g_medium_font.second));
-			top += g_medium_font.second + spacing_small;
+			const ImRect summary_bb(ImVec2(left, top), ImVec2(right, top + GetLineHeight(g_medium_font)));
+			top += GetLineHeight(g_medium_font) + spacing_small;
 
 			ImGui::PushFont(g_medium_font.first, g_medium_font.second);
 			ImGui::RenderTextClipped(
@@ -2840,8 +2844,8 @@ void Achievements::DrawLeaderboardsWindow()
 
 			if (!is_leaderboard_open && !Achievements::IsHardcoreModeActive())
 			{
-				const ImRect hardcore_warning_bb(ImVec2(left, top), ImVec2(right, top + g_medium_font.second));
-				top += g_medium_font.second + spacing_small;
+				const ImRect hardcore_warning_bb(ImVec2(left, top), ImVec2(right, top + GetLineHeight(g_medium_font)));
+				top += GetLineHeight(g_medium_font) + spacing_small;
 
 				ImGui::RenderTextClipped(hardcore_warning_bb.Min, hardcore_warning_bb.Max,
 					TRANSLATE("Achievements", "Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only."),
@@ -2886,7 +2890,7 @@ void Achievements::DrawLeaderboardsWindow()
 				ImGuiFullscreen::MenuButtonFrame(
 					"legend", false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, &visible, &hovered, &bb.Min, &bb.Max, 0, alpha);
 
-				const float midpoint = bb.Min.y + g_large_font.second + LayoutScale(4.0f);
+				const float midpoint = bb.Min.y + GetLineHeight(g_large_font) + LayoutScale(4.0f);
 				float text_start_x = bb.Min.x + LayoutScale(15.0f) + padding;
 
 				ImGui::PushFont(g_large_font.first, g_large_font.second);
@@ -2922,7 +2926,7 @@ void Achievements::DrawLeaderboardsWindow()
 
 				const float line_thickness = LayoutScale(1.0f);
 				const float line_padding = LayoutScale(5.0f);
-				const ImVec2 line_start(bb.Min.x, bb.Min.y + g_large_font.second + line_padding);
+				const ImVec2 line_start(bb.Min.x, bb.Min.y + GetLineHeight(g_large_font) + line_padding);
 				const ImVec2 line_end(bb.Max.x, line_start.y);
 				ImGui::GetWindowDrawList()->AddLine(line_start, line_end, ImGui::GetColorU32(ImGuiCol_TextDisabled), line_thickness);
 			}
@@ -3001,7 +3005,7 @@ void Achievements::DrawLeaderboardsWindow()
 					ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, &visible, &hovered, &bb.Min, &bb.Max);
 				if (visible)
 				{
-					const float midpoint = bb.Min.y + g_large_font.second + LayoutScale(4.0f);
+					const float midpoint = bb.Min.y + GetLineHeight(g_large_font) + LayoutScale(4.0f);
 					const ImRect title_bb(bb.Min, ImVec2(bb.Max.x, midpoint));
 
 					ImGui::PushFont(g_large_font.first, g_large_font.second);
@@ -3045,6 +3049,7 @@ void Achievements::DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& ent
 	float name_column_width, float time_column_width, float column_spacing)
 {
 	using ImGuiFullscreen::g_large_font;
+	using ImGuiFullscreen::GetLineHeight;
 	using ImGuiFullscreen::LayoutScale;
 
 	static constexpr float alpha = 0.8f;
@@ -3056,7 +3061,7 @@ void Achievements::DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& ent
 	if (!visible)
 		return;
 
-	const float midpoint = bb.Min.y + g_large_font.second + LayoutScale(4.0f);
+	const float midpoint = bb.Min.y + GetLineHeight(g_large_font) + LayoutScale(4.0f);
 	float text_start_x = bb.Min.x + LayoutScale(15.0f);
 	SmallString text;
 
@@ -3122,6 +3127,7 @@ void Achievements::DrawLeaderboardListEntry(const rc_client_leaderboard_t* lboar
 {
 	using ImGuiFullscreen::g_large_font;
 	using ImGuiFullscreen::g_medium_font;
+	using ImGuiFullscreen::GetLineHeight;
 	using ImGuiFullscreen::LayoutScale;
 
 	static constexpr float alpha = 0.8f;
@@ -3136,7 +3142,7 @@ void Achievements::DrawLeaderboardListEntry(const rc_client_leaderboard_t* lboar
 	if (!visible)
 		return;
 
-	const float midpoint = bb.Min.y + g_large_font.second + LayoutScale(4.0f);
+	const float midpoint = bb.Min.y + GetLineHeight(g_large_font) + LayoutScale(4.0f);
 	const float text_start_x = bb.Min.x + LayoutScale(15.0f);
 	const ImRect title_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
 	const ImRect summary_bb(ImVec2(text_start_x, midpoint), bb.Max);
