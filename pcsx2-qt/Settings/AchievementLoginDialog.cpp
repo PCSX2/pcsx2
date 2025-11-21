@@ -17,7 +17,8 @@ AchievementLoginDialog::AchievementLoginDialog(QWidget* parent, Achievements::Lo
 	, m_reason(reason)
 {
 	m_ui.setupUi(this);
-	QtUtils::SetScalableIcon(m_ui.loginIcon, QIcon::fromTheme(QStringLiteral("login-box-line")), QSize(32, 32));
+	const QString base_path(QtHost::GetResourcesBasePath());
+	QtUtils::SetScalableIcon(m_ui.loginIcon, QIcon(QStringLiteral("%1/icons/ra-icon.svg").arg(base_path)), QSize(50, 50));
 	setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
 	// Adjust text if needed based on reason.
