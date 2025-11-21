@@ -2412,6 +2412,7 @@ ImFontConfig::ImFontConfig()
     GlyphMaxAdvanceX = FLT_MAX;
     RasterizerMultiply = 1.0f;
     RasterizerDensity = 1.0f;
+    LineHeight = 1.0f;
     EllipsisChar = 0;
 }
 
@@ -3022,6 +3023,7 @@ ImFont* ImFontAtlas::AddFont(const ImFontConfig* font_cfg_in)
         font->Flags = font_cfg_in->Flags;
         font->LegacySize = font_cfg_in->SizePixels;
         font->CurrentRasterizerDensity = font_cfg_in->RasterizerDensity;
+        font->LineHeight = font_cfg_in->LineHeight;
         Fonts.push_back(font);
     }
     else
@@ -5464,8 +5466,8 @@ ImVec2 ImFontCalcTextSizeEx(ImFont* font, float size, float max_width, float wra
         text_end_display = text_end;
 
     ImFontBaked* baked = font->GetFontBaked(size);
-    const float line_height = size;
-    const float scale = line_height / baked->Size;
+    const float line_height = ImCeil(size * font->LineHeight);
+    const float scale = size / baked->Size;
 
     ImVec2 text_size = ImVec2(0, 0);
     float line_width = 0.0f;
@@ -5605,7 +5607,7 @@ begin:
     if (!text_end)
         text_end = text_begin + ImStrlen(text_begin); // ImGui:: functions generally already provides a valid text_end, so this is merely to handle direct calls.
 
-    const float line_height = size;
+    const float line_height = ImCeil(size * LineHeight);
     ImFontBaked* baked = GetFontBaked(size);
 
     const float scale = size / baked->Size;

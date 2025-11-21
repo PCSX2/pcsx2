@@ -3528,6 +3528,7 @@ struct ImFontConfig
     //unsigned int  FontBuilderFlags;       // --       // [Renamed in 1.92] Ue FontLoaderFlags.
     float           RasterizerMultiply;     // 1.0f     // Linearly brighten (>1.0f) or darken (<1.0f) font output. Brightening small fonts may be a good workaround to make them more readable. This is a silly thing we may remove in the future.
     float           RasterizerDensity;      // 1.0f     // [LEGACY: this only makes sense when ImGuiBackendFlags_RendererHasTextures is not supported] DPI scale multiplier for rasterization. Not altering other font metrics: makes it easy to swap between e.g. a 100% and a 400% fonts for a zooming display, or handle Retina screen. IMPORTANT: If you change this it is expected that you increase/decrease font scale roughly to the inverse of this, otherwise quality may look lowered.
+    float           LineHeight;             // 1.0f     // [PCSX2 Custom] The spacing between lines of the font, in ems.
 
     // [Internal]
     ImFontFlags     Flags;                  // Font flags (don't use just yet, will be exposed in upcoming 1.92.X updates)
@@ -3819,6 +3820,7 @@ struct ImFont
     ImFontAtlas*                ContainerAtlas;     // 4-8   // What we have been loaded into.
     ImFontFlags                 Flags;              // 4     // Font flags.
     float                       CurrentRasterizerDensity;    // Current rasterizer density. This is a varying state of the font.
+    float                       LineHeight;         // 4     // Line Height
 
     // [Internal] Members: Cold ~24-52 bytes
     // Conceptually Sources[] is the list of font sources merged to create this font.
