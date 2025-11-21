@@ -106,6 +106,7 @@ namespace GameList
 
 	const char* EntryTypeToString(EntryType type, bool translate);
 	const char* RegionToString(Region region, bool translate);
+	const char* RegionToFlagFilename(Region region);
 	const char* EntryCompatibilityRatingToString(CompatibilityRating rating, bool translate);
 
 	/// Fills in boot parameters (iso or elf) based on the game list entry.
