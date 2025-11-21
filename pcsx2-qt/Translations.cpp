@@ -27,10 +27,23 @@
 #include <optional>
 #include <vector>
 
-#ifdef _WIN32
+#if defined(_WIN32)
 #include "common/RedtapeWindows.h"
 #include <KnownFolders.h>
 #include <ShlObj.h>
+#elif defined(__APPLE__)
+#include <CoreText/CoreText.h>
+#else
+#include <fontconfig/fontconfig.h>
+#define USE_FONTCONFIG
+#endif
+
+#ifdef USE_FONTCONFIG
+typedef FcConfig* FontSearchContext;
+static void FontSearchContextDestroy(FcConfig* config) { if (config) FcConfigDestroy(config); }
+#else
+typedef void* FontSearchContext;
+static void FontSearchContextDestroy(void*) {}
 #endif
 
 #if 0
@@ -48,19 +61,13 @@ QT_TRANSLATE_NOOP("PermissionsDialogMicrophone", "PCSX2 uses your microphone to 
 QT_TRANSLATE_NOOP("PermissionsDialogCamera", "PCSX2 uses your camera to emulate an EyeToy camera plugged into the virtual PS2.")
 #endif
 
+enum class FontScript : u8;
+
 namespace QtHost
 {
-	struct FontInfo
-	{
-		const char* language;
-		const char* imgui_font_name;
-	};
-
 	static void UpdateGlyphRangesAndClearCache(QWidget* dialog_parent, const std::string_view language);
 	static bool DownloadMissingFont(QWidget* dialog_parent, const char* font_name, const std::string& path);
-	static const FontInfo* GetFontInfo(const std::string_view language);
-
-	static constexpr const char* DEFAULT_IMGUI_FONT_NAME = "Roboto-Regular.ttf";
+	static FontScript GetFontScript(const std::string_view language);
 
 	static QLocale s_current_locale;
 	static QCollator s_current_collator;
@@ -277,45 +284,346 @@ std::vector<std::pair<QString, QString>> QtHost::GetAvailableLanguageList()
 	};
 }
 
+enum class FontScript : u8
+{
+	Arabic,
+	ChineseSimplified,
+	ChineseTraditional,
+	Devanagari,
+	Emoji,
+	Hebrew,
+	Japanese,
+	Korean,
+	Latin,
+};
+static constexpr size_t NumFontScripts = static_cast<size_t>(FontScript::Latin) + 1;
+
+struct FontLoadInfo
+{
+	const char* file_name = nullptr;
+	const char* face_name = nullptr;
+};
+
+namespace FontNames
+{
+	static constexpr FontLoadInfo Arabic[] = {
+		{"NotoSansArabic-Regular.ttf"},
+		{"Segoeui.ttf"},
+		{nullptr, "Geeza Pro"},
+		{nullptr, "Noto Sans Arabic"},
+	};
+	static constexpr FontLoadInfo ChineseSimplified[] = {
+		{"NotoSansSC-Regular.ttf"},
+		{"Msyh.ttc"},
+		// {nullptr, "PingFang SC"}, // Freetype fails to load PingFang ttc
+		{nullptr, "Heiti SC"},
+		{nullptr, "Noto Sans CJK SC"},
+	};
+	static constexpr FontLoadInfo ChineseTraditional[] = {
+		{"NotoSansTC-Regular.ttf"},
+		{"Msjh.ttc"},
+		// {nullptr, "PingFang TC"}, // Freetype fails to load PingFang ttc
+		{nullptr, "Heiti TC"},
+		{nullptr, "Noto Sans CJK TC"},
+	};
+	static constexpr FontLoadInfo Devanagari[] = {
+		{"NotoSansDevanagari-Regular.ttf"},
+		{"Nirmala.ttf"},
+		{nullptr, "Kohinoor Devanagari"},
+		{nullptr, "Noto Sans Devanagari"},
+	};
+	static constexpr FontLoadInfo Emoji[] = {
+		{"NotoColorEmoji-Regular.ttf"},
+		{"Seguiemj.ttf"},
+		// {nullptr, "Apple Color Emoji"}, // Freetype can't properly render Apple Color Emoji.
+		{nullptr, "Noto Color Emoji"},
+		{nullptr, "Noto Emoji"},
+	};
+	static constexpr FontLoadInfo Hebrew[] = {
+		{"NotoSansHebrew-Regular.ttf"},
+		{"Segoeui.ttf"},
+		{nullptr, "Arial Hebrew"},
+		{nullptr, "Noto Sans Hebrew"},
+	};
+	static constexpr FontLoadInfo Japanese[] = {
+		{"NotoSansJP-Regular.ttf"},
+		{"YuGothR.ttc"},
+		{"Meiryo.ttc"},
+		{nullptr, "Hiragino Sans"},
+		{nullptr, "Noto Sans CJK JP"},
+	};
+	static constexpr FontLoadInfo Korean[] = {
+		{"NotoSansKR-Regular.ttf"},
+		{"Malgun.ttf"},
+		{nullptr, "Apple SD Gothic Neo"},
+		{nullptr, "Noto Sans CJK KR"},
+	};
+	static constexpr FontLoadInfo Latin[] = {
+		// We ship this with PCSX2 so no fallbacks are needed
+		{"Roboto-Regular.ttf"},
+	};
+} // namespace FontNames
+
+static constexpr std::span<const FontLoadInfo> GetFontNames(FontScript script)
+{
+	switch (script)
+	{
+#define CASE(x) case FontScript::x: return FontNames::x
+		CASE(Arabic);
+		CASE(ChineseSimplified);
+		CASE(ChineseTraditional);
+		CASE(Devanagari);
+		CASE(Emoji);
+		CASE(Hebrew);
+		CASE(Japanese);
+		CASE(Korean);
+		CASE(Latin);
+#undef CASE
+	}
+}
+
+static constexpr std::array<std::span<const FontLoadInfo>, NumFontScripts> g_font_load_info = [] {
+	std::array<std::span<const FontLoadInfo>, NumFontScripts> res = {};
+	for (size_t i = 0; i < NumFontScripts; i++)
+		res[i] = GetFontNames(static_cast<FontScript>(i));
+	return res;
+}();
+
+struct FontData
+{
+	std::span<const u8> data;
+	const char* face_name;
+	operator bool() const { return !data.empty(); }
+};
+
+static FontData s_font_data[NumFontScripts];
+
+static SmallString GetFontPath(const char* name)
+{
+	SmallString path = "fonts" FS_OSPATH_SEPARATOR_STR;
+	path.append(name);
+	return path;
+}
+
+static std::span<const u8> TryLoadFont(FontSearchContext* ctx, const FontLoadInfo& info)
+{
+	if (info.file_name)
+	{
+		SmallString path = GetFontPath(info.file_name);
+		std::string downloaded = Path::Combine(EmuFolders::UserResources, path);
+		if (std::span<const u8> data = FileSystem::MapBinaryFileForRead(downloaded.c_str()); !data.empty())
+			return data;
+		std::string shipped = EmuFolders::GetOverridableResourcePath(path);
+		if (std::span<const u8> data = FileSystem::MapBinaryFileForRead(shipped.c_str()); !data.empty())
+			return data;
+	}
+#if defined(_WIN32)
+	if (!info.file_name)
+		return {};
+	SmallString path = "C:\\Windows\\Fonts\\";
+	path.append(info.file_name);
+	return FileSystem::MapBinaryFileForRead(path.c_str());
+#elif defined(__APPLE__)
+	const char* name = info.face_name;
+	if (!name)
+		return {}; // Don't bother looking up file names
+	std::span<const u8> res = {};
+	CFStringRef cfname = CFStringCreateWithBytesNoCopy(nullptr, reinterpret_cast<const u8*>(name), strlen(name), kCFStringEncodingUTF8, false, kCFAllocatorNull);
+	CTFontDescriptorRef desc = CTFontDescriptorCreateWithNameAndSize(cfname, 0);
+	if (CFURLRef url = static_cast<CFURLRef>(CTFontDescriptorCopyAttribute(desc, kCTFontURLAttribute)))
+	{
+		u8 path[PATH_MAX];
+		if (CFURLGetFileSystemRepresentation(url, true, path, sizeof(path)))
+			res = FileSystem::MapBinaryFileForRead(reinterpret_cast<char*>(path));
+		CFRelease(url);
+	}
+	CFRelease(desc);
+	CFRelease(cfname);
+	return res;
+#else
+	const char* name = info.face_name;
+	if (!name)
+		return {}; // Don't bother looking up file names
+	if (!*ctx)
+		*ctx = FcInitLoadConfigAndFonts();
+	std::span<const u8> res = {};
+	FcPattern* search = FcNameParse(reinterpret_cast<const FcChar8*>(name));
+	FcResult fcres;
+	FcPattern* font = FcFontMatch(*ctx, search, &fcres);
+	if (font)
+	{
+		FcChar8* family;
+		FcChar8* path;
+		if (FcPatternGetString(font, FC_FILE, 0, &path) == FcResultMatch
+		 && FcPatternGetString(font, FC_FAMILY, 0, &family) == FcResultMatch
+		 && 0 == strcmp(name, reinterpret_cast<char*>(family)))
+		{
+			res = FileSystem::MapBinaryFileForRead(reinterpret_cast<char*>(path));
+		}
+		FcPatternDestroy(font);
+	}
+	FcPatternDestroy(search);
+	return res;
+#endif
+}
+
+static bool ValidateFont(const FontLoadInfo& info, std::span<const u8> data)
+{
+	if (info.face_name && 0 == strcmp(info.face_name, "Noto Color Emoji"))
+	{
+		// Noto Color Emoji comes in bitmap, SVG, and COLRv1 variants.
+		// We can only render the SVG variant.
+		if (data.size() < 8)
+			return false;
+		u32 magic_be;
+		u16 num_tables_be;
+		memcpy(&magic_be, &data[0], sizeof(u32));
+		memcpy(&num_tables_be, &data[4], sizeof(u16));
+		if (qFromBigEndian(magic_be) != 0x10000)
+			return false;
+		size_t num_tables = qFromBigEndian(num_tables_be);
+		if (data.size() < num_tables * 16 + 12)
+			return false;
+		for (size_t i = 0; i < num_tables; i++)
+		{
+			// Check if there's an "SVG " table
+			if (0 == memcmp(&data[i * 16 + 12], "SVG ", 4))
+				return true;
+		}
+		return false;
+	}
+	return true;
+}
+
+static void TryLoadFonts(FontSearchContext* ctx)
+{
+	for (size_t i = 0; i < NumFontScripts; i++)
+	{
+		if (!s_font_data[i].data.empty())
+			continue;
+
+		for (const FontLoadInfo& info : g_font_load_info[i])
+		{
+			if (std::span<const u8> data = TryLoadFont(ctx, info); !data.empty())
+			{
+				if (!ValidateFont(info, data))
+				{
+					FileSystem::UnmapFile(data);
+					continue;
+				}
+				s_font_data[i].data = data;
+				s_font_data[i].face_name = info.face_name;
+				break;
+			}
+		}
+	}
+}
+
+static FontScript GetSecondaryScript(FontScript primary)
+{
+	switch (primary)
+	{
+		case FontScript::ChineseSimplified: return FontScript::ChineseTraditional;
+		case FontScript::ChineseTraditional: return FontScript::ChineseSimplified;
+		default: return primary;
+	}
+}
+
+static constexpr FontScript g_fallback_list[] = {
+	FontScript::Japanese,
+	FontScript::Korean,
+	FontScript::ChineseSimplified,
+	FontScript::ChineseTraditional,
+	FontScript::Devanagari,
+	FontScript::Arabic,
+	FontScript::Hebrew,
+	FontScript::Emoji,
+};
+
+static bool HasCenteredElipsis(FontScript script)
+{
+	switch (script)
+	{
+		case FontScript::ChineseSimplified:
+		case FontScript::ChineseTraditional:
+		case FontScript::Japanese:
+		case FontScript::Korean:
+			return true;
+		default:
+			return false;
+	}
+}
+
+static void DownloadFontIfMissing(FontSearchContext* ctx, QWidget* dialog_parent, FontScript script)
+{
+	if (s_font_data[static_cast<size_t>(script)])
+		return;
+	const char* name = g_font_load_info[static_cast<size_t>(script)][0].file_name; // Downloadable font is always first
+	std::string path = Path::Combine(EmuFolders::UserResources, GetFontPath(name));
+	if (QtHost::DownloadMissingFont(dialog_parent, name, path))
+		TryLoadFonts(ctx);
+}
+
 void QtHost::UpdateGlyphRangesAndClearCache(QWidget* dialog_parent, const std::string_view language)
 {
-	const FontInfo* fi = GetFontInfo(language);
+	FontScript scriptPrimary   = GetFontScript(language);
+	FontScript scriptSecondary = GetSecondaryScript(scriptPrimary);
+	FontSearchContext ctx = nullptr;
 
-	const char* imgui_font_name = nullptr;
+	TryLoadFonts(&ctx);
 
-	if (fi)
-		imgui_font_name = fi->imgui_font_name;
+	DownloadFontIfMissing(&ctx, dialog_parent, scriptPrimary);
+	DownloadFontIfMissing(&ctx, dialog_parent, FontScript::Emoji);
 
-	// Check for the presence of font files.
-	std::string font_path;
-	if (imgui_font_name)
+	FontSearchContextDestroy(ctx);
+
+	std::vector<ImGuiManager::FontInfo> fonts;
+	fonts.reserve(std::size(g_fallback_list) + 1);
+
+	auto AddFont = [&fonts](FontScript script) -> ImGuiManager::FontInfo* {
+		const FontData& font = s_font_data[static_cast<size_t>(script)];
+		if (!font)
+			return nullptr;
+		ImGuiManager::FontInfo& res = fonts.emplace_back();
+		res.data = font.data;
+		res.face_name = font.face_name;
+		res.is_emoji_font = script == FontScript::Emoji;
+		return &res;
+	};
+
+	// Use latin script for its characters regardless of language
+	ImGuiManager::FontInfo* latin = AddFont(FontScript::Latin);
+	if (latin && scriptPrimary != FontScript::Latin)
 	{
-		// Non-standard fonts always go to the user resources directory, since they're downloaded on demand.
-		font_path = Path::Combine(EmuFolders::UserResources,
-			SmallString::from_format("fonts" FS_OSPATH_SEPARATOR_STR "{}", imgui_font_name));
-		if (!DownloadMissingFont(dialog_parent, imgui_font_name, font_path))
-			font_path.clear();
+		// Ellipsis is vertically centered in e.g. Japanese fonts, use the main language's version instead of the latin one
+		static constexpr uint32_t exclude_ellipsis[] = {0x2026, 0x2026};
+		if (HasCenteredElipsis(scriptPrimary))
+			latin->exclude_ranges = exclude_ellipsis;
 	}
-	if (font_path.empty())
+
+	if (scriptPrimary != FontScript::Latin)
+		AddFont(scriptPrimary);
+	if (scriptSecondary != scriptPrimary)
+		AddFont(scriptSecondary);
+	for (FontScript script : g_fallback_list)
 	{
-		// Use the default font.
-		font_path = EmuFolders::GetOverridableResourcePath(SmallString::from_format(
-			"fonts" FS_OSPATH_SEPARATOR_STR "{}", DEFAULT_IMGUI_FONT_NAME));
+		if (script != scriptPrimary && script != scriptSecondary)
+			AddFont(script);
 	}
 
 	// Called on UI thread, so we need to do this on the CPU/GS thread if it's active.
 	if (g_emu_thread)
 	{
-		Host::RunOnCPUThread([font_path = std::move(font_path)]() mutable {
+		Host::RunOnCPUThread([fonts = std::move(fonts)]() mutable {
 			if (MTGS::IsOpen())
 			{
-				MTGS::RunOnGSThread([font_path = std::move(font_path)]() mutable {
-					ImGuiManager::SetFontPath(std::move(font_path));
+				MTGS::RunOnGSThread([fonts = std::move(fonts)]() mutable {
+					ImGuiManager::SetFonts(std::move(fonts));
 				});
 			}
 			else
 			{
-				ImGuiManager::SetFontPath(std::move(font_path));
+				ImGuiManager::SetFonts(std::move(fonts));
 			}
 
 			Host::ClearTranslationCache();
@@ -324,7 +632,7 @@ void QtHost::UpdateGlyphRangesAndClearCache(QWidget* dialog_parent, const std::s
 	else
 	{
 		// Startup, safe to set directly.
-		ImGuiManager::SetFontPath(std::move(font_path));
+		ImGuiManager::SetFonts(std::move(fonts));
 		Host::ClearTranslationCache();
 	}
 }
@@ -356,26 +664,30 @@ bool QtHost::DownloadMissingFont(QWidget* dialog_parent, const char* font_name, 
 	return QtHost::DownloadFile(dialog_parent, progress_title, std::move(url), path);
 }
 
-static constexpr const QtHost::FontInfo s_font_info[] = {
-	{"ar-SA", "NotoSansArabic-Regular.ttf"},
-	{"fa-IR", "NotoSansArabic-Regular.ttf"},
-	{"hi-IN", "NotoSansDevanagari-Regular.ttf"},
-	{"he-IL", "NotoSansHebrew-Regular.ttf"},
-	{"ja-JP", "NotoSansJP-Regular.ttf"},
-	{"ko-KR", "NotoSansKR-Regular.ttf"},
-	{"zh-CN", "NotoSansSC-Regular.ttf"},
-	{"zh-TW", "NotoSansTC-Regular.ttf"},
+static constexpr const struct
+{
+	const char* name;
+	FontScript script;
+} s_language_scripts[] = {
+	{"ar-SA", FontScript::Arabic},
+	{"fa-IR", FontScript::Arabic},
+	{"hi-IN", FontScript::Devanagari},
+	{"he-IL", FontScript::Hebrew},
+	{"ja-JP", FontScript::Japanese},
+	{"ko-KR", FontScript::Korean},
+	{"zh-CN", FontScript::ChineseSimplified},
+	{"zh-TW", FontScript::ChineseTraditional},
 };
 
-const QtHost::FontInfo* QtHost::GetFontInfo(const std::string_view language)
+FontScript QtHost::GetFontScript(const std::string_view language)
 {
-	for (const FontInfo& it : s_font_info)
+	for (const auto& it : s_language_scripts)
 	{
-		if (language == it.language)
-			return &it;
+		if (language == it.name)
+			return it.script;
 	}
 
-	return nullptr;
+	return FontScript::Latin;
 }
 
 int QtHost::LocaleSensitiveCompare(QStringView lhs, QStringView rhs)
