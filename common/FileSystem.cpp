@@ -1271,8 +1271,8 @@ static std::span<const u8> MapBinaryFileForRead(HANDLE handle)
 	LARGE_INTEGER size;
 	if (!GetFileSizeEx(handle, &size) || size.QuadPart == 0)
 		return {};
-	HANDLE mapping = CreateFileMappingA(handle, nullptr, PAGE_READONLY, size.LowPart, size.HighPart, nullptr);
-	if (mapping == INVALID_HANDLE_VALUE)
+	HANDLE mapping = CreateFileMappingA(handle, nullptr, PAGE_READONLY, size.HighPart, size.LowPart, nullptr);
+	if (!mapping)
 		return {};
 	void* ptr = MapViewOfFile(mapping, FILE_MAP_READ, 0, 0, 0);
 	CloseHandle(mapping);
