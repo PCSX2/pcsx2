@@ -3038,12 +3038,6 @@ ImFont* ImFontAtlas::AddFont(const ImFontConfig* font_cfg_in)
     font->Sources.push_back(font_cfg);
     ImFontAtlasBuildUpdatePointers(this); // Pointers to Sources are otherwise dangling after we called Sources.push_back().
 
-    if (font_cfg->FontDataOwnedByAtlas == false)
-    {
-        font_cfg->FontDataOwnedByAtlas = true;
-        font_cfg->FontData = ImMemdup(font_cfg->FontData, (size_t)font_cfg->FontDataSize);
-    }
-
     // Sanity check
     // We don't round cfg.SizePixels yet as relative size of merged fonts are used afterwards.
     if (font_cfg->GlyphExcludeRanges != NULL)
