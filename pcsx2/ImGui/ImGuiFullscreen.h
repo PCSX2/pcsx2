@@ -28,8 +28,8 @@ namespace ImGuiFullscreen
 
 	static constexpr float LAYOUT_SCREEN_WIDTH = 1280.0f;
 	static constexpr float LAYOUT_SCREEN_HEIGHT = 720.0f;
-	static constexpr float LAYOUT_LARGE_FONT_SIZE = 26.0f;
-	static constexpr float LAYOUT_MEDIUM_FONT_SIZE = 16.0f;
+	static constexpr float LAYOUT_LARGE_FONT_SIZE = 22.0f;
+	static constexpr float LAYOUT_MEDIUM_FONT_SIZE = 14.0f;
 	static constexpr float LAYOUT_SMALL_FONT_SIZE = 10.0f;
 	static constexpr float LAYOUT_MENU_BUTTON_HEIGHT = 50.0f;
 	static constexpr float LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY = 26.0f;
@@ -71,6 +71,9 @@ namespace ImGuiFullscreen
 	static __fi float LayoutScale(float v) { return ImCeil(g_layout_scale * v); }
 	static __fi ImVec2 LayoutScale(const ImVec2& v) { return ImVec2(ImCeil(v.x * g_layout_scale), ImCeil(v.y * g_layout_scale)); }
 	static __fi ImVec2 LayoutScale(float x, float y) { return ImVec2(ImCeil(x * g_layout_scale), ImCeil(y * g_layout_scale)); }
+	/// Get the height of a line of text including the space to the next line.
+	/// Matches the result returned by CalcTextSizeA for one line of text.
+	static __fi float GetLineHeight(std::pair<ImFont*, float> font) { return ImCeil(font.second * font.first->LineHeight); }
 
 	static __fi float LayoutUnscale(float v) { return ImCeil(g_rcp_layout_scale * v); }
 	static __fi ImVec2 LayoutUnscale(const ImVec2& v) { return ImVec2(ImCeil(v.x * g_rcp_layout_scale), ImCeil(v.y * g_rcp_layout_scale)); }

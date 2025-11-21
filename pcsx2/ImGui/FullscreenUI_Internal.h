@@ -70,6 +70,7 @@ using ImGuiFullscreen::GetCachedSvgTexture;
 using ImGuiFullscreen::GetCachedSvgTextureAsync;
 using ImGuiFullscreen::GetCachedTexture;
 using ImGuiFullscreen::GetCachedTextureAsync;
+using ImGuiFullscreen::GetLineHeight;
 using ImGuiFullscreen::GetPlaceholderTexture;
 using ImGuiFullscreen::GetQueuedFocusResetType;
 using ImGuiFullscreen::HorizontalMenuItem;
