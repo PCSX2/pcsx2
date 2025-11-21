@@ -4,6 +4,8 @@ CHANGELOG
 PCSX2 Changes (must be reapplied after each update, use git blame on this changelog to inspect the commit that originally applied the change):
 - Removed code that copies unowned fonts into imgui's posession
   - Issue: https://github.com/ocornut/imgui/issues/9086
+- Don't shrink fonts based on their line height, and allow PCSX2 to specify a line height
+  - Issue: https://github.com/ocornut/imgui/issues/9063
 
 This document holds the user-facing changelog that we also use in release notes.
 We generally fold multiple commits pertaining to the same topic as a single entry.
