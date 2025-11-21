@@ -1148,6 +1148,7 @@ target_link_libraries(PCSX2_FLAGS INTERFACE
 	discord-rpc
 	simpleini
 	freesurround
+	Freetype::Freetype
 	SDL3::SDL3
 	ZLIB::ZLIB
 	LZ4::LZ4
