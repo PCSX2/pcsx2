@@ -1069,6 +1069,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitfieldEx(VideoCaptureWidth, "VideoCaptureWidth");
 	SettingsWrapBitfieldEx(VideoCaptureHeight, "VideoCaptureHeight");
 	SettingsWrapBitfieldEx(AudioCaptureBitrate, "AudioCaptureBitrate");
+	SettingsWrapBitfieldEx(AudioCaptureVolume, "AudioCaptureVolume");
 
 	SettingsWrapEntry(Adapter);
 	SettingsWrapEntry(HWDumpDirectory);
