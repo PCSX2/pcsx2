@@ -66,12 +66,12 @@ const std::string& InputRecordingFile::getFilename() const noexcept
 	return m_filename;
 }
 
-unsigned long InputRecordingFile::getTotalFrames() const noexcept
+u32 InputRecordingFile::getTotalFrames() const noexcept
 {
 	return m_totalFrames;
 }
 
-unsigned long InputRecordingFile::getUndoCount() const noexcept
+u32 InputRecordingFile::getUndoCount() const noexcept
 {
 	return m_undoCount;
 }
@@ -237,7 +237,7 @@ std::vector<PadData> InputRecordingFile::bulkReadPadData(u32 frameStart, u32 fra
 	}
 
 	// TODO - no multi-tap support
-	for (uint64_t currFrame = frameStart; currFrame < frameEnd; currFrame++)
+	for (u32 currFrame = frameStart; currFrame < frameEnd; currFrame++)
 	{
 		const auto padData = readPadData(currFrame, port, 0);
 		if (padData)
