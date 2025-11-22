@@ -120,6 +120,8 @@ namespace FileSystem
 	s64 FTell64(std::FILE* fp);
 	s64 FSize64(std::FILE* fp);
 
+	bool FFlush(std::FILE* fp);
+
 	int OpenFDFile(const char* filename, int flags, int mode, Error* error = nullptr);
 
 	/// Sharing modes for OpenSharedCFile().
