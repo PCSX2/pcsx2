@@ -174,7 +174,7 @@ namespace vtlb_private
 		/// Assumes the entry is a handler, and gets the raw handler ID
 		u8 assumeHandlerGetID() const { return value; }
 		/// Assumes the entry is a handler, and gets the physical address
-		u32 assumeHandlerGetPAddr(u32 vaddr) const { return (value + vaddr - assumeHandlerGetID()) & ~POINTER_SIGN_BIT; }
+		u32 assumeHandlerGetPAddr(u32 vaddr) const { return static_cast<u32>((value + vaddr - assumeHandlerGetID()) & ~POINTER_SIGN_BIT); }
 		/// Assumes the entry is a handler, returning it as a void*
 		void *assumeHandlerGetRaw(int index, bool write) const;
 		/// Assumes the entry is a handler, returning it
