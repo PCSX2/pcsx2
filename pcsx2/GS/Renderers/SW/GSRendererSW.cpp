@@ -374,7 +374,7 @@ void GSRendererSW::RewriteVerticesIfSTOverflow()
 					const GSVector4 q = (primclass == GS_SPRITE_CLASS) ? stcq[1].wwww() : stcq[j].wwww();
 					stcq[j] = stcq[j].blend32(uv_new * q, GSVector4::cast(rewrite));
 
-					vertex_copy[i + j].m[0] = GSVector4i::cast(stcq[j]).m;
+					vertex_copy[i + j].m[0] = GSVector4i::cast(stcq[j]);
 					vertex_copy[i + j].m[1] = vertex[index[i + j]].m[1];
 					index[i + j] = i + j;
 				}
