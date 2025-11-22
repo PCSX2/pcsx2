@@ -524,6 +524,13 @@ void LB()
 
 	if (!_Rt_) return;
 	cpuRegs.GPR.r[_Rt_].SD[0] = temp;
+
+	// Force event test on EE counter read to improve read + interrupt syncing. Namely ESPN Games.
+	if ((addr & 0xFFFFE0000) == 0x10000000)
+	{
+		intUpdateCPUCycles();
+		intEventTest();
+	}
 }
 
 void LBU()
@@ -533,6 +540,13 @@ void LBU()
 
 	if (!_Rt_) return;
 	cpuRegs.GPR.r[_Rt_].UD[0] = temp;
+
+	// Force event test on EE counter read to improve read + interrupt syncing. Namely ESPN Games.
+	if ((addr & 0xFFFFE0000) == 0x10000000)
+	{
+		intUpdateCPUCycles();
+		intEventTest();
+	}
 }
 
 void LH()
@@ -546,6 +560,13 @@ void LH()
 
 	if (!_Rt_) return;
 	cpuRegs.GPR.r[_Rt_].SD[0] = temp;
+
+	// Force event test on EE counter read to improve read + interrupt syncing. Namely ESPN Games.
+	if ((addr & 0xFFFFE0000) == 0x10000000)
+	{
+		intUpdateCPUCycles();
+		intEventTest();
+	}
 }
 
 void LHU()
@@ -559,6 +580,13 @@ void LHU()
 
 	if (!_Rt_) return;
 	cpuRegs.GPR.r[_Rt_].UD[0] = temp;
+
+	// Force event test on EE counter read to improve read + interrupt syncing. Namely ESPN Games.
+	if ((addr & 0xFFFFE0000) == 0x10000000)
+	{
+		intUpdateCPUCycles();
+		intEventTest();
+	}
 }
 
 void LW()
@@ -572,6 +600,13 @@ void LW()
 
 	if (!_Rt_) return;
 	cpuRegs.GPR.r[_Rt_].SD[0] = (s32)temp;
+
+	// Force event test on EE counter read to improve read + interrupt syncing. Namely ESPN Games.
+	if ((addr & 0xFFFFE0000) == 0x10000000)
+	{
+		intUpdateCPUCycles();
+		intEventTest();
+	}
 }
 
 void LWU()

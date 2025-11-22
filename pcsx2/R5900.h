@@ -283,6 +283,7 @@ static fpuRegisters& fpuRegs = _cpuRegistersPack.fpuRegs;
 extern bool eeEventTestIsActive;
 
 void intUpdateCPUCycles();
+void intEventTest();
 void intSetBranch();
 
 // This is a special form of the interpreter's doBranch that is run from various
