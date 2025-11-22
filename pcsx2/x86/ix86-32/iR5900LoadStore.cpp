@@ -107,9 +107,15 @@ static void recLoad(u32 bits, bool sign)
 		alloc_cb = []() { return _allocX86reg(X86TYPE_GPR, _Rt_, MODE_WRITE); };
 
 	int x86reg;
+	bool needs_flush = false;
 	if (GPR_IS_CONST1(_Rs_))
 	{
 		const u32 srcadr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
+
+		// Force event test on EE counter read to improve read + interrupt syncing. Namely ESPN Games.
+		if (bits <= 32 && (srcadr & 0xFFFFE0000) == 0x10000000)
+			needs_flush = true;
+
 		x86reg = vtlb_DynGenReadNonQuad_Const(bits, sign, false, srcadr, alloc_cb);
 	}
 	else
@@ -127,6 +133,12 @@ static void recLoad(u32 bits, bool sign)
 	pxAssert(!_Rt_ || !GPR_IS_CONST1(_Rt_));
 	if (!_Rt_)
 		_freeX86reg(x86reg);
+
+	if (bits <= 32 && needs_flush)
+	{
+		iFlushCall(FLUSH_INTERPRETER);
+		g_branch = 2;
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
