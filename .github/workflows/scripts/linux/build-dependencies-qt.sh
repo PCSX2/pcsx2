@@ -21,7 +21,7 @@ LIBJPEGTURBO=3.1.2
 LIBPNG=1.6.50
 LIBWEBP=1.6.0
 SDL=SDL3-3.2.26
-QT=6.10.0
+QT=6.10.1
 QTAPNG=1.3.0
 LZ4=1.10.0
 ZSTD=1.5.7
@@ -48,12 +48,12 @@ dad488474a51a0b01d547cd2834893d6299328d2e30f479a3564088b5476bae2  $SDL.tar.gz
 687ddc0c7cb128a3ea58e159b5129252537c27ede0c32a93f11f03127f0c0165  libpng-$LIBPNG-apng.patch.gz
 537512904744b35e232912055ccf8ec66d768639ff3abe5788d90d792ec5f48b  lz4-$LZ4.tar.gz
 eb33e51f49a15e023950cd7825ca74a4a2b43db8354825ac24fc1b7ee09e6fa3  zstd-$ZSTD.tar.gz
-ead4623bcb54a32257c5b3e3a5aec6d16ec96f4cda58d2e003f5a0c16f72046d  qtbase-everywhere-src-$QT.tar.xz
-64450a52507c540de53616ed5e516df0e0905a99d3035ddfaa690f2b3f7c0cea  qtimageformats-everywhere-src-$QT.tar.xz
-5ed2c0e04d5e73ff75c2a2ed92db5dc1788ba70f704fc2b71bc21644beda2533  qtsvg-everywhere-src-$QT.tar.xz
-d86d5098cf3e3e599f37e18df477e65908fc8f036e10ea731b3469ec4fdbd02a  qttools-everywhere-src-$QT.tar.xz
-326e8253cfd0cb5745238117f297da80e30ce8f4c1db81990497bd388b026cde  qttranslations-everywhere-src-$QT.tar.xz
-603f2b0a259b24bd0fb14f880d7761b1d248118a42a6870cdbe8fdda4173761f  qtwayland-everywhere-src-$QT.tar.xz
+5a6226f7e23db51fdc3223121eba53f3f5447cf0cc4d6cb82a3a2df7a65d265d  qtbase-everywhere-src-$QT.tar.xz
+498eabdf2381db96f808942b3e3c765f6360fe6c0e9961f0a45ff7a4c68d7a72  qtimageformats-everywhere-src-$QT.tar.xz
+c02f355a58f3bbcf404a628bf488b6aeb2d84a94c269afdb86f6e529343ab01f  qtsvg-everywhere-src-$QT.tar.xz
+8148408380ffea03101a26305c812b612ea30dbc07121e58707601522404d49b  qttools-everywhere-src-$QT.tar.xz
+8e49a2df88a12c376a479ae7bd272a91cf57ebb4e7c0cf7341b3565df99d2314  qttranslations-everywhere-src-$QT.tar.xz
+49bf6db800227a6b2c971f4c5d03dd1e81297e7ffb296ce4a96437304f27cb13  qtwayland-everywhere-src-$QT.tar.xz
 f1d3be3489f758efe1a8f12118a212febbe611aa670af32e0159fa3c1feab2a6  QtApng-$QTAPNG.tar.gz
 a8e4a25e5c2686fd36981e527ed05e451fcfc226bddf350f4e76181371190937  shaderc-$SHADERC.tar.gz
 9427deccbdf4bde6a269938df38c6bd75247493786a310d8d733a2c82065ef47  shaderc-glslang-$SHADERC_GLSLANG.tar.gz

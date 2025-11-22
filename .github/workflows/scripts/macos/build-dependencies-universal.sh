@@ -48,7 +48,7 @@ LIBJPEGTURBO=3.1.2
 LIBWEBP=1.6.0
 FFMPEG=8.0
 MOLTENVK=1.2.9
-QT=6.10.0
+QT=6.10.1
 QTAPNG=1.3.0
 KDDOCKWIDGETS=2.4.0
 PLUTOVG=1.3.1
@@ -89,11 +89,11 @@ e4ab7009bf0629fd11982d4c2aa83964cf244cffba7347ecd39019a9e38c4564  libwebp-$LIBWE
 8f0012234b464ce50890c490f18194f913a7b1f4e6a03d6644179fa0f867d0cf  libjpeg-turbo-$LIBJPEGTURBO.tar.gz
 b2751fccb6cc4c77708113cd78b561059b6fa904b24162fa0be2d60273d27b8e  ffmpeg-$FFMPEG.tar.xz
 f415a09385030c6510a936155ce211f617c31506db5fbc563e804345f1ecf56e  v$MOLTENVK.tar.gz
-ead4623bcb54a32257c5b3e3a5aec6d16ec96f4cda58d2e003f5a0c16f72046d  qtbase-everywhere-src-$QT.tar.xz
-64450a52507c540de53616ed5e516df0e0905a99d3035ddfaa690f2b3f7c0cea  qtimageformats-everywhere-src-$QT.tar.xz
-5ed2c0e04d5e73ff75c2a2ed92db5dc1788ba70f704fc2b71bc21644beda2533  qtsvg-everywhere-src-$QT.tar.xz
-d86d5098cf3e3e599f37e18df477e65908fc8f036e10ea731b3469ec4fdbd02a  qttools-everywhere-src-$QT.tar.xz
-326e8253cfd0cb5745238117f297da80e30ce8f4c1db81990497bd388b026cde  qttranslations-everywhere-src-$QT.tar.xz
+5a6226f7e23db51fdc3223121eba53f3f5447cf0cc4d6cb82a3a2df7a65d265d  qtbase-everywhere-src-$QT.tar.xz
+498eabdf2381db96f808942b3e3c765f6360fe6c0e9961f0a45ff7a4c68d7a72  qtimageformats-everywhere-src-$QT.tar.xz
+c02f355a58f3bbcf404a628bf488b6aeb2d84a94c269afdb86f6e529343ab01f  qtsvg-everywhere-src-$QT.tar.xz
+8148408380ffea03101a26305c812b612ea30dbc07121e58707601522404d49b  qttools-everywhere-src-$QT.tar.xz
+8e49a2df88a12c376a479ae7bd272a91cf57ebb4e7c0cf7341b3565df99d2314  qttranslations-everywhere-src-$QT.tar.xz
 f1d3be3489f758efe1a8f12118a212febbe611aa670af32e0159fa3c1feab2a6  QtApng-$QTAPNG.tar.gz
 a8e4a25e5c2686fd36981e527ed05e451fcfc226bddf350f4e76181371190937  shaderc-$SHADERC.tar.gz
 9427deccbdf4bde6a269938df38c6bd75247493786a310d8d733a2c82065ef47  shaderc-glslang-$SHADERC_GLSLANG.tar.gz

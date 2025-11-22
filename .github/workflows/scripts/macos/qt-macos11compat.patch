@@ -1,5 +1,4 @@
 diff --git a/.cmake.conf b/.cmake.conf
-index 9a21ff42a74..d6707ba7dff 100644
 --- a/.cmake.conf
 +++ b/.cmake.conf
 @@ -51,7 +51,7 @@ set(QT_MAX_NEW_POLICY_CMAKE_VERSION_QT_APPLE "3.21")
@@ -12,7 +11,6 @@ index 9a21ff42a74..d6707ba7dff 100644
  
  set(QT_SUPPORTED_MIN_IOS_SDK_VERSION "17")
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index d3a14fc67eb..1553b956fe3 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -12,6 +12,10 @@ cmake_minimum_required(VERSION 3.16)
@@ -27,7 +25,6 @@ index d3a14fc67eb..1553b956fe3 100644
  
  qt_internal_check_if_path_has_symlinks("${CMAKE_BINARY_DIR}")
 diff --git a/src/corelib/global/qsysinfo.cpp b/src/corelib/global/qsysinfo.cpp
-index ae762c0cc6d..9171a5736b4 100644
 --- a/src/corelib/global/qsysinfo.cpp
 +++ b/src/corelib/global/qsysinfo.cpp
 @@ -1027,7 +1027,7 @@ QByteArray QSysInfo::machineUniqueId()
@@ -40,10 +37,9 @@ index ae762c0cc6d..9171a5736b4 100644
      CFStringGetCString(stringRef, uuid, sizeof(uuid), kCFStringEncodingMacRoman);
      return QByteArray(uuid);
 diff --git a/src/corelib/kernel/qcore_mac.mm b/src/corelib/kernel/qcore_mac.mm
-index 9f27dbe694e..c023a48cad3 100644
 --- a/src/corelib/kernel/qcore_mac.mm
 +++ b/src/corelib/kernel/qcore_mac.mm
-@@ -372,7 +372,7 @@ bool qt_apple_runningWithLiquidGlass()
+@@ -367,7 +367,7 @@ bool qt_apple_runningWithLiquidGlass()
              return config;
  #endif
  
@@ -52,8 +48,50 @@ index 9f27dbe694e..c023a48cad3 100644
          if (!nvram) {
              qWarning("Failed to locate NVRAM entry in IO registry");
              return {};
+diff --git a/src/gui/platform/darwin/qappleiconengine.mm b/src/gui/platform/darwin/qappleiconengine.mm
+--- a/src/gui/platform/darwin/qappleiconengine.mm
++++ b/src/gui/platform/darwin/qappleiconengine.mm
+@@ -366,12 +366,16 @@
+                                                weight:NSFontWeightRegular
+                                                scale:NSImageSymbolScaleLarge];
+ 
++    auto *primaryColor = [NSColor colorWithSRGBRed:color.redF()
++                                             green:color.greenF()
++                                              blue:color.blueF()
++                                             alpha:color.alphaF()];
++
++    if (@available(macOS 13, *)) {
++
+     // Apply tint color first, which switches the configuration to palette mode
+     config = [config configurationByApplyingConfiguration:
+-        [NSImageSymbolConfiguration configurationWithPaletteColors:@[
+-            [NSColor colorWithSRGBRed:color.redF() green:color.greenF()
+-                blue:color.blueF() alpha:color.alphaF()]
+-        ]]];
++        [NSImageSymbolConfiguration configurationWithPaletteColors:@[primaryColor]]];
+ 
+     // Then switch back to monochrome, as palette mode gives a different look
+     // than monochrome, even with a single color.
+@@ -379,6 +383,18 @@
+         [NSImageSymbolConfiguration configurationPreferringMonochrome]];
+ 
+     return [image imageWithSymbolConfiguration:config];
++
++    } else {
++    NSImage *configuredImage = [image imageWithSymbolConfiguration:config];
++    return [NSImage imageWithSize:configuredImage.size flipped:NO
++        drawingHandler:^BOOL(NSRect) {
++            [primaryColor set];
++            NSRect imageRect = {NSZeroPoint, configuredImage.size};
++            [configuredImage drawInRect:imageRect];
++            NSRectFillUsingOperation(imageRect, NSCompositingOperationSourceIn);
++            return YES;
++        }];
++    }
+ }
+ #elif defined(QT_PLATFORM_UIKIT)
+ auto *configuredImage(const UIImage *image, const QColor &color)
 diff --git a/src/plugins/platforms/cocoa/qcocoawindow.mm b/src/plugins/platforms/cocoa/qcocoawindow.mm
-index 6b33d94d58c..867389e4c93 100644
 --- a/src/plugins/platforms/cocoa/qcocoawindow.mm
 +++ b/src/plugins/platforms/cocoa/qcocoawindow.mm
 @@ -323,6 +323,8 @@ a normal (not maximized or full screen) top-level window.
