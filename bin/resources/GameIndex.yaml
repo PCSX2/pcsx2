@@ -21856,12 +21856,6 @@ SLES-52942:
 SLES-52943:
   name: "ESPN NFL 2K5"
   region: "PAL-E"
-  patches:
-    7D5403E1:
-      content: |-
-        comment=Patch by Prafull
-        // Fixes random hangs.
-        patch=1,EE,0043c930,word,00000000
 SLES-52944:
   name: "Robotech - Invasion"
   region: "PAL-M5"
@@ -21922,13 +21916,6 @@ SLES-52965:
 SLES-52966:
   name: "ESPN NHL 2K5"
   region: "PAL-E"
-  patches:
-    EC301155:
-      content: |-
-        author=Prafull
-        comment=Patched by Prafull
-        // Avoid hanging at loading screen.
-        patch=1,EE,003e4018,word,00000000
 SLES-52967:
   name: "Guilty Gear X2 Reloaded"
   region: "PAL-E"
@@ -22148,12 +22135,6 @@ SLES-53022:
   region: "PAL-E"
   gameFixes:
     - SkipMPEGHack # Fixes videos.
-  patches:
-    CA37B42E:
-      content: |-
-        author=Prafull
-        comment=fixes hang at start
-        patch=1,EE,0034DA98,word,00000000
 SLES-53023:
   name: "RTL Ski Jump 2005"
   region: "PAL-E-G"
@@ -24260,38 +24241,9 @@ SLES-53685:
 SLES-53686:
   name: "NHL 2K6"
   region: "PAL-M3"
-  patches:
-    98EC4D86:
-      content: |-
-        author=Prafull
-        comment=Patched by Prafull
-        // Avoid hanging at loading screen.
-        patch=1,EE,00433150,word,00000000
 SLES-53687:
   name: "NBA 2K6"
   region: "PAL-M5"
-  patches:
-    4047DB34: # English
-      content: |-
-        author=Prafull
-        comment=fixes hang at start
-        patch=1,EE,00441ff8,word,00000000
-    B91D81A3: # French
-      content: |-
-        comment=fixes hang at start
-        patch=1,EE,00441fa0,word,00000000
-    C96E2007: # German
-      content: |-
-        comment=fixes hang at start
-        patch=1,EE,00441e48,word,00000000
-    79A6C879: # Italian
-      content: |-
-        comment=fixes hang at start
-        patch=1,EE,00441de8,word,00000000
-    08349AAF: # Spanish
-      content: |-
-        comment=fixes hang at start
-        patch=1,EE,00441ec8,word,00000000
 SLES-53689:
   name: "World Poker Tour"
   region: "PAL-M3"
@@ -25867,22 +25819,9 @@ SLES-54209:
 SLES-54210:
   name: "NBA 2K7"
   region: "PAL-M5"
-  patches:
-    04808D11:
-      content: |-
-        author=Prafull
-        comment=fixes hang at start
-        patch=1,EE,0044f0f8,word,00000000
 SLES-54211:
   name: "NHL 2K7"
   region: "PAL-M5"
-  patches:
-    1AD6EFD1:
-      content: |-
-        author=Prafull
-        comment=Patched by Prafull
-        // Avoid hanging at loading screen.
-        patch=1,EE,004412a8,word,00000000
 SLES-54212:
   name: "Agent Hugo - RoboRumble"
   region: "PAL-M11"
@@ -28073,13 +28012,6 @@ SLES-54880:
 SLES-54881:
   name: "NHL 2K8"
   region: "PAL-M5"
-  patches:
-    F2027778:
-      content: |-
-        author=Prafull
-        comment=Patched by Prafull
-        // Avoid hanging at loading screen.
-        patch=1,EE,004323b8,word,00000000
 SLES-54882:
   name: "Gecko Blaster"
   region: "PAL-M5"
@@ -29456,13 +29388,6 @@ SLES-55251:
 SLES-55252:
   name: "NHL 2K9"
   region: "PAL-M5"
-  patches:
-    5D981DF2:
-      content: |-
-        author=Prafull
-        comment=Patched by Prafull
-        // Avoid hanging at loading screen.
-        patch=1,EE,00430d38,word,00000000
 SLES-55253:
   name: "NBA 2K9"
   region: "PAL-M5"
@@ -49723,12 +49648,6 @@ SLPM-66451:
   name-sort: "めじゃー りーぐ べーすぼーる 2K6"
   name-en: "Major League Baseball 2K6"
   region: "NTSC-J"
-  patches:
-    F0393708:
-      content: |-
-        author=Prafull
-        comment=fixes hang at start
-        patch=1,EE,0035d8b8,word,00000000
 SLPM-66452:
   name: "かまいたちの夜×3 三日月島事件の真相"
   name-sort: "かまいたちのよる3 みかづきじまじけんのしんそう"
@@ -62661,12 +62580,6 @@ SLPS-25925:
   name-sort: "NHL 2K9"
   name-en: "NHL 2K9"
   region: "NTSC-J"
-  patches:
-    69C963FA:
-      content: |-
-        comment= patch by prafull , someother1ne
-        // Fixes hang at start
-        patch=1,EE,00430C70,word,00000000
 SLPS-25927:
   name: "トゥームレイダー アンダーワールド"
   name-sort: "とぅーむれいだー あんだーわーるど"
@@ -62692,12 +62605,6 @@ SLPS-25930:
   name-sort: "MLB 2K9 [えいごばん]"
   name-en: "Major League Baseball 2K9"
   region: "NTSC-J"
-  patches:
-    69C963FA:
-      content: |-
-        comment= patch by prafull , someother1ne
-        // Fixes hang at start
-        patch=1,EE,003AFCA0,word,00000000
 SLPS-25931:
   name: "家庭教師ヒットマンREBORN！ 狙え！? リング×ボンゴレトレーナーズ [Best Collection]"
   name-sort: "かてきょーひっとまんりぼーん！ ねらえ！? りんぐ×ぼんごれとれーなーず [Best Collection]"
@@ -67522,21 +67429,9 @@ SLUS-20725:
 SLUS-20726:
   name: "ESPN - NBA Basketball"
   region: "NTSC-U"
-  patches:
-    A13E5DD5:
-      content: |-
-        comment=Patch by Prafull
-        // Avoids hang at start.
-        patch=1,EE,003161c0,word,00000000
 SLUS-20727:
   name: "ESPN - NFL Football"
   region: "NTSC-U"
-  patches:
-    56920AD1:
-      content: |-
-        comment=Patch by Prafull
-        // Fixes random hangs.
-        patch=0,EE,003bb900,word,00000000
 SLUS-20728:
   name: "ESPN - NHL Hockey"
   region: "NTSC-U"
@@ -68607,41 +68502,17 @@ SLUS-20919:
   name: "ESPN - NFL 2K5"
   region: "NTSC-U"
   compat: 5
-  patches:
-    42F9D5AF:
-      content: |-
-        comment=Patch by Prafull
-        // Fixes random hangs.
-        patch=1,EE,0041c680,word,00000000
 SLUS-20920:
   name: "ESPN - NBA 2K5"
   region: "NTSC-U"
-  patches:
-    903C7BC5:
-      content: |-
-        comment=Patch by Prafull
-        // Avoids hanging at loading screen.
-        patch=1,EE,003bc800,word,00000000
 SLUS-20921:
   name: "ESPN - NHL 2K5"
   region: "NTSC-U"
   compat: 5
-  patches:
-    9B6E69EC:
-      content: |-
-        comment=Patch by Prafull
-        // Avoids hang at start.
-        patch=1,EE,003ed218,word,00000000
 SLUS-20922:
   name: "ESPN - College Hoops 2K5"
   region: "NTSC-U"
   compat: 2
-  patches:
-    2B54D3E5:
-      content: |-
-        comment=Patch by Prafull
-        // Avoids hang at loading.
-        patch=1,EE,003bcc08,word,00000000
 SLUS-20923:
   name: "KOF - Maximum Impact"
   region: "NTSC-U"
@@ -69381,13 +69252,6 @@ SLUS-21035:
     eeClampMode: 2 # Fixes hang when the baseball hits the ground.
   gsHWFixes:
     texturePreloading: 1 # Performs much better and stops freezing and or stuttering.
-  patches:
-    2243CE1D:
-      content: |-
-        author=Prafull
-        comment=Patched by Prafull
-        // Skip hang at start.
-        patch=1,EE,00364080,word,00000000
 SLUS-21036:
   name: "Get On Da Mic"
   region: "NTSC-U"
@@ -70562,41 +70426,17 @@ SLUS-21232:
   name: "College Hoops 2K6"
   region: "NTSC-U"
   compat: 5
-  patches:
-    A60E027C:
-      content: |-
-        comment=Patch by Prafull
-        // This fixes random hangs and makes the game playable.
-        patch=1,EE,0045f410,word,00000000
 SLUS-21233:
   name: "NBA 2K6"
   region: "NTSC-U"
-  patches:
-    E5C65369:
-      content: |-
-        comment=Patch by Prafull
-        // Avoids hang at start.
-        patch=1,EE,004413a8,word,00000000
 SLUS-21234:
   name: "NHL 2K6"
   region: "NTSC-U"
   compat: 2
-  patches:
-    87007AB7:
-      content: |-
-        author=Prafull
-        // Avoid hang at start.
-        patch=1,EE,003fd608,word,00000000
 SLUS-21235:
   name: "Major League Baseball 2K6"
   region: "NTSC-U"
   compat: 5
-  patches:
-    88BB9A5C:
-      content: |-
-        comment=Patch by Prafull
-        // Avoids hang at start.
-        patch=1,EE,003c4280,word,00000000
 SLUS-21236:
   name: "Tokyo Xtreme Racer Drift"
   region: "NTSC-U"
@@ -71268,12 +71108,6 @@ SLUS-21324:
     eeClampMode: 2 # Fixes hang when the baseball hits the ground.
   gsHWFixes:
     texturePreloading: 1 # Performs much better and stops freezing and or stuttering.
-  patches:
-    D592B291:
-      content: |-
-        comment=Patch by Prafull
-        // Skip hang at start.
-        patch=1,EE,0036b220,word,00000000 //1040fffd
 SLUS-21325:
   name: "Harry Potter and the Goblet of Fire"
   region: "NTSC-U"
@@ -71994,22 +71828,10 @@ SLUS-21423:
 SLUS-21424:
   name: "NBA 2K7"
   region: "NTSC-U"
-  patches:
-    F5AEDCC3:
-      content: |-
-        comment=Patch by Prafull
-        // Avoids hang at start.
-        patch=1,EE,0044ef60,word,00000000
 SLUS-21425:
   name: "NHL 2K7"
   region: "NTSC-U"
   compat: 5
-  patches:
-    478EFBDB:
-      content: |-
-        comment=Patch by Prafull
-        // Avoids hang at start.
-        patch=1,EE,004409d8,word,00000000
 SLUS-21426:
   name: "Call of Duty 3"
   region: "NTSC-U"
@@ -72653,12 +72475,6 @@ SLUS-21560:
 SLUS-21561:
   name: "Major League Baseball 2K7"
   region: "NTSC-U"
-  patches:
-    73D6D171:
-      content: |-
-        author=Prafull
-        comment=fixes hang at start
-        patch=1,EE,003CDE10,word,00000000
 SLUS-21563:
   name: "Horsez"
   region: "NTSC-U"
@@ -73112,12 +72928,6 @@ SLUS-21632:
   name: "NHL 2K8"
   region: "NTSC-U"
   compat: 5
-  patches:
-    77B49EF8:
-      content: |-
-        // Patched by Prafull-thanks to harsh.
-        // Avoids hang at start.
-        patch=1,EE,00432310,word,00000000
 SLUS-21633:
   name: "Aqua Teen Hunger Force - Zombie Ninja Pro-Am"
   region: "NTSC-U"
@@ -73643,20 +73453,6 @@ SLUS-21728:
 SLUS-21729:
   name: "Major League Baseball 2K8"
   region: "NTSC-U"
-  patches:
-    0BE24520:
-      content: |-
-        author=Prafull
-        // Fixes hanging at start.
-        // This hanging problem is common in every 2K
-        // games sport titles.
-        // They all hit the exact same piece of code when crashing.
-        // The game can randomly goes a bit further but it's impossible
-        // to progress in menus without this patch at least.
-        // Note: This issue will only happen if the game
-        // run on the inhouse Visual Concept engine.
-        // My theory is on a deep timing issue.
-        patch=1,EE,003cc1a0,word,00000000
 SLUS-21730:
   name: "Jumper - Griffin's Story"
   region: "NTSC-U"
@@ -73858,12 +73654,6 @@ SLUS-21763:
   name: "NHL 2K9"
   region: "NTSC-U"
   compat: 2
-  patches:
-    29FDCBF7:
-      content: |-
-        author=Prafull
-        // Avoid hang at start.
-        patch=1,EE,00431848,word,00000000
 SLUS-21764:
   name: "Cake Mania - Baker's Challenge"
   region: "NTSC-U"
@@ -74407,12 +74197,6 @@ SLUS-21870:
 SLUS-21871:
   name: "Major League Baseball 2K9"
   region: "NTSC-U"
-  patches:
-    72905002:
-      content: |-
-        author=Prafull
-        comment=fixes hang at start
-        patch=1,EE,003CC5D8,word,00000000
 SLUS-21872:
   name: "MTV Pimp My Ride - Street Racing"
   region: "NTSC-U"
@@ -74635,12 +74419,6 @@ SLUS-21914:
   name: "NHL 2K10"
   region: "NTSC-U"
   compat: 5
-  patches:
-    82CA153C:
-      content: |-
-        comment=Patch by Prafull
-        // Fixes hanging problem.
-        patch=1,EE,00431b70,word,00000000
 SLUS-21915:
   name: "The Lord of the Rings - Aragorn's Quest"
   name-sort: "Lord of the Rings, The - Aragorn's Quest"
@@ -74691,12 +74469,6 @@ SLUS-21928:
 SLUS-21929:
   name: "Major League Baseball 2K10"
   region: "NTSC-U"
-  patches:
-    2283765A:
-      content: |-
-        author=Prafull
-        // Avoid hanging at loading screen.
-        patch=1,EE,003cd6d8,word,00000000
 SLUS-21930:
   name: "Sakura Wars - So Long, My Love [Japanese - Disc 2]"
   region: "NTSC-U"
@@ -74765,12 +74537,6 @@ SLUS-21944:
 SLUS-21945:
   name: "Major League Baseball 2K11"
   region: "NTSC-U"
-  patches:
-    3D621C56:
-      content: |-
-        author=By Prafull
-        comment=fixes hang at start
-        patch=1,EE,003CFE58,word,00000000
 SLUS-21946:
   name: "Madden NFL 12"
   region: "NTSC-U"
@@ -74797,12 +74563,6 @@ SLUS-21950:
 SLUS-21951:
   name: "Major League Baseball 2K12"
   region: "NTSC-U"
-  patches:
-    C26C70A9:
-      content: |-
-        author=By Prafull
-        comment=fixes hang at start
-        patch=1,EE,003D4098,word,00000000
 SLUS-21954:
   name: "FIFA 13"
   region: "NTSC-U" # Latin America with En,Fr,Es
