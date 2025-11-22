@@ -38,7 +38,7 @@ void V_ADSR::UpdateCache()
 	CachedPhases[PHASE_RELEASE].Target = 0;
 }
 
-bool V_ADSR::Calculate(int voiceidx)
+bool V_ADSR::Calculate()
 {
 	pxAssume(Phase != PHASE_STOPPED);
 
