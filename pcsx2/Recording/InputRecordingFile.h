@@ -68,8 +68,8 @@ public:
 
 	// Retrieve the input recording's filename (not the path)
 	const std::string& getFilename() const noexcept;
-	unsigned long getTotalFrames() const noexcept;
-	unsigned long getUndoCount() const noexcept;
+	u32 getTotalFrames() const noexcept;
+	u32 getUndoCount() const noexcept;
 
 	void logRecordingMetadata();
 	std::vector<PadData> bulkReadPadData(u32 frameStart, u32 frameEnd, const uint port);
@@ -92,8 +92,8 @@ private:
 	bool m_savestate = false;
 
 	// An signed 32-bit frame limit is equivalent to 1.13 years of continuous 60fps footage
-	unsigned long m_totalFrames = 0;
-	unsigned long m_undoCount = 0;
+	u32 m_totalFrames = 0;
+	u32 m_undoCount = 0;
 
 	// Calculates the position of the current frame in the input recording
 	size_t getRecordingBlockSeekPoint(const u32 frame) const noexcept;
