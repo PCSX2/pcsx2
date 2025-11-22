@@ -13,7 +13,7 @@ ThreadModel::ThreadModel(DebugInterface& cpu, QObject* parent)
 
 int ThreadModel::rowCount(const QModelIndex&) const
 {
-	return m_cpu.GetThreadList().size();
+	return static_cast<int>(m_threads.size());
 }
 
 int ThreadModel::columnCount(const QModelIndex&) const
