@@ -38,6 +38,8 @@ static bool has_to_call_irq_dma[2] = { false, false };
 StereoOut32 (*ReverbUpsample)(V_Core& core);
 s32 (*ReverbDownsample)(V_Core& core, bool right);
 
+// Function pointer for multi-isa mixer 
+void (*spu2Mix)();
 
 static bool psxmode = false;
 
@@ -102,9 +104,6 @@ void V_Core::Init(int index)
 {
 	if (SPU2::MsgToConsole())
 		SPU2::ConLog("* SPU2: Init SPU2 core %d \n", index);
-
-	ReverbDownsample = MULTI_ISA_SELECT(ReverbDownsample);
-	ReverbUpsample = MULTI_ISA_SELECT(ReverbUpsample);
 
 	//memset(this, 0, sizeof(V_Core));
 	// Explicitly initializing variables instead.
