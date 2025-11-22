@@ -252,7 +252,7 @@ static void vSyncInfoCalc(vSyncTimingInfo* info, double framesPerSecond, u32 sca
 	const u64 accumilatedHRenderError = (hRender % 10000) + (hBlank % 10000);
 	const u64 accumilatedHFractional = accumilatedHRenderError % 10000;
 	info->hRender += (u32)(accumilatedHRenderError / 10000);
-	info->hSyncError = (accumilatedHFractional * (scansPerFrame / (IsInterlacedVideoMode() ? 2 : 1))) / 10000;
+	info->hSyncError = (u32)((accumilatedHFractional * (scansPerFrame / (IsInterlacedVideoMode() ? 2 : 1))) / 10000);
 
 	// Note: In NTSC modes there is some small rounding error in the vsync too,
 	// however it would take thousands of frames for it to amount to anything and
