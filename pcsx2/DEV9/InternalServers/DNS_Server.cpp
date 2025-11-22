@@ -160,7 +160,7 @@ namespace InternalServers
 			//Counts
 			ret->questions = dns.questions;
 
-			DNS_State* state = new DNS_State(reqs.size(), reqs, ret, payload->sourcePort);
+			DNS_State* state = new DNS_State(static_cast<int>(reqs.size()), reqs, ret, payload->sourcePort);
 			outstandingQueries++;
 
 			for (size_t i = 0; i < reqs.size(); i++)
