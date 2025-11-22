@@ -1148,36 +1148,86 @@ bool GSCapture::ProcessAudioPackets(s64 video_pts)
 		const u32 contig_frames = std::min(pending_frames, AUDIO_BUFFER_SIZE - s_audio_buffer_read_pos);
 		const u32 this_batch = std::min(s_audio_frame_size - s_audio_frame_pos, contig_frames);
 
+		// Apply volume multiplier if not 100%
+		const int volume = GSConfig.AudioCaptureVolume;
+		const float volume_mult = (volume != 100) ? (static_cast<float>(volume) / 100.0f) : 1.0f;
+
 		// Do we need to convert the sample format?
 		if (!s_swr_context)
 		{
-			// No, just copy frames out of staging buffer.
+			// No, just copy frames out of staging buffer with volume applied.
 			if (s_audio_frame_planar)
 			{
 				// This is slow. Hopefully doesn't happen in too many configurations.
 				for (u32 i = 0; i < AUDIO_CHANNELS; i++)
 				{
 					u8* output = s_converted_audio_frame->data[i] + s_audio_frame_pos * s_audio_frame_bps;
-					const u8* input = reinterpret_cast<u8*>(&s_audio_buffer[s_audio_buffer_read_pos * AUDIO_CHANNELS + i]);
+					const s16* input = &s_audio_buffer[s_audio_buffer_read_pos * AUDIO_CHANNELS + i];
 					for (u32 j = 0; j < this_batch; j++)
 					{
-						std::memcpy(output, input, sizeof(s16));
-						input += sizeof(s16) * AUDIO_CHANNELS;
+						const s16 src = *input;
+						if (volume_mult != 1.0f)
+						{
+							float sample = static_cast<float>(src) * volume_mult;
+							if (sample > 32767.0f)
+								sample = 32767.0f;
+							else if (sample < -32768.0f)
+								sample = -32768.0f;
+							const s16 scaled_sample = static_cast<s16>(sample);
+							std::memcpy(output, &scaled_sample, sizeof(s16));
+						}
+						else
+						{
+							std::memcpy(output, &src, sizeof(s16));
+						}
+
+						input += AUDIO_CHANNELS;
 						output += s_audio_frame_bps;
 					}
 				}
 			}
 			else
 			{
-				// Direct copy - optimal.
-				std::memcpy(s_converted_audio_frame->data[0] + s_audio_frame_pos * s_audio_frame_bps * AUDIO_CHANNELS,
-					&s_audio_buffer[s_audio_buffer_read_pos * AUDIO_CHANNELS], this_batch * sizeof(s16) * AUDIO_CHANNELS);
+				// Direct copy with volume optimal.
+				if (volume_mult != 1.0f)
+				{
+					const s16* input = &s_audio_buffer[s_audio_buffer_read_pos * AUDIO_CHANNELS];
+					s16* output = reinterpret_cast<s16*>(s_converted_audio_frame->data[0] + s_audio_frame_pos * s_audio_frame_bps * AUDIO_CHANNELS);
+					for (u32 i = 0; i < this_batch * AUDIO_CHANNELS; i++)
+					{
+						const float sample = static_cast<float>(input[i]) * volume_mult;
+						output[i] = static_cast<s16>(std::clamp(sample, -32768.0f, 32767.0f));
+					}
+				}
+				else
+				{
+					std::memcpy(s_converted_audio_frame->data[0] + s_audio_frame_pos * s_audio_frame_bps * AUDIO_CHANNELS,
+						&s_audio_buffer[s_audio_buffer_read_pos * AUDIO_CHANNELS], this_batch * sizeof(s16) * AUDIO_CHANNELS);
+				}
 			}
 		}
 		else
 		{
-			// Use swresample to convert.
-			const u8* input = reinterpret_cast<u8*>(&s_audio_buffer[s_audio_buffer_read_pos * AUDIO_CHANNELS]);
+			// Use swresample to convert. Apply volume to source before conversion.
+			const s16* input_s16 = &s_audio_buffer[s_audio_buffer_read_pos * AUDIO_CHANNELS];
+			const u8* input;
+			std::vector<s16> volume_buffer;
+
+			if (volume_mult != 1.0f)
+			{
+				// Apply volume to source samples before conversion
+				volume_buffer.resize(this_batch * AUDIO_CHANNELS);
+				for (u32 i = 0; i < this_batch * AUDIO_CHANNELS; i++)
+				{
+					const float sample = static_cast<float>(input_s16[i]) * volume_mult;
+					volume_buffer[i] = static_cast<s16>(std::clamp(sample, -32768.0f, 32767.0f));
+				}
+				input = reinterpret_cast<const u8*>(volume_buffer.data());
+			}
+			else
+			{
+				input = reinterpret_cast<const u8*>(input_s16);
+			}
 
 			// Might be planar, so offset both buffers.
 			u8* output[AUDIO_CHANNELS];
