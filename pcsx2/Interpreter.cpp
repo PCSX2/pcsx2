@@ -24,7 +24,7 @@ static bool intExitExecution = false;
 static fastjmp_buf intJmpBuf;
 static u32 intLastBranchTo;
 
-static void intEventTest();
+void intEventTest();
 
 void intUpdateCPUCycles()
 {
@@ -548,7 +548,7 @@ static void intReset()
 	branch2 = 0;
 }
 
-static void intEventTest()
+void intEventTest()
 {
 	// Perform counters, ints, and IOP updates:
 	_cpuEventTest_Shared();
