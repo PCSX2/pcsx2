@@ -1600,31 +1600,19 @@ void GSDeviceMTL::RenderCopy(GSTexture* sTex, id<MTLRenderPipelineState> pipelin
 	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
 }
 
-void GSDeviceMTL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader, bool linear)
+void GSDeviceMTL::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
+	GSHWDrawConfig::ColorMaskSelector cms, ShaderConvert shader, bool linear)
 { @autoreleasepool {
 
-	pxAssert(linear ? SupportsBilinear(shader) : SupportsNearest(shader));
-
-	id<MTLRenderPipelineState> pipeline = m_convert_pipeline[static_cast<int>(shader)];
+	const LoadAction load_action = (cms.wrgba == 0xf) ? LoadAction::DontCareIfFull : LoadAction::Load;
+	id<MTLRenderPipelineState> pipeline;
+	if (HasVariableWriteMask(shader))
+		pipeline = m_convert_pipeline_copy_mask[GetShaderIndexForMask(shader, cms.wrgba)];
+	else
+		pipeline = m_convert_pipeline[static_cast<int>(shader)];
 	pxAssertRel(pipeline, fmt::format("No pipeline for {}", shaderName(shader)).c_str());
 
-	const LoadAction load_action = (ShaderConvertWriteMask(shader) == 0xf) ? LoadAction::DontCareIfFull : LoadAction::Load;
 	DoStretchRect(sTex, sRect, dTex, dRect, pipeline, linear, load_action, nullptr, 0);
-}}
-
-void GSDeviceMTL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red, bool green, bool blue, bool alpha, ShaderConvert shader)
-{ @autoreleasepool {
-	int sel = 0;
-	if (red)   sel |= 1;
-	if (green) sel |= 2;
-	if (blue)  sel |= 4;
-	if (alpha) sel |= 8;
-	if (shader == ShaderConvert::RTA_CORRECTION) sel |= 16;
-	const int color_sel = sel & 15;
-
-	id<MTLRenderPipelineState> pipeline = m_convert_pipeline_copy_mask[sel];
-
-	DoStretchRect(sTex, sRect, dTex, dRect, pipeline, false, color_sel == 15 ? LoadAction::DontCareIfFull : LoadAction::Load, nullptr, 0);
 }}
 
 static_assert(sizeof(DisplayConstantBuffer) == sizeof(GSMTLPresentPSUniform));
@@ -1683,9 +1671,9 @@ void GSDeviceMTL::DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_r
 		const u32 end = i * 4;
 		const u32 vertex_count = end - start;
 		const u32 index_count = vertex_count + (vertex_count >> 1); // 6 indices per 4 vertices
-		const int rta_bit = shader == ShaderConvert::RTA_CORRECTION ? 16 : 0;
+		pxAssert(HasVariableWriteMask(shader) || wmask == 0xf);
 		id<MTLRenderPipelineState> new_pipeline = wmask == 0xf ? m_convert_pipeline[static_cast<int>(shader)]
-		                                                       : m_convert_pipeline_copy_mask[wmask | rta_bit];
+		                                                       : m_convert_pipeline_copy_mask[GetShaderIndexForMask(shader, wmask)];
 		if (new_pipeline != pipeline)
 		{
 			pipeline = new_pipeline;
