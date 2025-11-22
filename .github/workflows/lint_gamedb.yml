@@ -23,7 +23,7 @@ jobs:
       - name: Install Packages
         run: |
           npm install -g ajv-cli prettier
-          sudo apt-get -y install yamllint
+          pip install yamllint
 
       - name: Validate YAML
         run: |
