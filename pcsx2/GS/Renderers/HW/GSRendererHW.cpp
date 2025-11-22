@@ -7937,7 +7937,10 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	}
 	else if (DATE_one)
 	{
-		if (features.texture_barrier)
+		// TODO: Backport to dx12.
+		const bool renderer_is_directx12 = (GSGetCurrentRenderer() == GSRendererType::DX12);
+		const bool multidraw_fb_copy = features.multidraw_fb_copy && !renderer_is_directx12 && (m_conf.require_one_barrier || m_conf.require_full_barrier);
+		if (features.texture_barrier || multidraw_fb_copy)
 		{
 			m_conf.require_one_barrier = true;
 			m_conf.ps.date = 5 + m_cached_ctx.TEST.DATM;
