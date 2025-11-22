@@ -5769,9 +5769,6 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 		m_conf.ps.a_masked = 1;
 		m_conf.ps.blend_c = 0;
 		m_conf.require_one_barrier |= true;
-
-		// Alpha write is masked, by default this is enabled on vk/gl but not on dx11/12 as copies are slow so we can enable it now since rt alpha is read.
-		DATE_BARRIER = DATE;
 	}
 	else
 		blend_ad_alpha_masked = false;
@@ -7697,6 +7694,11 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 			new_scale_rt_alpha = full_cover || rt->m_last_draw >= s_n;
 		}
 	}
+
+	// Always swap DATE with DATE_BARRIER if we have barriers on when alpha write is masked.
+	// This is always enabled on vk/gl but not on dx11/12 as copies are slow so we can selectively enable it like now.
+	if (DATE && !m_conf.colormask.wa && (m_conf.require_one_barrier || m_conf.require_full_barrier))
+		DATE_BARRIER = true;
 
 	if ((m_conf.ps.tex_is_fb && rt && rt->m_rt_alpha_scale) || (tex && tex->m_from_target && tex->m_target_direct && tex->m_from_target->m_rt_alpha_scale))
 		m_conf.ps.rta_source_correction = 1;
