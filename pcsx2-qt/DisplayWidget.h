@@ -29,6 +29,12 @@ public:
 	void updateRelativeMode(bool enabled);
 	void updateCursor(bool hidden);
 
+	bool isFullScreen() const;
+	void setFocus();
+
+	QByteArray saveGeometry() const;
+	void restoreGeometry(const QByteArray& geometry);
+
 Q_SIGNALS:
 	void windowResizedEvent(int width, int height, float scale);
 	void windowRestoredEvent();
@@ -43,7 +49,6 @@ protected:
 	bool eventFilter(QObject* object, QEvent* event) override;
 
 private:
-	bool isActuallyFullscreen() const;
 	void updateCenterPos();
 
 	QPoint m_relative_mouse_start_pos{};
