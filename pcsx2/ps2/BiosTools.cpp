@@ -177,7 +177,7 @@ static bool LoadBiosVersion(std::FILE* fp, u32& version, std::string& descriptio
 																  "",
 			serial.c_str());
 
-		version = strtol(vermaj, (char**)NULL, 0) << 8;
+		version = static_cast<u32>(strtol(vermaj, (char**)NULL, 0) << 8);
 		version |= strtol(vermin, (char**)NULL, 0);
 
 		Console.WriteLn("BIOS Found: %s", description.c_str());

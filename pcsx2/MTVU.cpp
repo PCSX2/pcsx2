@@ -186,7 +186,7 @@ void VU_Thread::ExecuteRingBuffer()
 					break;
 				case MTVU_VIF_UNPACK:
 				{
-					u32 vif_copy_size = (uptr)&vif.StructEnd - (uptr)&vif.tag;
+					u32 vif_copy_size = static_cast<u32>((uptr)&vif.StructEnd - (uptr)&vif.tag);
 					Read(&vif.tag, vif_copy_size);
 					ReadRegs(&vifRegs);
 					u32 size = Read();
@@ -467,7 +467,7 @@ void VU_Thread::ExecuteVU(u32 vu_addr, u32 vif_top, u32 vif_itop, u32 fbrst)
 void VU_Thread::VifUnpack(vifStruct& _vif, VIFregisters& _vifRegs, const u8* data, u32 size)
 {
 	MTVU_LOG("MTVU - VifUnpack!");
-	u32 vif_copy_size = (uptr)&_vif.StructEnd - (uptr)&_vif.tag;
+	u32 vif_copy_size = (u32)((uptr)&_vif.StructEnd - (uptr)&_vif.tag);
 	ReserveSpace(1 + size_u32(vif_copy_size) + size_u32(sizeof(VIFregistersMTVU)) + 1 + size_u32(size));
 	Write(MTVU_VIF_UNPACK);
 	Write(&_vif.tag, vif_copy_size);

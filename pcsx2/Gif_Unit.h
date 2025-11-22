@@ -521,7 +521,7 @@ struct Gif_Path
 	// GS Packets that MTGS hasn't yet processed
 	u32 GetPendingGSPackets()
 	{
-		return mtvu.gsPackQueue.size();
+		return (u32)mtvu.gsPackQueue.size();
 	}
 };
 

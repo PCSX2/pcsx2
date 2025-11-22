@@ -1652,7 +1652,7 @@ void GSRendererSW::SharedData::UpdateSource()
 
 		std::string s;
 
-		for (size_t i = 0; m_tex[i].t; i++)
+		for (u32 i = 0; m_tex[i].t; i++)
 		{
 			const GIFRegTEX0& TEX0 = g_gs_renderer->GetTex0Layer(i);
 
