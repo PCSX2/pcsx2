@@ -150,6 +150,44 @@ const char* GameList::RegionToString(Region region, bool translate)
 	return name;
 }
 
+const char* GameList::RegionToFlagFilename(Region region)
+{
+	static constexpr std::array<const char*, static_cast<int>(Region::Count)> flag_names = {
+		"br",  // NTSC-B
+		"cn",  // NTSC-C
+		"tw",  // NTSC-HK
+		"jp",  // NTSC-J
+		"kr",  // NTSC-K
+		"tw",  // NTSC-T
+		"us",  // NTSC-U
+		"us",  // Other
+		"au",  // PAL-A
+		"za",  // PAL-AF
+		"au",  // PAL-AU
+		"nl",  // PAL-BE
+		"de",  // PAL-E
+		"fr",  // PAL-F
+		"fi",  // PAL-FI
+		"de",  // PAL-G
+		"gr",  // PAL-GR
+		"it",  // PAL-I
+		"in",  // PAL-IN
+		"mx",  // PAL-M
+		"nl",  // PAL-NL
+		"no",  // PAL-NO
+		"pt",  // PAL-P
+		"pl",  // PAL-PL
+		"ru",  // PAL-R
+		"es",  // PAL-S
+		"se",  // PAL-SC
+		"se",  // PAL-SW
+		"se",  // PAL-SWI
+		"us",  // PAL-UK
+	};
+
+	return flag_names.at(static_cast<int>(region));
+}
+
 const char* GameList::EntryCompatibilityRatingToString(CompatibilityRating rating, bool translate)
 {
 	const char* name = "";
