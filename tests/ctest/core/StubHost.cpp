@@ -276,7 +276,7 @@ int Host::LocaleSensitiveCompare(std::string_view lhs, std::string_view rhs)
 	int res = std::strncmp(lhs, rhs, std::min(lhs.size(), rhs.size()));
 	if (res != 0)
 		return res;
-	return lhs.size() > rhs.size() ? 1 : lhs.size() < rhs.size ? -1 : 0;
+	return lhs.size() > rhs.size() ? 1 : lhs.size() < rhs.size() ? -1 : 0;
 }
 
 std::optional<u32> InputManager::ConvertHostKeyboardStringToCode(const std::string_view str)
