@@ -560,11 +560,11 @@ struct alignas(16) GSHWDrawConfig
 		GSVector2i max_depth;
 		__fi VSConstantBuffer()
 		{
-			memset(this, 0, sizeof(*this));
+			memset(static_cast<void*>(this), 0, sizeof(*this));
 		}
 		__fi VSConstantBuffer(const VSConstantBuffer& other)
 		{
-			memcpy(this, &other, sizeof(*this));
+			memcpy(static_cast<void*>(this), static_cast<const void*>(&other), sizeof(*this));
 		}
 		__fi VSConstantBuffer& operator=(const VSConstantBuffer& other)
 		{
@@ -584,7 +584,7 @@ struct alignas(16) GSHWDrawConfig
 			if (*this == other)
 				return false;
 
-			memcpy(this, &other, sizeof(*this));
+			memcpy(static_cast<void*>(this), static_cast<const void*>(&other), sizeof(*this));
 			return true;
 		}
 	};
@@ -609,11 +609,11 @@ struct alignas(16) GSHWDrawConfig
 
 		__fi PSConstantBuffer()
 		{
-			memset(this, 0, sizeof(*this));
+			memset(static_cast<void*>(this), 0, sizeof(*this));
 		}
 		__fi PSConstantBuffer(const PSConstantBuffer& other)
 		{
-			memcpy(this, &other, sizeof(*this));
+			memcpy(static_cast<void*>(this), static_cast<const void*>(&other), sizeof(*this));
 		}
 		__fi PSConstantBuffer& operator=(const PSConstantBuffer& other)
 		{
@@ -633,7 +633,7 @@ struct alignas(16) GSHWDrawConfig
 			if (*this == other)
 				return false;
 
-			memcpy(this, &other, sizeof(*this));
+			memcpy(static_cast<void*>(this), static_cast<const void*>(&other), sizeof(*this));
 			return true;
 		}
 	};

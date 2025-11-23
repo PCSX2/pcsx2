@@ -40,6 +40,13 @@
       - 'pcsx2-qt/**/*'
       - '3rdparty/Qt/*'
       - '3rdparty/Qt/**/*'
+'OSD / ImGui':
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'pcsx2/ImGui/*'
+      - 'pcsx2/ImGui/**/*'
+      - '3rdparty/imgui/*'
+      - '3rdparty/imgui/**/*'
 'GameDB':
   - changed-files:
     - any-glob-to-any-file:

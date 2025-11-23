@@ -153,7 +153,7 @@ void DebuggerSettingsManager::saveGameSettings(QAbstractTableModel* abstractTabl
 	if (path.empty())
 		return;
 
-	const std::lock_guard<std::mutex> lock(writeLock);
+	std::lock_guard<std::mutex> lock(writeLock);
 	QJsonObject loadedSettings = loadGameSettingsJSON();
 	QJsonArray rowsArray;
 	QStringList keys;

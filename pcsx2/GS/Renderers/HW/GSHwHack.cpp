@@ -37,6 +37,90 @@ static bool s_nativeres;
 // Partial level, broken on all renderers.
 ////////////////////////////////////////////////////////////////////////////////
 
+bool GSHwHack::GSC_IRem(GSRendererHW& r, int& skip)
+{
+	if (skip == 0)
+	{
+		const int get_next_ctx = r.m_env.PRIM.CTXT;
+		const GSDrawingContext& next_ctx = r.m_env.CTXT[get_next_ctx];
+
+		// Game does alternate line channel shuffles with blending, we can't handle this and the first one does it, so skip the second.
+		if (RTME && RTPSM == PSMT8 && (RTBP0 + 0x20) == next_ctx.TEX0.TBP0 && RFBP == next_ctx.FRAME.Block())
+		{
+			skip = 1;
+			return false;
+		}
+		// Detect the deswizzling shuffle from depth, copying the RG and BA separately on each half of the page (ignore the split).
+		if (RTME && RFBP != RTBP0 && RFPSM == PSMCT16S && RTPSM == PSMCT16S)
+		{
+			if (r.m_vt.m_max.p.x == 64 && r.m_vt.m_max.p.y == 64 && r.m_index.tail == 128)
+			{
+				const GSVector4i draw_size(r.m_vt.m_min.p.x, r.m_vt.m_min.p.y/2, r.m_vt.m_max.p.x, r.m_vt.m_max.p.y/2);
+				const GSVector4i read_size(r.m_vt.m_min.t.x, r.m_vt.m_min.t.y/2, r.m_vt.m_max.t.x, r.m_vt.m_max.t.y/2);
+				r.m_cached_ctx.TEX0.PSM = PSMCT32;
+				r.m_cached_ctx.FRAME.PSM = PSMCT32;
+				r.ReplaceVerticesWithSprite(draw_size, read_size, GSVector2i(read_size.width(), read_size.height()), draw_size);
+			}
+		}
+
+		// Following the previous draw, it tries to copy everything read from depth and offset it by 2, for the alternate line channel shuffle (skipped above).
+		if (RTBP0 == (RFBP - 0x20) && r.m_vt.m_max.p.x == 64 && r.m_vt.m_max.p.y == 34 && r.m_index.tail == 2)
+		{
+			GSVector4i draw_size(r.m_vt.m_min.p.x, r.m_vt.m_min.p.y - 2.0f, r.m_vt.m_max.p.x, r.m_vt.m_max.p.y - 2.0f);
+			GSVector4i read_size(r.m_vt.m_min.t.x, r.m_vt.m_min.t.y, r.m_vt.m_max.t.x, r.m_vt.m_max.t.y);
+			r.ReplaceVerticesWithSprite(draw_size, read_size, GSVector2i(read_size.width(), read_size.height()), draw_size);
+
+
+			// Fix up the shuffle from last draw.
+			{
+				GIFRegTEX0 RTLookup = GIFRegTEX0::Create(RTBP0, RFBW, RFPSM);
+				GSTextureCache::Source* src = g_texture_cache->LookupSource(true, RTLookup, r.m_cached_ctx.TEXA, r.m_cached_ctx.CLAMP, GSVector4i(0,0,1,1), nullptr, true, false, r.m_cached_ctx.FRAME, true, true);
+
+				GSTextureCache::Target* rt = g_texture_cache->LookupTarget(GIFRegTEX0::Create(RTBP0, RFBW, RFPSM),
+					GSVector2i(1, 1), r.GetTextureScaleFactor(), GSTextureCache::RenderTarget, true, 0, false, false, true, true, GSVector4i(0,0,1,1), true, false, true, src);
+
+				if (!rt)
+					return false;
+
+				GSLocalMemory::psm_t rt_psm = GSLocalMemory::m_psm[RFPSM];
+				int page_offset = (RTBP0 - rt->m_TEX0.TBP0) >> 5;
+				int vertical_offset = page_offset / std::max(rt->m_TEX0.TBW, 1U) * rt_psm.pgs.y;
+				int horizontal_offset = page_offset % std::max(rt->m_TEX0.TBW, 1U) * rt_psm.pgs.x;
+
+				draw_size = draw_size + GSVector4i(horizontal_offset, vertical_offset, horizontal_offset, vertical_offset);
+				rt->UnscaleRTAlpha();
+
+				// Shuffle the blue channel in to red, leave green as-is.
+				GSHWDrawConfig& config = r.BeginHLEHardwareDraw(
+					rt->GetTexture(), nullptr, rt->GetScale(), rt->GetTexture(), rt->GetScale(), draw_size);
+				config.ps.shuffle = 1;
+				config.ps.dst_fmt = GSLocalMemory::PSM_FMT_32;
+				config.ps.write_rg = 0;
+				config.ps.shuffle_same = 0;
+				config.ps.real16src = 0;
+				config.ps.shuffle_across = 1;
+				config.ps.process_rg = r.SHUFFLE_WRITE;
+				config.ps.process_ba = r.SHUFFLE_READ;
+				config.colormask.wrgba = 0;
+				config.colormask.wr = 1;
+				config.ps.rta_correction = 0;
+				config.ps.rta_source_correction = 0;
+				config.ps.tfx = TFX_DECAL;
+				config.ps.tcc = true;
+				r.EndHLEHardwareDraw(true);
+
+				rt->m_alpha_min = 0;
+				rt->m_alpha_max = 255;
+
+				rt = nullptr;
+				src = nullptr;
+			}
+		}
+	}
+
+	return true;
+}
+
 // Channel effect not properly supported yet
 bool GSHwHack::GSC_Manhunt2(GSRendererHW& r, int& skip)
 {
@@ -467,55 +551,6 @@ bool GSHwHack::GSC_TalesOfLegendia(GSRendererHW& r, int& skip)
 	return true;
 }
 
-bool GSHwHack::GSC_ZettaiZetsumeiToshi2(GSRendererHW& r, int& skip)
-{
-	if (skip == 0)
-	{
-		if (RTME && RTPSM == PSMCT16S && (RFBMSK >= 0x6FFFFFFF || RFBMSK == 0))
-		{
-			skip = 1000;
-		}
-		else if (RTME && RTPSM == PSMCT32 && RFBMSK == 0xFF000000)
-		{
-			skip = 2; // Fog
-		}
-		else if ((RFBP | RTBP0) && RFPSM == RTPSM && RTPSM == PSMCT16 && RFBMSK == 0x3FFF)
-		{
-			// Note start of the effect (texture shuffle) is fixed but maybe not the extra draw call
-			skip = 1000;
-		}
-	}
-	else
-	{
-		if (!RTME && RTPSM == PSMCT32 && RFBP == 0x1180 && RTBP0 == 0x1180 && (RFBMSK == 0))
-		{
-			skip = 0;
-		}
-		if (RTME && RTPSM == PSMT4 && RFBP && (RTBP0 != 0x3753))
-		{
-			skip = 0;
-		}
-		if (RTME && RTPSM == PSMT8H && RFBP == 0x22e0 && RTBP0 == 0x36e0)
-		{
-			skip = 0;
-		}
-		if (!RTME && RTPSM == PSMT8H && RFBP == 0x22e0)
-		{
-			skip = 0;
-		}
-		if (RTME && RTPSM == PSMT8 && (RFBP == 0x1180 || RFBP == 0) && (RTBP0 != 0x3764 && RTBP0 != 0x370f))
-		{
-			skip = 0;
-		}
-		if (RTME && RTPSM == PSMCT16S && (RFBP == 0x1180))
-		{
-			skip = 2;
-		}
-	}
-
-	return true;
-}
-
 bool GSHwHack::GSC_UltramanFightingEvolution(GSRendererHW& r, int& skip)
 {
 	if (skip == 0)
@@ -561,27 +596,6 @@ bool GSHwHack::GSC_UrbanReign(GSRendererHW& r, int& skip)
 		{
 			GL_CACHE("GSC_UrbanReign: Fix region clamp to 64 wide");
 			RCLAMP.MAXU = 63;
-		}
-	}
-
-	return true;
-}
-
-bool GSHwHack::GSC_SteambotChronicles(GSRendererHW& r, int& skip)
-{
-	if (skip == 0)
-	{
-		// Author: miseru99 on forums.pcsx2.net
-		if (RTME && RTPSM == PSMCT16S)
-		{
-			if (RFBP == 0x1180)
-			{
-				skip = 1; // 1 deletes some of the glitched effects
-			}
-			else if (RFBP == 0)
-			{
-				skip = 100; // deletes most others(too high deletes the buggy sea completely;c, too low causes glitches to be visible)
-			}
 		}
 	}
 
@@ -1382,6 +1396,7 @@ bool GSHwHack::MV_Ico(GSRendererHW& r)
 #define CRC_F(name) { #name, &GSHwHack::name }
 
 const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_functions[] = {
+	CRC_F(GSC_IRem),
 	CRC_F(GSC_Manhunt2),
 	CRC_F(GSC_MidnightClub3),
 	CRC_F(GSC_SacredBlaze),
@@ -1391,7 +1406,6 @@ const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_function
 	CRC_F(GSC_TalesOfLegendia),
 	CRC_F(GSC_TalesofSymphonia),
 	CRC_F(GSC_UrbanReign),
-	CRC_F(GSC_ZettaiZetsumeiToshi2),
 	CRC_F(GSC_BlackAndBurnoutSky),
 	CRC_F(GSC_BlueTongueGames),
 	CRC_F(GSC_NFSUndercover),
@@ -1403,7 +1417,6 @@ const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_function
 	// Channel Effect
 	CRC_F(GSC_NamcoGames),
 	CRC_F(GSC_SandGrainGames),
-	CRC_F(GSC_SteambotChronicles),
 
 	// Depth Issue
 	CRC_F(GSC_BurnoutGames),

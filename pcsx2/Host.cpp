@@ -71,7 +71,7 @@ std::pair<const char*, u32> Host::LookupTranslationString(const std::string_view
 
 add_string:
 	s_translation_string_mutex.unlock_shared();
-	s_translation_string_mutex.lock();
+	std::lock_guard lock(s_translation_string_mutex);
 
 	if (s_translation_string_cache.empty()) [[unlikely]]
 	{
@@ -110,7 +110,6 @@ add_string:
 
 	ret.first = &s_translation_string_cache[insert_pos];
 	ret.second = static_cast<u32>(len);
-	s_translation_string_mutex.unlock();
 	return ret;
 }
 
@@ -132,10 +131,9 @@ std::string Host::TranslateToString(const std::string_view context, const std::s
 
 void Host::ClearTranslationCache()
 {
-	s_translation_string_mutex.lock();
+	std::lock_guard lock(s_translation_string_mutex);
 	s_translation_string_map.clear();
 	s_translation_string_cache_pos = 0;
-	s_translation_string_mutex.unlock();
 }
 
 void Host::ReportFormattedInfoAsync(const std::string_view title, const char* format, ...)

@@ -70,6 +70,7 @@ void ps_depth_copy()
 uniform ivec2 ClampMin;
 uniform int DownsampleFactor;
 uniform float Weight;
+uniform float StepMultiplier;
 
 void ps_downsample_copy()
 {
@@ -78,7 +79,7 @@ void ps_downsample_copy()
 	for (int yoff = 0; yoff < DownsampleFactor; yoff++)
 	{
 		for (int xoff = 0; xoff < DownsampleFactor; xoff++)
-			result += texelFetch(TextureSampler, coord + ivec2(xoff, yoff), 0);
+			result += texelFetch(TextureSampler, coord + ivec2(xoff * StepMultiplier, yoff * StepMultiplier), 0);
 	}
 	SV_Target0 = result / Weight;
 }

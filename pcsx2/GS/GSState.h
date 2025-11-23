@@ -4,6 +4,7 @@
 #pragma once
 
 #include "GS/GS.h"
+#include "GS/GSPerfMon.h"
 #include "GS/GSLocalMemory.h"
 #include "GS/GSDrawingContext.h"
 #include "GS/GSDrawingEnvironment.h"
@@ -263,6 +264,9 @@ public:
 	static int s_n;
 	static int s_last_transfer_draw_n;
 	static int s_transfer_n;
+
+	GSPerfMon m_perfmon_frame; // Track stat across a frame.
+	GSPerfMon m_perfmon_draw;  // Track stat across a draw.
 
 	static constexpr u32 STATE_VERSION = 9;
 

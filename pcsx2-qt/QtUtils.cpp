@@ -8,10 +8,9 @@
 #include <QtCore/QtGlobal>
 #include <QtCore/QMetaObject>
 #include <QtGui/QAction>
-#include <QtGui/QGuiApplication>
 #include <QtGui/QDesktopServices>
 #include <QtGui/QKeyEvent>
-#include <QtGui/QScreen>
+#include <QtGui/QPainter>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QHeaderView>
@@ -40,8 +39,6 @@
 #if defined(_WIN32)
 #include "common/RedtapeWindows.h"
 #include <Shlobj.h>
-#elif !defined(APPLE)
-#include <qpa/qplatformnativeinterface.h>
 #endif
 
 namespace QtUtils
@@ -137,6 +134,126 @@ namespace QtUtils
 	void ResizeColumnsForTreeView(QTreeView* view, const std::initializer_list<int>& widths)
 	{
 		ResizeColumnsForView(view, widths);
+	}
+
+	void resizeAndScalePixmap(QPixmap* pm, const int expected_width, const int expected_height, const qreal dpr, const ScalingMode scaling_mode, const float opacity)
+	{
+		if (!pm || pm->isNull() || pm->width() <= 0 || pm->height() <= 0)
+			return;
+
+		const int dpr_expected_width = qRound(expected_width * dpr);
+		const int dpr_expected_height = qRound(expected_height * dpr);
+
+		if (pm->width() == dpr_expected_width &&
+			pm->height() == dpr_expected_height &&
+			pm->devicePixelRatio() == dpr &&
+			opacity == 100.0f)
+		{
+			switch (scaling_mode)
+			{
+				case ScalingMode::Fit:
+				case ScalingMode::Stretch:
+				case ScalingMode::Center:
+					return;
+
+				case ScalingMode::Fill:
+				case ScalingMode::Tile:
+				default:
+					break;
+			}
+		}
+
+		QPixmap final_pixmap(dpr_expected_width, dpr_expected_height);
+		final_pixmap.setDevicePixelRatio(dpr);
+		final_pixmap.fill(Qt::transparent);
+
+		QPainter painter;
+		painter.begin(&final_pixmap);
+		painter.setRenderHint(QPainter::Antialiasing, true);
+		painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
+		painter.setOpacity(opacity / 100.0f);
+		painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+
+		const QRectF srcRect(0, 0, pm->width(), pm->height());
+		const QRectF painterRect(0, 0, expected_width, expected_height);
+
+		switch (scaling_mode)
+		{
+			case ScalingMode::Fit:
+			case ScalingMode::Fill:
+			{
+				auto const aspect_mode = (scaling_mode == ScalingMode::Fit) ?
+				                             Qt::KeepAspectRatio :
+				                             Qt::KeepAspectRatioByExpanding;
+
+				QSizeF scaledSize(pm->width(), pm->height());
+				scaledSize.scale(dpr_expected_width, dpr_expected_height, aspect_mode);
+
+				*pm = pm->scaled(
+					qRound(scaledSize.width()),
+					qRound(scaledSize.height()),
+					Qt::IgnoreAspectRatio,
+					Qt::SmoothTransformation
+				);
+
+				const QRectF scaledSrcRect(0, 0, pm->width(), pm->height());
+
+				QSizeF logicalSize = pm->size() / dpr;
+				QRectF destRect(QPointF(0, 0), logicalSize);
+
+				destRect.moveCenter(painterRect.center());
+
+				painter.drawPixmap(destRect, *pm, scaledSrcRect);
+				break;
+			}
+			case ScalingMode::Stretch:
+			{
+				*pm = pm->scaled(
+					dpr_expected_width,
+					dpr_expected_height,
+					Qt::IgnoreAspectRatio,
+					Qt::SmoothTransformation
+				);
+
+				const QRectF scaledSrcRect(0, 0, pm->width(), pm->height());
+
+				painter.drawPixmap(painterRect, *pm, scaledSrcRect);
+				break;
+			}
+			case ScalingMode::Center:
+			{
+				const qreal pmWidth = pm->width() / dpr;
+				const qreal pmHeight = pm->height() / dpr;
+
+				QRectF destRect(0, 0, pmWidth, pmHeight);
+
+				destRect.moveCenter(painterRect.center());
+
+				painter.drawPixmap(destRect, *pm, srcRect);
+				break;
+			}
+			case ScalingMode::Tile:
+			{
+				const qreal tileWidth = pm->width() / dpr;
+				const qreal tileHeight = pm->height() / dpr;
+
+				if (tileWidth <= 0 || tileHeight <= 0)
+					break;
+
+				QPixmap tileSource = pm->scaled(tileWidth, tileHeight, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+				tileSource.setDevicePixelRatio(dpr);
+
+				QBrush tileBrush(tileSource);
+				tileBrush.setTextureImage(tileSource.toImage());
+
+				painter.fillRect(painterRect, tileBrush);
+				break;
+			}
+			default:
+				break;
+		}
+		painter.end();
+		*pm = std::move(final_pixmap);
 	}
 
 	void ShowInFileExplorer(QWidget* parent, const QFileInfo& file)
@@ -252,68 +369,6 @@ namespace QtUtils
 			widget->setFixedSize(width, height);
 
 		widget->resize(width, height);
-	}
-
-	std::optional<WindowInfo> GetWindowInfoForWidget(QWidget* widget)
-	{
-		WindowInfo wi;
-
-		// Windows and Apple are easy here since there's no display connection.
-#if defined(_WIN32)
-		wi.type = WindowInfo::Type::Win32;
-		wi.window_handle = reinterpret_cast<void*>(widget->winId());
-#elif defined(__APPLE__)
-		wi.type = WindowInfo::Type::MacOS;
-		wi.window_handle = reinterpret_cast<void*>(widget->winId());
-#else
-		QPlatformNativeInterface* pni = QGuiApplication::platformNativeInterface();
-		const QString platform_name = QGuiApplication::platformName();
-		if (platform_name == QStringLiteral("xcb"))
-		{
-			// Can't get a handle for an unmapped window in X, it doesn't like it.
-			if (!widget->isVisible())
-			{
-				Console.WriteLn("Returning null window info for widget because it is not visible.");
-				return std::nullopt;
-			}
-
-			wi.type = WindowInfo::Type::X11;
-			wi.display_connection = pni->nativeResourceForWindow("display", widget->windowHandle());
-			wi.window_handle = reinterpret_cast<void*>(widget->winId());
-		}
-		else if (platform_name == QStringLiteral("wayland"))
-		{
-			wi.type = WindowInfo::Type::Wayland;
-			wi.display_connection = pni->nativeResourceForWindow("display", widget->windowHandle());
-			wi.window_handle = pni->nativeResourceForWindow("surface", widget->windowHandle());
-		}
-		else
-		{
-			Console.WriteLn("Unknown PNI platform '%s'.", platform_name.toUtf8().constData());
-			return std::nullopt;
-		}
-#endif
-
-		const qreal dpr = widget->devicePixelRatioF();
-		wi.surface_width = static_cast<u32>(static_cast<qreal>(widget->width()) * dpr);
-		wi.surface_height = static_cast<u32>(static_cast<qreal>(widget->height()) * dpr);
-		wi.surface_scale = static_cast<float>(dpr);
-
-		// Query refresh rate, we need it for sync.
-		std::optional<float> surface_refresh_rate = WindowInfo::QueryRefreshRateForWindow(wi);
-		if (!surface_refresh_rate.has_value())
-		{
-			// Fallback to using the screen, getting the rate for Wayland is an utter mess otherwise.
-			const QScreen* widget_screen = widget->screen();
-			if (!widget_screen)
-				widget_screen = QGuiApplication::primaryScreen();
-			surface_refresh_rate = widget_screen ? static_cast<float>(widget_screen->refreshRate()) : 0.0f;
-		}
-
-		wi.surface_refresh_rate = surface_refresh_rate.value();
-		INFO_LOG("Surface refresh rate: {} hz", wi.surface_refresh_rate);
-
-		return wi;
 	}
 
 	QString AbstractItemModelToCSV(QAbstractItemModel* model, int role, bool useQuotes)

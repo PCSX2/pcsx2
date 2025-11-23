@@ -484,6 +484,13 @@ bool Achievements::CreateClient(rc_client_t** client, std::unique_ptr<HTTPDownlo
 
 	rc_client_set_userdata(new_client, http->get());
 
+	const std::string custom_host = Host::GetBaseStringSettingValue("Achievements", "Host", "");
+	if (!custom_host.empty())
+	{
+		Console.WriteLn("Achievements: Using custom host %s", custom_host.c_str());
+		rc_client_set_host(new_client, custom_host.c_str());
+	}
+
 	*client = new_client;
 	return true;
 }

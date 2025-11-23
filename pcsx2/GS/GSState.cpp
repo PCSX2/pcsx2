@@ -202,6 +202,9 @@ void GSState::Reset(bool hardware_reset)
 	m_backed_up_ctx = -1;
 
 	memcpy(&m_prev_env, &m_env, sizeof(m_prev_env));
+
+	m_perfmon_draw.Reset();
+	m_perfmon_frame.Reset();
 }
 
 template<bool auto_flush>
@@ -2125,6 +2128,16 @@ void GSState::FlushPrim()
 		g_perfmon.Put(GSPerfMon::Draw, 1);
 		g_perfmon.Put(GSPerfMon::Prim, m_index.tail / GSUtil::GetVertexCount(PRIM->PRIM));
 
+		if (GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
+		{
+			if (GSConfig.SaveDrawStats)
+			{
+				m_perfmon_draw = g_perfmon - m_perfmon_draw;
+				m_perfmon_draw.Dump(GetDrawDumpPath("%05d_draw_stats.txt", s_n), GSIsHardwareRenderer());
+				m_perfmon_draw = g_perfmon;
+			}
+		}
+
 		m_index.tail = 0;
 		m_vertex.head = 0;
 
@@ -2429,8 +2442,8 @@ void GSState::InitReadFIFO(u8* mem, int len)
 	if (GSConfig.SaveRT && GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
 	{
 		const std::string s(GetDrawDumpPath(
-			"%05d_read_%05x_%d_%d_%d_%d_%d_%d.bmp",
-			s_n, (int)m_env.BITBLTBUF.SBP, (int)m_env.BITBLTBUF.SBW, (int)m_env.BITBLTBUF.SPSM,
+			"%05d_read_%05x_%d_%s_%d_%d_%d_%d.bmp",
+			s_n, (int)m_env.BITBLTBUF.SBP, (int)m_env.BITBLTBUF.SBW, GSUtil::GetPSMName(m_env.BITBLTBUF.SPSM),
 			r.left, r.top, r.right, r.bottom));
 
 		m_mem.SaveBMP(s, m_env.BITBLTBUF.SBP, m_env.BITBLTBUF.SBW, m_env.BITBLTBUF.SPSM, r.right, r.bottom);

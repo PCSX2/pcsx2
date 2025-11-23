@@ -68,6 +68,9 @@ void ReadOSDConfigParames()
 
 	// Region settings for time/date and extended language
 	configParams2.UC[1] = ((u32)params[3] & 0x78) << 1; // Daylight Savings, 24hr clock, Date format
+	configParams2.daylightSavings = configParams2.UC[1] & 0x10 ? 1 : 0;
+	configParams2.timeFormat = configParams2.UC[1] & 0x20 ? 1 : 0;
+	configParams2.dateFormat = configParams2.UC[1] & 0x80 ? 2 : (configParams2.UC[1] & 0x40 ? 1 : 0);
 	// FIXME: format, version and language are set manually by the bios. Not sure if any game needs them, but it seems to set version to 2 and duplicate the language value.
 	configParams2.version = 2;
 	configParams2.language = configParams1.language;

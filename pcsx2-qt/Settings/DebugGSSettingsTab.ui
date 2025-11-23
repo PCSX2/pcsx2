@@ -71,7 +71,21 @@
           </property>
          </widget>
         </item>
-        <item row="4" column="0">
+		<item row="4" column="0">
+		  <widget class="QCheckBox" name="saveDrawStats">
+		   <property name="text">
+		    <string>Save Draw Stats</string>
+		   </property>
+		  </widget>
+		</item>
+		<item row="4" column="1">
+		  <widget class="QCheckBox" name="saveFrameStats">
+		    <property name="text">
+		      <string>Save Frame Stats</string>
+		    </property>
+		  </widget>
+		</item>
+        <item row="5" column="0">
          <widget class="QCheckBox" name="saveTransferImages">
           <property name="text">
            <string>Save Transfer Image Data</string>

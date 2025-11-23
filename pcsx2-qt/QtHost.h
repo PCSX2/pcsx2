@@ -28,7 +28,7 @@
 
 class SettingsInterface;
 
-class DisplayWidget;
+class DisplaySurface;
 struct VMBootParameters;
 
 enum class CDVD_SourceType : uint8_t;
@@ -69,7 +69,7 @@ public:
 
 	/// Called back from the GS thread when the display state changes (e.g. fullscreen, render to main).
 	std::optional<WindowInfo> acquireRenderWindow(bool recreate_window);
-	void connectDisplaySignals(DisplayWidget* widget);
+	void connectDisplaySignals(DisplaySurface* widget);
 	void releaseRenderWindow();
 
 	void startBackgroundControllerPollTimer();
@@ -290,4 +290,10 @@ namespace QtHost
 
 	/// Compare strings in the locale of the current UI language
 	int LocaleSensitiveCompare(QStringView lhs, QStringView rhs);
+
+	/// Determines whether or not requests to enter/exit fullscreen mode should
+	/// be ignored. This is a hack so that we don't destroy a dialog box while
+	/// inside its exec function, which would cause a crash.
+	void LockVMWithDialog();
+	void UnlockVMWithDialog();
 } // namespace QtHost

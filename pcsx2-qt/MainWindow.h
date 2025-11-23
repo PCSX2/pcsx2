@@ -20,7 +20,7 @@
 class QProgressBar;
 
 class AutoUpdaterDialog;
-class DisplayWidget;
+class DisplaySurface;
 class DisplayContainer;
 class GameListWidget;
 class ControllerSettingsWindow;
@@ -69,6 +69,7 @@ public:
 		friend MainWindow;
 
 		QWidget* m_dialog_parent;
+		bool m_has_lock;
 		bool m_was_paused;
 		bool m_was_fullscreen;
 	};
@@ -113,7 +114,7 @@ public:
 	void checkMousePosition(int x, int y);
 public Q_SLOTS:
 	void checkForUpdates(bool display_message, bool force_check);
-	void refreshGameList(bool invalidate_cache);
+	void refreshGameList(bool invalidate_cache, bool popup_on_error);
 	void cancelGameListRefresh();
 	void reportInfo(const QString& title, const QString& message);
 	void reportError(const QString& title, const QString& message);
@@ -257,7 +258,6 @@ private:
 	bool shouldAbortForMemcardBusy(const VMLock& lock);
 
 	QWidget* getContentParent();
-	QWidget* getDisplayContainer() const;
 	void saveDisplayWindowGeometryToConfig();
 	void restoreDisplayWindowGeometryFromConfig();
 	void createDisplayWidget(bool fullscreen, bool render_to_main);
@@ -274,11 +274,11 @@ private:
 	QString getDiscDevicePath(const QString& title);
 
 	void startGameListEntry(
-		const GameList::Entry* entry, std::optional<s32> save_slot = std::nullopt, std::optional<bool> fast_boot = std::nullopt, bool load_backup = false);
-	void setGameListEntryCoverImage(const GameList::Entry* entry);
-	void clearGameListEntryPlayTime(const GameList::Entry* entry, const time_t entry_played_time);
-	void goToWikiPage(const GameList::Entry* entry);
-	void openScreenshotsFolderForGame(const GameList::Entry* entry);
+		const GameList::Entry& entry, std::optional<s32> save_slot = std::nullopt, std::optional<bool> fast_boot = std::nullopt, bool load_backup = false);
+	void setGameListEntryCoverImage(const GameList::Entry& entry);
+	void clearGameListEntryPlayTime(const GameList::Entry& entry, const time_t entry_played_time);
+	void goToWikiPage(const GameList::Entry& entry);
+	void openSnapshotsFolderForGame(const GameList::Entry& entry);
 
 	std::optional<bool> promptForResumeState(const QString& save_state_path);
 	void loadSaveStateSlot(s32 slot, bool load_backup = false);
@@ -291,8 +291,8 @@ private:
 	Ui::MainWindow m_ui;
 
 	GameListWidget* m_game_list_widget = nullptr;
-	DisplayWidget* m_display_widget = nullptr;
-	DisplayContainer* m_display_container = nullptr;
+	DisplaySurface* m_display_surface = nullptr;
+	QWidget* m_display_container = nullptr;
 
 	SettingsWindow* m_settings_window = nullptr;
 	ControllerSettingsWindow* m_controller_settings_window = nullptr;

@@ -446,8 +446,8 @@ static void PrintCommandLineHelp(const char* progname)
 	std::fprintf(stderr, "  -help: Displays this information and exits.\n");
 	std::fprintf(stderr, "  -version: Displays version information and exits.\n");
 	std::fprintf(stderr, "  -dumpdir <dir>: Frame dump directory (will be dumped as filename_frameN.png).\n");
-	std::fprintf(stderr, "  -dump [rt|tex|z|f|a|i|tr]: Enabling dumping of render target, texture, z buffer, frame, "
-		"alphas, and info (context, vertices, transfers (list)), transfers (images), respectively, per draw. Generates lots of data.\n");
+	std::fprintf(stderr, "  -dump [rt|tex|z|f|a|i|tr|ds|fs]: Enabling dumping of render target, texture, z buffer, frame, "
+		"alphas, and info (context, vertices, list of transfers), transfers images, draw stats, frame stats, respectively, per draw. Generates lots of data.\n");
 	std::fprintf(stderr, "  -dumprange N[,L,B]: Start dumping from draw N (base 0), stops after L draws, and only "
 		"those draws that are multiples of B (intersection of -dumprange and -dumprangef used)."
 		"Defaults to 0,-1,1 (all draws). Only used if -dump used.\n");
@@ -533,6 +533,10 @@ bool GSRunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& pa
 					s_settings_interface.SetBoolValue("EmuCore/GS", "SaveInfo", true);
 				if (str.find("tr") != std::string::npos)
 					s_settings_interface.SetBoolValue("EmuCore/GS", "SaveTransferImages", true);
+				if (str.find("ds") != std::string::npos)
+					s_settings_interface.SetBoolValue("EmuCore/GS", "SaveDrawStats", true);
+				if (str.find("fs") != std::string::npos)
+					s_settings_interface.SetBoolValue("EmuCore/GS", "SaveFrameStats", true);
 				continue;
 			}
 			else if (CHECK_ARG_PARAM("-dumprange"))
@@ -726,7 +730,7 @@ bool GSRunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& pa
 			else if (CHECK_ARG("-noshadercache"))
 			{
 				Console.WriteLn("Disabling shader cache");
-				s_settings_interface.SetBoolValue("EmuCore/GS", "disable_shader_cache", true);
+				s_settings_interface.SetBoolValue("EmuCore/GS", "DisableShaderCache", true);
 				continue;
 			}
 			else if (CHECK_ARG("-window"))
@@ -857,16 +861,27 @@ void GSRunner::DumpStats()
 #define main real_main
 #endif
 
-static void CPUThreadMain(VMBootParameters* params) {
-	if (VMManager::Initialize(*params))
+static void CPUThreadMain(VMBootParameters* params, std::atomic<int>* ret)
+{
+	ret->store(EXIT_FAILURE);
+
+	if (VMManager::Internal::CPUThreadInitialize())
 	{
-		// run until end
-		GSDumpReplayer::SetLoopCount(s_loop_count);
-		VMManager::SetState(VMState::Running);
-		while (VMManager::GetState() == VMState::Running)
-			VMManager::Execute();
-		VMManager::Shutdown(false);
-		GSRunner::DumpStats();
+		// apply new settings (e.g. pick up renderer change)
+		VMManager::ApplySettings();
+		GSDumpReplayer::SetIsDumpRunner(true);
+
+		if (VMManager::Initialize(*params))
+		{
+			// run until end
+			GSDumpReplayer::SetLoopCount(s_loop_count);
+			VMManager::SetState(VMState::Running);
+			while (VMManager::GetState() == VMState::Running)
+				VMManager::Execute();
+			VMManager::Shutdown(false);
+			GSRunner::DumpStats();
+			ret->store(EXIT_SUCCESS);
+		}
 	}
 
 	VMManager::Internal::CPUThreadShutdown();
@@ -888,9 +903,6 @@ int main(int argc, char* argv[])
 	if (!GSRunner::ParseCommandLineArgs(argc, argv, params))
 		return EXIT_FAILURE;
 
-	if (!VMManager::Internal::CPUThreadInitialize())
-		return EXIT_FAILURE;
-
 	if (s_use_window.value_or(true) && !GSRunner::CreatePlatformWindow())
 	{
 		Console.Error("Failed to create window.");
@@ -900,18 +912,14 @@ int main(int argc, char* argv[])
 	// Override settings that shouldn't be picked up from defaults or INIs.
 	GSRunner::SettingsOverride();
 
-	// apply new settings (e.g. pick up renderer change)
-	VMManager::ApplySettings();
-	GSDumpReplayer::SetIsDumpRunner(true);
-
-	std::thread cputhread(CPUThreadMain, &params);
+	std::atomic<int> thread_ret;
+	std::thread cputhread(CPUThreadMain, &params, &thread_ret);
 	GSRunner::PumpPlatformMessages(/*forever=*/true);
 	cputhread.join();
 
-	VMManager::Internal::CPUThreadShutdown();
 	GSRunner::DestroyPlatformWindow();
 
-	return EXIT_SUCCESS;
+	return thread_ret.load();
 }
 
 void Host::PumpMessagesOnCPUThread()

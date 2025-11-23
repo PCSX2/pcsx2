@@ -1512,14 +1512,15 @@ void GSDevice12::FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u32
 	struct Uniforms
 	{
 		float weight;
-		float pad0[3];
+		float step_multiplier;
+		float pad0[2];
 		GSVector2i clamp_min;
 		int downsample_factor;
 		int pad1;
 	};
 
 	const Uniforms cb = {
-		static_cast<float>(downsample_factor * downsample_factor), {}, clamp_min, static_cast<int>(downsample_factor), 0};
+		static_cast<float>(downsample_factor * downsample_factor), (GSConfig.UserHacks_NativeScaling > GSNativeScaling::Aggressive) ? 2.0f : 1.0f, {}, clamp_min, static_cast<int>(downsample_factor), 0};
 	SetUtilityRootSignature();
 	SetUtilityPushConstants(&cb, sizeof(cb));
 
@@ -3939,9 +3940,6 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 			{
 				Console.Warning("D3D12: Failed to allocate ColorClip render target, aborting draw.");
 
-				if (draw_rt_clone)
-					Recycle(draw_rt_clone);
-
 				if (date_image)
 					Recycle(date_image);
 
@@ -3963,15 +3961,16 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 			}
 
 			// we're not drawing to the RT, so we can use it as a source
-			if (config.require_one_barrier)
+			if (config.require_one_barrier && !m_features.multidraw_fb_copy)
 				PSSetShaderResource(2, draw_rt, true);
 		}
 
 		draw_rt = colclip_rt;
 	}
 
-	// Clear texture binding when it's bound to RT, DSV will be read only.
-	if (draw_rt && static_cast<GSTexture12*>(draw_rt)->GetSRVDescriptor() == m_tfx_textures[0])
+	// Clear texture binding when it's bound to RT or DS.
+	if (!config.tex && ((draw_rt && static_cast<GSTexture12*>(draw_rt)->GetSRVDescriptor() == m_tfx_textures[0]) ||
+		(draw_ds && static_cast<GSTexture12*>(draw_ds)->GetSRVDescriptor() == m_tfx_textures[0])))
 		PSSetShaderResource(0, nullptr, false);
 
 	if (m_in_render_pass && (m_current_render_target == draw_rt || m_current_depth_target == draw_ds))

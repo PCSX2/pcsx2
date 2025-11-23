@@ -136,6 +136,16 @@
        <string>Aggressive</string>
       </property>
      </item>
+     <item>
+      <property name="text">
+       <string>Normal (Maintain Upscale)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Aggressive (Maintain Upscale)</string>
+      </property>
+     </item>
     </widget>
    </item>
    <item row="4" column="0">

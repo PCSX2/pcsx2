@@ -163,6 +163,9 @@ void SymbolImporter::Reset()
 
 void SymbolImporter::LoadAndAnalyseElf(Pcsx2Config::DebugAnalysisOptions options)
 {
+	if (!VMManager::HasValidVM())
+		return;
+
 	const std::string& elf_path = VMManager::GetCurrentELF();
 
 	Error error;
@@ -192,6 +195,9 @@ void SymbolImporter::AnalyseElf(
 	Pcsx2Config::DebugAnalysisOptions options,
 	bool wait_until_elf_is_loaded)
 {
+	if (!VMManager::HasValidVM())
+		return;
+
 	// Search for a .sym file to load symbols from.
 	std::string nocash_path;
 	CDVD_SourceType source_type = CDVDsys_GetSourceType();

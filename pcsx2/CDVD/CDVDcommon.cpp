@@ -21,6 +21,7 @@
 #include <ctype.h>
 #include <exception>
 #include <memory>
+#include <mutex>
 #include <time.h>
 
 #include "fmt/format.h"
@@ -270,6 +271,23 @@ static void DetectDiskType()
 
 static std::string m_SourceFilename[3];
 static CDVD_SourceType m_CurrentSourceType = CDVD_SourceType::NoDisc;
+static std::mutex s_cdvd_lock;
+
+bool cdvdLock(Error* error)
+{
+	if (!s_cdvd_lock.try_lock())
+	{
+		Error::SetString(error, TRANSLATE_STR("CDVD", "The CDVD system is currently in use."));
+		return false;
+	}
+
+	return true;
+}
+
+void cdvdUnlock()
+{
+	s_cdvd_lock.unlock();
+}
 
 void CDVDsys_SetFile(CDVD_SourceType srctype, std::string newfile)
 {
@@ -579,7 +597,7 @@ static s32 NODISCdummyS32()
 	return 0;
 }
 
-static void NODISCnewDiskCB(void (*/* callback */)())
+static void NODISCnewDiskCB(void (* /* callback */)())
 {
 }
 

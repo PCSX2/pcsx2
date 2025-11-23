@@ -86,16 +86,6 @@ const char* MainWindow::DISC_IMAGE_FILTER = QT_TRANSLATE_NOOP("MainWindow", "All
 
 MainWindow* g_main_window = nullptr;
 
-#if defined(_WIN32) || defined(__APPLE__)
-static const bool s_use_central_widget = false;
-#else
-// Qt Wayland is broken. Any sort of stacked widget usage fails to update,
-// leading to broken window resizes, no display rendering, etc. So, we mess
-// with the central widget instead. Which we can't do on xorg, because it
-// breaks window resizing there...
-static bool s_use_central_widget = false;
-#endif
-
 // UI thread VM validity.
 static bool s_vm_valid = false;
 static bool s_vm_paused = false;
@@ -113,19 +103,6 @@ MainWindow::MainWindow()
 {
 	pxAssert(!g_main_window);
 	g_main_window = this;
-
-	//  Native window rendering is broken in wayland.
-	//  Let's work around it by disabling it for every widget besides
-	//  DisplayWidget.
-	//  Additionally, alien widget rendering is much more performant, so we
-	//  should have a nice responsiveness boost in our UI :)
-	//  QTBUG-133919, reported upstream by govanify
-	QGuiApplication::setAttribute(Qt::AA_NativeWindows, false);
-	QGuiApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings, true);
-
-#if !defined(_WIN32) && !defined(__APPLE__)
-	s_use_central_widget = DisplayContainer::isRunningOnWayland();
-#endif
 }
 
 MainWindow::~MainWindow()
@@ -192,7 +169,7 @@ static void makeIconsMasks(QWidget* menu)
 
 QWidget* MainWindow::getContentParent()
 {
-	return s_use_central_widget ? static_cast<QWidget*>(this) : static_cast<QWidget*>(m_ui.mainContainer);
+	return static_cast<QWidget*>(m_ui.mainContainer);
 }
 
 void MainWindow::setupAdditionalUi()
@@ -219,15 +196,7 @@ void MainWindow::setupAdditionalUi()
 	m_game_list_widget = new GameListWidget(getContentParent());
 	m_game_list_widget->initialize();
 	m_ui.actionGridViewShowTitles->setChecked(m_game_list_widget->getShowGridCoverTitles());
-	if (s_use_central_widget)
-	{
-		m_ui.mainContainer = nullptr; // setCentralWidget() will delete this
-		setCentralWidget(m_game_list_widget);
-	}
-	else
-	{
-		m_ui.mainContainer->addWidget(m_game_list_widget);
-	}
+	m_ui.mainContainer->addWidget(m_game_list_widget);
 
 	m_status_progress_widget = new QProgressBar(m_ui.statusBar);
 	m_status_progress_widget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
@@ -357,8 +326,8 @@ void MainWindow::connectSignals()
 		[this]() { doControllerSettings(ControllerSettingsWindow::Category::HotkeySettings); });
 	connect(m_ui.actionAddGameDirectory, &QAction::triggered,
 		[this]() { getSettingsWindow()->getGameListSettingsWidget()->addSearchDirectory(this); });
-	connect(m_ui.actionScanForNewGames, &QAction::triggered, [this]() { refreshGameList(false); });
-	connect(m_ui.actionRescanAllGames, &QAction::triggered, [this]() { refreshGameList(true); });
+	connect(m_ui.actionScanForNewGames, &QAction::triggered, [this]() { refreshGameList(false, true); });
+	connect(m_ui.actionRescanAllGames, &QAction::triggered, [this]() { refreshGameList(true, true); });
 	connect(m_ui.actionViewToolbar, &QAction::toggled, this, &MainWindow::onViewToolbarActionToggled);
 	connect(m_ui.actionViewLockToolbar, &QAction::toggled, this, &MainWindow::onViewLockToolbarActionToggled);
 	connect(m_ui.actionViewStatusBar, &QAction::toggled, this, &MainWindow::onViewStatusBarActionToggled);
@@ -532,7 +501,7 @@ void MainWindow::recreate()
 	if (was_display_created)
 	{
 		g_emu_thread->setSurfaceless(true);
-		while (m_display_widget || !g_emu_thread->isSurfaceless())
+		while (m_display_surface || !g_emu_thread->isSurfaceless())
 			QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
 
 		m_display_created = false;
@@ -547,7 +516,7 @@ void MainWindow::recreate()
 	MainWindow* new_main_window = new MainWindow();
 	pxAssert(g_main_window == new_main_window);
 	new_main_window->initialize();
-	new_main_window->refreshGameList(false);
+	new_main_window->refreshGameList(false, false);
 	new_main_window->show();
 	deleteLater();
 
@@ -1033,11 +1002,10 @@ void MainWindow::updateWindowTitle()
 	if (windowTitle() != main_title)
 		setWindowTitle(main_title);
 
-	if (m_display_widget && !isRenderingToMain())
+	if (m_display_container && !isRenderingToMain())
 	{
-		QWidget* container = m_display_container ? static_cast<QWidget*>(m_display_container) : static_cast<QWidget*>(m_display_widget);
-		if (container->windowTitle() != display_title)
-			container->setWindowTitle(display_title);
+		if (m_display_container->windowTitle() != display_title)
+			m_display_container->setWindowTitle(display_title);
 	}
 
 	if (g_log_window)
@@ -1052,7 +1020,7 @@ void MainWindow::updateWindowState(bool force_visible)
 
 	const bool hide_window = !isRenderingToMain() && shouldHideMainWindow();
 	const bool disable_resize = Host::GetBoolSettingValue("UI", "DisableWindowResize", false);
-	const bool has_window = s_vm_valid || m_display_widget;
+	const bool has_window = s_vm_valid || m_display_surface;
 
 	// Need to test both valid and display widget because of startup (vm invalid while window is created).
 	const bool visible = force_visible || !hide_window || !has_window;
@@ -1065,8 +1033,8 @@ void MainWindow::updateWindowState(bool force_visible)
 		QtUtils::SetWindowResizeable(this, resizeable);
 
 	// Update the display widget too if rendering separately.
-	if (m_display_widget && !isRenderingToMain())
-		QtUtils::SetWindowResizeable(getDisplayContainer(), resizeable);
+	if (m_display_surface && !isRenderingToMain())
+		QtUtils::SetWindowResizeable(m_display_container, resizeable);
 }
 
 void MainWindow::setProgressBar(int current, int total)
@@ -1093,26 +1061,20 @@ void MainWindow::clearProgressBar()
 
 bool MainWindow::isShowingGameList() const
 {
-	if (s_use_central_widget)
-		return (centralWidget() == m_game_list_widget);
-	else
-		return (m_ui.mainContainer->currentIndex() == 0);
+	return (m_ui.mainContainer->currentIndex() == 0);
 }
 
 bool MainWindow::isRenderingFullscreen() const
 {
-	if (!MTGS::IsOpen() || !m_display_widget)
+	if (!MTGS::IsOpen() || !m_display_surface)
 		return false;
 
-	return getDisplayContainer()->isFullScreen();
+	return m_display_container->isFullScreen();
 }
 
 bool MainWindow::isRenderingToMain() const
 {
-	if (s_use_central_widget)
-		return (m_display_widget && centralWidget() == m_display_widget);
-	else
-		return (m_display_widget && m_ui.mainContainer->indexOf(m_display_widget) == 1);
+	return (m_display_surface && m_ui.mainContainer->indexOf(m_display_container) == 1);
 }
 
 bool MainWindow::shouldHideMouseCursor() const
@@ -1137,11 +1099,19 @@ bool MainWindow::shouldMouseLock() const
 	if (!Host::GetBoolSettingValue("EmuCore", "EnableMouseLock", false))
 		return false;
 
+	if (m_display_created == false || m_display_surface == nullptr && !isRenderingToMain())
+		return false;
+
 	bool windowsHidden = (!g_debugger_window || g_debugger_window->isHidden()) &&
 	                     (!m_controller_settings_window || m_controller_settings_window->isHidden()) &&
 	                     (!m_settings_window || m_settings_window->isHidden());
 
-	return windowsHidden && (isActiveWindow() || isRenderingFullscreen());
+	auto* displayWindow = isRenderingToMain() ? window() : m_display_container->window();
+
+	if (displayWindow == nullptr)
+		return false;
+
+	return windowsHidden && (displayWindow->isActiveWindow() || displayWindow->isFullScreen());
 }
 
 bool MainWindow::shouldAbortForMemcardBusy(const VMLock& lock)
@@ -1186,7 +1156,7 @@ void MainWindow::switchToGameListView()
 
 		// switch to surfaceless. we have to wait until the display widget is gone before we swap over.
 		g_emu_thread->setSurfaceless(true);
-		while (m_display_widget)
+		while (m_display_surface)
 			QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
 	}
 }
@@ -1203,17 +1173,13 @@ void MainWindow::switchToEmulationView()
 	if (s_vm_paused && !m_was_paused_on_surface_loss)
 		g_emu_thread->setVMPaused(false);
 
-	if (m_display_widget)
-		m_display_widget->setFocus();
+	if (m_display_surface)
+		m_display_container->setFocus();
 }
 
-void MainWindow::refreshGameList(bool invalidate_cache)
+void MainWindow::refreshGameList(bool invalidate_cache, bool popup_on_error)
 {
-	// can't do this while the VM is running because of CDVD
-	if (s_vm_valid)
-		return;
-
-	m_game_list_widget->refresh(invalidate_cache);
+	m_game_list_widget->refresh(invalidate_cache, popup_on_error);
 }
 
 void MainWindow::cancelGameListRefresh()
@@ -1345,7 +1311,7 @@ void MainWindow::requestExit(bool allow_confirm)
 
 void MainWindow::checkForSettingChanges()
 {
-	if (m_display_widget)
+	if (m_display_surface)
 		updateDisplayWidgetCursor();
 
 	updateWindowState();
@@ -1355,10 +1321,10 @@ void MainWindow::checkForSettingChanges()
 
 std::optional<WindowInfo> MainWindow::getWindowInfo()
 {
-	if (!m_display_widget || isRenderingToMain())
-		return QtUtils::GetWindowInfoForWidget(this);
-	else if (QWidget* widget = getDisplayContainer())
-		return QtUtils::GetWindowInfoForWidget(widget);
+	if (!m_display_surface || isRenderingToMain())
+		return QtUtils::GetWindowInfoForWindow(this);
+	else if (m_display_surface)
+		return QtUtils::GetWindowInfoForWindow(m_display_surface);
 	else
 		return std::nullopt;
 }
@@ -1377,9 +1343,8 @@ void MainWindow::onGameListRefreshComplete()
 
 void MainWindow::onGameListSelectionChanged()
 {
-	auto lock = GameList::GetLock();
-	const GameList::Entry* entry = m_game_list_widget->getSelectedEntry();
-	if (!entry)
+	const std::optional<GameList::Entry> entry = m_game_list_widget->getSelectedEntry();
+	if (!entry.has_value())
 		return;
 
 	m_ui.statusBar->showMessage(QString::fromStdString(entry->path));
@@ -1387,9 +1352,8 @@ void MainWindow::onGameListSelectionChanged()
 
 void MainWindow::onGameListEntryActivated()
 {
-	auto lock = GameList::GetLock();
-	const GameList::Entry* entry = m_game_list_widget->getSelectedEntry();
-	if (!entry)
+	const std::optional<GameList::Entry> entry = m_game_list_widget->getSelectedEntry();
+	if (!entry.has_value())
 		return;
 
 	if (s_vm_valid)
@@ -1417,24 +1381,23 @@ void MainWindow::onGameListEntryActivated()
 	}
 
 	// only resume if the option is enabled, and we have one for this game
-	startGameListEntry(entry, resume.value() ? std::optional<s32>(-1) : std::optional<s32>(), std::nullopt);
+	startGameListEntry(*entry, resume.value() ? std::optional<s32>(-1) : std::optional<s32>(), std::nullopt);
 }
 
 void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 {
-	auto lock = GameList::GetLock();
-	const GameList::Entry* entry = m_game_list_widget->getSelectedEntry();
+	const std::optional<GameList::Entry> entry = m_game_list_widget->getSelectedEntry();
 
 	QMenu menu;
 
-	if (entry)
+	if (entry.has_value())
 	{
 		QAction* action = menu.addAction(tr("Properties..."));
 		action->setEnabled(!entry->serial.empty() || entry->type == GameList::EntryType::ELF);
 		if (action->isEnabled())
 		{
 			connect(action, &QAction::triggered, [entry]() {
-				SettingsWindow::openGamePropertiesDialog(entry,
+				SettingsWindow::openGamePropertiesDialog(&*entry,
 					entry->title, entry->serial, entry->crc, entry->type == GameList::EntryType::ELF, nullptr);
 			});
 		}
@@ -1446,7 +1409,7 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 		});
 
 		action = menu.addAction(tr("Set Cover Image..."));
-		connect(action, &QAction::triggered, [this, entry]() { setGameListEntryCoverImage(entry); });
+		connect(action, &QAction::triggered, [this, entry]() { setGameListEntryCoverImage(*entry); });
 
 #if !defined(__APPLE__)
 		connect(menu.addAction(tr("Create Game Shortcut...")), &QAction::triggered, [this]() { MainWindow::onCreateGameShortcutTriggered(); });
@@ -1458,38 +1421,37 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 		const time_t entry_played_time = GameList::GetCachedPlayedTimeForSerial(entry->serial);
 		// Best two options given zero play time are to grey this out or to not show it at all.
 		if (entry_played_time)
-			connect(menu.addAction(tr("Reset Play Time")), &QAction::triggered, [this, entry, entry_played_time]()
-				{ clearGameListEntryPlayTime(entry, entry_played_time); });
+			connect(menu.addAction(tr("Reset Play Time")), &QAction::triggered, [this, entry, entry_played_time]() { clearGameListEntryPlayTime(*entry, entry_played_time); });
 
 		// Check Wiki Page functionality is based on a serial redirect.
 		if (!entry->serial.empty())
-			connect(menu.addAction(tr("Check Wiki Page")), &QAction::triggered, [this, entry]() { goToWikiPage(entry); });
+			connect(menu.addAction(tr("Check Wiki Page")), &QAction::triggered, [this, entry]() { goToWikiPage(*entry); });
 
-		action = menu.addAction(tr("Open Screenshots Folder"));
-		connect(action, &QAction::triggered, [this, entry]() { openScreenshotsFolderForGame(entry); });
+		action = menu.addAction(tr("Open Snapshots Folder"));
+		connect(action, &QAction::triggered, [this, entry]() { openSnapshotsFolderForGame(*entry); });
 		menu.addSeparator();
 
 		if (!s_vm_valid)
 		{
 			action = menu.addAction(tr("Default Boot"));
-			connect(action, &QAction::triggered, [this, entry]() { startGameListEntry(entry); });
+			connect(action, &QAction::triggered, [this, entry]() { startGameListEntry(*entry); });
 
 			// Make bold to indicate it's the default choice when double-clicking
 			if (!VMManager::HasSaveStateInSlot(entry->serial.c_str(), entry->crc, -1))
 				QtUtils::MarkActionAsDefault(action);
 
 			action = menu.addAction(tr("Fast Boot"));
-			connect(action, &QAction::triggered, [this, entry]() { startGameListEntry(entry, std::nullopt, true); });
+			connect(action, &QAction::triggered, [this, entry]() { startGameListEntry(*entry, std::nullopt, true); });
 
 			action = menu.addAction(tr("Full Boot"));
-			connect(action, &QAction::triggered, [this, entry]() { startGameListEntry(entry, std::nullopt, false); });
+			connect(action, &QAction::triggered, [this, entry]() { startGameListEntry(*entry, std::nullopt, false); });
 
 			if (m_ui.menuDebug->menuAction()->isVisible())
 			{
 				action = menu.addAction(tr("Boot and Debug"));
 				connect(action, &QAction::triggered, [this, entry]() {
 					DebugInterface::setPauseOnEntry(true);
-					startGameListEntry(entry);
+					startGameListEntry(*entry);
 					DebuggerWindow::getInstance()->show();
 				});
 			}
@@ -1595,7 +1557,7 @@ void MainWindow::onSaveStateMenuAboutToShow()
 
 void MainWindow::onStartFullscreenUITriggered()
 {
-	if (m_display_widget)
+	if (m_display_surface)
 		g_emu_thread->stopFullscreenUI();
 	else
 		g_emu_thread->startFullscreenUI(Host::GetBaseBoolSettingValue("UI", "StartFullscreen", false));
@@ -1761,7 +1723,10 @@ void MainWindow::onToolsCoverDownloaderTriggered()
 #if !defined(__APPLE__)
 void MainWindow::onCreateGameShortcutTriggered()
 {
-	const GameList::Entry* entry = m_game_list_widget->getSelectedEntry();
+	const std::optional<GameList::Entry> entry = m_game_list_widget->getSelectedEntry();
+	if (!entry.has_value())
+		return;
+
 	const QString title = QString::fromStdString(entry->GetTitle());
 	const QString path = QString::fromStdString(entry->path);
 	VMLock lock(pauseAndLockVM());
@@ -2030,7 +1995,7 @@ void MainWindow::onVMPaused()
 	updateStatusBarWidgetVisibility();
 	m_last_fps_status = m_status_verbose_widget->text();
 	m_status_verbose_widget->setText(tr("Paused"));
-	if (m_display_widget)
+	if (m_display_surface)
 		updateDisplayWidgetCursor();
 }
 
@@ -2052,10 +2017,10 @@ void MainWindow::onVMResumed()
 	updateStatusBarWidgetVisibility();
 	m_status_verbose_widget->setText(m_last_fps_status);
 	m_last_fps_status = QString();
-	if (m_display_widget)
+	if (m_display_surface)
 	{
 		updateDisplayWidgetCursor();
-		m_display_widget->setFocus();
+		m_display_container->setFocus();
 	}
 }
 
@@ -2087,14 +2052,14 @@ void MainWindow::onVMStopped()
 		return;
 	}
 
-	if (m_display_widget)
+	if (m_display_surface)
 		updateDisplayWidgetCursor();
 	else
 		switchToGameListView();
 
 	// reload played time
 	if (m_game_list_widget->isShowingGameList())
-		m_game_list_widget->refresh(false);
+		m_game_list_widget->refresh(false, false);
 }
 
 void MainWindow::onGameChanged(const QString& title, const QString& elf_override, const QString& disc_path,
@@ -2323,19 +2288,24 @@ bool MainWindow::nativeEvent(const QByteArray& eventType, void* message, qintptr
 
 		if (msg->message == WM_INPUT)
 		{
-			UINT dwSize = 40;
-			static BYTE lpb[40];
-			if (GetRawInputData((HRAWINPUT)msg->lParam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)))
+			UINT dwSize = 0;
+			GetRawInputData((HRAWINPUT)msg->lParam, RID_INPUT, nullptr, &dwSize, sizeof(RAWINPUTHEADER));
+
+			if (dwSize > 0)
 			{
-				const RAWINPUT* raw = (RAWINPUT*)lpb;
-				if (raw->header.dwType == RIM_TYPEMOUSE)
+				std::vector<BYTE> lpb(dwSize);
+				if (GetRawInputData((HRAWINPUT)msg->lParam, RID_INPUT, lpb.data(), &dwSize, sizeof(RAWINPUTHEADER)) == dwSize)
 				{
-					const RAWMOUSE& mouse = raw->data.mouse;
-					if (mouse.usFlags == MOUSE_MOVE_ABSOLUTE || mouse.usFlags == MOUSE_MOVE_RELATIVE)
+					const RAWINPUT* raw = reinterpret_cast<const RAWINPUT*>(lpb.data());
+					if (raw->header.dwType == RIM_TYPEMOUSE)
 					{
-						POINT cursorPos;
-						GetCursorPos(&cursorPos);
-						checkMousePosition(cursorPos.x, cursorPos.y);
+						const RAWMOUSE& mouse = raw->data.mouse;
+						if (mouse.usFlags == MOUSE_MOVE_ABSOLUTE || mouse.usFlags == MOUSE_MOVE_RELATIVE)
+						{
+							POINT cursorPos;
+							if (GetCursorPos(&cursorPos))
+								checkMousePosition(cursorPos.x, cursorPos.y);
+						}
 					}
 				}
 			}
@@ -2352,22 +2322,17 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(bool recreate_window, 
 	DevCon.WriteLn("acquireRenderWindow() recreate=%s fullscreen=%s render_to_main=%s surfaceless=%s", recreate_window ? "true" : "false",
 		fullscreen ? "true" : "false", render_to_main ? "true" : "false", surfaceless ? "true" : "false");
 
-	QWidget* container = m_display_container ? static_cast<QWidget*>(m_display_container) : static_cast<QWidget*>(m_display_widget);
 	const bool is_fullscreen = isRenderingFullscreen();
 	const bool is_rendering_to_main = isRenderingToMain();
-	const bool changing_surfaceless = (!m_display_widget != surfaceless);
+	const bool changing_surfaceless = (!m_display_surface != surfaceless);
 	if (m_display_created && !recreate_window && fullscreen == is_fullscreen && is_rendering_to_main == render_to_main &&
 		!changing_surfaceless)
 	{
-		return m_display_widget ? m_display_widget->getWindowInfo() : WindowInfo();
+		return m_display_surface ? m_display_surface->getWindowInfo() : WindowInfo();
 	}
 
 	// Skip recreating the surface if we're just transitioning between fullscreen and windowed with render-to-main off.
-	// .. except on Wayland, where everything tends to break if you don't recreate.
-	const bool has_container = (m_display_container != nullptr);
-	const bool needs_container = DisplayContainer::isNeeded(fullscreen, render_to_main);
-	if (m_display_created && !recreate_window && !is_rendering_to_main && !render_to_main && has_container == needs_container &&
-		!needs_container && !changing_surfaceless)
+	if (m_display_created && !recreate_window && !is_rendering_to_main && !render_to_main && !changing_surfaceless)
 	{
 		DevCon.WriteLn("Toggling to %s without recreating surface", (fullscreen ? "fullscreen" : "windowed"));
 
@@ -2377,23 +2342,23 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(bool recreate_window, 
 
 		if (fullscreen)
 		{
-			container->showFullScreen();
+			m_display_container->showFullScreen();
 		}
 		else
 		{
 			if (m_is_temporarily_windowed && g_emu_thread->shouldRenderToMain())
-				container->setGeometry(geometry());
+				m_display_container->setGeometry(geometry());
 			else
 				restoreDisplayWindowGeometryFromConfig();
-			container->showNormal();
+			m_display_container->showNormal();
 		}
 
 		updateDisplayWidgetCursor();
-		m_display_widget->setFocus();
+		m_display_container->setFocus();
 		updateWindowState();
 
 		QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
-		return m_display_widget->getWindowInfo();
+		return m_display_surface->getWindowInfo();
 	}
 
 	destroyDisplayWidget(surfaceless);
@@ -2412,7 +2377,7 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(bool recreate_window, 
 
 	createDisplayWidget(fullscreen, render_to_main);
 
-	std::optional<WindowInfo> wi = m_display_widget->getWindowInfo();
+	std::optional<WindowInfo> wi = m_display_surface->getWindowInfo();
 	if (!wi.has_value())
 	{
 		QMessageBox::critical(this, tr("Error"), tr("Failed to get window info from widget"));
@@ -2420,14 +2385,13 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(bool recreate_window, 
 		return std::nullopt;
 	}
 
-	g_emu_thread->connectDisplaySignals(m_display_widget);
+	g_emu_thread->connectDisplaySignals(m_display_surface);
 
 	updateWindowTitle();
 	updateWindowState();
 
 	updateDisplayWidgetCursor();
-	m_display_widget->setFocus();
-
+	m_display_container->setFocus();
 	return wi;
 }
 
@@ -2441,63 +2405,45 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
 		QGuiApplication::sync();
 	}
 
-	QWidget* container;
-	if (DisplayContainer::isNeeded(fullscreen, render_to_main))
+	m_display_surface = new DisplaySurface();
+	if (fullscreen || !render_to_main)
 	{
-		m_display_container = new DisplayContainer();
-		m_display_widget = new DisplayWidget(m_display_container);
-		m_display_container->setDisplayWidget(m_display_widget);
-		container = m_display_container;
+		m_display_container = m_display_surface->createWindowContainer();
+		m_display_container->setWindowTitle(windowTitle());
+		m_display_container->setWindowIcon(windowIcon());
 	}
 	else
 	{
-		m_display_widget = new DisplayWidget((!fullscreen && render_to_main) ? getContentParent() : nullptr);
-		container = m_display_widget;
-	}
-
-	if (fullscreen || !render_to_main)
-	{
-		container->setWindowTitle(windowTitle());
-		container->setWindowIcon(windowIcon());
+		m_display_container = m_display_surface->createWindowContainer(getContentParent());
 	}
 
 	if (fullscreen)
 	{
-		// Don't risk doing this on Wayland, it really doesn't like window state changes,
-		// and positioning has no effect anyway.
-		if (!s_use_central_widget)
-		{
-			if (isVisible() && g_emu_thread->shouldRenderToMain())
-				container->move(pos());
-			else
-				restoreDisplayWindowGeometryFromConfig();
-		}
-
-		container->showFullScreen();
+		// On Wayland, while move/restoreGeometry can't position the window, it can influence which screen they show up on
+		if (isVisible() && g_emu_thread->shouldRenderToMain())
+			m_display_container->move(pos());
+		else
+			restoreDisplayWindowGeometryFromConfig();
+		m_display_container->showFullScreen();
 	}
 	else if (!render_to_main)
 	{
 		if (m_is_temporarily_windowed && g_emu_thread->shouldRenderToMain())
-			container->setGeometry(geometry());
+			m_display_container->setGeometry(geometry());
 		else
 			restoreDisplayWindowGeometryFromConfig();
-		container->showNormal();
-	}
-	else if (s_use_central_widget)
-	{
-		m_game_list_widget->setVisible(false);
-		takeCentralWidget();
-		m_game_list_widget->setParent(this); // takeCentralWidget() removes parent
-		setCentralWidget(m_display_widget);
-		m_display_widget->setFocus();
-		update();
+		m_display_container->showNormal();
 	}
 	else
 	{
 		pxAssertRel(m_ui.mainContainer->count() == 1, "Has no display widget");
-		m_ui.mainContainer->addWidget(container);
+		m_ui.mainContainer->addWidget(m_display_container);
 		m_ui.mainContainer->setCurrentIndex(1);
 	}
+
+	// Attatch drag and drop signals
+	connect(m_display_surface, &DisplaySurface::dragEnterEvent, this, &MainWindow::dragEnterEvent);
+	connect(m_display_surface, &DisplaySurface::dropEvent, this, &MainWindow::dropEvent);
 
 	updateDisplayRelatedActions(true, render_to_main, fullscreen);
 
@@ -2507,7 +2453,7 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
 
 void MainWindow::displayResizeRequested(qint32 width, qint32 height)
 {
-	if (!m_display_widget)
+	if (!m_display_surface)
 		return;
 
 	// unapply the pixel scaling factor for hidpi
@@ -2515,15 +2461,15 @@ void MainWindow::displayResizeRequested(qint32 width, qint32 height)
 	width = static_cast<qint32>(std::max(static_cast<int>(std::lroundf(static_cast<float>(width) / dpr)), 1));
 	height = static_cast<qint32>(std::max(static_cast<int>(std::lroundf(static_cast<float>(height) / dpr)), 1));
 
-	if (m_display_container || !m_display_widget->parent())
+	if (!m_display_container->parent())
 	{
 		// no parent - rendering to separate window. easy.
-		QtUtils::ResizePotentiallyFixedSizeWindow(getDisplayContainer(), width, height);
+		QtUtils::ResizePotentiallyFixedSizeWindow(m_display_container, width, height);
 		return;
 	}
 
 	// we are rendering to the main window. we have to add in the extra height from the toolbar/status bar.
-	const s32 extra_height = this->height() - m_display_widget->height();
+	const s32 extra_height = this->height() - m_display_container->height();
 	QtUtils::ResizePotentiallyFixedSizeWindow(this, width, height + extra_height);
 }
 
@@ -2534,7 +2480,7 @@ void MainWindow::mouseModeRequested(bool relative_mode, bool hide_cursor)
 
 	m_relative_mouse_mode = relative_mode;
 	m_hide_mouse_cursor = hide_cursor;
-	if (m_display_widget && !s_vm_paused)
+	if (m_display_surface && !s_vm_paused)
 		updateDisplayWidgetCursor();
 }
 
@@ -2550,73 +2496,46 @@ void MainWindow::releaseRenderWindow()
 
 void MainWindow::destroyDisplayWidget(bool show_game_list)
 {
-	if (!m_display_widget)
+	if (!m_display_surface)
 		return;
 
 	if (!isRenderingFullscreen() && !isRenderingToMain())
 		saveDisplayWindowGeometryToConfig();
 
-	if (m_display_container)
-		m_display_container->removeDisplayWidget();
-
 	if (isRenderingToMain())
 	{
-		if (s_use_central_widget)
+		pxAssertRel(m_ui.mainContainer->indexOf(m_display_container) == 1, "Display widget in stack");
+		m_ui.mainContainer->removeWidget(m_display_container);
+		if (show_game_list)
 		{
-			pxAssertRel(centralWidget() == m_display_widget, "Display widget is currently central");
-			takeCentralWidget();
-			if (show_game_list)
-			{
-				m_game_list_widget->setVisible(true);
-				setCentralWidget(m_game_list_widget);
-				m_game_list_widget->resizeTableViewColumnsToFit();
-			}
-		}
-		else
-		{
-			pxAssertRel(m_ui.mainContainer->indexOf(m_display_widget) == 1, "Display widget in stack");
-			m_ui.mainContainer->removeWidget(m_display_widget);
-			if (show_game_list)
-			{
-				m_ui.mainContainer->setCurrentIndex(0);
-				m_game_list_widget->resizeTableViewColumnsToFit();
-			}
+			m_ui.mainContainer->setCurrentIndex(0);
+			m_game_list_widget->resizeTableViewColumnsToFit();
 		}
 	}
 
-	if (m_display_widget)
-	{
-		m_display_widget->destroy();
-		m_display_widget = nullptr;
-	}
-
-	if (m_display_container)
-	{
-		m_display_container->deleteLater();
-		m_display_container = nullptr;
-	}
+	// displau surface is always in a container
+	pxAssert(m_display_container != nullptr);
+	m_display_container->deleteLater();
+	m_display_container = nullptr;
+	// m_display_surface will be destroyed by the container's dtor
+	m_display_surface = nullptr;
 
 	updateDisplayRelatedActions(false, false, false);
 }
 
 void MainWindow::updateDisplayWidgetCursor()
 {
-	pxAssertRel(m_display_widget, "Should have a display widget");
-	m_display_widget->updateRelativeMode(s_vm_valid && !s_vm_paused && m_relative_mouse_mode);
-	m_display_widget->updateCursor(s_vm_valid && !s_vm_paused && shouldHideMouseCursor());
+	pxAssertRel(m_display_surface, "Should have a display widget");
+	m_display_surface->updateRelativeMode(s_vm_valid && !s_vm_paused && m_relative_mouse_mode);
+	m_display_surface->updateCursor(s_vm_valid && !s_vm_paused && shouldHideMouseCursor());
 }
 
 void MainWindow::focusDisplayWidget()
 {
-	if (!m_display_widget || centralWidget() != m_display_widget)
+	if (!m_display_surface || centralWidget() != m_display_container)
 		return;
 
-	m_display_widget->setFocus();
-}
-
-QWidget* MainWindow::getDisplayContainer() const
-{
-	return (m_display_container ? static_cast<QWidget*>(m_display_container) : static_cast<QWidget*>(m_display_widget));
+	m_display_container->setFocus();
 }
 
 void MainWindow::setupMouseMoveHandler()
@@ -2636,45 +2555,47 @@ void MainWindow::setupMouseMoveHandler()
 
 void MainWindow::checkMousePosition(int x, int y)
 {
-	if (!shouldMouseLock())
-		return;
+	// This function is called from a different thread on Linux/macOS
+	// kaboom can happen when the widget is destroyed after shouldMouseLock is called, so queue everything to the UI thread
+	QtHost::RunOnUIThread([this, x, y]() {
+		if (!shouldMouseLock())
+			return;
 
-	const QPoint globalCursorPos = {x, y};
-	QRect windowBounds = isRenderingFullscreen() ? screen()->geometry() : geometry();
-	if (windowBounds.contains(globalCursorPos))
-		return;
+		// physical mouse position
+		const QPoint physicalPos(x, y);
 
-	Common::SetMousePosition(
-		std::clamp(globalCursorPos.x(), windowBounds.left(), windowBounds.right()),
-		std::clamp(globalCursorPos.y(), windowBounds.top(), windowBounds.bottom()));
+		const auto* displayWindow = m_display_surface;
 
-	/*
-		Provided below is how we would handle this if we were using low level hooks (What is used in Common::AttachMouseCb)
-		We currently use rawmouse on Windows, so Common::SetMousePosition called directly works fine.
-	*/
-#if 0
-		// We are currently in a low level hook. SetCursorPos here (what is in Common::SetMousePosition) will not work!
-		// Let's (a)buse Qt's event loop to dispatch the call at a later time, outside of the hook.
-		QMetaObject::invokeMethod(
-			this, [=]() {
-				Common::SetMousePosition(
-					std::clamp(globalCursorPos.x(), windowBounds.left(), windowBounds.right()),
-					std::clamp(globalCursorPos.y(), windowBounds.top(), windowBounds.bottom()));
-			},
-			Qt::QueuedConnection);
-#endif
+		// logical (DIP) frame rect
+		const QSize logicalSize = displayWindow->size();
+		const QPoint logicalPosition = displayWindow->position() + displayWindow->parent()->position();
+
+		// physical frame rect
+		const qreal scale = displayWindow->devicePixelRatio();
+		const QRectF physicalBounds(
+			logicalPosition.x() * scale,
+			logicalPosition.y() * scale,
+			logicalSize.width() * scale,
+			logicalSize.height() * scale);
+
+		if (physicalBounds.contains(physicalPos))
+			return;
+
+		Common::SetMousePosition(
+			std::clamp(physicalPos.x(), (int)physicalBounds.left(), (int)physicalBounds.right()),
+			std::clamp(physicalPos.y(), (int)physicalBounds.top(), (int)physicalBounds.bottom()));
+	});
 }
 
 void MainWindow::saveDisplayWindowGeometryToConfig()
 {
-	QWidget* container = getDisplayContainer();
-	if (container->windowState() & Qt::WindowFullScreen)
+	if (m_display_container->windowState() & Qt::WindowFullScreen)
 	{
 		// if we somehow ended up here, don't save the fullscreen state to the config
 		return;
 	}
 
-	const QByteArray geometry = getDisplayContainer()->saveGeometry();
+	const QByteArray geometry = m_display_container->saveGeometry();
 	const QByteArray geometry_b64 = geometry.toBase64();
 	const std::string old_geometry_b64 = Host::GetBaseStringSettingValue("UI", "DisplayWindowGeometry");
 	if (old_geometry_b64 != geometry_b64.constData())
@@ -2688,18 +2609,17 @@ void MainWindow::restoreDisplayWindowGeometryFromConfig()
 {
 	const std::string geometry_b64 = Host::GetBaseStringSettingValue("UI", "DisplayWindowGeometry");
 	const QByteArray geometry = QByteArray::fromBase64(QByteArray::fromStdString(geometry_b64));
-	QWidget* container = getDisplayContainer();
 	if (!geometry.isEmpty())
 	{
-		container->restoreGeometry(geometry);
+		m_display_container->restoreGeometry(geometry);
 
 		// make sure we're not loading a dodgy config which had fullscreen set...
-		container->setWindowState(container->windowState() & ~(Qt::WindowFullScreen | Qt::WindowActive));
+		m_display_container->setWindowState(m_display_container->windowState() & ~(Qt::WindowFullScreen | Qt::WindowActive));
 	}
 	else
 	{
 		// default size
-		container->resize(640, 480);
+		m_display_container->resize(640, 480);
 	}
 }
 
@@ -2710,7 +2630,7 @@ SettingsWindow* MainWindow::getSettingsWindow()
 		m_settings_window = new SettingsWindow();
 		connect(m_settings_window->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::themeChanged, this, &MainWindow::onThemeChanged);
 		connect(m_settings_window->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::languageChanged, this, &MainWindow::onLanguageChanged);
-		connect(m_settings_window->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::backgroundChanged, m_game_list_widget, [this] { m_game_list_widget->setCustomBackground(true); });
+		connect(m_settings_window->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::backgroundChanged, m_game_list_widget, [this] { m_game_list_widget->setCustomBackground(); });
 		connect(m_settings_window->getGameListSettingsWidget(), &GameListSettingsWidget::preferEnglishGameListChanged, this, [] {
 			g_main_window->m_game_list_widget->refreshGridCovers();
 		});
@@ -2745,13 +2665,21 @@ void MainWindow::doGameSettings(const char* category)
 	// prefer to use a game list entry, if we have one, that way the summary is populated
 	if (!s_current_disc_path.isEmpty() || !s_current_elf_override.isEmpty())
 	{
-		auto lock = GameList::GetLock();
 		const QString& path = (s_current_elf_override.isEmpty() ? s_current_disc_path : s_current_elf_override);
-		const GameList::Entry* entry = GameList::GetEntryForPath(path.toUtf8().constData());
-		if (entry)
+
+		std::optional<GameList::Entry> entry;
+
+		{
+			auto lock = GameList::GetLock();
+			const GameList::Entry* entry_ptr = GameList::GetEntryForPath(path.toUtf8().constData());
+			if (entry_ptr)
+				entry = *entry_ptr;
+		}
+
+		if (entry.has_value())
 		{
 			SettingsWindow::openGamePropertiesDialog(
-				entry, entry->title, entry->serial, entry->crc, !s_current_elf_override.isEmpty(), category);
+				&*entry, entry->title, entry->serial, entry->crc, !s_current_elf_override.isEmpty(), category);
 			return;
 		}
 	}
@@ -2841,16 +2769,16 @@ QString MainWindow::getDiscDevicePath(const QString& title)
 	return ret;
 }
 
-void MainWindow::startGameListEntry(const GameList::Entry* entry, std::optional<s32> save_slot, std::optional<bool> fast_boot, bool load_backup)
+void MainWindow::startGameListEntry(const GameList::Entry& entry, std::optional<s32> save_slot, std::optional<bool> fast_boot, bool load_backup)
 {
 	std::shared_ptr<VMBootParameters> params = std::make_shared<VMBootParameters>();
 	params->fast_boot = fast_boot;
 
-	GameList::FillBootParametersForEntry(params.get(), entry);
+	GameList::FillBootParametersForEntry(params.get(), &entry);
 
-	if (save_slot.has_value() && !entry->serial.empty())
+	if (save_slot.has_value() && !entry.serial.empty())
 	{
-		std::string state_filename = VMManager::GetSaveStateFileName(entry->serial.c_str(), entry->crc, save_slot.value(), load_backup);
+		std::string state_filename = VMManager::GetSaveStateFileName(entry.serial.c_str(), entry.crc, save_slot.value(), load_backup);
 		if (!FileSystem::FileExists(state_filename.c_str()))
 		{
 			QMessageBox::critical(this, tr("Error"), tr("This save state does not exist."));
@@ -2863,15 +2791,15 @@ void MainWindow::startGameListEntry(const GameList::Entry* entry, std::optional<
 	g_emu_thread->startVM(std::move(params));
 }
 
-void MainWindow::setGameListEntryCoverImage(const GameList::Entry* entry)
+void MainWindow::setGameListEntryCoverImage(const GameList::Entry& entry)
 {
 	const QString filename = QDir::toNativeSeparators(
 		QFileDialog::getOpenFileName(this, tr("Select Cover Image"), QString(), tr("All Cover Image Types (*.jpg *.jpeg *.png *.webp)")));
 	if (filename.isEmpty())
 		return;
 
-	const QString old_filename = QString::fromStdString(GameList::GetCoverImagePathForEntry(entry));
-	const QString new_filename = QString::fromStdString(GameList::GetNewCoverImagePathForEntry(entry, filename.toUtf8().constData(), true));
+	const QString old_filename = QString::fromStdString(GameList::GetCoverImagePathForEntry(&entry));
+	const QString new_filename = QString::fromStdString(GameList::GetNewCoverImagePathForEntry(&entry, filename.toUtf8().constData(), true));
 	if (new_filename.isEmpty())
 		return;
 
@@ -2912,56 +2840,47 @@ void MainWindow::setGameListEntryCoverImage(const GameList::Entry* entry)
 	m_game_list_widget->refreshGridCovers();
 }
 
-void MainWindow::clearGameListEntryPlayTime(const GameList::Entry* entry, const time_t entry_played_time)
+void MainWindow::clearGameListEntryPlayTime(const GameList::Entry& entry, const time_t entry_played_time)
 {
 	if (QMessageBox::question(this, tr("Confirm Reset"),
 			tr("Are you sure you want to reset the play time for '%1' (%2)?\n\nYour current play time is %3.\n\nThis action cannot be undone.")
-				.arg(entry->title.empty() ? tr("empty title") : QString::fromStdString(entry->title),
-					 entry->serial.empty() ? tr("no serial") : QString::fromStdString(entry->serial),
-					 QString::fromStdString(GameList::FormatTimespan(entry_played_time, true))),
-					 (QMessageBox::Yes | QMessageBox::No), QMessageBox::No) == QMessageBox::Yes)
+				.arg(entry.title.empty() ? tr("empty title") : QString::fromStdString(entry.title),
+					entry.serial.empty() ? tr("no serial") : QString::fromStdString(entry.serial),
+					QString::fromStdString(GameList::FormatTimespan(entry_played_time, true))),
+			(QMessageBox::Yes | QMessageBox::No), QMessageBox::No) == QMessageBox::Yes)
 	{
-		GameList::ClearPlayedTimeForSerial(entry->serial);
-		m_game_list_widget->refresh(false);
+		GameList::ClearPlayedTimeForSerial(entry.serial);
+		m_game_list_widget->refresh(false, false);
 	}
 }
 
-void MainWindow::goToWikiPage(const GameList::Entry* entry)
+void MainWindow::goToWikiPage(const GameList::Entry& entry)
 {
-	QtUtils::OpenURL(this, fmt::format("https://wiki.pcsx2.net/{}", entry->serial).c_str());
+	QtUtils::OpenURL(this, fmt::format("https://wiki.pcsx2.net/{}", entry.serial).c_str());
 }
 
-void MainWindow::openScreenshotsFolderForGame(const GameList::Entry* entry)
+void MainWindow::openSnapshotsFolderForGame(const GameList::Entry& entry)
 {
-	if (!entry || entry->title.empty())
-		return;
-
-	// if disabled open the snapshots folder
-	if (!EmuConfig.GS.OrganizeScreenshotsByGame)
+	// Go to top-level snapshots directory if not organizing by game.
+	if (EmuConfig.GS.OrganizeSnapshotsByGame && !entry.title.empty())
 	{
-		QtUtils::OpenURL(this, QUrl::fromLocalFile(QString::fromStdString(EmuFolders::Snapshots)));
-		return;
-	}
+		std::string game_name = entry.title;
+		Path::SanitizeFileName(&game_name);
 
-	std::string game_name = entry->title;
-	Path::SanitizeFileName(&game_name);
-	if (game_name.length() > 219)
-	{
-		game_name.resize(219);
-	}
-	const std::string game_dir = Path::Combine(EmuFolders::Snapshots, game_name);
+		const std::string game_dir = Path::Combine(EmuFolders::Snapshots, game_name);
 
-	if (!FileSystem::DirectoryExists(game_dir.c_str()))
-	{
-		if (!FileSystem::CreateDirectoryPath(game_dir.c_str(), false))
+		// Make sure the per-game directory exists or that we can successfully create it.
+		if (FileSystem::DirectoryExists(game_dir.c_str()) || FileSystem::CreateDirectoryPath(game_dir.c_str(), false))
 		{
-			QMessageBox::critical(this, tr("Error"), tr("Failed to create screenshots directory '%1'.").arg(QString::fromStdString(game_dir)));
+			const QFileInfo fi(QString::fromStdString(game_dir));
+			QtUtils::OpenURL(this, QUrl::fromLocalFile(fi.absoluteFilePath()));
 			return;
 		}
+
+		QMessageBox::critical(this, tr("Error"), tr("Failed to create snapshots directory '%1'\n\nOpening default directory.").arg(QString::fromStdString(game_dir)));
 	}
 
-	const QFileInfo fi(QString::fromStdString(game_dir));
-	QtUtils::OpenURL(this, QUrl::fromLocalFile(fi.absoluteFilePath()));
+	QtUtils::OpenURL(this, QUrl::fromLocalFile(QString::fromStdString(EmuFolders::Snapshots)));
 }
 
 std::optional<bool> MainWindow::promptForResumeState(const QString& save_state_path)
@@ -3020,11 +2939,11 @@ void MainWindow::loadSaveStateSlot(s32 slot, bool load_backup)
 	else
 	{
 		// we're not currently running, therefore we must've right clicked in the game list
-		const GameList::Entry* entry = m_game_list_widget->getSelectedEntry();
-		if (!entry)
+		const std::optional<GameList::Entry> entry = m_game_list_widget->getSelectedEntry();
+		if (!entry.has_value())
 			return;
 
-		startGameListEntry(entry, slot, std::nullopt, load_backup);
+		startGameListEntry(*entry, slot, std::nullopt, load_backup);
 	}
 }
 
@@ -3250,7 +3169,7 @@ MainWindow::VMLock MainWindow::pauseAndLockVM()
 	// period when there's no window, and Qt might shut us down. So avoid it there.
 	// On MacOS, it forces a workspace switch, which is kinda jarring.
 #ifndef __APPLE__
-	const bool was_fullscreen = g_emu_thread->isFullscreen() && !s_use_central_widget;
+	const bool was_fullscreen = g_emu_thread->isFullscreen();
 #else
 	const bool was_fullscreen = false;
 #endif
@@ -3269,17 +3188,12 @@ MainWindow::VMLock MainWindow::pauseAndLockVM()
 
 		g_emu_thread->setFullscreen(false, false);
 
-		// Container could change... thanks Wayland.
-		QWidget* container;
-		while (QtHost::IsVMValid() && (g_emu_thread->isFullscreen() ||
-										  !(container = getDisplayContainer()) || container->isFullScreen()))
+		// Process events untill both EmuThread and Qt have finished exiting fullscreen
+		while (QtHost::IsVMValid() && (g_emu_thread->isFullscreen() || m_display_container->isFullScreen()))
 		{
 			QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 		}
 	}
-
-	// Now we'll either have a borderless window, or a regular window (if we were exclusive fullscreen).
-	QWidget* dialog_parent = getDisplayContainer();
 
 	// Ensure main window is visible.
 	if (!g_main_window->isVisible())
@@ -3287,7 +3201,7 @@ MainWindow::VMLock MainWindow::pauseAndLockVM()
 	g_main_window->raise();
 	g_main_window->activateWindow();
 
-	return VMLock(dialog_parent, was_paused, was_fullscreen);
+	return VMLock(m_display_container, was_paused, was_fullscreen);
 }
 
 void MainWindow::rescanFile(const std::string& path)
@@ -3297,23 +3211,30 @@ void MainWindow::rescanFile(const std::string& path)
 
 MainWindow::VMLock::VMLock(QWidget* dialog_parent, bool was_paused, bool was_fullscreen)
 	: m_dialog_parent(dialog_parent)
+	, m_has_lock(true)
 	, m_was_paused(was_paused)
 	, m_was_fullscreen(was_fullscreen)
 {
+	QtHost::LockVMWithDialog();
 }
 
 MainWindow::VMLock::VMLock(VMLock&& lock)
 	: m_dialog_parent(lock.m_dialog_parent)
+	, m_has_lock(lock.m_has_lock)
 	, m_was_paused(lock.m_was_paused)
 	, m_was_fullscreen(lock.m_was_fullscreen)
 {
 	lock.m_dialog_parent = nullptr;
+	lock.m_has_lock = false;
 	lock.m_was_paused = true;
 	lock.m_was_fullscreen = false;
 }
 
 MainWindow::VMLock::~VMLock()
 {
+	if (m_has_lock)
+		QtHost::UnlockVMWithDialog();
+
 	if (m_was_fullscreen)
 	{
 		g_main_window->m_is_temporarily_windowed = false;
@@ -3326,10 +3247,15 @@ MainWindow::VMLock::~VMLock()
 
 MainWindow::VMLock& MainWindow::VMLock::operator=(VMLock&& lock)
 {
+	if (m_has_lock)
+		QtHost::UnlockVMWithDialog();
+
+	m_has_lock = lock.m_has_lock;
 	m_dialog_parent = lock.m_dialog_parent;
 	m_was_paused = lock.m_was_paused;
 	m_was_fullscreen = lock.m_was_fullscreen;
 
+	lock.m_has_lock = false;
 	lock.m_dialog_parent = nullptr;
 	lock.m_was_paused = true;
 	lock.m_was_fullscreen = false;

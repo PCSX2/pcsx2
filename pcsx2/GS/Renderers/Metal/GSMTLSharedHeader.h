@@ -72,6 +72,7 @@ struct GSMTLDownsamplePSUniform
 	vector_uint2 clamp_min;
 	uint downsample_factor;
 	float weight;
+	float step_multiplier;
 };
 
 struct GSMTLMainVertex

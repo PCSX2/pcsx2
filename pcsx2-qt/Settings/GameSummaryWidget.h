@@ -26,7 +26,7 @@ private Q_SLOTS:
 	void onDiscPathBrowseClicked();
 	void onVerifyClicked();
 	void onSearchHashClicked();
-	void onCheckWikiClicked(const GameList::Entry* entry);
+	void onCheckWikiClicked(const std::string& serial);
 
 private:
 	void populateInputProfiles();

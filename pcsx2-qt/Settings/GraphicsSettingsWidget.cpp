@@ -970,7 +970,6 @@ void GraphicsSettingsWidget::onTextureReplacementChanged()
 	m_texture.precacheTextureReplacements->setEnabled(enabled);
 }
 
-
 void GraphicsSettingsWidget::onCaptureContainerChanged()
 {
 	const std::string container(

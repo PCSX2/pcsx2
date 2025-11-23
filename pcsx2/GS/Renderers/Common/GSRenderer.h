@@ -59,7 +59,7 @@ public:
 	bool SaveSnapshotToMemory(u32 window_width, u32 window_height, bool apply_aspect, bool crop_borders,
 		u32* width, u32* height, std::vector<u32>* pixels);
 
-	void QueueSnapshot(const std::string& path, u32 gsdump_frames);
+	void QueueSnapshot(const std::string& path, const u32 gsdump_frames);
 	void StopGSDump();
 	void PresentCurrentFrame();
 	bool BeginCapture(std::string filename, const GSVector2i& size = GSVector2i(0, 0));

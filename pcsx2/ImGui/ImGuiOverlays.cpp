@@ -49,6 +49,31 @@
 
 InputRecordingUI::InputRecordingData g_InputRecordingData;
 
+// Start timers at 0 so we immediately get lines to cache.
+static constexpr double ONE_BILLION = 1000000000;
+static constexpr double UPDATE_INTERVAL = 0.1 * ONE_BILLION;
+static constexpr double UPDATE_INTERVAL_CPU_INFO = 5.0 * ONE_BILLION;
+Common::Timer s_last_update_timer = Common::Timer(0.0);
+Common::Timer s_last_update_timer_cpu_info = Common::Timer(0.0);
+
+ImU32 s_speed_line_color;
+SmallString s_speed_line;
+SmallString s_gs_stats_line;
+SmallString s_gs_memory_stats_line;
+SmallString s_gs_frame_times_line;
+SmallString s_resolution_line;
+SmallString s_hardware_info_cpu_line;
+SmallString s_hardware_info_gpu_line;
+SmallString s_cpu_usage_ee_line;
+SmallString s_cpu_usage_gs_line;
+SmallString s_cpu_usage_vu_line;
+std::vector<SmallString> s_software_thread_lines;
+SmallString s_capture_line;
+SmallString s_gpu_usage_line;
+SmallString s_speed_icon;
+
+constexpr ImU32 white_color = IM_COL32(255, 255, 255, 255);
+
 // OSD positioning funcs
 ImVec2 CalculateOSDPosition(OsdOverlayPos position, float margin, const ImVec2& text_size, float window_width, float window_height)
 {
@@ -170,7 +195,6 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 	const float font_size = ImGuiManager::GetFontSizeStandard();
 
 	ImDrawList* dl = ImGui::GetBackgroundDrawList();
-	SmallString text;
 	ImVec2 text_size;
 
 	// Adjust initial Y position based on vertical alignment
@@ -208,184 +232,233 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 		position_y += text_size.y + spacing; \
 	} while (0)
 
-	const bool paused = (VMManager::GetState() == VMState::Paused);
-	const bool fsui_active = FullscreenUI::HasActiveWindow();
-
-	if (!paused)
+	if (VMManager::GetState() != VMState::Paused)
 	{
-		bool first = true;
-		const float speed = PerformanceMetrics::GetSpeed();
-
-		if (GSConfig.OsdShowFPS)
+		if (s_last_update_timer.GetTimeNanoseconds() >= UPDATE_INTERVAL)
 		{
-			switch (PerformanceMetrics::GetInternalFPSMethod())
+			s_last_update_timer.Reset();
+			const float speed = PerformanceMetrics::GetSpeed();
+
+			s_speed_line.clear();
+			if (GSConfig.OsdShowFPS)
 			{
-				case PerformanceMetrics::InternalFPSMethod::GSPrivilegedRegister:
-					text.append_format("FPS: {:.2f} [P]", PerformanceMetrics::GetInternalFPS());
-					break;
+				switch (PerformanceMetrics::GetInternalFPSMethod())
+				{
+					case PerformanceMetrics::InternalFPSMethod::GSPrivilegedRegister:
+						s_speed_line.append_format("FPS: {:.2f} [P]", PerformanceMetrics::GetInternalFPS());
+						break;
 
-				case PerformanceMetrics::InternalFPSMethod::DISPFBBlit:
-					text.append_format("FPS: {:.2f} [B]", PerformanceMetrics::GetInternalFPS());
-					break;
+					case PerformanceMetrics::InternalFPSMethod::DISPFBBlit:
+						s_speed_line.append_format("FPS: {:.2f} [B]", PerformanceMetrics::GetInternalFPS());
+						break;
 
-				case PerformanceMetrics::InternalFPSMethod::None:
-				default:
-					text.append("FPS: N/A");
-					break;
-			}
-			first = false;
-		}
-
-		if (GSConfig.OsdShowVPS)
-		{
-			text.append_format("{}VPS: {:.2f}", first ? "" : " | ", PerformanceMetrics::GetFPS(),
-				PerformanceMetrics::GetFPS());
-			first = false;
-		}
-
-		if (GSConfig.OsdShowSpeed)
-		{
-			text.append_format("{}Speed: {}%", first ? "" : " | ", static_cast<u32>(std::round(speed)));
-
-			const float target_speed = VMManager::GetTargetSpeed();
-			if (target_speed == 0.0f)
-				text.append(" (T: Max)");
-			else
-				text.append_format(" (T: {:.0f}%)", target_speed * 100.0f);
-			first = false;
-		}
-
-		if (GSConfig.OsdShowVersion)
-		{
-			text.append_format("{}PCSX2 {}", first ? "" : " | ", BuildVersion::GitRev);
-		}
-
-		if (!text.empty())
-		{
-			ImU32 color;
-			if (speed < 95.0f)
-				color = IM_COL32(255, 100, 100, 255);
-			else if (speed > 105.0f)
-				color = IM_COL32(100, 255, 100, 255);
-			else
-				color = IM_COL32(255, 255, 255, 255);
-
-			DRAW_LINE(fixed_font, font_size, text.c_str(), color);
-		}
-
-		if (GSConfig.OsdShowGSStats)
-		{
-			text.clear();
-			GSgetStats(text);
-			DRAW_LINE(fixed_font, font_size, text.c_str(), IM_COL32(255, 255, 255, 255));
-
-			text.clear();
-			GSgetMemoryStats(text);
-			if (!text.empty())
-				DRAW_LINE(fixed_font, font_size, text.c_str(), IM_COL32(255, 255, 255, 255));
-
-			text.clear();
-			text.append_format("{} QF | Min: {:.2f}ms | Avg: {:.2f}ms | Max: {:.2f}ms",
-				MTGS::GetCurrentVsyncQueueSize() - 1, // we subtract one for the current frame
-				PerformanceMetrics::GetMinimumFrameTime(),
-				PerformanceMetrics::GetAverageFrameTime(),
-				PerformanceMetrics::GetMaximumFrameTime());
-			DRAW_LINE(fixed_font, font_size, text.c_str(), IM_COL32(255, 255, 255, 255));
-		}
-
-		if (GSConfig.OsdShowResolution)
-		{
-			int width, height;
-			GSgetInternalResolution(&width, &height);
-
-			text.clear();
-			text.append_format("{}x{} {} {}", width, height, ReportVideoMode(), ReportInterlaceMode());
-			DRAW_LINE(fixed_font, font_size, text.c_str(), IM_COL32(255, 255, 255, 255));
-		}
-
-		if (GSConfig.OsdShowHardwareInfo)
-		{
-			// CPU
-			text.clear();
-			const CPUInfo& info = GetCPUInfo();
-			bool has_small = info.num_small_cores > 0;
-			bool has_ht = info.num_threads != info.num_big_cores + info.num_small_cores;
-			text.append_format("CPU: {}", info.name);
-			if (has_ht & has_small)
-				text.append_format(" ({}P/{}E/{}T)", info.num_big_cores, info.num_small_cores, info.num_threads);
-			else if (has_small)
-				text.append_format(" ({}P/{}E)", info.num_big_cores, info.num_small_cores);
-			else
-				text.append_format(" ({}C/{}T)", info.num_big_cores, info.num_threads);
-			DRAW_LINE(fixed_font, font_size, text.c_str(), IM_COL32(255, 255, 255, 255));
-
-			// GPU
-			text.clear();
-			text.append_format("GPU: {}{}", g_gs_device->GetName(), GSConfig.UseDebugDevice ? " (Debug)" : "");
-			DRAW_LINE(fixed_font, font_size, text.c_str(), IM_COL32(255, 255, 255, 255));
-		}
-
-		if (GSConfig.OsdShowCPU)
-		{
-			text.clear();
-			if (EmuConfig.Speedhacks.EECycleRate != 0 || EmuConfig.Speedhacks.EECycleSkip != 0)
-				text.append_format("EE[{}/{}]: ", EmuConfig.Speedhacks.EECycleRate, EmuConfig.Speedhacks.EECycleSkip);
-			else
-				text = "EE: ";
-			FormatProcessorStat(text, PerformanceMetrics::GetCPUThreadUsage(), PerformanceMetrics::GetCPUThreadAverageTime());
-			DRAW_LINE(fixed_font, font_size, text.c_str(), IM_COL32(255, 255, 255, 255));
-
-			text = "GS: ";
-			FormatProcessorStat(text, PerformanceMetrics::GetGSThreadUsage(), PerformanceMetrics::GetGSThreadAverageTime());
-			DRAW_LINE(fixed_font, font_size, text.c_str(), IM_COL32(255, 255, 255, 255));
-
-			if (THREAD_VU1)
-			{
-				text = "VU: ";
-				FormatProcessorStat(text, PerformanceMetrics::GetVUThreadUsage(), PerformanceMetrics::GetVUThreadAverageTime());
-				DRAW_LINE(fixed_font, font_size, text.c_str(), IM_COL32(255, 255, 255, 255));
+					case PerformanceMetrics::InternalFPSMethod::None:
+					default:
+						s_speed_line.append("FPS: N/A");
+						break;
+				}
 			}
 
-			const u32 gs_sw_threads = PerformanceMetrics::GetGSSWThreadCount();
-			for (u32 i = 0; i < gs_sw_threads; i++)
+			if (GSConfig.OsdShowVPS)
+				s_speed_line.append_format("{}VPS: {:.2f}", s_speed_line.empty() ? "" : " | ", PerformanceMetrics::GetFPS());
+
+			if (GSConfig.OsdShowSpeed)
 			{
-				text.clear();
-				text.append_format("SW-{}: ", i);
-				FormatProcessorStat(text, PerformanceMetrics::GetGSSWThreadUsage(i), PerformanceMetrics::GetGSSWThreadAverageTime(i));
-				DRAW_LINE(fixed_font, font_size, text.c_str(), IM_COL32(255, 255, 255, 255));
+				s_speed_line.append_format("{}Speed: {}%", s_speed_line.empty() ? "" : " | ", static_cast<u32>(std::round(speed)));
+
+				const float target_speed = VMManager::GetTargetSpeed();
+				if (target_speed == 0.0f)
+					s_speed_line.append(" (T: Max)");
+				else
+					s_speed_line.append_format(" (T: {:.0f}%)", target_speed * 100.0f);
 			}
 
-			if (GSCapture::IsCapturing())
+			if (GSConfig.OsdShowVersion)
+				s_speed_line.append_format("{}PCSX2 {}", s_speed_line.empty() ? "" : " | ", BuildVersion::GitRev);
+
+			if (!s_speed_line.empty())
 			{
-				text = "CAP: ";
-				FormatProcessorStat(text, PerformanceMetrics::GetCaptureThreadUsage(), PerformanceMetrics::GetCaptureThreadAverageTime());
-				DRAW_LINE(fixed_font, font_size, text.c_str(), IM_COL32(255, 255, 255, 255));
+				if (speed < 95.0f)
+					s_speed_line_color = IM_COL32(255, 100, 100, 255); // red
+				else if (speed > 105.0f)
+					s_speed_line_color = IM_COL32(100, 255, 100, 255); // green
+				else
+					s_speed_line_color = white_color;
+
+				DRAW_LINE(fixed_font, font_size, s_speed_line.c_str(), s_speed_line_color);
+			}
+
+			if (GSConfig.OsdShowGSStats)
+			{
+				GSgetStats(s_gs_stats_line);
+				GSgetMemoryStats(s_gs_memory_stats_line);
+				s_gs_frame_times_line.format("{} QF | Min: {:.2f}ms | Avg: {:.2f}ms | Max: {:.2f}ms",
+					MTGS::GetCurrentVsyncQueueSize() - 1, // subtract one for the current frame
+					PerformanceMetrics::GetMinimumFrameTime(),
+					PerformanceMetrics::GetAverageFrameTime(),
+					PerformanceMetrics::GetMaximumFrameTime());
+
+				if (!s_gs_stats_line.empty())
+					DRAW_LINE(fixed_font, font_size, s_gs_stats_line.c_str(), white_color);
+				if (!s_gs_memory_stats_line.empty())
+					DRAW_LINE(fixed_font, font_size, s_gs_memory_stats_line.c_str(), white_color);
+				DRAW_LINE(fixed_font, font_size, s_gs_frame_times_line.c_str(), white_color);
+			}
+
+			if (GSConfig.OsdShowResolution)
+			{
+				int iwidth, iheight;
+				GSgetInternalResolution(&iwidth, &iheight);
+
+				s_resolution_line.format("{}x{} {} {}", iwidth, iheight, ReportVideoMode(), ReportInterlaceMode());
+				DRAW_LINE(fixed_font, font_size, s_resolution_line.c_str(), white_color);
+			}
+
+			if (GSConfig.OsdShowHardwareInfo)
+			{
+				// GPU can change on the fly with settings, but CPU change of any kind is a rare edge case.
+				if (s_last_update_timer_cpu_info.GetTimeNanoseconds() >= UPDATE_INTERVAL_CPU_INFO)
+				{
+					s_last_update_timer_cpu_info.Reset();
+
+					// CPU
+					const CPUInfo& info = GetCPUInfo();
+					const bool has_small = info.num_small_cores > 0;
+					const bool has_smt = info.num_threads != info.num_big_cores + info.num_small_cores;
+					s_hardware_info_cpu_line.format("CPU: {}", info.name);
+					if (has_smt && has_small)
+						s_hardware_info_cpu_line.append_format(" ({}P/{}E/{}T)", info.num_big_cores, info.num_small_cores, info.num_threads);
+					else if (has_small)
+						s_hardware_info_cpu_line.append_format(" ({}P/{}E)", info.num_big_cores, info.num_small_cores);
+					else
+						s_hardware_info_cpu_line.append_format(" ({}C/{}T)", info.num_big_cores, info.num_threads);
+				}
+
+				DRAW_LINE(fixed_font, font_size, s_hardware_info_cpu_line.c_str(), white_color);
+
+				// GPU
+				s_hardware_info_gpu_line.format("GPU: {}{}", g_gs_device->GetName(), GSConfig.UseDebugDevice ? " (Debug)" : "");
+				DRAW_LINE(fixed_font, font_size, s_hardware_info_gpu_line.c_str(), white_color);
+			}
+
+			if (GSConfig.OsdShowCPU)
+			{
+				if (EmuConfig.Speedhacks.EECycleRate != 0 || EmuConfig.Speedhacks.EECycleSkip != 0)
+					s_cpu_usage_ee_line.format("EE[{}/{}]: ", EmuConfig.Speedhacks.EECycleRate, EmuConfig.Speedhacks.EECycleSkip);
+				else
+					s_cpu_usage_ee_line.assign("EE: ");
+				FormatProcessorStat(s_cpu_usage_ee_line, PerformanceMetrics::GetCPUThreadUsage(), PerformanceMetrics::GetCPUThreadAverageTime());
+				DRAW_LINE(fixed_font, font_size, s_cpu_usage_ee_line.c_str(), white_color);
+
+				s_cpu_usage_gs_line.assign("GS: ");
+				FormatProcessorStat(s_cpu_usage_gs_line, PerformanceMetrics::GetGSThreadUsage(), PerformanceMetrics::GetGSThreadAverageTime());
+				DRAW_LINE(fixed_font, font_size, s_cpu_usage_gs_line.c_str(), white_color);
+
+				if (THREAD_VU1)
+				{
+					s_cpu_usage_vu_line.assign("VU: ");
+					FormatProcessorStat(s_cpu_usage_vu_line, PerformanceMetrics::GetVUThreadUsage(), PerformanceMetrics::GetVUThreadAverageTime());
+					DRAW_LINE(fixed_font, font_size, s_cpu_usage_vu_line.c_str(), white_color);
+				}
+
+				const u32 gs_sw_threads = PerformanceMetrics::GetGSSWThreadCount();
+				for (u32 thread = 0; thread < gs_sw_threads; thread++)
+				{
+					if (thread < s_software_thread_lines.size())
+						s_software_thread_lines[thread].format("SW-{}: ", thread);
+					else
+						s_software_thread_lines.push_back(SmallString("SW-{}: ", thread));
+					FormatProcessorStat(s_software_thread_lines[thread], PerformanceMetrics::GetGSSWThreadUsage(thread), PerformanceMetrics::GetGSSWThreadAverageTime(thread));
+					DRAW_LINE(fixed_font, font_size, s_software_thread_lines[thread].c_str(), white_color);
+				}
+
+				if (GSCapture::IsCapturing())
+				{
+					s_capture_line.assign("CAP: ");
+					FormatProcessorStat(s_capture_line, PerformanceMetrics::GetCaptureThreadUsage(), PerformanceMetrics::GetCaptureThreadAverageTime());
+					DRAW_LINE(fixed_font, font_size, s_capture_line.c_str(), white_color);
+				}
+			}
+
+			if (GSConfig.OsdShowGPU)
+			{
+				s_gpu_usage_line.assign("GPU: ");
+				FormatProcessorStat(s_gpu_usage_line, PerformanceMetrics::GetGPUUsage(), PerformanceMetrics::GetGPUAverageTime());
+				DRAW_LINE(fixed_font, font_size, s_gpu_usage_line.c_str(), white_color);
+			}
+
+			if (GSConfig.OsdShowIndicators)
+			{
+				const float target_speed = VMManager::GetTargetSpeed();
+				const bool is_normal_speed = (target_speed == EmuConfig.EmulationSpeed.NominalScalar ||
+											  VMManager::IsTargetSpeedAdjustedToHost());
+				if (!is_normal_speed)
+				{
+					if (target_speed == EmuConfig.EmulationSpeed.SlomoScalar) // Slow-Motion
+						s_speed_icon = ICON_PF_SLOW_MOTION;
+					else if (target_speed == EmuConfig.EmulationSpeed.TurboScalar) // Turbo
+						s_speed_icon = ICON_FA_FORWARD_FAST;
+					else // Unlimited
+						s_speed_icon = ICON_FA_FORWARD;
+
+					DRAW_LINE(standard_font, font_size, s_speed_icon, white_color);
+				}
 			}
 		}
-
-		if (GSConfig.OsdShowGPU)
+		// No refresh yet. Display cached lines.
+		else
 		{
-			text = "GPU: ";
-			FormatProcessorStat(text, PerformanceMetrics::GetGPUUsage(), PerformanceMetrics::GetGPUAverageTime());
-			DRAW_LINE(fixed_font, font_size, text.c_str(), IM_COL32(255, 255, 255, 255));
-		}
+			if (GSConfig.OsdShowFPS || GSConfig.OsdShowVPS || GSConfig.OsdShowSpeed || GSConfig.OsdShowVersion)
+				DRAW_LINE(fixed_font, font_size, s_speed_line.c_str(), s_speed_line_color);
 
-		if (GSConfig.OsdShowIndicators)
-		{
-			const float target_speed = VMManager::GetTargetSpeed();
-			const bool is_normal_speed = (target_speed == EmuConfig.EmulationSpeed.NominalScalar ||
-										  VMManager::IsTargetSpeedAdjustedToHost());
-			if (!is_normal_speed)
+			if (GSConfig.OsdShowGSStats)
 			{
-				if (target_speed == EmuConfig.EmulationSpeed.SlomoScalar) // Slow-Motion
-					DRAW_LINE(standard_font, font_size, ICON_PF_SLOW_MOTION, IM_COL32(255, 255, 255, 255));
-				else if (target_speed == EmuConfig.EmulationSpeed.TurboScalar) // Turbo
-					DRAW_LINE(standard_font, font_size, ICON_FA_FORWARD_FAST, IM_COL32(255, 255, 255, 255));
-				else // Unlimited
-					DRAW_LINE(standard_font, font_size, ICON_FA_FORWARD, IM_COL32(255, 255, 255, 255));
+				if (!s_gs_stats_line.empty())
+					DRAW_LINE(fixed_font, font_size, s_gs_stats_line.c_str(), white_color);
+				if (!s_gs_memory_stats_line.empty())
+					DRAW_LINE(fixed_font, font_size, s_gs_memory_stats_line.c_str(), white_color);
+				DRAW_LINE(fixed_font, font_size, s_gs_frame_times_line.c_str(), white_color);
+			}
+
+			if (GSConfig.OsdShowResolution)
+				DRAW_LINE(fixed_font, font_size, s_resolution_line.c_str(), white_color);
+
+			if (GSConfig.OsdShowHardwareInfo)
+			{
+				DRAW_LINE(fixed_font, font_size, s_hardware_info_cpu_line.c_str(), white_color);
+				DRAW_LINE(fixed_font, font_size, s_hardware_info_gpu_line.c_str(), white_color);
+			}
+
+			if (GSConfig.OsdShowCPU)
+			{
+				DRAW_LINE(fixed_font, font_size, s_cpu_usage_ee_line.c_str(), white_color);
+				DRAW_LINE(fixed_font, font_size, s_cpu_usage_gs_line.c_str(), white_color);
+				if (THREAD_VU1)
+					DRAW_LINE(fixed_font, font_size, s_cpu_usage_vu_line.c_str(), white_color);
+
+				const u32 thread_count = std::min(
+					PerformanceMetrics::GetGSSWThreadCount(),
+					static_cast<u32>(s_software_thread_lines.size()));
+				for (u32 thread = 0; thread < thread_count; thread++)
+					DRAW_LINE(fixed_font, font_size, s_software_thread_lines[thread].c_str(), white_color);
+
+				if (GSCapture::IsCapturing())
+					DRAW_LINE(fixed_font, font_size, s_capture_line.c_str(), white_color);
+			}
+
+			if (GSConfig.OsdShowGPU)
+				DRAW_LINE(fixed_font, font_size, s_gpu_usage_line.c_str(), white_color);
+
+			if (GSConfig.OsdShowIndicators)
+			{
+				const bool is_normal_speed = (VMManager::GetTargetSpeed() == EmuConfig.EmulationSpeed.NominalScalar ||
+											  VMManager::IsTargetSpeedAdjustedToHost());
+				if (!is_normal_speed)
+					DRAW_LINE(standard_font, font_size, s_speed_icon, white_color);
 			}
 		}
 
+		// Check every OSD frame because this is an animation.
 		if (GSConfig.OsdShowFrameTimes)
 		{
 			const ImVec2 history_size(200.0f * scale, 50.0f * scale);
@@ -426,9 +499,9 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 				ImDrawList* win_dl = ImGui::GetCurrentWindow()->DrawList;
 				const ImVec2 wpos(ImGui::GetCurrentWindow()->Pos);
 
-				text.clear();
-				text.append_format("Max: {:.1f} ms", max);
-				text_size = fixed_font->CalcTextSizeA(font_size, FLT_MAX, 0.0f, text.c_str(), text.c_str() + text.length());
+				SmallString frame_times_text;
+				frame_times_text.format("Max: {:.1f} ms", max);
+				text_size = fixed_font->CalcTextSizeA(font_size, FLT_MAX, 0.0f, frame_times_text.c_str(), frame_times_text.c_str() + frame_times_text.length());
 				
 				float text_x;
 				switch (GSConfig.OsdPerformancePos)
@@ -451,13 +524,12 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 						break;
 				}
 				win_dl->AddText(ImVec2(text_x + shadow_offset, wpos.y + shadow_offset),
-					IM_COL32(0, 0, 0, 100), text.c_str(), text.c_str() + text.length());
+					IM_COL32(0, 0, 0, 100), frame_times_text.c_str(), frame_times_text.c_str() + frame_times_text.length());
 				win_dl->AddText(ImVec2(text_x, wpos.y),
-					IM_COL32(255, 255, 255, 255), text.c_str(), text.c_str() + text.length());
+					white_color, frame_times_text.c_str(), frame_times_text.c_str() + frame_times_text.length());
 
-				text.clear();
-				text.append_format("Min: {:.1f} ms", min);
-				text_size = fixed_font->CalcTextSizeA(font_size, FLT_MAX, 0.0f, text.c_str(), text.c_str() + text.length());
+				frame_times_text.format("Min: {:.1f} ms", min);
+				text_size = fixed_font->CalcTextSizeA(font_size, FLT_MAX, 0.0f, frame_times_text.c_str(), frame_times_text.c_str() + frame_times_text.length());
 				
 				float min_text_x;
 				switch (GSConfig.OsdPerformancePos)
@@ -480,9 +552,9 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 						break;
 				}
 				win_dl->AddText(ImVec2(min_text_x + shadow_offset, wpos.y + history_size.y - font_size + shadow_offset),
-					IM_COL32(0, 0, 0, 100), text.c_str(), text.c_str() + text.length());
+					IM_COL32(0, 0, 0, 100), frame_times_text.c_str(), frame_times_text.c_str() + frame_times_text.length());
 				win_dl->AddText(ImVec2(min_text_x, wpos.y + history_size.y - font_size),
-					IM_COL32(255, 255, 255, 255), text.c_str(), text.c_str() + text.length());
+					white_color, frame_times_text.c_str(), frame_times_text.c_str() + frame_times_text.length());
 			}
 			ImGui::End();
 			ImGui::PopFont();
@@ -490,16 +562,15 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 			ImGui::PopStyleColor(3);
 		}
 	}
-	else if (!fsui_active)
+	else if (!FullscreenUI::HasActiveWindow())
 	{
 		if (GSConfig.OsdShowIndicators)
 		{
 			// We should put the Pause icon in the top right regardless of performance overlay position
-			text = ICON_FA_PAUSE;
-			text_size = standard_font->CalcTextSizeA(font_size, std::numeric_limits<float>::max(), -1.0f, text.c_str(), nullptr, nullptr);
+			text_size = standard_font->CalcTextSizeA(font_size, std::numeric_limits<float>::max(), -1.0f, ICON_FA_PAUSE, nullptr, nullptr);
 			const ImVec2 pause_pos(GetWindowWidth() - margin - text_size.x, margin);
-			dl->AddText(standard_font, font_size, ImVec2(pause_pos.x + shadow_offset, pause_pos.y + shadow_offset), IM_COL32(0, 0, 0, 100), text.c_str());
-			dl->AddText(standard_font, font_size, pause_pos, IM_COL32(255, 255, 255, 255), text.c_str());
+			dl->AddText(standard_font, font_size, ImVec2(pause_pos.x + shadow_offset, pause_pos.y + shadow_offset), IM_COL32(0, 0, 0, 100), ICON_FA_PAUSE);
+			dl->AddText(standard_font, font_size, pause_pos, white_color, ICON_FA_PAUSE);
 		}
 	}
 
@@ -640,7 +711,7 @@ __ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spa
 	dl->AddText(font, font_size,
 		ImVec2(GetWindowWidth() - margin - text_size.x + shadow_offset, position_y + shadow_offset), IM_COL32(0, 0, 0, 100),
 		text.c_str(), text.c_str() + text.length());
-	dl->AddText(font, font_size, ImVec2(GetWindowWidth() - margin - text_size.x, position_y), IM_COL32(255, 255, 255, 255),
+	dl->AddText(font, font_size, ImVec2(GetWindowWidth() - margin - text_size.x, position_y), white_color,
 		text.c_str(), text.c_str() + text.length());
 }
 
@@ -868,7 +939,7 @@ __ri void ImGuiManager::DrawVideoCaptureOverlay(float& position_y, float scale, 
 	dl->AddText(standard_font, font_size,
 		ImVec2(GetWindowWidth() - margin - text_size.x - icon_size.x, position_y), IM_COL32(255, 0, 0, 255), ICON);
 	dl->AddText(standard_font, font_size,
-		ImVec2(GetWindowWidth() - margin - text_size.x, position_y), IM_COL32(255, 255, 255, 255), text_msg.c_str(),
+		ImVec2(GetWindowWidth() - margin - text_size.x, position_y), white_color, text_msg.c_str(),
 		text_msg.end_ptr());
 
 	position_y += std::max(icon_size.y, text_size.y) + spacing;
@@ -893,9 +964,20 @@ namespace SaveStateSelectorUI
 	static void RefreshHotkeyLegend();
 	static void Draw();
 	static void ShowSlotOSDMessage();
+	static std::string GetSaveStateTimestampSummary(const std::time_t& modification_time);
 	bool IsOpen();
 
-	static constexpr const char* DATE_TIME_FORMAT = TRANSLATE_NOOP("ImGuiOverlays", "Saved at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}.");
+	static constexpr const char* SAVED_AGO_DAYS_TIME_DATE =
+		TRANSLATE_NOOP("ImGuiOverlays", "Saved {0} days ago at {1:%H:%M} on {1:%a} {1:%Y/%m/%d}");
+	static constexpr const char* SAVED_FUTURE_TIME_DATE =
+		TRANSLATE_NOOP("ImGuiOverlays", "Saved in the future at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}");
+	static constexpr const char* SAVED_AGO_HOURS_MINUTES =
+		TRANSLATE_NOOP("ImGuiOverlays", "Saved {0} hours, {1} minutes ago at {2:%H:%M}");
+	static constexpr const char* SAVED_AGO_MINUTES = TRANSLATE_NOOP("ImGuiOverlays", "Saved {0} minutes ago at {1:%H:%M}");
+	static constexpr const char* SAVED_AGO_SECONDS = TRANSLATE_NOOP("ImGuiOverlays", "Saved {} seconds ago");
+	static constexpr const char* SAVED_AGO_NOW = TRANSLATE_NOOP("ImGuiOverlays", "Saved just now");
+	static constexpr std::time_t ONE_HOUR = 60 * 60; // 3600
+	static constexpr std::time_t TWENTY_FOUR_HOURS = ONE_HOUR * 24; // 86400
 
 	static std::shared_ptr<GSTexture> s_placeholder_texture;
 	static std::string s_load_legend;
@@ -1073,14 +1155,7 @@ void SaveStateSelectorUI::InitializeListEntry(const std::string& serial, u32 crc
 	}
 
 	li->title = fmt::format(TRANSLATE_FS("ImGuiOverlays", "Save Slot {0}"), slot);
-
-	std::tm tm_local = {};
-#ifdef _MSC_VER
-	localtime_s(&tm_local, &sd.ModificationTime);
-#else
-	localtime_r(&sd.ModificationTime, &tm_local);
-#endif
-	li->summary = fmt::format(TRANSLATE_FS("ImGuiOverlays", DATE_TIME_FORMAT), tm_local);
+	li->summary = GetSaveStateTimestampSummary(sd.ModificationTime);
 	li->filename = Path::GetFileName(path);
 
 	u32 screenshot_width, screenshot_height;
@@ -1102,7 +1177,7 @@ void SaveStateSelectorUI::InitializeListEntry(const std::string& serial, u32 crc
 void SaveStateSelectorUI::InitializePlaceholderListEntry(ListEntry* li, std::string path, s32 slot)
 {
 	li->title = fmt::format(TRANSLATE_FS("ImGuiOverlays", "Save Slot {0}"), slot);
-	li->summary = TRANSLATE_STR("ImGuiOverlays", "No save present in this slot.");
+	li->summary = TRANSLATE_STR("ImGuiOverlays", "No save present in this slot");
 	li->filename = Path::GetFileName(path);
 }
 
@@ -1278,21 +1353,15 @@ void SaveStateSelectorUI::ShowSlotOSDMessage()
 	const std::string serial = VMManager::GetDiscSerial();
 	const std::string filename = VMManager::GetSaveStateFileName(serial.c_str(), crc, slot);
 	FILESYSTEM_STAT_DATA sd;
-	std::string date;
-	
-	std::tm tm_local = {};
-#ifdef _MSC_VER
-	localtime_s(&tm_local, &sd.ModificationTime);
-#else
-	localtime_r(&sd.ModificationTime, &tm_local);
-#endif
+	std::string timestamp_summary;
+
 	if (!filename.empty() && FileSystem::StatFile(filename.c_str(), &sd))
-		date = fmt::format(TRANSLATE_FS("ImGuiOverlays", DATE_TIME_FORMAT), tm_local);
+		timestamp_summary = GetSaveStateTimestampSummary(sd.ModificationTime);
 	else
-		date = TRANSLATE_STR("ImGuiOverlays", "no save yet");
+		timestamp_summary = TRANSLATE_STR("ImGuiOverlays", "no save yet");
 
 	Host::AddIconOSDMessage("ShowSlotOSDMessage", ICON_FA_MAGNIFYING_GLASS,
-		fmt::format(TRANSLATE_FS("Hotkeys", "Save slot {0} selected ({1})."), slot, date),
+		fmt::format(TRANSLATE_FS("Hotkeys", "Save slot {0} selected ({1})."), slot, timestamp_summary),
 		Host::OSD_QUICK_DURATION);
 }
 
@@ -1311,4 +1380,48 @@ void ImGuiManager::RenderOverlays()
 	DrawInputsOverlay(scale, margin, spacing);
 	if (SaveStateSelectorUI::s_open)
 		SaveStateSelectorUI::Draw();
+}
+
+std::string SaveStateSelectorUI::GetSaveStateTimestampSummary(const std::time_t& modification_time)
+{
+
+	std::tm tm_modification_local = {};
+#ifdef _MSC_VER
+	localtime_s(&tm_modification_local, &modification_time);
+#else
+	localtime_r(&modification_time, &tm_modification_local);
+#endif
+
+	const std::time_t current_time = std::time(nullptr);
+	const std::time_t time_since_save = current_time - std::mktime(&tm_modification_local);
+
+	if (time_since_save >= TWENTY_FOUR_HOURS)
+	{
+		return fmt::format(TRANSLATE_FS("ImGuiOverlays", SAVED_AGO_DAYS_TIME_DATE),
+			time_since_save / TWENTY_FOUR_HOURS, tm_modification_local);
+	}
+	else if (time_since_save >= ONE_HOUR)
+	{
+		return fmt::format(TRANSLATE_FS("ImGuiOverlays", SAVED_AGO_HOURS_MINUTES),
+			time_since_save / ONE_HOUR, (time_since_save / 60) % 60, tm_modification_local);
+	}
+	else if (time_since_save >= 60)
+	{
+		return fmt::format(TRANSLATE_FS("ImGuiOverlays", SAVED_AGO_MINUTES),
+			time_since_save / 60, tm_modification_local);
+	}
+	else if (time_since_save >= 5)
+	{
+		return fmt::format(TRANSLATE_FS("ImGuiOverlays", SAVED_AGO_SECONDS),
+			time_since_save);
+	}
+	else if (time_since_save >= 0)
+	{
+		return TRANSLATE_STR("ImGuiOverlays", SAVED_AGO_NOW);
+	}
+	else
+	{
+		return fmt::format(TRANSLATE_FS("ImGuiOverlays", SAVED_FUTURE_TIME_DATE),
+			tm_modification_local);
+	}
 }
