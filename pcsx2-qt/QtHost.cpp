@@ -1213,6 +1213,11 @@ void Host::RunOnCPUThread(std::function<void()> function, bool block /* = false 
 		Q_ARG(const std::function<void()>&, std::move(function)));
 }
 
+void Host::RunOnGSThread(std::function<void()> function)
+{
+	RunOnCPUThread([fn = std::move(function)] { MTGS::RunOnGSThread(std::move(fn)); });
+}
+
 void Host::RefreshGameListAsync(bool invalidate_cache)
 {
 	QMetaObject::invokeMethod(g_main_window, "refreshGameList", Qt::QueuedConnection, Q_ARG(bool, invalidate_cache));

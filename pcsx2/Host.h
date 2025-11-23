@@ -88,6 +88,9 @@ namespace Host
 	/// Safely executes a function on the VM thread.
 	void RunOnCPUThread(std::function<void()> function, bool block = false);
 
+	/// Safely executes a function on the GS thread.
+	void RunOnGSThread(std::function<void()> function);
+
 	/// Asynchronously starts refreshing the game list.
 	void RefreshGameListAsync(bool invalidate_cache);
 
