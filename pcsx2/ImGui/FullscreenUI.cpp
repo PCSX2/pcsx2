@@ -827,18 +827,13 @@ void ImGuiFullscreen::GetInputDialogHelpText(SmallStringBase& dest)
 void FullscreenUI::ApplyLayoutSettings(const SettingsInterface* bsi)
 {
 	ImGuiIO& io = ImGui::GetIO();
-	SmallString swap_mode;
-	if (bsi)
-		swap_mode = bsi->GetSmallStringValue("UI", "SwapOKFullscreenUI", "auto");
-	else
-		swap_mode = Host::GetBaseSmallStringSettingValue("UI", "SwapOKFullscreenUI", "auto");
+#define GET_SETTINGS_VALUE(type, section, key, default) \
+	(bsi ? bsi->Get##type##Value(section, key, default) : Host::GetBase##type##SettingValue(section, key, default))
+
+	SmallString swap_mode = GET_SETTINGS_VALUE(SmallString, "UI", "SwapOKFullscreenUI", "auto");
 
 	// Check Nintendo Setting
-	SmallString sdl2_nintendo_mode;
-	if (bsi)
-		sdl2_nintendo_mode = bsi->GetSmallStringValue("UI", "SDL2NintendoLayout", "false");
-	else
-		sdl2_nintendo_mode = Host::GetBaseSmallStringSettingValue("UI", "SDL2NintendoLayout", "false");
+	SmallString sdl2_nintendo_mode = GET_SETTINGS_VALUE(SmallString, "UI", "SDL2NintendoLayout", "false");
 
 	const InputLayout layout = ImGuiFullscreen::GetGamepadLayout();
 
@@ -878,11 +873,7 @@ void FullscreenUI::ApplyLayoutSettings(const SettingsInterface* bsi)
 		}
 
 		// Check BIOS
-		SmallString bios_selection;
-		if (bsi)
-			bios_selection = bsi->GetSmallStringValue("Filenames", "BIOS", "");
-		else
-			bios_selection = Host::GetBaseSmallStringSettingValue("Filenames", "BIOS", "");
+		SmallString bios_selection = GET_SETTINGS_VALUE(SmallString, "Filenames", "BIOS", "");
 
 		if (bios_selection != "")
 		{
@@ -906,6 +897,7 @@ void FullscreenUI::ApplyLayoutSettings(const SettingsInterface* bsi)
 	// Invalid setting
 	else
 		io.ConfigNavSwapGamepadButtons = false;
+#undef GET_SETTINGS_VALUE
 }
 
 void FullscreenUI::LocaleChanged()
