@@ -71,6 +71,7 @@ namespace QtHost
 
 	static QLocale s_current_locale;
 	static QCollator s_current_collator;
+	static std::mutex s_collator_mtx;
 
 	static std::vector<QTranslator*> s_translators;
 } // namespace QtHost
@@ -122,7 +123,10 @@ void QtHost::InstallTranslator(QWidget* dialog_parent)
 	QString qlanguage = language;
 	qlanguage.replace('-', '_');
 	s_current_locale = QLocale(qlanguage);
-	s_current_collator = QCollator(s_current_locale);
+	{
+		std::lock_guard<std::mutex> guard(s_collator_mtx);
+		s_current_collator = QCollator(s_current_locale);
+	}
 
 	// Install the base qt translation first.
 #if defined(__APPLE__)
@@ -692,4 +696,12 @@ FontScript QtHost::GetFontScript(const std::string_view language)
 int QtHost::LocaleSensitiveCompare(QStringView lhs, QStringView rhs)
 {
 	return s_current_collator.compare(lhs, rhs);
+}
+
+int Host::LocaleSensitiveCompare(std::string_view lhs, std::string_view rhs)
+{
+	QString qlhs = QString::fromUtf8(lhs.data(), lhs.size());
+	QString qrhs = QString::fromUtf8(rhs.data(), rhs.size());
+	std::lock_guard<std::mutex> guard(QtHost::s_collator_mtx);
+	return QtHost::s_current_collator.compare(qlhs, qrhs);
 }
