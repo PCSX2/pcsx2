@@ -1844,6 +1844,7 @@ bool Pcsx2Config::PadOptions::Port::operator!=(const PadOptions::Port& right) co
 
 Pcsx2Config::AchievementsOptions::AchievementsOptions()
 {
+	bitset = 0;
 	Enabled = false;
 	HardcoreMode = false;
 	EncoreMode = false;
