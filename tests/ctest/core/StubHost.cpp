@@ -273,7 +273,7 @@ void Host::OpenHostFileSelectorAsync(std::string_view title, bool select_directo
 
 int Host::LocaleSensitiveCompare(std::string_view lhs, std::string_view rhs)
 {
-	int res = std::strncmp(lhs, rhs, std::min(lhs.size(), rhs.size()));
+	int res = std::strncmp(lhs.data(), rhs.data(), std::min(lhs.size(), rhs.size()));
 	if (res != 0)
 		return res;
 	return lhs.size() > rhs.size() ? 1 : lhs.size() < rhs.size() ? -1 : 0;
