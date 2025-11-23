@@ -2768,20 +2768,29 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 		else if (dst->m_scale != scale)
 			scale = dst->m_scale;
 
-		// Game is changing from 32bit deptth to 24bit, meaning any top values in the depth will no longer be valid, I hope no games rely on these values being maintained, else we're screwed.
 		if (type == DepthStencil && dst->m_type == DepthStencil && GSLocalMemory::m_psm[dst->m_TEX0.PSM].trbpp == 32 && GSLocalMemory::m_psm[TEX0.PSM].trbpp == 24 && dst->m_alpha_max > 0)
 		{
+			// Game is changing from 32bit depth to 24bit, so backup the original 32 bit texture to preserve the upper 8 bits of Z.
 			calcRescale(dst);
 			GSTexture* tex = g_gs_device->CreateDepthStencil(new_scaled_size.x, new_scaled_size.y, GSTexture::Format::DepthStencil, false);
 			if (!tex)
 				return nullptr;
 			g_gs_device->StretchRect(dst->m_texture, sRect, tex, dRect, ShaderConvert::FLOAT32_TO_FLOAT24, false);
 			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
-			g_gs_device->Recycle(dst->m_texture);
-
+			tex->SetBackup32BitDepth(dst->m_texture);
 			dst->m_texture = tex;
-			dst->m_alpha_min = 0;
-			dst->m_alpha_max = 0;
+		}
+		else if (type == DepthStencil && dst->m_type == DepthStencil && GSLocalMemory::m_psm[dst->m_TEX0.PSM].trbpp == 24 && GSLocalMemory::m_psm[TEX0.PSM].trbpp == 32 && dst->m_texture->HasBackup32BitDepth())
+		{
+			// Game is changing from 24bit depth to 32bit, so restore the backed up upper 8 bits (if it exists).
+			calcRescale(dst);
+			GSTexture* tex = g_gs_device->CreateDepthStencil(new_scaled_size.x, new_scaled_size.y, GSTexture::Format::DepthStencil, false);
+			if (!tex)
+				return nullptr;
+			g_gs_device->StretchRect(dst->m_texture, sRect, tex, dRect, ShaderConvert::DEPTH_COPY, false); // Depth copy will automatically use the backed up data.
+			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+			g_gs_device->Recycle(dst->m_texture);
+			dst->m_texture = tex;
 		}
 		else if ((used || type == GSTextureCache::DepthStencil) && (std::abs(static_cast<s16>(GSLocalMemory::m_psm[dst->m_TEX0.PSM].bpp - GSLocalMemory::m_psm[TEX0.PSM].bpp)) == 16))
 		{
@@ -3236,6 +3245,15 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 						dst_match->UnscaleRTAlpha();
 						g_gs_device->StretchRect(dst_match->m_texture, sRect, dst->m_texture, dRect, shader, false);
 						g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+
+						if (shader == ShaderConvert::RGBA8_TO_FLOAT24)
+						{
+							// Copy all 32 bits of color into the back up texture in case the game converts to 32bit depth later.
+							GSTexture* tex = g_gs_device->CreateDepthStencil(new_scaled_size.x, new_scaled_size.y, GSTexture::Format::DepthStencil, false);
+							g_gs_device->StretchRect(dst_match->m_texture, sRect, tex, dRect, ShaderConvert::RGBA8_TO_FLOAT32, false);
+							g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+							dst->m_texture->SetBackup32BitDepth(tex);
+						}
 					}
 				}
 
