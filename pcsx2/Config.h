@@ -749,6 +749,7 @@ struct Pcsx2Config
 					OsdShowInputs : 1,
 					OsdShowVideoCapture : 1,
 					OsdShowInputRec : 1,
+					OsdShowTextureReplacements : 1,
 					HWSpinGPUForReadbacks : 1,
 					HWSpinCPUForReadbacks : 1,
 					GPUPaletteConversion : 1,
