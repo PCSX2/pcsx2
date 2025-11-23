@@ -89,55 +89,13 @@ int g_counter_cache_ignores = 0;
 #define XAFLAG_LOOP (1ul << 1)
 #define XAFLAG_LOOP_START (1ul << 2)
 
-static __forceinline s32 GetNextDataBuffered(V_Core& thiscore, uint voiceidx)
+static __forceinline void GetNextDataBuffered(V_Core& thiscore, uint voiceidx)
 {
 	V_Voice& vc(thiscore.Voices[voiceidx]);
 
-	if ((vc.SCurrent & 3) == 0)
+	if (vc.SBuffer == nullptr)
 	{
-		IncrementNextA(thiscore, voiceidx);
-
-		if ((vc.NextA & 7) == 0) // vc.SCurrent == 24 equivalent
-		{
-			if (vc.LoopFlags & XAFLAG_LOOP_END)
-			{
-				thiscore.Regs.ENDX |= (1 << voiceidx);
-				vc.NextA = vc.LoopStartA | 1;
-				if (!(vc.LoopFlags & XAFLAG_LOOP))
-				{
-					vc.Stop();
-
-					if (IsDevBuild)
-					{
-						if (SPU2::MsgVoiceOff())
-							SPU2::ConLog("* SPU2: Voice Off by EndPoint: %d \n", voiceidx);
-					}
-				}
-			}
-			else
-				vc.NextA++; // no, don't IncrementNextA here.  We haven't read the header yet.
-		}
-	}
-
-	if (vc.SCurrent == 28)
-	{
-		vc.SCurrent = 0;
-
-		// We'll need the loop flags and buffer pointers regardless of cache status:
-
-		for (int i = 0; i < 2; i++)
-			if (Cores[i].IRQEnable && Cores[i].IRQA == (vc.NextA & 0xFFFF8))
-				SetIrqCall(i);
-
-		s16* memptr = GetMemPtr(vc.NextA & 0xFFFF8);
-		vc.LoopFlags = *memptr >> 8; // grab loop flags from the upper byte.
-
-		if ((vc.LoopFlags & XAFLAG_LOOP_START) && !vc.LoopMode)
-		{
-			vc.LoopStartA = vc.NextA & 0xFFFF8;
-		}
-
-		const int cacheIdx = vc.NextA / pcm_WordsPerBlock;
+		const int cacheIdx = (vc.NextA & 0xFFFF8) / pcm_WordsPerBlock;
 		PcmCacheEntry& cacheLine = pcm_cache_data[cacheIdx];
 		vc.SBuffer = cacheLine.Sampledata;
 
@@ -172,46 +130,18 @@ static __forceinline s32 GetNextDataBuffered(V_Core& thiscore, uint voiceidx)
 					g_counter_cache_misses++;
 			}
 
+
+			s16* memptr = GetMemPtr(vc.NextA & 0xFFFF8);
 			XA_decode_block(vc.SBuffer, memptr, vc.Prev1, vc.Prev2);
 		}
 	}
 
-	return vc.SBuffer[vc.SCurrent++];
-}
-
-static __forceinline void GetNextDataDummy(V_Core& thiscore, uint voiceidx)
-{
-	V_Voice& vc(thiscore.Voices[voiceidx]);
-
-	IncrementNextA(thiscore, voiceidx);
-
-	if ((vc.NextA & 7) == 0) // vc.SCurrent == 24 equivalent
+	// Get the sample index for NextA, we have to subtract 1 to ignore the loop header
+	int sampleIdx = ((vc.NextA % pcm_WordsPerBlock) - 1) * 4;
+	for (int i = 0; i < 4; i++)
 	{
-		if (vc.LoopFlags & XAFLAG_LOOP_END)
-		{
-			thiscore.Regs.ENDX |= (1 << voiceidx);
-			vc.NextA = vc.LoopStartA | 1;
-		}
-		else
-			vc.NextA++; // no, don't IncrementNextA here.  We haven't read the header yet.
+		vc.DecodeFifo[(vc.DecPosWrite + i) % 32] = vc.SBuffer[sampleIdx + i];
 	}
-
-	if (vc.SCurrent == 28)
-	{
-		for (int i = 0; i < 2; i++)
-			if (Cores[i].IRQEnable && Cores[i].IRQA == (vc.NextA & 0xFFFF8))
-				SetIrqCall(i);
-
-		vc.LoopFlags = *GetMemPtr(vc.NextA & 0xFFFF8) >> 8; // grab loop flags from the upper byte.
-
-		if ((vc.LoopFlags & XAFLAG_LOOP_START) && !vc.LoopMode)
-			vc.LoopStartA = vc.NextA & 0xFFFF8;
-
-		vc.SCurrent = 0;
-	}
-
-	vc.SP -= 0x1000 * (4 - (vc.SCurrent & 3));
-	vc.SCurrent += 4 - (vc.SCurrent & 3);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -235,6 +165,69 @@ static __forceinline StereoOut32 ApplyVolume(const StereoOut32& data, const V_Vo
 	return StereoOut32(
 		ApplyVolume(data.Left, volume.Left.Value),
 		ApplyVolume(data.Right, volume.Right.Value));
+}
+
+static __forceinline void UpdateBlockHeader(V_Core& thiscore, uint voiceidx)
+{
+	V_Voice& vc(thiscore.Voices[voiceidx]);
+
+	for (int i = 0; i < 2; i++)
+		if (Cores[i].IRQEnable && Cores[i].IRQA == (vc.NextA & 0xFFFF8))
+			SetIrqCall(i);
+
+	s16* memptr = GetMemPtr(vc.NextA & 0xFFFF8);
+	vc.LoopFlags = *memptr >> 8; // grab loop flags from the upper byte.
+
+	if ((vc.LoopFlags & XAFLAG_LOOP_START) && !vc.LoopMode)
+	{
+		vc.LoopStartA = vc.NextA & 0xFFFF8;
+	}
+}
+
+static __forceinline void DecodeSamples(uint coreidx, uint voiceidx)
+{
+	V_Core& thiscore(Cores[coreidx]);
+	V_Voice& vc(thiscore.Voices[voiceidx]);
+
+	// Update the block header on every audio frame
+	UpdateBlockHeader(thiscore, voiceidx);
+
+	// When a voice is started at 0 pitch, NAX quickly advances to SSA + 5
+	// So that would mean the decode buffer holds around 12 samples
+	if (((int)(vc.DecPosWrite - vc.DecPosRead)) > 12) {
+		// Sufficient data buffered
+		return;
+	}
+
+	if (vc.ADSR.Phase > V_ADSR::PHASE_STOPPED)
+	{
+		GetNextDataBuffered(thiscore, voiceidx);
+	}
+
+	vc.DecPosWrite += 4;
+
+	IncrementNextA(thiscore, voiceidx);
+	if ((vc.NextA & 7) == 0)
+	{
+		if (vc.LoopFlags & XAFLAG_LOOP_END)
+		{
+			thiscore.Regs.ENDX |= (1 << voiceidx);
+			vc.NextA = vc.LoopStartA;
+			if (!(vc.LoopFlags & XAFLAG_LOOP))
+			{
+				vc.Stop();
+
+				if (IsDevBuild)
+				{
+					if (SPU2::MsgVoiceOff())
+						SPU2::ConLog("* SPU2: Voice Off by EndPoint: %d \n", voiceidx);
+				}
+			}
+		}
+
+		IncrementNextA(thiscore, voiceidx);
+		vc.SBuffer = nullptr;
+	}
 }
 
 static void __forceinline UpdatePitch(uint coreidx, uint voiceidx)
@@ -278,33 +271,27 @@ static __forceinline void CalculateADSR(V_Core& thiscore, uint voiceidx)
 	pxAssume(vc.ADSR.Value >= 0); // ADSR should never be negative...
 }
 
-__forceinline static s32 GaussianInterpolate(s32 pv4, s32 pv3, s32 pv2, s32 pv1, s32 i)
+static __forceinline void ConsumeSamples(V_Core& thiscore, uint voiceidx)
 {
-	s32 out = 0;
-	out =  (interpTable[i][0] * pv4) >> 15;
-	out += (interpTable[i][1] * pv3) >> 15;
-	out += (interpTable[i][2] * pv2) >> 15;
-	out += (interpTable[i][3] * pv1) >> 15;
+	V_Voice& vc(thiscore.Voices[voiceidx]);
 
-	return out;
+	int consumed = vc.SP >> 12;
+	vc.SP &= 0xfff;
+	vc.DecPosRead += consumed;
 }
 
 static __forceinline s32 GetVoiceValues(V_Core& thiscore, uint voiceidx)
 {
 	V_Voice& vc(thiscore.Voices[voiceidx]);
 
-	while (vc.SP >= 0)
-	{
-		vc.PV4 = vc.PV3;
-		vc.PV3 = vc.PV2;
-		vc.PV2 = vc.PV1;
-		vc.PV1 = GetNextDataBuffered(thiscore, voiceidx);
-		vc.SP -= 0x1000;
-	}
+	int phase = (vc.SP & 0x0ff0) >> 4;
+	s32 out = 0;
+	out += (interpTable[phase][0] * vc.DecodeFifo[(vc.DecPosRead + 0) % 32]) >> 15;
+	out += (interpTable[phase][1] * vc.DecodeFifo[(vc.DecPosRead + 1) % 32]) >> 15;
+	out += (interpTable[phase][2] * vc.DecodeFifo[(vc.DecPosRead + 2) % 32]) >> 15;
+	out += (interpTable[phase][3] * vc.DecodeFifo[(vc.DecPosRead + 3) % 32]) >> 15;
 
-	const s32 mu = vc.SP + 0x1000;
-
-	return GaussianInterpolate(vc.PV4, vc.PV3, vc.PV2, vc.PV1, (mu & 0x0ff0) >> 4);
+	return out;
 }
 
 // This is Dr. Hell's noise algorithm as implemented in pcsxr
@@ -382,21 +369,13 @@ static __forceinline StereoOut32 MixVoice(uint coreidx, uint voiceidx)
 	V_Core& thiscore(Cores[coreidx]);
 	V_Voice& vc(thiscore.Voices[voiceidx]);
 
-	// If this assertion fails, it mans SCurrent is being corrupted somewhere, or is not initialized
-	// properly.  Invalid values in SCurrent will cause errant IRQs and corrupted audio.
-	pxAssertMsg((vc.SCurrent <= 28) && (vc.SCurrent != 0), "Current sample should always range from 1->28");
-
 	// Most games don't use much volume slide effects.  So only call the UpdateVolume
 	// methods when needed by checking the flag outside the method here...
 	// (Note: Ys 6 : Ark of Nephistm uses these effects)
 
 	vc.Volume.Update();
 
-	// SPU2 Note: The spu2 continues to process voices for eternity, always, so we
-	// have to run through all the motions of updating the voice regardless of it's
-	// audible status.  Otherwise IRQs might not trigger and emulation might fail.
-
-	UpdatePitch(coreidx, voiceidx);
+	DecodeSamples(coreidx, voiceidx);
 
 	StereoOut32 voiceOut(0, 0);
 	s32 Value = 0;
@@ -419,11 +398,14 @@ static __forceinline StereoOut32 MixVoice(uint coreidx, uint voiceidx)
 
 		voiceOut = ApplyVolume(StereoOut32(Value, Value), vc.Volume);
 	}
-	else
-	{
-		while (vc.SP >= 0)
-			GetNextDataDummy(thiscore, voiceidx); // Dummy is enough
-	}
+
+	// SPU2 Note: The spu2 continues to process voices for eternity, always, so we
+	// have to run through all the motions of updating the voice regardless of it's
+	// audible status.  Otherwise IRQs might not trigger and emulation might fail.
+
+	UpdatePitch(coreidx, voiceidx);
+
+	ConsumeSamples(thiscore, voiceidx);
 
 	// Write-back of raw voice data (post ADSR applied)
 	if (voiceidx == 1)
@@ -533,7 +515,8 @@ StereoOut32 V_Core::Mix(const VoiceMixSet& inVoices, const StereoOut32& Input, c
 	return TD + ApplyVolume(RV, FxVol);
 }
 
-static StereoOut32 DCFilter(StereoOut32 input) {
+static StereoOut32 DCFilter(StereoOut32 input)
+{
 	// A simple DC blocking high-pass filter
 	// Implementation from http://peabody.sapp.org/class/dmp2/lab/dcblock/
 	// The magic number 0x7f5c is ceil(INT16_MAX * 0.995)
@@ -634,9 +617,9 @@ __forceinline void spu2Mix()
 			if (SPU2::MsgCache())
 			{
 				SPU2::ConLog(" * SPU2 > CacheStats > Hits: %d  Misses: %d  Ignores: %d\n",
-					   g_counter_cache_hits,
-					   g_counter_cache_misses,
-					   g_counter_cache_ignores);
+					g_counter_cache_hits,
+					g_counter_cache_misses,
+					g_counter_cache_ignores);
 			}
 
 			g_counter_cache_hits =
