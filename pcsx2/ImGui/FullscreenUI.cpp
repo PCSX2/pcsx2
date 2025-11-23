@@ -697,6 +697,9 @@ namespace FullscreenUI
 	// For when we have no GameList entry
 	static void DrawFallbackCover(const ImVec2& size);
 	static void DrawFallbackCover(ImDrawList* draw_list, const ImVec2& min, const ImVec2& max);
+	static std::string_view TrimString(const std::pair<ImFont*, float>& font, std::string_view str, float available_space);
+	static constexpr const char* g_ellipsis = "\xe2\x80\xa6";
+	static bool s_prefer_english_titles = false;
 
 	// Lazily populated cover images.
 	static std::unordered_map<std::string, std::string> s_cover_image_map;
@@ -910,6 +913,11 @@ void FullscreenUI::GamepadLayoutChanged()
 	ApplyLayoutSettings();
 }
 
+void FullscreenUI::PreferEnglishGameListChanged()
+{
+	s_prefer_english_titles = Host::GetBaseBoolSettingValue("UI", "PreferEnglishGameList", false);
+}
+
 // When drawing an svg to a non-integer size, we get a padded texture.
 // This function crops off this padding by setting the image UV for the draw.
 // We currently only use integer sizes for images, but I wrote this before checking that.
@@ -971,6 +979,7 @@ bool FullscreenUI::Initialize()
 	ImGuiFullscreen::UpdateLayoutScale();
 	ImGuiFullscreen::UpdateFontScale();
 	ApplyLayoutSettings();
+	PreferEnglishGameListChanged();
 
 	if (!ImGuiFullscreen::Initialize("fullscreenui/placeholder.png") || !LoadResources())
 	{
@@ -988,7 +997,7 @@ bool FullscreenUI::Initialize()
 
 	if (VMManager::HasValidVM())
 	{
-		UpdateGameDetails(VMManager::GetDiscPath(), VMManager::GetDiscSerial(), VMManager::GetTitle(true), VMManager::GetDiscCRC(),
+		UpdateGameDetails(VMManager::GetDiscPath(), VMManager::GetDiscSerial(), VMManager::GetTitle(s_prefer_english_titles), VMManager::GetDiscCRC(),
 			VMManager::GetCurrentCRC());
 	}
 	else
@@ -3711,7 +3720,7 @@ void FullscreenUI::DrawSettingsWindow()
 		if (s_game_settings_entry)
 		{
 			NavTitle(SmallString::from_format(
-				"{} ({})", Host::TranslateToCString(TR_CONTEXT, titles[static_cast<u32>(pages[index])]), s_game_settings_entry->GetTitle(true)));
+				"{} ({})", Host::TranslateToCString(TR_CONTEXT, titles[static_cast<u32>(pages[index])]), s_game_settings_entry->GetTitle(s_prefer_english_titles)));
 		}
 		else
 		{
@@ -3861,8 +3870,8 @@ void FullscreenUI::DrawSummarySettingsPage()
 
 	if (s_game_settings_entry)
 	{
-		if (MenuButton(FSUI_ICONSTR(ICON_FA_TAG, "Title"), s_game_settings_entry->GetTitle(true).c_str(), true))
-			CopyTextToClipboard(FSUI_STR("Game title copied to clipboard."), s_game_settings_entry->GetTitle(true));
+		if (MenuButton(FSUI_ICONSTR(ICON_FA_TAG, "Title"), s_game_settings_entry->GetTitle(s_prefer_english_titles).c_str(), true))
+			CopyTextToClipboard(FSUI_STR("Game title copied to clipboard."), s_game_settings_entry->GetTitle(s_prefer_english_titles));
 		if (MenuButton(FSUI_ICONSTR(ICON_FA_PAGER, "Serial"), s_game_settings_entry->serial.c_str(), true))
 			CopyTextToClipboard(FSUI_STR("Game serial copied to clipboard."), s_game_settings_entry->serial);
 		if (MenuButton(FSUI_ICONSTR(ICON_FA_CODE, "CRC"), fmt::format("{:08X}", s_game_settings_entry->crc).c_str(), true))
@@ -7750,7 +7759,7 @@ void FullscreenUI::PopulateGameListEntryList()
 			}
 
 			// fallback to title when all else is equal
-			const int res = StringUtil::Strcasecmp(lhs->GetTitleSort(true).c_str(), rhs->GetTitleSort(true).c_str());
+			const int res = StringUtil::Strcasecmp(lhs->GetTitleSort(s_prefer_english_titles).c_str(), rhs->GetTitleSort(s_prefer_english_titles).c_str());
 			return reverse ? (res > 0) : (res < 0);
 		});
 }
@@ -7856,6 +7865,19 @@ void FullscreenUI::DrawGameListWindow()
 	}
 }
 
+std::string_view FullscreenUI::TrimString(const std::pair<ImFont*, float>& font, std::string_view str, float available_space)
+{
+	const char* beg = str.data();
+	const char* end = beg + str.size();
+	float full_width = font.first->CalcTextSizeA(font.second, INFINITY, 0, beg, end).x;
+	if (full_width <= available_space)
+		return str;
+	float ellipsis_width = ImGui::CalcTextSize(g_ellipsis).x;
+	const char* trimmed = end;
+	font.first->CalcTextSizeA(font.second, available_space - ellipsis_width, 0, beg, end, &trimmed);
+	return std::string_view(beg, trimmed);
+}
+
 void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 {
 	ImGui::PushStyleColor(ImGuiCol_WindowBg, UIBackgroundColor);
@@ -7906,10 +7928,10 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 			const float text_start_x = bb.Min.x + image_size.x + LayoutScale(15.0f);
 			const ImRect title_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
 			const ImRect summary_bb(ImVec2(text_start_x, midpoint), bb.Max);
+			const std::string& title = entry->GetTitle(s_prefer_english_titles);
 
 			ImGui::PushFont(g_large_font.first, g_large_font.second);
-			// TODO: Fix font fallback issues and enable native-language titles
-			ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, entry->GetTitle(true).c_str(), entry->GetTitle(true).c_str() + entry->GetTitle(true).size(), nullptr,
+			ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, title.c_str(), title.c_str() + title.size(), nullptr,
 				ImVec2(0.0f, 0.0f), &title_bb);
 			ImGui::PopFont();
 
@@ -7987,13 +8009,14 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 		{
 			// title
 			ImGui::PushFont(g_large_font.first, g_large_font.second);
-			const std::string_view title(std::string_view(selected_entry->GetTitle(true)).substr(0, 37));
+			const std::string_view full_title(selected_entry->GetTitle(s_prefer_english_titles));
+			std::string_view title = TrimString(g_large_font, full_title, work_width);
 			text_width = ImGui::CalcTextSize(title.data(), title.data() + title.length(), false, work_width).x;
-			if (title.length() != selected_entry->GetTitle(true).length())
-				text_width += ImGui::CalcTextSize("...", nullptr, false, -1.0f).x;
+			if (title.length() != full_title.length())
+				text_width += ImGui::CalcTextSize(g_ellipsis).x;
 			ImGui::SetCursorPosX((work_width - text_width) / 2.0f);
 			ImGui::TextWrapped(
-				"%.*s%s", static_cast<int>(title.size()), title.data(), (title.length() == selected_entry->GetTitle(true).length()) ? "" : "...");
+				"%.*s%s", static_cast<int>(title.size()), title.data(), (title.length() == full_title.length()) ? "" : g_ellipsis);
 			ImGui::PopFont();
 
 			ImGui::PushFont(g_medium_font.first, g_medium_font.second);
@@ -8148,9 +8171,10 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
 			if (show_titles) 
 			{
 				const ImRect title_bb(ImVec2(bb.Min.x, bb.Min.y + image_height + title_spacing), bb.Max);
-				const std::string_view title(std::string_view(entry->GetTitle(true)).substr(0, 31));
+				const std::string_view full_title(entry->GetTitle(s_prefer_english_titles));
+				const std::string_view title = TrimString(g_medium_font, full_title, title_bb.GetWidth());
 				draw_title.clear();
-				fmt::format_to(std::back_inserter(draw_title), "{}{}", title, (title.length() == entry->GetTitle(true).length()) ? "" : "...");
+				fmt::format_to(std::back_inserter(draw_title), "{}{}", title, (title.length() == full_title.length()) ? "" : g_ellipsis);
 				ImGui::PushFont(g_medium_font.first, g_medium_font.second);
 				ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, draw_title.c_str(), draw_title.c_str() + draw_title.length(), nullptr,
 					ImVec2(0.5f, 0.0f), &title_bb);
@@ -8199,7 +8223,7 @@ void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
 	options.emplace_back(FSUI_ICONSTR(ICON_FA_SQUARE_XMARK, "Close Menu"), false);
 
 	const bool has_resume_state = VMManager::HasSaveStateInSlot(entry->serial.c_str(), entry->crc, -1);
-	OpenChoiceDialog(entry->GetTitle(true).c_str(), false, std::move(options),
+	OpenChoiceDialog(entry->GetTitle(s_prefer_english_titles).c_str(), false, std::move(options),
 		[has_resume_state, entry_path = entry->path, entry_serial = entry->serial, entry_title = entry->title, entry_played_time]
 		(s32 index, const std::string& title, bool checked) {
 			switch (index)
