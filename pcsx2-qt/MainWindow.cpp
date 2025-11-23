@@ -1099,7 +1099,7 @@ bool MainWindow::shouldMouseLock() const
 	if (!Host::GetBoolSettingValue("EmuCore", "EnableMouseLock", false))
 		return false;
 
-	if (m_display_created == false || m_display_surface == nullptr && !isRenderingToMain())
+	if (m_display_created == false || m_display_surface == nullptr)
 		return false;
 
 	bool windowsHidden = (!g_debugger_window || g_debugger_window->isHidden()) &&
