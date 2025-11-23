@@ -290,7 +290,8 @@ std::vector<std::pair<QString, QString>> QtHost::GetAvailableLanguageList()
 	};
 }
 
-enum class FontScript : u8 {
+enum class FontScript : u8
+{
 	Arabic,
 	ChineseSimplified,
 	ChineseTraditional,
@@ -303,12 +304,14 @@ enum class FontScript : u8 {
 };
 static constexpr size_t NumFontScripts = static_cast<size_t>(FontScript::Latin) + 1;
 
-struct FontLoadInfo {
+struct FontLoadInfo
+{
 	const char* file_name = nullptr;
 	const char* face_name = nullptr;
 };
 
-namespace FontNames {
+namespace FontNames
+{
 	static constexpr FontLoadInfo Arabic[] = {
 		{"NotoSansArabic-Regular.ttf"},
 		{"Segoeui.ttf"},
