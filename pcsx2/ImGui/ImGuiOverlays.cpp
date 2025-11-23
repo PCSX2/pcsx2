@@ -9,6 +9,7 @@
 #include "GS/GSCapture.h"
 #include "GS/GSVector.h"
 #include "GS/Renderers/Common/GSDevice.h"
+#include "GS/Renderers/HW/GSTextureReplacements.h"
 #include "Host.h"
 #include "IconsFontAwesome6.h"
 #include "IconsPromptFont.h"
@@ -148,6 +149,7 @@ namespace ImGuiManager
 	static void DrawInputsOverlay(float scale, float margin, float spacing);
 	static void DrawInputRecordingOverlay(float& position_y, float scale, float margin, float spacing);
 	static void DrawVideoCaptureOverlay(float& position_y, float scale, float margin, float spacing);
+	static void DrawTextureReplacementsOverlay(float& position_y, float scale, float margin, float spacing);
 } // namespace ImGuiManager
 
 static std::tuple<float, float> GetMinMax(std::span<const float> values)
@@ -946,6 +948,46 @@ __ri void ImGuiManager::DrawVideoCaptureOverlay(float& position_y, float scale, 
 	position_y += std::max(icon_size.y, text_size.y) + spacing;
 }
 
+__ri void ImGuiManager::DrawTextureReplacementsOverlay(float& position_y, float scale, float margin, float spacing)
+{
+	if (!GSConfig.OsdShowTextureReplacements ||
+		FullscreenUI::HasActiveWindow())
+		return;
+
+	const bool dumping_active = GSConfig.DumpReplaceableTextures;
+	const bool replacement_active = GSConfig.LoadTextureReplacements;
+
+	if (!dumping_active && !replacement_active)
+		return;
+
+	const float shadow_offset = std::ceil(scale);
+	ImFont* const standard_font = ImGuiManager::GetStandardFont();
+	const float font_size = ImGuiManager::GetFontSizeStandard();
+	ImDrawList* dl = ImGui::GetBackgroundDrawList();
+
+	SmallString texture_line;
+	if (replacement_active)
+	{
+		const u32 loaded_count = GSTextureReplacements::GetLoadedTextureCount();
+		texture_line.format("{} Replaced: {}", ICON_FA_IMAGES, loaded_count);
+	}
+	if (dumping_active)
+	{
+		if (!texture_line.empty())
+			texture_line.append(" | ");
+		const u32 dumped_count = GSTextureReplacements::GetDumpedTextureCount();
+		texture_line.append_format("{} Dumped: {}", ICON_FA_DOWNLOAD, dumped_count);
+	}
+
+	ImVec2 text_size = standard_font->CalcTextSizeA(font_size, std::numeric_limits<float>::max(), -1.0f, texture_line.c_str(), nullptr, nullptr);
+	const ImVec2 text_pos(GetWindowWidth() - margin - text_size.x, position_y);
+
+	dl->AddText(standard_font, font_size, ImVec2(text_pos.x + shadow_offset, text_pos.y + shadow_offset), IM_COL32(0, 0, 0, 100), texture_line.c_str());
+	dl->AddText(standard_font, font_size, text_pos, white_color, texture_line.c_str());
+
+	position_y += text_size.y + spacing;
+}
+
 namespace SaveStateSelectorUI
 {
 	namespace
@@ -1381,6 +1423,7 @@ void ImGuiManager::RenderOverlays()
 
 	DrawVideoCaptureOverlay(position_y, scale, margin, spacing);
 	DrawInputRecordingOverlay(position_y, scale, margin, spacing);
+	DrawTextureReplacementsOverlay(position_y, scale, margin, spacing);
 	if (GSConfig.OsdPerformancePos != OsdOverlayPos::None)
 		DrawPerformanceOverlay(position_y, scale, margin, spacing);
 	DrawSettingsOverlay(scale, margin, spacing);

@@ -124,6 +124,7 @@ namespace GSTextureReplacements
 
 	/// Textures that have been dumped, to save stat() calls.
 	static std::unordered_set<TextureName> s_dumped_textures;
+	static std::mutex s_dumped_textures_mutex;
 
 	/// Lookup map of texture names to replacements, if they exist.
 	static std::unordered_map<TextureName, std::string> s_replacement_texture_filenames;
@@ -802,10 +803,13 @@ void GSTextureReplacements::DumpTexture(const GSTextureCache::HashCacheKey& hash
 {
 	// check if it's been dumped or replaced already
 	const TextureName name(CreateTextureName(hash, level));
-	if (s_dumped_textures.find(name) != s_dumped_textures.end() || s_replacement_texture_filenames.find(name) != s_replacement_texture_filenames.end())
-		return;
+	{
+		std::unique_lock<std::mutex> lock(s_dumped_textures_mutex);
+		if (s_dumped_textures.find(name) != s_dumped_textures.end() || s_replacement_texture_filenames.find(name) != s_replacement_texture_filenames.end())
+			return;
 
-	s_dumped_textures.insert(name);
+		s_dumped_textures.insert(name);
+	}
 
 	// already exists on disk?
 	std::string filename(GetDumpFilename(name, level));
@@ -842,7 +846,20 @@ void GSTextureReplacements::DumpTexture(const GSTextureCache::HashCacheKey& hash
 
 void GSTextureReplacements::ClearDumpedTextureList()
 {
+	std::unique_lock<std::mutex> lock(s_dumped_textures_mutex);
 	s_dumped_textures.clear();
+}
+
+u32 GSTextureReplacements::GetDumpedTextureCount()
+{
+	std::unique_lock<std::mutex> lock(s_dumped_textures_mutex);
+	return static_cast<u32>(s_dumped_textures.size());
+}
+
+u32 GSTextureReplacements::GetLoadedTextureCount()
+{
+	std::unique_lock<std::mutex> lock(s_replacement_texture_cache_mutex);
+	return static_cast<u32>(s_replacement_texture_cache.size());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
