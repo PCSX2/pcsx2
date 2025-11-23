@@ -2570,11 +2570,21 @@ void MainWindow::checkMousePosition(int x, int y)
 		const QSize logicalSize = displayWindow->size();
 		const QPoint logicalPosition = displayWindow->position() + displayWindow->parent()->position();
 
+		// The offset to the origin of the current screen is in device-independent pixels while the origin itself is native!
+		// The logicalPosition is the sum of these two values, so we need to separate them and only scale the offset
+		const QScreen* screen = displayWindow->screen();
+
+		// If we fail to get the screen associated with the window, avoid mouse locking as it's probably in an unexpected position.
+		if (!screen)
+			return;
+
+		const QPoint screenPosition = screen->geometry().topLeft();
+
 		// physical frame rect
 		const qreal scale = displayWindow->devicePixelRatio();
 		const QRectF physicalBounds(
-			logicalPosition.x() * scale,
-			logicalPosition.y() * scale,
+			screenPosition.x() + (logicalPosition.x() - screenPosition.x()) * scale,
+			screenPosition.y() + (logicalPosition.y() - screenPosition.y()) * scale,
 			logicalSize.width() * scale,
 			logicalSize.height() * scale);
 
