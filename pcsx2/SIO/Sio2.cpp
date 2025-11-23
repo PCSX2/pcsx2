@@ -360,6 +360,12 @@ void Sio2::Memcard()
 		case MemcardCommand::AUTH_XOR:
 			g_MemoryCardProtocol.AuthXor();
 			break;
+        case MemcardCommand::AUTH_F1:
+			g_MemoryCardProtocol.AuthF1();
+			break;
+        case MemcardCommand::AUTH_F2:
+			g_MemoryCardProtocol.AuthF2();
+			break;
 		case MemcardCommand::AUTH_F3:
 			g_MemoryCardProtocol.AuthF3();
 			break;

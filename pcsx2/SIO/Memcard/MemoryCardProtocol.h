@@ -47,6 +47,8 @@ public:
 	void EraseBlock();
 	void UnknownBoot();
 	void AuthXor();
+    void AuthF1();
+	void AuthF2();
 	void AuthF3();
 	void AuthF7();
 };

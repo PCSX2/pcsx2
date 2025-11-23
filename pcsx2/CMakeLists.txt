@@ -1159,6 +1159,7 @@ target_link_libraries(PCSX2_FLAGS INTERFACE
 	ccc
 	plutovg::plutovg
 	plutosvg::plutosvg
+    des
 	${LIBC_LIBRARIES}
 )
 

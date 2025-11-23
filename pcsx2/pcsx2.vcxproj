@@ -989,6 +989,9 @@
     <ProjectReference Include="..\3rdparty\d3d12memalloc\d3d12memalloc.vcxproj">
       <Project>{d45cec7a-3171-40dd-975d-e1544cf16139}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\3rdparty\des\des.vcxproj">
+      <Project>{fdcbbb72-9d47-4995-a85c-59b96ef9eed2}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\3rdparty\discord-rpc\discord-rpc.vcxproj">
       <Project>{e960dfdf-1bd3-4c29-b251-d1a0919c9b09}</Project>
     </ProjectReference>

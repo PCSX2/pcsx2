@@ -42,6 +42,9 @@ include(SearchForStuff)
 get_git_version_info()
 write_svnrev_h()
 
+# des
+add_subdirectory(3rdparty/des)
+
 # make common
 add_subdirectory(common)
 

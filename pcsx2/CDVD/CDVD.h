@@ -91,6 +91,102 @@ struct cdvdTrayTimer
 	TrayStates trayState;
 };
 
+enum MECHA_STATE
+{
+	MECHA_STATE_0 = 0,
+	MECHA_STATE_READY = 1,
+	MECHA_STATE_KEY_INDEXES_SET = 2,
+	MECHA_STATE_CARD_IV_SEED_SET = 3,
+	MECHA_STATE_CARD_NONCE_SET = 4,
+	MECHA_STATE_CARD_CHALLANGE_GENERATED = 5,
+	MECHA_STATE_CARD_CHALLENGE12_SENT = 6,
+	MECHA_STATE_CARD_CHALLENGE23_SENT = 7,
+	MECHA_STATE_CARD_RESPONSE12_RECEIVED = 8,
+	MECHA_STATE_CARD_RESPONSE3_RECEIVED = 9,
+	MECHA_STATE_CARD_VERIFIED = 10,
+	MECHA_STATE_KELF_HEADER_PARAMS_SET = 11,
+	MECHA_STATE_KELF_HEADER_RECEIVED = 12,
+	MECHA_STATE_KELF_HEADER_VERIFED = 13,
+	MECHA_STATE_BIT_LENGTH_SENT = 14,
+	MECHA_STATE_KELF_CONTENT_DECRYPT_IN_PROGRESS = 15,
+	MECHA_STATE_DATA_IN_LENGTH_SET = 16,
+	MECHA_STATE_UNK17 = 17,
+	MECHA_STATE_DATA_OUT_LENGTH_SET = 18,
+	MECHA_STATE_KELF_CONTENT_RECEIVED = 19,
+	MECHA_STATE_KELF_CONTENT_DECRYPT_DONE = 20,
+	MECHA_STATE_KBIT1_SENT = 21,
+	MECHA_STATE_KBIT2_SENT = 22,
+	MECHA_STATE_KC1_SENT = 23,
+	MECHA_STATE_KC2_SENT = 24,
+	MECHA_STATE_CRYPTO_IV_SET = 25,
+	MECHA_STATE_CRYPTO_KEY_RECEIVED = 26,
+	MECHA_STATE_CRYPTO_KEYGEN_DONE = 27,
+	MECHA_STATE_CRYPTO_DATA_IN_SIZE_SET = 28,
+	MECHA_STATE_CRYPTO_CRYPT_DONE = 29,
+	MECHA_STATE_CRYPTO_DATA_OUT_SIZE_SET = 30,
+	MECHA_STATE_CRYPTO_DATA_RECVED = 31,
+};
+
+enum MECHA_RESULT
+{
+	MECHA_RESULT_0 = 0x0,
+	MECHA_RESULT_0x100 = 0x100,
+	MECHA_RESULT_CARD_CHALLANGE_GENERATED = 0x204,
+	MECHA_RESULT_CARD_VERIFIED = 0x209,
+	MECHA_RESULT_KELF_HEADER_VERIFED = 0x20C,
+	MECHA_RESULT_KELF_CONTENT_DECRYPTED = 0x213,
+	MECHA_RESULT_CRYPTO_KEYGEN_DONE = 0x21A,
+	MECHA_RESULT_CRYPTO_CRYPT_DONE = 0x21F,
+	MECHA_RESULT_FAILED = 0x300,
+};
+
+#pragma pack(push, 1)
+struct KELFHeader
+{
+	u8 Nonce[16];
+	u32 ContentSize; // Sometimes not...
+	u16 HeaderSize;
+	u8 SystemType;
+	u8 ApplicationType;
+	u16 Flags;
+	u16 BanCount;
+	u32 RegionFlags;
+};
+
+struct ConsoleBan
+{
+	u8 iLinkID[8];
+	u8 consoleID[8];
+};
+
+#define BIT_BLOCK_ENCRYPTED 1
+#define BIT_BLOCK_SIGNED 2
+
+struct BitBlock
+{
+	u32 Size;
+	u32 Flags;
+	u8 Signature[8];
+};
+
+struct BitTable
+{
+	u32 HeaderSize;
+	u8 BlockCount;
+	u8 gap[3];
+
+	struct BitBlock Blocks[256];
+};
+#pragma pack(pop)
+
+
+struct BitBlockProccessed
+{
+	u8 Flags;
+	u32 Size;
+	u8 Signature[8];
+};
+
 struct cdvdStruct
 {
 	u8 nCommand;
@@ -143,12 +239,44 @@ struct cdvdStruct
 	u8 KeyXor;
 	u8 decSet;
 
-	u8 mg_buffer[65536];
-	int mg_size;
-	int mg_maxsize;
-	int mg_datatype; //0-data(encrypted); 1-header
-	u8 mg_kbit[16];  //last BIT key 'seen'
-	u8 mg_kcon[16];  //last content key 'seen'
+	u8 icvps2Key[16];
+	MECHA_STATE mecha_state;
+	MECHA_RESULT mecha_result;
+	u8 mecha_errorcode;
+	u8 cardKeySlot;
+	u8 cardKeyIndex;
+	u8 mode3KeyIndex;
+	u8 memcard_iv[8];
+	u8 memcard_seed[8];
+	u8 memcard_nonce[8];
+	u8 memcard_key[16];
+	u8 memcard_random[8];
+	u8 memcard_challenge1[8];
+	u8 memcard_challenge2[8];
+	u8 memcard_challenge3[8];
+	u8 memcard_reponse1[8];
+	u8 memcard_reponse2[8];
+	u8 memcard_reponse3[8];
+	u8 CardKey[16][8];
+	u8 mode;
+	u16 DataSize;
+	u16 data_buffer_offset;
+	u8 data_buffer[0x80000];
+	u16 bit_length;
+	u16 data_out_offset;
+	u8 Kc[16];
+	BitTable* bitTablePtr;
+	u8* data_out_ptr;
+	u16 lastBitTable;
+	BitBlockProccessed bitBlocks[64];
+	u8 pub_icvps2[8];
+	u8 pub_Kbit[16];
+	u8 pub_Kc[16];
+	u16 DoneBlocks;
+	u16 currentBlockIdx;
+	KELFHeader verifiedKelfHeader;
+	u8 ContentLastCiphertext[8];
+	u8 SignatureLastCiphertext[8];
 
 	u8 TrayTimeout;
 	u8 Action;        // the currently scheduled emulated action
