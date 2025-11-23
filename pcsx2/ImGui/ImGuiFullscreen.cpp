@@ -1924,6 +1924,11 @@ bool ImGuiFullscreen::NavButton(const char* title, bool is_active, bool enabled 
 
 	bb.Min += style.FramePadding;
 	bb.Max -= style.FramePadding;
+	if (text_size.x < bb.GetWidth())
+	{
+		// Center text
+		bb.Min.x += ImFloor((bb.GetWidth() - text_size.x) / 2);
+	}
 
 	ImGui::PushStyleColor(
 		ImGuiCol_Text, ImGui::GetColorU32(enabled ? (is_active ? ImGuiCol_Text : ImGuiCol_TextDisabled) : ImGuiCol_ButtonHovered));
