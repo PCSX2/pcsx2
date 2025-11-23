@@ -149,6 +149,9 @@ namespace Host
 	/// Creates a progress callback that displays in the host.
 	std::unique_ptr<ProgressCallback> CreateHostProgressCallback();
 
+	/// Compare strings in the locale of the current UI language from any thread.  Prefer the QtHost version if you can use it.
+	int LocaleSensitiveCompare(std::string_view lhs, std::string_view rhs);
+
 	namespace Internal
 	{
 		/// Retrieves the base settings layer. Must call with lock held.

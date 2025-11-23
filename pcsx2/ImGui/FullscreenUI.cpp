@@ -7684,11 +7684,41 @@ void FullscreenUI::PopulateGameListEntryList()
 {
 	const int sort = Host::GetBaseIntSettingValue("UI", "FullscreenUIGameSort", 0);
 	const bool reverse = Host::GetBaseBoolSettingValue("UI", "FullscreenUIGameSortReverse", false);
+	static int s_last_sort = -1;
+	static bool s_last_reverse = false;
+	static bool s_last_prefer_eng = false;
+	static std::vector<const GameList::Entry*> s_last_unsorted_entries;
 
+	// Sort can be expensive, try to avoid when possible
 	const u32 count = GameList::GetEntryCount();
+	bool needs_update = sort != s_last_sort || reverse != s_last_reverse || s_last_prefer_eng != s_prefer_english_titles;
+	needs_update |= count != s_last_unsorted_entries.size();
+	if (!needs_update)
+	{
+		for (u32 i = 0; i < count; i++)
+		{
+			if (GameList::GetEntryByIndex(i) != s_last_unsorted_entries[i])
+			{
+				needs_update = true;
+				break;
+			}
+		}
+	}
+
+	if (!needs_update)
+		return;
+
+	s_last_sort = sort;
+	s_last_reverse = reverse;
+	s_last_prefer_eng = s_prefer_english_titles;
+
 	s_game_list_sorted_entries.resize(count);
+	s_last_unsorted_entries.resize(count);
 	for (u32 i = 0; i < count; i++)
+	{
 		s_game_list_sorted_entries[i] = GameList::GetEntryByIndex(i);
+		s_last_unsorted_entries[i] = s_game_list_sorted_entries[i];
+	}
 
 	std::sort(s_game_list_sorted_entries.begin(), s_game_list_sorted_entries.end(),
 		[sort, reverse](const GameList::Entry* lhs, const GameList::Entry* rhs) {
@@ -7759,7 +7789,7 @@ void FullscreenUI::PopulateGameListEntryList()
 			}
 
 			// fallback to title when all else is equal
-			const int res = StringUtil::Strcasecmp(lhs->GetTitleSort(s_prefer_english_titles).c_str(), rhs->GetTitleSort(s_prefer_english_titles).c_str());
+			const int res = Host::LocaleSensitiveCompare(lhs->GetTitleSort(s_prefer_english_titles), rhs->GetTitleSort(s_prefer_english_titles));
 			return reverse ? (res > 0) : (res < 0);
 		});
 }
