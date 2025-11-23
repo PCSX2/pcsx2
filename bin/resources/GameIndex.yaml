@@ -12063,8 +12063,6 @@ SCUS-97397:
         // Cop2 problems.
         patch=0,EE,00367798,word,48438000
         patch=0,EE,0036779C,word,4B06521B
-        // Offline button
-        patch=1,EE,00453938,byte,0
 SCUS-97398:
   name: "Siren [Demo]"
   region: "NTSC-U"
@@ -75686,9 +75684,7 @@ TCES-52033:
         author=YukiXXL
         // Cop2 problems.
         patch=0,EE,0038E8E8,word,48438000
-        patch=0,EE,0036CC9C,word,4B06521B
-        // Offline button
-        patch=1,EE,0048B930,byte,0
+        patch=0,EE,0038E8EC,word,4B06521B
         // Speed Correction (25 FPS)
         patch=1,EE,00175a7c,extended,00000019
         patch=1,EE,00175848,extended,00000019
