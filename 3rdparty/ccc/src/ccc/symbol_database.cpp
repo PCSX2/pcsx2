@@ -113,13 +113,27 @@ typename SymbolList<SymbolType>::AddressToHandleMapIterators SymbolList<SymbolTy
 template <typename SymbolType>
 typename SymbolList<SymbolType>::AddressToHandleMapIterators SymbolList<SymbolType>::handles_from_address_range(AddressRange range) const
 {
-	if(range.low.valid()) {
-		return {m_address_to_handle.lower_bound(range.low.value), m_address_to_handle.lower_bound(range.high.value)};
-	} else if(range.high.valid()) {
-		return {m_address_to_handle.begin(), m_address_to_handle.lower_bound(range.high.value)};
+	typename AddressToHandleMap::const_iterator begin, end;
+	if (range.low.valid() && range.high.valid()) {
+		if (range.low.value < range.high.value) {
+			begin = m_address_to_handle.lower_bound(range.low.value);
+			end = m_address_to_handle.lower_bound(range.high.value);
+		} else {
+			begin = m_address_to_handle.end();
+			end = m_address_to_handle.end();
+		}
+	} else if (range.low.valid()) {
+		begin = m_address_to_handle.lower_bound(range.low.value);
+		end = m_address_to_handle.end();
+	} else if (range.high.valid()) {
+		begin = m_address_to_handle.begin();
+		end = m_address_to_handle.lower_bound(range.high.value);
 	} else {
-		return {m_address_to_handle.end(), m_address_to_handle.end()};
+		begin = m_address_to_handle.end();
+		end = m_address_to_handle.end();
 	}
+	
+	return {begin, end};
 }
 
 template <typename SymbolType>
