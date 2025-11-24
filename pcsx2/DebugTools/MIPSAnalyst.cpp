@@ -186,9 +186,7 @@ namespace MIPSAnalyst
 		bool suspectedNoReturn = false;
 
 		u32 addr;
-		for (u64 i = startAddr; i <= endAddr; i += 4) {
-			addr = static_cast<u32>(i);
-
+		for (addr = startAddr; addr < endAddr; addr += 4) {
 			// Use pre-existing symbol map info if available. May be more reliable.
 			ccc::FunctionHandle existing_symbol_handle = database.functions.first_handle_from_starting_address(addr);
 			const ccc::Function* existing_symbol = database.functions.symbol_from_handle(existing_symbol_handle);
