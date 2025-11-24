@@ -3,13 +3,13 @@
 
 #include "SymbolTreeViews.h"
 
+#include "AsyncDialogs.h"
 #include "Debugger/JsonValueWrapper.h"
 #include "Debugger/SymbolTree/NewSymbolDialogs.h"
 #include "Debugger/SymbolTree/SymbolTreeDelegates.h"
 
 #include <QtGui/QActionGroup>
 #include <QtGui/QClipboard>
-#include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QScrollBar>
@@ -701,13 +701,10 @@ void SymbolTreeView::onRenameSymbol()
 		text = QString::fromStdString(symbol->name());
 	});
 
-	bool ok;
-	std::string name = QInputDialog::getText(this, title, label, QLineEdit::Normal, text, &ok).toStdString();
-	if (!ok)
-		return;
-
-	cpu().GetSymbolGuardian().ReadWrite([&](ccc::SymbolDatabase& database) {
-		node->symbol.rename_symbol(name, database);
+	AsyncDialogs::getText(this, title, label, text, [this, handle = node->symbol](QString new_name) {
+		cpu().GetSymbolGuardian().ReadWrite([&](ccc::SymbolDatabase& database) {
+			handle.rename_symbol(new_name.toStdString(), database);
+		});
 	});
 }
 
@@ -741,14 +738,11 @@ void SymbolTreeView::onChangeTypeTemporarily()
 		return;
 	}
 
-	bool ok;
-	QString type_string = QInputDialog::getText(this, title, label, QLineEdit::Normal, *old_type, &ok);
-	if (!ok)
-		return;
-
-	std::optional<QString> error_message = m_model->changeTypeTemporarily(index, type_string.toStdString());
-	if (error_message.has_value() && !error_message->isEmpty())
-		QMessageBox::warning(this, tr("Cannot Change Type"), *error_message);
+	AsyncDialogs::getText(this, title, label, *old_type, [this, index](QString type_string) {
+		std::optional<QString> error_message = m_model->changeTypeTemporarily(index, type_string.toStdString());
+		if (error_message.has_value() && !error_message->isEmpty())
+			QMessageBox::warning(this, tr("Cannot Change Type"), *error_message);
+	});
 }
 
 void SymbolTreeView::onTreeViewClicked(const QModelIndex& index)
