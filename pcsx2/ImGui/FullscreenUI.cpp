@@ -4552,7 +4552,9 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 		FSUI_NSTR("Automatic (Default)"),
 #ifdef _WIN32
 		FSUI_NSTR("Direct3D 11"),
+#ifdef PCSX2_DEVBUILD
 		FSUI_NSTR("Direct3D 12 (Not Recommended)"),
+#endif
 #endif
 #ifdef ENABLE_OPENGL
 		FSUI_NSTR("OpenGL"),
@@ -4570,7 +4572,9 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 		"-1", //GSRendererType::Auto,
 #ifdef _WIN32
 		"3", //GSRendererType::DX11,
+#ifdef PCSX2_DEVBUILD
 		"15", //GSRendererType::DX12,
+#endif
 #endif
 #ifdef ENABLE_OPENGL
 		"12", //GSRendererType::OGL,

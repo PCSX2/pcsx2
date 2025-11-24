@@ -25,7 +25,9 @@ static constexpr RendererInfo s_renderer_info[] = {
 	//: Graphics backend/engine type. Leave as-is.
 	{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Direct3D 11"), GSRendererType::DX11},
 	//: Graphics backend/engine type. Leave as-is.
+#ifdef PCSX2_DEVBUILD
 	{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Direct3D 12 (Not Recommended)"), GSRendererType::DX12},
+#endif
 #endif
 #ifdef ENABLE_OPENGL
 	//: Graphics backend/engine type. Leave as-is.
