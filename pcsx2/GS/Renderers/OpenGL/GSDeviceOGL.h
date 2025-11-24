@@ -141,6 +141,12 @@ private:
 
 	std::unique_ptr<GLContext> m_gl_context;
 
+	struct
+	{
+		bool buggy_pbo              : 1; ///< Avoid PBOs and just use glTextureSubImage2D with immediate data
+		bool broken_blend_coherency : 1; ///< Issue on Nvidia GPUs where some blend modes don't seem to be properly coherent, see comment in RenderHW
+	} m_bugs;
+
 	bool m_disable_download_pbo = false;
 
 	GLuint m_fbo = 0; // frame buffer container
@@ -231,7 +237,7 @@ private:
 	std::string m_shader_tfx_vgs;
 	std::string m_shader_tfx_fs;
 
-	bool CheckFeatures(bool& buggy_pbo);
+	bool CheckFeatures();
 
 	void SetSwapInterval();
 	void DestroyResources();

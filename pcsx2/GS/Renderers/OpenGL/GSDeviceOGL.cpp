@@ -180,8 +180,7 @@ bool GSDeviceOGL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		return false;
 	}
 
-	bool buggy_pbo;
-	if (!CheckFeatures(buggy_pbo))
+	if (!CheckFeatures())
 		return false;
 
 	// Store adapter name currently in use
@@ -529,7 +528,7 @@ bool GSDeviceOGL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	// ****************************************************************
 	// Pbo Pool allocation
 	// ****************************************************************
-	if (!buggy_pbo)
+	if (!m_bugs.buggy_pbo)
 	{
 		m_texture_upload_buffer = GLStreamBuffer::Create(GL_PIXEL_UNPACK_BUFFER, TEXTURE_UPLOAD_BUFFER_SIZE);
 		if (m_texture_upload_buffer)
@@ -603,11 +602,13 @@ bool GSDeviceOGL::CreateTextureFX()
 	return true;
 }
 
-bool GSDeviceOGL::CheckFeatures(bool& buggy_pbo)
+bool GSDeviceOGL::CheckFeatures()
 {
 	//bool vendor_id_amd = false;
 	//bool vendor_id_nvidia = false;
 	//bool vendor_id_intel = false;
+
+	memset(&m_bugs, 0, sizeof(m_bugs));
 
 	const char* vendor = (const char*)glGetString(GL_VENDOR);
 	if (std::strstr(vendor, "Advanced Micro Devices") || std::strstr(vendor, "ATI Technologies Inc.") ||
@@ -620,6 +621,7 @@ bool GSDeviceOGL::CheckFeatures(bool& buggy_pbo)
 	{
 		Console.WriteLn(Color_StrongGreen, "GL: NVIDIA GPU detected.");
 		//vendor_id_nvidia = true;
+		m_bugs.broken_blend_coherency = true;
 	}
 	else if (std::strstr(vendor, "Intel"))
 	{
@@ -700,8 +702,8 @@ bool GSDeviceOGL::CheckFeatures(bool& buggy_pbo)
 
 	// Don't use PBOs when we don't have ARB_buffer_storage, orphaning buffers probably ends up worse than just
 	// using the normal texture update routines and letting the driver take care of it.
-	buggy_pbo = !GLAD_GL_VERSION_4_4 && !GLAD_GL_ARB_buffer_storage && !GLAD_GL_EXT_buffer_storage;
-	if (buggy_pbo)
+	m_bugs.buggy_pbo = !GLAD_GL_VERSION_4_4 && !GLAD_GL_ARB_buffer_storage && !GLAD_GL_EXT_buffer_storage;
+	if (m_bugs.buggy_pbo)
 		Console.Warning("GL: Not using PBOs for texture uploads because buffer_storage is unavailable.");
 
 	// Give the user the option to disable PBO usage for downloads.
@@ -2565,10 +2567,19 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 
 	SetupPipeline(psel);
 
-	const bool check_barrier = !(config.require_one_barrier && !m_features.texture_barrier);
+	bool rt_hazard_barrier = config.tex && (config.tex == config.ds || config.tex == config.rt);
+	// In Time Crisis:
+	// 1. Fullscreen sprite reads depth and writes alpha (rt_hazard_barrier true from config.ds == config.tex)
+	// 2. Fullscreen sprite writes gray, rta hw blend blends based on dst alpha.
+	// On Nvidia, 2 seems to not pick up the data written by 1 unless we add a second barrier.
+	// Pretty sure GL is supposed to guarantee that the blend unit is coherent with previous pixel write out, so calling this a bug.
+	if (m_bugs.broken_blend_coherency)
+		rt_hazard_barrier |= (psel.ps.IsFeedbackLoop() || psel.ps.blend_c == 1) && GLState::rt == config.rt;
+	if (config.require_one_barrier || !m_features.texture_barrier)
+		rt_hazard_barrier = false; // Already in place or not available
 
 	// Be careful of the rt already being bound and the blend using the RT without a barrier.
-	if (check_barrier && ((config.tex && (config.tex == config.ds || config.tex == config.rt)) || ((psel.ps.IsFeedbackLoop() || psel.ps.blend_c == 1) && GLState::rt == config.rt)))
+	if (rt_hazard_barrier)
 	{
 		// Ensure all depth writes are finished before sampling
 		GL_INS("GL: Texture barrier to flush depth or rt before reading");
