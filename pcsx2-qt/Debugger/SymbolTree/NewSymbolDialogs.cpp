@@ -3,12 +3,13 @@
 
 #include "NewSymbolDialogs.h"
 
+#include "AsyncDialogs.h"
+#include "Debugger/DebuggerWindow.h"
+#include "Debugger/SymbolTree/TypeString.h"
+
 #include <QtCore/QTimer>
 #include <QtCore/QMetaMethod>
-#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QPushButton>
-
-#include "TypeString.h"
 
 NewSymbolDialog::NewSymbolDialog(u32 flags, u32 alignment, DebugInterface& cpu, QWidget* parent)
 	: QDialog(parent)
@@ -359,7 +360,7 @@ void NewFunctionDialog::createSymbol()
 	});
 
 	if (!error_message.isEmpty())
-		QMessageBox::warning(this, tr("Cannot Create Function"), error_message);
+		AsyncDialogs::warning(g_debugger_window, tr("Cannot Create Function"), error_message);
 }
 
 // *****************************************************************************
@@ -416,7 +417,7 @@ void NewGlobalVariableDialog::createSymbol()
 	});
 
 	if (!error_message.isEmpty())
-		QMessageBox::warning(this, tr("Cannot Create Global Variable"), error_message);
+		AsyncDialogs::warning(g_debugger_window, tr("Cannot Create Global Variable"), error_message);
 }
 
 // *****************************************************************************
@@ -534,7 +535,7 @@ void NewLocalVariableDialog::createSymbol()
 	});
 
 	if (!error_message.isEmpty())
-		QMessageBox::warning(this, tr("Cannot Create Local Variable"), error_message);
+		AsyncDialogs::warning(g_debugger_window, tr("Cannot Create Local Variable"), error_message);
 }
 
 // *****************************************************************************
@@ -648,5 +649,5 @@ void NewParameterVariableDialog::createSymbol()
 	});
 
 	if (!error_message.isEmpty())
-		QMessageBox::warning(this, tr("Cannot Create Parameter Variable"), error_message);
+		AsyncDialogs::warning(g_debugger_window, tr("Cannot Create Parameter Variable"), error_message);
 }

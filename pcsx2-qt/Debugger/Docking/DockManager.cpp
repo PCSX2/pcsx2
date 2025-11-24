@@ -3,6 +3,7 @@
 
 #include "DockManager.h"
 
+#include "AsyncDialogs.h"
 #include "Debugger/DebuggerView.h"
 #include "Debugger/DebuggerWindow.h"
 #include "Debugger/Docking/DockTables.h"
@@ -24,7 +25,6 @@
 
 #include <QtCore/QTimer>
 #include <QtCore/QtTranslation>
-#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QProxyStyle>
 #include <QtWidgets/QStyleFactory>
 
@@ -636,20 +636,28 @@ void DockManager::resetLayoutClicked(DockLayout::Index layout_index)
 	if (!layout.canReset())
 		return;
 
-	QString text = tr("Are you sure you want to reset layout '%1'?").arg(layout.name());
-	if (QMessageBox::question(g_debugger_window, tr("Confirmation"), text) != QMessageBox::Yes)
-		return;
+	const QString title = tr("Confirmation");
+	const QString text = tr("Are you sure you want to reset layout '%1'?").arg(layout.name());
 
-	bool current_layout = layout_index == m_current_layout;
+	AsyncDialogs::question(g_debugger_window, title, text, [this, layout_index]() {
+		if (layout_index >= m_layouts.size())
+			return;
 
-	if (current_layout)
-		switchToLayout(DockLayout::INVALID_INDEX);
+		DockLayout& layout = m_layouts[layout_index];
+		if (!layout.canReset())
+			return;
 
-	layout.reset();
-	layout.save(layout_index);
+		bool current_layout = layout_index == m_current_layout;
 
-	if (current_layout)
-		switchToLayout(layout_index);
+		if (current_layout)
+			switchToLayout(DockLayout::INVALID_INDEX);
+
+		layout.reset();
+		layout.save(layout_index);
+
+		if (current_layout)
+			switchToLayout(layout_index);
+	});
 }
 
 void DockManager::deleteLayoutClicked(DockLayout::Index layout_index)
@@ -659,12 +667,16 @@ void DockManager::deleteLayoutClicked(DockLayout::Index layout_index)
 
 	DockLayout& layout = m_layouts[layout_index];
 
-	QString text = tr("Are you sure you want to delete layout '%1'?").arg(layout.name());
-	if (QMessageBox::question(g_debugger_window, tr("Confirmation"), text) != QMessageBox::Yes)
-		return;
+	const QString title = tr("Confirmation");
+	const QString text = tr("Are you sure you want to delete layout '%1'?").arg(layout.name());
 
-	deleteLayout(layout_index);
-	updateLayoutSwitcher();
+	AsyncDialogs::question(g_debugger_window, title, text, [this, layout_index]() {
+		if (layout_index >= m_layouts.size())
+			return;
+
+		deleteLayout(layout_index);
+		updateLayoutSwitcher();
+	});
 }
 
 void DockManager::layoutSwitcherTabMoved(DockLayout::Index from_index, DockLayout::Index to_index)

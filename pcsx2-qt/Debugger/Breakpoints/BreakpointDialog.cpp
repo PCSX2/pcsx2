@@ -2,12 +2,13 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "BreakpointDialog.h"
-#include "DebugTools/Breakpoints.h"
 
+#include "AsyncDialogs.h"
 #include "QtUtils.h"
 #include "QtHost.h"
-#include <QtWidgets/QDialog>
-#include <QtWidgets/QMessageBox>
+#include "Debugger/DebuggerWindow.h"
+
+#include "DebugTools/Breakpoints.h"
 
 BreakpointDialog::BreakpointDialog(QWidget* parent, DebugInterface* cpu, BreakpointModel& model)
 	: QDialog(parent)
@@ -100,7 +101,7 @@ void BreakpointDialog::accept()
 		u64 address;
 		if (!m_cpu->evaluateExpression(m_ui.txtAddress->text().toStdString().c_str(), address, error))
 		{
-			QMessageBox::warning(this, tr("Invalid Address"), QString::fromStdString(error));
+			AsyncDialogs::warning(g_debugger_window, tr("Invalid Address"), QString::fromStdString(error));
 			return;
 		}
 
@@ -116,7 +117,7 @@ void BreakpointDialog::accept()
 
 			if (!m_cpu->initExpression(m_ui.txtCondition->text().toStdString().c_str(), expr, error))
 			{
-				QMessageBox::warning(this, tr("Invalid Condition"), QString::fromStdString(error));
+				AsyncDialogs::warning(g_debugger_window, tr("Invalid Condition"), QString::fromStdString(error));
 				return;
 			}
 
@@ -134,14 +135,14 @@ void BreakpointDialog::accept()
 		u64 startAddress;
 		if (!m_cpu->evaluateExpression(m_ui.txtAddress->text().toStdString().c_str(), startAddress, error))
 		{
-			QMessageBox::warning(this, tr("Invalid Address"), QString::fromStdString(error));
+			AsyncDialogs::warning(g_debugger_window, tr("Invalid Address"), QString::fromStdString(error));
 			return;
 		}
 
 		u64 size;
 		if (!m_cpu->evaluateExpression(m_ui.txtSize->text().toStdString().c_str(), size, error) || !size)
 		{
-			QMessageBox::warning(this, tr("Invalid Size"), QString::fromStdString(error));
+			AsyncDialogs::warning(g_debugger_window, tr("Invalid Size"), QString::fromStdString(error));
 			return;
 		}
 
@@ -157,7 +158,7 @@ void BreakpointDialog::accept()
 			PostfixExpression expr;
 			if (!m_cpu->initExpression(m_ui.txtCondition->text().toStdString().c_str(), expr, error))
 			{
-				QMessageBox::warning(this, tr("Invalid Condition"), QString::fromStdString(error));
+				AsyncDialogs::warning(g_debugger_window, tr("Invalid Condition"), QString::fromStdString(error));
 				return;
 			}
 

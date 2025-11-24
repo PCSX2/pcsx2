@@ -13,7 +13,6 @@
 #include <QtGui/QActionGroup>
 #include <QtGui/QClipboard>
 #include <QtGui/QMouseEvent>
-#include <QtWidgets/QMessageBox>
 
 using namespace QtUtils;
 
@@ -313,7 +312,7 @@ bool MemoryViewTable::InsertFloatIntoSelectedHexView(DebugInterface& cpu)
 		const float newFloatVal = newFloatStr.toFloat(&isValidFloat);
 		if (!isValidFloat)
 		{
-			QMessageBox::warning(parent, tr("Input Error"), tr("Invalid float value"));
+			AsyncDialogs::warning(parent, tr("Input Error"), tr("Invalid float value"));
 			return;
 		}
 
@@ -350,7 +349,7 @@ void MemoryViewTable::InsertAtCurrentSelection(const QString& text, DebugInterfa
 		const float newFloatVal = text.toFloat(&isValidFloat);
 		if (!isValidFloat)
 		{
-			QMessageBox::warning(parent, tr("Input Error"), tr("Invalid float value"));
+			AsyncDialogs::warning(parent, tr("Input Error"), tr("Invalid float value"));
 			return;
 		}
 
@@ -903,7 +902,7 @@ void MemoryView::contextGoToAddress()
 		std::string error;
 		if (!cpu().evaluateExpression(expression.toStdString().c_str(), address, error))
 		{
-			QMessageBox::warning(this, tr("Cannot Go To"), QString::fromStdString(error));
+			AsyncDialogs::warning(this, tr("Cannot Go To"), QString::fromStdString(error));
 			return;
 		}
 
