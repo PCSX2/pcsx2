@@ -18,7 +18,6 @@
 
 #include <QtGui/QActionGroup>
 #include <QtGui/QPalette>
-#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QStyleFactory>
 
@@ -186,7 +185,7 @@ void DockTabBar::openContextMenu(QPoint pos)
 
 			if (!widget->setCustomDisplayName(name))
 			{
-				QMessageBox::warning(this, tr("Invalid Name"), tr("The specified name is too long."));
+				AsyncDialogs::warning(this, tr("Invalid Name"), tr("The specified name is too long."));
 				return;
 			}
 

@@ -19,7 +19,6 @@
 #include <QtGui/QMouseEvent>
 #include <QtWidgets/QMenu>
 #include <QtGui/QClipboard>
-#include <QtWidgets/QMessageBox>
 #include "SymbolTree/NewSymbolDialogs.h"
 #include "common/StringUtil.h"
 
@@ -111,7 +110,7 @@ void DisassemblyView::contextPasteInstructionText()
 {
 	if (!cpu().isCpuPaused())
 	{
-		QMessageBox::warning(this, tr("Assemble Error"), tr("Unable to change assembly while core is running"));
+		AsyncDialogs::warning(this, tr("Assemble Error"), tr("Unable to change assembly while core is running"));
 		return;
 	}
 
@@ -130,7 +129,7 @@ void DisassemblyView::contextPasteInstructionText()
 		bool valid = MipsAssembleOpcode(newInstructions[instructionIdx].c_str(), &cpu(), replaceAddress, encodedInstruction, errorText);
 		if (!valid)
 		{
-			QMessageBox::warning(this, tr("Assemble Error"), QString("%1 %2").arg(errorText.c_str()).arg(newInstructions[instructionIdx].c_str()));
+			AsyncDialogs::warning(this, tr("Assemble Error"), QString("%1 %2").arg(errorText.c_str()).arg(newInstructions[instructionIdx].c_str()));
 			return;
 		}
 		encodedInstructions.push_back(encodedInstruction);
@@ -148,7 +147,7 @@ void DisassemblyView::contextAssembleInstruction()
 {
 	if (!cpu().isCpuPaused())
 	{
-		QMessageBox::warning(this, tr("Assemble Error"), tr("Unable to change assembly while core is running"));
+		AsyncDialogs::warning(this, tr("Assemble Error"), tr("Unable to change assembly while core is running"));
 		return;
 	}
 
@@ -164,7 +163,7 @@ void DisassemblyView::contextAssembleInstruction()
 		bool valid = MipsAssembleOpcode(instruction.toLocal8Bit().constData(), &cpu(), m_selectedAddressStart, encodedInstruction, errorText);
 		if (!valid)
 		{
-			QMessageBox::warning(this, tr("Assemble Error"), QString::fromStdString(errorText));
+			AsyncDialogs::warning(this, tr("Assemble Error"), QString::fromStdString(errorText));
 			return;
 		}
 
@@ -255,7 +254,7 @@ void DisassemblyView::contextGoToAddress()
 		std::string error;
 		if (!cpu().evaluateExpression(expression.toStdString().c_str(), address, error))
 		{
-			QMessageBox::warning(this, tr("Cannot Go To"), QString::fromStdString(error));
+			AsyncDialogs::warning(this, tr("Cannot Go To"), QString::fromStdString(error));
 			return;
 		}
 
@@ -302,7 +301,7 @@ void DisassemblyView::contextRenameFunction()
 	const FunctionInfo curFunc = cpu().GetSymbolGuardian().FunctionOverlappingAddress(m_selectedAddressStart);
 	if (!curFunc.address.valid())
 	{
-		QMessageBox::warning(this, tr("Rename Function Error"), tr("No function / symbol is currently selected."));
+		AsyncDialogs::warning(this, tr("Rename Function Error"), tr("No function / symbol is currently selected."));
 		return;
 	}
 
@@ -313,7 +312,7 @@ void DisassemblyView::contextRenameFunction()
 	AsyncDialogs::getText(this, title, label, oldName, [this, curFunc](QString newName) {
 		if (newName.isEmpty())
 		{
-			QMessageBox::warning(this, tr("Rename Function Error"), tr("Function name cannot be nothing."));
+			AsyncDialogs::warning(this, tr("Rename Function Error"), tr("Function name cannot be nothing."));
 			return;
 		}
 
@@ -369,7 +368,7 @@ void DisassemblyView::contextRestoreFunction()
 	}
 	else
 	{
-		QMessageBox::warning(this, tr("Restore Function Error"), tr("Unable to stub selected address."));
+		AsyncDialogs::warning(this, tr("Restore Function Error"), tr("Unable to stub selected address."));
 	}
 }
 

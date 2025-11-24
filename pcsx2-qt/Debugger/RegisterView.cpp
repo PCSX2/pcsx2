@@ -13,7 +13,6 @@
 #include <QtWidgets/QStyleOptionTab>
 #include <QtGui/QClipboard>
 #include <QtWidgets/QProxyStyle>
-#include <QtWidgets/QMessageBox>
 
 #include <bit>
 
@@ -375,7 +374,7 @@ void RegisterView::fetchNewValue(u64 currentValue, bool segment, std::function<v
 			value = input.toULongLong(&ok, 16);
 			if (!ok)
 			{
-				QMessageBox::warning(this, tr("Invalid register value"), tr("Invalid hexadecimal register value."));
+				AsyncDialogs::warning(this, tr("Invalid register value"), tr("Invalid hexadecimal register value."));
 				return;
 			}
 		}
@@ -385,7 +384,7 @@ void RegisterView::fetchNewValue(u64 currentValue, bool segment, std::function<v
 			value = std::bit_cast<u32>(input.toFloat(&ok));
 			if (!ok)
 			{
-				QMessageBox::warning(this, tr("Invalid register value"), tr("Invalid floating-point register value."));
+				AsyncDialogs::warning(this, tr("Invalid register value"), tr("Invalid floating-point register value."));
 				return;
 			}
 		}
@@ -463,7 +462,7 @@ std::optional<DebuggerEvents::GoToAddress> RegisterView::contextCreateGotoEvent(
 
 	if (!cpu().isValidAddress(addr))
 	{
-		QMessageBox::warning(
+		AsyncDialogs::warning(
 			this,
 			tr("Invalid target address"),
 			tr("This register holds an invalid address."));
