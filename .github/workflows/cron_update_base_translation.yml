@@ -11,7 +11,7 @@ jobs:
     name: "Update Base Translation"
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Update Base Translation
         run: ./.github/workflows/scripts/common/update_base_translation.sh

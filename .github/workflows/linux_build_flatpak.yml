@@ -51,7 +51,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           set-safe-directory: ${{ env.GITHUB_WORKSPACE }}
           # 10 here, since the odds of having 10 untagged commits in a row should be slim to none
