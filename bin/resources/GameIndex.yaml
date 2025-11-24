@@ -26717,6 +26717,8 @@ SLES-54458:
 SLES-54459:
   name: "All-Star Fighters"
   region: "PAL-E"
+  gameFixes:
+    - XGKickHack # Fixes inverted or broken character textures.
 SLES-54460:
   name: "Dragon Sisters"
   region: "PAL-E"
@@ -56605,7 +56607,7 @@ SLPS-20430:
   region: "NTSC-J"
   compat: 5
   gameFixes:
-    - XGKickHack # Fixes cell shade like effect.
+    - XGKickHack # Fixes inverted or broken character textures.
 SLPS-20431:
   name: "SIMPLE2000シリーズ Vol.86 THE 免許取得シミュレーション ～改正道路交通法対応版～"
   name-sort: "しんぷる2000しりーず Vol.  86 THE めんきょしゅとくしみゅれーしょん ～かいせいどうろこうつうほうたいおうばん～"
