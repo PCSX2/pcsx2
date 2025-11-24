@@ -265,13 +265,16 @@ void DisassemblyView::contextGoToAddress()
 void DisassemblyView::contextAddFunction()
 {
 	NewFunctionDialog* dialog = new NewFunctionDialog(cpu(), this);
-	dialog->setAttribute(Qt::WA_DeleteOnClose);
 	dialog->setName(QString("func_%1").arg(m_selectedAddressStart, 8, 16, QChar('0')));
 	dialog->setAddress(m_selectedAddressStart);
+	dialog->setAttribute(Qt::WA_DeleteOnClose);
+
 	if (m_selectedAddressEnd != m_selectedAddressStart)
 		dialog->setCustomSize(m_selectedAddressEnd - m_selectedAddressStart + 4);
-	if (dialog->exec() == QDialog::Accepted)
-		update();
+
+	connect(dialog, &QDialog::accepted, this, [this]() { update(); });
+
+	dialog->open();
 }
 
 void DisassemblyView::contextCopyFunctionName()

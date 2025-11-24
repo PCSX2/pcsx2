@@ -857,8 +857,10 @@ void FunctionTreeView::onNewButtonPressed()
 {
 	NewFunctionDialog* dialog = new NewFunctionDialog(cpu(), this);
 	dialog->setAttribute(Qt::WA_DeleteOnClose);
-	if (dialog->exec() == QDialog::Accepted)
-		reset();
+
+	connect(dialog, &QDialog::accepted, this, &FunctionTreeView::reset);
+
+	dialog->open();
 }
 
 // *****************************************************************************
@@ -1000,8 +1002,10 @@ void GlobalVariableTreeView::onNewButtonPressed()
 {
 	NewGlobalVariableDialog* dialog = new NewGlobalVariableDialog(cpu(), this);
 	dialog->setAttribute(Qt::WA_DeleteOnClose);
-	if (dialog->exec() == QDialog::Accepted)
-		reset();
+
+	connect(dialog, &QDialog::accepted, this, &GlobalVariableTreeView::reset);
+
+	dialog->open();
 }
 
 // *****************************************************************************
@@ -1129,8 +1133,10 @@ void LocalVariableTreeView::onNewButtonPressed()
 {
 	NewLocalVariableDialog* dialog = new NewLocalVariableDialog(cpu(), this);
 	dialog->setAttribute(Qt::WA_DeleteOnClose);
-	if (dialog->exec() == QDialog::Accepted)
-		reset();
+
+	connect(dialog, &QDialog::accepted, this, &LocalVariableTreeView::reset);
+
+	dialog->open();
 }
 
 // *****************************************************************************
@@ -1256,8 +1262,10 @@ void ParameterVariableTreeView::onNewButtonPressed()
 {
 	NewParameterVariableDialog* dialog = new NewParameterVariableDialog(cpu(), this);
 	dialog->setAttribute(Qt::WA_DeleteOnClose);
-	if (dialog->exec() == QDialog::Accepted)
-		reset();
+
+	connect(dialog, &QDialog::accepted, this, &ParameterVariableTreeView::reset);
+
+	dialog->open();
 }
 
 static bool testName(const QString& name, const QString& filter)
