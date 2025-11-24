@@ -144,12 +144,12 @@ void DockMenuBar::onLockStateChanged(bool layout_locked)
 	if (layout_locked)
 	{
 		m_layout_locked_toggle->setText(tr("Layout Locked"));
-		m_layout_locked_toggle->setIcon(QIcon::fromTheme(QString::fromUtf8("padlock-lock")));
+		m_layout_locked_toggle->setIcon(QIcon::fromTheme(QString::fromUtf8("lock-fill")));
 	}
 	else
 	{
 		m_layout_locked_toggle->setText(tr("Layout Unlocked"));
-		m_layout_locked_toggle->setIcon(QIcon::fromTheme(QString::fromUtf8("padlock-unlock")));
+		m_layout_locked_toggle->setIcon(QIcon::fromTheme(QString::fromUtf8("lock-unlock-fill")));
 	}
 
 	m_ignore_lock_state_changed = false;

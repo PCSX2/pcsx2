@@ -855,7 +855,7 @@
   </action>
   <action name="actionDebugger">
    <property name="icon">
-    <iconset theme="heart-circle-line"/>
+    <iconset theme="bug-line"/>
    </property>
    <property name="text">
     <string>&amp;Open Debugger</string>

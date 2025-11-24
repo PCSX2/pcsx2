@@ -204,7 +204,7 @@ void SettingsWindow::setupUi(const GameList::Entry* game)
 			tr("<strong>Advanced Settings</strong><hr>These are advanced options to determine the configuration of the simulated "
 			   "console.<br><br>Mouse over an option for additional information, and Shift+Wheel to scroll this panel."));
 		addWidget(m_debug_settings = new DebugSettingsWidget(this, m_ui.settingsContainer), tr("Debug"),
-			QStringLiteral("debugger-line"),
+			QStringLiteral("bug-line"),
 			tr("<strong>Debug Settings</strong><hr>These are options which can be used to log internal information about the application. "
 			   "<strong>Do not modify unless you know what you are doing</strong>, it will cause significant slowdown, and can waste large "
 			   "amounts of disk space."));

@@ -9,6 +9,7 @@
 		<file>icons/black/svg/booklet.svg</file>
 		<file>icons/black/svg/book.svg</file>
 		<file>icons/black/svg/brush-line.svg</file>
+		<file>icons/black/svg/bug-line.svg</file>
 		<file>icons/black/svg/buzz-controller-line.svg</file>
 		<file>icons/black/svg/camera-video.svg</file>
 		<file>icons/black/svg/cheats-line.svg</file>
@@ -17,7 +18,6 @@
 		<file>icons/black/svg/close-line.svg</file>
 		<file>icons/black/svg/controller-line.svg</file>
 		<file>icons/black/svg/controller-strike-line.svg</file>
-		<file>icons/black/svg/debugger-line.svg</file>
 		<file>icons/black/svg/debug-step-into-line.svg</file>
 		<file>icons/black/svg/debug-step-out-line.svg</file>
 		<file>icons/black/svg/debug-step-over-line.svg</file>
@@ -54,7 +54,6 @@
 		<file>icons/black/svg/guitar-line.svg</file>
 		<file>icons/black/svg/guncon2-line.svg</file>
 		<file>icons/black/svg/headset-line.svg</file>
-		<file>icons/black/svg/heart-circle-line.svg</file>
 		<file>icons/black/svg/image-fill.svg</file>
 		<file>icons/black/svg/interface-line.svg</file>
 		<file>icons/black/svg/jogcon-line.svg</file>
@@ -63,16 +62,15 @@
 		<file>icons/black/svg/keyboardmania-line.svg</file>
 		<file>icons/black/svg/lightbulb-line.svg</file>
 		<file>icons/black/svg/list-check.svg</file>
+		<file>icons/black/svg/lock-fill.svg</file>
+		<file>icons/black/svg/lock-unlock-fill.svg</file>
 		<file>icons/black/svg/login-box-line.svg</file>
-		<file>icons/black/svg/magnifier-line.svg</file>
 		<file>icons/black/svg/memcard-line.svg</file>
 		<file>icons/black/svg/mic-line.svg</file>
 		<file>icons/black/svg/minus-line.svg</file>
 		<file>icons/black/svg/mouse-line.svg</file>
 		<file>icons/black/svg/msd-line.svg</file>
 		<file>icons/black/svg/negcon-line.svg</file>
-		<file>icons/black/svg/padlock-lock.svg</file>
-		<file>icons/black/svg/padlock-unlock.svg</file>
 		<file>icons/black/svg/pause-line.svg</file>
 		<file>icons/black/svg/pencil-line.svg</file>
 		<file>icons/black/svg/pin-filled.svg</file>
@@ -87,6 +85,7 @@
 		<file>icons/black/svg/save-3-line.svg</file>
 		<file>icons/black/svg/screenshot-2-line.svg</file>
 		<file>icons/black/svg/seamic-line.svg</file>
+		<file>icons/black/svg/search-line.svg</file>
 		<file>icons/black/svg/settings-3-line.svg</file>
 		<file>icons/black/svg/shut-down-line.svg</file>
 		<file>icons/black/svg/singstar-line.svg</file>
@@ -114,6 +113,7 @@
 		<file>icons/white/svg/booklet.svg</file>
 		<file>icons/white/svg/book.svg</file>
 		<file>icons/white/svg/brush-line.svg</file>
+		<file>icons/white/svg/bug-line.svg</file>
 		<file>icons/white/svg/buzz-controller-line.svg</file>
 		<file>icons/white/svg/camera-video.svg</file>
 		<file>icons/white/svg/cheats-line.svg</file>
@@ -122,7 +122,6 @@
 		<file>icons/white/svg/close-line.svg</file>
 		<file>icons/white/svg/controller-line.svg</file>
 		<file>icons/white/svg/controller-strike-line.svg</file>
-		<file>icons/white/svg/debugger-line.svg</file>
 		<file>icons/white/svg/debug-step-into-line.svg</file>
 		<file>icons/white/svg/debug-step-out-line.svg</file>
 		<file>icons/white/svg/debug-step-over-line.svg</file>
@@ -159,7 +158,6 @@
 		<file>icons/white/svg/guitar-line.svg</file>
 		<file>icons/white/svg/guncon2-line.svg</file>
 		<file>icons/white/svg/headset-line.svg</file>
-		<file>icons/white/svg/heart-circle-line.svg</file>
 		<file>icons/white/svg/image-fill.svg</file>
 		<file>icons/white/svg/interface-line.svg</file>
 		<file>icons/white/svg/jogcon-line.svg</file>
@@ -168,6 +166,8 @@
 		<file>icons/white/svg/keyboardmania-line.svg</file>
 		<file>icons/white/svg/lightbulb-line.svg</file>
 		<file>icons/white/svg/list-check.svg</file>
+		<file>icons/white/svg/lock-fill.svg</file>
+		<file>icons/white/svg/lock-unlock-fill.svg</file>
 		<file>icons/white/svg/login-box-line.svg</file>
 		<file>icons/white/svg/magnifier-line.svg</file>
 		<file>icons/white/svg/memcard-line.svg</file>
@@ -192,6 +192,7 @@
 		<file>icons/white/svg/save-3-line.svg</file>
 		<file>icons/white/svg/screenshot-2-line.svg</file>
 		<file>icons/white/svg/seamic-line.svg</file>
+		<file>icons/white/svg/search-line.svg</file>
 		<file>icons/white/svg/settings-3-line.svg</file>
 		<file>icons/white/svg/shut-down-line.svg</file>
 		<file>icons/white/svg/singstar-line.svg</file>
