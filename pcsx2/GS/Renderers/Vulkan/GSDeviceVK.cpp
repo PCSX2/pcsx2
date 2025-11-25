@@ -3406,13 +3406,14 @@ void GSDeviceVK::IASetIndexBuffer(const void* index, size_t count)
 	SetIndexBuffer(m_index_stream_buffer.GetBuffer());
 }
 
-void GSDeviceVK::SetupAccuratePrims(GSHWDrawConfig& config)
+void GSDeviceVK::SetupAccuratePrimsBuffer(GSHWDrawConfig& config)
 {
 	if (config.accurate_prims)
 	{
 		const u32 count = config.accurate_prims_edge_data->size();
 		const u32 size = count * sizeof(AccuratePrimsEdgeData);
 
+		// Reserve the GPU region.
 		if (!m_accurate_prims_stream_buffer.ReserveMemory(size, sizeof(AccuratePrimsEdgeData)))
 		{
 			ExecuteCommandBufferAndRestartRenderPass(false, "Uploading bytes to accurate prims buffer");
@@ -3420,15 +3421,118 @@ void GSDeviceVK::SetupAccuratePrims(GSHWDrawConfig& config)
 				pxFailRel("Failed to reserve space for accurate prims");
 		}
 
+		const u32 offset = m_accurate_prims_stream_buffer.GetCurrentOffset();
+		
+		if (InRenderPass())
+			EndRenderPass();
+
+		// Copy data to an upload buffer.
+		VkBuffer upload_buffer;
+		u32 upload_buffer_offset;
+
+		const auto upload_data = [&](void* map_ptr) {
+			std::memcpy(map_ptr, config.accurate_prims_edge_data->data(), size);
+		};
+
+		// If the texture is larger than half our streaming buffer size, use a separate buffer.
+		// Otherwise allocation will either fail, or require lots of cmdbuffer submissions.
+		if (size > m_texture_stream_buffer.GetCurrentSize() / 2)
+		{
+			upload_buffer_offset = 0;
+			upload_buffer = AllocateUploadStagingBuffer(size, upload_data);
+		}
+		else
+		{
+			upload_buffer = WriteTextureUploadBuffer(size, upload_data, upload_buffer_offset);
+		}
+		if (upload_buffer == VK_NULL_HANDLE)
+		{
+			Console.Error("Failed to get upload buffer for accurate prims data.");
+			return;
+		}
+
+		// Copy data from upload to GPU buffer.
+		VkBufferCopy copyRegion = {upload_buffer_offset, offset, size};
+		vkCmdCopyBuffer(GetCurrentCommandBuffer(), upload_buffer, m_accurate_prims_stream_buffer.GetBuffer(), 1, &copyRegion);
+
+		// Commit the GPU region.
+		m_accurate_prims_stream_buffer.CommitMemory(size);
+
+		// Issue the barrier since this will be used next draw.
+		VkBufferMemoryBarrier barrier = {
+			VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER, nullptr,
+			VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT,
+			VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED,
+			m_accurate_prims_stream_buffer.GetBuffer(), offset, size};
+		vkCmdPipelineBarrier(GetCurrentCommandBuffer(),
+			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+			0, 0, nullptr, 1, &barrier, 0, nullptr);
+
+		m_accurate_prims_stream_buffer_offset = offset; // Save this for the constant buffer.
+	}
+}
+
+void GSDeviceVK::SetupAccuratePrimsConstants(GSHWDrawConfig& config)
+{
+	if (config.accurate_prims)
+	{
+		// We separate this from setting up the buffer to mirror Vulkan, which requires it.
 		config.cb_vs.base_vertex = m_vertex.start;
-		config.cb_ps.accurate_prims_base_index.x = m_accurate_prims_stream_buffer.GetCurrentOffset() / sizeof(AccuratePrimsEdgeData);
+		config.cb_ps.accurate_prims_base_index.x = m_accurate_prims_stream_buffer_offset / sizeof(AccuratePrimsEdgeData);
 
 		SetVSConstantBuffer(config.cb_vs);
 		SetPSConstantBuffer(config.cb_ps);
-
-		std::memcpy(m_accurate_prims_stream_buffer.GetCurrentHostPointer(), config.accurate_prims_edge_data->data(), size);
-		m_accurate_prims_stream_buffer.CommitMemory(size);
 	}
+}
+
+VkBuffer GSDeviceVK::WriteTextureUploadBuffer(u32 size, std::function<void(void*)> write_data, u32& offset_out)
+{
+	if (!m_texture_stream_buffer.ReserveMemory(size, GetBufferCopyOffsetAlignment()))
+	{
+		ExecuteCommandBuffer(
+			false, "While waiting for %u bytes in texture upload buffer", size);
+		if (!m_texture_stream_buffer.ReserveMemory(size, GetBufferCopyOffsetAlignment()))
+		{
+			Console.Error("Failed to reserve texture upload memory (%u bytes).", size);
+			return VK_NULL_HANDLE;
+		}
+	}
+
+	offset_out = m_texture_stream_buffer.GetCurrentOffset();
+	write_data(m_texture_stream_buffer.GetCurrentHostPointer());
+	m_texture_stream_buffer.CommitMemory(size);
+	return m_texture_stream_buffer.GetBuffer();
+}
+
+VkBuffer GSDeviceVK::AllocateUploadStagingBuffer(u32 size, std::function<void(void*)> write_data)
+{
+	const VkBufferCreateInfo bci = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, nullptr, 0, static_cast<VkDeviceSize>(size),
+		VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_SHARING_MODE_EXCLUSIVE, 0, nullptr};
+
+	// Don't worry about setting the coherent bit for this upload, the main reason we had
+	// that set in StreamBuffer was for MoltenVK, which would upload the whole buffer on
+	// smaller uploads, but we're writing to the whole thing anyway.
+	VmaAllocationCreateInfo aci = {};
+	aci.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
+	aci.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+
+	VmaAllocationInfo ai;
+	VkBuffer buffer;
+	VmaAllocation allocation;
+	VkResult res = vmaCreateBuffer(GSDeviceVK::GetInstance()->GetAllocator(), &bci, &aci, &buffer, &allocation, &ai);
+	if (res != VK_SUCCESS)
+	{
+		LOG_VULKAN_ERROR(res, "(AllocateUploadStagingBuffer) vmaCreateBuffer() failed: ");
+		return VK_NULL_HANDLE;
+	}
+
+	// Immediately queue it for freeing after the command buffer finishes, since it's only needed for the copy.
+	GSDeviceVK::GetInstance()->DeferBufferDestruction(buffer, allocation);
+
+	// And write the data.
+	write_data(ai.pMappedData);
+	vmaFlushAllocation(GSDeviceVK::GetInstance()->GetAllocator(), allocation, 0, size);
+	return buffer;
 }
 
 void GSDeviceVK::OMSetRenderTargets(
@@ -3762,7 +3866,8 @@ bool GSDeviceVK::CreateBuffers()
 
 	if (m_features.accurate_prims)
 	{
-		if (!m_accurate_prims_stream_buffer.Create(VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, ACCURATE_PRIMS_BUFFER_SIZE))
+		if (!m_accurate_prims_stream_buffer.Create(
+			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, ACCURATE_PRIMS_BUFFER_SIZE, true))
 		{
 			Host::ReportErrorAsync("GS", "Failed to allocate accurate prims buffer");
 			return false;
@@ -5673,12 +5778,14 @@ GSTextureVK* GSDeviceVK::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config)
 
 void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 {
-
 	const GSVector2i rtsize(config.rt ? config.rt->GetSize() : config.ds->GetSize());
 	GSTextureVK* draw_rt = static_cast<GSTextureVK*>(config.rt);
 	GSTextureVK* draw_ds = static_cast<GSTextureVK*>(config.ds);
 	GSTextureVK* draw_rt_clone = nullptr;
 	GSTextureVK* colclip_rt = static_cast<GSTextureVK*>(g_gs_device->GetColorClipTexture());
+
+	// Copying buffers needs to done outside render pass so do this early.
+	SetupAccuratePrimsBuffer(config);
 
 	// stream buffer in first, in case we need to exec
 	SetVSConstantBuffer(config.cb_vs);
@@ -6157,7 +6264,8 @@ void GSDeviceVK::UploadHWDrawVerticesAndIndices(GSHWDrawConfig& config)
 		IASetIndexBuffer(config.indices, config.nindices);
 	}
 
-	SetupAccuratePrims(config);
+	// Needs to be done after vertex offset is set.
+	SetupAccuratePrimsConstants(config);
 }
 
 VkImageMemoryBarrier GSDeviceVK::GetColorBufferBarrier(GSTextureVK* rt) const

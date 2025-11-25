@@ -79,7 +79,6 @@ private:
 	static bool CreateUAVDescriptor(ID3D12Resource* resource, DXGI_FORMAT format, D3D12DescriptorHandle* dh);
 
 	ID3D12GraphicsCommandList* GetCommandBufferForUpdate();
-	ID3D12Resource* AllocateUploadStagingBuffer(const void* data, u32 pitch, u32 upload_pitch, u32 height) const;
 	void CopyTextureDataForUpload(void* dst, const void* src, u32 pitch, u32 upload_pitch, u32 height) const;
 
 	wil::com_ptr_nothrow<ID3D12Resource> m_resource;

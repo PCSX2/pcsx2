@@ -350,43 +350,6 @@ ID3D12GraphicsCommandList* GSTexture12::GetCommandBufferForUpdate()
 	return dev->GetInitCommandList();
 }
 
-ID3D12Resource* GSTexture12::AllocateUploadStagingBuffer(
-	const void* data, u32 pitch, u32 upload_pitch, u32 height) const
-{
-	const u32 buffer_size = CalcUploadSize(height, upload_pitch);
-	wil::com_ptr_nothrow<ID3D12Resource> resource;
-	wil::com_ptr_nothrow<D3D12MA::Allocation> allocation;
-
-	const D3D12MA::ALLOCATION_DESC allocation_desc = {D3D12MA::ALLOCATION_FLAG_NONE, D3D12_HEAP_TYPE_UPLOAD};
-	const D3D12_RESOURCE_DESC resource_desc = {D3D12_RESOURCE_DIMENSION_BUFFER, 0, buffer_size, 1, 1, 1,
-		DXGI_FORMAT_UNKNOWN, {1, 0}, D3D12_TEXTURE_LAYOUT_ROW_MAJOR, D3D12_RESOURCE_FLAG_NONE};
-	HRESULT hr = GSDevice12::GetInstance()->GetAllocator()->CreateResource(&allocation_desc, &resource_desc,
-		D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, allocation.put(), IID_PPV_ARGS(resource.put()));
-	if (FAILED(hr))
-	{
-		Console.WriteLn("(AllocateUploadStagingBuffer) CreateCommittedResource() failed with %08X", hr);
-		return nullptr;
-	}
-
-	void* map_ptr;
-	hr = resource->Map(0, nullptr, &map_ptr);
-	if (FAILED(hr))
-	{
-		Console.WriteLn("(AllocateUploadStagingBuffer) Map() failed with %08X", hr);
-		return nullptr;
-	}
-
-	CopyTextureDataForUpload(map_ptr, data, pitch, upload_pitch, height);
-
-	const D3D12_RANGE write_range = {0, buffer_size};
-	resource->Unmap(0, &write_range);
-
-	// Immediately queue it for freeing after the command buffer finishes, since it's only needed for the copy.
-	// This adds the reference needed to keep the buffer alive.
-	GSDevice12::GetInstance()->DeferResourceDestruction(allocation.get(), resource.get());
-	return resource.get();
-}
-
 void GSTexture12::CopyTextureDataForUpload(void* dst, const void* src, u32 pitch, u32 upload_pitch, u32 height) const
 {
 	const u32 block_size = GetCompressedBlockSize();
@@ -406,7 +369,7 @@ bool GSTexture12::Update(const GSVector4i& r, const void* data, int pitch, int l
 	const u32 width = Common::AlignUpPow2(r.width(), block_size);
 	const u32 height = Common::AlignUpPow2(r.height(), block_size);
 	const u32 upload_pitch = Common::AlignUpPow2<u32>(pitch, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
-	const u32 required_size = CalcUploadSize(r.height(), upload_pitch);
+	const u32 required_size = CalcUploadSize(height, upload_pitch);
 
 	D3D12_TEXTURE_COPY_LOCATION srcloc;
 	srcloc.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
@@ -416,35 +379,25 @@ bool GSTexture12::Update(const GSVector4i& r, const void* data, int pitch, int l
 	srcloc.PlacedFootprint.Footprint.Format = m_dxgi_format;
 	srcloc.PlacedFootprint.Footprint.RowPitch = upload_pitch;
 
+	const auto upload_data = [&](void* map_ptr) {
+		CopyTextureDataForUpload(map_ptr, data, pitch, upload_pitch, height);
+	};
+
 	// If the texture is larger than half our streaming buffer size, use a separate buffer.
 	// Otherwise allocation will either fail, or require lots of cmdbuffer submissions.
 	if (required_size > (GSDevice12::GetInstance()->GetTextureStreamBuffer().GetSize() / 2))
 	{
-		srcloc.pResource = AllocateUploadStagingBuffer(data, pitch, upload_pitch, height);
-		if (!srcloc.pResource)
-			return false;
-
+		srcloc.pResource = GSDevice12::GetInstance()->AllocateUploadStagingBuffer(required_size, upload_data);
 		srcloc.PlacedFootprint.Offset = 0;
 	}
 	else
 	{
-		D3D12StreamBuffer& sbuffer = GSDevice12::GetInstance()->GetTextureStreamBuffer();
-		if (!sbuffer.ReserveMemory(required_size, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT))
-		{
-			GSDevice12::GetInstance()->ExecuteCommandList(
-				false, "While waiting for %u bytes in texture upload buffer", required_size);
-			if (!sbuffer.ReserveMemory(required_size, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT))
-			{
-				Console.Error("Failed to reserve texture upload memory (%u bytes).", required_size);
-				return false;
-			}
-		}
-
-		srcloc.pResource = sbuffer.GetBuffer();
-		srcloc.PlacedFootprint.Offset = sbuffer.GetCurrentOffset();
-		CopyTextureDataForUpload(sbuffer.GetCurrentHostPointer(), data, pitch, upload_pitch, height);
-		sbuffer.CommitMemory(required_size);
+		u32 offset;
+		srcloc.pResource = GSDevice12::GetInstance()->WriteTextureUploadBuffer(required_size, upload_data, offset);
+		srcloc.PlacedFootprint.Offset = offset;
 	}
+	if (!srcloc.pResource)
+		return false;
 
 	ID3D12GraphicsCommandList* cmdlist = GetCommandBufferForUpdate();
 	GL_PUSH("GSTexture12::Update({%d,%d} %dx%d Lvl:%u", r.x, r.y, r.width(), r.height(), layer);

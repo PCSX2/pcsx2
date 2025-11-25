@@ -22,7 +22,7 @@ public:
 	D3D12StreamBuffer();
 	~D3D12StreamBuffer();
 
-	bool Create(u32 size);
+	bool Create(u32 size, bool default_heap = false);
 
 	__fi bool IsValid() const { return static_cast<bool>(m_buffer); }
 	__fi ID3D12Resource* GetBuffer() const { return m_buffer.get(); }
@@ -54,7 +54,8 @@ private:
 	wil::com_ptr_nothrow<ID3D12Resource> m_buffer;
 	wil::com_ptr_nothrow<D3D12MA::Allocation> m_allocation;
 	D3D12_GPU_VIRTUAL_ADDRESS m_gpu_pointer = {};
-	u8* m_host_pointer = nullptr;
+	u8* m_host_pointer = nullptr; // Only used for upload heaps.
+	bool m_default_heap = false; // False for upload heap; true for default heap.
 
 	// List of fences and the corresponding positions in the buffer
 	std::deque<std::pair<u64, u32>> m_tracked_fences;

@@ -84,7 +84,6 @@ private:
 
 	VkCommandBuffer GetCommandBufferForUpdate();
 	void CopyTextureDataForUpload(void* dst, const void* src, u32 pitch, u32 upload_pitch, u32 height) const;
-	VkBuffer AllocateUploadStagingBuffer(const void* data, u32 pitch, u32 upload_pitch, u32 height) const;
 	void UpdateFromBuffer(VkCommandBuffer cmdbuf, int level, u32 x, u32 y, u32 width, u32 height, u32 buffer_height,
 		u32 row_length, VkBuffer buffer, u32 buffer_offset);
 

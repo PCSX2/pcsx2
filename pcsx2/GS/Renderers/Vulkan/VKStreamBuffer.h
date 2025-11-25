@@ -30,14 +30,13 @@ public:
 	__fi u32 GetCurrentSpace() const { return m_current_space; }
 	__fi u32 GetCurrentOffset() const { return m_current_offset; }
 
-	bool Create(VkBufferUsageFlags usage, u32 size);
+	bool Create(VkBufferUsageFlags usage, u32 size, bool device_local = false);
 	void Destroy(bool defer);
 
 	bool ReserveMemory(u32 num_bytes, u32 alignment);
 	void CommitMemory(u32 final_num_bytes);
 
 private:
-	bool AllocateBuffer(VkBufferUsageFlags usage, u32 size);
 	void UpdateCurrentFencePosition();
 	void UpdateGPUPosition();
 
@@ -51,7 +50,8 @@ private:
 
 	VmaAllocation m_allocation = VK_NULL_HANDLE;
 	VkBuffer m_buffer = VK_NULL_HANDLE;
-	u8* m_host_pointer = nullptr;
+	u8* m_host_pointer = nullptr; // Only used for upload buffers.
+	bool m_device_local = false; // False for upload buffer; true for default buffer.
 
 	// List of fences and the corresponding positions in the buffer
 	std::deque<std::pair<u64, u32>> m_tracked_fences;

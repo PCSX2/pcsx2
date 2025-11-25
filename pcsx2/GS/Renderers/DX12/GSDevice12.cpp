@@ -624,50 +624,89 @@ bool GSDevice12::SetGPUTimingEnabled(bool enabled)
 bool GSDevice12::AllocatePreinitializedGPUBuffer(u32 size, ID3D12Resource** gpu_buffer,
 	D3D12MA::Allocation** gpu_allocation, const std::function<void(void*)>& fill_callback)
 {
-	// Try to place the fixed index buffer in GPU local memory.
-	// Use the staging buffer to copy into it.
+	// Allocate and fill staging buffer
+	ID3D12Resource* cpu_buffer = AllocateUploadStagingBuffer(size, fill_callback);
+
+	// Create GPU buffer
 	const D3D12_RESOURCE_DESC rd = {D3D12_RESOURCE_DIMENSION_BUFFER, 0, size, 1, 1, 1, DXGI_FORMAT_UNKNOWN, {1, 0},
 		D3D12_TEXTURE_LAYOUT_ROW_MAJOR, D3D12_RESOURCE_FLAG_NONE};
-
-	const D3D12MA::ALLOCATION_DESC cpu_ad = {D3D12MA::ALLOCATION_FLAG_NONE, D3D12_HEAP_TYPE_UPLOAD};
-
-	ComPtr<ID3D12Resource> cpu_buffer;
-	ComPtr<D3D12MA::Allocation> cpu_allocation;
-	HRESULT hr = m_allocator->CreateResource(
-		&cpu_ad, &rd, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, cpu_allocation.put(), IID_PPV_ARGS(cpu_buffer.put()));
-	pxAssertMsg(SUCCEEDED(hr), "Allocate CPU buffer");
-	if (FAILED(hr))
-		return false;
-
-	static constexpr const D3D12_RANGE read_range = {};
-	const D3D12_RANGE write_range = {0, size};
-	void* mapped;
-	hr = cpu_buffer->Map(0, &read_range, &mapped);
-	pxAssertMsg(SUCCEEDED(hr), "Map CPU buffer");
-	if (FAILED(hr))
-		return false;
-	fill_callback(mapped);
-	cpu_buffer->Unmap(0, &write_range);
-
 	const D3D12MA::ALLOCATION_DESC gpu_ad = {D3D12MA::ALLOCATION_FLAG_COMMITTED, D3D12_HEAP_TYPE_DEFAULT};
-
-	hr = m_allocator->CreateResource(
+	HRESULT hr = m_allocator->CreateResource(
 		&gpu_ad, &rd, D3D12_RESOURCE_STATE_COMMON, nullptr, gpu_allocation, IID_PPV_ARGS(gpu_buffer));
 	pxAssertMsg(SUCCEEDED(hr), "Allocate GPU buffer");
 	if (FAILED(hr))
 		return false;
 
-	GetInitCommandList()->CopyBufferRegion(*gpu_buffer, 0, cpu_buffer.get(), 0, size);
+	// Copy the data
+	GetInitCommandList()->CopyBufferRegion(*gpu_buffer, 0, cpu_buffer, 0, size);
 
+	// Transition GPU buffer to COPY_DEST
 	D3D12_RESOURCE_BARRIER rb = {D3D12_RESOURCE_BARRIER_TYPE_TRANSITION, D3D12_RESOURCE_BARRIER_FLAG_NONE};
 	rb.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 	rb.Transition.pResource = *gpu_buffer;
 	rb.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST; // COMMON -> COPY_DEST at first use.
 	rb.Transition.StateAfter = D3D12_RESOURCE_STATE_INDEX_BUFFER;
 	GetInitCommandList()->ResourceBarrier(1, &rb);
-
-	DeferResourceDestruction(cpu_allocation.get(), cpu_buffer.get());
 	return true;
+}
+
+ID3D12Resource* GSDevice12::WriteTextureUploadBuffer(u32 size, std::function<void(void*)> write_data, u32& offset_out)
+{
+	if (!m_texture_stream_buffer.ReserveMemory(size, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT))
+	{
+		GSDevice12::GetInstance()->ExecuteCommandList(
+			false, "While waiting for %u bytes in texture upload buffer", size);
+		if (!m_texture_stream_buffer.ReserveMemory(size, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT))
+		{
+			Console.Error("Failed to reserve texture upload memory (%u bytes).", size);
+			return nullptr;
+		}
+	}
+
+	offset_out = m_texture_stream_buffer.GetCurrentOffset();
+	write_data(m_texture_stream_buffer.GetCurrentHostPointer());
+	m_texture_stream_buffer.CommitMemory(size);
+	return m_texture_stream_buffer.GetBuffer();
+}
+
+ID3D12Resource* GSDevice12::AllocateUploadStagingBuffer(u32 size, std::function<void(void*)> write_data)
+{
+	wil::com_ptr_nothrow<ID3D12Resource> resource;
+	wil::com_ptr_nothrow<D3D12MA::Allocation> allocation;
+
+	// Allocate staging buffer
+	const D3D12MA::ALLOCATION_DESC allocation_desc = {D3D12MA::ALLOCATION_FLAG_NONE, D3D12_HEAP_TYPE_UPLOAD};
+	const D3D12_RESOURCE_DESC resource_desc = {D3D12_RESOURCE_DIMENSION_BUFFER, 0, size, 1, 1, 1,
+		DXGI_FORMAT_UNKNOWN, {1, 0}, D3D12_TEXTURE_LAYOUT_ROW_MAJOR, D3D12_RESOURCE_FLAG_NONE};
+	HRESULT hr = GetAllocator()->CreateResource(&allocation_desc, &resource_desc,
+		D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, allocation.put(), IID_PPV_ARGS(resource.put()));
+	if (FAILED(hr))
+	{
+		Console.WriteLn("(AllocateUploadStagingBuffer) CreateCommittedResource() failed with %08X", hr);
+		return nullptr;
+	}
+
+	// Map
+	static constexpr const D3D12_RANGE read_range = {};
+	void* map_ptr;
+	hr = resource->Map(0, &read_range, &map_ptr);
+	if (FAILED(hr))
+	{
+		Console.WriteLn("(AllocateUploadStagingBuffer) Map() failed with %08X", hr);
+		return nullptr;
+	}
+
+	// Write data
+	write_data(map_ptr);
+
+	// Unmap
+	const D3D12_RANGE write_range = {0, size};
+	resource->Unmap(0, &write_range);
+
+	// Immediately queue it for freeing after the command buffer finishes, since it's only needed for the copy.
+	// This adds the reference needed to keep the buffer alive.
+	DeferResourceDestruction(allocation.get(), resource.get());
+	return resource.get();
 }
 
 RenderAPI GSDevice12::GetRenderAPI() const
@@ -2180,15 +2219,17 @@ void GSDevice12::IASetIndexBuffer(const void* index, size_t count)
 	m_index_stream_buffer.CommitMemory(size);
 }
 
-void GSDevice12::SetupAccuratePrims(GSHWDrawConfig& config)
+void GSDevice12::SetupAccuratePrimsBuffer(GSHWDrawConfig& config)
 {
 	if (config.accurate_prims)
 	{
+		// Unbind the buffer.
 		m_dirty_flags |= DIRTY_FLAG_PS_ACCURATE_PRIMS_BUFFER_BINDING;
 
 		const u32 count = config.accurate_prims_edge_data->size();
 		const u32 size = count * sizeof(AccuratePrimsEdgeData);
 
+		// Reserve the GPU region.
 		if (!m_accurate_prims_stream_buffer.ReserveMemory(size, sizeof(AccuratePrimsEdgeData)))
 		{
 			ExecuteCommandListAndRestartRenderPass(false, "Uploading bytes to accurate prims buffer");
@@ -2196,14 +2237,72 @@ void GSDevice12::SetupAccuratePrims(GSHWDrawConfig& config)
 				pxFailRel("Failed to reserve space for accurate prims");
 		}
 
+		const u32 offset = m_accurate_prims_stream_buffer.GetCurrentOffset();
+
+		if (InRenderPass())
+			EndRenderPass();
+
+		// Copy data to an upload buffer.
+		ID3D12Resource* upload_buffer;
+		u32 upload_buffer_offset;
+
+		const auto upload_data = [&](void* map_ptr) {
+			std::memcpy(map_ptr, config.accurate_prims_edge_data->data(), size);
+		};
+
+		// If the texture is larger than half our streaming buffer size, use a separate buffer.
+		// Otherwise allocation will either fail, or require lots of cmdbuffer submissions.
+		if (size > m_texture_stream_buffer.GetSize() / 2)
+		{
+			upload_buffer_offset = 0;
+			upload_buffer = AllocateUploadStagingBuffer(size, upload_data);
+		}
+		else
+		{
+			upload_buffer = WriteTextureUploadBuffer(size, upload_data, upload_buffer_offset);
+		}
+		if (!upload_buffer)
+		{
+			Console.Error("Failed to get upload buffer for accurate prims data.");
+			return;
+		}
+		
+		// Copy data from upload to GPU buffer.
+		const D3D12_RESOURCE_BARRIER barrier_sr_to_dst = {
+			D3D12_RESOURCE_BARRIER_TYPE_TRANSITION,
+			D3D12_RESOURCE_BARRIER_FLAG_NONE,
+			{{m_accurate_prims_stream_buffer.GetBuffer(), 0,
+				D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+				D3D12_RESOURCE_STATE_COPY_DEST}}};
+		GetCommandList()->ResourceBarrier(1, &barrier_sr_to_dst);
+		GetCommandList()->CopyBufferRegion(
+			m_accurate_prims_stream_buffer.GetBuffer(), offset, upload_buffer, upload_buffer_offset, size);
+
+		// Commit the GPU region.
+		m_accurate_prims_stream_buffer.CommitMemory(size);
+
+		// Issue the barrier since this will be used next draw.
+		const D3D12_RESOURCE_BARRIER barrier_dst_to_sr = {
+			D3D12_RESOURCE_BARRIER_TYPE_TRANSITION,
+			D3D12_RESOURCE_BARRIER_FLAG_NONE,
+			{{m_accurate_prims_stream_buffer.GetBuffer(), 0,
+				D3D12_RESOURCE_STATE_COPY_DEST,
+				D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE}}};
+		GetCommandList()->ResourceBarrier(1, &barrier_dst_to_sr);
+		
+		m_accurate_prims_stream_buffer_offset = offset; // Save this for the constant buffer.
+	}
+}
+
+void GSDevice12::SetupAccuratePrimsConstants(GSHWDrawConfig& config)
+{
+	if (config.accurate_prims)
+	{
 		config.cb_vs.base_vertex = m_vertex.start;
-		config.cb_ps.accurate_prims_base_index.x = m_accurate_prims_stream_buffer.GetCurrentOffset() / sizeof(AccuratePrimsEdgeData);
+		config.cb_ps.accurate_prims_base_index.x = m_accurate_prims_stream_buffer_offset / sizeof(AccuratePrimsEdgeData);
 
 		SetVSConstantBuffer(config.cb_vs);
 		SetPSConstantBuffer(config.cb_ps);
-
-		std::memcpy(m_accurate_prims_stream_buffer.GetCurrentHostPointer(), config.accurate_prims_edge_data->data(), size);
-		m_accurate_prims_stream_buffer.CommitMemory(size);
 	}
 }
 
@@ -2394,7 +2493,8 @@ bool GSDevice12::CreateBuffers()
 		return false;
 	}
 
-	if (!m_accurate_prims_stream_buffer.Create(ACCURATE_PRIMS_BUFFER_SIZE))
+	if (!m_accurate_prims_stream_buffer.Create(
+			m_features.accurate_prims ? ACCURATE_PRIMS_BUFFER_SIZE : sizeof(AccuratePrimsEdgeData), true))
 	{
 		Host::ReportErrorAsync("GS", "Failed to allocate accurate prims buffer");
 		return false;
@@ -2406,8 +2506,17 @@ bool GSDevice12::CreateBuffers()
 		return false;
 	}
 
-	// Create the shader resource view for the accurate prims buffer.
+	if (m_features.accurate_prims)
 	{
+		// Transition to accurate prims buffer to pixel shader resource and create the shader resource view.
+		const D3D12_RESOURCE_BARRIER barrier = {
+			D3D12_RESOURCE_BARRIER_TYPE_TRANSITION,
+			D3D12_RESOURCE_BARRIER_FLAG_NONE,
+			{{m_accurate_prims_stream_buffer.GetBuffer(), 0,
+				D3D12_RESOURCE_STATE_COMMON,
+				D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE}}};
+		GetInitCommandList()->ResourceBarrier(1, &barrier);
+
 		D3D12_SHADER_RESOURCE_VIEW_DESC desc = {
 			DXGI_FORMAT_UNKNOWN, D3D12_SRV_DIMENSION_BUFFER, D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING};
 		desc.Buffer.FirstElement = 0;
@@ -3940,6 +4049,9 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 
 	PipelineSelector& pipe = m_pipeline_selector;
 
+	// Copying buffers needs to done outside render pass so do this early.
+	SetupAccuratePrimsBuffer(config);
+
 	// figure out the pipeline
 	UpdateHWPipelineSelector(config);
 
@@ -4321,5 +4433,6 @@ void GSDevice12::UploadHWDrawVerticesAndIndices(GSHWDrawConfig& config)
 		IASetIndexBuffer(config.indices, config.nindices);
 	}
 
-	SetupAccuratePrims(config);
+	// Needs to be done after vertex offset is set.
+	SetupAccuratePrimsConstants(config);
 }

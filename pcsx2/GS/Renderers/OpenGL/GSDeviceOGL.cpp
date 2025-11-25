@@ -260,11 +260,17 @@ bool GSDeviceOGL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 
 		m_vertex_stream_buffer = GLStreamBuffer::Create(GL_ARRAY_BUFFER, VERTEX_BUFFER_SIZE);
 		m_index_stream_buffer = GLStreamBuffer::Create(GL_ELEMENT_ARRAY_BUFFER, INDEX_BUFFER_SIZE);
-		m_accurate_prims_stream_buffer = GLStreamBuffer::Create(GL_ARRAY_BUFFER, ACCURATE_PRIMS_BUFFER_SIZE);
+		if (m_features.accurate_prims)
+		{
+			// Performance note: prefer a non-syncing buffer for accurate prims so that it is more likely to be GPU local.
+			// Rationale: we expect this buffer to be updated relatively rarely and it's used as a pixel shader resource.
+			m_accurate_prims_stream_buffer = GLStreamBuffer::Create(GL_ARRAY_BUFFER, ACCURATE_PRIMS_BUFFER_SIZE, true);
+		}
 		m_vertex_uniform_stream_buffer = GLStreamBuffer::Create(GL_UNIFORM_BUFFER, VERTEX_UNIFORM_BUFFER_SIZE);
 		m_fragment_uniform_stream_buffer = GLStreamBuffer::Create(GL_UNIFORM_BUFFER, FRAGMENT_UNIFORM_BUFFER_SIZE);
 		glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &m_uniform_buffer_alignment);
-		if (!m_vertex_stream_buffer || !m_index_stream_buffer || !m_accurate_prims_stream_buffer ||
+		if (!m_vertex_stream_buffer || !m_index_stream_buffer ||
+			(m_features.accurate_prims && !m_accurate_prims_stream_buffer) ||
 			!m_vertex_uniform_stream_buffer || !m_fragment_uniform_stream_buffer)
 		{
 			Host::ReportErrorAsync("GS", "Failed to create vertex/index/uniform streaming buffers");

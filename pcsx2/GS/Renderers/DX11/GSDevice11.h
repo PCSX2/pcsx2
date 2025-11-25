@@ -137,7 +137,6 @@ private:
 	u32 m_vb_pos = 0; // bytes
 	u32 m_ib_pos = 0; // indices/sizeof(u32)
 	u32 m_structured_vb_pos = 0; // bytes
-	u32 m_accurate_prims_b_pos = 0; // bytes/sizeof(AccuratePrimsEdgeData)
 
 	bool m_allow_tearing_supported = false;
 	bool m_using_flip_model_swap_chain = true;

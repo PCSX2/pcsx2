@@ -129,6 +129,8 @@ public:
 	// Allocates a temporary CPU staging buffer, fires the callback with it to populate, then copies to a GPU buffer.
 	bool AllocatePreinitializedGPUBuffer(u32 size, ID3D12Resource** gpu_buffer, D3D12MA::Allocation** gpu_allocation,
 		const std::function<void(void*)>& fill_callback);
+	ID3D12Resource* AllocateUploadStagingBuffer(u32 size, std::function<void(void*)> write_data);
+	ID3D12Resource* WriteTextureUploadBuffer(u32 size, std::function<void(void*)> write_data, u32& offset_out);
 
 private:
 	struct CommandListResources
@@ -307,6 +309,7 @@ private:
 	D3D12StreamBuffer m_vertex_stream_buffer;
 	D3D12StreamBuffer m_index_stream_buffer;
 	D3D12StreamBuffer m_accurate_prims_stream_buffer;
+	u32 m_accurate_prims_stream_buffer_offset = 0;  // Ring buffer offset for the current draw.
 	D3D12DescriptorHandle m_accurate_prims_srv_descriptor_cpu;
 	D3D12DescriptorHandle m_accurate_prims_srv_descriptor_gpu;
 	D3D12StreamBuffer m_vertex_constant_buffer;
@@ -465,7 +468,8 @@ public:
 
 	void IASetVertexBuffer(const void* vertex, size_t stride, size_t count);
 	void IASetIndexBuffer(const void* index, size_t count);
-	void SetupAccuratePrims(GSHWDrawConfig& config);
+	void SetupAccuratePrimsBuffer(GSHWDrawConfig& config);
+	void SetupAccuratePrimsConstants(GSHWDrawConfig& config);
 
 	void PSSetShaderResource(int i, GSTexture* sr, bool check_state);
 	void PSSetSampler(GSHWDrawConfig::SamplerSelector sel);

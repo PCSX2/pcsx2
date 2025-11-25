@@ -98,6 +98,8 @@ public:
 	__fi VkCommandBuffer GetCurrentCommandBuffer() const { return m_current_command_buffer; }
 	__fi VKStreamBuffer& GetTextureUploadBuffer() { return m_texture_stream_buffer; }
 	VkCommandBuffer GetCurrentInitCommandBuffer();
+	VkBuffer AllocateUploadStagingBuffer(u32 size, std::function<void(void*)> write_data);
+	VkBuffer WriteTextureUploadBuffer(u32 size, std::function<void(void*)> write_data, u32& offset_out);
 
 	/// Allocates a descriptor set from the pool reserved for the current frame.
 	VkDescriptorSet AllocatePersistentDescriptorSet(VkDescriptorSetLayout set_layout);
@@ -381,6 +383,7 @@ private:
 	VKStreamBuffer m_vertex_stream_buffer;
 	VKStreamBuffer m_index_stream_buffer;
 	VKStreamBuffer m_accurate_prims_stream_buffer;
+	u32 m_accurate_prims_stream_buffer_offset = 0; // Ring buffer offset for the current draw.
 	VKStreamBuffer m_vertex_uniform_stream_buffer;
 	VKStreamBuffer m_fragment_uniform_stream_buffer;
 	VKStreamBuffer m_texture_stream_buffer;
@@ -563,7 +566,8 @@ public:
 	void PSSetShaderResource(int i, GSTexture* sr, bool check_state);
 	void PSSetSampler(GSHWDrawConfig::SamplerSelector sel);
 
-	void SetupAccuratePrims(GSHWDrawConfig& config);
+	void SetupAccuratePrimsBuffer(GSHWDrawConfig& config);
+	void SetupAccuratePrimsConstants(GSHWDrawConfig& config);
 
 	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i& scissor,
 		FeedbackLoopFlag feedback_loop = FeedbackLoopFlag_None);
