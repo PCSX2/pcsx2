@@ -7939,7 +7939,8 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	}
 	else if (DATE_one)
 	{
-		if (features.texture_barrier)
+		const bool multidraw_fb_copy = features.multidraw_fb_copy && (m_conf.require_one_barrier || m_conf.require_full_barrier);
+		if (features.texture_barrier || multidraw_fb_copy)
 		{
 			m_conf.require_one_barrier = true;
 			m_conf.ps.date = 5 + m_cached_ctx.TEST.DATM;
