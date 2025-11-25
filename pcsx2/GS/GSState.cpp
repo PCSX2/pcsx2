@@ -1077,7 +1077,7 @@ __forceinline void GSState::ApplyPRIM(u32 prim)
 	else
 		m_env.PRIM.PRIM = prim & 0x7;
 
-	if (m_prev_env.PRIM.U32[0] ^ m_env.PRIM.U32[0])
+	if ((m_prev_env.PRIM.U32[0] ^ m_env.PRIM.U32[0]) & PRIM_REG_MASK)
 		m_dirty_gs_regs |= (1 << DIRTY_REG_PRIM);
 	else
 		m_dirty_gs_regs &= ~(1<< DIRTY_REG_PRIM);
@@ -1335,7 +1335,7 @@ void GSState::GIFRegHandlerTEX0(const GIFReg* RESTRICT r)
 
 		if (i == m_prev_env.PRIM.CTXT)
 		{
-			if (m_prev_env.CTXT[i].MIPTBP1.U64 ^ mip_tbp1.U64)
+			if ((m_prev_env.CTXT[i].MIPTBP1.U64 ^ mip_tbp1.U64) & MIPTBP_REG_MASK)
 				m_dirty_gs_regs |= (1 << DIRTY_REG_MIPTBP1);
 			else
 				m_dirty_gs_regs &= ~(1 << DIRTY_REG_MIPTBP1);
@@ -1354,7 +1354,7 @@ void GSState::GIFRegHandlerCLAMP(const GIFReg* RESTRICT r)
 
 	if (i == m_prev_env.PRIM.CTXT)
 	{
-		if (m_prev_env.CTXT[i].CLAMP.U64 ^ m_env.CTXT[i].CLAMP.U64)
+		if ((m_prev_env.CTXT[i].CLAMP.U64 ^ m_env.CTXT[i].CLAMP.U64) & CLAMP_REG_MASK)
 			m_dirty_gs_regs |= (1 << DIRTY_REG_CLAMP);
 		else
 			m_dirty_gs_regs &= ~(1 << DIRTY_REG_CLAMP);
@@ -1379,7 +1379,7 @@ void GSState::GIFRegHandlerTEX1(const GIFReg* RESTRICT r)
 
 	if (i == m_prev_env.PRIM.CTXT)
 	{
-		if (m_prev_env.CTXT[i].TEX1.U64 ^ m_env.CTXT[i].TEX1.U64)
+		if ((m_prev_env.CTXT[i].TEX1.U64 ^ m_env.CTXT[i].TEX1.U64) & TEX1_REG_MASK)
 			m_dirty_gs_regs |= (1 << DIRTY_REG_TEX1);
 		else
 			m_dirty_gs_regs &= ~(1 << DIRTY_REG_TEX1);
@@ -1411,11 +1411,11 @@ void GSState::GIFRegHandlerXYOFFSET(const GIFReg* RESTRICT r)
 {
 	GL_REG("XYOFFSET_%d = 0x%x_%x", i, r->U32[1], r->U32[0]);
 
-	const u64 r_masked = r->U64 & 0x0000FFFF0000FFFFu;
+	const u64 r_masked = r->U64 & XYOFFSET_REG_MASK;
 
 	if (i == m_prev_env.PRIM.CTXT)
 	{
-		if (m_prev_env.CTXT[i].XYOFFSET.U64 != r_masked)
+		if ((m_prev_env.CTXT[i].XYOFFSET.U64 ^ r_masked) & XYOFFSET_REG_MASK)
 			m_dirty_gs_regs |= (1 << DIRTY_REG_XYOFFSET);
 		else
 			m_dirty_gs_regs &= ~(1 << DIRTY_REG_XYOFFSET);
@@ -1450,7 +1450,7 @@ void GSState::GIFRegHandlerPRMODE(const GIFReg* RESTRICT r)
 	m_env.PRIM = r->PRMODE;
 	m_env.PRIM.PRIM = _PRIM;
 
-	if (m_prev_env.PRIM.U32[0] ^ m_env.PRIM.U32[0])
+	if ((m_prev_env.PRIM.U32[0] ^ m_env.PRIM.U32[0]) & PRIM_REG_MASK)
 		m_dirty_gs_regs |= (1 << DIRTY_REG_PRIM);
 	else
 		m_dirty_gs_regs &= ~(1 << DIRTY_REG_PRIM);
@@ -1487,7 +1487,7 @@ void GSState::GIFRegHandlerMIPTBP1(const GIFReg* RESTRICT r)
 
 	if (i == m_prev_env.PRIM.CTXT)
 	{
-		if (m_prev_env.CTXT[i].MIPTBP1.U64 != m_env.CTXT[i].MIPTBP1.U64)
+		if ((m_prev_env.CTXT[i].MIPTBP1.U64 ^ m_env.CTXT[i].MIPTBP1.U64) & MIPTBP_REG_MASK)
 			m_dirty_gs_regs |= (1 << DIRTY_REG_MIPTBP1);
 		else
 			m_dirty_gs_regs &= ~(1 << DIRTY_REG_MIPTBP1);
@@ -1503,7 +1503,7 @@ void GSState::GIFRegHandlerMIPTBP2(const GIFReg* RESTRICT r)
 
 	if (i == m_prev_env.PRIM.CTXT)
 	{
-		if (m_prev_env.CTXT[i].MIPTBP2.U64 != m_env.CTXT[i].MIPTBP2.U64)
+		if ((m_prev_env.CTXT[i].MIPTBP2.U64 ^ m_env.CTXT[i].MIPTBP2.U64) & MIPTBP_REG_MASK)
 			m_dirty_gs_regs |= (1 << DIRTY_REG_MIPTBP2);
 		else
 			m_dirty_gs_regs &= ~(1 << DIRTY_REG_MIPTBP2);
@@ -1516,7 +1516,7 @@ void GSState::GIFRegHandlerTEXA(const GIFReg* RESTRICT r)
 
 	m_env.TEXA = r->TEXA;
 
-	if (m_prev_env.TEXA != m_env.TEXA)
+	if ((m_prev_env.TEXA.U64 ^ m_env.TEXA.U64) & TEXA_REG_MASK)
 		m_dirty_gs_regs |= (1 << DIRTY_REG_TEXA);
 	else
 		m_dirty_gs_regs &= ~(1 << DIRTY_REG_TEXA);
@@ -1528,7 +1528,7 @@ void GSState::GIFRegHandlerFOGCOL(const GIFReg* RESTRICT r)
 
 	m_env.FOGCOL = r->FOGCOL;
 
-	if (m_prev_env.FOGCOL != m_env.FOGCOL)
+	if ((m_prev_env.FOGCOL.U32[0] ^ m_env.FOGCOL.U32[0]) & FOGCOL_REG_MASK)
 		m_dirty_gs_regs |= (1 << DIRTY_REG_FOGCOL);
 	else
 		m_dirty_gs_regs &= ~(1 << DIRTY_REG_FOGCOL);
@@ -1548,7 +1548,7 @@ void GSState::GIFRegHandlerSCISSOR(const GIFReg* RESTRICT r)
 {
 	if (i == m_prev_env.PRIM.CTXT)
 	{
-		if (m_prev_env.CTXT[i].SCISSOR.U64 != r->SCISSOR.U64)
+		if ((m_prev_env.CTXT[i].SCISSOR.U64 ^ r->SCISSOR.U64) & SCISSOR_REG_MASK)
 			m_dirty_gs_regs |= (1 << DIRTY_REG_SCISSOR);
 		else
 			m_dirty_gs_regs &= ~(1 << DIRTY_REG_SCISSOR);
@@ -1579,7 +1579,7 @@ void GSState::GIFRegHandlerALPHA(const GIFReg* RESTRICT r)
 
 	if (i == m_prev_env.PRIM.CTXT)
 	{
-		if (m_prev_env.CTXT[i].ALPHA.U64 != m_env.CTXT[i].ALPHA.U64)
+		if ((m_prev_env.CTXT[i].ALPHA.U64 ^ m_env.CTXT[i].ALPHA.U64) & ALPHA_REG_MASK)
 			m_dirty_gs_regs |= (1 << DIRTY_REG_ALPHA);
 		else
 			m_dirty_gs_regs &= ~(1 << DIRTY_REG_ALPHA);
@@ -1590,7 +1590,7 @@ void GSState::GIFRegHandlerDIMX(const GIFReg* RESTRICT r)
 {
 	m_env.DIMX = r->DIMX;
 
-	if (m_prev_env.DIMX != m_env.DIMX)
+	if ((m_prev_env.DIMX.U64 ^ m_env.DIMX.U64) & DIMX_REG_MASK)
 		m_dirty_gs_regs |= (1 << DIRTY_REG_DIMX);
 	else
 		m_dirty_gs_regs &= ~(1 << DIRTY_REG_DIMX);
@@ -1600,7 +1600,7 @@ void GSState::GIFRegHandlerDTHE(const GIFReg* RESTRICT r)
 {
 	m_env.DTHE = r->DTHE;
 
-	if (m_prev_env.DTHE != m_env.DTHE)
+	if (m_prev_env.DTHE.DTHE != m_env.DTHE.DTHE)
 		m_dirty_gs_regs |= (1 << DIRTY_REG_DTHE);
 	else
 		m_dirty_gs_regs &= ~(1 << DIRTY_REG_DTHE);
@@ -1610,7 +1610,7 @@ void GSState::GIFRegHandlerCOLCLAMP(const GIFReg* RESTRICT r)
 {
 	m_env.COLCLAMP = r->COLCLAMP;
 
-	if (m_prev_env.COLCLAMP != m_env.COLCLAMP)
+	if (m_prev_env.COLCLAMP.CLAMP != m_env.COLCLAMP.CLAMP)
 		m_dirty_gs_regs |= (1 << DIRTY_REG_COLCLAMP);
 	else
 		m_dirty_gs_regs &= ~(1 << DIRTY_REG_COLCLAMP);
@@ -1623,7 +1623,7 @@ void GSState::GIFRegHandlerTEST(const GIFReg* RESTRICT r)
 
 	if (i == m_prev_env.PRIM.CTXT)
 	{
-		if (m_prev_env.CTXT[i].TEST != m_env.CTXT[i].TEST)
+		if ((m_prev_env.CTXT[i].TEST.U32[0] ^ m_env.CTXT[i].TEST.U32[0]) & TEST_REG_MASK)
 			m_dirty_gs_regs |= (1 << DIRTY_REG_TEST);
 		else
 			m_dirty_gs_regs &= ~(1 << DIRTY_REG_TEST);
@@ -1634,7 +1634,7 @@ void GSState::GIFRegHandlerPABE(const GIFReg* RESTRICT r)
 {
 	m_env.PABE = r->PABE;
 
-	if (m_prev_env.PABE != m_env.PABE)
+	if (m_prev_env.PABE.PABE != m_env.PABE.PABE)
 		m_dirty_gs_regs |= (1 << DIRTY_REG_PABE);
 	else
 		m_dirty_gs_regs &= ~(1 << DIRTY_REG_PABE);
@@ -1647,7 +1647,7 @@ void GSState::GIFRegHandlerFBA(const GIFReg* RESTRICT r)
 
 	if (i == m_prev_env.PRIM.CTXT)
 	{
-		if (m_prev_env.CTXT[i].FBA != m_env.CTXT[i].FBA)
+		if (m_prev_env.CTXT[i].FBA.FBA != m_env.CTXT[i].FBA.FBA)
 			m_dirty_gs_regs |= (1 << DIRTY_REG_FBA);
 		else
 			m_dirty_gs_regs &= ~(1 << DIRTY_REG_FBA);
@@ -1701,7 +1701,7 @@ void GSState::GIFRegHandlerFRAME(const GIFReg* RESTRICT r)
 
 	if (i == m_prev_env.PRIM.CTXT)
 	{
-		if (m_prev_env.CTXT[i].FRAME != m_env.CTXT[i].FRAME)
+		if ((m_prev_env.CTXT[i].FRAME.U64 ^ m_env.CTXT[i].FRAME.U64) & FRAME_REG_MASK)
 			m_dirty_gs_regs |= (1 << DIRTY_REG_FRAME);
 		else
 			m_dirty_gs_regs &= ~(1 << DIRTY_REG_FRAME);
@@ -1736,7 +1736,7 @@ void GSState::GIFRegHandlerZBUF(const GIFReg* RESTRICT r)
 
 	if (i == m_prev_env.PRIM.CTXT)
 	{
-		if (m_prev_env.CTXT[i].ZBUF != m_env.CTXT[i].ZBUF)
+		if ((m_prev_env.CTXT[i].ZBUF.U64 ^ m_env.CTXT[i].ZBUF.U64) & ZBUF_REG_MASK)
 			m_dirty_gs_regs |= (1 << DIRTY_REG_ZBUF);
 		else
 			m_dirty_gs_regs &= ~(1 << DIRTY_REG_ZBUF);
@@ -1919,7 +1919,7 @@ inline bool GSState::TestDrawChanged()
 	// Check if PRIM has changed we need to check if it's just a different triangle or the context is changing.
 	if (m_dirty_gs_regs & (1 << DIRTY_REG_PRIM))
 	{
-		u32 prim_mask = 0x7ff;
+		u32 prim_mask = PRIM_REG_MASK;
 
 		if (GSUtil::GetPrimClass(m_prev_env.PRIM.PRIM) == GSUtil::GetPrimClass(m_env.PRIM.PRIM))
 			prim_mask &= ~0x7;
