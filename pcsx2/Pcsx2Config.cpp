@@ -728,17 +728,17 @@ Pcsx2Config::GSOptions::GSOptions()
 	OsdShowSpeed = false;
 	OsdShowFPS = false;
 	OsdShowVPS = false;
-	OsdShowCPU = false;
-	OsdShowGPU = false;
 	OsdShowResolution = false;
 	OsdShowGSStats = false;
+	OsdShowCPU = false;
+	OsdShowGPU = false;
 	OsdShowIndicators = true;
+	OsdShowFrameTimes = false;
+	OsdShowHardwareInfo = false;
+	OsdShowVersion = false;
 	OsdShowSettings = false;
 	OsdshowPatches = false;
 	OsdShowInputs = false;
-	OsdShowFrameTimes = false;
-	OsdShowVersion = false;
-	OsdShowHardwareInfo = false;
 	OsdShowVideoCapture = true;
 	OsdShowInputRec = true;
 
