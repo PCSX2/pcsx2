@@ -256,8 +256,6 @@ void GameListWidget::initialize()
 
 	m_table_view = new QTableView(m_ui.stack);
 	m_table_view->setModel(m_sort_model);
-	m_table_view->setSortingEnabled(true);
-	m_table_view->horizontalHeader()->setSectionsMovable(true);
 	m_table_view->setSelectionMode(QAbstractItemView::SingleSelection);
 	m_table_view->setSelectionBehavior(QAbstractItemView::SelectRows);
 	m_table_view->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -265,8 +263,9 @@ void GameListWidget::initialize()
 	m_table_view->setMouseTracking(true);
 	m_table_view->setShowGrid(false);
 	m_table_view->setCurrentIndex(QModelIndex());
-	m_table_view->horizontalHeader()->setHighlightSections(false);
 	m_table_view->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
+	m_table_view->horizontalHeader()->setHighlightSections(false);
+	m_table_view->horizontalHeader()->setSectionsMovable(true);
 	m_table_view->verticalHeader()->hide();
 	m_table_view->setVerticalScrollMode(QAbstractItemView::ScrollMode::ScrollPerPixel);
 
@@ -738,8 +737,8 @@ void GameListWidget::resizeTableViewColumnsToFit()
 	QtUtils::ResizeColumnsForTableView(m_table_view, {
 														 DEFAULT_COLUMN_WIDTHS[GameListModel::Column_Type],
 														 DEFAULT_COLUMN_WIDTHS[GameListModel::Column_Serial],
+														 DEFAULT_COLUMN_WIDTHS[GameListModel::Column_Title],
 														 DEFAULT_COLUMN_WIDTHS[GameListModel::Column_FileTitle],
-														 DEFAULT_COLUMN_WIDTHS[GameListModel::Column_Type],
 														 DEFAULT_COLUMN_WIDTHS[GameListModel::Column_CRC],
 														 DEFAULT_COLUMN_WIDTHS[GameListModel::Column_TimePlayed],
 														 DEFAULT_COLUMN_WIDTHS[GameListModel::Column_LastPlayed],
