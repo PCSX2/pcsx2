@@ -225,20 +225,20 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_osd.scale, "EmuCore/GS", "OsdScale", 100.0f);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_osd.messagesPos, "EmuCore/GS", "OsdMessagesPos", static_cast<int>(OsdOverlayPos::TopLeft));
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_osd.performancePos, "EmuCore/GS", "OsdPerformancePos", static_cast<int>(OsdOverlayPos::TopRight));
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_osd.showSpeed, "EmuCore/GS", "OsdShowSpeed", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_osd.showSpeedPercentages, "EmuCore/GS", "OsdShowSpeed", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_osd.showFPS, "EmuCore/GS", "OsdShowFPS", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_osd.showVPS, "EmuCore/GS", "OsdShowVPS", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_osd.showCPU, "EmuCore/GS", "OsdShowCPU", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_osd.showGPU, "EmuCore/GS", "OsdShowGPU", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_osd.showResolution, "EmuCore/GS", "OsdShowResolution", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_osd.showGSStats, "EmuCore/GS", "OsdShowGSStats", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_osd.showIndicators, "EmuCore/GS", "OsdShowIndicators", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_osd.showUsageCPU, "EmuCore/GS", "OsdShowCPU", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_osd.showUsageGPU, "EmuCore/GS", "OsdShowGPU", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_osd.showStatusIndicators, "EmuCore/GS", "OsdShowIndicators", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_osd.showFrameTimes, "EmuCore/GS", "OsdShowFrameTimes", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_osd.showHardwareInfo, "EmuCore/GS", "OsdShowHardwareInfo", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_osd.showVersion, "EmuCore/GS", "OsdShowVersion", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_osd.showSettings, "EmuCore/GS", "OsdShowSettings", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_osd.showPatches, "EmuCore/GS", "OsdshowPatches", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_osd.showInputs, "EmuCore/GS", "OsdShowInputs", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_osd.showFrameTimes, "EmuCore/GS", "OsdShowFrameTimes", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_osd.showVersion, "EmuCore/GS", "OsdShowVersion", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_osd.showHardwareInfo, "EmuCore/GS", "OsdShowHardwareInfo", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_osd.showVideoCapture, "EmuCore/GS", "OsdShowVideoCapture", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_osd.showInputRec, "EmuCore/GS", "OsdShowInputRec", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_osd.warnAboutUnsafeSettings, "EmuCore", "OsdWarnAboutUnsafeSettings", true);
@@ -715,57 +715,59 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 		dialog()->registerWidgetHelp(m_osd.scale, tr("OSD Scale"), tr("100%"), tr("Scales the size of the onscreen OSD from 50% to 500%."));
 
 		dialog()->registerWidgetHelp(m_osd.messagesPos, tr("OSD Messages Position"), tr("Left (Default)"),
-			tr("Shows on-screen-display messages when events occur such as save states being "
+			tr("Position of on-screen-display messages when events occur such as save states being "
 			   "created/loaded, screenshots being taken, etc."));
 
-		dialog()->registerWidgetHelp(m_osd.performancePos, tr("OSD Statistics Position"), tr("Right (Default)"),
-			tr("Shows a variety of on-screen performance data points as selected by the user."));
+		dialog()->registerWidgetHelp(m_osd.performancePos, tr("OSD Performance Position"), tr("Right (Default)"),
+			tr("Position of a variety of on-screen performance data points as selected by the user."));
+
+		dialog()->registerWidgetHelp(m_osd.showSpeedPercentages, tr("Show Speed Percentages"), tr("Unchecked"),
+			tr("Shows the current emulation speed of the system as a percentage."));
 
 		dialog()->registerWidgetHelp(m_osd.showFPS, tr("Show FPS"), tr("Unchecked"),
-			tr("Shows the internal frame rate of the game in the top-right corner of the display."));
+			tr("Shows the number of internal video frames displayed per second by the system."));
 
 		dialog()->registerWidgetHelp(m_osd.showVPS, tr("Show VPS"), tr("Unchecked"),
-			tr("Shows the vsync rate of the emulator in the top-right corner of the display."));
-
-		dialog()->registerWidgetHelp(m_osd.showSpeed, tr("Show Speed Percentages"), tr("Unchecked"),
-			tr("Shows the current emulation speed of the system in the top-right corner of the display as a percentage."));
+			tr("Shows the number of V-syncs performed per second by the system."));
 
 		dialog()->registerWidgetHelp(m_osd.showResolution, tr("Show Resolution"), tr("Unchecked"),
-			tr("Shows the resolution of the game in the top-right corner of the display."));
+			tr("Shows the internal resolution of the game."));
 
-		dialog()->registerWidgetHelp(m_osd.showCPU, tr("Show CPU Usage"), tr("Unchecked"), tr("Shows host's CPU utilization."));
+		dialog()->registerWidgetHelp(m_osd.showGSStats, tr("Show GS Statistics"), tr("Unchecked"),
+			tr("Shows statistics about the emulated GS such as primitives and draw calls."));
 
-		dialog()->registerWidgetHelp(m_osd.showGPU, tr("Show GPU Usage"), tr("Unchecked"), tr("Shows host's GPU utilization."));
+		dialog()->registerWidgetHelp(m_osd.showUsageCPU, tr("Show CPU Usage"),
+			tr("Unchecked"), tr("Shows the host's CPU utilization based on threads."));
 
-		dialog()->registerWidgetHelp(m_osd.showGSStats, tr("Show Statistics"), tr("Unchecked"),
-			tr("Shows counters for internal graphical utilization, useful for debugging."));
+		dialog()->registerWidgetHelp(m_osd.showUsageGPU, tr("Show GPU Usage"),
+			tr("Unchecked"), tr("Shows the host's GPU utilization."));
 
-		dialog()->registerWidgetHelp(m_osd.showIndicators, tr("Show Indicators"), tr("Checked"),
-			tr("Shows OSD icon indicators for emulation states such as Pausing, Turbo, Fast-Forward, and Slow-Motion."));
-
-		dialog()->registerWidgetHelp(m_osd.showSettings, tr("Show Settings"), tr("Unchecked"),
-			tr("Displays various settings and the current values of those settings, useful for debugging."));
-
-		dialog()->registerWidgetHelp(m_osd.showPatches, tr("Show Patches"), tr("Unchecked"),
-			tr("Shows the amount of currently active patches/cheats on the bottom-right corner of the display."));
-
-		dialog()->registerWidgetHelp(m_osd.showInputs, tr("Show Inputs"), tr("Unchecked"),
-			tr("Shows the current controller state of the system in the bottom-left corner of the display."));
+		dialog()->registerWidgetHelp(m_osd.showStatusIndicators, tr("Show Status Indicators"), tr("Checked"),
+			tr("Shows icon indicators for emulation states such as Pausing, Turbo, Fast-Forward, and Slow-Motion."));
 
 		dialog()->registerWidgetHelp(m_osd.showFrameTimes, tr("Show Frame Times"), tr("Unchecked"),
 			tr("Displays a graph showing the average frametimes."));
 
+		dialog()->registerWidgetHelp(m_osd.showHardwareInfo, tr("Show Hardware Info"), tr("Unchecked"),
+			tr("Shows the current system CPU and GPU information."));
+
 		dialog()->registerWidgetHelp(m_osd.showVersion, tr("Show PCSX2 Version"), tr("Unchecked"),
-			tr("Shows the current PCSX2 version on the top-right corner of the display."));
+			tr("Shows the current PCSX2 version."));
+
+		dialog()->registerWidgetHelp(m_osd.showSettings, tr("Show Settings"), tr("Unchecked"),
+			tr("Displays various settings and the current values of those settings in the bottom-right corner of the display."));
+
+		dialog()->registerWidgetHelp(m_osd.showPatches, tr("Show Patches"), tr("Unchecked"),
+			tr("Shows the amount of currently active patches/cheats in the bottom-right corner of the display."));
+
+		dialog()->registerWidgetHelp(m_osd.showInputs, tr("Show Inputs"), tr("Unchecked"),
+			tr("Shows the current controller state of the system in the bottom-left corner of the display."));
 
 		dialog()->registerWidgetHelp(m_osd.showVideoCapture, tr("Show Video Capture Status"), tr("Checked"),
-			tr("Shows the currently active video capture status."));
+			tr("Shows the status of the currently active video capture in the top-right corner of the display.."));
 
 		dialog()->registerWidgetHelp(m_osd.showInputRec, tr("Show Input Recording Status"), tr("Checked"),
-			tr("Shows the currently active input recording status."));
-
-		dialog()->registerWidgetHelp(m_osd.showHardwareInfo, tr("Show Hardware Info"), tr("Unchecked"),
-			tr("Shows the current system hardware information on the OSD."));
+			tr("Shows the status of the currently active input recording in the top-right corner of the display.."));
 
 		dialog()->registerWidgetHelp(m_osd.warnAboutUnsafeSettings, tr("Warn About Unsafe Settings"), tr("Checked"),
 			tr("Displays warnings when settings are enabled which may break games."));
@@ -943,16 +945,16 @@ void GraphicsSettingsWidget::onPerformancePosChanged()
 {
 	const bool enabled = m_osd.performancePos->currentIndex() != (dialog()->isPerGameSettings() ? 1 : 0);
 
-	m_osd.showVPS->setEnabled(enabled);
-	m_osd.showSpeed->setEnabled(enabled);
+	m_osd.showSpeedPercentages->setEnabled(enabled);
 	m_osd.showFPS->setEnabled(enabled);
-	m_osd.showCPU->setEnabled(enabled);
-	m_osd.showGPU->setEnabled(enabled);
+	m_osd.showVPS->setEnabled(enabled);
 	m_osd.showResolution->setEnabled(enabled);
 	m_osd.showGSStats->setEnabled(enabled);
-	m_osd.showHardwareInfo->setEnabled(enabled);
-	m_osd.showIndicators->setEnabled(enabled);
+	m_osd.showUsageCPU->setEnabled(enabled);
+	m_osd.showUsageGPU->setEnabled(enabled);
+	m_osd.showStatusIndicators->setEnabled(enabled);
 	m_osd.showFrameTimes->setEnabled(enabled);
+	m_osd.showHardwareInfo->setEnabled(enabled);
 	m_osd.showVersion->setEnabled(enabled);
 }
 
