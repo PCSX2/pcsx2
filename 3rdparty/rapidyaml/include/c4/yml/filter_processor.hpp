@@ -5,7 +5,7 @@
 
 #ifdef RYML_DBG
 #include "c4/charconv.hpp"
-#include "c4/yml/detail/parser_dbg.hpp"
+#include "c4/yml/detail/dbgprint.hpp"
 #endif
 
 namespace c4 {

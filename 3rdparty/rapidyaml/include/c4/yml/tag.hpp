@@ -64,8 +64,7 @@ struct RYML_EXPORT TagDirective
     id_type next_node_id;
 
     bool create_from_str(csubstr directive_); ///< leaves next_node_id unfilled
-    bool create_from_str(csubstr directive_, Tree *tree);
-    size_t transform(csubstr tag, substr output, Callbacks const& callbacks) const;
+    size_t transform(csubstr tag, substr output, Callbacks const& callbacks, bool with_brackets=true) const;
 };
 
 struct RYML_EXPORT TagDirectiveRange

@@ -561,7 +561,7 @@ template<class T>
 C4_ALWAYS_INLINE auto _format_dump_compute_size(T const& v)
     -> typename std::enable_if<!dump_directly<T>::value, size_t>::type
 {
-    return to_chars({}, v);
+    return to_chars(substr{}, v);
 }
 template<class Arg, class... Args>
 size_t _format_dump_compute_size(Arg const& a, Args const& ...more)

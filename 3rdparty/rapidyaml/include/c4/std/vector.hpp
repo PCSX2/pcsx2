@@ -78,7 +78,7 @@ inline bool from_chars(c4::csubstr buf, std::vector<char, Alloc> * s)
     // see https://github.com/biojppm/rapidyaml/pull/264#issuecomment-1262133637
     if(buf.len > 0)
     {
-        memcpy(&(*s)[0], buf.str, buf.len);
+        memcpy(&(*s)[0], buf.str, buf.len); // NOLINT(readability-container-data-pointer)
     }
     return true;
 }

@@ -8,11 +8,16 @@
 
 #include <ctype.h>
 
-#include "c4/yml/detail/parser_dbg.hpp"
+#include "c4/yml/detail/dbgprint.hpp"
 #include "c4/yml/filter_processor.hpp"
 #ifdef RYML_DBG
 #include <c4/dump.hpp>
 #include "c4/yml/detail/print.hpp"
+#define _c4err_(fmt, ...) do { RYML_DEBUG_BREAK(); this->_err("ERROR:\n" "{}:{}: " fmt, __FILE__, __LINE__, __VA_ARGS__); } while(0)
+#define _c4err(fmt) do { RYML_DEBUG_BREAK(); this->_err("ERROR:\n" "{}:{}: " fmt, __FILE__, __LINE__); } while(0)
+#else
+#define _c4err_(fmt, ...) this->_err("ERROR: " fmt, __VA_ARGS__)
+#define _c4err(fmt) this->_err("ERROR: {}", fmt)
 #endif
 
 
@@ -796,7 +801,7 @@ bool ParseEngine<EventHandler>::_is_valid_start_scalar_plain_flow(csubstr s)
             case '{':
             case '[':
             //_RYML_WITHOUT_TAB_TOKENS(case '\t'):
-                _c4err("invalid token \":{}\"", _c4prc(s.str[1]));
+                _c4err_("invalid token \":{}\"", _c4prc(s.str[1]));
                 break;
             case ' ':
             case '}':
@@ -831,7 +836,7 @@ bool ParseEngine<EventHandler>::_is_valid_start_scalar_plain_flow(csubstr s)
             case '}':
             case '[':
             case ']':
-                _c4err("invalid token \"?{}\"", _c4prc(s.str[1]));
+                _c4err_("invalid token \"?{}\"", _c4prc(s.str[1]));
                 break;
             default:
                 break;
@@ -945,7 +950,7 @@ bool ParseEngine<EventHandler>::_scan_scalar_plain_seq_flow(ScannedScalar *C4_RE
             case '{':
             case '}':
                 _line_progressed(i);
-                _c4err("invalid character: '{}'", c); // noreturn
+                _c4err_("invalid character: '{}'", c); // noreturn
             default:
                 ;
             }
@@ -1021,14 +1026,14 @@ bool ParseEngine<EventHandler>::_scan_scalar_plain_map_flow(ScannedScalar *C4_RE
             case '{':
             case '[':
                 _line_progressed(i);
-                _c4err("invalid character: '{}'", c); // noreturn
+                _c4err_("invalid character: '{}'", c); // noreturn
                 break;
             case ']':
                 _line_progressed(i);
                 if(has_any(RSEQIMAP))
                     goto ended_scalar;
                 else
-                    _c4err("invalid character: '{}'", c); // noreturn
+                    _c4err_("invalid character: '{}'", c); // noreturn
                 break;
             case '#':
                 if(!i || s.str[i-1] == ' ' _RYML_WITH_TAB_TOKENS(|| s.str[i-1] == '\t'))
@@ -2661,45 +2666,50 @@ void ParseEngine<EventHandler>::_filter_dquoted_backslash(FilterProcessor &C4_RE
     {
         proc.translate_esc('\\');
     }
-    else if(next == 'x') // UTF8
+    else if(next == 'x') // 2-digit Unicode escape (\xXX), code point 0x00–0xFF
     {
         if(C4_UNLIKELY(proc.rpos + 1u + 2u >= proc.src.len))
-            _c4err("\\x requires 2 hex digits. scalar pos={}", proc.rpos);
+            _c4err_("\\x requires 2 hex digits. scalar pos={}", proc.rpos);
+        char readbuf[8];
         csubstr codepoint = proc.src.sub(proc.rpos + 2u, 2u);
         _c4dbgfdq("utf8 ~~~{}~~~ rpos={} rem=~~~{}~~~", codepoint, proc.rpos, proc.src.sub(proc.rpos));
-        uint8_t byteval = {};
-        if(C4_UNLIKELY(!read_hex(codepoint, &byteval)))
-            _c4err("failed to read \\x codepoint. scalar pos={}", proc.rpos);
-        proc.translate_esc_bulk((const char*)&byteval, 1u, /*nread*/3u);
+        uint32_t codepoint_val = {};
+        if(C4_UNLIKELY(!read_hex(codepoint, &codepoint_val)))
+            _c4err_("failed to read \\x codepoint. scalar pos={}", proc.rpos);
+        const size_t numbytes = decode_code_point((uint8_t*)readbuf, sizeof(readbuf), codepoint_val);
+        if(C4_UNLIKELY(numbytes == 0))
+            _c4err_("failed to decode code point={}", proc.rpos);
+        _RYML_CB_ASSERT(callbacks(), numbytes <= 4);
+        proc.translate_esc_bulk(readbuf, numbytes, /*nread*/3u);
         _c4dbgfdq("utf8 after rpos={} rem=~~~{}~~~", proc.rpos, proc.src.sub(proc.rpos));
     }
-    else if(next == 'u') // UTF16
+    else if(next == 'u') // 4-digit Unicode escape (\uXXXX), code point 0x0000–0xFFFF
     {
         if(C4_UNLIKELY(proc.rpos + 1u + 4u >= proc.src.len))
-            _c4err("\\u requires 4 hex digits. scalar pos={}", proc.rpos);
+            _c4err_("\\u requires 4 hex digits. scalar pos={}", proc.rpos);
         char readbuf[8];
         csubstr codepoint = proc.src.sub(proc.rpos + 2u, 4u);
         uint32_t codepoint_val = {};
         if(C4_UNLIKELY(!read_hex(codepoint, &codepoint_val)))
-            _c4err("failed to parse \\u codepoint. scalar pos={}", proc.rpos);
+            _c4err_("failed to parse \\u codepoint. scalar pos={}", proc.rpos);
         const size_t numbytes = decode_code_point((uint8_t*)readbuf, sizeof(readbuf), codepoint_val);
         if(C4_UNLIKELY(numbytes == 0))
-            _c4err("failed to decode code point={}", proc.rpos);
+            _c4err_("failed to decode code point={}", proc.rpos);
         _RYML_CB_ASSERT(callbacks(), numbytes <= 4);
         proc.translate_esc_bulk(readbuf, numbytes, /*nread*/5u);
     }
-    else if(next == 'U') // UTF32
+    else if(next == 'U') // 8-digit Unicode escape (\UXXXXXXXX), full 32-bit code point
     {
         if(C4_UNLIKELY(proc.rpos + 1u + 8u >= proc.src.len))
-            _c4err("\\U requires 8 hex digits. scalar pos={}", proc.rpos);
+            _c4err_("\\U requires 8 hex digits. scalar pos={}", proc.rpos);
         char readbuf[8];
         csubstr codepoint = proc.src.sub(proc.rpos + 2u, 8u);
         uint32_t codepoint_val = {};
         if(C4_UNLIKELY(!read_hex(codepoint, &codepoint_val)))
-            _c4err("failed to parse \\U codepoint. scalar pos={}", proc.rpos);
+            _c4err_("failed to parse \\U codepoint. scalar pos={}", proc.rpos);
         const size_t numbytes = decode_code_point((uint8_t*)readbuf, sizeof(readbuf), codepoint_val);
         if(C4_UNLIKELY(numbytes == 0))
-            _c4err("failed to decode code point={}", proc.rpos);
+            _c4err_("failed to decode code point={}", proc.rpos);
         _RYML_CB_ASSERT(callbacks(), numbytes <= 4);
         proc.translate_esc_bulk(readbuf, numbytes, /*nread*/9u);
     }
@@ -2772,7 +2782,7 @@ void ParseEngine<EventHandler>::_filter_dquoted_backslash(FilterProcessor &C4_RE
     }
     else
     {
-        _c4err("unknown character '{}' after '\\' pos={}", _c4prc(next), proc.rpos);
+        _c4err_("unknown character '{}' after '\\' pos={}", _c4prc(next), proc.rpos);
     }
     _c4dbgfdq("backslash...sofar=[{}]~~~{}~~~", proc.wpos, proc.sofar());
 }
@@ -2848,6 +2858,24 @@ FilterResultExtending ParseEngine<EventHandler>::filter_scalar_dquoted_in_place(
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 // block filtering helpers
+
+C4_NO_INLINE inline size_t _find_last_newline_and_larger_indentation(csubstr s, size_t indentation) noexcept
+{
+    if(indentation + 1 > s.len)
+        return npos;
+    for(size_t i = s.len-indentation-1; i != size_t(-1); --i)
+    {
+        if(s.str[i] == '\n')
+        {
+            csubstr rem = s.sub(i + 1);
+            size_t first = rem.first_not_of(' ');
+            first = (first != npos) ? first : rem.len;
+            if(first > indentation)
+                return i;
+        }
+    }
+    return npos;
+}
 
 template<class EventHandler>
 template<class FilterProcessor>
@@ -3506,37 +3534,67 @@ csubstr ParseEngine<EventHandler>::_filter_scalar_dquot(substr s)
         _c4dbgpf("filtering dquo scalar: not enough space: needs {}, have {}", len, s.len);
         substr dst = m_evt_handler->alloc_arena(len, &s);
         _c4dbgpf("filtering dquo scalar: dst.len={}", dst.len);
-        _RYML_CB_ASSERT(this->callbacks(), dst.len == len);
-        FilterResult rsd = this->filter_scalar_dquoted(s, dst);
-        _c4dbgpf("filtering dquo scalar: ... result now needs {} was {}", rsd.required_len(), len);
-        _RYML_CB_ASSERT(this->callbacks(), rsd.required_len() <= len); // may be smaller!
-        _RYML_CB_CHECK(m_evt_handler->m_stack.m_callbacks, rsd.valid());
-        _c4dbgpf("filtering dquo scalar: success! s=[{}]~~~{}~~~", rsd.get().len, rsd.get());
-        return rsd.get();
+        if(dst.str)
+        {
+            _RYML_CB_ASSERT(this->callbacks(), dst.len == len);
+            FilterResult rsd = this->filter_scalar_dquoted(s, dst);
+            _c4dbgpf("filtering dquo scalar: ... result now needs {} was {}", rsd.required_len(), len);
+            _RYML_CB_ASSERT(this->callbacks(), rsd.required_len() <= len); // may be smaller!
+            _RYML_CB_CHECK(m_evt_handler->m_stack.m_callbacks, rsd.valid());
+            _c4dbgpf("filtering dquo scalar: success! s=[{}]~~~{}~~~", rsd.get().len, rsd.get());
+            return rsd.get();
+        }
+        return dst;
     }
 }
 
 
 //-----------------------------------------------------------------------------
+
+template<class EventHandler>
+csubstr ParseEngine<EventHandler>::_move_scalar_left_and_add_newline(substr s)
+{
+    if(s.is_sub(m_buf))
+    {
+        _RYML_CB_ASSERT(m_evt_handler->m_stack.m_callbacks, s.str > m_buf.str);
+        _RYML_CB_ASSERT(m_evt_handler->m_stack.m_callbacks, s.str-1 >= m_buf.str);
+        if(s.len)
+            memmove(s.str - 1, s.str, s.len);
+        --s.str;
+        s.str[s.len] = '\n';
+        ++s.len;
+        return s;
+    }
+    else
+    {
+        substr dst = m_evt_handler->alloc_arena(s.len + 1);
+        if(s.len)
+            memcpy(dst.str, s.str, s.len);
+        dst[s.len] = '\n';
+        return dst;
+    }
+}
+
 template<class EventHandler>
 csubstr ParseEngine<EventHandler>::_filter_scalar_literal(substr s, size_t indentation, BlockChomp_e chomp)
 {
     _c4dbgpf("filtering block literal scalar: s=[{}]~~~{}~~~", s.len, s);
     FilterResult r = this->filter_scalar_block_literal_in_place(s, s.len, indentation, chomp);
+    csubstr result;
     if(C4_LIKELY(r.valid()))
     {
-        _c4dbgpf("filtering block literal scalar: success! s=[{}]~~~{}~~~", r.get().len, r.get());
-        return r.get();
+        result = r.get();
     }
     else
     {
         _c4dbgpf("filtering block literal scalar: not enough space: needs {}, have {}", r.required_len(), s.len);
-        substr dst = m_evt_handler->alloc_arena(r.required_len(), &s);
-        FilterResult rsd = this->filter_scalar_block_literal(s, dst, indentation, chomp);
-        _RYML_CB_CHECK(m_evt_handler->m_stack.m_callbacks, rsd.valid());
-        _c4dbgpf("filtering block literal scalar: success! s=[{}]~~~{}~~~", rsd.get().len, rsd.get());
-        return rsd.get();
+        _RYML_CB_ASSERT(m_evt_handler->m_stack.m_callbacks, r.required_len() == s.len + 1);
+        // this can only happen when adding a single newline in clip mode.
+        // so we shift left the scalar by one place
+        result = _move_scalar_left_and_add_newline(s);
     }
+    _c4dbgpf("filtering block literal scalar: success! s=[{}]~~~{}~~~", result.len, result);
+    return result;
 }
 
 
@@ -3546,20 +3604,21 @@ csubstr ParseEngine<EventHandler>::_filter_scalar_folded(substr s, size_t indent
 {
     _c4dbgpf("filtering block folded scalar: s=[{}]~~~{}~~~", s.len, s);
     FilterResult r = this->filter_scalar_block_folded_in_place(s, s.len, indentation, chomp);
+    csubstr result;
     if(C4_LIKELY(r.valid()))
     {
-        _c4dbgpf("filtering block folded scalar: success! s=[{}]~~~{}~~~", r.get().len, r.get());
-        return r.get();
+        result = r.get();
     }
     else
     {
         _c4dbgpf("filtering block folded scalar: not enough space: needs {}, have {}", r.required_len(), s.len);
-        substr dst = m_evt_handler->alloc_arena(r.required_len(), &s);
-        FilterResult rsd = this->filter_scalar_block_folded(s, dst, indentation, chomp);
-        _RYML_CB_CHECK(m_evt_handler->m_stack.m_callbacks, rsd.valid());
-        _c4dbgpf("filtering block folded scalar: success! s=[{}]~~~{}~~~", rsd.get().len, rsd.get());
-        return rsd.get();
+        _RYML_CB_ASSERT(m_evt_handler->m_stack.m_callbacks, r.required_len() == s.len + 1);
+        // this can only happen when adding a single newline in clip mode.
+        // so we shift left the scalar by one place
+        result = _move_scalar_left_and_add_newline(s);
     }
+    _c4dbgpf("filtering block folded scalar: success! s=[{}]~~~{}~~~", result.len, result);
+    return result;
 }
 
 
@@ -3875,119 +3934,6 @@ csubstr ParseEngine<EventHandler>::location_contents(Location const& loc) const
     _RYML_CB_ASSERT(m_evt_handler->m_stack.m_callbacks, loc.offset < m_buf.len);
     return m_buf.sub(loc.offset);
 }
-
-template<class EventHandler>
-Location ParseEngine<EventHandler>::location(ConstNodeRef node) const
-{
-    _RYML_CB_ASSERT(m_evt_handler->m_stack.m_callbacks, node.readable());
-    return location(*node.tree(), node.id());
-}
-
-template<class EventHandler>
-Location ParseEngine<EventHandler>::location(Tree const& tree, id_type node) const
-{
-    // try hard to avoid getting the location from a null string.
-    Location loc;
-    if(_location_from_node(tree, node, &loc, 0))
-        return loc;
-    return val_location(m_buf.str);
-}
-
-template<class EventHandler>
-bool ParseEngine<EventHandler>::_location_from_node(Tree const& tree, id_type node, Location *C4_RESTRICT loc, id_type level) const
-{
-    if(tree.has_key(node))
-    {
-        csubstr k = tree.key(node);
-        if(C4_LIKELY(k.str != nullptr))
-        {
-            _RYML_CB_ASSERT(m_evt_handler->m_stack.m_callbacks, k.is_sub(m_buf));
-            _RYML_CB_ASSERT(m_evt_handler->m_stack.m_callbacks, m_buf.is_super(k));
-            *loc = val_location(k.str);
-            return true;
-        }
-    }
-
-    if(tree.has_val(node))
-    {
-        csubstr v = tree.val(node);
-        if(C4_LIKELY(v.str != nullptr))
-        {
-            _RYML_CB_ASSERT(m_evt_handler->m_stack.m_callbacks, v.is_sub(m_buf));
-            _RYML_CB_ASSERT(m_evt_handler->m_stack.m_callbacks, m_buf.is_super(v));
-            *loc = val_location(v.str);
-            return true;
-        }
-    }
-
-    if(tree.is_container(node))
-    {
-        if(_location_from_cont(tree, node, loc))
-            return true;
-    }
-
-    if(tree.type(node) != NOTYPE && level == 0)
-    {
-        // try the prev sibling
-        {
-            const id_type prev = tree.prev_sibling(node);
-            if(prev != NONE)
-            {
-                if(_location_from_node(tree, prev, loc, level+1))
-                    return true;
-            }
-        }
-        // try the next sibling
-        {
-            const id_type next = tree.next_sibling(node);
-            if(next != NONE)
-            {
-                if(_location_from_node(tree, next, loc, level+1))
-                    return true;
-            }
-        }
-        // try the parent
-        {
-            const id_type parent = tree.parent(node);
-            if(parent != NONE)
-            {
-                if(_location_from_node(tree, parent, loc, level+1))
-                    return true;
-            }
-        }
-    }
-
-    return false;
-}
-
-template<class EventHandler>
-bool ParseEngine<EventHandler>::_location_from_cont(Tree const& tree, id_type node, Location *C4_RESTRICT loc) const
-{
-    _RYML_CB_ASSERT(m_evt_handler->m_stack.m_callbacks, tree.is_container(node));
-    if(!tree.is_stream(node))
-    {
-        const char *node_start = tree._p(node)->m_val.scalar.str;  // this was stored in the container
-        if(tree.has_children(node))
-        {
-            id_type child = tree.first_child(node);
-            if(tree.has_key(child))
-            {
-                // when a map starts, the container was set after the key
-                csubstr k = tree.key(child);
-                if(k.str && node_start > k.str)
-                    node_start = k.str;
-            }
-        }
-        *loc = val_location(node_start);
-        return true;
-    }
-    else // it's a stream
-    {
-        *loc = val_location(m_buf.str); // just return the front of the buffer
-    }
-    return true;
-}
-
 
 template<class EventHandler>
 Location ParseEngine<EventHandler>::val_location(const char *val) const
@@ -6563,7 +6509,6 @@ mapblck_start:
                     csubstr maybe_filtered = _maybe_filter_key_scalar_squot(sc); // KEY!
                     m_evt_handler->set_key_scalar_squoted(maybe_filtered);
                     _maybe_skip_whitespace_tokens();
-                    _set_indentation(m_evt_handler->m_curr->line_contents.indentation);
                     // keep the child state on RVAL
                     addrem_flags(RVAL, RNXT);
                 }
@@ -6604,7 +6549,6 @@ mapblck_start:
                     csubstr maybe_filtered = _maybe_filter_key_scalar_dquot(sc); // KEY!
                     m_evt_handler->set_key_scalar_dquoted(maybe_filtered);
                     _maybe_skip_whitespace_tokens();
-                    _set_indentation(m_evt_handler->m_curr->line_contents.indentation);
                     // keep the child state on RVAL
                     addrem_flags(RVAL, RNXT);
                 }
@@ -6666,7 +6610,6 @@ mapblck_start:
                     csubstr maybe_filtered = _maybe_filter_key_scalar_plain(sc, m_evt_handler->m_curr->indref); // KEY!
                     m_evt_handler->set_key_scalar_plain(maybe_filtered);
                     _maybe_skip_whitespace_tokens();
-                    _set_indentation(m_evt_handler->m_curr->line_contents.indentation);
                     // keep the child state on RVAL
                     addrem_flags(RVAL, RNXT);
                 }
@@ -6846,7 +6789,6 @@ mapblck_start:
                 m_evt_handler->begin_map_val_block();
                 _handle_annotations_and_indentation_after_start_mapblck(startindent, startline);
                 m_evt_handler->set_key_scalar_plain_empty();
-                _set_indentation(m_evt_handler->m_curr->line_contents.indentation);
                 // keep the child state on RVAL
                 addrem_flags(RVAL, RNXT);
             }

@@ -1,6 +1,5 @@
 #include "c4/yml/tag.hpp"
-#include "c4/yml/tree.hpp"
-#include "c4/yml/detail/parser_dbg.hpp"
+#include "c4/yml/detail/dbgprint.hpp"
 
 
 namespace c4 {
@@ -222,25 +221,7 @@ bool TagDirective::create_from_str(csubstr directive_)
     return true;
 }
 
-bool TagDirective::create_from_str(csubstr directive_, Tree *tree)
-{
-    _RYML_CB_CHECK(tree->callbacks(), directive_.begins_with("%TAG "));
-    if(!create_from_str(directive_))
-    {
-        _RYML_CB_ERR(tree->callbacks(), "invalid tag directive");
-    }
-    next_node_id = tree->size();
-    if(!tree->empty())
-    {
-        const id_type prev = tree->size() - 1;
-        if(tree->is_root(prev) && tree->type(prev) != NOTYPE && !tree->is_stream(prev))
-            ++next_node_id;
-    }
-    _c4dbgpf("%TAG: handle={} prefix={} next_node={}", handle, prefix, next_node_id);
-    return true;
-}
-
-size_t TagDirective::transform(csubstr tag, substr output, Callbacks const& callbacks) const
+size_t TagDirective::transform(csubstr tag, substr output, Callbacks const& callbacks, bool with_brackets) const
 {
     _c4dbgpf("%TAG: handle={} prefix={} next_node={}. tag={}", handle, prefix, next_node_id, tag);
     _RYML_CB_ASSERT(callbacks, tag.len >= handle.len);
@@ -258,16 +239,26 @@ size_t TagDirective::transform(csubstr tag, substr output, Callbacks const& call
             return 0; // return 0 to signal that the tag is local and cannot be resolved
         }
     }
-    size_t len = 1u + prefix.len + rest.len + 1u;
+    size_t len = prefix.len + rest.len;
+    if(with_brackets)
+        len += 2;
     size_t numpc = rest.count('%');
     if(numpc == 0)
     {
         if(len <= output.len)
         {
-            output.str[0] = '<';
-            memcpy(1u + output.str, prefix.str, prefix.len);
-            memcpy(1u + output.str + prefix.len, rest.str, rest.len);
-            output.str[1u + prefix.len + rest.len] = '>';
+            if(with_brackets)
+            {
+                output.str[0] = '<';
+                memcpy(1u + output.str, prefix.str, prefix.len);
+                memcpy(1u + output.str + prefix.len, rest.str, rest.len);
+                output.str[1u + prefix.len + rest.len] = '>';
+            }
+            else
+            {
+                memcpy(output.str, prefix.str, prefix.len);
+                memcpy(output.str + prefix.len, rest.str, rest.len);
+            }
         }
     }
     else
@@ -290,7 +281,8 @@ size_t TagDirective::transform(csubstr tag, substr output, Callbacks const& call
             size_t prev = 0, wpos = 0;
             auto appendstr = [&](csubstr s) { memcpy(output.str + wpos, s.str, s.len); wpos += s.len; };
             auto appendchar = [&](char c) { output.str[wpos++] = c; };
-            appendchar('<');
+            if(with_brackets)
+                appendchar('<');
             appendstr(prefix);
             pos = rest.find('%');
             _RYML_CB_ASSERT(callbacks, pos != npos);
@@ -312,7 +304,8 @@ size_t TagDirective::transform(csubstr tag, substr output, Callbacks const& call
             _RYML_CB_ASSERT(callbacks, prev > 0);
             _RYML_CB_ASSERT(callbacks, rest.len >= prev);
             appendstr(rest.sub(prev));
-            appendchar('>');
+            if(with_brackets)
+                appendchar('>');
             _RYML_CB_ASSERT(callbacks, wpos == len);
         }
     }
