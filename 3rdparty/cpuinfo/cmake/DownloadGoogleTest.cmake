@@ -1,11 +1,11 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.18 FATAL_ERROR)
 
 PROJECT(googletest-download NONE)
 
 INCLUDE(ExternalProject)
 ExternalProject_Add(googletest
-	URL https://github.com/google/googletest/archive/release-1.11.0.zip
-	URL_HASH SHA256=353571c2440176ded91c2de6d6cd88ddd41401d14692ec1f99e35d013feda55a
+	URL https://github.com/google/googletest/archive/refs/tags/v1.17.0.zip
+	URL_HASH SHA256=40d4ec942217dcc84a9ebe2a68584ada7d4a33a8ee958755763278ea1c5e18ff
 	SOURCE_DIR "${CONFU_DEPENDENCIES_SOURCE_DIR}/googletest"
 	BINARY_DIR "${CONFU_DEPENDENCIES_BINARY_DIR}/googletest"
 	CONFIGURE_COMMAND ""

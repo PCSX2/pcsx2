@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.5 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.18 FATAL_ERROR)
 
 # ---[ Setup project
 PROJECT(
@@ -108,7 +108,7 @@ IF(NOT CMAKE_SYSTEM_NAME)
       "Target operating system is not specified. "
       "cpuinfo will compile, but cpuinfo_initialize() will always fail.")
   SET(CPUINFO_SUPPORTED_PLATFORM FALSE)
-ELSEIF(NOT CMAKE_SYSTEM_NAME MATCHES "^(Windows|WindowsStore|CYGWIN|MSYS|Darwin|Linux|Android|FreeBSD)$")
+ELSEIF(NOT CMAKE_SYSTEM_NAME MATCHES "^(Windows|WindowsStore|CYGWIN|MSYS|Darwin|Linux|Android|FreeBSD|Emscripten)$")
   IF(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.14" AND NOT IS_APPLE_OS)
     MESSAGE(WARNING
       "Target operating system \"${CMAKE_SYSTEM_NAME}\" is not supported in cpuinfo. "
@@ -184,10 +184,11 @@ IF(CPUINFO_SUPPORTED_PLATFORM)
     ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
       LIST(APPEND CPUINFO_SRCS src/x86/freebsd/init.c)
     ENDIF()
-  ELSEIF(CMAKE_SYSTEM_NAME MATCHES "^Windows" AND CPUINFO_TARGET_PROCESSOR MATCHES "^(ARM64|arm64)$")
+  ELSEIF(CMAKE_SYSTEM_NAME MATCHES "^Windows" AND CPUINFO_TARGET_PROCESSOR MATCHES "^(ARM64|arm64|aarch64)$")
     LIST(APPEND CPUINFO_SRCS
       src/arm/windows/init-by-logical-sys-info.c
-      src/arm/windows/init.c)
+      src/arm/windows/init.c
+      src/arm/uarch.c)
   ELSEIF(CPUINFO_TARGET_PROCESSOR MATCHES "^(armv[5-8].*|aarch64|arm64.*)$" OR IOS_ARCH MATCHES "^(armv7.*|arm64.*)$")
     LIST(APPEND CPUINFO_SRCS
       src/arm/uarch.c
@@ -218,7 +219,7 @@ IF(CPUINFO_SUPPORTED_PLATFORM)
   ELSEIF(CPUINFO_TARGET_PROCESSOR MATCHES "^(riscv(32|64))$")
     LIST(APPEND CPUINFO_SRCS
       src/riscv/uarch.c)
-    IF(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    IF(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Android")
       LIST(APPEND CPUINFO_SRCS
         src/riscv/linux/init.c
 	src/riscv/linux/riscv-hw.c
@@ -746,6 +747,11 @@ IF(CPUINFO_SUPPORTED_PLATFORM AND CPUINFO_BUILD_MOCK_TESTS)
     TARGET_INCLUDE_DIRECTORIES(pixel-2-xl-test BEFORE PRIVATE test/mock)
     TARGET_LINK_LIBRARIES(pixel-2-xl-test PRIVATE cpuinfo_mock gtest)
     ADD_TEST(NAME pixel-2-xl-test COMMAND pixel-2-xl-test)
+
+    ADD_EXECUTABLE(pixel-8-test test/mock/pixel-8.cc)
+    TARGET_INCLUDE_DIRECTORIES(pixel-8-test BEFORE PRIVATE test/mock)
+    TARGET_LINK_LIBRARIES(pixel-8-test PRIVATE cpuinfo_mock gtest)
+    ADD_TEST(NAME pixel-8-test COMMAND pixel-8-test)
 
     ADD_EXECUTABLE(xiaomi-mi-5c-test test/mock/xiaomi-mi-5c.cc)
     TARGET_INCLUDE_DIRECTORIES(xiaomi-mi-5c-test BEFORE PRIVATE test/mock)

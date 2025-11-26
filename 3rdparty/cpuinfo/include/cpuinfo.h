@@ -373,10 +373,14 @@ enum cpuinfo_uarch {
 	cpuinfo_uarch_goldmont = 0x00100404,
 	/** Intel Goldmont Plus microarchitecture (Gemini Lake). */
 	cpuinfo_uarch_goldmont_plus = 0x00100405,
-	/** Intel Gracemont microarchitecture (Twin Lake). */
-	cpuinfo_uarch_gracemont = 0x00100406,
+	/** Intel Airmont microarchitecture (10 nm out-of-order Atom). */
+	cpuinfo_uarch_tremont = 0x00100406,
+	/** Intel Gracemont microarchitecture (AlderLake N). */
+	cpuinfo_uarch_gracemont = 0x00100407,
 	/** Intel Crestmont microarchitecture (Sierra Forest). */
-	cpuinfo_uarch_crestmont = 0x00100407,
+	cpuinfo_uarch_crestmont = 0x00100408,
+	/** Intel Darkmont microarchitecture (e-core used in Clearwater Forest). */
+	cpuinfo_uarch_darkmont = 0x00100409,
 
 	/** Intel Knights Ferry HPC boards. */
 	cpuinfo_uarch_knights_ferry = 0x00100500,
@@ -388,8 +392,6 @@ enum cpuinfo_uarch {
 	cpuinfo_uarch_knights_hill = 0x00100503,
 	/** Intel Knights Mill Xeon Phi. */
 	cpuinfo_uarch_knights_mill = 0x00100504,
-	/** Intel Darkmont microarchitecture (e-core used in Clearwater Forest). */
-	cpuinfo_uarch_darkmont = 0x00100505,
 
 	/** Intel/Marvell XScale series. */
 	cpuinfo_uarch_xscale = 0x00100600,
@@ -508,6 +510,8 @@ enum cpuinfo_uarch {
 	cpuinfo_uarch_cortex_x3 = 0x00300503,
 	/** ARM Cortex-X4. */
 	cpuinfo_uarch_cortex_x4 = 0x00300504,
+	/** ARM Cortex-X925. */
+	cpuinfo_uarch_cortex_x925 = 0x00300505,
 
 	/** ARM Cortex-A510. */
 	cpuinfo_uarch_cortex_a510 = 0x00300551,
@@ -519,6 +523,8 @@ enum cpuinfo_uarch {
 	cpuinfo_uarch_cortex_a715 = 0x00300572,
 	/** ARM Cortex-A720. */
 	cpuinfo_uarch_cortex_a720 = 0x00300573,
+	/** ARM Cortex-A725. */
+	cpuinfo_uarch_cortex_a725 = 0x00300574,
 
 	/** Qualcomm Scorpion. */
 	cpuinfo_uarch_scorpion = 0x00400100,
@@ -730,7 +736,7 @@ struct cpuinfo_cluster {
 	uint64_t frequency;
 };
 
-#define CPUINFO_PACKAGE_NAME_MAX 48
+#define CPUINFO_PACKAGE_NAME_MAX 64
 
 struct cpuinfo_package {
 	/** SoC or processor chip model name */

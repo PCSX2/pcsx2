@@ -750,12 +750,6 @@ void store_core_info_per_processor(
 	if (cores) {
 		processors[processor_global_index].core = cores + core_id;
 		cores[core_id].core_id = core_id;
-
-		if (chip_info->uarchs == NULL) {
-			cpuinfo_log_error("uarch is NULL for core %d", core_id);
-			return;
-		}
-
 		cores[core_id].uarch = chip_info->uarchs[0].uarch;
 		cores[core_id].frequency = chip_info->uarchs[0].frequency;
 
@@ -842,7 +836,6 @@ static bool connect_packages_cores_clusters_by_processors(
 		processor->cluster = cluster;
 
 		if (chip_info) {
-			size_t converted_chars = 0;
 			if (!WideCharToMultiByte(
 				    CP_UTF8,
 				    WC_ERR_INVALID_CHARS,
