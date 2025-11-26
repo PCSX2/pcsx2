@@ -441,7 +441,7 @@ parse_number_string(UC const *p, UC const *pend,
     if (digit_count > 19) {
       answer.too_many_digits = true;
       // Let us start again, this time, avoiding overflows.
-      // We don't need to check if is_integer, since we use the
+      // We don't need to call if is_integer, since we use the
       // pre-tokenized spans from above.
       i = 0;
       p = answer.integer.ptr;
@@ -451,7 +451,7 @@ parse_number_string(UC const *p, UC const *pend,
         i = i * 10 + uint64_t(*p - UC('0'));
         ++p;
       }
-      if (i >= minimal_nineteen_digit_integer) { // We have a big integers
+      if (i >= minimal_nineteen_digit_integer) { // We have a big integer
         exponent = end_of_integer_part - p + exp_number;
       } else { // We have a value with a fractional component.
         p = answer.fraction.ptr;

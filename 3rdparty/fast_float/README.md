@@ -57,6 +57,7 @@ Example:
 ```C++
 #include "fast_float/fast_float.h"
 #include <iostream>
+#include <string>
 
 int main() {
   std::string input = "3.1416 xyz ";
@@ -65,6 +66,25 @@ int main() {
   if (answer.ec != std::errc()) { std::cerr << "parsing failure\n"; return EXIT_FAILURE; }
   std::cout << "parsed the number " << result << std::endl;
   return EXIT_SUCCESS;
+}
+```
+
+Though the C++17 standard has you do a comparison with `std::errc()` to check whether the conversion worked, you can avoid it by casting the result to a `bool` like so:
+
+```cpp
+#include "fast_float/fast_float.h"
+#include <iostream>
+#include <string>
+
+int main() {
+  std::string input = "3.1416 xyz ";
+  double result;
+  if(auto answer = fast_float::from_chars(input.data(), input.data() + input.size(), result)) {
+    std::cout << "parsed the number " << result << std::endl;
+    return EXIT_SUCCESS;
+  }
+  std::cerr << "failed to parse " << result << std::endl;
+  return EXIT_FAILURE;
 }
 ```
 
@@ -357,6 +377,34 @@ int main() {
 }
 ```
 
+## Multiplication of an integer by a power of 10
+An integer `W` can be multiplied by a power of ten `10^Q` and
+converted to `double` with correctly rounded value
+(in "round to nearest, tie to even" fashion) using
+`fast_float::integer_times_pow10()`, e.g.:
+```C++
+const uint64_t W = 12345678901234567;
+const int Q = 23;
+const double result = fast_float::integer_times_pow10(W, Q);
+std::cout.precision(17);
+std::cout << W << " * 10^" << Q << " = " << result << " ("
+  << (result == 12345678901234567e23 ? "==" : "!=") << "expected)\n";
+```
+outputs
+```
+12345678901234567 * 10^23 = 1.2345678901234567e+39 (==expected)
+```
+`fast_float::integer_times_pow10()` gives the same result as
+using `fast_float::from_chars()` when parsing the string `"WeQ"`
+(in this example `"12345678901234567e23"`),
+except `fast_float::integer_times_pow10()` does not report out-of-range errors, and
+underflows to zero or overflows to infinity when the resulting value is
+out of range.
+
+Overloads of `fast_float::integer_times_pow10()` are provided for
+signed and unsigned integer types: `int64_t`, `uint64_t`, etc.
+
+
 ## Users and Related Work
 
 The fast_float library is part of:
@@ -364,6 +412,8 @@ The fast_float library is part of:
 * GCC (as of version 12): the `from_chars` function in GCC relies on fast_float,
 * [Chromium](https://github.com/Chromium/Chromium), the engine behind Google
   Chrome, Microsoft Edge, and Opera,
+* Boost JSON, MySQL, etc.
+* Blender
 * [WebKit](https://github.com/WebKit/WebKit), the engine behind Safari (Apple's
   web browser),
 * [DuckDB](https://duckdb.org),
@@ -376,7 +426,10 @@ The fast_float library is part of:
 The fastfloat algorithm is part of the [LLVM standard
 libraries](https://github.com/llvm/llvm-project/commit/87c016078ad72c46505461e4ff8bfa04819fe7ba).
 There is a [derived implementation part of
-AdaCore](https://github.com/AdaCore/VSS).
+AdaCore](https://github.com/AdaCore/VSS). The [SerenityOS operating
+system](https://github.com/SerenityOS/serenity/commit/53b7f5e6a11e663c83df8030c3171c5945cb75ec)
+has a derived implementation that is inherited by the [Ladybird
+Browser](https://github.com/LadybirdBrowser/ladybird).
 
 The fast_float library provides a performance similar to that of the
 [fast_double_parser](https://github.com/lemire/fast_double_parser) library but
@@ -384,6 +437,14 @@ using an updated algorithm reworked from the ground up, and while offering an
 API more in line with the expectations of C++ programmers. The
 fast_double_parser library is part of the [Microsoft LightGBM machine-learning
 framework](https://github.com/microsoft/LightGBM).
+
+
+
+Packages
+------
+
+[![Packaging status](https://repology.org/badge/vertical-allrepos/fastfloat.svg)](https://repology.org/project/fastfloat/versions)
+
 
 ## References
 
@@ -455,7 +516,7 @@ sufficiently recent version of CMake (3.11 or better at least):
 FetchContent_Declare(
   fast_float
   GIT_REPOSITORY https://github.com/fastfloat/fast_float.git
-  GIT_TAG tags/v8.0.2
+  GIT_TAG tags/v8.1.0
   GIT_SHALLOW TRUE)
 
 FetchContent_MakeAvailable(fast_float)
@@ -471,7 +532,7 @@ You may also use [CPM](https://github.com/cpm-cmake/CPM.cmake), like so:
 CPMAddPackage(
   NAME fast_float
   GITHUB_REPOSITORY "fastfloat/fast_float"
-  GIT_TAG v8.0.2)
+  GIT_TAG v8.1.0)
 ```
 
 ## Using as single header
@@ -483,7 +544,7 @@ if desired as described in the command line help.
 
 You may directly download automatically generated single-header files:
 
-<https://github.com/fastfloat/fast_float/releases/download/v8.0.2/fast_float.h>
+<https://github.com/fastfloat/fast_float/releases/download/v8.1.0/fast_float.h>
 
 ## Benchmarking
 
@@ -522,6 +583,7 @@ cmake --build build
   manager](https://conan.io/center/recipes/fast_float).
 * It is part of the [brew package
   manager](https://formulae.brew.sh/formula/fast_float).
+* fast_float is available on [xmake](https://xmake.io) repository.
 * Some Linux distribution like Fedora include fast_float (e.g., as
   `fast_float-devel`).
 
