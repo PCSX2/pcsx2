@@ -105,6 +105,7 @@ CPUINFO_INTERNAL void cpuinfo_x86_detect_topology(
 CPUINFO_INTERNAL void cpuinfo_x86_detect_cache(
 	uint32_t max_base_index,
 	uint32_t max_extended_index,
+	/* amd_topology_extensions is not used, kept for backward compatibility */
 	bool amd_topology_extensions,
 	enum cpuinfo_vendor vendor,
 	const struct cpuinfo_x86_model_info* model_info,

@@ -188,10 +188,17 @@ enum cpuinfo_uarch cpuinfo_x86_decode_uarch(
 						case 0x5A: // Moorefield
 						case 0x5D: // SoFIA
 							return cpuinfo_uarch_silvermont;
-						case 0xBE: // Twin Lake
+						case 0x86: // Jasper Lake
+						case 0x8A: // Lakefield
+						case 0x96: // Elkhart Lake
+						case 0x9C: // Jacobsville
+							return cpuinfo_uarch_tremont;
+						case 0xBE: // Alder Lake-N
 							return cpuinfo_uarch_gracemont;
 						case 0xAF: // Sierra Forest
 							return cpuinfo_uarch_crestmont;
+						case 0xDD: // Clearwater Forest
+							return cpuinfo_uarch_darkmont;
 						case 0x4C: // Braswell, Cherry
 							   // Trail
 						case 0x75: // Spreadtrum
@@ -208,8 +215,6 @@ enum cpuinfo_uarch cpuinfo_x86_decode_uarch(
 							return cpuinfo_uarch_knights_landing;
 						case 0x85:
 							return cpuinfo_uarch_knights_mill;
-						case 0xDD: // Clearwater Forest
-							return cpuinfo_uarch_darkmont;
 					}
 					break;
 				case 0x0F:

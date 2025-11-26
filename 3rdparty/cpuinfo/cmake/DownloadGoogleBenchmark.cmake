@@ -1,11 +1,11 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.18 FATAL_ERROR)
 
 PROJECT(googlebenchmark-download NONE)
 
 INCLUDE(ExternalProject)
 ExternalProject_Add(googlebenchmark
-	URL https://github.com/google/benchmark/archive/v1.6.1.zip
-	URL_HASH SHA256=367e963b8620080aff8c831e24751852cffd1f74ea40f25d9cc1b667a9dd5e45
+	URL https://github.com/google/benchmark/archive/refs/tags/v1.9.4.tar.gz
+	URL_HASH SHA256=b334658edd35efcf06a99d9be21e4e93e092bd5f95074c1673d5c8705d95c104
 	SOURCE_DIR "${CONFU_DEPENDENCIES_SOURCE_DIR}/googlebenchmark"
 	BINARY_DIR "${CONFU_DEPENDENCIES_BINARY_DIR}/googlebenchmark"
 	CONFIGURE_COMMAND ""
