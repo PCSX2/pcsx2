@@ -7663,21 +7663,6 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	if ((!IsOpaque() || m_context->ALPHA.IsBlack()) && rt && ((m_conf.colormask.wrgba & 0x7) || (m_texture_shuffle && !m_copy_16bit_to_target_shuffle && !m_same_group_texture_shuffle)))
 	{
 		EmulateBlending(blend_alpha_min, blend_alpha_max, DATE, DATE_PRIMID, DATE_BARRIER, rt, can_scale_rt_alpha, new_scale_rt_alpha);
-
-		// Similar to IsRTWritten(), check if the rt will change.
-		const bool no_rt = (!DATE && !m_conf.colormask.wrgba && !m_channel_shuffle);
-		const bool no_ds = !m_conf.ds ||
-			// Depth will be written through the RT.
-			(!no_rt && m_cached_ctx.FRAME.FBP == m_cached_ctx.ZBUF.ZBP && !PRIM->TME && m_cached_ctx.ZBUF.ZMSK == 0 &&
-				(m_cached_ctx.FRAME.FBMSK & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk) == 0 && m_cached_ctx.TEST.ZTE) ||
-			// No color or Z being written.
-			(no_rt && m_cached_ctx.ZBUF.ZMSK != 0);
-
-		if (no_rt && no_ds)
-		{
-			GL_INS("HW: Late draw cancel EmulateBlending().");
-			return;
-		}
 	}
 	else
 	{
@@ -7693,6 +7678,21 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 			// Restrict this to only when we're overwriting the whole target.
 			new_scale_rt_alpha = full_cover || rt->m_last_draw >= s_n;
 		}
+	}
+
+	// Similar to IsRTWritten(), check if the rt will change.
+	const bool no_rt = !rt || !(DATE || m_conf.colormask.wrgba || m_channel_shuffle);
+	const bool no_ds = !ds ||
+		// Depth will be written through the RT.
+		(!no_rt && m_cached_ctx.FRAME.FBP == m_cached_ctx.ZBUF.ZBP && !PRIM->TME && m_cached_ctx.ZBUF.ZMSK == 0 &&
+			(m_cached_ctx.FRAME.FBMSK & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk) == 0 && m_cached_ctx.TEST.ZTE) ||
+		// No color or Z being written.
+		(no_rt && m_cached_ctx.ZBUF.ZMSK != 0);
+
+	if (no_rt && no_ds)
+	{
+		GL_INS("HW: Late draw cancel DrawPrims().");
+		return;
 	}
 
 	// Always swap DATE with DATE_BARRIER if we have barriers on when alpha write is masked.
