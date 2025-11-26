@@ -1,4 +1,4 @@
-const char *getVersionString() const { return "7.27"; }
+const char *getVersionString() const { return "7.30"; }
 void aadd(const Address& addr, const Reg32e &reg) { opMR(addr, reg, T_0F38, 0x0FC, T_APX); }
 void aand(const Address& addr, const Reg32e &reg) { opMR(addr, reg, T_0F38|T_66, 0x0FC, T_APX|T_66); }
 void adc(const Operand& op, uint32_t imm) { opOI(op, imm, 0x10, 2); }
@@ -1878,6 +1878,7 @@ void cmpxchg16b(const Address& addr) { opMR(addr, Reg64(1), T_0F, 0xC7); }
 void fxrstor64(const Address& addr) { opMR(addr, Reg64(1), T_0F, 0xAE); }
 void movq(const Reg64& reg, const Mmx& mmx) { if (mmx.isXMM()) db(0x66); opSSE(mmx, reg, T_0F, 0x7E); }
 void movq(const Mmx& mmx, const Reg64& reg) { if (mmx.isXMM()) db(0x66); opSSE(mmx, reg, T_0F, 0x6E); }
+void movrs(const Reg& reg, const Address& addr) { opMR(addr, reg, T_0F38, reg.isBit(8) ? 0x8A : 0x8B); }
 void movsxd(const Reg64& reg, const Operand& op) { if (!op.isBit(32)) XBYAK_THROW(ERR_BAD_COMBINATION) opRO(reg, op, T_ALLOW_DIFF_SIZE, 0x63); }
 void pextrq(const Operand& op, const Xmm& xmm, uint8_t imm) { if (!op.isREG(64) && !op.isMEM()) XBYAK_THROW(ERR_BAD_COMBINATION) opSSE(Reg64(xmm.getIdx()), op, T_66 | T_0F3A, 0x16, 0, imm); }
 void pinsrq(const Xmm& xmm, const Operand& op, uint8_t imm) { if (!op.isREG(64) && !op.isMEM()) XBYAK_THROW(ERR_BAD_COMBINATION) opSSE(Reg64(xmm.getIdx()), op, T_66 | T_0F3A, 0x22, 0, imm); }
@@ -2684,6 +2685,8 @@ void vucomxsh(const Xmm& x, const Operand& op) { opAVX_X_XM_IMM(x, op, T_N2|T_F3
 void vucomxss(const Xmm& x, const Operand& op) { opAVX_X_XM_IMM(x, op, T_N4|T_F3|T_0F|T_W0|T_SAE_X|T_MUST_EVEX, 0x2E); }
 #ifdef XBYAK64
 void kmovq(const Reg64& r, const Opmask& k) { opKmov(k, r, true, 64); }
+void tcvtrowd2ps(const Zmm& z, const Tmm& t, const Reg32& r) { opVex(z, &r, t, T_F3|T_0F38|T_W0|T_MUST_EVEX, 0x4A); }
+void tcvtrowd2ps(const Zmm& z, const Tmm& t, uint8_t imm) { opVex(z, 0, t, T_F3|T_0F3A|T_W0|T_MUST_EVEX, 0x07, imm); }
 void tcvtrowps2bf16h(const Zmm& z, const Tmm& t, const Reg32& r) { opVex(z, &r, t, T_F2|T_0F38|T_W0|T_MUST_EVEX, 0x6D); }
 void tcvtrowps2bf16h(const Zmm& z, const Tmm& t, uint8_t imm) { opVex(z, 0, t, T_F2|T_0F3A|T_W0|T_MUST_EVEX, 0x07, imm); }
 void tcvtrowps2bf16l(const Zmm& z, const Tmm& t, const Reg32& r) { opVex(z, &r, t, T_F3|T_0F38|T_W0|T_MUST_EVEX, 0x6D); }
@@ -2694,6 +2697,10 @@ void tcvtrowps2phl(const Zmm& z, const Tmm& t, const Reg32& r) { opVex(z, &r, t,
 void tcvtrowps2phl(const Zmm& z, const Tmm& t, uint8_t imm) { opVex(z, 0, t, T_F2|T_0F3A|T_W0|T_MUST_EVEX, 0x77, imm); }
 void tilemovrow(const Zmm& z, const Tmm& t, const Reg32& r) { opVex(z, &r, t, T_66|T_0F38|T_W0|T_MUST_EVEX, 0x4A); }
 void tilemovrow(const Zmm& z, const Tmm& t, uint8_t imm) { opVex(z, 0, t, T_66|T_0F3A|T_W0|T_MUST_EVEX, 0x07, imm); }
+void vmovrsb(const Xmm& x, const Address& addr) { opVex(x, 0, addr, T_F2|T_MAP5|T_W0|T_MUST_EVEX, 0x6F); }
+void vmovrsd(const Xmm& x, const Address& addr) { opVex(x, 0, addr, T_F3|T_MAP5|T_W0|T_MUST_EVEX, 0x6F); }
+void vmovrsq(const Xmm& x, const Address& addr) { opVex(x, 0, addr, T_F3|T_MAP5|T_EW1|T_MUST_EVEX, 0x6F); }
+void vmovrsw(const Xmm& x, const Address& addr) { opVex(x, 0, addr, T_F2|T_MAP5|T_EW1|T_MUST_EVEX, 0x6F); }
 void vpbroadcastq(const Xmm& x, const Reg64& r) { opVex(x, 0, r, T_66|T_0F38|T_EW1|T_YMM|T_MUST_EVEX, 0x7C); }
 #endif
 #endif

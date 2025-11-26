@@ -123,8 +123,10 @@
 	#define XBYAK_TLS thread_local
 	#define XBYAK_VARIADIC_TEMPLATE
 	#define XBYAK_NOEXCEPT noexcept
+	#define XBYAK_OVERRIDE override
 #else
 	#define XBYAK_NOEXCEPT throw()
+	#define XBYAK_OVERRIDE
 #endif
 
 // require c++14 or later
@@ -161,7 +163,7 @@ namespace Xbyak {
 
 enum {
 	DEFAULT_MAX_CODE_SIZE = 4096,
-	VERSION = 0x7270 /* 0xABCD = A.BC(.D) */
+	VERSION = 0x7300 /* 0xABCD = A.BC(.D) */
 };
 
 #ifndef MIE_INTEGER_TYPE_DEFINED
@@ -340,7 +342,7 @@ public:
 		}
 	}
 	operator int() const { return err_; }
-	const char *what() const XBYAK_NOEXCEPT
+	const char *what() const XBYAK_NOEXCEPT XBYAK_OVERRIDE
 	{
 		return ConvertErrorToString(err_);
 	}
@@ -384,11 +386,6 @@ inline void AlignedFree(void *p)
 #endif
 }
 
-template<class To, class From>
-inline const To CastTo(From p) XBYAK_NOEXCEPT
-{
-	return (const To)(size_t)(p);
-}
 namespace inner {
 
 #ifdef _WIN32
@@ -432,6 +429,14 @@ enum LabelMode {
 	LasIs, // as is
 	Labs, // absolute
 	LaddTop // (addr + top) for mov(reg, label) with AutoGrow
+};
+
+enum AddressMode {
+	M_none,
+	M_ModRM,
+	M_64bitDisp,
+	M_rip,
+	M_ripAddr
 };
 
 } // inner
@@ -487,7 +492,7 @@ class MmapAllocator : public Allocator {
 	AllocationList allocList_;
 public:
 	explicit MmapAllocator(const std::string& name = "xbyak") : name_(name) {}
-	uint8_t *alloc(size_t size)
+	uint8_t *alloc(size_t size) XBYAK_OVERRIDE
 	{
 		const size_t alignedSizeM1 = inner::getPageSize() - 1;
 		size = (size + alignedSizeM1) & ~alignedSizeM1;
@@ -526,7 +531,7 @@ public:
 #endif
 		return (uint8_t*)p;
 	}
-	void free(uint8_t *p)
+	void free(uint8_t *p) XBYAK_OVERRIDE
 	{
 		if (p == 0) return;
 		AllocationList::iterator i = allocList_.find((uintptr_t)p);
@@ -903,30 +908,6 @@ struct Reg64 : public Reg32e {
 	explicit XBYAK_CONSTEXPR Reg64(int idx = 0) : Reg32e(idx, 64) {}
 };
 struct RegRip {
-	int64_t disp_;
-	const Label* label_;
-	bool isAddr_;
-	explicit XBYAK_CONSTEXPR RegRip(int64_t disp = 0, const Label* label = 0, bool isAddr = false) : disp_(disp), label_(label), isAddr_(isAddr) {}
-	friend const RegRip operator+(const RegRip& r, int disp) {
-		return RegRip(r.disp_ + disp, r.label_, r.isAddr_);
-	}
-	friend const RegRip operator-(const RegRip& r, int disp) {
-		return RegRip(r.disp_ - disp, r.label_, r.isAddr_);
-	}
-	friend const RegRip operator+(const RegRip& r, int64_t disp) {
-		return RegRip(r.disp_ + disp, r.label_, r.isAddr_);
-	}
-	friend const RegRip operator-(const RegRip& r, int64_t disp) {
-		return RegRip(r.disp_ - disp, r.label_, r.isAddr_);
-	}
-	friend const RegRip operator+(const RegRip& r, const Label& label) {
-		if (r.label_ || r.isAddr_) XBYAK_THROW_RET(ERR_BAD_ADDRESSING, RegRip());
-		return RegRip(r.disp_, &label);
-	}
-	friend const RegRip operator+(const RegRip& r, const void *addr) {
-		if (r.label_ || r.isAddr_) XBYAK_THROW_RET(ERR_BAD_ADDRESSING, RegRip());
-		return RegRip(r.disp_ + (int64_t)addr, 0, true);
-	}
 };
 #endif
 
@@ -987,17 +968,30 @@ public:
 };
 #endif
 
+/*
+	pattern
+	[base]? [+index[*scale]]? [+/-disp]* [+label]?
+	rip [+/-disp]* [+label]?
+	  rip+disp if backward reference then use label.getAddress()
+	  rip+label if forward reference
+	[&var]?[+/-disp]*
+*/
 class RegExp {
+	friend class Address;
 public:
 #ifdef XBYAK64
 	enum { i32e = 32 | 64 };
 #else
 	enum { i32e = 32 };
 #endif
-	XBYAK_CONSTEXPR RegExp(size_t disp = 0) : scale_(0), disp_(disp) { }
+	XBYAK_CONSTEXPR RegExp() : scale_(0), disp_(0), label_(0), rip_(false), setLabel_(false) { }
+	XBYAK_CONSTEXPR RegExp(size_t disp) : scale_(0), disp_(disp), label_(0), rip_(false), setLabel_(false) { }
 	XBYAK_CONSTEXPR RegExp(const Reg& r, int scale = 1)
 		: scale_(scale)
 		, disp_(0)
+		, label_(0)
+		, rip_(false)
+		, setLabel_(false)
 	{
 		if (!r.isREG(i32e) && !r.is(Reg::XMM|Reg::YMM|Reg::ZMM|Reg::TMM)) XBYAK_THROW(ERR_BAD_SIZE_OF_REGISTER)
 		if (scale == 0) return;
@@ -1008,6 +1002,26 @@ public:
 			base_ = r;
 		}
 	}
+	RegExp(Label& label);
+
+	RegExp(const void *addr)
+		: scale_(1)
+		, disp_(size_t(addr))
+		, label_(0)
+		, rip_(false)
+		, setLabel_(true)
+	{
+	}
+#ifdef XBYAK64
+	RegExp(const RegRip& /*rip*/)
+		: scale_(0)
+		, disp_(0)
+		, label_(0)
+		, rip_(true)
+		, setLabel_(false)
+	{
+	}
+#endif
 	bool isVsib(int bit = 128 | 256 | 512) const { return index_.isBit(bit); }
 	RegExp optimize() const
 	{
@@ -1025,6 +1039,8 @@ public:
 	}
 	const Reg& getBase() const { return base_; }
 	const Reg& getIndex() const { return index_; }
+	const Label *getLabel() const { return label_; }
+	bool isOnlyDisp() const { return !base_.getBit() && !index_.getBit(); } // for mov eax
 	int getScale() const { return scale_; }
 	size_t getDisp() const { return disp_; }
 	XBYAK_CONSTEXPR void verify() const
@@ -1045,13 +1061,22 @@ private:
 	Reg base_;
 	Reg index_;
 	int scale_;
-	size_t disp_;
+	size_t disp_; // absolute address
+	Label *label_;
+	bool rip_;
+	bool setLabel_; // disp_ contains the address of label
 };
 
 inline RegExp operator+(const RegExp& a, const RegExp& b)
 {
 	if (a.index_.getBit() && b.index_.getBit()) XBYAK_THROW_RET(ERR_BAD_ADDRESSING, RegExp())
+	if (a.label_ && b.label_) XBYAK_THROW_RET(ERR_BAD_ADDRESSING, RegExp())
+	if (b.rip_) XBYAK_THROW_RET(ERR_BAD_ADDRESSING, RegExp())
+	if (a.rip_ && !b.isOnlyDisp()) XBYAK_THROW_RET(ERR_BAD_ADDRESSING, RegExp())
+	if (a.setLabel_ && b.setLabel_) XBYAK_THROW_RET(ERR_BAD_ADDRESSING, RegExp())
 	RegExp ret = a;
+	if (ret.label_ == 0) ret.label_ = b.label_;
+	if (ret.setLabel_ == 0) ret.setLabel_ = b.setLabel_;
 	if (!ret.index_.getBit()) { ret.index_ = b.index_; ret.scale_ = b.scale_; }
 	if (b.base_.getBit()) {
 		if (ret.base_.getBit()) {
@@ -1076,6 +1101,9 @@ inline RegExp operator*(int scale, const Reg& r)
 {
 	return r * scale;
 }
+// backward compatibility for eax+0
+inline RegExp operator+(const RegExp& a, size_t b) { return a + RegExp(b); }
+
 inline RegExp operator-(const RegExp& e, size_t disp)
 {
 	RegExp ret = e;
@@ -1323,33 +1351,34 @@ public:
 
 class Address : public Operand {
 public:
-	enum Mode {
-		M_ModRM,
-		M_64bitDisp,
-		M_rip,
-		M_ripAddr
-	};
 	XBYAK_CONSTEXPR Address(uint32_t sizeBit, bool broadcast, const RegExp& e)
-		: Operand(0, MEM, sizeBit), e_(e), label_(0), mode_(M_ModRM), immSize(0), disp8N(0), permitVsib(false), broadcast_(broadcast), optimize_(true)
+		: Operand(0, MEM, sizeBit), e_(e), label_(e.label_), mode_(), immSize(0), disp8N(0), permitVsib(false), broadcast_(broadcast), optimize_(true)
 	{
+		if (e.rip_) {
+			mode_ = (e.label_ || e.setLabel_) ? inner::M_ripAddr : inner::M_rip;
+		} else {
+#ifdef XBYAK64
+			uint64_t disp = e.getDisp();
+			if (e.isOnlyDisp() && ((0x80000000 <= disp && disp <= 0xffffffff80000000) || e.getLabel())) {
+				mode_ = inner::M_64bitDisp;
+			} else
+#endif
+			{
+				mode_ = inner::M_ModRM;
+			}
+		}
 		e_.verify();
 	}
-#ifdef XBYAK64
-	explicit XBYAK_CONSTEXPR Address(size_t disp)
-		: Operand(0, MEM, 64), e_(disp), label_(0), mode_(M_64bitDisp), immSize(0), disp8N(0), permitVsib(false), broadcast_(false), optimize_(true) { }
-	XBYAK_CONSTEXPR Address(uint32_t sizeBit, bool broadcast, const RegRip& addr)
-		: Operand(0, MEM, sizeBit), e_(addr.disp_), label_(addr.label_), mode_(addr.isAddr_ ? M_ripAddr : M_rip), immSize(0), disp8N(0), permitVsib(false), broadcast_(broadcast), optimize_(true) { }
-#endif
 	RegExp getRegExp() const
 	{
 		return optimize_ ? e_.optimize() : e_;
 	}
 	Address cloneNoOptimize() const { Address addr = *this; addr.optimize_ = false; return addr; }
-	Mode getMode() const { return mode_; }
+	inner::AddressMode getMode() const { return mode_; }
 	bool is32bit() const { return e_.getBase().getBit() == 32 || e_.getIndex().getBit() == 32; }
-	bool isOnlyDisp() const { return !e_.getBase().getBit() && !e_.getIndex().getBit(); } // for mov eax
+	bool isOnlyDisp() const { return e_.isOnlyDisp(); }
 	size_t getDisp() const { return e_.getDisp(); }
-	bool is64bitDisp() const { return mode_ == M_64bitDisp; } // for moffset
+	bool is64bitDisp() const { return mode_ == inner::M_64bitDisp; } // for moffset
 	bool isBroadcast() const { return broadcast_; }
 	bool hasRex2() const { return e_.getBase().hasRex2() || e_.getIndex().hasRex2(); }
 	const Label* getLabel() const { return label_; }
@@ -1362,7 +1391,7 @@ public:
 private:
 	RegExp e_;
 	const Label* label_;
-	Mode mode_;
+	inner::AddressMode mode_;
 public:
 	int immSize; // the size of immediate value of nmemonics (0, 1, 2, 4)
 	int disp8N; // 0(normal), 1(force disp32), disp8N = {2, 4, 8}
@@ -1406,21 +1435,13 @@ public:
 	{
 		return Address(bit_, broadcast_, e);
 	}
-	Address operator[](const void *disp) const
-	{
-		return Address(bit_, broadcast_, RegExp(reinterpret_cast<size_t>(disp)));
-	}
-#ifdef XBYAK64
-	Address operator[](uint64_t disp) const { return Address(disp); }
-	Address operator[](const RegRip& addr) const { return Address(bit_, broadcast_, addr); }
-#endif
 };
 
 struct JmpLabel {
 	size_t endOfJmp; /* offset from top to the end address of jmp */
 	int jmpSize;
 	inner::LabelMode mode;
-	size_t disp; // disp for [rip + disp]
+	size_t disp; // disp for [rip + disp] or [forward ref label + disp]
 	explicit JmpLabel(size_t endOfJmp = 0, int jmpSize = 0, inner::LabelMode mode = inner::LasIs, size_t disp = 0)
 		: endOfJmp(endOfJmp), jmpSize(jmpSize), mode(mode), disp(disp)
 	{
@@ -1440,6 +1461,7 @@ public:
 	~Label();
 	void clear() { mgr = 0; id = 0; }
 	int getId() const { return id; }
+	bool isDefined() const;
 	const uint8_t *getAddress() const;
 
 	// backward compatibility
@@ -1455,6 +1477,22 @@ public:
 		return buf;
 	}
 };
+
+inline RegExp::RegExp(Label& label)
+	: scale_(1)
+	, disp_(0)
+	, label_(0)
+	, rip_(false)
+	, setLabel_(true)
+{
+	const uint8_t *addr = label.getAddress();
+	if (addr) {
+		disp_ = size_t(addr);
+		label_ = 0;
+	} else {
+		label_ = &label;
+	}
+}
 
 class LabelManager {
 	// for string label
@@ -1516,6 +1554,9 @@ class LabelManager {
 				if (jmp->jmpSize <= 4 && !inner::IsInInt32(disp)) XBYAK_THROW(ERR_OFFSET_IS_TOO_BIG)
 #endif
 				if (jmp->jmpSize == 1 && !inner::IsInDisp8((uint32_t)disp)) XBYAK_THROW(ERR_LABEL_IS_TOO_FAR)
+			}
+			if (jmp->mode != inner::LasIs) {
+				disp += jmp->disp;
 			}
 			if (base_->isAutoGrow()) {
 				base_->save(offset, disp, jmp->jmpSize, jmp->mode);
@@ -1673,8 +1714,13 @@ public:
 	bool hasUndefClabel() const { return hasUndefinedLabel_inner(clabelUndefList_); }
 	const uint8_t *getCode() const { return base_->getCode(); }
 	bool isReady() const { return !base_->isAutoGrow() || base_->isCalledCalcJmpAddress(); }
+	bool isDefined(const Label& label) const { return clabelDefList_.find(label.id) != clabelDefList_.end(); }
 };
 
+inline bool Label::isDefined() const
+{
+	return mgr && mgr->isDefined(*this);
+}
 inline Label::Label(const Label& rhs)
 {
 	id = rhs.id;
@@ -2010,8 +2056,11 @@ private:
 	{
 		db(static_cast<uint8_t>((mod << 6) | ((r1 & 7) << 3) | (r2 & 7)));
 	}
-	void setSIB(const RegExp& e, int reg, int disp8N = 0)
+	void setSIB(const Address& addr, int reg)
 	{
+		const RegExp& e = addr.getRegExp();
+		const Label *label = e.getLabel();
+		int disp8N = addr.disp8N;
 		uint64_t disp64 = e.getDisp();
 #if defined(XBYAK64) && !defined(__ILP32__)
 #ifdef XBYAK_OLD_DISP_CHECK
@@ -2034,8 +2083,10 @@ private:
 			mod00 = 0, mod01 = 1, mod10 = 2
 		};
 		int mod = mod10; // disp32
-		if (!baseBit || ((baseIdx & 7) != Operand::EBP && disp == 0)) {
+		if (!baseBit || ((baseIdx & 7) != Operand::EBP && (label == 0 && disp == 0))) {
 			mod = mod00;
+		} else if (label) {
+			// always disp32
 		} else {
 			if (disp8N == 0) {
 				if (inner::IsInDisp8(disp)) {
@@ -2069,7 +2120,11 @@ private:
 		if (mod == mod01) {
 			db(disp);
 		} else if (mod == mod10 || (mod == mod00 && !baseBit)) {
-			dd(disp);
+			if (label) {
+				putL_inner(*label, false, e.getDisp() - addr.immSize, 4);
+			} else {
+				dd(disp);
+			}
 		}
 	}
 	LabelManager labelMgr_;
@@ -2119,7 +2174,7 @@ private:
 	// for only MPX(bnd*)
 	void opMIB(const Address& addr, const Reg& reg, uint64_t type, int code)
 	{
-		if (addr.getMode() != Address::M_ModRM) XBYAK_THROW(ERR_INVALID_MIB_ADDRESS)
+		if (addr.getMode() != inner::M_ModRM) XBYAK_THROW(ERR_INVALID_MIB_ADDRESS)
 		opMR(addr.cloneNoOptimize(), reg, type, code);
 	}
 	void makeJmp(uint32_t disp, LabelType type, uint8_t shortCode, uint8_t longCode, uint8_t longPref)
@@ -2188,15 +2243,15 @@ private:
 	void opAddr(const Address &addr, int reg)
 	{
 		if (!addr.permitVsib && addr.isVsib()) XBYAK_THROW(ERR_BAD_VSIB_ADDRESSING)
-		if (addr.getMode() == Address::M_ModRM) {
-			setSIB(addr.getRegExp(), reg, addr.disp8N);
-		} else if (addr.getMode() == Address::M_rip || addr.getMode() == Address::M_ripAddr) {
+		if (addr.getMode() == inner::M_ModRM) {
+			setSIB(addr, reg);
+		} else if (addr.getMode() == inner::M_rip || addr.getMode() == inner::M_ripAddr) {
 			setModRM(0, reg, 5);
 			if (addr.getLabel()) { // [rip + Label]
-				putL_inner(*addr.getLabel(), true, addr.getDisp() - addr.immSize);
+				putL_inner(*addr.getLabel(), true, addr.getDisp() - addr.immSize, 4);
 			} else {
 				size_t disp = addr.getDisp();
-				if (addr.getMode() == Address::M_ripAddr) {
+				if (addr.getMode() == inner::M_ripAddr) {
 					if (isAutoGrow()) XBYAK_THROW(ERR_INVALID_RIP_IN_AUTO_GROW)
 					disp -= (size_t)getCurr() + 4 + addr.immSize;
 				}
@@ -2448,9 +2503,9 @@ private:
 		return bit / 8;
 	}
 	template<class T>
-	void putL_inner(T& label, bool relative = false, size_t disp = 0)
+	void putL_inner(T& label, bool relative = false, size_t disp = 0, int jmpSize = (int)sizeof(size_t))
 	{
-		const int jmpSize = relative ? 4 : (int)sizeof(size_t);
+		if (relative) jmpSize = 4;
 		if (isAutoGrow() && size_ + 16 >= maxSize_) growMemory();
 		size_t offset = 0;
 		if (labelMgr_.getOffset(&offset, label)) {
@@ -3028,7 +3083,11 @@ public:
 			if (code) {
 				rex(*reg);
 				db(op1.isREG(8) ? 0xA0 : op1.isREG() ? 0xA1 : op2.isREG(8) ? 0xA2 : 0xA3);
-				db(addr->getDisp(), 8);
+				if (addr->getLabel()) {
+					putL_inner(*addr->getLabel(), false, addr->getDisp() - addr->immSize, 8);
+				} else {
+					db(addr->getDisp(), 8);
+				}
 			} else {
 				XBYAK_THROW(ERR_BAD_COMBINATION)
 			}
@@ -3037,7 +3096,11 @@ public:
 		if (code && addr->isOnlyDisp()) {
 			rex(*reg, *addr);
 			db(code | (reg->isBit(8) ? 0 : 1));
-			dd(static_cast<uint32_t>(addr->getDisp()));
+			if (addr->getLabel()) {
+				putL_inner(*addr->getLabel(), false, addr->getDisp() - addr->immSize);
+			} else {
+				dd(static_cast<uint32_t>(addr->getDisp()));
+			}
 		} else
 #endif
 		{
