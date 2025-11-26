@@ -82,7 +82,7 @@
     <ClInclude Include="include\c4\windows_push.hpp" />
     <ClInclude Include="include\c4\yml\common.hpp" />
     <ClInclude Include="include\c4\yml\detail\checks.hpp" />
-    <ClInclude Include="include\c4\yml\detail\parser_dbg.hpp" />
+    <ClInclude Include="include\c4\yml\detail\dbgprint.hpp" />
     <ClInclude Include="include\c4\yml\detail\print.hpp" />
     <ClInclude Include="include\c4\yml\detail\stack.hpp" />
     <ClInclude Include="include\c4\yml\emit.def.hpp" />

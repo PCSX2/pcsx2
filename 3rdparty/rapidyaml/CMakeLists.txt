@@ -30,7 +30,7 @@ add_library(pcsx2-rapidyaml
   include/c4/windows_pop.hpp
   include/c4/windows_push.hpp
   include/c4/yml/common.hpp
-  include/c4/yml/detail/parser_dbg.hpp
+  include/c4/yml/detail/dbgprint.hpp
   include/c4/yml/detail/stack.hpp
   include/c4/yml/emit.def.hpp
   include/c4/yml/emit.hpp

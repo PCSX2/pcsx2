@@ -1,6 +1,6 @@
 #include "c4/yml/reference_resolver.hpp"
 #include "c4/yml/common.hpp"
-#include "c4/yml/detail/parser_dbg.hpp"
+#include "c4/yml/detail/dbgprint.hpp"
 #ifdef RYML_DBG
 #include "c4/yml/detail/print.hpp"
 #else
@@ -31,7 +31,7 @@ void ReferenceResolver::gather_anchors_and_refs__(id_type n)
     // insert key refs BEFORE inserting val refs
     if(m_tree->has_key(n))
     {
-        if(m_tree->key(n) == "<<")
+        if(!m_tree->is_key_quoted(n) && m_tree->key(n) == "<<")
         {
             _c4dbgpf("node[{}]: key is <<", n);
             if(m_tree->has_val(n))
@@ -264,7 +264,7 @@ void ReferenceResolver::resolve_()
                 _RYML_CB_ASSERT(m_tree->m_callbacks, refdata.type.is_val_ref());
                 if(m_tree->has_key_anchor(refdata.target) && m_tree->key_anchor(refdata.target) == m_tree->val_ref(refdata.node))
                 {
-                    _c4dbgpf("instance[{}:node{}] target.anchor==key.anchor=={}", i, refdata.node, m_tree->val_anchor(refdata.target));
+                    _c4dbgpf("instance[{}:node{}] target.anchor==key.anchor=={}", i, refdata.node, m_tree->key_anchor(refdata.target));
                     _RYML_CB_CHECK(m_tree->m_callbacks, !m_tree->is_container(refdata.target));
                     _RYML_CB_CHECK(m_tree->m_callbacks, m_tree->has_val(refdata.target));
                     // keys cannot be containers, so don't inherit container flags
