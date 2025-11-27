@@ -264,7 +264,7 @@ rmdir /S /Q "QtApng-%QTAPNG%"
 %SEVENZIP% x "QtApng-%QTAPNG%.zip" || goto error
 cd "QtApng-%QTAPNG%" || goto error
 %PATCH% -p1 < "%SCRIPTDIR%\..\common\qtapng-cmake.patch" || goto error
-cmake -B build -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" %FORCEPDB% %QTAPNGBUILDSPEC% || goto error
+cmake -B build %ARM64TOOLCHAIN% -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" %FORCEPDB% %QTAPNGBUILDSPEC% || goto error
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
 cd .. || goto error
