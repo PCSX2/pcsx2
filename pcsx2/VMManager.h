@@ -127,10 +127,10 @@ namespace VMManager
 	bool HasSaveStateInSlot(const char* game_serial, u32 game_crc, s32 slot);
 
 	/// Loads state from the specified file.
-	bool LoadState(const char* filename);
+	bool LoadState(const char* filename, Error* error = nullptr);
 
 	/// Loads state from the specified slot.
-	bool LoadStateFromSlot(s32 slot, bool backup = false);
+	bool LoadStateFromSlot(s32 slot, bool backup = false, Error* error = nullptr);
 
 	/// Saves state to the specified filename.
 	bool SaveState(const char* filename, bool zip_on_thread = true, bool backup_old_state = false);

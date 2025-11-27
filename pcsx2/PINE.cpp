@@ -8,6 +8,7 @@
 #include "Elfheader.h"
 #include "PINE.h"
 #include "VMManager.h"
+#include "common/Error.h"
 #include "common/Threading.h"
 
 #include <atomic>
@@ -18,6 +19,7 @@
 #include <thread>
 
 #include "fmt/format.h"
+#include "IconsFontAwesome6.h"
 
 #if defined(_WIN32)
 #define read_portable(a, b, c) (recv(a, (char*)b, c, 0))
@@ -654,7 +656,12 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 					goto error;
 				if (!SafetyChecks(buf_cnt, 1, ret_cnt, 0, buf_size)) [[unlikely]]
 					goto error;
-				Host::RunOnCPUThread([slot = FromSpan<u8>(buf, buf_cnt)] { VMManager::LoadStateFromSlot(slot); });
+				Host::RunOnCPUThread([slot = FromSpan<u8>(buf, buf_cnt)] {
+					Error state_error;
+					if (!VMManager::LoadStateFromSlot(slot, false, &state_error))
+						Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_TRIANGLE_EXCLAMATION,
+							state_error.GetDescription(), Host::OSD_INFO_DURATION);
+				});
 				buf_cnt += 1;
 				break;
 			}

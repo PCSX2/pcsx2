@@ -114,7 +114,7 @@ namespace VMManager
 	static void PrecacheCDVDFile();
 
 	static std::string GetCurrentSaveStateFileName(s32 slot, bool backup = false);
-	static bool DoLoadState(const char* filename);
+	static bool DoLoadState(const char* filename, Error* error = nullptr);
 	static bool DoSaveState(const char* filename, s32 slot_for_message, bool zip_on_thread, bool backup_old_state);
 	static void ZipSaveState(std::unique_ptr<ArchiveEntryList> elist,
 		std::unique_ptr<SaveStateScreenshotData> screenshot, std::string osd_key, const char* filename,
@@ -1589,8 +1589,10 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	// do we want to load state?
 	if (!GSDumpReplayer::IsReplayingDump() && !state_to_load.empty())
 	{
-		if (!DoLoadState(state_to_load.c_str()))
+		Error state_error;
+		if (!DoLoadState(state_to_load.c_str(), &state_error))
 		{
+			Host::ReportErrorAsync(TRANSLATE_SV("VMManager", "Failed to load save state."), state_error.GetDescription());
 			Shutdown(false);
 			return false;
 		}
@@ -1824,19 +1826,18 @@ std::string VMManager::GetCurrentSaveStateFileName(s32 slot, bool backup)
 	return GetSaveStateFileName(s_disc_serial.c_str(), s_disc_crc, slot, backup);
 }
 
-bool VMManager::DoLoadState(const char* filename)
+bool VMManager::DoLoadState(const char* filename, Error* error)
 {
 	if (GSDumpReplayer::IsReplayingDump())
+	{
+		Error::SetString(error, TRANSLATE_STR("VMManager", "Cannot load save state while replaying GS dump."));
 		return false;
+	}
 
 	Host::OnSaveStateLoading(filename);
 
-	Error error;
-	if (!SaveState_UnzipFromDisk(filename, &error))
-	{
-		Host::ReportErrorAsync(TRANSLATE_SV("VMManager", "Failed to load save state"), error.GetDescription());
+	if (!SaveState_UnzipFromDisk(filename, error))
 		return false;
-	}
 
 	Host::OnSaveStateLoaded(filename, true);
 	if (g_InputRecording.isActive())
@@ -1980,33 +1981,31 @@ u32 VMManager::DeleteSaveStates(const char* game_serial, u32 game_crc, bool also
 	return deleted;
 }
 
-bool VMManager::LoadState(const char* filename)
+bool VMManager::LoadState(const char* filename, Error* error)
 {
 	if (Achievements::IsHardcoreModeActive())
 	{
-		Host::AddIconOSDMessage("LoadStateHardcoreBlocked", ICON_FA_TRIANGLE_EXCLAMATION,
-			TRANSLATE_SV("VMManager", "Cannot load save state while RetroAchievements Hardcore Mode is active."),
-			Host::OSD_WARNING_DURATION);
+		Error::SetString(error,
+			TRANSLATE_STR("VMManager", "Cannot load save state while RetroAchievements Hardcore Mode is active."));
 		return false;
 	}
 
 	if (MemcardBusy::IsBusy())
 	{
-		Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_TRIANGLE_EXCLAMATION,
-			fmt::format(TRANSLATE_FS("VMManager", "Failed to load state (Memory card is busy)")),
-			Host::OSD_QUICK_DURATION);
+		Error::SetString(error,
+			TRANSLATE_STR("VMManager", "Memory card is busy."));
 		return false;
 	}
 
 	// TODO: Save the current state so we don't need to reset.
-	if (DoLoadState(filename))
+	if (DoLoadState(filename, error))
 		return true;
 
 	Reset();
 	return false;
 }
 
-bool VMManager::LoadStateFromSlot(s32 slot, bool backup)
+bool VMManager::LoadStateFromSlot(s32 slot, bool backup, Error* error)
 {
 	const std::string filename = GetCurrentSaveStateFileName(slot, backup);
 	if (filename.empty() || !FileSystem::FileExists(filename.c_str()))
@@ -2035,7 +2034,8 @@ bool VMManager::LoadStateFromSlot(s32 slot, bool backup)
 
 	Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_FOLDER_OPEN,
 		fmt::format(TRANSLATE_FS("VMManager", "Loading {} from slot {}..."), backup ? TRANSLATE("VMManager", "backup state") : TRANSLATE("VMManager", "state"), slot), Host::OSD_QUICK_DURATION);
-	return DoLoadState(filename.c_str());
+
+	return DoLoadState(filename.c_str(), error);
 }
 
 bool VMManager::SaveState(const char* filename, bool zip_on_thread, bool backup_old_state)

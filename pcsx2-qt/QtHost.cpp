@@ -318,7 +318,9 @@ void EmuThread::loadState(const QString& filename)
 	if (!VMManager::HasValidVM())
 		return;
 
-	VMManager::LoadState(filename.toUtf8().constData());
+	Error error;
+	if (!VMManager::LoadState(filename.toUtf8().constData(), &error))
+		Host::ReportErrorAsync(TRANSLATE_SV("QtHost", "Failed to Load State"), error.GetDescription());
 }
 
 void EmuThread::loadStateFromSlot(qint32 slot, bool load_backup)
@@ -332,7 +334,9 @@ void EmuThread::loadStateFromSlot(qint32 slot, bool load_backup)
 	if (!VMManager::HasValidVM())
 		return;
 
-	VMManager::LoadStateFromSlot(slot, load_backup);
+	Error error;
+	if (!VMManager::LoadStateFromSlot(slot, load_backup, &error))
+		Host::ReportErrorAsync(TRANSLATE_SV("QtHost", "Failed to Load State"), error.GetDescription());
 }
 
 void EmuThread::saveState(const QString& filename)
