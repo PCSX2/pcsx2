@@ -28,6 +28,7 @@
 #include "VMManager.h"
 
 #include "common/BitUtils.h"
+#include "common/Error.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
@@ -1325,7 +1326,10 @@ s32 SaveStateSelectorUI::GetCurrentSlot()
 void SaveStateSelectorUI::LoadCurrentSlot()
 {
 	Host::RunOnCPUThread([slot = GetCurrentSlot()]() {
-		VMManager::LoadStateFromSlot(slot);
+		Error error;
+		if (!VMManager::LoadStateFromSlot(slot, false, &error))
+			Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_TRIANGLE_EXCLAMATION,
+				error.GetDescription(), Host::OSD_INFO_DURATION);
 	});
 	Close();
 }
@@ -1333,7 +1337,10 @@ void SaveStateSelectorUI::LoadCurrentSlot()
 void SaveStateSelectorUI::LoadCurrentBackupSlot()
 {
 	Host::RunOnCPUThread([slot = GetCurrentSlot()]() {
-		VMManager::LoadStateFromSlot(slot, true);
+		Error error;
+		if (!VMManager::LoadStateFromSlot(slot, true, &error))
+			Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_TRIANGLE_EXCLAMATION,
+				error.GetDescription(), Host::OSD_INFO_DURATION);
 	});
 	Close();
 }

@@ -14,6 +14,7 @@
 #include "SIO/Memcard/MemoryCardFile.h"
 
 #include "common/Assertions.h"
+#include "common/Error.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
 #include "common/Timer.h"
@@ -103,7 +104,10 @@ static void HotkeyLoadStateSlot(s32 slot)
 			return;
 		}
 
-		VMManager::LoadStateFromSlot(slot);
+		Error error;
+		if (!VMManager::LoadStateFromSlot(slot, false, &error))
+			Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_TRIANGLE_EXCLAMATION,
+				error.GetDescription(), Host::OSD_INFO_DURATION);
 	});
 }
 
