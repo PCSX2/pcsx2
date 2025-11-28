@@ -38,6 +38,31 @@ private:
 	using OI_Ptr = bool(*)(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t); // OI - Before draw
 	using MV_Ptr = bool(*)(GSRendererHW& r); // MV - Move
 
+	// We modify some of the context registers to optimize away unnecessary operations.
+	// Instead of messing with the real context, we copy them and use those instead.
+	struct HWCachedCtx
+	{
+		GIFRegTEX0 TEX0;
+		GIFRegTEXA TEXA;
+		GIFRegCLAMP CLAMP;
+		GIFRegTEST TEST;
+		GIFRegFRAME FRAME;
+		GIFRegZBUF ZBUF;
+
+		__ri bool DepthRead() const { return TEST.ZTE && (TEST.ZTST == ZTST_GEQUAL || TEST.ZTST == ZTST_GREATER); }
+
+		__ri bool DepthWrite() const
+		{
+			if (TEST.ATE && TEST.ATST == ATST_NEVER &&
+				TEST.AFAIL != AFAIL_ZB_ONLY) // alpha test, all pixels fail, z buffer is not updated
+			{
+				return false;
+			}
+
+			return ZBUF.ZMSK == 0 && TEST.ZTE != 0; // ZTE == 0 is bug on the real hardware, write is blocked then
+		}
+	};
+
 	// Require special argument
 	bool OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Source* t, const GSVector4i& r_draw);
 	bool TryGSMemClear(bool no_rt, bool preserve_rt, bool invalidate_rt, u32 rt_end_bp, bool no_ds,
@@ -110,7 +135,9 @@ private:
 		const TextureMinMaxResult& tmm);
 
 	void EmulateZbuffer(const GSTextureCache::Target* ds);
-	void EmulateATST(float& AREF, GSHWDrawConfig::PSSelector& ps, bool pass_2);
+	static void GetAlphaTestConfigPS(const u32 atst, const u8 aref, const bool invert_test, u32& ps_atst_out, float& aref_out);
+	void EmulateAlphaTest(const bool& DATE, bool& DATE_BARRIER, bool& DATE_one, bool& DATE_PRIMID);
+	void EmulateAlphaTestSecondPass();
 
 	void SetTCOffset();
 	bool NextDrawColClip() const;
@@ -136,31 +163,6 @@ private:
 	bool IsDepthAlwaysPassing();
 	bool IsUsingCsInBlend();
 	bool IsUsingAsInBlend();
-
-	// We modify some of the context registers to optimize away unnecessary operations.
-	// Instead of messing with the real context, we copy them and use those instead.
-	struct HWCachedCtx
-	{
-		GIFRegTEX0 TEX0;
-		GIFRegTEXA TEXA;
-		GIFRegCLAMP CLAMP;
-		GIFRegTEST TEST;
-		GIFRegFRAME FRAME;
-		GIFRegZBUF ZBUF;
-
-		__ri bool DepthRead() const { return TEST.ZTE && TEST.ZTST >= 2; }
-
-		__ri bool DepthWrite() const
-		{
-			if (TEST.ATE && TEST.ATST == ATST_NEVER &&
-				TEST.AFAIL != AFAIL_ZB_ONLY) // alpha test, all pixels fail, z buffer is not updated
-			{
-				return false;
-			}
-
-			return ZBUF.ZMSK == 0 && TEST.ZTE != 0; // ZTE == 0 is bug on the real hardware, write is blocked then
-		}
-	};
 
 	// CRC Hacks
 	bool IsBadFrame();
@@ -274,4 +276,8 @@ public:
 
 	/// Compute the drawlist (if not already present) and bounding boxes for the current draw.
 	std::size_t ComputeDrawlistGetSize(float scale);
+
+	/// Create a temporary color clone of depth for depth feedback (DX12 and GL only right now)
+	void StartDepthAsRTFeedback();
+	void CleanupDepthAsRTFeedback();
 };
