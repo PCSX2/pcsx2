@@ -8816,7 +8816,7 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 							});
 					}
 
-					if (!Host::GetBaseBoolSettingValue("Achievements", "ChallengeMode", false))
+					if (!Host::GetBaseBoolSettingValue("Achievements", "ChallengeMode", true))
 					{
 						OpenConfirmMessageDialog(FSUI_STR("Enable Hardcore Mode"),
 							FSUI_STR("Hardcore mode is not currently enabled. Enabling hardcore mode allows you to set times, scores, and "
@@ -8988,7 +8988,7 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
 	check_challenge_state |= DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_PF_DUMBELL, "Hardcore Mode"),
 		FSUI_CSTR(
 			"\"Challenge\" mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions."),
-		"Achievements", "ChallengeMode", false, enabled);
+		"Achievements", "ChallengeMode", true, enabled);
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_BELL, "Achievement Notifications"),
 		FSUI_CSTR("Displays popup messages on events such as achievement unlocks and leaderboard submissions."), "Achievements",
 		"Notifications", true, enabled);
@@ -9044,7 +9044,7 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
 		"Achievements", "UnofficialTestMode", false, enabled);
 
 	// Check for challenge mode just being enabled.
-	if (check_challenge_state && enabled && bsi->GetBoolValue("Achievements", "ChallengeMode", false) && VMManager::HasValidVM())
+	if (check_challenge_state && enabled && bsi->GetBoolValue("Achievements", "ChallengeMode", true) && VMManager::HasValidVM())
 	{
 		// don't bother prompting if the game doesn't have achievements
 		auto lock = Achievements::GetLock();
