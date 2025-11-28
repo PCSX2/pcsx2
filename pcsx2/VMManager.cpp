@@ -2010,25 +2010,34 @@ bool VMManager::LoadStateFromSlot(s32 slot, bool backup, Error* error)
 	const std::string filename = GetCurrentSaveStateFileName(slot, backup);
 	if (filename.empty() || !FileSystem::FileExists(filename.c_str()))
 	{
-		Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_TRIANGLE_EXCLAMATION,
-			fmt::format(TRANSLATE_FS("VMManager", "There is no saved {} in slot {}."), backup ? TRANSLATE("VMManager", "backup state") : "state", slot),
-			Host::OSD_QUICK_DURATION);
+		if (backup)
+			Error::SetStringFmt(error,
+				TRANSLATE_FS("VMManager", "There is no save state in backup slot {}."), slot);
+		else
+			Error::SetStringFmt(error,
+				TRANSLATE_FS("VMManager", "There is no save state in slot {}."), slot);
 		return false;
 	}
 
 	if (Achievements::IsHardcoreModeActive())
 	{
-		Host::AddIconOSDMessage("LoadStateHardcoreBlocked", ICON_FA_TRIANGLE_EXCLAMATION,
-			fmt::format(TRANSLATE_FS("VMManager", "Cannot load save {} from slot {} while RetroAchievements Hardcore Mode is active."), backup ? TRANSLATE("VMManager", "backup state") : TRANSLATE("VMManager", "state"), slot),
-			Host::OSD_WARNING_DURATION);
+		if (backup)
+			Error::SetStringFmt(error,
+				TRANSLATE_FS("VMManager", "Cannot load save state from backup slot {} while RetroAchievements Hardcore Mode is active."), slot);
+		else
+			Error::SetStringFmt(error,
+				TRANSLATE_FS("VMManager", "Cannot load save state from slot {} while RetroAchievements Hardcore Mode is active."), slot);
 		return false;
 	}
 
 	if (MemcardBusy::IsBusy())
 	{
-		Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_TRIANGLE_EXCLAMATION,
-			fmt::format(TRANSLATE_FS("VMManager", "Failed to load {} from slot {} (Memory card is busy)"), backup ? TRANSLATE("VMManager", "backup state") : TRANSLATE("VMManager", "state"), slot),
-			Host::OSD_QUICK_DURATION);
+		if (backup)
+			Error::SetStringFmt(error,
+				TRANSLATE_FS("VMManager", "Failed to load save state from backup slot {} (memory card is busy)."), slot);
+		else
+			Error::SetStringFmt(error,
+				TRANSLATE_FS("VMManager", "Failed to load save state from slot {} (memory card is busy)."), slot);
 		return false;
 	}
 
