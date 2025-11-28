@@ -870,10 +870,10 @@ std::optional<InputBindingKey> SDLInputSource::ParseKeyString(const std::string_
 		key.data = 0;
 		return key;
 	}
-	else if (binding[0] == '+' || binding[0] == '-')
+	else if (binding[0] == '+' || binding[0] == '-' || binding.starts_with("Full"))
 	{
 		// likely an axis
-		const std::string_view axis_name(binding.substr(1));
+		const std::string_view axis_name(binding.substr(binding[0] == 'F' ? 4 : 1));
 
 		if (axis_name.starts_with("JoyAxis"))
 		{
@@ -882,7 +882,9 @@ std::optional<InputBindingKey> SDLInputSource::ParseKeyString(const std::string_
 			{
 				key.source_subtype = InputSubclass::ControllerAxis;
 				key.data = *value + std::size(s_sdl_axis_setting_names);
-				key.modifier = (binding[0] == '-') ? InputModifier::Negate : InputModifier::None;
+				key.modifier = (binding[0] == 'F') ? InputModifier::FullAxis :
+				               (binding[0] == '-') ? InputModifier::Negate :
+				                                     InputModifier::None;
 				key.invert = (end == "~");
 				return key;
 			}
@@ -894,21 +896,11 @@ std::optional<InputBindingKey> SDLInputSource::ParseKeyString(const std::string_
 				// found an axis!
 				key.source_subtype = InputSubclass::ControllerAxis;
 				key.data = i;
-				key.modifier = (binding[0] == '-') ? InputModifier::Negate : InputModifier::None;
+				key.modifier = (binding[0] == 'F') ? InputModifier::FullAxis :
+				               (binding[0] == '-') ? InputModifier::Negate :
+				                                     InputModifier::None;
 				return key;
 			}
-		}
-	}
-	else if (binding.starts_with("FullJoyAxis"))
-	{
-		std::string_view end;
-		if (auto value = StringUtil::FromChars<u32>(binding.substr(11), 10, &end))
-		{
-			key.source_subtype = InputSubclass::ControllerAxis;
-			key.data = *value + std::size(s_sdl_axis_setting_names);
-			key.modifier = InputModifier::FullAxis;
-			key.invert = (end == "~");
-			return key;
 		}
 	}
 	else if (binding.starts_with("Hat"))
