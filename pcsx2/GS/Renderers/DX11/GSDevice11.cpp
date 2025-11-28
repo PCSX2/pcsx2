@@ -14,6 +14,7 @@
 #include "common/Error.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
+#include "common/ScopedGuard.h"
 
 #include "imgui.h"
 #include "IconsFontAwesome.h"
@@ -67,6 +68,15 @@ GSDevice11::GSDevice11()
 	m_features.stencil_buffer = true;
 	m_features.cas_sharpening = true;
 	m_features.test_and_sample_depth = true;
+	if (m_features.multidraw_fb_copy && (GSConfig.DepthFeedbackMode == GSDepthFeedbackMode::Auto ||
+		GSConfig.DepthFeedbackMode == GSDepthFeedbackMode::Depth))
+	{
+		m_features.depth_feedback = GSDevice::DepthFeedbackSupport::Depth;
+	}
+	else
+	{
+		m_features.depth_feedback = GSDevice::DepthFeedbackSupport::None;
+	}
 }
 
 GSDevice11::~GSDevice11() = default;
@@ -1805,12 +1815,16 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 		sm.AddMacro("PS_DITHER_ADJUST", sel.dither_adjust);
 		sm.AddMacro("PS_ZCLAMP", sel.zclamp);
 		sm.AddMacro("PS_ZFLOOR", sel.zfloor);
+		sm.AddMacro("PS_ZWRITE", sel.zwrite);
 		sm.AddMacro("PS_SCANMSK", sel.scanmsk);
 		sm.AddMacro("PS_AUTOMATIC_LOD", sel.automatic_lod);
 		sm.AddMacro("PS_MANUAL_LOD", sel.manual_lod);
 		sm.AddMacro("PS_TEX_IS_FB", sel.tex_is_fb);
 		sm.AddMacro("PS_NO_COLOR", sel.no_color);
 		sm.AddMacro("PS_NO_COLOR1", sel.no_color1);
+		sm.AddMacro("PS_ZTST", sel.ztst);
+		sm.AddMacro("PS_COLOR_FEEDBACK", sel.color_feedback);
+		sm.AddMacro("PS_DEPTH_FEEDBACK", sel.depth_feedback);
 
 		wil::com_ptr_nothrow<ID3D11PixelShader> ps = m_shader_cache.GetPixelShader(m_dev.get(), m_tfx_source, sm.GetPtr(), "ps_main");
 		i = m_ps.try_emplace(sel, std::move(ps)).first;
@@ -2637,6 +2651,18 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 {
 	const GSVector2i rtsize = (config.rt ? config.rt : config.ds)->GetSize();
 	GSTexture* colclip_rt = g_gs_device->GetColorClipTexture();
+	GSTexture* draw_rt_clone = nullptr;
+	GSTexture* draw_ds_clone = nullptr;
+	GSTexture* primid_texture = nullptr;
+	
+	ScopedGuard recycle_temp_textures([&]() {
+		if (draw_rt_clone)
+			Recycle(draw_rt_clone);
+		if (draw_ds_clone)
+			Recycle(draw_ds_clone);
+		if (primid_texture)
+			Recycle(primid_texture);
+	});
 
 	if (colclip_rt)
 	{
@@ -2679,7 +2705,6 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 
 	// Destination Alpha Setup
 	const bool multidraw_fb_copy = m_features.multidraw_fb_copy && (config.require_one_barrier || config.require_full_barrier);
-	GSTexture* primid_texture = nullptr;
 	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking)
 	{
 		primid_texture = CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::PrimID, false);
@@ -2741,7 +2766,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 
 	// Depth testing and sampling, bind resource as dsv read only and srv at the same time without the need of a copy.
 	ID3D11DepthStencilView* read_only_dsv = nullptr;
-	if (config.tex && config.tex == config.ds)
+	if (config.ds && (config.tex == config.ds|| config.ps.IsFeedbackLoopDepth()) && !config.depth.zwe)
 		read_only_dsv = static_cast<GSTexture11*>(config.ds)->ReadOnlyDepthStencilView();
 
 	// Preemptively bind svr if possible.
@@ -2803,8 +2828,6 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		draw_ds = m_state.cached_dsv;
 	}
 
-	GSTexture* draw_rt_clone = nullptr;
-
 	if (draw_rt && (config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy) || (config.tex && config.tex == config.rt)))
 	{
 		// Requires a copy of the RT.
@@ -2815,6 +2838,16 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 			Console.Warning("D3D11: Failed to allocate temp texture for RT copy.");
 	}
 
+	if (draw_ds && (config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy)) &&
+		config.ps.IsFeedbackLoopDepth())
+	{
+		// Requires a copy of the DS.
+		// Used as "bind ds" flag when texture barrier is unsupported for tex is fb.
+		draw_ds_clone = CreateTexture(rtsize.x, rtsize.y, 1, draw_ds->GetFormat(), true);
+		if (!draw_rt_clone)
+			Console.Warning("D3D11: Failed to allocate temp texture for DS copy.");
+	}
+
 	OMSetRenderTargets(draw_rt, draw_ds, &config.scissor, read_only_dsv);
 	SetupOM(config.depth, OMBlendSelector(config.colormask, config.blend), config.blend.constant);
 
@@ -2822,7 +2855,8 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne && multidraw_fb_copy)
 		m_ctx->ClearDepthStencilView(*static_cast<GSTexture11*>(draw_ds), D3D11_CLEAR_STENCIL, 0.0f, 1);
 
-	SendHWDraw(config, draw_rt_clone, draw_rt, config.require_one_barrier, config.require_full_barrier, false);
+	SendHWDraw(config, draw_rt_clone, draw_rt, draw_ds_clone, draw_ds,
+		config.require_one_barrier, config.require_full_barrier, false);
 
 	if (config.blend_multi_pass.enable)
 	{
@@ -2848,14 +2882,9 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		}
 
 		SetupOM(config.alpha_second_pass.depth, OMBlendSelector(config.alpha_second_pass.colormask, config.blend), config.blend.constant);
-		SendHWDraw(config, draw_rt_clone, draw_rt, config.alpha_second_pass.require_one_barrier, config.alpha_second_pass.require_full_barrier, true);
+		SendHWDraw(config, draw_rt_clone, draw_rt, draw_ds_clone, draw_ds,
+			config.alpha_second_pass.require_one_barrier, config.alpha_second_pass.require_full_barrier, true);
 	}
-
-	if (draw_rt_clone)
-		Recycle(draw_rt_clone);
-
-	if (primid_texture)
-		Recycle(primid_texture);
 
 	if (colclip_rt)
 	{
@@ -2874,19 +2903,26 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	}
 }
 
-void GSDevice11::SendHWDraw(const GSHWDrawConfig& config, GSTexture* draw_rt_clone, GSTexture* draw_rt, const bool one_barrier, const bool full_barrier, const bool skip_first_barrier)
+void GSDevice11::SendHWDraw(const GSHWDrawConfig& config,
+	GSTexture* draw_rt_clone, GSTexture* draw_rt, GSTexture* draw_ds_clone, GSTexture* draw_ds,
+	const bool one_barrier, const bool full_barrier, const bool skip_first_barrier)
 {
-	if (draw_rt_clone)
+	if (draw_rt_clone || draw_ds_clone)
 	{
 #ifdef PCSX2_DEVBUILD
-		if ((one_barrier || full_barrier) && !config.ps.IsFeedbackLoop()) [[unlikely]]
+		if ((one_barrier || full_barrier) && !(config.ps.IsFeedbackLoopRT() || config.ps.IsFeedbackLoopDepth())) [[unlikely]]
 			Console.Warning("D3D11: Possible unnecessary copy detected.");
 #endif
 
 		auto CopyAndBind = [&](GSVector4i drawarea) {
-			CopyRect(draw_rt, draw_rt_clone, drawarea, drawarea.left, drawarea.top);
-			if (one_barrier || full_barrier)
+			if (draw_rt_clone)
+				CopyRect(draw_rt, draw_rt_clone, drawarea, drawarea.left, drawarea.top);
+			if (draw_ds_clone)
+				CopyRect(draw_ds, draw_ds_clone, drawarea, drawarea.left, drawarea.top);
+			if ((one_barrier || full_barrier) && draw_rt_clone)
 				PSSetShaderResource(2, draw_rt_clone);
+			if ((one_barrier || full_barrier) && draw_ds_clone)
+				PSSetShaderResource(4, draw_ds_clone);
 			if (config.tex && config.tex == config.rt)
 				PSSetShaderResource(0, draw_rt_clone);
 		};

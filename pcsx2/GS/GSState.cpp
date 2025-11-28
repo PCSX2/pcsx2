@@ -431,6 +431,8 @@ const char* GSState::GetFlushReasonString(GSFlushReason reason)
 			return "VSYNC";
 		case GSFlushReason::GSREOPEN:
 			return "GS REOPEN";
+		case GSFlushReason::VERTEXCOUNT:
+			return "VERTEX COUNT";
 		case GSFlushReason::UNKNOWN:
 		default:
 			return "UNKNOWN";
