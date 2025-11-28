@@ -2323,7 +2323,17 @@ void GSTextureCache::CombineAlignedInsideTargets(Target* target, GSTextureCache:
 
 							GL_CACHE("Combining %x-%x in to %x-%x draw %d", t->m_TEX0.TBP0, t->m_end_block, target->m_TEX0.TBP0, target->m_end_block, GSState::s_n);
 
-							g_gs_device->StretchRect(t->m_texture, source_rect, target->m_texture, target_drect, valid_color, valid_color, valid_color, valid_alpha, (target->m_type == RenderTarget) ? ShaderConvert::COPY : ShaderConvert::DEPTH_COPY);
+							if (target->m_type == RenderTarget)
+							{
+								g_gs_device->StretchRect(t->m_texture, source_rect, target->m_texture,
+									target_drect, valid_color, valid_color, valid_color, valid_alpha, ShaderConvert::COPY);
+							}
+							else
+							{
+								if (!valid_color || (!valid_alpha && (GSUtil::GetChannelMask(t->m_TEX0.PSM) & 0x8)))
+									GL_CACHE("Warning: CombineAlignedInsideTargets: Depth copy with invalid lower 24 bits or invalid upper 8 bits.");
+								g_gs_device->StretchRect(t->m_texture, source_rect, target->m_texture, target_drect, ShaderConvert::DEPTH_COPY);
+							}
 
 							target->UpdateValidity(target_drect_unscaled);
 						}

@@ -354,6 +354,7 @@ struct alignas(16) GSHWDrawConfig
 				u32 date : 3;
 				u32 atst : 3;
 				u32 afail : 2;
+				u32 ztst : 2;
 				// Color sampling
 				u32 fst : 1; // Investigate to do it on the VS
 				u32 tfx : 3;
@@ -414,6 +415,10 @@ struct alignas(16) GSHWDrawConfig
 
 				// Scan mask
 				u32 scanmsk : 2;
+
+				// Feedback
+				u32 color_feedback : 1;
+				u32 depth_feedback : 1;
 			};
 
 			struct
@@ -428,11 +433,16 @@ struct alignas(16) GSHWDrawConfig
 		__fi bool operator!=(const PSSelector& rhs) const { return (key_lo != rhs.key_lo || key_hi != rhs.key_hi); }
 		__fi bool operator<(const PSSelector& rhs) const { return (key_lo < rhs.key_lo || key_hi < rhs.key_hi); }
 
-		__fi bool IsFeedbackLoop() const
+		__fi bool IsFeedbackLoopRT() const
 		{
 			const u32 sw_blend_bits = blend_a | blend_b | blend_d;
 			const bool sw_blend_needs_rt = (sw_blend_bits != 0 && ((sw_blend_bits | blend_c) & 1u)) || ((a_masked & blend_c) != 0);
-			return channel_fb || tex_is_fb || fbmask || (date >= 5) || sw_blend_needs_rt;
+			return color_feedback || channel_fb || tex_is_fb || fbmask || (date >= 5) || sw_blend_needs_rt;;
+		}
+
+		__fi bool IsFeedbackLoopDepth() const
+		{
+			return depth_feedback;
 		}
 
 		/// Disables color output from the pixel shader, this is done when all channels are masked.

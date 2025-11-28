@@ -11,6 +11,18 @@
 #define SHUFFLE_WRITE 2
 #define SHUFFLE_READWRITE 3
 
+#ifndef ZTST_GEQUAL
+#define ZTST_GEQUAL 2
+#define ZTST_GREATER 3
+#endif
+
+#ifndef AFAIL_KEEP
+#define AFAIL_KEEP 0
+#define AFAIL_FB_ONLY 1
+#define AFAIL_ZB_ONLY 2
+#define AFAIL_RGB_ONLY 3
+#endif
+
 // TEX_COORD_DEBUG output the uv coordinate as color. It is useful
 // to detect bad sampling due to upscaling
 //#define TEX_COORD_DEBUG
@@ -25,9 +37,13 @@
 #define SW_AD_TO_HW (PS_BLEND_C == 1 && PS_A_MASKED)
 #define PS_PRIMID_INIT (PS_DATE == 1 || PS_DATE == 2)
 #define NEEDS_RT_EARLY (PS_TEX_IS_FB == 1 || PS_DATE >= 5)
-#define NEEDS_RT_FOR_AFAIL (PS_AFAIL == 3 && PS_NO_COLOR1)
-#define NEEDS_RT (NEEDS_RT_EARLY || NEEDS_RT_FOR_AFAIL || (!PS_PRIMID_INIT && (PS_FBMASK || SW_BLEND_NEEDS_RT || SW_AD_TO_HW)))
+#define NEEDS_RT_FOR_AFAIL (PS_AFAIL == PS_ZB_ONLY || (PS_AFAIL == AFAIL_RGB_ONLY && PS_NO_COLOR1))
+#define NEEDS_DEPTH_FOR_AFAIL (PS_AFAIL == AFAIL_FB_ONLY || PS_AFAIL == AFAIL_RGB_ONLY)
+#define NEEDS_RT (NEEDS_RT_EARLY || NEEDS_RT_FOR_AFAIL || (!PS_PRIMID_INIT && (PS_FBMASK || SW_BLEND_NEEDS_RT || SW_AD_TO_HW)) || PS_COLOR_FEEDBACK)
 #define NEEDS_TEX (PS_TFX != 4)
+#define NEEDS_DEPTH (PS_DEPTH_FEEDBACK && NEEDS_DEPTH_FOR_AFAIL)
+
+vec4 FragCoord;
 
 layout(std140, binding = 0) uniform cb21
 {
@@ -107,9 +123,10 @@ layout(binding = 2) uniform sampler2D RtSampler; // note 2 already use by the im
 
 #if PS_DATE == 3
 layout(binding = 3) uniform sampler2D img_prim_min;
+#endif
 
-// I don't remember why I set this parameter but it is surely useless
-//layout(pixel_center_integer) in vec4 gl_FragCoord;
+#if NEEDS_DEPTH
+layout(binding = 4) uniform sampler2D DepthSampler;
 #endif
 
 vec4 sample_from_rt()
@@ -119,7 +136,16 @@ vec4 sample_from_rt()
 #elif HAS_FRAMEBUFFER_FETCH
 	return LAST_FRAG_COLOR;
 #else
-	return texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0);
+	return texelFetch(RtSampler, ivec2(FragCoord.xy), 0);
+#endif
+}
+
+vec4 sample_from_depth()
+{
+#if !NEEDS_DEPTH
+	return vec4(0.0);
+#else
+	return texelFetch(DepthSampler, ivec2(FragCoord.xy), 0);
 #endif
 }
 
@@ -315,7 +341,7 @@ int fetch_raw_depth()
 #if PS_TEX_IS_FB == 1
 	return int(sample_from_rt().r * multiplier);
 #else
-	return int(texelFetch(TextureSampler, ivec2(gl_FragCoord.xy), 0).r * multiplier);
+	return int(texelFetch(TextureSampler, ivec2(FragCoord.xy), 0).r * multiplier);
 #endif
 }
 
@@ -324,7 +350,7 @@ vec4 fetch_raw_color()
 #if PS_TEX_IS_FB == 1
 	return sample_from_rt();
 #else
-	return texelFetch(TextureSampler, ivec2(gl_FragCoord.xy), 0);
+	return texelFetch(TextureSampler, ivec2(FragCoord.xy), 0);
 #endif
 }
 
@@ -724,9 +750,9 @@ void ps_dither(inout vec3 C, float As)
 {
 #if PS_DITHER > 0 && PS_DITHER < 3
 	#if PS_DITHER == 2
-		ivec2 fpos = ivec2(gl_FragCoord.xy);
+		ivec2 fpos = ivec2(FragCoord.xy);
 	#else
-		ivec2 fpos = ivec2(gl_FragCoord.xy * RcpScaleFactor);
+		ivec2 fpos = ivec2(FragCoord.xy * RcpScaleFactor);
 	#endif
 		float value = DitherMatrix[fpos.y&3][fpos.x&3];
 
@@ -969,9 +995,21 @@ float As = As_rgba.a;
 
 void ps_main()
 {
+	FragCoord = gl_FragCoord;
+
+#if NEEDS_DEPTH && (PS_ZTST == ZTST_GEQUAL || PS_ZTST == ZTST_GREATER)
+	#if PS_ZTST == ZTST_GEQUAL
+		if (FragCoord.z < sample_from_depth().r)
+			discard;
+	#elif PS_ZTST == ZTST_GREATER
+		if (FragCoord.z <= sample_from_depth().r)
+			discard;
+	#endif
+#endif // PS_ZTST
+
 #if PS_SCANMSK & 2
 	// fail depth test on prohibited lines
-	if ((int(gl_FragCoord.y) & 1) == (PS_SCANMSK & 1))
+	if ((int(FragCoord.y) & 1) == (PS_SCANMSK & 1))
 		discard;
 #endif
 
@@ -1007,7 +1045,7 @@ void ps_main()
 #endif
 
 #if PS_DATE == 3
-	int stencil_ceil = int(texelFetch(img_prim_min, ivec2(gl_FragCoord.xy), 0).r);
+	int stencil_ceil = int(texelFetch(img_prim_min, ivec2(FragCoord.xy), 0).r);
 	// Note gl_PrimitiveID == stencil_ceil will be the primitive that will update
 	// the bad alpha value so we must keep it.
 
@@ -1017,18 +1055,17 @@ void ps_main()
 #endif
 
 	vec4 C = ps_color();
-	bool atst_pass = atst(C);
 
-#if PS_AFAIL == 0 // KEEP or ATST off
-	if (!atst_pass)
-		discard;
+#if PS_FIXED_ONE_A
+	// AA (Fixed one) will output a coverage of 1.0 as alpha
+	C.a = 128.0f;
 #endif
 
-	// Must be done before alpha correction
+	bool atst_pass = atst(C);
 
-	// AA (Fixed one) will output a coverage of 1.0 as alpha
-#if PS_FIXED_ONE_A
-	C.a = 128.0f;
+#if PS_AFAIL == AFAIL_KEEP
+	if (!atst_pass)
+		discard;
 #endif
 
 #if SW_AD_TO_HW
@@ -1065,7 +1102,6 @@ void ps_main()
 #endif
 
 	ps_blend(C, alpha_blend);
-
 
 #if PS_SHUFFLE
 	#if !PS_READ16_SRC && !PS_SHUFFLE_SAME && !(PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE)
@@ -1118,32 +1154,54 @@ void ps_main()
 
 	ps_fbmask(C);
 
-#if PS_AFAIL == 3 && !PS_NO_COLOR1 // RGB_ONLY
+#if PS_AFAIL == AFAIL_RGB && !PS_NO_COLOR1
 	// Use alpha blend factor to determine whether to update A.
 	alpha_blend.a = float(atst_pass);
 #endif
 
 #if !PS_NO_COLOR
 	#if PS_RTA_CORRECTION
-		SV_Target0.a = C.a / 128.0f;
+		C.a = C.a / 128.0f;
 	#else
-		SV_Target0.a = C.a / 255.0f;
+		C.a = C.a / 255.0f;
 	#endif
 	#if PS_COLCLIP_HW == 1
-		SV_Target0.rgb = vec3(C.rgb / 65535.0f);
+		C.rgb = vec3(C.rgb / 65535.0f);
 	#else
-		SV_Target0.rgb = C.rgb / 255.0f;
+		C.rgb = C.rgb / 255.0f;
 	#endif
-	#if PS_AFAIL == 3 && PS_NO_COLOR1 // RGB_ONLY, no dual src blend
+	
+	// Alpha test with feedback
+	#if (PS_AFAIL == AFAIL_FB_ONLY) && NEEDS_DEPTH
 		if (!atst_pass)
-			SV_Target0.a = sample_from_rt().a;
+			FragCoord.z = sample_from_depth().r;
+	#elif (PS_AFAIL == AFAIL_ZB_ONLY) && NEEDS_RT
+		if (!atst_pass)
+			C = sample_from_rt();
+	#elif (PS_AFAIL == AFAIL_RGB_ONLY) 
+		if (!atst_pass)
+		{
+		#if NEEDS_RT && PS_NO_COLOR1 // No dual src blend
+			C.a = sample_from_rt().a;
+		#endif
+		#if NEEDS_DEPTH
+			FragCoord.z = sample_from_depth().r;
+		#endif
+		}
 	#endif
+
+	// Warning: do not write SV_Target0 until the end since the value might be needed for
+	// FB fetch in sample_from_rt().
+	SV_Target0 = C;
+
 	#if !PS_NO_COLOR1
 		SV_Target1 = alpha_blend;
 	#endif
 #endif
 
 #if PS_ZCLAMP
-	gl_FragDepth = min(gl_FragCoord.z, MaxDepthPS);
+	gl_FragDepth = min(FragCoord.z, MaxDepthPS);
+#elif NEEDS_DEPTH && AFAIL_NEEDS_DEPTH
+	gl_FragDepth = FragCoord.z; // Output depth value for ATST pass/fail
 #endif
 }
