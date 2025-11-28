@@ -39,6 +39,8 @@ enum class ShaderConvert
 	RGBA8_TO_FLOAT24_BILN,
 	RGBA8_TO_FLOAT16_BILN,
 	RGB5A1_TO_FLOAT16_BILN,
+	FLOAT32_DEPTH_TO_COLOR,
+	FLOAT32_COLOR_TO_DEPTH,
 	FLOAT32_TO_FLOAT24,
 	DEPTH_COPY,
 	DOWNSAMPLE_COPY,
@@ -101,6 +103,7 @@ static inline bool HasDepthOutput(ShaderConvert shader)
 		case ShaderConvert::RGBA8_TO_FLOAT24_BILN:
 		case ShaderConvert::RGBA8_TO_FLOAT16_BILN:
 		case ShaderConvert::RGB5A1_TO_FLOAT16_BILN:
+		case ShaderConvert::FLOAT32_COLOR_TO_DEPTH:
 		case ShaderConvert::FLOAT32_TO_FLOAT24:
 		case ShaderConvert::DEPTH_COPY:
 			return true;
@@ -327,6 +330,26 @@ struct alignas(16) GSHWDrawConfig
 		__fi bool UseExpandIndexBuffer() const { return (expand == VSExpand::Point || expand == VSExpand::Sprite); }
 	};
 	static_assert(sizeof(VSSelector) == 1, "VSSelector is a single byte");
+
+	enum PSAlphaTest
+	{
+		PS_ATST_NONE = 0,
+		PS_ATST_LEQUAL = 1,
+		PS_ATST_GEQUAL = 2,
+		PS_ATST_EQUAL = 3,
+		PS_ATST_NOTEQUAL = 4
+	};
+
+	// Identical with the usual GS enum except for the RGB_ONLY_DSB
+	enum PSAfail
+	{
+		PS_AFAIL_KEEP = 0,
+		PS_AFAIL_FB_ONLY = 1,
+		PS_AFAIL_ZB_ONLY = 2,
+		PS_AFAIL_RGB_ONLY = 3,
+		PS_AFAIL_RGB_ONLY_DSB = 4 // RGB only with dual source blend.
+	};
+
 #pragma pack(pop)
 #pragma pack(push, 4)
 	struct PSSelector
@@ -353,7 +376,8 @@ struct alignas(16) GSHWDrawConfig
 				// Pixel test
 				u32 date : 3;
 				u32 atst : 3;
-				u32 afail : 2;
+				u32 afail : 3;
+				u32 ztst : 2;
 				// Color sampling
 				u32 fst : 1; // Investigate to do it on the VS
 				u32 tfx : 3;
@@ -399,9 +423,10 @@ struct alignas(16) GSHWDrawConfig
 				u32 dither : 2;
 				u32 dither_adjust : 1;
 
-				// Depth clamp
+				// Depth writing
 				u32 zclamp : 1;
 				u32 zfloor : 1;
+				u32 zwrite : 1;
 
 				// Hack
 				u32 tcoffsethack : 1;
@@ -415,6 +440,10 @@ struct alignas(16) GSHWDrawConfig
 
 				// Scan mask
 				u32 scanmsk : 2;
+
+				// Feedback
+				u32 color_feedback : 1;
+				u32 depth_feedback : 1;
 			};
 
 			struct
@@ -429,11 +458,16 @@ struct alignas(16) GSHWDrawConfig
 		__fi bool operator!=(const PSSelector& rhs) const { return (key_lo != rhs.key_lo || key_hi != rhs.key_hi); }
 		__fi bool operator<(const PSSelector& rhs) const { return (key_lo < rhs.key_lo || key_hi < rhs.key_hi); }
 
-		__fi bool IsFeedbackLoop() const
+		__fi bool IsFeedbackLoopRT() const
 		{
 			const u32 sw_blend_bits = blend_a | blend_b | blend_d;
 			const bool sw_blend_needs_rt = (sw_blend_bits != 0 && ((sw_blend_bits | blend_c) & 1u)) || ((a_masked & blend_c) != 0);
-			return channel_fb || tex_is_fb || fbmask || (date >= 5) || sw_blend_needs_rt;
+			return color_feedback || channel_fb || tex_is_fb || fbmask || (date >= 5) || sw_blend_needs_rt;
+		}
+
+		__fi bool IsFeedbackLoopDepth() const
+		{
+			return depth_feedback;
 		}
 
 		/// Disables color output from the pixel shader, this is done when all channels are masked.
@@ -699,6 +733,27 @@ struct alignas(16) GSHWDrawConfig
 		// Blending has no effect if RGB is masked.
 		bool IsEffective(ColorMaskSelector colormask) const;
 	};
+
+	enum class AlphaTestMode
+	{
+		NONE,
+		KEEP,
+		FEEDBACK,
+		SIMPLE_FB_ONLY,
+		SIMPLE_RGB_ONLY,
+		PASS_THEN_FAIL,
+		NEVER,
+		ABORT_DRAW
+	};
+
+	static bool HasAlphaTestSecondPass(AlphaTestMode method)
+	{
+		return method == AlphaTestMode::SIMPLE_FB_ONLY ||
+		       method == AlphaTestMode::SIMPLE_RGB_ONLY ||
+		       method == AlphaTestMode::PASS_THEN_FAIL ||
+		       method == AlphaTestMode::NEVER;
+	}
+
 	enum class DestinationAlphaMode : u8
 	{
 		Off,            ///< No destination alpha test
@@ -718,6 +773,7 @@ struct alignas(16) GSHWDrawConfig
 	};
 
 	GSTexture* rt;        ///< Render target
+	GSTexture* ds_as_rt;  ///< Depth as color (if supported)
 	GSTexture* ds;        ///< Depth stencil
 	GSTexture* tex;       ///< Source texture
 	GSTexture* pal;       ///< Palette texture
@@ -742,6 +798,8 @@ struct alignas(16) GSHWDrawConfig
 
 	bool require_one_barrier;  ///< Require texture barrier before draw (also used to requst an rt copy if texture barrier isn't supported)
 	bool require_full_barrier; ///< Require texture barrier between all prims
+
+	AlphaTestMode alpha_test;
 
 	DestinationAlphaMode destination_alpha;
 	SetDATM datm : 2;
@@ -827,6 +885,13 @@ public:
 		Performance
 	};
 
+	enum class DepthFeedbackSupport : u8
+	{
+		None,     // No support for depth feedback loops.
+		Depth,    // Implement depth feedback loops directly on a depth buffer.
+		DepthAsRT // Implement depth feedback loops by first converting depth to color RT.
+	};
+
 	// clang-format off
 	struct FeatureSupport
 	{
@@ -845,6 +910,7 @@ public:
 		bool stencil_buffer       : 1; ///< Supports stencil buffer, and can use for DATE.
 		bool cas_sharpening       : 1; ///< Supports sufficient functionality for contrast adaptive sharpening.
 		bool test_and_sample_depth: 1; ///< Supports concurrently binding the depth-stencil buffer for sampling and depth testing.
+		DepthFeedbackSupport depth_feedback : 2; ///< Support for depth feedback loops.
 		FeatureSupport()
 		{
 			memset(this, 0, sizeof(*this));

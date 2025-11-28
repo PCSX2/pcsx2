@@ -11,6 +11,27 @@
 #define SHUFFLE_WRITE 2
 #define SHUFFLE_READWRITE 3
 
+#ifndef ZTST_GEQUAL
+#define ZTST_GEQUAL 2
+#define ZTST_GREATER 3
+#endif
+
+#ifndef AFAIL_KEEP
+#define AFAIL_KEEP 0
+#define AFAIL_FB_ONLY 1
+#define AFAIL_ZB_ONLY 2
+#define AFAIL_RGB_ONLY 3
+#define AFAIL_RGB_ONLY_DSB 4
+#endif
+
+#ifndef PS_ATST_NONE
+#define PS_ATST_NONE 0
+#define PS_ATST_LEQUAL 1
+#define PS_ATST_GEQUAL 2
+#define PS_ATST_EQUAL 3
+#define PS_ATST_NOTEQUAL 4
+#endif
+
 // TEX_COORD_DEBUG output the uv coordinate as color. It is useful
 // to detect bad sampling due to upscaling
 //#define TEX_COORD_DEBUG
@@ -25,9 +46,13 @@
 #define SW_AD_TO_HW (PS_BLEND_C == 1 && PS_A_MASKED)
 #define PS_PRIMID_INIT (PS_DATE == 1 || PS_DATE == 2)
 #define NEEDS_RT_EARLY (PS_TEX_IS_FB == 1 || PS_DATE >= 5)
-#define NEEDS_RT_FOR_AFAIL (PS_AFAIL == 3 && PS_NO_COLOR1)
-#define NEEDS_RT (NEEDS_RT_EARLY || NEEDS_RT_FOR_AFAIL || (!PS_PRIMID_INIT && (PS_FBMASK || SW_BLEND_NEEDS_RT || SW_AD_TO_HW)))
+#define NEEDS_RT_FOR_AFAIL (PS_AFAIL == PS_ZB_ONLY || PS_AFAIL == AFAIL_RGB_ONLY)
+#define NEEDS_DEPTH_FOR_AFAIL (PS_AFAIL == AFAIL_FB_ONLY || PS_AFAIL == AFAIL_RGB_ONLY)
+#define NEEDS_DEPTH_FOR_ZTST (PS_ZTST == ZTST_GEQUAL || PS_ZTST == ZTST_GREATER)
+
+#define NEEDS_RT (NEEDS_RT_EARLY || NEEDS_RT_FOR_AFAIL || (!PS_PRIMID_INIT && (PS_FBMASK || SW_BLEND_NEEDS_RT || SW_AD_TO_HW)) || PS_COLOR_FEEDBACK)
 #define NEEDS_TEX (PS_TFX != 4)
+#define NEEDS_DEPTH (PS_DEPTH_FEEDBACK && (NEEDS_DEPTH_FOR_AFAIL || NEEDS_DEPTH_FOR_ZTST))
 
 layout(std140, binding = 0) uniform cb21
 {
@@ -97,6 +122,16 @@ in SHADER
 	layout(location = 0) TARGET_0_QUALIFIER vec4 SV_Target0;
 #endif
 
+// Depth feedback mode 2 is for depth as color.
+// Use FB fetch for the feedback if it's available.
+#if NEEDS_DEPTH && PS_NO_COLOR1 && (DEPTH_FEEDBACK_SUPPORT == 2)
+#if HAS_FRAMEBUFFER_FETCH
+	layout(location = 1) inout float SV_Target1;
+#else
+	layout(location = 1) out float SV_Target1;
+#endif
+#endif
+
 #if NEEDS_TEX
 layout(binding = 0) uniform sampler2D TextureSampler;
 layout(binding = 1) uniform sampler2D PaletteSampler;
@@ -108,9 +143,13 @@ layout(binding = 2) uniform sampler2D RtSampler; // note 2 already use by the im
 
 #if PS_DATE == 3
 layout(binding = 3) uniform sampler2D img_prim_min;
+#endif
 
-// I don't remember why I set this parameter but it is surely useless
-//layout(pixel_center_integer) in vec4 gl_FragCoord;
+// Depth feedback mode 1 binds depth buffer directly as a texture.
+// Depth feedback mode 2 (depth as color) can use FB fetch for the feedback,
+// in which case we don't need to explicitly bind depth as a texture.
+#if (DEPTH_FEEDBACK_SUPPORT == 1 || (DEPTH_FEEDBACK_SUPPORT == 2 && !HAS_FRAMEBUFFER_FETCH)) && NEEDS_DEPTH
+layout(binding = 4) uniform sampler2D DepthSampler;
 #endif
 
 #if (PS_ZFLOOR || PS_ZCLAMP) && PS_HAS_CONSERVATIVE_DEPTH
@@ -125,6 +164,17 @@ vec4 sample_from_rt()
 	return LAST_FRAG_COLOR;
 #else
 	return texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0);
+#endif
+}
+
+vec4 sample_from_depth()
+{
+#if !NEEDS_DEPTH
+	return vec4(0.0);
+#elif HAS_FRAMEBUFFER_FETCH && (DEPTH_FEEDBACK_SUPPORT == 2)
+	return SV_Target1;
+#else
+	return texelFetch(DepthSampler, ivec2(gl_FragCoord.xy), 0);
 #endif
 }
 
@@ -634,17 +684,26 @@ bool atst(vec4 C)
 {
 	float a = C.a;
 
-#if (PS_ATST == 1)
+#if PS_ATST == PS_ATST_LEQUAL
+
 	return (a <= AREF);
-#elif (PS_ATST == 2)
+
+#elif PS_ATST == PS_ATST_GEQUAL
+
 	return (a >= AREF);
-#elif (PS_ATST == 3)
+
+#elif PS_ATST == PS_ATST_EQUAL
+
 	return (abs(a - AREF) <= 0.5f);
-#elif (PS_ATST == 4)
+
+#elif PS_ATST == PS_ATST_NOTEQUAL
+
 	return (abs(a - AREF) >= 0.5f);
+
 #else
-	// nothing to do
+
 	return true;
+
 #endif
 }
 
@@ -974,6 +1033,23 @@ float As = As_rgba.a;
 
 void ps_main()
 {
+	float input_z = gl_FragCoord.z;
+
+	// Must floor before depth testing.
+#if PS_ZFLOOR
+	input_z = floor(input_z * exp2(32.0f)) * exp2(-32.0f);
+#endif
+
+#if NEEDS_DEPTH && (PS_ZTST == ZTST_GEQUAL || PS_ZTST == ZTST_GREATER)
+	#if PS_ZTST == ZTST_GEQUAL
+		if (input_z < sample_from_depth().r)
+			discard;
+	#elif PS_ZTST == ZTST_GREATER
+		if (input_z <= sample_from_depth().r)
+			discard;
+	#endif
+#endif // PS_ZTST
+
 #if PS_SCANMSK & 2
 	// fail depth test on prohibited lines
 	if ((int(gl_FragCoord.y) & 1) == (PS_SCANMSK & 1))
@@ -1022,18 +1098,17 @@ void ps_main()
 #endif
 
 	vec4 C = ps_color();
-	bool atst_pass = atst(C);
 
-#if PS_AFAIL == 0 // KEEP or ATST off
-	if (!atst_pass)
-		discard;
+#if PS_FIXED_ONE_A
+	// AA (Fixed one) will output a coverage of 1.0 as alpha
+	C.a = 128.0f;
 #endif
 
-	// Must be done before alpha correction
+	bool atst_pass = atst(C);
 
-	// AA (Fixed one) will output a coverage of 1.0 as alpha
-#if PS_FIXED_ONE_A
-	C.a = 128.0f;
+#if PS_AFAIL == AFAIL_KEEP
+	if (!atst_pass)
+		discard;
 #endif
 
 #if SW_AD_TO_HW
@@ -1070,7 +1145,6 @@ void ps_main()
 #endif
 
 	ps_blend(C, alpha_blend);
-
 
 #if PS_SHUFFLE
 	#if !PS_READ16_SRC && !PS_SHUFFLE_SAME && !(PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE)
@@ -1123,41 +1197,64 @@ void ps_main()
 
 	ps_fbmask(C);
 
-#if PS_AFAIL == 3 && !PS_NO_COLOR1 // RGB_ONLY
+#if (PS_AFAIL == AFAIL_RGB_ONLY_DSB) && !PS_NO_COLOR1
 	// Use alpha blend factor to determine whether to update A.
 	alpha_blend.a = float(atst_pass);
 #endif
 
 #if !PS_NO_COLOR
 	#if PS_RTA_CORRECTION
-		SV_Target0.a = C.a / 128.0f;
+		C.a = C.a / 128.0f;
 	#else
-		SV_Target0.a = C.a / 255.0f;
+		C.a = C.a / 255.0f;
 	#endif
 	#if PS_COLCLIP_HW == 1
-		SV_Target0.rgb = vec3(C.rgb / 65535.0f);
+		C.rgb = vec3(C.rgb / 65535.0f);
 	#else
-		SV_Target0.rgb = C.rgb / 255.0f;
+		C.rgb = C.rgb / 255.0f;
 	#endif
-	#if PS_AFAIL == 3 && PS_NO_COLOR1 // RGB_ONLY, no dual src blend
+	
+	// Alpha test with feedback
+	#if (PS_AFAIL == AFAIL_FB_ONLY) && NEEDS_DEPTH && PS_ZWRITE
 		if (!atst_pass)
-			SV_Target0.a = sample_from_rt().a;
+			input_z = sample_from_depth().r;
+	#elif (PS_AFAIL == AFAIL_ZB_ONLY) && NEEDS_RT
+		if (!atst_pass)
+			C = sample_from_rt();
+	#elif (PS_AFAIL == AFAIL_RGB_ONLY) 
+		if (!atst_pass)
+		{
+		#if NEEDS_RT
+			C.a = sample_from_rt().a;
+		#endif
+		#if NEEDS_DEPTH && PS_ZWRITE
+			input_z = sample_from_depth().r;
+		#endif
+		}
 	#endif
+
+	// Warning: do not write SV_Target0 until the end since the value might be needed for
+	// FB fetch in sample_from_rt().
+	SV_Target0 = C;
+
 	#if !PS_NO_COLOR1
 		SV_Target1 = alpha_blend;
 	#endif
 #endif
 
-#if PS_ZFLOOR
-float depth_value = floor(gl_FragCoord.z * exp2(32.0f)) * exp2(-32.0f);
-#else
-float depth_value = gl_FragCoord.z;
-#endif
-	
 #if PS_ZCLAMP
-	gl_FragDepth = min(depth_value, MaxDepthPS);
-#elif PS_ZFLOOR
-	gl_FragDepth = depth_value;
+	input_z = min(input_z, MaxDepthPS);
 #endif
 
+#if PS_ZWRITE
+	#if NEEDS_DEPTH && PS_NO_COLOR1 && (DEPTH_FEEDBACK_SUPPORT == 2)
+		// Depth as color write. For depth as color feedback we write to both
+		// color copy and real depth to avoid having to copy back to real depth.
+		// Warning: do not write SV_Target1 until the end since the value might
+		// be needed for FB fetch in sample_from_depth().
+		SV_Target1 = input_z;
+	#endif
+	// Standard depth write.
+	gl_FragDepth = input_z;
+#endif
 }

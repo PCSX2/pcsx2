@@ -214,6 +214,16 @@ float rgb5a1_to_depth16(float4 val)
 	return float(((c.r & 0xF8u) >> 3) | ((c.g & 0xF8u) << 2) | ((c.b & 0xF8u) << 7) | ((c.a & 0x80u) << 8)) * exp2(-32.0f);
 }
 
+float ps_convert_float32_depth_to_color(PS_INPUT input) : SV_Target0
+{
+	return sample_c(input.t).r;
+}
+
+float ps_convert_float32_color_to_depth(PS_INPUT input) : SV_Depth
+{
+	return sample_c(input.t).r;
+}
+
 float ps_convert_float32_float24(PS_INPUT input) : SV_Depth
 {
 	// Truncates depth value to 24bits
