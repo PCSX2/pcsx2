@@ -2350,6 +2350,38 @@ void GSTextureCache::CombineAlignedInsideTargets(Target* target, GSTextureCache:
 	}
 }
 
+bool GSTextureCache::CheckAndResizeTargetValids(GIFRegTEX0 TEX0, GSTextureCache::Target* t, GSTextureCache::Source* src)
+{
+	// So far only Xenosaga 3 hits this code path, the real problem here is the valid area shows twice what it really is,
+	// if this is due to format change or reuse or what it needs to be investigated.
+
+	if (!t || !src)
+		return false;
+
+	if (src->m_from_target != t || !src->m_target_direct)
+		return false;
+
+	const int page_offset = TEX0.TBP0 - t->m_TEX0.TBP0;
+	const int number_pages = page_offset / 32;
+	const u32 tbw = std::max(t->m_TEX0.TBW, 1u);
+	const int row_offset = number_pages / tbw;
+	const int page_height = GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y;
+	const int vertical_pos = row_offset * page_height;
+
+	if (vertical_pos < t->m_valid.w / 2)
+		return false;
+
+	GL_INS("TC: Resizing RT BP 0x%x BW %d PSM %s", t->m_TEX0.TBP0, t->m_TEX0.TBW, GSUtil::GetPSMName(t->m_TEX0.PSM));
+
+	src->m_valid_rect.w = std::min(vertical_pos, src->m_valid_rect.w);
+	t->m_valid.w = std::min(vertical_pos, t->m_valid.w);
+
+	t->ResizeValidity(t->m_valid);
+	t->ResizeDrawn(t->m_valid);
+
+	return true;
+}
+
 GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVector2i& size, float scale, int type,
 	bool used, u32 fbmask, bool is_frame, bool preload, bool preserve_rgb, bool preserve_alpha, const GSVector4i draw_rect,
 	bool is_shuffle, bool possible_clear, bool preserve_scale, GSTextureCache::Source* src, GSTextureCache::Target* ds, int offset)
@@ -2518,10 +2550,17 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 					// I know what you're thinking, and I hate the guy who wrote it too (me). Project Snowblind, Tomb Raider etc decide to offset where they're drawing using a channel shuffle, and this gets messy, so best just to kill the old target.
 					if (is_shuffle && src && src->m_TEX0.PSM == PSMT8 && GSRendererHW::GetInstance()->m_context->FRAME.FBW == 1 && t->m_last_draw != (GSState::s_n - 1) && src->m_from_target && (src->m_from_target->m_TEX0.TBP0 == src->m_TEX0.TBP0 || (((src->m_TEX0.TBP0 - src->m_from_target->m_TEX0.TBP0) >> 5) % std::max(src->m_from_target->m_TEX0.TBW, 1U) == 0)) && widthpage_offset && src->m_from_target != t)
 					{
-						GL_INS("TC: Deleting RT BP 0x%x BW %d PSM %s offset overwrite shuffle", t->m_TEX0.TBP0, t->m_TEX0.TBW, GSUtil::GetPSMName(t->m_TEX0.PSM));
-						InvalidateSourcesFromTarget(t);
-						i = list.erase(i);
-						delete t;
+						if (CheckAndResizeTargetValids(TEX0, t, src))
+						{
+							i++;
+						}
+						else
+						{
+							GL_INS("TC: Deleting RT BP 0x%x BW %d PSM %s offset overwrite shuffle", t->m_TEX0.TBP0, t->m_TEX0.TBW, GSUtil::GetPSMName(t->m_TEX0.PSM));
+							InvalidateSourcesFromTarget(t);
+							i = list.erase(i);
+							delete t;
+						}
 
 						continue;
 					}
@@ -2529,21 +2568,9 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 					if (!is_shuffle && (!GSUtil::HasSameSwizzleBits(t->m_TEX0.PSM, TEX0.PSM) ||
 										   ((widthpage_offset % std::max(t->m_TEX0.TBW, 1U)) != 0 && ((widthpage_offset + (min_rect.width() + (s_psm.pgs.x - 1)) / s_psm.pgs.x)) > t->m_TEX0.TBW)))
 					{
-						const int page_offset = TEX0.TBP0 - t->m_TEX0.TBP0;
-						const int number_pages = page_offset / 32;
-						const u32 tbw = std::max(t->m_TEX0.TBW, 1u);
-						const int row_offset = number_pages / tbw;
-						const int page_height = GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y;
-						const int vertical_position = row_offset * page_height;
-
-						if (src && src->m_from_target == t && src->m_target_direct && vertical_position >= t->m_valid.w / 2)
+						if (CheckAndResizeTargetValids(TEX0, t, src))
 						{
-							// Valids and drawn since last read doesn't match, keep the target but resize it.
-							src->m_valid_rect.w = std::min(vertical_position, src->m_valid_rect.w);
-							t->m_valid.w = std::min(vertical_position, t->m_valid.w);
-							t->ResizeValidity(t->m_valid);
-							t->ResizeDrawn(t->m_valid);
-							++i;
+							i++;
 						}
 						else
 						{
@@ -2568,10 +2595,17 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 
 					if (!is_shuffle && !dirty_rect.rempty() && (!preserve_alpha && !preserve_rgb) && (GSState::s_n - 3) > t->m_last_draw)
 					{
-						GL_INS("TC: Deleting RT BP 0x%x BW %d PSM %s due to dirty areas not preserved (Likely change in target)", t->m_TEX0.TBP0, t->m_TEX0.TBW, GSUtil::GetPSMName(t->m_TEX0.PSM));
-						InvalidateSourcesFromTarget(t);
-						i = list.erase(i);
-						delete t;
+						if (CheckAndResizeTargetValids(TEX0, t, src))
+						{
+							i++;
+						}
+						else
+						{
+							GL_INS("TC: Deleting RT BP 0x%x BW %d PSM %s due to dirty areas not preserved (Likely change in target)", t->m_TEX0.TBP0, t->m_TEX0.TBW, GSUtil::GetPSMName(t->m_TEX0.PSM));
+							InvalidateSourcesFromTarget(t);
+							i = list.erase(i);
+							delete t;
+						}
 
 						continue;
 					}
@@ -2583,8 +2617,8 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 							// Beyond Good and Evil does this awful thing where it puts one framebuffer at 0xf00, with the first row of pages blanked out, and the whole thing goes down to 0x2080
 							// which is a problem, because it then puts the Z buffer at 0x1fc0, then offsets THAT by 1 row of pages, so it starts at, you guessed it, 2080.
 							// So let's check the *real* start.
-							u32 real_start_address = GSLocalMemory::GetStartBlockAddress(t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM, t->m_drawn_since_read);
-							u32 new_end_address = GSLocalMemory::GetEndBlockAddress(TEX0.TBP0, TEX0.TBW, TEX0.PSM, min_rect);
+							const u32 real_start_address = GSLocalMemory::GetStartBlockAddress(t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM, t->m_drawn_since_read);
+							const u32 new_end_address = GSLocalMemory::GetEndBlockAddress(TEX0.TBP0, TEX0.TBW, TEX0.PSM, min_rect);
 
 							// Not really overlapping.
 							if (real_start_address > new_end_address)
@@ -3565,9 +3599,16 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 					// Kill targets that are overlapping new targets, but ignore the copy if the old target is dirty  because we favour GS memory.
 					if (((std::abs(static_cast<int>(t->m_TEX0.TBP0 - dst->m_TEX0.TBP0) >> 5) % buffer_width) != 0) && !t->m_dirty.empty())
 					{
-						InvalidateSourcesFromTarget(t);
-						i = list.erase(j);
-						delete t;
+						if (CheckAndResizeTargetValids(TEX0, t, src))
+						{
+							i++;
+						}
+						else
+						{
+							InvalidateSourcesFromTarget(t);
+							i = list.erase(j);
+							delete t;
+						}
 
 						continue;
 					}
@@ -3704,9 +3745,17 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 							src->m_region.SetX(src->m_region.GetMinX() + dst_offset_width, src->m_region.GetMaxX() + dst_offset_width);
 						}
 
-						InvalidateSourcesFromTarget(t);
-						i = list.erase(j);
-						delete t;
+						if (CheckAndResizeTargetValids(TEX0, t, src))
+						{
+							i++;
+						}
+						else
+						{
+							InvalidateSourcesFromTarget(t);
+							i = list.erase(j);
+							delete t;
+						}
+
 						continue;
 					}
 				}
@@ -3813,9 +3862,16 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 							}
 							else
 							{
-								InvalidateSourcesFromTarget(t);
-								i = list.erase(j);
-								delete t;
+								if (CheckAndResizeTargetValids(TEX0, t, src))
+								{
+									i++;
+								}
+								else
+								{
+									InvalidateSourcesFromTarget(t);
+									i = list.erase(j);
+									delete t;
+								}
 							}
 
 							continue;
