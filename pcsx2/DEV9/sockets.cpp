@@ -6,6 +6,7 @@
 #include "common/ScopedGuard.h"
 
 #ifdef _WIN32
+#include "common/RedtapeWindows.h"
 #include <winsock2.h>
 #include <iphlpapi.h>
 #elif defined(__POSIX__)
@@ -20,6 +21,7 @@
 #include "sockets.h"
 #include "AdapterUtils.h"
 #include "DEV9.h"
+#include "Host.h"
 
 #include "Sessions/ICMP_Session/ICMP_Session.h"
 #include "Sessions/TCP_Session/TCP_Session.h"
@@ -45,7 +47,7 @@ std::vector<AdapterEntry> SocketAdapter::GetAdapters()
 	std::vector<AdapterEntry> nic;
 	AdapterEntry autoEntry;
 	autoEntry.type = Pcsx2Config::DEV9Options::NetApi::Sockets;
-	autoEntry.name = "Auto";
+	autoEntry.name = TRANSLATE_STR("DEV9", "Auto");
 	autoEntry.guid = "Auto";
 	nic.push_back(autoEntry);
 

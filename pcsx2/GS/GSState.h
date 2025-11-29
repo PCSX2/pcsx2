@@ -171,8 +171,9 @@ protected:
 	void UpdateVertexKick();
 
 	void GrowVertexBuffer();
-	bool IsAutoFlushDraw(u32 prim);
+	bool IsAutoFlushDraw(u32 prim, int& tex_layer);
 	template<u32 prim> void HandleAutoFlush();
+	bool EarlyDetectShuffle(u32 prim);
 	void CheckCLUTValidity(u32 prim);
 
 	template <u32 prim, bool auto_flush> void VertexKick(u32 skip);
@@ -269,6 +270,20 @@ public:
 	GSPerfMon m_perfmon_draw;  // Track stat across a draw.
 
 	static constexpr u32 STATE_VERSION = 9;
+
+	#define PRIM_REG_MASK 0x7FF
+	#define MIPTBP_REG_MASK ((1ULL << 60) - 1ULL)
+	#define CLAMP_REG_MASK ((1ULL << 44) - 1ULL)
+	#define TEX1_REG_MASK 0xFFF001803FDULL
+	#define XYOFFSET_REG_MASK 0x0000FFFF0000FFFFULL
+	#define TEXA_REG_MASK 0xFF000080FFULL
+	#define FOGCOL_REG_MASK 0xFFFFFF
+	#define SCISSOR_REG_MASK 0x7FF07FF07FF07FFULL
+	#define ALPHA_REG_MASK 0xFF000000FFULL
+	#define DIMX_REG_MASK 0x7777777777777777ULL
+	#define FRAME_REG_MASK 0xFFFFFFFF3F3F01FFULL
+	#define ZBUF_REG_MASK 0x10F0001FFULL
+	#define TEST_REG_MASK 0x7FFFF
 
 	enum REG_DIRTY
 	{
