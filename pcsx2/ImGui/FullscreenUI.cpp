@@ -10121,7 +10121,7 @@ TRANSLATE_NOOP("FullscreenUI", "Delete Save");
 TRANSLATE_NOOP("FullscreenUI", "Close Menu");
 TRANSLATE_NOOP("FullscreenUI", "Default Boot");
 TRANSLATE_NOOP("FullscreenUI", "Delete State");
-TRANSLATE_NOOP("FullscreenUI", "Incompatible Save State");
+TRANSLATE_NOOP("FullscreenUI", "Failed to Load State");
 TRANSLATE_NOOP("FullscreenUI", "Full Boot");
 TRANSLATE_NOOP("FullscreenUI", "Reset Play Time");
 TRANSLATE_NOOP("FullscreenUI", "Confirm Reset");
