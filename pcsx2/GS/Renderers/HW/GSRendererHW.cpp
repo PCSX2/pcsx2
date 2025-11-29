@@ -5555,7 +5555,7 @@ __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool 
 		// Hitman suffers from this, not sure on the exact scenario at the moment, but we need the barrier.
 		if (NeedsBlending() && m_context->ALPHA.IsCdInBlend())
 		{
-			// Needed to enable IsFeedbackLoop.
+			// Needed to enable IsFeedbackLoopRT.
 			m_conf.ps.channel_fb = 1;
 			// Assume no overlap when it's a channel shuffle, no need for full barriers.
 			m_conf.require_one_barrier = true;
@@ -7711,12 +7711,48 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		rt->m_alpha_max = rt_new_alpha_max;
 		rt->m_alpha_min = rt_new_alpha_min;
 	}
+	
+	// Alpha test afail configuration
 	// Warning must be done after EmulateZbuffer
-	// Depth test is always true so it can be executed in 2 passes (no order required) unlike color.
-	// The idea is to compute first the color which is independent of the alpha test. And then do a 2nd
-	// pass to handle the depth based on the alpha test.
-	const bool ate_first_pass = m_cached_ctx.TEST.DoFirstPass();
+	bool ate_first_pass = m_cached_ctx.TEST.DoFirstPass();
 	bool ate_second_pass = m_cached_ctx.TEST.DoSecondPass();
+
+	// Check if we should force a feedback loop for AFAIL
+	if (ate_first_pass && ate_second_pass && GSConfig.HWAFAILFeedback &&
+		(features.texture_barrier || features.multidraw_fb_copy))
+	{
+		const bool possible_zb_only = (m_cached_ctx.TEST.AFAIL == AFAIL_ZB_ONLY) && m_conf.depth.zwe;
+		const bool possible_rgb_only = (m_cached_ctx.TEST.AFAIL == AFAIL_RGB_ONLY) && rt && m_conf.colormask.wa;
+		const bool possible_fb_only = (m_cached_ctx.TEST.AFAIL == AFAIL_FB_ONLY) && rt && m_conf.colormask.wrgba;
+
+		const bool afail_needs_rt = possible_zb_only || possible_rgb_only;
+		const bool afail_needs_depth = possible_fb_only || possible_rgb_only;
+
+		if (afail_needs_rt)
+		{
+			m_conf.ps.color_feedback = true;
+			ate_second_pass = false;
+			m_conf.ps.afail = m_cached_ctx.TEST.AFAIL;
+			m_conf.require_one_barrier |= (m_prim_overlap == PRIM_OVERLAP_NO);
+			m_conf.require_full_barrier |= (m_prim_overlap != PRIM_OVERLAP_NO);
+		}
+
+		if (afail_needs_depth)
+		{
+			m_conf.ps.depth_feedback = true;
+			ate_second_pass = false;
+			m_conf.ps.afail = m_cached_ctx.TEST.AFAIL;
+			m_conf.require_one_barrier |= (m_prim_overlap == PRIM_OVERLAP_NO);
+			m_conf.require_full_barrier |= (m_prim_overlap != PRIM_OVERLAP_NO);
+			if (m_cached_ctx.TEST.ZTE && m_cached_ctx.TEST.ZTST == ZTST_GEQUAL || m_cached_ctx.TEST.ZTST == ZTST_GREATER)
+			{
+				// Enable SW depth testing and disable HW depth testing.
+				m_conf.ps.ztst = m_cached_ctx.TEST.ZTST;
+				m_conf.depth.ztst = ZTST_ALWAYS;
+			}
+		}
+	}
+
 	bool ate_RGBA_then_Z = false;
 	bool ate_RGB_then_Z = false;
 	GL_INS("HW: %sAlpha Test, ATST=%s, AFAIL=%s", (ate_first_pass && ate_second_pass) ? "Complex" : "",
@@ -7987,8 +8023,6 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		m_conf.cb_ps.FogColor_AREF = fc.blend32<8>(m_conf.cb_ps.FogColor_AREF);
 	}
 
-
-
 	// Update RT scaled alpha flag, nothing's going to read it anymore.
 	if (rt)
 	{
@@ -8004,9 +8038,12 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		if (m_conf.require_one_barrier || m_conf.require_full_barrier)
 			pxAssert(!m_conf.blend.enable);
 
-		// Barriers aren't needed with fbfetch.
-		m_conf.require_one_barrier = false;
-		m_conf.require_full_barrier = false;
+		if (!m_conf.ps.IsFeedbackLoopDepth())
+		{
+			// Barriers aren't needed with fbfetch for color feedback only.
+			m_conf.require_one_barrier = false;
+			m_conf.require_full_barrier = false;
+		}
 	}
 	// Multi-pass algorithms shouldn't be needed with full barrier and backends may not handle this correctly
 	pxAssert(!m_conf.require_full_barrier || !m_conf.ps.colclip_hw);
@@ -8022,6 +8059,13 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		// These shouldn't be enabled if texture barriers aren't supported, make sure they are off.
 		m_conf.ps.write_rg = 0;
 		m_conf.require_full_barrier = false;
+	}
+
+	if (m_conf.require_full_barrier && (g_gs_device->Features().texture_barrier || g_gs_device->Features().multidraw_fb_copy))
+	{
+		ComputeDrawlistGetSize(rt->m_scale);
+		m_conf.drawlist = &m_drawlist;
+		m_conf.drawlist_bbox = &m_drawlist_bbox;
 	}
 
 	// rs
@@ -8094,7 +8138,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 			{
 				m_conf.alpha_second_pass.ps.DisableColorOutput();
 			}
-			if (m_conf.alpha_second_pass.ps.IsFeedbackLoop())
+			if (m_conf.alpha_second_pass.ps.IsFeedbackLoopRT())
 			{
 				m_conf.alpha_second_pass.require_one_barrier = m_conf.require_one_barrier;
 				m_conf.alpha_second_pass.require_full_barrier = m_conf.require_full_barrier;
@@ -8118,14 +8162,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		m_conf.cb_ps.FogColor_AREF.a = m_conf.alpha_second_pass.ps_aref;
 		m_conf.alpha_second_pass.enable = false;
 	}
-
-	if (m_conf.require_full_barrier && (g_gs_device->Features().texture_barrier || g_gs_device->Features().multidraw_fb_copy))
-	{
-		ComputeDrawlistGetSize(rt->m_scale);
-		m_conf.drawlist = &m_drawlist;
-		m_conf.drawlist_bbox = &m_drawlist_bbox;
-	}
-
+	
 	if (!m_channel_shuffle_width)
 		g_gs_device->RenderHW(m_conf);
 	else
