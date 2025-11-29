@@ -13,6 +13,7 @@
 #include "common/Console.h"
 
 #include <QtCore/QDebug>
+#include <QtCore/QTimer>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QKeyEvent>
 #include <QtGui/QResizeEvent>
@@ -32,6 +33,10 @@
 DisplaySurface::DisplaySurface()
 	: QWindow()
 {
+	m_resize_debounce_timer = new QTimer(this);
+	m_resize_debounce_timer->setSingleShot(true);
+	m_resize_debounce_timer->setTimerType(Qt::PreciseTimer);
+	connect(m_resize_debounce_timer, &QTimer::timeout, this, &DisplaySurface::onResizeDebounceTimer);
 }
 
 DisplaySurface::~DisplaySurface()
@@ -245,6 +250,11 @@ void DisplaySurface::handleKeyInputEvent(QEvent* event)
 	}
 }
 
+void DisplaySurface::onResizeDebounceTimer()
+{
+	emit windowResizedEvent(m_pending_window_width, m_pending_window_height, m_pending_window_scale);
+}
+
 bool DisplaySurface::event(QEvent* event)
 {
 	switch (event->type())
@@ -355,10 +365,17 @@ bool DisplaySurface::event(QEvent* event)
 			// avoid spamming resize events for paint events (sent on move on windows)
 			if (m_last_window_width != scaled_width || m_last_window_height != scaled_height || m_last_window_scale != dpr)
 			{
+				m_pending_window_width = scaled_width;
+				m_pending_window_height = scaled_height;
+				m_pending_window_scale = dpr;
+
 				m_last_window_width = scaled_width;
 				m_last_window_height = scaled_height;
 				m_last_window_scale = dpr;
-				emit windowResizedEvent(scaled_width, scaled_height, dpr);
+				// qt spams resize events, sometimes several time per ms.
+				// since a vulkan resize swap chain event takes between 15 to 25ms this is,
+				// need less to say, unwanted.
+				m_resize_debounce_timer->start(100);
 			}
 
 			updateCenterPos();

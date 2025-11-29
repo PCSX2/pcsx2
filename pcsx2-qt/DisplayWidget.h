@@ -3,6 +3,7 @@
 
 #pragma once
 #include "common/WindowInfo.h"
+#include <QtCore/QTimer>
 #include <QtGui/QDragMoveEvent>
 #include <QtGui/QWindow>
 #include <optional>
@@ -42,6 +43,9 @@ protected:
 	bool event(QEvent* event) override;
 	bool eventFilter(QObject* object, QEvent* event) override;
 
+private Q_SLOTS:
+	void onResizeDebounceTimer();
+
 private:
 	bool isActuallyFullscreen() const;
 	void updateCenterPos();
@@ -59,6 +63,11 @@ private:
 	u32 m_last_window_width = 0;
 	u32 m_last_window_height = 0;
 	float m_last_window_scale = 1.0f;
+
+	QTimer* m_resize_debounce_timer = nullptr;
+	u32 m_pending_window_width = 0;
+	u32 m_pending_window_height = 0;
+	float m_pending_window_scale = 1.0f;
 
 	QWidget* m_container = nullptr;
 };
