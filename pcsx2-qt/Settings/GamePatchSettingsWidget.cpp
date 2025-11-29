@@ -84,8 +84,8 @@ GamePatchSettingsWidget::GamePatchSettingsWidget(SettingsWindow* settings_dialog
 	connect(m_ui.allCRCsCheckbox, &QCheckBox::checkStateChanged, this, &GamePatchSettingsWidget::reloadList);
 	connect(dialog(), &SettingsWindow::discSerialChanged, this, &GamePatchSettingsWidget::reloadList);
 
-	dialog()->registerWidgetHelp(m_ui.allCRCsCheckbox, tr("Show Patches For All CRCs"), tr("Checked"),
-		tr("Toggles scanning patch files for all CRCs of the game. With this enabled available patches for the game serial with different CRCs will also be loaded."));
+	dialog()->registerWidgetHelp(m_ui.allCRCsCheckbox, tr("Show Patches For All CRCs"),
+		tr("Toggles scanning patch files for all CRCs of the game. With this enabled available patches for the game serial with different CRCs will also be loaded."), tr("Checked"));
 
 	reloadList();
 }
