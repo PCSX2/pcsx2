@@ -186,7 +186,7 @@ namespace usb_pad
 					goto fail;
 				break;
 			}
-			case VendorDeviceRequest | 0x00:
+			case VendorDeviceRequest: // 0x00
 			{
 				FlightStickConData_VR00 vendordata_00{};
 				ret = sizeof(vendordata_00);
@@ -249,7 +249,7 @@ namespace usb_pad
 					InputManager::SetUSBVibrationIntensity(s->port, std::min(static_cast<float>(data[0]) * (1.0f / 255.0f), 1.0f), 0);
 				}
 				ret = length;
-				p->actual_length = length;
+				p->actual_length = ret;
 				break;
 			}
 			default:
