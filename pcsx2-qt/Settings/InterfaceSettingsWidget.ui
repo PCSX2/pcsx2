@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>725</width>
-    <height>625</height>
+    <height>637</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -75,6 +75,13 @@
        <widget class="QCheckBox" name="pauseOnFocusLoss">
         <property name="text">
          <string>Pause On Focus Loss</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QCheckBox" name="promptOnStateLoadSaveFailure">
+        <property name="text">
+         <string>Prompt On State Load/Save Failure</string>
         </property>
        </widget>
       </item>
@@ -380,6 +387,7 @@
   <tabstop>discordPresence</tabstop>
   <tabstop>pauseOnControllerDisconnection</tabstop>
   <tabstop>mouseLock</tabstop>
+  <tabstop>promptOnStateLoadSaveFailure</tabstop>
   <tabstop>startFullscreen</tabstop>
   <tabstop>doubleClickTogglesFullscreen</tabstop>
   <tabstop>renderToSeparateWindow</tabstop>

@@ -37,6 +37,7 @@
 #include "pcsx2/PerformanceMetrics.h"
 #include "pcsx2/Recording/InputRecording.h"
 #include "pcsx2/Recording/InputRecordingControls.h"
+#include "pcsx2/SaveState.h"
 #include "pcsx2/SIO/Sio.h"
 #include "pcsx2/GS/GSExtra.h"
 
@@ -1211,6 +1212,58 @@ bool MainWindow::confirmMessage(const QString& title, const QString& message)
 void MainWindow::onStatusMessage(const QString& message)
 {
 	m_ui.statusBar->showMessage(message);
+}
+
+void MainWindow::reportStateLoadError(const QString& message, std::optional<s32> slot, bool backup)
+{
+	const bool prompt_on_error = Host::GetBaseBoolSettingValue("UI", "PromptOnStateLoadSaveFailure", true);
+	if (!prompt_on_error)
+	{
+		SaveState_ReportLoadErrorOSD(message.toStdString(), slot, backup);
+		return;
+	}
+
+	QString title;
+	if (slot.has_value())
+	{
+		if (backup)
+			title = tr("Failed to Load State From Backup Slot %1").arg(*slot);
+		else
+			title = tr("Failed to Load State From Slot %1").arg(*slot);
+	}
+	else
+	{
+		title = tr("Failed to Load State");
+	}
+
+	VMLock lock(pauseAndLockVM());
+
+	QCheckBox* do_not_show_again = new QCheckBox(tr("Do not show again"));
+
+	QPointer<QMessageBox> message_box = new QMessageBox(this);
+	message_box->setWindowTitle(title);
+	message_box->setText(message);
+	message_box->setIcon(QMessageBox::Critical);
+	message_box->addButton(QMessageBox::Ok);
+	message_box->setDefaultButton(QMessageBox::Ok);
+	message_box->setCheckBox(do_not_show_again);
+
+	message_box->exec();
+	if (message_box.isNull())
+		return;
+
+	if (do_not_show_again->isChecked())
+	{
+		Host::SetBaseBoolSettingValue("UI", "PromptOnStateLoadSaveFailure", false);
+		Host::CommitBaseSettingChanges();
+		if (m_settings_window)
+		{
+			InterfaceSettingsWidget* interface_settings = m_settings_window->getInterfaceSettingsWidget();
+			interface_settings->updatePromptOnStateLoadSaveFailureCheckbox(Qt::Unchecked);
+		}
+	}
+
+	delete message_box;
 }
 
 void MainWindow::runOnUIThread(const std::function<void()>& func)

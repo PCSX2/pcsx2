@@ -15,6 +15,8 @@ public:
 	InterfaceSettingsWidget(SettingsWindow* settings_dialog, QWidget* parent);
 	~InterfaceSettingsWidget();
 
+	void updatePromptOnStateLoadSaveFailureCheckbox(Qt::CheckState state);
+
 Q_SIGNALS:
 	void themeChanged();
 	void languageChanged();

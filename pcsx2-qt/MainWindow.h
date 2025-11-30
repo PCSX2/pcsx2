@@ -120,6 +120,7 @@ public Q_SLOTS:
 	void reportError(const QString& title, const QString& message);
 	bool confirmMessage(const QString& title, const QString& message);
 	void onStatusMessage(const QString& message);
+	void reportStateLoadError(const QString& message, std::optional<s32> slot, bool backup);
 
 	void runOnUIThread(const std::function<void()>& func);
 	void requestReset();
