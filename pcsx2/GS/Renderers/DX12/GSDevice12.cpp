@@ -624,50 +624,89 @@ bool GSDevice12::SetGPUTimingEnabled(bool enabled)
 bool GSDevice12::AllocatePreinitializedGPUBuffer(u32 size, ID3D12Resource** gpu_buffer,
 	D3D12MA::Allocation** gpu_allocation, const std::function<void(void*)>& fill_callback)
 {
-	// Try to place the fixed index buffer in GPU local memory.
-	// Use the staging buffer to copy into it.
+	// Allocate and fill staging buffer
+	ID3D12Resource* cpu_buffer = AllocateUploadStagingBuffer(size, fill_callback);
+
+	// Create GPU buffer
 	const D3D12_RESOURCE_DESC rd = {D3D12_RESOURCE_DIMENSION_BUFFER, 0, size, 1, 1, 1, DXGI_FORMAT_UNKNOWN, {1, 0},
 		D3D12_TEXTURE_LAYOUT_ROW_MAJOR, D3D12_RESOURCE_FLAG_NONE};
-
-	const D3D12MA::ALLOCATION_DESC cpu_ad = {D3D12MA::ALLOCATION_FLAG_NONE, D3D12_HEAP_TYPE_UPLOAD};
-
-	ComPtr<ID3D12Resource> cpu_buffer;
-	ComPtr<D3D12MA::Allocation> cpu_allocation;
-	HRESULT hr = m_allocator->CreateResource(
-		&cpu_ad, &rd, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, cpu_allocation.put(), IID_PPV_ARGS(cpu_buffer.put()));
-	pxAssertMsg(SUCCEEDED(hr), "Allocate CPU buffer");
-	if (FAILED(hr))
-		return false;
-
-	static constexpr const D3D12_RANGE read_range = {};
-	const D3D12_RANGE write_range = {0, size};
-	void* mapped;
-	hr = cpu_buffer->Map(0, &read_range, &mapped);
-	pxAssertMsg(SUCCEEDED(hr), "Map CPU buffer");
-	if (FAILED(hr))
-		return false;
-	fill_callback(mapped);
-	cpu_buffer->Unmap(0, &write_range);
-
 	const D3D12MA::ALLOCATION_DESC gpu_ad = {D3D12MA::ALLOCATION_FLAG_COMMITTED, D3D12_HEAP_TYPE_DEFAULT};
-
-	hr = m_allocator->CreateResource(
+	HRESULT hr = m_allocator->CreateResource(
 		&gpu_ad, &rd, D3D12_RESOURCE_STATE_COMMON, nullptr, gpu_allocation, IID_PPV_ARGS(gpu_buffer));
 	pxAssertMsg(SUCCEEDED(hr), "Allocate GPU buffer");
 	if (FAILED(hr))
 		return false;
 
-	GetInitCommandList()->CopyBufferRegion(*gpu_buffer, 0, cpu_buffer.get(), 0, size);
+	// Copy the data
+	GetInitCommandList()->CopyBufferRegion(*gpu_buffer, 0, cpu_buffer, 0, size);
 
+	// Transition GPU buffer to COPY_DEST
 	D3D12_RESOURCE_BARRIER rb = {D3D12_RESOURCE_BARRIER_TYPE_TRANSITION, D3D12_RESOURCE_BARRIER_FLAG_NONE};
 	rb.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 	rb.Transition.pResource = *gpu_buffer;
 	rb.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST; // COMMON -> COPY_DEST at first use.
 	rb.Transition.StateAfter = D3D12_RESOURCE_STATE_INDEX_BUFFER;
 	GetInitCommandList()->ResourceBarrier(1, &rb);
-
-	DeferResourceDestruction(cpu_allocation.get(), cpu_buffer.get());
 	return true;
+}
+
+ID3D12Resource* GSDevice12::WriteTextureUploadBuffer(u32 size, std::function<void(void*)> write_data, u32& offset_out)
+{
+	if (!m_texture_stream_buffer.ReserveMemory(size, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT))
+	{
+		GSDevice12::GetInstance()->ExecuteCommandList(
+			false, "While waiting for %u bytes in texture upload buffer", size);
+		if (!m_texture_stream_buffer.ReserveMemory(size, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT))
+		{
+			Console.Error("Failed to reserve texture upload memory (%u bytes).", size);
+			return nullptr;
+		}
+	}
+
+	offset_out = m_texture_stream_buffer.GetCurrentOffset();
+	write_data(m_texture_stream_buffer.GetCurrentHostPointer());
+	m_texture_stream_buffer.CommitMemory(size);
+	return m_texture_stream_buffer.GetBuffer();
+}
+
+ID3D12Resource* GSDevice12::AllocateUploadStagingBuffer(u32 size, std::function<void(void*)> write_data)
+{
+	wil::com_ptr_nothrow<ID3D12Resource> resource;
+	wil::com_ptr_nothrow<D3D12MA::Allocation> allocation;
+
+	// Allocate staging buffer
+	const D3D12MA::ALLOCATION_DESC allocation_desc = {D3D12MA::ALLOCATION_FLAG_NONE, D3D12_HEAP_TYPE_UPLOAD};
+	const D3D12_RESOURCE_DESC resource_desc = {D3D12_RESOURCE_DIMENSION_BUFFER, 0, size, 1, 1, 1,
+		DXGI_FORMAT_UNKNOWN, {1, 0}, D3D12_TEXTURE_LAYOUT_ROW_MAJOR, D3D12_RESOURCE_FLAG_NONE};
+	HRESULT hr = GetAllocator()->CreateResource(&allocation_desc, &resource_desc,
+		D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, allocation.put(), IID_PPV_ARGS(resource.put()));
+	if (FAILED(hr))
+	{
+		Console.WriteLn("(AllocateUploadStagingBuffer) CreateCommittedResource() failed with %08X", hr);
+		return nullptr;
+	}
+
+	// Map
+	static constexpr const D3D12_RANGE read_range = {};
+	void* map_ptr;
+	hr = resource->Map(0, &read_range, &map_ptr);
+	if (FAILED(hr))
+	{
+		Console.WriteLn("(AllocateUploadStagingBuffer) Map() failed with %08X", hr);
+		return nullptr;
+	}
+
+	// Write data
+	write_data(map_ptr);
+
+	// Unmap
+	const D3D12_RANGE write_range = {0, size};
+	resource->Unmap(0, &write_range);
+
+	// Immediately queue it for freeing after the command buffer finishes, since it's only needed for the copy.
+	// This adds the reference needed to keep the buffer alive.
+	DeferResourceDestruction(allocation.get(), resource.get());
+	return resource.get();
 }
 
 RenderAPI GSDevice12::GetRenderAPI() const
@@ -1249,6 +1288,8 @@ bool GSDevice12::CheckFeatures(const u32& vendor_id)
 	const HRESULT hr = m_dxgi_factory->CheckFeatureSupport(
 		DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allow_tearing_supported, sizeof(allow_tearing_supported));
 	m_allow_tearing_supported = (SUCCEEDED(hr) && allow_tearing_supported == TRUE);
+
+	m_features.accurate_prims = GSConfig.HWAccuratePrims;
 
 	return true;
 }
@@ -2178,6 +2219,93 @@ void GSDevice12::IASetIndexBuffer(const void* index, size_t count)
 	m_index_stream_buffer.CommitMemory(size);
 }
 
+void GSDevice12::SetupAccuratePrimsBuffer(GSHWDrawConfig& config)
+{
+	if (config.accurate_prims)
+	{
+		// Unbind the buffer.
+		m_dirty_flags |= DIRTY_FLAG_PS_ACCURATE_PRIMS_BUFFER_BINDING;
+
+		const u32 count = config.accurate_prims_edge_data->size();
+		const u32 size = count * sizeof(AccuratePrimsEdgeData);
+
+		// Reserve the GPU region.
+		if (!m_accurate_prims_stream_buffer.ReserveMemory(size, sizeof(AccuratePrimsEdgeData)))
+		{
+			ExecuteCommandListAndRestartRenderPass(false, "Uploading bytes to accurate prims buffer");
+			if (!m_accurate_prims_stream_buffer.ReserveMemory(size, sizeof(AccuratePrimsEdgeData)))
+				pxFailRel("Failed to reserve space for accurate prims");
+		}
+
+		const u32 offset = m_accurate_prims_stream_buffer.GetCurrentOffset();
+
+		if (InRenderPass())
+			EndRenderPass();
+
+		// Copy data to an upload buffer.
+		ID3D12Resource* upload_buffer;
+		u32 upload_buffer_offset;
+
+		const auto upload_data = [&](void* map_ptr) {
+			std::memcpy(map_ptr, config.accurate_prims_edge_data->data(), size);
+		};
+
+		// If the texture is larger than half our streaming buffer size, use a separate buffer.
+		// Otherwise allocation will either fail, or require lots of cmdbuffer submissions.
+		if (size > m_texture_stream_buffer.GetSize() / 2)
+		{
+			upload_buffer_offset = 0;
+			upload_buffer = AllocateUploadStagingBuffer(size, upload_data);
+		}
+		else
+		{
+			upload_buffer = WriteTextureUploadBuffer(size, upload_data, upload_buffer_offset);
+		}
+		if (!upload_buffer)
+		{
+			Console.Error("Failed to get upload buffer for accurate prims data.");
+			return;
+		}
+		
+		// Copy data from upload to GPU buffer.
+		const D3D12_RESOURCE_BARRIER barrier_sr_to_dst = {
+			D3D12_RESOURCE_BARRIER_TYPE_TRANSITION,
+			D3D12_RESOURCE_BARRIER_FLAG_NONE,
+			{{m_accurate_prims_stream_buffer.GetBuffer(), 0,
+				D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+				D3D12_RESOURCE_STATE_COPY_DEST}}};
+		GetCommandList()->ResourceBarrier(1, &barrier_sr_to_dst);
+		GetCommandList()->CopyBufferRegion(
+			m_accurate_prims_stream_buffer.GetBuffer(), offset, upload_buffer, upload_buffer_offset, size);
+
+		// Commit the GPU region.
+		m_accurate_prims_stream_buffer.CommitMemory(size);
+
+		// Issue the barrier since this will be used next draw.
+		const D3D12_RESOURCE_BARRIER barrier_dst_to_sr = {
+			D3D12_RESOURCE_BARRIER_TYPE_TRANSITION,
+			D3D12_RESOURCE_BARRIER_FLAG_NONE,
+			{{m_accurate_prims_stream_buffer.GetBuffer(), 0,
+				D3D12_RESOURCE_STATE_COPY_DEST,
+				D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE}}};
+		GetCommandList()->ResourceBarrier(1, &barrier_dst_to_sr);
+		
+		m_accurate_prims_stream_buffer_offset = offset; // Save this for the constant buffer.
+	}
+}
+
+void GSDevice12::SetupAccuratePrimsConstants(GSHWDrawConfig& config)
+{
+	if (config.accurate_prims)
+	{
+		config.cb_vs.base_vertex = m_vertex.start;
+		config.cb_ps.accurate_prims_base_index.x = m_accurate_prims_stream_buffer_offset / sizeof(AccuratePrimsEdgeData);
+
+		SetVSConstantBuffer(config.cb_vs);
+		SetPSConstantBuffer(config.cb_ps);
+	}
+}
+
 void GSDevice12::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i& scissor)
 {
 	GSTexture12* vkRt = static_cast<GSTexture12*>(rt);
@@ -2305,9 +2433,9 @@ bool GSDevice12::GetTextureGroupDescriptors(
 	}
 
 	D3D12_CPU_DESCRIPTOR_HANDLE dst_handle = *gpu_handle;
-	D3D12_CPU_DESCRIPTOR_HANDLE src_handles[NUM_TFX_TEXTURES];
-	UINT src_sizes[NUM_TFX_TEXTURES];
-	pxAssert(count <= NUM_TFX_TEXTURES);
+	D3D12_CPU_DESCRIPTOR_HANDLE src_handles[NUM_TOTAL_TFX_TEXTURES];
+	UINT src_sizes[NUM_TOTAL_TFX_TEXTURES];
+	pxAssert(count <= NUM_TOTAL_TFX_TEXTURES);
 	for (u32 i = 0; i < count; i++)
 	{
 		src_handles[i] = cpu_handles[i];
@@ -2365,6 +2493,39 @@ bool GSDevice12::CreateBuffers()
 		return false;
 	}
 
+	if (!m_accurate_prims_stream_buffer.Create(
+			m_features.accurate_prims ? ACCURATE_PRIMS_BUFFER_SIZE : sizeof(AccuratePrimsEdgeData), true))
+	{
+		Host::ReportErrorAsync("GS", "Failed to allocate accurate prims buffer");
+		return false;
+	}
+
+	if (!m_descriptor_heap_manager.Allocate(&m_accurate_prims_srv_descriptor_cpu))
+	{
+		Console.Error("Failed to allocate accurate prims CPU descriptor");
+		return false;
+	}
+
+	if (m_features.accurate_prims)
+	{
+		// Transition to accurate prims buffer to pixel shader resource and create the shader resource view.
+		const D3D12_RESOURCE_BARRIER barrier = {
+			D3D12_RESOURCE_BARRIER_TYPE_TRANSITION,
+			D3D12_RESOURCE_BARRIER_FLAG_NONE,
+			{{m_accurate_prims_stream_buffer.GetBuffer(), 0,
+				D3D12_RESOURCE_STATE_COMMON,
+				D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE}}};
+		GetInitCommandList()->ResourceBarrier(1, &barrier);
+
+		D3D12_SHADER_RESOURCE_VIEW_DESC desc = {
+			DXGI_FORMAT_UNKNOWN, D3D12_SRV_DIMENSION_BUFFER, D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING};
+		desc.Buffer.FirstElement = 0;
+		desc.Buffer.NumElements = ACCURATE_PRIMS_BUFFER_SIZE / sizeof(AccuratePrimsEdgeData);
+		desc.Buffer.StructureByteStride = sizeof(AccuratePrimsEdgeData);
+		m_device->CreateShaderResourceView(m_accurate_prims_stream_buffer.GetBuffer(), &desc,
+			m_accurate_prims_srv_descriptor_cpu.cpu_handle);
+	}
+
 	if (!m_vertex_constant_buffer.Create(VERTEX_UNIFORM_BUFFER_SIZE))
 	{
 		Host::ReportErrorAsync("GS", "Failed to allocate vertex uniform buffer");
@@ -2415,9 +2576,11 @@ bool GSDevice12::CreateRootSignatures()
 	rsb.AddCBVParameter(0, D3D12_SHADER_VISIBILITY_ALL);
 	rsb.AddCBVParameter(1, D3D12_SHADER_VISIBILITY_PIXEL);
 	rsb.AddSRVParameter(0, D3D12_SHADER_VISIBILITY_VERTEX);
-	rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 2, D3D12_SHADER_VISIBILITY_PIXEL);
+	rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 2, D3D12_SHADER_VISIBILITY_PIXEL); // Source / Palette 
 	rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, NUM_TFX_SAMPLERS, D3D12_SHADER_VISIBILITY_PIXEL);
-	rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 2, D3D12_SHADER_VISIBILITY_PIXEL);
+	rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 2, D3D12_SHADER_VISIBILITY_PIXEL); // RT / PrimID
+	rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 4, 1, D3D12_SHADER_VISIBILITY_PIXEL); // Depth
+	rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 5, 1, D3D12_SHADER_VISIBILITY_PIXEL); // Accurate Prims
 	if (!(m_tfx_root_signature = rsb.Create()))
 		return false;
 	D3D12::SetObjectName(m_tfx_root_signature.get(), "TFX root signature");
@@ -2805,6 +2968,7 @@ void GSDevice12::DestroyResources()
 	m_vertex_constant_buffer.Destroy(false);
 	m_index_stream_buffer.Destroy(false);
 	m_vertex_stream_buffer.Destroy(false);
+	m_accurate_prims_stream_buffer.Destroy(false);
 
 	m_utility_root_signature.reset();
 	m_tfx_root_signature.reset();
@@ -2818,6 +2982,7 @@ void GSDevice12::DestroyResources()
 	m_shader_cache.Close();
 
 	m_descriptor_heap_manager.Free(&m_null_srv_descriptor);
+	m_descriptor_heap_manager.Free(&m_accurate_prims_srv_descriptor_cpu);
 	m_timestamp_query_buffer.reset();
 	m_timestamp_query_allocation.reset();
 	m_sampler_heap_manager.Destroy();
@@ -2851,6 +3016,7 @@ const ID3DBlob* GSDevice12::GetTFXVertexShader(GSHWDrawConfig::VSSelector sel)
 	sm.AddMacro("VS_FST", sel.fst);
 	sm.AddMacro("VS_IIP", sel.iip);
 	sm.AddMacro("VS_EXPAND", static_cast<int>(sel.expand));
+	sm.AddMacro("VS_ACCURATE_PRIMS", static_cast<int>(sel.accurate_prims));
 
 	const char* entry_point = (sel.expand != GSHWDrawConfig::VSExpand::None) ? "vs_main_expand" : "vs_main";
 	ComPtr<ID3DBlob> vs(m_shader_cache.GetVertexShader(m_tfx_source, sm.GetPtr(), entry_point));
@@ -2922,6 +3088,10 @@ const ID3DBlob* GSDevice12::GetTFXPixelShader(const GSHWDrawConfig::PSSelector& 
 	sm.AddMacro("PS_TEX_IS_FB", sel.tex_is_fb);
 	sm.AddMacro("PS_NO_COLOR", sel.no_color);
 	sm.AddMacro("PS_NO_COLOR1", sel.no_color1);
+	sm.AddMacro("PS_ACCURATE_PRIMS", sel.accurate_prims);
+	sm.AddMacro("PS_ACCURATE_PRIMS_AA", sel.accurate_prims_aa);
+	sm.AddMacro("PS_ACCURATE_PRIMS_AA_ABE", sel.accurate_prims_aa_abe);
+	sm.AddMacro("PS_ZTST", sel.ztst);
 
 	ComPtr<ID3DBlob> ps(m_shader_cache.GetPixelShader(m_tfx_source, sm.GetPtr(), "ps_main"));
 	it = m_tfx_pixel_shaders.emplace(sel, std::move(ps)).first;
@@ -3155,6 +3325,7 @@ void GSDevice12::InvalidateCachedState()
 	m_tfx_textures_handle_gpu.Clear();
 	m_tfx_samplers_handle_gpu.Clear();
 	m_tfx_rt_textures_handle_gpu.Clear();
+	m_tfx_depth_textures_handle_gpu.Clear();
 }
 
 void GSDevice12::SetVertexBuffer(D3D12_GPU_VIRTUAL_ADDRESS buffer, size_t size, size_t stride)
@@ -3236,7 +3407,11 @@ void GSDevice12::PSSetShaderResource(int i, GSTexture* sr, bool check_state)
 		return;
 
 	m_tfx_textures[i] = handle;
-	m_dirty_flags |= (i < 2) ? DIRTY_FLAG_TFX_TEXTURES : DIRTY_FLAG_TFX_RT_TEXTURES;
+	m_dirty_flags |=
+		(i < 2) ? DIRTY_FLAG_TFX_TEXTURES :
+		(i < 4) ? DIRTY_FLAG_TFX_RT_TEXTURES :
+		(i < 5) ? DIRTY_FLAG_TFX_DEPTH_TEXTURES :
+		          0; 
 }
 
 void GSDevice12::PSSetSampler(GSHWDrawConfig::SamplerSelector sel)
@@ -3639,6 +3814,17 @@ bool GSDevice12::ApplyTFXState(bool already_execed)
 		flags |= DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE_2;
 	}
 
+	if (flags & DIRTY_FLAG_TFX_DEPTH_TEXTURES)
+	{
+		if (!GetTextureGroupDescriptors(&m_tfx_depth_textures_handle_gpu, m_tfx_textures.data() + 4, 1))
+		{
+			ExecuteCommandListAndRestartRenderPass(false, "Ran out of TFX depth descriptor descriptor groups");
+			return ApplyTFXState(true);
+		}
+
+		flags |= DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE_3;
+	}
+
 	ID3D12GraphicsCommandList* cmdlist = GetCommandList();
 
 	if (m_current_root_signature != RootSignature::TFX)
@@ -3646,7 +3832,8 @@ bool GSDevice12::ApplyTFXState(bool already_execed)
 		m_current_root_signature = RootSignature::TFX;
 		flags |= DIRTY_FLAG_VS_CONSTANT_BUFFER_BINDING | DIRTY_FLAG_PS_CONSTANT_BUFFER_BINDING |
 		         DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE | DIRTY_FLAG_SAMPLERS_DESCRIPTOR_TABLE |
-		         DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE_2 | DIRTY_FLAG_PIPELINE;
+		         DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE_2 | DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE_3 |
+		         DIRTY_FLAG_PIPELINE;
 		cmdlist->SetGraphicsRootSignature(m_tfx_root_signature.get());
 	}
 
@@ -3659,12 +3846,28 @@ bool GSDevice12::ApplyTFXState(bool already_execed)
 		cmdlist->SetGraphicsRootShaderResourceView(TFX_ROOT_SIGNATURE_PARAM_VS_SRV,
 			m_vertex_stream_buffer.GetGPUPointer() + m_vertex.start * sizeof(GSVertex));
 	}
+	if (flags & DIRTY_FLAG_PS_ACCURATE_PRIMS_BUFFER_BINDING)
+	{
+		if (!GetDescriptorAllocator().Allocate(1, &m_accurate_prims_srv_descriptor_gpu))
+		{
+			Console.Error("Failed to allocate accurate prims GPU descriptor");
+			return false;
+		}
+
+		m_device.get()->CopyDescriptorsSimple(
+			1, m_accurate_prims_srv_descriptor_gpu, m_accurate_prims_srv_descriptor_cpu, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+		cmdlist->SetGraphicsRootDescriptorTable(TFX_ROOT_SIGNATURE_PARAM_PS_ACCURATE_PRIMS_SRV, m_accurate_prims_srv_descriptor_gpu);
+		
+	}
 	if (flags & DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE)
 		cmdlist->SetGraphicsRootDescriptorTable(TFX_ROOT_SIGNATURE_PARAM_PS_TEXTURES, m_tfx_textures_handle_gpu);
 	if (flags & DIRTY_FLAG_SAMPLERS_DESCRIPTOR_TABLE)
 		cmdlist->SetGraphicsRootDescriptorTable(TFX_ROOT_SIGNATURE_PARAM_PS_SAMPLERS, m_tfx_samplers_handle_gpu);
 	if (flags & DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE_2)
 		cmdlist->SetGraphicsRootDescriptorTable(TFX_ROOT_SIGNATURE_PARAM_PS_RT_TEXTURES, m_tfx_rt_textures_handle_gpu);
+	if (flags & DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE_3)
+		cmdlist->SetGraphicsRootDescriptorTable(TFX_ROOT_SIGNATURE_PARAM_PS_DEPTH_TEXTURES, m_tfx_depth_textures_handle_gpu);
 
 	ApplyBaseState(flags, cmdlist);
 	return true;
@@ -3829,11 +4032,25 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	GSTexture12* draw_rt = static_cast<GSTexture12*>(config.rt);
 	GSTexture12* draw_ds = static_cast<GSTexture12*>(config.ds);
 	GSTexture12* draw_rt_clone = nullptr;
+	GSTexture12* draw_ds_clone = nullptr;
+	GSTexture12* date_image = nullptr;
+
+	ScopedGuard recycle_temp_textures([&]() {
+		if (draw_rt_clone)
+			Recycle(draw_rt_clone);
+		if (draw_ds_clone)
+			Recycle(draw_ds_clone);
+		if (date_image)
+			Recycle(date_image);
+	});
 
 	// Align the render area to 128x128, hopefully avoiding render pass restarts for small render area changes (e.g. Ratchet and Clank).
 	const GSVector2i rtsize(config.rt ? config.rt->GetSize() : config.ds->GetSize());
 
 	PipelineSelector& pipe = m_pipeline_selector;
+
+	// Copying buffers needs to done outside render pass so do this early.
+	SetupAccuratePrimsBuffer(config);
 
 	// figure out the pipeline
 	UpdateHWPipelineSelector(config);
@@ -3903,7 +4120,6 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	}
 
 	// Primitive ID tracking DATE setup.
-	GSTexture12* date_image = nullptr;
 	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking)
 	{
 		GSTexture* backup_rt = config.rt;
@@ -3991,6 +4207,15 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 			Console.Warning("D3D12: Failed to allocate temp texture for RT copy.");
 	}
 
+	if (draw_ds && config.require_full_barrier && m_features.multidraw_fb_copy && config.ps.IsFeedbackLoopDepth())
+	{
+		// Requires a copy of the DS.
+		// Used as "bind ds" flag when texture barrier is unsupported for tex is fb.
+		draw_ds_clone = static_cast<GSTexture12*>(CreateTexture(rtsize.x, rtsize.y, 1, draw_ds->GetFormat(), true));
+		if (!draw_rt_clone)
+			Console.Warning("D3D12: Failed to allocate temp texture for DS copy.");
+	}
+
 	OMSetRenderTargets(draw_rt, draw_ds, config.scissor);
 
 	// Begin render pass if new target or out of the area.
@@ -4036,7 +4261,8 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		UploadHWDrawVerticesAndIndices(config);
 
 	// now we can do the actual draw
-	SendHWDraw(pipe, config, draw_rt_clone, draw_rt, config.require_one_barrier, config.require_full_barrier, false);
+	SendHWDraw(pipe, config, draw_rt_clone, draw_rt, draw_ds_clone, draw_ds,
+		config.require_one_barrier, config.require_full_barrier, false);
 
 	// blend second pass
 	if (config.blend_multi_pass.enable)
@@ -4065,14 +4291,9 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		pipe.cms = config.alpha_second_pass.colormask;
 		pipe.dss = config.alpha_second_pass.depth;
 		pipe.bs = config.blend;
-		SendHWDraw(pipe, config, draw_rt_clone, draw_rt, config.alpha_second_pass.require_one_barrier, config.alpha_second_pass.require_full_barrier, true);
+		SendHWDraw(pipe, config, draw_rt_clone, draw_rt, draw_ds_clone, draw_ds,
+			config.alpha_second_pass.require_one_barrier, config.alpha_second_pass.require_full_barrier, true);
 	}
-
-	if (draw_rt_clone)
-		Recycle(draw_rt_clone);
-
-	if (date_image)
-		Recycle(date_image);
 
 	// now blit the colclip texture back to the original target
 	if (colclip_rt)
@@ -4108,23 +4329,40 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	}
 }
 
-void GSDevice12::SendHWDraw(const PipelineSelector& pipe, const GSHWDrawConfig& config, GSTexture12* draw_rt_clone, GSTexture12* draw_rt, const bool one_barrier, const bool full_barrier, const bool skip_first_barrier)
+void GSDevice12::SendHWDraw(const PipelineSelector& pipe, const GSHWDrawConfig& config,
+	GSTexture12* draw_rt_clone, GSTexture12* draw_rt,
+	GSTexture12* draw_ds_clone, GSTexture12* draw_ds,
+	const bool one_barrier, const bool full_barrier, const bool skip_first_barrier)
 {
-	if (draw_rt_clone)
+	if (draw_rt_clone || draw_ds_clone)
 	{
 
 #ifdef PCSX2_DEVBUILD
-		if ((one_barrier || full_barrier) && !config.ps.IsFeedbackLoop()) [[unlikely]]
+		if ((one_barrier || full_barrier) && !(config.ps.IsFeedbackLoop() || config.ps.IsFeedbackLoopDepth())) [[unlikely]]
 			Console.Warning("D3D12: Possible unnecessary copy detected.");
 #endif
 		auto CopyAndBind = [&](GSVector4i drawarea) {
 			EndRenderPass();
 
-			CopyRect(draw_rt, draw_rt_clone, drawarea, drawarea.left, drawarea.top);
-			draw_rt->TransitionToState(D3D12_RESOURCE_STATE_RENDER_TARGET);
+			if (draw_rt_clone)
+			{
+				CopyRect(draw_rt, draw_rt_clone, drawarea, drawarea.left, drawarea.top);
+				draw_rt->TransitionToState(D3D12_RESOURCE_STATE_RENDER_TARGET);
+			}
+
+			if (draw_ds_clone)
+			{
+				CopyRect(draw_ds, draw_ds_clone, drawarea, drawarea.left, drawarea.top);
+				draw_ds->TransitionToState(D3D12_RESOURCE_STATE_DEPTH_WRITE);
+			}
 
 			if (one_barrier || full_barrier)
-				PSSetShaderResource(2, draw_rt_clone, true);
+			{
+				if (draw_rt_clone)
+					PSSetShaderResource(2, draw_rt_clone, true);
+				if (draw_ds_clone)
+					PSSetShaderResource(4, draw_ds_clone, true);
+			}
 			if (config.tex && config.tex == config.rt)
 				PSSetShaderResource(0, draw_rt_clone, true);
 		};
@@ -4153,7 +4391,6 @@ void GSDevice12::SendHWDraw(const PipelineSelector& pipe, const GSHWDrawConfig& 
 			return;
 		}
 
-
 		// Optimization: For alpha second pass we can reuse the copy snapshot from the first pass.
 		if (!skip_first_barrier)
 			CopyAndBind(config.drawarea);
@@ -4177,7 +4414,7 @@ void GSDevice12::UpdateHWPipelineSelector(GSHWDrawConfig& config)
 	m_pipeline_selector.ds = config.ds != nullptr;
 }
 
-void GSDevice12::UploadHWDrawVerticesAndIndices(const GSHWDrawConfig& config)
+void GSDevice12::UploadHWDrawVerticesAndIndices(GSHWDrawConfig& config)
 {
 	IASetVertexBuffer(config.verts, sizeof(GSVertex), config.nverts);
 
@@ -4195,4 +4432,7 @@ void GSDevice12::UploadHWDrawVerticesAndIndices(const GSHWDrawConfig& config)
 	{
 		IASetIndexBuffer(config.indices, config.nindices);
 	}
+
+	// Needs to be done after vertex offset is set.
+	SetupAccuratePrimsConstants(config);
 }

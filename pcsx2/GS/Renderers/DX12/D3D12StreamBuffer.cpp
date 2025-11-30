@@ -20,29 +20,33 @@ D3D12StreamBuffer::~D3D12StreamBuffer()
 	Destroy();
 }
 
-bool D3D12StreamBuffer::Create(u32 size)
+bool D3D12StreamBuffer::Create(u32 size, bool default_heap)
 {
 	const D3D12_RESOURCE_DESC resource_desc = {D3D12_RESOURCE_DIMENSION_BUFFER, 0, size, 1, 1, 1, DXGI_FORMAT_UNKNOWN,
 		{1, 0}, D3D12_TEXTURE_LAYOUT_ROW_MAJOR, D3D12_RESOURCE_FLAG_NONE};
 
 	D3D12MA::ALLOCATION_DESC allocationDesc = {};
 	allocationDesc.Flags = D3D12MA::ALLOCATION_FLAG_COMMITTED;
-	allocationDesc.HeapType = D3D12_HEAP_TYPE_UPLOAD;
+	allocationDesc.HeapType = default_heap ? D3D12_HEAP_TYPE_DEFAULT : D3D12_HEAP_TYPE_UPLOAD;
 
 	wil::com_ptr_nothrow<ID3D12Resource> buffer;
 	wil::com_ptr_nothrow<D3D12MA::Allocation> allocation;
 	HRESULT hr = GSDevice12::GetInstance()->GetAllocator()->CreateResource(&allocationDesc, &resource_desc,
-		D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, allocation.put(), IID_PPV_ARGS(buffer.put()));
+		default_heap ? D3D12_RESOURCE_STATE_COMMON : D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr, allocation.put(), IID_PPV_ARGS(buffer.put()));
 	pxAssertMsg(SUCCEEDED(hr), "Allocate buffer");
 	if (FAILED(hr))
 		return false;
 
 	static const D3D12_RANGE read_range = {};
-	u8* host_pointer;
-	hr = buffer->Map(0, &read_range, reinterpret_cast<void**>(&host_pointer));
-	pxAssertMsg(SUCCEEDED(hr), "Map buffer");
-	if (FAILED(hr))
-		return false;
+	u8* host_pointer = nullptr;
+	if (!default_heap)
+	{
+		hr = buffer->Map(0, &read_range, reinterpret_cast<void**>(&host_pointer));
+		pxAssertMsg(SUCCEEDED(hr), "Map buffer");
+		if (FAILED(hr))
+			return false;
+	}
 
 	Destroy(true);
 
@@ -51,6 +55,7 @@ bool D3D12StreamBuffer::Create(u32 size)
 	m_host_pointer = host_pointer;
 	m_size = size;
 	m_gpu_pointer = m_buffer->GetGPUVirtualAddress();
+	m_default_heap = default_heap;
 	return true;
 }
 
@@ -148,6 +153,7 @@ void D3D12StreamBuffer::Destroy(bool defer)
 	m_current_offset = 0;
 	m_current_space = 0;
 	m_current_gpu_position = 0;
+	m_default_heap = false;
 	m_tracked_fences.clear();
 }
 
