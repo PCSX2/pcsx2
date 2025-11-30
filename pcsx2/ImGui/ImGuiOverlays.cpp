@@ -1400,7 +1400,9 @@ void SaveStateSelectorUI::LoadCurrentBackupSlot()
 void SaveStateSelectorUI::SaveCurrentSlot()
 {
 	Host::RunOnCPUThread([slot = GetCurrentSlot()]() {
-		VMManager::SaveStateToSlot(slot);
+		VMManager::SaveStateToSlot(slot, true, [slot](const std::string& error) {
+			FullscreenUI::ReportStateSaveError(error, slot);
+		});
 	});
 	Close();
 }

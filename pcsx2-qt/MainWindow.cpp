@@ -1266,6 +1266,51 @@ void MainWindow::reportStateLoadError(const QString& message, std::optional<s32>
 	delete message_box;
 }
 
+void MainWindow::reportStateSaveError(const QString& message, std::optional<s32> slot)
+{
+	const bool prompt_on_error = Host::GetBaseBoolSettingValue("UI", "PromptOnStateLoadSaveFailure", true);
+	if (!prompt_on_error)
+	{
+		SaveState_ReportSaveErrorOSD(message.toStdString(), slot);
+		return;
+	}
+
+	QString title;
+	if (slot.has_value())
+		title = tr("Failed to Save State To Slot %1").arg(*slot);
+	else
+		title = tr("Failed to Save State");
+
+	VMLock lock(pauseAndLockVM());
+
+	QCheckBox* do_not_show_again = new QCheckBox(tr("Do not show again"));
+
+	QPointer<QMessageBox> message_box = new QMessageBox(this);
+	message_box->setWindowTitle(title);
+	message_box->setText(message);
+	message_box->setIcon(QMessageBox::Critical);
+	message_box->addButton(QMessageBox::Ok);
+	message_box->setDefaultButton(QMessageBox::Ok);
+	message_box->setCheckBox(do_not_show_again);
+
+	message_box->exec();
+	if (message_box.isNull())
+		return;
+
+	if (do_not_show_again->isChecked())
+	{
+		Host::SetBaseBoolSettingValue("UI", "PromptOnStateLoadSaveFailure", false);
+		Host::CommitBaseSettingChanges();
+		if (m_settings_window)
+		{
+			InterfaceSettingsWidget* interface_settings = m_settings_window->getInterfaceSettingsWidget();
+			interface_settings->updatePromptOnStateLoadSaveFailureCheckbox(Qt::Unchecked);
+		}
+	}
+
+	delete message_box;
+}
+
 void MainWindow::runOnUIThread(const std::function<void()>& func)
 {
 	func();
