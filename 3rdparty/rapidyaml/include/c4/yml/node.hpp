@@ -260,7 +260,7 @@ public:
 
 public:
 
-    /** @name node container+scalar style predicates */
+    /** @name style predicates */
     /** @{ */
 
     // documentation to the right -->
@@ -268,6 +268,9 @@ public:
     C4_ALWAYS_INLINE bool type_has_any(NodeType_e bits)  const RYML_NOEXCEPT { _C4RR(); return tree_->type_has_any(id_, bits); }  /**< Forward to @ref Tree::type_has_any(). Node must be readable. */
     C4_ALWAYS_INLINE bool type_has_all(NodeType_e bits)  const RYML_NOEXCEPT { _C4RR(); return tree_->type_has_all(id_, bits); }  /**< Forward to @ref Tree::type_has_all(). Node must be readable. */
     C4_ALWAYS_INLINE bool type_has_none(NodeType_e bits) const RYML_NOEXCEPT { _C4RR(); return tree_->type_has_none(id_, bits); } /**< Forward to @ref Tree::type_has_none(). Node must be readable. */
+
+    C4_ALWAYS_INLINE NodeType key_style()       const RYML_NOEXCEPT { _C4RR(); return tree_->key_style(id_); } /**< Forward to @ref Tree::key_style(). Node must be readable. */
+    C4_ALWAYS_INLINE NodeType val_style()       const RYML_NOEXCEPT { _C4RR(); return tree_->val_style(id_); } /**< Forward to @ref Tree::val_style(). Node must be readable. */
 
     C4_ALWAYS_INLINE bool is_container_styled() const RYML_NOEXCEPT { _C4RR(); return tree_->is_container_styled(id_); } /**< Forward to @ref Tree::is_container_styled(). Node must be readable. */
     C4_ALWAYS_INLINE bool is_block()            const RYML_NOEXCEPT { _C4RR(); return tree_->is_block(id_); }   /**< Forward to @ref Tree::is_block(). Node must be readable. */
@@ -610,6 +613,19 @@ public:
 
 public:
 
+    /** @name locations */
+    /** @{ */
+
+    Location location(Parser const& parser) const
+    {
+        _C4RR();
+        return tree_->location(parser, id_);
+    }
+
+    /** @} */
+
+public:
+
     /** @name deserialization */
     /** @{ */
 
@@ -881,7 +897,6 @@ public:
     ConstNodeRef& operator= (NodeRef const&) noexcept;
     ConstNodeRef& operator= (NodeRef     &&) noexcept;
 
-
     /** @} */
 
 public:
@@ -1128,6 +1143,14 @@ public:
     void set_container_style(NodeType_e style) { _C4RR(); m_tree->set_container_style(m_id, style); }
     void set_key_style(NodeType_e style) { _C4RR(); m_tree->set_key_style(m_id, style); }
     void set_val_style(NodeType_e style) { _C4RR(); m_tree->set_val_style(m_id, style); }
+    void clear_style(bool recurse=false) { _C4RR(); m_tree->clear_style(m_id, recurse); }
+    void set_style_conditionally(NodeType type_mask,
+                                 NodeType rem_style_flags,
+                                 NodeType add_style_flags,
+                                 bool recurse=false)
+    {
+        _C4RR(); m_tree->set_style_conditionally(m_id, type_mask, rem_style_flags, add_style_flags, recurse);
+    }
 
 public:
 

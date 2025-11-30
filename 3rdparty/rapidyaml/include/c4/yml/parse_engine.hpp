@@ -1,10 +1,6 @@
 #ifndef _C4_YML_PARSE_ENGINE_HPP_
 #define _C4_YML_PARSE_ENGINE_HPP_
 
-#ifndef _C4_YML_DETAIL_PARSER_DBG_HPP_
-#include "c4/yml/detail/parser_dbg.hpp"
-#endif
-
 #ifndef _C4_YML_PARSER_STATE_HPP_
 #include "c4/yml/parser_state.hpp"
 #endif
@@ -41,7 +37,10 @@ namespace yml {
  * - @ref EventHandlerTree is the handler responsible for creating the
  *   ryml @ref Tree
  *
- * - @ref EventHandlerYamlStd is the handler responsible for emitting
+ * - @ref extra::EventHandlerInts parses YAML into an integer array
+     representation of the tree and scalars.
+ *
+ * - @ref extra::EventHandlerTestSuite is the handler responsible for emitting
  *   standardized [YAML test suite
  *   events](https://github.com/yaml/yaml-test-suite), used (only) in
  *   the CI of this project.
@@ -103,8 +102,8 @@ namespace yml {
  * cases. They are called by the parser when a just-handled
  * value/container is actually the first key of a new map:
  *
- *   - `actually_val_is_first_key_of_new_map_flow()` (@ref EventHandlerTree::actually_val_is_first_key_of_new_map_flow() "see implementation in EventHandlerTree" / @ref EventHandlerYamlStd::actually_val_is_first_key_of_new_map_flow() "see implementation in EventHandlerYamlStd")
- *   - `actually_val_is_first_key_of_new_map_block()` (@ref EventHandlerTree::actually_val_is_first_key_of_new_map_block() "see implementation in EventHandlerTree" / @ref EventHandlerYamlStd::actually_val_is_first_key_of_new_map_block() "see implementation in EventHandlerYamlStd")
+ *   - `actually_val_is_first_key_of_new_map_flow()` (@ref EventHandlerTree::actually_val_is_first_key_of_new_map_flow() "see implementation in EventHandlerTree" / @ref EventHandlerTestSuite::actually_val_is_first_key_of_new_map_flow() "see implementation in EventHandlerTestSuite")
+ *   - `actually_val_is_first_key_of_new_map_block()` (@ref EventHandlerTree::actually_val_is_first_key_of_new_map_block() "see implementation in EventHandlerTree" / @ref EventHandlerTestSuite::actually_val_is_first_key_of_new_map_block() "see implementation in EventHandlerTestSuite")
  *
  * For example, consider an implicit map inside a seq: `[a: b, c:
  * d]` which is parsed as `[{a: b}, {c: d}]`. The standard event
@@ -282,11 +281,20 @@ public:
  * - @ref EventHandlerTree is the handler responsible for creating the
  *   ryml @ref Tree
  *
- * - @ref EventHandlerYamlStd is the handler responsible for emitting
+ * - @ref extra::EventHandlerTestSuite is a handler responsible for emitting
  *   standardized [YAML test suite
  *   events](https://github.com/yaml/yaml-test-suite), used (only) in
  *   the CI of this project. This is not part of the library and is
  *   not installed.
+ *
+ * - @ref extra::EventHandlerInts is the handler responsible for
+ *   emitting integer-coded events. It is intended for implementing
+ *   fully-conformant parsing in other programming languages
+ *   (integration is currently under work for
+ *   [YamlScript](https://github.com/yaml/yamlscript) and
+ *   [go-yaml](https://github.com/yaml/go-yaml/)). It is not part of
+ *   the library and is not installed.
+ *
  */
 template<class EventHandler>
 class ParseEngine
@@ -393,8 +401,7 @@ public:
 
 public:
 
-    /** @name deprecated parse methods
-     * @{ */
+    // deprecated parse methods
 
     /** @cond dev */
     template<class U=EventHandler> RYML_DEPRECATED("removed, deliberately undefined. use the freestanding function in parse.hpp.") typename std::enable_if<U::is_wtree, void>::type parse_in_place(csubstr filename, substr yaml, Tree *t, size_t node_id);
@@ -423,26 +430,33 @@ public:
     template<class U=EventHandler> RYML_DEPRECATED("removed, deliberately undefined. use the freestanding csubstr version in parse.hpp.") typename std::enable_if<U::is_wtree, Tree>::type parse_in_arena(                  substr yaml                         );
     /** @endcond */
 
-    /** @} */
-
 public:
 
     /** @name locations */
     /** @{ */
 
-    /** Get the location of a node of the last tree to be parsed by this parser. */
-    Location location(Tree const& tree, id_type node_id) const;
-    /** Get the location of a node of the last tree to be parsed by this parser. */
-    Location location(ConstNodeRef node) const;
     /** Get the string starting at a particular location, to the end
      * of the parsed source buffer. */
     csubstr location_contents(Location const& loc) const;
+
     /** Given a pointer to a buffer position, get the location.
      * @param[in] val must be pointing to somewhere in the source
      * buffer that was last parsed by this object. */
     Location val_location(const char *val) const;
 
     /** @} */
+
+public:
+
+    /** @cond dev */
+    template<class U>
+    RYML_DEPRECATED("moved to Tree::location(Parser const&). deliberately undefined here.")
+    auto location(Tree const&, id_type node) const -> typename std::enable_if<U::is_wtree, Location>::type;
+
+    template<class U>
+    RYML_DEPRECATED("moved to ConstNodeRef::location(Parser const&), deliberately undefined here.")
+    auto location(ConstNodeRef const&) const -> typename std::enable_if<U::is_wtree, Location>::type;
+    /** @endcond */
 
 public:
 
@@ -522,6 +536,7 @@ public: // exposed for testing
     csubstr _filter_scalar_dquot(substr s);
     csubstr _filter_scalar_literal(substr s, size_t indentation, BlockChomp_e chomp);
     csubstr _filter_scalar_folded(substr s, size_t indentation, BlockChomp_e chomp);
+    csubstr _move_scalar_left_and_add_newline(substr s);
 
     csubstr _maybe_filter_key_scalar_plain(ScannedScalar const& sc, size_t indendation);
     csubstr _maybe_filter_val_scalar_plain(ScannedScalar const& sc, size_t indendation);
@@ -672,9 +687,6 @@ private:
     void _resize_locations(size_t sz);
     bool _locations_dirty() const;
 
-    bool _location_from_cont(Tree const& tree, id_type node, Location *C4_RESTRICT loc) const;
-    bool _location_from_node(Tree const& tree, id_type node, Location *C4_RESTRICT loc, id_type level) const;
-
 private:
 
     void _reset();
@@ -756,10 +768,6 @@ private:
     csubstr m_newline_offsets_buf;
 
 };
-
-/** @cond dev */
-RYML_EXPORT C4_NO_INLINE size_t _find_last_newline_and_larger_indentation(csubstr s, size_t indentation) noexcept;
-/** @endcond */
 
 
 /** Quickly inspect the source to estimate the number of nodes the

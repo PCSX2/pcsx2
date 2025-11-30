@@ -5,7 +5,7 @@
         <tr><th>File        <td>SimpleIni.h
         <tr><th>Author      <td>Brodie Thiesfield
         <tr><th>Source      <td>https://github.com/brofield/simpleini
-        <tr><th>Version     <td>4.22
+        <tr><th>Version     <td>4.25
     </table>
 
     Jump to the @link CSimpleIniTempl CSimpleIni @endlink interface documentation.
@@ -53,7 +53,7 @@
     -#  If you will only be using straight utf8 files and access the data via the 
         char interface, then you do not need any conversion library and could define 
         SI_NO_CONVERSION. Note that no conversion also means no validation of the data.
-        If no converter is specified then the default converter is SI_CONVERT_GENERIC 
+        If no converter is specified then the default converter is SI_NO_CONVERSION
         on Mac/Linux and SI_CONVERT_WIN32 on Windows. If you need widechar support on 
         Mac/Linux then use either SI_CONVERT_GENERIC or SI_CONVERT_ICU. These are also
         supported on all platforms.
@@ -161,6 +161,9 @@
 
     @section notes NOTES
 
+    - The maximum supported file size is 1 GiB (SI_MAX_FILE_SIZE). Files larger
+      than this will be rejected with SI_FILE error to prevent excessive memory
+      allocation and potential denial of service attacks.
     - To load UTF-8 data on Windows 95, you need to use Microsoft Layer for
       Unicode, or SI_CONVERT_GENERIC, or SI_CONVERT_ICU.
     - When using SI_CONVERT_GENERIC, ConvertUTF.c must be compiled and linked.
@@ -261,6 +264,10 @@ constexpr int SI_FAIL = -1;     //!< Generic failure
 constexpr int SI_NOMEM = -2;    //!< Out of memory error
 constexpr int SI_FILE = -3;     //!< File error (see errno for detail error)
 
+//! Maximum supported file size (1 GiB). Files larger than this will be rejected
+//! to prevent excessive memory allocation and potential denial of service.
+constexpr size_t SI_MAX_FILE_SIZE = 1024ULL * 1024ULL * 1024ULL;
+
 #define SI_UTF8_SIGNATURE     "\xEF\xBB\xBF"
 
 #ifdef _WIN32
@@ -357,7 +364,7 @@ public:
                 if (lhs.nOrder != rhs.nOrder) {
                     return lhs.nOrder < rhs.nOrder;
                 }
-                return KeyOrder()(lhs.pItem, rhs.pItem);
+                return KeyOrder()(lhs, rhs);
             }
         };
     };
@@ -1462,9 +1469,14 @@ CSimpleIniTempl<SI_CHAR,SI_STRLESS,SI_CONVERTER>::LoadFile(
     if (lSize == 0) {
         return SI_OK;
     }
-    
+
+    // check file size is within supported limits (SI_MAX_FILE_SIZE)
+    if (static_cast<size_t>(lSize) > SI_MAX_FILE_SIZE) {
+        return SI_FILE;
+    }
+
     // allocate and ensure NULL terminated
-    char * pData = new(std::nothrow) char[lSize+static_cast<size_t>(1)];
+    char * pData = new(std::nothrow) char[static_cast<size_t>(lSize) + 1];
     if (!pData) {
         return SI_NOMEM;
     }
@@ -1516,13 +1528,18 @@ CSimpleIniTempl<SI_CHAR,SI_STRLESS,SI_CONVERTER>::LoadData(
         return SI_FAIL;
     }
 
+    // check converted data size is within supported limits (SI_MAX_FILE_SIZE)
+    if (uLen >= (SI_MAX_FILE_SIZE / sizeof(SI_CHAR))) {
+        return SI_FILE;
+    }
+
     // allocate memory for the data, ensure that there is a NULL
     // terminator wherever the converted data ends
-    SI_CHAR * pData = new(std::nothrow) SI_CHAR[uLen+1];
+    SI_CHAR * pData = new(std::nothrow) SI_CHAR[uLen + 1];
     if (!pData) {
         return SI_NOMEM;
     }
-    memset(pData, 0, sizeof(SI_CHAR)*(uLen+1));
+    memset(pData, 0, sizeof(SI_CHAR) * (uLen + 1));
 
     // convert the data
     if (!converter.ConvertFromStore(a_pData, a_uDataLen, pData, uLen)) {
@@ -1800,6 +1817,7 @@ CSimpleIniTempl<SI_CHAR,SI_STRLESS,SI_CONVERTER>::IsMultiLineData(
     }
 
     // embedded newlines
+    const SI_CHAR * pStart = a_pData;
     while (*a_pData) {
         if (IsNewLineChar(*a_pData)) {
             return true;
@@ -1807,8 +1825,8 @@ CSimpleIniTempl<SI_CHAR,SI_STRLESS,SI_CONVERTER>::IsMultiLineData(
         ++a_pData;
     }
 
-    // check for suffix
-    if (IsSpace(*--a_pData)) {
+    // check for suffix (ensure we don't go before start of string)
+    if (a_pData > pStart && IsSpace(*(a_pData - 1))) {
         return true;
     }
 
@@ -1821,7 +1839,7 @@ CSimpleIniTempl<SI_CHAR, SI_STRLESS, SI_CONVERTER>::IsSingleLineQuotedValue(
     const SI_CHAR* a_pData
 ) const
 {
-    // data needs quoting if it starts or ends with whitespace 
+    // data needs quoting if it starts or ends with whitespace
     // and doesn't have embedded newlines
 
     // empty string
@@ -1835,6 +1853,7 @@ CSimpleIniTempl<SI_CHAR, SI_STRLESS, SI_CONVERTER>::IsSingleLineQuotedValue(
     }
 
     // embedded newlines
+    const SI_CHAR * pStart = a_pData;
     while (*a_pData) {
         if (IsNewLineChar(*a_pData)) {
             return false;
@@ -1842,8 +1861,8 @@ CSimpleIniTempl<SI_CHAR, SI_STRLESS, SI_CONVERTER>::IsSingleLineQuotedValue(
         ++a_pData;
     }
 
-    // check for suffix
-    if (IsSpace(*--a_pData)) {
+    // check for suffix (ensure we don't go before start of string)
+    if (a_pData > pStart && IsSpace(*(a_pData - 1))) {
         return true;
     }
 
@@ -2088,7 +2107,8 @@ CSimpleIniTempl<SI_CHAR,SI_STRLESS,SI_CONVERTER>::AddEntry(
         if (pComment) {
             DeleteString(a_pComment);
             a_pComment = pComment;
-            CopyString(a_pComment);
+            rc = CopyString(a_pComment);
+            if (rc < 0) return rc;
         }
         Delete(a_pSection, a_pKey);
         iKey = keyval.end();
@@ -2257,12 +2277,13 @@ CSimpleIniTempl<SI_CHAR,SI_STRLESS,SI_CONVERTER>::GetDoubleValue(
         return a_nDefault;
     }
 
-    char * pszSuffix = NULL;
+    char * pszSuffix = szValue;
     double nValue = strtod(szValue, &pszSuffix);
 
     // any invalid strings will return the default value
-    if (!pszSuffix || *pszSuffix) { 
-        return a_nDefault; 
+    // check if no conversion was performed or if there are trailing characters
+    if (pszSuffix == szValue || *pszSuffix) {
+        return a_nDefault;
     }
 
     return nValue;
@@ -2421,7 +2442,7 @@ CSimpleIniTempl<SI_CHAR,SI_STRLESS,SI_CONVERTER>::GetSectionSize(
     int nCount = 0;
     const SI_CHAR * pLastKey = NULL;
     typename TKeyVal::const_iterator iKeyVal = section.begin();
-    for (int n = 0; iKeyVal != section.end(); ++iKeyVal, ++n) {
+    for (; iKeyVal != section.end(); ++iKeyVal) {
         if (!pLastKey || IsLess(pLastKey, iKeyVal->first.pItem)) {
             ++nCount;
             pLastKey = iKeyVal->first.pItem;
@@ -2464,7 +2485,7 @@ CSimpleIniTempl<SI_CHAR,SI_STRLESS,SI_CONVERTER>::GetAllSections(
 {
     a_names.clear();
     typename TSection::const_iterator i = m_data.begin();
-    for (int n = 0; i != m_data.end(); ++i, ++n ) {
+    for (; i != m_data.end(); ++i) {
         a_names.push_back(i->first);
     }
 }
@@ -2490,7 +2511,7 @@ CSimpleIniTempl<SI_CHAR,SI_STRLESS,SI_CONVERTER>::GetAllKeys(
     const TKeyVal & section = iSection->second;
     const SI_CHAR * pLastKey = NULL;
     typename TKeyVal::const_iterator iKeyVal = section.begin();
-    for (int n = 0; iKeyVal != section.end(); ++iKeyVal, ++n ) {
+    for (; iKeyVal != section.end(); ++iKeyVal) {
         if (!pLastKey || IsLess(pLastKey, iKeyVal->first.pItem)) {
             a_names.push_back(iKeyVal->first);
             pLastKey = iKeyVal->first.pItem;
@@ -2828,7 +2849,7 @@ CSimpleIniTempl<SI_CHAR,SI_STRLESS,SI_CONVERTER>::DeleteString(
     // strings may exist either inside the data block, or they will be
     // individually allocated and stored in m_strings. We only physically
     // delete those stored in m_strings.
-    if (a_pString < m_pData || a_pString >= m_pData + m_uDataLen) {
+    if (!m_pData || a_pString < m_pData || a_pString >= m_pData + m_uDataLen) {
         typename TNamesDepend::iterator i = m_strings.begin();
         for (;i != m_strings.end(); ++i) {
             if (a_pString == i->pItem) {
@@ -2850,17 +2871,19 @@ CSimpleIniTempl<SI_CHAR,SI_STRLESS,SI_CONVERTER>::DeleteString(
 //
 //  SI_NO_CONVERSION        Do not make the "W" wide character version of the 
 //                          library available. Only CSimpleIniA etc is defined.
+//                          Default on Linux/MacOS/etc.
+//  SI_CONVERT_WIN32        Use the Win32 API functions for conversion.
+//                          Default on Windows.
 //  SI_CONVERT_GENERIC      Use the Unicode reference conversion library in
 //                          the accompanying files ConvertUTF.h/c
 //  SI_CONVERT_ICU          Use the IBM ICU conversion library. Requires
 //                          ICU headers on include path and icuuc.lib
-//  SI_CONVERT_WIN32        Use the Win32 API functions for conversion.
 
 #if !defined(SI_NO_CONVERSION) && !defined(SI_CONVERT_GENERIC) && !defined(SI_CONVERT_WIN32) && !defined(SI_CONVERT_ICU)
 # ifdef _WIN32
 #  define SI_CONVERT_WIN32
 # else
-#  define SI_CONVERT_GENERIC
+#  define SI_NO_CONVERSION
 # endif
 #endif
 
@@ -3079,14 +3102,18 @@ public:
             return a_uInputDataLen;
         }
 
-#if defined(SI_NO_MBSTOWCS_NULL) || (!defined(_MSC_VER) && !defined(_linux))
+        // get the required buffer size
+#if defined(_MSC_VER)
+        size_t uBufSiz;
+        errno_t e = mbstowcs_s(&uBufSiz, NULL, 0, a_pInputData, a_uInputDataLen);
+        return (e == 0) ? uBufSiz : (size_t) -1;
+#elif !defined(SI_NO_MBSTOWCS_NULL)
+        return mbstowcs(NULL, a_pInputData, a_uInputDataLen);
+#else
         // fall back processing for platforms that don't support a NULL dest to mbstowcs
         // worst case scenario is 1:1, this will be a sufficient buffer size
         (void)a_pInputData;
         return a_uInputDataLen;
-#else
-        // get the actual required buffer size
-        return mbstowcs(NULL, a_pInputData, a_uInputDataLen);
 #endif
     }
 
@@ -3135,9 +3162,18 @@ public:
         }
 
         // convert to wchar_t
+#if defined(_MSC_VER)
+        size_t uBufSiz;
+        errno_t e = mbstowcs_s(&uBufSiz,
+            a_pOutputData, a_uOutputDataSize,
+            a_pInputData, a_uInputDataLen);
+		(void)uBufSiz;
+        return (e == 0);
+#else
         size_t retval = mbstowcs(a_pOutputData,
             a_pInputData, a_uOutputDataSize);
         return retval != (size_t)(-1);
+#endif
     }
 
     /** Calculate the number of char required by the storage format of this

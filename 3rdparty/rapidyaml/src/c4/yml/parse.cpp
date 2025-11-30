@@ -129,24 +129,6 @@ Tree parse_json_in_arena(csubstr filename, csubstr json                         
 Tree parse_json_in_arena(                  csubstr json                          ) { Parser::handler_type event_handler; Parser parser(&event_handler); Tree tree(parser.callbacks()); substr src = tree.copy_to_arena(json); parse_json_in_place(&parser, {}      , src, &tree, tree.root_id()); return tree; }
 
 
-RYML_EXPORT C4_NO_INLINE size_t _find_last_newline_and_larger_indentation(csubstr s, size_t indentation) noexcept
-{
-    if(indentation + 1 > s.len)
-        return npos;
-    for(size_t i = s.len-indentation-1; i != size_t(-1); --i)
-    {
-        if(s.str[i] == '\n')
-        {
-            csubstr rem = s.sub(i + 1);
-            size_t first = rem.first_not_of(' ');
-            first = (first != npos) ? first : rem.len;
-            if(first > indentation)
-                return i;
-        }
-    }
-    return npos;
-}
-
 //-----------------------------------------------------------------------------
 
 RYML_EXPORT id_type estimate_tree_capacity(csubstr src)

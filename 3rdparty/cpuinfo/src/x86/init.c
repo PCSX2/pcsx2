@@ -72,7 +72,7 @@ void cpuinfo_x86_init_processor(struct cpuinfo_x86_processor* processor) {
 		for (uint32_t i = 0; i < 3; i++) {
 			brand_string[i] = cpuid(UINT32_C(0x80000002) + i);
 		}
-		memcpy(processor->brand_string, brand_string, sizeof(processor->brand_string));
+		memcpy(processor->brand_string, brand_string, sizeof(brand_string));
 		cpuinfo_log_debug("raw CPUID brand string: \"%48s\"", processor->brand_string);
 	}
 }

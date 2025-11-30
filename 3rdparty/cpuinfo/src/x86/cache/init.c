@@ -87,7 +87,7 @@ void cpuinfo_x86_detect_cache(
 			}
 		}
 	}
-	if (amd_topology_extensions && max_extended_index >= UINT32_C(0x8000001D)) {
+	if (max_extended_index >= UINT32_C(0x8000001D)) {
 		struct cpuid_regs leaf0x8000001D;
 		uint32_t input_ecx = 0;
 		do {

@@ -5,6 +5,8 @@
 
 #include <cstddef>
 
+// NOLINTBEGIN(cert-dcl58-cpp)
+
 // forward declarations for std::vector
 #if defined(__GLIBCXX__) || defined(__GLIBCPP__) || defined(_MSC_VER)
 #if defined(_MSC_VER)
@@ -62,5 +64,7 @@ template<class Alloc> size_t to_chars(c4::substr buf, std::vector<char, Alloc> c
 template<class Alloc> bool from_chars(c4::csubstr buf, std::vector<char, Alloc> * s);
 
 } // namespace c4
+
+// NOLINTEND(cert-dcl58-cpp)
 
 #endif // _C4_STD_VECTOR_FWD_HPP_

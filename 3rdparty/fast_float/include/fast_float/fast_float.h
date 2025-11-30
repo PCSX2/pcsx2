@@ -46,6 +46,24 @@ from_chars_advanced(UC const *first, UC const *last, T &value,
                     parse_options_t<UC> options) noexcept;
 
 /**
+ * This function multiplies an integer number by a power of 10 and returns
+ * the result as a double precision floating-point value that is correctly
+ * rounded. The resulting floating-point value is the closest floating-point
+ * value, using the "round to nearest, tie to even" convention for values that
+ * would otherwise fall right in-between two values. That is, we provide exact
+ * conversion according to the IEEE standard.
+ *
+ * On overflow infinity is returned, on underflow 0 is returned.
+ *
+ * The implementation does not throw and does not allocate memory (e.g., with
+ * `new` or `malloc`).
+ */
+FASTFLOAT_CONSTEXPR20 inline double
+integer_times_pow10(uint64_t mantissa, int decimal_exponent) noexcept;
+FASTFLOAT_CONSTEXPR20 inline double
+integer_times_pow10(int64_t mantissa, int decimal_exponent) noexcept;
+
+/**
  * from_chars for integer types.
  */
 template <typename T, typename UC = char,

@@ -19,11 +19,12 @@ namespace yml {
  * @{ */
 
 
-/** The stack state needed specifically by @ref EventHandlerTree */
+/** @cond dev */
 struct EventHandlerTreeState : public ParserState
 {
     NodeData *tr_data;
 };
+/** @endcond */
 
 
 /** The event handler to create a ryml @ref Tree. See the
@@ -463,9 +464,8 @@ public:
     {
         _c4dbgpf("node[{}]: set key anchor: [{}]~~~{}~~~", m_curr->node_id, anchor.len, anchor);
         _RYML_CB_ASSERT(m_stack.m_callbacks, m_tree);
-        if(C4_UNLIKELY(_has_any_(KEYREF)))
-            _RYML_CB_ERR_(m_tree->callbacks(), "key cannot have both anchor and ref", m_curr->pos);
-        _RYML_CB_ASSERT(m_tree->callbacks(), !anchor.begins_with('&'));
+        _RYML_CB_ASSERT(m_stack.m_callbacks, !_has_any_(KEYREF));
+        _RYML_CB_ASSERT(m_stack.m_callbacks, !anchor.begins_with('&'));
         _enable_(KEYANCH);
         m_curr->tr_data->m_key.anchor = anchor;
     }
@@ -473,9 +473,8 @@ public:
     {
         _c4dbgpf("node[{}]: set val anchor: [{}]~~~{}~~~", m_curr->node_id, anchor.len, anchor);
         _RYML_CB_ASSERT(m_stack.m_callbacks, m_tree);
-        if(C4_UNLIKELY(_has_any_(VALREF)))
-            _RYML_CB_ERR_(m_tree->callbacks(), "val cannot have both anchor and ref", m_curr->pos);
-        _RYML_CB_ASSERT(m_tree->callbacks(), !anchor.begins_with('&'));
+        _RYML_CB_ASSERT(m_stack.m_callbacks, !_has_any_(VALREF));
+        _RYML_CB_ASSERT(m_stack.m_callbacks, !anchor.begins_with('&'));
         _enable_(VALANCH);
         m_curr->tr_data->m_val.anchor = anchor;
     }

@@ -1,5 +1,5 @@
-#ifndef _C4_YML_DETAIL_PARSER_DBG_HPP_
-#define _C4_YML_DETAIL_PARSER_DBG_HPP_
+#ifndef _C4_YML_DETAIL_DBGPRINT_HPP_
+#define _C4_YML_DETAIL_DBGPRINT_HPP_
 
 #ifndef _C4_YML_COMMON_HPP_
 #include "../common.hpp"
@@ -11,22 +11,9 @@
 
 
 //-----------------------------------------------------------------------------
-// some debugging scaffolds
-
-// NOLINTBEGIN(*)
-C4_SUPPRESS_WARNING_GCC_CLANG_PUSH
-C4_SUPPRESS_WARNING_MSVC_PUSH
-C4_SUPPRESS_WARNING_MSVC(4068/*unknown pragma*/)
-
-#pragma GCC system_header
-C4_SUPPRESS_WARNING_GCC("-Wunknown-pragmas")
-C4_SUPPRESS_WARNING_CLANG("-Wgnu-zero-variadic-macro-arguments")
-// NOLINTEND(*)
-
+// debug prints
 
 #ifndef RYML_DBG
-#   define _c4err(fmt, ...)   \
-    this->_err("ERROR: " fmt, ## __VA_ARGS__)
 #   define _c4dbgt(fmt, ...)
 #   define _c4dbgpf(fmt, ...)
 #   define _c4dbgpf_(fmt, ...)
@@ -36,14 +23,12 @@ C4_SUPPRESS_WARNING_CLANG("-Wgnu-zero-variadic-macro-arguments")
 #   define _c4presc(...)
 #   define _c4prscalar(msg, scalar, keep_newlines)
 #else
-#   define _c4err(fmt, ...)   \
-    do { RYML_DEBUG_BREAK(); this->_err("ERROR:\n" "{}:{}: " fmt, __FILE__, __LINE__, ## __VA_ARGS__); } while(0)
 #   define _c4dbgt(fmt, ...)   do { if(_dbg_enabled()) {                \
-                               this->_dbg ("{}:{}: "   fmt     , __FILE__, __LINE__, ## __VA_ARGS__); } } while(0)
-#   define _c4dbgpf(fmt, ...)  _dbg_printf("{}:{}: "   fmt "\n", __FILE__, __LINE__, ## __VA_ARGS__)
-#   define _c4dbgpf_(fmt, ...) _dbg_printf("{}:{}: "   fmt     , __FILE__, __LINE__, ## __VA_ARGS__)
-#   define _c4dbgp(msg)        _dbg_printf("{}:{}: "   msg "\n", __FILE__, __LINE__                )
-#   define _c4dbgp_(msg)       _dbg_printf("{}:{}: "   msg     , __FILE__, __LINE__                )
+                               this->_dbg ("{}:{}: "   fmt     , __FILE__, __LINE__, __VA_ARGS__); } } while(0)
+#   define _c4dbgpf(fmt, ...)  _dbg_printf("{}:{}: "   fmt "\n", __FILE__, __LINE__, __VA_ARGS__)
+#   define _c4dbgpf_(fmt, ...) _dbg_printf("{}:{}: "   fmt     , __FILE__, __LINE__, __VA_ARGS__)
+#   define _c4dbgp(msg)        _dbg_printf("{}:{}: "   msg "\n", __FILE__, __LINE__             )
+#   define _c4dbgp_(msg)       _dbg_printf("{}:{}: "   msg     , __FILE__, __LINE__             )
 #   define _c4dbgq(msg)        _dbg_printf(msg "\n")
 #   define _c4presc(...)       do { if(_dbg_enabled()) __c4presc(__VA_ARGS__); } while(0)
 #   define _c4prscalar(msg, scalar, keep_newlines)                  \
@@ -141,7 +126,4 @@ inline void __c4presc(csubstr s, bool keep_newlines=false)
 
 #endif // RYML_DBG
 
-C4_SUPPRESS_WARNING_GCC_CLANG_POP
-C4_SUPPRESS_WARNING_MSVC_POP
-
-#endif /* _C4_YML_DETAIL_PARSER_DBG_HPP_ */
+#endif /* _C4_YML_DETAIL_DBGPRINT_HPP_ */

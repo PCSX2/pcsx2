@@ -125,6 +125,18 @@ void cpuinfo_arm_decode_vendor_uarch(
 				case 0xD4F: /* Neoverse V2 */
 					*uarch = cpuinfo_uarch_neoverse_v2;
 					break;
+				case 0xD81: /* Cortex-A720 */
+					*uarch = cpuinfo_uarch_cortex_a720;
+					break;
+				case 0xD82: /* Cortex-X4 */
+					*uarch = cpuinfo_uarch_cortex_x4;
+					break;
+				case 0xD85: /* Cortex-X925 */
+					*uarch = cpuinfo_uarch_cortex_x925;
+					break;
+				case 0xD87: /* Cortex-A725 */
+					*uarch = cpuinfo_uarch_cortex_a725;
+					break;
 				default:
 					switch (midr_get_part(midr) >> 8) {
 #if CPUINFO_ARCH_ARM

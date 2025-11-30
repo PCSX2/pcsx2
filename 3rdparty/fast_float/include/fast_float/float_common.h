@@ -16,8 +16,8 @@
 #include "constexpr_feature_detect.h"
 
 #define FASTFLOAT_VERSION_MAJOR 8
-#define FASTFLOAT_VERSION_MINOR 0
-#define FASTFLOAT_VERSION_PATCH 2
+#define FASTFLOAT_VERSION_MINOR 1
+#define FASTFLOAT_VERSION_PATCH 0
 
 #define FASTFLOAT_STRINGIZE_IMPL(x) #x
 #define FASTFLOAT_STRINGIZE(x) FASTFLOAT_STRINGIZE_IMPL(x)
@@ -58,6 +58,11 @@ enum class chars_format : uint64_t {
 template <typename UC> struct from_chars_result_t {
   UC const *ptr;
   std::errc ec;
+
+  // https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2497r0.html
+  constexpr explicit operator bool() const noexcept {
+    return ec == std::errc();
+  }
 };
 
 using from_chars_result = from_chars_result_t<char>;
@@ -88,11 +93,12 @@ using parse_options = parse_options_t<char>;
      defined(__MINGW64__) || defined(__s390x__) ||                             \
      (defined(__ppc64__) || defined(__PPC64__) || defined(__ppc64le__) ||      \
       defined(__PPC64LE__)) ||                                                 \
-     defined(__loongarch64))
+     defined(__loongarch64) || (defined(__riscv) && __riscv_xlen == 64))
 #define FASTFLOAT_64BIT 1
 #elif (defined(__i386) || defined(__i386__) || defined(_M_IX86) ||             \
        defined(__arm__) || defined(_M_ARM) || defined(__ppc__) ||              \
-       defined(__MINGW32__) || defined(__EMSCRIPTEN__))
+       defined(__MINGW32__) || defined(__EMSCRIPTEN__) ||                      \
+       (defined(__riscv) && __riscv_xlen == 32))
 #define FASTFLOAT_32BIT 1
 #else
   // Need to check incrementally, since SIZE_MAX is a size_t, avoid overflow.
@@ -1126,7 +1132,12 @@ template <typename T> constexpr uint64_t int_luts<T>::min_safe_u64[];
 
 template <typename UC>
 fastfloat_really_inline constexpr uint8_t ch_to_digit(UC c) {
-  return int_luts<>::chdigit[static_cast<unsigned char>(c)];
+  // wchar_t and char can be signed, so we need to be careful.
+  using UnsignedUC = typename std::make_unsigned<UC>::type;
+  return int_luts<>::chdigit[static_cast<unsigned char>(
+      static_cast<UnsignedUC>(c) &
+      static_cast<UnsignedUC>(
+          -((static_cast<UnsignedUC>(c) & ~0xFFull) == 0)))];
 }
 
 fastfloat_really_inline constexpr size_t max_digits_u64(int base) {

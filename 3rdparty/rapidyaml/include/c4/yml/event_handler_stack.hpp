@@ -9,8 +9,8 @@
 #include "c4/yml/node_type.hpp"
 #endif
 
-#ifndef _C4_YML_DETAIL_PARSER_DBG_HPP_
-#include "c4/yml/detail/parser_dbg.hpp"
+#ifndef _C4_YML_DETAIL_DBGPRINT_HPP_
+#include "c4/yml/detail/dbgprint.hpp"
 #endif
 
 #ifndef _C4_YML_PARSER_STATE_HPP_

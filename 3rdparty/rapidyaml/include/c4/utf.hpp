@@ -61,10 +61,10 @@ C4CORE_EXPORT substr decode_code_point(substr out, csubstr code_point);
  * @param code: the code point must have length in ]0,8], and must not begin
  * with any of `U+`,`\\x`,`\\u,`\\U`,`0` (asserted)
  *
- * @return the part of @p out that was written, which will always be
+ * @return the number of written characters, which will always be
  * at most 4 bytes.
  */
-size_t decode_code_point(uint8_t *C4_RESTRICT buf, size_t buflen, uint32_t code);
+C4CORE_EXPORT size_t decode_code_point(uint8_t *C4_RESTRICT buf, size_t buflen, uint32_t code);
 
 /** @} */
 

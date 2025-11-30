@@ -512,10 +512,19 @@ public:
     C4_ALWAYS_INLINE bool is_val_quoted(id_type node) const { return _p(node)->m_type.is_val_quoted(); }
     C4_ALWAYS_INLINE bool is_quoted(id_type node) const { return _p(node)->m_type.is_quoted(); }
 
+    C4_ALWAYS_INLINE NodeType key_style(id_type node) const { _RYML_CB_ASSERT(m_callbacks, has_key(node)); return _p(node)->m_type.key_style(); }
+    C4_ALWAYS_INLINE NodeType val_style(id_type node) const { _RYML_CB_ASSERT(m_callbacks, has_val(node) || is_root(node)); return _p(node)->m_type.val_style(); }
+
     C4_ALWAYS_INLINE void set_container_style(id_type node, NodeType_e style) { _RYML_CB_ASSERT(m_callbacks, is_container(node)); _p(node)->m_type.set_container_style(style); }
     C4_ALWAYS_INLINE void set_key_style(id_type node, NodeType_e style) { _RYML_CB_ASSERT(m_callbacks, has_key(node)); _p(node)->m_type.set_key_style(style); }
     C4_ALWAYS_INLINE void set_val_style(id_type node, NodeType_e style) { _RYML_CB_ASSERT(m_callbacks, has_val(node)); _p(node)->m_type.set_val_style(style); }
 
+    void clear_style(id_type node, bool recurse=false);
+    void set_style_conditionally(id_type node,
+                                 NodeType type_mask,
+                                 NodeType rem_style_flags,
+                                 NodeType add_style_flags,
+                                 bool recurse=false);
     /** @} */
 
 public:
@@ -579,6 +588,8 @@ public:
      * ReferenceResolver::resolve() for further details. This overload
      * uses a throwaway resolver object. */
     void resolve(bool clear_anchors=true);
+
+    /** @} */
 
 public:
 
@@ -763,6 +774,21 @@ public:
 public:
 
     void merge_with(Tree const* src, id_type src_node=NONE, id_type dst_root=NONE);
+
+    /** @} */
+
+public:
+
+    /** @name locations */
+    /** @{ */
+
+    /** Get the location of a node from the parse used to parse this tree. */
+    Location location(Parser const& p, id_type node) const;
+
+private:
+
+    bool _location_from_node(Parser const& p, id_type node, Location *C4_RESTRICT loc, id_type level) const;
+    bool _location_from_cont(Parser const& p, id_type node, Location *C4_RESTRICT loc) const;
 
     /** @} */
 

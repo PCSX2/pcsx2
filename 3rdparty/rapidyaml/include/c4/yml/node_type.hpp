@@ -8,6 +8,9 @@
 C4_SUPPRESS_WARNING_MSVC_PUSH
 C4_SUPPRESS_WARNING_GCC_CLANG_PUSH
 C4_SUPPRESS_WARNING_GCC_CLANG("-Wold-style-cast")
+#if __GNUC__ >= 6
+C4_SUPPRESS_WARNING_GCC("-Wnull-dereference")
+#endif
 
 namespace c4 {
 namespace yml {
@@ -193,7 +196,7 @@ public:
 
 public:
 
-    /** @name container+scalar style queries
+    /** @name style functions
      * @{ */
 
     C4_ALWAYS_INLINE bool is_container_styled() const noexcept { return (type & (CONTAINER_STYLE)) != 0; }
@@ -218,9 +221,13 @@ public:
     C4_ALWAYS_INLINE bool is_val_quoted() const noexcept { return (type & VALQUO) != 0; }
     C4_ALWAYS_INLINE bool is_quoted() const noexcept { return (type & (KEYQUO|VALQUO)) != 0; }
 
+    C4_ALWAYS_INLINE NodeType key_style() const noexcept { return (type & (KEY_STYLE)); }
+    C4_ALWAYS_INLINE NodeType val_style() const noexcept { return (type & (VAL_STYLE)); }
+
     C4_ALWAYS_INLINE void set_container_style(NodeType_e style) noexcept { type = ((style & CONTAINER_STYLE) | (type & ~CONTAINER_STYLE)); }
     C4_ALWAYS_INLINE void set_key_style(NodeType_e style) noexcept { type = ((style & KEY_STYLE) | (type & ~KEY_STYLE)); }
     C4_ALWAYS_INLINE void set_val_style(NodeType_e style) noexcept { type = ((style & VAL_STYLE) | (type & ~VAL_STYLE)); }
+    C4_ALWAYS_INLINE void clear_style() noexcept { type &= ~STYLE; }
 
     /** @} */
 

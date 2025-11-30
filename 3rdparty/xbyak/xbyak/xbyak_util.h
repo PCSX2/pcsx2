@@ -114,6 +114,10 @@ inline T min_(T x, T y) { return x < y ? x : y; }
 	CPU detection class
 	@note static inline const member is supported by c++17 or later, so use template hack
 */
+#ifdef _MSC_VER
+	#pragma warning(push)
+	#pragma warning(disable : 4459)
+#endif
 class Cpu {
 public:
 	class Type {
@@ -154,10 +158,10 @@ private:
 	{
 		return (1U << n) - 1;
 	}
-	// [EBX:ECX:EDX] == s?
-	bool isEqualStr(uint32_t EBX, uint32_t ECX, uint32_t EDX, const char s[12]) const
+	// [ebx:ecx:edx] == s?
+	bool isEqualStr(uint32_t ebx, uint32_t ecx, uint32_t edx, const char s[12]) const
 	{
-		return get32bitAsBE(&s[0]) == EBX && get32bitAsBE(&s[4]) == EDX && get32bitAsBE(&s[8]) == ECX;
+		return get32bitAsBE(&s[0]) == ebx && get32bitAsBE(&s[4]) == edx && get32bitAsBE(&s[8]) == ecx;
 	}
 	uint32_t extractBit(uint32_t val, uint32_t base, uint32_t end) const
 	{
@@ -567,172 +571,172 @@ public:
 		, avx10version_(0)
 	{
 		uint32_t data[4] = {};
-		const uint32_t& EAX = data[0];
-		const uint32_t& EBX = data[1];
-		const uint32_t& ECX = data[2];
-		const uint32_t& EDX = data[3];
+		const uint32_t& eax = data[0];
+		const uint32_t& ebx = data[1];
+		const uint32_t& ecx = data[2];
+		const uint32_t& edx = data[3];
 		getCpuid(0, data);
-		const uint32_t maxNum = EAX;
-		if (isEqualStr(EBX, ECX, EDX, "AuthenticAMD")) {
+		const uint32_t maxNum = eax;
+		if (isEqualStr(ebx, ecx, edx, "AuthenticAMD")) {
 			type_ |= tAMD;
 			getCpuid(0x80000001, data);
-			if (EDX & (1U << 31)) {
+			if (edx & (1U << 31)) {
 				type_ |= t3DN;
 				// 3DNow! implies support for PREFETCHW on AMD
 				type_ |= tPREFETCHW;
 			}
 
-			if (EDX & (1U << 29)) {
+			if (edx & (1U << 29)) {
 				// Long mode implies support for PREFETCHW on AMD
 				type_ |= tPREFETCHW;
 			}
-		} else if (isEqualStr(EBX, ECX, EDX, "GenuineIntel")) {
+		} else if (isEqualStr(ebx, ecx, edx, "GenuineIntel")) {
 			type_ |= tINTEL;
 		}
 
 		// Extended flags information
 		getCpuid(0x80000000, data);
-		const uint32_t maxExtendedNum = EAX;
+		const uint32_t maxExtendedNum = eax;
 		if (maxExtendedNum >= 0x80000001) {
 			getCpuid(0x80000001, data);
 
-			if (ECX & (1U << 5)) type_ |= tLZCNT;
-			if (ECX & (1U << 6)) type_ |= tSSE4a;
-			if (ECX & (1U << 8)) type_ |= tPREFETCHW;
-			if (EDX & (1U << 15)) type_ |= tCMOV;
-			if (EDX & (1U << 22)) type_ |= tMMX2;
-			if (EDX & (1U << 27)) type_ |= tRDTSCP;
-			if (EDX & (1U << 30)) type_ |= tE3DN;
-			if (EDX & (1U << 31)) type_ |= t3DN;
+			if (ecx & (1U << 5)) type_ |= tLZCNT;
+			if (ecx & (1U << 6)) type_ |= tSSE4a;
+			if (ecx & (1U << 8)) type_ |= tPREFETCHW;
+			if (edx & (1U << 15)) type_ |= tCMOV;
+			if (edx & (1U << 22)) type_ |= tMMX2;
+			if (edx & (1U << 27)) type_ |= tRDTSCP;
+			if (edx & (1U << 30)) type_ |= tE3DN;
+			if (edx & (1U << 31)) type_ |= t3DN;
 		}
 
 		if (maxExtendedNum >= 0x80000008) {
 			getCpuid(0x80000008, data);
-			if (EBX & (1U << 0)) type_ |= tCLZERO;
+			if (ebx & (1U << 0)) type_ |= tCLZERO;
 		}
 
 		getCpuid(1, data);
-		if (ECX & (1U << 0)) type_ |= tSSE3;
-		if (ECX & (1U << 1)) type_ |= tPCLMULQDQ;
-		if (ECX & (1U << 9)) type_ |= tSSSE3;
-		if (ECX & (1U << 19)) type_ |= tSSE41;
-		if (ECX & (1U << 20)) type_ |= tSSE42;
-		if (ECX & (1U << 22)) type_ |= tMOVBE;
-		if (ECX & (1U << 23)) type_ |= tPOPCNT;
-		if (ECX & (1U << 25)) type_ |= tAESNI;
-		if (ECX & (1U << 26)) type_ |= tXSAVE;
-		if (ECX & (1U << 27)) type_ |= tOSXSAVE;
-		if (ECX & (1U << 29)) type_ |= tF16C;
-		if (ECX & (1U << 30)) type_ |= tRDRAND;
+		if (ecx & (1U << 0)) type_ |= tSSE3;
+		if (ecx & (1U << 1)) type_ |= tPCLMULQDQ;
+		if (ecx & (1U << 9)) type_ |= tSSSE3;
+		if (ecx & (1U << 19)) type_ |= tSSE41;
+		if (ecx & (1U << 20)) type_ |= tSSE42;
+		if (ecx & (1U << 22)) type_ |= tMOVBE;
+		if (ecx & (1U << 23)) type_ |= tPOPCNT;
+		if (ecx & (1U << 25)) type_ |= tAESNI;
+		if (ecx & (1U << 26)) type_ |= tXSAVE;
+		if (ecx & (1U << 27)) type_ |= tOSXSAVE;
+		if (ecx & (1U << 29)) type_ |= tF16C;
+		if (ecx & (1U << 30)) type_ |= tRDRAND;
 
-		if (EDX & (1U << 15)) type_ |= tCMOV;
-		if (EDX & (1U << 23)) type_ |= tMMX;
-		if (EDX & (1U << 25)) type_ |= tMMX2 | tSSE;
-		if (EDX & (1U << 26)) type_ |= tSSE2;
+		if (edx & (1U << 15)) type_ |= tCMOV;
+		if (edx & (1U << 23)) type_ |= tMMX;
+		if (edx & (1U << 25)) type_ |= tMMX2 | tSSE;
+		if (edx & (1U << 26)) type_ |= tSSE2;
 
 		if (type_ & tOSXSAVE) {
 			// check XFEATURE_ENABLED_MASK[2:1] = '11b'
 			uint64_t bv = getXfeature();
 			if ((bv & 6) == 6) {
-				if (ECX & (1U << 12)) type_ |= tFMA;
-				if (ECX & (1U << 28)) type_ |= tAVX;
+				if (ecx & (1U << 12)) type_ |= tFMA;
+				if (ecx & (1U << 28)) type_ |= tAVX;
 				// do *not* check AVX-512 state on macOS because it has on-demand AVX-512 support
 #if !defined(__APPLE__)
 				if (((bv >> 5) & 7) == 7)
 #endif
 				{
 					getCpuidEx(7, 0, data);
-					if (EBX & (1U << 16)) type_ |= tAVX512F;
+					if (ebx & (1U << 16)) type_ |= tAVX512F;
 					if (type_ & tAVX512F) {
-						if (EBX & (1U << 17)) type_ |= tAVX512DQ;
-						if (EBX & (1U << 21)) type_ |= tAVX512_IFMA;
-						if (EBX & (1U << 26)) type_ |= tAVX512PF;
-						if (EBX & (1U << 27)) type_ |= tAVX512ER;
-						if (EBX & (1U << 28)) type_ |= tAVX512CD;
-						if (EBX & (1U << 30)) type_ |= tAVX512BW;
-						if (EBX & (1U << 31)) type_ |= tAVX512VL;
-						if (ECX & (1U << 1)) type_ |= tAVX512_VBMI;
-						if (ECX & (1U << 6)) type_ |= tAVX512_VBMI2;
-						if (ECX & (1U << 11)) type_ |= tAVX512_VNNI;
-						if (ECX & (1U << 12)) type_ |= tAVX512_BITALG;
-						if (ECX & (1U << 14)) type_ |= tAVX512_VPOPCNTDQ;
-						if (EDX & (1U << 2)) type_ |= tAVX512_4VNNIW;
-						if (EDX & (1U << 3)) type_ |= tAVX512_4FMAPS;
-						if (EDX & (1U << 8)) type_ |= tAVX512_VP2INTERSECT;
-						if ((type_ & tAVX512BW) && (EDX & (1U << 23))) type_ |= tAVX512_FP16;
+						if (ebx & (1U << 17)) type_ |= tAVX512DQ;
+						if (ebx & (1U << 21)) type_ |= tAVX512_IFMA;
+						if (ebx & (1U << 26)) type_ |= tAVX512PF;
+						if (ebx & (1U << 27)) type_ |= tAVX512ER;
+						if (ebx & (1U << 28)) type_ |= tAVX512CD;
+						if (ebx & (1U << 30)) type_ |= tAVX512BW;
+						if (ebx & (1U << 31)) type_ |= tAVX512VL;
+						if (ecx & (1U << 1)) type_ |= tAVX512_VBMI;
+						if (ecx & (1U << 6)) type_ |= tAVX512_VBMI2;
+						if (ecx & (1U << 11)) type_ |= tAVX512_VNNI;
+						if (ecx & (1U << 12)) type_ |= tAVX512_BITALG;
+						if (ecx & (1U << 14)) type_ |= tAVX512_VPOPCNTDQ;
+						if (edx & (1U << 2)) type_ |= tAVX512_4VNNIW;
+						if (edx & (1U << 3)) type_ |= tAVX512_4FMAPS;
+						if (edx & (1U << 8)) type_ |= tAVX512_VP2INTERSECT;
+						if ((type_ & tAVX512BW) && (edx & (1U << 23))) type_ |= tAVX512_FP16;
 					}
 				}
 			}
 		}
 		if (maxNum >= 7) {
 			getCpuidEx(7, 0, data);
-			const uint32_t maxNumSubLeaves = EAX;
-			if (type_ & tAVX && (EBX & (1U << 5))) type_ |= tAVX2;
-			if (EBX & (1U << 3)) type_ |= tBMI1;
-			if (EBX & (1U << 4)) type_ |= tHLE;
-			if (EBX & (1U << 8)) type_ |= tBMI2;
-			if (EBX & (1U << 9)) type_ |= tENHANCED_REP;
-			if (EBX & (1U << 11)) type_ |= tRTM;
-			if (EBX & (1U << 14)) type_ |= tMPX;
-			if (EBX & (1U << 18)) type_ |= tRDSEED;
-			if (EBX & (1U << 19)) type_ |= tADX;
-			if (EBX & (1U << 20)) type_ |= tSMAP;
-			if (EBX & (1U << 23)) type_ |= tCLFLUSHOPT;
-			if (EBX & (1U << 24)) type_ |= tCLWB;
-			if (EBX & (1U << 29)) type_ |= tSHA;
-			if (ECX & (1U << 0)) type_ |= tPREFETCHWT1;
-			if (ECX & (1U << 5)) type_ |= tWAITPKG;
-			if (ECX & (1U << 8)) type_ |= tGFNI;
-			if (ECX & (1U << 9)) type_ |= tVAES;
-			if (ECX & (1U << 10)) type_ |= tVPCLMULQDQ;
-			if (ECX & (1U << 23)) type_ |= tKEYLOCKER;
-			if (ECX & (1U << 25)) type_ |= tCLDEMOTE;
-			if (ECX & (1U << 27)) type_ |= tMOVDIRI;
-			if (ECX & (1U << 28)) type_ |= tMOVDIR64B;
-			if (EDX & (1U << 5)) type_ |= tUINTR;
-			if (EDX & (1U << 14)) type_ |= tSERIALIZE;
-			if (EDX & (1U << 16)) type_ |= tTSXLDTRK;
-			if (EDX & (1U << 22)) type_ |= tAMX_BF16;
-			if (EDX & (1U << 24)) type_ |= tAMX_TILE;
-			if (EDX & (1U << 25)) type_ |= tAMX_INT8;
+			const uint32_t maxNumSubLeaves = eax;
+			if (type_ & tAVX && (ebx & (1U << 5))) type_ |= tAVX2;
+			if (ebx & (1U << 3)) type_ |= tBMI1;
+			if (ebx & (1U << 4)) type_ |= tHLE;
+			if (ebx & (1U << 8)) type_ |= tBMI2;
+			if (ebx & (1U << 9)) type_ |= tENHANCED_REP;
+			if (ebx & (1U << 11)) type_ |= tRTM;
+			if (ebx & (1U << 14)) type_ |= tMPX;
+			if (ebx & (1U << 18)) type_ |= tRDSEED;
+			if (ebx & (1U << 19)) type_ |= tADX;
+			if (ebx & (1U << 20)) type_ |= tSMAP;
+			if (ebx & (1U << 23)) type_ |= tCLFLUSHOPT;
+			if (ebx & (1U << 24)) type_ |= tCLWB;
+			if (ebx & (1U << 29)) type_ |= tSHA;
+			if (ecx & (1U << 0)) type_ |= tPREFETCHWT1;
+			if (ecx & (1U << 5)) type_ |= tWAITPKG;
+			if (ecx & (1U << 8)) type_ |= tGFNI;
+			if (ecx & (1U << 9)) type_ |= tVAES;
+			if (ecx & (1U << 10)) type_ |= tVPCLMULQDQ;
+			if (ecx & (1U << 23)) type_ |= tKEYLOCKER;
+			if (ecx & (1U << 25)) type_ |= tCLDEMOTE;
+			if (ecx & (1U << 27)) type_ |= tMOVDIRI;
+			if (ecx & (1U << 28)) type_ |= tMOVDIR64B;
+			if (edx & (1U << 5)) type_ |= tUINTR;
+			if (edx & (1U << 14)) type_ |= tSERIALIZE;
+			if (edx & (1U << 16)) type_ |= tTSXLDTRK;
+			if (edx & (1U << 22)) type_ |= tAMX_BF16;
+			if (edx & (1U << 24)) type_ |= tAMX_TILE;
+			if (edx & (1U << 25)) type_ |= tAMX_INT8;
 			if (maxNumSubLeaves >= 1) {
 				getCpuidEx(7, 1, data);
-				if (EAX & (1U << 0)) type_ |= tSHA512;
-				if (EAX & (1U << 1)) type_ |= tSM3;
-				if (EAX & (1U << 2)) type_ |= tSM4;
-				if (EAX & (1U << 3)) type_ |= tRAO_INT;
-				if (EAX & (1U << 4)) type_ |= tAVX_VNNI;
+				if (eax & (1U << 0)) type_ |= tSHA512;
+				if (eax & (1U << 1)) type_ |= tSM3;
+				if (eax & (1U << 2)) type_ |= tSM4;
+				if (eax & (1U << 3)) type_ |= tRAO_INT;
+				if (eax & (1U << 4)) type_ |= tAVX_VNNI;
 				if (type_ & tAVX512F) {
-					if (EAX & (1U << 5)) type_ |= tAVX512_BF16;
+					if (eax & (1U << 5)) type_ |= tAVX512_BF16;
 				}
-				if (EAX & (1U << 7)) type_ |= tCMPCCXADD;
-				if (EAX & (1U << 21)) type_ |= tAMX_FP16;
-				if (EAX & (1U << 23)) type_ |= tAVX_IFMA;
-				if (EAX & (1U << 31)) type_ |= tMOVRS;
-				if (EDX & (1U << 4)) type_ |= tAVX_VNNI_INT8;
-				if (EDX & (1U << 5)) type_ |= tAVX_NE_CONVERT;
-				if (EDX & (1U << 10)) type_ |= tAVX_VNNI_INT16;
-				if (EDX & (1U << 14)) type_ |= tPREFETCHITI;
-				if (EDX & (1U << 19)) type_ |= tAVX10;
-				if (EDX & (1U << 21)) type_ |= tAPX_F;
+				if (eax & (1U << 7)) type_ |= tCMPCCXADD;
+				if (eax & (1U << 21)) type_ |= tAMX_FP16;
+				if (eax & (1U << 23)) type_ |= tAVX_IFMA;
+				if (eax & (1U << 31)) type_ |= tMOVRS;
+				if (edx & (1U << 4)) type_ |= tAVX_VNNI_INT8;
+				if (edx & (1U << 5)) type_ |= tAVX_NE_CONVERT;
+				if (edx & (1U << 10)) type_ |= tAVX_VNNI_INT16;
+				if (edx & (1U << 14)) type_ |= tPREFETCHITI;
+				if (edx & (1U << 19)) type_ |= tAVX10;
+				if (edx & (1U << 21)) type_ |= tAPX_F;
 
 				getCpuidEx(0x1e, 1, data);
-				if (EAX & (1U << 4)) type_ |= tAMX_FP8;
-				if (EAX & (1U << 5)) type_ |= tAMX_TRANSPOSE;
-				if (EAX & (1U << 6)) type_ |= tAMX_TF32;
-				if (EAX & (1U << 7)) type_ |= tAMX_AVX512;
-				if (EAX & (1U << 8)) type_ |= tAMX_MOVRS;
+				if (eax & (1U << 4)) type_ |= tAMX_FP8;
+				if (eax & (1U << 5)) type_ |= tAMX_TRANSPOSE;
+				if (eax & (1U << 6)) type_ |= tAMX_TF32;
+				if (eax & (1U << 7)) type_ |= tAMX_AVX512;
+				if (eax & (1U << 8)) type_ |= tAMX_MOVRS;
 			}
 		}
 		if (maxNum >= 0x19) {
 			getCpuidEx(0x19, 0, data);
-			if (EBX & (1U << 0)) type_ |= tAESKLE;
-			if (EBX & (1U << 2)) type_ |= tWIDE_KL;
+			if (ebx & (1U << 0)) type_ |= tAESKLE;
+			if (ebx & (1U << 2)) type_ |= tWIDE_KL;
 			if (type_ & (tKEYLOCKER|tAESKLE|tWIDE_KL)) type_ |= tKEYLOCKER_WIDE;
 		}
 		if (has(tAVX10) && maxNum >= 0x24) {
 			getCpuidEx(0x24, 0, data);
-			avx10version_ = EBX & mask(7);
+			avx10version_ = ebx & mask(7);
 		}
 		setFamily();
 		setNumCores();
@@ -752,6 +756,9 @@ public:
 	}
 	int getAVX10version() const { return avx10version_; }
 };
+#ifdef _MSC_VER
+	#pragma warning(pop)
+#endif
 
 #ifndef XBYAK_ONLY_CLASS_CPU
 class Clock {

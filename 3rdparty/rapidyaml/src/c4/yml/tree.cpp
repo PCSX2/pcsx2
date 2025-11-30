@@ -1,5 +1,5 @@
 #include "c4/yml/tree.hpp"
-#include "c4/yml/detail/parser_dbg.hpp"
+#include "c4/yml/detail/dbgprint.hpp"
 #include "c4/yml/node.hpp"
 #include "c4/yml/reference_resolver.hpp"
 
@@ -857,7 +857,13 @@ void Tree::set_root_as_stream()
 void Tree::remove_children(id_type node)
 {
     _RYML_CB_ASSERT(m_callbacks, get(node) != nullptr);
+    #if __GNUC__ >= 6
+    C4_SUPPRESS_WARNING_GCC_WITH_PUSH("-Wnull-dereference")
+    #endif
     id_type ich = get(node)->m_first_child;
+    #if __GNUC__ >= 6
+    C4_SUPPRESS_WARNING_GCC_POP
+    #endif
     while(ich != NONE)
     {
         remove_children(ich);
@@ -1178,7 +1184,6 @@ id_type Tree::child_pos(id_type node, id_type ch) const
 
 #if defined(__clang__)
 #   pragma clang diagnostic push
-#   pragma GCC diagnostic ignored "-Wnull-dereference"
 #elif defined(__GNUC__)
 #   pragma GCC diagnostic push
 #   if __GNUC__ >= 6
@@ -1337,6 +1342,37 @@ void Tree::to_stream(id_type node, type_bits more_flags)
 
 
 //-----------------------------------------------------------------------------
+
+void Tree::clear_style(id_type node, bool recurse)
+{
+    NodeData *C4_RESTRICT d = _p(node);
+    d->m_type.clear_style();
+    if(!recurse)
+        return;
+    for(id_type child = d->m_first_child; child != NONE; child = next_sibling(child))
+        clear_style(child, recurse);
+}
+
+void Tree::set_style_conditionally(id_type node,
+                                   NodeType type_mask,
+                                   NodeType rem_style_flags,
+                                   NodeType add_style_flags,
+                                   bool recurse)
+{
+    NodeData *C4_RESTRICT d = _p(node);
+    if((d->m_type & type_mask) == type_mask)
+    {
+        d->m_type &= ~(NodeType)rem_style_flags;
+        d->m_type |= (NodeType)add_style_flags;
+    }
+    if(!recurse)
+        return;
+    for(id_type child = d->m_first_child; child != NONE; child = next_sibling(child))
+        set_style_conditionally(child, type_mask, rem_style_flags, add_style_flags, recurse);
+}
+
+
+//-----------------------------------------------------------------------------
 id_type Tree::num_tag_directives() const
 {
     // this assumes we have a very small number of tag directives
@@ -1366,10 +1402,30 @@ id_type Tree::add_tag_directive(TagDirective const& td)
     return pos;
 }
 
+namespace {
+bool _create_tag_directive_from_str(csubstr directive_, TagDirective *td, Tree *tree)
+{
+    _RYML_CB_CHECK(tree->callbacks(), directive_.begins_with("%TAG "));
+    if(!td->create_from_str(directive_))
+    {
+        _RYML_CB_ERR(tree->callbacks(), "invalid tag directive");
+    }
+    td->next_node_id = tree->size();
+    if(!tree->empty())
+    {
+        const id_type prev = tree->size() - 1;
+        if(tree->is_root(prev) && tree->type(prev) != NOTYPE && !tree->is_stream(prev))
+            ++td->next_node_id;
+    }
+    _c4dbgpf("%TAG: handle={} prefix={} next_node={}", td->handle, td->prefix, td->next_node_id);
+    return true;
+}
+} // namespace
+
 bool Tree::add_tag_directive(csubstr directive_)
 {
     TagDirective td;
-    if(td.create_from_str(directive_, this))
+    if(_create_tag_directive_from_str(directive_, &td, this))
     {
         add_tag_directive(td);
         return true;
@@ -1797,6 +1853,122 @@ Tree::_lookup_path_token Tree::_next_token(lookup_result *r, _lookup_path_token 
     return {unres.first(pos), SEQ};
 }
 
+
+} // namespace yml
+} // namespace c4
+
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+
+#include "c4/yml/event_handler_tree.hpp"
+#include "c4/yml/parse_engine.def.hpp"
+#include "c4/yml/parse.hpp"
+
+namespace c4 {
+namespace yml {
+
+Location Tree::location(Parser const& parser, id_type node) const
+{
+    // try hard to avoid getting the location from a null string.
+    Location loc;
+    if(_location_from_node(parser, node, &loc, 0))
+        return loc;
+    return parser.val_location(parser.source().str);
+}
+
+bool Tree::_location_from_node(Parser const& parser, id_type node, Location *C4_RESTRICT loc, id_type level) const
+{
+    if(has_key(node))
+    {
+        csubstr k = key(node);
+        if(C4_LIKELY(k.str != nullptr))
+        {
+            _RYML_CB_ASSERT(m_callbacks, k.is_sub(parser.source()));
+            _RYML_CB_ASSERT(m_callbacks, parser.source().is_super(k));
+            *loc = parser.val_location(k.str);
+            return true;
+        }
+    }
+
+    if(has_val(node))
+    {
+        csubstr v = val(node);
+        if(C4_LIKELY(v.str != nullptr))
+        {
+            _RYML_CB_ASSERT(m_callbacks, v.is_sub(parser.source()));
+            _RYML_CB_ASSERT(m_callbacks, parser.source().is_super(v));
+            *loc = parser.val_location(v.str);
+            return true;
+        }
+    }
+
+    if(is_container(node))
+    {
+        if(_location_from_cont(parser, node, loc))
+            return true;
+    }
+
+    if(type(node) != NOTYPE && level == 0)
+    {
+        // try the prev sibling
+        {
+            const id_type prev = prev_sibling(node);
+            if(prev != NONE)
+            {
+                if(_location_from_node(parser, prev, loc, level+1))
+                    return true;
+            }
+        }
+        // try the next sibling
+        {
+            const id_type next = next_sibling(node);
+            if(next != NONE)
+            {
+                if(_location_from_node(parser, next, loc, level+1))
+                    return true;
+            }
+        }
+        // try the parent
+        {
+            const id_type parent = this->parent(node);
+            if(parent != NONE)
+            {
+                if(_location_from_node(parser, parent, loc, level+1))
+                    return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool Tree::_location_from_cont(Parser const& parser, id_type node, Location *C4_RESTRICT loc) const
+{
+    _RYML_CB_ASSERT(m_callbacks, is_container(node));
+    if(!is_stream(node))
+    {
+        const char *node_start = _p(node)->m_val.scalar.str;  // this was stored in the container
+        if(has_children(node))
+        {
+            id_type child = first_child(node);
+            if(has_key(child))
+            {
+                // when a map starts, the container was set after the key
+                csubstr k = key(child);
+                if(k.str && node_start > k.str)
+                    node_start = k.str;
+            }
+        }
+        *loc = parser.val_location(node_start);
+        return true;
+    }
+    else // it's a stream
+    {
+        *loc = parser.val_location(parser.source().str); // just return the front of the buffer
+    }
+    return true;
+}
 
 } // namespace yml
 } // namespace c4
