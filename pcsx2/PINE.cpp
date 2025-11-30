@@ -646,7 +646,11 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 					goto error;
 				if (!SafetyChecks(buf_cnt, 1, ret_cnt, 0, buf_size)) [[unlikely]]
 					goto error;
-				Host::RunOnCPUThread([slot = FromSpan<u8>(buf, buf_cnt)] { VMManager::SaveStateToSlot(slot); });
+				Host::RunOnCPUThread([slot = FromSpan<u8>(buf, buf_cnt)] {
+					VMManager::SaveStateToSlot(slot, true, [slot](const std::string& error) {
+						SaveState_ReportSaveErrorOSD(error, slot);
+					});
+				});
 				buf_cnt += 1;
 				break;
 			}

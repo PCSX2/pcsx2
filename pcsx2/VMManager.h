@@ -165,10 +165,11 @@ namespace VMManager
 	bool LoadStateFromSlot(s32 slot, bool backup = false, Error* error = nullptr);
 
 	/// Saves state to the specified filename.
-	bool SaveState(const char* filename, bool zip_on_thread = true, bool backup_old_state = false);
+	void SaveState(const char* filename, bool zip_on_thread, bool backup_old_state,
+		std::function<void(const std::string&)> error_callback);
 
 	/// Saves state to the specified slot.
-	bool SaveStateToSlot(s32 slot, bool zip_on_thread = true);
+	void SaveStateToSlot(s32 slot, bool zip_on_thread, std::function<void(const std::string&)> error_callback);
 
 	/// Waits until all compressing save states have finished saving to disk.
 	void WaitForSaveStateFlush();

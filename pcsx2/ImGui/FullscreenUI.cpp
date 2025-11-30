@@ -671,6 +671,7 @@ namespace FullscreenUI
 	static bool OpenLoadStateSelectorForGameResume(const GameList::Entry* entry);
 	static void DrawResumeStateSelector();
 	static void DoLoadState(std::string path, std::optional<s32> slot, bool backup);
+	static void DoSaveState(s32 slot);
 
 	static std::vector<SaveStateListEntry> s_save_state_selector_slots;
 	static std::string s_save_state_selector_game_path;
@@ -7347,7 +7348,7 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 						if (is_loading)
 							DoLoadState(std::move(entry.path), entry.slot, false);
 						else
-							Host::RunOnCPUThread([slot = entry.slot]() { VMManager::SaveStateToSlot(slot); });
+							DoSaveState(entry.slot);
 
 						CloseSaveStateSelector();
 						ReturnToMainWindow();
@@ -7485,7 +7486,7 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 					if (is_loading)
 						DoLoadState(entry.path, entry.slot, false);
 					else
-						Host::RunOnCPUThread([slot = entry.slot]() { VMManager::SaveStateToSlot(slot); });
+						DoSaveState(entry.slot);
 
 					CloseSaveStateSelector();
 					ReturnToMainWindow();
@@ -7662,6 +7663,15 @@ void FullscreenUI::DoLoadState(std::string path, std::optional<s32> slot, bool b
 			params.save_state = std::move(path);
 			DoVMInitialize(params, false);
 		}
+	});
+}
+
+void FullscreenUI::DoSaveState(s32 slot)
+{
+	Host::RunOnCPUThread([slot]() {
+		VMManager::SaveStateToSlot(slot, true, [slot](const std::string& error) {
+			ReportStateSaveError(error, slot);
+		});
 	});
 }
 
@@ -9166,9 +9176,9 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
 	EndMenuButtons();
 }
 
-void FullscreenUI::ReportStateLoadError(std::string message, std::optional<s32> slot, bool backup)
+void FullscreenUI::ReportStateLoadError(const std::string& message, std::optional<s32> slot, bool backup)
 {
-	MTGS::RunOnGSThread([message = std::move(message), slot, backup]() {
+	MTGS::RunOnGSThread([message, slot, backup]() {
 		const bool prompt_on_error = Host::GetBaseBoolSettingValue("UI", "PromptOnStateLoadSaveFailure", true);
 		if (!prompt_on_error || !ImGuiManager::InitializeFullscreenUI())
 		{
@@ -9188,6 +9198,37 @@ void FullscreenUI::ReportStateLoadError(std::string message, std::optional<s32> 
 		{
 			title = FSUI_STR("Failed to Load State");
 		}
+
+		ImGuiFullscreen::InfoMessageDialogCallback callback;
+		if (VMManager::GetState() == VMState::Running)
+		{
+			Host::RunOnCPUThread([]() { VMManager::SetPaused(true); });
+			callback = []() {
+				Host::RunOnCPUThread([]() { VMManager::SetPaused(false); });
+			};
+		}
+
+		ImGuiFullscreen::OpenInfoMessageDialog(
+			fmt::format("{} {}", ICON_FA_TRIANGLE_EXCLAMATION, title),
+			std::move(message), std::move(callback));
+	});
+}
+
+void FullscreenUI::ReportStateSaveError(const std::string& message, std::optional<s32> slot)
+{
+	MTGS::RunOnGSThread([message, slot]() {
+		const bool prompt_on_error = Host::GetBaseBoolSettingValue("UI", "PromptOnStateLoadSaveFailure", true);
+		if (!prompt_on_error || !ImGuiManager::InitializeFullscreenUI())
+		{
+			SaveState_ReportSaveErrorOSD(message, slot);
+			return;
+		}
+
+		std::string title;
+		if (slot.has_value())
+			title = fmt::format(FSUI_FSTR("Failed to Save State To Slot {}"), *slot);
+		else
+			title = FSUI_STR("Failed to Save State");
 
 		ImGuiFullscreen::InfoMessageDialogCallback callback;
 		if (VMManager::GetState() == VMState::Running)

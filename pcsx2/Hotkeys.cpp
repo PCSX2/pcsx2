@@ -112,7 +112,9 @@ static void HotkeyLoadStateSlot(s32 slot)
 
 static void HotkeySaveStateSlot(s32 slot)
 {
-	VMManager::SaveStateToSlot(slot);
+	VMManager::SaveStateToSlot(slot, true, [slot](const std::string& error) {
+		FullscreenUI::ReportStateSaveError(error, slot);
+	});
 }
 
 static bool CanPause()

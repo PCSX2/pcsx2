@@ -356,3 +356,4 @@ public:
 };
 
 void SaveState_ReportLoadErrorOSD(const std::string& message, std::optional<s32> slot, bool backup);
+void SaveState_ReportSaveErrorOSD(const std::string& message, std::optional<s32> slot);

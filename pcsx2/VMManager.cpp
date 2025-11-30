@@ -115,13 +115,13 @@ namespace VMManager
 
 	static std::string GetCurrentSaveStateFileName(s32 slot, bool backup = false);
 	static bool DoLoadState(const char* filename, Error* error = nullptr);
-	static bool DoSaveState(const char* filename, s32 slot_for_message, bool zip_on_thread, bool backup_old_state);
+	static void DoSaveState(const char* filename, s32 slot_for_message, bool zip_on_thread, bool backup_old_state, std::function<void(const std::string&)> error_callback);
 	static void ZipSaveState(std::unique_ptr<ArchiveEntryList> elist,
-		std::unique_ptr<SaveStateScreenshotData> screenshot, std::string osd_key, const char* filename,
-		s32 slot_for_message);
+		std::unique_ptr<SaveStateScreenshotData> screenshot, const char* filename,
+		s32 slot_for_message, std::function<void(const std::string&)> error_callback);
 	static void ZipSaveStateOnThread(std::unique_ptr<ArchiveEntryList> elist,
-		std::unique_ptr<SaveStateScreenshotData> screenshot, std::string osd_key, std::string filename,
-		s32 slot_for_message);
+		std::unique_ptr<SaveStateScreenshotData> screenshot, std::string filename,
+		s32 slot_for_message, std::function<void(const std::string&)> error_callback);
 
 	static void LoadSettings();
 	static void LoadCoreSettings(SettingsInterface& si);
@@ -1617,8 +1617,13 @@ void VMManager::Shutdown(bool save_resume_state)
 	if (!GSDumpReplayer::IsReplayingDump() && save_resume_state)
 	{
 		std::string resume_file_name(GetCurrentSaveStateFileName(-1));
-		if (!resume_file_name.empty() && !DoSaveState(resume_file_name.c_str(), -1, true, false))
-			Console.Error("Failed to save resume state");
+		if (!resume_file_name.empty())
+		{
+			DoSaveState(resume_file_name.c_str(), -1, true, false, [](const std::string& error) {
+				Host::AddIconOSDMessage("SaveResumeState", ICON_FA_TRIANGLE_EXCLAMATION,
+					fmt::format(TRANSLATE_FS("VMManager", "Failed to save resume state: {}"), error), Host::OSD_QUICK_DURATION);
+			});
+		}
 	}
 
 	// end input recording before clearing state
@@ -1829,7 +1834,7 @@ bool VMManager::DoLoadState(const char* filename, Error* error)
 {
 	if (GSDumpReplayer::IsReplayingDump())
 	{
-		Error::SetString(error, TRANSLATE_STR("VMManager", "Cannot load save state while replaying GS dump."));
+		Error::SetString(error, TRANSLATE_STR("VMManager", "Cannot load state while replaying GS dump."));
 		return false;
 	}
 
@@ -1849,21 +1854,21 @@ bool VMManager::DoLoadState(const char* filename, Error* error)
 	return true;
 }
 
-bool VMManager::DoSaveState(const char* filename, s32 slot_for_message, bool zip_on_thread, bool backup_old_state)
+void VMManager::DoSaveState(const char* filename, s32 slot_for_message, bool zip_on_thread, bool backup_old_state, std::function<void(const std::string&)> error_callback)
 {
 	if (GSDumpReplayer::IsReplayingDump())
-		return false;
+	{
+		error_callback(TRANSLATE_STR("VMManager", "Cannot save state while replaying GS dump."));
+		return;
+	}
 
-	std::string osd_key(fmt::format("SaveStateSlot{}", slot_for_message));
 	Error error;
-
 	std::unique_ptr<ArchiveEntryList> elist = SaveState_DownloadState(&error);
 	if (!elist)
 	{
-		Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_TRIANGLE_EXCLAMATION,
-			fmt::format(TRANSLATE_FS("VMManager", "Failed to save state: {}."), error.GetDescription()),
-			Host::OSD_ERROR_DURATION);
-		return false;
+		error_callback(fmt::format(
+			TRANSLATE_FS("VMManager", "Failed to save state: {}."), error.GetDescription()));
+		return;
 	}
 
 	std::unique_ptr<SaveStateScreenshotData> screenshot = SaveState_SaveScreenshot();
@@ -1874,10 +1879,10 @@ bool VMManager::DoSaveState(const char* filename, s32 slot_for_message, bool zip
 		Console.WriteLn(fmt::format("Creating save state backup {}...", backup_filename));
 		if (!FileSystem::RenamePath(filename, backup_filename.c_str()))
 		{
-			Host::AddIconOSDMessage(osd_key, ICON_FA_TRIANGLE_EXCLAMATION,
-				fmt::format(
-					TRANSLATE_FS("VMManager", "Failed to back up old save state {}."), Path::GetFileName(filename)),
-				Host::OSD_ERROR_DURATION);
+			error_callback(fmt::format(
+				TRANSLATE_FS("VMManager", "Cannot back up old save state '{}'."),
+				Path::GetFileName(filename)));
+			return;
 		}
 	}
 
@@ -1886,21 +1891,22 @@ bool VMManager::DoSaveState(const char* filename, s32 slot_for_message, bool zip
 		// lock order here is important; the thread could exit before we resume here.
 		std::unique_lock lock(s_save_state_threads_mutex);
 		s_save_state_threads.emplace_back(&VMManager::ZipSaveStateOnThread, std::move(elist), std::move(screenshot),
-			std::move(osd_key), std::string(filename), slot_for_message);
+			std::string(filename), slot_for_message, std::move(error_callback));
 	}
 	else
 	{
-		ZipSaveState(std::move(elist), std::move(screenshot), std::move(osd_key), filename, slot_for_message);
+		ZipSaveState(
+			std::move(elist), std::move(screenshot), filename, slot_for_message, std::move(error_callback));
 	}
 
 	Host::OnSaveStateSaved(filename);
 	MemcardBusy::CheckSaveStateDependency();
-	return true;
+	return;
 }
 
 void VMManager::ZipSaveState(std::unique_ptr<ArchiveEntryList> elist,
-	std::unique_ptr<SaveStateScreenshotData> screenshot, std::string osd_key, const char* filename,
-	s32 slot_for_message)
+	std::unique_ptr<SaveStateScreenshotData> screenshot, const char* filename,
+	s32 slot_for_message, std::function<void(const std::string&)> error_callback)
 {
 	Common::Timer timer;
 
@@ -1908,26 +1914,26 @@ void VMManager::ZipSaveState(std::unique_ptr<ArchiveEntryList> elist,
 	{
 		if (slot_for_message >= 0 && VMManager::HasValidVM())
 		{
-			Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_FLOPPY_DISK,
+			Host::AddIconOSDMessage("SaveState", ICON_FA_FLOPPY_DISK,
 				fmt::format(TRANSLATE_FS("VMManager", "State saved to slot {}."), slot_for_message),
 				Host::OSD_QUICK_DURATION);
 		}
 	}
 	else
 	{
-		Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_TRIANGLE_EXCLAMATION,
-			fmt::format(TRANSLATE_FS("VMManager", "Failed to save state to slot {}."), slot_for_message,
-				Host::OSD_ERROR_DURATION));
+		error_callback(fmt::format(
+			TRANSLATE_FS("VMManager", "Failed to save state to slot {}."), slot_for_message));
 	}
 
 	DevCon.WriteLn("Zipping save state to '%s' took %.2f ms", filename, timer.GetTimeMilliseconds());
 }
 
 void VMManager::ZipSaveStateOnThread(std::unique_ptr<ArchiveEntryList> elist,
-	std::unique_ptr<SaveStateScreenshotData> screenshot, std::string osd_key, std::string filename,
-	s32 slot_for_message)
+	std::unique_ptr<SaveStateScreenshotData> screenshot, std::string filename,
+	s32 slot_for_message, std::function<void(const std::string&)> error_callback)
 {
-	ZipSaveState(std::move(elist), std::move(screenshot), std::move(osd_key), filename.c_str(), slot_for_message);
+	ZipSaveState(
+		std::move(elist), std::move(screenshot), filename.c_str(), slot_for_message, std::move(error_callback));
 
 	// remove ourselves from the thread list. if we're joining, we might not be in there.
 	const auto this_id = std::this_thread::get_id();
@@ -2046,37 +2052,45 @@ bool VMManager::LoadStateFromSlot(s32 slot, bool backup, Error* error)
 	return DoLoadState(filename.c_str(), error);
 }
 
-bool VMManager::SaveState(const char* filename, bool zip_on_thread, bool backup_old_state)
+void VMManager::SaveState(
+	const char* filename, bool zip_on_thread, bool backup_old_state, std::function<void(const std::string&)> error_callback)
 {
 	if (MemcardBusy::IsBusy())
 	{
-		Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_TRIANGLE_EXCLAMATION,
-			fmt::format(TRANSLATE_FS("VMManager", "Failed to save state (Memory card is busy)")),
-			Host::OSD_QUICK_DURATION);
-		return false;
+		error_callback(TRANSLATE_STR("VMManager", "Failed to save state (memory card is busy)."));
+		return;
 	}
 
-	return DoSaveState(filename, -1, zip_on_thread, backup_old_state);
+	DoSaveState(filename, -1, zip_on_thread, backup_old_state, std::move(error_callback));
 }
 
-bool VMManager::SaveStateToSlot(s32 slot, bool zip_on_thread)
+void VMManager::SaveStateToSlot(s32 slot, bool zip_on_thread, std::function<void(const std::string&)> error_callback)
 {
 	const std::string filename(GetCurrentSaveStateFileName(slot));
 	if (filename.empty())
-		return false;
+	{
+		error_callback(TRANSLATE_STR("VMManager", "Failed to generate filename for save state."));
+		return;
+	}
 
 	if (MemcardBusy::IsBusy())
 	{
-		Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_TRIANGLE_EXCLAMATION,
-			fmt::format(TRANSLATE_FS("VMManager", "Failed to save state to slot {} (Memory card is busy)"), slot),
-			Host::OSD_QUICK_DURATION);
-		return false;
+		error_callback(fmt::format(
+			TRANSLATE_FS("VMManager", "Failed to save state to slot {} (Memory card is busy)"), slot));
+		return;
 	}
 
 	// if it takes more than a minute.. well.. wtf.
 	Host::AddIconOSDMessage(fmt::format("SaveStateSlot{}", slot), ICON_FA_FLOPPY_DISK,
 		fmt::format(TRANSLATE_FS("VMManager", "Saving state to slot {}..."), slot), 60.0f);
-	return DoSaveState(filename.c_str(), slot, zip_on_thread, EmuConfig.BackupSavestate);
+
+	auto callback = [error_callback = std::move(error_callback), slot](const std::string& error) {
+		Host::RemoveKeyedOSDMessage(fmt::format("SaveStateSlot{}", slot));
+		error_callback(error);
+	};
+
+	return DoSaveState(
+		filename.c_str(), slot, zip_on_thread, EmuConfig.BackupSavestate, std::move(callback));
 }
 
 LimiterModeType VMManager::GetLimiterMode()
