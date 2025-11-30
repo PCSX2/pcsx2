@@ -3,6 +3,7 @@
 
 #include "DockManager.h"
 
+#include "AsyncDialogs.h"
 #include "Debugger/DebuggerView.h"
 #include "Debugger/DebuggerWindow.h"
 #include "Debugger/Docking/DockTables.h"
@@ -24,7 +25,6 @@
 
 #include <QtCore/QTimer>
 #include <QtCore/QtTranslation>
-#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QProxyStyle>
 #include <QtWidgets/QStyleFactory>
 
@@ -518,17 +518,19 @@ void DockManager::newLayoutClicked()
 	if (m_menu_bar)
 		m_menu_bar->onCurrentLayoutChanged(m_current_layout);
 
-	auto name_validator = [this](const QString& name) {
+	const auto name_validator = [this](const QString& name) {
 		return !hasNameConflict(name, DockLayout::INVALID_INDEX);
 	};
 
-	bool can_clone_current_layout = m_current_layout != DockLayout::INVALID_INDEX;
+	const bool can_clone_current_layout = m_current_layout != DockLayout::INVALID_INDEX;
 
-	QPointer<LayoutEditorDialog> dialog = new LayoutEditorDialog(
-		name_validator, can_clone_current_layout, g_debugger_window);
+	LayoutEditorDialog* dialog = new LayoutEditorDialog(name_validator, can_clone_current_layout, g_debugger_window);
+	dialog->setAttribute(Qt::WA_DeleteOnClose);
 
-	if (dialog->exec() == QDialog::Accepted && name_validator(dialog->name()))
-	{
+	connect(dialog, &QDialog::accepted, this, [this, dialog, name_validator]() {
+		if (!name_validator(dialog->name()))
+			return;
+
 		DockLayout::Index new_layout = DockLayout::INVALID_INDEX;
 
 		const auto [mode, index] = dialog->initialState();
@@ -565,9 +567,9 @@ void DockManager::newLayoutClicked()
 			updateLayoutSwitcher();
 			switchToLayout(new_layout);
 		}
-	}
+	});
 
-	delete dialog.get();
+	dialog->open();
 }
 
 void DockManager::openLayoutSwitcherContextMenu(const QPoint& pos, QTabBar* layout_switcher)
@@ -605,26 +607,33 @@ void DockManager::editLayoutClicked(DockLayout::Index layout_index)
 	if (layout_index >= m_layouts.size())
 		return;
 
-	DockLayout& layout = m_layouts[layout_index];
+	const DockLayout& layout = m_layouts[layout_index];
 
-	auto name_validator = [this, layout_index](const QString& name) {
+	const auto name_validator = [this, layout_index](const QString& name) {
 		return !hasNameConflict(name, layout_index);
 	};
 
-	QPointer<LayoutEditorDialog> dialog = new LayoutEditorDialog(
-		layout.name(), layout.cpu(), name_validator, g_debugger_window);
+	LayoutEditorDialog* dialog = new LayoutEditorDialog(layout.name(), layout.cpu(), name_validator, g_debugger_window);
+	dialog->setAttribute(Qt::WA_DeleteOnClose);
 
-	if (dialog->exec() != QDialog::Accepted || !name_validator(dialog->name()))
-		return;
+	connect(dialog, &QDialog::accepted, this, [this, layout_index, dialog, name_validator]() {
+		if (layout_index >= m_layouts.size())
+			return;
 
-	layout.setName(dialog->name());
-	layout.setCpu(dialog->cpu());
+		DockLayout& layout = m_layouts[layout_index];
 
-	layout.save(layout_index);
+		if (!name_validator(dialog->name()))
+			return;
 
-	delete dialog.get();
+		layout.setName(dialog->name());
+		layout.setCpu(dialog->cpu());
 
-	updateLayoutSwitcher();
+		layout.save(layout_index);
+
+		updateLayoutSwitcher();
+	});
+
+	dialog->open();
 }
 
 void DockManager::resetLayoutClicked(DockLayout::Index layout_index)
@@ -636,20 +645,28 @@ void DockManager::resetLayoutClicked(DockLayout::Index layout_index)
 	if (!layout.canReset())
 		return;
 
-	QString text = tr("Are you sure you want to reset layout '%1'?").arg(layout.name());
-	if (QMessageBox::question(g_debugger_window, tr("Confirmation"), text) != QMessageBox::Yes)
-		return;
+	const QString title = tr("Confirmation");
+	const QString text = tr("Are you sure you want to reset layout '%1'?").arg(layout.name());
 
-	bool current_layout = layout_index == m_current_layout;
+	AsyncDialogs::question(g_debugger_window, title, text, [this, layout_index]() {
+		if (layout_index >= m_layouts.size())
+			return;
 
-	if (current_layout)
-		switchToLayout(DockLayout::INVALID_INDEX);
+		DockLayout& layout = m_layouts[layout_index];
+		if (!layout.canReset())
+			return;
 
-	layout.reset();
-	layout.save(layout_index);
+		bool current_layout = layout_index == m_current_layout;
 
-	if (current_layout)
-		switchToLayout(layout_index);
+		if (current_layout)
+			switchToLayout(DockLayout::INVALID_INDEX);
+
+		layout.reset();
+		layout.save(layout_index);
+
+		if (current_layout)
+			switchToLayout(layout_index);
+	});
 }
 
 void DockManager::deleteLayoutClicked(DockLayout::Index layout_index)
@@ -659,12 +676,16 @@ void DockManager::deleteLayoutClicked(DockLayout::Index layout_index)
 
 	DockLayout& layout = m_layouts[layout_index];
 
-	QString text = tr("Are you sure you want to delete layout '%1'?").arg(layout.name());
-	if (QMessageBox::question(g_debugger_window, tr("Confirmation"), text) != QMessageBox::Yes)
-		return;
+	const QString title = tr("Confirmation");
+	const QString text = tr("Are you sure you want to delete layout '%1'?").arg(layout.name());
 
-	deleteLayout(layout_index);
-	updateLayoutSwitcher();
+	AsyncDialogs::question(g_debugger_window, title, text, [this, layout_index]() {
+		if (layout_index >= m_layouts.size())
+			return;
+
+		deleteLayout(layout_index);
+		updateLayoutSwitcher();
+	});
 }
 
 void DockManager::layoutSwitcherTabMoved(DockLayout::Index from_index, DockLayout::Index to_index)
