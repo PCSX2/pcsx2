@@ -1148,7 +1148,7 @@ bool BMPBufferLoader(RGBA8Image* image, const void* buffer, size_t buffer_size)
 		return false;
 	}
 
-	if (width > 65536 || height > 65536)
+	if (width >= 65536 || height >= 65536)
 	{
 		Console.Error("BMP dimensions too large: %ux%u", width, height);
 		return false;
