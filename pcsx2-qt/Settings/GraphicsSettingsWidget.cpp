@@ -241,6 +241,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_osd.showInputs, "EmuCore/GS", "OsdShowInputs", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_osd.showVideoCapture, "EmuCore/GS", "OsdShowVideoCapture", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_osd.showInputRec, "EmuCore/GS", "OsdShowInputRec", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_osd.showTextureReplacements, "EmuCore/GS", "OsdShowTextureReplacements", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_osd.warnAboutUnsafeSettings, "EmuCore", "OsdWarnAboutUnsafeSettings", true);
 
 	//////////////////////////////////////////////////////////////////////////
@@ -768,6 +769,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 
 		dialog()->registerWidgetHelp(m_osd.showInputRec, tr("Show Input Recording Status"), tr("Checked"),
 			tr("Shows the status of the currently active input recording in the top-right corner of the display.."));
+
+		dialog()->registerWidgetHelp(m_osd.showTextureReplacements, tr("Show Texture Replacement Status"), tr("Checked"),
+			tr("Shows the status of the number of dumped and loaded texture replacements in the top-right corner of the display."));
 
 		dialog()->registerWidgetHelp(m_osd.warnAboutUnsafeSettings, tr("Warn About Unsafe Settings"), tr("Checked"),
 			tr("Displays warnings when settings are enabled which may break games."));

@@ -149,6 +149,13 @@
           </property>
          </widget>
         </item>
+        <item row="6" column="2">
+         <widget class="QCheckBox" name="showTextureReplacements">
+          <property name="text">
+           <string>Show Texture Replacement Status</string>
+          </property>
+         </widget>
+        </item>
         <item row="4" column="0">
          <widget class="QCheckBox" name="showResolution">
           <property name="text">
@@ -391,6 +398,7 @@
   <tabstop>showInputs</tabstop>
   <tabstop>showVideoCapture</tabstop>
   <tabstop>showInputRec</tabstop>
+  <tabstop>showTextureReplacements</tabstop>
   <tabstop>warnAboutUnsafeSettings</tabstop>
  </tabstops>
  <resources/>
