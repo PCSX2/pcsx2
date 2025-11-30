@@ -38,6 +38,7 @@
 #include "common/StringUtil.h"
 #include "common/ZipHelpers.h"
 
+#include "IconsFontAwesome6.h"
 #include "fmt/format.h"
 
 #include <csetjmp>
@@ -1230,4 +1231,25 @@ bool SaveState_UnzipFromDisk(const std::string& filename, Error* error)
 
 	PostLoadPrep();
 	return true;
+}
+
+void SaveState_ReportLoadErrorOSD(const std::string& message, std::optional<s32> slot, bool backup)
+{
+	std::string full_message;
+	if (slot.has_value())
+	{
+		if (backup)
+			full_message = fmt::format(
+				TRANSLATE_FS("SaveState", "Failed to load state from slot {}: {}"), *slot, message);
+		else
+			full_message = fmt::format(
+				TRANSLATE_FS("SaveState", "Failed to load state from backup slot {}: {}"), *slot, message);
+	}
+	else
+	{
+		full_message = fmt::format(TRANSLATE_FS("SaveState", "Failed to load state: {}"), message);
+	}
+
+	Host::AddIconOSDMessage("SaveState", ICON_FA_TRIANGLE_EXCLAMATION,
+		full_message, Host::OSD_WARNING_DURATION);
 }

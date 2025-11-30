@@ -106,8 +106,7 @@ static void HotkeyLoadStateSlot(s32 slot)
 
 		Error error;
 		if (!VMManager::LoadStateFromSlot(slot, false, &error))
-			Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_TRIANGLE_EXCLAMATION,
-				error.GetDescription(), Host::OSD_INFO_DURATION);
+			FullscreenUI::ReportStateLoadError(error.GetDescription(), slot, false);
 	});
 }
 
