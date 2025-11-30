@@ -1136,16 +1136,6 @@ void Host::OnAchievementsHardcoreModeChanged(bool enabled)
 	emit g_emu_thread->onAchievementsHardcoreModeChanged(enabled);
 }
 
-void Host::OnCoverDownloaderOpenRequested()
-{
-	emit g_emu_thread->onCoverDownloaderOpenRequested();
-}
-
-void Host::OnCreateMemoryCardOpenRequested()
-{
-	emit g_emu_thread->onCreateMemoryCardOpenRequested();
-}
-
 bool Host::ShouldPreferHostFileSelector()
 {
 #ifdef __linux__
