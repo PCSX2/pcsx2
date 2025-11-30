@@ -927,6 +927,20 @@ void cdvdReset()
 	// Print time zone offset, DST, time format, date format, and system time basis.
 	DevCon.WriteLn(Color_StrongGreen, configParams1.timezoneOffset < 0 ? "Time Zone Offset: GMT%03d:%02d" : "Time Zone Offset: GMT+%02d:%02d",
 				   configParams1.timezoneOffset / 60, std::abs(configParams1.timezoneOffset % 60));
+
+	// Time zone ID has exactly 128 possible values.
+	if (configParams1.timeZoneID < 0x80)
+	{
+		// Cutoff for the old naming scheme (TimeZoneLocations[][0]) is v01.70 inclusive.
+		const bool new_time_zone_ID_names = ((BiosVersion >> 8) == 2) || ((BiosVersion & 0xFF) >= 90);
+		DevCon.WriteLn(Color_StrongGreen, "Time Zone Location: %s",
+			TimeZoneLocations[configParams1.timeZoneID][new_time_zone_ID_names]);
+	}
+	else
+	{
+		DevCon.WriteLn(Color_StrongRed, "Invalid time zone configuration in BIOS (ID: %d)", configParams1.timeZoneID);
+	}
+
 	DevCon.WriteLn(Color_StrongGreen, "DST: %s Time", configParams2.daylightSavings ? "Summer" : "Winter");
 	DevCon.WriteLn(Color_StrongGreen, "Time Format: %s-Hour", configParams2.timeFormat ? "12" : "24");
  	DevCon.WriteLn(Color_StrongGreen, "Date Format: %s", configParams2.dateFormat ? (configParams2.dateFormat == 2 ? "DD/MM/YYYY" : "MM/DD/YYYY") : "YYYY/MM/DD");
