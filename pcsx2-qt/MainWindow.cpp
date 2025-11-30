@@ -221,15 +221,21 @@ void MainWindow::setupAdditionalUi()
 	m_status_resolution_widget->hide();
 
 	m_status_fps_widget = new QLabel(m_ui.statusBar);
-	m_status_fps_widget->setFixedSize(60, 16);
+	m_status_fps_widget->setFixedHeight(16);
+	m_status_fps_widget->setMinimumWidth(60);
+	m_status_fps_widget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 	m_status_fps_widget->hide();
 
 	m_status_vps_widget = new QLabel(m_ui.statusBar);
-	m_status_vps_widget->setFixedSize(60, 16);
+	m_status_vps_widget->setFixedHeight(16);
+	m_status_vps_widget->setMinimumWidth(60);
+	m_status_vps_widget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 	m_status_vps_widget->hide();
 
 	m_status_speed_widget = new QLabel(m_ui.statusBar);
-	m_status_speed_widget->setFixedSize(90, 16);
+	m_status_speed_widget->setFixedHeight(16);
+	m_status_speed_widget->setMinimumWidth(130);
+	m_status_speed_widget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 	m_status_speed_widget->hide();
 
 	m_settings_toolbar_menu = new QMenu(m_ui.toolBar);
