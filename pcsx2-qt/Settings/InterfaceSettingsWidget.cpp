@@ -11,6 +11,8 @@
 #include "SettingsWindow.h"
 #include "QtHost.h"
 
+#include <QtCore/QLocale>
+
 const char* InterfaceSettingsWidget::THEME_NAMES[] = {
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Native"),
 //: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
@@ -244,10 +246,78 @@ void InterfaceSettingsWidget::onRenderToSeparateWindowChanged()
 	m_ui.hideMainWindow->setEnabled(m_ui.renderToSeparateWindow->isChecked());
 }
 
+static QString getSystemLanguageCode()
+{
+	std::vector<std::pair<QString, QString>> available = QtHost::GetAvailableLanguageList();
+	QString locale = QLocale::system().name();
+	locale.replace('_', '-');
+	for (const std::pair<QString, QString>& entry : available)
+	{
+		if (entry.second == locale)
+			return locale;
+	}
+	QStringView lang = QStringView(locale);
+	lang = lang.left(lang.indexOf('-'));
+	for (const std::pair<QString, QString>& entry : available)
+	{
+		QStringView avail = QStringView(entry.second);
+		avail = avail.left(avail.indexOf('-'));
+		if (avail == lang)
+			return entry.second;
+	}
+	// No matches, default to English
+	return QStringLiteral("en-US");
+}
+
+static QIcon getFlagIconForLanguage(const QString& language_code)
+{
+	QString actual_language_code = language_code;
+	if (language_code == QStringLiteral("system"))
+	{
+		actual_language_code = getSystemLanguageCode();
+	}
+
+	QString country_code;
+
+	const int dash_index = actual_language_code.indexOf('-');
+	if (dash_index > 0 && dash_index < actual_language_code.length() - 1)
+	{
+		country_code = actual_language_code.mid(dash_index + 1);
+	}
+	else
+	{
+		if (actual_language_code == QStringLiteral("en"))
+			country_code = QStringLiteral("US");
+		else
+			return QIcon(); // No flag available
+	}
+
+	// Special cases
+	if (actual_language_code == QStringLiteral("es-419"))
+	{
+		// Latin America (es-419) use Mexico flag as representative
+		country_code = QStringLiteral("MX");
+	}
+	else if (actual_language_code == QStringLiteral("sr-SP"))
+    {
+        // Serbia (SP) is not a valid ISO code, use RS (Serbia)
+        country_code = QStringLiteral("RS");
+    }
+
+	const QString flag_path = QStringLiteral("%1/icons/flags/%2.svg").arg(QtHost::GetResourcesBasePath()).arg(country_code.toLower());
+	return QIcon(flag_path);
+}
+
 void InterfaceSettingsWidget::populateLanguages()
 {
 	for (const std::pair<QString, QString>& it : QtHost::GetAvailableLanguageList())
-		m_ui.language->addItem(it.first, it.second);
+	{
+		QIcon flag_icon = getFlagIconForLanguage(it.second);
+		if (!flag_icon.isNull())
+			m_ui.language->addItem(flag_icon, it.first, it.second);
+		else
+			m_ui.language->addItem(it.first, it.second);
+	}
 }
 
 void InterfaceSettingsWidget::onSetGameListBackgroundTriggered()

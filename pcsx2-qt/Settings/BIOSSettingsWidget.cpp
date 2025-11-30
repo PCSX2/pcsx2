@@ -79,40 +79,42 @@ void BIOSSettingsWidget::populateList(QTreeWidget* list, const std::string& dire
 		switch (bios_region)
 		{
 			case 0: // Japan
-				item->setIcon(0, QIcon(QStringLiteral("%1/icons/flags/NTSC-J.svg").arg(res_path)));
+				item->setIcon(0, QIcon(QStringLiteral("%1/icons/flags/jp.svg").arg(res_path)));
 				break;
 
 			case 1: // USA
-				item->setIcon(0, QIcon(QStringLiteral("%1/icons/flags/NTSC-U.svg").arg(res_path)));
+				item->setIcon(0, QIcon(QStringLiteral("%1/icons/flags/us.svg").arg(res_path)));
 				break;
 
 			case 2: // Europe
-				item->setIcon(0, QIcon(QStringLiteral("%1/icons/flags/PAL-E.svg").arg(res_path)));
+				item->setIcon(0, QIcon(QStringLiteral("%1/icons/flags/eu.svg").arg(res_path)));
 				break;
 
 			case 3: // Oceania
-				item->setIcon(0, QIcon(QStringLiteral("%1/icons/flags/PAL-A.svg").arg(res_path)));
+				item->setIcon(0, QIcon(QStringLiteral("%1/icons/flags/au.svg").arg(res_path)));
 				break;
 
 			case 4: // Asia
-				item->setIcon(0, QIcon(QStringLiteral("%1/icons/flags/NTSC-HK.svg").arg(res_path)));
+				item->setIcon(0, QIcon(QStringLiteral("%1/icons/flags/hk.svg").arg(res_path)));
 				break;
 
 			case 5: // Russia
-				item->setIcon(0, QIcon(QStringLiteral("%1/icons/flags/PAL-R.svg").arg(res_path)));
+				item->setIcon(0, QIcon(QStringLiteral("%1/icons/flags/ru.svg").arg(res_path)));
 				break;
 
 			case 6: // China
-				item->setIcon(0, QIcon(QStringLiteral("%1/icons/flags/NTSC-C.svg").arg(res_path)));
+				item->setIcon(0, QIcon(QStringLiteral("%1/icons/flags/cn.svg").arg(res_path)));
 				break;
 
-			case 7: // Mexico, flag is missing
+			case 7: // Mexico
+				item->setIcon(0, QIcon(QStringLiteral("%1/icons/flags/mx.svg").arg(res_path)));
+				break;
 
 			case 8: // T10K
 			case 9: // Test
 			case 10: // Free
 			default:
-				item->setIcon(0, QIcon(QStringLiteral("%1/icons/flags/NTSC-J.svg").arg(res_path)));
+				item->setIcon(0, QIcon(QStringLiteral("%1/icons/flags/jp.svg").arg(res_path)));
 				break;
 		}
 
