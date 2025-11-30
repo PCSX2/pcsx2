@@ -28,6 +28,7 @@ namespace FullscreenUI
 	bool OpenAchievementsWindow();
 	bool OpenLeaderboardsWindow();
 	void ReportStateLoadError(std::string message, std::optional<s32> slot, bool backup);
+	void ReportStateSaveError(std::string message, std::optional<s32> slot);
 
 	// NOTE: Only call from GS thread.
 	bool IsAchievementsWindowOpen();

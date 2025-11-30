@@ -1253,3 +1253,16 @@ void SaveState_ReportLoadErrorOSD(const std::string& message, std::optional<s32>
 	Host::AddIconOSDMessage("SaveState", ICON_FA_TRIANGLE_EXCLAMATION,
 		full_message, Host::OSD_WARNING_DURATION);
 }
+
+void SaveState_ReportSaveErrorOSD(const std::string& message, std::optional<s32> slot)
+{
+	std::string full_message;
+	if (slot.has_value())
+		full_message = fmt::format(
+			TRANSLATE_FS("SaveState", "Failed to save state to slot {}: {}"), *slot, message);
+	else
+		full_message = fmt::format(TRANSLATE_FS("SaveState", "Failed to save state: {}"), message);
+
+	Host::AddIconOSDMessage("SaveState", ICON_FA_TRIANGLE_EXCLAMATION,
+		full_message, Host::OSD_WARNING_DURATION);
+}

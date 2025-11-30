@@ -594,10 +594,10 @@ __ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spa
 	} while (0)
 
 	if (Patch::GetAllActivePatchesCount() > 0 && EmuConfig.GS.OsdshowPatches)
-	APPEND("DB={} P={} C={} | ",
-		Patch::GetActiveGameDBPatchesCount(),
-		Patch::GetActivePatchesCount(),
-		Patch::GetActiveCheatsCount());
+		APPEND("DB={} P={} C={} | ",
+			Patch::GetActiveGameDBPatchesCount(),
+			Patch::GetActivePatchesCount(),
+			Patch::GetActiveCheatsCount());
 
 	if (EmuConfig.Speedhacks.EECycleRate != 0)
 		APPEND("CR={} ", EmuConfig.Speedhacks.EECycleRate);
@@ -1026,7 +1026,8 @@ void SaveStateSelectorUI::Open(float open_time /* = DEFAULT_OPEN_TIME */)
 	RefreshHotkeyLegend();
 }
 
-bool SaveStateSelectorUI::IsOpen(){
+bool SaveStateSelectorUI::IsOpen()
+{
 	return s_open;
 }
 
@@ -1346,7 +1347,9 @@ void SaveStateSelectorUI::LoadCurrentBackupSlot()
 void SaveStateSelectorUI::SaveCurrentSlot()
 {
 	Host::RunOnCPUThread([slot = GetCurrentSlot()]() {
-		VMManager::SaveStateToSlot(slot);
+		VMManager::SaveStateToSlot(slot, true, [slot](std::string error) {
+			FullscreenUI::ReportStateSaveError(std::move(error), slot);
+		});
 	});
 	Close();
 }
@@ -1374,7 +1377,7 @@ void ImGuiManager::RenderOverlays()
 {
 	const float scale = ImGuiManager::GetGlobalScale();
 	const float margin = std::ceil(10.0f * scale);
-	const float spacing = std::ceil(5.0f * scale);	
+	const float spacing = std::ceil(5.0f * scale);
 	float position_y = margin;
 
 	DrawVideoCaptureOverlay(position_y, scale, margin, spacing);

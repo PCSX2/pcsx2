@@ -358,11 +358,11 @@ void EmuThread::saveState(const QString& filename)
 	if (!VMManager::HasValidVM())
 		return;
 
-	if (!VMManager::SaveState(filename.toUtf8().constData()))
-	{
-		// this one is usually the result of a user-chosen path, so we can display a message box safely here
-		Console.Error("Failed to save state");
-	}
+	VMManager::SaveState(filename.toUtf8().constData(), true, false, [](std::string error) {
+		QtHost::RunOnUIThread([message = QString::fromStdString(error)]() {
+			g_main_window->reportStateSaveError(message, std::nullopt);
+		});
+	});
 }
 
 void EmuThread::saveStateToSlot(qint32 slot)
@@ -376,7 +376,11 @@ void EmuThread::saveStateToSlot(qint32 slot)
 	if (!VMManager::HasValidVM())
 		return;
 
-	VMManager::SaveStateToSlot(slot);
+	VMManager::SaveStateToSlot(slot, true, [slot](std::string error) {
+		QtHost::RunOnUIThread([message = QString::fromStdString(error), slot]() {
+			g_main_window->reportStateSaveError(message, slot);
+		});
+	});
 }
 
 void EmuThread::run()
