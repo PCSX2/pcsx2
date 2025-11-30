@@ -6,6 +6,7 @@
 #include "Host.h"
 #include "Memory.h"
 #include "Elfheader.h"
+#include "SaveState.h"
 #include "PINE.h"
 #include "VMManager.h"
 #include "common/Error.h"
@@ -19,7 +20,6 @@
 #include <thread>
 
 #include "fmt/format.h"
-#include "IconsFontAwesome6.h"
 
 #if defined(_WIN32)
 #define read_portable(a, b, c) (recv(a, (char*)b, c, 0))
@@ -659,8 +659,7 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 				Host::RunOnCPUThread([slot = FromSpan<u8>(buf, buf_cnt)] {
 					Error state_error;
 					if (!VMManager::LoadStateFromSlot(slot, false, &state_error))
-						Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_TRIANGLE_EXCLAMATION,
-							state_error.GetDescription(), Host::OSD_INFO_DURATION);
+						SaveState_ReportLoadErrorOSD(state_error.GetDescription(), slot, false);
 				});
 				buf_cnt += 1;
 				break;

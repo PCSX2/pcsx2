@@ -5,6 +5,7 @@
 
 #include <deque>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -353,3 +354,5 @@ public:
 	void FreezeMem(void* data, int size) override;
 	bool IsSaving() const override { return false; }
 };
+
+void SaveState_ReportLoadErrorOSD(const std::string& message, std::optional<s32> slot, bool backup);

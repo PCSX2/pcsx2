@@ -10,6 +10,7 @@
 #include <ctime>
 #include <string>
 #include <memory>
+#include <optional>
 
 struct Pcsx2Config;
 
@@ -26,6 +27,7 @@ namespace FullscreenUI
 	void OpenPauseMenu();
 	bool OpenAchievementsWindow();
 	bool OpenLeaderboardsWindow();
+	void ReportStateLoadError(std::string message, std::optional<s32> slot, bool backup);
 
 	// NOTE: Only call from GS thread.
 	bool IsAchievementsWindowOpen();
