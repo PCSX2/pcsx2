@@ -23,6 +23,14 @@
 #define AFAIL_RGB_ONLY 3
 #endif
 
+#ifndef PS_ATST_NONE
+#define PS_ATST_NONE 0
+#define PS_ATST_LEQUAL 1
+#define PS_ATST_GEQUAL 2
+#define PS_ATST_EQUAL 3
+#define PS_ATST_NOTEQUAL 4
+#endif
+
 // TEX_COORD_DEBUG output the uv coordinate as color. It is useful
 // to detect bad sampling due to upscaling
 //#define TEX_COORD_DEBUG
@@ -655,17 +663,26 @@ bool atst(vec4 C)
 {
 	float a = C.a;
 
-#if (PS_ATST == 1)
+#if PS_ATST == PS_ATST_LEQUAL
+
 	return (a <= AREF);
-#elif (PS_ATST == 2)
+
+#elif PS_ATST == PS_ATST_GEQUAL
+
 	return (a >= AREF);
-#elif (PS_ATST == 3)
+
+#elif PS_ATST == PS_ATST_EQUAL
+
 	return (abs(a - AREF) <= 0.5f);
-#elif (PS_ATST == 4)
+
+#elif PS_ATST == PS_ATST_NOTEQUAL
+
 	return (abs(a - AREF) >= 0.5f);
+
 #else
-	// nothing to do
+
 	return true;
+
 #endif
 }
 
@@ -1172,7 +1189,7 @@ void ps_main()
 	#endif
 	
 	// Alpha test with feedback
-	#if (PS_AFAIL == AFAIL_FB_ONLY) && NEEDS_DEPTH
+	#if (PS_AFAIL == AFAIL_FB_ONLY) && NEED_DEPTH && PS_ZCLAMP
 		if (!atst_pass)
 			FragCoord.z = sample_from_depth().r;
 	#elif (PS_AFAIL == AFAIL_ZB_ONLY) && NEEDS_RT
@@ -1184,7 +1201,7 @@ void ps_main()
 		#if NEEDS_RT && PS_NO_COLOR1 // No dual src blend
 			SV_Target0.a = sample_from_rt().a;
 		#endif
-		#if NEEDS_DEPTH
+		#if NEED_DEPTH && PS_ZCLAMP
 			FragCoord.z = sample_from_depth().r;
 		#endif
 		}
@@ -1197,7 +1214,5 @@ void ps_main()
 
 #if PS_ZCLAMP
 	gl_FragDepth = min(FragCoord.z, MaxDepthPS);
-#elif NEEDS_DEPTH && AFAIL_NEEDS_DEPTH
-	gl_FragDepth = FragCoord.z; // Output depth value for ATST pass/fail
 #endif
 }
