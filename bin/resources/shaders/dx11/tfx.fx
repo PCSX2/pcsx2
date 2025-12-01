@@ -33,6 +33,14 @@
 #define AFAIL_RGB_ONLY 3
 #endif
 
+#ifndef PS_ATST_NONE
+#define PS_ATST_NONE 0
+#define PS_ATST_LEQUAL 1
+#define PS_ATST_GEQUAL 2
+#define PS_ATST_EQUAL 3
+#define PS_ATST_NOTEQUAL 4
+#endif
+
 #ifndef PS_FST
 #define PS_IIP 0
 #define PS_FST 0
@@ -154,7 +162,7 @@ struct PS_OUTPUT
 #endif
 #endif
 #endif
-#if PS_ZCLAMP || (PS_DEPTH_FEEDBACK && AFAIL_NEEDS_DEPTH)
+#if PS_ZCLAMP
 	float depth : SV_Depth;
 #endif
 };
@@ -729,27 +737,27 @@ bool atst(float4 C)
 {
 	float a = C.a;
 
-	if(PS_ATST == 1)
-	{
-		return (a <= AREF);
-	}
-	else if(PS_ATST == 2)
-	{
-		return (a >= AREF);
-	}
-	else if(PS_ATST == 3)
-	{
-		 return (abs(a - AREF) <= 0.5f);
-	}
-	else if(PS_ATST == 4)
-	{
-		return (abs(a - AREF) >= 0.5f);
-	}
-	else
-	{
-		// nothing to do
-		return true;
-	}
+#if PS_ATST == PS_ATST_LEQUAL
+
+	return (a <= AREF);
+
+#elif PS_ATST == PS_ATST_GEQUAL
+
+	return (a >= AREF);
+
+#elif PS_ATST == PS_ATST_EQUAL
+
+	return (abs(a - AREF) <= 0.5f);
+
+#elif PS_ATST == PS_ATST_NOTEQUAL
+
+	return (abs(a - AREF) >= 0.5f);
+
+#else
+
+	return true;
+
+#endif
 }
 
 float4 fog(float4 c, float f)
@@ -1225,7 +1233,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 #endif
 
 	// Alpha test with feedback
-#if (PS_AFAIL == AFAIL_FB_ONLY) && PS_DEPTH_FEEDBACK
+#if (PS_AFAIL == AFAIL_FB_ONLY) && PS_DEPTH_FEEDBACK && PS_ZCLAMP
 	if (!atst_pass)
 		input.p.z = DepthTexture.Load(int3(input.p.xy, 0)).r;
 #elif (PS_AFAIL == AFAIL_ZB_ONLY) && PS_COLOR_FEEDBACK
@@ -1237,7 +1245,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 	#if PS_COLOR_FEEDBACK && PS_NO_COLOR1 // No dual src blend
 		output.c0.a = RtTexture.Load(int3(input.p.xy, 0)).a;
 	#endif
-	#if PS_DEPTH_FEEDBACK
+	#if PS_DEPTH_FEEDBACK && PS_ZCLAMP
 		input.p.z = DepthTexture.Load(int3(input.p.xy, 0)).r; 
 	#endif
 	}
@@ -1249,8 +1257,6 @@ PS_OUTPUT ps_main(PS_INPUT input)
 
 #if PS_ZCLAMP
 	output.depth = min(input.p.z, MaxDepthPS);
-#elif PS_DEPTH_FEEDBACK && AFAIL_NEEDS_DEPTH
-	output.depth = input.p.z; // Output depth value for ATST pass/fail
 #endif
 
 	return output;

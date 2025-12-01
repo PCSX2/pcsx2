@@ -257,6 +257,14 @@ void main()
 #define AFAIL_RGB_ONLY 3
 #endif
 
+#ifndef PS_ATST_NONE
+#define PS_ATST_NONE 0
+#define PS_ATST_LEQUAL 1
+#define PS_ATST_GEQUAL 2
+#define PS_ATST_EQUAL 3
+#define PS_ATST_NOTEQUAL 4
+#endif
+
 #ifndef PS_FST
 #define PS_FST 0
 #define PS_WMS 0
@@ -920,28 +928,27 @@ bool atst(vec4 C)
 {
 	float a = C.a;
 
-	#if (PS_ATST == 1)
-	{
-		return (a <= AREF);
-	}
-	#elif (PS_ATST == 2)
-	{
-		return (a >= AREF);
-	}
-	#elif (PS_ATST == 3)
-	{
-		return (abs(a - AREF) <= 0.5f);
-	}
-	#elif (PS_ATST == 4)
-	{
-		return (abs(a - AREF) >= 0.5f);
-	}
-	#else
-	{
-		// nothing to do
-		return true;
-	}
-	#endif
+#if PS_ATST == PS_ATST_LEQUAL
+
+	return (a <= AREF);
+
+#elif PS_ATST == PS_ATST_GEQUAL
+
+	return (a >= AREF);
+
+#elif PS_ATST == PS_ATST_EQUAL
+
+	return (abs(a - AREF) <= 0.5f);
+
+#elif PS_ATST == PS_ATST_NOTEQUAL
+
+	return (abs(a - AREF) >= 0.5f);
+
+#else
+
+	return true;
+
+#endif
 }
 
 vec4 fog(vec4 c, float f)
@@ -1447,7 +1454,7 @@ void main()
 		#endif
 
 		// Alpha test with feedback
-		#if (PS_AFAIL == AFAIL_FB_ONLY) && PS_FEEDBACK_LOOP_IS_NEEDED_DEPTH
+		#if (PS_AFAIL == AFAIL_FB_ONLY) && PS_FEEDBACK_LOOP_IS_NEEDED_DEPTH && PS_ZCLAMP
 			if (!atst_pass)
 				FragCoord.z = sample_from_depth().r;
 		#elif (PS_AFAIL == AFAIL_ZB_ONLY) && PS_FEEDBACK_LOOP_IS_NEEDED_RT
@@ -1459,7 +1466,7 @@ void main()
 			#if PS_FEEDBACK_LOOP_IS_NEEDED_RT && PS_NO_COLOR1 // No dual src blend
 				o_col0.a = sample_from_rt().a;
 			#endif
-			#if PS_FEEDBACK_LOOP_IS_NEEDED_DEPTH
+			#if PS_FEEDBACK_LOOP_IS_NEEDED_DEPTH && PS_ZCLAMP
 				FragCoord.z = sample_from_depth().r;
 			#endif
 			}
@@ -1468,8 +1475,6 @@ void main()
 
 	#if PS_ZCLAMP
 		gl_FragDepth = min(FragCoord.z, MaxDepthPS);
-	#elif PS_FEEDBACK_LOOP_IS_NEEDED_DEPTH && AFAIL_NEEDS_DEPTH
-		gl_FragDepth = FragCoord.z; // Output depth value for ATST pass/fail
 	#endif
 #endif // PS_DATE
 }

@@ -327,6 +327,16 @@ struct alignas(16) GSHWDrawConfig
 		__fi bool UseExpandIndexBuffer() const { return (expand == VSExpand::Point || expand == VSExpand::Sprite); }
 	};
 	static_assert(sizeof(VSSelector) == 1, "VSSelector is a single byte");
+
+	enum PSAlphaTest
+	{
+		PS_ATST_NONE = 0,
+		PS_ATST_LEQUAL = 1,
+		PS_ATST_GEQUAL = 2,
+		PS_ATST_EQUAL = 3,
+		PS_ATST_NOTEQUAL = 4
+	};
+
 #pragma pack(pop)
 #pragma pack(push, 4)
 	struct PSSelector
@@ -400,7 +410,7 @@ struct alignas(16) GSHWDrawConfig
 				u32 dither : 2;
 				u32 dither_adjust : 1;
 
-				// Depth clamp
+				// Depth clamp - also indicates SW depth write.
 				u32 zclamp : 1;
 
 				// Hack
