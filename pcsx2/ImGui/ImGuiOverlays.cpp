@@ -108,7 +108,7 @@ ImVec2 CalculateOSDPosition(OsdOverlayPos position, float margin, const ImVec2& 
 ImVec2 CalculatePerformanceOverlayTextPosition(OsdOverlayPos position, float margin, const ImVec2& text_size, float window_width, float position_y)
 {
 	const float abs_margin = std::abs(margin);
-	
+
 	// Get the X position based on horizontal alignment
 	float x_pos;
 	switch (position)
@@ -118,13 +118,13 @@ ImVec2 CalculatePerformanceOverlayTextPosition(OsdOverlayPos position, float mar
 		case OsdOverlayPos::BottomLeft:
 			x_pos = abs_margin; // Left alignment
 			break;
-			
+
 		case OsdOverlayPos::TopCenter:
 		case OsdOverlayPos::Center:
 		case OsdOverlayPos::BottomCenter:
 			x_pos = (window_width - text_size.x) * 0.5f; // Center alignment
 			break;
-			
+
 		case OsdOverlayPos::TopRight:
 		case OsdOverlayPos::CenterRight:
 		case OsdOverlayPos::BottomRight:
@@ -132,7 +132,7 @@ ImVec2 CalculatePerformanceOverlayTextPosition(OsdOverlayPos position, float mar
 			x_pos = window_width - text_size.x - abs_margin; // Right alignment
 			break;
 	}
-	
+
 	return ImVec2(x_pos, position_y);
 }
 
@@ -150,6 +150,7 @@ namespace ImGuiManager
 	static void DrawInputRecordingOverlay(float& position_y, float scale, float margin, float spacing);
 	static void DrawVideoCaptureOverlay(float& position_y, float scale, float margin, float spacing);
 	static void DrawTextureReplacementsOverlay(float& position_y, float scale, float margin, float spacing);
+	static void DrawIndicatorsOverlay(float& position_y, float scale, float margin, float spacing);
 } // namespace ImGuiManager
 
 static std::tuple<float, float> GetMinMax(std::span<const float> values)
@@ -194,7 +195,6 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 	const float shadow_offset = std::ceil(scale);
 
 	ImFont* const fixed_font = ImGuiManager::GetFixedFont();
-	ImFont* const standard_font = ImGuiManager::GetStandardFont();
 	const float font_size = ImGuiManager::GetFontSizeStandard();
 
 	ImDrawList* dl = ImGui::GetBackgroundDrawList();
@@ -209,14 +209,14 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 
 			position_y = (GetWindowHeight() - (font_size * 8.0f)) * 0.5f;
 			break;
-			
+
 		case OsdOverlayPos::BottomLeft:
 		case OsdOverlayPos::BottomCenter:
 		case OsdOverlayPos::BottomRight:
 
 			position_y = GetWindowHeight() - margin - (font_size * 15.0f + spacing * 14.0f);
 			break;
-			
+
 		case OsdOverlayPos::TopLeft:
 		case OsdOverlayPos::TopCenter:
 		case OsdOverlayPos::TopRight:
@@ -389,24 +389,6 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 				FormatProcessorStat(s_gpu_usage_line, PerformanceMetrics::GetGPUUsage(), PerformanceMetrics::GetGPUAverageTime());
 				DRAW_LINE(fixed_font, font_size, s_gpu_usage_line.c_str(), white_color);
 			}
-
-			if (GSConfig.OsdShowIndicators)
-			{
-				const float target_speed = VMManager::GetTargetSpeed();
-				const bool is_normal_speed = (target_speed == EmuConfig.EmulationSpeed.NominalScalar ||
-											  VMManager::IsTargetSpeedAdjustedToHost());
-				if (!is_normal_speed)
-				{
-					if (target_speed == EmuConfig.EmulationSpeed.SlomoScalar) // Slow-Motion
-						s_speed_icon = ICON_PF_SLOW_MOTION;
-					else if (target_speed == EmuConfig.EmulationSpeed.TurboScalar) // Turbo
-						s_speed_icon = ICON_FA_FORWARD_FAST;
-					else // Unlimited
-						s_speed_icon = ICON_FA_FORWARD;
-
-					DRAW_LINE(standard_font, font_size, s_speed_icon, white_color);
-				}
-			}
 		}
 		// No refresh yet. Display cached lines.
 		else
@@ -451,14 +433,6 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 
 			if (GSConfig.OsdShowGPU)
 				DRAW_LINE(fixed_font, font_size, s_gpu_usage_line.c_str(), white_color);
-
-			if (GSConfig.OsdShowIndicators)
-			{
-				const bool is_normal_speed = (VMManager::GetTargetSpeed() == EmuConfig.EmulationSpeed.NominalScalar ||
-											  VMManager::IsTargetSpeedAdjustedToHost());
-				if (!is_normal_speed)
-					DRAW_LINE(standard_font, font_size, s_speed_icon, white_color);
-			}
 		}
 
 		// Check every OSD frame because this is an animation.
@@ -466,7 +440,7 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 		{
 			const ImVec2 history_size(200.0f * scale, 50.0f * scale);
 			ImGui::SetNextWindowSize(ImVec2(history_size.x, history_size.y));
-			
+
 			const ImVec2 window_pos = CalculatePerformanceOverlayTextPosition(GSConfig.OsdPerformancePos, margin, history_size, GetWindowWidth(), position_y);
 			ImGui::SetNextWindowPos(window_pos);
 			ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.25f));
@@ -505,7 +479,7 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 				SmallString frame_times_text;
 				frame_times_text.format("Max: {:.1f} ms", max);
 				text_size = fixed_font->CalcTextSizeA(font_size, FLT_MAX, 0.0f, frame_times_text.c_str(), frame_times_text.c_str() + frame_times_text.length());
-				
+
 				float text_x;
 				switch (GSConfig.OsdPerformancePos)
 				{
@@ -533,7 +507,7 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 
 				frame_times_text.format("Min: {:.1f} ms", min);
 				text_size = fixed_font->CalcTextSizeA(font_size, FLT_MAX, 0.0f, frame_times_text.c_str(), frame_times_text.c_str() + frame_times_text.length());
-				
+
 				float min_text_x;
 				switch (GSConfig.OsdPerformancePos)
 				{
@@ -563,17 +537,6 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 			ImGui::PopFont();
 			ImGui::PopStyleVar(5);
 			ImGui::PopStyleColor(3);
-		}
-	}
-	else if (!FullscreenUI::HasActiveWindow())
-	{
-		if (GSConfig.OsdShowIndicators)
-		{
-			// We should put the Pause icon in the top right regardless of performance overlay position
-			text_size = standard_font->CalcTextSizeA(font_size, std::numeric_limits<float>::max(), -1.0f, ICON_FA_PAUSE, nullptr, nullptr);
-			const ImVec2 pause_pos(GetWindowWidth() - margin - text_size.x, margin);
-			dl->AddText(standard_font, font_size, ImVec2(pause_pos.x + shadow_offset, pause_pos.y + shadow_offset), IM_COL32(0, 0, 0, 100), ICON_FA_PAUSE);
-			dl->AddText(standard_font, font_size, pause_pos, white_color, ICON_FA_PAUSE);
 		}
 	}
 
@@ -986,6 +949,60 @@ __ri void ImGuiManager::DrawTextureReplacementsOverlay(float& position_y, float 
 	dl->AddText(standard_font, font_size, text_pos, white_color, texture_line.c_str());
 
 	position_y += text_size.y + spacing;
+}
+
+__ri void ImGuiManager::DrawIndicatorsOverlay(float& position_y, float scale, float margin, float spacing)
+{
+	if (!GSConfig.OsdShowIndicators ||
+		FullscreenUI::HasActiveWindow())
+		return;
+
+	const float shadow_offset = std::ceil(scale);
+
+	ImFont* const standard_font = ImGuiManager::GetStandardFont();
+	const float font_size = ImGuiManager::GetFontSizeStandard();
+
+	ImDrawList* dl = ImGui::GetBackgroundDrawList();
+	std::string text;
+	ImVec2 text_size;
+
+	text.reserve(64);
+	#define DRAW_LINE(font, size, text, color) \
+		do \
+		{ \
+			text_size = font->CalcTextSizeA(size, std::numeric_limits<float>::max(), -1.0f, (text), nullptr, nullptr); \
+			dl->AddText(font, size, \
+				ImVec2(GetWindowWidth() - margin - text_size.x + shadow_offset, position_y + shadow_offset), \
+				IM_COL32(0, 0, 0, 100), (text)); \
+			dl->AddText(font, size, ImVec2(GetWindowWidth() - margin - text_size.x, position_y), color, (text)); \
+			position_y += text_size.y + spacing; \
+		} while (0)
+
+		if (VMManager::GetState() != VMState::Paused)
+		{
+			// Draw Speed indicator
+			const float target_speed = VMManager::GetTargetSpeed();
+			const bool is_normal_speed = (target_speed == EmuConfig.EmulationSpeed.NominalScalar ||
+										  VMManager::IsTargetSpeedAdjustedToHost());
+			if (!is_normal_speed)
+			{
+				if (target_speed == EmuConfig.EmulationSpeed.SlomoScalar) // Slow-Motion
+					s_speed_icon = ICON_PF_SLOW_MOTION;
+				else if (target_speed == EmuConfig.EmulationSpeed.TurboScalar) // Turbo
+					s_speed_icon = ICON_FA_FORWARD_FAST;
+				else // Unlimited
+					s_speed_icon = ICON_FA_FORWARD;
+
+				DRAW_LINE(standard_font, font_size, s_speed_icon, white_color);
+			}
+		}
+		else
+		{
+			// Draw Pause indicator
+			const TinyString pause_msg = TinyString::from_format(TRANSLATE_FS("ImGuiOverlays", "{} Paused"), ICON_FA_PAUSE);
+			DRAW_LINE(standard_font, font_size, pause_msg, white_color);
+		}
+		#undef DRAW_LINE
 }
 
 namespace SaveStateSelectorUI
@@ -1418,9 +1435,10 @@ void ImGuiManager::RenderOverlays()
 {
 	const float scale = ImGuiManager::GetGlobalScale();
 	const float margin = std::ceil(10.0f * scale);
-	const float spacing = std::ceil(5.0f * scale);	
+	const float spacing = std::ceil(5.0f * scale);
 	float position_y = margin;
 
+	DrawIndicatorsOverlay(position_y, scale, margin, spacing);
 	DrawVideoCaptureOverlay(position_y, scale, margin, spacing);
 	DrawInputRecordingOverlay(position_y, scale, margin, spacing);
 	DrawTextureReplacementsOverlay(position_y, scale, margin, spacing);
