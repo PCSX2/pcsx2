@@ -4,7 +4,6 @@
 #include "BuildVersion.h"
 #include "Config.h"
 #include "Counters.h"
-#include "GS.h"
 #include "GS/GS.h"
 #include "GS/GSCapture.h"
 #include "GS/GSVector.h"
@@ -32,7 +31,6 @@
 #include "common/Error.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
-#include "common/StringUtil.h"
 #include "common/Timer.h"
 
 #include "fmt/chrono.h"
@@ -40,14 +38,10 @@
 #include "imgui.h"
 
 #include <array>
-#include <chrono>
 #include <cmath>
-#include <deque>
 #include <limits>
-#include <mutex>
 #include <span>
 #include <tuple>
-#include <unordered_map>
 
 InputRecordingUI::InputRecordingData g_InputRecordingData;
 
