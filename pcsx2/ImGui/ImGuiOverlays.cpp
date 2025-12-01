@@ -559,10 +559,10 @@ __ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spa
 	} while (0)
 
 	if (Patch::GetAllActivePatchesCount() > 0 && EmuConfig.GS.OsdshowPatches)
-	APPEND("DB={} P={} C={} | ",
-		Patch::GetActiveGameDBPatchesCount(),
-		Patch::GetActivePatchesCount(),
-		Patch::GetActiveCheatsCount());
+		APPEND("DB={} P={} C={} | ",
+			Patch::GetActiveGameDBPatchesCount(),
+			Patch::GetActivePatchesCount(),
+			Patch::GetActiveCheatsCount());
 
 	if (EmuConfig.Speedhacks.EECycleRate != 0)
 		APPEND("CR={} ", EmuConfig.Speedhacks.EECycleRate);
@@ -1085,7 +1085,8 @@ void SaveStateSelectorUI::Open(float open_time /* = DEFAULT_OPEN_TIME */)
 	RefreshHotkeyLegend();
 }
 
-bool SaveStateSelectorUI::IsOpen(){
+bool SaveStateSelectorUI::IsOpen()
+{
 	return s_open;
 }
 
