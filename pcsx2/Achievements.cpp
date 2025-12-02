@@ -40,6 +40,7 @@
 #include <cstdlib>
 #include <functional>
 #include <limits>
+#include <map>
 #include <optional>
 #include <string>
 #include <vector>
@@ -2499,7 +2500,7 @@ void Achievements::DrawAchievementsWindow()
 			ImVec2(display_size.x, display_size.y - heading_height - LayoutScale(ImGuiFullscreen::LAYOUT_FOOTER_HEIGHT)),
 			"achievements", background, 0.0f, ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, 0.0f), 0))
 	{
-		static bool buckets_collapsed[NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS] = {};
+		static std::map<std::pair<u32, u32>, bool> buckets_collapsed;
 		static const char* bucket_names[NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS] = {
 			TRANSLATE_NOOP("Achievements", "Unknown"),
 			TRANSLATE_NOOP("Achievements", "Locked"),
@@ -2525,11 +2526,25 @@ void Achievements::DrawAchievementsWindow()
 
 				pxAssert(bucket.bucket_type < NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS);
 
-				// TODO: Once subsets are supported, this will need to change.
-				bool& bucket_collapsed = buckets_collapsed[bucket.bucket_type];
-				bucket_collapsed ^=
-					ImGuiFullscreen::MenuHeadingButton(Host::TranslateToCString("Achievements", bucket_names[bucket.bucket_type]),
-						bucket_collapsed ? ICON_FA_CHEVRON_DOWN : ICON_FA_CHEVRON_UP);
+				bool& bucket_collapsed = buckets_collapsed[std::make_pair(bucket.subset_id, bucket.bucket_type)];
+				const char* translated_bucket_name = Host::TranslateToCString("Achievements", bucket_names[bucket.bucket_type]);
+
+				if (bucket.subset_id != 0)
+				{
+					const rc_client_subset_t* subset_info = rc_client_get_subset_info(s_client, bucket.subset_id);
+					bucket_collapsed ^=
+						ImGuiFullscreen::MenuHeadingButton(TinyString::from_format("{} - {}",
+							subset_info != nullptr ? subset_info->title : TRANSLATE("Achievements", "Unknown Subset"),
+							translated_bucket_name), bucket_collapsed ? ICON_FA_CHEVRON_DOWN : ICON_FA_CHEVRON_UP);
+				}
+				else
+				{
+					// Game without subsets
+					bucket_collapsed ^=
+						ImGuiFullscreen::MenuHeadingButton(translated_bucket_name,
+							bucket_collapsed ? ICON_FA_CHEVRON_DOWN : ICON_FA_CHEVRON_UP);
+				}
+
 				if (!bucket_collapsed)
 				{
 					for (u32 i = 0; i < bucket.num_achievements; i++)
