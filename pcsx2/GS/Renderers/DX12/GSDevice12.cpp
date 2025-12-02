@@ -1224,8 +1224,8 @@ bool GSDevice12::CheckFeatures(const u32& vendor_id)
 {
 	//const bool isAMD = (vendor_id == 0x1002 || vendor_id == 0x1022);
 
-	m_features.texture_barrier = false;
-	m_features.multidraw_fb_copy = GSConfig.OverrideTextureBarriers != 0;
+	m_features.texture_barrier = GSConfig.OverrideTextureBarriers != 0;
+	m_features.multidraw_fb_copy = false;
 	m_features.broken_point_sampler = false;
 	m_features.primitive_id = true;
 	m_features.prefer_new_textures = true;
@@ -3207,7 +3207,7 @@ void GSDevice12::SetStencilRef(u8 ref)
 	m_dirty_flags |= DIRTY_FLAG_STENCIL_REF;
 }
 
-void GSDevice12::PSSetShaderResource(int i, GSTexture* sr, bool check_state)
+void GSDevice12::PSSetShaderResource(int i, GSTexture* sr, bool check_state, bool feedback)
 {
 	D3D12DescriptorHandle handle;
 	if (sr)
@@ -3225,7 +3225,7 @@ void GSDevice12::PSSetShaderResource(int i, GSTexture* sr, bool check_state)
 			dtex->TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 		}
 		dtex->SetUseFenceCounter(GetCurrentFenceValue());
-		handle = dtex->GetSRVDescriptor();
+		handle = feedback ? dtex->GetFBLDescriptor() : dtex->GetSRVDescriptor();
 	}
 	else
 	{
@@ -3312,7 +3312,7 @@ void GSDevice12::UnbindTexture(GSTexture12* tex)
 {
 	for (u32 i = 0; i < NUM_TOTAL_TFX_TEXTURES; i++)
 	{
-		if (m_tfx_textures[i] == tex->GetSRVDescriptor())
+		if (m_tfx_textures[i] == tex->GetSRVDescriptor() || m_tfx_textures[i] == tex->GetFBLDescriptor())
 		{
 			m_tfx_textures[i] = m_null_texture->GetSRVDescriptor();
 			m_dirty_flags |= DIRTY_FLAG_TFX_TEXTURES;
@@ -3831,7 +3831,6 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	GSTexture12* colclip_rt = static_cast<GSTexture12*>(g_gs_device->GetColorClipTexture());
 	GSTexture12* draw_rt = static_cast<GSTexture12*>(config.rt);
 	GSTexture12* draw_ds = static_cast<GSTexture12*>(config.ds);
-	GSTexture12* draw_rt_clone = nullptr;
 
 	// Align the render area to 128x128, hopefully avoiding render pass restarts for small render area changes (e.g. Ratchet and Clank).
 	const GSVector2i rtsize(config.rt ? config.rt->GetSize() : config.ds->GetSize());
@@ -3955,7 +3954,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 			}
 
 			// we're not drawing to the RT, so we can use it as a source
-			if (config.require_one_barrier && !m_features.multidraw_fb_copy)
+			if (config.require_one_barrier && !m_features.texture_barrier)
 				PSSetShaderResource(2, draw_rt, true);
 		}
 
@@ -3985,14 +3984,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		m_pipeline_selector.ds = true;
 	}
 
-	if (draw_rt && (config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy) || (config.tex && config.tex == config.rt)))
-	{
-		// Requires a copy of the RT.
-		// Used as "bind rt" flag when texture barrier is unsupported for tex is fb.
-		draw_rt_clone = static_cast<GSTexture12*>(CreateTexture(rtsize.x, rtsize.y, 1, draw_rt->GetFormat(), true));
-		if (!draw_rt_clone)
-			Console.Warning("D3D12: Failed to allocate temp texture for RT copy.");
-	}
+	const bool feedback = draw_rt && (config.require_one_barrier || (config.require_full_barrier && m_features.texture_barrier) || (config.tex && config.tex == config.rt));
 
 	OMSetRenderTargets(draw_rt, draw_ds, config.scissor);
 
@@ -4011,8 +4003,8 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 			draw_ds ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE : D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
 			stencil_DATE ? D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE :
 						   D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
-			stencil_DATE ? (draw_rt_clone ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE :
-											D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_DISCARD) :
+			stencil_DATE ? (feedback ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE :
+									   D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_DISCARD) :
 						   D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
 			clear_color, draw_ds ? draw_ds->GetClearDepth() : 0.0f, 1);
 	}
@@ -4040,7 +4032,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		UploadHWDrawVerticesAndIndices(config);
 
 	// now we can do the actual draw
-	SendHWDraw(pipe, config, draw_rt_clone, draw_rt, config.require_one_barrier, config.require_full_barrier, false);
+	SendHWDraw(pipe, config, draw_rt, feedback, config.require_one_barrier, config.require_full_barrier);
 
 	// blend second pass
 	if (config.blend_multi_pass.enable)
@@ -4070,11 +4062,8 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		pipe.cms = config.alpha_second_pass.colormask;
 		pipe.dss = config.alpha_second_pass.depth;
 		pipe.bs = config.blend;
-		SendHWDraw(pipe, config, draw_rt_clone, draw_rt, config.alpha_second_pass.require_one_barrier, config.alpha_second_pass.require_full_barrier, true);
+		SendHWDraw(pipe, config, draw_rt, feedback, config.alpha_second_pass.require_one_barrier, config.alpha_second_pass.require_full_barrier);
 	}
-
-	if (draw_rt_clone)
-		Recycle(draw_rt_clone);
 
 	if (date_image)
 		Recycle(date_image);
@@ -4113,43 +4102,39 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	}
 }
 
-void GSDevice12::SendHWDraw(const PipelineSelector& pipe, const GSHWDrawConfig& config, GSTexture12* draw_rt_clone, GSTexture12* draw_rt, const bool one_barrier, const bool full_barrier, const bool skip_first_barrier)
+void GSDevice12::SendHWDraw(const PipelineSelector& pipe, const GSHWDrawConfig& config, GSTexture12* draw_rt, const bool feedback, const bool one_barrier, const bool full_barrier)
 {
-	if (draw_rt_clone)
+	if (feedback)
 	{
-
 #ifdef PCSX2_DEVBUILD
 		if ((one_barrier || full_barrier) && !config.ps.IsFeedbackLoop()) [[unlikely]]
-			Console.Warning("D3D12: Possible unnecessary copy detected.");
+			Console.Warning("D3D12: Possible unnecessary barrier detected.");
 #endif
-		auto CopyAndBind = [&](GSVector4i drawarea) {
-			EndRenderPass();
+		if (one_barrier || full_barrier)
+			PSSetShaderResource(2, draw_rt, false, true);
+		if (config.tex && config.tex == config.rt)
+			PSSetShaderResource(0, draw_rt, false, true);
 
-			CopyRect(draw_rt, draw_rt_clone, drawarea, drawarea.left, drawarea.top);
-			draw_rt->TransitionToState(D3D12_RESOURCE_STATE_RENDER_TARGET);
-
-			if (one_barrier || full_barrier)
-				PSSetShaderResource(2, draw_rt_clone, true);
-			if (config.tex && config.tex == config.rt)
-				PSSetShaderResource(0, draw_rt_clone, true);
-		};
-
-		if (m_features.multidraw_fb_copy && full_barrier)
+		if (full_barrier)
 		{
+			pxAssert(config.drawlist && !config.drawlist->empty());
 			const u32 draw_list_size = static_cast<u32>(config.drawlist->size());
 			const u32 indices_per_prim = config.indices_per_prim;
 
-			pxAssert(config.drawlist && !config.drawlist->empty());
-			pxAssert(config.drawlist_bbox && static_cast<u32>(config.drawlist_bbox->size()) == draw_list_size);
+			GL_PUSH("Split the draw");
+			g_perfmon.Put(GSPerfMon::Barriers, draw_list_size);
 
 			for (u32 n = 0, p = 0; n < draw_list_size; n++)
 			{
 				const u32 count = (*config.drawlist)[n] * indices_per_prim;
 
-				GSVector4i bbox = (*config.drawlist_bbox)[n].rintersect(config.drawarea);
+				EndRenderPass();
+				// Specify null for the after resource as both resources are used after the barrier.
+				// While this may also be true before the barrier, we only write using the main resource.
+				D3D12_RESOURCE_BARRIER barrier = {D3D12_RESOURCE_BARRIER_TYPE_ALIASING, D3D12_RESOURCE_BARRIER_FLAG_NONE};
+				barrier.Aliasing = {draw_rt->GetResource(), nullptr};
+				GetCommandList()->ResourceBarrier(1, &barrier);
 
-				// Copy only the part needed by the draw.
-				CopyAndBind(bbox);
 				if (BindDrawPipeline(pipe))
 					DrawIndexedPrimitive(p, count);
 				p += count;
@@ -4158,10 +4143,16 @@ void GSDevice12::SendHWDraw(const PipelineSelector& pipe, const GSHWDrawConfig& 
 			return;
 		}
 
+		if (one_barrier)
+		{
+			g_perfmon.Put(GSPerfMon::Barriers, 1);
 
-		// Optimization: For alpha second pass we can reuse the copy snapshot from the first pass.
-		if (!skip_first_barrier)
-			CopyAndBind(config.drawarea);
+			EndRenderPass();
+			// Specify null for the after resource as both resources are used after the barrier.
+			D3D12_RESOURCE_BARRIER barrier = {D3D12_RESOURCE_BARRIER_TYPE_ALIASING, D3D12_RESOURCE_BARRIER_FLAG_NONE};
+			barrier.Aliasing = {draw_rt->GetResource(), nullptr};
+			GetCommandList()->ResourceBarrier(1, &barrier);
+		}
 	}
 
 	if (BindDrawPipeline(pipe))
