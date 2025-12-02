@@ -1038,7 +1038,9 @@ void FullscreenUI::CheckForConfigChanges(const Pcsx2Config& old_config)
 
 	ImGuiFullscreen::SetTheme(Host::GetBaseStringSettingValue("UI", "FullscreenUITheme", "Dark"));
 
-	LoadCustomBackground();
+	MTGS::RunOnGSThread([]() {
+		LoadCustomBackground();
+	});
 
 	// If achievements got disabled, we might have the menu open...
 	// That means we're going to be reaching achievement state.
@@ -4034,17 +4036,17 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 			[](const std::string& path) {
 				if (!path.empty())
 				{
-					auto lock = Host::GetSettingsLock();
-					SettingsInterface* bsi = GetEditingSettingsInterface(false);
+					{
+						auto lock = Host::GetSettingsLock();
+						SettingsInterface* bsi = GetEditingSettingsInterface(false);
+
+						std::string relative_path = Path::MakeRelative(path, EmuFolders::DataRoot);
+						bsi->SetStringValue("UI", "GameListBackgroundPath", relative_path.c_str());
+						bsi->SetBoolValue("UI", "GameListBackgroundEnabled", true);
+						SetSettingsChanged(bsi);
+					}
 					
-					std::string relative_path = Path::MakeRelative(path, EmuFolders::DataRoot);
-					bsi->SetStringValue("UI", "GameListBackgroundPath", relative_path.c_str());
-					bsi->SetBoolValue("UI", "GameListBackgroundEnabled", true);
-					SetSettingsChanged(bsi);
-					
-					Host::RunOnCPUThread([]() {
-						LoadCustomBackground();
-					});
+					LoadCustomBackground();
 				}
 				CloseFileSelector();
 			},
