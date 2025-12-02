@@ -741,7 +741,7 @@ Pcsx2Config::GSOptions::GSOptions()
 	OsdShowInputs = false;
 	OsdShowVideoCapture = true;
 	OsdShowInputRec = true;
-	OsdShowTextureReplacements = true;
+	OsdShowTextureReplacements = false;
 
 	HWDownloadMode = GSHardwareDownloadMode::Enabled;
 	HWSpinGPUForReadbacks = false;
