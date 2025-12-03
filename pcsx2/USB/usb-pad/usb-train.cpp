@@ -37,6 +37,8 @@ namespace usb_pad
 			TRANSLATE_NOOP("USB", "Type 2"),
 			TRANSLATE_NOOP("USB", "Shinkansen"),
 			TRANSLATE_NOOP("USB", "Ryojōhen"),
+			TRANSLATE_NOOP("USB", "Train Mascon"),
+			TRANSLATE_NOOP("USB", "Master Controller"),
 		};
 		return subtypes;
 	}
@@ -62,6 +64,14 @@ namespace usb_pad
 		CID_TC_CAMERA,
 		CID_TC_L = CID_TC_C,
 		CID_TC_R = CID_TC_D,
+
+		// Train Mascon
+		CID_TC_ATS = CID_TC_D,
+		CID_TC_CLOSE = CID_TC_CAMERA,
+		CID_TC_POWER_UP,
+		CID_TC_POWER_DOWN,
+		CID_TC_REVERSER_UP,
+		CID_TC_REVERSER_DOWN,
 
 		BUTTONS_OFFSET = CID_TC_B,
 	};
@@ -110,6 +120,43 @@ namespace usb_pad
 
 				return bindings;
 			}
+			case TRAIN_MASCON:
+			{
+				static constexpr const InputBindingInfo bindings[] = {
+					{"PowerUp", TRANSLATE_NOOP("USB", "Power Up"), nullptr, InputBindingInfo::Type::Button, CID_TC_POWER_UP, GenericInputBinding::R1},
+					{"PowerDown", TRANSLATE_NOOP("USB", "Power Down"), nullptr, InputBindingInfo::Type::Button, CID_TC_POWER_DOWN, GenericInputBinding::L1},
+					{"ReverserUp", TRANSLATE_NOOP("USB", "Reverser Up"), nullptr, InputBindingInfo::Type::Button, CID_TC_REVERSER_UP, GenericInputBinding::R2},
+					{"ReverserDown", TRANSLATE_NOOP("USB", "Reverser Down"), nullptr, InputBindingInfo::Type::Button, CID_TC_REVERSER_DOWN, GenericInputBinding::L2},
+
+					{"Up", TRANSLATE_NOOP("USB", "D-Pad Up"), ICON_PF_DPAD_UP, InputBindingInfo::Type::Button, CID_TC_UP, GenericInputBinding::DPadUp},
+					{"Down", TRANSLATE_NOOP("USB", "D-Pad Down"), ICON_PF_DPAD_DOWN, InputBindingInfo::Type::Button, CID_TC_DOWN, GenericInputBinding::DPadDown},
+					{"Left", TRANSLATE_NOOP("USB", "D-Pad Left"), ICON_PF_DPAD_LEFT, InputBindingInfo::Type::Button, CID_TC_LEFT, GenericInputBinding::DPadLeft},
+					{"Right", TRANSLATE_NOOP("USB", "D-Pad Right"), ICON_PF_DPAD_RIGHT, InputBindingInfo::Type::Button, CID_TC_RIGHT, GenericInputBinding::DPadRight},
+
+					{"ATS", TRANSLATE_NOOP("USB", "ATS"), nullptr, InputBindingInfo::Type::Button, CID_TC_ATS, GenericInputBinding::Triangle},
+					{"Close", TRANSLATE_NOOP("USB", "Close"), nullptr, InputBindingInfo::Type::Button, CID_TC_CLOSE, GenericInputBinding::R3},
+					{"A", TRANSLATE_NOOP("USB", "A Button"), ICON_PF_KEY_A, InputBindingInfo::Type::Button, CID_TC_A, GenericInputBinding::Square},
+					{"B", TRANSLATE_NOOP("USB", "B Button"), ICON_PF_KEY_B, InputBindingInfo::Type::Button, CID_TC_B, GenericInputBinding::Cross},
+					{"C", TRANSLATE_NOOP("USB", "C Button"), ICON_PF_KEY_C, InputBindingInfo::Type::Button, CID_TC_C, GenericInputBinding::Circle},
+					{"Select", TRANSLATE_NOOP("USB", "Select"), ICON_PF_SELECT_SHARE, InputBindingInfo::Type::Button, CID_TC_SELECT, GenericInputBinding::Select},
+					{"Start", TRANSLATE_NOOP("USB", "Start"), ICON_PF_START, InputBindingInfo::Type::Button, CID_TC_START, GenericInputBinding::Start},
+				};
+				return bindings;
+			}
+			case MASTER_CONTROLLER:
+			{
+				static constexpr const InputBindingInfo bindings[] = {
+					{"PowerUp", TRANSLATE_NOOP("USB", "Power Up"), nullptr, InputBindingInfo::Type::Button, CID_TC_POWER_UP, GenericInputBinding::R1},
+					{"PowerDown", TRANSLATE_NOOP("USB", "Power Down"), nullptr, InputBindingInfo::Type::Button, CID_TC_POWER_DOWN, GenericInputBinding::L1},
+					{"ReverserUp", TRANSLATE_NOOP("USB", "Reverser Up"), nullptr, InputBindingInfo::Type::Button, CID_TC_REVERSER_UP, GenericInputBinding::R2},
+					{"ReverserDown", TRANSLATE_NOOP("USB", "Reverser Down"), nullptr, InputBindingInfo::Type::Button, CID_TC_REVERSER_DOWN, GenericInputBinding::L2},
+					{"S", TRANSLATE_NOOP("USB", "S"), ICON_PF_KEY_S, InputBindingInfo::Type::Button, CID_TC_D, GenericInputBinding::Cross},
+					{"A", TRANSLATE_NOOP("USB", "A"), ICON_PF_KEY_A, InputBindingInfo::Type::Button, CID_TC_A, GenericInputBinding::Square},
+					{"B", TRANSLATE_NOOP("USB", "B"), ICON_PF_KEY_B, InputBindingInfo::Type::Button, CID_TC_B, GenericInputBinding::Triangle},
+					{"C", TRANSLATE_NOOP("USB", "C"), ICON_PF_KEY_C, InputBindingInfo::Type::Button, CID_TC_C, GenericInputBinding::Circle},
+				};
+				return bindings;
+			}
 			default:
 				break;
 		}
@@ -151,21 +198,66 @@ namespace usb_pad
 	{
 		TrainDeviceState* s = USB_CONTAINER_OF(dev, TrainDeviceState, dev);
 
-		s->passthrough = USB::GetConfigBool(si, s->port, TypeName(), "Passthrough", false);
+		switch (s->type)
+		{
+			case TRAIN_TYPE2:
+			case TRAIN_SHINKANSEN:
+			case TRAIN_RYOJOUHEN:
+				s->passthrough = USB::GetConfigBool(si, s->port, TypeName(), "Passthrough", false);
+				break;
+			case MASTER_CONTROLLER:
+				s->power_notches = USB::GetConfigInt(si, s->port, TypeName(), "power_notches", 5);
+				s->brake_notches = USB::GetConfigInt(si, s->port, TypeName(), "brake_notches", 8);
+				break;
+		}
 	}
 
 	std::span<const SettingInfo> TrainDevice::Settings(u32 subtype) const
 	{
-		static constexpr const SettingInfo passthrough = {
-			SettingInfo::Type::Boolean,
-			"Passthrough",
-			TRANSLATE_NOOP("USB", "Axes Passthrough"),
-			TRANSLATE_NOOP("USB", "Passes through the unprocessed input axis to the game. Enable if you are using a compatible Densha De Go! controller. Disable if you are using any other joystick."),
-			"false",
-		};
-
-		static constexpr const SettingInfo info[] = {passthrough};
-		return info;
+		switch (subtype)
+		{
+			case TRAIN_TYPE2:
+			case TRAIN_SHINKANSEN:
+			case TRAIN_RYOJOUHEN:
+			{
+				static constexpr const SettingInfo info[] = {
+					{
+						.type = SettingInfo::Type::Boolean,
+						.name = "Passthrough",
+						.display_name = TRANSLATE_NOOP("USB", "Axes Passthrough"),
+						.description = TRANSLATE_NOOP("USB", "Passes through the unprocessed input axis to the game. Enable if you are using a compatible Densha De Go! controller. Disable if you are using any other joystick."),
+						.default_value = "false",
+					}
+				};
+				return info;
+			}
+			case MASTER_CONTROLLER:
+			{
+				static constexpr const SettingInfo info[] = {
+					{
+						.type = SettingInfo::Type::Integer,
+						.name = "power_notches",
+						.display_name = TRANSLATE_NOOP("USB", "Power notches"),
+						.description = TRANSLATE_NOOP("USB", "Selects the number of power notches (3-6)"),
+						.default_value = "5",
+						.min_value = "3",
+						.max_value = "6",
+					},
+					{
+						.type = SettingInfo::Type::Integer,
+						.name = "brake_notches",
+						.display_name = TRANSLATE_NOOP("USB", "Brake notches"),
+						.description = TRANSLATE_NOOP("USB", "Selects the number of brake notches (5-8)"),
+						.default_value = "8",
+						.min_value = "5",
+						.max_value = "8",
+					}
+				};
+				return info;
+			}
+			default:
+				return {};
+		}
 	}
 
 	static constexpr u32 button_mask(u32 bind_index)
@@ -173,7 +265,7 @@ namespace usb_pad
 		return (1u << (bind_index - TrainControlID::BUTTONS_OFFSET));
 	}
 
-	static constexpr u8 button_at(u8 value, u32 index)
+	static constexpr u16 button_at(u16 value, u32 index)
 	{
 		return value & button_mask(index);
 	}
@@ -205,6 +297,10 @@ namespace usb_pad
 			case CID_TC_SELECT:
 			case CID_TC_START:
 			case CID_TC_CAMERA:
+			case CID_TC_POWER_UP:
+			case CID_TC_POWER_DOWN:
+			case CID_TC_REVERSER_UP:
+			case CID_TC_REVERSER_DOWN:
 			{
 				return (button_at(s->data.buttons, bind_index) != 0u) ? 1.0f : 0.0f;
 			}
@@ -251,14 +347,18 @@ namespace usb_pad
 			case CID_TC_SELECT:
 			case CID_TC_START:
 			case CID_TC_CAMERA:
+			case CID_TC_POWER_UP:
+			case CID_TC_POWER_DOWN:
+			case CID_TC_REVERSER_UP:
+			case CID_TC_REVERSER_DOWN:
 			{
 				const u32 mask = button_mask(bind_index);
 				if (value >= 0.5f)
 					s->data.buttons |= mask;
 				else
 					s->data.buttons &= ~mask;
+				break;
 			}
-			break;
 
 			default:
 				break;
@@ -452,11 +552,23 @@ namespace usb_pad
 		return (get_ab(buttons) | (button_at(buttons, CID_TC_CAMERA) >> 4) | ((get_cd(buttons) | get_ss(buttons)) << 1));
 	}
 
+	void TrainDeviceState::UpdateHandles(u8 max_power, u8 max_brake)
+	{
+		if (!button_at(prev_buttons, CID_TC_POWER_UP) && button_at(data.buttons, CID_TC_POWER_UP) && handle < max_brake + 1 + max_power)
+			handle++;
+		if (!button_at(prev_buttons, CID_TC_POWER_DOWN) && button_at(data.buttons, CID_TC_POWER_DOWN) && handle > 0)
+			handle--;
+		if (!button_at(prev_buttons, CID_TC_REVERSER_UP) && button_at(data.buttons, CID_TC_REVERSER_UP) && reverser < 2)
+			reverser++;
+		if (!button_at(prev_buttons, CID_TC_REVERSER_DOWN) && button_at(data.buttons, CID_TC_REVERSER_DOWN) && reverser > 0)
+			reverser--;
+	}
+
 	static void train_handle_data(USBDevice* dev, USBPacket* p)
 	{
 		TrainDeviceState* s = USB_CONTAINER_OF(dev, TrainDeviceState, dev);
 
-		if (p->pid != USB_TOKEN_IN || p->ep->nr != 1)
+		if (s->type < MASTER_CONTROLLER && (p->pid != USB_TOKEN_IN || p->ep->nr != 1))
 		{
 			Console.Error("Unhandled TrainController request pid=%d ep=%u", p->pid, p->ep->nr);
 			p->status = USB_RET_STALL;
@@ -501,6 +613,77 @@ namespace usb_pad
 				usb_packet_copy(p, &out, sizeof(out));
 				break;
 			}
+			case TRAIN_MASCON:
+			{
+				s->UpdateHandles(5, 6);
+				s->prev_buttons = s->data.buttons;
+
+				TrainConData_TrainMascon out = {};
+				out.one = 0x01;
+				out.handle = 1 + s->handle;
+				out.reverser = s->reverser < 2 ? !s->reverser : s->reverser;
+				out.ats = !!button_at(s->data.buttons, CID_TC_ATS);
+				out.close = !!button_at(s->data.buttons, CID_TC_CLOSE);
+				out.button_a_soft = !!button_at(s->data.buttons, CID_TC_A);
+				out.button_a_hard = !!button_at(s->data.buttons, CID_TC_A);
+				out.button_b = !!button_at(s->data.buttons, CID_TC_B);
+				out.button_c = !!button_at(s->data.buttons, CID_TC_C);
+				out.start = !!button_at(s->data.buttons, CID_TC_START);
+				out.select = !!button_at(s->data.buttons, CID_TC_SELECT);
+				out.dpad_up = s->data.hat_up;
+				out.dpad_down = s->data.hat_down;
+				out.dpad_left = s->data.hat_left;
+				out.dpad_right = s->data.hat_right;
+				usb_packet_copy(p, &out, sizeof(out));
+				break;
+			}
+			case MASTER_CONTROLLER:
+			{
+				if (p->ep->nr == 1) // interrupt in
+				{
+					p->status = USB_RET_STALL;
+					break;
+				}
+				else if (p->ep->nr == 2) // bulk out
+				{
+					// The game sends a reset command after ~1500ms without updates. Resend the status during the next transfer
+					s->last_handle = -1;
+					s->last_reverser = -1;
+					break;
+				} // else bulk in
+
+				s->UpdateHandles(s->power_notches, s->brake_notches);
+
+				char data[100];
+				std::memset(data, 0, sizeof(data));
+				u8 pos = 0;
+
+				if (s->last_handle != s->handle)
+				{
+					pos += snprintf(data + pos, sizeof(data) - pos, "%s\x0d", s->mc_handle[s->handle + 8 - s->brake_notches]);
+					s->last_handle = s->handle;
+				}
+				if (s->last_reverser != s->reverser)
+				{
+					pos += snprintf(data + pos, sizeof(data) - pos, "%s\x0d", s->mc_reverser[s->reverser]);
+					s->last_reverser = s->reverser;
+				}
+
+				for (int i = 0; i < 4; i++)
+				{
+					if (!button_at(s->prev_buttons, BUTTONS_OFFSET + i) && button_at(s->data.buttons, BUTTONS_OFFSET + i))
+					{
+						pos += snprintf(data + pos, sizeof(data) - pos, "%s\x0d", s->mc_button_pressed[i]);
+					}
+					if (button_at(s->prev_buttons, BUTTONS_OFFSET + i) && !button_at(s->data.buttons, BUTTONS_OFFSET + i))
+					{
+						pos += snprintf(data + pos, sizeof(data) - pos, "%s\x0d", s->mc_button_released[i]);
+					}
+				}
+				s->prev_buttons = s->data.buttons;
+				usb_packet_copy(p, data, std::min<u16>(p->buffer_size, pos));
+				break;
+			}
 			default:
 				Console.Error("Unhandled TrainController USB_TOKEN_IN pid=%d ep=%u type=%u", p->pid, p->ep->nr, s->type);
 				p->status = USB_RET_IOERROR;
@@ -520,24 +703,41 @@ namespace usb_pad
 				s->desc.str = dct01_desc_strings;
 				if (usb_desc_parse_dev(dct01_dev_descriptor, sizeof(dct01_dev_descriptor), s->desc, s->desc_dev) < 0)
 					goto fail;
+				if (usb_desc_parse_config(taito_denshacon_config_descriptor, sizeof(taito_denshacon_config_descriptor), s->desc_dev) < 0)
+					goto fail;
 				break;
 			case TRAIN_SHINKANSEN:
 				s->desc.str = dct02_desc_strings;
 				if (usb_desc_parse_dev(dct02_dev_descriptor, sizeof(dct02_dev_descriptor), s->desc, s->desc_dev) < 0)
+					goto fail;
+				if (usb_desc_parse_config(taito_denshacon_config_descriptor, sizeof(taito_denshacon_config_descriptor), s->desc_dev) < 0)
 					goto fail;
 				break;
 			case TRAIN_RYOJOUHEN:
 				s->desc.str = dct03_desc_strings;
 				if (usb_desc_parse_dev(dct03_dev_descriptor, sizeof(dct03_dev_descriptor), s->desc, s->desc_dev) < 0)
 					goto fail;
+				if (usb_desc_parse_config(taito_denshacon_config_descriptor, sizeof(taito_denshacon_config_descriptor), s->desc_dev) < 0)
+					goto fail;
+				break;
+			case TRAIN_MASCON:
+				s->desc.str = dct03_desc_strings;
+				if (usb_desc_parse_dev(train_mascon_dev_descriptor, sizeof(train_mascon_dev_descriptor), s->desc, s->desc_dev) < 0)
+					goto fail;
+				if (usb_desc_parse_config(train_mascon_config_descriptor, sizeof(train_mascon_config_descriptor), s->desc_dev) < 0)
+					goto fail;
+				break;
+			case MASTER_CONTROLLER:
+				s->desc.str = dct03_desc_strings;
+				if (usb_desc_parse_dev(master_controller_dev_descriptor, sizeof(master_controller_dev_descriptor), s->desc, s->desc_dev) < 0)
+					goto fail;
+				if (usb_desc_parse_config(master_controller_config_descriptor, sizeof(master_controller_config_descriptor), s->desc_dev) < 0)
+					goto fail;
 				break;
 
 			default:
 				goto fail;
 		}
-
-		if (usb_desc_parse_config(taito_denshacon_config_descriptor, sizeof(taito_denshacon_config_descriptor), s->desc_dev) < 0)
-			goto fail;
 
 		s->dev.speed = USB_SPEED_FULL;
 		s->dev.klass.handle_attach = usb_desc_attach;
