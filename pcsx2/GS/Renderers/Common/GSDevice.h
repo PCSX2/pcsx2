@@ -432,7 +432,7 @@ struct alignas(16) GSHWDrawConfig
 		{
 			const u32 sw_blend_bits = blend_a | blend_b | blend_d;
 			const bool sw_blend_needs_rt = (sw_blend_bits != 0 && ((sw_blend_bits | blend_c) & 1u)) || ((a_masked & blend_c) != 0);
-			return channel_fb || tex_is_fb || fbmask || (date > 0 && date != 3) || sw_blend_needs_rt;
+			return channel_fb || tex_is_fb || fbmask || (date >= 5) || sw_blend_needs_rt;
 		}
 
 		/// Disables color output from the pixel shader, this is done when all channels are masked.
