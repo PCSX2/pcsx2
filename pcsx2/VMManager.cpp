@@ -1835,7 +1835,7 @@ bool VMManager::DoLoadState(const char* filename, Error* error)
 {
 	if (GSDumpReplayer::IsReplayingDump())
 	{
-		Error::SetString(error, TRANSLATE_STR("VMManager", "Cannot load state while replaying GS dump."));
+		Error::SetString(error, TRANSLATE_STR("VMManager", "Cannot load state while replaying a GS dump."));
 		return false;
 	}
 
@@ -1859,7 +1859,7 @@ void VMManager::DoSaveState(const char* filename, s32 slot_for_message, bool zip
 {
 	if (GSDumpReplayer::IsReplayingDump())
 	{
-		error_callback(TRANSLATE_STR("VMManager", "Cannot save state while replaying GS dump."));
+		error_callback(TRANSLATE_STR("VMManager", "Cannot save state while replaying a GS dump."));
 		return;
 	}
 
@@ -1867,8 +1867,7 @@ void VMManager::DoSaveState(const char* filename, s32 slot_for_message, bool zip
 	std::unique_ptr<ArchiveEntryList> elist = SaveState_DownloadState(&error);
 	if (!elist)
 	{
-		error_callback(fmt::format(
-			TRANSLATE_FS("VMManager", "Failed to save state: {}."), error.GetDescription()));
+		error_callback(error.GetDescription());
 		return;
 	}
 
@@ -1916,14 +1915,14 @@ void VMManager::ZipSaveState(std::unique_ptr<ArchiveEntryList> elist,
 		if (slot_for_message >= 0 && VMManager::HasValidVM())
 		{
 			Host::AddIconOSDMessage("SaveState", ICON_FA_FLOPPY_DISK,
-				fmt::format(TRANSLATE_FS("VMManager", "State saved to slot {}."), slot_for_message),
+				fmt::format(TRANSLATE_FS("VMManager", "Saved state to slot {}."), slot_for_message),
 				Host::OSD_QUICK_DURATION);
 		}
 	}
 	else
 	{
 		error_callback(fmt::format(
-			TRANSLATE_FS("VMManager", "Failed to save state to slot {}."), slot_for_message));
+			TRANSLATE_FS("VMManager", "Cannot zip state."), slot_for_message));
 	}
 
 	DevCon.WriteLn("Zipping save state to '%s' took %.2f ms", filename, timer.GetTimeMilliseconds());
@@ -1992,23 +1991,25 @@ bool VMManager::LoadState(const char* filename, Error* error)
 	if (Achievements::IsHardcoreModeActive())
 	{
 		Error::SetString(error,
-			TRANSLATE_STR("VMManager", "Cannot load save state while RetroAchievements Hardcore Mode is active."));
+			TRANSLATE_STR("VMManager", "Cannot load state while RetroAchievements Hardcore Mode is active."));
 		return false;
 	}
 
 	if (MemcardBusy::IsBusy())
 	{
 		Error::SetString(error,
-			TRANSLATE_STR("VMManager", "Memory card is busy."));
+			TRANSLATE_STR("VMManager", "The memory card is busy, so the state load operation has been cancelled to prevent data loss."));
 		return false;
 	}
 
 	// TODO: Save the current state so we don't need to reset.
-	if (DoLoadState(filename, error))
-		return true;
+	if (!DoLoadState(filename, error))
+	{
+		Reset();
+		return false;
+	}
 
-	Reset();
-	return false;
+	return true;
 }
 
 bool VMManager::LoadStateFromSlot(s32 slot, bool backup, Error* error)
@@ -2016,41 +2017,42 @@ bool VMManager::LoadStateFromSlot(s32 slot, bool backup, Error* error)
 	const std::string filename = GetCurrentSaveStateFileName(slot, backup);
 	if (filename.empty() || !FileSystem::FileExists(filename.c_str()))
 	{
-		if (backup)
-			Error::SetStringFmt(error,
-				TRANSLATE_FS("VMManager", "There is no save state in backup slot {}."), slot);
-		else
-			Error::SetStringFmt(error,
-				TRANSLATE_FS("VMManager", "There is no save state in slot {}."), slot);
+		Error::SetString(error, TRANSLATE_STR("VMManager", "The save slot is empty."));
 		return false;
 	}
 
 	if (Achievements::IsHardcoreModeActive())
 	{
-		if (backup)
-			Error::SetStringFmt(error,
-				TRANSLATE_FS("VMManager", "Cannot load save state from backup slot {} while RetroAchievements Hardcore Mode is active."), slot);
-		else
-			Error::SetStringFmt(error,
-				TRANSLATE_FS("VMManager", "Cannot load save state from slot {} while RetroAchievements Hardcore Mode is active."), slot);
+		Error::SetString(error,
+			TRANSLATE_STR("VMManager", "Cannot load state while RetroAchievements Hardcore Mode is active."));
 		return false;
 	}
 
 	if (MemcardBusy::IsBusy())
 	{
-		if (backup)
-			Error::SetStringFmt(error,
-				TRANSLATE_FS("VMManager", "Failed to load save state from backup slot {} (memory card is busy)."), slot);
-		else
-			Error::SetStringFmt(error,
-				TRANSLATE_FS("VMManager", "Failed to load save state from slot {} (memory card is busy)."), slot);
+		Error::SetString(error,
+			TRANSLATE_STR("VMManager",
+				"The memory card is busy, so the state load operation has been cancelled to prevent data loss."));
 		return false;
 	}
 
-	Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_FOLDER_OPEN,
-		fmt::format(TRANSLATE_FS("VMManager", "Loading {} from slot {}..."), backup ? TRANSLATE("VMManager", "backup state") : TRANSLATE("VMManager", "state"), slot), Host::OSD_QUICK_DURATION);
+	if (!DoLoadState(filename.c_str(), error))
+		return false;
 
-	return DoLoadState(filename.c_str(), error);
+	if (backup)
+	{
+		Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_FOLDER_OPEN,
+			fmt::format(TRANSLATE_FS("VMManager", "Loaded state from backup slot {}."), slot),
+			Host::OSD_QUICK_DURATION);
+	}
+	else
+	{
+		Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_FOLDER_OPEN,
+			fmt::format(TRANSLATE_FS("VMManager", "Loaded state from slot {}."), slot),
+			Host::OSD_QUICK_DURATION);
+	}
+
+	return true;
 }
 
 void VMManager::SaveState(
@@ -2058,7 +2060,8 @@ void VMManager::SaveState(
 {
 	if (MemcardBusy::IsBusy())
 	{
-		error_callback(TRANSLATE_STR("VMManager", "Failed to save state (memory card is busy)."));
+		error_callback(TRANSLATE_STR("VMManager",
+			"The memory card is busy, so the state save operation has been cancelled to prevent data loss."));
 		return;
 	}
 
@@ -2070,14 +2073,14 @@ void VMManager::SaveStateToSlot(s32 slot, bool zip_on_thread, std::function<void
 	const std::string filename(GetCurrentSaveStateFileName(slot));
 	if (filename.empty())
 	{
-		error_callback(TRANSLATE_STR("VMManager", "Failed to generate filename for save state."));
+		error_callback(TRANSLATE_STR("VMManager", "Cannot generate filename for save state."));
 		return;
 	}
 
 	if (MemcardBusy::IsBusy())
 	{
-		error_callback(fmt::format(
-			TRANSLATE_FS("VMManager", "Failed to save state to slot {} (Memory card is busy)"), slot));
+		error_callback(TRANSLATE_STR("VMManager",
+			"The memory card is busy, so the state save operation has been cancelled to prevent data loss."));
 		return;
 	}
 
