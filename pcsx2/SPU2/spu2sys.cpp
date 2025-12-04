@@ -237,6 +237,84 @@ void V_Voice::Stop()
 	ADSR.Phase = V_ADSR::PHASE_STOPPED;
 }
 
+__forceinline void CounterUpdate(u32 DMAICounter)
+{
+	if (((psxCounters[6].startCycle + psxCounters[6].deltaCycles) - psxRegs.cycle) > (u32)DMAICounter)
+	{
+		psxCounters[6].startCycle = psxRegs.cycle;
+		psxCounters[6].deltaCycles = DMAICounter;
+
+		psxNextDeltaCounter -= (psxRegs.cycle - psxNextStartCounter);
+		psxNextStartCounter = psxRegs.cycle;
+		if (psxCounters[6].deltaCycles < psxNextDeltaCounter)
+			psxNextDeltaCounter = psxCounters[6].deltaCycles;
+	}
+}
+
+__forceinline void CheckDMAProgress(int cid)
+{
+	V_Core& core = Cores[cid];
+	int adma_cbit = 1 << cid;
+
+	if (core.DMAICounter > 0 && (psxRegs.cycle - core.LastClock) > 0)
+	{
+		const u32 amt = std::min(psxRegs.cycle - core.LastClock, (u32)core.DMAICounter);
+		core.DMAICounter -= amt;
+		core.LastClock = psxRegs.cycle;
+
+		if (!core.AdmaInProgress)
+		{
+			if (cid == 0)
+				HW_DMA4_MADR += amt / 2;
+			if (cid == 1)
+				HW_DMA7_MADR += amt / 2;
+		}
+
+		if (core.DMAICounter > 0)
+		{
+			CounterUpdate(core.DMAICounter);
+			return;
+		}
+
+		for (int i = 0; i < 2; i++)
+		{
+			if (has_to_call_irq_dma[i])
+			{
+				//ConLog("* SPU2: Irq Called (%04x) at cycle %d.\n", Spdif.Info, Cycles);
+				has_to_call_irq_dma[i] = false;
+				if (!(Spdif.Info & (4 << i)) && Cores[i].IRQEnable)
+				{
+					Spdif.Info |= (4 << i);
+					spu2Irq();
+				}
+			}
+		}
+
+		if (((core.AutoDMACtrl & adma_cbit) != adma_cbit) && core.ReadSize)
+		{
+			if (core.IsDMARead)
+				core.FinishDMAread();
+			else
+				core.FinishDMAwrite();
+		}
+
+		if (core.DMAICounter <= 0)
+		{
+			if (cid == 0)
+			{
+				HW_DMA4_MADR = HW_DMA4_TADR;
+				spu2DMA4Irq();
+			}
+
+			if (cid == 1)
+			{
+				HW_DMA7_MADR = HW_DMA7_TADR;
+				spu2DMA7Irq();
+			}
+		}
+	}
+}
+
 static constexpr uint TickInterval = 768;
 static constexpr int SanityInterval = 4800;
 
@@ -302,112 +380,8 @@ __forceinline void TimeUpdate(u32 cClocks)
 		spu2Mix();
 	}
 
-	//Update DMA4 interrupt delay counter
-	if (Cores[0].DMAICounter > 0 && (psxRegs.cycle - Cores[0].LastClock) > 0)
-	{
-		const u32 amt = std::min(psxRegs.cycle - Cores[0].LastClock, (u32)Cores[0].DMAICounter);
-		Cores[0].DMAICounter -= amt;
-		Cores[0].LastClock = psxRegs.cycle;
-		if(!Cores[0].AdmaInProgress)
-			HW_DMA4_MADR += amt / 2;
-
-		if (Cores[0].DMAICounter <= 0)
-		{
-			for (int i = 0; i < 2; i++)
-			{
-				if (has_to_call_irq_dma[i])
-				{
-					//ConLog("* SPU2: Irq Called (%04x) at cycle %d.\n", Spdif.Info, Cycles);
-					has_to_call_irq_dma[i] = false;
-					if (!(Spdif.Info & (4 << i)) && Cores[i].IRQEnable)
-					{
-						Spdif.Info |= (4 << i);
-						spu2Irq();
-					}
-				}
-			}
-
-			if (((Cores[0].AutoDMACtrl & 1) != 1) && Cores[0].ReadSize)
-			{
-				if (Cores[0].IsDMARead)
-					Cores[0].FinishDMAread();
-				else
-					Cores[0].FinishDMAwrite();
-			}
-
-			if (Cores[0].DMAICounter <= 0)
-			{
-				HW_DMA4_MADR = HW_DMA4_TADR;
-				spu2DMA4Irq();
-			}
-		}
-		else
-		{
-			if (((psxCounters[6].startCycle + psxCounters[6].deltaCycles) - psxRegs.cycle) > (u32)Cores[0].DMAICounter)
-			{
-				psxCounters[6].startCycle = psxRegs.cycle;
-				psxCounters[6].deltaCycles = Cores[0].DMAICounter;
-
-				psxNextDeltaCounter -= (psxRegs.cycle - psxNextStartCounter);
-				psxNextStartCounter = psxRegs.cycle;
-				if (psxCounters[6].deltaCycles < psxNextDeltaCounter)
-					psxNextDeltaCounter = psxCounters[6].deltaCycles;
-			}
-		}
-	}
-
-	//Update DMA7 interrupt delay counter
-	if (Cores[1].DMAICounter > 0 && (psxRegs.cycle - Cores[1].LastClock) > 0)
-	{
-		const u32 amt = std::min(psxRegs.cycle - Cores[1].LastClock, (u32)Cores[1].DMAICounter);
-		Cores[1].DMAICounter -= amt;
-		Cores[1].LastClock = psxRegs.cycle;
-		if (!Cores[1].AdmaInProgress)
-			HW_DMA7_MADR += amt / 2;
-		if (Cores[1].DMAICounter <= 0)
-		{
-			for (int i = 0; i < 2; i++)
-			{
-				if (has_to_call_irq_dma[i])
-				{
-					//ConLog("* SPU2: Irq Called (%04x) at cycle %d.\n", Spdif.Info, Cycles);
-					has_to_call_irq_dma[i] = false;
-					if (!(Spdif.Info & (4 << i)) && Cores[i].IRQEnable)
-					{
-						Spdif.Info |= (4 << i);
-						spu2Irq();
-					}
-				}
-			}
-
-			if (((Cores[1].AutoDMACtrl & 2) != 2) && Cores[1].ReadSize)
-			{
-				if (Cores[1].IsDMARead)
-					Cores[1].FinishDMAread();
-				else
-					Cores[1].FinishDMAwrite();
-			}
-
-			if (Cores[1].DMAICounter <= 0)
-			{
-				HW_DMA7_MADR = HW_DMA7_TADR;
-				spu2DMA7Irq();
-			}
-		}
-		else
-		{
-			if (((psxCounters[6].startCycle + psxCounters[6].deltaCycles) - psxRegs.cycle) > (u32)Cores[1].DMAICounter)
-			{
-				psxCounters[6].startCycle = psxRegs.cycle;
-				psxCounters[6].deltaCycles = Cores[1].DMAICounter;
-
-				psxNextDeltaCounter -= (psxRegs.cycle - psxNextStartCounter);
-				psxNextStartCounter = psxRegs.cycle;
-				if (psxCounters[6].deltaCycles < psxNextDeltaCounter)
-					psxNextDeltaCounter = psxCounters[6].deltaCycles;
-			}
-		}
-	}
+	CheckDMAProgress(0);
+	CheckDMAProgress(1);
 }
 
 __forceinline void UpdateSpdifMode()
