@@ -1250,6 +1250,8 @@ bool GSDevice12::CheckFeatures(const u32& vendor_id)
 		DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allow_tearing_supported, sizeof(allow_tearing_supported));
 	m_allow_tearing_supported = (SUCCEEDED(hr) && allow_tearing_supported == TRUE);
 
+	m_direct_feedback = isAMD;
+
 	return true;
 }
 
@@ -4107,9 +4109,9 @@ void GSDevice12::SendHWDraw(const PipelineSelector& pipe, const GSHWDrawConfig& 
 			Console.Warning("D3D12: Possible unnecessary copy detected.");
 #endif
 		if (one_barrier || full_barrier)
-			PSSetShaderResource(2, draw_rt, false, true);
+			PSSetShaderResource(2, draw_rt, false, !m_direct_feedback);
 		if (config.tex && config.tex == config.rt)
-			PSSetShaderResource(0, draw_rt, false, true);
+			PSSetShaderResource(0, draw_rt, false, !m_direct_feedback);
 
 		if (full_barrier)
 		{

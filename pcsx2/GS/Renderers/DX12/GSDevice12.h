@@ -294,6 +294,10 @@ private:
 	bool m_is_exclusive_fullscreen = false;
 	bool m_device_lost = false;
 
+	// RDNA1/2 dosn't like us using aliased resources for feedback loops, instead we can just use the render target resource directly as the shader resource.
+	// Dispite MS saying that shader resources need to be in the shader resource state, nothing actually seems to care about them being in the Render target state.
+	bool m_direct_feedback = false;
+
 	ComPtr<ID3D12RootSignature> m_tfx_root_signature;
 	ComPtr<ID3D12RootSignature> m_utility_root_signature;
 
