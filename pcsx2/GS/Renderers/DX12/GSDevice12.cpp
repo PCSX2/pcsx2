@@ -165,11 +165,12 @@ bool GSDevice12::CreateDevice(u32& vendor_id)
 	// Enabling the debug layer will fail if the Graphics Tools feature is not installed.
 	if (enable_debug_layer)
 	{
-		ComPtr<ID3D12Debug> debug12;
+		ComPtr<ID3D12Debug1> debug12;
 		hr = D3D12GetDebugInterface(IID_PPV_ARGS(debug12.put()));
 		if (SUCCEEDED(hr))
 		{
 			debug12->EnableDebugLayer();
+			debug12->SetEnableGPUBasedValidation(true);
 		}
 		else
 		{
