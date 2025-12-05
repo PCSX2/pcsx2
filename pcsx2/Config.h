@@ -432,6 +432,13 @@ enum class GSTextureInRtMode : u8
 	MergeTargets,
 };
 
+enum class GSLimit24BitDepth : u8
+{
+	Disabled,
+	PrioritizeUpper,
+	PrioritizeLower,
+};
+
 enum class GSBilinearDirtyMode : u8
 {
 	Automatic,
@@ -844,6 +851,7 @@ struct Pcsx2Config
 		u8 UserHacks_CPUCLUTRender = 0;
 		GSGPUTargetCLUTMode UserHacks_GPUTargetCLUTMode = GSGPUTargetCLUTMode::Disabled;
 		GSTextureInRtMode UserHacks_TextureInsideRt = GSTextureInRtMode::Disabled;
+		GSLimit24BitDepth UserHacks_Limit24BitDepth = GSLimit24BitDepth::Disabled;
 		GSBilinearDirtyMode UserHacks_BilinearHack = GSBilinearDirtyMode::Automatic;
 		TriFiltering TriFilter = TriFiltering::Automatic;
 		s8 OverrideTextureBarriers = -1;
