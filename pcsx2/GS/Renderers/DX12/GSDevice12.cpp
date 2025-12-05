@@ -2305,9 +2305,9 @@ bool GSDevice12::GetTextureGroupDescriptors(
 	}
 
 	D3D12_CPU_DESCRIPTOR_HANDLE dst_handle = *gpu_handle;
-	D3D12_CPU_DESCRIPTOR_HANDLE src_handles[NUM_TFX_TEXTURES];
-	UINT src_sizes[NUM_TFX_TEXTURES];
-	pxAssert(count <= NUM_TFX_TEXTURES);
+	D3D12_CPU_DESCRIPTOR_HANDLE src_handles[NUM_TOTAL_TFX_TEXTURES];
+	UINT src_sizes[NUM_TOTAL_TFX_TEXTURES];
+	pxAssert(count <= NUM_TOTAL_TFX_TEXTURES);
 	for (u32 i = 0; i < count; i++)
 	{
 		src_handles[i] = cpu_handles[i];
@@ -2415,9 +2415,10 @@ bool GSDevice12::CreateRootSignatures()
 	rsb.AddCBVParameter(0, D3D12_SHADER_VISIBILITY_ALL);
 	rsb.AddCBVParameter(1, D3D12_SHADER_VISIBILITY_PIXEL);
 	rsb.AddSRVParameter(0, D3D12_SHADER_VISIBILITY_VERTEX);
-	rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 2, D3D12_SHADER_VISIBILITY_PIXEL);
+	rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 2, D3D12_SHADER_VISIBILITY_PIXEL); // Source / Palette 
 	rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, NUM_TFX_SAMPLERS, D3D12_SHADER_VISIBILITY_PIXEL);
-	rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 2, D3D12_SHADER_VISIBILITY_PIXEL);
+	rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 2, D3D12_SHADER_VISIBILITY_PIXEL); // RT / PrimID
+	rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 4, 1, D3D12_SHADER_VISIBILITY_PIXEL); // Depth
 	if (!(m_tfx_root_signature = rsb.Create()))
 		return false;
 	D3D12::SetObjectName(m_tfx_root_signature.get(), "TFX root signature");
@@ -2922,6 +2923,9 @@ const ID3DBlob* GSDevice12::GetTFXPixelShader(const GSHWDrawConfig::PSSelector& 
 	sm.AddMacro("PS_TEX_IS_FB", sel.tex_is_fb);
 	sm.AddMacro("PS_NO_COLOR", sel.no_color);
 	sm.AddMacro("PS_NO_COLOR1", sel.no_color1);
+	sm.AddMacro("PS_ZTST", sel.ztst);
+	sm.AddMacro("PS_COLOR_FEEDBACK", sel.color_feedback);
+	sm.AddMacro("PS_DEPTH_FEEDBACK", sel.depth_feedback);
 
 	ComPtr<ID3DBlob> ps(m_shader_cache.GetPixelShader(m_tfx_source, sm.GetPtr(), "ps_main"));
 	it = m_tfx_pixel_shaders.emplace(sel, std::move(ps)).first;
@@ -3155,6 +3159,7 @@ void GSDevice12::InvalidateCachedState()
 	m_tfx_textures_handle_gpu.Clear();
 	m_tfx_samplers_handle_gpu.Clear();
 	m_tfx_rt_textures_handle_gpu.Clear();
+	m_tfx_depth_textures_handle_gpu.Clear();
 }
 
 void GSDevice12::SetVertexBuffer(D3D12_GPU_VIRTUAL_ADDRESS buffer, size_t size, size_t stride)
@@ -3236,7 +3241,11 @@ void GSDevice12::PSSetShaderResource(int i, GSTexture* sr, bool check_state)
 		return;
 
 	m_tfx_textures[i] = handle;
-	m_dirty_flags |= (i < 2) ? DIRTY_FLAG_TFX_TEXTURES : DIRTY_FLAG_TFX_RT_TEXTURES;
+	m_dirty_flags |=
+		(i < 2) ? DIRTY_FLAG_TFX_TEXTURES :
+		(i < 4) ? DIRTY_FLAG_TFX_RT_TEXTURES :
+		(i < 5) ? DIRTY_FLAG_TFX_DEPTH_TEXTURES :
+		          0; 
 }
 
 void GSDevice12::PSSetSampler(GSHWDrawConfig::SamplerSelector sel)
@@ -3639,6 +3648,17 @@ bool GSDevice12::ApplyTFXState(bool already_execed)
 		flags |= DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE_2;
 	}
 
+	if (flags & DIRTY_FLAG_TFX_DEPTH_TEXTURES)
+	{
+		if (!GetTextureGroupDescriptors(&m_tfx_depth_textures_handle_gpu, m_tfx_textures.data() + 4, 1))
+		{
+			ExecuteCommandListAndRestartRenderPass(false, "Ran out of TFX depth descriptor descriptor groups");
+			return ApplyTFXState(true);
+		}
+
+		flags |= DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE_3;
+	}
+
 	ID3D12GraphicsCommandList* cmdlist = GetCommandList();
 
 	if (m_current_root_signature != RootSignature::TFX)
@@ -3646,7 +3666,8 @@ bool GSDevice12::ApplyTFXState(bool already_execed)
 		m_current_root_signature = RootSignature::TFX;
 		flags |= DIRTY_FLAG_VS_CONSTANT_BUFFER_BINDING | DIRTY_FLAG_PS_CONSTANT_BUFFER_BINDING |
 		         DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE | DIRTY_FLAG_SAMPLERS_DESCRIPTOR_TABLE |
-		         DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE_2 | DIRTY_FLAG_PIPELINE;
+		         DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE_2 | DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE_3 |
+		         DIRTY_FLAG_PIPELINE;
 		cmdlist->SetGraphicsRootSignature(m_tfx_root_signature.get());
 	}
 
@@ -3665,6 +3686,8 @@ bool GSDevice12::ApplyTFXState(bool already_execed)
 		cmdlist->SetGraphicsRootDescriptorTable(TFX_ROOT_SIGNATURE_PARAM_PS_SAMPLERS, m_tfx_samplers_handle_gpu);
 	if (flags & DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE_2)
 		cmdlist->SetGraphicsRootDescriptorTable(TFX_ROOT_SIGNATURE_PARAM_PS_RT_TEXTURES, m_tfx_rt_textures_handle_gpu);
+	if (flags & DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE_3)
+		cmdlist->SetGraphicsRootDescriptorTable(TFX_ROOT_SIGNATURE_PARAM_PS_DEPTH_TEXTURES, m_tfx_depth_textures_handle_gpu);
 
 	ApplyBaseState(flags, cmdlist);
 	return true;
@@ -3829,6 +3852,17 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	GSTexture12* draw_rt = static_cast<GSTexture12*>(config.rt);
 	GSTexture12* draw_ds = static_cast<GSTexture12*>(config.ds);
 	GSTexture12* draw_rt_clone = nullptr;
+	GSTexture12* draw_ds_clone = nullptr;
+	GSTexture12* date_image = nullptr;
+
+	ScopedGuard recycle_temp_textures([&]() {
+		if (draw_rt_clone)
+			Recycle(draw_rt_clone);
+		if (draw_ds_clone)
+			Recycle(draw_ds_clone);
+		if (date_image)
+			Recycle(date_image);
+	});
 
 	// Align the render area to 128x128, hopefully avoiding render pass restarts for small render area changes (e.g. Ratchet and Clank).
 	const GSVector2i rtsize(config.rt ? config.rt->GetSize() : config.ds->GetSize());
@@ -3894,7 +3928,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		SetBlendConstants(config.blend.constant);
 
 	// Depth testing and sampling, bind resource as dsv read only and srv at the same time without the need of a copy.
-	if (config.tex && config.tex == config.ds)
+	if (config.ds && (config.ds == config.tex || config.ps.IsFeedbackLoopDepth()) && !config.depth.zwe)
 	{
 		EndRenderPass();
 
@@ -3903,7 +3937,6 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	}
 
 	// Primitive ID tracking DATE setup.
-	GSTexture12* date_image = nullptr;
 	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking)
 	{
 		GSTexture* backup_rt = config.rt;
@@ -3991,6 +4024,16 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 			Console.Warning("D3D12: Failed to allocate temp texture for RT copy.");
 	}
 
+	if (draw_ds && (config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy)) &&
+		config.ps.IsFeedbackLoopDepth())
+	{
+		// Requires a copy of the DS.
+		// Used as "bind ds" flag when texture barrier is unsupported for tex is fb.
+		draw_ds_clone = static_cast<GSTexture12*>(CreateTexture(rtsize.x, rtsize.y, 1, draw_ds->GetFormat(), true));
+		if (!draw_rt_clone)
+			Console.Warning("D3D12: Failed to allocate temp texture for DS copy.");
+	}
+
 	OMSetRenderTargets(draw_rt, draw_ds, config.scissor);
 
 	// Begin render pass if new target or out of the area.
@@ -4036,7 +4079,8 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		UploadHWDrawVerticesAndIndices(config);
 
 	// now we can do the actual draw
-	SendHWDraw(pipe, config, draw_rt_clone, draw_rt, config.require_one_barrier, config.require_full_barrier, false);
+	SendHWDraw(pipe, config, draw_rt_clone, draw_rt, draw_ds_clone, draw_ds,
+		config.require_one_barrier, config.require_full_barrier, false);
 
 	// blend second pass
 	if (config.blend_multi_pass.enable)
@@ -4065,14 +4109,9 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		pipe.cms = config.alpha_second_pass.colormask;
 		pipe.dss = config.alpha_second_pass.depth;
 		pipe.bs = config.blend;
-		SendHWDraw(pipe, config, draw_rt_clone, draw_rt, config.alpha_second_pass.require_one_barrier, config.alpha_second_pass.require_full_barrier, true);
+		SendHWDraw(pipe, config, draw_rt_clone, draw_rt, draw_ds_clone, draw_ds,
+			config.alpha_second_pass.require_one_barrier, config.alpha_second_pass.require_full_barrier, true);
 	}
-
-	if (draw_rt_clone)
-		Recycle(draw_rt_clone);
-
-	if (date_image)
-		Recycle(date_image);
 
 	// now blit the colclip texture back to the original target
 	if (colclip_rt)
@@ -4108,23 +4147,40 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	}
 }
 
-void GSDevice12::SendHWDraw(const PipelineSelector& pipe, const GSHWDrawConfig& config, GSTexture12* draw_rt_clone, GSTexture12* draw_rt, const bool one_barrier, const bool full_barrier, const bool skip_first_barrier)
+void GSDevice12::SendHWDraw(const PipelineSelector& pipe, const GSHWDrawConfig& config,
+	GSTexture12* draw_rt_clone, GSTexture12* draw_rt,
+	GSTexture12* draw_ds_clone, GSTexture12* draw_ds,
+	const bool one_barrier, const bool full_barrier, const bool skip_first_barrier)
 {
-	if (draw_rt_clone)
+	if (draw_rt_clone || draw_ds_clone)
 	{
 
 #ifdef PCSX2_DEVBUILD
-		if ((one_barrier || full_barrier) && !config.ps.IsFeedbackLoop()) [[unlikely]]
+		if ((one_barrier || full_barrier) && !(config.ps.IsFeedbackLoopRT() || config.ps.IsFeedbackLoopDepth())) [[unlikely]]
 			Console.Warning("D3D12: Possible unnecessary copy detected.");
 #endif
 		auto CopyAndBind = [&](GSVector4i drawarea) {
 			EndRenderPass();
 
-			CopyRect(draw_rt, draw_rt_clone, drawarea, drawarea.left, drawarea.top);
-			draw_rt->TransitionToState(D3D12_RESOURCE_STATE_RENDER_TARGET);
+			if (draw_rt_clone)
+			{
+				CopyRect(draw_rt, draw_rt_clone, drawarea, drawarea.left, drawarea.top);
+				draw_rt->TransitionToState(D3D12_RESOURCE_STATE_RENDER_TARGET);
+			}
+
+			if (draw_ds_clone)
+			{
+				CopyRect(draw_ds, draw_ds_clone, drawarea, drawarea.left, drawarea.top);
+				draw_ds->TransitionToState(D3D12_RESOURCE_STATE_DEPTH_WRITE);
+			}
 
 			if (one_barrier || full_barrier)
-				PSSetShaderResource(2, draw_rt_clone, true);
+			{
+				if (draw_rt_clone)
+					PSSetShaderResource(2, draw_rt_clone, true);
+				if (draw_ds_clone)
+					PSSetShaderResource(4, draw_ds_clone, true);
+			}
 			if (config.tex && config.tex == config.rt)
 				PSSetShaderResource(0, draw_rt_clone, true);
 		};
@@ -4153,7 +4209,6 @@ void GSDevice12::SendHWDraw(const PipelineSelector& pipe, const GSHWDrawConfig& 
 			return;
 		}
 
-
 		// Optimization: For alpha second pass we can reuse the copy snapshot from the first pass.
 		if (!skip_first_barrier)
 			CopyAndBind(config.drawarea);
@@ -4177,7 +4232,7 @@ void GSDevice12::UpdateHWPipelineSelector(GSHWDrawConfig& config)
 	m_pipeline_selector.ds = config.ds != nullptr;
 }
 
-void GSDevice12::UploadHWDrawVerticesAndIndices(const GSHWDrawConfig& config)
+void GSDevice12::UploadHWDrawVerticesAndIndices(GSHWDrawConfig& config)
 {
 	IASetVertexBuffer(config.verts, sizeof(GSVertex), config.nverts);
 

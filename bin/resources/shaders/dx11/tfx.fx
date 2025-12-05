@@ -21,6 +21,26 @@
 #define GS_FORWARD_PRIMID 0
 #endif
 
+#ifndef ZTST_GEQUAL
+#define ZTST_GEQUAL 2
+#define ZTST_GREATER 3
+#endif
+
+#ifndef AFAIL_KEEP
+#define AFAIL_KEEP 0
+#define AFAIL_FB_ONLY 1
+#define AFAIL_ZB_ONLY 2
+#define AFAIL_RGB_ONLY 3
+#endif
+
+#ifndef PS_ATST_NONE
+#define PS_ATST_NONE 0
+#define PS_ATST_LEQUAL 1
+#define PS_ATST_GEQUAL 2
+#define PS_ATST_EQUAL 3
+#define PS_ATST_NOTEQUAL 4
+#endif
+
 #ifndef PS_FST
 #define PS_IIP 0
 #define PS_FST 0
@@ -78,12 +98,16 @@
 #define PS_NO_COLOR 0
 #define PS_NO_COLOR1 0
 #define PS_DATE 0
+#define PS_TEX_IS_FB 0
+#define PS_COLOR_FEEDBACK 0
+#define PS_DEPTH_FEEDBACK 0
 #endif
 
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
 #define SW_BLEND_NEEDS_RT (SW_BLEND && (PS_BLEND_A == 1 || PS_BLEND_B == 1 || PS_BLEND_C == 1 || PS_BLEND_D == 1))
 #define SW_AD_TO_HW (PS_BLEND_C == 1 && PS_A_MASKED)
-#define NEEDS_RT_FOR_AFAIL (PS_AFAIL == 3 && PS_NO_COLOR1)
+#define AFAIL_NEEDS_RT (PS_AFAIL == AFAIL_ZB_ONLY || (PS_AFAIL == AFAIL_RGB_ONLY && PS_NO_COLOR1))
+#define AFAIL_NEEDS_DEPTH (PS_AFAIL == AFAIL_FB_ONLY || PS_AFAIL == AFAIL_RGB_ONLY)
 
 struct VS_INPUT
 {
@@ -147,6 +171,7 @@ Texture2D<float4> Texture : register(t0);
 Texture2D<float4> Palette : register(t1);
 Texture2D<float4> RtTexture : register(t2);
 Texture2D<float> PrimMinTexture : register(t3);
+Texture2D<float> DepthTexture : register(t4);
 SamplerState TextureSampler : register(s0);
 
 #ifdef DX12
@@ -712,27 +737,27 @@ bool atst(float4 C)
 {
 	float a = C.a;
 
-	if(PS_ATST == 1)
-	{
-		return (a <= AREF);
-	}
-	else if(PS_ATST == 2)
-	{
-		return (a >= AREF);
-	}
-	else if(PS_ATST == 3)
-	{
-		 return (abs(a - AREF) <= 0.5f);
-	}
-	else if(PS_ATST == 4)
-	{
-		return (abs(a - AREF) >= 0.5f);
-	}
-	else
-	{
-		// nothing to do
-		return true;
-	}
+#if PS_ATST == PS_ATST_LEQUAL
+
+	return (a <= AREF);
+
+#elif PS_ATST == PS_ATST_GEQUAL
+
+	return (a >= AREF);
+
+#elif PS_ATST == PS_ATST_EQUAL
+
+	return (abs(a - AREF) <= 0.5f);
+
+#elif PS_ATST == PS_ATST_NOTEQUAL
+
+	return (abs(a - AREF) >= 0.5f);
+
+#else
+
+	return true;
+
+#endif
 }
 
 float4 fog(float4 c, float f)
@@ -1017,10 +1042,27 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 
 PS_OUTPUT ps_main(PS_INPUT input)
 {
+
+#if PS_DEPTH_FEEDBACK && (PS_ZTST == ZTST_GEQUAL || PS_ZTST == ZTST_GREATER)
+	#if PS_ZTST == ZTST_GEQUAL
+		if (input.p.z < DepthTexture.Load(int3(input.p.xy, 0)).r)
+			discard;
+	#elif PS_ZTST == ZTST_GREATER
+	if (input.p.z <= DepthTexture.Load(int3(input.p.xy, 0)).r)
+		discard;
+	#endif
+#endif // PS_ZTST
+
 	float4 C = ps_color(input);
+
+#if PS_FIXED_ONE_A
+	// AA (Fixed one) will output a coverage of 1.0 as alpha
+	C.a = 128.0f;
+#endif
+
 	bool atst_pass = atst(C);
 
-#if PS_AFAIL == 0 // KEEP or ATST off
+#if PS_AFAIL == AFAIL_KEEP
 	if (!atst_pass)
 		discard;
 #endif
@@ -1032,14 +1074,6 @@ PS_OUTPUT ps_main(PS_INPUT input)
 		// fail depth test on prohibited lines
 		if ((int(input.p.y) & 1) == (PS_SCANMSK & 1))
 			discard;
-	}
-
-	// Must be done before alpha correction
-
-	// AA (Fixed one) will output a coverage of 1.0 as alpha
-	if (PS_FIXED_ONE_A)
-	{
-		C.a = 128.0f;
 	}
 
 	float4 alpha_blend = (float4)0.0f;
@@ -1186,7 +1220,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 
 	ps_fbmask(C, input.p.xy);
 
-#if PS_AFAIL == 3 && !PS_NO_COLOR1 // RGB_ONLY
+#if (PS_AFAIL == AFAIL_RGB_ONLY) && !PS_NO_COLOR1
 	// Use alpha blend factor to determine whether to update A.
 	alpha_blend.a = float(atst_pass);
 #endif
@@ -1197,11 +1231,23 @@ PS_OUTPUT ps_main(PS_INPUT input)
 #if !PS_NO_COLOR1
 	output.c1 = alpha_blend;
 #endif
-#if PS_AFAIL == 3 && PS_NO_COLOR1 // RGB_ONLY, no dual src blend
+
+	// Alpha test with feedback
+#if (PS_AFAIL == AFAIL_FB_ONLY) && PS_DEPTH_FEEDBACK && PS_ZCLAMP
+	if (!atst_pass)
+		input.p.z = DepthTexture.Load(int3(input.p.xy, 0)).r;
+#elif (PS_AFAIL == AFAIL_ZB_ONLY) && PS_COLOR_FEEDBACK
+	if (!atst_pass)
+		output.c0 = RtTexture.Load(int3(input.p.xy, 0));
+#elif (PS_AFAIL == AFAIL_RGB_ONLY)
 	if (!atst_pass)
 	{
-		float RTa = NEEDS_RT_FOR_AFAIL ? RtTexture.Load(int3(input.p.xy, 0)).a : 0.0f;
-		output.c0.a = RTa;
+	#if PS_COLOR_FEEDBACK && PS_NO_COLOR1 // No dual src blend
+		output.c0.a = RtTexture.Load(int3(input.p.xy, 0)).a;
+	#endif
+	#if PS_DEPTH_FEEDBACK && PS_ZCLAMP
+		input.p.z = DepthTexture.Load(int3(input.p.xy, 0)).r; 
+	#endif
 	}
 #endif
 
