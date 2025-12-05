@@ -23,7 +23,7 @@ public:
 		CLONE_LAYOUT,
 	};
 
-	// Bundles together a creation mode and inital state.
+	// Bundles together a creation mode and a default dock layout index.
 	using InitialState = std::pair<CreationMode, size_t>;
 
 	// Create a "New Layout" dialog.
