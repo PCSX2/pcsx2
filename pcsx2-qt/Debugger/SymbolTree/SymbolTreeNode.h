@@ -55,7 +55,7 @@ public:
 		const ccc::SymbolDatabase& database,
 		const SymbolTreeDisplayOptions& display_options);
 
-	// Write the value back to the VM memory. Returns true on success.
+	// Write the value back to the VM memory. Returns true if the data changed.
 	bool writeToVM(
 		QVariant value,
 		DebugInterface& cpu,
