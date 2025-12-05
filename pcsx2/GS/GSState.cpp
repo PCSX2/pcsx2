@@ -4665,6 +4665,14 @@ __forceinline void GSState::VertexKick(u32 skip)
 	u32 next = m_vertex.next;
 	u32 xy_tail = m_vertex.xy_tail;
 
+	if (GSIsHardwareRenderer() && GSLocalMemory::m_psm[m_context->ZBUF.PSM].bpp == 32)
+	{
+		if (GSConfig.UserHacks_Limit24BitDepth == GSLimit24BitDepth::PrioritizeUpper)
+			m_v.XYZ.Z = ((m_v.XYZ.Z >> 8) & ~0xFF) | (m_v.XYZ.Z & 0xFF);
+		else if (GSConfig.UserHacks_Limit24BitDepth == GSLimit24BitDepth::PrioritizeLower)
+			m_v.XYZ.Z &= 0x00FFFFFF;
+	}
+
 	// callers should write XYZUVF to m_v.m[1] in one piece to have this load store-forwarded, either by the cpu or the compiler when this function is inlined
 
 	const GSVector4i new_v0(m_v.m[0]);
