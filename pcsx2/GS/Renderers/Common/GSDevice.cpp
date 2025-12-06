@@ -312,8 +312,69 @@ void GSDevice::GenerateExpansionIndexBuffer(void* buffer)
 	}
 }
 
+#ifdef BAKE_SHADERS_IN_CPP
+#include "../../bin/resources/shaders_cpp/common_fxaa.cpp"
+#include "../../bin/resources/shaders_cpp/vulkan_convert.cpp"
+#include "../../bin/resources/shaders_cpp/vulkan_imgui.cpp"
+#include "../../bin/resources/shaders_cpp/vulkan_interlace.cpp"
+#include "../../bin/resources/shaders_cpp/vulkan_merge.cpp"
+#include "../../bin/resources/shaders_cpp/vulkan_present.cpp"
+#include "../../bin/resources/shaders_cpp/vulkan_shadeboost.cpp"
+#include "../../bin/resources/shaders_cpp/vulkan_tfx.cpp"
+#include "../../bin/resources/shaders_cpp/opengl_convert.cpp"
+#include "../../bin/resources/shaders_cpp/opengl_imgui.cpp"
+#include "../../bin/resources/shaders_cpp/opengl_interlace.cpp"
+#include "../../bin/resources/shaders_cpp/opengl_merge.cpp"
+#include "../../bin/resources/shaders_cpp/opengl_present.cpp"
+#include "../../bin/resources/shaders_cpp/opengl_shadeboost.cpp"
+#include "../../bin/resources/shaders_cpp/opengl_tfx_fs.cpp"
+#include "../../bin/resources/shaders_cpp/opengl_tfx_vgs.cpp"
+#ifdef _WIN32
+#include "../../bin/resources/shaders_cpp/dx11_convert.cpp"
+#include "../../bin/resources/shaders_cpp/dx11_imgui.cpp"
+#include "../../bin/resources/shaders_cpp/dx11_interlace.cpp"
+#include "../../bin/resources/shaders_cpp/dx11_merge.cpp"
+#include "../../bin/resources/shaders_cpp/dx11_present.cpp"
+#include "../../bin/resources/shaders_cpp/dx11_shadeboost.cpp"
+#include "../../bin/resources/shaders_cpp/dx11_tfx.cpp"
+#endif
+
+static const std::map<std::string, const unsigned char*> baked_shaders = {
+	{ "shaders/common/fxaa.fx"         , common_fxaa},
+	{ "shaders/vulkan/convert.glsl"    , vulkan_convert},
+	{ "shaders/vulkan/imgui.glsl"      , vulkan_imgui},
+	{ "shaders/vulkan/interlace.glsl"  , vulkan_interlace},
+	{ "shaders/vulkan/merge.glsl"      , vulkan_merge },
+	{ "shaders/vulkan/present.glsl"    , vulkan_present },
+	{ "shaders/vulkan/shadeboost.glsl" , vulkan_shadeboost },
+	{ "shaders/vulkan/tfx.glsl"        , vulkan_tfx },
+	{ "shaders/opengl/convert.glsl"    , opengl_convert },
+	{ "shaders/opengl/imgui.glsl"      , opengl_imgui },
+	{ "shaders/opengl/interlace.glsl"  , opengl_interlace },
+	{ "shaders/opengl/merge.glsl"      , opengl_merge },
+	{ "shaders/opengl/present.glsl"    , opengl_present },
+	{ "shaders/opengl/shadeboost.glsl" , opengl_shadeboost },
+	{ "shaders/opengl/tfx_fs.glsl"     , opengl_tfx_fs },
+	{ "shaders/opengl/tfx_vgs.glsl"    , opengl_tfx_vgs },
+#ifdef _WIN32
+	{ "shaders/direct3d/convert.fx"    , dx11_convert },
+	{ "shaders/direct3d/imgui.fx"      , dx11_imgui },
+	{ "shaders/direct3d/interlace.fx"  , dx11_interlace },
+	{ "shaders/direct3d/merge.fx"      , dx11_merge },
+	{ "shaders/direct3d/present.fx"    , dx11_present },
+	{ "shaders/direct3d/shadeboost.fx" , dx11_shadeboost },
+	{ "shaders/direct3d/tfx.fx"        , dx11_tfx },
+#endif
+};
+#endif
+
 std::optional<std::string> GSDevice::ReadShaderSource(const char* filename)
 {
+#ifdef BAKE_SHADERS_IN_CPP
+	const auto it = baked_shaders.find(filename);
+	if (it != baked_shaders.end())
+		return reinterpret_cast<const char*>(it->second);
+#endif
 	return FileSystem::ReadFileToString(Path::Combine(EmuFolders::Resources, filename).c_str());
 }
 
