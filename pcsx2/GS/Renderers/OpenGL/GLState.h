@@ -40,6 +40,10 @@ namespace GLState
 
 	extern GSTextureOGL* rt; // render target
 	extern GSTextureOGL* ds; // Depth-Stencil
+
+	extern bool rt_written; // Render Target written
+	extern bool ds_written; // Depth Stencil written
+
 	extern GLuint tex_unit[8]; // shader input texture
 	extern GLuint64 tex_handle[8]; // shader input texture
 

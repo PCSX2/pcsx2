@@ -36,6 +36,10 @@ namespace GLState
 
 	GSTextureOGL* rt = nullptr;
 	GSTextureOGL* ds = nullptr;
+
+	bool rt_written;
+	bool ds_written;
+
 	GLuint tex_unit[8];
 	GLuint64 tex_handle[8];
 
@@ -67,6 +71,10 @@ namespace GLState
 
 		rt = nullptr;
 		ds = nullptr;
+
+		rt_written = false;
+		ds_written = false;
+
 		std::fill(std::begin(tex_unit), std::end(tex_unit), 0);
 		std::fill(std::begin(tex_handle), std::end(tex_handle), 0);
 	}
