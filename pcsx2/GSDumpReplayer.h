@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "common/Error.h"
+
 #include <string>
 #include <vector>
 
@@ -16,7 +18,7 @@ namespace GSDumpReplayer
 	bool IsRunner();
 	void SetIsDumpRunner(bool is_runner);
 
-	bool Initialize(const char* filename);
+	bool Initialize(const char* filename, Error* error = nullptr);
 	bool ChangeDump(const char* filename);
 	void Shutdown();
 

@@ -427,7 +427,6 @@ void MainWindow::connectSignals()
 
 void MainWindow::connectVMThreadSignals(EmuThread* thread)
 {
-	connect(thread, &EmuThread::messageConfirmed, this, &MainWindow::confirmMessage, Qt::BlockingQueuedConnection);
 	connect(thread, &EmuThread::statusMessage, this, &MainWindow::onStatusMessage);
 	connect(thread, &EmuThread::onAcquireRenderWindowRequested, this, &MainWindow::acquireRenderWindow, Qt::BlockingQueuedConnection);
 	connect(thread, &EmuThread::onReleaseRenderWindowRequested, this, &MainWindow::releaseRenderWindow, Qt::BlockingQueuedConnection);

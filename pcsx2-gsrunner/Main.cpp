@@ -175,16 +175,6 @@ void Host::ReportErrorAsync(const std::string_view title, const std::string_view
 		ERROR_LOG("ReportErrorAsync: {}", message);
 }
 
-bool Host::ConfirmMessage(const std::string_view title, const std::string_view message)
-{
-	if (!title.empty() && !message.empty())
-		ERROR_LOG("ConfirmMessage: {}: {}", title, message);
-	else if (!message.empty())
-		ERROR_LOG("ConfirmMessage: {}", message);
-
-	return true;
-}
-
 void Host::OpenURL(const std::string_view url)
 {
 	// noop
@@ -871,7 +861,7 @@ static void CPUThreadMain(VMBootParameters* params, std::atomic<int>* ret)
 		VMManager::ApplySettings();
 		GSDumpReplayer::SetIsDumpRunner(true);
 
-		if (VMManager::Initialize(*params))
+		if (VMManager::Initialize(*params) == VMBootResult::StartupSuccess)
 		{
 			// run until end
 			GSDumpReplayer::SetLoopCount(s_loop_count);
