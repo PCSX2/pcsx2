@@ -13,7 +13,10 @@
 	U16P(Cores[c].p)
 
 #define PVCP(c, v, p) \
-	PCORE(c, Voices[v].p)
+	U16P(Voices[v + (c * 24)].p)
+
+#define PVCP_SOA(c, v, p) \
+	U16P(VoiceData.p[v + (c * 24)])
 
 #define PVC(c, v)                          \
 		PVCP(c, v, Volume.Left.Reg_VOL),   \
@@ -30,8 +33,8 @@
 		PVCP(c, v, StartA),         \
 		PVCP(c, v, LoopStartA) + 1, \
 		PVCP(c, v, LoopStartA),     \
-		PVCP(c, v, NextA) + 1,      \
-		PVCP(c, v, NextA)
+		PVCP_SOA(c, v, NextA) + 1,      \
+		PVCP_SOA(c, v, NextA)
 
 #define PRAW(a) \
 	((u16*)nullptr)
