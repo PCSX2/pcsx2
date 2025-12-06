@@ -220,6 +220,11 @@ namespace Achievements
 	static rc_client_leaderboard_entry_list_t* s_leaderboard_nearby_entries;
 	static std::vector<std::pair<const rc_client_leaderboard_entry_t*, std::string>> s_leaderboard_user_icon_paths;
 	static bool s_is_showing_all_leaderboard_entries = false;
+	static u32 s_last_selected_leaderboard_id = 0;
+	static bool s_has_last_selected_leaderboard = false;
+	static bool s_restore_leaderboard_focus = false;
+	static float s_leaderboard_list_scroll = 0.0f;
+	static bool s_restore_leaderboard_scroll = false;
 
 	static std::vector<LeaderboardTrackerIndicator> s_active_leaderboard_trackers;
 	static std::vector<AchievementChallengeIndicator> s_active_challenge_indicators;
@@ -2719,6 +2724,12 @@ bool Achievements::PrepareLeaderboardsWindow()
 		return false;
 	}
 
+	s_has_last_selected_leaderboard = false;
+	s_restore_leaderboard_focus = false;
+	s_last_selected_leaderboard_id = 0;
+	s_restore_leaderboard_scroll = false;
+	s_leaderboard_list_scroll = 0.0f;
+
 	return true;
 }
 
@@ -2759,8 +2770,12 @@ void Achievements::DrawLeaderboardsWindow()
 		heading_height += LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) + spacing;
 	}
 
-	const float rank_column_width =
-		g_large_font.first->CalcTextSizeA(g_large_font.second, std::numeric_limits<float>::max(), -1.0f, "99999").x;
+	const float rank_column_width = std::max(
+		g_large_font.first->CalcTextSizeA(g_large_font.second, std::numeric_limits<float>::max(), -1.0f, "99999").x,
+		g_large_font.first
+			->CalcTextSizeA(
+				g_large_font.second, std::numeric_limits<float>::max(), -1.0f, TRANSLATE("Achievements", "Rank"))
+			.x);
 	const float name_column_width =
 		g_large_font.first->CalcTextSizeA(g_large_font.second, std::numeric_limits<float>::max(), -1.0f, "WWWWWWWWWWWWWWWWWWWWWW").x;
 	const float time_column_width =
@@ -2807,11 +2822,17 @@ void Achievements::DrawLeaderboardsWindow()
 			}
 			else
 			{
-				if (ImGuiFullscreen::FloatingButton(
-						ICON_FA_SQUARE_CARET_LEFT, 10.0f, 10.0f, -1.0f, -1.0f, 1.0f, 0.0f, true, g_large_font) ||
-					ImGuiFullscreen::WantsToCloseMenu())
+				const bool wants_to_go_back = ImGuiFullscreen::FloatingButton(
+												  ICON_FA_SQUARE_CARET_LEFT, 10.0f, 10.0f, -1.0f, -1.0f, 1.0f, 0.0f, true, g_large_font) ||
+												ImGuiFullscreen::WantsToCloseMenu();
+				if (wants_to_go_back)
 				{
 					close_leaderboard_on_exit = true;
+					if (s_has_last_selected_leaderboard)
+					{
+						s_restore_leaderboard_focus = true;
+						s_restore_leaderboard_scroll = true;
+					}
 				}
 			}
 
@@ -2902,19 +2923,25 @@ void Achievements::DrawLeaderboardsWindow()
 					"legend", false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, &visible, &hovered, &bb.Min, &bb.Max, 0, alpha);
 
 				const float midpoint = bb.Min.y + g_large_font.second + LayoutScale(4.0f);
-				float text_start_x = bb.Min.x + LayoutScale(15.0f) + padding;
+				const float icon_column_width = bb.Max.y - bb.Min.y;
+				float column_left = bb.Min.x + LayoutScale(15.0f) + padding;
 
 				ImGui::PushFont(g_large_font.first, g_large_font.second);
 
-				const ImRect rank_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
-				ImGui::RenderTextClipped(
-					rank_bb.Min, rank_bb.Max, TRANSLATE("Achievements", "Rank"), nullptr, nullptr, ImVec2(0.0f, 0.0f), &rank_bb);
-				text_start_x += rank_column_width + column_spacing;
+				const auto render_centered_heading = [&](const char* text, float width) {
+					const ImRect rect(ImVec2(column_left, bb.Min.y), ImVec2(column_left + width, midpoint));
+					ImGui::RenderTextClipped(rect.Min, rect.Max, text, nullptr, nullptr, ImVec2(0.5f, 0.0f), &rect);
+					column_left += width + column_spacing;
+				};
 
-				const ImRect user_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
+				render_centered_heading(TRANSLATE("Achievements", "Rank"), rank_column_width);
+
+				const float name_column_total_width = icon_column_width + column_spacing + name_column_width;
+				const ImRect user_bb(ImVec2(column_left + icon_column_width + column_spacing, bb.Min.y),
+					ImVec2(column_left + name_column_total_width, midpoint));
 				ImGui::RenderTextClipped(
-					user_bb.Min, user_bb.Max, TRANSLATE("Achievements", "Name"), nullptr, nullptr, ImVec2(0.0f, 0.0f), &user_bb);
-				text_start_x += name_column_width + column_spacing;
+					user_bb.Min, user_bb.Max, TRANSLATE("Achievements", "Name"), nullptr, nullptr, ImVec2(0.5f, 0.0f), &user_bb);
+				column_left += name_column_total_width + column_spacing;
 
 				static const char* value_headings[NUM_RC_CLIENT_LEADERBOARD_FORMATS] = {
 					TRANSLATE_NOOP("Achievements", "Time"),
@@ -2922,16 +2949,16 @@ void Achievements::DrawLeaderboardsWindow()
 					TRANSLATE_NOOP("Achievements", "Value"),
 				};
 
-				const ImRect score_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
-				ImGui::RenderTextClipped(score_bb.Min, score_bb.Max,
+				render_centered_heading(
 					Host::TranslateToCString(
 						"Achievements", value_headings[std::min<u8>(s_open_leaderboard->format, NUM_RC_CLIENT_LEADERBOARD_FORMATS - 1)]),
-					nullptr, nullptr, ImVec2(0.0f, 0.0f), &score_bb);
-				text_start_x += time_column_width + column_spacing;
+					time_column_width);
 
-				const ImRect date_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
-				ImGui::RenderTextClipped(
-					date_bb.Min, date_bb.Max, TRANSLATE("Achievements", "Date Submitted"), nullptr, nullptr, ImVec2(0.0f, 0.0f), &date_bb);
+				const float date_column_width = std::max(bb.Max.x - column_left, 0.0f);
+				const ImRect date_bb(ImVec2(column_left, bb.Min.y), ImVec2(column_left + date_column_width, midpoint));
+				ImGui::RenderTextClipped(date_bb.Min, date_bb.Max, TRANSLATE("Achievements", "Date Submitted"), nullptr, nullptr,
+					ImVec2(0.5f, 0.0f), &date_bb);
+				column_left += date_column_width;
 
 				ImGui::PopFont();
 
@@ -2952,6 +2979,14 @@ void Achievements::DrawLeaderboardsWindow()
 				ImVec2(display_size.x, display_size.y - heading_height - LayoutScale(ImGuiFullscreen::LAYOUT_FOOTER_HEIGHT)),
 				"leaderboards", background, 0.0f, ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, 0.0f), 0))
 		{
+			if (s_restore_leaderboard_scroll)
+			{
+				ImGui::SetScrollY(s_leaderboard_list_scroll);
+				s_restore_leaderboard_scroll = false;
+			}
+
+			const bool had_pending_focus_request = s_restore_leaderboard_focus;
+
 			ImGuiFullscreen::BeginMenuButtons();
 
 			for (u32 bucket_index = 0; bucket_index < s_leaderboard_list->num_buckets; bucket_index++)
@@ -2962,6 +2997,9 @@ void Achievements::DrawLeaderboardsWindow()
 			}
 
 			ImGuiFullscreen::EndMenuButtons();
+
+			if (had_pending_focus_request && s_restore_leaderboard_focus)
+				s_restore_leaderboard_focus = false;
 		}
 		ImGuiFullscreen::EndFullscreenWindow();
 
@@ -3072,7 +3110,9 @@ void Achievements::DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& ent
 		return;
 
 	const float midpoint = bb.Min.y + g_large_font.second + LayoutScale(4.0f);
-	float text_start_x = bb.Min.x + LayoutScale(15.0f);
+	const float column_padding = LayoutScale(15.0f);
+	const float icon_column_width = bb.Max.y - bb.Min.y;
+	float column_left = bb.Min.x + column_padding;
 	SmallString text;
 
 	text.format("{}", entry.rank);
@@ -3082,12 +3122,11 @@ void Achievements::DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& ent
 	if (is_self)
 		ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 242, 0, 255));
 
-	const ImRect rank_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
+	const ImRect rank_bb(ImVec2(column_left, bb.Min.y), ImVec2(column_left + rank_column_width, midpoint));
 	ImGui::RenderTextClipped(rank_bb.Min, rank_bb.Max, text.c_str(), text.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), &rank_bb);
-	text_start_x += rank_column_width + column_spacing;
+	column_left += rank_column_width + column_spacing;
 
-	const float icon_size = bb.Max.y - bb.Min.y;
-	const ImRect icon_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
+	const ImRect icon_bb(ImVec2(column_left, bb.Min.y), ImVec2(column_left + icon_column_width, bb.Min.y + icon_column_width));
 	GSTexture* icon_tex = nullptr;
 	if (auto it = std::find_if(s_leaderboard_user_icon_paths.begin(), s_leaderboard_user_icon_paths.end(),
 			[&entry](const auto& it) { return it.first == &entry; });
@@ -3108,18 +3147,20 @@ void Achievements::DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& ent
 	if (icon_tex)
 	{
 		ImGui::GetWindowDrawList()->AddImage(reinterpret_cast<ImTextureID>(icon_tex->GetNativeHandle()),
-			icon_bb.Min, icon_bb.Min + ImVec2(icon_size, icon_size));
+			icon_bb.Min, icon_bb.Min + ImVec2(icon_column_width, icon_column_width));
 	}
 
-	const ImRect user_bb(ImVec2(text_start_x + column_spacing + icon_size, bb.Min.y), ImVec2(bb.Max.x, midpoint));
+	column_left += icon_column_width + column_spacing;
+
+	const ImRect user_bb(ImVec2(column_left, bb.Min.y), ImVec2(column_left + name_column_width, midpoint));
 	ImGui::RenderTextClipped(user_bb.Min, user_bb.Max, entry.user, nullptr, nullptr, ImVec2(0.0f, 0.0f), &user_bb);
-	text_start_x += name_column_width + column_spacing;
+	column_left += name_column_width + column_spacing;
 
-	const ImRect score_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
+	const ImRect score_bb(ImVec2(column_left, bb.Min.y), ImVec2(column_left + time_column_width, midpoint));
 	ImGui::RenderTextClipped(score_bb.Min, score_bb.Max, entry.display, nullptr, nullptr, ImVec2(0.0f, 0.0f), &score_bb);
-	text_start_x += time_column_width + column_spacing;
+	column_left += time_column_width + column_spacing;
 
-	const ImRect time_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
+	const ImRect time_bb(ImVec2(column_left, bb.Min.y), ImVec2(bb.Max.x, midpoint));
 	const auto submit_time = FullscreenUI::TimeToPrintableString(entry.submitted);
 	ImGui::RenderTextClipped(time_bb.Min, time_bb.Max, submit_time.c_str(), submit_time.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), &time_bb);
 
@@ -3151,6 +3192,13 @@ void Achievements::DrawLeaderboardListEntry(const rc_client_leaderboard_t* lboar
 	if (!visible)
 		return;
 
+	if (s_restore_leaderboard_focus && s_has_last_selected_leaderboard && lboard->id == s_last_selected_leaderboard_id)
+	{
+		ImGui::SetItemDefaultFocus();
+		ImGui::SetScrollHereY(0.5f);
+		s_restore_leaderboard_focus = false;
+	}
+
 	const float midpoint = bb.Min.y + g_large_font.second + LayoutScale(4.0f);
 	const float text_start_x = bb.Min.x + LayoutScale(15.0f);
 	const ImRect title_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
@@ -3168,7 +3216,10 @@ void Achievements::DrawLeaderboardListEntry(const rc_client_leaderboard_t* lboar
 	}
 
 	if (pressed)
+	{
+		s_leaderboard_list_scroll = ImGui::GetScrollY();
 		OpenLeaderboard(lboard);
+	}
 }
 
 void Achievements::OpenLeaderboard(const rc_client_leaderboard_t* lboard)
@@ -3176,6 +3227,10 @@ void Achievements::OpenLeaderboard(const rc_client_leaderboard_t* lboard)
 	Console.WriteLn("Achievements: Opening leaderboard '%s' (%u)", lboard->title, lboard->id);
 
 	CloseLeaderboard();
+
+	s_last_selected_leaderboard_id = lboard->id;
+	s_has_last_selected_leaderboard = true;
+	s_restore_leaderboard_focus = false;
 
 	s_open_leaderboard = lboard;
 	s_is_showing_all_leaderboard_entries = false;
