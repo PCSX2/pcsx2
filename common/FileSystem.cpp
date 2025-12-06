@@ -42,6 +42,7 @@
 #include <limits.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/mman.h>
 #include <unistd.h>
 #endif
 
@@ -1262,6 +1263,71 @@ size_t FileSystem::ReadFileWithPartialProgress(std::FILE* fp, void* dst, size_t 
 	}
 
 	return done;
+}
+
+#ifdef _WIN32
+static std::span<const u8> MapBinaryFileForRead(HANDLE handle)
+{
+	LARGE_INTEGER size;
+	if (!GetFileSizeEx(handle, &size) || size.QuadPart == 0)
+		return {};
+	HANDLE mapping = CreateFileMappingW(handle, nullptr, PAGE_READONLY, size.HighPart, size.LowPart, nullptr);
+	if (!mapping)
+		return {};
+	void* ptr = MapViewOfFile(mapping, FILE_MAP_READ, 0, 0, 0);
+	CloseHandle(mapping);
+	return {static_cast<const u8*>(ptr), static_cast<size_t>(size.QuadPart)};
+}
+#else
+static std::span<const u8> MapBinaryFileForRead(int fd)
+{
+	struct stat s;
+	if (0 != fstat(fd, &s) || s.st_size == 0)
+		return {};
+	size_t size = static_cast<size_t>(s.st_size);
+	void* ptr = mmap(nullptr, size, PROT_READ, MAP_FILE | MAP_SHARED, fd, 0);
+	if (ptr == MAP_FAILED)
+		return {};
+	return {static_cast<const u8*>(ptr), size};
+}
+#endif
+
+std::span<const u8> FileSystem::MapBinaryFileForRead(const char* path)
+{
+#ifdef _WIN32
+	const std::wstring wpath = GetWin32Path(path);
+	HANDLE handle = CreateFileW(wpath.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0, nullptr);
+	if (handle == INVALID_HANDLE_VALUE)
+		return {};
+	std::span<const u8> result = ::MapBinaryFileForRead(handle);
+	CloseHandle(handle);
+	return result;
+#else
+	int fd = open(path, O_RDONLY);
+	if (fd <= 0)
+		return {};
+	std::span<const u8> result = ::MapBinaryFileForRead(fd);
+	close(fd);
+	return result;
+#endif
+}
+
+std::span<const u8> FileSystem::MapBinaryFileForRead(std::FILE* fp)
+{
+#ifdef _WIN32
+	return ::MapBinaryFileForRead(reinterpret_cast<HANDLE>(_get_osfhandle(_fileno(fp))));
+#else
+	return ::MapBinaryFileForRead(fileno(fp));
+#endif
+}
+
+void FileSystem::UnmapFile(std::span<const u8> file)
+{
+#ifdef _WIN32
+	UnmapViewOfFile(const_cast<u8*>(file.data()));
+#else
+	munmap(const_cast<u8*>(file.data()), file.size());
+#endif
 }
 
 bool FileSystem::EnsureDirectoryExists(const char* path, bool recursive, Error* error)
