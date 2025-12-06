@@ -7681,7 +7681,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	}
 
 	// Similar to IsRTWritten(), check if the rt will change.
-	const bool no_rt = !rt || !(DATE || m_conf.colormask.wrgba || m_channel_shuffle);
+	const bool no_rt = !rt || !(m_conf.colormask.wrgba || m_channel_shuffle);
 	const bool no_ds = !ds ||
 		// Depth will be written through the RT.
 		(!no_rt && m_cached_ctx.FRAME.FBP == m_cached_ctx.ZBUF.ZBP && !PRIM->TME && m_cached_ctx.ZBUF.ZMSK == 0 &&
