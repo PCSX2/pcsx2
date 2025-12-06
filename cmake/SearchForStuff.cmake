@@ -110,8 +110,10 @@ disable_compiler_warnings_for_target(speex)
 if(ENABLE_QT_UI)
 	find_package(Qt6 6.10.0 COMPONENTS CoreTools Core GuiTools Gui WidgetsTools Widgets LinguistTools REQUIRED)
 
-	if (Qt6_VERSION VERSION_GREATER_EQUAL 6.10.0)
-		find_package(Qt6 COMPONENTS CorePrivate GuiPrivate WidgetsPrivate REQUIRED)
+	if(NOT WIN32 AND NOT APPLE)
+		if (Qt6_VERSION VERSION_GREATER_EQUAL 6.10.0)
+			find_package(Qt6 COMPONENTS CorePrivate GuiPrivate WidgetsPrivate REQUIRED)
+		endif()
 	endif()
 
 	# The docking system for the debugger.

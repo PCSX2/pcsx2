@@ -26,8 +26,6 @@
 
 #if defined(_WIN32)
 #include "common/RedtapeWindows.h"
-#elif !defined(APPLE)
-#include <qpa/qplatformnativeinterface.h>
 #endif
 
 DisplaySurface::DisplaySurface()
