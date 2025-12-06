@@ -38,6 +38,7 @@
 #include "common/StringUtil.h"
 #include "common/ZipHelpers.h"
 
+#include "IconsFontAwesome6.h"
 #include "fmt/format.h"
 
 #include <csetjmp>
@@ -1038,14 +1039,16 @@ static bool SaveState_AddToZip(zip_t* zf, ArchiveEntryList* srclist, SaveStateSc
 	return true;
 }
 
-bool SaveState_ZipToDisk(std::unique_ptr<ArchiveEntryList> srclist, std::unique_ptr<SaveStateScreenshotData> screenshot, const char* filename)
+bool SaveState_ZipToDisk(std::unique_ptr<ArchiveEntryList> srclist, std::unique_ptr<SaveStateScreenshotData> screenshot, const char* filename, Error* error)
 {
 	zip_error_t ze = {};
 	zip_source_t* zs = zip_source_file_create(filename, 0, 0, &ze);
 	zip_t* zf = nullptr;
 	if (zs && !(zf = zip_open_from_source(zs, ZIP_CREATE | ZIP_TRUNCATE, &ze)))
 	{
-		Console.Error("Failed to open zip file '%s' for save state: %s", filename, zip_error_strerror(&ze));
+		Error::SetStringFmt(error,
+			TRANSLATE_FS("SaveState", "Failed to open zip file '{}' for save state: {}."),
+			filename, zip_error_strerror(&ze));
 
 		// have to clean up source
 		zip_source_free(zs);
@@ -1055,7 +1058,8 @@ bool SaveState_ZipToDisk(std::unique_ptr<ArchiveEntryList> srclist, std::unique_
 	// discard zip file if we fail saving something
 	if (!SaveState_AddToZip(zf, srclist.get(), screenshot.get()))
 	{
-		Console.Error("Failed to save state to zip file '%s'", filename);
+		Error::SetStringFmt(error,
+			TRANSLATE_FS("SaveState", "Failed to save state to zip file '{}'."), filename);
 		zip_discard(zf);
 		return false;
 	}
@@ -1230,4 +1234,38 @@ bool SaveState_UnzipFromDisk(const std::string& filename, Error* error)
 
 	PostLoadPrep();
 	return true;
+}
+
+void SaveState_ReportLoadErrorOSD(const std::string& message, std::optional<s32> slot, bool backup)
+{
+	std::string full_message;
+	if (slot.has_value())
+	{
+		if (backup)
+			full_message = fmt::format(
+				TRANSLATE_FS("SaveState", "Failed to load state from slot {}: {}"), *slot, message);
+		else
+			full_message = fmt::format(
+				TRANSLATE_FS("SaveState", "Failed to load state from backup slot {}: {}"), *slot, message);
+	}
+	else
+	{
+		full_message = fmt::format(TRANSLATE_FS("SaveState", "Failed to load state: {}"), message);
+	}
+
+	Host::AddIconOSDMessage("SaveState", ICON_FA_TRIANGLE_EXCLAMATION,
+		full_message, Host::OSD_WARNING_DURATION);
+}
+
+void SaveState_ReportSaveErrorOSD(const std::string& message, std::optional<s32> slot)
+{
+	std::string full_message;
+	if (slot.has_value())
+		full_message = fmt::format(
+			TRANSLATE_FS("SaveState", "Failed to save state to slot {}: {}"), *slot, message);
+	else
+		full_message = fmt::format(TRANSLATE_FS("SaveState", "Failed to save state: {}"), message);
+
+	Host::AddIconOSDMessage("SaveState", ICON_FA_TRIANGLE_EXCLAMATION,
+		full_message, Host::OSD_WARNING_DURATION);
 }

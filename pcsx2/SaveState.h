@@ -5,6 +5,7 @@
 
 #include <deque>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -53,7 +54,9 @@ class ArchiveEntryList;
 // These functions assume that the caller has paused the core thread.
 extern std::unique_ptr<ArchiveEntryList> SaveState_DownloadState(Error* error);
 extern std::unique_ptr<SaveStateScreenshotData> SaveState_SaveScreenshot();
-extern bool SaveState_ZipToDisk(std::unique_ptr<ArchiveEntryList> srclist, std::unique_ptr<SaveStateScreenshotData> screenshot, const char* filename);
+extern bool SaveState_ZipToDisk(
+	std::unique_ptr<ArchiveEntryList> srclist, std::unique_ptr<SaveStateScreenshotData> screenshot,
+	const char* filename, Error* error);
 extern bool SaveState_ReadScreenshot(const std::string& filename, u32* out_width, u32* out_height, std::vector<u32>* out_pixels);
 extern bool SaveState_UnzipFromDisk(const std::string& filename, Error* error);
 
@@ -353,3 +356,6 @@ public:
 	void FreezeMem(void* data, int size) override;
 	bool IsSaving() const override { return false; }
 };
+
+void SaveState_ReportLoadErrorOSD(const std::string& message, std::optional<s32> slot, bool backup);
+void SaveState_ReportSaveErrorOSD(const std::string& message, std::optional<s32> slot);

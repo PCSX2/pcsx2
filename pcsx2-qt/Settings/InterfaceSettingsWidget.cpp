@@ -95,15 +95,16 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* settings_dialog
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.confirmShutdown, "UI", "ConfirmShutdown", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pauseOnFocusLoss, "UI", "PauseOnFocusLoss", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pauseOnControllerDisconnection, "UI", "PauseOnControllerDisconnection", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.promptOnStateLoadSaveFailure, "UI", "PromptOnStateLoadSaveFailure", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.discordPresence, "EmuCore", "EnableDiscordPresence", false);
 
-#ifdef __linux__ 	// Mouse locking is only supported on X11
+#ifdef __linux__ // Mouse locking is only supported on X11
 	const bool mouse_lock_supported = QGuiApplication::platformName().toLower() == "xcb";
 #else
 	const bool mouse_lock_supported = true;
 #endif
 
-	if(mouse_lock_supported)
+	if (mouse_lock_supported)
 	{
 		SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.mouseLock, "EmuCore", "EnableMouseLock", false);
 		connect(m_ui.mouseLock, &QCheckBox::checkStateChanged, [](Qt::CheckState state) {
@@ -194,6 +195,8 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* settings_dialog
 		   "and unpauses when you switch back."));
 	dialog()->registerWidgetHelp(m_ui.pauseOnControllerDisconnection, tr("Pause On Controller Disconnection"),
 		tr("Unchecked"), tr("Pauses the emulator when a controller with bindings is disconnected."));
+	dialog()->registerWidgetHelp(m_ui.promptOnStateLoadSaveFailure, tr("Pause On State Load/Save Failure"),
+		tr("Checked"), tr("Display a modal dialog when a save state load/save operation fails."));
 	dialog()->registerWidgetHelp(m_ui.startFullscreen, tr("Start Fullscreen"), tr("Unchecked"),
 		tr("Automatically switches to fullscreen mode when a game is started."));
 	dialog()->registerWidgetHelp(m_ui.hideMouseCursor, tr("Hide Cursor In Fullscreen"), tr("Unchecked"),
@@ -222,7 +225,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* settings_dialog
 	dialog()->registerWidgetHelp(
 		m_ui.backgroundBrowse, tr("Game List Background"), tr("None"),
 		tr("Enable an animated/static background on the game list (where you launch your games).<br>"
-		"This background is only visible in the library and will be hidden once a game is launched. It will also be paused when it's not in focus."));
+		   "This background is only visible in the library and will be hidden once a game is launched. It will also be paused when it's not in focus."));
 	dialog()->registerWidgetHelp(
 		m_ui.backgroundReset, tr("Disable/Reset Game List Background"), tr("None"),
 		tr("Disable and reset the currently applied game list background."));
