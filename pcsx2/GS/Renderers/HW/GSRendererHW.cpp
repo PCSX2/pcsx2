@@ -5876,9 +5876,9 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 		case AccBlendLevel::Basic:
 		default:
 			// Prefer sw blend if possible.
-			color_dest_blend &= !prefer_sw_blend;
-			color_dest_blend2 &= !prefer_sw_blend;
-			blend_zero_to_one_range &= !prefer_sw_blend;
+			color_dest_blend &= !(m_channel_shuffle || m_conf.ps.dither);
+			color_dest_blend2 &= !(prefer_sw_blend || m_conf.ps.dither);
+			blend_zero_to_one_range &= !(prefer_sw_blend || m_conf.ps.dither);
 			accumulation_blend &= !prefer_sw_blend;
 			// Enable sw blending for barriers.
 			sw_blending |= blend_requires_barrier || prefer_sw_blend;
