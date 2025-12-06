@@ -111,6 +111,13 @@ ShortcutCreationDialog::ShortcutCreationDialog(QWidget* parent, const QString& t
 			}
 		}
 
+		if (m_ui.loadStateFileToggle->isChecked())
+		if (m_ui.loadStateFileToggle->isChecked() && !m_ui.loadStateFilePath->text().isEmpty())
+		{
+			args.push_back("-statefile");
+			args.push_back(m_ui.loadStateFilePath->text().toStdString());
+		}
+
 		if (m_ui.fullscreenMode->isChecked())
 			args.push_back(m_ui.fullscreenModeDropdown->currentIndex() ? "-nofullscreen" : "-fullscreen");
 
@@ -313,9 +320,6 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 		return;
 	}
 
-	if (is_flatpak) // Flatpak
-		executable_path = "flatpak run net.pcsx2.PCSX2";
-
 	// Find home directory
 	std::string link_path;
 	const char* home = std::getenv("HOME");
@@ -344,11 +348,26 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 		return;
 	}
 
-	// Checks if a shortcut already exist
-	if (FileSystem::FileExists(link_path.c_str()))
+	// Copy PCSX2 icon
+	std::string icon_dest;
+	if (xdg_data_home)
+		icon_dest = fmt::format("{}/icons/hicolor/512x512/apps/", xdg_data_home);
+	else
+		icon_dest = fmt::format("{}/.local/share/icons/hicolor/512x512/apps/", home);
+
+	std::string icon_name;
+	if (is_flatpak) // Flatpak
 	{
-		QMessageBox::critical(this, tr("Failed to create shortcut"), tr("A shortcut with the same name already exists."), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
-		return;
+		executable_path = "flatpak run net.pcsx2.PCSX2";
+		icon_name = "net.pcsx2.PCSX2";
+
+	}
+	else
+	{
+		icon_name = "PCSX2";
+		std::string icon_path = fmt::format("{}/{}.png", icon_dest, icon_name).c_str();
+		if (FileSystem::EnsureDirectoryExists(icon_dest.c_str(), true))
+			FileSystem::CopyFilePath(Path::Combine(EmuFolders::Resources, "icons/AppIconLarge.png").c_str(), icon_path.c_str(), false);
 	}
 
 	// Shortcut CmdLine Args
@@ -357,24 +376,12 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 		lossless &= ShortcutCreationDialog::EscapeShortcutCommandLine(&arg);
 
 	if (!lossless)
-		QMessageBox::warning(this, tr("Failed to create shortcut"), tr("File path contains invalid character(s). The resulting shortcut may not work."), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
+	{
+		QMessageBox::warning(this, tr("Failed to create shortcut"), tr("File path contains invalid character(s)."), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
+		return;
+	}
 
 	std::string cmdline = StringUtil::JoinString(passed_cli_args.begin(), passed_cli_args.end(), " ");
-
-	if (!is_flatpak)
-	{
-		// Copy PCSX2 icon
-		std::string icon_dest;
-		if (xdg_data_home)
-			icon_dest = fmt::format("{}/icons/hicolor/512x512/apps/", xdg_data_home);
-		else
-			icon_dest = fmt::format("{}/.local/share/icons/hicolor/512x512/apps/", home);
-
-		std::string icon_name = "PCSX2.png";
-		std::string icon_path = fmt::format("{}/{}", icon_dest, icon_name).c_str();
-		if (FileSystem::EnsureDirectoryExists(icon_dest.c_str(), true))
-			FileSystem::CopyFilePath(Path::Combine(EmuFolders::Resources, "icons/AppIconLarge.png").c_str(), icon_path.c_str(), false);
-	}
 
 	// Further string sanitization
 	if (!is_flatpak)
@@ -393,7 +400,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 		"StartupWMClass=PCSX2\n"
 		"Exec=" + final_args + "\n"
 		"Name=" + clean_name + "\n"
-		"Icon=net.pcsx2.PCSX2\n"
+		"Icon=" + icon_name + "\n"
 		"Categories=Game;Emulator;\n";
 	std::string_view sv(file_content);
 
