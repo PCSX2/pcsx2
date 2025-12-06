@@ -294,6 +294,10 @@ private:
 	bool m_is_exclusive_fullscreen = false;
 	bool m_device_lost = false;
 
+	// RDNA1/2 dosn't like us using aliased resources for feedback loops, instead we can just use the render target resource directly as the shader resource.
+	// Dispite MS saying that shader resources need to be in the shader resource state, nothing actually seems to care about them being in the Render target state.
+	bool m_direct_feedback = false;
+
 	ComPtr<ID3D12RootSignature> m_tfx_root_signature;
 	ComPtr<ID3D12RootSignature> m_utility_root_signature;
 
@@ -456,7 +460,7 @@ public:
 	void IASetVertexBuffer(const void* vertex, size_t stride, size_t count);
 	void IASetIndexBuffer(const void* index, size_t count);
 
-	void PSSetShaderResource(int i, GSTexture* sr, bool check_state);
+	void PSSetShaderResource(int i, GSTexture* sr, bool check_state, bool feedback = false);
 	void PSSetSampler(GSHWDrawConfig::SamplerSelector sel);
 
 	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i& scissor);
@@ -466,7 +470,7 @@ public:
 	bool BindDrawPipeline(const PipelineSelector& p);
 
 	void RenderHW(GSHWDrawConfig& config) override;
-	void SendHWDraw(const PipelineSelector& pipe, const GSHWDrawConfig& config, GSTexture12* draw_rt_clone, GSTexture12* draw_rt, const bool one_barrier, const bool full_barrier, const bool skip_first_barrier);
+	void SendHWDraw(const PipelineSelector& pipe, const GSHWDrawConfig& config, GSTexture12* draw_rt, const bool feedback, const bool one_barrier, const bool full_barrier, const bool skip_first_barrier);
 
 	void UpdateHWPipelineSelector(GSHWDrawConfig& config);
 	void UploadHWDrawVerticesAndIndices(const GSHWDrawConfig& config);
