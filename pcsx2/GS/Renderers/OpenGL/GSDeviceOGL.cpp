@@ -2305,25 +2305,34 @@ void GSDeviceOGL::OMSetBlendState(bool enable, GLenum src_factor, GLenum dst_fac
 
 void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i* scissor)
 {
-	g_perfmon.Put(GSPerfMon::RenderPasses, static_cast<double>(GLState::rt != rt || GLState::ds != ds));
+	const bool rt_changed = (rt != GLState::rt);
+	const bool ds_changed = (ds != GLState::ds);
 
+	g_perfmon.Put(GSPerfMon::RenderPasses, static_cast<double>(rt_changed || ds_changed));
 	// Split up to avoid unbind/bind calls when clearing.
 
 	OMSetFBO(m_fbo);
+
+	GLState::rt_written = false;
+	GLState::ds_written = false;
+
 	if (rt)
+	{
 		OMAttachRt(rt);
+		CommitClear(rt, false);
+		GLState::rt_written = rt_changed;
+	}
 	else
 		OMAttachRt();
 
 	if (ds)
+	{
 		OMAttachDs(ds);
+		CommitClear(ds, false);
+		GLState::ds_written = ds_changed;
+	}
 	else
 		OMAttachDs();
-
-	if (rt)
-		CommitClear(rt, false);
-	if (ds)
-		CommitClear(ds, false);
 
 	if (rt || ds)
 	{
@@ -2578,14 +2587,6 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	if (config.require_one_barrier || !m_features.texture_barrier)
 		rt_hazard_barrier = false; // Already in place or not available
 
-	// Be careful of the rt already being bound and the blend using the RT without a barrier.
-	if (rt_hazard_barrier)
-	{
-		// Ensure all depth writes are finished before sampling
-		GL_INS("GL: Texture barrier to flush depth or rt before reading");
-		g_perfmon.Put(GSPerfMon::Barriers, 1);
-		glTextureBarrier();
-	}
 	// additional non-pipeline config stuff
 	const bool point_size_enabled = config.vs.point_size;
 	if (GLState::point_size != point_size_enabled)
@@ -2644,15 +2645,27 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	// avoid changing framebuffer just to switch from rt+depth to rt and vice versa
 	GSTexture* draw_rt = colclip_rt ? colclip_rt : config.rt;
 	GSTexture* draw_ds = config.ds;
+	bool fb_optimization_needs_barrier = false;
 	if (!draw_rt && GLState::rt && GLState::ds == draw_ds && config.tex != GLState::rt &&
 		GLState::rt->GetSize() == draw_ds->GetSize())
 	{
 		draw_rt = GLState::rt;
+		fb_optimization_needs_barrier = !GLState::rt_written;
 	}
 	else if (!draw_ds && GLState::ds && GLState::rt == draw_rt && config.tex != GLState::ds &&
 			 GLState::ds->GetSize() == draw_rt->GetSize())
 	{
 		draw_ds = GLState::ds;
+		fb_optimization_needs_barrier = !GLState::ds_written;
+	}
+
+	// Be careful of the rt already being bound and the blend using the RT without a barrier.
+	if (fb_optimization_needs_barrier && rt_hazard_barrier)
+	{
+		// Ensure all depth writes are finished before sampling
+		GL_INS("GL: Texture barrier to flush depth or rt before reading");
+		g_perfmon.Put(GSPerfMon::Barriers, 1);
+		glTextureBarrier();
 	}
 
 	OMSetRenderTargets(draw_rt, draw_ds, &config.scissor);
