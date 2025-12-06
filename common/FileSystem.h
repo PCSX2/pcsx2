@@ -13,6 +13,11 @@
 #include <vector>
 #include <sys/stat.h>
 
+#if defined(_WIN32)
+#include "common/RedtapeWindows.h"
+#include <guiddef.h>
+#endif
+
 class Error;
 class ProgressCallback;
 
@@ -194,9 +199,20 @@ namespace FileSystem
 	bool DeleteSymbolicLink(const char* path, Error* error = nullptr);
 
 #ifdef _WIN32
-	// Path limit remover, but also converts to a wide string at the same time.
+	/// Path limit remover, but also converts to a wide string at the same time.
 	bool GetWin32Path(std::wstring* dest, std::string_view str);
 	std::wstring GetWin32Path(std::string_view str);
+
+	/// Creates an IShellLink (.lnk shortcut file); path_suffix assumed absolute path if no base_directory_ID supplied.
+	bool CreateWin32IShellLink(std::string_view path_suffix, std::string_view launch_arguments,
+		std::string_view description = "", const GUID& base_directory_ID = {0});
+#endif
+
+#if defined(__linux__) or defined(__FreeBSD__)
+	/// Creates a Linux desktop file (.desktop). Also usable on FreeBSD, as FreeBSD uses Linux DEs.
+	bool CreateLinuxDesktopFile(std::string_view destination, std::string_view exec, std::string_view name,
+		std::string_view comment, std::string_view icon = "net.pcsx2.PCSX2",
+		std::string_view categories = "Game;Emulator;", std::string_view terminal = "false");
 #endif
 
 	/// Abstracts a POSIX file lock.
