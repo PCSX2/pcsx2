@@ -256,29 +256,16 @@ struct V_Voice
 	// Sample pointer (19:12 bit fixed point)
 	s32 SP;
 
-	// Sample pointer for Cubic Interpolation
-	// Cubic interpolation mixes a sample behind Linear, so that it
-	// can have sample data to either side of the end points from which
-	// to extrapolate.  This SP represents that late sample position.
-	s32 SPc;
-
-	// Previous sample values - used for interpolation
-	// Inverted order of these members to match the access order in the
-	//   code (might improve cache hits).
-	s32 PV4;
-	s32 PV3;
-	s32 PV2;
-	s32 PV1;
-
 	// Last outputted audio value, used for voice modulation.
 	s32 OutX;
-	s32 NextCrest; // temp value for Crest calculation
 
 	// SBuffer now points directly to an ADPCM cache entry.
 	s16* SBuffer;
 
-	// sample position within the current decoded packet.
-	s32 SCurrent;
+	// Each voice has a buffer of decoded samples
+	s32 DecodeFifo[32];
+	u32 DecPosWrite;
+	u32 DecPosRead;
 
 	// it takes a few ticks for voices to start on the real SPU2?
 	void Start();
