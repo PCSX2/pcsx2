@@ -11,10 +11,11 @@ namespace usb_pad
 {
 	enum TrainDeviceTypes
 	{
-		TRAIN_TYPE2, // TCPP20009 or similar
-		TRAIN_SHINKANSEN, // TCPP20011
-		TRAIN_RYOJOUHEN, // TCPP20014
-		TRAIN_COUNT,
+		TRAIN_TYPE2, // TCPP-20009 or similar
+		TRAIN_SHINKANSEN, // TCPP-20011
+		TRAIN_RYOJOUHEN, // TCPP-20014
+		TRAIN_MASCON, // COTM-02001
+		MASTER_CONTROLLER, // VOK-00105 or VOK-00106 with OGCW-10001 adapter
 	};
 
 	class TrainDevice final : public DeviceProxy
@@ -39,7 +40,7 @@ namespace usb_pad
 		u8 control;
 		u8 brake;
 		u8 power;
-		u8 horn;
+		u8 horn; // pedal
 		u8 hat;
 		u8 buttons;
 	};
@@ -49,7 +50,7 @@ namespace usb_pad
 	{
 		u8 brake;
 		u8 power;
-		u8 horn;
+		u8 horn; // pedal
 		u8 hat;
 		u8 buttons;
 		u8 pad;
@@ -60,12 +61,37 @@ namespace usb_pad
 	{
 		u8 brake;
 		u8 power;
-		u8 horn;
+		u8 horn; // pedal
 		u8 hat;
 		u8 buttons;
 		u8 pad[3];
 	};
 	static_assert(sizeof(TrainConData_Ryojouhen) == 8);
+
+	struct TrainConData_TrainMascon
+	{
+		u8 one;
+
+		u8 handle : 4;
+		u8 reverser : 4;
+
+		u8 ats : 1;
+		u8 close : 1;
+		u8 button_a_soft : 1;
+		u8 button_a_hard : 1;
+		u8 button_b : 1;
+		u8 button_c : 1;
+		u8 : 2;
+
+		u8 start : 1;
+		u8 select : 1;
+		u8 dpad_up : 1;
+		u8 dpad_down : 1;
+		u8 dpad_left : 1;
+		u8 dpad_right : 1;
+		u8 : 2;
+	};
+	static_assert(sizeof(TrainConData_TrainMascon) == 4);
 #pragma pack(pop)
 
 	struct TrainDeviceState
@@ -75,6 +101,7 @@ namespace usb_pad
 
 		void Reset();
 		void UpdateHatSwitch() noexcept;
+		void UpdateHandles(u8 max_power, u8 max_brake);
 
 		USBDevice dev{};
 		USBDesc desc{};
@@ -95,12 +122,24 @@ namespace usb_pad
 			u8 power; // 255 is fully applied
 			u8 brake; // 255 is fully applied
 			u8 hatswitch; // direction
-			u8 buttons; // active high
+			u16 buttons; // active high
 		} data = {};
+
+		// Master Controller
+		const char* mc_handle[16] = {"TSB20", "TSB30", "TSB40", "TSE99", "TSA05", "TSA15", "TSA25", "TSA35", "TSA45", "TSA50", "TSA55", "TSA65", "TSA75", "TSA85", "TSA95", "TSB60"};
+		const char* mc_reverser[3] = {"TSG00", "TSG50", "TSG99"};
+		const char* mc_button_pressed[4] = {"TSY99", "TSX99", "TSZ99", "TSK99"};
+		const char* mc_button_released[4] = {"TSY00", "TSX00", "TSZ00", "TSK00"};
+		u8 power_notches;
+		u8 brake_notches;
+
+		u16 prev_buttons;
+		s8 last_handle = -1, handle = 0;
+		s8 last_reverser = -1, reverser = 1;
 	};
 
 	// Taito Densha Controllers as described at:
-	// https://marcriera.github.io/ddgo-controller-docs/controllers/usb/
+	// https://traincontrollerdb.marcriera.cat/hardware/#usb
 #define DEFINE_DCT_DEV_DESCRIPTOR(prefix, subclass, product) \
 	static const uint8_t prefix##_dev_descriptor[] = { \
 		/* bLength             */ USB_DEVICE_DESC_SIZE, \
@@ -184,5 +223,115 @@ namespace usb_pad
 
 	// dct03_dev_descriptor
 	DEFINE_DCT_DEV_DESCRIPTOR(dct03, 0xFF, 0x0007);
+
+	// ---- Train Mascon ----
+
+	static const uint8_t train_mascon_dev_descriptor[] = {
+		0x12,        // bLength
+		0x01,        // bDescriptorType (Device)
+		0x10, 0x01,  // bcdUSB 1.10
+		0x00,        // bDeviceClass (Use class information in the Interface Descriptors)
+		0x00,        // bDeviceSubClass
+		0x00,        // bDeviceProtocol
+		0x08,        // bMaxPacketSize0 8
+		0x06, 0x1C,  // idVendor 0x1C06
+		0xA7, 0x77,  // idProduct 0x77A7
+		0x02, 0x02,  // bcdDevice 2.02
+		0x01,        // iManufacturer (String Index)
+		0x02,        // iProduct (String Index)
+		0x03,        // iSerialNumber (String Index)
+		0x01,        // bNumConfigurations 1
+	};
+
+	static const uint8_t train_mascon_config_descriptor[] = {
+		0x09,        // bLength
+		0x02,        // bDescriptorType (Configuration)
+		0x19, 0x00,  // wTotalLength 25
+		0x01,        // bNumInterfaces 1
+		0x01,        // bConfigurationValue
+		0x04,        // iConfiguration (String Index)
+		0xA0,        // bmAttributes Remote Wakeup
+		0x32,        // bMaxPower 100mA
+
+		0x09,        // bLength
+		0x04,        // bDescriptorType (Interface)
+		0x00,        // bInterfaceNumber 0
+		0x00,        // bAlternateSetting
+		0x01,        // bNumEndpoints 1
+		0x00,        // bInterfaceClass
+		0x00,        // bInterfaceSubClass
+		0x00,        // bInterfaceProtocol
+		0x00,        // iInterface (String Index)
+
+		0x07,        // bLength
+		0x05,        // bDescriptorType (Endpoint)
+		0x81,        // bEndpointAddress (IN/D2H)
+		0x03,        // bmAttributes (Interrupt)
+		0x08, 0x00,  // wMaxPacketSize 8
+		0x14,        // bInterval 20 (unit depends on device speed)
+	};
+
+	// ---- Master Controller ----
+	// Implements a generic PL2303 adapter.
+	// Replace with official OGCW-10001 descriptors when available.
+
+	static const uint8_t master_controller_dev_descriptor[] = {
+		0x12,        // bLength
+		0x01,        // bDescriptorType (Device)
+		0x10, 0x01,  // bcdUSB 1.10
+		0x00,        // bDeviceClass (Use class information in the Interface Descriptors)
+		0x00,        // bDeviceSubClass
+		0x00,        // bDeviceProtocol
+		0x40,        // bMaxPacketSize0 64
+		0x7B, 0x06,  // idVendor 0x067B
+		0x03, 0x23,  // idProduct 0x2303
+		0x00, 0x03,  // bcdDevice 3.00
+		0x01,        // iManufacturer (String Index)
+		0x02,        // iProduct (String Index)
+		0x00,        // iSerialNumber (String Index)
+		0x01,        // bNumConfigurations 1
+	};
+
+	static const uint8_t master_controller_config_descriptor[] = {
+		0x09,        // bLength
+		0x02,        // bDescriptorType (Configuration)
+		0x27, 0x00,  // wTotalLength 39
+		0x01,        // bNumInterfaces 1
+		0x01,        // bConfigurationValue
+		0x00,        // iConfiguration (String Index)
+		0x80,        // bmAttributes
+		0x32,        // bMaxPower 100mA
+
+		0x09,        // bLength
+		0x04,        // bDescriptorType (Interface)
+		0x00,        // bInterfaceNumber 0
+		0x00,        // bAlternateSetting
+		0x03,        // bNumEndpoints 3
+		0xFF,        // bInterfaceClass
+		0x00,        // bInterfaceSubClass
+		0x00,        // bInterfaceProtocol
+		0x00,        // iInterface (String Index)
+
+		0x07,        // bLength
+		0x05,        // bDescriptorType (Endpoint)
+		0x81,        // bEndpointAddress (IN/D2H)
+		0x03,        // bmAttributes (Interrupt)
+		0x0A, 0x00,  // wMaxPacketSize 10
+		0x01,        // bInterval 1 (unit depends on device speed)
+
+		0x07,        // bLength
+		0x05,        // bDescriptorType (Endpoint)
+		0x02,        // bEndpointAddress (OUT/H2D)
+		0x02,        // bmAttributes (Bulk)
+		0x40, 0x00,  // wMaxPacketSize 64
+		0x00,        // bInterval 0 (unit depends on device speed)
+
+		0x07,        // bLength
+		0x05,        // bDescriptorType (Endpoint)
+		0x83,        // bEndpointAddress (IN/D2H)
+		0x02,        // bmAttributes (Bulk)
+		0x40, 0x00,  // wMaxPacketSize 64
+		0x00,        // bInterval 0 (unit depends on device speed)
+	};
 
 } // namespace usb_pad
