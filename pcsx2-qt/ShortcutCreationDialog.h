@@ -22,8 +22,9 @@ public:
 	bool EscapeShortcutCommandLine(std::string* cmdline);
 
 protected:
-	QString m_title;
-	QString m_path;
-	bool m_desktop;
+	const QString m_title;
+	const QString m_path;
+
+private:
 	Ui::ShortcutCreationDialog m_ui;
 };

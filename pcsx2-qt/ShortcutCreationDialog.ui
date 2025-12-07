@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>500</width>
-    <height>685</height>
+    <height>700</height>
    </rect>
   </property>
   <layout class="QGridLayout" name="shortcutLayout">
@@ -59,6 +59,9 @@
          </item>
          <item row="0" column="1">
           <widget class="QComboBox" name="fullscreenModeDropdown">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <item>
             <property name="text">
              <string>Force Enable</string>
@@ -82,10 +85,17 @@
        </widget>
       </item>
       <item row="3" column="2" colspan="2">
-       <widget class="QLineEdit" name="gameArgs"/>
+       <widget class="QLineEdit" name="gameArgs">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+       </widget>
       </item>
       <item row="4" column="2" colspan="2">
        <widget class="QComboBox" name="bootOptionDropdown">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <item>
          <property name="text">
           <string>Fast Boot</string>
@@ -107,13 +117,20 @@
       </item>
       <item row="2" column="3">
        <widget class="QPushButton" name="overrideBootELFButton">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="text">
          <string>Browse...</string>
         </property>
        </widget>
       </item>
       <item row="2" column="2">
-       <widget class="QLineEdit" name="overrideBootELFPath"/>
+       <widget class="QLineEdit" name="overrideBootELFPath">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+       </widget>
       </item>
       <item row="10" column="0" colspan="4">
        <widget class="QGroupBox" name="saveStateGroup">
@@ -123,6 +140,9 @@
         <layout class="QGridLayout" name="savestateGridLayout">
          <item row="1" column="1">
           <widget class="QSpinBox" name="loadStateIndex">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="showGroupSeparator" stdset="0">
             <bool>false</bool>
            </property>
@@ -132,7 +152,11 @@
           </widget>
          </item>
          <item row="2" column="1">
-          <widget class="QLineEdit" name="loadStateFilePath"/>
+          <widget class="QLineEdit" name="loadStateFilePath">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+          </widget>
          </item>
          <item row="0" column="0">
           <widget class="QRadioButton" name="loadStateNone">
@@ -160,6 +184,9 @@
          </item>
          <item row="2" column="2">
           <widget class="QPushButton" name="loadStateFileBrowse">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="text">
             <string>Browse...</string>
            </property>
@@ -194,7 +221,7 @@
          <item row="0" column="0">
           <widget class="QLabel" name="customArgsInstruction">
            <property name="text">
-            <string>You may add additional (space-separated) &lt;a href=&quot;https://pcsx2.net/docs/post/cli/&quot;&gt;custom arguments&lt;/a&gt; that are not listed above here:</string>
+            <string>You may add additional (space-separated) &lt;a href=&quot;https://pcsx2.net/docs/advanced/cli/&quot;&gt;custom arguments&lt;/a&gt; that are not listed above here:</string>
            </property>
            <property name="textFormat">
             <enum>Qt::TextFormat::RichText</enum>

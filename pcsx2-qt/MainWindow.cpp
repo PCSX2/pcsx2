@@ -1734,8 +1734,8 @@ void MainWindow::onCreateGameShortcutTriggered()
 
 	const QString title = QString::fromStdString(entry->GetTitle());
 	const QString path = QString::fromStdString(entry->path);
-	VMLock lock(pauseAndLockVM());
-	ShortcutCreationDialog dlg(lock.getDialogParent(), title, path);
+
+	ShortcutCreationDialog dlg(this, title, path);
 	dlg.exec();
 }
 #endif
