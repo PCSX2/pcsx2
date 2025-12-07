@@ -4003,7 +4003,6 @@ __forceinline bool GSState::EarlyDetectShuffle(u32 prim)
 
 	const GSVertex* RESTRICT vertex = &m_vertex.buff[0];
 	const u16* RESTRICT index = &m_index.buff[0];
-	const GSVector4i& o = m_xyof;
 
 	if (GSLocalMemory::m_psm[m_context->FRAME.PSM].bpp == 16 && GSLocalMemory::m_psm[m_context->TEX0.PSM].bpp == 16)
 	{
@@ -4023,6 +4022,7 @@ __forceinline bool GSState::EarlyDetectShuffle(u32 prim)
 		{
 			const float q0 = vertex[index[0]].RGBAQ.Q == 0.0f ? FLT_MIN : vertex[index[0]].RGBAQ.Q;
 			u0 = static_cast<int>((1 << m_context->TEX0.TW) * (vertex[index[0]].ST.S / q0) * 16.0f);
+
 			const float qn = m_v.RGBAQ.Q == 0.0f ? FLT_MIN : m_v.RGBAQ.Q;
 			un = static_cast<int>((1 << m_context->TEX0.TW) * (m_v.ST.S / qn) * 16.0f);
 		}
@@ -4044,6 +4044,7 @@ __forceinline bool GSState::EarlyDetectShuffle(u32 prim)
 
 		const int x0 = static_cast<int>(vertex[index[0]].XYZ.X) - static_cast<int>(m_context->XYOFFSET.OFX);
 		const int y0 = static_cast<int>(vertex[index[0]].XYZ.Y) - static_cast<int>(m_context->XYOFFSET.OFY);
+
 		const int x1 = static_cast<int>(vertex[index[1]].XYZ.X) - static_cast<int>(m_context->XYOFFSET.OFX);
 		const int y1 = static_cast<int>(vertex[index[1]].XYZ.Y) - static_cast<int>(m_context->XYOFFSET.OFY);
 
@@ -4053,17 +4054,20 @@ __forceinline bool GSState::EarlyDetectShuffle(u32 prim)
 		{
 			u0 = static_cast<int>(vertex[index[0]].U);
 			v0 = static_cast<int>(vertex[index[0]].V);
+
 			u1 = static_cast<int>(vertex[index[1]].U);
 			v1 = static_cast<int>(vertex[index[1]].V);
 		}
 		else
 		{
-			const float q0 = vertex[index[0]].RGBAQ.Q == 0.0f ? FLT_MIN : vertex[index[0]].RGBAQ.Q;
-			u0 = static_cast<int>((1 << m_context->TEX0.TW) * (vertex[index[0]].ST.S / q0) * 16.0f);
-			v0 = static_cast<int>((1 << m_context->TEX0.TH) * (vertex[index[0]].ST.T / q0) * 16.0f);
+			// Sprites have constant Q so use the second.
 			const float q1 = vertex[index[1]].RGBAQ.Q == 0.0f ? FLT_MIN : vertex[index[1]].RGBAQ.Q;
-			u1 = static_cast<int>((1 << m_context->TEX0.TW) * (vertex[index[1]].ST.S / q0) * 16.0f);
-			v1 = static_cast<int>((1 << m_context->TEX0.TH) * (vertex[index[1]].ST.T / q0) * 16.0f);
+
+			u0 = static_cast<int>((1 << m_context->TEX0.TW) * (vertex[index[0]].ST.S / q1) * 16.0f);
+			v0 = static_cast<int>((1 << m_context->TEX0.TH) * (vertex[index[0]].ST.T / q1) * 16.0f);
+
+			u1 = static_cast<int>((1 << m_context->TEX0.TW) * (vertex[index[1]].ST.S / q1) * 16.0f);
+			v1 = static_cast<int>((1 << m_context->TEX0.TH) * (vertex[index[1]].ST.T / q1) * 16.0f);
 		}
 
 		// Check that the source and destination sprite are exactly 8 pixel squares.
@@ -4093,6 +4097,7 @@ __forceinline bool GSState::EarlyDetectShuffle(u32 prim)
 
 		const int x0 = static_cast<int>(vertex[index[0]].XYZ.X) - static_cast<int>(m_context->XYOFFSET.OFX);
 		const int y0 = static_cast<int>(vertex[index[0]].XYZ.Y) - static_cast<int>(m_context->XYOFFSET.OFY);
+
 		const int x1 = static_cast<int>(vertex[index[1]].XYZ.X) - static_cast<int>(m_context->XYOFFSET.OFX);
 		const int y1 = static_cast<int>(vertex[index[1]].XYZ.Y) - static_cast<int>(m_context->XYOFFSET.OFY);
 
@@ -4102,17 +4107,20 @@ __forceinline bool GSState::EarlyDetectShuffle(u32 prim)
 		{
 			u0 = static_cast<int>(vertex[index[0]].U);
 			v0 = static_cast<int>(vertex[index[0]].V);
+
 			u1 = static_cast<int>(vertex[index[1]].U);
 			v1 = static_cast<int>(vertex[index[1]].V);
 		}
 		else
 		{
-			const float q0 = vertex[index[0]].RGBAQ.Q == 0.0f ? FLT_MIN : vertex[index[0]].RGBAQ.Q;
-			u0 = static_cast<int>((1 << m_context->TEX0.TW) * (vertex[index[0]].ST.S / q0) * 16.0f);
-			v0 = static_cast<int>((1 << m_context->TEX0.TH) * (vertex[index[0]].ST.T / q0) * 16.0f);
+			// Sprites have constant Q so use the second.
 			const float q1 = vertex[index[1]].RGBAQ.Q == 0.0f ? FLT_MIN : vertex[index[1]].RGBAQ.Q;
-			u1 = static_cast<int>((1 << m_context->TEX0.TW) * (vertex[index[1]].ST.S / q0) * 16.0f);
-			v1 = static_cast<int>((1 << m_context->TEX0.TH) * (vertex[index[1]].ST.T / q0) * 16.0f);
+			
+			u0 = static_cast<int>((1 << m_context->TEX0.TW) * (vertex[index[0]].ST.S / q1) * 16.0f);
+			v0 = static_cast<int>((1 << m_context->TEX0.TH) * (vertex[index[0]].ST.T / q1) * 16.0f);
+
+			u1 = static_cast<int>((1 << m_context->TEX0.TW) * (vertex[index[1]].ST.S / q1) * 16.0f);
+			v1 = static_cast<int>((1 << m_context->TEX0.TH) * (vertex[index[1]].ST.T / q1) * 16.0f);
 		}
 
 		// Check that the source and destination sprite are exactly 8 pixel squares.
