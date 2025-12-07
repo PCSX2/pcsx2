@@ -1603,9 +1603,11 @@ SCAJ-20052:
     - "SCAJ-20001"
 SCAJ-20055:
   name: "Battle Gear 3"
-  region: "NTSC-Unk"
+  region: "NTSC-J"
   clampModes:
     vuClampMode: 3 # Stops car from falling through track.
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes broken splitscreen mode.
 SCAJ-20056:
   name: "Bujingai"
   region: "NTSC-Unk"
@@ -29110,7 +29112,7 @@ SLES-55191:
     nativeScaling: 1 # Fixes post-processing smoothness and position.
     getSkipCount: "GSC_GuitarHero"
 SLES-55192:
-  name: "Steam Express"
+  name: "Nitrobike"
   region: "PAL-M5"
 SLES-55193:
   name: "Disney/Pixar WALL-E"
@@ -43481,6 +43483,8 @@ SLPM-65434:
   region: "NTSC-J"
   clampModes:
     vuClampMode: 3 # Stops car from falling through track.
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes broken splitscreen mode.
 SLPM-65435:
   name: "北へ。～Diamond Dust～"
   name-sort: "きたへ Diamond Dust"
