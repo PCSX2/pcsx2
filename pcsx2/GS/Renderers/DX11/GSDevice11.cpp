@@ -1908,7 +1908,7 @@ void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, u8 
 			} };
 			// clang-format on
 
-			bd.RenderTarget[0].BlendEnable = TRUE;
+			bd.RenderTarget[0].BlendEnable = bsel.blend.enable;
 			bd.RenderTarget[0].BlendOp = s_d3d11_blend_ops[bsel.blend.op];
 			bd.RenderTarget[0].SrcBlend = s_d3d11_blend_factors[bsel.blend.src_factor];
 			bd.RenderTarget[0].DestBlend = s_d3d11_blend_factors[bsel.blend.dst_factor];
@@ -2765,6 +2765,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 
 	if (config.blend_multi_pass.enable)
 	{
+		config.ps.no_color1 = config.blend_multi_pass.no_color1;
 		config.ps.blend_hw = config.blend_multi_pass.blend_hw;
 		config.ps.dither = config.blend_multi_pass.dither;
 		SetupPS(config.ps, &config.cb_ps, config.sampler);

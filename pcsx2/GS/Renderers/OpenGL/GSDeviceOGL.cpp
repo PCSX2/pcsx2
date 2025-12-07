@@ -2694,10 +2694,11 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		{
 			OMSetBlendState();
 		}
+		psel.ps.no_color1 = config.blend_multi_pass.no_color1;
 		psel.ps.blend_hw = config.blend_multi_pass.blend_hw;
 		psel.ps.dither = config.blend_multi_pass.dither;
 		SetupPipeline(psel);
-		SendHWDraw(config, config.require_one_barrier, config.require_full_barrier);
+		DrawIndexedPrimitive();
 	}
 
 	if (config.alpha_second_pass.enable)
