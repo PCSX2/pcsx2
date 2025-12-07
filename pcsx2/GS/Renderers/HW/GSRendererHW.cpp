@@ -6334,6 +6334,11 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 				m_conf.blend_multi_pass.enable = true;
 				m_conf.blend_multi_pass.blend = {true, GSDevice::DST_ALPHA, GSDevice::CONST_ONE, GSDevice::OP_REV_SUBTRACT, GSDevice::CONST_ONE, GSDevice::CONST_ZERO, false, 0};
 			}
+
+			// Remove second color output when unused. Works around bugs in some drivers (e.g. Intel).
+			m_conf.blend_multi_pass.no_color1 = !m_conf.blend_multi_pass.enable ||
+			                                    (!GSDevice::IsDualSourceBlendFactor(m_conf.blend_multi_pass.blend.src_factor) &&
+			                                     !GSDevice::IsDualSourceBlendFactor(m_conf.blend_multi_pass.blend.dst_factor));
 		}
 
 		if (!m_conf.blend_multi_pass.enable && blend_flag & BLEND_HW1)
@@ -6364,9 +6369,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 
 		// Remove second color output when unused. Works around bugs in some drivers (e.g. Intel).
 		m_conf.ps.no_color1 = !GSDevice::IsDualSourceBlendFactor(m_conf.blend.src_factor) &&
-		                      !GSDevice::IsDualSourceBlendFactor(m_conf.blend.dst_factor) &&
-		                      !GSDevice::IsDualSourceBlendFactor(m_conf.blend_multi_pass.blend.src_factor) &&
-		                      !GSDevice::IsDualSourceBlendFactor(m_conf.blend_multi_pass.blend.dst_factor);
+		                      !GSDevice::IsDualSourceBlendFactor(m_conf.blend.dst_factor);
 	}
 
 	// Notify the shader that it needs to invert rounding
@@ -7770,6 +7773,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 				{
 					if (m_conf.blend_multi_pass.enable)
 					{
+						m_conf.blend_multi_pass.no_color1 = false;
 						m_conf.blend_multi_pass.blend.src_factor_alpha = GSDevice::SRC1_ALPHA;
 						m_conf.blend_multi_pass.blend.dst_factor_alpha = GSDevice::INV_SRC1_ALPHA;
 					}
