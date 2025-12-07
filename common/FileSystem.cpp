@@ -28,7 +28,7 @@
 #endif
 
 #if defined(_WIN32)
-#include "RedtapeWindows.h"
+#include "common/RedtapeWindows.h"
 #include <io.h>
 #include <malloc.h>
 #include <pathcch.h>
