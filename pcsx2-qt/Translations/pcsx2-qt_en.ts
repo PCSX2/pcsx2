@@ -8003,11 +8003,6 @@ Please check your username and password, and try again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="9766"/>
-        <source>Direct3D 12 (Not Recommended)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="9770"/>
         <source>Software Renderer</source>
         <translation type="unfinished"></translation>
@@ -10160,6 +10155,11 @@ This action cannot be undone.</source>
     <message>
         <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="9765"/>
         <source>Direct3D 11</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="9766"/>
+        <source>Direct3D 12</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -15196,12 +15196,6 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="28"/>
-        <source>Direct3D 12 (Not Recommended)</source>
-        <extracomment>Graphics backend/engine type. Leave as-is.</extracomment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="459"/>
         <source>Overrides the full-motion video (FMV) aspect ratio. If disabled, the FMV Aspect Ratio will match the same value as the general Aspect Ratio setting.</source>
         <translation type="unfinished"></translation>
@@ -15703,6 +15697,12 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="486"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="716"/>
         <source>100%</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="28"/>
+        <source>Direct3D 12</source>
+        <extracomment>Graphics backend/engine type. Leave as-is.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
