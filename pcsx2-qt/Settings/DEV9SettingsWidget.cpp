@@ -139,7 +139,7 @@ DEV9SettingsWidget::DEV9SettingsWidget(SettingsWindow* settings_dialog, QWidget*
 
 	QStringList headers;
 	headers.push_back(tr("Name"));
-	headers.push_back(tr("Url"));
+	headers.push_back(tr("Hostname"));
 	headers.push_back(tr("Address"));
 	headers.push_back(tr("Enabled"));
 	m_ethHost_model->setHorizontalHeaderLabels(headers);
@@ -792,7 +792,7 @@ void DEV9SettingsWidget::showEvent(QShowEvent* event)
  * hidden, maybe because our table is nested within group & tab widgets
  * We could also listern to out show event, but we also need to listern to the tab
  * changed signal, in the event that another tab is selected when our ui is shown
- * 
+ *
  * Instead, lets use an eventFilter to determine exactly when the host table is shown
  * However, the eventFilter is ran before the widgets event handler, meaning the table
  * is still the wrong size, so we also need to check the show event
