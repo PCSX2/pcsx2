@@ -1586,7 +1586,7 @@ bool QtHost::DownloadFile(QWidget* parent, const QString& title, std::string url
 		!FileSystem::WriteBinaryFile(path.c_str(), data.data(), data.size()))
 	{
 		QMessageBox::critical(parent, qApp->translate("EmuThread", "Error"),
-			qApp->translate("EmuThread", "Failed to write '%1'.").arg(QString::fromStdString(path)));
+			qApp->translate("EmuThread", "Failed to write downloaded data to file '%1'.").arg(QString::fromStdString(path)));
 		return false;
 	}
 
