@@ -285,12 +285,12 @@ namespace QtUtils
 	{
 #if defined(_WIN32)
 		//: Windows action to show a file in Windows Explorer
-		return QCoreApplication::translate("FileOperations", "Show in Folder");
+		return QCoreApplication::translate("FileOperations", "Show in Explorer");
 #elif defined(__APPLE__)
 		//: macOS action to show a file in Finder
 		return QCoreApplication::translate("FileOperations", "Show in Finder");
 #else
-		//: Opens the system file manager to the directory containing a selected file
+		//: Linux/*NIX: Opens the system file manager to the directory containing a selected file
 		return QCoreApplication::translate("FileOperations", "Open Containing Directory");
 #endif
 	}
