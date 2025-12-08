@@ -115,7 +115,7 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* settings_dialog, QWidge
 	dialog()->registerWidgetHelp(m_ui.expansionSettings, tr("Expansion Settings"), tr("N/A"),
 		tr("These settings fine-tune the behavior of the FreeSurround-based channel expander."));
 	dialog()->registerWidgetHelp(m_ui.syncMode, tr("Synchronization"), tr("TimeStretch (Recommended)"),
-		tr("When running outside of 100% speed, adjusts the tempo on audio instead of dropping frames. Produces much nicer fast-forward/slowdown audio."));
+		tr("When the emulation isn't running at 100% speed, adjusts the tempo of the audio which produces much nicer sound during fast-forward/slowdown."));
 	dialog()->registerWidgetHelp(m_ui.stretchSettings, tr("Stretch Settings"), tr("N/A"),
 		tr("These settings fine-tune the behavior of the SoundTouch audio time stretcher when running outside of 100% speed."));
 	dialog()->registerWidgetHelp(m_ui.resetStandardVolume, tr("Reset Standard Volume"), tr("N/A"),
