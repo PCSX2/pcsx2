@@ -4922,46 +4922,53 @@ bool GSRendererHW::VerifyIndices()
 // Fix the colors in vertices in case the API only supports "provoking first vertex"
 // (i.e., when using flat shading the color comes from the first vertex, unlike PS2
 // which is "provoking last vertex").
-void GSRendererHW::HandleProvokingVertexFirst()
+void GSRendererHW::HandleProvokingVertexFirst(bool swap_indices)
 {
-	                                                     // Early exit conditions:
-	if (g_gs_device->Features().provoking_vertex_last || // device supports provoking last vertex
-	    m_conf.vs.iip ||                                 // we are doing Gouraud shading
-	    m_vt.m_primclass == GS_POINT_CLASS ||            // drawing points (one vertex per primitive; color is unambiguous)
-	    m_vt.m_primclass == GS_SPRITE_CLASS)             // drawing sprites (handled by the sprites -> triangles expand shader)
-		return;
+	pxAssertRel(!g_gs_device->Features().provoking_vertex_last && !m_conf.vs.iip,
+		"Should not call HandleProvokingVertexFirst() when API uses provoking vertex last or interpolating colors.");
 
 	const int n = GSUtil::GetClassVertexCount(m_vt.m_primclass);
 
-	// If all first/last vertices have the same color there is nothing to do.
-	bool first_eq_last = true;
-	for (u32 i = 0; i < m_index.tail; i += n)
+	if (swap_indices)
 	{
-		if (m_vertex.buff[m_index.buff[i]].RGBAQ.U32[0] != m_vertex.buff[m_index.buff[i + n - 1]].RGBAQ.U32[0])
+		// Fast path: just swap the indices. Used in cases where drawing order does not matter (triangles, expanded lines).
+		for (u32 i = 0; i < m_index.tail; i += n)
+			std::swap(m_index.buff[i], m_index.buff[i + n - 1]);
+	}
+	else
+	{
+		// Slow path: de-index and swap the vertex colors. Used in cases where the drawing order matters (lines).
+
+		// If all first/last vertices have the same color there is nothing to do.
+		bool first_eq_last = true;
+		for (u32 i = 0; i < m_index.tail; i += n)
 		{
-			first_eq_last = false;
-			break;
+			if (m_vertex.buff[m_index.buff[i]].RGBAQ.U32[0] != m_vertex.buff[m_index.buff[i + n - 1]].RGBAQ.U32[0])
+			{
+				first_eq_last = false;
+				break;
+			}
 		}
-	}
-	if (first_eq_last)
-		return;
+		if (first_eq_last)
+			return;
 
-	// De-index the vertices using the copy buffer
-	while (m_vertex.maxcount < m_index.tail)
-		GrowVertexBuffer();
-	for (int i = static_cast<int>(m_index.tail) - 1; i >= 0; i--)
-	{
-		m_vertex.buff_copy[i] = m_vertex.buff[m_index.buff[i]];
-		m_index.buff[i] = static_cast<u16>(i);
-	}
-	std::swap(m_vertex.buff, m_vertex.buff_copy);
-	m_vertex.head = m_vertex.next = m_vertex.tail = m_index.tail;
+		// De-index the vertices using the copy buffer
+		while (m_vertex.maxcount < m_index.tail)
+			GrowVertexBuffer();
+		for (int i = static_cast<int>(m_index.tail) - 1; i >= 0; i--)
+		{
+			m_vertex.buff_copy[i] = m_vertex.buff[m_index.buff[i]];
+			m_index.buff[i] = static_cast<u16>(i);
+		}
+		std::swap(m_vertex.buff, m_vertex.buff_copy);
+		m_vertex.head = m_vertex.next = m_vertex.tail = m_index.tail;
 
-	// Put correct color in the first vertex
-	for (u32 i = 0; i < m_index.tail; i += n)
-	{
-		m_vertex.buff[i].RGBAQ.U32[0] = m_vertex.buff[i + n - 1].RGBAQ.U32[0];
-		m_vertex.buff[i + n - 1].RGBAQ.U32[0] = 0xff; // Make last vertex red for debugging if used improperly
+		// Put correct color in the first vertex
+		for (u32 i = 0; i < m_index.tail; i += n)
+		{
+			m_vertex.buff[i].RGBAQ.U32[0] = m_vertex.buff[i + n - 1].RGBAQ.U32[0];
+			m_vertex.buff[i + n - 1].RGBAQ.U32[0] = 0xff; // Make last vertex red for debugging if used improperly
+		}
 	}
 }
 
@@ -5035,6 +5042,13 @@ void GSRendererHW::SetupIA(float target_scale, float sx, float sy, bool req_vert
 						ExpandLineIndices();
 					}
 				}
+
+				if (!features.provoking_vertex_last && !m_conf.vs.iip) // Flat shaded colors and API uses provoking vertex first
+				{
+					// Expanded lines are converted to triangles where drawing order does not matter so just swap first/last indices.
+					const bool swap_indices = m_conf.line_expand || (m_conf.vs.expand != GSHWDrawConfig::VSExpand::None);
+					HandleProvokingVertexFirst(swap_indices);
+				}
 			}
 			break;
 
@@ -5093,6 +5107,9 @@ void GSRendererHW::SetupIA(float target_scale, float sx, float sy, bool req_vert
 						GSVector4::store<true>(&v[i].ST, v_st);
 					}
 				}
+
+				if (!features.provoking_vertex_last && !m_conf.vs.iip) // Flat shaded colors and API uses provoking vertex first
+					HandleProvokingVertexFirst(true); // Drawing order does not matter for triangles so just swap first/last indices.
 			}
 			break;
 
@@ -8030,8 +8047,6 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 
 	m_conf.drawarea = m_channel_shuffle ? scissor : scissor.rintersect(ComputeBoundingBox(rtsize, rtscale));
 	m_conf.scissor = (DATE && !DATE_BARRIER) ? m_conf.drawarea : scissor;
-
-	HandleProvokingVertexFirst();
 
 	SetupIA(rtscale, sx, sy, m_channel_shuffle_width != 0);
 
