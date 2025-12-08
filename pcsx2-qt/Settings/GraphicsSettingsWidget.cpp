@@ -587,10 +587,10 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 		dialog()->registerWidgetHelp(m_fixes.gpuTargetCLUTMode, tr("GPU Target CLUT"), tr("Disabled"),
 			tr("Tries to detect when a game is drawing its own color palette and then renders it on the GPU with special handling."));
 
-		dialog()->registerWidgetHelp(m_fixes.skipDrawStart, tr("Skipdraw Range Start"), tr("0"),
+		dialog()->registerWidgetHelp(m_fixes.skipDrawStart, tr("Skip Draw Range Start"), tr("0"),
 			tr("Completely skips drawing surfaces from the surface in the left box up to the surface specified in the box on the right."));
 
-		dialog()->registerWidgetHelp(m_fixes.skipDrawEnd, tr("Skipdraw Range End"), tr("0"),
+		dialog()->registerWidgetHelp(m_fixes.skipDrawEnd, tr("Skip Draw Range End"), tr("0"),
 			tr("Completely skips drawing surfaces from the surface in the left box up to the surface specified in the box on the right."));
 
 		dialog()->registerWidgetHelp(m_fixes.hwAutoFlush, tr("Auto Flush"), tr("Unchecked"),
