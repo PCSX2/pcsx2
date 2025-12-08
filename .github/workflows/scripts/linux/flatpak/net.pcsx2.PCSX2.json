@@ -22,7 +22,8 @@
     "--socket=wayland",
     "--socket=fallback-x11",
     "--socket=pulseaudio",
-    "--talk-name=org.freedesktop.ScreenSaver"
+    "--talk-name=org.freedesktop.ScreenSaver",
+    "--filesystem=xdg-run/gamescope-0:ro"
   ],
   "modules": [
     "modules/10-libpcap.json",
