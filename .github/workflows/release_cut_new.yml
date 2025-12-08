@@ -68,7 +68,7 @@ jobs:
           mv ./release-notes.md ${GITHUB_WORKSPACE}/release-notes.md
 
       - name: Create a GitHub Release (Manual)
-        uses: softprops/action-gh-release@5be0e66d93ac7ed76da52eca8bb058f665c3a5fe
+        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b
         if: steps.tag_version.outputs.new_tag && github.event_name == 'workflow_dispatch'
         with:
           body_path: ./release-notes.md
@@ -77,7 +77,7 @@ jobs:
           tag_name: ${{ steps.tag_version.outputs.new_tag }}
 
       - name: Create a GitHub Release (Push)
-        uses: softprops/action-gh-release@5be0e66d93ac7ed76da52eca8bb058f665c3a5fe
+        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b
         if: steps.tag_version.outputs.new_tag && github.event_name != 'workflow_dispatch'
         with:
           body_path: ./release-notes.md
