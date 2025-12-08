@@ -44,7 +44,7 @@ GameFixSettingsWidget::GameFixSettingsWidget(SettingsWindow* settings_dialog, QW
 	dialog()->registerWidgetHelp(m_ui.EETimingHack, tr("EE Timing Hack"), tr("Unchecked"), tr("General-purpose timing hack. Known to affect following games: Digital Devil Saga, SSX."));
 	dialog()->registerWidgetHelp(m_ui.InstantDMAHack, tr("Instant DMA Hack"), tr("Unchecked"), tr("Good for cache emulation problems. Known to affect following games: Fire Pro Wrestling Z."));
 	dialog()->registerWidgetHelp(m_ui.DMABusyHack, tr("DMA Busy Hack"), tr("Unchecked"), tr("Known to affect following games: Mana Khemia 1, Metal Saga, Pilot Down Behind Enemy Lines."));
-	dialog()->registerWidgetHelp(m_ui.GIFFIFOHack, tr("Emulate GIF FIFO"), tr("Unchecked"), tr("Correct but slower. Known to affect the following games: Fifa Street 2."));
+	dialog()->registerWidgetHelp(m_ui.GIFFIFOHack, tr("Emulate GIF FIFO"), tr("Unchecked"), tr("Correct but slower. Known to affect the following games: FIFA Street 2."));
 	dialog()->registerWidgetHelp(m_ui.VIFFIFOHack, tr("Emulate VIF FIFO"), tr("Unchecked"), tr("Simulate VIF1 FIFO read ahead. Known to affect following games: Test Drive Unlimited, Transformers."));
 	dialog()->registerWidgetHelp(m_ui.VIF1StallHack, tr("Delay VIF1 Stalls"), tr("Unchecked"), tr("For SOCOM 2 HUD and Spy Hunter loading hang."));
 	dialog()->registerWidgetHelp(m_ui.VuAddSubHack, tr("VU Add Hack"), tr("Unchecked"), tr("For Tri-Ace Games: Star Ocean 3, Radiata Stories, Valkyrie Profile 2."));
