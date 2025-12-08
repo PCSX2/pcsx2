@@ -660,7 +660,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 			//: Wild Arms: name of a game series. Leave as-is or use an official translation.
 			tr("Lowers the GS precision to avoid gaps between pixels when upscaling. Fixes the text on Wild Arms games."));
 
-		dialog()->registerWidgetHelp(m_upscaling.bilinearHack, tr("Bilinear Upscale"), tr("Unchecked"),
+		dialog()->registerWidgetHelp(m_upscaling.bilinearHack, tr("Bilinear Dirty Upscale"), tr("Unchecked"),
 			tr("Can smooth out textures due to be bilinear filtered when upscaling. E.g. Brave sun glare."));
 
 		dialog()->registerWidgetHelp(m_upscaling.mergeSprite, tr("Merge Sprite"), tr("Unchecked"),
