@@ -22,9 +22,6 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QLabel" name="title">
-     <property name="text">
-      <string>Bindings for Controller0/ButtonCircle</string>
-     </property>
      <property name="buddy">
       <cstring>bindingList</cstring>
      </property>
