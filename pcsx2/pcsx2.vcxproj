@@ -642,6 +642,7 @@
     <ClInclude Include="DEV9\Sessions\UDP_Session\UDP_Common.h" />
     <ClInclude Include="DEV9\Sessions\UDP_Session\UDP_FixedPort.h" />
     <ClInclude Include="DEV9\Sessions\UDP_Session\UDP_BaseSession.h" />
+    <ClInclude Include="DEV9\Sessions\UDP_Session\UDP_ServerSession.h" />
     <ClInclude Include="DEV9\Sessions\UDP_Session\UDP_Session.h" />
     <ClInclude Include="DEV9\SimpleQueue.h" />
     <ClInclude Include="DEV9\smap.h" />

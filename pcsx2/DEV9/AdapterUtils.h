@@ -50,7 +50,7 @@ namespace AdapterUtils
 
 	std::optional<PacketReader::MAC_Address> GetAdapterMAC(const Adapter* adapter);
 	std::optional<PacketReader::IP::IP_Address> GetAdapterIP(const Adapter* adapter);
-	// Mask.
+	std::optional<PacketReader::IP::IP_Address> GetNetmask(const Adapter* adapter);
 	std::vector<PacketReader::IP::IP_Address> GetGateways(const Adapter* adapter);
 	std::vector<PacketReader::IP::IP_Address> GetDNS(const Adapter* adapter);
 }; // namespace AdapterUtils
