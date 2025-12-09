@@ -82,7 +82,7 @@ void InputRecordingViewer::openFile()
 {
 	QFileDialog dialog(this);
 	dialog.setFileMode(QFileDialog::ExistingFile);
-	dialog.setWindowTitle("Select a File");
+	dialog.setWindowTitle(tr("Select a File"));
 	dialog.setNameFilter(tr("Input Recording Files (*.p2m2)"));
 	QStringList fileNames;
 	if (dialog.exec())

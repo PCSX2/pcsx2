@@ -472,7 +472,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 
 		dialog()->registerWidgetHelp(m_display.interlacing, tr("Deinterlacing"), tr("Automatic (Default)"), tr("Determines the deinterlacing method to be used on the interlaced screen of the emulated console. Automatic should be able to correctly deinterlace most games, but if you see visibly shaky graphics, try one of the other options."));
 
-		dialog()->registerWidgetHelp(m_capture.screenshotSize, tr("Screenshot Resolution"), tr("Screen Resolution"),
+		dialog()->registerWidgetHelp(m_capture.screenshotSize, tr("Screenshot Resolution"), tr("Display Resolution"),
 			tr("Determines the resolution at which screenshots will be saved. Internal resolutions preserve more detail at the cost of "
 			   "file size."));
 
@@ -765,10 +765,10 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 			tr("Shows the current controller state of the system in the bottom-left corner of the display."));
 
 		dialog()->registerWidgetHelp(m_osd.showVideoCapture, tr("Show Video Capture Status"), tr("Checked"),
-			tr("Shows the status of the currently active video capture in the top-right corner of the display.."));
+			tr("Shows the status of the currently active video capture in the top-right corner of the display."));
 
 		dialog()->registerWidgetHelp(m_osd.showInputRec, tr("Show Input Recording Status"), tr("Checked"),
-			tr("Shows the status of the currently active input recording in the top-right corner of the display.."));
+			tr("Shows the status of the currently active input recording in the top-right corner of the display."));
 
 		dialog()->registerWidgetHelp(m_osd.showTextureReplacements, tr("Show Texture Replacement Status"), tr("Unchecked"),
 			tr("Shows the status of the number of dumped and loaded texture replacements in the top-right corner of the display."));

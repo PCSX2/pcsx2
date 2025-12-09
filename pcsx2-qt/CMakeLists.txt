@@ -272,7 +272,7 @@ if (NOT APPLE)
     )
 endif()
 
-file(GLOB TS_FILES ${CMAKE_CURRENT_SOURCE_DIR}/Translations/*.ts)
+file(GLOB TS_FILES ${CMAKE_CURRENT_SOURCE_DIR}/Translations/pcsx2-qt_*-*.ts)
 
 target_precompile_headers(pcsx2-qt PRIVATE PrecompiledHeader.h)
 set_source_files_properties(PrecompiledHeader.cpp PROPERTIES HEADER_FILE_ONLY TRUE)

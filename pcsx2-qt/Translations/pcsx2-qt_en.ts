@@ -589,18 +589,18 @@ Login token generated on %2.</source>
         <location filename="../../pcsx2/Achievements.cpp" line="1104"/>
         <source>You have unlocked {} of %n achievements</source>
         <comment>Achievement popup</comment>
-        <translation>
-            <numerusform>You have unlocked {} of %n achievements</numerusform>
-            <numerusform>You have unlocked {} of %n achievements</numerusform>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <location filename="../../pcsx2/Achievements.cpp" line="1107"/>
         <source>and earned {} of %n points</source>
         <comment>Achievement popup</comment>
-        <translation>
-            <numerusform>and earned {} of %n points</numerusform>
-            <numerusform>and earned {} of %n points</numerusform>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
         </translation>
     </message>
     <message>
@@ -622,18 +622,18 @@ Login token generated on %2.</source>
         <location filename="../../pcsx2/Achievements.cpp" line="1191"/>
         <source>%n achievements</source>
         <comment>Mastery popup</comment>
-        <translation>
-            <numerusform>%n achievement</numerusform>
-            <numerusform>%n achievements</numerusform>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <location filename="../../pcsx2/Achievements.cpp" line="1193"/>
         <source>%n points</source>
         <comment>Mastery popup</comment>
-        <translation>
-            <numerusform>%n point</numerusform>
-            <numerusform>%n points</numerusform>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
         </translation>
     </message>
     <message>
@@ -9641,8 +9641,8 @@ Do you want to load this save and continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="9650"/>
-        <source>Please enter your user name and password for retroachievements.org below. 
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="9618"/>
+        <source>Please enter your user name and password for retroachievements.org below.
 
  Your password will not be saved in PCSX2, an access token will be generated and used instead.</source>
         <translation type="unfinished"></translation>
@@ -15059,7 +15059,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="830"/>
         <source>Use Blit Swap Chain</source>
-        <extracomment>Blit = a data operation. You might want to write it as-is, but fully uppercased. More information: https://en.wikipedia.org/wiki/Bit_blit 
+        <extracomment>Blit = a data operation. You might want to write it as-is, but fully uppercased. More information: https://en.wikipedia.org/wiki/Bit_blit
 Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <translation type="unfinished"></translation>
     </message>
@@ -21225,7 +21225,7 @@ Ejecting {3} and replacing it with {2}.</source>
     <message>
         <location filename="../Settings/HddCreateQt.cpp" line="17"/>
         <location filename="../Settings/HddCreateQt.cpp" line="26"/>
-        <source>Creating HDD file 
+        <source>Creating HDD file
  %1 / %2 MiB</source>
         <translation type="unfinished"></translation>
     </message>
@@ -25530,6 +25530,7 @@ PCSX2 will be able to run once you&apos;ve placed your BIOS image inside the fol
     </message>
     <message>
         <location filename="../../pcsx2/VMManager.cpp" line="3204"/>
+
         <source>Texture dumping is enabled, this will continually dump textures to disk.</source>
         <translation type="unfinished"></translation>
     </message>
