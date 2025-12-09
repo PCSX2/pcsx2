@@ -1115,7 +1115,7 @@ static void rpsxLoad(int size, bool sign)
 	is_ram_read.SetTarget();
 
 	// read from psM directly
-	xAND(arg1regd, 0x1fffff);
+	xAND(arg1regd, Ps2MemSize::ExposedIopRam - 1);
 
 	auto addr = xComplexAddress(rax, iopMem->Main, arg1reg);
 	switch (size)
