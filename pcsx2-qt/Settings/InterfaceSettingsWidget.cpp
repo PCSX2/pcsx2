@@ -261,7 +261,7 @@ void InterfaceSettingsWidget::populateLanguages()
 void InterfaceSettingsWidget::onSetGameListBackgroundTriggered()
 {
 	const QString path = QDir::toNativeSeparators(
-		QFileDialog::getOpenFileName(this, tr("Select Background Image"), QString(), IMAGE_FILE_FILTER));
+		QFileDialog::getOpenFileName(this, tr("Select Background Image"), QString(), qApp->translate("InterfaceSettingsWidget", IMAGE_FILE_FILTER)));
 
 	if (path.isEmpty())
 		return;
