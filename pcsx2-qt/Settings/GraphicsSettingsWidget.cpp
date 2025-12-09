@@ -729,7 +729,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 			tr("Shows the number of internal video frames displayed per second by the system."));
 
 		dialog()->registerWidgetHelp(m_osd.showVPS, tr("Show VPS"), tr("Unchecked"),
-			tr("Shows the number of V-syncs performed per second by the system."));
+			tr("Shows the number of Vsyncs performed per second by the system."));
 
 		dialog()->registerWidgetHelp(m_osd.showResolution, tr("Show Resolution"), tr("Unchecked"),
 			tr("Shows the internal resolution of the game."));

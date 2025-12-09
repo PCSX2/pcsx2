@@ -4268,7 +4268,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 		FSUI_CSTR("Shows the number of internal video frames displayed per second by the system."),
 		"EmuCore/GS", "OsdShowFPS", false);
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_CLAPPERBOARD, "Show VPS"),
-		FSUI_CSTR("Shows the number of V-syncs performed per second by the system."), "EmuCore/GS", "OsdShowVPS", false);
+		FSUI_CSTR("Shows the number of Vsyncs performed per second by the system."), "EmuCore/GS", "OsdShowVPS", false);
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_PF_MONITOR_CODE, "Show Resolution"),
 		FSUI_CSTR("Shows the internal resolution of the game."), "EmuCore/GS", "OsdShowResolution", false);
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_COMPUTER, "Show Hardware Info"),
@@ -5196,7 +5196,7 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
 		std::string file_key(fmt::format("Slot{}_Filename", port + 1));
 
 		DrawToggleSetting(bsi,
-			SmallString::from_format(fmt::runtime(FSUI_ICONSTR_S(ICON_PF_MEMORY_CARD, "Card Enabled", "##card_enabled_{}")), port),
+			SmallString::from_format(fmt::runtime(FSUI_ICONSTR_S(ICON_PF_MEMORY_CARD, "Memory Card Enabled", "##card_enabled_{}")), port),
 			FSUI_CSTR("If not set, this card will be considered unplugged."), "MemoryCards", enable_key.c_str(), true);
 
 		const bool enabled = GetEffectiveBoolSetting(bsi, "MemoryCards", enable_key.c_str(), true);
