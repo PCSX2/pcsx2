@@ -45,6 +45,7 @@ BIOS
 namespace Ps2MemSize
 {
 	u32 ExposedRam = MainRam;
+	u32 ExposedIopRam = IopRam;
 } // namespace Ps2MemSize
 
 namespace SysMemory
@@ -305,6 +306,7 @@ void memSetExtraMemMode(bool mode)
 
 	// update the amount of RAM exposed to the VM
 	Ps2MemSize::ExposedRam = mode ? Ps2MemSize::TotalRam : Ps2MemSize::MainRam;
+	Ps2MemSize::ExposedIopRam = mode ? Ps2MemSize::TotalIopRam: Ps2MemSize::IopRam;
 }
 
 void memSetKernelMode() {

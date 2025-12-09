@@ -16,11 +16,14 @@ namespace Ps2MemSize
 	static constexpr u32 Scratch = _16kb;
 
 	static constexpr u32 IopRam = _1mb * 2; // 2MB main ram on the IOP.
+	static constexpr u32 ExtraIopRam = _1mb * 6; // 2MB main ram on the IOP.
+	static constexpr u32 TotalIopRam = _8mb; // 2MB main ram on the IOP.
 	static constexpr u32 IopHardware = _64kb;
 
 	static constexpr u32 GSregs = 0x00002000; // 8k for the GS registers and stuff.
 
 	extern u32 ExposedRam;
+	extern u32 ExposedIopRam;
 } // namespace Ps2MemSize
 
 typedef u8 mem8_t;
@@ -51,9 +54,10 @@ struct EEVM_MemoryAllocMess
 // Needs to fit within IOPmemSize of Memory.h
 struct IopVM_MemoryAllocMess
 {
-	u8 Main[Ps2MemSize::IopRam]; // Main memory (hard-wired to 2MB)
-	u8 P[_64kb];                 // I really have no idea what this is... --air
-	u8 Sif[0x100];               // a few special SIF/SBUS registers (likely not needed)
+	u8 Main[Ps2MemSize::IopRam];             // Main memory (hard-wired to 2MB)
+	u8 ExtraMemory[Ps2MemSize::ExtraIopRam]; // Extended memory to 16mb
+	u8 P[_64kb];                             // I really have no idea what this is... --air
+	u8 Sif[0x100];                           // a few special SIF/SBUS registers (likely not needed)
 };
 
 
