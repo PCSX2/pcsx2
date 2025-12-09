@@ -113,7 +113,7 @@ static void recLoad(u32 bits, bool sign)
 		const u32 srcadr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
 
 		// Force event test on EE counter read to improve read + interrupt syncing. Namely ESPN Games.
-		if (bits <= 32 && (srcadr & 0xFFFFE0000) == 0x10000000)
+		if (bits <= 32 && (srcadr & 0xFFFFE000) == 0x10000000)
 			needs_flush = true;
 
 		x86reg = vtlb_DynGenReadNonQuad_Const(bits, sign, false, srcadr, alloc_cb);
