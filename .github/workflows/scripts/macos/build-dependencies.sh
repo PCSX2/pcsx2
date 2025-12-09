@@ -29,7 +29,7 @@ LIBPNG=1.6.53
 LIBJPEGTURBO=3.1.2
 LIBWEBP=1.6.0
 FFMPEG=8.0
-MOLTENVK=1.2.9
+MOLTENVK=1.4.1
 QT=6.10.1
 QTAPNG=1.3.0
 KDDOCKWIDGETS=2.4.0
@@ -69,7 +69,7 @@ e4ab7009bf0629fd11982d4c2aa83964cf244cffba7347ecd39019a9e38c4564  libwebp-$LIBWE
 452a1a290bd0cf18737fad0057dc17b7fdf10a73eda2d6d4f31ba04fda25ef2c  libpng-$LIBPNG-apng.patch.gz
 8f0012234b464ce50890c490f18194f913a7b1f4e6a03d6644179fa0f867d0cf  libjpeg-turbo-$LIBJPEGTURBO.tar.gz
 b2751fccb6cc4c77708113cd78b561059b6fa904b24162fa0be2d60273d27b8e  ffmpeg-$FFMPEG.tar.xz
-f415a09385030c6510a936155ce211f617c31506db5fbc563e804345f1ecf56e  v$MOLTENVK.tar.gz
+9985f141902a17de818e264d17c1ce334b748e499ee02fcb4703e4dc0038f89c  v$MOLTENVK.tar.gz
 5a6226f7e23db51fdc3223121eba53f3f5447cf0cc4d6cb82a3a2df7a65d265d  qtbase-everywhere-src-$QT.tar.xz
 498eabdf2381db96f808942b3e3c765f6360fe6c0e9961f0a45ff7a4c68d7a72  qtimageformats-everywhere-src-$QT.tar.xz
 c02f355a58f3bbcf404a628bf488b6aeb2d84a94c269afdb86f6e529343ab01f  qtsvg-everywhere-src-$QT.tar.xz
@@ -225,7 +225,7 @@ cd "MoltenVK-${MOLTENVK}"
 sed -i '' 's/xcodebuild "$@"/xcodebuild $XCODEBUILD_EXTRA_ARGS "$@"/g' fetchDependencies
 sed -i '' 's/XCODEBUILD :=/XCODEBUILD ?=/g' Makefile
 XCODEBUILD_EXTRA_ARGS="VALID_ARCHS=x86_64" ./fetchDependencies --macos
-XCODEBUILD="set -o pipefail && xcodebuild VALID_ARCHS=x86_64" make macos
+XCODEBUILD="set -o pipefail && xcodebuild VALID_ARCHS=x86_64" make macos MVK_CONFIG_USE_METAL_ARGUMENT_BUFFERS=0 MVK_CONFIG_USE_METAL_PRIVATE_API=1
 cp Package/Latest/MoltenVK/dynamic/dylib/macOS/libMoltenVK.dylib "$INSTALLDIR/lib/"
 cd ..
 
