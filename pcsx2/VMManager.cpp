@@ -1909,19 +1909,18 @@ void VMManager::ZipSaveState(std::unique_ptr<ArchiveEntryList> elist,
 {
 	Common::Timer timer;
 
-	if (SaveState_ZipToDisk(std::move(elist), std::move(screenshot), filename))
+	Error error;
+	if (!SaveState_ZipToDisk(std::move(elist), std::move(screenshot), filename, &error))
 	{
-		if (slot_for_message >= 0 && VMManager::HasValidVM())
-		{
-			Host::AddIconOSDMessage("SaveState", ICON_FA_FLOPPY_DISK,
-				fmt::format(TRANSLATE_FS("VMManager", "Saved state to slot {}."), slot_for_message),
-				Host::OSD_QUICK_DURATION);
-		}
+		error_callback(error.GetDescription());
+		return;
 	}
-	else
+
+	if (slot_for_message >= 0 && VMManager::HasValidVM())
 	{
-		error_callback(fmt::format(
-			TRANSLATE_FS("VMManager", "Cannot zip state."), slot_for_message));
+		Host::AddIconOSDMessage(fmt::format("SaveStateSlot{}", slot_for_message), ICON_FA_FLOPPY_DISK,
+			fmt::format(TRANSLATE_FS("VMManager", "Saved state to slot {}."), slot_for_message),
+			Host::OSD_QUICK_DURATION);
 	}
 
 	DevCon.WriteLn("Zipping save state to '%s' took %.2f ms", filename, timer.GetTimeMilliseconds());
