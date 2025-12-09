@@ -4230,6 +4230,8 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 		true);
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_ARROW_POINTER, "Hide Cursor In Fullscreen"),
 		FSUI_CSTR("Hides the mouse pointer/cursor when the emulator is in fullscreen mode."), "UI", "HideMouseCursor", false);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_TABLET_SCREEN_BUTTON, "Start Big Picture UI"),
+		FSUI_CSTR("Automatically starts Big Picture Mode instead of the regular Qt interface when PCSX2 launches."), "UI", "StartBigPictureMode", false);
 
 	MenuHeading(FSUI_CSTR("On-Screen Display"));
 	DrawIntSpinBoxSetting(bsi, FSUI_ICONSTR(ICON_FA_MAGNIFYING_GLASS, "OSD Scale"),
