@@ -1039,14 +1039,18 @@ static bool SaveState_AddToZip(zip_t* zf, ArchiveEntryList* srclist, SaveStateSc
 	return true;
 }
 
-bool SaveState_ZipToDisk(std::unique_ptr<ArchiveEntryList> srclist, std::unique_ptr<SaveStateScreenshotData> screenshot, const char* filename)
+bool SaveState_ZipToDisk(
+	std::unique_ptr<ArchiveEntryList> srclist, std::unique_ptr<SaveStateScreenshotData> screenshot,
+	const char* filename, Error* error)
 {
 	zip_error_t ze = {};
 	zip_source_t* zs = zip_source_file_create(filename, 0, 0, &ze);
 	zip_t* zf = nullptr;
 	if (zs && !(zf = zip_open_from_source(zs, ZIP_CREATE | ZIP_TRUNCATE, &ze)))
 	{
-		Console.Error("Failed to open zip file '%s' for save state: %s", filename, zip_error_strerror(&ze));
+		Error::SetStringFmt(error,
+			TRANSLATE_FS("SaveState", "Failed to open zip file '{}' for save state: {}."),
+			filename, zip_error_strerror(&ze));
 
 		// have to clean up source
 		zip_source_free(zs);
@@ -1056,13 +1060,21 @@ bool SaveState_ZipToDisk(std::unique_ptr<ArchiveEntryList> srclist, std::unique_
 	// discard zip file if we fail saving something
 	if (!SaveState_AddToZip(zf, srclist.get(), screenshot.get()))
 	{
-		Console.Error("Failed to save state to zip file '%s'", filename);
+		Error::SetStringFmt(error,
+			TRANSLATE_FS("SaveState", "Failed to save state to zip file '{}'."), filename);
 		zip_discard(zf);
 		return false;
 	}
 
 	// force the zip to close, this is the expensive part with libzip.
-	zip_close(zf);
+	if (zip_close(zf) != 0)
+	{
+		Error::SetStringFmt(error,
+			TRANSLATE_FS("SaveState", "Failed to save state to zip file '{}': {}."), filename, zip_strerror(zf));
+		zip_discard(zf);
+		return false;
+	}
+
 	return true;
 }
 
