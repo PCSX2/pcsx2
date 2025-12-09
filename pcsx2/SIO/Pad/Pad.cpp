@@ -581,9 +581,10 @@ bool Pad::Freeze(StateWrapper& sw)
 
 				const auto& [port, slot] = sioConvertPadToPortAndSlot(unifiedSlot);
 				Host::AddIconOSDMessage(fmt::format("UnfreezePad{}Changed", unifiedSlot), ICON_FA_GAMEPAD,
+					//: {0} and {1} are the port and multitap slot, {2} and {3} are controller types (e.g. "DualShock 2", "Jogcon")
 					fmt::format(TRANSLATE_FS("Pad",
 									"Controller port {0}, slot {1} has a {2} connected, but the save state has a "
-									"{3}.\nEjecting {3} and replacing it with {2}."),
+									"{3}.\nEjecting {2} and replacing it with {3}."),
 						port, slot,
 						GetControllerTypeName(currentPad ? currentPad->GetType() : Pad::ControllerType::NotConnected),
 						GetControllerTypeName(statePadType)));
@@ -698,7 +699,7 @@ void Pad::SetMacroButtonState(InputBindingKey& key, u32 pad, u32 index, bool sta
 	}
 	if (mb.active_buttons.find(key.bits) != mb.active_buttons.end())
 		mb.active_buttons.erase(key.bits);
-	
+
 	mb.active_buttons.emplace(key.bits, state);
 
 	if (mb.active_buttons.size() != binding_count)

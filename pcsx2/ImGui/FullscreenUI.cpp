@@ -1202,11 +1202,11 @@ void FullscreenUI::Shutdown(bool clear_state)
 		s_about_window_open = false;
 	}
 	s_hotkey_list_cache = {};
-	
+
 	s_custom_background_texture.reset();
 	s_custom_background_path.clear();
 	s_custom_background_enabled = false;
-	
+
 	DestroyResources();
 	ImGuiFullscreen::Shutdown(clear_state);
 	s_initialized = false;
@@ -1240,7 +1240,7 @@ void FullscreenUI::Render()
 		s_current_main_window == MainWindowType::GameList ||
 		s_current_main_window == MainWindowType::GameListSettings ||
 		s_current_main_window == MainWindowType::Settings) && s_custom_background_enabled && s_custom_background_texture;
-	
+
 	ImVec4 original_background_color;
 	if (should_draw_background)
 	{
@@ -1691,7 +1691,7 @@ bool FullscreenUI::ShouldDefaultToGameList()
 void FullscreenUI::LoadCustomBackground()
 {
 	std::string path = Host::GetBaseStringSettingValue("UI", "GameListBackgroundPath");
-	
+
 	if (path.empty())
 	{
 		s_custom_background_texture.reset();
@@ -1757,15 +1757,15 @@ void FullscreenUI::DrawCustomBackground()
 
 	const ImGuiIO& io = ImGui::GetIO();
 	const ImVec2 display_size = io.DisplaySize;
-	
+
 	const float opacity = Host::GetBaseFloatSettingValue("UI", "GameListBackgroundOpacity", 100.0f) / 100.0f;
 	const std::string mode = Host::GetBaseStringSettingValue("UI", "GameListBackgroundMode", "fit");
 
 	const float tex_width = static_cast<float>(s_custom_background_texture->GetWidth());
 	const float tex_height = static_cast<float>(s_custom_background_texture->GetHeight());
-	
+
 	ImVec2 img_min, img_max;
-	
+
 	if (mode == "stretch")
 	{
 		// stretch to fill entire display (ignores aspect ratio)
@@ -1777,7 +1777,7 @@ void FullscreenUI::DrawCustomBackground()
 		// Fill display while preserving aspect ratio (could crop edges)
 		const float display_aspect = display_size.x / display_size.y;
 		const float tex_aspect = tex_width / tex_height;
-		
+
 		float scale;
 		if (tex_aspect > display_aspect)
 		{
@@ -1789,12 +1789,12 @@ void FullscreenUI::DrawCustomBackground()
 			// Image is taller scale to width and crop top/bottom
 			scale = display_size.x / tex_width;
 		}
-		
+
 		const float scaled_width = tex_width * scale;
 		const float scaled_height = tex_height * scale;
 		const float offset_x = (display_size.x - scaled_width) * 0.5f;
 		const float offset_y = (display_size.y - scaled_height) * 0.5f;
-		
+
 		img_min = ImVec2(offset_x, offset_y);
 		img_max = ImVec2(offset_x + scaled_width, offset_y + scaled_height);
 	}
@@ -1803,7 +1803,7 @@ void FullscreenUI::DrawCustomBackground()
 		// Fit on screen while preserving aspect ratio (no cropping)
 		const float display_aspect = display_size.x / display_size.y;
 		const float tex_aspect = tex_width / tex_height;
-		
+
 		float scale;
 		if (tex_aspect > display_aspect)
 		{
@@ -1815,12 +1815,12 @@ void FullscreenUI::DrawCustomBackground()
 			// Image is taller than display
 			scale = display_size.y / tex_height;
 		}
-		
+
 		const float scaled_width = tex_width * scale;
 		const float scaled_height = tex_height * scale;
 		const float offset_x = (display_size.x - scaled_width) * 0.5f;
 		const float offset_y = (display_size.y - scaled_height) * 0.5f;
-		
+
 		img_min = ImVec2(offset_x, offset_y);
 		img_max = ImVec2(offset_x + scaled_width, offset_y + scaled_height);
 	}
@@ -1829,7 +1829,7 @@ void FullscreenUI::DrawCustomBackground()
 	// We need to make windows transparent so our background image shows through
 	const ImVec4 transparent_bg = ImVec4(UIBackgroundColor.x, UIBackgroundColor.y, UIBackgroundColor.z, 0.0f);
 	ImGuiFullscreen::UIBackgroundColor = transparent_bg;
-	
+
 	ImDrawList* bg_draw_list = ImGui::GetBackgroundDrawList();
 	const ImU32 col = IM_COL32(255, 255, 255, static_cast<u8>(opacity * 255.0f));
 	bg_draw_list->AddImage(reinterpret_cast<ImTextureID>(s_custom_background_texture->GetNativeHandle()),
@@ -3358,7 +3358,7 @@ void FullscreenUI::DrawIPAddressSetting(SettingsInterface* bsi, const char* titl
 
 		char ip_str[16];
 		std::snprintf(ip_str, sizeof(ip_str), "%d.%d.%d.%d", ip_octets[0], ip_octets[1], ip_octets[2], ip_octets[3]);
-		
+
 		const char* message;
 		switch (ip_type)
 		{
@@ -3382,9 +3382,9 @@ void FullscreenUI::DrawIPAddressSetting(SettingsInterface* bsi, const char* titl
 		}
 
 		ImGuiFullscreen::CloseInputDialog();
-		
+
 		std::string ip_str_value(ip_str);
-		
+
 		ImGuiFullscreen::OpenInputStringDialog(
 			title,
 			message,
@@ -3401,10 +3401,10 @@ void FullscreenUI::DrawIPAddressSetting(SettingsInterface* bsi, const char* titl
 					new_octets[i] = std::clamp(std::atoi(segment.c_str()), 0, 255);
 					i++;
 				}
-				
+
 				char ip_str[16];
 				std::snprintf(ip_str, sizeof(ip_str), "%d.%d.%d.%d", new_octets[0], new_octets[1], new_octets[2], new_octets[3]);
-				
+
 				if (IsEditingGameSettings(bsi) && strcmp(ip_str, default_value) == 0)
 					bsi->DeleteValue(section, key);
 				else
@@ -4051,16 +4051,16 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 		"EmuCore", "UseSavestateSelector", true);
 
 	MenuHeading(FSUI_CSTR("Background"));
-	
+
 	std::string background_path = bsi->GetStringValue("UI", "GameListBackgroundPath", "");
 	const bool background_enabled = bsi->GetBoolValue("UI", "GameListBackgroundEnabled", false);
-	
+
 	std::string background_display = FSUI_STR("None");
 	if (!background_path.empty() && background_enabled)
 	{
 		background_display = Path::GetFileName(background_path);
 	}
-	
+
 	if (MenuButtonWithValue(FSUI_ICONSTR(ICON_FA_IMAGE, "Background Image"),
 			FSUI_CSTR("Select a custom background image to use in Big Picture Mode menus."),
 			background_display.c_str()))
@@ -4078,30 +4078,30 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 						bsi->SetBoolValue("UI", "GameListBackgroundEnabled", true);
 						SetSettingsChanged(bsi);
 					}
-					
+
 					LoadCustomBackground();
 				}
 				CloseFileSelector();
 			},
 			GetImageFileFilters());
 	}
-	
+
 	if (MenuButton(FSUI_ICONSTR(ICON_FA_XMARK, "Clear Background Image"),
 			FSUI_CSTR("Removes the custom background image.")))
 	{
 		bsi->DeleteValue("UI", "GameListBackgroundPath");
 		bsi->SetBoolValue("UI", "GameListBackgroundEnabled", false);
 		SetSettingsChanged(bsi);
-		
+
 		s_custom_background_texture.reset();
 		s_custom_background_path.clear();
 		s_custom_background_enabled = false;
 	}
-	
+
 	DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_DROPLET, "Background Opacity"),
 		FSUI_CSTR("Sets the transparency of the custom background image."),
 		"UI", "GameListBackgroundOpacity", 100, 0, 100, "%d%%");
-	
+
 	static constexpr const char* s_background_mode_names[] = {
 		FSUI_NSTR("Fit"),
 		FSUI_NSTR("Fill"),
@@ -4723,9 +4723,9 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 		FSUI_NSTR("Disabled (Ignore Transfers)"),
 	};
 	static constexpr const char* s_screenshot_sizes[] = {
-		FSUI_NSTR("Screen Resolution"),
-		FSUI_NSTR("Internal Resolution"),
-		FSUI_NSTR("Internal Resolution (Aspect Uncorrected)"),
+		FSUI_NSTR("Display Resolution (Aspect Corrected)"),
+		FSUI_NSTR("Internal Resolution (Aspect Corrected)"),
+		FSUI_NSTR("Internal Resolution (No Aspect Correction)"),
 	};
 	static constexpr const char* s_screenshot_formats[] = {
 		FSUI_NSTR("PNG"),
@@ -5300,22 +5300,22 @@ void FullscreenUI::DrawNetworkHDDSettingsPage()
 	const bool network_enabled = GetEffectiveBoolSetting(bsi, "DEV9/Eth", "EthEnable", false);
 
 	const std::string current_api = bsi->GetStringValue("DEV9/Eth", "EthApi", "Unset");
-	
+
 	static std::vector<std::vector<AdapterEntry>> adapter_lists;
 	static std::vector<Pcsx2Config::DEV9Options::NetApi> api_types;
 	static std::vector<std::string> api_display_names;
 	static bool adapters_loaded = false;
-	
+
 	if (!adapters_loaded && network_enabled)
 	{
 		adapter_lists.clear();
 		api_types.clear();
 		api_display_names.clear();
-		
+
 		adapter_lists.emplace_back();
 		api_types.emplace_back(Pcsx2Config::DEV9Options::NetApi::Unset);
 		api_display_names.emplace_back("Unset");
-		
+
 		std::vector<AdapterEntry> pcap_adapters = PCAPAdapter::GetAdapters();
 		if (!pcap_adapters.empty())
 		{
@@ -5323,7 +5323,7 @@ void FullscreenUI::DrawNetworkHDDSettingsPage()
 			std::vector<AdapterEntry> pcap_switched_adapters;
 			std::set<std::string> seen_bridged_guids;
 			std::set<std::string> seen_switched_guids;
-			
+
 			for (const auto& adapter : pcap_adapters)
 			{
 				if (adapter.type == Pcsx2Config::DEV9Options::NetApi::PCAP_Bridged)
@@ -5343,7 +5343,7 @@ void FullscreenUI::DrawNetworkHDDSettingsPage()
 					}
 				}
 			}
-			
+
 			// Sort adapters alphabetically by name
 			std::sort(pcap_bridged_adapters.begin(), pcap_bridged_adapters.end(),
 				[](const AdapterEntry& a, const AdapterEntry& b) { return a.name < b.name; });
@@ -5364,7 +5364,7 @@ void FullscreenUI::DrawNetworkHDDSettingsPage()
 				api_display_names.emplace_back("PCAP Switched");
 			}
 		}
-		
+
 #ifdef _WIN32
 		std::vector<AdapterEntry> tap_adapters = TAPAdapter::GetAdapters();
 		if (!tap_adapters.empty())
@@ -5378,7 +5378,7 @@ void FullscreenUI::DrawNetworkHDDSettingsPage()
 			api_display_names.emplace_back("TAP");
 		}
 #endif
-		
+
 		std::vector<AdapterEntry> socket_adapters = SocketAdapter::GetAdapters();
 		if (!socket_adapters.empty())
 		{
@@ -5390,7 +5390,7 @@ void FullscreenUI::DrawNetworkHDDSettingsPage()
 			api_types.emplace_back(Pcsx2Config::DEV9Options::NetApi::Sockets);
 			api_display_names.emplace_back("Sockets");
 		}
-		
+
 		adapters_loaded = true;
 	}
 
@@ -5410,7 +5410,7 @@ void FullscreenUI::DrawNetworkHDDSettingsPage()
 			network_enabled))
 	{
 		ImGuiFullscreen::ChoiceDialogOptions options;
-		
+
 		for (size_t i = 0; i < api_display_names.size(); i++)
 		{
 			options.emplace_back(api_display_names[i], i == current_api_index);
@@ -5428,9 +5428,9 @@ void FullscreenUI::DrawNetworkHDDSettingsPage()
 				const std::string selected_api = Pcsx2Config::DEV9Options::NetApiNames[static_cast<int>(current_api_types[index])];
 				const std::string previous_api = bsi->GetStringValue("DEV9/Eth", "EthApi", "Unset");
 				const std::string previous_device = bsi->GetStringValue("DEV9/Eth", "EthDevice", "");
-				
+
 				bsi->SetStringValue("DEV9/Eth", "EthApi", selected_api.c_str());
-				
+
 				std::string new_device = "";
 				if (index < static_cast<s32>(current_adapter_lists.size()))
 				{
@@ -5455,10 +5455,10 @@ void FullscreenUI::DrawNetworkHDDSettingsPage()
 						new_device = new_adapter_list[0].guid;
 					}
 				}
-				
+
 				bsi->SetStringValue("DEV9/Eth", "EthDevice", new_device.c_str());
 				SetSettingsChanged(bsi);
-				
+
 				CloseChoiceDialog();
 			});
 	}
@@ -5481,7 +5481,7 @@ void FullscreenUI::DrawNetworkHDDSettingsPage()
 				}
 			}
 		}
-		
+
 		if (device_display.empty())
 			device_display = current_device;
 	}
@@ -5528,7 +5528,7 @@ void FullscreenUI::DrawNetworkHDDSettingsPage()
 				if (index < static_cast<s32>(current_adapter_list.size()))
 				{
 					const auto& selected_adapter = current_adapter_list[index];
-					
+
 					auto lock = Host::GetSettingsLock();
 					bsi->SetStringValue("DEV9/Eth", "EthApi", current_api_choice.c_str());
 					bsi->SetStringValue("DEV9/Eth", "EthDevice", selected_adapter.guid.c_str());
@@ -5574,7 +5574,7 @@ void FullscreenUI::DrawNetworkHDDSettingsPage()
 		FSUI_CSTR("Automatically determine the subnet mask based on the IP address class."),
 		"DEV9/Eth", "AutoMask", true, ip_settings_enabled && subnet_can_be_edited);
 	DrawIPAddressSetting(bsi, FSUI_ICONSTR(ICON_FA_NETWORK_WIRED, "Subnet Mask"),
-		FSUI_CSTR("Subnet mask for the PS2 virtual network adapter."), "DEV9/Eth", "Mask", "0.0.0.0", 
+		FSUI_CSTR("Subnet mask for the PS2 virtual network adapter."), "DEV9/Eth", "Mask", "0.0.0.0",
 		ip_settings_enabled && subnet_can_be_edited && !mask_auto, LAYOUT_MENU_BUTTON_HEIGHT, g_large_font, g_medium_font, IPAddressType::SubnetMask);
 
 	const bool gateway_auto = GetEffectiveBoolSetting(bsi, "DEV9/Eth", "AutoGateway", true);
@@ -5632,7 +5632,7 @@ void FullscreenUI::DrawNetworkHDDSettingsPage()
 		{
 			const std::string full_path = fd.FileName;
 			const std::string filename = std::string(Path::GetFileName(full_path));
-			
+
 			// Get file size and determine LBA mode
 			const s64 file_size = FileSystem::GetPathFileSize(full_path.c_str());
 			if (file_size > 0)
@@ -5640,8 +5640,8 @@ void FullscreenUI::DrawNetworkHDDSettingsPage()
 				const int size_gb = static_cast<int>(file_size / _1gb);
 				const bool uses_lba48 = (file_size > static_cast<s64>(120) * _1gb);
 				const std::string lba_mode = uses_lba48 ? "LBA48" : "LBA28";
-				
-				choices.emplace_back(fmt::format("{} ({} GB, {})", filename, size_gb, lba_mode), 
+
+				choices.emplace_back(fmt::format("{} ({} GB, {})", filename, size_gb, lba_mode),
 					hdd_selection == full_path);
 				values.emplace_back(full_path);
 			}
@@ -5661,7 +5661,7 @@ void FullscreenUI::DrawNetworkHDDSettingsPage()
 				if (values[index] == "__browse__")
 				{
 					CloseChoiceDialog();
-					
+
 					OpenFileSelector(FSUI_ICONSTR(ICON_FA_HARD_DRIVE, "Select HDD Image File"), false,
 						[game_settings](const std::string& path) {
 							if (path.empty())
@@ -5677,7 +5677,7 @@ void FullscreenUI::DrawNetworkHDDSettingsPage()
 				else if (values[index] == "__create__")
 				{
 					CloseChoiceDialog();
-					
+
 					std::vector<std::pair<std::string, int>> size_options = {
 						{"40 GB (Recommended)", 40},
 						{"80 GB", 80},
@@ -5702,7 +5702,7 @@ void FullscreenUI::DrawNetworkHDDSettingsPage()
 							if (size_values[size_index] == -1)
 							{
 								CloseChoiceDialog();
-								
+
 								OpenInputStringDialog(
 									FSUI_ICONSTR(ICON_FA_PEN_TO_SQUARE, "Custom HDD Size"),
 									FSUI_STR("Enter custom HDD size in gigabytes (40–2000):"),
@@ -5711,7 +5711,7 @@ void FullscreenUI::DrawNetworkHDDSettingsPage()
 									[game_settings](std::string input) {
 										if (input.empty())
 											return;
-										
+
 										std::optional<int> custom_size_opt = StringUtil::FromChars<int>(input);
 										if (!custom_size_opt.has_value())
 										{
@@ -5719,17 +5719,17 @@ void FullscreenUI::DrawNetworkHDDSettingsPage()
 											return;
 										}
 										int custom_size_gb = custom_size_opt.value();
-										
+
 										if (custom_size_gb < 40 || custom_size_gb > 2000)
 										{
 											ShowToast(std::string(), FSUI_STR("HDD size must be between 40 GB and 2000 GB."));
 											return;
 										}
-										
+
 										const bool lba48 = (custom_size_gb > 120);
 										const std::string filename = fmt::format("DEV9hdd_{}GB_{}.raw", custom_size_gb, lba48 ? "LBA48" : "LBA28");
 										const std::string filepath = Path::Combine(EmuFolders::DataRoot, filename);
-										
+
 										if (FileSystem::FileExists(filepath.c_str()))
 										{
 											OpenConfirmMessageDialog(
@@ -5762,10 +5762,10 @@ void FullscreenUI::DrawNetworkHDDSettingsPage()
 
 							const int size_gb = size_values[size_index];
 							const bool lba48 = (size_gb > 120);
-							
+
 							const std::string filename = fmt::format("DEV9hdd_{}GB_{}.raw", size_gb, lba48 ? "LBA48" : "LBA28");
 							const std::string filepath = Path::Combine(EmuFolders::DataRoot, filename);
-							
+
 							if (FileSystem::FileExists(filepath.c_str()))
 							{
 								OpenConfirmMessageDialog(
@@ -5790,7 +5790,7 @@ void FullscreenUI::DrawNetworkHDDSettingsPage()
 								SetSettingsChanged(bsi);
 								FullscreenUI::CreateHardDriveWithProgress(filepath, size_gb, lba48);
 							}
-							
+
 							CloseChoiceDialog();
 						});
 				}
@@ -7854,7 +7854,7 @@ void FullscreenUI::DrawGameListWindow()
 void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 {
 	ImGui::PushStyleColor(ImGuiCol_WindowBg, UIBackgroundColor);
-	
+
 	if (!BeginFullscreenColumns(nullptr, heading_size.y, true, true))
 	{
 		EndFullscreenColumns();
@@ -8140,7 +8140,7 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
 
 			const bool show_titles = Host::GetBaseBoolSettingValue("UI", "FullscreenUIShowGameGridTitles", true);
 
-			if (show_titles) 
+			if (show_titles)
 			{
 				const ImRect title_bb(ImVec2(bb.Min.x, bb.Min.y + image_height + title_spacing), bb.Max);
 				const std::string_view title(std::string_view(entry->GetTitle(true)).substr(0, 31));

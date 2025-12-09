@@ -93,7 +93,7 @@ bool InputRecording::play(const std::string& filename)
 		if (!FileSystem::FileExists(savestatePath.c_str()))
 		{
 			InputRec::consoleLog(fmt::format("Could not locate savestate file at location - {}", savestatePath));
-			InputRec::log(TRANSLATE_STR("InputRecording", "Savestate load failed for input recording"), Host::OSD_ERROR_DURATION);
+			InputRec::log(TRANSLATE_STR("InputRecording", "Failed to load state for input recording"), Host::OSD_ERROR_DURATION);
 			m_file.close();
 			return false;
 		}
@@ -103,7 +103,7 @@ bool InputRecording::play(const std::string& filename)
 		const auto loaded = VMManager::LoadState(savestatePath.c_str());
 		if (!loaded)
 		{
-			InputRec::log(TRANSLATE_STR("InputRecording", "Load state failed for input recording, unsupported version?"), Host::OSD_ERROR_DURATION);
+			InputRec::log(TRANSLATE_STR("InputRecording", "Failed to load state for input recording, unsupported version?"), Host::OSD_ERROR_DURATION);
 			m_file.close();
 			m_is_active = false;
 			return false;

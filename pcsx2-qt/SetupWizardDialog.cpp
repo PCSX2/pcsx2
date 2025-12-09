@@ -261,8 +261,10 @@ void SetupWizardDialog::onDirectoryListContextMenuRequested(const QPoint& point)
 	const int row = selection[0].row();
 
 	QMenu menu;
+	//: Part of the right-click menu for game directory entries
 	menu.addAction(tr("Remove"), [this]() { onRemoveSearchDirectoryButtonClicked(); });
 	menu.addSeparator();
+	//: Part of the right-click menu for game directory entries
 	menu.addAction(tr("Open Directory..."),
 		[this, row]() { QtUtils::OpenURL(this, QUrl::fromLocalFile(m_ui.searchDirectoryList->item(row, 0)->text())); });
 	menu.exec(m_ui.searchDirectoryList->mapToGlobal(point));

@@ -93,7 +93,7 @@
    <item row="1" column="0">
     <widget class="QLabel" name="nativeScalingLabel">
      <property name="text">
-      <string>Native Scaling</string>
+      <string>Native Scaling:</string>
      </property>
      <property name="buddy">
       <cstring>nativeScaling</cstring>

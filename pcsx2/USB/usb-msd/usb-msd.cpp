@@ -1243,7 +1243,7 @@ namespace usb_msd
 			{
 				static constexpr const SettingInfo settings[] = {
 					{SettingInfo::Type::Path, "ImagePathMsd", TRANSLATE_NOOP("USB", "Image Path"),
-						TRANSLATE_NOOP("USB", "Sets the path to image which will back the virtual mass storage device.")},
+						TRANSLATE_NOOP("USB", "Sets the path to the disk image which will back the virtual mass storage device.")},
 				};
 				return settings;
 			}
@@ -1251,7 +1251,7 @@ namespace usb_msd
 			{
 				static constexpr const SettingInfo settings[] = {
 					{SettingInfo::Type::Path, "ImagePathMsac", TRANSLATE_NOOP("USB", "Image Path"),
-						TRANSLATE_NOOP("USB", "Sets the path to image which will back the virtual mass storage device.")},
+						TRANSLATE_NOOP("USB", "Sets the path to the disk image which will back the virtual mass storage device.")},
 				};
 				return settings;
 			}

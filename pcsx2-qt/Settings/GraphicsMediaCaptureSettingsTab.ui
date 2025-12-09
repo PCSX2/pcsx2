@@ -15,7 +15,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QGroupBox" name="groupBox">
+    <widget class="QGroupBox" name="screenshotGroupBox">
      <property name="title">
       <string>Screenshot Capture Setup</string>
      </property>
@@ -42,7 +42,7 @@
           </property>
           <item>
            <property name="text">
-            <string>Window Resolution (Aspect Corrected)</string>
+            <string>Display Resolution (Aspect Corrected)</string>
            </property>
           </item>
           <item>
@@ -186,6 +186,9 @@
              <property name="singleStep">
               <number>1</number>
              </property>
+             <property name="value">
+              <number>67</number>
+             </property>
             </widget>
            </item>
            <item row="2" column="0" colspan="2">
@@ -273,6 +276,9 @@
              <property name="singleStep">
               <number>100</number>
              </property>
+             <property name="value">
+              <number>420</number>
+             </property>
             </widget>
            </item>
            <item row="3" column="0">
@@ -325,7 +331,7 @@
                 <number>16</number>
                </property>
                <property name="value">
-                <number>240</number>
+                <number>480</number>
                </property>
               </widget>
              </item>
