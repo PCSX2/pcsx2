@@ -103,7 +103,7 @@ bool InputRecording::play(const std::string& filename)
 		const auto loaded = VMManager::LoadState(savestatePath.c_str());
 		if (!loaded)
 		{
-			InputRec::log(TRANSLATE_STR("InputRecording", "Savestate load failed for input recording, unsupported version?"), Host::OSD_ERROR_DURATION);
+			InputRec::log(TRANSLATE_STR("InputRecording", "Load state failed for input recording, unsupported version?"), Host::OSD_ERROR_DURATION);
 			m_file.close();
 			m_is_active = false;
 			return false;
@@ -343,7 +343,7 @@ void InputRecording::adjustFrameCounterOnReRecord(u32 newFrameCounter)
 	if (newFrameCounter > m_starting_frame + m_file.getTotalFrames())
 	{
 		InputRec::consoleLog("Warning, you've loaded PCSX2 emulation to a point after the end of the original recording. This should be avoided.");
-		InputRec::consoleLog("Savestate's framecount has been ignored, using the max length of the recording instead.");
+		InputRec::consoleLog("Save state's framecount has been ignored, using the max length of the recording instead.");
 		m_frame_counter = m_file.getTotalFrames();
 		if (getControls().isReplaying())
 		{
@@ -354,7 +354,7 @@ void InputRecording::adjustFrameCounterOnReRecord(u32 newFrameCounter)
 	if (newFrameCounter < m_starting_frame)
 	{
 		InputRec::consoleLog("Warning, you've loaded PCSX2 emulation to a point before the start of the original recording. This should be avoided.");
-		InputRec::consoleLog("Savestate's framecount has been ignored, starting from the beginning in replay mode.");
+		InputRec::consoleLog("Save state's framecount has been ignored, starting from the beginning in replay mode.");
 		m_frame_counter = 0;
 		if (getControls().isRecording())
 		{

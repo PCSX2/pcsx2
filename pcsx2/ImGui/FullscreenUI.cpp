@@ -6613,7 +6613,7 @@ void FullscreenUI::DrawAdvancedSettingsPage()
 			FSUI_CSTR("Performs just-in-time binary translation of 32-bit MIPS-I machine code to native code."), "EmuCore/CPU/Recompiler",
 			"EnableIOP", true);
 
-		MenuHeading(FSUI_CSTR("Savestate"));
+		MenuHeading(FSUI_CSTR("Save State Management"));
 		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_BOX_OPEN, "Compression Method"), FSUI_CSTR("Sets the compression algorithm for savestate."), "EmuCore",
 			"SavestateCompressionType", static_cast<int>(SavestateCompressionMethod::Zstandard), s_savestate_compression_type, std::size(s_savestate_compression_type), true);
 		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_COMPRESS, "Compression Level"), FSUI_CSTR("Sets the compression level for savestate."), "EmuCore",
