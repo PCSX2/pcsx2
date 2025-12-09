@@ -203,7 +203,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 	if (FAILED(res))
 	{
 		Console.ErrorFmt("Failed to create shortcut: CoInitialize failed ({})", str_error(res));
-		QMessageBox::critical(this, tr("Failed to create shortcut"), tr("CoInitialize failed (%1").arg(str_error(res)), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
+		QMessageBox::critical(this, tr("Failed to create shortcut"), tr("CoInitialize failed (%1)").arg(str_error(res)), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
 		return;
 	}
 
