@@ -17,7 +17,7 @@
 #include <QtCore/QDateTime>
 #include <QtWidgets/QMessageBox>
 
-const char* AUDIO_FILE_FILTER = QT_TRANSLATE_NOOP("MainWindow", "Audio Files (*.wav)");
+const char* AchievementSettingsWidget::AUDIO_FILE_FILTER = QT_TRANSLATE_NOOP("AchievementSettingsWidget", "WAV Audio Files (*.wav)");
 
 AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* settings_dialog, QWidget* parent)
 	: SettingsWidget(settings_dialog, parent)
@@ -44,9 +44,9 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* settings_di
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.achievementNotificationsDuration, "Achievements", "NotificationsDuration", Pcsx2Config::AchievementsOptions::DEFAULT_NOTIFICATION_DURATION);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.leaderboardNotificationsDuration, "Achievements", "LeaderboardsDuration", Pcsx2Config::AchievementsOptions::DEFAULT_LEADERBOARD_DURATION);
 
-	SettingWidgetBinder::BindWidgetToFileSetting(sif, m_ui.notificationSoundPath, m_ui.notificationSoundBrowse, m_ui.notificationSoundOpen, m_ui.notificationSoundReset, "Achievements", "InfoSoundName", Path::Combine(EmuFolders::Resources, EmuConfig.Achievements.DEFAULT_INFO_SOUND_NAME), AUDIO_FILE_FILTER, true, false);
-	SettingWidgetBinder::BindWidgetToFileSetting(sif, m_ui.unlockSoundPath, m_ui.unlockSoundBrowse, m_ui.unlockSoundOpen, m_ui.unlockSoundReset, "Achievements", "UnlockSoundName", Path::Combine(EmuFolders::Resources, EmuConfig.Achievements.DEFAULT_UNLOCK_SOUND_NAME), AUDIO_FILE_FILTER, true, false);
-	SettingWidgetBinder::BindWidgetToFileSetting(sif, m_ui.lbSoundPath, m_ui.lbSoundBrowse, m_ui.lbSoundOpen, m_ui.lbSoundReset, "Achievements", "LBSubmitSoundName", Path::Combine(EmuFolders::Resources, EmuConfig.Achievements.DEFAULT_LBSUBMIT_SOUND_NAME), AUDIO_FILE_FILTER, true, false);
+	SettingWidgetBinder::BindWidgetToFileSetting(sif, m_ui.notificationSoundPath, m_ui.notificationSoundBrowse, m_ui.notificationSoundOpen, m_ui.notificationSoundReset, "Achievements", "InfoSoundName", Path::Combine(EmuFolders::Resources, EmuConfig.Achievements.DEFAULT_INFO_SOUND_NAME), qApp->translate("AchievementSettingsWidget", AUDIO_FILE_FILTER), true, false);
+	SettingWidgetBinder::BindWidgetToFileSetting(sif, m_ui.unlockSoundPath, m_ui.unlockSoundBrowse, m_ui.unlockSoundOpen, m_ui.unlockSoundReset, "Achievements", "UnlockSoundName", Path::Combine(EmuFolders::Resources, EmuConfig.Achievements.DEFAULT_UNLOCK_SOUND_NAME), qApp->translate("AchievementSettingsWidget", AUDIO_FILE_FILTER), true, false);
+	SettingWidgetBinder::BindWidgetToFileSetting(sif, m_ui.lbSoundPath, m_ui.lbSoundBrowse, m_ui.lbSoundOpen, m_ui.lbSoundReset, "Achievements", "LBSubmitSoundName", Path::Combine(EmuFolders::Resources, EmuConfig.Achievements.DEFAULT_LBSUBMIT_SOUND_NAME), qApp->translate("AchievementSettingsWidget", AUDIO_FILE_FILTER), true, false);
 
 	dialog()->registerWidgetHelp(m_ui.enable, tr("Enable Achievements"), tr("Unchecked"), tr("When enabled and logged in, PCSX2 will scan for achievements on startup."));
 	dialog()->registerWidgetHelp(m_ui.hardcoreMode, tr("Enable Hardcore Mode"), tr("Unchecked"), tr("\"Challenge\" mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions."));

@@ -26,6 +26,7 @@ private Q_SLOTS:
 
 private:
 	void updateLoginState();
+	static const char* AUDIO_FILE_FILTER;
 
 	Ui::AchievementSettingsWidget m_ui;
 };
