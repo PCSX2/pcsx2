@@ -49,8 +49,7 @@ public slots:
 private:
 	Ui::RegisterView ui;
 
-	// Returns true on success
-	bool contextFetchNewValue(u64& out, u64 currentValue, bool segment = false);
+	void fetchNewValue(u64 currentValue, bool segment, std::function<void(u64)> callback);
 
 	// Used for the height offset the tab bar creates
 	// because we share a widget
