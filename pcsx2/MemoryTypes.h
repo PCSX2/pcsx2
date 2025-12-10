@@ -35,12 +35,11 @@ typedef u128 mem128_t;
 // Needs to fit within EEmemSize of Memory.h
 struct EEVM_MemoryAllocMess
 {
-	u8 Main[Ps2MemSize::MainRam];         // Main memory (hard-wired to 32MB)
-	u8 ExtraMemory[Ps2MemSize::ExtraRam]; // Extra memory (32MB up to 128MB => 96MB).
-	u8 Scratch[Ps2MemSize::Scratch];      // Scratchpad!
-	u8 ROM[Ps2MemSize::Rom];              // Boot rom (4MB)
-	u8 ROM1[Ps2MemSize::Rom1];            // DVD player (4MB)
-	u8 ROM2[Ps2MemSize::Rom2];            // Chinese extensions
+	u8 Main[Ps2MemSize::TotalRam];   // Main memory
+	u8 Scratch[Ps2MemSize::Scratch]; // Scratchpad!
+	u8 ROM[Ps2MemSize::Rom];         // Boot rom (4MB)
+	u8 ROM1[Ps2MemSize::Rom1];       // DVD player (4MB)
+	u8 ROM2[Ps2MemSize::Rom2];       // Chinese extensions
 
 	// Two 1 megabyte (max DMA) buffers for reading and writing to high memory (>32MB).
 	// Such accesses are not documented as causing bus errors but as the memory does
@@ -54,10 +53,9 @@ struct EEVM_MemoryAllocMess
 // Needs to fit within IOPmemSize of Memory.h
 struct IopVM_MemoryAllocMess
 {
-	u8 Main[Ps2MemSize::IopRam];             // Main memory (hard-wired to 2MB)
-	u8 ExtraMemory[Ps2MemSize::ExtraIopRam]; // Extended memory to 16mb
-	u8 P[_64kb];                             // I really have no idea what this is... --air
-	u8 Sif[0x100];                           // a few special SIF/SBUS registers (likely not needed)
+	u8 Main[Ps2MemSize::TotalRam]; // Main memory
+	u8 P[_64kb];                   // I really have no idea what this is... --air
+	u8 Sif[0x100];                 // a few special SIF/SBUS registers (likely not needed)
 };
 
 
