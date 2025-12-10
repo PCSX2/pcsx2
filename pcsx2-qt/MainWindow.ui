@@ -1047,7 +1047,7 @@
     <iconset theme="camera-video"/>
    </property>
    <property name="text">
-    <string>&amp;Video Capture</string>
+    <string comment="In Toolbar">&amp;Video Capture</string>
    </property>
   </action>
   <action name="actionEditCheats">
