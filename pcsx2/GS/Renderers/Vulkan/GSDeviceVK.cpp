@@ -2296,7 +2296,6 @@ GSDevice::PresentResult GSDeviceVK::BeginPresent(bool frame_skip)
 	VkResult res = m_resize_requested ? VK_ERROR_OUT_OF_DATE_KHR : m_swap_chain->AcquireNextImage();
 	if (res != VK_SUCCESS)
 	{
-		LOG_VULKAN_ERROR(res, "vkAcquireNextImageKHR() failed: ");
 		m_swap_chain->ReleaseCurrentImage();
 
 		if (res == VK_SUBOPTIMAL_KHR || res == VK_ERROR_OUT_OF_DATE_KHR)
@@ -2316,6 +2315,8 @@ GSDevice::PresentResult GSDeviceVK::BeginPresent(bool frame_skip)
 
 			res = m_swap_chain->AcquireNextImage();
 		}
+		else
+			LOG_VULKAN_ERROR(res, "vkAcquireNextImageKHR() failed: ");
 
 		// This can happen when multiple resize events happen in quick succession.
 		// In this case, just wait until the next frame to try again.
