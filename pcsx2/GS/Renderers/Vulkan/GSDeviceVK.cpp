@@ -1266,7 +1266,8 @@ void GSDeviceVK::SubmitCommandBuffer(VKSwapChain* present_swap_chain)
 		{
 			// VK_ERROR_OUT_OF_DATE_KHR is not fatal, just means we need to recreate our swap chain.
 			if (res == VK_ERROR_OUT_OF_DATE_KHR)
-				ResizeWindow(0, 0, m_window_info.surface_scale);
+				// Defer until next frame, otherwise resizing would invalidate swapchain before next present.
+				m_resize_requested = true;
 			else
 				LOG_VULKAN_ERROR(res, "vkQueuePresentKHR failed: ");
 
@@ -2183,6 +2184,8 @@ bool GSDeviceVK::UpdateWindow()
 
 void GSDeviceVK::ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale)
 {
+	m_resize_requested = false;
+
 	if (!m_swap_chain || (m_swap_chain->GetWidth() == static_cast<u32>(new_window_width) &&
 							 m_swap_chain->GetHeight() == static_cast<u32>(new_window_height)))
 	{
@@ -2290,7 +2293,7 @@ GSDevice::PresentResult GSDeviceVK::BeginPresent(bool frame_skip)
 		return PresentResult::FrameSkipped;
 	}
 
-	VkResult res = m_swap_chain->AcquireNextImage();
+	VkResult res = m_resize_requested ? VK_ERROR_OUT_OF_DATE_KHR : m_swap_chain->AcquireNextImage();
 	if (res != VK_SUCCESS)
 	{
 		LOG_VULKAN_ERROR(res, "vkAcquireNextImageKHR() failed: ");
