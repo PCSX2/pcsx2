@@ -76,7 +76,7 @@ body:
     attributes:
       label: PCSX2 Revision
       description: "We only accept bug reports for the latest dev version. Please try upgrading before making an issue."
-      placeholder: "Example: v1.7.1337"
+      placeholder: "Example: v2.5.374"
     validations:
       required: true
   - type: dropdown
