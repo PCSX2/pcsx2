@@ -19,16 +19,16 @@
     },
     {
       "type": "file",
-      "url": "https://download.sourceforge.net/libpng-apng/libpng-1.6.51-apng.patch.gz",
-      "dest-filename": "libpng-1.6.51-apng.patch.gz",
-      "sha256": "9c16ec5654be709f062a705d0c6f529193f1c2123fe7f102fda6733913689023"
+      "url": "https://download.sourceforge.net/libpng-apng/libpng-1.6.53-apng.patch.gz",
+      "dest-filename": "libpng-1.6.53-apng.patch.gz",
+      "sha256": "452a1a290bd0cf18737fad0057dc17b7fdf10a73eda2d6d4f31ba04fda25ef2c"
     },
     {
       "type": "shell",
       "commands":
       [
-          "gunzip -f libpng-1.6.51-apng.patch.gz",
-          "patch -p1  < \"libpng-1.6.51-apng.patch\""
+          "gunzip -f libpng-1.6.53-apng.patch.gz",
+          "patch -p1  < \"libpng-1.6.53-apng.patch\""
       ]
     }
   ],
