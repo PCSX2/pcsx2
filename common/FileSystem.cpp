@@ -28,13 +28,17 @@
 #endif
 
 #if defined(_WIN32)
-#include "RedtapeWindows.h"
+#include "common/RedtapeWindows.h"
+#include <comdef.h>
 #include <io.h>
 #include <malloc.h>
+#include <objbase.h>
 #include <pathcch.h>
-#include <winioctl.h>
 #include <share.h>
 #include <shlobj.h>
+#include <winioctl.h>
+#include <winnls.h>
+#include <wrl/client.h>
 #else
 #include <fcntl.h>
 #include <dirent.h>
@@ -68,7 +72,7 @@ static bool IsUNCPath(const T& path)
 static inline bool FileSystemCharacterIsSane(char32_t c, bool strip_slashes)
 {
 #ifdef _WIN32
-	// https://docs.microsoft.com/en-gb/windows/win32/fileio/naming-a-file?redirectedfrom=MSDN#naming-conventions
+	// https://docs.microsoft.com/en-gb/windows/win32/fileio/naming-a-file
 	if ((c == U'/' || c == U'\\') && strip_slashes)
 		return false;
 
@@ -214,7 +218,6 @@ bool Path::IsValidFileName(const std::string_view str, bool allow_slashes)
 }
 
 #ifdef _WIN32
-
 bool FileSystem::GetWin32Path(std::wstring* dest, std::string_view str)
 {
 	// Just convert to wide if it's a relative path, MAX_PATH still applies.
@@ -271,6 +274,134 @@ std::wstring FileSystem::GetWin32Path(std::string_view str)
 	return ret;
 }
 
+bool FileSystem::CreateWin32IShellLink(const std::string_view path_suffix, const std::string_view launch_arguments,
+	const std::string_view description, const GUID& base_directory_ID)
+{
+	const auto check_failed = [&](const HRESULT hresult, const bool initialized = true) -> bool {
+		if (!FAILED(hresult))
+			return false;
+
+		_com_error err(hresult);
+		const TCHAR* error_message = err.ErrorMessage();
+		Console.ErrorFmt("Failed to create shortcut: {}",
+			fmt::format("{} [{:08X}]", StringUtil::WideStringToUTF8String(error_message), hresult));
+
+		if (initialized)
+			CoUninitialize();
+
+		return true;
+	};
+
+	if (check_failed(CoInitialize(NULL), false))
+		return false;
+
+	// Create shell link instance.
+	Microsoft::WRL::ComPtr<IShellLink> shell_link;
+	if (check_failed(CoCreateInstance(
+			__uuidof(ShellLink), NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&shell_link))))
+	{
+		return false;
+	}
+
+	// Set path to executable.
+	if (check_failed(shell_link->SetPath(
+			StringUtil::UTF8StringToWideString(FileSystem::GetProgramPath()).c_str())))
+	{
+		return false;
+	}
+
+	// Set working directory.
+	if (check_failed(shell_link->SetWorkingDirectory(
+			StringUtil::UTF8StringToWideString(FileSystem::GetWorkingDirectory()).c_str())))
+	{
+		return false;
+	}
+
+	// Set launch arguments.
+	if (!launch_arguments.empty())
+	{
+		if (check_failed(shell_link->SetArguments(StringUtil::UTF8StringToWideString(launch_arguments).c_str())))
+			return false;
+	}
+
+	// Set icon.
+	const std::string icon_path =
+		Path::Combine(Path::GetDirectory(FileSystem::GetProgramPath()), "resources\\icons\\AppIconLarge.ico");
+	if (check_failed(shell_link->SetIconLocation(StringUtil::UTF8StringToWideString(icon_path).c_str(), 0)))
+		return false;
+
+	// Set description (comment).
+	if (!description.empty())
+	{
+		if (check_failed(shell_link->SetDescription(StringUtil::UTF8StringToWideString(description).c_str())))
+			return false;
+	}
+
+	std::string shortcut_file_destination = "\\\\?\\";
+	// If no base directory ID specified, assume path suffix is an absolute path.
+	if (!IsEqualGUID(base_directory_ID, GUID_NULL))
+	{
+		PWSTR base_directory = nullptr;
+		if (check_failed(SHGetKnownFolderPath(base_directory_ID, 0, NULL, &base_directory)))
+			return false;
+		shortcut_file_destination += StringUtil::WideStringToUTF8String(base_directory) + "\\";
+		CoTaskMemFree(base_directory);
+	}
+
+	shortcut_file_destination += path_suffix;
+	const std::wstring shortcut_file_path = FileSystem::GetWin32Path(shortcut_file_destination);
+
+	Console.WriteLnFmt("Creating a shortcut '{}' with arguments '{}'",
+		StringUtil::WideStringToUTF8String(shortcut_file_path), launch_arguments);
+
+	// Use IPersistFile object to save shell link.
+	Microsoft::WRL::ComPtr<IPersistFile> persist_file;
+	if (check_failed(shell_link.As(&persist_file)))
+		return false;
+
+	// Save shortcut link to disk.
+	if (check_failed(persist_file->Save(shortcut_file_path.c_str(), TRUE)))
+		return false;
+
+	CoUninitialize();
+	return true;
+}
+#endif
+
+#if defined(__linux__) or defined(__FreeBSD__)
+bool FileSystem::CreateLinuxDesktopFile(const std::string_view destination, const std::string_view exec,
+	const std::string_view name, const std::string_view comment,
+	const std::string_view icon, const std::string_view categories,
+	const std::string_view terminal)
+{
+	// Create the .desktop file's contents.
+	const std::string file_content = fmt::format(
+		"[Desktop Entry]\n"
+		"Encoding=UTF-8\n"
+		"Version=1.0\n"
+		"Type=Application\n"
+		"Terminal={}\n"
+		"StartupWMClass=PCSX2\n"
+		"Exec={}\n"
+		"Name={}\n"
+		"Comment={}\n"
+		"Icon={}\n"
+		"Categories={}\n",
+		terminal, exec, name, comment, icon, categories);
+
+	// Write to .desktop file.
+	if (destination.empty() || !WriteStringToFile(destination.data(), file_content))
+	{
+		Console.ErrorFmt("Failed to create .desktop file at {}.", destination);
+		return false;
+	}
+
+	// Enable file execution.
+	if (chmod(destination.data(), S_IRWXU))
+		Console.WarningFmt("Failed to change file permissions for .desktop file: {} ({})", strerror(errno), errno);
+
+	return true;
+}
 #endif
 
 bool Path::IsAbsolute(const std::string_view path)
