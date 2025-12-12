@@ -1769,7 +1769,8 @@ u8 cdvdRead(u8 key)
 
 		case 0x15: // RSV
 			CDVD_LOG("cdvdRead15(RSV)");
-			return 0x0; //  PSX DESR related, but confirmed to be 0 on normal PS2
+			//this should be 0x1 otherwise some PS2's will spam wakeup reason retry 00000000 on boot
+			return 0x1; //  PSX DESR related
 
 		case 0x16: // SCOMMAND
 			CDVD_LOG("cdvdRead16(SCMD) %x", cdvd.sCommand);
