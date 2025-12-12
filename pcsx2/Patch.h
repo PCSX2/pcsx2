@@ -29,9 +29,10 @@ namespace Patch
 	// In PCSX2 it indicates how/when/where the patch line should be applied. If
 	// place is not one of the supported values then the patch line is never applied.
 	// PCSX2 currently supports the following values:
-	// 0 - apply the patch line once on game boot/startup
+	// 0 - apply the patch line once on game boot only
 	// 1 - apply the patch line continuously (technically - on every vsync)
 	// 2 - effect of 0 and 1 combined, see below
+	// 3 - apply the patch line once on game boot or when enabled in the GUI
 	// Note:
 	// - while it may seem that a value of 1 does the same as 0, but also later
 	//   continues to apply the patch on every vsync - it's not.
@@ -43,6 +44,7 @@ namespace Patch
 		PPT_ONCE_ON_LOAD = 0,
 		PPT_CONTINUOUSLY = 1,
 		PPT_COMBINED_0_1 = 2,
+		PPT_ON_LOAD_OR_WHEN_ENABLED = 3,
 
 		PPT_END_MARKER
 	};
@@ -93,6 +95,13 @@ namespace Patch
 	// Functions for Dynamic EE patching.
 	extern void LoadDynamicPatches(const std::vector<DynamicPatch>& patches);
 	extern void ApplyDynamicPatches(u32 pc);
+
+	// Apply all loaded patches that should be applied when the entry point is
+	// being recompiled.
+	extern void ApplyBootPatches();
+
+	// Apply all loaded patches that should be applied during vsync.
+	extern void ApplyVsyncPatches();
 
 	// Patches the emulation memory by applying all the loaded patches with a specific place value.
 	// Note: unless you know better, there's no need to check whether or not different patch sources

@@ -51,7 +51,7 @@ namespace Patch
 		BYTES_T
 	};
 
-	static constexpr std::array<const char*, 3> s_place_to_string = {{"0", "1", "2"}};
+	static constexpr std::array<const char*, 4> s_place_to_string = {{"0", "1", "2", "3"}};
 	static constexpr std::array<const char*, 2> s_cpu_to_string = {{"EE", "IOP"}};
 	static constexpr std::array<const char*, 9> s_type_to_string = {
 		{"byte", "short", "word", "double", "extended", "beshort", "beword", "bedouble", "bytes"}};
@@ -672,7 +672,7 @@ u32 Patch::EnablePatches(const PatchList& patches, const EnablePatchList& enable
 				DevCon.WriteLnFmt("  {}", ip.ToString());
 
 			s_active_patches.push_back(&ip);
-			if (apply_immediately && ip.placetopatch == PPT_ONCE_ON_LOAD)
+			if (apply_immediately && ip.placetopatch == PPT_ON_LOAD_OR_WHEN_ENABLED)
 				patches_to_apply_immediately.push_back(&ip);
 		}
 
@@ -892,7 +892,7 @@ void Patch::PatchFunc::patch(PatchGroup* group, const std::string_view cmd, cons
 
 	if (!placetopatch.has_value())
 	{
-		PATCH_ERROR("Invalid 'place' value '{}' (0 - once on startup, 1: continuously)", pieces[0]);
+		PATCH_ERROR("Invalid 'place' value '{}' (0: on boot only, 1: continuously, 2: on boot and continuously, 3: on boot and when enabled in the GUI)", pieces[0]);
 		return;
 	}
 	if (!addr.has_value() || !addr_end.empty())
@@ -1081,6 +1081,19 @@ void Patch::PatchFunc::dpatch(PatchGroup* group, const std::string_view cmd, con
 	}
 
 	group->dpatches.push_back(dpatch);
+}
+
+void Patch::ApplyBootPatches()
+{
+	ApplyLoadedPatches(PPT_ONCE_ON_LOAD);
+	ApplyLoadedPatches(PPT_COMBINED_0_1);
+	ApplyLoadedPatches(PPT_ON_LOAD_OR_WHEN_ENABLED);
+}
+
+void Patch::ApplyVsyncPatches()
+{
+	ApplyLoadedPatches(PPT_CONTINUOUSLY);
+	ApplyLoadedPatches(PPT_COMBINED_0_1);
 }
 
 // This is for applying patches directly to memory
