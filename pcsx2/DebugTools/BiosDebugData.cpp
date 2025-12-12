@@ -79,10 +79,9 @@ std::vector<IopMod> getIOPModules()
 
 	for (int i = 0; maddr != 0; i++)
 	{
-		if (maddr >= 0x200000)
+		if (maddr >= Ps2MemSize::ExposedIopRam)
 		{
 			// outside of memory
-			// change if we ever support IOP ram extension
 			return {};
 		}
 
