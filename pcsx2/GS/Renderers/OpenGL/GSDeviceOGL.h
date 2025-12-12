@@ -157,9 +157,11 @@ private:
 
 	std::unique_ptr<GLStreamBuffer> m_vertex_stream_buffer;
 	std::unique_ptr<GLStreamBuffer> m_index_stream_buffer;
+	std::unique_ptr<GLStreamBuffer> m_expand_index_stream_buffer;
 	GLuint m_expand_ibo = 0;
 	GLuint m_vao = 0;
 	GLuint m_expand_vao = 0;
+	GLuint m_dummy_vao = 0;
 	GLenum m_draw_topology = 0;
 
 	std::unique_ptr<GLStreamBuffer> m_vertex_uniform_stream_buffer;
@@ -271,6 +273,8 @@ private:
 
 	void DrawStretchRect(const GSVector4& sRect, const GSVector4& dRect, const GSVector2i& ds);
 
+	void SetIndexBuffer(std::unique_ptr<GLStreamBuffer>& buffer, const void* index, size_t count);
+
 protected:
 	virtual void DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
 		GSHWDrawConfig::ColorMaskSelector cms, ShaderConvert shader, bool linear) override;
@@ -313,6 +317,7 @@ public:
 	void DrawPrimitive();
 	void DrawIndexedPrimitive();
 	void DrawIndexedPrimitive(int offset, int count);
+	void DrawVertexShaderIndexedPrimitive(int offset, int count, int expansion_factor);
 
 	std::unique_ptr<GSDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format) override;
 
@@ -342,10 +347,14 @@ public:
 
 	void SetupDATE(GSTexture* rt, GSTexture* ds, SetDATM datm, const GSVector4i& bbox);
 
+	void VSSetUniformBuffer(GSHWDrawConfig::VSConstantBuffer& cb);
+	void PSSetUniformBuffer(GSHWDrawConfig::PSConstantBuffer& cb);
+
 	void IASetVAO(GLuint vao);
 	void IASetPrimitiveTopology(GLenum topology);
 	void IASetVertexBuffer(const void* vertices, size_t count, size_t align_multiplier = 1);
 	void IASetIndexBuffer(const void* index, size_t count);
+	void VSSetIndexBuffer(const void* index, size_t count);
 
 	void PSSetShaderResource(int i, GSTexture* sr);
 	void PSSetSamplerState(GLuint ss);

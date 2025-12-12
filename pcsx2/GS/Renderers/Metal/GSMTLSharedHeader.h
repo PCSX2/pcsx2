@@ -94,6 +94,9 @@ struct GSMTLMainVSUniform
 	vector_float2 texture_offset;
 	vector_float2 point_size;
 	uint max_depth;
+	uint _pad0;
+	vector_uint2 base_vertex_index;
+	vector_uint2 _pad1;
 };
 
 struct GSMTLMainPSUniform
@@ -153,6 +156,8 @@ enum class GSMTLExpandType : unsigned char
 	Point = 1,
 	Line = 2,
 	Sprite = 3,
+	LineAA1 = 4,
+	TriangleAA1 = 5,
 };
 
 enum GSMTLFnConstants
