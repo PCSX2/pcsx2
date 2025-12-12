@@ -366,7 +366,17 @@ bool VKSwapChain::CreateSwapChain()
 
 	// Store the old/current swap chain when recreating for resize
 	// Old swap chain is destroyed regardless of whether the create call succeeds
-	VkSwapchainKHR old_swap_chain = m_swap_chain;
+	VkSwapchainKHR old_swap_chain;
+	// RDNA4 experences a 2s delay in the following 2-3 vkAcquireNextImageKHR calls if we pass the old swapchain to the new one.
+	// Instead, pass null. This requires us to have freed the old image, which we already do with the swapchain maintenance extension.
+	if (GSDeviceVK::GetInstance()->IsDeviceAMD() && GSDeviceVK::GetInstance()->GetOptionalExtensions().vk_ext_swapchain_maintenance1)
+	{
+		vkDestroySwapchainKHR(GSDeviceVK::GetInstance()->GetDevice(), m_swap_chain, nullptr);
+		old_swap_chain = VK_NULL_HANDLE;
+	}
+	else
+		old_swap_chain = m_swap_chain;
+
 	m_swap_chain = VK_NULL_HANDLE;
 
 	// Now we can actually create the swap chain
