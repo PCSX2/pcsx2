@@ -981,7 +981,7 @@ void GraphicsSettingsWidget::onCaptureContainerChanged()
 	const std::string container(
 		dialog()->getEffectiveStringValue("EmuCore/GS", "CaptureContainer", Pcsx2Config::GSOptions::DEFAULT_CAPTURE_CONTAINER));
 
-	m_capture.videoCaptureCodec->disconnect();
+	QObject::disconnect(m_capture.videoCaptureCodec, &QComboBox::currentIndexChanged, nullptr, nullptr);
 	m_capture.videoCaptureCodec->clear();
 	//: This string refers to a default codec, whether it's an audio codec or a video codec.
 	m_capture.videoCaptureCodec->addItem(tr("Default"), QString());
@@ -996,7 +996,7 @@ void GraphicsSettingsWidget::onCaptureContainerChanged()
 		dialog()->getSettingsInterface(), m_capture.videoCaptureCodec, "EmuCore/GS", "VideoCaptureCodec");
 	connect(m_capture.videoCaptureCodec, &QComboBox::currentIndexChanged, this, &GraphicsSettingsWidget::onCaptureCodecChanged);
 
-	m_capture.audioCaptureCodec->disconnect();
+	QObject::disconnect(m_capture.audioCaptureCodec, &QComboBox::currentIndexChanged, nullptr, nullptr);
 	m_capture.audioCaptureCodec->clear();
 	m_capture.audioCaptureCodec->addItem(tr("Default"), QString());
 	for (const auto& [format, name] : GSCapture::GetAudioCodecList(container.c_str()))
@@ -1012,7 +1012,7 @@ void GraphicsSettingsWidget::onCaptureContainerChanged()
 
 void GraphicsSettingsWidget::GraphicsSettingsWidget::onCaptureCodecChanged()
 {
-	m_capture.videoCaptureFormat->disconnect();
+	QObject::disconnect(m_capture.videoCaptureFormat, &QComboBox::currentIndexChanged, nullptr, nullptr);
 	m_capture.videoCaptureFormat->clear();
 	//: This string refers to a default pixel format
 	m_capture.videoCaptureFormat->addItem(tr("Default"), "");

@@ -180,7 +180,7 @@ void AudioSettingsWidget::updateDriverNames()
 	const AudioBackend backend = getEffectiveBackend();
 	const std::vector<std::pair<std::string, std::string>> names = AudioStream::GetDriverNames(backend);
 
-	m_ui.driver->disconnect();
+	QObject::disconnect(m_ui.driver, &QComboBox::currentIndexChanged, nullptr, nullptr);
 	m_ui.driver->clear();
 	if (names.empty())
 	{
@@ -208,7 +208,7 @@ void AudioSettingsWidget::updateDeviceNames()
 	const std::string current_device = dialog()->getEffectiveStringValue("SPU2/Output", "DeviceName", "");
 	const std::vector<AudioStream::DeviceInfo> devices = AudioStream::GetOutputDevices(backend, driver_name.c_str());
 
-	m_ui.outputDevice->disconnect();
+	QObject::disconnect(m_ui.outputDevice, &QComboBox::currentIndexChanged, nullptr, nullptr);
 	m_ui.outputDevice->clear();
 	m_output_device_latency = 0;
 
