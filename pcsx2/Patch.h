@@ -38,9 +38,6 @@ namespace Patch
 	//   The current (and past) behavior is that these patches are applied at different
 	//   places at the code, and it's possible, depending on circumstances, that 0 patches
 	//   will get applied before the first vsync and therefore earlier than 1 patches.
-	// - There's no "place" value which indicates to apply both once on startup
-	//   and then also continuously, however such behavior can be achieved by
-	//   duplicating the line where one has a 0 place and the other has a 1 place.
 	enum patch_place_type : u8
 	{
 		PPT_ONCE_ON_LOAD = 0,
