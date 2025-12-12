@@ -59,7 +59,7 @@ body:
     attributes:
       label: PCSX2 Revision
       description: "Please ensure you are on the latest version before making an issue"
-      placeholder: "Example: v1.7.1337"
+      placeholder: "Example: v2.5.374"
     validations:
       required: true
   - type: dropdown
