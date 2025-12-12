@@ -9948,6 +9948,7 @@ TRANSLATE_NOOP("FullscreenUI", "Load/Save State");
 TRANSLATE_NOOP("FullscreenUI", "Select Game");
 TRANSLATE_NOOP("FullscreenUI", "Change View");
 TRANSLATE_NOOP("FullscreenUI", "Launch Options");
+TRANSLATE_NOOP("FullscreenUI", "Startup Error");
 TRANSLATE_NOOP("FullscreenUI", "Select Disc Image");
 TRANSLATE_NOOP("FullscreenUI", "Select Disc Drive");
 TRANSLATE_NOOP("FullscreenUI", "WARNING: Memory Card Busy");
