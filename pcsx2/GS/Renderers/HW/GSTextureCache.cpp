@@ -2756,7 +2756,22 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 			if (!tex)
 				return nullptr;
 
-			g_gs_device->StretchRect(dst->m_texture, sRect, tex, dRect, (type == RenderTarget) ? ShaderConvert::COPY : ShaderConvert::DEPTH_COPY, dst->m_scale < scale);
+			if (scale == 1.0f)
+			{
+				// When using native HPO, the top-left column/row of pixels are often not drawn. Clamp these away to avoid sampling black,
+				// causing bleeding into the edges of the downsampled texture.
+				const u32 downsample_factor = static_cast<u32>(dst->GetScale());
+				const GSVector2i clamp_min = (GSConfig.UserHacks_HalfPixelOffset != GSHalfPixelOffset::Native) ?
+				                                 GSVector2i(0, 0) :
+				                                 GSVector2i(downsample_factor, downsample_factor);
+
+				const GSVector4 dRect = GSVector4(dst->GetUnscaledRect());
+
+				g_gs_device->FilteredDownsampleTexture(dst->m_texture, tex, downsample_factor, clamp_min, dRect);
+			}
+			else
+				g_gs_device->StretchRect(dst->m_texture, sRect, tex, dRect, (type == RenderTarget) ? ShaderConvert::COPY : ShaderConvert::DEPTH_COPY, dst->m_scale < scale);
+
 			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 			m_target_memory_usage = (m_target_memory_usage - dst->m_texture->GetMemUsage()) + tex->GetMemUsage();
 
