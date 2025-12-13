@@ -153,7 +153,7 @@ namespace Patch
 	static bool PatchStringHasUnlabelledPatch(const std::string& pnach_data);
 	static void ExtractPatchInfo(std::vector<PatchInfo>* dst, const std::string& pnach_data, u32* num_unlabelled_patches);
 	static void ReloadEnabledLists();
-	static u32 EnablePatches(const std::vector<PatchGroup>& patches, const std::vector<std::string>& enable_list, const std::vector<std::string>& enable_immediately_list);
+	static u32 EnablePatches(const std::vector<PatchGroup>* patches, const std::vector<std::string>& enable_list, const std::vector<std::string>* enable_immediately_list);
 
 	static void ApplyPatch(const PatchCommand* p);
 	static void ApplyDynaPatch(const DynamicPatch& patch, u32 address);
@@ -645,12 +645,10 @@ void Patch::ReloadEnabledLists()
 	}
 }
 
-u32 Patch::EnablePatches(const std::vector<PatchGroup>& patches, const std::vector<std::string>& enable_list, const std::vector<std::string>& enable_immediately_list)
+u32 Patch::EnablePatches(const std::vector<PatchGroup>* patches, const std::vector<std::string>& enable_list, const std::vector<std::string>* enable_immediately_list)
 {
-	std::vector<const PatchCommand*> patches_to_apply_immediately;
-
 	u32 count = 0;
-	for (const PatchGroup& p : patches)
+	for (const PatchGroup& p : *patches)
 	{
 		// For compatibility, we auto enable anything that's not labelled.
 		// Also for gamedb patches.
@@ -660,7 +658,6 @@ u32 Patch::EnablePatches(const std::vector<PatchGroup>& patches, const std::vect
 		Console.WriteLn(Color_Green, fmt::format("Enabled patch: {}",
 										 p.name.empty() ? std::string_view("<unknown>") : std::string_view(p.name)));
 
-		const bool apply_immediately = std::find(enable_immediately_list.begin(), enable_immediately_list.end(), p.name) != enable_immediately_list.end();
 		for (const PatchCommand& ip : p.patches)
 		{
 			// print the actual patch lines only in verbose mode (even in devel)
@@ -668,8 +665,6 @@ u32 Patch::EnablePatches(const std::vector<PatchGroup>& patches, const std::vect
 				DevCon.WriteLnFmt("  {}", ip.ToString());
 
 			s_active_patches.push_back(&ip);
-			if (apply_immediately && ip.placetopatch == PPT_ON_LOAD_OR_WHEN_ENABLED)
-				patches_to_apply_immediately.push_back(&ip);
 		}
 
 		for (const DynamicPatch& dp : p.dpatches)
@@ -686,12 +681,28 @@ u32 Patch::EnablePatches(const std::vector<PatchGroup>& patches, const std::vect
 		count += p.name.empty() ? (static_cast<u32>(p.patches.size()) + static_cast<u32>(p.dpatches.size())) : 1;
 	}
 
-	if (!patches_to_apply_immediately.empty())
+	// Apply PPT_ON_LOAD_OR_WHEN_ENABLED patches immediately.
+	if (enable_immediately_list && !enable_immediately_list->empty())
 	{
-		Host::RunOnCPUThread([patches = std::move(patches_to_apply_immediately)]() {
-			for (const PatchCommand* i : patches)
+		// Don't pass pointers to patch objects themselves here just in case the
+		// patches are reloaded twice in a row before this event makes it.
+		Host::RunOnCPUThread([patches, enable_immediately_list]() {
+			for (const PatchGroup& group : *patches)
 			{
-				ApplyPatch(i);
+				const bool apply_immediately = std::find(
+												   enable_immediately_list->begin(),
+												   enable_immediately_list->end(),
+												   group.name) != enable_immediately_list->end();
+				if (!apply_immediately)
+					continue;
+
+				for (const PatchCommand& command : group.patches)
+				{
+					if (command.placetopatch != PPT_ON_LOAD_OR_WHEN_ENABLED)
+						continue;
+
+					ApplyPatch(&command);
+				}
 			}
 		});
 	}
@@ -758,19 +769,23 @@ void Patch::UpdateActivePatches(bool reload_enabled_list, bool verbose, bool ver
 	u32 gp_count = 0;
 	if (EmuConfig.EnablePatches)
 	{
-		gp_count = EnablePatches(s_gamedb_patches, std::vector<std::string>(), std::vector<std::string>());
+		gp_count = EnablePatches(&s_gamedb_patches, std::vector<std::string>(), nullptr);
 		s_gamedb_counts = gp_count;
 		if (gp_count > 0)
 			message.append(TRANSLATE_PLURAL_STR("Patch", "%n GameDB patches are active.", "OSD Message", gp_count));
 	}
 
-	const u32 p_count = EnablePatches(s_game_patches, s_enabled_patches, apply_new_patches ? s_just_enabled_patches : std::vector<std::string>());
+	const u32 p_count = EnablePatches(
+		&s_game_patches, s_enabled_patches, apply_new_patches ? &s_just_enabled_patches : nullptr);
 	s_patches_counts = p_count;
 	if (p_count > 0)
 		message.append_format("{}{}", message.empty() ? "" : "\n",
 			TRANSLATE_PLURAL_STR("Patch", "%n game patches are active.", "OSD Message", p_count));
 
-	const u32 c_count = EmuConfig.EnableCheats ? EnablePatches(s_cheat_patches, s_enabled_cheats, apply_new_patches ? s_just_enabled_cheats : std::vector<std::string>()) : 0;
+	u32 c_count = 0;
+	if (EmuConfig.EnableCheats)
+		c_count = EnablePatches(
+			&s_cheat_patches, s_enabled_cheats, apply_new_patches ? &s_just_enabled_cheats : nullptr);
 	s_cheats_counts = c_count;
 	if (c_count > 0)
 		message.append_format("{}{}", message.empty() ? "" : "\n",
