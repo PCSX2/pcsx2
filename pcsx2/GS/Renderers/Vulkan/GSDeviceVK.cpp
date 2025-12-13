@@ -1501,10 +1501,10 @@ VkRenderPass GSDeviceVK::CreateCachedRenderPass(RenderPassCacheKey key)
 	VkAttachmentReference* color_reference_ptr = nullptr;
 	VkAttachmentReference depth_reference;
 	VkAttachmentReference* depth_reference_ptr = nullptr;
-	VkAttachmentReference input_reference;
-	VkAttachmentReference* input_reference_ptr = nullptr;
-	VkSubpassDependency subpass_dependency;
-	VkSubpassDependency* subpass_dependency_ptr = nullptr;
+	std::array<VkAttachmentReference, 2> input_reference;
+	u32 num_subpass_inputs = 0;
+	std::array<VkSubpassDependency, 2> subpass_dependency;
+	u32 num_subpass_dependencies = 0;
 	std::array<VkAttachmentDescription, 2> attachments;
 	u32 num_attachments = 0;
 	if (key.color_format != VK_FORMAT_UNDEFINED)
@@ -1524,26 +1524,26 @@ VkRenderPass GSDeviceVK::CreateCachedRenderPass(RenderPassCacheKey key)
 		{
 			if (!UseFeedbackLoopLayout())
 			{
-				input_reference.attachment = num_attachments;
-				input_reference.layout = layout;
-				input_reference_ptr = &input_reference;
+				input_reference[num_subpass_inputs].attachment = num_attachments;
+				input_reference[num_subpass_inputs].layout = layout;
+				num_subpass_inputs++;
 			}
 
 			if (!m_features.framebuffer_fetch)
 			{
 				// don't need the framebuffer-local dependency when we have rasterization order attachment access
-				subpass_dependency.srcSubpass = 0;
-				subpass_dependency.dstSubpass = 0;
-				subpass_dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-				subpass_dependency.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-				subpass_dependency.srcAccessMask =
+				subpass_dependency[num_subpass_dependencies].srcSubpass = 0;
+				subpass_dependency[num_subpass_dependencies].dstSubpass = 0;
+				subpass_dependency[num_subpass_dependencies].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+				subpass_dependency[num_subpass_dependencies].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+				subpass_dependency[num_subpass_dependencies].srcAccessMask =
 					VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-				subpass_dependency.dstAccessMask =
+				subpass_dependency[num_subpass_dependencies].dstAccessMask =
 					UseFeedbackLoopLayout() ? VK_ACCESS_SHADER_READ_BIT : VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
-				subpass_dependency.dependencyFlags =
+				subpass_dependency[num_subpass_dependencies].dependencyFlags =
 					UseFeedbackLoopLayout() ? (VK_DEPENDENCY_BY_REGION_BIT | VK_DEPENDENCY_FEEDBACK_LOOP_BIT_EXT) :
 											  VK_DEPENDENCY_BY_REGION_BIT;
-				subpass_dependency_ptr = &subpass_dependency;
+				num_subpass_dependencies++;
 			}
 		}
 
@@ -1562,6 +1562,35 @@ VkRenderPass GSDeviceVK::CreateCachedRenderPass(RenderPassCacheKey key)
 		depth_reference.attachment = num_attachments;
 		depth_reference.layout = layout;
 		depth_reference_ptr = &depth_reference;
+
+		if (key.depth_sampling)
+		{
+			if (!UseFeedbackLoopLayout())
+			{
+				input_reference[num_subpass_inputs].attachment = num_attachments;
+				input_reference[num_subpass_inputs].layout = layout;
+				num_subpass_inputs++;
+			}
+
+			if (!m_features.framebuffer_fetch)
+			{
+				// don't need the framebuffer-local dependency when we have rasterization order attachment access
+				subpass_dependency[num_subpass_dependencies].srcSubpass = 0;
+				subpass_dependency[num_subpass_dependencies].dstSubpass = 0;
+				subpass_dependency[num_subpass_dependencies].srcStageMask =
+					VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+				subpass_dependency[num_subpass_dependencies].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+				subpass_dependency[num_subpass_dependencies].srcAccessMask =
+					VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+				subpass_dependency[num_subpass_dependencies].dstAccessMask =
+					UseFeedbackLoopLayout() ? VK_ACCESS_SHADER_READ_BIT : VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
+				subpass_dependency[num_subpass_dependencies].dependencyFlags =
+					UseFeedbackLoopLayout() ? (VK_DEPENDENCY_BY_REGION_BIT | VK_DEPENDENCY_FEEDBACK_LOOP_BIT_EXT) :
+											  VK_DEPENDENCY_BY_REGION_BIT;
+				num_subpass_dependencies++;
+			}
+		}
+
 		num_attachments++;
 	}
 
@@ -1569,11 +1598,11 @@ VkRenderPass GSDeviceVK::CreateCachedRenderPass(RenderPassCacheKey key)
 		(key.color_feedback_loop && m_optional_extensions.vk_ext_rasterization_order_attachment_access) ?
 			VK_SUBPASS_DESCRIPTION_RASTERIZATION_ORDER_ATTACHMENT_COLOR_ACCESS_BIT_EXT :
 			0;
-	const VkSubpassDescription subpass = {subpass_flags, VK_PIPELINE_BIND_POINT_GRAPHICS, input_reference_ptr ? 1u : 0u,
-		input_reference_ptr ? input_reference_ptr : nullptr, color_reference_ptr ? 1u : 0u,
+	const VkSubpassDescription subpass = {subpass_flags, VK_PIPELINE_BIND_POINT_GRAPHICS, num_subpass_inputs,
+		num_subpass_inputs ? input_reference.data() : nullptr, color_reference_ptr ? 1u : 0u,
 		color_reference_ptr ? color_reference_ptr : nullptr, nullptr, depth_reference_ptr, 0, nullptr};
 	const VkRenderPassCreateInfo pass_info = {VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO, nullptr, 0u, num_attachments,
-		attachments.data(), 1u, &subpass, subpass_dependency_ptr ? 1u : 0u, subpass_dependency_ptr};
+		attachments.data(), 1u, &subpass, num_subpass_dependencies, num_subpass_dependencies ? subpass_dependency.data() : nullptr};
 
 	VkRenderPass pass;
 	const VkResult res = vkCreateRenderPass(m_device, &pass_info, nullptr, &pass);
@@ -3379,12 +3408,15 @@ void GSDeviceVK::OMSetRenderTargets(
 		if (vkRt)
 		{
 			m_current_framebuffer =
-				vkRt->GetLinkedFramebuffer(vkDs, (feedback_loop & FeedbackLoopFlag_ReadAndWriteRT) != 0);
+				vkRt->GetLinkedFramebuffer(vkDs,
+					(feedback_loop & FeedbackLoopFlag_ReadAndWriteRT) != 0,
+					(feedback_loop & FeedbackLoopFlag_ReadAndWriteDepth) != 0);
 		}
 		else
 		{
 			pxAssert(!(feedback_loop & FeedbackLoopFlag_ReadAndWriteRT));
-			m_current_framebuffer = vkDs->GetLinkedFramebuffer(nullptr, false);
+			m_current_framebuffer = vkDs->GetLinkedFramebuffer(
+				nullptr, false, (feedback_loop & FeedbackLoopFlag_ReadAndWriteDepth) != 0);
 		}
 	}
 	else if (InRenderPass())
@@ -3494,7 +3526,21 @@ void GSDeviceVK::OMSetRenderTargets(
 		if (vkDs)
 		{
 			// need to update descriptors to reflect the new layout
-			if (feedback_loop & FeedbackLoopFlag_ReadDS)
+			if (feedback_loop & FeedbackLoopFlag_ReadAndWriteDepth)
+			{
+				// NVIDIA drivers appear to return random garbage when sampling the RT via a feedback loop, if the load op for
+				// the render pass is CLEAR. Using vkCmdClearAttachments() doesn't work, so we have to clear the image instead.
+				// Note: DS feedback loop was added later - we will assume that the same issue is relevant.
+				if (vkDs->GetState() == GSTexture::State::Cleared && IsDeviceNVIDIA())
+					vkDs->CommitClear();
+
+				if (vkDs->GetLayout() != GSTextureVK::Layout::FeedbackLoop)
+				{
+					m_dirty_flags |= (DIRTY_FLAG_TFX_TEXTURE_0 << TFX_TEXTURE_DEPTH);
+					vkDs->TransitionToLayout(GSTextureVK::Layout::FeedbackLoop);
+				}
+			}
+			else if (feedback_loop & FeedbackLoopFlag_ReadDepth)
 			{
 				if (vkDs->GetLayout() != GSTextureVK::Layout::FeedbackLoop)
 				{
@@ -3743,9 +3789,13 @@ bool GSDeviceVK::CreatePipelineLayouts()
 	dslb.AddBinding(TFX_TEXTURE_PALETTE, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
 	dslb.AddBinding(TFX_TEXTURE_RT,
 		(m_features.texture_barrier && !UseFeedbackLoopLayout()) ? VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT :
-																   VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+																                              VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
 		1, VK_SHADER_STAGE_FRAGMENT_BIT);
 	dslb.AddBinding(TFX_TEXTURE_PRIMID, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+	dslb.AddBinding(TFX_TEXTURE_DEPTH,
+		(m_features.texture_barrier && !UseFeedbackLoopLayout()) ? VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT :
+		                                                           VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+		1, VK_SHADER_STAGE_FRAGMENT_BIT);
 	if ((m_tfx_texture_ds_layout = dslb.Create(dev)) == VK_NULL_HANDLE)
 		return false;
 	Vulkan::SetObjectName(dev, m_tfx_texture_ds_layout, "TFX texture descriptor layout");
@@ -4744,6 +4794,9 @@ VkShaderModule GSDeviceVK::GetTFXFragmentShader(const GSHWDrawConfig::PSSelector
 	AddMacro(ss, "PS_TEX_IS_FB", sel.tex_is_fb);
 	AddMacro(ss, "PS_NO_COLOR", sel.no_color);
 	AddMacro(ss, "PS_NO_COLOR1", sel.no_color1);
+	AddMacro(ss, "PS_ZTST", sel.ztst);
+	AddMacro(ss, "PS_COLOR_FEEDBACK", sel.color_feedback);
+	AddMacro(ss, "PS_DEPTH_FEEDBACK", sel.depth_feedback);
 	ss << m_tfx_source;
 
 	VkShaderModule mod = g_vulkan_shader_cache->GetFragmentShader(ss.str());
@@ -5341,11 +5394,15 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 		m_current_pipeline_layout = PipelineLayout::TFX;
 		flags |= DIRTY_FLAG_TFX_UBO | DIRTY_FLAG_TFX_TEXTURES;
 
-		// Clear out the RT binding if feedback loop isn't on, because it'll be in the wrong state and make
+		// Clear out the RT/DS binding if feedback loop isn't on, because it'll be in the wrong state and make
 		// the validation layer cranky. Not a big deal since we need to write it anyway.
-		const GSTextureVK::Layout rt_tex_layout = m_tfx_textures[TFX_TEXTURE_RT]->GetLayout();
-		if (rt_tex_layout != GSTextureVK::Layout::FeedbackLoop && rt_tex_layout != GSTextureVK::Layout::ShaderReadOnly)
-			m_tfx_textures[TFX_TEXTURE_RT] = m_null_texture.get();
+		std::array<TFX_TEXTURES, 2> texture_types = { TFX_TEXTURE_RT, TFX_TEXTURE_DEPTH };
+		for (u32 texture_type : texture_types)
+		{
+			const GSTextureVK::Layout tex_layout = m_tfx_textures[texture_type]->GetLayout();
+			if (tex_layout != GSTextureVK::Layout::FeedbackLoop && tex_layout != GSTextureVK::Layout::ShaderReadOnly)
+				m_tfx_textures[texture_type] = m_null_texture.get();
+		}
 	}
 
 	if (flags & DIRTY_FLAG_TFX_UBO)
@@ -5385,6 +5442,19 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 		{
 			dsub.AddImageDescriptorWrite(VK_NULL_HANDLE, TFX_TEXTURE_PRIMID,
 				m_tfx_textures[TFX_TEXTURE_PRIMID]->GetView(), m_tfx_textures[TFX_TEXTURE_PRIMID]->GetVkLayout());
+		}
+		if (flags & DIRTY_FLAG_TFX_TEXTURE_DEPTH)
+		{
+			if (m_features.texture_barrier && !UseFeedbackLoopLayout())
+			{
+				dsub.AddInputAttachmentDescriptorWrite(
+					VK_NULL_HANDLE, TFX_TEXTURE_DEPTH, m_tfx_textures[TFX_TEXTURE_DEPTH]->GetView(), VK_IMAGE_LAYOUT_GENERAL);
+			}
+			else
+			{
+				dsub.AddImageDescriptorWrite(VK_NULL_HANDLE, TFX_TEXTURE_DEPTH, m_tfx_textures[TFX_TEXTURE_DEPTH]->GetView(),
+					m_tfx_textures[TFX_TEXTURE_DEPTH]->GetVkLayout());
+			}
 		}
 
 		dsub.PushUpdate(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_tfx_pipeline_layout, TFX_DESCRIPTOR_SET_TEXTURES);
@@ -5545,7 +5615,6 @@ GSTextureVK* GSDeviceVK::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config)
 
 void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 {
-
 	const GSVector2i rtsize(config.rt ? config.rt->GetSize() : config.ds->GetSize());
 	GSTextureVK* draw_rt = static_cast<GSTextureVK*>(config.rt);
 	GSTextureVK* draw_ds = static_cast<GSTextureVK*>(config.ds);
@@ -5597,8 +5666,12 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	UpdateHWPipelineSelector(config, pipe);
 
 	// If we don't have a barrier but the texture was drawn to last draw, end the pass to insert a barrier.
-	if (InRenderPass() && !pipe.IsRTFeedbackLoop() && (config.tex == m_current_render_target || config.tex == m_current_depth_target))
-		EndRenderPass();
+	if (InRenderPass())
+	{
+		if ((!pipe.IsRTFeedbackLoop() && config.tex == m_current_render_target) ||
+			(!pipe.IsDepthFeedbackLoop() && config.tex == m_current_depth_target))
+			EndRenderPass();
+	}
 
 	// now blit the colclip texture back to the original target
 	if (colclip_rt)
@@ -5781,20 +5854,31 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	// Despite the layout changing enforcing the execution dependency between previous draws and the first
 	// input attachment read, it still wants the region/fragment-local barrier...
 
-	const bool skip_first_barrier =
-		(draw_rt && draw_rt->GetLayout() != GSTextureVK::Layout::FeedbackLoop && !pipe.ps.colclip_hw && !IsDeviceAMD());
+	bool skip_first_barrier = !pipe.ps.colclip_hw && !IsDeviceAMD();
+	if (draw_rt)
+		skip_first_barrier = skip_first_barrier && draw_rt->GetLayout() != GSTextureVK::Layout::FeedbackLoop;
+	if (draw_ds)
+		skip_first_barrier = skip_first_barrier && draw_ds->GetLayout() != GSTextureVK::Layout::FeedbackLoop;
 
 	OMSetRenderTargets(draw_rt, draw_ds, config.scissor, static_cast<FeedbackLoopFlag>(pipe.feedback_loop_flags));
 	if (pipe.IsRTFeedbackLoop())
 	{
 		pxAssertMsg(m_features.texture_barrier, "Texture barriers enabled");
-		PSSetShaderResource(2, draw_rt, false);
+		PSSetShaderResource(TFX_TEXTURE_RT, draw_rt, false);
 
 		// If this is the first draw to the target as a feedback loop, make sure we re-generate the texture descriptor.
 		// Otherwise, we might have a previous descriptor left over, that has the RT in a different state.
 		m_dirty_flags |= (skip_first_barrier ? static_cast<u32>(DIRTY_FLAG_TFX_TEXTURE_RT) : 0);
 	}
+	if (pipe.IsDepthFeedbackLoop())
+	{
+		pxAssertMsg(m_features.texture_barrier, "Texture barriers enabled");
+		PSSetShaderResource(TFX_TEXTURE_DEPTH, draw_ds, false);
 
+		// If this is the first draw to the target as a feedback loop, make sure we re-generate the texture descriptor.
+		// Otherwise, we might have a previous descriptor left over, that has the RT in a different state.
+		m_dirty_flags |= (skip_first_barrier ? static_cast<u32>(DIRTY_FLAG_TFX_TEXTURE_DEPTH) : 0);
+	}
 	// Begin render pass if new target or out of the area.
 	if (!InRenderPass())
 	{
@@ -5868,7 +5952,8 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 
 	// now we can do the actual draw
 	if (BindDrawPipeline(pipe))
-		SendHWDraw(config, draw_rt, config.require_one_barrier, config.require_full_barrier, skip_first_barrier);
+		SendHWDraw(config, pipe.IsRTFeedbackLoop() ? draw_rt : nullptr, pipe.IsDepthFeedbackLoop() ? draw_ds : nullptr,
+			config.require_one_barrier, config.require_full_barrier, skip_first_barrier);
 
 	// blend second pass
 	if (config.blend_multi_pass.enable)
@@ -5903,8 +5988,8 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		pipe.bs = config.blend;
 		if (BindDrawPipeline(pipe))
 		{
-			SendHWDraw(config, draw_rt, config.alpha_second_pass.require_one_barrier,
-				config.alpha_second_pass.require_full_barrier, false);
+			SendHWDraw(config, pipe.IsRTFeedbackLoop() ? draw_rt : nullptr, pipe.IsDepthFeedbackLoop() ? draw_ds : nullptr,
+				config.alpha_second_pass.require_one_barrier, config.alpha_second_pass.require_full_barrier, false);
 		}
 	}
 
@@ -5981,19 +6066,25 @@ void GSDeviceVK::UpdateHWPipelineSelector(GSHWDrawConfig& config, PipelineSelect
 	pipe.rt = config.rt != nullptr;
 	pipe.ds = config.ds != nullptr;
 	pipe.line_width = config.line_expand;
-	pipe.feedback_loop_flags =
-		(m_features.texture_barrier &&
-			(config.ps.IsFeedbackLoop() || config.require_one_barrier || config.require_full_barrier)) ?
-			FeedbackLoopFlag_ReadAndWriteRT :
-			FeedbackLoopFlag_None;
-	pipe.feedback_loop_flags |=
-		(config.tex && config.tex == config.ds) ? FeedbackLoopFlag_ReadDS : FeedbackLoopFlag_None;
+	pipe.feedback_loop_flags = FeedbackLoopFlag_None;
+	if (m_features.texture_barrier && (config.require_one_barrier || config.require_full_barrier))
+	{
+		if (config.ps.IsFeedbackLoopRT())
+			pipe.feedback_loop_flags |= FeedbackLoopFlag_ReadAndWriteRT;
+
+		if (config.ps.IsFeedbackLoopDepth())
+			pipe.feedback_loop_flags |= FeedbackLoopFlag_ReadAndWriteDepth;
+	}
+	if (!(pipe.feedback_loop_flags & FeedbackLoopFlag_ReadAndWriteDepth))
+	{
+		pipe.feedback_loop_flags |= (config.tex && config.tex == config.ds) ? FeedbackLoopFlag_ReadDepth : FeedbackLoopFlag_None;
+	}
 
 	// enable point size in the vertex shader if we're rendering points regardless of upscaling.
 	pipe.vs.point_size |= (config.topology == GSHWDrawConfig::Topology::Point);
 }
 
-void GSDeviceVK::UploadHWDrawVerticesAndIndices(const GSHWDrawConfig& config)
+void GSDeviceVK::UploadHWDrawVerticesAndIndices(GSHWDrawConfig& config)
 {
 	IASetVertexBuffer(config.verts, sizeof(GSVertex), config.nverts, GetVertexAlignment(config.vs.expand));
 	m_vertex.start *= GetExpansionFactor(config.vs.expand);
@@ -6010,7 +6101,7 @@ void GSDeviceVK::UploadHWDrawVerticesAndIndices(const GSHWDrawConfig& config)
 	}
 }
 
-VkImageMemoryBarrier GSDeviceVK::GetColorBufferBarrier(GSTextureVK* rt) const
+VkImageMemoryBarrier GSDeviceVK::GetColorBufferFeedbackBarrier(GSTextureVK* rt) const
 {
 	const VkImageLayout layout =
 		UseFeedbackLoopLayout() ? VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT : VK_IMAGE_LAYOUT_GENERAL;
@@ -6021,13 +6112,25 @@ VkImageMemoryBarrier GSDeviceVK::GetColorBufferBarrier(GSTextureVK* rt) const
 		VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, rt->GetImage(), {VK_IMAGE_ASPECT_COLOR_BIT, 0u, 1u, 0u, 1u}};
 }
 
-VkDependencyFlags GSDeviceVK::GetColorBufferBarrierFlags() const
+VkImageMemoryBarrier GSDeviceVK::GetDepthStencilBufferFeedbackBarrier(GSTextureVK* ds) const
+{
+	const VkImageLayout layout =
+		UseFeedbackLoopLayout() ? VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT : VK_IMAGE_LAYOUT_GENERAL;
+	const VkAccessFlags dst_access =
+		UseFeedbackLoopLayout() ? VK_ACCESS_SHADER_READ_BIT : VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
+	return {VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER, nullptr,
+		VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT, dst_access, layout, layout,
+		VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, ds->GetImage(),
+		{VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT, 0u, 1u, 0u, 1u}};
+}
+
+VkDependencyFlags GSDeviceVK::GetFeedbackBarrierDependencyFlags() const
 {
 	return UseFeedbackLoopLayout() ? (VK_DEPENDENCY_BY_REGION_BIT | VK_DEPENDENCY_FEEDBACK_LOOP_BIT_EXT) :
 	                                 VK_DEPENDENCY_BY_REGION_BIT;
 }
 
-void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt,
+void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, GSTextureVK* draw_ds,
 	bool one_barrier, bool full_barrier, bool skip_first_barrier)
 {
 	if (!m_features.texture_barrier) [[unlikely]]
@@ -6037,21 +6140,52 @@ void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt,
 	}
 
 #ifdef PCSX2_DEVBUILD
-	if ((one_barrier || full_barrier) && !m_pipeline_selector.ps.IsFeedbackLoop()) [[unlikely]]
+	if ((one_barrier || full_barrier) && !(m_pipeline_selector.ps.IsFeedbackLoopRT() || m_pipeline_selector.ps.IsFeedbackLoopDepth())) [[unlikely]]
 		Console.Warning("VK: Possible unnecessary barrier detected.");
 #endif
-	const VkDependencyFlags barrier_flags = GetColorBufferBarrierFlags();
+	VkDependencyFlags barrier_flags = GetFeedbackBarrierDependencyFlags();
+
+	std::array<VkImageMemoryBarrier, 2> barriers;
+	u32 n_barriers = 0;
+	if (full_barrier || one_barrier)
+	{
+		if (draw_rt)
+		{
+			barriers[0] = GetColorBufferFeedbackBarrier(draw_rt);
+			n_barriers++;
+		}
+		if (draw_ds)
+		{
+			barriers[1] = GetDepthStencilBufferFeedbackBarrier(draw_ds);
+			n_barriers++;
+		}
+	}
+
+	const auto IssueBarriers = [&]() {
+		if (draw_rt)
+		{
+			vkCmdPipelineBarrier(GetCurrentCommandBuffer(),
+				VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, barrier_flags, 0, nullptr, 0, nullptr, 1, &barriers[0]);
+		}
+		if (draw_ds)
+		{
+			vkCmdPipelineBarrier(GetCurrentCommandBuffer(),
+				VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, barrier_flags, 0, nullptr, 0, nullptr, 1, &barriers[1]);
+		}
+	};
+
 	if (full_barrier)
 	{
 		pxAssert(config.drawlist && !config.drawlist->empty());
 
-		const VkImageMemoryBarrier barrier = GetColorBufferBarrier(draw_rt);
 		const u32 indices_per_prim = config.indices_per_prim;
 		const u32 draw_list_size = static_cast<u32>(config.drawlist->size());
 
 		GL_PUSH("Split the draw");
-		g_perfmon.Put(
-			GSPerfMon::Barriers, static_cast<u32>(draw_list_size) - static_cast<u32>(skip_first_barrier));
+		g_perfmon.Put(GSPerfMon::Barriers,
+			n_barriers * (draw_list_size - static_cast<u32>(skip_first_barrier)));
 
 		u32 p = 0;
 		u32 n = 0;
@@ -6066,8 +6200,7 @@ void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt,
 
 		for (; n < draw_list_size; n++)
 		{
-			vkCmdPipelineBarrier(GetCurrentCommandBuffer(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, barrier_flags, 0, nullptr, 0, nullptr, 1, &barrier);
+			IssueBarriers();
 
 			const u32 count = (*config.drawlist)[n] * indices_per_prim;
 			DrawIndexedPrimitive(p, count);
@@ -6079,11 +6212,8 @@ void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt,
 
 	if (one_barrier && !skip_first_barrier)
 	{
-		g_perfmon.Put(GSPerfMon::Barriers, 1);
-
-		const VkImageMemoryBarrier barrier = GetColorBufferBarrier(draw_rt);
-		vkCmdPipelineBarrier(GetCurrentCommandBuffer(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, barrier_flags, 0, nullptr, 0, nullptr, 1, &barrier);
+		g_perfmon.Put(GSPerfMon::Barriers, n_barriers);
+		IssueBarriers();
 	}
 
 	DrawIndexedPrimitive();
