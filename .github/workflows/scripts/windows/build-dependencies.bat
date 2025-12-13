@@ -182,6 +182,7 @@ ninja -C build install || goto error
 cd .. || goto error
 
 echo Building SDL...
+rem bump to see if this busts the CI cache
 rmdir /S /Q "%SDL%"
 %SEVENZIP% x "%SDL%.zip" || goto error
 cd "%SDL%" || goto error
