@@ -125,10 +125,6 @@ namespace Patch
 		void (*func)(PatchGroup* group, const std::string_view cmd, const std::string_view param);
 	};
 
-	using PatchList = std::vector<PatchGroup>;
-	using ActivePatchList = std::vector<const PatchCommand*>;
-	using EnablePatchList = std::vector<std::string>;
-
 	namespace PatchFunc
 	{
 		static void patch(PatchGroup* group, const std::string_view cmd, const std::string_view param);
@@ -141,23 +137,23 @@ namespace Patch
 	static int PatchTableExecute(PatchGroup* group, const std::string_view lhs, const std::string_view rhs,
 		const std::span<const PatchTextTable>& Table);
 	static void LoadPatchLine(PatchGroup* group, const std::string_view line);
-	static u32 LoadPatchesFromString(PatchList* patch_list, const std::string& patch_file);
+	static u32 LoadPatchesFromString(std::vector<PatchGroup>* patch_list, const std::string& patch_file);
 	static bool OpenPatchesZip();
 	static std::string GetPnachTemplate(
 		const std::string_view serial, u32 crc, bool include_serial, bool add_wildcard, bool all_crcs);
 	static std::vector<std::string> FindPatchFilesOnDisk(
 		const std::string_view serial, u32 crc, bool cheats, bool all_crcs);
 
-	static bool ContainsPatchName(const PatchInfoList& patches, const std::string_view patchName);
-	static bool ContainsPatchName(const PatchList& patches, const std::string_view patchName);
+	static bool ContainsPatchName(const std::vector<PatchInfo>& patches, const std::string_view patchName);
+	static bool ContainsPatchName(const std::vector<PatchGroup>& patches, const std::string_view patchName);
 
 	template <typename F>
 	static void EnumeratePnachFiles(const std::string_view serial, u32 crc, bool cheats, bool for_ui, const F& f);
 
 	static bool PatchStringHasUnlabelledPatch(const std::string& pnach_data);
-	static void ExtractPatchInfo(PatchInfoList* dst, const std::string& pnach_data, u32* num_unlabelled_patches);
+	static void ExtractPatchInfo(std::vector<PatchInfo>* dst, const std::string& pnach_data, u32* num_unlabelled_patches);
 	static void ReloadEnabledLists();
-	static u32 EnablePatches(const PatchList& patches, const EnablePatchList& enable_list, const EnablePatchList& enable_immediately_list);
+	static u32 EnablePatches(const std::vector<PatchGroup>& patches, const std::vector<std::string>& enable_list, const std::vector<std::string>& enable_immediately_list);
 
 	static void ApplyPatch(const PatchCommand* p);
 	static void ApplyDynaPatch(const DynamicPatch& patch, u32 address);
@@ -175,21 +171,21 @@ namespace Patch
 	const char* PATCH_DISABLE_CONFIG_KEY = "Disable";
 
 	static zip_t* s_patches_zip;
-	static PatchList s_gamedb_patches;
-	static PatchList s_game_patches;
-	static PatchList s_cheat_patches;
+	static std::vector<PatchGroup> s_gamedb_patches;
+	static std::vector<PatchGroup> s_game_patches;
+	static std::vector<PatchGroup> s_cheat_patches;
 
 	static u32 s_gamedb_counts = 0;
 	static u32 s_patches_counts = 0;
 	static u32 s_cheats_counts = 0;
 
-	static ActivePatchList s_active_patches;
+	static std::vector<const PatchCommand*> s_active_patches;
 	static std::vector<DynamicPatch> s_active_gamedb_dynamic_patches;
 	static std::vector<DynamicPatch> s_active_pnach_dynamic_patches;
-	static EnablePatchList s_enabled_cheats;
-	static EnablePatchList s_enabled_patches;
-	static EnablePatchList s_just_enabled_cheats;
-	static EnablePatchList s_just_enabled_patches;
+	static std::vector<std::string> s_enabled_cheats;
+	static std::vector<std::string> s_enabled_patches;
+	static std::vector<std::string> s_just_enabled_cheats;
+	static std::vector<std::string> s_just_enabled_patches;
 	static u32 s_patches_crc;
 	static std::optional<float> s_override_aspect_ratio;
 	static std::optional<GSInterlaceMode> s_override_interlace_mode;
@@ -218,7 +214,7 @@ void Patch::TrimPatchLine(std::string& buffer)
 		buffer.erase(pos);
 }
 
-bool Patch::ContainsPatchName(const PatchList& patch_list, const std::string_view patch_name)
+bool Patch::ContainsPatchName(const std::vector<PatchGroup>& patch_list, const std::string_view patch_name)
 {
 	return std::find_if(patch_list.begin(), patch_list.end(), [&patch_name](const PatchGroup& patch) {
 		return patch.name == patch_name;
@@ -253,7 +249,7 @@ void Patch::LoadPatchLine(PatchGroup* group, const std::string_view line)
 	PatchTableExecute(group, key, value, s_patch_commands);
 }
 
-u32 Patch::LoadPatchesFromString(PatchList* patch_list, const std::string& patch_file)
+u32 Patch::LoadPatchesFromString(std::vector<PatchGroup>* patch_list, const std::string& patch_file)
 {
 	const size_t before = patch_list->size();
 
@@ -264,7 +260,7 @@ u32 Patch::LoadPatchesFromString(PatchList* patch_list, const std::string& patch
 			// Ungrouped/legacy patches should merge with other ungrouped patches.
 			if (current_patch_group.name.empty())
 			{
-				const PatchList::iterator ungrouped_patch = std::find_if(patch_list->begin(), patch_list->end(),
+				const std::vector<PatchGroup>::iterator ungrouped_patch = std::find_if(patch_list->begin(), patch_list->end(),
 					[](const PatchGroup& pg) { return pg.name.empty(); });
 				if (ungrouped_patch != patch_list->end())
 				{
@@ -407,7 +403,7 @@ std::vector<std::string> Patch::FindPatchFilesOnDisk(const std::string_view seri
 	return ret;
 }
 
-bool Patch::ContainsPatchName(const PatchInfoList& patches, const std::string_view patchName)
+bool Patch::ContainsPatchName(const std::vector<PatchInfo>& patches, const std::string_view patchName)
 {
 	return std::find_if(patches.begin(), patches.end(), [&patchName](const PatchInfo& patch) {
 		return patch.name == patchName;
@@ -491,7 +487,7 @@ bool Patch::PatchStringHasUnlabelledPatch(const std::string& pnach_data)
 	return false;
 }
 
-void Patch::ExtractPatchInfo(PatchInfoList* dst, const std::string& pnach_data, u32* num_unlabelled_patches)
+void Patch::ExtractPatchInfo(std::vector<PatchInfo>* dst, const std::string& pnach_data, u32* num_unlabelled_patches)
 {
 	std::istringstream ss(pnach_data);
 	std::string line;
@@ -570,9 +566,9 @@ std::string_view Patch::PatchInfo::GetNameParentPart() const
 	return ret;
 }
 
-Patch::PatchInfoList Patch::GetPatchInfo(const std::string_view serial, u32 crc, bool cheats, bool showAllCRCS, u32* num_unlabelled_patches)
+std::vector<Patch::PatchInfo> Patch::GetPatchInfo(const std::string_view serial, u32 crc, bool cheats, bool showAllCRCS, u32* num_unlabelled_patches)
 {
-	PatchInfoList ret;
+	std::vector<PatchInfo> ret;
 
 	if (num_unlabelled_patches)
 		*num_unlabelled_patches = 0;
@@ -592,14 +588,14 @@ std::string Patch::GetPnachFilename(const std::string_view serial, u32 crc, bool
 
 void Patch::ReloadEnabledLists()
 {
-	const EnablePatchList prev_enabled_cheats = std::move(s_enabled_cheats);
+	const std::vector<std::string> prev_enabled_cheats = std::move(s_enabled_cheats);
 	if (EmuConfig.EnableCheats && !Achievements::IsHardcoreModeActive())
 		s_enabled_cheats = Host::GetStringListSetting(CHEATS_CONFIG_SECTION, PATCH_ENABLE_CONFIG_KEY);
 	else
 		s_enabled_cheats = {};
 
-	const EnablePatchList prev_enabled_patches = std::exchange(s_enabled_patches, Host::GetStringListSetting(PATCHES_CONFIG_SECTION, PATCH_ENABLE_CONFIG_KEY));
-	const EnablePatchList disabled_patches = Host::GetStringListSetting(PATCHES_CONFIG_SECTION, PATCH_DISABLE_CONFIG_KEY);
+	const std::vector<std::string> prev_enabled_patches = std::exchange(s_enabled_patches, Host::GetStringListSetting(PATCHES_CONFIG_SECTION, PATCH_ENABLE_CONFIG_KEY));
+	const std::vector<std::string> disabled_patches = Host::GetStringListSetting(PATCHES_CONFIG_SECTION, PATCH_DISABLE_CONFIG_KEY);
 
 	// Name based matching for widescreen/NI settings.
 	if (EmuConfig.EnableWideScreenPatches)
@@ -649,9 +645,9 @@ void Patch::ReloadEnabledLists()
 	}
 }
 
-u32 Patch::EnablePatches(const PatchList& patches, const EnablePatchList& enable_list, const EnablePatchList& enable_immediately_list)
+u32 Patch::EnablePatches(const std::vector<PatchGroup>& patches, const std::vector<std::string>& enable_list, const std::vector<std::string>& enable_immediately_list)
 {
-	ActivePatchList patches_to_apply_immediately;
+	std::vector<const PatchCommand*> patches_to_apply_immediately;
 
 	u32 count = 0;
 	for (const PatchGroup& p : patches)
@@ -762,19 +758,19 @@ void Patch::UpdateActivePatches(bool reload_enabled_list, bool verbose, bool ver
 	u32 gp_count = 0;
 	if (EmuConfig.EnablePatches)
 	{
-		gp_count = EnablePatches(s_gamedb_patches, EnablePatchList(), EnablePatchList());
+		gp_count = EnablePatches(s_gamedb_patches, std::vector<std::string>(), std::vector<std::string>());
 		s_gamedb_counts = gp_count;
 		if (gp_count > 0)
 			message.append(TRANSLATE_PLURAL_STR("Patch", "%n GameDB patches are active.", "OSD Message", gp_count));
 	}
 
-	const u32 p_count = EnablePatches(s_game_patches, s_enabled_patches, apply_new_patches ? s_just_enabled_patches : EnablePatchList());
+	const u32 p_count = EnablePatches(s_game_patches, s_enabled_patches, apply_new_patches ? s_just_enabled_patches : std::vector<std::string>());
 	s_patches_counts = p_count;
 	if (p_count > 0)
 		message.append_format("{}{}", message.empty() ? "" : "\n",
 			TRANSLATE_PLURAL_STR("Patch", "%n game patches are active.", "OSD Message", p_count));
 
-	const u32 c_count = EmuConfig.EnableCheats ? EnablePatches(s_cheat_patches, s_enabled_cheats, apply_new_patches ? s_just_enabled_cheats : EnablePatchList()) : 0;
+	const u32 c_count = EmuConfig.EnableCheats ? EnablePatches(s_cheat_patches, s_enabled_cheats, apply_new_patches ? s_just_enabled_cheats : std::vector<std::string>()) : 0;
 	s_cheats_counts = c_count;
 	if (c_count > 0)
 		message.append_format("{}{}", message.empty() ? "" : "\n",

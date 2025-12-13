@@ -59,8 +59,6 @@ namespace Patch
 		std::string_view GetNameParentPart() const;
 	};
 
-	using PatchInfoList = std::vector<PatchInfo>;
-
 	struct DynamicPatchEntry
 	{
 		u32 offset;
@@ -79,7 +77,7 @@ namespace Patch
 	extern const char* PATCH_ENABLE_CONFIG_KEY;
 	extern const char* PATCH_DISABLE_CONFIG_KEY;
 
-	extern PatchInfoList GetPatchInfo(const std::string_view serial, u32 crc, bool cheats, bool showAllCRCS, u32* num_unlabelled_patches);
+	extern std::vector<PatchInfo> GetPatchInfo(const std::string_view serial, u32 crc, bool cheats, bool showAllCRCS, u32* num_unlabelled_patches);
 
 	/// Returns the path to a new cheat/patch pnach for the specified serial and CRC.
 	extern std::string GetPnachFilename(const std::string_view serial, u32 crc, bool cheats);
