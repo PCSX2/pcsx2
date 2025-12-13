@@ -241,4 +241,7 @@ VULKAN_DEVICE_ENTRY_POINT(vkCmdPushDescriptorSetKHR, false)
 // VK_EXT_swapchain_maintenance1
 VULKAN_DEVICE_ENTRY_POINT(vkReleaseSwapchainImagesEXT, false)
 
+// VK_KHR_swapchain_maintenance1
+VULKAN_DEVICE_ENTRY_POINT(vkReleaseSwapchainImagesKHR, false)
+
 #endif // VULKAN_DEVICE_ENTRY_POINT
