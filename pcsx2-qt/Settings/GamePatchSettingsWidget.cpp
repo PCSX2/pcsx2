@@ -15,19 +15,23 @@
 
 #include <algorithm>
 
-GamePatchDetailsWidget::GamePatchDetailsWidget(std::string name, const std::string& author,
-	const std::string& description, bool tristate, Qt::CheckState checkState, SettingsWindow* dialog, QWidget* parent)
+GamePatchDetailsWidget::GamePatchDetailsWidget(const Patch::PatchInfo& info, bool tristate, Qt::CheckState checkState, SettingsWindow* dialog, QWidget* parent)
 	: QWidget(parent)
 	, m_dialog(dialog)
-	, m_name(name)
+	, m_name(info.name)
 {
 	m_ui.setupUi(this);
 
-	m_ui.name->setText(QString::fromStdString(name));
+	const QString name = QString::fromStdString(info.name);
+	const QString author = !info.author.empty() ? QString::fromStdString(info.author) : tr("Unknown");
+	const QString place = QString::fromUtf8(PlaceToString(info.place));
+	const QString description = !info.description.empty() ? QString::fromStdString(info.description) : tr("No description provided.");
+	m_ui.name->setText(name);
 	m_ui.description->setText(
-		tr("<strong>Author: </strong>%1<br>%2")
-			.arg(author.empty() ? tr("Unknown") : QString::fromStdString(author))
-			.arg(description.empty() ? tr("No description provided.") : QString::fromStdString(description)));
+		tr("<strong>Author:</strong> %1<br><strong>Applied:</strong> %2<br>%3")
+			.arg(author)
+			.arg(place)
+			.arg(description));
 
 	pxAssert(dialog->getSettingsInterface());
 	m_ui.enabled->setTristate(tristate);
@@ -178,7 +182,7 @@ void GamePatchSettingsWidget::reloadList()
 			}
 
 			GamePatchDetailsWidget* it =
-				new GamePatchDetailsWidget(std::move(pi.name), pi.author, pi.description, globally_toggleable_option, check_state, dialog(), container);
+				new GamePatchDetailsWidget(pi, globally_toggleable_option, check_state, dialog(), container);
 			layout->addWidget(it);
 		}
 	}
