@@ -1221,7 +1221,7 @@ void FullscreenUI::Render()
 
 	// see if background setting changed
 	static std::string s_last_background_path;
-	std::string current_path = Host::GetBaseStringSettingValue("UI", "GameListBackgroundPath");
+	std::string current_path = Host::GetBaseStringSettingValue("UI", "FSUIBackgroundPath");
 	if (s_last_background_path != current_path)
 	{
 		s_last_background_path = current_path;
@@ -1240,7 +1240,8 @@ void FullscreenUI::Render()
 		s_current_main_window == MainWindowType::Exit ||
 		s_current_main_window == MainWindowType::GameList ||
 		s_current_main_window == MainWindowType::GameListSettings ||
-		s_current_main_window == MainWindowType::Settings) && s_custom_background_enabled && s_custom_background_texture;
+		s_current_main_window == MainWindowType::Settings) &&
+			!VMManager::HasValidVM() && s_custom_background_enabled && s_custom_background_texture;
 
 	ImVec4 original_background_color;
 	if (should_draw_background)
@@ -1691,7 +1692,7 @@ bool FullscreenUI::ShouldDefaultToGameList()
 
 void FullscreenUI::LoadCustomBackground()
 {
-	std::string path = Host::GetBaseStringSettingValue("UI", "GameListBackgroundPath");
+	std::string path = Host::GetBaseStringSettingValue("UI", "FSUIBackgroundPath");
 
 	if (path.empty())
 	{
@@ -1759,19 +1760,25 @@ void FullscreenUI::DrawCustomBackground()
 	const ImGuiIO& io = ImGui::GetIO();
 	const ImVec2 display_size = io.DisplaySize;
 
-	const float opacity = Host::GetBaseFloatSettingValue("UI", "GameListBackgroundOpacity", 100.0f) / 100.0f;
-	const std::string mode = Host::GetBaseStringSettingValue("UI", "GameListBackgroundMode", "fit");
+	const u8 alpha = static_cast<u8>(Host::GetBaseFloatSettingValue("UI", "FSUIBackgroundOpacity", 100.0f) * 2.55f);
+	const std::string mode = Host::GetBaseStringSettingValue("UI", "FSUIBackgroundMode", "fit");
 
 	const float tex_width = static_cast<float>(s_custom_background_texture->GetWidth());
 	const float tex_height = static_cast<float>(s_custom_background_texture->GetHeight());
 
-	ImVec2 img_min, img_max;
+	// Override the UIBackgroundColor that windows use
+	// We need to make windows transparent so our background image shows through
+	const ImVec4 transparent_bg = ImVec4(UIBackgroundColor.x, UIBackgroundColor.y, UIBackgroundColor.z, 0.0f);
+	ImGuiFullscreen::UIBackgroundColor = transparent_bg;
+
+	ImDrawList* bg_draw_list = ImGui::GetBackgroundDrawList();
+	const ImU32 col = IM_COL32(255, 255, 255, alpha);
+	const ImTextureID tex_id = reinterpret_cast<ImTextureID>(s_custom_background_texture->GetNativeHandle());
 
 	if (mode == "stretch")
 	{
 		// stretch to fill entire display (ignores aspect ratio)
-		img_min = ImVec2(0.0f, 0.0f);
-		img_max = display_size;
+		bg_draw_list->AddImage(tex_id, ImVec2(0.0f, 0.0f), display_size, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), col);
 	}
 	else if (mode == "fill")
 	{
@@ -1796,8 +1803,64 @@ void FullscreenUI::DrawCustomBackground()
 		const float offset_x = (display_size.x - scaled_width) * 0.5f;
 		const float offset_y = (display_size.y - scaled_height) * 0.5f;
 
-		img_min = ImVec2(offset_x, offset_y);
-		img_max = ImVec2(offset_x + scaled_width, offset_y + scaled_height);
+		bg_draw_list->AddImage(tex_id,
+			ImVec2(offset_x, offset_y),
+			ImVec2(offset_x + scaled_width, offset_y + scaled_height),
+			ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), col);
+	}
+	else if (mode == "center")
+	{
+		// Center image at original size
+		const float offset_x = (display_size.x - tex_width) * 0.5f;
+		const float offset_y = (display_size.y - tex_height) * 0.5f;
+
+		bg_draw_list->AddImage(tex_id,
+			ImVec2(offset_x, offset_y),
+			ImVec2(offset_x + tex_width, offset_y + tex_height),
+			ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), col);
+	}
+	else if (mode == "tile")
+	{
+		// Tile image across entire display
+		// If the image is extremely small, this approach can generate millions of quads
+		// and overflow the backend stream buffer (e.g. Vulkan assertion in VKStreamBuffer).
+		// Since we cannot switch ImGui's sampler to wrap (yet), clamp the maximum number of quads
+		constexpr int MAX_TILE_QUADS = 16384;
+
+		float tile_width = tex_width;
+		float tile_height = tex_height;
+		int tiles_x = static_cast<int>(std::ceil(display_size.x / tile_width));
+		int tiles_y = static_cast<int>(std::ceil(display_size.y / tile_height));
+
+		const int total_tiles = tiles_x * tiles_y;
+		if (total_tiles > MAX_TILE_QUADS)
+		{
+			const float scale = std::sqrt(static_cast<float>(total_tiles) / static_cast<float>(MAX_TILE_QUADS));
+			tile_width *= scale;
+			tile_height *= scale;
+			tiles_x = static_cast<int>(std::ceil(display_size.x / tile_width));
+			tiles_y = static_cast<int>(std::ceil(display_size.y / tile_height));
+		}
+
+		for (int y = 0; y < tiles_y; y++)
+		{
+			for (int x = 0; x < tiles_x; x++)
+			{
+				const float tile_x = static_cast<float>(x) * tile_width;
+				const float tile_y = static_cast<float>(y) * tile_height;
+				const float tile_max_x = std::min(tile_x + tile_width, display_size.x);
+				const float tile_max_y = std::min(tile_y + tile_height, display_size.y);
+
+				// get uvs for partial tiles at edges
+				const float uv_max_x = (tile_max_x - tile_x) / tile_width;
+				const float uv_max_y = (tile_max_y - tile_y) / tile_height;
+
+				bg_draw_list->AddImage(tex_id,
+					ImVec2(tile_x, tile_y),
+					ImVec2(tile_max_x, tile_max_y),
+					ImVec2(0.0f, 0.0f), ImVec2(uv_max_x, uv_max_y), col);
+			}
+		}
 	}
 	else // "fit" or default
 	{
@@ -1822,19 +1885,11 @@ void FullscreenUI::DrawCustomBackground()
 		const float offset_x = (display_size.x - scaled_width) * 0.5f;
 		const float offset_y = (display_size.y - scaled_height) * 0.5f;
 
-		img_min = ImVec2(offset_x, offset_y);
-		img_max = ImVec2(offset_x + scaled_width, offset_y + scaled_height);
+		bg_draw_list->AddImage(tex_id,
+			ImVec2(offset_x, offset_y),
+			ImVec2(offset_x + scaled_width, offset_y + scaled_height),
+			ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), col);
 	}
-
-	// Override the UIBackgroundColor that windows use
-	// We need to make windows transparent so our background image shows through
-	const ImVec4 transparent_bg = ImVec4(UIBackgroundColor.x, UIBackgroundColor.y, UIBackgroundColor.z, 0.0f);
-	ImGuiFullscreen::UIBackgroundColor = transparent_bg;
-
-	ImDrawList* bg_draw_list = ImGui::GetBackgroundDrawList();
-	const ImU32 col = IM_COL32(255, 255, 255, static_cast<u8>(opacity * 255.0f));
-	bg_draw_list->AddImage(reinterpret_cast<ImTextureID>(s_custom_background_texture->GetNativeHandle()),
-		img_min, img_max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), col);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -3630,7 +3685,7 @@ void FullscreenUI::DrawSettingsWindow()
 		ImVec2(io.DisplaySize.x, LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) +
 									 (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) + LayoutScale(2.0f));
 
-	const bool using_custom_bg = s_custom_background_enabled && s_custom_background_texture;
+	const bool using_custom_bg = !VMManager::HasValidVM() && s_custom_background_enabled && s_custom_background_texture;
 	const float header_bg_alpha = VMManager::HasValidVM() ? 0.90f : 1.0f;
 	const float content_bg_alpha = using_custom_bg ? 0.0f : (VMManager::HasValidVM() ? 0.90f : 1.0f);
 	SettingsInterface* bsi = GetEditingSettingsInterface();
@@ -4053,21 +4108,19 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 
 	MenuHeading(FSUI_CSTR("Background"));
 
-	std::string background_path = bsi->GetStringValue("UI", "GameListBackgroundPath", "");
-	const bool background_enabled = bsi->GetBoolValue("UI", "GameListBackgroundEnabled", false);
+	std::string background_path = bsi->GetStringValue("UI", "FSUIBackgroundPath", "");
 
 	std::string background_display = FSUI_STR("None");
-	if (!background_path.empty() && background_enabled)
+	if (!background_path.empty())
 	{
 		background_display = Path::GetFileName(background_path);
 	}
 
 	if (MenuButtonWithValue(FSUI_ICONSTR(ICON_FA_IMAGE, "Background Image"),
-			FSUI_CSTR("Select a custom background image to use in Big Picture Mode menus."),
+			FSUI_CSTR("Select a custom background image to use in Big Picture Mode menus.\n\nSupported formats: PNG, JPG, JPEG, BMP."),
 			background_display.c_str()))
 	{
-		OpenFileSelector(FSUI_ICONSTR(ICON_FA_IMAGE, "Select Background Image"), false,
-			[](const std::string& path) {
+		OpenFileSelector(FSUI_ICONSTR(ICON_FA_IMAGE, "Select Background Image"), false, [](const std::string& path) {
 				if (!path.empty())
 				{
 					{
@@ -4075,23 +4128,20 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 						SettingsInterface* bsi = GetEditingSettingsInterface(false);
 
 						std::string relative_path = Path::MakeRelative(path, EmuFolders::DataRoot);
-						bsi->SetStringValue("UI", "GameListBackgroundPath", relative_path.c_str());
-						bsi->SetBoolValue("UI", "GameListBackgroundEnabled", true);
+						bsi->SetStringValue("UI", "FSUIBackgroundPath", relative_path.c_str());
+						bsi->SetBoolValue("UI", "FSUIBackgroundEnabled", true);
 						SetSettingsChanged(bsi);
 					}
 
 					LoadCustomBackground();
 				}
-				CloseFileSelector();
-			},
-			GetImageFileFilters());
+				CloseFileSelector(); }, GetImageFileFilters());
 	}
 
 	if (MenuButton(FSUI_ICONSTR(ICON_FA_XMARK, "Clear Background Image"),
 			FSUI_CSTR("Removes the custom background image.")))
 	{
-		bsi->DeleteValue("UI", "GameListBackgroundPath");
-		bsi->SetBoolValue("UI", "GameListBackgroundEnabled", false);
+		bsi->DeleteValue("UI", "FSUIBackgroundPath");
 		SetSettingsChanged(bsi);
 
 		s_custom_background_texture.reset();
@@ -4101,21 +4151,25 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 
 	DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_DROPLET, "Background Opacity"),
 		FSUI_CSTR("Sets the transparency of the custom background image."),
-		"UI", "GameListBackgroundOpacity", 100, 0, 100, "%d%%");
+		"UI", "FSUIBackgroundOpacity", 100, 0, 100, "%d%%");
 
 	static constexpr const char* s_background_mode_names[] = {
 		FSUI_NSTR("Fit"),
 		FSUI_NSTR("Fill"),
 		FSUI_NSTR("Stretch"),
+		FSUI_NSTR("Center"),
+		FSUI_NSTR("Tile"),
 	};
 	static constexpr const char* s_background_mode_values[] = {
 		"fit",
 		"fill",
 		"stretch",
+		"center",
+		"tile",
 	};
 	DrawStringListSetting(bsi, FSUI_ICONSTR(ICON_FA_EXPAND, "Background Mode"),
 		FSUI_CSTR("Select how to display the background image."),
-		"UI", "GameListBackgroundMode", "fit", s_background_mode_names, s_background_mode_values, std::size(s_background_mode_names), true);
+		"UI", "FSUIBackgroundMode", "fit", s_background_mode_names, s_background_mode_values, std::size(s_background_mode_names), true);
 
 	MenuHeading(FSUI_CSTR("Behaviour"));
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_PF_SNOOZE, "Inhibit Screensaver"),

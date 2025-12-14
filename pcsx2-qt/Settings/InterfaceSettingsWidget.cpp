@@ -275,7 +275,7 @@ void InterfaceSettingsWidget::onSetGameListBackgroundTriggered()
 	if (path.isEmpty())
 		return;
 
-	std::string relative_path = Path::MakeRelative(QDir::toNativeSeparators(path).toStdString(), EmuFolders::DataRoot);
+	std::string relative_path = Path::MakeRelative(path.toStdString(), EmuFolders::DataRoot);
 	Host::SetBaseStringSettingValue("UI", "GameListBackgroundPath", relative_path.c_str());
 
 	Host::CommitBaseSettingChanges();
