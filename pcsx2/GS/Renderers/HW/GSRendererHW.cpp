@@ -2826,7 +2826,7 @@ void GSRendererHW::Draw()
 		const bool page_aligned = (m_r.w % pgs.y) == (pgs.y - 1) || (m_r.w % pgs.y) == 0;
 		const bool is_zero_color_clear = (GetConstantDirectWriteMemClearColor() == 0 && !preserve_rt_color && page_aligned);
 		const bool is_zero_depth_clear = (GetConstantDirectWriteMemClearDepth() == 0 && !preserve_depth && page_aligned);
-
+		bool gs_mem_cleared = false;
 		// If it's an invalid-sized draw, do the mem clear on the CPU, we don't want to create huge targets.
 		// If clearing to zero, don't bother creating the target. Games tend to clear more than they use, wasting VRAM/bandwidth.
 		if (is_zero_color_clear || is_zero_depth_clear || height_invalid)
@@ -2858,7 +2858,7 @@ void GSRendererHW::Draw()
 			{
 				g_texture_cache->InvalidateTemporaryZ();
 			}
-
+			gs_mem_cleared |= overwriting_whole_rt && overwriting_whole_ds && (!no_rt || !no_ds);
 			if (overwriting_whole_rt && overwriting_whole_ds &&
 				TryGSMemClear(no_rt, preserve_rt_color, is_zero_color_clear, rt_end_bp,
 					no_ds, preserve_depth, is_zero_depth_clear, ds_end_bp))
@@ -2886,6 +2886,27 @@ void GSRendererHW::Draw()
 
 				CleanupDraw(false);
 				return;
+			}
+		}
+
+		// If not a zero clear or the RT's aren't fully overwritten, we need to see if this is clearing for a future operation.
+		// So if the FBP or Z being cleared isn't getting used next frame, clear the actual GS memory.
+		if (!gs_mem_cleared)
+		{
+			const int get_next_ctx = m_env.PRIM.CTXT;
+			const GSDrawingContext& next_ctx = m_env.CTXT[get_next_ctx];
+			if ((!no_rt && next_ctx.FRAME.FBP != m_cached_ctx.FRAME.FBP) || (!no_ds && next_ctx.ZBUF.ZBP != m_cached_ctx.ZBUF.ZBP))
+			{
+				bool frame_masked = no_rt || (m_cached_ctx.FRAME.FBMSK & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk) || !IsOpaque() || !IsRTWritten();
+				const bool z_masked = no_ds || m_cached_ctx.ZBUF.ZMSK;
+
+				if (frame_masked && m_cached_ctx.FRAME.PSM == PSMCT32 && m_cached_ctx.FRAME.FBMSK == 0xFF000000u)
+				{
+					frame_masked = no_rt || !IsOpaque() || !IsRTWritten();
+				}
+
+				// Force clear of memory but don't invalidate anything.
+				TryGSMemClear(frame_masked, false, false, 0, z_masked, false, false, 0);
 			}
 		}
 	}
