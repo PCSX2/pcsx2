@@ -3,6 +3,9 @@
 
 //#version 420 // Keep it for text editor detection
 
+#define ACCURATE_LINES 1
+#define ACCURATE_TRIANGLES 2
+
 #define FMT_32 0
 #define FMT_24 1
 #define FMT_16 2
@@ -10,6 +13,11 @@
 #define SHUFFLE_READ  1
 #define SHUFFLE_WRITE 2
 #define SHUFFLE_READWRITE 3
+
+#ifndef ZTST_GEQUAL
+#define ZTST_GEQUAL 2
+#define ZTST_GREATER 3
+#endif
 
 // TEX_COORD_DEBUG output the uv coordinate as color. It is useful
 // to detect bad sampling due to upscaling
@@ -28,6 +36,9 @@
 #define NEEDS_RT_FOR_AFAIL (PS_AFAIL == 3 && PS_NO_COLOR1)
 #define NEEDS_RT (NEEDS_RT_EARLY || NEEDS_RT_FOR_AFAIL || (!PS_PRIMID_INIT && (PS_FBMASK || SW_BLEND_NEEDS_RT || SW_AD_TO_HW)))
 #define NEEDS_TEX (PS_TFX != 4)
+#define NEEDS_DEPTH ((PS_ACCURATE_PRIMS == ACCURATE_TRIANGLES) && PS_ACCURATE_PRIMS_AA && PS_ZCLAMP)
+
+vec4 FragCoord;
 
 layout(std140, binding = 0) uniform cb21
 {
@@ -57,7 +68,22 @@ layout(std140, binding = 0) uniform cb21
 
 	float ScaledScaleFactor;
 	float RcpScaleFactor;
+	uint _pad0;
+	uint _pad1;
+
+	uint accurate_prims_base_index;
+	uint _pad2;
+	uint _pad3;
+	uint _pad4;
 };
+
+#if PS_ACCURATE_PRIMS
+struct
+{
+	vec4 t_float;
+	vec4 t_int;
+	vec4 c;
+} PSin;
 
 in SHADER
 {
@@ -69,7 +95,56 @@ in SHADER
 	#else
 		flat vec4 c;
 	#endif
+} PSinReal;
+
+flat in uint accurate_prims_index;
+#if PS_ACCURATE_PRIMS == ACCURATE_TRIANGLES
+flat in uint accurate_triangles_interior;
+#endif
+
+struct AccuratePrimsEdgeData
+{
+	// Interpolated attributes
+	vec4 t_float0; // 0
+	vec4 t_float1; // 16
+	vec4 t_int0; // 32
+	vec4 t_int1; // 48
+	vec4 c0; // 64
+	vec4 c1; // 80
+	vec4 p0; // 96
+	vec4 p1; // 112
+	ivec4 edge0; // 128
+	ivec4 edge1; // 144
+	ivec2 xy0; // 160
+	ivec2 xy1; // 168
+	uint step_x; // 176
+	uint draw0; // 180
+	uint draw1; // 184
+	uint top_left; // 188
+	uint side; // 192
+	uint _pad0; // 196
+	uint _pad1; // 200
+	uint _pad2; // 204
+	// Total 208
+};
+
+layout (std140, binding = 3) buffer AccuratePrimsEdgeDataBuffer {
+	AccuratePrimsEdgeData accurate_prims_data[];
+};
+
+#else
+in SHADER
+{
+	vec4 t_float;
+	vec4 t_int;
+
+	#if PS_IIP != 0
+		vec4 c;
+	#else
+		flat vec4 c;
+	#endif
 } PSin;
+#endif
 
 #define TARGET_0_QUALIFIER out
 
@@ -107,9 +182,10 @@ layout(binding = 2) uniform sampler2D RtSampler; // note 2 already use by the im
 
 #if PS_DATE == 3
 layout(binding = 3) uniform sampler2D img_prim_min;
+#endif
 
-// I don't remember why I set this parameter but it is surely useless
-//layout(pixel_center_integer) in vec4 gl_FragCoord;
+#if NEEDS_DEPTH
+layout(binding = 4) uniform sampler2D DepthSampler;
 #endif
 
 vec4 sample_from_rt()
@@ -119,7 +195,16 @@ vec4 sample_from_rt()
 #elif HAS_FRAMEBUFFER_FETCH
 	return LAST_FRAG_COLOR;
 #else
-	return texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0);
+	return texelFetch(RtSampler, ivec2(FragCoord.xy), 0);
+#endif
+}
+
+vec4 sample_from_depth()
+{
+#if !NEEDS_DEPTH
+	return vec4(0.0);
+#else
+	return texelFetch(DepthSampler, ivec2(FragCoord.xy), 0);
 #endif
 }
 
@@ -315,7 +400,7 @@ int fetch_raw_depth()
 #if PS_TEX_IS_FB == 1
 	return int(sample_from_rt().r * multiplier);
 #else
-	return int(texelFetch(TextureSampler, ivec2(gl_FragCoord.xy), 0).r * multiplier);
+	return int(texelFetch(TextureSampler, ivec2(FragCoord.xy), 0).r * multiplier);
 #endif
 }
 
@@ -324,7 +409,7 @@ vec4 fetch_raw_color()
 #if PS_TEX_IS_FB == 1
 	return sample_from_rt();
 #else
-	return texelFetch(TextureSampler, ivec2(gl_FragCoord.xy), 0);
+	return texelFetch(TextureSampler, ivec2(FragCoord.xy), 0);
 #endif
 }
 
@@ -724,9 +809,9 @@ void ps_dither(inout vec3 C, float As)
 {
 #if PS_DITHER > 0 && PS_DITHER < 3
 	#if PS_DITHER == 2
-		ivec2 fpos = ivec2(gl_FragCoord.xy);
+		ivec2 fpos = ivec2(FragCoord.xy);
 	#else
-		ivec2 fpos = ivec2(gl_FragCoord.xy * RcpScaleFactor);
+		ivec2 fpos = ivec2(FragCoord.xy * RcpScaleFactor);
 	#endif
 		float value = DitherMatrix[fpos.y&3][fpos.x&3];
 
@@ -967,11 +1052,233 @@ float As = As_rgba.a;
 #endif
 }
 
+#if PS_ACCURATE_PRIMS
+// Interpolate vertex attributes over a line/edge manually.
+void InterpolateAttributesManual(AccuratePrimsEdgeData data, int weight0, int weight1)
+{
+	float weight0_f = float(weight0);
+	float weight1_f = float(weight1);
+	float weight_total = float(weight0 + weight1);
+
+	vec4 t_float_interp = (weight1_f * data.t_float1 + weight0_f * data.t_float0) / weight_total;
+	vec4 t_int_interp = (weight1_f * data.t_int1 + weight0_f * data.t_int0) / weight_total;
+	vec4 c_interp = (weight1_f * data.c1 + weight0_f * data.c0) / weight_total;
+	float z_interp = (weight1_f * data.p1.z + weight0_f * data.p0.z) / weight_total;
+
+	// No interpolation for constant attributes.
+	PSin.t_float = mix(t_float_interp, data.t_float1, equal(data.t_float1, data.t_float0));
+	PSin.t_int = mix(t_int_interp, data.t_int1, equal(data.t_int1, data.t_int0));
+	PSin.c = mix(c_interp, data.c1, equal(data.c1, data.c0));
+	FragCoord.z = (data.p1.z == data.p0.z) ? data.p1.z : z_interp;
+
+	// Clamp attributes. Fog/Z are normalized.
+	PSin.c = clamp(PSin.c, 0.0f, 255.0f);
+	PSin.t_float.z = clamp(PSin.t_float.z, 0.0f, 1.0f);
+	FragCoord.z = clamp(FragCoord.z, 0.0f, 1.0f);
+}
+#endif
+
+#if PS_ACCURATE_PRIMS == ACCURATE_LINES
+void HandleAccurateLines(out float alpha_coverage)
+{
+	AccuratePrimsEdgeData data = accurate_prims_data[accurate_prims_base_index + accurate_prims_index];
+
+	ivec2 xy0 = data.xy0;
+	ivec2 xy1 = data.xy1;
+	ivec2 dxy = xy1 - xy0;
+	ivec2 xy0_i = (xy0 + 8) & ~0xF;
+	ivec2 xy1_i = (xy1 + 8) & ~0xF;
+	bool step_x = bool(data.step_x);
+	bool draw0 = bool(data.draw0);
+	bool draw1 = bool(data.draw1);
+
+	// 4-bit fixed point: 16 subpixels per pixel
+	ivec2 xy_i = 16 * ivec2(floor(FragCoord.xy)); // Subtract half-integer pixel center.
+
+	// Determine major/minor axes
+	int major0 = step_x ? xy0.x : xy0.y;
+	int major1 = step_x ? xy1.x : xy1.y;
+	int minor0 = step_x ? xy0.y : xy0.x;
+	int minor1 = step_x ? xy1.y : xy1.x;
+	int major_i = step_x ? xy_i.x : xy_i.y;
+	int minor_i = step_x ? xy_i.y : xy_i.x;
+	int d_major = step_x ? dxy.x : dxy.y;
+	int d_major_scaled = 16 * d_major;
+
+	int major0_i = step_x ? xy0_i.x : xy0_i.y;
+	int major1_i = step_x ? xy1_i.x : xy1_i.y;
+
+	// Discard if outside line range
+	if (major_i < min(major0_i, major1_i) ||
+		major_i > max(major0_i, major1_i))
+		discard;
+
+	if ((major_i == major0_i && !draw0) ||
+		(major_i == major1_i && !draw1))
+		discard;
+
+	int weight0 = major1 - major_i;
+	int weight1 = major_i - major0;
+
+	// Compute minor axis line in fixed-point
+	int minor_line = weight1 * minor1 + weight0 * minor0;
+
+#if PS_ACCURATE_PRIMS_AA
+	// Proper fixed-point AA rounding
+	int minor_i_expected_0 = (minor_line / d_major) & ~0xF;
+	int minor_i_expected_1 = minor_i_expected_0 + 16;
+	int alpha_i_0 = d_major_scaled - (minor_line - d_major * minor_i_expected_0);
+	int alpha_i_1 = d_major_scaled - alpha_i_0;
+
+	int alpha_i;
+	if (minor_i == minor_i_expected_0)
+		alpha_i = alpha_i_0;
+	else if (minor_i == minor_i_expected_1)
+		alpha_i = alpha_i_1;
+	else
+		discard;
+	// Make sure that the output alpha is always <= 127 for AA.
+	alpha_coverage = floor(clamp(128.0f * float(alpha_i) / float(d_major_scaled), 0.0f, 127.0f));
+#else
+	// Non-AA: fixed-point rounding and 4-bit alignment
+	int minor_i_expected = ((2 * minor_line + d_major_scaled) / (2 * d_major)) & ~0xF;
+	if (minor_i != minor_i_expected)
+		discard;
+	alpha_coverage = 128.0f;
+#endif
+
+	// Interpolate attributes
+	InterpolateAttributesManual(data, weight0, weight1);
+}
+#endif
+
+#if PS_ACCURATE_PRIMS == ACCURATE_TRIANGLES
+void HandleAccurateTrianglesEdge(out float alpha_coverage)
+{
+	AccuratePrimsEdgeData data = accurate_prims_data[accurate_prims_base_index + accurate_prims_index];
+
+	ivec2 xy0 = data.xy0;
+	ivec2 xy1 = data.xy1;
+	ivec2 dxy = xy1 - xy0;
+	ivec2 xy0_i = (xy0 + 8) & ~0xF;
+	ivec2 xy1_i = (xy1 + 8) & ~0xF;
+	bool step_x = bool(data.step_x);
+	bool side = bool(data.side);
+	bool top_left = bool(data.top_left);
+
+	// 4-bit fixed point: 16 subpixels per pixel
+	ivec2 xy_i = 16 * ivec2(floor(FragCoord.xy)); // Subtract half-integer pixel center.
+
+	// Determine major/minor axes
+	int major0 = step_x ? xy0.x : xy0.y;
+	int major1 = step_x ? xy1.x : xy1.y;
+	int minor0 = step_x ? xy0.y : xy0.x;
+	int minor1 = step_x ? xy1.y : xy1.x;
+	int major_i = step_x ? xy_i.x : xy_i.y;
+	int minor_i = step_x ? xy_i.y : xy_i.x;
+	int d_major = step_x ? dxy.x : dxy.y;
+	int d_major_scaled = 16 * d_major;
+
+	int major0_i = step_x ? xy0_i.x : xy0_i.y;
+	int major1_i = step_x ? xy1_i.x : xy1_i.y;
+
+	// Discard if outside edge range.
+	// Note: this is not exactly what the SW rasterizer does.
+	// See the note in GSRasterizer::DrawEdgeTriangle() about the asymmetry in X and Y bounds checking.
+	if (major_i < min(major0_i, major1_i) ||
+		major_i > max(major0_i, major1_i))
+		discard;
+
+	// Discard if on wrong side of other edges
+	if (dot(data.edge0, ivec4(xy_i, 1, 0)) <= 0 ||
+		dot(data.edge1, ivec4(xy_i, 1, 0)) <= 0)
+		discard;
+
+	int weight0 = major1 - major_i;
+	int weight1 = major_i - major0;
+
+	// Compute minor axis line in fixed-point
+	int minor_line = weight1 * minor1 + weight0 * minor0;
+	int minor_i_expected = minor_line / d_major;
+	int minor_i_expected_0 = minor_i_expected & ~0xF;
+	int minor_i_expected_1 = minor_i_expected_0 + 16;
+	bool minor_i_pixel_center = ((minor_line - d_major * minor_i_expected_0) & 0xF) == 0;
+	int alpha_i_0 = d_major_scaled - (minor_line - d_major * minor_i_expected_0);
+	int alpha_i_1 = d_major_scaled - alpha_i_0;
+
+	// Proper fixed-point AA rounding
+	int alpha_i;
+	if ((minor_i_expected & 0xF) == 0)
+	{
+		// On a pixel center
+		alpha_i = top_left ? 0 : d_major_scaled;
+		minor_i_expected += top_left ? (side ? -16 : 16) : 0;
+	}
+	else if (side)
+	{
+		minor_i_expected = minor_i_expected_0;
+		alpha_i = alpha_i_0;
+	}
+	else
+	{
+		minor_i_expected = minor_i_expected_1;
+		alpha_i = alpha_i_1;
+	}
+	if (minor_i != minor_i_expected)
+		discard;
+	
+#if PS_ACCURATE_PRIMS_AA
+	// Make sure that the output alpha is always <= 127 for AA.
+	alpha_coverage = floor(clamp(128.0f * float(alpha_i) / float(d_major_scaled), 0.0f, 127.0f));
+#else
+	alpha_coverage = 128.0f;
+#endif
+
+	// Interpolate attributes
+	InterpolateAttributesManual(data, weight0, weight1);
+}
+#endif
+
 void ps_main()
 {
+	FragCoord = gl_FragCoord;
+
+#if PS_ACCURATE_PRIMS
+	float alpha_coverage;
+#if PS_ACCURATE_PRIMS == ACCURATE_LINES
+	HandleAccurateLines(alpha_coverage);
+#elif PS_ACCURATE_PRIMS == ACCURATE_TRIANGLES
+	if (bool(accurate_triangles_interior))
+	{
+		alpha_coverage = 128.0f;
+		PSin.t_float = PSinReal.t_float;
+		PSin.t_int = PSinReal.t_int;
+		PSin.c = PSinReal.c;
+	}
+	else
+	{
+		HandleAccurateTrianglesEdge(alpha_coverage);
+	}
+#endif
+#endif // PS_ACCURATE_PRIMS
+
+#if NEEDS_DEPTH
+	float current_depth = sample_from_depth().r;
+#endif
+
+#if PS_ZCLAMP && (PS_ZTST == ZTST_GEQUAL || PS_ZTST == ZTST_GREATER)
+	#if PS_ZTST == ZTST_GEQUAL
+		if (FragCoord.z < current_depth)
+			discard;
+	#elif PS_ZTST == ZTST_GREATER
+		if (FragCoord.z <= current_depth)
+			discard;
+	#endif
+#endif // PS_ZTST
+
 #if PS_SCANMSK & 2
 	// fail depth test on prohibited lines
-	if ((int(gl_FragCoord.y) & 1) == (PS_SCANMSK & 1))
+	if ((int(FragCoord.y) & 1) == (PS_SCANMSK & 1))
 		discard;
 #endif
 
@@ -1007,7 +1314,7 @@ void ps_main()
 #endif
 
 #if PS_DATE == 3
-	int stencil_ceil = int(texelFetch(img_prim_min, ivec2(gl_FragCoord.xy), 0).r);
+	int stencil_ceil = int(texelFetch(img_prim_min, ivec2(FragCoord.xy), 0).r);
 	// Note gl_PrimitiveID == stencil_ceil will be the primitive that will update
 	// the bad alpha value so we must keep it.
 
@@ -1017,18 +1324,25 @@ void ps_main()
 #endif
 
 	vec4 C = ps_color();
+
+#if PS_FIXED_ONE_A
+	// AA (Fixed one) will output a coverage of 1.0 as alpha
+	C.a = 128.0f;
+#elif PS_ACCURATE_PRIMS_AA
+	// AA: coverage is computed in alpha_coverage
+	#if PS_ACCURATE_PRIMS_AA_ABE
+		if (floor(C.a) == 128.0f) // According to manual & hardware tests the coverage is only used if the fragment alpha is 128.
+			C.a = alpha_coverage;
+	#else
+		C.a = alpha_coverage;
+	#endif
+#endif
+
 	bool atst_pass = atst(C);
 
 #if PS_AFAIL == 0 // KEEP or ATST off
 	if (!atst_pass)
 		discard;
-#endif
-
-	// Must be done before alpha correction
-
-	// AA (Fixed one) will output a coverage of 1.0 as alpha
-#if PS_FIXED_ONE_A
-	C.a = 128.0f;
 #endif
 
 #if SW_AD_TO_HW
@@ -1144,6 +1458,13 @@ void ps_main()
 #endif
 
 #if PS_ZCLAMP
-	gl_FragDepth = min(gl_FragCoord.z, MaxDepthPS);
+	#if PS_ACCURATE_PRIMS == ACCURATE_TRIANGLES
+		if (bool(accurate_triangles_interior))
+			gl_FragDepth = min(FragCoord.z, MaxDepthPS);
+		else
+			gl_FragDepth = current_depth; // No depth update for triangle edges.
+	#else
+		gl_FragDepth = min(FragCoord.z, MaxDepthPS);
+	#endif
 #endif
 }

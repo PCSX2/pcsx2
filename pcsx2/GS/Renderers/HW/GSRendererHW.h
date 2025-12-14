@@ -137,6 +137,21 @@ private:
 	bool IsUsingCsInBlend();
 	bool IsUsingAsInBlend();
 
+	void GetAccuratePrimsEdgeVertexAttributes(
+		const GSVertex& vtx0,
+		const GSVertex& vtx1,
+		const GSVertex* vtx_provoking,
+		AccuratePrimsEdgeData& data);
+	void ExpandAccurateTrianglesEdge(
+		const GSVertex& vtx0,
+		const GSVertex& vtx1,
+		const GSVertex* vtx_provoking,
+		const GSVector4i& edge0,
+		const GSVector4i& edge1,
+		bool top_left,
+		AccuratePrimsEdgeData& data,
+		GSVertex* vertex_out);
+
 	// We modify some of the context registers to optimize away unnecessary operations.
 	// Instead of messing with the real context, we copy them and use those instead.
 	struct HWCachedCtx
@@ -205,6 +220,8 @@ private:
 	std::unique_ptr<GSTextureCacheSW::Texture> m_sw_texture[7 + 1];
 	std::unique_ptr<GSVirtualAlignedClass<32>> m_sw_rasterizer;
 
+	std::vector<AccuratePrimsEdgeData> m_accurate_prims_edge_data;
+
 public:
 	GSRendererHW();
 	virtual ~GSRendererHW() override;
@@ -221,6 +238,8 @@ public:
 	void Lines2Sprites();
 	bool VerifyIndices();
 	void ExpandLineIndices();
+	void ExpandAccurateLinesVertices();
+	void ExpandAccurateTrianglesVertices();
 	void ConvertSpriteTextureShuffle(u32& process_rg, u32& process_ba, bool& shuffle_across, GSTextureCache::Target* rt, GSTextureCache::Source* tex);
 	GSVector4 RealignTargetTextureCoordinate(const GSTextureCache::Source* tex);
 	GSVector4i ComputeBoundingBox(const GSVector2i& rtsize, float rtscale);
@@ -273,4 +292,6 @@ public:
 
 	/// Compute the drawlist (if not already present) and bounding boxes for the current draw.
 	std::size_t ComputeDrawlistGetSize(float scale);
+
+	bool IsCoverageAlphaSupported() override;
 };

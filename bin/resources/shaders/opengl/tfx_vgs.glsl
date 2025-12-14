@@ -3,6 +3,16 @@
 
 //#version 420 // Keep it for text editor detection
 
+#define ACCURATE_LINES 1
+#define ACCURATE_TRIANGLES 2
+
+#if VS_ACCURATE_PRIMS
+flat out uint accurate_prims_index;
+#if VS_ACCURATE_PRIMS == ACCURATE_TRIANGLES
+flat out uint accurate_triangles_interior;
+#endif
+#endif
+
 layout(std140, binding = 1) uniform cb20
 {
 	vec2  VertexScale;
@@ -14,6 +24,8 @@ layout(std140, binding = 1) uniform cb20
 	vec2  PointSize;
 	uint  MaxDepth;
 	uint  pad_cb20;
+	uint  BaseVertex;
+	uint  pad_cb20_2;
 };
 
 #ifdef VERTEX_SHADER
@@ -74,6 +86,28 @@ void vs_main()
 	gl_Position.xy = gl_Position.xy * VertexScale - VertexOffset;
 	gl_Position.z = float(z) * exp_min32;
 	gl_Position.w = 1.0f;
+
+	#if VS_ACCURATE_PRIMS == ACCURATE_LINES
+		accurate_prims_index = (gl_VertexID - BaseVertex) / 6;
+		VSout.t_float = vec4(0.0f);
+		VSout.t_int = vec4(0.0f);
+		VSout.c = vec4(0.0f);
+		return; // Don't send line vertex attributes - they are interpolated manually in the fragment shader.
+	#elif VS_ACCURATE_PRIMS == ACCURATE_TRIANGLES
+		uint vertex_id = gl_VertexID - BaseVertex;
+		uint prim_id = vertex_id / 21;
+		accurate_triangles_interior = uint((vertex_id - 21 * prim_id) < 3); // First 3 vertices in each group of 21 is interior.
+		if (!bool(accurate_triangles_interior))
+		{
+			uint edge = (vertex_id - 21 * prim_id - 3) / 6; // Each group of 6 vertices after first 3 is one edge.
+			accurate_prims_index = 3 * prim_id + edge;
+			VSout.t_float = vec4(0.0f);
+			VSout.t_int = vec4(0.0f);
+			VSout.c = vec4(0.0f);
+			return; // Don't send edge vertex attributes - they are interpolated manually in the fragment shader.
+		}
+		// Send the interior vertex attributes for fixed function interpolation.
+	#endif
 
 	texture_coord();
 

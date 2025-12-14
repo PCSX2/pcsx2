@@ -114,7 +114,7 @@ std::unique_ptr<GSTextureVK> GSTextureVK::Create(Type type, Format format, int w
 				VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
 				VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
 				(GSDeviceVK::GetInstance()->UseFeedbackLoopLayout() ? VK_IMAGE_USAGE_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT
-				                                                    : 0);
+				                                                    : VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT);
 			vci.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 		}
 		break;
@@ -198,7 +198,7 @@ void GSTextureVK::Destroy(bool defer)
 
 	if (m_type == Type::RenderTarget || m_type == Type::DepthStencil)
 	{
-		for (const auto& [other_tex, fb, feedback] : m_framebuffers)
+		for (const auto& [other_tex, fb, feedback_color, feedback_depth] : m_framebuffers)
 		{
 			if (other_tex)
 			{
@@ -270,38 +270,6 @@ void GSTextureVK::CopyTextureDataForUpload(void* dst, const void* src, u32 pitch
 	StringUtil::StrideMemCpy(dst, upload_pitch, src, pitch, std::min(upload_pitch, pitch), count);
 }
 
-VkBuffer GSTextureVK::AllocateUploadStagingBuffer(const void* data, u32 pitch, u32 upload_pitch, u32 height) const
-{
-	const u32 size = upload_pitch * height;
-	const VkBufferCreateInfo bci = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, nullptr, 0, static_cast<VkDeviceSize>(size),
-		VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_SHARING_MODE_EXCLUSIVE, 0, nullptr};
-
-	// Don't worry about setting the coherent bit for this upload, the main reason we had
-	// that set in StreamBuffer was for MoltenVK, which would upload the whole buffer on
-	// smaller uploads, but we're writing to the whole thing anyway.
-	VmaAllocationCreateInfo aci = {};
-	aci.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
-	aci.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-
-	VmaAllocationInfo ai;
-	VkBuffer buffer;
-	VmaAllocation allocation;
-	VkResult res = vmaCreateBuffer(GSDeviceVK::GetInstance()->GetAllocator(), &bci, &aci, &buffer, &allocation, &ai);
-	if (res != VK_SUCCESS)
-	{
-		LOG_VULKAN_ERROR(res, "(AllocateUploadStagingBuffer) vmaCreateBuffer() failed: ");
-		return VK_NULL_HANDLE;
-	}
-
-	// Immediately queue it for freeing after the command buffer finishes, since it's only needed for the copy.
-	GSDeviceVK::GetInstance()->DeferBufferDestruction(buffer, allocation);
-
-	// And write the data.
-	CopyTextureDataForUpload(ai.pMappedData, data, pitch, upload_pitch, height);
-	vmaFlushAllocation(GSDeviceVK::GetInstance()->GetAllocator(), allocation, 0, size);
-	return buffer;
-}
-
 void GSTextureVK::UpdateFromBuffer(VkCommandBuffer cmdbuf, int level, u32 x, u32 y, u32 width, u32 height,
 	u32 buffer_height, u32 row_length, VkBuffer buffer, u32 buffer_offset)
 {
@@ -333,6 +301,10 @@ bool GSTextureVK::Update(const GSVector4i& r, const void* data, int pitch, int l
 	const u32 upload_pitch = Common::AlignUpPow2(pitch, GSDeviceVK::GetInstance()->GetBufferCopyRowPitchAlignment());
 	const u32 required_size = CalcUploadSize(height, upload_pitch);
 
+	const auto upload_data = [&](void* map_ptr) {
+		CopyTextureDataForUpload(map_ptr, data, pitch, upload_pitch, height);
+	};
+
 	// If the texture is larger than half our streaming buffer size, use a separate buffer.
 	// Otherwise allocation will either fail, or require lots of cmdbuffer submissions.
 	VkBuffer buffer;
@@ -340,29 +312,14 @@ bool GSTextureVK::Update(const GSVector4i& r, const void* data, int pitch, int l
 	if (required_size > (GSDeviceVK::GetInstance()->GetTextureUploadBuffer().GetCurrentSize() / 2))
 	{
 		buffer_offset = 0;
-		buffer = AllocateUploadStagingBuffer(data, pitch, upload_pitch, height);
-		if (buffer == VK_NULL_HANDLE)
-			return false;
+		buffer = GSDeviceVK::GetInstance()->AllocateUploadStagingBuffer(required_size, upload_data);
 	}
 	else
 	{
-		VKStreamBuffer& sbuffer = GSDeviceVK::GetInstance()->GetTextureUploadBuffer();
-		if (!sbuffer.ReserveMemory(required_size, GSDeviceVK::GetInstance()->GetBufferCopyOffsetAlignment()))
-		{
-			GSDeviceVK::GetInstance()->ExecuteCommandBuffer(
-				false, "While waiting for %u bytes in texture upload buffer", required_size);
-			if (!sbuffer.ReserveMemory(required_size, GSDeviceVK::GetInstance()->GetBufferCopyOffsetAlignment()))
-			{
-				Console.Error("Failed to reserve texture upload memory (%u bytes).", required_size);
-				return false;
-			}
-		}
-
-		buffer = sbuffer.GetBuffer();
-		buffer_offset = sbuffer.GetCurrentOffset();
-		CopyTextureDataForUpload(sbuffer.GetCurrentHostPointer(), data, pitch, upload_pitch, height);
-		sbuffer.CommitMemory(required_size);
+		buffer = GSDeviceVK::GetInstance()->WriteTextureUploadBuffer(required_size, upload_data, buffer_offset);
 	}
+	if (buffer == VK_NULL_HANDLE)
+		return false;
 
 	const VkCommandBuffer cmdbuf = GetCommandBufferForUpdate();
 	GL_PUSH("GSTextureVK::Update({%d,%d} %dx%d Lvl:%u", r.x, r.y, r.width(), r.height(), layer);
@@ -738,16 +695,16 @@ void GSTextureVK::TransitionSubresourcesToLayout(
 
 VkFramebuffer GSTextureVK::GetFramebuffer(bool feedback_loop)
 {
-	return GetLinkedFramebuffer(nullptr, feedback_loop);
+	return GetLinkedFramebuffer(nullptr, feedback_loop, false);
 }
 
-VkFramebuffer GSTextureVK::GetLinkedFramebuffer(GSTextureVK* depth_texture, bool feedback_loop)
+VkFramebuffer GSTextureVK::GetLinkedFramebuffer(GSTextureVK* depth_texture, bool feedback_loop_color, bool feedback_loop_depth)
 {
 	pxAssertRel(m_type != Type::Texture, "Texture is a render target");
 
-	for (const auto& [other_tex, fb, other_feedback_loop] : m_framebuffers)
+	for (const auto& [other_tex, fb, other_feedback_loop_color, other_feedback_loop_depth] : m_framebuffers)
 	{
-		if (other_tex == depth_texture && other_feedback_loop == feedback_loop)
+		if (other_tex == depth_texture && other_feedback_loop_color == feedback_loop_color && other_feedback_loop_depth == feedback_loop_depth)
 			return fb;
 	}
 
@@ -756,7 +713,7 @@ VkFramebuffer GSTextureVK::GetLinkedFramebuffer(GSTextureVK* depth_texture, bool
 		(m_type != GSTexture::Type::DepthStencil) ? (depth_texture ? depth_texture->m_vk_format : VK_FORMAT_UNDEFINED) :
 													m_vk_format,
 		VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_LOAD,
-		VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, feedback_loop);
+		VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, feedback_loop_color, feedback_loop_depth);
 	if (!rp)
 		return VK_NULL_HANDLE;
 
@@ -771,9 +728,9 @@ VkFramebuffer GSTextureVK::GetLinkedFramebuffer(GSTextureVK* depth_texture, bool
 	if (!fb)
 		return VK_NULL_HANDLE;
 
-	m_framebuffers.emplace_back(depth_texture, fb, feedback_loop);
+	m_framebuffers.emplace_back(depth_texture, fb, feedback_loop_color, feedback_loop_depth);
 	if (depth_texture)
-		depth_texture->m_framebuffers.emplace_back(this, fb, feedback_loop);
+		depth_texture->m_framebuffers.emplace_back(this, fb, feedback_loop_color, feedback_loop_depth);
 	return fb;
 }
 

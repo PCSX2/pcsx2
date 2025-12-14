@@ -19,6 +19,7 @@ VKStreamBuffer::VKStreamBuffer(VKStreamBuffer&& move)
 	, m_allocation(move.m_allocation)
 	, m_buffer(move.m_buffer)
 	, m_host_pointer(move.m_host_pointer)
+	, m_device_local(move.m_device_local)
 	, m_tracked_fences(std::move(move.m_tracked_fences))
 {
 	move.m_size = 0;
@@ -28,6 +29,7 @@ VKStreamBuffer::VKStreamBuffer(VKStreamBuffer&& move)
 	move.m_allocation = VK_NULL_HANDLE;
 	move.m_buffer = VK_NULL_HANDLE;
 	move.m_host_pointer = nullptr;
+	move.m_device_local = false;
 }
 
 VKStreamBuffer::~VKStreamBuffer()
@@ -48,19 +50,29 @@ VKStreamBuffer& VKStreamBuffer::operator=(VKStreamBuffer&& move)
 	std::swap(m_buffer, move.m_buffer);
 	std::swap(m_host_pointer, move.m_host_pointer);
 	std::swap(m_tracked_fences, move.m_tracked_fences);
+	std::swap(m_device_local, move.m_device_local);
 
 	return *this;
 }
 
-bool VKStreamBuffer::Create(VkBufferUsageFlags usage, u32 size)
+bool VKStreamBuffer::Create(VkBufferUsageFlags usage, u32 size, bool device_local)
 {
 	const VkBufferCreateInfo bci = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, nullptr, 0, static_cast<VkDeviceSize>(size),
 		usage, VK_SHARING_MODE_EXCLUSIVE, 0, nullptr};
 
 	VmaAllocationCreateInfo aci = {};
-	aci.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
-	aci.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-	aci.preferredFlags = VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+	if (device_local)
+	{
+		// GPU default buffer
+		aci.preferredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+	}
+	else
+	{
+		// CPU upload buffer
+		aci.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
+		aci.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+		aci.preferredFlags = VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+	}
 
 	VmaAllocationInfo ai = {};
 	VkBuffer new_buffer = VK_NULL_HANDLE;
@@ -83,7 +95,8 @@ bool VKStreamBuffer::Create(VkBufferUsageFlags usage, u32 size)
 	m_tracked_fences.clear();
 	m_allocation = new_allocation;
 	m_buffer = new_buffer;
-	m_host_pointer = static_cast<u8*>(ai.pMappedData);
+	m_host_pointer = device_local ? nullptr : static_cast<u8*>(ai.pMappedData);
+	m_device_local = device_local;
 	return true;
 }
 
@@ -104,6 +117,7 @@ void VKStreamBuffer::Destroy(bool defer)
 	m_buffer = VK_NULL_HANDLE;
 	m_allocation = VK_NULL_HANDLE;
 	m_host_pointer = nullptr;
+	m_device_local = false;
 }
 
 bool VKStreamBuffer::ReserveMemory(u32 num_bytes, u32 alignment)
@@ -180,8 +194,11 @@ void VKStreamBuffer::CommitMemory(u32 final_num_bytes)
 	pxAssert((m_current_offset + final_num_bytes) <= m_size);
 	pxAssert(final_num_bytes <= m_current_space);
 
-	// For non-coherent mappings, flush the memory range
-	vmaFlushAllocation(GSDeviceVK::GetInstance()->GetAllocator(), m_allocation, m_current_offset, final_num_bytes);
+	if (!m_device_local)
+	{
+		// For non-coherent mappings, flush the memory range
+		vmaFlushAllocation(GSDeviceVK::GetInstance()->GetAllocator(), m_allocation, m_current_offset, final_num_bytes);
+	}
 
 	m_current_offset += final_num_bytes;
 	m_current_space -= final_num_bytes;
