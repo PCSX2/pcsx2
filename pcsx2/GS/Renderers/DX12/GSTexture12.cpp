@@ -15,14 +15,17 @@
 #include "D3D12MemAlloc.h"
 
 GSTexture12::GSTexture12(Type type, Format format, int width, int height, int levels, DXGI_FORMAT dxgi_format,
-	wil::com_ptr_nothrow<ID3D12Resource> resource, wil::com_ptr_nothrow<D3D12MA::Allocation> allocation,
-	const D3D12DescriptorHandle& srv_descriptor, const D3D12DescriptorHandle& write_descriptor,
-	const D3D12DescriptorHandle& uav_descriptor, WriteDescriptorType wdtype, D3D12_RESOURCE_STATES resource_state)
+	wil::com_ptr_nothrow<ID3D12Resource> resource, wil::com_ptr_nothrow<ID3D12Resource> resource_fbl,
+	wil::com_ptr_nothrow<D3D12MA::Allocation> allocation, const D3D12DescriptorHandle& srv_descriptor,
+	const D3D12DescriptorHandle& write_descriptor, const D3D12DescriptorHandle& uav_descriptor,
+	const D3D12DescriptorHandle& fbl_descriptor, WriteDescriptorType wdtype, D3D12_RESOURCE_STATES resource_state)
 	: m_resource(std::move(resource))
+	, m_resource_fbl(std::move(resource_fbl))
 	, m_allocation(std::move(allocation))
 	, m_srv_descriptor(srv_descriptor)
 	, m_write_descriptor(write_descriptor)
 	, m_uav_descriptor(uav_descriptor)
+	, m_fbl_descriptor(fbl_descriptor)
 	, m_write_descriptor_type(wdtype)
 	, m_dxgi_format(dxgi_format)
 	, m_resource_state(resource_state)
@@ -64,8 +67,13 @@ void GSTexture12::Destroy(bool defer)
 		if (m_uav_descriptor)
 			dev->DeferDescriptorDestruction(dev->GetDescriptorHeapManager(), &m_uav_descriptor);
 
+		if (m_fbl_descriptor)
+			dev->DeferDescriptorDestruction(dev->GetDescriptorHeapManager(), &m_fbl_descriptor);
+
 		dev->DeferResourceDestruction(m_allocation.get(), m_resource.get());
+		dev->DeferResourceDestruction(m_allocation.get(), m_resource_fbl.get());
 		m_resource.reset();
+		m_resource_fbl.reset();
 		m_allocation.reset();
 	}
 	else
@@ -88,7 +96,11 @@ void GSTexture12::Destroy(bool defer)
 		if (m_uav_descriptor)
 			dev->GetDescriptorHeapManager().Free(&m_uav_descriptor);
 
+		if (m_fbl_descriptor)
+			dev->GetDescriptorHeapManager().Free(&m_fbl_descriptor);
+
 		m_resource.reset();
+		m_resource_fbl.reset();
 		m_allocation.reset();
 	}
 
@@ -135,7 +147,9 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 			// RT's tend to be larger, so we'll keep them committed for speed.
 			pxAssert(levels == 1);
 			allocationDesc.Flags |= D3D12MA::ALLOCATION_FLAG_COMMITTED;
-			desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+			allocationDesc.ExtraHeapFlags = D3D12_HEAP_FLAG_DENY_BUFFERS | D3D12_HEAP_FLAG_DENY_NON_RT_DS_TEXTURES;
+			desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET | D3D12_RESOURCE_FLAG_ALLOW_SIMULTANEOUS_ACCESS;
+			desc.Layout = D3D12_TEXTURE_LAYOUT_64KB_UNDEFINED_SWIZZLE;
 			optimized_clear_value.Format = rtv_format;
 			state = D3D12_RESOURCE_STATE_RENDER_TARGET;
 		}
@@ -167,20 +181,63 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 		desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 
 	wil::com_ptr_nothrow<ID3D12Resource> resource;
+	wil::com_ptr_nothrow<ID3D12Resource> resource_fbl;
 	wil::com_ptr_nothrow<D3D12MA::Allocation> allocation;
-	HRESULT hr = dev->GetAllocator()->CreateResource(&allocationDesc, &desc, state,
-		(type == Type::RenderTarget || type == Type::DepthStencil) ? &optimized_clear_value : nullptr, allocation.put(),
-		IID_PPV_ARGS(resource.put()));
-	if (FAILED(hr))
-	{
-		// OOM isn't fatal.
-		if (hr != E_OUTOFMEMORY)
-			Console.Error("Create texture failed: 0x%08X", hr);
 
-		return {};
+	if (type == Type::RenderTarget)
+	{
+		const D3D12_RESOURCE_ALLOCATION_INFO allocInfo = dev->GetDevice()->GetResourceAllocationInfo(0, 1, &desc);
+
+		HRESULT hr = dev->GetAllocator()->AllocateMemory(&allocationDesc, &allocInfo, allocation.put());
+		if (FAILED(hr))
+		{
+			// OOM isn't fatal.
+			if (hr != E_OUTOFMEMORY)
+				Console.Error("Allocate texture memory failed: 0x%08X", hr);
+
+			return {};
+		}
+
+		hr = dev->GetAllocator()->CreateAliasingResource(allocation.get(), 0, &desc, state,
+			(type == Type::RenderTarget || type == Type::DepthStencil) ? &optimized_clear_value : nullptr,
+			IID_PPV_ARGS(resource.put()));
+		if (FAILED(hr))
+		{
+			// OOM isn't fatal.
+			if (hr != E_OUTOFMEMORY)
+				Console.Error("Create texture resource 1 failed: 0x%08X", hr);
+
+			return {};
+		}
+
+		hr = dev->GetAllocator()->CreateAliasingResource(allocation.get(), 0, &desc, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+			(type == Type::RenderTarget || type == Type::DepthStencil) ? &optimized_clear_value : nullptr,
+			IID_PPV_ARGS(resource_fbl.put()));
+		if (FAILED(hr))
+		{
+			// OOM isn't fatal.
+			if (hr != E_OUTOFMEMORY)
+				Console.Error("Create texture resource 2 failed: 0x%08X", hr);
+
+			return {};
+		}
+	}
+	else
+	{
+		HRESULT hr = dev->GetAllocator()->CreateResource(&allocationDesc, &desc, state,
+			(type == Type::RenderTarget || type == Type::DepthStencil) ? &optimized_clear_value : nullptr, allocation.put(),
+			IID_PPV_ARGS(resource.put()));
+		if (FAILED(hr))
+		{
+			// OOM isn't fatal.
+			if (hr != E_OUTOFMEMORY)
+				Console.Error("Create texture failed: 0x%08X", hr);
+
+			return {};
+		}
 	}
 
-	D3D12DescriptorHandle srv_descriptor, write_descriptor, uav_descriptor;
+	D3D12DescriptorHandle srv_descriptor, write_descriptor, uav_descriptor, fbl_descriptor;
 	WriteDescriptorType write_descriptor_type = WriteDescriptorType::None;
 	if (srv_format != DXGI_FORMAT_UNKNOWN)
 	{
@@ -223,9 +280,20 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 		return {};
 	}
 
+	if (resource_fbl)
+	{
+		if (!CreateSRVDescriptor(resource_fbl.get(), levels, srv_format, &fbl_descriptor))
+		{
+			dev->GetDescriptorHeapManager().Free(&uav_descriptor);
+			dev->GetDescriptorHeapManager().Free(&write_descriptor);
+			dev->GetDescriptorHeapManager().Free(&srv_descriptor);
+			return {};
+		}
+	}
+
 	return std::unique_ptr<GSTexture12>(
-		new GSTexture12(type, format, width, height, levels, dxgi_format, std::move(resource), std::move(allocation),
-			srv_descriptor, write_descriptor, uav_descriptor, write_descriptor_type, state));
+		new GSTexture12(type, format, width, height, levels, dxgi_format, std::move(resource), std::move(resource_fbl), std::move(allocation),
+			srv_descriptor, write_descriptor, uav_descriptor, fbl_descriptor, write_descriptor_type, state));
 }
 
 std::unique_ptr<GSTexture12> GSTexture12::Adopt(wil::com_ptr_nothrow<ID3D12Resource> resource, Type type, Format format,
@@ -272,8 +340,8 @@ std::unique_ptr<GSTexture12> GSTexture12::Adopt(wil::com_ptr_nothrow<ID3D12Resou
 	}
 
 	return std::unique_ptr<GSTexture12>(new GSTexture12(type, format, static_cast<u32>(desc.Width), desc.Height,
-		desc.MipLevels, desc.Format, std::move(resource), {}, srv_descriptor, write_descriptor, uav_descriptor,
-		write_descriptor_type, resource_state));
+		desc.MipLevels, desc.Format, std::move(resource), {}, {}, srv_descriptor, write_descriptor, uav_descriptor,
+		{}, write_descriptor_type, resource_state));
 }
 
 bool GSTexture12::CreateSRVDescriptor(
