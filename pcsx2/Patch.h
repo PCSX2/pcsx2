@@ -55,6 +55,10 @@ namespace Patch
 		std::string description;
 		std::string author;
 
+		// This is only populated if all the patch lines in a given group have
+		// the same place value.
+		std::optional<patch_place_type> place;
+
 		std::string_view GetNamePart() const;
 		std::string_view GetNameParentPart() const;
 	};
@@ -116,4 +120,6 @@ namespace Patch
 	extern u32 GetAllActivePatchesCount();
 
 	extern bool IsGloballyToggleablePatch(const PatchInfo& patch_info);
+
+	extern const char* PlaceToString(std::optional<patch_place_type> place);
 } // namespace Patch

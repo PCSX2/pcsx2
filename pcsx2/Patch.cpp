@@ -492,6 +492,10 @@ void Patch::ExtractPatchInfo(std::vector<PatchInfo>* dst, const std::string& pna
 	std::istringstream ss(pnach_data);
 	std::string line;
 	PatchInfo current_patch;
+
+	std::optional<patch_place_type> last_place;
+	bool unknown_place = false;
+
 	while (std::getline(ss, line))
 	{
 		TrimPatchLine(line);
@@ -518,6 +522,8 @@ void Patch::ExtractPatchInfo(std::vector<PatchInfo>* dst, const std::string& pna
 					}
 				}
 				current_patch = {};
+				last_place = std::nullopt;
+				unknown_place = false;
 			}
 
 			current_patch.name = line.substr(1, line.length() - 2);
@@ -530,13 +536,51 @@ void Patch::ExtractPatchInfo(std::vector<PatchInfo>* dst, const std::string& pna
 		// Just ignore other directives, who knows what rubbish people have in here.
 		// Use comment for description if it hasn't been otherwise specified.
 		if (key == "author")
+		{
 			current_patch.author = value;
+		}
 		else if (key == "description")
+		{
 			current_patch.description = value;
+		}
 		else if (key == "comment" && current_patch.description.empty())
+		{
 			current_patch.description = value;
-		else if (key == "patch" && !has_patch && num_unlabelled_patches)
-			(*num_unlabelled_patches)++;
+		}
+		else if (key == "patch")
+		{
+			if (!has_patch && num_unlabelled_patches)
+				(*num_unlabelled_patches)++;
+
+			// Try to extract the place value of the patch lines so we can
+			// display them in the GUI if they all match. TODO: Don't duplicate
+			// all this parsing logic twice.
+			if (unknown_place)
+				continue;
+
+			std::string::size_type comma_pos = value.find(",");
+			if (comma_pos == std::string::npos)
+				comma_pos = 0;
+			const std::string_view padded_place = value.substr(0, comma_pos);
+			const std::string_view place_string = StringUtil::StripWhitespace(padded_place);
+			const std::optional<patch_place_type> place = LookupEnumName<patch_place_type>(
+				place_string, s_place_to_string);
+			if (!place.has_value() || (last_place.has_value() && place != last_place))
+			{
+				// This group contains patch lines with different or invalid
+				// place values.
+				current_patch.place = std::nullopt;
+				unknown_place = true;
+			}
+
+			current_patch.place = place;
+			last_place = place;
+		}
+		else if (key == "dpatch")
+		{
+			current_patch.place = std::nullopt;
+			unknown_place = true;
+		}
 	}
 
 	// Last one.
@@ -1754,4 +1798,32 @@ void Patch::ApplyDynaPatch(const DynamicPatch& patch, u32 address)
 	{
 		memWrite32(address + replacement.offset, replacement.value);
 	}
+}
+
+const char* Patch::PlaceToString(std::optional<patch_place_type> place)
+{
+	if (!place.has_value())
+		//: Time when a patch is applied.
+		return TRANSLATE("Patch", "Unknown");
+
+	switch (*place)
+	{
+		case Patch::PPT_ONCE_ON_LOAD:
+			//: Time when a patch is applied.
+			return TRANSLATE("Patch", "Only On Startup");
+		case Patch::PPT_CONTINUOUSLY:
+			//: Time when a patch is applied.
+			return TRANSLATE("Patch", "Every Frame");
+		case Patch::PPT_COMBINED_0_1:
+			//: Time when a patch is applied.
+			return TRANSLATE("Patch", "On Startup & Every Frame");
+		case Patch::PPT_ON_LOAD_OR_WHEN_ENABLED:
+			//: Time when a patch is applied.
+			return TRANSLATE("Patch", "On Startup & When Enabled");
+		default:
+		{
+		}
+	}
+
+	return "";
 }
