@@ -189,6 +189,7 @@ private:
 		wil::com_ptr_nothrow<ID3D11VertexShader> vs;
 		wil::com_ptr_nothrow<ID3D11PixelShader> ps[static_cast<int>(PresentShader::Count)];
 		wil::com_ptr_nothrow<ID3D11Buffer> ps_cb;
+		DisplayConstantBuffer cb_uniforms{};
 	} m_present;
 
 	struct
@@ -196,12 +197,14 @@ private:
 		wil::com_ptr_nothrow<ID3D11PixelShader> ps[2];
 		wil::com_ptr_nothrow<ID3D11Buffer> cb;
 		wil::com_ptr_nothrow<ID3D11BlendState> bs;
+		MergeConstantBuffer cb_uniforms{};
 	} m_merge;
 
 	struct
 	{
 		wil::com_ptr_nothrow<ID3D11PixelShader> ps[NUM_INTERLACE_SHADERS];
 		wil::com_ptr_nothrow<ID3D11Buffer> cb;
+		float cb_uniforms[4]{};
 	} m_interlace;
 
 	wil::com_ptr_nothrow<ID3D11PixelShader> m_fxaa_ps;
@@ -210,6 +213,7 @@ private:
 	{
 		wil::com_ptr_nothrow<ID3D11PixelShader> ps;
 		wil::com_ptr_nothrow<ID3D11Buffer> cb;
+		float cb_uniforms[4]{};
 	} m_shadeboost;
 
 	struct
@@ -233,6 +237,7 @@ private:
 		wil::com_ptr_nothrow<ID3D11PixelShader> ps;
 		wil::com_ptr_nothrow<ID3D11BlendState> bs;
 		wil::com_ptr_nothrow<ID3D11Buffer> vs_cb;
+		float vs_cb_uniforms[4][4]{};
 	} m_imgui;
 
 	// Shaders...
@@ -339,6 +344,8 @@ public:
 	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i* scissor = nullptr, ID3D11DepthStencilView* read_only_dsv = nullptr);
 	void SetViewport(const GSVector2i& viewport);
 	void SetScissor(const GSVector4i& scissor);
+
+	void UpdateSubresource(ID3D11Buffer* buffer, const void* cb_uniforms, void* cached_cb_uniforms, size_t cb_uniforms_size);
 
 	void SetupVS(VSSelector sel, const GSHWDrawConfig::VSConstantBuffer* cb);
 	void SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstantBuffer* cb, PSSamplerSelector ssel);
