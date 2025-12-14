@@ -364,6 +364,25 @@ namespace QtUtils
 		}
 	}
 
+	void SetWindowResizeable(QWindow* window, bool resizeable)
+	{
+		if (resizeable)
+		{
+			// Min/max numbers come from uic.
+			window->setMinimumWidth(1);
+			window->setMinimumHeight(1);
+			window->setMaximumWidth(16777215);
+			window->setMaximumHeight(16777215);
+		}
+		else
+		{
+			window->setMinimumWidth(window->width());
+			window->setMinimumHeight(window->height());
+			window->setMaximumWidth(window->width());
+			window->setMaximumHeight(window->height());
+		}
+	}
+
 	void ResizePotentiallyFixedSizeWindow(QWidget* widget, int width, int height)
 	{
 		width = std::max(width, 1);
@@ -372,6 +391,22 @@ namespace QtUtils
 			widget->setFixedSize(width, height);
 
 		widget->resize(width, height);
+	}
+
+	void ResizePotentiallyFixedSizeWindow(QWindow* window, int width, int height)
+	{
+		width = std::max(width, 1);
+		height = std::max(height, 1);
+
+		if (window->minimumHeight() == window->maximumHeight())
+		{
+			window->setMinimumWidth(width);
+			window->setMinimumHeight(height);
+			window->setMaximumWidth(width);
+			window->setMaximumHeight(height);
+		}
+
+		window->resize(width, height);
 	}
 
 	QString AbstractItemModelToCSV(QAbstractItemModel* model, int role, bool useQuotes)
