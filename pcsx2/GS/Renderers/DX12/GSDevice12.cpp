@@ -3827,7 +3827,20 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 
 	// TODO: Backport from vk.
 	if (stencil_DATE_One)
+	{
 		config.ps.date = 0;
+		config.alpha_second_pass.ps.date = 0;
+		if (!config.ps.IsFeedbackLoop())
+		{
+			config.require_one_barrier = false;
+			config.require_full_barrier = false;
+		}
+		if (!config.alpha_second_pass.ps.IsFeedbackLoop())
+		{
+			config.alpha_second_pass.require_one_barrier = false;
+			config.alpha_second_pass.require_full_barrier = false;
+		}
+	}
 
 	GSTexture12* colclip_rt = static_cast<GSTexture12*>(g_gs_device->GetColorClipTexture());
 	GSTexture12* draw_rt = static_cast<GSTexture12*>(config.rt);
