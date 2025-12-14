@@ -2832,8 +2832,8 @@ void VMManager::Internal::EntryPointCompilingOnCPUThread()
 
 	HandleELFChange(true);
 
-	Patch::ApplyLoadedPatches(Patch::PPT_ONCE_ON_LOAD);
-	Patch::ApplyLoadedPatches(Patch::PPT_COMBINED_0_1);
+	Patch::ApplyBootPatches();
+
 	// If the config changes at this point, it's a reset, so the game doesn't currently know about the memcard
 	// so there's no need to leave the eject running.
 	FileMcd_CancelEject();
@@ -2849,8 +2849,7 @@ void VMManager::Internal::VSyncOnCPUThread()
 {
 	Pad::UpdateMacroButtons();
 
-	Patch::ApplyLoadedPatches(Patch::PPT_CONTINUOUSLY);
-	Patch::ApplyLoadedPatches(Patch::PPT_COMBINED_0_1);
+	Patch::ApplyVsyncPatches();
 
 	// Frame advance must be done *before* pumping messages, because otherwise
 	// we'll immediately reduce the counter we just set.

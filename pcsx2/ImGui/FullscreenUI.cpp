@@ -630,9 +630,9 @@ namespace FullscreenUI
 	static std::unique_ptr<GameList::Entry> s_game_settings_entry;
 	static std::vector<std::pair<std::string, bool>> s_game_list_directories_cache;
 	static std::vector<GSAdapterInfo> s_graphics_adapter_list_cache;
-	static Patch::PatchInfoList s_game_patch_list;
+	static std::vector<Patch::PatchInfo> s_game_patch_list;
 	static std::vector<std::string> s_enabled_game_patch_cache;
-	static Patch::PatchInfoList s_game_cheats_list;
+	static std::vector<Patch::PatchInfo> s_game_cheats_list;
 	static std::vector<std::string> s_enabled_game_cheat_cache;
 	static u32 s_game_cheat_unlabelled_count = 0;
 	static std::vector<const HotkeyInfo*> s_hotkey_list_cache;
@@ -3637,7 +3637,7 @@ void FullscreenUI::PopulateGameListDirectoryCache(SettingsInterface* si)
 
 void FullscreenUI::PopulatePatchesAndCheatsList(const std::string_view serial, u32 crc)
 {
-	constexpr auto sort_patches = [](Patch::PatchInfoList& list) {
+	constexpr auto sort_patches = [](std::vector<Patch::PatchInfo>& list) {
 		std::sort(list.begin(), list.end(), [](const Patch::PatchInfo& lhs, const Patch::PatchInfo& rhs) { return lhs.name < rhs.name; });
 	};
 
@@ -6690,7 +6690,7 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
 {
 	SettingsInterface* bsi = GetEditingSettingsInterface();
 
-	const Patch::PatchInfoList& patch_list = cheats ? s_game_cheats_list : s_game_patch_list;
+	const std::vector<Patch::PatchInfo>& patch_list = cheats ? s_game_cheats_list : s_game_patch_list;
 	std::vector<std::string>& enable_list = cheats ? s_enabled_game_cheat_cache : s_enabled_game_patch_cache;
 	const char* section = cheats ? Patch::CHEATS_CONFIG_SECTION : Patch::PATCHES_CONFIG_SECTION;
 	const bool master_enable = cheats ? GetEffectiveBoolSetting(bsi, "EmuCore", "EnableCheats", false) : true;

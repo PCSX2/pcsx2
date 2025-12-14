@@ -20,7 +20,7 @@ class GamePatchDetailsWidget : public QWidget
 	Q_OBJECT
 
 public:
-	GamePatchDetailsWidget(std::string name, const std::string& author, const std::string& description, bool tristate, Qt::CheckState checkState,
+	GamePatchDetailsWidget(const Patch::PatchInfo& info, bool tristate, Qt::CheckState checkState,
 		SettingsWindow* dialog, QWidget* parent);
 	~GamePatchDetailsWidget();
 
