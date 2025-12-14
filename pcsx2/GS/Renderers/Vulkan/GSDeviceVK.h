@@ -367,6 +367,7 @@ public:
 
 private:
 	std::unique_ptr<VKSwapChain> m_swap_chain;
+	bool m_resize_requested = false;
 
 	VkDescriptorSetLayout m_utility_ds_layout = VK_NULL_HANDLE;
 	VkPipelineLayout m_utility_pipeline_layout = VK_NULL_HANDLE;
