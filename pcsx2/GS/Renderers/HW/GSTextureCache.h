@@ -32,8 +32,18 @@ public:
 
 	constexpr static bool CheckOverlap(const u32 a_bp, const u32 a_bp_end, const u32 b_bp, const u32 b_bp_end) noexcept
 	{
-		const bool valid = a_bp <= a_bp_end && b_bp <= b_bp_end;
-		const bool overlap = a_bp <= b_bp_end && a_bp_end >= b_bp;
+		u32 b_bp_start_synced = b_bp;
+		u32 b_bp_end_synced = b_bp_end;
+
+		// Check for wrapping
+		if (a_bp_end > GS_MAX_BLOCKS && b_bp_end < a_bp)
+		{
+			b_bp_start_synced += GS_MAX_BLOCKS;
+			b_bp_end_synced += GS_MAX_BLOCKS;
+		}
+
+		const bool valid = a_bp <= a_bp_end && b_bp_start_synced <= b_bp_end_synced;
+		const bool overlap = a_bp <= b_bp_end_synced && a_bp_end >= b_bp_start_synced;
 		return valid && overlap;
 	}
 
