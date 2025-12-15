@@ -51,6 +51,7 @@ public:
 	virtual float GetTextureScaleFactor() { return 1.0f; }
 	GSVector2i GetInternalResolution();
 	float GetModXYOffset();
+	virtual int GetLastGPUCLUTDraw() { return GSState::s_n; }
 
 	virtual GSTexture* LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVector2i& offset, float* scale, const GSVector2i& size);
 
