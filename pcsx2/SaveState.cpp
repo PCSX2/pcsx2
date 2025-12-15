@@ -1252,10 +1252,10 @@ void SaveState_ReportLoadErrorOSD(const std::string& message, std::optional<s32>
 	{
 		if (backup)
 			full_message = fmt::format(
-				TRANSLATE_FS("SaveState", "Failed to load state from slot {}: {}"), *slot, message);
+				TRANSLATE_FS("SaveState", "Failed to load state from backup slot {}: {}"), *slot, message);
 		else
 			full_message = fmt::format(
-				TRANSLATE_FS("SaveState", "Failed to load state from backup slot {}: {}"), *slot, message);
+				TRANSLATE_FS("SaveState", "Failed to load state from slot {}: {}"), *slot, message);
 	}
 	else
 	{
