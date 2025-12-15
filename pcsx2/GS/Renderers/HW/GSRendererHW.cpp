@@ -59,6 +59,11 @@ void GSRendererHW::ReadbackTextureCache()
 	g_texture_cache->ReadbackAll();
 }
 
+int GSRendererHW::GetLastGPUCLUTDraw()
+{
+	return g_texture_cache->GetLastGPUCLUTDraw();
+}
+
 GSTexture* GSRendererHW::LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVector2i& offset, float* scale, const GSVector2i& size)
 {
 	return g_texture_cache->LookupPaletteSource(CBP, CPSM, CBW, offset, scale, size);
