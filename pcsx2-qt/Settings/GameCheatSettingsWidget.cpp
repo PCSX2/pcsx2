@@ -40,6 +40,9 @@ GameCheatSettingsWidget::GameCheatSettingsWidget(SettingsWindow* settings_dialog
 
 	m_ui.cheatList->expandAll();
 
+	m_ui.cheatList->viewport()->installEventFilter(this);
+	m_ui.cheatList->viewport()->setMouseTracking(true);
+
 	SettingsInterface* sif = dialog()->getSettingsInterface();
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableCheats, "EmuCore", "EnableCheats", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.allCRCsCheckbox, "EmuCore", "ShowCheatsForAllCRCs", false);
@@ -83,7 +86,7 @@ void GameCheatSettingsWidget::onCheatListItemDoubleClicked(const QModelIndex& in
 		return;
 	}
 
-	QVariant data = item->data(Qt::UserRole);
+	QVariant data = item->data(NAME_ROLE);
 	if (!data.isValid())
 		return;
 
@@ -95,7 +98,7 @@ void GameCheatSettingsWidget::onCheatListItemDoubleClicked(const QModelIndex& in
 
 void GameCheatSettingsWidget::onCheatListItemChanged(QStandardItem* item)
 {
-	QVariant data = item->data(Qt::UserRole);
+	QVariant data = item->data(NAME_ROLE);
 	if (!data.isValid())
 		return;
 
@@ -107,6 +110,31 @@ void GameCheatSettingsWidget::onCheatListItemChanged(QStandardItem* item)
 		return;
 
 	setCheatEnabled(std::move(cheat_name), current_checked, true);
+}
+
+void GameCheatSettingsWidget::onCheatListItemHovered(const QModelIndex& index)
+{
+	const QModelIndex source_index = m_model_proxy->mapToSource(index);
+	const QModelIndex sibling_index = source_index.siblingAtColumn(0);
+	QStandardItem* item = m_model->itemFromIndex(sibling_index);
+	if (!item)
+	{
+		// No item is selected.
+		m_ui.appliedLabel->clear();
+		return;
+	}
+
+	std::optional<Patch::patch_place_type> place;
+
+	bool ok;
+	int place_value = item->data(PLACE_ROLE).toInt(&ok);
+	if (ok)
+	{
+		// The patch commands in the group are all applied at the same time.
+		place = static_cast<Patch::patch_place_type>(place_value);
+	}
+
+	m_ui.appliedLabel->setText(tr("<strong>Applied:</strong> %1").arg(Patch::PlaceToString(place)));
 }
 
 void GameCheatSettingsWidget::onReloadClicked()
@@ -134,6 +162,32 @@ void GameCheatSettingsWidget::disableAllCheats()
 	SettingsInterface* si = dialog()->getSettingsInterface();
 	si->ClearSection(Patch::CHEATS_CONFIG_SECTION);
 	si->Save();
+}
+
+bool GameCheatSettingsWidget::eventFilter(QObject* watched, QEvent* event)
+{
+	if (watched == m_ui.cheatList->viewport())
+	{
+		switch (event->type())
+		{
+			case QEvent::MouseMove:
+			{
+				QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);
+				onCheatListItemHovered(m_ui.cheatList->indexAt(mouse_event->position().toPoint()));
+				return true;
+			}
+			case QEvent::Leave:
+			{
+				onCheatListItemHovered(QModelIndex());
+				return true;
+			}
+			default:
+			{
+			}
+		}
+	}
+
+	return SettingsWidget::eventFilter(watched, event);
 }
 
 void GameCheatSettingsWidget::resizeEvent(QResizeEvent* event)
@@ -185,7 +239,7 @@ void GameCheatSettingsWidget::setStateRecursively(QStandardItem* parent, bool en
 	for (int i = 0; i < count; i++)
 	{
 		QStandardItem* item = parent ? parent->child(i, 0) : m_model->item(i, 0);
-		QVariant data = item->data(Qt::UserRole);
+		QVariant data = item->data(NAME_ROLE);
 		if (data.isValid())
 		{
 			if ((item->checkState() == Qt::Checked) != enabled)
@@ -277,7 +331,9 @@ QList<QStandardItem*> GameCheatSettingsWidget::populateTreeViewRow(const Patch::
 	const std::string_view name_part = pi.GetNamePart();
 	nameItem->setFlags(Qt::ItemIsUserCheckable | Qt::ItemNeverHasChildren | Qt::ItemIsEnabled);
 	nameItem->setCheckState(enabled ? Qt::Checked : Qt::Unchecked);
-	nameItem->setData(QString::fromStdString(pi.name), Qt::UserRole);
+	nameItem->setData(QString::fromStdString(pi.name), NAME_ROLE);
+	if (pi.place.has_value())
+		nameItem->setData(static_cast<int>(*pi.place), PLACE_ROLE);
 	if (!name_part.empty())
 		nameItem->setText(QString::fromUtf8(name_part.data(), name_part.length()));
 
