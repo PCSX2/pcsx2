@@ -553,7 +553,7 @@ void Patch::ExtractPatchInfo(std::vector<PatchInfo>* dst, const std::string& pna
 				(*num_unlabelled_patches)++;
 
 			// Try to extract the place value of the patch lines so we can
-			// display them in the GUI if they all match. TODO: Don't duplicate
+			// display it in the GUI if they all match. TODO: Don't duplicate
 			// all this parsing logic twice.
 			if (unknown_place)
 				continue;
@@ -571,6 +571,7 @@ void Patch::ExtractPatchInfo(std::vector<PatchInfo>* dst, const std::string& pna
 				// place values.
 				current_patch.place = std::nullopt;
 				unknown_place = true;
+				continue;
 			}
 
 			current_patch.place = place;
