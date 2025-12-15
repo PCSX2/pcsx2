@@ -4310,16 +4310,17 @@ bool GSTextureCache::PrepareDownloadTexture(u32 width, u32 height, GSTexture::Fo
 		}
 	}
 }*/
-void GSTextureCache::InvalidateContainedTargets(u32 start_bp, u32 end_bp, u32 write_psm, u32 write_bw)
+void GSTextureCache::InvalidateContainedTargets(u32 start_bp, u32 end_bp, u32 write_psm, u32 write_bw, u32 fb_mask, bool ignore_exact)
 {
-	const bool preserve_alpha = (GSLocalMemory::m_psm[write_psm].trbpp == 24);
-	for (int type = 0; type < 2; type++)
+	const bool preserve_alpha = (GSLocalMemory::m_psm[write_psm].trbpp == 24) || (fb_mask & 0xFF000000);
+	for (int type = 0; type < (ignore_exact ? 1 : 2); type++)
 	{
 		auto& list = m_dst[type];
 		for (auto i = list.begin(); i != list.end();)
 		{
 			Target* const t = *i;
-			if (start_bp != t->m_TEX0.TBP0 && (t->m_TEX0.TBP0 > end_bp || t->UnwrappedEndBlock() < start_bp))
+
+			if ((ignore_exact && start_bp == t->m_TEX0.TBP0) || (start_bp != t->m_TEX0.TBP0 && (t->m_TEX0.TBP0 > end_bp || t->UnwrappedEndBlock() < start_bp)))
 			{
 				++i;
 				continue;
@@ -4342,7 +4343,7 @@ void GSTextureCache::InvalidateContainedTargets(u32 start_bp, u32 end_bp, u32 wr
 					{
 
 						RGBAMask mask;
-						mask._u32 = GSUtil::GetChannelMask(write_psm);
+						mask._u32 = GSUtil::GetChannelMask(write_psm, fb_mask);
 						AddDirtyRectTarget(t, invalidate_r, t->m_TEX0.PSM, t->m_TEX0.TBW, mask, false);
 					}
 
@@ -4372,7 +4373,7 @@ void GSTextureCache::InvalidateContainedTargets(u32 start_bp, u32 end_bp, u32 wr
 
 			t->m_valid_alpha_low &= preserve_alpha;
 			t->m_valid_alpha_high &= preserve_alpha;
-			t->m_valid_rgb = false;
+			t->m_valid_rgb &= (fb_mask & 0x00FFFFFF) != 0;
 
 			// Don't keep partial depth buffers around.
 			if ((!t->m_valid_alpha_low && !t->m_valid_alpha_high && !t->m_valid_rgb) || type == DepthStencil)
@@ -4393,6 +4394,16 @@ void GSTextureCache::InvalidateContainedTargets(u32 start_bp, u32 end_bp, u32 wr
 				i = list.erase(i);
 				delete t;
 				continue;
+			}
+			else if (ignore_exact && GSUtil::HasCompatibleBits(t->m_TEX0.PSM, write_psm))
+			{
+				RGBAMask mask;
+				mask._u32 = GSUtil::GetChannelMask(write_psm, fb_mask);
+
+				AddDirtyRectTarget(t, t->m_valid, t->m_TEX0.PSM, t->m_TEX0.TBW, mask, false);
+				t->m_valid_rgb |= !!(mask._u32 & 0x7);
+				t->m_valid_alpha_low |= mask.c.a;
+				t->m_valid_alpha_high |= mask.c.a;
 			}
 
 			GL_CACHE("TC: InvalidateContainedTargets: Clear RGB valid on %s[%x, %s]", to_string(type), t->m_TEX0.TBP0, GSUtil::GetPSMName(t->m_TEX0.PSM));

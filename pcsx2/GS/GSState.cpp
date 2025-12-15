@@ -5496,6 +5496,11 @@ bool GSState::IsOpaque()
 		return true;
 
 	const GSDrawingContext* context = m_context;
+	const u32 fmsk = GSLocalMemory::m_psm[context->FRAME.PSM].fmsk;
+
+	// If we aren't drawing color, it's equivilant to opaque.
+	if ((context->FRAME.FBMSK & fmsk) == (fmsk & 0x00FFFFFF))
+		return true;
 
 	int amin = 0;
 	int amax = 0xff;
