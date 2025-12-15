@@ -451,6 +451,9 @@ protected:
 	GSTexture* m_temporary_z = nullptr; // invalidated after the draw
 	TempZAddress m_temporary_z_info;
 
+	Target* m_last_clut_target = nullptr;
+	int m_last_gpu_clut_draw = 0;
+
 	std::unique_ptr<GSDownloadTexture> m_color_download_texture;
 	std::unique_ptr<GSDownloadTexture> m_uint16_download_texture;
 	std::unique_ptr<GSDownloadTexture> m_uint32_download_texture;
@@ -491,6 +494,7 @@ public:
 	__fi u64 GetTotalHashCacheMemoryUsage() const { return (m_hash_cache_memory_usage + m_hash_cache_replacement_memory_usage); }
 	__fi u64 GetSourceMemoryUsage() const { return m_source_memory_usage; }
 	__fi u64 GetTargetMemoryUsage() const { return m_target_memory_usage; }
+	__fi int GetLastGPUCLUTDraw() { return m_last_gpu_clut_draw; };
 
 	void Read(Target* t, const GSVector4i& r);
 	void Read(Source* t, const GSVector4i& r);

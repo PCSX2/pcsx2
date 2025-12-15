@@ -440,17 +440,23 @@ void GSClut::Read32(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA)
 				GSTexture* dst = is_4bit ? m_gpu_clut4 : m_gpu_clut8;
 				const u32 dst_size = is_4bit ? 16 : 256;
 				const u32 dOffset = (TEX0.CSA & ((TEX0.CPSM == PSMCT16 || TEX0.CPSM == PSMCT16S) ? 15u : 31u)) << 4;
+				bool new_clut = false;
+
 				if (!dst)
 				{
 					// allocate texture lazily
 					dst = g_gs_device->CreateRenderTarget(dst_size, 1, GSTexture::Format::Color, false);
 					is_4bit ? (m_gpu_clut4 = dst) : (m_gpu_clut8 = dst);
+					new_clut = true;
 				}
 				if (dst)
 				{
 					GL_PUSH("Update GPU CLUT [CBP=%04X, CPSM=%s, CBW=%u, CSA=%u, Offset=(%d,%d)]",
 						TEX0.CBP, GSUtil::GetPSMName(TEX0.CPSM), CBW, TEX0.CSA, offset.x, offset.y);
-					g_gs_device->UpdateCLUTTexture(src, scale, offset.x, offset.y, dst, dOffset, dst_size);
+
+					if (new_clut || g_gs_renderer->GetLastGPUCLUTDraw() == GSState::s_n)
+						g_gs_device->UpdateCLUTTexture(src, scale, offset.x, offset.y, dst, dOffset, dst_size);
+
 					m_current_gpu_clut = dst;
 				}
 			}

@@ -7118,6 +7118,19 @@ GSTexture* GSTextureCache::LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVec
 				continue;
 		}
 
+		if (m_last_clut_target != nullptr && m_last_clut_target == t)
+		{
+			if (t->m_last_draw > m_last_gpu_clut_draw)
+			{
+				m_last_gpu_clut_draw = GSState::s_n;
+			}
+		}
+		else
+		{
+			m_last_clut_target = t;
+			m_last_gpu_clut_draw = GSState::s_n;
+		}
+
 		offset = this_offset;
 		*scale = t->m_scale;
 
