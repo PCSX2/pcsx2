@@ -115,7 +115,7 @@ jobs:
 
       - name: Cache Dependencies
         id: cache-deps
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: deps
           key: ${{ inputs.os }} ${{ inputs.platform }} deps ${{ hashFiles('.github/workflows/scripts/windows/build-dependencies.bat', '.github/workflows/scripts/common/*.patch') }}
@@ -154,7 +154,7 @@ jobs:
           cmake --build build --config Release --target unittests
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ steps.artifact-metadata.outputs.artifact-name }}
           path: |
@@ -186,7 +186,7 @@ jobs:
           }
 
       - name: Upload artifact - with symbols
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ steps.artifact-metadata.outputs.artifact-name }}-symbols
           path: |
