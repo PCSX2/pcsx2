@@ -21,8 +21,8 @@ private:
 	u32 m_skipped_duplicate_frames = 0;
 
 	// Tracking draw counters for idle frame detection.
-	int m_last_draw_n = 0;
-	int m_last_transfer_n = 0;
+	u64 m_last_draw_n = 0;
+	u64 m_last_transfer_n = 0;
 
 protected:
 	GSVector2i m_real_size{0, 0};
@@ -51,7 +51,7 @@ public:
 	virtual float GetTextureScaleFactor() { return 1.0f; }
 	GSVector2i GetInternalResolution();
 	float GetModXYOffset();
-	virtual int GetLastGPUCLUTDraw() { return GSState::s_n; }
+	virtual u64 GetLastGPUCLUTDraw() { return GSState::s_n; }
 
 	virtual GSTexture* LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVector2i& offset, float* scale, const GSVector2i& size);
 
