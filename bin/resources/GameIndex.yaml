@@ -13996,6 +13996,7 @@ SLED-53109:
     cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 1 # Fixes headlight brightness.
     cpuCLUTRender: 1 # Fixes broken headlights.
+    nativeScaling: 4 # Aligns post effects.
     minimumBlendingLevel: 3
 SLED-53137:
   name: "Stolen [Demo]"
@@ -22269,6 +22270,7 @@ SLES-53044:
     cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 1 # Fixes headlight brightness.
     cpuCLUTRender: 1 # Fixes broken headlights.
+    nativeScaling: 4 # Aligns post effects.
     minimumBlendingLevel: 3
 SLES-53045:
   name: "Street Racing Syndicate"
@@ -22592,6 +22594,7 @@ SLES-53151:
     cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 1 # Fixes headlight brightness.
     cpuCLUTRender: 1 # Fixes broken headlights.
+    nativeScaling: 4 # Aligns post effects.
     minimumBlendingLevel: 3
 SLES-53152:
   name: "Mashed Fully Loaded"
@@ -32394,6 +32397,7 @@ SLKA-25283:
     cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 1 # Fixes headlight brightness.
     cpuCLUTRender: 1 # Fixes broken headlights.
+    nativeScaling: 4 # Aligns post effects.
     minimumBlendingLevel: 3
 SLKA-25284:
   name: "사쿠라 대전　３　～파리는　불타고　있는가～"
@@ -48603,6 +48607,7 @@ SLPM-66277:
     cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 1 # Fixes headlight brightness.
     cpuCLUTRender: 1 # Fixes broken headlights.
+    nativeScaling: 4 # Aligns post effects.
     minimumBlendingLevel: 3
 SLPM-66278:
   name: "新・豪血寺一族 -煩悩解放-"
@@ -68225,6 +68230,7 @@ SLUS-20872:
     cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 1 # Fixes headlight brightness.
     cpuCLUTRender: 1 # Fixes broken headlights.
+    nativeScaling: 4 # Aligns post effects.
     minimumBlendingLevel: 3
 SLUS-20873:
   name: "Silent Hill 4 - The Room"
@@ -75330,6 +75336,7 @@ SLUS-29147:
     cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 1 # Fixes headlight brightness.
     cpuCLUTRender: 1 # Fixes broken headlights.
+    nativeScaling: 4 # Aligns post effects.
     minimumBlendingLevel: 3
 SLUS-29148:
   name: "The Incredible Hulk - Ultimate Destruction [Demo]"
