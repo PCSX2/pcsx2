@@ -575,7 +575,7 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 	{
 		if (GSConfig.SaveInfo)
 		{
-			DumpGSPrivRegs(*m_regs, GetDrawDumpPath("%05d_f%05lld_vsync_gs_reg.txt", s_n, g_perfmon.GetFrame()));
+			DumpGSPrivRegs(*m_regs, GetDrawDumpPath("%05lld_f%05lld_vsync_gs_reg.txt", s_n, g_perfmon.GetFrame()));
 
 			DumpDrawInfo(false, false, true);
 		}
@@ -586,7 +586,7 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 		if (GSConfig.SaveFrameStats)
 		{
 			m_perfmon_frame = g_perfmon - m_perfmon_frame;
-			m_perfmon_frame.Dump(GetDrawDumpPath("%05d_f%05lld_frame_stats.txt", s_n, g_perfmon.GetFrame()), GSIsHardwareRenderer());
+			m_perfmon_frame.Dump(GetDrawDumpPath("%05lld_f%05lld_frame_stats.txt", s_n, g_perfmon.GetFrame()), GSIsHardwareRenderer());
 			m_perfmon_frame = g_perfmon;
 		}
 	}

@@ -1131,7 +1131,7 @@ bool GSHwHack::OI_SonicUnleashed(GSRendererHW& r, GSTexture* rt, GSTexture* ds, 
 	if ((!rt) || (!RPRIM->TME) || (GSLocalMemory::m_psm[Texture.PSM].bpp != 16) || (GSLocalMemory::m_psm[Frame.PSM].bpp != 16) || (Texture.TBP0 == Frame.TBP0) || (Frame.TBW != 16 && Texture.TBW != 16))
 		return true;
 
-	GL_INS("OI_SonicUnleashed replace draw by a copy draw %d", r.s_n);
+	GL_INS("OI_SonicUnleashed replace draw by a copy draw %lld", r.s_n);
 
 	GSTextureCache::Target* src = g_texture_cache->LookupTarget(Texture, GSVector2i(1, 1), r.GetTextureScaleFactor(), GSTextureCache::RenderTarget, true, 0, false, false, true, true, GSVector4i::zero(), true);
 
@@ -1344,7 +1344,7 @@ static bool GetMoveTargetPair(GSRendererHW& r, GSTextureCache::Target** src, GST
 		req_target, preserve_target);
 }
 
-static int s_last_hacked_move_n = 0;
+static u64 s_last_hacked_move_n = 0;
 
 bool GSHwHack::MV_Growlanser(GSRendererHW& r)
 {
