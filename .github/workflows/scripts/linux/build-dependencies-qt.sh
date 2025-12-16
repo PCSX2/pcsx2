@@ -213,7 +213,7 @@ tar xf "harfbuzz-$HARFBUZZ.tar.gz"
 cd "harfbuzz-$HARFBUZZ"
 # Add an SOVERSION to match system harfbuzz
 sed -i 's/PROPERTIES VISIBILITY_INLINES_HIDDEN TRUE)/PROPERTIES VISIBILITY_INLINES_HIDDEN TRUE SOVERSION 0)/g' CMakeLists.txt
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DBUILD_SHARED_LIBS=ON -DHB_BUILD_UTILS=OFF -DHB_HAVE_FREETYPE=ON -B build -G Ninja
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DBUILD_SHARED_LIBS=ON -DHB_BUILD_UTILS=OFF -DHB_HAVE_FREETYPE=ON -DHB_HAVE_GOBJECT=ON -B build -G Ninja
 cmake --build build --parallel
 ninja -C build install
 cd ..
@@ -247,7 +247,7 @@ tar xf "qtbase-everywhere-src-$QT.tar.xz"
 cd "qtbase-everywhere-src-$QT"
 mkdir build
 cd build
-../configure -prefix "$INSTALLDIR" -release -dbus-linked -gui -widgets -fontconfig -qt-doubleconversion -ssl -openssl-runtime -opengl desktop -qpa xcb,wayland -xkbcommon -xcb -- --log-level=STATUS -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DFEATURE_dbus=ON -DFEATURE_icu=OFF -DFEATURE_printsupport=OFF -DFEATURE_sql=OFF -DFEATURE_system_png=ON -DFEATURE_system_jpeg=ON -DFEATURE_system_zlib=ON -DFEATURE_system_freetype=ON -DFEATURE_system_harfbuzz=ON -DFEATURE_gtk3=OFF
+../configure -prefix "$INSTALLDIR" -release -dbus-linked -gui -widgets -fontconfig -qt-doubleconversion -ssl -openssl-runtime -opengl desktop -qpa xcb,wayland -xkbcommon -xcb -gtk -- --log-level=STATUS -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DFEATURE_dbus=ON -DFEATURE_icu=OFF -DFEATURE_printsupport=OFF -DFEATURE_sql=OFF -DFEATURE_system_png=ON -DFEATURE_system_jpeg=ON -DFEATURE_system_zlib=ON -DFEATURE_system_freetype=ON -DFEATURE_system_harfbuzz=ON
 cmake --build . --parallel
 ninja install
 cd ../../
