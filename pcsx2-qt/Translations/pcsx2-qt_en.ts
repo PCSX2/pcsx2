@@ -12123,27 +12123,32 @@ Please see our official documentation for more information.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameCheatSettingsWidget.ui" line="109"/>
+        <location filename="../Settings/GameCheatSettingsWidget.ui" line="116"/>
         <source>Reload Cheats</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="61"/>
+        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="64"/>
         <source>Show Cheats For All CRCs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="61"/>
+        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="64"/>
         <source>Checked</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="62"/>
+        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="65"/>
         <source>Toggles scanning patch files for all CRCs of the game. With this enabled available patches for the game serial with different CRCs will also be loaded.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="236"/>
+        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="137"/>
+        <source>&lt;strong&gt;Applied:&lt;/strong&gt; %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="290"/>
         <source>%1 unlabelled patch codes will automatically activate.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -21247,7 +21252,7 @@ Ejecting {2} and replacing it with {3}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../../pcsx2/Patch.cpp" line="819"/>
+        <location filename="../../pcsx2/Patch.cpp" line="820"/>
         <source>%n GameDB patches are active.</source>
         <comment>OSD Message</comment>
         <translation type="unfinished">
@@ -21256,7 +21261,7 @@ Ejecting {2} and replacing it with {3}.</source>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../pcsx2/Patch.cpp" line="827"/>
+        <location filename="../../pcsx2/Patch.cpp" line="828"/>
         <source>%n game patches are active.</source>
         <comment>OSD Message</comment>
         <translation type="unfinished">
@@ -21265,7 +21270,7 @@ Ejecting {2} and replacing it with {3}.</source>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../pcsx2/Patch.cpp" line="836"/>
+        <location filename="../../pcsx2/Patch.cpp" line="837"/>
         <source>%n cheat patches are active.</source>
         <comment>OSD Message</comment>
         <translation type="unfinished">
@@ -21274,36 +21279,36 @@ Ejecting {2} and replacing it with {3}.</source>
         </translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Patch.cpp" line="850"/>
+        <location filename="../../pcsx2/Patch.cpp" line="851"/>
         <source>No cheats or patches (widescreen, compatibility or others) are found / enabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Patch.cpp" line="1807"/>
+        <location filename="../../pcsx2/Patch.cpp" line="1808"/>
         <source>Unknown</source>
         <extracomment>Time when a patch is applied.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Patch.cpp" line="1813"/>
+        <location filename="../../pcsx2/Patch.cpp" line="1814"/>
         <source>Only On Startup</source>
         <extracomment>Time when a patch is applied.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Patch.cpp" line="1816"/>
+        <location filename="../../pcsx2/Patch.cpp" line="1817"/>
         <source>Every Frame</source>
         <extracomment>Time when a patch is applied.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Patch.cpp" line="1819"/>
+        <location filename="../../pcsx2/Patch.cpp" line="1820"/>
         <source>On Startup &amp; Every Frame</source>
         <extracomment>Time when a patch is applied.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Patch.cpp" line="1822"/>
+        <location filename="../../pcsx2/Patch.cpp" line="1823"/>
         <source>On Startup &amp; When Enabled</source>
         <extracomment>Time when a patch is applied.</extracomment>
         <translation type="unfinished"></translation>
@@ -21588,12 +21593,12 @@ If you have any unsaved progress on this save state, you can download the compat
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/SaveState.cpp" line="1255"/>
+        <location filename="../../pcsx2/SaveState.cpp" line="1258"/>
         <source>Failed to load state from slot {}: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/SaveState.cpp" line="1258"/>
+        <location filename="../../pcsx2/SaveState.cpp" line="1255"/>
         <source>Failed to load state from backup slot {}: {}</source>
         <translation type="unfinished"></translation>
     </message>
