@@ -1434,7 +1434,14 @@ void GSDeviceOGL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r
 	// Empty rect, abort copy.
 	if (r.rempty())
 	{
-		GL_INS("GL: CopyRect rect empty.");
+		GL_INS("GL: CopyRect() rect empty, aborting copy.");
+		return;
+	}
+
+	// sTex and dTex are the same, abort copy.
+	if (sTex == dTex)
+	{
+		GL_INS("GL: CopyRect() sTex == dTex, aborting copy.");
 		return;
 	}
 

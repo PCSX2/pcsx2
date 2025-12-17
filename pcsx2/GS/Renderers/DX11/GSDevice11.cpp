@@ -1233,7 +1233,14 @@ void GSDevice11::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 	// Empty rect, abort copy.
 	if (r.rempty())
 	{
-		GL_INS("D3D11: CopyRect rect empty.");
+		GL_INS("D3D11: CopyRect() rect empty, aborting copy.");
+		return;
+	}
+
+	// sTex and dTex are the same, abort copy.
+	if (sTex == dTex)
+	{
+		GL_INS("D3D11: CopyRect() sTex == dTex, aborting copy.");
 		return;
 	}
 
