@@ -198,10 +198,7 @@ namespace FullscreenUI
 	{
 	private:
 		std::string m_dialogId;
-		std::atomic_bool m_completed{false};
-		std::atomic_bool m_success{false};
 		int m_reqMiB = 0;
-		std::atomic_bool m_dialogClosed{false}; // Check if dialog was already closed
 
 		static std::vector<std::shared_ptr<HddCreateInProgress>> s_activeOperations;
 		static std::mutex s_operationsMutex;
@@ -211,20 +208,6 @@ namespace FullscreenUI
 		HddCreateInProgress(const std::string& dialogId)
 			: m_dialogId(dialogId)
 		{
-		}
-
-		~HddCreateInProgress()
-		{
-			SafeCloseDialog();
-		}
-
-		void SafeCloseDialog()
-		{
-			bool expected = false;
-			if (m_dialogClosed.compare_exchange_strong(expected, true))
-			{
-				ImGuiFullscreen::CloseProgressDialog(m_dialogId.c_str());
-			}
 		}
 
 		static bool StartCreation(const std::string& filePath, int sizeInGB, bool use48BitLBA)
@@ -244,12 +227,10 @@ namespace FullscreenUI
 			{
 				if (!FileSystem::DeleteFilePath(filePath.c_str()))
 				{
-					Host::RunOnCPUThread([filePath]() {
-						ShowToast(
-							fmt::format("{} HDD Creation Failed", ICON_FA_TRIANGLE_EXCLAMATION),
-							fmt::format("Failed to delete existing HDD image file '{}'. Please check file permissions and try again.", Path::GetFileName(filePath)),
-							5.0f);
-					});
+					ShowToast(
+						fmt::format("{} HDD Creation Failed", ICON_FA_TRIANGLE_EXCLAMATION),
+						fmt::format("Failed to delete existing HDD image file '{}'. Please check file permissions and try again.", Path::GetFileName(filePath)),
+						5.0f);
 					return false;
 				}
 			}
@@ -269,14 +250,14 @@ namespace FullscreenUI
 				instance->Start();
 
 				if (!instance->errored)
-					Host::RunOnCPUThread([size_gb = static_cast<int>(instance->neededSize / static_cast<u64>(_1gb))]() {
+					MTGS::RunOnGSThread([size_gb = static_cast<int>(instance->neededSize / static_cast<u64>(_1gb))]() {
 						ShowToast(
 							ICON_FA_CIRCLE_CHECK,
 							fmt::format("HDD image ({} GB) created successfully.", size_gb),
 							3.0f);
 					});
 				else
-					Host::RunOnCPUThread([]() {
+					MTGS::RunOnGSThread([]() {
 						ShowToast(
 							ICON_FA_TRIANGLE_EXCLAMATION,
 							"Failed to create HDD image.",
@@ -301,10 +282,7 @@ namespace FullscreenUI
 		{
 			std::lock_guard<std::mutex> lock(s_operationsMutex);
 			for (auto& operation : s_activeOperations)
-			{
 				operation->SetCanceled();
-				operation->SafeCloseDialog();
-			}
 			s_activeOperations.clear();
 		}
 
@@ -323,17 +301,9 @@ namespace FullscreenUI
 			ImGuiFullscreen::UpdateProgressDialog(m_dialogId.c_str(), message, 0, m_reqMiB, writtenMiB);
 		}
 
-		virtual void SetError() override
-		{
-			SafeCloseDialog();
-			HddCreate::SetError();
-		}
-
 		virtual void Cleanup() override
 		{
-			SafeCloseDialog();
-			m_success.store(!errored, std::memory_order_release);
-			m_completed.store(true, std::memory_order_release);
+			ImGuiFullscreen::CloseProgressDialog(m_dialogId.c_str());
 		}
 	};
 
@@ -349,9 +319,7 @@ namespace FullscreenUI
 
 		if (sizeInGB < min_size || sizeInGB > max_size)
 		{
-			Host::RunOnCPUThread([min_size, max_size]() {
-				ShowToast(std::string(), fmt::format("Invalid HDD size. Size must be between {} and {} GB.", min_size, max_size).c_str());
-			});
+			ShowToast(std::string(), fmt::format("Invalid HDD size. Size must be between {} and {} GB.", min_size, max_size).c_str());
 			return false;
 		}
 
