@@ -14,6 +14,7 @@
 #include "common/HeterogeneousContainers.h"
 
 #include <QtCore/QSortFilterProxyModel>
+#include <QtGui/QMouseEvent>
 #include <QtGui/QStandardItemModel>
 
 GameCheatSettingsWidget::GameCheatSettingsWidget(SettingsWindow* settings_dialog, QWidget* parent)
