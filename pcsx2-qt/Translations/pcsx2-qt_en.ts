@@ -95,27 +95,27 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="27"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="28"/>
         <source>&lt;strong&gt;Your RetroAchievements login token is no longer valid.&lt;/strong&gt; You must re-enter your credentials for achievements to be tracked. Your password will not be saved in PCSX2, an access token will be generated and used instead.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="32"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="33"/>
         <source>&amp;Login</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="45"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="46"/>
         <source>Logging in...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="82"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="83"/>
         <source>Login Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="83"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="84"/>
         <source>Login failed.
 Error: %1
 
@@ -123,29 +123,29 @@ Please check your username and password, and try again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="84"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="85"/>
         <source>Login failed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="92"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="93"/>
         <source>Enable Achievements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="93"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="94"/>
         <source>Achievement tracking is not currently enabled. Your login will have no effect until after tracking is enabled.
 
 Do you want to enable tracking now?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="104"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="105"/>
         <source>Enable Hardcore Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="105"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="106"/>
         <source>Hardcore mode is not currently enabled. Enabling hardcore mode allows you to set times, scores, and participate in game-specific leaderboards.
 
 However, hardcore mode also prevents the usage of save states, cheats and slowdown functionality.
@@ -154,32 +154,32 @@ Do you want to enable hardcore mode?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="121"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="122"/>
         <source>Reset System</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="122"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="123"/>
         <source>Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="133"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="134"/>
         <source>Login Successful</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="134"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="135"/>
         <source>Successfully logged in to RetroAchievements as %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="136"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="137"/>
         <source>Successfully logged in as %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementLoginDialog.cpp" line="142"/>
+        <location filename="../Settings/AchievementLoginDialog.cpp" line="143"/>
         <source>&amp;Dismiss</source>
         <translation type="unfinished"></translation>
     </message>
