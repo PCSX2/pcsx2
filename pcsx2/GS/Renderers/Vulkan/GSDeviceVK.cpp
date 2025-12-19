@@ -207,6 +207,17 @@ bool GSDeviceVK::SelectInstanceExtensions(ExtensionList* extension_list, const W
 		Console.Warning("VK: Debug report requested, but extension is not available.");
 
 	oe->vk_swapchain_maintenance1 = wi.type != WindowInfo::Type::Surfaceless;
+	if (wi.type != WindowInfo::Type::Surfaceless)
+	{
+		oe->vk_swapchain_maintenance1 = true;
+		// VK_EXT_swapchain_maintenance1 requires VK_EXT_surface_maintenance1.
+		// VK_KHR_swapchain_maintenance1 might require VK_KHR_surface_maintenance1 (It does on Nvidia).
+		// If either VK_KHR_surface_maintenance1 is supported, or VK_EXT_swapchain_maintenance1 is unsupported, don't try VK_EXT_swapchain_maintenance1.
+		oe->vk_swapchain_maintenance1_is_khr = SupportsExtension(VK_KHR_SURFACE_MAINTENANCE_1_EXTENSION_NAME, false) ||
+			!SupportsExtension(VK_EXT_SURFACE_MAINTENANCE_1_EXTENSION_NAME, false);
+	}
+	else
+		oe->vk_swapchain_maintenance1 = false;
 
 	// Needed for exclusive fullscreen control.
 	SupportsExtension(VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME, false);
@@ -413,7 +424,12 @@ bool GSDeviceVK::SelectDeviceExtensions(ExtensionList* extension_list, bool enab
 	if (m_optional_extensions.vk_swapchain_maintenance1)
 	{
 		const bool khr_swapchain_maintenance1 = SupportsExtension(VK_KHR_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME, false);
-		m_optional_extensions.vk_swapchain_maintenance1 = khr_swapchain_maintenance1 ? khr_swapchain_maintenance1 : SupportsExtension(VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME, false);
+		// vk_swapchain_maintenance1_is_khr will be set if we havn't enabled VK_EXT_surface_maintenance1
+		// This will happen if either the VK_EXT_surface_maintenance1 was unsupported, or we instead found the KHR version.
+		// As the EXT version depends on the surface maintenance1 extension, we need to check that aswell.
+		m_optional_extensions.vk_swapchain_maintenance1 = khr_swapchain_maintenance1 ? khr_swapchain_maintenance1 :
+			(!m_optional_extensions.vk_swapchain_maintenance1_is_khr && SupportsExtension(VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME, false));
+
 		m_optional_extensions.vk_swapchain_maintenance1_is_khr = khr_swapchain_maintenance1;
 	}
 
