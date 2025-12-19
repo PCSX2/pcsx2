@@ -12088,17 +12088,17 @@ Please see our official documentation for more information.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="27"/>
+        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="28"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="28"/>
+        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="29"/>
         <source>Author</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="29"/>
+        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="30"/>
         <source>Description</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12128,27 +12128,27 @@ Please see our official documentation for more information.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="64"/>
+        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="65"/>
         <source>Show Cheats For All CRCs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="64"/>
+        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="65"/>
         <source>Checked</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="65"/>
+        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="66"/>
         <source>Toggles scanning patch files for all CRCs of the game. With this enabled available patches for the game serial with different CRCs will also be loaded.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="137"/>
+        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="138"/>
         <source>&lt;strong&gt;Applied:&lt;/strong&gt; %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="290"/>
+        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="291"/>
         <source>%1 unlabelled patch codes will automatically activate.</source>
         <translation type="unfinished"></translation>
     </message>
