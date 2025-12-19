@@ -2430,6 +2430,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	GSVector2i rtsize = (config.rt ? config.rt : config.ds)->GetSize();
 
 	GSTexture* primid_texture = nullptr;
+	GSTexture* draw_rt_clone = nullptr;
 	GSTexture* colclip_rt = g_gs_device->GetColorClipTexture();
 
 	if (colclip_rt)
@@ -2505,23 +2506,6 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 			break;
 	}
 
-	GSTexture* draw_rt_clone = nullptr;
-
-	if (config.require_one_barrier && !m_features.texture_barrier)
-	{
-		// Requires a copy of the RT.
-		draw_rt_clone = CreateTexture(rtsize.x, rtsize.y, 1, colclip_rt ? GSTexture::Format::ColorClip : GSTexture::Format::Color, true);
-		if (draw_rt_clone)
-		{
-			GL_PUSH("GL: Copy RT to temp texture {%d,%d %dx%d}",
-				config.drawarea.left, config.drawarea.top,
-				config.drawarea.width(), config.drawarea.height());
-			CopyRect(colclip_rt ? colclip_rt : config.rt, draw_rt_clone, config.drawarea, config.drawarea.left, config.drawarea.top);
-		}
-		else
-			Console.Warning("GL: Failed to allocate temp texture for RT copy.");
-	}
-
 	IASetVertexBuffer(config.verts, config.nverts, GetVertexAlignment(config.vs.expand));
 	m_vertex.start *= GetExpansionFactor(config.vs.expand);
 
@@ -2550,9 +2534,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		PSSetShaderResource(0, config.tex);
 	if (config.pal)
 		PSSetShaderResource(1, config.pal);
-	if (draw_rt_clone)
-		PSSetShaderResource(2, draw_rt_clone);
-	else if (config.require_one_barrier || config.require_full_barrier)
+	if (m_features.texture_barrier && (config.require_one_barrier || config.require_full_barrier))
 		PSSetShaderResource(2, colclip_rt ? colclip_rt : config.rt);
 
 	SetupSampler(config.sampler);
@@ -2666,6 +2648,25 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		GL_INS("GL: Texture barrier to flush depth or rt before reading");
 		g_perfmon.Put(GSPerfMon::Barriers, 1);
 		glTextureBarrier();
+	}
+
+	if (draw_rt && (config.require_one_barrier || (config.tex && config.tex == config.rt)) && !m_features.texture_barrier)
+	{
+		// Requires a copy of the RT.
+		draw_rt_clone = CreateTexture(rtsize.x, rtsize.y, 1, draw_rt->GetFormat(), true);
+		if (draw_rt_clone)
+		{
+			GL_PUSH("GL: Copy RT to temp texture {%d,%d %dx%d}",
+				config.drawarea.left, config.drawarea.top,
+				config.drawarea.width(), config.drawarea.height());
+			CopyRect(draw_rt, draw_rt_clone, config.drawarea, config.drawarea.left, config.drawarea.top);
+			if (config.require_one_barrier)
+				PSSetShaderResource(2, draw_rt_clone);
+			if (config.tex && config.tex == config.rt)
+				PSSetShaderResource(0, draw_rt_clone);
+		}
+		else
+			Console.Warning("GL: Failed to allocate temp texture for RT copy.");
 	}
 
 	OMSetRenderTargets(draw_rt, draw_ds, &config.scissor);

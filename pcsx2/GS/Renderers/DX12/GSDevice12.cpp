@@ -3845,6 +3845,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	GSTexture12* colclip_rt = static_cast<GSTexture12*>(g_gs_device->GetColorClipTexture());
 	GSTexture12* draw_rt = static_cast<GSTexture12*>(config.rt);
 	GSTexture12* draw_ds = static_cast<GSTexture12*>(config.ds);
+	GSTexture12* draw_rt_clone = nullptr;
 
 	// Align the render area to 128x128, hopefully avoiding render pass restarts for small render area changes (e.g. Ratchet and Clank).
 	const GSVector2i rtsize(config.rt ? config.rt->GetSize() : config.ds->GetSize());
@@ -3999,6 +4000,25 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	}
 
 	const bool feedback = draw_rt && (config.require_one_barrier || (config.require_full_barrier && m_features.texture_barrier) || (config.tex && config.tex == config.rt));
+	if (feedback && !m_features.texture_barrier)
+	{
+		// Requires a copy of the RT.
+		draw_rt_clone = static_cast<GSTexture12*>(CreateTexture(rtsize.x, rtsize.y, 1, draw_rt->GetFormat(), true));
+		if (draw_rt_clone)
+		{
+			GL_PUSH("D3D12: Copy RT to temp texture {%d,%d %dx%d}",
+				config.drawarea.left, config.drawarea.top,
+				config.drawarea.width(), config.drawarea.height());
+			EndRenderPass();
+			CopyRect(draw_rt, draw_rt_clone, config.drawarea, config.drawarea.left, config.drawarea.top);
+			if (config.require_one_barrier)
+				PSSetShaderResource(2, draw_rt_clone, true);
+			if (config.tex && config.tex == config.rt)
+				PSSetShaderResource(0, draw_rt_clone, true);
+		}
+		else
+			Console.Warning("D3D12: Failed to allocate temp texture for RT copy.");
+	}
 
 	OMSetRenderTargets(draw_rt, draw_ds, config.scissor);
 
@@ -4082,6 +4102,9 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	if (date_image)
 		Recycle(date_image);
 
+	if (draw_rt_clone)
+		Recycle(draw_rt_clone);
+
 	// now blit the colclip texture back to the original target
 	if (colclip_rt)
 	{
@@ -4118,6 +4141,12 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 
 void GSDevice12::SendHWDraw(const PipelineSelector& pipe, const GSHWDrawConfig& config, GSTexture12* draw_rt, const bool feedback, const bool one_barrier, const bool full_barrier)
 {
+	if (BindDrawPipeline(pipe) && !m_features.texture_barrier) [[unlikely]]
+	{
+		DrawIndexedPrimitive();
+		return;
+	}
+
 	if (feedback)
 	{
 #ifdef PCSX2_DEVBUILD

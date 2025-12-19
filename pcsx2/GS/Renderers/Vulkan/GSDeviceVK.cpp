@@ -5567,7 +5567,6 @@ GSTextureVK* GSDeviceVK::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config)
 
 void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 {
-
 	const GSVector2i rtsize(config.rt ? config.rt->GetSize() : config.ds->GetSize());
 	GSTextureVK* draw_rt = static_cast<GSTextureVK*>(config.rt);
 	GSTextureVK* draw_ds = static_cast<GSTextureVK*>(config.ds);
@@ -5700,24 +5699,6 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 			break;
 	}
 
-	if (config.require_one_barrier && !m_features.texture_barrier)
-	{
-		// requires a copy of the RT
-		draw_rt_clone = static_cast<GSTextureVK*>(CreateTexture(rtsize.x, rtsize.y, 1, colclip_rt ? GSTexture::Format::ColorClip : GSTexture::Format::Color, true));
-		if (draw_rt_clone)
-		{
-			EndRenderPass();
-
-			GL_PUSH("VK: Copy RT to temp texture for fbmask {%d,%d %dx%d}", config.drawarea.left, config.drawarea.top,
-				config.drawarea.width(), config.drawarea.height());
-
-			CopyRect(draw_rt, draw_rt_clone, config.drawarea, config.drawarea.left, config.drawarea.top);
-			PSSetShaderResource(2, draw_rt_clone, true);
-		}
-		else
-			Console.Warning("VK: Failed to allocate temp texture for RT copy.");
-	}
-
 	// Switch to colclip target for colclip hw rendering
 	if (pipe.ps.colclip_hw)
 	{
@@ -5793,6 +5774,26 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 
 		// Prefer keeping feedback loop enabled, that way we're not constantly restarting render passes
 		pipe.feedback_loop_flags |= m_current_framebuffer_feedback_loop;
+	}
+
+	if (draw_rt && (config.require_one_barrier || (config.tex && config.tex == config.rt)) && !m_features.texture_barrier)
+	{
+		// Requires a copy of the RT.
+		draw_rt_clone = static_cast<GSTextureVK*>(CreateTexture(rtsize.x, rtsize.y, 1, draw_rt->GetFormat(), true));
+		if (draw_rt_clone)
+		{
+			GL_PUSH("VK: Copy RT to temp texture {%d,%d %dx%d}",
+				config.drawarea.left, config.drawarea.top,
+				config.drawarea.width(), config.drawarea.height());
+			EndRenderPass();
+			CopyRect(draw_rt, draw_rt_clone, config.drawarea, config.drawarea.left, config.drawarea.top);
+			if (config.require_one_barrier)
+				PSSetShaderResource(2, draw_rt_clone, true);
+			if (config.tex && config.tex == config.rt)
+				PSSetShaderResource(0, draw_rt_clone, true);
+		}
+		else
+			Console.Warning("VK: Failed to allocate temp texture for RT copy.");
 	}
 
 	// We don't need the very first barrier if this is the first draw after switching to feedback loop,
