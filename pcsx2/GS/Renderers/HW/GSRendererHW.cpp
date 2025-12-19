@@ -9070,8 +9070,9 @@ bool GSRendererHW::OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Sourc
 		// Bottom of Texture (half height frame, will be the copy of Top texture after the draw)
 		// -----------------------------------------------------------------
 
-		const int tw = static_cast<int>(1 << m_cached_ctx.TEX0.TW);
-		const int th = static_cast<int>(1 << m_cached_ctx.TEX0.TH);
+		// Do not use tw and th, if it has been optimized to not be the TEX0 size, it will crash.
+		const int tw = tex->m_unscaled_size.x;
+		int th = tex->m_unscaled_size.y;
 
 		// Compute the Bottom of texture rectangle
 		pxAssert(m_cached_ctx.TEX0.TBP0 > m_cached_ctx.FRAME.Block());
@@ -9079,30 +9080,48 @@ bool GSRendererHW::OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Sourc
 		GSVector4i r_texture(r_draw);
 		r_texture.y -= offset;
 		r_texture.w -= offset;
+		const int new_height = std::max(r_texture.w, th);
 
-		if (GSTexture* rt = g_gs_device->CreateRenderTarget(tw, th, GSTexture::Format::Color))
+		GSTexture* temp_tex = g_gs_device->CreateTexture(tw, new_height, 1, tex->m_texture->GetFormat(), true);
+
+		if (temp_tex)
 		{
-			// sRect is the top of texture
-			// Need to half pixel offset the dest tex coordinates as draw pixels are top left instead of centre for texel reads.
-			const GSVector4 sRect(m_vt.m_min.t.x / tw, m_vt.m_min.t.y / th, m_vt.m_max.t.x / tw, m_vt.m_max.t.y / th);
-			const GSVector4 dRect = GSVector4(r_texture) + GSVector4(0.5f);
-			const GSVector4i r_full(0, 0, tw, th);
+			if (GSTexture* rt = g_gs_device->CreateRenderTarget(tw, new_height, GSTexture::Format::Color))
+			{
+				// sRect is the top of texture
+				// Need to half pixel offset the dest tex coordinates as draw pixels are top left instead of centre for texel reads.
+				const GSVector4 dRect = GSVector4(r_texture) + GSVector4(0.5f);
+				const GSVector4i r_full(0, 0, tw, th);
 
-			g_gs_device->CopyRect(tex->m_texture, rt, r_full, 0, 0);
+				g_gs_device->CopyRect(tex->m_texture, rt, r_full, 0, 0);
 
-			g_gs_device->StretchRect(tex->m_texture, sRect, rt, dRect, ShaderConvert::COPY, m_vt.IsRealLinear());
-			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+				g_texture_cache->ReplaceSourceTexture(tex, temp_tex, tex->m_scale, GSVector2i(tw, new_height), nullptr, false);
 
-			g_gs_device->CopyRect(rt, tex->m_texture, r_full, 0, 0);
-			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+				if (tex->m_region.HasY())
+				{
+					if (tex->m_region.GetMaxY() == th)
+					{
+						tex->m_region.bits &= ~(0xFFFF0000ULL << 32);
+						tex->m_region.SetY(tex->m_region.GetMinY(), new_height);
+					}
+				}
+				th = new_height;
+				const GSVector4 sRect(m_vt.m_min.t.x / tw, m_vt.m_min.t.y / th, m_vt.m_max.t.x / tw, m_vt.m_max.t.y / th);
+				const GSVector4i r_full_new(0, 0, tw, th);
+				g_gs_device->StretchRect(tex->m_texture, sRect, rt, dRect, ShaderConvert::COPY, m_vt.IsRealLinear());
+				g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
-			g_gs_device->Recycle(rt);
+				g_gs_device->CopyRect(rt, tex->m_texture, r_full_new, 0, 0);
+				g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+
+				g_gs_device->Recycle(rt);
+			}
+
+			// Copy back the texture into the GS mem. I don't know why but it will be
+			// reuploaded again later
+			g_texture_cache->Read(tex, r_texture.rintersect(tex->m_texture->GetRect()));
+
 		}
-
-		// Copy back the texture into the GS mem. I don't know why but it will be
-		// reuploaded again later
-		g_texture_cache->Read(tex, r_texture.rintersect(tex->m_texture->GetRect()));
-
 		g_texture_cache->InvalidateVideoMemSubTarget(_rt);
 
 		return false; // skip current draw
