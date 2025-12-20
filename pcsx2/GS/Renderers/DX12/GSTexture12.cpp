@@ -252,7 +252,7 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 			write_descriptor_type = WriteDescriptorType::RTV;
 			if (!CreateRTVDescriptor(resource.get(), rtv_format, &write_descriptor))
 			{
-				dev->GetRTVHeapManager().Free(&srv_descriptor);
+				dev->GetDescriptorHeapManager().Free(&srv_descriptor);
 				return {};
 			}
 		}
@@ -263,7 +263,7 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 			write_descriptor_type = WriteDescriptorType::DSV;
 			if (!CreateDSVDescriptor(resource.get(), dsv_format, &write_descriptor))
 			{
-				dev->GetDSVHeapManager().Free(&srv_descriptor);
+				dev->GetDescriptorHeapManager().Free(&srv_descriptor);
 				return {};
 			}
 		}
@@ -275,7 +275,17 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 
 	if (uav_format != DXGI_FORMAT_UNKNOWN && !CreateUAVDescriptor(resource.get(), dsv_format, &uav_descriptor))
 	{
-		dev->GetDescriptorHeapManager().Free(&write_descriptor);
+		switch (write_descriptor_type)
+		{
+			case WriteDescriptorType::RTV:
+				dev->GetRTVHeapManager().Free(&write_descriptor);
+				break;
+			case WriteDescriptorType::DSV:
+				dev->GetDSVHeapManager().Free(&write_descriptor);
+				break;
+			default:
+				break;
+		}
 		dev->GetDescriptorHeapManager().Free(&srv_descriptor);
 		return {};
 	}
@@ -285,7 +295,17 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 		if (!CreateSRVDescriptor(resource_fbl.get(), levels, srv_format, &fbl_descriptor))
 		{
 			dev->GetDescriptorHeapManager().Free(&uav_descriptor);
-			dev->GetDescriptorHeapManager().Free(&write_descriptor);
+			switch (write_descriptor_type)
+			{
+				case WriteDescriptorType::RTV:
+					dev->GetRTVHeapManager().Free(&write_descriptor);
+					break;
+				case WriteDescriptorType::DSV:
+					dev->GetDSVHeapManager().Free(&write_descriptor);
+					break;
+				default:
+					break;
+			}
 			dev->GetDescriptorHeapManager().Free(&srv_descriptor);
 			return {};
 		}
@@ -315,7 +335,7 @@ std::unique_ptr<GSTexture12> GSTexture12::Adopt(wil::com_ptr_nothrow<ID3D12Resou
 		write_descriptor_type = WriteDescriptorType::RTV;
 		if (!CreateRTVDescriptor(resource.get(), rtv_format, &write_descriptor))
 		{
-			GSDevice12::GetInstance()->GetRTVHeapManager().Free(&srv_descriptor);
+			GSDevice12::GetInstance()->GetDescriptorHeapManager().Free(&srv_descriptor);
 			return {};
 		}
 	}
@@ -324,7 +344,7 @@ std::unique_ptr<GSTexture12> GSTexture12::Adopt(wil::com_ptr_nothrow<ID3D12Resou
 		write_descriptor_type = WriteDescriptorType::DSV;
 		if (!CreateDSVDescriptor(resource.get(), dsv_format, &write_descriptor))
 		{
-			GSDevice12::GetInstance()->GetDSVHeapManager().Free(&srv_descriptor);
+			GSDevice12::GetInstance()->GetDescriptorHeapManager().Free(&srv_descriptor);
 			return {};
 		}
 	}
@@ -333,7 +353,18 @@ std::unique_ptr<GSTexture12> GSTexture12::Adopt(wil::com_ptr_nothrow<ID3D12Resou
 	{
 		if (!CreateUAVDescriptor(resource.get(), srv_format, &uav_descriptor))
 		{
-			GSDevice12::GetInstance()->GetDescriptorHeapManager().Free(&write_descriptor);
+			switch (write_descriptor_type)
+			{
+				case WriteDescriptorType::RTV:
+					GSDevice12::GetInstance()->GetRTVHeapManager().Free(&write_descriptor);
+					break;
+				case WriteDescriptorType::DSV:
+					GSDevice12::GetInstance()->GetDSVHeapManager().Free(&write_descriptor);
+					break;
+				default:
+					break;
+			}
+
 			GSDevice12::GetInstance()->GetDescriptorHeapManager().Free(&srv_descriptor);
 			return {};
 		}
