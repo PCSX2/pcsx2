@@ -211,6 +211,8 @@ typedef struct rc_api_game_title_entry_t {
   const char* title;
   /* The image name for the game badge */
   const char* image_name;
+  /* The URL for the game badge image */
+  const char* image_url;
 }
 rc_api_game_title_entry_t;
 

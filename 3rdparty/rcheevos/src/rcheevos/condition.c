@@ -374,7 +374,7 @@ void rc_condition_update_parse_state(rc_condition_t* condition, rc_parse_state_t
         memcpy(&parse->addsource_parent, &cond_operand, sizeof(cond_operand));
       }
 
-      parse->addsource_oper = RC_OPERATOR_ADD;
+      parse->addsource_oper = RC_OPERATOR_ADD_ACCUMULATOR;
       parse->indirect_parent.type = RC_OPERAND_NONE;
       break;
 
@@ -388,13 +388,13 @@ void rc_condition_update_parse_state(rc_condition_t* condition, rc_parse_state_t
         /* type determined by parent */
         const uint8_t new_size = rc_operand_is_float(&parse->addsource_parent) ? RC_MEMSIZE_FLOAT : RC_MEMSIZE_32_BITS;
 
-        if (parse->addsource_oper == RC_OPERATOR_ADD && !rc_operand_is_memref(&parse->addsource_parent)) {
+        if (parse->addsource_oper == RC_OPERATOR_ADD_ACCUMULATOR && !rc_operand_is_memref(&parse->addsource_parent)) {
           /* if the previous element was a constant we have to turn it into a memref by adding zero */
           rc_modified_memref_t* memref;
           rc_operand_t zero;
           rc_operand_set_const(&zero, 0);
           memref = rc_alloc_modified_memref(parse,
-              parse->addsource_parent.size, &parse->addsource_parent, RC_OPERATOR_ADD, &zero);
+              parse->addsource_parent.size, &parse->addsource_parent, RC_OPERATOR_ADD_ACCUMULATOR, &zero);
           parse->addsource_parent.value.memref = (rc_memref_t*)memref;
           parse->addsource_parent.type = RC_OPERAND_ADDRESS;
         }
@@ -414,19 +414,27 @@ void rc_condition_update_parse_state(rc_condition_t* condition, rc_parse_state_t
         }
 
         /* subtract the condition from the chain */
-        parse->addsource_oper = rc_operand_is_memref(&parse->addsource_parent) ? RC_OPERATOR_SUB : RC_OPERATOR_SUB_PARENT;
+        parse->addsource_oper = rc_operand_is_memref(&parse->addsource_parent) ? RC_OPERATOR_SUB_ACCUMULATOR : RC_OPERATOR_SUB_PARENT;
         rc_condition_convert_to_operand(condition, &cond_operand, parse);
         rc_operand_addsource(&cond_operand, parse, new_size);
         memcpy(&parse->addsource_parent, &cond_operand, sizeof(cond_operand));
 
         /* indicate the next value can be added to the chain */
-        parse->addsource_oper = RC_OPERATOR_ADD;
+        parse->addsource_oper = RC_OPERATOR_ADD_ACCUMULATOR;
       }
 
       parse->indirect_parent.type = RC_OPERAND_NONE;
       break;
 
     case RC_CONDITION_REMEMBER:
+      if (condition->operand1.type == RC_OPERAND_RECALL &&
+          condition->oper == RC_OPERATOR_NONE &&
+          parse->addsource_parent.type == RC_OPERAND_NONE &&
+          parse->indirect_parent.type == RC_OPERAND_NONE) {
+        /* Remembering {recall} without any modifications is a no-op */
+        break;
+      }
+
       rc_condition_convert_to_operand(condition, &condition->operand1, parse);
 
       if (parse->addsource_parent.type != RC_OPERAND_NONE) {
@@ -465,6 +473,9 @@ void rc_condition_update_parse_state(rc_condition_t* condition, rc_parse_state_t
     default:
       if (parse->addsource_parent.type != RC_OPERAND_NONE) {
         /* type determined by leaf */
+        if (parse->addsource_oper == RC_OPERATOR_ADD_ACCUMULATOR)
+          parse->addsource_oper = RC_OPERATOR_ADD;
+
         rc_operand_addsource(&condition->operand1, parse, condition->operand1.size);
         condition->operand1.is_combining = 1;
 

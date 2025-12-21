@@ -67,6 +67,7 @@ static void rc_parse_legacy_value(rc_value_t* self, const char** memaddr, rc_par
   next_clause = &self->conditions;
   do {
     /* count the number of joiners and add one to determine the number of clauses.  */
+    buffer[0] = 'A'; /* reset to AddSource */
     done = 0;
     num_measured_conditions = 1;
     buffer_ptr = *memaddr;
@@ -97,8 +98,8 @@ static void rc_parse_legacy_value(rc_value_t* self, const char** memaddr, rc_par
       }
     } while (!done);
 
-    /* if last condition is SubSource, we'll need to add a dummy condition for the Measured */
-    if (buffer[0] == 'B')
+    /* if last condition is not AddSource, we'll need to add a dummy condition for the Measured */
+    if (buffer[0] != 'A')
       ++num_measured_conditions;
 
     condset_with_conditions = RC_ALLOC_WITH_TRAILING(rc_condset_with_trailing_conditions_t,
@@ -121,10 +122,18 @@ static void rc_parse_legacy_value(rc_value_t* self, const char** memaddr, rc_par
       for (;; ++(*memaddr)) {
         switch (**memaddr) {
           case '_': /* add next */
+            *ptr = '\0';
+            break;
+
           case '$': /* maximum of */
           case '\0': /* end of string */
           case ':': /* end of leaderboard clause */
           case ')': /* end of rich presence macro */
+            /* the last condition needs to be Measured - AddSource can be changed here,
+             * SubSource will be handled later */
+            if (buffer[0] == 'A')
+              buffer[0] = 'M';
+
             *ptr = '\0';
             break;
 
@@ -176,33 +185,34 @@ static void rc_parse_legacy_value(rc_value_t* self, const char** memaddr, rc_par
         return;
       }
 
+      rc_condition_update_parse_state(cond, parse);
+
       *next = cond;
       next = &cond->next;
 
       if (**memaddr != '_') /* add next */
         break;
 
-      rc_condition_update_parse_state(cond, parse);
       ++cond;
     }
 
-    /* end of clause */
-    if (cond->type == RC_CONDITION_SUB_SOURCE) {
-      /* cannot change SubSource to Measured. add a dummy condition */
-      rc_condition_update_parse_state(cond, parse);
-      if (parse->buffer)
+    /* -- end of clause -- */
+
+    /* clause must end in a Measured. if it doesn't, append one */
+    if (cond->type != RC_CONDITION_MEASURED) {
+      if (!parse->buffer)
+        cond = &local_cond;
+      else
         ++cond;
 
-      buffer_ptr = "A:0";
+      buffer_ptr = "M:0";
       rc_parse_condition_internal(cond, &buffer_ptr, parse);
       *next = cond;
       next = &cond->next;
+      rc_condition_update_parse_state(cond, parse);
     }
 
-    /* convert final AddSource condition to Measured */
-    cond->type = RC_CONDITION_MEASURED;
-    cond->next = NULL;
-    rc_condition_update_parse_state(cond, parse);
+    *next = NULL;
 
     /* finalize clause */
     *next_clause = condset;

@@ -1,3 +1,18 @@
+# v12.2.0
+* add rc_client_create_subset_list
+* add rc_client_begin_fetch_game_titles
+* greatly improve performance parsing long AddSource chains
+* don't send pings if not processing frames; allows server to suspend session while emulator is paused
+* modify validation logic to return most severe error instead of first error found
+* improve validation warning when 'PauseIf {recall}' attempts to use non-PauseIf Remember
+* fix rounding error when subtracting floats from integers
+* fix infinite loop processing 'Remember {recall}' with no modifiers
+* fix measured value jumping to 0 if all measured-generating alts are paused
+* fix buffer overflow converting long user names between rc_client_external versions
+* fix validation warning when adding differently sized values
+* fix validation warning when ResetIf only applies to hit count inside an AndNext chain
+* fix validation warning when only last node of modified memref chain differs
+
 # v12.1.0
 * add rc_client_get_user_subset_summary
 * add validation warning for using MeasuredIf without Measured

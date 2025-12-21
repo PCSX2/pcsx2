@@ -235,8 +235,14 @@ int rc_evaluate_trigger(rc_trigger_t* self, rc_peek_t peek, void* ud, void* unus
     is_paused |= sub_paused;
   }
 
-  /* if paused, the measured value may not be captured, keep the old value */
-  if (!is_paused) {
+  if (is_paused) {
+    /* if the trigger is fully paused, ignore any updates to the measured value */
+  }
+  else if (measured_value.type == RC_VALUE_TYPE_NONE) {
+    /* if a measured value was not captured, keep the old value (it's possible to pause
+     * an alt that is generating the measured value without fully pausing the trigger) */
+  }
+  else {
     rc_typed_value_convert(&measured_value, RC_VALUE_TYPE_UNSIGNED);
     self->measured_value = measured_value.value.u32;
   }
