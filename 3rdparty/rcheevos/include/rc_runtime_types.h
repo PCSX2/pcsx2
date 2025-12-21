@@ -173,6 +173,8 @@ enum {
   RC_OPERATOR_SUB,
 
   RC_OPERATOR_SUB_PARENT, /* internal use */
+  RC_OPERATOR_ADD_ACCUMULATOR, /* internal use */
+  RC_OPERATOR_SUB_ACCUMULATOR, /* internal use */
   RC_OPERATOR_INDIRECT_READ /* internal use */
 };
 

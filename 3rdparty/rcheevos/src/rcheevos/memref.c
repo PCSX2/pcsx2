@@ -154,7 +154,13 @@ rc_modified_memref_t* rc_alloc_modified_memref(rc_parse_state_t* parse, uint8_t 
   memcpy(&modified_memref->parent, parent, sizeof(modified_memref->parent));
   memcpy(&modified_memref->modifier, modifier, sizeof(modified_memref->modifier));
   modified_memref->modifier_type = modifier_type;
+  modified_memref->depth = 0;
   modified_memref->memref.address = rc_operand_is_memref(modifier) ? modifier->value.memref->address : modifier->value.num;
+
+  if (rc_operand_is_memref(parent) && parent->value.memref->value.memref_type == RC_MEMREF_TYPE_MODIFIED_MEMREF) {
+    const rc_modified_memref_t* parent_modified_memref = (rc_modified_memref_t*)parent->value.memref;
+    modified_memref->depth = parent_modified_memref->depth + 1;
+  }
 
   return modified_memref;
 }
@@ -729,7 +735,30 @@ uint32_t rc_get_modified_memref_value(const rc_modified_memref_t* memref, rc_pee
       break;
 
     case RC_OPERATOR_SUB_PARENT:
+      /* sub parent is "-parent + modifier" */
       rc_typed_value_negate(&value);
+      rc_typed_value_add(&value, &modifier);
+      rc_typed_value_convert(&value, memref->memref.value.type);
+      break;
+
+    case RC_OPERATOR_SUB_ACCUMULATOR:
+      rc_typed_value_negate(&modifier);
+      /* fallthrough */ /* to case RC_OPERATOR_SUB_ACCUMULATOR */
+
+    case RC_OPERATOR_ADD_ACCUMULATOR:
+      /* when modifying the accumulator, force the modifier to match the accumulator
+       * type instead of promoting them both to the less restrictive type.
+       *
+       *   18 - 17.5  will result in an integer. should it be 0 or 1?
+       *
+       * default: float is less restrictive, convert both to float for combine,
+       *          then convert to the memref type.
+       *   (int)((float)18 - 17.5) -> (int)(0.5) -> 0
+       *
+       * accumulator is integer: force modifier to be integer before combining
+       *   (int)(18 - (int)17.5) -> (int)(18 - 17) -> 1
+       */
+      rc_typed_value_convert(&modifier, value.type);
       rc_typed_value_add(&value, &modifier);
       rc_typed_value_convert(&value, memref->memref.value.type);
       break;

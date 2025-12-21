@@ -222,6 +222,14 @@ typedef struct rc_client_subset_info_t {
   uint8_t pending_events;
 } rc_client_subset_info_t;
 
+struct rc_client_subset_list_info_t;
+typedef void (RC_CCONV* rc_client_destroy_subset_list_func_t)(struct rc_client_subset_list_info_t* list);
+
+typedef struct rc_client_subset_list_info_t {
+  rc_client_subset_list_t public_;
+  rc_client_destroy_subset_list_func_t destroy_func;
+} rc_client_subset_list_info_t;
+
 /*****************************************************************************\
 | Game                                                                        |
 \*****************************************************************************/
@@ -316,6 +324,8 @@ typedef struct rc_client_state_t {
   rc_client_raintegration_t* raintegration;
 #endif
 
+  uint32_t frames_processed;
+  uint32_t frames_at_last_ping;
   uint16_t unpaused_frame_decay;
   uint16_t required_unpaused_frames;
 

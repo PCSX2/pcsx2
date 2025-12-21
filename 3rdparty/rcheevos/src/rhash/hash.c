@@ -1300,7 +1300,18 @@ static void rc_hash_initialize_iterator_from_path(rc_hash_iterator_t* iterator, 
     bsearch(&search, handlers, num_handlers, sizeof(*handler), rc_hash_iterator_find_handler);
   if (handler) {
     handler->handler(iterator, handler->data);
-  } else {
+
+    if (iterator->callbacks.verbose_message) {
+      int count = 0;
+      while (iterator->consoles[count])
+        ++count;
+
+      rc_hash_iterator_verbose_formatted(iterator, "Found %d potential consoles for %s file extension", count, ext);
+    }
+  }
+  else {
+    rc_hash_iterator_error_formatted(iterator, "No console mapping specified for %s file extension - trying full file hash", ext);
+
     /* if we didn't match the extension, default to something that does a whole file hash */
     if (!iterator->consoles[0])
       iterator->consoles[0] = RC_CONSOLE_GAMEBOY;
@@ -1332,15 +1343,6 @@ int rc_hash_iterate(char hash[33], rc_hash_iterator_t* iterator) {
 
   if (iterator->index == -1) {
     rc_hash_initialize_iterator_from_path(iterator, iterator->path);
-
-    if (iterator->callbacks.verbose_message) {
-      int count = 0;
-      while (iterator->consoles[count])
-        ++count;
-
-      rc_hash_iterator_verbose_formatted(iterator, "Found %d potential consoles for %s file extension", count, rc_path_get_extension(iterator->path));
-    }
-
     iterator->index = 0;
   }
 

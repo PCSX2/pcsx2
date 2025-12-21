@@ -9,13 +9,15 @@
 
 /* https://media.retroachievements.org/Badge/123456_lock.png is 58 with null terminator */
 #define RC_CLIENT_IMAGE_URL_BUFFER_SIZE 64
+/* https://media.retroachievements.org/UserPic/TwentyCharUserNameXX.png is 69 with null terminator */
+#define RC_CLIENT_USER_IMAGE_URL_BUFFER_SIZE 80
 
 typedef struct rc_client_external_conversions_t {
   rc_client_user_t user;
   rc_client_game_t game;
   rc_client_subset_t subsets[4];
   rc_client_achievement_t achievements[16];
-  char user_avatar_url[RC_CLIENT_IMAGE_URL_BUFFER_SIZE];
+  char user_avatar_url[RC_CLIENT_USER_IMAGE_URL_BUFFER_SIZE];
   char game_badge_url[RC_CLIENT_IMAGE_URL_BUFFER_SIZE];
   char subset_badge_url[4][RC_CLIENT_IMAGE_URL_BUFFER_SIZE];
   char achievement_badge_url[16][RC_CLIENT_IMAGE_URL_BUFFER_SIZE];
@@ -24,7 +26,7 @@ typedef struct rc_client_external_conversions_t {
   uint32_t next_achievement_index;
 } rc_client_external_conversions_t;
 
-static const char* rc_client_external_build_avatar_url(char buffer[], uint32_t image_type, const char* image_name)
+static const char* rc_client_external_build_avatar_url(char buffer[], size_t buffer_size, uint32_t image_type, const char* image_name)
 {
   rc_api_fetch_image_request_t image_request;
   rc_api_request_t request;
@@ -38,7 +40,7 @@ static const char* rc_client_external_build_avatar_url(char buffer[], uint32_t i
   if (result != RC_OK)
     return NULL;
 
-  strcpy_s(buffer, RC_CLIENT_IMAGE_URL_BUFFER_SIZE, request.url);
+  snprintf(buffer, buffer_size, "%s", request.url);
   return buffer;
 }
 
@@ -69,7 +71,9 @@ const rc_client_user_t* rc_client_external_convert_v1_user(const rc_client_t* cl
   RC_CONVERSION_FILL(converted, rc_client_user_t, v1_rc_client_user_t);
 
   converted->avatar_url = rc_client_external_build_avatar_url(
-    client->state.external_client_conversions->user_avatar_url, RC_IMAGE_TYPE_USER, v1_user->username);
+    client->state.external_client_conversions->user_avatar_url,
+    sizeof(client->state.external_client_conversions->user_avatar_url),
+    RC_IMAGE_TYPE_USER, v1_user->username);
 
   return converted;
 }
@@ -88,7 +92,9 @@ const rc_client_game_t* rc_client_external_convert_v1_game(const rc_client_t* cl
   RC_CONVERSION_FILL(converted, rc_client_game_t, v1_rc_client_game_t);
 
   converted->badge_url = rc_client_external_build_avatar_url(
-    client->state.external_client_conversions->game_badge_url, RC_IMAGE_TYPE_GAME, v1_game->badge_name);
+    client->state.external_client_conversions->game_badge_url,
+    sizeof(client->state.external_client_conversions->game_badge_url),
+    RC_IMAGE_TYPE_GAME, v1_game->badge_name);
 
   return converted;
 }
@@ -123,7 +129,9 @@ const rc_client_subset_t* rc_client_external_convert_v1_subset(const rc_client_t
   memcpy(converted, v1_subset, sizeof(v1_rc_client_subset_t));
   RC_CONVERSION_FILL(converted, rc_client_subset_t, v1_rc_client_subset_t);
 
-  converted->badge_url = rc_client_external_build_avatar_url(badge_url, RC_IMAGE_TYPE_GAME, v1_subset->badge_name);
+  converted->badge_url = rc_client_external_build_avatar_url(badge_url,
+    sizeof(client->state.external_client_conversions->subset_badge_url[0]),
+    RC_IMAGE_TYPE_GAME, v1_subset->badge_name);
 
   return converted;
 }
@@ -161,8 +169,12 @@ const rc_client_achievement_t* rc_client_external_convert_v1_achievement(const r
   memcpy(converted, v1_achievement, sizeof(v1_rc_client_achievement_t));
   RC_CONVERSION_FILL(converted, rc_client_achievement_t, v1_rc_client_achievement_t);
 
-  converted->badge_url = rc_client_external_build_avatar_url(badge_url, RC_IMAGE_TYPE_ACHIEVEMENT, v1_achievement->badge_name);
-  converted->badge_locked_url = rc_client_external_build_avatar_url(badge_locked_url, RC_IMAGE_TYPE_ACHIEVEMENT_LOCKED, v1_achievement->badge_name);
+  converted->badge_url = rc_client_external_build_avatar_url(badge_url,
+    sizeof(client->state.external_client_conversions->achievement_badge_url[0]),
+    RC_IMAGE_TYPE_ACHIEVEMENT, v1_achievement->badge_name);
+  converted->badge_locked_url = rc_client_external_build_avatar_url(badge_locked_url,
+    sizeof(client->state.external_client_conversions->achievement_badge_locked_url[0]),
+    RC_IMAGE_TYPE_ACHIEVEMENT_LOCKED, v1_achievement->badge_name);
 
   return converted;
 }
@@ -246,9 +258,13 @@ rc_client_achievement_list_t* rc_client_external_convert_v1_achievement_list(con
           *achievement = &new_list->achievements[num_achievements++];
           memcpy(*achievement, *src_achievement, sizeof(**src_achievement));
 
-          (*achievement)->badge_url = rc_client_external_build_avatar_url(badge_url, RC_IMAGE_TYPE_ACHIEVEMENT, (*achievement)->badge_name);
+          (*achievement)->badge_url = rc_client_external_build_avatar_url(badge_url,
+            sizeof(client->state.external_client_conversions->achievement_badge_url[0]),
+            RC_IMAGE_TYPE_ACHIEVEMENT, (*achievement)->badge_name);
           badge_url += RC_CLIENT_IMAGE_URL_BUFFER_SIZE;
-          (*achievement)->badge_locked_url = rc_client_external_build_avatar_url(badge_url, RC_IMAGE_TYPE_ACHIEVEMENT_LOCKED, (*achievement)->badge_name);
+          (*achievement)->badge_locked_url = rc_client_external_build_avatar_url(badge_url,
+            sizeof(client->state.external_client_conversions->achievement_badge_locked_url[0]),
+            RC_IMAGE_TYPE_ACHIEVEMENT_LOCKED, (*achievement)->badge_name);
           badge_url += RC_CLIENT_IMAGE_URL_BUFFER_SIZE;
         }
       }

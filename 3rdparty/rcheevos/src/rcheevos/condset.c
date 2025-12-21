@@ -62,8 +62,10 @@ static int32_t rc_classify_conditions(rc_condset_t* self, const char* memaddr, c
   do {
     rc_parse_condition_internal(&condition, &memaddr, &parse);
 
-    if (parse.offset < 0)
+    if (parse.offset < 0) {
+      rc_destroy_parse_state(&parse);
       return parse.offset;
+    }
 
     ++index;
 
@@ -106,7 +108,9 @@ static int32_t rc_classify_conditions(rc_condset_t* self, const char* memaddr, c
    * logic in rc_find_next_classification */
   self->num_other_conditions += chain_length - 1;
 
-  return index;
+  rc_destroy_parse_state(&parse);
+
+  return (int32_t)index;
 }
 
 static int rc_find_next_classification(const char* memaddr) {

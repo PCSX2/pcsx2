@@ -61,6 +61,11 @@ typedef rc_client_async_handle_t* (RC_CCONV *rc_client_external_begin_fetch_lead
 typedef rc_client_async_handle_t* (RC_CCONV *rc_client_external_begin_fetch_leaderboard_entries_around_user_func_t)(rc_client_t* client,
   uint32_t leaderboard_id, uint32_t count, rc_client_fetch_leaderboard_entries_callback_t callback, void* callback_userdata);
 
+/* NOTE: rc_client_external_create_subset_list_func_t returns an internal wrapper structure which contains the public list
+ * and a destructor function. */
+struct rc_client_subset_list_info_t;
+typedef struct rc_client_subset_list_info_t* (RC_CCONV* rc_client_external_create_subset_list_func_t)();
+
 
 typedef size_t (RC_CCONV *rc_client_external_progress_size_func_t)(void);
 typedef int (RC_CCONV *rc_client_external_serialize_progress_func_t)(uint8_t* buffer, size_t buffer_size);
@@ -143,6 +148,9 @@ typedef struct rc_client_external_t
   /* VERSION 5 */
   rc_client_external_get_user_game_summary_func_t get_user_game_summary_v5;
   rc_client_external_get_user_subset_summary_func_t get_user_subset_summary;
+
+  /* VERSION 6 */
+  rc_client_external_create_subset_list_func_t create_subset_list;
 
 } rc_client_external_t;
 

@@ -649,12 +649,23 @@ static void rc_libretro_memory_init_from_unmapped_memory(rc_libretro_memory_regi
   uint32_t i, j;
   rc_libretro_core_memory_info_t info;
   size_t offset;
+  int found_aligning_padding = 0;
 
   for (i = 0; i < console_regions->num_regions; ++i) {
     const rc_memory_region_t* console_region = &console_regions->region[i];
     const size_t console_region_size = console_region->end_address - console_region->start_address + 1;
     const uint32_t type = rc_libretro_memory_console_region_to_ram_type(console_region->type);
     uint32_t base_address = 0;
+
+    if (console_region->type == RC_MEMORY_TYPE_UNUSED && console_region_size >= 0x10000 && !found_aligning_padding) {
+      if (console_regions->region[console_regions->num_regions - 1].end_address > 0x01000000) {
+        /* assume anything exposing more than 16MB of regions with at least one 64KB+ UNUSED region
+         * is padding so things align with real addresses. this indicates the memory is disjoint
+         * in the system, so we cannot expect it to be contiguous in the RETRO_SYSTEM_RAM.
+         * stop processing regions now, and just fill the remaining memory map with null filler. */
+        found_aligning_padding = 1;
+      }
+    }
 
     for (j = 0; j <= i; ++j) {
       const rc_memory_region_t* console_region2 = &console_regions->region[j];
@@ -665,7 +676,13 @@ static void rc_libretro_memory_init_from_unmapped_memory(rc_libretro_memory_regi
     }
     offset = console_region->start_address - base_address;
 
-    get_core_memory_info(type, &info);
+    if (!found_aligning_padding) {
+      get_core_memory_info(type, &info);
+    }
+    else {
+      info.data = NULL;
+      info.size = console_region_size;
+    }
 
     if (offset < info.size) {
       info.size -= offset;
