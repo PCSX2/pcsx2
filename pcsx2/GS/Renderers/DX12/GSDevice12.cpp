@@ -3855,6 +3855,18 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	// figure out the pipeline
 	UpdateHWPipelineSelector(config);
 
+	// Handle RT hazard when no barrier was requested
+	if (m_features.texture_barrier && config.tex && (config.tex == config.rt) && !(config.require_one_barrier || config.require_full_barrier))
+	{
+		g_perfmon.Put(GSPerfMon::Barriers, 1);
+
+		EndRenderPass();
+		// Specify null for the after resource as both resources are used after the barrier.
+		D3D12_RESOURCE_BARRIER barrier = {D3D12_RESOURCE_BARRIER_TYPE_ALIASING, D3D12_RESOURCE_BARRIER_FLAG_NONE};
+		barrier.Aliasing = {draw_rt->GetResource(), nullptr};
+		GetCommandList()->ResourceBarrier(1, &barrier);
+	}
+
 	// now blit the colclip texture back to the original target
 	if (colclip_rt)
 	{
