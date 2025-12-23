@@ -30130,6 +30130,11 @@ SLES-55544:
   region: "PAL-M5"
   roundModes:
     vu1RoundMode: 0 # Fixes VU size spam and potential graphical issues with GH3 engine.
+  gsHWFixes:
+    cpuCLUTRender: 1 # Fixes broken rainbow rendering.
+    halfPixelOffset: 4 # Mostly aligns post-processing.
+    nativeScaling: 1 # Fixes post-processing smoothness and position.
+    autoFlush: 1 # Fixes edge garbage and shadow definition.
 SLES-55545:
   name: "WWE SmackDown! vs. Raw 2010"
   region: "PAL-M5"
@@ -74178,8 +74183,10 @@ SLUS-21866:
   roundModes:
     vu1RoundMode: 0 # Fixes VU size spam and potential graphical issues with GH3 engine.
   gsHWFixes:
+    cpuCLUTRender: 1 # Fixes broken rainbow rendering.
     halfPixelOffset: 4 # Mostly aligns post-processing.
     nativeScaling: 1 # Fixes post-processing smoothness and position.
+    autoFlush: 1 # Fixes edge garbage and shadow definition.
 SLUS-21867:
   name: "Guitar Hero - Van Halen"
   region: "NTSC-U"
