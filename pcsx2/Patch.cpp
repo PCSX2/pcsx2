@@ -522,11 +522,11 @@ void Patch::ExtractPatchInfo(std::vector<PatchInfo>* dst, const std::string& pna
 					}
 				}
 				current_patch = {};
-				last_place = std::nullopt;
-				unknown_place = false;
 			}
 
 			current_patch.name = line.substr(1, line.length() - 2);
+			last_place = std::nullopt;
+			unknown_place = false;
 			continue;
 		}
 
