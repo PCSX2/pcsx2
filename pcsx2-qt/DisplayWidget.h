@@ -37,7 +37,7 @@ public:
 	void restoreGeometry(const QByteArray& geometry);
 
 Q_SIGNALS:
-	void windowResizedEvent(int width, int height, float scale);
+	void windowResizedEvent(u32 width, u32 height, float scale);
 	void windowRestoredEvent();
 
 	void dragEnterEvent(QDragEnterEvent* event);

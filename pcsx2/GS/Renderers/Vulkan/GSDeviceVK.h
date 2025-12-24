@@ -506,7 +506,7 @@ public:
 	void Destroy() override;
 
 	bool UpdateWindow() override;
-	void ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale) override;
+	void ResizeWindow(u32 new_window_width, u32 new_window_height, float new_window_scale) override;
 	bool SupportsExclusiveFullscreen() const override;
 	void DestroySurface() override;
 	std::string GetDriverInfo() const override;

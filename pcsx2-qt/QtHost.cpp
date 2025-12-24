@@ -777,7 +777,7 @@ void EmuThread::connectDisplaySignals(DisplaySurface* widget)
 	connect(widget, &DisplaySurface::windowRestoredEvent, this, &EmuThread::redrawDisplayWindow);
 }
 
-void EmuThread::onDisplayWindowResized(int width, int height, float scale)
+void EmuThread::onDisplayWindowResized(u32 width, u32 height, float scale)
 {
 	if (!MTGS::IsOpen())
 		return;
