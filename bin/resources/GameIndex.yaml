@@ -13722,6 +13722,8 @@ SLED-51676:
   region: "PAL"
   gameFixes:
     - XGKickHack # Fixes corrupted graphics.
+  gsHWFixes:
+    autoFlush: 1 # Fixes light bleed through walls.
 SLED-51807:
   name: "Summer Heat Beach Volleyball"
   region: "PAL-Unk"
@@ -16672,6 +16674,8 @@ SLES-50958:
   region: "PAL-M4"
   gameFixes:
     - XGKickHack # Fixes corrupted graphics.
+  gsHWFixes:
+    autoFlush: 1 # Fixes light bleed through walls.
 SLES-50963:
   name: "Riding Spirits"
   region: "PAL-M5"
@@ -66755,6 +66759,8 @@ SLUS-20597:
   compat: 5
   gameFixes:
     - XGKickHack # Fixes corrupted graphics.
+  gsHWFixes:
+    autoFlush: 1 # Fixes light bleed through walls.
 SLUS-20598:
   name: "Everblue 2"
   region: "NTSC-U"
@@ -74984,6 +74990,8 @@ SLUS-29049:
   region: "NTSC-U"
   gameFixes:
     - XGKickHack # Fixes corrupted graphics.
+  gsHWFixes:
+    autoFlush: 1 # Fixes light bleed through walls.
 SLUS-29050:
   name: "EverQuest Online Adventures [Regular Demo]"
   region: "NTSC-U"
