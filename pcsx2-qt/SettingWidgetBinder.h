@@ -463,7 +463,7 @@ namespace SettingWidgetBinder
 		{
 			if (!isNullable(widget))
 			{
-				widget->connect(widget, QOverload<int>::of(&QSpinBox::valueChanged), func);
+				widget->connect(widget, &QSpinBox::valueChanged, func);
 			}
 			else
 			{
@@ -591,7 +591,7 @@ namespace SettingWidgetBinder
 		{
 			if (!isNullable(widget))
 			{
-				widget->connect(widget, QOverload<double>::of(&QDoubleSpinBox::valueChanged), func);
+				widget->connect(widget, &QDoubleSpinBox::valueChanged, func);
 			}
 			else
 			{
@@ -608,7 +608,7 @@ namespace SettingWidgetBinder
 						});
 					menu.exec(widget->mapToGlobal(pt));
 				});
-				widget->connect(widget, QOverload<double>::of(&QDoubleSpinBox::valueChanged), widget, [widget, func = std::move(func)]() {
+				widget->connect(widget, &QDoubleSpinBox::valueChanged, widget, [widget, func = std::move(func)]() {
 					if (widget->property(IS_NULL_PROPERTY).toBool())
 					{
 						widget->setProperty(IS_NULL_PROPERTY, QVariant(false));

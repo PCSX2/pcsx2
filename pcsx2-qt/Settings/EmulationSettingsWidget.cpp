@@ -94,7 +94,7 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* settings_dialog
 	const std::optional<int> cycle_rate =
 		dialog()->getIntValue("EmuCore/Speedhacks", "EECycleRate", sif ? std::nullopt : std::optional<int>(DEFAULT_EE_CYCLE_RATE));
 	m_ui.eeCycleRate->setCurrentIndex(cycle_rate.has_value() ? (std::clamp(cycle_rate.value(), MINIMUM_EE_CYCLE_RATE, MAXIMUM_EE_CYCLE_RATE) + (0 - MINIMUM_EE_CYCLE_RATE) + static_cast<int>(dialog()->isPerGameSettings())) : 0);
-	connect(m_ui.eeCycleRate, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [&](int index) {
+	connect(m_ui.eeCycleRate, &QComboBox::currentIndexChanged, this, [&](int index) {
 		std::optional<int> value;
 		if (!dialog()->isPerGameSettings() || index > 0)
 			value = MINIMUM_EE_CYCLE_RATE + index - static_cast<int>(dialog()->isPerGameSettings());
@@ -218,7 +218,7 @@ void EmulationSettingsWidget::initializeSpeedCombo(QComboBox* cb, const char* se
 		cb->setCurrentIndex(custom_index);
 	}
 
-	connect(cb, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+	connect(cb, &QComboBox::currentIndexChanged, this,
 		[this, cb, section, key](int index) { handleSpeedComboChange(cb, section, key); });
 }
 

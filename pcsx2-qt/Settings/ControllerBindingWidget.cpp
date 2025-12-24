@@ -49,7 +49,7 @@ ControllerBindingWidget::ControllerBindingWidget(QWidget* parent, ControllerSett
 	ControllerSettingWidgetBinder::BindWidgetToInputProfileString(m_dialog->getProfileSettingsInterface(),
 		m_ui.controllerType, m_config_section, "Type", Pad::GetControllerInfo(Pad::GetDefaultPadType(port))->name);
 
-	connect(m_ui.controllerType, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ControllerBindingWidget::onTypeChanged);
+	connect(m_ui.controllerType, &QComboBox::currentIndexChanged, this, &ControllerBindingWidget::onTypeChanged);
 	connect(m_ui.bindings, &QPushButton::clicked, this, &ControllerBindingWidget::onBindingsClicked);
 	connect(m_ui.settings, &QPushButton::clicked, this, &ControllerBindingWidget::onSettingsClicked);
 	connect(m_ui.macros, &QPushButton::clicked, this, &ControllerBindingWidget::onMacrosClicked);
@@ -1002,8 +1002,8 @@ USBDeviceWidget::USBDeviceWidget(QWidget* parent, ControllerSettingsWindow* dial
 	ControllerSettingWidgetBinder::BindWidgetToInputProfileString(
 		m_dialog->getProfileSettingsInterface(), m_ui.deviceType, m_config_section, "Type", "None");
 
-	connect(m_ui.deviceType, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &USBDeviceWidget::onTypeChanged);
-	connect(m_ui.deviceSubtype, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &USBDeviceWidget::onSubTypeChanged);
+	connect(m_ui.deviceType, &QComboBox::currentIndexChanged, this, &USBDeviceWidget::onTypeChanged);
+	connect(m_ui.deviceSubtype, &QComboBox::currentIndexChanged, this, &USBDeviceWidget::onSubTypeChanged);
 	connect(m_ui.bindings, &QPushButton::clicked, this, &USBDeviceWidget::onBindingsClicked);
 	connect(m_ui.settings, &QPushButton::clicked, this, &USBDeviceWidget::onSettingsClicked);
 	connect(m_ui.automaticBinding, &QPushButton::clicked, this, &USBDeviceWidget::onAutomaticBindingClicked);
