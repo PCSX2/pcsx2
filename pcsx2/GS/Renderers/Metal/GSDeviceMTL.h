@@ -385,7 +385,7 @@ public:
 	bool SupportsExclusiveFullscreen() const override;
 	std::string GetDriverInfo() const override;
 
-	void ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale) override;
+	void ResizeWindow(u32 new_window_width, u32 new_window_height, float new_window_scale) override;
 
 	void UpdateTexture(id<MTLTexture> texture, u32 x, u32 y, u32 width, u32 height, const void* data, u32 data_stride);
 

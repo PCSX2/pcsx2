@@ -533,7 +533,7 @@ bool GSHasDisplayWindow()
 	return (g_gs_device->GetWindowInfo().type != WindowInfo::Type::Surfaceless);
 }
 
-void GSResizeDisplayWindow(int width, int height, float scale)
+void GSResizeDisplayWindow(u32 width, u32 height, float scale)
 {
 	g_gs_device->ResizeWindow(width, height, scale);
 	ImGuiManager::WindowResized();
