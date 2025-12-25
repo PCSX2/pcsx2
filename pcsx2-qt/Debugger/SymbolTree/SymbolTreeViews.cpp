@@ -3,15 +3,14 @@
 
 #include "SymbolTreeViews.h"
 
+#include "AsyncDialogs.h"
 #include "Debugger/JsonValueWrapper.h"
 #include "Debugger/SymbolTree/NewSymbolDialogs.h"
 #include "Debugger/SymbolTree/SymbolTreeDelegates.h"
 
 #include <QtGui/QActionGroup>
 #include <QtGui/QClipboard>
-#include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMenu>
-#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QScrollBar>
 
 static bool testName(const QString& name, const QString& filter);
@@ -643,14 +642,16 @@ void SymbolTreeView::onDeleteButtonPressed()
 	if (!node->symbol.valid())
 		return;
 
-	if (QMessageBox::question(this, tr("Confirm Deletion"), tr("Delete '%1'?").arg(node->name)) != QMessageBox::Yes)
-		return;
+	const QString title = tr("Confirm Deletion");
+	const QString text = tr("Delete '%1'?").arg(node->name);
 
-	cpu().GetSymbolGuardian().ReadWrite([&](ccc::SymbolDatabase& database) {
-		node->symbol.destroy_symbol(database, true);
+	AsyncDialogs::question(this, title, text, [this, handle = node->symbol]() {
+		cpu().GetSymbolGuardian().ReadWrite([&](ccc::SymbolDatabase& database) {
+			handle.destroy_symbol(database, true);
+		});
+
+		reset();
 	});
-
-	reset();
 }
 
 void SymbolTreeView::onCopyName()
@@ -701,13 +702,10 @@ void SymbolTreeView::onRenameSymbol()
 		text = QString::fromStdString(symbol->name());
 	});
 
-	bool ok;
-	std::string name = QInputDialog::getText(this, title, label, QLineEdit::Normal, text, &ok).toStdString();
-	if (!ok)
-		return;
-
-	cpu().GetSymbolGuardian().ReadWrite([&](ccc::SymbolDatabase& database) {
-		node->symbol.rename_symbol(name, database);
+	AsyncDialogs::getText(this, title, label, text, [this, handle = node->symbol](QString new_name) {
+		cpu().GetSymbolGuardian().ReadWrite([&](ccc::SymbolDatabase& database) {
+			handle.rename_symbol(new_name.toStdString(), database);
+		});
 	});
 }
 
@@ -737,18 +735,15 @@ void SymbolTreeView::onChangeTypeTemporarily()
 	std::optional<QString> old_type = m_model->typeFromModelIndexToString(index);
 	if (!old_type.has_value())
 	{
-		QMessageBox::warning(this, tr("Cannot Change Type"), tr("That node cannot have a type."));
+		AsyncDialogs::warning(this, tr("Cannot Change Type"), tr("That node cannot have a type."));
 		return;
 	}
 
-	bool ok;
-	QString type_string = QInputDialog::getText(this, title, label, QLineEdit::Normal, *old_type, &ok);
-	if (!ok)
-		return;
-
-	std::optional<QString> error_message = m_model->changeTypeTemporarily(index, type_string.toStdString());
-	if (error_message.has_value() && !error_message->isEmpty())
-		QMessageBox::warning(this, tr("Cannot Change Type"), *error_message);
+	AsyncDialogs::getText(this, title, label, *old_type, [this, index](QString type_string) {
+		std::optional<QString> error_message = m_model->changeTypeTemporarily(index, type_string.toStdString());
+		if (error_message.has_value() && !error_message->isEmpty())
+			AsyncDialogs::warning(this, tr("Cannot Change Type"), *error_message);
+	});
 }
 
 void SymbolTreeView::onTreeViewClicked(const QModelIndex& index)
@@ -862,8 +857,10 @@ void FunctionTreeView::onNewButtonPressed()
 {
 	NewFunctionDialog* dialog = new NewFunctionDialog(cpu(), this);
 	dialog->setAttribute(Qt::WA_DeleteOnClose);
-	if (dialog->exec() == QDialog::Accepted)
-		reset();
+
+	connect(dialog, &QDialog::accepted, this, &FunctionTreeView::reset);
+
+	dialog->open();
 }
 
 // *****************************************************************************
@@ -1005,8 +1002,10 @@ void GlobalVariableTreeView::onNewButtonPressed()
 {
 	NewGlobalVariableDialog* dialog = new NewGlobalVariableDialog(cpu(), this);
 	dialog->setAttribute(Qt::WA_DeleteOnClose);
-	if (dialog->exec() == QDialog::Accepted)
-		reset();
+
+	connect(dialog, &QDialog::accepted, this, &GlobalVariableTreeView::reset);
+
+	dialog->open();
 }
 
 // *****************************************************************************
@@ -1134,8 +1133,10 @@ void LocalVariableTreeView::onNewButtonPressed()
 {
 	NewLocalVariableDialog* dialog = new NewLocalVariableDialog(cpu(), this);
 	dialog->setAttribute(Qt::WA_DeleteOnClose);
-	if (dialog->exec() == QDialog::Accepted)
-		reset();
+
+	connect(dialog, &QDialog::accepted, this, &LocalVariableTreeView::reset);
+
+	dialog->open();
 }
 
 // *****************************************************************************
@@ -1261,8 +1262,10 @@ void ParameterVariableTreeView::onNewButtonPressed()
 {
 	NewParameterVariableDialog* dialog = new NewParameterVariableDialog(cpu(), this);
 	dialog->setAttribute(Qt::WA_DeleteOnClose);
-	if (dialog->exec() == QDialog::Accepted)
-		reset();
+
+	connect(dialog, &QDialog::accepted, this, &ParameterVariableTreeView::reset);
+
+	dialog->open();
 }
 
 static bool testName(const QString& name, const QString& filter)
