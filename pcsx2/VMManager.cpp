@@ -3726,15 +3726,16 @@ void VMManager::UpdateDiscordPresence(bool update_session_time)
 
 	auto lock = Achievements::GetLock();
 
-	if (Achievements::HasRichPresence())
+	if (Achievements::HasActiveGame() && Achievements::HasAchievementsOrLeaderboards())
 	{
-		rp.state = (state_string = StringUtil::Ellipsise(Achievements::GetRichPresenceString(), 128)).c_str();
-
 		if (const std::string& icon_url = Achievements::GetGameIconURL(); !icon_url.empty())
 		{
 			rp.largeImageKey = icon_url.c_str();
 			rp.largeImageText = s_title.c_str();
 		}
+
+		if (Achievements::HasRichPresence())
+			rp.state = (state_string = StringUtil::Ellipsise(Achievements::GetRichPresenceString(), 128)).c_str();
 	}
 
 	Discord_UpdatePresence(&rp);

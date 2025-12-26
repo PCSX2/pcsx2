@@ -1043,20 +1043,10 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
 	s_has_leaderboards = has_leaderboards;
 	s_has_rich_presence = rc_client_has_rich_presence(client);
 	s_game_icon = {};
-	s_game_icon_url = {};
+	s_game_icon_url = info->badge_url;
 
 	// ensure fullscreen UI is ready for notifications
 	MTGS::RunOnGSThread(&ImGuiManager::InitializeFullscreenUI);
-
-	char url_buffer[URL_BUFFER_SIZE];
-	if (int err = rc_client_game_get_image_url(info, url_buffer, std::size(url_buffer)); err == RC_OK)
-	{
-		s_game_icon_url = url_buffer;
-	}
-	else
-	{
-		ReportRCError(err, "rc_client_game_get_image_url() failed: ");
-	}
 
 	if (const std::string_view badge_name = info->badge_name; !badge_name.empty())
 	{
