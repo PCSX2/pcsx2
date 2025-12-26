@@ -278,7 +278,7 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 
 	for (size_t i = 0; i < std::size(m_merge.ps); i++)
 	{
-		const std::string entry_point(StringUtil::StdStringFromFormat("ps_main%d", i));
+		const std::string entry_point(StringUtil::StdStringFromFormat("ps_main%zu", i));
 		m_merge.ps[i] = m_shader_cache.GetPixelShader(m_dev.get(), *shader, nullptr, entry_point.c_str());
 		if (!m_merge.ps[i])
 			return false;
@@ -312,7 +312,7 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		return false;
 	for (size_t i = 0; i < std::size(m_interlace.ps); i++)
 	{
-		const std::string entry_point(StringUtil::StdStringFromFormat("ps_main%d", i));
+		const std::string entry_point(StringUtil::StdStringFromFormat("ps_main%zu", i));
 		m_interlace.ps[i] = m_shader_cache.GetPixelShader(m_dev.get(), *shader, nullptr, entry_point.c_str());
 		if (!m_interlace.ps[i])
 			return false;
@@ -498,7 +498,7 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 
 	for (size_t i = 0; i < std::size(m_date.primid_init_ps); i++)
 	{
-		const std::string entry_point(StringUtil::StdStringFromFormat("ps_stencil_image_init_%d", i));
+		const std::string entry_point(StringUtil::StdStringFromFormat("ps_stencil_image_init_%zu", i));
 		m_date.primid_init_ps[i] = m_shader_cache.GetPixelShader(m_dev.get(), *convert_hlsl, nullptr, entry_point.c_str());
 		if (!m_date.primid_init_ps[i])
 			return false;
@@ -893,7 +893,7 @@ std::string GSDevice11::GetDriverInfo() const
 	return ret;
 }
 
-void GSDevice11::ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale)
+void GSDevice11::ResizeWindow(u32 new_window_width, u32 new_window_height, float new_window_scale)
 {
 	if (!m_swap_chain || m_is_exclusive_fullscreen)
 		return;
