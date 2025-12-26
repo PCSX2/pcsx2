@@ -123,17 +123,18 @@ std::vector<GSAdapterInfo> D3D::GetAdapterInfo(IDXGIFactory5* factory)
 	return adapters;
 }
 
-bool D3D::GetRequestedExclusiveFullscreenModeDesc(IDXGIFactory5* factory, const RECT& window_rect, u32 width,
+bool D3D::GetRequestedExclusiveFullscreenModeDesc(IDXGIFactory5* factory, HWND window_hwnd, u32 width,
 	u32 height, float refresh_rate, DXGI_FORMAT format, DXGI_MODE_DESC* fullscreen_mode, IDXGIOutput** output)
 {
 	// We need to find which monitor the window is located on.
-	const GSVector4i client_rc_vec = GSVector4i::load<false>(&window_rect);
+	// DXGI seems to use the nearest monitor if the window is out of bounds.
+	const auto* monitor = MonitorFromWindow(window_hwnd, MONITOR_DEFAULTTONEAREST);
 
-	// The window might be on a different adapter to which we are rendering.. so we have to enumerate them all.
+	// The monitor might be on a different adapter to which we are rendering.. so we have to enumerate them all.
 	HRESULT hr;
-	wil::com_ptr_nothrow<IDXGIOutput> first_output, intersecting_output;
+	wil::com_ptr_nothrow<IDXGIOutput> first_output, monitor_output;
 
-	for (u32 adapter_index = 0; !intersecting_output; adapter_index++)
+	for (u32 adapter_index = 0; !monitor_output; adapter_index++)
 	{
 		wil::com_ptr_nothrow<IDXGIAdapter1> adapter;
 		hr = factory->EnumAdapters1(adapter_index, adapter.put());
@@ -152,10 +153,9 @@ bool D3D::GetRequestedExclusiveFullscreenModeDesc(IDXGIFactory5* factory, const 
 			else if (FAILED(hr) || FAILED(this_output->GetDesc(&output_desc)))
 				continue;
 
-			const GSVector4i output_rc = GSVector4i::load<false>(&output_desc.DesktopCoordinates);
-			if (!client_rc_vec.rintersect(output_rc).rempty())
+			if (output_desc.Monitor == monitor)
 			{
-				intersecting_output = std::move(this_output);
+				monitor_output = std::move(this_output);
 				break;
 			}
 
@@ -165,7 +165,7 @@ bool D3D::GetRequestedExclusiveFullscreenModeDesc(IDXGIFactory5* factory, const 
 		}
 	}
 
-	if (!intersecting_output)
+	if (!monitor_output)
 	{
 		if (!first_output)
 		{
@@ -174,7 +174,7 @@ bool D3D::GetRequestedExclusiveFullscreenModeDesc(IDXGIFactory5* factory, const 
 		}
 
 		Console.Warning("No DXGI output found for window, using first.");
-		intersecting_output = std::move(first_output);
+		monitor_output = std::move(first_output);
 	}
 
 	DXGI_MODE_DESC request_mode = {};
@@ -184,15 +184,15 @@ bool D3D::GetRequestedExclusiveFullscreenModeDesc(IDXGIFactory5* factory, const 
 	request_mode.RefreshRate.Numerator = static_cast<UINT>(std::floor(refresh_rate * 1000.0f));
 	request_mode.RefreshRate.Denominator = 1000u;
 
-	if (FAILED(hr = intersecting_output->FindClosestMatchingMode(&request_mode, fullscreen_mode, nullptr)) ||
+	if (FAILED(hr = monitor_output->FindClosestMatchingMode(&request_mode, fullscreen_mode, nullptr)) ||
 		request_mode.Format != format)
 	{
 		ERROR_LOG("Failed to find closest matching mode, hr={:08X}", static_cast<unsigned>(hr));
 		return false;
 	}
 
-	*output = intersecting_output.get();
-	intersecting_output->AddRef();
+	*output = monitor_output.get();
+	monitor_output->AddRef();
 	return true;
 }
 
