@@ -1039,7 +1039,7 @@ bool R3000DebugInterface::isValidAddress(u32 addr)
 		return true;
 	}
 
-	if (addr < 0x200000)
+	if (addr < Ps2MemSize::ExposedIopRam)
 	{
 		return true;
 	}
