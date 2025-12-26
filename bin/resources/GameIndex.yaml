@@ -3310,6 +3310,7 @@ SCED-51444:
 SCED-51452:
   name: "Sly Raccoon"
   region: "PAL-M5"
+  compat: 5
   gsHWFixes:
     halfPixelOffset: 5 # Fixes post alignment.
     autoFlush: 1 # Fixes Sly's shadow definition.
@@ -5137,6 +5138,7 @@ SCES-50916:
 SCES-50917:
   name: "Sly Raccoon"
   region: "PAL-M5"
+  compat: 5
   gsHWFixes:
     halfPixelOffset: 5 # Fixes post alignment.
     autoFlush: 1 # Fixes Sly's shadow definition.
@@ -8906,6 +8908,7 @@ SCPS-15036:
   name-sort: "かいとう すらいくーぱー"
   name-en: "Kaitou Sly Cooper"
   region: "NTSC-J"
+  compat: 5
   gsHWFixes:
     halfPixelOffset: 5 # Fixes post alignment.
     autoFlush: 1 # Fixes Sly's shadow definition.
@@ -12736,6 +12739,7 @@ SCUS-97518:
 SCUS-97519:
   name: "Sly 2 - Band of Thieves [Greatest Hits]"
   region: "NTSC-U"
+  compat: 5
   gsHWFixes:
     halfPixelOffset: 5 # Fixes chromatic effect.
 SCUS-97520:
@@ -19098,6 +19102,7 @@ SLES-51949:
 SLES-51950:
   name: "Sonic Heroes"
   region: "PAL-M5"
+  compat: 5
 SLES-51951:
   name: "Puyo Pop Fever"
   region: "PAL-M5"
@@ -23776,6 +23781,7 @@ SLES-53541:
 SLES-53542:
   name: "Shadow the Hedgehog"
   region: "PAL-M5"
+  compat: 5
   gsHWFixes:
     recommendedBlendingLevel: 4 # Improves smoke rendering.
     halfPixelOffset: 4 # Fixes post positioning.
@@ -28136,6 +28142,7 @@ SLES-54914:
 SLES-54915:
   name: "Sonic Riders - Zero Gravity"
   region: "PAL-M5"
+  compat: 5
   gsHWFixes:
     halfPixelOffset: 4 # Fixes light bloom.
     nativeScaling: 2 # Fixes post effects.
@@ -45377,6 +45384,7 @@ SLPM-65758:
   name: "ソニック メガコレクション プラス"
   name-sort: "そにっく めがこれくしょん ぷらす"
   name-en: "Sonic Mega Collection Plus"
+   compat: 5
   region: "NTSC-J"
   memcardFilters:
     - "SLPM-65758"
@@ -47853,6 +47861,7 @@ SLPM-66166:
   name-sort: "しゃどう・ざ・へっじほっぐ"
   name-en: "Shadow the Hedgehog"
   region: "NTSC-J"
+   compat: 5
   gsHWFixes:
     recommendedBlendingLevel: 4 # Improves smoke rendering.
     halfPixelOffset: 4 # Fixes post positioning.
@@ -48649,6 +48658,7 @@ SLPM-66281:
   name-sort: "そにっくらいだーず"
   name-en: "Sonic Riders"
   region: "NTSC-J"
+   compat: 5
   gsHWFixes:
     halfPixelOffset: 4 # Fix post-processing blur.
     nativeScaling: 1 # Fixes post effects.
