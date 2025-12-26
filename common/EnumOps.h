@@ -7,9 +7,9 @@
 
 // Template function for casting enumerations to their underlying type
 template <typename Enumeration>
-typename std::underlying_type<Enumeration>::type enum_cast(Enumeration E)
+std::underlying_type_t<Enumeration> enum_cast(Enumeration E)
 {
-	return static_cast<typename std::underlying_type<Enumeration>::type>(E);
+	return static_cast<typename std::underlying_type_t<Enumeration>>(E);
 }
 
 namespace detail
@@ -25,67 +25,67 @@ namespace detail
 		Enum value;
 		constexpr enum_bool_helper(Enum value): value(value) {}
 		constexpr operator Enum() const { return value; }
-		constexpr operator bool() const { return static_cast<bool>(static_cast<typename std::underlying_type<Enum>::type>(value)); }
+		constexpr operator bool() const { return static_cast<bool>(static_cast<std::underlying_type_t<Enum>>(value)); }
 	};
 };
 
 #define MARK_ENUM_AS_FLAGS(T) template<> struct detail::enum_is_flags<T> : public std::true_type {}
 
 template <typename Enum>
-constexpr typename std::enable_if<detail::enum_is_flags<Enum>::value, Enum>::type
-operator|(Enum lhs, Enum rhs) noexcept
+	requires detail::enum_is_flags<Enum>::value
+constexpr Enum operator|(Enum lhs, Enum rhs) noexcept
 {
-	using underlying = typename std::underlying_type<Enum>::type;
+	using underlying = std::underlying_type_t<Enum>;
 	return static_cast<Enum>(static_cast<underlying>(lhs) | static_cast<underlying>(rhs));
 }
 
 template <typename Enum>
-constexpr typename std::enable_if<detail::enum_is_flags<Enum>::value, detail::enum_bool_helper<Enum>>::type
-operator&(Enum lhs, Enum rhs) noexcept
+	requires detail::enum_is_flags<Enum>::value
+constexpr detail::enum_bool_helper<Enum> operator&(Enum lhs, Enum rhs) noexcept
 {
-	using underlying = typename std::underlying_type<Enum>::type;
+	using underlying = std::underlying_type_t<Enum>;
 	return static_cast<Enum>(static_cast<underlying>(lhs) & static_cast<underlying>(rhs));
 }
 
 template <typename Enum>
-constexpr typename std::enable_if<detail::enum_is_flags<Enum>::value, Enum>::type
-operator^(Enum lhs, Enum rhs) noexcept
+	requires detail::enum_is_flags<Enum>::value
+constexpr Enum operator^(Enum lhs, Enum rhs) noexcept
 {
-	using underlying = typename std::underlying_type<Enum>::type;
+	using underlying = std::underlying_type_t<Enum>;
 	return static_cast<Enum>(static_cast<underlying>(lhs) ^ static_cast<underlying>(rhs));
 }
 
 template <typename Enum>
-constexpr typename std::enable_if<detail::enum_is_flags<Enum>::value, Enum&>::type
-operator|=(Enum& lhs, Enum rhs) noexcept
+	requires detail::enum_is_flags<Enum>::value
+constexpr Enum& operator|=(Enum& lhs, Enum rhs) noexcept
 {
 	return lhs = lhs | rhs;
 }
 
 template <typename Enum>
-constexpr typename std::enable_if<detail::enum_is_flags<Enum>::value, Enum&>::type
-operator&=(Enum& lhs, Enum rhs) noexcept
+	requires detail::enum_is_flags<Enum>::value
+constexpr Enum& operator&=(Enum& lhs, Enum rhs) noexcept
 {
 	return lhs = lhs & rhs;
 }
 
 template <typename Enum>
-constexpr typename std::enable_if<detail::enum_is_flags<Enum>::value, Enum&>::type
-operator^=(Enum& lhs, Enum rhs) noexcept
+	requires detail::enum_is_flags<Enum>::value
+constexpr Enum& operator^=(Enum& lhs, Enum rhs) noexcept
 {
 	return lhs = lhs ^ rhs;
 }
 
-template<typename Enum>
-constexpr typename std::enable_if<detail::enum_is_flags<Enum>::value, bool>::type
-operator!(Enum e) noexcept
+template <typename Enum>
+	requires detail::enum_is_flags<Enum>::value
+constexpr bool operator!(Enum e) noexcept
 {
-	return !static_cast<typename std::underlying_type<Enum>::type>(e);
+	return !static_cast<std::underlying_type_t<Enum>>(e);
 }
 
-template<typename Enum>
-constexpr typename std::enable_if<detail::enum_is_flags<Enum>::value, Enum>::type
-operator~(Enum e) noexcept
+template <typename Enum>
+	requires detail::enum_is_flags<Enum>::value
+constexpr Enum operator~(Enum e) noexcept
 {
-	return static_cast<Enum>(~static_cast<typename std::underlying_type<Enum>::type>(e));
+	return static_cast<Enum>(~static_cast<std::underlying_type_t<Enum>>(e));
 }
