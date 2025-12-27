@@ -31,6 +31,7 @@
 #include "pcsx2/Achievements.h"
 #include "pcsx2/CDVD/CDVD.h"
 #include "pcsx2/GS.h"
+#include "pcsx2/GS/Renderers/Common/GSDevice.h"
 #include "pcsx2/GS/GSPerfMon.h"
 #include "pcsx2/GSDumpReplayer.h"
 #include "pcsx2/GameList.h"
@@ -99,6 +100,17 @@ static u64 s_total_uploads = 0;
 static u64 s_total_readbacks = 0;
 static u32 s_total_frames = 0;
 static u32 s_total_drawn_frames = 0;
+
+static bool s_perf_enable = false;
+static float s_perf_updates = 0.0f;
+static float s_perf_sum_fps = 0.0f;
+static float s_perf_sum_internal_fps = 0.0f;
+static float s_perf_sum_cpu_thread_usage = 0.0f;
+static float s_perf_sum_cpu_thread_time = 0.0f;
+static float s_perf_sum_gs_thread_usage = 0.0f;
+static float s_perf_sum_gs_thread_time = 0.0f;
+static float s_perf_sum_gpu_time = 0.0f;
+static float s_perf_sum_gpu_usage = 0.0f;
 
 bool GSRunner::InitializeConfig()
 {
@@ -295,6 +307,18 @@ void Host::OnGameChanged(const std::string& title, const std::string& elf_overri
 
 void Host::OnPerformanceMetricsUpdated()
 {
+	if (s_perf_enable)
+	{
+		s_perf_updates += 1.0f;
+		s_perf_sum_fps += PerformanceMetrics::GetFPS();
+		s_perf_sum_internal_fps += PerformanceMetrics::GetInternalFPS();
+		s_perf_sum_cpu_thread_usage += PerformanceMetrics::GetCPUThreadUsage();
+		s_perf_sum_cpu_thread_time += PerformanceMetrics::GetCPUThreadAverageTime();
+		s_perf_sum_gs_thread_usage += PerformanceMetrics::GetGSThreadUsage();
+		s_perf_sum_gs_thread_time += PerformanceMetrics::GetGSThreadAverageTime();
+		s_perf_sum_gpu_time += PerformanceMetrics::GetGPUAverageTime();
+		s_perf_sum_gpu_usage += PerformanceMetrics::GetGPUUsage();
+	}
 }
 
 void Host::OnSaveStateLoading(const std::string_view filename)
@@ -451,6 +475,7 @@ static void PrintCommandLineHelp(const char* progname)
 	std::fprintf(stderr, "  -surfaceless: Disables showing a window.\n");
 	std::fprintf(stderr, "  -logfile <filename>: Writes emu log to filename.\n");
 	std::fprintf(stderr, "  -noshadercache: Disables the shader cache (useful for parallel runs).\n");
+	std::fprintf(stderr, "  -perf: Enable frame timing performance stats.\n");
 	std::fprintf(stderr, "  --: Signals that no more arguments will follow and the remaining\n"
 						 "    parameters make up the filename. Use when the filename contains\n"
 						 "    spaces or starts with a dash.\n");
@@ -735,6 +760,12 @@ bool GSRunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& pa
 				s_use_window = false;
 				continue;
 			}
+			else if (CHECK_ARG("-perf"))
+			{
+				Console.WriteLn("Enable performance stats");
+				s_perf_enable = true;
+				continue;
+			}
 			else if (CHECK_ARG("--"))
 			{
 				no_more_args = true;
@@ -843,6 +874,18 @@ void GSRunner::DumpStats()
 	Console.WriteLn(fmt::format("@HWSTAT@ Copies: {} (avg {})", s_total_copies, static_cast<u64>(std::ceil(s_total_copies / static_cast<double>(s_total_drawn_frames)))));
 	Console.WriteLn(fmt::format("@HWSTAT@ Uploads: {} (avg {})", s_total_uploads, static_cast<u64>(std::ceil(s_total_uploads / static_cast<double>(s_total_drawn_frames)))));
 	Console.WriteLn(fmt::format("@HWSTAT@ Readbacks: {} (avg {})", s_total_readbacks, static_cast<u64>(std::ceil(s_total_readbacks / static_cast<double>(s_total_drawn_frames)))));
+	if (s_perf_enable)
+	{
+		Console.WriteLn(fmt::format("@HWSTAT@ Minimum Frame Time: {:.3f} ms ({:.3f} FPS)", PerformanceMetrics::GetMinimumFrameTime(), 1000.0f / PerformanceMetrics::GetMinimumFrameTime()));
+		Console.WriteLn(fmt::format("@HWSTAT@ Average Frame Time: {:.3f} ms ({:.3f} FPS)", PerformanceMetrics::GetAverageFrameTime(), 1000.0f / PerformanceMetrics::GetAverageFrameTime()));
+		Console.WriteLn(fmt::format("@HWSTAT@ Maximum Frame Time: {:.3f} ms ({:.3f} FPS)", PerformanceMetrics::GetMaximumFrameTime(), 1000.0f / PerformanceMetrics::GetMaximumFrameTime()));
+		Console.WriteLn(fmt::format("@HWSTAT@ CPU Thread Usage: {:.3f} %", s_perf_sum_cpu_thread_usage / s_perf_updates));
+		Console.WriteLn(fmt::format("@HWSTAT@ GS Thread Usage: {:.3f} %", s_perf_sum_gs_thread_usage / s_perf_updates));
+		Console.WriteLn(fmt::format("@HWSTAT@ GPU Usage: {:.3f} %", s_perf_sum_gpu_usage / s_perf_updates));
+		Console.WriteLn(fmt::format("@HWSTAT@ Average CPU Thread Time: {:.3f} ms", s_perf_sum_cpu_thread_time / s_perf_updates));
+		Console.WriteLn(fmt::format("@HWSTAT@ Average GS Thread Time: {:.3f} ms", s_perf_sum_gs_thread_time / s_perf_updates));
+		Console.WriteLn(fmt::format("@HWSTAT@ Average GPU Time: {:.3f} ms", s_perf_sum_gpu_time / s_perf_updates));
+	}
 	Console.WriteLn("============================================");
 }
 
@@ -866,6 +909,11 @@ static void CPUThreadMain(VMBootParameters* params, std::atomic<int>* ret)
 			// run until end
 			GSDumpReplayer::SetLoopCount(s_loop_count);
 			VMManager::SetState(VMState::Running);
+			if (s_perf_enable)
+			{
+				VMManager::SetLimiterMode(LimiterModeType::Unlimited);
+				g_gs_device->SetGPUTimingEnabled(true);
+			}
 			while (VMManager::GetState() == VMState::Running)
 				VMManager::Execute();
 			VMManager::Shutdown(false);
