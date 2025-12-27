@@ -866,6 +866,7 @@ static void CPUThreadMain(VMBootParameters* params, std::atomic<int>* ret)
 			// run until end
 			GSDumpReplayer::SetLoopCount(s_loop_count);
 			VMManager::SetState(VMState::Running);
+			VMManager::SetLimiterMode(LimiterModeType::Unlimited);
 			while (VMManager::GetState() == VMState::Running)
 				VMManager::Execute();
 			VMManager::Shutdown(false);
