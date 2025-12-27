@@ -10,7 +10,7 @@
 #include "GS/Renderers/Common/GSDevice.h"
 #include "GS/Renderers/HW/GSTextureReplacements.h"
 #include "Host.h"
-#include "IconsFontAwesome6.h"
+#include "IconsFontAwesome.h"
 #include "IconsPromptFont.h"
 #include "ImGui/FullscreenUI.h"
 #include "ImGui/ImGuiAnimated.h"

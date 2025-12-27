@@ -6,7 +6,7 @@
 #include "Counters.h"
 #include "GS/GS.h"
 #include "Host.h"
-#include "IconsFontAwesome6.h"
+#include "IconsFontAwesome.h"
 #include "ImGui/FullscreenUI.h"
 #include "ImGui/ImGuiFullscreen.h"
 #include "ImGui/ImGuiManager.h"

@@ -14,7 +14,7 @@
 #include "fmt/format.h"
 #include "StateWrapper.h"
 #include "Host.h"
-#include "IconsFontAwesome6.h"
+#include "IconsFontAwesome.h"
 
 namespace usb_printer
 {

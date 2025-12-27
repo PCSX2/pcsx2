@@ -13,7 +13,7 @@
 
 #include "cubeb/cubeb.h"
 #include "fmt/format.h"
-#include "IconsFontAwesome6.h"
+#include "IconsFontAwesome.h"
 
 #ifdef _WIN32
 #include "common/RedtapeWindows.h"
