@@ -5,7 +5,7 @@
 
 #include "common/Console.h"
 #include "Host.h"
-#include "IconsFontAwesome6.h"
+#include "IconsFontAwesome.h"
 #include "IconsPromptFont.h"
 #include "Input/InputManager.h"
 #include "StateWrapper.h"

@@ -20,7 +20,7 @@
 #include "Patch.h"
 #include "R5900.h"
 
-#include "IconsFontAwesome6.h"
+#include "IconsFontAwesome.h"
 #include "fmt/format.h"
 
 #include <algorithm>

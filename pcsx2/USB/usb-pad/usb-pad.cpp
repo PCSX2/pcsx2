@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "usb-pad.h"
-#include "IconsFontAwesome6.h"
+#include "IconsFontAwesome.h"
 #include "IconsPromptFont.h"
 #include "USB/qemu-usb/USBinternal.h"
 #include "USB/usb-pad/usb-pad-sdl-ff.h"

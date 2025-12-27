@@ -6,7 +6,7 @@
 #include "CDVD/IsoFileFormats.h"
 #include "Config.h"
 #include "Host.h"
-#include "IconsFontAwesome6.h"
+#include "IconsFontAwesome.h"
 
 #include "common/Assertions.h"
 #include "common/Console.h"

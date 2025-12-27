@@ -38,7 +38,7 @@
 #include "common/StringUtil.h"
 #include "common/ZipHelpers.h"
 
-#include "IconsFontAwesome6.h"
+#include "IconsFontAwesome.h"
 #include "fmt/format.h"
 
 #include <csetjmp>

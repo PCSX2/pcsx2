@@ -22,7 +22,7 @@
 #include "common/Threading.h"
 #include "common/Timer.h"
 
-#include "IconsFontAwesome6.h"
+#include "IconsFontAwesome.h"
 #include "imgui_internal.h"
 #include "imgui_stdlib.h"
 
