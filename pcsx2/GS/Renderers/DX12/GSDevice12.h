@@ -459,7 +459,7 @@ public:
 	void PSSetShaderResource(int i, GSTexture* sr, bool check_state, bool feedback = false);
 	void PSSetSampler(GSHWDrawConfig::SamplerSelector sel);
 
-	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i& scissor);
+	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i& scissor, bool depth_read = false);
 
 	void SetVSConstantBuffer(const GSHWDrawConfig::VSConstantBuffer& cb);
 	void SetPSConstantBuffer(const GSHWDrawConfig::PSConstantBuffer& cb);
@@ -580,6 +580,7 @@ private:
 
 	GSTexture12* m_current_render_target = nullptr;
 	GSTexture12* m_current_depth_target = nullptr;
+	bool m_current_depth_read_only = false;
 
 	D3D12_VIEWPORT m_viewport = {0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f};
 	GSVector4i m_scissor = GSVector4i::zero();

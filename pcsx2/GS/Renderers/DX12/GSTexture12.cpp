@@ -17,13 +17,15 @@
 GSTexture12::GSTexture12(Type type, Format format, int width, int height, int levels, DXGI_FORMAT dxgi_format,
 	wil::com_ptr_nothrow<ID3D12Resource> resource, wil::com_ptr_nothrow<ID3D12Resource> resource_fbl,
 	wil::com_ptr_nothrow<D3D12MA::Allocation> allocation, const D3D12DescriptorHandle& srv_descriptor,
-	const D3D12DescriptorHandle& write_descriptor, const D3D12DescriptorHandle& uav_descriptor,
-	const D3D12DescriptorHandle& fbl_descriptor, WriteDescriptorType wdtype, D3D12_RESOURCE_STATES resource_state)
+	const D3D12DescriptorHandle& write_descriptor, const D3D12DescriptorHandle& ro_dsv_descriptor,
+	const D3D12DescriptorHandle& uav_descriptor, const D3D12DescriptorHandle& fbl_descriptor,
+	WriteDescriptorType wdtype, D3D12_RESOURCE_STATES resource_state)
 	: m_resource(std::move(resource))
 	, m_resource_fbl(std::move(resource_fbl))
 	, m_allocation(std::move(allocation))
 	, m_srv_descriptor(srv_descriptor)
 	, m_write_descriptor(write_descriptor)
+	, m_read_dsv_descriptor(ro_dsv_descriptor)
 	, m_uav_descriptor(uav_descriptor)
 	, m_fbl_descriptor(fbl_descriptor)
 	, m_write_descriptor_type(wdtype)
@@ -58,6 +60,7 @@ void GSTexture12::Destroy(bool defer)
 				break;
 			case WriteDescriptorType::DSV:
 				dev->DeferDescriptorDestruction(dev->GetDSVHeapManager(), &m_write_descriptor);
+				dev->DeferDescriptorDestruction(dev->GetDSVHeapManager(), &m_read_dsv_descriptor);
 				break;
 			case WriteDescriptorType::None:
 			default:
@@ -87,6 +90,7 @@ void GSTexture12::Destroy(bool defer)
 				break;
 			case WriteDescriptorType::DSV:
 				dev->GetDSVHeapManager().Free(&m_write_descriptor);
+				dev->GetDSVHeapManager().Free(&m_read_dsv_descriptor);
 				break;
 			case WriteDescriptorType::None:
 			default:
@@ -237,7 +241,7 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 		}
 	}
 
-	D3D12DescriptorHandle srv_descriptor, write_descriptor, uav_descriptor, fbl_descriptor;
+	D3D12DescriptorHandle srv_descriptor, write_descriptor, ro_dsv_descriptor, uav_descriptor, fbl_descriptor;
 	WriteDescriptorType write_descriptor_type = WriteDescriptorType::None;
 	if (srv_format != DXGI_FORMAT_UNKNOWN)
 	{
@@ -261,8 +265,14 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 		case Type::DepthStencil:
 		{
 			write_descriptor_type = WriteDescriptorType::DSV;
-			if (!CreateDSVDescriptor(resource.get(), dsv_format, &write_descriptor))
+			if (!CreateDSVDescriptor(resource.get(), dsv_format, &write_descriptor, false))
 			{
+				dev->GetDescriptorHeapManager().Free(&srv_descriptor);
+				return {};
+			}
+			if (!CreateDSVDescriptor(resource.get(), dsv_format, &ro_dsv_descriptor, true))
+			{
+				dev->GetDSVHeapManager().Free(&write_descriptor);
 				dev->GetDescriptorHeapManager().Free(&srv_descriptor);
 				return {};
 			}
@@ -281,6 +291,7 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 				dev->GetRTVHeapManager().Free(&write_descriptor);
 				break;
 			case WriteDescriptorType::DSV:
+				dev->GetDSVHeapManager().Free(&ro_dsv_descriptor);
 				dev->GetDSVHeapManager().Free(&write_descriptor);
 				break;
 			default:
@@ -301,6 +312,7 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 					dev->GetRTVHeapManager().Free(&write_descriptor);
 					break;
 				case WriteDescriptorType::DSV:
+					dev->GetDSVHeapManager().Free(&ro_dsv_descriptor);
 					dev->GetDSVHeapManager().Free(&write_descriptor);
 					break;
 				default:
@@ -313,7 +325,7 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 
 	return std::unique_ptr<GSTexture12>(
 		new GSTexture12(type, format, width, height, levels, dxgi_format, std::move(resource), std::move(resource_fbl), std::move(allocation),
-			srv_descriptor, write_descriptor, uav_descriptor, fbl_descriptor, write_descriptor_type, state));
+			srv_descriptor, write_descriptor, ro_dsv_descriptor, uav_descriptor, fbl_descriptor, write_descriptor_type, state));
 }
 
 std::unique_ptr<GSTexture12> GSTexture12::Adopt(wil::com_ptr_nothrow<ID3D12Resource> resource, Type type, Format format,
@@ -322,7 +334,7 @@ std::unique_ptr<GSTexture12> GSTexture12::Adopt(wil::com_ptr_nothrow<ID3D12Resou
 {
 	const D3D12_RESOURCE_DESC desc = resource->GetDesc();
 
-	D3D12DescriptorHandle srv_descriptor, write_descriptor, uav_descriptor;
+	D3D12DescriptorHandle srv_descriptor, write_descriptor, ro_dsv_descriptor, uav_descriptor;
 	WriteDescriptorType write_descriptor_type = WriteDescriptorType::None;
 	if (srv_format != DXGI_FORMAT_UNKNOWN)
 	{
@@ -342,8 +354,14 @@ std::unique_ptr<GSTexture12> GSTexture12::Adopt(wil::com_ptr_nothrow<ID3D12Resou
 	else if (type == Type::DepthStencil)
 	{
 		write_descriptor_type = WriteDescriptorType::DSV;
-		if (!CreateDSVDescriptor(resource.get(), dsv_format, &write_descriptor))
+		if (!CreateDSVDescriptor(resource.get(), dsv_format, &write_descriptor, false))
 		{
+			GSDevice12::GetInstance()->GetDescriptorHeapManager().Free(&srv_descriptor);
+			return {};
+		}
+		if (!CreateDSVDescriptor(resource.get(), dsv_format, &ro_dsv_descriptor, true))
+		{
+			GSDevice12::GetInstance()->GetDSVHeapManager().Free(&write_descriptor);
 			GSDevice12::GetInstance()->GetDescriptorHeapManager().Free(&srv_descriptor);
 			return {};
 		}
@@ -359,6 +377,7 @@ std::unique_ptr<GSTexture12> GSTexture12::Adopt(wil::com_ptr_nothrow<ID3D12Resou
 					GSDevice12::GetInstance()->GetRTVHeapManager().Free(&write_descriptor);
 					break;
 				case WriteDescriptorType::DSV:
+					GSDevice12::GetInstance()->GetDSVHeapManager().Free(&ro_dsv_descriptor);
 					GSDevice12::GetInstance()->GetDSVHeapManager().Free(&write_descriptor);
 					break;
 				default:
@@ -371,7 +390,7 @@ std::unique_ptr<GSTexture12> GSTexture12::Adopt(wil::com_ptr_nothrow<ID3D12Resou
 	}
 
 	return std::unique_ptr<GSTexture12>(new GSTexture12(type, format, static_cast<u32>(desc.Width), desc.Height,
-		desc.MipLevels, desc.Format, std::move(resource), {}, {}, srv_descriptor, write_descriptor, uav_descriptor,
+		desc.MipLevels, desc.Format, std::move(resource), {}, {}, srv_descriptor, write_descriptor, {}, uav_descriptor,
 		{}, write_descriptor_type, resource_state));
 }
 
@@ -405,7 +424,7 @@ bool GSTexture12::CreateRTVDescriptor(ID3D12Resource* resource, DXGI_FORMAT form
 	return true;
 }
 
-bool GSTexture12::CreateDSVDescriptor(ID3D12Resource* resource, DXGI_FORMAT format, D3D12DescriptorHandle* dh)
+bool GSTexture12::CreateDSVDescriptor(ID3D12Resource* resource, DXGI_FORMAT format, D3D12DescriptorHandle* dh, bool read_only)
 {
 	if (!GSDevice12::GetInstance()->GetDSVHeapManager().Allocate(dh))
 	{
@@ -413,7 +432,7 @@ bool GSTexture12::CreateDSVDescriptor(ID3D12Resource* resource, DXGI_FORMAT form
 		return false;
 	}
 
-	const D3D12_DEPTH_STENCIL_VIEW_DESC desc = {format, D3D12_DSV_DIMENSION_TEXTURE2D, D3D12_DSV_FLAG_NONE};
+	const D3D12_DEPTH_STENCIL_VIEW_DESC desc = {format, D3D12_DSV_DIMENSION_TEXTURE2D, read_only ? D3D12_DSV_FLAG_READ_ONLY_DEPTH : D3D12_DSV_FLAG_NONE };
 	GSDevice12::GetInstance()->GetDevice()->CreateDepthStencilView(resource, &desc, dh->cpu_handle);
 	return true;
 }
@@ -708,7 +727,36 @@ void GSTexture12::TransitionToState(ID3D12GraphicsCommandList* cmdlist, D3D12_RE
 	if (m_resource_state == state)
 		return;
 
-	TransitionSubresourceToState(cmdlist, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, m_resource_state, state);
+	// Read only depth requires special handling as we might want to write stencil.
+	// Also batch the transition barriers as per recommendation from docs.
+	if (state == (D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE))
+	{
+		// Transition to read depth/write stencil
+		const D3D12_RESOURCE_BARRIER barriers[2] = {
+			{D3D12_RESOURCE_BARRIER_TYPE_TRANSITION, D3D12_RESOURCE_BARRIER_FLAG_NONE,
+				{{m_resource.get(), 0, m_resource_state, (D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE)}}},
+			{D3D12_RESOURCE_BARRIER_TYPE_TRANSITION, D3D12_RESOURCE_BARRIER_FLAG_NONE,
+				{{m_resource.get(), 1, m_resource_state, D3D12_RESOURCE_STATE_DEPTH_WRITE}}},
+		};
+		GSDevice12::GetInstance()->GetCommandList()->ResourceBarrier(m_resource_state == D3D12_RESOURCE_STATE_DEPTH_WRITE ? 1 : 2, barriers);
+	}
+	else if (m_resource_state == (D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE))
+	{
+		// Transition from read depth/write stencil
+		const D3D12_RESOURCE_BARRIER barriers[2] = {
+			{D3D12_RESOURCE_BARRIER_TYPE_TRANSITION, D3D12_RESOURCE_BARRIER_FLAG_NONE,
+				{{m_resource.get(), 0, (D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE), state}}},
+			{D3D12_RESOURCE_BARRIER_TYPE_TRANSITION, D3D12_RESOURCE_BARRIER_FLAG_NONE,
+				{{m_resource.get(), 1, D3D12_RESOURCE_STATE_DEPTH_WRITE, state}}},
+		};
+		GSDevice12::GetInstance()->GetCommandList()->ResourceBarrier(state == D3D12_RESOURCE_STATE_DEPTH_WRITE ? 1 : 2, barriers);
+	}
+	else
+	{
+		// Normal transition
+		TransitionSubresourceToState(cmdlist, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, m_resource_state, state);
+	}
+
 	m_resource_state = state;
 }
 
