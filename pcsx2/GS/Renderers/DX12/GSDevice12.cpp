@@ -2181,13 +2181,13 @@ void GSDevice12::IASetIndexBuffer(const void* index, size_t count)
 	m_index_stream_buffer.CommitMemory(size);
 }
 
-void GSDevice12::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i& scissor)
+void GSDevice12::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i& scissor, bool depth_read)
 {
 	GSTexture12* vkRt = static_cast<GSTexture12*>(rt);
 	GSTexture12* vkDs = static_cast<GSTexture12*>(ds);
 	pxAssert(vkRt || vkDs);
 
-	if (m_current_render_target != vkRt || m_current_depth_target != vkDs)
+	if (m_current_render_target != vkRt || m_current_depth_target != vkDs || m_current_depth_read_only != depth_read)
 	{
 		// framebuffer change
 		EndRenderPass();
@@ -2214,13 +2214,14 @@ void GSDevice12::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 
 	m_current_render_target = vkRt;
 	m_current_depth_target = vkDs;
+	m_current_depth_read_only = depth_read;
 
 	if (!InRenderPass())
 	{
 		if (vkRt)
 			vkRt->TransitionToState(D3D12_RESOURCE_STATE_RENDER_TARGET);
 		if (vkDs)
-			vkDs->TransitionToState(D3D12_RESOURCE_STATE_DEPTH_WRITE);
+			vkDs->TransitionToState(depth_read ? (D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE) : D3D12_RESOURCE_STATE_DEPTH_WRITE);
 	}
 
 	// This is used to set/initialize the framebuffer for tfx rendering.
@@ -3330,6 +3331,7 @@ void GSDevice12::UnbindTexture(GSTexture12* tex)
 	{
 		EndRenderPass();
 		m_current_depth_target = nullptr;
+		m_current_depth_read_only = false;
 	}
 }
 
@@ -3450,7 +3452,7 @@ void GSDevice12::BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE color_b
 	D3D12_RENDER_PASS_DEPTH_STENCIL_DESC ds = {};
 	if (m_current_depth_target)
 	{
-		ds.cpuDescriptor = m_current_depth_target->GetWriteDescriptor();
+		ds.cpuDescriptor = m_current_depth_read_only ? m_current_depth_target->GetReadDepthViewDescriptor() : m_current_depth_target->GetWriteDescriptor();
 		ds.DepthEndingAccess.Type = depth_end;
 		ds.DepthBeginningAccess.Type = depth_begin;
 		if (depth_begin == D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR)
@@ -3470,7 +3472,8 @@ void GSDevice12::BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE color_b
 	}
 
 	GetCommandList()->BeginRenderPass(m_current_render_target ? 1 : 0,
-		m_current_render_target ? &rt : nullptr, m_current_depth_target ? &ds : nullptr, D3D12_RENDER_PASS_FLAG_NONE);
+		m_current_render_target ? &rt : nullptr, m_current_depth_target ? &ds : nullptr,
+		(m_current_depth_target && m_current_depth_read_only) ? (D3D12_RENDER_PASS_FLAG_BIND_READ_ONLY_DEPTH) : D3D12_RENDER_PASS_FLAG_NONE);
 }
 
 void GSDevice12::EndRenderPass()
@@ -3552,11 +3555,13 @@ __ri void GSDevice12::ApplyBaseState(u32 flags, ID3D12GraphicsCommandList* cmdli
 		if (m_current_render_target)
 		{
 			cmdlist->OMSetRenderTargets(1, &m_current_render_target->GetWriteDescriptor().cpu_handle, FALSE,
-				m_current_depth_target ? &m_current_depth_target->GetWriteDescriptor().cpu_handle : nullptr);
+				m_current_depth_target ?
+					(m_current_depth_read_only ? &m_current_depth_target->GetReadDepthViewDescriptor().cpu_handle : &m_current_depth_target->GetWriteDescriptor().cpu_handle) :
+					nullptr);
 		}
 		else if (m_current_depth_target)
 		{
-			cmdlist->OMSetRenderTargets(0, nullptr, FALSE, &m_current_depth_target->GetWriteDescriptor().cpu_handle);
+			cmdlist->OMSetRenderTargets(0, nullptr, FALSE, m_current_depth_read_only ? &m_current_depth_target->GetReadDepthViewDescriptor().cpu_handle : &m_current_depth_target->GetWriteDescriptor().cpu_handle);
 		}
 	}
 }
@@ -3924,15 +3929,6 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	if (config.blend.constant_enable)
 		SetBlendConstants(config.blend.constant);
 
-	// Depth testing and sampling, bind resource as dsv read only and srv at the same time without the need of a copy.
-	if (config.tex && config.tex == config.ds)
-	{
-		EndRenderPass();
-
-		// Transition dsv as read only.
-		draw_ds->TransitionToState(D3D12_RESOURCE_STATE_DEPTH_READ);
-	}
-
 	// Primitive ID tracking DATE setup.
 	GSTexture12* date_image = nullptr;
 	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking)
@@ -4034,7 +4030,8 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 			Console.Warning("D3D12: Failed to allocate temp texture for RT copy.");
 	}
 
-	OMSetRenderTargets(draw_rt, draw_ds, config.scissor);
+	// For depth testing and sampling, use a read only dsv, otherwise use a write dsv
+	OMSetRenderTargets(draw_rt, draw_ds, config.scissor, config.tex && config.tex == config.ds);
 
 	// Begin render pass if new target or out of the area.
 	if (!m_in_render_pass)

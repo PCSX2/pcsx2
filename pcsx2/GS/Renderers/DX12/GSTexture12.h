@@ -30,6 +30,7 @@ public:
 
 	__fi const D3D12DescriptorHandle& GetSRVDescriptor() const { return m_srv_descriptor; }
 	__fi const D3D12DescriptorHandle& GetWriteDescriptor() const { return m_write_descriptor; }
+	__fi const D3D12DescriptorHandle& GetReadDepthViewDescriptor() const { return m_read_dsv_descriptor; }
 	__fi const D3D12DescriptorHandle& GetUAVDescriptor() const { return m_uav_descriptor; }
 	__fi const D3D12DescriptorHandle& GetFBLDescriptor() const { return m_fbl_descriptor; }
 	__fi D3D12_RESOURCE_STATES GetResourceState() const { return m_resource_state; }
@@ -72,13 +73,14 @@ private:
 	GSTexture12(Type type, Format format, int width, int height, int levels, DXGI_FORMAT dxgi_format,
 		wil::com_ptr_nothrow<ID3D12Resource> resource, wil::com_ptr_nothrow<ID3D12Resource> resource_fbl,
 		wil::com_ptr_nothrow<D3D12MA::Allocation> allocation, const D3D12DescriptorHandle& srv_descriptor,
-		const D3D12DescriptorHandle& write_descriptor, const D3D12DescriptorHandle& uav_descriptor,
-		const D3D12DescriptorHandle& fbl_descriptor, WriteDescriptorType wdtype, D3D12_RESOURCE_STATES resource_state);
+		const D3D12DescriptorHandle& write_descriptor, const D3D12DescriptorHandle& ro_dsv_descriptor,
+		const D3D12DescriptorHandle& uav_descriptor, const D3D12DescriptorHandle& fbl_descriptor,
+		WriteDescriptorType wdtype, D3D12_RESOURCE_STATES resource_state);
 
 	static bool CreateSRVDescriptor(
 		ID3D12Resource* resource, u32 levels, DXGI_FORMAT format, D3D12DescriptorHandle* dh);
 	static bool CreateRTVDescriptor(ID3D12Resource* resource, DXGI_FORMAT format, D3D12DescriptorHandle* dh);
-	static bool CreateDSVDescriptor(ID3D12Resource* resource, DXGI_FORMAT format, D3D12DescriptorHandle* dh);
+	static bool CreateDSVDescriptor(ID3D12Resource* resource, DXGI_FORMAT format, D3D12DescriptorHandle* dh, bool read_only);
 	static bool CreateUAVDescriptor(ID3D12Resource* resource, DXGI_FORMAT format, D3D12DescriptorHandle* dh);
 
 	ID3D12GraphicsCommandList* GetCommandBufferForUpdate();
@@ -91,6 +93,7 @@ private:
 
 	D3D12DescriptorHandle m_srv_descriptor = {};
 	D3D12DescriptorHandle m_write_descriptor = {};
+	D3D12DescriptorHandle m_read_dsv_descriptor = {};
 	D3D12DescriptorHandle m_uav_descriptor = {};
 	D3D12DescriptorHandle m_fbl_descriptor = {};
 	WriteDescriptorType m_write_descriptor_type = WriteDescriptorType::None;
