@@ -752,6 +752,7 @@ Pcsx2Config::GSOptions::GSOptions()
 	Mipmap = true;
 	HWMipmap = true;
 	HWAFAILFeedback = false;
+	HWAA1 = false;
 
 	ManualUserHacks = false;
 	UserHacks_AlignSpriteX = false;
@@ -1023,6 +1024,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 
 	SettingsWrapBitBoolEx(HWMipmap, "hw_mipmap");
 	SettingsWrapBitBoolEx(HWAFAILFeedback, "HWAFAILFeedback");
+	SettingsWrapBitBoolEx(HWAA1, "HWAA1");
 	SettingsWrapIntEnumEx(AccurateBlendingUnit, "accurate_blending_unit");
 	SettingsWrapIntEnumEx(TextureFiltering, "filter");
 	SettingsWrapIntEnumEx(TexturePreloading, "texture_preloading");

@@ -276,4 +276,6 @@ public:
 
 	/// Compute the drawlist (if not already present) and bounding boxes for the current draw.
 	std::size_t ComputeDrawlistGetSize(float scale);
+
+	bool IsCoverageAlphaSupported() override;
 };

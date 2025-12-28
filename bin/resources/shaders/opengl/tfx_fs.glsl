@@ -32,6 +32,12 @@
 #define PS_ATST_NOTEQUAL 4
 #endif
 
+#ifndef PS_AA1_NONE
+#define PS_AA1_NONE 0
+#define PS_AA1_LINE 1
+#define PS_AA1_TRIANGLE 2
+#endif
+
 // TEX_COORD_DEBUG output the uv coordinate as color. It is useful
 // to detect bad sampling due to upscaling
 //#define TEX_COORD_DEBUG
@@ -48,9 +54,10 @@
 #define NEEDS_RT_EARLY (PS_TEX_IS_FB == 1 || PS_DATE >= 5)
 #define NEEDS_RT_FOR_AFAIL (PS_AFAIL == PS_ZB_ONLY || PS_AFAIL == AFAIL_RGB_ONLY)
 #define NEEDS_DEPTH_FOR_AFAIL (PS_AFAIL == AFAIL_FB_ONLY || PS_AFAIL == AFAIL_RGB_ONLY)
+#define NEEDS_DEPTH_FOR_AA1 (PS_AA1 == PS_AA1_TRIANGLE)
 #define NEEDS_RT (NEEDS_RT_EARLY || NEEDS_RT_FOR_AFAIL || (!PS_PRIMID_INIT && (PS_FBMASK || SW_BLEND_NEEDS_RT || SW_AD_TO_HW)) || PS_COLOR_FEEDBACK)
 #define NEEDS_TEX (PS_TFX != 4)
-#define NEEDS_DEPTH (PS_DEPTH_FEEDBACK && NEEDS_DEPTH_FOR_AFAIL)
+#define NEEDS_DEPTH (PS_DEPTH_FEEDBACK && (NEEDS_DEPTH_FOR_AFAIL || NEEDS_DEPTH_FOR_AA1))
 
 vec4 FragCoord;
 
@@ -94,6 +101,9 @@ in SHADER
 	#else
 		flat vec4 c;
 	#endif
+
+	float inv_cov; // We use the inverse to make it simpler to interpolate.
+	flat uint interior; // 1 for triangle interior; 0 for edge;
 } PSin;
 
 #define TARGET_0_QUALIFIER out
@@ -1084,7 +1094,15 @@ void ps_main()
 
 	vec4 C = ps_color();
 
-#if PS_FIXED_ONE_A
+#if PS_AA1
+	float cov = clamp(1.0f - abs(PSin.inv_cov), 0.0f, 1.0f);
+	#if PS_ABE
+		if (floor(C.a) == 128.0f) // According to manual & hardware tests the coverage is only used if the fragment alpha is 128.
+			C.a = 128.0f * cov;
+	#else
+		C.a = 128.0f * cov;
+	#endif
+#elif PS_FIXED_ONE_A
 	// AA (Fixed one) will output a coverage of 1.0 as alpha
 	C.a = 128.0f;
 #endif
@@ -1228,12 +1246,17 @@ void ps_main()
 #endif
 
 #if PS_ZCLAMP
+	#if NEEDS_DEPTH && (PS_AA1 == PS_AA1_TRIANGLE)
+		if (!bool(PSin.interior))
+			FragCoord.z = sample_from_depth().r; // No depth update for triangle edges.
+	#endif
+	FragCoord.z = min(FragCoord.z, MaxDepthPS);
 	#if NEEDS_DEPTH && PS_NO_COLOR1
 		// Warning: do not write SV_Target1 until the end since the value might be needed for
 		// FB fetch in sample_from_depth().
-		SV_Target1 = min(FragCoord.z, MaxDepthPS);
+		SV_Target1 = FragCoord.z;
 	#else
-		gl_FragDepth = min(FragCoord.z, MaxDepthPS);
+		gl_FragDepth = FragCoord.z;
 	#endif
-#endif
+#endif // PS_ZCLAMP
 }

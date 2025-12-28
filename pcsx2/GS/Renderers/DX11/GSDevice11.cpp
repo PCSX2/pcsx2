@@ -396,6 +396,30 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		}
 	}
 
+	if (m_features.aa1)
+	{
+		bd.ByteWidth = INDEX_BUFFER_SIZE;
+		bd.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+		bd.StructureByteStride = sizeof(u32);
+		bd.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+
+		if (FAILED(m_dev->CreateBuffer(&bd, nullptr, m_expand_ib_vs.put())))
+		{
+			Console.Error("D3D11: Failed to create vertex shader index buffer.");
+			return false;
+		}
+
+		const CD3D11_SHADER_RESOURCE_VIEW_DESC expand_ib_vs_srv_desc(
+			D3D11_SRV_DIMENSION_BUFFER, DXGI_FORMAT_UNKNOWN, 0, INDEX_BUFFER_SIZE / sizeof(u32));
+		if (FAILED(m_dev->CreateShaderResourceView(m_expand_ib_vs.get(), &expand_ib_vs_srv_desc, m_expand_ib_vs_srv.put())))
+		{
+			Console.Error("D3D11: Failed to create vertex shader index buffer SRV.");
+			return false;
+		}
+
+		m_ctx->VSSetShaderResources(5, 1, m_expand_ib_vs_srv.addressof());
+	}
+
 	// rasterizer
 
 	memset(&rd, 0, sizeof(rd));
@@ -600,6 +624,8 @@ void GSDevice11::SetFeatures(IDXGIAdapter1* adapter)
 	m_max_texture_size = (m_feature_level >= D3D_FEATURE_LEVEL_11_0) ?
 	                         D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION :
 	                         D3D10_REQ_TEXTURE2D_U_OR_V_DIMENSION;
+
+	m_features.aa1 = GSConfig.HWAA1 && m_features.vs_expand;
 }
 
 bool GSDevice11::HasSurface() const
@@ -1122,6 +1148,23 @@ void GSDevice11::DrawIndexedPrimitive(int offset, int count)
 	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
 	PSUpdateShaderState(true, true);
 	m_ctx->DrawIndexed(count, m_index.start + offset, m_vertex.start);
+}
+
+void GSDevice11::DrawVertexShaderIndexedPrimitive(int offset, int count, int expansion_factor)
+{
+	pxAssert(offset + count <= (int)m_index.count);
+
+	// Vertex shader needs the updated offset into the index buffer since the vertex ID resets every draw call.
+	int full_offset = m_index.start + offset;
+	if (m_vs_cb_cache.base_vertex_index.y != full_offset)
+	{
+		m_vs_cb_cache.base_vertex_index.y = full_offset;
+		m_ctx->UpdateSubresource(m_vs_cb.get(), 0, NULL, &m_vs_cb_cache, 0, 0);
+	}
+
+	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
+	PSUpdateShaderState(true, true);
+	m_ctx->Draw(count * expansion_factor, 0);
 }
 
 void GSDevice11::CommitClear(GSTexture* t)
@@ -1770,6 +1813,8 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 		sm.AddMacro("PS_ZTST", sel.ztst);
 		sm.AddMacro("PS_COLOR_FEEDBACK", sel.color_feedback);
 		sm.AddMacro("PS_DEPTH_FEEDBACK", sel.depth_feedback);
+		sm.AddMacro("PS_AA1", sel.aa1);
+		sm.AddMacro("PS_ABE", sel.abe);
 
 		wil::com_ptr_nothrow<ID3D11PixelShader> ps = m_shader_cache.GetPixelShader(m_dev.get(), m_tfx_source, sm.GetPtr(), "ps_main");
 		i = m_ps.try_emplace(sel, std::move(ps)).first;
@@ -2231,12 +2276,7 @@ void GSDevice11::IAUnmapVertexBuffer(u32 stride, u32 count)
 {
 	m_ctx->Unmap(m_vb.get(), 0);
 
-	if (m_state.vb_stride != stride)
-	{
-		m_state.vb_stride = stride;
-		const UINT vb_offset = 0;
-		m_ctx->IASetVertexBuffers(0, 1, m_vb.addressof(), &stride, &vb_offset);
-	}
+	IASetVertexBuffer(m_vb.get(), stride);
 
 	m_vertex.count = count;
 }
@@ -2251,6 +2291,16 @@ bool GSDevice11::IASetVertexBuffer(const void* vertex, u32 stride, u32 count)
 
 	IAUnmapVertexBuffer(stride, count);
 	return true;
+}
+
+void GSDevice11::IASetVertexBuffer(ID3D11Buffer* buffer, u32 stride)
+{
+	if (m_state.vb != buffer || stride != m_state.vb_stride)
+	{
+		const UINT zero = 0;
+		m_ctx->IASetVertexBuffers(0, 1, &buffer, buffer ? &stride : &zero, &zero);
+		m_state.vb = buffer;
+	}
 }
 
 bool GSDevice11::IASetExpandVertexBuffer(const void* vertex, u32 stride, u32 count)
@@ -2370,6 +2420,47 @@ void GSDevice11::VSSetShader(ID3D11VertexShader* vs, ID3D11Buffer* vs_cb)
 
 		m_ctx->VSSetConstantBuffers(0, 1, &vs_cb);
 	}
+}
+
+u16* GSDevice11::VSMapIndexBuffer(u32 count)
+{
+	if (count > (INDEX_BUFFER_SIZE / sizeof(u16)))
+		return nullptr;
+
+	D3D11_MAP type = D3D11_MAP_WRITE_NO_OVERWRITE;
+
+	m_index.start = m_expand_ib_vs_pos;
+	m_expand_ib_vs_pos += count;
+
+	if (m_expand_ib_vs_pos > (INDEX_BUFFER_SIZE / sizeof(u16)))
+	{
+		m_index.start = 0;
+		m_expand_ib_vs_pos = count;
+		type = D3D11_MAP_WRITE_DISCARD;
+	}
+
+	D3D11_MAPPED_SUBRESOURCE m;
+	if (FAILED(m_ctx->Map(m_expand_ib_vs.get(), 0, type, 0, &m)))
+		return nullptr;
+
+	return static_cast<u16*>(m.pData) + m_index.start;
+}
+
+void GSDevice11::VSUnmapIndexBuffer(u32 count)
+{
+	m_ctx->Unmap(m_expand_ib_vs.get(), 0);
+	m_index.count = count;
+}
+
+bool GSDevice11::VSSetIndexBuffer(const void* index, u32 count)
+{
+	u16* map = VSMapIndexBuffer(count);
+	if (!map)
+		return false;
+
+	std::memcpy(map, index, count * sizeof(u16));
+	VSUnmapIndexBuffer(count);
+	return true;
 }
 
 void GSDevice11::PSSetShaderResource(int i, GSTexture* sr)
@@ -2590,7 +2681,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	GSTexture* draw_rt_clone = nullptr;
 	GSTexture* draw_ds_clone = nullptr;
 	GSTexture* primid_texture = nullptr;
-	
+
 	ScopedGuard recycle_temp_textures([&]() {
 		if (draw_rt_clone)
 			Recycle(draw_rt_clone);
@@ -2667,7 +2758,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 			return;
 		}
 
-		config.cb_vs.max_depth.y = m_vertex.start;
+		config.cb_vs.base_vertex_index.x = m_vertex.start;
 	}
 	else
 	{
@@ -2678,11 +2769,16 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		}
 	}
 
-	if (config.vs.UseExpandIndexBuffer())
+	if (config.vs.UseFixedExpandIndexBuffer())
 	{
 		IASetIndexBuffer(m_expand_ib.get());
 		m_index.start = 0;
 		m_index.count = config.nindices;
+	}
+	else if (config.vs.UseVertexShaderExpandIndexBuffer())
+	{
+		VSSetIndexBuffer(config.indices, config.nindices);
+		IASetVertexBuffer(nullptr, 0); // Unbind the vertex buffer to prevent unwanted fetches.
 	}
 	else
 	{
@@ -2837,6 +2933,19 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config,
 	GSTexture* draw_rt_clone, GSTexture* draw_rt, GSTexture* draw_ds_clone, GSTexture* draw_ds,
 	const bool one_barrier, const bool full_barrier, const bool skip_first_barrier)
 {
+	const u32 expansion_factor = GetExpansionFactor(config.vs.expand);
+
+	auto Draw = [&](int offset, int count) {
+		if (config.vertex_shader_indexing)
+		{
+			DrawVertexShaderIndexedPrimitive(offset, count, expansion_factor);
+		}
+		else
+		{
+			DrawIndexedPrimitive(offset, count);
+		}
+	};
+
 	if (draw_rt_clone || draw_ds_clone)
 	{
 #ifdef PCSX2_DEVBUILD
@@ -2877,7 +2986,8 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config,
 				// Copy only the part needed by the draw.
 				CopyAndBind(bbox);
 
-				DrawIndexedPrimitive(p, count);
+				Draw(p, count);
+				
 				p += count;
 			}
 
@@ -2889,5 +2999,5 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config,
 			CopyAndBind(config.drawarea);
 	}
 
-	DrawIndexedPrimitive();
+	Draw(0, m_index.count);
 }
