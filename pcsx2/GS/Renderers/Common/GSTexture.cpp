@@ -20,7 +20,7 @@ bool GSTexture::Save(const std::string& fn)
 {
 	// Depth textures need special treatment - we have a stencil component.
 	// Just re-use the existing conversion shader instead.
-	if (m_format == Format::DepthStencil)
+	if (m_format == Format::DepthStencil || m_format == Format::Float32)
 	{
 		GSTexture* temp = g_gs_device->CreateRenderTarget(GetWidth(), GetHeight(), Format::Color, false);
 		if (!temp)
@@ -63,23 +63,40 @@ bool GSTexture::Save(const std::string& fn)
 
 const char* GSTexture::GetFormatName(Format format)
 {
-	static constexpr const char* format_names[] = {
-		"Invalid",
-		"Color",
-		"ColorHQ",
-		"ColorHDR",
-		"ColorClip",
-		"DepthStencil",
-		"UNorm8",
-		"UInt16",
-		"UInt32",
-		"PrimID",
-		"BC1",
-		"BC2",
-		"BC3",
-		"BC7",
-	};
-	return format_names[(static_cast<u32>(format) < std::size(format_names)) ? static_cast<u32>(format) : 0];
+	switch (format)
+	{
+		default:
+			pxFailRel("Invalid texture format");
+		case Format::Invalid:      return "Invalid";
+		case Format::Color:        return "Color";
+		case Format::ColorHQ:      return "ColorHQ";
+		case Format::ColorHDR:     return "ColorHDR";
+		case Format::ColorClip:    return "ColorClip";
+		case Format::DepthStencil: return "DepthStencil";
+		case Format::Float32:      return "Float32";
+		case Format::UNorm8:       return "UNorm8";
+		case Format::UInt16:       return "UInt16";
+		case Format::UInt32:       return "UInt32";
+		case Format::PrimID:       return "PrimID";
+		case Format::BC1:          return "BC1";
+		case Format::BC2:          return "BC2";
+		case Format::BC3:          return "BC3";
+		case Format::BC7:          return "BC7";
+	}
+}
+
+bool GSTexture::IsBlockCompressedFormat(Format format)
+{
+	switch (format)
+	{
+		case Format::BC1:
+		case Format::BC2:
+		case Format::BC3:
+		case Format::BC7:
+			return true;
+		default:
+			return false;
+	}
 }
 
 u32 GSTexture::GetCompressedBytesPerBlock() const
@@ -89,24 +106,26 @@ u32 GSTexture::GetCompressedBytesPerBlock() const
 
 u32 GSTexture::GetCompressedBytesPerBlock(Format format)
 {
-	static constexpr u32 bytes_per_block[] = {
-		1, // Invalid
-		4, // Color/RGBA8
-		4, // ColorHQ/RGB10A2
-		8, // ColorHDR/RGBA16F
-		8, // ColorClip/RGBA16
-		4, // DepthStencil
-		1, // UNorm8/R8
-		2, // UInt16/R16UI
-		4, // UInt32/R32UI
-		4, // Int32/R32I
-		8, // BC1 - 16 pixels in 64 bits
-		16, // BC2 - 16 pixels in 128 bits
-		16, // BC3 - 16 pixels in 128 bits
-		16, // BC7 - 16 pixels in 128 bits
-	};
-
-	return bytes_per_block[static_cast<u32>(format)];
+	switch (format)
+	{
+		default:
+			pxFailRel("Invalid texture format");
+		case Format::Invalid:      return 1;  // Invalid
+		case Format::Color:        return 4;  // Color/RGBA8
+		case Format::ColorHQ:      return 4;  // ColorHQ/RGB10A2
+		case Format::ColorHDR:     return 8;  // ColorHDR/RGBA16F
+		case Format::ColorClip:    return 8;  // ColorClip/RGBA16
+		case Format::DepthStencil: return 4;  // DepthStencil
+		case Format::Float32:      return 4;  // Float32/R32
+		case Format::UNorm8:       return 1;  // UNorm8/R8
+		case Format::UInt16:       return 2;  // UInt16/R16UI
+		case Format::UInt32:       return 4;  // UInt32/R32UI
+		case Format::PrimID:       return 4;  // Int32/R32I
+		case Format::BC1:          return 8;  // BC1 - 16 pixels in 64 bits
+		case Format::BC2:          return 16; // BC2 - 16 pixels in 128 bits
+		case Format::BC3:          return 16; // BC3 - 16 pixels in 128 bits
+		case Format::BC7:          return 16; // BC7 - 16 pixels in 128 bits
+	}
 }
 
 u32 GSTexture::GetCompressedBlockSize() const
@@ -116,10 +135,7 @@ u32 GSTexture::GetCompressedBlockSize() const
 
 u32 GSTexture::GetCompressedBlockSize(Format format)
 {
-	if (format >= Format::BC1 && format <= Format::BC7)
-		return 4;
-	else
-		return 1;
+	return IsBlockCompressedFormat(format) ? 4 : 1;
 }
 
 u32 GSTexture::CalcUploadPitch(Format format, u32 width)
