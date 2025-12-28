@@ -158,6 +158,9 @@ private:
 	// Allocates a temporary CPU staging buffer, fires the callback with it to populate, then copies to a GPU buffer.
 	bool AllocatePreinitializedGPUBuffer(u32 size, VkBuffer* gpu_buffer, VmaAllocation* gpu_allocation,
 		VkBufferUsageFlags gpu_usage, const std::function<void(void*)>& fill_callback);
+	
+	// Helper function for uploading indices.
+	void UploadIndices(VKStreamBuffer& buffer, const void* index, size_t count);
 
 	union RenderPassCacheKey
 	{
@@ -294,7 +297,8 @@ public:
 	{
 		FeedbackLoopFlag_None = 0,
 		FeedbackLoopFlag_ReadAndWriteRT = 1,
-		FeedbackLoopFlag_ReadDS = 2,
+		FeedbackLoopFlag_ReadDepth = 2,
+		FeedbackLoopFlag_ReadAndWriteDepth = 4,
 	};
 
 	struct alignas(8) PipelineSelector
@@ -309,7 +313,7 @@ public:
 				u32 rt : 1;
 				u32 ds : 1;
 				u32 line_width : 1;
-				u32 feedback_loop_flags : 2;
+				u32 feedback_loop_flags : 3;
 			};
 
 			u32 key;
@@ -327,7 +331,8 @@ public:
 		__fi PipelineSelector() { std::memset(this, 0, sizeof(*this)); }
 
 		__fi bool IsRTFeedbackLoop() const { return ((feedback_loop_flags & FeedbackLoopFlag_ReadAndWriteRT) != 0); }
-		__fi bool IsTestingAndSamplingDepth() const { return ((feedback_loop_flags & FeedbackLoopFlag_ReadDS) != 0); }
+		__fi bool IsDepthFeedbackLoop() const { return ((feedback_loop_flags & FeedbackLoopFlag_ReadAndWriteDepth) != 0); }
+		__fi bool IsTestingAndSamplingDepth() const { return ((feedback_loop_flags & (FeedbackLoopFlag_ReadDepth | FeedbackLoopFlag_ReadAndWriteDepth)) != 0); }
 	};
 	static_assert(sizeof(PipelineSelector) == 24, "Pipeline selector is 24 bytes");
 
@@ -358,10 +363,11 @@ public:
 	};
 	enum TFX_TEXTURES : u32
 	{
-		TFX_TEXTURE_TEXTURE,
+		TFX_TEXTURE_TEXTURE = 0,
 		TFX_TEXTURE_PALETTE,
 		TFX_TEXTURE_RT,
 		TFX_TEXTURE_PRIMID,
+		TFX_TEXTURE_DEPTH,
 
 		NUM_TFX_TEXTURES
 	};
@@ -379,6 +385,7 @@ private:
 
 	VKStreamBuffer m_vertex_stream_buffer;
 	VKStreamBuffer m_index_stream_buffer;
+	VKStreamBuffer m_expand_index_stream_buffer;
 	VKStreamBuffer m_vertex_uniform_stream_buffer;
 	VKStreamBuffer m_fragment_uniform_stream_buffer;
 	VKStreamBuffer m_texture_stream_buffer;
@@ -526,6 +533,7 @@ public:
 	void DrawPrimitive();
 	void DrawIndexedPrimitive();
 	void DrawIndexedPrimitive(int offset, int count);
+	void DrawVertexShaderIndexedPrimitive(int offset, int count, int expansion_factor);
 
 	std::unique_ptr<GSDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format) override;
 
@@ -557,6 +565,7 @@ public:
 
 	void IASetVertexBuffer(const void* vertex, size_t stride, size_t count, size_t align_multiplier = 1);
 	void IASetIndexBuffer(const void* index, size_t count);
+	void VSSetIndexBuffer(const void* index, size_t count);
 
 	void PSSetShaderResource(int i, GSTexture* sr, bool check_state);
 	void PSSetSampler(GSHWDrawConfig::SamplerSelector sel);
@@ -570,10 +579,11 @@ public:
 
 	void RenderHW(GSHWDrawConfig& config) override;
 	void UpdateHWPipelineSelector(GSHWDrawConfig& config, PipelineSelector& pipe);
-	void UploadHWDrawVerticesAndIndices(const GSHWDrawConfig& config);
-	VkImageMemoryBarrier GetColorBufferBarrier(GSTextureVK* rt) const;
-	VkDependencyFlags GetColorBufferBarrierFlags() const;
-	void SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt,
+	void UploadHWDrawVerticesAndIndices(GSHWDrawConfig& config);
+	VkImageMemoryBarrier GetColorBufferFeedbackBarrier(GSTextureVK* rt) const;
+	VkImageMemoryBarrier GetDepthStencilBufferFeedbackBarrier(GSTextureVK* ds) const;
+	VkDependencyFlags GetFeedbackBarrierDependencyFlags() const;
+	void SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, GSTextureVK* draw_ds,
 		bool one_barrier, bool full_barrier, bool skip_first_barrier);
 
 	//////////////////////////////////////////////////////////////////////////
@@ -623,25 +633,27 @@ public:
 private:
 	enum DIRTY_FLAG : u32
 	{
-		DIRTY_FLAG_TFX_TEXTURE_0 = (1 << 0), // 0, 1, 2, 3
-		DIRTY_FLAG_TFX_UBO = (1 << 4),
-		DIRTY_FLAG_UTILITY_TEXTURE = (1 << 5),
-		DIRTY_FLAG_BLEND_CONSTANTS = (1 << 6),
-		DIRTY_FLAG_LINE_WIDTH = (1 << 7),
-		DIRTY_FLAG_INDEX_BUFFER = (1 << 8),
-		DIRTY_FLAG_VIEWPORT = (1 << 9),
-		DIRTY_FLAG_SCISSOR = (1 << 10),
-		DIRTY_FLAG_PIPELINE = (1 << 11),
-		DIRTY_FLAG_VS_CONSTANT_BUFFER = (1 << 12),
-		DIRTY_FLAG_PS_CONSTANT_BUFFER = (1 << 13),
+		DIRTY_FLAG_TFX_TEXTURE_0 = (1 << 0), // 0, 1, 2, 3, 4
+		DIRTY_FLAG_TFX_UBO = (1 << 5),
+		DIRTY_FLAG_UTILITY_TEXTURE = (1 << 6),
+		DIRTY_FLAG_BLEND_CONSTANTS = (1 << 7),
+		DIRTY_FLAG_LINE_WIDTH = (1 << 8),
+		DIRTY_FLAG_INDEX_BUFFER = (1 << 9),
+		DIRTY_FLAG_VIEWPORT = (1 << 10),
+		DIRTY_FLAG_SCISSOR = (1 << 11),
+		DIRTY_FLAG_PIPELINE = (1 << 12),
+		DIRTY_FLAG_VS_CONSTANT_BUFFER = (1 << 13),
+		DIRTY_FLAG_PS_CONSTANT_BUFFER = (1 << 14),
 
 		DIRTY_FLAG_TFX_TEXTURE_TEX = (DIRTY_FLAG_TFX_TEXTURE_0 << 0),
 		DIRTY_FLAG_TFX_TEXTURE_PALETTE = (DIRTY_FLAG_TFX_TEXTURE_0 << 1),
 		DIRTY_FLAG_TFX_TEXTURE_RT = (DIRTY_FLAG_TFX_TEXTURE_0 << 2),
 		DIRTY_FLAG_TFX_TEXTURE_PRIMID = (DIRTY_FLAG_TFX_TEXTURE_0 << 3),
+		DIRTY_FLAG_TFX_TEXTURE_DEPTH = (DIRTY_FLAG_TFX_TEXTURE_0 << 4),
 
 		DIRTY_FLAG_TFX_TEXTURES = DIRTY_FLAG_TFX_TEXTURE_TEX | DIRTY_FLAG_TFX_TEXTURE_PALETTE |
-		                          DIRTY_FLAG_TFX_TEXTURE_RT | DIRTY_FLAG_TFX_TEXTURE_PRIMID,
+		                          DIRTY_FLAG_TFX_TEXTURE_RT | DIRTY_FLAG_TFX_TEXTURE_PRIMID |
+		                          DIRTY_FLAG_TFX_TEXTURE_DEPTH,
 
 		DIRTY_BASE_STATE = DIRTY_FLAG_INDEX_BUFFER | DIRTY_FLAG_PIPELINE | DIRTY_FLAG_VIEWPORT | DIRTY_FLAG_SCISSOR |
 		                   DIRTY_FLAG_BLEND_CONSTANTS | DIRTY_FLAG_LINE_WIDTH,
