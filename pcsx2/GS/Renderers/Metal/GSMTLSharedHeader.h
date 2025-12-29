@@ -129,6 +129,7 @@ struct GSMTLMainPSUniform
 		unsigned int green_mask;
 		unsigned int green_shift;
 	} channel_shuffle;
+	vector_float2 channel_shuffle_offset;
 	vector_float2 tc_offset;
 	vector_float2 st_scale;
 	matrix_float4x4 dither_matrix;
