@@ -343,12 +343,14 @@ bool GSDevice12::CreateCommandLists()
 
 void GSDevice12::MoveToNextCommandList()
 {
-	m_current_command_list = (m_current_command_list + 1) % NUM_COMMAND_LISTS;
-	m_current_fence_value++;
+	const int next_command_list = (m_current_command_list + 1) % NUM_COMMAND_LISTS;
 
 	// We may have to wait if this command list hasn't finished on the GPU.
-	CommandListResources& res = m_command_lists[m_current_command_list];
+	CommandListResources& res = m_command_lists[next_command_list];
 	WaitForFence(res.ready_fence_value, false);
+
+	m_current_command_list = next_command_list;
+	m_current_fence_value++;
 	res.ready_fence_value = m_current_fence_value;
 	res.init_command_list_used = false;
 
