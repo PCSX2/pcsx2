@@ -168,6 +168,7 @@ cbuffer cb1
 	float4 LODParams;
 	float4 STRange;
 	int4 ChannelShuffle;
+	float2 ChannelShuffleOffset;
 	float2 TC_OffsetHack;
 	float2 STScale;
 	float4x4 DitherMatrix;
@@ -757,17 +758,17 @@ float4 ps_color(PS_INPUT input)
 #endif
 
 #if PS_CHANNEL_FETCH == 1
-	float4 T = fetch_red(int2(input.p.xy));
+	float4 T = fetch_red(int2(input.p.xy + ChannelShuffleOffset));
 #elif PS_CHANNEL_FETCH == 2
-	float4 T = fetch_green(int2(input.p.xy));
+	float4 T = fetch_green(int2(input.p.xy + ChannelShuffleOffset));
 #elif PS_CHANNEL_FETCH == 3
-	float4 T = fetch_blue(int2(input.p.xy));
+	float4 T = fetch_blue(int2(input.p.xy + ChannelShuffleOffset));
 #elif PS_CHANNEL_FETCH == 4
-	float4 T = fetch_alpha(int2(input.p.xy));
+	float4 T = fetch_alpha(int2(input.p.xy + ChannelShuffleOffset));
 #elif PS_CHANNEL_FETCH == 5
-	float4 T = fetch_rgb(int2(input.p.xy));
+	float4 T = fetch_rgb(int2(input.p.xy + ChannelShuffleOffset));
 #elif PS_CHANNEL_FETCH == 6
-	float4 T = fetch_gXbY(int2(input.p.xy));
+	float4 T = fetch_gXbY(int2(input.p.xy + ChannelShuffleOffset));
 #elif PS_DEPTH_FMT > 0
 	float4 T = sample_depth(st_int, input.p.xy);
 #else

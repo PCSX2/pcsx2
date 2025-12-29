@@ -258,7 +258,7 @@ public:
 	bool m_using_temp_z = false;
 	bool m_temp_z_full_copy = false;
 	bool m_in_target_draw = false;
-	bool m_channel_shuffle_abort = false;
+	bool m_channel_shuffle_finish = false;
 
 	u32 m_target_offset = 0;
 	u8 m_scanmask_used = 0;
