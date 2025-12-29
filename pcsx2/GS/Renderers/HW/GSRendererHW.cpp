@@ -2346,7 +2346,7 @@ void GSRendererHW::Draw()
 		// Tomb Raider: Underworld does similar, except with R, G, B in separate palettes, therefore
 		// we need to split on those too.
 		const bool is_hle_skip = m_conf.ps.urban_chaos_hle || m_conf.ps.tales_of_abyss_hle;
-		const u32 max_skip = ((m_channel_shuffle_finish || !m_channel_shuffle_width) ? 1 : m_channel_shuffle_width) << 5;
+		const u32 max_skip = ((m_channel_shuffle_finish || !m_channel_shuffle_width) ? std::max(m_context->FRAME.FBW, 1U) : m_channel_shuffle_width) << 5;
 		const bool shuffle_detect = IsPossibleChannelShuffle() && m_last_channel_shuffle_fbmsk == m_context->FRAME.FBMSK &&
 		                            m_last_channel_shuffle_fbp <= m_context->FRAME.Block() && (m_last_channel_shuffle_fbp + max_skip) >= m_context->FRAME.Block() && 
 									m_last_channel_shuffle_end_block > m_context->FRAME.Block() && m_last_channel_shuffle_tbp <= m_context->TEX0.TBP0
