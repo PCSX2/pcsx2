@@ -17830,6 +17830,8 @@ SLES-51393:
 SLES-51397:
   name: "IndyCar Series"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 5 # Aligns post-processing and fixes depth line.
 SLES-51398:
   name: "World Championship Snooker 2003"
   region: "PAL-E"
@@ -19953,6 +19955,8 @@ SLES-52298:
   name: "IndyCar Series 2005"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 5 # Aligns post-processing and fixes depth line.
 SLES-52308:
   name: "Karaoke Stage"
   region: "PAL-M5"
@@ -20123,6 +20127,9 @@ SLES-52378:
   name: "Euro Rally Champion"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 5 # Aligns post-processing and fixes depth line.
+    textureInsideRT: 1 # Fixes broken fog rendering.
 SLES-52379:
   name: "Shrek 2"
   region: "PAL-E"
@@ -25057,6 +25064,8 @@ SLES-53957:
 SLES-53958:
   name: "Noble Racing"
   region: "PAL-E"
+  gsHWFixes:
+    halfPixelOffset: 5 # Aligns post-processing and fixes depth line.
 SLES-53959:
   name: "Pac-Man World 3"
   region: "PAL-M5"
@@ -66984,6 +66993,8 @@ SLUS-20641:
   name: "IndyCar Series"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 5 # Aligns post-processing and fixes depth line.
 SLUS-20642:
   name: "Auto Modellista"
   region: "NTSC-U"
