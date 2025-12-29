@@ -6917,31 +6917,63 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 		GSVector4i::storel(&copy_dst_offset, copy_range);
 		if (m_channel_shuffle && (tex_diff || frame_diff))
 		{
-			const u32 max_skip = ((m_channel_shuffle_finish || !m_channel_shuffle_width) ? 1 : m_channel_shuffle_width) << 5;
-			const bool new_shuffle = !(m_last_channel_shuffle_fbmsk == m_context->FRAME.FBMSK &&
-										m_last_channel_shuffle_fbp <= m_context->FRAME.Block() && (m_last_channel_shuffle_fbp + max_skip) >= m_context->FRAME.Block() &&
-										m_last_channel_shuffle_end_block > m_context->FRAME.Block() && m_last_channel_shuffle_tbp <= m_context->TEX0.TBP0 && (m_last_channel_shuffle_tbp + max_skip) >= m_context->TEX0.TBP0);
-
-			if (rt == tex->m_from_target && new_shuffle)
-			{
-				if (m_prim_overlap == PRIM_OVERLAP_NO || !(g_gs_device->Features().texture_barrier || g_gs_device->Features().multidraw_fb_copy))
-					m_conf.require_one_barrier = true;
-				else
-					m_conf.require_full_barrier = true;
-			}
-
 			const int page_offset = (m_cached_ctx.TEX0.TBP0 - src_target->m_TEX0.TBP0) >> 5;
 			const int horizontal_offset = ((page_offset % src_target->m_TEX0.TBW) * GSLocalMemory::m_psm[src_target->m_TEX0.PSM].pgs.x);
 			const int vertical_offset = ((page_offset / src_target->m_TEX0.TBW) * GSLocalMemory::m_psm[src_target->m_TEX0.PSM].pgs.y);
 
-			m_conf.cb_ps.ChannelShuffleOffset = GSVector2((horizontal_offset - m_r.x) * tex->GetScale(), (vertical_offset - m_r.y) * tex->GetScale());
-			m_conf.ps.channel_fb = 1;
-			target_region = false;
-			source_region.bits = 0;
+			if (g_gs_device->Features().texture_barrier || g_gs_device->Features().multidraw_fb_copy)
+			{
+				const u32 max_skip = ((m_channel_shuffle_finish || !m_channel_shuffle_width) ? 1 : m_channel_shuffle_width) << 5;
+				const bool new_shuffle = !(m_last_channel_shuffle_fbmsk == m_context->FRAME.FBMSK &&
+										   m_last_channel_shuffle_fbp <= m_context->FRAME.Block() && (m_last_channel_shuffle_fbp + max_skip) >= m_context->FRAME.Block() &&
+										   m_last_channel_shuffle_end_block > m_context->FRAME.Block() && m_last_channel_shuffle_tbp <= m_context->TEX0.TBP0 && (m_last_channel_shuffle_tbp + max_skip) >= m_context->TEX0.TBP0);
 
-			unscaled_size = src_target->GetUnscaledSize();
-			scale = src_target->GetScale();
-			return;
+				if (rt == tex->m_from_target && new_shuffle)
+				{
+					if (m_prim_overlap == PRIM_OVERLAP_NO)
+						m_conf.require_one_barrier = true;
+					else
+						m_conf.require_full_barrier = true;
+				}
+
+				m_conf.cb_ps.ChannelShuffleOffset = GSVector2((horizontal_offset - m_r.x) * tex->GetScale(), (vertical_offset - m_r.y) * tex->GetScale());
+				m_conf.ps.channel_fb = 1;
+				target_region = false;
+				source_region.bits = 0;
+
+				unscaled_size = src_target->GetUnscaledSize();
+				scale = src_target->GetScale();
+				return;
+			}
+			else
+			{
+				copy_range.x += horizontal_offset;
+				copy_range.y += vertical_offset;
+				copy_range.z += horizontal_offset;
+				copy_range.w += vertical_offset;
+
+				if (!m_channel_shuffle)
+				{
+					copy_size.y -= vertical_offset;
+					copy_size.x -= horizontal_offset;
+				}
+				target_region = false;
+				source_region.bits = 0;
+				//copied_rt = tex->m_from_target != nullptr;
+				if (m_in_target_draw && (page_offset || frame_diff))
+				{
+					copy_range.z = copy_range.x + m_r.width();
+					copy_range.w = copy_range.y + m_r.height();
+
+					if (tex_diff != frame_diff)
+					{
+						GSVector4i::storel(&copy_dst_offset, m_r);
+					}
+				}
+
+				copy_range.z = std::min(copy_range.z, src_target->m_unscaled_size.x);
+				copy_range.w = std::min(copy_range.w, src_target->m_unscaled_size.y);
+			}
 		}
 	}
 	else
