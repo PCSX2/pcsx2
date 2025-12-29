@@ -49,6 +49,7 @@ layout(std140, binding = 0) uniform cb21
 	vec4 STRange;
 
 	ivec4 ChannelShuffle;
+	vec2 ChannelShuffleOffset;
 
 	vec2 TC_OffsetHack;
 	vec2 STScale;
@@ -315,7 +316,7 @@ int fetch_raw_depth()
 #if PS_TEX_IS_FB == 1
 	return int(sample_from_rt().r * multiplier);
 #else
-	return int(texelFetch(TextureSampler, ivec2(gl_FragCoord.xy), 0).r * multiplier);
+	return int(texelFetch(TextureSampler, ivec2(gl_FragCoord.xy + ChannelShuffleOffset), 0).r * multiplier);
 #endif
 }
 
@@ -324,7 +325,7 @@ vec4 fetch_raw_color()
 #if PS_TEX_IS_FB == 1
 	return sample_from_rt();
 #else
-	return texelFetch(TextureSampler, ivec2(gl_FragCoord.xy), 0);
+	return texelFetch(TextureSampler, ivec2(gl_FragCoord.xy + ChannelShuffleOffset), 0);
 #endif
 }
 

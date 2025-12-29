@@ -316,6 +316,7 @@ layout(std140, set = 0, binding = 1) uniform cb1
 	vec4 LODParams;
 	vec4 STRange;
 	ivec4 ChannelShuffle;
+	vec2 ChannelShuffleOffset;
 	vec2 TC_OffsetHack;
 	vec2 STScale;
 	mat4 DitherMatrix;
@@ -926,17 +927,17 @@ vec4 ps_color()
 #if !NEEDS_TEX
 	vec4 T = vec4(0.0f);
 #elif PS_CHANNEL_FETCH == 1
-	vec4 T = fetch_red(ivec2(gl_FragCoord.xy));
+	vec4 T = fetch_red(ivec2(gl_FragCoord.xy + ChannelShuffleOffset));
 #elif PS_CHANNEL_FETCH == 2
-	vec4 T = fetch_green(ivec2(gl_FragCoord.xy));
+	vec4 T = fetch_green(ivec2(gl_FragCoord.xy + ChannelShuffleOffset));
 #elif PS_CHANNEL_FETCH == 3
-	vec4 T = fetch_blue(ivec2(gl_FragCoord.xy));
+	vec4 T = fetch_blue(ivec2(gl_FragCoord.xy + ChannelShuffleOffset));
 #elif PS_CHANNEL_FETCH == 4
-	vec4 T = fetch_alpha(ivec2(gl_FragCoord.xy));
+	vec4 T = fetch_alpha(ivec2(gl_FragCoord.xy + ChannelShuffleOffset));
 #elif PS_CHANNEL_FETCH == 5
-	vec4 T = fetch_rgb(ivec2(gl_FragCoord.xy));
+	vec4 T = fetch_rgb(ivec2(gl_FragCoord.xy + ChannelShuffleOffset));
 #elif PS_CHANNEL_FETCH == 6
-	vec4 T = fetch_gXbY(ivec2(gl_FragCoord.xy));
+	vec4 T = fetch_gXbY(ivec2(gl_FragCoord.xy + ChannelShuffleOffset));
 #elif PS_DEPTH_FMT > 0
 	vec4 T = sample_depth(st_int, ivec2(gl_FragCoord.xy));
 #else

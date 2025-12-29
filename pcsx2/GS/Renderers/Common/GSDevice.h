@@ -622,6 +622,7 @@ struct alignas(16) GSHWDrawConfig
 		GSVector4 LODParams;
 		GSVector4 STRange;
 		GSVector4i ChannelShuffle;
+		GSVector2 ChannelShuffleOffset;
 		GSVector2 TCOffsetHack;
 		GSVector2 STScale;
 

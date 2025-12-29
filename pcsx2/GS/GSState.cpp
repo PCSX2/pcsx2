@@ -1202,7 +1202,7 @@ void GSState::ApplyTEX0(GIFRegTEX0& TEX0)
 		// Urban Chaos writes to the memory backing the CLUT in the middle of a shuffle, and
 		// it's unclear whether the CLUT would actually get reloaded in that case.
 		if (TEX0.CBP != m_mem.m_clut.GetCLUTCBP())
-			m_channel_shuffle_abort = true;
+			m_channel_shuffle_finish = true;
 	}
 
 	TEX0.CPSM &= 0xa; // 1010b
