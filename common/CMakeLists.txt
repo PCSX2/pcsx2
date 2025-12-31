@@ -34,6 +34,7 @@ target_sources(common PRIVATE
 	WAVWriter.cpp
 	WindowInfo.cpp
 	YAML.cpp
+	ZipFile.cpp
 )
 
 target_sources(common PRIVATE
@@ -81,6 +82,7 @@ target_sources(common PRIVATE
 	WindowInfo.h
 	WrappedMemCopy.h
 	YAML.h
+	ZipFile.h
 )
 
 if(_M_X86)
@@ -209,6 +211,7 @@ target_link_libraries(common PUBLIC
 	fmt::fmt
 	fast_float
 	rapidyaml::rapidyaml
+	libzip::zip
 )
 
 fixup_file_properties(common)
