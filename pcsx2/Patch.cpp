@@ -5,11 +5,12 @@
 
 #include "common/Assertions.h"
 #include "common/ByteSwap.h"
+#include "common/Console.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
 #include "common/SmallString.h"
 #include "common/StringUtil.h"
-#include "common/ZipHelpers.h"
+#include "common/ZipFile.h"
 
 #include "Achievements.h"
 #include "Config.h"
@@ -149,6 +150,7 @@ namespace Patch
 
 	template <typename F>
 	static void EnumeratePnachFiles(const std::string_view serial, u32 crc, bool cheats, bool for_ui, const F& f);
+	static std::optional<std::string> ReadPnachFileFromZip(const std::string& filename);
 
 	static bool PatchStringHasUnlabelledPatch(const std::string& pnach_data);
 	static void ExtractPatchInfo(std::vector<PatchInfo>* dst, const std::string& pnach_data, u32* num_unlabelled_patches);
@@ -170,7 +172,7 @@ namespace Patch
 	const char* PATCH_ENABLE_CONFIG_KEY = "Enable";
 	const char* PATCH_DISABLE_CONFIG_KEY = "Disable";
 
-	static zip_t* s_patches_zip;
+	static ZipArchive s_patches_zip;
 	static std::vector<PatchGroup> s_gamedb_patches;
 	static std::vector<PatchGroup> s_game_patches;
 	static std::vector<PatchGroup> s_cheat_patches;
@@ -338,15 +340,16 @@ u32 Patch::LoadPatchesFromString(std::vector<PatchGroup>* patch_list, const std:
 
 bool Patch::OpenPatchesZip()
 {
-	if (s_patches_zip)
+	if (s_patches_zip.IsValid())
 		return true;
 
 	const std::string filename = Path::Combine(EmuFolders::Resources, PATCHES_ZIP_NAME);
 
-	zip_error ze = {};
-	zip_source_t* zs = zip_source_file_create(filename.c_str(), 0, 0, &ze);
-	if (zs && !(s_patches_zip = zip_open_from_source(zs, ZIP_RDONLY, &ze)))
+	Error error;
+	if (!s_patches_zip.Open(filename.c_str(), ZIP_RDONLY, nullptr, &error))
 	{
+		Console.ErrorFmt("Failed to open {}: {}", filename, error.GetDescription());
+
 		static bool warning_shown = false;
 		if (!warning_shown)
 		{
@@ -357,13 +360,9 @@ bool Patch::OpenPatchesZip()
 			warning_shown = true;
 		}
 
-		// have to clean up source
-		Console.Error("Failed to open %s: %s", filename.c_str(), zip_error_strerror(&ze));
-		zip_source_free(zs);
 		return false;
 	}
 
-	std::atexit([]() { zip_close(s_patches_zip); });
 	return true;
 }
 
@@ -443,16 +442,45 @@ void Patch::EnumeratePnachFiles(const std::string_view serial, u32 crc, bool che
 	if (cheats || unlabeled_patch_found || !OpenPatchesZip())
 		return;
 
-	// Prefer filename with serial.
-	std::string zip_filename = GetPnachTemplate(serial, crc, true, false, false);
-	std::optional<std::string> pnach_data(ReadFileInZipToString(s_patches_zip, zip_filename.c_str()));
+	std::string zip_filename;
+	std::optional<std::string> pnach_data;
+
+	{
+		// Prefer filename with serial.
+		zip_filename = GetPnachTemplate(serial, crc, true, false, false);
+		pnach_data = ReadPnachFileFromZip(zip_filename);
+	}
+
 	if (!pnach_data.has_value())
 	{
 		zip_filename = GetPnachTemplate(serial, crc, false, false, false);
-		pnach_data = ReadFileInZipToString(s_patches_zip, zip_filename.c_str());
+		pnach_data = ReadPnachFileFromZip(zip_filename);
 	}
+
 	if (pnach_data.has_value())
 		f(std::move(zip_filename), std::move(pnach_data.value()));
+}
+
+std::optional<std::string> Patch::ReadPnachFileFromZip(const std::string& filename)
+{
+	std::optional<ZipEntryIndex> pnach_index =
+		s_patches_zip.LocateFile(filename.c_str(), ZIP_FL_NOCASE, nullptr);
+	if (!pnach_index.has_value())
+	{
+		// The file doesn't exist.
+		return std::nullopt;
+	}
+
+	Error error;
+	std::optional<std::string> pnach_data = s_patches_zip.ReadTextFile(*pnach_index, 0, &error);
+	if (!pnach_data.has_value())
+	{
+		Console.ErrorFmt("Failed to read pnach file '{}' from patches zip: {}.",
+			filename, error.GetDescription());
+		return std::nullopt;
+	}
+
+	return pnach_data;
 }
 
 bool Patch::PatchStringHasUnlabelledPatch(const std::string& pnach_data)
