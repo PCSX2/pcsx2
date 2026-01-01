@@ -32,8 +32,18 @@ public:
 
 	constexpr static bool CheckOverlap(const u32 a_bp, const u32 a_bp_end, const u32 b_bp, const u32 b_bp_end) noexcept
 	{
-		const bool valid = a_bp <= a_bp_end && b_bp <= b_bp_end;
-		const bool overlap = a_bp <= b_bp_end && a_bp_end >= b_bp;
+		u32 b_bp_start_synced = b_bp;
+		u32 b_bp_end_synced = b_bp_end;
+
+		// Check for wrapping
+		if (a_bp_end > GS_MAX_BLOCKS && b_bp_end < a_bp)
+		{
+			b_bp_start_synced += GS_MAX_BLOCKS;
+			b_bp_end_synced += GS_MAX_BLOCKS;
+		}
+
+		const bool valid = a_bp <= a_bp_end && b_bp_start_synced <= b_bp_end_synced;
+		const bool overlap = a_bp <= b_bp_end_synced && a_bp_end >= b_bp_start_synced;
 		return valid && overlap;
 	}
 
@@ -522,7 +532,7 @@ public:
 	bool HasTargetInHeightCache(u32 bp, u32 fbw, u32 psm, u32 max_age = std::numeric_limits<u32>::max(), bool move_front = true);
 	bool Has32BitTarget(u32 bp);
 
-	void InvalidateContainedTargets(u32 start_bp, u32 end_bp, u32 write_psm = PSMCT32, u32 write_bw = 1);
+	void InvalidateContainedTargets(u32 start_bp, u32 end_bp, u32 write_psm = PSMCT32, u32 write_bw = 1, u32 fb_mask = 0x00000000, bool ignore_exact = false);
 	void InvalidateVideoMemType(int type, u32 bp, u32 write_psm = PSMCT32, u32 write_fbmsk = 0, bool dirty_only = false);
 	void InvalidateVideoMemSubTarget(GSTextureCache::Target* rt);
 	void InvalidateVideoMem(const GSOffset& off, const GSVector4i& r, bool target = true);
