@@ -32,10 +32,18 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
-         <widget class="QComboBox" name="deviceType"/>
+         <widget class="QComboBox" name="deviceType">
+          <property name="sizeAdjustPolicy">
+           <enum>QComboBox::AdjustToContents</enum>
+          </property>
+         </widget>
         </item>
         <item>
-         <widget class="QComboBox" name="deviceSubtype"/>
+         <widget class="QComboBox" name="deviceSubtype">
+          <property name="sizeAdjustPolicy">
+           <enum>QComboBox::AdjustToContents</enum>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QToolButton" name="bindings">
