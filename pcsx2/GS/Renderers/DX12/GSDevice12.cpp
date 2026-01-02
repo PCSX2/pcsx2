@@ -2246,6 +2246,7 @@ bool GSDevice12::GetSampler(D3D12DescriptorHandle* cpu_handle, GSHWDrawConfig::S
 	if (anisotropy > 1 && ss.aniso)
 	{
 		sd.Filter = D3D12_FILTER_ANISOTROPIC;
+		sd.MaxLOD = (ss.lodclamp || !ss.UseMipmapFiltering()) ? 0.01f : FLT_MAX;
 	}
 	else
 	{
@@ -2263,13 +2264,13 @@ bool GSDevice12::GetSampler(D3D12DescriptorHandle* cpu_handle, GSHWDrawConfig::S
 		const u8 index = (static_cast<u8>(ss.IsMipFilterLinear()) << 2) |
 		                 (static_cast<u8>(ss.IsMagFilterLinear()) << 1) | static_cast<u8>(ss.IsMinFilterLinear());
 		sd.Filter = filters[index];
+		sd.MaxLOD = (ss.lodclamp || !ss.UseMipmapFiltering()) ? 0.25f : FLT_MAX;
 	}
 
 	sd.AddressU = ss.tau ? D3D12_TEXTURE_ADDRESS_MODE_WRAP : D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
 	sd.AddressV = ss.tav ? D3D12_TEXTURE_ADDRESS_MODE_WRAP : D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
 	sd.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
 	sd.MinLOD = 0.0f;
-	sd.MaxLOD = (ss.lodclamp || !ss.UseMipmapFiltering()) ? 0.25f : FLT_MAX;
 	sd.MaxAnisotropy = std::clamp<u8>(GSConfig.MaxAnisotropy, 1, 16);
 	sd.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
 
