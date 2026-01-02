@@ -176,10 +176,10 @@ bool GSHwHack::GSC_GuitarHero(GSRendererHW& r, int& skip)
 	// Crowd sprite generation is a mess, better done in software.
 	if (skip == 0)
 	{
-		if (RTBW <= 4 && RTME && RFBW <= 4 && (r.m_context->TEX1.MMIN & 1) == 0 && RFBP == 0x2DC0)
+		if (RTBW <= 4 && RTME && RFBW <= 4 && (r.m_context->TEX1.MMIN & 1) == 0)
 		{
 			r.ClearGSLocalMemory(r.m_context->offset.zb, r.m_r, 0);
-			r.SwPrimRender(r, false, false);
+			r.SwPrimRender(r, RFBP != 0x2DC0, false);
 			skip = 1;
 		}
 	}
