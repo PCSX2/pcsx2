@@ -437,26 +437,26 @@ void QtHost::SetStyleFromSettings()
 		// Alternative dark theme.
 		qApp->setStyle(QStyleFactory::create("Fusion"));
 
-		const QColor gray(150, 150, 150);
-		const QColor royalBlue(29, 41, 81);
-		const QColor darkishBlue(17, 30, 108);
+		const QColor abyssBlue(39, 58, 114);
+		const QColor darkishBlue(29, 41, 81);
 		const QColor lighterBlue(25, 32, 130);
-		const QColor highlight(36, 93, 218);
-		const QColor link(0, 202, 255);
+		const QColor blue(198, 238, 255);
+		const QColor gray(150, 150, 150);
 
 		QPalette cobaltSkyPalette;
-		cobaltSkyPalette.setColor(QPalette::Window, royalBlue);
+		cobaltSkyPalette.setColor(QPalette::Window, abyssBlue);
 		cobaltSkyPalette.setColor(QPalette::WindowText, Qt::white);
-		cobaltSkyPalette.setColor(QPalette::Base, royalBlue.lighter());
-		cobaltSkyPalette.setColor(QPalette::AlternateBase, darkishBlue);
+		cobaltSkyPalette.setColor(QPalette::Base, darkishBlue);
+		cobaltSkyPalette.setColor(QPalette::AlternateBase, darkishBlue.darker());
 		cobaltSkyPalette.setColor(QPalette::ToolTipBase, darkishBlue);
 		cobaltSkyPalette.setColor(QPalette::ToolTipText, Qt::white);
 		cobaltSkyPalette.setColor(QPalette::Text, Qt::white);
 		cobaltSkyPalette.setColor(QPalette::Button, lighterBlue);
 		cobaltSkyPalette.setColor(QPalette::ButtonText, Qt::white);
-		cobaltSkyPalette.setColor(QPalette::Link, link);
-		cobaltSkyPalette.setColor(QPalette::Highlight, highlight);
+		cobaltSkyPalette.setColor(QPalette::Link, blue);
+		cobaltSkyPalette.setColor(QPalette::Highlight, abyssBlue.lighter());
 		cobaltSkyPalette.setColor(QPalette::HighlightedText, Qt::white);
+		cobaltSkyPalette.setColor(QPalette::PlaceholderText, gray);
 
 		cobaltSkyPalette.setColor(QPalette::Active, QPalette::Button, lighterBlue);
 		cobaltSkyPalette.setColor(QPalette::Disabled, QPalette::ButtonText, gray);
