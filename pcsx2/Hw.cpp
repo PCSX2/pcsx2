@@ -11,14 +11,26 @@
 
 #include "fmt/format.h"
 
+#include <deque>
+
 using namespace R5900;
 
 const int rdram_devices = 2;	// put 8 for TOOL and 2 for PS2 and PSX
 int rdram_sdevid = 0;
 
+std::deque<u8> ee_sio_rx_fifo;
+std::deque<u8> ee_sio_tx_fifo;
+
 void hwReset()
 {
 	std::memset(eeHw, 0, sizeof(eeHw));
+
+	{
+		std::deque<u8> empty_rx;
+		std::swap(ee_sio_rx_fifo, empty_rx);
+		std::deque<u8> empty_tx;
+		std::swap(ee_sio_tx_fifo, empty_tx);
+	}
 
 	psHu32(SBUS_F260) = 0x1D000060;
 
