@@ -475,9 +475,9 @@ void QtHost::SetStyleFromSettings()
 		// OLED screens.
 		qApp->setStyle(QStyleFactory::create("Fusion"));
 
-		const QColor black(0, 0, 0);
-		const QColor gray(25, 25, 25);
-		const QColor lighterGray(75, 75, 75);
+		const QColor black(5, 5, 5);
+		const QColor gray(22, 22, 29);
+		const QColor lighterGray(65, 79, 98);
 		const QColor blue(198, 238, 255);
 
 		QPalette AMOLEDPalette;
