@@ -821,9 +821,6 @@ void MainWindow::onAchievementsHardcoreModeChanged(bool enabled)
 	// disable debugger while hardcore mode is active
 	m_ui.actionDebugger->setDisabled(enabled);
 
-	// refresh emulation actions to show/hide load state buttons based on hardcore mode
-	updateEmulationActions(s_vm_valid, s_vm_valid, false);
-
 	if (enabled)
 	{
 		// If PauseOnEntry is enabled, we prompt the user to disable Hardcore Mode
@@ -919,7 +916,7 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool stoppi
 	m_ui.actionPause->setEnabled(running);
 	m_ui.actionScreenshot->setEnabled(running);
 	m_ui.menuChangeDisc->setEnabled(running);
-	m_ui.menuLoadState->setEnabled(running && !Achievements::IsHardcoreModeActive());
+	m_ui.menuLoadState->setEnabled(running);
 	m_ui.menuSaveState->setEnabled(running);
 	m_ui.actionSaveGSDump->setEnabled(running);
 
@@ -928,7 +925,7 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool stoppi
 	m_ui.actionToolbarPause->setEnabled(running);
 	m_ui.actionToolbarScreenshot->setEnabled(running);
 	m_ui.actionToolbarChangeDisc->setEnabled(running);
-	m_ui.actionToolbarLoadState->setEnabled(running && !Achievements::IsHardcoreModeActive());
+	m_ui.actionToolbarLoadState->setEnabled(running);
 	m_ui.actionToolbarSaveState->setEnabled(running);
 
 	m_ui.actionViewGameProperties->setEnabled(running);
