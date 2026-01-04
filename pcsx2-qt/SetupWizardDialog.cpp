@@ -176,7 +176,7 @@ void SetupWizardDialog::setupLanguagePage()
 {
 	SettingWidgetBinder::BindWidgetToEnumSetting(nullptr, m_ui.theme, "UI", "Theme",
 		InterfaceSettingsWidget::THEME_NAMES, InterfaceSettingsWidget::THEME_VALUES, QtHost::GetDefaultThemeName(), "InterfaceSettingsWidget");
-	connect(m_ui.theme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SetupWizardDialog::themeChanged);
+	connect(m_ui.theme, &QComboBox::currentIndexChanged, this, &SetupWizardDialog::themeChanged);
 
 	for (const std::pair<QString, QString>& it : QtHost::GetAvailableLanguageList())
 	{
@@ -189,7 +189,7 @@ void SetupWizardDialog::setupLanguagePage()
 	SettingWidgetBinder::BindWidgetToStringSetting(
 		nullptr, m_ui.language, "UI", "Language", QtHost::GetDefaultLanguage());
 	connect(
-		m_ui.language, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SetupWizardDialog::languageChanged);
+		m_ui.language, &QComboBox::currentIndexChanged, this, &SetupWizardDialog::languageChanged);
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(
 		nullptr, m_ui.autoUpdateEnabled, "AutoUpdater", "CheckAtStartup", true);

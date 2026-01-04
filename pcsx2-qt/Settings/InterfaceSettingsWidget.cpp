@@ -133,18 +133,18 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* settings_dialog
 
 	SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.theme, "UI", "Theme", THEME_NAMES, THEME_VALUES,
 		QtHost::GetDefaultThemeName(), "InterfaceSettingsWidget");
-	connect(m_ui.theme, QOverload<int>::of(&QComboBox::currentIndexChanged), [this]() { emit themeChanged(); });
+	connect(m_ui.theme, &QComboBox::currentIndexChanged, [this]() { emit themeChanged(); });
 
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.backgroundOpacity, "UI", "GameListBackgroundOpacity", 100.0f);
 	SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.backgroundScale, "UI", "GameListBackgroundMode", BACKGROUND_SCALE_NAMES, QtUtils::ScalingMode::Fit);
 	connect(m_ui.backgroundBrowse, &QPushButton::clicked, [this]() { onSetGameListBackgroundTriggered(); });
 	connect(m_ui.backgroundReset, &QPushButton::clicked, [this]() { onClearGameListBackgroundTriggered(); });
 	connect(m_ui.backgroundOpacity, &QSpinBox::editingFinished, [this]() { emit backgroundChanged(); });
-	connect(m_ui.backgroundScale, QOverload<int>::of(&QComboBox::currentIndexChanged), [this]() { emit backgroundChanged(); });
+	connect(m_ui.backgroundScale, &QComboBox::currentIndexChanged, [this]() { emit backgroundChanged(); });
 
 	populateLanguages();
 	SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.language, "UI", "Language", QtHost::GetDefaultLanguage());
-	connect(m_ui.language, QOverload<int>::of(&QComboBox::currentIndexChanged), [this]() { emit languageChanged(); });
+	connect(m_ui.language, &QComboBox::currentIndexChanged, [this]() { emit languageChanged(); });
 
 	// Per-game settings is special, we don't want to bind it if we're editing per-game settings.
 	if (!dialog()->isPerGameSettings())
