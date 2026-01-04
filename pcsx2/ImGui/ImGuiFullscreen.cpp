@@ -708,16 +708,16 @@ void ImGuiFullscreen::EndLayout()
 	const float notification_margin = LayoutScale(10.0f);
 	const float spacing = LayoutScale(10.0f);
 	const float notification_vertical_pos = GetNotificationVerticalPosition();
-	
+
 	// Get the horizonal position based on alignment
 	float horizontal_pos;
 	if (s_notification_horizontal_position <= 0.0f)
 		horizontal_pos = notification_margin; // Left
-	else if (s_notification_horizontal_position >= 1.0f) 
+	else if (s_notification_horizontal_position >= 1.0f)
 		horizontal_pos = ImGui::GetIO().DisplaySize.x - notification_margin; // Right
 	else
 		horizontal_pos = ImGui::GetIO().DisplaySize.x * s_notification_horizontal_position; // Center
-	
+
 	ImVec2 position(horizontal_pos, notification_vertical_pos * ImGui::GetIO().DisplaySize.y +
 											 ((notification_vertical_pos >= 0.5f) ? -notification_margin : notification_margin));
 	DrawProgressDialogs(position, spacing);
@@ -2574,11 +2574,11 @@ void ImGuiFullscreen::DrawInputDialog()
 		ImGuiInputTextFlags flags = ImGuiInputTextFlags_None;
 		if (s_input_dialog_filter_type != InputFilterType::None)
 			flags |= ImGuiInputTextFlags_CallbackCharFilter;
-		
+
 		if (s_focus_reset_queued != FocusResetType::None)
 			ImGui::SetKeyboardFocusHere();
-		
-		ImGui::InputText("##input", &s_input_dialog_text, flags, 
+
+		ImGui::InputText("##input", &s_input_dialog_text, flags,
 			(s_input_dialog_filter_type != InputFilterType::None) ? input_callback : nullptr,
 			(s_input_dialog_filter_type != InputFilterType::None) ? static_cast<void*>(&s_input_dialog_filter_type) : nullptr);
 
@@ -3056,7 +3056,7 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
 			final_x = position.x - box_width;
 		else if (s_notification_horizontal_position > 0.0f && s_notification_horizontal_position < 1.0f)
 			final_x = position.x - (box_width * 0.5f);
-		
+
 		const ImVec2 box_min(final_x, actual_y);
 		const ImVec2 box_max(box_min.x + box_width, box_min.y + box_height);
 		const u32 background_color = (toast_background_color & ~IM_COL32_A_MASK) | (opacity << IM_COL32_A_SHIFT);
@@ -3209,14 +3209,14 @@ void ImGuiFullscreen::SetTheme(std::string_view theme)
 	}
 	else if (theme == "AMOLED")
 	{
-		UIBackgroundColor = HEX_TO_IMVEC4(0x000000, 0xff);
+		UIBackgroundColor = HEX_TO_IMVEC4(0x0A0A0A, 0xff);
 		UIBackgroundTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
 		UIBackgroundLineColor = HEX_TO_IMVEC4(0xf0f0f0, 0xff);
 		UIBackgroundHighlightColor = HEX_TO_IMVEC4(0x0c0c0c, 0xff);
 		UIPopupBackgroundColor = HEX_TO_IMVEC4(0x212121, 0xf2);
 		UIPrimaryColor = HEX_TO_IMVEC4(0x0a0a0a, 0xff);
 		UIPrimaryLightColor = HEX_TO_IMVEC4(0xb5b5b5, 0xff);
-		UIPrimaryDarkColor = HEX_TO_IMVEC4(0x000000, 0xff);
+		UIPrimaryDarkColor = HEX_TO_IMVEC4(0x0A0A0A, 0xff);
 		UIPrimaryTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
 		UIDisabledColor = HEX_TO_IMVEC4(0x8d8d8d, 0xff);
 		UITextHighlightColor = HEX_TO_IMVEC4(0x676767, 0xff);
