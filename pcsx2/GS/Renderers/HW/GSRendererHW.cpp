@@ -6783,11 +6783,11 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 		m_conf.sampler.biln = bilinear;
 		// Aniso filtering doesn't work with textureLod so use texture (automatic_lod) instead.
 		// Enable aniso only for triangles. Sprites are flat so aniso is likely useless (it would save perf for others primitives).
-		const bool anisotropic = m_vt.m_primclass == GS_TRIANGLE_CLASS && !trilinear_manual;
+		// Also make sure there isn't flat shading.
+		const bool anisotropic = m_vt.m_primclass == GS_TRIANGLE_CLASS && !trilinear_manual && !m_vt.m_eq.z;
 		m_conf.sampler.aniso = anisotropic;
 		m_conf.sampler.triln = trilinear;
-		if (anisotropic && !trilinear_manual)
-			m_conf.ps.automatic_lod = 1;
+		m_conf.ps.automatic_lod = anisotropic;
 	}
 
 	// clamp to base level if we're not providing or generating mipmaps

@@ -1186,8 +1186,9 @@ GLuint GSDeviceOGL::CreateSampler(PSSamplerSelector sel)
 			glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, sel.IsMinFilterLinear() ? GL_LINEAR_MIPMAP_NEAREST : GL_NEAREST_MIPMAP_NEAREST);
 	}
 
+	const bool aniso = GSConfig.MaxAnisotropy > 1 && sel.aniso;
 	glSamplerParameterf(sampler, GL_TEXTURE_MIN_LOD, -1000.0f);
-	glSamplerParameterf(sampler, GL_TEXTURE_MAX_LOD, sel.lodclamp ? 0.25f : 1000.0f);
+	glSamplerParameterf(sampler, GL_TEXTURE_MAX_LOD, sel.lodclamp ? (aniso ? 0.01f : 0.25f) : 1000.0f);
 
 	if (sel.tau)
 		glSamplerParameteri(sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -1200,9 +1201,9 @@ GLuint GSDeviceOGL::CreateSampler(PSSamplerSelector sel)
 
 	glSamplerParameteri(sampler, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-	const int anisotropy = GSConfig.MaxAnisotropy;
-	if (anisotropy > 1 && sel.aniso)
+	if (aniso)
 	{
+		const int anisotropy = GSConfig.MaxAnisotropy;
 		if (GLAD_GL_ARB_texture_filter_anisotropic)
 			glSamplerParameterf(sampler, GL_TEXTURE_MAX_ANISOTROPY, static_cast<float>(anisotropy));
 		else if (GLAD_GL_EXT_texture_filter_anisotropic)
