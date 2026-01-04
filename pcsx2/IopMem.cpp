@@ -52,10 +52,11 @@ void iopMemReset()
 	// at 0x0, 0x8000, and 0xa000:
 	for (int i = 0; i < 0x0080; i++)
 	{
-		psxMemWLUT[i + 0x0000] = (uptr)&iopMem->Main[(i & 0x1f) << 16];
+		u32 mask = (Ps2MemSize::ExposedIopRam / _64kb) - 1;
+		psxMemWLUT[i + 0x0000] = (uptr)&iopMem->Main[(i & mask) << 16];
 
 		// RLUTs, accessed through WLUT.
-		psxMemWLUT[i + 0x2000] = (uptr)&iopMem->Main[(i & 0x1f) << 16];
+		psxMemWLUT[i + 0x2000] = (uptr)&iopMem->Main[(i & mask) << 16];
 	}
 
 	// A few single-page allocations for things we store in special locations.
