@@ -190,6 +190,7 @@ public:
 			{
 				u32 topology : 2;
 				u32 rt : 1;
+				u32 ds_as_rt : 1;
 				u32 ds : 1;
 			};
 
@@ -253,9 +254,15 @@ public:
 
 	enum : u32
 	{
+		TEXTURE_TEXTURE = 0,
+		TEXTURE_PALETTE = 1,
+		TEXTURE_RT = 2,
+		TEXTURE_PRIMID = 3,
+		TEXTURE_DEPTH = 4,
+
 		NUM_TFX_CONSTANT_BUFFERS = 2,
 		NUM_TFX_TEXTURES = 2,
-		NUM_TFX_RT_TEXTURES = 2,
+		NUM_TFX_RT_TEXTURES = 3,
 		NUM_TOTAL_TFX_TEXTURES = NUM_TFX_TEXTURES + NUM_TFX_RT_TEXTURES,
 		NUM_TFX_SAMPLERS = 1,
 		NUM_UTILITY_TEXTURES = 1,
@@ -459,17 +466,20 @@ public:
 	void PSSetShaderResource(int i, GSTexture* sr, bool check_state, bool feedback = false);
 	void PSSetSampler(GSHWDrawConfig::SamplerSelector sel);
 
-	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i& scissor, bool depth_read = false);
+	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, GSTexture* ds_as_rt, const GSVector4i& scissor,
+		bool depth_read = false);
 
 	void SetVSConstantBuffer(const GSHWDrawConfig::VSConstantBuffer& cb);
 	void SetPSConstantBuffer(const GSHWDrawConfig::PSConstantBuffer& cb);
 	bool BindDrawPipeline(const PipelineSelector& p);
 
 	void RenderHW(GSHWDrawConfig& config) override;
-	void SendHWDraw(const PipelineSelector& pipe, const GSHWDrawConfig& config, GSTexture12* draw_rt, const bool feedback, const bool one_barrier, const bool full_barrier);
+	void SendHWDraw(const PipelineSelector& pipe, const GSHWDrawConfig& config, GSTexture12* draw_rt,
+		GSTexture12* draw_ds, const bool feedback_rt, const bool feedback_depth, const bool one_barrier,
+		const bool full_barrier);
 
 	void UpdateHWPipelineSelector(GSHWDrawConfig& config);
-	void UploadHWDrawVerticesAndIndices(const GSHWDrawConfig& config);
+	void UploadHWDrawVerticesAndIndices(GSHWDrawConfig& config);
 
 public:
 	/// Ends any render pass, executes the command buffer, and invalidates cached state.
@@ -548,12 +558,12 @@ private:
 		DIRTY_BASE_STATE = DIRTY_FLAG_VS_CONSTANT_BUFFER_BINDING | DIRTY_FLAG_PS_CONSTANT_BUFFER_BINDING |
 		                   DIRTY_FLAG_VS_VERTEX_BUFFER_BINDING | DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE |
 		                   DIRTY_FLAG_SAMPLERS_DESCRIPTOR_TABLE | DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE_2 |
-		                   DIRTY_FLAG_VERTEX_BUFFER | DIRTY_FLAG_INDEX_BUFFER | DIRTY_FLAG_PRIMITIVE_TOPOLOGY |
-		                   DIRTY_FLAG_VIEWPORT | DIRTY_FLAG_SCISSOR | DIRTY_FLAG_RENDER_TARGET | DIRTY_FLAG_PIPELINE |
-		                   DIRTY_FLAG_BLEND_CONSTANTS | DIRTY_FLAG_STENCIL_REF,
+		                   DIRTY_FLAG_VERTEX_BUFFER | DIRTY_FLAG_INDEX_BUFFER |
+		                   DIRTY_FLAG_PRIMITIVE_TOPOLOGY | DIRTY_FLAG_VIEWPORT | DIRTY_FLAG_SCISSOR | DIRTY_FLAG_RENDER_TARGET |
+		                   DIRTY_FLAG_PIPELINE | DIRTY_FLAG_BLEND_CONSTANTS | DIRTY_FLAG_STENCIL_REF,
 
-		DIRTY_TFX_STATE =
-			DIRTY_BASE_STATE | DIRTY_FLAG_TFX_TEXTURES | DIRTY_FLAG_TFX_SAMPLERS | DIRTY_FLAG_TFX_RT_TEXTURES,
+		DIRTY_TFX_STATE = DIRTY_BASE_STATE | DIRTY_FLAG_TFX_TEXTURES | DIRTY_FLAG_TFX_SAMPLERS |
+		                  DIRTY_FLAG_TFX_RT_TEXTURES,
 		DIRTY_UTILITY_STATE = DIRTY_BASE_STATE,
 		DIRTY_CONSTANT_BUFFER_STATE = DIRTY_FLAG_VS_CONSTANT_BUFFER | DIRTY_FLAG_PS_CONSTANT_BUFFER,
 	};
@@ -579,6 +589,7 @@ private:
 	D3D12_PRIMITIVE_TOPOLOGY m_primitive_topology = {};
 
 	GSTexture12* m_current_render_target = nullptr;
+	GSTexture12* m_current_depth_render_target = nullptr;
 	GSTexture12* m_current_depth_target = nullptr;
 	bool m_current_depth_read_only = false;
 
