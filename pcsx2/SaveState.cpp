@@ -67,7 +67,7 @@ static void PreLoadPrep()
 static void PostLoadPrep()
 {
 	resetCache();
-//	WriteCP0Status(cpuRegs.CP0.n.Status.val);
+	// WriteCP0Status(cpuRegs.CP0.n.Status.val);
 	for (int i = 0; i < 48; i++)
 	{
 		if (std::memcmp(&s_tlb_backup[i], &tlb[i], sizeof(tlbs)) != 0)
@@ -77,7 +77,9 @@ static void PostLoadPrep()
 		}
 	}
 
-	if (EmuConfig.Gamefixes.GoemonTlbHack) GoemonPreloadTlb();
+	if (EmuConfig.Gamefixes.GoemonTlbHack)
+		GoemonPreloadTlb();
+
 	CBreakPoints::SetSkipFirst(BREAKPOINT_EE, 0);
 	CBreakPoints::SetSkipFirst(BREAKPOINT_IOP, 0);
 
@@ -131,7 +133,7 @@ bool SaveStateBase::FreezeTag(const char* src)
 
 	if (std::strcmp(tagspace, src) != 0)
 	{
-		Console.Error(fmt::format("Savestate data corruption detected while reading tag: {}", src));
+		Console.ErrorFmt("Savestate data corruption detected while reading tag: {}", src);
 		m_error = true;
 		return false;
 	}
@@ -163,8 +165,7 @@ bool SaveStateBase::FreezeBios()
 			"    Current BIOS:   %s (crc=0x%08x)\n"
 			"    Savestate BIOS: %s (crc=0x%08x)\n",
 			BiosDescription.c_str(), BiosChecksum,
-			biosdesc, bioscheck
-		);
+			biosdesc, bioscheck);
 	}
 
 	return IsOkay();
@@ -184,12 +185,12 @@ bool SaveStateBase::FreezeInternals(Error* error)
 	if (!FreezeTag("cpuRegs"))
 		return false;
 
-	Freeze(cpuRegs);		// cpu regs + COP0
-	Freeze(psxRegs);		// iop regs
+	Freeze(cpuRegs); // cpu regs + COP0
+	Freeze(psxRegs); // iop regs
 	Freeze(fpuRegs);
-	Freeze(tlb);			// tlbs
-	Freeze(cachedTlbs);		// cached tlbs
-	Freeze(AllowParams1);	//OSDConfig written (Fast Boot)
+	Freeze(tlb); // tlbs
+	Freeze(cachedTlbs); // cached tlbs
+	Freeze(AllowParams1); //OSDConfig written (Fast Boot)
 	Freeze(AllowParams2);
 
 	// Third Block - Cycle Timers and Events
@@ -231,7 +232,7 @@ bool SaveStateBase::FreezeInternals(Error* error)
 	if (!FreezeTag("IOP-Subsystems"))
 		return false;
 
-	FreezeMem(iopMem->Sif, sizeof(iopMem->Sif));		// iop's sif memory (not really needed, but oh well)
+	FreezeMem(iopMem->Sif, sizeof(iopMem->Sif)); // iop's sif memory (not really needed, but oh well)
 
 	okay = okay && psxRcntFreeze();
 
@@ -301,7 +302,8 @@ memSavingState::memSavingState(VmStateBuffer& save_to)
 // Saving of state data
 void memSavingState::FreezeMem(void* data, int size)
 {
-	if (!size) return;
+	if (!size)
+		return;
 
 	const int new_size = m_idx + size;
 	if (static_cast<u32>(new_size) > m_memory.size())
@@ -320,7 +322,7 @@ memLoadingState::memLoadingState(const VmStateBuffer& load_from)
 }
 
 // Loading of state data from a memory buffer...
-void memLoadingState::FreezeMem( void* data, int size )
+void memLoadingState::FreezeMem(void* data, int size)
 {
 	if (static_cast<u32>(m_idx + size) > m_memory.size())
 		m_error = true;
@@ -349,20 +351,20 @@ struct SysState_Component
 
 static int SysState_MTGSFreeze(FreezeAction mode, freezeData* fP)
 {
-	MTGS::FreezeData sstate = { fP, 0 };
+	MTGS::FreezeData sstate = {fP, 0};
 	MTGS::Freeze(mode, sstate);
 	return sstate.retval;
 }
 
-static constexpr SysState_Component SPU2_{ "SPU2", SPU2freeze };
-static constexpr SysState_Component GS{ "GS", SysState_MTGSFreeze };
+static constexpr SysState_Component SPU2_{"SPU2", SPU2freeze};
+static constexpr SysState_Component GS{"GS", SysState_MTGSFreeze};
 
 static bool SysState_ComponentFreezeIn(zip_file_t* zf, SysState_Component comp)
 {
 	if (!zf)
 		return true;
 
-	freezeData fP = { 0, nullptr };
+	freezeData fP = {0, nullptr};
 	if (comp.freeze(FreezeAction::Size, &fP) != 0)
 		fP.size = 0;
 
@@ -376,14 +378,14 @@ static bool SysState_ComponentFreezeIn(zip_file_t* zf, SysState_Component comp)
 
 		if (zip_fread(zf, data.get(), fP.size) != static_cast<zip_int64_t>(fP.size))
 		{
-			Console.Error(fmt::format("* {}: Failed to decompress save data", comp.name));
+			Console.ErrorFmt("* {}: Failed to decompress save data", comp.name);
 			return false;
 		}
 	}
 
 	if (comp.freeze(FreezeAction::Load, &fP) != 0)
 	{
-		Console.Error(fmt::format("* {}: Failed to load freeze data", comp.name));
+		Console.ErrorFmt("* {}: Failed to load freeze data", comp.name);
 		return false;
 	}
 
@@ -395,7 +397,7 @@ static bool SysState_ComponentFreezeOut(SaveStateBase& writer, SysState_Componen
 	freezeData fP = {};
 	if (comp.freeze(FreezeAction::Size, &fP) != 0)
 	{
-		Console.Error(fmt::format("* {}: Failed to get freeze size", comp.name));
+		Console.ErrorFmt("* {}: Failed to get freeze size", comp.name);
 		return false;
 	}
 
@@ -410,7 +412,7 @@ static bool SysState_ComponentFreezeOut(SaveStateBase& writer, SysState_Componen
 	fP.data = writer.GetBlockPtr();
 	if (comp.freeze(FreezeAction::Save, &fP) != 0)
 	{
-		Console.Error(fmt::format("* {}: Failed to save freeze data", comp.name));
+		Console.ErrorFmt("* {}: Failed to save freeze data", comp.name);
 		return false;
 	}
 
@@ -418,7 +420,7 @@ static bool SysState_ComponentFreezeOut(SaveStateBase& writer, SysState_Componen
 	return true;
 }
 
-static bool SysState_ComponentFreezeInNew(zip_file_t* zf, const char* name, bool(*do_state_func)(StateWrapper&))
+static bool SysState_ComponentFreezeInNew(zip_file_t* zf, const char* name, bool (*do_state_func)(StateWrapper&))
 {
 	// TODO: We could decompress on the fly here for a little bit more speed.
 	std::vector<u8> data;
@@ -741,7 +743,7 @@ std::unique_ptr<ArchiveEntryList> SaveState_DownloadState(Error* error)
 		uint startpos = saveme.GetCurrentPos();
 		if (!entry->FreezeOut(saveme))
 		{
-			Error::SetString(error, fmt::format("FreezeOut() failed for {}.", entry->GetFilename()));
+			Error::SetStringFmt(error, "FreezeOut() failed for {}.", entry->GetFilename());
 			destlist.reset();
 			break;
 		}
@@ -807,9 +809,12 @@ static bool SaveState_CompressScreenshot(SaveStateScreenshotData* data, zip_t* z
 	if (setjmp(png_jmpbuf(png_ptr)))
 		return false;
 
-	png_set_write_fn(png_ptr, zs, [](png_structp png_ptr, png_bytep data_ptr, png_size_t size) {
-		zip_source_write(static_cast<zip_source_t*>(png_get_io_ptr(png_ptr)), data_ptr, size);
-	}, [](png_structp png_ptr) {});
+	png_set_write_fn(
+		png_ptr, zs,
+		[](png_structp png_ptr, png_bytep data_ptr, png_size_t size) {
+			zip_source_write(static_cast<zip_source_t*>(png_get_io_ptr(png_ptr)), data_ptr, size);
+		},
+		[](png_structp png_ptr) {});
 	png_set_compression_level(png_ptr, 5);
 	png_set_IHDR(png_ptr, info_ptr, data->width, data->height, 8, PNG_COLOR_TYPE_RGBA,
 		PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
@@ -1119,11 +1124,13 @@ static bool CheckVersion(const std::string& filename, zip_t* zf, Error* error)
 		{
 			current_emulator_version = "Unknown";
 		}
-		Error::SetString(error, fmt::format(TRANSLATE_FS("SaveState","This save state was created with PCSX2 version {0}. It is no longer compatible "
-											"with your current PCSX2 version {1}.\n\n"
-											"If you have any unsaved progress on this save state, you can download the compatible PCSX2 version {0} "
-											"from pcsx2.net, load the save state, and save your progress to the memory card."),
-											version_string, current_emulator_version));
+		Error::SetStringFmt(error,
+			TRANSLATE_FS("SaveState",
+				"This save state was created with PCSX2 version {0}. It is no longer compatible "
+				"with your current PCSX2 version {1}.\n\n"
+				"If you have any unsaved progress on this save state, you can download the compatible PCSX2 version {0} "
+				"from pcsx2.net, load the save state, and save your progress to the memory card."),
+			version_string, current_emulator_version);
 		return false;
 	}
 
@@ -1165,7 +1172,7 @@ static bool LoadInternalStructuresState(zip_t* zf, s64 index, Error* error)
 	memLoadingState state(buffer);
 	if (!state.FreezeBios())
 		return false;
-	
+
 	if (!state.FreezeInternals(error))
 		return false;
 
@@ -1182,7 +1189,7 @@ bool SaveState_UnzipFromDisk(const std::string& filename, Error* error)
 		if (zip_error_code_zip(&ze) == ZIP_ER_NOENT)
 			Error::SetString(error, "Savestate file does not exist.");
 		else
-			Error::SetString(error, fmt::format("Savestate zip error: {}", zip_error_strerror(&ze)));
+			Error::SetStringFmt(error, "Savestate zip error: {}", zip_error_strerror(&ze));
 
 		return false;
 	}
@@ -1235,7 +1242,7 @@ bool SaveState_UnzipFromDisk(const std::string& filename, Error* error)
 		auto zff = zip_fopen_index_managed(zf.get(), entryIndices[i], 0);
 		if (!zff || !SavestateEntries[i]->FreezeIn(zff.get()))
 		{
-			Error::SetString(error, fmt::format("Save state corruption in {}.", SavestateEntries[i]->GetFilename()));
+			Error::SetStringFmt(error, "Save state corruption in {}.", SavestateEntries[i]->GetFilename());
 			VMManager::Reset();
 			return false;
 		}

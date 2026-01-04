@@ -130,6 +130,9 @@
     <ClCompile Include="YAML.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ZipFile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AlignedMalloc.h">
@@ -339,6 +342,9 @@
     <ClInclude Include="SingleRegisterTypes.h" />
     <ClInclude Include="FPControl.h" />
     <ClInclude Include="YAML.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ZipFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
