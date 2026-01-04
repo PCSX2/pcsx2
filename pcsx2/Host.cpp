@@ -26,6 +26,7 @@ namespace Host
 		const std::string_view context, const std::string_view msg);
 
 	static std::mutex s_settings_mutex;
+	static std::mutex s_secrets_settings_mutex;
 	static LayeredSettingsInterface s_layered_settings_interface;
 
 	static constexpr u32 TRANSLATION_STRING_CACHE_SIZE = 4 * 1024 * 1024;
@@ -162,6 +163,11 @@ std::string Host::GetHTTPUserAgent()
 std::unique_lock<std::mutex> Host::GetSettingsLock()
 {
 	return std::unique_lock<std::mutex>(s_settings_mutex);
+}
+
+std::unique_lock<std::mutex> Host::GetSecretsSettingsLock()
+{
+	return std::unique_lock<std::mutex>(s_secrets_settings_mutex);
 }
 
 SettingsInterface* Host::GetSettingsInterface()
@@ -352,6 +358,11 @@ SettingsInterface* Host::Internal::GetBaseSettingsLayer()
 	return s_layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE);
 }
 
+SettingsInterface* Host::Internal::GetSecretsSettingsLayer()
+{
+	return s_layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_SECRETS);
+}
+
 SettingsInterface* Host::Internal::GetGameSettingsLayer()
 {
 	return s_layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_GAME);
@@ -365,8 +376,15 @@ SettingsInterface* Host::Internal::GetInputSettingsLayer()
 void Host::Internal::SetBaseSettingsLayer(SettingsInterface* sif)
 {
 	pxAssertRel(s_layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE) == nullptr,
-		"Base layer has not been set");
+		"Base layer has already been set");
 	s_layered_settings_interface.SetLayer(LayeredSettingsInterface::LAYER_BASE, sif);
+}
+
+void Host::Internal::SetSecretsSettingsLayer(SettingsInterface* sif)
+{
+	pxAssertRel(s_layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_SECRETS) == nullptr,
+		"Secrets layer has already been set");
+	s_layered_settings_interface.SetLayer(LayeredSettingsInterface::LAYER_SECRETS, sif);
 }
 
 void Host::Internal::SetGameSettingsLayer(SettingsInterface* sif, std::unique_lock<std::mutex>& settings_lock)

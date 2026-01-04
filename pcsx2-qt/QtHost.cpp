@@ -86,6 +86,7 @@ namespace QtHost
 //////////////////////////////////////////////////////////////////////////
 static QTimer* s_settings_save_timer = nullptr;
 static std::unique_ptr<INISettingsInterface> s_base_settings_interface;
+static std::unique_ptr<INISettingsInterface> s_secrets_settings_interface;
 static bool s_batch_mode = false;
 static bool s_nogui_mode = false;
 static bool s_start_big_picture_mode = false;
@@ -1307,6 +1308,7 @@ bool QtHost::InitializeConfig()
 	// Write crash dumps to the data directory, since that'll be accessible for certain.
 	CrashHandler::SetWriteDirectory(EmuFolders::DataRoot);
 
+	// Load main settings ini
 	const std::string path = Path::Combine(EmuFolders::Settings, "PCSX2.ini");
 	const bool settings_exists = FileSystem::FileExists(path.c_str());
 	Console.WriteLnFmt("Loading config from {}.", path);
@@ -1345,6 +1347,29 @@ bool QtHost::InitializeConfig()
 		// Don't save if we're running the setup wizard. We want to run it next time if they don't finish it.
 		if (!s_run_setup_wizard)
 			SaveSettings();
+	}
+
+	// Layer secrets ini on top
+	const std::string secrets_path = Path::Combine(EmuFolders::Settings, "secrets.ini");
+	const bool secrets_settings_exists = FileSystem::FileExists(secrets_path.c_str());
+	Console.WriteLnFmt("Loading secrets from {}.", secrets_path);
+
+	s_secrets_settings_interface = std::make_unique<INISettingsInterface>(std::move(secrets_path));
+	Host::Internal::SetSecretsSettingsLayer(s_secrets_settings_interface.get());
+	if (!secrets_settings_exists || !s_secrets_settings_interface->Load())
+	{
+		if (!s_base_settings_interface->Save(&error))
+		{
+			QMessageBox::critical(
+				nullptr, QStringLiteral("PCSX2"),
+				QStringLiteral(
+					"Failed to save secrets to\n\n%1\n\nThe error was: %2\n\nPlease ensure this directory is writable. You "
+					"can also try portable mode by creating portable.txt in the same directory you installed PCSX2 into.")
+					.arg(QString::fromStdString(s_secrets_settings_interface->GetFileName()))
+					.arg(QString::fromStdString(error.GetDescription())));
+			return false;
+		}
+		
 	}
 
 	// Setup wizard was incomplete last time?
