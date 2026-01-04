@@ -104,7 +104,8 @@ public:
 	u32 GetVersion() const { return m_version; }
 
 	/// Overload for integral or floating-point types. Writes bytes as-is.
-	template <typename T, std::enable_if_t<std::is_integral_v<T> || std::is_floating_point_v<T>, int> = 0>
+	template <typename T>
+		requires std::is_integral_v<T> || std::is_floating_point_v<T>
 	void Do(T* value_ptr)
 	{
 		if (m_mode == Mode::Read)
@@ -120,7 +121,8 @@ public:
 	}
 
 	/// Overload for enum types. Uses the underlying type.
-	template <typename T, std::enable_if_t<std::is_enum_v<T>, int> = 0>
+	template <typename T>
+		requires std::is_enum_v<T>
 	void Do(T* value_ptr)
 	{
 		using TType = std::underlying_type_t<T>;
@@ -142,7 +144,8 @@ public:
 	}
 
 	/// Overload for POD types, such as structs.
-	template <typename T, std::enable_if_t<std::is_standard_layout_v<T> && std::is_trivial_v<T>, int> = 0>
+	template <typename T>
+		requires std::is_standard_layout_v<T> && std::is_trivial_v<T>
 	void DoPOD(T* value_ptr)
 	{
 		if (m_mode == Mode::Read)

@@ -26,8 +26,8 @@ class GSSetupPrimCodeGenerator : public GSNewCodeGenerator
 	using Xmm = Xbyak::Xmm;
 	using Ymm = Xbyak::Ymm;
 
-	constexpr static bool isXmm = std::is_same<XYm, Xbyak::Xmm>::value;
-	constexpr static bool isYmm = std::is_same<XYm, Xbyak::Ymm>::value;
+	constexpr static bool isXmm = std::is_same_v<XYm, Xbyak::Xmm>;
+	constexpr static bool isYmm = std::is_same_v<XYm, Xbyak::Ymm>;
 	constexpr static int vecsize = isXmm ? 16 : 32;
 
 	constexpr static int dsize = isXmm ? 4 : 8;
