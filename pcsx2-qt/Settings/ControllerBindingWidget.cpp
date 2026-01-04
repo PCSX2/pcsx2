@@ -202,7 +202,11 @@ void ControllerBindingWidget::onAutomaticBindingClicked()
 	for (const QPair<QString, QString>& dev : m_dialog->getDeviceList())
 	{
 		// we set it as data, because the device list could get invalidated while the menu is up
-		QAction* action = menu.addAction(QStringLiteral("%1 (%2)").arg(dev.first).arg(dev.second));
+		QAction* action;
+		if(dev.first.compare(dev.second, Qt::CaseInsensitive) == 0)
+			action = menu.addAction(dev.first);
+		else
+			action = menu.addAction(QStringLiteral("%1: %2").arg(dev.first).arg(dev.second));
 		action->setData(dev.first);
 		connect(action, &QAction::triggered, this, [this, action]() { doDeviceAutomaticBinding(action->data().toString()); });
 		added = true;
@@ -1152,7 +1156,11 @@ void USBDeviceWidget::onAutomaticBindingClicked()
 	for (const QPair<QString, QString>& dev : m_dialog->getDeviceList())
 	{
 		// we set it as data, because the device list could get invalidated while the menu is up
-		QAction* action = menu.addAction(QStringLiteral("%1 (%2)").arg(dev.first).arg(dev.second));
+		QAction* action;
+		if(dev.first.compare(dev.second, Qt::CaseInsensitive) == 0)
+			action = menu.addAction(dev.first);
+		else
+			action = menu.addAction(QStringLiteral("%1: %2").arg(dev.first).arg(dev.second));
 		action->setData(dev.first);
 		connect(action, &QAction::triggered, this, [this, action]() { doDeviceAutomaticBinding(action->data().toString()); });
 		added = true;
