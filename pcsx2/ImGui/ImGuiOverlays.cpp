@@ -619,6 +619,8 @@ __ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spa
 			APPEND("SD={}/{} ", GSConfig.SkipDrawStart, GSConfig.SkipDrawEnd);
 		if (GSConfig.UserHacks_TextureInsideRt != GSTextureInRtMode::Disabled)
 			APPEND("TexRT={} ", static_cast<unsigned>(GSConfig.UserHacks_TextureInsideRt));
+		if (GSConfig.UserHacks_Limit24BitDepth != GSLimit24BitDepth::Disabled)
+			APPEND("TDR={} ", static_cast<unsigned>(GSConfig.UserHacks_Limit24BitDepth));
 		if (GSConfig.UserHacks_BilinearHack != GSBilinearDirtyMode::Automatic)
 			APPEND("BLU={} ", static_cast<unsigned>(GSConfig.UserHacks_BilinearHack));
 		if (GSConfig.UserHacks_ForceEvenSpritePosition)
