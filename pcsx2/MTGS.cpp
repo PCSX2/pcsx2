@@ -946,7 +946,7 @@ void MTGS::ApplySettings()
 		WaitGS(false, false, false);
 }
 
-void MTGS::ResizeDisplayWindow(int width, int height, float scale)
+void MTGS::ResizeDisplayWindow(u32 width, u32 height, float scale)
 {
 	pxAssertRel(IsOpen(), "MTGS is running");
 	RunOnGSThread([width, height, scale]() {

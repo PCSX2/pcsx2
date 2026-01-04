@@ -191,7 +191,7 @@ private:
 private Q_SLOTS:
 	void stopInThread();
 	void doBackgroundControllerPoll();
-	void onDisplayWindowResized(int width, int height, float scale);
+	void onDisplayWindowResized(u32 width, u32 height, float scale);
 	void onApplicationStateChanged(Qt::ApplicationState state);
 	void redrawDisplayWindow();
 

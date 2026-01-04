@@ -1019,7 +1019,7 @@ public:
 	virtual bool UpdateWindow() = 0;
 
 	/// Call when the window size changes externally to recreate any resources.
-	virtual void ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale) = 0;
+	virtual void ResizeWindow(u32 new_window_width, u32 new_window_height, float new_window_scale) = 0;
 
 	/// Returns true if exclusive fullscreen is supported.
 	virtual bool SupportsExclusiveFullscreen() const = 0;

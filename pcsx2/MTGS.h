@@ -69,7 +69,7 @@ namespace MTGS
 	void RunOnGSThread(AsyncCallType func);
 	void GameChanged();
 	void ApplySettings();
-	void ResizeDisplayWindow(int width, int height, float scale);
+	void ResizeDisplayWindow(u32 width, u32 height, float scale);
 	void UpdateDisplayWindow();
 	void SetVSyncMode(GSVSyncMode mode, bool allow_present_throttle);
 	void UpdateVSyncMode();
