@@ -285,26 +285,35 @@ void _hwWrite8(u32 mem, u8 value)
 #endif
 	if (mem == SIO_TXFIFO)
 	{
-		static bool included_newline = false;
-		static char sio_buffer[1024];
-		static int sio_count;
-
-		if (value == '\r')
+		static bool last_char_was_cr = false;
+		
+		// skip the \n in \r\n
+		if(last_char_was_cr && (value == '\n'))
 		{
-			included_newline = true;
-			sio_buffer[sio_count++] = '\n';
+			last_char_was_cr = false;
+			return;
 		}
-		else if (!included_newline || (value != '\n'))
+		
+		last_char_was_cr = value == '\r';
+		bool should_flush_cause_newline = false;
+		if (last_char_was_cr)
 		{
-			included_newline = false;
-			sio_buffer[sio_count++] = value;
+			should_flush_cause_newline = true;
+			ee_sio_tx_fifo.push_back('\n');
+		}
+		else
+		{
+			should_flush_cause_newline = value == '\n';
+			ee_sio_tx_fifo.push_back(value);
 		}
 
-		if ((sio_count == std::size(sio_buffer)-1) || (sio_count != 0 && sio_buffer[sio_count-1] == '\n'))
+		// Check if the only thing in the buffer
+		if (ee_sio_tx_fifo.size() == 1024 || should_flush_cause_newline)
 		{
-			sio_buffer[sio_count] = 0;
-			eeConLog( ShiftJIS_ConvertString(sio_buffer) );
-			sio_count = 0;
+			std::string output_string(ee_sio_tx_fifo.begin(), ee_sio_tx_fifo.end());
+
+			eeConLog(ShiftJIS_ConvertString(output_string.c_str()));
+			ee_sio_tx_fifo.clear();
 		}
 		return;
 	}

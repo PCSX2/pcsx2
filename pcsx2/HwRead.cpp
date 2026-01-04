@@ -125,7 +125,23 @@ mem32_t _hwRead32(u32 mem)
 			switch( mem )
 			{
 				case SIO_ISR:
+					
+					// Not (yet) hardware tested
+					// The PS2SDK behaviour is as follows:
 
+					// TX: Don't write to TX FIFO until until bit 15 is 0
+
+					// RX: RX FIFO has data when bits 8-11 are not 0 (maybe a byte count?)
+					// RX: When reading from the RX FIFO, set bits 0-2 to 1 (why??)
+					
+					// For TX, we don't do any LLE buffering, so we can keep bit 15 to 0
+					// For RX, just hack it so when the ee_rx_fifo.size() != 0, ISR = 0xf00
+
+					if(!ee_sio_rx_fifo.empty())
+						return 0xf00;
+
+					return 0x0;
+					break;
 				case 0x1000f410:
 				case MCH_RICM:
 					return 0;
@@ -211,6 +227,16 @@ mem32_t hwRead32_page_0F_INTC_HACK(u32 mem)
 template< uint page >
 mem8_t _hwRead8(u32 mem)
 {
+	if(mem == SIO_RXFIFO)
+	{
+		if(ee_sio_rx_fifo.empty())
+			return 0; // needs hardware test, what does it return with the FIFO is empty
+		
+		const char c = ee_sio_rx_fifo.front();
+		ee_sio_rx_fifo.pop_front();
+		return c;
+	}
+
 	u32 ret32 = _hwRead32<page, false>(mem & ~0x03);
 	return ((u8*)&ret32)[mem & 0x03];
 }
