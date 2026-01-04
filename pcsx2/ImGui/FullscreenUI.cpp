@@ -3458,7 +3458,10 @@ void FullscreenUI::StartAutomaticBinding(u32 port)
 			names.reserve(devices.size());
 			for (auto& [name, display_name] : devices)
 			{
-				options.emplace_back(fmt::format("{} ({})", name, display_name), false);
+				if(!StringUtil::compareNoCase(name, display_name))
+					options.emplace_back(fmt::format("{}: {}", name, display_name), false);
+				else
+					options.emplace_back(std::move(display_name), false);
 				names.push_back(std::move(name));
 			}
 			OpenChoiceDialog(FSUI_CSTR("Select Device"), false, std::move(options),
