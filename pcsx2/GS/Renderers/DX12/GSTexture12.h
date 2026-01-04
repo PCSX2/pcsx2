@@ -28,16 +28,84 @@ public:
 		int width, int height, int levels, DXGI_FORMAT dxgi_format, DXGI_FORMAT srv_format, DXGI_FORMAT rtv_format,
 		DXGI_FORMAT dsv_format, DXGI_FORMAT uav_format, D3D12_RESOURCE_STATES resource_state);
 
-	__fi const D3D12DescriptorHandle& GetSRVDescriptor() const { return m_srv_descriptor; }
-	__fi const D3D12DescriptorHandle& GetWriteDescriptor() const { return m_write_descriptor; }
 	__fi const D3D12DescriptorHandle& GetReadDepthViewDescriptor() const { return m_read_dsv_descriptor; }
-	__fi const D3D12DescriptorHandle& GetUAVDescriptor() const { return m_uav_descriptor; }
-	__fi const D3D12DescriptorHandle& GetFBLDescriptor() const { return m_fbl_descriptor; }
-	__fi D3D12_RESOURCE_STATES GetResourceState() const { return m_resource_state; }
-	__fi DXGI_FORMAT GetDXGIFormat() const { return m_dxgi_format; }
-	__fi ID3D12Resource* GetResource() const { return m_resource.get(); }
-	__fi ID3D12Resource* GetFBLResource() const { return m_resource_fbl.get(); }
+	
+	__fi const D3D12DescriptorHandle& GetSRVDescriptor() const
+	{
+		if (IsDepthStencil() && IsTargetModeUAV())
+		{
+			return static_cast<GSTexture12*>(m_uav_depth.get())->m_srv_descriptor;
+		}
+		else
+		{
+			return m_srv_descriptor;
+		}
+	}
+	
+	__fi const D3D12DescriptorHandle& GetWriteDescriptor() const
+	{
+		pxAssertRel(!IsTargetModeUAV(), "Trying to access write descriptor in UAV mode");
+		return m_write_descriptor;
+	}
 
+	__fi const D3D12DescriptorHandle& GetUAVDescriptor() const
+	{
+		if (IsDepthStencil() && IsTargetModeUAV())
+		{
+			return static_cast<GSTexture12*>(m_uav_depth.get())->m_uav_descriptor;
+		}
+		else
+		{
+			return m_uav_descriptor;
+		}
+	}
+
+	__fi const D3D12DescriptorHandle& GetFBLDescriptor() const
+	{
+		pxAssertRel(!IsTargetModeUAV(), "Trying to access FBL descriptor in UAV mode");
+		return m_fbl_descriptor;
+	}
+
+	__fi D3D12_RESOURCE_STATES GetResourceState() const
+	{
+		if (IsDepthStencil() && IsTargetModeUAV())
+		{
+			return static_cast<GSTexture12*>(m_uav_depth.get())->m_resource_state;
+		}
+		else
+		{
+			return m_resource_state;
+		}
+	}
+
+	__fi void SetResourceState(D3D12_RESOURCE_STATES state)
+	{
+		if (IsDepthStencil() && IsTargetModeUAV())
+		{
+			static_cast<GSTexture12*>(m_uav_depth.get())->m_resource_state = state;
+		}
+		else
+		{
+			m_resource_state = state;
+		}
+	}
+
+	__fi DXGI_FORMAT GetDXGIFormat() const { return m_dxgi_format; }
+
+	__fi ID3D12Resource* GetResource() const
+	{
+		if (IsDepthStencil() && IsTargetModeUAV())
+		{
+			return static_cast<GSTexture12*>(m_uav_depth.get())->m_resource.get();
+		}
+		else
+		{
+			return m_resource.get();
+		}
+	}
+
+	__fi ID3D12Resource* GetFBLResource() const { return m_resource_fbl.get(); }
+	
 	void* GetNativeHandle() const override;
 
 	bool Update(const GSVector4i& r, const void* data, int pitch, int layer = 0) override;
@@ -47,22 +115,34 @@ public:
 
 #ifdef PCSX2_DEVBUILD
 	void SetDebugName(std::string_view name) override;
+	void SaveDepthUAV(const std::string& fn) const;
 #endif
 
 	void TransitionToState(D3D12_RESOURCE_STATES state);
-	void CommitClear();
-	void CommitClear(ID3D12GraphicsCommandList* cmdlist);
+	void CommitClear(const float* color = nullptr);
+	void CommitClear(ID3D12GraphicsCommandList* cmdlist, const float* color = nullptr);
+	void CommitClearUAV(D3D12_GPU_DESCRIPTOR_HANDLE v, const float* color = nullptr);
+	void CommitClearUAV(ID3D12GraphicsCommandList* cmdlist, D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle,
+		const float* color = nullptr);
 
 	void Destroy(bool defer = true);
 
 	void TransitionToState(ID3D12GraphicsCommandList* cmdlist, D3D12_RESOURCE_STATES state);
-	void TransitionSubresourceToState(ID3D12GraphicsCommandList* cmdlist, int level, D3D12_RESOURCE_STATES before_state,
-		D3D12_RESOURCE_STATES after_state) const;
+	void TransitionSubresourceToState(ID3D12GraphicsCommandList* cmdlist, int level,
+		D3D12_RESOURCE_STATES before_state, D3D12_RESOURCE_STATES after_state);
 
+	D3D12_RESOURCE_BARRIER GetUAVBarrier();
+	void IssueUAVBarrier(ID3D12GraphicsCommandList* cmdlist);
+	void IssueUAVBarrier() override;
+	
+	void SetTargetMode(TargetMode mode) override;
+	
 	// Call when the texture is bound to the pipeline, or read from in a copy.
 	__fi void SetUseFenceCounter(u64 val) { m_use_fence_counter = val; }
 
 private:
+	void UpdateDepthUAV(bool uav_to_ds) override;
+
 	enum class WriteDescriptorType : u8
 	{
 		None,
@@ -86,6 +166,9 @@ private:
 	ID3D12GraphicsCommandList* GetCommandBufferForUpdate();
 	ID3D12Resource* AllocateUploadStagingBuffer(const void* data, u32 pitch, u32 upload_pitch, u32 height) const;
 	void CopyTextureDataForUpload(void* dst, const void* src, u32 pitch, u32 upload_pitch, u32 height) const;
+
+	// For transition to/from UAV usage.
+	void IssueUAVBarrierInternal(ID3D12GraphicsCommandList* cmdlist);
 
 	wil::com_ptr_nothrow<ID3D12Resource> m_resource;
 	wil::com_ptr_nothrow<ID3D12Resource> m_resource_fbl;

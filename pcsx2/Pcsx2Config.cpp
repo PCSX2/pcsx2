@@ -722,6 +722,7 @@ Pcsx2Config::GSOptions::GSOptions()
 	DisableShaderCache = false;
 	DisableFramebufferFetch = false;
 	DisableVertexShaderExpand = false;
+	DisableDepthFeedback = false;
 	SkipDuplicateFrames = false;
 	OsdMessagesPos = OsdOverlayPos::TopLeft;
 	OsdPerformancePos = OsdOverlayPos::TopRight;
@@ -751,6 +752,16 @@ Pcsx2Config::GSOptions::GSOptions()
 	PreloadFrameWithGSData = false;
 	Mipmap = true;
 	HWMipmap = true;
+	HWROV = false;
+	HWROVLogging = false;
+	HWROVHistoryTextures = 16;
+	HWROVHistoryDraws = 32;
+	HWROVHistoryWeightColor = 0.75f;
+	HWROVHistoryWeightDepth = 0.75f;
+	HWROVBarriersEnableColor = 2.0f;
+	HWROVBarriersEnableDepth = 4.0f;
+	HWROVBarriersDisableColor = 1.125f;
+	HWROVBarriersDisableDepth = 1.25f;
 
 	ManualUserHacks = false;
 	UserHacks_AlignSpriteX = false;
@@ -899,6 +910,7 @@ bool Pcsx2Config::GSOptions::RestartOptionsAreEqual(const GSOptions& right) cons
 		   OpEqu(DisableShaderCache) &&
 		   OpEqu(DisableFramebufferFetch) &&
 		   OpEqu(DisableVertexShaderExpand) &&
+		   OpEqu(DisableDepthFeedback) &&
 		   OpEqu(OverrideTextureBarriers) &&
 		   OpEqu(ExclusiveFullscreenControl);
 }
@@ -944,6 +956,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(DisableShaderCache);
 	SettingsWrapBitBool(DisableFramebufferFetch);
 	SettingsWrapBitBool(DisableVertexShaderExpand);
+	SettingsWrapBitBool(DisableDepthFeedback);
 	SettingsWrapBitBool(SkipDuplicateFrames);
 	SettingsWrapBitBool(OsdShowSpeed);
 	SettingsWrapBitBool(OsdShowFPS);
@@ -1021,6 +1034,17 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntryEx(UpscaleMultiplier, "upscale_multiplier");
 
 	SettingsWrapBitBoolEx(HWMipmap, "hw_mipmap");
+	SettingsWrapBitBool(HWROV);
+	SettingsWrapBitBool(HWROVLogging);
+	SettingsWrapEntry(HWROVHistoryDraws);
+	SettingsWrapEntry(HWROVHistoryTextures);
+	SettingsWrapEntry(HWROVHistoryWeightColor);
+	SettingsWrapEntry(HWROVHistoryWeightDepth);
+	SettingsWrapEntry(HWROVBarriersEnableColor);
+	SettingsWrapEntry(HWROVBarriersEnableDepth);
+	SettingsWrapEntry(HWROVBarriersDisableColor);
+	SettingsWrapEntry(HWROVBarriersDisableDepth);
+	SettingsWrapEntry(HWROVPreset);
 	SettingsWrapIntEnumEx(AccurateBlendingUnit, "accurate_blending_unit");
 	SettingsWrapIntEnumEx(TextureFiltering, "filter");
 	SettingsWrapIntEnumEx(TexturePreloading, "texture_preloading");
