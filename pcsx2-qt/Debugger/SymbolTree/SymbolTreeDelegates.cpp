@@ -3,6 +3,7 @@
 
 #include "SymbolTreeDelegates.h"
 
+#include "AsyncDialogs.h"
 #include "Debugger/SymbolTree/SymbolTreeModel.h"
 #include "Debugger/SymbolTree/TypeString.h"
 
@@ -10,7 +11,6 @@
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QLineEdit>
-#include <QtWidgets/QMessageBox>
 
 SymbolTreeValueDelegate::SymbolTreeValueDelegate(
 	DebugInterface& cpu,
@@ -495,7 +495,7 @@ void SymbolTreeTypeDelegate::setModelData(QWidget* editor, QAbstractItemModel* m
 		symbol_tree_model->resetChildren(index);
 	}
 	else
-		QMessageBox::warning(editor, tr("Cannot Change Type"), error_message);
+		AsyncDialogs::warning(editor, tr("Cannot Change Type"), error_message);
 }
 
 // *****************************************************************************
