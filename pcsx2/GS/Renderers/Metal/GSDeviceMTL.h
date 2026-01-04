@@ -202,7 +202,7 @@ public:
 				bool iip        : 1;
 				bool fst        : 1;
 				bool point_size : 1;
-				GSMTLExpandType expand : 2;
+				GSMTLExpandType expand : 3;
 			};
 			u8 key;
 		};
