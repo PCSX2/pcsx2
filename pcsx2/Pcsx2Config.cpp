@@ -1044,6 +1044,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntry(HWROVBarriersEnableDepth);
 	SettingsWrapEntry(HWROVBarriersDisableColor);
 	SettingsWrapEntry(HWROVBarriersDisableDepth);
+	SettingsWrapEntry(HWROVPreset);
 	SettingsWrapIntEnumEx(AccurateBlendingUnit, "accurate_blending_unit");
 	SettingsWrapIntEnumEx(TextureFiltering, "filter");
 	SettingsWrapIntEnumEx(TexturePreloading, "texture_preloading");

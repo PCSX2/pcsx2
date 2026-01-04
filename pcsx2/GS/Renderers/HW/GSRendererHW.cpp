@@ -6451,6 +6451,44 @@ void GSRendererHW::SetupROV()
 	if (!features.rov)
 		return;
 
+	static u32 rov_preset = 0;
+	static u32 max_drawcalls = 16; // Tell drawlist computation to cap at 16 to lower CPU burden and prevent
+	                               // outliers from influencing heuristic too much.
+	if (rov_preset != GSConfig.HWROVPreset)
+	{
+		rov_preset = GSConfig.HWROVPreset;
+		if (rov_preset == 1)
+		{
+			GSConfig.HWROVHistoryWeightColor = 0.75f;
+			GSConfig.HWROVHistoryWeightDepth = 0.75f;
+			GSConfig.HWROVBarriersEnableColor = 2.0f;
+			GSConfig.HWROVBarriersEnableDepth = 4.0f;
+			GSConfig.HWROVBarriersDisableColor = 1.125f;
+			GSConfig.HWROVBarriersDisableDepth = 1.25f;
+			max_drawcalls = 16;
+		}
+		else if (rov_preset == 2)
+		{
+			GSConfig.HWROVHistoryWeightColor = 0.75f;
+			GSConfig.HWROVHistoryWeightDepth = 0.75f;
+			GSConfig.HWROVBarriersEnableColor = 8.0f;
+			GSConfig.HWROVBarriersEnableDepth = 16.0f;
+			GSConfig.HWROVBarriersDisableColor = 1.5f;
+			GSConfig.HWROVBarriersDisableDepth = 2.0f;
+			max_drawcalls = 64;
+		}
+		else if (rov_preset == 3)
+		{
+			GSConfig.HWROVHistoryWeightColor = 0.0f;
+			GSConfig.HWROVHistoryWeightDepth = 0.0f;
+			GSConfig.HWROVBarriersEnableColor = 1.0f;
+			GSConfig.HWROVBarriersEnableDepth = 1.0f;
+			GSConfig.HWROVBarriersDisableColor = 1.0f;
+			GSConfig.HWROVBarriersDisableDepth = 1.0f;
+			max_drawcalls = 1;
+		}
+	}
+
 	GL_PUSH("HW: ROV Setup");
 
 	if (features.framebuffer_fetch)
@@ -6529,18 +6567,18 @@ void GSRendererHW::SetupROV()
 	GetForcedROVUsage(use_rov_color, use_rov_depth, feedback_color, feedback_depth);
 
 	// Get the number of barriers that would be used with the current config.
-	constexpr u32 MAX_DRAWS = 16; // Tell drawlist computation to cap at 16 to lower CPU burden and prevent
-	                              // outliers from influencing heuristic too much.
+	//constexpr u32 max_drawcalls = 16; // Tell drawlist computation to cap at 16 to lower CPU burden and prevent
+	                                  // outliers from influencing heuristic too much.
 	u32 num_drawcalls_i; 
 	if (using_barriers)
 	{
 		if (m_drawlist.size() > 0)
 		{
-			num_drawcalls_i = std::min(MAX_DRAWS, static_cast<u32>(m_drawlist.size())); // Already computed
+			num_drawcalls_i = std::min(max_drawcalls, static_cast<u32>(m_drawlist.size())); // Already computed
 		}
 		else
 		{
-			num_drawcalls_i = MAX_DRAWS; // Tells drawlist computation to cap at MAX_DRAWS.
+			num_drawcalls_i = max_drawcalls; // Tells drawlist computation to cap at MAX_DRAWS.
 			GetPrimitiveOverlapDrawlist(false, false, 1.0f, &num_drawcalls_i);
 		}
 	}
