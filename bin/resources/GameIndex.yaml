@@ -20894,10 +20894,8 @@ SLES-52636:
   gameFixes:
     - FullVU0SyncHack # Fixes in-game timer.
   gsHWFixes:
-    recommendedBlendingLevel: 3 # Fixes missing lighting and car reflections.
-    halfPixelOffset: 1 # Fixes 4 split lines in stage intros.
-    autoFlush: 1 # Fixes incorrect colors.
-    alignSprite: 1 # Fixes vertical lines such as in FMVs.
+    minimumBlendingLevel: 3 # Fixes missing lighting and car reflections.
+    halfPixelOffset: 4 # Fixes lines in game and FMVs.
 SLES-52637:
   name: "TOCA Race Driver 2"
   region: "PAL-M5"
