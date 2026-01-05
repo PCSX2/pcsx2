@@ -738,7 +738,7 @@ void GSTexture12::TransitionToState(ID3D12GraphicsCommandList* cmdlist, D3D12_RE
 			{D3D12_RESOURCE_BARRIER_TYPE_TRANSITION, D3D12_RESOURCE_BARRIER_FLAG_NONE,
 				{{m_resource.get(), 1, m_resource_state, D3D12_RESOURCE_STATE_DEPTH_WRITE}}},
 		};
-		GSDevice12::GetInstance()->GetCommandList()->ResourceBarrier(m_resource_state == D3D12_RESOURCE_STATE_DEPTH_WRITE ? 1 : 2, barriers);
+		cmdlist->ResourceBarrier(m_resource_state == D3D12_RESOURCE_STATE_DEPTH_WRITE ? 1 : 2, barriers);
 	}
 	else if (m_resource_state == (D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE))
 	{
@@ -749,7 +749,7 @@ void GSTexture12::TransitionToState(ID3D12GraphicsCommandList* cmdlist, D3D12_RE
 			{D3D12_RESOURCE_BARRIER_TYPE_TRANSITION, D3D12_RESOURCE_BARRIER_FLAG_NONE,
 				{{m_resource.get(), 1, D3D12_RESOURCE_STATE_DEPTH_WRITE, state}}},
 		};
-		GSDevice12::GetInstance()->GetCommandList()->ResourceBarrier(state == D3D12_RESOURCE_STATE_DEPTH_WRITE ? 1 : 2, barriers);
+		cmdlist->ResourceBarrier(state == D3D12_RESOURCE_STATE_DEPTH_WRITE ? 1 : 2, barriers);
 	}
 	else
 	{
