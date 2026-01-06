@@ -3,6 +3,7 @@
 
 #include "MemoryView.h"
 
+#include "AsyncDialogs.h"
 #include "Debugger/JsonValueWrapper.h"
 
 #include "QtHost.h"
@@ -12,8 +13,6 @@
 #include <QtGui/QActionGroup>
 #include <QtGui/QClipboard>
 #include <QtGui/QMouseEvent>
-#include <QtWidgets/QInputDialog>
-#include <QtWidgets/QMessageBox>
 
 using namespace QtUtils;
 
@@ -305,36 +304,33 @@ bool MemoryViewTable::InsertFloatIntoSelectedHexView(DebugInterface& cpu)
 	std::memcpy(&currentFloatVal, &currentIntVal, sizeof(currentFloatVal));
 	const QString currentfloatStr = QString("%1").arg(QString::number(currentFloatVal, 'g'), 14).trimmed();
 
-	// Prompt user to enter a new float value
-	bool isValidInput = false;
-	QString newFloatStr = QInputDialog::getText(parent, tr("Input New Float"), "",
-		QLineEdit::Normal, currentfloatStr, &isValidInput);
-	if (!isValidInput)
-		return false;
+	const QString title = tr("Input New Float");
 
-	// Convert string into float value
-	bool isValidFloat = false;
-	const float newFloatVal = newFloatStr.toFloat(&isValidFloat);
-	if (!isValidFloat)
-	{
-		QMessageBox::warning(parent, tr("Input Error"), tr("Invalid float value"));
-		return false;
-	}
+	AsyncDialogs::getText(parent, title, "", currentfloatStr, [this, &cpu](QString newFloatStr) {
+		// Convert string into float value
+		bool isValidFloat = false;
+		const float newFloatVal = newFloatStr.toFloat(&isValidFloat);
+		if (!isValidFloat)
+		{
+			AsyncDialogs::warning(parent, tr("Input Error"), tr("Invalid float value"));
+			return;
+		}
 
-	// Write new float value back to memory
-	u32 newIntVal = 0;
-	std::memcpy(&newIntVal, &newFloatVal, sizeof(newIntVal));
-	newIntVal = convertEndian(newIntVal);
+		// Write new float value back to memory
+		u32 newIntVal = 0;
+		std::memcpy(&newIntVal, &newFloatVal, sizeof(newIntVal));
+		newIntVal = convertEndian(newIntVal);
 
-	const QPointer<MemoryViewTable> table(this);
-	Host::RunOnCPUThread([table, address = selectedAddress, &cpu, val = newIntVal] {
-		cpu.write32(address, val);
+		const QPointer<MemoryViewTable> table(this);
+		Host::RunOnCPUThread([table, address = selectedAddress, &cpu, val = newIntVal] {
+			cpu.write32(address, val);
 
-		QtHost::RunOnUIThread([table] {
-			if (!table)
-				return;
+			QtHost::RunOnUIThread([table] {
+				if (!table)
+					return;
 
-			table->parent->update();
+				table->parent->update();
+			});
 		});
 	});
 
@@ -353,7 +349,7 @@ void MemoryViewTable::InsertAtCurrentSelection(const QString& text, DebugInterfa
 		const float newFloatVal = text.toFloat(&isValidFloat);
 		if (!isValidFloat)
 		{
-			QMessageBox::warning(parent, tr("Input Error"), tr("Invalid float value"));
+			AsyncDialogs::warning(parent, tr("Input Error"), tr("Invalid float value"));
 			return;
 		}
 
@@ -899,22 +895,19 @@ void MemoryView::contextPaste()
 
 void MemoryView::contextGoToAddress()
 {
-	bool ok;
-	QString targetString = QInputDialog::getText(this, tr("Go To In Memory View"), "",
-		QLineEdit::Normal, "", &ok);
+	const QString title = tr("Go To In Memory View");
 
-	if (!ok)
-		return;
+	AsyncDialogs::getText(this, title, "", "", [this](QString expression) {
+		u64 address = 0;
+		std::string error;
+		if (!cpu().evaluateExpression(expression.toStdString().c_str(), address, error))
+		{
+			AsyncDialogs::warning(this, tr("Cannot Go To"), QString::fromStdString(error));
+			return;
+		}
 
-	u64 address = 0;
-	std::string error;
-	if (!cpu().evaluateExpression(targetString.toStdString().c_str(), address, error))
-	{
-		QMessageBox::warning(this, tr("Cannot Go To"), QString::fromStdString(error));
-		return;
-	}
-
-	gotoAddress(static_cast<u32>(address));
+		gotoAddress(static_cast<u32>(address));
+	});
 }
 
 void MemoryView::contextFollowAddress()

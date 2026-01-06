@@ -3,17 +3,16 @@
 
 #include "RegisterView.h"
 
+#include "AsyncDialogs.h"
+#include "QtUtils.h"
 #include "Debugger/JsonValueWrapper.h"
 
-#include "QtUtils.h"
 #include <QtGui/QMouseEvent>
 #include <QtWidgets/QTabBar>
 #include <QtWidgets/QStylePainter>
 #include <QtWidgets/QStyleOptionTab>
 #include <QtGui/QClipboard>
-#include <QtWidgets/QInputDialog>
 #include <QtWidgets/QProxyStyle>
-#include <QtWidgets/QMessageBox>
 
 #include <bit>
 
@@ -351,12 +350,11 @@ void RegisterView::contextCopySegment()
 		QApplication::clipboard()->setText(FilledQStringFromValue(val._u32[3 - m_selected128Field], 16));
 }
 
-bool RegisterView::contextFetchNewValue(u64& out, u64 currentValue, bool segment)
+void RegisterView::fetchNewValue(u64 currentValue, bool segment, std::function<void(u64)> callback)
 {
 	const int categoryIndex = ui.registerTabs->currentIndex();
 	const bool floatingPoint = CAT_SHOW_FLOAT && segment;
 	const int regSize = cpu().getRegisterSize(categoryIndex);
-	bool ok = false;
 
 	QString existingValue("%1");
 
@@ -366,79 +364,89 @@ bool RegisterView::contextFetchNewValue(u64& out, u64 currentValue, bool segment
 		existingValue = existingValue.arg(std::bit_cast<float>((u32)currentValue));
 
 	//: Changing the value in a CPU register (e.g. "Change t0")
-	QString input = QInputDialog::getText(this, tr("Change %1").arg(cpu().getRegisterName(categoryIndex, m_selectedRow)), "",
-		QLineEdit::Normal, existingValue, &ok);
+	const QString title = tr("Change %1").arg(cpu().getRegisterName(categoryIndex, m_selectedRow));
 
-	if (!ok)
-		return false;
-
-	if (!floatingPoint) // Get input as hexadecimal
-	{
-		out = input.toULongLong(&ok, 16);
-		if (!ok)
+	AsyncDialogs::getText(this, title, "", existingValue, [this, callback, floatingPoint](QString input) {
+		u64 value;
+		if (!floatingPoint) // Get input as hexadecimal
 		{
-			QMessageBox::warning(this, tr("Invalid register value"), tr("Invalid hexadecimal register value."));
-			return false;
+			bool ok;
+			value = input.toULongLong(&ok, 16);
+			if (!ok)
+			{
+				AsyncDialogs::warning(this, tr("Invalid register value"), tr("Invalid hexadecimal register value."));
+				return;
+			}
 		}
-	}
-	else
-	{
-		out = std::bit_cast<u32>(input.toFloat(&ok));
-		if (!ok)
+		else
 		{
-			QMessageBox::warning(this, tr("Invalid register value"), tr("Invalid floating-point register value."));
-			return false;
+			bool ok;
+			value = std::bit_cast<u32>(input.toFloat(&ok));
+			if (!ok)
+			{
+				AsyncDialogs::warning(this, tr("Invalid register value"), tr("Invalid floating-point register value."));
+				return;
+			}
 		}
-	}
 
-	return true;
+		callback(value);
+	});
 }
 
 void RegisterView::contextChangeValue()
 {
-	const int categoryIndex = ui.registerTabs->currentIndex();
-	u64 newVal;
-	if (contextFetchNewValue(newVal, cpu().getRegister(categoryIndex, m_selectedRow).lo))
-	{
-		cpu().setRegister(categoryIndex, m_selectedRow, u128::From64(newVal));
+	const int category_index = ui.registerTabs->currentIndex();
+	const s32 row = m_selectedRow;
+	const u32 old_value = cpu().getRegister(category_index, row).lo;
+
+	fetchNewValue(old_value, false, [this, category_index, row](u64 input) {
+		cpu().setRegister(category_index, row, u128::From64(input));
 		DebuggerView::broadcastEvent(DebuggerEvents::VMUpdate());
-	}
+	});
 }
 
 void RegisterView::contextChangeTop()
 {
-	u64 newVal;
-	u128 oldVal = cpu().getRegister(ui.registerTabs->currentIndex(), m_selectedRow);
-	if (contextFetchNewValue(newVal, oldVal.hi))
-	{
-		oldVal.hi = newVal;
-		cpu().setRegister(ui.registerTabs->currentIndex(), m_selectedRow, oldVal);
+	const int category_index = ui.registerTabs->currentIndex();
+	const s32 row = m_selectedRow;
+	const u128 old_value = cpu().getRegister(category_index, row);
+
+	fetchNewValue(old_value.hi, false, [this, category_index, row, old_value](u32 input) {
+		u128 new_value = old_value;
+		new_value.hi = input;
+		cpu().setRegister(category_index, row, new_value);
 		DebuggerView::broadcastEvent(DebuggerEvents::VMUpdate());
-	}
+	});
 }
 
 void RegisterView::contextChangeBottom()
 {
-	u64 newVal;
-	u128 oldVal = cpu().getRegister(ui.registerTabs->currentIndex(), m_selectedRow);
-	if (contextFetchNewValue(newVal, oldVal.lo))
-	{
-		oldVal.lo = newVal;
-		cpu().setRegister(ui.registerTabs->currentIndex(), m_selectedRow, oldVal);
+	const int category_index = ui.registerTabs->currentIndex();
+	const s32 row = m_selectedRow;
+	const u128 old_value = cpu().getRegister(category_index, row);
+
+	fetchNewValue(old_value.lo, false, [this, category_index, row, old_value](u32 input) {
+		u128 new_value = old_value;
+		new_value.lo = input;
+		cpu().setRegister(category_index, row, new_value);
 		DebuggerView::broadcastEvent(DebuggerEvents::VMUpdate());
-	}
+	});
 }
 
 void RegisterView::contextChangeSegment()
 {
-	u64 newVal;
-	u128 oldVal = cpu().getRegister(ui.registerTabs->currentIndex(), m_selectedRow);
-	if (contextFetchNewValue(newVal, oldVal._u32[3 - m_selected128Field], true))
-	{
-		oldVal._u32[3 - m_selected128Field] = (u32)newVal;
-		cpu().setRegister(ui.registerTabs->currentIndex(), m_selectedRow, oldVal);
+	const int category_index = ui.registerTabs->currentIndex();
+	const s32 row = m_selectedRow;
+	const s32 field = m_selected128Field;
+	const u128 old_value = cpu().getRegister(category_index, row);
+	const u32 segment = old_value._u32[3 - field];
+
+	fetchNewValue(segment, false, [this, category_index, row, field, old_value](u32 input) {
+		u128 new_value = old_value;
+		new_value._u32[3 - field] = input;
+		cpu().setRegister(category_index, row, new_value);
 		DebuggerView::broadcastEvent(DebuggerEvents::VMUpdate());
-	}
+	});
 }
 
 std::optional<DebuggerEvents::GoToAddress> RegisterView::contextCreateGotoEvent()
@@ -454,7 +462,7 @@ std::optional<DebuggerEvents::GoToAddress> RegisterView::contextCreateGotoEvent(
 
 	if (!cpu().isValidAddress(addr))
 	{
-		QMessageBox::warning(
+		AsyncDialogs::warning(
 			this,
 			tr("Invalid target address"),
 			tr("This register holds an invalid address."));
