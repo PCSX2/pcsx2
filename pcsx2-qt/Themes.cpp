@@ -519,7 +519,7 @@ void QtHost::SetStyleFromSettings()
 		rubyPalette.setColor(QPalette::Window, slate);
 		rubyPalette.setColor(QPalette::WindowText, Qt::white);
 		rubyPalette.setColor(QPalette::Base, slate.lighter());
-		rubyPalette.setColor(QPalette::AlternateBase, slate.lighter());
+		rubyPalette.setColor(QPalette::AlternateBase, slate.darker());
 		rubyPalette.setColor(QPalette::ToolTipBase, slate);
 		rubyPalette.setColor(QPalette::ToolTipText, Qt::white);
 		rubyPalette.setColor(QPalette::Text, Qt::white);
@@ -553,7 +553,7 @@ void QtHost::SetStyleFromSettings()
 		sapphirePalette.setColor(QPalette::Window, slate);
 		sapphirePalette.setColor(QPalette::WindowText, Qt::white);
 		sapphirePalette.setColor(QPalette::Base, slate.lighter());
-		sapphirePalette.setColor(QPalette::AlternateBase, slate.lighter());
+		sapphirePalette.setColor(QPalette::AlternateBase, slate.darker());
 		sapphirePalette.setColor(QPalette::ToolTipBase, slate);
 		sapphirePalette.setColor(QPalette::ToolTipText, Qt::white);
 		sapphirePalette.setColor(QPalette::Text, Qt::white);
@@ -587,7 +587,7 @@ void QtHost::SetStyleFromSettings()
 		emeraldPalette.setColor(QPalette::Window, slate);
 		emeraldPalette.setColor(QPalette::WindowText, Qt::white);
 		emeraldPalette.setColor(QPalette::Base, slate.lighter());
-		emeraldPalette.setColor(QPalette::AlternateBase, slate.lighter());
+		emeraldPalette.setColor(QPalette::AlternateBase, slate.darker());
 		emeraldPalette.setColor(QPalette::ToolTipBase, slate);
 		emeraldPalette.setColor(QPalette::ToolTipText, Qt::white);
 		emeraldPalette.setColor(QPalette::Text, Qt::white);
