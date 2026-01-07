@@ -19,7 +19,7 @@ GSTexture12::GSTexture12(Type type, Format format, int width, int height, int le
 	wil::com_ptr_nothrow<D3D12MA::Allocation> allocation, const D3D12DescriptorHandle& srv_descriptor,
 	const D3D12DescriptorHandle& write_descriptor, const D3D12DescriptorHandle& ro_dsv_descriptor,
 	const D3D12DescriptorHandle& uav_descriptor, const D3D12DescriptorHandle& fbl_descriptor,
-	WriteDescriptorType wdtype, D3D12_RESOURCE_STATES resource_state)
+	WriteDescriptorType wdtype, bool simultaneous_texture, ResourceState resource_state)
 	: m_resource(std::move(resource))
 	, m_resource_fbl(std::move(resource_fbl))
 	, m_allocation(std::move(allocation))
@@ -31,6 +31,7 @@ GSTexture12::GSTexture12(Type type, Format format, int width, int height, int le
 	, m_write_descriptor_type(wdtype)
 	, m_dxgi_format(dxgi_format)
 	, m_resource_state(resource_state)
+	, m_simultaneous_tex(simultaneous_texture)
 {
 	m_type = type;
 	m_format = format;
@@ -111,28 +112,87 @@ void GSTexture12::Destroy(bool defer)
 	m_write_descriptor_type = WriteDescriptorType::None;
 }
 
+// For use with non-simultaneous textures only.
+// Simultaneous testures are always D3D12_BARRIER_LAYOUT_COMMON.
+static D3D12_BARRIER_LAYOUT GetD3D12BarrierLayout(GSTexture12::ResourceState state)
+{
+	switch (state)
+	{
+		case GSTexture12::ResourceState::Undefined:
+			return D3D12_BARRIER_LAYOUT_UNDEFINED;
+		case GSTexture12::ResourceState::Present:
+			return D3D12_BARRIER_LAYOUT_COMMON;
+		case GSTexture12::ResourceState::RenderTarget:
+			return D3D12_BARRIER_LAYOUT_RENDER_TARGET;
+		case GSTexture12::ResourceState::DepthWriteStencil:
+			return D3D12_BARRIER_LAYOUT_DEPTH_STENCIL_WRITE;
+		case GSTexture12::ResourceState::PixelShaderResource:
+		case GSTexture12::ResourceState::ComputeShaderResource:
+			return D3D12_BARRIER_LAYOUT_SHADER_RESOURCE;
+		case GSTexture12::ResourceState::CopySrc:
+			return D3D12_BARRIER_LAYOUT_DIRECT_QUEUE_COPY_SOURCE;
+		case GSTexture12::ResourceState::CopyDst:
+			return D3D12_BARRIER_LAYOUT_DIRECT_QUEUE_COPY_DEST;
+		case GSTexture12::ResourceState::CASShaderUAV:
+		case GSTexture12::ResourceState::PixelShaderUAV:
+			return D3D12_BARRIER_LAYOUT_DIRECT_QUEUE_UNORDERED_ACCESS;
+		default:
+			pxAssert(false);
+			return D3D12_BARRIER_LAYOUT_UNDEFINED;
+	}
+}
+
+static D3D12_RESOURCE_STATES GetD3D12ResourceState(GSTexture12::ResourceState state)
+{
+	switch (state)
+	{
+		case GSTexture12::ResourceState::Undefined:
+			return D3D12_RESOURCE_STATE_COMMON;
+		case GSTexture12::ResourceState::Present:
+			return D3D12_RESOURCE_STATE_COMMON;
+		case GSTexture12::ResourceState::RenderTarget:
+			return D3D12_RESOURCE_STATE_RENDER_TARGET;
+		case GSTexture12::ResourceState::DepthWriteStencil:
+			return D3D12_RESOURCE_STATE_DEPTH_WRITE;
+		case GSTexture12::ResourceState::PixelShaderResource:
+			return D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+		case GSTexture12::ResourceState::ComputeShaderResource:
+			return D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+		case GSTexture12::ResourceState::CopySrc:
+			return D3D12_RESOURCE_STATE_COPY_SOURCE;
+		case GSTexture12::ResourceState::CopyDst:
+			return D3D12_RESOURCE_STATE_COPY_DEST;
+		case GSTexture12::ResourceState::CASShaderUAV:
+		case GSTexture12::ResourceState::PixelShaderUAV:
+			return D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+		default:
+			pxAssert(false);
+			return D3D12_RESOURCE_STATE_COMMON;
+	}
+}
+
 std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int width, int height, int levels,
 	DXGI_FORMAT dxgi_format, DXGI_FORMAT srv_format, DXGI_FORMAT rtv_format, DXGI_FORMAT dsv_format,
 	DXGI_FORMAT uav_format)
 {
 	GSDevice12* const dev = GSDevice12::GetInstance();
 
-	D3D12_RESOURCE_DESC desc = {};
-	desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-	desc.Width = width;
-	desc.Height = height;
-	desc.DepthOrArraySize = 1;
-	desc.MipLevels = levels;
-	desc.Format = dxgi_format;
-	desc.SampleDesc.Count = 1;
-	desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+	GSDevice12::D3D12_RESOURCE_DESCU desc = {};
+	desc.desc1.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	desc.desc1.Width = width;
+	desc.desc1.Height = height;
+	desc.desc1.DepthOrArraySize = 1;
+	desc.desc1.MipLevels = levels;
+	desc.desc1.Format = dxgi_format;
+	desc.desc1.SampleDesc.Count = 1;
+	desc.desc1.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
 
 	D3D12MA::ALLOCATION_DESC allocationDesc = {};
 	allocationDesc.Flags = D3D12MA::ALLOCATION_FLAG_WITHIN_BUDGET;
 	allocationDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
 
 	D3D12_CLEAR_VALUE optimized_clear_value = {};
-	D3D12_RESOURCE_STATES state;
+	ResourceState state;
 
 	switch (type)
 	{
@@ -140,9 +200,9 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 		{
 			// This is a little annoying. basically, to do mipmap generation, we need to be a render target.
 			// If it's a compressed texture, we won't be generating mips anyway, so this should be fine.
-			desc.Flags = (levels > 1 && !IsCompressedFormat(format)) ? D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET :
-			                                                           D3D12_RESOURCE_FLAG_NONE;
-			state = D3D12_RESOURCE_STATE_COPY_DEST;
+			desc.desc1.Flags = (levels > 1 && !IsCompressedFormat(format)) ? D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET :
+			                                                                 D3D12_RESOURCE_FLAG_NONE;
+			state = ResourceState::CopyDst;
 		}
 		break;
 
@@ -152,10 +212,11 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 			pxAssert(levels == 1);
 			allocationDesc.Flags |= D3D12MA::ALLOCATION_FLAG_COMMITTED;
 			allocationDesc.ExtraHeapFlags = D3D12_HEAP_FLAG_DENY_BUFFERS | D3D12_HEAP_FLAG_DENY_NON_RT_DS_TEXTURES;
-			desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET | D3D12_RESOURCE_FLAG_ALLOW_SIMULTANEOUS_ACCESS;
-			desc.Layout = D3D12_TEXTURE_LAYOUT_64KB_UNDEFINED_SWIZZLE;
+			desc.desc1.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET | D3D12_RESOURCE_FLAG_ALLOW_SIMULTANEOUS_ACCESS;
+			if (!dev->UseEnhancedBarriers())
+				desc.desc1.Layout = D3D12_TEXTURE_LAYOUT_64KB_UNDEFINED_SWIZZLE;
 			optimized_clear_value.Format = rtv_format;
-			state = D3D12_RESOURCE_STATE_RENDER_TARGET;
+			state = ResourceState::RenderTarget;
 		}
 		break;
 
@@ -163,9 +224,9 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 		{
 			pxAssert(levels == 1);
 			allocationDesc.Flags |= D3D12MA::ALLOCATION_FLAG_COMMITTED;
-			desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+			desc.desc1.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 			optimized_clear_value.Format = dsv_format;
-			state = D3D12_RESOURCE_STATE_DEPTH_WRITE;
+			state = ResourceState::DepthWriteStencil;
 		}
 		break;
 
@@ -173,7 +234,7 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 		{
 			pxAssert(levels == 1);
 			allocationDesc.Flags |= D3D12MA::ALLOCATION_FLAG_COMMITTED;
-			state = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+			state = ResourceState::PixelShaderResource;
 		}
 		break;
 
@@ -182,15 +243,16 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 	}
 
 	if (uav_format != DXGI_FORMAT_UNKNOWN)
-		desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+		desc.desc1.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 
 	wil::com_ptr_nothrow<ID3D12Resource> resource;
 	wil::com_ptr_nothrow<ID3D12Resource> resource_fbl;
 	wil::com_ptr_nothrow<D3D12MA::Allocation> allocation;
 
-	if (type == Type::RenderTarget)
+	if (type == Type::RenderTarget && !dev->UseEnhancedBarriers())
 	{
-		const D3D12_RESOURCE_ALLOCATION_INFO allocInfo = dev->GetDevice()->GetResourceAllocationInfo(0, 1, &desc);
+		// We need to use an aliased resource for feedback with legacy barriers.
+		const D3D12_RESOURCE_ALLOCATION_INFO allocInfo = dev->GetDevice()->GetResourceAllocationInfo(0, 1, &desc.desc);
 
 		HRESULT hr = dev->GetAllocator()->AllocateMemory(&allocationDesc, &allocInfo, allocation.put());
 		if (FAILED(hr))
@@ -202,7 +264,7 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 			return {};
 		}
 
-		hr = dev->GetAllocator()->CreateAliasingResource(allocation.get(), 0, &desc, state,
+		hr = dev->GetAllocator()->CreateAliasingResource(allocation.get(), 0, &desc.desc, GetD3D12ResourceState(state),
 			(type == Type::RenderTarget || type == Type::DepthStencil) ? &optimized_clear_value : nullptr,
 			IID_PPV_ARGS(resource.put()));
 		if (FAILED(hr))
@@ -214,7 +276,7 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 			return {};
 		}
 
-		hr = dev->GetAllocator()->CreateAliasingResource(allocation.get(), 0, &desc, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+		hr = dev->GetAllocator()->CreateAliasingResource(allocation.get(), 0, &desc.desc, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
 			(type == Type::RenderTarget || type == Type::DepthStencil) ? &optimized_clear_value : nullptr,
 			IID_PPV_ARGS(resource_fbl.put()));
 		if (FAILED(hr))
@@ -228,9 +290,20 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 	}
 	else
 	{
-		HRESULT hr = dev->GetAllocator()->CreateResource(&allocationDesc, &desc, state,
-			(type == Type::RenderTarget || type == Type::DepthStencil) ? &optimized_clear_value : nullptr, allocation.put(),
-			IID_PPV_ARGS(resource.put()));
+		HRESULT hr;
+		if (dev->UseEnhancedBarriers())
+		{
+			hr = dev->GetAllocator()->CreateResource3(&allocationDesc, &desc.desc1,
+				type == Type::RenderTarget ? D3D12_BARRIER_LAYOUT_COMMON : GetD3D12BarrierLayout(state),
+				(type == Type::RenderTarget || type == Type::DepthStencil) ? &optimized_clear_value : nullptr,
+				0, nullptr, allocation.put(), IID_PPV_ARGS(resource.put()));
+		}
+		else
+		{
+			hr = dev->GetAllocator()->CreateResource(&allocationDesc, &desc.desc, GetD3D12ResourceState(state),
+				(type == Type::RenderTarget || type == Type::DepthStencil) ? &optimized_clear_value : nullptr, allocation.put(),
+				IID_PPV_ARGS(resource.put()));
+		}
 		if (FAILED(hr))
 		{
 			// OOM isn't fatal.
@@ -301,8 +374,10 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 		return {};
 	}
 
+	// Feedback descriptor used with legacy barriers
 	if (resource_fbl)
 	{
+		pxAssert(!dev->UseEnhancedBarriers());
 		if (!CreateSRVDescriptor(resource_fbl.get(), levels, srv_format, &fbl_descriptor))
 		{
 			dev->GetDescriptorHeapManager().Free(&uav_descriptor);
@@ -325,12 +400,12 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 
 	return std::unique_ptr<GSTexture12>(
 		new GSTexture12(type, format, width, height, levels, dxgi_format, std::move(resource), std::move(resource_fbl), std::move(allocation),
-			srv_descriptor, write_descriptor, ro_dsv_descriptor, uav_descriptor, fbl_descriptor, write_descriptor_type, state));
+			srv_descriptor, write_descriptor, ro_dsv_descriptor, uav_descriptor, fbl_descriptor, write_descriptor_type, type == Type::RenderTarget, state));
 }
 
 std::unique_ptr<GSTexture12> GSTexture12::Adopt(wil::com_ptr_nothrow<ID3D12Resource> resource, Type type, Format format,
 	int width, int height, int levels, DXGI_FORMAT dxgi_format, DXGI_FORMAT srv_format, DXGI_FORMAT rtv_format,
-	DXGI_FORMAT dsv_format, DXGI_FORMAT uav_format, D3D12_RESOURCE_STATES resource_state)
+	DXGI_FORMAT dsv_format, DXGI_FORMAT uav_format, ResourceState resource_state)
 {
 	const D3D12_RESOURCE_DESC desc = resource->GetDesc();
 
@@ -391,7 +466,7 @@ std::unique_ptr<GSTexture12> GSTexture12::Adopt(wil::com_ptr_nothrow<ID3D12Resou
 
 	return std::unique_ptr<GSTexture12>(new GSTexture12(type, format, static_cast<u32>(desc.Width), desc.Height,
 		desc.MipLevels, desc.Format, std::move(resource), {}, {}, srv_descriptor, write_descriptor, {}, uav_descriptor,
-		{}, write_descriptor_type, resource_state));
+		{}, write_descriptor_type, false, resource_state));
 }
 
 bool GSTexture12::CreateSRVDescriptor(
@@ -432,7 +507,7 @@ bool GSTexture12::CreateDSVDescriptor(ID3D12Resource* resource, DXGI_FORMAT form
 		return false;
 	}
 
-	const D3D12_DEPTH_STENCIL_VIEW_DESC desc = {format, D3D12_DSV_DIMENSION_TEXTURE2D, read_only ? D3D12_DSV_FLAG_READ_ONLY_DEPTH : D3D12_DSV_FLAG_NONE };
+	const D3D12_DEPTH_STENCIL_VIEW_DESC desc = {format, D3D12_DSV_DIMENSION_TEXTURE2D, read_only ? D3D12_DSV_FLAG_READ_ONLY_DEPTH : D3D12_DSV_FLAG_NONE};
 	GSDevice12::GetInstance()->GetDevice()->CreateDepthStencilView(resource, &desc, dh->cpu_handle);
 	return true;
 }
@@ -455,7 +530,7 @@ void* GSTexture12::GetNativeHandle() const
 	return const_cast<GSTexture12*>(this);
 }
 
-ID3D12GraphicsCommandList* GSTexture12::GetCommandBufferForUpdate()
+const D3D12CommandList& GSTexture12::GetCommandBufferForUpdate()
 {
 	GSDevice12* const dev = GSDevice12::GetInstance();
 	if (m_type != Type::Texture || m_use_fence_counter == dev->GetCurrentFenceValue())
@@ -476,10 +551,20 @@ ID3D12Resource* GSTexture12::AllocateUploadStagingBuffer(
 	wil::com_ptr_nothrow<D3D12MA::Allocation> allocation;
 
 	const D3D12MA::ALLOCATION_DESC allocation_desc = {D3D12MA::ALLOCATION_FLAG_NONE, D3D12_HEAP_TYPE_UPLOAD};
-	const D3D12_RESOURCE_DESC resource_desc = {D3D12_RESOURCE_DIMENSION_BUFFER, 0, buffer_size, 1, 1, 1,
-		DXGI_FORMAT_UNKNOWN, {1, 0}, D3D12_TEXTURE_LAYOUT_ROW_MAJOR, D3D12_RESOURCE_FLAG_NONE};
-	HRESULT hr = GSDevice12::GetInstance()->GetAllocator()->CreateResource(&allocation_desc, &resource_desc,
-		D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, allocation.put(), IID_PPV_ARGS(resource.put()));
+
+	const GSDevice12::D3D12_RESOURCE_DESCU resource_desc = {{D3D12_RESOURCE_DIMENSION_BUFFER, 0, buffer_size, 1, 1, 1,
+		DXGI_FORMAT_UNKNOWN, {1, 0}, D3D12_TEXTURE_LAYOUT_ROW_MAJOR, D3D12_RESOURCE_FLAG_NONE}};
+	HRESULT hr;
+	if (GSDevice12::GetInstance()->UseEnhancedBarriers())
+	{
+		hr = GSDevice12::GetInstance()->GetAllocator()->CreateResource3(&allocation_desc, &resource_desc.desc1,
+			D3D12_BARRIER_LAYOUT_UNDEFINED, nullptr, 0, nullptr, allocation.put(), IID_PPV_ARGS(resource.put()));
+	}
+	else
+	{
+		hr = GSDevice12::GetInstance()->GetAllocator()->CreateResource(&allocation_desc, &resource_desc.desc,
+			D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, allocation.put(), IID_PPV_ARGS(resource.put()));
+	}
 	if (FAILED(hr))
 	{
 		Console.WriteLn("(AllocateUploadStagingBuffer) CreateCommittedResource() failed with %08X", hr);
@@ -564,14 +649,14 @@ bool GSTexture12::Update(const GSVector4i& r, const void* data, int pitch, int l
 		sbuffer.CommitMemory(required_size);
 	}
 
-	ID3D12GraphicsCommandList* cmdlist = GetCommandBufferForUpdate();
+	const D3D12CommandList& cmdlist = GetCommandBufferForUpdate();
 	GL_PUSH("GSTexture12::Update({%d,%d} %dx%d Lvl:%u", r.x, r.y, r.width(), r.height(), layer);
 
 	// first time the texture is used? don't leave it undefined
-	if (m_resource_state == D3D12_RESOURCE_STATE_COMMON)
-		TransitionToState(cmdlist, D3D12_RESOURCE_STATE_COPY_DEST);
-	else if (m_resource_state != D3D12_RESOURCE_STATE_COPY_DEST)
-		TransitionSubresourceToState(cmdlist, layer, m_resource_state, D3D12_RESOURCE_STATE_COPY_DEST);
+	if (m_resource_state == GSTexture12::ResourceState::Undefined)
+		TransitionToState(cmdlist, GSTexture12::ResourceState::CopyDst);
+	else if (m_resource_state != GSTexture12::ResourceState::CopyDst)
+		TransitionSubresourceToState(cmdlist, layer, m_resource_state, GSTexture12::ResourceState::CopyDst);
 
 	// if we're an rt and have been cleared, and the full rect isn't being uploaded, do the clear
 	if (m_type == Type::RenderTarget)
@@ -588,11 +673,11 @@ bool GSTexture12::Update(const GSVector4i& r, const void* data, int pitch, int l
 	dstloc.SubresourceIndex = layer;
 
 	const D3D12_BOX srcbox{0u, 0u, 0u, width, height, 1u};
-	cmdlist->CopyTextureRegion(&dstloc, Common::AlignDownPow2((u32)r.x, block_size),
+	cmdlist.list4->CopyTextureRegion(&dstloc, Common::AlignDownPow2((u32)r.x, block_size),
 		Common::AlignDownPow2((u32)r.y, block_size), 0, &srcloc, &srcbox);
 
-	if (m_resource_state != D3D12_RESOURCE_STATE_COPY_DEST)
-		TransitionSubresourceToState(cmdlist, layer, D3D12_RESOURCE_STATE_COPY_DEST, m_resource_state);
+	if (m_resource_state != GSTexture12::ResourceState::CopyDst)
+		TransitionSubresourceToState(cmdlist, layer, GSTexture12::ResourceState::CopyDst, m_resource_state);
 
 	if (m_type == Type::Texture)
 		m_needs_mipmaps_generated |= (layer == 0);
@@ -642,15 +727,15 @@ void GSTexture12::Unmap()
 	const u32 buffer_offset = buffer.GetCurrentOffset();
 	buffer.CommitMemory(required_size);
 
-	ID3D12GraphicsCommandList* cmdlist = GetCommandBufferForUpdate();
+	const D3D12CommandList& cmdlist = GetCommandBufferForUpdate();
 	GL_PUSH("GSTexture12::Update({%d,%d} %dx%d Lvl:%u", m_map_area.x, m_map_area.y, m_map_area.width(),
 		m_map_area.height(), m_map_level);
 
 	// first time the texture is used? don't leave it undefined
-	if (m_resource_state == D3D12_RESOURCE_STATE_COMMON)
-		TransitionToState(cmdlist, D3D12_RESOURCE_STATE_COPY_DEST);
-	else if (m_resource_state != D3D12_RESOURCE_STATE_COPY_DEST)
-		TransitionSubresourceToState(cmdlist, m_map_level, m_resource_state, D3D12_RESOURCE_STATE_COPY_DEST);
+	if (m_resource_state == ResourceState::Undefined)
+		TransitionToState(cmdlist, ResourceState::CopyDst);
+	else if (m_resource_state != ResourceState::CopyDst)
+		TransitionSubresourceToState(cmdlist, m_map_level, m_resource_state, ResourceState::CopyDst);
 
 	// if we're an rt and have been cleared, and the full rect isn't being uploaded, do the clear
 	if (m_type == Type::RenderTarget)
@@ -677,10 +762,10 @@ void GSTexture12::Unmap()
 	dstloc.SubresourceIndex = m_map_level;
 
 	const D3D12_BOX srcbox{0u, 0u, 0u, width, height, 1};
-	cmdlist->CopyTextureRegion(&dstloc, m_map_area.x, m_map_area.y, 0, &srcloc, &srcbox);
+	cmdlist.list4->CopyTextureRegion(&dstloc, m_map_area.x, m_map_area.y, 0, &srcloc, &srcbox);
 
-	if (m_resource_state != D3D12_RESOURCE_STATE_COPY_DEST)
-		TransitionSubresourceToState(cmdlist, m_map_level, D3D12_RESOURCE_STATE_COPY_DEST, m_resource_state);
+	if (m_resource_state != ResourceState::CopyDst)
+		TransitionSubresourceToState(cmdlist, m_map_level, ResourceState::CopyDst, m_resource_state);
 
 	if (m_type == Type::Texture)
 		m_needs_mipmaps_generated |= (m_map_level == 0);
@@ -717,55 +802,343 @@ void GSTexture12::SetDebugName(std::string_view name)
 
 #endif
 
-void GSTexture12::TransitionToState(D3D12_RESOURCE_STATES state)
+void GSTexture12::TransitionToState(ResourceState state)
 {
 	TransitionToState(GSDevice12::GetInstance()->GetCommandList(), state);
 }
 
-void GSTexture12::TransitionToState(ID3D12GraphicsCommandList* cmdlist, D3D12_RESOURCE_STATES state)
+void GSTexture12::TransitionToState(const D3D12CommandList& cmdlist, ResourceState state)
 {
 	if (m_resource_state == state)
 		return;
 
-	// Read only depth requires special handling as we might want to write stencil.
-	// Also batch the transition barriers as per recommendation from docs.
-	if (state == (D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE))
-	{
-		// Transition to read depth/write stencil
-		const D3D12_RESOURCE_BARRIER barriers[2] = {
-			{D3D12_RESOURCE_BARRIER_TYPE_TRANSITION, D3D12_RESOURCE_BARRIER_FLAG_NONE,
-				{{m_resource.get(), 0, m_resource_state, (D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE)}}},
-			{D3D12_RESOURCE_BARRIER_TYPE_TRANSITION, D3D12_RESOURCE_BARRIER_FLAG_NONE,
-				{{m_resource.get(), 1, m_resource_state, D3D12_RESOURCE_STATE_DEPTH_WRITE}}},
-		};
-		cmdlist->ResourceBarrier(m_resource_state == D3D12_RESOURCE_STATE_DEPTH_WRITE ? 1 : 2, barriers);
-	}
-	else if (m_resource_state == (D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE))
-	{
-		// Transition from read depth/write stencil
-		const D3D12_RESOURCE_BARRIER barriers[2] = {
-			{D3D12_RESOURCE_BARRIER_TYPE_TRANSITION, D3D12_RESOURCE_BARRIER_FLAG_NONE,
-				{{m_resource.get(), 0, (D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE), state}}},
-			{D3D12_RESOURCE_BARRIER_TYPE_TRANSITION, D3D12_RESOURCE_BARRIER_FLAG_NONE,
-				{{m_resource.get(), 1, D3D12_RESOURCE_STATE_DEPTH_WRITE, state}}},
-		};
-		cmdlist->ResourceBarrier(state == D3D12_RESOURCE_STATE_DEPTH_WRITE ? 1 : 2, barriers);
-	}
-	else
-	{
-		// Normal transition
-		TransitionSubresourceToState(cmdlist, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, m_resource_state, state);
-	}
+	TransitionSubresourceToState(cmdlist, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, m_resource_state, state);
 
 	m_resource_state = state;
 }
 
-void GSTexture12::TransitionSubresourceToState(ID3D12GraphicsCommandList* cmdlist, int level,
-	D3D12_RESOURCE_STATES before_state, D3D12_RESOURCE_STATES after_state) const
+void GSTexture12::TransitionSubresourceToState(const D3D12CommandList& cmdlist, int level,
+	ResourceState before_state, ResourceState after_state) const
 {
-	const D3D12_RESOURCE_BARRIER barrier = {D3D12_RESOURCE_BARRIER_TYPE_TRANSITION, D3D12_RESOURCE_BARRIER_FLAG_NONE,
-		{{m_resource.get(), static_cast<u32>(level), before_state, after_state}}};
-	cmdlist->ResourceBarrier(1, &barrier);
+	if (GSDevice12::GetInstance()->UseEnhancedBarriers())
+	{
+		// Read only depth requires special handling as we might want to write stencil.
+		// We need to transition subresources separately, requiring 2 barriers
+		// Handling it here allows us to batch those barriers.
+		// Other transitions only need the one barrier.
+		D3D12_TEXTURE_BARRIER barriers[2] = {{D3D12_BARRIER_SYNC_NONE, D3D12_BARRIER_SYNC_NONE,
+			D3D12_BARRIER_ACCESS_COMMON, D3D12_BARRIER_ACCESS_COMMON,
+			D3D12_BARRIER_LAYOUT_COMMON, D3D12_BARRIER_LAYOUT_COMMON,
+			m_resource.get(), {static_cast<u32>(level), 0, 0, 0, 0, 0}, D3D12_TEXTURE_BARRIER_FLAG_NONE}};
+
+		uint num_barriers = 1;
+		D3D12_TEXTURE_BARRIER& barrier = barriers[0];
+		switch (before_state)
+		{
+			case ResourceState::Undefined:
+			case ResourceState::Present:
+				barrier.LayoutBefore = D3D12_BARRIER_LAYOUT_COMMON;
+				barrier.AccessBefore = D3D12_BARRIER_ACCESS_NO_ACCESS;
+				barrier.SyncBefore = D3D12_BARRIER_SYNC_NONE;
+				break;
+			case ResourceState::RenderTarget:
+				barrier.LayoutBefore = m_simultaneous_tex ? D3D12_BARRIER_LAYOUT_COMMON : D3D12_BARRIER_LAYOUT_RENDER_TARGET;
+				barrier.AccessBefore = m_simultaneous_tex ?
+				                           D3D12_BARRIER_ACCESS_RENDER_TARGET | D3D12_BARRIER_ACCESS_SHADER_RESOURCE :
+				                           D3D12_BARRIER_ACCESS_RENDER_TARGET;
+				barrier.SyncBefore = m_simultaneous_tex ?
+				                         D3D12_BARRIER_SYNC_RENDER_TARGET | D3D12_BARRIER_SYNC_PIXEL_SHADING :
+				                         D3D12_BARRIER_SYNC_RENDER_TARGET;
+				break;
+			case ResourceState::DepthWriteStencil:
+				pxAssert(!m_simultaneous_tex);
+				barrier.LayoutBefore = D3D12_BARRIER_LAYOUT_DEPTH_STENCIL_WRITE;
+				barrier.AccessBefore = D3D12_BARRIER_ACCESS_DEPTH_STENCIL_WRITE;
+				barrier.SyncBefore = D3D12_BARRIER_SYNC_DEPTH_STENCIL;
+				break;
+			case ResourceState::DepthReadStencil:
+				pxAssert(!m_simultaneous_tex);
+				pxAssert(level == D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
+
+				barriers[0].Subresources = {0, static_cast<uint>(m_mipmap_levels), 0, 1, 0, 1};
+				barriers[0].LayoutBefore = D3D12_BARRIER_LAYOUT_DIRECT_QUEUE_GENERIC_READ;
+				barriers[0].AccessBefore = D3D12_BARRIER_ACCESS_SHADER_RESOURCE | D3D12_BARRIER_ACCESS_DEPTH_STENCIL_READ;
+				barriers[0].SyncBefore = D3D12_BARRIER_SYNC_DEPTH_STENCIL | D3D12_BARRIER_SYNC_PIXEL_SHADING;
+				if (after_state != ResourceState::DepthWriteStencil)
+				{
+					num_barriers = 2;
+					barriers[1].Subresources = {0, static_cast<uint>(m_mipmap_levels), 0, 1, 1, 1};
+					barriers[1].LayoutBefore = D3D12_BARRIER_LAYOUT_DEPTH_STENCIL_WRITE;
+					barriers[1].AccessBefore = D3D12_BARRIER_ACCESS_DEPTH_STENCIL_READ;
+					barriers[1].SyncBefore = D3D12_BARRIER_SYNC_DEPTH_STENCIL;
+				}
+				break;
+			case ResourceState::PixelShaderResource:
+				barrier.LayoutBefore = m_simultaneous_tex ? D3D12_BARRIER_LAYOUT_COMMON : D3D12_BARRIER_LAYOUT_DIRECT_QUEUE_SHADER_RESOURCE;
+				barrier.AccessBefore = D3D12_BARRIER_ACCESS_SHADER_RESOURCE;
+				barrier.SyncBefore = D3D12_BARRIER_SYNC_PIXEL_SHADING;
+				break;
+			case ResourceState::ComputeShaderResource:
+				barrier.LayoutBefore = m_simultaneous_tex ? D3D12_BARRIER_LAYOUT_COMMON : D3D12_BARRIER_LAYOUT_DIRECT_QUEUE_SHADER_RESOURCE;
+				barrier.AccessBefore = D3D12_BARRIER_ACCESS_SHADER_RESOURCE;
+				barrier.SyncBefore = D3D12_BARRIER_SYNC_COMPUTE_SHADING;
+				break;
+			case ResourceState::CopySrc:
+				barrier.LayoutBefore = m_simultaneous_tex ? D3D12_BARRIER_LAYOUT_COMMON : D3D12_BARRIER_LAYOUT_DIRECT_QUEUE_COPY_SOURCE;
+				barrier.AccessBefore = D3D12_BARRIER_ACCESS_COPY_SOURCE;
+				barrier.SyncBefore = D3D12_BARRIER_SYNC_COPY;
+				break;
+			case ResourceState::CopyDst:
+				barrier.LayoutBefore = m_simultaneous_tex ? D3D12_BARRIER_LAYOUT_COMMON : D3D12_BARRIER_LAYOUT_DIRECT_QUEUE_COPY_DEST;
+				barrier.AccessBefore = D3D12_BARRIER_ACCESS_COPY_DEST;
+				barrier.SyncBefore = D3D12_BARRIER_SYNC_COPY;
+				break;
+			case ResourceState::CASShaderUAV:
+				barrier.LayoutBefore = m_simultaneous_tex ? D3D12_BARRIER_LAYOUT_COMMON : D3D12_BARRIER_LAYOUT_DIRECT_QUEUE_UNORDERED_ACCESS;
+				barrier.AccessBefore = D3D12_BARRIER_ACCESS_UNORDERED_ACCESS;
+				barrier.SyncBefore = D3D12_BARRIER_SYNC_COMPUTE_SHADING;
+				break;
+			case ResourceState::PixelShaderUAV:
+				barrier.LayoutBefore = m_simultaneous_tex ? D3D12_BARRIER_LAYOUT_COMMON : D3D12_BARRIER_LAYOUT_DIRECT_QUEUE_UNORDERED_ACCESS;
+				barrier.AccessBefore = D3D12_BARRIER_ACCESS_UNORDERED_ACCESS;
+				barrier.SyncBefore = D3D12_BARRIER_SYNC_PIXEL_SHADING | D3D12_BARRIER_SYNC_CLEAR_UNORDERED_ACCESS_VIEW;
+				break;
+			default:
+				pxAssert(false);
+				barrier.LayoutBefore = D3D12_BARRIER_LAYOUT_UNDEFINED;
+				barrier.AccessBefore = D3D12_BARRIER_ACCESS_NO_ACCESS;
+				barrier.SyncBefore = D3D12_BARRIER_SYNC_NONE;
+				break;
+		}
+
+		switch (after_state)
+		{
+			case ResourceState::Undefined:
+			case ResourceState::Present:
+				barrier.LayoutAfter = D3D12_BARRIER_LAYOUT_COMMON;
+				barrier.AccessAfter = D3D12_BARRIER_ACCESS_NO_ACCESS;
+				barrier.SyncAfter = D3D12_BARRIER_SYNC_NONE;
+				break;
+			case ResourceState::RenderTarget:
+				barrier.LayoutAfter = m_simultaneous_tex ? D3D12_BARRIER_LAYOUT_COMMON : D3D12_BARRIER_LAYOUT_RENDER_TARGET;
+				barrier.AccessAfter = m_simultaneous_tex ?
+				                          D3D12_BARRIER_ACCESS_RENDER_TARGET | D3D12_BARRIER_ACCESS_SHADER_RESOURCE :
+				                          D3D12_BARRIER_ACCESS_RENDER_TARGET;
+				barrier.SyncAfter = m_simultaneous_tex ?
+				                        D3D12_BARRIER_SYNC_RENDER_TARGET | D3D12_BARRIER_SYNC_PIXEL_SHADING :
+				                        D3D12_BARRIER_SYNC_RENDER_TARGET;
+				break;
+			case ResourceState::DepthWriteStencil:
+				pxAssert(!m_simultaneous_tex);
+				barrier.LayoutAfter = D3D12_BARRIER_LAYOUT_DEPTH_STENCIL_WRITE;
+				barrier.AccessAfter = D3D12_BARRIER_ACCESS_DEPTH_STENCIL_WRITE;
+				barrier.SyncAfter = D3D12_BARRIER_SYNC_DEPTH_STENCIL;
+				break;
+			case ResourceState::DepthReadStencil:
+				pxAssert(!m_simultaneous_tex);
+				pxAssert(level == D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
+
+				barriers[0].Subresources = {0, static_cast<uint>(m_mipmap_levels), 0, 1, 0, 1};
+				barriers[0].LayoutAfter = D3D12_BARRIER_LAYOUT_DIRECT_QUEUE_GENERIC_READ;
+				barriers[0].AccessAfter = D3D12_BARRIER_ACCESS_SHADER_RESOURCE | D3D12_BARRIER_ACCESS_DEPTH_STENCIL_READ;
+				barriers[0].SyncAfter = D3D12_BARRIER_SYNC_DEPTH_STENCIL | D3D12_BARRIER_SYNC_PIXEL_SHADING;
+				if (before_state != ResourceState::DepthWriteStencil)
+				{
+					num_barriers = 2;
+					barriers[1].Subresources = {0, static_cast<uint>(m_mipmap_levels), 0, 1, 1, 1};
+					barriers[1].LayoutAfter = D3D12_BARRIER_LAYOUT_DEPTH_STENCIL_WRITE;
+					barriers[1].AccessAfter = D3D12_BARRIER_ACCESS_DEPTH_STENCIL_READ;
+					barriers[1].SyncAfter = D3D12_BARRIER_SYNC_DEPTH_STENCIL;
+				}
+				break;
+			case ResourceState::PixelShaderResource:
+				barrier.LayoutAfter = m_simultaneous_tex ? D3D12_BARRIER_LAYOUT_COMMON : D3D12_BARRIER_LAYOUT_DIRECT_QUEUE_SHADER_RESOURCE;
+				barrier.AccessAfter = D3D12_BARRIER_ACCESS_SHADER_RESOURCE;
+				barrier.SyncAfter = D3D12_BARRIER_SYNC_PIXEL_SHADING;
+				break;
+			case ResourceState::ComputeShaderResource:
+				barrier.LayoutAfter = m_simultaneous_tex ? D3D12_BARRIER_LAYOUT_COMMON : D3D12_BARRIER_LAYOUT_DIRECT_QUEUE_SHADER_RESOURCE;
+				barrier.AccessAfter = D3D12_BARRIER_ACCESS_SHADER_RESOURCE;
+				barrier.SyncAfter = D3D12_BARRIER_SYNC_COMPUTE_SHADING;
+				break;
+			case ResourceState::CopySrc:
+				barrier.LayoutAfter = m_simultaneous_tex ? D3D12_BARRIER_LAYOUT_COMMON : D3D12_BARRIER_LAYOUT_DIRECT_QUEUE_COPY_SOURCE;
+				barrier.AccessAfter = D3D12_BARRIER_ACCESS_COPY_SOURCE;
+				barrier.SyncAfter = D3D12_BARRIER_SYNC_COPY;
+				break;
+			case ResourceState::CopyDst:
+				barrier.LayoutAfter = m_simultaneous_tex ? D3D12_BARRIER_LAYOUT_COMMON : D3D12_BARRIER_LAYOUT_DIRECT_QUEUE_COPY_DEST;
+				barrier.AccessAfter = D3D12_BARRIER_ACCESS_COPY_DEST;
+				barrier.SyncAfter = D3D12_BARRIER_SYNC_COPY;
+				break;
+			case ResourceState::CASShaderUAV:
+				barrier.LayoutAfter = m_simultaneous_tex ? D3D12_BARRIER_LAYOUT_COMMON : D3D12_BARRIER_LAYOUT_DIRECT_QUEUE_UNORDERED_ACCESS;
+				barrier.AccessAfter = D3D12_BARRIER_ACCESS_UNORDERED_ACCESS;
+				barrier.SyncAfter = D3D12_BARRIER_SYNC_COMPUTE_SHADING;
+				break;
+			case ResourceState::PixelShaderUAV:
+				barrier.LayoutAfter = m_simultaneous_tex ? D3D12_BARRIER_LAYOUT_COMMON : D3D12_BARRIER_LAYOUT_DIRECT_QUEUE_UNORDERED_ACCESS;
+				barrier.AccessAfter = D3D12_BARRIER_ACCESS_UNORDERED_ACCESS;
+				barrier.SyncAfter = D3D12_BARRIER_SYNC_PIXEL_SHADING | D3D12_BARRIER_SYNC_CLEAR_UNORDERED_ACCESS_VIEW;
+				break;
+			default:
+				pxAssert(false);
+				barrier.LayoutAfter = D3D12_BARRIER_LAYOUT_UNDEFINED;
+				barrier.AccessAfter = D3D12_BARRIER_ACCESS_NO_ACCESS;
+				barrier.SyncAfter = D3D12_BARRIER_SYNC_NONE;
+				break;
+		}
+
+		if (num_barriers == 2)
+		{
+			barriers[1].pResource = m_resource.get();
+			barriers[1].Flags = barriers[0].Flags;
+			if (before_state == ResourceState::DepthReadStencil)
+			{
+				barriers[1].LayoutAfter = barriers[0].LayoutAfter;
+				barriers[1].AccessAfter = barriers[0].AccessAfter;
+				barriers[1].SyncAfter = barriers[0].SyncAfter;
+			}
+			else // after_state == ResourceState::DepthReadStencil
+			{
+				barriers[1].LayoutBefore = barriers[0].LayoutBefore;
+				barriers[1].AccessBefore = barriers[0].AccessBefore;
+				barriers[1].SyncBefore = barriers[0].SyncBefore;
+			}
+		}
+
+		const D3D12_BARRIER_GROUP group = {.Type = D3D12_BARRIER_TYPE_TEXTURE, .NumBarriers = num_barriers, .pTextureBarriers = barriers};
+		cmdlist.list7->Barrier(1, &group);
+	}
+	else
+	{
+		// Read only depth requires special handling as we might want to write stencil.
+		// We need to transition subresources separately, requiring 2 barriers.
+		// Handling it here allows us to batch those barriers.
+		// Other transitions only need the one barrier.
+		D3D12_RESOURCE_BARRIER barriers[2] = {{D3D12_RESOURCE_BARRIER_TYPE_TRANSITION, D3D12_RESOURCE_BARRIER_FLAG_NONE,
+			{{m_resource.get(), static_cast<u32>(level), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COMMON}}}};
+
+		int num_barriers = 1;
+		D3D12_RESOURCE_BARRIER& barrier = barriers[0];
+		switch (before_state)
+		{
+			case ResourceState::Undefined:
+			case ResourceState::Present:
+				barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COMMON;
+				break;
+			case ResourceState::RenderTarget:
+				barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+				break;
+			case ResourceState::DepthWriteStencil:
+				barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_DEPTH_WRITE;
+				break;
+			case ResourceState::DepthReadStencil:
+				pxAssert(!m_simultaneous_tex);
+				pxAssert(m_mipmap_levels == 1);
+				pxAssert(level == D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
+
+				barriers[0].Transition.Subresource = 0;
+				barriers[0].Transition.StateBefore = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_DEPTH_READ;
+				if (after_state != ResourceState::DepthWriteStencil)
+				{
+					num_barriers = 2;
+					barriers[1].Transition.Subresource = 1;
+					barriers[1].Transition.StateBefore = D3D12_RESOURCE_STATE_DEPTH_WRITE;
+				}
+				break;
+			case ResourceState::PixelShaderResource:
+				barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+				break;
+			case ResourceState::ComputeShaderResource:
+				barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+				break;
+			case ResourceState::CopySrc:
+				barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_SOURCE;
+				break;
+			case ResourceState::CopyDst:
+				barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+				break;
+			case ResourceState::CASShaderUAV:
+			case ResourceState::PixelShaderUAV:
+				// Handled in after_state cases.
+				if (after_state == ResourceState::CASShaderUAV || after_state == ResourceState::PixelShaderUAV)
+					break;
+
+				barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+				break;
+			default:
+				pxAssert(false);
+				break;
+		}
+
+		switch (after_state)
+		{
+			case ResourceState::Undefined:
+			case ResourceState::Present:
+				barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_COMMON;
+				break;
+			case ResourceState::RenderTarget:
+				barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+				break;
+			case ResourceState::DepthWriteStencil:
+				barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_DEPTH_WRITE;
+				break;
+			case ResourceState::DepthReadStencil:
+				pxAssert(!m_simultaneous_tex);
+				pxAssert(m_mipmap_levels == 1);
+				pxAssert(level == D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
+
+				barriers[0].Transition.Subresource = 0;
+				barriers[0].Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_DEPTH_READ;
+				if (before_state != ResourceState::DepthWriteStencil)
+				{
+					num_barriers = 2;
+					barriers[1].Transition.Subresource = 1;
+					barriers[1].Transition.StateAfter = D3D12_RESOURCE_STATE_DEPTH_WRITE;
+				}
+				break;
+			case ResourceState::PixelShaderResource:
+				barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+				break;
+			case ResourceState::ComputeShaderResource:
+				barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+				break;
+			case ResourceState::CopySrc:
+				barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_SOURCE;
+				break;
+			case ResourceState::CopyDst:
+				barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_DEST;
+				break;
+			case ResourceState::CASShaderUAV:
+			case ResourceState::PixelShaderUAV:
+				if (before_state == ResourceState::CASShaderUAV || before_state == ResourceState::PixelShaderUAV)
+				{
+					// No state transition, but probably want a barrier instead.
+					barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+					// pResource is a common initial member, so no need to set again.
+				}
+				else
+					barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+				break;
+			default:
+				pxAssert(false);
+				break;
+		}
+
+		if (num_barriers == 2)
+		{
+			barriers[1].Transition.pResource = m_resource.get();
+			barriers[1].Type = barriers[0].Type;
+			barriers[1].Flags = barriers[0].Flags;
+			if (before_state == ResourceState::DepthReadStencil)
+				barriers[1].Transition.StateAfter = barriers[0].Transition.StateAfter;
+			else // after_state == ResourceState::DepthReadStencil
+				barriers[1].Transition.StateBefore = barriers[0].Transition.StateBefore;
+		}
+
+		cmdlist.list4->ResourceBarrier(num_barriers, barriers);
+	}
 }
 
 void GSTexture12::CommitClear()
@@ -774,22 +1147,21 @@ void GSTexture12::CommitClear()
 		return;
 
 	GSDevice12::GetInstance()->EndRenderPass();
-
 	CommitClear(GSDevice12::GetInstance()->GetCommandList());
 }
 
-void GSTexture12::CommitClear(ID3D12GraphicsCommandList* cmdlist)
+void GSTexture12::CommitClear(const D3D12CommandList& cmdlist)
 {
 	if (IsDepthStencil())
 	{
-		TransitionToState(cmdlist, D3D12_RESOURCE_STATE_DEPTH_WRITE);
-		cmdlist->ClearDepthStencilView(
+		TransitionToState(cmdlist, ResourceState::DepthWriteStencil);
+		cmdlist.list4->ClearDepthStencilView(
 			GetWriteDescriptor(), D3D12_CLEAR_FLAG_DEPTH, m_clear_value.depth, 0, 0, nullptr);
 	}
 	else
 	{
-		TransitionToState(cmdlist, D3D12_RESOURCE_STATE_RENDER_TARGET);
-		cmdlist->ClearRenderTargetView(GetWriteDescriptor(), GSVector4::unorm8(m_clear_value.color).v, 0, nullptr);
+		TransitionToState(cmdlist, ResourceState::RenderTarget);
+		cmdlist.list4->ClearRenderTargetView(GetWriteDescriptor(), GSVector4::unorm8(m_clear_value.color).v, 0, nullptr);
 	}
 
 	SetState(GSTexture::State::Dirty);
@@ -816,14 +1188,23 @@ std::unique_ptr<GSDownloadTexture12> GSDownloadTexture12::Create(u32 width, u32 
 	D3D12MA::ALLOCATION_DESC allocation_desc = {};
 	allocation_desc.HeapType = D3D12_HEAP_TYPE_READBACK;
 
-	const D3D12_RESOURCE_DESC resource_desc = {D3D12_RESOURCE_DIMENSION_BUFFER, 0, buffer_size, 1, 1, 1,
-		DXGI_FORMAT_UNKNOWN, {1, 0}, D3D12_TEXTURE_LAYOUT_ROW_MAJOR, D3D12_RESOURCE_FLAG_NONE};
+	const GSDevice12::D3D12_RESOURCE_DESCU resource_desc = {{D3D12_RESOURCE_DIMENSION_BUFFER, 0, buffer_size, 1, 1, 1,
+		DXGI_FORMAT_UNKNOWN, {1, 0}, D3D12_TEXTURE_LAYOUT_ROW_MAJOR, D3D12_RESOURCE_FLAG_NONE}};
 
 	wil::com_ptr_nothrow<D3D12MA::Allocation> allocation;
 	wil::com_ptr_nothrow<ID3D12Resource> buffer;
 
-	HRESULT hr = GSDevice12::GetInstance()->GetAllocator()->CreateResource(&allocation_desc, &resource_desc,
-		D3D12_RESOURCE_STATE_COPY_DEST, nullptr, allocation.put(), IID_PPV_ARGS(buffer.put()));
+	HRESULT hr;
+	if (GSDevice12::GetInstance()->UseEnhancedBarriers())
+	{
+		hr = GSDevice12::GetInstance()->GetAllocator()->CreateResource3(&allocation_desc, &resource_desc.desc1,
+			D3D12_BARRIER_LAYOUT_UNDEFINED, nullptr, 0, nullptr, allocation.put(), IID_PPV_ARGS(buffer.put()));
+	}
+	else
+	{
+		hr = GSDevice12::GetInstance()->GetAllocator()->CreateResource(&allocation_desc, &resource_desc.desc,
+			D3D12_RESOURCE_STATE_COPY_DEST, nullptr, allocation.put(), IID_PPV_ARGS(buffer.put()));
+	}
 	if (FAILED(hr))
 	{
 		Console.Error("(GSDownloadTexture12::Create) CreateResource() failed with HRESULT %08X", hr);
@@ -861,7 +1242,7 @@ void GSDownloadTexture12::CopyFromTexture(
 	if (IsMapped())
 		Unmap();
 
-	ID3D12GraphicsCommandList* cmdlist = GSDevice12::GetInstance()->GetCommandList();
+	const D3D12CommandList& cmdlist = GSDevice12::GetInstance()->GetCommandList();
 	GL_INS("ReadbackTexture: {%d,%d} %ux%u", src.left, src.top, src.width(), src.height());
 
 	D3D12_TEXTURE_COPY_LOCATION srcloc;
@@ -879,17 +1260,17 @@ void GSDownloadTexture12::CopyFromTexture(
 	dstloc.PlacedFootprint.Footprint.Depth = 1;
 	dstloc.PlacedFootprint.Footprint.RowPitch = m_current_pitch;
 
-	const D3D12_RESOURCE_STATES old_layout = tex12->GetResourceState();
-	if (old_layout != D3D12_RESOURCE_STATE_COPY_SOURCE)
-		tex12->TransitionSubresourceToState(cmdlist, src_level, old_layout, D3D12_RESOURCE_STATE_COPY_SOURCE);
+	const GSTexture12::ResourceState old_layout = tex12->GetResourceState();
+	if (old_layout != GSTexture12::ResourceState::CopySrc)
+		tex12->TransitionSubresourceToState(cmdlist, src_level, old_layout, GSTexture12::ResourceState::CopySrc);
 
 	// TODO: Rules for depth buffers here?
 	const D3D12_BOX srcbox{static_cast<UINT>(src.left), static_cast<UINT>(src.top), 0u, static_cast<UINT>(src.right),
 		static_cast<UINT>(src.bottom), 1u};
-	cmdlist->CopyTextureRegion(&dstloc, 0, 0, 0, &srcloc, &srcbox);
+	cmdlist.list4->CopyTextureRegion(&dstloc, 0, 0, 0, &srcloc, &srcbox);
 
-	if (old_layout != D3D12_RESOURCE_STATE_COPY_SOURCE)
-		tex12->TransitionSubresourceToState(cmdlist, src_level, D3D12_RESOURCE_STATE_COPY_SOURCE, old_layout);
+	if (old_layout != GSTexture12::ResourceState::CopySrc)
+		tex12->TransitionSubresourceToState(cmdlist, src_level, GSTexture12::ResourceState::CopySrc, old_layout);
 
 	m_copy_fence_value = GSDevice12::GetInstance()->GetCurrentFenceValue();
 	m_needs_flush = true;
