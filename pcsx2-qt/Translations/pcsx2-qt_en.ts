@@ -23147,8 +23147,9 @@ Rename it to {} to remove this warning.</source>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="938"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="448"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="373"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="79"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="98"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="89"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="108"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="131"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="440"/>
         <source>D-Pad Up</source>
         <translation type="unfinished"></translation>
@@ -23160,8 +23161,9 @@ Rename it to {} to remove this warning.</source>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="940"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="449"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="374"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="80"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="99"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="90"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="109"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="132"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="441"/>
         <source>D-Pad Down</source>
         <translation type="unfinished"></translation>
@@ -23173,8 +23175,9 @@ Rename it to {} to remove this warning.</source>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="941"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="450"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="375"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="81"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="100"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="91"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="110"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="133"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="442"/>
         <source>D-Pad Left</source>
         <translation type="unfinished"></translation>
@@ -23186,8 +23189,9 @@ Rename it to {} to remove this warning.</source>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="939"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="451"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="376"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="82"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="101"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="92"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="111"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="134"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="443"/>
         <source>D-Pad Right</source>
         <translation type="unfinished"></translation>
@@ -23211,6 +23215,7 @@ Rename it to {} to remove this warning.</source>
         <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="592"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="139"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="363"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="154"/>
         <source>A</source>
         <translation type="unfinished"></translation>
     </message>
@@ -23218,12 +23223,14 @@ Rename it to {} to remove this warning.</source>
         <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="593"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="140"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="364"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="155"/>
         <source>B</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="594"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="365"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="156"/>
         <source>C</source>
         <translation type="unfinished"></translation>
     </message>
@@ -23234,8 +23241,9 @@ Rename it to {} to remove this warning.</source>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="936"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1003"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="371"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="87"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="107"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="97"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="117"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="141"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="448"/>
         <source>Select</source>
         <translation type="unfinished"></translation>
@@ -23247,8 +23255,9 @@ Rename it to {} to remove this warning.</source>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="937"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1002"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="372"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="88"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="108"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="98"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="118"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="142"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="449"/>
         <source>Start</source>
         <translation type="unfinished"></translation>
@@ -23576,8 +23585,8 @@ Rename it to {} to remove this warning.</source>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="77"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="105"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="134"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="78"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="97"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="88"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="107"/>
         <source>Brake</source>
         <translation type="unfinished"></translation>
     </message>
@@ -24351,64 +24360,136 @@ Xbox 360 turntables require a 256x multiplier, most other turntables can use the
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="77"/>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="96"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="40"/>
+        <source>Train Mascon</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="41"/>
+        <source>Master Controller</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="87"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="106"/>
         <source>Power</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="83"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="93"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="138"/>
         <source>A Button</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="84"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="94"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="139"/>
         <source>B Button</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="85"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="95"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="140"/>
         <source>C Button</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="86"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="96"/>
         <source>D Button</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="102"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="112"/>
         <source>Announce</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="103"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="113"/>
         <source>Horn</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="104"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="114"/>
         <source>Left Door</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="105"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="115"/>
         <source>Right Door</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="106"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="116"/>
         <source>Camera Button</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="162"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="126"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="149"/>
+        <source>Power Up</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="127"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="150"/>
+        <source>Power Down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="128"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="151"/>
+        <source>Reverser Up</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="129"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="152"/>
+        <source>Reverser Down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="136"/>
+        <source>ATS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="137"/>
+        <source>Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="153"/>
+        <source>S</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="227"/>
         <source>Axes Passthrough</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="163"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="228"/>
         <source>Passes through the unprocessed input axis to the game. Enable if you are using a compatible Densha De Go! controller. Disable if you are using any other joystick.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="240"/>
+        <source>Power notches</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="241"/>
+        <source>Selects the number of power notches (3-6)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="249"/>
+        <source>Brake notches</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="250"/>
+        <source>Selects the number of brake notches (5-8)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
