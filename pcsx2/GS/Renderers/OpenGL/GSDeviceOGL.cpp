@@ -2628,6 +2628,12 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		SetupPipeline(psel);
 		PSSetShaderResource(3, primid_texture);
 	}
+	else if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::Depth)
+	{
+		PSSetShaderResource(2, config.rt);
+		config.rt = nullptr;
+		OMSetRenderTargets(config.rt, config.ds, &config.scissor);
+	}
 
 	if (config.blend.IsEffective(config.colormask))
 	{

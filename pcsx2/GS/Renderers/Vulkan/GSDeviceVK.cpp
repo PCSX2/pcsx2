@@ -5714,6 +5714,12 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		case GSHWDrawConfig::DestinationAlphaMode::Stencil:
 			SetupDATE(draw_rt, config.ds, config.datm, config.drawarea);
 			break;
+
+		case GSHWDrawConfig::DestinationAlphaMode::Depth:
+			PSSetShaderResource(2, config.rt, true);
+			draw_rt = nullptr;
+			OMSetRenderTargets(draw_rt, draw_ds, config.scissor, static_cast<FeedbackLoopFlag>(pipe.feedback_loop_flags));
+			break;
 	}
 
 	// Switch to colclip target for colclip hw rendering

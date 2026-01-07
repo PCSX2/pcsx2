@@ -433,7 +433,7 @@ struct alignas(16) GSHWDrawConfig
 		{
 			const u32 sw_blend_bits = blend_a | blend_b | blend_d;
 			const bool sw_blend_needs_rt = (sw_blend_bits != 0 && ((sw_blend_bits | blend_c) & 1u)) || ((a_masked & blend_c) != 0);
-			return channel_fb || tex_is_fb || fbmask || (date >= 5) || sw_blend_needs_rt;
+			return no_color == 0 && (channel_fb || tex_is_fb || fbmask || (date >= 5) || sw_blend_needs_rt);
 		}
 
 		/// Disables color output from the pixel shader, this is done when all channels are masked.
@@ -705,6 +705,7 @@ struct alignas(16) GSHWDrawConfig
 		Stencil,        ///< Emulate using read-only stencil
 		StencilOne,     ///< Emulate using read-write stencil (first write wins)
 		PrimIDTracking, ///< Emulate by tracking the primitive ID of the last pixel allowed through
+		Depth,          ///< Only depth is written, no need for barriers
 		Full,           ///< Full emulation (using barriers / ROV)
 	};
 

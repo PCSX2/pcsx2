@@ -7354,6 +7354,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	bool DATE_PRIMID = false;
 	bool DATE_BARRIER = false;
 	bool DATE_one = false;
+	bool DATE_DEPTH = false;
 
 	ResetStates();
 
@@ -7768,7 +7769,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	}
 
 	// Similar to IsRTWritten(), check if the rt will change.
-	const bool no_rt = !rt || !(m_conf.colormask.wrgba || m_channel_shuffle);
+	const bool no_rt = !rt || m_conf.colormask.wrgba == 0;
 	const bool no_ds = !ds ||
 		// Depth will be written through the RT.
 		(!no_rt && m_cached_ctx.FRAME.FBP == m_cached_ctx.ZBUF.ZBP && !PRIM->TME && m_cached_ctx.ZBUF.ZMSK == 0 &&
@@ -7782,9 +7783,16 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		return;
 	}
 
+	// Always swap DATE with DATE_DEPTH if rt isn't written.
+	// Only depth is written so we can test without needing a barrier.
 	// Always swap DATE with DATE_BARRIER if we have barriers on when alpha write is masked.
 	// This is always enabled on vk/gl but not on dx11/12 as copies are slow so we can selectively enable it like now.
-	if (DATE && !m_conf.colormask.wa && (m_conf.require_one_barrier || m_conf.require_full_barrier))
+	if (DATE && no_rt)
+	{
+		DATE_DEPTH = true;
+		DATE_BARRIER = false;
+	}
+	else if (DATE && !m_conf.colormask.wa && (m_conf.require_one_barrier || m_conf.require_full_barrier))
 		DATE_BARRIER = true;
 
 	if ((m_conf.ps.tex_is_fb && rt && rt->m_rt_alpha_scale) || (tex && tex->m_from_target && tex->m_target_direct && tex->m_from_target->m_rt_alpha_scale))
@@ -7891,10 +7899,13 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 
 	// No point outputting colours if we're just writing depth.
 	// We might still need the framebuffer for DATE, though.
-	if (!rt || m_conf.colormask.wrgba == 0)
+	if (no_rt)
 	{
 		m_conf.ps.DisableColorOutput();
 		m_conf.colormask.wrgba = 0;
+
+		m_conf.require_one_barrier = false;
+		m_conf.require_full_barrier = false;
 	}
 
 	if (m_conf.ps.scanmsk & 2)
@@ -7910,6 +7921,8 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		m_conf.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking;
 	else if (DATE_BARRIER)
 		m_conf.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::Full;
+	else if (DATE_DEPTH)
+		m_conf.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::Depth;
 	else if (features.stencil_buffer)
 		m_conf.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::Stencil;
 
@@ -8021,7 +8034,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	m_conf.ps.iip = (m_vt.m_primclass == GS_SPRITE_CLASS) ? 0 : PRIM->IIP;
 	m_conf.vs.iip = m_conf.ps.iip;
 
-	if (DATE_BARRIER)
+	if (DATE_DEPTH || DATE_BARRIER)
 	{
 		m_conf.ps.date = 5 + m_cached_ctx.TEST.DATM;
 	}

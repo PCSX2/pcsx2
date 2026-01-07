@@ -4142,6 +4142,12 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 			return;
 		}
 	}
+	else if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::Depth)
+	{
+		PSSetShaderResource(2, draw_rt, true);
+		draw_rt = nullptr;
+		OMSetRenderTargets(draw_rt, draw_ds, config.scissor, config.tex && config.tex == config.ds);
+	}
 
 	// Switch to colclip target for colclip hw rendering
 	if (pipe.ps.colclip_hw)

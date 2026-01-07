@@ -2734,6 +2734,12 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		SetupPS(config.ps, nullptr, config.sampler);
 		PSSetShaderResource(3, primid_texture);
 	}
+	else if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::Depth)
+	{
+		PSSetShaderResource(2, config.rt);
+		config.rt = nullptr;
+		OMSetRenderTargets(config.rt, config.ds, &config.scissor, read_only_dsv);
+	}
 
 	// Avoid changing framebuffer just to switch from rt+depth to rt and vice versa.
 	GSTexture* draw_rt = colclip_rt ? colclip_rt : config.rt;
