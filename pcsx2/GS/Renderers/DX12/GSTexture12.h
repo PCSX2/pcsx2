@@ -16,9 +16,27 @@ namespace D3D12MA
 	class Allocation;
 }
 
+struct D3D12CommandList;
+
 class GSTexture12 final : public GSTexture
 {
 public:
+	enum class ResourceState : u32
+	{
+		Undefined,
+		Present,
+		RenderTarget,
+		DepthWriteStencil,
+		DepthReadStencil,
+		PixelShaderResource,
+		ComputeShaderResource,
+		CopySrc,
+		CopyDst,
+		CASShaderUAV, // No Clear UAV Sync
+		PixelShaderUAV,
+		Count
+	};
+
 	~GSTexture12() override;
 
 	static std::unique_ptr<GSTexture12> Create(Type type, Format format, int width, int height, int levels,
@@ -26,14 +44,14 @@ public:
 		DXGI_FORMAT uav_format);
 	static std::unique_ptr<GSTexture12> Adopt(wil::com_ptr_nothrow<ID3D12Resource> resource, Type type, Format format,
 		int width, int height, int levels, DXGI_FORMAT dxgi_format, DXGI_FORMAT srv_format, DXGI_FORMAT rtv_format,
-		DXGI_FORMAT dsv_format, DXGI_FORMAT uav_format, D3D12_RESOURCE_STATES resource_state);
+		DXGI_FORMAT dsv_format, DXGI_FORMAT uav_format, ResourceState resource_state);
 
 	__fi const D3D12DescriptorHandle& GetSRVDescriptor() const { return m_srv_descriptor; }
 	__fi const D3D12DescriptorHandle& GetWriteDescriptor() const { return m_write_descriptor; }
 	__fi const D3D12DescriptorHandle& GetReadDepthViewDescriptor() const { return m_read_dsv_descriptor; }
 	__fi const D3D12DescriptorHandle& GetUAVDescriptor() const { return m_uav_descriptor; }
 	__fi const D3D12DescriptorHandle& GetFBLDescriptor() const { return m_fbl_descriptor; }
-	__fi D3D12_RESOURCE_STATES GetResourceState() const { return m_resource_state; }
+	__fi ResourceState GetResourceState() const { return m_resource_state; }
 	__fi DXGI_FORMAT GetDXGIFormat() const { return m_dxgi_format; }
 	__fi ID3D12Resource* GetResource() const { return m_resource.get(); }
 	__fi ID3D12Resource* GetFBLResource() const { return m_resource_fbl.get(); }
@@ -49,15 +67,15 @@ public:
 	void SetDebugName(std::string_view name) override;
 #endif
 
-	void TransitionToState(D3D12_RESOURCE_STATES state);
+	void TransitionToState(ResourceState state);
 	void CommitClear();
-	void CommitClear(ID3D12GraphicsCommandList* cmdlist);
+	void CommitClear(const D3D12CommandList& cmdlist);
 
 	void Destroy(bool defer = true);
 
-	void TransitionToState(ID3D12GraphicsCommandList* cmdlist, D3D12_RESOURCE_STATES state);
-	void TransitionSubresourceToState(ID3D12GraphicsCommandList* cmdlist, int level, D3D12_RESOURCE_STATES before_state,
-		D3D12_RESOURCE_STATES after_state) const;
+	void TransitionToState(const D3D12CommandList&, ResourceState state);
+	void TransitionSubresourceToState(const D3D12CommandList& cmdlist, int level, ResourceState before_state,
+		ResourceState after_state) const;
 
 	// Call when the texture is bound to the pipeline, or read from in a copy.
 	__fi void SetUseFenceCounter(u64 val) { m_use_fence_counter = val; }
@@ -75,7 +93,7 @@ private:
 		wil::com_ptr_nothrow<D3D12MA::Allocation> allocation, const D3D12DescriptorHandle& srv_descriptor,
 		const D3D12DescriptorHandle& write_descriptor, const D3D12DescriptorHandle& ro_dsv_descriptor,
 		const D3D12DescriptorHandle& uav_descriptor, const D3D12DescriptorHandle& fbl_descriptor,
-		WriteDescriptorType wdtype, D3D12_RESOURCE_STATES resource_state);
+		WriteDescriptorType wdtype, bool simultaneous_texture, ResourceState resource_state);
 
 	static bool CreateSRVDescriptor(
 		ID3D12Resource* resource, u32 levels, DXGI_FORMAT format, D3D12DescriptorHandle* dh);
@@ -83,7 +101,7 @@ private:
 	static bool CreateDSVDescriptor(ID3D12Resource* resource, DXGI_FORMAT format, D3D12DescriptorHandle* dh, bool read_only);
 	static bool CreateUAVDescriptor(ID3D12Resource* resource, DXGI_FORMAT format, D3D12DescriptorHandle* dh);
 
-	ID3D12GraphicsCommandList* GetCommandBufferForUpdate();
+	const D3D12CommandList& GetCommandBufferForUpdate();
 	ID3D12Resource* AllocateUploadStagingBuffer(const void* data, u32 pitch, u32 upload_pitch, u32 height) const;
 	void CopyTextureDataForUpload(void* dst, const void* src, u32 pitch, u32 upload_pitch, u32 height) const;
 
@@ -99,7 +117,11 @@ private:
 	WriteDescriptorType m_write_descriptor_type = WriteDescriptorType::None;
 
 	DXGI_FORMAT m_dxgi_format = DXGI_FORMAT_UNKNOWN;
-	D3D12_RESOURCE_STATES m_resource_state = D3D12_RESOURCE_STATE_COMMON;
+	ResourceState m_resource_state = ResourceState::Undefined;
+
+	// With legacy barriers, an aliased resource is used as the feedback shader resource.
+	// With enhanced barriers, the layout is always COMMON, but can use the main resource for feedback.
+	bool m_simultaneous_tex;
 
 	// Contains the fence counter when the texture was last used.
 	// When this matches the current fence counter, the texture was used this command buffer.
