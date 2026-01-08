@@ -806,12 +806,12 @@ void GSState::DumpTransferList(const std::string& filename)
 			(*file) << std::endl;
 
 		// clear, EE->GS, or GS->GS
-		(*file) << LIST_ITEM << "type: " << (transfer.zero_clear ? "clear" : (transfer.ee_to_gs ? "EE_to_GS" : "GS_to_GS")) << std::endl;
+		(*file) << LIST_ITEM << "type: " << (transfer.zero_clear ? "clear" : ((transfer.transfer_type == EEGS_TransferType::EE_to_GS) ? "EE_to_GS" : "GS_to_GS")) << std::endl;
 
 		// Dump BITBLTBUF
 		(*file) << INDENT << "BITBLTBUF: " << OPEN_MAP;
 
-		const bool gs_to_gs = !transfer.ee_to_gs && !transfer.zero_clear;
+		const bool gs_to_gs = (transfer.transfer_type == EEGS_TransferType::GS_to_GS) && !transfer.zero_clear;
 
 		if (gs_to_gs)
 		{
@@ -857,7 +857,7 @@ void GSState::DumpTransferImages()
 		const GSUploadQueue& transfer = m_draw_transfers[i];
 
 		std::string filename;
-		if (transfer.ee_to_gs || transfer.zero_clear)
+		if ((transfer.transfer_type == EEGS_TransferType::EE_to_GS) || transfer.zero_clear)
 		{
 			// clear or EE->GS: only the destination info is relevant.
 			filename = GetDrawDumpPath("%05d_transfer%02d_%s_%04x_%d_%s_%d_%d_%d_%d.png",
@@ -2365,7 +2365,7 @@ void GSState::Write(const u8* mem, int len)
 
 		s_last_transfer_draw_n = s_n;
 		// Store the transfer for preloading new RT's.
-		if ((m_draw_transfers.size() > 0 && blit.DBP == m_draw_transfers.back().blit.DBP))
+		if ((m_draw_transfers.size() > 0 && blit.DBP == m_draw_transfers.back().blit.DBP && m_draw_transfers.back().transfer_type == EEGS_TransferType::EE_to_GS))
 		{
 			// Same BP, let's update the rect.
 			GSUploadQueue transfer = m_draw_transfers.back();
@@ -2377,7 +2377,7 @@ void GSState::Write(const u8* mem, int len)
 		}
 		else
 		{
-			const GSUploadQueue new_transfer = { blit, r, s_n, false, true };
+			const GSUploadQueue new_transfer = {blit, r, s_n, false, EEGS_TransferType::EE_to_GS};
 			m_draw_transfers.push_back(new_transfer);
 		}
 
@@ -2566,7 +2566,7 @@ void GSState::Move()
 
 	s_last_transfer_draw_n = s_n;
 	// Store the transfer for preloading new RT's.
-	if ((m_draw_transfers.size() > 0 && m_env.BITBLTBUF.DBP == m_draw_transfers.back().blit.DBP))
+	if ((m_draw_transfers.size() > 0 && m_env.BITBLTBUF.DBP == m_draw_transfers.back().blit.DBP && m_draw_transfers.back().transfer_type == EEGS_TransferType::GS_to_GS))
 	{
 		// Same BP, let's update the rect.
 		GSUploadQueue transfer = m_draw_transfers.back();
@@ -2578,7 +2578,7 @@ void GSState::Move()
 	}
 	else
 	{
-		const GSUploadQueue new_transfer = { m_env.BITBLTBUF, r, s_n, false, false };
+		const GSUploadQueue new_transfer = {m_env.BITBLTBUF, r, s_n, false, EEGS_TransferType::GS_to_GS};
 		m_draw_transfers.push_back(new_transfer);
 	}
 

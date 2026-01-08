@@ -211,13 +211,20 @@ protected:
 	void CorrectATEAlphaMinMax(const u32 atst, const int aref);
 
 public:
+	enum EEGS_TransferType
+	{
+		EE_to_GS,
+		GS_to_GS,
+		GS_to_EE
+	};
+
 	struct GSUploadQueue
 	{
 		GIFRegBITBLTBUF blit;
 		GSVector4i rect;
 		int draw;
 		bool zero_clear;
-		bool ee_to_gs;
+		EEGS_TransferType transfer_type;
 	};
 
 	enum NoGapsType
