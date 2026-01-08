@@ -8,7 +8,7 @@ Easy to integrate Vulkan memory allocation library.
 
 **Changelog:** See [CHANGELOG.md](CHANGELOG.md)
 
-**Product page:** [Vulkan Memory Allocator on GPUOpen](https://gpuopen.com/gaming-product/vulkan-memory-allocator/)
+**Product page:** [Vulkan Memory Allocator on GPUOpen](https://gpuopen.com/vulkan-memory-allocator/)
 
 [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.svg)](http://isitmaintained.com/project/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator "Average time to resolve an issue")
 
@@ -44,7 +44,7 @@ Additional features:
 - Custom memory pools: Create a pool with desired parameters (e.g. fixed or limited maximum size) and allocate memory out of it.
 - Linear allocator: Create a pool with linear algorithm and use it for much faster allocations and deallocations in free-at-once, stack, double stack, or ring buffer fashion.
 - Support for Vulkan 1.0...1.4.
-- Support for extensions (and equivalent functionality included in new Vulkan versions):
+- Support for extensions (and equivalent functionality included in new core Vulkan versions):
    - VK_KHR_dedicated_allocation: Just enable it and it will be used automatically by the library.
    - VK_KHR_bind_memory2.
    - VK_KHR_maintenance4.
@@ -60,7 +60,7 @@ Additional features:
 - JSON dump: Obtain a string in JSON format with detailed map of internal state, including list of allocations, their string names, and gaps between them.
 - Convert this JSON dump into a picture to visualize your memory. See [tools/GpuMemDumpVis](tools/GpuMemDumpVis/README.md).
 - Debugging incorrect memory usage: Enable initialization of all allocated memory with a bit pattern to detect usage of uninitialized or freed memory. Enable validation of a magic number after every allocation to detect out-of-bounds memory corruption.
-- Support for interoperability with OpenGL.
+- Support for interoperability with OpenGL, Direct3D, and other graphics APIs through external memory export.
 - Virtual allocator: Interface for using core allocation algorithm to allocate any custom data, e.g. pieces of one large buffer.
 
 # Prerequisites
