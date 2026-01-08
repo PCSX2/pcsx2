@@ -2519,21 +2519,31 @@ void GSState::Move()
 
 	InvalidateLocalMem(m_env.BITBLTBUF, GSVector4i(sx, sy, sx + w, sy + h));
 	InvalidateVideoMem(m_env.BITBLTBUF, GSVector4i(dx, dy, dx + w, dy + h));
+	const bool overlaps = m_env.BITBLTBUF.SBP == m_env.BITBLTBUF.DBP;
+	const bool intersect = overlaps && !(GSVector4i(sx, sy, sx + w, sy + h).rintersect(GSVector4i(dx, dy, dx + w, dy + h)).rempty());
 
 	int xinc = 1;
 	int yinc = 1;
 
 	if (m_env.TRXPOS.DIRX)
 	{
-		sx += w - 1;
-		dx += w - 1;
-		xinc = -1;
+		// Only allow it to reverse if the destination is behind the source.
+		if (!intersect || (sx <= dx && (sx == dx || ((!m_env.TRXPOS.DIRY && sy >= dy) || (m_env.TRXPOS.DIRY && sy < dy)))))
+		{
+			sx += w - 1;
+			dx += w - 1;
+			xinc = -1;
+		}
 	}
 	if (m_env.TRXPOS.DIRY)
 	{
-		sy += h - 1;
-		dy += h - 1;
-		yinc = -1;
+		// Only allow it to reverse if the destination is behind the source.
+		if (!intersect || (sy <= dy && (sy == dy || ((!m_env.TRXPOS.DIRX && sx >= dx) || (m_env.TRXPOS.DIRX && sx < dx)))))
+		{
+			sy += h - 1;
+			dy += h - 1;
+			yinc = -1;
+		}
 	}
 
 	const GSLocalMemory::psm_t& spsm = GSLocalMemory::m_psm[m_env.BITBLTBUF.SPSM];
@@ -2572,7 +2582,7 @@ void GSState::Move()
 		m_draw_transfers.push_back(new_transfer);
 	}
 
-	auto copy = [this, sbp, dbp, sx, sy, dx, dy, w, h, yinc, xinc](const GSOffset& dpo, const GSOffset& spo, auto&& pxCopyFn)
+	auto copy = [this, sbp, dbp, sx, sy, dx, dy, w, h, yinc, xinc, intersect](const GSOffset& dpo, const GSOffset& spo, auto&& pxCopyFn)
 	{
 		int _sy = sy, _dy = dy; // Faster with local copied variables, compiler optimizations are dumb
 		if (xinc > 0)
@@ -2584,8 +2594,6 @@ void GSState::Move()
 			// Copying from itself to itself (rotating textures) used in Gitaroo Man stage 8
 			// What probably happens is because the copy is buffered, the source stays just ahead of the destination.
 			// No need to do all this if the copy source/destination don't intersect, however.
-			const bool intersect = !(GSVector4i(sx, sy, sx + w, sy + h).rintersect(GSVector4i(dx, dy, dx + w, dy + h)).rempty());
-
 			if (intersect && sbp == dbp && (((_sy < _dy) && ((ypage + page_height) > _dy)) || ((sx < dx) && ((xpage + page_width) > dx))))
 			{
 				int starty = (yinc > 0) ? 0 : h-1;
