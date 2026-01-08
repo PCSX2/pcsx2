@@ -5716,8 +5716,8 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 			break;
 
 		case GSHWDrawConfig::DestinationAlphaMode::Depth:
-			PSSetShaderResource(2, config.rt, true);
-			draw_rt = nullptr;
+			PSSetShaderResource(2, draw_rt, true);
+			draw_rt = (draw_rt == m_current_render_target) ? nullptr : m_current_render_target;
 			OMSetRenderTargets(draw_rt, draw_ds, config.scissor, static_cast<FeedbackLoopFlag>(pipe.feedback_loop_flags));
 			break;
 	}

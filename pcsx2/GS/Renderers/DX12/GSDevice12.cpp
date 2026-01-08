@@ -4145,7 +4145,12 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	else if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::Depth)
 	{
 		PSSetShaderResource(2, draw_rt, true);
-		draw_rt = nullptr;
+		if ((draw_rt == m_current_render_target))
+			Console.Warning("DATE RT SAME");
+		else
+			Console.Warning("DATE RT NOT SAME");
+
+		draw_rt = (draw_rt == m_current_render_target) ? nullptr : m_current_render_target;
 		OMSetRenderTargets(draw_rt, draw_ds, config.scissor, config.tex && config.tex == config.ds);
 	}
 

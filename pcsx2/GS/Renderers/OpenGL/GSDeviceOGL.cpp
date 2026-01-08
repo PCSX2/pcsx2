@@ -2631,7 +2631,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	else if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::Depth)
 	{
 		PSSetShaderResource(2, config.rt);
-		config.rt = nullptr;
+		config.rt = (config.rt == GLState::rt) ? nullptr : GLState::rt;
 		OMSetRenderTargets(config.rt, config.ds, &config.scissor);
 	}
 
