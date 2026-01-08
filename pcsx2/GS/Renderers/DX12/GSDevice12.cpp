@@ -750,6 +750,8 @@ bool GSDevice12::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 
 	InitializeState();
 	InitializeSamplers();
+	// Reference stencil isn't tied to pipeline, so we can set it once and leave it.
+	SetStencilRef(1);
 	return true;
 }
 
@@ -3740,7 +3742,7 @@ void GSDevice12::SetupDATE(GSTexture* rt, GSTexture* ds, SetDATM datm, const GSV
 	IASetVertexBuffer(vertices, sizeof(vertices[0]), 4);
 	SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	SetPipeline(m_convert[SetDATMShader(datm)].get());
-	SetStencilRef(1);
+	// Reference stencil value set on Create()
 	BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
 		D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
 		D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
@@ -3828,26 +3830,6 @@ GSTexture12* GSDevice12::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config, Pipe
 
 void GSDevice12::RenderHW(GSHWDrawConfig& config)
 {
-	// Destination Alpha Setup
-	const bool stencil_DATE_One = config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne;
-	const bool stencil_DATE = (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::Stencil || stencil_DATE_One);
-
-	// TODO: Backport from vk.
-	if (stencil_DATE_One)
-	{
-		config.ps.date = 0;
-		config.alpha_second_pass.ps.date = 0;
-		if (!config.ps.IsFeedbackLoop())
-		{
-			config.require_one_barrier = false;
-			config.require_full_barrier = false;
-		}
-		if (!config.alpha_second_pass.ps.IsFeedbackLoop())
-		{
-			config.alpha_second_pass.require_one_barrier = false;
-			config.alpha_second_pass.require_full_barrier = false;
-		}
-	}
 
 	GSTexture12* colclip_rt = static_cast<GSTexture12*>(g_gs_device->GetColorClipTexture());
 	GSTexture12* draw_rt = static_cast<GSTexture12*>(config.rt);
@@ -3910,8 +3892,29 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		}
 	}
 
-	if (stencil_DATE)
-		SetupDATE(draw_rt, config.ds, config.datm, config.drawarea);
+	// Destination Alpha Setup
+	const bool need_barrier = m_features.texture_barrier && (config.require_one_barrier || config.require_full_barrier);
+	switch (config.destination_alpha)
+	{
+		case GSHWDrawConfig::DestinationAlphaMode::Off: // No setup
+		case GSHWDrawConfig::DestinationAlphaMode::Full: // No setup
+		case GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking: // Setup is done below
+			break;
+		case GSHWDrawConfig::DestinationAlphaMode::StencilOne: // setup is done below
+		{
+			// we only need to do the setup here if we don't have barriers, in which case do full DATE.
+			if (!need_barrier)
+			{
+				SetupDATE(draw_rt, config.ds, config.datm, config.drawarea);
+				config.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::Stencil;
+			}
+		}
+		break;
+
+		case GSHWDrawConfig::DestinationAlphaMode::Stencil:
+			SetupDATE(draw_rt, config.ds, config.datm, config.drawarea);
+			break;
+	}
 
 	// stream buffer in first, in case we need to exec
 	SetVSConstantBuffer(config.cb_vs);
@@ -4033,6 +4036,17 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	// For depth testing and sampling, use a read only dsv, otherwise use a write dsv
 	OMSetRenderTargets(draw_rt, draw_ds, config.scissor, config.tex && config.tex == config.ds);
 
+	// DX12 equivalent of vkCmdClearAttachments for StencilOne
+	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne)
+	{
+		EndRenderPass();
+		// Make sure the DSV is in writeable state
+		draw_ds->TransitionToState(D3D12_RESOURCE_STATE_DEPTH_WRITE);
+
+		D3D12_RECT rect = {config.drawarea.left, config.drawarea.top, config.drawarea.left + config.drawarea.width(), config.drawarea.top + config.drawarea.height()};
+		GetCommandList()->ClearDepthStencilView(draw_ds->GetWriteDescriptor(), D3D12_CLEAR_FLAG_STENCIL, 0.0f, 1, 1, &rect);
+	}
+
 	// Begin render pass if new target or out of the area.
 	if (!m_in_render_pass)
 	{
@@ -4042,14 +4056,18 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 			// Denormalize clear color for hw colclip.
 			clear_color *= GSVector4::cxpr(255.0f / 65535.0f, 255.0f / 65535.0f, 255.0f / 65535.0f, 1.0f);
 		}
+
+		const bool stencil_DATE = config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::Stencil ||
+		                          config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne;
+
 		BeginRenderPass(GetLoadOpForTexture(draw_rt),
 			draw_rt ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE : D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
 			GetLoadOpForTexture(draw_ds),
 			draw_ds ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE : D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
 			stencil_DATE ? D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE :
 						   D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
-			stencil_DATE ? (feedback ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE :
-									   D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_DISCARD) :
+			stencil_DATE ? (need_barrier ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE :
+										   D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_DISCARD) :
 						   D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
 			clear_color, draw_ds ? draw_ds->GetClearDepth() : 0.0f, 1);
 	}
