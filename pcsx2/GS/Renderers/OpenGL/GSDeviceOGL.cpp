@@ -46,6 +46,10 @@ namespace ReplaceGL
 	{
 	}
 
+	static void GLAPIENTRY MemoryBarrier(const u32 barrier_bit)
+	{
+	}
+
 } // namespace ReplaceGL
 
 namespace Emulate_DSA
@@ -690,8 +694,13 @@ bool GSDeviceOGL::CheckFeatures()
 	if (!GLAD_GL_ARB_texture_barrier)
 	{
 		glTextureBarrier = ReplaceGL::TextureBarrier;
-		Host::AddOSDMessage(
-			"GL_ARB_texture_barrier is not supported, blending will not be accurate.", Host::OSD_ERROR_DURATION);
+		// Move to next fallback.
+		if (!GLAD_GL_ARB_shader_image_load_store)
+		{
+			glMemoryBarrier = ReplaceGL::MemoryBarrier;
+			Host::AddOSDMessage(
+				"Texture Barrier is not supported, blending will not be accurate.", Host::OSD_ERROR_DURATION);
+		}
 	}
 
 	if (!GLAD_GL_ARB_direct_state_access)
@@ -729,11 +738,11 @@ bool GSDeviceOGL::CheckFeatures()
 	else if (GSConfig.OverrideTextureBarriers == 1)
 		m_features.texture_barrier = true; // Force Enabled
 	else
-		m_features.texture_barrier = m_features.framebuffer_fetch || GLAD_GL_ARB_texture_barrier;
+		m_features.texture_barrier = m_features.framebuffer_fetch || GLAD_GL_ARB_texture_barrier || GLAD_GL_ARB_shader_image_load_store;
 	if (!m_features.texture_barrier)
 	{
 		Host::AddOSDMessage(
-			"GL_ARB_texture_barrier is not supported, blending will not be accurate.", Host::OSD_ERROR_DURATION);
+			"Texture Barrier is not supported, blending will not be accurate.", Host::OSD_ERROR_DURATION);
 	}
 
 	m_features.multidraw_fb_copy = false;
@@ -2647,7 +2656,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		// Ensure all depth writes are finished before sampling
 		GL_INS("GL: Texture barrier to flush depth or rt before reading");
 		g_perfmon.Put(GSPerfMon::Barriers, 1);
-		glTextureBarrier();
+		FeedbackBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 	}
 
 	if (draw_rt && (config.require_one_barrier || (config.tex && config.tex == config.rt)) && !m_features.texture_barrier)
@@ -2793,7 +2802,7 @@ void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config, bool one_barrier, boo
 		for (u32 n = 0, p = 0; n < draw_list_size; n++)
 		{
 			const u32 count = (*config.drawlist)[n] * indices_per_prim;
-			glTextureBarrier();
+			FeedbackBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 			DrawIndexedPrimitive(p, count);
 			p += count;
 		}
@@ -2804,10 +2813,23 @@ void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config, bool one_barrier, boo
 	if (one_barrier)
 	{
 		g_perfmon.Put(GSPerfMon::Barriers, 1);
-		glTextureBarrier();
+		FeedbackBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 	}
 
 	DrawIndexedPrimitive();
+}
+
+void GSDeviceOGL::FeedbackBarrier(const u32 barrier_bit)
+{
+	// glFinish() is expensive, it's better to use copies if barriers aren't supported,
+	// but can be useful if we want to force barriers on and debug.
+
+	if (GLAD_GL_ARB_texture_barrier)
+		glTextureBarrier();
+	else if (GLAD_GL_ARB_shader_image_load_store)
+		glMemoryBarrier(barrier_bit);
+	else
+		glFinish();
 }
 
 // Note: used as a callback of DebugMessageCallback. Don't change the signature

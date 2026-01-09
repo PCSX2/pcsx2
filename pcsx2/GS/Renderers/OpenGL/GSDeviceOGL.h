@@ -340,6 +340,8 @@ public:
 	void RenderHW(GSHWDrawConfig& config) override;
 	void SendHWDraw(const GSHWDrawConfig& config, bool one_barrier, bool full_barrier);
 
+	void FeedbackBarrier(const u32 barrier_bit);
+
 	void SetupDATE(GSTexture* rt, GSTexture* ds, SetDATM datm, const GSVector4i& bbox);
 
 	void IASetVAO(GLuint vao);
