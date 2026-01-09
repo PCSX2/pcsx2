@@ -208,6 +208,7 @@ enum GSMTLFnConstants
 	GSMTLConstantIndex_PS_DITHER,
 	GSMTLConstantIndex_PS_DITHER_ADJUST,
 	GSMTLConstantIndex_PS_ZCLAMP,
+	GSMTLConstantIndex_PS_ZFLOOR,
 	GSMTLConstantIndex_PS_TCOFFSETHACK,
 	GSMTLConstantIndex_PS_URBAN_CHAOS_HLE,
 	GSMTLConstantIndex_PS_TALES_OF_ABYSS_HLE,

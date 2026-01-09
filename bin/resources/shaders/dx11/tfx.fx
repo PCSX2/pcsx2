@@ -71,6 +71,7 @@
 #define PS_DITHER 0
 #define PS_DITHER_ADJUST 0
 #define PS_ZCLAMP 0
+#define PS_ZFLOOR 0
 #define PS_SCANMSK 0
 #define PS_AUTOMATIC_LOD 0
 #define PS_MANUAL_LOD 0
@@ -138,8 +139,9 @@ struct PS_OUTPUT
 #endif
 #endif
 #endif
-
+#if PS_ZCLAMP || PS_ZFLOOR
 	float depth : SV_Depth;
+#endif
 };
 
 Texture2D<float4> Texture : register(t0);
@@ -1208,11 +1210,15 @@ PS_OUTPUT ps_main(PS_INPUT input)
 
 #endif // PS_DATE != 1/2
 
+#if PS_ZFLOOR
 float depth_value = floor(input.p.z * exp2(32.0f)) * exp2(-32.0f);
-	
+#else
+float depth_value = input.p.z;
+#endif
+
 #if PS_ZCLAMP
 	output.depth = min(depth_value, MaxDepthPS);
-#else
+#elif PS_ZFLOOR
 	output.depth = depth_value;
 #endif
 

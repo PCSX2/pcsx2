@@ -288,6 +288,7 @@ void main()
 #define PS_DITHER 0
 #define PS_DITHER_ADJUST 0
 #define PS_ZCLAMP 0
+#define PS_ZFLOOR 0
 #define PS_FEEDBACK_LOOP 0
 #define PS_TEX_IS_FB 0
 #endif
@@ -1400,11 +1401,15 @@ void main()
 		#endif
 	#endif
 
-	float depth_value = floor(gl_FragCoord.z * exp2(32.0f)) * exp2(-32.0f);;
+	#if PS_ZFLOOR
+		float depth_value = floor(gl_FragCoord.z * exp2(32.0f)) * exp2(-32.0f);;
+	#else
+		float depth_value = gl_FragCoord.z;
+	#endif
 	
 	#if PS_ZCLAMP
-		gl_FragDepth = min(depth_value, MaxDepthPS);
-	#else
+		gl_FragDepth = min(gl_FragCoord.z, MaxDepthPS);
+	#elif PS_ZFLOOR
 		gl_FragDepth = depth_value;
 	#endif
 

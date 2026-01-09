@@ -61,6 +61,7 @@ constant uint PS_CHANNEL            [[function_constant(GSMTLConstantIndex_PS_CH
 constant uint PS_DITHER             [[function_constant(GSMTLConstantIndex_PS_DITHER)]];
 constant uint PS_DITHER_ADJUST      [[function_constant(GSMTLConstantIndex_PS_DITHER_ADJUST)]];
 constant bool PS_ZCLAMP             [[function_constant(GSMTLConstantIndex_PS_ZCLAMP)]];
+constant bool PS_ZFLOOR             [[function_constant(GSMTLConstantIndex_PS_ZFLOOR)]];
 constant bool PS_TCOFFSETHACK       [[function_constant(GSMTLConstantIndex_PS_TCOFFSETHACK)]];
 constant bool PS_URBAN_CHAOS_HLE    [[function_constant(GSMTLConstantIndex_PS_URBAN_CHAOS_HLE)]];
 constant bool PS_TALES_OF_ABYSS_HLE [[function_constant(GSMTLConstantIndex_PS_TALES_OF_ABYSS_HLE)]];
@@ -102,6 +103,7 @@ constant bool NEEDS_RT = NEEDS_RT_FOR_AFAIL || NEEDS_RT_EARLY || (!PS_PRIM_CHECK
 
 constant bool PS_COLOR0 = !PS_NO_COLOR;
 constant bool PS_COLOR1 = !PS_NO_COLOR1;
+constant bool PS_ZOUTPUT = PS_ZCLAMP || PS_ZFLOOR;
 
 struct MainVSIn
 {
@@ -137,7 +139,7 @@ struct MainPSOut
 {
 	float4 c0 [[color(0), index(0), function_constant(PS_COLOR0)]];
 	float4 c1 [[color(0), index(1), function_constant(PS_COLOR1)]];
-	float depth [[depth(less), function_constant(PS_ZCLAMP)]];
+	float depth [[depth(less), function_constant(PS_ZOUTPUT)]];
 };
 
 // MARK: - Vertex functions
@@ -1210,11 +1212,11 @@ struct PSMain
 		if (PS_COLOR1)
 			out.c1 = alpha_blend;
 		
-		float depth_value = floor(in.p.z * exp2(32.0f)) * exp2(-32.0f);
+		float depth_value = PS_ZFLOOR ? (floor(in.p.z * exp2(32.0f)) * exp2(-32.0f)) : in.p.z;
 		
 		if (PS_ZCLAMP)
 			out.depth = min(depth_value, cb.max_depth);
-		else
+		else if (PS_ZFLOOR)
 			out.depth = depth_value;
 
 		return out;

@@ -1878,6 +1878,7 @@ void GSDeviceMTL::MRESetHWPipelineState(GSHWDrawConfig::VSSelector vssel, GSHWDr
 		setFnConstantI(m_fn_constants, pssel.dither,                GSMTLConstantIndex_PS_DITHER);
 		setFnConstantI(m_fn_constants, pssel.dither_adjust,         GSMTLConstantIndex_PS_DITHER_ADJUST);
 		setFnConstantB(m_fn_constants, pssel.zclamp,                GSMTLConstantIndex_PS_ZCLAMP);
+		setFnConstantB(m_fn_constants, pssel.zfloor,                GSMTLConstantIndex_PS_ZFLOOR);
 		setFnConstantB(m_fn_constants, pssel.tcoffsethack,          GSMTLConstantIndex_PS_TCOFFSETHACK);
 		setFnConstantB(m_fn_constants, pssel.urban_chaos_hle,       GSMTLConstantIndex_PS_URBAN_CHAOS_HLE);
 		setFnConstantB(m_fn_constants, pssel.tales_of_abyss_hle,    GSMTLConstantIndex_PS_TALES_OF_ABYSS_HLE);
