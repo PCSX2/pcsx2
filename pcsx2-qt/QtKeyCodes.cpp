@@ -67,6 +67,17 @@ struct KeyCodeName
 	const char* icon_name;
 };
 
+// Extended keys for left/right versions, Non conflicting with Qt::Key enum
+enum ExtendedKeys
+{
+	Key_RightShift = 0x01100022,
+	Key_LeftShift = 0x01100023,
+	Key_RightControl = 0x01100024,
+	Key_LeftControl = 0x01100025,
+	Key_RightAlt = 0x01100026,
+	Key_LeftAlt = 0x01100027,
+};
+
 static constexpr const KeyCodeName s_qt_key_names[] = {
 	{Qt::Key_Escape, "Escape", ICON_PF_ESC},
 	{Qt::Key_Tab, "Tab", ICON_PF_TAB},
@@ -92,6 +103,13 @@ static constexpr const KeyCodeName s_qt_key_names[] = {
 	{Qt::Key_Control, "Control", ICON_PF_CTRL},
 	{Qt::Key_Meta, "Meta", ICON_PF_SUPER},
 	{Qt::Key_Alt, "Alt", ICON_PF_ALT},
+	// patch for left and right versions of the keys
+	{ExtendedKeys::Key_LeftShift, "LShift", ICON_PF_SHIFT},
+	{ExtendedKeys::Key_RightShift, "RShift", ICON_PF_SHIFT},
+	{ExtendedKeys::Key_LeftControl, "LCtrl", ICON_PF_CTRL},
+	{ExtendedKeys::Key_RightControl, "RCtrl", ICON_PF_CTRL},
+	{ExtendedKeys::Key_LeftAlt, "LAlt", ICON_PF_ALT},
+	{ExtendedKeys::Key_RightAlt, "RAlt", ICON_PF_ALT},
 	{Qt::Key_CapsLock, "CapsLock", ICON_PF_CAPS},
 	{Qt::Key_NumLock, "NumLock", ICON_PF_NUMLOCK},
 	{Qt::Key_ScrollLock, "ScrollLock", ICON_PF_SCRLK},
@@ -574,6 +592,41 @@ u32 QtUtils::KeyEventToCode(const QKeyEvent* ev)
 	const bool set_keycode = (modifiers & Qt::ShiftModifier) && !(modifiers & Qt::KeypadModifier);
 	const u8 keycode = set_keycode ? map_text_to_keycode(text) : 0;
 	int key = ev->key();
+
+	if (key == Qt::Key_Shift || key == Qt::Key_Alt || key == Qt::Key_Control)
+	{
+#if defined(Q_OS_WIN) or defined(Q_OS_LINUX)
+		// Scan codes (Tested it)
+		// 0x2A : Left shift
+		// 0x36 : Right shift
+		// 0x1D : Left ctrl
+		// 0xE01D : Right ctrl 
+		// 0x38 : Left alt
+		// right alt can become ctrl + right alt in some keyboard layouts (windows) 
+		// but thats fine for our use case
+		switch (ev->nativeScanCode())
+		{
+			case 0x2A:
+				key = ExtendedKeys::Key_LeftShift;
+				break;
+			case 0x36:
+				key = ExtendedKeys::Key_RightShift;
+				break;
+			case 0x1D:
+				key = ExtendedKeys::Key_LeftControl;
+				break;
+			case 0xE01D:
+				key = ExtendedKeys::Key_RightControl;
+				break;
+			case 0x38:
+				key = ExtendedKeys::Key_LeftAlt;
+				break;
+			default: 
+				break;
+		}
+		
+#endif
+	}
 
 	if (keycode != 0)
 		key = keycode; // Override key if mapped
