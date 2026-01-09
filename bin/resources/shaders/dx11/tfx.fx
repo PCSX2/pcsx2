@@ -138,9 +138,8 @@ struct PS_OUTPUT
 #endif
 #endif
 #endif
-#if PS_ZCLAMP
+
 	float depth : SV_Depth;
-#endif
 };
 
 Texture2D<float4> Texture : register(t0);
@@ -1209,8 +1208,12 @@ PS_OUTPUT ps_main(PS_INPUT input)
 
 #endif // PS_DATE != 1/2
 
+float depth_value = floor(input.p.z * exp2(32.0f)) * exp2(-32.0f);
+	
 #if PS_ZCLAMP
-	output.depth = min(input.p.z, MaxDepthPS);
+	output.depth = min(depth_value, MaxDepthPS);
+#else
+	output.depth = depth_value;
 #endif
 
 	return output;
