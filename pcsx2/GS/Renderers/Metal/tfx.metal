@@ -1209,8 +1209,13 @@ struct PSMain
 		}
 		if (PS_COLOR1)
 			out.c1 = alpha_blend;
+		
+		float depth_value = floor(in.p.z * exp2(32.0f)) * exp2(-32.0f);
+		
 		if (PS_ZCLAMP)
-			out.depth = min(in.p.z, cb.max_depth);
+			out.depth = min(depth_value, cb.max_depth);
+		else
+			out.depth = depth_value;
 
 		return out;
 	}
