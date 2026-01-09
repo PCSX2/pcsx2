@@ -24,7 +24,7 @@ namespace D3D
 	std::vector<GSAdapterInfo> GetAdapterInfo(IDXGIFactory5* factory);
 
 	// returns the fullscreen mode to use for the specified dimensions
-	bool GetRequestedExclusiveFullscreenModeDesc(IDXGIFactory5* factory, const RECT& window_rect, u32 width, u32 height,
+	bool GetRequestedExclusiveFullscreenModeDesc(IDXGIFactory5* factory, HWND window_hwnd, u32 width, u32 height,
 		float refresh_rate, DXGI_FORMAT format, DXGI_MODE_DESC* fullscreen_mode, IDXGIOutput** output);
 
 	// get an adapter based on name
