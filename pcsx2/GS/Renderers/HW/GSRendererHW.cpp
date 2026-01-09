@@ -3083,15 +3083,16 @@ void GSRendererHW::Draw()
 				}
 			}
 		}
-
-		possible_shuffle = !no_rt && (((shuffle_target /*&& GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 16*/) /*|| (m_cached_ctx.FRAME.Block() == m_cached_ctx.TEX0.TBP0 && ((m_cached_ctx.TEX0.PSM & 0x6) || m_cached_ctx.FRAME.PSM != m_cached_ctx.TEX0.PSM))*/) || IsPossibleChannelShuffle());
+		const bool is_possible_channel_shuffle = IsPossibleChannelShuffle();
+		possible_shuffle = !no_rt && (((shuffle_target /*&& GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 16*/) /*|| (m_cached_ctx.FRAME.Block() == m_cached_ctx.TEX0.TBP0 && ((m_cached_ctx.TEX0.PSM & 0x6) || m_cached_ctx.FRAME.PSM != m_cached_ctx.TEX0.PSM))*/) || is_possible_channel_shuffle);
+		const u32 channel_shuffle_targets = is_possible_channel_shuffle ? EmulateChannelShuffle(nullptr, true) : ChannelFetch_NONE;
 		const bool need_aem_color = GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].trbpp <= 24 && GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].pal == 0 && ((NeedsBlending() && m_context->ALPHA.C == 0) || IsDiscardingDstAlpha()) && m_cached_ctx.TEXA.AEM;
 		const u32 color_mask = (m_vt.m_max.c > GSVector4i::zero()).mask();
 		const bool texture_function_color = m_cached_ctx.TEX0.TFX == TFX_DECAL || (color_mask & 0xFFF) || (m_cached_ctx.TEX0.TFX > TFX_DECAL && (color_mask & 0xF000));
 		const bool texture_function_alpha = m_cached_ctx.TEX0.TFX != TFX_MODULATE || (color_mask & 0xF000);
-		const bool req_color = (texture_function_color && (!PRIM->ABE || GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].bpp < 16 || (NeedsBlending() && IsUsingCsInBlend())) && (possible_shuffle || (m_cached_ctx.FRAME.FBMSK & (fm_mask & 0x00FFFFFF)) != (fm_mask & 0x00FFFFFF))) || need_aem_color;
+		const bool req_color = (is_possible_channel_shuffle && channel_shuffle_targets != ChannelFetch_ALPHA) || (!is_possible_channel_shuffle && ((texture_function_color && (!PRIM->ABE || GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].bpp < 16 || (NeedsBlending() && IsUsingCsInBlend())) && (possible_shuffle || (m_cached_ctx.FRAME.FBMSK & (fm_mask & 0x00FFFFFF)) != (fm_mask & 0x00FFFFFF))) || need_aem_color));
 		const bool alpha_used = (GSUtil::GetChannelMask(m_context->TEX0.PSM) == 0x8 || (m_context->TEX0.TCC && texture_function_alpha)) && ((NeedsBlending() && IsUsingAsInBlend()) || (m_cached_ctx.TEST.ATE && m_cached_ctx.TEST.ATST > ATST_ALWAYS) || (possible_shuffle || (m_cached_ctx.FRAME.FBMSK & (fm_mask & 0xFF000000)) != (fm_mask & 0xFF000000)));
-		const bool req_alpha = (GSUtil::GetChannelMask(m_context->TEX0.PSM) & 0x8) && alpha_used;
+		const bool req_alpha = (is_possible_channel_shuffle && channel_shuffle_targets == ChannelFetch_ALPHA) || (!is_possible_channel_shuffle && (GSUtil::GetChannelMask(m_context->TEX0.PSM) & 0x8) && alpha_used);
 
 		// TODO: Be able to send an alpha of 1.0 (blended with vertex alpha maybe?) so we can avoid sending the texture, since we don't always need it.
 		// Example games: Evolution Snowboarding, Final Fantasy Dirge of Cerberus, Red Dead Revolver, Stuntman, Tony Hawk's Underground 2, Ultimate Spider-Man.
@@ -4259,7 +4260,7 @@ void GSRendererHW::Draw()
 		if (rt)
 		{
 			const bool update_fbw = (FRAME_TEX0.TBW != rt->m_TEX0.TBW || rt->m_TEX0.TBW == 1) && !m_in_target_draw && (m_channel_shuffle && src->m_target) && (!NeedsBlending() || IsOpaque() || m_context->ALPHA.IsBlack());
-			rt->m_TEX0.TBW = update_fbw ? ((src && src->m_from_target && src->m_32_bits_fmt) ? src->m_from_target->m_TEX0.TBW : FRAME_TEX0.TBW) : std::max(rt->m_TEX0.TBW, FRAME_TEX0.TBW);
+			rt->m_TEX0.TBW = update_fbw ? ((src && src->m_from_target && src->m_from_target->m_32_bits_fmt) ? src->m_from_target->m_TEX0.TBW : FRAME_TEX0.TBW) : std::max(rt->m_TEX0.TBW, FRAME_TEX0.TBW);
 			rt->m_TEX0.PSM = FRAME_TEX0.PSM;
 		}
 		if (ds)
@@ -5331,13 +5332,13 @@ bool GSRendererHW::TestChannelShuffle(GSTextureCache::Target* src)
 	const bool shuffle = m_channel_shuffle || IsPossibleChannelShuffle();
 
 	// This is a little redundant since it'll get called twice, but the only way to stop us wasting time on copies.
-	m_channel_shuffle = (shuffle && EmulateChannelShuffle(src, true));
+	m_channel_shuffle = (shuffle && EmulateChannelShuffle(src, true)) != 0;
 	return m_channel_shuffle;
 }
 
-__ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool test_only, GSTextureCache::Target* rt)
+__ri u32 GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool test_only, GSTextureCache::Target* rt)
 {
-	if ((src->m_texture->GetType() == GSTexture::Type::DepthStencil) && !src->m_32_bits_fmt)
+	if (src && (src->m_texture->GetType() == GSTexture::Type::DepthStencil) && !src->m_32_bits_fmt)
 	{
 		// So far 2 games hit this code path. Urban Chaos and Tales of Abyss
 		// UC: will copy depth to green channel
@@ -5347,7 +5348,7 @@ __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool 
 			// Green channel is masked
 			GL_INS("HW: HLE Shuffle Tales Of Abyss");
 			if (test_only)
-				return true;
+				return ChannelFetch_RGB;
 
 			m_conf.ps.tales_of_abyss_hle = 1;
 		}
@@ -5355,7 +5356,7 @@ __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool 
 		{
 			GL_INS("HW: HLE Shuffle Urban Chaos");
 			if (test_only)
-				return true;
+				return ChannelFetch_RGB;
 
 			m_conf.ps.urban_chaos_hle = 1;
 		}
@@ -5370,18 +5371,18 @@ __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool 
 		// handled above.
 		GL_INS("HW: Might not be channel shuffle");
 		if (test_only)
-			return false;
+			return ChannelFetch_NONE;
 
 		m_channel_shuffle = false;
 		return false;
 	}
 	else if (m_cached_ctx.CLAMP.WMS == 3 && ((m_cached_ctx.CLAMP.MAXU & 0x8) == 8))
 	{
+		const ChannelFetch channel_select = ((m_cached_ctx.CLAMP.WMT != 3 && (m_vertex.buff[m_index.buff[0]].V & 0x20) == 0) || (m_cached_ctx.CLAMP.WMT == 3 && ((m_cached_ctx.CLAMP.MAXV & 0x2) == 0))) ? ChannelFetch_BLUE : ChannelFetch_ALPHA;
+
 		// MGS3/Kill Zone
 		if (test_only)
-			return true;
-
-		const ChannelFetch channel_select = ((m_cached_ctx.CLAMP.WMT != 3 && (m_vertex.buff[m_index.buff[0]].V & 0x20) == 0) || (m_cached_ctx.CLAMP.WMT == 3 && ((m_cached_ctx.CLAMP.MAXV & 0x2) == 0))) ? ChannelFetch_BLUE : ChannelFetch_ALPHA;
+			return channel_select;
 
 		GL_INS("HW: %s channel", (channel_select == ChannelFetch_BLUE) ? "blue" : "alpha");
 
@@ -5391,7 +5392,7 @@ __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool 
 	{
 		// Read either Red or Green. Let's check the V coordinate. 0-1 is likely top so
 		// red. 2-3 is likely bottom so green (actually depends on texture base pointer offset)
-		const bool green = PRIM->FST && (m_vertex.buff[0].V & 32);
+		const bool green = (m_cached_ctx.CLAMP.WMT == 3 && ((m_cached_ctx.CLAMP.MAXV & 0x2) == 2)) || (PRIM->FST && (m_vertex.buff[0].V & 32));
 		if (green && (m_cached_ctx.FRAME.FBMSK & 0x00FFFFFF) == 0x00FFFFFF)
 		{
 			// Typically used in Terminator 3
@@ -5419,7 +5420,7 @@ __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool 
 
 				GL_INS("HW: Green/Blue channel (%d, %d)", blue_shift, green_shift);
 				if (test_only)
-					return true;
+					return ChannelFetch_GXBY;
 
 				m_conf.cb_ps.ChannelShuffle = GSVector4i(blue_mask, blue_shift, green_mask, green_shift);
 				m_conf.ps.channel = ChannelFetch_GXBY;
@@ -5429,7 +5430,7 @@ __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool 
 			{
 				GL_INS("HW: Green channel (wrong mask) (fbmask %x)", blue_mask);
 				if (test_only)
-					return true;
+					return ChannelFetch_GREEN;
 
 				m_conf.ps.channel = ChannelFetch_GREEN;
 			}
@@ -5438,7 +5439,7 @@ __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool 
 		{
 			GL_INS("HW: Green channel");
 			if (test_only)
-				return true;
+				return ChannelFetch_GREEN;
 
 			m_conf.ps.channel = ChannelFetch_GREEN;
 		}
@@ -5447,7 +5448,7 @@ __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool 
 			// Pop
 			GL_INS("HW: Red channel");
 			if (test_only)
-				return true;
+				return ChannelFetch_RED;
 
 			m_conf.ps.channel = ChannelFetch_RED;
 		}
@@ -5492,7 +5493,7 @@ __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool 
 #endif
 
 			if (test_only)
-				return true;
+				return channel;
 
 			m_conf.ps.channel = channel;
 		}
@@ -5502,7 +5503,7 @@ __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool 
 				m_r.x, m_r.y, m_r.z, m_r.w, min_uv.x, min_uv.y);
 
 			if (test_only)
-				return false;
+				return ChannelFetch_NONE;
 
 			m_channel_shuffle = false;
 			return false;
