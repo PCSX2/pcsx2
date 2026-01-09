@@ -4764,6 +4764,9 @@ SCES-50034:
   name: "MotoGP"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    gpuTargetCLUT: 2 # Fixes some (haze?) shuffle colors.
+    textureInsideRT: 1 # Fixes rendering artifacts on racers.
 SCES-50105:
   name: "Sky Odyssey"
   region: "PAL-M5"
@@ -54707,6 +54710,9 @@ SLPS-20040:
   name-sort: "もとGP"
   name-en: "MotoGP"
   region: "NTSC-J"
+  gsHWFixes:
+    gpuTargetCLUT: 2 # Fixes some (haze?) shuffle colors.
+    textureInsideRT: 1 # Fixes rendering artifacts on racers.
 SLPS-20041:
   name: "麻雀悟空 大聖"
   name-sort: "まーじゃんごくう たいせい"
@@ -64197,6 +64203,9 @@ SLUS-20058:
   name: "MotoGP"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    gpuTargetCLUT: 2 # Fixes some (haze?) shuffle colors.
+    textureInsideRT: 1 # Fixes rendering artifacts on racers.
 SLUS-20062:
   name: "Grand Theft Auto III"
   region: "NTSC-U"
