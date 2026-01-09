@@ -5138,6 +5138,7 @@ void GSRendererHW::EmulateZbuffer(const GSTextureCache::Target* ds)
 	m_conf.cb_vs.max_depth = GSVector2i(0xFFFFFFFF);
 	//ps_cb.MaxDepth = GSVector4(0.0f, 0.0f, 0.0f, 1.0f);
 	m_conf.ps.zclamp = 0;
+	m_conf.ps.zfloor = !m_cached_ctx.ZBUF.ZMSK;
 
 	if (clamp_z)
 	{

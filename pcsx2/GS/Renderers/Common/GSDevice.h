@@ -401,6 +401,7 @@ struct alignas(16) GSHWDrawConfig
 
 				// Depth clamp
 				u32 zclamp : 1;
+				u32 zfloor : 1;
 
 				// Hack
 				u32 tcoffsethack : 1;

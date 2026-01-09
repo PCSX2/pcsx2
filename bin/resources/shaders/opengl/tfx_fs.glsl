@@ -1143,11 +1143,15 @@ void ps_main()
 	#endif
 #endif
 
-float depth_value = floor(gl_FragCoord.z * exp2(32.0f)) * exp2(-32.0f);;
+#if PS_ZFLOOR
+float depth_value = floor(gl_FragCoord.z * exp2(32.0f)) * exp2(-32.0f);
+#else
+float depth_value = gl_FragCoord.z;
+#endif
 	
 #if PS_ZCLAMP
 	gl_FragDepth = min(depth_value, MaxDepthPS);
-#else
+#elif PS_ZFLOOR
 	gl_FragDepth = depth_value;
 #endif
 
