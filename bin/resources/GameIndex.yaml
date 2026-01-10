@@ -2239,6 +2239,8 @@ SCAJ-20152:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     textureInsideRT: 1 # Fixes corruption.
+    halfPixelOffset: 4 # Aligns post bloom.
+    nativeScaling: 2 # Fixes post effects.
     getSkipCount: "GSC_UrbanReign"
 SCAJ-20153:
   name: "コード・エイジ コマンダーズ"
@@ -6229,6 +6231,8 @@ SCES-53688:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     textureInsideRT: 1 # Fixes corruption.
+    halfPixelOffset: 4 # Aligns post bloom.
+    nativeScaling: 2 # Fixes post effects.
     getSkipCount: "GSC_UrbanReign"
 SCES-53795:
   name: "SingStar - '80s"
@@ -7698,6 +7702,8 @@ SCKA-20065:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     textureInsideRT: 1 # Fixes corruption.
+    halfPixelOffset: 4 # Aligns post bloom.
+    nativeScaling: 2 # Fixes post effects.
     getSkipCount: "GSC_UrbanReign"
 SCKA-20066:
   name: "아이토이 - 플레이 3"
@@ -35952,6 +35958,8 @@ SLPM-60272:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     textureInsideRT: 1 # Fixes corruption.
+    halfPixelOffset: 4 # Aligns post bloom.
+    nativeScaling: 2 # Fixes post effects.
     getSkipCount: "GSC_UrbanReign"
 SLPM-60273:
   name: "絶体絶命都市2 -凍てついた記憶たち- [体験版 Type-B]"
@@ -60340,6 +60348,8 @@ SLPS-25557:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     textureInsideRT: 1 # Fixes corruption.
+    halfPixelOffset: 4 # Aligns post bloom.
+    nativeScaling: 2 # Fixes post effects.
     getSkipCount: "GSC_UrbanReign"
 SLPS-25558:
   name: "ネオジオ バトルコロシアム"
@@ -70360,6 +70370,8 @@ SLUS-21209:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     textureInsideRT: 1 # Fixes corruption.
+    halfPixelOffset: 4 # Aligns post bloom.
+    nativeScaling: 2 # Fixes post effects.
     getSkipCount: "GSC_UrbanReign"
 SLUS-21212:
   name: "Spartan - Total Warrior"
