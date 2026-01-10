@@ -11,6 +11,8 @@
 std::vector<BreakPoint> CBreakPoints::breakPoints_;
 u32 CBreakPoints::breakSkipFirstAtEE_ = 0;
 u32 CBreakPoints::breakSkipFirstAtIop_ = 0;
+bool CBreakPoints::pendingClearSkipFirstAtEE_ = false;
+bool CBreakPoints::pendingClearSkipFirstAtIop_ = false;
 std::vector<MemCheck> CBreakPoints::memChecks_;
 std::vector<MemCheck*> CBreakPoints::cleanupMemChecks_;
 bool CBreakPoints::breakpointTriggered_ = false;
@@ -391,10 +393,12 @@ void CBreakPoints::SetSkipFirst(BreakPointCpu cpu, u32 pc)
 	if (cpu == BREAKPOINT_EE)
 	{
 		breakSkipFirstAtEE_ = standardizeBreakpointAddress(pc);
+		pendingClearSkipFirstAtEE_ = false;
 	}
 	else if (cpu == BREAKPOINT_IOP)
 	{
 		breakSkipFirstAtIop_ = pc;
+		pendingClearSkipFirstAtIop_ = false;
 	}
 }
 
@@ -407,10 +411,29 @@ u32 CBreakPoints::CheckSkipFirst(BreakPointCpu cpu, u32 cmpPc)
 	return 0;
 }
 
-void CBreakPoints::ClearSkipFirst()
+void CBreakPoints::ClearSkipFirst(BreakPointCpu cpu)
 {
-	breakSkipFirstAtEE_ = 0;
-	breakSkipFirstAtIop_ = 0;
+	if((cpu & BREAKPOINT_EE) != 0)
+		pendingClearSkipFirstAtEE_ = true;
+	else if ((cpu & BREAKPOINT_IOP) != 0)
+		pendingClearSkipFirstAtIop_ = true;
+	
+	if(cpu == BREAKPOINT_IOP_AND_EE)
+		CommitClearSkipFirst(BREAKPOINT_IOP_AND_EE);
+}
+
+void CBreakPoints::CommitClearSkipFirst(BreakPointCpu cpu)
+{
+	if((cpu & BREAKPOINT_EE) != 0 && pendingClearSkipFirstAtEE_)
+	{
+		pendingClearSkipFirstAtEE_ = false;
+		breakSkipFirstAtEE_ = 0;
+	}
+	else if ((cpu & BREAKPOINT_IOP) != 0 && pendingClearSkipFirstAtIop_)
+	{
+		pendingClearSkipFirstAtIop_ = true;
+		breakSkipFirstAtIop_ = 0;
+	}
 }
 
 const std::vector<MemCheck> CBreakPoints::GetMemCheckRanges()
