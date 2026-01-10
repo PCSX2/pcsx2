@@ -70,8 +70,8 @@ eeProfiler EE::Profiler;
 #define X86
 
 static DynamicHeapArray<u8, 4096> recRAMCopy;
-static DynamicHeapArray<u8, 4096> recLutReserve_RAM;
-static size_t recLutSize;
+static DynamicHeapArray<BASEBLOCK, 4096> recLutReserve_RAM;
+static size_t recLutEntries;
 static bool extraRam;
 
 static BASEBLOCK* recRAM = nullptr; // and the ptr to the blocks here
@@ -486,21 +486,22 @@ static void _DynGen_Dispatchers()
 
 static __ri void ClearRecLUT(BASEBLOCK* base, int memsize)
 {
-	for (int i = 0; i < memsize / (int)sizeof(uptr); i++)
+	for (int i = 0; i < memsize / 4; i++)
 		base[i].SetFnptr((uptr)JITCompile);
 }
 
 static void recReserveRAM()
 {
-	recLutSize = (Ps2MemSize::ExposedRam + Ps2MemSize::Rom + Ps2MemSize::Rom1 + Ps2MemSize::Rom2) * wordsize / 4;
+	// One entry per possible call target
+	recLutEntries = (Ps2MemSize::ExposedRam + Ps2MemSize::Rom + Ps2MemSize::Rom1 + Ps2MemSize::Rom2) / 4;
 
 	if (recRAMCopy.size() != Ps2MemSize::ExposedRam)
 		recRAMCopy.resize(Ps2MemSize::ExposedRam);
 
-	if (recLutReserve_RAM.size() != recLutSize)
-		recLutReserve_RAM.resize(recLutSize);
+	if (recLutReserve_RAM.size() != recLutEntries)
+		recLutReserve_RAM.resize(recLutEntries);
 
-	BASEBLOCK* basepos = reinterpret_cast<BASEBLOCK*>(recLutReserve_RAM.data());
+	BASEBLOCK* basepos = recLutReserve_RAM.data();
 	recRAM = basepos;
 	basepos += (Ps2MemSize::ExposedRam / 4);
 	recROM = basepos;
@@ -581,7 +582,8 @@ static void recResetRaw()
 	vtlb_DynGenDispatchers();
 	recPtr = xGetPtr();
 
-	ClearRecLUT(reinterpret_cast<BASEBLOCK*>(recLutReserve_RAM.data()), recLutSize);
+	ClearRecLUT(recLutReserve_RAM.data(),
+		Ps2MemSize::ExposedRam + Ps2MemSize::Rom + Ps2MemSize::Rom1 + Ps2MemSize::Rom2);
 	recRAMCopy.fill(0);
 
 	maxrecmem = 0;
