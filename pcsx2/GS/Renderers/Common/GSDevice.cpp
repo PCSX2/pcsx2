@@ -918,10 +918,15 @@ void GSDevice::Resize(int width, int height)
 	GSVector2i s = m_current->GetSize();
 	int multiplier = 1;
 
-	while (width > s.x || height > s.y)
+	if ((width > s.x || height > s.y))
 	{
-		s = m_current->GetSize() * GSVector2i(++multiplier);
+		while (width > s.x || height > s.y)
+		{
+			s = m_current->GetSize() * GSVector2i(++multiplier);
+		}
 	}
+	else
+		s = GSVector2i(width, height);
 
 	if (ResizeRenderTarget(&dTex, s.x, s.y, false, false))
 	{
