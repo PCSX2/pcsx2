@@ -1329,11 +1329,15 @@ __fi void cdvdReadInterrupt()
 	{
 		if (cdvd.ReadErr == 0)
 		{
-			while ((cdvd.ReadErr = DoCDVDgetBuffer(&cdr.Transfer[0])), cdvd.ReadErr == -2)
+			cdvd.ReadErr = DoCDVDgetBuffer(&cdr.Transfer[0]);
+
+			if (cdvd.ReadErr == -2)
 			{
-				// not finished yet ... block on the read until it finishes.
-				Threading::Sleep(0);
-				Threading::SpinWait();
+				// Data not ready yet - reschedule interrupt instead of blocking
+				// This allows the emulation to continue while waiting for disc I/O
+				// 2000 IOP cycles ≈ 54 microseconds at 36.864 MHz
+				CDVDREAD_INT(2000);
+				return;
 			}
 		}
 

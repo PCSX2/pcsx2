@@ -259,6 +259,17 @@ static s32 DISCgetBuffer(u8* dest)
 		return 0;
 	}
 
+	// Check if the sector is already cached (non-blocking check)
+	// This prevents blocking the emulation thread on physical disc I/O
+	const u32 sector_block = csector & ~(sectors_per_read - 1);
+	if (!cdvdCacheCheck(sector_block))
+	{
+		// Data not ready yet - the async thread is working on it
+		// Return -2 to signal pending status per CDVD API contract
+		return -2;
+	}
+
+	// Sector is cached - retrieve it (fast, non-blocking)
 	memcpy(dest, cdvdGetSector(csector, cmode), csize);
 
 	return 0;

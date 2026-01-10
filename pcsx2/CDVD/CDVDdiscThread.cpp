@@ -11,7 +11,8 @@
 #include <queue>
 #include <thread>
 
-const u32 sectors_per_read = 16;
+// Exported for use by CDVDdiscReader.cpp
+extern const u32 sectors_per_read = 16;
 
 static_assert(sectors_per_read > 1 && !(sectors_per_read & (sectors_per_read - 1)),
 			  "sectors_per_read must by a power of 2");
@@ -67,7 +68,8 @@ static void cdvdCacheUpdate(u32 lsn, u8* data)
 	Cache[entry].lsn = lsn;
 }
 
-static bool cdvdCacheCheck(u32 lsn)
+// Non-static: exported for use by CDVDdiscReader.cpp to check if sector is cached
+bool cdvdCacheCheck(u32 lsn)
 {
 	std::lock_guard<std::mutex> guard(s_cache_lock);
 	u32 entry = cdvdSectorHash(lsn);

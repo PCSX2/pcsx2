@@ -78,6 +78,9 @@ extern bool weAreInNewDiskCB;
 
 extern void (*newDiscCB)();
 
+// Sector read block size (sectors are read in blocks of this size)
+extern const u32 sectors_per_read;
+
 void cdvdStartThread();
 void cdvdStopThread();
 void cdvdRequestSector(u32 sector, s32 mode);
@@ -85,3 +88,7 @@ u8* cdvdGetSector(u32 sector, s32 mode);
 s32 cdvdDirectReadSector(u32 sector, s32 mode, u8* buffer);
 void cdvdRefreshData();
 void cdvdParseTOC();
+
+// Check if a sector block is already in the cache (non-blocking)
+// lsn should be block-aligned (sector & ~(sectors_per_read - 1))
+bool cdvdCacheCheck(u32 lsn);
