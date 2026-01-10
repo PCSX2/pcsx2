@@ -407,6 +407,10 @@ namespace FullscreenUI
 	static void CopyTextToClipboard(std::string title, const std::string_view text);
 	static void DrawAboutWindow();
 	static void OpenAboutWindow();
+	static void DrawCoverDownloaderWindow();
+	static void OpenCoverDownloaderWindow();
+	static void CloseCoverDownloaderWindow();
+	static void CoverDownloaderThreadFunc(const std::vector<std::string>& urls);
 	static void GetStandardSelectionFooterText(SmallStringBase& dest, bool back_instead_of_cancel);
 	static void ApplyLayoutSettings(const SettingsInterface* bsi = nullptr);
 
@@ -429,6 +433,18 @@ namespace FullscreenUI
 	static char s_achievements_login_username[256] = {};
 	static char s_achievements_login_password[256] = {};
 	static Achievements::LoginRequestReason s_achievements_login_reason = Achievements::LoginRequestReason::UserInitiated;
+
+	// cover downloader dialog state
+	static bool s_cover_downloader_open = false;
+	static std::array<char, 4096> s_cover_downloader_urls_buffer = {};
+	static bool s_cover_downloader_use_title_filenames = false;
+	static bool s_cover_downloader_downloading = false;
+	static std::unique_ptr<std::thread> s_cover_downloader_thread;
+	static std::mutex s_cover_downloader_mutex;
+	static std::string s_cover_downloader_status;
+	static bool s_cover_downloader_has_error = false;
+	static s32 s_cover_downloader_progress_max = 0;
+	static s32 s_cover_downloader_progress_value = 0;
 
 	// local copies of the currently-running game
 	static std::string s_current_game_title;
@@ -996,7 +1012,7 @@ bool FullscreenUI::HasActiveWindow()
 
 bool FullscreenUI::AreAnyDialogsOpen()
 {
-	return (s_save_state_selector_open || s_about_window_open ||
+	return (s_save_state_selector_open || s_about_window_open || s_cover_downloader_open ||
 			s_input_binding_type != InputBindingInfo::Type::Unknown || ImGuiFullscreen::IsChoiceDialogOpen() ||
 			ImGuiFullscreen::IsFileSelectorOpen());
 }
@@ -1149,6 +1165,7 @@ void FullscreenUI::Shutdown(bool clear_state)
 	{
 		CancelAllHddOperations();
 		CloseSaveStateSelector();
+		CloseCoverDownloaderWindow();
 		s_cover_image_map.clear();
 		s_game_list_sorted_entries = {};
 		s_game_list_directories_cache = {};
@@ -1265,6 +1282,9 @@ void FullscreenUI::Render()
 
 	if (s_about_window_open)
 		DrawAboutWindow();
+
+	if (s_cover_downloader_open)
+		DrawCoverDownloaderWindow();
 
 	if (s_achievements_login_open)
 		DrawAchievementsLoginWindow();
@@ -7836,6 +7856,10 @@ void FullscreenUI::DrawGameListWindow()
 		s_current_main_window = MainWindowType::GameListSettings;
 		QueueResetFocus(FocusResetType::WindowChanged);
 	}
+	else if (ImGui::IsKeyPressed(ImGuiKey_GamepadBack, false) || ImGui::IsKeyPressed(ImGuiKey_F4, false))
+	{
+		OpenCoverDownloaderWindow();
+	}
 
 	switch (s_game_list_view)
 	{
@@ -7867,6 +7891,7 @@ void FullscreenUI::DrawGameListWindow()
 		const bool swapNorthWest = ImGuiManager::IsGamepadNorthWestSwapped();
 		SetFullscreenFooterText(std::array{
 			std::make_pair(ICON_PF_DPAD, FSUI_VSTR("Select Game")),
+			std::make_pair(ICON_PF_SELECT_SHARE, FSUI_VSTR("Cover Downloader")),
 			std::make_pair(ICON_PF_START, FSUI_VSTR("Settings")),
 			std::make_pair(swapNorthWest ? ICON_PF_BUTTON_SQUARE : ICON_PF_BUTTON_TRIANGLE, FSUI_VSTR("Change View")),
 			std::make_pair(swapNorthWest ? ICON_PF_BUTTON_TRIANGLE : ICON_PF_BUTTON_SQUARE, FSUI_VSTR("Launch Options")),
@@ -7881,6 +7906,7 @@ void FullscreenUI::DrawGameListWindow()
 			std::make_pair(ICON_PF_F1, FSUI_VSTR("Change View")),
 			std::make_pair(ICON_PF_F2, FSUI_VSTR("Settings")),
 			std::make_pair(ICON_PF_F3, FSUI_VSTR("Launch Options")),
+			std::make_pair(ICON_PF_F4, FSUI_VSTR("Cover Downloader")),
 			std::make_pair(ICON_PF_ENTER, FSUI_VSTR("Start Game")),
 			std::make_pair(ICON_PF_ESC, FSUI_VSTR("Back")),
 		});
@@ -8437,16 +8463,6 @@ void FullscreenUI::DrawGameListSettingsWindow()
 			"FullscreenUIShowGameGridTitles", true);
 	}
 
-	MenuHeading(FSUI_CSTR("Cover Settings"));
-	{
-		DrawFolderSetting(bsi, FSUI_ICONSTR(ICON_FA_FOLDER, "Covers Directory"), "Folders", "Covers", EmuFolders::Covers);
-		if (MenuButton(
-				FSUI_ICONSTR(ICON_FA_DOWNLOAD, "Download Covers"), FSUI_CSTR("Downloads covers from a user-specified URL template.")))
-		{
-			Host::OnCoverDownloaderOpenRequested();
-		}
-	}
-
 	MenuHeading(FSUI_CSTR("Operations"));
 	{
 		if (MenuButton(
@@ -8684,6 +8700,374 @@ void FullscreenUI::DrawAboutWindow()
 	}
 
 	ImGui::PopStyleVar(2);
+	ImGui::PopFont();
+}
+
+void FullscreenUI::OpenCoverDownloaderWindow()
+{
+	s_cover_downloader_open = true;
+	s_cover_downloader_urls_buffer.fill('\0');
+	{
+		std::lock_guard<std::mutex> lock(s_cover_downloader_mutex);
+		s_cover_downloader_use_title_filenames = false;
+		s_cover_downloader_downloading = false;
+		s_cover_downloader_has_error = false;
+	}
+	QueueResetFocus(FocusResetType::PopupOpened);
+}
+
+void FullscreenUI::CloseCoverDownloaderWindow()
+{
+	if (s_cover_downloader_thread)
+	{
+		{
+			std::lock_guard<std::mutex> lock(s_cover_downloader_mutex);
+			s_cover_downloader_downloading = false;
+		}
+		if (s_cover_downloader_thread->joinable())
+		{
+			s_cover_downloader_thread->join();
+		}
+		s_cover_downloader_thread.reset();
+	}
+
+	s_cover_downloader_open = false;
+	s_cover_downloader_urls_buffer.fill('\0');
+	{
+		std::lock_guard<std::mutex> lock(s_cover_downloader_mutex);
+		s_cover_downloader_use_title_filenames = false;
+		s_cover_downloader_has_error = false;
+	}
+}
+
+void FullscreenUI::CoverDownloaderThreadFunc(const std::vector<std::string>& urls)
+{
+	class CoverDownloaderProgressCallback : public ProgressCallback
+	{
+	public:
+		CoverDownloaderProgressCallback() = default;
+		~CoverDownloaderProgressCallback() = default;
+
+		void PushState() override {}
+		void PopState() override {}
+
+		bool IsCancelled() const override
+		{
+			std::lock_guard<std::mutex> lock(s_cover_downloader_mutex);
+			return !s_cover_downloader_downloading;
+		}
+
+		bool IsCancellable() const override
+		{
+			return true;
+		}
+
+		void SetCancellable(bool cancellable) override
+		{
+		}
+
+		void SetTitle(const char* title) override
+		{
+		}
+
+		void SetStatusText(const char* text) override
+		{
+			std::lock_guard<std::mutex> lock(s_cover_downloader_mutex);
+			s_cover_downloader_status = text;
+		}
+
+		void SetProgressRange(u32 range) override
+		{
+			std::lock_guard<std::mutex> lock(s_cover_downloader_mutex);
+			s_cover_downloader_progress_max = range;
+			s_cover_downloader_progress_value = 0;
+		}
+
+		void SetProgressValue(u32 value) override
+		{
+			std::lock_guard<std::mutex> lock(s_cover_downloader_mutex);
+			s_cover_downloader_progress_value = value;
+		}
+
+		void IncrementProgressValue() override
+		{
+			std::lock_guard<std::mutex> lock(s_cover_downloader_mutex);
+			s_cover_downloader_progress_value++;
+		}
+
+		void SetProgressState(ProgressState state) override
+		{
+		}
+
+		void DisplayError(const char* message) override
+		{
+			std::lock_guard<std::mutex> lock(s_cover_downloader_mutex);
+			s_cover_downloader_status = fmt::format(FSUI_FSTR("Error: {}"), message);
+			s_cover_downloader_has_error = true;
+		}
+
+		void DisplayWarning(const char* message) override
+		{
+			std::lock_guard<std::mutex> lock(s_cover_downloader_mutex);
+			s_cover_downloader_status = fmt::format(FSUI_FSTR("Warning: {}"), message);
+			s_cover_downloader_has_error = false;
+		}
+
+		void DisplayInformation(const char* message) override
+		{
+			std::lock_guard<std::mutex> lock(s_cover_downloader_mutex);
+			s_cover_downloader_status = message;
+			s_cover_downloader_has_error = false;
+		}
+
+		void DisplayDebugMessage(const char* message) override
+		{
+		}
+
+		void ModalError(const char* message) override
+		{
+			DisplayError(message);
+		}
+
+		bool ModalConfirmation(const char* message) override
+		{
+			return false;
+		}
+
+		void ModalInformation(const char* message) override
+		{
+			DisplayInformation(message);
+		}
+	};
+
+	CoverDownloaderProgressCallback callback;
+	bool use_title_filenames;
+	{
+		std::lock_guard<std::mutex> lock(s_cover_downloader_mutex);
+		use_title_filenames = s_cover_downloader_use_title_filenames;
+	}
+	GameList::DownloadCovers(urls, !use_title_filenames, &callback);
+
+	{
+		std::lock_guard<std::mutex> lock(s_cover_downloader_mutex);
+		if (s_cover_downloader_has_error && !s_cover_downloader_status.empty())
+		{
+			std::string error_message = s_cover_downloader_status;
+			MTGS::RunOnGSThread([error_message]() {
+				ShowToast(FSUI_STR("Download Failed"), error_message, 5.0f);
+			});
+		}
+		// We clear the cover image cache so the newly downloaded covers are picked up
+		MTGS::RunOnGSThread([]() {
+			s_cover_image_map.clear();
+		});
+		s_cover_downloader_downloading = false;
+	}
+}
+
+void FullscreenUI::DrawCoverDownloaderWindow()
+{
+	ImGui::SetNextWindowSize(LayoutScale(800.0f, 640.0f));
+	ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+	ImGui::OpenPopup(FSUI_ICONSTR(ICON_FA_DOWNLOAD, "Cover Downloader"));
+
+	ImGui::PushFont(g_large_font.first, g_large_font.second);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
+		LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING, ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
+
+	const u32 flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar;
+
+	if (ImGui::BeginPopupModal(FSUI_ICONSTR(ICON_FA_DOWNLOAD, "Cover Downloader"), &s_cover_downloader_open, flags))
+	{
+		BeginMenuButtons();
+
+		ImGui::TextWrapped("%s", FSUI_CSTR("PCSX2 can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images."));
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(8.0f));
+		ImGui::TextWrapped("%s", FSUI_CSTR("In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:"));
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(6.0f));
+		ImGui::Text("${title}: %s", FSUI_CSTR("Title of the game."));
+		ImGui::Text("${filetitle}: %s", FSUI_CSTR("Name component of the game's filename."));
+		ImGui::Text("${serial}: %s", FSUI_CSTR("Serial of the game."));
+		ImGui::TextWrapped("%s https://www.example-not-a-real-domain.com/covers/${serial}.jpg", FSUI_CSTR("Example:"));
+
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
+
+		// URLs input section
+		{
+			ImGui::TextUnformatted(FSUI_CSTR("URLs:"));
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(4.0f));
+
+			const float text_box_height = LayoutScale(55.0f);
+			ImGui::SetNextItemWidth(-1.0f);
+			ImGuiInputTextFlags text_flags = ImGuiInputTextFlags_AllowTabInput;
+			bool is_downloading;
+			{
+				std::lock_guard<std::mutex> lock(s_cover_downloader_mutex);
+				is_downloading = s_cover_downloader_downloading;
+			}
+			if (!is_downloading)
+			{
+				ImGui::InputTextMultiline("##urls", s_cover_downloader_urls_buffer.data(), s_cover_downloader_urls_buffer.size(), ImVec2(-1.0f, text_box_height), text_flags);
+			}
+			else
+			{
+				ImGui::BeginDisabled();
+				ImGui::InputTextMultiline("##urls", s_cover_downloader_urls_buffer.data(), s_cover_downloader_urls_buffer.size(), ImVec2(-1.0f, text_box_height), text_flags);
+				ImGui::EndDisabled();
+			}
+
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
+
+			bool use_title;
+			{
+				std::lock_guard<std::mutex> lock(s_cover_downloader_mutex);
+				use_title = s_cover_downloader_use_title_filenames;
+			}
+			ImGui::SetNextItemWidth(-1.0f);
+			if (ImGui::Checkbox(FSUI_CSTR("Use Title File Names"), &use_title))
+			{
+				std::lock_guard<std::mutex> lock(s_cover_downloader_mutex);
+				s_cover_downloader_use_title_filenames = use_title;
+			}
+			const bool is_hovering_checkbox = ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal | ImGuiHoveredFlags_NoSharedDelay);
+			ImGui::SameLine();
+			ImGui::TextDisabled("(?)");
+			const bool is_hovering_indicator = ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal | ImGuiHoveredFlags_NoSharedDelay);
+			if (is_hovering_checkbox || is_hovering_indicator)
+			{
+				if (ImGui::BeginTooltip())
+				{
+					ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+					ImGui::TextUnformatted(FSUI_CSTR(
+						"By default, the downloaded covers will be saved with the game's serial to ensure covers do not break with GameDB changes "
+						"and that titles with multiple regions do not conflict. If this is not desired, you can check the \"Use Title File Names\" box above."));
+					ImGui::PopTextWrapPos();
+					ImGui::EndTooltip();
+				}
+			}
+		}
+
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
+
+		// Progress display
+		{
+			std::lock_guard<std::mutex> lock(s_cover_downloader_mutex);
+
+			if (s_cover_downloader_downloading)
+			{
+				if (!s_cover_downloader_status.empty())
+				{
+					ImGui::TextUnformatted(s_cover_downloader_status.c_str());
+				}
+				else
+				{
+					ImGui::TextUnformatted(FSUI_CSTR("Downloading covers..."));
+				}
+
+				// Show progress bar if we have progress info
+				if (s_cover_downloader_progress_max > 0)
+				{
+					const float progress = static_cast<float>(s_cover_downloader_progress_value) / static_cast<float>(s_cover_downloader_progress_max);
+					const int percent = static_cast<int>(std::round(progress * 100.0f));
+					ImGui::ProgressBar(progress, ImVec2(-1.0f, LayoutScale(30.0f)), fmt::format("{}%", percent).c_str());
+				}
+				else
+				{
+					// Indeterminate progress bar
+					const float fraction = std::fmod(ImGui::GetTime(), 2.0f) * 0.5f;
+					ImGui::ProgressBar(fraction, ImVec2(-1.0f, LayoutScale(30.0f)));
+				}
+
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(4.0f));
+			}
+		}
+
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(12.0f));
+
+		const bool has_urls = (s_cover_downloader_urls_buffer[0] != '\0');
+		bool start_enabled;
+		{
+			std::lock_guard<std::mutex> lock(s_cover_downloader_mutex);
+			start_enabled = !s_cover_downloader_downloading && has_urls;
+		}
+
+		{
+			std::unique_lock<std::mutex> lock(s_cover_downloader_mutex);
+			const bool is_downloading = s_cover_downloader_downloading;
+			lock.unlock();
+
+			if (is_downloading)
+			{
+				if (ActiveButton(FSUI_ICONSTR(ICON_FA_STOP, "Stop"), false))
+				{
+					{
+						std::lock_guard<std::mutex> lock2(s_cover_downloader_mutex);
+						s_cover_downloader_downloading = false;
+					}
+					if (s_cover_downloader_thread && s_cover_downloader_thread->joinable())
+						s_cover_downloader_thread->join();
+					s_cover_downloader_thread.reset();
+				}
+			}
+			else
+			{
+				if (ActiveButton(FSUI_ICONSTR(ICON_FA_PLAY, "Start"), false, start_enabled))
+				{
+					std::vector<std::string> urls;
+					std::string urls_text(s_cover_downloader_urls_buffer.data());
+					for (const auto& line : StringUtil::SplitString(urls_text, '\n', true))
+					{
+						if (!line.empty())
+							urls.push_back(std::string(line));
+					}
+
+					// Start download in a background thread
+					// Clean up any existing thread before creating a new one
+					if (s_cover_downloader_thread && s_cover_downloader_thread->joinable())
+					{
+						s_cover_downloader_thread->join();
+						s_cover_downloader_thread.reset();
+					}
+
+					bool should_start_download = false;
+					{
+						std::lock_guard<std::mutex> lock(s_cover_downloader_mutex);
+						if (!s_cover_downloader_downloading)
+						{
+							// Reset progress values for new download
+							s_cover_downloader_progress_max = 0;
+							s_cover_downloader_progress_value = 0;
+							s_cover_downloader_status.clear();
+							s_cover_downloader_has_error = false;
+							s_cover_downloader_downloading = true;
+							should_start_download = true;
+						}
+					}
+
+					if (should_start_download)
+					{
+						s_cover_downloader_thread = std::make_unique<std::thread>(CoverDownloaderThreadFunc, urls);
+					}
+				}
+			}
+		}
+
+		if (ActiveButton(FSUI_ICONSTR(ICON_FA_XMARK, "Close"), false) || WantsToCloseMenu())
+		{
+			ImGui::CloseCurrentPopup();
+			s_cover_downloader_open = false;
+			CloseCoverDownloaderWindow();
+		}
+
+		EndMenuButtons();
+
+		ImGui::EndPopup();
+	}
+
+	ImGui::PopStyleVar(4);
 	ImGui::PopFont();
 }
 
