@@ -90,6 +90,7 @@ static double s_last_barriers = 0;
 static double s_last_copies = 0;
 static double s_last_uploads = 0;
 static double s_last_readbacks = 0;
+static double s_last_target_transitions = 0;
 static u64 s_total_internal_draws = 0;
 static u64 s_total_draws = 0;
 static u64 s_total_render_passes = 0;
@@ -97,6 +98,7 @@ static u64 s_total_barriers = 0;
 static u64 s_total_copies = 0;
 static u64 s_total_uploads = 0;
 static u64 s_total_readbacks = 0;
+static u64 s_total_target_transitions = 0;
 static u32 s_total_frames = 0;
 static u32 s_total_drawn_frames = 0;
 
@@ -252,6 +254,7 @@ void Host::BeginPresentFrame()
 		update_stat(GSPerfMon::TextureCopies, s_total_copies, s_last_copies);
 		update_stat(GSPerfMon::TextureUploads, s_total_uploads, s_last_uploads);
 		update_stat(GSPerfMon::Readbacks, s_total_readbacks, s_last_readbacks);
+		update_stat(GSPerfMon::TargetTransitions, s_total_target_transitions, s_last_target_transitions);
 
 		const bool idle_frame = s_total_frames && (last_draws == s_total_internal_draws && last_uploads == s_total_uploads);
 
@@ -843,6 +846,7 @@ void GSRunner::DumpStats()
 	Console.WriteLn(fmt::format("@HWSTAT@ Copies: {} (avg {})", s_total_copies, static_cast<u64>(std::ceil(s_total_copies / static_cast<double>(s_total_drawn_frames)))));
 	Console.WriteLn(fmt::format("@HWSTAT@ Uploads: {} (avg {})", s_total_uploads, static_cast<u64>(std::ceil(s_total_uploads / static_cast<double>(s_total_drawn_frames)))));
 	Console.WriteLn(fmt::format("@HWSTAT@ Readbacks: {} (avg {})", s_total_readbacks, static_cast<u64>(std::ceil(s_total_readbacks / static_cast<double>(s_total_drawn_frames)))));
+	Console.WriteLn(fmt::format("@HWSTAT@ Target Transitions: {} (avg {})", s_total_target_transitions, static_cast<u64>(std::ceil(s_total_target_transitions / static_cast<double>(s_total_drawn_frames)))));
 	Console.WriteLn("============================================");
 }
 
@@ -851,9 +855,15 @@ void GSRunner::DumpStats()
 #define main real_main
 #endif
 
+// FIXME: DEBUGGING - REMOVE
+std::string dump_name;
+
 static void CPUThreadMain(VMBootParameters* params, std::atomic<int>* ret)
 {
 	ret->store(EXIT_FAILURE);
+
+	// FIXME: DEBUGGING - REMOVE
+	dump_name = Path::GetFileName(params->filename);
 
 	if (VMManager::Internal::CPUThreadInitialize())
 	{
@@ -866,6 +876,7 @@ static void CPUThreadMain(VMBootParameters* params, std::atomic<int>* ret)
 			// run until end
 			GSDumpReplayer::SetLoopCount(s_loop_count);
 			VMManager::SetState(VMState::Running);
+			VMManager::SetLimiterMode(LimiterModeType::Unlimited);
 			while (VMManager::GetState() == VMState::Running)
 				VMManager::Execute();
 			VMManager::Shutdown(false);

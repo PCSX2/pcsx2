@@ -21,6 +21,27 @@
 #define GS_FORWARD_PRIMID 0
 #endif
 
+#ifndef ZTST_GEQUAL
+#define ZTST_GEQUAL 2
+#define ZTST_GREATER 3
+#endif
+
+#ifndef AFAIL_KEEP
+#define AFAIL_KEEP 0
+#define AFAIL_FB_ONLY 1
+#define AFAIL_ZB_ONLY 2
+#define AFAIL_RGB_ONLY 3
+#define AFAIL_RGB_ONLY_DSB 4
+#endif
+
+#ifndef PS_ATST_NONE
+#define PS_ATST_NONE 0
+#define PS_ATST_LEQUAL 1
+#define PS_ATST_GEQUAL 2
+#define PS_ATST_EQUAL 3
+#define PS_ATST_NOTEQUAL 4
+#endif
+
 #ifndef PS_FST
 #define PS_IIP 0
 #define PS_FST 0
@@ -79,12 +100,25 @@
 #define PS_NO_COLOR 0
 #define PS_NO_COLOR1 0
 #define PS_DATE 0
+#define PS_TEX_IS_FB 0
+#define PS_COLOR_FEEDBACK 0
+#define PS_DEPTH_FEEDBACK 0
+#define PS_ROV_COLOR 0
+#define PS_ROV_DEPTH 0
 #endif
 
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
 #define SW_BLEND_NEEDS_RT (SW_BLEND && (PS_BLEND_A == 1 || PS_BLEND_B == 1 || PS_BLEND_C == 1 || PS_BLEND_D == 1))
 #define SW_AD_TO_HW (PS_BLEND_C == 1 && PS_A_MASKED)
-#define NEEDS_RT_FOR_AFAIL (PS_AFAIL == 3 && PS_NO_COLOR1)
+#define AFAIL_NEEDS_RT (PS_AFAIL == AFAIL_ZB_ONLY || PS_AFAIL == AFAIL_RGB_ONLY)
+#define AFAIL_NEEDS_DEPTH (PS_AFAIL == AFAIL_FB_ONLY || PS_AFAIL == AFAIL_RGB_ONLY)
+
+#define PS_RETURN_COLOR_ROV (!PS_NO_COLOR && PS_ROV_COLOR)
+#define PS_RETURN_COLOR (!PS_NO_COLOR && !PS_ROV_COLOR)
+#define PS_RETURN_DEPTH_ROV ((PS_ZCLAMP || PS_ZFLOOR) && PS_ROV_DEPTH)
+#define PS_RETURN_DEPTH ((PS_ZCLAMP || PS_ZFLOOR) && !PS_ROV_DEPTH)
+#define PS_ROV_EARLYDEPTHSTENCIL (PS_ROV_COLOR && !PS_ROV_DEPTH && !(PS_ZCLAMP || PS_ZFLOOR))
+#define PS_ENABLE_ZTST (PS_ZTST == ZTST_GEQUAL || PS_ZTST == ZTST_GREATER)
 
 struct VS_INPUT
 {
@@ -127,28 +161,75 @@ struct PS_INPUT
 
 #ifdef PIXEL_SHADER
 
+struct PS_OUTPUT_REAL
+{
+#define NUM_RTS 0
+
+#if PS_RETURN_COLOR
+	#if PS_DATE == 1 || PS_DATE == 2
+		float c : SV_Target;
+	#else
+		
+		float4 c0 : SV_Target0;
+
+		#undef NUM_RTS
+		#define NUM_RTS 1
+		
+		#if !PS_NO_COLOR1
+			float4 c1 : SV_Target1;
+		#endif
+	#endif
+#endif
+
+#if PS_RETURN_DEPTH
+	#if PS_DEPTH_FEEDBACK && PS_NO_COLOR1 && DX12
+		#if NUM_RTS > 0
+			float depth : SV_Target1;
+		#else
+			float depth : SV_Target0;
+		#endif
+	#else
+		float depth : SV_Depth;
+	#endif
+#endif
+
+#undef NUM_RTS
+};
+
 struct PS_OUTPUT
 {
 #if !PS_NO_COLOR
-#if PS_DATE == 1 || PS_DATE == 2
-	float c : SV_Target;
-#else
-	float4 c0 : SV_Target0;
-#if !PS_NO_COLOR1
-	float4 c1 : SV_Target1;
-#endif
-#endif
-#endif
-#if PS_ZCLAMP || PS_ZFLOOR
-	float depth : SV_Depth;
+	#if PS_DATE == 1 || PS_DATE == 2
+		float c;
+	#else
+		float4 c0;
+		#if !PS_NO_COLOR1
+			float4 c1;
+		#endif
+	#endif
 #endif
 };
 
 Texture2D<float4> Texture : register(t0);
 Texture2D<float4> Palette : register(t1);
+#if !PS_ROV_COLOR
 Texture2D<float4> RtTexture : register(t2);
+#endif
 Texture2D<float> PrimMinTexture : register(t3);
+#if !PS_ROV_DEPTH
+Texture2D<float> DepthTexture : register(t4);
+#endif
 SamplerState TextureSampler : register(s0);
+
+#if PS_ROV_COLOR
+RasterizerOrderedTexture2D<float4> RtTextureRov : register(u0);
+static float4 cachedRtValue;
+#endif
+
+#if PS_ROV_DEPTH
+RasterizerOrderedTexture2D<float> DepthTextureRov : register(u1);
+static float cachedDepthValue;
+#endif
 
 #ifdef DX12
 cbuffer cb1 : register(b1)
@@ -173,12 +254,47 @@ cbuffer cb1
 	float4x4 DitherMatrix;
 	float ScaledScaleFactor;
 	float RcpScaleFactor;
+	float pad0;
+	float pad1;
+	uint4 ColorMask;
 };
+
+float4 RtLoad(int2 xy)
+{
+#if PS_ROV_COLOR
+	return cachedRtValue;
+#else
+	return RtTexture.Load(int3(int2(xy), 0));
+#endif
+}
+
+float DepthLoad(int2 xy)
+{
+#if PS_ROV_DEPTH
+	return cachedDepthValue;
+#else
+	return DepthTexture.Load(int3(int2(xy), 0));
+#endif
+}
+
+void RtWrite(int2 xy, float4 c)
+{
+#if PS_ROV_COLOR
+	RtTextureRov[xy] = c;
+#endif
+}
+
+void DepthWrite(int2 xy, float d)
+{
+#if PS_ROV_DEPTH
+	DepthTextureRov[xy] = d;
+#endif
+}
 
 float4 sample_c(float2 uv, float uv_w, int2 xy)
 {
 #if PS_TEX_IS_FB == 1
-	return RtTexture.Load(int3(int2(xy), 0));
+	return RtLoad(xy);
 #elif PS_REGION_RECT == 1
 	return Texture.Load(int3(int2(uv), 0));
 #else
@@ -382,7 +498,7 @@ float4x4 sample_4p(uint4 u)
 int fetch_raw_depth(int2 xy)
 {
 #if PS_TEX_IS_FB == 1
-	float4 col = RtTexture.Load(int3(xy, 0));
+	float4 col = RtLoad(xy);
 #else
 	float4 col = Texture.Load(int3(xy, 0));
 #endif
@@ -392,7 +508,7 @@ int fetch_raw_depth(int2 xy)
 float4 fetch_raw_color(int2 xy)
 {
 #if PS_TEX_IS_FB == 1
-	return RtTexture.Load(int3(xy, 0));
+	return RtLoad(xy);
 #else
 	return Texture.Load(int3(xy, 0));
 #endif
@@ -401,7 +517,7 @@ float4 fetch_raw_color(int2 xy)
 float4 fetch_c(int2 uv)
 {
 #if PS_TEX_IS_FB == 1
-	return RtTexture.Load(int3(uv, 0));
+	return RtLoad(uv);
 #else
 	return Texture.Load(int3(uv, 0));
 #endif
@@ -713,27 +829,27 @@ bool atst(float4 C)
 {
 	float a = C.a;
 
-	if(PS_ATST == 1)
-	{
-		return (a <= AREF);
-	}
-	else if(PS_ATST == 2)
-	{
-		return (a >= AREF);
-	}
-	else if(PS_ATST == 3)
-	{
-		 return (abs(a - AREF) <= 0.5f);
-	}
-	else if(PS_ATST == 4)
-	{
-		return (abs(a - AREF) >= 0.5f);
-	}
-	else
-	{
-		// nothing to do
-		return true;
-	}
+#if PS_ATST == PS_ATST_LEQUAL
+
+	return (a <= AREF);
+
+#elif PS_ATST == PS_ATST_GEQUAL
+
+	return (a >= AREF);
+
+#elif PS_ATST == PS_ATST_EQUAL
+
+	return (abs(a - AREF) <= 0.5f);
+
+#elif PS_ATST == PS_ATST_NOTEQUAL
+
+	return (abs(a - AREF) >= 0.5f);
+
+#else
+
+	return true;
+
+#endif
 }
 
 float4 fog(float4 c, float f)
@@ -807,7 +923,7 @@ void ps_fbmask(inout float4 C, float2 pos_xy)
 	if (PS_FBMASK)
 	{
 		float multi = PS_COLCLIP_HW ? 65535.0f : 255.0f;
-		float4 RT = trunc(RtTexture.Load(int3(pos_xy, 0)) * multi + 0.1f);
+		float4 RT = trunc(RtLoad(int2(pos_xy)) * multi + 0.1f);
 		C = (float4)(((uint4)C & ~FbMask) | ((uint4)RT & FbMask));
 	}
 }
@@ -883,7 +999,7 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 			As_rgba.rgb = (float3)1.0f;
 		}
 
-		float4 RT = SW_BLEND_NEEDS_RT ? RtTexture.Load(int3(pos_xy, 0)) : (float4)0.0f;
+		float4 RT = SW_BLEND_NEEDS_RT ? RtLoad(int2(pos_xy)) : (float4)0.0f;
 
 		if (PS_SHUFFLE && SW_BLEND_NEEDS_RT)
 		{
@@ -1016,17 +1132,53 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 	}
 }
 
-PS_OUTPUT ps_main(PS_INPUT input)
+#if PS_ROV_EARLYDEPTHSTENCIL
+[earlydepthstencil]
+#endif
+
+#if (PS_RETURN_COLOR || PS_RETURN_DEPTH)
+PS_OUTPUT_REAL ps_main(PS_INPUT input)
+#else
+void ps_main(PS_INPUT input)
+#endif
 {
+#if PS_ROV_COLOR && PS_COLOR_FEEDBACK
+	cachedRtValue = RtTextureRov[input.p.xy];
+#endif
+
+#if PS_ROV_DEPTH && PS_DEPTH_FEEDBACK
+	cachedDepthValue = DepthTextureRov[input.p.xy];
+#endif
+
+	bool fail_z = false;
+#if PS_DEPTH_FEEDBACK && PS_ENABLE_ZTST
+	#if PS_ZTST == ZTST_GEQUAL
+		fail_z = (input.p.z < DepthLoad(input.p.xy));
+	#elif PS_ZTST == ZTST_GREATER
+		fail_z = (input.p.z <= DepthLoad(input.p.xy));
+	#endif
+
+	// Cannot directly discard with ROVs because it is illegal to do control flow based on the
+	// value read from an ROVs. We must instead use conditional writes (later).
+	#if !PS_ROV_DEPTH
+		if (fail_z)
+			discard;
+	#endif
+#endif
+
 	float4 C = ps_color(input);
+
+#if PS_FIXED_ONE_A
+	// AA (Fixed one) will output a coverage of 1.0 as alpha
+	C.a = 128.0f;
+#endif
+
 	bool atst_pass = atst(C);
 
-#if PS_AFAIL == 0 // KEEP or ATST off
+#if PS_AFAIL == AFAIL_KEEP
 	if (!atst_pass)
 		discard;
 #endif
-
-	PS_OUTPUT output;
 
 	if (PS_SCANMSK & 2)
 	{
@@ -1035,18 +1187,10 @@ PS_OUTPUT ps_main(PS_INPUT input)
 			discard;
 	}
 
-	// Must be done before alpha correction
-
-	// AA (Fixed one) will output a coverage of 1.0 as alpha
-	if (PS_FIXED_ONE_A)
-	{
-		C.a = 128.0f;
-	}
-
 	float4 alpha_blend = (float4)0.0f;
 	if (SW_AD_TO_HW)
 	{
-		float4 RT = PS_RTA_CORRECTION ? trunc(RtTexture.Load(int3(input.p.xy, 0)) * 128.0f + 0.1f) : trunc(RtTexture.Load(int3(input.p.xy, 0)) * 255.0f + 0.1f);
+		float4 RT = PS_RTA_CORRECTION ? trunc(RtLoad(input.p.xy) * 128.0f + 0.1f) : trunc(RtLoad(input.p.xy) * 255.0f + 0.1f);
 		alpha_blend = (float4)(RT.a / 128.0f);
 	}
 	else
@@ -1070,9 +1214,9 @@ PS_OUTPUT ps_main(PS_INPUT input)
 
 #if PS_WRITE_RG == 1
 	// Pseudo 16 bits access.
-	float rt_a = RtTexture.Load(int3(input.p.xy, 0)).g;
+	float rt_a = RtLoad(input.p.xy).g;
 #else
-	float rt_a = RtTexture.Load(int3(input.p.xy, 0)).a;
+	float rt_a = RtLoad(input.p.xy).a;
 #endif
 
 #if (PS_DATE & 3) == 1
@@ -1093,7 +1237,6 @@ PS_OUTPUT ps_main(PS_INPUT input)
 
 	if (bad)
 		discard;
-
 #endif
 
 #if PS_DATE == 3
@@ -1103,6 +1246,8 @@ PS_OUTPUT ps_main(PS_INPUT input)
 	if (int(input.primid) > stencil_ceil)
 		discard;
 #endif
+
+	PS_OUTPUT output;
 
 	// Get first primitive that will write a failling alpha value
 #if PS_DATE == 1
@@ -1187,42 +1332,92 @@ PS_OUTPUT ps_main(PS_INPUT input)
 
 	ps_fbmask(C, input.p.xy);
 
-#if PS_AFAIL == 3 && !PS_NO_COLOR1 // RGB_ONLY
+#if (PS_AFAIL == AFAIL_RGB_ONLY_DSB) && !PS_NO_COLOR1
 	// Use alpha blend factor to determine whether to update A.
 	alpha_blend.a = float(atst_pass);
 #endif
 
+	// Output color scaling
 #if !PS_NO_COLOR
 	output.c0.a = PS_RTA_CORRECTION ? C.a / 128.0f : C.a / 255.0f;
 	output.c0.rgb = PS_COLCLIP_HW ? float3(C.rgb / 65535.0f) : C.rgb / 255.0f;
 #if !PS_NO_COLOR1
 	output.c1 = alpha_blend;
 #endif
-#if PS_AFAIL == 3 && PS_NO_COLOR1 // RGB_ONLY, no dual src blend
+#endif // !PS_NO_COLOR
+
+	// Alpha test with feedback
+#if (PS_AFAIL == AFAIL_FB_ONLY) && PS_DEPTH_FEEDBACK && PS_ZCLAMP
+	if (!atst_pass)
+		input.p.z = DepthLoad(input.p.xy);
+#elif (PS_AFAIL == AFAIL_ZB_ONLY) && PS_COLOR_FEEDBACK && !PS_NO_COLOR
+	if (!atst_pass)
+		output.c0 = RtLoad(input.p.xy);
+#elif (PS_AFAIL == AFAIL_RGB_ONLY)
 	if (!atst_pass)
 	{
-		float RTa = NEEDS_RT_FOR_AFAIL ? RtTexture.Load(int3(input.p.xy, 0)).a : 0.0f;
-		output.c0.a = RTa;
+	#if PS_COLOR_FEEDBACK && !PS_NO_COLOR
+		output.c0.a = RtLoad(input.p.xy).a;
+	#endif
+	#if PS_DEPTH_FEEDBACK && PS_ZCLAMP
+		input.p.z = DepthLoad(input.p.xy);
+	#endif
 	}
 #endif
-
-#endif // !PS_NO_COLOR
 
 #endif // PS_DATE != 1/2
 
 #if PS_ZFLOOR
-float depth_value = floor(input.p.z * exp2(32.0f)) * exp2(-32.0f);
-#else
-float depth_value = input.p.z;
+	input.p.z = floor(input.p.z * exp2(32.0f)) * exp2(-32.0f);
 #endif
 
 #if PS_ZCLAMP
-	output.depth = min(depth_value, MaxDepthPS);
-#elif PS_ZFLOOR
-	output.depth = depth_value;
+	input.p.z = min(input.p.z, MaxDepthPS);
 #endif
 
-	return output;
+#if (PS_RETURN_COLOR || PS_RETURN_DEPTH)
+	PS_OUTPUT_REAL output_real;
+#endif
+
+	// Color write back
+#if PS_RETURN_COLOR
+	#if PS_DATE == 1 || PS_DATE == 2
+		output_real.c = output.c;
+	#else
+		output_real.c0 = output.c0;
+		#if !PS_NO_COLOR1
+			output_real.c1 = output.c1;
+		#endif
+	#endif
+#elif PS_RETURN_COLOR_ROV
+	#if PS_COLOR_FEEDBACK
+		float4 rt_col = RtLoad(input.p.xy);
+
+		output.c0.r = bool(ColorMask.r) ? output.c0.r : rt_col.r;
+		output.c0.g = bool(ColorMask.g) ? output.c0.g : rt_col.g;
+		output.c0.b = bool(ColorMask.b) ? output.c0.b : rt_col.b;
+		output.c0.a = bool(ColorMask.a) ? output.c0.a : rt_col.a;
+	#endif
+
+	#if PS_DEPTH_FEEDBACK && PS_ENABLE_ZTST
+		output.c0 = fail_z ? rt_col : output.c0;
+	#endif
+
+	RtWrite(input.p.xy, output.c0);
+#endif
+
+#if PS_DEPTH_FEEDBACK && PS_ENABLE_ZTST
+	input.p.z = fail_z ? DepthLoad(input.p.xy) : input.p.z;
+#endif
+#if PS_RETURN_DEPTH
+	output_real.depth = input.p.z;
+#elif PS_RETURN_DEPTH_ROV
+	DepthWrite(input.p.xy, input.p.z);
+#endif
+
+#if (PS_RETURN_COLOR || PS_RETURN_DEPTH)
+	return output_real;
+#endif
 }
 
 #endif // PIXEL_SHADER

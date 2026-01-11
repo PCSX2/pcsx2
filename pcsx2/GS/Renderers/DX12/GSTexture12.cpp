@@ -37,6 +37,7 @@ GSTexture12::GSTexture12(Type type, Format format, int width, int height, int le
 	m_size.x = width;
 	m_size.y = height;
 	m_mipmap_levels = levels;
+	m_target_mode = IsRenderTargetOrDepthStencil() ? TargetMode::Standard : TargetMode::Invalid;
 }
 
 GSTexture12::~GSTexture12()
@@ -46,6 +47,13 @@ GSTexture12::~GSTexture12()
 
 void GSTexture12::Destroy(bool defer)
 {
+	if (m_depth_color)
+	{
+		static_cast<GSTexture12*>(m_depth_color.get())->Destroy(defer);
+		m_depth_color.release();
+		m_depth_color_active = false;
+	}
+
 	GSDevice12* const dev = GSDevice12::GetInstance();
 	dev->UnbindTexture(this);
 
@@ -156,6 +164,10 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 			desc.Layout = D3D12_TEXTURE_LAYOUT_64KB_UNDEFINED_SWIZZLE;
 			optimized_clear_value.Format = rtv_format;
 			state = D3D12_RESOURCE_STATE_RENDER_TARGET;
+			if (uav_format != DXGI_FORMAT_UNKNOWN)
+			{
+				desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+			}
 		}
 		break;
 
@@ -174,6 +186,8 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 			pxAssert(levels == 1);
 			allocationDesc.Flags |= D3D12MA::ALLOCATION_FLAG_COMMITTED;
 			state = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+			pxAssert(uav_format != DXGI_FORMAT_UNKNOWN);
+			desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 		}
 		break;
 
@@ -181,13 +195,10 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 			return {};
 	}
 
-	if (uav_format != DXGI_FORMAT_UNKNOWN)
-		desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
-
 	wil::com_ptr_nothrow<ID3D12Resource> resource;
 	wil::com_ptr_nothrow<ID3D12Resource> resource_fbl;
 	wil::com_ptr_nothrow<D3D12MA::Allocation> allocation;
-
+	
 	if (type == Type::RenderTarget)
 	{
 		const D3D12_RESOURCE_ALLOCATION_INFO allocInfo = dev->GetDevice()->GetResourceAllocationInfo(0, 1, &desc);
@@ -203,8 +214,7 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 		}
 
 		hr = dev->GetAllocator()->CreateAliasingResource(allocation.get(), 0, &desc, state,
-			(type == Type::RenderTarget || type == Type::DepthStencil) ? &optimized_clear_value : nullptr,
-			IID_PPV_ARGS(resource.put()));
+			&optimized_clear_value, IID_PPV_ARGS(resource.put()));
 		if (FAILED(hr))
 		{
 			// OOM isn't fatal.
@@ -214,9 +224,9 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 			return {};
 		}
 
-		hr = dev->GetAllocator()->CreateAliasingResource(allocation.get(), 0, &desc, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-			(type == Type::RenderTarget || type == Type::DepthStencil) ? &optimized_clear_value : nullptr,
-			IID_PPV_ARGS(resource_fbl.put()));
+		hr = dev->GetAllocator()->CreateAliasingResource(allocation.get(), 0, &desc,
+			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+			&optimized_clear_value, IID_PPV_ARGS(resource_fbl.put()));
 		if (FAILED(hr))
 		{
 			// OOM isn't fatal.
@@ -229,13 +239,12 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 	else
 	{
 		HRESULT hr = dev->GetAllocator()->CreateResource(&allocationDesc, &desc, state,
-			(type == Type::RenderTarget || type == Type::DepthStencil) ? &optimized_clear_value : nullptr, allocation.put(),
-			IID_PPV_ARGS(resource.put()));
+			type == Type::DepthStencil ? &optimized_clear_value : nullptr, allocation.put(), IID_PPV_ARGS(resource.put()));
 		if (FAILED(hr))
 		{
 			// OOM isn't fatal.
 			if (hr != E_OUTOFMEMORY)
-				Console.Error("Create texture failed: 0x%08X", hr);
+				Console.Error("Create texture resource 3 failed: 0x%08X", hr);
 
 			return {};
 		}
@@ -259,6 +268,12 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 				dev->GetDescriptorHeapManager().Free(&srv_descriptor);
 				return {};
 			}
+			if (uav_format != DXGI_FORMAT_UNKNOWN && !CreateUAVDescriptor(resource.get(), uav_format, &uav_descriptor))
+			{
+				dev->GetRTVHeapManager().Free(&write_descriptor);
+				dev->GetDescriptorHeapManager().Free(&srv_descriptor);
+				return {};
+			}
 		}
 		break;
 
@@ -279,26 +294,15 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 		}
 		break;
 
-		default:
-			break;
-	}
-
-	if (uav_format != DXGI_FORMAT_UNKNOWN && !CreateUAVDescriptor(resource.get(), dsv_format, &uav_descriptor))
-	{
-		switch (write_descriptor_type)
+		case Type::RWTexture:
 		{
-			case WriteDescriptorType::RTV:
-				dev->GetRTVHeapManager().Free(&write_descriptor);
-				break;
-			case WriteDescriptorType::DSV:
-				dev->GetDSVHeapManager().Free(&ro_dsv_descriptor);
-				dev->GetDSVHeapManager().Free(&write_descriptor);
-				break;
-			default:
-				break;
+			if (uav_format != DXGI_FORMAT_UNKNOWN && !CreateUAVDescriptor(resource.get(), uav_format, &uav_descriptor))
+			{
+				dev->GetDescriptorHeapManager().Free(&srv_descriptor);
+				return {};
+			}
 		}
-		dev->GetDescriptorHeapManager().Free(&srv_descriptor);
-		return {};
+		break;
 	}
 
 	if (resource_fbl)
@@ -336,6 +340,7 @@ std::unique_ptr<GSTexture12> GSTexture12::Adopt(wil::com_ptr_nothrow<ID3D12Resou
 
 	D3D12DescriptorHandle srv_descriptor, write_descriptor, ro_dsv_descriptor, uav_descriptor;
 	WriteDescriptorType write_descriptor_type = WriteDescriptorType::None;
+
 	if (srv_format != DXGI_FORMAT_UNKNOWN)
 	{
 		if (!CreateSRVDescriptor(resource.get(), desc.MipLevels, srv_format, &srv_descriptor))
@@ -369,7 +374,7 @@ std::unique_ptr<GSTexture12> GSTexture12::Adopt(wil::com_ptr_nothrow<ID3D12Resou
 
 	if (uav_format != DXGI_FORMAT_UNKNOWN)
 	{
-		if (!CreateUAVDescriptor(resource.get(), srv_format, &uav_descriptor))
+		if (!CreateUAVDescriptor(resource.get(), uav_format, &uav_descriptor))
 		{
 			switch (write_descriptor_type)
 			{
@@ -514,6 +519,12 @@ void GSTexture12::CopyTextureDataForUpload(void* dst, const void* src, u32 pitch
 
 bool GSTexture12::Update(const GSVector4i& r, const void* data, int pitch, int layer)
 {
+	if (IsDepthColor())
+	{
+		GL_INS("Color -> DS in Update()");
+		UpdateDepthColor(true);
+	}
+
 	if (layer >= m_mipmap_levels)
 		return false;
 
@@ -602,6 +613,8 @@ bool GSTexture12::Update(const GSVector4i& r, const void* data, int pitch, int l
 
 bool GSTexture12::Map(GSMap& m, const GSVector4i* r, int layer)
 {
+	pxAssert(!IsDepthColor());
+
 	if (layer >= m_mipmap_levels || IsCompressedFormat())
 		return false;
 
@@ -630,6 +643,8 @@ bool GSTexture12::Map(GSMap& m, const GSVector4i* r, int layer)
 
 void GSTexture12::Unmap()
 {
+	pxAssert(!IsDepthColor());
+
 	// this can't handle blocks/compressed formats at the moment.
 	pxAssert(m_map_level < m_mipmap_levels && !IsCompressedFormat());
 	g_perfmon.Put(GSPerfMon::TextureUploads, 1);
@@ -688,7 +703,7 @@ void GSTexture12::Unmap()
 
 void GSTexture12::GenerateMipmap()
 {
-	pxAssert(!IsCompressedFormat(m_format));
+	pxAssert(!IsDepthColor() && !IsCompressedFormat(m_format));
 
 	for (int dst_level = 1; dst_level < m_mipmap_levels; dst_level++)
 	{
@@ -715,6 +730,15 @@ void GSTexture12::SetDebugName(std::string_view name)
 	D3D12::SetObjectName(m_resource.get(), name);
 }
 
+void GSTexture12::SaveDepthUAV(const std::string& fn) const
+{
+	pxAssert(m_depth_color);
+	D3D12_RESOURCE_STATES orig_state = static_cast<GSTexture12*>(m_depth_color.get())->m_resource_state;
+	static_cast<GSTexture12*>(m_depth_color.get())->TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	static_cast<GSTexture12*>(m_depth_color.get())->Save(fn);
+	static_cast<GSTexture12*>(m_depth_color.get())->TransitionToState(orig_state);
+}
+
 #endif
 
 void GSTexture12::TransitionToState(D3D12_RESOURCE_STATES state)
@@ -724,7 +748,20 @@ void GSTexture12::TransitionToState(D3D12_RESOURCE_STATES state)
 
 void GSTexture12::TransitionToState(ID3D12GraphicsCommandList* cmdlist, D3D12_RESOURCE_STATES state)
 {
-	if (m_resource_state == state)
+	// Depth/color must be updated explicitly before transitioning
+	if (IsDepthStencil())
+	{
+		if ((state & D3D12_RESOURCE_STATE_UNORDERED_ACCESS) && !IsDepthColor())
+		{
+			pxFail("Transitioning to depth UAV without depth color.");
+		}
+		else if ((state & (D3D12_RESOURCE_STATE_DEPTH_WRITE | D3D12_RESOURCE_STATE_DEPTH_READ)) && IsDepthColor())
+		{
+			pxFail("Transitioning to depth while in depth color.");
+		}
+	}
+
+	if (GetResourceState() == state)
 		return;
 
 	// Read only depth requires special handling as we might want to write stencil.
@@ -734,38 +771,48 @@ void GSTexture12::TransitionToState(ID3D12GraphicsCommandList* cmdlist, D3D12_RE
 		// Transition to read depth/write stencil
 		const D3D12_RESOURCE_BARRIER barriers[2] = {
 			{D3D12_RESOURCE_BARRIER_TYPE_TRANSITION, D3D12_RESOURCE_BARRIER_FLAG_NONE,
-				{{m_resource.get(), 0, m_resource_state, (D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE)}}},
+				{{GetResource(), 0, GetResourceState(), (D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE)}}},
 			{D3D12_RESOURCE_BARRIER_TYPE_TRANSITION, D3D12_RESOURCE_BARRIER_FLAG_NONE,
-				{{m_resource.get(), 1, m_resource_state, D3D12_RESOURCE_STATE_DEPTH_WRITE}}},
+				{{GetResource(), 1, GetResourceState(), D3D12_RESOURCE_STATE_DEPTH_WRITE}}},
 		};
-		cmdlist->ResourceBarrier(m_resource_state == D3D12_RESOURCE_STATE_DEPTH_WRITE ? 1 : 2, barriers);
+		cmdlist->ResourceBarrier(GetResourceState() == D3D12_RESOURCE_STATE_DEPTH_WRITE ? 1 : 2, barriers);
 	}
-	else if (m_resource_state == (D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE))
+	else if (GetResourceState() == (D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE))
 	{
 		// Transition from read depth/write stencil
 		const D3D12_RESOURCE_BARRIER barriers[2] = {
 			{D3D12_RESOURCE_BARRIER_TYPE_TRANSITION, D3D12_RESOURCE_BARRIER_FLAG_NONE,
-				{{m_resource.get(), 0, (D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE), state}}},
+				{{GetResource(), 0, (D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE), state}}},
 			{D3D12_RESOURCE_BARRIER_TYPE_TRANSITION, D3D12_RESOURCE_BARRIER_FLAG_NONE,
-				{{m_resource.get(), 1, D3D12_RESOURCE_STATE_DEPTH_WRITE, state}}},
+				{{GetResource(), 1, D3D12_RESOURCE_STATE_DEPTH_WRITE, state}}},
 		};
 		cmdlist->ResourceBarrier(state == D3D12_RESOURCE_STATE_DEPTH_WRITE ? 1 : 2, barriers);
 	}
 	else
 	{
 		// Normal transition
-		TransitionSubresourceToState(cmdlist, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, m_resource_state, state);
+		TransitionSubresourceToState(cmdlist, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, GetResourceState(), state);
 	}
 
-	m_resource_state = state;
+	SetResourceState(state);
 }
 
 void GSTexture12::TransitionSubresourceToState(ID3D12GraphicsCommandList* cmdlist, int level,
-	D3D12_RESOURCE_STATES before_state, D3D12_RESOURCE_STATES after_state) const
+	D3D12_RESOURCE_STATES before_state, D3D12_RESOURCE_STATES after_state)
 {
-	const D3D12_RESOURCE_BARRIER barrier = {D3D12_RESOURCE_BARRIER_TYPE_TRANSITION, D3D12_RESOURCE_BARRIER_FLAG_NONE,
-		{{m_resource.get(), static_cast<u32>(level), before_state, after_state}}};
+	D3D12_RESOURCE_BARRIER barrier = { D3D12_RESOURCE_BARRIER_TYPE_TRANSITION, D3D12_RESOURCE_BARRIER_FLAG_NONE,
+		{{GetResource(), static_cast<u32>(level), before_state, after_state}} };
 	cmdlist->ResourceBarrier(1, &barrier);
+}
+
+void GSTexture12::CommitClearUAV(D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle)
+{
+	if (m_state != GSTexture::State::Cleared)
+		return;
+
+	GSDevice12::GetInstance()->EndRenderPass();
+
+	CommitClearUAV(GSDevice12::GetInstance()->GetCommandList(), gpu_handle);
 }
 
 void GSTexture12::CommitClear()
@@ -778,13 +825,46 @@ void GSTexture12::CommitClear()
 	CommitClear(GSDevice12::GetInstance()->GetCommandList());
 }
 
+void GSTexture12::CommitClearUAV(ID3D12GraphicsCommandList* cmdlist, D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle)
+{
+	if (GetResourceState() != D3D12_RESOURCE_STATE_UNORDERED_ACCESS)
+	{
+		// This is an optimization for when we are already in unordered access, so don't used otherwise.
+		Console.Warning("CommitClearUAV: Not in UAV state.");
+		TransitionToState(cmdlist, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	}
+
+	if (IsDepthStencil())
+	{
+		cmdlist->ClearUnorderedAccessViewFloat(gpu_handle, GetUAVDescriptor(), GetResource(),
+			GSVector4(m_clear_value.depth, 0.0f, 0.0f, 0.0f).v, 0, nullptr);
+	}
+	else
+	{
+		GSVector4 default_color = GSVector4::unorm8(m_clear_value.color);
+		cmdlist->ClearUnorderedAccessViewFloat(gpu_handle, GetUAVDescriptor(), GetResource(),
+			default_color.v, 0, nullptr);
+	}
+
+	SetState(GSTexture::State::Dirty);
+}
+
 void GSTexture12::CommitClear(ID3D12GraphicsCommandList* cmdlist)
 {
 	if (IsDepthStencil())
 	{
-		TransitionToState(cmdlist, D3D12_RESOURCE_STATE_DEPTH_WRITE);
-		cmdlist->ClearDepthStencilView(
-			GetWriteDescriptor(), D3D12_CLEAR_FLAG_DEPTH, m_clear_value.depth, 0, 0, nullptr);
+		if (IsDepthColor())
+		{
+			static_cast<GSTexture12*>(m_depth_color.get())->TransitionToState(cmdlist, D3D12_RESOURCE_STATE_RENDER_TARGET);
+			cmdlist->ClearRenderTargetView(static_cast<GSTexture12*>(m_depth_color.get())->GetWriteDescriptor(),
+				GSVector4(m_clear_value.depth, 0.0f, 0.0f, 0.0f).v, 0, nullptr);
+		}
+		else
+		{
+			TransitionToState(cmdlist, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+			cmdlist->ClearDepthStencilView(GetWriteDescriptor(), D3D12_CLEAR_FLAG_DEPTH,
+				m_clear_value.depth, 0, 0, nullptr);
+		}
 	}
 	else
 	{
@@ -793,6 +873,52 @@ void GSTexture12::CommitClear(ID3D12GraphicsCommandList* cmdlist)
 	}
 
 	SetState(GSTexture::State::Dirty);
+}
+
+void GSTexture12::UpdateDepthColor(bool color_to_ds)
+{
+	pxAssertRel(IsDepthStencil() && IsDepthColor() == color_to_ds, "Wrong use of UpdateDepthColor()");
+
+	GL_PUSH("Updating %s", color_to_ds ? "Color -> DS" : "DS -> Color");
+
+	GSDevice12* device = GSDevice12::GetInstance();
+
+	pxAssert(!device->InRenderPass());
+
+	CreateDepthColor();
+
+	SetUseFenceCounter(device->GetCurrentFenceValue());
+
+	if (color_to_ds)
+	{
+		m_depth_color_active = false;
+		
+		// For cleared state simply propagate it.
+		if (GetState() != State::Cleared)
+		{
+			GSVector4 dRect(0.0f, 0.0f, static_cast<float>(GetWidth()), static_cast<float>(GetHeight()));
+			device->StretchRect(m_depth_color.get(), this, dRect, ShaderConvert::FLOAT32_COLOR_TO_DEPTH, false);
+			device->EndRenderPass();
+			device->UnbindTexture(static_cast<GSTexture12*>(m_depth_color.get()));
+			
+			g_perfmon.Put(GSPerfMon::TextureCopies, 1.0);
+		}
+	}
+	else
+	{
+		// For cleared state simply propagate it.
+		if (GetState() != State::Cleared)
+		{
+			GSVector4 dRect(0.0f, 0.0f, static_cast<float>(GetWidth()), static_cast<float>(GetHeight()));
+			device->StretchRect(this, m_depth_color.get(), dRect, ShaderConvert::FLOAT32_DEPTH_TO_COLOR, false);
+			device->EndRenderPass();
+			device->UnbindTexture(static_cast<GSTexture12*>(m_depth_color.get()));
+
+			g_perfmon.Put(GSPerfMon::TextureCopies, 1.0);
+		}
+
+		m_depth_color_active = true;
+	}
 }
 
 GSDownloadTexture12::GSDownloadTexture12(u32 width, u32 height, GSTexture::Format format)
@@ -841,6 +967,12 @@ void GSDownloadTexture12::CopyFromTexture(
 	const GSVector4i& drc, GSTexture* stex, const GSVector4i& src, u32 src_level, bool use_transfer_pitch)
 {
 	GSTexture12* const tex12 = static_cast<GSTexture12*>(stex);
+
+	if (tex12->IsDepthColor())
+	{
+		GL_INS("Color -> DS in CopyFromTexture()");
+		tex12->UpdateDepthColor(true);
+	}
 
 	pxAssert(tex12->GetFormat() == m_format);
 	pxAssert(drc.width() == src.width() && drc.height() == src.height());

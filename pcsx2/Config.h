@@ -739,6 +739,7 @@ struct Pcsx2Config
 					DisableShaderCache : 1,
 					DisableFramebufferFetch : 1,
 					DisableVertexShaderExpand : 1,
+					DisableDepthFeedback : 1,
 					SkipDuplicateFrames : 1,
 					OsdShowSpeed : 1,
 					OsdShowFPS : 1,
@@ -764,6 +765,8 @@ struct Pcsx2Config
 					PreloadFrameWithGSData : 1,
 					Mipmap : 1,
 					HWMipmap : 1,
+					HWROV : 1,
+					HWROVLogging : 1,
 					ManualUserHacks : 1,
 					UserHacks_AlignSpriteX : 1,
 					UserHacks_CPUFBConversion : 1,
@@ -855,6 +858,17 @@ struct Pcsx2Config
 		GSBilinearDirtyMode UserHacks_BilinearHack = GSBilinearDirtyMode::Automatic;
 		TriFiltering TriFilter = TriFiltering::Automatic;
 		s8 OverrideTextureBarriers = -1;
+
+		u32 HWROVHistoryTextures = 16;
+		u32 HWROVHistoryDraws = 32;
+		u32 HWROVMaxBarriers = 16;
+		float HWROVHistoryWeightColor = 0.75f;
+		float HWROVHistoryWeightDepth = 0.75f;
+		float HWROVBarriersEnableColor = 2.0f;
+		float HWROVBarriersEnableDepth = 4.0f;
+		float HWROVBarriersDisableColor = 1.125f;
+		float HWROVBarriersDisableDepth = 1.25f;
+		u32 HWROVPreset = 1;
 
 		u8 CAS_Sharpness = 50;
 		u8 ShadeBoost_Brightness = DEFAULT_SHADEBOOST_BRIGHTNESS;
