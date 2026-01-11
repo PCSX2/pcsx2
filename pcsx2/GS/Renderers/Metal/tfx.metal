@@ -509,7 +509,7 @@ struct PSMain
 
 	uint fetch_raw_depth()
 	{
-		return tex_depth.read(ushort2(in.p.xy)) * 0x1p32f;
+		return tex_depth.read(ushort2(in.p.xy + cb.channel_shuffle_offset)) * 0x1p32f;
 	}
 
 	float4 fetch_raw_color()
@@ -517,7 +517,7 @@ struct PSMain
 		if (PS_TEX_IS_FB)
 			return current_color;
 		else
-			return tex.read(ushort2(in.p.xy));
+			return tex.read(ushort2(in.p.xy + cb.channel_shuffle_offset));
 	}
 
 	float4 fetch_c(ushort2 uv)
