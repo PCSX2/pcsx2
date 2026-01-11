@@ -11,6 +11,7 @@
 #include "common/Threading.h"
 #include "common/WindowInfo.h"
 #include "common/HostSys.h"
+#include "fmt/format.h"
 
 #include <csignal>
 #include <cstring>
@@ -19,12 +20,15 @@
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/sysctl.h>
+#include <thread>
 #include <time.h>
 #include <mach/mach_init.h>
 #include <mach/mach_port.h>
 #include <mach/mach_time.h>
 #include <mach/mach_vm.h>
+#include <mach/message.h>
 #include <mach/task.h>
+#include <mach/thread_state.h>
 #include <mach/vm_map.h>
 #include <mutex>
 #include <ApplicationServices/ApplicationServices.h>
@@ -294,7 +298,7 @@ static CPUInfo CalcCPUInfo()
 	std::vector<DarwinMisc::CPUClass> classes = DarwinMisc::GetCPUClasses();
 	out.num_clusters = static_cast<u32>(classes.size());
 	out.num_big_cores = classes.empty() ? 0 : classes[0].num_physical;
-	out.num_threads   = classes.empty() ? 0 : classes[0].num_logical;
+	out.num_threads = classes.empty() ? 0 : classes[0].num_logical;
 	out.num_small_cores = 0;
 	for (std::size_t i = 1; i < classes.size(); i++)
 	{
@@ -568,14 +572,205 @@ void HostSys::EndCodeWrite()
 
 #endif // _M_ARM64
 
+#define USE_MACH_EXCEPTION_PORTS
+
 namespace PageFaultHandler
 {
+#ifdef USE_MACH_EXCEPTION_PORTS
+	static void SignalHandler(mach_port_t port);
+#else
 	static void SignalHandler(int sig, siginfo_t* info, void* ctx);
+#endif
 
 	static std::recursive_mutex s_exception_handler_mutex;
 	static bool s_in_exception_handler = false;
 	static bool s_installed = false;
 } // namespace PageFaultHandler
+
+#ifdef USE_MACH_EXCEPTION_PORTS
+
+#if defined(_M_X86)
+#define THREAD_STATE64_COUNT x86_THREAD_STATE64_COUNT
+#define THREAD_STATE64 x86_THREAD_STATE64
+#define thread_state64_t x86_thread_state64_t
+#elif defined(_M_ARM64)
+#define THREAD_STATE64_COUNT ARM_THREAD_STATE64_COUNT
+#define THREAD_STATE64 ARM_THREAD_STATE64
+#define thread_state64_t arm_thread_state64_t
+#else
+#error Unknown Darwin Platform
+#endif
+
+void PageFaultHandler::SignalHandler(mach_port_t port)
+{
+	Threading::SetNameOfCurrentThread("Mach Exception Thread");
+
+#pragma pack(4)
+	struct
+	{
+		mach_msg_header_t Head;
+		NDR_record_t NDR;
+		exception_type_t exception;
+		mach_msg_type_number_t codeCnt;
+		int64_t code[2];
+		int flavor;
+		mach_msg_type_number_t old_stateCnt;
+		natural_t old_state[THREAD_STATE64_COUNT];
+		mach_msg_trailer_t trailer;
+	} msg_in;
+
+	struct
+	{
+		mach_msg_header_t Head;
+		NDR_record_t NDR;
+		kern_return_t RetCode;
+		int flavor;
+		mach_msg_type_number_t new_stateCnt;
+		natural_t new_state[THREAD_STATE64_COUNT];
+	} msg_out;
+#pragma pack()
+	memset(&msg_in, 0xee, sizeof(msg_in));
+	memset(&msg_out, 0xee, sizeof(msg_out));
+	mach_msg_size_t send_size = 0;
+	mach_msg_option_t option = MACH_RCV_MSG;
+	while (true)
+	{
+		kern_return_t r;
+		if ((r = mach_msg_overwrite(&msg_out.Head, option, send_size, sizeof(msg_in), port,
+				 MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL, &msg_in.Head, 0)))
+		{
+			pxFail(fmt::format("CRITICAL: mach_msg_overwrite: {:x}", r).c_str());
+		}
+
+		if (msg_in.Head.msgh_id == MACH_NOTIFY_NO_SENDERS)
+		{
+			// the other thread exited
+			mach_port_deallocate(mach_task_self(), port);
+			return;
+		}
+
+		if (msg_in.Head.msgh_id != 2406)
+		{
+			pxFailRel("unknown message received");
+			return;
+		}
+
+		if (msg_in.flavor != THREAD_STATE64)
+		{
+			pxFailRel(fmt::format("unknown flavour {}, expected {}", msg_in.flavor, THREAD_STATE64).c_str());
+			return;
+		}
+
+		s_exception_handler_mutex.lock();
+		thread_state64_t* state = (thread_state64_t*)msg_in.old_state;
+
+		HandlerResult result = HandlerResult::ExecuteNextHandler;
+		if (!s_in_exception_handler)
+		{
+			s_in_exception_handler = true;
+
+#ifdef _M_ARM64
+			result = HandlePageFault(reinterpret_cast<void*>(state->__pc), reinterpret_cast<void*>(msg_in.code[1]), (msg_in.code[0] & 2) != 0);
+#else
+			result = HandlePageFault(reinterpret_cast<void*>(state->__rip), reinterpret_cast<void*>(msg_in.code[1]), (msg_in.code[0] & 2) != 0);
+#endif
+			s_in_exception_handler = false;
+		}
+
+		// Set up the reply.
+		msg_out.Head.msgh_bits = MACH_MSGH_BITS(MACH_MSGH_BITS_REMOTE(msg_in.Head.msgh_bits), 0);
+		msg_out.Head.msgh_remote_port = msg_in.Head.msgh_remote_port;
+		msg_out.Head.msgh_local_port = MACH_PORT_NULL;
+		msg_out.Head.msgh_id = msg_in.Head.msgh_id + 100;
+		msg_out.NDR = msg_in.NDR;
+
+		if (result != HandlerResult::ContinueExecution) // cooked
+		{
+			msg_out.RetCode = KERN_FAILURE;
+			msg_out.flavor = 0;
+			msg_out.new_stateCnt = 0;
+
+			// The crash handler on macOS or Linux doesn't use context passed to it
+			// Stubbing it here is fine
+			CrashHandler::CrashSignalHandler(-1, nullptr, nullptr);
+
+			pxFailRel("CrashSignalHandler returned when it should have terminated us!");
+		}
+		else
+		{
+			// Resumes execution right where we left off (re-executes instruction that caused the SIGSEGV)
+			msg_out.RetCode = KERN_SUCCESS;
+			msg_out.flavor = THREAD_STATE64;
+			msg_out.new_stateCnt = THREAD_STATE64_COUNT;
+			memcpy(msg_out.new_state, msg_in.old_state, THREAD_STATE64_COUNT * sizeof(natural_t));
+		}
+
+		msg_out.Head.msgh_size =
+			offsetof(__typeof__(msg_out), new_state) + msg_out.new_stateCnt * sizeof(natural_t);
+		send_size = msg_out.Head.msgh_size;
+		option |= MACH_SEND_MSG;
+
+		s_exception_handler_mutex.unlock();
+	}
+}
+
+bool PageFaultHandler::Install(Error* error)
+{
+	exception_mask_t masks[EXC_TYPES_COUNT];
+	mach_port_t ports[EXC_TYPES_COUNT];
+	exception_behavior_t behaviors[EXC_TYPES_COUNT];
+	thread_state_flavor_t flavors[EXC_TYPES_COUNT];
+	mach_msg_type_number_t count = EXC_TYPES_COUNT;
+
+	kern_return_t r = task_get_exception_ports(mach_task_self(), EXC_MASK_ALL,
+		masks, &count, ports, behaviors, flavors);
+
+	mach_port_t port;
+	if ((r = mach_port_allocate(mach_task_self(), MACH_PORT_RIGHT_RECEIVE, &port)))
+	{
+		pxFailRel(fmt::format("mach_port_allocate: {:x}", r).c_str());
+		return false;
+	}
+
+	std::thread sig_thread(PageFaultHandler::SignalHandler, port);
+	sig_thread.detach();
+
+	if ((r = mach_port_insert_right(mach_task_self(), port, port, MACH_MSG_TYPE_MAKE_SEND)))
+	{
+		mach_port_deallocate(mach_task_self(), port);
+		pxFailRel(fmt::format("mach_port_insert_right: {:x}", r).c_str());
+		return false;
+	}
+
+	task_set_exception_ports(mach_task_self(), EXC_MASK_BAD_ACCESS, MACH_PORT_NULL, EXCEPTION_DEFAULT, THREAD_STATE_NONE);
+
+	if ((r = thread_set_exception_ports(mach_thread_self(), EXC_MASK_BAD_ACCESS, port, EXCEPTION_STATE | MACH_EXCEPTION_CODES, THREAD_STATE64)))
+	{
+		mach_port_deallocate(mach_task_self(), port);
+		pxFailRel(fmt::format("thread_set_exception_ports: {:x}", r).c_str());
+		return false;
+	}
+
+	if ((r = mach_port_mod_refs(mach_task_self(), port, MACH_PORT_RIGHT_SEND, -1)))
+	{
+		mach_port_deallocate(mach_task_self(), port);
+		pxFailRel(fmt::format("mach_port_mod_refs: {:x}", r).c_str());
+		return false;
+	}
+
+	mach_port_t previous;
+	if ((r = mach_port_request_notification(mach_task_self(), port, MACH_NOTIFY_NO_SENDERS, 0, port, MACH_MSG_TYPE_MAKE_SEND_ONCE, &previous)))
+	{
+		mach_port_deallocate(mach_task_self(), port);
+		pxFailRel(fmt::format("mach_port_mod_refs: {:x}", r).c_str());
+		return false;
+	}
+
+	s_installed = true;
+	return true;
+}
+
+#else
 
 void PageFaultHandler::SignalHandler(int sig, siginfo_t* info, void* ctx)
 {
@@ -644,3 +839,4 @@ bool PageFaultHandler::Install(Error* error)
 	s_installed = true;
 	return true;
 }
+#endif
