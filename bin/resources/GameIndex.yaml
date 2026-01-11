@@ -54599,6 +54599,28 @@ SLPS-20017:
   name-sort: "すとりーとまーじゃんとらんす あさしん2"
   name-en: "Street Mahjong Trance 2"
   region: "NTSC-J"
+  patches:
+    7EF05210:
+      content: |-
+        author= Goatman13
+        comment=Hack sceCdDiskReady to not wait for drive ready.
+        patch=1,EE,000ffef4,word,304200c0
+        patch=1,EE,000ffef8,word,1443fffb
+        patch=1,EE,000fff00,word,3c19bc01
+        patch=1,EE,000fff04,word,9f2f0000
+        patch=1,EE,000fff08,word,3c180010
+        patch=1,EE,000fff0c,word,9f18fef4
+        patch=1,EE,000fff10,word,130f0003
+        patch=1,EE,000fff14,word,27390004
+        patch=1,EE,000fff18,word,1000fffa
+        patch=1,EE,000fff1c,word,00000000
+        patch=1,EE,000fff20,word,9f2f0000
+        patch=1,EE,000fff24,word,3c180010
+        patch=1,EE,000fff28,word,9f18fef8
+        patch=1,EE,000fff2c,word,170ffff6
+        patch=1,EE,000fff34,word,af200000
+        patch=1,EE,000fff38,word,03e00008
+        patch=1,EE,00273870,word,0803ffc0
 SLPS-20018:
   name: "ステッピングセレクション [ディスク1/2]"
   name-sort: "すてっぴんぐせれくしょん [でぃすく1/2]"
