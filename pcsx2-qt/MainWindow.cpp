@@ -2562,7 +2562,7 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
 		m_display_container = m_display_surface->createWindowContainer(getContentParent());
 	}
 
-	if (fullscreen)
+	if (fullscreen || g_emu_thread->isExclusiveFullscreen())
 	{
 		// On Wayland, while move/restoreGeometry can't position the window, it can influence which screen they show up on.
 		// Other platforms can position windows fine, but the only thing that matters here is the screen.
@@ -2572,13 +2572,21 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
 			m_display_surface->setFramePosition(pos());
 		else
 			restoreDisplayWindowGeometryFromConfig();
-		m_display_surface->showFullScreen();
+
+		if (fullscreen)
+			m_display_surface->showFullScreen();
+		else
+			m_display_surface->showNormal();
 #else
 		if (isVisible() && g_emu_thread->shouldRenderToMain())
 			m_display_container->move(pos());
 		else
 			restoreDisplayWindowGeometryFromConfig();
-		m_display_container->showFullScreen();
+
+		if (fullscreen)
+			m_display_container->showFullScreen();
+		else
+			m_display_container->showNormal();
 #endif
 	}
 	else if (!render_to_main)
