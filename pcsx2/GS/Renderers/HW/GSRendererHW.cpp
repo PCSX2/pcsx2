@@ -3056,8 +3056,10 @@ void GSRendererHW::Draw()
 						const int second_u = (PRIM->FST ? v[i + 1].U : static_cast<int>(v[i + 1].ST.S / v[i + 1].RGBAQ.Q)) >> 4;
 						const int vector_width = std::abs(v[i + 1].XYZ.X - v[i].XYZ.X) / 16;
 						const int tex_width = std::abs(second_u - first_u);
+						const int first_vector = (static_cast<int>(v[i].XYZ.X + 8) - static_cast<int>(m_context->XYOFFSET.OFX)) / 16;
 						// & 7 just a quicker way of doing % 8
-						if ((vector_width & 7) != 0 || (tex_width & 7) != 0 || tex_width != vector_width)
+						// If the first vector is the same position as the first_u, then it's not shuffling, it's just copying.
+						if ((vector_width & 7) != 0 || (tex_width & 7) != 0 || tex_width != vector_width || first_vector == first_u)
 						{
 							shuffle_channel_reads = false;
 							break;
