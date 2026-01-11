@@ -55,7 +55,7 @@
 #include "common/Timer.h"
 #include "common/emitter/x86emitter.h"
 
-#include "IconsFontAwesome6.h"
+#include "IconsFontAwesome.h"
 #include "IconsPromptFont.h"
 #include "cpuinfo.h"
 #include "discord_rpc.h"

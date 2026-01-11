@@ -5,7 +5,7 @@
 
 #include "common/Pcsx2Defs.h"
 
-#include "IconsFontAwesome6.h"
+#include "IconsFontAwesome.h"
 #include "imgui.h"
 #include "imgui_internal.h"
 

@@ -48,7 +48,7 @@
 #include "common/SmallString.h"
 #include "common/StringUtil.h"
 
-#include "IconsFontAwesome6.h"
+#include "IconsFontAwesome.h"
 
 #include "fmt/format.h"
 

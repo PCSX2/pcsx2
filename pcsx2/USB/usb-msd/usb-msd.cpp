@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
-#include "IconsFontAwesome6.h"
+#include "IconsFontAwesome.h"
 #include "USB/qemu-usb/qusb.h"
 #include "USB/qemu-usb/desc.h"
 #include "USB/qemu-usb/USBinternal.h"

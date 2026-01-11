@@ -6,7 +6,7 @@
 #include "MTGS.h"
 #include "MTVU.h"
 #include "Host.h"
-#include "IconsFontAwesome6.h"
+#include "IconsFontAwesome.h"
 #include "VMManager.h"
 
 #include "common/FPControl.h"

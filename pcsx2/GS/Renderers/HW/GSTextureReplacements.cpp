@@ -12,7 +12,7 @@
 
 #include "Config.h"
 #include "Host.h"
-#include "IconsFontAwesome6.h"
+#include "IconsFontAwesome.h"
 #include "GS/GSExtra.h"
 #include "GS/GSLocalMemory.h"
 #include "GS/Renderers/HW/GSTextureReplacements.h"

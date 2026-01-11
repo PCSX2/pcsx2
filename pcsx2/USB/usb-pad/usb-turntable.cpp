@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "Host.h"
-#include "IconsFontAwesome6.h"
+#include "IconsFontAwesome.h"
 #include "IconsPromptFont.h"
 #include "Input/InputManager.h"
 #include "StateWrapper.h"

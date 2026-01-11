@@ -4,7 +4,7 @@
 #include "GameDatabase.h"
 #include "GS/GS.h"
 #include "Host.h"
-#include "IconsFontAwesome6.h"
+#include "IconsFontAwesome.h"
 #include "vtlb.h"
 
 #include "common/Console.h"

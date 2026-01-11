@@ -16,7 +16,7 @@
 #include "common/StringUtil.h"
 
 #include "imgui.h"
-#include "IconsFontAwesome6.h"
+#include "IconsFontAwesome.h"
 
 #include <bit>
 #include <fstream>
