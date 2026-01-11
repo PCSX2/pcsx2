@@ -2294,10 +2294,10 @@ void GSTextureCache::CombineAlignedInsideTargets(Target* target, GSTextureCache:
 				continue;
 			}
 			// Formats match
-			if (t->m_TEX0.TBW == target->m_TEX0.TBW && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == GSLocalMemory::m_psm[target->m_TEX0.PSM].bpp)
+			if ((t->m_TEX0.TBW == target->m_TEX0.TBW || t->m_TEX0.TBW == 1) && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == GSLocalMemory::m_psm[target->m_TEX0.PSM].bpp)
 			{
-				const GSLocalMemory::psm_t& t_psm = GSLocalMemory::m_psm[t->m_TEX0.PSM];
-				const u32 page_offset = ((t->m_TEX0.TBP0 - target->m_TEX0.TBP0) >> 5) % std::max(1U, t->m_TEX0.TBW);
+				const GSLocalMemory::psm_t& t_psm = GSLocalMemory::m_psm[target->m_TEX0.PSM];
+				const u32 page_offset = ((t->m_TEX0.TBP0 - target->m_TEX0.TBP0) >> 5) % std::max(1U, target->m_TEX0.TBW);
 				const u32 page_width = (t->m_valid.z + (t_psm.pgs.x - 1)) / t_psm.pgs.x;
 
 				if ((page_offset + page_width) <= target->m_TEX0.TBW)
@@ -2308,7 +2308,7 @@ void GSTextureCache::CombineAlignedInsideTargets(Target* target, GSTextureCache:
 						{
 							t->Update();
 
-							const u32 vertical_offset = (((t->m_TEX0.TBP0 - target->m_TEX0.TBP0) >> 5) / std::max(1U, t->m_TEX0.TBW)) * t_psm.pgs.y;
+							const u32 vertical_offset = (((t->m_TEX0.TBP0 - target->m_TEX0.TBP0) >> 5) / std::max(1U, target->m_TEX0.TBW)) * t_psm.pgs.y;
 							const u32 horizontal_offset = page_offset * t_psm.pgs.x;
 							const GSVector4i target_drect_unscaled = t->m_drawn_since_read + GSVector4i(horizontal_offset, vertical_offset).xyxy();
 
