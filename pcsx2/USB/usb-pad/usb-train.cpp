@@ -209,6 +209,8 @@ namespace usb_pad
 				s->power_notches = USB::GetConfigInt(si, s->port, TypeName(), "power_notches", 5);
 				s->brake_notches = USB::GetConfigInt(si, s->port, TypeName(), "brake_notches", 8);
 				break;
+			default:
+				break;
 		}
 	}
 
