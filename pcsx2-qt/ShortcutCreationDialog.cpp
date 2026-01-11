@@ -145,8 +145,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 	// https://learn.microsoft.com/en-us/windows/win32/api/shlobj_core/nf-shlobj_core-shgetknownfolderpath
 	// https://learn.microsoft.com/en-us/windows/win32/shell/knownfolderid
 	std::string link_file;
-	PWSTR directory;
-	if (SUCCEEDED(SHGetKnownFolderPath(is_desktop ? FOLDERID_Desktop : FOLDERID_Programs, 0, NULL, &directory)) && std::wcslen(directory) > 0)
+	if (PWSTR directory; SUCCEEDED(SHGetKnownFolderPath(is_desktop ? FOLDERID_Desktop : FOLDERID_Programs, 0, NULL, &directory)))
 	{
 		std::string directory_utf8 = StringUtil::WideStringToUTF8String(directory);
 		CoTaskMemFree(directory);
