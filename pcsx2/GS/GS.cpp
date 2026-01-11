@@ -442,7 +442,7 @@ void GSvsync(u32 field, bool registers_written)
 	g_gs_renderer->PCRTCDisplays.SetRects(0, g_gs_renderer->m_regs->DISP[0].DISPLAY, g_gs_renderer->m_regs->DISP[0].DISPFB);
 	g_gs_renderer->PCRTCDisplays.SetRects(1, g_gs_renderer->m_regs->DISP[1].DISPLAY, g_gs_renderer->m_regs->DISP[1].DISPFB);
 	g_gs_renderer->PCRTCDisplays.CalculateDisplayOffset(g_gs_renderer->m_scanmask_used);
-	g_gs_renderer->PCRTCDisplays.CalculateFramebufferOffset(g_gs_renderer->m_scanmask_used);
+	g_gs_renderer->PCRTCDisplays.CalculateFramebufferOffset(g_gs_renderer->m_scanmask_used, g_gs_renderer->m_regs->DISP[0].DISPFB, g_gs_renderer->m_regs->DISP[1].DISPFB);
 
 	// Do not move the flush into the VSync() method. It's here because EE transfers
 	// get cleared in HW VSync, and may be needed for a buffered draw (FFX FMVs).

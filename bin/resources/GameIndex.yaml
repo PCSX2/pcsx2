@@ -27834,8 +27834,6 @@ SLES-54812:
 SLES-54813:
   name: "NASCAR 08"
   region: "PAL-A-E"
-  gsHWFixes:
-    deinterlace: 8 # Game requires AdaptiveTFF de-interlacing when auto.
 SLES-54814:
   name: "Dead Eye Jim"
   region: "PAL-E"
@@ -29188,8 +29186,6 @@ SLES-55199:
   name: "NASCAR 09"
   region: "PAL-M5"
   compat: 5
-  gsHWFixes:
-    deinterlace: 8 # Game requires AdaptiveTFF de-interlacing when auto.
 SLES-55200:
   name: "Guitar Hero - Aerosmith"
   region: "PAL-M4"
@@ -66465,7 +66461,6 @@ SLUS-20535:
   compat: 5
   gsHWFixes:
     roundSprite: 1 # Fix horizontal and vertical lines when racing.
-    deinterlace: 8 # Fixes misdetection of game deinterlace.
 SLUS-20536:
   name: "NBA Live 2003"
   region: "NTSC-U"
@@ -67665,7 +67660,6 @@ SLUS-20754:
   region: "NTSC-U"
   gsHWFixes:
     roundSprite: 1 # Fix horizontal and vertical lines when racing.
-    deinterlace: 8 # Fixes misdetection of game deinterlace.
   memcardFilters:
     - "PSCD10088" # Enables EA Sports BIO.
     - "SLUS-20754"
@@ -68030,7 +68024,6 @@ SLUS-20824:
   region: "NTSC-U"
   gsHWFixes:
     roundSprite: 1 # Fix horizontal and vertical lines when racing.
-    deinterlace: 8 # Fixes misdetection of game deinterlace.
   memcardFilters:
     - "PSCD10088" # Enables EA Sports BIO.
     - "SLUS-20824"
@@ -73078,8 +73071,6 @@ SLUS-21639:
   name: "NASCAR 08"
   region: "NTSC-U"
   compat: 5
-  gsHWFixes:
-    deinterlace: 8 # Game requires AdaptiveTFF de-interlacing when auto.
 SLUS-21640:
   name: "Rugby 08"
   region: "NTSC-U"
@@ -73647,8 +73638,6 @@ SLUS-21744:
   name: "NASCAR 09"
   region: "NTSC-U"
   compat: 5
-  gsHWFixes:
-    deinterlace: 8 # Game requires AdaptiveTFF de-interlacing when auto.
   patches:
     1B6C22B9:
       content: |-

@@ -408,7 +408,7 @@ public:
 
 		// Calculate framebuffer read offsets, should be considered if only one circuit is enabled, or difference is more than 1 line.
 		// Only considered if "Anti-blur" is enabled.
-		void CalculateFramebufferOffset(bool scanmask);
+		void CalculateFramebufferOffset(bool scanmask, GSRegDISPFB framebuffer0Reg, GSRegDISPFB framebuffer1Reg);
 
 		// Used in software mode to align the buffer when reading. Offset is accounted for (block aligned) by GetOutput.
 		void RemoveFramebufferOffset(int display);
