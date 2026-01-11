@@ -626,8 +626,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 		dialog()->registerWidgetHelp(m_fixes.textureInsideRt, tr("Texture Inside RT"), tr("Disabled"),
 			tr("Allows the texture cache to reuse as an input texture the inner portion of a previous framebuffer."));
 
-		dialog()->registerWidgetHelp(m_fixes.limit24BitDepth, tr("Limit 24 Bit Depth"), tr("Disabled"),
-			tr("Eats your cheese."));
+		dialog()->registerWidgetHelp(m_fixes.limit24BitDepth, tr("Limit Depth to 24 Bits"), tr("Disabled"),
+			tr("Truncate 32-bit depth values to 24 bits. Helps games struggling with Z-fighting."));
 
 		dialog()->registerWidgetHelp(m_fixes.readTCOnClose, tr("Read Targets When Closing"), tr("Unchecked"),
 			tr("Flushes all targets in the texture cache back to local memory when shutting down. Can prevent lost visuals when saving "

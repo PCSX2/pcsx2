@@ -345,12 +345,12 @@
      </item>
      <item>
       <property name="text">
-       <string>Prioritize Upper</string>
+       <string>Prioritize Upper Bits</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string>Prioritize Lower</string>
+       <string>Prioritize Lower Bits</string>
       </property>
      </item>
     </widget>
@@ -358,7 +358,7 @@
    <item row="5" column="0">
     <widget class="QLabel" name="limitDepthLabel">
      <property name="text">
-      <string>Limit 24 Bit Depth</string>
+      <string>Limit Depth to 24 Bits</string>
      </property>
     </widget>
    </item>
