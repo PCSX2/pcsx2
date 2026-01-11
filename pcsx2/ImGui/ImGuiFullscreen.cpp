@@ -2390,6 +2390,7 @@ void ImGuiFullscreen::DrawChoiceDialog()
 		return;
 
 	ImGui::PushFont(g_large_font.first, g_large_font.second);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
@@ -2466,7 +2467,7 @@ void ImGuiFullscreen::DrawChoiceDialog()
 	}
 
 	ImGui::PopStyleColor(4);
-	ImGui::PopStyleVar(3);
+	ImGui::PopStyleVar(4);
 	ImGui::PopFont();
 
 	if (choice >= 0)
@@ -2518,6 +2519,7 @@ void ImGuiFullscreen::DrawInputDialog()
 	ImGui::OpenPopup(s_input_dialog_title.c_str());
 
 	ImGui::PushFont(g_large_font.first, g_large_font.second);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
@@ -2528,7 +2530,7 @@ void ImGuiFullscreen::DrawInputDialog()
 
 	bool is_open = true;
 	if (ImGui::BeginPopupModal(s_input_dialog_title.c_str(), &is_open,
-			ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
+			ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar))
 	{
 		ResetFocusHere();
 		ImGui::TextWrapped("%s", s_input_dialog_message.c_str());
@@ -2578,9 +2580,21 @@ void ImGuiFullscreen::DrawInputDialog()
 		if (s_focus_reset_queued != FocusResetType::None)
 			ImGui::SetKeyboardFocusHere();
 
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(8.0f));
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(12.0f, 10.0f));
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, LayoutScale(1.0f));
+		ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0.25f, 0.25f, 0.25f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(0.3f, 0.3f, 0.3f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.4f, 0.4f, 0.4f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+
 		ImGui::InputText("##input", &s_input_dialog_text, flags,
 			(s_input_dialog_filter_type != InputFilterType::None) ? input_callback : nullptr,
 			(s_input_dialog_filter_type != InputFilterType::None) ? static_cast<void*>(&s_input_dialog_filter_type) : nullptr);
+
+		ImGui::PopStyleColor(5);
+		ImGui::PopStyleVar(3);
 
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
 
@@ -2613,7 +2627,7 @@ void ImGuiFullscreen::DrawInputDialog()
 		GetInputDialogHelpText(s_fullscreen_footer_text);
 
 	ImGui::PopStyleColor(4);
-	ImGui::PopStyleVar(3);
+	ImGui::PopStyleVar(4);
 	ImGui::PopFont();
 }
 
@@ -2705,7 +2719,8 @@ void ImGuiFullscreen::DrawMessageDialog()
 	const char* win_id = s_message_dialog_title.empty() ? "##messagedialog" : s_message_dialog_title.c_str();
 
 	ImGui::SetNextWindowSize(LayoutScale(700.0f, 0.0f));
-	ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+	ImGui::SetNextWindowPos((ImGui::GetIO().DisplaySize - LayoutScale(0.0f, LAYOUT_FOOTER_HEIGHT)) * 0.5f,
+		ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 	ImGui::OpenPopup(win_id);
 
 	ImGui::PushFont(g_large_font.first, g_large_font.second);
@@ -2719,7 +2734,7 @@ void ImGuiFullscreen::DrawMessageDialog()
 	ImGui::PushStyleColor(ImGuiCol_PopupBg, UIPopupBackgroundColor);
 
 	bool is_open = true;
-	const u32 flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+	const u32 flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar |
 					  (s_message_dialog_title.empty() ? ImGuiWindowFlags_NoTitleBar : 0);
 	std::optional<s32> result;
 
@@ -2870,7 +2885,8 @@ void ImGuiFullscreen::DrawProgressDialogs(ImVec2& position, float spacing)
 	{
 		const std::string popup_id = fmt::format("##progress_dialog_{}", data.id);
 		ImGui::SetNextWindowSize(LayoutScale(600.0f, 0.0f));
-		ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+		ImGui::SetNextWindowPos((ImGui::GetIO().DisplaySize - LayoutScale(0.0f, LAYOUT_FOOTER_HEIGHT)) * 0.5f,
+			ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 		ImGui::OpenPopup(popup_id.c_str());
 
 		ImGui::PushFont(g_large_font.first, g_large_font.second);
@@ -2885,7 +2901,7 @@ void ImGuiFullscreen::DrawProgressDialogs(ImVec2& position, float spacing)
 		ImGui::PushStyleColor(ImGuiCol_PlotHistogram, UISecondaryColor);
 
 		bool is_open = true;
-		const u32 flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar;
+		const u32 flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar;
 
 		if (ImGui::BeginPopupModal(popup_id.c_str(), &is_open, flags))
 		{
