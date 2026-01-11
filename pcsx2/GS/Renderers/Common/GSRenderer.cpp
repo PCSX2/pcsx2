@@ -714,6 +714,15 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 		u32 screenshot_width, screenshot_height;
 		std::vector<u32> screenshot_pixels;
 
+		if (GSConfig.LinearPresent == GSPostBilinearMode::BilinearSharp)
+		{
+			const GSTexture* current = g_gs_device->GetCurrent();
+			const GSVector2i internal_res = GetInternalResolution();
+
+			if (current->GetWidth() > internal_res.x || current->GetHeight() > internal_res.y)
+				g_gs_device->Resize(internal_res.x, internal_res.y);
+		}
+
 		if (!m_dump && m_dump_frames > 0)
 		{
 			if (GSConfig.UserHacks_ReadTCOnClose)
