@@ -8,6 +8,7 @@
 #include "IopBios.h"
 #include "IopHw.h"
 #include "Common.h"
+#include "common/HeapArray.h"
 #include "VMManager.h"
 
 #include <time.h>
@@ -840,37 +841,39 @@ void psxRecompileCodeConst3(R3000AFNPTR constcode, R3000AFNPTR_INFO constscode, 
 	noconstcode(info);
 }
 
-static u8* m_recBlockAlloc = NULL;
+static DynamicHeapArray<BASEBLOCK, 4096> recLutReserve;
+static size_t recLutEntries;
+static bool extraRam = false;
 
-static const uint m_recBlockAllocSize =
-	(((Ps2MemSize::IopRam + Ps2MemSize::Rom + Ps2MemSize::Rom1 + Ps2MemSize::Rom2) / 4) * sizeof(BASEBLOCK));
+static void recReserveRAM()
+{
+	// Goal: Allocate BASEBLOCKs for every possible branch target in IOP memory.
+	// Any 4-byte aligned address makes a valid branch target as per MIPS design (all instructions are
+	// always 4 bytes long).
+
+	recLutEntries =
+		((Ps2MemSize::ExposedIopRam + Ps2MemSize::Rom + Ps2MemSize::Rom1 + Ps2MemSize::Rom2) / 4);
+
+	if (recLutReserve.size() != recLutEntries)
+		recLutReserve.resize(recLutEntries);
+
+	BASEBLOCK* curpos = recLutReserve.data();
+	recRAM = curpos;
+	curpos += (Ps2MemSize::ExposedIopRam / 4);
+	recROM = curpos;
+	curpos += (Ps2MemSize::Rom / 4);
+	recROM1 = curpos;
+	curpos += (Ps2MemSize::Rom1 / 4);
+	recROM2 = curpos;
+	curpos += (Ps2MemSize::Rom2 / 4);
+}
 
 static void recReserve()
 {
 	recPtr = SysMemory::GetIOPRec();
 	recPtrEnd = SysMemory::GetIOPRecEnd() - _64kb;
 
-	// Goal: Allocate BASEBLOCKs for every possible branch target in IOP memory.
-	// Any 4-byte aligned address makes a valid branch target as per MIPS design (all instructions are
-	// always 4 bytes long).
-
-	if (!m_recBlockAlloc)
-	{
-		// We're on 64-bit, if these memory allocations fail, we're in real trouble.
-		m_recBlockAlloc = (u8*)_aligned_malloc(m_recBlockAllocSize, 4096);
-		if (!m_recBlockAlloc)
-			pxFailRel("Failed to allocate R3000A BASEBLOCK lookup tables");
-	}
-
-	u8* curpos = m_recBlockAlloc;
-	recRAM = (BASEBLOCK*)curpos;
-	curpos += (Ps2MemSize::IopRam / 4) * sizeof(BASEBLOCK);
-	recROM = (BASEBLOCK*)curpos;
-	curpos += (Ps2MemSize::Rom / 4) * sizeof(BASEBLOCK);
-	recROM1 = (BASEBLOCK*)curpos;
-	curpos += (Ps2MemSize::Rom1 / 4) * sizeof(BASEBLOCK);
-	recROM2 = (BASEBLOCK*)curpos;
-	curpos += (Ps2MemSize::Rom2 / 4) * sizeof(BASEBLOCK);
+	recReserveRAM();
 
 	pxAssertRel(!s_pInstCache, "InstCache not allocated");
 	s_nInstCacheSize = 128;
@@ -883,12 +886,18 @@ void recResetIOP()
 {
 	DevCon.WriteLn("iR3000A Recompiler reset.");
 
+	if (CHECK_EXTRAMEM != extraRam)
+	{
+		recReserveRAM();
+		extraRam = !extraRam;
+	}
+
 	xSetPtr(SysMemory::GetIOPRec());
 	_DynGen_Dispatchers();
 	recPtr = xGetPtr();
 
-	iopClearRecLUT((BASEBLOCK*)m_recBlockAlloc,
-		(((Ps2MemSize::IopRam + Ps2MemSize::Rom + Ps2MemSize::Rom1 + Ps2MemSize::Rom2) / 4)));
+	iopClearRecLUT(reinterpret_cast<BASEBLOCK*>(recLutReserve.data()),
+		Ps2MemSize::ExposedIopRam + Ps2MemSize::Rom + Ps2MemSize::Rom1 + Ps2MemSize::Rom2);
 
 	for (int i = 0; i < 0x10000; i++)
 		recLUT_SetPage(psxRecLUT, 0, 0, 0, i, 0);
@@ -899,13 +908,15 @@ void recResetIOP()
 	// the pc indexer into it's lower common denominator.
 
 	// We're only mapping 20 pages here in 4 places.
-	// 0x80 comes from : (Ps2MemSize::IopRam / 0x10000) * 4
+	// 0x80 comes from : (Ps2MemSize::IopRam / _64kb) * 4
 
 	for (int i = 0; i < 0x80; i++)
 	{
-		recLUT_SetPage(psxRecLUT, psxhwLUT, recRAM, 0x0000, i, i & 0x1f);
-		recLUT_SetPage(psxRecLUT, psxhwLUT, recRAM, 0x8000, i, i & 0x1f);
-		recLUT_SetPage(psxRecLUT, psxhwLUT, recRAM, 0xa000, i, i & 0x1f);
+		u32 mask = (Ps2MemSize::ExposedIopRam / _64kb) - 1;
+
+		recLUT_SetPage(psxRecLUT, psxhwLUT, recRAM, 0x0000, i, i & mask);
+		recLUT_SetPage(psxRecLUT, psxhwLUT, recRAM, 0x8000, i, i & mask);
+		recLUT_SetPage(psxRecLUT, psxhwLUT, recRAM, 0xa000, i, i & mask);
 	}
 
 	for (int i = 0x1fc0; i < 0x2000; i++)
@@ -940,7 +951,7 @@ void recResetIOP()
 
 static void recShutdown()
 {
-	safe_aligned_free(m_recBlockAlloc);
+	recLutReserve.deallocate();
 
 	safe_free(s_pInstCache);
 	s_nInstCacheSize = 0;
@@ -951,7 +962,7 @@ static void recShutdown()
 
 static void iopClearRecLUT(BASEBLOCK* base, int count)
 {
-	for (int i = 0; i < count; i++)
+	for (int i = 0; i < count / 4; i++)
 		base[i].SetFnptr((uptr)iopJITCompile);
 }
 
@@ -1039,7 +1050,7 @@ static __fi u32 psxRecClearMem(u32 pc)
 		}
 	}
 
-	iopClearRecLUT(PSX_GETBLOCK(lowerextent), (upperextent - lowerextent) / 4);
+	iopClearRecLUT(PSX_GETBLOCK(lowerextent), upperextent - lowerextent);
 
 	return upperextent - pc;
 }
