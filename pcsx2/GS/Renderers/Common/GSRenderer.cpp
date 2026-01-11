@@ -94,8 +94,8 @@ bool GSRenderer::Merge(int field)
 	}
 
 	// Need to do this here, if the user has Anti-Blur enabled, these offsets can get wiped out/changed.
-	const bool game_deinterlacing = (m_regs->DISP[0].DISPFB.DBY != PCRTCDisplays.PCRTCDisplays[0].prevFramebufferReg.DBY) !=
-									(m_regs->DISP[1].DISPFB.DBY != PCRTCDisplays.PCRTCDisplays[1].prevFramebufferReg.DBY);
+	const bool game_deinterlacing = (PCRTCDisplays.PCRTCDisplays[0].prevFramebufferOffsets.y != PCRTCDisplays.PCRTCDisplays[0].framebufferOffsets.y) !=
+	                                (PCRTCDisplays.PCRTCDisplays[1].prevFramebufferOffsets.y != PCRTCDisplays.PCRTCDisplays[1].framebufferOffsets.y);
 
 	// Only need to check the right/bottom on software renderer, hardware always gets the full texture then cuts a bit out later.
 	if (PCRTCDisplays.FrameRectMatch() && !PCRTCDisplays.FrameWrap() && !feedback_merge)
@@ -156,19 +156,10 @@ bool GSRenderer::Merge(int field)
 	bool is_bob = GSConfig.InterlaceMode == GSInterlaceMode::BobTFF || GSConfig.InterlaceMode == GSInterlaceMode::BobBFF;
 
 	// FFMD (half frames) requires blend deinterlacing, so automatically use that. Same when SCANMSK is used but not blended in the merge circuit (Alpine Racer 3).
-	if (GSConfig.InterlaceMode != GSInterlaceMode::Automatic || (!m_regs->SMODE2.FFMD && !scanmask_frame))
+	if (GSConfig.InterlaceMode != GSInterlaceMode::Automatic || (!game_deinterlacing && !m_regs->SMODE2.FFMD && !scanmask_frame))
 	{
-		// If the game is offsetting each frame itself and we're using full height buffers, we can offset this with Bob.
-		if (game_deinterlacing && !scanmask_frame && GSConfig.InterlaceMode == GSInterlaceMode::Automatic)
-		{
-			mode = 1; // Bob.
-			is_bob = true;
-		}
-		else
-		{
-			field2 = ((static_cast<int>(GSConfig.InterlaceMode) - 2) & 1);
-			mode = ((static_cast<int>(GSConfig.InterlaceMode) - 2) >> 1);
-		}
+		field2 = ((static_cast<int>(GSConfig.InterlaceMode) - 2) & 1);
+		mode = ((static_cast<int>(GSConfig.InterlaceMode) - 2) >> 1);
 	}
 
 	for (int i = 0; i < 2; i++)
