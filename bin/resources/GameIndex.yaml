@@ -5602,7 +5602,7 @@ SCES-52033:
         author=refraction
         // Cop2 problems.
         patch=0,EE,003953F8,word,48438000
-        patch=0,EE,003735FC,word,4B06521B
+        patch=0,EE,003953FC,word,4B06521B
         author=YukiXXL
         // Speed Correction (25 FPS)
         patch=1,EE,00175E1C,extended,00000019
@@ -11692,6 +11692,15 @@ SCUS-97264:
         // Cop2 problems.
         patch=0,EE,003735F8,word,48438000
         patch=0,EE,003735FC,word,4B06521B
+    062BC79E:
+      content: |-
+        author=YukiXXL
+        // Cop2 problems.
+        patch=0,EE,00395D28,word,48438000
+        patch=0,EE,00395D2C,word,4B06521B
+        // Other languages SNDVAG fix
+        patch=1,EE,204A0C3C,word,482E7325
+        patch=1,EE,204A0C40,word,0000474F
 SCUS-97265:
   name: "Jak II"
   region: "NTSC-U"
@@ -12079,12 +12088,21 @@ SCUS-97396:
   gsHWFixes:
     PCRTCOffsets: 1 # Fixes boot videos screen size.
 SCUS-97397:
-  name: "Syphon Filter - The Omega Strain"
+  name: "Syphon Filter - The Omega Strain Public Beta 1.0"
   region: "NTSC-U"
   gsHWFixes:
     autoFlush: 2 # Fixes lights going through walls.
     preloadFrameData: 1 # Fixes light flicker.
     halfPixelOffset: 2 # Corrects light position.
+  gameFixes:
+    - EETimingHack # Fixes random hangs.
+  patches:
+    C909A32E:
+      content: |-
+        author=YukiXXL
+        // Cop2 problems.
+        patch=0,EE,00367798,word,48438000
+        patch=0,EE,0036779C,word,4B06521B
 SCUS-97398:
   name: "Siren [Demo]"
   region: "NTSC-U"
@@ -75780,6 +75798,9 @@ TCES-52033:
     0DDA2728:
       content: |-
         author=YukiXXL
+        // Cop2 problems.
+        patch=0,EE,0038E8E8,word,48438000
+        patch=0,EE,0038E8EC,word,4B06521B
         // Speed Correction (25 FPS)
         patch=1,EE,00175a7c,extended,00000019
         patch=1,EE,00175848,extended,00000019
