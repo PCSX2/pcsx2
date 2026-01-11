@@ -739,6 +739,7 @@ struct Pcsx2Config
 					DisableShaderCache : 1,
 					DisableFramebufferFetch : 1,
 					DisableVertexShaderExpand : 1,
+					DisableDepthFeedback : 1,
 					SkipDuplicateFrames : 1,
 					OsdShowSpeed : 1,
 					OsdShowFPS : 1,
