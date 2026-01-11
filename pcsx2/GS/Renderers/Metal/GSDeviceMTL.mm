@@ -933,6 +933,8 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	m_features.stencil_buffer = true;
 	m_features.cas_sharpening = true;
 	m_features.test_and_sample_depth = true;
+	m_features.depth_feedback = false;
+	m_features.depth_as_rt_feedback = false;
 	m_max_texture_size = m_dev.features.max_texsize;
 
 	// Init metal stuff
@@ -1796,6 +1798,8 @@ static GSMTLExpandType ConvertVSExpand(GSHWDrawConfig::VSExpand generic)
 		case GSHWDrawConfig::VSExpand::Point:  return GSMTLExpandType::Point;
 		case GSHWDrawConfig::VSExpand::Line:   return GSMTLExpandType::Line;
 		case GSHWDrawConfig::VSExpand::Sprite: return GSMTLExpandType::Sprite;
+		case GSHWDrawConfig::VSExpand::LineAA1: return GSMTLExpandType::LineAA1;
+		case GSHWDrawConfig::VSExpand::TriangleAA1: return GSMTLExpandType::TriangleAA1;
 	}
 }
 
@@ -2131,13 +2135,13 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 		EndRenderPass(); // Barrier
 
 	size_t vertsize = config.nverts * sizeof(*config.verts);
-	size_t idxsize = config.vs.UseExpandIndexBuffer() ? 0 : (config.nindices * sizeof(*config.indices));
+	size_t idxsize = config.vs.UseFixedExpandIndexBuffer() ? 0 : (config.nindices * sizeof(*config.indices));
 	Map allocation = Allocate(m_vertex_upload_buf, vertsize + idxsize);
 	memcpy(allocation.cpu_buffer, config.verts, vertsize);
 
 	id<MTLBuffer> index_buffer;
 	size_t index_buffer_offset;
-	if (!config.vs.UseExpandIndexBuffer())
+	if (!config.vs.UseFixedExpandIndexBuffer())
 	{
 		memcpy(static_cast<u8*>(allocation.cpu_buffer) + vertsize, config.indices, idxsize);
 		index_buffer = allocation.gpu_buffer;
