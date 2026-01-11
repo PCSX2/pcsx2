@@ -1498,7 +1498,10 @@ void dynarecCheckBreakpoint()
 {
 	u32 pc = cpuRegs.pc;
 	if (CBreakPoints::CheckSkipFirst(BREAKPOINT_EE, pc) != 0)
+	{
+		CBreakPoints::ClearSkipFirst(BREAKPOINT_EE);
 		return;
+	}
 
 	const int bpFlags = isBreakpointNeeded(pc);
 	bool hit = false;
@@ -1532,7 +1535,10 @@ void dynarecMemcheck(size_t i)
 	const u32 op = memRead32(cpuRegs.pc);
 	const OPCODE& opcode = GetInstruction(op);
 	if (CBreakPoints::CheckSkipFirst(BREAKPOINT_EE, pc) != 0)
+	{
+		CBreakPoints::ClearSkipFirst(BREAKPOINT_EE);
 		return;
+	}
 
 	auto mc = CBreakPoints::GetMemChecks(BREAKPOINT_EE)[i];
 
@@ -1606,20 +1612,22 @@ void recMemcheck(u32 op, u32 bits, bool store)
 	}
 }
 
-void encodeBreakpoint()
+bool encodeBreakpoint()
 {
 	if (isBreakpointNeeded(pc) != 0)
 	{
 		iFlushCall(FLUSH_EVERYTHING | FLUSH_PC);
 		xFastCall((void*)dynarecCheckBreakpoint);
+		return true;
 	}
+	return false;
 }
 
-void encodeMemcheck()
+bool encodeMemcheck()
 {
 	const int needed = isMemcheckNeeded(pc);
 	if (needed == 0)
-		return;
+		return false;
 
 	const u32 op = memRead32(needed == 2 ? pc + 4 : pc);
 	const OPCODE& opcode = GetInstruction(op);
@@ -1643,6 +1651,7 @@ void encodeMemcheck()
 			recMemcheck(op, 128, store);
 			break;
 	}
+	return true;
 }
 
 void recompileNextInstruction(bool delayslot, bool swapped_delay_slot)
@@ -1653,8 +1662,8 @@ void recompileNextInstruction(bool delayslot, bool swapped_delay_slot)
 	// add breakpoint
 	if (!delayslot)
 	{
-		encodeBreakpoint();
-		encodeMemcheck();
+		if(encodeBreakpoint() || encodeMemcheck())
+			xFastCall((void*)CBreakPoints::CommitClearSkipFirst, BREAKPOINT_EE);
 	}
 	else
 	{

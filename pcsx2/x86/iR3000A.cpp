@@ -1259,7 +1259,10 @@ static bool psxDynarecCheckBreakpoint()
 {
 	u32 pc = psxRegs.pc;
 	if (CBreakPoints::CheckSkipFirst(BREAKPOINT_IOP, pc) == pc)
+	{
+		CBreakPoints::ClearSkipFirst(BREAKPOINT_IOP);
 		return false;
+	}
 
 	int bpFlags = psxIsBreakpointNeeded(pc);
 	bool hit = false;
@@ -1299,8 +1302,10 @@ static bool psxDynarecMemcheck(size_t i)
 	auto mc = CBreakPoints::GetMemChecks(BREAKPOINT_IOP)[i];
 
 	if (CBreakPoints::CheckSkipFirst(BREAKPOINT_IOP, pc) == pc)
+	{
+		CBreakPoints::ClearSkipFirst(BREAKPOINT_IOP);
 		return false;
-
+	}
 	if (mc.hasCond)
 	{
 		if (!mc.cond.Evaluate())
@@ -1373,7 +1378,7 @@ static void psxRecMemcheck(u32 op, u32 bits, bool store)
 	}
 }
 
-static void psxEncodeBreakpoint()
+static bool psxEncodeBreakpoint()
 {
 	if (psxIsBreakpointNeeded(psxpc) != 0)
 	{
@@ -1381,14 +1386,17 @@ static void psxEncodeBreakpoint()
 		xFastCall((void*)psxDynarecCheckBreakpoint);
 		xTEST(al, al);
 		xJNZ(iopExitRecompiledCode);
+		return true;
 	}
+
+	return false;
 }
 
-static void psxEncodeMemcheck()
+static bool psxEncodeMemcheck()
 {
 	int needed = psxIsMemcheckNeeded(psxpc);
 	if (needed == 0)
-		return;
+		return false;
 
 	u32 op = iopMemRead32(needed == 2 ? psxpc + 4 : psxpc);
 	const R5900::OPCODE& opcode = R5900::GetInstruction(op);
@@ -1409,6 +1417,7 @@ static void psxEncodeMemcheck()
 			psxRecMemcheck(op, 64, store);
 			break;
 	}
+	return true;
 }
 
 void psxRecompileNextInstruction(bool delayslot, bool swapped_delayslot)
@@ -1437,12 +1446,10 @@ void psxRecompileNextInstruction(bool delayslot, bool swapped_delayslot)
 	EEINST* old_inst_info = g_pCurInstInfo;
 	s_recompilingDelaySlot = delayslot;
 
-	// add breakpoint
 	if (!delayslot)
 	{
-		// Broken on x64
-		psxEncodeBreakpoint();
-		psxEncodeMemcheck();
+		if(psxEncodeBreakpoint() || psxEncodeMemcheck())
+			xFastCall((void*)CBreakPoints::CommitClearSkipFirst, BREAKPOINT_IOP);
 	}
 	else
 	{

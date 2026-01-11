@@ -135,7 +135,8 @@ public:
 
 	static void SetSkipFirst(BreakPointCpu cpu, u32 pc);
 	static u32 CheckSkipFirst(BreakPointCpu cpu, u32 pc);
-	static void ClearSkipFirst();
+	static void ClearSkipFirst(BreakPointCpu cpu = BREAKPOINT_IOP_AND_EE);
+	static void CommitClearSkipFirst(BreakPointCpu cpu);
 
 	// Includes uncached addresses.
 	static const std::vector<MemCheck> GetMemCheckRanges();
@@ -169,9 +170,9 @@ private:
 
 	static std::vector<BreakPoint> breakPoints_;
 	static u32 breakSkipFirstAtEE_;
-	static u64 breakSkipFirstTicksEE_;
+	static bool pendingClearSkipFirstAtEE_;
 	static u32 breakSkipFirstAtIop_;
-	static u64 breakSkipFirstTicksIop_;
+	static bool pendingClearSkipFirstAtIop_;
 
 	static bool breakpointTriggered_;
 	static BreakPointCpu breakpointTriggeredCpu_;

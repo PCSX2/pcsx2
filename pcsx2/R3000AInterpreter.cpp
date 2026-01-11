@@ -120,7 +120,10 @@ void psxBreakpoint(bool memcheck)
 {
 	u32 pc = psxRegs.pc;
 	if (CBreakPoints::CheckSkipFirst(BREAKPOINT_IOP, pc) != 0)
+	{
+		CBreakPoints::ClearSkipFirst(BREAKPOINT_IOP);
 		return;
+	}
 
 	if (!memcheck)
 	{
@@ -208,6 +211,8 @@ static __fi void execI()
 		psxBreakpoint(false);
 
 	psxCheckMemcheck();
+	
+	CBreakPoints::CommitClearSkipFirst(BREAKPOINT_IOP);
 #endif
 
 	// Inject IRX hack
