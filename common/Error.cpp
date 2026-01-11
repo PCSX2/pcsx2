@@ -14,8 +14,8 @@
 // Platform-specific includes
 #if defined(_WIN32)
 #include "RedtapeWindows.h"
-static_assert(std::is_same<DWORD, unsigned long>::value, "DWORD is unsigned long");
-static_assert(std::is_same<HRESULT, long>::value, "HRESULT is long");
+static_assert(std::is_same_v<DWORD, unsigned long>, "DWORD is unsigned long");
+static_assert(std::is_same_v<HRESULT, long>, "HRESULT is long");
 #endif
 
 Error::Error() = default;
