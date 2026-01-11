@@ -16,6 +16,8 @@ namespace D3D12MA
 	class Allocation;
 }
 
+struct D3D12CommandList;
+
 class GSTexture12 final : public GSTexture
 {
 public:
@@ -51,12 +53,12 @@ public:
 
 	void TransitionToState(D3D12_RESOURCE_STATES state);
 	void CommitClear();
-	void CommitClear(ID3D12GraphicsCommandList* cmdlist);
+	void CommitClear(const D3D12CommandList& cmdlist);
 
 	void Destroy(bool defer = true);
 
-	void TransitionToState(ID3D12GraphicsCommandList* cmdlist, D3D12_RESOURCE_STATES state);
-	void TransitionSubresourceToState(ID3D12GraphicsCommandList* cmdlist, int level, D3D12_RESOURCE_STATES before_state,
+	void TransitionToState(const D3D12CommandList&, D3D12_RESOURCE_STATES state);
+	void TransitionSubresourceToState(const D3D12CommandList& cmdlist, int level, D3D12_RESOURCE_STATES before_state,
 		D3D12_RESOURCE_STATES after_state) const;
 
 	// Call when the texture is bound to the pipeline, or read from in a copy.
@@ -75,7 +77,7 @@ private:
 		wil::com_ptr_nothrow<D3D12MA::Allocation> allocation, const D3D12DescriptorHandle& srv_descriptor,
 		const D3D12DescriptorHandle& write_descriptor, const D3D12DescriptorHandle& ro_dsv_descriptor,
 		const D3D12DescriptorHandle& uav_descriptor, const D3D12DescriptorHandle& fbl_descriptor,
-		WriteDescriptorType wdtype, D3D12_RESOURCE_STATES resource_state);
+		WriteDescriptorType wdtype, bool can_feedback, D3D12_RESOURCE_STATES resource_state);
 
 	static bool CreateSRVDescriptor(
 		ID3D12Resource* resource, u32 levels, DXGI_FORMAT format, D3D12DescriptorHandle* dh);
@@ -83,7 +85,7 @@ private:
 	static bool CreateDSVDescriptor(ID3D12Resource* resource, DXGI_FORMAT format, D3D12DescriptorHandle* dh, bool read_only);
 	static bool CreateUAVDescriptor(ID3D12Resource* resource, DXGI_FORMAT format, D3D12DescriptorHandle* dh);
 
-	ID3D12GraphicsCommandList* GetCommandBufferForUpdate();
+	const D3D12CommandList& GetCommandBufferForUpdate();
 	ID3D12Resource* AllocateUploadStagingBuffer(const void* data, u32 pitch, u32 upload_pitch, u32 height) const;
 	void CopyTextureDataForUpload(void* dst, const void* src, u32 pitch, u32 upload_pitch, u32 height) const;
 
@@ -100,6 +102,10 @@ private:
 
 	DXGI_FORMAT m_dxgi_format = DXGI_FORMAT_UNKNOWN;
 	D3D12_RESOURCE_STATES m_resource_state = D3D12_RESOURCE_STATE_COMMON;
+
+	// With legacy barriers, an aliased resource is used as the feedback shader resource.
+	// With enhanced barriers, the layout is always COMMON, but can use the main resource for feedback.
+	bool m_simultaneous_tex;
 
 	// Contains the fence counter when the texture was last used.
 	// When this matches the current fence counter, the texture was used this command buffer.
