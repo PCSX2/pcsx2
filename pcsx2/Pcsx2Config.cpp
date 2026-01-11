@@ -1149,9 +1149,9 @@ bool Pcsx2Config::GSOptions::UseHardwareRenderer() const
 	return (Renderer != GSRendererType::Null && Renderer != GSRendererType::SW);
 }
 
-bool Pcsx2Config::GSOptions::ShouldDump(int draw, int frame) const
+bool Pcsx2Config::GSOptions::ShouldDump(u64 draw, int frame) const
 {
-	int drawOffset = draw - SaveDrawStart;
+	int drawOffset = static_cast<int>(draw - static_cast<u64>(SaveDrawStart));
 	int frameOffset = frame - SaveFrameStart;
 	return DumpGSData &&
 		   (drawOffset >= 0) && ((SaveDrawCount < 0) || (drawOffset < SaveDrawCount)) && (drawOffset % SaveDrawBy == 0) &&
