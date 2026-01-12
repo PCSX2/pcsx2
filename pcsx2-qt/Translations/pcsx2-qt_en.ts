@@ -11893,7 +11893,7 @@ This action cannot be undone.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="5054"/>
+        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="5055"/>
         <source>Spin GPU During Readbacks is enabled, but calibrated timestamps are unavailable.  This might be really slow.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -24505,32 +24505,32 @@ Xbox 360 turntables require a 256x multiplier, most other turntables can use the
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="227"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="229"/>
         <source>Axes Passthrough</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="228"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="230"/>
         <source>Passes through the unprocessed input axis to the game. Enable if you are using a compatible Densha De Go! controller. Disable if you are using any other joystick.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="240"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="242"/>
         <source>Power notches</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="241"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="243"/>
         <source>Selects the number of power notches (3-6)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="249"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="251"/>
         <source>Brake notches</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="250"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="252"/>
         <source>Selects the number of brake notches (5-8)</source>
         <translation type="unfinished"></translation>
     </message>
