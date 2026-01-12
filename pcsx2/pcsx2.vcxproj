@@ -254,6 +254,7 @@
     <ClCompile Include="Host\SDLAudioStream.cpp" />
     <ClCompile Include="Hotkeys.cpp" />
     <ClCompile Include="ImGui\FullscreenUI.cpp" />
+    <ClCompile Include="ImGui\FullscreenUI_Settings.cpp" />
     <ClCompile Include="ImGui\ImGuiFullscreen.cpp" />
     <ClCompile Include="ImGui\ImGuiManager.cpp" />
     <ClCompile Include="ImGui\ImGuiOverlays.cpp" />
@@ -700,6 +701,7 @@
     <ClInclude Include="Host\AudioStream.h" />
     <ClInclude Include="Host\AudioStreamTypes.h" />
     <ClInclude Include="ImGui\FullscreenUI.h" />
+    <ClInclude Include="ImGui\FullscreenUI_Internal.h" />
     <ClInclude Include="ImGui\ImGuiAnimated.h" />
     <ClInclude Include="ImGui\ImGuiFullscreen.h" />
     <ClInclude Include="ImGui\ImGuiManager.h" />
