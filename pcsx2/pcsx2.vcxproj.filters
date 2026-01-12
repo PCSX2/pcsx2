@@ -1352,6 +1352,9 @@
     <ClCompile Include="ImGui\FullscreenUI.cpp">
       <Filter>Misc\ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="ImGui\FullscreenUI_Settings.cpp">
+      <Filter>Misc\ImGui</Filter>
+    </ClCompile>
     <ClCompile Include="ImGui\ImGuiFullscreen.cpp">
       <Filter>Misc\ImGui</Filter>
     </ClCompile>
@@ -2302,6 +2305,9 @@
       <Filter>Misc\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="ImGui\FullscreenUI.h">
+      <Filter>Misc\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\FullscreenUI_Internal.h">
       <Filter>Misc\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="ImGui\ImGuiFullscreen.h">
