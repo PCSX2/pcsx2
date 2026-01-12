@@ -23,24 +23,15 @@
 #include "USB/USB.h"
 #include "VMManager.h"
 #include "ps2/BiosTools.h"
-#include "DEV9/ATA/HddCreate.h"
-#include "DEV9/pcap_io.h"
-#include "DEV9/sockets.h"
-#ifdef _WIN32
-#include "DEV9/Win32/tap.h"
-#endif
 
 #include "common/Console.h"
 #include "common/Error.h"
 #include "common/FileSystem.h"
-#include "common/Image.h"
 #include "common/Path.h"
 #include "common/SettingsInterface.h"
-#include "common/SettingsWrapper.h"
 #include "common/SmallString.h"
 #include "common/StringUtil.h"
 #include "common/Threading.h"
-#include "common/Timer.h"
 
 #include "SIO/Memcard/MemoryCardFile.h"
 #include "SIO/Pad/Pad.h"
@@ -52,17 +43,6 @@
 #include "imgui_internal.h"
 
 #include "fmt/chrono.h"
-#include "fmt/format.h"
-
-#include <algorithm>
-#include <atomic>
-#include <array>
-#include <bitset>
-#include <chrono>
-#include <set>
-#include <thread>
-#include <utility>
-#include <vector>
 
 //////////////////////////////////////////////////////////////////////////
 // Utility
