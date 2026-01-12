@@ -2339,6 +2339,12 @@ void GSRendererHW::Draw()
 		return;
 	}
 
+	// Sometimes everything will get reset and it will draw a single black point in the top left corner,
+	// which can cause invalid targets to be created, so might as well skip it.
+	if (GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).eq(GSVector4i::zero()) && m_vt.m_eq.rgba == 0xffff && 
+		m_vt.m_max.c.rgba32() == 0 && m_draw_env->PRIM.PRIM == GS_POINTLIST && m_env.PRIM.PRIM != GS_POINTLIST)
+		return;
+
 	// Channel shuffles repeat lots of draws. Get out early if we can.
 	if (m_channel_shuffle)
 	{
