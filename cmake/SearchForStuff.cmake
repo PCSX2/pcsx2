@@ -133,6 +133,8 @@ if(_M_X86)
 	add_subdirectory(3rdparty/zydis EXCLUDE_FROM_ALL)
 elseif(_M_ARM64)
 	add_subdirectory(3rdparty/vixl EXCLUDE_FROM_ALL)
+elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "riscv64")
+	add_subdirectory(3rdparty/biscuit EXCLUDE_FROM_ALL)
 endif()
 
 # Prevent fmt from being built with exceptions, or being thrown at call sites.
