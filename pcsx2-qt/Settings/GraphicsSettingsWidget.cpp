@@ -23,7 +23,7 @@ static constexpr RendererInfo s_renderer_info[] = {
 	{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Automatic (Default)"), GSRendererType::Auto},
 #ifdef _WIN32
 	//: Graphics backend/engine type. Leave as-is.
-	{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Direct3D 11"), GSRendererType::DX11},
+	{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Direct3D 11 (Legacy)"), GSRendererType::DX11},
 	//: Graphics backend/engine type. Leave as-is.
 	{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Direct3D 12"), GSRendererType::DX12},
 #endif
