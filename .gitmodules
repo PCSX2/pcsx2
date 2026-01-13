@@ -1,0 +1,3 @@
+[submodule "3rdparty/biscuit"]
+	path = 3rdparty/biscuit
+	url = https://github.com/lioncash/biscuit.git
