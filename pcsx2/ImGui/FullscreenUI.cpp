@@ -4618,7 +4618,7 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 	static constexpr const char* s_renderer_names[] = {
 		FSUI_NSTR("Automatic (Default)"),
 #ifdef _WIN32
-		FSUI_NSTR("Direct3D 11"),
+		FSUI_NSTR("Direct3D 11 (Legacy)"),
 		FSUI_NSTR("Direct3D 12"),
 #endif
 #ifdef ENABLE_OPENGL
@@ -9890,7 +9890,7 @@ TRANSLATE_NOOP("FullscreenUI", "Extra + Preserve Sign");
 TRANSLATE_NOOP("FullscreenUI", "Full");
 TRANSLATE_NOOP("FullscreenUI", "Extra");
 TRANSLATE_NOOP("FullscreenUI", "Automatic (Default)");
-TRANSLATE_NOOP("FullscreenUI", "Direct3D 11");
+TRANSLATE_NOOP("FullscreenUI", "Direct3D 11 (Legacy)");
 TRANSLATE_NOOP("FullscreenUI", "Direct3D 12");
 TRANSLATE_NOOP("FullscreenUI", "OpenGL");
 TRANSLATE_NOOP("FullscreenUI", "Vulkan");
