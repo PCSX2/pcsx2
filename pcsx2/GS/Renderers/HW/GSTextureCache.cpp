@@ -691,7 +691,7 @@ void GSTextureCache::DirtyRectByPage(u32 sbp, u32 spsm, u32 sbw, Target* t, GSVe
 		const int src_bpp = src_info->bpp;
 		const bool column_align = !block_offset && src_r.z <= src_info->cs.x && src_r.w <= src_info->cs.y && src_info->depth == dst_info->depth;
 
-		if (block_offset)
+		if (block_offset && src_info->bpp == dst_info->bpp)
 			in_rect = in_rect.ralign<Align_Outside>(src_info->bs);
 		else if (column_align)
 			in_rect = in_rect.ralign<Align_Outside>(src_info->cs);
