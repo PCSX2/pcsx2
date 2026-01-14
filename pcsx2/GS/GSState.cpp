@@ -2528,7 +2528,7 @@ void GSState::Move()
 	if (m_env.TRXPOS.DIRX)
 	{
 		// Only allow it to reverse if the destination is behind the source.
-		if (!intersect || (sx <= dx && (sx == dx || ((!m_env.TRXPOS.DIRY && sy >= dy) || (m_env.TRXPOS.DIRY && sy < dy)))))
+		if (!intersect || sx < dx)
 		{
 			sx += w - 1;
 			dx += w - 1;
@@ -2538,7 +2538,7 @@ void GSState::Move()
 	if (m_env.TRXPOS.DIRY)
 	{
 		// Only allow it to reverse if the destination is behind the source.
-		if (!intersect || (sy <= dy && (sy == dy || ((!m_env.TRXPOS.DIRX && sx >= dx) || (m_env.TRXPOS.DIRX && sx < dx)))))
+		if (!intersect || sy < dy)
 		{
 			sy += h - 1;
 			dy += h - 1;
