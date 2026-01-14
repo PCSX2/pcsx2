@@ -67,29 +67,13 @@ public:
 
 	PS2Float Rsqrt(PS2Float other);
 
-	PS2Float ELENG(PS2Float y, PS2Float z);
-
 	PS2Float ERCPR();
-
-	PS2Float ERLENG(PS2Float y, PS2Float z);
-
-	PS2Float ERSADD(PS2Float y, PS2Float z);
 
 	PS2Float ESQRT();
 
 	PS2Float ESQUR();
 
-	PS2Float ESUM(PS2Float y, PS2Float z, PS2Float w);
-
 	PS2Float ERSQRT();
-
-	PS2Float ESADD(PS2Float y, PS2Float z);
-
-	PS2Float EEXP();
-
-	PS2Float EATAN();
-
-	PS2Float ESIN();
 
 	bool IsDenormalized();
 

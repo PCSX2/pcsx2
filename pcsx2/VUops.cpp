@@ -1922,61 +1922,45 @@ static __ri void _vuWAITP(VURegs* VU)
 
 static __ri void _vuESADD(VURegs* VU)
 {
-	if (CHECK_VU_SOFT_MUL((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0)) { VU->p.UL = PS2Float(VU->VF[_Fs_].i.x).ESADD(PS2Float(VU->VF[_Fs_].i.y), PS2Float(VU->VF[_Fs_].i.z)).raw; }
-	else
-	{
-		float p = vuDouble(VU->VF[_Fs_].i.x) * vuDouble(VU->VF[_Fs_].i.x) + vuDouble(VU->VF[_Fs_].i.y) * vuDouble(VU->VF[_Fs_].i.y) + vuDouble(VU->VF[_Fs_].i.z) * vuDouble(VU->VF[_Fs_].i.z);
+	float p = vuDouble(VU->VF[_Fs_].i.x) * vuDouble(VU->VF[_Fs_].i.x) + vuDouble(VU->VF[_Fs_].i.y) * vuDouble(VU->VF[_Fs_].i.y) + vuDouble(VU->VF[_Fs_].i.z) * vuDouble(VU->VF[_Fs_].i.z);
 
-		VU->p.F = p;
-	}
+	VU->p.F = p;
 }
 
 static __ri void _vuERSADD(VURegs* VU)
 {
-	if (CHECK_VU_SOFT_MUL((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_DIVSQRT((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0)) { VU->p.UL = PS2Float(VU->VF[_Fs_].i.x).ERSADD(PS2Float(VU->VF[_Fs_].i.y), PS2Float(VU->VF[_Fs_].i.z)).raw; }
-	else
-	{
-		float p = (vuDouble(VU->VF[_Fs_].i.x) * vuDouble(VU->VF[_Fs_].i.x)) + (vuDouble(VU->VF[_Fs_].i.y) * vuDouble(VU->VF[_Fs_].i.y)) + (vuDouble(VU->VF[_Fs_].i.z) * vuDouble(VU->VF[_Fs_].i.z));
+	float p = (vuDouble(VU->VF[_Fs_].i.x) * vuDouble(VU->VF[_Fs_].i.x)) + (vuDouble(VU->VF[_Fs_].i.y) * vuDouble(VU->VF[_Fs_].i.y)) + (vuDouble(VU->VF[_Fs_].i.z) * vuDouble(VU->VF[_Fs_].i.z));
 
-		if (p != 0.0)
-			p = 1.0f / p;
+	if (p != 0.0)
+		p = 1.0f / p;
 
-		VU->p.F = p;
-	}
+	VU->p.F = p;
 }
 
 static __ri void _vuELENG(VURegs* VU)
 {
-	if (CHECK_VU_SOFT_MUL((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_DIVSQRT((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0)) { VU->p.UL = PS2Float(VU->VF[_Fs_].i.x).ELENG(PS2Float(VU->VF[_Fs_].i.y), PS2Float(VU->VF[_Fs_].i.z)).raw; }
-	else
-	{
-		float p = vuDouble(VU->VF[_Fs_].i.x) * vuDouble(VU->VF[_Fs_].i.x) + vuDouble(VU->VF[_Fs_].i.y) * vuDouble(VU->VF[_Fs_].i.y) + vuDouble(VU->VF[_Fs_].i.z) * vuDouble(VU->VF[_Fs_].i.z);
+	float p = vuDouble(VU->VF[_Fs_].i.x) * vuDouble(VU->VF[_Fs_].i.x) + vuDouble(VU->VF[_Fs_].i.y) * vuDouble(VU->VF[_Fs_].i.y) + vuDouble(VU->VF[_Fs_].i.z) * vuDouble(VU->VF[_Fs_].i.z);
 
-		if (p >= 0)
-		{
-			p = sqrt(p);
-		}
-		VU->p.F = p;
+	if (p >= 0)
+	{
+		p = sqrt(p);
 	}
+	VU->p.F = p;
 }
 
 static __ri void _vuERLENG(VURegs* VU)
 {
-	if (CHECK_VU_SOFT_MUL((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_DIVSQRT((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0)) { VU->p.UL = PS2Float(VU->VF[_Fs_].i.x).ERLENG(PS2Float(VU->VF[_Fs_].i.y), PS2Float(VU->VF[_Fs_].i.z)).raw; }
-	else
-	{
-		float p = vuDouble(VU->VF[_Fs_].i.x) * vuDouble(VU->VF[_Fs_].i.x) + vuDouble(VU->VF[_Fs_].i.y) * vuDouble(VU->VF[_Fs_].i.y) + vuDouble(VU->VF[_Fs_].i.z) * vuDouble(VU->VF[_Fs_].i.z);
+	float p = vuDouble(VU->VF[_Fs_].i.x) * vuDouble(VU->VF[_Fs_].i.x) + vuDouble(VU->VF[_Fs_].i.y) * vuDouble(VU->VF[_Fs_].i.y) + vuDouble(VU->VF[_Fs_].i.z) * vuDouble(VU->VF[_Fs_].i.z);
 
-		if (p >= 0)
+	if (p >= 0)
+	{
+		p = sqrt(p);
+		if (p != 0)
 		{
-			p = sqrt(p);
-			if (p != 0)
-			{
-				p = 1.0f / p;
-			}
+			p = 1.0f / p;
 		}
-		VU->p.F = p;
 	}
+	VU->p.F = p;
 }
 
 
@@ -1996,57 +1980,42 @@ static __ri float _vuCalculateEATAN(float inputvalue) {
 	return result;
 }
 
-static __ri PS2Float _vuCalculateAccurateEATAN(PS2Float inputvalue)
-{
-	return inputvalue.EATAN();
-}
-
 static __ri void _vuEATAN(VURegs* VU)
 {
-	if (CHECK_VU_SOFT_MUL((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0)) { VU->p.UL = _vuCalculateAccurateEATAN(PS2Float(VU->VF[_Fs_].UL[_Fsf_])).raw; }
-	else
-	{
-		float p = _vuCalculateEATAN(vuDouble(VU->VF[_Fs_].UL[_Fsf_]));
-		VU->p.F = p;
-	}
+	float p = _vuCalculateEATAN(vuDouble(VU->VF[_Fs_].UL[_Fsf_]));
+
+	VU->p.F = p;
 }
 
 static __ri void _vuEATANxy(VURegs* VU)
 {
-	if (CHECK_VU_SOFT_MUL((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_DIVSQRT((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0)) { VU->p.UL = _vuCalculateAccurateEATAN(PS2Float(VU->VF[_Fs_].i.y).Div(PS2Float(VU->VF[_Fs_].i.x))).raw; }
-	else
+	float p = 0;
+
+	if (vuDouble(VU->VF[_Fs_].i.x) != 0)
 	{
-		float p = 0;
-		if (vuDouble(VU->VF[_Fs_].i.x) != 0)
-		{
-			p = _vuCalculateEATAN(vuDouble(VU->VF[_Fs_].i.y) / vuDouble(VU->VF[_Fs_].i.x));
-		}
-		VU->p.F = p;
+		p = _vuCalculateEATAN(vuDouble(VU->VF[_Fs_].i.y) / vuDouble(VU->VF[_Fs_].i.x));
 	}
+
+	VU->p.F = p;
 }
 
 static __ri void _vuEATANxz(VURegs* VU)
 {
-	if (CHECK_VU_SOFT_MUL((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_DIVSQRT((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0)) { VU->p.UL = _vuCalculateAccurateEATAN(PS2Float(VU->VF[_Fs_].i.z).Div(PS2Float(VU->VF[_Fs_].i.x))).raw; }
-	else
+	float p = 0;
+
+	if (vuDouble(VU->VF[_Fs_].i.x) != 0)
 	{
-		float p = 0;
-		if (vuDouble(VU->VF[_Fs_].i.x) != 0)
-		{
-			p = _vuCalculateEATAN(vuDouble(VU->VF[_Fs_].i.z) / vuDouble(VU->VF[_Fs_].i.x));
-		}
-		VU->p.F = p;
+		p = _vuCalculateEATAN(vuDouble(VU->VF[_Fs_].i.z) / vuDouble(VU->VF[_Fs_].i.x));
 	}
+
+	VU->p.F = p;
 }
 
 static __ri void _vuESUM(VURegs* VU)
 {
-	if (CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0)) { VU->p.UL = PS2Float(VU->VF[_Fs_].i.x).ESUM(PS2Float(VU->VF[_Fs_].i.y), PS2Float(VU->VF[_Fs_].i.z), PS2Float(VU->VF[_Fs_].i.w)).raw; }
-	else
-	{
-		float p = vuDouble(VU->VF[_Fs_].i.x) + vuDouble(VU->VF[_Fs_].i.y) + vuDouble(VU->VF[_Fs_].i.z) + vuDouble(VU->VF[_Fs_].i.w);
-		VU->p.F = p;
-	}
+	float p = vuDouble(VU->VF[_Fs_].i.x) + vuDouble(VU->VF[_Fs_].i.y) + vuDouble(VU->VF[_Fs_].i.z) + vuDouble(VU->VF[_Fs_].i.w);
+
+	VU->p.F = p;
 }
 
 static __ri void _vuERCPR(VURegs* VU)
@@ -2103,33 +2072,25 @@ static __ri void _vuERSQRT(VURegs* VU)
 
 static __ri void _vuESIN(VURegs* VU)
 {
-	if (CHECK_VU_SOFT_MUL((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0)) { VU->p.UL = PS2Float(VU->VF[_Fs_].UL[_Fsf_]).ESIN().raw; }
-	else
-	{
-		float sinconsts[5] = {1.0f, -0.166666567325592f, 0.008333025500178f, -0.000198074136279f, 0.000002601886990f};
-		float p = vuDouble(VU->VF[_Fs_].UL[_Fsf_]);
+	float sinconsts[5] = {1.0f, -0.166666567325592f, 0.008333025500178f, -0.000198074136279f, 0.000002601886990f};
+	float p = vuDouble(VU->VF[_Fs_].UL[_Fsf_]);
 
-		p = (sinconsts[0] * p) + (sinconsts[1] * pow(p, 3)) + (sinconsts[2] * pow(p, 5)) + (sinconsts[3] * pow(p, 7)) + (sinconsts[4] * pow(p, 9));
-		VU->p.F = vuDouble(*(u32*)&p);
-	}
+	p = (sinconsts[0] * p) + (sinconsts[1] * pow(p, 3)) + (sinconsts[2] * pow(p, 5)) + (sinconsts[3] * pow(p, 7)) + (sinconsts[4] * pow(p, 9));
+	VU->p.F = vuDouble(*(u32*)&p);
 }
 
 static __ri void _vuEEXP(VURegs* VU)
 {
-	if (CHECK_VU_SOFT_MUL((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_DIVSQRT((VU == &VU1) ? 1 : 0) && CHECK_VU_SOFT_ADDSUB((VU == &VU1) ? 1 : 0)) { VU->p.UL = PS2Float(VU->VF[_Fs_].UL[_Fsf_]).EEXP().raw; }
-	else
-	{
-		float consts[6] = {0.249998688697815f, 0.031257584691048f, 0.002591371303424f,
-			0.000171562001924f, 0.000005430199963f, 0.000000690600018f};
-		float p = vuDouble(VU->VF[_Fs_].UL[_Fsf_]);
+	float consts[6] = {0.249998688697815f, 0.031257584691048f, 0.002591371303424f,
+		0.000171562001924f, 0.000005430199963f, 0.000000690600018f};
+	float p = vuDouble(VU->VF[_Fs_].UL[_Fsf_]);
 
-		p = 1.0f + (consts[0] * p) + (consts[1] * pow(p, 2)) + (consts[2] * pow(p, 3)) + (consts[3] * pow(p, 4)) + (consts[4] * pow(p, 5)) + (consts[5] * pow(p, 6));
-		p = pow(p, 4);
-		p = vuDouble(*(u32*)&p);
-		p = 1 / p;
+	p = 1.0f + (consts[0] * p) + (consts[1] * pow(p, 2)) + (consts[2] * pow(p, 3)) + (consts[3] * pow(p, 4)) + (consts[4] * pow(p, 5)) + (consts[5] * pow(p, 6));
+	p = pow(p, 4);
+	p = vuDouble(*(u32*)&p);
+	p = 1 / p;
 
-		VU->p.F = p;
-	}
+	VU->p.F = p;
 }
 
 static __ri void _vuXITOP(VURegs* VU)

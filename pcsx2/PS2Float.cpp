@@ -478,35 +478,9 @@ PS2Float PS2Float::Rsqrt(PS2Float other)
 	return result;
 }
 
-PS2Float PS2Float::ELENG(PS2Float y, PS2Float z)
-{
-	PS2Float ACC = Mul(*this);
-	ACC.MulAddAcc(y, y);
-	PS2Float p = ACC.MulAdd(z, z);
-	return p.Sqrt();
-}
-
 PS2Float PS2Float::ERCPR()
 {
 	return PS2Float(ONE).Div(*this);
-}
-
-PS2Float PS2Float::ERLENG(PS2Float y, PS2Float z)
-{
-	PS2Float ACC = Mul(*this);
-	ACC.MulAddAcc(y, y);
-	PS2Float p = ACC.MulAdd(z, z);
-	p = PS2Float(ONE).Rsqrt(p);
-	return p;
-}
-
-PS2Float PS2Float::ERSADD(PS2Float y, PS2Float z)
-{
-	PS2Float ACC = Mul(*this);
-	ACC.MulAddAcc(y, y);
-	PS2Float p = ACC.MulAdd(z, z);
-	p = PS2Float(ONE).Div(p);
-	return p;
 }
 
 PS2Float PS2Float::ESQRT()
@@ -519,94 +493,9 @@ PS2Float PS2Float::ESQUR()
 	return Mul(*this);
 }
 
-PS2Float PS2Float::ESUM(PS2Float y, PS2Float z, PS2Float w)
-{
-	PS2Float ACC = Mul(PS2Float(ONE));
-	ACC.MulAddAcc(y, PS2Float(ONE));
-	ACC.MulAddAcc(z, PS2Float(ONE));
-	return ACC.MulAdd(w, PS2Float(ONE));
-}
-
 PS2Float PS2Float::ERSQRT()
 {
 	return PS2Float(ONE).Rsqrt(*this);
-}
-
-PS2Float PS2Float::ESADD(PS2Float y, PS2Float z)
-{
-	PS2Float ACC = Mul(*this);
-	ACC.MulAddAcc(y, y);
-	return ACC.MulAdd(z, z);
-}
-
-PS2Float PS2Float::EEXP()
-{
-	float consts[6] = {0.249998688697815f, 0.031257584691048f, 0.002591371303424f,
-		0.000171562001924f, 0.000005430199963f, 0.000000690600018f};
-
-	PS2Float tmp1 = Mul(*this);
-	PS2Float ACC = Mul(PS2Float(consts[0]));
-	PS2Float tmp2 = tmp1.Mul(*this);
-	ACC.MulAddAcc(tmp1, PS2Float(consts[1]));
-	tmp1 = tmp2.Mul(*this);
-	ACC.MulAddAcc(tmp2, PS2Float(consts[2]));
-	tmp2 = tmp1.Mul(*this);
-	ACC.MulAddAcc(tmp1, PS2Float(consts[3]));
-	tmp1 = tmp2.Mul(*this);
-	ACC.MulAddAcc(tmp2, PS2Float(consts[4]));
-	ACC.MulAddAcc(PS2Float(ONE), PS2Float(ONE));
-	PS2Float p = ACC.MulAdd(tmp1, PS2Float(consts[5]));
-	p = p.Mul(p);
-	p = p.Mul(p);
-	p = PS2Float(ONE).Div(p);
-
-	return p;
-}
-
-PS2Float PS2Float::EATAN()
-{
-	float eatanconst[9] = {0.999999344348907f, -0.333298563957214f, 0.199465364217758f, -0.13085337519646f,
-		0.096420042216778f, -0.055909886956215f, 0.021861229091883f, -0.004054057877511f,
-		0.785398185253143f};
-
-	PS2Float tmp1 = Add(PS2Float(ONE));
-	PS2Float tmp2 = Sub(PS2Float(ONE));
-	*this = tmp2.Div(tmp1);
-	PS2Float tmp3 = Mul(*this);
-	PS2Float ACC = PS2Float(eatanconst[0]).Mul(*this);
-	tmp1 = tmp3.Mul(*this);
-	tmp2 = tmp1.Mul(tmp3);
-	ACC.MulAddAcc(tmp1, PS2Float(eatanconst[1]));
-	tmp1 = tmp2.Mul(tmp3);
-	ACC.MulAddAcc(tmp2, PS2Float(eatanconst[2]));
-	tmp2 = tmp1.Mul(tmp3);
-	ACC.MulAddAcc(tmp1, PS2Float(eatanconst[3]));
-	tmp1 = tmp2.Mul(tmp3);
-	ACC.MulAddAcc(tmp2, PS2Float(eatanconst[4]));
-	tmp2 = tmp1.Mul(tmp3);
-	ACC.MulAddAcc(tmp1, PS2Float(eatanconst[5]));
-	tmp1 = tmp2.Mul(tmp3);
-	ACC.MulAddAcc(tmp2, PS2Float(eatanconst[6]));
-	ACC.MulAddAcc(PS2Float(ONE), PS2Float(eatanconst[8]));
-
-	return ACC.MulAdd(tmp1, PS2Float(eatanconst[7]));
-}
-
-PS2Float PS2Float::ESIN()
-{
-	float sinconsts[5] = {1.0f, -0.166666567325592f, 0.008333025500178f, -0.000198074136279f, 0.000002601886990f};
-
-	PS2Float tmp3 = Mul(*this);
-	PS2Float ACC = Mul(PS2Float(sinconsts[0]));
-	PS2Float tmp1 = tmp3.Mul(*this);
-	PS2Float tmp2 = tmp1.Mul(tmp3);
-	ACC.MulAddAcc(tmp1, PS2Float(sinconsts[1]));
-	tmp1 = tmp2.Mul(tmp3);
-	ACC.MulAddAcc(tmp2, PS2Float(sinconsts[2]));
-	tmp2 = tmp1.Mul(tmp3);
-	ACC.MulAddAcc(tmp1, PS2Float(sinconsts[3]));
-
-	return ACC.MulAdd(tmp2, PS2Float(sinconsts[4]));
 }
 
 bool PS2Float::IsDenormalized()
