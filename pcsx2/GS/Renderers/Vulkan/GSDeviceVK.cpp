@@ -481,7 +481,7 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 	vkGetPhysicalDeviceQueueFamilyProperties(m_physical_device, &queue_family_count, queue_family_properties.data());
 	DevCon.WriteLn("%u vulkan queue families", queue_family_count);
 
-	std::vector<int> queue_family_users(queue_family_count, 0);
+	std::vector<uint32_t> queue_family_users(queue_family_count, 0);
 
 	m_graphics_queue_family_index = queue_family_count;
 	m_present_queue_family_index = queue_family_count;
@@ -528,7 +528,7 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 	else
 	{
 		// No spare queue? Try the graphics queue.
-		if ((queue_family_properties[m_graphics_queue_family_index].queueCount & VK_QUEUE_COMPUTE_BIT) &&
+		if ((queue_family_properties[m_graphics_queue_family_index].queueFlags & VK_QUEUE_COMPUTE_BIT) &&
 			(queue_family_properties[m_graphics_queue_family_index].timestampValidBits != 0))
 		{
 			m_spin_queue_family_index = m_graphics_queue_family_index;
@@ -647,7 +647,7 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 		if (spin_queue_index == 1)
 			queue_infos[1].pQueuePriorities = queue_priorities + 1;
 	}
-	else
+	else if (m_spin_queue_family_index != queue_family_count)
 	{
 		VkDeviceQueueCreateInfo& spin_queue_info = queue_infos[device_info.queueCreateInfoCount++];
 		spin_queue_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
