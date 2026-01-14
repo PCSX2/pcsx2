@@ -49,21 +49,28 @@ static __ri u32 VU_MAC_UPDATE( s32 shift, VURegs* VU, float f)
 
 static __ri u32 VU_MAC_UPDATE(s32 shift, VURegs* VU, PS2Float f)
 {
+	bool isUnderflow = false;
+	
 	u32 v = f.raw;
 
 	if (v & PS2Float::SIGNMASK)
 		VU->macflag |= 0x0010 << shift;
 	else
 		VU->macflag &= ~(0x0010 << shift);
+	
+	if (f.uf)
+	{
+		isUnderflow = true;
+		VU->macflag = (VU->macflag & ~(0x1000 << shift)) | (0x0101 << shift);
+	}
 
 	if (f.IsZero())
 	{
 		VU->macflag = (VU->macflag & ~(0x1100 << shift)) | (0x0001 << shift);
 		return v;
 	}
-	else if (f.uf) { VU->macflag = (VU->macflag & ~(0x1000 << shift)) | (0x0101 << shift); }
 	else if (f.of) { VU->macflag = (VU->macflag & ~(0x0101 << shift)) | (0x1000 << shift); }
-	else { VU->macflag = (VU->macflag & ~(0x1101 << shift)); }
+	else if (!isUnderflow) { VU->macflag = (VU->macflag & ~(0x1101 << shift)); }
 
 	return v;
 }

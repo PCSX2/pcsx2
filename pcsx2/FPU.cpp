@@ -338,33 +338,27 @@ void CTC1() {
 }
 
 void CVT_S() {
-	if (CHECK_FPU_SOFT_ADDSUB || CHECK_FPU_SOFT_MUL || CHECK_FPU_SOFT_DIVSQRT) { _FdValUl_ = PS2Float::Itof(0, _FsValSl_).raw; }
-	else
-	{
-		_FdValf_ = (float)_FsValSl_;
-		_FdValf_ = fpuDouble(_FdValUl_);
-	}
+	_FdValf_ = (float)_FsValSl_;
+	_FdValf_ = fpuDouble(_FdValUl_);
 }
 
 void CVT_W() {
-	if (CHECK_FPU_SOFT_ADDSUB || CHECK_FPU_SOFT_MUL || CHECK_FPU_SOFT_DIVSQRT) { _FdValSl_ = PS2Float::Ftoi(0, _FsValUl_); }
-	else if ( ( _FsValUl_ & 0x7F800000 ) <= 0x4E800000 ) { _FdValSl_ = (s32)_FsValf_; }
+	if ( ( _FsValUl_ & 0x7F800000 ) <= 0x4E800000 ) { _FdValSl_ = (s32)_FsValf_; }
 	else if ( ( _FsValUl_ & 0x80000000 ) == 0 ) { _FdValUl_ = 0x7fffffff; }
 	else { _FdValUl_ = 0x80000000; }
 }
 
 void DIV_S() {
-	if (CHECK_FPU_SOFT_DIVSQRT)
+	if (checkDivideByZero( _FdValUl_, _FtValUl_, _FsValUl_, FPUflagD | FPUflagSD, FPUflagI | FPUflagSI)) return;
+	else if (CHECK_FPU_SOFT_DIVSQRT)
 	{
 		PS2Float divres = fpuAccurateDiv(_FsValUl_, _FtValUl_);
 		_FdValUl_ = divres.raw;
-		if (checkDivideByZeroInvalidSoft(divres, FPUflagD | FPUflagSD, FPUflagI | FPUflagSI)) return;
 		if (checkOverflowUnderflowSoft(divres, FPUflagO | FPUflagSO, true)) return;
 		checkOverflowUnderflowSoft(divres, FPUflagU | FPUflagSU, false);
 	}
 	else
 	{
-		if (checkDivideByZero( _FdValUl_, _FtValUl_, _FsValUl_, FPUflagD | FPUflagSD, FPUflagI | FPUflagSI)) return;
 		_FdValf_ = fpuDouble( _FsValUl_ ) / fpuDouble( _FtValUl_ );
 		if (checkOverflow( _FdValUl_, 0)) return;
 		checkUnderflow( _FdValUl_, 0);

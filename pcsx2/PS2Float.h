@@ -25,25 +25,21 @@ public:
 	constexpr u8 Exponent() const { return (raw >> 23) & 0xFF; }
 	constexpr bool Sign() const { return ((raw >> 31) & 1) != 0; }
 
-	PS2Float(s32 value);
+	__fi PS2Float(s32 value);
 
-	PS2Float(u32 value);
+	__fi PS2Float(u32 value);
 
-	PS2Float(float value);
+	__fi PS2Float(float value);
 
-	PS2Float(bool sign, u8 exponent, u32 mantissa);
+	__fi PS2Float(bool sign, u8 exponent, u32 mantissa);
 
-	static PS2Float Max();
+	__fi static PS2Float Max();
 
-	static PS2Float Min();
+	__fi static PS2Float Min();
 
-	static PS2Float One();
+	__fi static PS2Float One();
 
-	static PS2Float MinOne();
-
-	static PS2Float Itof(s32 complement, s32 f1);
-
-	static s32 Ftoi(s32 complement, u32 f1);
+	__fi static PS2Float MinOne();
 
 	static u8 Clip(u32 f1, u32 f2, bool& cplus, bool& cminus);
 
