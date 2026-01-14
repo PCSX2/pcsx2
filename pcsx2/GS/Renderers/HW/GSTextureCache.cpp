@@ -3815,6 +3815,7 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 						}
 
 						const int height_adjust = ((((dst_end_block + 31) - t->m_TEX0.TBP0) >> 5) / std::max(t->m_TEX0.TBW, 1U)) * GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y;
+						bool delete_target = true;
 
 						if (height_adjust < t->m_unscaled_size.y)
 						{
@@ -3822,27 +3823,32 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 							t->m_valid.w -= height_adjust;
 							t->ResizeValidity(t->m_valid);
 
-							GSTexture* tex = (t->m_type == RenderTarget) ?
-							                     g_gs_device->CreateRenderTarget(t->m_texture->GetWidth(), t->m_texture->GetHeight(), GSTexture::Format::Color, true) :
-							                     g_gs_device->CreateDepthStencil(t->m_texture->GetWidth(), t->m_texture->GetHeight(), GSTexture::Format::DepthStencil, true);
-							if (tex)
+							if (!t->m_valid.rempty())
 							{
-								g_gs_device->CopyRect(t->m_texture, tex, GSVector4i(0, height_adjust * t->m_scale, t->m_texture->GetWidth(), t->m_texture->GetHeight()), 0, 0);
-								if (src && src->m_target && src->m_from_target == t)
+								delete_target = false;
+								GSTexture* tex = (t->m_type == RenderTarget) ?
+								                     g_gs_device->CreateRenderTarget(t->m_texture->GetWidth(), t->m_texture->GetHeight(), GSTexture::Format::Color, true) :
+								                     g_gs_device->CreateDepthStencil(t->m_texture->GetWidth(), t->m_texture->GetHeight(), GSTexture::Format::DepthStencil, true);
+								if (tex)
 								{
-									src->m_from_target = t;
-									src->m_texture = t->m_texture;
-									src->m_target_direct = false;
-									src->m_shared_texture = false;
+									g_gs_device->CopyRect(t->m_texture, tex, GSVector4i(0, height_adjust * t->m_scale, t->m_texture->GetWidth(), t->m_texture->GetHeight()), 0, 0);
+									if (src && src->m_target && src->m_from_target == t)
+									{
+										src->m_from_target = t;
+										src->m_texture = t->m_texture;
+										src->m_target_direct = false;
+										src->m_shared_texture = false;
+									}
+									else
+									{
+										g_gs_device->Recycle(t->m_texture);
+									}
+									t->m_texture = tex;
 								}
-								else
-								{
-									g_gs_device->Recycle(t->m_texture);
-								}
-								t->m_texture = tex;
 							}
 						}
-						else
+						
+						if (delete_target)
 						{
 							if (src && src->m_target && src->m_from_target == t)
 							{
