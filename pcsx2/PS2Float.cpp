@@ -136,44 +136,6 @@ static u64 MulMantissa(u32 a, u32 b)
 // Float Processor
 //****************************************************************
 
-PS2Float::PS2Float(s32 value)
-	: raw((u32)value)
-{}
-
-PS2Float::PS2Float(u32 value)
-	: raw(value)
-{}
-
-PS2Float::PS2Float(float value)
-	: raw(std::bit_cast<u32>(value))
-{}
-
-PS2Float::PS2Float(bool sign, u8 exponent, u32 mantissa)
-	: raw((sign ? 1u : 0u) << 31 |
-		(u32)(exponent << MANTISSA_BITS) |
-		(mantissa & 0x7FFFFF))
-{}
-
-PS2Float PS2Float::Max()
-{
-	return PS2Float(MAX_FLOATING_POINT_VALUE);
-}
-
-PS2Float PS2Float::Min()
-{
-	return PS2Float(MIN_FLOATING_POINT_VALUE);
-}
-
-PS2Float PS2Float::One()
-{
-	return PS2Float(ONE);
-}
-
-PS2Float PS2Float::MinOne()
-{
-	return PS2Float(MIN_ONE);
-}
-
 PS2Float PS2Float::Add(PS2Float addend)
 {
 	if (IsDenormalized() || addend.IsDenormalized())

@@ -25,21 +25,47 @@ public:
 	constexpr u8 Exponent() const { return (raw >> 23) & 0xFF; }
 	constexpr bool Sign() const { return ((raw >> 31) & 1) != 0; }
 
-	__fi PS2Float(s32 value);
+	__fi PS2Float(s32 value)
+		: raw((u32)value)
+	{
+	}
 
-	__fi PS2Float(u32 value);
+	__fi PS2Float(u32 value)
+		: raw(value)
+	{
+	}
 
-	__fi PS2Float(float value);
+	__fi PS2Float(float value)
+		: raw(std::bit_cast<u32>(value))
+	{
+	}
 
-	__fi PS2Float(bool sign, u8 exponent, u32 mantissa);
+	__fi PS2Float(bool sign, u8 exponent, u32 mantissa)
+		: raw((sign ? 1u : 0u) << 31 |
+			  (u32)(exponent << MANTISSA_BITS) |
+			  (mantissa & 0x7FFFFF))
+	{
+	}
 
-	__fi static PS2Float Max();
+	__fi static PS2Float Max()
+	{
+		return PS2Float(MAX_FLOATING_POINT_VALUE);
+	}
 
-	__fi static PS2Float Min();
+	__fi static PS2Float Min()
+	{
+		return PS2Float(MIN_FLOATING_POINT_VALUE);
+	}
 
-	__fi static PS2Float One();
+	__fi static PS2Float One()
+	{
+		return PS2Float(ONE);
+	}
 
-	__fi static PS2Float MinOne();
+	__fi static PS2Float MinOne()
+	{
+		return PS2Float(MIN_ONE);
+	}
 
 	static u8 Clip(u32 f1, u32 f2, bool& cplus, bool& cminus);
 
