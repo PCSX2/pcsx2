@@ -1237,7 +1237,17 @@ void GSDevice11::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 		return;
 	}
 
+	const GSVector4i src_rect(0, 0, sTex->GetWidth(), sTex->GetHeight());
 	const GSVector4i dst_rect(0, 0, dTex->GetWidth(), dTex->GetHeight());
+	const bool src_dst_rect_match = src_rect.eq(dst_rect);
+
+	// Sizes must match for full depth copies when no partial copies are supported.
+	if (sTex->IsDepthStencil() && !src_dst_rect_match)
+	{
+		GL_INS("D3D11: CopyRect rect mismatch for full depth copy.");
+		return;
+	}
+
 	const bool full_draw_copy = sTex->IsDepthStencil() || dst_rect.eq(r);
 
 	// Source is cleared, if destination is a render target, we can carry the clear forward.
@@ -1259,8 +1269,7 @@ void GSDevice11::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 	// DX11 doesn't support partial depth copy so we need to
 	// either pass a nullptr D3D11_BOX for a full depth copy or use CopyResource instead.
 	// Optimization: Use CopyResource for depth copies or full rect color copies, it's faster than CopySubresourceRegion.
-	const GSVector4i src_rect(0, 0, sTex->GetWidth(), sTex->GetHeight());
-	const bool full_rt_copy = sTex->IsDepthStencil() || (destX == 0 && destY == 0 && r.eq(src_rect) && src_rect.eq(dst_rect));
+	const bool full_rt_copy = src_dst_rect_match && (sTex->IsDepthStencil() || (destX == 0 && destY == 0 && r.eq(src_rect)));
 	if (full_rt_copy)
 	{
 		m_ctx->CopyResource(*static_cast<GSTexture11*>(dTex), *static_cast<GSTexture11*>(sTex));
