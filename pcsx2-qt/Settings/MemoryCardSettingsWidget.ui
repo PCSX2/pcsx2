@@ -175,22 +175,6 @@
      </layout>
     </widget>
    </item>
-   <item>
-    <widget class="QGroupBox" name="settingsGroupBox">
-     <property name="title">
-      <string>Settings</string>
-     </property>
-     <layout class="QGridLayout" name="gridLayout_3">
-      <item row="0" column="0">
-       <widget class="QCheckBox" name="automaticManagement">
-        <property name="text">
-         <string>Automatically manage saves based on running game</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
   </layout>
  </widget>
  <customwidgets>
@@ -211,7 +195,6 @@
   <tabstop>renameCard</tabstop>
   <tabstop>convertCard</tabstop>
   <tabstop>deleteCard</tabstop>
-  <tabstop>automaticManagement</tabstop>
  </tabstops>
  <resources/>
  <connections/>

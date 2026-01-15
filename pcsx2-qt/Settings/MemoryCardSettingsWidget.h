@@ -9,6 +9,7 @@
 #include <QtWidgets/QTreeWidget>
 #include <QtWidgets/QToolButton>
 #include <QtWidgets/QListWidget>
+#include <QtWidgets/QCheckBox>
 
 #include <array>
 #include <optional>

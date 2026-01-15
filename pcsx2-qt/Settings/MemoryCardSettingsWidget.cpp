@@ -40,7 +40,6 @@ MemoryCardSettingsWidget::MemoryCardSettingsWidget(SettingsWindow* settings_dial
 
 	SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.directory, m_ui.browse, m_ui.open, m_ui.reset, "Folders",
 		"MemoryCards", Path::Combine(EmuFolders::DataRoot, "memcards"));
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.automaticManagement, "EmuCore", "McdFolderAutoManage", true);
 
 	setupAdditionalUi();
 
@@ -58,11 +57,6 @@ MemoryCardSettingsWidget::MemoryCardSettingsWidget(SettingsWindow* settings_dial
 	connect(m_ui.deleteCard, &QPushButton::clicked, this, &MemoryCardSettingsWidget::deleteCard);
 
 	refresh();
-
-	dialog()->registerWidgetHelp(m_ui.automaticManagement, tr("Automatically manage saves based on running game"),
-		tr("Checked"),
-		tr("(Folder type only / Card size: Auto) Loads only the relevant booted game saves, ignoring others. Avoids "
-		   "running out of space for saves."));
 }
 
 MemoryCardSettingsWidget::~MemoryCardSettingsWidget() = default;
