@@ -611,7 +611,7 @@ void FileMcd_EmuOpen()
 
 
 	Mcd::impl.Open();
-	Mcd::implFolder.SetFiltering(EmuConfig.McdFolderAutoManage);
+	Mcd::implFolder.SetFiltering(true);
 	Mcd::implFolder.Open();
 }
 
@@ -823,7 +823,7 @@ int FileMcd_ReIndex(uint port, uint slot, const std::string& filter)
 		//	return Mcd::impl.ReIndex( combinedSlot, filter );
 		//	break;
 		case MemoryCardType::Folder:
-			if (!Mcd::implFolder.ReIndex(combinedSlot, EmuConfig.McdFolderAutoManage, filter))
+			if (!Mcd::implFolder.ReIndex(combinedSlot, true, filter))
 				return -1;
 			break;
 		default:
@@ -930,7 +930,7 @@ std::vector<AvailableMcdInfo> FileMcd_GetAvailableCards(bool include_in_use_card
 			Pcsx2Config::McdOptions config;
 			config.Enabled = true;
 			config.Type = MemoryCardType::Folder;
-			sourceFolderMemoryCard.Open(fd.FileName, config, (8 * 1024 * 1024) / FolderMemoryCard::ClusterSize, EmuConfig.McdFolderAutoManage, "");
+			sourceFolderMemoryCard.Open(fd.FileName, config, (8 * 1024 * 1024) / FolderMemoryCard::ClusterSize, true, "");
 
 			mcds.push_back({std::move(basename), std::move(fd.FileName), fd.ModificationTime,
 				MemoryCardType::Folder, MemoryCardFileType::Unknown, 0u, sourceFolderMemoryCard.IsFormatted()});

@@ -2993,8 +2993,6 @@ void VMManager::CheckForMemoryCardConfigChanges(const Pcsx2Config& old_config)
 		}
 	}
 
-	changed |= (EmuConfig.McdFolderAutoManage != old_config.McdFolderAutoManage);
-
 	if (!changed)
 		return;
 
