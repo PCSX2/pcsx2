@@ -60491,7 +60491,6 @@ SLPS-25574:
     halfPixelOffset: 2 # Aligns effects.
     nativeScaling: 1 # Helps align effects.
     textureInsideRT: 1 # Fixes channel shuffles.
-    preloadFrameData: 1 # Fixes menu graphics.
     autoFlush: 1 # Fixes motion blur.
     minimumBlendingLevel: 2 # Improves post effects.
 SLPS-25575:
@@ -61216,7 +61215,6 @@ SLPS-25682:
     halfPixelOffset: 2 # Aligns effects.
     nativeScaling: 1 # Helps align effects.
     textureInsideRT: 1 # Fixes channel shuffles.
-    preloadFrameData: 1 # Fixes menu graphics.
     autoFlush: 1 # Fixes motion blur.
     minimumBlendingLevel: 2 # Improves post effects.
 SLPS-25683:
@@ -61846,7 +61844,6 @@ SLPS-25787:
     halfPixelOffset: 2 # Aligns effects.
     nativeScaling: 1 # Helps align effects.
     textureInsideRT: 1 # Fixes channel shuffles.
-    preloadFrameData: 1 # Fixes menu graphics.
     autoFlush: 1 # Fixes motion blur.
     minimumBlendingLevel: 2 # Improves post effects.
 SLPS-25788:
@@ -62258,7 +62255,6 @@ SLPS-25852:
     halfPixelOffset: 2 # Aligns effects.
     nativeScaling: 1 # Helps align effects.
     textureInsideRT: 1 # Fixes channel shuffles.
-    preloadFrameData: 1 # Fixes menu graphics.
     autoFlush: 1 # Fixes motion blur.
     minimumBlendingLevel: 2 # Improves post effects.
 SLPS-25853:
