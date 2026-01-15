@@ -137,6 +137,15 @@ bool GSDevice12::SupportsTextureFormat(DXGI_FORMAT format)
 	       (support.Support1 & required) == required;
 }
 
+bool GSDevice12::SupportsProgrammableSamplePositions()
+{
+	D3D12_FEATURE_DATA_D3D12_OPTIONS2 options = {};
+	if (SUCCEEDED(m_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS2, &options, sizeof(options))))
+		return options.ProgrammableSamplePositionsTier != D3D12_PROGRAMMABLE_SAMPLE_POSITIONS_TIER_NOT_SUPPORTED;
+
+	return false;
+}
+
 u32 GSDevice12::GetAdapterVendorID() const
 {
 	if (!m_adapter)
@@ -1250,6 +1259,9 @@ bool GSDevice12::CheckFeatures(const u32& vendor_id)
 
 	m_max_texture_size = D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION;
 
+	m_programmable_sample_positions = SupportsProgrammableSamplePositions();
+	Console.WriteLnFmt("D3D12: Programmable Sample Position: {}", m_programmable_sample_positions ? "Supported" : "Not Supported");
+
 	BOOL allow_tearing_supported = false;
 	const HRESULT hr = m_dxgi_factory->CheckFeatureSupport(
 		DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allow_tearing_supported, sizeof(allow_tearing_supported));
@@ -1351,8 +1363,18 @@ void GSDevice12::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 
 	GSTexture12* const sTex12 = static_cast<GSTexture12*>(sTex);
 	GSTexture12* const dTex12 = static_cast<GSTexture12*>(dTex);
+	const GSVector4i src_rect(0, 0, sTex12->GetWidth(), sTex12->GetHeight());
 	const GSVector4i dst_rect(0, 0, dTex12->GetWidth(), dTex12->GetHeight());
-	const bool full_draw_copy = dst_rect.eq(r);
+	const bool src_dst_rect_match = src_rect.eq(dst_rect);
+
+	// Sizes must match for full depth copies when no partial copies are supported.
+	if (sTex12->IsDepthStencil() && !src_dst_rect_match && !m_programmable_sample_positions)
+	{
+		GL_INS("D3D12: CopyRect rect mismatch for full depth copy.");
+		return;
+	}
+
+	const bool full_draw_copy = (sTex->IsDepthStencil() && !m_programmable_sample_positions) || dst_rect.eq(r);
 
 	// Source is cleared, if destination is a render target, we can carry the clear forward.
 	if (sTex12->GetState() == GSTexture::State::Cleared)
@@ -1414,8 +1436,8 @@ void GSDevice12::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 	dstloc.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
 	dstloc.SubresourceIndex = 0;
 
-	const GSVector4i src_rect(0, 0, sTex->GetWidth(), sTex->GetHeight());
-	const bool full_rt_copy = destX == 0 && destY == 0 && r.eq(src_rect) && src_rect.eq(dst_rect);
+	// DX12 requires ProgrammableSamplePositions tier 1 to support partial depth copies, otherwise fallback to full depth copies.
+	const bool full_rt_copy = src_dst_rect_match && ((sTex12->IsDepthStencil() && !m_programmable_sample_positions) || (destX == 0 && destY == 0 && r.eq(src_rect)));
 	if (full_rt_copy)
 	{
 		GetCommandList()->CopyResource(dTex12->GetResource(), sTex12->GetResource());

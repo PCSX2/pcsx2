@@ -99,6 +99,9 @@ public:
 	/// Test for support for the specified texture format.
 	bool SupportsTextureFormat(DXGI_FORMAT format);
 
+	// Partial depth copies require ProgrammableSamplePositions tier 1.
+	bool SupportsProgrammableSamplePositions();
+
 	enum class WaitType
 	{
 		None, ///< Don't wait (async)
@@ -170,6 +173,7 @@ private:
 	double m_timestamp_frequency = 0.0;
 	float m_accumulated_gpu_time = 0.0f;
 	bool m_gpu_timing_enabled = false;
+	bool m_programmable_sample_positions = false;
 
 	D3D12DescriptorHeapManager m_descriptor_heap_manager;
 	D3D12DescriptorHeapManager m_rtv_heap_manager;
