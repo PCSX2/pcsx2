@@ -6,6 +6,7 @@
 #include "vtlb.h"
 #include "MemoryTypes.h"
 #include "common/BitUtils.h"
+#include "common/MemoryInterface.h"
 
 // This is a table of default virtual map addresses for ps2vm components.  These locations
 // are provided and used to assist in debugging and possibly hacking; as it makes it possible
@@ -189,3 +190,23 @@ static __fi void memWrite128(u32 mem, const mem128_t& val) { vtlb_memWrite128(me
 
 extern void ba0W16(u32 mem, u16 value);
 extern u16 ba0R16(u32 mem);
+
+class EEMemoryInterface final : public MemoryInterface
+{
+public:
+	u8 Read8(u32 address, bool* valid = nullptr) override;
+	u16 Read16(u32 address, bool* valid = nullptr) override;
+	u32 Read32(u32 address, bool* valid = nullptr) override;
+	u64 Read64(u32 address, bool* valid = nullptr) override;
+	u128 Read128(u32 address, bool* valid = nullptr) override;
+	bool ReadBytes(u32 address, void* dest, u32 size) override;
+
+	bool Write8(u32 address, u8 value) override;
+	bool Write16(u32 address, u16 value) override;
+	bool Write32(u32 address, u32 value) override;
+	bool Write64(u32 address, u64 value) override;
+	bool Write128(u32 address, u128 value) override;
+	bool WriteBytes(u32 address, void* src, u32 size) override;
+
+	bool CompareBytes(u32 address, void* src, u32 size) override;
+};

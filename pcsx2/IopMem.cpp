@@ -537,3 +537,81 @@ std::string iopMemReadString(u32 mem, int maxlen)
 
 	return ret;
 }
+
+u8 IOPMemoryInterface::Read8(u32 address, bool* valid)
+{
+	if (valid)
+		*valid = true;
+	return iopMemRead8(address);
+}
+
+u16 IOPMemoryInterface::Read16(u32 address, bool* valid)
+{
+	if (valid)
+		*valid = true;
+	return iopMemRead16(address);
+}
+
+u32 IOPMemoryInterface::Read32(u32 address, bool* valid)
+{
+	if (valid)
+		*valid = true;
+	return iopMemRead32(address);
+}
+
+u64 IOPMemoryInterface::Read64(u32 address, bool* valid)
+{
+	if (valid)
+		*valid = false;
+	return 0;
+}
+
+u128 IOPMemoryInterface::Read128(u32 address, bool* valid)
+{
+	if (valid)
+		*valid = false;
+	return u128::From64(0);
+}
+
+bool IOPMemoryInterface::ReadBytes(u32 address, void* dest, u32 size)
+{
+	return iopMemSafeReadBytes(address, dest, size);
+}
+
+bool IOPMemoryInterface::Write8(u32 address, u8 value)
+{
+	iopMemWrite8(address, value);
+	return true;
+}
+
+bool IOPMemoryInterface::Write16(u32 address, u16 value)
+{
+	iopMemWrite16(address, value);
+	return true;
+}
+
+bool IOPMemoryInterface::Write32(u32 address, u32 value)
+{
+	iopMemWrite32(address, value);
+	return true;
+}
+
+bool IOPMemoryInterface::Write64(u32 address, u64 value)
+{
+	return false;
+
+}
+bool IOPMemoryInterface::Write128(u32 address, u128 value)
+{
+	return false;
+}
+
+bool IOPMemoryInterface::WriteBytes(u32 address, void* src, u32 size)
+{
+	return iopMemSafeWriteBytes(address, src, size);
+}
+
+bool IOPMemoryInterface::CompareBytes(u32 address, void* src, u32 size)
+{
+	return iopMemSafeCmpBytes(address, src, size) != 0;
+}

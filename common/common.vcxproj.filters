@@ -103,6 +103,9 @@
     <ClCompile Include="HTTPDownloaderWinHTTP.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MemoryInterface.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="MemorySettingsInterface.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -301,6 +304,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="HeterogeneousContainers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryInterface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MemorySettingsInterface.h">

@@ -1246,3 +1246,85 @@ bool SaveStateBase::memFreeze(Error* error)
 
 	return IsOkay();
 }
+
+u8 EEMemoryInterface::Read8(u32 address, bool* valid)
+{
+	if (valid)
+		*valid = true;
+	return memRead8(address);
+}
+
+u16 EEMemoryInterface::Read16(u32 address, bool* valid)
+{
+	if (valid)
+		*valid = true;
+	return memRead16(address);
+}
+
+u32 EEMemoryInterface::Read32(u32 address, bool* valid)
+{
+	if (valid)
+		*valid = true;
+	return memRead32(address);
+}
+
+u64 EEMemoryInterface::Read64(u32 address, bool* valid)
+{
+	if (valid)
+		*valid = true;
+	return memRead64(address);
+}
+
+u128 EEMemoryInterface::Read128(u32 address, bool* valid)
+{
+	u128 value;
+	memRead128(address, value);
+	if (valid)
+		*valid = true;
+	return value;
+}
+
+bool EEMemoryInterface::ReadBytes(u32 address, void* dest, u32 size)
+{
+	return vtlb_memSafeReadBytes(address, dest, size);
+}
+
+bool EEMemoryInterface::Write8(u32 address, u8 value)
+{
+	memWrite8(address, value);
+	return true;
+}
+
+bool EEMemoryInterface::Write16(u32 address, u16 value)
+{
+	memWrite16(address, value);
+	return true;
+}
+
+bool EEMemoryInterface::Write32(u32 address, u32 value)
+{
+	memWrite32(address, value);
+	return true;
+}
+
+bool EEMemoryInterface::Write64(u32 address, u64 value)
+{
+	memWrite64(address, value);
+	return true;
+
+}
+bool EEMemoryInterface::Write128(u32 address, u128 value)
+{
+	memWrite128(address, value);
+	return true;
+}
+
+bool EEMemoryInterface::WriteBytes(u32 address, void* src, u32 size)
+{
+	return vtlb_memSafeWriteBytes(address, src, size);
+}
+
+bool EEMemoryInterface::CompareBytes(u32 address, void* src, u32 size)
+{
+	return vtlb_memSafeCmpBytes(address, src, size) != 0;
+}
