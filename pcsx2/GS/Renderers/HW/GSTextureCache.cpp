@@ -4993,16 +4993,6 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 		return false;
 	}
 
-	// DX11/12 is a bit lame and can't partial copy depth targets. We could do this with a blit instead,
-	// but so far haven't seen anything which needs it.
-	const GSRendererType renderer = GSGetCurrentRenderer();
-	const bool renderer_is_directx = (renderer == GSRendererType::DX11 || renderer == GSRendererType::DX12);
-	if (renderer_is_directx)
-	{
-		if (spsm_s.depth || dpsm_s.depth)
-			return false;
-	}
-
 	bool req_resize = false;
 
 	// Save for later in case of page copy.
@@ -5176,7 +5166,12 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 	}
 
 	// If the copies overlap, this is a validation error, so we need to copy to a temporary texture first.
-	// DirectX also can't copy to the same texture it's reading from (except potentially with enhanced barriers).
+	// Direct3D11 can't do partial depth copies so use a blit shader copy instead.
+	// Direct3D12 can do partial depth copies but only with ProgrammableSamplePositions tier 1 so use blit shader copy instead.
+	// Direct3D11/12 can't copy to the same texture it's reading from (except potentially with enhanced barriers with D3D12).
+	// Performance is about the same between a gpu and shader copy so just always use shader copy to reduce complexity.
+	const GSRendererType renderer = GSGetCurrentRenderer();
+	const bool renderer_is_directx = (renderer == GSRendererType::DX11 || renderer == GSRendererType::DX12);
 	if (SBP == DBP && (!(GSVector4i(sx, sy, sx + w, sy + h).rintersect(GSVector4i(dx, dy, dx + w, dy + h))).rempty() || renderer_is_directx))
 	{
 		GSTexture* tmp_texture = src->m_texture->IsDepthStencil() ?
@@ -5193,6 +5188,7 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 			const GSVector4 src_rect = GSVector4(scaled_sx, scaled_sy, scaled_sx + scaled_w, scaled_sy + scaled_h);
 			const GSVector4 tmp_rect = src_rect / (GSVector4(tmp_texture->GetSize()).xyxy());
 			const GSVector4 dst_rect = GSVector4(scaled_dx, scaled_dy, (scaled_dx + scaled_w), (scaled_dy + scaled_h));
+			g_perfmon.Put(GSPerfMon::TextureCopies, 2);
 			g_gs_device->StretchRect(src->m_texture, tmp_rect, tmp_texture, src_rect, ShaderConvert::DEPTH_COPY, false);
 			g_gs_device->StretchRect(tmp_texture, tmp_rect, dst->m_texture, dst_rect, ShaderConvert::DEPTH_COPY, false);
 		}
@@ -5203,6 +5199,7 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 				const GSVector4 src_rect = GSVector4(scaled_sx, scaled_sy, scaled_sx + scaled_w, scaled_sy + scaled_h);
 				const GSVector4 tmp_rect = src_rect / (GSVector4(tmp_texture->GetSize()).xyxy());
 				const GSVector4 dst_rect = GSVector4(scaled_dx, scaled_dy, (scaled_dx + scaled_w), (scaled_dy + scaled_h));
+				g_perfmon.Put(GSPerfMon::TextureCopies, 2);
 				g_gs_device->StretchRect(src->m_texture, tmp_rect, tmp_texture, src_rect, false, false, false, true);
 				g_gs_device->StretchRect(tmp_texture, tmp_rect, dst->m_texture, dst_rect, false, false, false, true);
 			}
@@ -5224,12 +5221,13 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 	}
 	else
 	{
+		const GSVector4 scaled_src_rect = GSVector4(scaled_sx, scaled_sy, scaled_sx + scaled_w, scaled_sy + scaled_h);
+		const GSVector4 src_rect = scaled_src_rect / (GSVector4(src->m_texture->GetSize()).xyxy());
 		if (SPSM == PSMT8H && SPSM == DPSM)
 		{
-			ShaderConvert shader = ShaderConvert::COPY;
-
-			const GSVector4 src_rect = GSVector4(scaled_sx, scaled_sy, scaled_sx + scaled_w, scaled_sy + scaled_h) / (GSVector4(src->m_texture->GetSize()).xyxy());
+			const ShaderConvert shader = ShaderConvert::COPY;
 			const GSVector4 dst_rect = GSVector4(scaled_dx, scaled_dy, (scaled_dx + scaled_w), (scaled_dy + scaled_h));
+			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 			g_gs_device->StretchRect(src->m_texture, src_rect, dst->m_texture, dst_rect, false, false, false, true, shader);
 		}
 		else if (src->m_type != dst->m_type)
@@ -5247,14 +5245,18 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 				default:
 					break;
 			}
-			const GSVector4 src_rect = GSVector4(scaled_sx, scaled_sy, scaled_sx + scaled_w, scaled_sy + scaled_h) / (GSVector4(src->m_texture->GetSize()).xyxy());
-			g_gs_device->StretchRect(src->m_texture, src_rect, dst->m_texture, GSVector4(scaled_sx, scaled_sy, scaled_sx + scaled_w, scaled_sy + scaled_h), shader, false);
+			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+			g_gs_device->StretchRect(src->m_texture, src_rect, dst->m_texture, scaled_src_rect, shader, false);
+		}
+		else if (src->m_texture->IsDepthStencil())
+		{
+			const GSVector4 dst_rect = GSVector4(scaled_dx, scaled_dy, (scaled_dx + scaled_w), (scaled_dy + scaled_h));
+			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+			g_gs_device->StretchRect(src->m_texture, src_rect, dst->m_texture, dst_rect, ShaderConvert::DEPTH_COPY, false);
 		}
 		else
 		{
-			g_gs_device->CopyRect(src->m_texture, dst->m_texture,
-				GSVector4i(scaled_sx, scaled_sy, scaled_sx + scaled_w, scaled_sy + scaled_h),
-				scaled_dx, scaled_dy);
+			g_gs_device->CopyRect(src->m_texture, dst->m_texture, static_cast<GSVector4i>(scaled_src_rect), scaled_dx, scaled_dy);
 		}
 	}
 
