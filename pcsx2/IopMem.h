@@ -5,6 +5,8 @@
 
 #include "MemoryTypes.h"
 
+#include "common/MemoryInterface.h"
+
 #include <string>
 
 extern uptr *psxMemWLUT;
@@ -118,3 +120,23 @@ namespace IopMemory
 	extern void iopHwWrite32_Page3( u32 iopaddr, mem32_t data );
 	extern void iopHwWrite32_Page8( u32 iopaddr, mem32_t data );
 }
+
+class IOPMemoryInterface final : public MemoryInterface
+{
+public:
+	u8 Read8(u32 address, bool* valid = nullptr) override;
+	u16 Read16(u32 address, bool* valid = nullptr) override;
+	u32 Read32(u32 address, bool* valid = nullptr) override;
+	u64 Read64(u32 address, bool* valid = nullptr) override;
+	u128 Read128(u32 address, bool* valid = nullptr) override;
+	bool ReadBytes(u32 address, void* dest, u32 size) override;
+
+	bool Write8(u32 address, u8 value) override;
+	bool Write16(u32 address, u16 value) override;
+	bool Write32(u32 address, u32 value) override;
+	bool Write64(u32 address, u64 value) override;
+	bool Write128(u32 address, u128 value) override;
+	bool WriteBytes(u32 address, void* src, u32 size) override;
+
+	bool CompareBytes(u32 address, void* src, u32 size) override;
+};
