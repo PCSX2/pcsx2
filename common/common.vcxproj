@@ -62,6 +62,7 @@
     </ClCompile>
     <ClCompile Include="HTTPDownloaderWinHTTP.cpp" />
     <ClCompile Include="MD5Digest.cpp" />
+    <ClCompile Include="MemoryInterface.cpp" />
     <ClCompile Include="MemorySettingsInterface.cpp" />
     <ClCompile Include="ProgressCallback.cpp" />
     <ClCompile Include="ReadbackSpinManager.cpp" />
@@ -141,6 +142,7 @@
     </ClInclude>
     <ClInclude Include="HTTPDownloaderWinHTTP.h" />
     <ClInclude Include="MD5Digest.h" />
+    <ClInclude Include="MemoryInterface.h" />
     <ClInclude Include="MemorySettingsInterface.h" />
     <ClInclude Include="ProgressCallback.h" />
     <ClInclude Include="ScopedGuard.h" />
