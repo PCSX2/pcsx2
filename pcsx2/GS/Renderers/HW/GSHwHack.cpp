@@ -39,15 +39,77 @@ static bool s_nativeres;
 
 bool GSHwHack::GSC_IRem(GSRendererHW& r, int& skip)
 {
+	static bool first_shuffle = false;
+
+	if (skip > 0)
+	{
+		if (skip == 1 && first_shuffle)
+		{
+			first_shuffle = false;
+
+			GIFRegTEX0 RTLookup = GIFRegTEX0::Create(RTBP0, RFBW, RFPSM);
+			GSTextureCache::Source* src = g_texture_cache->LookupSource(true, RTLookup, r.m_cached_ctx.TEXA, r.m_cached_ctx.CLAMP, GSVector4i(0, 0, 1, 1), nullptr, true, false, r.m_cached_ctx.FRAME, true, true);
+
+			GSTextureCache::Target* rt = g_texture_cache->LookupTarget(GIFRegTEX0::Create(RTBP0, RFBW, RFPSM),
+				GSVector2i(1, 1), r.GetTextureScaleFactor(), GSTextureCache::RenderTarget, true, 0, false, false, true, true, GSVector4i(0, 0, 1, 1), true, false, true, src);
+
+			if (!rt)
+				return false;
+
+			GSLocalMemory::psm_t rt_psm = GSLocalMemory::m_psm[RFPSM];
+			int page_offset = (RTBP0 - rt->m_TEX0.TBP0) >> 5;
+			int vertical_offset = page_offset / std::max(rt->m_TEX0.TBW, 1U) * rt_psm.pgs.y;
+			int horizontal_offset = page_offset % std::max(rt->m_TEX0.TBW, 1U) * rt_psm.pgs.x;
+
+			GSVector4i draw_size = GSVector4i(0, 0, 64, 32) + GSVector4i(horizontal_offset, vertical_offset, horizontal_offset, vertical_offset);
+			rt->UnscaleRTAlpha();
+
+			// We need the original red back now for the next channel shuffle.
+			GSHWDrawConfig& config = r.BeginHLEHardwareDraw(
+				rt->GetTexture(), nullptr, rt->GetScale(), rt->GetTexture(), rt->GetScale(), draw_size);
+			config.ps.shuffle = 1;
+			config.ps.dst_fmt = GSLocalMemory::PSM_FMT_32;
+			config.ps.write_rg = 0;
+			config.ps.shuffle_same = 0;
+			config.ps.real16src = 0;
+			config.ps.shuffle_across = 1;
+			config.ps.process_rg = r.SHUFFLE_READWRITE;
+			config.ps.process_ba = r.SHUFFLE_READWRITE;
+			config.colormask.wrgba = 0;
+			config.colormask.wr = 1;
+			config.colormask.wb = 1;
+			config.ps.rta_correction = 0;
+			config.ps.rta_source_correction = 0;
+			config.ps.tfx = TFX_DECAL;
+			config.ps.tcc = true;
+			r.EndHLEHardwareDraw(true);
+
+			rt->m_alpha_min = 0;
+			rt->m_alpha_max = 255;
+
+			rt = nullptr;
+			src = nullptr;
+		}
+		else
+		{
+			skip--;
+			return !first_shuffle;
+		}
+	}
+
 	if (skip == 0)
 	{
 		const int get_next_ctx = r.m_env.PRIM.CTXT;
 		const GSDrawingContext& next_ctx = r.m_env.CTXT[get_next_ctx];
 
+		// Uses these to do some shuffle tricks, it breaks things for us
+		r.m_env.SCANMSK.MSK = 0;
+		r.m_prev_env.SCANMSK.MSK = 0;
+
 		// Game does alternate line channel shuffles with blending, we can't handle this and the first one does it, so skip the second.
 		if (RTME && RTPSM == PSMT8 && (RTBP0 + 0x20) == next_ctx.TEX0.TBP0 && RFBP == next_ctx.FRAME.Block())
 		{
-			skip = 1;
+			skip = 2;
 			return false;
 		}
 		// Detect the deswizzling shuffle from depth, copying the RG and BA separately on each half of the page (ignore the split).
@@ -90,7 +152,7 @@ bool GSHwHack::GSC_IRem(GSRendererHW& r, int& skip)
 				draw_size = draw_size + GSVector4i(horizontal_offset, vertical_offset, horizontal_offset, vertical_offset);
 				rt->UnscaleRTAlpha();
 
-				// Shuffle the blue channel in to red, leave green as-is.
+				// Shuffle the blue channel in to red, but swap them, we'll need the original red later.
 				GSHWDrawConfig& config = r.BeginHLEHardwareDraw(
 					rt->GetTexture(), nullptr, rt->GetScale(), rt->GetTexture(), rt->GetScale(), draw_size);
 				config.ps.shuffle = 1;
@@ -99,10 +161,11 @@ bool GSHwHack::GSC_IRem(GSRendererHW& r, int& skip)
 				config.ps.shuffle_same = 0;
 				config.ps.real16src = 0;
 				config.ps.shuffle_across = 1;
-				config.ps.process_rg = r.SHUFFLE_WRITE;
-				config.ps.process_ba = r.SHUFFLE_READ;
+				config.ps.process_rg = r.SHUFFLE_READWRITE;
+				config.ps.process_ba = r.SHUFFLE_READWRITE;
 				config.colormask.wrgba = 0;
 				config.colormask.wr = 1;
+				config.colormask.wb = 1;
 				config.ps.rta_correction = 0;
 				config.ps.rta_source_correction = 0;
 				config.ps.tfx = TFX_DECAL;
@@ -114,6 +177,7 @@ bool GSHwHack::GSC_IRem(GSRendererHW& r, int& skip)
 
 				rt = nullptr;
 				src = nullptr;
+				first_shuffle = true;
 			}
 		}
 	}
