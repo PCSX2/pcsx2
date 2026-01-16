@@ -907,7 +907,7 @@ bool atst(vec4 C)
 vec4 fog(vec4 c, float f)
 {
 	#if PS_FOG
-		c.rgb = trunc(mix(FogColor, c.rgb, f));
+		c.rgb = trunc(mix(FogColor, c.rgb, (f * 255.0f) / 256.0f));
 	#endif
 
 	return c;
