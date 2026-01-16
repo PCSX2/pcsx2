@@ -17,6 +17,8 @@
 
 #include "Config.h"
 
+#include "common/MemoryInterface.h"
+
 #include <string>
 #include <string_view>
 #include <vector>
