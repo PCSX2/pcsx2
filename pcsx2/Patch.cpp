@@ -28,6 +28,7 @@
 #include <memory>
 #include <span>
 #include <sstream>
+#include <type_traits>
 #include <vector>
 
 namespace Patch
@@ -155,10 +156,15 @@ namespace Patch
 	static void ReloadEnabledLists();
 	static u32 EnablePatches(const std::vector<PatchGroup>* patches, const std::vector<std::string>& enable_list, const std::vector<std::string>* enable_immediately_list);
 
-	static void ApplyPatch(const PatchCommand* p);
+	template <typename EEMemory, typename IOPMemory>
+	static void ApplyPatch(const PatchCommand* p, EEMemory& ee, IOPMemory& iop);
 	static void ApplyDynaPatch(const DynamicPatch& patch, u32 address);
-	static void writeCheat();
-	static void handle_extended_t(const PatchCommand* p);
+	template <typename Memory>
+		requires std::is_base_of_v<MemoryInterface, Memory>
+	static void writeCheat(Memory& memory);
+	template <typename Memory>
+		requires std::is_base_of_v<MemoryInterface, Memory>
+	static void handle_extended_t(const PatchCommand* p, Memory& memory);
 
 	// Name of patches which will be auto-enabled based on global options.
 	static constexpr std::string_view WS_PATCH_NAME = "Widescreen 16:9";
@@ -372,7 +378,7 @@ std::string Patch::GetPnachTemplate(const std::string_view serial, u32 crc, bool
 	if (!serial.empty())
 	{
 		if (all_crcs)
-			return fmt::format("{}_*.pnach", serial);	
+			return fmt::format("{}_*.pnach", serial);
 		else if (include_serial)
 			return fmt::format("{}_{:08X}{}.pnach", serial, crc, add_wildcard ? "*" : "");
 	}
@@ -746,7 +752,9 @@ u32 Patch::EnablePatches(const std::vector<PatchGroup>* patches, const std::vect
 					if (command.placetopatch != PPT_ON_LOAD_OR_WHEN_ENABLED)
 						continue;
 
-					ApplyPatch(&command);
+					EEMemoryInterface ee;
+					IOPMemoryInterface iop;
+					ApplyPatch(&command, ee, iop);
 				}
 			}
 		});
@@ -1152,13 +1160,14 @@ void Patch::ApplyVsyncPatches()
 	ApplyLoadedPatches(PPT_COMBINED_0_1);
 }
 
-// This is for applying patches directly to memory
 void Patch::ApplyLoadedPatches(patch_place_type place)
 {
+	EEMemoryInterface ee;
+	IOPMemoryInterface iop;
 	for (const PatchCommand* i : s_active_patches)
 	{
 		if (i->placetopatch == place)
-			ApplyPatch(i);
+			ApplyPatch(i, ee, iop);
 	}
 }
 
@@ -1205,25 +1214,29 @@ static u32 SkipCount = 0, IterationCount = 0;
 static u32 IterationIncrement = 0;
 static u32 PrevCheatType = 0, PrevCheatAddr = 0, LastType = 0;
 
-void Patch::writeCheat()
+template <typename Memory>
+	requires std::is_base_of_v<MemoryInterface, Memory>
+void Patch::writeCheat(Memory& memory)
 {
 	switch (LastType)
 	{
 		case 0x0:
-			memWrite8(PrevCheatAddr, IterationIncrement & 0xFF);
+			memory.Write8(PrevCheatAddr, IterationIncrement & 0xFF);
 			break;
 		case 0x1:
-			memWrite16(PrevCheatAddr, IterationIncrement & 0xFFFF);
+			memory.Write16(PrevCheatAddr, IterationIncrement & 0xFFFF);
 			break;
 		case 0x2:
-			memWrite32(PrevCheatAddr, IterationIncrement);
+			memory.Write32(PrevCheatAddr, IterationIncrement);
 			break;
 		default:
 			break;
 	}
 }
 
-void Patch::handle_extended_t(const PatchCommand* p)
+template <typename Memory>
+	requires std::is_base_of_v<MemoryInterface, Memory>
+void Patch::handle_extended_t(const PatchCommand* p, Memory& memory)
 {
 	if (SkipCount > 0)
 	{
@@ -1234,16 +1247,16 @@ void Patch::handle_extended_t(const PatchCommand* p)
 		{
 			case 0x3040: // vvvvvvvv 00000000 Inc
 			{
-				u32 mem = memRead32(PrevCheatAddr);
-				memWrite32(PrevCheatAddr, mem + (p->addr));
+				u32 mem = memory.Read32(PrevCheatAddr);
+				memory.Write32(PrevCheatAddr, mem + (p->addr));
 				PrevCheatType = 0;
 				break;
 			}
 
 			case 0x3050: // vvvvvvvv 00000000 Dec
 			{
-				u32 mem = memRead32(PrevCheatAddr);
-				memWrite32(PrevCheatAddr, mem - (p->addr));
+				u32 mem = memory.Read32(PrevCheatAddr);
+				memory.Write32(PrevCheatAddr, mem - (p->addr));
 				PrevCheatType = 0;
 				break;
 			}
@@ -1251,7 +1264,7 @@ void Patch::handle_extended_t(const PatchCommand* p)
 			case 0x4000: // vvvvvvvv iiiiiiii
 				for (u32 i = 0; i < IterationCount; i++)
 				{
-					memWrite32((u32)(PrevCheatAddr + (i * IterationIncrement)), (u32)(p->addr + ((u32)p->data * i)));
+					memory.Write32((u32)(PrevCheatAddr + (i * IterationIncrement)), (u32)(p->addr + ((u32)p->data * i)));
 				}
 				PrevCheatType = 0;
 				break;
@@ -1259,8 +1272,8 @@ void Patch::handle_extended_t(const PatchCommand* p)
 			case 0x5000: // bbbbbbbb 00000000
 				for (u32 i = 0; i < IterationCount; i++)
 				{
-					u8 mem = memRead8(PrevCheatAddr + i);
-					memWrite8((p->addr + i) & 0x0FFFFFFF, mem);
+					u8 mem = memory.Read8(PrevCheatAddr + i);
+					memory.Write8((p->addr + i) & 0x0FFFFFFF, mem);
 				}
 				PrevCheatType = 0;
 				break;
@@ -1275,7 +1288,7 @@ void Patch::handle_extended_t(const PatchCommand* p)
 
 				// Read first pointer
 				LastType = ((u32)p->addr & 0x000F0000) >> 16;
-				u32 mem = memRead32(PrevCheatAddr);
+				u32 mem = memory.Read32(PrevCheatAddr);
 
 				PrevCheatAddr = mem + (u32)p->data;
 				IterationCount--;
@@ -1285,7 +1298,7 @@ void Patch::handle_extended_t(const PatchCommand* p)
 				{
 					PrevCheatType = 0;
 					if (((mem & 0x0FFFFFFF) & 0x3FFFFFFC) != 0)
-						writeCheat();
+						writeCheat(memory);
 				}
 				else
 				{
@@ -1300,7 +1313,7 @@ void Patch::handle_extended_t(const PatchCommand* p)
 			case 0x6001: // 000Xnnnn iiiiiiii
 			{
 				// Read first pointer
-				u32 mem = memRead32(PrevCheatAddr & 0x0FFFFFFF);
+				u32 mem = memory.Read32(PrevCheatAddr & 0x0FFFFFFF);
 
 				PrevCheatAddr = mem + (u32)p->addr;
 				IterationCount--;
@@ -1310,11 +1323,11 @@ void Patch::handle_extended_t(const PatchCommand* p)
 				{
 					PrevCheatType = 0;
 					if (((mem & 0x0FFFFFFF) & 0x3FFFFFFC) != 0)
-						writeCheat();
+						writeCheat(memory);
 				}
 				else
 				{
-					mem = memRead32(PrevCheatAddr);
+					mem = memory.Read32(PrevCheatAddr);
 
 					PrevCheatAddr = mem + (u32)p->data;
 					IterationCount--;
@@ -1322,7 +1335,7 @@ void Patch::handle_extended_t(const PatchCommand* p)
 					{
 						PrevCheatType = 0;
 						if (((mem & 0x0FFFFFFF) & 0x3FFFFFFC) != 0)
-							writeCheat();
+							writeCheat(memory);
 					}
 				}
 			}
@@ -1331,41 +1344,41 @@ void Patch::handle_extended_t(const PatchCommand* p)
 			default:
 				if ((p->addr & 0xF0000000) == 0x00000000) // 0aaaaaaa 0000000vv
 				{
-					memWrite8(p->addr & 0x0FFFFFFF, (u8)p->data & 0x000000FF);
+					memory.Write8(p->addr & 0x0FFFFFFF, (u8)p->data & 0x000000FF);
 					PrevCheatType = 0;
 				}
 				else if ((p->addr & 0xF0000000) == 0x10000000) // 1aaaaaaa 0000vvvv
 				{
-					memWrite16(p->addr & 0x0FFFFFFF, (u16)p->data & 0x0000FFFF);
+					memory.Write16(p->addr & 0x0FFFFFFF, (u16)p->data & 0x0000FFFF);
 					PrevCheatType = 0;
 				}
 				else if ((p->addr & 0xF0000000) == 0x20000000) // 2aaaaaaa vvvvvvvv
 				{
-					memWrite32(p->addr & 0x0FFFFFFF, (u32)p->data);
+					memory.Write32(p->addr & 0x0FFFFFFF, (u32)p->data);
 					PrevCheatType = 0;
 				}
 				else if ((p->addr & 0xFFFF0000) == 0x30000000) // 300000vv 0aaaaaaa Inc
 				{
-					u8 mem = memRead8((u32)p->data);
-					memWrite8((u32)p->data, mem + (p->addr & 0x000000FF));
+					u8 mem = memory.Read8((u32)p->data);
+					memory.Write8((u32)p->data, mem + (p->addr & 0x000000FF));
 					PrevCheatType = 0;
 				}
 				else if ((p->addr & 0xFFFF0000) == 0x30100000) // 301000vv 0aaaaaaa Dec
 				{
-					u8 mem = memRead8((u32)p->data);
-					memWrite8((u32)p->data, mem - (p->addr & 0x000000FF));
+					u8 mem = memory.Read8((u32)p->data);
+					memory.Write8((u32)p->data, mem - (p->addr & 0x000000FF));
 					PrevCheatType = 0;
 				}
 				else if ((p->addr & 0xFFFF0000) == 0x30200000) // 3020vvvv 0aaaaaaa Inc
 				{
-					u16 mem = memRead16((u32)p->data);
-					memWrite16((u32)p->data, mem + (p->addr & 0x0000FFFF));
+					u16 mem = memory.Read16((u32)p->data);
+					memory.Write16((u32)p->data, mem + (p->addr & 0x0000FFFF));
 					PrevCheatType = 0;
 				}
 				else if ((p->addr & 0xFFFF0000) == 0x30300000) // 3030vvvv 0aaaaaaa Dec
 				{
-					u16 mem = memRead16((u32)p->data);
-					memWrite16((u32)p->data, mem - (p->addr & 0x0000FFFF));
+					u16 mem = memory.Read16((u32)p->data);
+					memory.Write16((u32)p->data, mem - (p->addr & 0x0000FFFF));
 					PrevCheatType = 0;
 				}
 				else if ((p->addr & 0xFFFF0000) == 0x30400000) // 30400000 0aaaaaaa Inc + Another line
@@ -1402,33 +1415,33 @@ void Patch::handle_extended_t(const PatchCommand* p)
 				{
 					if ((p->data & 0x00F00000) == 0x00000000) // 7aaaaaaa 000000vv
 					{
-						u8 mem = memRead8((u32)p->addr & 0x0FFFFFFF);
-						memWrite8((u32)p->addr & 0x0FFFFFFF, (u8)(mem | (p->data & 0x000000FF)));
+						u8 mem = memory.Read8((u32)p->addr & 0x0FFFFFFF);
+						memory.Write8((u32)p->addr & 0x0FFFFFFF, (u8)(mem | (p->data & 0x000000FF)));
 					}
 					else if ((p->data & 0x00F00000) == 0x00100000) // 7aaaaaaa 0010vvvv
 					{
-						u16 mem = memRead16((u32)p->addr & 0x0FFFFFFF);
-						memWrite16((u32)p->addr & 0x0FFFFFFF, (u16)(mem | (p->data & 0x0000FFFF)));
+						u16 mem = memory.Read16((u32)p->addr & 0x0FFFFFFF);
+						memory.Write16((u32)p->addr & 0x0FFFFFFF, (u16)(mem | (p->data & 0x0000FFFF)));
 					}
 					else if ((p->data & 0x00F00000) == 0x00200000) // 7aaaaaaa 002000vv
 					{
-						u8 mem = memRead8((u32)p->addr & 0x0FFFFFFF);
-						memWrite8((u32)p->addr & 0x0FFFFFFF, (u8)(mem & (p->data & 0x000000FF)));
+						u8 mem = memory.Read8((u32)p->addr & 0x0FFFFFFF);
+						memory.Write8((u32)p->addr & 0x0FFFFFFF, (u8)(mem & (p->data & 0x000000FF)));
 					}
 					else if ((p->data & 0x00F00000) == 0x00300000) // 7aaaaaaa 0030vvvv
 					{
-						u16 mem = memRead16((u32)p->addr & 0x0FFFFFFF);
-						memWrite16((u32)p->addr & 0x0FFFFFFF, (u16)(mem & (p->data & 0x0000FFFF)));
+						u16 mem = memory.Read16((u32)p->addr & 0x0FFFFFFF);
+						memory.Write16((u32)p->addr & 0x0FFFFFFF, (u16)(mem & (p->data & 0x0000FFFF)));
 					}
 					else if ((p->data & 0x00F00000) == 0x00400000) // 7aaaaaaa 004000vv
 					{
-						u8 mem = memRead8((u32)p->addr & 0x0FFFFFFF);
-						memWrite8((u32)p->addr & 0x0FFFFFFF, (u8)(mem ^ (p->data & 0x000000FF)));
+						u8 mem = memory.Read8((u32)p->addr & 0x0FFFFFFF);
+						memory.Write8((u32)p->addr & 0x0FFFFFFF, (u8)(mem ^ (p->data & 0x000000FF)));
 					}
 					else if ((p->data & 0x00F00000) == 0x00500000) // 7aaaaaaa 0050vvvv
 					{
-						u16 mem = memRead16((u32)p->addr & 0x0FFFFFFF);
-						memWrite16((u32)p->addr & 0x0FFFFFFF, (u16)(mem ^ (p->data & 0x0000FFFF)));
+						u16 mem = memory.Read16((u32)p->addr & 0x0FFFFFFF);
+						memory.Write16((u32)p->addr & 0x0FFFFFFF, (u16)(mem ^ (p->data & 0x0000FFFF)));
 					}
 				}
 				else if ((p->addr & 0xF0000000) == 0xD0000000 || (p->addr & 0xF0000000) == 0xE0000000)
@@ -1457,7 +1470,7 @@ void Patch::handle_extended_t(const PatchCommand* p)
 					{
 						if (type == 0) // Daaaaaaa yy00vvvv
 						{
-							u16 mem = memRead16(addr & 0x0FFFFFFF);
+							u16 mem = memory.Read16(addr & 0x0FFFFFFF);
 							if (mem != (data & 0x0000FFFF))
 							{
 								SkipCount = (data & 0xFF000000) >> 24;
@@ -1470,7 +1483,7 @@ void Patch::handle_extended_t(const PatchCommand* p)
 						}
 						else if (type == 1) // Daaaaaaa yy0100vv
 						{
-							u8 mem = memRead8(addr & 0x0FFFFFFF);
+							u8 mem = memory.Read8(addr & 0x0FFFFFFF);
 							if (mem != (data & 0x000000FF))
 							{
 								SkipCount = (data & 0xFF000000) >> 24;
@@ -1486,7 +1499,7 @@ void Patch::handle_extended_t(const PatchCommand* p)
 					{
 						if (type == 0) // Daaaaaaa yy10vvvv
 						{
-							u16 mem = memRead16(addr & 0x0FFFFFFF);
+							u16 mem = memory.Read16(addr & 0x0FFFFFFF);
 							if (mem == (data & 0x0000FFFF))
 							{
 								SkipCount = (data & 0xFF000000) >> 24;
@@ -1499,7 +1512,7 @@ void Patch::handle_extended_t(const PatchCommand* p)
 						}
 						else if (type == 1) // Daaaaaaa yy1100vv
 						{
-							u8 mem = memRead8(addr & 0x0FFFFFFF);
+							u8 mem = memory.Read8(addr & 0x0FFFFFFF);
 							if (mem == (data & 0x000000FF))
 							{
 								SkipCount = (data & 0xFF000000) >> 24;
@@ -1515,7 +1528,7 @@ void Patch::handle_extended_t(const PatchCommand* p)
 					{
 						if (type == 0) // Daaaaaaa yy20vvvv
 						{
-							u16 mem = memRead16(addr & 0x0FFFFFFF);
+							u16 mem = memory.Read16(addr & 0x0FFFFFFF);
 							if (mem >= (data & 0x0000FFFF))
 							{
 								SkipCount = (data & 0xFF000000) >> 24;
@@ -1528,7 +1541,7 @@ void Patch::handle_extended_t(const PatchCommand* p)
 						}
 						else if (type == 1) // Daaaaaaa yy2100vv
 						{
-							u8 mem = memRead8(addr & 0x0FFFFFFF);
+							u8 mem = memory.Read8(addr & 0x0FFFFFFF);
 							if (mem >= (data & 0x000000FF))
 							{
 								SkipCount = (data & 0xFF000000) >> 24;
@@ -1544,7 +1557,7 @@ void Patch::handle_extended_t(const PatchCommand* p)
 					{
 						if (type == 0) // Daaaaaaa yy30vvvv
 						{
-							u16 mem = memRead16(addr & 0x0FFFFFFF);
+							u16 mem = memory.Read16(addr & 0x0FFFFFFF);
 							if (mem <= (data & 0x0000FFFF))
 							{
 								SkipCount = (data & 0xFF000000) >> 24;
@@ -1557,7 +1570,7 @@ void Patch::handle_extended_t(const PatchCommand* p)
 						}
 						else if (type == 1) // Daaaaaaa yy3100vv
 						{
-							u8 mem = memRead8(addr & 0x0FFFFFFF);
+							u8 mem = memory.Read8(addr & 0x0FFFFFFF);
 							if (mem <= (data & 0x000000FF))
 							{
 								SkipCount = (data & 0xFF000000) >> 24;
@@ -1573,7 +1586,7 @@ void Patch::handle_extended_t(const PatchCommand* p)
 					{
 						if (type == 0) // Daaaaaaa yy40vvvv
 						{
-							u16 mem = memRead16(addr & 0x0FFFFFFF);
+							u16 mem = memory.Read16(addr & 0x0FFFFFFF);
 							if (mem & (data & 0x0000FFFF))
 							{
 								SkipCount = (data & 0xFF000000) >> 24;
@@ -1586,7 +1599,7 @@ void Patch::handle_extended_t(const PatchCommand* p)
 						}
 						else if (type == 1) // Daaaaaaa yy4100vv
 						{
-							u8 mem = memRead8(addr & 0x0FFFFFFF);
+							u8 mem = memory.Read8(addr & 0x0FFFFFFF);
 							if (mem & (data & 0x000000FF))
 							{
 								SkipCount = (data & 0xFF000000) >> 24;
@@ -1602,7 +1615,7 @@ void Patch::handle_extended_t(const PatchCommand* p)
 					{
 						if (type == 0) // Daaaaaaa yy50vvvv
 						{
-							u16 mem = memRead16(addr & 0x0FFFFFFF);
+							u16 mem = memory.Read16(addr & 0x0FFFFFFF);
 							if (!(mem & (data & 0x0000FFFF)))
 							{
 								SkipCount = (data & 0xFF000000) >> 24;
@@ -1615,7 +1628,7 @@ void Patch::handle_extended_t(const PatchCommand* p)
 						}
 						else if (type == 1) // Daaaaaaa yy5100vv
 						{
-							u8 mem = memRead8(addr & 0x0FFFFFFF);
+							u8 mem = memory.Read8(addr & 0x0FFFFFFF);
 							if (!(mem & (data & 0x000000FF)))
 							{
 								SkipCount = (data & 0xFF000000) >> 24;
@@ -1631,7 +1644,7 @@ void Patch::handle_extended_t(const PatchCommand* p)
 					{
 						if (type == 0) // Daaaaaaa yy60vvvv
 						{
-							u16 mem = memRead16(addr & 0x0FFFFFFF);
+							u16 mem = memory.Read16(addr & 0x0FFFFFFF);
 							if (mem | (data & 0x0000FFFF))
 							{
 								SkipCount = (data & 0xFF000000) >> 24;
@@ -1644,7 +1657,7 @@ void Patch::handle_extended_t(const PatchCommand* p)
 						}
 						else if (type == 1) // Daaaaaaa yy6100vv
 						{
-							u8 mem = memRead8(addr & 0x0FFFFFFF);
+							u8 mem = memory.Read8(addr & 0x0FFFFFFF);
 							if (mem | (data & 0x000000FF))
 							{
 								SkipCount = (data & 0xFF000000) >> 24;
@@ -1660,7 +1673,7 @@ void Patch::handle_extended_t(const PatchCommand* p)
 					{
 						if (type == 0) // Daaaaaaa yy70vvvv
 						{
-							u16 mem = memRead16(addr & 0x0FFFFFFF);
+							u16 mem = memory.Read16(addr & 0x0FFFFFFF);
 							if (!(mem | (data & 0x0000FFFF)))
 							{
 								SkipCount = (data & 0xFF000000) >> 24;
@@ -1673,7 +1686,7 @@ void Patch::handle_extended_t(const PatchCommand* p)
 						}
 						else if (type == 1) // Daaaaaaa yy7100vv
 						{
-							u8 mem = memRead8(addr & 0x0FFFFFFF);
+							u8 mem = memory.Read8(addr & 0x0FFFFFFF);
 							if (!(mem | (data & 0x000000FF)))
 							{
 								SkipCount = (data & 0xFF000000) >> 24;
@@ -1689,62 +1702,62 @@ void Patch::handle_extended_t(const PatchCommand* p)
 		}
 }
 
-void Patch::ApplyPatch(const PatchCommand* p)
+template <typename EEMemory, typename IOPMemory>
+void Patch::ApplyPatch(const PatchCommand* p, EEMemory& ee, IOPMemory& iop)
 {
 	u64 ledata = 0;
-
 	switch (p->cpu)
 	{
 		case CPU_EE:
 			switch (p->type)
 			{
 				case BYTE_T:
-					if (memRead8(p->addr) != (u8)p->data)
-						memWrite8(p->addr, (u8)p->data);
+					if (ee.Read8(p->addr) != (u8)p->data)
+						ee.Write8(p->addr, (u8)p->data);
 					break;
 
 				case SHORT_T:
-					if (memRead16(p->addr) != (u16)p->data)
-						memWrite16(p->addr, (u16)p->data);
+					if (ee.Read16(p->addr) != (u16)p->data)
+						ee.Write16(p->addr, (u16)p->data);
 					break;
 
 				case WORD_T:
-					if (memRead32(p->addr) != (u32)p->data)
-						memWrite32(p->addr, (u32)p->data);
+					if (ee.Read32(p->addr) != (u32)p->data)
+						ee.Write32(p->addr, (u32)p->data);
 					break;
 
 				case DOUBLE_T:
-					if (memRead64(p->addr) != (u64)p->data)
-						memWrite64(p->addr, (u64)p->data);
+					if (ee.Read64(p->addr) != (u64)p->data)
+						ee.Write64(p->addr, (u64)p->data);
 					break;
 
 				case EXTENDED_T:
-					handle_extended_t(p);
+					handle_extended_t(p, ee);
 					break;
 
 				case SHORT_BE_T:
 					ledata = ByteSwap(static_cast<u16>(p->data));
-					if (memRead16(p->addr) != (u16)ledata)
-						memWrite16(p->addr, (u16)ledata);
+					if (ee.Read16(p->addr) != (u16)ledata)
+						ee.Write16(p->addr, (u16)ledata);
 					break;
 
 				case WORD_BE_T:
 					ledata = ByteSwap(static_cast<u32>(p->data));
-					if (memRead32(p->addr) != (u32)ledata)
-						memWrite32(p->addr, (u32)ledata);
+					if (ee.Read32(p->addr) != (u32)ledata)
+						ee.Write32(p->addr, (u32)ledata);
 					break;
 
 				case DOUBLE_BE_T:
 					ledata = ByteSwap(p->data);
-					if (memRead64(p->addr) != (u64)ledata)
-						memWrite64(p->addr, (u64)ledata);
+					if (ee.Read64(p->addr) != (u64)ledata)
+						ee.Write64(p->addr, (u64)ledata);
 					break;
 
 				case BYTES_T:
 				{
 					// We compare before writing so the rec doesn't get upset and invalidate when there's no change.
-					if (vtlb_memSafeCmpBytes(p->addr, p->data_ptr, static_cast<u32>(p->data)) != 0)
-						vtlb_memSafeWriteBytes(p->addr, p->data_ptr, static_cast<u32>(p->data));
+					if (!ee.CompareBytes(p->addr, p->data_ptr, static_cast<u32>(p->data)))
+						ee.WriteBytes(p->addr, p->data_ptr, static_cast<u32>(p->data));
 				}
 				break;
 
@@ -1757,21 +1770,21 @@ void Patch::ApplyPatch(const PatchCommand* p)
 			switch (p->type)
 			{
 				case BYTE_T:
-					if (iopMemRead8(p->addr) != (u8)p->data)
-						iopMemWrite8(p->addr, (u8)p->data);
+					if (iop.Read8(p->addr) != (u8)p->data)
+						iop.Write8(p->addr, (u8)p->data);
 					break;
 				case SHORT_T:
-					if (iopMemRead16(p->addr) != (u16)p->data)
-						iopMemWrite16(p->addr, (u16)p->data);
+					if (iop.Read16(p->addr) != (u16)p->data)
+						iop.Write16(p->addr, (u16)p->data);
 					break;
 				case WORD_T:
-					if (iopMemRead32(p->addr) != (u32)p->data)
-						iopMemWrite32(p->addr, (u32)p->data);
+					if (iop.Read32(p->addr) != (u32)p->data)
+						iop.Write32(p->addr, (u32)p->data);
 					break;
 				case BYTES_T:
 				{
-					if (iopMemSafeCmpBytes(p->addr, p->data_ptr, static_cast<u32>(p->data)) != 0)
-						iopMemSafeWriteBytes(p->addr, p->data_ptr, static_cast<u32>(p->data));
+					if (!iop.CompareBytes(p->addr, p->data_ptr, static_cast<u32>(p->data)))
+						iop.WriteBytes(p->addr, p->data_ptr, static_cast<u32>(p->data));
 				}
 				break;
 
