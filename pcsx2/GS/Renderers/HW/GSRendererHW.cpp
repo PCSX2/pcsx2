@@ -3892,7 +3892,7 @@ void GSRendererHW::Draw()
 		{
 			const GSVector2i unscaled_size(ds->m_unscaled_size.x, ds->m_unscaled_size.y);
 			ds->m_scale = 1;
-			ds->ResizeTexture(ds->m_unscaled_size.x * target_scale, ds->m_unscaled_size.y * target_scale, true);
+			ds->ResizeTexture(ds->m_unscaled_size.x * target_scale, ds->m_unscaled_size.y * target_scale, true, true, GSVector4i::loadh(ds->m_unscaled_size * target_scale));
 			// Slightly abusing the texture resize.
 			ds->m_scale = target_scale;
 			ds->m_unscaled_size = unscaled_size;

@@ -268,7 +268,7 @@ public:
 		void UpdateValidChannels(u32 psm, u32 fbmsk);
 
 		/// Resizes target texture, DOES NOT RESCALE.
-		bool ResizeTexture(int new_unscaled_width, int new_unscaled_height, bool recycle_old = true, bool require_offset = false, GSVector4i offset = GSVector4i::zero(), bool keep_old = false);
+		bool ResizeTexture(int new_unscaled_width, int new_unscaled_height, bool recycle_old = true, bool require_new_rect = false, GSVector4i new_rect = GSVector4i::zero(), bool keep_old = false);
 
 	private:
 		void UpdateTextureDebugName();
