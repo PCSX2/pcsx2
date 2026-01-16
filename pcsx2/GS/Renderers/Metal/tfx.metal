@@ -790,7 +790,7 @@ struct PSMain
 	void fog(thread float4& C, float f)
 	{
 		if (PS_FOG)
-			C.rgb = trunc(mix(cb.fog_color, C.rgb, f));
+			C.rgb = trunc(mix(cb.fog_color, C.rgb, (f * 255.0f) / 256.0f));
 	}
 
 	float4 ps_color()
