@@ -1722,7 +1722,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 					if (found_t && (bw != t->m_TEX0.TBW || t->m_TEX0.PSM != psm))
 						match = false;
 
-					//if (!t_clean && can_convert)
+					// Different swizzle, different width, and dirty, so probably not what we want.
 					//	DevCon.Warning("Expected %x Got %x shuffle %d draw %d", psm, t_psm, possible_shuffle, GSState::s_n);
 					if (match)
 					{
@@ -2775,7 +2775,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 			if (!tex)
 				return nullptr;
 
-			if (scale == 1.0f)
+			if (scale == 1.0f && type == RenderTarget)
 			{
 				// When using native HPO, the top-left column/row of pixels are often not drawn. Clamp these away to avoid sampling black,
 				// causing bleeding into the edges of the downsampled texture.
