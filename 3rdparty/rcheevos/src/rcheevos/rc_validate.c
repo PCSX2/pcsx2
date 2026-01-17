@@ -510,6 +510,7 @@ static void rc_combine_ranges(uint32_t* min_val, uint32_t* max_val, uint8_t oper
       break;
 
     case RC_OPERATOR_ADD:
+    case RC_OPERATOR_ADD_ACCUMULATOR:
       if (*min_val > *max_val) { /* underflow occurred */
         *max_val += oper_max_val;
       }
@@ -522,6 +523,7 @@ static void rc_combine_ranges(uint32_t* min_val, uint32_t* max_val, uint8_t oper
       break;
 
     case RC_OPERATOR_SUB:
+    case RC_OPERATOR_SUB_ACCUMULATOR:
       *min_val -= oper_max_val;
       *max_val -= oper_min_val;
       break;

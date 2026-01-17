@@ -1,3 +1,7 @@
+# v12.2.1
+* fix parsing of leaderboards with comparisons in legacy-formatted values
+* fix validation warning on long AddSource chains
+
 # v12.2.0
 * add rc_client_create_subset_list
 * add rc_client_begin_fetch_game_titles
