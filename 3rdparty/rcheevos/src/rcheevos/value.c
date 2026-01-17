@@ -180,9 +180,11 @@ static void rc_parse_legacy_value(rc_value_t* self, const char** memaddr, rc_par
         return;
       }
 
-      if (!rc_operator_is_modifying(cond->oper)) {
-        parse->offset = RC_INVALID_OPERATOR;
-        return;
+      if (cond->type == RC_CONDITION_MEASURED && !rc_operator_is_modifying(cond->oper)) {
+        /* ignore non-modifying operator on measured clause. if it were parsed as an AddSource
+         * or SubSource, that would have already happened in rc_parse_condition_internal, and
+         * legacy formatted values are essentially a series of AddSources. */
+        cond->oper = RC_OPERATOR_NONE;
       }
 
       rc_condition_update_parse_state(cond, parse);
