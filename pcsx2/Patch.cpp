@@ -7,7 +7,6 @@
 #include "common/ByteSwap.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
-#include "common/SmallString.h"
 #include "common/StringUtil.h"
 #include "common/ZipHelpers.h"
 
@@ -33,30 +32,6 @@
 
 namespace Patch
 {
-	enum patch_cpu_type : u8
-	{
-		CPU_EE,
-		CPU_IOP
-	};
-
-	enum patch_data_type : u8
-	{
-		BYTE_T,
-		SHORT_T,
-		WORD_T,
-		DOUBLE_T,
-		EXTENDED_T,
-		SHORT_BE_T,
-		WORD_BE_T,
-		DOUBLE_BE_T,
-		BYTES_T
-	};
-
-	static constexpr std::array<const char*, 4> s_place_to_string = {{"0", "1", "2", "3"}};
-	static constexpr std::array<const char*, 2> s_cpu_to_string = {{"EE", "IOP"}};
-	static constexpr std::array<const char*, 9> s_type_to_string = {
-		{"byte", "short", "word", "double", "extended", "beshort", "beword", "bedouble", "bytes"}};
-
 	template <typename EnumType, class ArrayType>
 	static inline std::optional<EnumType> LookupEnumName(const std::string_view val, const ArrayType& arr)
 	{
@@ -67,48 +42,6 @@ namespace Patch
 		}
 		return std::nullopt;
 	}
-
-	struct PatchCommand
-	{
-		patch_place_type placetopatch;
-		patch_cpu_type cpu;
-		patch_data_type type;
-		u32 addr;
-		u64 data;
-		u8* data_ptr;
-
-		// needed because of the pointer
-		PatchCommand() { std::memset(static_cast<void*>(this), 0, sizeof(*this)); }
-		PatchCommand(const PatchCommand& p) = delete;
-		PatchCommand(PatchCommand&& p)
-		{
-			std::memcpy(static_cast<void*>(this), &p, sizeof(*this));
-			p.data_ptr = nullptr;
-		}
-		~PatchCommand()
-		{
-			if (data_ptr)
-				std::free(data_ptr);
-		}
-
-		PatchCommand& operator=(const PatchCommand& p) = delete;
-		PatchCommand& operator=(PatchCommand&& p)
-		{
-			std::memcpy(static_cast<void*>(this), &p, sizeof(*this));
-			p.data_ptr = nullptr;
-			return *this;
-		}
-
-		bool operator==(const PatchCommand& p) const { return std::memcmp(this, &p, sizeof(*this)) == 0; }
-		bool operator!=(const PatchCommand& p) const { return std::memcmp(this, &p, sizeof(*this)) != 0; }
-
-		SmallString ToString() const
-		{
-			return SmallString::from_format("{},{},{},{:08x},{:x}", s_place_to_string[static_cast<u8>(placetopatch)],
-				s_cpu_to_string[static_cast<u8>(cpu)], s_type_to_string[static_cast<u8>(type)], addr, data);
-		}
-	};
-	static_assert(sizeof(PatchCommand) == 24, "IniPatch has no padding");
 
 	struct PatchGroup
 	{
@@ -157,7 +90,9 @@ namespace Patch
 	static u32 EnablePatches(const std::vector<PatchGroup>* patches, const std::vector<std::string>& enable_list, const std::vector<std::string>* enable_immediately_list);
 
 	template <typename EEMemory, typename IOPMemory>
-	static void ApplyPatch(const PatchCommand* p, EEMemory& ee, IOPMemory& iop);
+		requires std::is_base_of_v<MemoryInterface, EEMemory> &&
+	             std::is_base_of_v<MemoryInterface, IOPMemory>
+	void ApplyPatch(const PatchCommand* p, EEMemory& ee, IOPMemory& iop);
 	static void ApplyDynaPatch(const DynamicPatch& patch, u32 address);
 	template <typename Memory>
 		requires std::is_base_of_v<MemoryInterface, Memory>
@@ -1149,26 +1084,41 @@ void Patch::PatchFunc::dpatch(PatchGroup* group, const std::string_view cmd, con
 
 void Patch::ApplyBootPatches()
 {
-	ApplyLoadedPatches(PPT_ONCE_ON_LOAD);
-	ApplyLoadedPatches(PPT_COMBINED_0_1);
-	ApplyLoadedPatches(PPT_ON_LOAD_OR_WHEN_ENABLED);
+	EEMemoryInterface ee;
+	IOPMemoryInterface iop;
+	ApplyPatches(s_active_patches, PPT_ONCE_ON_LOAD, ee, iop);
+	ApplyPatches(s_active_patches, PPT_COMBINED_0_1, ee, iop);
+	ApplyPatches(s_active_patches, PPT_ON_LOAD_OR_WHEN_ENABLED, ee, iop);
 }
 
 void Patch::ApplyVsyncPatches()
 {
-	ApplyLoadedPatches(PPT_CONTINUOUSLY);
-	ApplyLoadedPatches(PPT_COMBINED_0_1);
-}
-
-void Patch::ApplyLoadedPatches(patch_place_type place)
-{
 	EEMemoryInterface ee;
 	IOPMemoryInterface iop;
-	for (const PatchCommand* i : s_active_patches)
-	{
+	ApplyPatches(s_active_patches, PPT_CONTINUOUSLY, ee, iop);
+	ApplyPatches(s_active_patches, PPT_COMBINED_0_1, ee, iop);
+}
+
+void Patch::ApplyPatches(
+	const std::vector<const PatchCommand*>& patches,
+	patch_place_type place,
+	EEMemoryInterface& ee,
+	IOPMemoryInterface& iop)
+{
+	for (const PatchCommand* i : patches)
 		if (i->placetopatch == place)
 			ApplyPatch(i, ee, iop);
-	}
+}
+
+void Patch::ApplyPatches(
+	const std::vector<const PatchCommand*>& patches,
+	patch_place_type place,
+	MemoryInterface& ee,
+	MemoryInterface& iop)
+{
+	for (const PatchCommand* i : patches)
+		if (i->placetopatch == place)
+			ApplyPatch(i, ee, iop);
 }
 
 u32 Patch::GetActiveGameDBPatchesCount()
@@ -1703,6 +1653,8 @@ void Patch::handle_extended_t(const PatchCommand* p, Memory& memory)
 }
 
 template <typename EEMemory, typename IOPMemory>
+	requires std::is_base_of_v<MemoryInterface, EEMemory> &&
+             std::is_base_of_v<MemoryInterface, IOPMemory>
 void Patch::ApplyPatch(const PatchCommand* p, EEMemory& ee, IOPMemory& iop)
 {
 	u64 ledata = 0;
