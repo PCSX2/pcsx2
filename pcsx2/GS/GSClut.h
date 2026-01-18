@@ -49,6 +49,10 @@ class alignas(32) GSClut final : public GSAlignedClass<32>
 	GSTexture* m_gpu_clut4 = nullptr;
 	GSTexture* m_gpu_clut8 = nullptr;
 	GSTexture* m_current_gpu_clut = nullptr;
+	GSTexture* m_last_gpu_clut = nullptr;
+	GSVector2i m_gpu_clut_last_offset = 0;
+	u64 m_gpu_clut_draw = 0;
+	bool m_gpu_clut_dirty = true;
 
 	typedef void (GSClut::*writeCLUT)(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT);
 
@@ -97,7 +101,14 @@ public:
 	~GSClut();
 
 	__fi GSTexture* GetGPUTexture() const { return m_current_gpu_clut; }
-
+	__fi void SetGPUTextureDirty(u64 draw, GSTexture* texture)
+	{
+		if (texture == m_last_gpu_clut && draw > m_gpu_clut_draw)
+		{
+			m_gpu_clut_draw = draw;
+			m_gpu_clut_dirty = true;
+		}
+	}
 	void Reset();
 	bool InvalidateRange(u32 start_block, u32 end_block, bool is_draw = false);
 	u8 IsInvalid();

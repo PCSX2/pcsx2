@@ -59,11 +59,6 @@ void GSRendererHW::ReadbackTextureCache()
 	g_texture_cache->ReadbackAll();
 }
 
-u64 GSRendererHW::GetLastGPUCLUTDraw()
-{
-	return g_texture_cache->GetLastGPUCLUTDraw();
-}
-
 GSTexture* GSRendererHW::LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVector2i& offset, float* scale, const GSVector2i& size)
 {
 	return g_texture_cache->LookupPaletteSource(CBP, CPSM, CBW, offset, scale, size);
@@ -4905,6 +4900,9 @@ void GSRendererHW::Draw()
 
 	if ((fm & fm_mask) != fm_mask && !no_rt)
 	{
+		if (m_mem.m_clut.GetGPUTexture() && m_mem.m_clut.GetGPUTexture() == rt->m_texture)
+			m_mem.m_clut.SetGPUTextureDirty(rt->m_last_draw, rt->m_texture);
+
 		g_texture_cache->InvalidateVideoMem(context->offset.fb, real_rect, false);
 
 		// Remove overwritten Zs at the FBP.
