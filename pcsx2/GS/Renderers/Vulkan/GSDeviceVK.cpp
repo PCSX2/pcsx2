@@ -1348,13 +1348,27 @@ void GSDeviceVK::SubmitCommandBuffer(VKSwapChain* present_swap_chain)
 
 	if (present_swap_chain)
 	{
-		const VkPresentInfoKHR present_info = {VK_STRUCTURE_TYPE_PRESENT_INFO_KHR, nullptr, 1,
-			present_swap_chain->GetRenderingFinishedSemaphorePtr(), 1, present_swap_chain->GetSwapChainPtr(),
+		// vkQueuePresentKHR on NVidia dosn't seem to properly wait on the passed semaphore, causing artifacts.
+		// OBS capture with BPM encouters issues, but can apparently occur on the presented image aswell.
+		// Instead, wait on the RenderingFinished semaphore with vkQueueSubmit.
+		const VkSubmitInfo submit_present_info = {VK_STRUCTURE_TYPE_SUBMIT_INFO, nullptr, 1,
+			present_swap_chain->GetRenderingFinishedSemaphorePtr(), &wait_bits};
+
+		res = vkQueueSubmit(m_present_queue, 1, &submit_present_info, nullptr);
+		if (res != VK_SUCCESS)
+		{
+			LOG_VULKAN_ERROR(res, "vkQueueSubmit failed: ");
+			m_last_submit_failed = true;
+			return;
+		}
+
+		const VkPresentInfoKHR present_info = {VK_STRUCTURE_TYPE_PRESENT_INFO_KHR, nullptr, 0,
+			nullptr, 1, present_swap_chain->GetSwapChainPtr(),
 			present_swap_chain->GetCurrentImageIndexPtr(), nullptr};
 
 		present_swap_chain->ResetImageAcquireResult();
 
-		const VkResult res = vkQueuePresentKHR(m_present_queue, &present_info);
+		res = vkQueuePresentKHR(m_present_queue, &present_info);
 		if (res != VK_SUCCESS && res != VK_SUBOPTIMAL_KHR)
 		{
 			// VK_ERROR_OUT_OF_DATE_KHR is not fatal, just means we need to recreate our swap chain.
