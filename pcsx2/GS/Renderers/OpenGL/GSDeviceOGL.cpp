@@ -770,6 +770,11 @@ bool GSDeviceOGL::CheckFeatures()
 		m_features.line_expand ? "hardware" : (m_features.vs_expand ? "vertex expanding" : "UNSUPPORTED"),
 		m_features.vs_expand ? "vertex expanding" : "CPU");
 
+	if (!GLAD_GL_ARB_conservative_depth)
+	{
+		Console.Warning("GLAD_GL_ARB_conservative_depth is not supported. This will reduce performance.");
+	}
+
 	return true;
 }
 
@@ -1292,6 +1297,16 @@ std::string GSDeviceOGL::GenGlslHeader(const std::string_view entry, GLenum type
 		header += "#define HAS_FRAMEBUFFER_FETCH 1\n";
 	else
 		header += "#define HAS_FRAMEBUFFER_FETCH 0\n";
+
+	if (GLAD_GL_ARB_conservative_depth)
+	{
+		header += "#extension GL_ARB_conservative_depth : enable\n";
+		header += "#define HAS_CONSERVATIVE_DEPTH 1\n";
+	}
+	else
+	{
+		header += "#define HAS_CONSERVATIVE_DEPTH 0\n";
+	}
 
 	// Allow to puts several shader in 1 files
 	switch (type)
