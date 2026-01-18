@@ -361,6 +361,10 @@ layout(set = 1, binding = 1) uniform texture2D Palette;
 layout(set = 1, binding = 3) uniform texture2D PrimMinTexture;
 #endif
 
+#if PS_ZFLOOR || PS_ZCLAMP
+layout(depth_less) out float gl_FragDepth;
+#endif
+
 #if NEEDS_TEX
 
 vec4 sample_c(vec2 uv)
