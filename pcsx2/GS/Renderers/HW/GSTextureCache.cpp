@@ -3815,23 +3815,54 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 						if (GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets && t->Inside(dst->m_TEX0.TBP0, dst->m_TEX0.TBW, dst->m_TEX0.PSM, dst->m_valid) &&
 							GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == GSLocalMemory::m_psm[dst->m_TEX0.PSM].bpp)
 						{
-							dst->m_TEX0.TBP0 = t->m_TEX0.TBP0;
-							dst->m_valid = t->m_valid;
-							dst->m_drawn_since_read = t->m_drawn_since_read;
-							dst->m_end_block = t->m_end_block;
-							dst->m_valid_rgb = true;
-							t->m_valid_rgb = false;
-							t->m_was_dst_matched = true;
+							// if this part is dirty, then let's break it in two.
+							const GSVector4i dirty_rect = t->m_dirty.GetTotalRect(t->m_TEX0, t->m_unscaled_size);
+							if (GSLocalMemory::GetStartBlockAddress(t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM, dirty_rect) >= dst->m_TEX0.TBP0)
+							{
+								t->m_valid.w = dirty_rect.y;
 
-							dst->ResizeTexture(t->m_unscaled_size.x, t->m_unscaled_size.y);
+								if (t->m_valid.rempty())
+								{
+									if (src && src->m_target && src->m_from_target == t)
+									{
+										src->m_from_target = nullptr;
+										src->m_texture = t->m_texture;
+										src->m_target_direct = false;
+										src->m_shared_texture = false;
 
-							const ShaderConvert shader = (GSLocalMemory::m_psm[dst->m_TEX0.PSM].trbpp == 16) ? ShaderConvert::RGB5A1_TO_FLOAT16 :
-							                             (GSLocalMemory::m_psm[dst->m_TEX0.PSM].trbpp == 32) ? ShaderConvert::RGBA8_TO_FLOAT32 :
-							                                                                                   ShaderConvert::RGBA8_TO_FLOAT24;
+										t->m_texture = nullptr;
+										i = list.erase(j);
+										delete t;
+									}
+									else
+									{
+										InvalidateSourcesFromTarget(t);
+										i = list.erase(j);
+										delete t;
+									}
+								}
+								else
+									t->UpdateValidity(t->m_valid, true);
+							}
+							else
+							{
+								dst->m_TEX0.TBP0 = t->m_TEX0.TBP0;
+								dst->m_valid = t->m_valid;
+								dst->m_drawn_since_read = t->m_drawn_since_read;
+								dst->m_end_block = t->m_end_block;
+								dst->m_valid_rgb = true;
+								t->m_valid_rgb = false;
+								t->m_was_dst_matched = true;
 
-							g_gs_device->StretchRect(t->m_texture, GSVector4(0, 0, 1, 1),
-								dst->m_texture, GSVector4(t->GetUnscaledRect()) * GSVector4(dst->GetScale()), shader, false);
+								dst->ResizeTexture(t->m_unscaled_size.x, t->m_unscaled_size.y);
 
+								const ShaderConvert shader = (GSLocalMemory::m_psm[dst->m_TEX0.PSM].trbpp == 16) ? ShaderConvert::RGB5A1_TO_FLOAT16 :
+								                             (GSLocalMemory::m_psm[dst->m_TEX0.PSM].trbpp == 32) ? ShaderConvert::RGBA8_TO_FLOAT32 :
+								                                                                                   ShaderConvert::RGBA8_TO_FLOAT24;
+
+								g_gs_device->StretchRect(t->m_texture, GSVector4(0, 0, 1, 1),
+									dst->m_texture, GSVector4(t->GetUnscaledRect()) * GSVector4(dst->GetScale()), shader, false);
+							}
 							break;
 						}
 						else
@@ -3858,7 +3889,18 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 
 						if (height_adjust < t->m_unscaled_size.y)
 						{
-							t->m_TEX0.TBP0 = GSLocalMemory::GetStartBlockAddress(t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM, GSVector4i(0, height_adjust, t->m_valid.z, t->m_valid.w));
+							const u32 new_base_tbp = GSLocalMemory::GetStartBlockAddress(t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM, GSVector4i(0, height_adjust, t->m_valid.z, t->m_valid.w));
+							if (t->m_dirty.size() > 0)
+							{
+								u32 dirty_end = GSLocalMemory::GetEndBlockAddress(t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM, t->m_dirty.GetTotalRect(t->m_TEX0, t->m_unscaled_size));
+
+								if (new_base_tbp >= dirty_end)
+									t->m_dirty.clear();
+								else
+									t->Update(true);
+							}
+
+							t->m_TEX0.TBP0 = new_base_tbp;
 							t->m_valid.w -= height_adjust;
 							t->ResizeValidity(t->m_valid);
 
@@ -4368,16 +4410,19 @@ void GSTextureCache::InvalidateContainedTargets(u32 start_bp, u32 end_bp, u32 wr
 				const u32 end_width = write_bw * 64;
 				const u32 end_height = ((end_page_offset / std::max(write_bw, 1U)) * GSLocalMemory::m_psm[write_psm].pgs.y) + GSLocalMemory::m_psm[write_psm].pgs.y;
 				const GSVector4i r = GSVector4i(0, 0, end_width, end_height);
-				const GSVector4i invalidate_r = TranslateAlignedRectByPage(t, start_bp, write_psm, write_bw, r, false).rintersect(t->m_valid); // it is invalidation but we need a real rect.
+				const GSVector4i invalidate_r = TranslateAlignedRectByPage(t, start_bp, write_psm, write_bw, r, true).rintersect(t->m_valid); // it is invalidation but we need a real rect.
 
 				if (offset == 0 || dirty_rect.rempty() || !dirty_rect.rintersect(invalidate_r).rempty())
 				{
 					if (write_bw == t->m_TEX0.TBW && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == GSLocalMemory::m_psm[write_psm].bpp)
 					{
-
 						RGBAMask mask;
 						mask._u32 = GSUtil::GetChannelMask(write_psm, fb_mask);
-						AddDirtyRectTarget(t, invalidate_r, t->m_TEX0.PSM, t->m_TEX0.TBW, mask, false);
+						
+						if (write_bw != t->m_TEX0.TBW)
+							DirtyRectByPage(start_bp, write_psm, write_bw, t, r);
+						else
+							AddDirtyRectTarget(t, invalidate_r, t->m_TEX0.PSM, t->m_TEX0.TBW, mask, false);
 					}
 
 					++i;
