@@ -490,6 +490,18 @@ bool VKSwapChain::CreateSwapChain()
 			sema.available_semaphore = VK_NULL_HANDLE;
 			return false;
 		}
+
+		res = vkCreateSemaphore(
+			GSDeviceVK::GetInstance()->GetDevice(), &semaphore_info, nullptr, &sema.present_ready_semaphore);
+		if (res != VK_SUCCESS)
+		{
+			LOG_VULKAN_ERROR(res, "vkCreateSemaphore failed: ");
+			vkDestroySemaphore(GSDeviceVK::GetInstance()->GetDevice(), sema.rendering_finished_semaphore, nullptr);
+			vkDestroySemaphore(GSDeviceVK::GetInstance()->GetDevice(), sema.available_semaphore, nullptr);
+			sema.rendering_finished_semaphore = VK_NULL_HANDLE;
+			sema.available_semaphore = VK_NULL_HANDLE;
+			return false;
+		}
 	}
 
 	return true;
@@ -505,6 +517,8 @@ void VKSwapChain::DestroySwapChainImages()
 	m_images.clear();
 	for (auto& it : m_semaphores)
 	{
+		if (it.present_ready_semaphore != VK_NULL_HANDLE)
+			vkDestroySemaphore(GSDeviceVK::GetInstance()->GetDevice(), it.present_ready_semaphore, nullptr);
 		if (it.rendering_finished_semaphore != VK_NULL_HANDLE)
 			vkDestroySemaphore(GSDeviceVK::GetInstance()->GetDevice(), it.rendering_finished_semaphore, nullptr);
 		if (it.available_semaphore != VK_NULL_HANDLE)

@@ -1351,10 +1351,12 @@ void GSDeviceVK::SubmitCommandBuffer(VKSwapChain* present_swap_chain)
 		// vkQueuePresentKHR on NVidia dosn't seem to properly wait on the passed semaphore, causing artifacts.
 		// OBS capture with BPM encouters issues, but can apparently occur on the presented image aswell.
 		// Instead, wait on the RenderingFinished semaphore with vkQueueSubmit.
-		const VkSubmitInfo submit_present_info = {VK_STRUCTURE_TYPE_SUBMIT_INFO, nullptr, 1,
-			present_swap_chain->GetRenderingFinishedSemaphorePtr(), &wait_bits};
+		const uint32_t present_wait_bits = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+		const VkSubmitInfo submit_present_wait_info = {VK_STRUCTURE_TYPE_SUBMIT_INFO, nullptr, 1,
+			present_swap_chain->GetRenderingFinishedSemaphorePtr(), &present_wait_bits, 0,
+			nullptr, 1, present_swap_chain->GetPresentReadySemaphorePtr()};
 
-		res = vkQueueSubmit(m_present_queue, 1, &submit_present_info, nullptr);
+		res = vkQueueSubmit(m_present_queue, 1, &submit_present_wait_info, nullptr);
 		if (res != VK_SUCCESS)
 		{
 			LOG_VULKAN_ERROR(res, "vkQueueSubmit failed: ");
@@ -1362,8 +1364,8 @@ void GSDeviceVK::SubmitCommandBuffer(VKSwapChain* present_swap_chain)
 			return;
 		}
 
-		const VkPresentInfoKHR present_info = {VK_STRUCTURE_TYPE_PRESENT_INFO_KHR, nullptr, 0,
-			nullptr, 1, present_swap_chain->GetSwapChainPtr(),
+		const VkPresentInfoKHR present_info = {VK_STRUCTURE_TYPE_PRESENT_INFO_KHR, nullptr, 1,
+			present_swap_chain->GetPresentReadySemaphorePtr(), 1, present_swap_chain->GetSwapChainPtr(),
 			present_swap_chain->GetCurrentImageIndexPtr(), nullptr};
 
 		present_swap_chain->ResetImageAcquireResult();
