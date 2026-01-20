@@ -64,6 +64,14 @@ public:
 	{
 		return &m_semaphores[m_current_semaphore].rendering_finished_semaphore;
 	}
+	__fi VkSemaphore GetPresentReadySemaphore() const
+	{
+		return m_semaphores[m_current_semaphore].present_ready_semaphore;
+	}
+	__fi const VkSemaphore* GetPresentReadySemaphorePtr() const
+	{
+		return &m_semaphores[m_current_semaphore].present_ready_semaphore;
+	}
 
 	VkFormat GetTextureFormat() const;
 	VkResult AcquireNextImage();
@@ -92,6 +100,7 @@ private:
 	{
 		VkSemaphore available_semaphore;
 		VkSemaphore rendering_finished_semaphore;
+		VkSemaphore present_ready_semaphore;
 	};
 
 	WindowInfo m_window_info;
