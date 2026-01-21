@@ -4415,7 +4415,14 @@ void GSTextureCache::InvalidateContainedTargets(u32 start_bp, u32 end_bp, u32 wr
 					Target* const rev_t = *j;
 					if (rev_t->m_TEX0.TBP0 == t->m_TEX0.TBP0 && GSLocalMemory::m_psm[rev_t->m_TEX0.PSM].bpp == GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp)
 					{
-						rev_t->m_was_dst_matched = false;
+						if (t->m_last_draw > rev_t->m_last_draw && GSUtil::GetChannelMask(t->m_TEX0.PSM) == GSUtil::GetChannelMask(rev_t->m_TEX0.PSM))
+						{
+							GL_CACHE("TC: InvalidateContainedTargets: Remove Target %s[%x, %s]", to_string(1 - type), rev_t->m_TEX0.TBP0, GSUtil::GetPSMName(rev_t->m_TEX0.PSM));
+							rev_list.erase(j);
+							delete rev_t;
+						}
+						else
+							rev_t->m_was_dst_matched = false;
 						break;
 					}
 					++j;
