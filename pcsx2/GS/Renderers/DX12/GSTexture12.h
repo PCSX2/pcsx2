@@ -74,7 +74,7 @@ public:
 	void Destroy(bool defer = true);
 
 	void TransitionToState(const D3D12CommandList&, ResourceState state);
-	void TransitionSubresourceToState(const D3D12CommandList& cmdlist, int level, ResourceState before_state,
+	void TransitionSubresourceToState(const D3D12CommandList& cmdlist, u32 level, ResourceState before_state,
 		ResourceState after_state) const;
 
 	// Call when the texture is bound to the pipeline, or read from in a copy.
