@@ -2404,250 +2404,276 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 	};
 
 	Target* dst = nullptr;
-	auto& list = m_dst[type];
+	Target* dst_match = nullptr;
+	auto* list = &m_dst[type];
 
 	const GSVector4i min_rect = draw_rect.max_u32(GSVector4i(0, 0, draw_rect.x, draw_rect.y));
 	// TODO: Move all frame stuff to its own routine too.
 	if (!is_frame)
 	{
-		for (auto i = list.begin(); i != list.end();)
+		for (int iteration = 0; iteration < 2; iteration++)
 		{
-			Target* t = *i;
-			if (bp == t->m_TEX0.TBP0)
-			{
-				bool can_use = true;
+			if (dst != nullptr)
+				break;
 
-				if (dst && ((GSState::s_n - dst->m_last_draw) < (GSState::s_n - t->m_last_draw) && dst->m_TEX0.TBP0 <= bp))
+			list = &m_dst[iteration == 0 ? type : (1 - type)];
+			for (auto i = list->begin(); i != list->end();)
+			{
+				Target* t = *i;
+				if (bp == t->m_TEX0.TBP0)
 				{
-					DevCon.Warning("Ignoring target at %x as one at %x is newer", t->m_TEX0.TBP0, dst->m_TEX0.TBP0);
-					i++;
-					continue;
-				}
-				// if It's an old target and it's being completely overwritten, kill it.
-				// Dragon Quest 8 reuses a render-target sized buffer as a single-page buffer, without clearing it. But,
-				// it does dirty it by writing over the 64x64 region. So while we can't use this heuristic for tossing
-				// targets at BW=1 because it breaks other games, we can when the *new* buffer area is completely dirty.
-				if (((!preserve_rgb && !preserve_alpha) || (t->m_was_dst_matched && fbmask == 0xffffff)) && TEX0.TBW != t->m_TEX0.TBW)
-				{
-					// Old targets or shrunk targets where Y draw height goes outside the page.
-					if (TEX0.TBW > 1 && (t->m_age >= 1 || (type == RenderTarget && draw_rect.w > GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y && TEX0.TBW < t->m_TEX0.TBW)))
+					bool can_use = true;
+
+					if (dst && ((GSState::s_n - dst->m_last_draw) < (GSState::s_n - t->m_last_draw) && dst->m_TEX0.TBP0 <= bp))
+					{
+						DevCon.Warning("Ignoring target at %x as one at %x is newer", t->m_TEX0.TBP0, dst->m_TEX0.TBP0);
+						i++;
+						continue;
+					}
+					// if It's an old target and it's being completely overwritten, kill it.
+					// Dragon Quest 8 reuses a render-target sized buffer as a single-page buffer, without clearing it. But,
+					// it does dirty it by writing over the 64x64 region. So while we can't use this heuristic for tossing
+					// targets at BW=1 because it breaks other games, we can when the *new* buffer area is completely dirty.
+					if (((!preserve_rgb && !preserve_alpha) || (t->m_was_dst_matched && fbmask == 0xffffff)) && TEX0.TBW != t->m_TEX0.TBW)
+					{
+						// Old targets or shrunk targets where Y draw height goes outside the page.
+						if (TEX0.TBW > 1 && (t->m_age >= 1 || (type == RenderTarget && draw_rect.w > GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y && TEX0.TBW < t->m_TEX0.TBW)))
+						{
+							can_use = false;
+						}
+						else if (!t->m_dirty.empty())
+						{
+							const GSVector4i size_rect = GSVector4i::loadh(size);
+							can_use = !t->m_dirty.GetTotalRect(TEX0, size).rintersect(size_rect).eq(size_rect);
+						}
+					}
+					else if (type == RenderTarget && (fbmask == 0xffffff && !t->m_was_dst_matched && TEX0.TBW != t->m_TEX0.TBW))
+					{
+						// When returning to being matched with the Z buffer in width, we need to make sure the RGB is up to date as it could get used later (Hitman Contracts).
+						auto& rev_list = m_dst[1 - type];
+						for (auto j = rev_list.begin(); j != rev_list.end(); ++j)
+						{
+							Target* ds = *j;
+
+							if (t->m_TEX0.TBP0 != ds->m_TEX0.TBP0 || !ds->m_valid_rgb || TEX0.TBW != ds->m_TEX0.TBW)
+								continue;
+
+							t->m_was_dst_matched = true;
+							t->m_valid_rgb = false;
+							break;
+						}
+					}
+					// TODO: What might be a nicer solution than this, is to rearrange the targets to match the new layout, however this comes with some caviets:
+					// 1. They can draw wider than the FBW
+					// 2. The dirty+valid rects will need to also be rearranged
+					// 3. This could mean larger targets hanging around more
+					// 4. Sources which reference a target may become invalid and will need to be removed
+					// 5. Potential performance implications from additional render passes/copying
+					//
+					// But the bonuses are:
+					// 1. Rearranging the page layout will fix quite a few games which do this
+					// 2. Preserved data will be in the correct place (in most cases)
+					// 3. Less deleting sources/targets
+					// 4. We can basically do clears in hardware, if they aren't insane ones
+					bool dirtied_area = t->m_dirty.size() >= 1;
+
+					// Check it covers the whole area of the new draw
+					if (!is_shuffle && dirtied_area)
+					{
+						const u32 draw_start = GSLocalMemory::GetStartBlockAddress(TEX0.TBP0, TEX0.TBW, TEX0.PSM, draw_rect);
+						const u32 draw_end = GSLocalMemory::GetEndBlockAddress(TEX0.TBP0, TEX0.TBW, TEX0.PSM, draw_rect);
+
+						const GSVector4i dirty_rect = t->m_dirty.GetTotalRect(t->m_TEX0, t->m_unscaled_size);
+						const u32 dirty_start = GSLocalMemory::GetStartBlockAddress(t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM, dirty_rect);
+						const u32 dirty_end = GSLocalMemory::GetEndBlockAddress(t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM, dirty_rect);
+
+						if (dirty_end < draw_end || dirty_start > draw_start)
+							dirtied_area = false;
+					}
+
+					if (can_use && ((!is_shuffle && dirtied_area) || (is_shuffle && src && GSLocalMemory::m_psm[src->m_TEX0.PSM].bpp == 8 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 16)) && ((preserve_alpha && preserve_rgb) || (draw_rect.w > GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y && !possible_clear)) && TEX0.TBW != t->m_TEX0.TBW)
 					{
 						can_use = false;
 					}
-					else if (!t->m_dirty.empty())
+
+					if (can_use)
 					{
-						const GSVector4i size_rect = GSVector4i::loadh(size);
-						can_use = !t->m_dirty.GetTotalRect(TEX0, size).rintersect(size_rect).eq(size_rect);
-					}
-				}
-				else if (type == RenderTarget && (fbmask == 0xffffff && !t->m_was_dst_matched && TEX0.TBW != t->m_TEX0.TBW))
-				{
-					// When returning to being matched with the Z buffer in width, we need to make sure the RGB is up to date as it could get used later (Hitman Contracts).
-					auto& rev_list = m_dst[1 - type];
-					for (auto j = rev_list.begin(); j != rev_list.end(); ++j)
-					{
-						Target* ds = *j;
-
-						if (t->m_TEX0.TBP0 != ds->m_TEX0.TBP0 || !ds->m_valid_rgb || TEX0.TBW != ds->m_TEX0.TBW)
-							continue;
-
-						t->m_was_dst_matched = true;
-						t->m_valid_rgb = false;
-						break;
-					}
-				}
-				// TODO: What might be a nicer solution than this, is to rearrange the targets to match the new layout, however this comes with some caviets:
-				// 1. They can draw wider than the FBW
-				// 2. The dirty+valid rects will need to also be rearranged
-				// 3. This could mean larger targets hanging around more
-				// 4. Sources which reference a target may become invalid and will need to be removed
-				// 5. Potential performance implications from additional render passes/copying
-				//
-				// But the bonuses are:
-				// 1. Rearranging the page layout will fix quite a few games which do this
-				// 2. Preserved data will be in the correct place (in most cases)
-				// 3. Less deleting sources/targets
-				// 4. We can basically do clears in hardware, if they aren't insane ones
-				bool dirtied_area = t->m_dirty.size() >= 1;
-
-				// Check it covers the whole area of the new draw
-				if (!is_shuffle && dirtied_area)
-				{
-					const u32 draw_start = GSLocalMemory::GetStartBlockAddress(TEX0.TBP0, TEX0.TBW, TEX0.PSM, draw_rect);
-					const u32 draw_end = GSLocalMemory::GetEndBlockAddress(TEX0.TBP0, TEX0.TBW, TEX0.PSM, draw_rect);
-
-					const GSVector4i dirty_rect = t->m_dirty.GetTotalRect(t->m_TEX0, t->m_unscaled_size);
-					const u32 dirty_start = GSLocalMemory::GetStartBlockAddress(t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM, dirty_rect);
-					const u32 dirty_end = GSLocalMemory::GetEndBlockAddress(t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM, dirty_rect);
-
-					if (dirty_end < draw_end || dirty_start > draw_start)
-						dirtied_area = false;
-				}
-
-				if (can_use && ((!is_shuffle && dirtied_area) || (is_shuffle && src && GSLocalMemory::m_psm[src->m_TEX0.PSM].bpp == 8 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 16)) && ((preserve_alpha && preserve_rgb) || (draw_rect.w > GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y && !possible_clear)) && TEX0.TBW != t->m_TEX0.TBW)
-				{
-					can_use = false;
-				}
-
-				if (can_use)
-				{
-					if (used)
-						list.MoveFront(i.Index());
-					dst = t;
-
-					dst->m_32_bits_fmt |= (psm_s.bpp != 16);
-					break;
-				}
-				else if (!(src && src->m_from_target == t))
-				{
-					GL_INS("TC: Deleting RT BP 0x%x BW %d PSM %s due to change in target", t->m_TEX0.TBP0, t->m_TEX0.TBW, GSUtil::GetPSMName(t->m_TEX0.PSM));
-					InvalidateSourcesFromTarget(t);
-					i = list.erase(i);
-					delete t;
-
-					continue;
-				}
-			}
-			// Probably pointing to half way through the target
-			else if (!min_rect.rempty() && GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets)
-			{
-				// Some games misuse the scissor so it ends up valid 1 pixel over, which causes hell for us. So check if it still overlaps without the extra pixel.
-				const GSVector4i adjusted_valid = GSVector4i(t->m_valid.x, t->m_valid.y, std::min(t->m_valid.z, static_cast<int>(t->m_TEX0.TBW) * 64), t->m_valid.w - 1);
-				const u32 adjusted_endblock = GSLocalMemory::GetEndBlockAddress(t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM, adjusted_valid);
-				if (adjusted_endblock <= bp)
-				{
-					i++;
-					continue;
-				}
-
-				const u32 widthpage_offset = (std::abs(static_cast<int>(bp - t->m_TEX0.TBP0)) >> 5) % std::max(t->m_TEX0.TBW, 1U);
-				const bool is_aligned_ok = widthpage_offset == 0 || ((min_rect.width() <= static_cast<int>((t->m_TEX0.TBW - widthpage_offset) * 64) && (t->m_TEX0.TBW == TEX0.TBW || TEX0.TBW == 1)) && bp >= t->m_TEX0.TBP0);
-				const bool no_target_or_newer = (!dst || ((GSState::s_n - dst->m_last_draw) < (GSState::s_n - t->m_last_draw)));
-				const bool width_match = (t->m_TEX0.TBW == TEX0.TBW || (TEX0.TBW == 1 && draw_rect.w <= GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y));
-				const bool ds_offset = !ds || offset != 0;
-				const bool is_double_buffer = TEX0.TBP0 == ((((t->m_end_block + 1) - t->m_TEX0.TBP0) / 2) + t->m_TEX0.TBP0);
-				const bool source_match = src && src->m_TEX0.TBP0 <= bp && src->m_end_block > bp && src->m_TEX0.TBW == TEX0.TBW && src->m_from_target && src->m_from_target == t && t->Inside(bp, TEX0.TBW, TEX0.PSM, min_rect);
-				const bool was_used_last_draw = t->m_last_draw == (GSState::s_n - 1);
-				// if it's a shuffle, some games tend to offset back by a page, such as Tomb Raider, for no disernable reason, but it then causes problems.
-				// This can also happen horizontally (Catwoman moves everything one page left with shuffles), but this is too messy to deal with right now.
-				const bool overlaps = t->Overlaps(bp, TEX0.TBW, TEX0.PSM, min_rect) || (is_shuffle && src && GSLocalMemory::m_psm[src->m_TEX0.PSM].bpp == 8 && t->Overlaps(bp, TEX0.TBW, TEX0.PSM, min_rect + GSVector4i(0, 0, 0, 32)));
-				if (source_match || (no_target_or_newer && is_aligned_ok && width_match && overlaps && (is_shuffle || ds_offset || is_double_buffer || was_used_last_draw)))
-				{
-					const GSLocalMemory::psm_t& s_psm = GSLocalMemory::m_psm[TEX0.PSM];
-
-					// If it overlaps but the target is huge and the Z isn't offset, we need to split the buffer, so let's shrink this one down.
-					// 896 is just 448 * 2,just gives the buffer chance to be larger than normal, in case they do something like 640x640, or something ridiculous.
-					if (!is_shuffle && (ds && offset == 0 && (t->m_valid.w >= 896) && ((((t->m_end_block + 1) - t->m_TEX0.TBP0) >> 1) + t->m_TEX0.TBP0) <= bp))
-					{
-						const u32 local_offset = (((bp - t->m_TEX0.TBP0) >> 5) / std::max(t->m_TEX0.TBW, 1U)) * s_psm.pgs.y;
-						if ((dst = CreateTarget(TEX0, GSVector2i(t->m_valid.z, t->m_valid.w - local_offset), GSVector2i(t->m_valid.z, t->m_valid.w - local_offset), scale, type, true, fbmask, false, false, preserve_rgb || preserve_alpha, GSVector4i::zero(), src)))
-							dst->m_32_bits_fmt |= (psm_s.bpp != 16);
-
-						break;
-					}
-
-					// I know what you're thinking, and I hate the guy who wrote it too (me). Project Snowblind, Tomb Raider etc decide to offset where they're drawing using a channel shuffle, and this gets messy, so best just to kill the old target.
-					if (is_shuffle && src && src->m_TEX0.PSM == PSMT8 && GSRendererHW::GetInstance()->m_context->FRAME.FBW == 1 && t->m_last_draw != (GSState::s_n - 1) && src->m_from_target && (src->m_from_target->m_TEX0.TBP0 == src->m_TEX0.TBP0 || (((src->m_TEX0.TBP0 - src->m_from_target->m_TEX0.TBP0) >> 5) % std::max(src->m_from_target->m_TEX0.TBW, 1U) == 0)) && widthpage_offset && src->m_from_target != t)
-					{
-						GL_INS("TC: Deleting RT BP 0x%x BW %d PSM %s offset overwrite shuffle", t->m_TEX0.TBP0, t->m_TEX0.TBW, GSUtil::GetPSMName(t->m_TEX0.PSM));
-						InvalidateSourcesFromTarget(t);
-						i = list.erase(i);
-						delete t;
-
-						continue;
-					}
-
-					if (!is_shuffle && (!GSUtil::HasSameSwizzleBits(t->m_TEX0.PSM, TEX0.PSM) ||
-										   ((widthpage_offset % std::max(t->m_TEX0.TBW, 1U)) != 0 && ((widthpage_offset + (min_rect.width() + (s_psm.pgs.x - 1)) / s_psm.pgs.x)) > t->m_TEX0.TBW)))
-					{
-						const int page_offset = TEX0.TBP0 - t->m_TEX0.TBP0;
-						const int number_pages = page_offset / 32;
-						const u32 tbw = std::max(t->m_TEX0.TBW, 1u);
-						const int row_offset = number_pages / tbw;
-						const int page_height = GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y;
-						const int vertical_position = row_offset * page_height;
-
-						if (src && src->m_from_target == t && src->m_target_direct && vertical_position >= t->m_valid.w / 2)
-						{
-							// Valids and drawn since last read doesn't match, keep the target but resize it.
-							src->m_valid_rect.w = std::min(vertical_position, src->m_valid_rect.w);
-							t->m_valid.w = std::min(vertical_position, t->m_valid.w);
-							t->ResizeValidity(t->m_valid);
-							t->ResizeDrawn(t->m_valid);
-							++i;
-						}
-						else
-						{
-							GL_INS("TC: Deleting RT BP 0x%x BW %d PSM %s due to change in target", t->m_TEX0.TBP0, t->m_TEX0.TBW, GSUtil::GetPSMName(t->m_TEX0.PSM));
-							InvalidateSourcesFromTarget(t);
-							i = list.erase(i);
-							delete t;
-						}
-
-						continue;
-					}
-
-					GSVector4i lookup_rect = min_rect;
-
-					if (is_shuffle)
-						lookup_rect = lookup_rect & GSVector4i(~8);
-
-					const GSVector4i translated_rect = GSVector4i(0, 0, 0, 0).max_i32(TranslateAlignedRectByPage(t, TEX0.TBP0, TEX0.PSM, TEX0.TBW, lookup_rect));
-					const GSVector4i dirty_rect = t->m_dirty.empty() ? GSVector4i::zero() : t->m_dirty.GetTotalRect(t->m_TEX0, t->m_unscaled_size);
-					const bool all_dirty = dirty_rect.eq(t->m_valid);
-
-
-					if (!is_shuffle && !dirty_rect.rempty() && (!preserve_alpha && !preserve_rgb) && (GSState::s_n - 3) > t->m_last_draw)
-					{
-						GL_INS("TC: Deleting RT BP 0x%x BW %d PSM %s due to dirty areas not preserved (Likely change in target)", t->m_TEX0.TBP0, t->m_TEX0.TBW, GSUtil::GetPSMName(t->m_TEX0.PSM));
-						InvalidateSourcesFromTarget(t);
-						i = list.erase(i);
-						delete t;
-
-						continue;
-					}
-
-					if (!all_dirty && ((translated_rect.w <= t->m_valid.w) || widthpage_offset == 0 || (GSState::s_n - 3) <= t->m_last_draw))
-					{
-						if (TEX0.TBW == t->m_TEX0.TBW && !is_shuffle && widthpage_offset == 0 && ((min_rect.w + 63) / 64) > 1)
-						{
-							// Beyond Good and Evil does this awful thing where it puts one framebuffer at 0xf00, with the first row of pages blanked out, and the whole thing goes down to 0x2080
-							// which is a problem, because it then puts the Z buffer at 0x1fc0, then offsets THAT by 1 row of pages, so it starts at, you guessed it, 2080.
-							// So let's check the *real* start.
-							u32 real_start_address = GSLocalMemory::GetStartBlockAddress(t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM, t->m_drawn_since_read);
-							u32 new_end_address = GSLocalMemory::GetEndBlockAddress(TEX0.TBP0, TEX0.TBW, TEX0.PSM, min_rect);
-
-							// Not really overlapping.
-							if (real_start_address > new_end_address)
-							{
-								i++;
-								continue;
-							}
-						}
-
-						//DevCon.Warning("Here draw %d wanted %x PSM %x got %x PSM %x offset of %d pages width %d pages draw width %d", GSState::s_n, bp, TEX0.PSM, t->m_TEX0.TBP0, t->m_TEX0.PSM, (bp - t->m_TEX0.TBP0) >> 5, t->m_TEX0.TBW, draw_rect.width());
-						dst = t;
-
-						dst->m_32_bits_fmt |= (psm_s.bpp != 16);
-						//Continue just in case there's a newer target
 						if (used)
-							list.MoveFront(i.Index());
-						if (t->m_TEX0.TBP0 <= bp || GSLocalMemory::GetStartBlockAddress(TEX0.TBP0, TEX0.TBW, TEX0.PSM, min_rect) >= bp)
-							break;
+							list->MoveFront(i.Index());
+
+						if (iteration == 1)
+						{
+							dst_match = t;
+							dst_match->m_32_bits_fmt |= (psm_s.bpp != 16);
+						}
 						else
-							continue;
+						{
+							dst = t;
+							dst->m_32_bits_fmt |= (psm_s.bpp != 16);
+						}
+
+						break;
+					}
+					else if (!(src && src->m_from_target == t))
+					{
+						GL_INS("TC: Deleting RT BP 0x%x BW %d PSM %s due to change in target", t->m_TEX0.TBP0, t->m_TEX0.TBW, GSUtil::GetPSMName(t->m_TEX0.PSM));
+						InvalidateSourcesFromTarget(t);
+						i = list->erase(i);
+						delete t;
+
+						continue;
 					}
 				}
-			}
+				// Probably pointing to half way through the target
+				else if (!min_rect.rempty() && GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets)
+				{
+					// Some games misuse the scissor so it ends up valid 1 pixel over, which causes hell for us. So check if it still overlaps without the extra pixel.
+					const GSVector4i adjusted_valid = GSVector4i(t->m_valid.x, t->m_valid.y, std::min(t->m_valid.z, static_cast<int>(t->m_TEX0.TBW) * 64), t->m_valid.w - 1);
+					const u32 adjusted_endblock = GSLocalMemory::GetEndBlockAddress(t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM, adjusted_valid);
+					if (adjusted_endblock <= bp)
+					{
+						i++;
+						continue;
+					}
 
-			i++;
+					const u32 widthpage_offset = (std::abs(static_cast<int>(bp - t->m_TEX0.TBP0)) >> 5) % std::max(t->m_TEX0.TBW, 1U);
+					const bool is_aligned_ok = widthpage_offset == 0 || ((min_rect.width() <= static_cast<int>((t->m_TEX0.TBW - widthpage_offset) * 64) && (t->m_TEX0.TBW == TEX0.TBW || TEX0.TBW == 1)) && bp >= t->m_TEX0.TBP0);
+					const bool no_target_or_newer = (!dst || ((GSState::s_n - dst->m_last_draw) < (GSState::s_n - t->m_last_draw)));
+					const bool width_match = (t->m_TEX0.TBW == TEX0.TBW || (TEX0.TBW == 1 && draw_rect.w <= GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y));
+					const bool ds_offset = !ds || offset != 0;
+					const bool is_double_buffer = TEX0.TBP0 == ((((t->m_end_block + 1) - t->m_TEX0.TBP0) / 2) + t->m_TEX0.TBP0);
+					const bool source_match = src && src->m_TEX0.TBP0 <= bp && src->m_end_block > bp && src->m_TEX0.TBW == TEX0.TBW && src->m_from_target && src->m_from_target == t && t->Inside(bp, TEX0.TBW, TEX0.PSM, min_rect);
+					const bool was_used_last_draw = t->m_last_draw == (GSState::s_n - 1);
+					// if it's a shuffle, some games tend to offset back by a page, such as Tomb Raider, for no disernable reason, but it then causes problems.
+					// This can also happen horizontally (Catwoman moves everything one page left with shuffles), but this is too messy to deal with right now.
+					const bool overlaps = t->Overlaps(bp, TEX0.TBW, TEX0.PSM, min_rect) || (is_shuffle && src && GSLocalMemory::m_psm[src->m_TEX0.PSM].bpp == 8 && t->Overlaps(bp, TEX0.TBW, TEX0.PSM, min_rect + GSVector4i(0, 0, 0, 32)));
+					if (source_match || (no_target_or_newer && is_aligned_ok && width_match && overlaps && (is_shuffle || ds_offset || is_double_buffer || was_used_last_draw)))
+					{
+						const GSLocalMemory::psm_t& s_psm = GSLocalMemory::m_psm[TEX0.PSM];
+
+						// If it overlaps but the target is huge and the Z isn't offset, we need to split the buffer, so let's shrink this one down.
+						// 896 is just 448 * 2,just gives the buffer chance to be larger than normal, in case they do something like 640x640, or something ridiculous.
+						if (!is_shuffle && (ds && offset == 0 && (t->m_valid.w >= 896) && ((((t->m_end_block + 1) - t->m_TEX0.TBP0) >> 1) + t->m_TEX0.TBP0) <= bp))
+						{
+							const u32 local_offset = (((bp - t->m_TEX0.TBP0) >> 5) / std::max(t->m_TEX0.TBW, 1U)) * s_psm.pgs.y;
+							if ((dst = CreateTarget(TEX0, GSVector2i(t->m_valid.z, t->m_valid.w - local_offset), GSVector2i(t->m_valid.z, t->m_valid.w - local_offset), scale, type, true, fbmask, false, false, preserve_rgb || preserve_alpha, GSVector4i::zero(), src)))
+								dst->m_32_bits_fmt |= (psm_s.bpp != 16);
+
+							break;
+						}
+
+						// I know what you're thinking, and I hate the guy who wrote it too (me). Project Snowblind, Tomb Raider etc decide to offset where they're drawing using a channel shuffle, and this gets messy, so best just to kill the old target.
+						if (is_shuffle && src && src->m_TEX0.PSM == PSMT8 && GSRendererHW::GetInstance()->m_context->FRAME.FBW == 1 && t->m_last_draw != (GSState::s_n - 1) && src->m_from_target && (src->m_from_target->m_TEX0.TBP0 == src->m_TEX0.TBP0 || (((src->m_TEX0.TBP0 - src->m_from_target->m_TEX0.TBP0) >> 5) % std::max(src->m_from_target->m_TEX0.TBW, 1U) == 0)) && widthpage_offset && src->m_from_target != t)
+						{
+							GL_INS("TC: Deleting RT BP 0x%x BW %d PSM %s offset overwrite shuffle", t->m_TEX0.TBP0, t->m_TEX0.TBW, GSUtil::GetPSMName(t->m_TEX0.PSM));
+							InvalidateSourcesFromTarget(t);
+							i = list->erase(i);
+							delete t;
+
+							continue;
+						}
+
+						if (!is_shuffle && (!GSUtil::HasSameSwizzleBits(t->m_TEX0.PSM, TEX0.PSM) ||
+											   ((widthpage_offset % std::max(t->m_TEX0.TBW, 1U)) != 0 && ((widthpage_offset + (min_rect.width() + (s_psm.pgs.x - 1)) / s_psm.pgs.x)) > t->m_TEX0.TBW)))
+						{
+							const int page_offset = TEX0.TBP0 - t->m_TEX0.TBP0;
+							const int number_pages = page_offset / 32;
+							const u32 tbw = std::max(t->m_TEX0.TBW, 1u);
+							const int row_offset = number_pages / tbw;
+							const int page_height = GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y;
+							const int vertical_position = row_offset * page_height;
+
+							if (src && src->m_from_target == t && src->m_target_direct && vertical_position >= t->m_valid.w / 2)
+							{
+								// Valids and drawn since last read doesn't match, keep the target but resize it.
+								src->m_valid_rect.w = std::min(vertical_position, src->m_valid_rect.w);
+								t->m_valid.w = std::min(vertical_position, t->m_valid.w);
+								t->ResizeValidity(t->m_valid);
+								t->ResizeDrawn(t->m_valid);
+								++i;
+							}
+							else
+							{
+								GL_INS("TC: Deleting RT BP 0x%x BW %d PSM %s due to change in target", t->m_TEX0.TBP0, t->m_TEX0.TBW, GSUtil::GetPSMName(t->m_TEX0.PSM));
+								InvalidateSourcesFromTarget(t);
+								i = list->erase(i);
+								delete t;
+							}
+
+							continue;
+						}
+
+						GSVector4i lookup_rect = min_rect;
+
+						if (is_shuffle)
+							lookup_rect = lookup_rect & GSVector4i(~8);
+
+						const GSVector4i translated_rect = GSVector4i(0, 0, 0, 0).max_i32(TranslateAlignedRectByPage(t, TEX0.TBP0, TEX0.PSM, TEX0.TBW, lookup_rect));
+						const GSVector4i dirty_rect = t->m_dirty.empty() ? GSVector4i::zero() : t->m_dirty.GetTotalRect(t->m_TEX0, t->m_unscaled_size);
+						const bool all_dirty = dirty_rect.eq(t->m_valid);
+
+
+						if (!is_shuffle && !dirty_rect.rempty() && (!preserve_alpha && !preserve_rgb) && (GSState::s_n - 3) > t->m_last_draw)
+						{
+							GL_INS("TC: Deleting RT BP 0x%x BW %d PSM %s due to dirty areas not preserved (Likely change in target)", t->m_TEX0.TBP0, t->m_TEX0.TBW, GSUtil::GetPSMName(t->m_TEX0.PSM));
+							InvalidateSourcesFromTarget(t);
+							i = list->erase(i);
+							delete t;
+
+							continue;
+						}
+
+						if (!all_dirty && ((translated_rect.w <= t->m_valid.w) || widthpage_offset == 0 || (GSState::s_n - 3) <= t->m_last_draw))
+						{
+							if (TEX0.TBW == t->m_TEX0.TBW && !is_shuffle && widthpage_offset == 0 && ((min_rect.w + 63) / 64) > 1)
+							{
+								// Beyond Good and Evil does this awful thing where it puts one framebuffer at 0xf00, with the first row of pages blanked out, and the whole thing goes down to 0x2080
+								// which is a problem, because it then puts the Z buffer at 0x1fc0, then offsets THAT by 1 row of pages, so it starts at, you guessed it, 2080.
+								// So let's check the *real* start.
+								u32 real_start_address = GSLocalMemory::GetStartBlockAddress(t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM, t->m_drawn_since_read);
+								u32 new_end_address = GSLocalMemory::GetEndBlockAddress(TEX0.TBP0, TEX0.TBW, TEX0.PSM, min_rect);
+
+								// Not really overlapping.
+								if (real_start_address > new_end_address)
+								{
+									i++;
+									continue;
+								}
+							}
+
+							//DevCon.Warning("Here draw %d wanted %x PSM %x got %x PSM %x offset of %d pages width %d pages draw width %d", GSState::s_n, bp, TEX0.PSM, t->m_TEX0.TBP0, t->m_TEX0.PSM, (bp - t->m_TEX0.TBP0) >> 5, t->m_TEX0.TBW, draw_rect.width());
+							if (iteration == 1)
+							{
+								dst_match = t;
+								dst_match->m_32_bits_fmt |= (psm_s.bpp != 16);
+
+								break;
+							}
+							else
+							{
+								dst = t;
+								dst->m_32_bits_fmt |= (psm_s.bpp != 16);
+							}
+							//Continue just in case there's a newer target
+							if (used)
+								list->MoveFront(i.Index());
+							if (t->m_TEX0.TBP0 <= bp || GSLocalMemory::GetStartBlockAddress(TEX0.TBP0, TEX0.TBW, TEX0.PSM, min_rect) >= bp)
+								break;
+							else
+								continue;
+						}
+					}
+				}
+
+				i++;
+			}
 		}
 	}
 	else
 	{
 		pxAssert(type == RenderTarget);
 		// Let's try to find a perfect frame that contains valid data
-		for (auto i = list.begin(); i != list.end(); ++i)
+		for (auto i = list->begin(); i != list->end(); ++i)
 		{
 			Target* t = *i;
 
@@ -2673,7 +2699,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 						{
 							DevCon.Warning("Wanted %x psm %x bw %x, got %x psm %x bw %x, deleting", TEX0.TBP0, TEX0.PSM, TEX0.TBW, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW);
 							InvalidateSourcesFromTarget(t);
-							i = list.erase(i);
+							i = list->erase(i);
 							delete t;
 							continue;
 						}
@@ -2691,7 +2717,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 		// 2nd try ! Try to find a frame at the requested bp -> bp + size is inside of (or equal to)
 		if (!dst)
 		{
-			for (auto i = list.begin(); i != list.end(); ++i)
+			for (auto i = list->begin(); i != list->end(); ++i)
 			{
 				Target* t = *i;
 				const u32 end_block = GSLocalMemory::GetEndBlockAddress(bp, TEX0.TBW, TEX0.PSM, GSVector4i(0, size.y, size.x, size.y + 1));
@@ -2711,7 +2737,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 						{
 							DevCon.Warning("2 Wanted %x psm %x bw %x, got %x psm %x bw %x, deleting", TEX0.TBP0, TEX0.PSM, TEX0.TBW, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW);
 							InvalidateSourcesFromTarget(t);
-							i = list.erase(i);
+							i = list->erase(i);
 							delete t;
 							continue;
 						}
@@ -2731,7 +2757,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 		// 3rd try ! Try to find a frame that doesn't contain valid data (honestly I'm not sure we need to do it)
 		if (!dst)
 		{
-			for (auto i = list.begin(); i != list.end(); ++i)
+			for (auto i = list->begin(); i != list->end(); ++i)
 			{
 				Target* t = *i;
 				if (bp == t->m_TEX0.TBP0 && TEX0.TBW == t->m_TEX0.TBW)
@@ -2743,7 +2769,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 						{
 							DevCon.Warning("3 Wanted %x psm %x bw %x, got %x psm %x bw %x, deleting", TEX0.TBP0, TEX0.PSM, TEX0.TBW, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW);
 							InvalidateSourcesFromTarget(t);
-							i = list.erase(i);
+							i = list->erase(i);
 							delete t;
 							continue;
 						}
@@ -2969,21 +2995,21 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 			if (!is_frame)
 			{
 				GL_CACHE("TC: Attempt to repopulate RGB for %s[%x]", to_string(type), dst->m_TEX0.TBP0);
-				for (Target* dst_match : m_dst[1 - type])
+				for (Target* dst_match_repopulate : m_dst[1 - type])
 				{
-					if (dst_match->m_TEX0.TBP0 != dst->m_TEX0.TBP0 || !dst_match->m_valid_rgb)
+					if (dst_match_repopulate->m_TEX0.TBP0 != dst->m_TEX0.TBP0 || !dst_match_repopulate->m_valid_rgb)
 						continue;
 
-					dst->m_TEX0.TBW = dst_match->m_TEX0.TBW;
+					dst->m_TEX0.TBW = dst_match_repopulate->m_TEX0.TBW;
 					// Force the valid rect to the new size in case of shrinkage.
-					dst->m_valid = dst_match->m_valid;
-					dst->UpdateValidity(dst_match->m_valid);
+					dst->m_valid = dst_match_repopulate->m_valid;
+					dst->UpdateValidity(dst_match_repopulate->m_valid);
 
 					if (type == RenderTarget)
 					{
-						dst_match->m_valid_rgb = (fbmask & mask) == (mask & 0x00FFFFFFu);
+						dst_match_repopulate->m_valid_rgb = (fbmask & mask) == (mask & 0x00FFFFFFu);
 						dst->m_was_dst_matched = true;
-						if (!CopyRGBFromDepthToColor(dst, dst_match))
+						if (!CopyRGBFromDepthToColor(dst, dst_match_repopulate))
 						{
 							// Needed new texture and memory allocation failed.
 							return nullptr;
@@ -2991,10 +3017,10 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 					}
 					else
 					{
-						dst_match->m_valid_rgb &= (fbmask & mask) == (mask & 0x00FFFFFFu);
+						dst_match_repopulate->m_valid_rgb &= (fbmask & mask) == (mask & 0x00FFFFFFu);
 						dst->Update();
 
-						if (!dst->ResizeTexture(dst_match->m_unscaled_size.x, dst_match->m_unscaled_size.y))
+						if (!dst->ResizeTexture(dst_match_repopulate->m_unscaled_size.x, dst_match_repopulate->m_unscaled_size.y))
 						{
 							// Needed new texture and memory allocation failed.
 							return nullptr;
@@ -3004,14 +3030,14 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 						                             (GSLocalMemory::m_psm[dst->m_TEX0.PSM].trbpp == 32) ? ShaderConvert::RGBA8_TO_FLOAT32 :
 						                                                                                   ShaderConvert::RGBA8_TO_FLOAT24;
 
-						g_gs_device->StretchRect(dst_match->m_texture, GSVector4(0, 0, 1, 1),
+						g_gs_device->StretchRect(dst_match_repopulate->m_texture, GSVector4(0, 0, 1, 1),
 							dst->m_texture, GSVector4(dst->GetUnscaledRect()) * GSVector4(dst->GetScale()), shader, false);
 						g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
-						dst_match->m_valid_rgb = !used;
-						dst_match->m_was_dst_matched = true;
+						dst_match_repopulate->m_valid_rgb = !used;
+						dst_match_repopulate->m_was_dst_matched = true;
 						dst->m_valid_rgb = true;
-						dst->m_32_bits_fmt = dst_match->m_32_bits_fmt;
+						dst->m_32_bits_fmt = dst_match_repopulate->m_32_bits_fmt;
 					}
 					break;
 				}
@@ -3088,67 +3114,28 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 	}
 	else if (!is_frame && !GSConfig.UserHacks_DisableDepthSupport)
 	{
-		const int rev_type = (type == DepthStencil) ? RenderTarget : DepthStencil;
-
-		// Depth stencil/RT can be an older RT/DS but only check recent RT/DS to avoid to pick
-		// some bad data.
-		auto& rev_list = m_dst[rev_type];
-		Target* dst_match = nullptr;
-		for (auto i = rev_list.begin(); i != rev_list.end(); ++i)
+		if (!dst_match)
 		{
-			Target* t = *i;
-			// Don't pull in targets without valid lower 24 bits unless the Z is 32bits and the alpha is valid, it makes no sense to convert them otherwise.
-			// FIXME: Technically the difference in size is fine, but if the target gets reinterpreted, the hw renderer doesn't rearrange the target.
-			// This does cause some extra uploads in some games (like Burnout), but without this, bad data gets displayed in games like Transformers.
-			if (bp != t->m_TEX0.TBP0 || (!t->m_valid_rgb && (!(GSUtil::GetChannelMask(TEX0.PSM) & 0x8) || !(t->m_valid_alpha_low || t->m_valid_alpha_high))) ||
-				(!is_shuffle && t->m_TEX0.TBW != TEX0.TBW && (possible_clear || ((~GSLocalMemory::m_psm[t->m_TEX0.PSM].fmsk | fbmask) == 0xffffffff))))
+			const int rev_type = (type == DepthStencil) ? RenderTarget : DepthStencil;
+			// Depth stencil/RT can be an older RT/DS but only check recent RT/DS to avoid to pick
+			// some bad data.
+			auto& rev_list = m_dst[rev_type];
+			for (auto i = rev_list.begin(); i != rev_list.end(); ++i)
 			{
-				continue;
-			}
-			// If the format is completely different, but it's the same location, it's likely just overwriting it, so get rid.
-			// Make sure it's not currently in use, that could be bad.
-			if (!is_shuffle && (!ds || (ds != t)) &&
-				t->m_TEX0.TBW != TEX0.TBW && TEX0.TBW != 1 && !preserve_rgb && min_rect.w > GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y)
-			{
-				if (src && src->m_target && src->m_from_target == t && src->m_target_direct)
+				Target* t = *i;
+				// Don't pull in targets without valid lower 24 bits unless the Z is 32bits and the alpha is valid, it makes no sense to convert them otherwise.
+				// FIXME: Technically the difference in size is fine, but if the target gets reinterpreted, the hw renderer doesn't rearrange the target.
+				// This does cause some extra uploads in some games (like Burnout), but without this, bad data gets displayed in games like Transformers.
+				if (bp != t->m_TEX0.TBP0 || (!t->m_valid_rgb && (!(GSUtil::GetChannelMask(TEX0.PSM) & 0x8) || !(t->m_valid_alpha_low || t->m_valid_alpha_high))) ||
+					(!is_shuffle && t->m_TEX0.TBW != TEX0.TBW && (possible_clear || ((~GSLocalMemory::m_psm[t->m_TEX0.PSM].fmsk | fbmask) == 0xffffffff))))
 				{
-					src->m_target_direct = false;
-					src->m_shared_texture = false;
-					t->m_texture = nullptr;
+					continue;
 				}
-
-				GL_CACHE("TC: Deleting Z draw %d", GSState::s_n);
-				InvalidateSourcesFromTarget(t);
-				i = rev_list.erase(i);
-				delete t;
-				continue;
-			}
-			const GSLocalMemory::psm_t& t_psm_s = GSLocalMemory::m_psm[t->m_TEX0.PSM];
-			if (t_psm_s.bpp != psm_s.bpp)
-			{
-				bool remove_target = possible_clear || (used && !is_shuffle);
-
-				// If we have a BW change, and it's not a multiple of 2 (for a shuffle), the game's going to get a jigsaw
-				// puzzle of pages and can't be expecting to have legitimate data. Tokimeki Memorial 3 reuses a BW 17
-				// buffer as BW 10, and if we don't discard the BW 17 buffer, the BW 10 buffer ends up twice the size.
-				const u32 shuffle_bw = (psm_s.bpp > t_psm_s.bpp) ? (TEX0.TBW / 2u) : (TEX0.TBW * 2u);
-				if (t->m_TEX0.TBW != TEX0.TBW && (t->m_TEX0.TBW != shuffle_bw && !is_shuffle))
+				// If the format is completely different, but it's the same location, it's likely just overwriting it, so get rid.
+				// Make sure it's not currently in use, that could be bad.
+				if (!is_shuffle && (!ds || (ds != t)) &&
+					t->m_TEX0.TBW != TEX0.TBW && TEX0.TBW != 1 && !preserve_rgb && min_rect.w > GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y)
 				{
-					// But we'll make sure the whole existing target's actually being drawn over to be safe.
-					const u32 end_block = GSLocalMemory::GetUnwrappedEndBlockAddress(TEX0.TBP0, TEX0.TBW, TEX0.PSM, draw_rect);
-					if (end_block >= t->UnwrappedEndBlock())
-					{
-						GL_CACHE("TC: Not converting %s at %x TBW %u with end block of %x when we're drawing through %x",
-							to_string(rev_type), t->m_TEX0.TBP0, t->m_TEX0.TBW, t->UnwrappedEndBlock(), end_block);
-						remove_target = true;
-					}
-				}
-
-				// Probably an old target, get rid of it.
-				if (remove_target)
-				{
-					// DT Racer hits this path and causes a crash when RT in RT is disabled,
-					// so let's make sure source and target texture isn't linked/shared before deleting the target.
 					if (src && src->m_target && src->m_from_target == t && src->m_target_direct)
 					{
 						src->m_target_direct = false;
@@ -3156,26 +3143,67 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 						t->m_texture = nullptr;
 					}
 
+					GL_CACHE("TC: Deleting Z draw %d", GSState::s_n);
 					InvalidateSourcesFromTarget(t);
 					i = rev_list.erase(i);
 					delete t;
 					continue;
 				}
-			}
+				const GSLocalMemory::psm_t& t_psm_s = GSLocalMemory::m_psm[t->m_TEX0.PSM];
+				if (t_psm_s.bpp != psm_s.bpp)
+				{
+					bool remove_target = possible_clear || (used && !is_shuffle);
 
-			if (t->m_age == 0)
-			{
-				dst_match = t;
-				break;
-			}
-			else if (t->m_age == 1 && (preserve_rgb || (preserve_alpha && (t->m_valid_alpha_low || t->m_valid_alpha_high))))
-			{
-				dst_match = t;
+					// If we have a BW change, and it's not a multiple of 2 (for a shuffle), the game's going to get a jigsaw
+					// puzzle of pages and can't be expecting to have legitimate data. Tokimeki Memorial 3 reuses a BW 17
+					// buffer as BW 10, and if we don't discard the BW 17 buffer, the BW 10 buffer ends up twice the size.
+					const u32 shuffle_bw = (psm_s.bpp > t_psm_s.bpp) ? (TEX0.TBW / 2u) : (TEX0.TBW * 2u);
+					if (t->m_TEX0.TBW != TEX0.TBW && (t->m_TEX0.TBW != shuffle_bw && !is_shuffle))
+					{
+						// But we'll make sure the whole existing target's actually being drawn over to be safe.
+						const u32 end_block = GSLocalMemory::GetUnwrappedEndBlockAddress(TEX0.TBP0, TEX0.TBW, TEX0.PSM, draw_rect);
+						if (end_block >= t->UnwrappedEndBlock())
+						{
+							GL_CACHE("TC: Not converting %s at %x TBW %u with end block of %x when we're drawing through %x",
+								to_string(rev_type), t->m_TEX0.TBP0, t->m_TEX0.TBW, t->UnwrappedEndBlock(), end_block);
+							remove_target = true;
+						}
+					}
+
+					// Probably an old target, get rid of it.
+					if (remove_target)
+					{
+						// DT Racer hits this path and causes a crash when RT in RT is disabled,
+						// so let's make sure source and target texture isn't linked/shared before deleting the target.
+						if (src && src->m_target && src->m_from_target == t && src->m_target_direct)
+						{
+							src->m_target_direct = false;
+							src->m_shared_texture = false;
+							t->m_texture = nullptr;
+						}
+
+						InvalidateSourcesFromTarget(t);
+						i = rev_list.erase(i);
+						delete t;
+						continue;
+					}
+				}
+
+				if (t->m_age == 0)
+				{
+					dst_match = t;
+					break;
+				}
+				else if (t->m_age == 1 && (preserve_rgb || (preserve_alpha && (t->m_valid_alpha_low || t->m_valid_alpha_high))))
+				{
+					dst_match = t;
+				}
 			}
 		}
-		// We only want to use a matched target if it's actually being used.
-		if (dst_match)
+		else 
 		{
+			// dst_match, we only want to use a matched target if it's actually being used.
+
 			calcRescale(dst_match);
 
 			// If we don't need A, and the existing target doesn't have valid alpha, don't bother converting it.
@@ -3192,7 +3220,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 			// Clear instead of invalidating if there is anything which isn't touched.
 			clear |= (!preserve_target && fbmask != 0);
 			GIFRegTEX0 new_TEX0;
-			new_TEX0.TBP0 = TEX0.TBP0;
+			new_TEX0.TBP0 = GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets ? dst_match->m_TEX0.TBP0 : TEX0.TBP0;
 			new_TEX0.TBW = (!half_width) ? dst_match->m_TEX0.TBW : TEX0.TBW;
 			new_TEX0.PSM = is_shuffle ? dst_match->m_TEX0.PSM : TEX0.PSM;
 
