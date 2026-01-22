@@ -3992,10 +3992,6 @@ GSTexture12* GSDevice12::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config, Pipe
 
 void GSDevice12::FeedbackBarrier(const GSTexture12* texture)
 {
-	// The DX12 spec notes "You may not read from, or consume, a write that occurred within the same render pass".
-	// The only exception being the implicit reads for render target blending or depth testing.
-	// Thus, in addition to a barrier, we need to end the render pass.
-	EndRenderPass();
 	if (m_enhanced_barriers)
 	{
 		// Enhanced barriers allows for single resource feedback.
@@ -4008,6 +4004,10 @@ void GSDevice12::FeedbackBarrier(const GSTexture12* texture)
 	}
 	else
 	{
+		// The DX12 spec notes "You may not read from, or consume, a write that occurred within the same render pass".
+		// The only exception being the implicit reads for render target blending or depth testing.
+		// Thus, in addition to a barrier, we need to end the render pass.
+		EndRenderPass();
 		// Specify null for the after resource as both resources are used after the barrier.
 		// While this may also be true before the barrier, we only write using the main resource.
 		D3D12_RESOURCE_BARRIER barrier = {D3D12_RESOURCE_BARRIER_TYPE_ALIASING, D3D12_RESOURCE_BARRIER_FLAG_NONE};
