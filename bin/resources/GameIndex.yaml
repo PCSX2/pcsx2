@@ -1980,6 +1980,10 @@ SCAJ-20116:
 SCAJ-20117:
   name: "Fu-un Bakumatsu-den"
   region: "NTSC-Unk"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes ghosting.
+    alignSprite: 1 # Fixes vertical lines.
+    forceEvenSpritePosition: 1 # De-blurs the 3D image.
 SCAJ-20118:
   name: "ラジアータ ストーリーズ"
   name-sort: "らじあーた すとーりーず"
@@ -32299,9 +32303,13 @@ SLKA-25255:
   name-en: "Mobile Suit Gundam Seed - Never Ending Tomorrow"
   region: "NTSC-K"
 SLKA-25257:
-  name: "풍운 막말전" # Undumped on ReDump as of 2025-08-28
-  name-en: "Fu-un Bakumatsu Den"
+  name: "풍운　막말전" # Undumped on ReDump as of 2025-08-28
+  name-en: "Fu-un Bakumatsu-den"
   region: "NTSC-K"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes ghosting.
+    alignSprite: 1 # Fixes vertical lines.
+    forceEvenSpritePosition: 1 # De-blurs the 3D image.
 SLKA-25258:
   name: "요시츠네 영웅전"
   name-sort: "Yoshitsune Yeongungjeon"
@@ -35705,10 +35713,14 @@ SLPM-60220:
   name-en: "Hajime no Ippo II - Victorious Road [Trial]"
   region: "NTSC-J"
 SLPM-60225:
-  name: "風雲新撰組 [体験版]"
+  name: "風雲　新撰組 [体験版]"
   name-sort: "ふううん しんせんぐみ [たいけんばん]"
-  name-en: "Fuuun Shinsengumi [Trial]"
+  name-en: "Fu-un Shinsen-gumi [Trial]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes ghosting.
+    alignSprite: 1 # Fixes vertical lines.
+    forceEvenSpritePosition: 1 # De-blurs the 3D image.
 SLPM-60226:
   name: "シャドウハーツⅡ [体験版]"
   name-sort: "しゃどうはーつ2 [たいけんばん]"
@@ -36472,10 +36484,14 @@ SLPM-61095:
   name-en: "Dengeki PS2 / DengekiPlayStation D74"
   region: "NTSC-J"
 SLPM-61096:
-  name: "風雲幕末伝 [体験版]"
+  name: "風雲　幕末伝 [体験版]"
   name-sort: "ふううんばくまつでん [たいけんばん]"
-  name-en: "Fuuun Bakumatsu-den [Trial]"
+  name-en: "Fu-un Bakumatsu-den [Trial]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes ghosting.
+    alignSprite: 1 # Fixes vertical lines.
+    forceEvenSpritePosition: 1 # De-blurs the 3D image.
 SLPM-61097:
   name: "電撃PS2 / 電撃PlayStation D75"
   name-sort: "でんげき PS2 でんげきPlayStation D75"
@@ -43885,10 +43901,14 @@ SLPM-65493:
   name-en: "Hurrah! Sailor [Limited Edition]"
   region: "NTSC-J"
 SLPM-65494:
-  name: "風雲 新撰組"
+  name: "風雲　新撰組"
   name-sort: "ふううん しんせんぐみ"
-  name-en: "Fuuun Shinsengumi"
+  name-en: "Fu-un Shinsen-gumi"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes ghosting.
+    alignSprite: 1 # Fixes vertical lines.
+    forceEvenSpritePosition: 1 # De-blurs the 3D image.
 SLPM-65495:
   name: "モンスターハンター"
   name-sort: "もんすたーはんたー"
@@ -45757,11 +45777,15 @@ SLPM-65812:
   name-en: "Bakushou! Jinsei Kaidou - NOVA Usagi ga Miteruzo! [TAITO BEST]"
   region: "NTSC-J"
 SLPM-65813:
-  name: "風雲幕末伝"
+  name: "風雲　幕末伝"
   name-sort: "ふううん ばくまつでん"
-  name-en: "Fu-un Bakumatsu Den"
+  name-en: "Fu-un Bakumatsu-den"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes ghosting.
+    alignSprite: 1 # Fixes vertical lines.
+    forceEvenSpritePosition: 1 # De-blurs the 3D image.
 SLPM-65815:
   name: "トム・クランシーシリーズ スプリンターセル パンドラトゥモロー"
   name-sort: "とむくらんしーしりーず すぷりんたーせる ぱんどらとぅもろー"
@@ -53730,10 +53754,14 @@ SLPM-74201:
     - "SLPM-65286"
     - "BWNETCNF"
 SLPM-74202:
-  name: "風雲 新撰組 [PlayStation2 the Best]"
+  name: "風雲　新撰組 [PlayStation2 the Best]"
   name-sort: "ふううん しんせんぐみ [PlayStation2 the Best]"
-  name-en: "Fuuun Shinsengumi [PlayStation2 the Best]"
+  name-en: "Fu-un Shinsen-gumi [PlayStation2 the Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes ghosting.
+    alignSprite: 1 # Fixes vertical lines.
+    forceEvenSpritePosition: 1 # De-blurs the 3D image.
 SLPM-74204:
   name: "首都高バトル01 [PlayStation2 the Best]"
   name-sort: "しゅとこうばとる01 [PlayStation2 the Best]"
@@ -53882,10 +53910,14 @@ SLPM-74227:
     halfPixelOffset: 4 # Fixes misaligned lighting and bloom.
     bilinearUpscale: 1 # Smooths out bloom.
 SLPM-74228:
-  name: "風雲幕末伝 [PlayStation2 the Best]"
+  name: "風雲　幕末伝 [PlayStation2 the Best]"
   name-sort: "ふううんばくまつでん [PlayStation2 the Best]"
-  name-en: "Fuuun Bakumatsu-den [PlayStation2 the Best]"
+  name-en: "Fu-un Bakumatsu-den [PlayStation2 the Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes ghosting.
+    alignSprite: 1 # Fixes vertical lines.
+    forceEvenSpritePosition: 1 # De-blurs the 3D image.
 SLPM-74229:
   name: "バイオハザード4 [PlayStation2 the Best]"
   name-sort: "ばいおはざーど4 [PlayStation2 the Best]"
@@ -63462,10 +63494,14 @@ SLPS-73227:
   name-en: "Another Century's Episode [PlayStation2 the Best]"
   region: "NTSC-J"
 SLPS-73228:
-  name: "風雲幕末伝 [PlayStation2 the Best]"
+  name: "風雲　幕末伝 [PlayStation2 the Best]"
   name-sort: "ふううんばくまつでん [PlayStation2 the Best]"
-  name-en: "Fuuun Bakumatsu-den [PlayStation2 the Best]"
+  name-en: "Fu-un Bakumatsu-den [PlayStation2 the Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes ghosting.
+    alignSprite: 1 # Fixes vertical lines.
+    forceEvenSpritePosition: 1 # De-blurs the 3D image.
 SLPS-73229:
   name: "ベルウィックサーガ [PlayStation2 the Best]"
   name-sort: "べるうぃっくさーが [PlayStation2 the Best]"
