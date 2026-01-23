@@ -787,9 +787,9 @@ void GSState::DumpTransferList(const std::string& filename)
 	constexpr const char* COMMENT = " # ";
 
 	int n_dumped = 0; // Number of transfers dumped for this draw.
-	for (auto& m_draw_transfer : m_draw_transfers)
+	for (auto& draw_transfer : m_draw_transfers)
 	{
-		if (m_draw_transfer.draw != s_n - 1)
+		if (draw_transfer.draw != s_n - 1)
 			continue; // skip transfers that did not start in the previous draw
 
 		if (!file.has_value())
@@ -800,7 +800,7 @@ void GSState::DumpTransferList(const std::string& filename)
 			file->imbue(std::locale::classic()); // Disable integer separators.
 		}
 
-		const GSUploadQueue& transfer = m_draw_transfer;
+		const GSUploadQueue& transfer = draw_transfer;
 
 		if (n_dumped > 0)
 			(*file) << std::endl;
@@ -849,12 +849,12 @@ void GSState::DumpTransferImages()
 	std::optional<std::ofstream> file;
 
 	int transfer_n = 0;
-	for (auto& m_draw_transfer : m_draw_transfers)
+	for (auto& draw_transfer : m_draw_transfers)
 	{
-		if (m_draw_transfer.draw != s_n - 1)
+		if (draw_transfer.draw != s_n - 1)
 			continue; // skip transfers that did not start in the previous draw
 
-		const GSUploadQueue& transfer = m_draw_transfer;
+		const GSUploadQueue& transfer = draw_transfer;
 
 		std::string filename;
 		if ((transfer.transfer_type == EEGS_TransferType::EE_to_GS) || transfer.zero_clear)

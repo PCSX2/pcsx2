@@ -375,9 +375,9 @@ void InputBindingDialog::ReloadBindNames()
 {
 	m_bindings_ui.clear();
 	m_bindings_ui.reserve(m_bindings_settings.size());
-	for (auto& m_bindings_setting : m_bindings_settings)
+	for (auto& bindings_setting : m_bindings_settings)
 	{
-		SmallString binding{std::string_view{m_bindings_setting}};
+		SmallString binding{std::string_view{bindings_setting}};
 		InputManager::PrettifyInputBinding(binding, false);
 		m_bindings_ui.push_back(std::string{binding});
 	}

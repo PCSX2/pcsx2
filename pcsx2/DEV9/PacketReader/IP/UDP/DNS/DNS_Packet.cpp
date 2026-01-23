@@ -146,8 +146,8 @@ namespace PacketReader::IP::UDP::DNS
 		for (const auto& answer : answers)
 			length += answer.GetLength();
 
-		for (const auto& authoritie : authorities)
-			length += authoritie.GetLength();
+		for (const auto& authority : authorities)
+			length += authority.GetLength();
 
 		for (const auto& i : additional)
 			length += i.GetLength();
@@ -171,8 +171,8 @@ namespace PacketReader::IP::UDP::DNS
 		for (const auto& answer : answers)
 			answer.WriteBytes(buffer, offset);
 
-		for (const auto& authoritie : authorities)
-			authoritie.WriteBytes(buffer, offset);
+		for (const auto& authority : authorities)
+			authority.WriteBytes(buffer, offset);
 
 		for (const auto& i : additional)
 			i.WriteBytes(buffer, offset);

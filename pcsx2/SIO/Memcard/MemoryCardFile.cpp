@@ -251,7 +251,7 @@ std::string FileMcd_GetDefaultName(uint slot)
 
 FileMemoryCard::FileMemoryCard()
 {
-	for (long long& slot : m_fileSize)
+	for (s64& slot : m_fileSize)
 	{
 		slot = -1;
 	}

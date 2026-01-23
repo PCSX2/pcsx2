@@ -840,20 +840,19 @@ MemoryCardFileEntryCluster* FolderMemoryCard::GetFileEntryCluster(const u32 curr
 MemoryCardFileEntry* FolderMemoryCard::GetFileEntryFromFileDataCluster(const u32 currentCluster, const u32 searchCluster, std::string* fileName, const size_t originalDirCount, u32* outClusterNumber)
 {
 	// check both entries of the current cluster if they're the file we're searching for, and if yes return it
-	for (auto& entrie : m_fileEntryDict[currentCluster].entries)
+	for (auto& entry : m_fileEntryDict[currentCluster].entries)
 	{
-		MemoryCardFileEntry* const entry = &entrie;
-		if (entry->IsValid() && entry->IsUsed() && entry->IsFile())
+		if (entry.IsValid() && entry.IsUsed() && entry.IsFile())
 		{
-			u32 fileCluster = entry->entry.data.cluster;
+			u32 fileCluster = entry.entry.data.cluster;
 			u32 clusterNumber = 0;
 			do
 			{
 				if (fileCluster == searchCluster)
 				{
-					Path::ChangeFileName(fileName, (const char*)entry->entry.data.name);
+					Path::ChangeFileName(fileName, (const char*)entry.entry.data.name);
 					*outClusterNumber = clusterNumber;
-					return entry;
+					return &entry;
 				}
 				++clusterNumber;
 			} while ((fileCluster = m_fat.data[0][0][fileCluster] & NextDataClusterMask) != LastDataCluster);
@@ -873,16 +872,15 @@ MemoryCardFileEntry* FolderMemoryCard::GetFileEntryFromFileDataCluster(const u32
 	}
 
 	// check subdirectories
-	for (auto& entrie : m_fileEntryDict[currentCluster].entries)
+	for (auto& entry : m_fileEntryDict[currentCluster].entries)
 	{
-		MemoryCardFileEntry* const entry = &entrie;
-		if (entry->IsValid() && entry->IsUsed() && entry->IsDir() && !entry->IsDotDir())
+		if (entry.IsValid() && entry.IsUsed() && entry.IsDir() && !entry.IsDotDir())
 		{
-			MemoryCardFileEntry* ptr = GetFileEntryFromFileDataCluster(entry->entry.data.cluster, searchCluster, fileName, originalDirCount, outClusterNumber);
+			MemoryCardFileEntry* ptr = GetFileEntryFromFileDataCluster(entry.entry.data.cluster, searchCluster, fileName, originalDirCount, outClusterNumber);
 			if (ptr != nullptr)
 			{
 				std::vector<std::string_view> components(Path::SplitNativePath(*fileName));
-				components.insert(components.begin() + originalDirCount, (const char*)entry->entry.data.name);
+				components.insert(components.begin() + originalDirCount, (const char*)entry.entry.data.name);
 				*fileName = Path::JoinNativePath(components);
 				return ptr;
 			}
@@ -1371,9 +1369,9 @@ void FolderMemoryCard::FlushDeletedFilesAndRemoveUnchangedDataFromCache(const st
 void FolderMemoryCard::FlushDeletedFilesAndRemoveUnchangedDataFromCache(const std::vector<MemoryCardFileEntryTreeNode>& oldFileEntries, const u32 newCluster, const u32 newFileCount, const std::string& dirPath)
 {
 	// go through all file entires of the current directory of the old data
-	for (const auto& oldFileEntrie : oldFileEntries)
+	for (const auto& oldFileEntry : oldFileEntries)
 	{
-		const MemoryCardFileEntry* entry = &oldFileEntrie.entry;
+		const MemoryCardFileEntry* entry = &oldFileEntry.entry;
 		if (entry->IsValid() && entry->IsUsed() && !entry->IsDotDir())
 		{
 			// check if an equivalent entry exists in m_fileEntryDict
@@ -1403,7 +1401,7 @@ void FolderMemoryCard::FlushDeletedFilesAndRemoveUnchangedDataFromCache(const st
 				memcpy(cleanName, (const char*)entry->entry.data.name, sizeof(cleanName));
 				FileAccessHelper::CleanMemcardFilename(cleanName);
 				const std::string subDirPath(Path::Combine(dirPath, cleanName));
-				FlushDeletedFilesAndRemoveUnchangedDataFromCache(oldFileEntrie.subdir, newEntry->entry.data.cluster, newEntry->entry.data.length, subDirPath);
+				FlushDeletedFilesAndRemoveUnchangedDataFromCache(oldFileEntry.subdir, newEntry->entry.data.cluster, newEntry->entry.data.length, subDirPath);
 			}
 			else if (entry->IsFile())
 			{
@@ -2171,18 +2169,18 @@ void FileAccessHelper::CloseMatching(const std::string_view path)
 
 void FileAccessHelper::CloseAll()
 {
-	for (auto& m_file : m_files)
+	for (auto& file : m_files)
 	{
-		CloseFileHandle(m_file.second.fileHandle, m_file.second.fileRef->entry);
+		CloseFileHandle(file.second.fileHandle, file.second.fileRef->entry);
 	}
 	m_files.clear();
 }
 
 void FileAccessHelper::FlushAll()
 {
-	for (auto& m_file : m_files)
+	for (auto& file : m_files)
 	{
-		std::fflush(m_file.second.fileHandle);
+		std::fflush(file.second.fileHandle);
 	}
 }
 
@@ -2289,17 +2287,17 @@ FolderMemoryCardAggregator::FolderMemoryCardAggregator()
 
 void FolderMemoryCardAggregator::Open()
 {
-	for (auto& m_card : m_cards)
+	for (auto& card : m_cards)
 	{
-		m_card.Open(m_enableFiltering, m_lastKnownFilter);
+		card.Open(m_enableFiltering, m_lastKnownFilter);
 	}
 }
 
 void FolderMemoryCardAggregator::Close()
 {
-	for (auto& m_card : m_cards)
+	for (auto& card : m_cards)
 	{
-		m_card.Close();
+		card.Close();
 	}
 }
 

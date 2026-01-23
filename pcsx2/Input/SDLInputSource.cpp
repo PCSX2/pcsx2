@@ -1265,9 +1265,9 @@ bool SDLInputSource::OpenDevice(SDL_JoystickID index, bool is_gamepad)
 
 	const SDL_JoystickID joystick_id = SDL_GetJoystickID(joystick);
 	int player_id = gamepad ? SDL_GetGamepadPlayerIndex(gamepad) : SDL_GetJoystickPlayerIndex(joystick);
-	for (auto& m_controller : m_controllers)
+	for (auto& controller : m_controllers)
 	{
-		if (m_controller.joystick_id == joystick_id)
+		if (controller.joystick_id == joystick_id)
 		{
 			ERROR_LOG("SDLInputSource: Controller {}, instance {}, player {} already connected, ignoring.", index, joystick_id, player_id);
 			if (gamepad)

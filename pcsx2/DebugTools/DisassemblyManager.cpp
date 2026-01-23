@@ -342,9 +342,9 @@ u32 DisassemblyManager::getNthNextAddress(u32 address, int n)
 
 void DisassemblyManager::clear()
 {
-	for (auto& entrie : entries)
+	for (auto& entry : entries)
 	{
-		delete entrie.second;
+		delete entry.second;
 	}
 	entries.clear();
 }
@@ -702,9 +702,9 @@ void DisassemblyFunction::load()
 
 void DisassemblyFunction::clear()
 {
-	for (auto& entrie : entries)
+	for (auto& entry : entries)
 	{
-		delete entrie.second;
+		delete entry.second;
 	}
 
 	entries.clear();

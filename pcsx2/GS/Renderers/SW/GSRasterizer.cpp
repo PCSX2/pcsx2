@@ -1561,9 +1561,9 @@ void GSRasterizerList::Sync()
 {
 	if (!IsSynced())
 	{
-		for (const auto& m_worker : m_workers)
+		for (const auto& worker : m_workers)
 		{
-			m_worker->Wait();
+			worker->Wait();
 		}
 
 		g_perfmon.Put(GSPerfMon::SyncPoint, 1);
@@ -1572,9 +1572,9 @@ void GSRasterizerList::Sync()
 
 bool GSRasterizerList::IsSynced() const
 {
-	for (const auto& m_worker : m_workers)
+	for (const auto& worker : m_workers)
 	{
-		if (!m_worker->IsEmpty())
+		if (!worker->IsEmpty())
 		{
 			return false;
 		}
