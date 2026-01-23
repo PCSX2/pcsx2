@@ -562,20 +562,18 @@ PS2Float PS2Float::DoAdd(PS2Float other)
 	u32 sign2 = (u32)((s32)other.raw >> 31);
 	s32 otherMantissa = (s32)(((other.Mantissa() | 0x800000) ^ sign2) - sign2);
 
-	// PS2 multiply by 2 before doing the Math here.
 	s32 man = (selfMantissa << roundingMultiplier) + ((otherMantissa << roundingMultiplier) >> resExponent);
 	s32 absMan = abs(man);
 	if (absMan == 0)
 		return PS2Float(0);
 
-	// Remove from exponent the PS2 Multiplier value.
 	s32 rawExp = selfExponent - roundingMultiplier;
 
 	s32 amount = Common::normalizeAmounts[Common::CountLeadingSignBits(absMan)];
 	rawExp -= amount;
 	absMan <<= amount;
 
-	s32 msbIndex = Common::BitScanReverse8(absMan >> MANTISSA_BITS);
+	s32 msbIndex = Common::BitScanReverse(absMan >> MANTISSA_BITS);
 	rawExp += msbIndex;
 	absMan >>= msbIndex;
 
