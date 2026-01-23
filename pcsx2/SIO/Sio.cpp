@@ -16,9 +16,11 @@ _mcd mcds[2][4];
 _mcd *mcd;
 
 void sioNextFrame() {
-	for ( uint port = 0; port < 2; ++port ) {
-		for ( uint slot = 0; slot < 4; ++slot ) {
-			mcds[port][slot].NextFrame();
+	for (auto& mcd : mcds)
+	{
+		for (auto& slot : mcd)
+		{
+			slot.NextFrame();
 		}
 	}
 }

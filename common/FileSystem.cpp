@@ -867,9 +867,8 @@ std::string Path::URLEncode(std::string_view str)
 	std::string ret;
 	ret.reserve(str.length() + ((str.length() + 3) / 4) * 3);
 
-	for (size_t i = 0, l = str.size(); i < l; i++)
+	for (char c : str)
 	{
-		const char c = str[i];
 		if ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '-' || c == '_' ||
 			c == '.' || c == '!' || c == '~' || c == '*' || c == '\'' || c == '(' || c == ')')
 		{

@@ -251,9 +251,9 @@ std::string FileMcd_GetDefaultName(uint slot)
 
 FileMemoryCard::FileMemoryCard()
 {
-	for (u8 slot = 0; slot < 8; slot++)
+	for (long long& slot : m_fileSize)
 	{
-		m_fileSize[slot] = -1;
+		slot = -1;
 	}
 }
 
@@ -551,8 +551,8 @@ u64 FileMemoryCard::GetCRC(uint slot)
 			if (std::fread(buffer, sizeof(buffer), 1, mcfp) != 1)
 				return 0;
 
-			for (uint t = 0; t < std::size(buffer); ++t)
-				retval ^= buffer[t];
+			for (unsigned long long t : buffer)
+				retval ^= t;
 		}
 	}
 	else
@@ -640,11 +640,11 @@ void FileMcd_Reopen(std::string new_serial)
 
 static bool FileMcd_IsAutoEjecting()
 {
-	for (size_t port = 0; port < SIO::PORTS; ++port)
+	for (auto& mcd : mcds)
 	{
-		for (size_t slot = 0; slot < SIO::SLOTS; ++slot)
+		for (auto& slot : mcd)
 		{
-			if (mcds[port][slot].autoEjectTicks > 0)
+			if (slot.autoEjectTicks > 0)
 			{
 				return true; // Auto-eject is active
 			}
@@ -903,9 +903,9 @@ std::vector<AvailableMcdInfo> FileMcd_GetAvailableCards(bool include_in_use_card
 		if (!include_in_use_cards)
 		{
 			bool in_use = false;
-			for (size_t i = 0; i < std::size(EmuConfig.Mcd); i++)
+			for (auto& i : EmuConfig.Mcd)
 			{
-				if (EmuConfig.Mcd[i].Filename == basename)
+				if (i.Filename == basename)
 				{
 					in_use = true;
 					break;

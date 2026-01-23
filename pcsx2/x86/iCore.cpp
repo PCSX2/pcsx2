@@ -67,11 +67,11 @@ bool _isAllocatableX86reg(int x86reg)
 
 bool _hasX86reg(int type, int reg, int required_mode /*= 0*/)
 {
-	for (uint i = 0; i < iREGCNT_GPR; i++)
+	for (auto& x86reg : x86regs)
 	{
-		if (x86regs[i].inuse && x86regs[i].type == type && x86regs[i].reg == reg)
+		if (x86reg.inuse && x86reg.type == type && x86reg.reg == reg)
 		{
-			return ((x86regs[i].mode & required_mode) == required_mode);
+			return ((x86reg.mode & required_mode) == required_mode);
 		}
 	}
 
@@ -219,11 +219,11 @@ int _checkXMMreg(int type, int reg, int mode)
 
 bool _hasXMMreg(int type, int reg, int required_mode /*= 0*/)
 {
-	for (uint i = 0; i < iREGCNT_XMM; i++)
+	for (auto& xmmreg : xmmregs)
 	{
-		if (xmmregs[i].inuse && xmmregs[i].type == type && xmmregs[i].reg == reg)
+		if (xmmreg.inuse && xmmreg.type == type && xmmreg.reg == reg)
 		{
-			return ((xmmregs[i].mode & required_mode) == required_mode);
+			return ((xmmreg.mode & required_mode) == required_mode);
 		}
 	}
 
@@ -455,51 +455,51 @@ void _reallocateXMMreg(int xmmreg, int newtype, int newreg, int newmode, bool wr
 // You must use _clearNeededXMMregs to clear the flag
 void _addNeededGPRtoX86reg(int gprreg)
 {
-	for (uint i = 0; i < iREGCNT_GPR; i++)
+	for (auto& x86reg : x86regs)
 	{
-		if (x86regs[i].inuse == 0)
+		if (x86reg.inuse == 0)
 			continue;
-		if (x86regs[i].type != X86TYPE_GPR)
+		if (x86reg.type != X86TYPE_GPR)
 			continue;
-		if (x86regs[i].reg != gprreg)
+		if (x86reg.reg != gprreg)
 			continue;
 
-		x86regs[i].counter = g_x86AllocCounter++; // update counter
-		x86regs[i].needed = 1;
+		x86reg.counter = g_x86AllocCounter++; // update counter
+		x86reg.needed = 1;
 		break;
 	}
 }
 
 void _addNeededPSXtoX86reg(int gprreg)
 {
-	for (uint i = 0; i < iREGCNT_GPR; i++)
+	for (auto& x86reg : x86regs)
 	{
-		if (x86regs[i].inuse == 0)
+		if (x86reg.inuse == 0)
 			continue;
-		if (x86regs[i].type != X86TYPE_PSX)
+		if (x86reg.type != X86TYPE_PSX)
 			continue;
-		if (x86regs[i].reg != gprreg)
+		if (x86reg.reg != gprreg)
 			continue;
 
-		x86regs[i].counter = g_x86AllocCounter++; // update counter
-		x86regs[i].needed = 1;
+		x86reg.counter = g_x86AllocCounter++; // update counter
+		x86reg.needed = 1;
 		break;
 	}
 }
 
 void _addNeededGPRtoXMMreg(int gprreg)
 {
-	for (uint i = 0; i < iREGCNT_XMM; i++)
+	for (auto& xmmreg : xmmregs)
 	{
-		if (xmmregs[i].inuse == 0)
+		if (xmmreg.inuse == 0)
 			continue;
-		if (xmmregs[i].type != XMMTYPE_GPRREG)
+		if (xmmreg.type != XMMTYPE_GPRREG)
 			continue;
-		if (xmmregs[i].reg != gprreg)
+		if (xmmreg.reg != gprreg)
 			continue;
 
-		xmmregs[i].counter = g_xmmAllocCounter++; // update counter
-		xmmregs[i].needed = 1;
+		xmmreg.counter = g_xmmAllocCounter++; // update counter
+		xmmreg.needed = 1;
 		break;
 	}
 }
@@ -508,17 +508,17 @@ void _addNeededGPRtoXMMreg(int gprreg)
 // You must use _clearNeededXMMregs to clear the flag
 void _addNeededFPtoXMMreg(int fpreg)
 {
-	for (uint i = 0; i < iREGCNT_XMM; i++)
+	for (auto& xmmreg : xmmregs)
 	{
-		if (xmmregs[i].inuse == 0)
+		if (xmmreg.inuse == 0)
 			continue;
-		if (xmmregs[i].type != XMMTYPE_FPREG)
+		if (xmmreg.type != XMMTYPE_FPREG)
 			continue;
-		if (xmmregs[i].reg != fpreg)
+		if (xmmreg.reg != fpreg)
 			continue;
 
-		xmmregs[i].counter = g_xmmAllocCounter++; // update counter
-		xmmregs[i].needed = 1;
+		xmmreg.counter = g_xmmAllocCounter++; // update counter
+		xmmreg.needed = 1;
 		break;
 	}
 }
@@ -527,15 +527,15 @@ void _addNeededFPtoXMMreg(int fpreg)
 // You must use _clearNeededXMMregs to clear the flag
 void _addNeededFPACCtoXMMreg()
 {
-	for (uint i = 0; i < iREGCNT_XMM; i++)
+	for (auto& xmmreg : xmmregs)
 	{
-		if (xmmregs[i].inuse == 0)
+		if (xmmreg.inuse == 0)
 			continue;
-		if (xmmregs[i].type != XMMTYPE_FPACC)
+		if (xmmreg.type != XMMTYPE_FPACC)
 			continue;
 
-		xmmregs[i].counter = g_xmmAllocCounter++; // update counter
-		xmmregs[i].needed = 1;
+		xmmreg.counter = g_xmmAllocCounter++; // update counter
+		xmmreg.needed = 1;
 		break;
 	}
 }
@@ -544,21 +544,21 @@ void _addNeededFPACCtoXMMreg()
 // Written register will set MODE_READ (aka data is valid, no need to load it)
 void _clearNeededXMMregs()
 {
-	for (uint i = 0; i < iREGCNT_XMM; i++)
+	for (auto& xmmreg : xmmregs)
 	{
 
-		if (xmmregs[i].needed)
+		if (xmmreg.needed)
 		{
 
 			// setup read to any just written regs
-			if (xmmregs[i].inuse && (xmmregs[i].mode & MODE_WRITE))
-				xmmregs[i].mode |= MODE_READ;
-			xmmregs[i].needed = 0;
+			if (xmmreg.inuse && (xmmreg.mode & MODE_WRITE))
+				xmmreg.mode |= MODE_READ;
+			xmmreg.needed = 0;
 		}
 
-		if (xmmregs[i].inuse)
+		if (xmmreg.inuse)
 		{
-			pxAssert(xmmregs[i].type != XMMTYPE_TEMP);
+			pxAssert(xmmreg.type != XMMTYPE_TEMP);
 		}
 	}
 }

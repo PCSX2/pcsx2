@@ -235,7 +235,7 @@ namespace PacketReader::IP::UDP::DHCP
 
 	DHCP_Packet::~DHCP_Packet()
 	{
-		for (size_t i = 0; i < options.size(); i++)
-			delete options[i];
+		for (auto& option : options)
+			delete option;
 	}
 } // namespace PacketReader::IP::UDP::DHCP

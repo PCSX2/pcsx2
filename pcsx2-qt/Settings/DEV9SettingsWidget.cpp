@@ -511,8 +511,8 @@ void DEV9SettingsWidget::onEthHostImport()
 	if (hosts.size() == 0)
 		return;
 
-	for (size_t i = 0; i < hosts.size(); i++)
-		AddNewHostConfig(hosts[i]);
+	for (const auto& host : hosts)
+		AddNewHostConfig(host);
 
 	QMessageBox::information(this, tr("DNS Hosts"),
 		tr("Imported Successfully"),
@@ -538,8 +538,8 @@ void DEV9SettingsWidget::onEthHostPerGame()
 			{
 				dialog()->setIntSettingValue("DEV9/Eth/Hosts", "Count", 0);
 				std::vector<HostEntryUi> hosts = ListBaseHostsConfig();
-				for (size_t i = 0; i < hosts.size(); i++)
-					AddNewHostConfig(hosts[i]);
+				for (const auto& host : hosts)
+					AddNewHostConfig(host);
 				break;
 			}
 
@@ -879,11 +879,11 @@ void DEV9SettingsWidget::LoadAdapters()
 
 		std::string baseAdapter = " ";
 		const std::string valueGUID = Host::GetBaseStringSettingValue("DEV9/Eth", "EthDevice", "");
-		for (size_t i = 0; i < baseList.size(); i++)
+		for (auto& i : baseList)
 		{
-			if (baseList[i].guid == valueGUID)
+			if (i.guid == valueGUID)
 			{
-				baseAdapter = baseList[i].name;
+				baseAdapter = i.name;
 				break;
 			}
 		}
@@ -955,9 +955,8 @@ void DEV9SettingsWidget::RefreshHostList()
 	m_ui.ethHostImport->setEnabled(enableHostsUi);
 
 	//Load list
-	for (size_t i = 0; i < hosts.size(); i++)
+	for (auto entry : hosts)
 	{
-		HostEntryUi entry = hosts[i];
 		const int row = m_ethHost_model->rowCount();
 		m_ethHost_model->insertRow(row);
 

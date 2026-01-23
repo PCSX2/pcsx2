@@ -33,7 +33,7 @@ namespace Sessions
 		std::vector<ConnectionClosedEventHandler> Handlers = connectionClosedHandlers;
 		connectionClosedHandlers.clear();
 
-		for (size_t i = 0; i < Handlers.size(); i++)
-			Handlers[i](this);
+		for (const auto& Handler : Handlers)
+			Handler(this);
 	}
 } // namespace Sessions

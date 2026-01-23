@@ -1728,10 +1728,10 @@ bool Pcsx2Config::EmulationSpeedOptions::operator!=(const EmulationSpeedOptions&
 
 Pcsx2Config::USBOptions::USBOptions()
 {
-	for (u32 i = 0; i < static_cast<u32>(Ports.size()); i++)
+	for (auto& Port : Ports)
 	{
-		Ports[i].DeviceType = -1;
-		Ports[i].DeviceSubtype = 0;
+		Port.DeviceType = -1;
+		Port.DeviceSubtype = 0;
 	}
 }
 

@@ -673,9 +673,9 @@ bool unpack_bc7_mode0_2(uint32_t mode, const uint64_t* data_chunks, color_rgba* 
 	for (uint32_t c = 0; c < COMPS; c++)
 	{
 		uint64_t channel_read_chunk = channel_read_chunks[c];
-		for (uint32_t e = 0; e < ENDPOINTS; e++)
+		for (auto& endpoint : endpoints)
 		{
-			endpoints[e][c] = static_cast<uint8_t>(channel_read_chunk & ENDPOINT_MASK);
+			endpoint[c] = static_cast<uint8_t>(channel_read_chunk & ENDPOINT_MASK);
 			channel_read_chunk >>= ENDPOINT_BITS;
 		}
 	}
@@ -695,9 +695,9 @@ bool unpack_bc7_mode0_2(uint32_t mode, const uint64_t* data_chunks, color_rgba* 
 	insert_weight_zero(weights_read_chunk, WEIGHT_BITS, std::max(g_bc7_table_anchor_index_third_subset_1[part], g_bc7_table_anchor_index_third_subset_2[part]));
 
 	uint32_t weights[16];
-	for (uint32_t i = 0; i < 16; i++)
+	for (unsigned int& weight : weights)
 	{
-		weights[i] = static_cast<uint32_t>(weights_read_chunk & WEIGHT_MASK);
+		weight = static_cast<uint32_t>(weights_read_chunk & WEIGHT_MASK);
 		weights_read_chunk >>= WEIGHT_BITS;
 	}
 
@@ -786,9 +786,9 @@ bool unpack_bc7_mode1_3_7(uint32_t mode, const uint64_t* data_chunks, color_rgba
 	for (uint32_t c = 0; c < COMPS; c++)
 	{
 		uint64_t channel_read_chunk = channel_read_chunks[c];
-		for (uint32_t e = 0; e < ENDPOINTS; e++)
+		for (auto& endpoint : endpoints)
 		{
-			endpoints[e][c] = static_cast<uint8_t>(channel_read_chunk & ENDPOINT_MASK);
+			endpoint[c] = static_cast<uint8_t>(channel_read_chunk & ENDPOINT_MASK);
 			channel_read_chunk >>= ENDPOINT_BITS;
 		}
 	}
@@ -801,9 +801,9 @@ bool unpack_bc7_mode1_3_7(uint32_t mode, const uint64_t* data_chunks, color_rgba
 	insert_weight_zero(weight_read_chunk, WEIGHT_BITS, g_bc7_table_anchor_index_second_subset[part]);
 
 	uint32_t weights[16];
-	for (uint32_t i = 0; i < 16; i++)
+	for (unsigned int& weight : weights)
 	{
-		weights[i] = static_cast<uint32_t>(weight_read_chunk & WEIGHT_MASK);
+		weight = static_cast<uint32_t>(weight_read_chunk & WEIGHT_MASK);
 		weight_read_chunk >>= WEIGHT_BITS;
 	}
 
@@ -862,9 +862,9 @@ bool unpack_bc7_mode4_5(uint32_t mode, const uint64_t* data_chunks, color_rgba* 
 	color_rgba endpoints[ENDPOINTS];
 	for (uint32_t c = 0; c < 3; c++)
 	{
-		for (uint32_t e = 0; e < ENDPOINTS; e++)
+		for (auto& endpoint : endpoints)
 		{
-			endpoints[e][c] = static_cast<uint8_t>(color_read_bits & ENDPOINT_MASK);
+			endpoint[c] = static_cast<uint8_t>(color_read_bits & ENDPOINT_MASK);
 			color_read_bits >>= ENDPOINT_BITS;
 		}
 	}
@@ -901,21 +901,21 @@ bool unpack_bc7_mode4_5(uint32_t mode, const uint64_t* data_chunks, color_rgba* 
 	if (index_mode)
 		std::swap(rgb_weights_chunk, a_weights_chunk);
 
-	for (uint32_t i = 0; i < 16; i++)
+	for (unsigned int& weight : weights)
 	{
-		weights[i] = (rgb_weights_chunk & weight_mask[0]);
+		weight = (rgb_weights_chunk & weight_mask[0]);
 		rgb_weights_chunk >>= weight_bits[0];
 	}
 
-	for (uint32_t i = 0; i < 16; i++)
+	for (unsigned int& a_weight : a_weights)
 	{
-		a_weights[i] = (a_weights_chunk & weight_mask[1]);
+		a_weight = (a_weights_chunk & weight_mask[1]);
 		a_weights_chunk >>= weight_bits[1];
 	}
 
-	for (uint32_t e = 0; e < ENDPOINTS; e++)
+	for (auto& endpoint : endpoints)
 		for (uint32_t c = 0; c < 4; c++)
-			endpoints[e][c] = static_cast<uint8_t>(bc7_dequant(endpoints[e][c], (c == 3) ? A_ENDPOINT_BITS : ENDPOINT_BITS));
+			endpoint[c] = static_cast<uint8_t>(bc7_dequant(endpoint[c], (c == 3) ? A_ENDPOINT_BITS : ENDPOINT_BITS));
 
 	color_rgba block_colors[8];
 #ifdef BC7DECOMP_USE_SSE2

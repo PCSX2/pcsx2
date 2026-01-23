@@ -1037,10 +1037,10 @@ QIcon USBDeviceWidget::getIcon() const
 		{"TrainController", "train-line"} // Train Controller
 	};
 
-	for (size_t i = 0; i < std::size(icons); i++)
+	for (auto icon : icons)
 	{
-		if (m_device_type == icons[i][0])
-			return QIcon::fromTheme(icons[i][1]);
+		if (m_device_type == icon[0])
+			return QIcon::fromTheme(icon[1]);
 	}
 
 	return QIcon::fromTheme("usb-fill");

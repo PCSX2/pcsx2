@@ -44,8 +44,8 @@ namespace InternalServers
 		//Prefill unordered_map, allowing use to modify it from seperate threads
 		//See https://en.cppreference.com/w/cpp/container#Thread_safety
 		//Different elements in the same container can be modified concurrently by different threads
-		for (size_t i = 0; i < dnsQuestions.size(); i++)
-			answers[dnsQuestions[i]] = {};
+		for (const auto& dnsQuestion : dnsQuestions)
+			answers[dnsQuestion] = {};
 	}
 
 	int DNS_Server::DNS_State::AddAnswer(const std::string& answer, IP_Address address)
@@ -130,9 +130,8 @@ namespace InternalServers
 		{
 			std::vector<std::string> reqs;
 
-			for (size_t i = 0; i < dns.questions.size(); i++)
+			for (auto q : dns.questions)
 			{
-				DNS_QuestionEntry q = dns.questions[i];
 				if (q.entryType == 1 && q.entryClass == 1)
 					reqs.push_back(q.name);
 				else
@@ -163,11 +162,11 @@ namespace InternalServers
 			DNS_State* state = new DNS_State(static_cast<int>(reqs.size()), reqs, ret, payload->sourcePort);
 			outstandingQueries++;
 
-			for (size_t i = 0; i < reqs.size(); i++)
+			for (const auto& req : reqs)
 			{
-				if (CheckHostList(reqs[i], state))
+				if (CheckHostList(req, state))
 					continue;
-				GetHost(reqs[i], state);
+				GetHost(req, state);
 			}
 			return true;
 		}
@@ -201,9 +200,9 @@ namespace InternalServers
 		std::vector<std::string> reqs = state->questions;
 		std::unordered_map<std::string, IP_Address> answers = state->GetAnswers();
 
-		for (size_t i = 0; i < reqs.size(); i++)
+		for (const auto& req : reqs)
 		{
-			IP_Address ans = answers[reqs[i]];
+			IP_Address ans = answers[req];
 			if (ans.integer != 0)
 			{
 				//TODO, might not be effective on pcap
@@ -214,7 +213,7 @@ namespace InternalServers
 				std::vector<u8> ansVector;
 				ansVector.resize(4);
 				*(IP_Address*)&ansVector[0] = ans;
-				DNS_ResponseEntry ansEntry(reqs[i], 1, 1, ansVector, 10800);
+				DNS_ResponseEntry ansEntry(req, 1, 1, ansVector, 10800);
 				retPay->answers.push_back(ansEntry);
 			}
 			else

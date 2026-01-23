@@ -309,11 +309,11 @@ std::string HTTPDownloader::GetExtensionForContentType(const std::string& conten
 	};
 
 	std::string ret;
-	for (size_t i = 0; i < std::size(table); i++)
+	for (auto i : table)
 	{
-		if (StringUtil::compareNoCase(table[i][0], content_type))
+		if (StringUtil::compareNoCase(i[0], content_type))
 		{
-			ret = table[i][1];
+			ret = i[1];
 			break;
 		}
 	}

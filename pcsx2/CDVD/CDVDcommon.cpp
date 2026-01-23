@@ -324,8 +324,8 @@ CDVD_SourceType CDVDsys_GetSourceType()
 
 void CDVDsys_ClearFiles()
 {
-	for (u32 i = 0; i < std::size(m_SourceFilename); i++)
-		m_SourceFilename[i] = {};
+	for (auto& i : m_SourceFilename)
+		i = {};
 }
 
 void CDVDsys_ChangeSource(CDVD_SourceType type)

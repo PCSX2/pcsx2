@@ -275,22 +275,22 @@ static chd_file* OpenCHD(const std::string& filename, FileSystem::ManagedCFilePt
 	const std::unique_lock hash_cache_lock(s_chd_hash_cache_mutex);
 
 	// Memoize which hashes came from what files, to avoid reading them repeatedly.
-	for (auto it = s_chd_hash_cache.begin(); it != s_chd_hash_cache.end(); ++it)
+	for (auto& it : s_chd_hash_cache)
 	{
-		if (!StringUtil::compareNoCase(parent_dir, Path::GetDirectory(it->first)))
+		if (!StringUtil::compareNoCase(parent_dir, Path::GetDirectory(it.first)))
 			continue;
 
-		if (!IsHeaderParentCHD(header, it->second))
+		if (!IsHeaderParentCHD(header, it.second))
 			continue;
 
 		// Re-check the header, it might have changed since we last opened.
 		chd_header parent_header;
-		auto parent_fp = FileSystem::OpenManagedSharedCFile(it->first.c_str(), "rb", FileSystem::FileShareMode::DenyWrite);
+		auto parent_fp = FileSystem::OpenManagedSharedCFile(it.first.c_str(), "rb", FileSystem::FileShareMode::DenyWrite);
 		if (parent_fp && chd_read_header_file(parent_fp.get(), &parent_header) == CHDERR_NONE &&
 			IsHeaderParentCHD(header, parent_header))
 		{
 			// Need to take a copy of the string, because the parent might add to the list and invalidate the iterator.
-			const std::string filename_to_open = it->first;
+			const std::string filename_to_open = it.first;
 
 			// Match! Open this one.
 			parent_chd = OpenCHD(filename_to_open, std::move(parent_fp), error, recursion_level + 1);

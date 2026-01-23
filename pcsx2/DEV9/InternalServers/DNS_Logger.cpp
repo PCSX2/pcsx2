@@ -36,8 +36,8 @@ namespace InternalServers
 		if (data.size() != 0)
 		{
 			str.reserve(data.size() * 4);
-			for (size_t i = 0; i < data.size(); i++)
-				str += std::to_string(data[i]) + ":";
+			for (unsigned char i : data)
+				str += std::to_string(i) + ":";
 
 			str.pop_back();
 		} //else leave string empty

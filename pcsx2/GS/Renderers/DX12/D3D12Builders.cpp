@@ -194,8 +194,8 @@ void D3D12::GraphicsPipelineBuilder::SetNoBlendingState()
 void D3D12::GraphicsPipelineBuilder::ClearRenderTargets()
 {
 	m_desc.NumRenderTargets = 0;
-	for (u32 i = 0; i < sizeof(m_desc.RTVFormats) / sizeof(m_desc.RTVFormats[0]); i++)
-		m_desc.RTVFormats[i] = DXGI_FORMAT_UNKNOWN;
+	for (auto& RTVFormat : m_desc.RTVFormats)
+		RTVFormat = DXGI_FORMAT_UNKNOWN;
 }
 
 void D3D12::GraphicsPipelineBuilder::SetRenderTarget(u32 rt, DXGI_FORMAT format)

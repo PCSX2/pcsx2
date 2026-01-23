@@ -397,6 +397,6 @@ void ATA::CreateHDDinfoCsum()
 	identifyData[511] = static_cast<u8>(255 - counter + 1);
 	counter = 0;
 
-	for (int i = 0; i < (512); i++)
-		counter += identifyData[i];
+	for (unsigned char i : identifyData)
+		counter += i;
 }

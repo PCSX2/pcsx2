@@ -62,9 +62,8 @@ s32 SPU2Savestate::FreezeIt(DataBlock& spud)
 		x = reinterpret_cast<decltype(x)>(reinterpret_cast<const u8*>((x)) - iopPhysMem(0)); \
 	}
 
-	for (u32 i = 0; i < 2; i++)
+	for (auto& core : spud.Cores)
 	{
-		V_Core& core = spud.Cores[i];
 		FIX_POINTER(core.DMAPtr);
 		FIX_POINTER(core.DMARPtr);
 	}
@@ -128,9 +127,8 @@ s32 SPU2Savestate::ThawIt(DataBlock& spud)
 		x = reinterpret_cast<decltype(x)>(iopPhysMem(0) + reinterpret_cast<size_t>((x))); \
 	}
 
-		for (u32 i = 0; i < 2; i++)
+		for (auto& core : Cores)
 		{
-			V_Core& core = Cores[i];
 			FIX_POINTER(core.DMAPtr);
 			FIX_POINTER(core.DMARPtr);
 		}
@@ -148,12 +146,12 @@ s32 SPU2Savestate::ThawIt(DataBlock& spud)
 		// Go through the V_Voice structs and recalculate SBuffer pointer from
 		// the NextA setting.
 
-		for (int c = 0; c < 2; c++)
+		for (auto& Core : Cores)
 		{
-			for (int v = 0; v < 24; v++)
+			for (auto& Voice : Core.Voices)
 			{
-				const int cacheIdx = Cores[c].Voices[v].NextA / pcm_WordsPerBlock;
-				Cores[c].Voices[v].SBuffer = pcm_cache_data[cacheIdx].Sampledata;
+				const int cacheIdx = Voice.NextA / pcm_WordsPerBlock;
+				Voice.SBuffer = pcm_cache_data[cacheIdx].Sampledata;
 			}
 		}
 	}

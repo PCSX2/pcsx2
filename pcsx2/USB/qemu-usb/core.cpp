@@ -46,12 +46,12 @@ void usb_pick_speed(USBPort* port)
 	};
 	USBDevice* udev = port->dev;
 
-	for (u32 i = 0; i < std::size(speeds); i++)
+	for (int speed : speeds)
 	{
-		if ((udev->speedmask & (1 << speeds[i])) &&
-			(port->speedmask & (1 << speeds[i])))
+		if ((udev->speedmask & (1 << speed)) &&
+			(port->speedmask & (1 << speed)))
 		{
-			udev->speed = speeds[i];
+			udev->speed = speed;
 			return;
 		}
 	}

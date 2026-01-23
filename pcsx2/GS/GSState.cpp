@@ -51,18 +51,18 @@ constexpr int GSState::GetSaveStateSize(int version)
 
 	for (int i = 0; i < 2; i++)
 	{
-		size += sizeof(m_env.CTXT[i].XYOFFSET);
-		size += sizeof(m_env.CTXT[i].TEX0);
-		size += sizeof(m_env.CTXT[i].TEX1);
-		size += sizeof(m_env.CTXT[i].CLAMP);
-		size += sizeof(m_env.CTXT[i].MIPTBP1);
-		size += sizeof(m_env.CTXT[i].MIPTBP2);
-		size += sizeof(m_env.CTXT[i].SCISSOR);
-		size += sizeof(m_env.CTXT[i].ALPHA);
-		size += sizeof(m_env.CTXT[i].TEST);
-		size += sizeof(m_env.CTXT[i].FBA);
-		size += sizeof(m_env.CTXT[i].FRAME);
-		size += sizeof(m_env.CTXT[i].ZBUF);
+		size += sizeof(GSDrawingEnvironment::CTXT[i].XYOFFSET);
+		size += sizeof(GSDrawingEnvironment::CTXT[i].TEX0);
+		size += sizeof(GSDrawingEnvironment::CTXT[i].TEX1);
+		size += sizeof(GSDrawingEnvironment::CTXT[i].CLAMP);
+		size += sizeof(GSDrawingEnvironment::CTXT[i].MIPTBP1);
+		size += sizeof(GSDrawingEnvironment::CTXT[i].MIPTBP2);
+		size += sizeof(GSDrawingEnvironment::CTXT[i].SCISSOR);
+		size += sizeof(GSDrawingEnvironment::CTXT[i].ALPHA);
+		size += sizeof(GSDrawingEnvironment::CTXT[i].TEST);
+		size += sizeof(GSDrawingEnvironment::CTXT[i].FBA);
+		size += sizeof(GSDrawingEnvironment::CTXT[i].FRAME);
+		size += sizeof(GSDrawingEnvironment::CTXT[i].ZBUF);
 	}
 
 	size += sizeof(m_v.RGBAQ);
@@ -163,9 +163,9 @@ void GSState::Reset(bool hardware_reset)
 
 	UpdateVertexKick();
 
-	for (u32 i = 0; i < 2; i++)
+	for (auto& i : m_env.CTXT)
 	{
-		m_env.CTXT[i].UpdateScissor();
+		i.UpdateScissor();
 
 		// What is this nonsense? Basically, GOW does a 32x448 draw after resetting the GS, thinking the PSM for the framebuffer is going
 		// to be set to C24, therefore the alpha bits get left alone. Because of the reset, in PCSX2, it ends up as C32, and the TC gets
@@ -182,11 +182,11 @@ void GSState::Reset(bool hardware_reset)
 		// after reset (otherwise it'd only ever render 1x1).
 		//
 		if (!hardware_reset && GSIsHardwareRenderer())
-			m_env.CTXT[i].scissor.cull = GSVector4i::xffffffff();
+			i.scissor.cull = GSVector4i::xffffffff();
 
-		m_env.CTXT[i].offset.fb = m_mem.GetOffset(m_env.CTXT[i].FRAME.Block(), m_env.CTXT[i].FRAME.FBW, m_env.CTXT[i].FRAME.PSM);
-		m_env.CTXT[i].offset.zb = m_mem.GetOffset(m_env.CTXT[i].ZBUF.Block(), m_env.CTXT[i].FRAME.FBW, m_env.CTXT[i].ZBUF.PSM);
-		m_env.CTXT[i].offset.fzb4 = m_mem.GetPixelOffset4(m_env.CTXT[i].FRAME, m_env.CTXT[i].ZBUF);
+		i.offset.fb = m_mem.GetOffset(i.FRAME.Block(), i.FRAME.FBW, i.FRAME.PSM);
+		i.offset.zb = m_mem.GetOffset(i.ZBUF.Block(), i.FRAME.FBW, i.ZBUF.PSM);
+		i.offset.fzb4 = m_mem.GetPixelOffset4(i.FRAME, i.ZBUF);
 	}
 
 	UpdateScissor();
@@ -787,9 +787,9 @@ void GSState::DumpTransferList(const std::string& filename)
 	constexpr const char* COMMENT = " # ";
 
 	int n_dumped = 0; // Number of transfers dumped for this draw.
-	for (int i = 0; i < static_cast<int>(m_draw_transfers.size()); ++i)
+	for (auto& m_draw_transfer : m_draw_transfers)
 	{
-		if (m_draw_transfers[i].draw != s_n - 1)
+		if (m_draw_transfer.draw != s_n - 1)
 			continue; // skip transfers that did not start in the previous draw
 
 		if (!file.has_value())
@@ -800,7 +800,7 @@ void GSState::DumpTransferList(const std::string& filename)
 			file->imbue(std::locale::classic()); // Disable integer separators.
 		}
 
-		const GSUploadQueue& transfer = m_draw_transfers[i];
+		const GSUploadQueue& transfer = m_draw_transfer;
 
 		if (n_dumped > 0)
 			(*file) << std::endl;
@@ -849,12 +849,12 @@ void GSState::DumpTransferImages()
 	std::optional<std::ofstream> file;
 
 	int transfer_n = 0;
-	for (int i = 0; i < static_cast<int>(m_draw_transfers.size()); ++i)
+	for (auto& m_draw_transfer : m_draw_transfers)
 	{
-		if (m_draw_transfers[i].draw != s_n - 1)
+		if (m_draw_transfer.draw != s_n - 1)
 			continue; // skip transfers that did not start in the previous draw
 
-		const GSUploadQueue& transfer = m_draw_transfers[i];
+		const GSUploadQueue& transfer = m_draw_transfer;
 
 		std::string filename;
 		if ((transfer.transfer_type == EEGS_TransferType::EE_to_GS) || transfer.zero_clear)
@@ -3052,20 +3052,20 @@ int GSState::Freeze(freezeData* fd, bool sizeonly)
 	WriteState(data, &m_env.TRXREG);
 	WriteState(data, &m_env.TRXREG); // obsolete
 
-	for (int i = 0; i < 2; i++)
+	for (auto& i : m_env.CTXT)
 	{
-		WriteState(data, &m_env.CTXT[i].XYOFFSET);
-		WriteState(data, &m_env.CTXT[i].TEX0);
-		WriteState(data, &m_env.CTXT[i].TEX1);
-		WriteState(data, &m_env.CTXT[i].CLAMP);
-		WriteState(data, &m_env.CTXT[i].MIPTBP1);
-		WriteState(data, &m_env.CTXT[i].MIPTBP2);
-		WriteState(data, &m_env.CTXT[i].SCISSOR);
-		WriteState(data, &m_env.CTXT[i].ALPHA);
-		WriteState(data, &m_env.CTXT[i].TEST);
-		WriteState(data, &m_env.CTXT[i].FBA);
-		WriteState(data, &m_env.CTXT[i].FRAME);
-		WriteState(data, &m_env.CTXT[i].ZBUF);
+		WriteState(data, &i.XYOFFSET);
+		WriteState(data, &i.TEX0);
+		WriteState(data, &i.TEX1);
+		WriteState(data, &i.CLAMP);
+		WriteState(data, &i.MIPTBP1);
+		WriteState(data, &i.MIPTBP2);
+		WriteState(data, &i.SCISSOR);
+		WriteState(data, &i.ALPHA);
+		WriteState(data, &i.TEST);
+		WriteState(data, &i.FBA);
+		WriteState(data, &i.FRAME);
+		WriteState(data, &i.ZBUF);
 	}
 
 	WriteState(data, &m_v.RGBAQ);
@@ -3154,27 +3154,27 @@ int GSState::Defrost(const freezeData* fd)
 	ReadState(&m_env.TRXREG, data);
 	ReadState(&m_env.TRXREG, data); // obsolete
 
-	for (int i = 0; i < 2; i++)
+	for (auto& i : m_env.CTXT)
 	{
-		ReadState(&m_env.CTXT[i].XYOFFSET, data);
-		ReadState(&m_env.CTXT[i].TEX0, data);
-		ReadState(&m_env.CTXT[i].TEX1, data);
+		ReadState(&i.XYOFFSET, data);
+		ReadState(&i.TEX0, data);
+		ReadState(&i.TEX1, data);
 
 		if (version <= 6)
 			data += sizeof(GIFRegTEX2);
 
-		ReadState(&m_env.CTXT[i].CLAMP, data);
-		ReadState(&m_env.CTXT[i].MIPTBP1, data);
-		ReadState(&m_env.CTXT[i].MIPTBP2, data);
-		ReadState(&m_env.CTXT[i].SCISSOR, data);
-		ReadState(&m_env.CTXT[i].ALPHA, data);
-		ReadState(&m_env.CTXT[i].TEST, data);
-		ReadState(&m_env.CTXT[i].FBA, data);
-		ReadState(&m_env.CTXT[i].FRAME, data);
-		ReadState(&m_env.CTXT[i].ZBUF, data);
+		ReadState(&i.CLAMP, data);
+		ReadState(&i.MIPTBP1, data);
+		ReadState(&i.MIPTBP2, data);
+		ReadState(&i.SCISSOR, data);
+		ReadState(&i.ALPHA, data);
+		ReadState(&i.TEST, data);
+		ReadState(&i.FBA, data);
+		ReadState(&i.FRAME, data);
+		ReadState(&i.ZBUF, data);
 
-		m_env.CTXT[i].XYOFFSET.OFX &= 0xffff;
-		m_env.CTXT[i].XYOFFSET.OFY &= 0xffff;
+		i.XYOFFSET.OFX &= 0xffff;
+		i.XYOFFSET.OFY &= 0xffff;
 
 		if (version <= 4)
 			data += sizeof(u32) * 7; // skip
@@ -3236,13 +3236,13 @@ int GSState::Defrost(const freezeData* fd)
 
 	UpdateVertexKick();
 
-	for (u32 i = 0; i < 2; i++)
+	for (auto& i : m_env.CTXT)
 	{
-		m_env.CTXT[i].UpdateScissor();
+		i.UpdateScissor();
 
-		m_env.CTXT[i].offset.fb = m_mem.GetOffset(m_env.CTXT[i].FRAME.Block(), m_env.CTXT[i].FRAME.FBW, m_env.CTXT[i].FRAME.PSM);
-		m_env.CTXT[i].offset.zb = m_mem.GetOffset(m_env.CTXT[i].ZBUF.Block(), m_env.CTXT[i].FRAME.FBW, m_env.CTXT[i].ZBUF.PSM);
-		m_env.CTXT[i].offset.fzb4 = m_mem.GetPixelOffset4(m_env.CTXT[i].FRAME, m_env.CTXT[i].ZBUF);
+		i.offset.fb = m_mem.GetOffset(i.FRAME.Block(), i.FRAME.FBW, i.FRAME.PSM);
+		i.offset.zb = m_mem.GetOffset(i.ZBUF.Block(), i.FRAME.FBW, i.ZBUF.PSM);
+		i.offset.fzb4 = m_mem.GetPixelOffset4(i.FRAME, i.ZBUF);
 	}
 
 	UpdateScissor();
@@ -6549,18 +6549,17 @@ void GSState::GSPCRTCRegs::CalculateDisplayOffset(bool scanmask)
 			}
 		}
 
-		for (int i = 0; i < 2; i++)
+		for (auto& PCRTCDisplay : PCRTCDisplays)
 		{
 			// Should this be MAGV/H in the DISPLAY register rather than the "default" magnification?
 			const GSVector2i offset = {
-				(static_cast<int>(PCRTCDisplays[i].displayOffset.x) - offsets.z) / (VideoModeDividers[videomode].x + 1),
-				(static_cast<int>(PCRTCDisplays[i].displayOffset.y) - (offsets.w * (interlaced + 1))) / (VideoModeDividers[videomode].y + 1)
-			};
+				(static_cast<int>(PCRTCDisplay.displayOffset.x) - offsets.z) / (VideoModeDividers[videomode].x + 1),
+				(static_cast<int>(PCRTCDisplay.displayOffset.y) - (offsets.w * (interlaced + 1))) / (VideoModeDividers[videomode].y + 1)};
 
-			PCRTCDisplays[i].displayRect.x += offset.x;
-			PCRTCDisplays[i].displayRect.z += offset.x;
-			PCRTCDisplays[i].displayRect.y += offset.y;
-			PCRTCDisplays[i].displayRect.w += offset.y;
+			PCRTCDisplay.displayRect.x += offset.x;
+			PCRTCDisplay.displayRect.z += offset.x;
+			PCRTCDisplay.displayRect.y += offset.y;
+			PCRTCDisplay.displayRect.w += offset.y;
 		}
 
 		if (both_enabled)

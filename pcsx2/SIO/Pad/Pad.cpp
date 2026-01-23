@@ -707,9 +707,9 @@ void Pad::SetMacroButtonState(InputBindingKey& key, u32 pad, u32 index, bool sta
 
 	if (mb.active_buttons.size() > 1 && state)
 	{
-		for (auto it = mb.active_buttons.begin(); it != mb.active_buttons.end(); ++it)
+		for (auto& active_button : mb.active_buttons)
 		{
-			if (!it->second)
+			if (!active_button.second)
 				return;
 		}
 	}

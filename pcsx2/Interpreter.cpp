@@ -97,10 +97,8 @@ void intMemcheck(u32 op, u32 bits, bool store)
 	const u32 end = start + bits/8;
 
 	auto checks = CBreakPoints::GetMemChecks(BREAKPOINT_EE);
-	for (size_t i = 0; i < checks.size(); i++)
+	for (auto& check : checks)
 	{
-		auto& check = checks[i];
-
 		if (check.result == 0)
 			continue;
 		if ((check.memCond & MEMCHECK_WRITE) == 0 && store)

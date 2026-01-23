@@ -342,9 +342,9 @@ u32 DisassemblyManager::getNthNextAddress(u32 address, int n)
 
 void DisassemblyManager::clear()
 {
-	for (auto it = entries.begin(); it != entries.end(); it++)
+	for (auto& entrie : entries)
 	{
-		delete it->second;
+		delete entrie.second;
 	}
 	entries.clear();
 }
@@ -419,10 +419,8 @@ void DisassemblyFunction::getBranchLines(u32 start, u32 size, std::vector<Branch
 {
 	u32 end = start+size;
 
-	for (size_t i = 0; i < lines.size(); i++)
+	for (auto& line : lines)
 	{
-		BranchLine& line = lines[i];
-
 		u32 first = line.first;
 		u32 second = line.second;
 
@@ -446,9 +444,10 @@ void DisassemblyFunction::generateBranchLines()
 	};
 
 	LaneInfo lanes[NUM_LANES];
-	for (int i = 0; i < NUM_LANES; i++) {
-		lanes[i].used = false;
-		lanes[i].end = 0;
+	for (auto& lane : lanes)
+	{
+		lane.used = false;
+		lane.end = 0;
 	}
 
 	u32 end = address+size;
@@ -478,12 +477,12 @@ void DisassemblyFunction::generateBranchLines()
 	}
 
 	std::sort(lines.begin(),lines.end());
-	for (size_t i = 0; i < lines.size(); i++)
+	for (auto& line : lines)
 	{
-		for (int l = 0; l < NUM_LANES; l++)
+		for (auto& lane : lanes)
 		{
-			if (lines[i].first > lanes[l].end)
-				lanes[l].used = false;
+			if (line.first > lane.end)
+				lane.used = false;
 		}
 
 		int lane = -1;
@@ -502,9 +501,9 @@ void DisassemblyFunction::generateBranchLines()
 			continue;
 		}
 
-		lanes[lane].end = lines[i].second;
+		lanes[lane].end = line.second;
 		lanes[lane].used = true;
-		lines[i].laneIndex = lane;
+		line.laneIndex = lane;
 	}
 }
 
@@ -524,15 +523,15 @@ void DisassemblyFunction::load()
 
 	// gather all branch targets
 	std::set<u32> branchTargets;
-	for (size_t i = 0; i < lines.size(); i++)
+	for (auto& line : lines)
 	{
-		switch (lines[i].type)
+		switch (line.type)
 		{
 		case LINE_DOWN:
-			branchTargets.insert(lines[i].second);
+			branchTargets.insert(line.second);
 			break;
 		case LINE_UP:
-			branchTargets.insert(lines[i].first);
+			branchTargets.insert(line.first);
 			break;
 		}
 	}
@@ -703,9 +702,9 @@ void DisassemblyFunction::load()
 
 void DisassemblyFunction::clear()
 {
-	for (auto it = entries.begin(); it != entries.end(); it++)
+	for (auto& entrie : entries)
 	{
-		delete it->second;
+		delete entrie.second;
 	}
 
 	entries.clear();

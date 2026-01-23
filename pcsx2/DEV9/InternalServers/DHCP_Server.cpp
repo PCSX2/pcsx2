@@ -213,66 +213,66 @@ namespace InternalServers
 
 		uint leaseTime = 86400;
 
-		for (size_t i = 0; i < dhcp.options.size(); i++)
+		for (auto& option : dhcp.options)
 		{
-			switch (dhcp.options[i]->GetCode())
+			switch (option->GetCode())
 			{
 				case 0:
 					continue;
 				case 1:
-					if (netmask != ((DHCPopSubnet*)dhcp.options[i])->subnetMask)
+					if (netmask != ((DHCPopSubnet*)option)->subnetMask)
 						Console.Error("DHCP: SubnetMask missmatch");
 					break;
 				case 3:
-					if (((DHCPopRouter*)dhcp.options[i])->routers.size() != 1)
+					if (((DHCPopRouter*)option)->routers.size() != 1)
 						Console.Error("DHCP: Routers count missmatch");
 
-					if (gateway != ((DHCPopRouter*)dhcp.options[i])->routers[0])
+					if (gateway != ((DHCPopRouter*)option)->routers[0])
 						Console.Error("DHCP: RouterIP missmatch");
 					break;
 				case 6:
 					// clang-format off
-					if (((((DHCPopDNS*)dhcp.options[i])->dnsServers.size() == 0 && dns1.integer == 0) ||
-						 (((DHCPopDNS*)dhcp.options[i])->dnsServers.size() == 1 && dns1.integer != 0 && dns2.integer == 0) ||
-						 (((DHCPopDNS*)dhcp.options[i])->dnsServers.size() == 2 && dns2.integer != 0)) == false)
+					if (((((DHCPopDNS*)option)->dnsServers.size() == 0 && dns1.integer == 0) ||
+						 (((DHCPopDNS*)option)->dnsServers.size() == 1 && dns1.integer != 0 && dns2.integer == 0) ||
+						 (((DHCPopDNS*)option)->dnsServers.size() == 2 && dns2.integer != 0)) == false)
 						Console.Error("DHCP: DNS count missmatch");
 					// clang-format on
 
-					if ((((DHCPopDNS*)dhcp.options[i])->dnsServers.size() > 0 && dns1 != ((DHCPopDNS*)dhcp.options[i])->dnsServers[0]) ||
-						(((DHCPopDNS*)dhcp.options[i])->dnsServers.size() > 1 && dns2 != ((DHCPopDNS*)dhcp.options[i])->dnsServers[1]))
+					if ((((DHCPopDNS*)option)->dnsServers.size() > 0 && dns1 != ((DHCPopDNS*)option)->dnsServers[0]) ||
+						(((DHCPopDNS*)option)->dnsServers.size() > 1 && dns2 != ((DHCPopDNS*)option)->dnsServers[1]))
 						Console.Error("DHCP: DNS missmatch");
 					break;
 				case 12:
 					//TODO use name?
 					break;
 				case 50:
-					if (ps2IP != ((DHCPopREQIP*)dhcp.options[i])->requestedIP)
+					if (ps2IP != ((DHCPopREQIP*)option)->requestedIP)
 						Console.Error("DHCP: ReqIP missmatch");
 					break;
 				case 51:
-					leaseTime = ((DHCPopIPLT*)(dhcp.options[i]))->ipLeaseTime;
+					leaseTime = ((DHCPopIPLT*)option)->ipLeaseTime;
 					break;
 				case 53:
-					msg = ((DHCPopMSG*)(dhcp.options[i]))->message;
+					msg = ((DHCPopMSG*)option)->message;
 					break;
 				case 54:
-					if (NetAdapter::internalIP != ((DHCPopSERVIP*)dhcp.options[i])->serverIP)
+					if (NetAdapter::internalIP != ((DHCPopSERVIP*)option)->serverIP)
 						Console.Error("DHCP: ServIP missmatch");
 					break;
 				case 55:
-					reqList = ((DHCPopREQLIST*)(dhcp.options[i]))->requests;
+					reqList = ((DHCPopREQLIST*)option)->requests;
 					break;
 				case 56: //String message
 					break;
 				case 57:
-					maxMs = ((DHCPopMMSGS*)(dhcp.options[i]))->maxMessageSize;
+					maxMs = ((DHCPopMMSGS*)option)->maxMessageSize;
 					break;
 				case 60: //ClassID
 				case 61: //ClientID
 				case 255: //End
 					break;
 				default:
-					Console.Error("DHCP: Got Unhandled Option %d", dhcp.options[i]->GetCode());
+					Console.Error("DHCP: Got Unhandled Option %d", option->GetCode());
 					break;
 			}
 		}
@@ -296,9 +296,9 @@ namespace InternalServers
 			if (msg == 3)
 				retPay->options.push_back(new DHCPopMSG(5));
 
-			for (size_t i = 0; i < reqList.size(); i++)
+			for (unsigned char i : reqList)
 			{
-				switch (reqList[i])
+				switch (i)
 				{
 					case 1:
 						retPay->options.push_back(new DHCPopSubnet(netmask));
@@ -334,7 +334,7 @@ namespace InternalServers
 					case 54: //Server Identifier (Already Added)
 						break;
 					default:
-						Console.Error("DHCP: Got Unhandled Request %d", reqList[i]);
+						Console.Error("DHCP: Got Unhandled Request %d", i);
 						break;
 				}
 			}

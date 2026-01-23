@@ -187,8 +187,8 @@ namespace PacketReader::IP
 		NetLib::WriteIPAddress(buffer, offset, destinationIP);
 
 		//options
-		for (size_t i = 0; i < options.size(); i++)
-			options[i]->WriteBytes(buffer, offset);
+		for (auto& option : options)
+			option->WriteBytes(buffer, offset);
 
 		//Zero alignment bytes
 		if (*offset != startOff + headerLength)
@@ -207,8 +207,8 @@ namespace PacketReader::IP
 	void IP_Packet::ReComputeHeaderLen()
 	{
 		int opOffset = 20;
-		for (size_t i = 0; i < options.size(); i++)
-			opOffset += options[i]->GetLength();
+		for (auto& option : options)
+			opOffset += option->GetLength();
 
 		//needs to be a whole number of 32bits
 		headerLength = Common::AlignUpPow2(opOffset, 4);
@@ -236,8 +236,8 @@ namespace PacketReader::IP
 		NetLib::WriteIPAddress(headerSegment, &counter, destinationIP);
 
 		//options
-		for (size_t i = 0; i < options.size(); i++)
-			options[i]->WriteBytes(headerSegment, &counter);
+		for (auto& option : options)
+			option->WriteBytes(headerSegment, &counter);
 
 		//Zero alignment bytes
 		if (counter != headerLength)
@@ -269,8 +269,8 @@ namespace PacketReader::IP
 		NetLib::WriteIPAddress(headerSegment, &counter, destinationIP);
 
 		//options
-		for (size_t i = 0; i < options.size(); i++)
-			options[i]->WriteBytes(headerSegment, &counter);
+		for (auto& option : options)
+			option->WriteBytes(headerSegment, &counter);
 
 		//Zero alignment bytes
 		if (counter != headerLength)
@@ -286,8 +286,8 @@ namespace PacketReader::IP
 
 	IP_Packet::~IP_Packet()
 	{
-		for (size_t i = 0; i < options.size(); i++)
-			delete options[i];
+		for (auto& option : options)
+			delete option;
 	}
 
 	u16 IP_Packet::InternetChecksum(const u8* buffer, int length)

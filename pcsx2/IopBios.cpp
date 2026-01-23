@@ -521,10 +521,10 @@ namespace R3000A
 
 		void reset()
 		{
-			for (int i = 0; i < maxfds; i++)
+			for (auto& fd : fds)
 			{
-				if (fds[i])
-					fds[i].close();
+				if (fd)
+					fd.close();
 			}
 			handles.clear();
 		}

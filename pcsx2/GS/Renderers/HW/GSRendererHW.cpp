@@ -3424,10 +3424,10 @@ void GSRendererHW::Draw()
 
 				if (ds->m_dirty.size())
 				{
-					for (int i = 0; i < static_cast<int>(ds->m_dirty.size()); i++)
+					for (auto& i : ds->m_dirty)
 					{
-						ds->m_dirty[i].r.y += new_offset;
-						ds->m_dirty[i].r.w += new_offset;
+						i.r.y += new_offset;
+						i.r.w += new_offset;
 					}
 				}
 
@@ -3721,10 +3721,10 @@ void GSRendererHW::Draw()
 
 				if (rt->m_dirty.size())
 				{
-					for (int i = 0; i < static_cast<int>(rt->m_dirty.size()); i++)
+					for (auto& i : rt->m_dirty)
 					{
-						rt->m_dirty[i].r.y += new_offset;
-						rt->m_dirty[i].r.w += new_offset;
+						i.r.y += new_offset;
+						i.r.w += new_offset;
 					}
 				}
 
@@ -8223,19 +8223,19 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 // If the EE uploaded a new CLUT since the last draw, use that.
 bool GSRendererHW::HasEEUpload(GSVector4i r)
 {
-	for (auto iter = m_draw_transfers.begin(); iter != m_draw_transfers.end(); ++iter)
+	for (auto& m_draw_transfer : m_draw_transfers)
 	{
-		if (iter->draw == (s_n - 1) && iter->blit.DBP == m_cached_ctx.TEX0.TBP0 && GSUtil::HasSharedBits(iter->blit.DPSM, m_cached_ctx.TEX0.PSM))
+		if (m_draw_transfer.draw == (s_n - 1) && m_draw_transfer.blit.DBP == m_cached_ctx.TEX0.TBP0 && GSUtil::HasSharedBits(m_draw_transfer.blit.DPSM, m_cached_ctx.TEX0.PSM))
 		{
 			GSVector4i rect = r;
 
-			if (!GSUtil::HasCompatibleBits(iter->blit.DPSM, m_cached_ctx.TEX0.PSM))
+			if (!GSUtil::HasCompatibleBits(m_draw_transfer.blit.DPSM, m_cached_ctx.TEX0.PSM))
 			{
 				GSTextureCache::SurfaceOffsetKey sok;
-				sok.elems[0].bp = iter->blit.DBP;
-				sok.elems[0].bw = iter->blit.DBW;
-				sok.elems[0].psm = iter->blit.DPSM;
-				sok.elems[0].rect = iter->rect;
+				sok.elems[0].bp = m_draw_transfer.blit.DBP;
+				sok.elems[0].bw = m_draw_transfer.blit.DBW;
+				sok.elems[0].psm = m_draw_transfer.blit.DPSM;
+				sok.elems[0].rect = m_draw_transfer.rect;
 				sok.elems[1].bp = m_cached_ctx.TEX0.TBP0;
 				sok.elems[1].bw = m_cached_ctx.TEX0.TBW;
 				sok.elems[1].psm = m_cached_ctx.TEX0.PSM;
@@ -8305,9 +8305,9 @@ GSRendererHW::CLUTDrawTestResult GSRendererHW::PossibleCLUTDraw()
 	int draw_divder_match = false;
 	const int valid_sizes[] = {8, 16, 32, 64};
 
-	for (int i = 0; i < 4; i++)
+	for (int valid_size : valid_sizes)
 	{
-		draw_divder_match = ((m_vt.m_primclass == GS_POINT_CLASS) ? ((static_cast<int>(m_vt.m_max.p.x + 1) & ~1) == valid_sizes[i]) : (static_cast<int>(m_vt.m_max.p.x) == valid_sizes[i]));
+		draw_divder_match = ((m_vt.m_primclass == GS_POINT_CLASS) ? ((static_cast<int>(m_vt.m_max.p.x + 1) & ~1) == valid_size) : (static_cast<int>(m_vt.m_max.p.x) == valid_size));
 
 		if (draw_divder_match)
 			break;

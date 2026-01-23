@@ -75,8 +75,8 @@ namespace InternalServers
 		if (data.size() != 0)
 		{
 			str.reserve(data.size() * 4);
-			for (size_t i = 0; i < data.size(); i++)
-				str += StringUtil::StdStringFromFormat("%.2X:", data[i]);
+			for (unsigned char i : data)
+				str += StringUtil::StdStringFromFormat("%.2X:", i);
 
 			str.pop_back();
 		} // else leave string empty
@@ -202,9 +202,8 @@ namespace InternalServers
 
 		Console.WriteLn("DEV9: DHCP: Options Count %i", dhcp->options.size());
 
-		for (size_t i = 0; i < dhcp->options.size(); i++)
+		for (auto entry : dhcp->options)
 		{
-			BaseOption* entry = dhcp->options[i];
 			Console.WriteLn("DEV9: DHCP: Option %s (%i)", OptionToString(entry->GetCode()), entry->GetCode());
 			Console.WriteLn("DEV9: DHCP: Option Size %i", entry->GetLength());
 			switch (entry->GetCode())
@@ -221,16 +220,16 @@ namespace InternalServers
 				{
 					const DHCPopRouter* routers = static_cast<DHCPopRouter*>(entry);
 					Console.WriteLn("DEV9: DHCP: Routers Count %i", routers->routers.size());
-					for (size_t j = 0; j < routers->routers.size(); j++)
-						Console.WriteLn("DEV9: DHCP: Router %s", IpToString(routers->routers[j]).c_str());
+					for (auto router : routers->routers)
+						Console.WriteLn("DEV9: DHCP: Router %s", IpToString(router).c_str());
 					break;
 				}
 				case 6:
 				{
 					const DHCPopDNS* dns = static_cast<DHCPopDNS*>(entry);
 					Console.WriteLn("DEV9: DHCP: DNS Count %i", dns->dnsServers.size());
-					for (size_t j = 0; j < dns->dnsServers.size(); j++)
-						Console.WriteLn("DEV9: DHCP: DNS %s", IpToString(dns->dnsServers[j]).c_str());
+					for (auto dnsServer : dns->dnsServers)
+						Console.WriteLn("DEV9: DHCP: DNS %s", IpToString(dnsServer).c_str());
 					break;
 				}
 				case 12:
@@ -288,8 +287,8 @@ namespace InternalServers
 				{
 					const DHCPopREQLIST* reqList = static_cast<DHCPopREQLIST*>(entry);
 					Console.WriteLn("DEV9: DHCP: Request Count %i", reqList->requests.size());
-					for (size_t j = 0; j < reqList->requests.size(); j++)
-						Console.WriteLn("DEV9: DHCP: Requested %s (%i)", OptionToString(reqList->requests[j]), reqList->requests[j]);
+					for (unsigned char request : reqList->requests)
+						Console.WriteLn("DEV9: DHCP: Requested %s (%i)", OptionToString(request), request);
 					break;
 				}
 				case 56:

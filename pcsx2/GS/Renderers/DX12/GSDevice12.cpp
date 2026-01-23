@@ -1176,11 +1176,11 @@ std::string GSDevice12::GetDriverInfo() const
 		{D3D_FEATURE_LEVEL_11_1, "D3D_FEATURE_LEVEL_11_1"},
 	}};
 
-	for (size_t i = 0; i < std::size(feature_level_names); i++)
+	for (const auto& feature_level_name : feature_level_names)
 	{
-		if (m_feature_level == std::get<0>(feature_level_names[i]))
+		if (m_feature_level == std::get<0>(feature_level_name))
 		{
-			ret = std::get<1>(feature_level_names[i]);
+			ret = std::get<1>(feature_level_name);
 			break;
 		}
 	}

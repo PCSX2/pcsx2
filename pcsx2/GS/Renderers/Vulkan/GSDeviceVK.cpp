@@ -4593,12 +4593,12 @@ void GSDeviceVK::DestroyResources()
 				vkDestroyPipeline(m_device, m_colclip_finish_pipelines[ds][fbl], nullptr);
 		}
 	}
-	for (u32 ds = 0; ds < 2; ds++)
+	for (auto& m_date_image_setup_pipeline : m_date_image_setup_pipelines)
 	{
-		for (u32 datm = 0; datm < 4; datm++)
+		for (auto& datm : m_date_image_setup_pipeline)
 		{
-			if (m_date_image_setup_pipelines[ds][datm] != VK_NULL_HANDLE)
-				vkDestroyPipeline(m_device, m_date_image_setup_pipelines[ds][datm], nullptr);
+			if (datm != VK_NULL_HANDLE)
+				vkDestroyPipeline(m_device, datm, nullptr);
 		}
 	}
 	if (m_fxaa_pipeline != VK_NULL_HANDLE)

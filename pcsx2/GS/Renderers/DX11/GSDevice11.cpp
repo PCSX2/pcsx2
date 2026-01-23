@@ -874,11 +874,11 @@ std::string GSDevice11::GetDriverInfo() const
 		{D3D_FEATURE_LEVEL_11_0, "D3D_FEATURE_LEVEL_11_0"},
 	}};
 
-	for (size_t i = 0; i < std::size(feature_level_names); i++)
+	for (const auto& feature_level_name : feature_level_names)
 	{
-		if (m_feature_level == std::get<0>(feature_level_names[i]))
+		if (m_feature_level == std::get<0>(feature_level_name))
 		{
-			ret = std::get<1>(feature_level_names[i]);
+			ret = std::get<1>(feature_level_name);
 			break;
 		}
 	}
@@ -2500,7 +2500,7 @@ void GSDevice11::PSUnbindConflictingSRVs(GSTexture* tex1, GSTexture* tex2)
 	bool changed = false;
 	for (size_t i = 0; i < MAX_TEXTURES; i++)
 	{
-		// We chech against what's currently bound (cached_sr_views), then update local state (ps_sr_views) which calls PSUpdateShaderState to update gpu state.
+		// We check against what's currently bound (cached_sr_views), then update local state (ps_sr_views) which calls PSUpdateShaderState to update gpu state.
 		if ((tex1 && m_state.ps_cached_sr_views[i] == *static_cast<GSTexture11*>(tex1)) || (tex2 && m_state.ps_cached_sr_views[i] == *static_cast<GSTexture11*>(tex2)))
 		{
 			m_state.ps_sr_views[i] = nullptr;

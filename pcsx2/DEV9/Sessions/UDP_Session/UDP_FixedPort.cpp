@@ -101,8 +101,8 @@ namespace Sessions
 			else
 			{
 				// Need to wait for child connections to close.
-				for (size_t i = 0; i < connectionsCopy.size(); i++)
-					connectionsCopy[i]->ForceClose();
+				for (auto& i : connectionsCopy)
+					i->ForceClose();
 
 				return std::nullopt;
 			}
@@ -112,9 +112,8 @@ namespace Sessions
 			{
 				std::lock_guard numberlock(connectionSentry);
 
-				for (size_t i = 0; i < connections.size(); i++)
+				for (auto s : connections)
 				{
-					UDP_BaseSession* s = connections[i];
 					if (s->WillRecive(ret.value().sourceIP))
 						return ret;
 				}
@@ -144,8 +143,8 @@ namespace Sessions
 			connectionsCopy = connections;
 		}
 
-		for (size_t i = 0; i < connectionsCopy.size(); i++)
-			connectionsCopy[i]->Reset();
+		for (auto& i : connectionsCopy)
+			i->Reset();
 	}
 
 	UDP_Session* UDP_FixedPort::NewClientSession(ConnectionKey parNewKey, bool parIsBrodcast, bool parIsMulticast)

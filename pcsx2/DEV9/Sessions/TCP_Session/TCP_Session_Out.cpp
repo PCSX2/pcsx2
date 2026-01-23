@@ -115,28 +115,28 @@ namespace Sessions
 
 		ResetMyNumbers();
 
-		for (size_t i = 0; i < tcp->options.size(); i++)
+		for (auto& option : tcp->options)
 		{
-			switch (tcp->options[i]->GetCode())
+			switch (option->GetCode())
 			{
 				case 0: // End
 				case 1: // Nop
 					continue;
 				case 2: // MSS
-					maxSegmentSize = static_cast<TCPopMSS*>(tcp->options[i])->maxSegmentSize;
+					maxSegmentSize = static_cast<TCPopMSS*>(option)->maxSegmentSize;
 					break;
 				case 3: // WindowScale
-					windowScale = static_cast<TCPopWS*>(tcp->options[i])->windowScale;
+					windowScale = static_cast<TCPopWS*>(option)->windowScale;
 					if (windowScale > 0)
 						Console.Error("DEV9: TCP: Non-zero window scale option");
 					break;
 				case 8: // TimeStamp
-					lastRecivedTimeStamp = static_cast<TCPopTS*>(tcp->options[i])->senderTimeStamp;
+					lastRecivedTimeStamp = static_cast<TCPopTS*>(option)->senderTimeStamp;
 					sendTimeStamps = true;
 					timeStampStart = std::chrono::steady_clock::now();
 					break;
 				default:
-					Console.Error("DEV9: TCP: Got unknown option %d", tcp->options[i]->GetCode());
+					Console.Error("DEV9: TCP: Got unknown option %d", option->GetCode());
 					break;
 			}
 		}
@@ -253,18 +253,18 @@ namespace Sessions
 			return true;
 		}
 
-		for (size_t i = 0; i < tcp->options.size(); i++)
+		for (auto& option : tcp->options)
 		{
-			switch (tcp->options[i]->GetCode())
+			switch (option->GetCode())
 			{
 				case 0: // End
 				case 1: // Nop
 					continue;
 				case 8: // Timestamp
-					lastRecivedTimeStamp = static_cast<TCPopTS*>(tcp->options[i])->senderTimeStamp;
+					lastRecivedTimeStamp = static_cast<TCPopTS*>(option)->senderTimeStamp;
 					break;
 				default:
-					Console.Error("DEV9: TCP: Got unknown option %d", tcp->options[i]->GetCode());
+					Console.Error("DEV9: TCP: Got unknown option %d", option->GetCode());
 					break;
 			}
 		}
@@ -287,18 +287,18 @@ namespace Sessions
 			Console.Error("DEV9: TCP: Urgent data not supported");
 			return true;
 		}
-		for (size_t i = 0; i < tcp->options.size(); i++)
+		for (auto& option : tcp->options)
 		{
-			switch (tcp->options[i]->GetCode())
+			switch (option->GetCode())
 			{
 				case 0: // End
 				case 1: // Nop
 					continue;
 				case 8:
-					lastRecivedTimeStamp = static_cast<TCPopTS*>(tcp->options[i])->senderTimeStamp;
+					lastRecivedTimeStamp = static_cast<TCPopTS*>(option)->senderTimeStamp;
 					break;
 				default:
-					Console.Error("DEV9: TCP: Got unknown option %d", tcp->options[i]->GetCode());
+					Console.Error("DEV9: TCP: Got unknown option %d", option->GetCode());
 					break;
 			}
 		}
@@ -379,18 +379,18 @@ namespace Sessions
 			Console.Error("DEV9: TCP: Attempt to connect to an existing connection");
 			return true;
 		}
-		for (size_t i = 0; i < tcp->options.size(); i++)
+		for (auto& option : tcp->options)
 		{
-			switch (tcp->options[i]->GetCode())
+			switch (option->GetCode())
 			{
 				case 0: // End
 				case 1: // Nop
 					continue;
 				case 8:
-					lastRecivedTimeStamp = static_cast<TCPopTS*>(tcp->options[i])->senderTimeStamp;
+					lastRecivedTimeStamp = static_cast<TCPopTS*>(option)->senderTimeStamp;
 					break;
 				default:
-					Console.Error("DEV9: TCP: Got Unknown Option %d", tcp->options[i]->GetCode());
+					Console.Error("DEV9: TCP: Got Unknown Option %d", option->GetCode());
 					break;
 			}
 		}

@@ -1713,27 +1713,27 @@ void recompileNextInstruction(bool delayslot, bool swapped_delay_slot)
 	if (pc <= s_nEndBlock && (g_pCurInstInfo + (s_nEndBlock - pc) / 4 + 1) <= s_pInstCache + s_nInstCacheSize)
 	{
 		int count;
-		for (u32 i = 0; i < iREGCNT_GPR; ++i)
+		for (auto& x86reg : x86regs)
 		{
-			if (x86regs[i].inuse)
+			if (x86reg.inuse)
 			{
-				count = _recIsRegReadOrWritten(g_pCurInstInfo, (s_nEndBlock - pc) / 4 + 1, x86regs[i].type, x86regs[i].reg);
+				count = _recIsRegReadOrWritten(g_pCurInstInfo, (s_nEndBlock - pc) / 4 + 1, x86reg.type, x86reg.reg);
 				if (count > 0)
-					x86regs[i].counter = 1000 - count;
+					x86reg.counter = 1000 - count;
 				else
-					x86regs[i].counter = 0;
+					x86reg.counter = 0;
 			}
 		}
 
-		for (u32 i = 0; i < iREGCNT_XMM; ++i)
+		for (auto& xmmreg : xmmregs)
 		{
-			if (xmmregs[i].inuse)
+			if (xmmreg.inuse)
 			{
-				count = _recIsRegReadOrWritten(g_pCurInstInfo, (s_nEndBlock - pc) / 4 + 1, xmmregs[i].type, xmmregs[i].reg);
+				count = _recIsRegReadOrWritten(g_pCurInstInfo, (s_nEndBlock - pc) / 4 + 1, xmmreg.type, xmmreg.reg);
 				if (count > 0)
-					xmmregs[i].counter = 1000 - count;
+					xmmreg.counter = 1000 - count;
 				else
-					xmmregs[i].counter = 0;
+					xmmreg.counter = 0;
 			}
 		}
 	}

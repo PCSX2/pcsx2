@@ -1192,17 +1192,17 @@ static void RegWrite_Core(u16 value)
 				Cores[1].FxEnable = 0;
 				Cores[1].EffectsStartA = 0x7FFF8; // park core1 effect area in inaccessible mem
 				Cores[1].EffectsEndA = 0x7FFFF;
-				for (uint v = 0; v < 24; ++v)
+				for (auto& Voice : Cores[1].Voices)
 				{
-					Cores[1].Voices[v].Volume = V_VolumeSlideLR(0, 0); // V_VolumeSlideLR::Max;
+					Voice.Volume = V_VolumeSlideLR(0, 0); // V_VolumeSlideLR::Max;
 
-					Cores[1].Voices[v].ADSR.Value = 0;
-					Cores[1].Voices[v].ADSR.Phase = 0;
-					Cores[1].Voices[v].Pitch = 0x0;
-					Cores[1].Voices[v].NextA = 0x6FFFF;
-					Cores[1].Voices[v].StartA = 0x6FFFF;
-					Cores[1].Voices[v].LoopStartA = 0x6FFFF;
-					Cores[1].Voices[v].Modulated = 0;
+					Voice.ADSR.Value = 0;
+					Voice.ADSR.Phase = 0;
+					Voice.Pitch = 0x0;
+					Voice.NextA = 0x6FFFF;
+					Voice.StartA = 0x6FFFF;
+					Voice.LoopStartA = 0x6FFFF;
+					Voice.Modulated = 0;
 				}
 				return;
 			}

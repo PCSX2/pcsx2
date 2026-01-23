@@ -59,9 +59,9 @@ bool SaveStateBase::mtvuFreeze()
 		vu1Thread.WriteVIRegs(&VU1.VI[0]);
 		vu1Thread.WriteVFRegs(&VU1.VF[0]);
 	}
-	for (size_t i = 0; i < 4; ++i)
+	for (auto& vuCycle : vu1Thread.vuCycles)
 	{
-		unsigned int v = vu1Thread.vuCycles[i].load();
+		unsigned int v = vuCycle.load();
 		Freeze(v);
 	}
 
@@ -120,8 +120,8 @@ void VU_Thread::Reset()
 	m_read_pos = 0;
 	std::memset(&vif, 0, sizeof(vif));
 	std::memset(&vifRegs, 0, sizeof(vifRegs));
-	for (size_t i = 0; i < 4; ++i)
-		vu1Thread.vuCycles[i] = 0;
+	for (auto& vuCycle : vu1Thread.vuCycles)
+		vuCycle = 0;
 	vu1Thread.mtvuInterrupts = 0;
 }
 

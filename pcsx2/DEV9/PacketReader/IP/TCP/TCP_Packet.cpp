@@ -205,8 +205,8 @@ namespace PacketReader::IP::TCP
 		NetLib::WriteUInt16(buffer, offset, urgentPointer);
 
 		//options
-		for (size_t i = 0; i < options.size(); i++)
-			options[i]->WriteBytes(buffer, offset);
+		for (auto& option : options)
+			option->WriteBytes(buffer, offset);
 
 		//Zero alignment bytes
 		if (*offset != startOff + headerLength)
@@ -230,8 +230,8 @@ namespace PacketReader::IP::TCP
 	void TCP_Packet::ReComputeHeaderLen()
 	{
 		int opOffset = 20;
-		for (size_t i = 0; i < options.size(); i++)
-			opOffset += options[i]->GetLength();
+		for (auto& option : options)
+			opOffset += option->GetLength();
 
 		//needs to be a whole number of 32bits
 		headerLength = Common::AlignUpPow2(opOffset, 4);

@@ -492,26 +492,26 @@ int _checkX86reg(int type, int reg, int mode)
 
 void _addNeededX86reg(int type, int reg)
 {
-	for (uint i = 0; i < iREGCNT_GPR; i++)
+	for (auto& x86reg : x86regs)
 	{
-		if (!x86regs[i].inuse || x86regs[i].reg != reg || x86regs[i].type != type)
+		if (!x86reg.inuse || x86reg.reg != reg || x86reg.type != type)
 			continue;
 
-		x86regs[i].counter = g_x86AllocCounter++;
-		x86regs[i].needed = 1;
+		x86reg.counter = g_x86AllocCounter++;
+		x86reg.needed = 1;
 	}
 }
 
 void _clearNeededX86regs()
 {
-	for (uint i = 0; i < iREGCNT_GPR; i++)
+	for (auto& x86reg : x86regs)
 	{
-		if (x86regs[i].needed)
+		if (x86reg.needed)
 		{
-			if (x86regs[i].inuse && (x86regs[i].mode & MODE_WRITE))
-				x86regs[i].mode |= MODE_READ;
+			if (x86reg.inuse && (x86reg.mode & MODE_WRITE))
+				x86reg.mode |= MODE_READ;
 		}
-		x86regs[i].needed = 0;
+		x86reg.needed = 0;
 	}
 }
 

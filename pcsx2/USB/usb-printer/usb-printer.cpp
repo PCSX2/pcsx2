@@ -249,23 +249,23 @@ namespace usb_printer
 			case USB_TOKEN_IN:
 				if (s->cmd_state == 0 && s->last_command_size > 0)
 				{
-					for (uint32_t i = 0; i < sizeof(commands) / sizeof(commands[0]); i++)
+					for (const auto& command : commands)
 					{
 						if (s->last_command[1] == 0xCF)
 						{
-							if (memcmp(s->last_command, commands[i].cmd, 11) == 0)
+							if (memcmp(s->last_command, command.cmd, 11) == 0)
 							{
-								int length = commands[i].cmd[9];
-								usb_packet_copy(p, (void*)commands[i].ret, length);
+								int length = command.cmd[9];
+								usb_packet_copy(p, (void*)command.ret, length);
 								s->last_command_size = 0;
 							}
 						}
 						else
 						{
-							if (memcmp(s->last_command, commands[i].cmd, 7) == 0)
+							if (memcmp(s->last_command, command.cmd, 7) == 0)
 							{
-								int length = commands[i].cmd[5];
-								usb_packet_copy(p, (void*)commands[i].ret, length);
+								int length = command.cmd[5];
+								usb_packet_copy(p, (void*)command.ret, length);
 								s->last_command_size = 0;
 							}
 						}

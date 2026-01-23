@@ -224,8 +224,8 @@ bool USB::DoOHCIState(StateWrapper& sw)
 
 	sw.Do(&s_qemu_ohci->rhdesc_a);
 	sw.Do(&s_qemu_ohci->rhdesc_b);
-	for (u32 i = 0; i < OHCI_MAX_PORTS; i++)
-		sw.Do(&s_qemu_ohci->rhport[i].ctrl);
+	for (auto& i : s_qemu_ohci->rhport)
+		sw.Do(&i.ctrl);
 
 	sw.Do(&s_qemu_ohci->old_ctl);
 	sw.DoArray(s_qemu_ohci->usb_buf, sizeof(s_qemu_ohci->usb_buf));
@@ -266,10 +266,10 @@ void USB::DoDeviceState(USBDevice* dev, StateWrapper& sw)
 	}
 
 	DoEndpointState(&dev->ep_ctl, sw);
-	for (u32 i = 0; i < USB_MAX_ENDPOINTS; i++)
-		DoEndpointState(&dev->ep_in[i], sw);
-	for (u32 i = 0; i < USB_MAX_ENDPOINTS; i++)
-		DoEndpointState(&dev->ep_out[i], sw);
+	for (auto& i : dev->ep_in)
+		DoEndpointState(&i, sw);
+	for (auto& i : dev->ep_out)
+		DoEndpointState(&i, sw);
 }
 
 void USB::DoEndpointState(USBEndpoint* ep, StateWrapper& sw)

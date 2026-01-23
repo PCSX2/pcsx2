@@ -29,9 +29,9 @@ bool Sio2::Initialize()
 {
 	this->SoftReset();
 
-	for (size_t i = 0; i < CmdQueue.size(); i++)
+	for (unsigned int& i : CmdQueue)
 	{
-		CmdQueue[i] = 0;
+		i = 0;
 	}
 
 	for (size_t i = 0; i < PortCtrl0.size(); i++)

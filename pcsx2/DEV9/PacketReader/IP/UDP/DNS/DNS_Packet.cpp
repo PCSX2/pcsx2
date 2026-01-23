@@ -140,17 +140,17 @@ namespace PacketReader::IP::UDP::DNS
 	{
 		int length = 2 * 2 + 4 * 2;
 
-		for (size_t i = 0; i < questions.size(); i++)
-			length += questions[i].GetLength();
+		for (const auto& question : questions)
+			length += question.GetLength();
 
-		for (size_t i = 0; i < answers.size(); i++)
-			length += answers[i].GetLength();
+		for (const auto& answer : answers)
+			length += answer.GetLength();
 
-		for (size_t i = 0; i < authorities.size(); i++)
-			length += authorities[i].GetLength();
+		for (const auto& authoritie : authorities)
+			length += authoritie.GetLength();
 
-		for (size_t i = 0; i < additional.size(); i++)
-			length += additional[i].GetLength();
+		for (const auto& i : additional)
+			length += i.GetLength();
 
 		return length;
 	}
@@ -165,17 +165,17 @@ namespace PacketReader::IP::UDP::DNS
 		NetLib::WriteUInt16(buffer, offset, authorities.size());
 		NetLib::WriteUInt16(buffer, offset, additional.size());
 
-		for (size_t i = 0; i < questions.size(); i++)
-			questions[i].WriteBytes(buffer, offset);
+		for (const auto& question : questions)
+			question.WriteBytes(buffer, offset);
 
-		for (size_t i = 0; i < answers.size(); i++)
-			answers[i].WriteBytes(buffer, offset);
+		for (const auto& answer : answers)
+			answer.WriteBytes(buffer, offset);
 
-		for (size_t i = 0; i < authorities.size(); i++)
-			authorities[i].WriteBytes(buffer, offset);
+		for (const auto& authoritie : authorities)
+			authoritie.WriteBytes(buffer, offset);
 
-		for (size_t i = 0; i < additional.size(); i++)
-			additional[i].WriteBytes(buffer, offset);
+		for (const auto& i : additional)
+			i.WriteBytes(buffer, offset);
 	}
 
 	DNS_Packet* DNS_Packet::Clone() const

@@ -68,9 +68,9 @@ GSTextureCache::~GSTextureCache()
 
 void GSTextureCache::ReadbackAll()
 {
-	for (int type = 0; type < 2; type++)
+	for (auto& type : m_dst)
 	{
-		for (auto t : m_dst[type])
+		for (auto t : type)
 			Read(t, t->m_drawn_since_read);
 	}
 }
@@ -88,12 +88,12 @@ void GSTextureCache::RemoveAll(bool sources, bool targets, bool hash_cache)
 
 	if (targets)
 	{
-		for (int type = 0; type < 2; type++)
+		for (auto& type : m_dst)
 		{
-			for (auto t : m_dst[type])
+			for (auto t : type)
 				delete t;
 
-			m_dst[type].clear();
+			type.clear();
 		}
 
 		m_target_heights.clear();
@@ -2472,11 +2472,9 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 					{
 						// When returning to being matched with the Z buffer in width, we need to make sure the RGB is up to date as it could get used later (Hitman Contracts).
 						auto& rev_list = m_dst[1 - type];
-						for (auto j = rev_list.begin(); j != rev_list.end(); ++j)
+						for (auto ds : rev_list)
 						{
-							Target* ds = *j;
-
-							if (t->m_TEX0.TBP0 != ds->m_TEX0.TBP0 || !ds->m_valid_rgb || TEX0.TBW != ds->m_TEX0.TBW)
+								if (t->m_TEX0.TBP0 != ds->m_TEX0.TBP0 || !ds->m_valid_rgb || TEX0.TBW != ds->m_TEX0.TBW)
 								continue;
 
 							t->m_was_dst_matched = true;
@@ -3614,9 +3612,8 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 	// Can't do channel writes to depth targets, and DirectX can't partial copy depth targets.
 	if (psm_s.depth == 0)
 	{
-		for (int type = 0; type < 2; type++)
+		for (auto& list : m_dst)
 		{
-			auto& list = m_dst[type];
 			for (auto i = list.begin(); i != list.end();)
 			{
 				auto j = i;
@@ -3799,9 +3796,8 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 	}
 	else
 	{
-		for (int type = 0; type < 2; type++)
+		for (auto& list : m_dst)
 		{
-			auto& list = m_dst[type];
 			for (auto i = list.begin(); i != list.end();)
 			{
 				auto j = i;
@@ -4651,9 +4647,8 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 	RGBAMask rgba;
 	rgba._u32 = GSUtil::GetChannelMask(psm);
 
-	for (int type = 0; type < 2; type++)
+	for (auto& list : m_dst)
 	{
-		auto& list = m_dst[type];
 		for (auto i = list.begin(); i != list.end();)
 		{
 			auto j = i;
@@ -5511,9 +5506,9 @@ bool GSTextureCache::PageMove(u32 SBP, u32 DBP, u32 BW, u32 PSM, int sx, int sy,
 	// Find our targets.
 	Target* stgt = nullptr;
 	Target* dtgt = nullptr;
-	for (int type = 0; type < 2; type++)
+	for (auto& type : m_dst)
 	{
-		for (Target* tgt : m_dst[type])
+		for (Target* tgt : type)
 		{
 			// We _could_ do compatible bits here maybe?
 			if (tgt->m_TEX0.PSM != PSM)
@@ -5609,9 +5604,8 @@ GSTextureCache::Target* GSTextureCache::GetExactTarget(u32 BP, u32 BW, int type,
 GSTextureCache::Target* GSTextureCache::GetTargetWithSharedBits(u32 BP, u32 PSM) const
 {
 	auto& rts = m_dst[GSLocalMemory::m_psm[PSM].depth ? DepthStencil : RenderTarget];
-	for (auto it = rts.begin(); it != rts.end(); ++it) // Iterate targets from MRU to LRU.
+	for (auto t : rts) // Iterate targets from MRU to LRU.
 	{
-		Target* t = *it;
 		const u32 t_psm = (t->HasValidAlpha()) ? t->m_TEX0.PSM & ~0x1 : t->m_TEX0.PSM;
 		if (GSUtil::HasSharedBits(PSM, t_psm) && (t->m_TEX0.TBP0 == BP || (GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets && t->m_TEX0.TBP0 < BP && t->UnwrappedEndBlock() > BP)))
 			return t;
@@ -5622,9 +5616,9 @@ GSTextureCache::Target* GSTextureCache::GetTargetWithSharedBits(u32 BP, u32 PSM)
 
 GSTextureCache::Target* GSTextureCache::FindOverlappingTarget(GSTextureCache::Target* target) const
 {
-	for (int i = 0; i < 2; i++)
+	for (const auto& i : m_dst)
 	{
-		for (Target* tgt : m_dst[i])
+		for (Target* tgt : i)
 		{
 			if (tgt == target)
 				continue;
@@ -5639,9 +5633,9 @@ GSTextureCache::Target* GSTextureCache::FindOverlappingTarget(GSTextureCache::Ta
 
 GSTextureCache::Target* GSTextureCache::FindOverlappingTarget(u32 BP, u32 end_bp) const
 {
-	for (int i = 0; i < 2; i++)
+	for (const auto& i : m_dst)
 	{
-		for (Target* tgt : m_dst[i])
+		for (Target* tgt : i)
 		{
 			if (CheckOverlap(tgt->m_TEX0.TBP0, tgt->m_end_block, BP, end_bp))
 				return tgt;
@@ -5851,9 +5845,8 @@ void GSTextureCache::IncAge()
 	// Toss and recompute sizes after 2 seconds of not being used. Should be sufficient for most loading screens.
 	static constexpr int max_size_age = 120;
 
-	for (int type = 0; type < 2; type++)
+	for (auto& list : m_dst)
 	{
-		auto& list = m_dst[type];
 		for (auto i = list.begin(); i != list.end();)
 		{
 			Target* t = *i;
@@ -6601,9 +6594,8 @@ GSTextureCache::Source* GSTextureCache::CreateMergedSource(GIFRegTEX0 TEX0, GIFR
 		GL_INS("TC: Searching for block range %x - %x for (%u,%u)", this_start_block, this_end_block, page_x * page_width,
 			page_y * page_height);
 
-		for (auto i = m_dst[RenderTarget].begin(); i != m_dst[RenderTarget].end(); ++i)
+		for (auto t : m_dst[RenderTarget])
 		{
-			Target* const t = *i;
 			if (this_start_block >= t->m_TEX0.TBP0 && this_end_block <= t->m_end_block && GSUtil::HasCompatibleBits(t->m_TEX0.PSM, TEX0.PSM))
 			{
 				GL_INS("TC: Candidate at BP %x BW %d PSM %d", t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM);

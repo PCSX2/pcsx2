@@ -1432,9 +1432,8 @@ void InputManager::PauseVibration()
 {
 	for (PadVibrationBinding& binding : s_pad_vibration_array)
 	{
-		for (u32 motor_index = 0; motor_index < MAX_MOTORS_PER_PAD; motor_index++)
+		for (auto& motor : binding.motors)
 		{
-			PadVibrationBinding::Motor& motor = binding.motors[motor_index];
 			if (!motor.source || motor.last_intensity == 0.0f)
 				continue;
 
@@ -1474,9 +1473,8 @@ void InputManager::UpdateContinuedVibration()
 		else
 		{
 			// independent motor control
-			for (u32 i = 0; i < MAX_MOTORS_PER_PAD; i++)
+			for (auto& motor : pad.motors)
 			{
-				PadVibrationBinding::Motor& motor = pad.motors[i];
 				if (!motor.source || motor.last_intensity == 0.0f)
 					continue;
 
