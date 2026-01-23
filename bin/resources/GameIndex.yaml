@@ -1981,8 +1981,7 @@ SCAJ-20117:
   name: "Fu-un Bakumatsu-den"
   region: "NTSC-Unk"
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes ghosting.
-    alignSprite: 1 # Fixes vertical lines.
+    halfPixelOffset: 5 # Fixes vertical lines.
     forceEvenSpritePosition: 1 # De-blurs the 3D image.
 SCAJ-20118:
   name: "ラジアータ ストーリーズ"
@@ -32307,8 +32306,7 @@ SLKA-25257:
   name-en: "Fu-un Bakumatsu-den"
   region: "NTSC-K"
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes ghosting.
-    alignSprite: 1 # Fixes vertical lines.
+    halfPixelOffset: 5 # Fixes vertical lines.
     forceEvenSpritePosition: 1 # De-blurs the 3D image.
 SLKA-25258:
   name: "요시츠네 영웅전"
@@ -35718,8 +35716,7 @@ SLPM-60225:
   name-en: "Fu-un Shinsen-gumi [Trial]"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes ghosting.
-    alignSprite: 1 # Fixes vertical lines.
+    halfPixelOffset: 5 # Fixes vertical lines.
     forceEvenSpritePosition: 1 # De-blurs the 3D image.
 SLPM-60226:
   name: "シャドウハーツⅡ [体験版]"
@@ -36489,8 +36486,7 @@ SLPM-61096:
   name-en: "Fu-un Bakumatsu-den [Trial]"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes ghosting.
-    alignSprite: 1 # Fixes vertical lines.
+    halfPixelOffset: 5 # Fixes vertical lines.
     forceEvenSpritePosition: 1 # De-blurs the 3D image.
 SLPM-61097:
   name: "電撃PS2 / 電撃PlayStation D75"
@@ -43906,8 +43902,7 @@ SLPM-65494:
   name-en: "Fu-un Shinsen-gumi"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes ghosting.
-    alignSprite: 1 # Fixes vertical lines.
+    halfPixelOffset: 5 # Fixes vertical lines.
     forceEvenSpritePosition: 1 # De-blurs the 3D image.
 SLPM-65495:
   name: "モンスターハンター"
@@ -45783,8 +45778,7 @@ SLPM-65813:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes ghosting.
-    alignSprite: 1 # Fixes vertical lines.
+    halfPixelOffset: 5 # Fixes vertical lines.
     forceEvenSpritePosition: 1 # De-blurs the 3D image.
 SLPM-65815:
   name: "トム・クランシーシリーズ スプリンターセル パンドラトゥモロー"
@@ -53759,8 +53753,7 @@ SLPM-74202:
   name-en: "Fu-un Shinsen-gumi [PlayStation2 the Best]"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes ghosting.
-    alignSprite: 1 # Fixes vertical lines.
+    halfPixelOffset: 5 # Fixes vertical lines.
     forceEvenSpritePosition: 1 # De-blurs the 3D image.
 SLPM-74204:
   name: "首都高バトル01 [PlayStation2 the Best]"
@@ -53915,8 +53908,7 @@ SLPM-74228:
   name-en: "Fu-un Bakumatsu-den [PlayStation2 the Best]"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes ghosting.
-    alignSprite: 1 # Fixes vertical lines.
+    halfPixelOffset: 5 # Fixes vertical lines.
     forceEvenSpritePosition: 1 # De-blurs the 3D image.
 SLPM-74229:
   name: "バイオハザード4 [PlayStation2 the Best]"
@@ -63499,8 +63491,7 @@ SLPS-73228:
   name-en: "Fu-un Bakumatsu-den [PlayStation2 the Best]"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes ghosting.
-    alignSprite: 1 # Fixes vertical lines.
+    halfPixelOffset: 5 # Fixes vertical lines.
     forceEvenSpritePosition: 1 # De-blurs the 3D image.
 SLPS-73229:
   name: "ベルウィックサーガ [PlayStation2 the Best]"
