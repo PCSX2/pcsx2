@@ -71,8 +71,7 @@ void mVUreset(microVU& mVU, bool resetReserve)
 			mVU.prog.prog[i] = new std::deque<microProgram*>();
 			continue;
 		}
-		std::deque<microProgram*>::iterator it(mVU.prog.prog[i]->begin());
-		for (; it != mVU.prog.prog[i]->end(); ++it)
+		for (auto it = mVU.prog.prog[i]->begin(); it != mVU.prog.prog[i]->end(); ++it)
 		{
 			mVUdeleteProg(mVU, it[0]);
 		}
@@ -90,8 +89,7 @@ void mVUclose(microVU& mVU)
 	{
 		if (!mVU.prog.prog[i])
 			continue;
-		std::deque<microProgram*>::iterator it(mVU.prog.prog[i]->begin());
-		for (; it != mVU.prog.prog[i]->end(); ++it)
+		for (auto it = mVU.prog.prog[i]->begin(); it != mVU.prog.prog[i]->end(); ++it)
 		{
 			mVUdeleteProg(mVU, it[0]);
 		}
@@ -200,8 +198,7 @@ void mVUprintUniqueRatio(microVU& mVU)
 		microProgramList* list = mVU.prog.prog[pc];
 		if (!list)
 			continue;
-		std::deque<microProgram*>::iterator it(list->begin());
-		for (; it != list->end(); ++it)
+		for (auto it = list->begin(); it != list->end(); ++it)
 		{
 			v.push_back(mVUrangesHash(mVU, *it[0]));
 		}
@@ -251,8 +248,7 @@ _mVUt __fi void* mVUsearchProg(u32 startPC, uptr pState)
 
 	if (!quick.prog) // If null, we need to search for new program
 	{
-		std::deque<microProgram*>::iterator it(list->begin());
-		for (; it != list->end(); ++it)
+		for (auto it = list->begin(); it != list->end(); ++it)
 		{
 			bool b = mVUcmpProg(mVU, *it[0]);
 
