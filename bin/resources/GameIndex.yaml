@@ -70560,9 +70560,7 @@ SLUS-21236:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes ghosting during Rain.
-    alignSprite: 1 # Fixes vertical lines.
-    forceEvenSpritePosition: 1 # Fixes double image.
+    halfPixelOffset: 5 # Fixes vertical lines.
 SLUS-21237:
   name: "AND 1 Streetball"
   region: "NTSC-U"
