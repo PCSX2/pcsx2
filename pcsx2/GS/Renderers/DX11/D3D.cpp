@@ -426,7 +426,8 @@ GSRendererType D3D::GetPreferredRenderer()
 			if (!feature_level.has_value())
 				return GSRendererType::DX11;
 			else if (feature_level == D3D_FEATURE_LEVEL_12_0)
-				return check_vulkan_supported() ? GSRendererType::VK : GSRendererType::OGL;
+				//return check_vulkan_supported() ? GSRendererType::VK : GSRendererType::OGL;
+				return GSRendererType::DX12;
 			else if (feature_level == D3D_FEATURE_LEVEL_11_0)
 				return GSRendererType::OGL;
 			else
@@ -439,7 +440,8 @@ GSRendererType D3D::GetPreferredRenderer()
 			if (!feature_level.has_value())
 				return GSRendererType::DX11;
 			else if (feature_level == D3D_FEATURE_LEVEL_12_0)
-				return check_vulkan_supported() ? GSRendererType::VK : GSRendererType::DX12;
+				//return check_vulkan_supported() ? GSRendererType::VK : GSRendererType::DX12;
+				return GSRendererType::DX12;
 			else if (feature_level == D3D_FEATURE_LEVEL_11_1)
 				return GSRendererType::DX12;
 			else
