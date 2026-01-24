@@ -3215,6 +3215,7 @@ void GSRendererHW::Draw()
 	float target_scale = GetTextureScaleFactor();
 	bool scaled_copy = false;
 	int scale_draw = IsScalingDraw(src, m_primitive_covers_without_gaps != NoGapsType::GapsFound);
+	m_downscale_source = false;
 
 	if (GSConfig.UserHacks_NativeScaling != GSNativeScaling::Off)
 	{
@@ -3248,8 +3249,6 @@ void GSRendererHW::Draw()
 				scale_draw = 1;
 				scaled_copy = true;
 			}
-
-			m_downscale_source = false;
 		}
 	}
 
