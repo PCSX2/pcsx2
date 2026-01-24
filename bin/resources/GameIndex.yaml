@@ -2075,6 +2075,8 @@ SCAJ-20128:
 SCAJ-20129:
   name: "Ponkotsu Roman Daikatsugeki Bumpy Trot"
   region: "NTSC-Unk"
+  roundModes:
+    eeRoundMode: 0 # Fixes broken load triggers.
   gsHWFixes:
     getSkipCount: "GSC_IRem"
     halfPixelOffset: 2 # Aligns effects.
@@ -7614,6 +7616,8 @@ SCKA-20058:
   name: "액션 로망 범피 트롯"
   name-en: "Action Romance Bumpy Trot"
   region: "NTSC-K"
+  roundModes:
+    eeRoundMode: 0 # Fixes broken load triggers.
   gsHWFixes:
     getSkipCount: "GSC_IRem"
     halfPixelOffset: 2 # Aligns effects.
@@ -25578,6 +25582,8 @@ SLES-54137:
 SLES-54138:
   name: "Steambot Chronicles"
   region: "PAL-E"
+  roundModes:
+    eeRoundMode: 0 # Fixes broken load triggers.
   gsHWFixes:
     getSkipCount: "GSC_IRem"
     halfPixelOffset: 2 # Aligns effects.
@@ -26228,6 +26234,8 @@ SLES-54333:
 SLES-54335:
   name: "Steambot Chronicles"
   region: "PAL-F"
+  roundModes:
+    eeRoundMode: 0 # Fixes broken load triggers.
   gsHWFixes:
     getSkipCount: "GSC_IRem"
     halfPixelOffset: 2 # Aligns effects.
@@ -35853,6 +35861,8 @@ SLPM-60255:
   name-sort: "ぽんこつろまんだいかつげきばんぴーとろっと [たいけんばん]"
   name-en: "Ponkotsu Roeman Daikatsugeki Bumpy Trot [Trial]"
   region: "NTSC-J"
+  roundModes:
+    eeRoundMode: 0 # Fixes broken load triggers.
   gsHWFixes:
     getSkipCount: "GSC_IRem"
     halfPixelOffset: 2 # Aligns effects.
@@ -35924,6 +35934,8 @@ SLPM-60266:
   name-sort: "ぽんこつろまんだいかつげきばんぴーとろっと [たいけんばん]"
   name-en: "Ponkotsu Roeman Daikatsugeki Bumpy Trot [Trial]"
   region: "NTSC-J"
+  roundModes:
+    eeRoundMode: 0 # Fixes broken load triggers.
   gsHWFixes:
     getSkipCount: "GSC_IRem"
     halfPixelOffset: 2 # Aligns effects.
@@ -59824,6 +59836,8 @@ SLPS-25457:
   name-sort: "ぽんこつろまんだいかつげきばんぴーとろっと"
   name-en: "Ponkotsu Roeman Daikatsugeki Bumpy Trot"
   region: "NTSC-J"
+  roundModes:
+    eeRoundMode: 0 # Fixes broken load triggers.
   gsHWFixes:
     getSkipCount: "GSC_IRem"
     halfPixelOffset: 2 # Aligns effects.
@@ -61228,6 +61242,8 @@ SLPS-25683:
   name-sort: "ぽんこつろまんだいかつげきばんぴーとろっと [Irem COLLECTION]"
   name-en: "Ponkotsu Roman Daikatsugeki Bumpy Trot [Irem Collection]"
   region: "NTSC-J"
+  roundModes:
+    eeRoundMode: 0 # Fixes broken load triggers.
   gsHWFixes:
     getSkipCount: "GSC_IRem"
     halfPixelOffset: 2 # Aligns effects.
@@ -71360,6 +71376,8 @@ SLUS-21344:
   name: "Steambot Chronicles"
   region: "NTSC-U"
   compat: 5
+  roundModes:
+    eeRoundMode: 0 # Fixes broken load triggers.
   gsHWFixes:
     getSkipCount: "GSC_IRem"
     halfPixelOffset: 2 # Aligns effects.
@@ -74901,6 +74919,8 @@ SLUS-28059:
 SLUS-28061:
   name: "Steambot Chronicles [Trade Demo]"
   region: "NTSC-U"
+  roundModes:
+    eeRoundMode: 0 # Fixes broken load triggers.
   gsHWFixes:
     getSkipCount: "GSC_IRem"
     halfPixelOffset: 2 # Aligns effects.
@@ -75679,6 +75699,8 @@ SLUS-29185:
 SLUS-29188:
   name: "Steambot Chronicles [Regular Demo]"
   region: "NTSC-U"
+  roundModes:
+    eeRoundMode: 0 # Fixes broken load triggers.
   gsHWFixes:
     getSkipCount: "GSC_IRem"
     halfPixelOffset: 2 # Aligns effects.
