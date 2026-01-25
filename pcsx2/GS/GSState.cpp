@@ -3819,19 +3819,21 @@ GSState::PRIM_OVERLAP GSState::GetPrimitiveOverlapDrawlistImpl(bool save_drawlis
 					index[j + tri0[0]] == index[j + tri1[0]] &&
 					index[j + tri0[1]] == index[j + tri1[1]])
 				{
+					u32 k = j;
+
 					// Get the initial triangle bbox.
-					bbox = GSVector4i(v[index[j + 0]].m[1]).upl16().xyxy();
-					bbox = bbox.runion(GSVector4i(v[index[j + 1]].m[1]).upl16().xyxy());
-					bbox = bbox.runion(GSVector4i(v[index[j + 2]].m[1]).upl16().xyxy());
+					bbox = GSVector4i(v[index[k + 0]].m[1]).upl16().xyxy();
+					bbox = bbox.runion(GSVector4i(v[index[k + 1]].m[1]).upl16().xyxy());
+					bbox = bbox.runion(GSVector4i(v[index[k + 2]].m[1]).upl16().xyxy());
 
 					while (true)
 					{
 						// There is a shared edge between this and next triangle.
 						// Check if the unshared point is on opposite sides of the shared edge.
-						const GSVector4i shared0 = GSVector4i(v[index[j + skip + tri0[0]]].m[1]).upl16();
-						const GSVector4i shared1 = GSVector4i(v[index[j + skip + tri0[1]]].m[1]).upl16() - shared0;
-						const GSVector4i unshared0 = GSVector4i(v[index[j + skip + tri0[2]]].m[1]).upl16() - shared0;
-						const GSVector4i unshared1 = GSVector4i(v[index[j + skip + tri1[2]]].m[1]).upl16() - shared0;
+						const GSVector4i shared0 = GSVector4i(v[index[k + tri1[0]]].m[1]).upl16();
+						const GSVector4i shared1 = GSVector4i(v[index[k + tri1[1]]].m[1]).upl16() - shared0;
+						const GSVector4i unshared0 = GSVector4i(v[index[k + tri0[2]]].m[1]).upl16() - shared0;
+						const GSVector4i unshared1 = GSVector4i(v[index[k + tri1[2]]].m[1]).upl16() - shared0;
 
 						// Cross product signs comparison.
 						if ((unshared0.x * shared1.y - unshared0.y * shared1.x >= 0) ==
@@ -3842,21 +3844,21 @@ GSState::PRIM_OVERLAP GSState::GetPrimitiveOverlapDrawlistImpl(bool save_drawlis
 
 						// Corners are on opposite sides so we can assume a non-axis-aligned quad.
 						// Take union with the single unshared point.
-						bbox = bbox.runion(GSVector4i(v[index[j + skip + tri1[2]]].m[1]).upl16().xyxy());
-
-						skip += 3;
+						bbox = bbox.runion(GSVector4i(v[index[k + tri1[2]]].m[1]).upl16().xyxy());
+						k += 3;
 
 						got_bbox = true;
 
-						if (!(j + skip + 3 < count &&
-							index[j + skip + tri0[0]] == index[j + skip + tri1[0]] &&
-							index[j + skip + tri0[1]] == index[j + skip + tri1[1]]))
+						if (!(k + 3 < count &&
+							index[k + tri0[0]] == index[k + tri1[0]] &&
+							index[k + tri0[1]] == index[k + tri1[1]]))
 						{
-							// Cannot continue the strip/fan. Consume the last triangle and exit.
-							skip += 3;
+							// Cannot continue the strip/fan.
 							break;
 						}
 					}
+					
+					skip = k - j + 3;
 				}
 			};
 
