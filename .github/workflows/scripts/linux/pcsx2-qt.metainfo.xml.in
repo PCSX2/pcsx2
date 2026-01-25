@@ -20,7 +20,7 @@
   <url type="donation">https://github.com/sponsors/PCSX2</url>
   <url type="faq">https://pcsx2.net/docs/</url>
   <url type="help">https://pcsx2.net/discord</url>
-  <url type="contribute">https://github.com/PCSX2/pcsx2/blob/master/.github/CONTRIBUTING.md</url>
+  <url type="contribute">https://pcsx2.net/docs/category/contributing</url>
   <url type="translate">https://crowdin.com/project/pcsx2-emulator</url>
   <url type="contact">https://mastodon.social/@PCSX2</url>
   <screenshots>
