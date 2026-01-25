@@ -193,11 +193,24 @@ void GSDevice12::LoadAgilitySDK()
 	if (agility_loaded)
 		return;
 
-	HRESULT hr;
+	// On older versions of Windows 10 (example 2019 LTSC) D3D12GetInterface may fail because it doesn't exist,
+	// in such case we can check if D3D12GetInterface exists first.
+	const HMODULE d3d12 = GetModuleHandleW(L"d3d12.dll");
+	if (!d3d12)
+		return;
+
+	using PFN_D3D12GetInterface = HRESULT(WINAPI*)(REFCLSID rclsid, REFIID riid, void** ppv);
+	auto pD3D12GetInterface = reinterpret_cast<PFN_D3D12GetInterface>(GetProcAddress(d3d12, "D3D12GetInterface"));
+	if (!pD3D12GetInterface)
+	{
+		Console.Error("D3D12: Agility SDK configuration is not available");
+		return;
+	}
 
 	// See https://microsoft.github.io/DirectX-Specs/d3d/IndependentDevices.html
 	ComPtr<ID3D12SDKConfiguration1> sdk_configuration;
-	hr = D3D12GetInterface(CLSID_D3D12SDKConfiguration, IID_PPV_ARGS(sdk_configuration.put()));
+	HRESULT hr;
+	hr = pD3D12GetInterface(CLSID_D3D12SDKConfiguration, IID_PPV_ARGS(sdk_configuration.put()));
 	if (FAILED(hr))
 	{
 		Console.Error("D3D12: Agility SDK configuration is not available");
