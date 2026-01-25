@@ -22,8 +22,8 @@
 MemoryCardProtocol g_MemoryCardProtocol;
 
 u8 keysource[] = { 0xf5, 0x80, 0x95, 0x3c, 0x4c, 0x84, 0xa9, 0xc0 };
-u8 dex_key[16] = { 0x17, 0x39, 0xd3, 0xbc, 0xd0, 0x2c, 0x18, 0x07, 0x4b, 0x17, 0xf0, 0xea, 0xc4, 0x66, 0x30, 0xf9 };
-u8 cex_key[16] = { 0x06, 0x46, 0x7a, 0x6c, 0x5b, 0x9b, 0x82, 0x77, 0x39, 0x0f, 0x78, 0xb7, 0xf2, 0xc6, 0xa5, 0x20 };
+u8 cex_key[16] = {0x06, 0x46, 0x7a, 0x6c, 0x5b, 0x9b, 0x82, 0x77, 0x0d, 0xdf, 0xe9, 0x7e, 0x24, 0x5b, 0x9f, 0xca};
+u8 dex_key[16] = {0x17, 0x39, 0xD3, 0xBC, 0xD0, 0x2C, 0x18, 0x07, 0x0F, 0x7A, 0xF3, 0xB7, 0x9E, 0x73, 0x03, 0x1C};
 u8 *key = dex_key;
 u8 iv[8];
 u8 seed[8];
@@ -537,6 +537,7 @@ void MemoryCardProtocol::AuthXor()
 			for (size_t xorCounter = 0; xorCounter < 8; xorCounter++)
 			{
 				u8 val = iv[7 - xorCounter];
+                g_Sio2FifoIn.pop_front();
                 g_Sio2FifoOut.push_back(val);
                 xorResult ^= val;
 			}
@@ -552,6 +553,7 @@ void MemoryCardProtocol::AuthXor()
 			for (size_t xorCounter = 0; xorCounter < 8; xorCounter++)
 			{
 				u8 val = seed[7 - xorCounter];
+                g_Sio2FifoIn.pop_front();
                 g_Sio2FifoOut.push_back(val);
                 xorResult ^= val;
 			}
@@ -567,6 +569,7 @@ void MemoryCardProtocol::AuthXor()
 			for (size_t xorCounter = 0; xorCounter < 8; xorCounter++)
 			{
 				u8 val = nonce[7 - xorCounter];
+                g_Sio2FifoIn.pop_front();
                 g_Sio2FifoOut.push_back(val);
                 xorResult ^= val;
 			}
@@ -583,6 +586,7 @@ void MemoryCardProtocol::AuthXor()
 			for (size_t xorCounter = 0; xorCounter < 8; xorCounter++)
 			{
                 u8 val = MechaResponse1[7 - xorCounter];
+                g_Sio2FifoIn.pop_front();
                 g_Sio2FifoOut.push_back(val);
                 xorResult ^= val;
 			}
@@ -598,6 +602,7 @@ void MemoryCardProtocol::AuthXor()
 			for (size_t xorCounter = 0; xorCounter < 8; xorCounter++)
 			{
 				u8 val = MechaResponse2[7 - xorCounter];
+                g_Sio2FifoIn.pop_front();
                 g_Sio2FifoOut.push_back(val);
                 xorResult ^= val;
 			}
@@ -614,6 +619,7 @@ void MemoryCardProtocol::AuthXor()
 			for (size_t xorCounter = 0; xorCounter < 8; xorCounter++)
 			{
 				u8 val = MechaResponse3[7 - xorCounter];
+                g_Sio2FifoIn.pop_front();
                 g_Sio2FifoOut.push_back(val);
                 xorResult ^= val;
 			}
@@ -710,20 +716,7 @@ void MemoryCardProtocol::AuthF1()
         case 0x42:
         case 0x52:
         {
-            g_Sio2FifoOut.push_back(0x00);
-			g_Sio2FifoOut.push_back(0x2b);
-            u8 xorResult = 0;
-            for (size_t i = 0; i < 8; i++)
-            {
-                if (!g_Sio2FifoIn.empty())
-                {
-                    xorResult ^= g_Sio2FifoIn.front();
-                    g_Sio2FifoIn.pop_front();
-                }
-                g_Sio2FifoOut.push_back(0x00);
-            }
-            g_Sio2FifoOut.push_back(xorResult);
-            g_Sio2FifoOut.push_back(mcd->term);
+            The2bTerminator(5);
             break;
         }
 

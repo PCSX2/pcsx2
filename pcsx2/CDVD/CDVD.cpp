@@ -2617,8 +2617,8 @@ MECHA_RESULT generateCardChallenge()
 	std::memcpy(&key1[8], g_keyStore.CardKeyHi[cdvd.cardKeyIndex], 8);
 
 	u8 key2[16];
-	std::memcpy(key2, g_keyStore.CardKeyLow[cdvd.cardKeyIndex], 8);
-	std::memcpy(&key2[8], g_keyStore.CardKeyHi[cdvd.cardKeyIndex], 8);
+	std::memcpy(key2, g_keyStore.CardKey2Low[cdvd.cardKeyIndex], 8);
+	std::memcpy(&key2[8], g_keyStore.CardKey2Hi[cdvd.cardKeyIndex], 8);
 
 	doubleDesEncrypt(key1, cdvd.memcard_key);
 	doubleDesEncrypt(key2, &cdvd.memcard_key[8]);
