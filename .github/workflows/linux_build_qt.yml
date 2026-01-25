@@ -12,7 +12,7 @@ on:
       os:
         required: false
         type: string
-        default: ubuntu-22.04
+        default: ubuntu-24.04
       platform:
         required: false
         type: string
@@ -101,7 +101,7 @@ jobs:
       - name: Install Packages
         run: |
           tools/retry.sh wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc
-          sudo tools/retry.sh apt-add-repository -n 'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-17 main'
+          sudo tools/retry.sh apt-add-repository -n 'deb http://apt.llvm.org/noble/ llvm-toolchain-noble main'
           sudo tools/retry.sh apt-get update
           sudo tools/retry.sh apt-get -y install \
             build-essential ccache clang-17 cmake curl extra-cmake-modules git libasound2-dev libaio-dev \
