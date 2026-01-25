@@ -127,43 +127,58 @@ private:
 
 protected:
 	static constexpr int INVALID_ALPHA_MINMAX = 500;
+	static constexpr int MAX_DRAW_BUFFERS = 3;
 
 	GSVertex m_v = {};
 	float m_q = 1.0f;
 	GSVector4i m_scissor_cull_min = {};
 	GSVector4i m_scissor_cull_max = {};
 	GSVector4i m_xyof = {};
+	int  m_used_buffers_idx = 0;
+	int m_current_buffer_idx = 0;
+	bool m_recent_buffer_switch = false;
 
-	struct
+	struct GSVertexBuff
 	{
 		GSVertex* buff;
-		GSVertex* buff_copy;            // same size buffer to copy/modify the original buffer
+		GSVertex* buff_copy; // same size buffer to copy/modify the original buffer
 		u32 head, tail, next, maxcount; // head: first vertex, tail: last vertex + 1, next: last indexed + 1
 		u32 xy_tail;
 		GSVector4i xy[4];
 		GSVector4i xyhead;
-	} m_vertex = {};
+	};
 
-	struct
+	GSVertexBuff m_vertex_buffers[MAX_DRAW_BUFFERS];
+	GSVertexBuff* m_vertex;
+
+	struct GSIndexBuff
 	{
 		u16* buff;
 		u32 tail;
-	} m_index = {};
+	};
 
-	struct
-	{
-		GSVertex* buff;
-		u32 head, tail, next, maxcount; // head: first vertex, tail: last vertex + 1, next: last indexed + 1
-		u32 xy_tail;
-		GSVector4i xy[4];
-		GSVector4i xyhead;
-	} m_draw_vertex = {};
+	GSIndexBuff m_index_buffers[MAX_DRAW_BUFFERS];
+
+	GSIndexBuff* m_index;
+
+	GSVertexBuff m_draw_vertex = {};
 
 	struct
 	{
 		u16* buff;
 		u32 tail;
 	} m_draw_index = {};
+
+	struct GSDrawBufferEnv
+	{
+		GSDrawingEnvironment m_env;
+		int m_backed_up_ctx = 0;
+		u32 m_dirty_regs = 0;
+		GSVector4i draw_rect = GSVector4i::zero();
+		bool related_draw = false;
+	};
+
+	GSDrawBufferEnv m_env_buffers[MAX_DRAW_BUFFERS] = {};
 
 	void UpdateContext();
 	void UpdateScissor();
@@ -175,6 +190,7 @@ protected:
 	template<u32 prim> void HandleAutoFlush();
 	bool EarlyDetectShuffle(u32 prim);
 	void CheckCLUTValidity(u32 prim);
+	bool CheckOverlapVerts(u32 n);
 
 	template <u32 prim, bool auto_flush> void VertexKick(u32 skip);
 
@@ -241,9 +257,10 @@ public:
 	GSLocalMemory m_mem;
 	GSDrawingEnvironment m_env = {};
 	GSDrawingEnvironment m_prev_env = {};
+	GSDrawingEnvironment m_temp_env = {};
 	const GSDrawingEnvironment* m_draw_env = &m_env;
 	GSDrawingContext* m_context = nullptr;
-	GSVector4i temp_draw_rect = {};
+	GSVector4i temp_draw_rect;
 	std::unique_ptr<GSDumpBase> m_dump;
 	bool m_scissor_invalid = false;
 	bool m_quad_check_valid = false;
@@ -441,7 +458,15 @@ public:
 	virtual void Reset(bool hardware_reset);
 	virtual void UpdateSettings(const Pcsx2Config::GSOptions& old_config);
 
+	void ResetDrawBuffers();
+	void ResetDrawBufferIdx();
+	void FlushBuffers(bool flush_base_only = false, bool use_flush_reason = false, GSFlushReason flush_reason = GSFlushReason::CONTEXTCHANGE);
+	void PushBuffer();
+	void SetDrawBufferEnv();
+	void SetDrawBuffDirty();
+	bool CanBufferNewDraw();
 	void Flush(GSFlushReason reason);
+	void FlushDraw(GSFlushReason reason);
 	u32 CalcMask(int exp, int max_exp);
 	void FlushPrim();
 	bool TestDrawChanged();
@@ -454,7 +479,7 @@ public:
 
 	virtual void Move();
 
-	GSVector4i GetTEX0Rect();
+	GSVector4i GetTEX0Rect(GSDrawingContext prev_ctx);
 	void CheckWriteOverlap(bool req_write, bool req_read);
 	void Write(const u8* mem, int len);
 	void Read(u8* mem, int len);
