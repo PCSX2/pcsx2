@@ -156,10 +156,11 @@ void SPU2::DoFullDump()
 			fprintf(dump, "  - ENDX:   %x\n", Cores[c].Regs.VMIXER);
 			fprintf(dump, "  - STATX:  %x\n", Cores[c].Regs.VMIXEL);
 			fprintf(dump, "  - ATTR:   %x\n", Cores[c].Regs.VMIXER);
-			for (u8 v = 0; v < 24; v++)
+			for (u8 i = 0; i < 24; i++)
 			{
+				int v = i + (24 * c);
 				fprintf(dump, "Voice %d:\n", v);
-				Cores[c].Voices[v].Volume.DebugDump(dump, "");
+				Voices[v].Volume.DebugDump(dump, "");
 
 				fprintf(dump, "  - ADSR Envelope: %x & %x\n"
 							  "     - Ash: %x\n"
@@ -174,33 +175,32 @@ void SPU2::DoFullDump()
 							  "     - Rm: %x\n"
 							  "     - Phase: %x\n"
 							  "     - Value: %x\n",
-						Cores[c].Voices[v].ADSR.regADSR1,
-						Cores[c].Voices[v].ADSR.regADSR2,
-						Cores[c].Voices[v].ADSR.AttackShift,
-						Cores[c].Voices[v].ADSR.AttackStep,
-						Cores[c].Voices[v].ADSR.AttackMode,
-						Cores[c].Voices[v].ADSR.DecayShift,
-						Cores[c].Voices[v].ADSR.SustainLevel,
-						Cores[c].Voices[v].ADSR.SustainShift,
-						Cores[c].Voices[v].ADSR.SustainStep,
-						Cores[c].Voices[v].ADSR.SustainMode,
-						Cores[c].Voices[v].ADSR.ReleaseShift,
-						Cores[c].Voices[v].ADSR.ReleaseMode,
-						Cores[c].Voices[v].ADSR.Phase,
-						Cores[c].Voices[v].ADSR.Value);
+						Voices[v].ADSR.regADSR1,
+						Voices[v].ADSR.regADSR2,
+						Voices[v].ADSR.AttackShift,
+						Voices[v].ADSR.AttackStep,
+						Voices[v].ADSR.AttackMode,
+						Voices[v].ADSR.DecayShift,
+						Voices[v].ADSR.SustainLevel,
+						Voices[v].ADSR.SustainShift,
+						Voices[v].ADSR.SustainStep,
+						Voices[v].ADSR.SustainMode,
+						Voices[v].ADSR.ReleaseShift,
+						Voices[v].ADSR.ReleaseMode,
+						Voices[v].ADSR.Phase,
+						Voices[v].ADSR.Value);
 
-				fprintf(dump, "  - Pitch:     %x\n", Cores[c].Voices[v].Pitch);
-				fprintf(dump, "  - Modulated: %s\n", Cores[c].Voices[v].Modulated ? "Yes" : "No");
-				fprintf(dump, "  - Source:    %s\n", Cores[c].Voices[v].Noise ? "Noise" : "Wave");
-				fprintf(dump, "  - Direct Output for Left Channel:   %s\n", Cores[c].VoiceGates[v].DryL ? "Yes" : "No");
-				fprintf(dump, "  - Direct Output for Right Channel:  %s\n", Cores[c].VoiceGates[v].DryR ? "Yes" : "No");
-				fprintf(dump, "  - Effects Output for Left Channel:  %s\n", Cores[c].VoiceGates[v].WetL ? "Yes" : "No");
-				fprintf(dump, "  - Effects Output for Right Channel: %s\n", Cores[c].VoiceGates[v].WetR ? "Yes" : "No");
-				fprintf(dump, "  - Loop Start Address:  %x\n", Cores[c].Voices[v].LoopStartA);
-				fprintf(dump, "  - Sound Start Address: %x\n", Cores[c].Voices[v].StartA);
-				fprintf(dump, "  - Next Data Address:   %x\n", Cores[c].Voices[v].NextA);
-				fprintf(dump, "  - Play Status:         %s\n", (Cores[c].Voices[v].ADSR.Phase > 0) ? "Playing" : "Not Playing");
-				fprintf(dump, "  - Block Sample:        %d\n", Cores[c].Voices[v].SCurrent);
+				fprintf(dump, "  - Pitch:     %x\n", Voices[v].Pitch);
+				fprintf(dump, "  - Modulated: %s\n", Voices[v].Modulated ? "Yes" : "No");
+				fprintf(dump, "  - Source:    %s\n", Voices[v].Noise ? "Noise" : "Wave");
+				fprintf(dump, "  - Direct Output for Left Channel:   %s\n", VoiceData.DryL[v] ? "Yes" : "No");
+				fprintf(dump, "  - Direct Output for Right Channel:  %s\n", VoiceData.DryR[v] ? "Yes" : "No");
+				fprintf(dump, "  - Effects Output for Left Channel:  %s\n", VoiceData.WetL[v] ? "Yes" : "No");
+				fprintf(dump, "  - Effects Output for Right Channel: %s\n", VoiceData.WetR[v] ? "Yes" : "No");
+				fprintf(dump, "  - Loop Start Address:  %x\n", Voices[v].LoopStartA);
+				fprintf(dump, "  - Sound Start Address: %x\n", Voices[v].StartA);
+				fprintf(dump, "  - Next Data Address:   %x\n", VoiceData.NextA[v]);
+				fprintf(dump, "  - Play Status:         %s\n", (Voices[v].ADSR.Phase > 0) ? "Playing" : "Not Playing");
 			}
 			fprintf(dump, "#### END OF DUMP.\n\n");
 		}

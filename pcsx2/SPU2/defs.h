@@ -63,11 +63,12 @@ struct StereoOut32
 	}
 };
 
+extern void (*spu2Mix)();
 extern s16* GetMemPtr(u32 addr);
 extern s16 spu2M_Read(u32 addr);
 extern void spu2M_Write(u32 addr, s16 value);
 extern void spu2M_Write(u32 addr, u16 value);
-extern void spu2Mix();
+MULTI_ISA_DEF(void spu2Mix();)
 extern void spu2Output(StereoOut32 out);
 
 static __forceinline s16 SignExtend16(u16 v)
@@ -221,11 +222,25 @@ struct V_ADSR
 
 public:
 	void UpdateCache();
-	bool Calculate(int voiceidx);
+	bool Calculate();
 	void Attack();
 	void Release();
 };
 
+// SOA representation of voices
+struct V_VoiceData
+{
+	// Next Read Data address (also Reg_NAXH/L)
+	u32 NextA[48];
+
+	// Last outputted audio value, used for voice modulation.
+	s32 OutX[48];
+
+	s32 DryL[48]; // 'AND Gate' for Direct Output to Left Channel
+	s32 DryR[48]; // 'AND Gate' for Direct Output for Right Channel
+	s32 WetL[48]; // 'AND Gate' for Effect Output for Left Channel
+	s32 WetR[48]; // 'AND Gate' for Effect Output for Right Channel
+};
 
 struct V_Voice
 {
@@ -239,8 +254,6 @@ struct V_Voice
 	u32 LoopStartA;
 	// Sound Start address (also Reg_SSAH/L)
 	u32 StartA;
-	// Next Read Data address (also Reg_NAXH/L)
-	u32 NextA;
 	// Voice Decoding State
 	s32 Prev1;
 	s32 Prev2;
@@ -256,34 +269,17 @@ struct V_Voice
 	// Sample pointer (19:12 bit fixed point)
 	s32 SP;
 
-	// Sample pointer for Cubic Interpolation
-	// Cubic interpolation mixes a sample behind Linear, so that it
-	// can have sample data to either side of the end points from which
-	// to extrapolate.  This SP represents that late sample position.
-	s32 SPc;
-
-	// Previous sample values - used for interpolation
-	// Inverted order of these members to match the access order in the
-	//   code (might improve cache hits).
-	s32 PV4;
-	s32 PV3;
-	s32 PV2;
-	s32 PV1;
-
-	// Last outputted audio value, used for voice modulation.
-	s32 OutX;
-	s32 NextCrest; // temp value for Crest calculation
-
 	// SBuffer now points directly to an ADPCM cache entry.
 	s16* SBuffer;
 
-	// sample position within the current decoded packet.
-	s32 SCurrent;
-
-	// it takes a few ticks for voices to start on the real SPU2?
-	void Start();
-	void Stop();
+	// Each voice has a buffer of decoded samples
+	s32 DecodeFifo[32];
+	u32 DecPosWrite;
+	u32 DecPosRead;
 };
+
+void VoiceStart(int voiceidx);
+void VoiceStop(int voiceidx);
 
 // ** Begin Debug-only variables section **
 // Separated from the V_Voice struct to improve cache performance of
@@ -299,7 +295,6 @@ struct V_VoiceDebug
 
 struct V_CoreDebug
 {
-	V_VoiceDebug Voices[24];
 	// Last Transfer Size
 	u32 lastsize;
 
@@ -384,14 +379,6 @@ struct V_CoreRegs
 	u16 _1AC;
 };
 
-struct V_VoiceGates
-{
-	s32 DryL; // 'AND Gate' for Direct Output to Left Channel
-	s32 DryR; // 'AND Gate' for Direct Output for Right Channel
-	s32 WetL; // 'AND Gate' for Effect Output for Left Channel
-	s32 WetR; // 'AND Gate' for Effect Output for Right Channel
-};
-
 struct V_CoreGates
 {
 	s32 InpL; // Sound Data Input to Direct Output (Left)
@@ -404,7 +391,6 @@ struct V_CoreGates
 
 struct VoiceMixSet
 {
-	static const VoiceMixSet Empty;
 	StereoOut32 Dry, Wet;
 
 	VoiceMixSet() {}
@@ -421,10 +407,6 @@ struct V_Core
 
 	u32 Index; // Core index identifier.
 
-	// Voice Gates -- These are SSE-related values, and must always be
-	// first to ensure 16 byte alignment
-
-	V_VoiceGates VoiceGates[NumVoices];
 	V_CoreGates DryGate;
 	V_CoreGates WetGate;
 
@@ -432,8 +414,6 @@ struct V_Core
 	V_VolumeLR ExtVol; // Volume for External Data Input
 	V_VolumeLR InpVol; // Volume for Sound Data Input
 	V_VolumeLR FxVol; // Volume for Output from Effects
-
-	V_Voice Voices[NumVoices];
 
 	u32 IRQA; // Interrupt Address
 	u32 TSA; // DMA Transfer Start Address
@@ -491,11 +471,6 @@ struct V_Core
 	u16 psxSoundDataTransferControl;
 	u16 psxSPUSTAT;
 
-	// HACK -- This is a temp buffer which is (or isn't?) used to circumvent some memory
-	// corruption that originates elsewhere. >_<  The actual ADMA buffer
-	// is an area mapped to SPU2 main memory.
-	//s16				ADMATempBuffer[0x1000];
-
 	// ----------------------------------------------------------------------------------
 	//  V_Core Methods
 	// ----------------------------------------------------------------------------------
@@ -519,7 +494,6 @@ struct V_Core
 	//  Mixer Section
 	// --------------------------------------------------------------------------------------
 
-	StereoOut32 Mix(const VoiceMixSet& inVoices, const StereoOut32& Input, const StereoOut32& Ext);
 	StereoOut32 DoReverb(StereoOut32 Input);
 	s32 RevbGetIndexer(s32 offset);
 
@@ -580,6 +554,9 @@ extern StereoOut32 (*ReverbUpsample)(V_Core& core);
 extern s32 (*ReverbDownsample)(V_Core& core, bool right);
 
 extern V_Core Cores[2];
+extern V_VoiceData VoiceData;
+extern V_Voice Voices[48];
+extern V_VoiceDebug DebugVoices[48];
 extern V_SPDIF Spdif;
 
 // Output Buffer Writing Position (the same for all data);
@@ -643,3 +620,6 @@ struct PcmCacheEntry
 };
 
 extern PcmCacheEntry pcm_cache_data[pcm_BlockCount];
+extern int g_counter_cache_hits;
+extern int g_counter_cache_misses;
+extern int g_counter_cache_ignores;
