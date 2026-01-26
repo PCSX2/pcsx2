@@ -140,27 +140,34 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 		return;
 	}
 
-	// Locate home directory
+	// Get path to Desktop or per-user Start Menu\Programs directory
+	// https://superuser.com/questions/1489874/how-can-i-get-the-real-path-of-desktop-in-windows-explorer/1789849#1789849
+	// https://learn.microsoft.com/en-us/windows/win32/api/shlobj_core/nf-shlobj_core-shgetknownfolderpath
+	// https://learn.microsoft.com/en-us/windows/win32/shell/knownfolderid
 	std::string link_file;
-	if (const char* home = std::getenv("USERPROFILE"))
+	if (PWSTR directory; SUCCEEDED(SHGetKnownFolderPath(is_desktop ? FOLDERID_Desktop : FOLDERID_Programs, 0, NULL, &directory)))
 	{
+		std::string directory_utf8 = StringUtil::WideStringToUTF8String(directory);
+		CoTaskMemFree(directory);
+
 		if (is_desktop)
-			link_file = Path::ToNativePath(fmt::format("{}/Desktop/{}.lnk", home, clean_name));
+			link_file = Path::ToNativePath(fmt::format("{}/{}.lnk", directory_utf8, clean_name));
 		else
 		{
-			const std::string start_menu_dir = Path::ToNativePath(fmt::format("{}/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/PCSX2", home));
-			if (!FileSystem::EnsureDirectoryExists(start_menu_dir.c_str(), false))
+			const std::string pcsx2_start_menu_dir = Path::ToNativePath(fmt::format("{}/PCSX2", directory_utf8));
+			if (!FileSystem::EnsureDirectoryExists(pcsx2_start_menu_dir.c_str(), false))
 			{
 				QMessageBox::critical(this, tr("Failed to create shortcut"), tr("Could not create start menu directory."), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
 				return;
 			}
 
-			link_file = Path::ToNativePath(fmt::format("{}/{}.lnk", start_menu_dir, clean_name));
+			link_file = Path::ToNativePath(fmt::format("{}/{}.lnk", pcsx2_start_menu_dir, clean_name));
 		}
 	}
 	else
 	{
-		QMessageBox::critical(this, tr("Failed to create shortcut"), tr("Home path is empty."), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
+		CoTaskMemFree(directory);
+		QMessageBox::critical(this, tr("Failed to create shortcut"), is_desktop ? tr("'Desktop' directory not found") : tr("User's 'Start Menu\\Programs' directory not found"), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
 		return;
 	}
 
