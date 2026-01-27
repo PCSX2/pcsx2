@@ -1355,6 +1355,12 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, boo
 		return false;
 	}
 
+	if (!FileSystem::CreateDirectoryPath(EmuFolders::Covers.c_str(), false))
+	{
+		progress->DisplayError(fmt::format("Failed to create covers directory: {}", EmuFolders::Covers).c_str());
+		return false;
+	}
+
 	std::vector<std::pair<std::string, std::string>> download_urls;
 	{
 		std::unique_lock lock(s_mutex);
