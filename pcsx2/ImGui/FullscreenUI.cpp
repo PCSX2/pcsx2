@@ -4461,7 +4461,7 @@ void FullscreenUI::DrawBIOSSettingsPage()
 			});
 	}
 
-	MenuHeading(FSUI_CSTR("Options and Patches"));
+	MenuHeading(FSUI_CSTR("Fast Boot Options"));
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_FORWARD_FAST, "Fast Boot"), FSUI_CSTR("Skips the intro screen, and bypasses region checks."),
 		"EmuCore", "EnableFastBoot", true);
 
@@ -9509,7 +9509,7 @@ TRANSLATE_NOOP("FullscreenUI", "Resets configuration to defaults (excluding cont
 TRANSLATE_NOOP("FullscreenUI", "BIOS Configuration");
 TRANSLATE_NOOP("FullscreenUI", "Changes the BIOS image used to start future sessions.");
 TRANSLATE_NOOP("FullscreenUI", "BIOS Selection");
-TRANSLATE_NOOP("FullscreenUI", "Options and Patches");
+TRANSLATE_NOOP("FullscreenUI", "Fast Boot Options");
 TRANSLATE_NOOP("FullscreenUI", "Skips the intro screen, and bypasses region checks.");
 TRANSLATE_NOOP("FullscreenUI", "Speed Control");
 TRANSLATE_NOOP("FullscreenUI", "Sets the speed when running without fast forwarding.");
