@@ -1397,7 +1397,7 @@ void GSDevice11::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	const float right = dRect.z * 2 / ds.x - 1.0f;
 	const float bottom = 1.0f - dRect.w * 2 / ds.y;
 
-	GSVertexPT1 vertices[] =
+	const GSVertexPT1 vertices[] =
 	{
 		{GSVector4(left, top, 0.5f, 1.0f), GSVector2(sRect.x, sRect.y)},
 		{GSVector4(right, top, 0.5f, 1.0f), GSVector2(sRect.z, sRect.y)},
@@ -1427,13 +1427,14 @@ void GSDevice11::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 void GSDevice11::UpdateCLUTTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize)
 {
 	// match merge cb
-	struct Uniforms
+	struct alignas(16) Uniforms
 	{
 		float scale;
 		float pad1[3];
 		u32 offsetX, offsetY, dOffset;
+		u32 pad2;
 	};
-	const Uniforms cb = {sScale, {}, offsetX, offsetY, dOffset};
+	const Uniforms cb = {sScale, {}, offsetX, offsetY, dOffset, 0};
 	m_ctx->UpdateSubresource(m_merge.cb.get(), 0, nullptr, &cb, 0, 0);
 
 	const GSVector4 dRect(0, 0, dSize, 1);
@@ -1444,14 +1445,15 @@ void GSDevice11::UpdateCLUTTexture(GSTexture* sTex, float sScale, u32 offsetX, u
 void GSDevice11::ConvertToIndexedTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, u32 SBW, u32 SPSM, GSTexture* dTex, u32 DBW, u32 DPSM)
 {
 	// match merge cb
-	struct Uniforms
+	struct alignas(16) Uniforms
 	{
 		float scale;
 		float pad1[3];
 		u32 SBW, DBW, SPSM;
+		u32 pad2;
 	};
 
-	const Uniforms cb = {sScale, {}, SBW, DBW, SPSM};
+	const Uniforms cb = {sScale, {}, SBW, DBW, SPSM, 0};
 	m_ctx->UpdateSubresource(m_merge.cb.get(), 0, nullptr, &cb, 0, 0);
 
 	const GSVector4 dRect(0, 0, dTex->GetWidth(), dTex->GetHeight());
@@ -1461,7 +1463,7 @@ void GSDevice11::ConvertToIndexedTexture(GSTexture* sTex, float sScale, u32 offs
 
 void GSDevice11::FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u32 downsample_factor, const GSVector2i& clamp_min, const GSVector4& dRect)
 {
-	struct Uniforms
+	struct alignas(16) Uniforms
 	{
 		float weight;
 		float step_multiplier;
@@ -2063,13 +2065,13 @@ void GSDevice11::RenderImGui()
 
 	UpdateImGuiTextures();
 
-	const float L = 0.0f;
+	constexpr float L = 0.0f;
 	const float R = static_cast<float>(m_window_info.surface_width);
-	const float T = 0.0f;
+	constexpr float T = 0.0f;
 	const float B = static_cast<float>(m_window_info.surface_height);
 
 	// clang-format off
-  const float ortho_projection[4][4] =
+	const GSVector4 ortho_projection[4] =
 	{
 		{ 2.0f/(R-L),   0.0f,           0.0f,       0.0f },
 		{ 0.0f,         2.0f/(T-B),     0.0f,       0.0f },
