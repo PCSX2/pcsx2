@@ -1635,14 +1635,14 @@ void GSDevice12::UpdateCLUTTexture(
 	GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize)
 {
 	// match merge cb
-	struct Uniforms
+	struct alignas(16) Uniforms
 	{
 		float scale;
 		float pad1[3];
 		u32 offsetX, offsetY, dOffset;
 		u32 pad2;
 	};
-	const Uniforms cb = {sScale, {}, offsetX, offsetY, dOffset};
+	const Uniforms cb = {sScale, {}, offsetX, offsetY, dOffset, 0};
 	SetUtilityRootSignature();
 	SetUtilityPushConstants(&cb, sizeof(cb));
 
@@ -1656,14 +1656,15 @@ void GSDevice12::ConvertToIndexedTexture(
 	GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, u32 SBW, u32 SPSM, GSTexture* dTex, u32 DBW, u32 DPSM)
 {
 	// match merge cb
-	struct Uniforms
+	struct alignas(16) Uniforms
 	{
 		float scale;
 		float pad1[3];
 		u32 SBW, DBW, SPSM;
+		u32 pad2;
 	};
 
-	const Uniforms cb = {sScale, {}, SBW, DBW, SPSM};
+	const Uniforms cb = {sScale, {}, SBW, DBW, SPSM, 0};
 	SetUtilityRootSignature();
 	SetUtilityPushConstants(&cb, sizeof(cb));
 
@@ -1675,7 +1676,7 @@ void GSDevice12::ConvertToIndexedTexture(
 
 void GSDevice12::FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u32 downsample_factor, const GSVector2i& clamp_min, const GSVector4& dRect)
 {
-	struct Uniforms
+	struct alignas(16) Uniforms
 	{
 		float weight;
 		float step_multiplier;
@@ -2184,7 +2185,7 @@ void GSDevice12::RenderImGui()
 	const float B = static_cast<float>(m_window_info.surface_height);
 
 	// clang-format off
-  const float ortho_projection[4][4] =
+	const GSVector4 ortho_projection[4] =
 	{
 		{ 2.0f/(R-L),   0.0f,           0.0f,       0.0f },
 		{ 0.0f,         2.0f/(T-B),     0.0f,       0.0f },

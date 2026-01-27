@@ -3131,7 +3131,7 @@ void GSDeviceVK::UpdateCLUTTexture(
 	GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize)
 {
 	// Super annoying, but apparently NVIDIA doesn't like floats/ints packed together in the same vec4?
-	struct Uniforms
+	struct alignas(16) Uniforms
 	{
 		u32 offsetX, offsetY, dOffset, pad1;
 		float scale;
@@ -3150,7 +3150,7 @@ void GSDeviceVK::UpdateCLUTTexture(
 void GSDeviceVK::ConvertToIndexedTexture(
 	GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, u32 SBW, u32 SPSM, GSTexture* dTex, u32 DBW, u32 DPSM)
 {
-	struct Uniforms
+	struct alignas(16) Uniforms
 	{
 		u32 SBW;
 		u32 DBW;
@@ -3171,7 +3171,7 @@ void GSDeviceVK::ConvertToIndexedTexture(
 
 void GSDeviceVK::FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u32 downsample_factor, const GSVector2i& clamp_min, const GSVector4& dRect)
 {
-	struct Uniforms
+	struct alignas(16) Uniforms
 	{
 		GSVector2i clamp_min;
 		int downsample_factor;
@@ -4434,16 +4434,13 @@ void GSDeviceVK::RenderImGui()
 
 	UpdateImGuiTextures();
 
-	const float uniforms[2][2] = {{
-									  2.0f / static_cast<float>(m_window_info.surface_width),
-									  2.0f / static_cast<float>(m_window_info.surface_height),
-								  },
-		{
-			-1.0f,
-			-1.0f,
-		}};
+	const GSVector4 uniforms(
+		2.0f / static_cast<float>(m_window_info.surface_width),
+		2.0f / static_cast<float>(m_window_info.surface_height),
+		-1.0f,
+		-1.0f);
 
-	SetUtilityPushConstants(uniforms, sizeof(uniforms));
+	SetUtilityPushConstants(&uniforms, sizeof(uniforms));
 	SetPipeline(m_imgui_pipeline);
 
 	if (m_utility_sampler != m_linear_sampler)

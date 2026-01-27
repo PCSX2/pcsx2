@@ -899,14 +899,13 @@ void GSDevice::ShadeBoost()
 	if (ResizeRenderTarget(&m_target_tmp, m_current->GetWidth(), m_current->GetHeight(), false, false))
 	{
 		// predivide to avoid the divide (multiply) in the shader
-		const float params[4] = {
+		const GSVector4 params(
 			static_cast<float>(GSConfig.ShadeBoost_Brightness) * (1.0f / 50.0f),
 			static_cast<float>(GSConfig.ShadeBoost_Contrast) * (1.0f / 50.0f),
 			static_cast<float>(GSConfig.ShadeBoost_Saturation) * (1.0f / 50.0f),
-			static_cast<float>(GSConfig.ShadeBoost_Gamma) * (1.0f / 50.0f),
-		};
+			static_cast<float>(GSConfig.ShadeBoost_Gamma) * (1.0f / 50.0f));
 
-		DoShadeBoost(m_current, m_target_tmp, params);
+		DoShadeBoost(m_current, m_target_tmp, params.v);
 
 		m_current = m_target_tmp;
 	}
