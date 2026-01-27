@@ -339,6 +339,7 @@ public:
 	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i* scissor = nullptr, ID3D11DepthStencilView* read_only_dsv = nullptr);
 	void SetViewport(const GSVector2i& viewport);
 	void SetScissor(const GSVector4i& scissor);
+	void SetUtilityPushConstants(ID3D11Buffer* buffer, const void* data, size_t size);
 
 	void SetupVS(VSSelector sel, const GSHWDrawConfig::VSConstantBuffer* cb);
 	void SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstantBuffer* cb, PSSamplerSelector ssel);

@@ -239,8 +239,9 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	memset(&bd, 0, sizeof(bd));
 
 	bd.ByteWidth = sizeof(DisplayConstantBuffer);
-	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.Usage = D3D11_USAGE_DYNAMIC;
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
 	m_dev->CreateBuffer(&bd, nullptr, m_present.ps_cb.put());
 
@@ -267,8 +268,9 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	memset(&bd, 0, sizeof(bd));
 
 	bd.ByteWidth = sizeof(MergeConstantBuffer);
-	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.Usage = D3D11_USAGE_DYNAMIC;
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
 	m_dev->CreateBuffer(&bd, nullptr, m_merge.cb.put());
 
@@ -302,8 +304,9 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	memset(&bd, 0, sizeof(bd));
 
 	bd.ByteWidth = sizeof(InterlaceConstantBuffer);
-	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.Usage = D3D11_USAGE_DYNAMIC;
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
 	m_dev->CreateBuffer(&bd, nullptr, m_interlace.cb.put());
 
@@ -322,8 +325,9 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 
 	memset(&bd, 0, sizeof(bd));
 	bd.ByteWidth = sizeof(float) * 4;
-	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.Usage = D3D11_USAGE_DYNAMIC;
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
 	m_dev->CreateBuffer(&bd, nullptr, m_shadeboost.cb.put());
 
@@ -437,8 +441,9 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	memset(&bd, 0, sizeof(bd));
 
 	bd.ByteWidth = sizeof(GSHWDrawConfig::VSConstantBuffer);
-	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.Usage = D3D11_USAGE_DYNAMIC;
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
 	if (FAILED(m_dev->CreateBuffer(&bd, nullptr, m_vs_cb.put())))
 	{
@@ -449,8 +454,9 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	memset(&bd, 0, sizeof(bd));
 
 	bd.ByteWidth = sizeof(GSHWDrawConfig::PSConstantBuffer);
-	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.Usage = D3D11_USAGE_DYNAMIC;
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
 	if (FAILED(m_dev->CreateBuffer(&bd, nullptr, m_ps_cb.put())))
 	{
@@ -1383,7 +1389,7 @@ void GSDevice11::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	cb.SetSource(sRect, sTex->GetSize());
 	cb.SetTarget(dRect, ds);
 	cb.SetTime(shaderTime);
-	m_ctx->UpdateSubresource(m_present.ps_cb.get(), 0, nullptr, &cb, 0, 0);
+	SetUtilityPushConstants(m_present.ps_cb.get(), &cb, sizeof(cb));
 
 	// om
 
@@ -1435,7 +1441,7 @@ void GSDevice11::UpdateCLUTTexture(GSTexture* sTex, float sScale, u32 offsetX, u
 		u32 pad2;
 	};
 	const Uniforms cb = {sScale, {}, offsetX, offsetY, dOffset, 0};
-	m_ctx->UpdateSubresource(m_merge.cb.get(), 0, nullptr, &cb, 0, 0);
+	SetUtilityPushConstants(m_merge.cb.get(), &cb, sizeof(cb));
 
 	const GSVector4 dRect(0, 0, dSize, 1);
 	const ShaderConvert shader = (dSize == 16) ? ShaderConvert::CLUT_4 : ShaderConvert::CLUT_8;
@@ -1454,7 +1460,7 @@ void GSDevice11::ConvertToIndexedTexture(GSTexture* sTex, float sScale, u32 offs
 	};
 
 	const Uniforms cb = {sScale, {}, SBW, DBW, SPSM, 0};
-	m_ctx->UpdateSubresource(m_merge.cb.get(), 0, nullptr, &cb, 0, 0);
+	SetUtilityPushConstants(m_merge.cb.get(), &cb, sizeof(cb));
 
 	const GSVector4 dRect(0, 0, dTex->GetWidth(), dTex->GetHeight());
 	const ShaderConvert shader = ((SPSM & 0xE) == 0) ? ShaderConvert::RGBA_TO_8I : ShaderConvert::RGB5A1_TO_8I;
@@ -1475,7 +1481,7 @@ void GSDevice11::FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u32
 
 	const Uniforms cb = {
 		static_cast<float>(downsample_factor * downsample_factor), (GSConfig.UserHacks_NativeScaling > GSNativeScaling::Aggressive) ? 2.0f : 1.0f, {}, clamp_min, static_cast<int>(downsample_factor), 0};
-	m_ctx->UpdateSubresource(m_merge.cb.get(), 0, nullptr, &cb, 0, 0);
+	SetUtilityPushConstants(m_merge.cb.get(), &cb, sizeof(cb));
 
 	const ShaderConvert shader = ShaderConvert::DOWNSAMPLE_COPY;
 	DoStretchRect(sTex, GSVector4::zero(), dTex, dRect, m_convert.ps[static_cast<int>(shader)].get(), m_merge.cb.get(), nullptr, false);
@@ -1584,7 +1590,7 @@ void GSDevice11::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 	if (feedback_write_2 || feedback_write_1 || sTex[0])
 	{
 		const MergeConstantBuffer cb = {GSVector4::unorm8(c), EXTBUF.EMODA, EXTBUF.EMODC};
-		m_ctx->UpdateSubresource(m_merge.cb.get(), 0, nullptr, &cb, 0, 0);
+		SetUtilityPushConstants(m_merge.cb.get(), &cb, sizeof(cb));
 	}
 
 	if (sTex[1] && (PMODE.SLBG == 0 || feedback_write_2_but_blend_bg))
@@ -1620,7 +1626,7 @@ void GSDevice11::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 
 void GSDevice11::DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderInterlace shader, bool linear, const InterlaceConstantBuffer& cb)
 {
-	m_ctx->UpdateSubresource(m_interlace.cb.get(), 0, nullptr, &cb, 0, 0);
+	SetUtilityPushConstants(m_interlace.cb.get(), &cb, sizeof(cb));
 
 	DoStretchRect(sTex, sRect, dTex, dRect, m_interlace.ps[static_cast<int>(shader)].get(), m_interlace.cb.get(), linear);
 }
@@ -1658,7 +1664,7 @@ void GSDevice11::DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float para
 	const GSVector4 sRect(0, 0, 1, 1);
 	const GSVector4 dRect(0, 0, s.x, s.y);
 
-	m_ctx->UpdateSubresource(m_shadeboost.cb.get(), 0, nullptr, params, 0, 0);
+	SetUtilityPushConstants(m_shadeboost.cb.get(), params, 16);
 
 	DoStretchRect(sTex, sRect, dTex, dRect, m_shadeboost.ps.get(), m_shadeboost.cb.get(), false);
 }
@@ -1704,7 +1710,7 @@ void GSDevice11::SetupVS(VSSelector sel, const GSHWDrawConfig::VSConstantBuffer*
 
 	if (m_vs_cb_cache.Update(*cb))
 	{
-		m_ctx->UpdateSubresource(m_vs_cb.get(), 0, NULL, cb, 0, 0);
+		SetUtilityPushConstants(m_vs_cb.get(), cb, sizeof(GSHWDrawConfig::VSConstantBuffer));
 	}
 
 	VSSetShader(i->second.vs.get(), m_vs_cb.get());
@@ -1785,7 +1791,7 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 
 	if (cb && m_ps_cb_cache.Update(*cb))
 	{
-		m_ctx->UpdateSubresource(m_ps_cb.get(), 0, NULL, cb, 0, 0);
+		SetUtilityPushConstants(m_ps_cb.get(), cb, sizeof(GSHWDrawConfig::PSConstantBuffer));
 	}
 
 	wil::com_ptr_nothrow<ID3D11SamplerState> ss0;
@@ -2043,9 +2049,10 @@ bool GSDevice11::CreateImGuiResources()
 	}
 
 	D3D11_BUFFER_DESC buffer_desc = {};
-	buffer_desc.Usage = D3D11_USAGE_DEFAULT;
+	buffer_desc.Usage = D3D11_USAGE_DYNAMIC;
 	buffer_desc.ByteWidth = sizeof(float) * 4 * 4;
 	buffer_desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	buffer_desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	hr = m_dev->CreateBuffer(&buffer_desc, nullptr, m_imgui.vs_cb.put());
 	if (FAILED(hr))
 	{
@@ -2080,7 +2087,7 @@ void GSDevice11::RenderImGui()
 	};
 	// clang-format on
 
-	m_ctx->UpdateSubresource(m_imgui.vs_cb.get(), 0, nullptr, ortho_projection, 0, 0);
+	SetUtilityPushConstants(m_imgui.vs_cb.get(), ortho_projection, sizeof(ortho_projection));
 
 	const UINT vb_stride = sizeof(ImDrawVert);
 	const UINT vb_offset = 0;
@@ -2567,6 +2574,17 @@ void GSDevice11::SetScissor(const GSVector4i& scissor)
 	{
 		m_state.scissor = scissor;
 		m_ctx->RSSetScissorRects(1, reinterpret_cast<const D3D11_RECT*>(&scissor));
+	}
+}
+
+void GSDevice11::SetUtilityPushConstants(ID3D11Buffer* buffer, const void* data, size_t size)
+{
+	// Buffers need to be properly aligned to 16 bytes.
+	D3D11_MAPPED_SUBRESOURCE mapped;
+	if (SUCCEEDED(m_ctx->Map(buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped)))
+	{
+		memcpy(mapped.pData, data, size);
+		m_ctx->Unmap(buffer, 0);
 	}
 }
 
