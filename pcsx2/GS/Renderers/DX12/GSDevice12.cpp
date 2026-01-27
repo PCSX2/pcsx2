@@ -788,6 +788,7 @@ void GSDevice12::SetVSyncMode(GSVSyncMode mode, bool allow_present_throttle)
 
 	if (GetSwapChainBufferCount() != old_buffer_count)
 	{
+		ExecuteCommandList(true);
 		DestroySwapChain();
 		if (!CreateSwapChain())
 			pxFailRel("Failed to recreate swap chain after vsync change.");
