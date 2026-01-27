@@ -744,6 +744,7 @@ Pcsx2Config::GSOptions::GSOptions()
 	OsdShowTextureReplacements = false;
 
 	HWDownloadMode = GSHardwareDownloadMode::Enabled;
+	HWZIntegerMode = GSHardwareZIntegerMode::Disabled;
 	HWSpinGPUForReadbacks = false;
 	HWSpinCPUForReadbacks = false;
 	GPUPaletteConversion = false;
@@ -1033,6 +1034,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapIntEnumEx(TexturePreloading, "texture_preloading");
 	SettingsWrapIntEnumEx(GSDumpCompression, "GSDumpCompression");
 	SettingsWrapIntEnumEx(HWDownloadMode, "HWDownloadMode");
+	SettingsWrapIntEnumEx(HWZIntegerMode, "HWZIntegerMode");
 	SettingsWrapIntEnumEx(CASMode, "CASMode");
 	SettingsWrapBitfieldEx(CAS_Sharpness, "CASSharpness");
 	SettingsWrapBitfieldEx(Dithering, "dithering_ps2");
