@@ -3,16 +3,16 @@
 
 #include "MemorySearchView.h"
 
-#include "DebugTools/DebugInterface.h"
-
+#include "AsyncDialogs.h"
 #include "QtUtils.h"
+
+#include "DebugTools/DebugInterface.h"
 
 #include "common/Console.h"
 
 #include <QtGui/QClipboard>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QScrollBar>
-#include <QtWidgets/QMessageBox>
 #include <QtConcurrent/QtConcurrent>
 #include <QtCore/QFutureWatcher>
 #include <QtGui/QPainter>
@@ -478,7 +478,7 @@ void MemorySearchView::onSearchButtonClicked()
 
 	if (!ok)
 	{
-		QMessageBox::critical(this, tr("Debugger"), tr("Invalid start address"));
+		AsyncDialogs::critical(this, tr("Debugger"), tr("Invalid start address"));
 		return;
 	}
 
@@ -486,13 +486,13 @@ void MemorySearchView::onSearchButtonClicked()
 
 	if (!ok)
 	{
-		QMessageBox::critical(this, tr("Debugger"), tr("Invalid end address"));
+		AsyncDialogs::critical(this, tr("Debugger"), tr("Invalid end address"));
 		return;
 	}
 
 	if (searchStart >= searchEnd)
 	{
-		QMessageBox::critical(this, tr("Debugger"), tr("Start address can't be equal to or greater than the end address"));
+		AsyncDialogs::critical(this, tr("Debugger"), tr("Start address can't be equal to or greater than the end address"));
 		return;
 	}
 
@@ -527,7 +527,7 @@ void MemorySearchView::onSearchButtonClicked()
 
 			if (!ok)
 			{
-				QMessageBox::critical(this, tr("Debugger"), tr("Invalid search value"));
+				AsyncDialogs::critical(this, tr("Debugger"), tr("Invalid search value"));
 				return;
 			}
 
@@ -551,7 +551,7 @@ void MemorySearchView::onSearchButtonClicked()
 					if (value <= std::numeric_limits<unsigned char>::max())
 						break;
 				default:
-					QMessageBox::critical(this, tr("Debugger"), tr("Value is larger than type"));
+					AsyncDialogs::critical(this, tr("Debugger"), tr("Value is larger than type"));
 					return;
 			}
 		}
@@ -565,7 +565,7 @@ void MemorySearchView::onSearchButtonClicked()
 				searchComparison == SearchComparison::IncreasedBy ||
 				searchComparison == SearchComparison::NotChanged))
 		{
-			QMessageBox::critical(this, tr("Debugger"), tr("This search comparison can only be used with filter searches."));
+			AsyncDialogs::critical(this, tr("Debugger"), tr("This search comparison can only be used with filter searches."));
 			return;
 		}
 	}
@@ -578,7 +578,7 @@ void MemorySearchView::onSearchButtonClicked()
 							   searchComparison == SearchComparison::IncreasedBy ||
 							   searchComparison == SearchComparison::NotChanged))
 	{
-		QMessageBox::critical(this, tr("Debugger"), tr("This search comparison can only be used with filter searches."));
+		AsyncDialogs::critical(this, tr("Debugger"), tr("This search comparison can only be used with filter searches."));
 		return;
 	}
 
