@@ -135,7 +135,7 @@
    <item>
     <widget class="QGroupBox" name="groupBox_2">
      <property name="title">
-      <string>Options and Patches</string>
+      <string>Fast Boot Options</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
