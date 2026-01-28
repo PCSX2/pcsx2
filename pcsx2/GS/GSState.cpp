@@ -1915,6 +1915,11 @@ void GSState::FlushWrite()
 			
 			// Just setting the height should be okay...
 			r.w = std::max(r.y + calculated_height, psm_s.bs.y);
+
+			if (m_draw_transfers.size() > 0 && m_tr.m_blit.DBP == m_draw_transfers.back().blit.DBP)
+			{
+				m_draw_transfers.back().rect = r;
+			}
 		}
 	}
 
