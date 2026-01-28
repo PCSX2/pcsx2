@@ -5083,12 +5083,13 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 
 	if (is_hardware)
 	{
-		const bool dumping_active = GetEffectiveBoolSetting(bsi, "EmuCore/GS", "DumpReplaceableTextures", false);
-		const bool replacement_active = GetEffectiveBoolSetting(bsi, "EmuCore/GS", "LoadTextureReplacements", false);
+		const bool texture_preloading_full = GetEffectiveIntSetting(bsi, "EmuCore/GS", "texture_preloading", 2) == 2;
+		const bool dumping_active = GetEffectiveBoolSetting(bsi, "EmuCore/GS", "DumpReplaceableTextures", false) && texture_preloading_full;
+		const bool replacement_active = GetEffectiveBoolSetting(bsi, "EmuCore/GS", "LoadTextureReplacements", false) && texture_preloading_full;
 
 		MenuHeading(FSUI_CSTR("Texture Replacement"));
 		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_IMAGES, "Load Textures"), FSUI_CSTR("Loads replacement textures where available and user-provided."),
-			"EmuCore/GS", "LoadTextureReplacements", false);
+			"EmuCore/GS", "LoadTextureReplacements", false, texture_preloading_full);
 		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_SPINNER, "Asynchronous Texture Loading"),
 			FSUI_CSTR("Loads replacement textures on a worker thread, reducing microstutter when replacements are enabled."), "EmuCore/GS",
 			"LoadTextureReplacementsAsync", true, replacement_active);
@@ -5103,7 +5104,7 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 
 		MenuHeading(FSUI_CSTR("Texture Dumping"));
 		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_DOWNLOAD, "Dump Textures"), FSUI_CSTR("Dumps replaceable textures to disk. Will reduce performance."),
-			"EmuCore/GS", "DumpReplaceableTextures", false);
+			"EmuCore/GS", "DumpReplaceableTextures", false, texture_preloading_full);
 		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_IMAGES, "Dump Mipmaps"), FSUI_CSTR("Includes mipmaps when dumping textures."), "EmuCore/GS",
 			"DumpReplaceableMipmaps", false, dumping_active);
 		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_VIDEO, "Dump FMV Textures"),

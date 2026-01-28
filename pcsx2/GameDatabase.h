@@ -101,7 +101,7 @@ namespace GameDatabaseSchema
 		ClampMode vu0ClampMode = ClampMode::Undefined;
 		ClampMode vu1ClampMode = ClampMode::Undefined;
 		std::vector<GamefixId> gameFixes;
-		std::vector<std::pair<SpeedHack, int>> speedHacks;
+		std::vector<std::pair<SpeedHack, s32>> speedHacks;
 		std::vector<std::pair<GSHWFixId, s32>> gsHWFixes;
 		std::vector<std::string> memcardFilters;
 		std::unordered_map<u32, std::string> patches;
@@ -120,6 +120,12 @@ namespace GameDatabaseSchema
 
 		/// Returns true if the current config value for the specified hw fix id matches the value.
 		static bool configMatchesHWFix(const Pcsx2Config::GSOptions& config, GSHWFixId id, int value);
+
+		/// Returns the value for a speed hack if the corresponding child exists in the DB.
+		std::optional<s32> getSpeedHackValue(const SpeedHack queried_speed_hack) const;
+
+		/// Returns the value for a GS hardware fix if the corresponding child exists in the DB.
+		std::optional<s32> getGSHWFixValue(const GSHWFixId queried_hardware_fix) const;
 	};
 }; // namespace GameDatabaseSchema
 

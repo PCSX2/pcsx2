@@ -3173,8 +3173,7 @@ void VMManager::WarnAboutUnsafeSettings()
 			TRANSLATE_SV("VMManager", "Cycle rate/skip is not at default, this may crash or make games run too slow."));
 	}
 
-	const bool is_sw_renderer = EmuConfig.GS.Renderer == GSRendererType::SW;
-	if (!is_sw_renderer)
+	if (EmuConfig.GS.Renderer != GSRendererType::SW && EmuConfig.GS.Renderer != GSRendererType::Null)
 	{
 		// HW renderer settings.
 		if (EmuConfig.GS.UpscaleMultiplier < 1.0f)
@@ -3202,20 +3201,74 @@ void VMManager::WarnAboutUnsafeSettings()
 			append(ICON_FA_CIRCLE_EXCLAMATION,
 				TRANSLATE_SV("VMManager", "GPU Palette Conversion is enabled, this may reduce performance."));
 		}
-		if (EmuConfig.GS.TexturePreloading != TexturePreloadingLevel::Full)
+
+		// Check if texturePreloading None or Partial in DB; assume Full if unspecified or game fixes are disabled.
+		s32 texture_preloading_DB_value = 2;
+		if (EmuConfig.EnableGameFixes)
+		{
+			if (const GameDatabaseSchema::GameEntry* game = GameDatabase::findGame(s_disc_serial))
+				texture_preloading_DB_value = game->getGSHWFixValue(GameDatabaseSchema::GSHWFixId::TexturePreloading).value_or(2);
+		}
+
+		if (EmuConfig.GS.TexturePreloading != TexturePreloadingLevel::Full || texture_preloading_DB_value != 2)
+		{
+			// No need to warn the user about performance for a setting we're enforcing.
+			if (texture_preloading_DB_value == 2)
+			{
+				append(ICON_FA_CIRCLE_EXCLAMATION,
+					TRANSLATE_SV("VMManager", "Texture Preloading is not set to Full. This may reduce performance."));
+			}
+			else if (EmuConfig.GS.LoadTextureReplacements || EmuConfig.GS.DumpReplaceableTextures)
+			{
+				const std::string_view texture_preloading_DB_value_name =
+					(texture_preloading_DB_value == 0) ?
+						TRANSLATE_SV("VMManager", "None") :
+						TRANSLATE_SV("VMManager", "Partial");
+
+				if (EmuConfig.GS.TexturePreloading == TexturePreloadingLevel::Full)
+				{
+					append(ICON_FA_CIRCLE_EXCLAMATION,
+						fmt::format(TRANSLATE_FS("VMManager", "Texture Preloading is set to {} by the GameDB."),
+							texture_preloading_DB_value_name));
+				}
+				else
+				{
+					const std::string_view texture_preloading_setting_value_name =
+						(EmuConfig.GS.TexturePreloading == TexturePreloadingLevel::Off) ?
+							TRANSLATE_SV("VMManager", "None") :
+							TRANSLATE_SV("VMManager", "Partial");
+					append(ICON_FA_CIRCLE_EXCLAMATION,
+						fmt::format(TRANSLATE_FS("VMManager", "Texture Preloading is set to {} by the GameDB and to {} in the settings."),
+							texture_preloading_DB_value_name, texture_preloading_setting_value_name));
+				}
+			}
+
+			if (EmuConfig.GS.LoadTextureReplacements && EmuConfig.GS.DumpReplaceableTextures)
+			{
+				append(ICON_FA_IMAGES,
+					TRANSLATE_SV("VMManager", "Texture replacement and dumping will not work unless Texture Preloading is set to Full."));
+			}
+			else if (EmuConfig.GS.LoadTextureReplacements)
+			{
+				append(ICON_FA_IMAGES,
+					TRANSLATE_SV("VMManager", "Texture replacement will not work unless Texture Preloading is set to Full."));
+			}
+			else if (EmuConfig.GS.DumpReplaceableTextures)
+			{
+				append(ICON_FA_DOWNLOAD,
+					TRANSLATE_SV("VMManager", "Texture dumping will not work unless Texture Preloading is set to Full."));
+			}
+		}
+		// No textures dumped while texture preloading isn't set to Full.
+		else if (EmuConfig.GS.DumpReplaceableTextures)
 		{
 			append(ICON_FA_CIRCLE_EXCLAMATION,
-				TRANSLATE_SV("VMManager", "Texture Preloading is not Full, this may reduce performance."));
+				TRANSLATE_SV("VMManager", "Texture dumping is enabled. This will continually dump textures to disk."));
 		}
 		if (EmuConfig.GS.UserHacks_EstimateTextureRegion)
 		{
 			append(ICON_FA_CIRCLE_EXCLAMATION,
 				TRANSLATE_SV("VMManager", "Estimate texture region is enabled, this may reduce performance."));
-		}
-		if (EmuConfig.GS.DumpReplaceableTextures)
-		{
-			append(ICON_FA_CIRCLE_EXCLAMATION,
-				TRANSLATE_SV("VMManager", "Texture dumping is enabled, this will continually dump textures to disk."));
 		}
 		if (!EmuConfig.GS.HWMipmap)
 		{
