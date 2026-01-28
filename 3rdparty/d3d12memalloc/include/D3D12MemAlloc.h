@@ -24,7 +24,7 @@
 
 /** \mainpage D3D12 Memory Allocator
 
-<b>Version 3.0.1</b> (2025-05-08)
+<b>Version 3.1.0-development</b> (2025-XX-XX)
 
 Copyright (c) 2019-2025 Advanced Micro Devices, Inc. All rights reserved. \n
 License: MIT
@@ -64,7 +64,7 @@ Documentation of all members: D3D12MemAlloc.h
         
 \section main_see_also Web links
 
-- [Direct3D 12 Memory Allocator at GPUOpen.com](https://gpuopen.com/gaming-product/d3d12-memory-allocator/) - product page
+- [Direct3D 12 Memory Allocator at GPUOpen.com](https://gpuopen.com/d3d12-memory-allocator/) - product page
 - [GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator at GitHub.com](https://github.com/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator) - source code repository
 */
 
@@ -1112,8 +1112,19 @@ enum ALLOCATOR_FLAGS
     which may take longer than creating placed resources in existing heaps.
     Passing this flag will disable this committed preference globally for the allocator.
     It can also be disabled for a single allocation by using #ALLOCATION_FLAG_STRATEGY_MIN_TIME.
+
+    If the tight resource alignment feature is used by the library (which happens automatically whenever supported,
+    unless you use flag #ALLOCATOR_FLAG_DONT_USE_TIGHT_ALIGNMENT), then small buffers are not preferred as committed.
+    Long story short, you don't need to specify any of these flags.
+    The library chooses the most optimal method automatically.
     */
     ALLOCATOR_FLAG_DONT_PREFER_SMALL_BUFFERS_COMMITTED = 0x10,
+    /** Disables the use of the tight alignment feature even when it is supported on the current system.
+    By default, the feature is used whenever available.
+
+    Support can be checked by D3D12MA::Allocator::IsTightAlignmentSupported() regardless of using this flag.
+    */
+    ALLOCATOR_FLAG_DONT_USE_TIGHT_ALIGNMENT = 0x20,
 };
 
 /// \brief Parameters of created Allocator object. To be used with CreateAllocator().
@@ -1189,6 +1200,12 @@ public:
     This flag is fetched from `D3D12_FEATURE_D3D12_OPTIONS16::GPUUploadHeapSupported`.
     */
     BOOL IsGPUUploadHeapSupported() const;
+    /** \brief Returns true if resource tight alignment is supported on the current system.
+    When supported, it is automatically used by the library, unless
+    #ALLOCATOR_FLAG_DONT_USE_TIGHT_ALIGNMENT flag was specified on allocator creation.
+    This flag is fetched from `D3D12_FEATURE_DATA_TIGHT_ALIGNMENT::SupportTier`.
+    */
+    BOOL IsTightAlignmentSupported() const;
     /** \brief Returns total amount of memory of specific segment group, in bytes.
     
     \param memorySegmentGroup use `DXGI_MEMORY_SEGMENT_GROUP_LOCAL` or `DXGI_MEMORY_SEGMENT_GROUP_NON_LOCAL`.
@@ -1800,7 +1817,7 @@ DEFINE_ENUM_FLAG_OPERATORS(D3D12MA::VIRTUAL_ALLOCATION_FLAGS);
 /// \endcond
 
 /**
-\page faq Frequenty asked questions
+\page faq Frequently asked questions
 
 <b>What is %D3D12MA?</b>
 
@@ -2864,6 +2881,23 @@ and D3D12MA::POOL_FLAG_MSAA_TEXTURES_ALWAYS_COMMITTED on the creation of any cus
 With those flags, the alignment of the heaps created by %D3D12MA can be lower, but any MSAA textures are created as committed.
 You should always use these flags in your code unless you really need to create some MSAA textures as placed.
 
+With DirectX 12 Agility SDK 1.618.1, Microsoft added a new feature called **"tight alignment"**.
+Note this is a separate feature than the "small alignment" described earlier.
+When using this new SDK and a compatible graphics driver, the API exposes support for this new feature.
+Then, a new flag `D3D12_RESOURCE_FLAG_USE_TIGHT_ALIGNMENT` can be added when creating a resource.
+D3D12 can then return the alignment required for the resource smaller than the default ones described above.
+This library automatically makes use of the tight alignment feature when available and adds that new resource flag.
+When the tight alignment is enabled, the heuristics that creates small buffers as committed described above is deactivated,
+as it is no longer needed.
+
+You can check if the tight alignment it is available in the current system by calling D3D12MA::Allocator::IsTightAlignmentSupported().
+You can tell the library to not use it by specifying D3D12MA::ALLOCATOR_FLAG_DONT_USE_TIGHT_ALIGNMENT.
+Typically, you don't need to do any of those.
+
+The library automatically aligns all buffers to at least 256 B, even when the system supports smaller alignment.
+This is the alignment required for constant buffers, expressed by `D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT` constant.
+You can override this logic for \subpage custom_pools with a specific D3D12MA::POOL_DESC::MinAllocationAlignment.
+
 \page defragmentation Defragmentation
 
 Interleaved allocations and deallocations of many objects of varying size can
@@ -3558,7 +3592,7 @@ Features deliberately excluded from the scope of this library:
 - **Descriptor allocation.** Although also called "heaps", objects that represent
   descriptors are separate part of the D3D12 API from buffers and textures.
   You can still use \ref virtual_allocator to manage descriptors and their ranges inside a descriptor heap.
-- **Support for reserved (tiled) resources.** We don't recommend using them.
+- **Support for reserved (tiled) resources.** We don't recommend using them. For more information, see [1].
 - Support for `ID3D12Device::Evict` and `MakeResident`. We don't recommend using them.
   You can call them on the D3D12 objects manually.
   Plese keep in mind, however, that eviction happens on the level of entire `ID3D12Heap` memory blocks
@@ -3575,4 +3609,6 @@ Features deliberately excluded from the scope of this library:
   It is recommended to disable such warnings instead.
 - This is a C++ library. **Bindings or ports to any other programming languages** are welcome as external projects but
   are not going to be included into this repository.
+
+[1] Antoine Richermoz, Fabrice Neyret. The Sad State of Hardware Virtual Textures. UGA - Universite Grenoble Alpes; INRIA Grenoble - Rhone-Alpes. 2025, pp.13. hal-05138369
 */
