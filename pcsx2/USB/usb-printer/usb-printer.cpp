@@ -20,6 +20,7 @@ namespace usb_printer
 {
 	static const char* sPrinterNames[] = {
 		"Sony DPP-MP1",
+		"Sony MPR-G600",
 	};
 
 	typedef struct PrinterState
@@ -43,6 +44,7 @@ namespace usb_printer
 
 	static void usb_printer_handle_reset(USBDevice* dev)
 	{
+		// Console.WriteLn("Printer: usb_printer_handle_reset");
 		PrinterState* s = USB_CONTAINER_OF(dev, PrinterState, dev);
 		s->cmd_state = 0;
 		if (s->print_file)
@@ -55,6 +57,7 @@ namespace usb_printer
 	static void usb_printer_handle_control(USBDevice* dev, USBPacket* p, int request, int value,
 		int index, int length, uint8_t* data)
 	{
+		// Console.WriteLn("Printer: usb_printer_handle_control");
 		PrinterState* s = USB_CONTAINER_OF(dev, PrinterState, dev);
 		int ret = 0;
 
@@ -67,12 +70,14 @@ namespace usb_printer
 		switch (request)
 		{
 			case ClassInterfaceRequest | GET_DEVICE_ID:
+				Console.WriteLn("Printer: usb_printer_handle_control GET_DEVICE_ID");
 				ret = 2 + StringUtil::Strlcpy((char*)data + 2, sPrinters[s->selected_printer].device_id, length - 2);
 				data[0] = ret >> 8;
 				data[1] = ret & 0xff;
 				p->actual_length = ret;
 				break;
 			case ClassInterfaceRequest | GET_PORT_STATUS:
+				Console.WriteLn("Printer: usb_printer_handle_control GET_PORT_STATUS");
 				data[0] = GET_PORT_STATUS_PAPER_NOT_EMPTY | GET_PORT_STATUS_SELECTED | GET_PORT_STATUS_NO_ERROR;
 				p->actual_length = 1;
 				break;
@@ -278,6 +283,70 @@ namespace usb_printer
 		}
 	}
 
+	static void usb_printer_handle_data_popegg(USBDevice* dev, USBPacket* p)
+	{
+		//START: 	1B 28 62 01 00 01
+		//END: 	 0C 1B 28 62 01 00 00
+		// char start_raster_cmd[] =  { 0x1B, 0x28, 0x62, 0x01, 0x00, 0x00, 0x01 };
+		// char finish_raster_cmd[] = { 0x0C, 0x1B, 0x28, 0x62, 0x01, 0x00, 0x00 };
+		const std::vector<uint8_t> START = {0x1B, 0x28, 0x62, 0x01, 0x00, 0x01};
+		const std::vector<uint8_t> END   = {0x0C, 0x1B, 0x28, 0x62, 0x01, 0x00, 0x00};
+
+		PrinterState* s = USB_CONTAINER_OF(dev, PrinterState, dev);
+		switch (p->pid)
+		{
+			case USB_TOKEN_OUT:
+				// Console.WriteLn("Printer: usb_printer_handle_data_popegg USB_TOKEN_OUT");
+				s->last_command_size = p->buffer_size;
+				usb_packet_copy(p, s->last_command, s->last_command_size);
+				if (s->cmd_state == 0)
+				{
+					std::vector<uint8_t> buffer(s->last_command, s->last_command + s->last_command_size);
+					auto startIt = std::search(buffer.begin(), buffer.end(), START.begin(), START.end());
+
+				    if (startIt != buffer.end()) {
+		    			Console.WriteLn("Printer: usb_printer_handle_data_popegg starting file capture");
+				        s->cmd_state = 1;
+						//start file to dump data
+						char cur_time_str[32];
+						const time_t cur_time = time(nullptr);
+						strftime(cur_time_str, sizeof(cur_time_str), "%Y_%m_%d_%H_%M_%S", localtime(&cur_time));
+						s->print_filename = Path::Combine(EmuFolders::Snapshots, fmt::format("popegg_print_{}.bin", cur_time_str));
+						s->print_file = FileSystem::OpenCFile(s->print_filename.c_str(), "wb");
+				    }
+				}
+				else if (s->cmd_state == 1)
+				{
+					//continue dumping data to file
+					//s, s->last_command_size, s->last_command
+					if (std::fwrite(s->last_command, s->last_command_size, 1, s->print_file) != 1)
+					{
+						Console.Error("Error writing data to print file");
+					}
+
+					//if we get to "end", close file and set state to 0
+					// s->data_size -= s->last_command_size;
+					// if (s->data_size <= 0)
+					// {
+					// 	s->cmd_state = 0;
+					// }
+					std::vector<uint8_t> buffer(s->last_command, s->last_command + s->last_command_size);
+				    auto endIt   = std::search(buffer.begin(), buffer.end(), END.begin(), END.end());
+
+				    if (endIt != buffer.end()) {
+		    			Console.WriteLn("Printer: usb_printer_handle_data_popegg ending file capture");
+				        s->cmd_state = 0;
+				        sony_close_file(s);
+				    }
+				}
+				break;
+			case USB_TOKEN_IN:
+				break;
+			default:
+				break;
+		}
+	}
+
 	static void usb_printer_handle_destroy(USBDevice* dev)
 	{
 		PrinterState* s = USB_CONTAINER_OF(dev, PrinterState, dev);
@@ -287,6 +356,7 @@ namespace usb_printer
 
 	USBDevice* PrinterDevice::CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const
 	{
+		Console.WriteLn("Printer: CreateDevice");
 		PrinterState* s = new PrinterState();
 
 		s->selected_printer = std::min<u32>(subtype, std::size(sPrinters));
@@ -306,6 +376,9 @@ namespace usb_printer
 		{
 			case ProtocolSonyUPD:
 				s->dev.klass.handle_data = usb_printer_handle_data_sony;
+				break;
+			case ProtocolPopEgg:
+				s->dev.klass.handle_data = usb_printer_handle_data_popegg;
 				break;
 		}
 		s->dev.klass.unrealize = usb_printer_handle_destroy;
