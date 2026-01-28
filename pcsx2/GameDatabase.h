@@ -51,6 +51,7 @@ namespace GameDatabaseSchema
 		PreloadFrameData,
 		DisablePartialInvalidation,
 		TextureInsideRT,
+		Limit24BitDepth,
 		AlignSprite,
 		MergeSprite,
 		Mipmap,
