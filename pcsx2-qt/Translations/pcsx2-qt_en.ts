@@ -2223,7 +2223,7 @@ Leaderboard Position: {1} of {2}</source>
     </message>
     <message>
         <location filename="../Settings/BIOSSettingsWidget.ui" line="138"/>
-        <source>Options and Patches</source>
+        <source>Fast Boot Options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -6805,11 +6805,6 @@ The URL was: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="9512"/>
-        <source>Options and Patches</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="9513"/>
         <source>Skips the intro screen, and bypasses region checks.</source>
         <translation type="unfinished"></translation>
@@ -9943,6 +9938,11 @@ Do you want to shutdown anyway and IRREVERSIBLY CORRUPT YOUR MEMORY CARD?</sourc
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="9512"/>
+        <source>Fast Boot Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="9604"/>
         <source>Bilinear Dirty Upscale</source>
         <translation type="unfinished"></translation>
@@ -11893,7 +11893,7 @@ This action cannot be undone.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="5055"/>
+        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="5052"/>
         <source>Spin GPU During Readbacks is enabled, but calibrated timestamps are unavailable.  This might be really slow.</source>
         <translation type="unfinished"></translation>
     </message>
