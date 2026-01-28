@@ -44,7 +44,6 @@ namespace usb_printer
 
 	static void usb_printer_handle_reset(USBDevice* dev)
 	{
-		// Console.WriteLn("Printer: usb_printer_handle_reset");
 		PrinterState* s = USB_CONTAINER_OF(dev, PrinterState, dev);
 		s->cmd_state = 0;
 		if (s->print_file)
@@ -57,7 +56,6 @@ namespace usb_printer
 	static void usb_printer_handle_control(USBDevice* dev, USBPacket* p, int request, int value,
 		int index, int length, uint8_t* data)
 	{
-		// Console.WriteLn("Printer: usb_printer_handle_control");
 		PrinterState* s = USB_CONTAINER_OF(dev, PrinterState, dev);
 		int ret = 0;
 
@@ -285,9 +283,9 @@ namespace usb_printer
 
 	static void usb_printer_handle_data_popegg(USBDevice* dev, USBPacket* p)
 	{
-		//START: 	1B 28 62 01 00 01
-		//END: 	 0C 1B 28 62 01 00 00
-		// char start_raster_cmd[] =  { 0x1B, 0x28, 0x62, 0x01, 0x00, 0x00, 0x01 };
+		// START:	1B 28 62 01 00 01
+		// END:  0C 1B 28 62 01 00 00
+		// char start_raster_cmd[] =  { 0x1B, 0x28, 0x62, 0x01, 0x00, 0x01 };
 		// char finish_raster_cmd[] = { 0x0C, 0x1B, 0x28, 0x62, 0x01, 0x00, 0x00 };
 		const std::vector<uint8_t> START = {0x1B, 0x28, 0x62, 0x01, 0x00, 0x01};
 		const std::vector<uint8_t> END   = {0x0C, 0x1B, 0x28, 0x62, 0x01, 0x00, 0x00};
@@ -317,19 +315,13 @@ namespace usb_printer
 				}
 				else if (s->cmd_state == 1)
 				{
-					//continue dumping data to file
-					//s, s->last_command_size, s->last_command
+					// continue dumping data to file
 					if (std::fwrite(s->last_command, s->last_command_size, 1, s->print_file) != 1)
 					{
 						Console.Error("Error writing data to print file");
 					}
 
-					//if we get to "end", close file and set state to 0
-					// s->data_size -= s->last_command_size;
-					// if (s->data_size <= 0)
-					// {
-					// 	s->cmd_state = 0;
-					// }
+					// if we get to "end", close file and set state to 0
 					std::vector<uint8_t> buffer(s->last_command, s->last_command + s->last_command_size);
 				    auto endIt   = std::search(buffer.begin(), buffer.end(), END.begin(), END.end());
 
@@ -356,7 +348,6 @@ namespace usb_printer
 
 	USBDevice* PrinterDevice::CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const
 	{
-		Console.WriteLn("Printer: CreateDevice");
 		PrinterState* s = new PrinterState();
 
 		s->selected_printer = std::min<u32>(subtype, std::size(sPrinters));

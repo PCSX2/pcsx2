@@ -136,7 +136,7 @@ namespace usb_printer
 	enum PrinterProtocol
 	{
 		ProtocolSonyUPD,
-		ProtocolPopEgg,
+		ProtocolPopEgg,		// Canon BJL (Bubble Jet Language) and ESC/P2-style raster data
 	};
 
 	struct PrinterData
