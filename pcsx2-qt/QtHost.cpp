@@ -1212,6 +1212,11 @@ void Host::RunOnCPUThread(std::function<void()> function, bool block /* = false 
 		Q_ARG(const std::function<void()>&, std::move(function)));
 }
 
+void Host::RunOnGSThread(std::function<void()> function)
+{
+	RunOnCPUThread([fn = std::move(function)] { MTGS::RunOnGSThread(std::move(fn)); });
+}
+
 void Host::RefreshGameListAsync(bool invalidate_cache)
 {
 	QMetaObject::invokeMethod(g_main_window, "refreshGameList", Qt::QueuedConnection, Q_ARG(bool, invalidate_cache));
@@ -2383,6 +2388,8 @@ int main(int argc, char* argv[])
 	std::shared_ptr<VMBootParameters> autoboot;
 	if (!QtHost::ParseCommandLineOptions(app.arguments(), autoboot))
 		return EXIT_FAILURE;
+
+	SysMemory::ReserveMemory();
 
 	// Bail out if we can't find any config.
 	if (!QtHost::InitializeConfig())

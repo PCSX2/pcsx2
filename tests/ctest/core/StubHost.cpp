@@ -152,6 +152,10 @@ void Host::RunOnCPUThread(std::function<void()> function, bool block /* = false 
 {
 }
 
+void Host::RunOnGSThread(std::function<void()> function)
+{
+}
+
 void Host::RefreshGameListAsync(bool invalidate_cache)
 {
 }
@@ -260,6 +264,14 @@ void Host::OpenHostFileSelectorAsync(std::string_view title, bool select_directo
 	FileSelectorFilters filters, std::string_view initial_directory)
 {
 	callback(std::string());
+}
+
+int Host::LocaleSensitiveCompare(std::string_view lhs, std::string_view rhs)
+{
+	int res = std::strncmp(lhs.data(), rhs.data(), std::min(lhs.size(), rhs.size()));
+	if (res != 0)
+		return res;
+	return lhs.size() > rhs.size() ? 1 : lhs.size() < rhs.size() ? -1 : 0;
 }
 
 std::optional<u32> InputManager::ConvertHostKeyboardStringToCode(const std::string_view str)

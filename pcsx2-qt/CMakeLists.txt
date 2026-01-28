@@ -297,6 +297,10 @@ if(NOT WIN32 AND NOT APPLE)
 	target_link_libraries(pcsx2-qt PRIVATE Qt6::GuiPrivate)
 endif()
 
+if(UNIX AND NOT APPLE)
+	target_link_libraries(pcsx2-qt PRIVATE Fontconfig::Fontconfig)
+endif()
+
 # Our Qt builds may have exceptions on, so force them off.
 target_compile_definitions(pcsx2-qt PRIVATE QT_NO_EXCEPTIONS)
 
