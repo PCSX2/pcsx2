@@ -328,6 +328,16 @@ struct alignas(16) GSHWDrawConfig
 	};
 	static_assert(sizeof(VSSelector) == 1, "VSSelector is a single byte");
 #pragma pack(pop)
+
+	enum PSAlphaTest
+	{
+		PS_ATST_NONE = 0,
+		PS_ATST_LEQUAL = 1,
+		PS_ATST_GEQUAL = 2,
+		PS_ATST_EQUAL = 3,
+		PS_ATST_NOTEQUAL = 4
+	};
+
 #pragma pack(push, 4)
 	struct PSSelector
 	{
@@ -780,6 +790,37 @@ struct alignas(16) GSHWDrawConfig
 	ColClipMode colclip_mode;
 	GIFRegFRAME colclip_frame;
 	GSVector4i colclip_update_area; ///< Area in the framebuffer which colclip will modify;
+
+	// Dumping
+	static std::string GetTopologyName(u32 topology);
+	static std::string GetVSExpandName(u32 vsexpand);
+	static std::string GetPSAlphaTestName(u32 dstfmt);
+	static std::string GetPSDstFmtName(u32 dstfmt);
+	static std::string GetPSDepthFmtName(u32 depthfmt);
+	static std::string GetPSBlendABDName(u32 abd);
+	static std::string GetPSBlendCName(u32 c);
+	static std::string GetPSBlendHWName(u32 blendhw);
+	static std::string GetPSBlendMixName(u32 blendmix);
+	static std::string GetPSDitherName(u32 dither);
+	static std::string GetPSChannelName(u32 channel);
+	static std::string GetSSTrilnName(u32 triln);
+	static std::string GetBlendOpName(u32 blendop);
+	static std::string GetBlendFactorName(u32 blendfactor);
+	static std::string GetDestinationAlphaModeName(u32 datm);
+	static std::string GetPSDateName(u32 date);
+	static std::string GetColClipModeName(u32 ccmode);
+	static std::string GetSetDATMName(u32 setdatm);
+	static void DumpPSSelector(std::ostream& out, const PSSelector& ps, const std::string& indent = "");
+	static void DumpVSSelector(std::ostream& out, const VSSelector& vs, const std::string& indent = "");
+	static void DumpBlendState(std::ostream& out, const BlendState& bs, const std::string& indent = "");
+	static void DumpDepthStencilSelctor(std::ostream& out, const DepthStencilSelector& ds, const std::string& indent = "");
+	static void DumpSamplerSelector(std::ostream& out, const SamplerSelector& ss, const std::string& indent = "");
+	static void DumpAlphaPass(std::ostream& out, const AlphaPass& ap, const std::string& indent = "");
+	static void DumpBlendMultipass(std::ostream& out, const BlendMultiPass& bmp, const std::string& indent = "");
+	static void DumpConfig(std::ostream& out, const GSHWDrawConfig& conf,
+		bool ps = true, bool vs = true, bool bs = true, bool dss = true, bool ss = true, bool asp = true, bool bmp = true);
+	static void DumpConfig(const std::string& fn, const GSHWDrawConfig& conf,
+		bool ps = true, bool vs = true, bool bs = true, bool dss = true, bool ss = true, bool asp = true, bool bmp = true);
 };
 
 static inline u32 GetExpansionFactor(GSHWDrawConfig::VSExpand expand)

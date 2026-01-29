@@ -436,8 +436,8 @@ static void PrintCommandLineHelp(const char* progname)
 	std::fprintf(stderr, "  -help: Displays this information and exits.\n");
 	std::fprintf(stderr, "  -version: Displays version information and exits.\n");
 	std::fprintf(stderr, "  -dumpdir <dir>: Frame dump directory (will be dumped as filename_frameN.png).\n");
-	std::fprintf(stderr, "  -dump [rt|tex|z|f|a|i|tr|ds|fs]: Enabling dumping of render target, texture, z buffer, frame, "
-		"alphas, and info (context, vertices, list of transfers), transfers images, draw stats, frame stats, respectively, per draw. Generates lots of data.\n");
+	std::fprintf(stderr, "  -dump [rt|tex|z|f|a|i|tr|ds|fs|hw]: Enabling dumping of render target, texture, z buffer, frame, "
+		"alphas, and info (context, vertices, list of transfers), transfers images, draw stats, frame stats, HW config, respectively, per draw. Generates lots of data.\n");
 	std::fprintf(stderr, "  -dumprange N[,L,B]: Start dumping from draw N (base 0), stops after L draws, and only "
 		"those draws that are multiples of B (intersection of -dumprange and -dumprangef used)."
 		"Defaults to 0,-1,1 (all draws). Only used if -dump used.\n");
@@ -527,6 +527,8 @@ bool GSRunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& pa
 					s_settings_interface.SetBoolValue("EmuCore/GS", "SaveDrawStats", true);
 				if (str.find("fs") != std::string::npos)
 					s_settings_interface.SetBoolValue("EmuCore/GS", "SaveFrameStats", true);
+				if (str.find("hw") != std::string::npos)
+					s_settings_interface.SetBoolValue("EmuCore/GS", "SaveHWConfig", true);
 				continue;
 			}
 			else if (CHECK_ARG_PARAM("-dumprange"))
