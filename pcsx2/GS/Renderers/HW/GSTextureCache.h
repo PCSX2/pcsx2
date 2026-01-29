@@ -256,7 +256,7 @@ public:
 		Target(GIFRegTEX0 TEX0, int type, const GSVector2i& unscaled_size, float scale, GSTexture* texture);
 		~Target();
 
-		static Target* Create(GIFRegTEX0 TEX0, int w, int h, float scale, int type, bool clear);
+		static Target* Create(GIFRegTEX0 TEX0, int w, int h, float scale, int type, bool clear, bool z_integer = false);
 
 		__fi bool HasValidAlpha() const { return (m_valid_alpha_low | m_valid_alpha_high); }
 		bool HasValidBitsForFormat(u32 psm, bool req_color, bool req_alpha, bool width_match);
@@ -518,7 +518,7 @@ public:
 		const GSVector4i draw_rc = GSVector4i::zero(), bool is_shuffle = false, bool possible_clear = false, bool preserve_scale = false, GSTextureCache::Source* src = nullptr, GSTextureCache::Target* ds = nullptr, int offset = -1);
 	Target* CreateTarget(GIFRegTEX0 TEX0, const GSVector2i& size, const GSVector2i& valid_size, float scale, int type, bool used = true, u32 fbmask = 0,
 		bool is_frame = false, bool preload = GSConfig.PreloadFrameWithGSData, bool preserve_target = true,
-		const GSVector4i draw_rc = GSVector4i::zero(), GSTextureCache::Source* src = nullptr);
+		const GSVector4i draw_rc = GSVector4i::zero(), GSTextureCache::Source* src = nullptr, bool z_integer = false);
 	Target* LookupDisplayTarget(GIFRegTEX0 TEX0, const GSVector2i& size, float scale, bool is_feedback);
 
 	/// Looks up a target in the cache, and only returns it if the BP/BW match exactly.
@@ -545,8 +545,14 @@ public:
 	void ReplaceSourceTexture(Source* s, GSTexture* new_texture, float new_scale, const GSVector2i& new_unscaled_size,
 		HashCacheEntry* hc_entry, bool new_texture_is_shared);
 
+	/// Converts single color value to integer depth using the specified shader expression.
+	static u32 ConvertColorToDepthInteger(u32 c, ShaderConvert convert);
+
 	/// Converts single color value to depth using the specified shader expression.
 	static float ConvertColorToDepth(u32 c, ShaderConvert convert);
+
+	/// Converts single integer depth value to colour using the specified shader expression.
+	static u32 ConvertDepthIntegerToColor(u32 d, ShaderConvert convert);
 
 	/// Converts single depth value to colour using the specified shader expression.
 	static u32 ConvertDepthToColor(float d, ShaderConvert convert);
