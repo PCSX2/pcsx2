@@ -157,11 +157,8 @@ void GSDeviceOGL::SetVSyncMode(GSVSyncMode mode, bool allow_present_throttle)
 	SetSwapInterval();
 }
 
-bool GSDeviceOGL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
+bool GSDeviceOGL::CheckDevice()
 {
-	if (!GSDevice::Create(vsync_mode, allow_present_throttle))
-		return false;
-
 	// GL is a pain and needs the window super early to create the context.
 	if (!AcquireWindow(true))
 		return false;
@@ -181,6 +178,17 @@ bool GSDeviceOGL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	}
 
 	if (!CheckFeatures())
+		return false;
+
+	return true;
+}
+
+bool GSDeviceOGL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
+{
+	if (!GSDevice::Create(vsync_mode, allow_present_throttle))
+		return false;
+
+	if (!CheckDevice())
 		return false;
 
 	// Store adapter name currently in use

@@ -429,6 +429,7 @@ public:
 	bool HasSurface() const override;
 
 	bool Create(GSVSyncMode vsync_mode, bool allow_present_throttle) override;
+	bool CheckDevice();
 	void Destroy() override;
 
 	bool UpdateWindow() override;
