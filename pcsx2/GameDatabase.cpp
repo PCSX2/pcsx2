@@ -380,7 +380,6 @@ static const char* s_gs_hw_fix_names[] = {
 	"trilinearFiltering",
 	"skipDrawStart",
 	"skipDrawEnd",
-	"halfBottomOverride",
 	"halfPixelOffset",
 	"roundSprite",
 	"nativeScaling",

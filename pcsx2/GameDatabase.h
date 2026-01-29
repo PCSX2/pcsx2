@@ -65,7 +65,6 @@ namespace GameDatabaseSchema
 		TrilinearFiltering,
 		SkipDrawStart,
 		SkipDrawEnd,
-		HalfBottomOverride,
 		HalfPixelOffset,
 		RoundSprite,
 		NativeScaling,
