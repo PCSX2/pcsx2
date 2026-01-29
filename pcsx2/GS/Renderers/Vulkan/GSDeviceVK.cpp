@@ -2929,6 +2929,8 @@ void GSDeviceVK::DrawMultiStretchRects(
 void GSDeviceVK::DoMultiStretchRects(
 	const MultiStretchRect* rects, u32 num_rects, GSTextureVK* dTex, ShaderConvert shader)
 {
+	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+
 	// Set up vertices first.
 	const u32 vertex_reserve_size = num_rects * 4 * sizeof(GSVertexPT1);
 	const u32 index_reserve_size = num_rects * 6 * sizeof(u16);
@@ -3082,6 +3084,8 @@ void GSDeviceVK::DoStretchRect(GSTextureVK* sTex, const GSVector4& sRect, GSText
 
 void GSDeviceVK::DrawStretchRect(const GSVector4& sRect, const GSVector4& dRect, const GSVector2i& ds)
 {
+	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+
 	// ia
 	const float left = dRect.x * 2 / ds.x - 1.0f;
 	const float top = 1.0f - dRect.y * 2 / ds.y;
@@ -5468,6 +5472,8 @@ void GSDeviceVK::SetPSConstantBuffer(const GSHWDrawConfig::PSConstantBuffer& cb)
 
 void GSDeviceVK::SetupDATE(GSTexture* rt, GSTexture* ds, SetDATM datm, const GSVector4i& bbox)
 {
+	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+
 	GL_PUSH("SetupDATE {%d,%d} %dx%d", bbox.left, bbox.top, bbox.width(), bbox.height());
 
 	const GSVector2i size(ds->GetSize());
@@ -5495,6 +5501,8 @@ void GSDeviceVK::SetupDATE(GSTexture* rt, GSTexture* ds, SetDATM datm, const GSV
 
 GSTextureVK* GSDeviceVK::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config)
 {
+	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+
 	// How this is done:
 	// - can't put a barrier for the image in the middle of the normal render pass, so that's out
 	// - so, instead of just filling the int texture with INT_MAX, we sample the RT and use -1 for failing values
@@ -5676,7 +5684,6 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 			SetPipeline(m_colclip_finish_pipelines[pipe.ds][pipe.IsRTFeedbackLoop()]);
 			SetUtilityTexture(colclip_rt, m_point_sampler);
 			DrawStretchRect(sRect, drawareaf, rtsize);
-			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
 			Recycle(colclip_rt);
 			g_gs_device->SetColorClipTexture(nullptr);
@@ -5893,7 +5900,6 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		const GSVector4 drawareaf = GSVector4((config.colclip_mode == GSHWDrawConfig::ColClipMode::ConvertOnly) ? GSVector4i::loadh(rtsize) : config.drawarea);
 		const GSVector4 sRect(drawareaf / GSVector4(rtsize).xyxy());
 		DrawStretchRect(sRect, drawareaf, rtsize);
-		g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
 		GL_POP();
 		OMSetRenderTargets(draw_rt, draw_ds, config.scissor, static_cast<FeedbackLoopFlag>(pipe.feedback_loop_flags));
@@ -5995,7 +6001,6 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 			SetPipeline(m_colclip_finish_pipelines[pipe.ds][pipe.IsRTFeedbackLoop()]);
 			SetUtilityTexture(colclip_rt, m_point_sampler);
 			DrawStretchRect(sRect, drawareaf, rtsize);
-			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
 			Recycle(colclip_rt);
 			g_gs_device->SetColorClipTexture(nullptr);
