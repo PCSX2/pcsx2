@@ -2339,18 +2339,18 @@ Leaderboard Position: {1} of {2}</source>
     </message>
     <message>
         <location filename="../Debugger/Breakpoints/BreakpointDialog.cpp" line="103"/>
-        <location filename="../Debugger/Breakpoints/BreakpointDialog.cpp" line="132"/>
+        <location filename="../Debugger/Breakpoints/BreakpointDialog.cpp" line="137"/>
         <source>Invalid Address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Debugger/Breakpoints/BreakpointDialog.cpp" line="119"/>
-        <location filename="../Debugger/Breakpoints/BreakpointDialog.cpp" line="155"/>
+        <location filename="../Debugger/Breakpoints/BreakpointDialog.cpp" line="160"/>
         <source>Invalid Condition</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Breakpoints/BreakpointDialog.cpp" line="139"/>
+        <location filename="../Debugger/Breakpoints/BreakpointDialog.cpp" line="144"/>
         <source>Invalid Size</source>
         <translation type="unfinished"></translation>
     </message>
