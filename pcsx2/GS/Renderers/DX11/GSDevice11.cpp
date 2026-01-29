@@ -2847,6 +2847,7 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config, GSTexture* draw_rt_clo
 		{
 			const u32 draw_list_size = static_cast<u32>(config.drawlist->size());
 			const u32 indices_per_prim = config.indices_per_prim;
+			const GSVector4i rtsize(0, 0, draw_rt->GetWidth(), draw_rt->GetHeight());
 
 			pxAssert(config.drawlist && !config.drawlist->empty());
 			pxAssert(config.drawlist_bbox && static_cast<u32>(config.drawlist_bbox->size()) == draw_list_size);
@@ -2855,10 +2856,28 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config, GSTexture* draw_rt_clo
 			{
 				const u32 count = (*config.drawlist)[n] * indices_per_prim;
 
-				GSVector4i bbox = (*config.drawlist_bbox)[n].rintersect(config.drawarea);
+				const GSVector4i original_bbox = (*config.drawlist_bbox)[n].rintersect(config.drawarea);
+				GSVector4i snapped_bbox = original_bbox;
 
-				// Copy only the part needed by the draw.
-				CopyAndBind(bbox);
+				// We don't want the snapped box adjustments when the rect is empty as it might make the copy to pass.
+				// The empty rect itself needs to be handled in renderer properly.
+				if (!snapped_bbox.rempty())
+				{
+					// Aligning bbox to 4 pixel boundaries so copies will be faster using Direct Memory Access,
+					// otherwise it may stall as more commands need to be issued.
+					snapped_bbox.left &= ~3;
+					snapped_bbox.top &= ~3;
+					snapped_bbox.right = (snapped_bbox.right + 3) & ~3;
+					snapped_bbox.bottom = (snapped_bbox.bottom + 3) & ~3;
+
+					// Ensure the new sizes are within bounds.
+					snapped_bbox.left = std::max(0, snapped_bbox.left);
+					snapped_bbox.top = std::max(0, snapped_bbox.top);
+					snapped_bbox.right = std::min(snapped_bbox.right, rtsize.right);
+					snapped_bbox.bottom = std::min(snapped_bbox.bottom, rtsize.bottom);
+				}
+
+				CopyAndBind(snapped_bbox);
 
 				DrawIndexedPrimitive(p, count);
 				p += count;
