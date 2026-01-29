@@ -83,7 +83,7 @@ public:
 private:
 	enum : u32
 	{
-		MAX_TEXTURES = 4,
+		MAX_TEXTURES = 5,
 		MAX_SAMPLERS = 1,
 		VERTEX_BUFFER_SIZE = 32 * 1024 * 1024,
 		INDEX_BUFFER_SIZE = 16 * 1024 * 1024,
@@ -345,7 +345,9 @@ public:
 	void SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, u8 afix);
 
 	void RenderHW(GSHWDrawConfig& config) override;
-	void SendHWDraw(const GSHWDrawConfig& config, GSTexture* draw_rt_clone, GSTexture* draw_rt, const bool one_barrier, const bool full_barrier, const bool skip_first_barrier);
+	void SendHWDraw(const GSHWDrawConfig& config,
+		GSTexture* draw_rt_clone, GSTexture* draw_rt, GSTexture* draw_ds_clone, GSTexture* draw_ds,
+		const bool one_barrier, const bool full_barrier, const bool skip_first_barrier);
 
 	void ClearSamplerCache() override;
 
