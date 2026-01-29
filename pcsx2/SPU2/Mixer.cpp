@@ -9,6 +9,28 @@
 
 #include "common/Assertions.h"
 
+// LOOP/END sets the ENDX bit and sets NAX to LSA, and the voice is muted if LOOP is not set
+// LOOP seems to only have any effect on the block with LOOP/END set, where it prevents muting the voice
+// (the documented requirement that every block in a loop has the LOOP bit set is nonsense according to tests)
+// LOOP/START sets LSA to NAX unless LSA was written manually since sound generation started
+// (see LoopMode, the method by which this is achieved on the real SPU2 is unknown)
+#define XAFLAG_LOOP_END (1ul << 0)
+#define XAFLAG_LOOP (1ul << 1)
+#define XAFLAG_LOOP_START (1ul << 2)
+
+#if MULTI_ISA_COMPILE_ONCE
+// decoded pcm data, used to cache the decoded data so that it needn't be decoded
+// multiple times.  Cache chunks are decoded when the mixer requests the blocks, and
+// invalided when DMA transfers and memory writes are performed.
+PcmCacheEntry pcm_cache_data[pcm_BlockCount];
+
+int g_counter_cache_hits = 0;
+int g_counter_cache_misses = 0;
+int g_counter_cache_ignores = 0;
+#endif
+
+MULTI_ISA_UNSHARED_START
+
 static const s32 tbl_XA_Factor[16][2] =
 	{
 		{0, 0},
@@ -70,24 +92,6 @@ static void __forceinline IncrementNextA(V_Core& thiscore, uint voiceidx)
 	vc.NextA++;
 	vc.NextA &= 0xFFFFF;
 }
-
-// decoded pcm data, used to cache the decoded data so that it needn't be decoded
-// multiple times.  Cache chunks are decoded when the mixer requests the blocks, and
-// invalided when DMA transfers and memory writes are performed.
-PcmCacheEntry pcm_cache_data[pcm_BlockCount];
-
-int g_counter_cache_hits = 0;
-int g_counter_cache_misses = 0;
-int g_counter_cache_ignores = 0;
-
-// LOOP/END sets the ENDX bit and sets NAX to LSA, and the voice is muted if LOOP is not set
-// LOOP seems to only have any effect on the block with LOOP/END set, where it prevents muting the voice
-// (the documented requirement that every block in a loop has the LOOP bit set is nonsense according to tests)
-// LOOP/START sets LSA to NAX unless LSA was written manually since sound generation started
-// (see LoopMode, the method by which this is achieved on the real SPU2 is unknown)
-#define XAFLAG_LOOP_END (1ul << 0)
-#define XAFLAG_LOOP (1ul << 1)
-#define XAFLAG_LOOP_START (1ul << 2)
 
 static __forceinline void GetNextDataBuffered(V_Core& thiscore, uint voiceidx)
 {
@@ -416,8 +420,6 @@ static __forceinline StereoOut32 MixVoice(uint coreidx, uint voiceidx)
 	return voiceOut;
 }
 
-const VoiceMixSet VoiceMixSet::Empty((StereoOut32()), (StereoOut32())); // Don't use SteroOut32::Empty because C++ doesn't make any dep/order checks on global initializers.
-
 static __forceinline void MixCoreVoices(VoiceMixSet& dest, const uint coreidx)
 {
 	V_Core& thiscore(Cores[coreidx]);
@@ -435,40 +437,42 @@ static __forceinline void MixCoreVoices(VoiceMixSet& dest, const uint coreidx)
 	}
 }
 
-StereoOut32 V_Core::Mix(const VoiceMixSet& inVoices, const StereoOut32& Input, const StereoOut32& Ext)
+static __forceinline StereoOut32 MixCore(const uint coreidx, const VoiceMixSet& inVoices, const StereoOut32& Input, const StereoOut32& Ext)
 {
-	MasterVol.Update();
-	UpdateNoise(*this);
+	V_Core& thiscore(Cores[coreidx]);
+
+	thiscore.MasterVol.Update();
+	UpdateNoise(thiscore);
 
 	// Saturate final result to standard 16 bit range.
 	const VoiceMixSet Voices(clamp_mix(inVoices.Dry), clamp_mix(inVoices.Wet));
 
 	// Write Mixed results To Output Area
-	spu2M_WriteFast(((0 == Index) ? 0x1000 : 0x1800) + OutPos, Voices.Dry.Left);
-	spu2M_WriteFast(((0 == Index) ? 0x1200 : 0x1A00) + OutPos, Voices.Dry.Right);
-	spu2M_WriteFast(((0 == Index) ? 0x1400 : 0x1C00) + OutPos, Voices.Wet.Left);
-	spu2M_WriteFast(((0 == Index) ? 0x1600 : 0x1E00) + OutPos, Voices.Wet.Right);
+	spu2M_WriteFast(((0 == thiscore.Index) ? 0x1000 : 0x1800) + OutPos, Voices.Dry.Left);
+	spu2M_WriteFast(((0 == thiscore.Index) ? 0x1200 : 0x1A00) + OutPos, Voices.Dry.Right);
+	spu2M_WriteFast(((0 == thiscore.Index) ? 0x1400 : 0x1C00) + OutPos, Voices.Wet.Left);
+	spu2M_WriteFast(((0 == thiscore.Index) ? 0x1600 : 0x1E00) + OutPos, Voices.Wet.Right);
 
 	// Write mixed results to logfile (if enabled)
 
 #ifdef PCSX2_DEVBUILD
-	WaveDump::WriteCore(Index, CoreSrc_DryVoiceMix, Voices.Dry);
-	WaveDump::WriteCore(Index, CoreSrc_WetVoiceMix, Voices.Wet);
+	WaveDump::WriteCore(thiscore.Index, CoreSrc_DryVoiceMix, Voices.Dry);
+	WaveDump::WriteCore(thiscore.Index, CoreSrc_WetVoiceMix, Voices.Wet);
 #endif
 
 	// Mix in the Input data
 
 	StereoOut32 TD(
-		Input.Left & DryGate.InpL,
-		Input.Right & DryGate.InpR);
+		Input.Left & thiscore.DryGate.InpL,
+		Input.Right & thiscore.DryGate.InpR);
 
 	// Mix in the Voice data
-	TD.Left += Voices.Dry.Left & DryGate.SndL;
-	TD.Right += Voices.Dry.Right & DryGate.SndR;
+	TD.Left += Voices.Dry.Left & thiscore.DryGate.SndL;
+	TD.Right += Voices.Dry.Right & thiscore.DryGate.SndR;
 
 	// Mix in the External (nothing/core0) data
-	TD.Left += Ext.Left & DryGate.ExtL;
-	TD.Right += Ext.Right & DryGate.ExtR;
+	TD.Left += Ext.Left & thiscore.DryGate.ExtL;
+	TD.Right += Ext.Right & thiscore.DryGate.ExtR;
 
 	// ----------------------------------------------------------------------------
 	//    Reverberation Effects Processing
@@ -492,27 +496,27 @@ StereoOut32 V_Core::Mix(const VoiceMixSet& inVoices, const StereoOut32& Input, c
 
 	// Mix Input, Voice, and External data:
 
-	TW.Left = Input.Left & WetGate.InpL;
-	TW.Right = Input.Right & WetGate.InpR;
+	TW.Left = Input.Left & thiscore.WetGate.InpL;
+	TW.Right = Input.Right & thiscore.WetGate.InpR;
 
-	TW.Left += Voices.Wet.Left & WetGate.SndL;
-	TW.Right += Voices.Wet.Right & WetGate.SndR;
-	TW.Left += Ext.Left & WetGate.ExtL;
-	TW.Right += Ext.Right & WetGate.ExtR;
+	TW.Left += Voices.Wet.Left & thiscore.WetGate.SndL;
+	TW.Right += Voices.Wet.Right & thiscore.WetGate.SndR;
+	TW.Left += Ext.Left & thiscore.WetGate.ExtL;
+	TW.Right += Ext.Right & thiscore.WetGate.ExtR;
 
 #ifdef PCSX2_DEVBUILD
-	WaveDump::WriteCore(Index, CoreSrc_PreReverb, TW);
+	WaveDump::WriteCore(thiscore.Index, CoreSrc_PreReverb, TW);
 #endif
 
-	StereoOut32 RV = DoReverb(TW);
+	StereoOut32 RV = thiscore.DoReverb(TW);
 
 #ifdef PCSX2_DEVBUILD
-	WaveDump::WriteCore(Index, CoreSrc_PostReverb, RV);
+	WaveDump::WriteCore(thiscore.Index, CoreSrc_PostReverb, RV);
 #endif
 
 	// Mix Dry + Wet
 	// (master volume is applied later to the result of both outputs added together).
-	return TD + ApplyVolume(RV, FxVol);
+	return TD + ApplyVolume(RV, thiscore.FxVol);
 }
 
 static StereoOut32 DCFilter(StereoOut32 input)
@@ -529,7 +533,7 @@ static StereoOut32 DCFilter(StereoOut32 input)
 	return output;
 }
 
-__forceinline void spu2Mix()
+void spu2Mix()
 {
 	// Note: Playmode 4 is SPDIF, which overrides other inputs.
 	StereoOut32 InputData[2] =
@@ -549,11 +553,12 @@ __forceinline void spu2Mix()
 #endif
 
 	// Todo: Replace me with memzero initializer!
-	VoiceMixSet VoiceData[2] = {VoiceMixSet::Empty, VoiceMixSet::Empty}; // mixed voice data for each core.
+	VoiceMixSet VoiceData[2] = {{StereoOut32(), StereoOut32()}, {StereoOut32(), StereoOut32()}}; // mixed voice data for each core.
+
 	MixCoreVoices(VoiceData[0], 0);
 	MixCoreVoices(VoiceData[1], 1);
 
-	StereoOut32 Ext(Cores[0].Mix(VoiceData[0], InputData[0], StereoOut32::Empty));
+	StereoOut32 Ext(MixCore(0, VoiceData[0], InputData[0], StereoOut32::Empty));
 
 	if ((PlayMode & 4) || (Cores[0].Mute != 0))
 		Ext = StereoOut32::Empty;
@@ -571,7 +576,7 @@ __forceinline void spu2Mix()
 #endif
 
 	Ext = ApplyVolume(Ext, Cores[1].ExtVol);
-	StereoOut32 Out(Cores[1].Mix(VoiceData[1], InputData[1], Ext));
+	StereoOut32 Out(MixCore(1, VoiceData[1], InputData[1], Ext));
 
 	if (PlayMode & 8)
 	{
@@ -628,3 +633,5 @@ __forceinline void spu2Mix()
 		}
 	}
 }
+
+MULTI_ISA_UNSHARED_END
