@@ -242,7 +242,7 @@ public:
 		bool m_valid_rgb = false;
 		bool m_rt_alpha_scale = false;
 		bool m_downscaled = false;
-		int m_last_draw = 0;
+		u64 m_last_draw = 0;
 
 		bool m_is_frame = false;
 		bool m_used = false;

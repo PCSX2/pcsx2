@@ -917,7 +917,7 @@ struct Pcsx2Config
 		bool operator!=(const GSOptions& right) const;
 
 		// Should we dump this draw/frame?
-		bool ShouldDump(int draw, int frame) const;
+		bool ShouldDump(u64 draw, int frame) const;
 	};
 
 	struct SPU2Options

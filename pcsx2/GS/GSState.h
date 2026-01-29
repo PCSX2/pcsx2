@@ -222,7 +222,7 @@ public:
 	{
 		GIFRegBITBLTBUF blit;
 		GSVector4i rect;
-		int draw;
+		u64 draw;
 		bool zero_clear;
 		EEGS_TransferType transfer_type;
 	};
@@ -269,9 +269,9 @@ public:
 	GSVector4i m_r = {};
 	GSVector4i m_r_no_scissor = {};
 
-	static int s_n;
-	static int s_last_transfer_draw_n;
-	static int s_transfer_n;
+	static u64 s_n;
+	static u64 s_last_transfer_draw_n;
+	static u64 s_transfer_n;
 
 	GSPerfMon m_perfmon_frame; // Track stat across a frame.
 	GSPerfMon m_perfmon_draw;  // Track stat across a draw.

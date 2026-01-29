@@ -19,9 +19,9 @@
 #include <iomanip>
 #include <bit>
 
-int GSState::s_n = 0;
-int GSState::s_last_transfer_draw_n = 0;
-int GSState::s_transfer_n = 0;
+u64 GSState::s_n = 0;
+u64 GSState::s_last_transfer_draw_n = 0;
+u64 GSState::s_transfer_n = 0;
 
 static __fi bool IsAutoFlushEnabled()
 {
@@ -444,7 +444,7 @@ void GSState::DumpDrawInfo(bool dump_regs, bool dump_verts, bool dump_transfers)
 	// Dump Register state
 	if (dump_regs)
 	{
-		s = GetDrawDumpPath("%05d_context.txt", s_n);
+		s = GetDrawDumpPath("%05lld_context.txt", s_n);
 
 		m_draw_env->Dump(s);
 		m_context->Dump(s);
@@ -453,14 +453,14 @@ void GSState::DumpDrawInfo(bool dump_regs, bool dump_verts, bool dump_transfers)
 	// Dump vertices
 	if (dump_verts)
 	{
-		s = GetDrawDumpPath("%05d_vertex.txt", s_n);
+		s = GetDrawDumpPath("%05lld_vertex.txt", s_n);
 		DumpVertices(s);
 	}
 
 	// Dump transfers
 	if (dump_transfers)
 	{
-		s = GetDrawDumpPath("%05d_transfers.txt", s_n);
+		s = GetDrawDumpPath("%05lld_transfers.txt", s_n);
 		DumpTransferList(s);
 	}
 }
@@ -860,14 +860,14 @@ void GSState::DumpTransferImages()
 		if ((transfer.transfer_type == EEGS_TransferType::EE_to_GS) || transfer.zero_clear)
 		{
 			// clear or EE->GS: only the destination info is relevant.
-			filename = GetDrawDumpPath("%05d_transfer%02d_%s_%04x_%d_%s_%d_%d_%d_%d.png",
+			filename = GetDrawDumpPath("%05lld_transfer%02d_%s_%04x_%d_%s_%d_%d_%d_%d.png",
 				s_n, transfer_n++, (transfer.zero_clear ? "clear" : "EE_to_GS"), transfer.blit.DBP, transfer.blit.DBW,
 				GSUtil::GetPSMName(transfer.blit.DPSM), transfer.rect.x, transfer.rect.y, transfer.rect.z, transfer.rect.w);
 		}
 		else
 		{
 			// GS->GS: the source and destination info are both relevant.
-			filename = GetDrawDumpPath("%05d_transfer%02d_GS_to_GS_%04x_%d_%s_%04x_%d_%s_%d_%d_%d_%d.bmp",
+			filename = GetDrawDumpPath("%05lld_transfer%02d_GS_to_GS_%04x_%d_%s_%04x_%d_%s_%d_%d_%d_%d.bmp",
 				s_n, transfer_n++, transfer.blit.SBP, transfer.blit.SBW, GSUtil::GetPSMName(transfer.blit.SPSM),
 				transfer.blit.DBP, transfer.blit.DBW, GSUtil::GetPSMName(transfer.blit.DPSM),
 				transfer.rect.x, transfer.rect.y, transfer.rect.z, transfer.rect.w);
@@ -2157,7 +2157,7 @@ void GSState::FlushPrim()
 			if (GSConfig.SaveDrawStats)
 			{
 				m_perfmon_draw = g_perfmon - m_perfmon_draw;
-				m_perfmon_draw.Dump(GetDrawDumpPath("%05d_draw_stats.txt", s_n), GSIsHardwareRenderer());
+				m_perfmon_draw.Dump(GetDrawDumpPath("%05lld_draw_stats.txt", s_n), GSIsHardwareRenderer());
 				m_perfmon_draw = g_perfmon;
 			}
 		}
@@ -2405,7 +2405,7 @@ void GSState::Write(const u8* mem, int len)
 			m_draw_transfers.push_back(new_transfer);
 		}
 
-		GL_CACHE("Write! %u ...  => 0x%x W:%d F:%s (DIR %d%d), dPos(%d %d) size(%d %d) draw %d", s_transfer_n,
+		GL_CACHE("Write! %u ...  => 0x%x W:%d F:%s (DIR %d%d), dPos(%d %d) size(%d %d) draw %lld", s_transfer_n,
 				blit.DBP, blit.DBW, GSUtil::GetPSMName(blit.DPSM),
 				m_tr.m_pos.DIRX, m_tr.m_pos.DIRY,
 				m_tr.x, m_tr.y, m_tr.w, m_tr.h, s_n);
@@ -2466,7 +2466,7 @@ void GSState::InitReadFIFO(u8* mem, int len)
 	if (GSConfig.SaveRT && GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
 	{
 		const std::string s(GetDrawDumpPath(
-			"%05d_read_%05x_%d_%s_%d_%d_%d_%d.bmp",
+			"%05lld_read_%05x_%d_%s_%d_%d_%d_%d.bmp",
 			s_n, (int)m_env.BITBLTBUF.SBP, (int)m_env.BITBLTBUF.SBW, GSUtil::GetPSMName(m_env.BITBLTBUF.SPSM),
 			r.left, r.top, r.right, r.bottom));
 
@@ -2492,8 +2492,7 @@ void GSState::Read(u8* mem, int len)
 	if (!m_tr.Update(w, h, bpp, len))
 		return;
 
-	const int draw = s_n;
-
+	const u64 draw = s_n;
 
 	if (draw != s_n)
 		DevCon.Warning("Warning! Possible incorrect data download");
