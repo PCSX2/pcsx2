@@ -1296,6 +1296,8 @@ void GSDevice11::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTextur
 
 void GSDevice11::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ID3D11PixelShader* ps, ID3D11Buffer* ps_cb, ID3D11BlendState* bs, bool linear)
 {
+	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+
 	CommitClear(sTex);
 
 	const bool draw_in_depth = dTex && dTex->IsDepthStencil();
@@ -1363,6 +1365,8 @@ void GSDevice11::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTextur
 
 void GSDevice11::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, float shaderTime, bool linear)
 {
+	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+
 	CommitClear(sTex);
 
 	GSVector2i ds;
@@ -1522,6 +1526,8 @@ void GSDevice11::DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_re
 
 void GSDevice11::DoMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, const GSVector2& ds)
 {
+	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+
 	// Don't use primitive restart here, it ends up slower on some drivers.
 	const u32 vertex_reserve_size = num_rects * 4;
 	const u32 index_reserve_size = num_rects * 6;
@@ -2162,6 +2168,8 @@ void GSDevice11::RenderImGui()
 
 void GSDevice11::SetupDATE(GSTexture* rt, GSTexture* ds, SetDATM datm, const GSVector4i& bbox)
 {
+	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+
 	// sfex3 (after the capcom logo), vf4 (first menu fading in), ffxii shadows, rumble roses shadows, persona4 shadows
 
 	CommitClear(rt);
@@ -2604,7 +2612,6 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 			const GSVector4 dRect(config.colclip_update_area);
 			const GSVector4 sRect = dRect / GSVector4(size.x, size.y).xyxy();
 			StretchRect(colclip_rt, sRect, config.rt, dRect, ShaderConvert::COLCLIP_RESOLVE, false);
-			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 			Recycle(colclip_rt);
 
 			g_gs_device->SetColorClipTexture(nullptr);
@@ -2633,7 +2640,6 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 			const GSVector4 dRect = GSVector4((config.colclip_mode == GSHWDrawConfig::ColClipMode::ConvertOnly) ? GSVector4i::loadh(rtsize) : config.drawarea);
 			const GSVector4 sRect = dRect / GSVector4(rtsize.x, rtsize.y).xyxy();
 			StretchRect(config.rt, sRect, colclip_rt, dRect, ShaderConvert::COLCLIP_INIT, false);
-			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 		}
 	}
 
@@ -2818,7 +2824,6 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 			const GSVector4 dRect(config.colclip_update_area);
 			const GSVector4 sRect = dRect / GSVector4(size.x, size.y).xyxy();
 			StretchRect(colclip_rt, sRect, config.rt, dRect, ShaderConvert::COLCLIP_RESOLVE, false);
-			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 			Recycle(colclip_rt);
 
 			g_gs_device->SetColorClipTexture(nullptr);
