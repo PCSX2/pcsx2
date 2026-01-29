@@ -184,7 +184,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     MAX_DIFF_FRAMES = args.maxframes
 
-    outfile = open(args.outfile, "w")
+    outfile = open(args.outfile, "w", encoding="utf-8")
     write(FILE_HEADER)
 
     if not check_regression_tests(os.path.realpath(args.baselinedir), os.path.realpath(args.testdir)):

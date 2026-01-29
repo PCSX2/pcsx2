@@ -756,7 +756,7 @@ bool GSHwHack::GSC_PolyphonyDigitalGames(GSRendererHW& r, int& skip)
 		config.ps.channel = ChannelFetch_RGB;
 		config.colormask.wrgba = 1 | 2 | 4;
 		r.EndHLEHardwareDraw(false);
-
+		src->m_last_draw = r.s_n;
 		return true;
 	}
 	else
@@ -814,6 +814,7 @@ bool GSHwHack::GSC_PolyphonyDigitalGames(GSRendererHW& r, int& skip)
 			config.ps.channel = ChannelFetch_RED + channel;
 			config.colormask.wrgba = 8;
 			r.EndHLEHardwareDraw(false);
+			dst->m_last_draw = r.s_n;
 		}
 
 		return true;
