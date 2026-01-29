@@ -1426,6 +1426,8 @@ bool GSDevice12::CheckFeatures(const u32& vendor_id)
 		Console.WriteLnFmt("D3D12: Failed to check for Enhanced Barriers: 0x{:08x}", static_cast<unsigned long>(hr));
 		m_enhanced_barriers = false;
 	}
+	
+	m_features.aa1 = GSConfig.HWAA1 && m_features.vs_expand && (m_features.depth_feedback != GSDevice::DepthFeedbackSupport::None);
 
 	return true;
 }
@@ -1434,6 +1436,20 @@ void GSDevice12::DrawPrimitive()
 {
 	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
 	GetCommandList().list4->DrawInstanced(m_vertex.count, 1, m_vertex.start, 0);
+}
+
+void GSDevice12::DrawVertexShaderIndexedPrimitive(int offset, int count, int expansion_factor)
+{
+	int full_offset = m_index.start + offset;
+	if (m_vs_cb_cache.base_vertex_index.y != full_offset)
+	{
+		m_vs_cb_cache.base_vertex_index.y = full_offset;
+		m_dirty_flags |= DIRTY_FLAG_VS_CONSTANT_BUFFER;
+		ApplyTFXState();
+	}
+
+	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
+	GetCommandList().list4->DrawInstanced(count * expansion_factor, 1, m_index.start, 0);
 }
 
 void GSDevice12::DrawIndexedPrimitive()
@@ -2348,22 +2364,32 @@ void GSDevice12::IASetVertexBuffer(const void* vertex, size_t stride, size_t cou
 	m_vertex_stream_buffer.CommitMemory(size);
 }
 
-void GSDevice12::IASetIndexBuffer(const void* index, size_t count)
+void GSDevice12::UploadIndices(D3D12StreamBuffer& buffer, const void* index, size_t count)
 {
 	const u32 size = sizeof(u16) * static_cast<u32>(count);
-	if (!m_index_stream_buffer.ReserveMemory(size, sizeof(u16)))
+	if (!buffer.ReserveMemory(size, sizeof(u16)))
 	{
 		ExecuteCommandListAndRestartRenderPass(false, "Uploading bytes to index buffer");
-		if (!m_index_stream_buffer.ReserveMemory(size, sizeof(u16)))
-			pxFailRel("Failed to reserve space for vertices");
+		if (!buffer.ReserveMemory(size, sizeof(u16)))
+			pxFailRel("Failed to reserve space for indices");
 	}
 
-	m_index.start = m_index_stream_buffer.GetCurrentOffset() / sizeof(u16);
+	m_index.start = buffer.GetCurrentOffset() / sizeof(u16);
 	m_index.count = count;
-	SetIndexBuffer(m_index_stream_buffer.GetGPUPointer(), m_index_stream_buffer.GetSize(), DXGI_FORMAT_R16_UINT);
 
-	std::memcpy(m_index_stream_buffer.GetCurrentHostPointer(), index, size);
-	m_index_stream_buffer.CommitMemory(size);
+	std::memcpy(buffer.GetCurrentHostPointer(), index, size);
+	buffer.CommitMemory(size);
+}
+
+void GSDevice12::IASetIndexBuffer(const void* index, size_t count)
+{
+	UploadIndices(m_index_stream_buffer, index, count);
+	SetIndexBuffer(m_index_stream_buffer.GetGPUPointer(), m_index_stream_buffer.GetSize(), DXGI_FORMAT_R16_UINT);
+}
+
+void GSDevice12::VSSetIndexBuffer(const void* index, size_t count)
+{
+	UploadIndices(m_expand_index_stream_buffer, index, count);
 }
 
 void GSDevice12::OMSetRenderTargets(GSTexture* rt, GSTexture* ds_as_rt, GSTexture* ds, const GSVector4i& scissor,
@@ -2556,6 +2582,12 @@ bool GSDevice12::CreateBuffers()
 		return false;
 	}
 
+	if (!m_expand_index_stream_buffer.Create(m_features.aa1 ? INDEX_BUFFER_SIZE : 4))
+	{
+		Host::ReportErrorAsync("GS", "Failed to allocate expansion index buffer (VS resource)");
+		return false;
+	}
+
 	if (!m_vertex_constant_buffer.Create(VERTEX_UNIFORM_BUFFER_SIZE))
 	{
 		Host::ReportErrorAsync("GS", "Failed to allocate vertex uniform buffer");
@@ -2606,6 +2638,7 @@ bool GSDevice12::CreateRootSignatures()
 	rsb.AddCBVParameter(0, D3D12_SHADER_VISIBILITY_ALL);
 	rsb.AddCBVParameter(1, D3D12_SHADER_VISIBILITY_PIXEL);
 	rsb.AddSRVParameter(0, D3D12_SHADER_VISIBILITY_VERTEX);
+	rsb.AddSRVParameter(5, D3D12_SHADER_VISIBILITY_VERTEX);
 	rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 2, D3D12_SHADER_VISIBILITY_PIXEL); // Source / Palette 
 	rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, NUM_TFX_SAMPLERS, D3D12_SHADER_VISIBILITY_PIXEL);
 	rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 3, D3D12_SHADER_VISIBILITY_PIXEL); // RT / PrimID / Depth
@@ -3002,6 +3035,7 @@ void GSDevice12::DestroyResources()
 	m_vertex_constant_buffer.Destroy(false);
 	m_index_stream_buffer.Destroy(false);
 	m_vertex_stream_buffer.Destroy(false);
+	m_expand_index_stream_buffer.Destroy(false);
 
 	m_utility_root_signature.reset();
 	m_tfx_root_signature.reset();
@@ -3124,6 +3158,8 @@ const ID3DBlob* GSDevice12::GetTFXPixelShader(const GSHWDrawConfig::PSSelector& 
 	sm.AddMacro("PS_ZTST", sel.ztst);
 	sm.AddMacro("PS_COLOR_FEEDBACK", sel.color_feedback);
 	sm.AddMacro("PS_DEPTH_FEEDBACK", sel.depth_feedback);
+	sm.AddMacro("PS_AA1", sel.aa1);
+	sm.AddMacro("PS_ABE", sel.abe);
 
 	ComPtr<ID3DBlob> ps(m_shader_cache.GetPixelShader(m_tfx_source, sm.GetPtr(), "ps_main"));
 	it = m_tfx_pixel_shaders.emplace(sel, std::move(ps)).first;
@@ -3360,7 +3396,7 @@ void GSDevice12::ExecuteCommandListForReadback()
 
 void GSDevice12::InvalidateCachedState()
 {
-	m_dirty_flags |= DIRTY_BASE_STATE | DIRTY_TFX_STATE | DIRTY_UTILITY_STATE | DIRTY_CONSTANT_BUFFER_STATE;
+	m_dirty_flags |= DIRTY_BASE_STATE | DIRTY_ROOT_PARAMS | DIRTY_TFX_STATE | DIRTY_UTILITY_STATE | DIRTY_CONSTANT_BUFFER_STATE;
 	m_current_root_signature = RootSignature::Undefined;
 	m_utility_texture_cpu.Clear();
 	m_utility_texture_gpu.Clear();
@@ -3753,7 +3789,7 @@ __ri void GSDevice12::ApplyBaseState(u32 flags, ID3D12GraphicsCommandList* cmdli
 	if (flags & DIRTY_FLAG_PRIMITIVE_TOPOLOGY)
 		cmdlist->IASetPrimitiveTopology(m_primitive_topology);
 
-	if (flags & DIRTY_FLAG_PIPELINE)
+	if ((flags & DIRTY_FLAG_PIPELINE) && m_current_pipeline)
 		cmdlist->SetPipelineState(const_cast<ID3D12PipelineState*>(m_current_pipeline));
 
 	if (flags & DIRTY_FLAG_VIEWPORT)
@@ -3897,8 +3933,13 @@ bool GSDevice12::ApplyTFXState(bool already_execed)
 		cmdlist->SetGraphicsRootConstantBufferView(TFX_ROOT_SIGNATURE_PARAM_PS_CBV, m_tfx_constant_buffers[1]);
 	if (flags & DIRTY_FLAG_VS_VERTEX_BUFFER_BINDING)
 	{
-		cmdlist->SetGraphicsRootShaderResourceView(TFX_ROOT_SIGNATURE_PARAM_VS_SRV,
+		cmdlist->SetGraphicsRootShaderResourceView(TFX_ROOT_SIGNATURE_PARAM_VS_VB_SRV,
 			m_vertex_stream_buffer.GetGPUPointer() + m_vertex.start * sizeof(GSVertex));
+	}
+	if (flags & DIRTY_FLAG_VS_INDEX_BUFFER_BINDING)
+	{
+		cmdlist->SetGraphicsRootShaderResourceView(TFX_ROOT_SIGNATURE_PARAM_VS_IB_SRV,
+			m_expand_index_stream_buffer.GetGPUPointer());
 	}
 	if (flags & DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE)
 		cmdlist->SetGraphicsRootDescriptorTable(TFX_ROOT_SIGNATURE_PARAM_PS_TEXTURES, m_tfx_textures_handle_gpu);
@@ -4435,6 +4476,19 @@ void GSDevice12::SendHWDraw(const PipelineSelector& pipe, const GSHWDrawConfig& 
 
 	const int n_barriers = static_cast<bool>(feedback_rt) + static_cast<bool>(feedback_depth);
 
+	const u32 expansion_factor = GetExpansionFactor(config.vs.expand);
+
+	auto Draw = [&](int offset, int count) {
+		if (config.vertex_shader_indexing)
+		{
+			DrawVertexShaderIndexedPrimitive(offset, count, expansion_factor);
+		}
+		else
+		{
+			DrawIndexedPrimitive(offset, count);
+		}
+	};
+	
 	if (feedback_rt || feedback_depth)
 	{
 #ifdef PCSX2_DEVBUILD
@@ -4467,7 +4521,7 @@ void GSDevice12::SendHWDraw(const PipelineSelector& pipe, const GSHWDrawConfig& 
 					FeedbackBarrier(draw_ds);
 
 				if (BindDrawPipeline(pipe))
-					DrawIndexedPrimitive(p, count);
+					Draw(p, count);
 				p += count;
 			}
 
@@ -4486,7 +4540,7 @@ void GSDevice12::SendHWDraw(const PipelineSelector& pipe, const GSHWDrawConfig& 
 	}
 
 	if (BindDrawPipeline(pipe))
-		DrawIndexedPrimitive();
+		Draw(0, m_index.count);
 }
 
 void GSDevice12::UpdateHWPipelineSelector(GSHWDrawConfig& config)
@@ -4512,11 +4566,16 @@ void GSDevice12::UploadHWDrawVerticesAndIndices(GSHWDrawConfig& config)
 	if (config.vs.expand != GSHWDrawConfig::VSExpand::None)
 		m_dirty_flags |= DIRTY_FLAG_VS_VERTEX_BUFFER_BINDING;
 
-	if (config.vs.UseExpandIndexBuffer())
+	if (config.vs.UseFixedExpandIndexBuffer())
 	{
 		m_index.start = 0;
 		m_index.count = config.nindices;
 		SetIndexBuffer(m_expand_index_buffer->GetGPUVirtualAddress(), EXPAND_BUFFER_SIZE, DXGI_FORMAT_R16_UINT);
+	}
+	else if (config.vs.UseVertexShaderExpandIndexBuffer())
+	{
+		m_dirty_flags |= DIRTY_FLAG_VS_INDEX_BUFFER_BINDING;
+		VSSetIndexBuffer(config.indices, config.nindices);
 	}
 	else
 	{

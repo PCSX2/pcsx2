@@ -3731,6 +3731,7 @@ GSState::PRIM_OVERLAP GSState::GetPrimitiveOverlapDrawlistImpl(bool save_drawlis
 	const GSVertex* RESTRICT v = m_vertex.buff;
 	const u16* RESTRICT index = m_index.buff;
 	const u32 count = m_index.tail;
+	const bool using_aa1 = IsCoverageAlphaSupported();
 
 	// Optimize out using indices for sprites and points; probably not much difference.
 	const auto GetIndex = [&](int i) {
@@ -3744,7 +3745,8 @@ GSState::PRIM_OVERLAP GSState::GetPrimitiveOverlapDrawlistImpl(bool save_drawlis
 	// Allows faster comparison than using O(n^2) for full pairwise intersections.
 	// Check Virtua Fighter for example.
 
-	if (primclass == GS_TRIANGLE_CLASS && m_quad_check_valid && m_are_quads)
+	// Do not use allow quads to be batched with AA1, this causes artifacts along the edges that meet.
+	if (primclass == GS_TRIANGLE_CLASS && m_quad_check_valid && m_are_quads && !using_aa1)
 	{
 		// The triangles-are-quads check already ensures that there is no overlap.
 		m_drawlist.push_back(m_index.tail / n);
@@ -3757,7 +3759,7 @@ GSState::PRIM_OVERLAP GSState::GetPrimitiveOverlapDrawlistImpl(bool save_drawlis
 	}
 
 	PRIM_OVERLAP overlap = PRIM_OVERLAP_NO;
-	bool check_quads = (primclass == GS_TRIANGLE_CLASS);
+	bool check_quads = (primclass == GS_TRIANGLE_CLASS) && !using_aa1;
 
 	u32 i = 0;
 	u32 skip = 0; // Number of indices to skip if we have the bbox from the previous iteration.
@@ -3839,7 +3841,8 @@ GSState::PRIM_OVERLAP GSState::GetPrimitiveOverlapDrawlistImpl(bool save_drawlis
 			};
 
 			// First check: see if the triangles are part of triangle strip/fan.
-			if (primclass == GS_TRIANGLE_CLASS)
+			// Do not allow tristips/fans to be batched with AA1, since this causes artifacts along the edges that meet.
+			if (primclass == GS_TRIANGLE_CLASS && !using_aa1)
 			{
 				CheckTriangleQuads.template operator()<0>(); // Check triangle strips.
 				CheckTriangleQuads.template operator()<1>(); // Check triangle fans.
@@ -3881,6 +3884,10 @@ GSState::PRIM_OVERLAP GSState::GetPrimitiveOverlapDrawlistImpl(bool save_drawlis
 
 				got_bbox = true;
 			}
+
+			// Expand by 1 pixels for AA1 edges.
+			if (using_aa1)
+				bbox += GSVector4i(-1, -1, 1, 1);
 
 			// Avoid degenerate bbox.
 			bbox = bbox.blend(bbox + GSVector4i(0, 0, 1, 1), bbox.xyxy() == bbox.zwzw());
@@ -3941,7 +3948,7 @@ GSState::PRIM_OVERLAP GSState::PrimitiveOverlap(bool save_drawlist)
 	if (m_vertex.next < 4)
 		return PRIM_OVERLAP_NO;
 
-	if (m_vt.m_primclass == GS_TRIANGLE_CLASS)
+	if (m_vt.m_primclass == GS_TRIANGLE_CLASS && !IsCoverageAlphaSupported())
 		return (m_index.tail == 6 && TrianglesAreQuads()) ? PRIM_OVERLAP_NO : PRIM_OVERLAP_UNKNOW;
 	else if (m_vt.m_primclass != GS_SPRITE_CLASS)
 		return PRIM_OVERLAP_UNKNOW; // maybe, maybe not
@@ -5308,12 +5315,15 @@ void GSState::CalcAlphaMinMax(const int tex_alpha_min, const int tex_alpha_max)
 	// Limit max to 255 as we send 500 when we don't know, makes calculating 24/16bit easier.
 	int min = tex_alpha_min, max = std::min(tex_alpha_max, 255);
 
-	if (IsCoverageAlpha())
+	if (IsCoverageAlphaFixedOne())
 	{
-		// HW renderer doesn't currently support AA, so its min is 128.
-		// If we add AA support to the HW renderer, this will need to be changed.
-		// (Will probably only be supported with ROV/FBFetch so we would want to check for that.)
-		min = GSIsHardwareRenderer() ? 128 : 0;
+		// HW renderer doesn't support AA1, assume alpha is constant 128.
+		min = 128;
+		max = 128;
+	}
+	else if (IsCoverageAlphaSupported())
+	{
+		min = 0;
 		max = 128;
 	}
 	else
@@ -5613,7 +5623,17 @@ bool GSState::IsMipMapActive()
 
 bool GSState::IsCoverageAlpha()
 {
-	return !PRIM->ABE && PRIM->AA1 && (m_vt.m_primclass == GS_LINE_CLASS || m_vt.m_primclass == GS_TRIANGLE_CLASS);
+	return PRIM->AA1 && (m_vt.m_primclass == GS_LINE_CLASS || m_vt.m_primclass == GS_TRIANGLE_CLASS);
+}
+
+bool GSState::IsCoverageAlphaFixedOne()
+{
+	return IsCoverageAlpha() && !PRIM->ABE && !IsCoverageAlphaSupported();
+}
+
+bool GSState::IsCoverageAlphaSupported()
+{
+	return false;
 }
 
 GIFRegTEX0 GSState::GetTex0Layer(u32 lod)
