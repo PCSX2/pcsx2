@@ -24781,6 +24781,11 @@ SLES-53820:
 SLES-53821:
   name: "Radio Helicopter II"
   region: "PAL-E"
+  patches:
+    9A695202:
+      content: |-
+        comment=Patch that nops a branch instruction causing a freeze.
+        patch=1,EE,001799AC,word,00000000
 SLES-53824:
   name: "Trapt"
   region: "PAL-E"
@@ -40089,6 +40094,11 @@ SLPM-62624:
   name-sort: "ぷちこぷたー2"
   name-en: "Petit Copter 2"
   region: "NTSC-J"
+  patches:
+    9A695202:
+      content: |-
+        comment=Patch that nops a branch instruction causing a freeze.
+        patch=1,EE,001799B8,word,00000000
 SLPM-62625:
   name: "鬼浜爆走愚連隊 激闘編"
   name-sort: "おにはまばくそうぐれんたい げきとうへん"
