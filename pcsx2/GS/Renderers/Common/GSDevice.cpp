@@ -244,7 +244,7 @@ const char* GSDevice::RenderAPIToString(RenderAPI api)
 
 bool GSDevice::GetRequestedExclusiveFullscreenMode(u32* width, u32* height, float* refresh_rate)
 {
-	const std::string mode = Host::GetBaseStringSettingValue("EmuCore/GS", "FullscreenMode", "");
+	const std::string mode = Host::GetStringSettingValue("EmuCore/GS", "FullscreenMode", "");
 	if (!mode.empty())
 	{
 		const std::string_view mode_view = mode;
