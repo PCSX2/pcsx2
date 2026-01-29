@@ -16,6 +16,7 @@
 enum class ShaderConvert
 {
 	COPY = 0,
+	BLIT_1TO1,
 	RGBA8_TO_16_BITS,
 	DATM_1,
 	DATM_0,

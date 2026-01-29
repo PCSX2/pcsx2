@@ -44,6 +44,7 @@ const char* shaderName(ShaderConvert value)
 	{
 			// clang-format off
 		case ShaderConvert::COPY:                   return "ps_copy";
+		case ShaderConvert::BLIT_1TO1:              return "ps_blit_1to1";
 		case ShaderConvert::RGBA8_TO_16_BITS:       return "ps_convert_rgba8_16bits";
 		case ShaderConvert::DATM_1:                 return "ps_datm1";
 		case ShaderConvert::DATM_0:                 return "ps_datm0";

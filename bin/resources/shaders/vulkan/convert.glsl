@@ -52,6 +52,13 @@ void ps_copy()
 }
 #endif
 
+#ifdef ps_blit_1to1
+void ps_blit_1to1()
+{
+
+}
+#endif
+
 #ifdef ps_depth_copy
 void ps_depth_copy()
 {
