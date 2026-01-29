@@ -354,6 +354,30 @@ u32 D3D12::RootSignatureBuilder::AddDescriptorTable(
 	return index;
 }
 
+u32 D3D12::RootSignatureBuilder::AddDescriptorTableMultiRange(u32 num_ranges,
+	D3D12_DESCRIPTOR_RANGE_TYPE* rt, u32* start_shader_reg, u32* num_shader_regs, D3D12_SHADER_VISIBILITY visibility)
+{
+	const u32 index = m_desc.NumParameters++;
+	const u32 dr_index = m_num_descriptor_ranges;
+	m_num_descriptor_ranges += num_ranges;
+
+	for (u32 i = 0; i < num_ranges; i++)
+	{
+		m_descriptor_ranges[dr_index + i].RangeType = rt[i];
+		m_descriptor_ranges[dr_index + i].NumDescriptors = num_shader_regs[i];
+		m_descriptor_ranges[dr_index + i].BaseShaderRegister = start_shader_reg[i];
+		m_descriptor_ranges[dr_index + i].RegisterSpace = 0;
+		m_descriptor_ranges[dr_index + i].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+	}
+
+	m_params[index].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	m_params[index].DescriptorTable.pDescriptorRanges = &m_descriptor_ranges[dr_index];
+	m_params[index].DescriptorTable.NumDescriptorRanges = num_ranges;
+	m_params[index].ShaderVisibility = visibility;
+
+	return index;
+}
+
 #ifdef PCSX2_DEVBUILD
 #include "common/StringUtil.h"
 

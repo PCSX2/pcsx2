@@ -83,6 +83,11 @@ layout(std140, binding = 0) uniform cb21
 
 	float ScaledScaleFactor;
 	float RcpScaleFactor;
+
+	float pad0;
+	float pad1;
+	
+	uvec4 ColorMask;
 };
 
 in SHADER

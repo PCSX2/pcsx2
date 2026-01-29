@@ -728,7 +728,7 @@ void Vulkan::DescriptorSetUpdateBuilder::PushUpdate(
 }
 
 void Vulkan::DescriptorSetUpdateBuilder::AddImageDescriptorWrite(VkDescriptorSet set, u32 binding, VkImageView view,
-	VkImageLayout layout /*= VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL*/)
+	VkImageLayout layout /*= VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL*/, bool read_only /*= true*/)
 {
 	pxAssert(m_num_writes < MAX_WRITES && m_num_image_infos < MAX_IMAGE_INFOS);
 
@@ -742,7 +742,7 @@ void Vulkan::DescriptorSetUpdateBuilder::AddImageDescriptorWrite(VkDescriptorSet
 	dw.dstSet = set;
 	dw.dstBinding = binding;
 	dw.descriptorCount = 1;
-	dw.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+	dw.descriptorType = read_only ? VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE : VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 	dw.pImageInfo = &ii;
 }
 

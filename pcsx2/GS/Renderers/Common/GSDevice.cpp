@@ -4,6 +4,7 @@
 #include "GS/Renderers/Common/GSDevice.h"
 #include "GS/GSGL.h"
 #include "GS/GS.h"
+#include "GS/GSUtil.h"
 #include "Host.h"
 
 #include "common/Console.h"
@@ -18,6 +19,8 @@
 #include "imgui.h"
 
 #include <algorithm>
+#include <ostream>
+#include <fstream>
 
 int SetDATMShader(SetDATM datm)
 {
@@ -645,6 +648,11 @@ void GSDevice::Recycle(GSTexture* t)
 	if (!t)
 		return;
 
+	if (t->IsDepthColor())
+	{
+		t->ForgetDepthColor();
+	}
+
 	t->SetLastFrameUsed(m_frame);
 
 	FastList<GSTexture*>& pool = m_pool[!t->IsTexture()];
@@ -1055,6 +1063,450 @@ bool GSHWDrawConfig::BlendState::IsEffective(ColorMaskSelector colormask) const
 {
 	return enable && (((colormask.key & 7u) && (src_factor != GSDevice::CONST_ONE || dst_factor != GSDevice::CONST_ZERO)) ||
 						 ((colormask.key & 8u) && (src_factor_alpha != GSDevice::CONST_ONE || dst_factor_alpha != GSDevice::CONST_ZERO)));
+}
+
+static std::string GetTopologyName(u32 topology)
+{
+	switch (static_cast<GSHWDrawConfig::Topology>(topology))
+	{
+	case GSHWDrawConfig::Topology::Point: return "Point";
+	case GSHWDrawConfig::Topology::Line: return "Line";
+	case GSHWDrawConfig::Topology::Triangle: return "Triangle";
+	default: return std::to_string(topology);
+	}
+}
+
+static std::string GetVSExpandName(u32 vsexpand)
+{
+	switch (static_cast<GSHWDrawConfig::VSExpand>(vsexpand))
+	{
+	case GSHWDrawConfig::VSExpand::None: return "None";
+	case GSHWDrawConfig::VSExpand::Point: return "Point";
+	case GSHWDrawConfig::VSExpand::Line: return "Line";
+	case GSHWDrawConfig::VSExpand::Sprite: return "Sprite";
+	default: return std::to_string(vsexpand);
+	}
+}
+
+static std::string GetPSAlphaTestName(u32 atst)
+{
+	switch (static_cast<GSHWDrawConfig::PSAlphaTest>(atst))
+	{
+	case GSHWDrawConfig::PSAlphaTest::PS_ATST_NONE: return "PS_ATST_NONE";
+	case GSHWDrawConfig::PSAlphaTest::PS_ATST_LEQUAL : return "PS_ATST_LEQUAL";
+	case GSHWDrawConfig::PSAlphaTest::PS_ATST_GEQUAL : return "PS_ATST_GEQUAL";
+	case GSHWDrawConfig::PSAlphaTest::PS_ATST_EQUAL : return "PS_ATST_EQUAL";
+	case GSHWDrawConfig::PSAlphaTest::PS_ATST_NOTEQUAL : return "PS_ATST_NOTEQUAL";
+	default: return std::to_string(atst);
+	};
+}
+
+static std::string GetPSAFailName(u32 afail)
+{
+	switch (static_cast<GSHWDrawConfig::PSAfail>(afail))
+	{
+	case GSHWDrawConfig::PSAfail::PS_AFAIL_KEEP: return "KEEP";
+	case GSHWDrawConfig::PSAfail::PS_AFAIL_FB_ONLY: return "FB_ONLY";
+	case GSHWDrawConfig::PSAfail::PS_AFAIL_ZB_ONLY: return "ZB_ONLY";
+	case GSHWDrawConfig::PSAfail::PS_AFAIL_RGB_ONLY: return "RGB_ONLY";
+	case GSHWDrawConfig::PSAfail::PS_AFAIL_RGB_ONLY_DSB: return "RGB_ONLY_DSB";
+	default: return std::to_string(afail);
+	}
+}
+
+static std::string GetDstFmtName(u32 dstfmt)
+{
+	switch (dstfmt)
+	{
+	case 0: return "32bit";
+	case 1: return "24bit";
+	case 2: return "16bit";
+	default: return std::to_string(dstfmt);
+	}
+}
+
+static std::string GetDepthFmtName(u32 depthfmt)
+{
+	switch (depthfmt)
+	{
+	case 0: return "None";
+	case 1: return "32bit";
+	case 2: return "16bit";
+	case 3: return "RGBA";
+	default: return std::to_string(depthfmt);
+	}
+}
+
+static std::string GetDateName(u32 date)
+{
+	return std::to_string(date); // TODO
+}
+
+static std::string GetBlendABDName(u32 abd)
+{
+	switch (abd)
+	{
+	case ALPHA_ABC_CS: return "Cs";
+	case ALPHA_ABC_CD: return "Cd";
+	case 2: return "Zero";
+	default: return std::to_string(abd);
+	}
+}
+
+static std::string GetBlendCName(u32 c)
+{
+	switch (c)
+	{
+	case ALPHA_C_AS: return "As";
+	case ALPHA_C_AD: return "Ad";
+	case ALPHA_C_FIX: return "Af";
+	default: return std::to_string(c);
+	}
+}
+
+static std::string GetBlendHWName(u32 blendhw)
+{
+	switch (static_cast<HWBlendType>(blendhw))
+	{
+		case HWBlendType::SRC_ONE_DST_FACTOR: return "SRC_ONE_DST_FACTOR";
+		case HWBlendType::SRC_ALPHA_DST_FACTOR: return "SRC_ALPHA_DST_FACTOR";
+		case HWBlendType::SRC_DOUBLE: return "SRC_DOUBLE";
+		case HWBlendType::SRC_HALF_ONE_DST_FACTOR: return "SRC_HALF_ONE_DST_FACTOR";
+		case HWBlendType::SRC_INV_DST_BLEND_HALF: return "SRC_INV_DST_BLEND_HALF";
+		case HWBlendType::INV_SRC_DST_BLEND_HALF: return "INV_SRC_DST_BLEND_HALF";
+		default: return std::to_string(blendhw);
+	}
+}
+
+static std::string GetBlendMixName(u32 blendmix)
+{
+	switch (static_cast<HWBlendType>(blendmix))
+	{
+	case HWBlendType::BMIX1_ALPHA_HIGH_ONE: return "BMIX1_ALPHA_HIGH_ONE";
+	case HWBlendType::BMIX1_SRC_HALF: return "BMIX1_SRC_HALF";
+	case HWBlendType::BMIX2_OVERFLOW: return "BMIX2_OVERFLOW";
+	default: return std::to_string(blendmix);
+	}
+}
+
+static std::string GetPSChannelName(u32 channel)
+{
+	return std::to_string(channel); // TODO
+}
+
+static std::string GetPSDitherName(u32 dither)
+{
+	return std::to_string(dither); // TODO
+}
+
+static std::string GetSSTrilnName(u32 triln)
+{
+	switch (static_cast<GS_MIN_FILTER>(triln))
+	{
+	case GS_MIN_FILTER::Nearest: return "Nearest";
+	case GS_MIN_FILTER::Linear: return "Linear";
+	case GS_MIN_FILTER::Nearest_Mipmap_Nearest: return "Nearest_Mipmap_Nearest";
+	case GS_MIN_FILTER::Nearest_Mipmap_Linear: return "Nearest_Mipmap_Linear";
+	case GS_MIN_FILTER::Linear_Mipmap_Nearest: return "Linear_Mipmap_Nearest";
+	case GS_MIN_FILTER::Linear_Mipmap_Linear: return "Linear_Mipmap_Linear";
+	default: return std::to_string(triln); // TODO
+	}
+}
+
+static std::string GetBlendOpName(u32 blendop)
+{
+	switch (blendop)
+	{
+	case 0: return "ADD";
+	case 1: return "SUBTRACT";
+	case 2: return "REVERSE_SUBTRACT";
+	default: return std::to_string(blendop);
+	}
+}
+
+static std::string GetBlendFactorName(u32 blendfactor)
+{
+	switch (blendfactor)
+	{
+	case 0: return "SRC_COLOR";
+	case 1: return "ONE_MINUS_SRC_COLOR";
+	case 2: return "DST_COLOR";
+	case 3: return "ONE_MINUS_DST_COLOR";
+	case 4: return "SRC1_COLOR";
+	case 5: return "ONE_MINUS_SRC1_COLOR";
+	case 6: return "SRC_ALPHA";
+	case 7: return "ONE_MINUS_SRC_ALPHA";
+	case 8: return "DST_ALPHA";
+	case 9: return "ONE_MINUS_DST_ALPHA";
+	case 10: return "SRC1_ALPHA";
+	case 11: return "ONE_MINUS_SRC1_ALPHA";
+	case 12: return "CONSTANT_COLOR";
+	case 13: return "ONE_MINUS_CONSTANT_COLOR";
+	case 14: return "ONE";
+	case 15: return "ZERO";
+	default: return std::to_string(blendfactor);
+	}
+}
+
+static std::string GetDestinationAlphaModeName(u32 datm)
+{
+	switch (static_cast<GSHWDrawConfig::DestinationAlphaMode>(datm))
+	{
+	case GSHWDrawConfig::DestinationAlphaMode::Off: return "Off";
+	case GSHWDrawConfig::DestinationAlphaMode::Stencil: return "Stencil";
+	case GSHWDrawConfig::DestinationAlphaMode::StencilOne: return "StencilOne";
+	case GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking: return "PrimIDTracking";
+	case GSHWDrawConfig::DestinationAlphaMode::Full: return "Full";
+	default: return std::to_string(datm);
+	}
+}
+
+static std::string GetColClipModeName(u32 ccmode)
+{
+	switch (static_cast<GSHWDrawConfig::ColClipMode>(ccmode))
+	{
+		case GSHWDrawConfig::ColClipMode::NoModify: return "NoModify";
+		case GSHWDrawConfig::ColClipMode::ConvertOnly: return "ConvertOnly";
+		case GSHWDrawConfig::ColClipMode::ResolveOnly: return "ResolveOnly";
+		case GSHWDrawConfig::ColClipMode::ConvertAndResolve: return "ConvertAndResolve";
+		case GSHWDrawConfig::ColClipMode::EarlyResolve: return "EarlyResolve";
+		default: return std::to_string(ccmode);
+	}
+}
+
+static std::string GetSetDATMName(u32 setdatm)
+{
+	switch (static_cast<SetDATM>(setdatm))
+	{
+		case SetDATM::DATM0: return "DATM0";
+		case SetDATM::DATM1: return "DATM1";
+		case SetDATM::DATM0_RTA_CORRECTION: return "DATM0_RTA_CORRECTION";
+		case SetDATM::DATM1_RTA_CORRECTION: return "DATM1_RTA_CORRECTION";
+		default: return std::to_string(setdatm);
+	};
+}
+
+static constexpr const char* INDENT = "  ";
+
+void GSHWDrawConfig::DumpPSSelector(std::ostream& out, const PSSelector& ps, const std::string& indent)
+{
+	out.imbue(std::locale::classic()); // Disable integer separators
+	out << std::dec;
+
+	out << indent << "aem_fmt: " << static_cast<u32>(ps.aem_fmt) << std::endl;
+	out << indent << "pal_fmt: " << static_cast<u32>(ps.pal_fmt) << std::endl;
+	out << indent << "dst_fmt: " << GetDstFmtName(static_cast<u32>(ps.dst_fmt)) << std::endl;
+	out << indent << "depth_fmt: " << GetDepthFmtName(static_cast<u32>(ps.depth_fmt)) << std::endl;
+	out << indent << "aem: " << static_cast<u32>(ps.aem) << std::endl;
+	out << indent << "fba: " << static_cast<u32>(ps.fba) << std::endl;
+	out << indent << "fog: " << static_cast<u32>(ps.fog) << std::endl;
+	out << indent << "iip: " << static_cast<u32>(ps.iip) << std::endl;
+	out << indent << "date: " << static_cast<u32>(ps.date) << std::endl;
+	out << indent << "atst: " << static_cast<u32>(ps.atst) << std::endl;
+	out << indent << "afail: " << GSUtil::GetAFAILName(static_cast<u32>(ps.afail)) << std::endl;
+	out << indent << "ztst: " << GSUtil::GetZTSTName(static_cast<u32>(ps.ztst)) << std::endl;
+	out << indent << "fst: " << static_cast<u32>(ps.fst) << std::endl;
+	out << indent << "tfx: " << static_cast<u32>(ps.tfx) << std::endl;
+	out << indent << "tcc: " << GSUtil::GetTCCName(static_cast<u32>(ps.tcc)) << std::endl;
+	out << indent << "wms: " << static_cast<u32>(ps.wms) << std::endl;
+	out << indent << "wmt: " << static_cast<u32>(ps.wmt) << std::endl;
+	out << indent << "adjs: " << static_cast<u32>(ps.adjs) << std::endl;
+	out << indent << "adjt: " << static_cast<u32>(ps.adjt) << std::endl;
+	out << indent << "ltf: " << static_cast<u32>(ps.ltf) << std::endl;
+	out << indent << "shuffle: " << static_cast<u32>(ps.shuffle) << std::endl;
+	out << indent << "shuffle_same: " << static_cast<u32>(ps.shuffle_same) << std::endl;
+	out << indent << "real16src: " << static_cast<u32>(ps.real16src) << std::endl;
+	out << indent << "process_ba: " << static_cast<u32>(ps.process_ba) << std::endl;
+	out << indent << "process_rg: " << static_cast<u32>(ps.process_rg) << std::endl;
+	out << indent << "shuffle_across: " << static_cast<u32>(ps.shuffle_across) << std::endl;
+	out << indent << "write_rg: " << static_cast<u32>(ps.write_rg) << std::endl;
+	out << indent << "fbmask: " << static_cast<u32>(ps.fbmask) << std::endl;
+	out << indent << "blend_a: " << GetBlendABDName(static_cast<u32>(ps.blend_a)) << std::endl;
+	out << indent << "blend_b: " << GetBlendABDName(static_cast<u32>(ps.blend_b)) << std::endl;
+	out << indent << "blend_c: " << GetBlendCName(static_cast<u32>(ps.blend_c)) << std::endl;
+	out << indent << "blend_d: " << GetBlendABDName(static_cast<u32>(ps.blend_d)) << std::endl;
+	out << indent << "fixed_one_a: " << static_cast<u32>(ps.fixed_one_a) << std::endl;
+	out << indent << "blend_hw: " << GetBlendHWName(static_cast<u32>(ps.blend_hw)) << std::endl;
+	out << indent << "a_masked: " << static_cast<u32>(ps.a_masked) << std::endl;
+	out << indent << "colclip_hw: " << static_cast<u32>(ps.colclip_hw) << std::endl;
+	out << indent << "rta_correction: " << static_cast<u32>(ps.rta_correction) << std::endl;
+	out << indent << "rta_source_correction: " << static_cast<u32>(ps.rta_source_correction) << std::endl;
+	out << indent << "colclip: " << static_cast<u32>(ps.colclip) << std::endl;
+	out << indent << "blend_mix: " << GetBlendMixName(static_cast<u32>(ps.blend_mix)) << std::endl;
+	out << indent << "round_inv: " << static_cast<u32>(ps.round_inv) << std::endl;
+	out << indent << "pabe: " << static_cast<u32>(ps.pabe) << std::endl;
+	out << indent << "no_color: " << static_cast<u32>(ps.no_color) << std::endl;
+	out << indent << "no_color1: " << static_cast<u32>(ps.no_color1) << std::endl;
+	out << indent << "channel: " << GetPSChannelName(static_cast<u32>(ps.channel)) << std::endl;
+	out << indent << "channel_fb: " << static_cast<u32>(ps.channel_fb) << std::endl;
+	out << indent << "dither: " << GetPSDitherName(static_cast<u32>(ps.dither)) << std::endl;
+	out << indent << "dither_adjust: " << static_cast<u32>(ps.dither_adjust) << std::endl;
+	out << indent << "zclamp: " << static_cast<u32>(ps.zclamp) << std::endl;
+	out << indent << "tcoffsethack: " << static_cast<u32>(ps.tcoffsethack) << std::endl;
+	out << indent << "urban_chaos_hle: " << static_cast<u32>(ps.urban_chaos_hle) << std::endl;
+	out << indent << "tales_of_abyss_hle: " << static_cast<u32>(ps.tales_of_abyss_hle) << std::endl;
+	out << indent << "tex_is_fb: " << static_cast<u32>(ps.tex_is_fb) << std::endl;
+	out << indent << "automatic_lod: " << static_cast<u32>(ps.automatic_lod) << std::endl;
+	out << indent << "manual_lod: " << static_cast<u32>(ps.manual_lod) << std::endl;
+	out << indent << "point_sampler: " << static_cast<u32>(ps.point_sampler) << std::endl;
+	out << indent << "region_rect: " << static_cast<u32>(ps.region_rect) << std::endl;
+	out << indent << "scanmsk: " << GSUtil::GetSCANMSKName(static_cast<u32>(ps.scanmsk)) << std::endl;
+	out << indent << "color_feedback: " << static_cast<u32>(ps.color_feedback) << std::endl;
+	out << indent << "depth_feedback: " << static_cast<u32>(ps.depth_feedback) << std::endl;
+	out << indent << "rov_color: " << static_cast<u32>(ps.rov_color) << std::endl;
+	out << indent << "rov_depth: " << static_cast<u32>(ps.rov_depth) << std::endl;
+}
+
+void GSHWDrawConfig::DumpVSSelector(std::ostream& out, const VSSelector& vs, const std::string& indent)
+{
+	out.imbue(std::locale::classic()); // Disable integer separators
+	out << std::dec;
+
+	out << indent << "fst: " << static_cast<u32>(vs.fst) << std::endl;
+	out << indent << "tme: " << static_cast<u32>(vs.tme) << std::endl;
+	out << indent << "iip: " << static_cast<u32>(vs.iip) << std::endl;
+	out << indent << "point_size: " << static_cast<u32>(vs.point_size) << std::endl;
+	out << indent << "expand: " << GetVSExpandName(static_cast<u32>(vs.expand)) << std::endl;
+}
+
+void GSHWDrawConfig::DumpBlendState(std::ostream& out, const BlendState& bs, const std::string& indent)
+{
+	out.imbue(std::locale::classic());
+	out << std::dec;
+
+	out << indent << "enable: " << static_cast<u32>(bs.enable) << std::endl;
+	out << indent << "constant_enable: " << static_cast<u32>(bs.constant_enable) << std::endl;
+	out << indent << "op: " << GetBlendOpName(static_cast<u32>(bs.op)) << std::endl;
+	out << indent << "src_factor: " << GetBlendFactorName(static_cast<u32>(bs.src_factor)) << std::endl;
+	out << indent << "dst_factor: " << GetBlendFactorName(static_cast<u32>(bs.dst_factor)) << std::endl;
+	out << indent << "src_factor_alpha: " << GetBlendFactorName(static_cast<u32>(bs.src_factor_alpha)) << std::endl;
+	out << indent << "dst_factor_alpha: " << GetBlendFactorName(static_cast<u32>(bs.dst_factor_alpha)) << std::endl;
+	out << indent << "constant: " << static_cast<u32>(bs.constant) << std::endl;
+}
+
+void GSHWDrawConfig::DumpDepthStencilSelctor(std::ostream& out, const DepthStencilSelector& dss, const std::string& indent)
+{
+	out.imbue(std::locale::classic()); // Disable integer separators
+	out << std::dec;
+
+	out << indent << "ztst: " << GSUtil::GetZTSTName(static_cast<u32>(dss.ztst)) << std::endl;
+	out << indent << "zwe: " << static_cast<u32>(dss.zwe) << std::endl;
+	out << indent << "date: " << static_cast<u32>(dss.date) << std::endl;
+	out << indent << "date_one: " << static_cast<u32>(dss.date_one) << std::endl;
+}
+
+void GSHWDrawConfig::DumpSamplerSelector(std::ostream& out, const SamplerSelector& ss, const std::string& indent)
+{
+	out.imbue(std::locale::classic()); // Disable integer separators
+	out << std::dec;
+
+	out << indent << "tau: " << static_cast<u32>(ss.tau) << std::endl;
+	out << indent << "tav: " << static_cast<u32>(ss.tav) << std::endl;
+	out << indent << "biln: " << static_cast<u32>(ss.biln) << std::endl;
+	out << indent << "triln: " << GetSSTrilnName(static_cast<u32>(ss.triln)) << std::endl;
+	out << indent << "aniso: " << static_cast<u32>(ss.aniso) << std::endl;
+	out << indent << "lodclamp: " << static_cast<u32>(ss.lodclamp) << std::endl;
+}
+
+void GSHWDrawConfig::DumpAlphaPass(std::ostream& out, const AlphaPass& ap, const std::string& indent)
+{
+	out.imbue(std::locale::classic()); // Disable integer separators
+	out << std::dec;
+
+	out << indent << "enable: " << static_cast<u32>(ap.enable) << std::endl;
+	out << indent << "require_one_barrier: " << static_cast<u32>(ap.require_one_barrier) << std::endl;
+	out << indent << "require_full_barrier: " << static_cast<u32>(ap.require_full_barrier) << std::endl;
+	out << indent << "colormask: " << std::showbase << std::hex << static_cast<u32>(ap.colormask.wrgba) << std::dec << std::endl;
+	out << indent << "ps_aref: " << static_cast<u32>(ap.ps_aref) << std::endl;
+
+	out << indent << "ps:" << std::endl;
+	DumpPSSelector(out, ap.ps, indent + INDENT);
+
+	out << indent << "dss:" << std::endl;
+	DumpDepthStencilSelctor(out, ap.depth, indent + INDENT);
+}
+
+void GSHWDrawConfig::DumpBlendMultipass(std::ostream& out, const BlendMultiPass& bmp, const std::string& indent)
+{
+	out.imbue(std::locale::classic()); // Disable integer separators
+	out << std::dec;
+
+	out << indent << "enable: " << static_cast<u32>(bmp.enable) << std::endl;
+	out << indent << "no_color1: " << static_cast<u32>(bmp.no_color1) << std::endl;
+	out << indent << "blend_hw: " << GetBlendHWName(static_cast<u32>(bmp.blend_hw)) << std::endl;
+	out << indent << "dither: " << static_cast<u32>(bmp.dither) << std::endl;
+
+	out << indent << "blend:" << std::endl;
+	DumpBlendState(out, bmp.blend, indent + INDENT);
+}
+
+void GSHWDrawConfig::DumpConfig(std::ostream& out, const GSHWDrawConfig& conf,
+	bool ps, bool vs, bool bs, bool dss, bool ss, bool asp, bool bmp)
+{
+	out.imbue(std::locale::classic()); // Disable integer separators
+	out << std::dec;
+
+	out << "topology: " << GetTopologyName(static_cast<u32>(conf.topology)) << std::endl;
+	out << "require_one_barrier: " << static_cast<u32>(conf.require_one_barrier) << std::endl;
+	out << "require_full_barrier: " << static_cast<u32>(conf.require_full_barrier) << std::endl;
+
+	out << "destination_alpha: " << static_cast<u32>(conf.destination_alpha) << std::endl;
+	out << "datm: " << static_cast<u32>(conf.datm) << std::endl;
+	out << "line_expand: " << conf.line_expand << std::endl;
+	out << "colormask: " << std::hex << std::showbase << static_cast<u32>(conf.colormask.wrgba) << std::dec << std::endl;
+
+	if (ps)
+	{
+		out << "ps:" << std::endl;
+		DumpPSSelector(out, conf.ps, INDENT);
+	}
+
+	if (vs)
+	{
+		out << "vs:" << std::endl;
+		DumpVSSelector(out, conf.vs, INDENT);
+	}
+
+	if (bs)
+	{
+		out << "blend:" << std::endl;
+		DumpBlendState(out, conf.blend, INDENT);
+	}
+
+	if (ss)
+	{
+		out << "sampler:" << std::endl;
+		DumpSamplerSelector(out, conf.sampler, INDENT);
+	}
+
+	if (dss)
+	{
+		out << "depth:" << std::endl;
+		DumpDepthStencilSelctor(out, conf.depth, INDENT);
+	}
+	
+	if (asp)
+	{
+		out << "alpha_second_pass:" << std::endl;
+		DumpAlphaPass(out, conf.alpha_second_pass, INDENT);
+	}
+
+	if (bmp)
+	{
+		out << "blend_multi_pass:" << std::endl;
+		DumpBlendMultipass(out, conf.blend_multi_pass, INDENT);
+	}
+}
+
+void GSHWDrawConfig::DumpConfig(const std::string& fn, const GSHWDrawConfig& conf,
+	bool ps, bool vs, bool bs, bool dss, bool ss, bool asp, bool bmp)
+{
+	std::ofstream file(fn);
+
+	if (!file.is_open())
+		return;
+	
+	DumpConfig(file, conf, ps, vs, bs, dss, ss, asp, bmp);
 }
 
 // clang-format off
