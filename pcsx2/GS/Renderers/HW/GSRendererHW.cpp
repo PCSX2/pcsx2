@@ -5910,6 +5910,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 	{
 		case AccBlendLevel::Maximum:
 			sw_blending |= true;
+			accumulation_blend &= (GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 32);
 			[[fallthrough]];
 		case AccBlendLevel::Full:
 			sw_blending |= m_conf.ps.blend_a != m_conf.ps.blend_b && alpha_c0_high_max_one;
