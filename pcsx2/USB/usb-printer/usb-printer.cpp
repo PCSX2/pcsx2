@@ -5,6 +5,7 @@
 #include "USB/qemu-usb/qusb.h"
 #include "USB/qemu-usb/USBinternal.h"
 #include "USB/usb-printer/usb-printer.h"
+#include "USB/usb-printer/pixma_parse.h"
 #include "USB/USB.h"
 #include "common/Console.h"
 #include "common/FileSystem.h"
@@ -15,6 +16,7 @@
 #include "StateWrapper.h"
 #include "Host.h"
 #include "IconsFontAwesome.h"
+
 
 namespace usb_printer
 {
@@ -337,6 +339,12 @@ namespace usb_printer
 				    if (endIt != buffer.end()) {
 		    			Console.WriteLn("Printer: usb_printer_handle_data_popegg ending file capture");
 				        s->cmd_state = 0;
+
+				        // convert to ppm
+				        std::string ppm_filename = s->print_filename.substr(0,s->print_filename.length()-4).append(".ppm");
+		    			Console.WriteLn("Printer: usb_printer_handle_data_popegg starting ppm conversion");
+				        process_bjl(&s->print_filename[0], &ppm_filename[0]);
+
 				        sony_close_file(s);
 				    }
 				}

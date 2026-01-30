@@ -397,6 +397,7 @@ set(pcsx2USBSources
 	USB/usb-pad/usb-trance-vibrator.cpp
 	USB/usb-pad/usb-turntable.cpp
 	USB/usb-printer/usb-printer.cpp
+	USB/usb-printer/pixma_parse.cpp
 )
 
 # USB headers
@@ -433,6 +434,7 @@ set(pcsx2USBHeaders
 	USB/usb-pad/usb-train.h
 	USB/usb-pad/usb-trance-vibrator.h
 	USB/usb-printer/usb-printer.h
+	USB/usb-printer/pixma_parse.h
 )
 
 # Host PAD
