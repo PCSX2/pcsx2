@@ -283,11 +283,10 @@ namespace usb_printer
 
 	static void usb_printer_handle_data_popegg(USBDevice* dev, USBPacket* p)
 	{
-		// START:	1B 28 62 01 00 01
-		// END:  0C 1B 28 62 01 00 00
-		// char start_raster_cmd[] =  { 0x1B, 0x28, 0x62, 0x01, 0x00, 0x01 };
-		// char finish_raster_cmd[] = { 0x0C, 0x1B, 0x28, 0x62, 0x01, 0x00, 0x00 };
-		const std::vector<uint8_t> START = {0x1B, 0x28, 0x62, 0x01, 0x00, 0x01};
+		// BJL Job START: 		1B 5B 4B 02 00 00 1F 42 4A 4C 53 54 41 52 54
+		// BJL Raster START:	1B 28 62 01 00 01
+		// BJL Raster END:   0C 1B 28 62 01 00 00
+		const std::vector<uint8_t> START = {0x1B, 0x5B, 0x4B, 0x02, 0x00, 0x00, 0x1F, 0x42, 0x4A, 0x4C, 0x53, 0x54, 0x41, 0x52, 0x54};
 		const std::vector<uint8_t> END   = {0x0C, 0x1B, 0x28, 0x62, 0x01, 0x00, 0x00};
 
 		PrinterState* s = USB_CONTAINER_OF(dev, PrinterState, dev);
@@ -305,12 +304,22 @@ namespace usb_printer
 				    if (startIt != buffer.end()) {
 		    			Console.WriteLn("Printer: usb_printer_handle_data_popegg starting file capture");
 				        s->cmd_state = 1;
-						//start file to dump data
+						// start file to dump data
 						char cur_time_str[32];
 						const time_t cur_time = time(nullptr);
 						strftime(cur_time_str, sizeof(cur_time_str), "%Y_%m_%d_%H_%M_%S", localtime(&cur_time));
 						s->print_filename = Path::Combine(EmuFolders::Snapshots, fmt::format("popegg_print_{}.bin", cur_time_str));
 						s->print_file = FileSystem::OpenCFile(s->print_filename.c_str(), "wb");
+
+						// write the start of the feed to file
+						if (std::fwrite(s->last_command, s->last_command_size, 1, s->print_file) != 1)
+						{
+							Console.Error("Error writing data to print file");
+						}
+
+						Host::AddIconOSDMessage("USBPrinterOpen", ICON_FA_PRINT,
+							fmt::format(TRANSLATE_FS("USB", "Printer saving to '{}'..."), Path::GetFileName(s->print_filename)),
+							Host::OSD_INFO_DURATION);
 				    }
 				}
 				else if (s->cmd_state == 1)
