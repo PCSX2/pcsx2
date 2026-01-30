@@ -136,6 +136,7 @@ private:
 	bool m_using_flip_model_swap_chain = true;
 	bool m_using_allow_tearing = false;
 	bool m_is_exclusive_fullscreen = false;
+	bool m_conservative_depth = false;
 
 	struct
 	{

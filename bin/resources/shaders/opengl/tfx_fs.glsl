@@ -113,7 +113,7 @@ layout(binding = 3) uniform sampler2D img_prim_min;
 //layout(pixel_center_integer) in vec4 gl_FragCoord;
 #endif
 
-#if (PS_ZFLOOR || PS_ZCLAMP) && HAS_CONSERVATIVE_DEPTH
+#if (PS_ZFLOOR || PS_ZCLAMP) && PS_HAS_CONSERVATIVE_DEPTH
 layout(depth_less) out float gl_FragDepth;
 #endif
 
