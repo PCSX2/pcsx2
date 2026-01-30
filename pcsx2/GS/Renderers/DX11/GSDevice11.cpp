@@ -972,15 +972,15 @@ void GSDevice11::EndPresent()
 	if (m_vsync_mode != GSVSyncMode::FIFO && m_gpu_timing_enabled)
 		PopTimestampQuery();
 
+	// clear out the swap chain view, it might get resized..
+	OMSetRenderTargets(nullptr, nullptr, nullptr, nullptr);
+
 	const UINT sync_interval = static_cast<UINT>(m_vsync_mode == GSVSyncMode::FIFO);
 	const UINT flags = (m_vsync_mode == GSVSyncMode::Disabled && m_using_allow_tearing) ? DXGI_PRESENT_ALLOW_TEARING : 0;
 	m_swap_chain->Present(sync_interval, flags);
 
 	if (m_gpu_timing_enabled)
 		KickTimestampQuery();
-
-	// clear out the swap chain view, it might get resized..
-	OMSetRenderTargets(nullptr, nullptr, nullptr, nullptr);
 }
 
 bool GSDevice11::CreateTimestampQueries()
