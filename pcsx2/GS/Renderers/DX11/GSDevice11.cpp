@@ -599,6 +599,8 @@ void GSDevice11::SetFeatures(IDXGIAdapter1* adapter)
 	m_max_texture_size = (m_feature_level >= D3D_FEATURE_LEVEL_11_0) ?
 	                         D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION :
 	                         D3D10_REQ_TEXTURE2D_U_OR_V_DIMENSION;
+
+	m_conservative_depth = (m_feature_level >= D3D_FEATURE_LEVEL_11_0);
 }
 
 bool GSDevice11::HasSurface() const
@@ -1721,6 +1723,7 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 		ShaderMacro sm;
 
 		sm.AddMacro("PIXEL_SHADER", 1);
+		sm.AddMacro("PS_HAS_CONSERVATIVE_DEPTH", m_conservative_depth);
 		sm.AddMacro("PS_FST", sel.fst);
 		sm.AddMacro("PS_WMS", sel.wms);
 		sm.AddMacro("PS_WMT", sel.wmt);

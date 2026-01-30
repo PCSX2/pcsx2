@@ -139,8 +139,12 @@ struct PS_OUTPUT
 #endif
 #endif
 #endif
-#if PS_ZCLAMP || PS_ZFLOOR
-	float depth : SV_DepthLessEqual;
+#if (PS_ZFLOOR || PS_ZCLAMP)
+	#if PS_HAS_CONSERVATIVE_DEPTH
+		float depth : SV_DepthLessEqual;
+	#else
+		float depth : SV_Depth;
+	#endif
 #endif
 };
 

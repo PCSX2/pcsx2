@@ -1301,11 +1301,11 @@ std::string GSDeviceOGL::GenGlslHeader(const std::string_view entry, GLenum type
 	if (GLAD_GL_ARB_conservative_depth)
 	{
 		header += "#extension GL_ARB_conservative_depth : enable\n";
-		header += "#define HAS_CONSERVATIVE_DEPTH 1\n";
+		header += "#define PS_HAS_CONSERVATIVE_DEPTH 1\n";
 	}
 	else
 	{
-		header += "#define HAS_CONSERVATIVE_DEPTH 0\n";
+		header += "#define PS_HAS_CONSERVATIVE_DEPTH 0\n";
 	}
 
 	// Allow to puts several shader in 1 files
