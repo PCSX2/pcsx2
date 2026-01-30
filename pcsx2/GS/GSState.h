@@ -478,6 +478,7 @@ public:
 	
 	template<bool shuffle_check>
 	bool TrianglesAreQuadsImpl();
+	bool AreTrianglesQuadNonAA(const GSVertex* RESTRICT vin, const u16* RESTRICT index0, const u16* RESTRICT index1);
 	bool TrianglesAreQuads(bool shuffle_check = false);
 	template <u32 primclass>
 	PRIM_OVERLAP GetPrimitiveOverlapDrawlistImpl(bool save_drawlist = false, bool save_bbox = false, float bbox_scale = 1.0f);

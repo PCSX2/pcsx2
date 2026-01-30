@@ -4711,31 +4711,260 @@ void GSRendererHW::Draw()
 	// Note: second hack corrects only the texture coordinate
 	// Be careful to not correct downscaled targets, this can get messy and break post processing
 	// but it still needs to adjust native stuff from memory as it's not been compensated for upscaling (Dragon Quest 8 font for example).
-	if (CanUpscale() && (m_vt.m_primclass == GS_SPRITE_CLASS) && rt && rt->GetScale() > 1.0f)
+	if (CanUpscale() && ((m_vt.m_primclass == GS_SPRITE_CLASS) || ((m_index.tail % 6 == 0) && m_vt.m_primclass == GS_TRIANGLE_CLASS && m_vt.m_eq.z)) && rt && rt->GetScale() > 1.0f)
 	{
-		const u32 count = m_vertex.next;
-		GSVertex* v = &m_vertex.buff[0];
+		bool valid_format = true;
 
-		// Hack to avoid vertical black line in various games (ace combat/tekken)
-		if (GSConfig.UserHacks_AlignSpriteX)
+		if (m_vt.m_primclass == GS_TRIANGLE_CLASS)
 		{
-			// Note for performance reason I do the check only once on the first
-			// primitive
-			const int win_position = v[1].XYZ.X - context->XYOFFSET.OFX;
-			const bool unaligned_position = ((win_position & 0xF) == 8);
-			const bool unaligned_texture = ((v[1].U & 0xF) == 0) && PRIM->FST; // I'm not sure this check is useful
-			const bool hole_in_vertex = (count < 4) || (v[1].XYZ.X != v[2].XYZ.X);
-			if (hole_in_vertex && unaligned_position && (unaligned_texture || !PRIM->FST))
+			const GSVertex* RESTRICT v = m_vertex.buff;
+			const u16* RESTRICT index = m_index.buff;
+			const size_t count = m_index.tail;
+
+			for (int i = 0; i < count; i += 6)
 			{
-				// Normaly vertex are aligned on full pixels and texture in half
-				// pixels. Let's extend the coverage of an half-pixel to avoid
-				// hole after upscaling
-				for (u32 i = 0; i < count; i += 2)
+				// Non-axis aligned check when only two triangles
+				if (!AreTrianglesQuadNonAA(v, &index[i], &index[i + 3]))
 				{
-					v[i + 1].XYZ.X += 8;
-					// I really don't know if it is a good idea. Neither what to do for !PRIM->FST
-					if (unaligned_texture)
-						v[i + 1].U += 8;
+					valid_format = false;
+					break;
+				}
+			}
+		}
+		if (valid_format)
+		{
+			const u32 count = m_vertex.next;
+			GSVertex* v = &m_vertex.buff[0];
+			u16* idx = &m_index.buff[0];
+			const bool indexed_texture = src && src->m_scale == 1.0f && GSLocalMemory::m_psm[src->m_TEX0.PSM].pal > 0;
+
+			// Shortcut for when the sprites are right up against each other.
+			if (GSConfig.UserHacks_AlignSpriteX && m_vt.m_primclass == GS_SPRITE_CLASS && indexed_texture && PRIM->FST && m_index.tail > 2 &&
+				((v[idx[1]].U == v[idx[2]].U && (v[idx[1]].XYZ.X == v[idx[2]].XYZ.X) && v[idx[0]].V == v[idx[2]].V) || 
+				  (v[idx[1]].V == v[idx[2]].V && (v[idx[1]].XYZ.Y == v[idx[2]].XYZ.Y) && v[idx[0]].U == v[idx[2]].U)))
+			{
+				for (int i = 0; i < m_index.tail; i += 2)
+				{
+					if (!((v[idx[i + 1]].U == v[idx[i + 2]].U && (v[idx[i + 1]].XYZ.X == v[idx[i + 2]].XYZ.X) && v[idx[i]].V == v[idx[i + 2]].V)))
+					{
+						if (v[idx[i + 1]].U & 0x8)
+							v[idx[i + 1]].U -= 8;
+					}
+					if (!((v[idx[i + 1]].V == v[idx[i + 2]].V && (v[idx[i + 1]].XYZ.Y == v[idx[i + 2]].XYZ.Y) && v[idx[i]].U == v[idx[i + 2]].U)))
+					{
+						if (v[idx[i + 1]].V & 0x8)
+							v[idx[i + 11]].V -= 8;
+					}
+				}
+				if (v[idx[m_index.tail - 1]].U & 0x8)
+					v[idx[m_index.tail - 1]].U -= 8;
+
+				if (v[idx[m_index.tail - 1]].V & 0x8)
+					v[idx[m_index.tail - 1]].V -= 8;
+			}
+			else
+			// Hack to avoid vertical black line in various games (ace combat/tekken)
+			if (GSConfig.UserHacks_AlignSpriteX)
+			{
+				// Note for performance reason I do the check only once on the first
+				// primitive
+				const int win_position0 = v[idx[0]].XYZ.X - context->XYOFFSET.OFX;
+				const int win_position1 = v[idx[1]].XYZ.X - context->XYOFFSET.OFX;
+				const bool unaligned_position = ((win_position0 & 0xf) != 0) || ((win_position1 & 0xF) != 0);
+				const int first_s = (v[idx[0]].ST.S / v[idx[0]].RGBAQ.Q) * static_cast<int>(1 << m_cached_ctx.TEX0.TW);
+				const bool unaligned_texture = (PRIM->FST && ((v[1].U & 0xF) == 0)) || (!PRIM->FST && (first_s & 0xF) == 0); // I'm not sure this check is useful
+				const int gap = std::min(static_cast<int>(v[2].XYZ.X), static_cast<int>(v[3].XYZ.X)) - std::max(static_cast<int>(v[0].XYZ.X), static_cast<int>(v[1].XYZ.X));
+				bool hole_in_vertex = (count < 4) || (v[1].XYZ.X != v[2].XYZ.X && ((v[1].XYZ.X ^ v[2].XYZ.X) & 0xF) != 0);
+				const bool is_tri = m_vt.m_primclass == GS_TRIANGLE_CLASS;
+				const int skip = is_tri ? 3 : 2;
+
+				GSVector2 gradient = GSVector2(1.0f, 1.0f);
+
+				if (m_lod.y == 0)
+				{
+					bool can_disable_linear = true;
+					for (u32 i = 0; i < m_index.tail; i += skip)
+					{
+						const int x_offset = (is_tri && v[idx[i]].XYZ.X == v[idx[i + 1]].XYZ.X) ? 2 : 1;
+						const int y_offset = (is_tri && v[idx[i]].XYZ.Y == v[idx[i + 1]].XYZ.Y) ? 2 : 1;
+
+						GSVector2 vert = GSVector2(std::abs(static_cast<float>(v[idx[i]].XYZ.X - v[idx[i + x_offset]].XYZ.X)), std::abs(static_cast<float>(v[idx[i]].XYZ.Y - v[idx[i + y_offset]].XYZ.Y)));
+						GSVector2 tex;
+
+						if (!PRIM->FST)
+						{
+							const int s_offset = (is_tri && (v[idx[i]].ST.S / v[idx[i]].RGBAQ.Q) == (v[idx[i + 1]].ST.S / v[idx[i + 1]].RGBAQ.Q)) ? 2 : 1;
+							const int t_offset = (is_tri && (v[idx[i]].ST.T / v[idx[i]].RGBAQ.Q) == (v[idx[i + 1]].ST.T / v[idx[i + 1]].RGBAQ.Q)) ? 2 : 1;
+							GSVector2 v0, v1;
+							float s = std::min((v[idx[i]].ST.S / v[idx[i]].RGBAQ.Q), 1.0f);
+							float t = std::min((v[idx[i]].ST.T / v[idx[i]].RGBAQ.Q), 1.0f);
+							v0.x = static_cast<int>((1 << m_cached_ctx.TEX0.TW) * s * 16.0f);
+							v0.y = static_cast<int>((1 << m_cached_ctx.TEX0.TH) * t * 16.0f);
+
+							s = std::min((v[idx[i + s_offset]].ST.S / v[idx[i + s_offset]].RGBAQ.Q), 1.0f);
+							t = std::min((v[idx[i + t_offset]].ST.T / v[idx[i + t_offset]].RGBAQ.Q), 1.0f);
+							v1.x = static_cast<int>((1 << m_cached_ctx.TEX0.TW) * s * 16.0f);
+							v1.y = static_cast<int>((1 << m_cached_ctx.TEX0.TH) * t * 16.0f);
+
+							tex = GSVector2(std::abs(v1.x - v0.x), std::abs(v1.y - v0.y));
+						}
+						else
+						{
+							const int u_offset = (is_tri && v[idx[i]].U == v[idx[i + 1]].U) ? 2 : 1;
+							const int v_offset = (is_tri && v[idx[i]].V == v[idx[i + 1]].V) ? 2 : 1;
+							tex = GSVector2(std::abs(static_cast<float>(v[idx[i]].U - v[idx[i + u_offset]].U)), std::abs(static_cast<float>(v[idx[i]].V - v[idx[i + v_offset]].V)));
+						}
+
+						GSVector2 grad = tex / vert;
+						if ((grad.x != gradient.x && grad.x != floor(grad.x)) || (grad.y != gradient.y && grad.y != floor(grad.y)))
+						{
+							can_disable_linear = false;
+							gradient = grad;
+							break;
+						}
+					}
+					if (can_disable_linear)
+					{
+						m_vt.m_filter.linear = 0;
+						m_vt.m_filter.opt_linear = 0;
+					}
+				}
+
+				/*if ((m_vt.m_primclass == GS_SPRITE_CLASS) && hole_in_vertex && unaligned_position && (unaligned_texture || !PRIM->FST))
+				{
+					// Normaly vertex are aligned on full pixels and texture in half
+					// pixels. Let's extend the coverage of an half-pixel to avoid
+					// hole after upscaling
+					for (u32 i = 0; i < count; i += 2)
+					{
+						v[i + 1].XYZ.X += 8;
+						// I really don't know if it is a good idea. Neither what to do for !PRIM->FST
+						if (unaligned_texture)
+							v[i + 1].U += 8;
+					}
+				}
+				else */if (indexed_texture && (gradient.x > (1.0f / 16.0f) || gradient.y > (1.0f / 16.0f)))
+				{
+					const int comparitor = unaligned_position ? 0 : 8;
+
+					if (!PRIM->FST)
+					{
+						int s_offset = (is_tri && (v[idx[0]].ST.S / v[idx[0]].RGBAQ.Q) == (v[idx[1]].ST.S / v[idx[1]].RGBAQ.Q)) ? 2 : 1;
+						int t_offset = (is_tri && (v[idx[0]].ST.T / v[idx[0]].RGBAQ.Q) == (v[idx[1]].ST.T / v[idx[1]].RGBAQ.Q)) ? 2 : 1;
+						GSVector2i v0, v1;
+						float q = v[idx[0]].RGBAQ.Q == 0 ? FLT_MIN : v[idx[0]].RGBAQ.Q;
+						float s = v[idx[0]].ST.S / q;
+						float t = v[idx[0]].ST.T / q;
+						v0.x = static_cast<int>((1 << m_cached_ctx.TEX0.TW) * s * 16.0f);
+						v0.y = static_cast<int>((1 << m_cached_ctx.TEX0.TH) * t * 16.0f);
+
+						q = v[idx[s_offset]].RGBAQ.Q == 0 ? FLT_MIN : v[idx[s_offset]].RGBAQ.Q;
+						s = v[idx[s_offset]].ST.S / q;
+						t = v[idx[t_offset]].ST.T / q;
+						v1.x = static_cast<int>((1 << m_cached_ctx.TEX0.TW) * s * 16.0f);
+						v1.y = static_cast<int>((1 << m_cached_ctx.TEX0.TH) * t * 16.0f);
+						bool small_texture = std::abs(v1.x - v0.x) <= (64 * 16) || std::abs(v1.y - v0.y) <= (64 * 16);
+						bool offset_texture_x = (m_vt.IsLinear() || ((v0.x & 0xF) && (v1.x & 0xF))) && small_texture; // Keep them relatively small to avoid full screen stuff.
+						bool offset_texture_y = (m_vt.IsLinear() || ((v0.y & 0xF) && (v1.y & 0xF))) && small_texture;
+
+						//if (offset_texture_x && offset_texture_y)
+						{
+							for (u32 i = m_index.buff[0]; i < m_index.tail; i += skip)
+							{
+								GSVector2 st;
+
+								if (gradient.x > (1.0f / 16.0f))
+								{
+									float largest_s = std::max(is_tri ? (v[i + 2].ST.S / v[i + 2].RGBAQ.Q) : static_cast<float>(0), std::max((v[i].ST.S / v[i].RGBAQ.Q), (v[i + 1].ST.S / v[i + 1].RGBAQ.Q)));
+									float smallest_s = std::min(is_tri ? (v[i + 2].ST.S / v[i + 2].RGBAQ.Q) : static_cast<float>(0), std::min((v[i].ST.S / v[i].RGBAQ.Q), (v[i + 1].ST.S / v[i + 1].RGBAQ.Q)));
+
+									for (int j = 0; j < skip; j++)
+									{
+										q = v[i + j].RGBAQ.Q == 0 ? FLT_MIN : v[i + j].RGBAQ.Q;
+										float s = v[i + j].ST.S / q;
+										st.x = static_cast<float>(1 << m_cached_ctx.TEX0.TW) * s;
+										if ((v[i + j].ST.S / q) == largest_s)
+											v[i + j].ST.S = ((st.x - 0.5f) / static_cast<float>(1 << m_cached_ctx.TEX0.TW)) * q;
+										// Check the minimap in Persona 3.
+										if ((static_cast<int>(st.x * 16) & 0x8) == comparitor && (v[i + j].ST.S / q) == smallest_s)
+											v[i + j].ST.S = (std::max(0.0f, (st.x - 0.5f)) / static_cast<float>(1 << m_cached_ctx.TEX0.TW)) * q;
+									}
+								}
+
+								if (gradient.y > (1.0f / 16.0f))
+								{
+									float largest_t = std::max(is_tri ? (v[i + 2].ST.T / v[i + 2].RGBAQ.Q) : static_cast<float>(0), std::max((v[i].ST.T / v[i].RGBAQ.Q), (v[i + 1].ST.T / v[i + 1].RGBAQ.Q)));
+									float smallest_t = std::min(is_tri ? (v[i + 2].ST.T / v[i + 2].RGBAQ.Q) : static_cast<float>(0), std::min((v[i].ST.T / v[i].RGBAQ.Q), (v[i + 1].ST.T / v[i + 1].RGBAQ.Q)));
+									for (int j = 0; j < skip; j++)
+									{
+										q = v[i + j].RGBAQ.Q == 0 ? FLT_MIN : v[i + j].RGBAQ.Q;
+										float t = v[i + j].ST.T / q;
+										st.y = static_cast<float>(1 << m_cached_ctx.TEX0.TH) * t;
+										if ((v[i + j].ST.T / q) == largest_t)
+											v[i + j].ST.T = ((st.y - 0.5f) / static_cast<float>(1 << m_cached_ctx.TEX0.TH)) * q;
+										// Check the minimap in Persona 3.
+										if ((static_cast<int>(st.y * 16) & 0x8) == comparitor && (v[i + j].ST.T / q) == smallest_t)
+											v[i + j].ST.T = (std::max(0.0f, (st.y - 0.5f)) / static_cast<float>(1 << m_cached_ctx.TEX0.TH)) * q;
+									}
+								}
+							}
+						}
+					}
+					else
+					{
+						int u_offset = (is_tri && (v[0].U == v[1].U)) ? 2 : 1;
+						int v_offset = (is_tri && (v[0].V == v[1].V)) ? 2 : 1;
+						bool small_texture = std::abs(static_cast<int>(v[idx[u_offset]].U) - static_cast<int>(v[idx[0]].U)) <= (64 * 16) || std::abs(static_cast<int>(v[idx[v_offset]].V) - static_cast<int>(v[idx[0]].V)) <= (64 * 16);
+						bool offset_texture_x = (m_vt.IsLinear() || ((v[0].U & 0xF) && (v[idx[u_offset]].U & 0xF))) && small_texture;
+						bool offset_texture_y = (m_vt.IsLinear() || ((v[0].V & 0xF) && (v[idx[v_offset]].V & 0xF))) && small_texture;
+
+						if (offset_texture_x && offset_texture_y)
+						{
+							for (u32 i = m_index.buff[0]; i < m_index.tail; i += skip)
+							{
+								if (gradient.x > (1.0f / 16.0f))
+								{
+									const u16 largest_u = std::max(is_tri ? v[idx[i + 2]].U : static_cast<u16>(0), std::max(v[idx[i]].U, v[idx[i + 1]].U));
+
+									if ((v[idx[i]].U & 0x8) == comparitor && v[idx[i]].U == largest_u)
+										v[idx[i]].U = std::max(static_cast<int>(v[idx[i]].U) - 8, 0);
+
+									if ((v[idx[i + 1]].U & 0x8) == comparitor && v[idx[i + 1]].U == largest_u)
+										v[idx[i + 1]].U = std::max(static_cast<int>(v[idx[i + 1]].U) - 8, 0);
+
+									if (is_tri && (v[idx[i + 2]].U & 0x8) == comparitor && v[idx[i + 2]].U == largest_u)
+										v[idx[i + 2]].U = std::max(static_cast<int>(v[idx[i + 2]].U) - 8, 0);
+								}
+
+								if (gradient.y > (1.0f / 16.0f))
+								{
+									const u16 largest_v = std::max(is_tri ? v[idx[i + 2]].V : static_cast<u16>(0), std::max(v[idx[i]].V, v[idx[i + 1]].V));
+
+									if ((v[idx[i]].V & 0x8) == comparitor && v[idx[i]].V == largest_v)
+										v[idx[i]].V = std::max(static_cast<int>(v[idx[i]].V) - 8, 0);
+
+									if ((v[idx[i + 1]].V & 0x8) == comparitor && v[idx[i + 1]].V == largest_v)
+										v[idx[i + 1]].V = std::max(static_cast<int>(v[idx[i + 1]].V) - 8, 0);
+
+									if (is_tri && (v[idx[i + 2]].V & 0x8) == comparitor && v[idx[i + 2]].V == largest_v)
+										v[idx[i + 2]].V = std::max(static_cast<int>(v[idx[i + 2]].V) - 8, 0);
+								}
+							}
+						}
+					}
+				}
+				else if ((m_vt.m_primclass == GS_SPRITE_CLASS) && hole_in_vertex && unaligned_position && (unaligned_texture || !PRIM->FST))
+				{
+					// Normaly vertex are aligned on full pixels and texture in half
+					// pixels. Let's extend the coverage of an half-pixel to avoid
+					// hole after upscaling
+					for (u32 i = 0; i < count; i += 2)
+					{
+						v[i + 1].XYZ.X += 8;
+						// I really don't know if it is a good idea. Neither what to do for !PRIM->FST
+						if (unaligned_texture)
+							v[i + 1].U += 8;
+					}
 				}
 			}
 		}
