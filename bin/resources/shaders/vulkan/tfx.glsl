@@ -245,6 +245,27 @@ void main()
 #define GS_LINE 0
 #endif
 
+#ifndef ZTST_GEQUAL
+#define ZTST_GEQUAL 2
+#define ZTST_GREATER 3
+#endif
+
+#ifndef AFAIL_KEEP
+#define AFAIL_KEEP 0
+#define AFAIL_FB_ONLY 1
+#define AFAIL_ZB_ONLY 2
+#define AFAIL_RGB_ONLY 3
+#define AFAIL_RGB_ONLY_DSB 4
+#endif
+
+#ifndef PS_ATST_NONE
+#define PS_ATST_NONE 0
+#define PS_ATST_LEQUAL 1
+#define PS_ATST_GEQUAL 2
+#define PS_ATST_EQUAL 3
+#define PS_ATST_NOTEQUAL 4
+#endif
+
 #ifndef PS_FST
 #define PS_FST 0
 #define PS_WMS 0
@@ -289,16 +310,28 @@ void main()
 #define PS_DITHER_ADJUST 0
 #define PS_ZCLAMP 0
 #define PS_ZFLOOR 0
-#define PS_FEEDBACK_LOOP 0
+#define PS_ZWRITE 0
+#define PS_SCANMSK 0
+#define PS_AUTOMATIC_LOD 0
+#define PS_MANUAL_LOD 0
 #define PS_TEX_IS_FB 0
+#define PS_NO_COLOR 0
+#define PS_NO_COLOR1 0
+#define PS_DATE 0
+#define PS_TEX_IS_FB 0
+#define PS_COLOR_FEEDBACK 0
+#define PS_DEPTH_FEEDBACK 0
 #endif
 
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
 #define SW_BLEND_NEEDS_RT (SW_BLEND && (PS_BLEND_A == 1 || PS_BLEND_B == 1 || PS_BLEND_C == 1 || PS_BLEND_D == 1))
 #define SW_AD_TO_HW (PS_BLEND_C == 1 && PS_A_MASKED)
-#define AFAIL_NEEDS_RT (PS_AFAIL == 3 && PS_NO_COLOR1)
+#define AFAIL_NEEDS_RT (PS_AFAIL == AFAIL_ZB_ONLY || PS_AFAIL == AFAIL_RGB_ONLY)
+#define AFAIL_NEEDS_DEPTH (PS_AFAIL == AFAIL_FB_ONLY || PS_AFAIL == AFAIL_RGB_ONLY)
+#define ZTST_NEEDS_DEPTH (PS_ZTST == ZTST_GEQUAL || PS_ZTST == ZTST_GREATER)
 
-#define PS_FEEDBACK_LOOP_IS_NEEDED (PS_TEX_IS_FB == 1 || AFAIL_NEEDS_RT || PS_FBMASK || SW_BLEND_NEEDS_RT || SW_AD_TO_HW || (PS_DATE >= 5))
+#define PS_FEEDBACK_LOOP_IS_NEEDED_RT (PS_TEX_IS_FB == 1 || AFAIL_NEEDS_RT || PS_FBMASK || SW_BLEND_NEEDS_RT || SW_AD_TO_HW || (PS_DATE >= 5) || PS_COLOR_FEEDBACK)
+#define PS_FEEDBACK_LOOP_IS_NEEDED_DEPTH (PS_DEPTH_FEEDBACK && (AFAIL_NEEDS_DEPTH || ZTST_NEEDS_DEPTH))
 
 #define NEEDS_TEX (PS_TFX != 4)
 
@@ -347,13 +380,30 @@ layout(set = 1, binding = 0) uniform sampler2D Texture;
 layout(set = 1, binding = 1) uniform texture2D Palette;
 #endif
 
-#if PS_FEEDBACK_LOOP_IS_NEEDED
+#if PS_FEEDBACK_LOOP_IS_NEEDED_RT || PS_FEEDBACK_LOOP_IS_NEEDED_DEPTH
 	#if defined(DISABLE_TEXTURE_BARRIER) || defined(HAS_FEEDBACK_LOOP_LAYOUT)
-		layout(set = 1, binding = 2) uniform texture2D RtSampler;
-		vec4 sample_from_rt() { return texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0); }
+		#if PS_FEEDBACK_LOOP_IS_NEEDED_RT
+			layout(set = 1, binding = 2) uniform texture2D RtSampler;
+			vec4 sample_from_rt() { return texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0); }
+		#endif
+		#if PS_FEEDBACK_LOOP_IS_NEEDED_DEPTH
+			layout(set = 1, binding = 4) uniform texture2D DepthSampler;
+			vec4 sample_from_depth() { return texelFetch(DepthSampler, ivec2(gl_FragCoord.xy), 0); }
+		#endif
 	#else
-		layout(input_attachment_index = 0, set = 1, binding = 2) uniform subpassInput RtSampler;
-		vec4 sample_from_rt() { return subpassLoad(RtSampler); }
+		// Must consider each case separately since the input attachment indices must be consecutive.
+		#if PS_FEEDBACK_LOOP_IS_NEEDED_RT && PS_FEEDBACK_LOOP_IS_NEEDED_DEPTH
+			layout(input_attachment_index = 0, set = 1, binding = 2) uniform subpassInput RtSampler;
+			layout(input_attachment_index = 1, set = 1, binding = 4) uniform subpassInput DepthSampler;
+			vec4 sample_from_rt() { return subpassLoad(RtSampler); }
+			vec4 sample_from_depth() { return subpassLoad(DepthSampler); }
+		#elif PS_FEEDBACK_LOOP_IS_NEEDED_RT
+			layout(input_attachment_index = 0, set = 1, binding = 2) uniform subpassInput RtSampler;
+			vec4 sample_from_rt() { return subpassLoad(RtSampler); }
+		#elif PS_FEEDBACK_LOOP_IS_NEEDED_DEPTH
+			layout(input_attachment_index = 0, set = 1, binding = 4) uniform subpassInput DepthSampler;
+			vec4 sample_from_depth() { return subpassLoad(DepthSampler); }
+		#endif
 	#endif
 #endif
 
@@ -361,7 +411,7 @@ layout(set = 1, binding = 1) uniform texture2D Palette;
 layout(set = 1, binding = 3) uniform texture2D PrimMinTexture;
 #endif
 
-#if PS_ZFLOOR || PS_ZCLAMP
+#if PS_ZWRITE
 layout(depth_less) out float gl_FragDepth;
 #endif
 
@@ -885,28 +935,27 @@ bool atst(vec4 C)
 {
 	float a = C.a;
 
-	#if (PS_ATST == 1)
-	{
-		return (a <= AREF);
-	}
-	#elif (PS_ATST == 2)
-	{
-		return (a >= AREF);
-	}
-	#elif (PS_ATST == 3)
-	{
-		return (abs(a - AREF) <= 0.5f);
-	}
-	#elif (PS_ATST == 4)
-	{
-		return (abs(a - AREF) >= 0.5f);
-	}
-	#else
-	{
-		// nothing to do
-		return true;
-	}
-	#endif
+#if PS_ATST == PS_ATST_LEQUAL
+
+	return (a <= AREF);
+
+#elif PS_ATST == PS_ATST_GEQUAL
+
+	return (a >= AREF);
+
+#elif PS_ATST == PS_ATST_EQUAL
+
+	return (abs(a - AREF) <= 0.5f);
+
+#elif PS_ATST == PS_ATST_NOTEQUAL
+
+	return (abs(a - AREF) >= 0.5f);
+
+#else
+
+	return true;
+
+#endif
 }
 
 vec4 fog(vec4 c, float f)
@@ -975,7 +1024,6 @@ vec4 ps_color()
 void ps_fbmask(inout vec4 C)
 {
 	#if PS_FBMASK
-		
 		#if PS_COLCLIP_HW == 1
 			vec4 RT = trunc(sample_from_rt() * 65535.0f);
 		#else
@@ -1071,7 +1119,7 @@ void ps_blend(inout vec4 Color, inout vec4 As_rgba)
 			As_rgba.rgb = vec3(1.0f);
 		#endif
 
-		#if PS_FEEDBACK_LOOP_IS_NEEDED
+		#if PS_FEEDBACK_LOOP_IS_NEEDED_RT
 			vec4 RT = sample_from_rt();
 		#else
 			// Not used, but we define it to make the selection below simpler.
@@ -1084,7 +1132,7 @@ void ps_blend(inout vec4 Color, inout vec4 As_rgba)
 			float Ad = trunc(RT.a * 255.0f + 0.1f) / 128.0f;
 		#endif
 		
-		#if PS_SHUFFLE && PS_FEEDBACK_LOOP_IS_NEEDED
+		#if PS_SHUFFLE && PS_FEEDBACK_LOOP_IS_NEEDED_RT
 			uvec4 denorm_rt = uvec4(RT);
 			#if (PS_PROCESS_BA & SHUFFLE_WRITE)
 				RT.r = float((denorm_rt.b << 3) & 0xF8u);
@@ -1236,6 +1284,27 @@ void ps_blend(inout vec4 Color, inout vec4 As_rgba)
 
 void main()
 {
+	float input_z = gl_FragCoord.z;
+
+	// Must floor before depth testing.
+#if PS_ZFLOOR
+	input_z = floor(input_z * exp2(32.0f)) * exp2(-32.0f);
+#endif
+
+#if PS_ZCLAMP
+	input_z = min(input_z, MaxDepthPS);
+#endif
+
+#if PS_FEEDBACK_LOOP_IS_NEEDED_DEPTH && (PS_ZTST == ZTST_GEQUAL || PS_ZTST == ZTST_GREATER)
+	#if PS_ZTST == ZTST_GEQUAL
+		if (input_z < sample_from_depth().r)
+			discard;
+	#elif PS_ZTST == ZTST_GREATER
+		if (input_z <= sample_from_depth().r)
+			discard;
+	#endif
+#endif // PS_ZTST
+
 #if PS_SCANMSK & 2
 	// fail depth test on prohibited lines
 	if ((int(gl_FragCoord.y) & 1) == (PS_SCANMSK & 1))
@@ -1283,18 +1352,17 @@ void main()
 #endif
 
 	vec4 C = ps_color();
-	bool atst_pass = atst(C);
 
-#if PS_AFAIL == 0 // KEEP or ATST off
-	if (!atst_pass)
-		discard;
+#if PS_FIXED_ONE_A
+	// AA (Fixed one) will output a coverage of 1.0 as alpha
+	C.a = 128.0f;
 #endif
 
-	// Must be done before alpha correction
+	bool atst_pass = atst(C);
 
-	// AA (Fixed one) will output a coverage of 1.0 as alpha
-#if PS_FIXED_ONE_A
-	C.a = 128.0f;
+#if PS_AFAIL == AFAIL_KEEP
+	if (!atst_pass)
+		discard;
 #endif
 
 #if SW_AD_TO_HW
@@ -1333,7 +1401,7 @@ void main()
 #else
 	ps_blend(C, alpha_blend);
 
-#if PS_SHUFFLE
+	#if PS_SHUFFLE
 		#if !PS_READ16_SRC && !PS_SHUFFLE_SAME && !(PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE)
 			uvec4 denorm_c_after = uvec4(C);
 			#if (PS_PROCESS_BA & SHUFFLE_READ)
@@ -1381,7 +1449,7 @@ void main()
 
 	ps_fbmask(C);
 
-	#if PS_AFAIL == 3 && !PS_NO_COLOR1 // RGB_ONLY
+	#if (PS_AFAIL == AFAIL_RGB_ONLY_DSB) && !PS_NO_COLOR1
 		// Use alpha blend factor to determine whether to update A.
 		alpha_blend.a = float(atst_pass);
 	#endif
@@ -1400,24 +1468,30 @@ void main()
 		#if !PS_NO_COLOR1
 			o_col1 = alpha_blend;
 		#endif
-		#if PS_AFAIL == 3 && PS_NO_COLOR1 // RGB_ONLY, no dual src blend
+
+		// Alpha test with feedback
+		#if (PS_AFAIL == AFAIL_FB_ONLY) && PS_FEEDBACK_LOOP_IS_NEEDED_DEPTH && PS_ZWRITE
 			if (!atst_pass)
+				input_z = sample_from_depth().r;
+		#elif (PS_AFAIL == AFAIL_ZB_ONLY) && PS_FEEDBACK_LOOP_IS_NEEDED_RT
+			if (!atst_pass)
+				o_col0 = sample_from_rt();
+		#elif (PS_AFAIL == AFAIL_RGB_ONLY) 
+			if (!atst_pass)
+			{
+			#if PS_FEEDBACK_LOOP_IS_NEEDED_RT
 				o_col0.a = sample_from_rt().a;
+			#endif
+			#if PS_FEEDBACK_LOOP_IS_NEEDED_DEPTH && PS_ZWRITE
+				input_z = sample_from_depth().r;
+			#endif
+			}
 		#endif
 	#endif
-
-	#if PS_ZFLOOR
-		float depth_value = floor(gl_FragCoord.z * exp2(32.0f)) * exp2(-32.0f);;
-	#else
-		float depth_value = gl_FragCoord.z;
-	#endif
 	
-	#if PS_ZCLAMP
-		gl_FragDepth = min(gl_FragCoord.z, MaxDepthPS);
-	#elif PS_ZFLOOR
-		gl_FragDepth = depth_value;
+	#if PS_ZWRITE
+		gl_FragDepth = input_z;
 	#endif
-
 #endif // PS_DATE
 }
 
