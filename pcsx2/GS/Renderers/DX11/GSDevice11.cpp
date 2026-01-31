@@ -611,6 +611,12 @@ void GSDevice11::SetFeatures(IDXGIAdapter1* adapter)
 
 	m_conservative_depth = (m_feature_level >= D3D_FEATURE_LEVEL_11_0);
 	m_rgba16_unorm_hw_blend = IsTextureFormatHWBlendable(m_dev.get(), DXGI_FORMAT_R16G16B16A16_UNORM);
+
+	// Let the user know if said features are available.
+	Console.WriteLnFmt("D3D11: DXTn Texture Compression: {}", m_features.dxt_textures ? "Supported" : "Not Supported");
+	Console.WriteLnFmt("D3D11: BC6/7 Texture Compression: {}", m_features.bptc_textures ? "Supported" : "Not Supported");
+	Console.WriteLnFmt("D3D11: Conservative Depth: {}", m_conservative_depth ? "Supported" : "Not Supported");
+	Console.WriteLnFmt("D3D11: RGBA16 UNORM Hardware Blending: {}", m_rgba16_unorm_hw_blend ? "Supported" : "Not Supported");
 }
 
 bool GSDevice11::HasSurface() const
