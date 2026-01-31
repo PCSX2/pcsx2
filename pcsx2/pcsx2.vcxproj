@@ -410,6 +410,7 @@
     <ClCompile Include="USB\usb-pad\usb-trance-vibrator.cpp" />
     <ClCompile Include="USB\usb-pad\usb-turntable.cpp" />
     <ClCompile Include="USB\usb-printer\usb-printer.cpp" />
+    <ClCompile Include="USB\usb-printer\pixma_parse.cpp" />
     <ClCompile Include="USB\USB.cpp" />
     <ClCompile Include="VMManager.cpp" />
     <ClCompile Include="windows\Optimus.cpp" />
@@ -865,6 +866,7 @@
     <ClInclude Include="USB\usb-pad\usb-trance-vibrator.h" />
     <ClInclude Include="USB\usb-pad\usb-turntable.h" />
     <ClInclude Include="USB\usb-printer\usb-printer.h" />
+    <ClInclude Include="USB\usb-printer\pixma_parse.h" />
     <ClInclude Include="USB\USB.h" />
     <ClInclude Include="Utilities\AsciiFile.h" />
     <ClInclude Include="Elfheader.h" />
