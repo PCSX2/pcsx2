@@ -143,6 +143,7 @@ namespace Achievements
 	static void HandleResetEvent(const rc_client_event_t* event);
 	static void HandleUnlockEvent(const rc_client_event_t* event);
 	static void HandleGameCompleteEvent(const rc_client_event_t* event);
+	static void HandleSubsetCompleteEvent(const rc_client_event_t* event);
 	static void HandleLeaderboardStartedEvent(const rc_client_event_t* event);
 	static void HandleLeaderboardFailedEvent(const rc_client_event_t* event);
 	static void HandleLeaderboardSubmittedEvent(const rc_client_event_t* event);
@@ -825,6 +826,10 @@ void Achievements::ClientEventHandler(const rc_client_event_t* event, rc_client_
 			HandleGameCompleteEvent(event);
 			break;
 
+		case RC_CLIENT_EVENT_SUBSET_COMPLETED:
+			HandleSubsetCompleteEvent(event);
+			break;
+
 		case RC_CLIENT_EVENT_LEADERBOARD_STARTED:
 			HandleLeaderboardStartedEvent(event);
 			break;
@@ -1211,6 +1216,33 @@ void Achievements::HandleGameCompleteEvent(const rc_client_event_t* event)
 			{
 				ImGuiFullscreen::AddNotification(
 					"achievement_mastery", GAME_COMPLETE_NOTIFICATION_TIME, std::move(title), std::move(message), std::move(icon));
+			}
+		});
+	}
+}
+
+void Achievements::HandleSubsetCompleteEvent(const rc_client_event_t* event)
+{
+	const rc_client_subset_t* subset = event->subset;
+	Console.WriteLn("Achievements: Subset '%s' (%u) complete", subset->title, subset->id);
+	UpdateGameSummary();
+
+	if (EmuConfig.Achievements.Notifications)
+	{
+		std::string title = fmt::format(TRANSLATE_FS("Achievements", "Mastered {}"), subset->title);
+		std::string message = fmt::format(
+			TRANSLATE_FS("Achievements", "{0}, {1}"),
+			TRANSLATE_PLURAL_STR("Achievements", "%n achievements", "Mastery popup",
+				s_game_summary.num_unlocked_achievements),
+			TRANSLATE_PLURAL_STR("Achievements", "%n points", "Mastery popup", s_game_summary.points_unlocked));
+
+		std::string badge_path = GetSubsetBadgePath(subset);
+
+		MTGS::RunOnGSThread([title = std::move(title), message = std::move(message), badge_path = std::move(badge_path)]() {
+			if (ImGuiManager::InitializeFullscreenUI())
+			{
+				ImGuiFullscreen::AddNotification(
+					"achievement_subset_mastery", GAME_COMPLETE_NOTIFICATION_TIME, std::move(title), std::move(message), std::move(badge_path));
 			}
 		});
 	}
