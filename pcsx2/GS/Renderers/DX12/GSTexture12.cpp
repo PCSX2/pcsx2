@@ -265,8 +265,7 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 		}
 
 		hr = dev->GetAllocator()->CreateAliasingResource(allocation.get(), 0, &desc.desc, GetD3D12ResourceState(state),
-			(type == Type::RenderTarget || type == Type::DepthStencil) ? &optimized_clear_value : nullptr,
-			IID_PPV_ARGS(resource.put()));
+			&optimized_clear_value, IID_PPV_ARGS(resource.put()));
 		if (FAILED(hr))
 		{
 			// OOM isn't fatal.
@@ -277,8 +276,7 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 		}
 
 		hr = dev->GetAllocator()->CreateAliasingResource(allocation.get(), 0, &desc.desc, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-			(type == Type::RenderTarget || type == Type::DepthStencil) ? &optimized_clear_value : nullptr,
-			IID_PPV_ARGS(resource_fbl.put()));
+			&optimized_clear_value, IID_PPV_ARGS(resource_fbl.put()));
 		if (FAILED(hr))
 		{
 			// OOM isn't fatal.
