@@ -3560,7 +3560,7 @@ __forceinline bool AreTrianglesQuad(const GSVertex* RESTRICT vin, const u16* RES
 	return are_quad;
 }
 
-__forceinline bool AreTrianglesQuadNonAA(const GSVertex* RESTRICT vin, const u16* RESTRICT index0, const u16* RESTRICT index1)
+bool GSState::AreTrianglesQuadNonAA(const GSVertex* RESTRICT vin, const u16* RESTRICT index0, const u16* RESTRICT index1)
 {
 	u32 v0[3] = {
 		vin[index0[0]].XYZ.U32[0],
