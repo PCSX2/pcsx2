@@ -502,6 +502,7 @@ public:
 	RenderAPI GetRenderAPI() const override;
 	bool HasSurface() const override;
 
+	bool CheckDevice();
 	bool Create(GSVSyncMode vsync_mode, bool allow_present_throttle) override;
 	void Destroy() override;
 

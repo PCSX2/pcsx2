@@ -7,8 +7,14 @@
 #include "GS/GSExtra.h"
 #include "Host.h"
 
-#ifdef _M_X86
+#include "GS/Renderers/DX12/GSDevice12.h"
+
+#if defined(_M_X86) && defined(ENABLE_VULKAN)
 #include "GS/Renderers/Vulkan/GSDeviceVK.h"
+#endif
+
+#ifdef ENABLE_OPENGL
+#include "GS/Renderers/OpenGL/GSDeviceOGL.h"
 #endif
 
 #include "common/Console.h"
@@ -350,9 +356,9 @@ GSRendererType D3D::GetPreferredRenderer()
 	const auto factory = CreateFactory(false);
 	const auto adapter = GetChosenOrFirstAdapter(factory.get(), GSConfig.Adapter);
 
-	// If we somehow can't get a D3D11 device, it's unlikely any of the renderers are going to work.
+	// If we somehow can't get a D3D11 device, it's unlikely any of the renderers are going to work, why are we here just to suffer?
 	if (!adapter)
-		return GSRendererType::DX11;
+		return GSRendererType::Null;
 
 	const auto get_d3d11_feature_level = [&adapter]() -> std::optional<D3D_FEATURE_LEVEL> {
 		static const D3D_FEATURE_LEVEL check[] = {
@@ -374,13 +380,30 @@ GSRendererType D3D::GetPreferredRenderer()
 		Console.WriteLn("D3D11 feature level for autodetection: %x", static_cast<unsigned>(feature_level));
 		return feature_level;
 	};
-	const auto get_d3d12_device = [&adapter]() {
-		wil::com_ptr_nothrow<ID3D12Device> device;
-		const HRESULT hr = D3D12CreateDevice(adapter.get(), D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(device.put()));
-		if (FAILED(hr))
-			Console.Error("D3D12CreateDevice() for automatic renderer failed: %08X", hr);
-		return device;
+
+	static auto showUnsupportedOSD = [](const char* apiName, const char* messageId) {
+		Host::AddIconOSDMessage(
+			messageId,
+			ICON_FA_TV,
+			TRANSLATE_STR("GS",
+				fmt::format(
+					"The {} graphics API was automatically selected, but no compatible devices were found.\n"
+					"       You should update all graphics drivers in your system, including any integrated GPUs\n"
+					"       to use the {} renderer.",
+					apiName, apiName)
+					.c_str()),
+			Host::OSD_WARNING_DURATION);
 	};
+
+	static constexpr auto check_direct3d12_supported = []() {
+		GSDevice12 device;
+		if (device.CheckDevice())
+			return true;
+
+		showUnsupportedOSD("Direct3D 12", "D3D12DriverUnsupported");
+		return false;
+	};
+
 #ifdef ENABLE_VULKAN
 	static constexpr auto check_for_mapping_layers = []() {
 		PCWSTR familyName = L"Microsoft.D3DMappingLayers_8wekyb3d8bbwe";
@@ -405,17 +428,28 @@ GSRendererType D3D::GetPreferredRenderer()
 		if (check_for_mapping_layers())
 			return false;
 
-		if (!GSDeviceVK::EnumerateGPUs().empty())
+		GSDeviceVK device;
+		if (device.CheckDevice())
 			return true;
 
-		Host::AddIconOSDMessage("VKDriverUnsupported", ICON_FA_TV, TRANSLATE_STR("GS",
-			"The Vulkan graphics API was automatically selected, but no compatible devices were found.\n"
-			"       You should update all graphics drivers in your system, including any integrated GPUs\n"
-			"       to use the Vulkan renderer."), Host::OSD_WARNING_DURATION);
+		showUnsupportedOSD("Vulkan", "VKDriverUnsupported");
 		return false;
 	};
 #else
 	static constexpr auto check_vulkan_supported = []() { return false; };
+#endif
+
+#ifdef ENABLE_OPENGL
+	static constexpr auto check_opengl_supported = []() {
+		GSDeviceOGL device;
+		if (device.CheckDevice())
+			return true;
+
+		showUnsupportedOSD("OpenGL", "GLDriverUnsupported");
+		return false;
+	};
+#else
+	static constexpr auto check_opengl_supported = []() { return false; };
 #endif
 
 	switch (GetVendorID(adapter.get()))
@@ -425,13 +459,35 @@ GSRendererType D3D::GetPreferredRenderer()
 			const std::optional<D3D_FEATURE_LEVEL> feature_level = get_d3d11_feature_level();
 			if (!feature_level.has_value())
 				return GSRendererType::DX11;
-			else if (feature_level == D3D_FEATURE_LEVEL_12_0)
-				//return check_vulkan_supported() ? GSRendererType::VK : GSRendererType::OGL;
-				return GSRendererType::DX12;
-			else if (feature_level == D3D_FEATURE_LEVEL_11_0)
-				return GSRendererType::OGL;
-			else
+
+			// Maxwell gen2 and newer pickup.
+			if (feature_level == D3D_FEATURE_LEVEL_12_0)
+			{
+				if (check_direct3d12_supported())
+					return GSRendererType::DX12;
+
+				if (check_vulkan_supported())
+					return GSRendererType::VK;
+
+				if (check_opengl_supported())
+					return GSRendererType::OGL;
+
 				return GSRendererType::DX11;
+			}
+
+			// Fermi and newer pickup.
+			if (feature_level == D3D_FEATURE_LEVEL_11_0)
+			{
+				if (check_vulkan_supported())
+					return GSRendererType::VK;
+
+				if (check_opengl_supported())
+					return GSRendererType::OGL;
+
+				return GSRendererType::DX11;
+			}
+
+			return GSRendererType::DX11;
 		}
 
 		case VendorID::AMD:
@@ -439,21 +495,53 @@ GSRendererType D3D::GetPreferredRenderer()
 			const std::optional<D3D_FEATURE_LEVEL> feature_level = get_d3d11_feature_level();
 			if (!feature_level.has_value())
 				return GSRendererType::DX11;
-			else if (feature_level == D3D_FEATURE_LEVEL_12_0)
-				//return check_vulkan_supported() ? GSRendererType::VK : GSRendererType::DX12;
-				return GSRendererType::DX12;
-			else if (feature_level == D3D_FEATURE_LEVEL_11_1)
-				return GSRendererType::DX12;
-			else
+
+			// GCN 5.0 and newer pickup.
+			if (feature_level == D3D_FEATURE_LEVEL_12_1)
+			{
+				if (check_direct3d12_supported())
+					return GSRendererType::DX12;
+
+				if (check_vulkan_supported())
+					return GSRendererType::VK;
+
+				if (check_opengl_supported())
+					return GSRendererType::OGL;
+
 				return GSRendererType::DX11;
+			}
+
+			// GCN 1.1 and newer pickup.
+			if (feature_level == D3D_FEATURE_LEVEL_12_0)
+			{
+				if (check_direct3d12_supported())
+					return GSRendererType::DX12;
+
+				if (check_vulkan_supported())
+					return GSRendererType::VK;
+
+				return GSRendererType::DX11;
+			}
+
+			// GCN 1.0 and newer pickup.
+			if (feature_level == D3D_FEATURE_LEVEL_11_1)
+				return GSRendererType::DX12;
+
+			return GSRendererType::DX11;
 		}
 
 		case VendorID::Intel:
 		{
+			const std::optional<D3D_FEATURE_LEVEL> feature_level = get_d3d11_feature_level();
+			if (!feature_level.has_value())
+				return GSRendererType::DX11;
+
 			// Vulkan has broken barriers, prior to Xe.
 
 			// Sampler feedback Tier 0.9 is only present in Tiger Lake/Xe/Arc, so we can use that to
 			// differentiate between them. Unfortunately, that requires a D3D12 device.
+			// Edit: It's better to use OpenGL on intel as it has support for fb fetch.
+			/*
 			const auto device12 = get_d3d12_device();
 			if (device12)
 			{
@@ -471,8 +559,13 @@ GSRendererType D3D::GetPreferredRenderer()
 					return GSRendererType::OGL;
 				}
 			}
+			*/
 
-			Console.WriteLn("Sampler feedback tier 0.9 or Direct3D 12 not found for Intel GPU, using Direct3D 11.");
+			// Haswell and newer pickup.
+			if (feature_level == D3D_FEATURE_LEVEL_11_1)
+				if (check_opengl_supported())
+					return GSRendererType::OGL;
+
 			return GSRendererType::DX11;
 		}
 		break;
