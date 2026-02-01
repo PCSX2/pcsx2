@@ -132,12 +132,15 @@ private:
 	u32 m_ib_pos = 0; // indices/sizeof(u32)
 	u32 m_structured_vb_pos = 0; // bytes
 
+public:
+	bool m_rgba16_unorm_hw_blend = false;
+
+private:
 	bool m_allow_tearing_supported = false;
 	bool m_using_flip_model_swap_chain = true;
 	bool m_using_allow_tearing = false;
 	bool m_is_exclusive_fullscreen = false;
 	bool m_conservative_depth = false;
-	bool m_rgba16_unorm_hw_blend = false;
 
 	struct
 	{
