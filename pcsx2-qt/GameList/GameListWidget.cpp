@@ -282,7 +282,7 @@ void GameListWidget::initialize()
 	connect(m_table_view, &QTableView::customContextMenuRequested, this,
 		&GameListWidget::onTableViewContextMenuRequested);
 	connect(m_table_view->horizontalHeader(), &QHeaderView::customContextMenuRequested, this,
-			&GameListWidget::onTableViewHeaderContextMenuRequested);
+		&GameListWidget::onTableViewHeaderContextMenuRequested);
 
 	// Save state when header state changes (hiding and showing handled within onTableViewHeaderContextMenuRequested).
 	connect(m_table_view->horizontalHeader(), &QHeaderView::sectionMoved, this, &GameListWidget::onTableHeaderStateChanged);
@@ -298,6 +298,11 @@ void GameListWidget::initialize()
 
 	// After header state load to account for user-specified sort.
 	m_table_view->setSortingEnabled(true);
+
+	// Safety Fallback: Ensure the header is actually visible and
+	// force it to stretch correctly on the first launch. This is an edgecase in case it already broke for some people or broke on older versions
+	m_table_view->horizontalHeader()->show();
+	resizeTableViewColumnsToFit();
 
 	m_ui.stack->insertWidget(0, m_table_view);
 
@@ -408,7 +413,7 @@ void GameListWidget::setCustomBackground()
 	// Selected Custom background is valid, connect the signals and start animation in gamelist
 	connect(m_background_movie, &QMovie::frameChanged, this, &GameListWidget::processBackgroundFrames, Qt::UniqueConnection);
 	m_ui.stack->setAutoFillBackground(false);
-	
+
 	m_table_view->viewport()->setAutoFillBackground(false);
 	m_list_view->viewport()->setAutoFillBackground(false);
 	updateCustomBackgroundState(true);
@@ -562,29 +567,128 @@ void GameListWidget::onListViewContextMenuRequested(const QPoint& point)
 
 void GameListWidget::onTableViewHeaderContextMenuRequested(const QPoint& point)
 {
+	// Create the context menu that appears when the user right-clicks
+	// on the horizontal header (column bar) of the game list.
 	QMenu menu;
+
+	// Retrieve the table's horizontal header.
+	// This is the widget (horizontal bar visually) that displays column titles like "Title",
+	// "Region", "Time Played", etc.
 	QHeaderView* header = m_table_view->horizontalHeader();
+
+	// Safety check: if for some reason the header does not exist,
+	// abort early to avoid crashes (unlikely) or more likely to prevent the header to disappear which makes the ability to right click and add/disable/re-order for columns impossible.
 	if (!header)
 		return;
 
 	int column_visual = 0;
+	// Iterate over *all* logical columns defined by the GameListModel.
+	// Logical indices are stable and represent the model's column IDs,
+	// regardless of how the user has reordered them visually giving them the freedom to display how they want it, holding and dragging the column headers also works.
 	for (int column = 0; column < GameListModel::Column_Count; column++)
 	{
-		// The "cover" column is the game grid and cannot be hidden.
+		// The "cover" column represents the game grid / box art view.
+		// It must never be hidden, so we skip it entirely.
 		if (column == GameListModel::Column_Cover)
 			continue;
 
-		column_visual = header->visualIndex(column);
-		QAction* action = menu.addAction(m_model->getColumnDisplayName(column_visual));
+		// Convert the logical column index into a *visual* index.
+		// This ensures the correct column is toggled even if the user
+		// has reordered columns by dragging the header.
+		const int column_visual = header->visualIndex(column);
+
+		// Add an entry to the context menu using the column's display name.
+		// Each entry represents a toggleable column.
+		QAction* action = menu.addAction(
+			m_model->getColumnDisplayName(column_visual));
+
+		// The menu entry is an interactable checkbox for the right-click menu.
 		action->setCheckable(true);
+
+		// The checkbox state reflects whether the column is currently visible.
 		action->setChecked(!m_table_view->isColumnHidden(column_visual));
-		connect(action, &QAction::toggled, [this, column_visual](bool enabled) {
-			m_table_view->setColumnHidden(column_visual, !enabled);
-			onTableHeaderStateChanged();
-			resizeTableViewColumnsToFit();
-		});
+
+		// Connect the checkbox toggle to logic that hides or shows the column.
+		connect(action, &QAction::toggled, this,
+			[this, column, column_visual, action](bool enabled) {
+				// Possible Optimization: Store the header pointer once for the whole lambda
+				// because it gets called quite often it seems and this should avoid Double Lookups.
+				QHeaderView* const header = m_table_view->horizontalHeader();
+				// If the user is attempting to *hide* this column...
+				if (!enabled)
+				{
+					// We must ensure that at least ONE column remains visible.
+					// Allowing all columns to be hidden would cause the header
+					// to collapse to zero height, permanently locking the user
+					// out of the UI with no way to recover unless you reset (such as with the wizard or delete the INI or know what INI value to adjust).
+					bool any_other_visible = false;
+
+					// Scan all columns to see if any other column is still visible.
+					// We use 'i' here to avoid shadowing the 'column' variable captured from the outer loop, see the connect logic above.
+					for (int i = 0; i < GameListModel::Column_Count; i++)
+					{
+						// Skip the cover column, which is never hideable.
+						if (i == GameListModel::Column_Cover)
+							continue;
+
+						// Convert logical index to visual index using the cached header pointer to avoid double lookups.
+						const int visual = header->visualIndex(i);
+
+						// If this column exists and is visible...
+						if (visual >= 0 && !m_table_view->isColumnHidden(visual))
+						{
+							// ...and it is NOT the column we're currently trying to hide (column_visual),
+							// then at least one other column remains visible and can't be unchecked to avoid accidental misclicks
+							// (and possible frustration for regular users albeit small as you have to uncheck everything).
+							if (visual != column_visual)
+							{
+								any_other_visible = true;
+								break;
+							}
+						}
+					}
+
+					// If no other visible columns were found, this means the user
+					// is attempting to hide the *last* visible column.
+					// We block this action and re-check the checkbox to reflect
+					// that the column must remain visible.
+					// I thought about making it show a blank bar instead or even say Placeholder as text,
+					// but it seems that Qt will enforce the minimum size to 0 if there are no enabled checkboxes
+					// (which makes sense) and don't want to hack fake columns which I already referenced in this file.
+					if (!any_other_visible)
+					{
+						action->setChecked(true);
+						return;
+					}
+				}
+
+				// Apply the column visibility change.
+				m_table_view->setColumnHidden(column_visual, !enabled);
+
+				// Notify the rest of the UI that the header state has changed.
+				// This typically triggers saving the new state to the settings namely PCSX2.ini file.
+				onTableHeaderStateChanged();
+
+				// Recalculate column widths to keep the layout tidy
+				// after showing or hiding a column.
+				resizeTableViewColumnsToFit();
+			});
 	}
 
+	// Add a separator to visually separate column toggles, it's easier to have a clear distinction between the column toggles and the reset button.
+	menu.addSeparator();
+
+	// Add a "panic button" that fully restores the default column layout.
+	// This allows users to recover without editing configuration files such as [GameListTableView] has a key with
+	// and variable HeaderState which you can remove the line to also do the same effect but not user-friendly.
+	QAction* resetAction = menu.addAction(tr("Reset to Default Columns"));
+
+	// Makes it so that you get the default order is forcely applied again (Type, Code, Title, Time Played,
+	// Last Played, Size, Region, Compatibility) when you left click the option.
+	connect(resetAction, &QAction::triggered,
+		this, &GameListWidget::resetTableHeaderToDefault);
+
+	// Display the context menu at the mouse position.
 	menu.exec(m_table_view->mapToGlobal(point));
 }
 
@@ -824,6 +928,8 @@ void GameListWidget::applyTableHeaderDefaults()
 }
 
 // TODO (Tech): Create a button for this in the minibar. Currently unused.
+// TODO (Red): Not sure if I should integrate it in the minibar for now when I made sure they can't break their order and there is a reset function now when you right-click the column.
+//             They could accidentaly press on it when they didn't want to, could be revised later still because people without mouses can't do it such as controller mode on the TV.
 void GameListWidget::resetTableHeaderToDefault()
 {
 	QHeaderView* header = m_table_view->horizontalHeader();
@@ -848,6 +954,8 @@ void GameListWidget::resetTableHeaderToDefault()
 	}
 
 	Host::SetBaseStringSettingValue("GameListTableView", "HeaderState", header->saveState().toBase64());
+	// This makes the columns expand to fill the window right now.
+	resizeTableViewColumnsToFit();
 }
 
 void GameListWidget::saveSortSettings(const int column, const Qt::SortOrder sort_order)
