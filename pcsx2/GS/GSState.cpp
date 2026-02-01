@@ -6114,8 +6114,11 @@ void GSState::GSPCRTCRegs::CalculateFramebufferOffset(bool scanmask, GSRegDISPFB
 	{
 		if (framebuffer0Reg.DBY != PCRTCDisplays[0].prevFramebufferReg.DBY)
 		{
-			PCRTCDisplays[0].framebufferRect.y = PCRTCDisplays[1].framebufferRect.y;
-			PCRTCDisplays[0].framebufferRect.w = PCRTCDisplays[1].framebufferRect.w;
+			if (framebuffer1Reg.DBY == PCRTCDisplays[1].prevFramebufferReg.DBY)
+			{
+				PCRTCDisplays[0].framebufferRect.y = PCRTCDisplays[1].framebufferRect.y;
+				PCRTCDisplays[0].framebufferRect.w = PCRTCDisplays[1].framebufferRect.w;
+			}
 		}
 		else
 		{
