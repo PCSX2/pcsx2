@@ -563,23 +563,17 @@ void VKSwapChain::ReleaseCurrentImage()
 	{
 		GSDeviceVK::GetInstance()->WaitForGPUIdle();
 
+		// VK_EXT_swapchain_maintenance1 types/enums are aliases of VK_KHR_swapchain_maintenance1 types/enums.
+		const VkReleaseSwapchainImagesInfoKHR info = {.sType = VK_STRUCTURE_TYPE_RELEASE_SWAPCHAIN_IMAGES_INFO_KHR,
+			.swapchain = m_swap_chain,
+			.imageIndexCount = 1,
+			.pImageIndices = &m_current_image};
+
 		VkResult res;
 		if (GSDeviceVK::GetInstance()->GetOptionalExtensions().vk_swapchain_maintenance1_is_khr)
-		{
-			const VkReleaseSwapchainImagesInfoKHR info = {.sType = VK_STRUCTURE_TYPE_RELEASE_SWAPCHAIN_IMAGES_INFO_KHR,
-				.swapchain = m_swap_chain,
-				.imageIndexCount = 1,
-				.pImageIndices = &m_current_image};
 			res = vkReleaseSwapchainImagesKHR(GSDeviceVK::GetInstance()->GetDevice(), &info);
-		}
 		else
-		{
-			const VkReleaseSwapchainImagesInfoEXT info = {.sType = VK_STRUCTURE_TYPE_RELEASE_SWAPCHAIN_IMAGES_INFO_EXT,
-				.swapchain = m_swap_chain,
-				.imageIndexCount = 1,
-				.pImageIndices = &m_current_image};
 			res = vkReleaseSwapchainImagesEXT(GSDeviceVK::GetInstance()->GetDevice(), &info);
-		}
 		if (res != VK_SUCCESS)
 			LOG_VULKAN_ERROR(res, "vkReleaseSwapchainImages() failed: ");
 	}
