@@ -228,7 +228,7 @@ static __fi void execI()
 		PSXCPU_LOG("%s", disR3000AF(psxRegs.code, psxRegs.pc));
 
 	psxRegs.pc+= 4;
-	psxRegs.cycle++;
+	psxRegs.cycle += 2;
 
 	psxBSC[psxRegs.code >> 26]();
 }
