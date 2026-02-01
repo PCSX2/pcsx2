@@ -3754,13 +3754,11 @@ GSState::PRIM_OVERLAP GSState::GetPrimitiveOverlapDrawlistImpl(bool save_drawlis
 	const u16* RESTRICT index = m_index.buff;
 	const u32 count = m_index.tail;
 
-	// Optimize out using indices for sprites and points; probably not much difference.
-	// FIXME: REfactor this to just return the points.
-	const auto GetIndex = [&](int i) {
+	const auto GetPoint = [v, index](int i) -> GSVector4i {
 		if constexpr (primclass == GS_SPRITE_CLASS || primclass == GS_POINT_CLASS)
-			return i;
+			return GSVector4i(v[i].m[1]).upl16(); // Optimize out using the indices.
 		else
-			return index[i];
+			return GSVector4i(v[index[i]].m[1]).upl16();
 	};
 
 	// Batch prim into groups so that within each group the cumulative bboxes are non-overlapping.
@@ -3801,11 +3799,13 @@ GSState::PRIM_OVERLAP GSState::GetPrimitiveOverlapDrawlistImpl(bool save_drawlis
 
 			// Test overlap of two adjacent triangles give the indices of the
 			// shared edge and two unshared points.
-			const auto TrianglesOverlap = [v, index](u32 s0, u32 s1, u32 u0, u32 u1, bool& sign_out) -> bool {
-				const GSVector4i shared0 = GSVector4i(v[index[s0]].m[1]).upl16();
-				const GSVector4i shared1 = GSVector4i(v[index[s1]].m[1]).upl16() - shared0;
-				const GSVector4i unshared0 = GSVector4i(v[index[u0]].m[1]).upl16() - shared0;
-				const GSVector4i unshared1 = GSVector4i(v[index[u1]].m[1]).upl16() - shared0;
+			const auto TrianglesOverlap = [v, index, GetPoint]
+				(u32 s0, u32 s1, u32 u0, u32 u1, bool& sign_out) -> bool {
+
+				const GSVector4i shared0 = GetPoint(s0);
+				const GSVector4i shared1 = GetPoint(s1) - shared0;
+				const GSVector4i unshared0 = GetPoint(u0) - shared0;
+				const GSVector4i unshared1 = GetPoint(u1) - shared0;
 
 				// Determine which side of the shared edge each triangle is on.
 				const bool sign0 = unshared0.x * shared1.y - unshared0.y * shared1.x >= 0;
@@ -3818,7 +3818,7 @@ GSState::PRIM_OVERLAP GSState::GetPrimitiveOverlapDrawlistImpl(bool save_drawlis
 			};
 
 			// Helper to detect triangles strips/fans.
-			const auto CheckTriangleQuads = [v, index, count, TrianglesOverlap]
+			const auto CheckTriangleQuads = [v, index, count, TrianglesOverlap, GetPoint]
 				<int type>(u32 i, u32& skip, GSVector4i& bbox, bool& axis_aligned) -> bool {
 
 				// Assuming that indices 0-5 represent two triangles:
@@ -3856,9 +3856,9 @@ GSState::PRIM_OVERLAP GSState::GetPrimitiveOverlapDrawlistImpl(bool save_drawlis
 				u32 j = i;
 
 				// Get the initial triangle bbox.
-				bbox = GSVector4i(v[index[j + 0]].m[1]).upl16().xyxy();
-				bbox = bbox.runion(GSVector4i(v[index[j + 1]].m[1]).upl16().xyxy());
-				bbox = bbox.runion(GSVector4i(v[index[j + 2]].m[1]).upl16().xyxy());
+				bbox = GetPoint(j + 0).xyxy();
+				bbox = bbox.runion(GetPoint(j + 1).xyxy());
+				bbox = bbox.runion(GetPoint(j + 2).xyxy());
 
 				while (true)
 				{
@@ -3871,7 +3871,7 @@ GSState::PRIM_OVERLAP GSState::GetPrimitiveOverlapDrawlistImpl(bool save_drawlis
 
 					// Corners are on opposite sides so we can assume a non-axis-aligned quad.
 					// Take union with the single unshared point.
-					bbox = bbox.runion(GSVector4i(v[index[j + tri1[2]]].m[1]).upl16().xyxy());
+					bbox = bbox.runion(GetPoint(j + tri1[2]).xyxy());
 					if (type == 0)
 					{
 						// Only do axis-aligned check for tristrips.
@@ -3903,6 +3903,7 @@ GSState::PRIM_OVERLAP GSState::GetPrimitiveOverlapDrawlistImpl(bool save_drawlis
 			// Template parameter indicates if the triangle is at the end of the strip or beginning.
 			const auto MatchTriangles = [v, index, TrianglesOverlap]<bool end0, bool end1>
 				(u32 tri0, u32 tri1, bool& sign) -> bool {
+
 				// For the end triangle only consider the last edge of the triangle.
 				// For the start triangle only consider the first edge of the triangle.
 				const u32 base0 = end0 ? 1 : 0;
@@ -3944,6 +3945,7 @@ GSState::PRIM_OVERLAP GSState::GetPrimitiveOverlapDrawlistImpl(bool save_drawlis
 			// a grid of triangles strips.
 			const auto CheckTriangleStrips = [index, v, count, CheckTriangleQuads, MatchTriangles]
 				(u32 i, u32& skip, GSVector4i& bbox_all) -> bool {
+
 				if (!(primclass == GS_TRIANGLE_CLASS && i + 6 <= count))
 				{
 					return false;
@@ -4020,15 +4022,15 @@ GSState::PRIM_OVERLAP GSState::GetPrimitiveOverlapDrawlistImpl(bool save_drawlis
 							MatchTriangles.template operator()<true, true>(prev_tri1, tri1, sign1))
 						{
 							count++;
-							// Console.Warning("Tristrip Match: draw=%d count=%d orient=normal j=%d", s_n, count, j);
 							flip = false; // Tristrips are in the same directions.
+							// Console.Warning("Tristrip Match: draw=%d count=%d orient=normal j=%d", s_n, count, j);
 						}
 						else if (MatchTriangles.template operator()<false, true>(prev_tri0, tri1, sign0) &&
 							MatchTriangles.template operator()<true, false>(prev_tri1, tri0, sign1))
 						{
 							count++;
-							// Console.Warning("Tristrip Match: draw=%d count=%d orient=flip j=%d", s_n, count, j);
 							flip = true; // Tristrips are in opposite directions.
+							// Console.Warning("Tristrip Match: draw=%d count=%d orient=flip j=%d", s_n, count, j);
 						}
 						else
 						{
@@ -4070,36 +4072,38 @@ GSState::PRIM_OVERLAP GSState::GetPrimitiveOverlapDrawlistImpl(bool save_drawlis
 			};
 
 			// Helper functions to detect when two triangles form an axis-aligned quad.
-			const auto GetBBoxAxisAlignedTriangles = [v, index, count](u32 i, u32& skip, GSVector4i& bbox) -> bool {
+			const auto GetBBoxAxisAlignedTriangles = [v, index, count, GetPoint]
+				(u32 i, u32& skip, GSVector4i& bbox) -> bool {
+
 				if (!(primclass == GS_TRIANGLE_CLASS && i + 6 <= count))
 				{
 					return false;
 				}
 
-				const u16* RESTRICT idx0 = &index[i + 0];
-				const u16* RESTRICT idx1 = &index[i + 3];
+				const u32 off0 = i + 0;
+				const u32 off1 = i + 3;
 				TriangleOrdering tri0;
 				TriangleOrdering tri1;
 
-				if (!AreTrianglesQuad<0, 0>(v, idx0, idx1, &tri0, &tri1))
+				if (!AreTrianglesQuad<0, 0>(v, index + off0, index + off1, &tri0, &tri1))
 				{
 					return false;
 				}
 
 				// tri.b is right angle corner
-				bbox = GSVector4i(v[idx0[tri0.b]].m[1]).upl16().xyxy();
-				bbox = bbox.runion(GSVector4i(v[idx1[tri1.b]].m[1]).upl16().xyxy());
+				bbox = GetPoint(off0 + tri0.b).xyxy();
+				bbox = bbox.runion(GetPoint(off1 + tri1.b).xyxy());
 				skip = 6;
 
 				return true;
 			};
 
 			// Helper functions to just get the individual prim bbox.
-			const auto GetBBox = [v, count, GetIndex](u32 i, u32& skip, GSVector4i& bbox) -> bool {
-				bbox = GSVector4i(v[GetIndex(i + 0)].m[1]).upl16().xyxy();
+			const auto GetBBox = [v, count, GetPoint](u32 i, u32& skip, GSVector4i& bbox) -> bool {
+				bbox = GetPoint(i + 0).xyxy();
 				for (u32 j = 1; j < n; j++) // Unroll
 				{
-					bbox = bbox.runion(GSVector4i(v[GetIndex(i + j)].m[1]).upl16().xyxy());
+					bbox = bbox.runion(GetPoint(i + j).xyxy());
 				}
 				skip = n;
 				return true;
