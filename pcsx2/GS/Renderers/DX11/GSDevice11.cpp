@@ -1323,6 +1323,10 @@ void GSDevice11::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTextur
 	GSVector2i ds;
 	if (dTex)
 	{
+		// preemptively bind svr if possible
+		if (m_state.cached_rt_view != sTex && m_state.cached_dsv != sTex)
+			PSSetShaderResource(0, sTex);
+
 		// ps unbind conflicting srvs
 		PSUnbindConflictingSRVs(dTex);
 
@@ -1390,6 +1394,10 @@ void GSDevice11::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	GSVector2i ds;
 	if (dTex)
 	{
+		// preemptively bind svr if possible
+		if (m_state.cached_rt_view != sTex && m_state.cached_dsv != sTex)
+			PSSetShaderResource(0, sTex);
+
 		// ps unbind conflicting srvs
 		PSUnbindConflictingSRVs(dTex);
 
@@ -2196,6 +2204,11 @@ void GSDevice11::SetupDATE(GSTexture* rt, GSTexture* ds, SetDATM datm, const GSV
 
 	m_ctx->ClearDepthStencilView(*static_cast<GSTexture11*>(ds), D3D11_CLEAR_STENCIL, 0.0f, 0);
 
+	// preemptively bind svr if possible
+
+	if (m_state.cached_rt_view != rt && m_state.cached_dsv != rt)
+		PSSetShaderResource(0, rt);
+
 	// ps unbind conflicting srvs
 
 	PSUnbindConflictingSRVs(ds);
@@ -2409,6 +2422,7 @@ void GSDevice11::VSSetShader(ID3D11VertexShader* vs, ID3D11Buffer* vs_cb)
 
 void GSDevice11::PSSetShaderResource(int i, GSTexture* sr)
 {
+	// Update local state only, PSUpdateShaderState updates gpu state.
 	m_state.ps_sr_views[i] = *static_cast<GSTexture11*>(sr);
 }
 
@@ -2445,7 +2459,7 @@ void GSDevice11::PSUpdateShaderState(const bool sr_update, const bool ss_update)
 	if (sr_update)
 	{
 		bool sr_changed = false;
-		for (size_t i = 0; i < m_state.ps_sr_views.size(); ++i)
+		for (size_t i = 0; i < MAX_TEXTURES; ++i)
 		{
 			if (m_state.ps_cached_sr_views[i] != m_state.ps_sr_views[i])
 			{
@@ -2457,14 +2471,14 @@ void GSDevice11::PSUpdateShaderState(const bool sr_update, const bool ss_update)
 		if (sr_changed)
 		{
 			m_state.ps_cached_sr_views = m_state.ps_sr_views;
-			m_ctx->PSSetShaderResources(0, m_state.ps_sr_views.size(), m_state.ps_sr_views.data());
+			m_ctx->PSSetShaderResources(0, MAX_TEXTURES, m_state.ps_sr_views.data());
 		}
 	}
 
 	if (ss_update)
 	{
 		bool ss_changed = false;
-		for (size_t i = 0; i < m_state.ps_ss.size(); ++i)
+		for (size_t i = 0; i < MAX_SAMPLERS; ++i)
 		{
 			if (m_state.ps_cached_ss[i] != m_state.ps_ss[i])
 			{
@@ -2476,7 +2490,7 @@ void GSDevice11::PSUpdateShaderState(const bool sr_update, const bool ss_update)
 		if (ss_changed)
 		{
 			m_state.ps_cached_ss = m_state.ps_ss;
-			m_ctx->PSSetSamplers(0, m_state.ps_ss.size(), m_state.ps_ss.data());
+			m_ctx->PSSetSamplers(0, MAX_SAMPLERS, m_state.ps_ss.data());
 		}
 	}
 }
@@ -2485,9 +2499,10 @@ void GSDevice11::PSUnbindConflictingSRVs(GSTexture* tex1, GSTexture* tex2)
 {
 	// Make sure no SRVs are bound using the same texture before binding it to a RTV.
 	bool changed = false;
-	for (size_t i = 0; i < m_state.ps_sr_views.size(); i++)
+	for (size_t i = 0; i < MAX_TEXTURES; i++)
 	{
-		if ((tex1 && m_state.ps_sr_views[i] == *static_cast<GSTexture11*>(tex1)) || (tex2 && m_state.ps_sr_views[i] == *static_cast<GSTexture11*>(tex2)))
+		// We chech against what's currently bound (cached_sr_views), then update local state (ps_sr_views) which calls PSUpdateShaderState to update gpu state.
+		if ((tex1 && m_state.ps_cached_sr_views[i] == *static_cast<GSTexture11*>(tex1)) || (tex2 && m_state.ps_cached_sr_views[i] == *static_cast<GSTexture11*>(tex2)))
 		{
 			m_state.ps_sr_views[i] = nullptr;
 			changed = true;
@@ -2729,19 +2744,28 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	if (config.tex && config.tex == config.ds)
 		read_only_dsv = static_cast<GSTexture11*>(config.ds)->ReadOnlyDepthStencilView();
 
-	// Should be called before changing local srv state.
-	PSUnbindConflictingSRVs(colclip_rt ? colclip_rt : config.rt, read_only_dsv ? nullptr : config.ds);
-
+	// Preemptively bind svr if possible.
+	// We update the local state, then if there are srv conflicts PSUnbindConflictingSRVs will update the gpu state.
 	if (config.tex)
 	{
 		CommitClear(config.tex);
-		PSSetShaderResource(0, config.tex);
+		if (m_state.cached_rt_view != config.tex && m_state.cached_dsv != config.tex)
+			PSSetShaderResource(0, config.tex);
 	}
 	if (config.pal)
 	{
 		CommitClear(config.pal);
-		PSSetShaderResource(1, config.pal);
+		if (m_state.cached_rt_view != config.pal && m_state.cached_dsv != config.pal)
+			PSSetShaderResource(1, config.pal);
 	}
+
+	// Should be called before changing current gpu state.
+	PSUnbindConflictingSRVs(colclip_rt ? colclip_rt : config.rt, read_only_dsv ? nullptr : config.ds);
+
+	if (config.tex)
+		PSSetShaderResource(0, config.tex);
+	if (config.pal)
+		PSSetShaderResource(1, config.pal);
 
 	SetupVS(config.vs, &config.cb_vs);
 	SetupPS(config.ps, &config.cb_ps, config.sampler);
