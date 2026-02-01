@@ -197,6 +197,9 @@ static bool s_screensaver_inhibited = false;
 
 static bool s_discord_presence_active = false;
 static time_t s_discord_presence_time_epoch;
+static const char* s_discord_presence_app_id = "1458595419499139094";
+static const char* s_discord_presence_large_image_key = "4k-pcsx2";
+static const char* s_discord_presence_large_image_text = "PCSX2 PS2 Emulator";
 
 // Making GSDumpReplayer.h dependent on R5900.h is a no-no, since the GS uses it.
 extern R5900cpu GSDumpReplayerCpu;
@@ -3688,7 +3691,7 @@ void VMManager::InitializeDiscordPresence()
 		return;
 
 	DiscordEventHandlers handlers = {};
-	Discord_Initialize("1025789002055430154", &handlers, 0, nullptr);
+	Discord_Initialize(s_discord_presence_app_id, &handlers, 0, nullptr);
 	s_discord_presence_active = true;
 
 	UpdateDiscordPresence(true);
@@ -3715,8 +3718,8 @@ void VMManager::UpdateDiscordPresence(bool update_session_time)
 
 	// https://discord.com/developers/docs/rich-presence/how-to#updating-presence-update-presence-payload-fields
 	DiscordRichPresence rp = {};
-	rp.largeImageKey = "4k-pcsx2";
-	rp.largeImageText = "PCSX2 PS2 Emulator";
+	rp.largeImageKey = s_discord_presence_large_image_key;
+	rp.largeImageText = s_discord_presence_large_image_text;
 	rp.startTimestamp = s_discord_presence_time_epoch;
 	rp.details = s_title.empty() ? TRANSLATE("VMManager", "No Game Running") : s_title.c_str();
 
