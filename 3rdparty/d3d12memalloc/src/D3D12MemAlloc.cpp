@@ -33,11 +33,24 @@
     #include <shared_mutex>
 #endif
 
-// Includes needed for MinGW - see #71.
-#ifndef _MSC_VER
-    #include <guiddef.h>
-    // guiddef.h must be included first.
-    #include <dxguids.h>
+// On older mingw versions, using the Agility SDK will cause linker errors unless dxguids.h is included.
+// But on newer mingw versions, the includes aren't necessary thus no need to grab DirectX-Headers.
+// Release cycles are slow for LTS distros on Linux, so this codeblock will need to stay for a few years.
+#if defined(__MINGW64_VERSION_MAJOR) && defined(__MINGW64_VERSION_MINOR) && \
+	defined(__MINGW64_VERSION_BUGFIX) && defined(__ID3D12Device8_INTERFACE_DEFINED__)
+    #define D3D12MA_MAKE_MINGW_VERSION(x, y, z) ((x << 20u) | (y << 10u) | (z))
+    #if D3D12MA_MAKE_MINGW_VERSION(__MINGW64_VERSION_MAJOR, __MINGW64_VERSION_MINOR, \
+								  __MINGW64_VERSION_BUGFIX) <= D3D12MA_MAKE_MINGW_VERSION(11, 0, 1)
+        #if defined(__has_include)
+            #if !__has_include(<dxguids.h>)
+                #error "mingw or gcc detected. dxguids.h is needed. You can grab it from https://github.com/microsoft/DirectX-Headers or if you're on Ubuntu just run sudo apt install directx-headers-dev"
+            #endif
+        #endif
+        #include <guiddef.h>
+        // // guiddef.h must be included first.
+        #include <dxguids.h>
+    #endif
+    #undef D3D12MA_MAKE_MINGW_VERSION
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -93,6 +106,14 @@
     #endif
 #endif
 
+#ifndef D3D12MA_DEFAULT_ALIGNMENT
+    /*
+    Default alignment of allocations in default pools and custom pools with MinAllocationAlignment == 0.
+    Can be lowered for custom pools by specifying custom MinAllocationAlignment > 0.
+    */
+    #define D3D12MA_DEFAULT_ALIGNMENT D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT
+#endif
+
 #ifndef D3D12MA_DEBUG_ALIGNMENT
     /*
     Minimum alignment of all allocations, in bytes.
@@ -124,6 +145,14 @@ especially to test compatibility with D3D12_RESOURCE_HEAP_TIER_1 on modern GPUs.
 #ifndef D3D12MA_DEFAULT_BLOCK_SIZE
    /// Default size of a block allocated as single ID3D12Heap.
    #define D3D12MA_DEFAULT_BLOCK_SIZE (64ull * 1024 * 1024)
+#endif
+
+#ifndef D3D12MA_TIGHT_ALIGNMENT_SUPPORTED
+    #if D3D12_SDK_VERSION >= 618
+        #define D3D12MA_TIGHT_ALIGNMENT_SUPPORTED 1
+    #else
+        #define D3D12MA_TIGHT_ALIGNMENT_SUPPORTED 0
+    #endif
 #endif
 
 #ifndef D3D12MA_OPTIONS16_SUPPORTED
@@ -186,6 +215,7 @@ static const D3D12_HEAP_FLAGS RESOURCE_CLASS_HEAP_FLAGS =
 static const D3D12_RESIDENCY_PRIORITY D3D12_RESIDENCY_PRIORITY_NONE = D3D12_RESIDENCY_PRIORITY(0);
 
 static const D3D12_HEAP_TYPE D3D12_HEAP_TYPE_GPU_UPLOAD_COPY = (D3D12_HEAP_TYPE)5;
+static const D3D12_RESOURCE_FLAGS D3D12_RESOURCE_FLAG_USE_TIGHT_ALIGNMENT_COPY = (D3D12_RESOURCE_FLAGS)0x400;
 
 #ifndef _D3D12MA_ENUM_DECLARATIONS
 
@@ -787,11 +817,9 @@ static bool ValidateAllocateMemoryParameters(
     return pAllocDesc &&
         pAllocInfo &&
         ppAllocation &&
-        (pAllocInfo->Alignment == 0 ||
-            pAllocInfo->Alignment == D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT ||
-            pAllocInfo->Alignment == D3D12_DEFAULT_MSAA_RESOURCE_PLACEMENT_ALIGNMENT) &&
-        pAllocInfo->SizeInBytes != 0 &&
-        pAllocInfo->SizeInBytes % (64ull * 1024) == 0;
+        IsPow2(pAllocInfo->Alignment) &&
+        pAllocInfo->SizeInBytes > 0 &&
+        pAllocInfo->SizeInBytes % 4 == 0;
 }
 
 #endif // _D3D12MA_FUNCTIONS
@@ -5960,6 +5988,8 @@ public:
     BOOL IsCacheCoherentUMA() const { return m_D3D12Architecture.CacheCoherentUMA; }
     bool SupportsResourceHeapTier2() const { return m_D3D12Options.ResourceHeapTier >= D3D12_RESOURCE_HEAP_TIER_2; }
     bool IsGPUUploadHeapSupported() const { return m_GPUUploadHeapSupported != FALSE; }
+    bool IsTightAlignmentSupported() const { return m_TightAlignmentSupported != FALSE; }
+    bool IsTightAlignmentEnabled() const { return IsTightAlignmentSupported() && m_UseTightAlignment; }
     bool UseMutex() const { return m_UseMutex; }
     AllocationObjectAllocator& GetAllocationObjectAllocator() { return m_AllocationObjectAllocator; }
     UINT GetCurrentFrameIndex() const { return m_CurrentFrameIndex.load(); }
@@ -6046,7 +6076,8 @@ private:
     const bool m_UseMutex;
     const bool m_AlwaysCommitted;
     const bool m_MsaaAlwaysCommitted;
-    const bool m_PreferSmallBuffersCommitted;
+    bool m_PreferSmallBuffersCommitted;
+    const bool m_UseTightAlignment;
     bool m_DefaultPoolsNotZeroed = false;
     ID3D12Device* m_Device; // AddRef
 #ifdef __ID3D12Device1_INTERFACE_DEFINED__
@@ -6074,6 +6105,7 @@ private:
     DXGI_ADAPTER_DESC m_AdapterDesc;
     D3D12_FEATURE_DATA_D3D12_OPTIONS m_D3D12Options;
     BOOL m_GPUUploadHeapSupported = FALSE;
+    BOOL m_TightAlignmentSupported = FALSE;
     D3D12_FEATURE_DATA_ARCHITECTURE m_D3D12Architecture;
     AllocationObjectAllocator m_AllocationObjectAllocator;
 
@@ -6155,7 +6187,8 @@ AllocatorPimpl::AllocatorPimpl(const ALLOCATION_CALLBACKS& allocationCallbacks, 
     : m_UseMutex((desc.Flags & ALLOCATOR_FLAG_SINGLETHREADED) == 0),
     m_AlwaysCommitted((desc.Flags & ALLOCATOR_FLAG_ALWAYS_COMMITTED) != 0),
     m_MsaaAlwaysCommitted((desc.Flags & ALLOCATOR_FLAG_MSAA_TEXTURES_ALWAYS_COMMITTED) != 0),
-    m_PreferSmallBuffersCommitted((desc.Flags & ALLOCATOR_FLAG_DONT_PREFER_SMALL_BUFFERS_COMMITTED) == 0),
+    m_PreferSmallBuffersCommitted((desc.Flags& ALLOCATOR_FLAG_DONT_PREFER_SMALL_BUFFERS_COMMITTED) == 0),
+    m_UseTightAlignment((desc.Flags & ALLOCATOR_FLAG_DONT_USE_TIGHT_ALIGNMENT) == 0),
     m_Device(desc.pDevice),
     m_Adapter(desc.pAdapter),
     m_PreferredBlockSize(desc.PreferredBlockSize != 0 ? desc.PreferredBlockSize : D3D12MA_DEFAULT_BLOCK_SIZE),
@@ -6244,6 +6277,25 @@ HRESULT AllocatorPimpl::Init(const ALLOCATOR_DESC& desc)
     }
 #endif // #if D3D12MA_OPTIONS16_SUPPORTED
 
+#if D3D12MA_TIGHT_ALIGNMENT_SUPPORTED
+    {
+        D3D12_FEATURE_DATA_TIGHT_ALIGNMENT tightAlignment = {};
+        hr = m_Device->CheckFeatureSupport(D3D12_FEATURE_D3D12_TIGHT_ALIGNMENT, &tightAlignment, sizeof(tightAlignment));
+        if (SUCCEEDED(hr))
+        {
+            m_TightAlignmentSupported = tightAlignment.SupportTier >= D3D12_TIGHT_ALIGNMENT_TIER_1;
+            
+            // If tight alignment is supported (checked by the code above) and wasn't disabled by the developer
+            // (with ALLOCATOR_FLAG_DONT_USE_TIGHT_ALIGNMENT), disable the preference for creating small buffers as committed,
+            // as if ALLOCATOR_FLAG_DONT_PREFER_SMALL_BUFFERS_COMMITTED was specified.
+            if (IsTightAlignmentEnabled())
+            {
+                m_PreferSmallBuffersCommitted = false;
+            }
+        }
+    }
+#endif // #if D3D12MA_TIGHT_ALIGNMENT_SUPPORTED
+
     hr = m_Device->CheckFeatureSupport(D3D12_FEATURE_ARCHITECTURE, &m_D3D12Architecture, sizeof(m_D3D12Architecture));
     if (FAILED(hr))
     {
@@ -6273,7 +6325,7 @@ HRESULT AllocatorPimpl::Init(const ALLOCATOR_DESC& desc)
             0, // minBlockCount
             SIZE_MAX, // maxBlockCount
             false, // explicitBlockSize
-            D3D12MA_DEBUG_ALIGNMENT, // minAllocationAlignment
+            (UINT64)D3D12MA_DEFAULT_ALIGNMENT, // minAllocationAlignment
             0, // Default algorithm,
             m_MsaaAlwaysCommitted,
             NULL, // pProtectedSession
@@ -6940,6 +6992,9 @@ void AllocatorPimpl::BuildStatsString(WCHAR** ppStatsString, BOOL detailedMap)
 
                 json.WriteString(L"GPUUploadHeapSupported");
                 json.WriteBool(m_GPUUploadHeapSupported != FALSE);
+
+                json.WriteString(L"TightAlignmentSupported");
+                json.WriteBool(m_TightAlignmentSupported != FALSE);
             }
             json.EndObject();
         }
@@ -7758,8 +7813,19 @@ HRESULT AllocatorPimpl::GetResourceAllocationInfo(
     D3D12_RESOURCE_ALLOCATION_INFO& outAllocInfo) const
 {
 #ifdef __ID3D12Device1_INTERFACE_DEFINED__
-    /* Optional optimization: Microsoft documentation says:
-    https://docs.microsoft.com/en-us/windows/win32/api/d3d12/nf-d3d12-id3d12device-getresourceallocationinfo
+
+#if D3D12MA_TIGHT_ALIGNMENT_SUPPORTED
+    if (IsTightAlignmentEnabled() &&
+        // Don't allow USE_TIGHT_ALIGNMENT together with ALLOW_CROSS_ADAPTER as there is a D3D Debug Layer error:
+        // D3D12 ERROR: ID3D12Device::GetResourceAllocationInfo: D3D12_RESOURCE_DESC::Flag D3D12_RESOURCE_FLAG_USE_TIGHT_ALIGNMENT will be ignored since D3D12_RESOURCE_FLAG_ALLOW_CROSS_ADAPTER is set. [ STATE_CREATION ERROR #599: CREATERESOURCE_INVALIDMISCFLAGS]
+        (inOutResourceDesc.Flags & D3D12_RESOURCE_FLAG_ALLOW_CROSS_ADAPTER) == 0)
+    {
+        inOutResourceDesc.Flags |= D3D12_RESOURCE_FLAG_USE_TIGHT_ALIGNMENT;
+    }
+#endif // #if D3D12MA_TIGHT_ALIGNMENT_SUPPORTED
+
+    /* Optional optimization: Microsoft documentation of the ID3D12Device::
+    GetResourceAllocationInfo function says:
 
     Your application can forgo using GetResourceAllocationInfo for buffer resources
     (D3D12_RESOURCE_DIMENSION_BUFFER). Buffers have the same size on all adapters,
@@ -7767,20 +7833,25 @@ HRESULT AllocatorPimpl::GetResourceAllocationInfo(
     D3D12_RESOURCE_DESC::Width.
     */
     if (inOutResourceDesc.Alignment == 0 &&
-        inOutResourceDesc.Dimension == D3D12_RESOURCE_DIMENSION_BUFFER)
+        inOutResourceDesc.Dimension == D3D12_RESOURCE_DIMENSION_BUFFER &&
+        !IsTightAlignmentEnabled())
     {
         outAllocInfo = {
             AlignUp<UINT64>(inOutResourceDesc.Width, D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT), // SizeInBytes
             D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT }; // Alignment
         return S_OK;
     }
+
 #endif // #ifdef __ID3D12Device1_INTERFACE_DEFINED__
 
     HRESULT hr = S_OK;
 
 #if D3D12MA_USE_SMALL_RESOURCE_PLACEMENT_ALIGNMENT
     if (inOutResourceDesc.Alignment == 0 &&
-        inOutResourceDesc.Dimension == D3D12_RESOURCE_DIMENSION_TEXTURE2D &&
+        (inOutResourceDesc.Flags & D3D12_RESOURCE_FLAG_USE_TIGHT_ALIGNMENT_COPY) == 0 &&
+        (inOutResourceDesc.Dimension == D3D12_RESOURCE_DIMENSION_TEXTURE1D ||
+            inOutResourceDesc.Dimension == D3D12_RESOURCE_DIMENSION_TEXTURE2D ||
+            inOutResourceDesc.Dimension == D3D12_RESOURCE_DIMENSION_TEXTURE3D) &&
         (inOutResourceDesc.Flags & (D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET | D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL)) == 0
 #if D3D12MA_USE_SMALL_RESOURCE_PLACEMENT_ALIGNMENT == 1
         && CanUseSmallAlignment(inOutResourceDesc)
@@ -8088,7 +8159,7 @@ BlockVector::BlockVector(
     m_MinBlockCount(minBlockCount),
     m_MaxBlockCount(maxBlockCount),
     m_ExplicitBlockSize(explicitBlockSize),
-    m_MinAllocationAlignment(minAllocationAlignment),
+    m_MinAllocationAlignment(D3D12MA_MAX(minAllocationAlignment, (UINT64)D3D12MA_DEBUG_ALIGNMENT)),
     m_Algorithm(algorithm),
     m_DenyMsaaTextures(denyMsaaTextures),
     m_ProtectedSession(pProtectedSession),
@@ -9241,12 +9312,14 @@ PoolPimpl::PoolPimpl(AllocatorPimpl* allocator, const POOL_DESC& desc)
     D3D12MA_ASSERT(m_Desc.pProtectedSession == NULL);
 #endif
 
+    const UINT64 minAlignment = desc.MinAllocationAlignment > 0 ? desc.MinAllocationAlignment : D3D12MA_DEFAULT_ALIGNMENT;
+
     m_BlockVector = D3D12MA_NEW(allocator->GetAllocs(), BlockVector)(
         allocator, desc.HeapProperties, desc.HeapFlags,
         preferredBlockSize,
         desc.MinBlockCount, maxBlockCount,
         explicitBlockSize,
-        D3D12MA_MAX(desc.MinAllocationAlignment, (UINT64)D3D12MA_DEBUG_ALIGNMENT),
+        minAlignment,
         (desc.Flags & POOL_FLAG_ALGORITHM_MASK) != 0,
         (desc.Flags & POOL_FLAG_MSAA_TEXTURES_ALWAYS_COMMITTED) != 0,
         desc.pProtectedSession,
@@ -9709,6 +9782,11 @@ BOOL Allocator::IsGPUUploadHeapSupported() const
     return m_Pimpl->IsGPUUploadHeapSupported();
 }
 
+BOOL Allocator::IsTightAlignmentSupported() const
+{
+    return m_Pimpl->IsTightAlignmentSupported();
+}
+
 UINT64 Allocator::GetMemoryCapacity(UINT memorySegmentGroup) const
 {
     return m_Pimpl->GetMemoryCapacity(memorySegmentGroup);
@@ -9800,7 +9878,7 @@ HRESULT Allocator::AllocateMemory(
         return E_INVALIDARG;
     }
     D3D12MA_DEBUG_GLOBAL_MUTEX_LOCK
-        return m_Pimpl->AllocateMemory(pAllocDesc, pAllocInfo, ppAllocation);
+    return m_Pimpl->AllocateMemory(pAllocDesc, pAllocInfo, ppAllocation);
 }
 
 HRESULT Allocator::CreateAliasingResource(
