@@ -1980,6 +1980,8 @@ SCAJ-20116:
 SCAJ-20117:
   name: "Fu-un Bakumatsu-den"
   region: "NTSC-Unk"
+  gsHWFixes:
+    halfPixelOffset: 5 # Fixes vertical lines.
 SCAJ-20118:
   name: "ラジアータ ストーリーズ"
   name-sort: "らじあーた すとーりーず"
@@ -13217,9 +13219,7 @@ SLAJ-25018:
   region: "NTSC-HK"
   compat: 5
   gsHWFixes:
-    alignSprite: 1 # Fixes vertical lines.
-    forceEvenSpritePosition: 1 # Improves visual clarity whilst upscaling.
-    roundSprite: 1 # Reduces graphics garbage on UI whilst upscaling.
+    halfPixelOffset: 5 # Fixes vertical lines.
 SLAJ-25019:
   name: "The Lord of the Rings - The Return of the King"
   region: "NTSC-C"
@@ -22704,9 +22704,7 @@ SLES-53191:
   name: "Kaido Racer"
   region: "PAL-M5"
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes ghosting during Rain/Storm.
-    alignSprite: 1 # Fixes vertical lines.
-    forceEvenSpritePosition: 1 # De-blurs the 3D image.
+    halfPixelOffset: 5 # Fixes vertical lines.
 SLES-53192:
   name: "Tim Burton's The Nightmare Before Christmas - Oogie's Reveng"
   name-sort: "Nightmare Before Christmas, The - Tim Burton's"
@@ -24969,9 +24967,7 @@ SLES-53900:
   name: "Kaido Racer 2"
   region: "PAL-M3"
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes ghosting during Storm.
-    alignSprite: 1 # Fixes black lines when upscaling.
-    forceEvenSpritePosition: 1 # De-blurs the 3D image.
+    halfPixelOffset: 5 # Fixes vertical lines.
 SLES-53901:
   name: "Torino 2006"
   region: "PAL-M5"
@@ -31336,9 +31332,7 @@ SLKA-25063:
   name-en: "Kaido Battle"
   region: "NTSC-K"
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes ghosting during Rain.
-    alignSprite: 1 # Fixes vertical lines.
-    forceEvenSpritePosition: 1 # De-blurs the 3D image.
+    halfPixelOffset: 5 # Fixes vertical lines.
 SLKA-25064:
   name: "천주 3 천벌"
   name-en: "Tenchu - Wrath of Heaven"
@@ -31433,9 +31427,7 @@ SLKA-25084:
   region: "NTSC-K"
   compat: 5
   gsHWFixes:
-    alignSprite: 1 # Fixes vertical lines.
-    forceEvenSpritePosition: 1 # Improves visual clarity whilst upscaling.
-    roundSprite: 1 # Reduces graphics garbage on UI whilst upscaling.
+    halfPixelOffset: 5 # Fixes vertical lines.
 SLKA-25085:
   name: "진・삼국무쌍 3 맹장전"
   name-en: "Jin Samguk Mussang 3 - Maengjangjeon"
@@ -31723,9 +31715,7 @@ SLKA-25146:
   name-en: "Kaido Battle 2 - Chain Reaction"
   region: "NTSC-K"
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes ghosting during Rain/Storm.
-    alignSprite: 1 # Fixes vertical lines.
-    forceEvenSpritePosition: 1 # De-blurs the 3D image.
+    halfPixelOffset: 5 # Fixes vertical lines.
 SLKA-25148:
   name: "MVP 베이스볼 2004"
   name-en: "MVP Baseball 2004"
@@ -32312,9 +32302,11 @@ SLKA-25255:
   name-en: "Mobile Suit Gundam Seed - Never Ending Tomorrow"
   region: "NTSC-K"
 SLKA-25257:
-  name: "풍운 막말전" # Undumped on ReDump as of 2025-08-28
-  name-en: "Fu-un Bakumatsu Den"
+  name: "풍운　막말전" # Undumped on ReDump as of 2025-08-28
+  name-en: "Fu-un Bakumatsu-den"
   region: "NTSC-K"
+  gsHWFixes:
+    halfPixelOffset: 5 # Fixes vertical lines.
 SLKA-25258:
   name: "요시츠네 영웅전"
   name-sort: "Yoshitsune Yeongungjeon"
@@ -35575,9 +35567,7 @@ SLPM-60195:
   name-en: "Kaidō Battle - Nikko, Haruna, Rokko, Hakone [Trial]"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes ghosting during Rain.
-    alignSprite: 1 # Fixes vertical lines.
-    forceEvenSpritePosition: 1 # De-blurs the 3D image.
+    halfPixelOffset: 5 # Fixes vertical lines.
 SLPM-60197:
   name: "エキサイティングプロレス 4 [体験版]"
   name-sort: "えきさいてぃんぐぷろれす4 [たいけんばん]"
@@ -35621,9 +35611,7 @@ SLPM-60206:
   name-en: "Shutokou Battle 01 [Trial]"
   region: "NTSC-J"
   gsHWFixes:
-    alignSprite: 1 # Fixes vertical lines.
-    forceEvenSpritePosition: 1 # Improves visual clarity whilst upscaling.
-    roundSprite: 1 # Reduces graphics garbage on UI whilst upscaling.
+    halfPixelOffset: 5 # Fixes vertical lines.
 SLPM-60207:
   name: "ロックマンX7 [体験版]"
   name-sort: "ろっくまんえっくす7 [たいけんばん]"
@@ -35718,10 +35706,12 @@ SLPM-60220:
   name-en: "Hajime no Ippo II - Victorious Road [Trial]"
   region: "NTSC-J"
 SLPM-60225:
-  name: "風雲新撰組 [体験版]"
+  name: "風雲　新撰組 [体験版]"
   name-sort: "ふううん しんせんぐみ [たいけんばん]"
-  name-en: "Fuuun Shinsengumi [Trial]"
+  name-en: "Fu-un Shinsen-gumi [Trial]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Fixes vertical lines.
 SLPM-60226:
   name: "シャドウハーツⅡ [体験版]"
   name-sort: "しゃどうはーつ2 [たいけんばん]"
@@ -35737,9 +35727,7 @@ SLPM-60228:
   name-en: "Kaidō Battle 2 - Chain Reaction [Trial]"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes ghosting during Rain/Storm.
-    alignSprite: 1 # Fixes vertical lines.
-    forceEvenSpritePosition: 1 # De-blurs the 3D image.
+    halfPixelOffset: 5 # Fixes vertical lines.
 SLPM-60237:
   name: "電車でGO！FINAL [体験版]"
   name-sort: "でんしゃでごーFINAL [たいけんばん]"
@@ -36489,10 +36477,12 @@ SLPM-61095:
   name-en: "Dengeki PS2 / DengekiPlayStation D74"
   region: "NTSC-J"
 SLPM-61096:
-  name: "風雲幕末伝 [体験版]"
+  name: "風雲　幕末伝 [体験版]"
   name-sort: "ふううんばくまつでん [たいけんばん]"
-  name-en: "Fuuun Bakumatsu-den [Trial]"
+  name-en: "Fu-un Bakumatsu-den [Trial]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Fixes vertical lines.
 SLPM-61097:
   name: "電撃PS2 / 電撃PlayStation D75"
   name-sort: "でんげき PS2 でんげきPlayStation D75"
@@ -36601,8 +36591,7 @@ SLPM-61115:
   name-en: "Racing Battle - C1 Grand Prix [Trial]"
   region: "NTSC-J"
   gsHWFixes:
-    alignSprite: 1 # Fixes vertical lines.
-    forceEvenSpritePosition: 1 # De-blurs the 3D image.
+    halfPixelOffset: 5 # Fixes vertical lines.
 SLPM-61116:
   name: "冒険王ビィト ダークネスセンチュリー [体験版]"
   name-sort: "ぼうけんおうびぃと だーくねすせんちゅりー [たいけんばん]"
@@ -36649,9 +36638,7 @@ SLPM-61121:
   name-en: "Kaido Touge no Densetsu [Trial]"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes ghosting during Rain/Storm.
-    alignSprite: 1 # Fixes vertical lines.
-    forceEvenSpritePosition: 1 # De-blurs the 3D image.
+    halfPixelOffset: 5 # Fixes vertical lines.
 SLPM-61122:
   name: "電撃PS2 / 電撃PlayStation D81"
   name-sort: "でんげき PS2 でんげきPlayStation D81"
@@ -42495,9 +42482,7 @@ SLPM-65246:
   name-en: "Kaidō Battle - Nikko, Haruna, Rokko, Hakone"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes ghosting during Rain.
-    alignSprite: 1 # Fixes vertical lines.
-    forceEvenSpritePosition: 1 # De-blurs the 3D image.
+    halfPixelOffset: 5 # Fixes vertical lines.
 SLPM-65247:
   name: "三國志戦記2"
   name-sort: "さんごくしせんき2"
@@ -42872,9 +42857,7 @@ SLPM-65308:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    alignSprite: 1 # Fixes vertical lines.
-    forceEvenSpritePosition: 1 # Improves visual clarity whilst upscaling.
-    roundSprite: 1 # Reduces graphics garbage on UI whilst upscaling.
+    halfPixelOffset: 5 # Fixes vertical lines.
 SLPM-65309:
   name: "Splashdown [PlayStation2 the Best]"
   name-sort: "すぷらっしゅだうん [PlayStation2 the Best]"
@@ -43907,10 +43890,12 @@ SLPM-65493:
   name-en: "Hurrah! Sailor [Limited Edition]"
   region: "NTSC-J"
 SLPM-65494:
-  name: "風雲 新撰組"
+  name: "風雲　新撰組"
   name-sort: "ふううん しんせんぐみ"
-  name-en: "Fuuun Shinsengumi"
+  name-en: "Fu-un Shinsen-gumi"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Fixes vertical lines.
 SLPM-65495:
   name: "モンスターハンター"
   name-sort: "もんすたーはんたー"
@@ -44048,9 +44033,7 @@ SLPM-65514:
   name-en: "Kaidō Battle 2 - Chain Reaction"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes ghosting during Rain/Storm.
-    alignSprite: 1 # Fixes vertical lines.
-    forceEvenSpritePosition: 1 # De-blurs the 3D image.
+    halfPixelOffset: 5 # Fixes vertical lines.
 SLPM-65515:
   name: "サクラ大戦物語 ～ミステリアス巴里～"
   name-sort: "さくらたいせんものがたり ～みすてりあすぱり～"
@@ -45779,11 +45762,13 @@ SLPM-65812:
   name-en: "Bakushou! Jinsei Kaidou - NOVA Usagi ga Miteruzo! [TAITO BEST]"
   region: "NTSC-J"
 SLPM-65813:
-  name: "風雲幕末伝"
+  name: "風雲　幕末伝"
   name-sort: "ふううん ばくまつでん"
-  name-en: "Fu-un Bakumatsu Den"
+  name-en: "Fu-un Bakumatsu-den"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 5 # Fixes vertical lines.
 SLPM-65815:
   name: "トム・クランシーシリーズ スプリンターセル パンドラトゥモロー"
   name-sort: "とむくらんしーしりーず すぷりんたーせる ぱんどらとぅもろー"
@@ -46249,8 +46234,7 @@ SLPM-65897:
   name-en: "Racing Battle - C1 Grand Prix"
   region: "NTSC-J"
   gsHWFixes:
-    alignSprite: 1 # Fixes vertical lines.
-    forceEvenSpritePosition: 1 # De-blurs the 3D image.
+    halfPixelOffset: 5 # Fixes vertical lines.
 SLPM-65898:
   name: "キャッスルファンタジア エレンシア戦記 DXパック"
   name-sort: "きゃっするふぁんたじあ えれんしあせんき DXぱっく"
@@ -47001,9 +46985,7 @@ SLPM-66022:
   name-en: "Kaido - Touge no Densetsu"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes ghosting during Rain/Storm.
-    alignSprite: 1 # Fixes vertical lines.
-    forceEvenSpritePosition: 1 # De-blurs the 3D image.
+    halfPixelOffset: 5 # Fixes vertical lines.
 SLPM-66023:
   name: "ふしぎ遊戯 玄武開伝 外伝 鏡の巫女 [限定版]"
   name-sort: "ふしぎゆうぎ げんぶかいでん がいでん かがみのみこ [げんていばん]"
@@ -53752,10 +53734,12 @@ SLPM-74201:
     - "SLPM-65286"
     - "BWNETCNF"
 SLPM-74202:
-  name: "風雲 新撰組 [PlayStation2 the Best]"
+  name: "風雲　新撰組 [PlayStation2 the Best]"
   name-sort: "ふううん しんせんぐみ [PlayStation2 the Best]"
-  name-en: "Fuuun Shinsengumi [PlayStation2 the Best]"
+  name-en: "Fu-un Shinsen-gumi [PlayStation2 the Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Fixes vertical lines.
 SLPM-74204:
   name: "首都高バトル01 [PlayStation2 the Best]"
   name-sort: "しゅとこうばとる01 [PlayStation2 the Best]"
@@ -53763,9 +53747,7 @@ SLPM-74204:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    alignSprite: 1 # Fixes vertical lines.
-    forceEvenSpritePosition: 1 # Improves visual clarity whilst upscaling.
-    roundSprite: 1 # Reduces graphics garbage on UI whilst upscaling.
+    halfPixelOffset: 5 # Fixes vertical lines.
 SLPM-74205:
   name: "真・女神転生Ⅲ - NOCTURNE [PlayStation2 the Best]"
   name-sort: "しんめがみてんせい3 - NOCTURNE [PlayStation2 the Best]"
@@ -53904,10 +53886,12 @@ SLPM-74227:
     halfPixelOffset: 4 # Fixes misaligned lighting and bloom.
     bilinearUpscale: 1 # Smooths out bloom.
 SLPM-74228:
-  name: "風雲幕末伝 [PlayStation2 the Best]"
+  name: "風雲　幕末伝 [PlayStation2 the Best]"
   name-sort: "ふううんばくまつでん [PlayStation2 the Best]"
-  name-en: "Fuuun Bakumatsu-den [PlayStation2 the Best]"
+  name-en: "Fu-un Bakumatsu-den [PlayStation2 the Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Fixes vertical lines.
 SLPM-74229:
   name: "バイオハザード4 [PlayStation2 the Best]"
   name-sort: "ばいおはざーど4 [PlayStation2 the Best]"
@@ -63488,10 +63472,12 @@ SLPS-73227:
   name-en: "Another Century's Episode [PlayStation2 the Best]"
   region: "NTSC-J"
 SLPS-73228:
-  name: "風雲幕末伝 [PlayStation2 the Best]"
+  name: "風雲　幕末伝 [PlayStation2 the Best]"
   name-sort: "ふううんばくまつでん [PlayStation2 the Best]"
-  name-en: "Fuuun Bakumatsu-den [PlayStation2 the Best]"
+  name-en: "Fu-un Bakumatsu-den [PlayStation2 the Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Fixes vertical lines.
 SLPS-73229:
   name: "ベルウィックサーガ [PlayStation2 the Best]"
   name-sort: "べるうぃっくさーが [PlayStation2 the Best]"
@@ -68131,9 +68117,7 @@ SLUS-20831:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    alignSprite: 1 # Fixes vertical lines.
-    forceEvenSpritePosition: 1 # Improves visual clarity whilst upscaling.
-    roundSprite: 1 # Reduces graphics garbage on UI whilst upscaling.
+    halfPixelOffset: 5 # Fixes vertical lines.
 SLUS-20833:
   name: "Mega Man Anniversary Collection"
   region: "NTSC-U"
@@ -70602,9 +70586,7 @@ SLUS-21236:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes ghosting during Rain.
-    alignSprite: 1 # Fixes vertical lines.
-    forceEvenSpritePosition: 1 # Fixes double image.
+    halfPixelOffset: 5 # Fixes vertical lines.
 SLUS-21237:
   name: "AND 1 Streetball"
   region: "NTSC-U"
@@ -71786,9 +71768,7 @@ SLUS-21394:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes ghosting during Rain/Storm.
-    alignSprite: 1 # Fixes vertical lines.
-    forceEvenSpritePosition: 1 # De-blurs the 3D image.
+    halfPixelOffset: 5 # Fixes vertical lines.
 SLUS-21395:
   name: "Avatar - The Last Airbender"
   region: "NTSC-U"
