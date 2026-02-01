@@ -197,20 +197,18 @@ bool D3D12StreamBuffer::WaitForClearSpace(u32 num_bytes)
 	u32 new_space = 0;
 	u32 new_gpu_position = 0;
 
-	auto iter = m_tracked_fences.begin();
-	for (; iter != m_tracked_fences.end(); ++iter)
-	{
+	auto iter = std::find_if(m_tracked_fences.begin(), m_tracked_fences.end(), [&, this](const auto& iter) {
 		// Would this fence bring us in line with the GPU?
 		// This is the "last resort" case, where a command buffer execution has been forced
 		// after no additional data has been written to it, so we can assume that after the
 		// fence has been signaled the entire buffer is now consumed.
-		u32 gpu_position = iter->second;
+		u32 gpu_position = iter.second;
 		if (m_current_offset == gpu_position)
 		{
 			new_offset = 0;
 			new_space = m_size;
 			new_gpu_position = 0;
-			break;
+			return true;
 		}
 
 		// Assuming that we wait for this fence, are we allocating in front of the GPU?
@@ -225,7 +223,7 @@ bool D3D12StreamBuffer::WaitForClearSpace(u32 num_bytes)
 				new_offset = m_current_offset;
 				new_space = m_size - m_current_offset;
 				new_gpu_position = gpu_position;
-				break;
+				return true;
 			}
 
 			// We can wrap around to the start, behind the GPU, if there is enough space.
@@ -236,7 +234,7 @@ bool D3D12StreamBuffer::WaitForClearSpace(u32 num_bytes)
 				new_offset = 0;
 				new_space = gpu_position;
 				new_gpu_position = gpu_position;
-				break;
+				return true;
 			}
 		}
 		else
@@ -251,10 +249,11 @@ bool D3D12StreamBuffer::WaitForClearSpace(u32 num_bytes)
 				new_offset = m_current_offset;
 				new_space = gpu_position - m_current_offset;
 				new_gpu_position = gpu_position;
-				break;
+				return true;
 			}
 		}
-	}
+		return false;
+	});
 
 	// Did any fences satisfy this condition?
 	// Has the command buffer been executed yet? If not, the caller should execute it.

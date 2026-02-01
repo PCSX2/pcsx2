@@ -817,7 +817,7 @@ void GSTexture12::TransitionToState(const D3D12CommandList& cmdlist, ResourceSta
 	m_resource_state = state;
 }
 
-void GSTexture12::TransitionSubresourceToState(const D3D12CommandList& cmdlist, int level,
+void GSTexture12::TransitionSubresourceToState(const D3D12CommandList& cmdlist, u32 level,
 	ResourceState before_state, ResourceState after_state) const
 {
 	if (GSDevice12::GetInstance()->UseEnhancedBarriers())
@@ -829,7 +829,7 @@ void GSTexture12::TransitionSubresourceToState(const D3D12CommandList& cmdlist, 
 		D3D12_TEXTURE_BARRIER barriers[2] = {{D3D12_BARRIER_SYNC_NONE, D3D12_BARRIER_SYNC_NONE,
 			D3D12_BARRIER_ACCESS_COMMON, D3D12_BARRIER_ACCESS_COMMON,
 			D3D12_BARRIER_LAYOUT_COMMON, D3D12_BARRIER_LAYOUT_COMMON,
-			m_resource.get(), {static_cast<u32>(level), 0, 0, 0, 0, 0}, D3D12_TEXTURE_BARRIER_FLAG_NONE}};
+			m_resource.get(), {level, 0, 0, 0, 0, 0}, D3D12_TEXTURE_BARRIER_FLAG_NONE}};
 
 		uint num_barriers = 1;
 		D3D12_TEXTURE_BARRIER& barrier = barriers[0];
