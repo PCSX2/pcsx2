@@ -839,7 +839,8 @@ static MRCOwned<id<MTLSamplerState>> CreateSampler(id<MTLDevice> dev, GSHWDrawCo
 	[sdesc setMaxAnisotropy:GSConfig.MaxAnisotropy && sel.aniso ? GSConfig.MaxAnisotropy : 1];
 	bool clampLOD = sel.lodclamp || !sel.UseMipmapFiltering();
 	const char* clampdesc = clampLOD ? " LODClamp" : "";
-	[sdesc setLodMaxClamp:clampLOD ? 0.25f : FLT_MAX];
+	float clampValue = GSConfig.MaxAnisotropy > 1 && sel.aniso ? 0.01f : 0.25f;
+	[sdesc setLodMaxClamp:clampLOD ? clampValue : FLT_MAX];
 
 	[sdesc setLabel:[NSString stringWithFormat:@"%s%s %s%s%s", taudesc, tavdesc, magname, minname, clampdesc]];
 	MRCOwned<id<MTLSamplerState>> ret = MRCTransfer([dev newSamplerStateWithDescriptor:sdesc]);
