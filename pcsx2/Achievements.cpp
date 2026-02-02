@@ -2796,23 +2796,36 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
 	const float points_start = points_template_start + ((points_template_size.x - points_size.x) * 0.5f);
 
 	const char* right_icon_text;
+	const char* badge_text;
+	const char* badge_icon;
+	ImVec4 badge_color;
 	switch (cheevo->type)
 	{
 		case RC_CLIENT_ACHIEVEMENT_TYPE_MISSABLE:
-			right_icon_text = ICON_PF_ACHIEVEMENTS_MISSABLE; // Missable
+			badge_text = TRANSLATE("Achievements", "Missable");
+			badge_icon = ICON_PF_ACHIEVEMENTS_MISSABLE;
+			badge_color = ImVec4(0.78f, 0.55f, 0.30f, 1.0f);
+			right_icon_text = is_unlocked ? ICON_FA_LOCK_OPEN : ICON_FA_LOCK;
 			break;
 
 		case RC_CLIENT_ACHIEVEMENT_TYPE_PROGRESSION:
-			right_icon_text = ICON_PF_ACHIEVEMENTS_PROGRESSION; // Progression
+			badge_text = TRANSLATE("Achievements", "Progression");
+			badge_icon = ICON_PF_ACHIEVEMENTS_PROGRESSION;
+			badge_color = ImVec4(0.62f, 0.48f, 0.80f, 1.0f);
+			right_icon_text = is_unlocked ? ICON_FA_LOCK_OPEN : ICON_FA_LOCK;
 			break;
 
 		case RC_CLIENT_ACHIEVEMENT_TYPE_WIN:
-			right_icon_text = ICON_PF_ACHIEVEMENTS_WIN; // Win Condition
+			badge_text = TRANSLATE("Achievements", "Win Condition");
+			badge_icon = ICON_PF_ACHIEVEMENTS_WIN;
+			badge_color = ImVec4(0.36f, 0.62f, 0.36f, 1.0f);
+			right_icon_text = is_unlocked ? ICON_FA_LOCK_OPEN : ICON_FA_LOCK;
 			break;
 
-			// Just use the lock for standard achievements.
 		case RC_CLIENT_ACHIEVEMENT_TYPE_STANDARD:
 		default:
+			badge_text = nullptr;
+			badge_icon = nullptr;
 			right_icon_text = is_unlocked ? ICON_FA_LOCK_OPEN : ICON_FA_LOCK;
 			break;
 	}
@@ -2820,7 +2833,34 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
 	const ImVec2 right_icon_size(g_large_font.first->CalcTextSizeA(g_large_font.second, FLT_MAX, 0.0f, right_icon_text));
 
 	const float text_start_x = bb.Min.x + image_size.x + LayoutScale(15.0f);
-	const ImRect title_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(points_start, midpoint));
+
+	const float badge_padding = LayoutScale(6.0f);
+	const float icon_text_spacing = LayoutScale(4.0f);
+	const float badge_title_spacing = LayoutScale(6.0f);
+	ImVec2 badge_size = ImVec2(0.0f, 0.0f);
+	ImVec2 badge_icon_size = ImVec2(0.0f, 0.0f);
+	ImVec2 badge_text_size = ImVec2(0.0f, 0.0f);
+	if (badge_text && badge_icon)
+	{
+		badge_icon_size = g_medium_font.first->CalcTextSizeA(g_medium_font.second, FLT_MAX, 0.0f, badge_icon);
+		badge_text_size = g_medium_font.first->CalcTextSizeA(g_medium_font.second, FLT_MAX, 0.0f, badge_text);
+		badge_size = ImVec2(badge_icon_size.x + icon_text_spacing + badge_text_size.x + (badge_padding * 2.0f),
+			g_medium_font.second + badge_padding);
+	}
+
+	const ImVec2 title_size(g_large_font.first->CalcTextSizeA(g_large_font.second, FLT_MAX, 0.0f, cheevo->title));
+	const float title_text_end_x = text_start_x + title_size.x;
+
+	float title_max_x = points_start;
+	float badge_x = 0.0f;
+	if (badge_text && badge_icon)
+	{
+		const float effective_title_max_x = points_start - (badge_size.x + badge_title_spacing);
+		badge_x = std::min(title_text_end_x + badge_title_spacing, effective_title_max_x);
+		title_max_x = badge_x - badge_title_spacing;
+	}
+
+	const ImRect title_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(title_max_x, midpoint));
 	const ImRect summary_bb(ImVec2(text_start_x, midpoint), ImVec2(points_start, midpoint + g_medium_font.second + extra_summary_height));
 	const ImRect points_bb(ImVec2(points_start, midpoint), bb.Max);
 	const ImRect lock_bb(
@@ -2830,6 +2870,24 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
 	ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, cheevo->title, nullptr, nullptr, ImVec2(0.0f, 0.0f), &title_bb);
 	ImGui::RenderTextClipped(lock_bb.Min, lock_bb.Max, right_icon_text, nullptr, &right_icon_size, ImVec2(0.0f, 0.0f), &lock_bb);
 	ImGui::PopFont();
+
+	if (badge_text && badge_icon)
+	{
+		ImDrawList* dl = ImGui::GetWindowDrawList();
+		const ImVec2 badge_min(badge_x, bb.Min.y + ((midpoint - bb.Min.y) / 2.0f) - (badge_size.y / 2.0f));
+		const ImVec2 badge_max(badge_min.x + badge_size.x, badge_min.y + badge_size.y);
+
+		dl->AddRectFilled(badge_min, badge_max, ImGui::GetColorU32(badge_color), LayoutScale(3.0f));
+
+		const float icon_y = badge_min.y + ((badge_size.y - badge_icon_size.y) * 0.5f);
+		const float text_y = badge_min.y + ((badge_size.y - badge_text_size.y) * 0.5f);
+
+		const ImVec2 icon_pos(badge_min.x + badge_padding, icon_y);
+		dl->AddText(g_medium_font.first, g_medium_font.second, icon_pos, IM_COL32(255, 255, 255, 255), badge_icon);
+
+		const ImVec2 text_pos(icon_pos.x + badge_icon_size.x + icon_text_spacing, text_y);
+		dl->AddText(g_medium_font.first, g_medium_font.second, text_pos, IM_COL32(255, 255, 255, 255), badge_text);
+	}
 
 	ImGui::PushFont(g_medium_font.first, g_medium_font.second);
 	if (cheevo->description && summary_length > 0)
