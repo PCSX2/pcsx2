@@ -2891,11 +2891,40 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config, GSTexture* draw_rt_clo
 				PSSetShaderResource(0, draw_rt_clone);
 		};
 
+		const GSVector4i rtsize(0, 0, draw_rt->GetWidth(), draw_rt->GetHeight());
+		auto ProcessCopyArea = [&rtsize](GSVector4i& area) {
+			// We don't want the snapped box adjustments when the rect is empty as it might make the copy to pass.
+			// The empty rect itself needs to be handled in renderer properly.
+			if (area.rempty())
+				return;
+
+			// If copy area exceeds 90% coverage then we can do a full copy instead which should be faster.
+			const float rt_area = static_cast<float>(rtsize.width() * rtsize.height());
+			const float copy_area = static_cast<float>(area.width() * area.height());
+			if ((copy_area / rt_area) >= 0.90f)
+			{
+				area = rtsize;
+				return;
+			}
+
+			// Aligning bbox to 4 pixel boundaries so copies will be faster using Direct Memory Access,
+			// otherwise it may stall as more commands need to be issued.
+			area.left &= ~3;
+			area.top &= ~3;
+			area.right = (area.right + 3) & ~3;
+			area.bottom = (area.bottom + 3) & ~3;
+
+			// Ensure the new sizes are within bounds.
+			area.left = std::max(0, area.left);
+			area.top = std::max(0, area.top);
+			area.right = std::min(area.right, rtsize.right);
+			area.bottom = std::min(area.bottom, rtsize.bottom);
+		};
+
 		if (m_features.multidraw_fb_copy && full_barrier)
 		{
 			const u32 draw_list_size = static_cast<u32>(config.drawlist->size());
 			const u32 indices_per_prim = config.indices_per_prim;
-			const GSVector4i rtsize(0, 0, draw_rt->GetWidth(), draw_rt->GetHeight());
 
 			pxAssert(config.drawlist && !config.drawlist->empty());
 			pxAssert(config.drawlist_bbox && static_cast<u32>(config.drawlist_bbox->size()) == draw_list_size);
@@ -2907,24 +2936,7 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config, GSTexture* draw_rt_clo
 				const GSVector4i original_bbox = (*config.drawlist_bbox)[n].rintersect(config.drawarea);
 				GSVector4i snapped_bbox = original_bbox;
 
-				// We don't want the snapped box adjustments when the rect is empty as it might make the copy to pass.
-				// The empty rect itself needs to be handled in renderer properly.
-				if (!snapped_bbox.rempty())
-				{
-					// Aligning bbox to 4 pixel boundaries so copies will be faster using Direct Memory Access,
-					// otherwise it may stall as more commands need to be issued.
-					snapped_bbox.left &= ~3;
-					snapped_bbox.top &= ~3;
-					snapped_bbox.right = (snapped_bbox.right + 3) & ~3;
-					snapped_bbox.bottom = (snapped_bbox.bottom + 3) & ~3;
-
-					// Ensure the new sizes are within bounds.
-					snapped_bbox.left = std::max(0, snapped_bbox.left);
-					snapped_bbox.top = std::max(0, snapped_bbox.top);
-					snapped_bbox.right = std::min(snapped_bbox.right, rtsize.right);
-					snapped_bbox.bottom = std::min(snapped_bbox.bottom, rtsize.bottom);
-				}
-
+				ProcessCopyArea(snapped_bbox);
 				CopyAndBind(snapped_bbox);
 
 				DrawIndexedPrimitive(p, count);
@@ -2936,7 +2948,11 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config, GSTexture* draw_rt_clo
 
 		// Optimization: For alpha second pass we can reuse the copy snapshot from the first pass.
 		if (!skip_first_barrier)
-			CopyAndBind(config.drawarea);
+		{
+			GSVector4i snapped_drawarea = config.drawarea;
+			ProcessCopyArea(snapped_drawarea);
+			CopyAndBind(snapped_drawarea);
+		}
 	}
 
 	DrawIndexedPrimitive();
