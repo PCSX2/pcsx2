@@ -1016,6 +1016,9 @@ public:
 	/// Generates a fixed index buffer for expanding points and sprites. Buffer is assumed to be at least EXPAND_BUFFER_SIZE in size.
 	static void GenerateExpansionIndexBuffer(void* buffer);
 
+	// Process copy area for sw blend copies.
+	GSVector4i ProcessCopyArea(const GSVector4i& rtsize, const GSVector4i& drawarea);
+
 	/// Reads the specified shader source file.
 	static std::optional<std::string> ReadShaderSource(const char* filename);
 

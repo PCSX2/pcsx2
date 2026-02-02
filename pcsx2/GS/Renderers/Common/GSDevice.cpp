@@ -315,6 +315,31 @@ void GSDevice::GenerateExpansionIndexBuffer(void* buffer)
 	}
 }
 
+GSVector4i GSDevice::ProcessCopyArea(const GSVector4i& rtsize, const GSVector4i& drawarea)
+{
+	GSVector4i snapped_drawarea(drawarea);
+	// We don't want the snapped box adjustments when the rect is empty as it might make the copy to pass.
+	// The empty rect itself needs to be handled in renderer properly.
+	if (snapped_drawarea.rempty())
+		return snapped_drawarea;
+
+	// If copy area exceeds 95% coverage then we can do a full copy instead which should be faster.
+	const float rt_area = static_cast<float>(rtsize.width() * rtsize.height());
+	const float copy_area = static_cast<float>(drawarea.width() * drawarea.height());
+	constexpr float coverage = 0.95f;
+	if ((copy_area / rt_area) >= coverage)
+	{
+		snapped_drawarea = rtsize;
+		return snapped_drawarea;
+	}
+
+	// Aligning bbox to 4 pixel boundaries so copies will be faster using Direct Memory Access,
+	// otherwise it may stall as more commands need to be issued.
+	snapped_drawarea = snapped_drawarea.ralign<Align_Outside>(GSVector2i(4, 4)).rintersect(rtsize);
+
+	return snapped_drawarea;
+}
+
 std::optional<std::string> GSDevice::ReadShaderSource(const char* filename)
 {
 	return FileSystem::ReadFileToString(Path::Combine(EmuFolders::Resources, filename).c_str());
