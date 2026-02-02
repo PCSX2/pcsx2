@@ -118,18 +118,21 @@ PATCH_TEST(IOPWord,
 PATCH_TEST(Extended8BitWrite,
 	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x00100000, Patch::EXTENDED_T, 0x00000012))
 {
+	ee.ExpectRead8(0x00100000, 0);
 	ee.ExpectWrite8(0x00100000, 0x12);
 }
 
 PATCH_TEST(Extended16BitWrite,
 	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x10100000, Patch::EXTENDED_T, 0x00001234))
 {
+	ee.ExpectRead16(0x00100000, 0);
 	ee.ExpectWrite16(0x00100000, 0x1234);
 }
 
 PATCH_TEST(Extended32BitWrite,
 	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x20100000, Patch::EXTENDED_T, 0x12345678))
 {
+	ee.ExpectRead32(0x00100000, 0);
 	ee.ExpectWrite32(0x00100000, 0x12345678);
 }
 
@@ -279,6 +282,7 @@ PATCH_TEST(ExtendedSerialWriteOnce,
 	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x40100000, Patch::EXTENDED_T, 0x00010000),
 	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x12345678, Patch::EXTENDED_T, 0x11111111))
 {
+	ee.ExpectRead32(0x00100000, 0);
 	ee.ExpectWrite32(0x00100000, 0x12345678);
 }
 
@@ -286,7 +290,9 @@ PATCH_TEST(ExtendedSerialWriteContiguous,
 	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x40100000, Patch::EXTENDED_T, 0x00020001),
 	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x12345678, Patch::EXTENDED_T, 0x11111111))
 {
+	ee.ExpectRead32(0x00100000, 0);
 	ee.ExpectWrite32(0x00100000, 0x12345678);
+	ee.ExpectRead32(0x00100004, 0);
 	ee.ExpectWrite32(0x00100004, 0x23456789);
 }
 
@@ -294,7 +300,9 @@ PATCH_TEST(ExtendedSerialWriteStrided,
 	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x40100000, Patch::EXTENDED_T, 0x00020002),
 	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x12345678, Patch::EXTENDED_T, 0x11111111))
 {
+	ee.ExpectRead32(0x00100000, 0);
 	ee.ExpectWrite32(0x00100000, 0x12345678);
+	ee.ExpectRead32(0x00100008, 0);
 	ee.ExpectWrite32(0x00100008, 0x23456789);
 }
 
@@ -313,8 +321,10 @@ PATCH_TEST(ExtendedCopyBytes2,
 	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x00200000, Patch::EXTENDED_T, 0x00000000))
 {
 	ee.ExpectRead8(0x00100000, 0x12);
+	ee.ExpectRead8(0x00200000, 0);
 	ee.ExpectWrite8(0x00200000, 0x12);
 	ee.ExpectRead8(0x00100001, 0x12);
+	ee.ExpectRead8(0x00200001, 0);
 	ee.ExpectWrite8(0x00200001, 0x12);
 }
 
@@ -327,6 +337,7 @@ PATCH_TEST(ExtendedPointerWrite8,
 	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x00000001, Patch::EXTENDED_T, 0x00000004))
 {
 	ee.ExpectRead32(0x00100000, 0x00200000);
+	ee.ExpectRead8(0x00200004, 0);
 	ee.ExpectWrite8(0x00200004, 0x12);
 }
 
@@ -335,6 +346,7 @@ PATCH_TEST(ExtendedPointerWrite16,
 	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x00010001, Patch::EXTENDED_T, 0x00000004))
 {
 	ee.ExpectRead32(0x00100000, 0x00200000);
+	ee.ExpectRead16(0x00200004, 0);
 	ee.ExpectWrite16(0x00200004, 0x1234);
 }
 
@@ -343,6 +355,7 @@ PATCH_TEST(ExtendedPointerWrite32,
 	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x00020001, Patch::EXTENDED_T, 0x00000004))
 {
 	ee.ExpectRead32(0x00100000, 0x00200000);
+	ee.ExpectRead32(0x00200004, 0);
 	ee.ExpectWrite32(0x00200004, 0x12345678);
 }
 
@@ -353,6 +366,7 @@ PATCH_TEST(ExtendedPointerWriteMultiEven,
 {
 	ee.ExpectRead32(0x00100000, 0x00200000);
 	ee.ExpectRead32(0x00200004, 0x00300000);
+	ee.ExpectRead32(0x00300008, 0);
 	ee.ExpectWrite32(0x00300008, 0x12345678);
 }
 
@@ -364,6 +378,7 @@ PATCH_TEST(ExtendedPointerWriteMultiOdd,
 	ee.ExpectRead32(0x00100000, 0x00200000);
 	ee.ExpectRead32(0x00200004, 0x00300000);
 	ee.ExpectRead32(0x00300008, 0x00400000);
+	ee.ExpectRead32(0x0040000c, 0);
 	ee.ExpectWrite32(0x0040000c, 0x12345678);
 }
 
@@ -440,7 +455,9 @@ PATCH_TEST(ExtendedConditional8BitEqualTrue,
 	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x00300000, Patch::EXTENDED_T, 0x00000012))
 {
 	ee.ExpectRead8(0x00100000, 0x12);
+	ee.ExpectRead8(0x00200000, 0);
 	ee.ExpectWrite8(0x00200000, 0x12);
+	ee.ExpectRead8(0x00300000, 0);
 	ee.ExpectWrite8(0x00300000, 0x12);
 }
 
@@ -450,6 +467,7 @@ PATCH_TEST(ExtendedConditional8BitEqualFalse,
 	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x00300000, Patch::EXTENDED_T, 0x00000012))
 {
 	ee.ExpectRead8(0x00100000, 0x21);
+	ee.ExpectRead8(0x00300000, 0);
 	ee.ExpectWrite8(0x00300000, 0x12);
 }
 
@@ -459,7 +477,9 @@ PATCH_TEST(ExtendedConditionalEqualTrue,
 	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x00300000, Patch::EXTENDED_T, 0x00000012))
 {
 	ee.ExpectRead16(0x00100000, 0x1234);
+	ee.ExpectRead8(0x00200000, 0);
 	ee.ExpectWrite8(0x00200000, 0x12);
+	ee.ExpectRead8(0x00300000, 0);
 	ee.ExpectWrite8(0x00300000, 0x12);
 }
 
@@ -469,6 +489,7 @@ PATCH_TEST(ExtendedConditionalEqualFalse,
 	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x00300000, Patch::EXTENDED_T, 0x00000012))
 {
 	ee.ExpectRead16(0x00100000, 0x4321);
+	ee.ExpectRead8(0x00300000, 0);
 	ee.ExpectWrite8(0x00300000, 0x12);
 }
 
@@ -477,6 +498,7 @@ PATCH_TEST(ExtendedConditionalNotEqualTrue,
 	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x00200000, Patch::EXTENDED_T, 0x00000012))
 {
 	ee.ExpectRead16(0x00100000, 0x4321);
+	ee.ExpectRead8(0x00200000, 0);
 	ee.ExpectWrite8(0x00200000, 0x12);
 }
 
@@ -492,6 +514,7 @@ PATCH_TEST(ExtendedConditionalLessThanTrue,
 	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x00200000, Patch::EXTENDED_T, 0x00000012))
 {
 	ee.ExpectRead16(0x00100000, 0x4321);
+	ee.ExpectRead8(0x00200000, 0);
 	ee.ExpectWrite8(0x00200000, 0x12);
 }
 
@@ -508,7 +531,9 @@ PATCH_TEST(ExtendedConditionalECodeEqualTrue,
 	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x00300000, Patch::EXTENDED_T, 0x00000012))
 {
 	ee.ExpectRead16(0x00100000, 0x1234);
+	ee.ExpectRead8(0x00200000, 0);
 	ee.ExpectWrite8(0x00200000, 0x12);
+	ee.ExpectRead8(0x00300000, 0);
 	ee.ExpectWrite8(0x00300000, 0x12);
 }
 
@@ -518,5 +543,6 @@ PATCH_TEST(ExtendedConditionalECodeEqualFalse,
 	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x00300000, Patch::EXTENDED_T, 0x00000012))
 {
 	ee.ExpectRead16(0x00100000, 0x4321);
+	ee.ExpectRead8(0x00300000, 0);
 	ee.ExpectWrite8(0x00300000, 0x12);
 }
