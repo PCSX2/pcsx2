@@ -1171,13 +1171,13 @@ void Patch::writeCheat(Memory& memory)
 	switch (LastType)
 	{
 		case 0x0:
-			memory.Write8(PrevCheatAddr, IterationIncrement & 0xFF);
+			memory.IdempotentWrite8(PrevCheatAddr, IterationIncrement & 0xFF);
 			break;
 		case 0x1:
-			memory.Write16(PrevCheatAddr, IterationIncrement & 0xFFFF);
+			memory.IdempotentWrite16(PrevCheatAddr, IterationIncrement & 0xFFFF);
 			break;
 		case 0x2:
-			memory.Write32(PrevCheatAddr, IterationIncrement);
+			memory.IdempotentWrite32(PrevCheatAddr, IterationIncrement);
 			break;
 		default:
 			break;
@@ -1214,7 +1214,7 @@ void Patch::handle_extended_t(const PatchCommand* p, Memory& memory)
 			case 0x4000: // vvvvvvvv iiiiiiii
 				for (u32 i = 0; i < IterationCount; i++)
 				{
-					memory.Write32((u32)(PrevCheatAddr + (i * IterationIncrement)), (u32)(p->addr + ((u32)p->data * i)));
+					memory.IdempotentWrite32((u32)(PrevCheatAddr + (i * IterationIncrement)), (u32)(p->addr + ((u32)p->data * i)));
 				}
 				PrevCheatType = 0;
 				break;
@@ -1223,7 +1223,7 @@ void Patch::handle_extended_t(const PatchCommand* p, Memory& memory)
 				for (u32 i = 0; i < IterationCount; i++)
 				{
 					u8 mem = memory.Read8(PrevCheatAddr + i);
-					memory.Write8((p->addr + i) & 0x0FFFFFFF, mem);
+					memory.IdempotentWrite8((p->addr + i) & 0x0FFFFFFF, mem);
 				}
 				PrevCheatType = 0;
 				break;
@@ -1294,17 +1294,17 @@ void Patch::handle_extended_t(const PatchCommand* p, Memory& memory)
 			default:
 				if ((p->addr & 0xF0000000) == 0x00000000) // 0aaaaaaa 0000000vv
 				{
-					memory.Write8(p->addr & 0x0FFFFFFF, (u8)p->data & 0x000000FF);
+					memory.IdempotentWrite8(p->addr & 0x0FFFFFFF, (u8)p->data & 0x000000FF);
 					PrevCheatType = 0;
 				}
 				else if ((p->addr & 0xF0000000) == 0x10000000) // 1aaaaaaa 0000vvvv
 				{
-					memory.Write16(p->addr & 0x0FFFFFFF, (u16)p->data & 0x0000FFFF);
+					memory.IdempotentWrite16(p->addr & 0x0FFFFFFF, (u16)p->data & 0x0000FFFF);
 					PrevCheatType = 0;
 				}
 				else if ((p->addr & 0xF0000000) == 0x20000000) // 2aaaaaaa vvvvvvvv
 				{
-					memory.Write32(p->addr & 0x0FFFFFFF, (u32)p->data);
+					memory.IdempotentWrite32(p->addr & 0x0FFFFFFF, (u32)p->data);
 					PrevCheatType = 0;
 				}
 				else if ((p->addr & 0xFFFF0000) == 0x30000000) // 300000vv 0aaaaaaa Inc
@@ -1657,96 +1657,103 @@ template <typename EEMemory, typename IOPMemory>
              std::is_base_of_v<MemoryInterface, IOPMemory>
 void Patch::ApplyPatch(const PatchCommand* p, EEMemory& ee, IOPMemory& iop)
 {
-	u64 ledata = 0;
 	switch (p->cpu)
 	{
 		case CPU_EE:
+		{
 			switch (p->type)
 			{
 				case BYTE_T:
-					if (ee.Read8(p->addr) != (u8)p->data)
-						ee.Write8(p->addr, (u8)p->data);
+				{
+					ee.IdempotentWrite8(p->addr, static_cast<u8>(p->data));
 					break;
-
+				}
 				case SHORT_T:
-					if (ee.Read16(p->addr) != (u16)p->data)
-						ee.Write16(p->addr, (u16)p->data);
+				{
+					ee.IdempotentWrite16(p->addr, static_cast<u16>(p->data));
 					break;
-
+				}
 				case WORD_T:
-					if (ee.Read32(p->addr) != (u32)p->data)
-						ee.Write32(p->addr, (u32)p->data);
+				{
+					ee.IdempotentWrite32(p->addr, static_cast<u32>(p->data));
 					break;
-
+				}
 				case DOUBLE_T:
-					if (ee.Read64(p->addr) != (u64)p->data)
-						ee.Write64(p->addr, (u64)p->data);
+				{
+					ee.IdempotentWrite64(p->addr, p->data);
 					break;
-
+				}
 				case EXTENDED_T:
+				{
 					handle_extended_t(p, ee);
 					break;
-
+				}
 				case SHORT_BE_T:
-					ledata = ByteSwap(static_cast<u16>(p->data));
-					if (ee.Read16(p->addr) != (u16)ledata)
-						ee.Write16(p->addr, (u16)ledata);
+				{
+					u16 value = ByteSwap(static_cast<u16>(p->data));
+					ee.IdempotentWrite16(p->addr, value);
 					break;
-
+				}
 				case WORD_BE_T:
-					ledata = ByteSwap(static_cast<u32>(p->data));
-					if (ee.Read32(p->addr) != (u32)ledata)
-						ee.Write32(p->addr, (u32)ledata);
+				{
+					u32 value = ByteSwap(static_cast<u32>(p->data));
+					ee.IdempotentWrite32(p->addr, value);
 					break;
-
+				}
 				case DOUBLE_BE_T:
-					ledata = ByteSwap(p->data);
-					if (ee.Read64(p->addr) != (u64)ledata)
-						ee.Write64(p->addr, (u64)ledata);
+				{
+					u64 value = ByteSwap(p->data);
+					ee.IdempotentWrite64(p->addr, value);
 					break;
-
+				}
 				case BYTES_T:
 				{
 					// We compare before writing so the rec doesn't get upset and invalidate when there's no change.
-					if (!ee.CompareBytes(p->addr, p->data_ptr, static_cast<u32>(p->data)))
-						ee.WriteBytes(p->addr, p->data_ptr, static_cast<u32>(p->data));
-				}
-				break;
-
-				default:
+					ee.IdempotentWriteBytes(p->addr, p->data_ptr, static_cast<u32>(p->data));
 					break;
+				}
+				default:
+				{
+					break;
+				}
 			}
 			break;
-
+		}
 		case CPU_IOP:
+		{
 			switch (p->type)
 			{
 				case BYTE_T:
-					if (iop.Read8(p->addr) != (u8)p->data)
-						iop.Write8(p->addr, (u8)p->data);
+				{
+					iop.IdempotentWrite(p->addr, static_cast<u8>(p->data));
 					break;
+				}
 				case SHORT_T:
-					if (iop.Read16(p->addr) != (u16)p->data)
-						iop.Write16(p->addr, (u16)p->data);
+				{
+					iop.IdempotentWrite16(p->addr, static_cast<u16>(p->data));
 					break;
+				}
 				case WORD_T:
-					if (iop.Read32(p->addr) != (u32)p->data)
-						iop.Write32(p->addr, (u32)p->data);
+				{
+					iop.IdempotentWrite32(p->addr, static_cast<u32>(p->data));
 					break;
+				}
 				case BYTES_T:
 				{
-					if (!iop.CompareBytes(p->addr, p->data_ptr, static_cast<u32>(p->data)))
-						iop.WriteBytes(p->addr, p->data_ptr, static_cast<u32>(p->data));
-				}
-				break;
-
-				default:
+					iop.IdempotentWriteBytes(p->addr, p->data_ptr, static_cast<u32>(p->data));
 					break;
+				}
+				default:
+				{
+					break;
+				}
 			}
 			break;
-
+		}
 		default:
+		{
 			break;
+		}
 	}
 }
 
