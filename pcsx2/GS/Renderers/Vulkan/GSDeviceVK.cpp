@@ -2629,6 +2629,25 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 	return true;
 }
 
+bool GSDeviceVK::CheckConservativeDepth()
+{
+	// Some Intel GPUs are known to crash with conservative depth.
+	// Detect those here and disable it.
+
+	const u16 vendor_id = static_cast<u16>(m_device_properties.vendorID);
+	const u16 pci_id = static_cast<u16>(m_device_properties.deviceID);
+
+	GPUArchitecture arch = LookupGPUArchitecture(vendor_id, pci_id);
+
+	// Blacklist everything up to Gen 9.
+	if (arch >= GPUArchitecture::IntelGen2 && arch <= GPUArchitecture::IntelGen9)
+	{
+		return false;
+	}
+
+	return true;
+}
+
 bool GSDeviceVK::CheckFeatures()
 {
 	const VkPhysicalDeviceLimits& limits = m_device_properties.limits;
@@ -2716,6 +2735,8 @@ bool GSDeviceVK::CheckFeatures()
 	}
 
 	m_max_texture_size = m_device_properties.limits.maxImageDimension2D;
+
+	m_features.conservative_depth = CheckConservativeDepth();
 
 	return true;
 }
@@ -4728,6 +4749,7 @@ VkShaderModule GSDeviceVK::GetTFXFragmentShader(const GSHWDrawConfig::PSSelector
 	std::stringstream ss;
 	AddShaderHeader(ss);
 	AddShaderStageMacro(ss, false, false, true);
+	AddMacro(ss, "PS_HAS_CONSERVATIVE_DEPTH", static_cast<int>(m_features.conservative_depth));
 	AddMacro(ss, "PS_FST", sel.fst);
 	AddMacro(ss, "PS_WMS", sel.wms);
 	AddMacro(ss, "PS_WMT", sel.wmt);

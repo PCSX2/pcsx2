@@ -933,6 +933,7 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	m_features.stencil_buffer = true;
 	m_features.cas_sharpening = true;
 	m_features.test_and_sample_depth = true;
+	m_features.conservative_depth = true;
 	m_max_texture_size = m_dev.features.max_texsize;
 
 	// Init metal stuff
