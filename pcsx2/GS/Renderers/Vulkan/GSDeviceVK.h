@@ -574,7 +574,7 @@ public:
 	VkImageMemoryBarrier GetColorBufferBarrier(GSTextureVK* rt) const;
 	VkDependencyFlags GetColorBufferBarrierFlags() const;
 	void SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt,
-		bool one_barrier, bool full_barrier, bool skip_first_barrier);
+		bool one_barrier, bool full_barrier);
 
 	//////////////////////////////////////////////////////////////////////////
 	// Vulkan State
