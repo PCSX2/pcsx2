@@ -546,3 +546,12 @@ PATCH_TEST(ExtendedConditionalECodeEqualFalse,
 	ee.ExpectRead8(0x00300000, 0);
 	ee.ExpectWrite8(0x00300000, 0x12);
 }
+
+PATCH_TEST(ExtendedConditionalResetSkipCount,
+	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0xd0100000, Patch::EXTENDED_T, 0xff010012),
+	BuildPatchCommand(Patch::PPT_CONTINUOUSLY, Patch::CPU_EE, 0x00200000, Patch::EXTENDED_T, 0x00000012))
+{
+	ee.ExpectRead8(0x00100000, 0xab);
+	ee.ExpectRead8(0x00200000, 0);
+	ee.ExpectWrite8(0x00200000, 0x12);
+}
