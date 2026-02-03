@@ -512,6 +512,9 @@ void GSState::PushBuffer()
 
 bool GSState::CanBufferNewDraw()
 {
+	if (!GSConfig.UserHacks_DrawBuffering)
+		return false;
+
 	GSDrawingContext& cur_context = m_env.CTXT[m_env.PRIM.CTXT];
 	GSDrawingContext& base_context = m_env_buffers[0].m_env.CTXT[m_env_buffers[0].m_env.PRIM.CTXT];
 
@@ -5210,6 +5213,9 @@ __forceinline void GSState::HandleAutoFlush()
 
 bool GSState::CheckOverlapVerts(u32 n)
 {
+	if (!GSConfig.UserHacks_DrawBuffering)
+		return false;
+
 	if (m_recent_buffer_switch && ((m_vertex->tail + 1) - m_vertex->head) == n)
 	{
 		m_recent_buffer_switch = false;

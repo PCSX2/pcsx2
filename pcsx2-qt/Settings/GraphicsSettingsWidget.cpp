@@ -151,6 +151,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 		sif, m_fixes.limit24BitDepth, "EmuCore/GS", "UserHacks_Limit24BitDepth", static_cast<int>(GSLimit24BitDepth::Disabled));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_fixes.readTCOnClose, "EmuCore/GS", "UserHacks_ReadTCOnClose", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_fixes.estimateTextureRegion, "EmuCore/GS", "UserHacks_EstimateTextureRegion", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_fixes.drawBuffering, "EmuCore/GS", "UserHacks_DrawBuffering", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_fixes.gpuPaletteConversion, "EmuCore/GS", "paltex", false);
 	connect(m_fixes.cpuSpriteRenderBW, &QComboBox::currentIndexChanged, this,
 		&GraphicsSettingsWidget::onCPUSpriteRenderBWChanged);
@@ -635,6 +636,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 
 		dialog()->registerWidgetHelp(m_fixes.estimateTextureRegion, tr("Estimate Texture Region"), tr("Unchecked"),
 			tr("Attempts to reduce the texture size when games do not set it themselves (e.g. Snowblind games)."));
+
+		dialog()->registerWidgetHelp(m_fixes.drawBuffering, tr("Draw Buffering"), tr("Unchecked"),
+			tr("Attempts to reduce draw calls in games which do heavy context switching for blending purposes."));
 	}
 
 	// Upscaling Fixes tab
