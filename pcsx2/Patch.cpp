@@ -1278,6 +1278,8 @@ void Patch::handle_extended_t(const PatchCommand* p, Memory& memory, ExtendedSta
 				// Read first pointer
 				state.last_type = ((u32)p->addr & 0x000F0000) >> 16;
 				u32 mem = memory.Read32(state.prev_cheat_addr);
+				if (((mem & 0x0FFFFFFF) & 0x3FFFFFFC) == 0)
+					state.null_pointer_encountered = true;
 
 				state.prev_cheat_addr = mem + (u32)p->data;
 				state.iteration_count--;
@@ -1286,14 +1288,12 @@ void Patch::handle_extended_t(const PatchCommand* p, Memory& memory, ExtendedSta
 				if (state.iteration_count == 0)
 				{
 					state.prev_cheat_type = 0;
-					if (((mem & 0x0FFFFFFF) & 0x3FFFFFFC) != 0)
+					if (!state.null_pointer_encountered)
 						writeCheat(memory, state);
 				}
 				else
 				{
 					state.prev_cheat_type = 0x6001;
-					if (((mem & 0x0FFFFFFF) & 0x3FFFFFFC) == 0)
-						state.null_pointer_encountered = true;
 				}
 			}
 			break;
@@ -1303,7 +1303,11 @@ void Patch::handle_extended_t(const PatchCommand* p, Memory& memory, ExtendedSta
 				// Read first pointer
 				u32 mem = 0;
 				if (!state.null_pointer_encountered)
+				{
 					mem = memory.Read32(state.prev_cheat_addr & 0x0FFFFFFF);
+					if (((mem & 0x0FFFFFFF) & 0x3FFFFFFC) == 0)
+						state.null_pointer_encountered = true;
+				}
 
 				state.prev_cheat_addr = mem + (u32)p->addr;
 				state.iteration_count--;
@@ -1312,22 +1316,28 @@ void Patch::handle_extended_t(const PatchCommand* p, Memory& memory, ExtendedSta
 				if (state.iteration_count == 0)
 				{
 					state.prev_cheat_type = 0;
-					if (((mem & 0x0FFFFFFF) & 0x3FFFFFFC) != 0)
+					if (!state.null_pointer_encountered)
 						writeCheat(memory, state);
 				}
 				else
 				{
 					if (!state.null_pointer_encountered)
+					{
 						mem = memory.Read32(state.prev_cheat_addr);
+						if (((mem & 0x0FFFFFFF) & 0x3FFFFFFC) == 0)
+							state.null_pointer_encountered = true;
+					}
 					else
+					{
 						mem = 0;
+					}
 
 					state.prev_cheat_addr = mem + (u32)p->data;
 					state.iteration_count--;
 					if (state.iteration_count == 0)
 					{
 						state.prev_cheat_type = 0;
-						if (((mem & 0x0FFFFFFF) & 0x3FFFFFFC) != 0)
+						if (!state.null_pointer_encountered)
 							writeCheat(memory, state);
 					}
 				}
