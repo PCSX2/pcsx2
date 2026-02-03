@@ -7277,27 +7277,27 @@ void GSRendererHW::EmulateATST(float& AREF, GSHWDrawConfig::PSSelector& ps, bool
 	{
 		case ATST_LESS:
 			AREF = aref - 0.1f;
-			ps.atst = 1;
+			ps.atst = GSHWDrawConfig::PSAlphaTest::PS_ATST_LEQUAL;
 			break;
 		case ATST_LEQUAL:
 			AREF = aref - 0.1f + 1.0f;
-			ps.atst = 1;
+			ps.atst = GSHWDrawConfig::PSAlphaTest::PS_ATST_LEQUAL;
 			break;
 		case ATST_GEQUAL:
 			AREF = aref - 0.1f;
-			ps.atst = 2;
+			ps.atst = GSHWDrawConfig::PSAlphaTest::PS_ATST_GEQUAL;
 			break;
 		case ATST_GREATER:
 			AREF = aref - 0.1f + 1.0f;
-			ps.atst = 2;
+			ps.atst = GSHWDrawConfig::PSAlphaTest::PS_ATST_GEQUAL;
 			break;
 		case ATST_EQUAL:
 			AREF = aref;
-			ps.atst = 3;
+			ps.atst = GSHWDrawConfig::PSAlphaTest::PS_ATST_EQUAL;
 			break;
 		case ATST_NOTEQUAL:
 			AREF = aref;
-			ps.atst = 4;
+			ps.atst = GSHWDrawConfig::PSAlphaTest::PS_ATST_NOTEQUAL;
 			break;
 		case ATST_NEVER: // Draw won't be done so no need to implement it in shader
 		case ATST_ALWAYS:
@@ -8204,6 +8204,11 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		std::memcpy(&m_conf.depth, &m_conf.alpha_second_pass.depth, sizeof(m_conf.depth));
 		m_conf.cb_ps.FogColor_AREF.a = m_conf.alpha_second_pass.ps_aref;
 		m_conf.alpha_second_pass.enable = false;
+	}
+
+	if (GSConfig.SaveHWConfig && GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
+	{
+		GSHWDrawConfig::DumpConfig(GetDrawDumpPath("%05d_hwconfig.txt", s_n), m_conf);
 	}
 
 	if (!m_channel_shuffle_width)

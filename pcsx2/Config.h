@@ -788,6 +788,7 @@ struct Pcsx2Config
 					SaveTransferImages : 1,
 					SaveDrawStats : 1,
 					SaveFrameStats : 1,
+					SaveHWConfig : 1,
 					DumpReplaceableTextures : 1,
 					DumpReplaceableMipmaps : 1,
 					DumpTexturesWithFMVActive : 1,
