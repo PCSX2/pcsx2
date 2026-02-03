@@ -382,23 +382,6 @@ PATCH_TEST(ExtendedPointerWriteMultiOdd,
 	ee.ExpectWrite32(0x0040000c, 0x12345678);
 }
 
-PATCH_TEST(ExtendedPointerWriteFirstNull,
-	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x60100000, Patch::EXTENDED_T, 0x12345678),
-	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x00020000, Patch::EXTENDED_T, 0x00000004))
-{
-	ee.ExpectRead32(0x00100000, 0x00000000);
-}
-
-PATCH_TEST(ExtendedPointerWriteLastNull,
-	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x60100000, Patch::EXTENDED_T, 0x12345678),
-	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x00020003, Patch::EXTENDED_T, 0x00000004),
-	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x00000008, Patch::EXTENDED_T, 0x0000000c))
-{
-	ee.ExpectRead32(0x00100000, 0x00200000);
-	ee.ExpectRead32(0x00200004, 0x00300000);
-	ee.ExpectRead32(0x00300008, 0x00000000);
-}
-
 PATCH_TEST(ExtendedPointerWriteSkipsNullSingle,
 	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x60100000, Patch::EXTENDED_T, 0x0fffffff),
 	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x00020001, Patch::EXTENDED_T, 0x0fffffff),
@@ -413,7 +396,7 @@ PATCH_TEST(ExtendedPointerWriteSkipsNullSingle,
 // There was previously a bug where if the pointer write command was split over
 // three lines or more, if the first pointer was null it would interpret the
 // middle of the pointer write command as the start of a new command.
-PATCH_TEST(ExtendedPointerWriteSkipsFirstNullMultiEven,
+PATCH_TEST(ExtendedPointerWriteSkipsFirstNullEven,
 	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x60100000, Patch::EXTENDED_T, 0x0fffffff),
 	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x00020002, Patch::EXTENDED_T, 0x00000004),
 	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x0fffffff, Patch::EXTENDED_T, 0x00000000),
@@ -425,7 +408,7 @@ PATCH_TEST(ExtendedPointerWriteSkipsFirstNullMultiEven,
 	ee.ExpectIdempotentWrite32(0x00300000, 0, 0x12345678);
 }
 
-PATCH_TEST(ExtendedPointerWriteSkipsFirstNullMultiOdd,
+PATCH_TEST(ExtendedPointerWriteSkipsFirstNullOdd,
 	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x60100000, Patch::EXTENDED_T, 0x0fffffff),
 	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x00020003, Patch::EXTENDED_T, 0x00000004),
 	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x00000008, Patch::EXTENDED_T, 0x0fffffff),
@@ -433,6 +416,62 @@ PATCH_TEST(ExtendedPointerWriteSkipsFirstNullMultiOdd,
 	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x20300000, Patch::EXTENDED_T, 0x12345678))
 {
 	ee.ExpectRead32(0x00100000, 0);
+	ee.ExpectIdempotentWrite32(0x00200000, 0, 0x12345678);
+	ee.ExpectIdempotentWrite32(0x00300000, 0, 0x12345678);
+}
+
+PATCH_TEST(ExtendedPointerWriteSkipsMiddleNullEven,
+	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x60100000, Patch::EXTENDED_T, 0x0fffffff),
+	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x00020004, Patch::EXTENDED_T, 0x00000004),
+	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x00000008, Patch::EXTENDED_T, 0x0000000c),
+	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x0fffffff, Patch::EXTENDED_T, 0x00000000),
+	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x20200000, Patch::EXTENDED_T, 0x12345678),
+	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x20300000, Patch::EXTENDED_T, 0x12345678))
+{
+	ee.ExpectRead32(0x00100000, 0x00110000);
+	ee.ExpectRead32(0x00110004, 0);
+	ee.ExpectIdempotentWrite32(0x00200000, 0, 0x12345678);
+	ee.ExpectIdempotentWrite32(0x00300000, 0, 0x12345678);
+}
+
+PATCH_TEST(ExtendedPointerWriteSkipsMiddleNullOdd,
+	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x60100000, Patch::EXTENDED_T, 0x0fffffff),
+	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x00020005, Patch::EXTENDED_T, 0x00000004),
+	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x00000008, Patch::EXTENDED_T, 0x0000000c),
+	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x00000010, Patch::EXTENDED_T, 0x0fffffff),
+	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x20200000, Patch::EXTENDED_T, 0x12345678),
+	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x20300000, Patch::EXTENDED_T, 0x12345678))
+{
+	ee.ExpectRead32(0x00100000, 0x00110000);
+	ee.ExpectRead32(0x00110004, 0x00120000);
+	ee.ExpectRead32(0x00120008, 0);
+	ee.ExpectIdempotentWrite32(0x00200000, 0, 0x12345678);
+	ee.ExpectIdempotentWrite32(0x00300000, 0, 0x12345678);
+}
+
+PATCH_TEST(ExtendedPointerWriteSkipsLastNullEven,
+	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x60100000, Patch::EXTENDED_T, 0x0fffffff),
+	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x00020002, Patch::EXTENDED_T, 0x00000004),
+	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x0fffffff, Patch::EXTENDED_T, 0x00000000),
+	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x20200000, Patch::EXTENDED_T, 0x12345678),
+	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x20300000, Patch::EXTENDED_T, 0x12345678))
+{
+	ee.ExpectRead32(0x00100000, 0x00110000);
+	ee.ExpectRead32(0x00110004, 0);
+	ee.ExpectIdempotentWrite32(0x00200000, 0, 0x12345678);
+	ee.ExpectIdempotentWrite32(0x00300000, 0, 0x12345678);
+}
+
+PATCH_TEST(ExtendedPointerWriteSkipsLastNullOdd,
+	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x60100000, Patch::EXTENDED_T, 0x0fffffff),
+	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x00020003, Patch::EXTENDED_T, 0x00000004),
+	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x00000008, Patch::EXTENDED_T, 0x0fffffff),
+	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x20200000, Patch::EXTENDED_T, 0x12345678),
+	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x20300000, Patch::EXTENDED_T, 0x12345678))
+{
+	ee.ExpectRead32(0x00100000, 0x00110000);
+	ee.ExpectRead32(0x00110004, 0x00120000);
+	ee.ExpectRead32(0x00120008, 0);
 	ee.ExpectIdempotentWrite32(0x00200000, 0, 0x12345678);
 	ee.ExpectIdempotentWrite32(0x00300000, 0, 0x12345678);
 }
