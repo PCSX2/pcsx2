@@ -67,6 +67,7 @@ namespace Patch
 		u32 prev_cheat_type = 0;
 		u32 prev_cheat_addr = 0;
 		u32 last_type = 0;
+		bool null_pointer_encountered = false;
 	};
 
 	namespace PatchFunc
@@ -1266,6 +1267,8 @@ void Patch::handle_extended_t(const PatchCommand* p, Memory& memory, ExtendedSta
 
 			case 0x6000: // 000Xnnnn iiiiiiii
 			{
+				state.null_pointer_encountered = false;
+
 				// Get Number of pointers
 				if (((u32)p->addr & 0x0000FFFF) == 0)
 					state.iteration_count = 1;
@@ -1288,10 +1291,9 @@ void Patch::handle_extended_t(const PatchCommand* p, Memory& memory, ExtendedSta
 				}
 				else
 				{
+					state.prev_cheat_type = 0x6001;
 					if (((mem & 0x0FFFFFFF) & 0x3FFFFFFC) == 0)
-						state.prev_cheat_type = 0;
-					else
-						state.prev_cheat_type = 0x6001;
+						state.null_pointer_encountered = true;
 				}
 			}
 			break;
@@ -1299,7 +1301,9 @@ void Patch::handle_extended_t(const PatchCommand* p, Memory& memory, ExtendedSta
 			case 0x6001: // 000Xnnnn iiiiiiii
 			{
 				// Read first pointer
-				u32 mem = memory.Read32(state.prev_cheat_addr & 0x0FFFFFFF);
+				u32 mem = 0;
+				if (!state.null_pointer_encountered)
+					mem = memory.Read32(state.prev_cheat_addr & 0x0FFFFFFF);
 
 				state.prev_cheat_addr = mem + (u32)p->addr;
 				state.iteration_count--;
@@ -1313,7 +1317,10 @@ void Patch::handle_extended_t(const PatchCommand* p, Memory& memory, ExtendedSta
 				}
 				else
 				{
-					mem = memory.Read32(state.prev_cheat_addr);
+					if (!state.null_pointer_encountered)
+						mem = memory.Read32(state.prev_cheat_addr);
+					else
+						mem = 0;
 
 					state.prev_cheat_addr = mem + (u32)p->data;
 					state.iteration_count--;
