@@ -2892,34 +2892,6 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config, GSTexture* draw_rt_clo
 		};
 
 		const GSVector4i rtsize(0, 0, draw_rt->GetWidth(), draw_rt->GetHeight());
-		auto ProcessCopyArea = [&rtsize](GSVector4i& area) {
-			// We don't want the snapped box adjustments when the rect is empty as it might make the copy to pass.
-			// The empty rect itself needs to be handled in renderer properly.
-			if (area.rempty())
-				return;
-
-			// If copy area exceeds 90% coverage then we can do a full copy instead which should be faster.
-			const float rt_area = static_cast<float>(rtsize.width() * rtsize.height());
-			const float copy_area = static_cast<float>(area.width() * area.height());
-			if ((copy_area / rt_area) >= 0.90f)
-			{
-				area = rtsize;
-				return;
-			}
-
-			// Aligning bbox to 4 pixel boundaries so copies will be faster using Direct Memory Access,
-			// otherwise it may stall as more commands need to be issued.
-			area.left &= ~3;
-			area.top &= ~3;
-			area.right = (area.right + 3) & ~3;
-			area.bottom = (area.bottom + 3) & ~3;
-
-			// Ensure the new sizes are within bounds.
-			area.left = std::max(0, area.left);
-			area.top = std::max(0, area.top);
-			area.right = std::min(area.right, rtsize.right);
-			area.bottom = std::min(area.bottom, rtsize.bottom);
-		};
 
 		if (m_features.multidraw_fb_copy && full_barrier)
 		{
@@ -2934,10 +2906,7 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config, GSTexture* draw_rt_clo
 				const u32 count = (*config.drawlist)[n] * indices_per_prim;
 
 				const GSVector4i original_bbox = (*config.drawlist_bbox)[n].rintersect(config.drawarea);
-				GSVector4i snapped_bbox = original_bbox;
-
-				ProcessCopyArea(snapped_bbox);
-				CopyAndBind(snapped_bbox);
+				CopyAndBind(ProcessCopyArea(rtsize, original_bbox));
 
 				DrawIndexedPrimitive(p, count);
 				p += count;
@@ -2948,11 +2917,7 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config, GSTexture* draw_rt_clo
 
 		// Optimization: For alpha second pass we can reuse the copy snapshot from the first pass.
 		if (!skip_first_barrier)
-		{
-			GSVector4i snapped_drawarea = config.drawarea;
-			ProcessCopyArea(snapped_drawarea);
-			CopyAndBind(snapped_drawarea);
-		}
+			CopyAndBind(ProcessCopyArea(rtsize, config.drawarea));
 	}
 
 	DrawIndexedPrimitive();
