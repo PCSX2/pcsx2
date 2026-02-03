@@ -6116,14 +6116,24 @@ void GSState::GSPCRTCRegs::CalculateFramebufferOffset(bool scanmask, GSRegDISPFB
 		{
 			if (framebuffer1Reg.DBY == PCRTCDisplays[1].prevFramebufferReg.DBY)
 			{
-				PCRTCDisplays[0].framebufferRect.y = PCRTCDisplays[1].framebufferRect.y;
-				PCRTCDisplays[0].framebufferRect.w = PCRTCDisplays[1].framebufferRect.w;
+				const int offset = PCRTCDisplays[1].framebufferRect.y - PCRTCDisplays[0].framebufferRect.y;
+
+				if (std::abs(offset) <= 4)
+				{
+					PCRTCDisplays[0].framebufferRect.y += offset;
+					PCRTCDisplays[0].framebufferRect.w += offset;
+				}
 			}
 		}
 		else
 		{
-			PCRTCDisplays[1].framebufferRect.y = PCRTCDisplays[0].framebufferRect.y;
-			PCRTCDisplays[1].framebufferRect.w = PCRTCDisplays[0].framebufferRect.w;
+			const int offset = PCRTCDisplays[0].framebufferRect.y - PCRTCDisplays[1].framebufferRect.y;
+
+			if (std::abs(offset) <= 4)
+			{
+				PCRTCDisplays[1].framebufferRect.y += offset;
+				PCRTCDisplays[1].framebufferRect.w += offset;
+			}
 		}
 	}
 }
