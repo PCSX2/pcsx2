@@ -59,6 +59,16 @@ namespace Patch
 		void (*func)(PatchGroup* group, const std::string_view cmd, const std::string_view param);
 	};
 
+	struct ExtendedState
+	{
+		u32 skip_count = 0;
+		u32 iteration_count = 0;
+		u32 iteration_increment = 0;
+		u32 prev_cheat_type = 0;
+		u32 prev_cheat_addr = 0;
+		u32 last_type = 0;
+	};
+
 	namespace PatchFunc
 	{
 		static void patch(PatchGroup* group, const std::string_view cmd, const std::string_view param);
@@ -92,14 +102,14 @@ namespace Patch
 	template <typename EEMemory, typename IOPMemory>
 		requires std::is_base_of_v<MemoryInterface, EEMemory> &&
 	             std::is_base_of_v<MemoryInterface, IOPMemory>
-	void ApplyPatch(const PatchCommand* p, EEMemory& ee, IOPMemory& iop);
+	void ApplyPatch(const PatchCommand* p, EEMemory& ee, IOPMemory& iop, ExtendedState& state);
 	static void ApplyDynaPatch(const DynamicPatch& patch, u32 address);
 	template <typename Memory>
 		requires std::is_base_of_v<MemoryInterface, Memory>
-	static void writeCheat(Memory& memory);
+	static void writeCheat(Memory& memory, ExtendedState& state);
 	template <typename Memory>
 		requires std::is_base_of_v<MemoryInterface, Memory>
-	static void handle_extended_t(const PatchCommand* p, Memory& memory);
+	static void handle_extended_t(const PatchCommand* p, Memory& memory, ExtendedState& state);
 
 	// Name of patches which will be auto-enabled based on global options.
 	static constexpr std::string_view WS_PATCH_NAME = "Widescreen 16:9";
@@ -644,6 +654,10 @@ u32 Patch::EnablePatches(const std::vector<PatchGroup>* patches, const std::vect
 		Console.WriteLn(Color_Green, fmt::format("Enabled patch: {}",
 										 p.name.empty() ? std::string_view("<unknown>") : std::string_view(p.name)));
 
+		// Indicate that a new group has started so that extended code state
+		// such as the skip counter can be reset.
+		s_active_patches.emplace_back(nullptr);
+
 		for (const PatchCommand& ip : p.patches)
 		{
 			// print the actual patch lines only in verbose mode (even in devel)
@@ -682,14 +696,16 @@ u32 Patch::EnablePatches(const std::vector<PatchGroup>* patches, const std::vect
 				if (!apply_immediately)
 					continue;
 
+				EEMemoryInterface ee;
+				IOPMemoryInterface iop;
+				ExtendedState state;
+
 				for (const PatchCommand& command : group.patches)
 				{
 					if (command.placetopatch != PPT_ON_LOAD_OR_WHEN_ENABLED)
 						continue;
 
-					EEMemoryInterface ee;
-					IOPMemoryInterface iop;
-					ApplyPatch(&command, ee, iop);
+					ApplyPatch(&command, ee, iop, state);
 				}
 			}
 		});
@@ -1105,9 +1121,21 @@ void Patch::ApplyPatches(
 	EEMemoryInterface& ee,
 	IOPMemoryInterface& iop)
 {
-	for (const PatchCommand* i : patches)
-		if (i->placetopatch == place)
-			ApplyPatch(i, ee, iop);
+	ExtendedState state;
+
+	for (const PatchCommand* patch : patches)
+	{
+		if (!patch)
+		{
+			state = {};
+			continue;
+		}
+
+		if (patch->placetopatch != place)
+			continue;
+
+		ApplyPatch(patch, ee, iop, state);
+	}
 }
 
 void Patch::ApplyPatches(
@@ -1116,9 +1144,21 @@ void Patch::ApplyPatches(
 	MemoryInterface& ee,
 	MemoryInterface& iop)
 {
-	for (const PatchCommand* i : patches)
-		if (i->placetopatch == place)
-			ApplyPatch(i, ee, iop);
+	ExtendedState state;
+
+	for (const PatchCommand* patch : patches)
+	{
+		if (!patch)
+		{
+			state = {};
+			continue;
+		}
+
+		if (patch->placetopatch != place)
+			continue;
+
+		ApplyPatch(patch, ee, iop, state);
+	}
 }
 
 u32 Patch::GetActiveGameDBPatchesCount()
@@ -1160,24 +1200,20 @@ void Patch::LoadDynamicPatches(const std::vector<DynamicPatch>& patches)
 		s_active_gamedb_dynamic_patches.push_back(it);
 }
 
-static u32 SkipCount = 0, IterationCount = 0;
-static u32 IterationIncrement = 0;
-static u32 PrevCheatType = 0, PrevCheatAddr = 0, LastType = 0;
-
 template <typename Memory>
 	requires std::is_base_of_v<MemoryInterface, Memory>
-void Patch::writeCheat(Memory& memory)
+void Patch::writeCheat(Memory& memory, ExtendedState& state)
 {
-	switch (LastType)
+	switch (state.last_type)
 	{
 		case 0x0:
-			memory.IdempotentWrite8(PrevCheatAddr, IterationIncrement & 0xFF);
+			memory.IdempotentWrite8(state.prev_cheat_addr, state.iteration_increment & 0xFF);
 			break;
 		case 0x1:
-			memory.IdempotentWrite16(PrevCheatAddr, IterationIncrement & 0xFFFF);
+			memory.IdempotentWrite16(state.prev_cheat_addr, state.iteration_increment & 0xFFFF);
 			break;
 		case 0x2:
-			memory.IdempotentWrite32(PrevCheatAddr, IterationIncrement);
+			memory.IdempotentWrite32(state.prev_cheat_addr, state.iteration_increment);
 			break;
 		default:
 			break;
@@ -1186,76 +1222,76 @@ void Patch::writeCheat(Memory& memory)
 
 template <typename Memory>
 	requires std::is_base_of_v<MemoryInterface, Memory>
-void Patch::handle_extended_t(const PatchCommand* p, Memory& memory)
+void Patch::handle_extended_t(const PatchCommand* p, Memory& memory, ExtendedState& state)
 {
-	if (SkipCount > 0)
+	if (state.skip_count > 0)
 	{
-		SkipCount--;
+		state.skip_count--;
 	}
 	else
-		switch (PrevCheatType)
+		switch (state.prev_cheat_type)
 		{
 			case 0x3040: // vvvvvvvv 00000000 Inc
 			{
-				u32 mem = memory.Read32(PrevCheatAddr);
-				memory.Write32(PrevCheatAddr, mem + (p->addr));
-				PrevCheatType = 0;
+				u32 mem = memory.Read32(state.prev_cheat_addr);
+				memory.Write32(state.prev_cheat_addr, mem + (p->addr));
+				state.prev_cheat_type = 0;
 				break;
 			}
 
 			case 0x3050: // vvvvvvvv 00000000 Dec
 			{
-				u32 mem = memory.Read32(PrevCheatAddr);
-				memory.Write32(PrevCheatAddr, mem - (p->addr));
-				PrevCheatType = 0;
+				u32 mem = memory.Read32(state.prev_cheat_addr);
+				memory.Write32(state.prev_cheat_addr, mem - (p->addr));
+				state.prev_cheat_type = 0;
 				break;
 			}
 
 			case 0x4000: // vvvvvvvv iiiiiiii
-				for (u32 i = 0; i < IterationCount; i++)
+				for (u32 i = 0; i < state.iteration_count; i++)
 				{
-					memory.IdempotentWrite32((u32)(PrevCheatAddr + (i * IterationIncrement)), (u32)(p->addr + ((u32)p->data * i)));
+					memory.IdempotentWrite32((u32)(state.prev_cheat_addr + (i * state.iteration_increment)), (u32)(p->addr + ((u32)p->data * i)));
 				}
-				PrevCheatType = 0;
+				state.prev_cheat_type = 0;
 				break;
 
 			case 0x5000: // bbbbbbbb 00000000
-				for (u32 i = 0; i < IterationCount; i++)
+				for (u32 i = 0; i < state.iteration_count; i++)
 				{
-					u8 mem = memory.Read8(PrevCheatAddr + i);
+					u8 mem = memory.Read8(state.prev_cheat_addr + i);
 					memory.IdempotentWrite8((p->addr + i) & 0x0FFFFFFF, mem);
 				}
-				PrevCheatType = 0;
+				state.prev_cheat_type = 0;
 				break;
 
 			case 0x6000: // 000Xnnnn iiiiiiii
 			{
 				// Get Number of pointers
 				if (((u32)p->addr & 0x0000FFFF) == 0)
-					IterationCount = 1;
+					state.iteration_count = 1;
 				else
-					IterationCount = (u32)p->addr & 0x0000FFFF;
+					state.iteration_count = (u32)p->addr & 0x0000FFFF;
 
 				// Read first pointer
-				LastType = ((u32)p->addr & 0x000F0000) >> 16;
-				u32 mem = memory.Read32(PrevCheatAddr);
+				state.last_type = ((u32)p->addr & 0x000F0000) >> 16;
+				u32 mem = memory.Read32(state.prev_cheat_addr);
 
-				PrevCheatAddr = mem + (u32)p->data;
-				IterationCount--;
+				state.prev_cheat_addr = mem + (u32)p->data;
+				state.iteration_count--;
 
 				// Check if needed to read another pointer
-				if (IterationCount == 0)
+				if (state.iteration_count == 0)
 				{
-					PrevCheatType = 0;
+					state.prev_cheat_type = 0;
 					if (((mem & 0x0FFFFFFF) & 0x3FFFFFFC) != 0)
-						writeCheat(memory);
+						writeCheat(memory, state);
 				}
 				else
 				{
 					if (((mem & 0x0FFFFFFF) & 0x3FFFFFFC) == 0)
-						PrevCheatType = 0;
+						state.prev_cheat_type = 0;
 					else
-						PrevCheatType = 0x6001;
+						state.prev_cheat_type = 0x6001;
 				}
 			}
 			break;
@@ -1263,29 +1299,29 @@ void Patch::handle_extended_t(const PatchCommand* p, Memory& memory)
 			case 0x6001: // 000Xnnnn iiiiiiii
 			{
 				// Read first pointer
-				u32 mem = memory.Read32(PrevCheatAddr & 0x0FFFFFFF);
+				u32 mem = memory.Read32(state.prev_cheat_addr & 0x0FFFFFFF);
 
-				PrevCheatAddr = mem + (u32)p->addr;
-				IterationCount--;
+				state.prev_cheat_addr = mem + (u32)p->addr;
+				state.iteration_count--;
 
 				// Check if needed to read another pointer
-				if (IterationCount == 0)
+				if (state.iteration_count == 0)
 				{
-					PrevCheatType = 0;
+					state.prev_cheat_type = 0;
 					if (((mem & 0x0FFFFFFF) & 0x3FFFFFFC) != 0)
-						writeCheat(memory);
+						writeCheat(memory, state);
 				}
 				else
 				{
-					mem = memory.Read32(PrevCheatAddr);
+					mem = memory.Read32(state.prev_cheat_addr);
 
-					PrevCheatAddr = mem + (u32)p->data;
-					IterationCount--;
-					if (IterationCount == 0)
+					state.prev_cheat_addr = mem + (u32)p->data;
+					state.iteration_count--;
+					if (state.iteration_count == 0)
 					{
-						PrevCheatType = 0;
+						state.prev_cheat_type = 0;
 						if (((mem & 0x0FFFFFFF) & 0x3FFFFFFC) != 0)
-							writeCheat(memory);
+							writeCheat(memory, state);
 					}
 				}
 			}
@@ -1295,71 +1331,71 @@ void Patch::handle_extended_t(const PatchCommand* p, Memory& memory)
 				if ((p->addr & 0xF0000000) == 0x00000000) // 0aaaaaaa 0000000vv
 				{
 					memory.IdempotentWrite8(p->addr & 0x0FFFFFFF, (u8)p->data & 0x000000FF);
-					PrevCheatType = 0;
+					state.prev_cheat_type = 0;
 				}
 				else if ((p->addr & 0xF0000000) == 0x10000000) // 1aaaaaaa 0000vvvv
 				{
 					memory.IdempotentWrite16(p->addr & 0x0FFFFFFF, (u16)p->data & 0x0000FFFF);
-					PrevCheatType = 0;
+					state.prev_cheat_type = 0;
 				}
 				else if ((p->addr & 0xF0000000) == 0x20000000) // 2aaaaaaa vvvvvvvv
 				{
 					memory.IdempotentWrite32(p->addr & 0x0FFFFFFF, (u32)p->data);
-					PrevCheatType = 0;
+					state.prev_cheat_type = 0;
 				}
 				else if ((p->addr & 0xFFFF0000) == 0x30000000) // 300000vv 0aaaaaaa Inc
 				{
 					u8 mem = memory.Read8((u32)p->data);
 					memory.Write8((u32)p->data, mem + (p->addr & 0x000000FF));
-					PrevCheatType = 0;
+					state.prev_cheat_type = 0;
 				}
 				else if ((p->addr & 0xFFFF0000) == 0x30100000) // 301000vv 0aaaaaaa Dec
 				{
 					u8 mem = memory.Read8((u32)p->data);
 					memory.Write8((u32)p->data, mem - (p->addr & 0x000000FF));
-					PrevCheatType = 0;
+					state.prev_cheat_type = 0;
 				}
 				else if ((p->addr & 0xFFFF0000) == 0x30200000) // 3020vvvv 0aaaaaaa Inc
 				{
 					u16 mem = memory.Read16((u32)p->data);
 					memory.Write16((u32)p->data, mem + (p->addr & 0x0000FFFF));
-					PrevCheatType = 0;
+					state.prev_cheat_type = 0;
 				}
 				else if ((p->addr & 0xFFFF0000) == 0x30300000) // 3030vvvv 0aaaaaaa Dec
 				{
 					u16 mem = memory.Read16((u32)p->data);
 					memory.Write16((u32)p->data, mem - (p->addr & 0x0000FFFF));
-					PrevCheatType = 0;
+					state.prev_cheat_type = 0;
 				}
 				else if ((p->addr & 0xFFFF0000) == 0x30400000) // 30400000 0aaaaaaa Inc + Another line
 				{
-					PrevCheatType = 0x3040;
-					PrevCheatAddr = (u32)p->data;
+					state.prev_cheat_type = 0x3040;
+					state.prev_cheat_addr = (u32)p->data;
 				}
 				else if ((p->addr & 0xFFFF0000) == 0x30500000) // 30500000 0aaaaaaa Inc + Another line
 				{
-					PrevCheatType = 0x3050;
-					PrevCheatAddr = (u32)p->data;
+					state.prev_cheat_type = 0x3050;
+					state.prev_cheat_addr = (u32)p->data;
 				}
 				else if ((p->addr & 0xF0000000) == 0x40000000) // 4aaaaaaa nnnnssss + Another line
 				{
-					IterationCount = ((u32)p->data & 0xFFFF0000) >> 16;
-					IterationIncrement = ((u32)p->data & 0x0000FFFF) * 4;
-					PrevCheatAddr = (u32)p->addr & 0x0FFFFFFF;
-					PrevCheatType = 0x4000;
+					state.iteration_count = ((u32)p->data & 0xFFFF0000) >> 16;
+					state.iteration_increment = ((u32)p->data & 0x0000FFFF) * 4;
+					state.prev_cheat_addr = (u32)p->addr & 0x0FFFFFFF;
+					state.prev_cheat_type = 0x4000;
 				}
 				else if ((p->addr & 0xF0000000) == 0x50000000) // 5sssssss nnnnnnnn + Another line
 				{
-					PrevCheatAddr = (u32)p->addr & 0x0FFFFFFF;
-					IterationCount = ((u32)p->data);
-					PrevCheatType = 0x5000;
+					state.prev_cheat_addr = (u32)p->addr & 0x0FFFFFFF;
+					state.iteration_count = ((u32)p->data);
+					state.prev_cheat_type = 0x5000;
 				}
 				else if ((p->addr & 0xF0000000) == 0x60000000) // 6aaaaaaa 000000vv + Another line/s
 				{
-					PrevCheatAddr = (u32)p->addr & 0x0FFFFFFF;
-					IterationIncrement = ((u32)p->data);
-					IterationCount = 0;
-					PrevCheatType = 0x6000;
+					state.prev_cheat_addr = (u32)p->addr & 0x0FFFFFFF;
+					state.iteration_increment = ((u32)p->data);
+					state.iteration_count = 0;
+					state.prev_cheat_type = 0x6000;
 				}
 				else if ((p->addr & 0xF0000000) == 0x70000000)
 				{
@@ -1423,26 +1459,26 @@ void Patch::handle_extended_t(const PatchCommand* p, Memory& memory)
 							u16 mem = memory.Read16(addr & 0x0FFFFFFF);
 							if (mem != (data & 0x0000FFFF))
 							{
-								SkipCount = (data & 0xFF000000) >> 24;
-								if (!SkipCount)
+								state.skip_count = (data & 0xFF000000) >> 24;
+								if (!state.skip_count)
 								{
-									SkipCount = 1;
+									state.skip_count = 1;
 								}
 							}
-							PrevCheatType = 0;
+							state.prev_cheat_type = 0;
 						}
 						else if (type == 1) // Daaaaaaa yy0100vv
 						{
 							u8 mem = memory.Read8(addr & 0x0FFFFFFF);
 							if (mem != (data & 0x000000FF))
 							{
-								SkipCount = (data & 0xFF000000) >> 24;
-								if (!SkipCount)
+								state.skip_count = (data & 0xFF000000) >> 24;
+								if (!state.skip_count)
 								{
-									SkipCount = 1;
+									state.skip_count = 1;
 								}
 							}
-							PrevCheatType = 0;
+							state.prev_cheat_type = 0;
 						}
 					}
 					else if (cond == 1) // Daaaaaaa yy1zvvvv
@@ -1452,26 +1488,26 @@ void Patch::handle_extended_t(const PatchCommand* p, Memory& memory)
 							u16 mem = memory.Read16(addr & 0x0FFFFFFF);
 							if (mem == (data & 0x0000FFFF))
 							{
-								SkipCount = (data & 0xFF000000) >> 24;
-								if (!SkipCount)
+								state.skip_count = (data & 0xFF000000) >> 24;
+								if (!state.skip_count)
 								{
-									SkipCount = 1;
+									state.skip_count = 1;
 								}
 							}
-							PrevCheatType = 0;
+							state.prev_cheat_type = 0;
 						}
 						else if (type == 1) // Daaaaaaa yy1100vv
 						{
 							u8 mem = memory.Read8(addr & 0x0FFFFFFF);
 							if (mem == (data & 0x000000FF))
 							{
-								SkipCount = (data & 0xFF000000) >> 24;
-								if (!SkipCount)
+								state.skip_count = (data & 0xFF000000) >> 24;
+								if (!state.skip_count)
 								{
-									SkipCount = 1;
+									state.skip_count = 1;
 								}
 							}
-							PrevCheatType = 0;
+							state.prev_cheat_type = 0;
 						}
 					}
 					else if (cond == 2) // Daaaaaaa yy2zvvvv
@@ -1481,26 +1517,26 @@ void Patch::handle_extended_t(const PatchCommand* p, Memory& memory)
 							u16 mem = memory.Read16(addr & 0x0FFFFFFF);
 							if (mem >= (data & 0x0000FFFF))
 							{
-								SkipCount = (data & 0xFF000000) >> 24;
-								if (!SkipCount)
+								state.skip_count = (data & 0xFF000000) >> 24;
+								if (!state.skip_count)
 								{
-									SkipCount = 1;
+									state.skip_count = 1;
 								}
 							}
-							PrevCheatType = 0;
+							state.prev_cheat_type = 0;
 						}
 						else if (type == 1) // Daaaaaaa yy2100vv
 						{
 							u8 mem = memory.Read8(addr & 0x0FFFFFFF);
 							if (mem >= (data & 0x000000FF))
 							{
-								SkipCount = (data & 0xFF000000) >> 24;
-								if (!SkipCount)
+								state.skip_count = (data & 0xFF000000) >> 24;
+								if (!state.skip_count)
 								{
-									SkipCount = 1;
+									state.skip_count = 1;
 								}
 							}
-							PrevCheatType = 0;
+							state.prev_cheat_type = 0;
 						}
 					}
 					else if (cond == 3) // Daaaaaaa yy3zvvvv
@@ -1510,26 +1546,26 @@ void Patch::handle_extended_t(const PatchCommand* p, Memory& memory)
 							u16 mem = memory.Read16(addr & 0x0FFFFFFF);
 							if (mem <= (data & 0x0000FFFF))
 							{
-								SkipCount = (data & 0xFF000000) >> 24;
-								if (!SkipCount)
+								state.skip_count = (data & 0xFF000000) >> 24;
+								if (!state.skip_count)
 								{
-									SkipCount = 1;
+									state.skip_count = 1;
 								}
 							}
-							PrevCheatType = 0;
+							state.prev_cheat_type = 0;
 						}
 						else if (type == 1) // Daaaaaaa yy3100vv
 						{
 							u8 mem = memory.Read8(addr & 0x0FFFFFFF);
 							if (mem <= (data & 0x000000FF))
 							{
-								SkipCount = (data & 0xFF000000) >> 24;
-								if (!SkipCount)
+								state.skip_count = (data & 0xFF000000) >> 24;
+								if (!state.skip_count)
 								{
-									SkipCount = 1;
+									state.skip_count = 1;
 								}
 							}
-							PrevCheatType = 0;
+							state.prev_cheat_type = 0;
 						}
 					}
 					else if (cond == 4) // Daaaaaaa yy4zvvvv
@@ -1539,26 +1575,26 @@ void Patch::handle_extended_t(const PatchCommand* p, Memory& memory)
 							u16 mem = memory.Read16(addr & 0x0FFFFFFF);
 							if (mem & (data & 0x0000FFFF))
 							{
-								SkipCount = (data & 0xFF000000) >> 24;
-								if (!SkipCount)
+								state.skip_count = (data & 0xFF000000) >> 24;
+								if (!state.skip_count)
 								{
-									SkipCount = 1;
+									state.skip_count = 1;
 								}
 							}
-							PrevCheatType = 0;
+							state.prev_cheat_type = 0;
 						}
 						else if (type == 1) // Daaaaaaa yy4100vv
 						{
 							u8 mem = memory.Read8(addr & 0x0FFFFFFF);
 							if (mem & (data & 0x000000FF))
 							{
-								SkipCount = (data & 0xFF000000) >> 24;
-								if (!SkipCount)
+								state.skip_count = (data & 0xFF000000) >> 24;
+								if (!state.skip_count)
 								{
-									SkipCount = 1;
+									state.skip_count = 1;
 								}
 							}
-							PrevCheatType = 0;
+							state.prev_cheat_type = 0;
 						}
 					}
 					else if (cond == 5) // Daaaaaaa yy5zvvvv
@@ -1568,26 +1604,26 @@ void Patch::handle_extended_t(const PatchCommand* p, Memory& memory)
 							u16 mem = memory.Read16(addr & 0x0FFFFFFF);
 							if (!(mem & (data & 0x0000FFFF)))
 							{
-								SkipCount = (data & 0xFF000000) >> 24;
-								if (!SkipCount)
+								state.skip_count = (data & 0xFF000000) >> 24;
+								if (!state.skip_count)
 								{
-									SkipCount = 1;
+									state.skip_count = 1;
 								}
 							}
-							PrevCheatType = 0;
+							state.prev_cheat_type = 0;
 						}
 						else if (type == 1) // Daaaaaaa yy5100vv
 						{
 							u8 mem = memory.Read8(addr & 0x0FFFFFFF);
 							if (!(mem & (data & 0x000000FF)))
 							{
-								SkipCount = (data & 0xFF000000) >> 24;
-								if (!SkipCount)
+								state.skip_count = (data & 0xFF000000) >> 24;
+								if (!state.skip_count)
 								{
-									SkipCount = 1;
+									state.skip_count = 1;
 								}
 							}
-							PrevCheatType = 0;
+							state.prev_cheat_type = 0;
 						}
 					}
 					else if (cond == 6) // Daaaaaaa yy6zvvvv
@@ -1597,26 +1633,26 @@ void Patch::handle_extended_t(const PatchCommand* p, Memory& memory)
 							u16 mem = memory.Read16(addr & 0x0FFFFFFF);
 							if (mem | (data & 0x0000FFFF))
 							{
-								SkipCount = (data & 0xFF000000) >> 24;
-								if (!SkipCount)
+								state.skip_count = (data & 0xFF000000) >> 24;
+								if (!state.skip_count)
 								{
-									SkipCount = 1;
+									state.skip_count = 1;
 								}
 							}
-							PrevCheatType = 0;
+							state.prev_cheat_type = 0;
 						}
 						else if (type == 1) // Daaaaaaa yy6100vv
 						{
 							u8 mem = memory.Read8(addr & 0x0FFFFFFF);
 							if (mem | (data & 0x000000FF))
 							{
-								SkipCount = (data & 0xFF000000) >> 24;
-								if (!SkipCount)
+								state.skip_count = (data & 0xFF000000) >> 24;
+								if (!state.skip_count)
 								{
-									SkipCount = 1;
+									state.skip_count = 1;
 								}
 							}
-							PrevCheatType = 0;
+							state.prev_cheat_type = 0;
 						}
 					}
 					else if (cond == 7) // Daaaaaaa yy7zvvvv
@@ -1626,26 +1662,26 @@ void Patch::handle_extended_t(const PatchCommand* p, Memory& memory)
 							u16 mem = memory.Read16(addr & 0x0FFFFFFF);
 							if (!(mem | (data & 0x0000FFFF)))
 							{
-								SkipCount = (data & 0xFF000000) >> 24;
-								if (!SkipCount)
+								state.skip_count = (data & 0xFF000000) >> 24;
+								if (!state.skip_count)
 								{
-									SkipCount = 1;
+									state.skip_count = 1;
 								}
 							}
-							PrevCheatType = 0;
+							state.prev_cheat_type = 0;
 						}
 						else if (type == 1) // Daaaaaaa yy7100vv
 						{
 							u8 mem = memory.Read8(addr & 0x0FFFFFFF);
 							if (!(mem | (data & 0x000000FF)))
 							{
-								SkipCount = (data & 0xFF000000) >> 24;
-								if (!SkipCount)
+								state.skip_count = (data & 0xFF000000) >> 24;
+								if (!state.skip_count)
 								{
-									SkipCount = 1;
+									state.skip_count = 1;
 								}
 							}
-							PrevCheatType = 0;
+							state.prev_cheat_type = 0;
 						}
 					}
 				}
@@ -1655,7 +1691,7 @@ void Patch::handle_extended_t(const PatchCommand* p, Memory& memory)
 template <typename EEMemory, typename IOPMemory>
 	requires std::is_base_of_v<MemoryInterface, EEMemory> &&
              std::is_base_of_v<MemoryInterface, IOPMemory>
-void Patch::ApplyPatch(const PatchCommand* p, EEMemory& ee, IOPMemory& iop)
+void Patch::ApplyPatch(const PatchCommand* p, EEMemory& ee, IOPMemory& iop, ExtendedState& state)
 {
 	switch (p->cpu)
 	{
@@ -1685,7 +1721,7 @@ void Patch::ApplyPatch(const PatchCommand* p, EEMemory& ee, IOPMemory& iop)
 				}
 				case EXTENDED_T:
 				{
-					handle_extended_t(p, ee);
+					handle_extended_t(p, ee, state);
 					break;
 				}
 				case SHORT_BE_T:
