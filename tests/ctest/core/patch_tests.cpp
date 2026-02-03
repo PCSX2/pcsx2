@@ -399,6 +399,44 @@ PATCH_TEST(ExtendedPointerWriteLastNull,
 	ee.ExpectRead32(0x00300008, 0x00000000);
 }
 
+PATCH_TEST(ExtendedPointerWriteSkipsNullSingle,
+	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x60100000, Patch::EXTENDED_T, 0x0fffffff),
+	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x00020001, Patch::EXTENDED_T, 0x0fffffff),
+	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x20200000, Patch::EXTENDED_T, 0x12345678),
+	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x20300000, Patch::EXTENDED_T, 0x12345678))
+{
+	ee.ExpectRead32(0x00100000, 0);
+	ee.ExpectIdempotentWrite32(0x00200000, 0, 0x12345678);
+	ee.ExpectIdempotentWrite32(0x00300000, 0, 0x12345678);
+}
+
+// There was previously a bug where if the pointer write command was split over
+// three lines or more, if the first pointer was null it would interpret the
+// middle of the pointer write command as the start of a new command.
+PATCH_TEST(ExtendedPointerWriteSkipsFirstNullMultiEven,
+	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x60100000, Patch::EXTENDED_T, 0x0fffffff),
+	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x00020002, Patch::EXTENDED_T, 0x00000004),
+	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x0fffffff, Patch::EXTENDED_T, 0x00000000),
+	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x20200000, Patch::EXTENDED_T, 0x12345678),
+	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x20300000, Patch::EXTENDED_T, 0x12345678))
+{
+	ee.ExpectRead32(0x00100000, 0);
+	ee.ExpectIdempotentWrite32(0x00200000, 0, 0x12345678);
+	ee.ExpectIdempotentWrite32(0x00300000, 0, 0x12345678);
+}
+
+PATCH_TEST(ExtendedPointerWriteSkipsFirstNullMultiOdd,
+	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x60100000, Patch::EXTENDED_T, 0x0fffffff),
+	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x00020003, Patch::EXTENDED_T, 0x00000004),
+	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x00000008, Patch::EXTENDED_T, 0x0fffffff),
+	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x20200000, Patch::EXTENDED_T, 0x12345678),
+	BuildPatchCommand(Patch::PPT_ONCE_ON_LOAD, Patch::CPU_EE, 0x20300000, Patch::EXTENDED_T, 0x12345678))
+{
+	ee.ExpectRead32(0x00100000, 0);
+	ee.ExpectIdempotentWrite32(0x00200000, 0, 0x12345678);
+	ee.ExpectIdempotentWrite32(0x00300000, 0, 0x12345678);
+}
+
 // *****************************************************************************
 // Boolean operation (Extended)
 // *****************************************************************************
