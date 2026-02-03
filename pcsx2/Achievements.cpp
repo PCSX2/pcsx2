@@ -2458,7 +2458,7 @@ void Achievements::DrawAchievementsWindow()
 			}
 
 			const ImRect title_bb(ImVec2(left, top), ImVec2(right, top + g_large_font.second));
-			text.assign(s_game_title);
+			text.assign(s_open_subset ? s_open_subset->title : s_game_title);
 
 			if (s_hardcore_mode)
 				text.append(TRANSLATE_SV("Achievements", " (Hardcore Mode)"));
@@ -2472,18 +2472,26 @@ void Achievements::DrawAchievementsWindow()
 			const ImRect summary_bb(ImVec2(left, top), ImVec2(right, top + g_medium_font.second));
 			UpdateGameSummary();
 
-			if (s_game_summary.num_core_achievements > 0)
+			rc_client_user_game_summary_t display_summary = {};
+			const rc_client_user_game_summary_t* summary_ptr = &s_game_summary;
+			if (s_open_subset)
 			{
-				if (s_game_summary.num_unlocked_achievements == s_game_summary.num_core_achievements)
+				rc_client_get_user_subset_summary(s_client, s_open_subset->id, &display_summary);
+				summary_ptr = &display_summary;
+			}
+
+			if (summary_ptr->num_core_achievements > 0)
+			{
+				if (summary_ptr->num_unlocked_achievements == summary_ptr->num_core_achievements)
 				{
 					text.format(TRANSLATE_FS("Achievements", "You have unlocked all achievements and earned {} points!"),
-						s_game_summary.points_unlocked);
+						summary_ptr->points_unlocked);
 				}
 				else
 				{
 					text.format(TRANSLATE_FS("Achievements", "You have unlocked {0} of {1} achievements, earning {2} of {3} possible points."),
-						s_game_summary.num_unlocked_achievements, s_game_summary.num_core_achievements, s_game_summary.points_unlocked,
-						s_game_summary.points_core);
+						summary_ptr->num_unlocked_achievements, summary_ptr->num_core_achievements, summary_ptr->points_unlocked,
+						summary_ptr->points_core);
 				}
 			}
 			else
@@ -2498,12 +2506,12 @@ void Achievements::DrawAchievementsWindow()
 				summary_bb.Min, summary_bb.Max, text.c_str(), text.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
 			ImGui::PopFont();
 
-			if (s_game_summary.num_core_achievements > 0)
+			if (summary_ptr->num_core_achievements > 0)
 			{
 				const float progress_height = ImGuiFullscreen::LayoutScale(20.0f);
 				const ImRect progress_bb(ImVec2(left, top), ImVec2(right, top + progress_height));
 				const float fraction =
-					static_cast<float>(s_game_summary.num_unlocked_achievements) / static_cast<float>(s_game_summary.num_core_achievements);
+					static_cast<float>(summary_ptr->num_unlocked_achievements) / static_cast<float>(summary_ptr->num_core_achievements);
 				dl->AddRectFilled(progress_bb.Min, progress_bb.Max, ImGui::GetColorU32(ImGuiFullscreen::UIPrimaryDarkColor));
 				dl->AddRectFilled(progress_bb.Min, ImVec2(progress_bb.Min.x + fraction * progress_bb.GetWidth(), progress_bb.Max.y),
 					ImGui::GetColorU32(ImGuiFullscreen::UISecondaryColor));
