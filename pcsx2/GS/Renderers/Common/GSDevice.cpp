@@ -320,10 +320,11 @@ GSVector4i GSDevice::ProcessCopyArea(const GSVector4i& rtsize, const GSVector4i&
 	if (snapped_drawarea.rempty())
 		return snapped_drawarea;
 
-	// If copy area exceeds 90% coverage then we can do a full copy instead which should be faster.
+	// If copy area exceeds 95% coverage then we can do a full copy instead which should be faster.
 	const float rt_area = static_cast<float>(rtsize.width() * rtsize.height());
 	const float copy_area = static_cast<float>(drawarea.width() * drawarea.height());
-	if ((copy_area / rt_area) >= 0.90f)
+	const float coverage = 0.95f;
+	if ((copy_area / rt_area) >= coverage)
 	{
 		snapped_drawarea = rtsize;
 		return snapped_drawarea;
