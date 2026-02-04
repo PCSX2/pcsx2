@@ -39,8 +39,9 @@ const char* shaderName(ShaderConvert value)
 {
 	switch (value)
 	{
-			// clang-format off
+		// clang-format off
 		case ShaderConvert::COPY:                   return "ps_copy";
+		case ShaderConvert::COPY_UINT:              return "ps_copy_uint";
 		case ShaderConvert::RGBA8_TO_16_BITS:       return "ps_convert_rgba8_16bits";
 		case ShaderConvert::DATM_1:                 return "ps_datm1";
 		case ShaderConvert::DATM_0:                 return "ps_datm0";
@@ -51,22 +52,38 @@ const char* shaderName(ShaderConvert value)
 		case ShaderConvert::RTA_CORRECTION:         return "ps_rta_correction";
 		case ShaderConvert::RTA_DECORRECTION:       return "ps_rta_decorrection";
 		case ShaderConvert::TRANSPARENCY_FILTER:    return "ps_filter_transparency";
-		case ShaderConvert::FLOAT32_TO_16_BITS:     return "ps_convert_float32_32bits";
-		case ShaderConvert::FLOAT32_TO_32_BITS:     return "ps_convert_float32_32bits";
+		case ShaderConvert::FLOAT32_TO_16_BITS:     return "ps_convert_float32_uint32";
+		case ShaderConvert::FLOAT32_TO_UINT32:      return "ps_convert_float32_uint32";
+		case ShaderConvert::FLOAT32_TO_UINT24:      return "ps_convert_float32_uint24";
 		case ShaderConvert::FLOAT32_TO_RGBA8:       return "ps_convert_float32_rgba8";
 		case ShaderConvert::FLOAT32_TO_RGB8:        return "ps_convert_float32_rgba8";
+		case ShaderConvert::UINT32_TO_16_BITS:      return "ps_copy_uint";
+		case ShaderConvert::UINT32_TO_FLOAT32:      return "ps_convert_uint32_float32";
+		case ShaderConvert::UINT32_TO_FLOAT24:      return "ps_convert_uint32_float24";
+		case ShaderConvert::UINT32_TO_RGBA8:        return "ps_convert_uint32_rgba8";
+		case ShaderConvert::UINT32_TO_RGB8:         return "ps_convert_uint32_rgba8";
 		case ShaderConvert::FLOAT16_TO_RGB5A1:      return "ps_convert_float16_rgb5a1";
+		case ShaderConvert::UINT16_TO_RGB5A1:       return "ps_convert_uint16_rgb5a1";
 		case ShaderConvert::RGBA8_TO_FLOAT32:       return "ps_convert_rgba8_float32";
 		case ShaderConvert::RGBA8_TO_FLOAT24:       return "ps_convert_rgba8_float24";
 		case ShaderConvert::RGBA8_TO_FLOAT16:       return "ps_convert_rgba8_float16";
+		case ShaderConvert::RGBA8_TO_UINT32:        return "ps_convert_rgba8_uint32";
+		case ShaderConvert::RGBA8_TO_UINT24:        return "ps_convert_rgba8_uint24";
+		case ShaderConvert::RGBA8_TO_UINT16:        return "ps_convert_rgba8_uint16";
 		case ShaderConvert::RGB5A1_TO_FLOAT16:      return "ps_convert_rgb5a1_float16";
+		case ShaderConvert::RGB5A1_TO_UINT16:       return "ps_convert_rgb5a1_uint16";
 		case ShaderConvert::RGBA8_TO_FLOAT32_BILN:  return "ps_convert_rgba8_float32_biln";
 		case ShaderConvert::RGBA8_TO_FLOAT24_BILN:  return "ps_convert_rgba8_float24_biln";
 		case ShaderConvert::RGBA8_TO_FLOAT16_BILN:  return "ps_convert_rgba8_float16_biln";
+		case ShaderConvert::RGBA8_TO_UINT32_BILN:   return "ps_convert_rgba8_uint32_biln";
+		case ShaderConvert::RGBA8_TO_UINT24_BILN:   return "ps_convert_rgba8_uint24_biln";
+		case ShaderConvert::RGBA8_TO_UINT16_BILN:   return "ps_convert_rgba8_uint16_biln";
 		case ShaderConvert::RGB5A1_TO_FLOAT16_BILN: return "ps_convert_rgb5a1_float16_biln";
+		case ShaderConvert::RGB5A1_TO_UINT16_BILN:  return "ps_convert_rgb5a1_uint16_biln";
 		case ShaderConvert::FLOAT32_DEPTH_TO_COLOR: return "ps_convert_float32_depth_to_color";
 		case ShaderConvert::FLOAT32_COLOR_TO_DEPTH: return "ps_convert_float32_color_to_depth";
 		case ShaderConvert::FLOAT32_TO_FLOAT24:     return "ps_convert_float32_float24";
+		case ShaderConvert::UINT32_TO_UINT24:       return "ps_convert_uint32_uint24";
 		case ShaderConvert::DEPTH_COPY:             return "ps_depth_copy";
 		case ShaderConvert::DOWNSAMPLE_COPY:        return "ps_downsample_copy";
 		case ShaderConvert::RGBA_TO_8I:             return "ps_convert_rgba_8i";
@@ -391,12 +408,32 @@ void GSDevice::ThrottlePresentation()
 
 void GSDevice::ClearRenderTarget(GSTexture* t, u32 c)
 {
+	pxAssert(t->IsRenderTarget());
 	t->SetClearColor(c);
 }
 
 void GSDevice::ClearDepth(GSTexture* t, float d)
 {
+	pxAssert(t->IsDepthStencil());
 	t->SetClearDepth(d);
+}
+
+void GSDevice::ClearDepthInteger(GSTexture* t, u32 d)
+{
+	pxAssert(t->IsDepthInteger());
+	t->SetClearColor(d);
+}
+
+void GSDevice::ClearDepthOrDepthInteger(GSTexture* t, u32 d)
+{
+	if (t->IsDepthInteger())
+	{
+		ClearDepthInteger(t, d);
+	}
+	else
+	{
+		ClearDepth(t, static_cast<float>(d) * 0x1p-32);
+	}
 }
 
 bool GSDevice::ProcessClearsBeforeCopy(GSTexture* sTex, GSTexture* dTex, const bool full_copy)
@@ -718,6 +755,16 @@ GSTexture* GSDevice::CreateDepthStencil(int w, int h, GSTexture::Format format, 
 	return FetchSurface(GSTexture::Type::DepthStencil, w, h, 1, format, clear, !prefer_reuse);
 }
 
+GSTexture* GSDevice::CreateCompatibleTexture(GSTexture* tex, bool clear, bool prefer_reuse)
+{
+	return CreateCompatibleTexture(tex, tex->GetWidth(), tex->GetHeight(), clear, prefer_reuse);
+}
+
+GSTexture* GSDevice::CreateCompatibleTexture(GSTexture* tex, int w, int h, bool clear, bool prefer_reuse)
+{
+	return FetchSurface(tex->GetType(), w, h, 1, tex->GetFormat(), clear, !prefer_reuse);
+}
+
 GSTexture* GSDevice::CreateTexture(int w, int h, int mipmap_levels, GSTexture::Format format, bool prefer_reuse /* = false */)
 {
 	pxAssert(mipmap_levels != 0 && (mipmap_levels < 0 || mipmap_levels <= GetMipmapLevelsForSize(w, h)));
@@ -729,6 +776,8 @@ void GSDevice::DoStretchRectWithAssertions(GSTexture* sTex, const GSVector4& sRe
 	GSHWDrawConfig::ColorMaskSelector cms, ShaderConvert shader, bool linear)
 {
 	pxAssert((dTex && dTex->IsDepthStencil()) == HasDepthOutput(shader));
+	pxAssert((dTex && dTex->IsIntegerFormat()) == HasIntegerOutput(shader));
+	pxAssert((sTex && sTex->IsIntegerFormat()) == HasIntegerInput(shader));
 	pxAssert(linear ? SupportsBilinear(shader) : SupportsNearest(shader));
 	GL_INS("StretchRect(%d) {%d,%d} %dx%d -> {%d,%d) %dx%d", shader, int(sRect.left), int(sRect.top),
 		int(sRect.right - sRect.left), int(sRect.bottom - sRect.top), int(dRect.left), int(dRect.top),

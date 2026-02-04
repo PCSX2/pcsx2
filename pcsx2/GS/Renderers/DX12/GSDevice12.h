@@ -212,7 +212,7 @@ public:
 			{
 				u32 topology : 2;
 				u32 rt : 1;
-				u32 ds_as_rt : 1;
+				u32 ds_as_rt : 2; // 0: none, 1: Float32, 2: UInt32
 				u32 ds : 1;
 			};
 
@@ -230,7 +230,7 @@ public:
 
 		__fi PipelineSelector() { std::memset(this, 0, sizeof(*this)); }
 	};
-	static_assert(sizeof(PipelineSelector) == 24, "Pipeline selector is 24 bytes");
+	static_assert(sizeof(PipelineSelector) == 32, "Pipeline selector is 32 bytes");
 
 	struct PipelineSelectorHash
 	{
@@ -402,7 +402,7 @@ private:
 	const ID3D12PipelineState* GetTFXPipeline(const PipelineSelector& p);
 
 	ComPtr<ID3DBlob> GetUtilityVertexShader(const std::string& source, const char* entry_point);
-	ComPtr<ID3DBlob> GetUtilityPixelShader(const std::string& source, const char* entry_point);
+	ComPtr<ID3DBlob> GetUtilityPixelShader(const std::string& source, const char* entry_point, bool integer_input = false);
 
 	void FeedbackBarrier(const GSTexture12* texture);
 
@@ -544,11 +544,13 @@ public:
 	void BeginRenderPass(
 		D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE color_begin = D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
 		D3D12_RENDER_PASS_ENDING_ACCESS_TYPE color_end = D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
+		D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE depth_color_begin = D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
+		D3D12_RENDER_PASS_ENDING_ACCESS_TYPE depth_color_end = D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
 		D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE depth_begin = D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
 		D3D12_RENDER_PASS_ENDING_ACCESS_TYPE depth_end = D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
 		D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE stencil_begin = D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
 		D3D12_RENDER_PASS_ENDING_ACCESS_TYPE stencil_end = D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
-		GSVector4 clear_color = GSVector4::zero(), float clear_depth = 0.0f, u8 clear_stencil = 0);
+		GSVector4 clear_color = GSVector4::zero(), float clear_depth_color = 0.0f, float clear_depth = 0.0f, u8 clear_stencil = 0);
 	void EndRenderPass();
 
 	void SetViewport(const D3D12_VIEWPORT& viewport);

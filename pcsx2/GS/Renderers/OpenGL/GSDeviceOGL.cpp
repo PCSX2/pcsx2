@@ -544,7 +544,7 @@ bool GSDeviceOGL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 
 	// Basic to ensure structures are correctly packed
 	static_assert(sizeof(VSSelector) == 1, "Wrong VSSelector size");
-	static_assert(sizeof(PSSelector) == 12, "Wrong PSSelector size");
+	static_assert(sizeof(PSSelector) == 16, "Wrong PSSelector size");
 	static_assert(sizeof(PSSamplerSelector) == 1, "Wrong PSSamplerSelector size");
 	static_assert(sizeof(OMDepthStencilSelector) == 1, "Wrong OMDepthStencilSelector size");
 	static_assert(sizeof(OMColorMaskSelector) == 1, "Wrong OMColorMaskSelector size");

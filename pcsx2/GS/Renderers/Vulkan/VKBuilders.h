@@ -272,7 +272,7 @@ namespace Vulkan
 	{
 		enum : u32
 		{
-			MAX_ATTACHMENTS = 2,
+			MAX_ATTACHMENTS = 3,
 		};
 
 	public:

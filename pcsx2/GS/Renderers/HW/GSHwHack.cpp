@@ -841,8 +841,7 @@ bool GSHwHack::GSC_Battlefield2(GSRendererHW& r, int& skip)
 
 			if (dst)
 			{
-				float dc = r.m_vertex.buff[1].XYZ.Z;
-				g_gs_device->ClearDepth(dst->m_texture, dc * std::exp2(-32.0f));
+				g_gs_device->ClearDepthOrDepthInteger(dst->m_texture, r.m_vertex.buff[1].XYZ.Z);
 			}
 		}
 	}
@@ -1103,7 +1102,7 @@ bool GSHwHack::OI_RozenMaidenGebetGarden(GSRendererHW& r, GSTexture* rt, GSTextu
 			if (GSTextureCache::Target* tmp_ds = g_texture_cache->LookupTarget(TEX0, r.GetTargetSize(), r.GetTextureScaleFactor(), GSTextureCache::DepthStencil))
 			{
 				GL_INS("OI_RozenMaidenGebetGarden ZB clear");
-				g_gs_device->ClearDepth(tmp_ds->m_texture, 0.0f);
+				g_gs_device->ClearDepthOrDepthInteger(tmp_ds->m_texture, 0);
 			}
 
 			return false;
@@ -1225,7 +1224,7 @@ bool GSHwHack::OI_ArTonelico2(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GST
 	if (ds && r.m_vertex.next == 2 && !RPRIM->TME && RFRAME.FBW == 10 && v->XYZ.Z == 0 && RTEST.ZTST == ZTST_ALWAYS)
 	{
 		GL_INS("OI_ArTonelico2");
-		g_gs_device->ClearDepth(ds, 0.0f);
+		g_gs_device->ClearDepthOrDepthInteger(ds, 0);
 	}
 
 	return true;
@@ -1377,8 +1376,10 @@ bool GSHwHack::MV_Growlanser(GSRendererHW& r)
 
 	GL_INS("MV_Growlanser: %x -> %x %dx%d", RSBP, RDBP, src->GetUnscaledWidth(), src->GetUnscaledHeight());
 
+	const ShaderConvert shader = dst->GetTexture()->IsDepthInteger() ? ShaderConvert::RGBA8_TO_UINT32 :
+	                                                                   ShaderConvert::RGBA8_TO_FLOAT32;
 	g_gs_device->StretchRect(src->GetTexture(), GSVector4(rc) / GSVector4(src->GetUnscaledSize()).xyxy(),
-		dst->GetTexture(), GSVector4(rc) * GSVector4(dst->GetScale()), ShaderConvert::RGBA8_TO_FLOAT32, false);
+		dst->GetTexture(), GSVector4(rc) * GSVector4(dst->GetScale()), shader, false);
 
 	s_last_hacked_move_n = r.s_n;
 	return true;
