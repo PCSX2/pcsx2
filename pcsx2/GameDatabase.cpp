@@ -368,6 +368,7 @@ static const char* s_gs_hw_fix_names[] = {
 	"preloadFrameData",
 	"disablePartialInvalidation",
 	"textureInsideRT",
+	"limit24BitDepth",
 	"alignSprite",
 	"mergeSprite",
 	"mipmap",
@@ -596,6 +597,9 @@ bool GameDatabaseSchema::GameEntry::configMatchesHWFix(const Pcsx2Config::GSOpti
 		case GSHWFixId::TextureInsideRT:
 			return (static_cast<int>(config.UserHacks_TextureInsideRt) == value);
 
+		case GSHWFixId::Limit24BitDepth:
+			return (static_cast<int>(config.UserHacks_Limit24BitDepth) == value);
+
 		case GSHWFixId::AlignSprite:
 			return (config.UpscaleMultiplier <= 1.0f || static_cast<int>(config.UserHacks_AlignSpriteX) == value);
 
@@ -740,6 +744,13 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 			{
 				if (value >= 0 && value <= static_cast<int>(GSTextureInRtMode::MergeTargets))
 					config.UserHacks_TextureInsideRt = static_cast<GSTextureInRtMode>(value);
+			}
+			break;
+
+			case GSHWFixId::Limit24BitDepth:
+			{
+				if (value >= 0 && value <= static_cast<int>(GSLimit24BitDepth::PrioritizeLower))
+					config.UserHacks_Limit24BitDepth = static_cast<GSLimit24BitDepth>(value);
 			}
 			break;
 

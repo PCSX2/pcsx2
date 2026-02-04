@@ -169,6 +169,11 @@
               "minimum": 0,
               "maximum": 2
             },
+            "limit24BitDepth": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2
+            },
             "alignSprite": {
               "type": "integer",
               "minimum": 0,
