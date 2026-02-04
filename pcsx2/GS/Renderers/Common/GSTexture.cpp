@@ -4,6 +4,8 @@
 #include "GS/Renderers/Common/GSTexture.h"
 #include "GS/Renderers/Common/GSDevice.h"
 #include "GS/GSPng.h"
+#include "GS/GSPerfMon.h"
+#include "GS/GSGL.h"
 
 #include "common/Console.h"
 #include "common/BitUtils.h"
@@ -181,6 +183,23 @@ void GSTexture::GenerateMipmapsIfNeeded()
 
 	m_needs_mipmaps_generated = false;
 	GenerateMipmap();
+}
+
+void GSTexture::CreateDepthColor()
+{
+	pxAssert(IsDepthStencil());
+
+	if (!m_depth_color)
+	{
+		m_depth_color.reset(g_gs_device->CreateRenderTarget(GetWidth(), GetHeight(), Format::Float32, false));
+#ifdef PCSX2_DEVBUILD
+		if (GSConfig.UseDebugDevice)
+		{
+			m_depth_color->SetDebugName(fmt::format("0x{:x} Depth color for @ 0x{:x}",
+				reinterpret_cast<u64>(m_depth_color.get()), reinterpret_cast<u64>(this)));
+		}
+#endif
+	}
 }
 
 GSDownloadTexture::GSDownloadTexture(u32 width, u32 height, GSTexture::Format format)

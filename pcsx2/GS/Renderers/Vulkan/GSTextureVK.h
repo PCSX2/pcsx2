@@ -39,9 +39,42 @@ public:
 
 	void Destroy(bool defer);
 
-	__fi VkImage GetImage() const { return m_image; }
-	__fi VkImageView GetView() const { return m_view; }
-	__fi Layout GetLayout() const { return m_layout; }
+	__fi VkImage GetImage() const
+	{
+		if (IsDepthColor())
+		{
+			return static_cast<GSTextureVK*>(m_depth_color.get())->m_image;
+		}
+		else
+		{
+			return m_image;
+		}
+	}
+
+	__fi VkImageView GetView() const
+	{
+		if (IsDepthColor())
+		{
+			return static_cast<GSTextureVK*>(m_depth_color.get())->m_view;
+		}
+		else
+		{
+			return m_view;
+		}
+	}
+
+	__fi Layout GetLayout() const
+	{
+		if (IsDepthColor())
+		{
+			return static_cast<GSTextureVK*>(m_depth_color.get())->m_layout;
+		}
+		else
+		{
+			return m_layout;
+		}
+	}
+
 	__fi VkFormat GetVkFormat() const { return m_vk_format; }
 
 	VkImageLayout GetVkLayout() const;
@@ -61,6 +94,9 @@ public:
 	void CommitClear();
 	void CommitClear(VkCommandBuffer cmdbuf);
 
+	void UpdateDepthColor(bool color_to_ds) override;
+	virtual bool IsUnorderedAccess() const override { return GetLayout() == Layout::ReadWriteImage; }
+
 	// Used when the render pass is changing the image layout, or to force it to
 	// VK_IMAGE_LAYOUT_UNDEFINED, if the existing contents of the image is
 	// irrelevant and will not be loaded.
@@ -69,6 +105,8 @@ public:
 	void TransitionToLayout(VkCommandBuffer command_buffer, Layout new_layout);
 	void TransitionSubresourcesToLayout(
 		VkCommandBuffer command_buffer, int start_level, int num_levels, Layout old_layout, Layout new_layout);
+
+	static VkFramebuffer CreateNullFramebuffer();
 
 	/// Framebuffers are lazily allocated.
 	VkFramebuffer GetFramebuffer(bool feedback_loop);
@@ -79,6 +117,18 @@ public:
 	__fi void SetUseFenceCounter(u64 counter) { m_use_fence_counter = counter; }
 
 private:
+	__fi void SetLayout(Layout new_layout)
+	{
+		if (IsDepthColor())
+		{
+			static_cast<GSTextureVK*>(m_depth_color.get())->m_layout = new_layout;
+		}
+		else
+		{
+			m_layout = new_layout;
+		}
+	}
+
 	GSTextureVK(Type type, Format format, int width, int height, int levels, VkImage image, VmaAllocation allocation,
 		VkImageView view, VkFormat vk_format);
 

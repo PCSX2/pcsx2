@@ -124,6 +124,7 @@ private:
 	u32 EmulateChannelShuffle(GSTextureCache::Target* src, bool test_only, GSTextureCache::Target* rt = nullptr);
 	void EmulateBlending(int rt_alpha_min, int rt_alpha_max, const bool DATE, bool& DATE_PRIMID, bool& DATE_BARRIER, GSTextureCache::Target* rt,
 		bool can_scale_rt_alpha, bool& new_rt_alpha_scale);
+	void SetupROV();
 	void CleanupDraw(bool invalidate_temp_src);
 
 	void EmulateTextureSampler(const GSTextureCache::Target* rt, const GSTextureCache::Target* ds,
@@ -198,6 +199,33 @@ private:
 	float m_userhacks_tcoffset_y = 0.0f;
 
 	GSVector2i m_lod = {}; // Min & Max level of detail
+
+	GIFRegALPHA m_optimized_blend = {}; // Save for ROV setup
+
+	struct TextureROVHistory
+	{
+		GSTexture* m_tex = nullptr; // Texture being tracked.
+		u32 m_last_draw = 0; // Last draw this was updated.
+		float m_average_barriers = 1.0f; // Average number of barriers per draw.
+
+		TextureROVHistory(GSTexture* tex) : m_tex(tex)
+		{
+		}
+	};
+
+	// Settings for the ROV enable/disable heuristic.
+	u32 m_rov_history_textures = 16;
+	u32 m_rov_history_draws = 32;
+	u32 m_rov_max_barriers = 16;
+	float m_rov_history_weight_color = 0.75f;
+	float m_rov_history_weight_depth = 0.75f;
+	float m_rov_barriers_enable_color = 2.0f;
+	float m_rov_barriers_enable_depth = 4.0f;
+	float m_rov_barriers_disable_color = 1.125f;
+	float m_rov_barriers_disable_depth = 1.25f;
+	u32 m_rov_preset = 0;
+	std::vector<TextureROVHistory*> m_texture_rov_history;
+	__fi TextureROVHistory* GetTextureROVHistory(GSTexture* tex);
 
 	GSHWDrawConfig m_conf = {};
 	HWCachedCtx m_cached_ctx;

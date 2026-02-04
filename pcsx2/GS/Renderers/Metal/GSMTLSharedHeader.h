@@ -135,6 +135,7 @@ struct GSMTLMainPSUniform
 	matrix_float4x4 dither_matrix;
 
 	vector_float4 scale_factor;
+	vector_uint4 color_mask;
 };
 
 enum GSMTLAttributes
