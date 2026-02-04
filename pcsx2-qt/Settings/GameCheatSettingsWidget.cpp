@@ -118,9 +118,8 @@ void GameCheatSettingsWidget::onCheatListItemHovered(const QModelIndex& index)
 	const QModelIndex source_index = m_model_proxy->mapToSource(index);
 	const QModelIndex sibling_index = source_index.siblingAtColumn(0);
 	QStandardItem* item = m_model->itemFromIndex(sibling_index);
-	if (!item)
+	if (!item || !item->isCheckable())
 	{
-		// No item is selected.
 		m_ui.appliedLabel->clear();
 		return;
 	}
