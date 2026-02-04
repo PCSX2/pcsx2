@@ -243,7 +243,6 @@ void LogWindow::createUi()
 	vlayout->addWidget(m_text);
 	vlayout->addWidget(m_input_widget);
 
-	central_widget->setLayout(vlayout);
 	setCentralWidget(central_widget);
 }
 
