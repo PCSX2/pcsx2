@@ -773,6 +773,7 @@ struct Pcsx2Config
 					Mipmap : 1,
 					HWMipmap : 1,
 					HWAccurateAlphaTest: 1,
+					HWAA1 : 1,
 					ManualUserHacks : 1,
 					UserHacks_AlignSpriteX : 1,
 					UserHacks_CPUFBConversion : 1,
