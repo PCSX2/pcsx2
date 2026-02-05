@@ -524,8 +524,8 @@ public:
 
 	// Assumes that the previous level has been transitioned to PS resource,
 	// and the current level has been transitioned to RT.
-	void RenderTextureMipmap(GSTexture12* texture, u32 dst_level, u32 dst_width, u32 dst_height, u32 src_level,
-		u32 src_width, u32 src_height);
+	void RenderTextureMipmap(GSTexture12* src_texture, GSTexture12* dst_texture, u32 dst_level, u32 dst_width, u32 dst_height, u32 src_level,
+		u32 src_width, u32 src_height, GSVector2i offsets);
 
 	// Ends a render pass if we're currently in one.
 	// When Bind() is next called, the pass will be restarted.

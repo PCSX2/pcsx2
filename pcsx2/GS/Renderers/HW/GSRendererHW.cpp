@@ -4170,10 +4170,23 @@ void GSRendererHW::Draw()
 
 			// Backup original coverage.
 			const GSVector4i coverage = tmm.coverage;
+			GSTexture* target_levels[6] = {nullptr};
+			GSVector2i target_offsets[6] = {};
 
-			for (int layer = m_lod.x + 1; layer <= m_lod.y; layer++)
+			GSVector2i layer_levels(m_lod.x + 1, m_lod.y);
+			if (src->m_target)
 			{
-				const GIFRegTEX0 MIP_TEX0(GetTex0Layer(layer));
+				target_levels[0] = src->m_texture;
+				layer_levels.x = 1;
+				layer_levels.y = m_context->TEX1.MXL;
+
+			}
+
+			bool has_target_mips = true;
+
+			for (int layer = layer_levels.x; layer <= layer_levels.y; layer++)
+			{
+				GIFRegTEX0 MIP_TEX0(GetTex0Layer(layer));
 
 				MIP_CLAMP.MINU >>= 1;
 				MIP_CLAMP.MINV >>= 1;
@@ -4185,7 +4198,37 @@ void GSRendererHW::Draw()
 
 				tmm = GetTextureMinMax(MIP_TEX0, MIP_CLAMP, m_vt.IsLinear(), true);
 
-				src->UpdateLayer(MIP_TEX0, tmm.coverage, layer - m_lod.x);
+				if (!src->m_target)
+				{
+					src->UpdateLayer(MIP_TEX0, tmm.coverage, layer - m_lod.x);
+					has_target_mips = false;
+				}
+				else
+				{
+					const GSVector4i tgt_rect = GSVector4i(0, 0, tmm.coverage.z, tmm.coverage.w);
+					GSTextureCache::Target* tgt = g_texture_cache->FindOverlappingTarget(MIP_TEX0.TBP0, GSLocalMemory::GetEndBlockAddress(MIP_TEX0.TBP0, MIP_TEX0.TBW, MIP_TEX0.PSM, tgt_rect));
+
+					if (tgt != nullptr)
+					{
+						tgt->Update();
+						target_levels[layer] = tgt->m_texture;
+
+						if (tgt->m_TEX0.TBP0 != MIP_TEX0.TBP0)
+						{
+							GSVector4i offset = GSVector4i::zero();
+							g_texture_cache->TranslateAlignedRectByPage(tgt, MIP_TEX0.TBP0, MIP_TEX0.PSM, MIP_TEX0.TBW, tgt_rect, false);
+							target_offsets[layer] = GSVector2i(offset.x * tgt->GetScale(), offset.y * tgt->GetScale());
+							
+						}
+					}
+					else
+						has_target_mips = false;
+				}
+			}
+			if (src->m_target && !src->m_target_direct && m_lod.y > m_lod.x && has_target_mips)
+			{
+				src->m_texture->GenerateMipmapsIfNeeded(target_levels, target_offsets);
+				src->m_target_mips = true;
 			}
 
 			// we don't need to generate mipmaps since they were provided
@@ -6507,12 +6550,13 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 	const bool need_mipmap = IsMipMapDraw();
 	const bool shader_emulated_sampler = tex->m_palette || (tex->m_target && !m_conf.ps.shuffle && cpsm.fmt != 0) ||
 	                                     complex_wms_wmt || psm.depth || target_region;
-	const bool can_trilinear = !tex->m_palette && !tex->m_target && !m_conf.ps.shuffle;
+	const bool mips_available = tex->m_target_mips || !tex->m_target;
+	const bool can_trilinear = !tex->m_palette && mips_available && !m_conf.ps.shuffle;
 	const bool trilinear_manual = need_mipmap && GSConfig.HWMipmap;
 
 	bool bilinear = m_vt.IsLinear();
 	int trilinear = 0;
-	bool trilinear_auto = false; // Generate mipmaps if needed (basic).
+	bool trilinear_auto = true; // Generate mipmaps if needed (basic).
 	switch (GSConfig.TriFilter)
 	{
 		case TriFiltering::Forced:
@@ -6806,7 +6850,7 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 	}
 	else if (trilinear_auto)
 	{
-		tex->m_texture->GenerateMipmapsIfNeeded();
+		tex->m_texture->GenerateMipmapsIfNeeded(nullptr, nullptr);
 		m_conf.ps.automatic_lod = 1;
 	}
 

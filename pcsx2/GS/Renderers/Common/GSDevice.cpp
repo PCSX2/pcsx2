@@ -706,6 +706,13 @@ void GSDevice::PurgePool()
 	m_pool_memory_usage = 0;
 }
 
+GSTexture* GSDevice::CreateMipRenderTarget(int w, int h, int mipmap_levels, GSTexture::Format format, bool clear, bool prefer_reuse /* = false */)
+{
+	pxAssert(mipmap_levels != 0 && (mipmap_levels < 0 || mipmap_levels <= GetMipmapLevelsForSize(w, h)));
+	const int levels = mipmap_levels < 0 ? GetMipmapLevelsForSize(w, h) : mipmap_levels;
+	return FetchSurface(GSTexture::Type::RenderTarget, w, h, levels, format, clear, !prefer_reuse);
+}
+
 GSTexture* GSDevice::CreateRenderTarget(int w, int h, GSTexture::Format format, bool clear, bool prefer_reuse)
 {
 	return FetchSurface(GSTexture::Type::RenderTarget, w, h, 1, format, clear, !prefer_reuse);

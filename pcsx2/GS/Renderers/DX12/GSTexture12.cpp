@@ -771,20 +771,26 @@ void GSTexture12::Unmap()
 		m_needs_mipmaps_generated |= (m_map_level == 0);
 }
 
-void GSTexture12::GenerateMipmap()
+void GSTexture12::GenerateMipmap(GSTexture* target_list[], GSVector2i offsets_list[])
 {
 	pxAssert(!IsCompressedFormat(m_format));
 
 	for (int dst_level = 1; dst_level < m_mipmap_levels; dst_level++)
 	{
-		const int src_level = dst_level - 1;
+		const bool has_target_layer = target_list && target_list[dst_level] != nullptr;
+		int src_level = has_target_layer ? dst_level : (dst_level - 1);
 		const int src_width = std::max<int>(m_size.x >> src_level, 1);
 		const int src_height = std::max<int>(m_size.y >> src_level, 1);
 		const int dst_width = std::max<int>(m_size.x >> dst_level, 1);
 		const int dst_height = std::max<int>(m_size.y >> dst_level, 1);
 
+		GSVector2i offset = has_target_layer ? offsets_list[dst_level] : GSVector2i(0, 0);
+		src_level = has_target_layer ? 0 : src_level;
+
+		GSTexture12* src_image = has_target_layer ? static_cast<GSTexture12*>(target_list[dst_level]) : this;
+
 		GSDevice12::GetInstance()->RenderTextureMipmap(
-			this, dst_level, dst_width, dst_height, src_level, src_width, src_height);
+			src_image, this, dst_level, dst_width, dst_height, src_level, src_width, src_height, offset);
 	}
 
 	SetUseFenceCounter(GSDevice12::GetInstance()->GetCurrentFenceValue());

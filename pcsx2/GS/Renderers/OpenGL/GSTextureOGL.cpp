@@ -311,7 +311,7 @@ void GSTextureOGL::Unmap()
 	}
 }
 
-void GSTextureOGL::GenerateMipmap()
+void GSTextureOGL::GenerateMipmap(GSTexture* target_list[], GSVector2i offsets_list[])
 {
 	pxAssert(m_mipmap_levels > 1);
 	GSDeviceOGL::GetInstance()->CommitClear(this, true);

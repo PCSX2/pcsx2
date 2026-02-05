@@ -6220,6 +6220,8 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		// Create a cleared RT if we somehow end up with an empty source rect (because the RT isn't large enough).
 		const bool source_rect_empty = sRect.rempty();
 		const bool use_texture = (shader == ShaderConvert::COPY && !source_rect_empty);
+		const bool needs_lod_levels = use_texture && (lod != nullptr) && lod->y > 0;
+		const int lod_level = (lod != nullptr) ? (lod->y + 1) : 1;
 		GSVector4i region_rect = GSVector4i(0, 0, tw, th);
 
 		// Assuming everything matches up, instead of copying the target, we can just sample it directly.
@@ -6227,7 +6229,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		// TODO: We still need to copy if the TBW is mismatched. Except when TBW <= 1 (Jak 2).
 		const GSVector2i dst_texture_size = dst->m_texture->GetSize();
 		if (use_texture && // not reinterpreting the RT
-			!force_target_copy)
+			!force_target_copy && !needs_lod_levels)
 		{
 			// sample the target directly
 			src->m_texture = dst->m_texture;
@@ -6262,7 +6264,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			// 'src' is the new texture cache entry (hence the output)
 			GSTexture* sTex = dst->m_texture;
 			GSTexture* dTex = use_texture ?
-			                      g_gs_device->CreateTexture(new_size.x, new_size.y, 1, GSTexture::Format::Color, PreferReusedLabelledTexture()) :
+			                      g_gs_device->CreateTexture(new_size.x, new_size.y, lod_level, GSTexture::Format::Color, PreferReusedLabelledTexture()) :
 			                      g_gs_device->CreateRenderTarget(new_size.x, new_size.y, GSTexture::Format::Color, source_rect_empty || destX != 0 || destY != 0, PreferReusedLabelledTexture());
 			if (!dTex) [[unlikely]]
 			{
@@ -6280,9 +6282,17 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			{
 				if (dst->m_rt_alpha_scale)
 				{
-					const GSVector4 sRectF = GSVector4(sRect) / GSVector4(1, 1, sTex->GetWidth(), sTex->GetHeight());
-					g_gs_device->StretchRect(
-						sTex, sRectF, dTex, GSVector4(destX, destY, sRect.width(), sRect.height()), ShaderConvert::RTA_DECORRECTION, false);
+					if (!use_texture)
+					{
+						const GSVector4 sRectF = GSVector4(sRect) / GSVector4(1, 1, sTex->GetWidth(), sTex->GetHeight());
+						g_gs_device->StretchRect(
+							sTex, sRectF, dTex, GSVector4(destX, destY, sRect.width(), sRect.height()), ShaderConvert::RTA_DECORRECTION, false);
+					}
+					else
+					{
+						dst->UnscaleRTAlpha();
+						g_gs_device->CopyRect(sTex, dTex, sRect, destX, destY);
+					}
 				}
 				else
 					g_gs_device->CopyRect(sTex, dTex, sRect, destX, destY);

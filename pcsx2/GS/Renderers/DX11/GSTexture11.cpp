@@ -84,7 +84,7 @@ void GSTexture11::Unmap()
 	pxFailRel("Should not be called.");
 }
 
-void GSTexture11::GenerateMipmap()
+void GSTexture11::GenerateMipmap(GSTexture* target_list[], GSVector2i offsets_list[])
 {
 	GSDevice11::GetInstance()->GetD3DContext()->GenerateMips(operator ID3D11ShaderResourceView*());
 }

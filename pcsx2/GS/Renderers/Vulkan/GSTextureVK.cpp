@@ -461,7 +461,7 @@ void GSTextureVK::Unmap()
 		m_needs_mipmaps_generated |= (m_map_level == 0);
 }
 
-void GSTextureVK::GenerateMipmap()
+void GSTextureVK::GenerateMipmap(GSTexture* target_list[], GSVector2i offsets_list[])
 {
 	const VkCommandBuffer cmdbuf = GetCommandBufferForUpdate();
 
@@ -470,7 +470,8 @@ void GSTextureVK::GenerateMipmap()
 
 	for (int dst_level = 1; dst_level < m_mipmap_levels; dst_level++)
 	{
-		const int src_level = dst_level - 1;
+		const bool has_target_layer = target_list && target_list[dst_level] != nullptr;
+		int src_level = has_target_layer ? dst_level : (dst_level - 1);
 		const int src_width = std::max<int>(m_size.x >> src_level, 1);
 		const int src_height = std::max<int>(m_size.y >> src_level, 1);
 		const int dst_width = std::max<int>(m_size.x >> dst_level, 1);
@@ -479,14 +480,17 @@ void GSTextureVK::GenerateMipmap()
 		TransitionSubresourcesToLayout(cmdbuf, src_level, 1, m_layout, Layout::TransferSrc);
 		TransitionSubresourcesToLayout(cmdbuf, dst_level, 1, m_layout, Layout::TransferDst);
 
+		GSVector2i offset = has_target_layer ? offsets_list[dst_level] : GSVector2i(0, 0);
+		src_level = has_target_layer ? 0 : src_level;
 		const VkImageBlit blit = {
 			{VK_IMAGE_ASPECT_COLOR_BIT, static_cast<u32>(src_level), 0u, 1u}, // srcSubresource
-			{{0, 0, 0}, {src_width, src_height, 1}}, // srcOffsets
+			{{offset.x, offset.y, 0}, {offset.x + src_width, offset.y + src_height, 1}}, // srcOffsets
 			{VK_IMAGE_ASPECT_COLOR_BIT, static_cast<u32>(dst_level), 0u, 1u}, // dstSubresource
 			{{0, 0, 0}, {dst_width, dst_height, 1}} // dstOffsets
 		};
 
-		vkCmdBlitImage(cmdbuf, m_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, m_image,
+		VkImage src_image = has_target_layer ? static_cast<GSTextureVK*>(target_list[dst_level])->m_image : m_image;
+		vkCmdBlitImage(cmdbuf, src_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, m_image,
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit, VK_FILTER_LINEAR);
 
 		TransitionSubresourcesToLayout(cmdbuf, src_level, 1, Layout::TransferSrc, m_layout);

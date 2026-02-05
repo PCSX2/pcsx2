@@ -158,13 +158,13 @@ u32 GSTexture::CalcUploadSize(Format format, u32 height, u32 pitch)
 	return pitch * ((static_cast<u32>(height) + (block_size - 1)) / block_size);
 }
 
-void GSTexture::GenerateMipmapsIfNeeded()
+void GSTexture::GenerateMipmapsIfNeeded(GSTexture* target_list[], GSVector2i offsets_list[])
 {
 	if (!m_needs_mipmaps_generated || m_mipmap_levels <= 1 || IsCompressedFormat())
 		return;
 
 	m_needs_mipmaps_generated = false;
-	GenerateMipmap();
+	GenerateMipmap(target_list, offsets_list);
 }
 
 GSDownloadTexture::GSDownloadTexture(u32 width, u32 height, GSTexture::Format format)

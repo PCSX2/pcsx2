@@ -59,6 +59,7 @@ public:
 	};
 
 protected:
+
 	GSVector2i m_size{};
 	int m_mipmap_levels = 0;
 	Type m_type = Type::Invalid;
@@ -82,7 +83,7 @@ public:
 	virtual bool Update(const GSVector4i& r, const void* data, int pitch, int layer = 0) = 0;
 	virtual bool Map(GSMap& m, const GSVector4i* r = nullptr, int layer = 0) = 0;
 	virtual void Unmap() = 0;
-	virtual void GenerateMipmap() = 0;
+	virtual void GenerateMipmap(GSTexture* target_list[], GSVector2i offset_list[]) = 0;
 
 #ifdef PCSX2_DEVBUILD
 	virtual void SetDebugName(std::string_view name) = 0;
@@ -153,7 +154,7 @@ public:
 		m_clear_value.depth = depth;
 	}
 
-	void GenerateMipmapsIfNeeded();
+	void GenerateMipmapsIfNeeded(GSTexture* target_list[], GSVector2i offsets_list[]);
 	void ClearMipmapGenerationFlag() { m_needs_mipmaps_generated = false; }
 
 	// Typical size of a RGBA texture

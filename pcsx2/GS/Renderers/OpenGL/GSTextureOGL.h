@@ -39,7 +39,7 @@ public:
 	bool Update(const GSVector4i& r, const void* data, int pitch, int layer = 0) override;
 	bool Map(GSMap& m, const GSVector4i* r = NULL, int layer = 0) override;
 	void Unmap() override;
-	void GenerateMipmap() override;
+	void GenerateMipmap(GSTexture* target_list[], GSVector2i offsets_list[]) override;
 
 #ifdef PCSX2_DEVBUILD
 	void SetDebugName(std::string_view name) override;
