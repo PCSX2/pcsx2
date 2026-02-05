@@ -213,13 +213,13 @@ bool GSTexture::IsShaderWriteFormat(Format format)
 	return format == Format::Color || format == Format::DepthColor;
 }
 
-void GSTexture::GenerateMipmapsIfNeeded()
+void GSTexture::GenerateMipmapsIfNeeded(GSTexture* target_list[], GSVector2i offsets_list[])
 {
 	if (!m_needs_mipmaps_generated || m_mipmap_levels <= 1 || IsCompressedFormat())
 		return;
 
 	m_needs_mipmaps_generated = false;
-	GenerateMipmap();
+	GenerateMipmap(target_list, offsets_list);
 }
 
 GSDownloadTexture::GSDownloadTexture(u32 width, u32 height, GSTexture::Format format)

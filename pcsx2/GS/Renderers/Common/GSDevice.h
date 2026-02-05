@@ -1670,6 +1670,7 @@ public:
 
 	GSTexture* FetchSurface(GSTexture::Usage usage, int width, int height, int levels, GSTexture::Format format, bool clear, bool prefer_reuse);
 	GSTexture* FetchSurface(GSTexture::Usage usage, const GSVector2i& size, int levels, GSTexture::Format format, bool clear, bool prefer_reuse);
+	GSTexture* CreateMipRenderTarget(int w, int h, int mipmap_levels, GSTexture::Format format, bool clear = true, bool prefer_reuse = false);
 	GSTexture* CreateRenderTarget(int w, int h, GSTexture::Format format, bool clear = true, bool prefer_reuse = true);
 	GSTexture* CreateRenderTarget(const GSVector2i& size, GSTexture::Format format, bool clear = true, bool prefer_reuse = true);
 	GSTexture* CreateFeedbackTarget(int w, int h, GSTexture::Format format, bool clear = true, bool prefer_reuse = true);
