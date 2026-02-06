@@ -33,19 +33,20 @@ u32 Cycles;
 
 int PlayMode;
 
-static bool has_to_call_irq[2] = { false, false };
-static bool has_to_call_irq_dma[2] = { false, false };
+static bool has_to_call_irq_dma[2] = {false, false};
 StereoOut32 (*ReverbUpsample)(V_Core& core);
 s32 (*ReverbDownsample)(V_Core& core, bool right);
-
 
 static bool psxmode = false;
 
 void SetIrqCall(int core)
 {
-	// reset by an irq disable/enable cycle, behaviour found by
-	// test programs that bizarrely only fired one interrupt
-	has_to_call_irq[core] = true;
+	//SPU2::ConLog("* SPU2: Irq Called (%04x) at cycle %d.\n", Spdif.Info, Cycles);
+	if (!(Spdif.Info & (4 << core)) && Cores[core].IRQEnable)
+	{
+		Spdif.Info |= (4 << core);
+		spu2Irq();
+	}
 }
 
 void SetIrqCallDMA(int core)
@@ -342,20 +343,6 @@ __forceinline void TimeUpdate(u32 cClocks)
 	//Update Mixing Progress
 	while (dClocks >= TickInterval)
 	{
-		for (int i = 0; i < 2; i++)
-		{
-			if (has_to_call_irq[i])
-			{
-				//ConLog("* SPU2: Irq Called (%04x) at cycle %d.\n", Spdif.Info, Cycles);
-				has_to_call_irq[i] = false;
-				if (!(Spdif.Info & (4 << i)) && Cores[i].IRQEnable)
-				{
-					Spdif.Info |= (4 << i);
-					spu2Irq();
-				}
-			}
-		}
-
 		dClocks -= TickInterval;
 		lClocks += TickInterval;
 		Cycles++;
