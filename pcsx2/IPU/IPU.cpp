@@ -314,6 +314,13 @@ void ipuSoftReset()
 	g_ipu_thresh[0] = 0;
 	g_ipu_thresh[1] = 0;
 
+	if (!decoder.intra_dc_precision)
+	{
+		decoder.dc_dct_pred[0] =
+		decoder.dc_dct_pred[1] =
+		decoder.dc_dct_pred[2] = 128 << decoder.intra_dc_precision;
+	}
+
 	ipuRegs.ctrl.reset();
 	ipuRegs.top = 0;
 	ipu_cmd.clear();
