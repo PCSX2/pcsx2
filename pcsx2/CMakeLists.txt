@@ -247,7 +247,6 @@ set(pcsx2SPU2Sources
 	SPU2/ADSR.cpp
 	SPU2/Debug.cpp
 	SPU2/Dma.cpp
-	SPU2/Mixer.cpp
 	SPU2/spu2.cpp
 	SPU2/ReadInput.cpp
 	SPU2/RegTable.cpp
@@ -258,6 +257,7 @@ set(pcsx2SPU2Sources
 )
 
 set(pcsx2SPU2SourcesUnshared
+	SPU2/Mixer.cpp
 	SPU2/ReverbResample.cpp
 )
 
