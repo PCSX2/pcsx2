@@ -4,6 +4,7 @@
 #include "Common.h"
 #include "Host.h"
 #include "IopDma.h"
+#include "IopHw.h"
 #include "Recording/InputRecording.h"
 #include "SIO/Memcard/MemoryCardProtocol.h"
 #include "SIO/Multitap/MultitapProtocol.h"
@@ -109,7 +110,7 @@ void Sio2::SetCtrl(u32 value)
 
 	if (this->ctrl & Sio2Ctrl::START_TRANSFER)
 	{
-		Interrupt();
+		PSX_INT(IopEvt_SIO2, 20000);
 	}
 }
 

@@ -5,6 +5,7 @@
 #include "Common.h"
 
 #include "SIO/Sio0.h"
+#include "SIO/Sio2.h"
 #include "Sif.h"
 #include "DebugTools/Breakpoints.h"
 #include "R5900OpcodeTables.h"
@@ -178,12 +179,31 @@ static __fi void Sio0TestEvent(IopEventId n)
 	}
 }
 
+static __fi void Sio2TestEvent(IopEventId n)
+{
+	if (!(psxRegs.interrupt & (1 << n)))
+	{
+		return;
+	}
+
+	if (psxTestCycle(psxRegs.sCycle[n], psxRegs.eCycle[n]))
+	{
+		psxRegs.interrupt &= ~(1 << n);
+		g_Sio2.Interrupt();
+	}
+	else
+	{
+		psxSetNextBranch(psxRegs.sCycle[n], psxRegs.eCycle[n]);
+	}
+}
+
 static __fi void _psxTestInterrupts()
 {
 	IopTestEvent(IopEvt_SIF0,		sif0Interrupt);	// SIF0
 	IopTestEvent(IopEvt_SIF1,		sif1Interrupt);	// SIF1
 	IopTestEvent(IopEvt_SIF2,		sif2Interrupt);	// SIF2
 	Sio0TestEvent(IopEvt_SIO);
+	Sio2TestEvent(IopEvt_SIO2);
 	IopTestEvent(IopEvt_CdvdSectorReady, cdvdSectorReady);
 	IopTestEvent(IopEvt_CdvdRead,	cdvdReadInterrupt);
 
