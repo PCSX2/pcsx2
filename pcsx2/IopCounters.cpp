@@ -782,8 +782,8 @@ void psxRcntSetNewIntrMode(int index)
 	psxCounters[index].mode.overflowFlag = false;
 	psxCounters[index].mode.intrEnable = true;
 
-	if (psxCounters[index].mode.repeatIntr != psxCounters[index].currentIrqMode.repeatInterrupt || psxCounters[index].mode.toggleIntr != psxCounters[index].currentIrqMode.toggleInterrupt)
-		DevCon.Warning("Updating psxCounter[%d] mode old repeat %d new %d old toggle %d new %d", index, psxCounters[index].mode.repeatIntr, psxCounters[index].currentIrqMode.repeatInterrupt, psxCounters[index].mode.toggleIntr, psxCounters[index].currentIrqMode.toggleInterrupt);
+	//if (psxCounters[index].mode.repeatIntr != psxCounters[index].currentIrqMode.repeatInterrupt || psxCounters[index].mode.toggleIntr != psxCounters[index].currentIrqMode.toggleInterrupt)
+	//	DevCon.Warning("Updating psxCounter[%d] mode old repeat %d new %d old toggle %d new %d", index, psxCounters[index].mode.repeatIntr, psxCounters[index].currentIrqMode.repeatInterrupt, psxCounters[index].mode.toggleIntr, psxCounters[index].currentIrqMode.toggleInterrupt);
 	
 	psxCounters[index].currentIrqMode.repeatInterrupt = psxCounters[index].mode.repeatIntr;
 	psxCounters[index].currentIrqMode.toggleInterrupt = psxCounters[index].mode.toggleIntr;

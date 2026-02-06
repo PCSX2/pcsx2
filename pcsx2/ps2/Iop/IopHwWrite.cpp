@@ -653,7 +653,7 @@ void iopHwWrite32_Page8( u32 addr, mem32_t val )
 					break;
 				case (HW_SIO2_INTR & 0x0fff):
 					Sio2Log.WriteLn("%s(%08X, %08X) SIO2 ISTAT Write", __FUNCTION__, addr, val);
-					g_Sio2.iStat = val;
+					g_Sio2.iStat &= ~val;
 					break;
 				// Other SIO2 registers are read-only, no-ops on write.
 				default:

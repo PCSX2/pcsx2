@@ -100,7 +100,12 @@ void Sio2::SoftReset()
 
 void Sio2::Interrupt()
 {
-	iopIntcIrq(17);
+	if (!iStat)
+		iopIntcIrq(17);
+	else
+		DevCon.Warning("Nearly sent double SIO2 IRQ");
+
+	iStat |= 1;
 }
 
 void Sio2::SetCtrl(u32 value)
