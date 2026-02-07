@@ -91,11 +91,11 @@ void GSDrawingContext::UpdateScissor()
 	scissor.in = rscissor + GSVector4i::cxpr(0, 0, 1, 1);
 
 	// Fixed-point scissor min/max, used for rejecting primitives which are entirely outside.
-	scissor.cull = rscissor.sll32<4>();
+	// Bottom-right end point should be exclusive for rectangle intersection test to work correctly.
+	scissor.cull = rscissor.sll32<4>() + GSVector4i::cxpr(0, 0, 1, 1);
 
-	// Offset applied to vertices for culling, zw is for native resolution culling
-	// We want to round subpixels down, because at least one pixel gets filled per scanline.
-	scissor.xyof = GSVector4i::loadl(&XYOFFSET.U64).xyxy().sub32(GSVector4i::cxpr(0, 0, 15, 15));
+	// Offset applied to vertices for culling.
+	scissor.xyof = GSVector4i::loadl(&XYOFFSET.U64).xyxy();
 }
 
 GIFRegTEX0 GSDrawingContext::GetSizeFixedTEX0(const GSVector4& st, bool linear, bool mipmap) const

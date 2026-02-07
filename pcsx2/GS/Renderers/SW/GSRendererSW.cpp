@@ -468,7 +468,25 @@ void GSRendererSW::Draw()
 	std::memcpy(sd->index, m_index.buff, sizeof(u16) * m_index.tail);
 
 	GSVector4i scissor = context->scissor.in;
-	GSVector4i bbox = GSVector4i(m_vt.m_min.p.floor().upld(m_vt.m_max.p.floor())) + GSVector4i(0, 0, 1, 1); // right/bottom should be exclusive so +1
+	GSVector4i bbox;
+	
+	if (m_vt.m_primclass == GS_LINE_CLASS || m_vt.m_primclass == GS_POINT_CLASS)
+	{
+		// min: round, max: round
+		bbox = GSVector4i((m_vt.m_min.p + GSVector4(0.5f)).floor().upld((m_vt.m_max.p + GSVector4(0.5f)).floor()));
+	}
+	else
+	{
+		// min: ceil, max: floor
+		bbox = GSVector4i(m_vt.m_min.p.ceil().upld(m_vt.m_max.p.floor()));
+	}
+
+	if (PRIM->AA1 && (m_vt.m_primclass == GS_LINE_CLASS || m_vt.m_primclass == GS_TRIANGLE_CLASS))
+	{
+		bbox += GSVector4i(-1, -1, 1, 1); // Expand bbox by 1 on all sides when using antialiasing.
+	}
+
+	bbox += GSVector4i(0, 0, 1, 1); // right/bottom should be exclusive so +1
 
 	GSVector4i r = bbox.rintersect(scissor);
 
