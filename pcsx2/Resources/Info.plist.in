@@ -79,6 +79,8 @@
 	<string>${CMAKE_OSX_DEPLOYMENT_TARGET}</string>
 	<key>NSHighResolutionCapable</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>${PCSX2_CAMERA_USAGE_DESCRIPTION}</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>${PCSX2_MICROPHONE_USAGE_DESCRIPTION}</string>
 	<key>LSApplicationCategoryType</key> 
