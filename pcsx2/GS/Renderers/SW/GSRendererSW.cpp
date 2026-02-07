@@ -291,7 +291,8 @@ void ConvertVertexBuffer(const GSDrawingContext* RESTRICT ctx, GSVertexSW* RESTR
 template <u32 primclass>
 void GSRendererSW::RewriteVerticesIfSTOverflow()
 {
-	if (PRIM->TME && PRIM->FST == 0)
+	// Need to be texture mapping with ST and not have so many vertices that rewritten indices will overflow.
+	if (PRIM->TME && PRIM->FST == 0 && m_index.tail <= UINT16_MAX)
 	{
 		const GSVector4 tsize = GSVector4(
 			static_cast<float>(1 << m_context->TEX0.TW),

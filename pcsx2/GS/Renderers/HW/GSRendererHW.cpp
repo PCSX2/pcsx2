@@ -9723,7 +9723,7 @@ void GSRendererHW::RewriteVerticesIfLargeSTImpl()
 {
 	// Only applicable if texture mapping with ST.
 	// We cannot de-index vertices if there are more than the largest possible index.
-	if (PRIM->TME && PRIM->FST == 0 && m_index.tail <= UINT16_MAX)
+	if (PRIM->TME && PRIM->FST == 0)
 	{
 		const GSVector4 tsize = GSVector4(
 			static_cast<float>(1 << m_context->TEX0.TW),
@@ -9741,6 +9741,14 @@ void GSRendererHW::RewriteVerticesIfLargeSTImpl()
 
 		if (st_overflow)
 		{
+			GL_PUSH("HW: Large ST detected, rewriting vertices.");
+			if (m_index.tail > UINT16_MAX)
+			{
+				GL_INS("HW: Too many vertices to rewrite safely, exiting.");
+				DevCon.Warning("HW: Large ST detected but too many vertices to rewrite safely.");
+				return;
+			}
+
 			constexpr int n = GSUtil::GetClassVertexCount(primclass);
 
 			// Make sure the copy buffer is large enough.
