@@ -4,6 +4,7 @@
 #include "GS/Renderers/Vulkan/GSDeviceVK.h"
 #include "GS/Renderers/Vulkan/VKBuilders.h"
 #include "GS/Renderers/Vulkan/VKSwapChain.h"
+#include "ImGui/ImGuiManager.h"
 #include "VMManager.h"
 
 #include "common/Assertions.h"
@@ -610,6 +611,8 @@ bool VKSwapChain::ResizeSwapChain(u32 new_width, u32 new_height, float new_scale
 		DestroySwapChain();
 		return false;
 	}
+
+	ImGuiManager::WindowResized();
 
 	return true;
 }
