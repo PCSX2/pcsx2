@@ -191,14 +191,63 @@
              </property>
             </widget>
            </item>
-           <item row="2" column="0" colspan="2">
+           <item row="2" column="0">
+            <widget class="QLabel" name="audioCaptureVolumeLabel">
+             <property name="text">
+              <string>Volume:</string>
+             </property>
+             <property name="buddy">
+              <cstring>audioCaptureVolume</cstring>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <layout class="QHBoxLayout" name="audioCaptureVolumeLayout" stretch="1,0">
+             <item>
+              <widget class="QSlider" name="audioCaptureVolume">
+               <property name="orientation">
+                <enum>Qt::Orientation::Horizontal</enum>
+               </property>
+               <property name="minimum">
+                <number>0</number>
+               </property>
+               <property name="maximum">
+                <number>100</number>
+               </property>
+               <property name="value">
+                <number>100</number>
+               </property>
+               <property name="tickPosition">
+                <enum>QSlider::TickPosition::TicksBelow</enum>
+               </property>
+               <property name="tickInterval">
+                <number>25</number>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="audioCaptureVolumeValue">
+               <property name="text">
+                <string>100%</string>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>40</width>
+                 <height>0</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="3" column="0" colspan="2">
             <widget class="QCheckBox" name="enableAudioCaptureArguments">
              <property name="text">
               <string>Extra Arguments</string>
              </property>
             </widget>
            </item>
-           <item row="3" column="0" colspan="2">
+           <item row="4" column="0" colspan="2">
             <widget class="QLineEdit" name="audioCaptureArguments"/>
            </item>
           </layout>
@@ -401,6 +450,7 @@
   <tabstop>enableAudioCapture</tabstop>
   <tabstop>audioCaptureCodec</tabstop>
   <tabstop>audioCaptureBitrate</tabstop>
+  <tabstop>audioCaptureVolume</tabstop>
   <tabstop>enableAudioCaptureArguments</tabstop>
   <tabstop>audioCaptureArguments</tabstop>
  </tabstops>

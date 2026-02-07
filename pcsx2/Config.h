@@ -711,6 +711,7 @@ struct Pcsx2Config
 		static constexpr int DEFAULT_VIDEO_CAPTURE_WIDTH = 640;
 		static constexpr int DEFAULT_VIDEO_CAPTURE_HEIGHT = 480;
 		static constexpr int DEFAULT_AUDIO_CAPTURE_BITRATE = 192;
+		static constexpr int DEFAULT_AUDIO_CAPTURE_VOLUME = 100;
 		static const char* DEFAULT_CAPTURE_CONTAINER;
 
 		static constexpr int DEFAULT_SHADEBOOST_BRIGHTNESS = 50;
@@ -888,6 +889,7 @@ struct Pcsx2Config
 		int VideoCaptureWidth = DEFAULT_VIDEO_CAPTURE_WIDTH;
 		int VideoCaptureHeight = DEFAULT_VIDEO_CAPTURE_HEIGHT;
 		int AudioCaptureBitrate = DEFAULT_AUDIO_CAPTURE_BITRATE;
+		int AudioCaptureVolume = DEFAULT_AUDIO_CAPTURE_VOLUME;
 
 		std::string Adapter;
 		std::string HWDumpDirectory;
