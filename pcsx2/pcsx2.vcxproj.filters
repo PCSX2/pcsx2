@@ -1172,6 +1172,9 @@
     <ClCompile Include="USB\usb-printer\usb-printer.cpp">
       <Filter>System\Ps2\USB\usb-printer</Filter>
     </ClCompile>
+    <ClCompile Include="USB\usb-printer\pixma_parse.cpp">
+      <Filter>System\Ps2\USB\usb-printer</Filter>
+    </ClCompile>
     <ClCompile Include="USB\usb-msd\usb-msd.cpp">
       <Filter>System\Ps2\USB\usb-msd</Filter>
     </ClCompile>
@@ -2131,6 +2134,9 @@
       <Filter>System\Ps2\USB\usb-eyetoy</Filter>
     </ClInclude>
     <ClInclude Include="USB\usb-printer\usb-printer.h">
+      <Filter>System\Ps2\USB\usb-printer</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-printer\pixma_parse.h">
       <Filter>System\Ps2\USB\usb-printer</Filter>
     </ClInclude>
     <ClInclude Include="USB\usb-msd\usb-msd.h">
