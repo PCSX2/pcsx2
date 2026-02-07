@@ -257,16 +257,16 @@ GSDeviceVK::GPUList GSDeviceVK::EnumerateGPUs(VkInstance instance)
 	gpus.reserve(physical_devices.size());
 	for (VkPhysicalDevice device : physical_devices)
 	{
-		VkPhysicalDeviceProperties props = {};
-		vkGetPhysicalDeviceProperties(device, &props);
+		VkPhysicalDeviceProperties2 props2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
+		vkGetPhysicalDeviceProperties2(device, &props2);
 
 		// Skip GPUs which don't support Vulkan 1.1, since we won't be able to create a device with them anyway.
-		if (VK_API_VERSION_VARIANT(props.apiVersion) == 0 && VK_API_VERSION_MAJOR(props.apiVersion) <= 1 &&
-			VK_API_VERSION_MINOR(props.apiVersion) < 1)
+		if (VK_API_VERSION_VARIANT(props2.properties.apiVersion) == 0 && VK_API_VERSION_MAJOR(props2.properties.apiVersion) <= 1 &&
+			VK_API_VERSION_MINOR(props2.properties.apiVersion) < 1)
 		{
 			Console.Warning(fmt::format("VK: Ignoring GPU '{}' because it only claims support for Vulkan {}.{}.{}",
-				props.deviceName, VK_API_VERSION_MAJOR(props.apiVersion), VK_API_VERSION_MINOR(props.apiVersion),
-				VK_API_VERSION_PATCH(props.apiVersion)));
+				props2.properties.deviceName, VK_API_VERSION_MAJOR(props2.properties.apiVersion), VK_API_VERSION_MINOR(props2.properties.apiVersion),
+				VK_API_VERSION_PATCH(props2.properties.apiVersion)));
 			continue;
 		}
 
@@ -276,7 +276,7 @@ GSDeviceVK::GPUList GSDeviceVK::EnumerateGPUs(VkInstance instance)
 		if (res != VK_SUCCESS)
 		{
 			Console.Warning(fmt::format("VK: Ignoring GPU '{}' because vkEnumerateInstanceExtensionProperties() failed: ",
-				props.deviceName, Vulkan::VkResultToString(res)));
+				props2.properties.deviceName, Vulkan::VkResultToString(res)));
 			continue;
 		}
 
@@ -294,7 +294,7 @@ GSDeviceVK::GPUList GSDeviceVK::EnumerateGPUs(VkInstance instance)
 				}) == available_extension_list.end())
 			{
 				Console.Warning(fmt::format("VK: Ignoring GPU '{}' because is is missing required extension {}",
-					props.deviceName, required_extension_name));
+					props2.properties.deviceName, required_extension_name));
 				has_missing_extension = true;
 			}
 		}
@@ -302,8 +302,8 @@ GSDeviceVK::GPUList GSDeviceVK::EnumerateGPUs(VkInstance instance)
 			continue;
 
 		GSAdapterInfo ai;
-		ai.name = props.deviceName;
-		ai.max_texture_size = std::min(props.limits.maxFramebufferWidth, props.limits.maxImageDimension2D);
+		ai.name = props2.properties.deviceName;
+		ai.max_texture_size = std::min(props2.properties.limits.maxFramebufferWidth, props2.properties.limits.maxImageDimension2D);
 		ai.max_upscale_multiplier = GSGetMaxUpscaleMultiplier(ai.max_texture_size);
 
 		// handle duplicate adapter names
@@ -452,17 +452,17 @@ bool GSDeviceVK::SelectDeviceExtensions(ExtensionList* extension_list, bool enab
 
 bool GSDeviceVK::SelectDeviceFeatures()
 {
-	VkPhysicalDeviceFeatures available_features;
-	vkGetPhysicalDeviceFeatures(m_physical_device, &available_features);
+	VkPhysicalDeviceFeatures2 available_features2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
+	vkGetPhysicalDeviceFeatures2(m_physical_device, &available_features2);
 
 	// Enable the features we use.
-	m_device_features.dualSrcBlend = available_features.dualSrcBlend;
-	m_device_features.largePoints = available_features.largePoints;
-	m_device_features.wideLines = available_features.wideLines;
-	m_device_features.fragmentStoresAndAtomics = available_features.fragmentStoresAndAtomics;
-	m_device_features.textureCompressionBC = available_features.textureCompressionBC;
-	m_device_features.samplerAnisotropy = available_features.samplerAnisotropy;
-	m_device_features.geometryShader = available_features.geometryShader;
+	m_device_features2.features.dualSrcBlend = available_features2.features.dualSrcBlend;
+	m_device_features2.features.largePoints = available_features2.features.largePoints;
+	m_device_features2.features.wideLines = available_features2.features.wideLines;
+	m_device_features2.features.fragmentStoresAndAtomics = available_features2.features.fragmentStoresAndAtomics;
+	m_device_features2.features.textureCompressionBC = available_features2.features.textureCompressionBC;
+	m_device_features2.features.samplerAnisotropy = available_features2.features.samplerAnisotropy;
+	m_device_features2.features.geometryShader = available_features2.features.geometryShader;
 
 	return true;
 }
@@ -470,16 +470,16 @@ bool GSDeviceVK::SelectDeviceFeatures()
 bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer)
 {
 	u32 queue_family_count;
-	vkGetPhysicalDeviceQueueFamilyProperties(m_physical_device, &queue_family_count, nullptr);
+	vkGetPhysicalDeviceQueueFamilyProperties2(m_physical_device, &queue_family_count, nullptr);
 	if (queue_family_count == 0)
 	{
-		Console.Error("No queue families found on specified vulkan physical device.");
+		Console.Error("No queue families found on specified Vulkan physical device.");
 		return false;
 	}
 
-	std::vector<VkQueueFamilyProperties> queue_family_properties(queue_family_count);
-	vkGetPhysicalDeviceQueueFamilyProperties(m_physical_device, &queue_family_count, queue_family_properties.data());
-	DevCon.WriteLn("%u vulkan queue families", queue_family_count);
+	std::vector<VkQueueFamilyProperties2> queue_family_properties2(queue_family_count);
+	vkGetPhysicalDeviceQueueFamilyProperties2(m_physical_device, &queue_family_count, queue_family_properties2.data());
+	DevCon.WriteLn("%u Vulkan queue families", queue_family_count);
 
 	// Find graphics and present queues.
 	m_graphics_queue_family_index = queue_family_count;
@@ -488,7 +488,7 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 	u32 spin_queue_index = 0;
 	for (uint32_t i = 0; i < queue_family_count; i++)
 	{
-		VkBool32 graphics_supported = queue_family_properties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT;
+		VkBool32 graphics_supported = queue_family_properties2[i].queueFamilyProperties.queueFlags & VK_QUEUE_GRAPHICS_BIT;
 		if (graphics_supported)
 		{
 			m_graphics_queue_family_index = i;
@@ -524,18 +524,18 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 	for (uint32_t i = 0; i < queue_family_count; i++)
 	{
 		// Pick a queue for spinning
-		if (!(queue_family_properties[i].queueFlags & VK_QUEUE_COMPUTE_BIT))
+		if (!(queue_family_properties2[i].queueFamilyProperties.queueFlags & VK_QUEUE_COMPUTE_BIT))
 			continue; // We need compute
-		if (queue_family_properties[i].timestampValidBits == 0)
+		if (queue_family_properties2[i].queueFamilyProperties.timestampValidBits == 0)
 			continue; // We need timing
 		const bool queue_is_used = i == m_graphics_queue_family_index || i == m_present_queue_family_index;
 		if (queue_is_used && m_spin_queue_family_index != queue_family_count)
 			continue; // Found a non-graphics queue to use
 		spin_queue_index = 0;
 		m_spin_queue_family_index = i;
-		if (queue_is_used && queue_family_properties[i].queueCount > 1)
+		if (queue_is_used && queue_family_properties2[i].queueFamilyProperties.queueCount > 1)
 			spin_queue_index = 1;
-		if (!(queue_family_properties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT))
+		if (!(queue_family_properties2[i].queueFamilyProperties.queueFlags & VK_QUEUE_GRAPHICS_BIT))
 			break; // Async compute queue, definitely pick this one
 	}
 	if (m_graphics_queue_family_index == queue_family_count)
@@ -610,7 +610,7 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 	if (!SelectDeviceFeatures())
 		return false;
 
-	device_info.pEnabledFeatures = &m_device_features;
+	device_info.pEnabledFeatures = &m_device_features2.features;
 
 	// Enable debug layer on debug builds
 	if (enable_validation_layer)
@@ -686,19 +686,19 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 		vkGetDeviceQueue(m_device, m_present_queue_family_index, 0, &m_present_queue);
 	}
 	m_spinning_supported = m_spin_queue_family_index != queue_family_count &&
-	                       queue_family_properties[m_graphics_queue_family_index].timestampValidBits > 0 &&
-	                       m_device_properties.limits.timestampPeriod > 0;
+	                       queue_family_properties2[m_graphics_queue_family_index].queueFamilyProperties.timestampValidBits > 0 &&
+	                       m_device_properties2.properties.limits.timestampPeriod > 0;
 	m_spin_queue_is_graphics_queue =
 		m_spin_queue_family_index == m_graphics_queue_family_index && spin_queue_index == 0;
 
-	m_gpu_timing_supported = (m_device_properties.limits.timestampComputeAndGraphics != 0 &&
-							  queue_family_properties[m_graphics_queue_family_index].timestampValidBits > 0 &&
-							  m_device_properties.limits.timestampPeriod > 0);
+	m_gpu_timing_supported = (m_device_properties2.properties.limits.timestampComputeAndGraphics != 0 &&
+							  queue_family_properties2[m_graphics_queue_family_index].queueFamilyProperties.timestampValidBits > 0 &&
+							  m_device_properties2.properties.limits.timestampPeriod > 0);
 	DevCon.WriteLn("GPU timing is %s (TS=%u TS valid bits=%u, TS period=%f)",
 		m_gpu_timing_supported ? "supported" : "not supported",
-		static_cast<u32>(m_device_properties.limits.timestampComputeAndGraphics),
-		queue_family_properties[m_graphics_queue_family_index].timestampValidBits,
-		m_device_properties.limits.timestampPeriod);
+		static_cast<u32>(m_device_properties2.properties.limits.timestampComputeAndGraphics),
+		queue_family_properties2[m_graphics_queue_family_index].queueFamilyProperties.timestampValidBits,
+		m_device_properties2.properties.limits.timestampPeriod);
 
 	if (!ProcessDeviceExtensions())
 		return false;
@@ -707,7 +707,7 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 	{
 		vkGetDeviceQueue(m_device, m_spin_queue_family_index, spin_queue_index, &m_spin_queue);
 
-		m_spin_timestamp_scale = m_device_properties.limits.timestampPeriod;
+		m_spin_timestamp_scale = m_device_properties2.properties.limits.timestampPeriod;
 		if (m_optional_extensions.vk_ext_calibrated_timestamps)
 		{
 #ifdef _WIN32
@@ -872,19 +872,19 @@ bool GSDeviceVK::CreateAllocator()
 	std::array<VkDeviceSize, VK_MAX_MEMORY_HEAPS> heap_size_limits;
 	if (GSConfig.UseDebugDevice)
 	{
-		VkPhysicalDeviceMemoryProperties memory_properties;
-		vkGetPhysicalDeviceMemoryProperties(m_physical_device, &memory_properties);
+		VkPhysicalDeviceMemoryProperties2 memory_properties2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2};
+		vkGetPhysicalDeviceMemoryProperties2(m_physical_device, &memory_properties2);
 
 		bool has_upload_heap = false;
 		heap_size_limits.fill(VK_WHOLE_SIZE);
-		for (u32 i = 0; i < memory_properties.memoryTypeCount; i++)
+		for (u32 i = 0; i < memory_properties2.memoryProperties.memoryTypeCount; i++)
 		{
 			// Look for any memory types which are upload-like.
-			const VkMemoryType& type = memory_properties.memoryTypes[i];
+			const VkMemoryType& type = memory_properties2.memoryProperties.memoryTypes[i];
 			if ((type.propertyFlags & UPLOAD_HEAP_PROPERTIES) != UPLOAD_HEAP_PROPERTIES)
 				continue;
 
-			const VkMemoryHeap& heap = memory_properties.memoryHeaps[type.heapIndex];
+			const VkMemoryHeap& heap = memory_properties2.memoryProperties.memoryHeaps[type.heapIndex];
 			if (heap.size >= UPLOAD_HEAP_SIZE_THRESHOLD)
 				continue;
 
@@ -1337,7 +1337,7 @@ void GSDeviceVK::CommandBufferCompleted(u32 index)
 			if (timestamps[0] > 0 && m_gpu_timing_enabled)
 			{
 				const double ns_diff =
-					(timestamps[1] - timestamps[0]) * static_cast<double>(m_device_properties.limits.timestampPeriod);
+					(timestamps[1] - timestamps[0]) * static_cast<double>(m_device_properties2.properties.limits.timestampPeriod);
 				m_accumulated_gpu_time += ns_diff / 1000000.0;
 			}
 			if (resources.spin_id >= 0)
@@ -1851,7 +1851,7 @@ void GSDeviceVK::SpinCommandCompleted(u32 index)
 	}
 }
 
-void GSDeviceVK::SubmitSpinCommand(u32 index, u32 cycles)
+void GSDeviceVK::SubmitSpinCommand(const u32 index, const u32 cycles)
 {
 	SpinResources& resources = m_spin_resources[index];
 	VkResult res;
@@ -2255,8 +2255,8 @@ void GSDeviceVK::DestroySurface()
 std::string GSDeviceVK::GetDriverInfo() const
 {
 	std::string ret;
-	const u32 api_version = m_device_properties.apiVersion;
-	const u32 driver_version = m_device_properties.driverVersion;
+	const u32 api_version = m_device_properties2.properties.apiVersion;
+	const u32 driver_version = m_device_properties2.properties.driverVersion;
 	if (m_optional_extensions.vk_khr_driver_properties)
 	{
 		const VkPhysicalDeviceDriverProperties& props = m_device_driver_properties;
@@ -2265,40 +2265,40 @@ std::string GSDeviceVK::GetDriverInfo() const
 			VK_VERSION_MAJOR(driver_version), VK_VERSION_MINOR(driver_version), VK_VERSION_PATCH(driver_version),
 			VK_API_VERSION_MAJOR(api_version), VK_API_VERSION_MINOR(api_version), VK_API_VERSION_PATCH(api_version),
 			props.conformanceVersion.major, props.conformanceVersion.minor, props.conformanceVersion.subminor,
-			props.conformanceVersion.patch, props.driverInfo, props.driverName, m_device_properties.deviceName);
+			props.conformanceVersion.patch, props.driverInfo, props.driverName, m_device_properties2.properties.deviceName);
 	}
 	else
 	{
 		ret = StringUtil::StdStringFromFormat("Driver %u.%u.%u\nVulkan %u.%u.%u\n%s", VK_VERSION_MAJOR(driver_version),
 			VK_VERSION_MINOR(driver_version), VK_VERSION_PATCH(driver_version), VK_API_VERSION_MAJOR(api_version),
-			VK_API_VERSION_MINOR(api_version), VK_API_VERSION_PATCH(api_version), m_device_properties.deviceName);
+			VK_API_VERSION_MINOR(api_version), VK_API_VERSION_PATCH(api_version), m_device_properties2.properties.deviceName);
 	}
 
 	return ret;
 }
 
-void GSDeviceVK::SetVSyncMode(GSVSyncMode mode, bool allow_present_throttle)
+void GSDeviceVK::SetVSyncMode(GSVSyncMode vsync_mode, const bool allow_present_throttle)
 {
 	m_allow_present_throttle = allow_present_throttle;
 	if (!m_swap_chain)
 	{
 		// For when it is re-created.
-		m_vsync_mode = mode;
+		m_vsync_mode = vsync_mode;
 		return;
 	}
 
 	VkPresentModeKHR present_mode;
-	if (!VKSwapChain::SelectPresentMode(m_swap_chain->GetSurface(), &mode, &present_mode))
+	if (!VKSwapChain::SelectPresentMode(m_swap_chain->GetSurface(), &vsync_mode, &present_mode))
 	{
 		ERROR_LOG("Ignoring vsync mode change.");
 		return;
 	}
 
 	// Actually changed? If using a fallback, it might not have.
-	if (m_vsync_mode == mode)
+	if (m_vsync_mode == vsync_mode)
 		return;
 
-	m_vsync_mode = mode;
+	m_vsync_mode = vsync_mode;
 
 	// This swap chain should not be used by the current buffer, thus safe to destroy.
 	WaitForGPUIdle();
@@ -2563,22 +2563,22 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 	}
 
 	// Read device physical memory properties, we need it for allocating buffers
-	vkGetPhysicalDeviceProperties(m_physical_device, &m_device_properties);
+	vkGetPhysicalDeviceProperties2(m_physical_device, &m_device_properties2);
 
 	// Stores the GPU name
-	m_name = m_device_properties.deviceName;
+	m_name = m_device_properties2.properties.deviceName;
 
 	// We need this to be at least 32 byte aligned for AVX2 stores.
-	m_device_properties.limits.minUniformBufferOffsetAlignment =
-		std::max(m_device_properties.limits.minUniformBufferOffsetAlignment, static_cast<VkDeviceSize>(32));
-	m_device_properties.limits.minTexelBufferOffsetAlignment =
-		std::max(m_device_properties.limits.minTexelBufferOffsetAlignment, static_cast<VkDeviceSize>(32));
-	m_device_properties.limits.optimalBufferCopyOffsetAlignment =
-		std::max(m_device_properties.limits.optimalBufferCopyOffsetAlignment, static_cast<VkDeviceSize>(32));
-	m_device_properties.limits.optimalBufferCopyRowPitchAlignment = std::bit_ceil(
-		std::max(m_device_properties.limits.optimalBufferCopyRowPitchAlignment, static_cast<VkDeviceSize>(32)));
-	m_device_properties.limits.bufferImageGranularity =
-		std::max(m_device_properties.limits.bufferImageGranularity, static_cast<VkDeviceSize>(32));
+	m_device_properties2.properties.limits.minUniformBufferOffsetAlignment =
+		std::max(m_device_properties2.properties.limits.minUniformBufferOffsetAlignment, static_cast<VkDeviceSize>(32));
+	m_device_properties2.properties.limits.minTexelBufferOffsetAlignment =
+		std::max(m_device_properties2.properties.limits.minTexelBufferOffsetAlignment, static_cast<VkDeviceSize>(32));
+	m_device_properties2.properties.limits.optimalBufferCopyOffsetAlignment =
+		std::max(m_device_properties2.properties.limits.optimalBufferCopyOffsetAlignment, static_cast<VkDeviceSize>(32));
+	m_device_properties2.properties.limits.optimalBufferCopyRowPitchAlignment = std::bit_ceil(
+		std::max(m_device_properties2.properties.limits.optimalBufferCopyRowPitchAlignment, static_cast<VkDeviceSize>(32)));
+	m_device_properties2.properties.limits.bufferImageGranularity =
+		std::max(m_device_properties2.properties.limits.bufferImageGranularity, static_cast<VkDeviceSize>(32));
 
 	if (enable_debug_utils)
 		EnableDebugUtils();
@@ -2631,8 +2631,8 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 
 bool GSDeviceVK::CheckFeatures()
 {
-	const VkPhysicalDeviceLimits& limits = m_device_properties.limits;
-	//const u32 vendorID = m_device_properties.vendorID;
+	const VkPhysicalDeviceLimits& limits = m_device_properties2.properties.limits;
+	//const u32 vendorID = m_device_properties2.properties.vendorID;
 	//const bool isAMD = (vendorID == 0x1002 || vendorID == 0x1022);
 	//const bool isNVIDIA = (vendorID == 0x10DE);
 
@@ -2643,7 +2643,7 @@ bool GSDeviceVK::CheckFeatures()
 	m_features.broken_point_sampler = false;
 
 	// geometryShader is needed because gl_PrimitiveID is part of the Geometry SPIR-V Execution Model.
-	m_features.primitive_id = m_device_features.geometryShader;
+	m_features.primitive_id = m_device_features2.features.geometryShader;
 
 	m_features.prefer_new_textures = true;
 	m_features.provoking_vertex_last = m_optional_extensions.vk_ext_provoking_vertex;
@@ -2654,10 +2654,10 @@ bool GSDeviceVK::CheckFeatures()
 
 	// Test for D32S8 support.
 	{
-		VkFormatProperties props = {};
-		vkGetPhysicalDeviceFormatProperties(m_physical_device, VK_FORMAT_D32_SFLOAT_S8_UINT, &props);
+		VkFormatProperties2 format_props2 = {VK_STRUCTURE_TYPE_FORMAT_PROPERTIES_2};
+		vkGetPhysicalDeviceFormatProperties2(m_physical_device, VK_FORMAT_D32_SFLOAT_S8_UINT, &format_props2);
 		m_features.stencil_buffer =
-			((props.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) != 0);
+			((format_props2.formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) != 0);
 	}
 
 	// Fbfetch is useless if we don't have barriers enabled.
@@ -2671,10 +2671,10 @@ bool GSDeviceVK::CheckFeatures()
 
 	// whether we can do point/line expand depends on the range of the device
 	const float f_upscale = static_cast<float>(GSConfig.UpscaleMultiplier);
-	m_features.point_expand = (m_device_features.largePoints && limits.pointSizeRange[0] <= f_upscale &&
+	m_features.point_expand = (m_device_features2.features.largePoints && limits.pointSizeRange[0] <= f_upscale &&
 							   limits.pointSizeRange[1] >= f_upscale);
 	m_features.line_expand =
-		(m_device_features.wideLines && limits.lineWidthRange[0] <= f_upscale && limits.lineWidthRange[1] >= f_upscale);
+		(m_device_features2.features.wideLines && limits.lineWidthRange[0] <= f_upscale && limits.lineWidthRange[1] >= f_upscale);
 
 	DevCon.WriteLn("Optional features:%s%s%s%s%s", m_features.primitive_id ? " primitive_id" : "",
 		m_features.texture_barrier ? " texture_barrier" : "", m_features.framebuffer_fetch ? " framebuffer_fetch" : "",
@@ -2693,19 +2693,19 @@ bool GSDeviceVK::CheckFeatures()
 				(VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT | VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) :
 				(VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT | VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT);
 
-		VkFormatProperties props = {};
-		vkGetPhysicalDeviceFormatProperties(m_physical_device, vkfmt, &props);
-		if ((props.optimalTilingFeatures & bits) != bits)
+		VkFormatProperties2 format_props2 = {VK_STRUCTURE_TYPE_FORMAT_PROPERTIES_2};
+		vkGetPhysicalDeviceFormatProperties2(m_physical_device, vkfmt, &format_props2);
+		if ((format_props2.formatProperties.optimalTilingFeatures & bits) != bits)
 		{
 			Host::ReportFormattedErrorAsync("VK: Renderer Unavailable",
 				"Required format %u is missing bits, you may need to update your driver. (vk:%u, has:0x%x, needs:0x%x)",
-				fmt, static_cast<unsigned>(vkfmt), props.optimalTilingFeatures, bits);
+				fmt, static_cast<unsigned>(vkfmt), format_props2.formatProperties.optimalTilingFeatures, bits);
 			return false;
 		}
 	}
 
-	m_features.dxt_textures = m_device_features.textureCompressionBC;
-	m_features.bptc_textures = m_device_features.textureCompressionBC;
+	m_features.dxt_textures = m_device_features2.features.textureCompressionBC;
+	m_features.bptc_textures = m_device_features2.features.textureCompressionBC;
 
 	if (!m_features.texture_barrier && !m_features.stencil_buffer)
 	{
@@ -2715,7 +2715,7 @@ bool GSDeviceVK::CheckFeatures()
 			Host::OSD_WARNING_DURATION);
 	}
 
-	m_max_texture_size = m_device_properties.limits.maxImageDimension2D;
+	m_max_texture_size = m_device_properties2.properties.limits.maxImageDimension2D;
 
 	return true;
 }
@@ -3565,7 +3565,7 @@ VkSampler GSDeviceVK::GetSampler(GSHWDrawConfig::SamplerSelector ss)
 	if (it != m_samplers.end())
 		return it->second;
 
-	const bool aniso = (ss.aniso && GSConfig.MaxAnisotropy > 1 && m_device_features.samplerAnisotropy);
+	const bool aniso = (ss.aniso && GSConfig.MaxAnisotropy > 1 && m_device_features2.features.samplerAnisotropy);
 
 	// See https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VkSamplerCreateInfo.html#_description
 	// for the reasoning behind 0.25f here.
@@ -5336,7 +5336,7 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 	if (flags & DIRTY_FLAG_VS_CONSTANT_BUFFER)
 	{
 		if (!m_vertex_uniform_stream_buffer.ReserveMemory(
-				sizeof(m_vs_cb_cache), static_cast<u32>(m_device_properties.limits.minUniformBufferOffsetAlignment)))
+				sizeof(m_vs_cb_cache), static_cast<u32>(m_device_properties2.properties.limits.minUniformBufferOffsetAlignment)))
 		{
 			if (already_execed)
 			{
@@ -5357,7 +5357,7 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 	if (flags & DIRTY_FLAG_PS_CONSTANT_BUFFER)
 	{
 		if (!m_fragment_uniform_stream_buffer.ReserveMemory(
-				sizeof(m_ps_cb_cache), static_cast<u32>(m_device_properties.limits.minUniformBufferOffsetAlignment)))
+				sizeof(m_ps_cb_cache), static_cast<u32>(m_device_properties2.properties.limits.minUniformBufferOffsetAlignment)))
 		{
 			if (already_execed)
 			{

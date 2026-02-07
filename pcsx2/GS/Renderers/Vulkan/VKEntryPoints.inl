@@ -22,11 +22,7 @@ VULKAN_MODULE_ENTRY_POINT(vkDestroyInstance, true)
 
 VULKAN_INSTANCE_ENTRY_POINT(vkGetDeviceProcAddr, true)
 VULKAN_INSTANCE_ENTRY_POINT(vkEnumeratePhysicalDevices, true)
-VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceFeatures, true)
-VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceFormatProperties, true)
-VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceImageFormatProperties, true)
 VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceProperties, true)
-VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceQueueFamilyProperties, true)
 VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceMemoryProperties, true)
 VULKAN_INSTANCE_ENTRY_POINT(vkCreateDevice, true)
 VULKAN_INSTANCE_ENTRY_POINT(vkEnumerateDeviceExtensionProperties, true)
@@ -81,8 +77,11 @@ VULKAN_INSTANCE_ENTRY_POINT(vkCreateDisplayPlaneSurfaceKHR, false)
 
 // Vulkan 1.1 functions.
 VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceFeatures2, true)
-VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceProperties2, true)
+VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceFormatProperties2, true)
+VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceImageFormatProperties2, true)
 VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceMemoryProperties2, true)
+VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceProperties2, true)
+VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceQueueFamilyProperties2, true)
 
 // VK_EXT_calibrated_timestamps
 VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceCalibrateableTimeDomainsEXT, false)
