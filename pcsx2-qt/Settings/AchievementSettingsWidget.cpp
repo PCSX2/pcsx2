@@ -27,7 +27,7 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* settings_di
 	setupTab(m_ui);
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enable, "Achievements", "Enabled", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.hardcoreMode, "Achievements", "ChallengeMode", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.hardcoreMode, "Achievements", "ChallengeMode", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.achievementNotifications, "Achievements", "Notifications", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.leaderboardNotifications, "Achievements", "LeaderboardNotifications", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.soundEffects, "Achievements", "SoundEffects", true);
@@ -49,7 +49,7 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* settings_di
 	SettingWidgetBinder::BindWidgetToFileSetting(sif, m_ui.lbSoundPath, m_ui.lbSoundBrowse, m_ui.lbSoundOpen, m_ui.lbSoundReset, "Achievements", "LBSubmitSoundName", Path::Combine(EmuFolders::Resources, EmuConfig.Achievements.DEFAULT_LBSUBMIT_SOUND_NAME), qApp->translate("AchievementSettingsWidget", AUDIO_FILE_FILTER), true, false);
 
 	dialog()->registerWidgetHelp(m_ui.enable, tr("Enable Achievements"), tr("Unchecked"), tr("When enabled and logged in, PCSX2 will scan for achievements on startup."));
-	dialog()->registerWidgetHelp(m_ui.hardcoreMode, tr("Enable Hardcore Mode"), tr("Unchecked"), tr("\"Challenge\" mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions."));
+	dialog()->registerWidgetHelp(m_ui.hardcoreMode, tr("Enable Hardcore Mode"), tr("Checked"), tr("\"Challenge\" mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions."));
 	dialog()->registerWidgetHelp(m_ui.achievementNotifications, tr("Show Achievement Notifications"), tr("Checked"), tr("Displays popup messages on events such as achievement unlocks and game completion."));
 	dialog()->registerWidgetHelp(m_ui.leaderboardNotifications, tr("Show Leaderboard Notifications"), tr("Checked"), tr("Displays popup messages when starting, submitting, or failing a leaderboard challenge."));
 	dialog()->registerWidgetHelp(m_ui.soundEffects, tr("Enable Sound Effects"), tr("Checked"), tr("Plays sound effects for events such as achievement unlocks and leaderboard submissions."));
@@ -169,7 +169,7 @@ void AchievementSettingsWidget::onHardcoreModeStateChanged()
 		return;
 
 	const bool enabled = dialog()->getEffectiveBoolValue("Achievements", "Enabled", false);
-	const bool challenge = dialog()->getEffectiveBoolValue("Achievements", "ChallengeMode", false);
+	const bool challenge = dialog()->getEffectiveBoolValue("Achievements", "ChallengeMode", true);
 	if (!enabled || !challenge)
 		return;
 
@@ -250,7 +250,7 @@ void AchievementSettingsWidget::onLoginLogoutPressed()
 		m_ui.enable->setChecked(true);
 		updateEnableState();
 	}
-	if (!m_ui.hardcoreMode->isChecked() && Host::GetBaseBoolSettingValue("Achievements", "ChallengeMode", false))
+	if (!m_ui.hardcoreMode->isChecked() && Host::GetBaseBoolSettingValue("Achievements", "ChallengeMode", true))
 	{
 		QSignalBlocker sb(m_ui.hardcoreMode);
 		m_ui.hardcoreMode->setChecked(true);
