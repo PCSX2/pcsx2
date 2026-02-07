@@ -831,11 +831,8 @@ bool GSDevice12::HasSurface() const
 	return static_cast<bool>(m_swap_chain);
 }
 
-bool GSDevice12::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
+bool GSDevice12::CheckDevice()
 {
-	if (!GSDevice::Create(vsync_mode, allow_present_throttle))
-		return false;
-
 	u32 vendor_id = 0;
 	if (!CreateDevice(vendor_id))
 		return false;
@@ -845,6 +842,17 @@ bool GSDevice12::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		Console.Error("D3D12: Your GPU does not support the required D3D12 features.");
 		return false;
 	}
+
+	return true;
+}
+
+bool GSDevice12::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
+{
+	if (!GSDevice::Create(vsync_mode, allow_present_throttle))
+		return false;
+
+	if (!CheckDevice())
+		return false;
 
 	m_name = D3D::GetAdapterName(m_adapter.get());
 
