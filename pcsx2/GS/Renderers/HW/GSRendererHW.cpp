@@ -4938,6 +4938,13 @@ void GSRendererHW::HandleProvokingVertexFirst(bool swap_indices)
 	else
 	{
 		// Slow path: de-index and swap the vertex colors. Used in cases where the drawing order matters (lines).
+		GL_PUSH("HW: Rewriting vertices for provoking vertex first.");
+		if (m_index.tail > UINT16_MAX)
+		{
+			GL_INS("HW: Too many vertices to rewrite safely, exiting.");
+			DevCon.Warning("HW: Too many vertices to rewrite safely for provoking vertex first.");
+			return;
+		}
 
 		// If all first/last vertices have the same color there is nothing to do.
 		bool first_eq_last = true;
