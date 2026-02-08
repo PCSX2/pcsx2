@@ -1,18 +1,25 @@
 // SPDX-FileCopyrightText: 2002-2026 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
+#include "Host.h"
 #include "CoverDownloadDialog.h"
 #include "QtUtils.h"
 
 #include "pcsx2/GameList.h"
 
 #include "common/Assertions.h"
+#include <regex>
 
 CoverDownloadDialog::CoverDownloadDialog(QWidget* parent /*= nullptr*/)
 	: QDialog(parent)
 {
 	m_ui.setupUi(this);
 	QtUtils::SetScalableIcon(m_ui.coverIcon, QIcon::fromTheme(QStringLiteral("artboard-2-line")), QSize(32, 32));
+
+	std::string urls = Host::GetBaseStringSettingValue("UI", "CoverURLs");
+	urls = std::regex_replace(urls, std::regex("\\\\n"), "\n");
+	m_ui.urls->setText(QString::fromStdString(urls));
+
 	updateEnabled();
 
 	connect(m_ui.start, &QPushButton::clicked, this, &CoverDownloadDialog::onStartClicked);
@@ -23,6 +30,14 @@ CoverDownloadDialog::CoverDownloadDialog(QWidget* parent /*= nullptr*/)
 CoverDownloadDialog::~CoverDownloadDialog()
 {
 	pxAssert(!m_thread);
+
+	std::string urls = m_ui.urls->toPlainText().toStdString();
+	urls = std::regex_replace(urls, std::regex("\n"), "\\n");
+	const std::string old_urls(Host::GetBaseStringSettingValue("UI", "CoverURLs"));
+	if (old_urls != urls)
+	{
+		Host::SetBaseStringSettingValue("UI", "CoverURLs", urls.c_str());
+	}
 }
 
 void CoverDownloadDialog::closeEvent(QCloseEvent* ev)
