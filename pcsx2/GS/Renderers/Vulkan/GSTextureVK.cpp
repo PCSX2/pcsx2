@@ -349,8 +349,18 @@ bool GSTextureVK::Update(const GSVector4i& r, const void* data, int pitch, int l
 		VKStreamBuffer& sbuffer = GSDeviceVK::GetInstance()->GetTextureUploadBuffer();
 		if (!sbuffer.ReserveMemory(required_size, GSDeviceVK::GetInstance()->GetBufferCopyOffsetAlignment()))
 		{
-			GSDeviceVK::GetInstance()->ExecuteCommandBuffer(
-				false, "While waiting for %u bytes in texture upload buffer", required_size);
+			GSDeviceVK* dev = GSDeviceVK::GetInstance();
+			if (!dev->IsPresenting())
+			{
+				dev->ExecuteCommandBuffer(
+					false, "While waiting for %u bytes in texture upload buffer", required_size);
+			}
+			else
+			{
+				dev->ExecuteCommandBufferAndRestartPresent(
+					false, "While waiting for %u bytes in texture upload buffer", required_size);
+			}
+
 			if (!sbuffer.ReserveMemory(required_size, GSDeviceVK::GetInstance()->GetBufferCopyOffsetAlignment()))
 			{
 				Console.Error("Failed to reserve texture upload memory (%u bytes).", required_size);
@@ -410,8 +420,18 @@ bool GSTextureVK::Map(GSMap& m, const GSVector4i* r, int layer)
 
 	if (!buffer.ReserveMemory(required_size, GSDeviceVK::GetInstance()->GetBufferCopyOffsetAlignment()))
 	{
-		GSDeviceVK::GetInstance()->ExecuteCommandBuffer(
-			false, "While waiting for %u bytes in texture upload buffer", required_size);
+		GSDeviceVK* dev = GSDeviceVK::GetInstance();
+		if (!dev->IsPresenting())
+		{
+			dev->ExecuteCommandBuffer(
+				false, "While waiting for %u bytes in texture upload buffer", required_size);
+		}
+		else
+		{
+			dev->ExecuteCommandBufferAndRestartPresent(
+				false, "While waiting for %u bytes in texture upload buffer", required_size);
+		}
+
 		if (!buffer.ReserveMemory(required_size, GSDeviceVK::GetInstance()->GetBufferCopyOffsetAlignment()))
 			pxFailRel("Failed to reserve texture upload memory");
 	}

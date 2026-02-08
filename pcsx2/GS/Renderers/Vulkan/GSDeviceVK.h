@@ -369,6 +369,7 @@ public:
 private:
 	std::unique_ptr<VKSwapChain> m_swap_chain;
 	bool m_resize_requested = false;
+	bool m_is_presenting = false;
 
 	VkDescriptorSetLayout m_utility_ds_layout = VK_NULL_HANDLE;
 	VkPipelineLayout m_utility_pipeline_layout = VK_NULL_HANDLE;
@@ -515,6 +516,7 @@ public:
 
 	PresentResult BeginPresent(bool frame_skip) override;
 	void EndPresent() override;
+	bool IsPresenting() const;
 
 	bool SetGPUTimingEnabled(bool enabled) override;
 	float GetAndResetAccumulatedGPUTime() override;
@@ -589,6 +591,7 @@ public:
 	void ExecuteCommandBuffer(bool wait_for_completion);
 	void ExecuteCommandBuffer(bool wait_for_completion, const char* reason, ...);
 	void ExecuteCommandBufferAndRestartRenderPass(bool wait_for_completion, const char* reason);
+	void ExecuteCommandBufferAndRestartPresent(bool wait_for_completion, const char* reason, ...);
 	void ExecuteCommandBufferForReadback();
 
 	/// Set dirty flags on everything to force re-bind at next draw time.

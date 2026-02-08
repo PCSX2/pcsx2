@@ -2392,6 +2392,7 @@ GSDevice::PresentResult GSDeviceVK::BeginPresent(bool frame_skip)
 		{0, 0}, {static_cast<u32>(swap_chain_texture->GetWidth()), static_cast<u32>(swap_chain_texture->GetHeight())}};
 	vkCmdSetViewport(GetCurrentCommandBuffer(), 0, 1, &vp);
 	vkCmdSetScissor(GetCurrentCommandBuffer(), 0, 1, &scissor);
+	m_is_presenting = true;
 	return PresentResult::OK;
 }
 
@@ -2401,6 +2402,7 @@ void GSDeviceVK::EndPresent()
 
 	VkCommandBuffer cmdbuffer = GetCurrentCommandBuffer();
 	vkCmdEndRenderPass(cmdbuffer);
+	m_is_presenting = false;
 	m_swap_chain->GetCurrentTexture()->TransitionToLayout(cmdbuffer, GSTextureVK::Layout::PresentSrc);
 	g_perfmon.Put(GSPerfMon::RenderPasses, 1);
 
@@ -2408,6 +2410,11 @@ void GSDeviceVK::EndPresent()
 	MoveToNextCommandBuffer();
 
 	InvalidateCachedState();
+}
+
+bool GSDeviceVK::IsPresenting() const
+{
+	return m_is_presenting;
 }
 
 #ifdef ENABLE_OGL_DEBUG
@@ -5039,6 +5046,33 @@ void GSDeviceVK::ExecuteCommandBufferAndRestartRenderPass(bool wait_for_completi
 		// restart render pass
 		BeginRenderPass(GetRenderPassForRestarting(render_pass), render_pass_area);
 	}
+}
+
+void GSDeviceVK::ExecuteCommandBufferAndRestartPresent(bool wait_for_completion, const char* reason, ...)
+{
+	std::va_list ap;
+	va_start(ap, reason);
+	const std::string reason_str(StringUtil::StdStringFromFormatV(reason, ap));
+	va_end(ap);
+
+	Console.Warning("VK: Executing command buffer due to '%s'", reason_str.c_str());
+
+	pxAssert(m_is_presenting);
+	vkCmdEndRenderPass(GetCurrentCommandBuffer());
+	ExecuteCommandBuffer(wait_for_completion);
+
+	GSTextureVK* swap_chain_texture = m_swap_chain->GetCurrentTexture();
+
+	const VkFramebuffer fb = swap_chain_texture->GetFramebuffer(false);
+	pxAssert(fb);
+
+	const VkRenderPassBeginInfo rp = {VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO, nullptr,
+		GetRenderPass(swap_chain_texture->GetVkFormat(), VK_FORMAT_UNDEFINED, VK_ATTACHMENT_LOAD_OP_LOAD,
+			VK_ATTACHMENT_STORE_OP_STORE),
+		fb,
+		{{0, 0}, {static_cast<u32>(swap_chain_texture->GetWidth()), static_cast<u32>(swap_chain_texture->GetHeight())}},
+		0u, nullptr};
+	vkCmdBeginRenderPass(GetCurrentCommandBuffer(), &rp, VK_SUBPASS_CONTENTS_INLINE);
 }
 
 void GSDeviceVK::ExecuteCommandBufferForReadback()
