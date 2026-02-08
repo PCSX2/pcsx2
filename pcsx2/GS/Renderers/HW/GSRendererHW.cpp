@@ -2322,7 +2322,10 @@ void GSRendererHW::RoundSpriteOffset()
 
 void GSRendererHW::Draw()
 {
-	RewriteVerticesIfLargeST();
+	if (GSConfig.UserHacks_RewriteLargeST)
+	{
+		RewriteVerticesIfLargeST();
+	}
 
 	static u32 num_skipped_channel_shuffle_draws = 0;
 
