@@ -273,4 +273,9 @@ public:
 
 	/// Compute the drawlist (if not already present) and bounding boxes for the current draw.
 	std::size_t ComputeDrawlistGetSize(float scale);
+
+	/// Rewrite large ST coordinates if needed to prevent graphical glitches in texture mapping.
+	template <u32 primclass>
+	void RewriteVerticesIfLargeSTImpl();
+	void RewriteVerticesIfLargeST();
 };
