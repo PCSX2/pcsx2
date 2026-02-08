@@ -12155,12 +12155,12 @@ Please see our official documentation for more information.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="138"/>
+        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="137"/>
         <source>&lt;strong&gt;Applied:&lt;/strong&gt; %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="291"/>
+        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="290"/>
         <source>%1 unlabelled patch codes will automatically activate.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -17649,6 +17649,7 @@ Right click to clear binding</source>
     </message>
     <message>
         <location filename="../Settings/InterfaceSettingsWidget.ui" line="84"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="200"/>
         <source>Prompt On State Load/Save Failure</source>
         <translation type="unfinished"></translation>
     </message>
@@ -17926,16 +17927,6 @@ Right click to clear binding</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="200"/>
-        <source>Pause On State Load/Save Failure</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="201"/>
-        <source>Display a modal dialog when a save state load/save operation fails.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../Settings/InterfaceSettingsWidget.cpp" line="208"/>
         <source>Renders the game to a separate window, instead of the main window. If unchecked, the game will display over the game list.</source>
         <translation type="unfinished"></translation>
@@ -18060,6 +18051,11 @@ Right click to clear binding</source>
     <message>
         <location filename="../Settings/InterfaceSettingsWidget.cpp" line="196"/>
         <source>Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="201"/>
+        <source>Displays a modal dialog when a save state load/save operation fails.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
