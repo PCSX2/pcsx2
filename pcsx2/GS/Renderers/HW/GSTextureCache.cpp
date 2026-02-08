@@ -2837,7 +2837,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 			m_target_memory_usage = (m_target_memory_usage - dst->m_texture->GetMemUsage()) + tex->GetMemUsage();
 
 			// If we're changing resolution scale, just toss the texture, it's not going to get reused.
-			if ((!GSConfig.UserHacks_NativePaletteDraw && !dst->m_downscaled) || (dst->m_scale != 1.0f && scale != 1.0f))
+			if ((!GSConfig.UserHacks_NativePaletteDraw && !dst->m_downscaled && scale != 1.0f) || (dst->m_scale != 1.0f && scale != 1.0f))
 				delete dst->m_texture;
 			else
 				g_gs_device->Recycle(dst->m_texture);
