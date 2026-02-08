@@ -162,7 +162,7 @@ void iopHwWrite8_Page8( u32 addr, mem8_t val )
 	// all addresses are assumed to be prefixed with 0x1f808xxx:
 	pxAssert( (addr >> 12) == 0x1f808 );
 
-	if (addr == HW_SIO2_DATAIN)
+	if (addr == HW_SIO2_TX)
 	{
 		g_Sio2.Write(val);
 	}
@@ -595,9 +595,9 @@ void iopHwWrite32_Page8( u32 addr, mem32_t val )
 	{
 		if( masked_addr < 0x240 )
 		{
-			Sio2Log.WriteLn("%s(%08X, %08X) SIO2 SEND3 Write (len = %d / %d) (port = %d)", __FUNCTION__, addr, val, (val >> 8) & Send3::COMMAND_LENGTH_MASK, (val >> 18) & Send3::COMMAND_LENGTH_MASK, val & 0x01);
+			Sio2Log.WriteLn("%s(%08X, %08X) SIO2 SEND3 Write (len = %d / %d) (port = %d)", __FUNCTION__, addr, val, (val >> 8) & Sio2Cmd::COMMAND_LENGTH_MASK, (val >> 18) & Sio2Cmd::COMMAND_LENGTH_MASK, val & 0x01);
 			const int parm = (masked_addr - 0x200) / 4;
-			g_Sio2.SetSend3(parm, val);
+			g_Sio2.SetCmd(parm, val);
 		}
 		else if ( masked_addr < 0x260 )
 		{
@@ -609,47 +609,47 @@ void iopHwWrite32_Page8( u32 addr, mem32_t val )
 			if (masked_addr & 4)
 			{
 				Sio2Log.WriteLn("%s(%08X, %08X) SIO2 SEND2 Write", __FUNCTION__, addr, val);
-				g_Sio2.send2[parm] = val;
+				g_Sio2.PortCtrl1[parm] = val;
 			}
 			else
 			{
 				Sio2Log.WriteLn("%s(%08X, %08X) SIO2 SEND1 Write", __FUNCTION__, addr, val);
-				g_Sio2.send1[parm] = val;
+				g_Sio2.PortCtrl0[parm] = val;
 			}
 		}
 		else if ( masked_addr <= 0x280 )
 		{
 			switch( masked_addr )
 			{
-				case (HW_SIO2_DATAIN & 0x0fff):
+				case (HW_SIO2_TX & 0x0fff):
 					Sio2Log.Warning("%s(%08X, %08X) Unexpected 32 bit write to HW_SIO2_DATAIN", __FUNCTION__, addr, val);
 					break;
-				case (HW_SIO2_FIFO & 0x0fff):
+				case (HW_SIO2_RX & 0x0fff):
 					Sio2Log.Warning("%s(%08X, %08X) Unexpected 32 bit write to HW_SIO2_FIFO", __FUNCTION__, addr, val);
 					break;
 				case (HW_SIO2_CTRL & 0x0fff):
 					Sio2Log.WriteLn("%s(%08X, %08X) SIO2 CTRL Write", __FUNCTION__, addr, val);
 					g_Sio2.SetCtrl(val);
 					break;
-				case (HW_SIO2_RECV1 & 0x0fff):
+				case (HW_SIO2_CMD_STAT & 0x0fff):
 					Sio2Log.WriteLn("%s(%08X, %08X) SIO2 RECV1 Write", __FUNCTION__, addr, val);
-					g_Sio2.recv1 = val;
+					g_Sio2.CmdStat = val;
 					break;
-				case (HW_SIO2_RECV2 & 0x0fff):
+				case (HW_SIO2_PORT_STAT & 0x0fff):
 					Sio2Log.WriteLn("%s(%08X, %08X) SIO2 RECV2 Write", __FUNCTION__, addr, val);
-					g_Sio2.recv2 = val;
+					g_Sio2.PortStat = val;
 					break;
-				case (HW_SIO2_RECV3 & 0x0fff):
+				case (HW_SIO2_FIFO_STAT & 0x0fff):
 					Sio2Log.WriteLn("%s(%08X, %08X) SIO2 RECV3 Write", __FUNCTION__, addr, val);
-					g_Sio2.recv3 = val;
+					g_Sio2.FifoStat = val;
 					break;
-				case (HW_SIO2_8278 & 0x0fff):
+				case (HW_SIO2_FIFO_TX & 0x0fff):
 					Sio2Log.WriteLn("%s(%08X, %08X) SIO2 UNK1 Write", __FUNCTION__, addr, val);
-					g_Sio2.unknown1 = val;
+					g_Sio2.FifoTxPos = val;
 					break;
-				case (HW_SIO2_827C & 0x0fff):
+				case (HW_SIO2_FIFO_RX & 0x0fff):
 					Sio2Log.WriteLn("%s(%08X, %08X) SIO2 UNK2 Write", __FUNCTION__, addr, val);
-					g_Sio2.unknown2 = val;
+					g_Sio2.FifoRxPos = val;
 					break;
 				case (HW_SIO2_INTR & 0x0fff):
 					Sio2Log.WriteLn("%s(%08X, %08X) SIO2 ISTAT Write", __FUNCTION__, addr, val);
