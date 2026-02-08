@@ -64,14 +64,14 @@ static const u32
 
 	// SIO2 is a DMA interface for the SIO.
 
-	HW_SIO2_DATAIN		= 0x1F808260,
-	HW_SIO2_FIFO		= 0x1f808264,
+	HW_SIO2_TX		    = 0x1F808260,
+	HW_SIO2_RX		    = 0x1f808264,
 	HW_SIO2_CTRL		= 0x1f808268,
-	HW_SIO2_RECV1		= 0x1f80826c,
-	HW_SIO2_RECV2		= 0x1f808270,
-	HW_SIO2_RECV3		= 0x1f808274,
-	HW_SIO2_8278        = 0x1F808278, // May as well add defs
-	HW_SIO2_827C        = 0x1F80827C, // for these 2...
+	HW_SIO2_CMD_STAT	= 0x1f80826c,
+	HW_SIO2_PORT_STAT   = 0x1f808270,
+	HW_SIO2_FIFO_STAT	= 0x1f808274,
+	HW_SIO2_FIFO_TX     = 0x1F808278, // May as well add defs
+	HW_SIO2_FIFO_RX     = 0x1F80827C, // for these 2...
 	HW_SIO2_INTR		= 0x1f808280;
 
 enum DMAMadrAddresses

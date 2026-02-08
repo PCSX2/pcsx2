@@ -29,25 +29,25 @@ bool Sio2::Initialize()
 {
 	this->SoftReset();
 
-	for (size_t i = 0; i < send3.size(); i++)
+	for (size_t i = 0; i < CmdQueue.size(); i++)
 	{
-		send3[i] = 0;
+		CmdQueue[i] = 0;
 	}
 
-	for (size_t i = 0; i < send1.size(); i++)
+	for (size_t i = 0; i < PortCtrl0.size(); i++)
 	{
-		send1[i] = 0;
-		send2[i] = 0;
+		PortCtrl0[i] = 0;
+		PortCtrl1[i] = 0;
 	}
 
 	dataIn = 0;
 	dataOut = 0;
 	SetCtrl(Sio2Ctrl::SIO2MAN_RESET);
-	SetRecv1(Recv1::DISCONNECTED);
-	recv2 = Recv2::DEFAULT;
-	recv3 = Recv3::DEFAULT;
-	unknown1 = 0;
-	unknown2 = 0;
+	SetCmdStat(CmdStat::DISCONNECTED);
+	PortStat = PortStat::DEFAULT;
+	FifoStat = FifoStat::DEFAULT;
+	FifoTxPos = 0;
+	FifoRxPos = 0;
 	iStat = 0;
 
 	port = 0;
@@ -80,13 +80,13 @@ bool Sio2::Shutdown()
 
 void Sio2::SoftReset()
 {
-	send3Read = false;
-	send3Position = 0;
+	queueRead = false;
+	queuePosition = 0;
 	commandLength = 0;
 	processedLength = 0;
 	// Clear dmaBlockSize, in case the next SIO2 command is not sent over DMA11.
 	dmaBlockSize = 0;
-	send3Complete = false;
+	queueComplete = false;
 
 	// Anything in g_Sio2FifoIn which was not necessary to consume should be cleared out prior to the next SIO2 cycle.
 	while (!g_Sio2FifoIn.empty())
@@ -94,8 +94,8 @@ void Sio2::SoftReset()
 		g_Sio2FifoIn.pop_front();
 	}
 
-	// RECV1 should always be reassembled based on the devices being probed by the packet.
-	recv1 = 0;
+	// cmd_stat should always be reassembled based on the devices being probed by the packet.
+	CmdStat = 0;
 }
 
 void Sio2::Interrupt()
@@ -113,9 +113,9 @@ void Sio2::SetCtrl(u32 value)
 	}
 }
 
-void Sio2::SetSend3(size_t position, u32 value)
+void Sio2::SetCmd(size_t position, u32 value)
 {
-	this->send3[position] = value;
+	this->CmdQueue[position] = value;
 
 	if (position == 0)
 	{
@@ -123,9 +123,9 @@ void Sio2::SetSend3(size_t position, u32 value)
 	}
 }
 
-void Sio2::SetRecv1(u32 value)
+void Sio2::SetCmdStat(u32 value)
 {
-	this->recv1 = value;
+	this->CmdStat = value;
 }
 
 void Sio2::Pad()
@@ -134,29 +134,29 @@ void Sio2::Pad()
 	PadBase* pad = Pad::GetPad(port, mtap.GetPadSlot());
 
 	// Update the third nibble with which ports have been accessed
-	if (this->recv1 & Recv1::ONE_PORT_OPEN)
+	if (this->CmdStat & CmdStat::ONE_PORT_OPEN)
 	{
-		this->recv1 &= ~(Recv1::ONE_PORT_OPEN);
-		this->recv1 |= Recv1::TWO_PORTS_OPEN;
+		this->CmdStat &= ~(CmdStat::ONE_PORT_OPEN);
+		this->CmdStat |= CmdStat::TWO_PORTS_OPEN;
 	}
 	else
 	{
-		this->recv1 |= Recv1::ONE_PORT_OPEN;
+		this->CmdStat |= CmdStat::ONE_PORT_OPEN;
 	}
 
 	// This bit is always set, whether the pad is present or missing
-	this->recv1 |= Recv1::NO_DEVICES_MISSING;
+	this->CmdStat |= CmdStat::NO_DEVICES_MISSING;
 
 	// If the currently accessed pad is missing, also tick those bits
 	if (pad->GetType() == Pad::ControllerType::NotConnected || pad->ejectTicks)
 	{
 		if (!port)
 		{
-			this->recv1 |= Recv1::PORT_1_MISSING;
+			this->CmdStat |= CmdStat::PORT_1_MISSING;
 		}
 		else
 		{
-			this->recv1 |= Recv1::PORT_2_MISSING;
+			this->CmdStat |= CmdStat::PORT_2_MISSING;
 		}
 	}
 
@@ -196,18 +196,18 @@ void Sio2::Multitap()
 	const bool multitapEnabled = EmuConfig.Pad.IsMultitapPortEnabled(this->port);
 	
 	// Update the third nibble with which ports have been accessed
-	if (this->recv1 & Recv1::ONE_PORT_OPEN)
+	if (this->CmdStat & CmdStat::ONE_PORT_OPEN)
 	{
-		this->recv1 &= ~(Recv1::ONE_PORT_OPEN);
-		this->recv1 |= Recv1::TWO_PORTS_OPEN;
+		this->CmdStat &= ~(CmdStat::ONE_PORT_OPEN);
+		this->CmdStat |= CmdStat::TWO_PORTS_OPEN;
 	}
 	else
 	{
-		this->recv1 |= Recv1::ONE_PORT_OPEN;
+		this->CmdStat |= CmdStat::ONE_PORT_OPEN;
 	}
 
 	// This bit is always set, whether the pad is present or missing
-	this->recv1 |= Recv1::NO_DEVICES_MISSING;
+	this->CmdStat |= CmdStat::NO_DEVICES_MISSING;
 
 	// If the currently accessed multitap is missing, also tick those bits.
 	// MTAPMAN is special though.
@@ -217,11 +217,11 @@ void Sio2::Multitap()
 	// then a disconnect value would look like 0x0002D100.
 	//
 	// MTAPMAN however does not check the bit set by 0x00020000. It only checks the bit
-	// set by 0x00010000. So even if port 2 is being addressed, RECV1 should be 0x0001D100
+	// set by 0x00010000. So even if port 2 is being addressed, cmd stat should be 0x0001D100
 	// (or 0x0001D200 if there are both ports being accessed in that packet).
 	if (!multitapEnabled)
 	{
-		this->recv1 |= Recv1::PORT_1_MISSING;
+		this->CmdStat |= CmdStat::PORT_1_MISSING;
 	}
 
 	g_MultitapArr.at(this->port).SendToMultitap();
@@ -229,7 +229,7 @@ void Sio2::Multitap()
 
 void Sio2::Infrared()
 {
-	SetRecv1(Recv1::DISCONNECTED);
+	SetCmdStat(CmdStat::DISCONNECTED);
 
 	g_Sio2FifoIn.pop_front();
 	const u8 responseByte = 0xff;
@@ -246,11 +246,11 @@ void Sio2::Memcard()
 
 	mcd = &mcds[port][mtap.GetMemcardSlot()];
 
-	// Check if auto ejection is active. If so, set RECV1 to DISCONNECTED,
+	// Check if auto ejection is active. If so, set cmd stat to DISCONNECTED,
 	// and zero out the fifo to simulate dead air over the wire.
 	if (mcd->autoEjectTicks)
 	{
-		SetRecv1(Recv1::DISCONNECTED);
+		SetCmdStat(CmdStat::DISCONNECTED);
 		g_Sio2FifoOut.push_back(0xff); // Because Sio2::Write pops the first g_Sio2FifoIn member
 
 		while (!g_Sio2FifoIn.empty())
@@ -262,7 +262,7 @@ void Sio2::Memcard()
 		return;
 	}
 
-	SetRecv1(mcd->IsPresent() ? Recv1::CONNECTED : Recv1::DISCONNECTED);
+	SetCmdStat(mcd->IsPresent() ? CmdStat::CONNECTED : CmdStat::DISCONNECTED);
 
 	const u8 commandByte = g_Sio2FifoIn.front();
 	g_Sio2FifoIn.pop_front();
@@ -376,25 +376,25 @@ void Sio2::Write(u8 data)
 {
 	Sio2Log.WriteLn("%s(%02X) SIO2 DATA Write", __FUNCTION__, data);
 
-	if (!send3Read)
+	if (!queueRead)
 	{
-		// No more SEND3 positions to access, but the game is still sending us SIO2 writes. Lets ignore them.
-		if (send3Position > send3.size())
+		// No more queue positions to access, but the game is still sending us SIO2 writes. Lets ignore them.
+		if (queuePosition > CmdQueue.size())
 		{
-			Console.Warning("%s(%02X) Received data after exhausting all SEND3 values!", __FUNCTION__, data);
+			Console.Warning("%s(%02X) Received data after exhausting all queue entries!", __FUNCTION__, data);
 			return;
 		}
 
-		const u32 currentSend3 = send3[send3Position];
-		port = currentSend3 & Send3::PORT;
-		commandLength = (currentSend3 >> 8) & Send3::COMMAND_LENGTH_MASK;
-		send3Read = true;
+		const u32 currentCmd = CmdQueue[queuePosition];
+		port = currentCmd & Sio2Cmd::PORT;
+		commandLength = (currentCmd >> 8) & Sio2Cmd::COMMAND_LENGTH_MASK;
+		queueRead = true;
 
-		// The freshly read SEND3 position had a length of 0, so we are done handling SIO2 commands until
-		// the next SEND3 writes.
+		// The freshly read cmd position had a length of 0, so we are done handling SIO2 commands until
+		// the next cmd writes.
 		if (commandLength == 0)
 		{
-			send3Complete = true;
+			queueComplete = true;
 		}
 
 		// If the prior command did not need to fully pop g_Sio2FifoIn, do so now,
@@ -405,7 +405,7 @@ void Sio2::Write(u8 data)
 		}
 	}
 
-	if (send3Complete)
+	if (queueComplete)
 	{
 		return;
 	}
@@ -418,9 +418,9 @@ void Sio2::Write(u8 data)
 	// ... These were from SIO2 DMA (DMA block size is non-zero when SIO2 DMA occurs)
 	if ((g_Sio2FifoIn.size() == g_Sio2.commandLength && g_Sio2.dmaBlockSize == 0) || g_Sio2FifoIn.size() == g_Sio2.dmaBlockSize)
 	{
-		// Go ahead and prep so the next write triggers a load of the new SEND3 value.
-		g_Sio2.send3Read = false;
-		g_Sio2.send3Position++;
+		// Go ahead and prep so the next write triggers a load of the new cmd value.
+		g_Sio2.queueRead = false;
+		g_Sio2.queuePosition++;
 
 		// Check the SIO mode
 		const u8 sioMode = g_Sio2FifoIn.front();
@@ -443,7 +443,7 @@ void Sio2::Write(u8 data)
 			default:
 				Console.Error("%s(%02X) Unhandled SIO mode %02X", __FUNCTION__, data, sioMode);
 				g_Sio2FifoOut.push_back(0xff);
-				SetRecv1(Recv1::DISCONNECTED);
+				SetCmdStat(CmdStat::DISCONNECTED);
 				break;
 		}
 
@@ -488,25 +488,25 @@ bool Sio2::DoState(StateWrapper& sw)
 	if (!sw.DoMarker("Sio2"))
 		return false;
 
-	sw.Do(&send3);
-	sw.Do(&send1);
-	sw.Do(&send2);
+	sw.Do(&CmdQueue);
+	sw.Do(&PortCtrl0);
+	sw.Do(&PortCtrl1);
 	sw.Do(&dataIn);
 	sw.Do(&dataOut);
 	sw.Do(&ctrl);
-	sw.Do(&recv1);
-	sw.Do(&recv2);
-	sw.Do(&recv3);
-	sw.Do(&unknown1);
-	sw.Do(&unknown2);
+	sw.Do(&CmdStat);
+	sw.Do(&PortStat);
+	sw.Do(&FifoStat);
+	sw.Do(&FifoTxPos);
+	sw.Do(&FifoRxPos);
 	sw.Do(&iStat);
 	sw.Do(&port);
-	sw.Do(&send3Read);
-	sw.Do(&send3Position);
+	sw.Do(&queueRead);
+	sw.Do(&queuePosition);
 	sw.Do(&commandLength);
 	sw.Do(&processedLength);
 	sw.Do(&dmaBlockSize);
-	sw.Do(&send3Complete);
+	sw.Do(&queueComplete);
 
 	sw.Do(&g_Sio2FifoIn);
 	sw.Do(&g_Sio2FifoOut);
