@@ -379,8 +379,12 @@ bool VKSwapChain::CreateSwapChain()
 
 	m_swap_chain = VK_NULL_HANDLE;
 
+	// VK_EXT_swapchain_maintenance1 types/enums are aliases of VK_KHR_swapchain_maintenance1 types/enums.
+	const VkSwapchainPresentModesCreateInfoKHR modes_info{VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_MODES_CREATE_INFO_KHR, nullptr, 1u, &m_present_mode};
+
 	// Now we can actually create the swap chain
-	VkSwapchainCreateInfoKHR swap_chain_info = {VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR, nullptr, 0, m_surface,
+	VkSwapchainCreateInfoKHR swap_chain_info = {VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR, 
+		GSDeviceVK::GetInstance()->GetOptionalExtensions().vk_swapchain_maintenance1 ? &modes_info : nullptr, 0, m_surface,
 		image_count, surface_format->format, surface_format->colorSpace, size, 1u, image_usage,
 		VK_SHARING_MODE_EXCLUSIVE, 0, nullptr, transform, alpha, m_present_mode, VK_TRUE, old_swap_chain};
 	std::array<uint32_t, 2> indices = {{
@@ -563,23 +567,17 @@ void VKSwapChain::ReleaseCurrentImage()
 	{
 		GSDeviceVK::GetInstance()->WaitForGPUIdle();
 
+		// VK_EXT_swapchain_maintenance1 types/enums are aliases of VK_KHR_swapchain_maintenance1 types/enums.
+		const VkReleaseSwapchainImagesInfoKHR info = {.sType = VK_STRUCTURE_TYPE_RELEASE_SWAPCHAIN_IMAGES_INFO_KHR,
+			.swapchain = m_swap_chain,
+			.imageIndexCount = 1,
+			.pImageIndices = &m_current_image};
+
 		VkResult res;
 		if (GSDeviceVK::GetInstance()->GetOptionalExtensions().vk_swapchain_maintenance1_is_khr)
-		{
-			const VkReleaseSwapchainImagesInfoKHR info = {.sType = VK_STRUCTURE_TYPE_RELEASE_SWAPCHAIN_IMAGES_INFO_KHR,
-				.swapchain = m_swap_chain,
-				.imageIndexCount = 1,
-				.pImageIndices = &m_current_image};
 			res = vkReleaseSwapchainImagesKHR(GSDeviceVK::GetInstance()->GetDevice(), &info);
-		}
 		else
-		{
-			const VkReleaseSwapchainImagesInfoEXT info = {.sType = VK_STRUCTURE_TYPE_RELEASE_SWAPCHAIN_IMAGES_INFO_EXT,
-				.swapchain = m_swap_chain,
-				.imageIndexCount = 1,
-				.pImageIndices = &m_current_image};
 			res = vkReleaseSwapchainImagesEXT(GSDeviceVK::GetInstance()->GetDevice(), &info);
-		}
 		if (res != VK_SUCCESS)
 			LOG_VULKAN_ERROR(res, "vkReleaseSwapchainImages() failed: ");
 	}
