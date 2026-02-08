@@ -3591,11 +3591,19 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 		{
 			if (GSRendererHW::GetInstance()->m_draw_transfers.size() > 0)
 			{
-				GSState::GSUploadQueue last_draw = GSRendererHW::GetInstance()->m_draw_transfers.back();
-				if (last_draw.zero_clear && last_draw.blit.DBP == TEX0.TBP0 && last_draw.blit.DBW == TEX0.TBW)
+				auto& transfers = GSRendererHW::GetInstance()->m_draw_transfers;
+
+				for (auto iter = transfers.rbegin(); iter != transfers.rend(); ++iter)
 				{
-					hw_clear = true;
-					GSRendererHW::GetInstance()->m_draw_transfers.pop_back();
+					if (iter->draw < (GSState::s_n - 1))
+						break;
+
+					if (iter->zero_clear && iter->blit.DBP == TEX0.TBP0 && iter->blit.DBW == TEX0.TBW)
+					{
+						hw_clear = true;
+						transfers.erase(std::next(iter).base());
+						break;
+					}
 				}
 			}
 			GL_INS("TC: Preloading the RT DATA");

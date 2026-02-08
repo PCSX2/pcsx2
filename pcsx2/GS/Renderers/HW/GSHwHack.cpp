@@ -115,7 +115,7 @@ bool GSHwHack::GSC_IRem(GSRendererHW& r, int& skip)
 		// Detect the deswizzling shuffle from depth, copying the RG and BA separately on each half of the page (ignore the split).
 		if (RTME && RFBP != RTBP0 && RFPSM == PSMCT16S && RTPSM == PSMCT16S)
 		{
-			if (r.m_vt.m_max.p.x == 64 && r.m_vt.m_max.p.y == 64 && r.m_index.tail == 128)
+			if (r.m_vt.m_max.p.x == 64 && r.m_vt.m_max.p.y == 64 && r.m_index->tail == 128)
 			{
 				const GSVector4i draw_size(r.m_vt.m_min.p.x, r.m_vt.m_min.p.y/2, r.m_vt.m_max.p.x, r.m_vt.m_max.p.y/2);
 				const GSVector4i read_size(r.m_vt.m_min.t.x, r.m_vt.m_min.t.y/2, r.m_vt.m_max.t.x, r.m_vt.m_max.t.y/2);
@@ -126,7 +126,7 @@ bool GSHwHack::GSC_IRem(GSRendererHW& r, int& skip)
 		}
 
 		// Following the previous draw, it tries to copy everything read from depth and offset it by 2, for the alternate line channel shuffle (skipped above).
-		if (RTBP0 == (RFBP - 0x20) && r.m_vt.m_max.p.x == 64 && r.m_vt.m_max.p.y == 34 && r.m_index.tail == 2)
+		if (RTBP0 == (RFBP - 0x20) && r.m_vt.m_max.p.x == 64 && r.m_vt.m_max.p.y == 34 && r.m_index->tail == 2)
 		{
 			GSVector4i draw_size(r.m_vt.m_min.p.x, r.m_vt.m_min.p.y - 2.0f, r.m_vt.m_max.p.x, r.m_vt.m_max.p.y - 2.0f);
 			GSVector4i read_size(r.m_vt.m_min.t.x, r.m_vt.m_min.t.y, r.m_vt.m_max.t.x, r.m_vt.m_max.t.y);
@@ -264,10 +264,10 @@ bool GSHwHack::GSC_SFEX3(GSRendererHW& r, int& skip)
 			// Skipping is no good as the copy is used again later, and it causes a weird shimmer/echo effect every other frame.
 
 			// Add on the height from the second part of the draw to the first, to make it one big rect.
-			r.m_vertex.buff[1].XYZ.Y += r.m_vertex.buff[r.m_vertex.tail - 1].XYZ.Y - r.m_context->XYOFFSET.OFY;
-			r.m_vertex.buff[1].V = r.m_vertex.buff[r.m_vertex.tail - 1].V;
-			r.m_vertex.tail = 2;
-			r.m_index.tail = 2;
+			r.m_vertex->buff[1].XYZ.Y += r.m_vertex->buff[r.m_vertex->tail - 1].XYZ.Y - r.m_context->XYOFFSET.OFY;
+			r.m_vertex->buff[1].V = r.m_vertex->buff[r.m_vertex->tail - 1].V;
+			r.m_vertex->tail = 2;
+			r.m_index->tail = 2;
 		}
 	}
 
@@ -332,9 +332,9 @@ bool GSHwHack::GSC_NamcoGames(GSRendererHW& r, int& skip)
 {
 	if (skip == 0)
 	{
-		if (!s_nativeres && r.PRIM->PRIM == GS_SPRITE && RTME && RTEX0.TFX == 1 && RFPSM == RTPSM && RTPSM == PSMCT32 && RFBMSK == 0xFF000000 && r.m_index.tail > 2)
+		if (!s_nativeres && r.PRIM->PRIM == GS_SPRITE && RTME && RTEX0.TFX == 1 && RFPSM == RTPSM && RTPSM == PSMCT32 && RFBMSK == 0xFF000000 && r.m_index->tail > 2)
 		{
-			GSVertex* v = &r.m_vertex.buff[0];
+			GSVertex* v = &r.m_vertex->buff[0];
 			// Don't enable hack on native res.
 			// Fixes ghosting/blur effect and white lines appearing in stages: Moonfit Wilderness, Acid Rain - caused by upscaling.
 			// Game copies the framebuffer as individual page rects with slight offsets (like 1/16 of a pixel etc) which doesn't wokr well with upscaling.
@@ -348,7 +348,7 @@ bool GSHwHack::GSC_NamcoGames(GSRendererHW& r, int& skip)
 			else
 			{
 				// Fixes the alignment of the two halves for the heat haze on the temple stage.
-				for (u32 i = 0; i < r.m_index.tail; i+=2)
+				for (u32 i = 0; i < r.m_index->tail; i+=2)
 				{
 					v[i].XYZ.Y -= 0x8;
 				}
@@ -676,7 +676,7 @@ bool GSHwHack::GSC_NFSUndercover(GSRendererHW& r, int& skip)
 
 	if (RPRIM->TME && Frame.PSM == PSMCT16S && Frame.FBMSK != 0 && Frame.FBW == 10 && Texture.TBW == 1 && Texture.TBP0 == 0x02800 && Texture.PSM == PSMZ16S)
 	{
-		GSVertex* v = &r.m_vertex.buff[1];
+		GSVertex* v = &r.m_vertex->buff[1];
 		v[0].XYZ.X = static_cast<u16>(RCONTEXT->XYOFFSET.OFX + ((r.m_r.z * 2) << 4));
 		v[0].XYZ.Y = static_cast<u16>(RCONTEXT->XYOFFSET.OFY + (r.m_r.w << 4));
 		v[0].U = r.m_r.z << 4;
@@ -687,8 +687,8 @@ bool GSHwHack::GSC_NFSUndercover(GSRendererHW& r, int& skip)
 		r.m_vt.m_max.p.y = r.m_r.w;
 		r.m_vt.m_max.t.x = r.m_r.z;
 		r.m_vt.m_max.t.y = r.m_r.w;
-		r.m_vertex.head = r.m_vertex.tail = r.m_vertex.next = 2;
-		r.m_index.tail = 2;
+		r.m_vertex->head = r.m_vertex->tail = r.m_vertex->next = 2;
+		r.m_index->tail = 2;
 		skip = 79;
 	}
 	else
@@ -841,7 +841,7 @@ bool GSHwHack::GSC_Battlefield2(GSRendererHW& r, int& skip)
 
 			if (dst)
 			{
-				float dc = r.m_vertex.buff[1].XYZ.Z;
+				float dc = r.m_vertex->buff[1].XYZ.Z;
 				g_gs_device->ClearDepth(dst->m_texture, dc * std::exp2(-32.0f));
 			}
 		}
@@ -859,9 +859,9 @@ bool GSHwHack::GSC_BlueTongueGames(GSRendererHW& r, int& skip)
 	if (RPRIM->TME && RTEX0.TW == 3 && RTEX0.TH == 3 && RTEX0.PSM == 0 && RFRAME.FBMSK == 0x00FFFFFF && RFRAME.FBW == 8 && r.PCRTCDisplays.GetResolution().x > 512)
 	{
 		// Check we are drawing stripes
-		for (u32 i = 1; i < r.m_vertex.tail; i+=2)
+		for (u32 i = 1; i < r.m_vertex->tail; i+=2)
 		{
-			int value = (((r.m_vertex.buff[i].XYZ.X - r.m_vertex.buff[i - 1].XYZ.X) + 8) >> 4);
+			int value = (((r.m_vertex->buff[i].XYZ.X - r.m_vertex->buff[i - 1].XYZ.X) + 8) >> 4);
 			if (value != 32)
 				return false;
 		}
@@ -873,18 +873,18 @@ bool GSHwHack::GSC_BlueTongueGames(GSRendererHW& r, int& skip)
 
 		for (int vert = 32; vert < 40; vert+=2)
 		{
-			r.m_vertex.buff[vert].XYZ.X = context->XYOFFSET.OFX + (((vert * 16) << 4) - 8);
-			r.m_vertex.buff[vert].XYZ.Y = context->XYOFFSET.OFY;
-			r.m_vertex.buff[vert].U = (vert * 16) << 4;
-			r.m_vertex.buff[vert].V = 0;
-			r.m_vertex.buff[vert+1].XYZ.X = context->XYOFFSET.OFX + ((((vert * 16) + 32) << 4) - 8);
-			r.m_vertex.buff[vert+1].XYZ.Y = context->XYOFFSET.OFY + (r.PCRTCDisplays.GetResolution().y << 4) + 8;
-			r.m_vertex.buff[vert+1].U = ((vert * 16) + 32) << 4;
-			r.m_vertex.buff[vert+1].V = r.PCRTCDisplays.GetResolution().y << 4;
+			r.m_vertex->buff[vert].XYZ.X = context->XYOFFSET.OFX + (((vert * 16) << 4) - 8);
+			r.m_vertex->buff[vert].XYZ.Y = context->XYOFFSET.OFY;
+			r.m_vertex->buff[vert].U = (vert * 16) << 4;
+			r.m_vertex->buff[vert].V = 0;
+			r.m_vertex->buff[vert+1].XYZ.X = context->XYOFFSET.OFX + ((((vert * 16) + 32) << 4) - 8);
+			r.m_vertex->buff[vert+1].XYZ.Y = context->XYOFFSET.OFY + (r.PCRTCDisplays.GetResolution().y << 4) + 8;
+			r.m_vertex->buff[vert+1].U = ((vert * 16) + 32) << 4;
+			r.m_vertex->buff[vert+1].V = r.PCRTCDisplays.GetResolution().y << 4;
 		}
 
-		/*r.m_vertex.head = r.m_vertex.tail = r.m_vertex.next = 2;
-		r.m_index.tail = 2;*/
+		/*r.m_vertex->head = r.m_vertex->tail = r.m_vertex->next = 2;
+		r.m_index->tail = 2;*/
 
 		r.m_vt.m_max.p.x = r.m_r.z;
 		r.m_vt.m_max.p.y = r.m_r.w;
@@ -918,7 +918,7 @@ bool GSHwHack::GSC_BlueTongueGames(GSRendererHW& r, int& skip)
 
 	// This is the giant dither-like depth buffer. We need this on the CPU *and* the GPU for textures which are
 	// rendered on both.
-	if (context->FRAME.FBW == 8 && r.m_index.tail == 32 && r.PRIM->TME && context->TEX0.TBW == 1)
+	if (context->FRAME.FBW == 8 && r.m_index->tail == 32 && r.PRIM->TME && context->TEX0.TBW == 1)
 	{
 		r.SwPrimRender(r, false, false);
 		return false;
@@ -958,8 +958,8 @@ bool GSHwHack::GSC_MetalGearSolid3(GSRendererHW& r, int& skip)
 	GL_INS("OI_MetalGearSolid3(): %x -> %x, %dx%d, subtract %d", RFBP, RFBP + (RFBW / 2), r.m_r.width(), r.m_r.height(),
 		w_sub);
 
-	for (u32 i = 0; i < r.m_vertex.next; i++)
-		r.m_vertex.buff[i].XYZ.X -= w_sub_fp;
+	for (u32 i = 0; i < r.m_vertex->next; i++)
+		r.m_vertex->buff[i].XYZ.X -= w_sub_fp;
 
 	// No point adjusting the scissor, it just ends up expanding out anyway.. but we do have to fix up the draw rect.
 	r.m_r -= GSVector4i(w_sub);
@@ -972,7 +972,7 @@ bool GSHwHack::GSC_Turok(GSRendererHW& r, int& skip)
 	// Since we can't look in to the future to check this, the options are either rearrange all the pages in a target when the width changes
 	// (very slow, could break a ton of stuff which stores different things in the alpha channel), or this. I choose this.
 
-	if (r.m_index.tail == 6 && RPRIM->PRIM == 4 && !RTME && RFBMSK == 0x00FFFFFF && floor(r.m_vt.m_max.p.x) == 512 && r.m_env.CTXT[r.m_backed_up_ctx].FRAME.FBW == 10 && RFRAME.FBW == 8 && RFPSM == PSMCT32 && RTEST.ATE && RTEST.ATST == ATST_GEQUAL)
+	if (r.m_index->tail == 6 && RPRIM->PRIM == 4 && !RTME && RFBMSK == 0x00FFFFFF && floor(r.m_vt.m_max.p.x) == 512 && r.m_env.CTXT[r.m_backed_up_ctx].FRAME.FBW == 10 && RFRAME.FBW == 8 && RFPSM == PSMCT32 && RTEST.ATE && RTEST.ATST == ATST_GEQUAL)
 	{
 		int num_pages = r.m_cached_ctx.FRAME.FBW * ((floor(r.m_vt.m_max.p.y) + 31) / 32);
 		r.m_cached_ctx.FRAME.FBW = 10;
@@ -989,7 +989,7 @@ bool GSHwHack::GSC_Turok(GSRendererHW& r, int& skip)
 
 bool GSHwHack::OI_PointListPalette(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
 {
-	const u32 n_vertices = r.m_vertex.next;
+	const u32 n_vertices = r.m_vertex->next;
 	const int w = r.m_r.width();
 	const int h = r.m_r.height();
 	const bool is_copy = !r.PRIM->ABE || (
@@ -1022,7 +1022,7 @@ bool GSHwHack::OI_PointListPalette(GSRendererHW& r, GSTexture* rt, GSTexture* ds
 		const u32 FBP = r.m_cached_ctx.FRAME.Block();
 		const u32 FBW = r.m_cached_ctx.FRAME.FBW;
 		GL_INS("PointListPalette - m_r = <%d, %d => %d, %d>, n_vertices = %u, FBP = 0x%x, FBW = %u", r.m_r.x, r.m_r.y, r.m_r.z, r.m_r.w, n_vertices, FBP, FBW);
-		const GSVertex* RESTRICT v = r.m_vertex.buff;
+		const GSVertex* RESTRICT v = r.m_vertex->buff;
 		const int ox(r.m_context->XYOFFSET.OFX);
 		const int oy(r.m_context->XYOFFSET.OFY);
 		for (size_t i = 0; i < n_vertices; ++i)
@@ -1220,9 +1220,9 @@ bool GSHwHack::OI_ArTonelico2(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GST
 	   buffer to adapt the page width properly.
 	 */
 
-	const GSVertex* v = &r.m_vertex.buff[0];
+	const GSVertex* v = &r.m_vertex->buff[0];
 
-	if (ds && r.m_vertex.next == 2 && !RPRIM->TME && RFRAME.FBW == 10 && v->XYZ.Z == 0 && RTEST.ZTST == ZTST_ALWAYS)
+	if (ds && r.m_vertex->next == 2 && !RPRIM->TME && RFRAME.FBW == 10 && v->XYZ.Z == 0 && RTEST.ZTST == ZTST_ALWAYS)
 	{
 		GL_INS("OI_ArTonelico2");
 		g_gs_device->ClearDepth(ds, 0.0f);
