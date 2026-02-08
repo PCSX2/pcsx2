@@ -43,6 +43,8 @@ layout(binding = 0) uniform sampler2D TextureSampler;
 // Give a different name so I remember there is a special case!
 #if defined(ps_convert_rgba8_16bits) || defined(ps_convert_float32_32bits)
 layout(location = 0) out uint SV_Target1;
+#elif defined(ps_convert_float32_depth_to_color)
+layout(location = 0) out float SV_Target0;
 #else
 layout(location = 0) out vec4 SV_Target0;
 #endif
@@ -144,6 +146,20 @@ float rgb5a1_to_depth16(vec4 unorm)
 	uvec4 c = uvec4(unorm * vec4(255.5f));
 	return float(((c.r & 0xF8u) >> 3) | ((c.g & 0xF8u) << 2) | ((c.b & 0xF8u) << 7) | ((c.a & 0x80u) << 8)) * exp2(-32.0f);
 }
+
+#ifdef ps_convert_float32_depth_to_color
+void ps_convert_float32_depth_to_color()
+{
+	SV_Target0 = sample_c().r;
+}
+#endif
+
+#ifdef ps_convert_float32_color_to_depth
+void ps_convert_float32_color_to_depth()
+{
+	gl_FragDepth = sample_c().r;
+}
+#endif
 
 #ifdef ps_convert_float32_float24
 void ps_convert_float32_float24()
