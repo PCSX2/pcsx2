@@ -56,6 +56,12 @@ public:
 	__fi ID3D12Resource* GetResource() const { return m_resource.get(); }
 	__fi ID3D12Resource* GetFBLResource() const { return m_resource_fbl.get(); }
 
+	GSVector4 GetUNormClearColor() const override
+	{
+		return IsDepthInteger() ? GSVector4(static_cast<float>(m_clear_value.color), 0.0f, 0.0f, 0.0f) :
+			GSVector4::unorm8(m_clear_value.color);
+	}
+
 	void* GetNativeHandle() const override;
 
 	bool Update(const GSVector4i& r, const void* data, int pitch, int layer = 0) override;

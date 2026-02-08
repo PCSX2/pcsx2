@@ -82,13 +82,17 @@ public:
 	__fi bool IsDeviceAMD() const { return (m_device_properties.vendorID == 0x1002); }
 
 	// Creates a simple render pass.
-	VkRenderPass GetRenderPass(VkFormat color_format, VkFormat depth_format,
+	VkRenderPass GetRenderPass(VkFormat color_format, VkFormat depth_as_color_format, VkFormat depth_format,
 		VkAttachmentLoadOp color_load_op = VK_ATTACHMENT_LOAD_OP_LOAD,
 		VkAttachmentStoreOp color_store_op = VK_ATTACHMENT_STORE_OP_STORE,
+		VkAttachmentLoadOp depth_as_color_load_op = VK_ATTACHMENT_LOAD_OP_LOAD,
+		VkAttachmentStoreOp depth_as_color_store_op = VK_ATTACHMENT_STORE_OP_STORE,
 		VkAttachmentLoadOp depth_load_op = VK_ATTACHMENT_LOAD_OP_LOAD,
 		VkAttachmentStoreOp depth_store_op = VK_ATTACHMENT_STORE_OP_STORE,
 		VkAttachmentLoadOp stencil_load_op = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-		VkAttachmentStoreOp stencil_store_op = VK_ATTACHMENT_STORE_OP_DONT_CARE, bool color_feedback_loop = false,
+		VkAttachmentStoreOp stencil_store_op = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+		bool color_feedback_loop = false,
+		bool depth_as_color_feedback_loop = false,
 		bool depth_sampling = false);
 
 	// Gets a non-clearing version of the specified render pass. Slow, don't call in hot path.
@@ -163,19 +167,23 @@ private:
 	{
 		struct
 		{
-			u32 color_format : 8;
-			u32 depth_format : 8;
-			u32 color_load_op : 2;
-			u32 color_store_op : 1;
-			u32 depth_load_op : 2;
-			u32 depth_store_op : 1;
-			u32 stencil_load_op : 2;
-			u32 stencil_store_op : 1;
-			u32 color_feedback_loop : 1;
-			u32 depth_sampling : 1;
+			u64 color_format : 8;
+			u64 depth_as_color_format : 8;
+			u64 depth_format : 8;
+			u64 color_load_op : 2;
+			u64 color_store_op : 1;
+			u64 depth_as_color_load_op : 2;
+			u64 depth_as_color_store_op : 1;
+			u64 depth_load_op : 2;
+			u64 depth_store_op : 1;
+			u64 stencil_load_op : 2;
+			u64 stencil_store_op : 1;
+			u64 color_feedback_loop : 1;
+			u64 depth_as_color_feedback_loop : 1;
+			u64 depth_sampling : 1;
 		};
 
-		u32 key;
+		u64 key;
 	};
 
 	using ExtensionList = std::vector<const char*>;
@@ -280,7 +288,7 @@ private:
 
 	bool m_last_submit_failed = false;
 
-	std::map<u32, VkRenderPass> m_render_pass_cache;
+	std::map<u64, VkRenderPass> m_render_pass_cache;
 
 	VkDebugUtilsMessengerEXT m_debug_messenger_callback = VK_NULL_HANDLE;
 
@@ -294,7 +302,9 @@ public:
 	{
 		FeedbackLoopFlag_None = 0,
 		FeedbackLoopFlag_ReadAndWriteRT = 1,
-		FeedbackLoopFlag_ReadDS = 2,
+		FeedbackLoopFlag_ReadDepth = 2,
+		FeedbackLoopFlag_ReadAndWriteDepth = 4,
+		FeedbackLoopFlag_ReadAndWriteDepthRT = 8,
 	};
 
 	struct alignas(8) PipelineSelector
@@ -307,9 +317,10 @@ public:
 			{
 				u32 topology : 2;
 				u32 rt : 1;
+				u32 ds_as_rt : 1;
 				u32 ds : 1;
 				u32 line_width : 1;
-				u32 feedback_loop_flags : 2;
+				u32 feedback_loop_flags : 4;
 			};
 
 			u32 key;
@@ -327,9 +338,11 @@ public:
 		__fi PipelineSelector() { std::memset(this, 0, sizeof(*this)); }
 
 		__fi bool IsRTFeedbackLoop() const { return ((feedback_loop_flags & FeedbackLoopFlag_ReadAndWriteRT) != 0); }
-		__fi bool IsTestingAndSamplingDepth() const { return ((feedback_loop_flags & FeedbackLoopFlag_ReadDS) != 0); }
+		__fi bool IsDepthFeedbackLoop() const { return ((feedback_loop_flags & FeedbackLoopFlag_ReadAndWriteDepth) != 0); }
+		__fi bool IsTestingAndSamplingDepth() const { return ((feedback_loop_flags & (FeedbackLoopFlag_ReadDepth | FeedbackLoopFlag_ReadAndWriteDepth)) != 0); }
+		__fi bool IsDepthRTFeedbackLoop() const { return ((feedback_loop_flags & FeedbackLoopFlag_ReadAndWriteDepthRT) != 0); }
 	};
-	static_assert(sizeof(PipelineSelector) == 24, "Pipeline selector is 24 bytes");
+	static_assert(sizeof(PipelineSelector) == 32, "Pipeline selector is 32 bytes");
 
 	struct PipelineSelectorHash
 	{
@@ -358,10 +371,11 @@ public:
 	};
 	enum TFX_TEXTURES : u32
 	{
-		TFX_TEXTURE_TEXTURE,
+		TFX_TEXTURE_TEXTURE = 0,
 		TFX_TEXTURE_PALETTE,
 		TFX_TEXTURE_RT,
 		TFX_TEXTURE_PRIMID,
+		TFX_TEXTURE_DEPTH,
 
 		NUM_TFX_TEXTURES
 	};
@@ -491,10 +505,27 @@ public:
 	/// Returns true if Vulkan is suitable as a default for the devices in the system.
 	static bool IsSuitableDefaultRenderer();
 
-	__fi VkRenderPass GetTFXRenderPass(bool rt, bool ds, bool colclip, bool stencil, bool fbl, bool dsp,
-		VkAttachmentLoadOp rt_op, VkAttachmentLoadOp ds_op) const
+	__fi VkRenderPass GetTFXRenderPass(
+		bool rt, bool ds_as_rt, bool ds, bool colclip, bool stencil,
+		bool fbl, bool fbl_ds_as_rt, bool dsp,
+		VkAttachmentLoadOp rt_op, VkAttachmentLoadOp ds_as_rt_op, VkAttachmentLoadOp ds_op)
 	{
-		return m_tfx_render_pass[rt][ds][colclip][stencil][fbl][dsp][rt_op][ds_op];
+		if (ds_as_rt)
+		{
+			return GetRenderPass(
+				rt ? LookupNativeFormat(GSTexture::Format::Color) : VK_FORMAT_UNDEFINED,
+				LookupNativeFormat(GSTexture::Format::UInt32),
+				ds ? LookupNativeFormat(GSTexture::Format::DepthStencil) : VK_FORMAT_UNDEFINED,
+				rt ? rt_op : VK_ATTACHMENT_LOAD_OP_DONT_CARE, rt ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE,
+				ds_as_rt_op, VK_ATTACHMENT_STORE_OP_STORE,
+				ds ? ds_op : VK_ATTACHMENT_LOAD_OP_DONT_CARE, ds ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE,
+				ds ? ds_op : VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+				fbl, fbl_ds_as_rt, dsp);
+		}
+		else
+		{
+			return m_tfx_render_pass[rt][ds][colclip][stencil][fbl][dsp][rt_op][ds_op];
+		}
 	}
 	__fi VkSampler GetPointSampler() const { return m_point_sampler; }
 	__fi VkSampler GetLinearSampler() const { return m_linear_sampler; }
@@ -561,8 +592,8 @@ public:
 	void PSSetShaderResource(int i, GSTexture* sr, bool check_state);
 	void PSSetSampler(GSHWDrawConfig::SamplerSelector sel);
 
-	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i& scissor,
-		FeedbackLoopFlag feedback_loop = FeedbackLoopFlag_None);
+	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds_as_rt, GSTexture* ds,
+		const GSVector4i& scissor, FeedbackLoopFlag feedback_loop = FeedbackLoopFlag_None);
 
 	void SetVSConstantBuffer(const GSHWDrawConfig::VSConstantBuffer& cb);
 	void SetPSConstantBuffer(const GSHWDrawConfig::PSConstantBuffer& cb);
@@ -570,10 +601,12 @@ public:
 
 	void RenderHW(GSHWDrawConfig& config) override;
 	void UpdateHWPipelineSelector(GSHWDrawConfig& config, PipelineSelector& pipe);
-	void UploadHWDrawVerticesAndIndices(const GSHWDrawConfig& config);
-	VkImageMemoryBarrier GetColorBufferBarrier(GSTextureVK* rt) const;
-	VkDependencyFlags GetColorBufferBarrierFlags() const;
-	void SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt,
+	void UploadHWDrawVerticesAndIndices(GSHWDrawConfig& config);
+	VkImageMemoryBarrier GetColorBufferFeedbackBarrier(GSTextureVK* rt) const;
+	VkImageMemoryBarrier GetDepthStencilBufferFeedbackBarrier(GSTextureVK* ds) const;
+	VkDependencyFlags GetFeedbackBarrierDependencyFlags() const;
+	void SendHWDraw(const GSHWDrawConfig& config,
+		GSTextureVK* draw_rt, GSTextureVK* draw_ds_as_rt, GSTextureVK* draw_ds,
 		bool one_barrier, bool full_barrier, bool skip_first_barrier);
 
 	//////////////////////////////////////////////////////////////////////////
@@ -623,25 +656,27 @@ public:
 private:
 	enum DIRTY_FLAG : u32
 	{
-		DIRTY_FLAG_TFX_TEXTURE_0 = (1 << 0), // 0, 1, 2, 3
-		DIRTY_FLAG_TFX_UBO = (1 << 4),
-		DIRTY_FLAG_UTILITY_TEXTURE = (1 << 5),
-		DIRTY_FLAG_BLEND_CONSTANTS = (1 << 6),
-		DIRTY_FLAG_LINE_WIDTH = (1 << 7),
-		DIRTY_FLAG_INDEX_BUFFER = (1 << 8),
-		DIRTY_FLAG_VIEWPORT = (1 << 9),
-		DIRTY_FLAG_SCISSOR = (1 << 10),
-		DIRTY_FLAG_PIPELINE = (1 << 11),
-		DIRTY_FLAG_VS_CONSTANT_BUFFER = (1 << 12),
-		DIRTY_FLAG_PS_CONSTANT_BUFFER = (1 << 13),
+		DIRTY_FLAG_TFX_TEXTURE_0 = (1 << 0), // 0, 1, 2, 3, 4
+		DIRTY_FLAG_TFX_UBO = (1 << 5),
+		DIRTY_FLAG_UTILITY_TEXTURE = (1 << 6),
+		DIRTY_FLAG_BLEND_CONSTANTS = (1 << 7),
+		DIRTY_FLAG_LINE_WIDTH = (1 << 8),
+		DIRTY_FLAG_INDEX_BUFFER = (1 << 9),
+		DIRTY_FLAG_VIEWPORT = (1 << 10),
+		DIRTY_FLAG_SCISSOR = (1 << 11),
+		DIRTY_FLAG_PIPELINE = (1 << 12),
+		DIRTY_FLAG_VS_CONSTANT_BUFFER = (1 << 13),
+		DIRTY_FLAG_PS_CONSTANT_BUFFER = (1 << 14),
 
 		DIRTY_FLAG_TFX_TEXTURE_TEX = (DIRTY_FLAG_TFX_TEXTURE_0 << 0),
 		DIRTY_FLAG_TFX_TEXTURE_PALETTE = (DIRTY_FLAG_TFX_TEXTURE_0 << 1),
 		DIRTY_FLAG_TFX_TEXTURE_RT = (DIRTY_FLAG_TFX_TEXTURE_0 << 2),
 		DIRTY_FLAG_TFX_TEXTURE_PRIMID = (DIRTY_FLAG_TFX_TEXTURE_0 << 3),
+		DIRTY_FLAG_TFX_TEXTURE_DEPTH = (DIRTY_FLAG_TFX_TEXTURE_0 << 4),
 
 		DIRTY_FLAG_TFX_TEXTURES = DIRTY_FLAG_TFX_TEXTURE_TEX | DIRTY_FLAG_TFX_TEXTURE_PALETTE |
-		                          DIRTY_FLAG_TFX_TEXTURE_RT | DIRTY_FLAG_TFX_TEXTURE_PRIMID,
+		                          DIRTY_FLAG_TFX_TEXTURE_RT | DIRTY_FLAG_TFX_TEXTURE_PRIMID |
+		                          DIRTY_FLAG_TFX_TEXTURE_DEPTH,
 
 		DIRTY_BASE_STATE = DIRTY_FLAG_INDEX_BUFFER | DIRTY_FLAG_PIPELINE | DIRTY_FLAG_VIEWPORT | DIRTY_FLAG_SCISSOR |
 		                   DIRTY_FLAG_BLEND_CONSTANTS | DIRTY_FLAG_LINE_WIDTH,
@@ -672,6 +707,7 @@ private:
 	VkBuffer m_index_buffer = VK_NULL_HANDLE;
 
 	GSTextureVK* m_current_render_target = nullptr;
+	GSTextureVK* m_current_depth_render_target = nullptr;
 	GSTextureVK* m_current_depth_target = nullptr;
 	VkFramebuffer m_current_framebuffer = VK_NULL_HANDLE;
 	VkRenderPass m_current_render_pass = VK_NULL_HANDLE;

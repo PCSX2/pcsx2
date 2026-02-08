@@ -7,6 +7,19 @@
 
 #if defined(VERTEX_SHADER)
 
+#ifndef VS_EXPAND_NONE
+#define VS_EXPAND_NONE 0
+#define VS_EXPAND_POINT 1
+#define VS_EXPAND_LINE 2
+#define VS_EXPAND_SPRITE 3
+#define VS_EXPAND_POINT_Z_INTEGER 4
+#define VS_EXPAND_LINE_Z_INTEGER 5
+#define VS_EXPAND_TRIANGLE_Z_INTEGER 6
+#endif
+
+#define VS_NEEDS_BARY VS_Z_INTEGER && \
+	(VS_EXPAND == VS_EXPAND_LINE || VS_EXPAND == VS_EXPAND_LINE_Z_INTEGER || VS_EXPAND == VS_EXPAND_TRIANGLE_Z_INTEGER)
+
 layout(std140, set = 0, binding = 0) uniform cb0
 {
 	vec2 VertexScale;
@@ -28,9 +41,16 @@ layout(location = 0) out VSOutput
 	#else
 		flat vec4 c;
 	#endif
+
+#if VS_Z_INTEGER
+	flat uvec3 zi;
+#if VS_NEEDS_BARY
+	vec2 bary;
+#endif
+#endif
 } vsOut;
 
-#if VS_EXPAND == 0
+#if VS_EXPAND == VS_EXPAND_NONE
 
 layout(location = 0) in vec2 a_st;
 layout(location = 1) in uvec4 a_c;
@@ -109,6 +129,12 @@ struct ProcessedVertex
 	vec4 t;
 	vec4 ti;
 	vec4 c;
+#if VS_Z_INTEGER
+	uint z;
+#if VS_NEEDS_BARY
+	vec2 bary;
+#endif
+#endif
 };
 
 ProcessedVertex load_vertex(uint index)
@@ -153,6 +179,20 @@ ProcessedVertex load_vertex(uint index)
 	vtx.c = a_c;
 	vtx.t.z = a_f.r;
 
+#if VS_Z_INTEGER
+	#if VS_NEEDS_BARY
+		#if VS_EXPAND == VS_EXPAND_TRIANGLE_Z_INTEGER
+			uint index_mod = index % 3;
+		#elif VS_EXPAND == VS_EXPAND_LINE || VS_EXPAND == VS_EXPAND_LINE_Z_INTEGER
+			uint index_mod = index & 1;
+		#else
+			uint index_mod = 0;
+		#endif
+		vtx.bary = vec2(index_mod == 0, index_mod == 1);
+	#endif
+	vtx.z = z;
+#endif
+
 	return vtx;
 }
 
@@ -160,15 +200,20 @@ void main()
 {
 	ProcessedVertex vtx;
 	uint vid = uint(gl_VertexIndex);
+	uvec3 zi;
 
-#if VS_EXPAND == 1 // Point
+#if VS_EXPAND == VS_EXPAND_POINT
 
 	vtx = load_vertex(vid >> 2);
 
 	vtx.p.x += ((vid & 1u) != 0u) ? PointSize.x : 0.0f; 
 	vtx.p.y += ((vid & 2u) != 0u) ? PointSize.y : 0.0f;
 
-#elif VS_EXPAND == 2 // Line
+#if VS_Z_INTEGER
+	zi = uvec3(vtx.z, 0, 0);
+#endif
+
+#elif VS_EXPAND == VS_EXPAND_LINE
 
 	uint vid_base = vid >> 2;
 
@@ -186,11 +231,16 @@ void main()
 	vec2 offset = ((uint(is_bottom) ^ uint(is_right)) != 0u) ? line_width : -line_width;
 	vtx.p.xy += offset;
 
+	// All vertices of the same primitive must have z in same order
+#if VS_Z_INTEGER
+	zi = (vid_base & 1) ? uvec3(vtx.z, other.z, 0) : uvec3(other.z, vtx.z, 0);
+#endif
+
 	// Lines will be run as (0 1 2) (1 2 3)
 	// This means that both triangles will have a point based off the top line point as their first point
 	// So we don't have to do anything for !IIP
 
-#elif VS_EXPAND == 3 // Sprite
+#elif VS_EXPAND == VS_EXPAND_SPRITE
 
 	// Sprite points are always in pairs
 	uint vid_base = vid >> 1;
@@ -211,12 +261,48 @@ void main()
 	vtx.t.y = is_bottom ? lt.t.y : vtx.t.y;
 	vtx.ti.yw = is_bottom ? lt.ti.yw : vtx.ti.yw;
 
+#if VS_Z_INTEGER
+	zi = uvec3(vtx.z, 0, 0); // Flat Z
+#endif
+
+#elif VS_Z_INTEGER && (VS_EXPAND == VS_EXPAND_TRIANGLE_Z_INTEGER)
+
+	uint vid_base = (vid / 3) * 3;
+	ProcessedVertex raw0 = load_vertex(vid_base + 0);
+	ProcessedVertex raw1 = load_vertex(vid_base + 1);
+	ProcessedVertex raw2 = load_vertex(vid_base + 2);
+	vtx = load_vertex(vid);
+
+	// All vertices of the same primitive must have z in same order
+	zi = uvec3(raw0.z, raw1.z, raw2.z);
+
+#elif VS_Z_INTEGER && (VS_EXPAND == VS_EXPAND_LINE_Z_INTEGER)
+
+	uint vid_base = vid & ~1;
+	ProcessedVertex raw0 = load_vertex(vid_base + 0);
+	ProcessedVertex raw1 = load_vertex(vid_base + 1);
+	vtx = load_vertex(vid);
+
+	// All vertices of the same primitive must have z in same order
+	zi = uvec3(raw0.z, raw1.z, 0);
+
+#elif VS_Z_INTEGER && (VS_EXPAND == VS_EXPAND_POINT_Z_INTEGER)
+	vtx = load_vertex(vid);
+
+	zi = uvec3(vtx.z, 0, 0); // Flat Z
 #endif
 
 	gl_Position = vtx.p;
 	vsOut.t = vtx.t;
 	vsOut.ti = vtx.ti;
 	vsOut.c = vtx.c;
+
+#if VS_Z_INTEGER
+	vsOut.zi = zi;
+#if VS_NEEDS_BARY
+	vsOut.bary = vtx.bary;
+#endif
+#endif
 }
 
 #endif // VS_EXPAND
@@ -243,6 +329,35 @@ void main()
 #define GS_PRIM 3
 #define GS_POINT 0
 #define GS_LINE 0
+#endif
+
+#ifndef ZTST_GEQUAL
+#define ZTST_GEQUAL 2
+#define ZTST_GREATER 3
+#endif
+
+#ifndef AFAIL_KEEP
+#define AFAIL_KEEP 0
+#define AFAIL_FB_ONLY 1
+#define AFAIL_ZB_ONLY 2
+#define AFAIL_RGB_ONLY 3
+#define AFAIL_RGB_ONLY_DSB 4
+#endif
+
+#ifndef PS_ATST_NONE
+#define PS_ATST_NONE 0
+#define PS_ATST_LEQUAL 1
+#define PS_ATST_GEQUAL 2
+#define PS_ATST_EQUAL 3
+#define PS_ATST_NOTEQUAL 4
+#endif
+
+#ifndef POINT_CLASS
+#define POINT_CLASS 0
+#define LINE_CLASS 1
+#define TRIANGLE_CLASS 2
+#define SPRITE_CLASS 3
+#define INVALID_CLASS 7
 #endif
 
 #ifndef PS_FST
@@ -289,16 +404,31 @@ void main()
 #define PS_DITHER_ADJUST 0
 #define PS_ZCLAMP 0
 #define PS_ZFLOOR 0
-#define PS_FEEDBACK_LOOP 0
+#define PS_ZWRITE 0
+#define PS_SCANMSK 0
+#define PS_AUTOMATIC_LOD 0
+#define PS_MANUAL_LOD 0
 #define PS_TEX_IS_FB 0
+#define PS_NO_COLOR 0
+#define PS_NO_COLOR1 0
+#define PS_DATE 0
+#define PS_COLOR_FEEDBACK 0
+#define PS_DEPTH_FEEDBACK 0
+#define PS_Z_RT_SLOT 0
+#define PS_Z_INTEGER 0
+#define PS_PRIMCLASS 0
+#define PS_TEX_INTEGER 0
 #endif
 
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
 #define SW_BLEND_NEEDS_RT (SW_BLEND && (PS_BLEND_A == 1 || PS_BLEND_B == 1 || PS_BLEND_C == 1 || PS_BLEND_D == 1))
 #define SW_AD_TO_HW (PS_BLEND_C == 1 && PS_A_MASKED)
-#define AFAIL_NEEDS_RT (PS_AFAIL == 3 && PS_NO_COLOR1)
+#define AFAIL_NEEDS_RT (PS_AFAIL == AFAIL_ZB_ONLY || PS_AFAIL == AFAIL_RGB_ONLY)
+#define AFAIL_NEEDS_DEPTH (PS_AFAIL == AFAIL_FB_ONLY || PS_AFAIL == AFAIL_RGB_ONLY)
+#define ZTST_NEEDS_DEPTH (PS_ZTST == ZTST_GEQUAL || PS_ZTST == ZTST_GREATER)
 
-#define PS_FEEDBACK_LOOP_IS_NEEDED (PS_TEX_IS_FB == 1 || AFAIL_NEEDS_RT || PS_FBMASK || SW_BLEND_NEEDS_RT || SW_AD_TO_HW || (PS_DATE >= 5))
+#define PS_FEEDBACK_LOOP_IS_NEEDED_RT (PS_TEX_IS_FB == 1 || AFAIL_NEEDS_RT || PS_FBMASK || SW_BLEND_NEEDS_RT || SW_AD_TO_HW || (PS_DATE >= 5) || PS_COLOR_FEEDBACK)
+#define PS_FEEDBACK_LOOP_IS_NEEDED_DEPTH (PS_DEPTH_FEEDBACK && (AFAIL_NEEDS_DEPTH || ZTST_NEEDS_DEPTH))
 
 #define NEEDS_TEX (PS_TFX != 4)
 
@@ -308,7 +438,11 @@ layout(std140, set = 0, binding = 1) uniform cb1
 	float AREF;
 	vec4 WH;
 	vec2 TA;
+#if PS_Z_INTEGER
+	uint MaxDepthPS;
+#else
 	float MaxDepthPS;
+#endif
 	float Af;
 	uvec4 FbMask;
 	vec4 HalfTexel;
@@ -333,6 +467,12 @@ layout(location = 0) in VSOutput
 	#else
 		flat vec4 c;
 	#endif
+#if PS_Z_INTEGER
+	flat uvec3 zi;
+	#if PS_PRIMCLASS == LINE_CLASS || PS_PRIMCLASS == TRIANGLE_CLASS
+		vec2 bary;
+	#endif
+#endif
 } vsIn;
 
 #if !PS_NO_COLOR && !PS_NO_COLOR1
@@ -342,18 +482,65 @@ layout(location = 0, index = 1) out vec4 o_col1;
 layout(location = 0) out vec4 o_col0;
 #endif
 
+#if PS_Z_INTEGER && PS_NO_COLOR1
+	#if PS_Z_RT_SLOT
+		layout(location = 1) out uint o_depth;
+	#else
+		layout(location = 0) out uint o_depth;
+	#endif
+#endif
+
 #if NEEDS_TEX
+#if PS_TEX_INTEGER
+layout(set = 1, binding = 0) uniform usampler2D Texture;
+#else
 layout(set = 1, binding = 0) uniform sampler2D Texture;
+#endif
 layout(set = 1, binding = 1) uniform texture2D Palette;
 #endif
 
-#if PS_FEEDBACK_LOOP_IS_NEEDED
+#if PS_FEEDBACK_LOOP_IS_NEEDED_RT || PS_FEEDBACK_LOOP_IS_NEEDED_DEPTH
 	#if defined(DISABLE_TEXTURE_BARRIER) || defined(HAS_FEEDBACK_LOOP_LAYOUT)
-		layout(set = 1, binding = 2) uniform texture2D RtSampler;
-		vec4 sample_from_rt() { return texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0); }
+		#if PS_FEEDBACK_LOOP_IS_NEEDED_RT
+			layout(set = 1, binding = 2) uniform texture2D RtSampler;
+			vec4 sample_from_rt() { return texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0); }
+		#endif
+		#if PS_FEEDBACK_LOOP_IS_NEEDED_DEPTH
+			#if PS_Z_INTEGER
+				layout(set = 1, binding = 4) uniform utexture2D DepthSampler;
+				uint sample_from_depth() { return texelFetch(DepthSampler, ivec2(gl_FragCoord.xy), 0).r; }
+			#else
+				layout(set = 1, binding = 4) uniform texture2D DepthSampler;
+				float sample_from_depth() { return texelFetch(DepthSampler, ivec2(gl_FragCoord.xy), 0).r; }
+			#endif
+		#endif
 	#else
-		layout(input_attachment_index = 0, set = 1, binding = 2) uniform subpassInput RtSampler;
-		vec4 sample_from_rt() { return subpassLoad(RtSampler); }
+		// Must consider each case separately since the input attachment indices must be consecutive.
+		#if PS_FEEDBACK_LOOP_IS_NEEDED_RT && PS_FEEDBACK_LOOP_IS_NEEDED_DEPTH
+			layout(input_attachment_index = 0, set = 1, binding = 2) uniform subpassInput RtSampler;
+			#if PS_Z_INTEGER
+				layout(input_attachment_index = 1, set = 1, binding = 4) uniform usubpassInput DepthSampler;
+			#else
+				layout(input_attachment_index = 1, set = 1, binding = 4) uniform subpassInput DepthSampler;
+			#endif
+			vec4 sample_from_rt() { return subpassLoad(RtSampler); }
+			#if PS_Z_INTEGER
+				uint sample_from_depth() { return subpassLoad(DepthSampler).r; }
+			#else
+				float sample_from_depth() { return subpassLoad(DepthSampler).r; }
+			#endif
+		#elif PS_FEEDBACK_LOOP_IS_NEEDED_RT
+			layout(input_attachment_index = 0, set = 1, binding = 2) uniform subpassInput RtSampler;
+			vec4 sample_from_rt() { return subpassLoad(RtSampler); }
+		#elif PS_FEEDBACK_LOOP_IS_NEEDED_DEPTH
+			#if PS_Z_INTEGER
+				layout(input_attachment_index = 0, set = 1, binding = 4) uniform usubpassInput DepthSampler;
+				uint sample_from_depth() { return subpassLoad(DepthSampler).r; }
+			#else
+				layout(input_attachment_index = 0, set = 1, binding = 4) uniform subpassInput DepthSampler;
+				float sample_from_depth() { return subpassLoad(DepthSampler).r; }
+			#endif
+		#endif
 	#endif
 #endif
 
@@ -361,7 +548,7 @@ layout(set = 1, binding = 1) uniform texture2D Palette;
 layout(set = 1, binding = 3) uniform texture2D PrimMinTexture;
 #endif
 
-#if PS_ZFLOOR || PS_ZCLAMP
+#if PS_ZWRITE
 layout(depth_less) out float gl_FragDepth;
 #endif
 
@@ -371,6 +558,8 @@ vec4 sample_c(vec2 uv)
 {
 #if PS_TEX_IS_FB
 	return sample_from_rt();
+#elif PS_TEX_INTEGER
+	return vec4(0.0, 0.0, 0.0, 0.0);
 #elif PS_REGION_RECT
 	return texelFetch(Texture, ivec2(uv), 0);
 #else
@@ -556,20 +745,26 @@ mat4 sample_4p(uvec4 u)
 	return c;
 }
 
-int fetch_raw_depth(ivec2 xy)
+uint fetch_raw_depth(ivec2 xy)
 {
+#if PS_TEX_INTEGER
+	return texelFetch(Texture, xy, 0).r;
+#else
 #if PS_TEX_IS_FB
 	vec4 col = sample_from_rt();
 #else
 	vec4 col = texelFetch(Texture, xy, 0);
 #endif
-	return int(col.r * exp2(32.0f));
+	return uint(col.r * exp2(32.0f));
+#endif
 }
 
 vec4 fetch_raw_color(ivec2 xy)
 {
 #if PS_TEX_IS_FB
 	return sample_from_rt();
+#elif PS_TEX_INTEGER
+	return vec4(0.0, 0.0, 0.0, 0.0);
 #else
 	return texelFetch(Texture, xy, 0);
 #endif
@@ -579,6 +774,8 @@ vec4 fetch_c(ivec2 uv)
 {
 #if PS_TEX_IS_FB
 	return sample_from_rt();
+#elif PS_TEX_INTEGER
+	return vec4(0.0, 0.0, 0.0, 0.0);
 #else
 	return texelFetch(Texture, uv, 0);
 #endif
@@ -642,7 +839,7 @@ vec4 sample_depth(vec2 st, ivec2 pos)
 	#if (PS_TALES_OF_ABYSS_HLE == 1)
 	{
 		// Warning: UV can't be used in channel effect
-		int depth = fetch_raw_depth(pos);
+		uint depth = fetch_raw_depth(pos);
 
 		// Convert msb based on the palette
 		t = texelFetch(Palette, ivec2((depth >> 8) & 0xFF, 0), 0) * 255.0f;
@@ -656,7 +853,7 @@ vec4 sample_depth(vec2 st, ivec2 pos)
 		// To be faster both steps (msb&lsb) are done in a single pass.
 
 		// Warning: UV can't be used in channel effect
-		int depth = fetch_raw_depth(pos);
+		uint depth = fetch_raw_depth(pos);
 
 		// Convert lsb based on the palette
 		t = texelFetch(Palette, ivec2(depth & 0xFF, 0), 0) * 255.0f;
@@ -670,16 +867,24 @@ vec4 sample_depth(vec2 st, ivec2 pos)
 	{
 		// Based on ps_convert_float32_rgba8 of convert
 
-		// Convert a vec32 depth texture into a RGBA color texture
+		// Convert a float32 or uint32 depth texture into a RGBA color texture
+#if PS_TEX_INTEGER
+		uint d = fetch_raw_depth(uv);
+#else
 		uint d = uint(fetch_c(uv).r * exp2(32.0f));
+#endif
 		t = vec4(uvec4((d & 0xFFu), ((d >> 8) & 0xFFu), ((d >> 16) & 0xFFu), (d >> 24)));
 	}
 	#elif (PS_DEPTH_FMT == 2)
 	{
 		// Based on ps_convert_float16_rgb5a1 of convert
 
-		// Convert a vec32 (only 16 lsb) depth into a RGB5A1 color texture
+		// Convert a float32 or uint32 (only 16 lsb) depth into a RGB5A1 color texture
+#if PS_TEX_INTEGER
+		uint d = fetch_raw_depth(uv);
+#else
 		uint d = uint(fetch_c(uv).r * exp2(32.0f));
+#endif
 		t = vec4(uvec4((d & 0x1Fu), ((d >> 5) & 0x1Fu), ((d >> 10) & 0x1Fu), (d >> 15) & 0x01u)) * vec4(8.0f, 8.0f, 8.0f, 128.0f);
 	}
 	#elif (PS_DEPTH_FMT == 3)
@@ -715,7 +920,7 @@ vec4 fetch_red(ivec2 xy)
 	vec4 rt;
 
 	#if (PS_DEPTH_FMT == 1) || (PS_DEPTH_FMT == 2)
-		int depth = (fetch_raw_depth(xy)) & 0xFF;
+		uint depth = (fetch_raw_depth(xy)) & 0xFF;
 		rt = vec4(float(depth) / 255.0f);
 	#else
 		rt = fetch_raw_color(xy);
@@ -729,7 +934,7 @@ vec4 fetch_green(ivec2 xy)
 	vec4 rt;
 
 	#if (PS_DEPTH_FMT == 1) || (PS_DEPTH_FMT == 2)
-		int depth = (fetch_raw_depth(xy) >> 8) & 0xFF;
+		uint depth = (fetch_raw_depth(xy) >> 8) & 0xFF;
 		rt = vec4(float(depth) / 255.0f);
 	#else
 		rt = fetch_raw_color(xy);
@@ -743,7 +948,7 @@ vec4 fetch_blue(ivec2 xy)
 	vec4 rt;
 
 	#if (PS_DEPTH_FMT == 1) || (PS_DEPTH_FMT == 2)
-		int depth = (fetch_raw_depth(xy) >> 16) & 0xFF;
+		uint depth = (fetch_raw_depth(xy) >> 16) & 0xFF;
 		rt = vec4(float(depth) / 255.0f);
 	#else
 		rt = fetch_raw_color(xy);
@@ -768,8 +973,8 @@ vec4 fetch_rgb(ivec2 xy)
 vec4 fetch_gXbY(ivec2 xy)
 {
 	#if (PS_DEPTH_FMT == 1) || (PS_DEPTH_FMT == 2)
-		int depth = fetch_raw_depth(xy);
-		int bg = (depth >> (8 + ChannelShuffle.w)) & 0xFF;
+		uint depth = fetch_raw_depth(xy);
+		uint bg = (depth >> (8 + ChannelShuffle.w)) & 0xFF;
 		return vec4(bg);
 	#else
 		ivec4 rt = ivec4(fetch_raw_color(xy) * 255.0);
@@ -885,28 +1090,27 @@ bool atst(vec4 C)
 {
 	float a = C.a;
 
-	#if (PS_ATST == 1)
-	{
-		return (a <= AREF);
-	}
-	#elif (PS_ATST == 2)
-	{
-		return (a >= AREF);
-	}
-	#elif (PS_ATST == 3)
-	{
-		return (abs(a - AREF) <= 0.5f);
-	}
-	#elif (PS_ATST == 4)
-	{
-		return (abs(a - AREF) >= 0.5f);
-	}
-	#else
-	{
-		// nothing to do
-		return true;
-	}
-	#endif
+#if PS_ATST == PS_ATST_LEQUAL
+
+	return (a <= AREF);
+
+#elif PS_ATST == PS_ATST_GEQUAL
+
+	return (a >= AREF);
+
+#elif PS_ATST == PS_ATST_EQUAL
+
+	return (abs(a - AREF) <= 0.5f);
+
+#elif PS_ATST == PS_ATST_NOTEQUAL
+
+	return (abs(a - AREF) >= 0.5f);
+
+#else
+
+	return true;
+
+#endif
 }
 
 vec4 fog(vec4 c, float f)
@@ -975,7 +1179,6 @@ vec4 ps_color()
 void ps_fbmask(inout vec4 C)
 {
 	#if PS_FBMASK
-		
 		#if PS_COLCLIP_HW == 1
 			vec4 RT = trunc(sample_from_rt() * 65535.0f);
 		#else
@@ -1071,7 +1274,7 @@ void ps_blend(inout vec4 Color, inout vec4 As_rgba)
 			As_rgba.rgb = vec3(1.0f);
 		#endif
 
-		#if PS_FEEDBACK_LOOP_IS_NEEDED
+		#if PS_FEEDBACK_LOOP_IS_NEEDED_RT
 			vec4 RT = sample_from_rt();
 		#else
 			// Not used, but we define it to make the selection below simpler.
@@ -1084,7 +1287,7 @@ void ps_blend(inout vec4 Color, inout vec4 As_rgba)
 			float Ad = trunc(RT.a * 255.0f + 0.1f) / 128.0f;
 		#endif
 		
-		#if PS_SHUFFLE && PS_FEEDBACK_LOOP_IS_NEEDED
+		#if PS_SHUFFLE && PS_FEEDBACK_LOOP_IS_NEEDED_RT
 			uvec4 denorm_rt = uvec4(RT);
 			#if (PS_PROCESS_BA & SHUFFLE_WRITE)
 				RT.r = float((denorm_rt.b << 3) & 0xF8u);
@@ -1234,8 +1437,104 @@ void ps_blend(inout vec4 Color, inout vec4 As_rgba)
 	#endif
 }
 
+// FIXME: Wrap if if/else for triangle/line class (do for DX code also)
+// Emulate 64 bit multiplication to avoid using higher feature levels.
+void mul64(uint x, uint y, out uint lo, out uint hi)
+{
+	uint hh = (x >> 16) * (y >> 16);
+	uint hl = (x >> 16) * (y & 0xFFFF);
+	uint lh = (x & 0xFFFF) * (y >> 16);
+	uint ll = (x & 0xFFFF) * (y & 0xFFFF);
+	lo = ll + (hl << 16) + (lh << 16);
+	uint c = ((hl & 0xFFFF) + (lh & 0xFFFF) + (ll >> 16)) >> 16; // carry bit
+	hi = hh + (hl >> 16) + (lh >> 16) + c;
+}
+
+// Interpolate Z using barycentric triangle/line coordinates
+uint interp_zint(vec2 bary, uvec3 z)
+{
+	// Convert weights from floating to 24 bit fixed point.
+	const uint pow24 = 1u << 24;
+	uint w0 = clamp(uint(float(pow24) * bary.x), 0, pow24);
+	uint w1 = 0;
+	uint w2 = 0;
+
+	// Make sure all weights sum up to 2^24 and are in the correct range
+	w1 = pow24 - w0;
+#if PS_PRIMCLASS == TRIANGLE_CLASS
+	w1 = uint(float(pow24) * bary.y);
+	w1 = min(w1, pow24 - w0);
+	w2 = pow24 - w1 - w0;
+#endif
+
+	// Get the 64 bit products w * z
+	uint z0_lo = 0, z0_hi = 0;
+	uint z1_lo = 0, z1_hi = 0;
+	uint z2_lo = 0, z2_hi = 0;
+
+	mul64(w0, z.x, z0_lo, z0_hi);
+	mul64(w1, z.y, z1_lo, z1_hi);
+#if PS_PRIMCLASS == TRIANGLE_CLASS
+	mul64(w2, z.z, z2_lo, z2_hi);
+#endif
+
+	// Emulate 64 bit addition to avoid using higher feature levels.
+	uint z_lo = z0_lo;
+	uint z_hi = z0_hi;
+
+	z_lo += z1_lo;
+	z_hi += z1_hi + uint(z_lo < z1_lo);
+
+#if PS_PRIMCLASS == TRIANGLE_CLASS
+	z_lo += z2_lo;
+	z_hi += z2_hi + uint(z_lo < z2_lo);
+#endif
+
+	// Note: truncating rather than round seems to be more accurate.
+	// Add 2^23 to the result before truncating so that it rounds.
+	// z_lo += 1 << 23;
+	// z_hi += uint(z_lo < (1 << 23));
+
+	// The weights are 24 bits so get bits 24:55 of the result.
+	return (z_hi << 8) + (z_lo >> 24);
+}
+
 void main()
 {
+#if PS_Z_INTEGER
+	#if (PS_PRIMCLASS == TRIANGLE_CLASS || PS_PRIMCLASS == LINE_CLASS)
+		// Interpolate integer Z from barycentric coordinates.
+		uint input_z = interp_zint(vsIn.bary, vsIn.zi);
+	#else
+		uint input_z = vsIn.zi.x; // No interpolation
+	#endif
+#else
+	float input_z = gl_FragCoord.z;
+#endif
+
+	// Must floor before depth testing.
+#if PS_ZFLOOR && !PS_Z_INTEGER
+	input_z = floor(input_z * exp2(32.0f)) * exp2(-32.0f);
+#endif
+
+#if PS_FEEDBACK_LOOP_IS_NEEDED_DEPTH
+	#if PS_Z_INTEGER
+		uint curr_z = sample_from_depth() & MaxDepthPS;
+	#else
+		float curr_z = sample_from_depth();
+	#endif
+#endif
+
+#if PS_FEEDBACK_LOOP_IS_NEEDED_DEPTH &&  ZTST_NEEDS_DEPTH
+	#if PS_ZTST == ZTST_GEQUAL
+		if (input_z < curr_z)
+			discard;
+	#elif PS_ZTST == ZTST_GREATER
+		if (input_z <= curr_z)
+			discard;
+	#endif
+#endif // PS_ZTST
+
 #if PS_SCANMSK & 2
 	// fail depth test on prohibited lines
 	if ((int(gl_FragCoord.y) & 1) == (PS_SCANMSK & 1))
@@ -1283,18 +1582,17 @@ void main()
 #endif
 
 	vec4 C = ps_color();
-	bool atst_pass = atst(C);
 
-#if PS_AFAIL == 0 // KEEP or ATST off
-	if (!atst_pass)
-		discard;
+#if PS_FIXED_ONE_A
+	// AA (Fixed one) will output a coverage of 1.0 as alpha
+	C.a = 128.0f;
 #endif
 
-	// Must be done before alpha correction
+	bool atst_pass = atst(C);
 
-	// AA (Fixed one) will output a coverage of 1.0 as alpha
-#if PS_FIXED_ONE_A
-	C.a = 128.0f;
+#if PS_AFAIL == AFAIL_KEEP
+	if (!atst_pass)
+		discard;
 #endif
 
 #if SW_AD_TO_HW
@@ -1333,7 +1631,7 @@ void main()
 #else
 	ps_blend(C, alpha_blend);
 
-#if PS_SHUFFLE
+	#if PS_SHUFFLE
 		#if !PS_READ16_SRC && !PS_SHUFFLE_SAME && !(PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE)
 			uvec4 denorm_c_after = uvec4(C);
 			#if (PS_PROCESS_BA & SHUFFLE_READ)
@@ -1381,7 +1679,7 @@ void main()
 
 	ps_fbmask(C);
 
-	#if PS_AFAIL == 3 && !PS_NO_COLOR1 // RGB_ONLY
+	#if (PS_AFAIL == AFAIL_RGB_ONLY_DSB) && !PS_NO_COLOR1
 		// Use alpha blend factor to determine whether to update A.
 		alpha_blend.a = float(atst_pass);
 	#endif
@@ -1400,24 +1698,43 @@ void main()
 		#if !PS_NO_COLOR1
 			o_col1 = alpha_blend;
 		#endif
-		#if PS_AFAIL == 3 && PS_NO_COLOR1 // RGB_ONLY, no dual src blend
+
+		// Alpha test with feedback
+		#if (PS_AFAIL == AFAIL_FB_ONLY) && PS_FEEDBACK_LOOP_IS_NEEDED_DEPTH && PS_ZWRITE
 			if (!atst_pass)
+				input_z = curr_z;
+		#elif (PS_AFAIL == AFAIL_ZB_ONLY) && PS_FEEDBACK_LOOP_IS_NEEDED_RT
+			if (!atst_pass)
+				o_col0 = sample_from_rt();
+		#elif (PS_AFAIL == AFAIL_RGB_ONLY) 
+			if (!atst_pass)
+			{
+			#if PS_FEEDBACK_LOOP_IS_NEEDED_RT
 				o_col0.a = sample_from_rt().a;
+			#endif
+			#if PS_FEEDBACK_LOOP_IS_NEEDED_DEPTH && PS_ZWRITE
+				input_z = curr_z;
+			#endif
+			}
 		#endif
 	#endif
 
-	#if PS_ZFLOOR
-		float depth_value = floor(gl_FragCoord.z * exp2(32.0f)) * exp2(-32.0f);;
-	#else
-		float depth_value = gl_FragCoord.z;
+	#if PS_ZCLAMP
+		input_z = min(input_z, MaxDepthPS);
 	#endif
 	
-	#if PS_ZCLAMP
-		gl_FragDepth = min(gl_FragCoord.z, MaxDepthPS);
-	#elif PS_ZFLOOR
-		gl_FragDepth = depth_value;
+	#if PS_ZCLAMP && PS_Z_INTEGER && PS_FEEDBACK_LOOP_IS_NEEDED_DEPTH
+		// Mask based on depth format
+		input_z |= (sample_from_depth() & ~MaxDepthPS);
 	#endif
-
+	
+	#if PS_ZWRITE
+		#if PS_Z_INTEGER
+			o_depth = input_z;
+		#else
+			gl_FragDepth = input_z;
+		#endif
+	#endif
 #endif // PS_DATE
 }
 

@@ -21,6 +21,45 @@
 #define GS_FORWARD_PRIMID 0
 #endif
 
+#ifndef ZTST_GEQUAL
+#define ZTST_GEQUAL 2
+#define ZTST_GREATER 3
+#endif
+
+#ifndef AFAIL_KEEP
+#define AFAIL_KEEP 0
+#define AFAIL_FB_ONLY 1
+#define AFAIL_ZB_ONLY 2
+#define AFAIL_RGB_ONLY 3
+#define AFAIL_RGB_ONLY_DSB 4
+#endif
+
+#ifndef PS_ATST_NONE
+#define PS_ATST_NONE 0
+#define PS_ATST_LEQUAL 1
+#define PS_ATST_GEQUAL 2
+#define PS_ATST_EQUAL 3
+#define PS_ATST_NOTEQUAL 4
+#endif
+
+#ifndef POINT_CLASS
+#define POINT_CLASS 0
+#define LINE_CLASS 1
+#define TRIANGLE_CLASS 2
+#define SPRITE_CLASS 3
+#define INVALID_CLASS 7
+#endif
+
+#ifndef VS_EXPAND_NONE
+#define VS_EXPAND_NONE 0
+#define VS_EXPAND_POINT 1
+#define VS_EXPAND_LINE 2
+#define VS_EXPAND_SPRITE 3
+#define VS_EXPAND_POINT_Z_INTEGER 4
+#define VS_EXPAND_LINE_Z_INTEGER 5
+#define VS_EXPAND_TRIANGLE_Z_INTEGER 6
+#endif
+
 #ifndef PS_FST
 #define PS_IIP 0
 #define PS_FST 0
@@ -72,6 +111,7 @@
 #define PS_DITHER_ADJUST 0
 #define PS_ZCLAMP 0
 #define PS_ZFLOOR 0
+#define PS_ZWRITE 0
 #define PS_SCANMSK 0
 #define PS_AUTOMATIC_LOD 0
 #define PS_MANUAL_LOD 0
@@ -79,12 +119,23 @@
 #define PS_NO_COLOR 0
 #define PS_NO_COLOR1 0
 #define PS_DATE 0
+#define PS_COLOR_FEEDBACK 0
+#define PS_DEPTH_FEEDBACK 0
+#define PS_Z_RT_SLOT 0
+#define PS_Z_INTEGER 0
+#define PS_PRIMCLASS 0
+#define PS_TEX_INTEGER 0
 #endif
 
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
 #define SW_BLEND_NEEDS_RT (SW_BLEND && (PS_BLEND_A == 1 || PS_BLEND_B == 1 || PS_BLEND_C == 1 || PS_BLEND_D == 1))
 #define SW_AD_TO_HW (PS_BLEND_C == 1 && PS_A_MASKED)
-#define NEEDS_RT_FOR_AFAIL (PS_AFAIL == 3 && PS_NO_COLOR1)
+#define AFAIL_NEEDS_RT (PS_AFAIL == AFAIL_ZB_ONLY || PS_AFAIL == AFAIL_RGB_ONLY)
+#define AFAIL_NEEDS_DEPTH (PS_AFAIL == AFAIL_FB_ONLY || PS_AFAIL == AFAIL_RGB_ONLY)
+#define SW_Z_TESTING (PS_ZTST == ZTST_GEQUAL || PS_ZTST == ZTST_GREATER)
+
+#define VS_NEEDS_BARY VS_Z_INTEGER && \
+	(VS_EXPAND == VS_EXPAND_LINE || VS_EXPAND == VS_EXPAND_LINE_Z_INTEGER || VS_EXPAND == VS_EXPAND_TRIANGLE_Z_INTEGER)
 
 struct VS_INPUT
 {
@@ -95,6 +146,9 @@ struct VS_INPUT
 	uint z : POSITION1;
 	uint2 uv : TEXCOORD2;
 	float4 f : COLOR1;
+#if VS_NEEDS_BARY
+	float2 bary : COLOR2;
+#endif
 };
 
 struct VS_OUTPUT
@@ -108,6 +162,13 @@ struct VS_OUTPUT
 #else
 	nointerpolation float4 c : COLOR0;
 #endif
+
+#if VS_Z_INTEGER
+	nointerpolation uint3 zi : COLOR1;
+#if VS_NEEDS_BARY
+	float2 bary : COLOR2;
+#endif
+#endif
 };
 
 struct PS_INPUT
@@ -115,11 +176,20 @@ struct PS_INPUT
 	noperspective centroid float4 p : SV_Position;
 	float4 t : TEXCOORD0;
 	float4 ti : TEXCOORD2;
+
 #if VS_IIP != 0 || GS_IIP != 0 || PS_IIP != 0
 	float4 c : COLOR0;
 #else
 	nointerpolation float4 c : COLOR0;
 #endif
+
+#if PS_Z_INTEGER
+	nointerpolation uint3 zi : COLOR1;
+#if PS_PRIMCLASS == LINE_CLASS || PS_PRIMCLASS == TRIANGLE_CLASS
+	float2 bary : COLOR2;
+#endif
+#endif
+
 #if (PS_DATE >= 1 && PS_DATE <= 3) || GS_FORWARD_PRIMID
 	uint primid : SV_PrimitiveID;
 #endif
@@ -129,6 +199,7 @@ struct PS_INPUT
 
 struct PS_OUTPUT
 {
+#define NUM_RTS 0
 #if !PS_NO_COLOR
 #if PS_DATE == 1 || PS_DATE == 2
 	float c : SV_Target;
@@ -139,19 +210,43 @@ struct PS_OUTPUT
 #endif
 #endif
 #endif
-#if (PS_ZFLOOR || PS_ZCLAMP)
-	#if PS_HAS_CONSERVATIVE_DEPTH
-		float depth : SV_DepthLessEqual;
+#if PS_ZWRITE
+	#if PS_Z_INTEGER
+		#if PS_Z_RT_SLOT
+			uint depth : SV_Target1;
+		#else
+			uint depth : SV_Target0;
+		#endif
 	#else
-		float depth : SV_Depth;
+		#if PS_DEPTH_FEEDBACK && PS_NO_COLOR1 && DX12
+			#if PS_Z_RT_SLOT
+				float depth_color : SV_Target1;
+			#else
+				float depth_color : SV_Target0;
+			#endif
+		#endif
+		#if PS_HAS_CONSERVATIVE_DEPTH
+			float depth : SV_DepthLessEqual;
+		#else
+			float depth : SV_Depth;
+		#endif
 	#endif
 #endif
 };
 
+#if PS_TEX_INTEGER
+Texture2D<uint> Texture : register(t0);
+#else
 Texture2D<float4> Texture : register(t0);
+#endif
 Texture2D<float4> Palette : register(t1);
 Texture2D<float4> RtTexture : register(t2);
 Texture2D<float> PrimMinTexture : register(t3);
+#if PS_Z_INTEGER
+Texture2D<uint> DepthTexture : register(t4);
+#else
+Texture2D<float> DepthTexture : register(t4);
+#endif
 SamplerState TextureSampler : register(s0);
 
 #ifdef DX12
@@ -164,7 +259,11 @@ cbuffer cb1
 	float AREF;
 	float4 WH;
 	float2 TA;
+#if PS_Z_INTEGER
+	uint MaxDepthPS;
+#else
 	float MaxDepthPS;
+#endif
 	float Af;
 	uint4 FbMask;
 	float4 HalfTexel;
@@ -184,6 +283,8 @@ float4 sample_c(float2 uv, float uv_w, int2 xy)
 {
 #if PS_TEX_IS_FB == 1
 	return RtTexture.Load(int3(int2(xy), 0));
+#elif PS_TEX_INTEGER == 1
+	return float4(0.0f, 0.0f, 0.0f, 0.0f);
 #elif PS_REGION_RECT == 1
 	return Texture.Load(int3(int2(uv), 0));
 #else
@@ -384,20 +485,26 @@ float4x4 sample_4p(uint4 u)
 	return c;
 }
 
-int fetch_raw_depth(int2 xy)
+uint fetch_raw_depth(int2 xy)
 {
+#if PS_TEX_INTEGER
+	return Texture.Load(int3(xy, 0));
+#else
 #if PS_TEX_IS_FB == 1
 	float4 col = RtTexture.Load(int3(xy, 0));
 #else
 	float4 col = Texture.Load(int3(xy, 0));
 #endif
-	return (int)(col.r * exp2(32.0f));
+	return (uint)(col.r * exp2(32.0f));
+#endif
 }
 
 float4 fetch_raw_color(int2 xy)
 {
 #if PS_TEX_IS_FB == 1
 	return RtTexture.Load(int3(xy, 0));
+#elif PS_TEX_INTEGER
+	return float4(0.0f, 0.0f, 0.0f, 0.0f);
 #else
 	return Texture.Load(int3(xy, 0));
 #endif
@@ -407,6 +514,8 @@ float4 fetch_c(int2 uv)
 {
 #if PS_TEX_IS_FB == 1
 	return RtTexture.Load(int3(uv, 0));
+#elif PS_TEX_INTEGER
+	return float4(0.0f, 0.0f, 0.0f, 0.0f);
 #else
 	return Texture.Load(int3(uv, 0));
 #endif
@@ -466,10 +575,10 @@ float4 sample_depth(float2 st, float2 pos)
 	if (PS_TALES_OF_ABYSS_HLE == 1)
 	{
 		// Warning: UV can't be used in channel effect
-		int depth = fetch_raw_depth(pos);
+		uint depth = fetch_raw_depth(pos);
 
 		// Convert msb based on the palette
-		t = Palette.Load(int3((depth >> 8) & 0xFF, 0, 0)) * 255.0f;
+		t = Palette.Load(uint3((depth >> 8) & 0xFF, 0, 0)) * 255.0f;
 	}
 	else if (PS_URBAN_CHAOS_HLE == 1)
 	{
@@ -480,7 +589,7 @@ float4 sample_depth(float2 st, float2 pos)
 		// To be faster both steps (msb&lsb) are done in a single pass.
 
 		// Warning: UV can't be used in channel effect
-		int depth = fetch_raw_depth(pos);
+		uint depth = fetch_raw_depth(pos);
 
 		// Convert lsb based on the palette
 		t = Palette.Load(int3(depth & 0xFF, 0, 0)) * 255.0f;
@@ -494,8 +603,12 @@ float4 sample_depth(float2 st, float2 pos)
 	{
 		// Based on ps_convert_float32_rgba8 of convert
 
-		// Convert a FLOAT32 depth texture into a RGBA color texture
+		// Convert a FLOAT32 or UINT32 depth texture into a RGBA color texture
+#if PS_TEX_INTEGER
+		uint d = fetch_raw_depth(uv);
+#else
 		uint d = uint(fetch_c(uv).r * exp2(32.0f));
+#endif
 		t = float4(uint4((d & 0xFFu), ((d >> 8) & 0xFFu), ((d >> 16) & 0xFFu), (d >> 24)));
 	}
 	else if (PS_DEPTH_FMT == 2)
@@ -503,7 +616,11 @@ float4 sample_depth(float2 st, float2 pos)
 		// Based on ps_convert_float16_rgb5a1 of convert
 
 		// Convert a FLOAT32 (only 16 lsb) depth into a RGB5A1 color texture
+#if PS_TEX_INTEGER
+		uint d = fetch_raw_depth(uv);
+#else
 		uint d = uint(fetch_c(uv).r * exp2(32.0f));
+#endif
 		t = float4(uint4((d & 0x1Fu), ((d >> 5) & 0x1Fu), ((d >> 10) & 0x1Fu), (d >> 15) & 0x01u)) * float4(8.0f, 8.0f, 8.0f, 128.0f);
 	}
 	else if (PS_DEPTH_FMT == 3)
@@ -538,7 +655,7 @@ float4 fetch_red(int2 xy)
 
 	if ((PS_DEPTH_FMT == 1) || (PS_DEPTH_FMT == 2))
 	{
-		int depth = (fetch_raw_depth(xy)) & 0xFF;
+		uint depth = (fetch_raw_depth(xy)) & 0xFF;
 		rt = (float4)(depth) / 255.0f;
 	}
 	else
@@ -555,7 +672,7 @@ float4 fetch_green(int2 xy)
 
 	if ((PS_DEPTH_FMT == 1) || (PS_DEPTH_FMT == 2))
 	{
-		int depth = (fetch_raw_depth(xy) >> 8) & 0xFF;
+		uint depth = (fetch_raw_depth(xy) >> 8) & 0xFF;
 		rt = (float4)(depth) / 255.0f;
 	}
 	else
@@ -572,7 +689,7 @@ float4 fetch_blue(int2 xy)
 
 	if ((PS_DEPTH_FMT == 1) || (PS_DEPTH_FMT == 2))
 	{
-		int depth = (fetch_raw_depth(xy) >> 16) & 0xFF;
+		uint depth = (fetch_raw_depth(xy) >> 16) & 0xFF;
 		rt = (float4)(depth) / 255.0f;
 	}
 	else
@@ -600,8 +717,8 @@ float4 fetch_gXbY(int2 xy)
 {
 	if ((PS_DEPTH_FMT == 1) || (PS_DEPTH_FMT == 2))
 	{
-		int depth = fetch_raw_depth(xy);
-		int bg = (depth >> (8 + ChannelShuffle.w)) & 0xFF;
+		uint depth = fetch_raw_depth(xy);
+		uint bg = (depth >> (8 + ChannelShuffle.w)) & 0xFF;
 		return (float4)(bg);
 	}
 	else
@@ -718,27 +835,27 @@ bool atst(float4 C)
 {
 	float a = C.a;
 
-	if(PS_ATST == 1)
-	{
-		return (a <= AREF);
-	}
-	else if(PS_ATST == 2)
-	{
-		return (a >= AREF);
-	}
-	else if(PS_ATST == 3)
-	{
-		 return (abs(a - AREF) <= 0.5f);
-	}
-	else if(PS_ATST == 4)
-	{
-		return (abs(a - AREF) >= 0.5f);
-	}
-	else
-	{
-		// nothing to do
-		return true;
-	}
+#if PS_ATST == PS_ATST_LEQUAL
+
+	return (a <= AREF);
+
+#elif PS_ATST == PS_ATST_GEQUAL
+
+	return (a >= AREF);
+
+#elif PS_ATST == PS_ATST_EQUAL
+
+	return (abs(a - AREF) <= 0.5f);
+
+#elif PS_ATST == PS_ATST_NOTEQUAL
+
+	return (abs(a - AREF) >= 0.5f);
+
+#else
+
+	return true;
+
+#endif
 }
 
 float4 fog(float4 c, float f)
@@ -1021,12 +1138,114 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 	}
 }
 
+// Emulate 64 bit multiplication to avoid using higher feature levels.
+void mul64(uint x, uint y, out uint lo, out uint hi)
+{
+	uint hh = (x >> 16) * (y >> 16);
+	uint hl = (x >> 16) * (y & 0xFFFF);
+	uint lh = (x & 0xFFFF) * (y >> 16);
+	uint ll = (x & 0xFFFF) * (y & 0xFFFF);
+	lo = ll + (hl << 16) + (lh << 16);
+	uint c = ((hl & 0xFFFF) + (lh & 0xFFFF) + (ll >> 16)) >> 16; // carry bit
+	hi = hh + (hl >> 16) + (lh >> 16) + c;
+}
+
+// Interpolate Z using barycentric triangle/line coordinates
+uint interp_zint(float2 bary, uint3 z)
+{
+	// Convert weights from floating to 24 bit fixed point.
+	const uint pow24 = 1u << 24;
+	uint w0 = clamp(uint(float(pow24) * bary.x), 0, pow24);
+	uint w1 = 0;
+	uint w2 = 0;
+
+	// Make sure all weights sum up to 2^24 and are in the correct range
+#if PS_PRIMCLASS == LINE_CLASS
+	w1 = pow24 - w0;
+#elif PS_PRIMCLASS == TRIANGLE_CLASS
+	w1 = uint(float(pow24) * bary.y);
+	w1 = min(w1, pow24 - w0);
+	w2 = pow24 - w1 - w0;
+#endif
+
+	// Get the 64 bit products w * z
+	uint z0_lo = 0, z0_hi = 0;
+	uint z1_lo = 0, z1_hi = 0;
+	uint z2_lo = 0, z2_hi = 0;
+
+	mul64(w0, z.x, z0_lo, z0_hi);
+	mul64(w1, z.y, z1_lo, z1_hi);
+#if PS_PRIMCLASS == TRIANGLE_CLASS
+	mul64(w2, z.z, z2_lo, z2_hi);
+#endif
+
+	// Emulate 64 bit addition to avoid using higher feature levels.
+	uint z_lo = z0_lo;
+	uint z_hi = z0_hi;
+
+	z_lo += z1_lo;
+	z_hi += z1_hi + uint(z_lo < z1_lo);
+
+#if PS_PRIMCLASS == TRIANGLE_CLASS
+	z_lo += z2_lo;
+	z_hi += z2_hi + uint(z_lo < z2_lo);
+#endif
+
+	// Note: truncating rather than round seems to be more accurate.
+	// Add 2^23 to the result before truncating so that it rounds.
+	// z_lo += 1 << 23;
+	// z_hi += uint(z_lo < (1 << 23));
+
+	// The weights are 24 bits so get bits 24:55 of the result.
+	return (z_hi << 8) + (z_lo >> 24);
+}
+
 PS_OUTPUT ps_main(PS_INPUT input)
 {
+#if PS_Z_INTEGER
+	#if (PS_PRIMCLASS == TRIANGLE_CLASS || PS_PRIMCLASS == LINE_CLASS)
+		// Interpolate integer Z from barycentric coordinates.
+		uint input_z = interp_zint(input.bary, input.zi);
+	#else
+		uint input_z = input.zi.x; // No interpolation
+	#endif
+#else
+	float input_z = input.p.z;
+#endif
+
+	// Must floor before depth testing.
+#if !PS_Z_INTEGER && PS_ZFLOOR
+	input_z = floor(input_z * exp2(32.0f)) * exp2(-32.0f);
+#endif
+
+#if PS_DEPTH_FEEDBACK
+	#if PS_Z_INTEGER
+		uint curr_z = DepthTexture.Load(int3(input.p.xy, 0)).r & MaxDepthPS;
+	#else
+		float curr_z = DepthTexture.Load(int3(input.p.xy, 0)).r;
+	#endif
+#endif
+
+#if PS_DEPTH_FEEDBACK && SW_Z_TESTING
+	#if PS_ZTST == ZTST_GEQUAL
+		if (input_z < curr_z)
+			discard;
+	#elif PS_ZTST == ZTST_GREATER
+		if (input_z <= curr_z)
+			discard;
+	#endif
+#endif // PS_ZTST
+
 	float4 C = ps_color(input);
+
+#if PS_FIXED_ONE_A
+	// AA (Fixed one) will output a coverage of 1.0 as alpha
+	C.a = 128.0f;
+#endif
+
 	bool atst_pass = atst(C);
 
-#if PS_AFAIL == 0 // KEEP or ATST off
+#if PS_AFAIL == AFAIL_KEEP
 	if (!atst_pass)
 		discard;
 #endif
@@ -1038,14 +1257,6 @@ PS_OUTPUT ps_main(PS_INPUT input)
 		// fail depth test on prohibited lines
 		if ((int(input.p.y) & 1) == (PS_SCANMSK & 1))
 			discard;
-	}
-
-	// Must be done before alpha correction
-
-	// AA (Fixed one) will output a coverage of 1.0 as alpha
-	if (PS_FIXED_ONE_A)
-	{
-		C.a = 128.0f;
 	}
 
 	float4 alpha_blend = (float4)0.0f;
@@ -1192,7 +1403,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 
 	ps_fbmask(C, input.p.xy);
 
-#if PS_AFAIL == 3 && !PS_NO_COLOR1 // RGB_ONLY
+#if (PS_AFAIL == AFAIL_RGB_ONLY_DSB) && !PS_NO_COLOR1
 	// Use alpha blend factor to determine whether to update A.
 	alpha_blend.a = float(atst_pass);
 #endif
@@ -1203,11 +1414,23 @@ PS_OUTPUT ps_main(PS_INPUT input)
 #if !PS_NO_COLOR1
 	output.c1 = alpha_blend;
 #endif
-#if PS_AFAIL == 3 && PS_NO_COLOR1 // RGB_ONLY, no dual src blend
+
+	// Alpha test with feedback
+#if (PS_AFAIL == AFAIL_FB_ONLY) && PS_DEPTH_FEEDBACK && PS_ZWRITE
+	if (!atst_pass)
+		input_z = curr_z;
+#elif (PS_AFAIL == AFAIL_ZB_ONLY) && PS_COLOR_FEEDBACK
+	if (!atst_pass)
+		output.c0 = RtTexture.Load(int3(input.p.xy, 0));
+#elif (PS_AFAIL == AFAIL_RGB_ONLY)
 	if (!atst_pass)
 	{
-		float RTa = NEEDS_RT_FOR_AFAIL ? RtTexture.Load(int3(input.p.xy, 0)).a : 0.0f;
-		output.c0.a = RTa;
+	#if PS_COLOR_FEEDBACK
+		output.c0.a = RtTexture.Load(int3(input.p.xy, 0)).a;
+	#endif
+	#if PS_DEPTH_FEEDBACK && PS_ZWRITE
+		input_z = curr_z;
+	#endif
 	}
 #endif
 
@@ -1215,16 +1438,21 @@ PS_OUTPUT ps_main(PS_INPUT input)
 
 #endif // PS_DATE != 1/2
 
-#if PS_ZFLOOR
-float depth_value = floor(input.p.z * exp2(32.0f)) * exp2(-32.0f);
-#else
-float depth_value = input.p.z;
+#if PS_ZCLAMP
+	input_z = min(input_z, MaxDepthPS);
 #endif
 
-#if PS_ZCLAMP
-	output.depth = min(depth_value, MaxDepthPS);
-#elif PS_ZFLOOR
-	output.depth = depth_value;
+#if PS_ZCLAMP && PS_Z_INTEGER && PS_DEPTH_FEEDBACK
+	// Mask based on depth format
+	input_z |= (DepthTexture.Load(int3(input.p.xy, 0)).r & ~MaxDepthPS);
+#endif
+
+#if PS_ZWRITE
+#if PS_DEPTH_FEEDBACK && PS_NO_COLOR1 && DX12 && !PS_Z_INTEGER
+	// Output color clone for feedback as well as real depth.
+	output.depth_color = input_z;
+#endif
+	output.depth = input_z;
 #endif
 
 	return output;
@@ -1302,10 +1530,17 @@ VS_OUTPUT vs_main(VS_INPUT input)
 	output.c = input.c;
 	output.t.z = input.f.r;
 
+#if VS_Z_INTEGER
+	output.zi = uint3(input.z, 0, 0);
+#if VS_NEEDS_BARY
+	output.bary = input.bary;
+#endif
+#endif
+
 	return output;
 }
 
-#if VS_EXPAND != 0
+#if VS_EXPAND != VS_EXPAND_NONE
 
 struct VS_RAW_INPUT
 {
@@ -1336,12 +1571,25 @@ VS_INPUT load_vertex(uint index)
 	vert.z = raw.Z;
 	vert.uv = uint2(raw.UV & 0xFFFFu, raw.UV >> 16);
 	vert.f = float4(float(raw.FOG & 0xFFu), float((raw.FOG >> 8) & 0xFFu), float((raw.FOG >> 16) & 0xFFu), float(raw.FOG >> 24)) / 255.0f;
+
+	// Barycentric coordinates handling
+#if VS_Z_INTEGER && VS_NEEDS_BARY
+#if VS_EXPAND == VS_EXPAND_TRIANGLE_Z_INTEGER
+	uint index_mod = index % 3;
+#elif VS_EXPAND == VS_EXPAND_LINE || VS_EXPAND == VS_EXPAND_LINE_Z_INTEGER
+	uint index_mod = index & 1;
+#else
+	uint index_mod = 0;
+#endif
+	vert.bary = float2(index_mod == 0, index_mod == 1);
+#endif
+
 	return vert;
 }
 
 VS_OUTPUT vs_main_expand(uint vid : SV_VertexID)
 {
-#if VS_EXPAND == 1 // Point
+#if VS_EXPAND == VS_EXPAND_POINT
 
 	VS_OUTPUT vtx = vs_main(load_vertex(vid >> 2));
 
@@ -1350,7 +1598,7 @@ VS_OUTPUT vs_main_expand(uint vid : SV_VertexID)
 
 	return vtx;
 
-#elif VS_EXPAND == 2 // Line
+#elif VS_EXPAND == VS_EXPAND_LINE
 
 	uint vid_base = vid >> 2;
 	bool is_bottom = vid & 2;
@@ -1366,13 +1614,18 @@ VS_OUTPUT vs_main_expand(uint vid : SV_VertexID)
 	float2 offset = (is_bottom ^ is_right) ? line_width : -line_width;
 	vtx.p.xy += offset;
 
+	// All vertices of the same primitive must have z in same order
+#if VS_Z_INTEGER
+	vtx.zi = (vid_base & 1) ? uint3(vtx.zi.x, other.zi.x, 0) : uint3(other.zi.x, vtx.zi.x, 0);
+#endif
+
 	// Lines will be run as (0 1 2) (1 2 3)
 	// This means that both triangles will have a point based off the top line point as their first point
 	// So we don't have to do anything for !IIP
 
 	return vtx;
 
-#elif VS_EXPAND == 3 // Sprite
+#elif VS_EXPAND == VS_EXPAND_SPRITE
 
 	// Sprite points are always in pairs
 	uint vid_base = vid >> 1;
@@ -1395,6 +1648,33 @@ VS_OUTPUT vs_main_expand(uint vid : SV_VertexID)
 
 	return vtx;
 
+#elif VS_Z_INTEGER && (VS_EXPAND == VS_EXPAND_TRIANGLE_Z_INTEGER)
+
+	uint vid_base = (vid / 3) * 3;
+	VS_INPUT raw0 = load_vertex(vid_base + 0);
+	VS_INPUT raw1 = load_vertex(vid_base + 1);
+	VS_INPUT raw2 = load_vertex(vid_base + 2);
+	VS_OUTPUT vtx = vs_main(load_vertex(vid));
+
+	// All vertices of the same primitive must have z in same order
+	vtx.zi = uint3(raw0.z, raw1.z, raw2.z);
+
+	return vtx;
+
+#elif VS_Z_INTEGER && (VS_EXPAND == VS_EXPAND_LINE_Z_INTEGER)
+
+	uint vid_base = vid & ~1;
+	VS_INPUT raw0 = load_vertex(vid_base + 0);
+	VS_INPUT raw1 = load_vertex(vid_base + 1);
+	VS_OUTPUT vtx = vs_main(load_vertex(vid));
+
+	// All vertices of the same primitive must have z in same order
+	vtx.zi = uint3(raw0.z, raw1.z, 0);
+	
+	return vtx;
+
+#elif VS_Z_INTEGER && (VS_EXPAND == VS_EXPAND_POINT_Z_INTEGER)
+	return vs_main(load_vertex(vid));
 #endif
 }
 
