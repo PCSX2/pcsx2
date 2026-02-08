@@ -102,10 +102,16 @@ static void CDVD_INT(int eCycle)
 // test (which will cause the exception to be handled).
 static void cdvdSetIrq(uint id = (1 << Irq_CommandComplete))
 {
+	if (!(cdvd.IntrStat & id))
+	{
+		iopIntcIrq(2);
+		psxSetNextBranchDelta(20);
+	}
+	else
+		DevCon.Warning("CDVD trying to double issue IRQ %x", id);
+
 	cdvd.IntrStat |= id;
 	cdvd.AbortRequested = false;
-	iopIntcIrq(2);
-	psxSetNextBranchDelta(20);
 }
 
 static int mg_BIToffset(u8* buffer)
