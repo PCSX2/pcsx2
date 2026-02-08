@@ -5817,26 +5817,11 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 			Console.Warning("VK: Failed to allocate temp texture for RT copy.");
 	}
 
-	// We don't need the very first barrier if this is the first draw after switching to feedback loop,
-	// because the layout change in itself enforces the execution dependency. colclip hw needs a barrier between
-	// setup and the first draw to read it. TODO: Make colclip hw use subpasses instead.
-
-	// However, it turns out *not* doing this causes GPU resets on RDNA3, specifically Windows drivers.
-	// Despite the layout changing enforcing the execution dependency between previous draws and the first
-	// input attachment read, it still wants the region/fragment-local barrier...
-
-	const bool skip_first_barrier =
-		(draw_rt && draw_rt->GetLayout() != GSTextureVK::Layout::FeedbackLoop && !pipe.ps.colclip_hw && !IsDeviceAMD());
-
 	OMSetRenderTargets(draw_rt, draw_ds, config.scissor, static_cast<FeedbackLoopFlag>(pipe.feedback_loop_flags));
 	if (pipe.IsRTFeedbackLoop())
 	{
 		pxAssertMsg(m_features.texture_barrier, "Texture barriers enabled");
 		PSSetShaderResource(2, draw_rt, false);
-
-		// If this is the first draw to the target as a feedback loop, make sure we re-generate the texture descriptor.
-		// Otherwise, we might have a previous descriptor left over, that has the RT in a different state.
-		m_dirty_flags |= (skip_first_barrier ? static_cast<u32>(DIRTY_FLAG_TFX_TEXTURE_RT) : 0);
 	}
 
 	// Begin render pass if new target or out of the area.
@@ -5911,7 +5896,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 
 	// now we can do the actual draw
 	if (BindDrawPipeline(pipe))
-		SendHWDraw(config, draw_rt, config.require_one_barrier, config.require_full_barrier, skip_first_barrier);
+		SendHWDraw(config, draw_rt, config.require_one_barrier, config.require_full_barrier);
 
 	// blend second pass
 	if (config.blend_multi_pass.enable)
@@ -5947,7 +5932,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		if (BindDrawPipeline(pipe))
 		{
 			SendHWDraw(config, draw_rt, config.alpha_second_pass.require_one_barrier,
-				config.alpha_second_pass.require_full_barrier, false);
+				config.alpha_second_pass.require_full_barrier);
 		}
 	}
 
@@ -6070,7 +6055,7 @@ VkDependencyFlags GSDeviceVK::GetColorBufferBarrierFlags() const
 }
 
 void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt,
-	bool one_barrier, bool full_barrier, bool skip_first_barrier)
+	bool one_barrier, bool full_barrier)
 {
 	if (!m_features.texture_barrier) [[unlikely]]
 	{
@@ -6092,21 +6077,9 @@ void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt,
 		const u32 draw_list_size = static_cast<u32>(config.drawlist->size());
 
 		GL_PUSH("Split the draw");
-		g_perfmon.Put(
-			GSPerfMon::Barriers, static_cast<u32>(draw_list_size) - static_cast<u32>(skip_first_barrier));
+		g_perfmon.Put(GSPerfMon::Barriers, static_cast<u32>(draw_list_size));
 
-		u32 p = 0;
-		u32 n = 0;
-
-		if (skip_first_barrier)
-		{
-			const u32 count = (*config.drawlist)[n] * indices_per_prim;
-			DrawIndexedPrimitive(p, count);
-			p += count;
-			++n;
-		}
-
-		for (; n < draw_list_size; n++)
+		for (u32 n = 0, p = 0; n < draw_list_size; n++)
 		{
 			vkCmdPipelineBarrier(GetCurrentCommandBuffer(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
 				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, barrier_flags, 0, nullptr, 0, nullptr, 1, &barrier);
@@ -6119,7 +6092,7 @@ void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt,
 		return;
 	}
 
-	if (one_barrier && !skip_first_barrier)
+	if (one_barrier)
 	{
 		g_perfmon.Put(GSPerfMon::Barriers, 1);
 
