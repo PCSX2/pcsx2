@@ -222,7 +222,7 @@ HANDLE TAPOpen(const std::string& device_guid)
 		unsigned long minor;
 		unsigned long debug;
 	} version;
-	LONG version_len;
+	DWORD version_len;
 
 	std::string device_path = USERMODEDEVICEDIR + device_guid + TAPSUFFIX;
 
@@ -242,7 +242,7 @@ HANDLE TAPOpen(const std::string& device_guid)
 
 	const BOOL bret = DeviceIoControl(handle.get(), TAP_IOCTL_GET_VERSION,
 		&version, sizeof(version),
-		&version, sizeof(version), (LPDWORD)&version_len, NULL);
+		&version, sizeof(version), &version_len, NULL);
 
 	if (bret == FALSE)
 	{

@@ -239,7 +239,7 @@ std::vector<std::pair<std::string, std::string>> LayeredSettingsInterface::GetKe
 				ret.push_back(std::move(entry));
 			}
 			// Mark keys as seen after processing all entries in case the layer has multiple entries for a specific key
-			for (auto cur = ret.begin() + newly_added_begin, end = ret.end(); cur < end; cur++)
+			for (auto cur = ret.begin() + newly_added_begin; cur != ret.end(); ++cur)
 				seen.insert(cur->first);
 		}
 	}
