@@ -23,6 +23,7 @@ public:
 		SyncPoint,
 		Barriers,
 		RenderPasses,
+		TargetTransitions,
 		CounterLast,
 
 		// Reused counters for HW.

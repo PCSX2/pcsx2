@@ -38,6 +38,31 @@ private:
 	using OI_Ptr = bool(*)(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t); // OI - Before draw
 	using MV_Ptr = bool(*)(GSRendererHW& r); // MV - Move
 
+	// We modify some of the context registers to optimize away unnecessary operations.
+	// Instead of messing with the real context, we copy them and use those instead.
+	struct HWCachedCtx
+	{
+		GIFRegTEX0 TEX0;
+		GIFRegTEXA TEXA;
+		GIFRegCLAMP CLAMP;
+		GIFRegTEST TEST;
+		GIFRegFRAME FRAME;
+		GIFRegZBUF ZBUF;
+
+		__ri bool DepthRead() const { return TEST.ZTE && (TEST.ZTST == ZTST_GEQUAL || TEST.ZTST == ZTST_GREATER); }
+
+		__ri bool DepthWrite() const
+		{
+			if (TEST.ATE && TEST.ATST == ATST_NEVER &&
+				TEST.AFAIL != AFAIL_ZB_ONLY) // alpha test, all pixels fail, z buffer is not updated
+			{
+				return false;
+			}
+
+			return ZBUF.ZMSK == 0 && TEST.ZTE != 0; // ZTE == 0 is bug on the real hardware, write is blocked then
+		}
+	};
+
 	// Require special argument
 	bool OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Source* t, const GSVector4i& r_draw);
 	bool TryGSMemClear(bool no_rt, bool preserve_rt, bool invalidate_rt, u32 rt_end_bp, bool no_ds,
@@ -99,6 +124,7 @@ private:
 	u32 EmulateChannelShuffle(GSTextureCache::Target* src, bool test_only, GSTextureCache::Target* rt = nullptr);
 	void EmulateBlending(int rt_alpha_min, int rt_alpha_max, const bool DATE, bool& DATE_PRIMID, bool& DATE_BARRIER, GSTextureCache::Target* rt,
 		bool can_scale_rt_alpha, bool& new_rt_alpha_scale);
+	void SetupROV();
 	void CleanupDraw(bool invalidate_temp_src);
 
 	void EmulateTextureSampler(const GSTextureCache::Target* rt, const GSTextureCache::Target* ds,
@@ -110,7 +136,9 @@ private:
 		const TextureMinMaxResult& tmm);
 
 	void EmulateZbuffer(const GSTextureCache::Target* ds);
-	void EmulateATST(float& AREF, GSHWDrawConfig::PSSelector& ps, bool pass_2);
+	static void GetAlphaTestConfigPS(const u32 atst, const u8 aref, const bool invert_test, u32& ps_atst_out, float& aref_out);
+	void EmulateAlphaTest(const bool& DATE, bool& DATE_BARRIER, bool& DATE_one, bool& DATE_PRIMID);
+	void EmulateAlphaTestSecondPass();
 
 	void SetTCOffset();
 	bool NextDrawColClip() const;
@@ -136,31 +164,6 @@ private:
 	bool IsDepthAlwaysPassing();
 	bool IsUsingCsInBlend();
 	bool IsUsingAsInBlend();
-
-	// We modify some of the context registers to optimize away unnecessary operations.
-	// Instead of messing with the real context, we copy them and use those instead.
-	struct HWCachedCtx
-	{
-		GIFRegTEX0 TEX0;
-		GIFRegTEXA TEXA;
-		GIFRegCLAMP CLAMP;
-		GIFRegTEST TEST;
-		GIFRegFRAME FRAME;
-		GIFRegZBUF ZBUF;
-
-		__ri bool DepthRead() const { return TEST.ZTE && TEST.ZTST >= 2; }
-
-		__ri bool DepthWrite() const
-		{
-			if (TEST.ATE && TEST.ATST == ATST_NEVER &&
-				TEST.AFAIL != AFAIL_ZB_ONLY) // alpha test, all pixels fail, z buffer is not updated
-			{
-				return false;
-			}
-
-			return ZBUF.ZMSK == 0 && TEST.ZTE != 0; // ZTE == 0 is bug on the real hardware, write is blocked then
-		}
-	};
 
 	// CRC Hacks
 	bool IsBadFrame();
@@ -196,6 +199,33 @@ private:
 	float m_userhacks_tcoffset_y = 0.0f;
 
 	GSVector2i m_lod = {}; // Min & Max level of detail
+
+	GIFRegALPHA m_optimized_blend = {}; // Save for ROV setup
+
+	struct TextureROVHistory
+	{
+		GSTexture* m_tex = nullptr; // Texture being tracked.
+		u32 m_last_draw = 0; // Last draw this was updated.
+		float m_average_barriers = 1.0f; // Average number of barriers per draw.
+
+		TextureROVHistory(GSTexture* tex) : m_tex(tex)
+		{
+		}
+	};
+
+	// Settings for the ROV enable/disable heuristic.
+	u32 m_rov_history_textures = 16;
+	u32 m_rov_history_draws = 32;
+	u32 m_rov_max_barriers = 16;
+	float m_rov_history_weight_color = 0.75f;
+	float m_rov_history_weight_depth = 0.75f;
+	float m_rov_barriers_enable_color = 2.0f;
+	float m_rov_barriers_enable_depth = 4.0f;
+	float m_rov_barriers_disable_color = 1.125f;
+	float m_rov_barriers_disable_depth = 1.25f;
+	u32 m_rov_preset = 0;
+	std::vector<TextureROVHistory*> m_texture_rov_history;
+	__fi TextureROVHistory* GetTextureROVHistory(GSTexture* tex);
 
 	GSHWDrawConfig m_conf = {};
 	HWCachedCtx m_cached_ctx;
@@ -273,4 +303,8 @@ public:
 
 	/// Compute the drawlist (if not already present) and bounding boxes for the current draw.
 	std::size_t ComputeDrawlistGetSize(float scale);
+
+	/// Create a temporary color clone of depth for depth feedback (DX12 only right now)
+	void StartDepthAsRTFeedback();
+	void CleanupDepthAsRTFeedback();
 };

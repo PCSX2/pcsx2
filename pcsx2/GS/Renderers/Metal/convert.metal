@@ -171,6 +171,11 @@ fragment float4 ps_convert_float16_rgb5a1(ConvertShaderData data [[stage_in]], C
 	return convert_depth16_rgba8(res.sample(data.t)) / 255.f;
 }
 
+fragment float ps_convert_float32_depth_to_color(ConvertShaderData data [[stage_in]], ConvertPSDepthRes res)
+{
+	return res.sample(data.t);
+}
+
 struct DepthOut
 {
 	float depth [[depth(any)]];
@@ -255,6 +260,12 @@ fragment DepthOut ps_convert_float32_float24(ConvertShaderData data [[stage_in]]
 	uint val = uint(res.sample(data.t) * 0x1p32) & 0xFFFFFF;
 	return float(val) * 0x1p-32f;
 }
+
+fragment DepthOut ps_convert_float32_color_to_depth(ConvertShaderData data [[stage_in]], ConvertPSRes res)
+{
+	return res.sample(data.t).x;
+}
+
 
 fragment DepthOut ps_convert_rgba8_float32(ConvertShaderData data [[stage_in]], ConvertToDepthRes res)
 {

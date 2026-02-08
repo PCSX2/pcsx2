@@ -46,6 +46,7 @@ public:
 		bool vk_khr_driver_properties : 1;
 		bool vk_khr_shader_non_semantic_info : 1;
 		bool vk_ext_attachment_feedback_loop_layout : 1;
+		bool vk_ext_fragment_shader_interlock : 1;
 	};
 
 	// Global state accessors
@@ -61,8 +62,8 @@ public:
 	// The interaction between raster order attachment access and fbfetch is unclear.
 	__fi bool UseFeedbackLoopLayout() const
 	{
-		return (m_optional_extensions.vk_ext_attachment_feedback_loop_layout &&
-				!m_optional_extensions.vk_ext_rasterization_order_attachment_access);
+		return m_optional_extensions.vk_ext_attachment_feedback_loop_layout &&
+		       !m_optional_extensions.vk_ext_rasterization_order_attachment_access;
 	}
 
 	// Helpers for getting constants
@@ -294,7 +295,8 @@ public:
 	{
 		FeedbackLoopFlag_None = 0,
 		FeedbackLoopFlag_ReadAndWriteRT = 1,
-		FeedbackLoopFlag_ReadDS = 2,
+		FeedbackLoopFlag_ReadDepth = 2,
+		FeedbackLoopFlag_ReadAndWriteDepth = 4,
 	};
 
 	struct alignas(8) PipelineSelector
@@ -309,7 +311,7 @@ public:
 				u32 rt : 1;
 				u32 ds : 1;
 				u32 line_width : 1;
-				u32 feedback_loop_flags : 2;
+				u32 feedback_loop_flags : 3;
 			};
 
 			u32 key;
@@ -327,7 +329,8 @@ public:
 		__fi PipelineSelector() { std::memset(this, 0, sizeof(*this)); }
 
 		__fi bool IsRTFeedbackLoop() const { return ((feedback_loop_flags & FeedbackLoopFlag_ReadAndWriteRT) != 0); }
-		__fi bool IsTestingAndSamplingDepth() const { return ((feedback_loop_flags & FeedbackLoopFlag_ReadDS) != 0); }
+		__fi bool IsDepthFeedbackLoop() const { return ((feedback_loop_flags & FeedbackLoopFlag_ReadAndWriteDepth) != 0); }
+		__fi bool IsTestingAndSamplingDepth() const { return ((feedback_loop_flags & (FeedbackLoopFlag_ReadDepth | FeedbackLoopFlag_ReadAndWriteDepth)) != 0); }
 	};
 	static_assert(sizeof(PipelineSelector) == 24, "Pipeline selector is 24 bytes");
 
@@ -358,10 +361,13 @@ public:
 	};
 	enum TFX_TEXTURES : u32
 	{
-		TFX_TEXTURE_TEXTURE,
+		TFX_TEXTURE_TEXTURE = 0,
 		TFX_TEXTURE_PALETTE,
 		TFX_TEXTURE_RT,
 		TFX_TEXTURE_PRIMID,
+		TFX_TEXTURE_DEPTH,
+		TFX_TEXTURE_RT_ROV,
+		TFX_TEXTURE_DEPTH_ROV,
 
 		NUM_TFX_TEXTURES
 	};
@@ -558,11 +564,12 @@ public:
 	void IASetVertexBuffer(const void* vertex, size_t stride, size_t count, size_t align_multiplier = 1);
 	void IASetIndexBuffer(const void* index, size_t count);
 
-	void PSSetShaderResource(int i, GSTexture* sr, bool check_state);
+	void PSSetUnorderedAccess(int i, GSTexture* tex, bool check_state, bool uav_read, bool uav_write);
+	void PSSetShaderResource(int i, GSTexture* sr, bool check_state, bool read_only = true);
 	void PSSetSampler(GSHWDrawConfig::SamplerSelector sel);
 
 	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i& scissor,
-		FeedbackLoopFlag feedback_loop = FeedbackLoopFlag_None);
+		FeedbackLoopFlag feedback_loop = FeedbackLoopFlag_None, const GSVector2i& viewport_size = {});
 
 	void SetVSConstantBuffer(const GSHWDrawConfig::VSConstantBuffer& cb);
 	void SetPSConstantBuffer(const GSHWDrawConfig::PSConstantBuffer& cb);
@@ -570,10 +577,11 @@ public:
 
 	void RenderHW(GSHWDrawConfig& config) override;
 	void UpdateHWPipelineSelector(GSHWDrawConfig& config, PipelineSelector& pipe);
-	void UploadHWDrawVerticesAndIndices(const GSHWDrawConfig& config);
-	VkImageMemoryBarrier GetColorBufferBarrier(GSTextureVK* rt) const;
-	VkDependencyFlags GetColorBufferBarrierFlags() const;
-	void SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt,
+	void UploadHWDrawVerticesAndIndices(GSHWDrawConfig& config);
+	VkImageMemoryBarrier GetColorBufferFeedbackBarrier(GSTextureVK* rt) const;
+	VkImageMemoryBarrier GetDepthStencilBufferFeedbackBarrier(GSTextureVK* ds) const;
+	VkDependencyFlags GetFeedbackBarrierDependencyFlags() const;
+	void SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, GSTextureVK* draw_ds,
 		bool one_barrier, bool full_barrier, bool skip_first_barrier);
 
 	//////////////////////////////////////////////////////////////////////////
@@ -623,25 +631,30 @@ public:
 private:
 	enum DIRTY_FLAG : u32
 	{
-		DIRTY_FLAG_TFX_TEXTURE_0 = (1 << 0), // 0, 1, 2, 3
-		DIRTY_FLAG_TFX_UBO = (1 << 4),
-		DIRTY_FLAG_UTILITY_TEXTURE = (1 << 5),
-		DIRTY_FLAG_BLEND_CONSTANTS = (1 << 6),
-		DIRTY_FLAG_LINE_WIDTH = (1 << 7),
-		DIRTY_FLAG_INDEX_BUFFER = (1 << 8),
-		DIRTY_FLAG_VIEWPORT = (1 << 9),
-		DIRTY_FLAG_SCISSOR = (1 << 10),
-		DIRTY_FLAG_PIPELINE = (1 << 11),
-		DIRTY_FLAG_VS_CONSTANT_BUFFER = (1 << 12),
-		DIRTY_FLAG_PS_CONSTANT_BUFFER = (1 << 13),
+		DIRTY_FLAG_TFX_TEXTURE_0 = (1 << 0), // 0, 1, 2, 3, 4, 5, 6
+		DIRTY_FLAG_TFX_UBO = (1 << 7),
+		DIRTY_FLAG_UTILITY_TEXTURE = (1 << 8),
+		DIRTY_FLAG_BLEND_CONSTANTS = (1 << 9),
+		DIRTY_FLAG_LINE_WIDTH = (1 << 10),
+		DIRTY_FLAG_INDEX_BUFFER = (1 << 11),
+		DIRTY_FLAG_VIEWPORT = (1 << 12),
+		DIRTY_FLAG_SCISSOR = (1 << 13),
+		DIRTY_FLAG_PIPELINE = (1 << 14),
+		DIRTY_FLAG_VS_CONSTANT_BUFFER = (1 << 15),
+		DIRTY_FLAG_PS_CONSTANT_BUFFER = (1 << 16),
 
 		DIRTY_FLAG_TFX_TEXTURE_TEX = (DIRTY_FLAG_TFX_TEXTURE_0 << 0),
 		DIRTY_FLAG_TFX_TEXTURE_PALETTE = (DIRTY_FLAG_TFX_TEXTURE_0 << 1),
 		DIRTY_FLAG_TFX_TEXTURE_RT = (DIRTY_FLAG_TFX_TEXTURE_0 << 2),
 		DIRTY_FLAG_TFX_TEXTURE_PRIMID = (DIRTY_FLAG_TFX_TEXTURE_0 << 3),
+		DIRTY_FLAG_TFX_TEXTURE_DEPTH = (DIRTY_FLAG_TFX_TEXTURE_0 << 4),
+		DIRTY_FLAG_TFX_TEXTURE_RT_ROV = (DIRTY_FLAG_TFX_TEXTURE_0 << 5),
+		DIRTY_FLAG_TFX_TEXTURE_DEPTH_ROV = (DIRTY_FLAG_TFX_TEXTURE_0 << 6),
 
 		DIRTY_FLAG_TFX_TEXTURES = DIRTY_FLAG_TFX_TEXTURE_TEX | DIRTY_FLAG_TFX_TEXTURE_PALETTE |
-		                          DIRTY_FLAG_TFX_TEXTURE_RT | DIRTY_FLAG_TFX_TEXTURE_PRIMID,
+		                          DIRTY_FLAG_TFX_TEXTURE_RT | DIRTY_FLAG_TFX_TEXTURE_PRIMID |
+		                          DIRTY_FLAG_TFX_TEXTURE_DEPTH | DIRTY_FLAG_TFX_TEXTURE_RT_ROV |
+		                          DIRTY_FLAG_TFX_TEXTURE_DEPTH_ROV,
 
 		DIRTY_BASE_STATE = DIRTY_FLAG_INDEX_BUFFER | DIRTY_FLAG_PIPELINE | DIRTY_FLAG_VIEWPORT | DIRTY_FLAG_SCISSOR |
 		                   DIRTY_FLAG_BLEND_CONSTANTS | DIRTY_FLAG_LINE_WIDTH,
@@ -698,6 +711,7 @@ private:
 	VkPipeline m_current_pipeline = VK_NULL_HANDLE;
 
 	std::unique_ptr<GSTextureVK> m_null_texture;
+	VkFramebuffer m_null_framebuffer;
 
 	// current pipeline selector - we save this in the struct to avoid re-zeroing it every draw
 	PipelineSelector m_pipeline_selector = {};
