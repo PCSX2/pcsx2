@@ -6270,19 +6270,23 @@ SCES-53880:
   region: "PAL-E"
 SCES-53881:
   name: "Buzz! Le Grand Quiz"
+  name-en: "Buzz! The Big Quiz"
   region: "PAL-F"
 SCES-53882:
-  name: "Buzz! The Big Quiz"
+  name: "Buzz! Il Superquiz"
+  name-en: "Buzz! The Big Quiz"
   region: "PAL-I"
   gameFixes:
     - EETimingHack # Fixes freezes.
 SCES-53883:
-  name: "Buzz! The Big Quiz"
+  name: "Buzz! Das große Quiz"
+  name-en: "Buzz! The Big Quiz"
   region: "PAL-G"
   gameFixes:
     - EETimingHack # Fixes freezes.
 SCES-53884:
-  name: "Buzz! El GRAN Reto"
+  name: "Buzz! El Gran Reto"
+  name-en: "Buzz! The Big Quiz"
   region: "PAL-S"
   compat: 2
   gameFixes:
@@ -6319,10 +6323,12 @@ SCES-53926:
   name: "Buzz! The Big Quiz"
   region: "PAL-SC"
 SCES-53927:
-  name: "Buzz! The Big Quiz"
+  name: "Buzz! Suuri Tietovisa"
+  name-en: "Buzz! The Big Quiz"
   region: "PAL-FI"
 SCES-53929:
-  name: "Buzz! The Big Quiz"
+  name: "Buzz! O Grande Quiz"
+  name-en: "Buzz! The Big Quiz"
   region: "PAL-P"
 SCES-53931:
   name: "Shinobido - Way of the Ninja"
@@ -6438,19 +6444,23 @@ SCES-54258:
   name: "Buzz! The Sports Quiz"
   region: "PAL-E"
 SCES-54259:
-  name: "Buzz! The Sports Quiz"
+  name: "Buzz! Das Sport-Quiz"
+  name-en: "Buzz! The Sports Quiz"
   region: "PAL-G"
 SCES-54260:
   name: "Buzz! Le Quiz du Sport"
+  name-en: "Buzz! The Sports Quiz"
   region: "PAL-F"
 SCES-54261:
   name: "Buzz! The Sports Quiz"
   region: "PAL-I"
 SCES-54262:
-  name: "Buzz! - El Gran Concurso de Deportes"
+  name: "Buzz! El Gran Concurso de Deportes"
+  name-en: "Buzz! The Sports Quiz"
   region: "PAL-S"
 SCES-54263:
-  name: "Buzz! The Sports Quiz"
+  name: "Buzz! O Quiz Desportivo"
+  name-en: "Buzz! The Sports Quiz"
   region: "PAL-P"
 SCES-54264:
   name: "Buzz! The Sports Quiz"
@@ -6462,7 +6472,8 @@ SCES-54266:
   name: "Buzz! The Sports Quiz"
   region: "PAL-SC"
 SCES-54267:
-  name: "Buzz! The Sports Quiz"
+  name: "Buzz! Sporttivisa"
+  name-en: "Buzz! The Sports Quiz"
   region: "PAL-FI"
 SCES-54268:
   name: "Buzz! The Sports Quiz"
@@ -6498,24 +6509,29 @@ SCES-54496:
   region: "PAL-E"
 SCES-54497:
   name: "Buzz! Le Mega Quiz"
+  name-en: "Buzz! The Mega Quiz"
   region: "PAL-F"
 SCES-54498:
   name: "Buzz! The Mega Quiz"
   region: "PAL-I"
 SCES-54499:
   name: "Buzz! Das Mega-Quiz"
+  name-en: "Buzz! The Mega Quiz"
   region: "PAL-G"
 SCES-54500:
   name: "Buzz! El Mega Concurso"
+  name-en: "Buzz! The Mega Quiz"
   region: "PAL-S"
 SCES-54501:
   name: "Buzz! The Mega Quiz"
   region: "PAL-A"
 SCES-54503:
   name: "Buzz! Megavisa"
+  name-en: "Buzz! The Mega Quiz"
   region: "PAL-FI"
 SCES-54504:
   name: "Buzz! O Mega Quiz"
+  name-en: "Buzz! The Mega Quiz"
   region: "PAL-P"
 SCES-54505:
   name: "Buzz! The Mega Quiz"
