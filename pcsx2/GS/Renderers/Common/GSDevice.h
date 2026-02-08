@@ -845,6 +845,7 @@ public:
 		bool stencil_buffer       : 1; ///< Supports stencil buffer, and can use for DATE.
 		bool cas_sharpening       : 1; ///< Supports sufficient functionality for contrast adaptive sharpening.
 		bool test_and_sample_depth: 1; ///< Supports concurrently binding the depth-stencil buffer for sampling and depth testing.
+		bool conservative_depth   : 1; ///< Supports conservative depth to use early Z optimization with shader Z write.
 		FeatureSupport()
 		{
 			memset(this, 0, sizeof(*this));
@@ -1128,3 +1129,24 @@ template <>
 struct std::hash<GSHWDrawConfig::PSSelector> : public GSHWDrawConfig::PSSelectorHash {};
 
 extern std::unique_ptr<GSDevice> g_gs_device;
+
+enum class GPUArchitecture : u16 {
+	Unknown,
+	IntelGen2,
+	IntelGen3,
+	IntelGen4,
+	IntelGen5,
+	IntelGen6,
+	IntelGen7,
+	IntelGen8,
+	IntelGen9,
+	IntelGen11,
+	IntelXe,
+	IntelXeHPG,
+	IntelXeHPC,
+	IntelXeLPG,
+	IntelXe2,
+	IntelXe3,
+};
+
+GPUArchitecture LookupGPUArchitecture(uint16_t vendor_id, uint16_t pci_id);

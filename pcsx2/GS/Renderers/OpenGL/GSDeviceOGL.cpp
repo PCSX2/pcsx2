@@ -772,7 +772,12 @@ bool GSDeviceOGL::CheckFeatures()
 
 	if (!GLAD_GL_ARB_conservative_depth)
 	{
+		m_features.conservative_depth = false;
 		Console.Warning("GLAD_GL_ARB_conservative_depth is not supported. This will reduce performance.");
+	}
+	else
+	{
+		m_features.conservative_depth = true;
 	}
 
 	return true;
@@ -1298,14 +1303,9 @@ std::string GSDeviceOGL::GenGlslHeader(const std::string_view entry, GLenum type
 	else
 		header += "#define HAS_FRAMEBUFFER_FETCH 0\n";
 
-	if (GLAD_GL_ARB_conservative_depth)
+	if (m_features.conservative_depth)
 	{
 		header += "#extension GL_ARB_conservative_depth : enable\n";
-		header += "#define PS_HAS_CONSERVATIVE_DEPTH 1\n";
-	}
-	else
-	{
-		header += "#define PS_HAS_CONSERVATIVE_DEPTH 0\n";
 	}
 
 	// Allow to puts several shader in 1 files
@@ -1356,7 +1356,9 @@ std::string GSDeviceOGL::GetPSSource(const PSSelector& sel)
 {
 	DevCon.WriteLn("GL: Compiling new pixel shader with selector 0x%" PRIX64 "%08X", sel.key_hi, sel.key_lo);
 
-	std::string macro = fmt::format("#define PS_FST {}\n", sel.fst)
+	std::string macro =
+		fmt::format("#define PS_HAS_CONSERVATIVE_DEPTH {}\n", static_cast<int>(m_features.conservative_depth))
+		+ fmt::format("#define PS_FST {}\n", sel.fst)
 		+ fmt::format("#define PS_WMS {}\n", sel.wms)
 		+ fmt::format("#define PS_WMT {}\n", sel.wmt)
 		+ fmt::format("#define PS_ADJS {}\n", sel.adjs)

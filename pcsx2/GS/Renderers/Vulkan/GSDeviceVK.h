@@ -453,6 +453,7 @@ private:
 	VkShaderModule GetUtilityFragmentShader(const std::string& source, const char* replace_main);
 
 	bool CreateDeviceAndSwapChain();
+	bool CheckConservativeDepth();
 	bool CheckFeatures();
 	bool CreateNullTexture();
 	bool CreateBuffers();
