@@ -282,7 +282,7 @@ void ohci_hard_reset(OHCIState* ohci)
 /* Get an array of dwords from main memory */
 __fi static int get_dwords(u32 addr, u32* buf, u32 num)
 {
-	if ((addr + (num * sizeof(u32))) > sizeof(iopMem->Main))
+	if ((addr + (num * sizeof(u32))) > Ps2MemSize::ExposedIopRam)
 		return 0;
 
 	std::memcpy(buf, iopMem->Main + addr, num * sizeof(u32));
@@ -292,7 +292,7 @@ __fi static int get_dwords(u32 addr, u32* buf, u32 num)
 /* Get an array of words from main memory */
 __fi static int get_words(u32 addr, u16* buf, u32 num)
 {
-	if ((addr + (num * sizeof(u16))) > sizeof(iopMem->Main))
+	if ((addr + (num * sizeof(u16))) > Ps2MemSize::ExposedIopRam)
 		return 0;
 
 	std::memcpy(buf, iopMem->Main + addr, num * sizeof(u16));
@@ -302,7 +302,7 @@ __fi static int get_words(u32 addr, u16* buf, u32 num)
 /* Put an array of dwords in to main memory */
 __fi static int put_dwords(u32 addr, u32* buf, u32 num)
 {
-	if ((addr + (num * sizeof(u32))) > sizeof(iopMem->Main))
+	if ((addr + (num * sizeof(u32))) > Ps2MemSize::ExposedIopRam)
 		return 0;
 
 	std::memcpy(iopMem->Main + addr, buf, num * sizeof(u32));
@@ -312,7 +312,7 @@ __fi static int put_dwords(u32 addr, u32* buf, u32 num)
 /* Put an array of dwords in to main memory */
 __fi static int put_words(u32 addr, u16* buf, u32 num)
 {
-	if ((addr + (num * sizeof(u16))) > sizeof(iopMem->Main))
+	if ((addr + (num * sizeof(u16))) > Ps2MemSize::ExposedIopRam)
 		return 0;
 
 	std::memcpy(iopMem->Main + addr, buf, num * sizeof(u16));
@@ -362,7 +362,7 @@ static int ohci_copy_td(OHCIState* ohci, struct ohci_td* td, uint8_t* buf, u32 l
 	u32 ptr = td->cbp;
 	const u32 n = std::min<u32>(0x1000 - (ptr & 0xfff), len);
 
-	if ((ptr + n) > sizeof(iopMem->Main))
+	if ((ptr + n) > Ps2MemSize::ExposedIopRam)
 		return 1;
 
 	if (write)
@@ -376,7 +376,7 @@ static int ohci_copy_td(OHCIState* ohci, struct ohci_td* td, uint8_t* buf, u32 l
 	buf += n;
 	len -= n;
 
-	if ((ptr + n) > sizeof(iopMem->Main))
+	if ((ptr + n) > Ps2MemSize::ExposedIopRam)
 		return 1;
 
 	if (write)
@@ -394,7 +394,7 @@ static int ohci_copy_iso_td(OHCIState* ohci, u32 start_addr, u32 end_addr,
 	u32 ptr = start_addr;
 	const u32 n = std::min<u32>(0x1000 - (ptr & 0xfff), len);
 
-	if ((ptr + n) > sizeof(iopMem->Main))
+	if ((ptr + n) > Ps2MemSize::ExposedIopRam)
 		return 1;
 
 	if (write)
@@ -408,7 +408,7 @@ static int ohci_copy_iso_td(OHCIState* ohci, u32 start_addr, u32 end_addr,
 	buf += n;
 	len -= n;
 
-	if ((ptr + n) > sizeof(iopMem->Main))
+	if ((ptr + n) > Ps2MemSize::ExposedIopRam)
 		return 1;
 
 	if (write)
@@ -1099,7 +1099,7 @@ void ohci_frame_boundary(void* opaque)
 {
 	OHCIState* ohci = (OHCIState*)opaque;
 
-	if (ohci->hcca + sizeof(ohci_hcca) > sizeof(iopMem->Main))
+	if (ohci->hcca + sizeof(ohci_hcca) > Ps2MemSize::ExposedIopRam)
 	{
 		Console.Error("ohci->hcca pointer is out of range.");
 		return;

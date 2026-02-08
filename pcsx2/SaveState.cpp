@@ -537,7 +537,7 @@ public:
 
 	const char* GetFilename() const override { return "iopMemory.bin"; }
 	u8* GetDataPtr() const override { return iopMem->Main; }
-	uint GetDataSize() const override { return sizeof(iopMem->Main); }
+	uint GetDataSize() const override { return Ps2MemSize::ExposedIopRam; }
 };
 
 class SavestateEntry_HwRegs final : public MemorySavestateEntry

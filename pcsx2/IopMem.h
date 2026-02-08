@@ -37,7 +37,7 @@ static __fi const T* iopVirtMemR( u32 mem )
 // Obtains a pointer to the IOP's physical mapping (bypasses the TLB)
 static __fi u8* iopPhysMem( u32 addr )
 {
-	return &iopMem->Main[addr & 0x1fffff];
+	return &iopMem->Main[addr & (Ps2MemSize::ExposedIopRam - 1)];
 }
 
 #define psxSs8(mem)		iopMem->Sif[(mem) & 0x00ff]

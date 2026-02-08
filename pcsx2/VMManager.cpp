@@ -3289,7 +3289,7 @@ void VMManager::WarnAboutUnsafeSettings()
 	if (EmuConfig.Cpu.ExtraMemory)
 	{
 		append(ICON_PF_MICROCHIP,
-			TRANSLATE_SV("VMManager", "128MB RAM is enabled. Compatibility with some games may be affected."));
+			TRANSLATE_SV("VMManager", "Extended RAM is enabled. Compatibility with some games may be affected."));
 	}
 	if (!EmuConfig.EnableGameFixes)
 	{
