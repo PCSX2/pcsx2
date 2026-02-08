@@ -62,6 +62,14 @@ GSTextureOGL::GSTextureOGL(Type type, int width, int height, int levels, Format 
 			m_int_type = GL_UNSIGNED_BYTE;
 			m_int_shift = 0;
 			break;
+		
+		// 1 channel float
+		case Format::Float32:
+			gl_fmt = GL_R32F;
+			m_int_format = GL_RED;
+			m_int_type = GL_FLOAT;
+			m_int_shift = 2;
+			break;
 
 		// 4 channel normalized
 		case Format::Color:
