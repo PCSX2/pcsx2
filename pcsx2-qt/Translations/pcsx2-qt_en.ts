@@ -21683,42 +21683,42 @@ If you have any unsaved progress on this save state, you can download the compat
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Memory/SavedAddressesView.cpp" line="60"/>
+        <location filename="../Debugger/Memory/SavedAddressesView.cpp" line="61"/>
         <source>New</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Memory/SavedAddressesView.cpp" line="79"/>
+        <location filename="../Debugger/Memory/SavedAddressesView.cpp" line="80"/>
         <source>Copy Address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Memory/SavedAddressesView.cpp" line="79"/>
+        <location filename="../Debugger/Memory/SavedAddressesView.cpp" line="80"/>
         <source>Copy Text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Memory/SavedAddressesView.cpp" line="88"/>
+        <location filename="../Debugger/Memory/SavedAddressesView.cpp" line="89"/>
         <source>Copy all as CSV</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Memory/SavedAddressesView.cpp" line="95"/>
+        <location filename="../Debugger/Memory/SavedAddressesView.cpp" line="96"/>
         <source>Paste from CSV</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Memory/SavedAddressesView.cpp" line="98"/>
+        <location filename="../Debugger/Memory/SavedAddressesView.cpp" line="99"/>
         <source>Load from Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Memory/SavedAddressesView.cpp" line="105"/>
+        <location filename="../Debugger/Memory/SavedAddressesView.cpp" line="106"/>
         <source>Save to Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Memory/SavedAddressesView.cpp" line="109"/>
+        <location filename="../Debugger/Memory/SavedAddressesView.cpp" line="110"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
