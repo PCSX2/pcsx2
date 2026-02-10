@@ -324,27 +324,12 @@ void AudioStream::ReadFrames(SampleType* samples, u32 num_frames)
 
 	if (m_volume != 100)
 	{
-		u32 num_samples = num_frames * m_output_channels;
-
-		const u32 aligned_samples = Common::AlignDownPow2(num_samples, 4);
-		num_samples -= aligned_samples;
-
+		const int num_samples = num_frames * m_output_channels;
 		const float volume_mult = static_cast<float>(m_volume) / 100.0f;
-		const GSVector4 volume_multv = GSVector4(volume_mult);
-		const SampleType* const aligned_samples_end = samples + aligned_samples;
 
-		for (; samples != aligned_samples_end; samples += 4)
+		for (int i = 0; i < num_samples; i++)
 		{
-			GSVector4 fv = GSVector4::load<false>(samples);
-			fv = fv * volume_multv;
-			GSVector4::store<false>(samples, fv);
-		}
-
-		while (num_samples > 0)
-		{
-			*samples *= volume_mult;
-			samples++;
-			num_samples--;
+			samples[i] *= volume_mult;
 		}
 	}
 }
