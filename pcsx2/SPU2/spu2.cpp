@@ -31,7 +31,7 @@ static bool s_psxmode = false;
 static bool s_output_muted = false;
 
 static std::unique_ptr<AudioStream> s_output_stream;
-static std::array<s16, AudioStream::CHUNK_SIZE * 2> s_current_chunk;
+static std::array<float, AudioStream::CHUNK_SIZE * 2> s_current_chunk;
 static u32 s_current_chunk_pos;
 static u32 s_standard_volume = 0;
 static u32 s_fast_forward_volume = 0;
@@ -487,8 +487,8 @@ s32 SPU2freeze(FreezeAction mode, freezeData* data)
 __forceinline void spu2Output(StereoOut32 out)
 {
 	// Final clamp, take care not to exceed 16 bits from here on
-	s_current_chunk[s_current_chunk_pos++] = static_cast<s16>(clamp_mix(out.Left));
-	s_current_chunk[s_current_chunk_pos++] = static_cast<s16>(clamp_mix(out.Right));
+	s_current_chunk[s_current_chunk_pos++] = static_cast<float>(clamp_mix(out.Left)) / INT16_MAX;
+	s_current_chunk[s_current_chunk_pos++] = static_cast<float>(clamp_mix(out.Right)) / INT16_MAX;
 	if (s_current_chunk_pos == s_current_chunk.size())
 	{
 		s_current_chunk_pos = 0;
