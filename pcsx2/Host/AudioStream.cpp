@@ -416,7 +416,6 @@ void AudioStream::AllocateBuffer()
 
 	m_buffer = std::make_unique<float[]>(m_buffer_size * m_internal_channels);
 	m_staging_buffer = std::make_unique<float[]>(CHUNK_SIZE * m_internal_channels);
-	m_float_buffer = std::make_unique<float[]>(CHUNK_SIZE * m_internal_channels);
 
 	if (IsExpansionEnabled())
 		m_expand_buffer = std::make_unique<float[]>(m_parameters.expand_block_size * NUM_INPUT_CHANNELS);
@@ -431,7 +430,6 @@ void AudioStream::DestroyBuffer()
 {
 	m_expand_buffer.reset();
 	m_staging_buffer.reset();
-	m_float_buffer.reset();
 	m_buffer.reset();
 	m_buffer_size = 0;
 	m_wpos.store(0, std::memory_order_release);
@@ -599,8 +597,7 @@ void AudioStream::WriteChunk(const SampleType* chunk)
 	}
 	else
 	{
-		std::memcpy(m_float_buffer.get(), chunk, CHUNK_SIZE * NUM_INPUT_CHANNELS * sizeof(SampleType));
-		StretchWriteBlock(m_float_buffer.get());
+		StretchWriteBlock(chunk);
 	}
 }
 
@@ -650,9 +647,8 @@ void AudioStream::StretchWriteBlock(const float* block)
 		m_soundtouch->putSamples(block, CHUNK_SIZE);
 
 		u32 tempProgress;
-		while (tempProgress = m_soundtouch->receiveSamples(m_float_buffer.get(), CHUNK_SIZE), tempProgress != 0)
+		while (tempProgress = m_soundtouch->receiveSamples(m_staging_buffer.get(), CHUNK_SIZE), tempProgress != 0)
 		{
-			std::memcpy(m_staging_buffer.get(), m_float_buffer.get(), tempProgress * m_internal_channels * sizeof(SampleType));
 			InternalWriteFrames(m_staging_buffer.get(), tempProgress);
 		}
 
@@ -661,8 +657,7 @@ void AudioStream::StretchWriteBlock(const float* block)
 	}
 	else
 	{
-		std::memcpy(m_staging_buffer.get(), block, CHUNK_SIZE * m_internal_channels * sizeof(SampleType));
-		InternalWriteFrames(m_staging_buffer.get(), CHUNK_SIZE);
+		InternalWriteFrames(block, CHUNK_SIZE);
 	}
 }
 

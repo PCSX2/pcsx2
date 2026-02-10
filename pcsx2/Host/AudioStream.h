@@ -188,9 +188,6 @@ private:
 	// temporary staging buffer, used for timestretching
 	std::unique_ptr<SampleType[]> m_staging_buffer;
 
-	// float buffer, soundtouch only accepts float samples as input
-	std::unique_ptr<float[]> m_float_buffer;
-
 	std::unique_ptr<FreeSurroundDecoder> m_expander;
 
 	// block buffer for expansion
