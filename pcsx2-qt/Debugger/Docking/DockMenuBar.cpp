@@ -275,9 +275,17 @@ void DockMenuBarStyle::drawControl(
 			// false, QFusionStyle will try to draw a border along the bottom.
 			bool act = opt->state & State_Selected && opt->state & State_Sunken;
 			if (act)
-				break;
+			{
+				// Cancel out an unwanted adjustment that QFusionStyle does.
+				QStyleOptionMenuItem item = *opt;
+				item.rect = opt->rect.adjusted(0, -1, 0, 3);
 
-			QCommonStyle::drawControl(element, option, painter, widget);
+				QProxyStyle::drawControl(element, &item, painter, widget);
+			}
+			else
+			{
+				QCommonStyle::drawControl(element, opt, painter, widget);
+			}
 
 			return;
 		}
