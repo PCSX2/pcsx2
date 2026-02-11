@@ -11,7 +11,7 @@ class HddCreateQt : public HddCreate
 {
 public:
 	HddCreateQt(QWidget* parent);
-	virtual ~HddCreateQt(){};
+	virtual ~HddCreateQt() {}
 
 private:
 	QWidget* m_parent;

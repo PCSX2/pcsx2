@@ -262,17 +262,17 @@ void AudioSettingsWidget::updateLatencyLabel()
 		if (expand_buffer_ms > 0)
 		{
 			m_ui.bufferingLabel->setText(tr("Maximum Latency: %1 ms (%2 ms buffer + %3 ms expand + %4 ms output)")
-											 .arg(config_buffer_ms + expand_buffer_ms + output_latency_ms)
-											 .arg(config_buffer_ms)
-											 .arg(expand_buffer_ms)
-											 .arg(output_latency_ms));
+					.arg(config_buffer_ms + expand_buffer_ms + output_latency_ms)
+					.arg(config_buffer_ms)
+					.arg(expand_buffer_ms)
+					.arg(output_latency_ms));
 		}
 		else
 		{
 			m_ui.bufferingLabel->setText(tr("Maximum Latency: %1 ms (%2 ms buffer + %3 ms output)")
-											 .arg(config_buffer_ms + output_latency_ms)
-											 .arg(config_buffer_ms)
-											 .arg(output_latency_ms));
+					.arg(config_buffer_ms + output_latency_ms)
+					.arg(config_buffer_ms)
+					.arg(output_latency_ms));
 		}
 	}
 	else
@@ -280,8 +280,8 @@ void AudioSettingsWidget::updateLatencyLabel()
 		if (expand_buffer_ms > 0)
 		{
 			m_ui.bufferingLabel->setText(tr("Maximum Latency: %1 ms (%2 ms expand, minimum output latency unknown)")
-											 .arg(expand_buffer_ms + config_buffer_ms)
-											 .arg(expand_buffer_ms));
+					.arg(expand_buffer_ms + config_buffer_ms)
+					.arg(expand_buffer_ms));
 		}
 		else
 		{

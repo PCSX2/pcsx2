@@ -112,7 +112,8 @@ void CoverDownloadDialog::cancelThread()
 }
 
 CoverDownloadDialog::CoverDownloadThread::CoverDownloadThread(QWidget* parent, const QString& urls, bool use_serials)
-	: QtAsyncProgressThread(parent), m_use_serials(use_serials)
+	: QtAsyncProgressThread(parent)
+	, m_use_serials(use_serials)
 {
 	for (const QString& str : urls.split(QChar('\n')))
 		m_urls.push_back(str.toStdString());

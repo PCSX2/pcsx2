@@ -19,7 +19,7 @@ struct SymbolTreeLocation
 		MEMORY,
 		NONE // Put NONE last so nodes of this type sort to the bottom.
 	};
-	
+
 	Type type = NONE;
 	u32 address = 0;
 

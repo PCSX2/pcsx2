@@ -43,7 +43,7 @@ public slots:
 	void contextCopyInstructionHex();
 	void contextCopyInstructionText();
 	void contextCopyFunctionName();
-	void contextPasteInstructionText();	
+	void contextPasteInstructionText();
 	void contextAssembleInstruction();
 	void contextNoopInstruction();
 	void contextRestoreInstruction();

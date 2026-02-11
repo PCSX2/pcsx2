@@ -99,9 +99,8 @@ void MemoryCardCreateDialog::updateState()
 void MemoryCardCreateDialog::createCard()
 {
 	const QString name = m_ui.name->text();
-	const std::string name_str = QStringLiteral("%1.%2").arg(name)
-		.arg((m_fileType == MemoryCardFileType::PS1) ? QStringLiteral("mcr") : QStringLiteral("ps2"))
-		.toStdString();
+	const QString type = (m_fileType == MemoryCardFileType::PS1) ? QStringLiteral("mcr") : QStringLiteral("ps2");
+	const std::string name_str = QStringLiteral("%1.%2").arg(name).arg(type).toStdString();
 	if (!Path::IsValidFileName(name_str, false))
 	{
 		QMessageBox::critical(this, tr("Create Memory Card"),

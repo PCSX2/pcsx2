@@ -144,7 +144,7 @@ void AboutDialog::showHTMLDialog(QWidget* parent, const QString& title, const QS
 	{
 		tb->setSource(QUrl::fromLocalFile(path));
 	}
-	
+
 	layout->addWidget(tb, 1);
 
 	QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Close, &dialog);

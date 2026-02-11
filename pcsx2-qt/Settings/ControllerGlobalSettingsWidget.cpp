@@ -88,7 +88,7 @@ ControllerGlobalSettingsWidget::~ControllerGlobalSettingsWidget() = default;
 void ControllerGlobalSettingsWidget::addDeviceToList(const QString& identifier, const QString& name)
 {
 	QListWidgetItem* item = new QListWidgetItem();
-	if(identifier.compare(name,Qt::CaseInsensitive) == 0)
+	if (identifier.compare(name, Qt::CaseInsensitive) == 0)
 		item->setText(identifier);
 	else
 		item->setText(QStringLiteral("%1: %2").arg(identifier).arg(name));

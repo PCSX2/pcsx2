@@ -133,19 +133,19 @@ void AchievementLoginDialog::processLoginResult(bool result, const QString& mess
 	QMessageBox::information(
 		this, tr("Login Successful"),
 		tr("Successfully logged in to RetroAchievements as %1.").arg(QString::fromStdString(username)));
-	
+
 	m_ui.status->setText(tr("Successfully logged in as %1.").arg(QString::fromStdString(username)));
 	m_ui.status->setStyleSheet("color: green; font-weight: bold;");
-	
+
 	disconnect(m_ui.buttonBox, &QDialogButtonBox::accepted, this, &AchievementLoginDialog::loginClicked);
-	
+
 	m_login->setVisible(false);
 	QPushButton* dismissButton = m_ui.buttonBox->addButton(tr("&Dismiss"), QDialogButtonBox::AcceptRole);
 	dismissButton->setDefault(true);
 	dismissButton->setFocus();
-	
+
 	connect(dismissButton, &QPushButton::clicked, this, [this]() { done(0); });
-	
+
 	enableUI(false);
 }
 

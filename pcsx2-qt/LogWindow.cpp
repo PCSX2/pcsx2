@@ -52,7 +52,7 @@ void LogWindow::updateSettings()
 	const bool curr_enabled = Log::IsHostOutputEnabled();
 	const bool input_enabled = Host::GetBaseBoolSettingValue("Logging", "ShowEESIOInput");
 
-	if(g_log_window && g_log_window->m_line_input)
+	if (g_log_window && g_log_window->m_line_input)
 	{
 		g_log_window->m_input_widget->setVisible(input_enabled);
 	}
@@ -199,18 +199,16 @@ void LogWindow::createUi()
 
 	m_line_input = new QLineEdit(this);
 	connect(m_line_input, &QLineEdit::returnPressed, this, &LogWindow::onInputEntered);
-	
+
 	m_local_echo_checkbox = new QCheckBox(tr("Local Echo"), this);
 	m_local_echo_checkbox->setChecked(m_local_echo);
-	connect(m_local_echo_checkbox, &QCheckBox::checkStateChanged, this, [&](Qt::CheckState state)
-	{
+	connect(m_local_echo_checkbox, &QCheckBox::checkStateChanged, this, [&](Qt::CheckState state) {
 		m_local_echo = state == Qt::CheckState::Checked;
 	});
-	
+
 	m_newline_on_enter_checkbox = new QCheckBox(tr("Newline on send"), this);
 	m_newline_on_enter_checkbox->setChecked(m_newline_on_enter);
-	connect(m_newline_on_enter_checkbox, &QCheckBox::checkStateChanged, this, [&](Qt::CheckState state)
-	{
+	connect(m_newline_on_enter_checkbox, &QCheckBox::checkStateChanged, this, [&](Qt::CheckState state) {
 		m_newline_on_enter = state == Qt::CheckState::Checked;
 	});
 
@@ -416,18 +414,18 @@ void LogWindow::onInputEntered()
 	if (text.isEmpty() && !m_newline_on_enter)
 		return;
 
-	if(m_newline_on_enter)
+	if (m_newline_on_enter)
 		text.append('\n');
 
 	std::string str = text.toUtf8().toStdString();
 
-	if(VMManager::WriteBytesToEESIORXFIFO({reinterpret_cast<const u8*>(str.data()), str.size()}))
+	if (VMManager::WriteBytesToEESIORXFIFO({reinterpret_cast<const u8*>(str.data()), str.size()}))
 	{
 		m_line_input->clear();
 
-		if(m_local_echo)
+		if (m_local_echo)
 			// appendMessage expects a newline to be at the end of the string
-			appendMessage(0, 0, m_newline_on_enter ? text : (text + '\n') );
+			appendMessage(0, 0, m_newline_on_enter ? text : (text + '\n'));
 
 		QTextCursor cursor(m_text->textCursor());
 		cursor.movePosition(QTextCursor::End);

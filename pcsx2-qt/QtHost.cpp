@@ -195,7 +195,7 @@ void EmuThread::stopFullscreenUI()
 	{
 		m_run_fullscreen_ui.store(false, std::memory_order_release);
 		emit onFullscreenUIStateChange(false);
-		
+
 		// Resume and refresh background when FullscreenUI exits
 		QMetaObject::invokeMethod(g_main_window, "updateGameListBackground", Qt::QueuedConnection);
 	}
@@ -1160,7 +1160,7 @@ void Host::OpenHostFileSelectorAsync(std::string_view title, bool select_directo
 	if (!filters.empty())
 	{
 		filters_str.append(QStringLiteral("All File Types (%1)")
-							   .arg(QString::fromStdString(StringUtil::JoinString(filters.begin(), filters.end(), " "))));
+				.arg(QString::fromStdString(StringUtil::JoinString(filters.begin(), filters.end(), " "))));
 		for (const std::string& filter : filters)
 		{
 			filters_str.append(
@@ -1369,7 +1369,6 @@ bool QtHost::InitializeConfig()
 					.arg(QString::fromStdString(error.GetDescription())));
 			return false;
 		}
-		
 	}
 
 	// Setup wizard was incomplete last time?

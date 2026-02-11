@@ -214,8 +214,8 @@ void AchievementSettingsWidget::updateLoginState()
 			StringUtil::FromChars<u64>(Host::GetBaseStringSettingValue("Achievements", "LoginTimestamp", "0")).value_or(0);
 		const QDateTime login_timestamp(QDateTime::fromSecsSinceEpoch(static_cast<qint64>(login_unix_timestamp)));
 		m_ui.loginStatus->setText(tr("Username: %1\nLogin token generated on %2.")
-									  .arg(QString::fromStdString(username))
-									  .arg(login_timestamp.toString(Qt::TextDate)));
+				.arg(QString::fromStdString(username))
+				.arg(login_timestamp.toString(Qt::TextDate)));
 		m_ui.loginButton->setText(tr("Logout"));
 	}
 	else

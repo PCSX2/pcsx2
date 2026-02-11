@@ -282,7 +282,7 @@ void GameListWidget::initialize()
 	connect(m_table_view, &QTableView::customContextMenuRequested, this,
 		&GameListWidget::onTableViewContextMenuRequested);
 	connect(m_table_view->horizontalHeader(), &QHeaderView::customContextMenuRequested, this,
-			&GameListWidget::onTableViewHeaderContextMenuRequested);
+		&GameListWidget::onTableViewHeaderContextMenuRequested);
 
 	// Save state when header state changes (hiding and showing handled within onTableViewHeaderContextMenuRequested).
 	connect(m_table_view->horizontalHeader(), &QHeaderView::sectionMoved, this, &GameListWidget::onTableHeaderStateChanged);
@@ -408,7 +408,7 @@ void GameListWidget::setCustomBackground()
 	// Selected Custom background is valid, connect the signals and start animation in gamelist
 	connect(m_background_movie, &QMovie::frameChanged, this, &GameListWidget::processBackgroundFrames, Qt::UniqueConnection);
 	m_ui.stack->setAutoFillBackground(false);
-	
+
 	m_table_view->viewport()->setAutoFillBackground(false);
 	m_list_view->viewport()->setAutoFillBackground(false);
 	updateCustomBackgroundState(true);

@@ -101,7 +101,7 @@ QVariant ModuleModel::headerData(int section, Qt::Orientation orientation, int r
 				//: Warning: short space limit. Abbreviate if needed.
 				return tr("NAME");
 			case ModuleColumns::VERSION:
-				//: Warning: short space limit. Abbreviate if needed. 
+				//: Warning: short space limit. Abbreviate if needed.
 				return tr("VERSION");
 			case ModuleColumns::ENTRY:
 				//: Warning: short space limit. Abbreviate if needed. // Entrypoint of the executable

@@ -1401,12 +1401,30 @@ namespace SettingWidgetBinder
 			int sif_second_value = DEFAULT_SECOND;
 
 			// Get Settings Interface values or default if that fails
-			if (!sif->GetIntValue(section.c_str(), YEAR_KEY, &sif_year_value)) { sif_year_value = DEFAULT_YEAR; }
-			if (!sif->GetIntValue(section.c_str(), MONTH_KEY, &sif_month_value)) { sif_month_value = DEFAULT_MONTH; }
-			if (!sif->GetIntValue(section.c_str(), DAY_KEY, &sif_day_value)) { sif_day_value = DEFAULT_DAY; }
-			if (!sif->GetIntValue(section.c_str(), HOUR_KEY, &sif_hour_value)) { sif_hour_value = DEFAULT_HOUR; }
-			if (!sif->GetIntValue(section.c_str(), MINUTE_KEY, &sif_minute_value)) { sif_minute_value = DEFAULT_MINUTE; }
-			if (!sif->GetIntValue(section.c_str(), SECOND_KEY, &sif_second_value)) { sif_second_value = DEFAULT_SECOND; }
+			if (!sif->GetIntValue(section.c_str(), YEAR_KEY, &sif_year_value))
+			{
+				sif_year_value = DEFAULT_YEAR;
+			}
+			if (!sif->GetIntValue(section.c_str(), MONTH_KEY, &sif_month_value))
+			{
+				sif_month_value = DEFAULT_MONTH;
+			}
+			if (!sif->GetIntValue(section.c_str(), DAY_KEY, &sif_day_value))
+			{
+				sif_day_value = DEFAULT_DAY;
+			}
+			if (!sif->GetIntValue(section.c_str(), HOUR_KEY, &sif_hour_value))
+			{
+				sif_hour_value = DEFAULT_HOUR;
+			}
+			if (!sif->GetIntValue(section.c_str(), MINUTE_KEY, &sif_minute_value))
+			{
+				sif_minute_value = DEFAULT_MINUTE;
+			}
+			if (!sif->GetIntValue(section.c_str(), SECOND_KEY, &sif_second_value))
+			{
+				sif_second_value = DEFAULT_SECOND;
+			}
 
 			// No need to check for valid date since QDateTime resets to minimum upon becoming invalid
 			Accessor::setDateTime(widget, QDate(static_cast<int>(sif_year_value + YEAR_OFFSET), static_cast<int>(sif_month_value), static_cast<int>(sif_day_value)),
@@ -1414,8 +1432,7 @@ namespace SettingWidgetBinder
 
 			// Update the settings interface and reload the game settings when changed
 			Accessor::connectValueChanged(widget, [sif, widget, section = std::move(section), YEAR_KEY = std::move(YEAR_KEY), MONTH_KEY = std::move(MONTH_KEY),
-				DAY_KEY = std::move(DAY_KEY), HOUR_KEY = std::move(HOUR_KEY), MINUTE_KEY = std::move(MINUTE_KEY), SECOND_KEY = std::move(SECOND_KEY), YEAR_OFFSET = std::move(YEAR_OFFSET)]() {
-
+													  DAY_KEY = std::move(DAY_KEY), HOUR_KEY = std::move(HOUR_KEY), MINUTE_KEY = std::move(MINUTE_KEY), SECOND_KEY = std::move(SECOND_KEY), YEAR_OFFSET = std::move(YEAR_OFFSET)]() {
 				sif->SetIntValue(section.c_str(), YEAR_KEY, Accessor::getYear(widget) - YEAR_OFFSET);
 				sif->SetIntValue(section.c_str(), MONTH_KEY, Accessor::getMonth(widget));
 				sif->SetIntValue(section.c_str(), DAY_KEY, Accessor::getDay(widget));
@@ -1436,8 +1453,7 @@ namespace SettingWidgetBinder
 
 			// Update and apply base settings with values from widget when user changes it in UI
 			Accessor::connectValueChanged(widget, [widget, section = std::move(section), YEAR_KEY = std::move(YEAR_KEY), MONTH_KEY = std::move(MONTH_KEY),
-				DAY_KEY = std::move(DAY_KEY), HOUR_KEY = std::move(HOUR_KEY), MINUTE_KEY = std::move(MINUTE_KEY), SECOND_KEY = std::move(SECOND_KEY), YEAR_OFFSET = std::move(YEAR_OFFSET)]() {
-
+													  DAY_KEY = std::move(DAY_KEY), HOUR_KEY = std::move(HOUR_KEY), MINUTE_KEY = std::move(MINUTE_KEY), SECOND_KEY = std::move(SECOND_KEY), YEAR_OFFSET = std::move(YEAR_OFFSET)]() {
 				const int new_year_value = Accessor::getYear(widget);
 				const int new_month_value = Accessor::getMonth(widget);
 				const int new_day_value = Accessor::getDay(widget);
@@ -1455,6 +1471,5 @@ namespace SettingWidgetBinder
 				g_emu_thread->applySettings();
 			});
 		}
-
 	}
 } // namespace SettingWidgetBinder

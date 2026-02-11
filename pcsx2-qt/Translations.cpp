@@ -341,11 +341,12 @@ bool QtHost::DownloadMissingFont(QWidget* dialog_parent, const char* font_name, 
 		msgbox.setWindowModality(Qt::WindowModal);
 		msgbox.setIcon(QMessageBox::Critical);
 		msgbox.setTextFormat(Qt::RichText);
-		msgbox.setText(qApp->translate("MainWindow",
-			"The font file '%1' is required for the On-Screen Display and Big Picture Mode to show messages in your language.<br><br>"
-			"Do you want to download this file now? These files are usually less than 10 megabytes in size.<br><br>"
-			"<strong>If you do not download this file, on-screen messages will not be readable.</strong>")
-			.arg(QLatin1StringView(font_name)));
+		msgbox.setText(
+			qApp->translate("MainWindow",
+					"The font file '%1' is required for the On-Screen Display and Big Picture Mode to show messages in your language.<br><br>"
+					"Do you want to download this file now? These files are usually less than 10 megabytes in size.<br><br>"
+					"<strong>If you do not download this file, on-screen messages will not be readable.</strong>")
+				.arg(QLatin1StringView(font_name)));
 		msgbox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
 		if (msgbox.exec() != QMessageBox::Yes)
 			return false;

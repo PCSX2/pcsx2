@@ -37,41 +37,39 @@ MemoryCardConvertDialog::MemoryCardConvertDialog(QWidget* parent, QString select
 	m_ui.progressBar->setRange(0, 100);
 	m_ui.progressBar->setValue(0);
 
-	connect(m_ui.conversionTypeSelect, &QComboBox::currentIndexChanged, this, [this]()
+	connect(m_ui.conversionTypeSelect, &QComboBox::currentIndexChanged, this, [this]() {
+		switch (m_srcCardInfo.type)
 		{
-			switch (m_srcCardInfo.type)
-			{
-				case MemoryCardType::File:
-					SetType(MemoryCardType::Folder, MemoryCardFileType::Unknown, tr("Uses a folder on your PC filesystem, instead of a file. Infinite capacity, while keeping the same compatibility as an 8 MB Memory Card."));
-					break;
-				case MemoryCardType::Folder:
-					switch (m_ui.conversionTypeSelect->currentData().toInt())
-					{
-						case 8:
-							SetType(MemoryCardType::File, MemoryCardFileType::PS2_8MB, tr("A standard, 8 MB Memory Card. Most compatible, but smallest capacity."));
-							break;
-						case 16:
-							SetType(MemoryCardType::File, MemoryCardFileType::PS2_16MB, tr("2x larger than a standard Memory Card. May have some compatibility issues."));
-							break;
-						case 32:
-							SetType(MemoryCardType::File, MemoryCardFileType::PS2_32MB, tr("4x larger than a standard Memory Card. Likely to have compatibility issues."));
-							break;
-						case 64:
-							SetType(MemoryCardType::File, MemoryCardFileType::PS2_64MB, tr("8x larger than a standard Memory Card. Likely to have compatibility issues."));
-							break;
-						default:
-							//: MemoryCardType should be left as-is.
-							QMessageBox::critical(this, tr("Convert Memory Card Failed"), tr("Invalid MemoryCardType"));
-							return;
-					}
-					break;
-				default:
-					//: MemoryCardType should be left as-is.
-					QMessageBox::critical(this, tr("Convert Memory Card Failed"), tr("Invalid MemoryCardType"));
-					return;
-			}
+			case MemoryCardType::File:
+				SetType(MemoryCardType::Folder, MemoryCardFileType::Unknown, tr("Uses a folder on your PC filesystem, instead of a file. Infinite capacity, while keeping the same compatibility as an 8 MB Memory Card."));
+				break;
+			case MemoryCardType::Folder:
+				switch (m_ui.conversionTypeSelect->currentData().toInt())
+				{
+					case 8:
+						SetType(MemoryCardType::File, MemoryCardFileType::PS2_8MB, tr("A standard, 8 MB Memory Card. Most compatible, but smallest capacity."));
+						break;
+					case 16:
+						SetType(MemoryCardType::File, MemoryCardFileType::PS2_16MB, tr("2x larger than a standard Memory Card. May have some compatibility issues."));
+						break;
+					case 32:
+						SetType(MemoryCardType::File, MemoryCardFileType::PS2_32MB, tr("4x larger than a standard Memory Card. Likely to have compatibility issues."));
+						break;
+					case 64:
+						SetType(MemoryCardType::File, MemoryCardFileType::PS2_64MB, tr("8x larger than a standard Memory Card. Likely to have compatibility issues."));
+						break;
+					default:
+						//: MemoryCardType should be left as-is.
+						QMessageBox::critical(this, tr("Convert Memory Card Failed"), tr("Invalid MemoryCardType"));
+						return;
+				}
+				break;
+			default:
+				//: MemoryCardType should be left as-is.
+				QMessageBox::critical(this, tr("Convert Memory Card Failed"), tr("Invalid MemoryCardType"));
+				return;
 		}
-	);
+	});
 
 	disconnect(m_ui.buttonBox, &QDialogButtonBox::accepted, this, nullptr);
 
@@ -88,7 +86,6 @@ bool MemoryCardConvertDialog::IsSetup()
 
 void MemoryCardConvertDialog::onStatusUpdated()
 {
-
 }
 
 void MemoryCardConvertDialog::onProgressUpdated(int value, int range)

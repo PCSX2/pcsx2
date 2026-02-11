@@ -160,7 +160,6 @@ void GameListModel::loadOrGenerateCover(const GameList::Entry* ge)
 
 		// Final check that scale is unchanged before we send out the produced image.
 		return m_cover_scale_counter.load(std::memory_order_acquire) == counter ? image : QPixmap();
-
 	});
 
 	// Context must be 'this' so we run on the UI thread.
@@ -221,7 +220,7 @@ QString GameListModel::formatTimespan(const time_t timespan)
 	const u32 hours = static_cast<u32>(timespan / 3600);
 	if (hours > 0)
 		return qApp->translate("GameList", "%n hours", "", hours);
-	
+
 	const u32 minutes = static_cast<u32>((timespan % 3600) / 60);
 	if (minutes > 0)
 		return qApp->translate("GameList", "%n minutes", "", minutes);

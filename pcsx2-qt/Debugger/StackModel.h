@@ -25,8 +25,7 @@ public:
 		COLUMN_COUNT
 	};
 
-	static constexpr QHeaderView::ResizeMode HeaderResizeModes[StackColumns::COLUMN_COUNT] =
-	{
+	static constexpr QHeaderView::ResizeMode HeaderResizeModes[StackColumns::COLUMN_COUNT] = {
 		QHeaderView::ResizeMode::ResizeToContents,
 		QHeaderView::ResizeMode::Stretch,
 		QHeaderView::ResizeMode::ResizeToContents,

@@ -203,7 +203,7 @@ void ControllerBindingWidget::onAutomaticBindingClicked()
 	{
 		// we set it as data, because the device list could get invalidated while the menu is up
 		QAction* action;
-		if(dev.first.compare(dev.second, Qt::CaseInsensitive) == 0)
+		if (dev.first.compare(dev.second, Qt::CaseInsensitive) == 0)
 			action = menu.addAction(dev.first);
 		else
 			action = menu.addAction(QStringLiteral("%1: %2").arg(dev.first).arg(dev.second));
@@ -1157,7 +1157,7 @@ void USBDeviceWidget::onAutomaticBindingClicked()
 	{
 		// we set it as data, because the device list could get invalidated while the menu is up
 		QAction* action;
-		if(dev.first.compare(dev.second, Qt::CaseInsensitive) == 0)
+		if (dev.first.compare(dev.second, Qt::CaseInsensitive) == 0)
 			action = menu.addAction(dev.first);
 		else
 			action = menu.addAction(QStringLiteral("%1: %2").arg(dev.first).arg(dev.second));

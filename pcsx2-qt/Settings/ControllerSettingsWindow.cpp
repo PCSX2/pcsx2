@@ -89,10 +89,10 @@ void ControllerSettingsWindow::onCurrentProfileChanged(int index)
 
 void ControllerSettingsWindow::onNewProfileClicked()
 {
-	const QString profile_name(QInputDialog::getText(this, tr("Create Input Profile"), 
-	tr("Custom input profiles are used to override the Shared input profile for specific games.\n"
-	"To apply a custom input profile to a game, go to its Game Properties, then change the 'Input Profile' on the Summary tab.\n\n"
-	"Enter the name for the new input profile:")));
+	const QString profile_name(QInputDialog::getText(this, tr("Create Input Profile"),
+		tr("Custom input profiles are used to override the Shared input profile for specific games.\n"
+		   "To apply a custom input profile to a game, go to its Game Properties, then change the 'Input Profile' on the Summary tab.\n\n"
+		   "Enter the name for the new input profile:")));
 	if (profile_name.isEmpty())
 		return;
 
@@ -457,10 +457,16 @@ void ControllerSettingsWindow::createWidgets()
 		const QString display_name(QString::fromUtf8(ci ? ci->GetLocalizedName() : "Unknown"));
 
 		QListWidgetItem* item = new QListWidgetItem();
-		//: Controller Port is an official term from Sony. Find the official translation for your language inside the console's manual.
-		item->setText(mtap_enabled[port] ? (tr("Controller Port %1%2\n%3").arg(port + 1).arg(s_mtap_slot_names[slot]).arg(display_name))
-		//: Controller Port is an official term from Sony. Find the official translation for your language inside the console's manual.
-		                                 : tr("Controller Port %1\n%2").arg(port + 1).arg(display_name));
+		if (mtap_enabled[port])
+		{
+			//: Controller Port is an official term from Sony. Find the official translation for your language inside the console's manual.
+			item->setText(tr("Controller Port %1%2\n%3").arg(port + 1).arg(s_mtap_slot_names[slot]).arg(display_name));
+		}
+		else
+		{
+			//: Controller Port is an official term from Sony. Find the official translation for your language inside the console's manual.
+			item->setText(tr("Controller Port %1\n%2").arg(port + 1).arg(display_name));
+		}
 		item->setIcon(m_port_bindings[global_slot]->getIcon());
 		item->setData(Qt::UserRole, QVariant(global_slot));
 		m_ui.settingsCategory->addItem(item);
@@ -513,10 +519,16 @@ void ControllerSettingsWindow::updateListDescription(u32 global_slot, Controller
 			const Pad::ControllerInfo* ci = Pad::GetControllerInfo(widget->getControllerType());
 			const QString display_name = QString::fromUtf8(ci ? ci->GetLocalizedName() : "Unknown");
 
-			//: Controller Port is an official term from Sony. Find the official translation for your language inside the console's manual.
-			item->setText(mtap_enabled ? (tr("Controller Port %1%2\n%3").arg(port + 1).arg(s_mtap_slot_names[slot]).arg(display_name))
-			//: Controller Port is an official term from Sony. Find the official translation for your language inside the console's manual.
-			                           : tr("Controller Port %1\n%2").arg(port + 1).arg(display_name));
+			if (mtap_enabled)
+			{
+				//: Controller Port is an official term from Sony. Find the official translation for your language inside the console's manual.
+				item->setText(tr("Controller Port %1%2\n%3").arg(port + 1).arg(s_mtap_slot_names[slot]).arg(display_name));
+			}
+			else
+			{
+				//: Controller Port is an official term from Sony. Find the official translation for your language inside the console's manual.
+				item->setText(tr("Controller Port %1\n%2").arg(port + 1).arg(display_name));
+			}
 			item->setIcon(widget->getIcon());
 			break;
 		}

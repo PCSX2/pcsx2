@@ -357,7 +357,6 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 	{
 		executable_path = "flatpak run net.pcsx2.PCSX2";
 		icon_name = "net.pcsx2.PCSX2";
-
 	}
 	else
 	{
@@ -395,9 +394,12 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 		"Type=Application\n"
 		"Terminal=false\n"
 		"StartupWMClass=PCSX2\n"
-		"Exec=" + final_args + "\n"
-		"Name=" + clean_name + "\n"
-		"Icon=" + icon_name + "\n"
+		"Exec=" +
+		final_args + "\n" +
+		"Name=" +
+		clean_name + "\n" +
+		"Icon=" +
+		icon_name + "\n" +
 		"Categories=Game;Emulator;\n";
 	std::string_view sv(file_content);
 

@@ -8,7 +8,7 @@
 #include "common/FileSystem.h"
 
 MemoryCardConvertWorker::MemoryCardConvertWorker(QWidget* parent, MemoryCardType type, MemoryCardFileType fileType, const std::string& srcFileName, const std::string& destFileName)
-		: QtAsyncProgressThread(parent)
+	: QtAsyncProgressThread(parent)
 {
 	this->type = type;
 	this->fileType = fileType;
