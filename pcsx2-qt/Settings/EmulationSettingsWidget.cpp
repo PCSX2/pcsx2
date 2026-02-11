@@ -47,7 +47,15 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* settings_dialog
 
 	if (dialog()->isPerGameSettings())
 	{
-		SettingWidgetBinder::BindWidgetToDateTimeSetting(sif, m_ui.rtcDateTime, "EmuCore");
+		SettingWidgetBinder::DateTimeKeys rtc_keys;
+		rtc_keys.year = "RtcYear";
+		rtc_keys.month = "RtcMonth";
+		rtc_keys.day = "RtcDay";
+		rtc_keys.hour = "RtcHour";
+		rtc_keys.minute = "RtcMinute";
+		rtc_keys.second = "RtcSecond";
+
+		SettingWidgetBinder::BindWidgetToDateTimeSetting(sif, m_ui.rtcDateTime, "EmuCore", rtc_keys);
 		m_ui.rtcDateTime->setDateRange(QDate(2000, 1, 1), QDate(2099, 12, 31));
 		SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.manuallySetRealTimeClock, "EmuCore", "ManuallySetRealTimeClock", false);
 		connect(m_ui.manuallySetRealTimeClock, &QCheckBox::checkStateChanged, this, &EmulationSettingsWidget::onManuallySetRealTimeClockChanged);
