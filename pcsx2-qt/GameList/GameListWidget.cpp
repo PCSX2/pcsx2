@@ -292,9 +292,39 @@ void GameListWidget::initialize()
 
 	// Load the last session's header state or create a new one.
 	if (Host::ContainsBaseSettingValue("GameListTableView", "HeaderState"))
+	{
 		loadTableHeaderState();
+
+		// Enforce at least one column is visible immediately after loading.
+		// If the loaded config has everything hidden, force the Title column to show.
+		QHeaderView* header = m_table_view->horizontalHeader();
+		if (header)
+		{
+			bool any_visible = false;
+			for (int column = 0; column < GameListModel::Column_Count; column++)
+			{
+				if (column != GameListModel::Column_Cover && !header->isSectionHidden(column))
+				{
+					any_visible = true;
+					break;
+				}
+			}
+
+			if (!any_visible)
+			{
+				// Force the Title column (logical index 2) to be visible. When there is none, Qt by default will hide everything
+				// So avoiding ghost columns, just enforce the Title one if it sees none.
+				// This ensures there is a right-click menu possible to restore other columns via Reset All Columns
+				// or manually checking 1 by 1 and dragging and dropping the columns for the order itself.
+				header->setSectionHidden(GameListModel::Column_Title, false);
+				onTableHeaderStateChanged();
+			}
+		}
+	}
 	else
+	{
 		applyTableHeaderDefaults();
+	}
 
 	// After header state load to account for user-specified sort.
 	m_table_view->setSortingEnabled(true);
@@ -581,7 +611,6 @@ void GameListWidget::onTableViewHeaderContextMenuRequested(const QPoint& point)
 	if (!header)
 		return;
 
-	int column_visual = 0;
 	// Iterate over *all* logical columns defined by the GameListModel.
 	// Logical indices are stable and represent the model's column IDs,
 	// regardless of how the user has reordered them visually giving them the freedom to display how they want it, holding and dragging the column headers also works.
@@ -610,9 +639,7 @@ void GameListWidget::onTableViewHeaderContextMenuRequested(const QPoint& point)
 
 		// Connect the checkbox toggle to logic that hides or shows the column.
 		connect(action, &QAction::toggled, this,
-			[this, column, column_visual, action](bool enabled) {
-				// Possible Optimization: Store the header pointer once for the whole lambda
-				// because it gets called quite often it seems and this should avoid Double Lookups.
+			[this, column_visual, action](bool enabled) {
 				QHeaderView* const header = m_table_view->horizontalHeader();
 				// If the user is attempting to *hide* this column...
 				if (!enabled)
@@ -624,15 +651,14 @@ void GameListWidget::onTableViewHeaderContextMenuRequested(const QPoint& point)
 					bool any_other_visible = false;
 
 					// Scan all columns to see if any other column is still visible.
-					// We use 'i' here to avoid shadowing the 'column' variable captured from the outer loop, see the connect logic above.
-					for (int i = 0; i < GameListModel::Column_Count; i++)
+					for (int column = 0; column < GameListModel::Column_Count; column++)
 					{
 						// Skip the cover column, which is never hideable.
-						if (i == GameListModel::Column_Cover)
+						if (column == GameListModel::Column_Cover)
 							continue;
 
 						// Convert logical index to visual index using the cached header pointer to avoid double lookups.
-						const int visual = header->visualIndex(i);
+						const int visual = header->visualIndex(column);
 
 						// If this column exists and is visible...
 						if (visual >= 0 && !m_table_view->isColumnHidden(visual))
@@ -655,6 +681,7 @@ void GameListWidget::onTableViewHeaderContextMenuRequested(const QPoint& point)
 					// I thought about making it show a blank bar instead or even say Placeholder as text,
 					// but it seems that Qt will enforce the minimum size to 0 if there are no enabled checkboxes
 					// (which makes sense) and don't want to hack fake columns which I already referenced in this file.
+					// In essence will ignore column being checked or unchecked, see if atleast one other column is still visible and if not then block the unchecking
 					if (!any_other_visible)
 					{
 						action->setChecked(true);
@@ -666,7 +693,7 @@ void GameListWidget::onTableViewHeaderContextMenuRequested(const QPoint& point)
 				m_table_view->setColumnHidden(column_visual, !enabled);
 
 				// Notify the rest of the UI that the header state has changed.
-				// This typically triggers saving the new state to the settings namely PCSX2.ini file.
+				// This typically triggers saving the new state to the settings namely PCSX2.ini file (indirectly via the onTableHeaderStateChanged).
 				onTableHeaderStateChanged();
 
 				// Recalculate column widths to keep the layout tidy
@@ -681,7 +708,7 @@ void GameListWidget::onTableViewHeaderContextMenuRequested(const QPoint& point)
 	// Add a "panic button" that fully restores the default column layout.
 	// This allows users to recover without editing configuration files such as [GameListTableView] has a key with
 	// and variable HeaderState which you can remove the line to also do the same effect but not user-friendly.
-	QAction* resetAction = menu.addAction(tr("Reset to Default Columns"));
+	QAction* resetAction = menu.addAction(tr("Reset All Columns"));
 
 	// Makes it so that you get the default order is forcely applied again (Type, Code, Title, Time Played,
 	// Last Played, Size, Region, Compatibility) when you left click the option.
@@ -891,6 +918,33 @@ void GameListWidget::loadTableHeaderState()
 
 	QSignalBlocker blocker(header);
 	header->restoreState(QByteArray::fromBase64(QByteArray::fromStdString(state_setting)));
+}
+void GameListWidget::ensureMinimumOneColumnVisible()
+{
+	QHeaderView* header = m_table_view->horizontalHeader();
+	if (!header)
+		return;
+
+	bool any_visible = false;
+
+	for (int column = 0; column < GameListModel::Column_Count; column++)
+	{
+		if (column == GameListModel::Column_Cover)
+			continue;
+
+		if (!header->isSectionHidden(column))
+		{
+			any_visible = true;
+			break;
+		}
+	}
+
+	// If absolutely everything is hidden, restore the default layout as a fallback.
+	// This protects against broken older configs where users ended up with 0 visible columns and can't do per-game properties or even play.
+	if (!any_visible)
+	{
+		applyTableHeaderDefaults();
+	}
 }
 
 void GameListWidget::onTableHeaderStateChanged()

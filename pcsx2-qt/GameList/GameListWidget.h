@@ -109,6 +109,7 @@ private:
 	void loadTableHeaderState();
 	void applyTableHeaderDefaults();
 	void resetTableHeaderToDefault();
+	void ensureMinimumOneColumnVisible();
 	void saveSortSettings(int column, Qt::SortOrder sort_order);
 	void listZoom(float delta);
 	void updateToolbar();
