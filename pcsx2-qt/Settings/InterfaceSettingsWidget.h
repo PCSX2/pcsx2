@@ -16,6 +16,7 @@ public:
 	~InterfaceSettingsWidget();
 
 	void updatePromptOnStateLoadSaveFailureCheckbox(Qt::CheckState state);
+    void updateMouseLockCheckbox(Qt::CheckState state);
 
 Q_SIGNALS:
 	void themeChanged();

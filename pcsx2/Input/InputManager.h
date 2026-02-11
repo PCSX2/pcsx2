@@ -323,4 +323,7 @@ namespace Host
 
 	/// Enables relative mouse mode in the host, and/or hides the cursor.
 	void SetMouseMode(bool relative_mode, bool hide_cursor);
+
+	/// Changes the mouse lock setting
+	void SetMouseLock(bool state);
 } // namespace Host

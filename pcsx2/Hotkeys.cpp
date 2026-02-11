@@ -340,4 +340,9 @@ DEFINE_HOTKEY("DecreaseVolume", TRANSLATE_NOOP("Hotkeys", "Audio"), TRANSLATE_NO
 		if (!pressed && VMManager::HasValidVM())
 			HotkeyAdjustVolume(-5);
 	})
+DEFINE_HOTKEY("ToggleMouseLock", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Toggle Mouse Lock"),
+	[](s32 pressed) {
+		if (!pressed)
+			Host::SetMouseLock(!Host::GetBoolSettingValue("EmuCore", "EnableMouseLock"));
+	})
 END_HOTKEY_LIST()

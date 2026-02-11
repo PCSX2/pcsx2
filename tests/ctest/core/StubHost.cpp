@@ -90,6 +90,10 @@ void Host::SetMouseMode(bool relative_mode, bool hide_cursor)
 {
 }
 
+void Host::SetMouseLock(bool state)
+{
+}
+
 std::optional<WindowInfo> Host::AcquireRenderWindow(bool recreate_window)
 {
 	return std::nullopt;

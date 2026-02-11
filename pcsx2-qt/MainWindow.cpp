@@ -440,6 +440,7 @@ void MainWindow::connectVMThreadSignals(EmuThread* thread)
 	connect(thread, &EmuThread::onReleaseRenderWindowRequested, this, &MainWindow::releaseRenderWindow, Qt::BlockingQueuedConnection);
 	connect(thread, &EmuThread::onResizeRenderWindowRequested, this, &MainWindow::displayResizeRequested);
 	connect(thread, &EmuThread::onMouseModeRequested, this, &MainWindow::mouseModeRequested);
+	connect(thread, &EmuThread::onMouseLockRequested, this, &MainWindow::mouseLockRequested);
 	connect(thread, &EmuThread::onFullscreenUIStateChange, this, &MainWindow::onFullscreenUIStateChange);
 	connect(thread, &EmuThread::onVMStarting, this, &MainWindow::onVMStarting);
 	connect(thread, &EmuThread::onVMStarted, this, &MainWindow::onVMStarted);
@@ -2662,6 +2663,30 @@ void MainWindow::mouseModeRequested(bool relative_mode, bool hide_cursor)
 	m_hide_mouse_cursor = hide_cursor;
 	if (m_display_surface && !s_vm_paused)
 		updateDisplayWidgetCursor();
+}
+
+void MainWindow::mouseLockRequested(bool state)
+{
+#ifdef __linux__ // Mouse locking is only supported on X11
+	const bool mouse_lock_supported = QGuiApplication::platformName().toLower() == "xcb";
+    if (!mouse_lock_supported)
+        return;
+#endif
+
+    Host::SetBaseBoolSettingValue("EmuCore", "EnableMouseLock", state);
+    Host::CommitBaseSettingChanges();
+
+    if (state) {
+        setupMouseMoveHandler();
+    } else {
+        Common::DetachMousePositionCb();
+    }
+
+    if (m_settings_window)
+    {
+        InterfaceSettingsWidget* interface_settings = m_settings_window->getInterfaceSettingsWidget();
+        interface_settings->updateMouseLockCheckbox(state ? Qt::Checked : Qt::Unchecked);
+    }
 }
 
 void MainWindow::releaseRenderWindow()
