@@ -2652,7 +2652,7 @@ void Achievements::DrawAchievementsWindow()
 					if (bucket.bucket_type != bucket_type)
 						continue;
 
-					if (s_open_subset && bucket.subset_id != s_open_subset->id)
+					if (s_open_subset && bucket.subset_id != 0 && bucket.subset_id != s_open_subset->id)
 						continue;
 
 					pxAssert(bucket.bucket_type < NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS);
