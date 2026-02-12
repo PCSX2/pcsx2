@@ -455,9 +455,9 @@ bool Achievements::Initialize()
 		SettingsInterface* secretsInterface = Host::Internal::GetSecretsSettingsLayer();
 		secretsInterface->SetStringValue("Achievements", "Token", oldToken.c_str());
 		secretsInterface->Save();
-		
+
 		oldToken.clear();
-		
+
 		auto baseLock = Host::GetSettingsLock();
 		SettingsInterface* baseInterface = Host::Internal::GetBaseSettingsLayer();
 		baseInterface->DeleteValue("Achievements", "Token");
@@ -540,7 +540,7 @@ void Achievements::UpdateNotificationPosition()
 {
 	// Set notification position based on achievement settings
 	float horizontal_position, vertical_position, direction;
-	
+
 	// Determine horizontal alignment
 	switch (EmuConfig.Achievements.NotificationPosition)
 	{
@@ -549,13 +549,13 @@ void Achievements::UpdateNotificationPosition()
 		case OsdOverlayPos::BottomLeft:
 			horizontal_position = 0.0f; // Left
 			break;
-			
+
 		case OsdOverlayPos::TopCenter:
 		case OsdOverlayPos::Center:
 		case OsdOverlayPos::BottomCenter:
 			horizontal_position = 0.5f; // Center
 			break;
-			
+
 		case OsdOverlayPos::TopRight:
 		case OsdOverlayPos::CenterRight:
 		case OsdOverlayPos::BottomRight:
@@ -563,7 +563,7 @@ void Achievements::UpdateNotificationPosition()
 			horizontal_position = 1.0f; // Right
 			break;
 	}
-	
+
 	// Determine vertical alignment and stacking direction
 	switch (EmuConfig.Achievements.NotificationPosition)
 	{
@@ -573,14 +573,14 @@ void Achievements::UpdateNotificationPosition()
 			vertical_position = 0.15f; // Top area
 			direction = 1.0f; // Stack downward
 			break;
-			
+
 		case OsdOverlayPos::CenterLeft:
 		case OsdOverlayPos::Center:
 		case OsdOverlayPos::CenterRight:
 			vertical_position = 0.5f; // Center
 			direction = 1.0f; // Stack downward
 			break;
-			
+
 		case OsdOverlayPos::BottomLeft:
 		case OsdOverlayPos::BottomCenter:
 		case OsdOverlayPos::BottomRight:
@@ -589,7 +589,7 @@ void Achievements::UpdateNotificationPosition()
 			direction = -1.0f; // Stack upward
 			break;
 	}
-	
+
 	ImGuiFullscreen::SetNotificationPosition(horizontal_position, vertical_position, direction);
 }
 
@@ -739,13 +739,19 @@ uint32_t Achievements::ClientReadMemory(uint32_t address, uint8_t* buffer, uint3
 void Achievements::ClientServerCall(
 	const rc_api_request_t* request, rc_client_server_callback_t callback, void* callback_data, rc_client_t* client)
 {
-	HTTPDownloader::Request::Callback hd_callback = [callback, callback_data](s32 status_code, const std::string& content_type, HTTPDownloader::Request::Data data)
-	{
+	HTTPDownloader::Request::Callback hd_callback = [callback, callback_data](s32 status_code, const std::string& content_type, HTTPDownloader::Request::Data data) {
 		rc_api_server_response_t rr;
-		rr.http_status_code = (status_code <= 0) ? (status_code == HTTPDownloader::HTTP_STATUS_CANCELLED ?
-		                                                   RC_API_SERVER_RESPONSE_CLIENT_ERROR :
-		                                                   RC_API_SERVER_RESPONSE_RETRYABLE_CLIENT_ERROR)
-		                                         : status_code;
+		if (status_code <= 0)
+		{
+			if (status_code == HTTPDownloader::HTTP_STATUS_CANCELLED)
+				rr.http_status_code = RC_API_SERVER_RESPONSE_CLIENT_ERROR;
+			else
+				rr.http_status_code = RC_API_SERVER_RESPONSE_RETRYABLE_CLIENT_ERROR;
+		}
+		else
+		{
+			rr.http_status_code = status_code;
+		}
 		rr.body_length = data.size();
 		rr.body = reinterpret_cast<const char*>(data.data());
 
@@ -1833,7 +1839,7 @@ void Achievements::ClientLoginWithPasswordCallback(int result, const char* error
 	Host::SetBaseStringSettingValue("Achievements", "Username", params->username);
 	Host::SetBaseStringSettingValue("Achievements", "LoginTimestamp", fmt::format("{}", std::time(nullptr)).c_str());
 	Host::CommitBaseSettingChanges();
-	
+
 	SettingsInterface* secretsInterface = Host::Internal::GetSecretsSettingsLayer();
 	secretsInterface->SetStringValue("Achievements", "Token", user->token);
 	secretsInterface->Save();
@@ -2032,7 +2038,7 @@ static ImVec2 CalculateOverlayPosition(const ImGuiIO& io, float padding, Achieve
 static ImVec2 AdjustPositionForAlignment(const ImVec2& base_position, const ImVec2& element_size, AchievementOverlayPosition alignment)
 {
 	ImVec2 adjusted = base_position;
-	
+
 	// Adjust for horizontal alignment
 	switch (alignment)
 	{
@@ -2041,14 +2047,14 @@ static ImVec2 AdjustPositionForAlignment(const ImVec2& base_position, const ImVe
 		case AchievementOverlayPosition::BottomLeft:
 			// Left aligned no adjustment needed for x
 			break;
-			
+
 		case AchievementOverlayPosition::TopCenter:
 		case AchievementOverlayPosition::Center:
 		case AchievementOverlayPosition::BottomCenter:
 			// Center aligned offset by half element width
 			adjusted.x -= element_size.x * 0.5f;
 			break;
-			
+
 		case AchievementOverlayPosition::TopRight:
 		case AchievementOverlayPosition::CenterRight:
 		case AchievementOverlayPosition::BottomRight:
@@ -2057,7 +2063,7 @@ static ImVec2 AdjustPositionForAlignment(const ImVec2& base_position, const ImVe
 			adjusted.x -= element_size.x;
 			break;
 	}
-	
+
 	// Adjust for vertical alignment
 	switch (alignment)
 	{
@@ -2066,14 +2072,14 @@ static ImVec2 AdjustPositionForAlignment(const ImVec2& base_position, const ImVe
 		case AchievementOverlayPosition::TopRight:
 			// Top aligned no adjustment needed for y
 			break;
-			
+
 		case AchievementOverlayPosition::CenterLeft:
 		case AchievementOverlayPosition::Center:
 		case AchievementOverlayPosition::CenterRight:
 			// Center aligned offset by half element height
 			adjusted.y -= element_size.y * 0.5f;
 			break;
-			
+
 		case AchievementOverlayPosition::BottomLeft:
 		case AchievementOverlayPosition::BottomCenter:
 		case AchievementOverlayPosition::BottomRight:
@@ -2082,7 +2088,7 @@ static ImVec2 AdjustPositionForAlignment(const ImVec2& base_position, const ImVe
 			adjusted.y -= element_size.y;
 			break;
 	}
-	
+
 	return adjusted;
 }
 
@@ -2094,19 +2100,19 @@ static ImVec2 GetStackingDirection(AchievementOverlayPosition alignment)
 		case AchievementOverlayPosition::TopCenter:
 		case AchievementOverlayPosition::TopRight:
 			return ImVec2(0.0f, 1.0f); // Stack downward
-			
+
 		case AchievementOverlayPosition::BottomLeft:
 		case AchievementOverlayPosition::BottomCenter:
 		case AchievementOverlayPosition::BottomRight:
 		default:
 			return ImVec2(0.0f, -1.0f); // Stack upward
-			
+
 		case AchievementOverlayPosition::CenterLeft:
 			return ImVec2(1.0f, 0.0f); // Stack rightward
-			
+
 		case AchievementOverlayPosition::CenterRight:
 			return ImVec2(-1.0f, 0.0f); // Stack leftward
-			
+
 		case AchievementOverlayPosition::Center:
 			return ImVec2(0.0f, -1.0f); // Stack upward for center
 	}
@@ -2147,7 +2153,7 @@ void Achievements::DrawGameOverlays()
 			{
 				dl->AddImage(reinterpret_cast<ImTextureID>(badge->GetNativeHandle()),
 					current_position, current_position + image_size, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), col);
-				
+
 				// For horizontal layouts, go horizontally for vertical layouts, stay in the same row
 				if (std::abs(stack_direction.x) > 0.0f)
 				{
@@ -2198,7 +2204,7 @@ void Achievements::DrawGameOverlays()
 		const ImVec2 progress_box_size = ImVec2(image_size.x + text_size.x + spacing + padding * 2.0f, image_size.y + padding * 2.0f);
 		const ImVec2 stack_direction = GetStackingDirection(EmuConfig.Achievements.OverlayPosition);
 		const ImVec2 box_position = AdjustPositionForAlignment(position, progress_box_size, EmuConfig.Achievements.OverlayPosition);
-		
+
 		const ImVec2 box_min = box_position;
 		const ImVec2 box_max = box_position + progress_box_size;
 		const float box_rounding = LayoutScale(1.0f);
@@ -2232,7 +2238,7 @@ void Achievements::DrawGameOverlays()
 	if (!s_active_leaderboard_trackers.empty() && EmuConfig.Achievements.LBOverlays)
 	{
 		const ImVec2 stack_direction = GetStackingDirection(EmuConfig.Achievements.OverlayPosition);
-		
+
 		for (auto it = s_active_leaderboard_trackers.begin(); it != s_active_leaderboard_trackers.end();)
 		{
 			const LeaderboardTrackerIndicator& indicator = *it;
@@ -2247,7 +2253,7 @@ void Achievements::DrawGameOverlays()
 
 			const ImVec2 tracker_box_size = ImVec2(size.x + padding * 2.0f, size.y + padding * 2.0f);
 			const ImVec2 box_position = AdjustPositionForAlignment(position, tracker_box_size, EmuConfig.Achievements.OverlayPosition);
-			
+
 			const ImVec2 box_min = box_position;
 			const ImVec2 box_max = box_position + tracker_box_size;
 			const float box_rounding = LayoutScale(1.0f);
@@ -3049,7 +3055,7 @@ void Achievements::DrawLeaderboardsWindow()
 			{
 				const bool wants_to_go_back = ImGuiFullscreen::FloatingButton(
 												  ICON_FA_SQUARE_CARET_LEFT, 10.0f, 10.0f, -1.0f, -1.0f, 1.0f, 0.0f, true, g_large_font) ||
-												ImGuiFullscreen::WantsToCloseMenu();
+				                              ImGuiFullscreen::WantsToCloseMenu();
 				if (wants_to_go_back)
 				{
 					close_leaderboard_on_exit = true;
