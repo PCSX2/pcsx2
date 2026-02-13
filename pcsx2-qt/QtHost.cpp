@@ -1739,7 +1739,7 @@ void Host::SetMouseMode(bool relative_mode, bool hide_cursor)
 
 void Host::SetMouseLock(bool state)
 {
-    emit g_emu_thread->onMouseLockRequested(state);
+	emit g_emu_thread->onMouseLockRequested(state);
 }
 
 void QtHost::LockVMWithDialog()

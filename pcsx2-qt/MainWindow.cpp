@@ -2669,24 +2669,27 @@ void MainWindow::mouseLockRequested(bool state)
 {
 #ifdef __linux__ // Mouse locking is only supported on X11
 	const bool mouse_lock_supported = QGuiApplication::platformName().toLower() == "xcb";
-    if (!mouse_lock_supported)
-        return;
+	if (!mouse_lock_supported)
+		return;
 #endif
 
-    Host::SetBaseBoolSettingValue("EmuCore", "EnableMouseLock", state);
-    Host::CommitBaseSettingChanges();
+	Host::SetBaseBoolSettingValue("EmuCore", "EnableMouseLock", state);
+	Host::CommitBaseSettingChanges();
 
-    if (state) {
-        setupMouseMoveHandler();
-    } else {
-        Common::DetachMousePositionCb();
-    }
+	if (state)
+	{
+		setupMouseMoveHandler();
+	}
+	else
+	{
+		Common::DetachMousePositionCb();
+	}
 
-    if (m_settings_window)
-    {
-        InterfaceSettingsWidget* interface_settings = m_settings_window->getInterfaceSettingsWidget();
-        interface_settings->updateMouseLockCheckbox(state ? Qt::Checked : Qt::Unchecked);
-    }
+	if (m_settings_window)
+	{
+		InterfaceSettingsWidget* interface_settings = m_settings_window->getInterfaceSettingsWidget();
+		interface_settings->updateMouseLockCheckbox(state ? Qt::Checked : Qt::Unchecked);
+	}
 }
 
 void MainWindow::releaseRenderWindow()
