@@ -3564,7 +3564,7 @@ Enter the name for the new input profile:</source>
         <location filename="../Settings/ControllerSettingsWindow.cpp" line="193"/>
         <location filename="../Settings/ControllerSettingsWindow.cpp" line="199"/>
         <location filename="../Settings/ControllerSettingsWindow.cpp" line="235"/>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="573"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="585"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3650,40 +3650,41 @@ You cannot undo this action.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="461"/>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="517"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="463"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="525"/>
         <source>Controller Port %1%2
 %3</source>
         <extracomment>Controller Port is an official term from Sony. Find the official translation for your language inside the console&apos;s manual.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="463"/>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="519"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="468"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="530"/>
         <source>Controller Port %1
 %2</source>
+        <extracomment>Controller Port is an official term from Sony. Find the official translation for your language inside the console&apos;s manual.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="479"/>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="537"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="485"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="549"/>
         <source>USB Port %1
 %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="489"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="495"/>
         <source>Hotkeys</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="551"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="563"/>
         <source>Shared</source>
         <extracomment>&quot;Shared&quot; refers here to the shared input profile.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="573"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="585"/>
         <source>The input profile named &apos;%1&apos; cannot be found.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5839,35 +5840,35 @@ Do you want to overwrite?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1566"/>
-        <location filename="../QtHost.cpp" line="1586"/>
-        <location filename="../QtHost.cpp" line="1594"/>
-        <location filename="../QtHost.cpp" line="1628"/>
+        <location filename="../QtHost.cpp" line="1565"/>
+        <location filename="../QtHost.cpp" line="1585"/>
+        <location filename="../QtHost.cpp" line="1593"/>
+        <location filename="../QtHost.cpp" line="1627"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1566"/>
+        <location filename="../QtHost.cpp" line="1565"/>
         <source>Failed to create HTTPDownloader.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1574"/>
+        <location filename="../QtHost.cpp" line="1573"/>
         <source>Downloading %1...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1587"/>
+        <location filename="../QtHost.cpp" line="1586"/>
         <source>Download failed with HTTP status code %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1595"/>
+        <location filename="../QtHost.cpp" line="1594"/>
         <source>Download failed: Data is empty.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1629"/>
+        <location filename="../QtHost.cpp" line="1628"/>
         <source>Failed to write downloaded data to file &apos;%1&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5891,7 +5892,7 @@ Do you want to overwrite?</source>
     </message>
     <message>
         <location filename="../Settings/EmulationSettingsWidget.ui" line="136"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="135"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="143"/>
         <source>Enable Cheats</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5912,25 +5913,25 @@ Do you want to overwrite?</source>
     </message>
     <message>
         <location filename="../Settings/EmulationSettingsWidget.ui" line="150"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="137"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="145"/>
         <source>Enable Host Filesystem</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/EmulationSettingsWidget.ui" line="157"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="130"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="138"/>
         <source>Enable Fast CDVD</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/EmulationSettingsWidget.ui" line="164"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="132"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="140"/>
         <source>Enable CDVD Precaching</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/EmulationSettingsWidget.ui" line="171"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="123"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="131"/>
         <source>Enable Thread Pinning</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5941,7 +5942,7 @@ Do you want to overwrite?</source>
     </message>
     <message>
         <location filename="../Settings/EmulationSettingsWidget.ui" line="111"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="119"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="127"/>
         <source>Disabled</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5982,7 +5983,7 @@ Do you want to overwrite?</source>
     </message>
     <message>
         <location filename="../Settings/EmulationSettingsWidget.ui" line="87"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="116"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="124"/>
         <source>100% (Normal Speed)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6019,273 +6020,273 @@ Do you want to overwrite?</source>
     </message>
     <message>
         <location filename="../Settings/EmulationSettingsWidget.ui" line="255"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="154"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="162"/>
         <source>Use Host VSync Timing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/EmulationSettingsWidget.ui" line="290"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="168"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="176"/>
         <source>Use System Locale Format</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/EmulationSettingsWidget.ui" line="234"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="146"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="154"/>
         <source>Sync to Host Refresh Rate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/EmulationSettingsWidget.ui" line="248"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="140"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="148"/>
         <source>Optimal Frame Pacing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/EmulationSettingsWidget.ui" line="241"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="151"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="159"/>
         <source>Vertical Sync (VSync)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/EmulationSettingsWidget.ui" line="262"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="157"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="165"/>
         <source>Skip Presenting Duplicate Frames</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/EmulationSettingsWidget.ui" line="274"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="164"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="172"/>
         <source>Real-Time Clock</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/EmulationSettingsWidget.ui" line="280"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="162"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="170"/>
         <source>Manually Set Real-Time Clock</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="60"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="68"/>
         <source>Use Global Setting [%1]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="106"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="114"/>
         <source>Normal Speed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="107"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="115"/>
         <source>Sets the target emulation speed. It is not guaranteed that this speed will be reached, and if not, the emulator will run as fast as it can manage.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="110"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="113"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="168"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="118"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="121"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="176"/>
         <source>User Preference</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="124"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="132"/>
         <source>Sets the priority for specific threads in a specific order ignoring the system scheduler. May help CPUs with big (P) and little (E) cores (e.g., Intel 12th or newer generation CPUs or other vendors such as AMD).</source>
         <extracomment>P-Core = Performance Core, E-Core = Efficiency Core. See if Intel has official translations for these terms.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="127"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="135"/>
         <source>Checked</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="117"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="125"/>
         <source>Higher values may increase internal framerate in games, but will increase CPU requirements substantially. Lower values will reduce the CPU load allowing lightweight games to run full speed on weaker CPUs.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="120"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="128"/>
         <source>Makes the emulated Emotion Engine skip cycles. Helps a small subset of games like SOTC. Most of the time it&apos;s harmful to performance.</source>
         <extracomment>SOTC = Shadow of the Colossus. A game&apos;s title, should not be translated unless an official translation exists.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="123"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="130"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="132"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="135"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="137"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="131"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="138"/>
         <location filename="../Settings/EmulationSettingsWidget.cpp" line="140"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="146"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="151"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="143"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="145"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="148"/>
         <location filename="../Settings/EmulationSettingsWidget.cpp" line="154"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="157"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="159"/>
         <location filename="../Settings/EmulationSettingsWidget.cpp" line="162"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="165"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="170"/>
         <source>Unchecked</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="136"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="144"/>
         <source>Automatically loads and applies cheats on game start.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="138"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="146"/>
         <source>Allows games and homebrew to access files / folders directly on the host computer.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="110"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="118"/>
         <source>Fast-Forward Speed</source>
         <extracomment>The &quot;User Preference&quot; string will appear after the text &quot;Recommended Value:&quot;</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="106"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="114"/>
         <source>100%</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="111"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="119"/>
         <source>Sets the fast-forward speed. This speed will be used when the fast-forward hotkey is pressed/toggled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="113"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="121"/>
         <source>Slow-Motion Speed</source>
         <extracomment>The &quot;User Preference&quot; string will appear after the text &quot;Recommended Value:&quot;</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="114"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="122"/>
         <source>Sets the slow-motion speed. This speed will be used when the slow-motion hotkey is pressed/toggled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="116"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="124"/>
         <source>EE Cycle Rate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="119"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="127"/>
         <source>EE Cycle Skip</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="127"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="135"/>
         <source>Enable Multithreaded VU1 (MTVU1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="128"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="136"/>
         <source>Generally a speedup on CPUs with 4 or more cores. Safe for most games, but a few are incompatible and may hang.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="131"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="139"/>
         <source>Fast disc access, shorter loading times. Check HDLoader compatibility lists for games that are known to have issues with this.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="133"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="141"/>
         <source>Loads the disc image into RAM before starting the virtual machine. Can reduce stutter on systems with hard drives that have long wake times, but significantly increases boot times.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="141"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="149"/>
         <source>Sets the VSync queue size to 0, making every frame be completed and presented by the GS before input is polled and the next frame begins. Using this setting can reduce input lag at the cost of measurably higher CPU and GPU requirements.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="143"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="151"/>
         <source>Maximum Frame Latency</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="143"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="151"/>
         <source>2 Frames</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="147"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="155"/>
         <source>Speeds up emulation so that the guest refresh rate matches the host. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%. Sync to Host Refresh Rate will not take effect if the console&apos;s refresh rate is too far from the host&apos;s refresh rate. Users with variable refresh rate displays should disable this option.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="169"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="177"/>
         <source>Uses the operating system&apos;s date/time format rather than &quot;yyyy-MM-dd HH:mm:ss&quot;. May exclude seconds.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="144"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="152"/>
         <source>Sets the maximum number of frames that can be queued up to the GS, before the CPU thread will wait for one of them to complete before continuing. Higher values can assist with smoothing out irregular frame times, but increase input lag.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="152"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="160"/>
         <source>Enable this option to match PCSX2&apos;s refresh rate with your current monitor or screen. VSync is automatically disabled when it is not possible (e.g., running at non-100% speed).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="155"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="163"/>
         <source>When synchronizing with the host refresh rate, this option disables PCSX2&apos;s internal frame timing and uses the host instead. Can result in smoother frame pacing, &lt;strong&gt;but at the cost of increased input latency&lt;/strong&gt;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="158"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="166"/>
         <source>Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth out frame time fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase input lag. Helps when using frame generation on 25/30fps games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="163"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="171"/>
         <source>Manually set a real-time clock to use for the virtual PlayStation 2 instead of using your OS&apos; system clock.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="164"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="172"/>
         <source>Current date and time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="165"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="173"/>
         <source>Real-time clock (RTC) used by the virtual PlayStation 2.&lt;br&gt;This time is only applied upon booting the PS2; changing it while in-game will have no effect.&lt;br&gt;Some games require an RTC date/time set after their release date.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="182"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="190"/>
         <source>Use Global Setting [%1%]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="194"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="202"/>
         <source>%1% [%2 FPS (NTSC) / %3 FPS (PAL)]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="202"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="210"/>
         <source>Unlimited</source>
         <extracomment>Every case that uses this particular string seems to refer to speeds: Normal Speed/Fast Forward Speed/Slow Motion Speed.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="206"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="214"/>
         <source>Custom</source>
         <extracomment>Every case that uses this particular string seems to refer to speeds: Normal Speed/Fast Forward Speed/Slow Motion Speed.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="214"/>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="250"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="222"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="258"/>
         <source>Custom [%1% / %2 FPS (NTSC) / %3 FPS (PAL)]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="235"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="243"/>
         <source>Custom Speed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="235"/>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="243"/>
         <source>Enter Custom Speed</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12766,7 +12767,7 @@ graphical quality, but this will increase system requirements.</source>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../GameList/GameListModel.cpp" line="223"/>
+        <location filename="../GameList/GameListModel.cpp" line="222"/>
         <location filename="../../pcsx2/GameList.cpp" line="1248"/>
         <source>%n hours</source>
         <translation type="unfinished">
@@ -12775,7 +12776,7 @@ graphical quality, but this will increase system requirements.</source>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../GameList/GameListModel.cpp" line="227"/>
+        <location filename="../GameList/GameListModel.cpp" line="226"/>
         <location filename="../../pcsx2/GameList.cpp" line="1250"/>
         <source>%n minutes</source>
         <translation type="unfinished">
@@ -12792,52 +12793,52 @@ graphical quality, but this will increase system requirements.</source>
 <context>
     <name>GameListModel</name>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="512"/>
+        <location filename="../GameList/GameListModel.cpp" line="511"/>
         <source>Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="513"/>
+        <location filename="../GameList/GameListModel.cpp" line="512"/>
         <source>Code</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="514"/>
+        <location filename="../GameList/GameListModel.cpp" line="513"/>
         <source>Title</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="515"/>
+        <location filename="../GameList/GameListModel.cpp" line="514"/>
         <source>File Title</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="516"/>
+        <location filename="../GameList/GameListModel.cpp" line="515"/>
         <source>CRC</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="517"/>
+        <location filename="../GameList/GameListModel.cpp" line="516"/>
         <source>Time Played</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="518"/>
+        <location filename="../GameList/GameListModel.cpp" line="517"/>
         <source>Last Played</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="519"/>
+        <location filename="../GameList/GameListModel.cpp" line="518"/>
         <source>Size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="520"/>
+        <location filename="../GameList/GameListModel.cpp" line="519"/>
         <source>Region</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="521"/>
+        <location filename="../GameList/GameListModel.cpp" line="520"/>
         <source>Compatibility</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12996,6 +12997,11 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../GameList/GameListWidget.ui" line="201"/>
         <source>Search...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../GameList/GameListWidget.cpp" line="606"/>
+        <source>Reset All Columns</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -18250,32 +18256,32 @@ Right click to clear binding</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LogWindow.cpp" line="210"/>
+        <location filename="../LogWindow.cpp" line="209"/>
         <source>Newline on send</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LogWindow.cpp" line="256"/>
+        <location filename="../LogWindow.cpp" line="254"/>
         <source>Select Log File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LogWindow.cpp" line="256"/>
+        <location filename="../LogWindow.cpp" line="254"/>
         <source>Log Files (*.txt)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LogWindow.cpp" line="263"/>
+        <location filename="../LogWindow.cpp" line="261"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LogWindow.cpp" line="263"/>
+        <location filename="../LogWindow.cpp" line="261"/>
         <source>Failed to open file for writing.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LogWindow.cpp" line="270"/>
+        <location filename="../LogWindow.cpp" line="268"/>
         <source>Log was written to %1.
 </source>
         <translation type="unfinished"></translation>
@@ -19486,12 +19492,12 @@ The saves will not be recoverable.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Translations.cpp" line="344"/>
+        <location filename="../Translations.cpp" line="345"/>
         <source>The font file &apos;%1&apos; is required for the On-Screen Display and Big Picture Mode to show messages in your language.&lt;br&gt;&lt;br&gt;Do you want to download this file now? These files are usually less than 10 megabytes in size.&lt;br&gt;&lt;br&gt;&lt;strong&gt;If you do not download this file, on-screen messages will not be readable.&lt;/strong&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Translations.cpp" line="354"/>
+        <location filename="../Translations.cpp" line="355"/>
         <source>Downloading Files</source>
         <translation type="unfinished"></translation>
     </message>
@@ -19569,25 +19575,25 @@ Savestates should not be used in place of in-game saves.</source>
     </message>
     <message>
         <location filename="../Settings/MemoryCardConvertDialog.ui" line="36"/>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="179"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="176"/>
         <source>8 MB File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/MemoryCardConvertDialog.ui" line="41"/>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="190"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="187"/>
         <source>16 MB File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/MemoryCardConvertDialog.ui" line="46"/>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="201"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="198"/>
         <source>32 MB File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/MemoryCardConvertDialog.ui" line="51"/>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="212"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="209"/>
         <source>64 MB File</source>
         <translation type="unfinished"></translation>
     </message>
@@ -19607,74 +19613,74 @@ Savestates should not be used in place of in-game saves.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="45"/>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="149"/>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="320"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="44"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="146"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="317"/>
         <source>Uses a folder on your PC filesystem, instead of a file. Infinite capacity, while keeping the same compatibility as an 8 MB Memory Card.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="51"/>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="300"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="50"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="297"/>
         <source>A standard, 8 MB Memory Card. Most compatible, but smallest capacity.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="54"/>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="305"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="53"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="302"/>
         <source>2x larger than a standard Memory Card. May have some compatibility issues.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="57"/>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="310"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="56"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="307"/>
         <source>4x larger than a standard Memory Card. Likely to have compatibility issues.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="60"/>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="315"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="59"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="312"/>
         <source>8x larger than a standard Memory Card. Likely to have compatibility issues.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="64"/>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="70"/>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="230"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="63"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="69"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="227"/>
         <source>Convert Memory Card Failed</source>
         <extracomment>MemoryCardType should be left as-is.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="64"/>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="70"/>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="230"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="63"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="69"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="227"/>
         <source>Invalid MemoryCardType</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="102"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="99"/>
         <source>Conversion Complete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="102"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="99"/>
         <source>Memory Card &quot;%1&quot; converted to &quot;%2&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="223"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="220"/>
         <source>Your folder Memory Card has too much data inside it to be converted to a file Memory Card. The largest supported file Memory Card has a capacity of 64 MB. To convert your folder Memory Card, you must remove game folders until its size is 64 MB or less.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="223"/>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="325"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="220"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="322"/>
         <source>Cannot Convert Memory Card</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="325"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="322"/>
         <source>There was an error when accessing the memory card directory. Error message: %0</source>
         <translation type="unfinished"></translation>
     </message>
@@ -19683,10 +19689,10 @@ Savestates should not be used in place of in-game saves.</source>
     <name>MemoryCardCreateDialog</name>
     <message>
         <location filename="../Settings/MemoryCardCreateDialog.ui" line="14"/>
-        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="107"/>
-        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="114"/>
-        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="121"/>
-        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="134"/>
+        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="106"/>
+        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="113"/>
+        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="120"/>
+        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="133"/>
         <source>Create Memory Card</source>
         <translation type="unfinished"></translation>
     </message>
@@ -19767,22 +19773,22 @@ Savestates should not be used in place of in-game saves.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="108"/>
+        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="107"/>
         <source>Failed to create the Memory Card, because the name &apos;%1&apos; contains one or more invalid characters.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="115"/>
+        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="114"/>
         <source>Failed to create the Memory Card, because another card with the name &apos;%1&apos; already exists.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="122"/>
+        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="121"/>
         <source>Failed to create the Memory Card, the log may contain more information.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="134"/>
+        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="133"/>
         <source>Memory Card &apos;%1&apos; created.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -21470,40 +21476,40 @@ Ejecting {2} and replacing it with {3}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1536"/>
-        <location filename="../QtHost.cpp" line="1551"/>
+        <location filename="../QtHost.cpp" line="1535"/>
+        <location filename="../QtHost.cpp" line="1550"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1537"/>
+        <location filename="../QtHost.cpp" line="1536"/>
         <source>An error occurred while deleting empty game settings:
 {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1552"/>
+        <location filename="../QtHost.cpp" line="1551"/>
         <source>An error occurred while saving game settings:
 {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1705"/>
+        <location filename="../QtHost.cpp" line="1704"/>
         <source>Controller {} connected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1718"/>
+        <location filename="../QtHost.cpp" line="1717"/>
         <source>System paused because controller {} was disconnected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1731"/>
+        <location filename="../QtHost.cpp" line="1730"/>
         <source>Controller {} disconnected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1969"/>
+        <location filename="../QtHost.cpp" line="1968"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
@@ -22520,8 +22526,8 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../ShortcutCreationDialog.cpp" line="308"/>
         <location filename="../ShortcutCreationDialog.cpp" line="316"/>
         <location filename="../ShortcutCreationDialog.cpp" line="344"/>
-        <location filename="../ShortcutCreationDialog.cpp" line="377"/>
-        <location filename="../ShortcutCreationDialog.cpp" line="416"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="376"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="418"/>
         <source>Failed to create shortcut</source>
         <translation type="unfinished"></translation>
     </message>
@@ -22553,7 +22559,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <location filename="../ShortcutCreationDialog.cpp" line="188"/>
-        <location filename="../ShortcutCreationDialog.cpp" line="377"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="376"/>
         <source>File path contains invalid character(s).</source>
         <translation type="unfinished"></translation>
     </message>
@@ -22613,17 +22619,17 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="406"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="408"/>
         <source>Desktop Shortcut Files (*.desktop)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="408"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="410"/>
         <source>Select Shortcut Save Destination</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="416"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="418"/>
         <source>Failed to create .desktop file</source>
         <translation type="unfinished"></translation>
     </message>
@@ -23003,97 +23009,97 @@ Rename it to {} to remove this warning.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/ThreadModel.h" line="53"/>
+        <location filename="../Debugger/ThreadModel.h" line="52"/>
         <source>BAD</source>
         <extracomment>Refers to a Thread State in the Debugger.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/ThreadModel.h" line="55"/>
+        <location filename="../Debugger/ThreadModel.h" line="54"/>
         <source>RUN</source>
         <extracomment>Refers to a Thread State in the Debugger.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/ThreadModel.h" line="57"/>
+        <location filename="../Debugger/ThreadModel.h" line="56"/>
         <source>READY</source>
         <extracomment>Refers to a Thread State in the Debugger.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/ThreadModel.h" line="59"/>
+        <location filename="../Debugger/ThreadModel.h" line="58"/>
         <source>WAIT</source>
         <extracomment>Refers to a Thread State in the Debugger.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/ThreadModel.h" line="61"/>
+        <location filename="../Debugger/ThreadModel.h" line="60"/>
         <source>SUSPEND</source>
         <extracomment>Refers to a Thread State in the Debugger.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/ThreadModel.h" line="63"/>
+        <location filename="../Debugger/ThreadModel.h" line="62"/>
         <source>WAIT SUSPEND</source>
         <extracomment>Refers to a Thread State in the Debugger.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/ThreadModel.h" line="65"/>
+        <location filename="../Debugger/ThreadModel.h" line="64"/>
         <source>DORMANT</source>
         <extracomment>Refers to a Thread State in the Debugger.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/ThreadModel.h" line="71"/>
+        <location filename="../Debugger/ThreadModel.h" line="70"/>
         <source>NONE</source>
         <extracomment>Refers to a Thread Wait State in the Debugger.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/ThreadModel.h" line="73"/>
+        <location filename="../Debugger/ThreadModel.h" line="72"/>
         <source>WAKEUP REQUEST</source>
         <extracomment>Refers to a Thread Wait State in the Debugger.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/ThreadModel.h" line="75"/>
+        <location filename="../Debugger/ThreadModel.h" line="74"/>
         <source>SEMAPHORE</source>
         <extracomment>Refers to a Thread Wait State in the Debugger.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/ThreadModel.h" line="77"/>
+        <location filename="../Debugger/ThreadModel.h" line="76"/>
         <source>SLEEP</source>
         <extracomment>Refers to a Thread Wait State in the Debugger.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/ThreadModel.h" line="79"/>
+        <location filename="../Debugger/ThreadModel.h" line="78"/>
         <source>DELAY</source>
         <extracomment>Refers to a Thread Wait State in the Debugger.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/ThreadModel.h" line="81"/>
+        <location filename="../Debugger/ThreadModel.h" line="80"/>
         <source>EVENTFLAG</source>
         <extracomment>Refers to a Thread Wait State in the Debugger.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/ThreadModel.h" line="83"/>
+        <location filename="../Debugger/ThreadModel.h" line="82"/>
         <source>MBOX</source>
         <extracomment>Refers to a Thread Wait State in the Debugger.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/ThreadModel.h" line="85"/>
+        <location filename="../Debugger/ThreadModel.h" line="84"/>
         <source>VPOOL</source>
         <extracomment>Refers to a Thread Wait State in the Debugger.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/ThreadModel.h" line="87"/>
+        <location filename="../Debugger/ThreadModel.h" line="86"/>
         <source>FIXPOOL</source>
         <extracomment>Refers to a Thread Wait State in the Debugger.</extracomment>
         <translation type="unfinished"></translation>
