@@ -58,6 +58,7 @@ namespace GameDatabaseSchema
 		BilinearUpscale,
 		NativePaletteDraw,
 		EstimateTextureRegion,
+		RewriteLargeST,
 		PCRTCOffsets,
 		PCRTCOverscan,
 
