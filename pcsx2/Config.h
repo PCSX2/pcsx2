@@ -805,6 +805,7 @@ struct Pcsx2Config
 					UserHacks_NativePaletteDraw : 1,
 					UserHacks_EstimateTextureRegion : 1,
 					UserHacks_DrawBuffering : 1,
+					UserHacks_RewriteLargeST : 1,
 					FXAA : 1,
 					ShadeBoost : 1,
 					DumpGSData : 1,

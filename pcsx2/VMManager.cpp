@@ -3261,6 +3261,11 @@ void VMManager::WarnAboutUnsafeSettings()
 			append(ICON_FA_CIRCLE_EXCLAMATION,
 				TRANSLATE_SV("VMManager", "Draw Buffering is enabled, this may result in graphical errors."));
 		}
+		if (EmuConfig.GS.UserHacks_RewriteLargeST)
+		{
+			append(ICON_FA_CIRCLE_EXCLAMATION,
+				TRANSLATE_SV("VMManager", "Rewrite large ST is enabled, this may reduce performance."));
+		}
 		if (EmuConfig.GS.DumpReplaceableTextures)
 		{
 			append(ICON_FA_CIRCLE_EXCLAMATION,

@@ -2887,6 +2887,15 @@ void GSRendererHW::Draw()
 
 	// First pass texture shuffle detection using context/vertices.
 	DetectTextureShuffle();
+	
+	// Ridge Racer V and Destruction Derby Arena have large ST coordinates in reflection map draws that cause
+	// speckled artifacts on cars. Detect and rewrite such vertices here.
+	if (GSConfig.UserHacks_RewriteLargeST)
+	{
+		// The threshold is chosen to be low enough to fix the artifacts in Ridge Racer V and Destruction Derby Arena
+		// while not breaking anything.
+		RewriteVerticesIfLargeST(GSVector4::cxpr(16.0f), false);
+	}
 
 	// When the format is 24bit (Z or C), DATE ceases to function.
 	// It was believed that in 24bit mode all pixels pass because alpha doesn't exist
