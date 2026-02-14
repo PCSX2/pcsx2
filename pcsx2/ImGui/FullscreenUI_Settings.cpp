@@ -3080,6 +3080,9 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 			DrawToggleSetting(bsi, FSUI_CSTR("Estimate Texture Region"),
 				FSUI_CSTR("Attempts to reduce the texture size when games do not set it themselves (e.g. Snowblind games)."), "EmuCore/GS",
 				"UserHacks_EstimateTextureRegion", false, manual_hw_fixes);
+			DrawToggleSetting(bsi, FSUI_CSTR("Rewrite Large ST"),
+				FSUI_CSTR("Rewrite large ST coordinates and clamp the values (mainly for Ridge Racer V)."), "EmuCore/GS",
+				"UserHacks_RewriteLargeST", false, manual_hw_fixes);
 			DrawToggleSetting(bsi, FSUI_CSTR("GPU Palette Conversion"),
 				FSUI_CSTR("When enabled GPU converts colormap-textures, otherwise the CPU will. It is a trade-off between GPU and CPU."),
 				"EmuCore/GS", "paltex", false, manual_hw_fixes);

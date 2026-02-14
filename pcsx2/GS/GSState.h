@@ -486,6 +486,9 @@ public:
 	bool SpriteDrawWithoutGaps();
 	void CalculatePrimitiveCoversWithoutGaps();
 	GIFRegTEX0 GetTex0Layer(u32 lod);
+	template <u32 primclass>
+	void RewriteVerticesIfLargeSTImpl(const GSVector4& large_val, bool check_clamp_mode);
+	void RewriteVerticesIfLargeST(const GSVector4& large_val, bool check_clamp_mode);
 };
 
 // We put this in the header because of Multi-ISA.
