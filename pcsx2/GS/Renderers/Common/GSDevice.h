@@ -966,7 +966,7 @@ public:
 	/// Returns a string representing the specified API.
 	static const char* RenderAPIToString(RenderAPI api);
 
-	/// Parses the configured fullscreen mode into its components (width * height @ refresh hz)
+	/// Parses the configured fullscreen mode into its components (width * height @ refresh Hz)
 	static bool GetRequestedExclusiveFullscreenMode(u32* width, u32* height, float* refresh_rate);
 
 	/// Converts a fullscreen mode to a string.

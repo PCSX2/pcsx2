@@ -180,7 +180,7 @@ namespace QtUtils
 		}
 
 		wi.surface_refresh_rate = surface_refresh_rate.value();
-		INFO_LOG("Surface refresh rate: {} hz", wi.surface_refresh_rate);
+		INFO_LOG("Surface refresh rate: {} Hz", wi.surface_refresh_rate);
 
 		return wi;
 	}
