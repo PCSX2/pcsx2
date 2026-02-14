@@ -315,7 +315,7 @@ bool GSDevice::GetRequestedExclusiveFullscreenMode(u32* width, u32* height, floa
 
 std::string GSDevice::GetFullscreenModeString(u32 width, u32 height, float refresh_rate)
 {
-	return StringUtil::StdStringFromFormat("%u x %u @ %f hz", width, height, refresh_rate);
+	return StringUtil::StdStringFromFormat("%u x %u @ %f Hz", width, height, refresh_rate);
 }
 
 void GSDevice::GenerateExpansionIndexBuffer(void* buffer)
