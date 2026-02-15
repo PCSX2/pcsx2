@@ -37,6 +37,8 @@ struct VMBootParameters
 
 	std::optional<bool> fast_boot;
 	std::optional<bool> fullscreen;
+	std::optional<bool> start_turbo;
+	std::optional<bool> start_unlimited;
 	bool disable_achievements_hardcore_mode = false;
 };
 

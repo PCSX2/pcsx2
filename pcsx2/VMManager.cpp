@@ -1468,7 +1468,13 @@ VMBootResult VMManager::Initialize(const VMBootParameters& boot_params, Error* e
 	if (Achievements::IsHardcoreModeActive() && (!state_to_load.empty() || DebugInterface::getPauseOnEntry()))
 		return VMBootResult::PromptDisableHardcoreMode;
 
-	s_limiter_mode = LimiterModeType::Nominal;
+	if (boot_params.start_unlimited.value_or(false))
+		s_limiter_mode = LimiterModeType::Unlimited;
+	else if (boot_params.start_turbo.value_or(false))
+		s_limiter_mode = LimiterModeType::Turbo;
+	else
+		s_limiter_mode = LimiterModeType::Nominal;
+
 	s_target_speed = GetTargetSpeedForLimiterMode(s_limiter_mode);
 	s_use_vsync_for_timing = false;
 
