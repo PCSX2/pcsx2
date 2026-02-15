@@ -2052,11 +2052,8 @@ bool GSDeviceVK::HasSurface() const
 	return static_cast<bool>(m_swap_chain);
 }
 
-bool GSDeviceVK::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
+bool GSDeviceVK::CheckDevice()
 {
-	if (!GSDevice::Create(vsync_mode, allow_present_throttle))
-		return false;
-
 	if (!CreateDeviceAndSwapChain())
 		return false;
 
@@ -2065,6 +2062,17 @@ bool GSDeviceVK::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		Host::ReportErrorAsync("GS", TRANSLATE_SV("GSDeviceVK", "Your GPU does not support the required Vulkan features."));
 		return false;
 	}
+
+	return true;
+}
+
+bool GSDeviceVK::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
+{
+	if (!GSDevice::Create(vsync_mode, allow_present_throttle))
+		return false;
+
+	if (!CheckDevice())
+		return false;
 
 	if (!CreateNullTexture())
 	{
