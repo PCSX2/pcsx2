@@ -384,14 +384,14 @@ float4x4 sample_4p(uint4 u)
 	return c;
 }
 
-int fetch_raw_depth(int2 xy)
+uint fetch_raw_depth(int2 xy)
 {
 #if PS_TEX_IS_FB == 1
 	float4 col = RtTexture.Load(int3(xy, 0));
 #else
 	float4 col = Texture.Load(int3(xy, 0));
 #endif
-	return (int)(col.r * exp2(32.0f));
+	return (uint)(col.r * exp2(32.0f));
 }
 
 float4 fetch_raw_color(int2 xy)
@@ -466,10 +466,10 @@ float4 sample_depth(float2 st, float2 pos)
 	if (PS_TALES_OF_ABYSS_HLE == 1)
 	{
 		// Warning: UV can't be used in channel effect
-		int depth = fetch_raw_depth(pos);
+		uint depth = fetch_raw_depth(pos);
 
 		// Convert msb based on the palette
-		t = Palette.Load(int3((depth >> 8) & 0xFF, 0, 0)) * 255.0f;
+		t = Palette.Load(int3((depth >> 8u) & 0xFFu, 0, 0)) * 255.0f;
 	}
 	else if (PS_URBAN_CHAOS_HLE == 1)
 	{
@@ -480,13 +480,13 @@ float4 sample_depth(float2 st, float2 pos)
 		// To be faster both steps (msb&lsb) are done in a single pass.
 
 		// Warning: UV can't be used in channel effect
-		int depth = fetch_raw_depth(pos);
+		uint depth = fetch_raw_depth(pos);
 
 		// Convert lsb based on the palette
-		t = Palette.Load(int3(depth & 0xFF, 0, 0)) * 255.0f;
+		t = Palette.Load(int3(depth & 0xFFu, 0, 0)) * 255.0f;
 
 		// Msb is easier
-		float green = (float)((depth >> 8) & 0xFF) * 36.0f;
+		float green = (float)((depth >> 8u) & 0xFFu) * 36.0f;
 		green = min(green, 255.0f);
 		t.g += green;
 	}
@@ -538,7 +538,7 @@ float4 fetch_red(int2 xy)
 
 	if ((PS_DEPTH_FMT == 1) || (PS_DEPTH_FMT == 2))
 	{
-		int depth = (fetch_raw_depth(xy)) & 0xFF;
+		uint depth = (fetch_raw_depth(xy)) & 0xFFu;
 		rt = (float4)(depth) / 255.0f;
 	}
 	else
@@ -555,7 +555,7 @@ float4 fetch_green(int2 xy)
 
 	if ((PS_DEPTH_FMT == 1) || (PS_DEPTH_FMT == 2))
 	{
-		int depth = (fetch_raw_depth(xy) >> 8) & 0xFF;
+		uint depth = (fetch_raw_depth(xy) >> 8u) & 0xFFu;
 		rt = (float4)(depth) / 255.0f;
 	}
 	else
@@ -572,7 +572,7 @@ float4 fetch_blue(int2 xy)
 
 	if ((PS_DEPTH_FMT == 1) || (PS_DEPTH_FMT == 2))
 	{
-		int depth = (fetch_raw_depth(xy) >> 16) & 0xFF;
+		uint depth = (fetch_raw_depth(xy) >> 16u) & 0xFFu;
 		rt = (float4)(depth) / 255.0f;
 	}
 	else
@@ -600,8 +600,8 @@ float4 fetch_gXbY(int2 xy)
 {
 	if ((PS_DEPTH_FMT == 1) || (PS_DEPTH_FMT == 2))
 	{
-		int depth = fetch_raw_depth(xy);
-		int bg = (depth >> (8 + ChannelShuffle.w)) & 0xFF;
+		uint depth = fetch_raw_depth(xy);
+		uint bg = (depth >> (8u + uint(ChannelShuffle.w))) & 0xFFu;
 		return (float4)(bg);
 	}
 	else

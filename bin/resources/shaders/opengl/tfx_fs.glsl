@@ -313,14 +313,14 @@ mat4 sample_4p(uvec4 u)
 	return c;
 }
 
-int fetch_raw_depth()
+uint fetch_raw_depth()
 {
 	float multiplier = exp2(32.0f);
 
 #if PS_TEX_IS_FB == 1
-	return int(sample_from_rt().r * multiplier);
+	return uint(sample_from_rt().r * multiplier);
 #else
-	return int(texelFetch(TextureSampler, ivec2(gl_FragCoord.xy + ChannelShuffleOffset), 0).r * multiplier);
+	return uint(texelFetch(TextureSampler, ivec2(gl_FragCoord.xy + ChannelShuffleOffset), 0).r * multiplier);
 #endif
 }
 
@@ -393,10 +393,10 @@ vec4 sample_depth(vec2 st)
 
 #if PS_TALES_OF_ABYSS_HLE == 1
 	// Warning: UV can't be used in channel effect
-	int depth = fetch_raw_depth();
+	uint depth = fetch_raw_depth();
 
 	// Convert msb based on the palette
-	t = texelFetch(PaletteSampler, ivec2((depth >> 8) & 0xFF, 0), 0) * 255.0f;
+	t = texelFetch(PaletteSampler, ivec2((depth >> 8u) & 0xFFu, 0), 0) * 255.0f;
 
 #elif PS_URBAN_CHAOS_HLE == 1
 	// Depth buffer is read as a RGB5A1 texture. The game try to extract the green channel.
@@ -406,13 +406,13 @@ vec4 sample_depth(vec2 st)
 	// To be faster both steps (msb&lsb) are done in a single pass.
 
 	// Warning: UV can't be used in channel effect
-	int depth = fetch_raw_depth();
+	uint depth = fetch_raw_depth();
 
 	// Convert lsb based on the palette
-	t = texelFetch(PaletteSampler, ivec2((depth & 0xFF), 0), 0) * 255.0f;
+	t = texelFetch(PaletteSampler, ivec2((depth & 0xFFu), 0), 0) * 255.0f;
 
 	// Msb is easier
-	float green = float((depth >> 8) & 0xFF) * 36.0f;
+	float green = float((depth >> 8u) & 0xFFu) * 36.0f;
 	green = min(green, 255.0f);
 
 	t.g += green;
@@ -454,7 +454,7 @@ vec4 sample_depth(vec2 st)
 vec4 fetch_red()
 {
 #if PS_DEPTH_FMT == 1 || PS_DEPTH_FMT == 2
-	int depth = (fetch_raw_depth()) & 0xFF;
+	uint depth = (fetch_raw_depth()) & 0xFFu;
 	vec4 rt = vec4(depth) / 255.0f;
 #else
 	vec4 rt = fetch_raw_color();
@@ -465,7 +465,7 @@ vec4 fetch_red()
 vec4 fetch_green()
 {
 #if PS_DEPTH_FMT == 1 || PS_DEPTH_FMT == 2
-	int depth = (fetch_raw_depth() >> 8) & 0xFF;
+	uint depth = (fetch_raw_depth() >> 8u) & 0xFFu;
 	vec4 rt = vec4(depth) / 255.0f;
 #else
 	vec4 rt = fetch_raw_color();
@@ -476,7 +476,7 @@ vec4 fetch_green()
 vec4 fetch_blue()
 {
 #if PS_DEPTH_FMT == 1 || PS_DEPTH_FMT == 2
-	int depth = (fetch_raw_depth() >> 16) & 0xFF;
+	uint depth = (fetch_raw_depth() >> 16u) & 0xFFu;
 	vec4 rt = vec4(depth) / 255.0f;
 #else
 	vec4 rt = fetch_raw_color();
@@ -500,8 +500,8 @@ vec4 fetch_rgb()
 vec4 fetch_gXbY()
 {
 #if PS_DEPTH_FMT == 1 || PS_DEPTH_FMT == 2
-	int depth = fetch_raw_depth();
-	int bg = (depth >> (8 + ChannelShuffle.w)) & 0xFF;
+	uint depth = fetch_raw_depth();
+	uint bg = (depth >> (8u + uint(ChannelShuffle.w))) & 0xFFu;
 	return vec4(bg);
 #else
 	ivec4 rt = ivec4(fetch_raw_color() * 255.0f);
