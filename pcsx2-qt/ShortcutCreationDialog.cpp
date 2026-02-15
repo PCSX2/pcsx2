@@ -4,6 +4,7 @@
 #include "ShortcutCreationDialog.h"
 #include "QtHost.h"
 #include <fmt/format.h>
+#include <QtWidgets/QButtonGroup>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMessageBox>
 #include "common/Console.h"
@@ -40,6 +41,12 @@ ShortcutCreationDialog::ShortcutCreationDialog(QWidget* parent, const QString& t
 	m_ui.shortcutStartMenu->setText(tr("Application Launcher"));
 #endif
 
+	QButtonGroup* buttonGroup = new QButtonGroup(this);
+	buttonGroup->setExclusive(true);
+	buttonGroup->addButton(m_ui.fastForwardTurboOption);
+	buttonGroup->addButton(m_ui.fastForwardUnlimitedOption);
+	m_ui.fastForwardTurboOption->setChecked(true);
+
 	connect(m_ui.overrideBootELFButton, &QPushButton::clicked, [&]() {
 		const QString path = QFileDialog::getOpenFileName(this, tr("Select ELF File"), QString(), tr("ELF Files (*.elf);;All Files (*.*)"));
 		if (!path.isEmpty())
@@ -60,6 +67,11 @@ ShortcutCreationDialog::ShortcutCreationDialog(QWidget* parent, const QString& t
 	connect(m_ui.loadStateFileToggle, &QCheckBox::toggled, m_ui.loadStateFileBrowse, &QPushButton::setEnabled);
 	connect(m_ui.bootOptionToggle, &QCheckBox::toggled, m_ui.bootOptionDropdown, &QPushButton::setEnabled);
 	connect(m_ui.fullscreenMode, &QCheckBox::toggled, m_ui.fullscreenModeDropdown, &QPushButton::setEnabled);
+	connect(m_ui.fastForwardOptionToggle, &QCheckBox::toggled, [this] {
+		const bool enabled = m_ui.fastForwardOptionToggle->isChecked();
+		m_ui.fastForwardTurboOption->setEnabled(enabled);
+		m_ui.fastForwardUnlimitedOption->setEnabled(enabled);
+	});
 
 	m_ui.loadStateIndex->setMaximum(VMManager::NUM_SAVE_STATE_SLOTS);
 
@@ -113,6 +125,14 @@ ShortcutCreationDialog::ShortcutCreationDialog(QWidget* parent, const QString& t
 
 		if (m_ui.bigPictureModeToggle->isChecked())
 			args.push_back("-bigpicture");
+
+		if (m_ui.fastForwardOptionToggle->isChecked())
+		{
+			if (m_ui.fastForwardTurboOption->isChecked())
+				args.push_back("-turbo");
+			else if (m_ui.fastForwardUnlimitedOption->isChecked())
+				args.push_back("-unlimited");
+		}
 
 		std::string custom_args = m_ui.customArgsInput->text().toStdString();
 

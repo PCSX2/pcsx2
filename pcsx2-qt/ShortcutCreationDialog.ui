@@ -20,28 +20,38 @@
       <string/>
      </property>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="7" column="0">
-       <widget class="QLabel" name="displayOptionLabel">
-        <property name="text">
-         <string>Display Options</string>
+      <item row="12" column="0" colspan="4">
+       <widget class="QGroupBox" name="customArgsGroup">
+        <property name="title">
+         <string/>
         </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QCheckBox" name="overrideBootELFToggle">
-        <property name="text">
-         <string>Override boot ELF:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="11" column="0">
-       <widget class="QLabel" name="customArgsLabel">
-        <property name="text">
-         <string>Custom Arguments</string>
-        </property>
-        <property name="buddy">
-         <cstring>customArgsInput</cstring>
-        </property>
+        <layout class="QGridLayout" name="customArgsGrid">
+         <item row="1" column="0">
+          <widget class="QLineEdit" name="customArgsInput"/>
+         </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="customArgsInstruction">
+           <property name="text">
+            <string>You may add additional (space-separated) &lt;a href=&quot;https://pcsx2.net/docs/advanced/cli/&quot;&gt;custom arguments&lt;/a&gt; that are not listed above here:</string>
+           </property>
+           <property name="textFormat">
+            <enum>Qt::TextFormat::RichText</enum>
+           </property>
+           <property name="wordWrap">
+            <bool>true</bool>
+           </property>
+           <property name="openExternalLinks">
+            <bool>true</bool>
+           </property>
+           <property name="textInteractionFlags">
+            <set>Qt::TextInteractionFlag::TextBrowserInteraction</set>
+           </property>
+           <property name="buddy">
+            <cstring>customArgsInput</cstring>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
       <item row="8" column="0" colspan="4">
@@ -84,34 +94,10 @@
         </layout>
        </widget>
       </item>
-      <item row="3" column="2" colspan="2">
-       <widget class="QLineEdit" name="gameArgs">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="2" colspan="2">
-       <widget class="QComboBox" name="bootOptionDropdown">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <item>
-         <property name="text">
-          <string>Fast Boot</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Full Boot</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item row="4" column="0">
-       <widget class="QCheckBox" name="bootOptionToggle">
+      <item row="5" column="0">
+       <widget class="QCheckBox" name="fastForwardOptionToggle">
         <property name="text">
-         <string>Boot mode:</string>
+         <string>Fast Forward:</string>
         </property>
        </widget>
       </item>
@@ -125,10 +111,48 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="2">
-       <widget class="QLineEdit" name="overrideBootELFPath">
+      <item row="7" column="0">
+       <widget class="QLabel" name="displayOptionLabel">
+        <property name="text">
+         <string>Display Options</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QCheckBox" name="bootOptionToggle">
+        <property name="text">
+         <string>Boot mode:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" colspan="3">
+       <widget class="QCheckBox" name="portableModeToggle">
+        <property name="text">
+         <string>Portable Mode (Stores data in local PCSX2 directory)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="2" colspan="2">
+       <widget class="QLineEdit" name="gameArgs">
         <property name="enabled">
          <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="11" column="0">
+       <widget class="QLabel" name="customArgsLabel">
+        <property name="text">
+         <string>Custom Arguments</string>
+        </property>
+        <property name="buddy">
+         <cstring>customArgsInput</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QCheckBox" name="overrideBootELFToggle">
+        <property name="text">
+         <string>Override boot ELF:</string>
         </property>
        </widget>
       </item>
@@ -195,6 +219,13 @@
         </layout>
        </widget>
       </item>
+      <item row="2" column="2">
+       <widget class="QLineEdit" name="overrideBootELFPath">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
       <item row="9" column="0">
        <widget class="QLabel" name="saveStateLabel">
         <property name="text">
@@ -209,45 +240,45 @@
         </property>
        </widget>
       </item>
-      <item row="12" column="0" colspan="4">
-       <widget class="QGroupBox" name="customArgsGroup">
-        <property name="title">
-         <string/>
-        </property>
-        <layout class="QGridLayout" name="customArgsGrid">
-         <item row="1" column="0">
-          <widget class="QLineEdit" name="customArgsInput"/>
-         </item>
-         <item row="0" column="0">
-          <widget class="QLabel" name="customArgsInstruction">
-           <property name="text">
-            <string>You may add additional (space-separated) &lt;a href=&quot;https://pcsx2.net/docs/advanced/cli/&quot;&gt;custom arguments&lt;/a&gt; that are not listed above here:</string>
-           </property>
-           <property name="textFormat">
-            <enum>Qt::TextFormat::RichText</enum>
-           </property>
-           <property name="wordWrap">
-            <bool>true</bool>
-           </property>
-           <property name="openExternalLinks">
-            <bool>true</bool>
-           </property>
-           <property name="textInteractionFlags">
-            <set>Qt::TextInteractionFlag::TextBrowserInteraction</set>
-           </property>
-           <property name="buddy">
-            <cstring>customArgsInput</cstring>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
+      <item row="5" column="2" colspan="2">
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QRadioButton" name="fastForwardTurboOption">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Turbo</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="fastForwardUnlimitedOption">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Unlimited</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
-      <item row="0" column="0" colspan="3">
-       <widget class="QCheckBox" name="portableModeToggle">
-        <property name="text">
-         <string>Portable Mode (Stores data in local PCSX2 directory)</string>
+      <item row="4" column="2" colspan="2">
+       <widget class="QComboBox" name="bootOptionDropdown">
+        <property name="enabled">
+         <bool>false</bool>
         </property>
+        <item>
+         <property name="text">
+          <string>Fast Boot</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Full Boot</string>
+         </property>
+        </item>
        </widget>
       </item>
      </layout>
