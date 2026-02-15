@@ -234,6 +234,7 @@ namespace FullscreenUI
 	// achievements login dialog state
 	inline bool s_achievements_login_open = false;
 	inline bool s_achievements_login_logging_in = false;
+	inline bool s_achievements_login_show_dismiss = false;
 	inline char s_achievements_login_username[256] = {};
 	inline char s_achievements_login_password[256] = {};
 	inline Achievements::LoginRequestReason s_achievements_login_reason = Achievements::LoginRequestReason::UserInitiated;
