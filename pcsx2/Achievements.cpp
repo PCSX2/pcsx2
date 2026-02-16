@@ -4,6 +4,7 @@
 #include "Achievements.h"
 #include "BuildVersion.h"
 #include "CDVD/CDVD.h"
+#include "Config.h"
 #include "Elfheader.h"
 #include "Host.h"
 #include "GS/Renderers/Common/GSTexture.h"
@@ -74,6 +75,9 @@ namespace Achievements
 	// Chrome uses 10 server calls per domain, seems reasonable.
 	static constexpr u32 MAX_CONCURRENT_SERVER_CALLS = 10;
 
+	static constexpr u32 ACHIEVEMENTS_CACHE_SIGNATURE = 0x43413250; // "P2AC"
+	static constexpr u32 ACHIEVEMENTS_CACHE_VERSION = 1;
+
 	namespace
 	{
 		struct LoginWithPasswordParameters
@@ -119,7 +123,7 @@ namespace Achievements
 	static void BeginLoadingScreen(const char* text, bool* was_running_idle);
 	static void EndLoadingScreen(bool was_running_idle);
 	static std::string_view GetELFNameForHash(const std::string& elf_path);
-	static std::string GetGameHash(const std::string& elf_path);
+	static std::optional<Achievements::GameHash> GetGameHash(const std::string& elf_path);
 	static void SetHardcoreMode(bool enabled, bool force_display_message);
 	static bool IsLoggedInOrLoggingIn();
 	static bool CanEnableHardcoreMode();
@@ -188,6 +192,15 @@ namespace Achievements
 	static void CloseLeaderboard();
 	static void CloseSubset();
 
+	static void UpdateCacheEntry(bool supported);
+	static void ReadCacheFile();
+	static void AddCacheEntry(u32 crc, const CacheEntry& entry);
+	static void OverwriteCacheEntry(std::multimap<u32, CacheEntry>::iterator iterator, const CacheEntry& entry);
+	static void WriteEntireCacheFile();
+	static bool ReadCacheEntry(std::FILE* file, u32 crc, CacheEntry& entry);
+	static bool WriteCacheEntry(std::FILE* file, u32 crc, const CacheEntry& entry);
+	static std::string GetCacheFilePath();
+
 	static bool s_hardcore_mode = false;
 
 #ifdef ENABLE_RAINTEGRATION
@@ -199,7 +212,7 @@ namespace Achievements
 	static std::string s_image_directory;
 	static std::unique_ptr<HTTPDownloader> s_http_downloader;
 
-	static std::string s_game_hash;
+	static std::optional<GameHash> s_game_hash;
 	static std::string s_game_title;
 	static std::string s_game_icon;
 	static std::string s_game_icon_url;
@@ -236,6 +249,9 @@ namespace Achievements
 	static std::vector<LeaderboardTrackerIndicator> s_active_leaderboard_trackers;
 	static std::vector<AchievementChallengeIndicator> s_active_challenge_indicators;
 	static std::optional<AchievementProgressIndicator> s_active_progress_indicator;
+
+	/// Map from game CRCs to cache entries.
+	static std::multimap<u32, CacheEntry> s_game_cache;
 } // namespace Achievements
 
 
@@ -297,19 +313,19 @@ std::string_view Achievements::GetELFNameForHash(const std::string& elf_path)
 	return std::string_view(elf_path).substr(start, end - start);
 }
 
-std::string Achievements::GetGameHash(const std::string& elf_path)
+std::optional<Achievements::GameHash> Achievements::GetGameHash(const std::string& elf_path)
 {
 	// this.. really shouldn't be invalid
 	const std::string_view name_for_hash = GetELFNameForHash(elf_path);
 	if (name_for_hash.empty())
-		return {};
+		return std::nullopt;
 
 	ElfObject elfo;
 	Error error;
 	if (!cdvdLoadElf(&elfo, elf_path, false, &error))
 	{
 		Console.Error(fmt::format("Achievements: Failed to read ELF '{}' on disc: {}", elf_path, error.GetDescription()));
-		return {};
+		return std::nullopt;
 	}
 
 	// See rcheevos hash.c - rc_hash_ps2().
@@ -323,15 +339,12 @@ std::string Achievements::GetGameHash(const std::string& elf_path)
 	if (hash_size > 0)
 		digest.Update(elfo.GetData().data(), hash_size);
 
-	u8 hash[16];
-	digest.Final(hash);
+	GameHash hash;
+	digest.Final(hash.bytes.data());
 
-	const std::string hash_str =
-		StringUtil::StdStringFromFormat("%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x", hash[0], hash[1], hash[2],
-			hash[3], hash[4], hash[5], hash[6], hash[7], hash[8], hash[9], hash[10], hash[11], hash[12], hash[13], hash[14], hash[15]);
-
-	Console.WriteLn(fmt::format("Hash for '{}' ({} bytes, {} bytes hashed): {}", name_for_hash, elfo.GetSize(), hash_size, hash_str));
-	return hash_str;
+	std::string hash_str = hash.ToString();
+	Console.WriteLnFmt("Hash for '{}' ({} bytes, {} bytes hashed): {}", name_for_hash, elfo.GetSize(), hash_size, hash_str);
+	return hash;
 }
 
 
@@ -950,7 +963,8 @@ void Achievements::IdentifyGame(u32 disc_crc, u32 crc)
 	if (s_game_crc == crc_to_use)
 		return;
 
-	const std::string game_hash = GetGameHash(booted_elf ? VMManager::GetCurrentELF() : VMManager::GetDiscELF());
+	const std::string elf_path = booted_elf ? VMManager::GetCurrentELF() : VMManager::GetDiscELF();
+	const std::optional<GameHash> game_hash = GetGameHash(elf_path);
 	if (s_game_hash == game_hash)
 		return;
 
@@ -991,7 +1005,7 @@ void Achievements::BeginLoadGame()
 
 	ClearGameInfo();
 
-	if (s_game_hash.empty())
+	if (!s_game_hash.has_value())
 	{
 		// when we're booting the bios, or shutting down, this will fail
 		if (s_game_crc != 0)
@@ -1005,7 +1019,8 @@ void Achievements::BeginLoadGame()
 		return;
 	}
 
-	s_load_game_request = rc_client_begin_load_game(s_client, s_game_hash.c_str(), ClientLoadGameCallback, nullptr);
+	std::string game_hash_str = s_game_hash.has_value() ? s_game_hash->ToString() : "";
+	s_load_game_request = rc_client_begin_load_game(s_client, game_hash_str.c_str(), ClientLoadGameCallback, nullptr);
 }
 
 void Achievements::ClientLoadGameCallback(int result, const char* error_message, rc_client_t* client, void* userdata)
@@ -1013,10 +1028,13 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
 	s_load_game_request = nullptr;
 
 	if (result == RC_NO_GAME_LOADED)
-	{
-		// Unknown game.
-		Console.WriteLn(Color_StrongYellow, "Achievements: Unknown game '%s', disabling achievements.", s_game_hash.c_str());
+	{ // Unknown game.
+		std::string game_hash_str = s_game_hash.has_value() ? s_game_hash->ToString() : "";
+		Console.WriteLn(Color_StrongYellow,
+			"Achievements: Unknown game '%s', disabling achievements.", game_hash_str.c_str());
 		DisableHardcoreMode();
+		CacheEntry entry;
+		UpdateCacheEntry(false);
 		return;
 	}
 	else if (result == RC_LOGIN_REQUIRED)
@@ -1073,6 +1091,7 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
 
 	UpdateGameSummary();
 	DisplayAchievementSummary();
+	UpdateCacheEntry(true);
 
 	Host::OnAchievementsRefreshed();
 }
@@ -1108,7 +1127,7 @@ void Achievements::ClearGameInfo()
 void Achievements::ClearGameHash()
 {
 	s_game_crc = 0;
-	std::string().swap(s_game_hash);
+	s_game_hash.reset();
 }
 
 void Achievements::DisplayAchievementSummary()
@@ -3567,6 +3586,188 @@ void Achievements::CloseSubset()
 	s_open_subset = nullptr;
 }
 
+std::optional<Achievements::CacheEntry> Achievements::LookupCacheEntry(u32 game_crc, const GameHash* game_hash)
+{
+	auto lock = GetLock();
+
+	if (s_game_cache.empty())
+		ReadCacheFile();
+
+	const auto range = s_game_cache.equal_range(game_crc);
+	if (range.first == range.second)
+		return std::nullopt;
+
+	if (game_hash)
+	{
+		// Check for CRC collisions.
+		for (auto iterator = range.first; iterator != range.second; iterator++)
+			if (iterator->second.game_hash == *game_hash)
+				return iterator->second;
+
+		return std::nullopt;
+	}
+
+	return range.first->second;
+}
+
+void Achievements::UpdateCacheEntry(bool supported)
+{
+	if (!s_game_hash.has_value())
+		return;
+
+	if (s_game_cache.empty())
+		ReadCacheFile();
+
+	CacheEntry entry;
+	entry.game_hash = *s_game_hash;
+	entry.supported = supported;
+	if (supported)
+	{
+		entry.has_achievements = rc_client_has_achievements(s_client);
+		entry.has_leaderboards = rc_client_has_leaderboards(s_client);
+		entry.num_core_achievements = s_game_summary.num_core_achievements;
+		entry.num_unlocked_achievements = s_game_summary.num_unlocked_achievements;
+	}
+
+	const auto range = s_game_cache.equal_range(s_game_crc);
+	for (auto iterator = range.first; iterator != range.second; iterator++)
+	{
+		if (iterator->second.game_hash == *s_game_hash)
+		{
+			if (iterator->second != entry)
+				OverwriteCacheEntry(iterator, std::move(entry));
+			return;
+		}
+	}
+
+	// No existing entry was found, so create a new one.
+	AddCacheEntry(s_game_crc, std::move(entry));
+}
+
+static void Achievements::ReadCacheFile()
+{
+	const std::string path = GetCacheFilePath();
+	auto file = FileSystem::OpenManagedCFile(path.c_str(), "rb");
+	if (!file)
+		return;
+
+	u32 signature;
+	u32 version;
+	u32 entry_count;
+	if (!FileSystem::ReadU32(file.get(), &signature) ||
+		signature != ACHIEVEMENTS_CACHE_SIGNATURE ||
+		!FileSystem::ReadU32(file.get(), &version) ||
+		!FileSystem::ReadU32(file.get(), &entry_count))
+	{
+		Console.Warning("Failed to load achievement cache: Invalid header.");
+		return;
+	}
+
+	if (version != ACHIEVEMENTS_CACHE_VERSION)
+	{
+		Console.Warning("Failed to load achievement cache: Incompatible version.");
+		return;
+	}
+
+	for (u32 i = 0; i < entry_count; i++)
+	{
+		u32 crc;
+		CacheEntry entry;
+
+		entry.file_offset = FileSystem::FTell64(file.get());
+
+		u8 supported;
+		u8 has_achievements;
+		u8 has_leaderboards;
+		if (!FileSystem::ReadU32(file.get(), &crc) ||
+			std::fread(entry.game_hash.bytes.data(), entry.game_hash.bytes.size(), 1, file.get()) != 1 ||
+			!FileSystem::ReadU8(file.get(), &supported) ||
+			!FileSystem::ReadU8(file.get(), &has_achievements) ||
+			has_achievements > 1 ||
+			!FileSystem::ReadU8(file.get(), &has_leaderboards) ||
+			has_leaderboards > 1 ||
+			!FileSystem::ReadU32(file.get(), &entry.num_core_achievements) ||
+			!FileSystem::ReadU32(file.get(), &entry.num_unlocked_achievements))
+		{
+			Console.Warning("Failed to load achievement cache: Entry corrupted.");
+			s_game_cache.clear();
+			return;
+		}
+
+		entry.supported = static_cast<bool>(supported);
+		entry.has_achievements = static_cast<bool>(has_achievements);
+		entry.has_leaderboards = static_cast<bool>(has_leaderboards);
+
+		s_game_cache.emplace(crc, std::move(entry));
+	}
+}
+
+static void Achievements::AddCacheEntry(u32 crc, const CacheEntry& entry)
+{
+	s_game_cache.emplace(crc, entry);
+	WriteEntireCacheFile();
+}
+
+static void Achievements::OverwriteCacheEntry(std::multimap<u32, CacheEntry>::iterator iterator, const CacheEntry& entry)
+{
+	iterator->second = entry;
+	// TODO: Only write the one entry back.
+	WriteEntireCacheFile();
+}
+
+static void Achievements::WriteEntireCacheFile()
+{
+	const std::string path = GetCacheFilePath();
+	auto file = FileSystem::OpenManagedCFile(path.c_str(), "wb");
+	if (!file)
+		return;
+
+	if (!FileSystem::WriteU32(file.get(), ACHIEVEMENTS_CACHE_SIGNATURE) ||
+		!FileSystem::WriteU32(file.get(), ACHIEVEMENTS_CACHE_VERSION) ||
+		!FileSystem::WriteU32(file.get(), static_cast<u32>(s_game_cache.size())))
+	{
+		Console.Warning("Achievements cache couldn't be written.");
+		file.reset(nullptr);
+		DeleteCacheFile();
+		return;
+	}
+
+	for (const auto& [crc, entry] : s_game_cache)
+	{
+		const u8 supported = static_cast<u8>(entry.supported);
+		const u8 has_achievements = static_cast<u8>(entry.has_achievements);
+		const u8 has_leaderboards = static_cast<u8>(entry.has_leaderboards);
+		if (!FileSystem::WriteU32(file.get(), crc) ||
+			std::fwrite(entry.game_hash.bytes.data(), entry.game_hash.bytes.size(), 1, file.get()) != 1 ||
+			!FileSystem::WriteU8(file.get(), supported) ||
+			!FileSystem::WriteU8(file.get(), has_achievements) ||
+			!FileSystem::WriteU8(file.get(), has_leaderboards) ||
+			!FileSystem::WriteU32(file.get(), entry.num_core_achievements) ||
+			!FileSystem::WriteU32(file.get(), entry.num_unlocked_achievements))
+		{
+			Console.Warning("Achievements cache entry couldn't be written.");
+			file.reset(nullptr);
+			DeleteCacheFile();
+			return;
+		}
+	}
+}
+
+void Achievements::DeleteCacheFile()
+{
+	auto lock = GetLock();
+
+	s_game_cache.clear();
+
+	const std::string path = GetCacheFilePath();
+	FileSystem::DeleteFilePath(path.c_str());
+}
+
+static std::string Achievements::GetCacheFilePath()
+{
+	return Path::Combine(EmuFolders::Cache, "achievements.cache");
+}
+
 #ifdef ENABLE_RAINTEGRATION
 
 #include "RA_Consoles.h"
@@ -3634,7 +3835,15 @@ void Achievements::RAIntegration::MainWindowChanged(void* new_handle)
 
 void Achievements::RAIntegration::GameChanged()
 {
-	s_game_id = s_game_hash.empty() ? 0 : RA_IdentifyHash(s_game_hash.c_str());
+	if (s_game_hash.has_value())
+	{
+		std::string game_hash_str = s_game_hash->ToString();
+		s_game_id = RA_IdentifyHash(game_hash_str.c_str());
+	}
+	else
+	{
+		s_game_id = 0;
+	}
 	RA_ActivateGame(s_game_id);
 }
 

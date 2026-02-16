@@ -4,6 +4,7 @@
 #pragma once
 
 #include "common/Pcsx2Types.h"
+#include "common/StringUtil.h"
 
 #include "Config.h"
 
@@ -24,6 +25,39 @@ namespace Achievements
 	{
 		UserInitiated,
 		TokenInvalid,
+	};
+
+	struct GameHash
+	{
+		std::array<u8, 16> bytes;
+
+		std::string ToString() const
+		{
+			return StringUtil::StdStringFromFormat(
+				"%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
+				bytes[0], bytes[1], bytes[2], bytes[3],
+				bytes[4], bytes[5], bytes[6], bytes[7],
+				bytes[8], bytes[9], bytes[10], bytes[11],
+				bytes[12], bytes[13], bytes[14], bytes[15]);
+		}
+
+		friend auto operator<=>(const GameHash&, const GameHash&) = default;
+	};
+
+	struct CacheEntry
+	{
+		GameHash game_hash;
+
+		bool supported = false;
+		bool has_achievements = false;
+		bool has_leaderboards = false;
+
+		u32 num_core_achievements = 0;
+		u32 num_unlocked_achievements = 0;
+
+		s64 file_offset = 0;
+
+		friend auto operator<=>(const CacheEntry&, const CacheEntry&) = default;
 	};
 
 	/// Acquires the achievements lock. Must be held when accessing any achievement state from another thread.
@@ -147,6 +181,14 @@ namespace Achievements
 
 	/// Renders the leaderboard list.
 	void DrawLeaderboardsWindow();
+
+	/// Lookup achievement information (unlocks, etc) for a given game based on
+	/// its CRC, and optionally the MD5 hash of its ELF file if you want to
+	/// gracefully handle CRC collisions.
+	std::optional<CacheEntry> LookupCacheEntry(u32 game_crc, const GameHash* game_hash = nullptr);
+
+	/// Delete the achievement game cache. This will clear
+	void DeleteCacheFile();
 
 #ifdef ENABLE_RAINTEGRATION
 	/// Prevents the internal implementation from being used. Instead, RAIntegration will be

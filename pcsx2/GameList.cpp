@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2002-2026 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
+#include "Achievements.h"
 #include "CDVD/CDVD.h"
 #include "Elfheader.h"
 #include "GameList.h"
@@ -153,36 +154,36 @@ const char* GameList::RegionToString(Region region, bool translate)
 const char* GameList::RegionToFlagFilename(Region region)
 {
 	static constexpr std::array<const char*, static_cast<int>(Region::Count)> flag_names = {
-		"br",  // NTSC-B
-		"cn",  // NTSC-C
-		"hk",  // NTSC-HK
-		"jp",  // NTSC-J
-		"kr",  // NTSC-K
-		"tw",  // NTSC-T
-		"us",  // NTSC-U
-		"Other",  // Other
-		"au",  // PAL-A
-		"za",  // PAL-AF
-		"at",  // PAL-AU
-		"be",  // PAL-BE
-		"eu",  // PAL-E
-		"fr",  // PAL-F
-		"fi",  // PAL-FI
-		"de",  // PAL-G
-		"gr",  // PAL-GR
-		"it",  // PAL-I
-		"in",  // PAL-IN
-		"eu",  // PAL-M
-		"nl",  // PAL-NL
-		"no",  // PAL-NO
-		"pt",  // PAL-P
-		"pl",  // PAL-PL
-		"ru",  // PAL-R
-		"es",  // PAL-S
-		"scn",  // PAL-SC
-		"se",  // PAL-SW
-		"ch",  // PAL-SWI
-		"gb",  // PAL-UK
+		"br", // NTSC-B
+		"cn", // NTSC-C
+		"hk", // NTSC-HK
+		"jp", // NTSC-J
+		"kr", // NTSC-K
+		"tw", // NTSC-T
+		"us", // NTSC-U
+		"Other", // Other
+		"au", // PAL-A
+		"za", // PAL-AF
+		"at", // PAL-AU
+		"be", // PAL-BE
+		"eu", // PAL-E
+		"fr", // PAL-F
+		"fi", // PAL-FI
+		"de", // PAL-G
+		"gr", // PAL-GR
+		"it", // PAL-I
+		"in", // PAL-IN
+		"eu", // PAL-M
+		"nl", // PAL-NL
+		"no", // PAL-NO
+		"pt", // PAL-P
+		"pl", // PAL-PL
+		"ru", // PAL-R
+		"es", // PAL-S
+		"scn", // PAL-SC
+		"se", // PAL-SW
+		"ch", // PAL-SWI
+		"gb", // PAL-UK
 	};
 
 	return flag_names.at(static_cast<int>(region));
@@ -454,62 +455,17 @@ bool GameList::GetGameListEntryFromCache(const std::string& path, GameList::Entr
 	return true;
 }
 
-static bool ReadString(std::FILE* stream, std::string* dest)
-{
-	u32 size;
-	if (std::fread(&size, sizeof(size), 1, stream) != 1)
-		return false;
-
-	dest->resize(size);
-	if (size > 0 && std::fread(dest->data(), size, 1, stream) != 1)
-		return false;
-
-	return true;
-}
-
-static bool ReadU8(std::FILE* stream, u8* dest)
-{
-	return std::fread(dest, sizeof(u8), 1, stream) > 0;
-}
-
-static bool ReadU32(std::FILE* stream, u32* dest)
-{
-	return std::fread(dest, sizeof(u32), 1, stream) > 0;
-}
-
-static bool ReadU64(std::FILE* stream, u64* dest)
-{
-	return std::fread(dest, sizeof(u64), 1, stream) > 0;
-}
-
-static bool WriteString(std::FILE* stream, const std::string& str)
-{
-	const u32 size = static_cast<u32>(str.size());
-	return (std::fwrite(&size, sizeof(size), 1, stream) > 0 && (size == 0 || std::fwrite(str.data(), size, 1, stream) > 0));
-}
-
-static bool WriteU8(std::FILE* stream, u8 dest)
-{
-	return std::fwrite(&dest, sizeof(u8), 1, stream) > 0;
-}
-
-static bool WriteU32(std::FILE* stream, u32 dest)
-{
-	return std::fwrite(&dest, sizeof(u32), 1, stream) > 0;
-}
-
-static bool WriteU64(std::FILE* stream, u64 dest)
-{
-	return std::fwrite(&dest, sizeof(u64), 1, stream) > 0;
-}
-
 bool GameList::LoadEntriesFromCache(std::FILE* stream)
 {
 	u32 file_signature, file_version;
 	s64 start_pos, file_size;
-	if (!ReadU32(stream, &file_signature) || !ReadU32(stream, &file_version) || file_signature != GAME_LIST_CACHE_SIGNATURE ||
-		file_version != GAME_LIST_CACHE_VERSION || (start_pos = FileSystem::FTell64(stream)) < 0 ||
-		FileSystem::FSeek64(stream, 0, SEEK_END) != 0 || (file_size = FileSystem::FTell64(stream)) < 0 ||
+	if (!FileSystem::ReadU32(stream, &file_signature) ||
+		!FileSystem::ReadU32(stream, &file_version) ||
+		file_signature != GAME_LIST_CACHE_SIGNATURE ||
+		file_version != GAME_LIST_CACHE_VERSION ||
+		(start_pos = FileSystem::FTell64(stream)) < 0 ||
+		FileSystem::FSeek64(stream, 0, SEEK_END) != 0 ||
+		(file_size = FileSystem::FTell64(stream)) < 0 ||
 		FileSystem::FSeek64(stream, start_pos, SEEK_SET) != 0)
 	{
 		Console.Warning("Game list cache is corrupted");
@@ -526,10 +482,19 @@ bool GameList::LoadEntriesFromCache(std::FILE* stream)
 		u8 compatibility_rating;
 		u64 last_modified_time;
 
-		if (!ReadString(stream, &path) || !ReadString(stream, &ge.serial) || !ReadString(stream, &ge.title) || !ReadString(stream, &ge.title_sort) ||
-			!ReadString(stream, &ge.title_en) || !ReadU8(stream, &type) || !ReadU8(stream, &region) || !ReadU64(stream, &ge.total_size) ||
-			!ReadU64(stream, &last_modified_time) || !ReadU32(stream, &ge.crc) || !ReadU8(stream, &compatibility_rating) ||
-			region >= static_cast<u8>(Region::Count) || type >= static_cast<u8>(EntryType::Count) ||
+		if (!FileSystem::ReadString(stream, &path) ||
+			!FileSystem::ReadString(stream, &ge.serial) ||
+			!FileSystem::ReadString(stream, &ge.title) ||
+			!FileSystem::ReadString(stream, &ge.title_sort) ||
+			!FileSystem::ReadString(stream, &ge.title_en) ||
+			!FileSystem::ReadU8(stream, &type) ||
+			!FileSystem::ReadU8(stream, &region) ||
+			!FileSystem::ReadU64(stream, &ge.total_size) ||
+			!FileSystem::ReadU64(stream, &last_modified_time) ||
+			!FileSystem::ReadU32(stream, &ge.crc) ||
+			!FileSystem::ReadU8(stream, &compatibility_rating) ||
+			region >= static_cast<u8>(Region::Count) ||
+			type >= static_cast<u8>(EntryType::Count) ||
 			compatibility_rating > static_cast<u8>(CompatibilityRating::Perfect))
 		{
 			Console.Warning("Game list cache entry is corrupted");
@@ -586,8 +551,8 @@ bool GameList::OpenCacheForWriting()
 	{
 		// check the header
 		u32 signature, version;
-		if (ReadU32(s_cache_write_stream, &signature) && signature == GAME_LIST_CACHE_SIGNATURE &&
-			ReadU32(s_cache_write_stream, &version) && version == GAME_LIST_CACHE_VERSION &&
+		if (FileSystem::ReadU32(s_cache_write_stream, &signature) && signature == GAME_LIST_CACHE_SIGNATURE &&
+			FileSystem::ReadU32(s_cache_write_stream, &version) && version == GAME_LIST_CACHE_VERSION &&
 			FileSystem::FSeek64(s_cache_write_stream, 0, SEEK_END) == 0)
 		{
 			return true;
@@ -604,7 +569,8 @@ bool GameList::OpenCacheForWriting()
 
 
 	// new cache file, write header
-	if (!WriteU32(s_cache_write_stream, GAME_LIST_CACHE_SIGNATURE) || !WriteU32(s_cache_write_stream, GAME_LIST_CACHE_VERSION))
+	if (!FileSystem::WriteU32(s_cache_write_stream, GAME_LIST_CACHE_SIGNATURE) ||
+		!FileSystem::WriteU32(s_cache_write_stream, GAME_LIST_CACHE_VERSION))
 	{
 		Console.Error("Failed to write game list cache header");
 		std::fclose(s_cache_write_stream);
@@ -619,17 +585,17 @@ bool GameList::OpenCacheForWriting()
 bool GameList::WriteEntryToCache(const Entry* entry)
 {
 	bool result = true;
-	result &= WriteString(s_cache_write_stream, entry->path);
-	result &= WriteString(s_cache_write_stream, entry->serial);
-	result &= WriteString(s_cache_write_stream, entry->title);
-	result &= WriteString(s_cache_write_stream, entry->title_sort);
-	result &= WriteString(s_cache_write_stream, entry->title_en);
-	result &= WriteU8(s_cache_write_stream, static_cast<u8>(entry->type));
-	result &= WriteU8(s_cache_write_stream, static_cast<u8>(entry->region));
-	result &= WriteU64(s_cache_write_stream, entry->total_size);
-	result &= WriteU64(s_cache_write_stream, static_cast<u64>(entry->last_modified_time));
-	result &= WriteU32(s_cache_write_stream, entry->crc);
-	result &= WriteU8(s_cache_write_stream, static_cast<u8>(entry->compatibility_rating));
+	result &= FileSystem::WriteString(s_cache_write_stream, entry->path);
+	result &= FileSystem::WriteString(s_cache_write_stream, entry->serial);
+	result &= FileSystem::WriteString(s_cache_write_stream, entry->title);
+	result &= FileSystem::WriteString(s_cache_write_stream, entry->title_sort);
+	result &= FileSystem::WriteString(s_cache_write_stream, entry->title_en);
+	result &= FileSystem::WriteU8(s_cache_write_stream, static_cast<u8>(entry->type));
+	result &= FileSystem::WriteU8(s_cache_write_stream, static_cast<u8>(entry->region));
+	result &= FileSystem::WriteU64(s_cache_write_stream, entry->total_size);
+	result &= FileSystem::WriteU64(s_cache_write_stream, static_cast<u64>(entry->last_modified_time));
+	result &= FileSystem::WriteU32(s_cache_write_stream, entry->crc);
+	result &= FileSystem::WriteU8(s_cache_write_stream, static_cast<u8>(entry->compatibility_rating));
 
 	// flush after each entry, that way we don't end up with a corrupted file if we crash scanning.
 	if (result)
@@ -875,7 +841,10 @@ void GameList::Refresh(bool invalidate_cache, bool only_cache, ProgressCallback*
 	ScopedGuard unlock_cdvd = &cdvdUnlock;
 
 	if (invalidate_cache)
+	{
 		DeleteCacheFile();
+		Achievements::DeleteCacheFile();
+	}
 	else
 		LoadCache();
 
