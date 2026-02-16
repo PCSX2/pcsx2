@@ -11951,14 +11951,7 @@ This action cannot be undone.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/DX11/D3D.cpp" line="392"/>
-        <source>Your system has the &quot;OpenCL, OpenGL, and Vulkan Compatibility Pack&quot; installed.
-This Vulkan driver crashes PCSX2 on some GPUs.
-To use the Vulkan renderer, you should remove this app package.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/GS/Renderers/DX11/D3D.cpp" line="411"/>
+        <location filename="../../pcsx2/GS/Renderers/DX11/D3D.cpp" line="388"/>
         <source>The Vulkan graphics API was automatically selected, but no compatible devices were found.
        You should update all graphics drivers in your system, including any integrated GPUs
        to use the Vulkan renderer.</source>
@@ -22369,267 +22362,282 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 <context>
     <name>ShortcutCreationDialog</name>
     <message>
-        <location filename="../ShortcutCreationDialog.ui" line="26"/>
+        <location filename="../ShortcutCreationDialog.ui" line="117"/>
         <source>Display Options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.ui" line="33"/>
+        <location filename="../ShortcutCreationDialog.ui" line="155"/>
         <source>Override boot ELF:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.ui" line="40"/>
+        <location filename="../ShortcutCreationDialog.ui" line="145"/>
         <source>Custom Arguments</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.ui" line="56"/>
+        <location filename="../ShortcutCreationDialog.ui" line="66"/>
         <source>Fullscreen mode:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.ui" line="67"/>
+        <location filename="../ShortcutCreationDialog.ui" line="77"/>
         <source>Force Enable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.ui" line="72"/>
+        <location filename="../ShortcutCreationDialog.ui" line="82"/>
         <source>Force Disable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.ui" line="80"/>
+        <location filename="../ShortcutCreationDialog.ui" line="90"/>
         <source>Use Big Picture mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.ui" line="101"/>
+        <location filename="../ShortcutCreationDialog.ui" line="100"/>
+        <source>Fast Forward:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.ui" line="251"/>
+        <source>Turbo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.ui" line="261"/>
+        <source>Unlimited</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShortcutCreationDialog.ui" line="274"/>
         <source>Fast Boot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.ui" line="106"/>
+        <location filename="../ShortcutCreationDialog.ui" line="279"/>
         <source>Full Boot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.ui" line="114"/>
+        <location filename="../ShortcutCreationDialog.ui" line="124"/>
         <source>Boot mode:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.ui" line="124"/>
-        <location filename="../ShortcutCreationDialog.ui" line="191"/>
+        <location filename="../ShortcutCreationDialog.ui" line="110"/>
+        <location filename="../ShortcutCreationDialog.ui" line="215"/>
         <source>Browse...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.ui" line="164"/>
+        <location filename="../ShortcutCreationDialog.ui" line="188"/>
         <source>Do not load save state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.ui" line="174"/>
+        <location filename="../ShortcutCreationDialog.ui" line="198"/>
         <source>Load save state by slot:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.ui" line="181"/>
+        <location filename="../ShortcutCreationDialog.ui" line="205"/>
         <source>Load save state from file:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.ui" line="201"/>
+        <location filename="../ShortcutCreationDialog.ui" line="232"/>
         <source>Save State Options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.ui" line="208"/>
+        <location filename="../ShortcutCreationDialog.ui" line="239"/>
         <source>Game arguments:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.ui" line="224"/>
+        <location filename="../ShortcutCreationDialog.ui" line="35"/>
         <source>You may add additional (space-separated) &lt;a href=&quot;https://pcsx2.net/docs/advanced/cli/&quot;&gt;custom arguments&lt;/a&gt; that are not listed above here:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.ui" line="249"/>
+        <location filename="../ShortcutCreationDialog.ui" line="131"/>
         <source>Portable Mode (Stores data in local PCSX2 directory)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.ui" line="259"/>
+        <location filename="../ShortcutCreationDialog.ui" line="290"/>
         <source>Shortcut Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.ui" line="276"/>
+        <location filename="../ShortcutCreationDialog.ui" line="307"/>
         <source>Launch Options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.ui" line="289"/>
+        <location filename="../ShortcutCreationDialog.ui" line="320"/>
         <source>Launcher</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.ui" line="296"/>
+        <location filename="../ShortcutCreationDialog.ui" line="327"/>
         <source>Desktop</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="34"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="35"/>
         <source>Create Shortcut For %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="38"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="39"/>
         <source>Start Menu</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="40"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="41"/>
         <source>Application Launcher</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="44"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="51"/>
         <source>Select ELF File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="44"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="51"/>
         <source>ELF Files (*.elf);;All Files (*.*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="50"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="57"/>
         <source>Select Save State File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="50"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="57"/>
         <source>Save States (*.p2s);;All Files (*.*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="139"/>
-        <location filename="../ShortcutCreationDialog.cpp" line="160"/>
-        <location filename="../ShortcutCreationDialog.cpp" line="170"/>
-        <location filename="../ShortcutCreationDialog.cpp" line="177"/>
-        <location filename="../ShortcutCreationDialog.cpp" line="188"/>
-        <location filename="../ShortcutCreationDialog.cpp" line="210"/>
-        <location filename="../ShortcutCreationDialog.cpp" line="221"/>
-        <location filename="../ShortcutCreationDialog.cpp" line="297"/>
-        <location filename="../ShortcutCreationDialog.cpp" line="308"/>
-        <location filename="../ShortcutCreationDialog.cpp" line="316"/>
-        <location filename="../ShortcutCreationDialog.cpp" line="344"/>
-        <location filename="../ShortcutCreationDialog.cpp" line="376"/>
-        <location filename="../ShortcutCreationDialog.cpp" line="418"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="159"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="180"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="190"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="197"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="208"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="230"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="241"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="317"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="328"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="336"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="364"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="396"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="438"/>
         <source>Failed to create shortcut</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="139"/>
-        <location filename="../ShortcutCreationDialog.cpp" line="308"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="159"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="328"/>
         <source>Filename contains illegal character.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="160"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="180"/>
         <source>Could not create start menu directory.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="170"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="190"/>
         <source>&apos;Desktop&apos; directory not found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="170"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="190"/>
         <source>User&apos;s &apos;Start Menu\Programs&apos; directory not found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="177"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="197"/>
         <source>A shortcut with the same name already exists.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="188"/>
-        <location filename="../ShortcutCreationDialog.cpp" line="376"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="208"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="396"/>
         <source>File path contains invalid character(s).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="210"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="230"/>
         <source>CoInitialize failed (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="230"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="250"/>
         <source>CoCreateInstance failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="239"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="259"/>
         <source>SetPath failed (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="248"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="268"/>
         <source>SetWorkingDirectory failed (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="259"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="279"/>
         <source>SetArguments failed (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="270"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="290"/>
         <source>SetIconLocation failed (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="278"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="298"/>
         <source>QueryInterface failed (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="287"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="307"/>
         <source>Failed to save the shortcut (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="297"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="317"/>
         <source>Cannot create a shortcut without a title.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="316"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="336"/>
         <source>Executable path is empty.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="344"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="364"/>
         <source>Path to the Home directory is empty.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="408"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="428"/>
         <source>Desktop Shortcut Files (*.desktop)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="410"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="430"/>
         <source>Select Shortcut Save Destination</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="418"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="438"/>
         <source>Failed to create .desktop file</source>
         <translation type="unfinished"></translation>
     </message>
@@ -25495,109 +25503,109 @@ Xbox 360 turntables require a 256x multiplier, most other turntables can use the
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1490"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1496"/>
         <source>Failed to initialize GS.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1502"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1508"/>
         <source>Failed to initialize SPU2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1511"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1517"/>
         <source>Failed to initialize PAD.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1519"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1525"/>
         <source>Failed to initialize SIO2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1529"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1535"/>
         <source>Failed to initialize SIO0.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1539"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1545"/>
         <source>Failed to initialize DEV9.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1550"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1556"/>
         <source>Failed to initialize USB.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1558"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1564"/>
         <source>Failed to initialize FW.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2088"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2094"/>
         <source>Saving state to slot {}...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2291"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2297"/>
         <source>Disc removed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2299"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2305"/>
         <source>Disc changed to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2308"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2314"/>
         <source>Failed to open new disc image &apos;{}&apos;. Reverting to old image.
 Error was: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2317"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2323"/>
         <source>Failed to switch back to old disc image. Removing disc.
 Error was: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3169"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3175"/>
         <source>Fast CDVD is enabled, this may break games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3173"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3179"/>
         <source>Cycle rate/skip is not at default, this may crash or make games run too slow.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3183"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3189"/>
         <source>Upscale multiplier is below native, this will break rendering.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3223"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3229"/>
         <source>Mipmapping is disabled. This may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3228"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3234"/>
         <source>Debug device is enabled. This will massively reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3258"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3264"/>
         <source>Texture filtering is not set to Bilinear (PS2). This will break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3721"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3727"/>
         <source>No Game Running</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3188"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3194"/>
         <source>Trilinear filtering is not set to automatic. This may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -25613,230 +25621,230 @@ PCSX2 will be able to run once you&apos;ve placed your BIOS image inside the fol
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1625"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1631"/>
         <source>Failed to save resume state: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1838"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1844"/>
         <source>Cannot load state while replaying a GS dump.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1862"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1868"/>
         <source>Cannot save state while replaying a GS dump.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1883"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1889"/>
         <source>Cannot back up old save state &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1923"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1929"/>
         <source>Saved state to slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1993"/>
-        <location filename="../../pcsx2/VMManager.cpp" line="2026"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1999"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2032"/>
         <source>Cannot load state while RetroAchievements Hardcore Mode is active.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2000"/>
-        <location filename="../../pcsx2/VMManager.cpp" line="2033"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2006"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2039"/>
         <source>The memory card is busy, so the state load operation has been cancelled to prevent data loss.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2019"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2025"/>
         <source>The save slot is empty.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2044"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2050"/>
         <source>Loaded state from backup slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2050"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2056"/>
         <source>Loaded state from slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2062"/>
-        <location filename="../../pcsx2/VMManager.cpp" line="2081"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2068"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2087"/>
         <source>The memory card is busy, so the state save operation has been cancelled to prevent data loss.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2075"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2081"/>
         <source>Cannot generate filename for save state.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2287"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2293"/>
         <source>No disc to remove.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3116"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3122"/>
         <source>Cheats have been disabled due to RetroAchievements Hardcore Mode.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3193"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3199"/>
         <source>Blending Accuracy is below Basic, this may break effects in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3198"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3204"/>
         <source>Hardware Download Mode is not set to Accurate, this may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3233"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3239"/>
         <source>Dithering is set to Force 32 bit. This will break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3238"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3244"/>
         <source>Dithering is disabled. This will cause color banding in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3243"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3249"/>
         <source>Integer scaling is enabled. This may shrink the image.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3252"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3258"/>
         <source>Graphics API is not set to Automatic. This may cause performance problems and graphical issues.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3264"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3270"/>
         <source>EE FPU Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3270"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3276"/>
         <source>EE FPU Clamp Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3275"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3281"/>
         <source>VU0 Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3280"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3286"/>
         <source>VU1 Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3287"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3293"/>
         <source>VU Clamp Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3292"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3298"/>
         <source>128MB RAM is enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3297"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3303"/>
         <source>Game Fixes are not enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3302"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3308"/>
         <source>Compatibility Patches are not enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3306"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3312"/>
         <source>Frame rate for NTSC is not default. This may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3308"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3314"/>
         <source>Frame rate for PAL is not default. This may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3327"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3333"/>
         <source>EE Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3332"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3338"/>
         <source>VU0 Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3337"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3343"/>
         <source>VU1 Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3342"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3348"/>
         <source>IOP Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3347"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3353"/>
         <source>EE Cache is enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3352"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3358"/>
         <source>EE Wait Loop Detection is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3357"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3363"/>
         <source>INTC Spin Detection is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3360"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3366"/>
         <source>Fastmem is not enabled, this will reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3364"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3370"/>
         <source>Instant VU1 is disabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3369"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3375"/>
         <source>mVU Flag Hack is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3203"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3209"/>
         <source>GPU Palette Conversion is enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2262"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2268"/>
         <source>Cannot frame advance while RetroAchievements Hardcore Mode is active.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3208"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3214"/>
         <source>Texture Preloading is not Full, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3213"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3219"/>
         <source>Estimate texture region is enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3218"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3224"/>
         <source>Texture dumping is enabled, this will continually dump textures to disk.</source>
         <translation type="unfinished"></translation>
     </message>
