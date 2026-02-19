@@ -4419,44 +4419,49 @@ Do you want to overwrite?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugGSSettingsTab.ui" line="100"/>
+        <location filename="../Settings/DebugGSSettingsTab.ui" line="98"/>
+        <source>Save HW Config</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugGSSettingsTab.ui" line="107"/>
         <source>Save Draw Start:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugGSSettingsTab.ui" line="117"/>
+        <location filename="../Settings/DebugGSSettingsTab.ui" line="124"/>
         <source>Save Draw Count:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugGSSettingsTab.ui" line="137"/>
+        <location filename="../Settings/DebugGSSettingsTab.ui" line="144"/>
         <source>Save Frame Start:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugGSSettingsTab.ui" line="154"/>
+        <location filename="../Settings/DebugGSSettingsTab.ui" line="161"/>
         <source>Save Frame Count:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugGSSettingsTab.ui" line="174"/>
+        <location filename="../Settings/DebugGSSettingsTab.ui" line="181"/>
         <source>Hardware Dump Directory:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugGSSettingsTab.ui" line="184"/>
+        <location filename="../Settings/DebugGSSettingsTab.ui" line="191"/>
         <source>Software Dump Directory:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/DebugGSSettingsTab.ui" line="199"/>
-        <location filename="../Settings/DebugGSSettingsTab.ui" line="220"/>
-        <source>Browse...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/DebugGSSettingsTab.ui" line="206"/>
         <location filename="../Settings/DebugGSSettingsTab.ui" line="227"/>
+        <source>Browse...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DebugGSSettingsTab.ui" line="213"/>
+        <location filename="../Settings/DebugGSSettingsTab.ui" line="234"/>
         <source>Open...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4680,45 +4685,45 @@ Do you want to overwrite?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="132"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="133"/>
         <source>Enable Trace Logging</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/DebugSettingsWidget.cpp" line="52"/>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="132"/>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="135"/>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="137"/>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="139"/>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="141"/>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="143"/>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="145"/>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="147"/>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="149"/>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="151"/>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="153"/>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="155"/>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="157"/>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="159"/>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="161"/>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="163"/>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="165"/>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="167"/>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="169"/>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="171"/>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="174"/>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="176"/>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="178"/>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="180"/>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="182"/>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="184"/>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="186"/>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="188"/>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="190"/>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="192"/>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="194"/>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="196"/>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="199"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="133"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="136"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="138"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="140"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="142"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="144"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="146"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="148"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="150"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="152"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="154"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="156"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="158"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="160"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="162"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="164"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="166"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="168"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="170"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="172"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="175"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="177"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="179"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="181"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="183"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="185"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="187"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="189"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="191"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="193"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="195"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="197"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="200"/>
         <source>Unchecked</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4789,311 +4794,311 @@ Do you want to overwrite?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="132"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="133"/>
         <source>Globally enable / disable trace logging.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="135"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="136"/>
         <source>EE BIOS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="135"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="136"/>
         <source>Log SYSCALL and DECI2 activity.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="137"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="138"/>
         <source>EE Memory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="137"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="138"/>
         <source>Log memory access to unknown or unmapped EE memory.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="139"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="140"/>
         <source>EE R5900</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="139"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="140"/>
         <source>Log R5900 core instructions (excluding COPs). Requires modifying the PCSX2 source and enabling the interpreter.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="141"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="142"/>
         <source>EE COP0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="141"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="142"/>
         <source>Log COP0 (MMU, CPU status, etc) instructions.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="143"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="144"/>
         <source>EE COP1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="143"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="144"/>
         <source>Log COP1 (FPU) instructions.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="145"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="146"/>
         <source>EE COP2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="145"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="146"/>
         <source>Log COP2 (VU0 Macro mode) instructions.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="147"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="148"/>
         <source>EE Cache</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="147"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="148"/>
         <source>Log EE cache activity.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="149"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="150"/>
         <source>EE Known MMIO</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="149"/>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="182"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="150"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="183"/>
         <source>Log known MMIO accesses.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="151"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="152"/>
         <source>EE Unknown MMIO</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="151"/>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="184"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="152"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="185"/>
         <source>Log unknown or unimplemented MMIO accesses.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="153"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="154"/>
         <source>EE DMA Registers</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="153"/>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="186"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="154"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="187"/>
         <source>Log DMA-related MMIO accesses.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="155"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="156"/>
         <source>EE IPU</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="155"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="156"/>
         <source>Log IPU activity; MMIO, decoding operations, DMA status, etc.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="157"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="158"/>
         <source>EE GIF Tags</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="157"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="158"/>
         <source>Log GIFtag parsing activity.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="159"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="160"/>
         <source>EE VIF Codes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="159"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="160"/>
         <source>Log VIFcode processing; command, tag style, interrupts.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="161"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="162"/>
         <source>EE MSKPATH3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="161"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="162"/>
         <source>Log Path3 Masking processing.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="163"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="164"/>
         <source>EE MFIFO</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="163"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="164"/>
         <source>Log Scratchpad MFIFO activity.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="165"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="166"/>
         <source>EE DMA Controller</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="165"/>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="190"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="166"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="191"/>
         <source>Log DMA transfer activity. Stalls, bus right arbitration, etc.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="167"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="168"/>
         <source>EE Counters</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="167"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="168"/>
         <source>Log all EE counters events and some counter register activity.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="169"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="170"/>
         <source>EE VIF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="169"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="170"/>
         <source>Log various VIF and VIFcode processing data.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="171"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="172"/>
         <source>EE GIF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="171"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="172"/>
         <source>Log various GIF and GIFtag parsing data.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="174"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="175"/>
         <source>IOP BIOS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="174"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="175"/>
         <source>Log SYSCALL and IRX activity.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="176"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="177"/>
         <source>IOP Memcards</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="176"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="177"/>
         <source>Log memory card activity. Reads, Writes, erases, etc.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="178"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="179"/>
         <source>IOP R3000A</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="178"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="179"/>
         <source>Log R3000A core instructions (excluding COPs).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="180"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="181"/>
         <source>IOP COP2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="180"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="181"/>
         <source>Log IOP GPU co-processor instructions.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="182"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="183"/>
         <source>IOP Known MMIO</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="184"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="185"/>
         <source>IOP Unknown MMIO</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="186"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="187"/>
         <source>IOP DMA Registers</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="188"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="189"/>
         <source>IOP PAD</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="188"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="189"/>
         <source>Log PAD activity.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="190"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="191"/>
         <source>IOP DMA Controller</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="192"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="193"/>
         <source>IOP Counters</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="192"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="193"/>
         <source>Log all IOP counters events and some counter register activity.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="194"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="195"/>
         <source>IOP CDVD</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="194"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="195"/>
         <source>Log CDVD hardware activity.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="196"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="197"/>
         <source>IOP MDEC</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="196"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="197"/>
         <source>Log Motion (FMV) Decoder hardware unit activity.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="199"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="200"/>
         <source>EE SIF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.cpp" line="199"/>
+        <location filename="../Settings/DebugSettingsWidget.cpp" line="200"/>
         <source>Log SIF (EE &lt;-&gt; IOP) activity.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -21385,12 +21390,12 @@ Ejecting {2} and replacing it with {3}.</source>
 <context>
     <name>Pcsx2Config</name>
     <message>
-        <location filename="../../pcsx2/Pcsx2Config.cpp" line="1166"/>
+        <location filename="../../pcsx2/Pcsx2Config.cpp" line="1167"/>
         <source>Disabled (Noisy)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Pcsx2Config.cpp" line="1167"/>
+        <location filename="../../pcsx2/Pcsx2Config.cpp" line="1168"/>
         <source>TimeStretch (Recommended)</source>
         <translation type="unfinished"></translation>
     </message>
