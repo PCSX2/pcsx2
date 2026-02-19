@@ -5932,13 +5932,15 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 			accumulation_blend &= !prefer_sw_blend;
 			// Enable sw blending for barriers.
 			sw_blending |= blend_requires_barrier || prefer_sw_blend;
-			// Enable sw blending for free blending.
+			// Enable sw blending for free blending (non recursive, accumulation).
 			sw_blending |= free_blend;
 			// Do not run BLEND MIX if sw blending is already present, it's less accurate.
 			blend_mix &= !sw_blending;
 			sw_blending |= blend_mix;
 			[[fallthrough]];
 		case AccBlendLevel::Minimum:
+			// Enable sw blending for non recursive mode.
+			sw_blending |= blend_non_recursive;
 			break;
 	}
 
