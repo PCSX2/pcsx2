@@ -100,8 +100,8 @@ AboutDialog['File non trovato: %1']</translation>
     <message>
       <location filename="../Settings/AchievementLoginDialog.cpp" line="28"/>
       <source>&lt;strong&gt;Your RetroAchievements login token is no longer valid.&lt;/strong&gt; You must re-enter your credentials for achievements to be tracked. Your password will not be saved in PCSX2, an access token will be generated and used instead.</source>
-      <translation>&lt;strong&gt;Il tuo gettone di accesso RetroAchievements non è più valido.&lt;/strong&gt; È necessario reinserire le credenziali affinché i risultati vengano monitorati. La tua password non verrà salvata in PCSX2, ma verrà generato e utilizzato un token di accesso.
-AchievementLoginDialog['&lt;strong&gt;Il tuo gettone di accesso RetroAchievements non è più valido.&lt;/strong&gt; È necessario reinserire le credenziali affinché i risultati vengano monitorati. La tua password non verrà salvata in PCSX2, ma verrà generato e utilizzato un token di accesso.']</translation>
+      <translation>&lt;strong&gt;Il tuo token di accesso RetroAchievements non è più valido.&lt;/strong&gt; È necessario reinserire le credenziali affinché i risultati vengano monitorati. La tua password non verrà salvata in PCSX2, ma verrà generato e utilizzato un token di accesso.
+AchievementLoginDialog['&lt;strong&gt;Il tuo token di accesso RetroAchievements non è più valido.&lt;/strong&gt; È necessario reinserire le credenziali affinché i risultati vengano monitorati. La tua password non verrà salvata in PCSX2, ma verrà generato e utilizzato un token di accesso.']</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementLoginDialog.cpp" line="33"/>
