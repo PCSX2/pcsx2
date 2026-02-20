@@ -6378,7 +6378,10 @@ void GSState::GSPCRTCRegs::CalculateFramebufferOffset(bool scanmask, GSRegDISPFB
 		}
 		else // Only one rect is alternating
 		{
-			const int index = alternating_1 ? 1 : 0;
+			// A lot of ternary operating going on here.
+			// Basically if display 1 is alternating, use that, otherwise use 0 if display 0 is alternating
+			// if neither are alternating, pick the one with the lowest offset.
+			const int index = alternating_1 ? 1 : (alternating_0 ? 0 : ((static_cast<u32>(PCRTCDisplays[1].framebufferRect.y) < static_cast<u32>(PCRTCDisplays[0].framebufferRect.y)) ? 0 : 1));
 			const int offset = PCRTCDisplays[1 - index].framebufferRect.y - PCRTCDisplays[index].framebufferRect.y;
 
 			if (std::abs(offset) <= 4)
