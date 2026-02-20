@@ -50,9 +50,11 @@ REC_FUNC(SDR);
 REC_FUNC(SQ);
 REC_FUNC(LWC1);
 REC_FUNC(SWC1);
+/*
+These are technically COP2 so they are handled in microVU_Macro.inl
 REC_FUNC(LQC2);
 REC_FUNC(SQC2);
-
+*/
 #else
 
 using namespace Interpreter::OpcodeImpl;
