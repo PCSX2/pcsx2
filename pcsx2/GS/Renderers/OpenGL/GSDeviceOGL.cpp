@@ -1660,20 +1660,15 @@ void GSDeviceOGL::DrawStretchRect(const GSVector4& sRect, const GSVector4& dRect
 {
 	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
-	// Original code from DX
-	const float left = dRect.x * 2 / ds.x - 1.0f;
-	const float right = dRect.z * 2 / ds.x - 1.0f;
-#if 0
-	const float top = 1.0f - dRect.y * 2 / ds.y;
-	const float bottom = 1.0f - dRect.w * 2 / ds.y;
-#else
-	// Opengl get some issues with the coordinate
-	// I flip top/bottom to fix scaling of the internal resolution
-	const float top = -1.0f + dRect.y * 2 / ds.y;
-	const float bottom = -1.0f + dRect.w * 2 / ds.y;
-#endif
+	const float inv_x = 2.0f / ds.x;
+	const float inv_y = 2.0f / ds.y;
 
-	GSVertexPT1 vertices[] =
+	const float left = dRect.x * inv_x - 1.0f;
+	const float right = dRect.z * inv_x - 1.0f;
+	const float top = -1.0f + dRect.y * inv_y;
+	const float bottom = -1.0f + dRect.w * inv_y;
+
+	const GSVertexPT1 vertices[] =
 	{
 		{GSVector4(left  , top   , 0.0f, 0.0f) , GSVector2(sRect.x , sRect.y)} ,
 		{GSVector4(right , top   , 0.0f, 0.0f) , GSVector2(sRect.z , sRect.y)} ,
@@ -1748,10 +1743,14 @@ void GSDeviceOGL::DoMultiStretchRects(const MultiStretchRect* rects, u32 num_rec
 	{
 		const GSVector4& sRect = rects[i].src_rect;
 		const GSVector4& dRect = rects[i].dst_rect;
-		const float left = dRect.x * 2 / ds.x - 1.0f;
-		const float right = dRect.z * 2 / ds.x - 1.0f;
-		const float top = -1.0f + dRect.y * 2 / ds.y;
-		const float bottom = -1.0f + dRect.w * 2 / ds.y;
+
+		const float inv_x = 2.0f / ds.x;
+		const float inv_y = 2.0f / ds.y;
+
+		const float left = dRect.x * inv_x - 1.0f;
+		const float right = dRect.z * inv_x - 1.0f;
+		const float top = -1.0f + dRect.y * inv_y;
+		const float bottom = -1.0f + dRect.w * inv_y;
 
 		const u32 vstart = vcount;
 		verts[vcount++] = { GSVector4(left  , top   , 0.0f, 0.0f) , GSVector2(sRect.x , sRect.y) };

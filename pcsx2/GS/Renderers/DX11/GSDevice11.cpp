@@ -1352,12 +1352,15 @@ void GSDevice11::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTextur
 
 	// ia
 
-	const float left = dRect.x * 2 / ds.x - 1.0f;
-	const float top = 1.0f - dRect.y * 2 / ds.y;
-	const float right = dRect.z * 2 / ds.x - 1.0f;
-	const float bottom = 1.0f - dRect.w * 2 / ds.y;
+	const float inv_x = 2.0f / ds.x;
+	const float inv_y = 2.0f / ds.y;
 
-	GSVertexPT1 vertices[] =
+	const float left = dRect.x * inv_x - 1.0f;
+	const float right = dRect.z * inv_x - 1.0f;
+	const float top = 1.0f - dRect.y * inv_y;
+	const float bottom = 1.0f - dRect.w * inv_y;
+
+	const GSVertexPT1 vertices[] =
 	{
 		{GSVector4(left, top, 0.5f, 1.0f), GSVector2(sRect.x, sRect.y)},
 		{GSVector4(right, top, 0.5f, 1.0f), GSVector2(sRect.z, sRect.y)},
@@ -1422,10 +1425,13 @@ void GSDevice11::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 
 	// ia
 
-	const float left = dRect.x * 2 / ds.x - 1.0f;
-	const float top = 1.0f - dRect.y * 2 / ds.y;
-	const float right = dRect.z * 2 / ds.x - 1.0f;
-	const float bottom = 1.0f - dRect.w * 2 / ds.y;
+	const float inv_x = 2.0f / ds.x;
+	const float inv_y = 2.0f / ds.y;
+
+	const float left = dRect.x * inv_x - 1.0f;
+	const float right = dRect.z * inv_x - 1.0f;
+	const float top = 1.0f - dRect.y * inv_y;
+	const float bottom = 1.0f - dRect.w * inv_y;
 
 	const GSVertexPT1 vertices[] =
 	{
@@ -1565,10 +1571,14 @@ void GSDevice11::DoMultiStretchRects(const MultiStretchRect* rects, u32 num_rect
 	{
 		const GSVector4& sRect = rects[i].src_rect;
 		const GSVector4& dRect = rects[i].dst_rect;
-		const float left = dRect.x * 2 / ds.x - 1.0f;
-		const float top = 1.0f - dRect.y * 2 / ds.y;
-		const float right = dRect.z * 2 / ds.x - 1.0f;
-		const float bottom = 1.0f - dRect.w * 2 / ds.y;
+
+		const float inv_x = 2.0f / ds.x;
+		const float inv_y = 2.0f / ds.y;
+
+		const float left = dRect.x * inv_x - 1.0f;
+		const float right = dRect.z * inv_x - 1.0f;
+		const float top = 1.0f - dRect.y * inv_y;
+		const float bottom = 1.0f - dRect.w * inv_y;
 
 		const u32 vstart = vcount;
 		verts[vcount++] = {GSVector4(left, top, 0.5f, 1.0f), GSVector2(sRect.x, sRect.y)};
