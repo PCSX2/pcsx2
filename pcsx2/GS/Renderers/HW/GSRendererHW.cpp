@@ -7523,6 +7523,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	}
 
 	// DATE: selection of the algorithm. Must be done before blending because GL42 is not compatible with blending
+	bool ate_second_pass = m_cached_ctx.TEST.DoSecondPass();
 	if (DATE)
 	{
 		if (m_cached_ctx.TEST.DATM)
@@ -7560,7 +7561,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 			GL_PERF("DATE: Fast with FBA, all pixels will be >= 128");
 			DATE_one = !m_cached_ctx.TEST.DATM;
 		}
-		else if (m_conf.colormask.wa && !m_cached_ctx.TEST.ATE && !(m_cached_ctx.FRAME.FBMSK & 0x80000000))
+		else if (m_conf.colormask.wa && !ate_second_pass && !(m_cached_ctx.FRAME.FBMSK & 0x80000000))
 		{
 			// Performance note: check alpha range with GetAlphaMinMax()
 			// Note: all my dump are already above 120fps, but it seems to reduce GPU load
@@ -7610,14 +7611,11 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 				DATE_one = true;
 			}
 		}
-		else if (!m_conf.colormask.wa && !m_cached_ctx.TEST.ATE)
+		else if (features.texture_barrier && !m_conf.colormask.wa)
 		{
 			GL_PERF("DATE: Accurate with no alpha write");
-			if (g_gs_device->Features().texture_barrier)
-			{
-				m_conf.require_one_barrier = true;
-				DATE_BARRIER = true;
-			}
+			m_conf.require_one_barrier = true;
+			DATE_BARRIER = true;
 		}
 
 		// Will save my life !
@@ -7799,7 +7797,6 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	// The idea is to compute first the color which is independent of the alpha test. And then do a 2nd
 	// pass to handle the depth based on the alpha test.
 	const bool ate_first_pass = m_cached_ctx.TEST.DoFirstPass();
-	bool ate_second_pass = m_cached_ctx.TEST.DoSecondPass();
 	bool ate_RGBA_then_Z = false;
 	bool ate_RGB_then_Z = false;
 	GL_INS("HW: %sAlpha Test, ATST=%s, AFAIL=%s", (ate_first_pass && ate_second_pass) ? "Complex" : "",
