@@ -16901,9 +16901,11 @@ SLES-51053:
   name: "Tom & Jerry's War of the Wiskers"
   region: "PAL-M6"
 SLES-51054:
-  name: "Midnight Club 2"
+  name: "Midnight Club II"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    nativeScaling: 1 # Fixes light effect flicker while selecting a car.
   patches:
     ACB1989A:
       content: |-
@@ -64845,6 +64847,8 @@ SLUS-20209:
   name: "Midnight Club II"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    nativeScaling: 1 # Fixes light effect flicker while selecting a car.
   patches:
     E5F2DF38:
       content: |-
