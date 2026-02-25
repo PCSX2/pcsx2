@@ -6,6 +6,7 @@
 #include "DebugTools/Breakpoints.h"
 #include "Elfheader.h"
 #include "GS.h"
+#include "Host.h"
 #include "Memory.h"
 #include "Patch.h"
 #include "R3000A.h"
@@ -71,6 +72,7 @@ eeProfiler EE::Profiler;
 
 static DynamicHeapArray<u8, 4096> recRAMCopy;
 static DynamicHeapArray<BASEBLOCK, 4096> recLutReserve_RAM;
+static DynamicHeapArray<BASEBLOCK, 4096> recLutUnmapped;
 static size_t recLutEntries;
 static bool extraRam;
 
@@ -346,6 +348,7 @@ void recCall(void (*func)())
 static void recRecompile(const u32 startpc);
 static void dyna_block_discard(u32 start, u32 sz);
 static void dyna_page_reset(u32 start, u32 sz);
+static void HitUnmappedRecLUTPage();
 
 static const void* DispatcherEvent = nullptr;
 static const void* DispatcherReg = nullptr;
@@ -353,6 +356,7 @@ static const void* JITCompile = nullptr;
 static const void* EnterRecompiledCode = nullptr;
 static const void* DispatchBlockDiscard = nullptr;
 static const void* DispatchPageReset = nullptr;
+static const void* UnmappedRecLUTPage = nullptr;
 
 static void recEventTest()
 {
@@ -461,6 +465,13 @@ static const void* _DynGen_DispatchPageReset()
 	return retval;
 }
 
+static const void* _DynGen_UnmappedRecLUTPage()
+{
+	u8* retval = xGetPtr();
+	xFastCall((const void*)HitUnmappedRecLUTPage);
+	return retval;
+}
+
 static void _DynGen_Dispatchers()
 {
 	const u8* start = xGetAlignedCallTarget();
@@ -474,6 +485,7 @@ static void _DynGen_Dispatchers()
 	EnterRecompiledCode = _DynGen_EnterRecompiledCode();
 	DispatchBlockDiscard = _DynGen_DispatchBlockDiscard();
 	DispatchPageReset = _DynGen_DispatchPageReset();
+	UnmappedRecLUTPage = _DynGen_UnmappedRecLUTPage();
 
 	recBlocks.SetJITCompile(JITCompile);
 
@@ -483,6 +495,13 @@ static void _DynGen_Dispatchers()
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //
+
+static void HitUnmappedRecLUTPage()
+{
+	Host::ReportErrorAsync("R5900 Exception", fmt::format("Jump to unmapped recLUT page (PC: 0x{:08x})", cpuRegs.pc));
+	VMManager::SetPaused(true);
+	recExitExecution();
+}
 
 static __ri void ClearRecLUT(BASEBLOCK* base, int memsize)
 {
@@ -501,6 +520,9 @@ static void recReserveRAM()
 	if (recLutReserve_RAM.size() != recLutEntries)
 		recLutReserve_RAM.resize(recLutEntries);
 
+	// Allocate one LUT page of memory for unmapped pages to reference
+	recLutUnmapped.resize(_64kb / 4);
+
 	BASEBLOCK* basepos = recLutReserve_RAM.data();
 	recRAM = basepos;
 	basepos += (Ps2MemSize::ExposedRam / 4);
@@ -511,8 +533,11 @@ static void recReserveRAM()
 	recROM2 = basepos;
 	basepos += (Ps2MemSize::Rom2 / 4);
 
+	BASEBLOCK* unmapped = recLutUnmapped.data();
 	for (int i = 0; i < 0x10000; i++)
-		recLUT_SetPage(recLUT, 0, 0, 0, i, 0);
+	{
+		recLUT_SetPage(recLUT, hwLUT, unmapped, i, 0, 0);
+	}
 
 	for (int i = 0x0000; i < (int)(Ps2MemSize::ExposedRam / 0x10000); i++)
 	{
@@ -584,6 +609,10 @@ static void recResetRaw()
 
 	ClearRecLUT(recLutReserve_RAM.data(),
 		Ps2MemSize::ExposedRam + Ps2MemSize::Rom + Ps2MemSize::Rom1 + Ps2MemSize::Rom2);
+
+	for (int i = 0; i < _64kb / 4; i++)
+		recLutUnmapped.data()[i].SetFnptr((uptr)UnmappedRecLUTPage);
+
 	recRAMCopy.fill(0);
 
 	maxrecmem = 0;
