@@ -844,6 +844,7 @@ void GameListWidget::onTableHeaderStateChanged()
 
 	// Encode QByteArray state as Base64 string for storage.
 	Host::SetBaseStringSettingValue("GameListTableView", "HeaderState", header->saveState().toBase64());
+	Host::CommitBaseSettingChanges();
 }
 
 void GameListWidget::applyTableHeaderDefaults()
@@ -868,6 +869,7 @@ void GameListWidget::applyTableHeaderDefaults()
 	}
 
 	Host::SetBaseStringSettingValue("GameListTableView", "HeaderState", header->saveState().toBase64());
+	Host::CommitBaseSettingChanges();
 }
 
 // TODO (Tech): Create a button for this in the minibar. Currently unused.
@@ -897,6 +899,8 @@ void GameListWidget::resetTableHeaderToDefault()
 	}
 
 	Host::SetBaseStringSettingValue("GameListTableView", "HeaderState", header->saveState().toBase64());
+	Host::CommitBaseSettingChanges();
+
 	// This makes the columns expand to fill the window right now.
 	resizeTableViewColumnsToFit();
 }
@@ -906,6 +910,7 @@ void GameListWidget::saveSortSettings(const int column, const Qt::SortOrder sort
 	Host::SetBaseStringSettingValue("GameListTableView", "SortColumn",
 		GameListModel::getColumnName(static_cast<GameListModel::Column>(column)));
 	Host::SetBaseBoolSettingValue("GameListTableView", "SortDescending", static_cast<bool>(sort_order));
+	Host::CommitBaseSettingChanges();
 }
 
 std::optional<GameList::Entry> GameListWidget::getSelectedEntry() const
