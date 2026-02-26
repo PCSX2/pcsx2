@@ -295,7 +295,7 @@ void GameListWidget::initialize()
 	{
 		loadTableHeaderState();
 		// Enforce at least one column is visible immediately after loading.
-		// This handles cases where a config (perhaps from an older version) has 0 columns and 
+		// This handles cases where a config (perhaps from an older version) has 0 columns and
 		// no games are visible to be changed (such as per-game config) or played as you can't click on any.
 		// Will automatically repair a broken header state from config (PCSX2.ini) file.
 		ensureMinimumOneColumnVisible();
@@ -825,7 +825,7 @@ void GameListWidget::ensureMinimumOneColumnVisible()
 	}
 
 	// If absolutely everything is hidden, force the Title column to be visible.
-	// This ensures there is always a right-click menu on the column available to restore 
+	// This ensures there is always a right-click menu on the column available to restore
 	// other columns or access the "Reset All Columns" option or even re-order them with drag and drop.
 	// By default Qt will hide everything if it sees 0 viable columns, so just enforce atleast 1 column.
 	// Adding ghost columns would be hacky and ugly so let's not do that.
@@ -844,6 +844,7 @@ void GameListWidget::onTableHeaderStateChanged()
 
 	// Encode QByteArray state as Base64 string for storage.
 	Host::SetBaseStringSettingValue("GameListTableView", "HeaderState", header->saveState().toBase64());
+	Host::CommitBaseSettingChanges();
 }
 
 void GameListWidget::applyTableHeaderDefaults()
@@ -868,6 +869,7 @@ void GameListWidget::applyTableHeaderDefaults()
 	}
 
 	Host::SetBaseStringSettingValue("GameListTableView", "HeaderState", header->saveState().toBase64());
+	Host::CommitBaseSettingChanges();
 }
 
 // TODO (Tech): Create a button for this in the minibar. Currently unused.
@@ -897,6 +899,8 @@ void GameListWidget::resetTableHeaderToDefault()
 	}
 
 	Host::SetBaseStringSettingValue("GameListTableView", "HeaderState", header->saveState().toBase64());
+	Host::CommitBaseSettingChanges();
+
 	// This makes the columns expand to fill the window right now.
 	resizeTableViewColumnsToFit();
 }
@@ -906,6 +910,7 @@ void GameListWidget::saveSortSettings(const int column, const Qt::SortOrder sort
 	Host::SetBaseStringSettingValue("GameListTableView", "SortColumn",
 		GameListModel::getColumnName(static_cast<GameListModel::Column>(column)));
 	Host::SetBaseBoolSettingValue("GameListTableView", "SortDescending", static_cast<bool>(sort_order));
+	Host::CommitBaseSettingChanges();
 }
 
 std::optional<GameList::Entry> GameListWidget::getSelectedEntry() const
