@@ -1393,28 +1393,24 @@ void GSDevice11::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTextur
 	DrawPrimitive();
 }
 
-void GSDevice11::ShaderCopyRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, GSHWDrawConfig& config)
+void GSDevice11::BlitOnetoOne(GSTexture* sTex, GSTexture* dTex, const GSVector4& r)
 {
 	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
-	// backup state
-
-	// OMSetRenderTargets
-	GSTexture* backup_ds = m_state.cached_dsv;
-	// IASetPrimitiveTopology
-	D3D11_PRIMITIVE_TOPOLOGY backup_topology = m_state.topology;
-	// Viewport
-	GSVector2i viewport = m_state.viewport;
-
 	CommitClear(sTex);
 
-	// ps unbind conflicting srvs
-	PSUnbindConflictingSRVs(dTex);
+	// preemptively bind srv if possible
 
-	OMSetRenderTargets(dTex, nullptr);
+	if (m_state.cached_rt_view != sTex && m_state.cached_dsv != sTex)
+		PSSetShaderResource(0, sTex);
+
+	// ps unbind conflicting srvs
+
+	PSUnbindConflictingSRVs(dTex);
 
 	// om
 
+	OMSetRenderTargets(dTex, nullptr);
 	OMSetBlendState(nullptr, 0);
 
 	// ia
@@ -1424,39 +1420,24 @@ void GSDevice11::ShaderCopyRect(GSTexture* sTex, const GSVector4& sRect, GSTextu
 
 	// vp
 
-	D3D11_VIEWPORT vp = {
-		dRect.x,
-		dRect.y,
-		dRect.z - dRect.x, // Width
-		dRect.w - dRect.y, // Height
-		0.0f, 1.0f};
+	const D3D11_VIEWPORT vp = {r.x, r.y, r.z - r.x, r.w - r.y, 0.0f, 1.0f};
 	m_ctx->RSSetViewports(1, &vp);
-
+	m_state.viewport = GSVector2i(0, 0);
 	
+	// vs
+
 	VSSetShader(m_convert.vs_blit_1to1.get(), nullptr);
+
 	// ps
 
 	PSSetShaderResource(0, sTex);
-	m_state.ps_sr_views[2] = nullptr;
 	PSSetShader(m_convert.ps[static_cast<int>(ShaderConvert::BLIT_1TO1)].get(), nullptr);
+	PSUpdateShaderState(true, false);
 
 	// draw
 
 	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
-	PSUpdateShaderState(true, false);
 	m_ctx->Draw(3, 0);
-
-	// restore state
-	PSUnbindConflictingSRVs(sTex, backup_ds);
-	OMSetRenderTargets(sTex, backup_ds);
-
-	vp = {0.0f, 0.0f, static_cast<float>(viewport.x), static_cast<float>(viewport.y), 0.0f, 1.0f};
-	m_ctx->RSSetViewports(1, &vp);
-
-	IASetPrimitiveTopology(backup_topology);
-
-	if (config.tex)
-		m_state.ps_sr_views[0] = *static_cast<GSTexture11*>(config.tex);
 }
 
 void GSDevice11::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, float shaderTime, bool linear)
@@ -2483,6 +2464,21 @@ void GSDevice11::IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY topology)
 	}
 }
 
+D3D11_PRIMITIVE_TOPOLOGY GSDevice11::IAGetPrimitiveTopology(GSHWDrawConfig::Topology topology)
+{
+	switch (topology)
+	{
+		case GSHWDrawConfig::Topology::Point:
+			return D3D11_PRIMITIVE_TOPOLOGY_POINTLIST;
+		case GSHWDrawConfig::Topology::Line:
+			return D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
+		case GSHWDrawConfig::Topology::Triangle:
+			return D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+		default:
+			return D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
+	}
+}
+
 void GSDevice11::VSSetShader(ID3D11VertexShader* vs, ID3D11Buffer* vs_cb)
 {
 	if (m_state.vs != vs)
@@ -2819,15 +2815,6 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		}
 	}
 
-	D3D11_PRIMITIVE_TOPOLOGY topology = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
-	switch (config.topology)
-	{
-		case GSHWDrawConfig::Topology::Point:    topology = D3D11_PRIMITIVE_TOPOLOGY_POINTLIST;    break;
-		case GSHWDrawConfig::Topology::Line:     topology = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;     break;
-		case GSHWDrawConfig::Topology::Triangle: topology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST; break;
-	}
-	IASetPrimitiveTopology(topology);
-
 	// Depth testing and sampling, bind resource as dsv read only and srv at the same time without the need of a copy.
 	ID3D11DepthStencilView* read_only_dsv = nullptr;
 	if (config.tex && config.tex == config.ds)
@@ -2862,14 +2849,15 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		dss.zwe = 0;
 		const OMBlendSelector blend(GSHWDrawConfig::ColorMaskSelector(1),
 			GSHWDrawConfig::BlendState(true, CONST_ONE, CONST_ONE, 3 /* MIN */, CONST_ONE, CONST_ZERO, false, 0));
+		IASetPrimitiveTopology(IAGetPrimitiveTopology(config.topology));
+		SetupVS(config.vs, &config.cb_vs);
+		SetupPS(config.ps, &config.cb_ps, config.sampler);
 		SetupOM(dss, blend, 0);
 		OMSetRenderTargets(primid_texture, config.ds, &config.scissor, read_only_dsv);
 		DrawIndexedPrimitive();
 
-		SetupVS(config.vs, &config.cb_vs);
 		config.ps.date = 3;
 		config.alpha_second_pass.ps.date = 3;
-		SetupPS(config.ps, &config.cb_ps, config.sampler);
 		PSSetShaderResource(3, primid_texture);
 	}
 
@@ -2893,18 +2881,13 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	GSTexture* draw_rt_clone = nullptr;
 
 	if (draw_rt && (config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy) || (config.tex && config.tex == config.rt)))
-	{ 
+	{
 		// Requires a copy of the RT.
 		// Used as "bind rt" flag when texture barrier is unsupported for tex is fb.
 
-		// Accumulation draw area that will be on the first loop iteration on feedback loop with overlap.
-		GSVector4i drawarea = config.drawarea;
-		if ((config.require_full_barrier && m_features.multidraw_fb_copy))
-			drawarea = (*config.drawlist_bbox)[0].rintersect(config.drawarea);
-
 		// Drawarea threshold, if the size exceeds 512 then prefer gpu copy, otherwise shader copy.
 		constexpr int area_size_x_y = 512;
-		if (drawarea.width() > area_size_x_y || drawarea.height() > area_size_x_y)
+		if (config.drawarea.width() > area_size_x_y || config.drawarea.height() > area_size_x_y)
 			draw_rt_clone = CreateTexture(rtsize.x, rtsize.y,1,  draw_rt->GetFormat(), true);
 		else
 			draw_rt_clone = CreateRenderTarget(rtsize.x, rtsize.y, draw_rt->GetFormat(), false, true);
@@ -2913,7 +2896,6 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 			Console.Warning("D3D11: Failed to allocate temp texture for RT copy.");
 	}
 
-	OMSetRenderTargets(draw_rt, draw_ds, &config.scissor, read_only_dsv);
 	// Clear stencil as close as possible to the RT bind, to avoid framebuffer swaps.
 	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne && multidraw_fb_copy)
 		m_ctx->ClearDepthStencilView(*static_cast<GSTexture11*>(draw_ds), D3D11_CLEAR_STENCIL, 0.0f, 1);
@@ -2973,10 +2955,21 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 void GSDevice11::SendHWDraw(GSHWDrawConfig& config, GSTexture* draw_rt_clone, GSTexture* draw_rt, GSTexture* draw_ds, ID3D11DepthStencilView* read_only_dsv,
 	const bool one_barrier, const bool full_barrier, const bool skip_first_barrier)
 {
-	auto SetPipeline = [&]() {
+	auto SetupPipeline = [&]() {
+		IASetPrimitiveTopology(IAGetPrimitiveTopology(config.topology));
 		SetupVS(config.vs, &config.cb_vs);
 		SetupPS(config.ps, config.ps.date == 3 ? nullptr : &config.cb_ps, config.sampler);
 		SetupOM(config.depth, OMBlendSelector(config.colormask, config.blend), config.blend.constant);
+
+		PSUnbindConflictingSRVs(draw_rt);
+		OMSetRenderTargets(draw_rt, draw_ds, &config.scissor, read_only_dsv);
+
+		if (config.tex)
+			PSSetShaderResource(0, config.tex);
+		if (config.tex && config.tex == draw_rt)
+			PSSetShaderResource(0, draw_rt_clone);
+		if (one_barrier || full_barrier)
+			PSSetShaderResource(2, draw_rt_clone);
 	};
 
 	if (draw_rt_clone)
@@ -2990,12 +2983,7 @@ void GSDevice11::SendHWDraw(GSHWDrawConfig& config, GSTexture* draw_rt_clone, GS
 			if (draw_rt_clone->GetType() == GSTexture::Type::Texture)
 				CopyRect(draw_rt, draw_rt_clone, drawarea, drawarea.left, drawarea.top);
 			else
-				ShaderCopyRect(draw_rt, GSVector4(drawarea), draw_rt_clone, GSVector4(drawarea), config);
-
-			if (one_barrier || full_barrier)
-				PSSetShaderResource(2, draw_rt_clone);
-			if (config.tex && config.tex == config.rt)
-				PSSetShaderResource(0, draw_rt_clone);
+				BlitOnetoOne(draw_rt, draw_rt_clone, GSVector4(drawarea));
 		};
 
 		const GSVector4i rtsize(0, 0, draw_rt->GetWidth(), draw_rt->GetHeight());
@@ -3015,7 +3003,7 @@ void GSDevice11::SendHWDraw(GSHWDrawConfig& config, GSTexture* draw_rt_clone, GS
 				const GSVector4i original_bbox = (*config.drawlist_bbox)[n].rintersect(config.drawarea);
 				CopyAndBind(ProcessCopyArea(rtsize, original_bbox));
 
-				SetPipeline();
+				SetupPipeline();
 				DrawIndexedPrimitive(p, count);
 				p += count;
 			}
@@ -3028,6 +3016,6 @@ void GSDevice11::SendHWDraw(GSHWDrawConfig& config, GSTexture* draw_rt_clone, GS
 			CopyAndBind(ProcessCopyArea(rtsize, config.drawarea));
 	}
 
-	SetPipeline();
+	SetupPipeline();
 	DrawIndexedPrimitive();
 }

@@ -62,7 +62,7 @@ void ps_copy()
 #ifdef ps_blit_1to1
 void ps_blit_1to1()
 {
-
+	SV_Target0 = vec4(0);
 }
 #endif
 
