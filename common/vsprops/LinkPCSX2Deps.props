@@ -27,6 +27,12 @@
     <DepsDLLs Condition="!$(Configuration.Contains(Debug))" Include="$(DepsBinDir)kddockwidgets-qt6.dll" />
     <DepsDLLs Include="$(DepsBinDir)plutovg.dll" />
     <DepsDLLs Include="$(DepsBinDir)plutosvg.dll" />
+    <DepsDLLs Condition="Exists('$(DepsBinDir)avcodec-62.dll')" Include="$(DepsBinDir)avcodec-62.dll" />
+    <DepsDLLs Condition="Exists('$(DepsBinDir)avformat-62.dll')" Include="$(DepsBinDir)avformat-62.dll" />
+    <DepsDLLs Condition="Exists('$(DepsBinDir)avutil-60.dll')" Include="$(DepsBinDir)avutil-60.dll" />
+    <DepsDLLs Condition="Exists('$(DepsBinDir)avutil-60.dll')" Include="$(DepsBinDir)avutil-60.dll" />
+    <DepsDLLs Condition="Exists('$(DepsBinDir)swresample-6.dll')" Include="$(DepsBinDir)swresample-6.dll" />
+    <DepsDLLs Condition="Exists('$(DepsBinDir)swscale-9.dll')" Include="$(DepsBinDir)swscale-9.dll" />
   </ItemGroup>
   <ItemGroup>
     <AgilityDLLs Condition="Exists('$(DepsBinDir)D3D12\D3D12Core.dll')" Include="$(DepsBinDir)D3D12\D3D12Core.dll" />
