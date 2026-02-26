@@ -322,18 +322,19 @@ bool GSDevice12::CreateDevice(u32& vendor_id)
 			}
 
 			D3D12_INFO_QUEUE_FILTER filter = {};
-			std::array<D3D12_MESSAGE_ID, 6> id_list{
+			std::array<D3D12_MESSAGE_ID, 7> id_list{
 				D3D12_MESSAGE_ID_CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE,
 				D3D12_MESSAGE_ID_CLEARDEPTHSTENCILVIEW_MISMATCHINGCLEARVALUE,
 				D3D12_MESSAGE_ID_CREATEGRAPHICSPIPELINESTATE_RENDERTARGETVIEW_NOT_SET,
 				D3D12_MESSAGE_ID_CREATEINPUTLAYOUT_TYPE_MISMATCH,
 				D3D12_MESSAGE_ID_DRAW_EMPTY_SCISSOR_RECTANGLE,
-				// The current OS version of D3D12 (616) has a validation bug
-				// This is fixed with Agility 1.618.4.
-				// For now, disable this warning untill the OS updates.
+				// The current OS version of D3D12 (616) has a validation bug.
+				// This is fixed with Agility 1.618.4 (RTV) and 1.619.0 (UAV).
+				// For now, disable these warnings until the OS updates.
 				D3D12_MESSAGE_ID_INCOMPATIBLE_BARRIER_LAYOUT,
+				D3D12_MESSAGE_ID_GPU_BASED_VALIDATION_INCOMPATIBLE_TEXTURE_LAYOUT,
 			};
-			filter.DenyList.NumIDs = static_cast<UINT>(sdkVersion < 618 ? id_list.size() : id_list.size() - 1);
+			filter.DenyList.NumIDs = static_cast<UINT>(sdkVersion < 619 ? id_list.size() : id_list.size() - 2);
 			filter.DenyList.pIDList = id_list.data();
 			info_queue->PushStorageFilter(&filter);
 		}
