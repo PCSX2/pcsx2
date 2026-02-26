@@ -1395,6 +1395,8 @@ void GSDevice11::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTextur
 
 void GSDevice11::ShaderCopyRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, GSHWDrawConfig& config)
 {
+	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+
 	// backup state
 
 	// OMSetRenderTargets
@@ -2891,10 +2893,21 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	GSTexture* draw_rt_clone = nullptr;
 
 	if (draw_rt && (config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy) || (config.tex && config.tex == config.rt)))
-	{
+	{ 
 		// Requires a copy of the RT.
 		// Used as "bind rt" flag when texture barrier is unsupported for tex is fb.
-		draw_rt_clone = CreateRenderTarget(rtsize.x, rtsize.y, draw_rt->GetFormat(), false, true);
+
+		// Accumulation draw area that will be on the first loop iteration on feedback loop with overlap.
+		GSVector4i drawarea = config.drawarea;
+		if ((config.require_full_barrier && m_features.multidraw_fb_copy))
+			drawarea = (*config.drawlist_bbox)[0].rintersect(config.drawarea);
+
+		// Drawarea threshold, if the size exceeds 512 then prefer gpu copy, otherwise shader copy.
+		constexpr int area_size_x_y = 512;
+		if (drawarea.width() > area_size_x_y || drawarea.height() > area_size_x_y)
+			draw_rt_clone = CreateTexture(rtsize.x, rtsize.y,1,  draw_rt->GetFormat(), true);
+		else
+			draw_rt_clone = CreateRenderTarget(rtsize.x, rtsize.y, draw_rt->GetFormat(), false, true);
 
 		if (!draw_rt_clone)
 			Console.Warning("D3D11: Failed to allocate temp texture for RT copy.");
@@ -2964,8 +2977,6 @@ void GSDevice11::SendHWDraw(GSHWDrawConfig& config, GSTexture* draw_rt_clone, GS
 		SetupVS(config.vs, &config.cb_vs);
 		SetupPS(config.ps, config.ps.date == 3 ? nullptr : &config.cb_ps, config.sampler);
 		SetupOM(config.depth, OMBlendSelector(config.colormask, config.blend), config.blend.constant);
-		PSUnbindConflictingSRVs(draw_rt, draw_ds);
-		OMSetRenderTargets(draw_rt, draw_ds, &config.scissor, read_only_dsv);
 	};
 
 	if (draw_rt_clone)
@@ -2976,11 +2987,11 @@ void GSDevice11::SendHWDraw(GSHWDrawConfig& config, GSTexture* draw_rt_clone, GS
 #endif
 
 		auto CopyAndBind = [&](GSVector4i drawarea) {
-			const GSVector2i rtsize = draw_rt->GetSize();
-			//CopyRect(draw_rt, draw_rt_clone, drawarea, drawarea.left, drawarea.top);
-			//PSUnbindConflictingSRVs(draw_rt_clone);
-			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
-			ShaderCopyRect(draw_rt, GSVector4(drawarea), draw_rt_clone, GSVector4(drawarea), config);
+			if (draw_rt_clone->GetType() == GSTexture::Type::Texture)
+				CopyRect(draw_rt, draw_rt_clone, drawarea, drawarea.left, drawarea.top);
+			else
+				ShaderCopyRect(draw_rt, GSVector4(drawarea), draw_rt_clone, GSVector4(drawarea), config);
+
 			if (one_barrier || full_barrier)
 				PSSetShaderResource(2, draw_rt_clone);
 			if (config.tex && config.tex == config.rt)
