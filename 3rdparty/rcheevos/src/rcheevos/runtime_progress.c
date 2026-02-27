@@ -913,7 +913,7 @@ uint32_t rc_runtime_progress_size(const rc_runtime_t* runtime, void* unused_L)
 
   result = rc_runtime_progress_serialize_internal(&progress);
   if (result != RC_OK)
-    return result;
+    return 0;
 
   return progress.offset;
 }
