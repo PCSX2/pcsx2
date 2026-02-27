@@ -388,23 +388,27 @@ __WI_LIBCPP_INLINE_VAR __WI_LIBCPP_CONSTEXPR bool is_void_v = is_void<_Tp>::valu
 
 // __is_nullptr_t
 
-template <class _Tp>
-struct __is_nullptr_t_impl : public false_type
+namespace details
 {
-};
-template <>
-struct __is_nullptr_t_impl<nullptr_t> : public true_type
-{
-};
+    template <class _Tp>
+    struct is_nullptr_t_impl : false_type
+    {
+    };
+
+    template <>
+    struct is_nullptr_t_impl<nullptr_t> : true_type
+    {
+    };
+} // namespace details
 
 template <class _Tp>
-struct __WI_LIBCPP_TEMPLATE_VIS __is_nullptr_t : public __is_nullptr_t_impl<typename remove_cv<_Tp>::type>
+struct __WI_LIBCPP_TEMPLATE_VIS __is_nullptr_t : details::is_nullptr_t_impl<typename remove_cv<_Tp>::type>
 {
 };
 
 #if __WI_LIBCPP_STD_VER > 11
 template <class _Tp>
-struct __WI_LIBCPP_TEMPLATE_VIS is_null_pointer : public __is_nullptr_t_impl<typename remove_cv<_Tp>::type>
+struct __WI_LIBCPP_TEMPLATE_VIS is_null_pointer : details::is_nullptr_t_impl<typename remove_cv<_Tp>::type>
 {
 };
 
@@ -1189,8 +1193,13 @@ using type_identity_t = typename type_identity<_Tp>::type;
 
 // is_signed
 
+__WI_PUSH_WARNINGS
+__WI_MSVC_DISABLE_WARNING(4296) // error C4296: '<': expression is always false
+
 template <class _Tp, bool = is_integral<_Tp>::value>
 struct __libcpp_is_signed_impl : public __WI_LIBCPP_BOOL_CONSTANT(_Tp(-1) < _Tp(0)){};
+
+__WI_POP_WARNINGS
 
 template <class _Tp>
 struct __libcpp_is_signed_impl<_Tp, false> : public true_type
@@ -1488,18 +1497,18 @@ struct __WI_LIBCPP_TEMPLATE_VIS is_convertible
 
 #else // __WI_HAS_FEATURE_IS_CONVERTIBLE_TO
 
-namespace __is_convertible_imp
+namespace wi_is_convertible_imp
 {
     template <class _Tp>
     void __test_convert(_Tp);
 
     template <class _From, class _To, class = void>
-    struct __is_convertible_test : public false_type
+    struct wi_is_convertible_test : public false_type
     {
     };
 
     template <class _From, class _To>
-    struct __is_convertible_test<_From, _To, decltype(__is_convertible_imp::__test_convert<_To>(declval<_From>()))> : public true_type
+    struct wi_is_convertible_test<_From, _To, decltype(wi_is_convertible_imp::__test_convert<_To>(declval<_From>()))> : public true_type
     {
     };
 
@@ -1535,16 +1544,16 @@ namespace __is_convertible_imp
             value = 3
         };
     };
-} // namespace __is_convertible_imp
+} // namespace wi_is_convertible_imp
 
-template <class _Tp, unsigned = __is_convertible_imp::__is_array_function_or_void<typename remove_reference<_Tp>::type>::value>
-struct __is_convertible_check
+template <class _Tp, unsigned = wi_is_convertible_imp::__is_array_function_or_void<typename remove_reference<_Tp>::type>::value>
+struct wi_is_convertible_check
 {
     static const size_t __v = 0;
 };
 
 template <class _Tp>
-struct __is_convertible_check<_Tp, 0>
+struct wi_is_convertible_check<_Tp, 0>
 {
     static const size_t __v = sizeof(_Tp);
 };
@@ -1552,12 +1561,12 @@ struct __is_convertible_check<_Tp, 0>
 template <
     class _T1,
     class _T2,
-    unsigned _T1_is_array_function_or_void = __is_convertible_imp::__is_array_function_or_void<_T1>::value,
-    unsigned _T2_is_array_function_or_void = __is_convertible_imp::__is_array_function_or_void<_T2>::value>
-struct __is_convertible
+    unsigned _T1_is_array_function_or_void = wi_is_convertible_imp::__is_array_function_or_void<_T1>::value,
+    unsigned _T2_is_array_function_or_void = wi_is_convertible_imp::__is_array_function_or_void<_T2>::value>
+struct wi_is_convertible
     : public integral_constant<
           bool,
-          __is_convertible_imp::__is_convertible_test<_T1, _T2>::value
+          wi_is_convertible_imp::wi_is_convertible_test<_T1, _T2>::value
 #if defined(__WI_LIBCPP_HAS_NO_RVALUE_REFERENCES)
               && !(!is_function<_T1>::value && !is_reference<_T1>::value && is_reference<_T2>::value &&
                    (!is_const<typename remove_reference<_T2>::type>::value || is_volatile<typename remove_reference<_T2>::type>::value) &&
@@ -1567,37 +1576,61 @@ struct __is_convertible
           >{};
 
 template <class _T1, class _T2>
-struct __is_convertible<_T1, _T2, 0, 1> : public false_type{};
-template <class _T1, class _T2>
-struct __is_convertible<_T1, _T2, 1, 1> : public false_type{};
-template <class _T1, class _T2>
-struct __is_convertible<_T1, _T2, 2, 1> : public false_type{};
-template <class _T1, class _T2>
-struct __is_convertible<_T1, _T2, 3, 1> : public false_type{};
-
-template <class _T1, class _T2>
-struct __is_convertible<_T1, _T2, 0, 2> : public false_type{};
-template <class _T1, class _T2>
-struct __is_convertible<_T1, _T2, 1, 2> : public false_type{};
-template <class _T1, class _T2>
-struct __is_convertible<_T1, _T2, 2, 2> : public false_type{};
-template <class _T1, class _T2>
-struct __is_convertible<_T1, _T2, 3, 2> : public false_type{};
-
-template <class _T1, class _T2>
-struct __is_convertible<_T1, _T2, 0, 3> : public false_type{};
-template <class _T1, class _T2>
-struct __is_convertible<_T1, _T2, 1, 3> : public false_type{};
-template <class _T1, class _T2>
-struct __is_convertible<_T1, _T2, 2, 3> : public false_type{};
-template <class _T1, class _T2>
-struct __is_convertible<_T1, _T2, 3, 3> : public true_type{};
-
-template <class _T1, class _T2>
-struct __WI_LIBCPP_TEMPLATE_VIS is_convertible : public __is_convertible<_T1, _T2>
+struct wi_is_convertible<_T1, _T2, 0, 1> : public false_type
 {
-    static const size_t __complete_check1 = __is_convertible_check<_T1>::__v;
-    static const size_t __complete_check2 = __is_convertible_check<_T2>::__v;
+};
+template <class _T1, class _T2>
+struct wi_is_convertible<_T1, _T2, 1, 1> : public false_type
+{
+};
+template <class _T1, class _T2>
+struct wi_is_convertible<_T1, _T2, 2, 1> : public false_type
+{
+};
+template <class _T1, class _T2>
+struct wi_is_convertible<_T1, _T2, 3, 1> : public false_type
+{
+};
+
+template <class _T1, class _T2>
+struct wi_is_convertible<_T1, _T2, 0, 2> : public false_type
+{
+};
+template <class _T1, class _T2>
+struct wi_is_convertible<_T1, _T2, 1, 2> : public false_type
+{
+};
+template <class _T1, class _T2>
+struct wi_is_convertible<_T1, _T2, 2, 2> : public false_type
+{
+};
+template <class _T1, class _T2>
+struct wi_is_convertible<_T1, _T2, 3, 2> : public false_type
+{
+};
+
+template <class _T1, class _T2>
+struct wi_is_convertible<_T1, _T2, 0, 3> : public false_type
+{
+};
+template <class _T1, class _T2>
+struct wi_is_convertible<_T1, _T2, 1, 3> : public false_type
+{
+};
+template <class _T1, class _T2>
+struct wi_is_convertible<_T1, _T2, 2, 3> : public false_type
+{
+};
+template <class _T1, class _T2>
+struct wi_is_convertible<_T1, _T2, 3, 3> : public true_type
+{
+};
+
+template <class _T1, class _T2>
+struct __WI_LIBCPP_TEMPLATE_VIS is_convertible : public wi_is_convertible<_T1, _T2>
+{
+    static const size_t __complete_check1 = wi_is_convertible_check<_T1>::__v;
+    static const size_t __complete_check2 = wi_is_convertible_check<_T2>::__v;
 };
 
 #endif // __WI_HAS_FEATURE_IS_CONVERTIBLE_TO

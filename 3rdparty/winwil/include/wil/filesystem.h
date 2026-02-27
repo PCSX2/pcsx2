@@ -977,7 +977,21 @@ namespace details
     {
         *result = nullptr;
 
-        wistd::unique_ptr<char[]> resultHolder(new (std::nothrow) char[allocationSize]);
+        // NOTE: We need to use '::operator new' here because we return as 'unique_ptr<T>' instead of 'unique_ptr<T[]>'
+        // and 'delete' is incompatible with 'new[]' (say, if we allocate an array of bytes with 'char[]'). Note that it
+        // _is_ valid to allocate with '::operator new' and deallocate with 'delete ptr' so long as the type of 'ptr'
+        // does not have class-specific allocation functions and 'ptr' points to an object of the specified type.
+
+        // default_delete does not handle pointer-to-void
+        struct void_deleter
+        {
+            void operator()(void* ptr) WI_NOEXCEPT
+            {
+                ::operator delete(ptr);
+            }
+        };
+
+        wistd::unique_ptr<void, void_deleter> resultHolder(::operator new(allocationSize, std::nothrow));
         RETURN_IF_NULL_ALLOC(resultHolder);
 
         for (;;)
@@ -993,7 +1007,7 @@ namespace details
                 if (lastError == ERROR_MORE_DATA)
                 {
                     allocationSize *= 2;
-                    resultHolder.reset(new (std::nothrow) char[allocationSize]);
+                    resultHolder.reset(::operator new(allocationSize, std::nothrow));
                     RETURN_IF_NULL_ALLOC(resultHolder);
                 }
                 else if (lastError == ERROR_NO_MORE_FILES) // for folder enumeration cases
@@ -1028,6 +1042,11 @@ RETURN_IF_FAILED(GetFileInfoNoThrow<FileNameInfo>(fileHandle, fileNameInfo));
 template <FILE_INFO_BY_HANDLE_CLASS infoClass, typename wistd::enable_if<!details::MapInfoClassToInfoStruct<infoClass>::isFixed, int>::type = 0>
 HRESULT GetFileInfoNoThrow(HANDLE fileHandle, wistd::unique_ptr<typename details::MapInfoClassToInfoStruct<infoClass>::type>& result) WI_NOEXCEPT
 {
+#ifdef __STDCPP_DEFAULT_NEW_ALIGNMENT__
+    static_assert(
+        __STDCPP_DEFAULT_NEW_ALIGNMENT__ >= alignof(typename details::MapInfoClassToInfoStruct<infoClass>::type),
+        "Memory allocated by 'details::GetFileInfo' may not be aligned correctly");
+#endif
     void* rawResult;
     HRESULT hr = details::GetFileInfo(
         fileHandle,
