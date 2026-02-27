@@ -279,6 +279,7 @@ protected:
 public:
 	GSDeviceOGL();
 	virtual ~GSDeviceOGL();
+	static std::vector<GSAdapterInfo> GetAdapterInfo();
 
 	__fi static GSDeviceOGL* GetInstance() { return static_cast<GSDeviceOGL*>(g_gs_device.get()); }
 
