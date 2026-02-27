@@ -37,8 +37,19 @@
 	#define XBYAK_GNUC_PREREQ(major, minor) 0
 #endif
 
+// User defined (must define all 3)
+#if defined(XBYAK_STD_UNORDERED_SET) || defined(XBYAK_STD_UNORDERED_MAP) || defined(XBYAK_STD_UNORDERED_MULTIMAP)
+	#ifndef XBYAK_STD_UNORDERED_SET
+		#error "Define XBYAK_STD_UNORDERED_SET"
+	#endif
+	#ifndef XBYAK_STD_UNORDERED_MAP
+		#error "Define XBYAK_STD_UNORDERED_MAP"
+	#endif
+	#ifndef XBYAK_STD_UNORDERED_MULTIMAP
+		#error "Define XBYAK_STD_UNORDERED_MULTIMAP"
+	#endif
 // This covers -std=(gnu|c)++(0x|11|1y), -stdlib=libc++, and modern Microsoft.
-#if ((defined(_MSC_VER) && (_MSC_VER >= 1600)) || defined(_LIBCPP_VERSION) ||\
+#elif ((defined(_MSC_VER) && (_MSC_VER >= 1600)) || defined(_LIBCPP_VERSION) ||\
 	 			 ((__cplusplus >= 201103) || defined(__GXX_EXPERIMENTAL_CXX0X__)))
 	#include <unordered_set>
 	#define XBYAK_STD_UNORDERED_SET std::unordered_set
@@ -163,7 +174,7 @@ namespace Xbyak {
 
 enum {
 	DEFAULT_MAX_CODE_SIZE = 4096,
-	VERSION = 0x7300 /* 0xABCD = A.BC(.D) */
+	VERSION = 0x7352 /* 0xABCD = A.BC(.D) */
 };
 
 #ifndef MIE_INTEGER_TYPE_DEFINED
@@ -242,6 +253,8 @@ enum {
 	ERR_INVALID_REG_IDX,
 	ERR_BAD_ENCODING_MODE,
 	ERR_CANT_USE_ABCDH,
+	ERR_CANT_INIT_CPUTOPOLOGY,
+	ERR_INVALID_CPUMASK_INDEX,
 	ERR_INTERNAL // Put it at last.
 };
 
@@ -302,6 +315,8 @@ inline const char *ConvertErrorToString(int err)
 		"invalid reg index",
 		"bad encoding mode",
 		"can't use [abcd]h with rex",
+		"can't init CpuTopology",
+		"invalid cpumask index",
 		"internal error"
 	};
 	assert(ERR_INTERNAL + 1 == sizeof(errTbl) / sizeof(*errTbl));
@@ -518,7 +533,13 @@ public:
 			}
 		}
 #endif
-		void *p = mmap(NULL, size, PROT_READ | PROT_WRITE, mode, fd, 0);
+		int prot = PROT_READ | PROT_WRITE;
+#ifdef PROT_MPROTECT
+		// Some NetBSD systems have this protection turned on by default
+		// https://man.netbsd.org/mprotect.2
+		prot |= PROT_MPROTECT(PROT_READ | PROT_WRITE | PROT_EXEC);
+#endif
+		void *p = mmap(NULL, size, prot, mode, fd, 0);
 		if (p == MAP_FAILED) {
 			if (fd != -1) close(fd);
 			XBYAK_THROW_RET(ERR_CANT_ALLOC, 0)
@@ -984,14 +1005,14 @@ public:
 #else
 	enum { i32e = 32 };
 #endif
-	XBYAK_CONSTEXPR RegExp() : scale_(0), disp_(0), label_(0), rip_(false), setLabel_(false) { }
-	XBYAK_CONSTEXPR RegExp(size_t disp) : scale_(0), disp_(disp), label_(0), rip_(false), setLabel_(false) { }
+	XBYAK_CONSTEXPR RegExp() : scale_(0), disp_(0), label_(0), rip_(false), asPtr_(false) { }
+	XBYAK_CONSTEXPR RegExp(size_t disp) : scale_(0), disp_(disp), label_(0), rip_(false), asPtr_(false) { }
 	XBYAK_CONSTEXPR RegExp(const Reg& r, int scale = 1)
 		: scale_(scale)
 		, disp_(0)
 		, label_(0)
 		, rip_(false)
-		, setLabel_(false)
+		, asPtr_(false)
 	{
 		if (!r.isREG(i32e) && !r.is(Reg::XMM|Reg::YMM|Reg::ZMM|Reg::TMM)) XBYAK_THROW(ERR_BAD_SIZE_OF_REGISTER)
 		if (scale == 0) return;
@@ -1004,21 +1025,22 @@ public:
 	}
 	RegExp(Label& label);
 
-	RegExp(const void *addr)
-		: scale_(1)
+	// can't use constexpr to const void *
+	explicit RegExp(const void *addr)
+		: scale_(0)
 		, disp_(size_t(addr))
 		, label_(0)
 		, rip_(false)
-		, setLabel_(true)
+		, asPtr_(true)
 	{
 	}
 #ifdef XBYAK64
-	RegExp(const RegRip& /*rip*/)
+	XBYAK_CONSTEXPR RegExp(const RegRip& /*rip*/)
 		: scale_(0)
 		, disp_(0)
 		, label_(0)
 		, rip_(true)
-		, setLabel_(false)
+		, asPtr_(false)
 	{
 	}
 #endif
@@ -1052,6 +1074,7 @@ public:
 		}
 	}
 	friend RegExp operator+(const RegExp& a, const RegExp& b);
+	friend RegExp operator+(const RegExp& e, size_t disp);
 	friend RegExp operator-(const RegExp& e, size_t disp);
 private:
 	/*
@@ -1064,7 +1087,7 @@ private:
 	size_t disp_; // absolute address
 	Label *label_;
 	bool rip_;
-	bool setLabel_; // disp_ contains the address of label
+	bool asPtr_; // disp_ contains a pointer
 };
 
 inline RegExp operator+(const RegExp& a, const RegExp& b)
@@ -1073,10 +1096,10 @@ inline RegExp operator+(const RegExp& a, const RegExp& b)
 	if (a.label_ && b.label_) XBYAK_THROW_RET(ERR_BAD_ADDRESSING, RegExp())
 	if (b.rip_) XBYAK_THROW_RET(ERR_BAD_ADDRESSING, RegExp())
 	if (a.rip_ && !b.isOnlyDisp()) XBYAK_THROW_RET(ERR_BAD_ADDRESSING, RegExp())
-	if (a.setLabel_ && b.setLabel_) XBYAK_THROW_RET(ERR_BAD_ADDRESSING, RegExp())
+	if (a.asPtr_ && b.asPtr_) XBYAK_THROW_RET(ERR_BAD_ADDRESSING, RegExp())
 	RegExp ret = a;
 	if (ret.label_ == 0) ret.label_ = b.label_;
-	if (ret.setLabel_ == 0) ret.setLabel_ = b.setLabel_;
+	if (ret.asPtr_ == 0) ret.asPtr_ = b.asPtr_;
 	if (!ret.index_.getBit()) { ret.index_ = b.index_; ret.scale_ = b.scale_; }
 	if (b.base_.getBit()) {
 		if (ret.base_.getBit()) {
@@ -1101,8 +1124,19 @@ inline RegExp operator*(int scale, const Reg& r)
 {
 	return r * scale;
 }
-// backward compatibility for eax+0
-inline RegExp operator+(const RegExp& a, size_t b) { return a + RegExp(b); }
+
+// backward compatibility for eax+&x (pointer address)
+inline RegExp operator+(const RegExp& a, const void* b) { return a + RegExp(b); }
+
+// overload for integer literals (e.g. eax+0) to avoid ambiguity with the void* overload
+inline RegExp operator+(const RegExp& e, int disp) { return e + size_t(disp); }
+
+inline RegExp operator+(const RegExp& e, size_t disp)
+{
+	RegExp ret = e;
+	ret.disp_ += disp;
+	return ret;
+}
 
 inline RegExp operator-(const RegExp& e, size_t disp)
 {
@@ -1351,11 +1385,15 @@ public:
 
 class Address : public Operand {
 public:
+	XBYAK_CONSTEXPR Address()
+		: Operand(0, MEM, 0), e_(), label_(NULL), mode_(inner::M_ModRM), immSize(0),
+		  disp8N(0), permitVsib(false), broadcast_(false), optimize_(true) { }
 	XBYAK_CONSTEXPR Address(uint32_t sizeBit, bool broadcast, const RegExp& e)
-		: Operand(0, MEM, sizeBit), e_(e), label_(e.label_), mode_(), immSize(0), disp8N(0), permitVsib(false), broadcast_(broadcast), optimize_(true)
+		: Operand(0, MEM, sizeBit), e_(e), label_(e.label_), mode_(), immSize(0),
+		  disp8N(0), permitVsib(false), broadcast_(broadcast), optimize_(true)
 	{
 		if (e.rip_) {
-			mode_ = (e.label_ || e.setLabel_) ? inner::M_ripAddr : inner::M_rip;
+			mode_ = (e.label_ || e.asPtr_) ? inner::M_ripAddr : inner::M_rip;
 		} else {
 #ifdef XBYAK64
 			uint64_t disp = e.getDisp();
@@ -1435,6 +1473,10 @@ public:
 	{
 		return Address(bit_, broadcast_, e);
 	}
+	Address operator[](const void *addr) const
+	{
+		return operator[](RegExp(addr));
+	}
 };
 
 struct JmpLabel {
@@ -1483,7 +1525,7 @@ inline RegExp::RegExp(Label& label)
 	, disp_(0)
 	, label_(0)
 	, rip_(false)
-	, setLabel_(true)
+	, asPtr_(true)
 {
 	const uint8_t *addr = label.getAddress();
 	if (addr) {
@@ -2253,6 +2295,7 @@ private:
 				size_t disp = addr.getDisp();
 				if (addr.getMode() == inner::M_ripAddr) {
 					if (isAutoGrow()) XBYAK_THROW(ERR_INVALID_RIP_IN_AUTO_GROW)
+					// compute the relative offset to the pointer address
 					disp -= (size_t)getCurr() + 4 + addr.immSize;
 				}
 				dd(inner::VerifyInInt32(disp));
@@ -3353,11 +3396,14 @@ public:
 		opAVX10ZeroExt(op1, op2, typeTbl, codeTbl, enc, 16|32|64);
 	}
 	/*
-		use single byte nop if useMultiByteNop = false
+		useMultiByteNop
+		= 0: use only single byte nop
+		= 1: recommended multi-byte
+		= 2: better for newer CPUs
 	*/
-	void nop(size_t size = 1, bool useMultiByteNop = true)
+	void nop(size_t size = 1, int useMultiByteNop = 2)
 	{
-		if (!useMultiByteNop) {
+		if (useMultiByteNop == 0) {
 			for (size_t i = 0; i < size; i++) {
 				db(0x90);
 			}
@@ -3368,8 +3414,9 @@ public:
 			recommended multi-byte sequence of NOP instruction
 			AMD and Intel seem to agree on the same sequences for up to 9 bytes:
 			https://support.amd.com/TechDocs/55723_SOG_Fam_17h_Processors_3.00.pdf
+			10~15 byte nop in Software Optimization Guide for the AMD Zen4 Microarchitecture No. 57647
 		*/
-		static const uint8_t nopTbl[9][9] = {
+		static const uint8_t nopTbl[][15] = {
 			{0x90},
 			{0x66, 0x90},
 			{0x0F, 0x1F, 0x00},
@@ -3378,9 +3425,15 @@ public:
 			{0x66, 0x0F, 0x1F, 0x44, 0x00, 0x00},
 			{0x0F, 0x1F, 0x80, 0x00, 0x00, 0x00, 0x00},
 			{0x0F, 0x1F, 0x84, 0x00, 0x00, 0x00, 0x00, 0x00},
-			{0x66, 0x0F, 0x1F, 0x84, 0x00, 0x00, 0x00, 0x00, 0x00},
+			{0x66, 0x0F, 0x1F, 0x84, 0x00, 0x00, 0x00, 0x00, 0x00}, // 9
+			{0x66, 0x66, 0x0F, 0x1F, 0x84, 0x00, 0x00, 0x00, 0x00, 0x00},
+			{0x66, 0x66, 0x66, 0x0F, 0x1F, 0x84, 0x00, 0x00, 0x00, 0x00, 0x00}, // 11
+			{0x66, 0x66, 0x66, 0x66, 0x0F, 0x1F, 0x84, 0x00, 0x00, 0x00, 0x00, 0x00},
+			{0x66, 0x66, 0x66, 0x66, 0x66, 0x0F, 0x1F, 0x84, 0x00, 0x00, 0x00, 0x00, 0x00},
+			{0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x0F, 0x1F, 0x84, 0x00, 0x00, 0x00, 0x00, 0x00},
+			{0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x0F, 0x1F, 0x84, 0x00, 0x00, 0x00, 0x00, 0x00},
 		};
-		const size_t n = sizeof(nopTbl) / sizeof(nopTbl[0]);
+		const size_t n = useMultiByteNop == 2 ? sizeof(nopTbl) / sizeof(nopTbl[0]) : 9;
 		while (size > 0) {
 			size_t len = (std::min)(n, size);
 			const uint8_t *seq = nopTbl[len - 1];
@@ -3391,9 +3444,9 @@ public:
 #ifndef XBYAK_DONT_READ_LIST
 #include "xbyak_mnemonic.h"
 	/*
-		use single byte nop if useMultiByteNop = false
+		use single byte nop if useMultiByteNop = 0
 	*/
-	void align(size_t x = 16, bool useMultiByteNop = true)
+	void align(size_t x = 16, int useMultiByteNop = 2)
 	{
 		if (x == 1) return;
 		if (x < 1 || (x & (x - 1))) XBYAK_THROW(ERR_BAD_ALIGN)
