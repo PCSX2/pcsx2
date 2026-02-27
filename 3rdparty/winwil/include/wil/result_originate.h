@@ -121,11 +121,13 @@ namespace details
 /// @endcond
 } // namespace wil
 
+#ifndef RESULT_SUPPRESS_STATIC_INITIALIZERS
 // Automatically call RoOriginateError upon error origination by including this file
 WI_HEADER_INITIALIZATION_FUNCTION(ResultStowedExceptionInitialize, [] {
     ::wil::SetOriginateErrorCallback(::wil::details::RaiseRoOriginateOnWilExceptions);
     ::wil::SetFailfastWithContextCallback(::wil::details::FailfastWithContextCallback);
     return 1;
 })
+#endif // RESULT_SUPPRESS_STATIC_INITIALIZERS
 
 #endif // __WIL_RESULT_ORIGINATE_INCLUDED

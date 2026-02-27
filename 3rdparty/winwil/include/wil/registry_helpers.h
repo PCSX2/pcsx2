@@ -16,7 +16,7 @@
 #include "common.h"
 
 #if WIL_USE_STL
-#include <functional>
+#include <algorithm>
 #include <iterator>
 #include <string>
 #include <vector>
@@ -27,7 +27,11 @@
 #endif
 
 #include <stdint.h>
+#ifdef __MINGW32__
+#include <windows.h>
+#else
 #include <Windows.h>
+#endif
 #include "resource.h"
 
 #ifdef _KERNEL_MODE
@@ -66,6 +70,12 @@ namespace reg
 
         // Open key for reading and writing. Equivalent to KEY_ALL_ACCESS.
         readwrite,
+
+        // Open key for reading from 64-bit registry.
+        read64,
+
+        // Open key for reading and writing from 64-bit registry. Equivalent to KEY_ALL_ACCESS.
+        readwrite64,
     };
 
     /// @cond
@@ -101,6 +111,10 @@ namespace reg
                 return KEY_READ;
             case key_access::readwrite:
                 return KEY_ALL_ACCESS;
+            case key_access::read64:
+                return KEY_READ | KEY_WOW64_64KEY;
+            case key_access::readwrite64:
+                return KEY_ALL_ACCESS | KEY_WOW64_64KEY;
             }
             FAIL_FAST();
             RESULT_NORETURN_RESULT(0);
@@ -447,6 +461,7 @@ namespace reg
                 }
                 // including the last null buffer space in the returned buffer-size-bytes
                 // as the registry API we call guarantees null termination
+                // NOLINTNEXTLINE(bugprone-misplaced-widening-cast): size_t and DWORD are effectively the same on x86
                 return static_cast<DWORD>((::wcslen(value) + 1) * sizeof(wchar_t));
             }
 
@@ -537,6 +552,7 @@ namespace reg
             {
                 // including the last null buffer space in the returned buffer-size-bytes
                 // as the registry API we call guarantees null termination
+                // NOLINTNEXTLINE(bugprone-misplaced-widening-cast): size_t and DWORD are effectively the same on x86
                 return static_cast<DWORD>((string.size() + 1) * sizeof(wchar_t));
             }
 
@@ -573,6 +589,8 @@ namespace reg
             {
                 return true;
             }
+
+            // NOLINTNEXTLINE(bugprone-exception-escape): Only reduces the size
             inline size_t trim_buffer(::std::wstring& buffer) WI_NOEXCEPT
             {
                 // remove any embedded null characters
@@ -891,16 +909,16 @@ namespace reg
 
             // constexpr expressions to determining the get* and set* registry value types
             // for all supported types T to read/write values
-            template <typename T>
+            template <typename T = void>
             DWORD get_value_type() WI_NOEXCEPT
             {
-                static_assert(sizeof(T) != sizeof(T), "Unsupported type for get_value_type");
+                static_assert(!wistd::is_same_v<T, T>, "Unsupported type for get_value_type");
             }
 
-            template <typename T>
+            template <typename T = void>
             DWORD set_value_type() WI_NOEXCEPT
             {
-                static_assert(sizeof(T) != sizeof(T), "Unsupported type for set_value_type");
+                static_assert(!wistd::is_same_v<T, T>, "Unsupported type for set_value_type");
             }
 
             template <>
@@ -1077,7 +1095,7 @@ namespace reg
             reg_view_t& operator=(reg_view_t&&) = delete;
 
             typename err_policy::result open_key(
-                _In_opt_ _In_opt_ PCWSTR subKey, _Out_ HKEY* hkey, ::wil::reg::key_access access = ::wil::reg::key_access::read) const
+                _In_opt_ PCWSTR subKey, _Out_ HKEY* hkey, ::wil::reg::key_access access = ::wil::reg::key_access::read) const
             {
                 constexpr DWORD zero_options{0};
                 return err_policy::HResult(
@@ -1124,7 +1142,7 @@ namespace reg
             typename err_policy::result get_value_char_array(
                 _In_opt_ PCWSTR subkey, _In_opt_ PCWSTR value_name, WCHAR (&return_value)[Length], DWORD type, _Out_opt_ DwordType* requiredBytes) const
             {
-                constexpr DwordType zero_value{0ul};
+                constexpr DwordType zero_value{0UL};
                 ::wil::assign_to_opt_param(requiredBytes, zero_value);
                 DWORD data_size_bytes{Length * sizeof(WCHAR)};
                 const auto hr = HRESULT_FROM_WIN32(::RegGetValueW(
@@ -1306,18 +1324,18 @@ namespace reg
         constexpr size_t iterator_max_valuename_length = 16383;
 
         // function overloads to allow *_enumerator objects to be constructed from all 3 types of HKEY representatives
-        inline HKEY get_hkey(HKEY h) WI_NOEXCEPT
+        inline HKEY get_hkey(HKEY key) WI_NOEXCEPT
         {
-            return h;
+            return key;
         }
-        inline HKEY get_hkey(const ::wil::unique_hkey& h) WI_NOEXCEPT
+        inline HKEY get_hkey(const ::wil::unique_hkey& key) WI_NOEXCEPT
         {
-            return h.get();
+            return key.get();
         }
 #if defined(__WIL_WINREG_STL)
-        inline HKEY get_hkey(const ::wil::shared_hkey& h) WI_NOEXCEPT
+        inline HKEY get_hkey(const ::wil::shared_hkey& key) WI_NOEXCEPT
         {
-            return h.get();
+            return key.get();
         }
 #endif // #if defined(__WIL_WINREG_STL)
 
@@ -1327,7 +1345,7 @@ namespace reg
         // reference these overload functions
         inline void clear_name(::std::wstring& name, size_t) WI_NOEXCEPT
         {
-            name.assign(name.size(), L'\0');
+            std::fill(name.begin(), name.end(), L'\0');
         }
         inline ::std::wstring copy_name(const ::std::wstring& str, size_t length) WI_NOEXCEPT
         {
@@ -1442,7 +1460,7 @@ namespace reg
     class key_iterator_data
     {
     public:
-        T name{};
+        T name{}; // NOLINT(misc-non-private-member-variables-in-classes): Part of original interface & cannot change
 
         key_iterator_data(HKEY key = nullptr) WI_NOEXCEPT : m_hkey{key}
         {
@@ -1600,8 +1618,8 @@ namespace reg
     class value_iterator_data
     {
     public:
-        T name{};
-        DWORD type = REG_NONE;
+        T name{};              // NOLINT(misc-non-private-member-variables-in-classes): Part of original interface & cannot change
+        DWORD type = REG_NONE; // NOLINT(misc-non-private-member-variables-in-classes): Part of original interface & cannot change
 
         value_iterator_data(HKEY key = nullptr) WI_NOEXCEPT : m_hkey{key}
         {
@@ -1711,10 +1729,8 @@ namespace reg
 
                     // resize and try again - growing exponentially up to the max
                     string_length *= 2;
-                    if (string_length > ::wil::reg::reg_iterator_details::iterator_max_valuename_length + 1)
-                    {
-                        string_length = ::wil::reg::reg_iterator_details::iterator_max_valuename_length + 1;
-                    }
+                    string_length = (wistd::min)(
+                        string_length, static_cast<DWORD>(::wil::reg::reg_iterator_details::iterator_max_valuename_length + 1));
                     continue;
                 }
 
@@ -1817,16 +1833,8 @@ namespace reg
         iterator_t& operator+=(size_t offset)
         {
             uint32_t newIndex = m_data.m_index + static_cast<uint32_t>(offset);
-            if (newIndex < m_data.m_index)
-            {
-                // fail on integer overflow
-                THROW_HR(E_INVALIDARG);
-            }
-            if (newIndex == ::wil::reg::reg_iterator_details::iterator_end_offset)
-            {
-                // fail if this creates an end iterator
-                THROW_HR(E_INVALIDARG);
-            }
+            THROW_HR_IF(E_INVALIDARG, newIndex < m_data.m_index); // fail on integer overflow
+            THROW_HR_IF(E_INVALIDARG, newIndex == ::wil::reg::reg_iterator_details::iterator_end_offset); // fail if this creates an end iterator
 
             // iterate by the integer offset
             for (size_t count = 0; count < offset; ++count)
@@ -1880,14 +1888,9 @@ namespace reg
         HRESULT move_next() WI_NOEXCEPT
         {
             const auto newIndex = m_data.m_index + 1;
-            if (newIndex < m_data.m_index)
+            if ((newIndex < m_data.m_index) ||                                       // fail on integer overflow
+                (newIndex == ::wil::reg::reg_iterator_details::iterator_end_offset)) // fail if this creates an end iterator
             {
-                // fail on integer overflow
-                m_last_error = E_INVALIDARG;
-            }
-            else if (newIndex == ::wil::reg::reg_iterator_details::iterator_end_offset)
-            {
-                // fail if this creates an end iterator
                 m_last_error = E_INVALIDARG;
             }
             else

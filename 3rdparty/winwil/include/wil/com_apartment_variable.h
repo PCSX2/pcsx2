@@ -149,6 +149,7 @@ namespace details
     template <apartment_variable_leak_action leak_action = apartment_variable_leak_action::fail_fast, typename test_hook = apartment_variable_platform>
     struct apartment_variable_base
     {
+    protected:
         inline static winrt::slim_mutex s_lock;
 
         struct apartment_variable_storage
@@ -169,6 +170,50 @@ namespace details
         // Apartment id -> variables storage.
         inline static wil::object_without_destructor_on_shutdown<std::unordered_map<unsigned long long, apartment_variable_storage>> s_apartmentStorage;
 
+        // NOTE: Requires 's_lock' to be held
+        static apartment_variable_storage* get_current_apartment_variable_storage()
+        {
+            auto storage = s_apartmentStorage.get().find(test_hook::GetApartmentId());
+            if (storage != s_apartmentStorage.get().end())
+            {
+                return &storage->second;
+            }
+            return nullptr;
+        }
+
+        // NOTE: Requires 's_lock' to be held
+        apartment_variable_storage* ensure_current_apartment_variables()
+        {
+            auto variables = get_current_apartment_variable_storage();
+            if (variables)
+            {
+                return variables;
+            }
+
+            struct ApartmentObserver : public winrt::implements<ApartmentObserver, IApartmentShutdown>
+            {
+                void STDMETHODCALLTYPE OnUninitialize(unsigned long long apartmentId) noexcept override
+                {
+                    // This code runs at apartment rundown so be careful to avoid deadlocks by
+                    // extracting the variables under the lock then release them outside.
+                    auto variables = [apartmentId]() {
+                        auto lock = winrt::slim_lock_guard(s_lock);
+                        return s_apartmentStorage.get().extract(apartmentId);
+                    }();
+                    WI_ASSERT(variables.key() == apartmentId);
+                    // The system implicitly releases the shutdown observer
+                    // after invoking the callback and does not allow calling unregister
+                    // in the callback. So release the reference to the registration.
+                    variables.mapped().cookie.release();
+                }
+            };
+            auto shutdownRegistration = test_hook::RegisterForApartmentShutdown(winrt::make<ApartmentObserver>().get());
+            return &s_apartmentStorage.get()
+                        .insert({test_hook::GetApartmentId(), apartment_variable_storage(std::move(shutdownRegistration))})
+                        .first->second;
+        }
+
+    public:
         constexpr apartment_variable_base() = default;
         ~apartment_variable_base()
         {
@@ -224,47 +269,6 @@ namespace details
             }
 
             return *any;
-        }
-
-        static apartment_variable_storage* get_current_apartment_variable_storage()
-        {
-            auto storage = s_apartmentStorage.get().find(test_hook::GetApartmentId());
-            if (storage != s_apartmentStorage.get().end())
-            {
-                return &storage->second;
-            }
-            return nullptr;
-        }
-
-        apartment_variable_storage* ensure_current_apartment_variables()
-        {
-            auto variables = get_current_apartment_variable_storage();
-            if (variables)
-            {
-                return variables;
-            }
-
-            struct ApartmentObserver : public winrt::implements<ApartmentObserver, IApartmentShutdown>
-            {
-                void STDMETHODCALLTYPE OnUninitialize(unsigned long long apartmentId) noexcept override
-                {
-                    // This code runs at apartment rundown so be careful to avoid deadlocks by
-                    // extracting the variables under the lock then release them outside.
-                    auto variables = [apartmentId]() {
-                        auto lock = winrt::slim_lock_guard(s_lock);
-                        return s_apartmentStorage.get().extract(apartmentId);
-                    }();
-                    WI_ASSERT(variables.key() == apartmentId);
-                    // The system implicitly releases the shutdown observer
-                    // after invoking the callback and does not allow calling unregister
-                    // in the callback. So release the reference to the registration.
-                    variables.mapped().cookie.release();
-                }
-            };
-            auto shutdownRegistration = test_hook::RegisterForApartmentShutdown(winrt::make<ApartmentObserver>().get());
-            return &s_apartmentStorage.get()
-                        .insert({test_hook::GetApartmentId(), apartment_variable_storage(std::move(shutdownRegistration))})
-                        .first->second;
         }
 
         // get current value or custom-construct one on demand

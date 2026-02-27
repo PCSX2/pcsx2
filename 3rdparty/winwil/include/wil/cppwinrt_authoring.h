@@ -111,6 +111,89 @@ struct single_threaded_rw_property : single_threaded_property<T>
 
 #endif // __WIL_CPPWINRT_AUTHORING_PROPERTIES_INCLUDED
 
+#if (!defined(__WIL_CPPWINRT_AUTHORING_INCLUDED_ICLASSFACTORY) && defined(__IClassFactory_INTERFACE_DEFINED__)) || \
+    defined(WIL_DOXYGEN) // class factory
+/// @cond
+#define __WIL_CPPWINRT_AUTHORING_INCLUDED_ICLASSFACTORY
+/// @endcond
+
+template <typename T, typename... Rest>
+struct class_factory : winrt::implements<class_factory<T, Rest...>, IClassFactory, winrt::no_weak_ref, Rest...>
+{
+    HRESULT __stdcall CreateInstance(IUnknown* outer, GUID const& iid, void** result) noexcept final
+    try
+    {
+        *result = nullptr;
+
+        if (!outer)
+        {
+            return winrt::make_self<T>().as(iid, result);
+        }
+        else
+        {
+            return CLASS_E_NOAGGREGATION;
+        }
+    }
+    CATCH_RETURN()
+
+    HRESULT __stdcall LockServer(BOOL lock) noexcept final
+    try
+    {
+        if (lock)
+        {
+            ++winrt::get_module_lock();
+        }
+        else
+        {
+            --winrt::get_module_lock();
+        }
+
+        return S_OK;
+    }
+    CATCH_RETURN()
+};
+
+#endif // !defined(__WIL_CPPWINRT_AUTHORING_INCLUDED_ICLASSFACTORY) && defined(__IClassFactory_INTERFACE_DEFINED__)
+
+#if (!defined(__WIL_CPPWINRT_AUTHORING_INCLUDED_COM_SERVER) && defined(__WIL_CPPWINRT_AUTHORING_INCLUDED_ICLASSFACTORY) && defined(__WIL__COMBASEAPI_H_)) || \
+    defined(WIL_DOXYGEN) // COM server
+/// @cond
+#define __WIL_CPPWINRT_AUTHORING_INCLUDED_COM_SERVER
+/// @endcond
+
+template <typename T>
+WI_NODISCARD_REASON("The class is unregistered when the returned value is destructed")
+unique_com_class_object_cookie
+    register_com_server(GUID const& guid, DWORD context = CLSCTX_LOCAL_SERVER, DWORD flags = REGCLS_MULTIPLEUSE)
+{
+    unique_com_class_object_cookie registration;
+    winrt::check_hresult(CoRegisterClassObject(
+        guid, winrt::make<class_factory<T, winrt::no_module_lock>>().get(), context, flags, registration.put()));
+    return registration;
+}
+
+template <typename... Ts>
+WI_NODISCARD_REASON("The classes are unregistered when the returned value is destructed")
+std::vector<unique_com_class_object_cookie> register_com_server(
+    std::array<GUID, sizeof...(Ts)> const& guids, DWORD context = CLSCTX_LOCAL_SERVER, DWORD flags = REGCLS_MULTIPLEUSE)
+{
+    std::vector<wil::unique_com_class_object_cookie> registrations;
+    registrations.reserve(sizeof...(Ts));
+
+    std::size_t i = 0;
+    (registrations.push_back(wil::register_com_server<Ts>(guids[i++], context, flags | REGCLS_SUSPENDED)), ...);
+
+    // allow the user to keep class objects suspended if they've explicitly passed REGCLS_SUSPENDED.
+    if (!WI_IsFlagSet(flags, REGCLS_SUSPENDED))
+    {
+        winrt::check_hresult(CoResumeClassObjects());
+    }
+
+    return registrations;
+}
+
+#endif // (!defined(__WIL_CPPWINRT_AUTHORING_INCLUDED_COM_SERVER) && defined(__WIL_CPPWINRT_AUTHORING_INCLUDED_ICLASSFACTORY) && defined(__WIL__COMBASEAPI_H_))
+
 #if (!defined(__WIL_CPPWINRT_AUTHORING_INCLUDED_FOUNDATION) && defined(WINRT_Windows_Foundation_H)) || \
     defined(WIL_DOXYGEN) // WinRT / XAML helpers
 /// @cond

@@ -14,7 +14,11 @@
 #define __WIL_CPPWINRT_INCLUDED
 
 #include "common.h"
+#ifdef __MINGW32__
 #include <windows.h>
+#else
+#include <Windows.h>
+#endif
 #include <unknwn.h>
 #include <inspectable.h>
 #include <hstring.h>
@@ -31,7 +35,7 @@ namespace wil::details
 {
 // Since the C++/WinRT version macro is a string...
 // For example: "2.0.221104.6"
-inline constexpr int version_from_string(const char* versionString)
+constexpr int version_from_string(const char* versionString)
 {
     int result = 0;
     while ((*versionString >= '0') && (*versionString <= '9'))
@@ -43,12 +47,12 @@ inline constexpr int version_from_string(const char* versionString)
     return result;
 }
 
-inline constexpr int major_version_from_string(const char* versionString)
+constexpr int major_version_from_string(const char* versionString)
 {
     return version_from_string(versionString);
 }
 
-inline constexpr int minor_version_from_string(const char* versionString)
+constexpr int minor_version_from_string(const char* versionString)
 {
     int dotCount = 0;
     while ((*versionString != '\0'))
@@ -101,10 +105,12 @@ static_assert(::wil::details::major_version_from_string(CPPWINRT_VERSION) >= 2, 
 // In C++/WinRT 2.0 and beyond, this function pointer exists. In earlier versions it does not. It's much easier to avoid
 // linker errors than it is to SFINAE on variable existence, so we declare the variable here, but are careful not to
 // use it unless the version of C++/WinRT is high enough
+// NOLINTBEGIN(readability-redundant-declaration)
 extern std::int32_t(__stdcall* winrt_to_hresult_handler)(void*) noexcept;
 
 // The same is true with this function pointer as well, except that the version must be 2.X or higher.
 extern void(__stdcall* winrt_throw_hresult_handler)(uint32_t, char const*, char const*, void*, winrt::hresult const) noexcept;
+// NOLINTEND(readability-redundant-declaration)
 /// @endcond
 
 /// @cond
@@ -314,9 +320,9 @@ inline ::IInspectable* com_raw_ptr(const winrt::Windows::Foundation::IInspectabl
 template <typename T>
 T convert_from_abi(::IUnknown* from)
 {
-    T to{nullptr}; // `T` is a projected type.
-    winrt::check_hresult(from->QueryInterface(winrt::guid_of<T>(), winrt::put_abi(to)));
-    return to;
+    T result{nullptr}; // `T` is a projected type.
+    winrt::check_hresult(from->QueryInterface(winrt::guid_of<T>(), winrt::put_abi(result)));
+    return result;
 }
 
 // For obtaining an object from an interop method on the factory. Example:
@@ -333,9 +339,9 @@ auto capture_interop(HRESULT (__stdcall Interface::*method)(InterfaceArgs...), A
 // For obtaining an object from an interop method on an instance. Example:
 // winrt::UserActivitySession session = wil::capture_interop<winrt::UserActivitySession>(activity, &IUserActivityInterop::CreateSessionForWindow, hwnd);
 template <typename WinRTResult, typename Interface, typename... InterfaceArgs, typename... Args>
-auto capture_interop(winrt::Windows::Foundation::IUnknown const& o, HRESULT (__stdcall Interface::*method)(InterfaceArgs...), Args&&... args)
+auto capture_interop(winrt::Windows::Foundation::IUnknown const& obj, HRESULT (__stdcall Interface::*method)(InterfaceArgs...), Args&&... args)
 {
-    return winrt::capture<WinRTResult>(o.as<Interface>(), method, std::forward<Args>(args)...);
+    return winrt::capture<WinRTResult>(obj.as<Interface>(), method, std::forward<Args>(args)...);
 }
 
 /** Holds a reference to the host C++/WinRT module to prevent it from being unloaded.

@@ -328,7 +328,7 @@ struct result_holder
     result_holder(result_holder const&) = delete;
     void operator=(result_holder const&) = delete;
 
-    ~result_holder() noexcept(false)
+    ~result_holder() noexcept
     {
         if (restricted_error && g_pfnDestroyRestrictedErrorInformation)
         {
@@ -342,10 +342,9 @@ struct result_holder
             result.wrap.~result_wrapper();
             break;
         case result_status::error:
-            // Rethrow unobserved exception. Delete this line to
-            // discard unobserved exceptions.
-            if (result.error)
-                std::rethrow_exception(result.error);
+            // Discard unobserved exception. There is nowhere to report it,
+            // and abandonment might validly happen if an exception occurs
+            // before the owner of the task can await it.
             result.error.~exception_ptr();
         }
     }
@@ -532,11 +531,25 @@ struct task_promise : promise_base<T>
         this->emplace_value(wistd::forward<U>(value));
     }
 
+    // Workaround a bug in MSVC where it does not properly deduce the return type.
+    // Using a constraint is simpler and does not have the issue.
+#if _HAS_CXX20
+
+    void return_value(T const& value)
+        requires(!wistd::is_reference_v<T>)
+    {
+        this->emplace_value(value);
+    }
+
+#else
+
     template <typename Dummy = void>
     wistd::enable_if_t<!wistd::is_reference_v<T>, Dummy> return_value(T const& value)
     {
         this->emplace_value(value);
     }
+
+#endif
 };
 
 template <>
