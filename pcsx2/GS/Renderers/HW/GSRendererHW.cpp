@@ -7523,7 +7523,9 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	}
 
 	// DATE: selection of the algorithm. Must be done before blending because GL42 is not compatible with blending
+	const bool ate_first_pass = m_cached_ctx.TEST.DoFirstPass();
 	bool ate_second_pass = m_cached_ctx.TEST.DoSecondPass();
+	const bool ate_multi_pass = ate_first_pass && ate_second_pass;
 	if (DATE)
 	{
 		if (m_cached_ctx.TEST.DATM)
@@ -7561,7 +7563,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 			GL_PERF("DATE: Fast with FBA, all pixels will be >= 128");
 			DATE_one = !m_cached_ctx.TEST.DATM;
 		}
-		else if (m_conf.colormask.wa && !ate_second_pass && !(m_cached_ctx.FRAME.FBMSK & 0x80000000))
+		else if (m_conf.colormask.wa && !ate_multi_pass && !(m_cached_ctx.FRAME.FBMSK & 0x80000000))
 		{
 			// Performance note: check alpha range with GetAlphaMinMax()
 			// Note: all my dump are already above 120fps, but it seems to reduce GPU load
@@ -7796,12 +7798,11 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	// Depth test is always true so it can be executed in 2 passes (no order required) unlike color.
 	// The idea is to compute first the color which is independent of the alpha test. And then do a 2nd
 	// pass to handle the depth based on the alpha test.
-	const bool ate_first_pass = m_cached_ctx.TEST.DoFirstPass();
 	bool ate_RGBA_then_Z = false;
 	bool ate_RGB_then_Z = false;
-	GL_INS("HW: %sAlpha Test, ATST=%s, AFAIL=%s", (ate_first_pass && ate_second_pass) ? "Complex" : "",
+	GL_INS("HW: %sAlpha Test, ATST=%s, AFAIL=%s", ate_multi_pass ? "Complex" : "",
 		GSUtil::GetATSTName(m_cached_ctx.TEST.ATST), GSUtil::GetAFAILName(m_cached_ctx.TEST.AFAIL));
-	if (ate_first_pass && ate_second_pass)
+	if (ate_multi_pass)
 	{
 		const bool commutative_depth = (m_conf.depth.ztst == ZTST_GEQUAL && m_vt.m_eq.z) || (m_conf.depth.ztst == ZTST_ALWAYS) || !m_conf.depth.zwe;
 		const bool commutative_alpha = (m_context->ALPHA.C != 1) || !m_conf.colormask.wa; // when either Alpha Src or a constant, or not updating A
