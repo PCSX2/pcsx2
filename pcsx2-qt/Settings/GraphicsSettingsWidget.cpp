@@ -44,6 +44,7 @@ static constexpr RendererInfo s_renderer_info[] = {
 	//: Null here means that this is a graphics backend that will show nothing.
 	{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Null"), GSRendererType::Null},
 };
+static constexpr int TemporaryMultiplierRole = (Qt::UserRole + 1);
 
 static const char* s_anisotropic_filtering_entries[] = {QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Off (Default)"),
 	QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "2x"), QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "4x"),
@@ -752,7 +753,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 			   "Usually results in worse frame pacing."));
 
 		dialog()->registerWidgetHelp(m_advanced.extendedUpscales, tr("Extended Upscaling Multipliers"), tr("Unchecked"),
-			tr("Displays additional, very high upscaling multipliers dependent on GPU capability. Available only with the Vulkan or OpenGL renderer."));
+			tr("Displays additional, very high upscaling multipliers dependent on GPU and driver capability."));
 
 		dialog()->registerWidgetHelp(m_advanced.useDebugDevice, tr("Enable Debug Device"), tr("Unchecked"),
 			tr("Enables API-level validation of graphics commands."));
@@ -1074,6 +1075,13 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 		current_adapter_info = (current_adapter_info || adapters.empty()) ? current_adapter_info : &adapters.front();
 	}
 
+	const bool supports_extended_upscales =
+		current_adapter_info && current_adapter_info->max_upscale_multiplier > 12u;
+	{
+		QSignalBlocker sb(m_advanced.extendedUpscales);
+		m_advanced.extendedUpscales->setEnabled(supports_extended_upscales);
+	}
+
 	// fill+select fullscreen modes
 	{
 		QSignalBlocker sb(m_display.fullscreenModes);
@@ -1105,8 +1113,9 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 		}
 	}
 
-	// assume the GPU can do 10K textures.
-	const u32 max_upscale_multiplier = std::max(current_adapter_info ? current_adapter_info->max_upscale_multiplier : 0u, 10u);
+	// assume the GPU can do at least 16K textures when we don't have any adapter info.
+	const u32 max_upscale_multiplier = std::max(current_adapter_info ? current_adapter_info->max_upscale_multiplier : 0u, 12u);
+
 	populateUpscaleMultipliers(max_upscale_multiplier);
 }
 
@@ -1147,7 +1156,7 @@ void GraphicsSettingsWidget::populateUpscaleMultipliers(u32 max_upscale_multipli
 	QSignalBlocker sb(m_hw.upscaleMultiplier);
 	m_hw.upscaleMultiplier->clear();
 
-	const u32 max_shown_multiplier = m_advanced.extendedUpscales && m_advanced.extendedUpscales->checkState() == Qt::Checked ?
+	const u32 max_shown_multiplier = m_advanced.extendedUpscales->checkState() == Qt::Checked ?
 	                                     max_upscale_multiplier :
 	                                     std::min(max_upscale_multiplier, max_non_advanced_multiplier);
 	for (const auto& [name, value] : templates)
@@ -1170,8 +1179,21 @@ void GraphicsSettingsWidget::populateUpscaleMultipliers(u32 max_upscale_multipli
 		const std::optional<float> config_value = dialog()->getFloatValue("EmuCore/GS", "upscale_multiplier", std::nullopt);
 		if (config_value.has_value())
 		{
-			if (int index = m_hw.upscaleMultiplier->findData(QVariant(config_value.value())); index > 0)
+			float saved_value = config_value.value();
+			int index = m_hw.upscaleMultiplier->findData(QVariant(saved_value));
+
+			// If the saved value goes above the current UI limit, add it temporarily
+			if (index <= 0 && saved_value > max_shown_multiplier)
+			{
+				m_hw.upscaleMultiplier->addItem(tr("%1x Native").arg(saved_value), QVariant(saved_value));
+				m_hw.upscaleMultiplier->setItemData(m_hw.upscaleMultiplier->count() - 1, true, TemporaryMultiplierRole);
+				index = m_hw.upscaleMultiplier->findData(QVariant(saved_value));
+			}
+
+			if (index > 0)
 				m_hw.upscaleMultiplier->setCurrentIndex(index);
+			else
+				m_hw.upscaleMultiplier->setCurrentIndex(0);
 		}
 		else
 		{
@@ -1180,16 +1202,38 @@ void GraphicsSettingsWidget::populateUpscaleMultipliers(u32 max_upscale_multipli
 	}
 	else
 	{
-		if (int index = m_hw.upscaleMultiplier->findData(QVariant(global_value)); index > 0)
+		float saved_value = global_value;
+		int index = m_hw.upscaleMultiplier->findData(QVariant(saved_value));
+
+		// If the saved value goes above the current UI limit, add it temporarily
+		if (index <= 0 && saved_value > max_shown_multiplier)
+		{
+			m_hw.upscaleMultiplier->addItem(tr("%1x Native").arg(saved_value), QVariant(saved_value));
+			m_hw.upscaleMultiplier->setItemData(m_hw.upscaleMultiplier->count() - 1, true, TemporaryMultiplierRole);
+			index = m_hw.upscaleMultiplier->findData(QVariant(saved_value));
+		}
+
+		if (index > 0)
 			m_hw.upscaleMultiplier->setCurrentIndex(index);
 	}
 }
 
 void GraphicsSettingsWidget::onUpscaleMultiplierChanged()
 {
+	const int current_index = m_hw.upscaleMultiplier->currentIndex();
 	const QVariant data = m_hw.upscaleMultiplier->currentData();
 	dialog()->setFloatSettingValue("EmuCore/GS", "upscale_multiplier",
 		data.isValid() ? std::optional<float>(data.toFloat()) : std::optional<float>());
+
+	QSignalBlocker sb(m_hw.upscaleMultiplier);
+	for (int i = (m_hw.upscaleMultiplier->count() - 1); i >= 0; i--)
+	{
+		if (i == current_index)
+			continue;
+
+		if (m_hw.upscaleMultiplier->itemData(i, TemporaryMultiplierRole).toBool())
+			m_hw.upscaleMultiplier->removeItem(i);
+	}
 }
 
 #include "moc_GraphicsSettingsWidget.cpp"
