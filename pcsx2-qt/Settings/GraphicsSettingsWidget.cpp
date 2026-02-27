@@ -752,7 +752,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 			   "Usually results in worse frame pacing."));
 
 		dialog()->registerWidgetHelp(m_advanced.extendedUpscales, tr("Extended Upscaling Multipliers"), tr("Unchecked"),
-			tr("Displays additional, very high upscaling multipliers dependent on GPU capability."));
+			tr("Displays additional, very high upscaling multipliers dependent on GPU capability. Available only with the Vulkan or OpenGL renderer."));
 
 		dialog()->registerWidgetHelp(m_advanced.useDebugDevice, tr("Enable Debug Device"), tr("Unchecked"),
 			tr("Enables API-level validation of graphics commands."));
