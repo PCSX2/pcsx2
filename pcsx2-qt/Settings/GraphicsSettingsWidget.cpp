@@ -1235,8 +1235,8 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 		}
 	}
 
-	// assume the GPU can do 10K textures.
-	const u32 max_upscale_multiplier = std::max(current_adapter_info ? current_adapter_info->max_upscale_multiplier : 0u, 10u);
+	// We assume the GPU can do at least 16K textures when we don't have any adapter info.
+	const u32 max_upscale_multiplier = std::max(current_adapter_info ? current_adapter_info->max_upscale_multiplier : 0u, 12u);
 	const u32 max_shown_multiplier =
 		(((is_vk || is_ogl) && m_advanced.extendedUpscales && m_advanced.extendedUpscales->checkState() == Qt::Checked) ?
 				max_upscale_multiplier :
