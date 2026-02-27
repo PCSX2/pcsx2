@@ -94,6 +94,7 @@ void cpuinfo_arm_decode_vendor_uarch(
 					*uarch = cpuinfo_uarch_neoverse_v1;
 					break;
 				case 0xD41: /* Cortex-A78 */
+				case 0xD4B: /* Cortex-A78C */
 					*uarch = cpuinfo_uarch_cortex_a78;
 					break;
 				case 0xD44: /* Cortex-X1 */
@@ -125,6 +126,9 @@ void cpuinfo_arm_decode_vendor_uarch(
 				case 0xD4F: /* Neoverse V2 */
 					*uarch = cpuinfo_uarch_neoverse_v2;
 					break;
+				case 0xD80: /* Cortex-A520 */
+					*uarch = cpuinfo_uarch_cortex_a520;
+					break;
 				case 0xD81: /* Cortex-A720 */
 					*uarch = cpuinfo_uarch_cortex_a720;
 					break;
@@ -136,6 +140,18 @@ void cpuinfo_arm_decode_vendor_uarch(
 					break;
 				case 0xD87: /* Cortex-A725 */
 					*uarch = cpuinfo_uarch_cortex_a725;
+					break;
+				case 0xD8C:
+					*uarch = cpuinfo_uarch_lumex_c1_ultra;
+					break;
+				case 0xD90:
+					*uarch = cpuinfo_uarch_lumex_c1_premium;
+					break;
+				case 0xD8B:
+					*uarch = cpuinfo_uarch_lumex_c1_pro;
+					break;
+				case 0xD8A:
+					*uarch = cpuinfo_uarch_lumex_c1_nano;
 					break;
 				default:
 					switch (midr_get_part(midr) >> 8) {
@@ -346,6 +362,9 @@ void cpuinfo_arm_decode_vendor_uarch(
 #if CPUINFO_ARCH_ARM64
 				case 0x001:
 					*uarch = cpuinfo_uarch_oryon;
+					break;
+				case 0x002:
+					*uarch = cpuinfo_uarch_oryon_v3;
 					break;
 				case 0xC00:
 					*uarch = cpuinfo_uarch_falkor;

@@ -69,6 +69,7 @@ void cpuinfo_arm_linux_decode_isa_from_proc_cpuinfo(
 		 * - Processors with Cortex-A77 cores
 		 * - Processors with Cortex-A78 cores
 		 * - Processors with Cortex-A510 cores
+		 * - Processors with Cortex-A520 cores
 		 * - Processors with Cortex-A710 cores
 		 * - Processors with Cortex-A715 cores
 		 * - Processors with Cortex-X1 cores
@@ -101,6 +102,7 @@ void cpuinfo_arm_linux_decode_isa_from_proc_cpuinfo(
 				case UINT32_C(0x4100D470): /* Cortex-A710 */
 				case UINT32_C(0x4100D480): /* Cortex-X2 */
 				case UINT32_C(0x4100D490): /* Neoverse N2 */
+				case UINT32_C(0x4100D4B0): /* Cortex-A78C */
 				case UINT32_C(0x4100D4D0): /* Cortex-A715 */
 				case UINT32_C(0x4100D4E0): /* Cortex-X3 */
 				case UINT32_C(0x4100D4F0): /* Neoverse V2 */
@@ -162,6 +164,7 @@ void cpuinfo_arm_linux_decode_isa_from_proc_cpuinfo(
 				case UINT32_C(0x4100D470): /* Cortex-A710 */
 				case UINT32_C(0x4100D480): /* Cortex-X2 */
 				case UINT32_C(0x4100D490): /* Neoverse N2 */
+				case UINT32_C(0x4100D4B0): /* Cortex-A78C */
 				case UINT32_C(0x4100D4D0): /* Cortex-A715 */
 				case UINT32_C(0x4100D4E0): /* Cortex-X3 */
 				case UINT32_C(0x4100D4F0): /* Neoverse V2 */

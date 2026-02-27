@@ -21,9 +21,11 @@
 #ifndef CPUFAMILY_ARM_LIGHTNING_THUNDER
 #define CPUFAMILY_ARM_LIGHTNING_THUNDER 0x462504D2
 #endif
+// A14 / M1
 #ifndef CPUFAMILY_ARM_FIRESTORM_ICESTORM
 #define CPUFAMILY_ARM_FIRESTORM_ICESTORM 0x1B588BB3
 #endif
+// A15 / M2
 #ifndef CPUFAMILY_ARM_AVALANCHE_BLIZZARD
 #define CPUFAMILY_ARM_AVALANCHE_BLIZZARD 0xDA33D83D
 #endif
@@ -65,6 +67,18 @@
 // M4 Pro / M4 Max
 #ifndef CPUFAMILY_ARM_BRAVA
 #define CPUFAMILY_ARM_BRAVA 0x17d5b93a
+#endif
+// M5
+#ifndef CPUFAMILY_ARM_HIDRA
+#define CPUFAMILY_ARM_HIDRA 0x1d5a87e8
+#endif
+// A19
+#ifndef CPUFAMILY_ARM_TILOS
+#define CPUFAMILY_ARM_TILOS 0x01d7a72b
+#endif
+// A19 Pro
+#ifndef CPUFAMILY_ARM_THERA
+#define CPUFAMILY_ARM_THERA 0xab345f09
 #endif
 
 struct cpuinfo_arm_isa cpuinfo_isa = {
@@ -118,36 +132,58 @@ static enum cpuinfo_uarch decode_uarch(uint32_t cpu_family, uint32_t core_index,
 			/* 2x Monsoon + 4x Mistral cores */
 			return core_index < 2 ? cpuinfo_uarch_monsoon : cpuinfo_uarch_mistral;
 		case CPUFAMILY_ARM_VORTEX_TEMPEST:
-			/* Hexa-core: 2x Vortex + 4x Tempest; Octa-core: 4x
-			 * Cortex + 4x Tempest */
+			/* Hexa-core: 2x Vortex + 4x Tempest; */
+			/* Octa-core: 4x Cortex + 4x Tempest */
 			return core_index + 4 < core_count ? cpuinfo_uarch_vortex : cpuinfo_uarch_tempest;
 		case CPUFAMILY_ARM_LIGHTNING_THUNDER:
-			/* Hexa-core: 2x Lightning + 4x Thunder; Octa-core
-			 * (presumed): 4x Lightning + 4x Thunder */
+			/* Hexa-core: 2x Lightning + 4x Thunder; */
+			/* Octa-core: 4x Lightning + 4x Thunder */
 			return core_index + 4 < core_count ? cpuinfo_uarch_lightning : cpuinfo_uarch_thunder;
 		case CPUFAMILY_ARM_FIRESTORM_ICESTORM:
-			/* Hexa-core: 2x Firestorm + 4x Icestorm; Octa-core: 4x
-			 * Firestorm + 4x Icestorm */
+			/* Hexa-core: 2x Firestorm + 4x Icestorm; */
+			/* Octa-core: 4x Firestorm + 4x Icestorm */
 			return core_index + 4 < core_count ? cpuinfo_uarch_firestorm : cpuinfo_uarch_icestorm;
 		case CPUFAMILY_ARM_AVALANCHE_BLIZZARD:
 			/* Hexa-core: 2x Avalanche + 4x Blizzard */
 			return core_index + 4 < core_count ? cpuinfo_uarch_avalanche : cpuinfo_uarch_blizzard;
 		case CPUFAMILY_ARM_EVEREST_SAWTOOTH:
-			/* Hexa-core: 2x Avalanche + 4x Blizzard */
+			/* Hexa-core: 2x Everest + 4x Sawtooth */
 			return core_index + 4 < core_count ? cpuinfo_uarch_everest : cpuinfo_uarch_sawtooth;
-			return core_index + 4 < core_count ? cpuinfo_uarch_avalanche : cpuinfo_uarch_blizzard;
+
+		case CPUFAMILY_ARM_IBIZA: /* M3 */
+			/* 8-core: 4x Coll Everest v2 + 4x Coll Sawtooth v2*/
+		case CPUFAMILY_ARM_PALMA: /* M3 Max */
+			/* 14-core: 10x Coll Everest v2 + 4x Coll Sawtooth v2*/
 		case CPUFAMILY_ARM_COLL:
-			/* Hexa-core: 2x Avalanche + 4x Blizzard */
+			/* Hexa-core: 2x Coll Everest v2 + 4x Coll Sawtooth v2 */
 			return core_index + 4 < core_count ? cpuinfo_uarch_coll_everest : cpuinfo_uarch_coll_sawtooth;
+		case CPUFAMILY_ARM_LOBOS: /* M3 Pro */
+			/* 12-core: 6x Coll Everest v2 + 6x Coll Sawtooth v2v2 */
+			return core_index + 6 < core_count ? cpuinfo_uarch_coll_everest : cpuinfo_uarch_coll_sawtooth;
 
 		case CPUFAMILY_ARM_TUPAI:
-			/* Hexa-core: 2x Avalanche + 4x Blizzard */
+			/* Hexa-core: 2x Tupai Everest v3 + 4x Tupai Sawtooth v3 */
 			return core_index + 4 < core_count ? cpuinfo_uarch_tupai_everest : cpuinfo_uarch_tupai_sawtooth;
 
 		case CPUFAMILY_ARM_TAHITI:
-			/* Hexa-core: 2x Avalanche + 4x Blizzard */
+			/* Hexa-core: 2x Tahiti Everest + 4x Tahiti Sawtooth */
 			return core_index + 4 < core_count ? cpuinfo_uarch_tahiti_everest
 							   : cpuinfo_uarch_tahiti_sawtooth;
+
+		case CPUFAMILY_ARM_DONAN: /* M4 */
+			/* 10-core: 4x Donan Everest v3 + 6x Donan Sawtooth v3 */
+			return core_index + 6 < core_count ? cpuinfo_uarch_donan_everest : cpuinfo_uarch_donan_sawtooth;
+		case CPUFAMILY_ARM_BRAVA: /* M4 Pro */
+			/* 14-core: 10x Donan Everest v3 + 4x Donan Sawtooth v3 */
+			return core_index + 4 < core_count ? cpuinfo_uarch_donan_everest : cpuinfo_uarch_donan_sawtooth;
+
+		case CPUFAMILY_ARM_TILOS: /* A19 */
+		case CPUFAMILY_ARM_THERA: /* A19 Pro */
+			/* Hexa-core: 2x Tilos Everest v4 + 4x Tilos Sawtooth v4 */
+			return core_index + 4 < core_count ? cpuinfo_uarch_tilos_everest : cpuinfo_uarch_tilos_sawtooth;
+		case CPUFAMILY_ARM_HIDRA: /* M5 */
+			/* 10-core: 4x Tilos Everest v4 + 6x Tilos Sawtooth v4 */
+			return core_index + 6 < core_count ? cpuinfo_uarch_tilos_everest : cpuinfo_uarch_tilos_sawtooth;
 
 		default:
 			/* Use hw.cpusubtype for detection */
@@ -361,10 +397,8 @@ void cpuinfo_arm_mach_init(void) {
 	 * possible. Otherwise, fallback to hardcoded set of CPUs with known
 	 * support.
 	 */
-	const uint32_t has_feat_lse = get_sys_info_by_name("hw.optional.arm.FEAT_LSE");
-	if (has_feat_lse != 0) {
-		cpuinfo_isa.atomics = true;
-	} else {
+	cpuinfo_isa.atomics = get_sys_info_by_name("hw.optional.arm.FEAT_LSE") != 0;
+	if (!cpuinfo_isa.atomics) {
 		// Mandatory in ARMv8.1-A, list only cores released before iOS
 		// 15 / macOS 12
 		switch (cpu_family) {
@@ -376,10 +410,8 @@ void cpuinfo_arm_mach_init(void) {
 		}
 	}
 
-	const uint32_t has_feat_rdm = get_sys_info_by_name("hw.optional.arm.FEAT_RDM");
-	if (has_feat_rdm != 0) {
-		cpuinfo_isa.rdm = true;
-	} else {
+	cpuinfo_isa.rdm = get_sys_info_by_name("hw.optional.arm.FEAT_RDM") != 0;
+	if (!cpuinfo_isa.rdm) {
 		// Optional in ARMv8.2-A (implemented in Apple cores),
 		// list only cores released before iOS 15 / macOS 12
 		switch (cpu_family) {
@@ -391,10 +423,8 @@ void cpuinfo_arm_mach_init(void) {
 		}
 	}
 
-	const uint32_t has_feat_fp16 = get_sys_info_by_name("hw.optional.arm.FEAT_FP16");
-	if (has_feat_fp16 != 0) {
-		cpuinfo_isa.fp16arith = true;
-	} else {
+	cpuinfo_isa.fp16arith = get_sys_info_by_name("hw.optional.arm.FEAT_FP16") != 0;
+	if (!cpuinfo_isa.fp16arith) {
 		// Optional in ARMv8.2-A (implemented in Apple cores),
 		// list only cores released before iOS 15 / macOS 12
 		switch (cpu_family) {
@@ -406,15 +436,11 @@ void cpuinfo_arm_mach_init(void) {
 		}
 	}
 
-	const uint32_t has_feat_fhm = get_sys_info_by_name("hw.optional.arm.FEAT_FHM");
-	if (has_feat_fhm != 0) {
-		cpuinfo_isa.fhm = true;
-	} else {
+	cpuinfo_isa.fhm = get_sys_info_by_name("hw.optional.arm.FEAT_FHM") != 0;
+	if (!cpuinfo_isa.fhm) {
 		// Prior to iOS 15, use 'hw.optional.armv8_2_fhm'
-		const uint32_t has_feat_fhm_legacy = get_sys_info_by_name("hw.optional.armv8_2_fhm");
-		if (has_feat_fhm_legacy != 0) {
-			cpuinfo_isa.fhm = true;
-		} else {
+		cpuinfo_isa.fhm = get_sys_info_by_name("hw.optional.armv8_2_fhm") != 0;
+		if (!cpuinfo_isa.fhm) {
 			// Mandatory in ARMv8.4-A when FP16 arithmetics is
 			// implemented, list only cores released before iOS 15 /
 			// macOS 12
@@ -426,17 +452,10 @@ void cpuinfo_arm_mach_init(void) {
 		}
 	}
 
-	const uint32_t has_feat_bf16 = get_sys_info_by_name("hw.optional.arm.FEAT_BF16");
-	if (has_feat_bf16 != 0) {
-		cpuinfo_isa.bf16 = true;
-	}
-
-	const uint32_t has_feat_fcma = get_sys_info_by_name("hw.optional.arm.FEAT_FCMA");
-	if (has_feat_fcma != 0) {
-		cpuinfo_isa.fcma = true;
-	} else {
-		// Mandatory in ARMv8.3-A, list only cores released before iOS
-		// 15 / macOS 12
+	cpuinfo_isa.bf16 = get_sys_info_by_name("hw.optional.arm.FEAT_BF16") != 0;
+	cpuinfo_isa.fcma = get_sys_info_by_name("hw.optional.arm.FEAT_FCMA") != 0;
+	if (!cpuinfo_isa.fcma) {
+		// Mandatory in ARMv8.3-A, list only cores released before iOS 15 / macOS 12
 		switch (cpu_family) {
 			case CPUFAMILY_ARM_LIGHTNING_THUNDER:
 			case CPUFAMILY_ARM_FIRESTORM_ICESTORM:
@@ -444,12 +463,9 @@ void cpuinfo_arm_mach_init(void) {
 		}
 	}
 
-	const uint32_t has_feat_jscvt = get_sys_info_by_name("hw.optional.arm.FEAT_JSCVT");
-	if (has_feat_jscvt != 0) {
-		cpuinfo_isa.jscvt = true;
-	} else {
-		// Mandatory in ARMv8.3-A, list only cores released before iOS
-		// 15 / macOS 12
+	cpuinfo_isa.jscvt = get_sys_info_by_name("hw.optional.arm.FEAT_JSCVT") != 0;
+	if (!cpuinfo_isa.jscvt) {
+		// Mandatory in ARMv8.3-A, list only cores released before iOS 15 / macOS 12
 		switch (cpu_family) {
 			case CPUFAMILY_ARM_LIGHTNING_THUNDER:
 			case CPUFAMILY_ARM_FIRESTORM_ICESTORM:
@@ -457,12 +473,9 @@ void cpuinfo_arm_mach_init(void) {
 		}
 	}
 
-	const uint32_t has_feat_dotprod = get_sys_info_by_name("hw.optional.arm.FEAT_DotProd");
-	if (has_feat_dotprod != 0) {
-		cpuinfo_isa.dot = true;
-	} else {
-		// Mandatory in ARMv8.4-A, list only cores released before iOS
-		// 15 / macOS 12
+	cpuinfo_isa.dot = get_sys_info_by_name("hw.optional.arm.FEAT_DotProd") != 0;
+	if (!cpuinfo_isa.dot) {
+		// Mandatory in ARMv8.4-A, list only cores released before iOS 15 / macOS 12
 		switch (cpu_family) {
 			case CPUFAMILY_ARM_LIGHTNING_THUNDER:
 			case CPUFAMILY_ARM_FIRESTORM_ICESTORM:
@@ -470,20 +483,16 @@ void cpuinfo_arm_mach_init(void) {
 		}
 	}
 
-	const uint32_t has_feat_i8mm = get_sys_info_by_name("hw.optional.arm.FEAT_I8MM");
-	if (has_feat_i8mm != 0) {
-		cpuinfo_isa.i8mm = true;
-	}
+	cpuinfo_isa.i8mm = get_sys_info_by_name("hw.optional.arm.FEAT_I8MM") != 0;
+	cpuinfo_isa.sme = get_sys_info_by_name("hw.optional.arm.FEAT_SME") != 0;
+	cpuinfo_isa.sme2 = get_sys_info_by_name("hw.optional.arm.FEAT_SME2") != 0;
+	cpuinfo_isa.sme2p1 = get_sys_info_by_name("hw.optional.arm.FEAT_SME2p1") != 0;
+	cpuinfo_isa.sme_i16i32 = get_sys_info_by_name("hw.optional.arm.SME_I16I32") != 0;
+	cpuinfo_isa.sme_bi32i32 = get_sys_info_by_name("hw.optional.arm.SME_BI32I32") != 0;
+	cpuinfo_isa.sme_b16b16 = get_sys_info_by_name("hw.optional.arm.FEAT_SME_B16B16") != 0;
+	cpuinfo_isa.sme_f16f16 = get_sys_info_by_name("hw.optional.arm.FEAT_SME_F16F16") != 0;
 
-	const uint32_t has_feat_sme = get_sys_info_by_name("hw.optional.arm.FEAT_SME");
-	if (has_feat_sme != 0) {
-		cpuinfo_isa.sme = true;
-	}
-
-	const uint32_t has_feat_sme2 = get_sys_info_by_name("hw.optional.arm.FEAT_SME2");
-	if (has_feat_sme2 != 0) {
-		cpuinfo_isa.sme2 = true;
-	}
+	cpuinfo_isa.smelen = get_sys_info_by_name("hw.optional.arm.sme_max_svl_b");
 
 	uint32_t num_clusters = 1;
 	for (uint32_t i = 0; i < mach_topology.cores; i++) {

@@ -231,7 +231,7 @@ uint32_t cpuinfo_linux_get_processor_min_frequency(uint32_t processor) {
 }
 
 bool cpuinfo_linux_get_processor_core_id(uint32_t processor, uint32_t core_id_ptr[restrict static 1]) {
-	char core_id_filename[PACKAGE_ID_FILENAME_SIZE];
+	char core_id_filename[CORE_ID_FILENAME_SIZE];
 	const int chars_formatted =
 		snprintf(core_id_filename, CORE_ID_FILENAME_SIZE, CORE_ID_FILENAME_FORMAT, processor);
 	if ((unsigned int)chars_formatted >= CORE_ID_FILENAME_SIZE) {
