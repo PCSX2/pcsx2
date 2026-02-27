@@ -600,6 +600,14 @@ std::vector<GSAdapterInfo> GSGetAdapterInfo(GSRendererType renderer)
 		break;
 #endif
 
+#ifdef ENABLE_OPENGL
+		case GSRendererType::OGL:
+		{
+			ret = GSDeviceOGL::GetAdapterInfo();
+		}
+		break;
+#endif
+
 #ifdef ENABLE_VULKAN
 		case GSRendererType::VK:
 		{
