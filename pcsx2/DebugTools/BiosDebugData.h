@@ -53,6 +53,7 @@ struct IOPInternalThread
 	u32 status;
 	u32 entrypoint;
 	u32 waitstate;
+	u32 waitId;
 	u32 initPriority;
 };
 
