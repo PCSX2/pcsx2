@@ -1314,7 +1314,7 @@ static bool match_omap(const char* start, const char* end, struct cpuinfo_arm_ch
  * ro.board.platform) to match.
  * @param cores - number of cores in the chipset.
  * @param max_cpu_freq_max - maximum of
- * /sys/devices/system/cpu/cpu<number>/cpofreq/cpu_freq_max values.
+ * /sys/devices/system/cpu/cpu<number>/cpufreq/cpu_freq_max values.
  * @param[out] chipset - location where chipset information will be stored upon
  * a successful match and decoding.
  *
@@ -1607,7 +1607,7 @@ static bool match_and_parse_sunxi(
  * @param end - end of the /proc/cpuinfo Hardware string to match.
  * @param cores - number of cores in the chipset.
  * @param max_cpu_freq_max - maximum of
- * /sys/devices/system/cpu/cpu<number>/cpofreq/cpu_freq_max values.
+ * /sys/devices/system/cpu/cpu<number>/cpufreq/cpu_freq_max values.
  * @param[out] chipset - location where chipset information will be stored upon
  * a successful match and decoding.
  *
@@ -2456,7 +2456,7 @@ static const struct special_map_entry tegra_hardware_map_entries[] = {
  * @param[in] platform - /proc/cpuinfo Hardware string.
  * @param cores - number of cores in the chipset.
  * @param max_cpu_freq_max - maximum of
- * /sys/devices/system/cpu/cpu<number>/cpofreq/cpu_freq_max values.
+ * /sys/devices/system/cpu/cpu<number>/cpufreq/cpu_freq_max values.
  *
  * @returns Decoded chipset name. If chipset could not be decoded, the resulting
  * structure would use `unknown` vendor and series identifiers.
@@ -2857,7 +2857,7 @@ static const struct special_map_entry special_board_map_entries[] = {
  * @param[in] platform - ro.product.board value.
  * @param cores - number of cores in the chipset.
  * @param max_cpu_freq_max - maximum of
- * /sys/devices/system/cpu/cpu<number>/cpofreq/cpu_freq_max values.
+ * /sys/devices/system/cpu/cpu<number>/cpufreq/cpu_freq_max values.
  *
  * @returns Decoded chipset name. If chipset could not be decoded, the resulting
  * structure would use `unknown` vendor and series identifiers.
@@ -3162,7 +3162,7 @@ static const struct special_map_entry special_platform_map_entries[] = {
  * @param[in] platform - ro.board.platform value.
  * @param cores - number of cores in the chipset.
  * @param max_cpu_freq_max - maximum of
- * /sys/devices/system/cpu/cpu<number>/cpofreq/cpu_freq_max values.
+ * /sys/devices/system/cpu/cpu<number>/cpufreq/cpu_freq_max values.
  *
  * @returns Decoded chipset name. If chipset could not be decoded, the resulting
  * structure would use `unknown` vendor and series identifiers.
@@ -3499,7 +3499,7 @@ struct cpuinfo_arm_chipset cpuinfo_arm_android_decode_chipset_from_ro_chipname(
  * @param[in,out] chipset - chipset name to fix.
  * @param cores - number of cores in the chipset.
  * @param max_cpu_freq_max - maximum of
- * /sys/devices/system/cpu/cpu<number>/cpofreq/cpu_freq_max values.
+ * /sys/devices/system/cpu/cpu<number>/cpufreq/cpu_freq_max values.
  */
 void cpuinfo_arm_fixup_chipset(
 	struct cpuinfo_arm_chipset chipset[restrict static 1],
@@ -4038,7 +4038,7 @@ static enum cpuinfo_arm_chipset_vendor disambiguate_chipset_vendor(
  * described above.
  * @param cores - number of cores in the chipset.
  * @param max_cpu_freq_max - maximum of
- * /sys/devices/system/cpu/cpu<number>/cpofreq/cpu_freq_max values.
+ * /sys/devices/system/cpu/cpu<number>/cpufreq/cpu_freq_max values.
  *
  * @returns Decoded chipset name. If chipset could not be decoded, the resulting
  * structure would use `unknown` vendor and series identifiers.
@@ -4291,7 +4291,7 @@ void cpuinfo_arm_fixup_raspberry_pi_chipset(
  * @param[in] hardware - /proc/cpuinfo Hardware string.
  * @param cores - number of cores in the chipset.
  * @param max_cpu_freq_max - maximum of
- * /sys/devices/system/cpu/cpu<number>/cpofreq/cpu_freq_max values.
+ * /sys/devices/system/cpu/cpu<number>/cpufreq/cpu_freq_max values.
  *
  * @returns Decoded chipset name. If chipset could not be decoded, the resulting
  * structure would use `unknown` vendor and series identifiers.
