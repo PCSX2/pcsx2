@@ -221,7 +221,6 @@ private:
 	struct
 	{
 		wil::com_ptr_nothrow<ID3D11DepthStencilState> dss;
-		wil::com_ptr_nothrow<ID3D11BlendState> bs;
 		wil::com_ptr_nothrow<ID3D11PixelShader> primid_init_ps[4];
 	} m_date;
 
@@ -316,7 +315,7 @@ public:
 	void ConvertToIndexedTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, u32 SBW, u32 SPSM, GSTexture* dTex, u32 DBW, u32 DPSM) override;
 	void FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u32 downsample_factor, const GSVector2i& clamp_min, const GSVector4& dRect) override;
 	void DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, GSTexture* dTex, ShaderConvert shader) override;
-	void DoMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, const GSVector2& ds);
+	void DoMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, const GSVector2& ds, const bool draw_in_depth);
 
 	void SetupDATE(GSTexture* rt, GSTexture* ds, SetDATM datm, const GSVector4i& bbox);
 

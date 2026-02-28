@@ -495,16 +495,6 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 
 	m_dev->CreateDepthStencilState(&dsd, m_date.dss.put());
 
-	// blend
-
-	{
-		D3D11_BLEND_DESC blend;
-
-		memset(&blend, 0, sizeof(blend));
-
-		m_dev->CreateBlendState(&blend, m_date.bs.put());
-	}
-
 	for (size_t i = 0; i < std::size(m_date.primid_init_ps); i++)
 	{
 		const std::string entry_point(StringUtil::StdStringFromFormat("ps_stencil_image_init_%zu", i));
@@ -1346,9 +1336,7 @@ void GSDevice11::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTextur
 	if (draw_in_depth)
 		OMSetDepthStencilState(m_convert.dss_write.get(), 0);
 	else
-		OMSetDepthStencilState(m_convert.dss.get(), 0);
-
-	OMSetBlendState(bs, 0);
+		OMSetBlendState(bs, 0);
 
 	// ia
 
@@ -1420,7 +1408,6 @@ void GSDevice11::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 
 	// om
 
-	OMSetDepthStencilState(m_convert.dss.get(), 0);
 	OMSetBlendState(m_convert.bs[D3D11_COLOR_WRITE_ENABLE_ALL].get(), 0);
 
 	// ia
@@ -1526,8 +1513,15 @@ void GSDevice11::DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_re
 	PSSetShader(m_convert.ps[static_cast<int>(shader)].get(), nullptr);
 	PSUnbindConflictingSRVs(dTex);
 
-	OMSetDepthStencilState(dTex->IsRenderTarget() ? m_convert.dss.get() : m_convert.dss_write.get(), 0);
-	OMSetRenderTargets(dTex->IsRenderTarget() ? dTex : nullptr, dTex->IsDepthStencil() ? dTex : nullptr);
+	const bool draw_in_depth = dTex->IsDepthStencil();
+
+	if (draw_in_depth)
+	{
+		OMSetDepthStencilState(m_convert.dss_write.get(), 0);
+		OMSetRenderTargets(nullptr, dTex);
+	}
+	else
+		OMSetRenderTargets(dTex, nullptr);
 
 	const GSVector2 ds(static_cast<float>(dTex->GetWidth()), static_cast<float>(dTex->GetHeight()));
 	GSTexture* last_tex = rects[0].src;
@@ -1545,7 +1539,7 @@ void GSDevice11::DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_re
 			continue;
 		}
 
-		DoMultiStretchRects(rects + first, count, ds);
+		DoMultiStretchRects(rects + first, count, ds, draw_in_depth);
 		last_tex = rects[i].src;
 		last_linear = rects[i].linear;
 		last_wmask = rects[i].wmask.wrgba;
@@ -1553,10 +1547,10 @@ void GSDevice11::DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_re
 		count = 1;
 	}
 
-	DoMultiStretchRects(rects + first, count, ds);
+	DoMultiStretchRects(rects + first, count, ds, draw_in_depth);
 }
 
-void GSDevice11::DoMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, const GSVector2& ds)
+void GSDevice11::DoMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, const GSVector2& ds, const bool draw_in_depth)
 {
 	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
@@ -1604,7 +1598,8 @@ void GSDevice11::DoMultiStretchRects(const MultiStretchRect* rects, u32 num_rect
 	PSSetShaderResource(0, rects[0].src);
 	PSSetSamplerState(rects[0].linear ? m_convert.ln.get() : m_convert.pt.get());
 
-	OMSetBlendState(m_convert.bs[rects[0].wmask.wrgba].get(), 0.0f);
+	if (!draw_in_depth)
+		OMSetBlendState(m_convert.bs[rects[0].wmask.wrgba].get(), 0.0f);
 
 	DrawIndexedPrimitive();
 }
@@ -2225,7 +2220,6 @@ void GSDevice11::SetupDATE(GSTexture* rt, GSTexture* ds, SetDATM datm, const GSV
 	// om
 
 	OMSetDepthStencilState(m_date.dss.get(), 1);
-	OMSetBlendState(m_date.bs.get(), 0);
 	OMSetRenderTargets(nullptr, ds);
 
 	// ia
