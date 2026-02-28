@@ -404,6 +404,13 @@ enum class GSHardwareDownloadMode : u8
 	Disabled
 };
 
+enum class GSHardwareZIntegerMode : u8
+{
+	Disabled,
+	Enabled,
+	Always
+};
+
 enum class GSCASMode : u8
 {
 	Disabled,
@@ -840,6 +847,7 @@ struct Pcsx2Config
 		TexturePreloadingLevel TexturePreloading = TexturePreloadingLevel::Full;
 		GSDumpCompressionMethod GSDumpCompression = GSDumpCompressionMethod::Zstandard;
 		GSHardwareDownloadMode HWDownloadMode = GSHardwareDownloadMode::Enabled;
+		GSHardwareZIntegerMode HWZIntegerMode = GSHardwareZIntegerMode::Disabled;
 		GSCASMode CASMode = GSCASMode::Disabled;
 		u8 Dithering = 2;
 		u8 MaxAnisotropy = 0;
