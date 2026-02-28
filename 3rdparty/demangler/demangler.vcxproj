@@ -35,7 +35,6 @@
     <ClInclude Include="include\demangle.h" />
     <ClInclude Include="include\dyn-string.h" />
     <ClInclude Include="include\environ.h" />
-    <ClInclude Include="include\getopt.h" />
     <ClInclude Include="include\libiberty.h" />
     <ClInclude Include="include\safe-ctype.h" />
   </ItemGroup>
@@ -46,8 +45,6 @@
     <ClCompile Include="src\cplus-dem.c" />
     <ClCompile Include="src\d-demangle.c" />
     <ClCompile Include="src\dyn-string.c" />
-    <ClCompile Include="src\getopt.c" />
-    <ClCompile Include="src\getopt1.c" />
     <ClCompile Include="src\rust-demangle.c" />
     <ClCompile Include="src\safe-ctype.c" />
     <ClCompile Include="src\xexit.c" />
