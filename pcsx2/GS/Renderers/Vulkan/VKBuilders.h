@@ -241,7 +241,7 @@ namespace Vulkan
 			bool clear = true);
 
 		void AddImageDescriptorWrite(VkDescriptorSet set, u32 binding, VkImageView view,
-			VkImageLayout layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+			VkImageLayout layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, bool read_only = true);
 		void AddSamplerDescriptorWrite(VkDescriptorSet set, u32 binding, VkSampler sampler);
 		void AddSamplerDescriptorWrites(VkDescriptorSet set, u32 binding, const VkSampler* samplers, u32 num_samplers);
 		void AddCombinedImageSamplerDescriptorWrite(VkDescriptorSet set, u32 binding, VkImageView view,

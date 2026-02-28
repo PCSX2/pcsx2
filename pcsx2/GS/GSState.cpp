@@ -3725,7 +3725,7 @@ bool GSState::TrianglesAreQuads(bool shuffle_check)
 }
 
 template<u32 primclass>
-GSState::PRIM_OVERLAP GSState::GetPrimitiveOverlapDrawlistImpl(bool save_drawlist, bool save_bbox, float bbox_scale)
+GSState::PRIM_OVERLAP GSState::GetPrimitiveOverlapDrawlistImpl(bool save_drawlist, bool save_bbox, float bbox_scale, u32* max_size)
 {
 	const GSVector4i xyof = m_context->scissor.xyof.xyxy();
 
@@ -3769,7 +3769,14 @@ GSState::PRIM_OVERLAP GSState::GetPrimitiveOverlapDrawlistImpl(bool save_drawlis
 	if (primclass == GS_TRIANGLE_CLASS && m_quad_check_valid && m_are_quads)
 	{
 		// The triangles-are-quads check already ensures that there is no overlap.
-		m_drawlist.push_back(m_index.tail / n);
+		if (save_drawlist)
+		{
+			m_drawlist.push_back(m_index.tail / n);
+		}
+		else if (max_size)
+		{
+			*max_size = 1;
+		}
 		if (save_bbox)
 		{
 			const GSVector4i draw_area = GSVector4i(m_vt.m_min.p.upld(m_vt.m_max.p) * GSVector4(16.0f)) + xyof;
@@ -3781,6 +3788,7 @@ GSState::PRIM_OVERLAP GSState::GetPrimitiveOverlapDrawlistImpl(bool save_drawlis
 	PRIM_OVERLAP overlap = PRIM_OVERLAP_NO;
 	bool check_quads = (primclass == GS_TRIANGLE_CLASS);
 
+	u32 drawlist_size = 0;
 	u32 i = 0;
 	u32 skip = 0; // Number of indices to skip if we have the bbox from the previous iteration.
 	
@@ -4174,6 +4182,17 @@ GSState::PRIM_OVERLAP GSState::GetPrimitiveOverlapDrawlistImpl(bool save_drawlis
 		{
 			m_drawlist.push_back((j - i) / n); // Prim count
 		}
+		else if (max_size)
+		{
+			// If the max size pointer is passed it means we just want to peek at
+			// the drawlist size up to the given limit to avoid unecessary work.
+			drawlist_size++;
+			if (drawlist_size >= *max_size)
+			{
+				*max_size = drawlist_size;
+				return drawlist_size > 0 ? PRIM_OVERLAP_YES : PRIM_OVERLAP_UNKNOW;
+			}
+		}
 		else if (j < count)
 		{
 			return PRIM_OVERLAP_YES; // Early exit if not saving drawlist.
@@ -4187,21 +4206,27 @@ GSState::PRIM_OVERLAP GSState::GetPrimitiveOverlapDrawlistImpl(bool save_drawlis
 		all = bbox;
 		i = j;
 	}
+
+	if (max_size)
+	{
+		*max_size = drawlist_size;
+	}
+
 	return overlap;
 }
 
-GSState::PRIM_OVERLAP GSState::GetPrimitiveOverlapDrawlist(bool save_drawlist, bool save_bbox, float bbox_scale)
+GSState::PRIM_OVERLAP GSState::GetPrimitiveOverlapDrawlist(bool save_drawlist, bool save_bbox, float bbox_scale, u32* max_size)
 {
 	switch (m_vt.m_primclass)
 	{
 		case GS_POINT_CLASS:
-			return GetPrimitiveOverlapDrawlistImpl<GS_POINT_CLASS>(save_drawlist, save_bbox, bbox_scale);
+			return GetPrimitiveOverlapDrawlistImpl<GS_POINT_CLASS>(save_drawlist, save_bbox, bbox_scale, max_size);
 		case GS_LINE_CLASS:
-			return GetPrimitiveOverlapDrawlistImpl<GS_LINE_CLASS>(save_drawlist, save_bbox, bbox_scale);
+			return GetPrimitiveOverlapDrawlistImpl<GS_LINE_CLASS>(save_drawlist, save_bbox, bbox_scale, max_size);
 		case GS_TRIANGLE_CLASS:
-			return GetPrimitiveOverlapDrawlistImpl<GS_TRIANGLE_CLASS>(save_drawlist, save_bbox, bbox_scale);
+			return GetPrimitiveOverlapDrawlistImpl<GS_TRIANGLE_CLASS>(save_drawlist, save_bbox, bbox_scale, max_size);
 		case GS_SPRITE_CLASS:
-			return GetPrimitiveOverlapDrawlistImpl<GS_SPRITE_CLASS>(save_drawlist, save_bbox, bbox_scale);
+			return GetPrimitiveOverlapDrawlistImpl<GS_SPRITE_CLASS>(save_drawlist, save_bbox, bbox_scale, max_size);
 		default:
 			pxFail("Invalid primclass."); // Impossible.
 			return PRIM_OVERLAP_UNKNOW;
