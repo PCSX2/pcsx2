@@ -240,6 +240,56 @@ void GSDrawScanlineCodeGenerator::Init()
 	armAsm->Lsl(w8, w6, 1); // *2
 	armAsm->Add(x8, _scratchaddr, x8);
 
+	if (m_sel.rounduv)
+	{
+		// local.temp.round.left = left;
+
+		armAsm->Str(w6, _local(temp.round.left));
+
+		// const u32 bits = scan.t.U32[2];
+
+		armAsm->Ldr(_wscratch, MemOperand(_v, offsetof(GSVertexSW, t.z)));
+
+		// const int prim_left = (bits >> 0) & 0xFFF;
+		// local.temp.round.prim_left = prim_left;
+
+		armAsm->And(_wscratch2, _wscratch, 0xFFF);
+		armAsm->Str(_wscratch2, _local(temp.round.prim_left));
+
+		// const int flags_u = (bits >> 24) & 0xF;
+		// local.temp.round.flags_u = flags_u;
+
+		armAsm->Lsr(_wscratch2, _wscratch, 24);
+		armAsm->And(_wscratch2, _wscratch2, 0xF);
+		armAsm->Str(_wscratch2, _local(temp.round.flags_u));
+
+		// const int prim_top = (bits >> 12) & 0xFFF;
+		// int flags_v = (bits >> 28) & 0xF;
+
+		armAsm->Lsr(_wscratch2, _wscratch, 12);
+		armAsm->And(_wscratch2, _wscratch2, 0xFFF);
+		armAsm->Lsr(_wscratch, _wscratch, 28);
+
+		static_assert((ROUND_UV_DOWN >> 1) == ROUND_UV_UP);
+		// if (prim_top == top)
+		// {
+		//   flags_v = ((flags_v & ROUND_UV_DOWN) >> 1) | (flags_v & ~ROUND_UV_DOWN);
+		// }
+
+		Label end_if;
+		armAsm->Cmp(_wscratch2, _top);
+		armAsm->B(ne, &end_if);
+		armAsm->And(_wscratch2, _wscratch, ROUND_UV_DOWN);
+		armAsm->Lsr(_wscratch2, _wscratch2, 1);
+		armAsm->Bic(_wscratch, _wscratch, ROUND_UV_DOWN);
+		armAsm->Orr(_wscratch, _wscratch, _wscratch2);
+		armAsm->Bind(&end_if);
+
+		// local.temp.round.flags_v = flags_v;
+
+		armAsm->Str(_wscratch, _local(temp.round.flags_v));
+	}
+
 	if ((m_sel.prim != GS_SPRITE_CLASS && ((m_sel.fwrite && m_sel.fge) || m_sel.zb)) || (m_sel.fb && (m_sel.edge || m_sel.tfx != TFX_NONE || m_sel.iip)))
 	{
 		// w1 = &m_local.d[skip]
@@ -549,6 +599,15 @@ void GSDrawScanlineCodeGenerator::Step()
 		armAsm->Add(_scratchaddr, _globals, offsetof(GSScanlineGlobalData, const_test_128b[7]));
 		armAsm->Ldr(_test, MemOperand(_scratchaddr, x1, SXTW));
 	}
+
+	if (m_sel.rounduv)
+	{
+		// local.temp.round.left += vlen;
+
+		armAsm->Ldr(_wscratch, _local(temp.round.left));
+		armAsm->Add(_wscratch, _wscratch, 4);
+		armAsm->Str(_wscratch, _local(temp.round.left));
+	}
 }
 
 void GSDrawScanlineCodeGenerator::TestZ(const VRegister& temp1, const VRegister& temp2)
@@ -701,6 +760,15 @@ void GSDrawScanlineCodeGenerator::SampleTexture()
 		}
 	}
 
+	if (m_sel.rounduv)
+	{
+		armAsm->Mov(v2, ureg);
+		armAsm->Mov(v3, vreg);
+		ureg = v2;
+		vreg = v3;
+		RoundUV(ureg, vreg, v0, v1, v5, v6, _vscratch, _vscratch2);
+	}
+
 	if (m_sel.ltf)
 	{
 		// GSVector4i uf = u.xxzzlh().srl16(12);
@@ -708,7 +776,7 @@ void GSDrawScanlineCodeGenerator::SampleTexture()
 		armAsm->Trn1(uf.V8H(), ureg.V8H(), ureg.V8H());
 		armAsm->Ushr(uf.V8H(), uf.V8H(), 12);
 
-		if (m_sel.prim != GS_SPRITE_CLASS)
+		if (m_sel.prim != GS_SPRITE_CLASS || m_sel.rounduv)
 		{
 			// GSVector4i vf = v.xxzzlh().srl16(12);
 
@@ -749,7 +817,7 @@ void GSDrawScanlineCodeGenerator::SampleTexture()
 void GSDrawScanlineCodeGenerator::SampleTexture_TexelReadHelper(int mip_offset)
 {
 	const auto& uf = v4;
-	const auto& vf = (m_sel.prim != GS_SPRITE_CLASS || m_sel.mmin) ? v7 : _temp_vf;
+	const auto& vf = (m_sel.prim != GS_SPRITE_CLASS || m_sel.rounduv || m_sel.mmin) ? v7 : _temp_vf;
 
 	// GSVector4i y0 = uv0.uph16() << tw;
 	// GSVector4i x0 = uv0.upl16();
@@ -2436,6 +2504,99 @@ void GSDrawScanlineCodeGenerator::split16_2x8(const VRegister& l, const VRegiste
 		armAsm->Mov(l, src);
 		armAsm->Ushr(h.V8H(), src.V8H(), 8);
 		armAsm->Bic(l.V8H(), 0xFF, 8);
+	}
+}
+
+void GSDrawScanlineCodeGenerator::RoundUV(
+	const VRegister& u, const VRegister& v,
+	const VRegister& tmp1, const VRegister& tmp2,
+	const VRegister& tmp3, const VRegister& tmp4,
+	const VRegister& tmp5, const VRegister& tmp6)
+{
+	for (int i = 0; i < 2; i++)
+	{
+		// i == 0: U rounding.
+		// i == 1: V rounding.
+
+		if (i == 0)
+		{
+			// const VectorI curr_x = VectorI(local.temp.round.left) + VectorI::load<true>(g_const.m_offsets);
+
+			armAsm->Ld1r(tmp1.V4S(), _local(temp.round.left));
+			armAsm->Ldr(tmp2.V4S(), _global(const_offsets));
+			armAsm->Add(tmp1.V4S(), tmp1.V4S(), tmp2.V4S());
+
+			// const VectorI at_left = VectorI(local.temp.round.prim_left) == curr_x;
+
+			armAsm->Ld1r(tmp2.V4S(), _local(temp.round.prim_left));
+			armAsm->Cmeq(tmp1.V4S(), tmp1.V4S(), tmp2.V4S());
+		}
+
+		// const VectorI round_setting_u = VectorI(local.temp.round.flags_u);
+		// const VectorI round_setting_v = VectorI(local.temp.round.flags_v);
+
+		armAsm->Ld1r(tmp2.V4S(), i == 0 ? _local(temp.round.flags_u) : _local(temp.round.flags_v));
+
+		// const VectorI round_down_const = VectorI::load<true>(g_const.m_round_down);
+		// const VectorI round_down_u = (round_setting_u == round_down_const) & ~at_left;
+		// const VectorI round_down_v = (round_setting_v == round_down_const);
+
+		armAsm->Ld1r(tmp3.V4S(), _global(const_round_down));
+		armAsm->Cmeq(tmp3.V4S(), tmp3.V4S(), tmp2.V4S());
+		if (i == 0)
+			armAsm->Bic(tmp3.V4S(), tmp3.V4S(), tmp1.V4S());
+
+		// const VectorI round_up_const = VectorI::load<true>(g_const.m_round_up);
+		// const VectorI round_up_u = (round_setting_u == round_up_const) |
+		//                            ((round_setting_u == round_down_const) & at_left);
+		// const VectorI round_up_v = (round_setting_v == round_up_const);
+
+		armAsm->Ld1r(tmp4.V4S(), _global(const_round_up));
+		armAsm->Cmeq(tmp4.V4S(), tmp4.V4S(), tmp2.V4S());
+		if (i == 0)
+		{
+			armAsm->Ld1r(tmp5.V4S(), _global(const_round_down));
+			armAsm->Cmeq(tmp5.V4S(), tmp5.V4S(), tmp2.V4S());
+			armAsm->And(tmp5.V4S(), tmp5.V4S(), tmp1.V4S());
+			armAsm->Orr(tmp4.V4S(), tmp4.V4S(), tmp5.V4S());
+		}
+
+		// const VectorI quarter_texel = VectorI::load<true>(g_const.m_quarter_texel);
+		// const VectorI half_texel_mask = VectorI::load<true>(g_const.m_half_texel_mask);
+		// VectorI ui = (u + quarter_texel) & half_texel_mask;
+		// VectorI vi = (v + quarter_texel) & half_texel_mask;
+
+		const VRegister& uv = i == 0 ? u : v;
+		armAsm->Ld1r(tmp1.V4S(), _global(const_quarter_texel));
+		armAsm->Ld1r(tmp5.V4S(), _global(const_half_texel_mask));
+		armAsm->Add(tmp1.V4S(), tmp1.V4S(), uv.V4S());
+		armAsm->And(tmp1.V4S(), tmp1.V4S(), tmp5.V4S());
+
+		// const VectorI threshold = VectorI::load<true>(g_const.m_round_threshold);
+		// VectorI close_u = (u - ui).abs32() <= threshold;
+		// VectorI close_v = (v - vi).abs32() <= threshold;
+
+		armAsm->Sub(tmp2.V4S(), uv.V4S(), tmp1.V4S());
+		armAsm->Abs(tmp2.V4S(), tmp2.V4S());
+		armAsm->Ld1r(tmp5.V4S(), _global(const_round_threshold));
+		armAsm->Cmgt(tmp2.V4S(), tmp2.V4S(), tmp5.V4S());
+		armAsm->Mvn(tmp2.V4S(), tmp2.V4S());
+
+		// u = u.blend8(ui - threshold, close_u & round_down_u);
+		// u = u.blend8(ui + threshold, close_u & round_up_u);
+		// v = v.blend8(vi - threshold, close_v & round_down_v);
+		// v = v.blend8(vi + threshold, close_v & round_up_v);
+
+		armAsm->And(tmp3.V4S(), tmp3.V4S(), tmp2.V4S());
+		armAsm->And(tmp4.V4S(), tmp4.V4S(), tmp2.V4S());
+		armAsm->Sub(tmp2.V4S(), tmp1.V4S(), tmp5.V4S());
+		armAsm->Add(tmp6.V4S(), tmp1.V4S(), tmp5.V4S());
+		armAsm->And(tmp2.V4S(), tmp2.V4S(), tmp3.V4S());
+		armAsm->And(tmp6.V4S(), tmp6.V4S(), tmp4.V4S());
+		// armAsm->Bic(uv.V4S(), uv.V4S(), tmp3.V4S()); // FIXME: Uncomment after testing!
+		// armAsm->Bic(uv.V4S(), uv.V4S(), tmp4.V4S()); // FIXME: Uncomment after testing!
+		// armAsm->Orr(uv.V4S(), uv.V4S(), tmp2.V4S()); // FIXME: Uncomment after testing!
+		// armAsm->Orr(uv.V4S(), uv.V4S(), tmp6.V4S()); // FIXME: Uncomment after testing!
 	}
 }
 

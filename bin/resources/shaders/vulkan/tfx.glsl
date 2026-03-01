@@ -28,7 +28,22 @@ layout(location = 0) out VSOutput
 	#else
 		flat vec4 c;
 	#endif
+
+	#if VS_ROUND_UV != 0
+		flat uvec4 rounduv;
+	#endif
 } vsOut;
+
+uvec4 extract_round_uv_bits(float q)
+{
+	uint qi = floatBitsToUint(q);
+	return uvec4(
+		(qi >> 0) & 0xFFF,  // Prim left
+		(qi >> 12) & 0xFFF, // Prim top
+		(qi >> 24) & 0xF,   // Round U flags
+		(qi >> 28) & 0xF    // Round V flags
+	);
+}
 
 #if VS_EXPAND == 0
 
@@ -56,7 +71,12 @@ void main()
 	gl_Position.y = -gl_Position.y;
 
 	#if VS_TME
-		vec2 uv = a_uv - TextureOffset;
+		#if VS_ROUND_UV == 0
+			vec2 uv = a_uv - TextureOffset;
+		#else
+			vec2 uv = a_st - TextureOffset;
+		#endif
+		
 		vec2 st = a_st - TextureOffset;
 
 		// Integer nomalized
@@ -73,9 +93,18 @@ void main()
 		// Float coords
 		vsOut.t.xy = st;
 		vsOut.t.w = a_q;
+
+		// Get UV rounding info saved in Q.
+		#if VS_ROUND_UV
+			vsOut.rounduv = extract_round_uv_bits(a_q);
+			vsOut.t.w = 1.0f;
+		#endif
 	#else
 		vsOut.t = vec4(0.0f, 0.0f, 0.0f, 1.0f);
 		vsOut.ti = vec4(0.0f);
+		#if VS_ROUND_UV
+			vsOut.rounduv = uvec4(0);
+		#endif
 	#endif
 
 	#if VS_POINT_SIZE
@@ -109,6 +138,9 @@ struct ProcessedVertex
 	vec4 t;
 	vec4 ti;
 	vec4 c;
+#if VS_ROUND_UV
+	uvec4 rounduv;
+#endif
 };
 
 ProcessedVertex load_vertex(uint index)
@@ -133,7 +165,11 @@ ProcessedVertex load_vertex(uint index)
 	vtx.p.y = -vtx.p.y;
 
 	#if VS_TME
-		vec2 uv = a_uv - TextureOffset;
+		#if VS_ROUND_UV == 0
+			vec2 uv = a_uv - TextureOffset;
+		#else
+			vec2 uv = a_st - TextureOffset;
+		#endif
 		vec2 st = a_st - TextureOffset;
 		vtx.ti.xy = uv * TextureScale;
 
@@ -145,9 +181,18 @@ ProcessedVertex load_vertex(uint index)
 
 		vtx.t.xy = st;
 		vtx.t.w = a_q;
+	
+		// Get UV rounding info saved in Q.
+		#if VS_ROUND_UV
+			vtx.rounduv = extract_round_uv_bits(a_q);
+			vtx.t.w = 1.0f;
+		#endif
 	#else
 		vtx.t = vec4(0.0f, 0.0f, 0.0f, 1.0f);
 		vtx.ti = vec4(0.0f);
+		#if VS_ROUND_UV
+			vtx.rounduv = uvec4(0);
+		#endif
 	#endif
 
 	vtx.c = a_c;
@@ -217,6 +262,9 @@ void main()
 	vsOut.t = vtx.t;
 	vsOut.ti = vtx.ti;
 	vsOut.c = vtx.c;
+#if VS_ROUND_UV
+	vsOut.rounduv = vtx.rounduv;
+#endif
 }
 
 #endif // VS_EXPAND
@@ -321,6 +369,7 @@ void main()
 #define PS_TEX_IS_FB 0
 #define PS_COLOR_FEEDBACK 0
 #define PS_DEPTH_FEEDBACK 0
+#define PS_ROUND_UV 0
 #endif
 
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
@@ -365,6 +414,9 @@ layout(location = 0) in VSOutput
 		vec4 c;
 	#else
 		flat vec4 c;
+	#endif
+	#if PS_ROUND_UV != 0
+		flat uvec4 rounduv;
 	#endif
 } vsIn;
 
@@ -551,6 +603,37 @@ vec4 clamp_wrap_uv(vec4 uv)
 	#endif
 
 	return uv;
+}
+
+vec4 round_uv()
+{
+#if PS_ROUND_UV != 0
+	// Check if we're at the prim top or left.
+	ivec2 topleft = ivec2(equal(ivec2(gl_FragCoord.xy), ivec2(vsIn.rounduv.xy)));
+
+	// Extract flags for whether to round U, V.
+	ivec2 round_flags = ivec2(vsIn.rounduv.zw);
+
+	// Being on the top or left pixels converts round down to round up.
+	ivec2 round_down = ivec2(equal(round_flags, ivec2(PS_ROUND_UV_DOWN))) & ~topleft;
+	ivec2 round_up = ivec2(equal(round_flags, ivec2(PS_ROUND_UV_UP))) |
+	                 (ivec2(equal(round_flags, ivec2(PS_ROUND_UV_DOWN))) & topleft);
+
+	vec2 uv = vsIn.ti.zw; // Unnormalized UVs.
+	vec2 uvi = round(uv / 8.0f) * 8.0f; // Nearest half texel.
+	
+	// Round only if close to a half texel.
+	ivec2 close = ivec2(lessThanEqual(abs(uv - uvi), vec2(PS_ROUND_UV_THRESHOLD)));
+	round_down &= close;
+	round_up &= close;
+
+	uv = mix(uv, uvi - vec2(PS_ROUND_UV_THRESHOLD), bvec2(round_down));
+	uv = mix(uv, uvi + vec2(PS_ROUND_UV_THRESHOLD), bvec2(round_up));
+
+	return vec4(uv / 16.0f / WH.xy, uv); // Return normalized and unnormalized coords.
+#else
+	return vec4(0.0f);
+#endif
 }
 
 mat4 sample_4c(vec4 uv)
@@ -972,6 +1055,10 @@ vec4 ps_color()
 #if PS_FST == 0
 	vec2 st = vsIn.t.xy / vsIn.t.w;
 	vec2 st_int = vsIn.ti.zw / vsIn.t.w;
+#elif PS_ROUND_UV != 0
+	vec4 ti_rounded = round_uv();
+	vec2 st = ti_rounded.xy;
+	vec2 st_int = ti_rounded.zw;
 #else
 	vec2 st = vsIn.ti.xy;
 	vec2 st_int = vsIn.ti.zw;

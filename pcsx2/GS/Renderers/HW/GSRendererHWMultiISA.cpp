@@ -39,6 +39,9 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc, b
 	GSRasterizerData data;
 	GSScanlineGlobalData& gd = data.global;
 
+	const u32 round_uv = static_cast<u32>(hw.GetVertexUVRoundingInfo());
+	const u32 fst = PRIM->FST | round_uv; // UV rounding pre-divides ST by Q and saves as UVs.
+
 	hw.m_sw_vertex_buffer.resize(((hw.m_vertex.next + 1) & ~1));
 
 	data.primclass = vt.m_primclass;
@@ -53,7 +56,8 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc, b
 	// Optimize the division by 1 with a nop. It also means that GS_SPRITE_CLASS must be processed when !vt.m_eq.q.
 	// If you have both GS_SPRITE_CLASS && vt.m_eq.q, it will depends on the first part of the 'OR'.
 	const u32 q_div = !hw.IsMipMapActive() && ((vt.m_eq.q && vt.m_min.t.z != 1.0f) || (!vt.m_eq.q && vt.m_primclass == GS_SPRITE_CLASS));
-	GSVertexSW::s_cvb[vt.m_primclass][PRIM->TME][PRIM->FST][q_div](context, data.vertex, hw.m_vertex.buff, hw.m_vertex.next);
+	GSVertexSW::s_cvb[vt.m_primclass][PRIM->TME][fst][q_div][round_uv](
+		context, data.vertex, hw.m_vertex.buff, hw.m_vertex.next);
 
 	GSVector4i scissor = context->scissor.in;
 	GSVector4i bbox = GSVector4i(vt.m_min.p.floor().xyxy(vt.m_max.p.ceil())).rintersect(scissor);
@@ -162,8 +166,9 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc, b
 		{
 			gd.sel.tfx = context->TEX0.TFX;
 			gd.sel.tcc = context->TEX0.TCC;
-			gd.sel.fst = PRIM->FST;
+			gd.sel.fst = PRIM->FST | round_uv;
 			gd.sel.ltf = vt.IsLinear();
+			gd.sel.rounduv = round_uv;
 
 			if (GSLocalMemory::m_psm[context->TEX0.PSM].pal > 0)
 			{
