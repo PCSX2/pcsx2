@@ -185,6 +185,7 @@ protected:
 	void UpdateVertexKick();
 
 	void GrowVertexBuffer();
+	bool DeindexVertices();
 	bool IsAutoFlushDraw(u32 prim, int& tex_layer);
 	template<u32 prim> void HandleAutoFlush();
 	bool EarlyDetectShuffle(u32 prim);
@@ -544,6 +545,9 @@ public:
 	template <u32 primclass>
 	void RewriteVerticesIfLargeSTImpl(const GSVector4& large_val, bool check_clamp_mode);
 	void RewriteVerticesIfLargeST(const GSVector4& large_val, bool check_clamp_mode);
+	template<u32 primclass, bool fst>
+	bool GetVertexUVRoundingInfoImpl();
+	bool GetVertexUVRoundingInfo();
 };
 
 // We put this in the header because of Multi-ISA.
