@@ -78,7 +78,7 @@ void vs_main()
 	texture_coord();
 
 	VSout.c = i_c;
-	VSout.t_float.z = i_f.x; // pack for with texture
+	VSout.t_float.z = i_f.x; // pack fog with texture
 
 	#if VS_POINT_SIZE
 		gl_PointSize = PointSize.x;
