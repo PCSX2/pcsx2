@@ -16,6 +16,7 @@ constant bool DEPTH_FEEDBACK        [[function_constant(GSMTLConstantIndex_DEPTH
 constant bool ROV_NEEDS_R32         [[function_constant(GSMTLConstantIndex_ROV_NEEDS_R32)]];
 constant bool FST                   [[function_constant(GSMTLConstantIndex_FST)]];
 constant bool IIP                   [[function_constant(GSMTLConstantIndex_IIP)]];
+constant bool VS_ROUND_UV           [[function_constant(GSMTLConstantIndex_VS_ROUND_UV)]];
 constant bool VS_POINT_SIZE         [[function_constant(GSMTLConstantIndex_VS_POINT_SIZE)]];
 constant uint VS_EXPAND_TYPE_RAW    [[function_constant(GSMTLConstantIndex_VS_EXPAND_TYPE)]];
 constant uint PS_AEM_FMT            [[function_constant(GSMTLConstantIndex_PS_AEM_FMT)]];
@@ -78,6 +79,7 @@ constant bool PS_ABE                [[function_constant(GSMTLConstantIndex_PS_AB
 constant uint PS_SW_ANISO           [[function_constant(GSMTLConstantIndex_PS_SW_ANISO)]];
 constant bool PS_ROV_COLOR          [[function_constant(GSMTLConstantIndex_PS_ROV_COLOR)]];
 constant uint PS_ROV_DEPTH_RAW      [[function_constant(GSMTLConstantIndex_PS_ROV_DEPTH)]];
+constant uint PS_ROUND_UV_RAW       [[function_constant(GSMTLConstantIndex_PS_ROUND_UV)]];
 
 using GSShader::VSExpand;
 using AFAIL = GSShader::PS_AFAIL;
@@ -85,12 +87,14 @@ using ATST = GSShader::PS_ATST;
 using GSShader::ZTST;
 using AA1 = GSShader::PS_AA1;
 using ROV_DEPTH = GSShader::PS_ROV_DEPTH;
+using ROUND_UV = GSShader::PS_ROUND_UV;
 constant VSExpand VS_EXPAND_TYPE = static_cast<VSExpand>(VS_EXPAND_TYPE_RAW);
 constant AFAIL PS_AFAIL = static_cast<AFAIL>(PS_AFAIL_RAW);
 constant ATST  PS_ATST  = static_cast<ATST>(PS_ATST_RAW);
 constant ZTST  PS_ZTST  = static_cast<ZTST>(PS_ZTST_RAW);
 constant AA1   PS_AA1   = static_cast<AA1>(PS_AA1_RAW);
 constant ROV_DEPTH PS_ROV_DEPTH = static_cast<ROV_DEPTH>(PS_ROV_DEPTH_RAW);
+constant ROUND_UV PS_ROUND_UV = static_cast<ROUND_UV>(PS_ROUND_UV_RAW);
 
 #if defined(__METAL_MACOS__) && __METAL_VERSION__ >= 220
 	#define PRIMID_SUPPORT 1
@@ -135,6 +139,7 @@ constant bool VS_COVERAGE = VS_EXPAND_TYPE == VSExpand::LineAA1 || VS_EXPAND_TYP
 constant bool VS_INTERIOR = VS_EXPAND_TYPE == VSExpand::TriangleAA1;
 constant bool PS_COVERAGE = PS_AA1 != AA1::NONE;
 constant bool PS_INTERIOR = PS_AA1 == AA1::TRIANGLE_SW_Z;
+constant bool PS_ROUND_UV_ENABLED = PS_ROUND_UV != ROUND_UV::NONE;
 
 struct MainVSIn
 {
@@ -156,6 +161,7 @@ struct MainVSOut
 	float4 fc [[flat, function_constant(NOT_IIP)]];
 	float inv_cov [[function_constant(VS_COVERAGE)]];
 	uint interior [[function_constant(VS_INTERIOR)]];
+	uint4 rounduv [[flat, function_constant(VS_ROUND_UV)]];
 	float point_size [[point_size, function_constant(VS_POINT_SIZE)]];
 };
 
@@ -168,6 +174,7 @@ struct MainPSIn
 	float4 fc [[flat, function_constant(NOT_IIP)]];
 	float inv_cov [[function_constant(PS_COVERAGE)]];
 	uint interior [[function_constant(PS_INTERIOR)]];
+	uint4 rounduv [[flat, function_constant(PS_ROUND_UV_ENABLED)]];
 };
 
 struct MainResult
@@ -201,9 +208,28 @@ struct MainPSOut
 
 // MARK: - Vertex functions
 
+static uint4 extract_round_uv_bits(float q)
+{
+	uint qi = as_type<uint>(q);
+	return uint4(
+		(qi >> 0) & 0xFFF,  // Prim left
+		(qi >> 12) & 0xFFF, // Prim top
+		(qi >> 24) & 0xF,   // Round U flags
+		(qi >> 28) & 0xF    // Round V flags
+	);
+}
+
 static void texture_coord(thread const MainVSIn& v, thread MainVSOut& out, constant GSMTLMainVSUniform& cb)
 {
-	float2 uv = float2(v.uv) - cb.texture_offset;
+	float2 uv;
+	if (!VS_ROUND_UV)
+	{
+		uv = float2(v.uv) - cb.texture_offset;
+	}
+	else
+	{
+		uv = v.st - cb.texture_offset;
+	}
 	float2 st = v.st - cb.texture_offset;
 
 	// Float coordinate
@@ -222,6 +248,13 @@ static void texture_coord(thread const MainVSIn& v, thread MainVSOut& out, const
 	{
 		// Some games uses float coordinate for post-processing effects
 		out.ti.zw = st / cb.texture_scale;
+	}
+
+	if (VS_ROUND_UV)
+	{
+		// Get UV rounding info saved in Q.
+		out.rounduv = extract_round_uv_bits(v.q);
+		out.t.w = 1.0f;
 	}
 }
 
@@ -891,6 +924,47 @@ struct PSMain
 		return uv;
 	}
 
+	float4 round_uv()
+	{
+		if (PS_ROUND_UV != ROUND_UV::NONE)
+		{
+			// Check if we're at the prim top or left.
+			int2 topleft = int2(int2(in.p.xy) == int2(in.rounduv.xy));
+
+			// Extract flags for whether to round U, V.
+			int2 round_flags = int2(in.rounduv.zw);
+
+			// Being on the top or left pixels converts round down to round up.
+			int2 round_down = int2(round_flags == ROUND_UV_DOWN) & ~topleft;
+			int2 round_up = int2(round_flags == ROUND_UV_UP) |
+			                (int2(round_flags == ROUND_UV_DOWN) & topleft);
+
+			float2 uv = in.ti.zw; // Unnormalized UVs.
+			float2 uvi = round(in.ti.zw / 8.0f) * 8.0f; // Nearest half texel.
+			
+			// Round only if close to a half texel.
+			int2 close = int2(abs(uv - uvi) < ROUND_UV_THRESHOLD);
+			round_down &= close;
+			round_up &= close;
+
+			uv = select(uv, uvi - ROUND_UV_THRESHOLD, bool2(round_down));
+			uv = select(uv, uvi + ROUND_UV_THRESHOLD, bool2(round_up));
+
+			uv = select(uv, uv.yx, bool2(round_flags & int2(ROUND_UV_SWAP)));
+
+			if (PS_ROUND_UV == ROUND_UV::LINEAR)
+			{
+				uv = trunc(uv); // Truncate to closest subtexel for bilinear.
+			}
+
+			return float4(uv / 16.0f / cb.wh.xy, uv); // Return normalized and unnormalized coords.
+		}
+		else
+		{
+			return float4(0.0f);
+		}
+	}
+
 	float4x4 sample_4c(float4 uv)
 	{
 		return {
@@ -1237,6 +1311,14 @@ struct PSMain
 		{
 			st = in.t.xy / in.t.w;
 			st_int = in.ti.zw / in.t.w;
+		}
+		else if (PS_ROUND_UV != ROUND_UV::NONE)
+		{
+			float4 ti_rounded = round_uv();
+			
+			// Note: xy are normalized coordinates
+			st = ti_rounded.xy;
+			st_int = ti_rounded.zw;
 		}
 		else
 		{
