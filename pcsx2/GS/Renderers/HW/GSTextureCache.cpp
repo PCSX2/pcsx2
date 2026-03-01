@@ -1810,7 +1810,8 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 					// Keep note that 2 bw is basically 1 normal page, as bw is in 64 pixels, and 8bit pages are 128 pixels wide, aka 2 bw.
 					// Also check for 4HH/HL and 8H which use the alpha channel, if the page order is wrong this can cause problems as well (Jak X font).
 					else if (!possible_shuffle && GSLocalMemory::m_psm[psm].trbpp <= 8 &&
-					         (GSUtil::GetChannelMask(t->m_TEX0.PSM) != 0xF ||
+							 ((GSUtil::GetChannelMask(t->m_TEX0.PSM) != GSUtil::GetChannelMask(psm) && 
+							 !(((GSUtil::GetChannelMask(psm) & 0x7) == 0 || t->m_valid_rgb) && ((GSUtil::GetChannelMask(psm) & 0x8) == 0 || (t->m_valid_alpha_low && t->m_valid_alpha_high)))) ||
 					          ((GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp != 16 || GSLocalMemory::m_psm[psm].bpp < 16) &&
 					           (!(block_boundary_rect.w <= GSLocalMemory::m_psm[psm].pgs.y &&
 					              ((GSLocalMemory::m_psm[psm].bpp == 32) ? bw : ((bw + 1) / 2)) <= t->m_TEX0.TBW) &&
