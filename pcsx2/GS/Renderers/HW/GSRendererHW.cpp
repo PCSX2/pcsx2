@@ -5001,15 +5001,8 @@ void GSRendererHW::HandleProvokingVertexFirst()
 		return;
 
 	// De-index the vertices using the copy buffer
-	while (m_vertex.maxcount < m_index.tail)
-		GrowVertexBuffer();
-	for (int i = static_cast<int>(m_index.tail) - 1; i >= 0; i--)
-	{
-		m_vertex.buff_copy[i] = m_vertex.buff[m_index.buff[i]];
-		m_index.buff[i] = static_cast<u16>(i);
-	}
-	std::swap(m_vertex.buff, m_vertex.buff_copy);
-	m_vertex.head = m_vertex.next = m_vertex.tail = m_index.tail;
+	if (!DeindexVertices()) [[unlikely]]
+		return;
 
 	// Put correct color in the first vertex
 	for (u32 i = 0; i < m_index.tail; i += n)
@@ -8119,6 +8112,19 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		ComputeDrawlistGetSize(rt->m_scale);
 		m_conf.drawlist = &m_drawlist;
 		m_conf.drawlist_bbox = &m_drawlist_bbox;
+	}
+
+	// Round UV handling.
+	if (GetUpscaleMultiplier() == 1.0f && m_conf.ps.tfx != TFX_NONE && !m_channel_shuffle && !m_texture_shuffle)
+	{
+		if (GetVertexUVRoundingInfo())
+		{
+			GL_INS("HW: Doing shader UV rounding.%s", PRIM->FST ? "" : " Converting ST to UV (pre-divide Q).");
+			m_conf.ps.round_uv = true;
+			m_conf.vs.round_uv = true;
+			m_conf.ps.fst = true;
+			m_conf.vs.fst = true;
+		}
 	}
 
 	HandleProvokingVertexFirst();

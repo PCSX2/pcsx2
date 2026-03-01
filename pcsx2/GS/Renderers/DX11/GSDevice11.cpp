@@ -1718,6 +1718,7 @@ void GSDevice11::SetupVS(VSSelector sel, const GSHWDrawConfig::VSConstantBuffer*
 		sm.AddMacro("VS_TME", sel.tme);
 		sm.AddMacro("VS_FST", sel.fst);
 		sm.AddMacro("VS_IIP", sel.iip);
+		sm.AddMacro("VS_ROUND_UV", static_cast<int>(sel.round_uv));
 		sm.AddMacro("VS_EXPAND", static_cast<int>(sel.expand));
 
 		static constexpr const D3D11_INPUT_ELEMENT_DESC layout[] =
@@ -1765,6 +1766,9 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 
 		sm.AddMacro("PIXEL_SHADER", 1);
 		sm.AddMacro("PS_HAS_CONSERVATIVE_DEPTH", m_conservative_depth);
+		sm.AddMacro("PS_ROUND_UV_THRESHOLD", fmt::format("{}", static_cast<float>(ROUND_UV_THRESHOLD)));
+		sm.AddMacro("PS_ROUND_UV_UP", fmt::format("{}", static_cast<int>(ROUND_UV_UP)));
+		sm.AddMacro("PS_ROUND_UV_DOWN", fmt::format("{}", static_cast<int>(ROUND_UV_DOWN)));
 		sm.AddMacro("PS_FST", sel.fst);
 		sm.AddMacro("PS_WMS", sel.wms);
 		sm.AddMacro("PS_WMT", sel.wmt);
@@ -1822,6 +1826,7 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 		sm.AddMacro("PS_TEX_IS_FB", sel.tex_is_fb);
 		sm.AddMacro("PS_NO_COLOR", sel.no_color);
 		sm.AddMacro("PS_NO_COLOR1", sel.no_color1);
+		sm.AddMacro("PS_ROUND_UV", sel.round_uv);
 
 		wil::com_ptr_nothrow<ID3D11PixelShader> ps = m_shader_cache.GetPixelShader(m_dev.get(), m_tfx_source, sm.GetPtr(), "ps_main");
 		i = m_ps.try_emplace(sel, std::move(ps)).first;
