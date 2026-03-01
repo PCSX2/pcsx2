@@ -19,6 +19,7 @@ struct alignas(32) GSVertexSW
 	// t: s t q f
 	// c: r g b a
 	// cov is placed in x since by the time it's known, xy are no longer needed
+	// When doing uv rounding, rounding info is placed in q.
 
 	GSVector4 p, _pad, t, c;
 
@@ -236,7 +237,7 @@ struct alignas(32) GSVertexSW
 
 	typedef void (*ConvertVertexBufferPtr)(const GSDrawingContext* RESTRICT ctx, GSVertexSW* RESTRICT dst, const GSVertex* RESTRICT src, u32 count);
 
-	static ConvertVertexBufferPtr s_cvb[4][2][2][2];
+	static ConvertVertexBufferPtr s_cvb[4][2][2][2][2];
 
 	static void InitStatic();
 };
