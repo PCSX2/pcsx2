@@ -186,6 +186,7 @@ protected:
 	void UpdateVertexKick();
 
 	void GrowVertexBuffer();
+	bool DeindexVertices();
 	bool IsAutoFlushDraw(u32 prim, int& tex_layer);
 	template<u32 prim> void HandleAutoFlush();
 	bool EarlyDetectShuffle(u32 prim);
@@ -540,6 +541,9 @@ public:
 	bool SpriteDrawWithoutGaps();
 	void CalculatePrimitiveCoversWithoutGaps();
 	GIFRegTEX0 GetTex0Layer(u32 lod);
+	template<u32 primclass, bool fst>
+	bool GetVertexUVRoundingInfoImpl();
+	bool GetVertexUVRoundingInfo();
 };
 
 // We put this in the header because of Multi-ISA.

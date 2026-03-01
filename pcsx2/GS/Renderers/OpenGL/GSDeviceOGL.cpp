@@ -1468,6 +1468,10 @@ std::string GSDeviceOGL::GenGlslHeader(const std::string_view entry, GLenum type
 		header += "#define DEPTH_FEEDBACK_SUPPORT 2\n"; // Depth as RT
 	}
 
+	header += "#define PS_ROUND_UV_THRESHOLD " + fmt::format("{}", static_cast<float>(ROUND_UV_THRESHOLD)) + "\n";
+	header += "#define PS_ROUND_UV_UP " + fmt::format("{}", static_cast<int>(ROUND_UV_UP)) + "\n";
+	header += "#define PS_ROUND_UV_DOWN " + fmt::format("{}", static_cast<int>(ROUND_UV_DOWN)) + "\n";
+
 	// Allow to puts several shader in 1 files
 	switch (type)
 	{
@@ -1505,7 +1509,8 @@ std::string GSDeviceOGL::GetVSSource(VSSelector sel)
 	std::string macro = fmt::format("#define VS_FST {}\n", static_cast<u32>(sel.fst))
 		+ fmt::format("#define VS_IIP {}\n", static_cast<u32>(sel.iip))
 		+ fmt::format("#define VS_POINT_SIZE {}\n", static_cast<u32>(sel.point_size))
-	  + fmt::format("#define VS_EXPAND {}\n", static_cast<int>(sel.expand));
+		+ fmt::format("#define VS_ROUND_UV {}\n", static_cast<int>(sel.round_uv))
+		+ fmt::format("#define VS_EXPAND {}\n", static_cast<int>(sel.expand));
 
 	std::string src = GenGlslHeader("vs_main", GL_VERTEX_SHADER, macro);
 	src += m_shader_tfx_vgs;
@@ -1576,6 +1581,7 @@ std::string GSDeviceOGL::GetPSSource(const PSSelector& sel)
 		+ fmt::format("#define PS_AA1 {}\n", static_cast<u32>(sel.aa1))
 		+ fmt::format("#define PS_ABE {}\n", sel.abe)
 		+ fmt::format("#define PS_ANISOTROPIC_FILTERING {}", sel.sw_aniso)
+		+ fmt::format("#define PS_ROUND_UV {}\n", sel.round_uv)
 	;
 
 	std::string src = GenGlslHeader("ps_main", GL_FRAGMENT_SHADER, macro);
