@@ -667,6 +667,7 @@ struct alignas(16) GSHWDrawConfig
 	using PS_AFAIL = GSShader::PS_AFAIL;
 	using PS_AA1   = GSShader::PS_AA1;
 	using PS_ROV_DEPTH = GSShader::PS_ROV_DEPTH;
+	using PS_ROUND_UV = GSShader::PS_ROUND_UV;
 #pragma pack(push, 1)
 	struct VSSelector
 	{
@@ -678,8 +679,8 @@ struct alignas(16) GSHWDrawConfig
 				u8 tme : 1;
 				u8 iip : 1;
 				u8 point_size : 1;		///< Set when points need to be expanded without VS expanding.
+				u8 round_uv : 1;
 				VSExpand expand : 3;
-				u8 _free : 1;
 			};
 			u8 key;
 		};
@@ -791,6 +792,9 @@ struct alignas(16) GSHWDrawConfig
 				// ROVs
 				u32 rov_color : 1;
 				PS_ROV_DEPTH rov_depth : 2;
+				
+				// Round UV
+				PS_ROUND_UV round_uv : 2;
 			};
 
 			struct

@@ -40,6 +40,12 @@
 #define PS_AA1_TRIANGLE_SW_Z 3
 #endif
 
+#ifndef PS_ROUND_UV_NONE
+#define PS_ROUND_UV_NONE 0
+#define PS_ROUND_UV_NEAREST 1
+#define PS_ROUND_UV_LINEAR 2
+#endif
+
 // TEX_COORD_DEBUG output the uv coordinate as color. It is useful
 // to detect bad sampling due to upscaling
 //#define TEX_COORD_DEBUG
@@ -115,6 +121,10 @@ in SHADER
 
 	float inv_cov; // We use the inverse to make it simpler to interpolate.
 	flat uint interior; // 1 for triangle interior; 0 for edge;
+	
+	#if PS_ROUND_UV != 0
+		flat uvec4 rounduv;
+	#endif
 } PSin;
 
 #define TARGET_0_QUALIFIER out
@@ -459,6 +469,43 @@ vec4 clamp_wrap_uv(vec4 uv)
 #endif
 
 	return uv_out;
+}
+
+vec4 round_uv()
+{
+#if PS_ROUND_UV
+	// Check if we're at the prim top or left.
+	ivec2 topleft = ivec2(equal(ivec2(gl_FragCoord.xy), ivec2(PSin.rounduv.xy)));
+
+	// Get flags for whether to round U, V.
+	ivec2 round_flags = ivec2(PSin.rounduv.zw);
+
+	// Being on the top or left pixels converts round down to round up.
+	ivec2 round_down = ivec2(bvec2(round_flags & ivec2(ROUND_UV_DOWN))) & ~topleft;
+	ivec2 round_up = ivec2(bvec2(round_flags & ivec2(ROUND_UV_UP))) |
+	                 (ivec2(bvec2(round_flags & ivec2(ROUND_UV_DOWN))) & topleft);
+
+	vec2 uv = PSin.t_int.zw; // Unnormalized UVs.
+	vec2 uvi = round(PSin.t_int.zw / 8.0f) * 8.0f; // Nearest half texel.
+	
+	// Round only if close to a half texel.
+	ivec2 close = ivec2(lessThanEqual(abs(uv - uvi), vec2(ROUND_UV_THRESHOLD)));
+	round_down &= close;
+	round_up &= close;
+
+	uv = mix(uv, uvi - vec2(ROUND_UV_THRESHOLD), bvec2(round_down));
+	uv = mix(uv, uvi + vec2(ROUND_UV_THRESHOLD), bvec2(round_up));
+
+	uv = mix(uv, uv.yx, bvec2(round_flags & ivec2(ROUND_UV_SWAP)));
+
+#if PS_ROUND_UV == PS_ROUND_UV_LINEAR
+	uv = trunc(uv); // Truncate to closest subtexel for bilinear.
+#endif
+
+	return vec4(uv / 16.0f / WH.xy, uv); // Return normalized and unnormalized coords.
+#else
+	return vec4(0.0f);
+#endif
 }
 
 mat4 sample_4c(vec4 uv)
@@ -879,6 +926,10 @@ vec4 ps_color()
 #if (PS_FST == 0)
 	vec2 st = PSin.t_float.xy / vec2(PSin.t_float.w);
 	vec2 st_int = PSin.t_int.zw / vec2(PSin.t_float.w);
+#elif PS_ROUND_UV != 0
+	vec4 t_int_rounded = round_uv();
+	vec2 st = t_int_rounded.xy;
+	vec2 st_int = t_int_rounded.zw;
 #else
 	// Note xy are normalized coordinate
 	vec2 st = PSin.t_int.xy;
