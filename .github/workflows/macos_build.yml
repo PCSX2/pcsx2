@@ -197,7 +197,7 @@ jobs:
           cp "${{ steps.artifact-metadata.outputs.artifact-name }}.tar.xz" ci-artifacts/macOS.tar.xz
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.artifact-metadata.outputs.artifact-name }}
           path: "*.tar.xz"
