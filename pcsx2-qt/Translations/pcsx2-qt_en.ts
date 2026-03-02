@@ -11978,7 +11978,7 @@ This action cannot be undone.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/DX11/GSDevice11.cpp" line="525"/>
+        <location filename="../../pcsx2/GS/Renderers/DX11/GSDevice11.cpp" line="515"/>
         <source>The Direct3D 11 renderer is running at feature level 10.0. This is an UNSUPPORTED configuration.
 Do not request support, please upgrade your hardware/drivers first.</source>
         <translation type="unfinished"></translation>
