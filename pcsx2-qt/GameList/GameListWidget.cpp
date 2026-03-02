@@ -63,7 +63,9 @@ static constexpr std::array<int, GameListModel::Column_Count> DEFAULT_COLUMN_WID
 	90, // last played
 	80, // size
 	60, // region
-	120 // compatibility
+	120, // compatibility
+	0, // cover
+	100, // achievements
 }};
 static_assert(static_cast<int>(DEFAULT_COLUMN_WIDTHS.size()) <= GameListModel::Column_Count,
 	"Game List: More default column widths than column types.");
@@ -245,6 +247,43 @@ namespace
 		}
 	};
 
+	class AchievementsProgressDelegate final : public QStyledItemDelegate
+	{
+	public:
+		using QStyledItemDelegate::QStyledItemDelegate;
+
+		void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+		{
+			QStyledItemDelegate::paint(painter, option, index);
+
+			const QVariant progress = index.data(GameListModel::AchievementsProgressRole);
+			if (!progress.isValid())
+				return;
+
+			const QStyle* style = option.widget ? option.widget->style() : QApplication::style();
+			const QRect& cell = option.rect;
+			const int margin = style->pixelMetric(QStyle::PM_FocusFrameHMargin, &option, option.widget) + 1;
+			const int bar_y = cell.y() + (cell.height() + option.fontMetrics.height()) / 2 + 1;
+			const QRect bar(cell.x() + margin, bar_y, std::min(cell.width() - 2 * margin, 40), 2);
+			if (!bar.isValid() || bar.bottom() > cell.bottom())
+				return;
+
+			const bool selected = option.state & QStyle::State_Selected;
+			QColor track_color = option.palette.color(selected ? QPalette::HighlightedText : QPalette::Text);
+			track_color.setAlphaF(0.35f);
+			painter->fillRect(QStyle::visualRect(option.direction, cell, bar), track_color);
+
+			const double completion = progress.toDouble();
+			if (completion > 0.0)
+			{
+				QRect fill = bar;
+				fill.setWidth(std::max(1, qRound(bar.width() * completion)));
+				painter->fillRect(QStyle::visualRect(option.direction, cell, fill),
+					option.palette.color(selected ? QPalette::HighlightedText : QPalette::Highlight));
+			}
+		}
+	};
+
 	class CoverDecorationsDelegate final : public QStyledItemDelegate
 	{
 	public:
@@ -381,6 +420,7 @@ void GameListWidget::initialize()
 	m_table_view->setItemDelegateForColumn(0, new GameListIconStyleDelegate(this));
 	m_table_view->setItemDelegateForColumn(8, new GameListIconStyleDelegate(this));
 	m_table_view->setItemDelegateForColumn(9, new GameListIconStyleDelegate(this));
+	m_table_view->setItemDelegateForColumn(11, new AchievementsProgressDelegate(this));
 
 	connect(m_table_view->selectionModel(), &QItemSelectionModel::currentChanged, this,
 		&GameListWidget::onSelectionModelCurrentChanged);

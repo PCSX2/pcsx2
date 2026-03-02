@@ -22,6 +22,7 @@ class GameListModel final : public QAbstractTableModel
 public:
 	static constexpr int FavoriteRole = Qt::UserRole + 1;
 	static constexpr int CustomSettingsRole = Qt::UserRole + 2;
+	static constexpr int AchievementsProgressRole = Qt::UserRole + 3;
 	enum Column : int
 	{
 		Column_Type,
@@ -35,6 +36,7 @@ public:
 		Column_Region,
 		Column_Compatibility,
 		Column_Cover,
+		Column_Achievements,
 
 		Column_Count
 	};

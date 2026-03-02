@@ -1059,6 +1059,7 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
 			"Achievements: Unknown game '%s', disabling achievements.", game_hash_str.c_str());
 		DisableHardcoreMode();
 		UpdateCacheEntry(false);
+		Host::OnAchievementsRefreshed();
 		return;
 	}
 	else if (result == RC_LOGIN_REQUIRED)
@@ -1223,6 +1224,7 @@ void Achievements::HandleUnlockEvent(const rc_client_event_t* event)
 	Console.WriteLn("Achievements: Achievement %s (%u) for game %u unlocked", cheevo->title, cheevo->id, s_game_id);
 	UpdateGameSummary();
 	UpdateCacheEntry(true);
+	Host::OnAchievementsRefreshed();
 
 	if (EmuConfig.Achievements.Notifications)
 	{
