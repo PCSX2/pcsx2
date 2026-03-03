@@ -1559,6 +1559,8 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 		// Best two options given zero play time are to grey this out or to not show it at all.
 		if (entry_played_time)
 			connect(menu.addAction(tr("Reset Play Time")), &QAction::triggered, [this, entry, entry_played_time]() { clearGameListEntryPlayTime(*entry, entry_played_time); });
+		// Show this option whether play time exists or not.
+		connect(menu.addAction(tr("Edit Play Time")), &QAction::triggered, [this, entry, entry_played_time]() { editGameListEntryPlayTime(*entry, entry_played_time); });
 
 		// Check Wiki Page functionality is based on a serial redirect.
 		if (!entry->serial.empty())
@@ -3079,6 +3081,46 @@ void MainWindow::clearGameListEntryPlayTime(const GameList::Entry& entry, const 
 	{
 		GameList::ClearPlayedTimeForSerial(entry.serial);
 		m_game_list_widget->refresh(false, false);
+	}
+}
+
+void MainWindow::editGameListEntryPlayTime(const GameList::Entry& entry, const time_t entry_played_time)
+{
+	const u32 hours = static_cast<u32>(entry_played_time / 3600);
+	const u32 minutes = static_cast<u32>((entry_played_time % 3600) / 60);
+	const u32 seconds = static_cast<u32>((entry_played_time % 3600) % 60);
+
+	bool ok;
+	int new_hours = QInputDialog::getInt(this, tr("Edit Play Time For %1").arg(entry.title.empty() ? tr("empty title") : QString::fromStdString(entry.title)),
+		tr("Hours (Min: 0, Max: 99999):"), hours, 0, 99999, 1, &ok);
+
+	if (ok)
+	{
+		ok = NULL;
+		int new_minutes = QInputDialog::getInt(this, tr("Edit Play Time For %1").arg(entry.title.empty() ? tr("empty title") : QString::fromStdString(entry.title)),
+			tr("Minutes (Min: 0, Max: 59):"), minutes, 0, 59, 1, &ok);
+
+		if (ok)
+		{
+			ok = NULL;
+			int new_seconds = QInputDialog::getInt(this, tr("Edit Play Time For %1").arg(entry.title.empty() ? tr("empty title") : QString::fromStdString(entry.title)),
+				tr("Seconds (Min: 0, Max: 59):"), seconds, 0, 59, 1, &ok);
+
+			if (ok)
+			{
+				time_t new_time = (new_hours * 3600) + (new_minutes * 60) + new_seconds;
+
+				if (new_time == 0)
+				{
+					GameList::ClearPlayedTimeForSerial(entry.serial);
+				}
+				else
+				{
+					GameList::UpdatePlayedTimeForSerial(entry.serial, new_time);
+					m_game_list_widget->refresh(false, false);
+				}
+			}
+		}
 	}
 }
 
