@@ -154,7 +154,7 @@ jobs:
           cmake --build build --config Release --target unittests
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.artifact-metadata.outputs.artifact-name }}
           path: |
@@ -168,7 +168,7 @@ jobs:
             !./bin/**/*.lib
 
       - name: Install the Breakpad Symbol Generator
-        uses: baptiste0928/cargo-install@b687c656bda5733207e629b50a22bf68974a0305
+        uses: baptiste0928/cargo-install@f204293d9709061b7bc1756fec3ec4e2cd57dec0
         with:
           crate: dump_syms
 
@@ -186,7 +186,7 @@ jobs:
           }
 
       - name: Upload artifact - with symbols
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.artifact-metadata.outputs.artifact-name }}-symbols
           path: |

@@ -174,7 +174,7 @@ jobs:
 
       - name: Upload artifact
         if: inputs.buildAppImage == true
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.artifact-metadata.outputs.artifact-name }}
           path: ci-artifacts
