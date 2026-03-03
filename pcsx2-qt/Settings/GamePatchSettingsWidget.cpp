@@ -211,3 +211,5 @@ void GamePatchSettingsWidget::setGlobalNiPatchNoteVisibility(bool visible)
 {
 	m_ui.globalNiPatchState->setVisible(visible);
 }
+
+#include "moc_GamePatchSettingsWidget.cpp"

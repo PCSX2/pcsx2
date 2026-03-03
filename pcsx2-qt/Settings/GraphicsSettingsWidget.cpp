@@ -1316,3 +1316,5 @@ void GraphicsSettingsWidget::onUpscaleMultiplierChanged()
 	dialog()->setFloatSettingValue("EmuCore/GS", "upscale_multiplier",
 		data.isValid() ? std::optional<float>(data.toFloat()) : std::optional<float>());
 }
+
+#include "moc_GraphicsSettingsWidget.cpp"

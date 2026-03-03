@@ -136,3 +136,5 @@ void ThreadModel::refreshData()
 	m_threads = m_cpu.GetThreadList();
 	endResetModel();
 }
+
+#include "moc_ThreadModel.cpp"

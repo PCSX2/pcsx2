@@ -145,3 +145,5 @@ void BIOSSettingsWidget::fastBootChanged()
 	const bool enabled = dialog()->getEffectiveBoolValue("EmuCore", "EnableFastBoot", true);
 	m_ui.fastBootFastForward->setEnabled(enabled);
 }
+
+#include "moc_BIOSSettingsWidget.cpp"

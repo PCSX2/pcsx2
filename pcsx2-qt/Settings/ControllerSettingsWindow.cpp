@@ -600,3 +600,5 @@ void ControllerSettingsWindow::switchProfile(const QString& name)
 	m_profile_name = name;
 	createWidgets();
 }
+
+#include "moc_ControllerSettingsWindow.cpp"

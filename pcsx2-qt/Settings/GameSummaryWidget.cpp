@@ -418,3 +418,5 @@ void GameSummaryWidget::setCustomRegion(int region)
 	GameList::SaveCustomRegionForPath(m_entry_path, region);
 	repopulateCurrentDetails();
 }
+
+#include "moc_GameSummaryWidget.cpp"

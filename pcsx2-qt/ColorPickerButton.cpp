@@ -51,3 +51,5 @@ void ColorPickerButton::onClicked()
 	updateBackgroundColor();
 	emit colorChanged(new_rgb);
 }
+
+#include "moc_ColorPickerButton.cpp"

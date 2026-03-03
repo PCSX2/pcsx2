@@ -321,3 +321,5 @@ void MemoryCardConvertDialog::FileOpenError(const QString errmsg)
 {
 	QMessageBox::critical(this, tr("Cannot Convert Memory Card"), tr("There was an error when accessing the memory card directory. Error message: %0").arg(errmsg));
 }
+
+#include "moc_MemoryCardConvertDialog.cpp"

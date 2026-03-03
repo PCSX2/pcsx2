@@ -693,3 +693,5 @@ void SettingsWindow::closeGamePropertiesDialogs()
 		dialog->deleteLater();
 	}
 }
+
+#include "moc_SettingsWindow.cpp"

@@ -542,3 +542,5 @@ bool ShortcutCreationDialog::EscapeShortcutCommandLine(std::string* arg)
 	return lossless;
 #endif
 }
+
+#include "moc_ShortcutCreationDialog.cpp"

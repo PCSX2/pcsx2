@@ -699,3 +699,5 @@ void BreakpointModel::clear()
 	m_breakpoints.clear();
 	endResetModel();
 }
+
+#include "moc_BreakpointModel.cpp"

@@ -50,7 +50,7 @@
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\rapidjson\include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)pcsx2</AdditionalIncludeDirectories>
       <!-- Needed for moc pch -->
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(ProjectDir)\Settings;$(ProjectDir)\GameList;$(ProjectDir)\Tools\InputRecording;$(ProjectDir)\Debugger;$(ProjectDir)\Debugger\Breakpoints;$(ProjectDir)\Debugger\Docking;$(ProjectDir)\Debugger\Memory;$(ProjectDir)\Debugger\SymbolTree</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(ProjectDir)Settings;$(ProjectDir)GameList;$(ProjectDir)Tools\InputRecording;$(ProjectDir)Debugger;$(ProjectDir)Debugger\Breakpoints;$(ProjectDir)\Debugger\Docking;$(ProjectDir)Debugger\Memory;$(ProjectDir)Debugger\SymbolTree;$(IntDir)Settings;$(IntDir)GameList;$(IntDir)Tools\InputRecording;$(IntDir)Debugger;$(IntDir)Debugger\Breakpoints;$(IntDir)\Debugger\Docking;$(IntDir)Debugger\Memory;$(IntDir)Debugger\SymbolTree</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>PrecompiledHeader.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
@@ -280,83 +280,6 @@
     </QtResource>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(IntDir)Settings\moc_BIOSSettingsWidget.cpp" />
-    <ClCompile Include="$(IntDir)Settings\moc_ControllerBindingWidget.cpp" />
-    <ClCompile Include="$(IntDir)Settings\moc_ControllerGlobalSettingsWidget.cpp" />
-    <ClCompile Include="$(IntDir)Settings\moc_ControllerSettingsWindow.cpp" />
-    <ClCompile Include="$(IntDir)Settings\moc_MemoryCardCreateDialog.cpp" />
-    <ClCompile Include="$(IntDir)Settings\moc_EmulationSettingsWidget.cpp" />
-    <ClCompile Include="$(IntDir)Settings\moc_GameListSettingsWidget.cpp" />
-    <ClCompile Include="$(IntDir)Settings\moc_GraphicsSettingsWidget.cpp" />
-    <ClCompile Include="$(IntDir)Settings\moc_InterfaceSettingsWidget.cpp" />
-    <ClCompile Include="$(IntDir)Settings\moc_SettingsWidget.cpp" />
-    <ClCompile Include="$(IntDir)Settings\moc_SettingsWindow.cpp" />
-    <ClCompile Include="$(IntDir)Settings\moc_AdvancedSettingsWidget.cpp" />
-    <ClCompile Include="$(IntDir)Settings\moc_GameCheatSettingsWidget.cpp" />
-    <ClCompile Include="$(IntDir)Settings\moc_GameFixSettingsWidget.cpp" />
-    <ClCompile Include="$(IntDir)Settings\moc_GamePatchSettingsWidget.cpp" />
-    <ClCompile Include="$(IntDir)Settings\moc_HotkeySettingsWidget.cpp" />
-    <ClCompile Include="$(IntDir)Settings\moc_InputBindingDialog.cpp" />
-    <ClCompile Include="$(IntDir)Settings\moc_InputBindingWidget.cpp" />
-    <ClCompile Include="$(IntDir)Settings\moc_AudioSettingsWidget.cpp" />
-    <ClCompile Include="$(IntDir)Settings\moc_MemoryCardConvertDialog.cpp" />
-    <ClCompile Include="$(IntDir)Settings\moc_MemoryCardSettingsWidget.cpp" />
-    <ClCompile Include="$(IntDir)Settings\moc_FolderSettingsWidget.cpp" />
-    <ClCompile Include="$(IntDir)Settings\moc_DEV9DnsHostDialog.cpp" />
-    <ClCompile Include="$(IntDir)Settings\moc_DEV9SettingsWidget.cpp" />
-    <ClCompile Include="$(IntDir)Settings\moc_DEV9UiCommon.cpp" />
-    <ClCompile Include="$(IntDir)Settings\moc_GameSummaryWidget.cpp" />
-    <ClCompile Include="$(IntDir)Settings\moc_AchievementLoginDialog.cpp" />
-    <ClCompile Include="$(IntDir)Settings\moc_AchievementSettingsWidget.cpp" />
-    <ClCompile Include="$(IntDir)Settings\moc_DebugAnalysisSettingsWidget.cpp" />
-    <ClCompile Include="$(IntDir)Settings\moc_DebugSettingsWidget.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\moc_AnalysisOptionsDialog.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\moc_DebuggerView.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\moc_DebuggerWindow.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\moc_DisassemblyView.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\moc_RegisterView.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\moc_StackModel.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\moc_StackView.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\moc_ModuleModel.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\moc_ModuleView.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\moc_ThreadModel.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\moc_ThreadView.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\Breakpoints\moc_BreakpointDialog.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\Breakpoints\moc_BreakpointModel.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\Breakpoints\moc_BreakpointView.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\Docking\moc_DockManager.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\Docking\moc_DockMenuBar.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\Docking\moc_DockViews.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\Docking\moc_DropIndicators.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\Docking\moc_LayoutEditorDialog.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\Docking\moc_NoLayoutsWidget.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\Memory\moc_MemorySearchView.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\Memory\moc_MemoryView.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\Memory\moc_SavedAddressesModel.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\Memory\moc_SavedAddressesView.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\SymbolTree\moc_NewSymbolDialogs.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\SymbolTree\moc_SymbolTreeDelegates.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\SymbolTree\moc_SymbolTreeLocation.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\SymbolTree\moc_SymbolTreeModel.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\SymbolTree\moc_SymbolTreeNode.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\SymbolTree\moc_SymbolTreeViews.cpp" />
-    <ClCompile Include="$(IntDir)Debugger\SymbolTree\moc_TypeString.cpp" />
-    <ClCompile Include="$(IntDir)GameList\moc_GameListModel.cpp" />
-    <ClCompile Include="$(IntDir)GameList\moc_GameListRefreshThread.cpp" />
-    <ClCompile Include="$(IntDir)GameList\moc_GameListWidget.cpp" />
-    <ClCompile Include="$(IntDir)moc_AboutDialog.cpp" />
-    <ClCompile Include="$(IntDir)moc_AutoUpdaterDialog.cpp" />
-    <ClCompile Include="$(IntDir)moc_ColorPickerButton.cpp" />
-    <ClCompile Include="$(IntDir)moc_CoverDownloadDialog.cpp" />
-    <ClCompile Include="$(IntDir)moc_DisplayWidget.cpp" />
-    <ClCompile Include="$(IntDir)moc_LogWindow.cpp" />
-    <ClCompile Include="$(IntDir)moc_MainWindow.cpp" />
-    <ClCompile Include="$(IntDir)moc_QtHost.cpp" />
-    <ClCompile Include="$(IntDir)moc_QtProgressCallback.cpp" />
-    <ClCompile Include="$(IntDir)moc_SetupWizardDialog.cpp" />
-    <ClCompile Include="$(IntDir)moc_ShortcutCreationDialog.cpp" />
-    <ClCompile Include="$(IntDir)Tools\InputRecording\moc_NewInputRecordingDlg.cpp" />
-    <ClCompile Include="$(IntDir)Tools\InputRecording\moc_InputRecordingViewer.cpp" />
     <ClCompile Include="$(IntDir)qrc_resources.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>

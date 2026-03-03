@@ -651,3 +651,5 @@ void NewParameterVariableDialog::createSymbol()
 	if (!error_message.isEmpty())
 		AsyncDialogs::warning(g_debugger_window, tr("Cannot Create Parameter Variable"), error_message);
 }
+
+#include "moc_NewSymbolDialogs.cpp"

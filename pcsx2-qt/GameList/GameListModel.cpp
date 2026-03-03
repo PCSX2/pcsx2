@@ -519,3 +519,5 @@ void GameListModel::setColumnDisplayNames()
 	m_column_display_names[Column_Region] = tr("Region");
 	m_column_display_names[Column_Compatibility] = tr("Compatibility");
 }
+
+#include "moc_GameListModel.cpp"

@@ -125,3 +125,5 @@ void CoverDownloadDialog::CoverDownloadThread::runAsync()
 {
 	GameList::DownloadCovers(m_urls, m_use_serials, this);
 }
+
+#include "moc_CoverDownloadDialog.cpp"

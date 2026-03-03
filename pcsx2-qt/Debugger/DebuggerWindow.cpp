@@ -573,3 +573,5 @@ DebugInterface* DebuggerWindow::currentCPU()
 
 	return &DebugInterface::get(*maybe_cpu);
 }
+
+#include "moc_DebuggerWindow.cpp"

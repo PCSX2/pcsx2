@@ -2496,3 +2496,5 @@ shutdown_and_exit:
 
 	return result;
 }
+
+#include "moc_QtHost.cpp"

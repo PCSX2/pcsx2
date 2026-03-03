@@ -894,3 +894,5 @@ bool DockManager::dragAboutToStart(KDDockWidgets::Core::Draggable* draggable)
 
 	return !locked;
 }
+
+#include "moc_DockManager.cpp"

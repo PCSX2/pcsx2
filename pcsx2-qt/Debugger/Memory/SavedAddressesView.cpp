@@ -166,3 +166,5 @@ void SavedAddressesView::saveToDebuggerSettings()
 {
 	DebuggerSettingsManager::saveGameSettings(m_model);
 }
+
+#include "moc_SavedAddressesView.cpp"

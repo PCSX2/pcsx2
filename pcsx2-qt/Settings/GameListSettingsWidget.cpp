@@ -278,3 +278,5 @@ void GameListSettingsWidget::onScanForNewGamesClicked()
 {
 	g_main_window->refreshGameList(false, true);
 }
+
+#include "moc_GameListSettingsWidget.cpp"

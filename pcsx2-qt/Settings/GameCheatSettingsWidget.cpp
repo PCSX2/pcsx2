@@ -346,3 +346,5 @@ QList<QStandardItem*> GameCheatSettingsWidget::populateTreeViewRow(const Patch::
 	items.push_back(descriptionItem);
 	return items;
 }
+
+#include "moc_GameCheatSettingsWidget.cpp"

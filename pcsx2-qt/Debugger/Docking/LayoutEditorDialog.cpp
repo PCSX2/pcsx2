@@ -105,3 +105,5 @@ void LayoutEditorDialog::onNameChanged()
 	m_ui.buttonBox->button(QDialogButtonBox::Ok)->setEnabled(error_message.isEmpty());
 	m_ui.errorMessage->setText(error_message);
 }
+
+#include "moc_LayoutEditorDialog.cpp"

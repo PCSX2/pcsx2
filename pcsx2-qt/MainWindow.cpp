@@ -3553,3 +3553,5 @@ const QString& QtHost::GetCurrentGamePath()
 {
 	return s_current_disc_path;
 }
+
+#include "moc_MainWindow.cpp"
