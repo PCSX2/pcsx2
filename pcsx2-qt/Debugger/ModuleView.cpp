@@ -105,3 +105,5 @@ void ModuleView::onDoubleClick(const QModelIndex& index)
 		}
 	}
 }
+
+#include "moc_ModuleView.cpp"

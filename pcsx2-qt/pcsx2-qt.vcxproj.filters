@@ -4,9 +4,6 @@
     <Filter Include="Resources">
       <UniqueIdentifier>{1f18feb4-85f0-455d-927a-d4d6b226d8a5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="moc">
-      <UniqueIdentifier>{1ab68559-2163-40b5-818b-d2a7ff210c12}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Settings">
       <UniqueIdentifier>{11eec1ee-70c1-42ad-8cd1-e7f72f4c8673}</UniqueIdentifier>
     </Filter>
@@ -46,20 +43,11 @@
     <ClCompile Include="AsyncDialogs.cpp" />
     <ClCompile Include="QtHost.cpp" />
     <ClCompile Include="MainWindow.cpp" />
-    <ClCompile Include="$(IntDir)moc_MainWindow.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
     <ClCompile Include="$(IntDir)qrc_resources.cpp">
       <Filter>Resources</Filter>
     </ClCompile>
     <ClCompile Include="DisplayWidget.cpp" />
-    <ClCompile Include="$(IntDir)moc_DisplayWidget.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
     <ClCompile Include="QtUtils.cpp" />
-    <ClCompile Include="$(IntDir)moc_QtHost.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
     <ClCompile Include="QtKeyCodes.cpp" />
     <ClCompile Include="Settings\BIOSSettingsWidget.cpp">
       <Filter>Settings</Filter>
@@ -79,44 +67,11 @@
     <ClCompile Include="Settings\SettingsWindow.cpp">
       <Filter>Settings</Filter>
     </ClCompile>
-    <ClCompile Include="$(IntDir)Settings\moc_BIOSSettingsWidget.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Settings\moc_EmulationSettingsWidget.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Settings\moc_GameListSettingsWidget.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Settings\moc_GraphicsSettingsWidget.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Settings\moc_InterfaceSettingsWidget.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Settings\moc_SettingsWindow.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Settings\moc_AdvancedSettingsWidget.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
     <ClCompile Include="Settings\AdvancedSettingsWidget.cpp">
       <Filter>Settings</Filter>
     </ClCompile>
-    <ClCompile Include="$(IntDir)Settings\moc_GameFixSettingsWidget.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
     <ClCompile Include="Settings\GameFixSettingsWidget.cpp">
       <Filter>Settings</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Settings\moc_HotkeySettingsWidget.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Settings\moc_InputBindingDialog.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Settings\moc_InputBindingWidget.cpp">
-      <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="Settings\InputBindingWidget.cpp">
       <Filter>Settings</Filter>
@@ -137,56 +92,14 @@
     <ClCompile Include="GameList\GameListModel.cpp">
       <Filter>GameList</Filter>
     </ClCompile>
-    <ClCompile Include="$(IntDir)moc_AboutDialog.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Settings\moc_ControllerSettingsWindow.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)GameList\moc_GameListModel.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)GameList\moc_GameListRefreshThread.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)GameList\moc_GameListWidget.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
     <ClCompile Include="Settings\ControllerSettingsWindow.cpp">
       <Filter>Settings</Filter>
     </ClCompile>
     <ClCompile Include="Settings\ControllerBindingWidget.cpp">
       <Filter>Settings</Filter>
     </ClCompile>
-    <ClCompile Include="$(IntDir)Settings\moc_ControllerBindingWidget.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
     <ClCompile Include="Settings\ControllerGlobalSettingsWidget.cpp">
       <Filter>Settings</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Settings\moc_MemoryCardConvertDialog.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Settings\moc_MemoryCardSettingsWidget.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Settings\moc_ControllerGlobalSettingsWidget.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Settings\moc_GameSummaryWidget.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Settings\moc_AudioSettingsWidget.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Settings\moc_DEV9DnsHostDialog.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Settings\moc_DEV9SettingsWidget.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Settings\moc_DEV9UiCommon.cpp">
-      <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="Settings\GameSummaryWidget.cpp">
       <Filter>Settings</Filter>
@@ -199,9 +112,6 @@
     </ClCompile>
     <ClCompile Include="Settings\AudioSettingsWidget.cpp">
       <Filter>Settings</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Settings\moc_MemoryCardCreateDialog.cpp">
-      <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="Settings\MemoryCardCreateDialog.cpp">
       <Filter>Settings</Filter>
@@ -219,15 +129,6 @@
       <Filter>Settings</Filter>
     </ClCompile>
     <ClCompile Include="AutoUpdaterDialog.cpp" />
-    <ClCompile Include="$(IntDir)moc_AutoUpdaterDialog.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Tools\InputRecording\moc_NewInputRecordingDlg.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Tools\InputRecording\moc_InputRecordingViewer.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
     <ClCompile Include="Tools\InputRecording\NewInputRecordingDlg.cpp">
       <Filter>Tools\Input Recording</Filter>
     </ClCompile>
@@ -235,32 +136,14 @@
     <ClCompile Include="Settings\FolderSettingsWidget.cpp">
       <Filter>Settings</Filter>
     </ClCompile>
-    <ClCompile Include="$(IntDir)Settings\moc_FolderSettingsWidget.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)moc_CoverDownloadDialog.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)moc_ShortcutCreationDialog.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
     <ClCompile Include="CoverDownloadDialog.cpp" />
     <ClCompile Include="ShortcutCreationDialog.cpp" />
     <ClCompile Include="QtProgressCallback.cpp" />
-    <ClCompile Include="$(IntDir)moc_QtProgressCallback.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
     <ClCompile Include="Settings\AchievementSettingsWidget.cpp">
       <Filter>Settings</Filter>
     </ClCompile>
     <ClCompile Include="Settings\AchievementLoginDialog.cpp">
       <Filter>Settings</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Settings\moc_AchievementSettingsWidget.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Settings\moc_AchievementLoginDialog.cpp">
-      <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="Settings\MemoryCardConvertWorker.cpp">
       <Filter>Settings</Filter>
@@ -271,14 +154,8 @@
     <ClCompile Include="Settings\DebugAnalysisSettingsWidget.cpp">
       <Filter>Settings</Filter>
     </ClCompile>
-    <ClCompile Include="$(IntDir)Settings\moc_DebugAnalysisSettingsWidget.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
     <ClCompile Include="Settings\DebugSettingsWidget.cpp">
       <Filter>Settings</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Settings\moc_DebugSettingsWidget.cpp">
-      <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="Debugger\AnalysisOptionsDialog.cpp">
       <Filter>Debugger</Filter>
@@ -295,61 +172,7 @@
     <ClCompile Include="Debugger\ThreadModel.cpp">
       <Filter>Debugger</Filter>
     </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\moc_AnalysisOptionsDialog.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\moc_DebuggerView.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\moc_DebuggerWindow.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\moc_StackModel.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\moc_ThreadModel.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\Breakpoints\moc_BreakpointDialog.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\Breakpoints\moc_BreakpointModel.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\Breakpoints\moc_BreakpointView.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\Docking\moc_DockManager.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\Docking\moc_DockViews.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\Docking\moc_DropIndicators.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\Docking\moc_LayoutEditorDialog.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\Docking\moc_NoLayoutsWidget.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\Memory\moc_MemorySearchView.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\Memory\moc_MemoryView.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\Memory\moc_SavedAddressesModel.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\Memory\moc_SavedAddressesView.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
     <ClCompile Include="ColorPickerButton.cpp" />
-    <ClCompile Include="$(IntDir)moc_ColorPickerButton.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
     <ClCompile Include="Themes.cpp" />
     <ClCompile Include="Settings\GamePatchSettingsWidget.cpp">
       <Filter>Settings</Filter>
@@ -357,21 +180,8 @@
     <ClCompile Include="Settings\GameCheatSettingsWidget.cpp">
       <Filter>Settings</Filter>
     </ClCompile>
-    <ClCompile Include="$(IntDir)Settings\moc_GamePatchSettingsWidget.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Settings\moc_GameCheatSettingsWidget.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
     <ClCompile Include="Translations.cpp" />
     <ClCompile Include="SetupWizardDialog.cpp" />
-    <ClCompile Include="$(IntDir)moc_SetupWizardDialog.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="LogWindow.cpp" />
-    <ClCompile Include="$(IntDir)moc_LogWindow.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
     <ClCompile Include="Debugger\DebuggerSettingsManager.cpp">
       <Filter>Debugger</Filter>
     </ClCompile>
@@ -439,27 +249,6 @@
     <ClCompile Include="Debugger\Docking\NoLayoutsWidget.cpp">
       <Filter>Debugger\Docking</Filter>
     </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\SymbolTree\moc_NewSymbolDialogs.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\SymbolTree\moc_SymbolTreeDelegates.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\SymbolTree\moc_SymbolTreeLocation.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\SymbolTree\moc_SymbolTreeModel.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\SymbolTree\moc_SymbolTreeNode.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\SymbolTree\moc_TypeString.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\Docking\moc_DockMenuBar.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
     <ClCompile Include="Debugger\Docking\DockMenuBar.cpp">
       <Filter>Debugger\Docking</Filter>
     </ClCompile>
@@ -469,21 +258,6 @@
     <ClCompile Include="Debugger\SymbolTree\SymbolTreeViews.cpp">
       <Filter>Debugger\SymbolTree</Filter>
     </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\moc_DisassemblyView.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\moc_RegisterView.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\moc_StackView.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\SymbolTree\moc_SymbolTreeViews.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\moc_ThreadView.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
     <ClCompile Include="Debugger\DisassemblyView.cpp">
       <Filter>Debugger</Filter>
     </ClCompile>
@@ -492,15 +266,6 @@
     </ClCompile>
     <ClCompile Include="Debugger\ThreadView.cpp">
       <Filter>Debugger</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\moc_ModuleModel.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Debugger\moc_ModuleView.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)Settings\moc_SettingsWidget.cpp">
-      <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="Settings\SettingsWidget.cpp">
       <Filter>Settings</Filter>

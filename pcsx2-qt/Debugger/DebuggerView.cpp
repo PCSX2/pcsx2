@@ -310,3 +310,5 @@ std::vector<QAction*> DebuggerView::createEventActionsImplementation(
 
 	return actions;
 }
+
+#include "moc_DebuggerView.cpp"

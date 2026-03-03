@@ -232,3 +232,5 @@ QWidget* QtAsyncProgressThread::parentWidget() const
 {
 	return qobject_cast<QWidget*>(parent());
 }
+
+#include "moc_QtProgressCallback.cpp"

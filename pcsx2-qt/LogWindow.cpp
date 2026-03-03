@@ -461,3 +461,5 @@ void LogWindow::restoreSize()
 	const int height = Host::GetBaseIntSettingValue("UI", "LogWindowHeight", DEFAULT_HEIGHT);
 	resize(width, height);
 }
+
+#include "moc_LogWindow.cpp"

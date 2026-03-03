@@ -571,3 +571,5 @@ void DockSegmentedDropIndicatorOverlay::drawMinimalistic()
 		painter.drawRect(segment->second.boundingRect());
 	}
 }
+
+#include "moc_DropIndicators.cpp"

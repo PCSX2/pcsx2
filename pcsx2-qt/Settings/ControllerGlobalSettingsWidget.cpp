@@ -213,3 +213,5 @@ ControllerMappingSettingsDialog::ControllerMappingSettingsDialog(ControllerSetti
 	connect(m_ui.buttonBox->button(QDialogButtonBox::Close), &QPushButton::clicked, this, &QDialog::accept);
 }
 ControllerMappingSettingsDialog::~ControllerMappingSettingsDialog() = default;
+
+#include "moc_ControllerGlobalSettingsWidget.cpp"

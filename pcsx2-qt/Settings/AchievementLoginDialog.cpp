@@ -171,3 +171,5 @@ bool AchievementLoginDialog::canEnableLoginButton() const
 {
 	return !m_ui.userName->text().isEmpty() && !m_ui.password->text().isEmpty();
 }
+
+#include "moc_AchievementLoginDialog.cpp"

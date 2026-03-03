@@ -133,3 +133,5 @@ void MemoryCardCreateDialog::createCard()
 	QMessageBox::information(this, tr("Create Memory Card"), tr("Memory Card '%1' created.").arg(name));
 	accept();
 }
+
+#include "moc_MemoryCardCreateDialog.cpp"

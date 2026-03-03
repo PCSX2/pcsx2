@@ -294,3 +294,5 @@ void InterfaceSettingsWidget::onClearGameListBackgroundTriggered()
 	Host::CommitBaseSettingChanges();
 	emit backgroundChanged();
 }
+
+#include "moc_InterfaceSettingsWidget.cpp"

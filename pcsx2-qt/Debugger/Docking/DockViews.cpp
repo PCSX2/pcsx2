@@ -307,3 +307,5 @@ void DockTabBar::mouseDoubleClickEvent(QMouseEvent* event)
 	else
 		event->ignore();
 }
+
+#include "moc_DockViews.cpp"

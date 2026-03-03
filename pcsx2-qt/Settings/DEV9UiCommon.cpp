@@ -68,3 +68,5 @@ void IPItemDelegate::updateEditorGeometry(QWidget* editor, const QStyleOptionVie
 {
 	editor->setGeometry(option.rect);
 }
+
+#include "moc_DEV9UiCommon.cpp"

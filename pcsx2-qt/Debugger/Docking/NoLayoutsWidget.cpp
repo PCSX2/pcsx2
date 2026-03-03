@@ -13,3 +13,5 @@ QPushButton* NoLayoutsWidget::createDefaultLayoutsButton()
 {
 	return m_ui.createDefaultLayoutsButton;
 }
+
+#include "moc_NoLayoutsWidget.cpp"

@@ -131,3 +131,5 @@ void ModuleModel::refreshData()
 	m_modules = m_cpu.GetModuleList();
 	endResetModel();
 }
+
+#include "moc_ModuleModel.cpp"

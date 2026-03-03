@@ -384,3 +384,5 @@ void InputBindingDialog::ReloadBindNames()
 
 	updateList();
 }
+
+#include "moc_InputBindingDialog.cpp"

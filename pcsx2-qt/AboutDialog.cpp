@@ -153,3 +153,5 @@ void AboutDialog::showHTMLDialog(QWidget* parent, const QString& title, const QS
 
 	dialog.exec();
 }
+
+#include "moc_AboutDialog.cpp"

@@ -276,3 +276,5 @@ void DebugSettingsWidget::onLoggingEnableChanged()
 	g_emu_thread->applySettings();
 }
 #endif
+
+#include "moc_DebugSettingsWidget.cpp"

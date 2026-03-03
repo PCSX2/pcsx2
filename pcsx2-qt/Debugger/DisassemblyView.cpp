@@ -1089,3 +1089,5 @@ bool DisassemblyView::FunctionCanRestore(u32 address)
 
 	return m_stubbedFunctions.find(address) != m_stubbedFunctions.end();
 }
+
+#include "moc_DisassemblyView.cpp"

@@ -180,3 +180,5 @@ void BreakpointView::resizeColumns()
 		i++;
 	}
 }
+
+#include "moc_BreakpointView.cpp"

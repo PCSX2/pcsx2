@@ -273,3 +273,5 @@ void AchievementSettingsWidget::onAchievementsRefreshed(quint32 id, const QStrin
 {
 	m_ui.gameInfo->setText(game_info_string);
 }
+
+#include "moc_AchievementSettingsWidget.cpp"

@@ -503,3 +503,5 @@ void AudioSettingsWidget::resetVolume(const bool fast_forward)
 		slider->setValue(100);
 	}
 }
+
+#include "moc_AudioSettingsWidget.cpp"

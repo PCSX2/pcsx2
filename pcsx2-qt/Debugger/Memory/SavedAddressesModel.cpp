@@ -219,3 +219,5 @@ void SavedAddressesModel::clear()
 	m_savedAddresses.clear();
 	endResetModel();
 }
+
+#include "moc_SavedAddressesModel.cpp"

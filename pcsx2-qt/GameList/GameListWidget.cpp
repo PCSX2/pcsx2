@@ -985,3 +985,5 @@ void GameListGridListView::wheelEvent(QWheelEvent* e)
 
 	QListView::wheelEvent(e);
 }
+
+#include "moc_GameListWidget.cpp"

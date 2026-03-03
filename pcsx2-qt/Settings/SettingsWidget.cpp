@@ -114,3 +114,5 @@ void SettingsWidget::updateTabMargins(QScrollArea* scroll_area)
 		scroll_area->widget()->layout()->setContentsMargins(-1, -1, -1, -1);
 	}
 }
+
+#include "moc_SettingsWidget.cpp"

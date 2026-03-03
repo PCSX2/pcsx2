@@ -33,3 +33,5 @@ void AnalysisOptionsDialog::analyse()
 	if (m_ui.closeCheckBox->isChecked())
 		accept();
 }
+
+#include "moc_AnalysisOptionsDialog.cpp"

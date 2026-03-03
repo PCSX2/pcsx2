@@ -1272,3 +1272,5 @@ static bool testName(const QString& name, const QString& filter)
 {
 	return filter.isEmpty() || name.contains(filter, Qt::CaseInsensitive);
 }
+
+#include "moc_SymbolTreeViews.cpp"

@@ -523,3 +523,5 @@ void MemoryCardSlotWidget::setCard(const std::optional<std::string>& name, bool 
 
 	item->setToolTip(item->text());
 }
+
+#include "moc_MemoryCardSettingsWidget.cpp"

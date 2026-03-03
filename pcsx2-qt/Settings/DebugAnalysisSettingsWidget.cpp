@@ -517,3 +517,5 @@ int DebugAnalysisSettingsWidget::getIntSettingValue(
 
 	return Host::GetIntSettingValue(section, key, default_value);
 }
+
+#include "moc_DebugAnalysisSettingsWidget.cpp"
