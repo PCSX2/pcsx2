@@ -127,6 +127,8 @@ namespace VMManager
 	static void LoadCoreSettings(SettingsInterface& si);
 	static void ApplyCoreSettings();
 	static void LoadInputBindings(SettingsInterface& si, std::unique_lock<std::mutex>& lock);
+	static bool HasAnyBindingsForPad(const SettingsInterface& si, u32 port);
+	static void WarnAboutUnconfiguredController();
 	static void UpdateInhibitScreensaver(bool allow);
 	static void AccumulateSessionPlaytime();
 	static void ResetResumeTimestamp();
@@ -683,6 +685,36 @@ void VMManager::LoadInputBindings(SettingsInterface& si, std::unique_lock<std::m
 	{
 		InputManager::ReloadBindings(si, si, si, false, false);
 	}
+}
+
+bool VMManager::HasAnyBindingsForPad(const SettingsInterface& si, u32 port)
+{
+	if (port >= Pad::NUM_CONTROLLER_PORTS)
+		return false;
+
+	const std::string section = Pad::GetConfigSection(port);
+	const Pad::ControllerInfo* info = Pad::GetConfigControllerType(si, section.c_str(), port);
+	if (!info || info->type == Pad::ControllerType::NotConnected)
+		return false;
+
+	for (const InputBindingInfo& binding : info->bindings)
+	{
+		if (!si.GetStringList(section.c_str(), binding.name).empty())
+			return true;
+	}
+
+	return false;
+}
+
+void VMManager::WarnAboutUnconfiguredController()
+{
+	std::unique_lock<std::mutex> lock = Host::GetSettingsLock();
+	SettingsInterface* si = Host::GetSettingsInterface();
+	if (!si || HasAnyBindingsForPad(*si, 0))
+		return;
+
+	Host::AddIconOSDMessage("ControllerNotConfigured", ICON_FA_GAMEPAD,
+		TRANSLATE_STR("VMManager", "Controller 1 has no input bindings configured."), Host::OSD_WARNING_DURATION);
 }
 
 void VMManager::ApplyGameFixes()
@@ -1517,6 +1549,7 @@ VMBootResult VMManager::Initialize(const VMBootParameters& boot_params, Error* e
 		Error::SetString(error, TRANSLATE_STR("VMManager", "Failed to initialize PAD."));
 		return VMBootResult::StartupFailure;
 	}
+	WarnAboutUnconfiguredController();
 	ScopedGuard close_pad = &Pad::Shutdown;
 
 	Console.WriteLn("Initializing SIO2...");
