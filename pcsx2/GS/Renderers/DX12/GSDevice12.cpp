@@ -546,6 +546,12 @@ bool GSDevice12::ExecuteCommandList(WaitType wait_for_completion)
 	CommandListResources& res = m_command_lists[m_current_command_list];
 	HRESULT hr;
 
+	// Flush stream buffers to GPU memory
+	m_vertex_stream_buffer.FlushMemory();
+	m_index_stream_buffer.FlushMemory();
+	m_vertex_constant_buffer.FlushMemory();
+	m_pixel_constant_buffer.FlushMemory();
+
 	if (res.has_timestamp_query)
 	{
 		// write the timestamp back at the end of the cmdlist
@@ -576,7 +582,11 @@ bool GSDevice12::ExecuteCommandList(WaitType wait_for_completion)
 
 	if (res.init_command_list_used)
 	{
-		const std::array<ID3D12CommandList*, 2> execute_lists{res.command_lists[0].list4.get(), res.command_lists[1].list4.get()};
+		// Call as seperate ExecuteCommandLists to ensure constant buffer copies are completed.
+		// This ends up being faster then using barriers on each buffer.
+		std::array<ID3D12CommandList*, 1> execute_lists{res.command_lists[0].list4.get()};
+		m_command_queue->ExecuteCommandLists(static_cast<UINT>(execute_lists.size()), execute_lists.data());
+		execute_lists[0] = res.command_lists[1].list4.get();
 		m_command_queue->ExecuteCommandLists(static_cast<UINT>(execute_lists.size()), execute_lists.data());
 	}
 	else
@@ -2569,25 +2579,25 @@ bool GSDevice12::CreateNullTexture()
 
 bool GSDevice12::CreateBuffers()
 {
-	if (!m_vertex_stream_buffer.Create(VERTEX_BUFFER_SIZE))
+	if (!m_vertex_stream_buffer.Create(VERTEX_BUFFER_SIZE, false))
 	{
 		Host::ReportErrorAsync("GS", "Failed to allocate vertex buffer");
 		return false;
 	}
 
-	if (!m_index_stream_buffer.Create(INDEX_BUFFER_SIZE))
+	if (!m_index_stream_buffer.Create(INDEX_BUFFER_SIZE, false))
 	{
 		Host::ReportErrorAsync("GS", "Failed to allocate index buffer");
 		return false;
 	}
 
-	if (!m_vertex_constant_buffer.Create(VERTEX_UNIFORM_BUFFER_SIZE))
+	if (!m_vertex_constant_buffer.Create(VERTEX_UNIFORM_BUFFER_SIZE, !m_uma))
 	{
 		Host::ReportErrorAsync("GS", "Failed to allocate vertex uniform buffer");
 		return false;
 	}
 
-	if (!m_pixel_constant_buffer.Create(FRAGMENT_UNIFORM_BUFFER_SIZE))
+	if (!m_pixel_constant_buffer.Create(FRAGMENT_UNIFORM_BUFFER_SIZE, !m_uma))
 	{
 		Host::ReportErrorAsync("GS", "Failed to allocate fragment uniform buffer");
 		return false;

@@ -20,7 +20,7 @@ D3D12StreamBuffer::~D3D12StreamBuffer()
 	Destroy();
 }
 
-bool D3D12StreamBuffer::Create(u32 size)
+bool D3D12StreamBuffer::Create(u32 size, bool gpu_backed_buffer)
 {
 	const GSDevice12::D3D12_RESOURCE_DESCU resource_desc = {{D3D12_RESOURCE_DIMENSION_BUFFER, 0, size, 1, 1, 1, DXGI_FORMAT_UNKNOWN,
 		{1, 0}, D3D12_TEXTURE_LAYOUT_ROW_MAJOR, D3D12_RESOURCE_FLAG_NONE}};
@@ -51,11 +51,32 @@ bool D3D12StreamBuffer::Create(u32 size)
 
 	Destroy(true);
 
-	m_buffer = std::move(buffer);
-	m_allocation = std::move(allocation);
+	m_buffer_upload = std::move(buffer);
+	m_allocation_upload = std::move(allocation);
 	m_host_pointer = host_pointer;
 	m_size = size;
-	m_gpu_pointer = m_buffer->GetGPUVirtualAddress();
+
+	if (gpu_backed_buffer)
+	{
+		allocationDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
+
+		if (GSDevice12::GetInstance()->UseEnhancedBarriers())
+			hr = GSDevice12::GetInstance()->GetAllocator()->CreateResource3(&allocationDesc, &resource_desc.desc1,
+				D3D12_BARRIER_LAYOUT_UNDEFINED, nullptr, 0, nullptr, allocation.put(), IID_PPV_ARGS(buffer.put()));
+		else
+			hr = GSDevice12::GetInstance()->GetAllocator()->CreateResource(&allocationDesc, &resource_desc.desc,
+				D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, allocation.put(), IID_PPV_ARGS(buffer.put()));
+		pxAssertMsg(SUCCEEDED(hr), "Allocate buffer");
+		if (FAILED(hr))
+			return false;
+
+		m_buffer_default = std::move(buffer);
+		m_allocation_default = std::move(allocation);
+		m_gpu_pointer = m_buffer_default->GetGPUVirtualAddress();
+	}
+	else
+		m_gpu_pointer = m_buffer_upload->GetGPUVirtualAddress();
+
 	return true;
 }
 
@@ -136,21 +157,50 @@ void D3D12StreamBuffer::CommitMemory(u32 final_num_bytes)
 	m_current_space -= final_num_bytes;
 }
 
+void D3D12StreamBuffer::FlushMemory()
+{
+	if (m_buffer_default &&
+		m_current_space != m_size)
+	{
+		if (m_current_copy_offset < m_current_offset)
+		{
+			const u32 size = m_current_offset - m_current_copy_offset;
+			GSDevice12::GetInstance()->GetInitCommandList().list4->CopyBufferRegion(m_buffer_default.get(), m_current_copy_offset,
+				m_buffer_upload.get(), m_current_copy_offset, size);
+		}
+		else
+		{
+			const u32 size = m_size - m_current_copy_offset;
+			GSDevice12::GetInstance()->GetInitCommandList().list4->CopyBufferRegion(m_buffer_default.get(), m_current_copy_offset,
+				m_buffer_upload.get(), m_current_copy_offset, size);
+			GSDevice12::GetInstance()->GetInitCommandList().list4->CopyBufferRegion(m_buffer_default.get(), 0,
+				m_buffer_upload.get(), 0, m_current_offset);
+		}
+		m_current_copy_offset = m_current_offset;
+	}
+}
+
 void D3D12StreamBuffer::Destroy(bool defer)
 {
 	if (m_host_pointer)
 	{
 		const D3D12_RANGE written_range = {0, m_size};
-		m_buffer->Unmap(0, &written_range);
+		m_buffer_upload->Unmap(0, &written_range);
 		m_host_pointer = nullptr;
 	}
 
-	if (m_buffer && defer)
-		GSDevice12::GetInstance()->DeferResourceDestruction(m_allocation.get(), m_buffer.get());
-	m_buffer.reset();
-	m_allocation.reset();
+	if (m_buffer_upload && defer)
+		GSDevice12::GetInstance()->DeferResourceDestruction(m_allocation_upload.get(), m_buffer_upload.get());
+	m_buffer_upload.reset();
+	m_allocation_upload.reset();
+
+	if (m_buffer_default && defer)
+		GSDevice12::GetInstance()->DeferResourceDestruction(m_allocation_default.get(), m_buffer_default.get());
+	m_buffer_default.reset();
+	m_allocation_default.reset();
 
 	m_current_offset = 0;
+	m_current_copy_offset = 0;
 	m_current_space = 0;
 	m_current_gpu_position = 0;
 	m_tracked_fences.clear();
