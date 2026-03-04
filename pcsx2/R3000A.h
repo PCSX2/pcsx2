@@ -94,12 +94,12 @@ struct psxRegisters {
 	CP2Ctrl CP2C; 		/* Cop2 control registers */
 	u32 pc;				/* Program counter */
 	u32 code;			/* The instruction */
-	u32 cycle;
+	u64 cycle;
 	u32 interrupt;
 	u32 pcWriteback;
 
 	// Controls when branch tests are performed.
-	u32 iopNextEventCycle;
+	u64 iopNextEventCycle;
 
 	// This value is used when the IOP execution is broken to return control to the EE.
 	// (which happens when the IOP throws EE-bound interrupts).  It holds the value of
@@ -112,7 +112,7 @@ struct psxRegisters {
 	s32 iopCycleEE;
 	u32 iopCycleEECarry;
 
-	u32 sCycle[32];		// start cycle for signaled ints
+	u64 sCycle[32];		// start cycle for signaled ints
 	s32 eCycle[32];		// cycle delta for signaled ints (sCycle + eCycle == branch cycle)
 	//u32 _msflag[32];
 	//u32 _smflag[32];
@@ -164,13 +164,10 @@ alignas(16) extern psxRegisters psxRegs;
 
 #define _SetLink(x)     psxRegs.GPR.r[x] = _PC_ + 4;       // Sets the return address in the link register
 
-extern s32 EEsCycle;
-extern u32 EEoCycle;
-
 #endif
 
 extern s32 psxNextDeltaCounter;
-extern u32 psxNextStartCounter;
+extern u64 psxNextStartCounter;
 extern bool iopEventAction;
 extern bool iopEventTestIsActive;
 

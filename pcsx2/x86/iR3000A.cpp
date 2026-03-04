@@ -1146,17 +1146,17 @@ static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 
 	if (EmuConfig.Speedhacks.WaitLoop && s_nBlockFF && newpc == s_branchTo)
 	{
-		xMOV(eax, ptr32[&psxRegs.cycle]);
-		xMOV(ecx, eax);
-		xMOV(edx, ptr32[&psxRegs.iopCycleEE]);
-		xADD(edx, 7);
-		xSHR(edx, 3);
-		xADD(eax, edx);
-		xCMP(eax, ptr32[&psxRegs.iopNextEventCycle]);
-		xCMOVNS(eax, ptr32[&psxRegs.iopNextEventCycle]);
-		xMOV(ptr32[&psxRegs.cycle], eax);
-		xSUB(eax, ecx);
-		xSHL(eax, 3);
+		xMOV(rax, ptr64[&psxRegs.cycle]);
+		xMOV(rcx, rax);
+		xMOV(rdx, ptr32[&psxRegs.iopCycleEE]);
+		xADD(rdx, 7);
+		xSHR(rdx, 3);
+		xADD(rax, rdx);
+		xCMP(rax, ptr64[&psxRegs.iopNextEventCycle]);
+		xCMOVNS(rax, ptr64[&psxRegs.iopNextEventCycle]);
+		xMOV(ptr64[&psxRegs.cycle], rax);
+		xSUB(rax, rcx);
+		xSHL(rax, 3);
 		iPsxAddEECycles(0xFFFFFFFF);
 		xJLE(iopExitRecompiledCode);
 
@@ -1170,16 +1170,16 @@ static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 	}
 	else
 	{
-		xMOV(ebx, ptr32[&psxRegs.cycle]);
-		xADD(ebx, blockCycles);
-		xMOV(ptr32[&psxRegs.cycle], ebx); // update cycles
+		xMOV(rbx, ptr64[&psxRegs.cycle]);
+		xADD(rbx, blockCycles);
+		xMOV(ptr64[&psxRegs.cycle], rbx); // update cycles
 
 		// jump if iopCycleEE <= 0  (iop's timeslice timed out, so time to return control to the EE)
 		iPsxAddEECycles(blockCycles);
 		xJLE(iopExitRecompiledCode);
 
 		// check if an event is pending
-		xSUB(ebx, ptr32[&psxRegs.iopNextEventCycle]);
+		xSUB(rbx, ptr64[&psxRegs.iopNextEventCycle]);
 		xForwardJS<u8> nointerruptpending;
 
 		xFastCall((void*)iopEventTest);
@@ -1225,7 +1225,7 @@ void rpsxSYSCALL()
 	xCMP(ptr32[&psxRegs.pc], psxpc - 4);
 	j8Ptr[0] = JE8(0);
 
-	xADD(ptr32[&psxRegs.cycle], psxScaleBlockCycles());
+	xADD(ptr64[&psxRegs.cycle], psxScaleBlockCycles());
 	iPsxAddEECycles(psxScaleBlockCycles());
 	JMP32((uptr)iopDispatcherReg - ((uptr)x86Ptr + 5));
 
@@ -1247,7 +1247,7 @@ void rpsxBREAK()
 
 	xCMP(ptr32[&psxRegs.pc], psxpc - 4);
 	j8Ptr[0] = JE8(0);
-	xADD(ptr32[&psxRegs.cycle], psxScaleBlockCycles());
+	xADD(ptr64[&psxRegs.cycle], psxScaleBlockCycles());
 	iPsxAddEECycles(psxScaleBlockCycles());
 	JMP32((uptr)iopDispatcherReg - ((uptr)x86Ptr + 5));
 	x86SetJ8(j8Ptr[0]);
@@ -1742,7 +1742,7 @@ StartRecomp:
 			pxAssert(!link_next_block);
 		else
 		{
-			xADD(ptr32[&psxRegs.cycle], psxScaleBlockCycles());
+			xADD(ptr64[&psxRegs.cycle], psxScaleBlockCycles());
 			iPsxAddEECycles(psxScaleBlockCycles());
 		}
 

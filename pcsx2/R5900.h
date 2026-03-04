@@ -405,7 +405,7 @@ extern void cpuClearInt(uint n);
 extern void GoemonPreloadTlb();
 extern void GoemonUnloadTlb(u32 key);
 
-extern void cpuSetNextEvent( u32 startCycle, s32 delta );
+extern void cpuSetNextEvent( u64 startCycle, s32 delta );
 extern void cpuSetNextEventDelta( s32 delta );
 extern int  cpuTestCycle( u32 startCycle, s32 delta );
 extern void cpuSetEvent();

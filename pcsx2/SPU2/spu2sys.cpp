@@ -257,7 +257,7 @@ __forceinline void CheckDMAProgress(int cid)
 
 	if (core.DMAICounter > 0 && (psxRegs.cycle - core.LastClock) > 0)
 	{
-		const u32 amt = std::min(psxRegs.cycle - core.LastClock, (u32)core.DMAICounter);
+		const u32 amt = std::min<u64>(psxRegs.cycle - core.LastClock, (u32)core.DMAICounter);
 		core.DMAICounter -= amt;
 		core.LastClock = psxRegs.cycle;
 

@@ -94,7 +94,7 @@ void psxException(u32 code, u32 bd)
 	}*/
 }
 
-__fi void psxSetNextBranch( u32 startCycle, s32 delta )
+__fi void psxSetNextBranch( u64 startCycle, s32 delta )
 {
 	// typecast the conditional to signed so that things don't blow up
 	// if startCycle is greater than our next branch cycle.
@@ -108,7 +108,7 @@ __fi void psxSetNextBranchDelta( s32 delta )
 	psxSetNextBranch( psxRegs.cycle, delta );
 }
 
-__fi int psxTestCycle( u32 startCycle, s32 delta )
+__fi int psxTestCycle( u64 startCycle, s32 delta )
 {
 	// typecast the conditional to signed so that things don't explode
 	// if the startCycle is ahead of our current cpu cycle.

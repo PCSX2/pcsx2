@@ -24,7 +24,7 @@ namespace SPU2
 	static void InternalReset(bool psxmode);
 } // namespace SPU2
 
-u32 lClocks = 0;
+u64 lClocks = 0;
 
 static bool s_audio_capture_active = false;
 static bool s_psxmode = false;

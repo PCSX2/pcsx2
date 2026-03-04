@@ -190,7 +190,7 @@ void cpuTlbMissW(u32 addr, u32 bd) {
 }
 
 // sets a branch test to occur some time from an arbitrary starting point.
-__fi void cpuSetNextEvent( u32 startCycle, s32 delta )
+__fi void cpuSetNextEvent( u64 startCycle, s32 delta )
 {
 	// typecast the conditional to signed so that things don't blow up
 	// if startCycle is greater than our next branch cycle.
