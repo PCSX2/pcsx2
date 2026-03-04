@@ -1391,6 +1391,7 @@ bool GSDevice12::CheckFeatures(const u32& vendor_id)
 	m_features.cas_sharpening = true;
 	m_features.test_and_sample_depth = true;
 	m_features.vs_expand = !GSConfig.DisableVertexShaderExpand;
+	m_features.conservative_depth = !GSConfig.DisableConservativeDepth;
 
 	m_features.dxt_textures = SupportsTextureFormat(DXGI_FORMAT_BC1_UNORM) &&
 	                          SupportsTextureFormat(DXGI_FORMAT_BC2_UNORM) &&
@@ -3063,7 +3064,7 @@ const ID3DBlob* GSDevice12::GetTFXPixelShader(const GSHWDrawConfig::PSSelector& 
 
 	ShaderMacro sm;
 	sm.AddMacro("PIXEL_SHADER", 1);
-	sm.AddMacro("PS_HAS_CONSERVATIVE_DEPTH", 1);
+	sm.AddMacro("PS_HAS_CONSERVATIVE_DEPTH", static_cast<int>(m_features.conservative_depth));
 	sm.AddMacro("PS_FST", sel.fst);
 	sm.AddMacro("PS_WMS", sel.wms);
 	sm.AddMacro("PS_WMT", sel.wmt);

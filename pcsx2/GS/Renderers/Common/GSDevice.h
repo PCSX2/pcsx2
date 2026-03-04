@@ -886,6 +886,7 @@ public:
 		bool stencil_buffer       : 1; ///< Supports stencil buffer, and can use for DATE.
 		bool cas_sharpening       : 1; ///< Supports sufficient functionality for contrast adaptive sharpening.
 		bool test_and_sample_depth: 1; ///< Supports concurrently binding the depth-stencil buffer for sampling and depth testing.
+		bool conservative_depth   : 1; ///< Supports conservative depth to use early Z optimization with shader Z write.
 		FeatureSupport()
 		{
 			memset(this, 0, sizeof(*this));

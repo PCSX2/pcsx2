@@ -2635,6 +2635,7 @@ bool GSDeviceVK::CheckFeatures()
 	m_features.prefer_new_textures = true;
 	m_features.provoking_vertex_last = m_optional_extensions.vk_ext_provoking_vertex;
 	m_features.vs_expand = !GSConfig.DisableVertexShaderExpand;
+	m_features.conservative_depth = !GSConfig.DisableConservativeDepth;
 
 	if (!m_features.texture_barrier)
 		Console.Warning("VK: Texture buffers are disabled. This may break some graphical effects.");
@@ -4722,6 +4723,7 @@ VkShaderModule GSDeviceVK::GetTFXFragmentShader(const GSHWDrawConfig::PSSelector
 	std::stringstream ss;
 	AddShaderHeader(ss);
 	AddShaderStageMacro(ss, false, false, true);
+	AddMacro(ss, "PS_HAS_CONSERVATIVE_DEPTH", static_cast<int>(m_features.conservative_depth));
 	AddMacro(ss, "PS_FST", sel.fst);
 	AddMacro(ss, "PS_WMS", sel.wms);
 	AddMacro(ss, "PS_WMT", sel.wmt);

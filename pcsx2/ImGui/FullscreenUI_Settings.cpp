@@ -3231,6 +3231,8 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 			"EmuCore/GS", "DisableShaderCache", false);
 		DrawToggleSetting(bsi, FSUI_CSTR("Disable Vertex Shader Expand"), FSUI_CSTR("Falls back to the CPU for expanding sprites/lines."),
 			"EmuCore/GS", "DisableVertexShaderExpand", false);
+		DrawToggleSetting(bsi, FSUI_CSTR("Disable Conservative Depth"), FSUI_CSTR("Prevents usage of conservative depth optimization."),
+			"EmuCore/GS", "DisableConservativeDepth", false);
 		DrawIntListSetting(bsi, FSUI_CSTR("Texture Preloading"),
 			FSUI_CSTR(
 				"Uploads full textures to the GPU on use, rather than only the utilized regions. Can improve performance in some games."),

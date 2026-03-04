@@ -259,6 +259,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_advanced.disableFramebufferFetch, "EmuCore/GS", "DisableFramebufferFetch", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_advanced.disableShaderCache, "EmuCore/GS", "DisableShaderCache", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_advanced.disableVertexShaderExpand, "EmuCore/GS", "DisableVertexShaderExpand", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_advanced.disableConservativeDepth, "EmuCore/GS", "DisableConservativeDepth", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_advanced.gsDownloadMode, "EmuCore/GS", "HWDownloadMode", static_cast<int>(GSHardwareDownloadMode::Enabled));
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_advanced.ntscFrameRate, "EmuCore/GS", "FrameRateNTSC", 59.94f);
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_advanced.palFrameRate, "EmuCore/GS", "FrameRatePAL", 50.00f);

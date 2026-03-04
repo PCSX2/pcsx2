@@ -920,6 +920,7 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 
 	m_features.broken_point_sampler = false;
 	m_features.vs_expand = !GSConfig.DisableVertexShaderExpand;
+	m_features.conservative_depth = !GSConfig.DisableConservativeDepth;
 	m_features.primitive_id = m_dev.features.primid;
 	m_features.texture_barrier = true;
 	m_features.multidraw_fb_copy = false;
@@ -933,6 +934,7 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	m_features.stencil_buffer = true;
 	m_features.cas_sharpening = true;
 	m_features.test_and_sample_depth = true;
+	m_features.conservative_depth = true;
 	m_max_texture_size = m_dev.features.max_texsize;
 
 	// Init metal stuff

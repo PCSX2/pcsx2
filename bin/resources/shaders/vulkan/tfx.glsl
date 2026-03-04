@@ -361,7 +361,7 @@ layout(set = 1, binding = 1) uniform texture2D Palette;
 layout(set = 1, binding = 3) uniform texture2D PrimMinTexture;
 #endif
 
-#if PS_ZFLOOR || PS_ZCLAMP
+#if PS_HAS_CONSERVATIVE_DEPTH && (PS_ZFLOOR || PS_ZCLAMP)
 layout(depth_less) out float gl_FragDepth;
 #endif
 

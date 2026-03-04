@@ -321,6 +321,13 @@
           </property>
          </widget>
         </item>
+        <item row="2" column="0">
+         <widget class="QCheckBox" name="disableConservativeDepth">
+          <property name="text">
+           <string>Disable Conservative Depth</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </item>
      </layout>
@@ -358,6 +365,7 @@
   <tabstop>disableFramebufferFetch</tabstop>
   <tabstop>disableShaderCache</tabstop>
   <tabstop>disableVertexShaderExpand</tabstop>
+  <tabstop>disableConservativeDepth</tabstop>
  </tabstops>
  <resources/>
  <connections/>
