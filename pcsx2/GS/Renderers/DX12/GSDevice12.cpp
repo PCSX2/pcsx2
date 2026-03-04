@@ -1407,6 +1407,11 @@ bool GSDevice12::CheckFeatures(const u32& vendor_id)
 		DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allow_tearing_supported, sizeof(allow_tearing_supported));
 	m_allow_tearing_supported = (SUCCEEDED(hr) && allow_tearing_supported == TRUE);
 
+	D3D12_FEATURE_DATA_ARCHITECTURE1 device_architecture1 = {};
+	hr = m_device->CheckFeatureSupport(D3D12_FEATURE_ARCHITECTURE1, &device_architecture1, sizeof(device_architecture1));
+	m_uma = SUCCEEDED(hr) && device_architecture1.UMA;
+	Console.WriteLnFmt("D3D12: {}", m_uma ? (device_architecture1.CacheCoherentUMA ? "Cache Coherent Unified Memory Architecture" : "Unified Memory Architecture") : "Non-Unified Memory Architecture");
+
 	D3D12_FEATURE_DATA_D3D12_OPTIONS3 device_options3 = {};
 	hr = m_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS3, &device_options3, sizeof(device_options3));
 	m_typed_casting_supported = SUCCEEDED(hr) && device_options3.CastingFullyTypedFormatSupported;
