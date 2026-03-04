@@ -34,7 +34,7 @@ struct SPU2Savestate::DataBlock
 	u16 OutPos;
 	u16 InputPos;
 	u32 Cycles;
-	u32 lClocks;
+	u64 lClocks;
 	int PlayMode;
 };
 

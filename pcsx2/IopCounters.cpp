@@ -33,7 +33,7 @@
 
 psxCounter psxCounters[NUM_COUNTERS];
 s32 psxNextDeltaCounter;
-u32 psxNextStartCounter;
+u64 psxNextStartCounter;
 
 bool hBlanking = false;
 bool vBlanking = false;
@@ -132,7 +132,8 @@ static void _rcntSet(int cntidx)
 		return;
 	}
 
-	c = (u64)((overflowCap - counter.count) * counter.rate) - (psxRegs.cycle - counter.startCycle);
+	// FIXME: the u32 casts in this expression exist to match pre-64bit counter code, rewrite these
+	c = (u64)((overflowCap - counter.count) * counter.rate) - ((u32)psxRegs.cycle - (u32)counter.startCycle);
 	c += psxRegs.cycle - psxNextStartCounter; // adjust for time passed since last rcntUpdate();
 
 	if (c < (u64)psxNextDeltaCounter)
@@ -144,7 +145,7 @@ static void _rcntSet(int cntidx)
 	if (counter.target & IOPCNT_FUTURE_TARGET)
 		return;
 
-	c = (s64)((counter.target - counter.count) * counter.rate) - (psxRegs.cycle - counter.startCycle);
+	c = (s64)((counter.target - counter.count) * counter.rate) - ((u32)psxRegs.cycle - (u32)counter.startCycle);
 	c += psxRegs.cycle - psxNextStartCounter; // adjust for time passed since last rcntUpdate();
 
 	if (c < (u64)psxNextDeltaCounter)

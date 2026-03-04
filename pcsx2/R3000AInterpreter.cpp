@@ -270,7 +270,7 @@ static s32 intExecuteBlock( s32 eeCycles )
 {
 	psxRegs.iopBreak = 0;
 	psxRegs.iopCycleEE = eeCycles;
-	u32 lastIOPCycle = 0;
+	u64 lastIOPCycle = 0;
 
 	while (psxRegs.iopCycleEE > 0)
 	{

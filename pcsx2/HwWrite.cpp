@@ -175,7 +175,7 @@ void _hwWrite32( u32 mem, u32 value )
 					}
 					if (value & (1 << 19))
 					{
-						u32 cycle = psxRegs.cycle;
+						u64 cycle = psxRegs.cycle;
 						//pgifInit();
 						psxReset();
 						PSXCLK =  33868800;
