@@ -325,7 +325,7 @@ static __fi void _HwWrite_16or32_Page1( u32 addr, T val )
 			//	case 0x05a: serial_control_write( val ); break;
 			//	case 0x05e: serial_baud_write( val ); break;
 
-			mcase(HW_IREG):
+			mcase(HW_ISTAT):
 				psxHu(addr) &= val;
 				if (val == 0xffffffff) {
 					psxHu32(addr) |= 1 << 2;
@@ -333,7 +333,7 @@ static __fi void _HwWrite_16or32_Page1( u32 addr, T val )
 				}
 			break;
 
-			mcase(HW_IREG+2):
+			mcase(HW_ISTAT+2):
 				psxHu(addr) &= val;
 			break;
 

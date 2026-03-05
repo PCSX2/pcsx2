@@ -542,7 +542,7 @@ void cdrInterrupt()
 	}
 
 	if (cdr.Stat != NoIntr && cdr.Reg2 != 0x18)
-		psxHu32(0x1070) |= 0x4;
+		psxHu32(HW_ISTAT) |= 0x4;
 
 	CDVD_LOG("Cdr Interrupt %x\n", Irq);
 }
@@ -620,7 +620,7 @@ void cdrReadInterrupt()
 		CDREAD_INT((cdr.Mode & 0x80) ? (cdReadTime / 2) : cdReadTime);
 	}
 
-	psxHu32(0x1070) |= 0x4;
+	psxHu32(HW_ISTAT) |= 0x4;
 	return;
 }
 

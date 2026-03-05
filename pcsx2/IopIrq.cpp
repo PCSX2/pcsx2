@@ -47,6 +47,6 @@ void spu2Irq()
 
 void iopIntcIrq(uint irqType)
 {
-	psxHu32(0x1070) |= 1 << irqType;
+	psxHu32(HW_ISTAT) |= 1 << irqType;
 	iopTestIntc();
 }

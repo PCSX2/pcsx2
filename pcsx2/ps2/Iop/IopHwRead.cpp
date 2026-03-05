@@ -290,13 +290,13 @@ static __fi T _HwRead_16or32_Page1( u32 addr )
 			//	case 0x05e: hard = serial_baud_read(); break;
 
 			mcase(HW_ICTRL):
-				ret = psxHu32(0x1078);
-				psxHu32(0x1078) = 0;
+				ret = psxHu32(HW_ICTRL);
+				psxHu32(HW_ICTRL) = 0;
 			break;
 
 			mcase(HW_ICTRL+2):
-				ret = psxHu16(0x107a);
-				psxHu32(0x1078) = 0;	// most likely should clear all 32 bits here.
+				ret = psxHu16(HW_ICTRL+2);
+				psxHu32(HW_ICTRL) = 0;	// most likely should clear all 32 bits here.
 			break;
 
 			// ------------------------------------------------------------------------

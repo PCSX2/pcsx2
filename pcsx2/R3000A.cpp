@@ -228,11 +228,11 @@ __ri void iopEventTest()
 		iopEventTestIsActive = false;
 	}
 
-	if ((psxHu32(0x1078) != 0) && ((psxHu32(0x1070) & psxHu32(0x1074)) != 0))
+	if ((psxHu32(HW_ICTRL) != 0) && ((psxHu32(HW_ISTAT) & psxHu32(HW_IMASK)) != 0))
 	{
 		if ((psxRegs.CP0.n.Status & 0xFE01) >= 0x401)
 		{
-			PSXCPU_LOG("Interrupt: %x  %x", psxHu32(0x1070), psxHu32(0x1074));
+			PSXCPU_LOG("Interrupt: %x  %x", psxHu32(HW_ISTAT), psxHu32(HW_IMASK));
 			psxException(0, 0);
 			iopEventAction = true;
 		}
@@ -241,8 +241,8 @@ __ri void iopEventTest()
 
 void iopTestIntc()
 {
-	if( psxHu32(0x1078) == 0 ) return;
-	if( (psxHu32(0x1070) & psxHu32(0x1074)) == 0 ) return;
+	if( psxHu32(HW_ICTRL) == 0 ) return;
+	if( (psxHu32(HW_ISTAT) & psxHu32(HW_IMASK)) == 0 ) return;
 
 	if( !eeEventTestIsActive )
 	{
