@@ -1545,7 +1545,7 @@ static void PreBlockCheck(u32 blockpc)
 static void iopRecRecompile(const u32 startpc)
 {
 	u32 i;
-	u32 willbranch3 = 0;
+	u32 link_next_block = 0;
 
 	// When upgrading the IOP, there are two resets, the second of which is a 'fake' reset
 	// This second 'reset' involves UDNL calling SYSMEM and LOADCORE directly, resetting LOADCORE's modules
@@ -1618,8 +1618,8 @@ static void iopRecRecompile(const u32 startpc)
 		BASEBLOCK* pblock = PSX_GETBLOCK(i);
 		if (i != startpc && pblock->GetFnptr() != (uptr)iopJITCompile)
 		{
-			// branch = 3
-			willbranch3 = 1;
+			// The next instruction is already compiled, end here and link to it.
+			link_next_block = 1;
 			s_nEndBlock = i;
 			break;
 		}
@@ -1739,14 +1739,14 @@ StartRecomp:
 	else
 	{
 		if (psxbranch)
-			pxAssert(!willbranch3);
+			pxAssert(!link_next_block);
 		else
 		{
 			xADD(ptr32[&psxRegs.cycle], psxScaleBlockCycles());
 			iPsxAddEECycles(psxScaleBlockCycles());
 		}
 
-		if (willbranch3 || !psxbranch)
+		if (link_next_block || !psxbranch)
 		{
 			pxAssert(psxpc == s_nEndBlock);
 			_psxFlushCall(FLUSH_EVERYTHING);
