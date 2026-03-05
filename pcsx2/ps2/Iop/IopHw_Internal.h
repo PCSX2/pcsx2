@@ -58,8 +58,8 @@ static __ri const char* _ioplog_GetHwName( u32 addr, T val )
 		// ------------------------------------------------------------------------
 		case 0x1f801060:return "RAM_SIZE";
 
-		case HW_IREG:	return "IREG";
-		case HW_IREG+2:	return "IREG_hi";
+		case HW_ISTAT:	return "ISTAT";
+		case HW_ISTAT+2:	return "ISTAT_hi";
 		case HW_IMASK:	return "IMASK";
 		case HW_IMASK+2:return "IMASK_hi";
 		case HW_ICTRL:	return "ICTRL";

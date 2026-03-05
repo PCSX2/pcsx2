@@ -35,7 +35,7 @@ static const u32
 	HW_SIO_BAUD			= 0x1f80104e,
 
     HW_RAM_SIZE         = 0x1f801060,
-	HW_IREG				= 0x1f801070,
+	HW_ISTAT			= 0x1f801070,
 	HW_IMASK			= 0x1f801074,
 	HW_ICTRL			= 0x1f801078,
 
