@@ -50,7 +50,7 @@ set QTMINOR=6.10
 set QTAPNG=1.3.0
 
 set FREETYPE=2.14.1
-set HARFBUZZ=12.2.0
+set HARFBUZZ=13.0.0
 set LIBJPEGTURBO=3.1.3
 set LIBPNG=1655
 set LIBPNGLONG=1.6.55
@@ -79,7 +79,7 @@ call :downloadfile "qttranslations-everywhere-src-%QT%.zip" "https://download.qt
 call :downloadfile "QtApng-%QTAPNG%.zip" "https://github.com/jurplel/QtApng/archive/refs/tags/%QTAPNG%.zip" 5176082cdd468047a7eb1ec1f106b032f57df207aa318d559b29606b00d159ac || goto error
 
 call :downloadfile "freetype-%FREETYPE%.tar.gz" https://sourceforge.net/projects/freetype/files/freetype2/%FREETYPE%/freetype-%FREETYPE%.tar.gz/download 174d9e53402e1bf9ec7277e22ec199ba3e55a6be2c0740cb18c0ee9850fc8c34 || goto error
-call :downloadfile "harfbuzz-%HARFBUZZ%.zip" https://github.com/harfbuzz/harfbuzz/archive/refs/tags/%HARFBUZZ%.zip 31490c781bacd2ce56862555b11c51c964977c39f14f51b817dfaecf0be089fe || goto error
+call :downloadfile "harfbuzz-%HARFBUZZ%.zip" https://github.com/harfbuzz/harfbuzz/archive/refs/tags/%HARFBUZZ%.zip a448a8abc3f9ae8eef19ef3ce247370957c1fada5d58a01b5e281e792f40fa61 || goto error
 call :downloadfile "lpng%LIBPNG%.zip" https://download.sourceforge.net/libpng/lpng1655.zip aa45ef52ff7a4e61f34af866b3254b0b243ddc42fe2adb823b0843d2a57c2e86 || goto error
 call :downloadfile "lpng%LIBPNG%-apng.patch.gz" https://download.sourceforge.net/libpng-apng/libpng-%LIBPNGLONG%-apng.patch.gz 017c06f75ffed25f6cda9b5369ec6da0ac35a6616adf7abe4222516a0237f37a || goto error
 call :downloadfile "libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/%LIBJPEGTURBO%/libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" 075920b826834ac4ddf97661cc73491047855859affd671d52079c6867c1c6c0 || goto error
