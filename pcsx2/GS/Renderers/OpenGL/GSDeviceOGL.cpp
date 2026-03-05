@@ -1530,10 +1530,10 @@ void GSDeviceOGL::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTextu
 	if (draw_in_depth)
 		OMSetDepthStencilState(m_convert.dss_write);
 	else
-	{
-		OMSetBlendState(alpha_blend, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_FUNC_ADD);
-		OMSetColorMaskState(cms);
-	}
+		OMSetDepthStencilState(m_convert.dss);
+
+	OMSetBlendState(alpha_blend, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_FUNC_ADD);
+	OMSetColorMaskState(cms);
 
 	// ************************************
 	// Texture
@@ -1644,6 +1644,7 @@ void GSDeviceOGL::FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u3
 	prog.Uniform1f(2, static_cast<float>(downsample_factor * downsample_factor));
 	prog.Uniform1f(3, (GSConfig.UserHacks_NativeScaling > GSNativeScaling::Aggressive) ? 2.0f : 1.0f);
 
+	OMSetDepthStencilState(m_convert.dss);
 	OMSetBlendState(false);
 	OMSetColorMaskState();
 	OMSetRenderTargets(dTex, nullptr);
@@ -1681,24 +1682,18 @@ void GSDeviceOGL::DrawStretchRect(const GSVector4& sRect, const GSVector4& dRect
 	DrawPrimitive();
 }
 
-void GSDeviceOGL::DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, GSTexture* dTex, ShaderConvert shader)
+void GSDeviceOGL::DrawMultiStretchRects(
+	const MultiStretchRect* rects, u32 num_rects, GSTexture* dTex, ShaderConvert shader)
 {
 	IASetVAO(m_vao);
 	IASetPrimitiveTopology(GL_TRIANGLE_STRIP);
-
-	const bool draw_in_depth = dTex->IsDepthStencil();
-
-	if (draw_in_depth)
-	{
-		OMSetDepthStencilState(m_convert.dss_write);
-		OMSetRenderTargets(nullptr, dTex);
-	}
-	else
-	{
-		OMSetBlendState(false);
+	OMSetDepthStencilState(HasDepthOutput(shader) ? m_convert.dss_write : m_convert.dss);
+	OMSetBlendState(false);
+	OMSetColorMaskState();
+	if (!dTex->IsDepthStencil())
 		OMSetRenderTargets(dTex, nullptr);
-	}
-
+	else
+		OMSetRenderTargets(nullptr, dTex);
 	m_convert.ps[static_cast<int>(shader)].Bind();
 
 	const GSVector2 ds(static_cast<float>(dTex->GetWidth()), static_cast<float>(dTex->GetHeight()));
@@ -1717,7 +1712,7 @@ void GSDeviceOGL::DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_r
 			continue;
 		}
 
-		DoMultiStretchRects(rects + first, count, ds, draw_in_depth);
+		DoMultiStretchRects(rects + first, count, ds);
 		last_tex = rects[i].src;
 		last_linear = rects[i].linear;
 		last_wmask = rects[i].wmask.wrgba;
@@ -1725,10 +1720,10 @@ void GSDeviceOGL::DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_r
 		count = 1;
 	}
 
-	DoMultiStretchRects(rects + first, count, ds, draw_in_depth);
+	DoMultiStretchRects(rects + first, count, ds);
 }
 
-void GSDeviceOGL::DoMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, const GSVector2& ds, const bool draw_in_depth)
+void GSDeviceOGL::DoMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, const GSVector2& ds)
 {
 	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
@@ -1780,10 +1775,7 @@ void GSDeviceOGL::DoMultiStretchRects(const MultiStretchRect* rects, u32 num_rec
 
 	PSSetShaderResource(0, rects[0].src);
 	PSSetSamplerState(rects[0].linear ? m_convert.ln : m_convert.pt);
-
-	if (!draw_in_depth)
-		OMSetColorMaskState(rects[0].wmask);
-
+	OMSetColorMaskState(rects[0].wmask);
 	DrawIndexedPrimitive();
 }
 
@@ -1950,6 +1942,8 @@ void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, SetDATM datm, const GS
 	// om
 
 	OMSetDepthStencilState(m_date.dss);
+	OMSetBlendState(false);
+	OMSetColorMaskState();
 
 	// ia
 
