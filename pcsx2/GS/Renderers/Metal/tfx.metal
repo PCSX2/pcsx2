@@ -71,7 +71,7 @@ constant bool PS_MANUAL_LOD         [[function_constant(GSMTLConstantIndex_PS_MA
 constant bool PS_REGION_RECT        [[function_constant(GSMTLConstantIndex_PS_REGION_RECT)]];
 constant uint PS_SCANMSK            [[function_constant(GSMTLConstantIndex_PS_SCANMSK)]];
 
-constant GSMTLExpandType VS_EXPAND_TYPE = static_cast<GSMTLExpandType>(VS_EXPAND_TYPE_RAW);
+constant GSShader::VSExpand VS_EXPAND_TYPE = static_cast<GSShader::VSExpand>(VS_EXPAND_TYPE_RAW);
 
 #if defined(__METAL_MACOS__) && __METAL_VERSION__ >= 220
 	#define PRIMID_SUPPORT 1
@@ -219,9 +219,9 @@ vertex MainVSOut vs_main_expand(
 {
 	switch (VS_EXPAND_TYPE)
 	{
-		case GSMTLExpandType::None:
+		case GSShader::VSExpand::None:
 			return vs_main_run(load_vertex(vertices[vid]), cb);
-		case GSMTLExpandType::Point:
+		case GSShader::VSExpand::Point:
 		{
 			MainVSOut point = vs_main_run(load_vertex(vertices[vid >> 2]), cb);
 			if (vid & 1)
@@ -230,7 +230,7 @@ vertex MainVSOut vs_main_expand(
 				point.p.y += cb.point_size.y;
 			return point;
 		}
-		case GSMTLExpandType::Line:
+		case GSShader::VSExpand::Line:
 		{
 			uint vid_base = vid >> 2;
 			bool is_bottom = vid & 2;
@@ -252,7 +252,7 @@ vertex MainVSOut vs_main_expand(
 
 			return point;
 		}
-		case GSMTLExpandType::Sprite:
+		case GSShader::VSExpand::Sprite:
 		{
 			uint vid_base = vid >> 1;
 			bool is_bottom = vid & 2;

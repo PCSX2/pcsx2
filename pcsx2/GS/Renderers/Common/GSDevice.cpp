@@ -1121,17 +1121,17 @@ std::string GSHWDrawConfig::GetPSDateName(u32 date)
 	}
 }
 
-std::string GSHWDrawConfig::GetPSAlphaTestName(u32 atst)
+std::string GSHWDrawConfig::GetPSAlphaTestName(PS_ATST atst)
 {
-	switch (static_cast<GSHWDrawConfig::PSAlphaTest>(atst))
+	switch (atst)
 	{
-		case GSHWDrawConfig::PSAlphaTest::PS_ATST_NONE: return "NONE";
-		case GSHWDrawConfig::PSAlphaTest::PS_ATST_LEQUAL: return "LEQUAL";
-		case GSHWDrawConfig::PSAlphaTest::PS_ATST_GEQUAL: return "GEQUAL";
-		case GSHWDrawConfig::PSAlphaTest::PS_ATST_EQUAL: return "EQUAL";
-		case GSHWDrawConfig::PSAlphaTest::PS_ATST_NOTEQUAL: return "NOTEQUAL";
-		default: return std::to_string(atst);
+		case PS_ATST::NONE:     return "NONE";
+		case PS_ATST::LEQUAL:   return "LEQUAL";
+		case PS_ATST::GEQUAL:   return "GEQUAL";
+		case PS_ATST::EQUAL:    return "EQUAL";
+		case PS_ATST::NOTEQUAL: return "NOTEQUAL";
 	};
+	return "UNKNOWN";
 }
 
 std::string GSHWDrawConfig::GetPSDstFmtName(u32 dstfmt)
@@ -1333,7 +1333,7 @@ void GSHWDrawConfig::DumpPSSelector(std::ostream& out, const PSSelector& ps, con
 	out << indent << "fog: " << static_cast<u32>(ps.fog) << std::endl;
 	out << indent << "iip: " << static_cast<u32>(ps.iip) << std::endl;
 	out << indent << "date: " << static_cast<u32>(ps.date) << " # " << GetPSDateName(static_cast<u32>(ps.date)) << std::endl;
-	out << indent << "atst: " << static_cast<u32>(ps.atst) << " # " << GetPSAlphaTestName(static_cast<u32>(ps.atst)) << std::endl;
+	out << indent << "atst: " << static_cast<u32>(ps.atst) << " # " << GetPSAlphaTestName(ps.atst) << std::endl;
 	out << indent << "afail: " << static_cast<u32>(ps.afail) << " # " << GSUtil::GetAFAILName(static_cast<u32>(ps.afail)) << std::endl;
 	out << indent << "fst: " << static_cast<u32>(ps.fst) << std::endl;
 	out << indent << "tfx: " << static_cast<u32>(ps.tfx) << std::endl;
