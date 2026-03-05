@@ -747,6 +747,12 @@ static void setFnConstantI(MTLFunctionConstantValues* fc, unsigned int value, GS
 	[fc setConstantValue:&value type:MTLDataTypeUInt atIndex:constant];
 }
 
+template <typename T, std::enable_if_t<std::is_enum_v<T>, bool> = true>
+static void setFnConstantI(MTLFunctionConstantValues* fc, T value, GSMTLFnConstants constant)
+{
+	setFnConstantI(fc, static_cast<std::underlying_type_t<T>>(value), constant);
+}
+
 template <typename Fn>
 static void OnMainThread(Fn&& fn)
 {
@@ -1051,15 +1057,15 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	{
 		VSSelector sel;
 		sel.key = i;
-		if (sel.point_size && sel.expand != GSMTLExpandType::None)
+		if (sel.point_size && sel.expand != GSShader::VSExpand::None)
 			continue;
 		setFnConstantB(m_fn_constants, sel.fst,        GSMTLConstantIndex_FST);
 		setFnConstantB(m_fn_constants, sel.iip,        GSMTLConstantIndex_IIP);
 		setFnConstantB(m_fn_constants, sel.point_size, GSMTLConstantIndex_VS_POINT_SIZE);
 		NSString* shader = @"vs_main";
-		if (sel.expand != GSMTLExpandType::None)
+		if (sel.expand != GSShader::VSExpand::None)
 		{
-			setFnConstantI(m_fn_constants, static_cast<u32>(sel.expand), GSMTLConstantIndex_VS_EXPAND_TYPE);
+			setFnConstantI(m_fn_constants, sel.expand, GSMTLConstantIndex_VS_EXPAND_TYPE);
 			shader = @"vs_main_expand";
 		}
 		m_hw_vs[i] = LoadShader(shader);
@@ -1799,17 +1805,6 @@ static MTLBlendOperation ConvertBlendOp(GSDevice::BlendOp generic)
 	}
 }
 
-static GSMTLExpandType ConvertVSExpand(GSHWDrawConfig::VSExpand generic)
-{
-	switch (generic)
-	{
-		case GSHWDrawConfig::VSExpand::None:   return GSMTLExpandType::None;
-		case GSHWDrawConfig::VSExpand::Point:  return GSMTLExpandType::Point;
-		case GSHWDrawConfig::VSExpand::Line:   return GSMTLExpandType::Line;
-		case GSHWDrawConfig::VSExpand::Sprite: return GSMTLExpandType::Sprite;
-	}
-}
-
 void GSDeviceMTL::MRESetHWPipelineState(GSHWDrawConfig::VSSelector vssel, GSHWDrawConfig::PSSelector pssel, GSHWDrawConfig::BlendState blend, GSHWDrawConfig::ColorMaskSelector cms)
 {
 	PipelineSelectorExtrasMTL extras(blend, m_current_render.color_target, cms, m_current_render.depth_target, m_current_render.stencil_target);
@@ -1831,7 +1826,7 @@ void GSDeviceMTL::MRESetHWPipelineState(GSHWDrawConfig::VSSelector vssel, GSHWDr
 	vssel_mtl.fst = vssel.fst;
 	vssel_mtl.iip = vssel.iip;
 	vssel_mtl.point_size = vssel.point_size;
-	vssel_mtl.expand = ConvertVSExpand(vssel.expand);
+	vssel_mtl.expand = vssel.expand;
 	id<MTLFunction> vs = m_hw_vs[vssel_mtl.key];
 
 	id<MTLFunction> ps;
@@ -1906,7 +1901,7 @@ void GSDeviceMTL::MRESetHWPipelineState(GSHWDrawConfig::VSSelector vssel, GSHWDr
 	MRCOwned<MTLRenderPipelineDescriptor*> pdesc = MRCTransfer([MTLRenderPipelineDescriptor new]);
 	if (vssel_mtl.point_size)
 		[pdesc setInputPrimitiveTopology:MTLPrimitiveTopologyClassPoint];
-	if (vssel_mtl.expand == GSMTLExpandType::None)
+	if (vssel_mtl.expand == GSShader::VSExpand::None)
 		[pdesc setVertexDescriptor:m_hw_vertex];
 	else
 		[pdesc setInputPrimitiveTopology:MTLPrimitiveTopologyClassTriangle];

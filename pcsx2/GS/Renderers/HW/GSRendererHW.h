@@ -92,6 +92,9 @@ private:
 	bool TextureCoversWithoutGapsNotEqual();
 	bool Is8PixelReverseSprite(const GSVertex& v0, const GSVertex& v1);
 
+	using PS_ATST  = GSShader::PS_ATST;
+	using PS_AFAIL = GSShader::PS_AFAIL;
+
 	enum class CLUTDrawTestResult
 	{
 		NotCLUTDraw,
@@ -144,7 +147,7 @@ private:
 		const TextureMinMaxResult& tmm);
 
 	void EmulateZbuffer(const GSTextureCache::Target* ds);
-	static void GetAlphaTestConfigPS(const u32 atst, const u8 aref, const bool invert_test, u32& ps_atst_out, float& aref_out);
+	static void GetAlphaTestConfigPS(const u32 atst, const u8 aref, const bool invert_test, PS_ATST& ps_atst_out, float& aref_out);
 	void EmulateAlphaTest(DATEOptions& date_options);
 	void EmulateAlphaTestSecondPass();
 

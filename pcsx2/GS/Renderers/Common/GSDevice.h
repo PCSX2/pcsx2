@@ -7,6 +7,7 @@
 #include "common/WindowInfo.h"
 #include "GS/GS.h"
 #include "GS/Renderers/Common/GSFastList.h"
+#include "GS/Renderers/Common/GSShaderEnums.h"
 #include "GS/Renderers/Common/GSTexture.h"
 #include "GS/Renderers/Common/GSVertex.h"
 #include "GS/GSAlignedClass.h"
@@ -300,13 +301,9 @@ struct alignas(16) GSHWDrawConfig
 		Line,
 		Triangle,
 	};
-	enum class VSExpand: u8
-	{
-		None,
-		Point,
-		Line,
-		Sprite,
-	};
+	using VSExpand = GSShader::VSExpand;
+	using PS_ATST  = GSShader::PS_ATST;
+	using PS_AFAIL = GSShader::PS_AFAIL;
 #pragma pack(push, 1)
 	struct VSSelector
 	{
@@ -330,28 +327,7 @@ struct alignas(16) GSHWDrawConfig
 		__fi bool UseExpandIndexBuffer() const { return (expand == VSExpand::Point || expand == VSExpand::Sprite); }
 	};
 	static_assert(sizeof(VSSelector) == 1, "VSSelector is a single byte");
-#pragma pack(pop)
 
-	enum PSAlphaTest
-	{
-		PS_ATST_NONE = 0,
-		PS_ATST_LEQUAL = 1,
-		PS_ATST_GEQUAL = 2,
-		PS_ATST_EQUAL = 3,
-		PS_ATST_NOTEQUAL = 4
-	};
-
-	// Identical with the usual GS enum except for the RGB_ONLY_DSB
-	enum PSAfail
-	{
-		PS_AFAIL_KEEP = 0,
-		PS_AFAIL_FB_ONLY = 1,
-		PS_AFAIL_ZB_ONLY = 2,
-		PS_AFAIL_RGB_ONLY = 3,
-		PS_AFAIL_RGB_ONLY_DSB = 4 // RGB only with dual source blend.
-	};
-
-#pragma pack(push, 4)
 	struct PSSelector
 	{
 		// Performance note: there are too many shader combinations
@@ -375,8 +351,8 @@ struct alignas(16) GSHWDrawConfig
 				u32 iip : 1;
 				// Pixel test
 				u32 date : 3;
-				u32 atst : 3;
-				u32 afail : 3;
+				PS_ATST atst : 3;
+				PS_AFAIL afail : 3;
 				u32 ztst : 2;
 				// Color sampling
 				u32 fst : 1; // Investigate to do it on the VS
@@ -842,7 +818,7 @@ struct alignas(16) GSHWDrawConfig
 	// Dumping
 	static std::string GetTopologyName(u32 topology);
 	static std::string GetVSExpandName(u32 vsexpand);
-	static std::string GetPSAlphaTestName(u32 dstfmt);
+	static std::string GetPSAlphaTestName(PS_ATST dstfmt);
 	static std::string GetPSDstFmtName(u32 dstfmt);
 	static std::string GetPSDepthFmtName(u32 depthfmt);
 	static std::string GetPSBlendABDName(u32 abd);
