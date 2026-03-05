@@ -3,6 +3,7 @@
 
 #pragma once
 #include <simd/simd.h>
+#include "../Common/GSShaderEnums.h"
 
 enum GSMTLBufferIndices
 {
@@ -146,14 +147,6 @@ enum GSMTLAttributes
 	GSMTLAttributeIndexZ,
 	GSMTLAttributeIndexUV,
 	GSMTLAttributeIndexF,
-};
-
-enum class GSMTLExpandType : unsigned char
-{
-	None = 0,
-	Point = 1,
-	Line = 2,
-	Sprite = 3,
 };
 
 enum GSMTLFnConstants

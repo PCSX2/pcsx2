@@ -12,6 +12,9 @@
 #include "common/StringUtil.h"
 #include <bit>
 
+using PS_ATST  = GSShader::PS_ATST;
+using PS_AFAIL = GSShader::PS_AFAIL;
+
 GSRendererHW::GSRendererHW()
 	: GSRenderer()
 {
@@ -7293,7 +7296,7 @@ bool GSRendererHW::CanUseTexIsFB(const GSTextureCache::Target* rt, const GSTextu
 	return false;
 }
 
-void GSRendererHW::GetAlphaTestConfigPS(const u32 atst, const u8 aref, const bool invert_test, u32& ps_atst_out, float& aref_out)
+void GSRendererHW::GetAlphaTestConfigPS(const u32 atst, const u8 aref, const bool invert_test, PS_ATST& ps_atst_out, float& aref_out)
 {
 	static const u32 inverted_atst[] = {
 		ATST_ALWAYS,
@@ -7312,32 +7315,32 @@ void GSRendererHW::GetAlphaTestConfigPS(const u32 atst, const u8 aref, const boo
 	{
 		case ATST_LESS:
 			aref_out = static_cast<float>(aref) - small_val;
-			ps_atst_out = GSHWDrawConfig::PS_ATST_LEQUAL;
+			ps_atst_out = PS_ATST::LEQUAL;
 			break;
 		case ATST_LEQUAL:
 			aref_out = static_cast<float>(aref) - small_val + 1.0f;
-			ps_atst_out = GSHWDrawConfig::PS_ATST_LEQUAL;
+			ps_atst_out = PS_ATST::LEQUAL;
 			break;
 		case ATST_GEQUAL:
 			aref_out = static_cast<float>(aref) - small_val;
-			ps_atst_out = GSHWDrawConfig::PS_ATST_GEQUAL;
+			ps_atst_out = PS_ATST::GEQUAL;
 			break;
 		case ATST_GREATER:
 			aref_out = static_cast<float>(aref) - small_val + 1.0f;
-			ps_atst_out = GSHWDrawConfig::PS_ATST_GEQUAL;
+			ps_atst_out = PS_ATST::GEQUAL;
 			break;
 		case ATST_EQUAL:
 			aref_out = static_cast<float>(aref);
-			ps_atst_out = GSHWDrawConfig::PS_ATST_EQUAL;
+			ps_atst_out = PS_ATST::EQUAL;
 			break;
 		case ATST_NOTEQUAL:
 			aref_out = static_cast<float>(aref);
-			ps_atst_out = GSHWDrawConfig::PS_ATST_NOTEQUAL;
+			ps_atst_out = PS_ATST::NOTEQUAL;
 			break;
 		case ATST_NEVER:
 		case ATST_ALWAYS:
 		default:
-			ps_atst_out = GSHWDrawConfig::PS_ATST_NONE;
+			ps_atst_out = PS_ATST::NONE;
 			break;
 	}
 }
@@ -7356,7 +7359,7 @@ void GSRendererHW::EmulateAlphaTest(const bool& DATE, bool& DATE_BARRIER, bool& 
 	GL_PUSH("HW: Alpha test config (1)");
 
 	// Temp pixel shader constants for the setup.
-	u32 ps_atst;
+	PS_ATST ps_atst;
 	float ps_aref;
 
 	u32 atst = m_cached_ctx.TEST.ATST;
@@ -7413,7 +7416,7 @@ void GSRendererHW::EmulateAlphaTest(const bool& DATE, bool& DATE_BARRIER, bool& 
 		GetAlphaTestConfigPS(atst, aref, false, ps_atst, ps_aref);
 		m_conf.ps.atst = ps_atst;
 		m_conf.cb_ps.FogColor_AREF.a = ps_aref;
-		m_conf.ps.afail = GSHWDrawConfig::PS_AFAIL_KEEP;
+		m_conf.ps.afail = PS_AFAIL::KEEP;
 		m_conf.alpha_test = GSHWDrawConfig::AlphaTestMode::KEEP;
 		return;
 	}
@@ -7480,7 +7483,7 @@ void GSRendererHW::EmulateAlphaTest(const bool& DATE, bool& DATE_BARRIER, bool& 
 		GetAlphaTestConfigPS(atst, aref, false, ps_atst, ps_aref);
 		m_conf.ps.atst = ps_atst;
 		m_conf.cb_ps.FogColor_AREF.a = ps_aref;
-		m_conf.ps.afail = afail;
+		m_conf.ps.afail = static_cast<PS_AFAIL>(afail);
 
 		m_conf.ps.color_feedback |= afail_needs_rt;
 		m_conf.ps.depth_feedback |= afail_needs_depth;
@@ -7523,7 +7526,7 @@ void GSRendererHW::EmulateAlphaTest(const bool& DATE, bool& DATE_BARRIER, bool& 
 		GetAlphaTestConfigPS(atst, aref, false, ps_atst, ps_aref);
 		m_conf.ps.atst = ps_atst;
 		m_conf.cb_ps.FogColor_AREF.a = ps_aref;
-		m_conf.ps.afail = GSHWDrawConfig::PS_AFAIL_RGB_ONLY_DSB;
+		m_conf.ps.afail = PS_AFAIL::RGB_ONLY_DSB;
 		m_conf.ps.no_color1 = false;
 
 		// Swap stencil DATE for PrimID DATE, for both Z on and off cases.
@@ -7550,7 +7553,7 @@ void GSRendererHW::EmulateAlphaTest(const bool& DATE, bool& DATE_BARRIER, bool& 
 		GetAlphaTestConfigPS(atst, aref, false, ps_atst, ps_aref);
 		m_conf.ps.atst = ps_atst;
 		m_conf.cb_ps.FogColor_AREF.a = ps_aref;
-		m_conf.ps.afail = GSHWDrawConfig::PS_AFAIL_KEEP;
+		m_conf.ps.afail = PS_AFAIL::KEEP;
 		m_conf.alpha_test = GSHWDrawConfig::AlphaTestMode::PASS_THEN_FAIL;
 	}
 }
@@ -7569,7 +7572,7 @@ void GSRendererHW::EmulateAlphaTestSecondPass()
 	const u32 aref = m_cached_ctx.TEST.AREF;
 
 	// Temp variables for PS config.
-	u32 ps_atst;
+	PS_ATST ps_atst;
 	float ps_aref;
 
 	std::memcpy(&m_conf.alpha_second_pass.ps, &m_conf.ps, sizeof(m_conf.ps));
@@ -7593,7 +7596,7 @@ void GSRendererHW::EmulateAlphaTestSecondPass()
 			m_conf.alpha_second_pass.enable = true;
 			m_conf.alpha_second_pass.ps.atst = ps_atst;
 			m_conf.alpha_second_pass.ps_aref = ps_aref;
-			m_conf.alpha_second_pass.ps.afail = GSHWDrawConfig::PS_AFAIL_KEEP;
+			m_conf.alpha_second_pass.ps.afail = PS_AFAIL::KEEP;
 		}
 
 		// Setup for RBG_ONLY dual source blend selection
@@ -7650,7 +7653,7 @@ void GSRendererHW::EmulateAlphaTestSecondPass()
 			m_conf.alpha_second_pass.enable = true;
 			m_conf.alpha_second_pass.ps.atst = ps_atst;
 			m_conf.alpha_second_pass.ps_aref = ps_aref;
-			m_conf.alpha_second_pass.ps.afail = GSHWDrawConfig::PS_AFAIL_KEEP;
+			m_conf.alpha_second_pass.ps.afail = PS_AFAIL::KEEP;
 		}
 	}
 
