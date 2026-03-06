@@ -46,7 +46,7 @@ __fi void _vu0run(bool breakOnMbit, bool addCycles, bool sync_only) {
 	if (!(VU0.VI[REG_VPU_STAT].UL & 1)) return;
 
 	//VU0 is ahead of the EE and M-Bit is already encountered, so no need to wait for it, just catch up the EE
-	if ((VU0.flags & VUFLAG_MFLAGSET) && breakOnMbit && (s32)(cpuRegs.cycle - VU0.cycle) <= 0)
+	if ((VU0.flags & VUFLAG_MFLAGSET) && breakOnMbit && (s64)(cpuRegs.cycle - VU0.cycle) <= 0)
 	{
 		cpuRegs.cycle = VU0.cycle;
 		return;
@@ -55,12 +55,12 @@ __fi void _vu0run(bool breakOnMbit, bool addCycles, bool sync_only) {
 	if(!EmuConfig.Cpu.Recompiler.EnableEE)
 		intUpdateCPUCycles();
 
-	u32 startcycle = cpuRegs.cycle;
+	u64 startcycle = cpuRegs.cycle;
 	s32 runCycles  = 0x7fffffff;
 
 	if (sync_only)
 	{
-		runCycles  = (s32)(cpuRegs.cycle - VU0.cycle);
+		runCycles  = (s64)(cpuRegs.cycle - VU0.cycle);
 
 		if (runCycles < 0)
 			return;

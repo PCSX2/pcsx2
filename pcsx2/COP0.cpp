@@ -523,7 +523,7 @@ cpuRegs.PERF.n.pccr, cpuRegs.PERF.n.pcr0, cpuRegs.PERF.n.pcr1, _Imm_ & 0x3F);*/
 
 			case 9:
 			{
-				u32 incr = cpuRegs.cycle - cpuRegs.lastCOP0Cycle;
+				s64 incr = cpuRegs.cycle - cpuRegs.lastCOP0Cycle;
 				if (incr == 0)
 					incr++;
 				cpuRegs.CP0.n.Count += incr;

@@ -164,9 +164,6 @@ alignas(16) extern psxRegisters psxRegs;
 
 #define _SetLink(x)     psxRegs.GPR.r[x] = _PC_ + 4;       // Sets the return address in the link register
 
-extern s32 EEsCycle;
-extern u32 EEoCycle;
-
 #endif
 
 extern s32 psxNextDeltaCounter;

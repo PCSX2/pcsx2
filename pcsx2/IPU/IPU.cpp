@@ -39,7 +39,7 @@ alignas(16) const int non_linear_quantizer_scale[32] =
 	56, 64, 72, 80, 88, 96, 104, 112
 };
 
-uint eecount_on_last_vdec = 0;
+u64 eecount_on_last_vdec = 0;
 bool FMVstarted = false;
 bool EnableFMV = false;
 
