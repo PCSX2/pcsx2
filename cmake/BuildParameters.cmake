@@ -270,6 +270,14 @@ endif()
 
 set(PCSX2_WARNINGS ${DEFAULT_WARNINGS})
 
+# Make sure we're building with position independent code enabled. Without this
+# check, on some platforms (e.g. Fedora 43) the right flags won't be passed to
+# the linker, resulting in a broken build when LTO is enabled.
+include(CheckPIESupported)
+check_pie_supported()
+
+set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
+
 #-------------------------------------------------------------------------------
 # MacOS-specific things
 #-------------------------------------------------------------------------------

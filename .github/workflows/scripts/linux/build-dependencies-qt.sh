@@ -145,7 +145,7 @@ echo "Building libbacktrace..."
 rm -fr "libbacktrace-$LIBBACKTRACE"
 unzip "$LIBBACKTRACE.zip"
 cd "libbacktrace-$LIBBACKTRACE"
-./configure --prefix="$INSTALLDIR"
+./configure --prefix="$INSTALLDIR" --with-pic
 make
 make install
 cd ..
