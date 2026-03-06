@@ -1084,7 +1084,7 @@ bool GSHWDrawConfig::BlendState::IsEffective(ColorMaskSelector colormask) const
 						 ((colormask.key & 8u) && (src_factor_alpha != GSDevice::CONST_ONE || dst_factor_alpha != GSDevice::CONST_ZERO)));
 }
 
-std::string GSHWDrawConfig::GetTopologyName(u32 topology)
+static std::string GetTopologyName(u32 topology)
 {
 	switch (static_cast<GSHWDrawConfig::Topology>(topology))
 	{
@@ -1095,7 +1095,7 @@ std::string GSHWDrawConfig::GetTopologyName(u32 topology)
 	}
 }
 
-std::string GSHWDrawConfig::GetVSExpandName(u32 vsexpand)
+static std::string GetVSExpandName(u32 vsexpand)
 {
 	switch (static_cast<GSHWDrawConfig::VSExpand>(vsexpand))
 	{
@@ -1107,7 +1107,7 @@ std::string GSHWDrawConfig::GetVSExpandName(u32 vsexpand)
 	}
 }
 
-std::string GSHWDrawConfig::GetPSDateName(u32 date)
+static std::string GetPSDateName(u32 date)
 {
 	switch (date)
 	{
@@ -1121,8 +1121,9 @@ std::string GSHWDrawConfig::GetPSDateName(u32 date)
 	}
 }
 
-std::string GSHWDrawConfig::GetPSAlphaTestName(PS_ATST atst)
+static std::string GetPSAlphaTestName(GSShader::PS_ATST atst)
 {
+	using GSShader::PS_ATST;
 	switch (atst)
 	{
 		case PS_ATST::NONE:     return "NONE";
@@ -1134,7 +1135,7 @@ std::string GSHWDrawConfig::GetPSAlphaTestName(PS_ATST atst)
 	return "UNKNOWN";
 }
 
-std::string GSHWDrawConfig::GetPSDstFmtName(u32 dstfmt)
+static std::string GetPSDstFmtName(u32 dstfmt)
 {
 	switch (dstfmt)
 	{
@@ -1145,7 +1146,7 @@ std::string GSHWDrawConfig::GetPSDstFmtName(u32 dstfmt)
 	}
 }
 
-std::string GSHWDrawConfig::GetPSDepthFmtName(u32 depthfmt)
+static std::string GetPSDepthFmtName(u32 depthfmt)
 {
 	switch (depthfmt)
 	{
@@ -1157,7 +1158,7 @@ std::string GSHWDrawConfig::GetPSDepthFmtName(u32 depthfmt)
 	}
 }
 
-std::string GSHWDrawConfig::GetPSBlendABDName(u32 abd)
+static std::string GetPSBlendABDName(u32 abd)
 {
 	switch (abd)
 	{
@@ -1168,7 +1169,7 @@ std::string GSHWDrawConfig::GetPSBlendABDName(u32 abd)
 	}
 }
 
-std::string GSHWDrawConfig::GetPSBlendCName(u32 c)
+static std::string GetPSBlendCName(u32 c)
 {
 	switch (c)
 	{
@@ -1179,7 +1180,7 @@ std::string GSHWDrawConfig::GetPSBlendCName(u32 c)
 	}
 }
 
-std::string GSHWDrawConfig::GetPSBlendHWName(u32 blendhw)
+static std::string GetPSBlendHWName(u32 blendhw)
 {
 	switch (static_cast<HWBlendType>(blendhw))
 	{
@@ -1193,7 +1194,7 @@ std::string GSHWDrawConfig::GetPSBlendHWName(u32 blendhw)
 	}
 }
 
-std::string GSHWDrawConfig::GetPSBlendMixName(u32 blendmix)
+static std::string GetPSBlendMixName(u32 blendmix)
 {
 	switch (static_cast<HWBlendType>(blendmix))
 	{
@@ -1204,7 +1205,7 @@ std::string GSHWDrawConfig::GetPSBlendMixName(u32 blendmix)
 	}
 }
 
-std::string GSHWDrawConfig::GetPSChannelName(u32 channel)
+static std::string GetPSChannelName(u32 channel)
 {
 	switch (channel)
 	{
@@ -1219,7 +1220,7 @@ std::string GSHWDrawConfig::GetPSChannelName(u32 channel)
 	}
 }
 
-std::string GSHWDrawConfig::GetPSDitherName(u32 dither)
+static std::string GetPSDitherName(u32 dither)
 {
 	switch (dither)
 	{
@@ -1230,7 +1231,7 @@ std::string GSHWDrawConfig::GetPSDitherName(u32 dither)
 	}
 }
 
-std::string GSHWDrawConfig::GetSSTrilnName(u32 triln)
+static std::string GetSSTrilnName(u32 triln)
 {
 	switch (static_cast<GS_MIN_FILTER>(triln))
 	{
@@ -1244,7 +1245,7 @@ std::string GSHWDrawConfig::GetSSTrilnName(u32 triln)
 	}
 }
 
-std::string GSHWDrawConfig::GetBlendOpName(u32 blendop)
+static std::string GetBlendOpName(u32 blendop)
 {
 	switch (blendop)
 	{
@@ -1255,7 +1256,7 @@ std::string GSHWDrawConfig::GetBlendOpName(u32 blendop)
 	}
 }
 
-std::string GSHWDrawConfig::GetBlendFactorName(u32 blendfactor)
+static std::string GetBlendFactorName(u32 blendfactor)
 {
 	switch (blendfactor)
 	{
@@ -1279,7 +1280,7 @@ std::string GSHWDrawConfig::GetBlendFactorName(u32 blendfactor)
 	}
 }
 
-std::string GSHWDrawConfig::GetDestinationAlphaModeName(u32 datm)
+static std::string GetDestinationAlphaModeName(u32 datm)
 {
 	switch (static_cast<GSHWDrawConfig::DestinationAlphaMode>(datm))
 	{
@@ -1292,7 +1293,7 @@ std::string GSHWDrawConfig::GetDestinationAlphaModeName(u32 datm)
 	}
 }
 
-std::string GSHWDrawConfig::GetColClipModeName(u32 ccmode)
+static std::string GetColClipModeName(u32 ccmode)
 {
 	switch (static_cast<GSHWDrawConfig::ColClipMode>(ccmode))
 	{
@@ -1305,7 +1306,7 @@ std::string GSHWDrawConfig::GetColClipModeName(u32 ccmode)
 	}
 }
 
-std::string GSHWDrawConfig::GetSetDATMName(u32 datm)
+static std::string GetSetDATMName(u32 datm)
 {
 	switch (static_cast<SetDATM>(datm))
 	{
@@ -1319,7 +1320,7 @@ std::string GSHWDrawConfig::GetSetDATMName(u32 datm)
 
 static constexpr const char* INDENT = "  ";
 
-void GSHWDrawConfig::DumpPSSelector(std::ostream& out, const PSSelector& ps, const std::string& indent)
+static void DumpPSSelector(std::ostream& out, const GSHWDrawConfig::PSSelector& ps, const std::string& indent)
 {
 	out.imbue(std::locale::classic()); // Disable integer separators
 	out << std::dec;
@@ -1383,7 +1384,7 @@ void GSHWDrawConfig::DumpPSSelector(std::ostream& out, const PSSelector& ps, con
 	out << indent << "scanmsk: " << static_cast<u32>(ps.scanmsk) << " # " << GSUtil::GetSCANMSKName(static_cast<u32>(ps.scanmsk)) << std::endl;
 }
 
-void GSHWDrawConfig::DumpVSSelector(std::ostream& out, const VSSelector& vs, const std::string& indent)
+static void DumpVSSelector(std::ostream& out, const GSHWDrawConfig::VSSelector& vs, const std::string& indent)
 {
 	out.imbue(std::locale::classic()); // Disable integer separators
 	out << std::dec;
@@ -1395,7 +1396,7 @@ void GSHWDrawConfig::DumpVSSelector(std::ostream& out, const VSSelector& vs, con
 	out << indent << "expand: " << static_cast<u32>(vs.expand) << " # " << GetVSExpandName(static_cast<u32>(vs.expand)) << std::endl;
 }
 
-void GSHWDrawConfig::DumpBlendState(std::ostream& out, const BlendState& bs, const std::string& indent)
+static void DumpBlendState(std::ostream& out, const GSHWDrawConfig::BlendState& bs, const std::string& indent)
 {
 	out.imbue(std::locale::classic()); // Disable integer separators
 	out << std::dec;
@@ -1410,7 +1411,7 @@ void GSHWDrawConfig::DumpBlendState(std::ostream& out, const BlendState& bs, con
 	out << indent << "constant: " << static_cast<u32>(bs.constant) << std::endl;
 }
 
-void GSHWDrawConfig::DumpDepthStencilSelctor(std::ostream& out, const DepthStencilSelector& dss, const std::string& indent)
+static void DumpDepthStencilSelctor(std::ostream& out, const GSHWDrawConfig::DepthStencilSelector& dss, const std::string& indent)
 {
 	out.imbue(std::locale::classic()); // Disable integer separators
 	out << std::dec;
@@ -1421,7 +1422,7 @@ void GSHWDrawConfig::DumpDepthStencilSelctor(std::ostream& out, const DepthStenc
 	out << indent << "date_one: " << static_cast<u32>(dss.date_one) << std::endl;
 }
 
-void GSHWDrawConfig::DumpSamplerSelector(std::ostream& out, const SamplerSelector& ss, const std::string& indent)
+static void DumpSamplerSelector(std::ostream& out, const GSHWDrawConfig::SamplerSelector& ss, const std::string& indent)
 {
 	out.imbue(std::locale::classic()); // Disable integer separators
 	out << std::dec;
@@ -1434,7 +1435,7 @@ void GSHWDrawConfig::DumpSamplerSelector(std::ostream& out, const SamplerSelecto
 	out << indent << "lodclamp: " << static_cast<u32>(ss.lodclamp) << std::endl;
 }
 
-void GSHWDrawConfig::DumpAlphaPass(std::ostream& out, const AlphaPass& ap, const std::string& indent)
+static void DumpAlphaPass(std::ostream& out, const GSHWDrawConfig::AlphaPass& ap, const std::string& indent)
 {
 	out.imbue(std::locale::classic()); // Disable integer separators
 	out << std::dec;
@@ -1452,7 +1453,7 @@ void GSHWDrawConfig::DumpAlphaPass(std::ostream& out, const AlphaPass& ap, const
 	DumpDepthStencilSelctor(out, ap.depth, indent + INDENT);
 }
 
-void GSHWDrawConfig::DumpBlendMultipass(std::ostream& out, const BlendMultiPass& bmp, const std::string& indent)
+static void DumpBlendMultipass(std::ostream& out, const GSHWDrawConfig::BlendMultiPass& bmp, const std::string& indent)
 {
 	out.imbue(std::locale::classic()); // Disable integer separators
 	out << std::dec;
@@ -1466,7 +1467,7 @@ void GSHWDrawConfig::DumpBlendMultipass(std::ostream& out, const BlendMultiPass&
 	DumpBlendState(out, bmp.blend, indent + INDENT);
 }
 
-void GSHWDrawConfig::DumpConfig(std::ostream& out, const GSHWDrawConfig& conf,
+static void DumpConfig(std::ostream& out, const GSHWDrawConfig& conf,
 	bool ps, bool vs, bool bs, bool dss, bool ss, bool asp, bool bmp)
 {
 	out.imbue(std::locale::classic()); // Disable integer separators
@@ -1524,15 +1525,15 @@ void GSHWDrawConfig::DumpConfig(std::ostream& out, const GSHWDrawConfig& conf,
 	}
 }
 
-void GSHWDrawConfig::DumpConfig(const std::string& fn, const GSHWDrawConfig& conf,
+void GSHWDrawConfig::DumpConfig(const std::string& path, const GSHWDrawConfig& conf,
 	bool ps, bool vs, bool bs, bool dss, bool ss, bool asp, bool bmp)
 {
 	std::ofstream file(fn);
 
 	if (!file.is_open())
 		return;
-	
-	DumpConfig(file, conf, ps, vs, bs, dss, ss, asp, bmp);
+
+	::DumpConfig(file, conf, ps, vs, bs, dss, ss, asp, bmp);
 }
 
 // clang-format off
