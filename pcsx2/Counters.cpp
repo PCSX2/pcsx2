@@ -31,13 +31,13 @@ Counter counters[4];
 SyncCounter hsyncCounter;
 SyncCounter vsyncCounter;
 
-u32 nextStartCounter;	// records the cpuRegs.cycle value of the last call to rcntUpdate()
+u64 nextStartCounter;	// records the cpuRegs.cycle value of the last call to rcntUpdate()
 s32 nextDeltaCounter;	// delta from nextsCounter, in cycles, until the next rcntUpdate()
 
 // Forward declarations needed because C/C++ both are wimpy single-pass compilers.
 
-static void rcntStartGate(bool mode, u32 sCycle);
-static void rcntEndGate(bool mode, u32 sCycle);
+static void rcntStartGate(bool mode, u64 sCycle);
+static void rcntEndGate(bool mode, u64 sCycle);
 static void rcntWcount(int index, u32 value);
 static void rcntWmode(int index, u32 value);
 static void rcntWtarget(int index, u32 value);
@@ -425,7 +425,7 @@ void UpdateVSyncRate(bool force)
 }
 
 // FMV switch stuff
-extern uint eecount_on_last_vdec;
+extern u64 eecount_on_last_vdec;
 extern bool FMVstarted;
 extern bool EnableFMV;
 
@@ -484,7 +484,7 @@ static __fi void DoFMVSwitch()
 	}
 }
 
-static __fi void VSyncStart(u32 sCycle)
+static __fi void VSyncStart(u64 sCycle)
 {
 	// End-of-frame tasks.
 	DoFMVSwitch();
@@ -561,7 +561,7 @@ static __fi void GSVSync()
 	}
 }
 
-static __fi void VSyncEnd(u32 sCycle)
+static __fi void VSyncEnd(u64 sCycle)
 {
 	EECNT_LOG("    ================  EE COUNTER VSYNC END (frame: %d)  ================", g_FrameCount);
 
@@ -740,7 +740,7 @@ __fi void rcntSyncCounter(int i)
 		const u32 change = (cpuRegs.cycle - counters[i].startCycle) / counters[i].rate;
 		counters[i].startCycle += change * counters[i].rate;
 
-		counters[i].startCycle &= ~(counters[i].rate - 1);
+		counters[i].startCycle &= ~((u64)counters[i].rate - 1);
 
 		if (rcntCanCount(i))
 			counters[i].count += change;
@@ -789,7 +789,7 @@ static __fi void _rcntSetGate(int index)
 }
 
 // mode - 0 means hblank source, 8 means vblank source.
-static __fi void rcntStartGate(bool isVblank, u32 sCycle)
+static __fi void rcntStartGate(bool isVblank, u64 sCycle)
 {
 	for (int i = 0; i < 4; i++)
 	{
@@ -818,7 +818,7 @@ static __fi void rcntStartGate(bool isVblank, u32 sCycle)
 				// Just set the start cycle -- counting will be done as needed
 				// for events (overflows, targets, mode changes, and the gate off below)
 				rcntSyncCounter(i);
-				counters[i].startCycle = sCycle & ~(counters[i].rate - 1);
+				counters[i].startCycle = sCycle & ~((u64)counters[i].rate - 1);
 				EECNT_LOG("EE Counter[%d] %s StartGate Type0, count = %x", i,
 					isVblank ? "vblank" : "hblank", counters[i].count);
 				break;
@@ -830,7 +830,7 @@ static __fi void rcntStartGate(bool isVblank, u32 sCycle)
 				rcntSyncCounter(i);
 				counters[i].count = 0;
 				counters[i].target &= 0xffff;
-				counters[i].startCycle = sCycle & ~(counters[i].rate - 1);
+				counters[i].startCycle = sCycle & ~((u64)counters[i].rate - 1);
 				EECNT_LOG("EE Counter[%d] %s StartGate Type%d, count = %x", i,
 					isVblank ? "vblank" : "hblank", counters[i].mode.GateMode, counters[i].count);
 				break;
@@ -846,7 +846,7 @@ static __fi void rcntStartGate(bool isVblank, u32 sCycle)
 }
 
 // mode - 0 means hblank signal, 8 means vblank signal.
-static __fi void rcntEndGate(bool isVblank, u32 sCycle)
+static __fi void rcntEndGate(bool isVblank, u64 sCycle)
 {
 	for (int i = 0; i < 4; i++)
 	{
@@ -859,7 +859,7 @@ static __fi void rcntEndGate(bool isVblank, u32 sCycle)
 		switch (counters[i].mode.GateMode)
 		{
 			case 0x0: //Count When Signal is low (V_RENDER ONLY)
-				counters[i].startCycle = sCycle & ~(counters[i].rate - 1);
+				counters[i].startCycle = sCycle & ~((u64)counters[i].rate - 1);
 
 				EECNT_LOG("EE Counter[%d] %s EndGate Type0, count = %x", i,
 					isVblank ? "vblank" : "hblank", counters[i].count);
@@ -903,7 +903,7 @@ static __fi void rcntWmode(int index, u32 value)
 	}
 
 	// In case the rate has changed we need to set the start cycle to the previous tick.
-	counters[index].startCycle = cpuRegs.cycle & ~(counters[index].rate - 1);
+	counters[index].startCycle = cpuRegs.cycle & ~((u64)counters[index].rate - 1);
 	_rcntSetGate(index);
 	_rcntSet(index);
 }

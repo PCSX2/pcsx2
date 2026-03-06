@@ -276,7 +276,7 @@ __fi void vif1VUFinish()
 
 __fi void vif1Interrupt()
 {
-	VIF_LOG("vif1Interrupt: %8.8x chcr %x, done %x, qwc %x", cpuRegs.cycle, vif1ch.chcr._u32, vif1.done, vif1ch.qwc);
+	VIF_LOG("vif1Interrupt: %8.8llx chcr %x, done %x, qwc %x", cpuRegs.cycle, vif1ch.chcr._u32, vif1.done, vif1ch.qwc);
 
 	g_vif1Cycles = 0;
 

@@ -15,7 +15,7 @@ static __fi void IntCHackCheck()
 {
 	// Sanity check: To protect from accidentally "rewinding" the cyclecount
 	// on the few times nextBranchCycle can be behind our current cycle.
-	s32 diff = cpuRegs.nextEventCycle - cpuRegs.cycle;
+	s64 diff = cpuRegs.nextEventCycle - cpuRegs.cycle;
 	if (diff > 0 && (cpuRegs.cycle - cpuRegs.lastEventCycle) > 8) cpuRegs.cycle = cpuRegs.nextEventCycle;
 }
 
