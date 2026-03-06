@@ -2647,9 +2647,18 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		OMSetBlendState();
 	}
 
-	// avoid changing framebuffer just to switch from rt+depth to rt and vice versa
 	GSTexture* draw_rt = colclip_rt ? colclip_rt : config.rt;
 	GSTexture* draw_ds = config.ds;
+
+	// Clear texture binding when it's bound to RT or DS.
+	if (!config.tex && ((draw_rt && static_cast<GSTextureOGL*>(draw_rt)->GetID() == GLState::tex_unit[0]) ||
+		(draw_ds && static_cast<GSTextureOGL*>(draw_ds)->GetID() == GLState::tex_unit[0])))
+	{
+		GLState::tex_unit[0] = 0;
+		glBindTextureUnit(0, 0);
+	}
+
+	// Avoid changing framebuffer just to switch from rt+depth to rt and vice versa.
 	bool fb_optimization_needs_barrier = false;
 	if (!draw_rt && GLState::rt && GLState::ds == draw_ds && config.tex != GLState::rt &&
 		GLState::rt->GetSize() == draw_ds->GetSize())
