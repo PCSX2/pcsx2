@@ -335,6 +335,7 @@ enum class AccBlendLevel : u8
 	High,
 	Full,
 	Maximum,
+	MaxCount
 };
 
 enum class OsdOverlayPos : u8
