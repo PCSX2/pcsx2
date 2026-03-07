@@ -67,21 +67,21 @@ static bool ValidatePipelineCacheHeader(const VK_PIPELINE_CACHE_HEADER& header)
 		return false;
 	}
 
-	if (header.vendor_id != GSDeviceVK::GetInstance()->GetDeviceProperties().vendorID)
+	if (header.vendor_id != GSDeviceVK::GetInstance()->GetDeviceProperties().properties.vendorID)
 	{
 		Console.Error("Pipeline cache failed validation: Incorrect vendor ID (file: 0x%X, device: 0x%X)",
-			header.vendor_id, GSDeviceVK::GetInstance()->GetDeviceProperties().vendorID);
+			header.vendor_id, GSDeviceVK::GetInstance()->GetDeviceProperties().properties.vendorID);
 		return false;
 	}
 
-	if (header.device_id != GSDeviceVK::GetInstance()->GetDeviceProperties().deviceID)
+	if (header.device_id != GSDeviceVK::GetInstance()->GetDeviceProperties().properties.deviceID)
 	{
 		Console.Error("Pipeline cache failed validation: Incorrect device ID (file: 0x%X, device: 0x%X)",
-			header.device_id, GSDeviceVK::GetInstance()->GetDeviceProperties().deviceID);
+			header.device_id, GSDeviceVK::GetInstance()->GetDeviceProperties().properties.deviceID);
 		return false;
 	}
 
-	if (std::memcmp(header.uuid, GSDeviceVK::GetInstance()->GetDeviceProperties().pipelineCacheUUID, VK_UUID_SIZE) != 0)
+	if (std::memcmp(header.uuid, GSDeviceVK::GetInstance()->GetDeviceProperties().properties.pipelineCacheUUID, VK_UUID_SIZE) != 0)
 	{
 		Console.Error("Pipeline cache failed validation: Incorrect UUID");
 		return false;
@@ -94,9 +94,9 @@ static void FillPipelineCacheHeader(VK_PIPELINE_CACHE_HEADER* header)
 {
 	header->header_length = sizeof(VK_PIPELINE_CACHE_HEADER);
 	header->header_version = VK_PIPELINE_CACHE_HEADER_VERSION_ONE;
-	header->vendor_id = GSDeviceVK::GetInstance()->GetDeviceProperties().vendorID;
-	header->device_id = GSDeviceVK::GetInstance()->GetDeviceProperties().deviceID;
-	std::memcpy(header->uuid, GSDeviceVK::GetInstance()->GetDeviceProperties().pipelineCacheUUID, VK_UUID_SIZE);
+	header->vendor_id = GSDeviceVK::GetInstance()->GetDeviceProperties().properties.vendorID;
+	header->device_id = GSDeviceVK::GetInstance()->GetDeviceProperties().properties.deviceID;
+	std::memcpy(header->uuid, GSDeviceVK::GetInstance()->GetDeviceProperties().properties.pipelineCacheUUID, VK_UUID_SIZE);
 }
 
 #define SHADERC_FUNCTIONS(X) \
