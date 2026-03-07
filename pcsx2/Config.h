@@ -335,6 +335,7 @@ enum class AccBlendLevel : u8
 	High,
 	Full,
 	Maximum,
+	MaxCount
 };
 
 enum class OsdOverlayPos : u8
@@ -701,11 +702,26 @@ struct Pcsx2Config
 		/// Converts a tri-state option to an optional boolean value.
 		static std::optional<bool> TriStateToOptionalBoolean(int value);
 
+		/// Constants for determining default values.
 		static constexpr float DEFAULT_FRAME_RATE_NTSC = 59.94f;
 		static constexpr float DEFAULT_FRAME_RATE_PAL = 50.00f;
 
+		static constexpr GSRendererType DEFAULT_HW_RENDERER = GSRendererType::Auto;
+
 		static constexpr AspectRatioType DEFAULT_ASPECT_RATIO = AspectRatioType::RAuto4_3_3_2;
 		static constexpr GSInterlaceMode DEFAULT_INTERLACE_MODE = GSInterlaceMode::Automatic;
+		static constexpr GSPostBilinearMode DEFAULT_BILINEAR_FILTERING_MODE = GSPostBilinearMode::BilinearSmooth;
+		static constexpr FMVAspectRatioSwitchType DEFAULT_FMV_ASPECT_RATIO = FMVAspectRatioSwitchType::Off;
+		static constexpr GSCASMode DEFAULT_CAS_MODE = GSCASMode::Disabled;
+
+		static constexpr float DEFAULT_UPSCALE_MULTIPLIER = 1.0f;
+		static constexpr AccBlendLevel DEFAULT_BLENDING_ACCURACY = AccBlendLevel::Basic;
+		static constexpr BiFiltering DEFAULT_TEXTURE_FILTERING_MODE = BiFiltering::PS2;
+		static constexpr TriFiltering DEFAULT_TRILINEAR_FILTERING_MODE = TriFiltering::Automatic;
+
+		static constexpr float DEFAULT_OSD_SCALE = 100.0f;
+		static constexpr OsdOverlayPos DEFAULT_OSD_MESSAGE_POS = OsdOverlayPos::TopLeft;
+		static constexpr OsdOverlayPos DEFAULT_OSD_PERFORMANCE_POS = OsdOverlayPos::TopRight;
 
 		static constexpr int DEFAULT_VIDEO_CAPTURE_BITRATE = 6000;
 		static constexpr int DEFAULT_VIDEO_CAPTURE_WIDTH = 640;
@@ -812,26 +828,26 @@ struct Pcsx2Config
 		float FrameratePAL = DEFAULT_FRAME_RATE_PAL;
 
 		AspectRatioType AspectRatio = DEFAULT_ASPECT_RATIO;
-		FMVAspectRatioSwitchType FMVAspectRatioSwitch = FMVAspectRatioSwitchType::Off;
+		FMVAspectRatioSwitchType FMVAspectRatioSwitch = DEFAULT_FMV_ASPECT_RATIO;
 		GSInterlaceMode InterlaceMode = DEFAULT_INTERLACE_MODE;
-		GSPostBilinearMode LinearPresent = GSPostBilinearMode::BilinearSmooth;
+		GSPostBilinearMode LinearPresent = DEFAULT_BILINEAR_FILTERING_MODE;
 
 		float StretchY = 100.0f;
 		int Crop[4] = {};
 
-		float OsdScale = 100.0f;
-		OsdOverlayPos OsdMessagesPos = OsdOverlayPos::TopLeft;
-		OsdOverlayPos OsdPerformancePos = OsdOverlayPos::TopRight;
+		float OsdScale = DEFAULT_OSD_SCALE;
+		OsdOverlayPos OsdMessagesPos = DEFAULT_OSD_MESSAGE_POS;
+		OsdOverlayPos OsdPerformancePos = DEFAULT_OSD_PERFORMANCE_POS;
 
-		GSRendererType Renderer = GSRendererType::Auto;
-		float UpscaleMultiplier = 1.0f;
+		GSRendererType Renderer = DEFAULT_HW_RENDERER;
+		float UpscaleMultiplier = DEFAULT_UPSCALE_MULTIPLIER;
 
-		AccBlendLevel AccurateBlendingUnit = AccBlendLevel::Basic;
-		BiFiltering TextureFiltering = BiFiltering::PS2;
+		AccBlendLevel AccurateBlendingUnit = DEFAULT_BLENDING_ACCURACY;
+		BiFiltering TextureFiltering = DEFAULT_TEXTURE_FILTERING_MODE;
 		TexturePreloadingLevel TexturePreloading = TexturePreloadingLevel::Full;
 		GSDumpCompressionMethod GSDumpCompression = GSDumpCompressionMethod::Zstandard;
 		GSHardwareDownloadMode HWDownloadMode = GSHardwareDownloadMode::Enabled;
-		GSCASMode CASMode = GSCASMode::Disabled;
+		GSCASMode CASMode = DEFAULT_CAS_MODE;
 		u8 Dithering = 2;
 		u8 MaxAnisotropy = 0;
 		u8 TVShader = 0;
@@ -854,7 +870,7 @@ struct Pcsx2Config
 		GSTextureInRtMode UserHacks_TextureInsideRt = GSTextureInRtMode::Disabled;
 		GSLimit24BitDepth UserHacks_Limit24BitDepth = GSLimit24BitDepth::Disabled;
 		GSBilinearDirtyMode UserHacks_BilinearHack = GSBilinearDirtyMode::Automatic;
-		TriFiltering TriFilter = TriFiltering::Automatic;
+		TriFiltering TriFilter = DEFAULT_TRILINEAR_FILTERING_MODE;
 		s8 OverrideTextureBarriers = -1;
 
 		u8 CAS_Sharpness = 50;
