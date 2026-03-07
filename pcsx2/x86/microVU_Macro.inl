@@ -372,10 +372,10 @@ static void mVUSyncVU0()
 
 	xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
 	xForwardJZ32 skipvuidle;
-	xSUB(eax, ptr32[&VU0.cycle]);
+	xSUB(rax, ptr64[&VU0.cycle]);
 	if (EmuConfig.Gamefixes.VUSyncHack || EmuConfig.Gamefixes.FullVU0SyncHack)
-		xSUB(eax, ptr32[&VU0.nextBlockCycles]);
-	xCMP(eax, 4);
+		xSUB(rax, ptr64[&VU0.nextBlockCycles]);
+	xCMP(rax, 4);
 	xForwardJL32 skip;
 	xLoadFarAddr(arg1reg, CpuVU0);
 	xMOV(arg2reg, s_nBlockInterlocked);
