@@ -6,6 +6,7 @@
 #include "common/Pcsx2Defs.h"
 #include "common/RedtapeWindows.h"
 #include "common/RedtapeWilCom.h"
+#include "common/Assertions.h"
 
 #include <d3d12.h>
 #include <deque>
@@ -22,10 +23,17 @@ public:
 	D3D12StreamBuffer();
 	~D3D12StreamBuffer();
 
-	bool Create(u32 size);
+	// gpu_backed_buffer specifies if a second buffer should be created in the default heap.
+	bool Create(u32 size, bool gpu_backed_buffer = false);
 
-	__fi bool IsValid() const { return static_cast<bool>(m_buffer); }
-	__fi ID3D12Resource* GetBuffer() const { return m_buffer.get(); }
+	__fi bool IsValid() const { return static_cast<bool>(m_buffer_upload); }
+	__fi ID3D12Resource* GetBuffer() const
+	{
+		// This function is currently only used for textures, which already need to bt copied to a texture resource.
+		// For now, assert that gpu_backed_buffer was false.
+		pxAssert(m_buffer_default == nullptr);
+		return m_buffer_upload.get();
+	}
 	__fi D3D12_GPU_VIRTUAL_ADDRESS GetGPUPointer() const { return m_gpu_pointer; }
 	__fi void* GetHostPointer() const { return m_host_pointer; }
 	__fi void* GetCurrentHostPointer() const { return m_host_pointer + m_current_offset; }
@@ -36,6 +44,8 @@ public:
 
 	bool ReserveMemory(u32 num_bytes, u32 alignment);
 	void CommitMemory(u32 final_num_bytes);
+	// Queues copy to default heap if gpu_backed_buffer was true.
+	void FlushMemory();
 
 	void Destroy(bool defer = true);
 
@@ -48,11 +58,14 @@ private:
 
 	u32 m_size = 0;
 	u32 m_current_offset = 0;
+	u32 m_current_copy_offset = 0;
 	u32 m_current_space = 0;
 	u32 m_current_gpu_position = 0;
 
-	wil::com_ptr_nothrow<ID3D12Resource> m_buffer;
-	wil::com_ptr_nothrow<D3D12MA::Allocation> m_allocation;
+	wil::com_ptr_nothrow<ID3D12Resource> m_buffer_upload;
+	wil::com_ptr_nothrow<ID3D12Resource> m_buffer_default;
+	wil::com_ptr_nothrow<D3D12MA::Allocation> m_allocation_upload;
+	wil::com_ptr_nothrow<D3D12MA::Allocation> m_allocation_default;
 	D3D12_GPU_VIRTUAL_ADDRESS m_gpu_pointer = {};
 	u8* m_host_pointer = nullptr;
 
