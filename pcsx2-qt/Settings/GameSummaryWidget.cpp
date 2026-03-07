@@ -83,7 +83,9 @@ void GameSummaryWidget::populateDetails(const GameList::Entry* entry)
 
 				const qsizetype compatibility_value = static_cast<qsizetype>(entry->compatibility_rating);
 				//: First arg is filled-in stars for game compatibility; second is empty stars; should be swapped for RTL languages
-				return tr(" %0%1").arg(QStringLiteral("★").repeated(compatibility_value - 1)).arg(QStringLiteral("☆").repeated(6 - compatibility_value));
+				return tr(" %0%1").arg(
+					QStringLiteral("★").repeated(compatibility_value - 1),
+					QStringLiteral("☆").repeated(6 - compatibility_value));
 			}()));
 
 	int row = 0;
@@ -342,15 +344,15 @@ void GameSummaryWidget::onVerifyClicked()
 		if (!hentry->version.empty())
 		{
 			setVerifyResult(tr("Verified as %1 [%2] (Version %3).")
-					.arg(QString::fromStdString(hentry->name))
-					.arg(QString::fromStdString(hentry->serial))
-					.arg(QString::fromStdString(hentry->version)));
+					.arg(QString::fromStdString(hentry->name),
+						QString::fromStdString(hentry->serial),
+						QString::fromStdString(hentry->version)));
 		}
 		else
 		{
 			setVerifyResult(tr("Verified as %1 [%2].")
-					.arg(QString::fromStdString(hentry->name))
-					.arg(QString::fromStdString(hentry->serial)));
+					.arg(QString::fromStdString(hentry->name),
+						QString::fromStdString(hentry->serial)));
 		}
 	}
 	else

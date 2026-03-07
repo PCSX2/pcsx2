@@ -919,9 +919,7 @@ std::vector<SymbolTreeView::SymbolWork> GlobalVariableTreeView::getSymbols(
 		else
 			function_name = tr("unknown function");
 
-		QString name = QString("%1 (%2)")
-		                   .arg(QString::fromStdString(local_variable.name()))
-		                   .arg(function_name);
+		QString name = QString("%1 (%2)").arg(QString::fromStdString(local_variable.name()), function_name);
 		if (!testName(name, filter))
 			continue;
 

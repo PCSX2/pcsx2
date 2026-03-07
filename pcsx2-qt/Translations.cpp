@@ -139,7 +139,7 @@ void QtHost::InstallTranslator(QWidget* dialog_parent)
 
 	// Qt base uses underscores instead of hyphens.
 	const QString qt_language = QString(language).replace(QChar('-'), QChar('_'));
-	QString base_path = QStringLiteral("%1/qt_%2.qm").arg(base_dir).arg(qt_language);
+	QString base_path = QStringLiteral("%1/qt_%2.qm").arg(base_dir, qt_language);
 	bool has_base_ts = QFile::exists(base_path);
 	if (!has_base_ts)
 	{
@@ -147,7 +147,7 @@ void QtHost::InstallTranslator(QWidget* dialog_parent)
 		const qsizetype index = language.lastIndexOf('-');
 		if (index > 0)
 		{
-			base_path = QStringLiteral("%1/qt_%2.qm").arg(base_dir).arg(language.left(index));
+			base_path = QStringLiteral("%1/qt_%2.qm").arg(base_dir, language.left(index));
 			has_base_ts = QFile::exists(base_path);
 		}
 	}
@@ -158,7 +158,7 @@ void QtHost::InstallTranslator(QWidget* dialog_parent)
 		if (!base_translator->load(base_path))
 		{
 			QMessageBox::warning(nullptr, QStringLiteral("Translation Error"),
-				QStringLiteral("Failed to find load base translation file for '%1':\n%2").arg(language).arg(base_path));
+				QStringLiteral("Failed to find load base translation file for '%1':\n%2").arg(language, base_path));
 			delete base_translator;
 		}
 		else
@@ -168,7 +168,7 @@ void QtHost::InstallTranslator(QWidget* dialog_parent)
 		}
 	}
 
-	const QString path = QStringLiteral("%1/pcsx2-qt_%3.qm").arg(base_dir).arg(language);
+	const QString path = QStringLiteral("%1/pcsx2-qt_%3.qm").arg(base_dir, language);
 	QTranslator* translator = nullptr;
 	if (QFile::exists(path))
 	{
@@ -181,7 +181,7 @@ void QtHost::InstallTranslator(QWidget* dialog_parent)
 		else
 		{
 			QMessageBox::warning(nullptr, QStringLiteral("Translation Error"),
-				QStringLiteral("Failed to load translation file for language '%1':\n%2").arg(language).arg(path));
+				QStringLiteral("Failed to load translation file for language '%1':\n%2").arg(language, path));
 			delete translator;
 			translator = nullptr;
 		}
@@ -191,7 +191,7 @@ void QtHost::InstallTranslator(QWidget* dialog_parent)
 #ifdef PCSX2_DEVBUILD
 		// For now, until we're sure this works on all platforms, we won't block users from starting if they're missing.
 		QMessageBox::warning(nullptr, QStringLiteral("Translation Error"),
-			QStringLiteral("Failed to find translation file for language '%1':\n%2").arg(language).arg(path));
+			QStringLiteral("Failed to find translation file for language '%1':\n%2").arg(language, path));
 #endif
 	}
 

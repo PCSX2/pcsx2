@@ -547,7 +547,7 @@ namespace QtUtils
 			country_code = QStringLiteral("RS");
 		}
 
-		const QString flag_path = QStringLiteral("%1/icons/flags/%2.svg").arg(QtHost::GetResourcesBasePath()).arg(country_code.toLower());
+		const QString flag_path = QStringLiteral("%1/icons/flags/%2.svg").arg(QtHost::GetResourcesBasePath(), country_code.toLower());
 		return QIcon(flag_path);
 	}
 } // namespace QtUtils

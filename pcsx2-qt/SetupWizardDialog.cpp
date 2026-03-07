@@ -415,7 +415,7 @@ void SetupWizardDialog::openAutomaticMappingMenu(u32 port, QLabel* update_label)
 	for (const QPair<QString, QString>& dev : m_device_list)
 	{
 		// we set it as data, because the device list could get invalidated while the menu is up
-		QAction* action = menu.addAction(QStringLiteral("%1 (%2)").arg(dev.first).arg(dev.second));
+		QAction* action = menu.addAction(QStringLiteral("%1 (%2)").arg(dev.first, dev.second));
 		action->setData(dev.first);
 		connect(action, &QAction::triggered, this, [this, port, update_label, action]() {
 			doDeviceAutomaticBinding(port, update_label, action->data().toString());

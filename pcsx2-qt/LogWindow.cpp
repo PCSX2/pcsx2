@@ -122,7 +122,7 @@ void LogWindow::updateWindowTitle()
 	if (QtHost::IsVMValid() && !serial.isEmpty())
 	{
 		const QFileInfo fi(QtHost::GetCurrentGamePath());
-		title = tr("Log Window - %1 [%2]").arg(serial).arg(fi.fileName());
+		title = tr("Log Window - %1 [%2]").arg(serial, fi.fileName());
 	}
 	else
 	{
@@ -288,7 +288,7 @@ void LogWindow::logCallback(LOGLEVEL level, ConsoleColors color, std::string_vie
 	{
 		QMetaObject::invokeMethod(g_log_window, "appendMessage", Qt::QueuedConnection,
 			Q_ARG(quint32, static_cast<u32>(level)), Q_ARG(quint32, static_cast<u32>(color)),
-			Q_ARG(const QString&, qmessage));
+			Q_ARG(QString, qmessage));
 	}
 }
 

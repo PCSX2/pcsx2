@@ -29,9 +29,7 @@ GamePatchDetailsWidget::GamePatchDetailsWidget(const Patch::PatchInfo& info, boo
 	m_ui.name->setText(name);
 	m_ui.description->setText(
 		tr("<strong>Author:</strong> %1<br><strong>Applied:</strong> %2<br>%3")
-			.arg(author)
-			.arg(place)
-			.arg(description));
+			.arg(author, place, description));
 
 	pxAssert(dialog->getSettingsInterface());
 	m_ui.enabled->setTristate(tristate);
