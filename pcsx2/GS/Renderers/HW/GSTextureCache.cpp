@@ -5927,6 +5927,9 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		src->m_lod = *lod;
 	}
 
+	if (GSConfig.MaxAnisotropy > 1)
+		tlevels = std::max(2, tlevels);
+
 	bool hack = false;
 	bool channel_shuffle = dst && (TEX0.PSM == PSMT8) && (GSRendererHW::GetInstance()->TestChannelShuffle(dst));
 
@@ -6912,7 +6915,8 @@ GSTextureCache::HashCacheEntry* GSTextureCache::LookupHashCache(const GIFRegTEX0
 	const int tw = region.HasX() ? region.GetWidth() : (1 << TEX0.TW);
 	const int th = region.HasY() ? region.GetHeight() : (1 << TEX0.TH);
 	const int tlevels = lod ? (GSConfig.HWMipmap ? std::min(lod->y - lod->x + 1, GSDevice::GetMipmapLevelsForSize(tw, th)) : -1) : 1;
-	GSTexture* tex = g_gs_device->CreateTexture(tw, th, tlevels, paltex ? GSTexture::Format::UNorm8 : GSTexture::Format::Color);
+	const int aniso_tlevels = (GSConfig.MaxAnisotropy > 1) ? std::max(2, tlevels) : tlevels;
+	GSTexture* tex = g_gs_device->CreateTexture(tw, th, aniso_tlevels, paltex ? GSTexture::Format::UNorm8 : GSTexture::Format::Color);
 	if (!tex)
 	{
 		// out of video memory if we hit here
