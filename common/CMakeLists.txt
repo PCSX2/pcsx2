@@ -19,6 +19,7 @@ target_sources(common PRIVATE
 	HostSys.cpp
 	Image.cpp
 	HTTPDownloader.cpp
+	MemoryInterface.cpp
 	MemorySettingsInterface.cpp
 	MD5Digest.cpp
 	PrecompiledHeader.cpp
@@ -58,6 +59,7 @@ target_sources(common PRIVATE
 	LRUCache.h
 	HeapArray.h
 	HTTPDownloader.h
+	MemoryInterface.h
 	MemorySettingsInterface.h
 	MD5Digest.h
 	MRCHelpers.h

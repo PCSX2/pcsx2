@@ -4,7 +4,7 @@ add_custom_command(TARGET unittests POST_BUILD COMMAND ${CMAKE_CTEST_COMMAND} --
 
 macro(add_pcsx2_test target)
 	add_executable(${target} EXCLUDE_FROM_ALL ${ARGN})
-	target_link_libraries(${target} PRIVATE gtest gtest_main)
+	target_link_libraries(${target} PRIVATE gtest)
 	if(APPLE)
 		# For some reason this doesn't get pulled in implicitly...
 		target_link_libraries(${target} PRIVATE
