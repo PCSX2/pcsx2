@@ -3,6 +3,7 @@
 
 #include "CoverDownloadDialog.h"
 #include "QtUtils.h"
+#include "QtHost.h"
 
 #include "pcsx2/GameList.h"
 
@@ -12,6 +13,13 @@ CoverDownloadDialog::CoverDownloadDialog(QWidget* parent /*= nullptr*/)
 	: QDialog(parent)
 {
 	m_ui.setupUi(this);
+
+	const std::string cached_urls = Host::GetBaseStringSettingValue("CoverDownload", "CoverDownloadURLs");
+	m_ui.urls->setPlainText(QString::fromStdString(cached_urls));
+
+	const bool use_titles = Host::GetBaseBoolSettingValue("CoverDownload", "useTitleFileNames", false);
+	m_ui.useTitleFileNames->setChecked(use_titles);
+
 	QtUtils::SetScalableIcon(m_ui.coverIcon, QIcon::fromTheme(QStringLiteral("artboard-2-line")), QSize(32, 32));
 	updateEnabled();
 
@@ -92,6 +100,11 @@ void CoverDownloadDialog::updateEnabled()
 
 void CoverDownloadDialog::startThread()
 {
+	std::string urls = m_ui.urls->toPlainText().toStdString();
+	Host::SetBaseStringSettingValue("CoverDownload", "CoverDownloadURLs", urls.c_str());
+	Host::SetBaseBoolSettingValue("CoverDownload", "useTitleFileNames", m_ui.useTitleFileNames->isChecked());
+	Host::CommitBaseSettingChanges();
+
 	m_thread = std::make_unique<CoverDownloadThread>(this, m_ui.urls->toPlainText(), !m_ui.useTitleFileNames->isChecked());
 	m_last_refresh_time.Reset();
 	connect(m_thread.get(), &CoverDownloadThread::statusUpdated, this, &CoverDownloadDialog::onDownloadStatus);
