@@ -104,7 +104,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	//////////////////////////////////////////////////////////////////////////
 	// HW Settings
 	//////////////////////////////////////////////////////////////////////////
-	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_hw.textureFiltering, "EmuCore/GS", "filter", static_cast<int>(BiFiltering::PS2));
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_hw.textureFiltering, "EmuCore/GS", "filter", static_cast<int>(Pcsx2Config::GSOptions::DEFAULT_TEXTURE_FILTERING_MODE));
 	SettingWidgetBinder::BindWidgetToIntSetting(
 		sif, m_hw.trilinearFiltering, "EmuCore/GS", "TriFilter", static_cast<int>(TriFiltering::Automatic), -1);
 	SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_hw.anisotropicFiltering, "EmuCore/GS", "MaxAnisotropy",
@@ -123,7 +123,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	//////////////////////////////////////////////////////////////////////////
 	// SW Settings
 	//////////////////////////////////////////////////////////////////////////
-	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_sw.swTextureFiltering, "EmuCore/GS", "filter", static_cast<int>(BiFiltering::PS2));
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_sw.swTextureFiltering, "EmuCore/GS", "filter", static_cast<int>(Pcsx2Config::GSOptions::DEFAULT_TEXTURE_FILTERING_MODE));
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_sw.extraSWThreads, "EmuCore/GS", "extrathreads", 2);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_sw.swAutoFlush, "EmuCore/GS", "autoflush_sw", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_sw.swMipmap, "EmuCore/GS", "mipmap", true);
@@ -211,7 +211,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_post.shadeBoostGamma, "EmuCore/GS", "ShadeBoost_Gamma", Pcsx2Config::GSOptions::DEFAULT_SHADEBOOST_GAMMA);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_post.shadeBoostSaturation, "EmuCore/GS", "ShadeBoost_Saturation", Pcsx2Config::GSOptions::DEFAULT_SHADEBOOST_SATURATION);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_post.tvShader, "EmuCore/GS", "TVShader", DEFAULT_TV_SHADER_MODE);
-	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_post.casMode, "EmuCore/GS", "CASMode", static_cast<int>(GSCASMode::Disabled));
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_post.casMode, "EmuCore/GS", "CASMode", static_cast<int>(Pcsx2Config::GSOptions::DEFAULT_CAS_MODE));
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_post.casSharpness, "EmuCore/GS", "CASSharpness", DEFAULT_CAS_SHARPNESS);
 
 	connect(m_post.shadeBoost, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::onShadeBoostChanged);
@@ -225,8 +225,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	// OSD Settings
 	//////////////////////////////////////////////////////////////////////////
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_osd.scale, "EmuCore/GS", "OsdScale", 100.0f);
-	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_osd.messagesPos, "EmuCore/GS", "OsdMessagesPos", static_cast<int>(OsdOverlayPos::TopLeft));
-	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_osd.performancePos, "EmuCore/GS", "OsdPerformancePos", static_cast<int>(OsdOverlayPos::TopRight));
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_osd.messagesPos, "EmuCore/GS", "OsdMessagesPos", static_cast<int>(Pcsx2Config::GSOptions::DEFAULT_OSD_MESSAGE_POS));
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_osd.performancePos, "EmuCore/GS", "OsdPerformancePos", static_cast<int>(Pcsx2Config::GSOptions::DEFAULT_OSD_PERFORMANCE_POS));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_osd.showSpeedPercentages, "EmuCore/GS", "OsdShowSpeed", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_osd.showFPS, "EmuCore/GS", "OsdShowFPS", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_osd.showVPS, "EmuCore/GS", "OsdShowVPS", false);
@@ -271,7 +271,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	//////////////////////////////////////////////////////////////////////////
 	// Non-trivial settings
 	//////////////////////////////////////////////////////////////////////////
-	const int renderer = dialog()->getEffectiveIntValue("EmuCore/GS", "Renderer", static_cast<int>(GSRendererType::Auto));
+	const int renderer = dialog()->getEffectiveIntValue("EmuCore/GS", "Renderer", static_cast<int>(Pcsx2Config::GSOptions::DEFAULT_HW_RENDERER));
 	for (const RendererInfo& ri : s_renderer_info)
 	{
 		m_header.rendererDropdown->addItem(qApp->translate("GraphicsSettingsWidget", ri.name));
@@ -282,7 +282,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	// per-game override for renderer is slightly annoying, since we need to populate the global setting field
 	if (sif)
 	{
-		const int global_renderer = Host::GetBaseIntSettingValue("EmuCore/GS", "Renderer", static_cast<int>(GSRendererType::Auto));
+		const int global_renderer = Host::GetBaseIntSettingValue("EmuCore/GS", "Renderer", static_cast<int>(Pcsx2Config::GSOptions::DEFAULT_HW_RENDERER));
 		QString global_renderer_name;
 		for (const RendererInfo& ri : s_renderer_info)
 		{
@@ -929,7 +929,7 @@ void GraphicsSettingsWidget::onFullscreenModeChanged(int index)
 
 void GraphicsSettingsWidget::onTrilinearFilteringChanged()
 {
-	const bool forced_bilinear = (dialog()->getEffectiveIntValue("EmuCore/GS", "TriFilter", static_cast<int>(TriFiltering::Automatic)) >=
+	const bool forced_bilinear = (dialog()->getEffectiveIntValue("EmuCore/GS", "TriFilter", static_cast<int>(Pcsx2Config::GSOptions::DEFAULT_TRILINEAR_FILTERING_MODE)) >=
 								  static_cast<int>(TriFiltering::Forced));
 	m_hw.textureFiltering->setDisabled(forced_bilinear);
 }
