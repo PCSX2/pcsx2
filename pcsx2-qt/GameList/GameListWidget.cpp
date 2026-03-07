@@ -213,7 +213,8 @@ void GameListWidget::initialize()
 {
 	const float cover_scale = Host::GetBaseFloatSettingValue("UI", "GameListCoverArtScale", 0.45f);
 	const bool show_cover_titles = Host::GetBaseBoolSettingValue("UI", "GameListShowCoverTitles", true);
-	m_model = new GameListModel(cover_scale, show_cover_titles, devicePixelRatioF(), this);
+	const bool show_full_cover_titles = Host::GetBaseBoolSettingValue("UI", "GameListShowFullCoverTitles", true);
+	m_model = new GameListModel(cover_scale, show_cover_titles, show_full_cover_titles, devicePixelRatioF(), this);
 	m_model->updateCacheSize(width(), height());
 
 	m_sort_model = new GameListSortModel(m_model);
@@ -242,6 +243,7 @@ void GameListWidget::initialize()
 	connect(m_ui.viewGameGrid, &QPushButton::clicked, this, &GameListWidget::showGameGrid);
 	connect(m_ui.gridScale, &QSlider::valueChanged, this, &GameListWidget::gridIntScale);
 	connect(m_ui.viewGridTitles, &QPushButton::toggled, this, &GameListWidget::setShowCoverTitles);
+	connect(m_ui.viewFullGridTitles, &QPushButton::toggled, this, &GameListWidget::setShowFullCoverTitles);
 	connect(m_ui.filterType, &QComboBox::currentIndexChanged, this, [this](int index) {
 		m_sort_model->setFilterType((index == 0) ? GameList::EntryType::Count : static_cast<GameList::EntryType>(index - 1));
 	});
@@ -327,6 +329,7 @@ void GameListWidget::initialize()
 	m_list_view->setFrameStyle(QFrame::NoFrame);
 	m_list_view->setVerticalScrollMode(QAbstractItemView::ScrollMode::ScrollPerPixel);
 	m_list_view->verticalScrollBar()->setSingleStep(15);
+	m_list_view->setWordWrap(show_full_cover_titles);
 	onCoverScaleChanged();
 
 	connect(m_list_view->selectionModel(), &QItemSelectionModel::currentChanged, this,
@@ -474,6 +477,11 @@ bool GameListWidget::isShowingGameGrid() const
 bool GameListWidget::getShowGridCoverTitles() const
 {
 	return m_model->getShowCoverTitles();
+}
+
+bool GameListWidget::getShowGridFullCoverTitles() const
+{
+	return m_model->getShowFullCoverTitles();
 }
 
 void GameListWidget::refresh(bool invalidate_cache, bool popup_on_error)
@@ -701,6 +709,21 @@ void GameListWidget::setShowCoverTitles(bool enabled)
 	emit layoutChange();
 }
 
+void GameListWidget::setShowFullCoverTitles(bool enabled)
+{
+	if (m_model->getShowFullCoverTitles() == enabled)
+		return;
+
+	Host::SetBaseBoolSettingValue("UI", "GameListShowFullCoverTitles", enabled);
+	Host::CommitBaseSettingChanges();
+	m_model->setShowFullCoverTitles(enabled);
+	m_list_view->setWordWrap(enabled); 
+	if (isShowingGameGrid())
+		m_model->refresh();
+	updateToolbar();
+	emit layoutChange();
+}
+
 void GameListWidget::updateToolbar()
 {
 	const bool grid_view = isShowingGameGrid();
@@ -717,11 +740,16 @@ void GameListWidget::updateToolbar()
 		m_ui.viewGridTitles->setChecked(m_model->getShowCoverTitles());
 	}
 	{
+		QSignalBlocker sb(m_ui.viewFullGridTitles);
+		m_ui.viewFullGridTitles->setChecked(m_model->getShowFullCoverTitles());
+	}
+	{
 		QSignalBlocker sb(m_ui.gridScale);
 		m_ui.gridScale->setValue(static_cast<int>(m_model->getCoverScale() * 100.0f));
 	}
 
 	m_ui.viewGridTitles->setEnabled(grid_view);
+	m_ui.viewFullGridTitles->setEnabled(grid_view);
 	m_ui.gridScale->setEnabled(grid_view);
 }
 

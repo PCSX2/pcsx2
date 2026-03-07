@@ -73,9 +73,10 @@ const char* GameListModel::getColumnName(const Column col)
 	return s_column_names[static_cast<int>(col)];
 }
 
-GameListModel::GameListModel(const float cover_scale, const bool show_cover_titles, const qreal dpr, QObject* parent /* = nullptr */)
+GameListModel::GameListModel(const float cover_scale, const bool show_cover_titles, bool show_full_cover_titles, const qreal dpr, QObject* parent /* = nullptr */)
 	: QAbstractTableModel(parent)
 	, m_show_titles_for_covers(show_cover_titles)
+	, m_show_full_titles_for_covers(show_full_cover_titles)
 	, m_dpr{dpr}
 {
 	loadSettings();
@@ -315,9 +316,33 @@ QVariant GameListModel::data(const QModelIndex& index, const int role) const
 			switch (index.column())
 			{
 				case Column_Cover:
-					return QSize(static_cast<int>(static_cast<float>(SIZE_HINT_WIDTH) * m_cover_scale),
-						static_cast<int>(static_cast<float>(m_show_titles_for_covers ? SIZE_HINT_HEIGHT_TITLES : SIZE_HINT_HEIGHT) * m_cover_scale));
+				{
+					const int cover_width = static_cast<int>(static_cast<float>(SIZE_HINT_WIDTH) * m_cover_scale);
+            		const int cover_height = static_cast<int>(static_cast<float>(SIZE_HINT_HEIGHT) * m_cover_scale);
 
+            		if (m_show_full_titles_for_covers && m_show_titles_for_covers)
+            		{
+                		// Calculate height needed for the longest title at the current font/width
+						const int text_width = static_cast<int>(static_cast<float>(COVER_ART_WIDTH) * m_cover_scale);
+                		QFont font;
+                		font.setPointSizeF(20.0f * m_cover_scale); 
+                		const QFontMetrics fm(font);
+                		int max_text_height = fm.height();
+						const auto lock = GameList::GetLock();
+                		const u32 count = GameList::GetEntryCount();
+                		for (u32 i = 0; i < count; i++)
+                		{
+                    		const GameList::Entry* entry = GameList::GetEntryByIndex(i);
+                    		if (!entry) continue;
+                    		const QString title = QString::fromStdString(entry->GetTitle(m_prefer_english_titles));
+                    		const QRect bound = fm.boundingRect(QRect(0, 0, text_width, 0),
+                        		Qt::TextWordWrap | Qt::AlignHCenter, title);
+                    		max_text_height = std::max(max_text_height, bound.height());
+                		}
+                		return QSize(cover_width, cover_height + max_text_height);
+            		}
+					return QSize(cover_width, static_cast<int>(static_cast<float>(m_show_titles_for_covers ? SIZE_HINT_HEIGHT_TITLES : SIZE_HINT_HEIGHT) * m_cover_scale));
+				}
 				default:
 					return QVariant();
 			}
