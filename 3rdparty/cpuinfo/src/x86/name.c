@@ -612,6 +612,8 @@ uint32_t cpuinfo_x86_normalize_brand_string(const char raw_name[48], char normal
 					break;
 				case '@':
 					parser_state.frequency_separator = char_ptr;
+					*char_ptr = ' ';
+					break;
 				case '\0':
 				case '\t':
 					*char_ptr = ' ';

@@ -83,7 +83,75 @@
 #endif
 /// @endcond
 
+/// @cond
+#if defined(__MINGW32__) && !defined(_NATIVE_WCHAR_T_DEFINED)
+using __wchar_t = wchar_t;
+#endif
+/// @endcond
+
 #include <sal.h>
+
+#ifdef __MINGW32__
+#ifndef _Post_z_
+#ifdef __z
+#define _Post_z_ SAL__post SAL__valid __z
+#else
+#define _Post_z_ SAL__post SAL__valid
+#endif
+#endif
+#ifndef _Pre_maybenull_
+#define _Pre_maybenull_ SAL__pre SAL__maybenull
+#endif
+#ifndef _Translates_last_error_to_HRESULT_
+#define _Translates_last_error_to_HRESULT_
+#endif
+#ifndef _Translates_Win32_to_HRESULT_
+#define _Translates_Win32_to_HRESULT_(x)
+#endif
+#ifndef _Translates_NTSTATUS_to_HRESULT_
+#define _Translates_NTSTATUS_to_HRESULT_(x)
+#endif
+#ifndef _Pre_opt_valid_
+#define _Pre_opt_valid_ SAL__pre SAL__valid SAL__maybenull
+#endif
+#ifndef _Frees_ptr_
+#define _Frees_ptr_ __drv_freesMem(Mem)
+#endif
+#ifndef _Frees_ptr_opt_
+#define _Frees_ptr_opt_ __drv_freesMem(Mem) SAL__maybenull
+#endif
+#ifndef _Pre_valid_
+#define _Pre_valid_ SAL__pre SAL__valid
+#endif
+#ifndef _Ret_opt_bytecap_
+#define _Ret_opt_bytecap_(n)
+#endif
+extern "C"
+{
+    inline void WriteRelease(long* p, long v)
+    {
+        __atomic_store_n(p, v, __ATOMIC_RELEASE);
+    }
+    inline long ReadAcquire(const long* p)
+    {
+        return __atomic_load_n(p, __ATOMIC_ACQUIRE);
+    }
+    inline long InterlockedIncrementNoFence(volatile long* ptr)
+    {
+        return __atomic_add_fetch(ptr, 1, __ATOMIC_RELAXED);
+    }
+    inline long InterlockedDecrementNoFence(volatile long* ptr)
+    {
+        return __atomic_sub_fetch(ptr, 1, __ATOMIC_RELAXED);
+    }
+#if !__has_builtin(_ReturnAddress)
+    inline void* _ReturnAddress(void)
+    {
+        return __builtin_return_address(0);
+    }
+#endif
+}
+#endif
 
 // Some SAL remapping / decoration to better support Doxygen.  Macros that look like function calls can
 // confuse Doxygen when they are used to decorate a function or variable.  We simplify some of these to
@@ -263,7 +331,11 @@
 #include "wistd_type_traits.h"
 
 //! This macro inserts ODR violation protection; the macro allows it to be compatible with straight "C" code
+#if defined(_MSC_VER)
 #define WI_ODR_PRAGMA(NAME, TOKEN) __pragma(detect_mismatch("ODR_violation_" NAME "_mismatch", TOKEN))
+#else
+#define WI_ODR_PRAGMA(NAME, TOKEN)
+#endif
 
 #ifdef WIL_KERNEL_MODE
 WI_ODR_PRAGMA("WIL_KERNEL_MODE", "1")
@@ -398,6 +470,15 @@ check fails as opposed to the invalid parameter handler that the STL invokes. Th
 // Until we'll have C++17 enabled in our code base, we're falling back to SAL
 #define WI_NODISCARD __WI_LIBCPP_NODISCARD_ATTRIBUTE
 
+#ifdef __has_cpp_attribute
+#if __has_cpp_attribute(nodiscard) >= 201907L
+#define WI_NODISCARD_REASON(x) [[nodiscard(x)]]
+#endif
+#endif
+#ifndef WI_NODISCARD_REASON
+#define WI_NODISCARD_REASON(x) WI_NODISCARD
+#endif
+
 #define __R_ENABLE_IF_IS_CLASS(ptrType) wistd::enable_if_t<wistd::is_class<ptrType>::value, void*> = nullptr
 #define __R_ENABLE_IF_IS_NOT_CLASS(ptrType) wistd::enable_if_t<!wistd::is_class<ptrType>::value, void*> = nullptr
 
@@ -454,6 +535,21 @@ check fails as opposed to the invalid parameter handler that the STL invokes. Th
 //! if (WI_IsSingleFlagSet(m_flags))                                // Is *exactly* one flag set in the given variable?
 //! ~~~~
 //! @{
+
+namespace wil
+{
+/// @cond
+namespace details
+{
+    template <unsigned long long flag>
+    struct verify_single_flag_helper
+    {
+        static_assert((flag != 0) && ((flag & (flag - 1)) == 0), "Single flag expected, zero or multiple flags found");
+        static constexpr unsigned long long value = flag;
+    };
+} // namespace details
+} // namespace wil
+/// @endcond
 
 //! Returns the unsigned type of the same width and numeric value as the given enum
 #define WI_EnumValue(val) static_cast<::wil::integral_from_enum<decltype(val)>>(val)
@@ -560,20 +656,26 @@ The above example is used within WIL to decide whether or not the library contai
 desktop APIs.  Building this functionality as `#IFDEF`s within functions would create ODR violations, whereas
 doing it with global function pointers and header initialization allows a runtime determination. */
 #define WI_HEADER_INITIALIZATION_FUNCTION(name, fn)
-#elif defined(_M_IX86)
+#elif defined(_M_IX86) || defined(_M_IA64) || defined(_M_AMD64) || defined(_M_ARM) || defined(_M_ARM64)
+#if defined(_MSC_VER)
+#ifdef _M_IX86
 #define WI_HEADER_INITIALIZATION_FUNCTION(name, fn) \
     extern "C" \
     { \
         __declspec(selectany) unsigned char g_header_init_##name = static_cast<unsigned char>(fn()); \
     } \
     __pragma(comment(linker, "/INCLUDE:_g_header_init_" #name))
-#elif defined(_M_IA64) || defined(_M_AMD64) || defined(_M_ARM) || defined(_M_ARM64)
+#else
 #define WI_HEADER_INITIALIZATION_FUNCTION(name, fn) \
     extern "C" \
     { \
         __declspec(selectany) unsigned char g_header_init_##name = static_cast<unsigned char>(fn()); \
     } \
     __pragma(comment(linker, "/INCLUDE:g_header_init_" #name))
+#endif
+#else
+#define WI_HEADER_INITIALIZATION_FUNCTION(name, expr) inline int name##_header_init = ((expr)(), 0)
+#endif
 #else
 #error linker pragma must include g_header_init variation
 #endif
@@ -594,6 +696,7 @@ namespace details
     class pointer_range
     {
     public:
+        // NOLINTNEXTLINE(performance-unnecessary-value-param): These should be pointers
         pointer_range(T begin_, T end_) : m_begin(begin_), m_end(end_)
         {
         }
@@ -620,6 +723,7 @@ for (auto& obj : make_range(objPointerBegin, objPointerEnd)) { }
 template <typename T>
 details::pointer_range<T> make_range(T begin, T end)
 {
+    // NOLINTNEXTLINE(performance-unnecessary-value-param): These are expected to be pointers and cheap to copy
     return details::pointer_range<T>(begin, end);
 }
 
@@ -686,18 +790,6 @@ struct variadic_logical_or<false, Rest...> : variadic_logical_or<Rest...>::type
 };
 /// @endcond
 
-/// @cond
-namespace details
-{
-    template <unsigned long long flag>
-    struct verify_single_flag_helper
-    {
-        static_assert((flag != 0) && ((flag & (flag - 1)) == 0), "Single flag expected, zero or multiple flags found");
-        static const unsigned long long value = flag;
-    };
-} // namespace details
-/// @endcond
-
 //! @defgroup typesafety Type Validation
 //! Helpers to validate variable types to prevent accidental, but allowed type conversions.
 //! These helpers are most useful when building macros that accept a particular type.  Putting these functions around the types
@@ -712,32 +804,32 @@ boolean, BOOLEAN, and classes with an explicit bool cast.
 @param val The logical bool expression
 @return A C++ bool representing the evaluation of `val`. */
 template <typename T, __R_ENABLE_IF_IS_CLASS(T)>
-_Post_satisfies_(return == static_cast<bool>(val)) inline constexpr bool verify_bool(const T& val) WI_NOEXCEPT
+_Post_satisfies_(return == static_cast<bool>(val)) constexpr bool verify_bool(const T& val) WI_NOEXCEPT
 {
     return static_cast<bool>(val);
 }
 
 template <typename T, __R_ENABLE_IF_IS_NOT_CLASS(T)>
-inline constexpr bool verify_bool(T /*val*/) WI_NOEXCEPT
+constexpr bool verify_bool(T /*val*/) WI_NOEXCEPT
 {
     static_assert(!wistd::is_same<T, T>::value, "Wrong Type: bool/BOOL/BOOLEAN/boolean expected");
     return false;
 }
 
 template <>
-_Post_satisfies_(return == val) inline constexpr bool verify_bool<bool>(bool val) WI_NOEXCEPT
+_Post_satisfies_(return == val) constexpr bool verify_bool<bool>(bool val) WI_NOEXCEPT
 {
     return val;
 }
 
 template <>
-_Post_satisfies_(return == (val != 0)) inline constexpr bool verify_bool<int>(int val) WI_NOEXCEPT
+_Post_satisfies_(return == (val != 0)) constexpr bool verify_bool<int>(int val) WI_NOEXCEPT
 {
     return (val != 0);
 }
 
 template <>
-_Post_satisfies_(return == (val != 0)) inline constexpr bool verify_bool<unsigned char>(unsigned char val) WI_NOEXCEPT
+_Post_satisfies_(return == (val != 0)) constexpr bool verify_bool<unsigned char>(unsigned char val) WI_NOEXCEPT
 {
     return (val != 0);
 }
@@ -748,7 +840,7 @@ accept any `int` value as long as that is the underlying typedef behind `BOOL`.
 @param val The Win32 BOOL returning expression
 @return A Win32 BOOL representing the evaluation of `val`. */
 template <typename T>
-_Post_satisfies_(return == val) inline constexpr int verify_BOOL(T val) WI_NOEXCEPT
+_Post_satisfies_(return == val) constexpr int verify_BOOL(T val) WI_NOEXCEPT
 {
     // Note: Written in terms of 'int' as BOOL is actually:  typedef int BOOL;
     static_assert((wistd::is_same<T, int>::value), "Wrong Type: BOOL expected");
@@ -777,7 +869,7 @@ RETURN_HR_IF(static_cast<HRESULT>(UIA_E_NOTSUPPORTED), (patternId != UIA_DragPat
 @param hr The HRESULT returning expression
 @return An HRESULT representing the evaluation of `val`. */
 template <typename T>
-_Post_satisfies_(return == hr) inline constexpr long verify_hresult(T hr) WI_NOEXCEPT
+_Post_satisfies_(return == hr) constexpr long verify_hresult(T hr) WI_NOEXCEPT
 {
     // Note: Written in terms of 'long' as HRESULT is actually:  typedef _Return_type_success_(return >= 0) long HRESULT
     static_assert(wistd::is_same<T, long>::value, "Wrong Type: HRESULT expected");
@@ -837,11 +929,11 @@ namespace details
 {
     // Use size-specific casts to avoid sign extending numbers -- avoid warning C4310: cast truncates constant value
 #define __WI_MAKE_UNSIGNED(val) \
-    (__pragma(warning(push)) __pragma(warning(disable : 4310 4309))( \
+    (__WI_PUSH_WARNINGS __WI_MSVC_DISABLE_WARNING(4310 4309)( \
         sizeof(val) == 1   ? static_cast<unsigned char>(val) \
         : sizeof(val) == 2 ? static_cast<unsigned short>(val) \
         : sizeof(val) == 4 ? static_cast<unsigned long>(val) \
-                           : static_cast<unsigned long long>(val)) __pragma(warning(pop)))
+                           : static_cast<unsigned long long>(val)) __WI_POP_WARNINGS)
 #define __WI_IS_UNSIGNED_SINGLE_FLAG_SET(val) ((val) && !((val) & ((val) - 1)))
 #define __WI_IS_SINGLE_FLAG_SET(val) __WI_IS_UNSIGNED_SINGLE_FLAG_SET(__WI_MAKE_UNSIGNED(val))
 
@@ -912,6 +1004,88 @@ using integral_from_enum = typename details::variable_size_mapping<T>::type;
 //! Declares a name that intentionally hides a name from an outer scope.
 //! Use this to prevent accidental use of a parameter or lambda captured variable.
 using hide_name = void(struct hidden_name);
+
+/** A helper tag type used to disambiguate function overloads by assigning priority to each overload.
+This is primarily useful when using SFINAE on different properties of a type that might overlap. For example, consider
+the following code:
+~~~
+template <typename T, std::enable_if_t<condition_a<T>, int> = 0>
+void doit(const T&);
+template <typename T, std::enable_if_t<condition_b<T>, int> = 0>
+void doit(const T&);
+~~~
+If `doit` is called with a type `T` that satisfies both `condition_a<T>` and `condition_b<T>`, the code will fail to
+compile. One way to solve this issue is to change the condiiton of the second overload to
+`condition_b<T> && !condition_a<T>`, however this can get quite complicated and verbose fast. With `priority_tag`, this
+could get simplified down to:
+~~~
+template <typename T, std::enable_if_t<condition_a<T>, int> = 0>
+void doit_impl(const T&, priority_tag<1>);
+template <typename T, std::enable_if_t<condition_b<T>, int> = 0>
+void doit_impl(const T&, priority_tag<0>);
+
+template <typename T>
+void doit(const T& val)
+{
+    doit_impl(val, priority_tag<1>{});
+}
+~~~
+This will invoke the first overload if a type `T` satisfies both `condition_a<T>` and `condition_b<T>`.
+*/
+template <int N>
+struct priority_tag : priority_tag<N - 1>
+{
+};
+
+/// @cond
+template <>
+struct priority_tag<0>
+{
+};
+/// @endcond
+
+/// @cond
+namespace details
+{
+    // Helper type to determine if a type "behaves like a std::basic_string_view." Note that this type is designed to
+    // match types such as std::basic_string_view, std::basic_string, and winrt::hstring while _not_ matching against
+    // things like std::array or std::vector.
+    template <typename T, typename CharT>
+    struct is_string_view_like_t
+    {
+    private:
+        // winrt::hstring doesn't have much to differentiate itself from std::array/std::vector apart from 'c_str' which
+        // std::basic_string_view lacks. Therefore we need an "OR" condition to get the behavior we want
+        template <typename U>
+        static wistd::true_type has_cstr(
+            U* ptr, wistd::enable_if_t<wistd::is_convertible_v<decltype(ptr->c_str()), wistd::add_const_t<CharT>*>>*);
+        template <typename U>
+        static wistd::false_type has_cstr(U* ptr, ...);
+
+        template <typename U>
+        static wistd::true_type has_substr(U* ptr, wistd::enable_if_t<wistd::is_same_v<decltype(ptr->substr(0, 0)), U>>*);
+        template <typename U>
+        static wistd::false_type has_substr(U*, ...);
+
+        template <typename U>
+        static wistd::true_type test(
+            U* obj,
+            wistd::enable_if_t<wistd::is_same_v<typename U::value_type, CharT>>*, // T::value_type == CharT
+            wistd::enable_if_t<wistd::is_convertible_v<decltype(obj->size()), size_t>>*, // T::size() well formed and convertible to size_t
+            wistd::enable_if_t<wistd::is_convertible_v<decltype(obj->data()), wistd::add_const_t<CharT>*>>*, // T::data() well formed and convertible to const CharT*
+            wistd::enable_if_t<decltype(has_cstr<U>(nullptr, nullptr))::value || decltype(has_substr<U>(nullptr, nullptr))::value>*); // T::c_str() or T::substr() well formed
+
+        template <typename U>
+        static wistd::false_type test(U*, ...);
+
+    public:
+        static constexpr bool value = decltype(test<T>(nullptr, nullptr, nullptr, nullptr, nullptr))::value;
+    };
+
+    template <typename T, typename CharT>
+    constexpr bool is_string_view_like = is_string_view_like_t<T, CharT>::value;
+} // namespace details
+/// @endcond
 } // namespace wil
 
 #pragma warning(pop)

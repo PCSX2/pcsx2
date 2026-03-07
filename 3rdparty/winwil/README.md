@@ -20,6 +20,11 @@ Some things that WIL includes to whet your appetite:
 - [`include/wil/registry.h`](include/wil/registry.h) ([documentation](https://github.com/microsoft/wil/wiki/Registry-Helpers)): Type-safe functions to read from, write to,
   and watch the registry. Also, registry watchers that can call a lambda function or a callback function
   you provide whenever a certain tree within the Windows registry changes.
+- [`include/wil/network.h`](include/wil/network.h): ([documentation](https://github.com/microsoft/wil/wiki/Network-Helpers)) Supports Winsock and network APIs
+  by providing a header-include list which addresses the inter-header include dependendies;
+  provides RAII objects for WSAStartup refcounts as well as the various addrinfo* types
+  returned from the family of getaddrinfo* functions; provides a type-safe class for managing
+  the entire family of sockaddr-related structures.
 - [`include/wil/result.h`](include/wil/result.h)
   ([documentation](https://github.com/Microsoft/wil/wiki/Error-handling-helpers)):
   Preprocessor macros to help you check for errors from Windows API functions,
@@ -59,70 +64,128 @@ Note that even though WIL is a header-only library, you still need to install th
 
 To get started contributing to WIL, first make sure that you have:
 
-* The latest version of [Visual Studio](https://visualstudio.microsoft.com/downloads/) or Build Tools for Visual Studio with the latest MSVC C++ build tools and Address Sanitizer components included.
+* The latest version of [Visual Studio](https://visualstudio.microsoft.com/downloads/) or Build Tools for Visual Studio with the latest MSVC C++
+  build tools and Address Sanitizer components included. In Visual Studio Installer's Import Configuration tool, pick [.vsconfig](.vsconfig)
+  to the necessary workloads installed.
 * The most recent [Windows SDK](https://developer.microsoft.com/windows/downloads/windows-sdk)
-* [Nuget](https://www.nuget.org/downloads) downloaded and added to `PATH`
-  * (`winget install nuget`; see [Install NuGet client tools](https://learn.microsoft.com/nuget/install-nuget-client-tools))
-* [vcpkg](https://vcpkg.io) available on your system.
-Follow their [getting started](https://vcpkg.io/en/getting-started) guide to get set up.
-You'll need to provide the path to vcpkg when initializing with CMake by passing `-DCMAKE_TOOLCHAIN_FILE=[path to vcpkg]/scripts/buildsystems/vcpkg.cmake`.
+* [Nuget](https://www.nuget.org/downloads) downloaded and added to `PATH` - see [Install NuGet client tools](https://learn.microsoft.com/nuget/install-nuget-client-tools)
+* [vcpkg](https://vcpkg.io) available on your system. Follow their [getting started](https://vcpkg.io/en/getting-started) guide to get set up. Make sure the `VCKPKG_ROOT` environment variable is set, and the path to `vcpkg.exe` is in your `%PATH%`.
+* A recent version of [Clang](http://releases.llvm.org/download.html)
+
+You can install these with WinGet in a console command line:
+
+```powershell
+winget install Microsoft.VisualStudio.2022.Community
+winget install Microsoft.WindowsSDK.10.0.22621
+winget install Microsoft.NuGet -e
+winget install Kitware.CMake -e
+winget install Ninja-build.Ninja -e
+
+# Select "Add LLVM to the system path for all users"
+winget install -i llvm.llvm
+```
+
+By default, `init.cmd` and `cmake` attempt to find vcpkg's cmake integration toolchain file on their own, by
+looking in the `VCPKG_ROOT` environment variable.  After bootstrapping, you can use `setx` to have this variable
+across shell sessions.  Make sure the directory containing `vcpkg.exe` is in your `PATH`.
+
+If `VCPKG_ROOT` is not set you can pass its location to CMake or the `init.cmd` script with one of these:
+
+* `cmake [...] --toolchain [path to vcpkg]/scripts/buildsystems/vcpkg.cmake`
+* `scripts\init.cmd [...] --vcpkg <path to vcpkg>`
+
 Note that if you use the `init.cmd` script (mentioned below), this path can be specified or auto-detected if you:
-  1. Manually specify the path to the root of your vcpkg clone via the `-p` or `--vcpkg` argument,
   1. Have the `VCPKG_ROOT` environment variable set to the root of your vcpkg clone.
   You can use the `setx` command to have this variable persist across shell sessions,
   1. Have the path to the root of your vcpkg clone added to your `PATH` (i.e. the path to `vcpkg.exe`), or
   1. If your vcpkg clone is located at the root of the same drive as your WIL clone (e.g. `C:\vcpkg` if your WIL clone is on the `C:` drive)
 
-If you are doing any non-trivial work, also be sure to have:
+## Visual Studio 2022
 
-* A recent version of [Clang](http://releases.llvm.org/download.html)
-  * (`winget install -i llvm.llvm` and select `Add LLVM to the system path for all users`)
+Visual Studio 2022 has [fully integrated CMake support](https://learn.microsoft.com/cpp/build/cmake-projects-in-visual-studio). Opening
+this directory in Visual Studio 2022 uses the default "clang Debug" configurations. Other configurations for "clang Release," "msvc Debug,"
+and "msvc Release" are available in the Configuration drop-down.
 
-## Initial configuration
+Use "Build > Build All" to compile all targets.
 
-Once everything is installed (you'll need to restart Terminal if you updated `PATH` and don't have [this 2023 fix](https://github.com/microsoft/terminal/pull/14999)), open a VS native command window (e.g. `x64 Native Tools Command Prompt for VS 2022` \[_not_ `Developer Command Prompt for VS2022`]).
+## Visual Studio Code
 
-* If you are familiar with CMake you can get started building normally.
-* Otherwise, or if you prefer to skip all of the boilerplate, you can use the `init.cmd` script in the [scripts](scripts) directory.
-For example:
-  ```cmd
-  C:\wil> scripts\init.cmd -c clang -g ninja -b debug
-  ```
-  You can execute `init.cmd --help` for a summary of available options.
-  The `scripts/init_all.cmd` script will run the `init.cmd` script for all combinations of Clang/MSVC and Debug/RelWithDebInfo.
-  Note that for either script, projects will only be generated for the architecture of the current VS command window.
+Microsoft's [CMake Tools for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cmake-tools) make working
+in VSCode easy.
 
-To set up Visual Studio with IntelliSense, see below.
-If you used the `init.cmd` script, the corresponding build output directory should contain a `compile_commands.json` file that describes the commands used to compile each input file.
-Some editors such as Visual Studio Code can be configured to use this file to provide better auto-complete, tooltips, etc.
-Visual Studio Code, in particular should auto-detect the presence of this file and prompt you to use it for better IntelliSense.
-If you are not auto-prompted, this can be manually configured in the workspace's C/C++ properties under the property name `compileCommands`.
+1. Start a "Native Tools Command Prompt" (see below)
+1. Launch VS Code from the prompt, giving it the path to this repo (like `code c:\wil`)
+3. Use "CMake: Select Configure Preset" to pick `clang`, then "CMake: Select Build Preset" to pick `clang Debug`, then "CMake: Select Build Target" and pick `all`
+4. Use "CMake: Build" to compile all targets
 
-### Visual Studio setup
+## Command Line
 
-To generate a Visual Studio solution with IntelliSense:
-```cmd
-C:\wil> scripts\init.cmd -c msvc -g msbuild
+Once everything is installed (you'll need to restart Terminal if you updated `PATH` and don't have [this 2023 fix](https://github.com/microsoft/terminal/pull/14999)),
+open a VS native command window (e.g. `x64 Native Tools Command Prompt for VS 2022` \[_not_ `Developer Command Prompt for VS2022`]).
+
+You can use a [CMake preset](./CMakePresets.json) to configure the environment:
+
+```powershell
+# Configure for clang compiler, then build clang-debug
+C:\wil> cmake --preset "clang"
+C:\wil> cmake --build --preset "clang-debug"
 ```
 
-That will create a `.sln` file in the corresponding `build/` subdirectory (e.g. `build/msvc64debug`).
-You can open this solution in Visual Studio to develop and build, or you can invoke MSBuild directly.
+You can also use [`scripts/init.cmd`](./scripts/init.cmd) to pick the configuration:
 
-> **Important!** When using MSVC as the generator, the build type (`-b` argument to `init.cmd`) is mostly ignored by Visual Studio (since you can change the build type in the IDE), however this selection may still have an impact on project generation due to logic in the CMake files.
+```cmd
+C:\wil> scripts\init.cmd -c clang -g ninja -b debug
+```
 
-You can also get decent IntelliSense just by opening the repo directory in Visual Studio; VS should auto-detect CMake. You'll have to compile and run tests in a terminal window, though.
+This script supports using msbuild as the generator/build-tool (pass `-g msbuild`) and the other [`CMAKE_BUILD_TYPE` values](https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html)
+(pass `-b minsizerel`). You can execute `init.cmd --help` for a summary of available options.
+
+The `scripts/init_all.cmd` script will run the `init.cmd` script for all combinations of Clang/MSVC and Debug/RelWithDebInfo.
+
+> **Note**: For either script, projects will only be generated for the architecture of the current VS command window.
 
 ## Inner loop
 
-The scripts use a common directory pattern of `build/$(compiler)$(arch)$(type)` for the build output root. E.g. `build/clang64debug` when using Clang as the compiler, x64 as the architecture, and Debug as the build type. It is this directory where you will want to build from.
+In Visual Studio 2022, select a startup item (e.g. `witest.exe`) and use "Debug > Start Debugging". Targets will be
+rebuilt as needed.  Use "Build > Rebuild All" to rebuild all tests. Use the Visual Studio Test Explorer to run the
+tests.
 
-For example, if you initialized using the command above (`scripts\init.cmd -c clang -g ninja -b debug`), you can build the tests like so:
-```cmd
-C:\wil\build\clang64debug> ninja
+In VS Code, use "CMake: Set Launch/Debug Target" and select a target (e.g. `witest.exe`). Use "CMake: Debug" (default keybind `Shift-F5`)
+to run the selected test [in VS Code's debugger environment.](https://code.visualstudio.com/docs/cpp/cpp-debug).
+Switch to [VS Code's "testing" tab,](https://code.visualstudio.com/docs/debugtest/testing) and click the "Run Tests"
+option.
+
+For command-line CMake (configured with `cmake --preset ...`) build use, some examples:
+```powershell
+# Build for MSVC release, all targets
+C:\wil> cmake --build --preset "msvc-release"
+
+# Build only one test (e.g. for improved compile times)
+C:\wil> cmake --build --preset "msvc-release" --target "witest.noexcept"
+
+# Clean outputs, then build one target
+C:\wil> cmake --build --preset "msvc-release" --clean-first --target "witest"
+
+# Run tests
+C:\wil> ctest --preset "msvc-release"
 ```
-Or, if you want to only build a single test (e.g. for improved compile times):
-```cmd
-C:\wil\build\clang64debug> ninja witest.noexcept
+
+For command-line Ninja (configured with `init.cmd -c clang -b debug`) build use, some examples:
+```powershell
+# Build all tests
+C:\wil> ninja -C build\clang-x64-debug
+
+# Build only one test
+C:\wil> ninja -C build\clang-x64-debug witest
+
+# Clean outputs, then build one target
+C:\wil> ninja -C build\clang-x64-debug -j 0 clean witest.app
+
+# Run the tests (PowerShell)
+C:\wil> Get-ChildItem -Recurse -File build\clang-x64-debug\witest*.exe | %{ Write-Host $_ ; & $_ }
+
+# Run the tests (cmd)
+C:\wil> for /F %f IN ('dir /s /b build\clang\tests\witest*.exe') do %f
 ```
 
 The output is a number of test executables. If you used the initialization script(s) mentioned above, or if you followed
@@ -130,6 +193,9 @@ the same directory naming convention of those scripts, you can use the [runtests
 which will execute any test executables that have been built, erroring out - and preserving the exit code - if any test
 fails. Note that MSBuild will modify the output directory names, so this script is only compatible with using Ninja as the
 generator.
+
+> **Note:** The `witest.app` test is significantly slower than the other tests. You can use Test Explorer or the Testing
+> tab to hide it while doing quick validation.
 
 ## Build everything
 
@@ -139,8 +205,6 @@ C:\wil> scripts\init_all.cmd
 C:\wil> scripts\build_all.cmd
 C:\wil> scripts\runtests.cmd
 ```
-Note that this will only test for the architecture that corresponds to the command window you opened. You will want to
-repeat this process for the other architecture (e.g. by using the `x86 Native Tools Command Prompt for VS 2022` in addition to `x64`).
 
 ## Formatting
 
@@ -204,7 +268,7 @@ C:\wil> scripts\run-clang-format.cmd
 ```
 Additionally, we've added a build target that will invoke this script, named `format`:
 ```cmd
-C:\wil\build\clang64debug> ninja format
+C:\wil\build\clang-x64-debug> ninja format
 ```
 Please note that this all assumes that your Visual Studio installation is up to date.
 If it's out of date, code unrelated to your changes may get formatted unexpectedly.

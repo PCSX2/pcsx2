@@ -1,16 +1,3 @@
-diff --git a/CHANGES b/CHANGES
-index 5d3dd16..587b612 100644
---- a/CHANGES
-+++ b/CHANGES
-@@ -4,7 +4,7 @@ v2024.1
-  - Update dependencies
-  - Propagate test/install options to Glslang
- 
--v2024.0
-+v2024.0 2024-03-09
-  - Update dependencies
-  - Utilities:
-     - Use Python3 explicitly in utility scripts
 diff --git a/CMakeLists.txt b/CMakeLists.txt
 index ffcb54b..7c1a6d8 100644
 --- a/CMakeLists.txt

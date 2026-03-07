@@ -282,7 +282,7 @@ namespace details
             return *this;
         }
 
-        StoredCallContextInfo(StoredCallContextInfo const& other) WI_NOEXCEPT : m_ownsMessage(false)
+        StoredCallContextInfo(StoredCallContextInfo const& other) WI_NOEXCEPT
         {
             contextId = other.contextId;
             contextName = other.contextName;
@@ -296,7 +296,7 @@ namespace details
             }
         }
 
-        StoredCallContextInfo(_In_opt_ PCSTR staticContextName) WI_NOEXCEPT : m_ownsMessage(false)
+        StoredCallContextInfo(_In_opt_ PCSTR staticContextName) WI_NOEXCEPT
         {
             contextId = 0;
             contextName = staticContextName;
@@ -365,7 +365,7 @@ namespace details
             }
         }
 
-        bool m_ownsMessage;
+        bool m_ownsMessage{false};
     };
 
     template <typename TActivity>
@@ -530,8 +530,8 @@ protected:
     static bool WasAlreadyReportedToTelemetry(long failureId) WI_NOEXCEPT
     {
         static long volatile s_lastFailureSeen = -1;
-        auto wasSeen = (s_lastFailureSeen == failureId);
-        s_lastFailureSeen = failureId;
+        long oldValue = InterlockedExchange(&s_lastFailureSeen, failureId);
+        auto wasSeen = (oldValue == failureId);
         return wasSeen;
     }
 
@@ -4729,6 +4729,49 @@ WIL_WARN_DEPRECATED_1612_PRAGMA("IMPLEMENT_TRACELOGGING_CLASS")
         varName7, \
         VarType8, \
         varName8, \
+        TraceLoggingKeyword(MICROSOFT_KEYWORD_CRITICAL_DATA), \
+        TelemetryPrivacyDataTag(PrivacyTag))
+#define DEFINE_COMPLIANT_CRITICAL_DATA_EVENT_PARAM9( \
+    EventId, \
+    PrivacyTag, \
+    VarType1, \
+    varName1, \
+    VarType2, \
+    varName2, \
+    VarType3, \
+    varName3, \
+    VarType4, \
+    varName4, \
+    VarType5, \
+    varName5, \
+    VarType6, \
+    varName6, \
+    VarType7, \
+    varName7, \
+    VarType8, \
+    varName8, \
+    VarType9, \
+    varName9) \
+    DEFINE_TRACELOGGING_EVENT_PARAM9( \
+        EventId, \
+        VarType1, \
+        varName1, \
+        VarType2, \
+        varName2, \
+        VarType3, \
+        varName3, \
+        VarType4, \
+        varName4, \
+        VarType5, \
+        varName5, \
+        VarType6, \
+        varName6, \
+        VarType7, \
+        varName7, \
+        VarType8, \
+        varName8, \
+        VarType9, \
+        varName9, \
         TraceLoggingKeyword(MICROSOFT_KEYWORD_CRITICAL_DATA), \
         TelemetryPrivacyDataTag(PrivacyTag))
 

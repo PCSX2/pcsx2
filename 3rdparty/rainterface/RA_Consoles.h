@@ -1,7 +1,7 @@
 #ifndef RA_CONSOLES_H
 #define RA_CONSOLES_H
 
-/* this list should match the list in rcheevos/include/rconsoles.h */
+/* this list should match the list in rcheevos/include/rc_consoles.h */
 enum ConsoleID
 {
     UnknownConsoleID = 0,
@@ -77,6 +77,19 @@ enum ConsoleID
     Zeebo = 70,
     Arduboy = 71,
     WASM4 = 72,
+    Arcadia2001 = 73,
+    IntertonVC4000 = 74,
+    ElektorTVGamesComputer = 75,
+    PCEngineCD = 76,
+    JaguarCD = 77,
+    DSi = 78,
+    TI83 = 79,
+    Uzebox = 80,
+    FamicomDiskSystem = 81,
+
+    Hubs = 100,
+    Events = 101,
+    Standalone = 102,
 
     NumConsoleIDs
 };
