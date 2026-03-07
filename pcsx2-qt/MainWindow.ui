@@ -99,6 +99,7 @@
     <addaction name="actionBIOSSettings"/>
     <addaction name="actionEmulationSettings"/>
     <addaction name="actionGraphicsSettings"/>
+    <addaction name="actionOSDSettings"/>
     <addaction name="actionAudioSettings"/>
     <addaction name="actionMemoryCardSettings"/>
     <addaction name="actionDEV9Settings"/>
@@ -590,6 +591,14 @@
    </property>
    <property name="text">
     <string>&amp;Audio</string>
+   </property>
+  </action>
+  <action name="actionOSDSettings">
+   <property name="icon">
+    <iconset theme="heart-circle-line"/>
+   </property>
+   <property name="text">
+    <string>&amp;On-Screen Display</string>
    </property>
   </action>
   <action name="actionGameListSettings">

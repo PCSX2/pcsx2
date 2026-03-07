@@ -61,6 +61,9 @@
     <ClCompile Include="Settings\GraphicsSettingsWidget.cpp">
       <Filter>Settings</Filter>
     </ClCompile>
+    <ClCompile Include="Settings\OSDSettingsWidget.cpp">
+      <Filter>Settings</Filter>
+    </ClCompile>
     <ClCompile Include="Settings\InterfaceSettingsWidget.cpp">
       <Filter>Settings</Filter>
     </ClCompile>
@@ -313,6 +316,9 @@
       <Filter>Settings</Filter>
     </QtMoc>
     <QtMoc Include="Settings\GraphicsSettingsWidget.h">
+      <Filter>Settings</Filter>
+    </QtMoc>
+    <QtMoc Include="Settings\OSDSettingsWidget.h">
       <Filter>Settings</Filter>
     </QtMoc>
     <QtMoc Include="Settings\InterfaceSettingsWidget.h">
@@ -683,9 +689,6 @@
     <QtUi Include="Settings\GraphicsMediaCaptureSettingsTab.ui">
       <Filter>Settings</Filter>
     </QtUi>
-    <QtUi Include="Settings\GraphicsOnScreenDisplaySettingsTab.ui">
-      <Filter>Settings</Filter>
-    </QtUi>
     <QtUi Include="Settings\GraphicsPostProcessingSettingsTab.ui">
       <Filter>Settings</Filter>
     </QtUi>
@@ -714,6 +717,9 @@
       <Filter>Settings</Filter>
     </QtUi>
     <QtUi Include="Settings\MemoryCardSettingsWidget.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\OSDSettingsWidget.ui">
       <Filter>Settings</Filter>
     </QtUi>
     <QtUi Include="Settings\PatchDetailsWidget.ui">
