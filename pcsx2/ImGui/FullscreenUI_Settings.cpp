@@ -3187,6 +3187,8 @@ void FullscreenUI::DrawOSDSettingsPage()
 	MenuHeading(FSUI_CSTR("On-Screen Display"));
 	DrawIntSpinBoxSetting(bsi, FSUI_ICONSTR(ICON_FA_MAGNIFYING_GLASS, "OSD Scale"),
 		FSUI_CSTR("Determines how large the on-screen messages and monitors are."), "EmuCore/GS", "OsdScale", 100, 25, 500, 1, FSUI_CSTR("%d%%"));
+	DrawIntSpinBoxSetting(bsi, FSUI_ICONSTR(ICON_FA_BORDER_ALL, "OSD Margin"),
+		FSUI_CSTR("Determines the distance in pixels from the edges of the screen for OSD elements."), "EmuCore/GS", "OsdMargin", 10, 0, 100, 1, FSUI_CSTR("%dpx"));
 
 	// OSD Positioning Options
 	static constexpr const char* s_osd_position_options[] = {

@@ -1433,7 +1433,7 @@ void SaveStateSelectorUI::ShowSlotOSDMessage()
 void ImGuiManager::RenderOverlays()
 {
 	const float scale = ImGuiManager::GetGlobalScale();
-	const float margin = std::ceil(10.0f * scale);
+	const float margin = std::ceil(GSConfig.OsdMargin * scale);
 	const float spacing = std::ceil(5.0f * scale);
 	float position_y = margin;
 

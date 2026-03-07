@@ -798,7 +798,7 @@ void ImGuiManager::DrawOSDMessages(Common::Timer::Value current_time)
 	const float font_size = GetFontSizeStandard();
 	const float scale = s_global_scale;
 	const float spacing = std::ceil(5.0f * scale);
-	const float margin = std::ceil(10.0f * scale);
+	const float margin = std::ceil(GSConfig.OsdMargin * scale);
 	const float padding = std::ceil(8.0f * scale);
 	const float rounding = std::ceil(5.0f * scale);
 	const float max_width = s_window_width - (margin + padding) * 2.0f;

@@ -728,6 +728,7 @@ struct Pcsx2Config
 		static constexpr TriFiltering DEFAULT_TRILINEAR_FILTERING_MODE = TriFiltering::Automatic;
 
 		static constexpr float DEFAULT_OSD_SCALE = 100.0f;
+		static constexpr float DEFAULT_OSD_MARGIN = 10.0f;
 		static constexpr OsdOverlayPos DEFAULT_OSD_MESSAGE_POS = OsdOverlayPos::TopLeft;
 		static constexpr OsdOverlayPos DEFAULT_OSD_PERFORMANCE_POS = OsdOverlayPos::TopRight;
 
@@ -845,6 +846,7 @@ struct Pcsx2Config
 		int Crop[4] = {};
 
 		float OsdScale = DEFAULT_OSD_SCALE;
+		float OsdMargin = DEFAULT_OSD_MARGIN;
 		OsdOverlayPos OsdMessagesPos = DEFAULT_OSD_MESSAGE_POS;
 		OsdOverlayPos OsdPerformancePos = DEFAULT_OSD_PERFORMANCE_POS;
 
