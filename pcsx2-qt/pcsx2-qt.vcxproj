@@ -146,6 +146,7 @@
     <ClCompile Include="Settings\EmulationSettingsWidget.cpp" />
     <ClCompile Include="Settings\GameListSettingsWidget.cpp" />
     <ClCompile Include="Settings\GraphicsSettingsWidget.cpp" />
+    <ClCompile Include="Settings\OSDSettingsWidget.cpp" />
     <ClCompile Include="Settings\InterfaceSettingsWidget.cpp" />
     <ClCompile Include="Settings\SettingsWidget.cpp" />
     <ClCompile Include="Settings\SettingsWindow.cpp" />
@@ -191,6 +192,7 @@
     <QtMoc Include="Settings\BIOSSettingsWidget.h" />
     <QtMoc Include="Settings\EmulationSettingsWidget.h" />
     <QtMoc Include="Settings\GraphicsSettingsWidget.h" />
+    <QtMoc Include="Settings\OSDSettingsWidget.h" />
     <QtMoc Include="Settings\SettingsWidget.h" />
     <QtMoc Include="Settings\SettingsWindow.h" />
     <QtMoc Include="Settings\AdvancedSettingsWidget.h" />
@@ -348,7 +350,6 @@
     <QtUi Include="Settings\GraphicsHardwareFixesSettingsTab.ui" />
     <QtUi Include="Settings\GraphicsHardwareRenderingSettingsTab.ui" />
     <QtUi Include="Settings\GraphicsMediaCaptureSettingsTab.ui" />
-    <QtUi Include="Settings\GraphicsOnScreenDisplaySettingsTab.ui" />
     <QtUi Include="Settings\GraphicsPostProcessingSettingsTab.ui" />
     <QtUi Include="Settings\GraphicsSettingsHeader.ui" />
     <QtUi Include="Settings\GraphicsSoftwareRenderingSettingsTab.ui" />
@@ -359,6 +360,7 @@
     <QtUi Include="Settings\MemoryCardConvertDialog.ui" />
     <QtUi Include="Settings\MemoryCardCreateDialog.ui" />
     <QtUi Include="Settings\MemoryCardSettingsWidget.ui" />
+    <QtUi Include="Settings\OSDSettingsWidget.ui" />
     <QtUi Include="Settings\PatchDetailsWidget.ui" />
     <QtUi Include="Settings\SettingsWindow.ui" />
     <QtUi Include="Settings\USBBindingWidget_Buzz.ui" />

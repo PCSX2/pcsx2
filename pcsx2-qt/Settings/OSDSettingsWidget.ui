@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>GraphicsOnScreenDisplaySettingsTab</class>
- <widget class="QWidget" name="GraphicsOnScreenDisplaySettingsTab">
+ <class>OSDSettingsWidget</class>
+ <widget class="QWidget" name="OSDSettingsWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
