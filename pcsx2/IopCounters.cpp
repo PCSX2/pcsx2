@@ -97,7 +97,7 @@ static void psxRcntSync(int cntidx)
 			psxCounters[cntidx].count += change;
 			psxCounters[cntidx].startCycle += change * psxCounters[cntidx].rate;
 
-			psxCounters[cntidx].startCycle &= ~(psxCounters[cntidx].rate - 1);
+			psxCounters[cntidx].startCycle &= ~((u64)psxCounters[cntidx].rate - 1);
 		}
 	}
 	else
@@ -338,7 +338,7 @@ static void _psxCheckStartGate(int i)
 									   psxRcntRcount32(i);
 
 			// Not strictly necessary.
-			psxCounters[i].startCycle = psxRegs.cycle & ~(psxCounters[i].rate - 1);
+			psxCounters[i].startCycle = psxRegs.cycle & ~((u64)psxCounters[i].rate - 1);
 			break;
 
 		case 0x1: // GATE_ON_ClearStart - Counts constantly, clears on Blank END
@@ -367,7 +367,7 @@ static void _psxCheckEndGate(int i)
 	switch (psxCounters[i].mode.gateMode)
 	{
 		case 0x0: // GATE_ON_count - count while gate signal is low (RENDER)
-			psxCounters[i].startCycle = psxRegs.cycle & ~(psxCounters[i].rate - 1);
+			psxCounters[i].startCycle = psxRegs.cycle & ~((u64)psxCounters[i].rate - 1);
 			break;
 
 		case 0x1: // GATE_ON_ClearStart - Counts constantly, clears on Blank END
@@ -386,7 +386,7 @@ static void _psxCheckEndGate(int i)
 		case 0x3: // GATE_ON_Start - Starts counting when the next Blank Ends, no clear.
 			if (psxCounters[i].mode.stopped)
 			{
-				psxCounters[i].startCycle = psxRegs.cycle & ~(psxCounters[i].rate - 1);
+				psxCounters[i].startCycle = psxRegs.cycle & ~((u64)psxCounters[i].rate - 1);
 				psxCounters[i].mode.stopped = false;
 			}
 			break;
@@ -624,7 +624,7 @@ __fi void psxRcntWmode16(int index, u32 value)
 
 	// Current counter *always* resets on mode write.
 	counter.count = 0;
-	counter.startCycle = psxRegs.cycle & ~(counter.rate - 1);
+	counter.startCycle = psxRegs.cycle & ~((u64)counter.rate - 1);
 	counter.target &= 0xffff;
 
 	_rcntSet(index);
