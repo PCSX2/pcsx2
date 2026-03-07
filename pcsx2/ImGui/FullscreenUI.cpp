@@ -1685,8 +1685,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 			case PauseSubMenu::None:
 			{
 				// NOTE: Menu close must come first, because otherwise VM destruction options will race.
-				const bool can_load_state = s_current_disc_crc != 0 && !Achievements::IsHardcoreModeActive();
-				const bool can_save_state = s_current_disc_crc != 0;
+				const bool can_load_or_save_state = s_current_disc_crc != 0;
 
 				if (just_focused)
 					ImGui::SetFocusID(ImGui::GetID(FSUI_ICONSTR(ICON_FA_PLAY, "Resume Game")), ImGui::GetCurrentWindow());
@@ -1700,19 +1699,19 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 					DoToggleFrameLimit();
 				}
 
-				if (ActiveButton(FSUI_ICONSTR(ICON_FA_ARROW_ROTATE_LEFT, "Load State"), false, can_load_state))
+				if (ActiveButton(FSUI_ICONSTR(ICON_FA_ARROW_ROTATE_LEFT, "Load State"), false, can_load_or_save_state))
 				{
 					if (OpenSaveStateSelector(true))
 						s_current_main_window = MainWindowType::None;
 				}
 
-				if (ActiveButton(FSUI_ICONSTR(ICON_FA_DOWNLOAD, "Save State"), false, can_save_state))
+				if (ActiveButton(FSUI_ICONSTR(ICON_FA_DOWNLOAD, "Save State"), false, can_load_or_save_state))
 				{
 					if (OpenSaveStateSelector(false))
 						s_current_main_window = MainWindowType::None;
 				}
 
-				if (ActiveButton(FSUI_ICONSTR(ICON_FA_WRENCH, "Game Properties"), false, can_save_state))
+				if (ActiveButton(FSUI_ICONSTR(ICON_FA_WRENCH, "Game Properties"), false, can_load_or_save_state))
 				{
 					SwitchToGameSettings();
 				}
@@ -1752,7 +1751,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 				if (ActiveButton(FSUI_ICONSTR(ICON_FA_POWER_OFF, "Close Game"), false))
 				{
 					// skip submenu when we can't save anyway
-					if (!can_save_state)
+					if (!can_load_or_save_state)
 						RequestShutdown(false);
 					else
 						OpenPauseSubMenu(PauseSubMenu::Exit);
@@ -2077,7 +2076,7 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 
 					if (ActiveButton(
 							is_loading ? FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Load State") : FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Save State"),
-							false, is_loading ? !Achievements::IsHardcoreModeActive() : true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
+							false, true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
 					{
 						if (is_loading)
 							DoLoadState(std::move(entry.path), entry.slot, false);
@@ -3608,7 +3607,7 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 							});
 					}
 
-					if (!Host::GetBaseBoolSettingValue("Achievements", "ChallengeMode", false))
+					if (!Host::GetBaseBoolSettingValue("Achievements", "ChallengeMode", true))
 					{
 						OpenConfirmMessageDialog(FSUI_STR("Enable Hardcore Mode"),
 							FSUI_STR("Hardcore mode is not currently enabled. Enabling hardcore mode allows you to set times, scores, and "
@@ -3780,7 +3779,7 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
 	check_challenge_state |= DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_PF_DUMBELL, "Hardcore Mode"),
 		FSUI_CSTR(
 			"\"Challenge\" mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions."),
-		"Achievements", "ChallengeMode", false, enabled);
+		"Achievements", "ChallengeMode", true, enabled);
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_BELL, "Achievement Notifications"),
 		FSUI_CSTR("Displays popup messages on events such as achievement unlocks and leaderboard submissions."), "Achievements",
 		"Notifications", true, enabled);
@@ -3836,7 +3835,7 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
 		"Achievements", "UnofficialTestMode", false, enabled);
 
 	// Check for challenge mode just being enabled.
-	if (check_challenge_state && enabled && bsi->GetBoolValue("Achievements", "ChallengeMode", false) && VMManager::HasValidVM())
+	if (check_challenge_state && enabled && bsi->GetBoolValue("Achievements", "ChallengeMode", true) && VMManager::HasValidVM())
 	{
 		// don't bother prompting if the game doesn't have achievements
 		auto lock = Achievements::GetLock();
