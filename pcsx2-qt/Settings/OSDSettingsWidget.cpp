@@ -23,6 +23,7 @@ OSDSettingsWidget::OSDSettingsWidget(SettingsWindow* settings_dialog, QWidget* p
 	// OSD Settings
 	//////////////////////////////////////////////////////////////////////////
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.scale, "EmuCore/GS", "OsdScale", 100.0f);
+	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.margin, "EmuCore/GS", "OsdMargin", 10.0f);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.messagesPos, "EmuCore/GS", "OsdMessagesPos", static_cast<int>(Pcsx2Config::GSOptions::DEFAULT_OSD_MESSAGE_POS));
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.performancePos, "EmuCore/GS", "OsdPerformancePos", static_cast<int>(Pcsx2Config::GSOptions::DEFAULT_OSD_PERFORMANCE_POS));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showSpeedPercentages, "EmuCore/GS", "OsdShowSpeed", false);
@@ -50,6 +51,9 @@ OSDSettingsWidget::OSDSettingsWidget(SettingsWindow* settings_dialog, QWidget* p
 	// OSD Help
 	//////////////////////////////////////////////////////////////////////////
 	dialog()->registerWidgetHelp(m_ui.scale, tr("OSD Scale"), tr("100%"), tr("Scales the size of the onscreen OSD from 50% to 500%."));
+
+	dialog()->registerWidgetHelp(m_ui.margin, tr("OSD Margin"), tr("10px"),
+		tr("Sets the distance in pixels from the edges of the screen for OSD elements."));
 
 	dialog()->registerWidgetHelp(m_ui.messagesPos, tr("OSD Messages Position"), tr("Left (Default)"),
 		tr("Position of on-screen-display messages when events occur such as save states being "
