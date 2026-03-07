@@ -1,0 +1,108 @@
+diff --git a/libavcodec/aacencdsp.h b/libavcodec/aacencdsp.h
+index d0d86c3d70..a8531b714e 100644
+--- a/libavcodec/aacencdsp.h
++++ b/libavcodec/aacencdsp.h
+@@ -65,7 +65,7 @@ static inline void ff_aacenc_dsp_init(AACEncDSPContext *s)
+ 
+ #if ARCH_RISCV
+     ff_aacenc_dsp_init_riscv(s);
+-#elif ARCH_X86
++#elif ARCH_X86 && HAVE_X86ASM
+     ff_aacenc_dsp_init_x86(s);
+ #elif ARCH_AARCH64
+     ff_aacenc_dsp_init_aarch64(s);
+diff --git a/libavcodec/bswapdsp.c b/libavcodec/bswapdsp.c
+index f0ea2b55c5..f375ab79ac 100644
+--- a/libavcodec/bswapdsp.c
++++ b/libavcodec/bswapdsp.c
+@@ -53,7 +53,7 @@ av_cold void ff_bswapdsp_init(BswapDSPContext *c)
+ 
+ #if ARCH_RISCV
+     ff_bswapdsp_init_riscv(c);
+-#elif ARCH_X86
++#elif ARCH_X86 && HAVE_X86ASM
+     ff_bswapdsp_init_x86(c);
+ #endif
+ }
+diff --git a/libavcodec/idctdsp.c b/libavcodec/idctdsp.c
+index 8a71c7ef77..e039f900eb 100644
+--- a/libavcodec/idctdsp.c
++++ b/libavcodec/idctdsp.c
+@@ -41,7 +41,7 @@ av_cold void ff_init_scantable_permutation(uint8_t *idct_permutation,
+ {
+     int i;
+ 
+-#if ARCH_X86
++#if ARCH_X86 && HAVE_X86ASM
+     if (ff_init_scantable_permutation_x86(idct_permutation,
+                                           perm_type))
+         return;
+@@ -301,7 +301,7 @@ av_cold void ff_idctdsp_init(IDCTDSPContext *c, AVCodecContext *avctx)
+     ff_idctdsp_init_ppc(c, avctx, high_bit_depth);
+ #elif ARCH_RISCV
+     ff_idctdsp_init_riscv(c, avctx, high_bit_depth);
+-#elif ARCH_X86
++#elif ARCH_X86 && HAVE_X86ASM
+     ff_idctdsp_init_x86(c, avctx, high_bit_depth);
+ #elif ARCH_MIPS
+     ff_idctdsp_init_mips(c, avctx, high_bit_depth);
+diff --git a/libavcodec/x86/Makefile b/libavcodec/x86/Makefile
+index ebf458453e..513be8d1a3 100644
+--- a/libavcodec/x86/Makefile
++++ b/libavcodec/x86/Makefile
+@@ -4,7 +4,7 @@ OBJS                                   += x86/constants.o               \
+ OBJS-$(CONFIG_AC3DSP)                  += x86/ac3dsp_init.o
+ OBJS-$(CONFIG_AUDIODSP)                += x86/audiodsp_init.o
+ OBJS-$(CONFIG_BLOCKDSP)                += x86/blockdsp_init.o
+-OBJS-$(CONFIG_BSWAPDSP)                += x86/bswapdsp_init.o
++X86ASM-OBJS-$(CONFIG_BSWAPDSP)         += x86/bswapdsp_init.o
+ OBJS-$(CONFIG_DIRAC_DECODER)           += x86/diracdsp_init.o           \
+                                           x86/dirac_dwt_init.o
+ OBJS-$(CONFIG_FDCTDSP)                 += x86/fdctdsp_init.o
+@@ -20,7 +20,7 @@ OBJS-$(CONFIG_LLVIDDSP)                += x86/lossless_videodsp_init.o
+ OBJS-$(CONFIG_LLVIDENCDSP)             += x86/lossless_videoencdsp_init.o
+ OBJS-$(CONFIG_HUFFYUVDSP)              += x86/huffyuvdsp_init.o
+ OBJS-$(CONFIG_HUFFYUVENCDSP)           += x86/huffyuvencdsp_init.o
+-OBJS-$(CONFIG_IDCTDSP)                 += x86/idctdsp_init.o
++X86ASM-OBJS-$(CONFIG_IDCTDSP)          += x86/idctdsp_init.o
+ OBJS-$(CONFIG_LPC)                     += x86/lpc_init.o
+ OBJS-$(CONFIG_ME_CMP)                  += x86/me_cmp_init.o
+ OBJS-$(CONFIG_MPEGAUDIODSP)            += x86/mpegaudiodsp.o
+@@ -39,7 +39,7 @@ OBJS-$(CONFIG_XMM_CLOBBER_TEST)        += x86/w64xmmtest.o
+ # decoders/encoders
+ OBJS-$(CONFIG_AAC_DECODER)             += x86/aacpsdsp_init.o          \
+                                           x86/sbrdsp_init.o
+-OBJS-$(CONFIG_AAC_ENCODER)             += x86/aacencdsp_init.o
++X86ASM-OBJS-$(CONFIG_AAC_ENCODER)      += x86/aacencdsp_init.o
+ OBJS-$(CONFIG_ADPCM_G722_DECODER)      += x86/g722dsp_init.o
+ OBJS-$(CONFIG_ADPCM_G722_ENCODER)      += x86/g722dsp_init.o
+ OBJS-$(CONFIG_ALAC_DECODER)            += x86/alacdsp_init.o
+diff --git a/libavcodec/x86/lpc_init.c b/libavcodec/x86/lpc_init.c
+index f2fca53799..da2c5a526d 100644
+--- a/libavcodec/x86/lpc_init.c
++++ b/libavcodec/x86/lpc_init.c
+@@ -19,6 +19,7 @@
+  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+  */
+ 
++#include "config.h"
+ #include "libavutil/attributes.h"
+ #include "libavutil/x86/asm.h"
+ #include "libavutil/x86/cpu.h"
+@@ -112,9 +113,13 @@ av_cold void ff_lpc_init_x86(LPCContext *c)
+         c->lpc_compute_autocorr = lpc_compute_autocorr_sse2;
+ #endif
+ 
++#if HAVE_SSE2_EXTERNAL
+     if (EXTERNAL_SSE2(cpu_flags))
+         c->lpc_apply_welch_window = ff_lpc_apply_welch_window_sse2;
++#endif
+ 
++#if HAVE_AVX2_EXTERNAL
+     if (EXTERNAL_AVX2(cpu_flags))
+         c->lpc_apply_welch_window = ff_lpc_apply_welch_window_avx2;
++#endif
+ }
+-- 
+2.43.0.windows.1
+
