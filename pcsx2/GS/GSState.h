@@ -207,6 +207,8 @@ protected:
 	bool IsMipMapDraw();
 	bool IsMipMapActive();
 	bool IsCoverageAlpha();
+	bool IsCoverageAlphaFixedOne();
+	virtual bool IsCoverageAlphaSupported();
 	void CalcAlphaMinMax(const int tex_min, const int tex_max);
 	void CorrectATEAlphaMinMax(const u32 atst, const int aref);
 
