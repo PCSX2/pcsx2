@@ -1034,7 +1034,8 @@ QIcon USBDeviceWidget::getIcon() const
 		{"DJTurntable", "dj-hero-line"}, // DJ Hero TurnTable
 		{"Gametrak", "gametrak-line"}, // Gametrak Device
 		{"RealPlay", "realplay-sphere-line"}, // RealPlay Device
-		{"TrainController", "train-line"} // Train Controller
+		{"TrainController", "train-line"}, // Train Controller
+		{"FlightStickController", "controller-line"} // Hori FlightStick
 	};
 
 	for (size_t i = 0; i < std::size(icons); i++)
