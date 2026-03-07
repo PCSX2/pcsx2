@@ -3187,6 +3187,9 @@ void FullscreenUI::DrawGameListSettingsWindow()
 		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_TAG, "Show Titles"),
 			FSUI_CSTR("Shows Titles for Games when in Game Grid View Mode"), "UI",
 			"FullscreenUIShowGameGridTitles", true);
+		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_GLOBE, "Prefer English Titles"),
+			FSUI_CSTR("For games with both a title in the game's native language and one in English, prefer the English title."), "UI",
+			"PreferEnglishGameList", false);
 	}
 
 	MenuHeading(FSUI_CSTR("Cover Settings"));
@@ -4029,7 +4032,7 @@ void FullscreenUI::ReportStateSaveError(const std::string& message, std::optiona
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Translation String Area
-// To avoid having to type T_RANSLATE("FullscreenUI", ...) everywhere, we use the shorter macros in the internal 
+// To avoid having to type T_RANSLATE("FullscreenUI", ...) everywhere, we use the shorter macros in the internal
 // header file, then preprocess and generate a bunch of noops here to define the strings. Sadly that means
 // the view in Linguist is gonna suck, but you can search the file for the string for more context.
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
