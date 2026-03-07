@@ -318,42 +318,18 @@ void AudioStream::ReadFrames(SampleType* samples, u32 num_frames)
 		else
 		{
 			// no data, fall back to silence
-			std::memset(samples + (frames_to_read * m_output_channels), 0, silence_frames * m_output_channels * sizeof(s16));
+			std::memset(samples + (frames_to_read * m_output_channels), 0, silence_frames * m_output_channels * sizeof(SampleType));
 		}
 	}
 
 	if (m_volume != 100)
 	{
-		u32 num_samples = num_frames * m_output_channels;
-
-		const u32 aligned_samples = Common::AlignDownPow2(num_samples, 8);
-		num_samples -= aligned_samples;
-
+		const int num_samples = num_frames * m_output_channels;
 		const float volume_mult = static_cast<float>(m_volume) / 100.0f;
-		const GSVector4 volume_multv = GSVector4(volume_mult);
-		const SampleType* const aligned_samples_end = samples + aligned_samples;
-		for (; samples != aligned_samples_end; samples += 8)
-		{
-			GSVector4i iv = GSVector4i::load<false>(samples); // [0, 1, 2, 3, 4, 5, 6, 7]
-			GSVector4i iv1 = iv.upl16(iv); // [0, 0, 1, 1, 2, 2, 3, 3]
-			GSVector4i iv2 = iv.uph16(iv); // [4, 4, 5, 5, 6, 6, 7, 7]
-			iv1 = iv1.sra32<16>(); // [0, 1, 2, 3]
-			iv2 = iv2.sra32<16>(); // [4, 5, 6, 7]
-			GSVector4 fv1 = GSVector4(iv1); // [f0, f1, f2, f3]
-			GSVector4 fv2 = GSVector4(iv2); // [f4, f5, f6, f7]
-			fv1 = fv1 * volume_multv; // [f0, f1, f2, f3]
-			fv2 = fv2 * volume_multv; // [f4, f5, f6, f7]
-			iv1 = GSVector4i(fv1); // [0, 1, 2, 3]
-			iv2 = GSVector4i(fv2); // [4, 5, 6, 7]
-			iv = iv1.ps32(iv2); // [0, 1, 2, 3, 4, 5, 6, 7]
-			GSVector4i::store<false>(samples, iv);
-		}
 
-		while (num_samples > 0)
+		for (int i = 0; i < num_samples; i++)
 		{
-			*samples = static_cast<s16>(std::clamp(static_cast<float>(*samples) * volume_mult, -32768.0f, 32767.0f));
-			samples++;
-			num_samples--;
+			samples[i] *= volume_mult;
 		}
 	}
 }
@@ -423,9 +399,8 @@ void AudioStream::AllocateBuffer()
 	m_buffer_size = GetAlignedBufferSize(((m_parameters.buffer_ms * multiplier) * m_sample_rate) / 1000);
 	m_target_buffer_size = GetAlignedBufferSize((m_sample_rate * m_parameters.buffer_ms) / 1000u);
 
-	m_buffer = std::make_unique<s16[]>(m_buffer_size * m_internal_channels);
-	m_staging_buffer = std::make_unique<s16[]>(CHUNK_SIZE * m_internal_channels);
-	m_float_buffer = std::make_unique<float[]>(CHUNK_SIZE * m_internal_channels);
+	m_buffer = std::make_unique<float[]>(m_buffer_size * m_internal_channels);
+	m_staging_buffer = std::make_unique<float[]>(CHUNK_SIZE * m_internal_channels);
 
 	if (IsExpansionEnabled())
 		m_expand_buffer = std::make_unique<float[]>(m_parameters.expand_block_size * NUM_INPUT_CHANNELS);
@@ -440,7 +415,6 @@ void AudioStream::DestroyBuffer()
 {
 	m_expand_buffer.reset();
 	m_staging_buffer.reset();
-	m_float_buffer.reset();
 	m_buffer.reset();
 	m_buffer_size = 0;
 	m_wpos.store(0, std::memory_order_release);
@@ -534,53 +508,6 @@ void AudioStream::WriteFrame(const SampleType* frame)
 	EndWrite(1);
 }
 
-static void S16ChunkToFloat(const s16* src, float* dst, u32 num_samples)
-{
-	constexpr GSVector4 S16_TO_FLOAT_V = GSVector4::cxpr(1.0f / 32767.0f);
-
-	const u32 iterations = (num_samples + 7) / 8;
-	for (u32 i = 0; i < iterations; i++)
-	{
-		const GSVector4i sv = GSVector4i::load<false>(src);
-		src += 8;
-
-		GSVector4i iv1 = sv.upl16(sv); // [0, 0, 1, 1, 2, 2, 3, 3]
-		GSVector4i iv2 = sv.uph16(sv); // [4, 4, 5, 5, 6, 6, 7, 7]
-		iv1 = iv1.sra32<16>(); // [0, 1, 2, 3]
-		iv2 = iv2.sra32<16>(); // [4, 5, 6, 7]
-		GSVector4 fv1 = GSVector4(iv1); // [f0, f1, f2, f3]
-		GSVector4 fv2 = GSVector4(iv2); // [f4, f5, f6, f7]
-		fv1 = fv1 * S16_TO_FLOAT_V;
-		fv2 = fv2 * S16_TO_FLOAT_V;
-
-		GSVector4::store<false>(dst + 0, fv1);
-		GSVector4::store<false>(dst + 4, fv2);
-		dst += 8;
-	}
-}
-
-static void FloatChunkToS16(s16* dst, const float* src, u32 num_samples)
-{
-	const GSVector4 FLOAT_TO_S16_V = GSVector4::cxpr(32767.0f);
-
-	const u32 iterations = (num_samples + 7) / 8;
-	for (u32 i = 0; i < iterations; i++)
-	{
-		GSVector4 fv1 = GSVector4::load<false>(src + 0);
-		GSVector4 fv2 = GSVector4::load<false>(src + 4);
-		src += 8;
-
-		fv1 = fv1 * FLOAT_TO_S16_V;
-		fv2 = fv2 * FLOAT_TO_S16_V;
-		GSVector4i iv1 = GSVector4i(fv1);
-		GSVector4i iv2 = GSVector4i(fv2);
-
-		const GSVector4i iv = iv1.ps32(iv2);
-		GSVector4i::store<false>(dst, iv);
-		dst += 8;
-	}
-}
-
 void AudioStream::ExpandAllocate()
 {
 	pxAssert(!m_expander);
@@ -639,7 +566,7 @@ void AudioStream::WriteChunk(const SampleType* chunk)
 	if (IsExpansionEnabled())
 	{
 		// StretchWriteBlock() overwrites the staging buffer on output, so we need to copy into the expand buffer first.
-		S16ChunkToFloat(chunk, m_expand_buffer.get() + m_expand_buffer_pos * NUM_INPUT_CHANNELS, CHUNK_SIZE * NUM_INPUT_CHANNELS);
+		std::memcpy(m_expand_buffer.get() + m_expand_buffer_pos * NUM_INPUT_CHANNELS, chunk, CHUNK_SIZE * NUM_INPUT_CHANNELS * sizeof(SampleType));
 
 		// Output the corresponding block.
 		if (m_expand_output_buffer)
@@ -655,8 +582,7 @@ void AudioStream::WriteChunk(const SampleType* chunk)
 	}
 	else
 	{
-		S16ChunkToFloat(chunk, m_float_buffer.get(), CHUNK_SIZE * NUM_INPUT_CHANNELS);
-		StretchWriteBlock(m_float_buffer.get());
+		StretchWriteBlock(chunk);
 	}
 }
 
@@ -706,9 +632,8 @@ void AudioStream::StretchWriteBlock(const float* block)
 		m_soundtouch->putSamples(block, CHUNK_SIZE);
 
 		u32 tempProgress;
-		while (tempProgress = m_soundtouch->receiveSamples(m_float_buffer.get(), CHUNK_SIZE), tempProgress != 0)
+		while (tempProgress = m_soundtouch->receiveSamples(m_staging_buffer.get(), CHUNK_SIZE), tempProgress != 0)
 		{
-			FloatChunkToS16(m_staging_buffer.get(), m_float_buffer.get(), tempProgress * m_internal_channels);
 			InternalWriteFrames(m_staging_buffer.get(), tempProgress);
 		}
 
@@ -717,8 +642,7 @@ void AudioStream::StretchWriteBlock(const float* block)
 	}
 	else
 	{
-		FloatChunkToS16(m_staging_buffer.get(), block, CHUNK_SIZE * m_internal_channels);
-		InternalWriteFrames(m_staging_buffer.get(), CHUNK_SIZE);
+		InternalWriteFrames(block, CHUNK_SIZE);
 	}
 }
 
