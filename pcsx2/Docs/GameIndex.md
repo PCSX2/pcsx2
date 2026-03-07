@@ -172,6 +172,7 @@ The clamp modes are also numerically based.
 * cpuSpriteRenderBW           [Value between `0` to `10`]   {Disabled, 1 (64), 2 (128), 3 (192), 4 (256), 5 (320), 6 (384), 7 (448), 8 (512), 9 (576), 10 (640)} Default: Off (`0`)
 * cpuSpriteRenderLevel        [`0` or `1` or `2`]    {Sprites only, Sprites/Triangles, Blended Sprites/Triangles}  Default: Off unless cpuSpriteRenderBW has value other than Off then it is 'Sprites only' (`0`)
 * estimateTextureRegion       [`0` or `1`]          {Off, On}                               Default: Off (`0`)
+* drawBuffering			      [`0` or `1`]          {Off, On}                               Default: Off (`0`)
 * getSkipCount                {`GSC` with suffix }  {None unless specific game GSC}         Default: Disabled (`0`) unless valid variable name (ex. GSC_PolyphonyDigitalGames, GSC_UrbanReign, ...)
 * gpuPaletteConversion        [`0` or `1`]          {Off, On}                               Default: Off (`0`)
 * gpuTargetCLUT               [`0` or `1` or `2`]   {Disabled, Enabled (Exact Match), Enabled (Check Inside Target)}                     Default: Disabled (`0`)
