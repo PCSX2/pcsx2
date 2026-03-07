@@ -224,6 +224,7 @@ void Pad::SetDefaultHotkeyConfig(SettingsInterface& si)
 	si.SetStringValue("Hotkeys", "CycleAspectRatio", "Keyboard/F6");
 	si.SetStringValue("Hotkeys", "CycleInterlaceMode", "Keyboard/F5");
 	// si.SetStringValue("Hotkeys", "CycleTVShader", "Keyboard/"); TBD
+	// si.SetStringValue("Hotkeys", "CycleBlendingAccuracy", "Keyboard/"); TBD
 	si.SetStringValue("Hotkeys", "ToggleMipmapMode", "Keyboard/Insert");
 	//	si.SetStringValue("Hotkeys", "DecreaseUpscaleMultiplier", "Keyboard"); TBD
 	//	si.SetStringValue("Hotkeys", "IncreaseUpscaleMultiplier", "Keyboard"); TBD
