@@ -18,6 +18,7 @@
 #include <sstream>
 #include <iomanip>
 #include <bit>
+#include <numeric>
 
 u64 GSState::s_n = 0;
 u64 GSState::s_last_transfer_draw_n = 0;
@@ -3350,6 +3351,31 @@ void GSState::GrowVertexBuffer()
 	m_vertex.maxcount = maxcount - 3; // -3 to have some space at the end of the buffer before DrawingKick can grow it
 }
 
+bool GSState::DeindexVertices()
+{
+	if (m_index.tail > UINT16_MAX) [[unlikely]]
+	{
+		Console.Warning("Error: Cannot deindex %u (> %u) vertices.", m_index.tail, UINT16_MAX);
+		return false;
+	}
+
+	while (m_vertex.maxcount < m_index.tail)
+	{
+		GrowVertexBuffer();
+	}
+
+	for (int i = static_cast<int>(m_index.tail) - 1; i >= 0; i--)
+	{
+		m_vertex.buff_copy[i] = m_vertex.buff[m_index.buff[i]];
+		m_index.buff[i] = static_cast<u16>(i);
+	}
+
+	std::swap(m_vertex.buff, m_vertex.buff_copy);
+	m_vertex.head = m_vertex.next = m_vertex.tail = m_index.tail;
+
+	return true;
+}
+
 // For returning order of vertices to form a right triangle
 struct TriangleOrdering
 {
@@ -4316,6 +4342,203 @@ bool GSState::SpriteDrawWithoutGaps()
 	}
 
 	return false;
+}
+
+// Emulate UV rounding error when UVs fall exactly on texel boundaries (i.e. UVs being rounded down instead of up,
+// likely due to internal precision of GS). This is only implemented for sprites and axis-aligned triangles forming quads.
+// Return true if we determined that accurate rounding can be done.
+template<u32 primclass>
+bool GSState::GetVertexUVRoundingInfoImpl()
+{
+	// The following rules are suggested by hardware tests and applies to cases where UVs should fall exactly on a texel boundary
+	// at pixel centers:
+	// - The top-most and/or left-most pixels never have rounding error (since the GS likely rasterizes top-left to bottom-right).
+	// - When the width is not power of 2, the Us other than the left-most round down at texel boundaries.
+	// - When the height is not power of 2, the Vs other than the top-most round down at texel boundaries.
+	// - If the width and/or height is a power of 2, the UVs round up at texel boundaries.
+	// - Axis-aligned triangles have an exception: if the axis-aligned edges are the right and bottom,
+	//   the Vs always round up at texel boundaries. This it the only configuration out of the 4 possible
+	//   that has this exception.
+
+	// Side note: The reason for this behavior might be due to the GS fixed-point precision for computing gradients,
+	// since power-of-2 and non-power-of-2 denominators have different behavior. However, this pattern only seems to
+	// hold when the width or height is <= 512 pixels. At > 512 pixels, the rounding seems to be sporadically up/down,
+	// suggesting that reciprocals < 1/ 512 are somehow treated differently. Fortunately, a width or height of 640
+	// rounds down the UVs, so no changes are needed to the below code in most cases.
+
+	static_assert(primclass == GS_TRIANGLE_CLASS || primclass == GS_SPRITE_CLASS);
+
+	// Only applies to UVs and point-sampled draws.
+	if (!(GSConfig.AccurateUVRounding && PRIM->TME && PRIM->FST && !m_vt.IsRealLinear()))
+		return false;
+
+	// How many vertices for each quad.
+	constexpr u32 n = primclass == GS_TRIANGLE_CLASS ? 6 : 2;
+
+	const GSVector4i xyof = m_context->scissor.xyof.xyxy();
+
+	// Corners of right-angle corners for triangles forming quads.
+	std::vector<u32> tri_quad_corners;
+
+	// Only apply this to draws where all triangles form axis-aligned quads (both for XY and UV).
+	if (primclass == GS_TRIANGLE_CLASS)
+	{
+		GSVertex* RESTRICT vtx = m_vertex.buff;
+		u16* RESTRICT index = m_index.buff;
+
+		if (m_index.tail % 6 != 0)
+			return false;
+
+		for (u32 i = 0; i < m_index.tail; i += 6)
+		{
+			const u16* idx0 = index + i + 0;
+			const u16* idx1 = index + i + 3;
+
+			TriangleOrdering tri0, tri1;
+
+			// Check if vertex XYs and UVs form an axis-aligned quad.
+			if (!AreTrianglesQuad<1, 1>(vtx, idx0, idx1, &tri0, &tri1))
+				return false;
+
+			// Save the right angle corners.
+			tri_quad_corners.push_back(i + 0 + tri0.b);
+			tri_quad_corners.push_back(i + 3 + tri1.b);
+		}
+	}
+
+	if constexpr (primclass == GS_TRIANGLE_CLASS)
+	{
+		// Must deindex to send per-prim data.
+		if (!DeindexVertices()) [[unlikely]]
+			return false;
+	}
+
+	GSVertex* RESTRICT vtx = m_vertex.buff;
+	const u32 count = m_index.tail;
+
+	for (u32 i = 0; i < count; i += n)
+	{
+		GSVertex v0, v1; // Corners of the quad.
+
+		if constexpr (primclass == GS_TRIANGLE_CLASS)
+		{
+			v0 = vtx[tri_quad_corners[2 * (i / n) + 0]];
+			v1 = vtx[tri_quad_corners[2 * (i / n) + 1]];
+		}
+		else
+		{
+			v0 = vtx[i + 0];
+			v1 = vtx[i + 1];
+		}
+
+		const int X0 = static_cast<int>(v0.XYZ.X) - xyof.x;
+		const int Y0 = static_cast<int>(v0.XYZ.Y) - xyof.y;
+		const int X1 = static_cast<int>(v1.XYZ.X) - xyof.x;
+		const int Y1 = static_cast<int>(v1.XYZ.Y) - xyof.y;
+		const int U0 = static_cast<int>(v0.U);
+		const int V0 = static_cast<int>(v0.V);
+		const int U1 = static_cast<int>(v1.U);
+		const int V1 = static_cast<int>(v1.V);
+
+		const int dX = X1 - X0;
+		const int dY = Y1 - Y0;
+		const int dU = U1 - U0;
+		const int dV = V1 - V0;
+		const int abs_dX = std::abs(dX);
+		const int abs_dY = std::abs(dY);
+		const int abs_dU = std::abs(dU);
+		const int abs_dV = std::abs(dV);
+
+		const auto IsPow2 = [](int i) { return (i & (i - 1)) == 0; };
+
+		const bool pow2_dX = IsPow2(abs_dX);
+		const bool pow2_dY = IsPow2(abs_dY);
+
+		// Only allow adjustment if:
+		// - The coordinates are half-texel aligned, or dU/dX or dV/dY is an integer.
+		// - The denominator of dU/dX or dV/dY in lowest terms is small enough.
+		// Otherwise it might mess up the actual value being interpolated (e.g. if dU/dX = 448/447 or U0 = 1/16).
+		const bool aligned_XU = ((X0 | X1 | U0 | U1) & 7) == 0;
+		const bool aligned_YV = ((Y0 | Y1 | V0 | V1) & 7) == 0;
+		const int dX_lowest = abs_dX / std::gcd(std::max(abs_dX, 1), std::max(abs_dU, 1));
+		const int dY_lowest = abs_dY / std::gcd(std::max(abs_dY, 1), std::max(abs_dV, 1));
+		const bool allow_round_U = dU != 0 && aligned_XU && (dX_lowest < ROUND_UV_DENOMINATOR);
+		const bool allow_round_V = dV != 0 && aligned_YV && (dY_lowest < ROUND_UV_DENOMINATOR);
+
+		// Get rounding info for each vertex.
+		for (u32 j = 0; j < n; j++)
+		{
+			u32 round_U; // Round flag for U.
+			u32 round_V; // Round flag for V.
+			int sX; // Stepping origin X (no error at these X).
+			int sY; // Stepping origin Y (no error at these Y).
+
+			if constexpr (primclass == GS_TRIANGLE_CLASS)
+			{
+				// Hypothesis: The GS steps along the left edge when rasterizing triangles. For bottom-right
+				// triangles, the left edge goes from bottom to top, so it flips the direction of V stepping.
+				const bool bottom_right_triangle = ((j < 3 ? X0 : X1) == std::max(X0, X1)) &&
+												   ((j < 3 ? Y0 : Y1) == std::max(Y0, Y1));
+
+				// Determine whether stepping direction of U, V is negative.
+				const bool negU = (dX < 0) != (dU < 0);
+				const bool negV = ((dY < 0) != (dV < 0)) != bottom_right_triangle;
+
+				// For triangles, both dX and dY must be powers of 2 for no error.
+				round_U = (negU || (pow2_dX && pow2_dY)) ? ROUND_UV_UP : ROUND_UV_DOWN;
+				round_V = (negV || (pow2_dX && pow2_dY)) ? ROUND_UV_UP : ROUND_UV_DOWN;
+
+				// Hypothesis: triangles step along the left edge and left-to-right on scanlines,
+				// so there's no error at the first vertex of the left edge.
+				sX = std::min(X0, X1);
+				sY = bottom_right_triangle ? std::max(Y0, Y1) : std::min(Y0, Y1);
+			}
+			else
+			{
+				// For sprites, treat each axis independently.
+				round_U = ((dU < 0) || pow2_dX) ? ROUND_UV_UP : ROUND_UV_DOWN;
+				round_V = ((dV < 0) || pow2_dY) ? ROUND_UV_UP : ROUND_UV_DOWN;
+
+				// Hypothesis: The GS step in the direction specified by vertices when rasterizing
+				// sprites so there's no error at the X or Y of the first vertex.
+				sX = X0;
+				sY = Y0;
+			}
+
+			// Rounding settings (4 bits each for each U, V).
+			const u32 round_settings = (allow_round_U ? round_U : 0) | ((allow_round_V ? round_V : 0) << 4);
+			
+			if (GSIsHardwareRenderer())
+			{
+				// Save the rounding info in unused S, T, Q attributes.
+				vtx[i + j].RGBAQ.Q = static_cast<float>(round_settings);
+				vtx[i + j].ST.S = static_cast<float>(sX >> 4);
+				vtx[i + j].ST.T = static_cast<float>(sY >> 4);
+			}
+			else
+			{
+				// SW scanline renderer doesn't have as many free bits so pack everything into Q.
+				const u32 prim_topleft = ((sX >> 4) & 0xFFF) | (((sY >> 4) & 0xFFF) << 12); // 12 bits for each X, Y.
+
+				vtx[i + j].RGBAQ.U32[1] = prim_topleft | (round_settings << 24);
+			}
+		}
+	}
+
+	return true;
+}
+
+bool GSState::GetVertexUVRoundingInfo()
+{
+	switch (m_vt.m_primclass)
+	{
+		case GS_TRIANGLE_CLASS:
+			return GetVertexUVRoundingInfoImpl<GS_TRIANGLE_CLASS>();
+		case GS_SPRITE_CLASS:
+			return GetVertexUVRoundingInfoImpl<GS_SPRITE_CLASS>();
+		default:
+			return false;
+	}
 }
 
 void GSState::CalculatePrimitiveCoversWithoutGaps()

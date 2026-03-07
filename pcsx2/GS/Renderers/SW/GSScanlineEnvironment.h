@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "GS/Renderers/Common/GSVertex.h"
 #include "GS/GSLocalMemory.h"
 #include "GS/GSVector.h"
 
@@ -56,6 +57,7 @@ union GSScanlineSelector
 		u32 notest : 1; // 55 (no ztest, no atest, no date, no scissor test, and horizontally aligned to 4 pixels)
 		// TODO: 1D texture flag? could save 2 texture reads and 4 lerps with bilinear, and also the texture coordinate clamp/wrap code in one direction
 		u32 zequal : 1; // 56
+		u32 rounduv : 1; // 57
 		u32 breakpoint : 1; // Insert a trap to stop the program, helpful to stop debugger on a program
 	};
 
@@ -206,6 +208,7 @@ struct alignas(32) GSScanlineLocalData // per prim variables, each thread has it
 		GSVector8i uv_minmax[2];
 		GSVector8i trb, tga;
 		GSVector8i test;
+		struct { u32 left, prim_left, flags_u, flags_v; u32 _pad[4]; } round;
 	} temp;
 
 #else
@@ -234,6 +237,7 @@ struct alignas(32) GSScanlineLocalData // per prim variables, each thread has it
 		GSVector4i uv_minmax[2];
 		GSVector4i trb, tga;
 		GSVector4i test;
+		struct { u32 left, prim_left, flags_u, flags_v; } round;
 	} temp;
 
 #endif
@@ -295,6 +299,30 @@ struct GSScanlineConstantData : public GSAlignedClass<32>
 		{ -3.0f , -2.0f , -1.0f , 0.0f},
 	};
 	alignas(16) float m_log2_coef_128b[4][4] = {};
+
+	// Constants for UV rounding.
+	alignas(32) u32 m_offsets[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
+	alignas(32) u32 m_round_up[8] = {
+		ROUND_UV_UP, ROUND_UV_UP, ROUND_UV_UP, ROUND_UV_UP,
+		ROUND_UV_UP, ROUND_UV_UP, ROUND_UV_UP, ROUND_UV_UP,
+	};
+	alignas(32) u32 m_round_down[8] = {
+		ROUND_UV_DOWN, ROUND_UV_DOWN, ROUND_UV_DOWN, ROUND_UV_DOWN,
+		ROUND_UV_DOWN, ROUND_UV_DOWN, ROUND_UV_DOWN, ROUND_UV_DOWN,
+	};
+	alignas(32) u32 m_quarter_texel[8] = {
+		0x4000, 0x4000, 0x4000, 0x4000, 0x4000, 0x4000, 0x4000, 0x4000
+	};
+	alignas(32) u32 m_half_texel_mask[8] = {
+		~(0x8000u - 1), ~(0x8000u - 1), ~(0x8000u - 1), ~(0x8000u - 1),
+		~(0x8000u - 1), ~(0x8000u - 1), ~(0x8000u - 1), ~(0x8000u - 1),
+	};
+	alignas(32) u32 m_round_threshold[8] = {
+		static_cast<u32>(0x1000 * ROUND_UV_THRESHOLD), static_cast<u32>(0x1000 * ROUND_UV_THRESHOLD), // 0x1000 = 1/16 texel.
+		static_cast<u32>(0x1000 * ROUND_UV_THRESHOLD), static_cast<u32>(0x1000 * ROUND_UV_THRESHOLD),
+		static_cast<u32>(0x1000 * ROUND_UV_THRESHOLD), static_cast<u32>(0x1000 * ROUND_UV_THRESHOLD),
+		static_cast<u32>(0x1000 * ROUND_UV_THRESHOLD), static_cast<u32>(0x1000 * ROUND_UV_THRESHOLD),
+	};
 
 	constexpr GSScanlineConstantData()
 	{

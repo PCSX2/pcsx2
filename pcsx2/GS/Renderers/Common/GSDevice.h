@@ -425,6 +425,9 @@ struct alignas(16) GSHWDrawConfig
 
 				// Scan mask
 				u32 scanmsk : 2;
+
+				// Round UV
+				u32 round_uv : 1;
 			};
 
 			struct

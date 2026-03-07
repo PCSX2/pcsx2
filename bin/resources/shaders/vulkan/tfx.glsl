@@ -291,6 +291,7 @@ void main()
 #define PS_ZFLOOR 0
 #define PS_FEEDBACK_LOOP 0
 #define PS_TEX_IS_FB 0
+#define PS_ROUND_UV 0
 #endif
 
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
@@ -501,6 +502,36 @@ vec4 clamp_wrap_uv(vec4 uv)
 	#endif
 
 	return uv;
+}
+
+vec4 round_uv()
+{
+#if PS_ROUND_UV
+	// Whether we are at the top or left of the prim.
+	ivec2 topleft = ivec2(equal(ivec2(gl_FragCoord.xy), ivec2(vsIn.t.xy)));
+
+	// Extract flags for whether to round U, V.
+	int round_flags_i = int(vsIn.t.w);
+	ivec2 round_flags = ivec2((round_flags_i >> 0) & 0xF, (round_flags_i >> 4) & 0xF);
+
+	// Being on the top or left pixels converts round down to round up.
+	ivec2 round_down = ivec2(equal(round_flags, ivec2(PS_ROUND_UV_DOWN))) & ~topleft;
+	ivec2 round_up = ivec2(equal(round_flags, ivec2(PS_ROUND_UV_UP))) |
+	                 (ivec2(equal(round_flags, ivec2(PS_ROUND_UV_DOWN))) & topleft);
+
+	vec2 uv = vsIn.ti.zw; // Unnormalized UVs.
+	vec2 uvi = round(vsIn.ti.zw / 8.0f) * 8.0f; // Nearest half texel.
+	
+	ivec2 close = ivec2(lessThan(abs(uv - uvi), vec2(PS_ROUND_UV_THRESHOLD)));
+
+	// Round only if close to a half texel.
+	uv = mix(uv, uvi - vec2(PS_ROUND_UV_THRESHOLD), bvec2(close & round_down));
+	uv = mix(uv, uvi + vec2(PS_ROUND_UV_THRESHOLD), bvec2(close & round_up));
+
+	return vec4(uv / 16.0f / WH.xy, uv); // Return normalized and unnormalized coords.
+#else
+	return vec4(0.0f);
+#endif
 }
 
 mat4 sample_4c(vec4 uv)
@@ -923,6 +954,10 @@ vec4 ps_color()
 #if PS_FST == 0
 	vec2 st = vsIn.t.xy / vsIn.t.w;
 	vec2 st_int = vsIn.ti.zw / vsIn.t.w;
+#elif PS_ROUND_UV != 0
+	vec4 ti_rounded = round_uv();
+	vec2 st = ti_rounded.xy;
+	vec2 st_int = ti_rounded.zw;
 #else
 	vec2 st = vsIn.ti.xy;
 	vec2 st_int = vsIn.ti.zw;
