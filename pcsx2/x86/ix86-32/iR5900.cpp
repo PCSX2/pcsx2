@@ -2144,16 +2144,7 @@ static bool recSkipTimeoutLoop(s32 reg, bool is_timeout_loop)
 	xMOV(rbx, ptr64[&cpuRegs.cycle]); // ebx = cycle
 	xMOV(rcx, ptr64[&cpuRegs.nextEventCycle]); // ecx = nextEventCycle
 	xCMP(rbx, rcx);
-	//xJAE((void*)DispatcherEvent); // jump to dispatcher if event immediately
-
-	// TODO: In the case where nextEventCycle < cycle because it's overflowed, tack 8
-	// cycles onto the event count, so hopefully it'll wrap around. This is pretty
-	// gross, but until we switch to 64-bit counters, not many better options.
-	xForwardJB8 not_dispatcher;
-	xADD(rbx, 8);
-	xMOV(ptr64[&cpuRegs.cycle], rbx);
-	xJMP((void*)DispatcherEvent);
-	not_dispatcher.SetTarget();
+	xJAE((void*)DispatcherEvent); // jump to dispatcher if event immediately
 
 	xMOV(edx, ptr32[&cpuRegs.GPR.r[reg].UL[0]]); // eax = v0
 	xLEA(rax, ptrNative[rdx * 8 + rbx]); // edx = v0 * 8 + cycle
