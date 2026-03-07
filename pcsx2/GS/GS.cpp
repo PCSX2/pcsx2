@@ -1288,6 +1288,30 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphic
 
 			MTGS::RunOnGSThread([new_shader]() { GSConfig.TVShader = new_shader; });
 		}},
+		{"CycleBlendingAccuracy", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Cycle Blending Accuracy"),
+			[](s32 pressed) {
+				if (pressed)
+					return;
+
+				static constexpr std::array<const char*, static_cast<u8>(AccBlendLevel::MaxCount)> s_blending_option_names = {{
+					TRANSLATE_NOOP("Hotkeys", "Minimum"),
+					TRANSLATE_NOOP("Hotkeys", "Basic"),
+					TRANSLATE_NOOP("Hotkeys", "Medium"),
+					TRANSLATE_NOOP("Hotkeys", "High"),
+					TRANSLATE_NOOP("Hotkeys", "Full"),
+					TRANSLATE_NOOP("Hotkeys", "Maximum"),
+				}};
+
+				const AccBlendLevel new_blend_mode = static_cast<AccBlendLevel>(
+					(static_cast<u8>(EmuConfig.GS.AccurateBlendingUnit) + 1) % static_cast<u8>(AccBlendLevel::MaxCount));
+				Host::AddKeyedOSDMessage("CycleBlendingAccuracy",
+					fmt::format(
+						TRANSLATE_FS("Hotkeys", "Blending Accuracy set to {}."), s_blending_option_names[static_cast<u8>(new_blend_mode)]),
+					Host::OSD_QUICK_DURATION);
+				EmuConfig.GS.AccurateBlendingUnit = new_blend_mode;
+
+				MTGS::RunOnGSThread([new_blend_mode]() { GSConfig.AccurateBlendingUnit = new_blend_mode; });
+			}},
 	{"ToggleTextureDumping", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Toggle Texture Dumping"),
 		[](s32 pressed) {
 			if (!pressed)
