@@ -1,0 +1,22 @@
+name: 'Commit Message Check'
+on:
+  pull_request_target:
+    types:
+      - opened
+      - edited
+      - reopened
+      - synchronize
+
+jobs:
+  check-commit-message:
+    name: Check Commit Message
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for a commit prefix 
+        uses: gsactions/commit-message-checker@16fa2d5de096ae0d35626443bcd24f1e756cafee
+        with:
+          pattern: '^[A-Z][A-Za-z0-9 \[]+:.+'
+          excludeTitle: true
+          excludeDescription: true
+          checkAllCommitMessages: true
+          error: 'Commit messages should be capitalized, start with a prefix, delimited by a colon. Example: "Debugger: Add a paste bytes option to the memory view"'
