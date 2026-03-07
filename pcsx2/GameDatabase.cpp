@@ -883,6 +883,15 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 			{
 				if (!is_sw_renderer && value >= 0 && value <= static_cast<int>(AccBlendLevel::Maximum) && static_cast<int>(EmuConfig.GS.AccurateBlendingUnit) < value)
 				{
+					static constexpr std::array<const char*, static_cast<u8>(AccBlendLevel::MaxCount)> s_blending_option_names = {{
+						TRANSLATE_NOOP("GameDatabase", "Minimum"),
+						TRANSLATE_NOOP("GameDatabase", "Basic"),
+						TRANSLATE_NOOP("GameDatabase", "Medium"),
+						TRANSLATE_NOOP("GameDatabase", "High"),
+						TRANSLATE_NOOP("GameDatabase", "Full"),
+						TRANSLATE_NOOP("GameDatabase", "Maximum"),
+					}};
+
 					Host::AddKeyedOSDMessage("HWBlendingWarning",
 						fmt::format(TRANSLATE_FS("GameDatabase",
 										"{0} Current Blending Accuracy is {1}.\n"
@@ -890,9 +899,8 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 										"You can adjust the blending level in Game Properties to improve\n"
 										"graphical quality, but this will increase system requirements."),
 							ICON_FA_PAINTBRUSH,
-							Pcsx2Config::GSOptions::BlendingLevelNames[static_cast<int>(
-								EmuConfig.GS.AccurateBlendingUnit)],
-							Pcsx2Config::GSOptions::BlendingLevelNames[value]),
+							s_blending_option_names[static_cast<u8>(EmuConfig.GS.AccurateBlendingUnit)],
+							s_blending_option_names[static_cast<u8>(value)]),
 						Host::OSD_WARNING_DURATION);
 				}
 				else
