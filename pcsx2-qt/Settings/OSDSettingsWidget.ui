@@ -258,7 +258,7 @@
         </property>
        </widget>
       </item>
-      <item row="6" column="0" colspan="2">
+      <item row="7" column="0" colspan="2">
        <spacer name="checkboxSpacer">
         <property name="orientation">
          <enum>Qt::Orientation::Vertical</enum>
@@ -274,7 +274,53 @@
         </property>
        </spacer>
       </item>
-      <item row="7" column="0" colspan="2">
+      <item row="8" column="0" colspan="2">
+       <layout class="QHBoxLayout" name="selectButtonsLayout">
+        <property name="spacing">
+         <number>5</number>
+        </property>
+        <item>
+         <widget class="QPushButton" name="selectAllButton">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>Select All</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="deselectAllButton">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>Deselect All</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Orientation::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item row="9" column="0" colspan="2">
        <layout class="QGridLayout" name="optionLayout" rowstretch="0,0,0,0,0,0,0,0,0,0">
         <property name="sizeConstraint">
          <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
@@ -285,66 +331,66 @@
         <property name="spacing">
          <number>7</number>
         </property>
-        <item row="9" column="0">
+        <item row="1" column="0">
          <widget class="QCheckBox" name="showFrameTimes">
           <property name="text">
            <string>Show Frame Times</string>
           </property>
          </widget>
         </item>
-        <item row="8" column="2">
-         <widget class="QLabel" name="warningLabel">
-          <property name="text">
-           <string>Messages</string>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="0">
+        <item row="7" column="0">
          <widget class="QCheckBox" name="showUsageCPU">
           <property name="text">
            <string>Show CPU Usage</string>
           </property>
          </widget>
         </item>
-        <item row="1" column="1">
-         <widget class="QCheckBox" name="showHardwareInfo">
-          <property name="text">
-           <string>Show Hardware Info</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="0">
+        <item row="5" column="0">
          <widget class="QCheckBox" name="showResolution">
           <property name="text">
            <string>Show Resolution</string>
           </property>
          </widget>
         </item>
-        <item row="0" column="1">
-         <widget class="QLabel" name="Column1_SystemInformation">
-          <property name="text">
-           <string>System Information</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0">
+        <item row="4" column="0">
          <widget class="QCheckBox" name="showVPS">
           <property name="text">
            <string>Show VPS</string>
           </property>
          </widget>
         </item>
-        <item row="7" column="0">
+        <item row="8" column="0">
          <widget class="QCheckBox" name="showUsageGPU">
           <property name="text">
            <string>Show GPU Usage</string>
           </property>
          </widget>
         </item>
-        <item row="1" column="0">
+        <item row="2" column="0">
          <widget class="QCheckBox" name="showSpeedPercentages">
           <property name="text">
            <string>Show Speed Percentages</string>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="0">
+         <widget class="QCheckBox" name="showGSStats">
+          <property name="text">
+           <string>Show GS Statistics</string>
+          </property>
+         </widget>
+        </item>
+        <item row="9" column="0">
+         <widget class="QCheckBox" name="showStatusIndicators">
+          <property name="text">
+           <string>Show Status Indicators</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QCheckBox" name="showFPS">
+          <property name="text">
+           <string>Show FPS</string>
           </property>
          </widget>
         </item>
@@ -355,38 +401,24 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="2">
-         <widget class="QCheckBox" name="showSettings">
+        <item row="0" column="1">
+         <widget class="QLabel" name="Column1_SystemInformation">
           <property name="text">
-           <string>Show Settings</string>
+           <string>System Information</string>
           </property>
          </widget>
         </item>
-        <item row="5" column="0">
-         <widget class="QCheckBox" name="showGSStats">
+        <item row="0" column="2">
+         <widget class="QLabel" name="Column2_SettingsAndInputs">
           <property name="text">
-           <string>Show GS Statistics</string>
+           <string>Settings &amp; Inputs</string>
           </property>
          </widget>
         </item>
-        <item row="8" column="0">
-         <widget class="QCheckBox" name="showStatusIndicators">
+        <item row="1" column="1">
+         <widget class="QCheckBox" name="showHardwareInfo">
           <property name="text">
-           <string>Show Status Indicators</string>
-          </property>
-         </widget>
-        </item>
-        <item row="9" column="2">
-         <widget class="QCheckBox" name="warnAboutUnsafeSettings">
-          <property name="text">
-           <string>Warn About Unsafe Settings</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QCheckBox" name="showFPS">
-          <property name="text">
-           <string>Show FPS</string>
+           <string>Show Hardware Info</string>
           </property>
          </widget>
         </item>
@@ -397,10 +429,10 @@
           </property>
          </widget>
         </item>
-        <item row="0" column="2">
-         <widget class="QLabel" name="Column2_SettingsAndInputs">
+        <item row="1" column="2">
+         <widget class="QCheckBox" name="showSettings">
           <property name="text">
-           <string>Settings &amp; Inputs</string>
+           <string>Show Settings</string>
           </property>
          </widget>
         </item>
@@ -439,6 +471,20 @@
           </property>
          </widget>
         </item>
+        <item row="7" column="2">
+         <widget class="QLabel" name="warningLabel">
+          <property name="text">
+           <string>Messages</string>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="2">
+         <widget class="QCheckBox" name="warnAboutUnsafeSettings">
+          <property name="text">
+           <string>Warn About Unsafe Settings</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </item>
      </layout>
@@ -468,6 +514,8 @@
   <tabstop>osdFontPath</tabstop>
   <tabstop>browseOsdFontPath</tabstop>
   <tabstop>clearOsdFontPath</tabstop>
+  <tabstop>selectAllButton</tabstop>
+  <tabstop>deselectAllButton</tabstop>
   <tabstop>showSpeedPercentages</tabstop>
   <tabstop>showFPS</tabstop>
   <tabstop>showVPS</tabstop>
@@ -477,15 +525,6 @@
   <tabstop>showUsageGPU</tabstop>
   <tabstop>showStatusIndicators</tabstop>
   <tabstop>showFrameTimes</tabstop>
-  <tabstop>showHardwareInfo</tabstop>
-  <tabstop>showVersion</tabstop>
-  <tabstop>showSettings</tabstop>
-  <tabstop>showPatches</tabstop>
-  <tabstop>showInputs</tabstop>
-  <tabstop>showVideoCapture</tabstop>
-  <tabstop>showInputRec</tabstop>
-  <tabstop>showTextureReplacements</tabstop>
-  <tabstop>warnAboutUnsafeSettings</tabstop>
  </tabstops>
  <resources/>
  <connections/>

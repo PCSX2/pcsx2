@@ -40,6 +40,8 @@ OSDSettingsWidget::OSDSettingsWidget(SettingsWindow* settings_dialog, QWidget* p
 	connect(m_ui.performancePos, &QComboBox::currentIndexChanged, this, &OSDSettingsWidget::onPerformancePosChanged);
 	connect(m_ui.browseOsdFontPath, &QPushButton::clicked, this, &OSDSettingsWidget::onBrowseOsdFontPathClicked);
 	connect(m_ui.clearOsdFontPath, &QPushButton::clicked, this, &OSDSettingsWidget::onClearOsdFontPathClicked);
+	connect(m_ui.selectAllButton, &QPushButton::clicked, this, &OSDSettingsWidget::onSelectAllClicked);
+	connect(m_ui.deselectAllButton, &QPushButton::clicked, this, &OSDSettingsWidget::onDeselectAllClicked);
 	onMessagesPosChanged();
 	onPerformancePosChanged();
 
@@ -246,6 +248,60 @@ void OSDSettingsWidget::onOsdShowSettingsToggled()
 {
 	const bool enabled = dialog()->getEffectiveBoolValue("EmuCore/GS", "OsdShowSettings", false);
 	m_ui.showPatches->setEnabled(enabled);
+}
+
+void OSDSettingsWidget::onSelectAllClicked()
+{
+	const QList<QCheckBox*> checkboxes = {
+		m_ui.showSpeedPercentages,
+		m_ui.showFPS,
+		m_ui.showVPS,
+		m_ui.showResolution,
+		m_ui.showGSStats,
+		m_ui.showUsageCPU,
+		m_ui.showUsageGPU,
+		m_ui.showStatusIndicators,
+		m_ui.showFrameTimes,
+		m_ui.showHardwareInfo,
+		m_ui.showVersion,
+		m_ui.showSettings,
+		m_ui.showPatches,
+		m_ui.showInputs,
+		m_ui.showVideoCapture,
+		m_ui.showInputRec,
+		m_ui.showTextureReplacements,
+		m_ui.warnAboutUnsafeSettings};
+
+	for (QCheckBox* checkbox : checkboxes)
+		checkbox->setChecked(true);
+}
+
+void OSDSettingsWidget::onDeselectAllClicked()
+{
+	const QList<QCheckBox*> checkboxes = {
+		m_ui.showSpeedPercentages,
+		m_ui.showFPS,
+		m_ui.showVPS,
+		m_ui.showResolution,
+		m_ui.showGSStats,
+		m_ui.showUsageCPU,
+		m_ui.showUsageGPU,
+		m_ui.showFrameTimes,
+		m_ui.showHardwareInfo,
+		m_ui.showVersion,
+		m_ui.showSettings,
+		m_ui.showPatches,
+		m_ui.showInputs,
+		m_ui.showTextureReplacements};
+
+	for (QCheckBox* checkbox : checkboxes)
+		checkbox->setChecked(false);
+
+	// Keep these checked
+	m_ui.showStatusIndicators->setChecked(true);
+	m_ui.showVideoCapture->setChecked(true);
+	m_ui.showInputRec->setChecked(true);
+	m_ui.warnAboutUnsafeSettings->setChecked(true);
 }
 
 #include "moc_OSDSettingsWidget.cpp"
