@@ -25,7 +25,6 @@
 
 #include <algorithm>
 #include <cstring>
-#include <memory>
 #include <span>
 #include <sstream>
 #include <vector>
@@ -372,7 +371,7 @@ std::string Patch::GetPnachTemplate(const std::string_view serial, u32 crc, bool
 	if (!serial.empty())
 	{
 		if (all_crcs)
-			return fmt::format("{}_*.pnach", serial);	
+			return fmt::format("{}_*.pnach", serial);
 		else if (include_serial)
 			return fmt::format("{}_{:08X}{}.pnach", serial, crc, add_wildcard ? "*" : "");
 	}
@@ -886,7 +885,7 @@ bool Patch::ReloadPatchAffectingOptions()
 	const AspectRatioType current_ar = EmuConfig.GS.AspectRatio;
 	const GSInterlaceMode current_interlace = EmuConfig.GS.InterlaceMode;
 	const float custom_aspect_ratio = EmuConfig.CurrentCustomAspectRatio;
-	
+
 	// This is pretty gross, but we're not using a config layer, so...
 	AspectRatioType new_ar = Pcsx2Config::GSOptions::DEFAULT_ASPECT_RATIO;
 	const std::string ar_value = Host::GetStringSettingValue("EmuCore/GS", "AspectRatio",
