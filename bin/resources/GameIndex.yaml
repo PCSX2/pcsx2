@@ -3114,6 +3114,7 @@ SCED-50781:
     vu1RoundMode: 0 # Fixes tyre textures.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects shadow position.
+    rewriteLargeST: 1 # Fix noise on cars
 SCED-50783:
   name: "Official PlayStation 2 Magazine-UK Greatest Hits Volume 6 - Special Edition - Awards 2002"
   region: "PAL-M5"
@@ -3677,6 +3678,7 @@ SCED-52098:
     vu1RoundMode: 0 # Fixes tire textures.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects shadow position.
+    rewriteLargeST: 1 # Fix noise on cars
 SCED-52119:
   name: "Official PlayStation 2 Magazine Germany Special Edition 01/2004"
   region: "PAL-G"
@@ -4726,6 +4728,7 @@ SCES-50000:
     gpuPaletteConversion: 2 # Lots of CLUTs in large textures.
     cpuSpriteRenderBW: 1 # Fixes car textures.
     cpuSpriteRenderLevel: 1 # Needed for above.
+    rewriteLargeST: 1 # Fix reflections on cars
 SCES-50001:
   name: "Tekken Tag Tournament"
   region: "PAL-M5"
@@ -5077,6 +5080,7 @@ SCES-50781:
     vu1RoundMode: 0 # Fixes tyre textures.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects shadow position.
+    rewriteLargeST: 1 # Fix noise on cars
 SCES-50791:
   name: "Frequency"
   region: "PAL-M5"
@@ -5580,6 +5584,7 @@ SCES-51979:
     vu1RoundMode: 0 # Fixes tire textures.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects shadow position.
+    rewriteLargeST: 1 # Fix noise on cars
 SCES-52004:
   name: "Killzone"
   region: "PAL-M6"
@@ -35196,6 +35201,7 @@ SLPM-60109:
     gpuPaletteConversion: 2 # Lots of CLUTs in large textures.
     cpuSpriteRenderBW: 1 # Fixes car textures.
     cpuSpriteRenderLevel: 1 # Needed for above.
+    rewriteLargeST: 1 # Fix reflections on cars
 SLPM-60112:
   name: "フレースヴェルグ [体験版]"
   name-sort: "ふれーすヴぇるぐ [たいけんばん]"
@@ -54530,6 +54536,7 @@ SLPS-20001:
     gpuPaletteConversion: 2 # Lots of CLUTs in large textures.
     cpuSpriteRenderBW: 1 # Fixes car textures.
     cpuSpriteRenderLevel: 1 # Needed for above.
+    rewriteLargeST: 1 # Fix reflections on cars
 SLPS-20002:
   name: "撞球 ビリヤードマスター2"
   name-sort: "どうきゅう びりやーどますたー2"
@@ -63112,6 +63119,7 @@ SLPS-71502:
     gpuPaletteConversion: 2 # Lots of CLUTs in large textures.
     cpuSpriteRenderBW: 1 # Fixes car textures.
     cpuSpriteRenderLevel: 1 # Needed for above.
+    rewriteLargeST: 1 # Fix reflections on cars
 SLPS-72501:
   name: "ファイナルファンタジーⅩ [MEGA HITS!]"
   name-sort: "ふぁいなるふぁんたじー10 [MEGA HITS!]"
@@ -64071,6 +64079,7 @@ SLUS-20002:
     gpuPaletteConversion: 2 # Lots of CLUTs in large textures.
     cpuSpriteRenderBW: 1 # Fixes car textures.
     cpuSpriteRenderLevel: 1 # Needed for above.
+    rewriteLargeST: 1 # Fix reflections on cars
 SLUS-20003:
   name: "Portal Runner"
   region: "NTSC-U"
@@ -68271,6 +68280,7 @@ SLUS-20855:
     vu1RoundMode: 0 # Fixes tyre textures.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects shadow position.
+    rewriteLargeST: 1 # Fix noise on cars
 SLUS-20856:
   name: "Spy Fiction"
   region: "NTSC-U"
