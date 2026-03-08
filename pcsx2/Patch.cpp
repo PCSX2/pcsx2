@@ -24,7 +24,6 @@
 
 #include <algorithm>
 #include <cstring>
-#include <memory>
 #include <span>
 #include <sstream>
 #include <type_traits>
@@ -846,7 +845,7 @@ bool Patch::ReloadPatchAffectingOptions()
 	const AspectRatioType current_ar = EmuConfig.GS.AspectRatio;
 	const GSInterlaceMode current_interlace = EmuConfig.GS.InterlaceMode;
 	const float custom_aspect_ratio = EmuConfig.CurrentCustomAspectRatio;
-	
+
 	// This is pretty gross, but we're not using a config layer, so...
 	AspectRatioType new_ar = Pcsx2Config::GSOptions::DEFAULT_ASPECT_RATIO;
 	const std::string ar_value = Host::GetStringSettingValue("EmuCore/GS", "AspectRatio",
