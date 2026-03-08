@@ -94,19 +94,28 @@ mem8_t iopHwRead8_Page1( u32 addr )
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //
-mem8_t iopHwRead8_Page3( u32 addr )
+mem8_t iopHwRead8_Page3(u32 addr)
 {
 	// all addresses are assumed to be prefixed with 0x1f803xxx:
-	pxAssume( (addr >> 12) == 0x1f803 );
+	pxAssume((addr >> 12) == 0x1f803);
+
+	const u32 masked_addr = addr & 0x0fff;
 
 	mem8_t ret;
-	if( addr == 0x1f803100 )	// PS/EE/IOP conf related
-		//ret = 0x10; // Dram 2M
-		ret = 0xFF; //all high bus is the corect default state for CEX PS2!
-	else
-		ret = psxHu8( addr );
+	switch (masked_addr)
+	{
+		case 0x100: // TOOL config switches
+			ret = 0;
+			break;
+		case 0x204: // TOOL board id
+			ret = 0x7c;
+			break;
+		default:
+			ret = psxHu8(addr);
+			break;
+	}
 
-	IopHwTraceLog<mem8_t>( addr, ret, true );
+	IopHwTraceLog<mem8_t>(addr, ret, true);
 	return ret;
 }
 
