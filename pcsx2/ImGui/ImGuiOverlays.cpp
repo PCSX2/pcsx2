@@ -225,8 +225,106 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 	{ \
 		text_size = font->CalcTextSizeA(size, std::numeric_limits<float>::max(), -1.0f, (text), nullptr, nullptr); \
 		const ImVec2 text_pos = CalculatePerformanceOverlayTextPosition(GSConfig.OsdPerformancePos, margin, text_size, GetWindowWidth(), position_y); \
+		const bool __bold_osd = GSConfig.OsdBoldText; \
 		dl->AddText(font, size, ImVec2(text_pos.x + shadow_offset, text_pos.y + shadow_offset), IM_COL32(0, 0, 0, 100), (text)); \
 		dl->AddText(font, size, text_pos, color, (text)); \
+		const auto __is_all_digits = [](const char* __begin, const char* __end) -> bool \
+		{ \
+			for (const char* __c = __begin; __c < __end; __c++) \
+			{ \
+				if (!std::isdigit(static_cast<unsigned char>(*__c))) \
+					return false; \
+			} \
+			return true; \
+		}; \
+		const auto __is_all_alpha = [](const char* __begin, const char* __end) -> bool \
+		{ \
+			for (const char* __c = __begin; __c < __end; __c++) \
+			{ \
+				if (!std::isalpha(static_cast<unsigned char>(*__c))) \
+					return false; \
+			} \
+			return true; \
+		}; \
+		for (const char* __p = (text); __p && *__p;) \
+		{ \
+			const char* __sep = strstr(__p, " | "); \
+			const char* __seg_end = __sep ? __sep : __p + strlen(__p); \
+			const char* __label_begin = nullptr; \
+			const char* __label_end = nullptr; \
+			const unsigned char __first = static_cast<unsigned char>(*__p); \
+			const bool __starts_numeric = (std::isdigit(__first) || __first == '+' || __first == '-' || __first == '.'); \
+			for (const char* __c = __p; __c < __seg_end; __c++) \
+			{ \
+				if (*__c == ':') \
+				{ \
+					__label_begin = __p; \
+					__label_end = __c + 1; \
+					break; \
+				} \
+			} \
+			if (!__label_begin) \
+			{ \
+				if (!__starts_numeric) \
+				{ \
+					__label_begin = __p; \
+					__label_end = __seg_end; \
+				} \
+				else \
+				{ \
+					const char* __first_space = __p; \
+					while (__first_space < __seg_end && *__first_space != ' ') \
+						__first_space++; \
+					if (__first_space < __seg_end) \
+					{ \
+						const char* __x = __p; \
+						while (__x < __first_space && *__x != 'x' && *__x != 'X') \
+							__x++; \
+						const bool __has_resolution_prefix = \
+							(__x > __p && (__x + 1) < __first_space && \
+							__is_all_digits(__p, __x) && __is_all_digits(__x + 1, __first_space)); \
+						if (__has_resolution_prefix && (__first_space + 1) < __seg_end) \
+						{ \
+							__label_begin = __first_space + 1; \
+							__label_end = __seg_end; \
+							const char* __trim_end = __label_end; \
+							while (__trim_end > __label_begin && std::isspace(static_cast<unsigned char>(*(__trim_end - 1)))) \
+								__trim_end--; \
+							if (__trim_end > __label_begin && *(__trim_end - 1) == ')') \
+							{ \
+								const char* __open = __trim_end - 1; \
+								while (__open > __label_begin && *__open != '(') \
+									__open--; \
+								if (__open > __label_begin && *__open == '(' && *(__open - 1) == ' ') \
+									__label_end = __open - 1; \
+							} \
+						} \
+					} \
+					if (!__label_begin) \
+					{ \
+						const char* __space = __seg_end; \
+						while (__space > __p && *(__space - 1) != ' ') \
+							__space--; \
+						if (__space > __p && __space < __seg_end && __is_all_alpha(__space, __seg_end)) \
+						{ \
+							__label_begin = __space; \
+							__label_end = __seg_end; \
+						} \
+					} \
+				} \
+			} \
+			if (__label_begin && __label_end && __label_begin < __label_end) \
+			{ \
+				const float __x0 = font->CalcTextSizeA(size, FLT_MAX, -1.0f, (text), __label_begin).x; \
+				const ImVec2 __pos(text_pos.x + __x0, text_pos.y); \
+				if (__bold_osd) \
+				{ \
+					dl->AddText(font, size, __pos, color, __label_begin, __label_end); \
+					dl->AddText(font, size, ImVec2(__pos.x + 0.6f, __pos.y), color, __label_begin, __label_end); \
+				} \
+			} \
+			__p = __sep ? __sep + 3 : nullptr; \
+		} \
 		position_y += text_size.y + spacing; \
 	} while (0)
 
@@ -671,11 +769,18 @@ __ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spa
 	ImDrawList* dl = ImGui::GetBackgroundDrawList();
 	ImVec2 text_size =
 		font->CalcTextSizeA(font_size, std::numeric_limits<float>::max(), -1.0f, text.c_str(), text.c_str() + text.length(), nullptr);
+	const ImVec2 text_pos(GetWindowWidth() - margin - text_size.x, position_y);
+	const bool bold_osd = GSConfig.OsdBoldText;
 	dl->AddText(font, font_size,
-		ImVec2(GetWindowWidth() - margin - text_size.x + shadow_offset, position_y + shadow_offset), IM_COL32(0, 0, 0, 100),
+		ImVec2(text_pos.x + shadow_offset, text_pos.y + shadow_offset), IM_COL32(0, 0, 0, 100),
 		text.c_str(), text.c_str() + text.length());
-	dl->AddText(font, font_size, ImVec2(GetWindowWidth() - margin - text_size.x, position_y), white_color,
+	dl->AddText(font, font_size, text_pos, white_color,
 		text.c_str(), text.c_str() + text.length());
+	if (bold_osd)
+	{
+		dl->AddText(font, font_size, ImVec2(text_pos.x + 0.6f, text_pos.y), white_color,
+			text.c_str(), text.c_str() + text.length());
+	}
 }
 
 __ri void ImGuiManager::DrawInputsOverlay(float scale, float margin, float spacing)
