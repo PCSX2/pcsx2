@@ -839,6 +839,7 @@ struct Pcsx2Config
 
 		float OsdScale = DEFAULT_OSD_SCALE;
 		float OsdMargin = DEFAULT_OSD_MARGIN;
+		std::string OsdFontPath;
 		OsdOverlayPos OsdMessagesPos = DEFAULT_OSD_MESSAGE_POS;
 		OsdOverlayPos OsdPerformancePos = DEFAULT_OSD_PERFORMANCE_POS;
 
