@@ -24,6 +24,8 @@ private Q_SLOTS:
 	void onOsdShowSettingsToggled();
 	void onBrowseOsdFontPathClicked();
 	void onClearOsdFontPathClicked();
+	void onSelectAllClicked();
+	void onDeselectAllClicked();
 
 private:
 	void loadOsdFontPathSetting();
