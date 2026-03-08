@@ -2,10 +2,32 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "OSDSettingsWidget.h"
+#include "Settings/OsdFontPickerDialog.h"
 #include "SettingWidgetBinder.h"
 #include "SettingsWindow.h"
+#include "QtHost.h"
+
+#include "pcsx2/Host.h"
 
 #include "pcsx2/Config.h"
+
+#include <QtCore/QDir>
+
+static constexpr const char* OSD_DEFAULT_FONT_RESOURCE = "fonts" FS_OSPATH_SEPARATOR_STR "RobotoMono-Medium.ttf";
+
+static QString getConfiguredOsdFontPath(SettingsWindow* dialog)
+{
+	return QString::fromStdString(dialog->getEffectiveStringValue("EmuCore/GS", "OsdFontPath", ""));
+}
+
+static QString getEffectiveOsdFontPathForDisplay(SettingsWindow* dialog)
+{
+	const QString configured = getConfiguredOsdFontPath(dialog).trimmed();
+	if (!configured.isEmpty())
+		return configured;
+
+	return QString::fromStdString(EmuFolders::GetOverridableResourcePath(OSD_DEFAULT_FONT_RESOURCE));
+}
 
 OSDSettingsWidget::OSDSettingsWidget(SettingsWindow* settings_dialog, QWidget* parent)
 	: SettingsWidget(settings_dialog, parent)
@@ -16,6 +38,8 @@ OSDSettingsWidget::OSDSettingsWidget(SettingsWindow* settings_dialog, QWidget* p
 
 	connect(m_ui.messagesPos, &QComboBox::currentIndexChanged, this, &OSDSettingsWidget::onMessagesPosChanged);
 	connect(m_ui.performancePos, &QComboBox::currentIndexChanged, this, &OSDSettingsWidget::onPerformancePosChanged);
+	connect(m_ui.browseOsdFontPath, &QPushButton::clicked, this, &OSDSettingsWidget::onBrowseOsdFontPathClicked);
+	connect(m_ui.clearOsdFontPath, &QPushButton::clicked, this, &OSDSettingsWidget::onClearOsdFontPathClicked);
 	onMessagesPosChanged();
 	onPerformancePosChanged();
 
@@ -23,9 +47,11 @@ OSDSettingsWidget::OSDSettingsWidget(SettingsWindow* settings_dialog, QWidget* p
 	// OSD Settings
 	//////////////////////////////////////////////////////////////////////////
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.scale, "EmuCore/GS", "OsdScale", 100.0f);
+	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.scale, "EmuCore/GS", "OsdScale", 100.0f);
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.margin, "EmuCore/GS", "OsdMargin", 10.0f);
-	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.messagesPos, "EmuCore/GS", "OsdMessagesPos", static_cast<int>(Pcsx2Config::GSOptions::DEFAULT_OSD_MESSAGE_POS));
-	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.performancePos, "EmuCore/GS", "OsdPerformancePos", static_cast<int>(Pcsx2Config::GSOptions::DEFAULT_OSD_PERFORMANCE_POS));
+	loadOsdFontPathSetting();
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.messagesPos, "EmuCore/GS", "OsdMessagesPos", static_cast<int>(OsdOverlayPos::TopLeft));
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.performancePos, "EmuCore/GS", "OsdPerformancePos", static_cast<int>(OsdOverlayPos::TopRight));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showSpeedPercentages, "EmuCore/GS", "OsdShowSpeed", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showFPS, "EmuCore/GS", "OsdShowFPS", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showVPS, "EmuCore/GS", "OsdShowVPS", false);
@@ -55,6 +81,9 @@ OSDSettingsWidget::OSDSettingsWidget(SettingsWindow* settings_dialog, QWidget* p
 
 	dialog()->registerWidgetHelp(m_ui.margin, tr("OSD Margin"), tr("10px"),
 		tr("Sets the distance in pixels from the edges of the screen for OSD elements."));
+
+	dialog()->registerWidgetHelp(m_ui.osdFontPath, tr("OSD Font File"), tr("Default"),
+		tr("Uses a custom local font file for OSD text. Leave empty to use the bundled default font."));
 
 	dialog()->registerWidgetHelp(m_ui.messagesPos, tr("OSD Messages Position"), tr("Left (Default)"),
 		tr("Position of on-screen-display messages when events occur such as save states being "
@@ -122,6 +151,73 @@ OSDSettingsWidget::OSDSettingsWidget(SettingsWindow* settings_dialog, QWidget* p
 }
 
 OSDSettingsWidget::~OSDSettingsWidget() = default;
+
+void OSDSettingsWidget::onBrowseOsdFontPathClicked()
+{
+	if (m_font_picker)
+	{
+		m_font_picker->raise();
+		m_font_picker->activateWindow();
+		return;
+	}
+
+	m_font_picker = new OSDFontPickerDialog(this, getConfiguredOsdFontPath(dialog()), m_ui.boldText->isChecked());
+	m_font_picker->setModal(false);
+	m_font_picker->setAttribute(Qt::WA_DeleteOnClose, true);
+
+	connect(m_font_picker, &QDialog::accepted, this, [this]() {
+		if (!m_font_picker)
+			return;
+
+		const QString selected = m_font_picker->selectedFontPath().trimmed();
+		saveOsdFontPathSetting(QDir::toNativeSeparators(selected));
+	});
+
+	connect(m_font_picker, &QObject::destroyed, this, [this]() {
+		m_font_picker = nullptr;
+	});
+
+	m_font_picker->show();
+}
+
+void OSDSettingsWidget::onClearOsdFontPathClicked()
+{
+	saveOsdFontPathSetting(QString());
+}
+
+void OSDSettingsWidget::loadOsdFontPathSetting()
+{
+	m_ui.osdFontPath->setText(QDir::toNativeSeparators(getEffectiveOsdFontPathForDisplay(dialog())));
+}
+
+void OSDSettingsWidget::saveOsdFontPathSetting(const QString& path)
+{
+	const QString trimmed_path = path.trimmed();
+	const QByteArray utf8 = trimmed_path.toUtf8();
+
+	if (SettingsInterface* sif = dialog()->getSettingsInterface())
+	{
+		if (trimmed_path.isEmpty())
+			sif->DeleteValue("EmuCore/GS", "OsdFontPath");
+		else
+			sif->SetStringValue("EmuCore/GS", "OsdFontPath", utf8.constData());
+
+		QtHost::SaveGameSettings(sif, true);
+		g_emu_thread->reloadGameSettings();
+	}
+	else
+	{
+		if (trimmed_path.isEmpty())
+			Host::RemoveBaseSettingValue("EmuCore/GS", "OsdFontPath");
+		else
+			Host::SetBaseStringSettingValue("EmuCore/GS", "OsdFontPath", utf8.constData());
+
+		Host::CommitBaseSettingChanges();
+		g_emu_thread->applySettings();
+	}
+
+	m_ui.osdFontPath->setText(QDir::toNativeSeparators(getEffectiveOsdFontPathForDisplay(dialog())));
+}
 
 void OSDSettingsWidget::onMessagesPosChanged()
 {

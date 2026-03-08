@@ -20,39 +20,6 @@
       <string>On-Screen Display</string>
      </property>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="4" column="0">
-       <widget class="QLabel" name="boldTextLabel">
-        <property name="text">
-         <string>OSD Text Style:</string>
-        </property>
-        <property name="buddy">
-         <cstring>boldText</cstring>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="2">
-       <widget class="QCheckBox" name="boldText">
-        <property name="text">
-         <string>Bold OSD Text</string>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="0" colspan="3">
-       <spacer name="checkboxSpacer">
-        <property name="orientation">
-         <enum>Qt::Orientation::Vertical</enum>
-        </property>
-        <property name="sizeType">
-         <enum>QSizePolicy::Policy::Fixed</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>20</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
       <item row="0" column="0">
        <widget class="QLabel" name="scaleLabel">
         <property name="text">
@@ -63,61 +30,65 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="2">
-       <widget class="QComboBox" name="performancePos">
-        <item>
-         <property name="text">
-          <string>None</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Top Left</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Top Center</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Top Right (Default)</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Center Left</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Center</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Center Right</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Bottom Left</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Bottom Center</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Bottom Right</string>
-         </property>
-        </item>
+      <item row="0" column="1">
+       <widget class="QSpinBox" name="scale">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="suffix">
+         <string>%</string>
+        </property>
+        <property name="minimum">
+         <number>50</number>
+        </property>
+        <property name="maximum">
+         <number>500</number>
+        </property>
        </widget>
       </item>
-      <item row="2" column="2">
+      <item row="1" column="0">
+       <widget class="QLabel" name="marginLabel">
+        <property name="text">
+         <string>OSD Margin:</string>
+        </property>
+        <property name="buddy">
+         <cstring>margin</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QSpinBox" name="margin">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="suffix">
+         <string>px</string>
+        </property>
+        <property name="minimum">
+         <number>0</number>
+        </property>
+        <property name="maximum">
+         <number>100</number>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="messagesPosLabel">
+        <property name="text">
+         <string>OSD Messages Position:</string>
+        </property>
+        <property name="buddy">
+         <cstring>messagesPos</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
        <widget class="QComboBox" name="messagesPos">
         <item>
          <property name="text">
@@ -171,54 +142,6 @@
         </item>
        </widget>
       </item>
-      <item row="1" column="2">
-       <widget class="QSpinBox" name="margin">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="suffix">
-         <string>px</string>
-        </property>
-        <property name="minimum">
-         <number>0</number>
-        </property>
-        <property name="maximum">
-         <number>100</number>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2">
-       <widget class="QSpinBox" name="scale">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="suffix">
-         <string>%</string>
-        </property>
-        <property name="minimum">
-         <number>50</number>
-        </property>
-        <property name="maximum">
-         <number>500</number>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="marginLabel">
-        <property name="text">
-         <string>OSD Margin:</string>
-        </property>
-        <property name="buddy">
-         <cstring>margin</cstring>
-        </property>
-       </widget>
-      </item>
       <item row="3" column="0">
        <widget class="QLabel" name="performancePosLabel">
         <property name="text">
@@ -229,17 +152,129 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="messagesPosLabel">
+      <item row="3" column="1">
+       <widget class="QComboBox" name="performancePos">
+        <item>
+         <property name="text">
+          <string>None</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Top Left</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Top Center</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Top Right (Default)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Center Left</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Center</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Center Right</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Bottom Left</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Bottom Center</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Bottom Right</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="osdFontPathLabel">
         <property name="text">
-         <string>OSD Messages Position:</string>
+         <string>OSD Font File:</string>
         </property>
         <property name="buddy">
-         <cstring>messagesPos</cstring>
+         <cstring>osdFontPath</cstring>
         </property>
        </widget>
       </item>
-      <item row="8" column="0" colspan="3">
+      <item row="4" column="1">
+       <layout class="QHBoxLayout" name="osdFontPathLayout">
+        <item>
+         <widget class="QLineEdit" name="osdFontPath">
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="browseOsdFontPath">
+          <property name="text">
+           <string>Browse...</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="clearOsdFontPath">
+          <property name="text">
+           <string>Default</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="boldTextLabel">
+        <property name="text">
+         <string>OSD Text Style:</string>
+        </property>
+        <property name="buddy">
+         <cstring>boldText</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <widget class="QCheckBox" name="boldText">
+        <property name="text">
+         <string>Bold OSD Text</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0" colspan="2">
+       <spacer name="checkboxSpacer">
+        <property name="orientation">
+         <enum>Qt::Orientation::Vertical</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Policy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="7" column="0" colspan="2">
        <layout class="QGridLayout" name="optionLayout" rowstretch="0,0,0,0,0,0,0,0,0,0">
         <property name="sizeConstraint">
          <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
@@ -430,6 +465,9 @@
   <tabstop>messagesPos</tabstop>
   <tabstop>performancePos</tabstop>
   <tabstop>boldText</tabstop>
+  <tabstop>osdFontPath</tabstop>
+  <tabstop>browseOsdFontPath</tabstop>
+  <tabstop>clearOsdFontPath</tabstop>
   <tabstop>showSpeedPercentages</tabstop>
   <tabstop>showFPS</tabstop>
   <tabstop>showVPS</tabstop>
@@ -442,6 +480,11 @@
   <tabstop>showHardwareInfo</tabstop>
   <tabstop>showVersion</tabstop>
   <tabstop>showSettings</tabstop>
+  <tabstop>showPatches</tabstop>
+  <tabstop>showInputs</tabstop>
+  <tabstop>showVideoCapture</tabstop>
+  <tabstop>showInputRec</tabstop>
+  <tabstop>showTextureReplacements</tabstop>
   <tabstop>warnAboutUnsafeSettings</tabstop>
  </tabstops>
  <resources/>
