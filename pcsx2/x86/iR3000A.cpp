@@ -1577,6 +1577,13 @@ static void iopRecRecompile(const u32 startpc)
 		}
 	}
 
+	// Override the memory size argument to IOPBOOT
+	if (startpc == 0xbfc4a000) {
+		// Don't bother emitting assembly for this, it'll only run once
+		// per boot so this is fine
+		psxRegs.GPR.n.a0 = Ps2MemSize::ExposedIopRam >> 20;
+	}
+
 	pxAssert(startpc);
 
 	// if recPtr reached the mem limit reset whole mem

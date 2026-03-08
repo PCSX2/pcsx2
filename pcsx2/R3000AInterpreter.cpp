@@ -246,6 +246,11 @@ static void doBranch(s32 tar) {
 		R3000SymbolGuardian.ClearIrxModules();
 	}
 
+	// Override the memory size argument to IOPBOOT
+	if(tar == 0xbfc4a000) {
+		psxRegs.GPR.n.a0 = Ps2MemSize::ExposedIopRam >> 20;
+	}
+
 	branch2 = iopIsDelaySlot = true;
 	branchPC = tar;
 	execI();
