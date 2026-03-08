@@ -147,6 +147,7 @@
     <ClCompile Include="Settings\GameListSettingsWidget.cpp" />
     <ClCompile Include="Settings\GraphicsSettingsWidget.cpp" />
     <ClCompile Include="Settings\OSDSettingsWidget.cpp" />
+    <ClCompile Include="Settings\OsdFontPickerDialog.cpp" />
     <ClCompile Include="Settings\InterfaceSettingsWidget.cpp" />
     <ClCompile Include="Settings\SettingsWidget.cpp" />
     <ClCompile Include="Settings\SettingsWindow.cpp" />
@@ -266,6 +267,7 @@
     <QtMoc Include="Settings\ControllerBindingWidget.h" />
     <QtMoc Include="Settings\ControllerGlobalSettingsWidget.h" />
     <ClInclude Include="Settings\MemoryCardConvertWorker.h" />
+    <QtMoc Include="Settings\OsdFontPickerDialog.h" />
     <ClInclude Include="SettingWidgetBinder.h" />
     <QtMoc Include="QtHost.h" />
     <ClInclude Include="PrecompiledHeader.h" />
@@ -361,6 +363,7 @@
     <QtUi Include="Settings\MemoryCardCreateDialog.ui" />
     <QtUi Include="Settings\MemoryCardSettingsWidget.ui" />
     <QtUi Include="Settings\OSDSettingsWidget.ui" />
+    <QtUi Include="Settings\OsdFontPickerDialog.ui" />
     <QtUi Include="Settings\PatchDetailsWidget.ui" />
     <QtUi Include="Settings\SettingsWindow.ui" />
     <QtUi Include="Settings\USBBindingWidget_Buzz.ui" />

@@ -6,6 +6,10 @@
 #include "ui_OSDSettingsWidget.h"
 #include "SettingsWidget.h"
 
+#include <QtCore/QPointer>
+
+class OSDFontPickerDialog;
+
 class OSDSettingsWidget : public SettingsWidget
 {
 	Q_OBJECT
@@ -18,7 +22,13 @@ private Q_SLOTS:
 	void onMessagesPosChanged();
 	void onPerformancePosChanged();
 	void onOsdShowSettingsToggled();
+	void onBrowseOsdFontPathClicked();
+	void onClearOsdFontPathClicked();
 
 private:
+	void loadOsdFontPathSetting();
+	void saveOsdFontPathSetting(const QString& path);
+
 	Ui::OSDSettingsWidget m_ui;
+	QPointer<OSDFontPickerDialog> m_font_picker;
 };

@@ -64,6 +64,9 @@
     <ClCompile Include="Settings\OSDSettingsWidget.cpp">
       <Filter>Settings</Filter>
     </ClCompile>
+    <ClCompile Include="Settings\OsdFontPickerDialog.cpp">
+      <Filter>Settings</Filter>
+    </ClCompile>
     <ClCompile Include="Settings\InterfaceSettingsWidget.cpp">
       <Filter>Settings</Filter>
     </ClCompile>
@@ -297,6 +300,9 @@
       <Filter>Settings</Filter>
     </ClInclude>
     <ClInclude Include="Settings\MemoryCardConvertWorker.h">
+      <Filter>Settings</Filter>
+    </ClInclude>
+    <ClInclude Include="Settings\OsdFontPickerDialog.h">
       <Filter>Settings</Filter>
     </ClInclude>
     <ClInclude Include="Debugger\DebuggerSettingsManager.h">
@@ -720,6 +726,9 @@
       <Filter>Settings</Filter>
     </QtUi>
     <QtUi Include="Settings\OSDSettingsWidget.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\OsdFontPickerDialog.ui">
       <Filter>Settings</Filter>
     </QtUi>
     <QtUi Include="Settings\PatchDetailsWidget.ui">
