@@ -240,6 +240,16 @@ DEFINE_HOTKEY("ResetVM", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Ho
 		if (!pressed && VMManager::HasValidVM())
 			VMManager::Reset();
 	})
+DEFINE_HOTKEY("ReloadPatches", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Reload Patches"),
+	[](s32 pressed) {
+		if (!pressed && VMManager::HasValidVM())
+		{
+			Host::RunOnCPUThread([]() {
+				Host::AddKeyedOSDMessage("ReloadPatchHotkey", "Reloading Patches...");
+				VMManager::ReloadPatches(true, false, true, true);
+			});
+		}
+	})
 DEFINE_HOTKEY("SwapMemCards", TRANSLATE_NOOP("Hotkeys", "System"),
 	TRANSLATE_NOOP("Hotkeys", "Swap Memory Cards"), [](s32 pressed) {
 		if (!pressed && VMManager::HasValidVM())
