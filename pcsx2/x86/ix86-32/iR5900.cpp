@@ -348,7 +348,7 @@ void recCall(void (*func)())
 static void recRecompile(const u32 startpc);
 static void dyna_block_discard(u32 start, u32 sz);
 static void dyna_page_reset(u32 start, u32 sz);
-static void HitUnmappedRecLUTPage();
+static void recError(u32 error);
 
 static const void* DispatcherEvent = nullptr;
 static const void* DispatcherReg = nullptr;
@@ -468,7 +468,7 @@ static const void* _DynGen_DispatchPageReset()
 static const void* _DynGen_UnmappedRecLUTPage()
 {
 	u8* retval = xGetPtr();
-	xFastCall((const void*)HitUnmappedRecLUTPage);
+	xFastCall((const void*)recError, 0);
 	return retval;
 }
 
@@ -496,9 +496,18 @@ static void _DynGen_Dispatchers()
 //////////////////////////////////////////////////////////////////////////////////////////
 //
 
-static void HitUnmappedRecLUTPage()
+static void recError(u32 error)
 {
-	Host::ReportErrorAsync("R5900 Exception", fmt::format("Jump to unmapped recLUT page (PC: 0x{:08x})", cpuRegs.pc));
+	switch (error)
+	{
+		case 0:
+			Host::ReportErrorAsync("R5900 Exception", fmt::format("Jump to unmapped recLUT page (PC: 0x{:08x})", cpuRegs.pc));
+			break;
+		case 1:
+			Host::ReportErrorAsync("R5900 Exception", fmt::format("Jump to unaligned address (PC: 0x{:08x})", cpuRegs.pc));
+			break;
+	}
+
 	VMManager::SetPaused(true);
 	recExitExecution();
 }
@@ -829,77 +838,25 @@ void recClear(u32 addr, u32 size)
 
 static int* s_pCode;
 
-void SetBranchReg(u32 reg)
+
+// Branch to a runtime variable target
+// pass the target in eax
+void SetBranchReg()
 {
 	g_branch = 1;
 
-	if (reg != 0xffffffff)
-	{
-		//		if (GPR_IS_CONST1(reg))
-		//			xMOV(ptr32[&cpuRegs.pc], g_cpuConstRegs[reg].UL[0]);
-		//		else
-		//		{
-		//			int mmreg;
-		//
-		//			if ((mmreg = _checkXMMreg(XMMTYPE_GPRREG, reg, MODE_READ)) >= 0)
-		//			{
-		//				xMOVSS(ptr[&cpuRegs.pc], xRegisterSSE(mmreg));
-		//			}
-		//			else
-		//			{
-		//				xMOV(eax, ptr[(void*)((int)&cpuRegs.GPR.r[reg].UL[0])]);
-		//				xMOV(ptr[&cpuRegs.pc], eax);
-		//			}
-		//		}
-		const bool swap = EmuConfig.Gamefixes.GoemonTlbHack ? false : TrySwapDelaySlot(reg, 0, 0, true);
-		if (!swap)
-		{
-			const int wbreg = _allocX86reg(X86TYPE_PCWRITEBACK, 0, MODE_WRITE | MODE_CALLEESAVED);
-			_eeMoveGPRtoR(xRegister32(wbreg), reg);
+	xMOV(ptr32[&cpuRegs.pc], eax);
 
-			if (EmuConfig.Gamefixes.GoemonTlbHack)
-			{
-				xMOV(ecx, xRegister32(wbreg));
-				vtlb_DynV2P();
-				xMOV(xRegister32(wbreg), eax);
-			}
-
-			recompileNextInstruction(true, false);
-
-			// the next instruction may have flushed the register.. so reload it if so.
-			if (x86regs[wbreg].inuse && x86regs[wbreg].type == X86TYPE_PCWRITEBACK)
-			{
-				xMOV(ptr[&cpuRegs.pc], xRegister32(wbreg));
-				x86regs[wbreg].inuse = 0;
-			}
-			else
-			{
-				xMOV(eax, ptr[&cpuRegs.pcWriteback]);
-				xMOV(ptr[&cpuRegs.pc], eax);
-			}
-		}
-		else
-		{
-			if (GPR_IS_DIRTY_CONST(reg) || _hasX86reg(X86TYPE_GPR, reg, 0))
-			{
-				const int x86reg = _allocX86reg(X86TYPE_GPR, reg, MODE_READ);
-				xMOV(ptr32[&cpuRegs.pc], xRegister32(x86reg));
-			}
-			else
-			{
-				_eeMoveGPRtoM((uptr)&cpuRegs.pc, reg);
-			}
-		}
-	}
-
-	//	xCMP(ptr32[&cpuRegs.pc], 0);
-	//	j8Ptr[5] = JNE8(0);
-	//	xFastCall((void*)(uptr)tempfn);
-	//	x86SetJ8(j8Ptr[5]);
+	// Test for jump to unaligned, only needed for register branches
+	//  since unaligned targets can't be encoded with imm
+	xTEST(eax, 3);
+	xForwardJNZ32 unaligned;
 
 	iFlushCall(FLUSH_EVERYTHING);
-
 	iBranchTest();
+
+	unaligned.SetTarget();
+	xFastCall((const void*)recError, 1);
 }
 
 void SetBranchImm(u32 imm)
