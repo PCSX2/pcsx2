@@ -776,6 +776,9 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 	if (new_config.OsdScale != old_config.OsdScale)
 		ImGuiManager::RequestScaleUpdate();
 
+	if (new_config.OsdFontPath != old_config.OsdFontPath)
+		ImGuiManager::ReloadFonts();
+
 	// Options which need a full teardown/recreate.
 	if (!GSConfig.RestartOptionsAreEqual(old_config))
 	{
