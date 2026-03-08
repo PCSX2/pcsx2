@@ -64,7 +64,7 @@ void SaveBranchState();
 void LoadBranchState();
 
 void recompileNextInstruction(bool delayslot, bool swapped_delay_slot);
-void SetBranchReg(u32 reg);
+void SetBranchReg();
 void SetBranchImm(u32 imm);
 
 void iFlushCall(int flushtype);
