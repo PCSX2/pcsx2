@@ -38,6 +38,7 @@ OSDSettingsWidget::OSDSettingsWidget(SettingsWindow* settings_dialog, QWidget* p
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showHardwareInfo, "EmuCore/GS", "OsdShowHardwareInfo", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showVersion, "EmuCore/GS", "OsdShowVersion", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showSettings, "EmuCore/GS", "OsdShowSettings", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.boldText, "EmuCore/GS", "OsdBoldText", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showPatches, "EmuCore/GS", "OsdshowPatches", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showInputs, "EmuCore/GS", "OsdShowInputs", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showVideoCapture, "EmuCore/GS", "OsdShowVideoCapture", true);
@@ -97,6 +98,9 @@ OSDSettingsWidget::OSDSettingsWidget(SettingsWindow* settings_dialog, QWidget* p
 
 	dialog()->registerWidgetHelp(m_ui.showSettings, tr("Show Settings"), tr("Unchecked"),
 		tr("Displays various settings and the current values of those settings in the bottom-right corner of the display."));
+
+	dialog()->registerWidgetHelp(m_ui.boldText, tr("Bold OSD Text"), tr("Checked"),
+		tr("Draws OSD text with heavier weight for improved readability."));
 
 	dialog()->registerWidgetHelp(m_ui.showPatches, tr("Show Patches"), tr("Unchecked"),
 		tr("Shows the amount of currently active patches/cheats in the bottom-right corner of the display."));
