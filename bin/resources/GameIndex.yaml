@@ -2625,7 +2625,7 @@ SCAJ-25047:
   gsHWFixes:
     minimumBlendingLevel: 2 # Fixes dark font to more bright like software mode.
 SCAJ-30001:
-  name: "Xenosaga - Episode I - Der Wille zur Macht [PlayStation2 the Best]"
+  name: "Xenosaga Episode I - Der Wille zur Macht [PlayStation2 the Best]"
   region: "NTSC-Unk"
   compat: 5
   gsHWFixes:
@@ -66195,7 +66195,7 @@ SLUS-20468:
   name: "Dynasty Tactics"
   region: "NTSC-U"
 SLUS-20469:
-  name: "Xenosaga - Episode I - Der Wille zur Macht"
+  name: "Xenosaga Episode I - Der Wille zur Macht"
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
@@ -68494,7 +68494,7 @@ SLUS-20891:
   memcardFilters:
     - "SLUS-20488"
 SLUS-20892:
-  name: "Xenosaga - Episode II - Jenseits von Gut und Böse [Disc 1 of 2]"
+  name: "Xenosaga Episode II - Jenseits von Gut und Böse [Disc 1 of 2]"
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
@@ -69961,7 +69961,7 @@ SLUS-21132:
   region: "NTSC-U"
   compat: 5
 SLUS-21133:
-  name: "Xenosaga - Episode II - Jenseits von Gut und Böse [Disc 2 of 2]"
+  name: "Xenosaga Episode II - Jenseits von Gut und Böse [Disc 2 of 2]"
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
