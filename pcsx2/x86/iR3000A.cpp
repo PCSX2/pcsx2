@@ -264,7 +264,10 @@ static void iopRecError(int err)
 	switch (err)
 	{
 		case 0:
-			Host::ReportErrorAsync("R3000A Exception", fmt::format("Jump to unmapped recLUT page"));
+			Host::ReportErrorAsync("R3000A Exception", fmt::format("Jump to unmapped recLUT page (PC: 0x{:08x})", psxRegs.pc));
+			break;
+		case 1:
+			Host::ReportErrorAsync("R3000A Exception", fmt::format("Jump to unaligned address (PC: 0x{:08x})", psxRegs.pc));
 			break;
 	}
 
@@ -1104,50 +1107,26 @@ static __fi void recClearIOP(u32 Addr, u32 Size)
 		pc += PSXREC_CLEARM(pc);
 }
 
-void psxSetBranchReg(u32 reg)
+void psxSetBranchReg()
 {
 	psxbranch = 1;
 
-	if (reg != 0xffffffff)
-	{
-		const bool swap = psxTrySwapDelaySlot(reg, 0, 0);
+	xMOV(ptr32[&psxRegs.pc], eax);
 
-		if (!swap)
-		{
-			const int wbreg = _allocX86reg(X86TYPE_PCWRITEBACK, 0, MODE_WRITE | MODE_CALLEESAVED);
-			_psxMoveGPRtoR(xRegister32(wbreg), reg);
-
-			psxRecompileNextInstruction(true, false);
-
-			if (x86regs[wbreg].inuse && x86regs[wbreg].type == X86TYPE_PCWRITEBACK)
-			{
-				xMOV(ptr32[&psxRegs.pc], xRegister32(wbreg));
-				x86regs[wbreg].inuse = 0;
-			}
-			else
-			{
-				xMOV(eax, ptr32[&psxRegs.pcWriteback]);
-				xMOV(ptr32[&psxRegs.pc], eax);
-			}
-		}
-		else
-		{
-			if (PSX_IS_DIRTY_CONST(reg) || _hasX86reg(X86TYPE_PSX, reg, 0))
-			{
-				const int x86reg = _allocX86reg(X86TYPE_PSX, reg, MODE_READ);
-				xMOV(ptr32[&psxRegs.pc], xRegister32(x86reg));
-			}
-			else
-			{
-				_psxMoveGPRtoM((uptr)&psxRegs.pc, reg);
-			}
-		}
-	}
+	xTEST(eax, 3);
+	xForwardJNZ32 unaligned;
 
 	_psxFlushCall(FLUSH_EVERYTHING);
 	iPsxBranchTest(0xffffffff, 1);
 
-	JMP32((uptr)iopDispatcherReg - ((uptr)x86Ptr + 5));
+	xJMP(iopDispatcherReg);
+
+	unaligned.SetTarget();
+
+	xFastCall(iopRecError, 1);
+	// Ideally iopRecERror should not return, but it might if the EE rec's
+	// ExitExecution deferred stopping until later
+	xJMP(iopExitRecompiledCode);
 }
 
 void psxSetBranchImm(u32 imm)
