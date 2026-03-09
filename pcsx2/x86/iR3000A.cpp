@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "iR3000A.h"
+#include "Host.h"
 #include "R3000A.h"
 #include "BaseblockEx.h"
 #include "R5900OpcodeTables.h"
@@ -87,6 +88,7 @@ extern void (*rpsxBSC[64])();
 void rpsxpropBSC(EEINST* prev, EEINST* pinst);
 
 static void iopClearRecLUT(BASEBLOCK* base, int count);
+static void iopRecError(int err);
 
 #define PSX_GETBLOCK(x) PC_GETBLOCK_(x, psxRecLUT)
 
@@ -156,6 +158,7 @@ static const void* iopDispatcherReg = nullptr;
 static const void* iopJITCompile = nullptr;
 static const void* iopEnterRecompiledCode = nullptr;
 static const void* iopExitRecompiledCode = nullptr;
+static const void* iopUnmappedRecLUTPage = nullptr;
 
 static void recEventTest()
 {
@@ -224,6 +227,19 @@ static const void* _DynGen_EnterRecompiledCode()
 	return retval;
 }
 
+static const void* _DynGen_UnmappedRecLUTPage()
+{
+	u8* retval = xGetPtr();
+
+	xFastCall(iopRecError, 0);
+
+	// Ideally iopRecERror should not return, but it might if the EE rec's
+	// ExitExecution deferred stopping until later
+	xJMP(iopExitRecompiledCode);
+
+	return retval;
+}
+
 static void _DynGen_Dispatchers()
 {
 	const u8* start = xGetAlignedCallTarget();
@@ -236,10 +252,24 @@ static void _DynGen_Dispatchers()
 
 	iopJITCompile = _DynGen_JITCompile();
 	iopEnterRecompiledCode = _DynGen_EnterRecompiledCode();
+	iopUnmappedRecLUTPage =  _DynGen_UnmappedRecLUTPage();
 
 	recBlocks.SetJITCompile(iopJITCompile);
 
 	Perf::any.Register(start, xGetPtr() - start, "IOP Dispatcher");
+}
+
+static void iopRecError(int err)
+{
+	switch (err)
+	{
+		case 0:
+			Host::ReportErrorAsync("R3000A Exception", fmt::format("Jump to unmapped recLUT page"));
+			break;
+	}
+
+	VMManager::SetPaused(true);
+	Cpu->ExitExecution();
 }
 
 ////////////////////////////////////////////////////
@@ -842,6 +872,7 @@ void psxRecompileCodeConst3(R3000AFNPTR constcode, R3000AFNPTR_INFO constscode, 
 }
 
 static DynamicHeapArray<BASEBLOCK, 4096> recLutReserve;
+static DynamicHeapArray<BASEBLOCK, 4096> recLutUnmapped;
 static size_t recLutEntries;
 static bool extraRam = false;
 
@@ -856,6 +887,8 @@ static void recReserveRAM()
 
 	if (recLutReserve.size() != recLutEntries)
 		recLutReserve.resize(recLutEntries);
+
+	recLutUnmapped.resize(_64kb / 4);
 
 	BASEBLOCK* curpos = recLutReserve.data();
 	recRAM = curpos;
@@ -899,8 +932,17 @@ void recResetIOP()
 	iopClearRecLUT(reinterpret_cast<BASEBLOCK*>(recLutReserve.data()),
 		Ps2MemSize::ExposedIopRam + Ps2MemSize::Rom + Ps2MemSize::Rom1 + Ps2MemSize::Rom2);
 
+	BASEBLOCK* unmapped = recLutUnmapped.data();
+
 	for (int i = 0; i < 0x10000; i++)
-		recLUT_SetPage(psxRecLUT, 0, 0, 0, i, 0);
+	{
+		recLUT_SetPage(psxRecLUT, psxhwLUT, unmapped, i, 0, 0);
+	}
+
+	for (int i = 0; i < _64kb / 4; i++)
+	{
+		unmapped[i].SetFnptr((uptr)iopUnmappedRecLUTPage);
+	}
 
 	// IOP knows 64k pages, hence for the 0x10000's
 
