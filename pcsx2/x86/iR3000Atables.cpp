@@ -1417,7 +1417,39 @@ static void rpsxJAL()
 
 static void rpsxJR()
 {
-	psxSetBranchReg(_Rs_);
+	const bool swap = psxTrySwapDelaySlot(_Rs_, 0, 0);
+
+	if (!swap)
+	{
+		const int wbreg = _allocX86reg(X86TYPE_PCWRITEBACK, 0, MODE_WRITE | MODE_CALLEESAVED);
+		_psxMoveGPRtoR(xRegister32(wbreg), _Rs_);
+
+		psxRecompileNextInstruction(true, false);
+
+		if (x86regs[wbreg].inuse && x86regs[wbreg].type == X86TYPE_PCWRITEBACK)
+		{
+			xMOV(eax, xRegister32(wbreg));
+			x86regs[wbreg].inuse = 0;
+		}
+		else
+		{
+			xMOV(eax, ptr32[&psxRegs.pcWriteback]);
+		}
+	}
+	else
+	{
+		if (PSX_IS_DIRTY_CONST(_Rs_) || _hasX86reg(X86TYPE_PSX, _Rs_, 0))
+		{
+			const int x86reg = _allocX86reg(X86TYPE_PSX, _Rs_, MODE_READ);
+			xMOV(eax, xRegister32(x86reg));
+		}
+		else
+		{
+			_psxMoveGPRtoR(eax, _Rs_);
+		}
+	}
+
+	psxSetBranchReg();
 }
 
 static void rpsxJALR()
@@ -1446,13 +1478,12 @@ static void rpsxJALR()
 
 		if (x86regs[wbreg].inuse && x86regs[wbreg].type == X86TYPE_PCWRITEBACK)
 		{
-			xMOV(ptr32[&psxRegs.pc], xRegister32(wbreg));
+			xMOV(eax, xRegister32(wbreg));
 			x86regs[wbreg].inuse = 0;
 		}
 		else
 		{
 			xMOV(eax, ptr32[&psxRegs.pcWriteback]);
-			xMOV(ptr32[&psxRegs.pc], eax);
 		}
 	}
 	else
@@ -1460,15 +1491,15 @@ static void rpsxJALR()
 		if (PSX_IS_DIRTY_CONST(_Rs_) || _hasX86reg(X86TYPE_PSX, _Rs_, 0))
 		{
 			const int x86reg = _allocX86reg(X86TYPE_PSX, _Rs_, MODE_READ);
-			xMOV(ptr32[&psxRegs.pc], xRegister32(x86reg));
+			xMOV(eax, xRegister32(x86reg));
 		}
 		else
 		{
-			_psxMoveGPRtoM((uptr)&psxRegs.pc, _Rs_);
+			_psxMoveGPRtoR(eax, _Rs_);
 		}
 	}
 
-	psxSetBranchReg(0xffffffff);
+	psxSetBranchReg();
 }
 
 //// BEQ
