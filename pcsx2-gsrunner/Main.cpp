@@ -112,7 +112,26 @@ bool GSRunner::InitializeConfig()
 	if (!VMManager::PerformEarlyHardwareChecks(&error))
 		return false;
 
-	ImGuiManager::SetFontPath(Path::Combine(EmuFolders::Resources, "fonts" FS_OSPATH_SEPARATOR_STR "Roboto-Regular.ttf"));
+	{
+		const std::string roboto_path =
+			EmuFolders::GetOverridableResourcePath("fonts" FS_OSPATH_SEPARATOR_STR "Roboto-Regular.ttf");
+		const auto roboto_data = FileSystem::MapBinaryFileForRead(roboto_path.c_str());
+		if (roboto_data.empty())
+		{
+			Console.ErrorFmt("Failed to load font file '{}'.", roboto_path);
+			return false;
+		}
+
+		std::vector<ImGuiManager::FontInfo> fonts;
+		ImGuiManager::FontInfo fi{};
+		fi.data = roboto_data;
+		fi.exclude_ranges = {};
+		fi.face_name = nullptr;
+		fi.is_emoji_font = false;
+		fonts.push_back(fi);
+
+		ImGuiManager::SetFonts(std::move(fonts));
+	}
 
 	// don't provide an ini path, or bother loading. we'll store everything in memory.
 	MemorySettingsInterface& si = s_settings_interface;
@@ -405,6 +424,14 @@ void Host::OpenHostFileSelectorAsync(std::string_view title, bool select_directo
 	FileSelectorFilters filters, std::string_view initial_directory)
 {
 	callback(std::string());
+}
+
+int Host::LocaleSensitiveCompare(std::string_view lhs, std::string_view rhs)
+{
+	const int res = std::strncmp(lhs.data(), rhs.data(), std::min(lhs.size(), rhs.size()));
+	if (res != 0)
+		return res;
+	return lhs.size() > rhs.size() ? 1 : (lhs.size() < rhs.size() ? -1 : 0);
 }
 
 std::optional<u32> InputManager::ConvertHostKeyboardStringToCode(const std::string_view str)
