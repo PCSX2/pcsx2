@@ -3212,6 +3212,49 @@ void FullscreenUI::DrawOSDSettingsPage()
 	DrawStringListSetting(bsi, FSUI_ICONSTR(ICON_FA_CHART_BAR, "OSD Performance Position"),
 		FSUI_CSTR("Determines where performance statistics are positioned."), "EmuCore/GS", "OsdPerformancePos", "3",
 		s_osd_position_options, s_osd_position_values, std::size(s_osd_position_options), true);
+
+	{
+		const bool game_settings = IsEditingGameSettings(bsi);
+		const std::optional<SmallString> osd_font_value(bsi->GetOptionalSmallStringValue(
+			"EmuCore/GS", "OsdFontPath", game_settings ? std::nullopt : std::optional<const char*>("")));
+
+		const std::string osd_font_summary_str =
+			(osd_font_value.has_value() && !osd_font_value->empty()) ?
+				std::string(osd_font_value->c_str()) :
+				EmuFolders::GetOverridableResourcePath("fonts" FS_OSPATH_SEPARATOR_STR "RobotoMono-Medium.ttf");
+		const char* osd_font_summary = osd_font_summary_str.c_str();
+
+		if (MenuButton(FSUI_ICONSTR(ICON_FA_FONT, "OSD Font File"), osd_font_summary))
+		{
+			auto callback = [game_settings = IsEditingGameSettings(bsi)](const std::string& path) {
+				auto lock = Host::GetSettingsLock();
+				SettingsInterface* ebsi = GetEditingSettingsInterface(game_settings);
+
+				if (!path.empty())
+					ebsi->SetStringValue("EmuCore/GS", "OsdFontPath", path.c_str());
+
+				SetSettingsChanged(ebsi);
+				CloseFileSelector();
+			};
+
+			std::string initial_path;
+			if (osd_font_value.has_value() && !osd_font_value->empty())
+				initial_path = Path::GetDirectory(osd_font_value.value());
+
+			OpenFileSelector(FSUI_CSTR("Select OSD Font"), false, std::move(callback),
+				{"*.ttf", "*.ttc", "*.otf", "*.otc"}, std::move(initial_path));
+		}
+
+		if (osd_font_value.has_value() && !osd_font_value->empty())
+		{
+			if (MenuButton(FSUI_CSTR("Clear OSD Font Override"), FSUI_CSTR("Use default bundled font")))
+			{
+				SettingsInterface* ebsi = bsi;
+				ebsi->DeleteValue("EmuCore/GS", "OsdFontPath");
+				SetSettingsChanged(ebsi);
+			}
+		}
+	}
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_BOLD, "Bold OSD Text"),
 		FSUI_CSTR("Draws OSD text with heavier weight for improved readability."), 
 		"EmuCore/GS", "OsdBoldText", true);
