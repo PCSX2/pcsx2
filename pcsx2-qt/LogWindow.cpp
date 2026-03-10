@@ -2,10 +2,13 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "LogWindow.h"
-#include "Host.h"
+
 #include "MainWindow.h"
 #include "QtHost.h"
 #include "SettingWidgetBinder.h"
+
+#include "Achievements.h"
+#include "Host.h"
 #include "VMManager.h"
 
 #include <QtCore/QLatin1StringView>
@@ -428,7 +431,22 @@ void LogWindow::onInputEntered()
 	std::string str = text.toUtf8().toStdString();
 
 	Host::RunOnCPUThread([str = std::move(str), focus, window]() {
-		bool success = VMManager::WriteBytesToEESIORXFIFO({reinterpret_cast<const u8*>(str.data()), str.size()});
+		bool success = true;
+
+		if (!VMManager::HasValidVM())
+		{
+			Console.Warning("Cannot write to EE SIO RX FIFO while there is no virtual machine running.");
+			success = false;
+		}
+
+		if (success && Achievements::IsHardcoreModeActive())
+		{
+			Console.Warning("Cannot write to EE SIO RX FIFO while RetroAchievements hardcore mode is active.");
+			success = false;
+		}
+
+		if (success)
+			success = VMManager::WriteBytesToEESIORXFIFO({reinterpret_cast<const u8*>(str.data()), str.size()});
 
 		QtHost::RunOnUIThread([success, str = std::move(str), focus, window]() {
 			if (!window)
