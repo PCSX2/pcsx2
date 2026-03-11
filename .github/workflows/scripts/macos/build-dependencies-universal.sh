@@ -7,16 +7,21 @@ merge_binaries() {
 	ARMDIR=$2
 	echo "Merging ARM64 binaries from $ARMDIR into fat binaries at $X86DIR..."
 
-	IFS="
-"
+	IFS=$'\n'
+	FILES=()
+
 	pushd "$X86DIR"
 	for X86BIN in $(find . -type f \( -name '*.dylib' -o -name '*.a' -o -perm +111 \)); do
 		if file "$X86DIR/$X86BIN" | grep "Mach-O.*x86_64" >/dev/null; then
 			ARMBIN="${ARMDIR}/${X86BIN}"
 			echo "Merge $ARMBIN to $X86BIN..."
 			lipo -create "$X86BIN" "$ARMBIN" -o "$X86BIN"
+			FILES+=("$X86BIN")
 		fi
 	done
+	# If the timestamps of all the files we touched aren't equal, make may recreate them on make install if one depends on another
+	# Minimize the chance of that by touching them all at once
+	touch "${FILES[@]}"
 	popd
 }
 
@@ -153,7 +158,7 @@ if [ "$BUILD_FFMPEG" -ne 0 ]; then
 	cd build
 	LDFLAGS="-dead_strip $LDFLAGS" CFLAGS="-Os $CFLAGS" CXXFLAGS="-Os $CXXFLAGS" \
 		../configure --prefix="$INSTALLDIR" \
-		--enable-cross-compile --arch=x86_64 --cc='clang -arch x86_64' --cxx='clang++ -arch x86_64' --disable-x86asm \
+		--enable-cross-compile --arch=x86_64 --cc='clang -arch x86_64' --cxx='clang++ -arch x86_64' \
 		--disable-all --disable-autodetect --disable-static --enable-shared \
 		--enable-avcodec --enable-avformat --enable-avutil --enable-swresample --enable-swscale \
 		--enable-audiotoolbox --enable-videotoolbox \
