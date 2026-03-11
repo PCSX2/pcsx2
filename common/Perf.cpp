@@ -138,9 +138,9 @@ namespace Perf
 			pxAssertRel(perf_marker != MAP_FAILED, "Map perf marker");
 
 			JITDUMP_HEADER jh = {};
-#if defined(_M_X86)
+#if defined(ARCH_X86)
 			jh.elf_mach = EM_X86_64;
-#elif defined(_M_ARM64)
+#elif defined(ARCH_ARM64)
 			jh.elf_mach = EM_AARCH64;
 #else
 #error Unhandled architecture.

@@ -81,7 +81,7 @@ No support will be provided, continue at your own risk.
 *********************************************************")
 endif()
 
-if(_M_ARM64)
+if(ARCH_ARM64)
 	message(WARNING "
 *************** UNSUPPORTED CONFIGURATION ***************
 Apple Silicon support in PCSX2 is INCOMPLETE. There are

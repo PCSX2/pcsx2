@@ -5,11 +5,11 @@
 
 #include "GS/GSState.h"
 
-#ifdef _M_X86
+#ifdef ARCH_X86
 #include "GS/Renderers/SW/GSSetupPrimCodeGenerator.all.h"
 #include "GS/Renderers/SW/GSDrawScanlineCodeGenerator.all.h"
 #endif
-#ifdef _M_ARM64
+#ifdef ARCH_ARM64
 #include "GS/Renderers/SW/GSSetupPrimCodeGenerator.arm64.h"
 #include "GS/Renderers/SW/GSDrawScanlineCodeGenerator.arm64.h"
 #endif

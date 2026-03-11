@@ -85,7 +85,7 @@ target_sources(common PRIVATE
 	YAML.h
 )
 
-if(_M_X86)
+if(ARCH_X86)
 	target_sources(common PRIVATE
 		emitter/bmi.cpp
 		emitter/fpu.cpp

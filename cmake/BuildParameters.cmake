@@ -84,7 +84,7 @@ if("${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "x86_64" OR "${CMAKE_HOST_SYSTEM_PR
 	option(DISABLE_ADVANCE_SIMD "Disable advance use of SIMD (SSE2+ & AVX)" OFF)
 
 	list(APPEND PCSX2_DEFS _M_X86=1)
-	set(_M_X86 TRUE)
+	set(ARCH_X86 TRUE)
 	if(DISABLE_ADVANCE_SIMD)
 		message(STATUS "Building for x86-64 (Multi-ISA).")
 	else()
@@ -113,9 +113,14 @@ if("${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "x86_64" OR "${CMAKE_HOST_SYSTEM_PR
 elseif("${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "arm64" OR "${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "aarch64" OR
        "${CMAKE_OSX_ARCHITECTURES}" STREQUAL "arm64")
 	message(STATUS "Building for Apple Silicon (ARM64).")
-	list(APPEND PCSX2_DEFS _M_ARM64=1)
-	set(_M_ARM64 TRUE)
-	add_compile_options("-march=armv8.4-a" "-mcpu=apple-m1")
+	set(ARCH_ARM64 TRUE)
+	if(APPLE)
+		# Min spec is an M1
+		add_compile_options("-march=armv8.4-a" "-mcpu=apple-m1")
+	else()
+		# Require atomic rmw instructions
+		add_compile_options("-march=armv8.1-a")
+	endif()
 
 	# If we're running on Linux, we need to detect the page/cache line size.
 	# It could be a virtual machine with 4K pages, or 16K with Asahi.

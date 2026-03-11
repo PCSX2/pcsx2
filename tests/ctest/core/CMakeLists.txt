@@ -14,7 +14,7 @@ target_link_libraries(core_test PUBLIC
 	common
 )
 
-if(DISABLE_ADVANCE_SIMD)
+if(DISABLE_ADVANCE_SIMD AND ARCH_X86)
 	if(WIN32)
 		set(compile_options_avx2 /arch:AVX2)
 		set(compile_options_avx  /arch:AVX)

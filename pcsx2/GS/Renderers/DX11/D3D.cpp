@@ -7,7 +7,7 @@
 #include "GS/GSExtra.h"
 #include "Host.h"
 
-#ifdef _M_X86
+#ifdef ARCH_X86
 #include "GS/Renderers/Vulkan/GSDeviceVK.h"
 #endif
 
@@ -457,7 +457,7 @@ GSRendererType D3D::GetPreferredRenderer()
 		default:
 		{
 			// Default is D3D11, but prefer DX12 on ARM (better drivers).
-#ifdef _M_ARM64
+#ifdef ARCH_ARM64
 			return GSRendererType::DX12;
 #else
 			return GSRendererType::DX11;

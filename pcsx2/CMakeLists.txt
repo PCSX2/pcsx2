@@ -470,12 +470,12 @@ set(pcsx2GSSourcesUnshared
 	GS/Renderers/SW/GSRendererSW.cpp
 )
 
-if(_M_X86)
+if(ARCH_X86)
 	list(APPEND pcsx2GSSourcesUnshared
 		GS/Renderers/SW/GSDrawScanlineCodeGenerator.all.cpp
 		GS/Renderers/SW/GSSetupPrimCodeGenerator.all.cpp
 	)
-elseif(_M_ARM64)
+elseif(ARCH_ARM64)
 	list(APPEND pcsx2GSSourcesUnshared
 		GS/Renderers/SW/GSDrawScanlineCodeGenerator.arm64.cpp
 		GS/Renderers/SW/GSSetupPrimCodeGenerator.arm64.cpp
@@ -564,14 +564,14 @@ set(pcsx2GSHeaders
 	GS/Renderers/SW/GSVertexSW.h
 	)
 
-if(_M_X86)
+if(ARCH_X86)
 	list(APPEND pcsx2GSHeaders
 		GS/GSVector4.h
 		GS/GSVector4i.h
 		GS/GSVector8.h
 		GS/GSVector8i.h
 	)
-elseif(_M_ARM64)
+elseif(ARCH_ARM64)
 	list(APPEND pcsx2GSHeaders
 		GS/GSVector4_arm64.h
 		GS/GSVector4i_arm64.h
@@ -746,7 +746,7 @@ set(pcsx2IPUHeaders
 	IPU/yuv2rgb.h
 )
 
-if(DISABLE_ADVANCE_SIMD)
+if(DISABLE_ADVANCE_SIMD AND ARCH_X86)
 	target_compile_definitions(PCSX2 PUBLIC MULTI_ISA_SHARED_COMPILATION)
 	if(USE_GCC)
 		target_link_options(PCSX2_FLAGS INTERFACE -Wno-odr)
@@ -1071,10 +1071,10 @@ set(pcsx2LTOSources
 	${pcsx2GSHeaders}
 )
 
-if(_M_X86)
+if(ARCH_X86)
 	list(APPEND pcsx2LTOSources ${pcsx2x86Sources} ${pcsx2x86Headers})
 	target_link_libraries(PCSX2_FLAGS INTERFACE zydis)
-elseif(_M_ARM64)
+elseif(ARCH_ARM64)
 	list(APPEND pcsx2LTOSources ${pcsx2arm64Sources} ${pcsx2arm64Headers})
 	target_link_libraries(PCSX2_FLAGS INTERFACE vixl)
 endif()
@@ -1202,7 +1202,7 @@ else()
 endif()
 
 # additonal include directories
-if(_M_X86)
+if(ARCH_X86)
 	target_include_directories(PCSX2_FLAGS INTERFACE "${CMAKE_SOURCE_DIR}/3rdparty/xbyak")
 	target_compile_definitions(PCSX2_FLAGS INTERFACE XBYAK_NO_EXCEPTION)
 endif()
