@@ -15,7 +15,7 @@
 
 #include <cstring>
 
-#if defined(_M_X86)
+#if defined(ARCH_X86)
 
 // Can't stick them in structs because it breaks calling convention things, yay
 using r128 = __m128i;
@@ -102,7 +102,7 @@ using r128 = __m128i;
 	_mm_store_ps((float*)&dest, _mm_setzero_ps());
 }
 
-#elif defined(_M_ARM64)
+#elif defined(ARCH_ARM64)
 
 using r128 = uint32x4_t;
 

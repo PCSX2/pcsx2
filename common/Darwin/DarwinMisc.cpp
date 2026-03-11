@@ -338,7 +338,7 @@ void* HostSys::Mmap(void* base, size_t size, const PageProtectionMode& mode)
 	if (mode.IsNone())
 		return nullptr;
 
-#ifdef __aarch64__
+#ifdef ARCH_ARM64
 	// We can't allocate executable memory with mach_vm_allocate() on Apple Silicon.
 	// Instead, we need to use MAP_JIT with mmap(), which does not support fixed mappings.
 	if (mode.CanExecute())
@@ -441,7 +441,7 @@ void HostSys::UnmapSharedMemory(void* baseaddr, size_t size)
 		pxFailRel("Failed to unmap shared memory");
 }
 
-#ifdef _M_ARM64
+#ifdef ARCH_ARM64
 
 void HostSys::FlushInstructionCache(void* address, u32 size)
 {
@@ -518,7 +518,7 @@ bool SharedMemoryMappingArea::Unmap(void* map_base, size_t map_size)
 	return true;
 }
 
-#ifdef _M_ARM64
+#ifdef ARCH_ARM64
 
 static thread_local int s_code_write_depth = 0;
 
@@ -570,7 +570,7 @@ void HostSys::EndCodeWrite()
 	}
 }
 
-#endif // _M_ARM64
+#endif // ARCH_ARM64
 
 #define USE_MACH_EXCEPTION_PORTS
 
@@ -589,11 +589,11 @@ namespace PageFaultHandler
 
 #ifdef USE_MACH_EXCEPTION_PORTS
 
-#if defined(_M_X86)
+#if defined(ARCH_X86)
 #define THREAD_STATE64_COUNT x86_THREAD_STATE64_COUNT
 #define THREAD_STATE64 x86_THREAD_STATE64
 #define thread_state64_t x86_thread_state64_t
-#elif defined(_M_ARM64)
+#elif defined(ARCH_ARM64)
 #define THREAD_STATE64_COUNT ARM_THREAD_STATE64_COUNT
 #define THREAD_STATE64 ARM_THREAD_STATE64
 #define thread_state64_t arm_thread_state64_t
@@ -669,7 +669,7 @@ void PageFaultHandler::SignalHandler(mach_port_t port)
 		{
 			s_in_exception_handler = true;
 
-#ifdef _M_ARM64
+#ifdef ARCH_ARM64
 			result = HandlePageFault(reinterpret_cast<void*>(state->__pc), reinterpret_cast<void*>(msg_in.code[1]), (msg_in.code[0] & 2) != 0);
 #else
 			result = HandlePageFault(reinterpret_cast<void*>(state->__rip), reinterpret_cast<void*>(msg_in.code[1]), (msg_in.code[0] & 2) != 0);
@@ -774,12 +774,12 @@ bool PageFaultHandler::Install(Error* error)
 
 void PageFaultHandler::SignalHandler(int sig, siginfo_t* info, void* ctx)
 {
-#if defined(_M_X86)
+#if defined(ARCH_X86)
 	void* const exception_address =
 		reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__es.__faultvaddr);
 	void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__ss.__rip);
 	const bool is_write = (static_cast<ucontext_t*>(ctx)->uc_mcontext->__es.__err & 2) != 0;
-#elif defined(_M_ARM64)
+#elif defined(ARCH_ARM64)
 	void* const exception_address = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__es.__far);
 	void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__ss.__pc);
 	const bool is_write = IsStoreInstruction(exception_pc);
@@ -825,7 +825,7 @@ bool PageFaultHandler::Install(Error* error)
 		return false;
 	}
 
-#ifdef _M_ARM64
+#ifdef ARCH_ARM64
 	if (sigaction(SIGSEGV, &sa, nullptr) != 0)
 	{
 		Error::SetErrno(error, "sigaction() for SIGSEGV failed: ", errno);
