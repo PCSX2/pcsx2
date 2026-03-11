@@ -30,7 +30,9 @@ static const float3x3 rgb2yuv =
 	{-0.419, -0.081, 0.500}
 };
 
-Texture2D Texture;
+Texture2D Texture : register(t0);
+Texture2D RTTexture : register(t2);
+Texture2D DSDepth : register(t4);
 SamplerState TextureSampler;
 
 float4 sample_c(float2 uv)
@@ -50,6 +52,12 @@ struct PS_OUTPUT
 	float4 c : SV_Target0;
 };
 
+struct PS_OUTPUT_BLIT_COMBINED
+{
+	float4 color : SV_Target0;
+	float  depth : SV_Depth;
+};
+
 VS_OUTPUT vs_main(VS_INPUT input)
 {
 	VS_OUTPUT output;
@@ -61,6 +69,22 @@ VS_OUTPUT vs_main(VS_INPUT input)
 	return output;
 }
 
+VS_OUTPUT vs_blit_1to1(uint vID : SV_VertexID)
+{
+	VS_OUTPUT output;
+
+	// Hard-coded positions for the Oversized Triangle.
+	static const float2 positions[3] = {
+		float2(-1.0f,  1.0f),
+		float2( 3.0f,  1.0f),
+		float2(-1.0f, -3.0f)
+	};
+
+	output.p = float4(positions[vID], 0.0f, 1.0f);
+
+	return output;
+}
+
 PS_OUTPUT ps_copy(PS_INPUT input)
 {
 	PS_OUTPUT output;
@@ -68,6 +92,29 @@ PS_OUTPUT ps_copy(PS_INPUT input)
 	output.c = sample_c(input.t);
 
 	return output;
+}
+
+float4 ps_blit_1to1_color(float4 pos : SV_Position) : SV_Target
+{
+	int3 coord = int3(pos.xy, 0);
+	return RTTexture.Load(coord);
+}
+
+float ps_blit_1to1_depth(float4 pos : SV_Position) : SV_Depth
+{
+	int3 coord = int3(pos.xy, 0);
+	return DSDepth.Load(coord).r;
+}
+
+PS_OUTPUT_BLIT_COMBINED ps_blit_1to1_combined(float4 pos : SV_Position)
+{
+	PS_OUTPUT_BLIT_COMBINED blit_out;
+	int3 coord = int3(pos.xy, 0);
+
+	blit_out.color = RTTexture.Load(coord);
+	blit_out.depth = DSDepth.Load(coord).r; 
+
+	return blit_out;
 }
 
 float ps_depth_copy(PS_INPUT input) : SV_Depth
