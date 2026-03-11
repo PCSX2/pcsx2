@@ -38,7 +38,7 @@ if [ "${INSTALLDIR:0:1}" != "/" ]; then
 	INSTALLDIR="$PWD/$INSTALLDIR"
 fi
 
-QT=6.10.1
+QT=6.10.2
 QTAPNG=1.3.0
 
 FREETYPE=2.14.1
