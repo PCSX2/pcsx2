@@ -13,6 +13,10 @@ on:
         required: false
         type: string
         default: macos-26
+      arch:
+        required: false
+        type: string
+        default: x86-64
       patchesUrl:
         required: false
         type: string
@@ -94,12 +98,12 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ~/deps
-          key: ${{ inputs.os }} deps ${{ hashFiles('.github/workflows/scripts/macos/*', '.github/workflows/scripts/common/*.patch') }}
+          key: ${{ inputs.os }} ${{ inputs.arch }} deps ${{ hashFiles('.github/workflows/scripts/macos/*', '.github/workflows/scripts/common/*.patch') }}
 
       - name: Build Dependencies
         if: steps.cache-deps.outputs.cache-hit != 'true'
         run: |
-          .github/workflows/scripts/macos/build-dependencies.sh "$HOME/deps"
+          .github/workflows/scripts/macos/build-dependencies${{ case(inputs.arch == 'x86-64', '', '-universal') }}.sh "$HOME/deps"
 
       - name: Download patches
         run: |
@@ -115,16 +119,16 @@ jobs:
         uses: actions/cache@v5
         with:
           path: .ccache
-          key: ${{ inputs.os }} ccache ${{ steps.ccache_cache_timestamp.outputs.timestamp }}
-          restore-keys: ${{ inputs.os }} ccache
+          key: ${{ inputs.os }} ${{ inputs.arch }} ccache ${{ steps.ccache_cache_timestamp.outputs.timestamp }}
+          restore-keys: ${{ inputs.os }} ${{ inputs.arch }} ccache
 
       - name: Generate CMake Files
         run: |
           cmake -DCMAKE_PREFIX_PATH="$HOME/deps" \
                 -DCMAKE_BUILD_TYPE=Release \
-                -DCMAKE_OSX_ARCHITECTURES="x86_64" \
+                -DCMAKE_OSX_ARCHITECTURES="${{ case(inputs.arch == 'x86-64', 'x86_64', inputs.arch) }}" \
                 -DDISABLE_ADVANCE_SIMD=ON \
-                -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \
+                -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ case(inputs.arch == 'x86-64', 'ON', 'OFF') }} \
                 -DUSE_LINKED_FFMPEG=ON \
                 -DCMAKE_C_COMPILER_LAUNCHER=ccache \
                 -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
@@ -184,6 +188,7 @@ jobs:
           app_store_connect_api_key_json_file: 'key.json'
 
       - name: Zip Build Artifacts
+        if: inputs.arch == 'x86-64'
         run: |
           TAG="$(git tag --points-at HEAD)"
           if [ -z "$TAG" ]; then
@@ -197,6 +202,7 @@ jobs:
           cp "${{ steps.artifact-metadata.outputs.artifact-name }}.tar.xz" ci-artifacts/macOS.tar.xz
 
       - name: Upload Artifact
+        if: inputs.arch == 'x86-64'
         uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.artifact-metadata.outputs.artifact-name }}
