@@ -21326,12 +21326,12 @@ Ejecting {2} and replacing it with {3}.</source>
 <context>
     <name>Patch</name>
     <message>
-        <location filename="../../pcsx2/Patch.cpp" line="353"/>
+        <location filename="../../pcsx2/Patch.cpp" line="305"/>
         <source>Failed to open {}. Built-in game patches are not available.</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../../pcsx2/Patch.cpp" line="820"/>
+        <location filename="../../pcsx2/Patch.cpp" line="780"/>
         <source>%n GameDB patches are active.</source>
         <comment>OSD Message</comment>
         <translation type="unfinished">
@@ -21340,7 +21340,7 @@ Ejecting {2} and replacing it with {3}.</source>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../pcsx2/Patch.cpp" line="828"/>
+        <location filename="../../pcsx2/Patch.cpp" line="788"/>
         <source>%n game patches are active.</source>
         <comment>OSD Message</comment>
         <translation type="unfinished">
@@ -21349,7 +21349,7 @@ Ejecting {2} and replacing it with {3}.</source>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../pcsx2/Patch.cpp" line="837"/>
+        <location filename="../../pcsx2/Patch.cpp" line="797"/>
         <source>%n cheat patches are active.</source>
         <comment>OSD Message</comment>
         <translation type="unfinished">
@@ -21358,36 +21358,36 @@ Ejecting {2} and replacing it with {3}.</source>
         </translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Patch.cpp" line="851"/>
+        <location filename="../../pcsx2/Patch.cpp" line="811"/>
         <source>No cheats or patches (widescreen, compatibility or others) are found / enabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Patch.cpp" line="1808"/>
+        <location filename="../../pcsx2/Patch.cpp" line="1833"/>
         <source>Unknown</source>
         <extracomment>Time when a patch is applied.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Patch.cpp" line="1814"/>
+        <location filename="../../pcsx2/Patch.cpp" line="1839"/>
         <source>Only On Startup</source>
         <extracomment>Time when a patch is applied.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Patch.cpp" line="1817"/>
+        <location filename="../../pcsx2/Patch.cpp" line="1842"/>
         <source>Every Frame</source>
         <extracomment>Time when a patch is applied.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Patch.cpp" line="1820"/>
+        <location filename="../../pcsx2/Patch.cpp" line="1845"/>
         <source>On Startup &amp; Every Frame</source>
         <extracomment>Time when a patch is applied.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Patch.cpp" line="1823"/>
+        <location filename="../../pcsx2/Patch.cpp" line="1848"/>
         <source>On Startup &amp; When Enabled</source>
         <extracomment>Time when a patch is applied.</extracomment>
         <translation type="unfinished"></translation>
