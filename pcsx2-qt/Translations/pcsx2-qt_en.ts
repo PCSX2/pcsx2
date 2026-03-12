@@ -12139,17 +12139,17 @@ Please see our official documentation for more information.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="28"/>
+        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="27"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="29"/>
+        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="28"/>
         <source>Author</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="30"/>
+        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="29"/>
         <source>Description</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12179,27 +12179,27 @@ Please see our official documentation for more information.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="65"/>
+        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="64"/>
         <source>Show Cheats For All CRCs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="65"/>
+        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="64"/>
         <source>Checked</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="66"/>
+        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="65"/>
         <source>Toggles scanning patch files for all CRCs of the game. With this enabled available patches for the game serial with different CRCs will also be loaded.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="137"/>
+        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="136"/>
         <source>&lt;strong&gt;Applied:&lt;/strong&gt; %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="290"/>
+        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="289"/>
         <source>%1 unlabelled patch codes will automatically activate.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13024,17 +13024,17 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GamePatchSettingsWidget.cpp" line="26"/>
+        <location filename="../Settings/GamePatchSettingsWidget.cpp" line="25"/>
         <source>Unknown</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GamePatchSettingsWidget.cpp" line="28"/>
+        <location filename="../Settings/GamePatchSettingsWidget.cpp" line="27"/>
         <source>No description provided.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GamePatchSettingsWidget.cpp" line="31"/>
+        <location filename="../Settings/GamePatchSettingsWidget.cpp" line="30"/>
         <source>&lt;strong&gt;Author:&lt;/strong&gt; %1&lt;br&gt;&lt;strong&gt;Applied:&lt;/strong&gt; %2&lt;br&gt;%3</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13072,22 +13072,22 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GamePatchSettingsWidget.cpp" line="91"/>
+        <location filename="../Settings/GamePatchSettingsWidget.cpp" line="90"/>
         <source>Show Patches For All CRCs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GamePatchSettingsWidget.cpp" line="91"/>
+        <location filename="../Settings/GamePatchSettingsWidget.cpp" line="90"/>
         <source>Checked</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GamePatchSettingsWidget.cpp" line="92"/>
+        <location filename="../Settings/GamePatchSettingsWidget.cpp" line="91"/>
         <source>Toggles scanning patch files for all CRCs of the game. With this enabled available patches for the game serial with different CRCs will also be loaded.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GamePatchSettingsWidget.cpp" line="191"/>
+        <location filename="../Settings/GamePatchSettingsWidget.cpp" line="190"/>
         <source>There are no patches available for this game.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -16883,8 +16883,9 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <location filename="../../pcsx2/Hotkeys.cpp" line="233"/>
         <location filename="../../pcsx2/Hotkeys.cpp" line="238"/>
         <location filename="../../pcsx2/Hotkeys.cpp" line="243"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="250"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="343"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="253"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="260"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="353"/>
         <source>System</source>
         <translation type="unfinished"></translation>
     </message>
@@ -16944,24 +16945,24 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="329"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="333"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="338"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="339"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="343"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="348"/>
         <source>Audio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="333"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="343"/>
         <source>Increase Volume</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="338"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="348"/>
         <source>Decrease Volume</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="329"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="339"/>
         <source>Toggle Mute</source>
         <translation type="unfinished"></translation>
     </message>
@@ -16981,12 +16982,12 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="251"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="261"/>
         <source>Toggle Input Recording Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="244"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="254"/>
         <source>Swap Memory Cards</source>
         <translation type="unfinished"></translation>
     </message>
@@ -17052,153 +17053,158 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="255"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="260"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="243"/>
+        <source>Reload Patches</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../../pcsx2/Hotkeys.cpp" line="265"/>
         <location filename="../../pcsx2/Hotkeys.cpp" line="270"/>
         <location filename="../../pcsx2/Hotkeys.cpp" line="275"/>
         <location filename="../../pcsx2/Hotkeys.cpp" line="280"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="288"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="285"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="290"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="298"/>
         <source>Save States</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="256"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="266"/>
         <source>Select Previous Save Slot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="261"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="271"/>
         <source>Select Next Save Slot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="266"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="276"/>
         <source>Save State To Selected Slot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="271"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="281"/>
         <source>Load State From Selected Slot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="276"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="286"/>
         <source>Load Backup State From Selected Slot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="281"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="291"/>
         <source>Save State and Select Next Slot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="289"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="299"/>
         <source>Select Next Slot and Save State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="307"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="317"/>
         <source>Save State To Slot 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="308"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="318"/>
         <source>Load State From Slot 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="309"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="319"/>
         <source>Save State To Slot 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="310"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="320"/>
         <source>Load State From Slot 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="311"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="321"/>
         <source>Save State To Slot 3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="312"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="322"/>
         <source>Load State From Slot 3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="313"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="323"/>
         <source>Save State To Slot 4</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="314"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="324"/>
         <source>Load State From Slot 4</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="315"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="325"/>
         <source>Save State To Slot 5</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="316"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="326"/>
         <source>Load State From Slot 5</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="317"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="327"/>
         <source>Save State To Slot 6</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="318"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="328"/>
         <source>Load State From Slot 6</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="319"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="329"/>
         <source>Save State To Slot 7</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="320"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="330"/>
         <source>Load State From Slot 7</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="321"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="331"/>
         <source>Save State To Slot 8</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="322"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="332"/>
         <source>Load State From Slot 8</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="323"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="333"/>
         <source>Save State To Slot 9</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="324"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="334"/>
         <source>Load State From Slot 9</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="325"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="335"/>
         <source>Save State To Slot 10</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="326"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="336"/>
         <source>Load State From Slot 10</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="343"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="353"/>
         <source>Toggle Mouse Lock</source>
         <translation type="unfinished"></translation>
     </message>
@@ -18195,97 +18201,97 @@ Right click to clear binding</source>
 <context>
     <name>LogWindow</name>
     <message>
-        <location filename="../LogWindow.cpp" line="125"/>
+        <location filename="../LogWindow.cpp" line="129"/>
         <source>Log Window - %1 [%2]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LogWindow.cpp" line="129"/>
+        <location filename="../LogWindow.cpp" line="133"/>
         <source>Log Window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LogWindow.cpp" line="147"/>
+        <location filename="../LogWindow.cpp" line="151"/>
         <source>&amp;Clear</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LogWindow.cpp" line="149"/>
+        <location filename="../LogWindow.cpp" line="153"/>
         <source>&amp;Save...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LogWindow.cpp" line="154"/>
+        <location filename="../LogWindow.cpp" line="158"/>
         <source>Cl&amp;ose</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LogWindow.cpp" line="157"/>
+        <location filename="../LogWindow.cpp" line="161"/>
         <source>&amp;Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LogWindow.cpp" line="161"/>
+        <location filename="../LogWindow.cpp" line="165"/>
         <source>Log To &amp;System Console</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LogWindow.cpp" line="165"/>
+        <location filename="../LogWindow.cpp" line="169"/>
         <source>Log To &amp;Debug Console</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LogWindow.cpp" line="169"/>
+        <location filename="../LogWindow.cpp" line="173"/>
         <source>Log To &amp;File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LogWindow.cpp" line="176"/>
+        <location filename="../LogWindow.cpp" line="180"/>
         <source>Attach To &amp;Main Window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LogWindow.cpp" line="180"/>
+        <location filename="../LogWindow.cpp" line="184"/>
         <source>Show &amp;Timestamps</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LogWindow.cpp" line="184"/>
+        <location filename="../LogWindow.cpp" line="188"/>
         <source>Show EE SIO &amp;Input</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LogWindow.cpp" line="203"/>
+        <location filename="../LogWindow.cpp" line="207"/>
         <source>Local Echo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LogWindow.cpp" line="209"/>
+        <location filename="../LogWindow.cpp" line="213"/>
         <source>Newline on send</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LogWindow.cpp" line="254"/>
+        <location filename="../LogWindow.cpp" line="258"/>
         <source>Select Log File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LogWindow.cpp" line="254"/>
+        <location filename="../LogWindow.cpp" line="258"/>
         <source>Log Files (*.txt)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LogWindow.cpp" line="261"/>
+        <location filename="../LogWindow.cpp" line="265"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LogWindow.cpp" line="261"/>
+        <location filename="../LogWindow.cpp" line="265"/>
         <source>Failed to open file for writing.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../LogWindow.cpp" line="268"/>
+        <location filename="../LogWindow.cpp" line="272"/>
         <source>Log was written to %1.
 </source>
         <translation type="unfinished"></translation>
@@ -21326,12 +21332,12 @@ Ejecting {2} and replacing it with {3}.</source>
 <context>
     <name>Patch</name>
     <message>
-        <location filename="../../pcsx2/Patch.cpp" line="305"/>
+        <location filename="../../pcsx2/Patch.cpp" line="304"/>
         <source>Failed to open {}. Built-in game patches are not available.</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../../pcsx2/Patch.cpp" line="780"/>
+        <location filename="../../pcsx2/Patch.cpp" line="779"/>
         <source>%n GameDB patches are active.</source>
         <comment>OSD Message</comment>
         <translation type="unfinished">
@@ -21340,7 +21346,7 @@ Ejecting {2} and replacing it with {3}.</source>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../pcsx2/Patch.cpp" line="788"/>
+        <location filename="../../pcsx2/Patch.cpp" line="787"/>
         <source>%n game patches are active.</source>
         <comment>OSD Message</comment>
         <translation type="unfinished">
@@ -21349,7 +21355,7 @@ Ejecting {2} and replacing it with {3}.</source>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../pcsx2/Patch.cpp" line="797"/>
+        <location filename="../../pcsx2/Patch.cpp" line="796"/>
         <source>%n cheat patches are active.</source>
         <comment>OSD Message</comment>
         <translation type="unfinished">
@@ -21358,36 +21364,36 @@ Ejecting {2} and replacing it with {3}.</source>
         </translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Patch.cpp" line="811"/>
+        <location filename="../../pcsx2/Patch.cpp" line="810"/>
         <source>No cheats or patches (widescreen, compatibility or others) are found / enabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Patch.cpp" line="1833"/>
+        <location filename="../../pcsx2/Patch.cpp" line="1832"/>
         <source>Unknown</source>
         <extracomment>Time when a patch is applied.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Patch.cpp" line="1839"/>
+        <location filename="../../pcsx2/Patch.cpp" line="1838"/>
         <source>Only On Startup</source>
         <extracomment>Time when a patch is applied.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Patch.cpp" line="1842"/>
+        <location filename="../../pcsx2/Patch.cpp" line="1841"/>
         <source>Every Frame</source>
         <extracomment>Time when a patch is applied.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Patch.cpp" line="1845"/>
+        <location filename="../../pcsx2/Patch.cpp" line="1844"/>
         <source>On Startup &amp; Every Frame</source>
         <extracomment>Time when a patch is applied.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Patch.cpp" line="1848"/>
+        <location filename="../../pcsx2/Patch.cpp" line="1847"/>
         <source>On Startup &amp; When Enabled</source>
         <extracomment>Time when a patch is applied.</extracomment>
         <translation type="unfinished"></translation>
