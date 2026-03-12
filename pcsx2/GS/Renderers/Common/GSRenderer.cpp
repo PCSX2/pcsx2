@@ -112,12 +112,20 @@ bool GSRenderer::Merge(int field)
 				(!(m_regs->PMODE.MMOD == 1 && m_regs->PMODE.ALP == 0) || // Blend RC1 with non-zero alpha.
 				(m_regs->PMODE.AMOD == 0) ||                             // Use alpha of RC1.
 				(feedback_merge && m_regs->EXTBUF.FBIN == 0));           // Use RC1 for feedback merge.
+		
+		// The following two flags determine if RC1 output completely overwrites RC2 output
+		// due to the alpha used for blending and the respective rectangles of the outputs.
+		const bool rc1_contains_rc2 =
+			PCRTCDisplays.PCRTCDisplays[0].displayRect.rcontains(PCRTCDisplays.PCRTCDisplays[1].displayRect);
+		
+		const bool rc1_overwrites_rc2 = use_rc1 && rc1_contains_rc2 && m_regs->PMODE.MMOD == 1 && m_regs->PMODE.ALP == 255;
+
 		const bool use_rc2 =
-			PCRTCDisplays.PCRTCDisplays[1].enabled &&          // RC2 enabled.
-				// Blending RC2 and not overwriting completely with RC1.
-				((m_regs->PMODE.SLBG == 0 && !(use_rc1 && m_regs->PMODE.MMOD == 1 && m_regs->PMODE.ALP == 255)) || 
-				(m_regs->PMODE.AMOD == 1) ||                   // Use alpha of RC2.
-				(feedback_merge && m_regs->EXTBUF.FBIN == 1)); // Use RC2 for feedback merge.
+			PCRTCDisplays.PCRTCDisplays[1].enabled &&                // RC2 enabled.
+				((m_regs->PMODE.SLBG == 0 && !rc1_overwrites_rc2) || // Blending RC2 and not overwritten by RC1.
+				(m_regs->PMODE.AMOD == 1) ||                         // Use alpha of RC2.
+				(feedback_merge && m_regs->EXTBUF.FBIN == 1));       // Use RC2 for feedback merge.
+
 		if (use_rc1)
 			tex[0] = GetOutput(0, tex_scale[0], y_offset[0]);
 		if (use_rc2)
