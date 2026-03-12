@@ -519,20 +519,6 @@ static __forceinline StereoOut32 MixCore(const uint coreidx, const VoiceMixSet& 
 	return TD + ApplyVolume(RV, thiscore.FxVol);
 }
 
-static StereoOut32 DCFilter(StereoOut32 input)
-{
-	// A simple DC blocking high-pass filter
-	// Implementation from http://peabody.sapp.org/class/dmp2/lab/dcblock/
-	// The magic number 0x7f5c is ceil(INT16_MAX * 0.995)
-	StereoOut32 output;
-	output.Left = (input.Left - DCFilterIn.Left + clamp_mix((0x7f5c * DCFilterOut.Left) >> 15));
-	output.Right = (input.Right - DCFilterIn.Right + clamp_mix((0x7f5c * DCFilterOut.Right) >> 15));
-
-	DCFilterIn = input;
-	DCFilterOut = output;
-	return output;
-}
-
 void spu2Mix()
 {
 	// Note: Playmode 4 is SPDIF, which overrides other inputs.
@@ -590,13 +576,6 @@ void spu2Mix()
 	{
 		Out = ApplyVolume(clamp_mix(Out), Cores[1].MasterVol);
 	}
-
-	// For a long time PCSX2 has had its output volume halved by
-	// an incorrect function for applying the master volume above.
-	//
-	// Adjust volume here so it matches what people have come to expect.
-	Out = ApplyVolume(Out, {0x4fff, 0x4fff});
-	Out = DCFilter(Out);
 
 #ifdef PCSX2_DEVBUILD
 	// Log final output to wavefile.

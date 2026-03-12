@@ -4,6 +4,7 @@
 #include "Common.h"
 #include "Hardware.h"
 #include "Gif_Unit.h"
+#include "IopHw.h"
 #include "IopMem.h"
 
 #include "ps2/HwInternal.h"
@@ -174,14 +175,14 @@ void _hwWrite32( u32 mem, u32 value )
 					}
 					if (value & (1 << 19))
 					{
-						u32 cycle = psxRegs.cycle;
+						u64 cycle = psxRegs.cycle;
 						//pgifInit();
 						psxReset();
 						PSXCLK =  33868800;
 						SPU2::Reset(true);
 						setPs1CDVDSpeed(cdvd.Speed);
-						psxHu32(0x1f801450) = 0x8;
-						psxHu32(0x1f801078) = 1;
+						psxHu32(HW_ICFG) = 0x8;
+						psxHu32(HW_ICTRL) = 1;
 						psxRegs.cycle = cycle;
 					}
 					if(!(value & 0x100))

@@ -50,26 +50,26 @@ set QTMINOR=6.10
 set QTAPNG=1.3.0
 
 set FREETYPE=2.14.1
-set HARFBUZZ=12.2.0
-set LIBJPEGTURBO=3.1.2
-set LIBPNG=1653
-set LIBPNGLONG=1.6.53
+set HARFBUZZ=13.0.0
+set LIBJPEGTURBO=3.1.3
+set LIBPNG=1655
+set LIBPNGLONG=1.6.55
 set SDL=SDL3-3.4.2
 set LZ4=1.10.0
 set WEBP=1.6.0
-set ZLIB=1.3.1
-set ZLIBSHORT=131
+set ZLIB=1.3.2
+set ZLIBSHORT=132
 set ZSTD=1.5.7
 set KDDOCKWIDGETS=2.4.0
 set PLUTOVG=1.3.2
 set PLUTOSVG=0.0.7
 
-set SHADERC=2025.4
-set SHADERC_GLSLANG=7a47e2531cb334982b2a2dd8513dca0a3de4373d
-set SHADERC_SPIRVHEADERS=b824a462d4256d720bebb40e78b9eb8f78bbb305
-set SHADERC_SPIRVTOOLS=971a7b6e8d7740035bbff089bbbf9f42951ecfd5
+set SHADERC=2026.1
+set SHADERC_GLSLANG=f0bd0257c308b9a26562c1a30c4748a0219cc951
+set SHADERC_SPIRVHEADERS=04f10f650d514df88b76d25e83db360142c7b174
+set SHADERC_SPIRVTOOLS=fbe4f3ad913c44fe8700545f8ffe35d1382b7093
 
-set AGILITYSDK=1.618.5
+set AGILITYSDK=1.619.0
 
 call :downloadfile "qtbase-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtbase-everywhere-src-%QT%.zip" 690e08ce807041150d388b5351de2e591febf0a0bc973b56e1197e2df9a2d96f || goto error
 call :downloadfile "qtimageformats-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtimageformats-everywhere-src-%QT%.zip" a407e489ca8d68639530e881aea797f58754e355ca06024a73358bd9cc5fca17 || goto error
@@ -79,24 +79,24 @@ call :downloadfile "qttranslations-everywhere-src-%QT%.zip" "https://download.qt
 call :downloadfile "QtApng-%QTAPNG%.zip" "https://github.com/jurplel/QtApng/archive/refs/tags/%QTAPNG%.zip" 5176082cdd468047a7eb1ec1f106b032f57df207aa318d559b29606b00d159ac || goto error
 
 call :downloadfile "freetype-%FREETYPE%.tar.gz" https://sourceforge.net/projects/freetype/files/freetype2/%FREETYPE%/freetype-%FREETYPE%.tar.gz/download 174d9e53402e1bf9ec7277e22ec199ba3e55a6be2c0740cb18c0ee9850fc8c34 || goto error
-call :downloadfile "harfbuzz-%HARFBUZZ%.zip" https://github.com/harfbuzz/harfbuzz/archive/refs/tags/%HARFBUZZ%.zip 31490c781bacd2ce56862555b11c51c964977c39f14f51b817dfaecf0be089fe || goto error
-call :downloadfile "lpng%LIBPNG%.zip" https://download.sourceforge.net/libpng/lpng1653.zip 140566abc64bb2320cb35f1d154d1cb3eb7174a12234d33bfdffb446bdc0a1d2 || goto error
-call :downloadfile "lpng%LIBPNG%-apng.patch.gz" https://download.sourceforge.net/libpng-apng/libpng-%LIBPNGLONG%-apng.patch.gz 452a1a290bd0cf18737fad0057dc17b7fdf10a73eda2d6d4f31ba04fda25ef2c || goto error
-call :downloadfile "libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/%LIBJPEGTURBO%/libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" 8f0012234b464ce50890c490f18194f913a7b1f4e6a03d6644179fa0f867d0cf || goto error
+call :downloadfile "harfbuzz-%HARFBUZZ%.zip" https://github.com/harfbuzz/harfbuzz/archive/refs/tags/%HARFBUZZ%.zip a448a8abc3f9ae8eef19ef3ce247370957c1fada5d58a01b5e281e792f40fa61 || goto error
+call :downloadfile "lpng%LIBPNG%.zip" https://download.sourceforge.net/libpng/lpng1655.zip aa45ef52ff7a4e61f34af866b3254b0b243ddc42fe2adb823b0843d2a57c2e86 || goto error
+call :downloadfile "lpng%LIBPNG%-apng.patch.gz" https://download.sourceforge.net/libpng-apng/libpng-%LIBPNGLONG%-apng.patch.gz 017c06f75ffed25f6cda9b5369ec6da0ac35a6616adf7abe4222516a0237f37a || goto error
+call :downloadfile "libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/%LIBJPEGTURBO%/libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" 075920b826834ac4ddf97661cc73491047855859affd671d52079c6867c1c6c0 || goto error
 call :downloadfile "libwebp-%WEBP%.tar.gz" "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-%WEBP%.tar.gz" e4ab7009bf0629fd11982d4c2aa83964cf244cffba7347ecd39019a9e38c4564 || goto error
 call :downloadfile "%SDL%.zip" "https://libsdl.org/release/%SDL%.zip" 4954d436c95c42aa258d4eb3fb95f8ecc5d7a3dc411f0f41ac2692d34b9b9e9c || goto error
 call :downloadfile "lz4-%LZ4%.zip" "https://github.com/lz4/lz4/archive/refs/tags/v%LZ4%.zip" 3224b4c80f351f194984526ef396f6079bd6332dd9825c72ac0d7a37b3cdc565 || goto error
-call :downloadfile "zlib%ZLIBSHORT%.zip" "https://github.com/madler/zlib/releases/download/v%ZLIB%/zlib%ZLIBSHORT%.zip" 72af66d44fcc14c22013b46b814d5d2514673dda3d115e64b690c1ad636e7b17 || goto error
+call :downloadfile "zlib%ZLIBSHORT%.zip" "https://github.com/madler/zlib/releases/download/v%ZLIB%/zlib%ZLIBSHORT%.zip" e8bf55f3017aa181690990cb58a994e77885da140609fc8f94abe9b65d2cae28 || goto error
 call :downloadfile "zstd-%ZSTD%.zip" "https://github.com/facebook/zstd/archive/refs/tags/v%ZSTD%.zip" 7897bc5d620580d9b7cd3539c44b59d78f3657d33663fe97a145e07b4ebd69a4 || goto error
 call :downloadfile "KDDockWidgets-%KDDOCKWIDGETS%.zip" "https://github.com/KDAB/KDDockWidgets/archive/v%KDDOCKWIDGETS%.zip" 47ddb48197872055f0adf8e90a7235f8a3b795ca1ee3a28ac2c504c673ae3806 || goto error
 call :downloadfile "plutovg-%PLUTOVG%.zip" "https://github.com/sammycage/plutovg/archive/v%PLUTOVG%.zip" 4fe4e48f28aa80171b2166d45c0976ab0f21eecedb52cd4c3ef73b5afb48fac9 || goto error
 call :downloadfile "plutosvg-%PLUTOSVG%.zip" "https://github.com/sammycage/plutosvg/archive/v%PLUTOSVG%.zip" 82dee2c57ad712bdd6d6d81d3e76249d89caa4b5a4214353660fd5adff12201a || goto error
-call :downloadfile: "agility-sdk-%AGILITYSDK%.nupkg" "https://www.nuget.org/api/v2/package/Microsoft.Direct3D.D3D12/%AGILITYSDK%" 0027fc24f947c48dbded13ada7d280be221eb651644e23a8a476f0f1f0a079dd || goto error
+call :downloadfile "agility-sdk-%AGILITYSDK%.nupkg" "https://www.nuget.org/api/v2/package/Microsoft.Direct3D.D3D12/%AGILITYSDK%" d5edab9a0c4d1b78ba6fe55b425eeef9fefba7d2a101e889d70fd21d481e6cb1 || goto error
 
-call :downloadfile "shaderc-%SHADERC%.zip" "https://github.com/google/shaderc/archive/refs/tags/v%SHADERC%.zip" fab72d1a38eacea52710d18edb95dfd75db894ad869675d07a1eb26827da9b15 || goto error
-call :downloadfile "shaderc-glslang-%SHADERC_GLSLANG%.zip" "https://github.com/KhronosGroup/glslang/archive/%SHADERC_GLSLANG%.zip" 4a118247386ffba9160113f146f2189ba5abe3995db357114d7112ede6bd3cd1 || goto error
-call :downloadfile "shaderc-spirv-headers-%SHADERC_SPIRVHEADERS%.zip" "https://github.com/KhronosGroup/SPIRV-Headers/archive/%SHADERC_SPIRVHEADERS%.zip" 9a38cb3b14484f5038d78cd5df89404f2f5b389a6ad91f9f1df4ae71bb9490dc || goto error
-call :downloadfile "shaderc-spirv-tools-%SHADERC_SPIRVTOOLS%.zip" "https://github.com/KhronosGroup/SPIRV-Tools/archive/%SHADERC_SPIRVTOOLS%.zip" a26383c836a84fab5b03aed5d98e8e27d6c0a9cdbc3b0f462ccfe0a11a3d91ea || goto error
+call :downloadfile "shaderc-%SHADERC%.zip" "https://github.com/google/shaderc/archive/refs/tags/v%SHADERC%.zip" 3ac59c8216d367ab7858684d39c8faf872a64150aeb139335f4e083c5f79dde0 || goto error
+call :downloadfile "shaderc-glslang-%SHADERC_GLSLANG%.zip" "https://github.com/KhronosGroup/glslang/archive/%SHADERC_GLSLANG%.zip" 42a30acca4a35955370ed8ff6e54b823b4d4a5a86571baec1203d3fce87da447 || goto error
+call :downloadfile "shaderc-spirv-headers-%SHADERC_SPIRVHEADERS%.zip" "https://github.com/KhronosGroup/SPIRV-Headers/archive/%SHADERC_SPIRVHEADERS%.zip" 00ecd73dcaaa956cf2221ce899ce096e9535ba20695483c5277adede462d1bde || goto error
+call :downloadfile "shaderc-spirv-tools-%SHADERC_SPIRVTOOLS%.zip" "https://github.com/KhronosGroup/SPIRV-Tools/archive/%SHADERC_SPIRVTOOLS%.zip" 65b23ace0ff0c64daf51f7741ebb6448899fa4aceefc72403e56f5b95607ca8e || goto error
 
 if %DEBUG%==1 (
   echo Building debug and release libraries...

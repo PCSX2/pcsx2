@@ -326,8 +326,8 @@ void recBranchCall(void (*func)())
 	// In order to make sure a branch test is performed, the nextBranchCycle is set
 	// to the current cpu cycle.
 
-	xMOV(eax, ptr[&cpuRegs.cycle]);
-	xMOV(ptr[&cpuRegs.nextEventCycle], eax);
+	xMOV(rax, ptr64[&cpuRegs.cycle]);
+	xMOV(ptr64[&cpuRegs.nextEventCycle], rax);
 
 	recCall(func);
 	g_branch = 2;
@@ -1362,20 +1362,20 @@ static void iBranchTest(u32 newpc)
 
 	if (EmuConfig.Speedhacks.WaitLoop && s_nBlockFF && newpc == s_branchTo)
 	{
-		xMOV(eax, ptr32[&cpuRegs.nextEventCycle]);
-		xADD(ptr32[&cpuRegs.cycle], scaleblockcycles());
-		xCMP(eax, ptr32[&cpuRegs.cycle]);
-		xCMOVS(eax, ptr32[&cpuRegs.cycle]);
-		xMOV(ptr32[&cpuRegs.cycle], eax);
+		xMOV(rax, ptr64[&cpuRegs.nextEventCycle]);
+		xADD(ptr64[&cpuRegs.cycle], scaleblockcycles());
+		xCMP(rax, ptr64[&cpuRegs.cycle]);
+		xCMOVS(rax, ptr64[&cpuRegs.cycle]);
+		xMOV(ptr64[&cpuRegs.cycle], rax);
 
 		xJMP((void*)DispatcherEvent);
 	}
 	else
 	{
-		xMOV(eax, ptr[&cpuRegs.cycle]);
-		xADD(eax, scaleblockcycles());
-		xMOV(ptr[&cpuRegs.cycle], eax); // update cycles
-		xSUB(eax, ptr[&cpuRegs.nextEventCycle]);
+		xMOV(rax, ptr64[&cpuRegs.cycle]);
+		xADD(rax, scaleblockcycles());
+		xMOV(ptr64[&cpuRegs.cycle], rax); // update cycles
+		xSUB(rax, ptr64[&cpuRegs.nextEventCycle]);
 
 		if (newpc == 0xffffffff)
 			xJS(DispatcherReg);
@@ -2141,28 +2141,19 @@ static bool recSkipTimeoutLoop(s32 reg, bool is_timeout_loop)
 	// if new_v0 > 0 { jump to dispatcher because loop exited early }
 	// else new_v0 is 0, so exit loop
 
-	xMOV(ebx, ptr32[&cpuRegs.cycle]); // ebx = cycle
-	xMOV(ecx, ptr32[&cpuRegs.nextEventCycle]); // ecx = nextEventCycle
-	xCMP(ebx, ecx);
-	//xJAE((void*)DispatcherEvent); // jump to dispatcher if event immediately
-
-	// TODO: In the case where nextEventCycle < cycle because it's overflowed, tack 8
-	// cycles onto the event count, so hopefully it'll wrap around. This is pretty
-	// gross, but until we switch to 64-bit counters, not many better options.
-	xForwardJB8 not_dispatcher;
-	xADD(ebx, 8);
-	xMOV(ptr32[&cpuRegs.cycle], ebx);
-	xJMP((void*)DispatcherEvent);
-	not_dispatcher.SetTarget();
+	xMOV(rbx, ptr64[&cpuRegs.cycle]); // ebx = cycle
+	xMOV(rcx, ptr64[&cpuRegs.nextEventCycle]); // ecx = nextEventCycle
+	xCMP(rbx, rcx);
+	xJAE((void*)DispatcherEvent); // jump to dispatcher if event immediately
 
 	xMOV(edx, ptr32[&cpuRegs.GPR.r[reg].UL[0]]); // eax = v0
 	xLEA(rax, ptrNative[rdx * 8 + rbx]); // edx = v0 * 8 + cycle
 	xCMP(rcx, rax);
 	xCMOVB(rax, rcx); // eax = new_cycles = min(v8 * 8, nextEventCycle)
-	xMOV(ptr32[&cpuRegs.cycle], eax); // writeback new_cycles
-	xSUB(eax, ebx); // new_cycles -= cycle
-	xSHR(eax, 3); // compute new v0 value
-	xSUB(edx, eax); // v0 -= cycle_diff
+	xMOV(ptr64[&cpuRegs.cycle], rax); // writeback new_cycles
+	xSUB(rax, rbx); // new_cycles -= cycle
+	xSHR(rax, 3); // compute new v0 value
+	xSUB(rdx, rax); // v0 -= cycle_diff
 	xMOV(ptr32[&cpuRegs.GPR.r[reg].UL[0]], edx); // write back new value of v0
 	xJNZ((void*)DispatcherEvent); // jump to dispatcher if new v0 is not zero (i.e. an event)
 	xMOV(ptr32[&cpuRegs.pc], s_nEndBlock); // otherwise end of loop
@@ -2716,7 +2707,7 @@ StartRecomp:
 			else
 			{
 				xMOV(ptr32[&cpuRegs.pc], pc);
-				xADD(ptr32[&cpuRegs.cycle], scaleblockcycles());
+				xADD(ptr64[&cpuRegs.cycle], scaleblockcycles());
 				recBlocks.Link(HWADDR(pc), xJcc32());
 			}
 		}

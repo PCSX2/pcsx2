@@ -273,7 +273,7 @@ void ipuCMDProcess()
 
 void ipu0Interrupt()
 {
-	IPU_LOG("ipu0Interrupt: %x", cpuRegs.cycle);
+	IPU_LOG("ipu0Interrupt: %llx", cpuRegs.cycle);
 
 	if(ipu0ch.qwc > 0)
 	{
@@ -289,7 +289,7 @@ void ipu0Interrupt()
 
 __fi void ipu1Interrupt()
 {
-	IPU_LOG("ipu1Interrupt %x:", cpuRegs.cycle);
+	IPU_LOG("ipu1Interrupt %llx:", cpuRegs.cycle);
 
 	if(!IPU1Status.DMAFinished || IPU1Status.InProgress)  //Sanity Check
 	{

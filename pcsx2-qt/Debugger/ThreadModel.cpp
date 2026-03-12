@@ -62,6 +62,8 @@ QVariant ThreadModel::data(const QModelIndex& index, int role) const
 
 				return tr("INVALID");
 			}
+			case ThreadModel::WAIT_ID:
+				return QtUtils::FilledQStringFromValue(thread->WaitId(), 16);
 		}
 	}
 	else if (role == Qt::UserRole)
@@ -85,6 +87,8 @@ QVariant ThreadModel::data(const QModelIndex& index, int role) const
 				return static_cast<u32>(thread->Status());
 			case ThreadModel::WAIT_TYPE:
 				return static_cast<u32>(thread->Wait());
+			case ThreadModel::WAIT_ID:
+				return QString::number(thread->WaitId());
 			default:
 				return QVariant();
 		}
@@ -116,6 +120,9 @@ QVariant ThreadModel::headerData(int section, Qt::Orientation orientation, int r
 			case ThreadColumns::WAIT_TYPE:
 				//: Warning: short space limit. Abbreviate if needed.
 				return tr("WAIT TYPE");
+			case ThreadColumns::WAIT_ID:
+				//: Warning: short space limit. Abbreviate if needed.
+				return tr("WAIT ID");
 			default:
 				return QVariant();
 		}
@@ -129,3 +136,5 @@ void ThreadModel::refreshData()
 	m_threads = m_cpu.GetThreadList();
 	endResetModel();
 }
+
+#include "moc_ThreadModel.cpp"

@@ -334,3 +334,5 @@ void EmulationSettingsWidget::onUseSystemLocaleFormatChanged()
 	const bool enabled = dialog()->getEffectiveBoolValue("EmuCore", "UseSystemLocaleFormat", false);
 	m_ui.rtcDateTime->setDisplayFormat(enabled ? QLocale::system().dateTimeFormat(QLocale::ShortFormat) : "yyyy-MM-dd HH:mm:ss");
 }
+
+#include "moc_EmulationSettingsWidget.cpp"

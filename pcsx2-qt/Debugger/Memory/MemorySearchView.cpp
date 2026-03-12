@@ -753,3 +753,5 @@ std::vector<SearchComparison> MemorySearchView::getValidSearchComparisonsForStat
 
 	return comparisons;
 }
+
+#include "moc_MemorySearchView.cpp"

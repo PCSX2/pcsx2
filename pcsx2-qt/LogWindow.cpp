@@ -2,9 +2,13 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "LogWindow.h"
+
 #include "MainWindow.h"
 #include "QtHost.h"
 #include "SettingWidgetBinder.h"
+
+#include "Achievements.h"
+#include "Host.h"
 #include "VMManager.h"
 
 #include <QtCore/QLatin1StringView>
@@ -417,20 +421,58 @@ void LogWindow::onInputEntered()
 	if (m_newline_on_enter)
 		text.append('\n');
 
+	if (!m_line_input->isEnabled())
+		return;
+
+	bool focus = m_line_input->hasFocus();
+	m_line_input->setDisabled(true);
+
+	const QPointer<LogWindow> window(this);
 	std::string str = text.toUtf8().toStdString();
 
-	if (VMManager::WriteBytesToEESIORXFIFO({reinterpret_cast<const u8*>(str.data()), str.size()}))
-	{
-		m_line_input->clear();
+	Host::RunOnCPUThread([str = std::move(str), focus, window]() {
+		bool success = true;
 
-		if (m_local_echo)
-			// appendMessage expects a newline to be at the end of the string
-			appendMessage(0, 0, m_newline_on_enter ? text : (text + '\n'));
+		if (!VMManager::HasValidVM())
+		{
+			Console.Warning("Cannot write to EE SIO RX FIFO while there is no virtual machine running.");
+			success = false;
+		}
 
-		QTextCursor cursor(m_text->textCursor());
-		cursor.movePosition(QTextCursor::End);
-		m_text->setTextCursor(cursor);
-	}
+		if (success && Achievements::IsHardcoreModeActive())
+		{
+			Console.Warning("Cannot write to EE SIO RX FIFO while RetroAchievements hardcore mode is active.");
+			success = false;
+		}
+
+		if (success)
+			success = VMManager::WriteBytesToEESIORXFIFO({reinterpret_cast<const u8*>(str.data()), str.size()});
+
+		QtHost::RunOnUIThread([success, str = std::move(str), focus, window]() {
+			if (!window)
+				return;
+
+			if (success)
+			{
+				window->m_line_input->clear();
+
+				if (window->m_local_echo)
+				{
+					// appendMessage expects a newline to be at the end of the string
+					QString text = QString::fromStdString(str);
+					window->appendMessage(0, 0, window->m_newline_on_enter ? text : (text + '\n'));
+				}
+
+				QTextCursor cursor(window->m_text->textCursor());
+				cursor.movePosition(QTextCursor::End);
+				window->m_text->setTextCursor(cursor);
+			}
+
+			window->m_line_input->setDisabled(false);
+			if (focus)
+				window->m_line_input->setFocus();
+		});
+	});
 }
 
 void LogWindow::saveSize()
@@ -461,3 +503,5 @@ void LogWindow::restoreSize()
 	const int height = Host::GetBaseIntSettingValue("UI", "LogWindowHeight", DEFAULT_HEIGHT);
 	resize(width, height);
 }
+
+#include "moc_LogWindow.cpp"

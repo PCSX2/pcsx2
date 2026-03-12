@@ -143,7 +143,7 @@ bool mVUIsReservedCOP2(int hostreg)
 	void recV##f() \
 	{ \
 		iFlushCall(FLUSH_FOR_POSSIBLE_MICRO_EXEC); \
-		xADD(ptr32[&cpuRegs.cycle], scaleblockcycles_clear()); \
+		xADD(ptr64[&cpuRegs.cycle], scaleblockcycles_clear()); \
 		recCall(V##f); \
 	}
 
@@ -331,22 +331,22 @@ static void COP2_Interlock(bool mBitSync)
 		{
 			iFlushCall(FLUSH_FOR_POSSIBLE_MICRO_EXEC);
 			_freeX86reg(eax);
-			xMOV(eax, ptr32[&cpuRegs.cycle]);
-			xADD(eax, scaleblockcycles_clear());
-			xMOV(ptr32[&cpuRegs.cycle], eax); // update cycles
+			xMOV(rax, ptr64[&cpuRegs.cycle]);
+			xADD(rax, scaleblockcycles_clear());
+			xMOV(ptr64[&cpuRegs.cycle], rax); // update cycles
 
 			xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
 			xForwardJZ32 skipvuidle;
 			if (mBitSync)
 			{
-				xSUB(eax, ptr32[&VU0.cycle]);
+				xSUB(rax, ptr64[&VU0.cycle]);
 
 				// Why do we check this here? Ratchet games, maybe others end up with flickering polygons
 				// when we use lazy COP2 sync, otherwise. The micro resumption getting deferred an extra
 				// EE block is apparently enough to cause issues.
 				if (EmuConfig.Gamefixes.VUSyncHack || EmuConfig.Gamefixes.FullVU0SyncHack)
-					xSUB(eax, ptr32[&VU0.nextBlockCycles]);
-				xCMP(eax, 4);
+					xSUB(rax, ptr64[&VU0.nextBlockCycles]);
+				xCMP(rax, 4);
 				xForwardJL32 skip;
 				xLoadFarAddr(arg1reg, CpuVU0);
 				xMOV(arg2reg, s_nBlockInterlocked);
@@ -366,16 +366,16 @@ static void mVUSyncVU0()
 {
 	iFlushCall(FLUSH_FOR_POSSIBLE_MICRO_EXEC);
 	_freeX86reg(eax);
-	xMOV(eax, ptr32[&cpuRegs.cycle]);
-	xADD(eax, scaleblockcycles_clear());
-	xMOV(ptr32[&cpuRegs.cycle], eax); // update cycles
+	xMOV(rax, ptr64[&cpuRegs.cycle]);
+	xADD(rax, scaleblockcycles_clear());
+	xMOV(ptr64[&cpuRegs.cycle], rax); // update cycles
 
 	xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
 	xForwardJZ32 skipvuidle;
-	xSUB(eax, ptr32[&VU0.cycle]);
+	xSUB(rax, ptr64[&VU0.cycle]);
 	if (EmuConfig.Gamefixes.VUSyncHack || EmuConfig.Gamefixes.FullVU0SyncHack)
-		xSUB(eax, ptr32[&VU0.nextBlockCycles]);
-	xCMP(eax, 4);
+		xSUB(rax, ptr64[&VU0.nextBlockCycles]);
+	xCMP(rax, 4);
 	xForwardJL32 skip;
 	xLoadFarAddr(arg1reg, CpuVU0);
 	xMOV(arg2reg, s_nBlockInterlocked);

@@ -524,6 +524,11 @@ typedef struct rc_client_achievement_t {
 RC_EXPORT const rc_client_achievement_t* RC_CCONV rc_client_get_achievement_info(rc_client_t* client, uint32_t id);
 
 /**
+ * Gets the next achievement after a provided achievement that fits in the specified bucket. Returns NULL if none found.
+ */
+RC_EXPORT const rc_client_achievement_t * RC_CCONV rc_client_get_next_achievement_info(rc_client_t * client, const rc_client_achievement_t * achievement, int bucket);
+
+/**
  * Gets the URL for the achievement image.
  * Returns RC_OK on success.
  */

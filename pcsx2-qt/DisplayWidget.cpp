@@ -493,3 +493,5 @@ bool DisplaySurface::eventFilter(QObject* object, QEvent* event)
 			return false;
 	}
 }
+
+#include "moc_DisplayWidget.cpp"

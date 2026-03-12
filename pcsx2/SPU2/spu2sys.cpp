@@ -26,7 +26,6 @@ V_CoreDebug DebugCores[2];
 V_Core Cores[2];
 V_SPDIF Spdif;
 
-StereoOut32 DCFilterIn, DCFilterOut;
 u16 OutPos;
 u16 InputPos;
 u32 Cycles;
@@ -127,8 +126,6 @@ void V_Core::Init(int index)
 	DMAPtr = nullptr;
 	KeyOn = 0;
 	OutPos = 0;
-	DCFilterIn = {};
-	DCFilterOut = {};
 
 	psxmode = false;
 	psxSoundDataTransferControl = 0;
@@ -257,7 +254,7 @@ __forceinline void CheckDMAProgress(int cid)
 
 	if (core.DMAICounter > 0 && (psxRegs.cycle - core.LastClock) > 0)
 	{
-		const u32 amt = std::min(psxRegs.cycle - core.LastClock, (u32)core.DMAICounter);
+		const u32 amt = std::min<u64>(psxRegs.cycle - core.LastClock, (u32)core.DMAICounter);
 		core.DMAICounter -= amt;
 		core.LastClock = psxRegs.cycle;
 

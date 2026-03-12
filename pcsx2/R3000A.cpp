@@ -94,7 +94,7 @@ void psxException(u32 code, u32 bd)
 	}*/
 }
 
-__fi void psxSetNextBranch( u32 startCycle, s32 delta )
+__fi void psxSetNextBranch( u64 startCycle, s32 delta )
 {
 	// typecast the conditional to signed so that things don't blow up
 	// if startCycle is greater than our next branch cycle.
@@ -108,7 +108,7 @@ __fi void psxSetNextBranchDelta( s32 delta )
 	psxSetNextBranch( psxRegs.cycle, delta );
 }
 
-__fi int psxTestCycle( u32 startCycle, s32 delta )
+__fi int psxTestCycle( u64 startCycle, s32 delta )
 {
 	// typecast the conditional to signed so that things don't explode
 	// if the startCycle is ahead of our current cpu cycle.
@@ -228,11 +228,11 @@ __ri void iopEventTest()
 		iopEventTestIsActive = false;
 	}
 
-	if ((psxHu32(0x1078) != 0) && ((psxHu32(0x1070) & psxHu32(0x1074)) != 0))
+	if ((psxHu32(HW_ICTRL) != 0) && ((psxHu32(HW_ISTAT) & psxHu32(HW_IMASK)) != 0))
 	{
 		if ((psxRegs.CP0.n.Status & 0xFE01) >= 0x401)
 		{
-			PSXCPU_LOG("Interrupt: %x  %x", psxHu32(0x1070), psxHu32(0x1074));
+			PSXCPU_LOG("Interrupt: %x  %x", psxHu32(HW_ISTAT), psxHu32(HW_IMASK));
 			psxException(0, 0);
 			iopEventAction = true;
 		}
@@ -241,8 +241,8 @@ __ri void iopEventTest()
 
 void iopTestIntc()
 {
-	if( psxHu32(0x1078) == 0 ) return;
-	if( (psxHu32(0x1070) & psxHu32(0x1074)) == 0 ) return;
+	if( psxHu32(HW_ICTRL) == 0 ) return;
+	if( (psxHu32(HW_ISTAT) & psxHu32(HW_IMASK)) == 0 ) return;
 
 	if( !eeEventTestIsActive )
 	{

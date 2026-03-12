@@ -67,7 +67,11 @@
     </widget>
    </item>
    <item>
-    <widget class="QTextEdit" name="urls"/>
+    <widget class="QTextEdit" name="urls">
+      <property name="acceptRichText">
+        <bool>false</bool>
+      </property>
+    </widget>
    </item>
    <item>
     <widget class="QLabel" name="label_2">

@@ -12,6 +12,8 @@ option(ENABLE_GSRUNNER "Enables building the GSRunner by default.  It can still 
 option(LTO_PCSX2_CORE "Enable LTO/IPO/LTCG on the subset of pcsx2 that benefits most from it but not anything else")
 option(USE_VTUNE "Plug VTUNE to profile GS JIT.")
 option(PACKAGE_MODE "Use this option to ease packaging of PCSX2 (developer/distribution option)")
+option(BUNDLE_EMOJI_FONT "Bundles Noto Color Emoji for systems whose system emoji font isn't usable by freetype" ON)
+option(POSITION_INDEPENDENT_CODE "Generate position-independent code. It is recommended that you leave this on." ON)
 
 #-------------------------------------------------------------------------------
 # Graphical option
@@ -268,6 +270,34 @@ if(USE_CLANG AND TIMETRACE)
 endif()
 
 set(PCSX2_WARNINGS ${DEFAULT_WARNINGS})
+
+if(POSITION_INDEPENDENT_CODE)
+	# Make sure position-independent code is enabled properly.
+	# Without this check, on some platforms (e.g. Fedora 43) the right flags
+	# won't be passed to the linker, resulting in a broken build when link time
+	# optimization is enabled (even with a cmake version >= 3.14).
+	if(NOT MSVC)
+		include(CheckPIESupported)
+		check_pie_supported(OUTPUT_VARIABLE PIE_SUPPORTED_OUTPUT LANGUAGES C CXX)
+
+		if((NOT CMAKE_C_LINK_PIE_SUPPORTED) OR (NOT CMAKE_CXX_LINK_PIE_SUPPORTED))
+			message(WARNING
+				"The POSITION_INDEPENDENT_CODE option is enabled but is not "
+				"supported at link time:\n${PIE_SUPPORTED_OUTPUT}")
+		endif()
+	endif()
+
+	set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+else()
+	if(CMAKE_INTERPROCEDURAL_OPTIMIZATION)
+		message(WARNING
+			"The CMAKE_INTERPROCEDURAL_OPTIMIZATION option is enabled but the "
+			"CMAKE_POSITION_INDEPENDENT_CODE option is disabled. This has been "
+			"found to result in broken builds on certain platforms.")
+	endif()
+
+	set(CMAKE_POSITION_INDEPENDENT_CODE OFF)
+endif()
 
 #-------------------------------------------------------------------------------
 # MacOS-specific things

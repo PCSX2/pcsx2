@@ -8,7 +8,6 @@
 #include "Settings/GameCheatSettingsWidget.h"
 #include "Settings/SettingsWindow.h"
 
-#include "pcsx2/GameList.h"
 #include "pcsx2/Patch.h"
 
 #include "common/HeterogeneousContainers.h"
@@ -346,3 +345,5 @@ QList<QStandardItem*> GameCheatSettingsWidget::populateTreeViewRow(const Patch::
 	items.push_back(descriptionItem);
 	return items;
 }
+
+#include "moc_GameCheatSettingsWidget.cpp"

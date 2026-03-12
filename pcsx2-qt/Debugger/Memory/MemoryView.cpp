@@ -965,3 +965,5 @@ void MemoryView::gotoAddress(u32 address)
 	this->repaint();
 	this->setFocus();
 }
+
+#include "moc_MemoryView.cpp"

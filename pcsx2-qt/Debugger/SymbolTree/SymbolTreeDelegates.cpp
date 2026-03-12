@@ -527,3 +527,5 @@ void SymbolTreeIntegerLineEdit::setSignedValue(s64 value)
 {
 	setText(m_display_options.signedIntegerToString(value, m_size_bits));
 }
+
+#include "moc_SymbolTreeDelegates.cpp"

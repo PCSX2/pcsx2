@@ -1157,6 +1157,7 @@ target_link_libraries(PCSX2_FLAGS INTERFACE
 	discord-rpc
 	simpleini
 	freesurround
+	Freetype::Freetype
 	SDL3::SDL3
 	ZLIB::ZLIB
 	LZ4::LZ4
@@ -1275,6 +1276,9 @@ function(setup_main_executable target)
 		if (NOT WIN32 AND "${path}" MATCHES "/dx11/") # Don't include unneccessary stuff
 			continue()
 		endif()
+		if (NOT BUNDLE_EMOJI_FONT AND "${path}" MATCHES "fonts/NotoColorEmoji")
+			continue()
+		endif()
 		pcsx2_resource(${target} ${path} ${CMAKE_SOURCE_DIR}/bin/resources/)
 	endforeach()
 
@@ -1306,7 +1310,7 @@ function(setup_main_executable target)
 
 		# Copy dependency libraries.
 		set(DEPS_BINDIR "${CMAKE_SOURCE_DIR}/deps/bin")
-		set(DEPS_TO_COPY freetype.dll harfbuzz.dll jpeg62.dll libpng16.dll libsharpyuv.dll libwebp.dll libwebpdemux.dll libwebpmux.dll lz4.dll SDL3.dll shaderc_shared.dll zlib1.dll zstd.dll plutovg.dll plutosvg.dll)
+		set(DEPS_TO_COPY freetype.dll harfbuzz.dll jpeg62.dll libpng16.dll libsharpyuv.dll libwebp.dll libwebpdemux.dll libwebpmux.dll lz4.dll SDL3.dll shaderc_shared.dll z.dll zstd.dll plutovg.dll plutosvg.dll)
 		set(DEPS_TO_COPY
 			$<IF:$<CONFIG:Debug>,kddockwidgets-qt6d.dll,kddockwidgets-qt6.dll>
 			${DEPS_TO_COPY}

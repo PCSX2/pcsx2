@@ -1,3 +1,14 @@
+# 3.1.0 (2026-02-23)
+
+- Added supported for resource tight alignment (feature added in Agility SDK 1.618.1). It is used automatically when available.
+  - Added function `Allocator::IsTightAlignmentSupported`.
+  - Added `ALLOCATOR_FLAG_DONT_USE_TIGHT_ALIGNMENT`.
+- Fixes and improvements in the internal function `AllocatorPimpl::GetResourceAllocationInfo` (which decides when to use small alignment or tight alignment), including:
+  - Added support for 1D and 3D textures when `D3D12MA_USE_SMALL_RESOURCE_PLACEMENT_ALIGNMENT = 2` (#78, #79).
+  - Fix for cases when `D3D12_TEXTURE_LAYOUT_64KB_*_SWIZZLE` is used (#86).
+- Fixes for build errors in MinGW (#77).
+- Fixes and improvements in documentation and tests.
+
 # 3.0.1 (2025-05-08)
 
 - Fixed macros `D3D12MA_RECOMMENDED_ALLOCATOR_FLAGS`, `D3D12MA_RECOMMENDED_POOL_FLAGS` (#73).

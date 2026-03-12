@@ -35,7 +35,7 @@ static const u32
 	HW_SIO_BAUD			= 0x1f80104e,
 
     HW_RAM_SIZE         = 0x1f801060,
-	HW_IREG				= 0x1f801070,
+	HW_ISTAT			= 0x1f801070,
 	HW_IMASK			= 0x1f801074,
 	HW_ICTRL			= 0x1f801078,
 
@@ -316,7 +316,7 @@ enum IopEventId
 extern void PSX_INT( IopEventId n, s32 ecycle);
 extern int psxRemainingCycles(IopEventId n);
 
-extern void psxSetNextBranch( u32 startCycle, s32 delta );
+extern void psxSetNextBranch( u64 startCycle, s32 delta );
 extern void psxSetNextBranchDelta( s32 delta );
 
 extern void psxHwReset();

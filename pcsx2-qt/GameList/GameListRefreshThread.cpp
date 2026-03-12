@@ -121,3 +121,5 @@ void GameListRefreshThread::run()
 	GameList::Refresh(m_invalidate_cache, false, &m_progress);
 	emit refreshComplete();
 }
+
+#include "moc_GameListRefreshThread.cpp"

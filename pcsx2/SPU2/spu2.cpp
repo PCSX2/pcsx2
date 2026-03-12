@@ -24,17 +24,19 @@ namespace SPU2
 	static void InternalReset(bool psxmode);
 } // namespace SPU2
 
-u32 lClocks = 0;
+u64 lClocks = 0;
 
 static bool s_audio_capture_active = false;
 static bool s_psxmode = false;
 static bool s_output_muted = false;
 
 static std::unique_ptr<AudioStream> s_output_stream;
-static std::array<s16, AudioStream::CHUNK_SIZE * 2> s_current_chunk;
+static std::array<float, AudioStream::CHUNK_SIZE * 2> s_current_chunk;
 static u32 s_current_chunk_pos;
 static u32 s_standard_volume = 0;
 static u32 s_fast_forward_volume = 0;
+
+float DCFilterIn[2], DCFilterOut[2];
 
 u32 SPU2::GetConsoleSampleRate()
 {
@@ -231,6 +233,9 @@ void SPU2::InternalReset(bool psxmode)
 		memset(_spu2mem, 0, 0x200000);
 		memset(_spu2mem + 0x2800, 7, 0x10); // from BIOS reversal. Locks the voices so they don't run free.
 		memset(_spu2mem + 0xe870, 7, 0x10); // Loop which gets left over by the BIOS, Megaman X7 relies on it being there.
+
+		memset(DCFilterIn, 0, sizeof(DCFilterIn));
+		memset(DCFilterOut, 0, sizeof(DCFilterOut));
 
 		Spdif.Info = 0; // Reset IRQ Status if it got set in a previously run game
 
@@ -484,11 +489,36 @@ s32 SPU2freeze(FreezeAction mode, freezeData* data)
 	return 0;
 }
 
+static void DCFilter(float *input)
+{
+	// A simple DC blocking high-pass filter
+	// Implementation from http://peabody.sapp.org/class/dmp2/lab/dcblock/
+	float output[2];
+	output[0] = (input[0] - DCFilterIn[0] + ((0.995f * DCFilterOut[0])));
+	output[1] = (input[1] - DCFilterIn[1] + ((0.995f * DCFilterOut[1])));
+
+	DCFilterIn[0] = input[0];
+	DCFilterIn[1] = input[1];
+	DCFilterOut[0] = output[0];
+	DCFilterOut[1] = output[1];
+
+	input[0] = output[0];
+	input[1] = output[1];
+}
+
 __forceinline void spu2Output(StereoOut32 out)
 {
-	// Final clamp, take care not to exceed 16 bits from here on
-	s_current_chunk[s_current_chunk_pos++] = static_cast<s16>(clamp_mix(out.Left));
-	s_current_chunk[s_current_chunk_pos++] = static_cast<s16>(clamp_mix(out.Right));
+	float conv[2];
+
+	conv[0] = static_cast<float>(clamp_mix(out.Left)) / INT16_MAX;
+	conv[1] = static_cast<float>(clamp_mix(out.Right)) / INT16_MAX;
+
+	/* Some games pause voices with the volume left on leaving us with
+     * significant DC offset, so we filter it out (e.x. SSX 3)*/
+	DCFilter(conv);
+
+	s_current_chunk[s_current_chunk_pos++] = conv[0];
+	s_current_chunk[s_current_chunk_pos++] = conv[1];
 	if (s_current_chunk_pos == s_current_chunk.size())
 	{
 		s_current_chunk_pos = 0;

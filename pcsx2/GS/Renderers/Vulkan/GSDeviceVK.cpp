@@ -4523,6 +4523,8 @@ void GSDeviceVK::RenderBlankFrame()
 bool GSDeviceVK::DoCAS(
 	GSTexture* sTex, GSTexture* dTex, bool sharpen_only, const std::array<u32, NUM_CAS_CONSTANTS>& constants)
 {
+	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+
 	EndRenderPass();
 
 	GSTextureVK* const sTexVK = static_cast<GSTextureVK*>(sTex);

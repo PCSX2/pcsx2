@@ -33,7 +33,7 @@
 
 psxCounter psxCounters[NUM_COUNTERS];
 s32 psxNextDeltaCounter;
-u32 psxNextStartCounter;
+u64 psxNextStartCounter;
 
 bool hBlanking = false;
 bool vBlanking = false;
@@ -97,7 +97,7 @@ static void psxRcntSync(int cntidx)
 			psxCounters[cntidx].count += change;
 			psxCounters[cntidx].startCycle += change * psxCounters[cntidx].rate;
 
-			psxCounters[cntidx].startCycle &= ~(psxCounters[cntidx].rate - 1);
+			psxCounters[cntidx].startCycle &= ~((u64)psxCounters[cntidx].rate - 1);
 		}
 	}
 	else
@@ -132,7 +132,8 @@ static void _rcntSet(int cntidx)
 		return;
 	}
 
-	c = (u64)((overflowCap - counter.count) * counter.rate) - (psxRegs.cycle - counter.startCycle);
+	// FIXME: the u32 casts in this expression exist to match pre-64bit counter code, rewrite these
+	c = (u64)((overflowCap - counter.count) * counter.rate) - ((u32)psxRegs.cycle - (u32)counter.startCycle);
 	c += psxRegs.cycle - psxNextStartCounter; // adjust for time passed since last rcntUpdate();
 
 	if (c < (u64)psxNextDeltaCounter)
@@ -144,7 +145,7 @@ static void _rcntSet(int cntidx)
 	if (counter.target & IOPCNT_FUTURE_TARGET)
 		return;
 
-	c = (s64)((counter.target - counter.count) * counter.rate) - (psxRegs.cycle - counter.startCycle);
+	c = (s64)((counter.target - counter.count) * counter.rate) - ((u32)psxRegs.cycle - (u32)counter.startCycle);
 	c += psxRegs.cycle - psxNextStartCounter; // adjust for time passed since last rcntUpdate();
 
 	if (c < (u64)psxNextDeltaCounter)
@@ -214,7 +215,7 @@ static void _rcntFireInterrupt(int i, bool isOverflow)
 		{
 			// IRQ fired
 			//DevCon.Warning("Counter %d %s IRQ Fired count %x target %x psx Cycle %d", i, isOverflow ? "Overflow" : "Target", psxCounters[i].count, psxCounters[i].target, psxRegs.cycle);
-			psxHu32(0x1070) |= psxCounters[i].interrupt;
+			psxHu32(HW_ISTAT) |= psxCounters[i].interrupt;
 			iopTestIntc();
 		}
 
@@ -337,7 +338,7 @@ static void _psxCheckStartGate(int i)
 									   psxRcntRcount32(i);
 
 			// Not strictly necessary.
-			psxCounters[i].startCycle = psxRegs.cycle & ~(psxCounters[i].rate - 1);
+			psxCounters[i].startCycle = psxRegs.cycle & ~((u64)psxCounters[i].rate - 1);
 			break;
 
 		case 0x1: // GATE_ON_ClearStart - Counts constantly, clears on Blank END
@@ -366,7 +367,7 @@ static void _psxCheckEndGate(int i)
 	switch (psxCounters[i].mode.gateMode)
 	{
 		case 0x0: // GATE_ON_count - count while gate signal is low (RENDER)
-			psxCounters[i].startCycle = psxRegs.cycle & ~(psxCounters[i].rate - 1);
+			psxCounters[i].startCycle = psxRegs.cycle & ~((u64)psxCounters[i].rate - 1);
 			break;
 
 		case 0x1: // GATE_ON_ClearStart - Counts constantly, clears on Blank END
@@ -385,7 +386,7 @@ static void _psxCheckEndGate(int i)
 		case 0x3: // GATE_ON_Start - Starts counting when the next Blank Ends, no clear.
 			if (psxCounters[i].mode.stopped)
 			{
-				psxCounters[i].startCycle = psxRegs.cycle & ~(psxCounters[i].rate - 1);
+				psxCounters[i].startCycle = psxRegs.cycle & ~((u64)psxCounters[i].rate - 1);
 				psxCounters[i].mode.stopped = false;
 			}
 			break;
@@ -623,7 +624,7 @@ __fi void psxRcntWmode16(int index, u32 value)
 
 	// Current counter *always* resets on mode write.
 	counter.count = 0;
-	counter.startCycle = psxRegs.cycle & ~(counter.rate - 1);
+	counter.startCycle = psxRegs.cycle & ~((u64)counter.rate - 1);
 	counter.target &= 0xffff;
 
 	_rcntSet(index);

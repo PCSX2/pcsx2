@@ -45,6 +45,7 @@ BIOS
 namespace Ps2MemSize
 {
 	u32 ExposedRam = MainRam;
+	u32 ExposedIopRam = IopRam;
 } // namespace Ps2MemSize
 
 namespace SysMemory
@@ -185,7 +186,6 @@ bool SysMemory::AllocateMemoryMap()
 	HostMemoryMap::IOPmem = (uptr)(s_data_memory + HostMemoryMap::IOPmemOffset);
 	HostMemoryMap::VUmem = (uptr)(s_data_memory + HostMemoryMap::VUmemOffset);
 
-	DumpMemoryMap();
 	return true;
 }
 
@@ -235,12 +235,20 @@ void SysMemory::ReleaseMemoryMap()
 	}
 }
 
+void SysMemory::ReserveMemory()
+{
+	if (!s_data_memory_file_handle)
+		AllocateMemoryMap();
+}
+
 bool SysMemory::Allocate()
 {
 	DevCon.WriteLn(Color_StrongBlue, "Allocating host memory for virtual systems...");
 
-	if (!AllocateMemoryMap())
+	if (!s_data_memory_file_handle && !AllocateMemoryMap())
 		return false;
+
+	DumpMemoryMap();
 
 	memAllocate();
 	iopMemAlloc();
@@ -273,8 +281,6 @@ void SysMemory::Release()
 	vuMemRelease();
 	iopMemRelease();
 	memRelease();
-
-	ReleaseMemoryMap();
 }
 
 u8* SysMemory::GetDataPtr(size_t offset)
@@ -305,6 +311,7 @@ void memSetExtraMemMode(bool mode)
 
 	// update the amount of RAM exposed to the VM
 	Ps2MemSize::ExposedRam = mode ? Ps2MemSize::TotalRam : Ps2MemSize::MainRam;
+	Ps2MemSize::ExposedIopRam = mode ? Ps2MemSize::TotalIopRam: Ps2MemSize::IopRam;
 }
 
 void memSetKernelMode() {
@@ -1245,4 +1252,86 @@ bool SaveStateBase::memFreeze(Error* error)
 	}
 
 	return IsOkay();
+}
+
+u8 EEMemoryInterface::Read8(u32 address, bool* valid)
+{
+	if (valid)
+		*valid = true;
+	return memRead8(address);
+}
+
+u16 EEMemoryInterface::Read16(u32 address, bool* valid)
+{
+	if (valid)
+		*valid = true;
+	return memRead16(address);
+}
+
+u32 EEMemoryInterface::Read32(u32 address, bool* valid)
+{
+	if (valid)
+		*valid = true;
+	return memRead32(address);
+}
+
+u64 EEMemoryInterface::Read64(u32 address, bool* valid)
+{
+	if (valid)
+		*valid = true;
+	return memRead64(address);
+}
+
+u128 EEMemoryInterface::Read128(u32 address, bool* valid)
+{
+	u128 value;
+	memRead128(address, value);
+	if (valid)
+		*valid = true;
+	return value;
+}
+
+bool EEMemoryInterface::ReadBytes(u32 address, void* dest, u32 size)
+{
+	return vtlb_memSafeReadBytes(address, dest, size);
+}
+
+bool EEMemoryInterface::Write8(u32 address, u8 value)
+{
+	memWrite8(address, value);
+	return true;
+}
+
+bool EEMemoryInterface::Write16(u32 address, u16 value)
+{
+	memWrite16(address, value);
+	return true;
+}
+
+bool EEMemoryInterface::Write32(u32 address, u32 value)
+{
+	memWrite32(address, value);
+	return true;
+}
+
+bool EEMemoryInterface::Write64(u32 address, u64 value)
+{
+	memWrite64(address, value);
+	return true;
+
+}
+bool EEMemoryInterface::Write128(u32 address, u128 value)
+{
+	memWrite128(address, value);
+	return true;
+}
+
+bool EEMemoryInterface::WriteBytes(u32 address, void* src, u32 size)
+{
+	return vtlb_memSafeWriteBytes(address, src, size);
+}
+
+bool EEMemoryInterface::CompareBytes(u32 address, void* src, u32 size)
+{
+	return vtlb_memSafeCmpBytes(address, src, size) != 0;
 }

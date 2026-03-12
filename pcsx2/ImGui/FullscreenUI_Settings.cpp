@@ -291,7 +291,7 @@ void FullscreenUI::DrawInputBindingButton(
 		}
 	}
 
-	const float midpoint = bb.Min.y + g_large_font.second + LayoutScale(4.0f);
+	const float midpoint = bb.Min.y + GetLineHeight(g_large_font) + LayoutScale(4.0f);
 
 	if (oneline)
 	{
@@ -1877,7 +1877,7 @@ void FullscreenUI::DrawSettingsWindow()
 		if (s_game_settings_entry)
 		{
 			NavTitle(SmallString::from_format(
-				"{} ({})", Host::TranslateToCString(TR_CONTEXT, titles[static_cast<u32>(pages[index])]), s_game_settings_entry->GetTitle(true)));
+				"{} ({})", Host::TranslateToCString(TR_CONTEXT, titles[static_cast<u32>(pages[index])]), s_game_settings_entry->GetTitle(s_prefer_english_titles)));
 		}
 		else
 		{
@@ -2027,8 +2027,8 @@ void FullscreenUI::DrawSummarySettingsPage()
 
 	if (s_game_settings_entry)
 	{
-		if (MenuButton(FSUI_ICONSTR(ICON_FA_TAG, "Title"), s_game_settings_entry->GetTitle(true).c_str(), true))
-			CopyTextToClipboard(FSUI_STR("Game title copied to clipboard."), s_game_settings_entry->GetTitle(true));
+		if (MenuButton(FSUI_ICONSTR(ICON_FA_TAG, "Title"), s_game_settings_entry->GetTitle(s_prefer_english_titles).c_str(), true))
+			CopyTextToClipboard(FSUI_STR("Game title copied to clipboard."), s_game_settings_entry->GetTitle(s_prefer_english_titles));
 		if (MenuButton(FSUI_ICONSTR(ICON_FA_PAGER, "Serial"), s_game_settings_entry->serial.c_str(), true))
 			CopyTextToClipboard(FSUI_STR("Game serial copied to clipboard."), s_game_settings_entry->serial);
 		if (MenuButton(FSUI_ICONSTR(ICON_FA_CODE, "CRC"), fmt::format("{:08X}", s_game_settings_entry->crc).c_str(), true))

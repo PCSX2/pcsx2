@@ -1,3 +1,11 @@
+# v12.3.0
+* add rc_client_get_next_achievement_info
+* rc_client image functions will now return RC_INSUFFICENT_BUFFER instead of truncating if buffer is not large enough
+* fix race condition where rich presence from previous game may get associated to current game
+* fix rc_client_has_leaderboards returning true if the game only has hidden leaderboards
+* fix memory leak parsing large achievements
+* fix incomplete rich presence display condition affecting later display conditions
+
 # v12.2.1
 * fix parsing of leaderboards with comparisons in legacy-formatted values
 * fix validation warning on long AddSource chains

@@ -118,3 +118,5 @@ void InputRecordingViewer::closeFile()
 	} // TODO else error
 	m_ui.actionClose->setEnabled(m_file_open);
 }
+
+#include "moc_InputRecordingViewer.cpp"

@@ -92,3 +92,5 @@ void NewInputRecordingDlg::updateFormStatus()
 {
 	m_ui.m_dlgBtns->button(QDialogButtonBox::Ok)->setEnabled(isFormValid());
 }
+
+#include "moc_NewInputRecordingDlg.cpp"

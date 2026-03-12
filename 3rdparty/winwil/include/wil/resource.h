@@ -23,6 +23,7 @@
 #pragma warning(push)
 #pragma warning(disable : 26135 26110) // Missing locking annotation, Caller failing to hold lock
 #pragma warning(disable : 4714)        // __forceinline not honored
+#pragma warning(disable : 4820)        // padding added after data member
 
 #ifndef __WIL_RESOURCE
 #define __WIL_RESOURCE
@@ -139,7 +140,7 @@ namespace details
         {
             wistd::invoke(close_fn, value);
         }
-        inline static void close_reset(pointer_storage_t value) WI_NOEXCEPT
+        static void close_reset(pointer_storage_t value) WI_NOEXCEPT
         {
             auto preserveError = last_error_context();
             wistd::invoke(close_fn, value);
@@ -153,7 +154,7 @@ namespace details
         {
             close_fn(value);
         }
-        inline static void close_reset(pointer_storage_t value) WI_NOEXCEPT
+        static void close_reset(pointer_storage_t value) WI_NOEXCEPT
         {
             auto preserveError = last_error_context();
             close_fn(value);
@@ -181,10 +182,12 @@ namespace details
         typedef pointer_access_t pointer_access;
         __forceinline static pointer_storage invalid_value()
         {
+            // NOLINTNEXTLINE(performance-no-int-to-ptr): There's no provenance concealment because this isn't a valid pointer
             return (pointer)invalid;
         }
         __forceinline static bool is_valid(pointer_storage value) WI_NOEXCEPT
         {
+            // NOLINTNEXTLINE(performance-no-int-to-ptr): There's no provenance concealment because this isn't a valid pointer
             return (static_cast<pointer>(value) != (pointer)invalid);
         }
     };
@@ -286,7 +289,8 @@ namespace details
     struct needs_destruction
     {
         template <typename U>
-        static auto invoke(int) -> wistd::bool_constant<sizeof(U) >= 0>; // Always true, but SFINAE's if incomplete type
+        static auto invoke(int)
+            -> wistd::bool_constant<sizeof(U) >= 0>; // NOLINT(bugprone-sizeof-expression) Always true, but SFINAE's if incomplete type
         template <typename U>
         static auto invoke(float) -> wistd::false_type;
 
@@ -580,7 +584,7 @@ namespace details
             return m_call;
         }
 
-    protected:
+    private:
         TLambda m_lambda;
         bool m_call = true;
     };
@@ -783,10 +787,13 @@ namespace details
     struct out_param_t
     {
         typedef typename wil::smart_pointer_details<T>::pointer pointer;
+
+    private:
         T& wrapper;
         pointer pRaw;
         bool replace = true;
 
+    public:
         out_param_t(_Inout_ T& output) : wrapper(output), pRaw(nullptr)
         {
         }
@@ -819,10 +826,13 @@ namespace details
     struct out_param_ptr_t
     {
         typedef typename wil::smart_pointer_details<T>::pointer pointer;
+
+    private:
         T& wrapper;
         pointer pRaw;
         bool replace = true;
 
+    public:
         out_param_ptr_t(_Inout_ T& output) : wrapper(output), pRaw(nullptr)
         {
         }
@@ -857,18 +867,18 @@ namespace details
 This avoids multi-step handling of a raw resource to establish the smart pointer.
 Example: `GetFoo(out_param(foo));` */
 template <typename T>
-details::out_param_t<T> out_param(T& p)
+details::out_param_t<T> out_param(T& ptr)
 {
-    return details::out_param_t<T>(p);
+    return details::out_param_t<T>(ptr);
 }
 
 /** Use to retrieve raw out parameter pointers (with a required cast) into smart pointers that do not support the '&' operator.
 Use only when the smart pointer's &handle is not equal to the output type a function requires, necessitating a cast.
 Example: `wil::out_param_ptr<PSECURITY_DESCRIPTOR*>(securityDescriptor)` */
 template <typename Tcast, typename T>
-details::out_param_ptr_t<Tcast, T> out_param_ptr(T& p)
+details::out_param_ptr_t<Tcast, T> out_param_ptr(T& ptr)
 {
-    return details::out_param_ptr_t<Tcast, T>(p);
+    return details::out_param_ptr_t<Tcast, T>(ptr);
 }
 
 /** Use unique_struct to define an RAII type for a trivial struct that references resources that must be cleaned up.
@@ -1038,10 +1048,12 @@ If the type you're wrapping is a system type, you can share the code by declarin
 to [GitHub](https://github.com/microsoft/wil/). Otherwise, if the type is local to your project, declare it locally.
 
 @tparam ValueType: The type of array you want to manage.
-@tparam ArrayDeleter: The type of the function to clean up the array. Takes one parameter of type T[] or T*. Return values are
-        ignored. This is called in the destructor and reset functions.
+@tparam ArrayDeleter: The type of the function to clean up the array. Takes one parameter of type T[] or T*, and optionally a
+        second parameter of type SizeType specifying the number of elements being deleted. Return values are ignored. This is
+        called in the destructor and reset functions.
 @tparam ElementDeleter: The type of the function to clean up the array elements. Takes one parameter of type T. Return values are
         ignored. This is called in the destructor and reset functions.
+@tparam SizeType: The type for holding the element count. Defaults to size_t.
 
 ~~~
 void GetSomeArray(_Out_ size_t*, _Out_ NOTMYTYPE**);
@@ -1057,12 +1069,12 @@ destroy(p);
 wil::unique_any_array_ptr<NOTMYTYPE, ::CoTaskMemFree, not_my_deleter> myArray;
 GetSomeArray(myArray.size_address(), &myArray);
 ~~~ */
-template <typename ValueType, typename ArrayDeleter, typename ElementDeleter = empty_deleter>
+template <typename ValueType, typename ArrayDeleter, typename ElementDeleter = empty_deleter, typename SizeType = size_t>
 class unique_any_array_ptr
 {
 public:
     typedef ValueType value_type;
-    typedef size_t size_type;
+    typedef SizeType size_type;
     typedef ptrdiff_t difference_type;
     typedef ValueType* pointer;
     typedef const ValueType* const_pointer;
@@ -1086,7 +1098,7 @@ public:
         return *this;
     }
 
-    unique_any_array_ptr(pointer ptr, size_t size) WI_NOEXCEPT : m_ptr(ptr), m_size(size)
+    unique_any_array_ptr(pointer ptr, SizeType size) WI_NOEXCEPT : m_ptr(ptr), m_size(size)
     {
     }
 
@@ -1232,13 +1244,26 @@ public:
         if (m_ptr)
         {
             reset_array(ElementDeleter());
-            ArrayDeleter()(m_ptr);
+
+            // If the deleter has overloads that can accept either just the pointer, or the pointer and size, we prioritize the
+            // pointer-only version, since that is the version we initially supported. And if we can't invoke it with either
+            // parameter set, we'll allow the compiler to still try to invoke the pointer-only version and cause it to emit an
+            // error message that will tell the developer what the mismatch is.
+            if constexpr (wistd::is_invocable_v<ArrayDeleter, pointer> || !wistd::is_invocable_v<ArrayDeleter, pointer, size_type>)
+            {
+                ArrayDeleter()(m_ptr);
+            }
+            else
+            {
+                ArrayDeleter()(m_ptr, m_size);
+            }
+
             m_ptr = nullptr;
             m_size = size_type{};
         }
     }
 
-    void reset(pointer ptr, size_t size) WI_NOEXCEPT
+    void reset(pointer ptr, SizeType size) WI_NOEXCEPT
     {
         reset();
         m_ptr = ptr;
@@ -1269,10 +1294,12 @@ public:
     template <typename TSize>
     struct size_address_ptr
     {
+    private:
         unique_any_array_ptr& wrapper;
         TSize size{};
         bool replace = true;
 
+    public:
         size_address_ptr(_Inout_ unique_any_array_ptr& output) : wrapper(output)
         {
         }
@@ -1336,9 +1363,9 @@ namespace details
     struct unique_any_array_deleter
     {
         template <typename T>
-        void operator()(_Pre_opt_valid_ _Frees_ptr_opt_ T* p) const
+        void operator()(_Pre_opt_valid_ _Frees_ptr_opt_ T* ptr) const
         {
-            UniqueAnyType::policy::close_reset(p);
+            UniqueAnyType::policy::close_reset(ptr);
         }
     };
 
@@ -1346,20 +1373,20 @@ namespace details
     struct unique_struct_array_deleter
     {
         template <typename T>
-        void operator()(_Pre_opt_valid_ _Frees_ptr_opt_ T& p) const
+        void operator()(_Pre_opt_valid_ _Frees_ptr_opt_ T& ptr) const
         {
-            close_invoker<close_fn_t, close_fn, T*>::close(&p);
+            close_invoker<close_fn_t, close_fn, T*>::close(&ptr);
         }
     };
 
     struct com_unknown_deleter
     {
         template <typename T>
-        void operator()(_Pre_opt_valid_ _Frees_ptr_opt_ T* p) const
+        void operator()(_Pre_opt_valid_ _Frees_ptr_opt_ T* ptr) const
         {
-            if (p)
+            if (ptr)
             {
-                p->Release();
+                ptr->Release();
             }
         }
     };
@@ -1394,9 +1421,9 @@ namespace details
 } // namespace details
 /// @endcond
 
-template <typename T, typename ArrayDeleter>
+template <typename T, typename ArrayDeleter, typename SizeType = size_t>
 using unique_array_ptr =
-    unique_any_array_ptr<typename details::element_traits<T>::type, ArrayDeleter, typename details::element_traits<T>::deleter>;
+    unique_any_array_ptr<typename details::element_traits<T>::type, ArrayDeleter, typename details::element_traits<T>::deleter, SizeType>;
 
 /** Adapter for single-parameter 'free memory' for `wistd::unique_ptr`.
 This struct provides a standard wrapper for calling a platform function to deallocate memory held by a
@@ -1430,6 +1457,7 @@ struct function_deleter
     template <typename T>
     void operator()(_Frees_ptr_opt_ T* toFree) const
     {
+        // NOLINTNEXTLINE(bugprone-multi-level-implicit-pointer-conversion): It's common to call deleter functions that take void*
         TDeleter(toFree);
     }
 };
@@ -1820,15 +1848,67 @@ inline PCWSTR str_raw_ptr(PCWSTR str)
 }
 
 template <typename T>
-PCWSTR str_raw_ptr(const unique_any_t<T>& ua)
+PCWSTR str_raw_ptr(const unique_any_t<T>& val)
 {
-    return str_raw_ptr(ua.get());
+    return str_raw_ptr(val.get());
 }
 
 #if !defined(__WIL_MIN_KERNEL) && !defined(WIL_KERNEL_MODE)
 /// @cond
 namespace details
 {
+    struct string_view_t
+    {
+        wchar_t const* data;
+        size_t length;
+    };
+
+    template <typename StringT>
+    struct view_from_string_t
+    {
+        // Prioritize types that behave like string views as we already know their lengths
+        template <typename T, wistd::enable_if_t<is_string_view_like<T, wchar_t>, int> = 0>
+        static constexpr string_view_t get_impl(const T& str, priority_tag<2>) WI_NOEXCEPT
+        {
+            return string_view_t{str.data(), str.size()};
+        }
+
+        // Finally, assume PCWSTR or convertible to PCWSTR
+        template <typename T, wistd::enable_if_t<wistd::is_convertible_v<T, PCWSTR>, int> = 0>
+        static string_view_t get_impl(const T& str, priority_tag<1>) WI_NOEXCEPT
+        {
+            return string_view_t{str, str ? ::wcslen(str) : 0u};
+        }
+
+        // Catch-all when nothing matches to display a more helpful error message
+        template <typename T>
+        static constexpr string_view_t get_impl(const T&, priority_tag<0>) WI_NOEXCEPT
+        {
+            static_assert(!wistd::is_same_v<T, T>, "Argument is of an unknown string type");
+            return {};
+        }
+
+        static constexpr string_view_t get(const StringT& str) WI_NOEXCEPT
+        {
+            return get_impl(str, priority_tag<2>{});
+        }
+    };
+
+    template <typename StringT>
+    constexpr string_view_t view_from_string(const StringT& str)
+    {
+        return view_from_string_t<StringT>::get(str);
+    }
+
+    template <typename T>
+    struct view_from_string_t<wil::unique_any_t<T>>
+    {
+        static string_view_t get(const wil::unique_any_t<T>& str) WI_NOEXCEPT
+        {
+            return view_from_string(str.get());
+        }
+    };
+
     // Forward declaration
     template <typename string_type>
     struct string_maker;
@@ -1836,12 +1916,12 @@ namespace details
     // Concatenate any number of strings together and store it in an automatically allocated string.  If a string is present
     // in the input buffer, it is overwritten.
     template <typename string_type>
-    HRESULT str_build_nothrow(string_type& result, _In_reads_(strCount) PCWSTR* strList, size_t strCount)
+    HRESULT str_build_nothrow_(string_type& result, _In_reads_(strCount) string_view_t const* strList, size_t strCount)
     {
         size_t lengthRequiredWithoutNull{};
         for (auto& string : make_range(strList, strCount))
         {
-            lengthRequiredWithoutNull += string ? wcslen(string) : 0;
+            lengthRequiredWithoutNull += string.length;
         }
 
         details::string_maker<string_type> maker;
@@ -1851,9 +1931,10 @@ namespace details
         auto bufferEnd = buffer + lengthRequiredWithoutNull + 1;
         for (auto& string : make_range(strList, strCount))
         {
-            if (string)
+            if (string.data)
             {
-                RETURN_IF_FAILED(StringCchCopyExW(buffer, (bufferEnd - buffer), string, &buffer, nullptr, STRSAFE_IGNORE_NULLS));
+                RETURN_IF_FAILED(StringCchCopyNExW(
+                    buffer, (bufferEnd - buffer), string.data, string.length, &buffer, nullptr, STRSAFE_IGNORE_NULLS));
             }
         }
 
@@ -1861,12 +1942,11 @@ namespace details
         return S_OK;
     }
 
-    // NOTE: 'Strings' must all be PCWSTR, or convertible to PCWSTR, but C++ doesn't allow us to express that cleanly
     template <typename string_type, typename... Strings>
     HRESULT str_build_nothrow(string_type& result, Strings... strings)
     {
-        PCWSTR localStrings[] = {strings...};
-        return str_build_nothrow(result, localStrings, sizeof...(Strings));
+        string_view_t localStrings[] = {strings...};
+        return str_build_nothrow_<string_type>(result, localStrings, ARRAYSIZE(localStrings));
     }
 } // namespace details
 /// @endcond
@@ -1877,7 +1957,8 @@ template <typename string_type, typename... strings>
 HRESULT str_concat_nothrow(string_type& buffer, const strings&... str)
 {
     static_assert(sizeof...(str) > 0, "attempting to concatenate no strings");
-    return details::str_build_nothrow(buffer, details::string_maker<string_type>::get(buffer), str_raw_ptr(str)...);
+    return details::str_build_nothrow(
+        buffer, details::view_from_string(details::string_maker<string_type>::get(buffer)), details::view_from_string(str)...);
 }
 #endif // !defined(__WIL_MIN_KERNEL) && !defined(WIL_KERNEL_MODE)
 
@@ -1981,6 +2062,7 @@ namespace std
 template <typename storage_t>
 struct hash<wil::unique_any_t<storage_t>>
 {
+    // NOLINTNEXTLINE(readability-redundant-casting): This warning originates from the STL headers
     WI_NODISCARD size_t operator()(wil::unique_any_t<storage_t> const& val) const
     {
         return (hash<typename wil::unique_any_t<storage_t>::pointer>()(val.get()));
@@ -2036,20 +2118,6 @@ namespace details
             {
                 m_ptr = std::make_shared<unique_t>(wistd::move(other));
             }
-        }
-
-        shared_storage(const shared_storage& other) WI_NOEXCEPT : m_ptr(other.m_ptr)
-        {
-        }
-
-        shared_storage& operator=(const shared_storage& other) WI_NOEXCEPT
-        {
-            m_ptr = other.m_ptr;
-            return *this;
-        }
-
-        shared_storage(shared_storage&& other) WI_NOEXCEPT : m_ptr(wistd::move(other.m_ptr))
-        {
         }
 
         shared_storage(std::shared_ptr<unique_t> const& ptr) : m_ptr(ptr)
@@ -2323,22 +2391,10 @@ class weak_any
 public:
     typedef SharedT shared_t;
 
-    weak_any() WI_NOEXCEPT
-    {
-    }
+    weak_any() WI_NOEXCEPT = default;
 
     weak_any(const shared_t& other) WI_NOEXCEPT : m_weakPtr(other.m_ptr)
     {
-    }
-
-    weak_any(const weak_any& other) WI_NOEXCEPT : m_weakPtr(other.m_weakPtr)
-    {
-    }
-
-    weak_any& operator=(const weak_any& right) WI_NOEXCEPT
-    {
-        m_weakPtr = right.m_weakPtr;
-        return (*this);
     }
 
     weak_any& operator=(const shared_t& right) WI_NOEXCEPT
@@ -2393,6 +2449,7 @@ namespace std
 template <typename storage_t>
 struct hash<wil::shared_any_t<storage_t>>
 {
+    // NOLINTNEXTLINE(readability-redundant-casting): This warning originates from the STL headers
     WI_NODISCARD size_t operator()(wil::shared_any_t<storage_t> const& val) const
     {
         return (hash<typename wil::shared_any_t<storage_t>::pointer>()(val.get()));
@@ -2499,29 +2556,29 @@ typename wistd::enable_if<wistd::extent<_Ty>::value != 0, void>::type make_uniqu
 #define __WIL_WINBASE_
 namespace details
 {
-    inline void __stdcall SetEvent(HANDLE h) WI_NOEXCEPT
+    inline void __stdcall SetEvent(HANDLE evt) WI_NOEXCEPT
     {
-        __FAIL_FAST_ASSERT_WIN32_BOOL_FALSE__(::SetEvent(h));
+        __FAIL_FAST_ASSERT_WIN32_BOOL_FALSE__(::SetEvent(evt));
     }
 
-    inline void __stdcall ResetEvent(HANDLE h) WI_NOEXCEPT
+    inline void __stdcall ResetEvent(HANDLE evt) WI_NOEXCEPT
     {
-        __FAIL_FAST_ASSERT_WIN32_BOOL_FALSE__(::ResetEvent(h));
+        __FAIL_FAST_ASSERT_WIN32_BOOL_FALSE__(::ResetEvent(evt));
     }
 
-    inline void __stdcall CloseHandle(HANDLE h) WI_NOEXCEPT
+    inline void __stdcall CloseHandle(HANDLE handle) WI_NOEXCEPT
     {
-        __FAIL_FAST_ASSERT_WIN32_BOOL_FALSE__(::CloseHandle(h));
+        __FAIL_FAST_ASSERT_WIN32_BOOL_FALSE__(::CloseHandle(handle));
     }
 
-    inline void __stdcall ReleaseSemaphore(_In_ HANDLE h) WI_NOEXCEPT
+    inline void __stdcall ReleaseSemaphore(_In_ HANDLE semaphore) WI_NOEXCEPT
     {
-        __FAIL_FAST_ASSERT_WIN32_BOOL_FALSE__(::ReleaseSemaphore(h, 1, nullptr));
+        __FAIL_FAST_ASSERT_WIN32_BOOL_FALSE__(::ReleaseSemaphore(semaphore, 1, nullptr));
     }
 
-    inline void __stdcall ReleaseMutex(_In_ HANDLE h) WI_NOEXCEPT
+    inline void __stdcall ReleaseMutex(_In_ HANDLE mutex) WI_NOEXCEPT
     {
-        __FAIL_FAST_ASSERT_WIN32_BOOL_FALSE__(::ReleaseMutex(h));
+        __FAIL_FAST_ASSERT_WIN32_BOOL_FALSE__(::ReleaseMutex(mutex));
     }
 
     inline void __stdcall CloseTokenLinkedToken(_In_ TOKEN_LINKED_TOKEN* linkedToken) WI_NOEXCEPT
@@ -2602,13 +2659,10 @@ namespace details
     {
         static void Destroy(_In_ PTP_TIMER threadpoolTimer) WI_NOEXCEPT
         {
+            static_assert(cancellationBehavior != PendingCallbackCancellationBehavior::NoWait); // Handled by partial specialization
             threadpool_t::SetThreadpoolTimer(threadpoolTimer, nullptr, 0, 0);
-#pragma warning(suppress : 4127) // conditional expression is constant
-            if (cancellationBehavior != PendingCallbackCancellationBehavior::NoWait)
-            {
-                threadpool_t::WaitForThreadpoolTimerCallbacks(
-                    threadpoolTimer, (cancellationBehavior == PendingCallbackCancellationBehavior::Cancel));
-            }
+            threadpool_t::WaitForThreadpoolTimerCallbacks(
+                threadpoolTimer, (cancellationBehavior == PendingCallbackCancellationBehavior::Cancel));
             threadpool_t::CloseThreadpoolTimer(threadpoolTimer);
         }
     };
@@ -2702,9 +2756,9 @@ typedef unique_any_handle_null_only<decltype(&::DeleteBoundaryDescriptor), ::Del
 namespace details
 {
     template <ULONG flags>
-    inline void __stdcall ClosePrivateNamespaceHelper(HANDLE h) WI_NOEXCEPT
+    inline void __stdcall ClosePrivateNamespaceHelper(HANDLE handle) WI_NOEXCEPT
     {
-        ::ClosePrivateNamespace(h, flags);
+        ::ClosePrivateNamespace(handle, flags);
     }
 } // namespace details
 /// @endcond
@@ -2777,6 +2831,421 @@ inline bool handle_wait(HANDLE hEvent, DWORD dwMilliseconds = INFINITE, BOOL bAl
     __FAIL_FAST_ASSERT__((status == WAIT_TIMEOUT) || (status == WAIT_OBJECT_0) || (bAlertable && (status == WAIT_IO_COMPLETION)));
     return (status == WAIT_OBJECT_0);
 }
+
+/** Functions to wait for multiple synchronization objects (handles).
+
+wait_all(), wait_any() and their _fastfail and _nothrow variants, provide a convenient way to wait for
+multiple synchronization objects to be signaled. wait_all() waits until all objects are signaled and
+wait_any() waits until any object is signaled.
+
+Both functions accept any combination of:
+
+- Raw HANDLE values
+- WIL smart handle types (unique_handle, unique_event, etc)
+- WRL handle wrappers (Mutex, Semaphore, etc)
+- Any type that provides access to an underlying HANDLE through .get() or .Get()
+- Any type that provides an overload of the get_object_handle() function returning a HANDLE
+
+The functions return a wait_result or wait_result_alertable object containing details about the wait
+operation.
+
+The examples below try to touch on all possible uses of wait_all() and wait_any():
+
+@code
+wil::unique_event evt1;
+wil::unique_event evt2;
+
+// Wait for all events to be signaled, timeout after 1 second
+auto result = wil::wait_all(1000, evt1, evt2);
+if (result) {
+    // Abandoned objects can be checked via result.abandoned(). Abandoned objects are signaled and
+    // wait_all/wait_any will return success for those.
+    if (result.abandoned()) {
+        // Handle abandoned object at result.index()
+    } else {
+        // All events signaled
+    }
+} else if (result.timed_out()) {
+    // Handle timeout
+}
+
+// Wait for any event to be signaled with no timeout
+wil::unique_mutex mtx1;
+auto result = wil::wait_any_failfast(evt1, evt2, mtx1);
+if (result) {
+    // Abandoned objects can be checked via result.abandoned(). Abandoned objects are signaled and
+    // wait_all/wait_any will return success for those.
+    if (result.abandoned()) {
+        // Handle abandoned object at result.index()
+    } else {
+        // The signaled object is identified by result.index(), representing the N'th object
+        // in the argument list (0-based), i.e, evt1 is index 0, evt2 is index 1 and mtx1 is index 2.
+    }
+}
+
+// Using an alertable wait (usage of wait traits template argument is required) and showing how to
+// add support for custom types in the wait_all/wait_any functions.
+// Please see the documentation for WaitForMultipleObjectsEx (specifically the bAlertable parameter)
+// at https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitformultipleobjectsex
+// for more details about alertable waits.
+struct CustomType
+{
+    [...]
+    HANDLE get_handle() const WI_NOEXCEPT
+    {
+        // Return the underlying HANDLE for this custom type
+        return m_handle;
+    }
+
+    HANDLE m_handle;
+};
+
+// Provide a get_object_handle() overload so CustomType can participate in wait_all/wait_any
+HANDLE get_object_handle(const CustomType& custom) WI_NOEXCEPT
+{
+    return custom.get_handle();
+}
+
+CustomType custom1{...};
+HANDLE h1 = CreateEvent(...);
+wil::unique_event h2{...};
+wil::unique_semaphore h3{...};
+[...]
+auto result = wil::wait_all_nothrow<wil::wait_alertable_traits>(custom1, h1, h2, h3);
+if (result) {
+    // All handles signaled or abandoned (which are also considered signaled). More granular checks
+    // can be performed with result.signaled() and result.abandoned()
+} else if (result.alerted()) {
+    // Wait was interrupted by APC
+}
+@endcode
+
+@param timeout_milliseconds How long to wait in milliseconds. If using one of the overloads without
+a timeout, INFINITE is used internally.
+@param objects One or more handles/objects to wait on (max MAXIMUM_WAIT_OBJECTS)
+@return A wait_result or wait_result_alertable containing the wait status
+*/
+
+struct wait_result
+{
+    constexpr wait_result(DWORD status = WAIT_FAILED) WI_NOEXCEPT : m_status(status)
+    {
+        if (signaled() || abandoned())
+        {
+            m_hr = S_OK;
+        }
+        else if (timed_out())
+        {
+            m_hr = HRESULT_FROM_WIN32(ERROR_TIMEOUT);
+        }
+    }
+
+    // This constructor is used for failure cases (WAIT_FAILED) only!
+    constexpr wait_result(HRESULT hr) WI_NOEXCEPT : m_status(WAIT_FAILED), m_hr(hr)
+    {
+        __FAIL_FAST_ASSERT__(FAILED(hr));
+    }
+
+    WI_NODISCARD constexpr bool signaled() const WI_NOEXCEPT
+    {
+        // status should be between WAIT_OBJECT_0 (inclusive) and WAIT_OBJECT_0 + MAXIMUM_WAIT_OBJECTS
+        // (exclusive). However, because WAIT_OBJECT_0 is 0 and since status is a DWORD (unsigned),
+        // it will always be >= WAIT_OBJECT_0. Adding that check would actually cause a compiler error.
+        return m_status < (WAIT_OBJECT_0 + MAXIMUM_WAIT_OBJECTS);
+    }
+
+    WI_NODISCARD constexpr bool abandoned() const WI_NOEXCEPT
+    {
+        return ((m_status >= WAIT_ABANDONED_0) && (m_status < WAIT_ABANDONED_0 + MAXIMUM_WAIT_OBJECTS));
+    }
+
+    WI_NODISCARD constexpr explicit operator bool() const WI_NOEXCEPT
+    {
+        return signaled() || abandoned();
+    }
+
+    WI_NODISCARD constexpr bool timed_out() const WI_NOEXCEPT
+    {
+        return m_status == WAIT_TIMEOUT;
+    }
+
+    WI_NODISCARD constexpr DWORD index() const WI_NOEXCEPT
+    {
+        if (signaled())
+        {
+            return m_status - WAIT_OBJECT_0;
+        }
+
+        if (abandoned())
+        {
+            return m_status - WAIT_ABANDONED_0;
+        }
+
+        // index() should only be called if the object was signaled or abandoned.
+        FAIL_FAST();
+
+        // Unreachable, but avoids compiler errors
+        return static_cast<DWORD>(-1);
+    }
+
+    WI_NODISCARD constexpr DWORD status() const WI_NOEXCEPT
+    {
+        return m_status;
+    }
+
+    WI_NODISCARD constexpr HRESULT hresult() const WI_NOEXCEPT
+    {
+        return m_hr;
+    }
+
+protected:
+    DWORD m_status = WAIT_FAILED;
+    HRESULT m_hr = S_FALSE;
+};
+
+struct wait_result_alertable : wait_result
+{
+    // These constructors are needed by wait_for_multiple_objects_ex() in order to have an homogeneous
+    // return type. wait_for_multiple_objects_ex() needs to be able to construct a wait_result or
+    // wait_result_alertable from a DWORD or HRESULT. The default argument values allow us
+    // to default construct a wait_result_alertable object.
+    constexpr wait_result_alertable(DWORD status = WAIT_FAILED) WI_NOEXCEPT : wait_result(status)
+    {
+        if (alerted())
+        {
+            m_hr = HRESULT_FROM_WIN32(ERROR_ALERTED);
+        }
+    }
+
+    // This constructor is used for failure cases (WAIT_FAILED) only!
+    constexpr wait_result_alertable(HRESULT hr) WI_NOEXCEPT : wait_result(hr)
+    {
+    }
+
+    WI_NODISCARD constexpr bool alerted() const WI_NOEXCEPT
+    {
+        return m_status == WAIT_IO_COMPLETION;
+    }
+};
+
+// Wait traits
+
+struct wait_traits
+{
+    using result_type = wait_result;
+    constexpr static BOOL is_alertable = FALSE;
+};
+
+struct wait_alertable_traits
+{
+    using result_type = wait_result_alertable;
+    constexpr static BOOL is_alertable = TRUE;
+};
+
+namespace details
+{
+    template <typename alertable_policy_traits>
+    struct wait_all_traits : alertable_policy_traits
+    {
+        constexpr static BOOL is_waiting_for_all = TRUE;
+    };
+
+    template <typename alertable_policy_traits>
+    struct wait_any_traits : alertable_policy_traits
+    {
+        constexpr static BOOL is_waiting_for_all = FALSE;
+    };
+
+    template <typename wait_traits, typename err_policy>
+    inline auto wait_for_multiple_objects_ex(const HANDLE* lpHandles, DWORD nCount, DWORD dwMilliseconds)
+    {
+        __FAIL_FAST_ASSERT__(lpHandles != nullptr);
+        __FAIL_FAST_ASSERT__(nCount > 0);
+        __FAIL_FAST_ASSERT__(nCount <= MAXIMUM_WAIT_OBJECTS);
+
+        using wait_result_type = typename wait_traits::result_type;
+
+        const DWORD status =
+            ::WaitForMultipleObjectsEx(nCount, lpHandles, wait_traits::is_waiting_for_all, dwMilliseconds, wait_traits::is_alertable);
+        if (status == WAIT_FAILED)
+        {
+            const auto hr = HRESULT_FROM_WIN32(::GetLastError());
+            err_policy::HResult(hr);
+            return wait_result_type{hr};
+        }
+
+        return wait_result_type{status};
+    }
+
+    // This section implements tag dispatching and SFINAE to detect types that can supply a HANDLE
+    // value. It handles these cases:
+    //
+    // 1. A raw HANDLE value itself
+    // 2. Objects with a .get() method returning HANDLE
+    // 3. Objects with a .Get() method returning HANDLE
+    //
+    // Additional type patterns can be supported by adding overloads here or in client code.
+
+    // Overload for .get()
+    template <typename T>
+    constexpr auto get_object_handle_impl(const T& object, priority_tag<3>)
+        -> wistd::enable_if_t<wistd::is_same_v<decltype(object.get()), HANDLE>, HANDLE>
+    {
+        return object.get();
+    }
+
+    // Overload for .Get()
+    template <typename T>
+    constexpr auto get_object_handle_impl(const T& object, priority_tag<2>)
+        -> wistd::enable_if_t<wistd::is_same_v<decltype(object.Get()), HANDLE>, HANDLE>
+    {
+        return object.Get();
+    }
+
+    // Overload for HANDLE itself
+    constexpr HANDLE get_object_handle_impl(HANDLE handle, priority_tag<1>)
+    {
+        return handle;
+    }
+
+    // Catch-all fallback to present a nicer error message
+    template <typename T>
+    constexpr HANDLE get_object_handle_impl(const T&, priority_tag<0>)
+    {
+        static_assert(
+            sizeof(T) == 0,
+            "get_object_handle: unsupported type T. Cannot extract HANDLE from T. "
+            "Consider adding a new get_object_handle overload for type T.");
+        return nullptr;
+    }
+
+    template <typename T>
+    constexpr HANDLE get_object_handle(const T& object)
+    {
+        return get_object_handle_impl(object, priority_tag<3>{});
+    }
+
+    template <typename wait_traits, typename err_policy, typename... TObjects>
+    auto wait_for_multiple_objects(DWORD timeout_milliseconds, const TObjects&... objects)
+    {
+        constexpr auto object_count = sizeof...(objects);
+        static_assert(object_count > 1, "wait_for_multiple_objects expects at least 2 waitable objects");
+        static_assert(object_count <= MAXIMUM_WAIT_OBJECTS, "wait_for_multiple_objects expects no more than MAXIMUM_WAIT_OBJECTS waitable objects");
+
+        const HANDLE handles[] = {get_object_handle(objects)...};
+        return wait_for_multiple_objects_ex<wait_traits, err_policy>(handles, ARRAYSIZE(handles), timeout_milliseconds);
+    }
+} // namespace details
+
+//
+// wait_all variants
+//
+
+// exception throwing versions
+
+#ifdef WIL_ENABLE_EXCEPTIONS
+template <typename alertable_policy_traits = wait_traits, typename... TObjects>
+auto wait_all(DWORD timeout_milliseconds, TObjects&&... objects)
+{
+    return details::wait_for_multiple_objects<details::wait_all_traits<alertable_policy_traits>, err_exception_policy>(
+        timeout_milliseconds, wistd::forward<TObjects>(objects)...);
+}
+
+template <typename alertable_policy_traits = wait_traits, typename... TObjects>
+auto wait_all(TObjects&&... objects)
+{
+    return details::wait_for_multiple_objects<details::wait_all_traits<alertable_policy_traits>, err_exception_policy>(
+        INFINITE, wistd::forward<TObjects>(objects)...);
+}
+#endif // WIL_ENABLE_EXCEPTIONS
+
+// fail_fast versions
+
+template <typename alertable_policy_traits = wait_traits, typename... TObjects>
+auto wait_all_failfast(DWORD timeout_milliseconds, TObjects&&... objects) WI_NOEXCEPT
+{
+    return details::wait_for_multiple_objects<details::wait_all_traits<alertable_policy_traits>, err_failfast_policy>(
+        timeout_milliseconds, wistd::forward<TObjects>(objects)...);
+}
+
+template <typename alertable_policy_traits = wait_traits, typename... TObjects>
+auto wait_all_failfast(TObjects&&... objects) WI_NOEXCEPT
+{
+    return details::wait_for_multiple_objects<details::wait_all_traits<alertable_policy_traits>, err_failfast_policy>(
+        INFINITE, wistd::forward<TObjects>(objects)...);
+}
+
+// returncode versions
+
+template <typename alertable_policy_traits = wait_traits, typename... TObjects>
+auto wait_all_nothrow(DWORD timeout_milliseconds, TObjects&&... objects) WI_NOEXCEPT
+{
+    return details::wait_for_multiple_objects<details::wait_all_traits<alertable_policy_traits>, err_returncode_policy>(
+        timeout_milliseconds, wistd::forward<TObjects>(objects)...);
+}
+
+template <typename alertable_policy_traits = wait_traits, typename... TObjects>
+auto wait_all_nothrow(TObjects&&... objects) WI_NOEXCEPT
+{
+    return details::wait_for_multiple_objects<details::wait_all_traits<alertable_policy_traits>, err_returncode_policy>(
+        INFINITE, wistd::forward<TObjects>(objects)...);
+}
+
+//
+// wait_any variants
+//
+
+// exception throwing versions
+
+#ifdef WIL_ENABLE_EXCEPTIONS
+template <typename alertable_policy_traits = wait_traits, typename... TObjects>
+auto wait_any(DWORD timeout_milliseconds, TObjects&&... objects)
+{
+    return details::wait_for_multiple_objects<details::wait_any_traits<alertable_policy_traits>, err_exception_policy>(
+        timeout_milliseconds, wistd::forward<TObjects>(objects)...);
+}
+
+template <typename alertable_policy_traits = wait_traits, typename... TObjects>
+auto wait_any(TObjects&&... objects)
+{
+    return details::wait_for_multiple_objects<details::wait_any_traits<alertable_policy_traits>, err_exception_policy>(
+        INFINITE, wistd::forward<TObjects>(objects)...);
+}
+#endif // WIL_ENABLE_EXCEPTIONS
+
+// fail_fast versions
+
+template <typename alertable_policy_traits = wait_traits, typename... TObjects>
+auto wait_any_failfast(DWORD timeout_milliseconds, TObjects&&... objects) WI_NOEXCEPT
+{
+    return details::wait_for_multiple_objects<details::wait_any_traits<alertable_policy_traits>, err_failfast_policy>(
+        timeout_milliseconds, wistd::forward<TObjects>(objects)...);
+}
+
+template <typename alertable_policy_traits = wait_traits, typename... TObjects>
+auto wait_any_failfast(TObjects&&... objects) WI_NOEXCEPT
+{
+    return details::wait_for_multiple_objects<details::wait_any_traits<alertable_policy_traits>, err_failfast_policy>(
+        INFINITE, wistd::forward<TObjects>(objects)...);
+}
+
+// returncode versions
+
+template <typename alertable_policy_traits = wait_traits, typename... TObjects>
+auto wait_any_nothrow(DWORD timeout_milliseconds, TObjects&&... objects) WI_NOEXCEPT
+{
+    return details::wait_for_multiple_objects<details::wait_any_traits<alertable_policy_traits>, err_returncode_policy>(
+        timeout_milliseconds, wistd::forward<TObjects>(objects)...);
+}
+
+template <typename alertable_policy_traits = wait_traits, typename... TObjects>
+auto wait_any_nothrow(TObjects&&... objects) WI_NOEXCEPT
+{
+    return details::wait_for_multiple_objects<details::wait_any_traits<alertable_policy_traits>, err_returncode_policy>(
+        INFINITE, wistd::forward<TObjects>(objects)...);
+}
+
+// Event support
 
 enum class EventOptions
 {
@@ -2985,7 +3454,7 @@ public:
         {
             return TryAcquireEvent();
         }
-        else if (timeoutMilliseconds == INFINITE)
+        if (timeoutMilliseconds == INFINITE)
         {
             return wait();
         }
@@ -3039,10 +3508,8 @@ private:
         {
             return ResetEvent();
         }
-        else
-        {
-            return is_signaled();
-        }
+
+        return is_signaled();
     }
 
     bool WaitForSignal(DWORD timeoutMilliseconds) WI_NOEXCEPT
@@ -3562,13 +4029,13 @@ string_type make_unique_ansistring_nothrow(
         FAIL_FAST_IF(!source);
         length = strlen(source);
     }
-    const size_t cb = (length + 1) * sizeof(*source);
-    auto result = static_cast<PSTR>(details::string_allocator<string_type>::allocate(cb));
+    const size_t allocSizeBytes = (length + 1) * sizeof(*source);
+    auto result = static_cast<PSTR>(details::string_allocator<string_type>::allocate(allocSizeBytes));
     if (result)
     {
         if (source)
         {
-            memcpy_s(result, cb, source, cb - sizeof(*source));
+            memcpy_s(result, allocSizeBytes, source, allocSizeBytes - sizeof(*source));
         }
         else
         {
@@ -3684,8 +4151,11 @@ namespace details
 
     struct SecureZeroData
     {
+    private:
         void* pointer;
         size_t sizeBytes;
+
+    public:
         SecureZeroData(void* pointer_, size_t sizeBytes_ = 0) WI_NOEXCEPT
         {
             pointer = pointer_;
@@ -3718,9 +4188,9 @@ WI_NODISCARD inline secure_zero_memory_scope_exit SecureZeroMemory_scope_exit(_I
 /// @cond
 namespace details
 {
-    inline void __stdcall FreeProcessHeap(_Pre_opt_valid_ _Frees_ptr_opt_ void* p)
+    inline void __stdcall FreeProcessHeap(_Pre_opt_valid_ _Frees_ptr_opt_ void* ptr)
     {
-        ::HeapFree(::GetProcessHeap(), 0, p);
+        ::HeapFree(::GetProcessHeap(), 0, ptr);
     }
 
     struct heap_allocator
@@ -3736,27 +4206,27 @@ namespace details
 struct process_heap_deleter
 {
     template <typename T>
-    void operator()(_Pre_valid_ _Frees_ptr_ T* p) const
+    void operator()(_Pre_valid_ _Frees_ptr_ T* ptr) const
     {
-        details::FreeProcessHeap(p);
+        details::FreeProcessHeap(ptr);
     }
 };
 
 struct virtualalloc_deleter
 {
     template <typename T>
-    void operator()(_Pre_valid_ _Frees_ptr_ T* p) const
+    void operator()(_Pre_valid_ _Frees_ptr_ T* ptr) const
     {
-        ::VirtualFree(p, 0, MEM_RELEASE);
+        ::VirtualFree(ptr, 0, MEM_RELEASE);
     }
 };
 
 struct mapview_deleter
 {
     template <typename T>
-    void operator()(_Pre_valid_ _Frees_ptr_ T* p) const
+    void operator()(_Pre_valid_ _Frees_ptr_ T* ptr) const
     {
-        ::UnmapViewOfFile(p);
+        ::UnmapViewOfFile(ptr);
     }
 };
 
@@ -3813,21 +4283,26 @@ using unique_mapview_ptr = wistd::unique_ptr<details::ensure_trivially_destructi
 //
 // UpdateGlobalState(value);
 // globalStateWatcher.SetEvent(); // signal observers so they can update
+enum class event_watcher_options
+{
+    none = 0x0,
+    manual_reset = 0x1 << 0,
+    manual_start = 0x1 << 1,
+};
+
+DEFINE_ENUM_FLAG_OPERATORS(event_watcher_options);
 
 /// @cond
 namespace details
 {
     struct event_watcher_state
     {
-        event_watcher_state(unique_event_nothrow&& eventHandle, wistd::function<void()>&& callback) :
-            m_callback(wistd::move(callback)), m_event(wistd::move(eventHandle))
-        {
-        }
         wistd::function<void()> m_callback;
         unique_event_nothrow m_event;
         // The thread pool must be last to ensure that the other members are valid
         // when it is destructed as it will reference them.
         unique_threadpool_wait m_threadPoolWait;
+        event_watcher_options m_flags{event_watcher_options::none};
     };
 
     inline void delete_event_watcher_state(_In_opt_ event_watcher_state* watcherStorage)
@@ -3856,22 +4331,49 @@ public:
     template <typename from_err_policy>
     event_watcher_t(
         unique_any_t<event_t<details::unique_storage<details::handle_resource_policy>, from_err_policy>>&& eventHandle,
+        event_watcher_options optFlags,
         wistd::function<void()>&& callback)
     {
         static_assert(wistd::is_same<void, result>::value, "this constructor requires exceptions or fail fast; use the create method");
-        create(wistd::move(eventHandle), wistd::move(callback));
+        create(wistd::move(eventHandle), optFlags, wistd::move(callback));
     }
 
-    event_watcher_t(_In_ HANDLE eventHandle, wistd::function<void()>&& callback)
+    template <typename from_err_policy>
+    event_watcher_t(
+        unique_any_t<event_t<details::unique_storage<details::handle_resource_policy>, from_err_policy>>&& eventHandle,
+        wistd::function<void()>&& callback) :
+        event_watcher_t(wistd::move(eventHandle), event_watcher_options::none, wistd::move(callback))
     {
-        static_assert(wistd::is_same<void, result>::value, "this constructor requires exceptions or fail fast; use the create method");
-        create(eventHandle, wistd::move(callback));
     }
 
-    event_watcher_t(wistd::function<void()>&& callback)
+    event_watcher_t(_In_ HANDLE eventHandle, event_watcher_options optFlags, wistd::function<void()>&& callback)
     {
         static_assert(wistd::is_same<void, result>::value, "this constructor requires exceptions or fail fast; use the create method");
-        create(wistd::move(callback));
+        create(eventHandle, optFlags, wistd::move(callback));
+    }
+
+    event_watcher_t(_In_ HANDLE eventHandle, wistd::function<void()>&& callback) :
+        event_watcher_t(eventHandle, event_watcher_options::none, wistd::move(callback))
+    {
+    }
+
+    event_watcher_t(event_watcher_options optFlags, wistd::function<void()>&& callback)
+    {
+        static_assert(wistd::is_same<void, result>::value, "this constructor requires exceptions or fail fast; use the create method");
+        create(optFlags, wistd::move(callback));
+    }
+
+    event_watcher_t(wistd::function<void()>&& callback) : event_watcher_t(event_watcher_options::none, wistd::move(callback))
+    {
+    }
+
+    template <typename event_err_policy>
+    result create(
+        unique_any_t<event_t<details::unique_storage<details::handle_resource_policy>, event_err_policy>>&& eventHandle,
+        event_watcher_options optFlags,
+        wistd::function<void()>&& callback)
+    {
+        return err_policy::HResult(create_take_hevent_ownership(eventHandle.release(), optFlags, wistd::move(callback)));
     }
 
     template <typename event_err_policy>
@@ -3879,11 +4381,17 @@ public:
         unique_any_t<event_t<details::unique_storage<details::handle_resource_policy>, event_err_policy>>&& eventHandle,
         wistd::function<void()>&& callback)
     {
-        return err_policy::HResult(create_take_hevent_ownership(eventHandle.release(), wistd::move(callback)));
+        return create(wistd::move(eventHandle), event_watcher_options::none, wistd::move(callback));
     }
 
     // Creates the event that you will be watching.
     result create(wistd::function<void()>&& callback)
+    {
+        return create(event_watcher_options::none, wistd::move(callback));
+    }
+
+    // Creates the event that you will be watching.
+    result create(event_watcher_options optFlags, wistd::function<void()>&& callback)
     {
         unique_event_nothrow eventHandle;
         HRESULT hr = eventHandle.create(EventOptions::ManualReset); // auto-reset is supported too.
@@ -3891,18 +4399,23 @@ public:
         {
             return err_policy::HResult(hr);
         }
-        return err_policy::HResult(create_take_hevent_ownership(eventHandle.release(), wistd::move(callback)));
+        return err_policy::HResult(create_take_hevent_ownership(eventHandle.release(), optFlags, wistd::move(callback)));
     }
 
     // Input is an event handler that is duplicated into this class.
     result create(_In_ HANDLE eventHandle, wistd::function<void()>&& callback)
+    {
+        return create(eventHandle, event_watcher_options::none, wistd::move(callback));
+    }
+
+    result create(_In_ HANDLE eventHandle, event_watcher_options optFlags, wistd::function<void()>&& callback)
     {
         unique_event_nothrow ownedHandle;
         if (!DuplicateHandle(GetCurrentProcess(), eventHandle, GetCurrentProcess(), &ownedHandle, 0, FALSE, DUPLICATE_SAME_ACCESS))
         {
             return err_policy::LastError();
         }
-        return err_policy::HResult(create_take_hevent_ownership(ownedHandle.release(), wistd::move(callback)));
+        return err_policy::HResult(create_take_hevent_ownership(ownedHandle.release(), optFlags, wistd::move(callback)));
     }
 
     // Provide access to the inner event and the very common SetEvent() method on it.
@@ -3915,33 +4428,48 @@ public:
         storage_t::get()->m_event.SetEvent();
     }
 
+    void start()
+    {
+        SetThreadpoolWait(storage_t::get()->m_threadPoolWait.get(), storage_t::get()->m_event.get(), nullptr);
+    }
+
 private:
     // Had to move this from a Lambda so it would compile in C++/CLI (which thought the Lambda should be a managed function for some reason).
     static void CALLBACK wait_callback(PTP_CALLBACK_INSTANCE, void* context, TP_WAIT* pThreadPoolWait, TP_WAIT_RESULT)
     {
         auto pThis = static_cast<details::event_watcher_state*>(context);
-        // Manual events must be re-set to avoid missing the last notification.
-        pThis->m_event.ResetEvent();
+        if (WI_IsFlagClear(pThis->m_flags, event_watcher_options::manual_reset))
+        {
+            // Manual events must be re-set to avoid missing the last notification.
+            pThis->m_event.ResetEvent();
+        }
         // Call the client before re-arming to ensure that multiple callbacks don't
         // run concurrently.
         pThis->m_callback();
-        SetThreadpoolWait(pThreadPoolWait, pThis->m_event.get(), nullptr); // valid params ensure success
+        if (WI_IsFlagClear(pThis->m_flags, event_watcher_options::manual_start))
+        {
+            // Re-arm the wait only if not manual start.
+            SetThreadpoolWait(pThreadPoolWait, pThis->m_event.get(), nullptr);
+        }
     }
 
     // To avoid template expansion (if unique_event/unique_event_nothrow forms were used) this base
     // create function takes a raw handle and assumes its ownership, even on failure.
-    HRESULT create_take_hevent_ownership(_In_ HANDLE rawHandleOwnershipTaken, wistd::function<void()>&& callback)
+    HRESULT create_take_hevent_ownership(_In_ HANDLE rawHandleOwnershipTaken, event_watcher_options optFlags, wistd::function<void()>&& callback)
     {
         __FAIL_FAST_ASSERT__(rawHandleOwnershipTaken != nullptr); // invalid parameter
         unique_event_nothrow eventHandle(rawHandleOwnershipTaken);
         wistd::unique_ptr<details::event_watcher_state> watcherState(
-            new (std::nothrow) details::event_watcher_state(wistd::move(eventHandle), wistd::move(callback)));
+            new (std::nothrow) details::event_watcher_state{wistd::move(callback), wistd::move(eventHandle), nullptr, optFlags});
         RETURN_IF_NULL_ALLOC(watcherState);
 
         watcherState->m_threadPoolWait.reset(CreateThreadpoolWait(wait_callback, watcherState.get(), nullptr));
         RETURN_LAST_ERROR_IF(!watcherState->m_threadPoolWait);
         storage_t::reset(watcherState.release()); // no more failures after this, pass ownership
-        SetThreadpoolWait(storage_t::get()->m_threadPoolWait.get(), storage_t::get()->m_event.get(), nullptr);
+        if (WI_IsFlagClear(optFlags, event_watcher_options::manual_start))
+        {
+            start();
+        }
         return S_OK;
     }
 };
@@ -3952,25 +4480,54 @@ typedef unique_any_t<event_watcher_t<details::unique_storage<details::event_watc
 template <typename err_policy>
 unique_event_watcher_nothrow make_event_watcher_nothrow(
     unique_any_t<event_t<details::unique_storage<details::handle_resource_policy>, err_policy>>&& eventHandle,
+    event_watcher_options flags,
     wistd::function<void()>&& callback) WI_NOEXCEPT
 {
     unique_event_watcher_nothrow watcher;
-    watcher.create(wistd::move(eventHandle), wistd::move(callback));
+    watcher.create(wistd::move(eventHandle), flags, wistd::move(callback));
+    return watcher; // caller must test for success using if (watcher)
+}
+
+template <typename err_policy>
+unique_event_watcher_nothrow make_event_watcher_nothrow(
+    unique_any_t<event_t<details::unique_storage<details::handle_resource_policy>, err_policy>>&& eventHandle,
+    wistd::function<void()>&& callback) WI_NOEXCEPT
+{
+    return make_event_watcher_nothrow(wistd::move(eventHandle), event_watcher_options::none, wistd::move(callback));
+}
+
+inline unique_event_watcher_nothrow make_event_watcher_nothrow(
+    _In_ HANDLE eventHandle, event_watcher_options flags, wistd::function<void()>&& callback) WI_NOEXCEPT
+{
+    unique_event_watcher_nothrow watcher;
+    watcher.create(eventHandle, flags, wistd::move(callback));
     return watcher; // caller must test for success using if (watcher)
 }
 
 inline unique_event_watcher_nothrow make_event_watcher_nothrow(_In_ HANDLE eventHandle, wistd::function<void()>&& callback) WI_NOEXCEPT
 {
+    return make_event_watcher_nothrow(eventHandle, event_watcher_options::none, wistd::move(callback));
+}
+
+inline unique_event_watcher_nothrow make_event_watcher_nothrow(event_watcher_options flags, wistd::function<void()>&& callback) WI_NOEXCEPT
+{
     unique_event_watcher_nothrow watcher;
-    watcher.create(eventHandle, wistd::move(callback));
+    watcher.create(flags, wistd::move(callback));
     return watcher; // caller must test for success using if (watcher)
 }
 
 inline unique_event_watcher_nothrow make_event_watcher_nothrow(wistd::function<void()>&& callback) WI_NOEXCEPT
 {
-    unique_event_watcher_nothrow watcher;
-    watcher.create(wistd::move(callback));
-    return watcher; // caller must test for success using if (watcher)
+    return make_event_watcher_nothrow(event_watcher_options::none, wistd::move(callback));
+}
+
+template <typename err_policy>
+unique_event_watcher_failfast make_event_watcher_failfast(
+    unique_any_t<event_t<details::unique_storage<details::handle_resource_policy>, err_policy>>&& eventHandle,
+    event_watcher_options flags,
+    wistd::function<void()>&& callback)
+{
+    return unique_event_watcher_failfast(wistd::move(eventHandle), flags, wistd::move(callback));
 }
 
 template <typename err_policy>
@@ -3978,17 +4535,28 @@ unique_event_watcher_failfast make_event_watcher_failfast(
     unique_any_t<event_t<details::unique_storage<details::handle_resource_policy>, err_policy>>&& eventHandle,
     wistd::function<void()>&& callback)
 {
-    return unique_event_watcher_failfast(wistd::move(eventHandle), wistd::move(callback));
+    return make_event_watcher_failfast(wistd::move(eventHandle), event_watcher_options::none, wistd::move(callback));
+}
+
+inline unique_event_watcher_failfast make_event_watcher_failfast(
+    _In_ HANDLE eventHandle, event_watcher_options flags, wistd::function<void()>&& callback)
+{
+    return unique_event_watcher_failfast(eventHandle, flags, wistd::move(callback));
 }
 
 inline unique_event_watcher_failfast make_event_watcher_failfast(_In_ HANDLE eventHandle, wistd::function<void()>&& callback)
 {
-    return unique_event_watcher_failfast(eventHandle, wistd::move(callback));
+    return make_event_watcher_failfast(eventHandle, event_watcher_options::none, wistd::move(callback));
+}
+
+inline unique_event_watcher_failfast make_event_watcher_failfast(event_watcher_options flags, wistd::function<void()>&& callback)
+{
+    return unique_event_watcher_failfast(flags, wistd::move(callback));
 }
 
 inline unique_event_watcher_failfast make_event_watcher_failfast(wistd::function<void()>&& callback)
 {
-    return unique_event_watcher_failfast(wistd::move(callback));
+    return make_event_watcher_failfast(event_watcher_options::none, wistd::move(callback));
 }
 
 #ifdef WIL_ENABLE_EXCEPTIONS
@@ -3997,19 +4565,38 @@ typedef unique_any_t<event_watcher_t<details::unique_storage<details::event_watc
 template <typename err_policy>
 unique_event_watcher make_event_watcher(
     unique_any_t<event_t<details::unique_storage<details::handle_resource_policy>, err_policy>>&& eventHandle,
+    event_watcher_options flags,
     wistd::function<void()>&& callback)
 {
-    return unique_event_watcher(wistd::move(eventHandle), wistd::move(callback));
+    return unique_event_watcher(wistd::move(eventHandle), flags, wistd::move(callback));
+}
+
+template <typename err_policy>
+unique_event_watcher make_event_watcher(
+    unique_any_t<event_t<details::unique_storage<details::handle_resource_policy>, err_policy>>&& eventHandle,
+    wistd::function<void()>&& callback)
+{
+    return make_event_watcher(wistd::move(eventHandle), event_watcher_options::none, wistd::move(callback));
+}
+
+inline unique_event_watcher make_event_watcher(_In_ HANDLE eventHandle, event_watcher_options flags, wistd::function<void()>&& callback)
+{
+    return unique_event_watcher(eventHandle, flags, wistd::move(callback));
 }
 
 inline unique_event_watcher make_event_watcher(_In_ HANDLE eventHandle, wistd::function<void()>&& callback)
 {
-    return unique_event_watcher(eventHandle, wistd::move(callback));
+    return make_event_watcher(eventHandle, event_watcher_options::none, wistd::move(callback));
+}
+
+inline unique_event_watcher make_event_watcher(event_watcher_options flags, wistd::function<void()>&& callback)
+{
+    return unique_event_watcher(flags, wistd::move(callback));
 }
 
 inline unique_event_watcher make_event_watcher(wistd::function<void()>&& callback)
 {
-    return unique_event_watcher(wistd::move(callback));
+    return make_event_watcher(event_watcher_options::none, wistd::move(callback));
 }
 #endif // WIL_ENABLE_EXCEPTIONS
 
@@ -4193,13 +4780,13 @@ if (foo)
 template <typename T, typename... Args>
 inline typename wistd::enable_if<!wistd::is_array<T>::value, unique_hlocal_ptr<T>>::type make_unique_hlocal_nothrow(Args&&... args)
 {
-    unique_hlocal_ptr<T> sp(static_cast<T*>(::LocalAlloc(LMEM_FIXED, sizeof(T))));
-    if (sp)
+    unique_hlocal_ptr<T> result(static_cast<T*>(::LocalAlloc(LMEM_FIXED, sizeof(T))));
+    if (result)
     {
         // use placement new to initialize memory from the previous allocation
-        new (sp.get()) T(wistd::forward<Args>(args)...);
+        new (result.get()) T(wistd::forward<Args>(args)...);
     }
-    return sp;
+    return result;
 }
 
 /** Provides `std::make_unique()` semantics for array resources allocated with `LocalAlloc()` in a context that may not throw upon
@@ -4223,18 +4810,18 @@ inline typename wistd::enable_if<wistd::is_array<T>::value && wistd::extent<T>::
     typedef typename wistd::remove_extent<T>::type E;
     FAIL_FAST_IF((__WI_SIZE_MAX / sizeof(E)) < size);
     size_t allocSize = sizeof(E) * size;
-    unique_hlocal_ptr<T> sp(static_cast<E*>(::LocalAlloc(LMEM_FIXED, allocSize)));
-    if (sp)
+    unique_hlocal_ptr<T> result(static_cast<E*>(::LocalAlloc(LMEM_FIXED, allocSize)));
+    if (result)
     {
         // use placement new to initialize memory from the previous allocation;
         // note that array placement new cannot be used as the standard allows for operator new[]
         // to consume overhead in the allocation for internal bookkeeping
-        for (auto& elem : make_range(static_cast<E*>(sp.get()), size))
+        for (auto& elem : make_range(static_cast<E*>(result.get()), size))
         {
             new (&elem) E();
         }
     }
-    return sp;
+    return result;
 }
 
 /** Provides `std::make_unique()` semantics for resources allocated with `LocalAlloc()` in a context that must fail fast upon
@@ -4396,13 +4983,13 @@ inline auto make_hlocal_ansistring(
 struct hlocal_secure_deleter
 {
     template <typename T>
-    void operator()(_Pre_opt_valid_ _Frees_ptr_opt_ T* p) const
+    void operator()(_Pre_opt_valid_ _Frees_ptr_opt_ T* ptr) const
     {
-        if (p)
+        if (ptr)
         {
 #pragma warning(suppress : 26006 26007)            // LocalSize() ensures proper buffer length
-            ::SecureZeroMemory(p, ::LocalSize(p)); // this is safe since LocalSize() returns 0 on failure
-            ::LocalFree(p);
+            ::SecureZeroMemory(ptr, ::LocalSize(ptr)); // this is safe since LocalSize() returns 0 on failure
+            ::LocalFree(ptr);
         }
     }
 };
@@ -4944,6 +5531,29 @@ inline PCWSTR str_raw_ptr(const unique_hstring& str)
     return str_raw_ptr(str.get());
 }
 
+namespace details
+{
+    template <>
+    struct view_from_string_t<HSTRING>
+    {
+        static string_view_t get(HSTRING str) WI_NOEXCEPT
+        {
+            UINT32 length = 0;
+            PCWSTR rawBuffer = WindowsGetStringRawBuffer(str, &length);
+            return string_view_t{rawBuffer, length};
+        }
+    };
+
+    template <>
+    struct view_from_string_t<unique_hstring>
+    {
+        static string_view_t get(const unique_hstring& str)
+        {
+            return view_from_string(str.get());
+        }
+    };
+} // namespace details
+
 #endif // __WIL__WINSTRING_H_
 #if (defined(__WIL__WINSTRING_H_) && !defined(__WIL__WINSTRING_H_STL) && defined(WIL_RESOURCE_STL)) || defined(WIL_DOXYGEN)
 /// @cond
@@ -5076,7 +5686,7 @@ typedef weak_any<shared_winhttp_hinternet> weak_winhttp_hinternet;
 /// @cond
 #define __WIL_WINSOCKAPI_
 /// @endcond
-typedef unique_any<SOCKET, int(WINAPI*)(SOCKET), ::closesocket, details::pointer_access_all, SOCKET, SOCKET, INVALID_SOCKET, SOCKET> unique_socket;
+typedef unique_any<SOCKET, decltype(&::closesocket), ::closesocket, details::pointer_access_all, SOCKET, SOCKET, INVALID_SOCKET, SOCKET> unique_socket;
 #endif // __WIL_WINSOCKAPI_
 #if (defined(__WIL_WINSOCKAPI_) && !defined(__WIL_WINSOCKAPI_STL) && defined(WIL_RESOURCE_STL)) || defined(WIL_DOXYGEN)
 /// @cond
@@ -5086,6 +5696,27 @@ typedef shared_any<unique_socket> shared_socket;
 typedef weak_any<shared_socket> weak_socket;
 #endif // __WIL_WINSOCKAPI_STL
 
+#if (defined(_WS2TCPIP_H_) && !defined(__WIL_WS2TCPIP_H_)) || defined(WIL_DOXYGEN)
+/// @cond
+#define __WIL_WS2TCPIP_H_
+/// @endcond
+typedef unique_any<ADDRINFOA*, decltype(&::freeaddrinfo), ::freeaddrinfo> unique_addrinfo_ansi;
+typedef unique_any<ADDRINFOW*, decltype(&::FreeAddrInfoW), ::FreeAddrInfoW> unique_addrinfo;
+// not defining a type for FreeAddrInfoEx(ADDRINFOEXA*) as that API is formally __declspec(deprecated)
+typedef unique_any<ADDRINFOEXW*, decltype(&::FreeAddrInfoExW), ::FreeAddrInfoExW> unique_addrinfoex;
+#endif // __WIL_WS2TCPIP_H_
+#if (defined(__WIL_WS2TCPIP_H_) && !defined(__WIL_WS2TCPIP_H_STL) && defined(WIL_RESOURCE_STL)) || defined(WIL_DOXYGEN)
+/// @cond
+#define __WIL_WS2TCPIP_H_STL
+/// @endcond
+typedef shared_any<unique_addrinfo_ansi> shared_addrinfo_ansi;
+typedef weak_any<unique_addrinfo_ansi> weak_addrinfo_ansi;
+typedef shared_any<unique_addrinfo> shared_addrinfo;
+typedef weak_any<unique_addrinfo> weak_addrinfo;
+typedef shared_any<unique_addrinfoex> shared_addrinfoex;
+typedef weak_any<unique_addrinfoex> weak_addrinfoex;
+#endif // __WIL_WS2TCPIP_H_STL
+
 #if (defined(_WINGDI_) && !defined(__WIL_WINGDI_) && WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) && !defined(NOGDI) && !defined(WIL_KERNEL_MODE)) || \
     defined(WIL_DOXYGEN)
 /// @cond
@@ -5093,8 +5724,11 @@ typedef weak_any<shared_socket> weak_socket;
 /// @endcond
 struct window_dc
 {
+private:
     HDC dc;
     HWND hwnd;
+
+public:
     window_dc(HDC dc_, HWND hwnd_ = nullptr) WI_NOEXCEPT
     {
         dc = dc_;
@@ -5133,8 +5767,11 @@ typedef unique_any<HDC, decltype(&paint_dc::close), paint_dc::close, details::po
 
 struct select_result
 {
+private:
     HGDIOBJ hgdi;
     HDC hdc;
+
+public:
     select_result(HGDIOBJ hgdi_, HDC hdc_ = nullptr) WI_NOEXCEPT
     {
         hgdi = hgdi_;
@@ -5144,9 +5781,9 @@ struct select_result
     {
         return hgdi;
     }
-    static void close(select_result sr) WI_NOEXCEPT
+    static void close(select_result obj) WI_NOEXCEPT
     {
-        ::SelectObject(sr.hdc, sr.hgdi);
+        ::SelectObject(obj.hdc, obj.hgdi);
     }
 };
 typedef unique_any<HGDIOBJ, decltype(&select_result::close), select_result::close, details::pointer_access_all, select_result> unique_select_object;
@@ -5475,13 +6112,13 @@ if (foo)
 template <typename T, typename... Args>
 inline typename wistd::enable_if<!wistd::is_array<T>::value, unique_cotaskmem_ptr<T>>::type make_unique_cotaskmem_nothrow(Args&&... args)
 {
-    unique_cotaskmem_ptr<T> sp(static_cast<T*>(::CoTaskMemAlloc(sizeof(T))));
-    if (sp)
+    unique_cotaskmem_ptr<T> result(static_cast<T*>(::CoTaskMemAlloc(sizeof(T))));
+    if (result)
     {
         // use placement new to initialize memory from the previous allocation
-        new (sp.get()) T(wistd::forward<Args>(args)...);
+        new (result.get()) T(wistd::forward<Args>(args)...);
     }
-    return sp;
+    return result;
 }
 
 /** Provides `std::make_unique()` semantics for array resources allocated with `CoTaskMemAlloc()` in a context that may not throw
@@ -5505,18 +6142,18 @@ inline typename wistd::enable_if<wistd::is_array<T>::value && wistd::extent<T>::
     typedef typename wistd::remove_extent<T>::type E;
     FAIL_FAST_IF((__WI_SIZE_MAX / sizeof(E)) < size);
     size_t allocSize = sizeof(E) * size;
-    unique_cotaskmem_ptr<T> sp(static_cast<E*>(::CoTaskMemAlloc(allocSize)));
-    if (sp)
+    unique_cotaskmem_ptr<T> result(static_cast<E*>(::CoTaskMemAlloc(allocSize)));
+    if (result)
     {
         // use placement new to initialize memory from the previous allocation;
         // note that array placement new cannot be used as the standard allows for operator new[]
         // to consume overhead in the allocation for internal bookkeeping
-        for (auto& elem : make_range(static_cast<E*>(sp.get()), size))
+        for (auto& elem : make_range(static_cast<E*>(result.get()), size))
         {
             new (&elem) E();
         }
     }
-    return sp;
+    return result;
 }
 
 /** Provides `std::make_unique()` semantics for resources allocated with `CoTaskMemAlloc()` in a context that must fail fast upon
@@ -5667,21 +6304,21 @@ typedef weak_any<shared_cotaskmem_string> weak_cotaskmem_string;
 struct cotaskmem_secure_deleter
 {
     template <typename T>
-    void operator()(_Pre_opt_valid_ _Frees_ptr_opt_ T* p) const
+    void operator()(_Pre_opt_valid_ _Frees_ptr_opt_ T* ptr) const
     {
-        if (p)
+        if (ptr)
         {
             IMalloc* malloc;
             if (SUCCEEDED(::CoGetMalloc(1, &malloc)))
             {
-                size_t const size = malloc->GetSize(p);
+                size_t const size = malloc->GetSize(ptr);
                 if (size != static_cast<size_t>(-1))
                 {
-                    ::SecureZeroMemory(p, size);
+                    ::SecureZeroMemory(ptr, size);
                 }
                 malloc->Release();
             }
-            ::CoTaskMemFree(p);
+            ::CoTaskMemFree(ptr);
         }
     }
 };
@@ -6179,16 +6816,16 @@ typedef unique_any<PSID, decltype(&::CoTaskMemFree), ::CoTaskMemFree> unique_cot
 #define __WIL_PROCESSTHREADSAPI_H_DESK_SYS
 namespace details
 {
-    inline void __stdcall CloseProcessInformation(_In_ PROCESS_INFORMATION* p)
+    inline void __stdcall CloseProcessInformation(_In_ PROCESS_INFORMATION* procInfo)
     {
-        if (p->hProcess)
+        if (procInfo->hProcess)
         {
-            CloseHandle(p->hProcess);
+            CloseHandle(procInfo->hProcess);
         }
 
-        if (p->hThread)
+        if (procInfo->hThread)
         {
-            CloseHandle(p->hThread);
+            CloseHandle(procInfo->hThread);
         }
     }
 } // namespace details
@@ -7682,6 +8319,11 @@ namespace details
 
     template <typename TMutex>
     struct lock_proof_traits<std::lock_guard<TMutex>> : exclusive_lock_proof
+    {
+    };
+
+    template <typename TMutex>
+    struct lock_proof_traits<std::scoped_lock<TMutex>> : exclusive_lock_proof
     {
     };
 } // namespace details

@@ -251,7 +251,7 @@ static __fi void _doBranch_shared(u32 tar)
 
 				if (can_skip)
 				{
-					if (static_cast<s32>(cpuRegs.nextEventCycle - cpuRegs.cycle) > 0)
+					if (static_cast<s64>(cpuRegs.nextEventCycle - cpuRegs.cycle) > 0)
 						cpuRegs.cycle = cpuRegs.nextEventCycle;
 					else
 						cpuRegs.nextEventCycle = cpuRegs.cycle;

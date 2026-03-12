@@ -437,7 +437,7 @@ struct V_Core
 	u32 NoiseOut; // Noise Output
 	u16 AutoDMACtrl; // AutoDMA Status
 	s32 DMAICounter; // DMA Interrupt Counter
-	u32 LastClock; // DMA Interrupt Clock Cycle Counter
+	u64 LastClock; // DMA Interrupt Clock Cycle Counter
 	u32 InputDataLeft; // Input Buffer
 	u32 InputDataTransferred; // Used for simulating MADR increase (GTA VC)
 	u32 InputPosWrite;
@@ -569,8 +569,6 @@ extern u16 OutPos;
 extern u16 InputPos;
 // SPU Mixing Cycles ("Ticks mixed" counter)
 extern u32 Cycles;
-// DC Filter state
-extern StereoOut32 DCFilterIn, DCFilterOut;
 
 extern s16 spu2regs[0x010000 / sizeof(s16)];
 extern s16 _spu2mem[0x200000 / sizeof(s16)];

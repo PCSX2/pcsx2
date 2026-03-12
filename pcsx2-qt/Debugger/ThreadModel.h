@@ -24,6 +24,7 @@ public:
 		PRIORITY,
 		STATE,
 		WAIT_TYPE,
+		WAIT_ID,
 		COLUMN_COUNT
 	};
 
@@ -32,6 +33,7 @@ public:
 		QHeaderView::ResizeMode::ResizeToContents,
 		QHeaderView::ResizeMode::ResizeToContents,
 		QHeaderView::ResizeMode::ResizeToContents,
+		QHeaderView::ResizeMode::Stretch,
 		QHeaderView::ResizeMode::Stretch,
 		QHeaderView::ResizeMode::Stretch,
 	};

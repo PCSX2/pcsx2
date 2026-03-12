@@ -200,3 +200,5 @@ void BreakpointDialog::accept()
 
 	QDialog::accept();
 }
+
+#include "moc_BreakpointDialog.cpp"

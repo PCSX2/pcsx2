@@ -33,6 +33,7 @@
 #include "pcsx2/GSDumpReplayer.h"
 #include "pcsx2/GameList.h"
 #include "pcsx2/Host.h"
+#include "pcsx2/ImGui/FullscreenUI.h"
 #include "pcsx2/MTGS.h"
 #include "pcsx2/PerformanceMetrics.h"
 #include "pcsx2/Recording/InputRecording.h"
@@ -2572,7 +2573,7 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
 
 #ifdef DISPLAY_SURFACE_WINDOW
 		if (isVisible() && g_emu_thread->shouldRenderToMain())
-			m_display_surface->setFramePosition(pos());
+			m_display_surface->setPosition(screen()->availableGeometry().topLeft());
 		else
 			restoreDisplayWindowGeometryFromConfig();
 
@@ -2582,7 +2583,7 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
 			m_display_surface->showNormal();
 #else
 		if (isVisible() && g_emu_thread->shouldRenderToMain())
-			m_display_container->move(pos());
+			m_display_container->move(screen()->availableGeometry().topLeft());
 		else
 			restoreDisplayWindowGeometryFromConfig();
 
@@ -2863,6 +2864,7 @@ SettingsWindow* MainWindow::getSettingsWindow()
 		connect(m_settings_window->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::backgroundChanged, m_game_list_widget, [this] { m_game_list_widget->setCustomBackground(); });
 		connect(m_settings_window->getGameListSettingsWidget(), &GameListSettingsWidget::preferEnglishGameListChanged, this, [] {
 			g_main_window->m_game_list_widget->refreshGridCovers();
+			Host::RunOnGSThread([] { FullscreenUI::PreferEnglishGameListChanged(); });
 		});
 	}
 
@@ -3593,3 +3595,5 @@ const QString& QtHost::GetCurrentGamePath()
 {
 	return s_current_disc_path;
 }
+
+#include "moc_MainWindow.cpp"

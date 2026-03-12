@@ -8,7 +8,6 @@
 #include "SettingWidgetBinder.h"
 #include "Settings/SettingsWindow.h"
 
-#include "pcsx2/GameList.h"
 #include "pcsx2/Patch.h"
 
 #include "common/Assertions.h"
@@ -211,3 +210,5 @@ void GamePatchSettingsWidget::setGlobalNiPatchNoteVisibility(bool visible)
 {
 	m_ui.globalNiPatchState->setVisible(visible);
 }
+
+#include "moc_GamePatchSettingsWidget.cpp"

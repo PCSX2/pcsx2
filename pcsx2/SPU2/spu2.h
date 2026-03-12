@@ -78,7 +78,7 @@ void SPU2interruptDMA7();
 void SPU2readDMA7Mem(u16* pMem, u32 size);
 void SPU2writeDMA7Mem(u16* pMem, u32 size);
 
-extern u32 lClocks;
+extern u64 lClocks;
 
 extern void CounterUpdate(u32 DMAICounter);
 extern void TimeUpdate(u32 cClocks);

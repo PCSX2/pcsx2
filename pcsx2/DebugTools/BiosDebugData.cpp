@@ -53,8 +53,9 @@ std::vector<std::unique_ptr<BiosThread>> getIOPThreads()
 		data.status = iopMemRead8(item + 0xc);
 		data.tid = iopMemRead16(item + 0xa);
 		data.entrypoint = iopMemRead32(item + 0x38);
-		data.waitstate = iopMemRead16(item + 0xe);
-		data.initPriority = iopMemRead16(item + 0x2e);
+		data.waitstate = iopMemRead16(item + 0x1c);
+		data.waitId = iopMemRead32(item + 0x20);
+		data.initPriority = iopMemRead16(item + 0xe);
 
 		data.SavedSP = iopMemRead32(item + 0x10);
 
@@ -79,10 +80,9 @@ std::vector<IopMod> getIOPModules()
 
 	for (int i = 0; maddr != 0; i++)
 	{
-		if (maddr >= 0x200000)
+		if (maddr >= Ps2MemSize::ExposedIopRam)
 		{
 			// outside of memory
-			// change if we ever support IOP ram extension
 			return {};
 		}
 

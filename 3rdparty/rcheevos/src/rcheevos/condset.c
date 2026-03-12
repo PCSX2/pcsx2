@@ -134,10 +134,12 @@ static int rc_find_next_classification(const char* memaddr) {
         break;
 
       default:
+        rc_destroy_parse_state(&parse);
         return classification;
     }
   } while (*memaddr++ == '_');
 
+  rc_destroy_parse_state(&parse);
   return RC_CONDITION_CLASSIFICATION_OTHER;
 }
 
@@ -260,6 +262,11 @@ rc_condset_t* rc_parse_condset(const char** memaddr, rc_parse_state_t* parse) {
   }
 
   next = &self->conditions;
+
+  /* prevent bleedthrough of incomplete conditions from other groups */
+  parse->addsource_oper = RC_OPERATOR_NONE;
+  parse->addsource_parent.type = RC_OPERAND_NONE;
+  parse->indirect_parent.type = RC_OPERAND_NONE;
 
   /* each condition set has a functionally new recall accumulator */
   parse->remember.type = RC_OPERAND_NONE;

@@ -93,3 +93,5 @@ void HotkeySettingsWidget::createButtons()
 	// Fill remaining space.
 	m_layout->addStretch(1);
 }
+
+#include "moc_HotkeySettingsWidget.cpp"

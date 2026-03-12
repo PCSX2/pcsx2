@@ -527,3 +527,5 @@ void InputVibrationBindingWidget::mouseReleaseEvent(QMouseEvent* e)
 
 	QPushButton::mouseReleaseEvent(e);
 }
+
+#include "moc_InputBindingWidget.cpp"

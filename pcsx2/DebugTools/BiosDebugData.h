@@ -53,6 +53,7 @@ struct IOPInternalThread
 	u32 status;
 	u32 entrypoint;
 	u32 waitstate;
+	u32 waitId;
 	u32 initPriority;
 };
 
@@ -95,6 +96,7 @@ public:
 	[[nodiscard]] virtual u32 PC() const = 0;
 	[[nodiscard]] virtual ThreadStatus Status() const = 0;
 	[[nodiscard]] virtual WaitState Wait() const = 0;
+	[[nodiscard]] virtual u32 WaitId() const = 0;
 	[[nodiscard]] virtual u32 EntryPoint() const = 0;
 	[[nodiscard]] virtual u32 StackTop() const = 0;
 	[[nodiscard]] virtual u32 Priority() const = 0;
@@ -127,6 +129,7 @@ public:
 		}
 		return WaitState::NONE;
 	};
+	[[nodiscard]] u32 WaitId() const override { return data.semaId; };
 	[[nodiscard]] u32 EntryPoint() const override { return data.entry_init; };
 	[[nodiscard]] u32 StackTop() const override { return data.stack; };
 	[[nodiscard]] u32 Priority() const override { return data.currentPriority; };
@@ -170,6 +173,7 @@ public:
 		}
 		return WaitState::NONE;
 	};
+	[[nodiscard]] u32 WaitId() const override { return data.waitId; };
 	[[nodiscard]] u32 EntryPoint() const override { return data.entrypoint; };
 	[[nodiscard]] u32 StackTop() const override { return data.stackTop; };
 	[[nodiscard]] u32 Priority() const override { return data.initPriority; };

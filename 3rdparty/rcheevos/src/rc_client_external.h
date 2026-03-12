@@ -46,6 +46,7 @@ typedef void (RC_CCONV* rc_client_external_add_game_hash_func_t)(const char* has
 struct rc_client_achievement_list_info_t;
 typedef struct rc_client_achievement_list_info_t* (RC_CCONV *rc_client_external_create_achievement_list_func_t)(int category, int grouping);
 typedef const rc_client_achievement_t* (RC_CCONV *rc_client_external_get_achievement_info_func_t)(uint32_t id);
+typedef const rc_client_achievement_t* (RC_CCONV* rc_client_external_get_next_achievement_info_func_t)(uint32_t id, int grouping);
 
 /* NOTE: rc_client_external_create_leaderboard_list_func_t returns an internal wrapper structure which contains the public list
  * and a destructor function. */
@@ -152,9 +153,12 @@ typedef struct rc_client_external_t
   /* VERSION 6 */
   rc_client_external_create_subset_list_func_t create_subset_list;
 
+  /* VERSION 7 */
+  rc_client_external_get_next_achievement_info_func_t get_next_achievement_info;
+
 } rc_client_external_t;
 
-#define RC_CLIENT_EXTERNAL_VERSION 5
+#define RC_CLIENT_EXTERNAL_VERSION 7
 
 void rc_client_add_game_hash(rc_client_t* client, const char* hash, uint32_t game_id);
 void rc_client_load_unknown_game(rc_client_t* client, const char* hash);

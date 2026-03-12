@@ -637,7 +637,13 @@ static int rc_client_get_image_url(char buffer[], size_t buffer_size, int image_
   image_request.image_name = image_name;
   result = rc_api_init_fetch_image_request_hosted(&request, &image_request, NULL);
   if (result == RC_OK)
-    snprintf(buffer, buffer_size, "%s", request.url);
+  {
+    const size_t len = strlen(request.url);
+    if (len >= buffer_size)
+      result = RC_INSUFFICIENT_BUFFER;
+    else
+      memcpy(buffer, request.url, len + 1);
+  }
 
   rc_api_destroy_request(&request);
   return result;
@@ -898,7 +904,11 @@ int rc_client_user_get_image_url(const rc_client_user_t* user, char buffer[], si
     return RC_INVALID_STATE;
 
   if (user->avatar_url) {
-    snprintf(buffer, buffer_size, "%s", user->avatar_url);
+    const size_t len = strlen(user->avatar_url);
+    if (len >= buffer_size)
+      return RC_INSUFFICIENT_BUFFER;
+
+    memcpy(buffer, user->avatar_url, len + 1);
     return RC_OK;
   }
 
@@ -3514,7 +3524,11 @@ int rc_client_game_get_image_url(const rc_client_game_t* game, char buffer[], si
     return RC_INVALID_STATE;
 
   if (game->badge_url) {
-    snprintf(buffer, buffer_size, "%s", game->badge_url);
+    const size_t len = strlen(game->badge_url);
+    if (len >= buffer_size)
+      return RC_INSUFFICIENT_BUFFER;
+
+    memcpy(buffer, game->badge_url, len + 1);
     return RC_OK;
   }
 
@@ -4307,6 +4321,62 @@ const rc_client_achievement_t* rc_client_get_achievement_info(rc_client_t* clien
   return NULL;
 }
 
+const rc_client_achievement_t* rc_client_get_next_achievement_info(rc_client_t* client,
+    const rc_client_achievement_t* achievement, int bucket)
+{
+  const rc_client_achievement_info_t* after = (const rc_client_achievement_info_t*)achievement;
+  rc_client_achievement_info_t* achievement_info;
+  time_t recent_unlock_time;
+  rc_client_subset_info_t* subset;
+
+  if (!client)
+    return NULL;
+
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->get_next_achievement_info)
+    return client->state.external_client->get_next_achievement_info(achievement ? achievement->id : 0, bucket);
+#endif
+
+  if (!client->game)
+    return NULL;
+
+  recent_unlock_time = time(NULL) - RC_CLIENT_RECENT_UNLOCK_DELAY_SECONDS;
+  for (subset = client->game->subsets; subset; subset = subset->next) {
+    if (subset->active && subset->public_.num_achievements > 0) {
+      const rc_client_achievement_info_t* start = subset->achievements;
+      const rc_client_achievement_info_t* stop = start + subset->public_.num_achievements;
+      if (after == NULL || (after >= start && after <= stop)) {
+        /* found a subset containing the provided achievement. look for the next
+         * achievement matching the requested bucket */
+        uint32_t index = after ? (uint32_t)(after - start) + 1 : 0;
+        do {
+          if (index >= subset->public_.num_achievements) {
+            /* done with this subset. find the next active subset with achievements */
+            do {
+              subset = subset->next;
+              if (!subset)
+                return NULL;
+            } while (!subset->active || subset->public_.num_achievements == 0);
+
+            index = 0;
+          }
+
+          /* found an achievement. check to see if it matches the requested bucket. */
+          achievement_info = &subset->achievements[index];
+          rc_client_update_achievement_display_information(client, achievement_info, recent_unlock_time);
+          if (achievement_info->public_.bucket == bucket)
+            return &achievement_info->public_;
+
+          ++index;
+        } while (1);
+      }
+    }
+  }
+
+  return NULL;
+}
+
+
 int rc_client_achievement_get_image_url(const rc_client_achievement_t* achievement, int state, char buffer[], size_t buffer_size)
 {
   const int image_type = (state == RC_CLIENT_ACHIEVEMENT_STATE_UNLOCKED) ?
@@ -4316,12 +4386,20 @@ int rc_client_achievement_get_image_url(const rc_client_achievement_t* achieveme
     return rc_client_get_image_url(buffer, buffer_size, image_type, "00000");
 
   if (image_type == RC_IMAGE_TYPE_ACHIEVEMENT && achievement->badge_url) {
-    snprintf(buffer, buffer_size, "%s", achievement->badge_url);
+    const size_t len = strlen(achievement->badge_url);
+    if (len >= buffer_size)
+      return RC_INSUFFICIENT_BUFFER;
+
+    memcpy(buffer, achievement->badge_url, len + 1);
     return RC_OK;
   }
 
   if (image_type == RC_IMAGE_TYPE_ACHIEVEMENT_LOCKED && achievement->badge_locked_url) {
-    snprintf(buffer, buffer_size, "%s", achievement->badge_locked_url);
+    const size_t len = strlen(achievement->badge_locked_url);
+    if (len >= buffer_size)
+      return RC_INSUFFICIENT_BUFFER;
+
+    memcpy(buffer, achievement->badge_locked_url, len + 1);
     return RC_OK;
   }
 
@@ -4870,6 +4948,7 @@ int rc_client_has_leaderboards(rc_client_t* client)
 {
   rc_client_subset_info_t* subset;
   int result;
+  uint32_t i;
 
   if (!client)
     return 0;
@@ -4884,17 +4963,21 @@ int rc_client_has_leaderboards(rc_client_t* client)
 
   rc_mutex_lock(&client->state.mutex);
 
-  subset = client->game->subsets;
   result = 0;
-  for (; subset; subset = subset->next)
+  for (subset = client->game->subsets; subset; subset = subset->next)
   {
     if (!subset->active)
       continue;
 
-    if (subset->public_.num_leaderboards > 0) {
-      result = 1;
-      break;
+    for (i = 0; i < subset->public_.num_leaderboards; ++i) {
+      if (!subset->leaderboards[i].hidden) {
+        result = 1;
+        break;
+      }
     }
+
+    if (result)
+      break;
   }
 
   rc_mutex_unlock(&client->state.mutex);
@@ -5438,6 +5521,14 @@ static void rc_client_ping(rc_client_scheduled_callback_data_t* callback_data, r
   if (client->state.frames_processed != client->state.frames_at_last_ping) {
     client->state.frames_at_last_ping = client->state.frames_processed;
 
+    memset(&api_params, 0, sizeof(api_params));
+    api_params.username = client->user.username;
+    api_params.api_token = client->user.token;
+    api_params.game_id = client->game->public_.id;
+    api_params.rich_presence = buffer;
+    api_params.game_hash = client->game->public_.hash;
+    api_params.hardcore = client->state.hardcore;
+
     if (!client->callbacks.rich_presence_override ||
         !client->callbacks.rich_presence_override(client, buffer, sizeof(buffer))) {
       rc_mutex_lock(&client->state.mutex);
@@ -5448,13 +5539,12 @@ static void rc_client_ping(rc_client_scheduled_callback_data_t* callback_data, r
       rc_mutex_unlock(&client->state.mutex);
     }
 
-    memset(&api_params, 0, sizeof(api_params));
-    api_params.username = client->user.username;
-    api_params.api_token = client->user.token;
-    api_params.game_id = client->game->public_.id;
-    api_params.rich_presence = buffer;
-    api_params.game_hash = client->game->public_.hash;
-    api_params.hardcore = client->state.hardcore;
+    /* there's a miniscule chance the game will be changed out while we're waiting for the lock.
+     * if that happens, discard this ping. the new game will have scheduled its own ping.
+     * don't reschedule this one. */
+    if (!client->game || client->game->public_.id != api_params.game_id) {
+      return;
+    }
 
     result = rc_api_init_ping_request_hosted(&request, &api_params, &client->state.host);
     if (result != RC_OK) {
