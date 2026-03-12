@@ -59,7 +59,7 @@ f1d3be3489f758efe1a8f12118a212febbe611aa670af32e0159fa3c1feab2a6  QtApng-$QTAPNG
 b2751fccb6cc4c77708113cd78b561059b6fa904b24162fa0be2d60273d27b8e  ffmpeg-$FFMPEG.tar.xz
 32427e8c471ac095853212a37aef816c60b42052d4d9e48230bab3bdf2936ccc  freetype-$FREETYPE.tar.xz
 207f96964dc9475b13c1f66565bf145d2658089d65b4cf786d351da2857fc269  harfbuzz-$HARFBUZZ.tar.gz
-fd6f417fe9e3a071cf1424a5152d926a34c4a3c5070745470be6cf12a404ed79  $LIBBACKTRACE.zip
+96e5c2d7f2c482a60d5804da48a2eb9a0db0719b2c65dcc169fbfdcf37f3a45d  libbacktrace-$LIBBACKTRACE.tar.gz
 075920b826834ac4ddf97661cc73491047855859affd671d52079c6867c1c6c0  libjpeg-turbo-$LIBJPEGTURBO.tar.gz
 d925722864837ad5ae2a82070d4b2e0603dc72af44bd457c3962298258b8e82d  libpng-$LIBPNG.tar.xz
 e4ab7009bf0629fd11982d4c2aa83964cf244cffba7347ecd39019a9e38c4564  libwebp-$LIBWEBP.tar.gz
@@ -67,23 +67,24 @@ ef39a2e3f9a8a78296c40da701967dd1b0d0d6e267e483863ce70f8a03b4050c  $SDL.tar.gz
 017c06f75ffed25f6cda9b5369ec6da0ac35a6616adf7abe4222516a0237f37a  libpng-$LIBPNG-apng.patch.gz
 537512904744b35e232912055ccf8ec66d768639ff3abe5788d90d792ec5f48b  lz4-$LZ4.tar.gz
 13da39edb3a40ed9713ae390ca89faa2f1202c9dda869ef306a8d4383e242bee  nv-codec-headers-$NVENC.tar.gz
-c465aa56757e7746ac707f582b6e2d51546569a4a2488c1172fb543aa5fdfc2c  vulkan-sdk-$VULKAN.tar.gz
+c465aa56757e7746ac707f582b6e2d51546569a4a2488c1172fb543aa5fdfc2c  Vulkan-Headers-vulkan-sdk-$VULKAN.tar.gz
 eb33e51f49a15e023950cd7825ca74a4a2b43db8354825ac24fc1b7ee09e6fa3  zstd-$ZSTD.tar.gz
 51dbf24fe72e43dd7cb9a289d3cab47112010f1a2ed69b6fc8ac0dff31991ed2  KDDockWidgets-$KDDOCKWIDGETS.tar.gz
 7bd4e79ce18b1d47517e7e91fbb7cf19d4f01942804a519bc7c0bf32b6325dd5  plutovg-$PLUTOVG.tar.gz
 78561b571ac224030cdc450ca2986b4de915c2ba7616004a6d71a379bffd15f3  plutosvg-$PLUTOSVG.tar.gz
 
 245002feccbe7f8361b223545a5654cea69780745886872d7efff50a38d96c66  shaderc-$SHADERC.tar.gz
-bd58dca4dac67dcf7640292d7d63e0416274d40ee2200f7301878cec11ac6647  shaderc-glslang-$SHADERC_GLSLANG.tar.gz
-1b220e3eec1714f0451b0e3652979bd280edf10893f617837b88e6359a804ded  shaderc-spirv-headers-$SHADERC_SPIRVHEADERS.tar.gz
-cabb35f4eef0da3ef72ad9edd596af4191d7507a8f35c05df526d2d5ff889f59  shaderc-spirv-tools-$SHADERC_SPIRVTOOLS.tar.gz
+bd58dca4dac67dcf7640292d7d63e0416274d40ee2200f7301878cec11ac6647  glslang-$SHADERC_GLSLANG.tar.gz
+1b220e3eec1714f0451b0e3652979bd280edf10893f617837b88e6359a804ded  SPIRV-Headers-$SHADERC_SPIRVHEADERS.tar.gz
+cabb35f4eef0da3ef72ad9edd596af4191d7507a8f35c05df526d2d5ff889f59  SPIRV-Tools-$SHADERC_SPIRVTOOLS.tar.gz
 EOF
 
 if ! shasum -sa 256 --check SHASUMS 2> /dev/null; then
-	curl -L \
-		-o "freetype-$FREETYPE.tar.xz" "https://sourceforge.net/projects/freetype/files/freetype2/$FREETYPE/freetype-$FREETYPE.tar.xz/download" \
-		-o "harfbuzz-$HARFBUZZ.tar.gz" "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/$HARFBUZZ.tar.gz" \
-		-O "https://github.com/ianlancetaylor/libbacktrace/archive/$LIBBACKTRACE.zip" \
+	rm -f -- *.tar.xz *.tar.gz
+	curl -JL \
+		-O "https://sourceforge.net/projects/freetype/files/freetype2/$FREETYPE/freetype-$FREETYPE.tar.xz" \
+		-O "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/$HARFBUZZ.tar.gz" \
+		-O "https://github.com/ianlancetaylor/libbacktrace/archive/$LIBBACKTRACE.tar.gz" \
 		-O "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/$LIBJPEGTURBO/libjpeg-turbo-$LIBJPEGTURBO.tar.gz" \
 		-O "https://downloads.sourceforge.net/project/libpng/libpng16/$LIBPNG/libpng-$LIBPNG.tar.xz" \
 		-O "https://download.sourceforge.net/libpng-apng/libpng-$LIBPNG-apng.patch.gz" \
@@ -100,14 +101,14 @@ if ! shasum -sa 256 --check SHASUMS 2> /dev/null; then
 		-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qttools-everywhere-src-$QT.tar.xz" \
 		-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qttranslations-everywhere-src-$QT.tar.xz" \
 		-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtwayland-everywhere-src-$QT.tar.xz" \
-		-o "QtApng-$QTAPNG.tar.gz" "https://github.com/jurplel/QtApng/archive/refs/tags/$QTAPNG.tar.gz" \
-		-o "shaderc-$SHADERC.tar.gz" "https://github.com/google/shaderc/archive/refs/tags/v$SHADERC.tar.gz" \
-		-o "shaderc-glslang-$SHADERC_GLSLANG.tar.gz" "https://github.com/KhronosGroup/glslang/archive/$SHADERC_GLSLANG.tar.gz" \
-		-o "shaderc-spirv-headers-$SHADERC_SPIRVHEADERS.tar.gz" "https://github.com/KhronosGroup/SPIRV-Headers/archive/$SHADERC_SPIRVHEADERS.tar.gz" \
-		-o "shaderc-spirv-tools-$SHADERC_SPIRVTOOLS.tar.gz" "https://github.com/KhronosGroup/SPIRV-Tools/archive/$SHADERC_SPIRVTOOLS.tar.gz" \
-		-o "KDDockWidgets-$KDDOCKWIDGETS.tar.gz" "https://github.com/KDAB/KDDockWidgets/archive/v$KDDOCKWIDGETS.tar.gz" \
-		-o "plutovg-$PLUTOVG.tar.gz" "https://github.com/sammycage/plutovg/archive/v$PLUTOVG.tar.gz" \
-		-o "plutosvg-$PLUTOSVG.tar.gz" "https://github.com/sammycage/plutosvg/archive/v$PLUTOSVG.tar.gz"
+		-O "https://github.com/jurplel/QtApng/archive/refs/tags/$QTAPNG.tar.gz" \
+		-O "https://github.com/google/shaderc/archive/refs/tags/v$SHADERC.tar.gz" \
+		-O "https://github.com/KhronosGroup/glslang/archive/$SHADERC_GLSLANG.tar.gz" \
+		-O "https://github.com/KhronosGroup/SPIRV-Headers/archive/$SHADERC_SPIRVHEADERS.tar.gz" \
+		-O "https://github.com/KhronosGroup/SPIRV-Tools/archive/$SHADERC_SPIRVTOOLS.tar.gz" \
+		-O "https://github.com/KDAB/KDDockWidgets/archive/v$KDDOCKWIDGETS.tar.gz" \
+		-O "https://github.com/sammycage/plutovg/archive/v$PLUTOVG.tar.gz" \
+		-O "https://github.com/sammycage/plutosvg/archive/v$PLUTOSVG.tar.gz"
 fi
 
 shasum -a 256 --check SHASUMS
@@ -115,7 +116,7 @@ shasum -a 256 --check SHASUMS
 if [ "$BUILD_FFMPEG" -ne 0 ]; then
 	echo "Installing vulkan headers..."
 	rm -fr "Vulkan-Headers-vulkan-sdk-$VULKAN"
-	tar xf "vulkan-sdk-$VULKAN.tar.gz"
+	tar xf "Vulkan-Headers-vulkan-sdk-$VULKAN.tar.gz"
 	cd "Vulkan-Headers-vulkan-sdk-$VULKAN"
 	cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR"
 	make -C build install
@@ -145,7 +146,7 @@ fi
 
 echo "Building libbacktrace..."
 rm -fr "libbacktrace-$LIBBACKTRACE"
-unzip "$LIBBACKTRACE.zip"
+tar xf "libbacktrace-$LIBBACKTRACE.tar.gz"
 cd "libbacktrace-$LIBBACKTRACE"
 ./configure --prefix="$INSTALLDIR" --with-pic
 make
@@ -352,13 +353,12 @@ cd ..
 echo "Building shaderc..."
 rm -fr "shaderc-$SHADERC"
 tar xf "shaderc-$SHADERC.tar.gz"
-cd "shaderc-$SHADERC"
-cd third_party
-tar xf "../../shaderc-glslang-$SHADERC_GLSLANG.tar.gz"
+cd "shaderc-$SHADERC/third_party"
+tar xf "../../glslang-$SHADERC_GLSLANG.tar.gz"
 mv "glslang-$SHADERC_GLSLANG" "glslang"
-tar xf "../../shaderc-spirv-headers-$SHADERC_SPIRVHEADERS.tar.gz"
+tar xf "../../SPIRV-Headers-$SHADERC_SPIRVHEADERS.tar.gz"
 mv "SPIRV-Headers-$SHADERC_SPIRVHEADERS" "spirv-headers"
-tar xf "../../shaderc-spirv-tools-$SHADERC_SPIRVTOOLS.tar.gz"
+tar xf "../../SPIRV-Tools-$SHADERC_SPIRVTOOLS.tar.gz"
 mv "SPIRV-Tools-$SHADERC_SPIRVTOOLS" "spirv-tools"
 cd ..
 patch -p1 < "$SCRIPTDIR/../common/shaderc-changes.patch"
