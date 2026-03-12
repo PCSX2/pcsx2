@@ -375,6 +375,7 @@ static const char* s_gs_hw_fix_names[] = {
 	"bilinearUpscale",
 	"nativePaletteDraw",
 	"estimateTextureRegion",
+	"drawBuffering",
 	"PCRTCOffsets",
 	"PCRTCOverscan",
 	"trilinearFiltering",
@@ -614,6 +615,9 @@ bool GameDatabaseSchema::GameEntry::configMatchesHWFix(const Pcsx2Config::GSOpti
 		case GSHWFixId::EstimateTextureRegion:
 			return (static_cast<int>(config.UserHacks_EstimateTextureRegion) == value);
 
+		case GSHWFixId::DrawBuffering:
+			return (static_cast<int>(config.UserHacks_DrawBuffering) == value);
+
 		case GSHWFixId::PCRTCOffsets:
 			return (static_cast<int>(config.PCRTCOffsets) == value);
 
@@ -768,6 +772,10 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 
 			case GSHWFixId::EstimateTextureRegion:
 				config.UserHacks_EstimateTextureRegion = (value > 0);
+				break;
+
+			case GSHWFixId::DrawBuffering:
+				config.UserHacks_DrawBuffering = (value > 0);
 				break;
 
 			case GSHWFixId::PCRTCOffsets:
