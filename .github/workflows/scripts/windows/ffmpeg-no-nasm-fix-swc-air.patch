@@ -1,0 +1,177 @@
+diff --git a/libswscale/x86/rgb2rgb.c b/libswscale/x86/rgb2rgb.c
+index 48a73bd0b2..718b90ec81 100644
+--- a/libswscale/x86/rgb2rgb.c
++++ b/libswscale/x86/rgb2rgb.c
+@@ -2439,6 +2439,7 @@ av_cold void rgb2rgb_init_x86(void)
+         deinterleaveBytes = deinterleave_bytes_sse2;
+     }
+ #endif
++#if HAVE_SSE3_EXTERNAL
+     if (EXTERNAL_SSSE3(cpu_flags)) {
+         shuffle_bytes_0321 = ff_shuffle_bytes_0321_ssse3;
+         shuffle_bytes_2103 = ff_shuffle_bytes_2103_ssse3;
+@@ -2450,6 +2451,7 @@ av_cold void rgb2rgb_init_x86(void)
+         shuffle_bytes_2130 = ff_shuffle_bytes_2130_ssse3;
+         shuffle_bytes_1203 = ff_shuffle_bytes_1203_ssse3;
+     }
++#endif
+ #if HAVE_AVX_EXTERNAL
+     if (EXTERNAL_AVX(cpu_flags)) {
+         deinterleaveBytes = deinterleave_bytes_avx;
+diff --git a/libswscale/x86/swscale.c b/libswscale/x86/swscale.c
+index 8b6f9bd58a..33b9673779 100644
+--- a/libswscale/x86/swscale.c
++++ b/libswscale/x86/swscale.c
+@@ -473,6 +473,7 @@ RANGE_CONVERT_FUNCS_DECL(avx2, 16)
+ 
+ av_cold void ff_sws_init_range_convert_x86(SwsInternal *c)
+ {
++#if HAVE_X86ASM
+     int cpu_flags = av_get_cpu_flags();
+     if (EXTERNAL_AVX2_FAST(cpu_flags)) {
+         if (c->dstBpc <= 14) {
+@@ -485,6 +486,7 @@ av_cold void ff_sws_init_range_convert_x86(SwsInternal *c)
+     } else if (EXTERNAL_SSE4(cpu_flags) && c->dstBpc > 14) {
+         RANGE_CONVERT_FUNCS(sse4, 16);
+     }
++#endif
+ }
+ 
+ av_cold void ff_sws_init_swscale_x86(SwsInternal *c)
+@@ -569,6 +571,7 @@ switch(c->dstBpc){ \
+              else                ASSIGN_SCALE_FUNC2(hscalefn, X8, opt1, opt2); \
+              break; \
+     }
++#if HAVE_SSE2_EXTERNAL
+     if (EXTERNAL_SSE2(cpu_flags)) {
+         ASSIGN_SSE_SCALE_FUNC(c->hyScale, c->hLumFilterSize, sse2, sse2);
+         ASSIGN_SSE_SCALE_FUNC(c->hcScale, c->hChrFilterSize, sse2, sse2);
+@@ -607,6 +610,8 @@ switch(c->dstBpc){ \
+             break;
+         }
+     }
++#endif
++#if HAVE_SSE3_EXTERNAL
+     if (EXTERNAL_SSSE3(cpu_flags)) {
+         ASSIGN_SSE_SCALE_FUNC(c->hyScale, c->hLumFilterSize, ssse3, ssse3);
+         ASSIGN_SSE_SCALE_FUNC(c->hcScale, c->hChrFilterSize, ssse3, ssse3);
+@@ -617,6 +622,8 @@ switch(c->dstBpc){ \
+             break;
+         }
+     }
++#endif
++#if HAVE_SSE4_EXTERNAL
+     if (EXTERNAL_SSE4(cpu_flags)) {
+         /* Xto15 don't need special sse4 functions */
+         ASSIGN_SSE_SCALE_FUNC(c->hyScale, c->hLumFilterSize, sse4, ssse3);
+@@ -627,7 +634,9 @@ switch(c->dstBpc){ \
+         if (c->dstBpc == 16 && !isBE(c->opts.dst_format) && !(c->opts.flags & SWS_ACCURATE_RND))
+             c->yuv2plane1 = ff_yuv2plane1_16_sse4;
+     }
++#endif
+ 
++#if HAVE_AVX_EXTERNAL
+     if (EXTERNAL_AVX(cpu_flags)) {
+         ASSIGN_VSCALEX_FUNC(c->yuv2planeX, avx, ,
+                             HAVE_ALIGNED_STACK || ARCH_X86_64);
+@@ -657,6 +666,7 @@ switch(c->dstBpc){ \
+             break;
+         }
+     }
++#endif
+ 
+ #if ARCH_X86_64
+ #define ASSIGN_AVX2_SCALE_FUNC(hscalefn, filtersize) \
+@@ -666,6 +676,7 @@ switch(c->dstBpc){ \
+              break; \
+     }
+ 
++#if HAVE_AVX2_EXTERNAL
+     if (EXTERNAL_AVX2_FAST(cpu_flags) && !(cpu_flags & AV_CPU_FLAG_SLOW_GATHER)) {
+         if ((c->srcBpc == 8) && (c->dstBpc <= 14)) {
+             ASSIGN_AVX2_SCALE_FUNC(c->hcScale, c->hChrFilterSize);
+@@ -697,6 +708,7 @@ switch(c->dstBpc){ \
+             break;
+         }
+     }
++#endif
+ 
+ 
+ #define INPUT_PLANER_RGB_A_FUNC_CASE_NOBREAK(fmt, name, opt)          \
+@@ -756,6 +768,7 @@ switch(c->dstBpc){ \
+         INPUT_PLANER_RGBAXX_YUVA_FUNC_CASE(AV_PIX_FMT_GBRPF32, AV_PIX_FMT_GBRAPF32, rgbf32, opt)
+ 
+ 
++#if HAVE_SSE2_EXTERNAL
+     if (EXTERNAL_SSE2(cpu_flags)) {
+         switch (c->opts.src_format) {
+         INPUT_PLANER_RGB_A_FUNC_CASE_NOBREAK(AV_PIX_FMT_GBRAP,                         rgb, sse2);
+@@ -770,7 +783,9 @@ switch(c->dstBpc){ \
+             break;
+         }
+     }
++#endif
+ 
++#if HAVE_SSE4_EXTERNAL
+     if (EXTERNAL_SSE4(cpu_flags)) {
+         switch (c->opts.src_format) {
+         case AV_PIX_FMT_GBRAP:
+@@ -785,7 +800,9 @@ switch(c->dstBpc){ \
+             break;
+         }
+     }
++#endif
+ 
++#if HAVE_AVX2_EXTERNAL
+     if (EXTERNAL_AVX2_FAST(cpu_flags)) {
+         switch (c->opts.src_format) {
+         INPUT_PLANER_RGB_YUVA_ALL_CASES(avx2)
+@@ -793,6 +810,7 @@ switch(c->dstBpc){ \
+             break;
+         }
+     }
++#endif
+ 
+     if(c->opts.flags & SWS_FULL_CHR_H_INT) {
+ 
+@@ -825,6 +843,7 @@ switch(c->dstBpc){ \
+         YUV2ANYX_FUNC_CASE(AV_PIX_FMT_GBRPF32BE,  gbrpf32be,  opt) \
+         YUV2ANYX_FUNC_CASE(AV_PIX_FMT_GBRAPF32BE, gbrapf32be, opt)
+ 
++#if HAVE_SSE2_EXTERNAL
+         if (EXTERNAL_SSE2(cpu_flags)) {
+             switch (c->opts.dst_format) {
+             YUV2ANYX_GBRAP_CASES(sse2)
+@@ -832,7 +851,9 @@ switch(c->dstBpc){ \
+                 break;
+             }
+         }
++#endif
+ 
++#if HAVE_SSE4_EXTERNAL
+         if (EXTERNAL_SSE4(cpu_flags)) {
+             switch (c->opts.dst_format) {
+             YUV2ANYX_GBRAP_CASES(sse4)
+@@ -840,7 +861,9 @@ switch(c->dstBpc){ \
+                 break;
+             }
+         }
++#endif
+ 
++#if HAVE_AVX2_EXTERNAL
+         if (EXTERNAL_AVX2_FAST(cpu_flags)) {
+             switch (c->opts.dst_format) {
+             YUV2ANYX_GBRAP_CASES(avx2)
+@@ -848,7 +871,8 @@ switch(c->dstBpc){ \
+                 break;
+             }
+         }
++#endif
+     }
+ 
+-#endif
++#endif /* ARCH_X86_64 */
+ }
+-- 
+2.43.0.windows.1
+
