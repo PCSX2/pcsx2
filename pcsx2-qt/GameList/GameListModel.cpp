@@ -12,7 +12,7 @@
 #include <QtCore/QDateTime>
 #include <QtCore/QFuture>
 #include <QtCore/QFutureWatcher>
-#include <QtConcurrent/QtConcurrent>
+#include <QtConcurrent/QtConcurrentRun>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QIcon>
 #include <QtGui/QPainter>

@@ -206,7 +206,7 @@ void ControllerBindingWidget::onAutomaticBindingClicked()
 		if (dev.first.compare(dev.second, Qt::CaseInsensitive) == 0)
 			action = menu.addAction(dev.first);
 		else
-			action = menu.addAction(QStringLiteral("%1: %2").arg(dev.first).arg(dev.second));
+			action = menu.addAction(QStringLiteral("%1: %2").arg(dev.first, dev.second));
 		action->setData(dev.first);
 		connect(action, &QAction::triggered, this, [this, action]() { doDeviceAutomaticBinding(action->data().toString()); });
 		added = true;
@@ -537,7 +537,7 @@ ControllerCustomSettingsWidget::~ControllerCustomSettingsWidget() = default;
 static std::tuple<QString, QString> getPrefixAndSuffixForIntFormat(const QString& format)
 {
 	QString prefix, suffix;
-	QRegularExpression re(QStringLiteral("(.*)%.*d(.*)"));
+	static QRegularExpression re(QStringLiteral("(.*)%.*d(.*)"));
 	QRegularExpressionMatch match(re.match(format));
 	if (match.isValid())
 	{
@@ -553,7 +553,7 @@ static std::tuple<QString, QString, int> getPrefixAndSuffixForFloatFormat(const 
 	QString prefix, suffix;
 	int decimals = -1;
 
-	QRegularExpression re(QStringLiteral("(.*)%.*([0-9]+)f(.*)"));
+	static QRegularExpression re(QStringLiteral("(.*)%.*([0-9]+)f(.*)"));
 	QRegularExpressionMatch match(re.match(format));
 	if (match.isValid())
 	{
@@ -567,8 +567,8 @@ static std::tuple<QString, QString, int> getPrefixAndSuffixForFloatFormat(const 
 	}
 	else
 	{
-		re = QRegularExpression(QStringLiteral("(.*)%.*f(.*)"));
-		match = re.match(format);
+		static QRegularExpression re_fallback(QStringLiteral("(.*)%.*f(.*)"));
+		match = re_fallback.match(format);
 		prefix = match.captured(1).replace(QStringLiteral("%%"), QStringLiteral("%"));
 		suffix = match.captured(2).replace(QStringLiteral("%%"), QStringLiteral("%"));
 	}
@@ -739,8 +739,6 @@ void ControllerCustomSettingsWidget::restoreDefaults()
 {
 	for (const SettingInfo& si : m_settings)
 	{
-		const QString key(QString::fromStdString(si.name));
-
 		switch (si.type)
 		{
 			case SettingInfo::Type::Boolean:
@@ -1160,7 +1158,7 @@ void USBDeviceWidget::onAutomaticBindingClicked()
 		if (dev.first.compare(dev.second, Qt::CaseInsensitive) == 0)
 			action = menu.addAction(dev.first);
 		else
-			action = menu.addAction(QStringLiteral("%1: %2").arg(dev.first).arg(dev.second));
+			action = menu.addAction(QStringLiteral("%1: %2").arg(dev.first, dev.second));
 		action->setData(dev.first);
 		connect(action, &QAction::triggered, this, [this, action]() { doDeviceAutomaticBinding(action->data().toString()); });
 		added = true;

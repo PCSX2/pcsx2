@@ -55,7 +55,6 @@ void DebuggerSettingsManager::loadGameSettings(BreakpointModel* bpModel)
 		return;
 
 	const QJsonValue breakpointsValue = loadGameSettingsJSON().value("Breakpoints");
-	const QString valueToLoad = breakpointsValue.toString();
 	if (breakpointsValue.isUndefined() || !breakpointsValue.isArray())
 	{
 		Console.WriteLnFmt("Debugger Settings Manager: Failed to read Breakpoints array from settings file: '{}'", path);
@@ -108,7 +107,6 @@ void DebuggerSettingsManager::loadGameSettings(SavedAddressesModel* savedAddress
 		return;
 
 	const QJsonValue savedAddressesValue = loadGameSettingsJSON().value("SavedAddresses");
-	QString valueToLoad = savedAddressesValue.toString();
 	if (savedAddressesValue.isUndefined() || !savedAddressesValue.isArray())
 	{
 		Console.WriteLnFmt("Debugger Settings Manager: Failed to read Saved Addresses array from settings file: '{}'", path);

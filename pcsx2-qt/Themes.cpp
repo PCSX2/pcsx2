@@ -612,12 +612,12 @@ void QtHost::SetStyleFromSettings()
 		//Additional Theme option than loads .qss from main PCSX2 Directory
 		qApp->setStyle(QStyleFactory::create("Fusion"));
 
-		QString sheet_content;
 		QFile sheets(QString::fromStdString(Path::Combine(EmuFolders::DataRoot, "custom.qss")));
 
 		if (sheets.open(QFile::ReadOnly))
 		{
-			QString sheet_content = QString::fromUtf8(sheets.readAll().data());
+			QByteArray bytes = sheets.readAll();
+			QString sheet_content = QString::fromUtf8(bytes.data());
 			qApp->setStyleSheet(sheet_content);
 		}
 		else

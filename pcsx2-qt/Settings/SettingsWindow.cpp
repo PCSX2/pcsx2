@@ -393,7 +393,7 @@ bool SettingsWindow::eventFilter(QObject* object, QEvent* event)
 	if (event->type() == QEvent::Enter)
 	{
 		auto iter = m_widget_help_text_map.constFind(object);
-		if (iter != m_widget_help_text_map.end())
+		if (iter != m_widget_help_text_map.constEnd())
 		{
 			m_current_help_widget = object;
 			m_ui.helpText->setText(iter.value());

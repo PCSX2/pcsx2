@@ -638,7 +638,6 @@ void BreakpointModel::loadBreakpointFromFieldList(QStringList fields)
 		mc.memCond = static_cast<MemCheckCondition>(type);
 
 		// Address
-		QString test = fields[BreakpointColumns::OFFSET];
 		mc.start = fields[BreakpointColumns::OFFSET].toUInt(&ok, 16);
 		if (!ok)
 		{

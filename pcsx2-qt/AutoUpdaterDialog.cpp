@@ -419,7 +419,7 @@ void AutoUpdaterDialog::getChangesComplete(s32 status_code, std::vector<u8> data
 				if (!message.isEmpty())
 				{
 					changes_html +=
-						QStringLiteral("<li>%1 <i>(%2)</i></li>").arg(message.toHtmlEscaped()).arg(author.toHtmlEscaped());
+						QStringLiteral("<li>%1 <i>(%2)</i></li>").arg(message.toHtmlEscaped(), author.toHtmlEscaped());
 				}
 			}
 
@@ -564,8 +564,8 @@ void AutoUpdaterDialog::checkIfUpdateNeeded()
 		return;
 	}
 
-	m_ui.currentVersion->setText(tr("Current Version: %1 (%2)").arg(getCurrentVersion()).arg(getCurrentVersionDate()));
-	m_ui.newVersion->setText(tr("New Version: %1 (%2)").arg(m_latest_version).arg(m_latest_version_timestamp.toString()));
+	m_ui.currentVersion->setText(tr("Current Version: %1 (%2)").arg(getCurrentVersion(), getCurrentVersionDate()));
+	m_ui.newVersion->setText(tr("New Version: %1 (%2)").arg(m_latest_version, m_latest_version_timestamp.toString()));
 	m_ui.downloadSize->setText(tr("Download Size: %1 MB").arg(static_cast<double>(m_download_size) / 1048576.0, 0, 'f', 2));
 	m_ui.updateNotes->setText(tr("Loading..."));
 	queueGetChanges();

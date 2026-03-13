@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include <QtCore/QtCore>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QProgressDialog>
 

@@ -11,7 +11,6 @@
 #include <optional>
 #include <type_traits>
 
-#include <QtCore/QtCore>
 #include <QtGui/QAction>
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QComboBox>

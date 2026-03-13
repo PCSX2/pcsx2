@@ -96,7 +96,7 @@ void MemoryCardConvertDialog::onProgressUpdated(int value, int range)
 
 void MemoryCardConvertDialog::onThreadFinished()
 {
-	QMessageBox::information(this, tr("Conversion Complete"), tr("Memory Card \"%1\" converted to \"%2\"").arg(m_selectedCard).arg(m_destCardName));
+	QMessageBox::information(this, tr("Conversion Complete"), tr("Memory Card \"%1\" converted to \"%2\"").arg(m_selectedCard, m_destCardName));
 	accept();
 }
 

@@ -994,7 +994,7 @@ void GraphicsSettingsWidget::onCaptureContainerChanged()
 	{
 		const QString qformat(QString::fromStdString(format));
 		const QString qname(QString::fromStdString(name));
-		m_capture.videoCaptureCodec->addItem(QStringLiteral("%1 [%2]").arg(qformat).arg(qname), qformat);
+		m_capture.videoCaptureCodec->addItem(QStringLiteral("%1 [%2]").arg(qformat, qname), qformat);
 	}
 
 	SettingWidgetBinder::BindWidgetToStringSetting(
@@ -1008,7 +1008,7 @@ void GraphicsSettingsWidget::onCaptureContainerChanged()
 	{
 		const QString qformat(QString::fromStdString(format));
 		const QString qname(QString::fromStdString(name));
-		m_capture.audioCaptureCodec->addItem(QStringLiteral("%1 [%2]").arg(qformat).arg(qname), qformat);
+		m_capture.audioCaptureCodec->addItem(QStringLiteral("%1 [%2]").arg(qformat, qname), qformat);
 	}
 
 	SettingWidgetBinder::BindWidgetToStringSetting(

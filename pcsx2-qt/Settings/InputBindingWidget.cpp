@@ -467,7 +467,7 @@ void InputVibrationBindingWidget::onClicked()
 {
 	QInputDialog dialog(QtUtils::GetRootWidget(this));
 
-	const QString full_key(QStringLiteral("%1/%2").arg(QString::fromStdString(m_section_name)).arg(QString::fromStdString(m_key_name)));
+	const QString full_key(QStringLiteral("%1/%2").arg(QString::fromStdString(m_section_name), QString::fromStdString(m_key_name)));
 	const QString current(QString::fromStdString(m_binding));
 	QStringList input_setting_options(m_dialog->getVibrationMotors());
 	QStringList input_ui_options;

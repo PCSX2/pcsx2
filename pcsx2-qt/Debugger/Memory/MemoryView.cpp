@@ -939,7 +939,7 @@ void MemoryView::wheelEvent(QWheelEvent* event)
 
 void MemoryView::keyPressEvent(QKeyEvent* event)
 {
-	if (!m_table.KeyPress(event->key(), event->text().size() ? event->text()[0] : '\0', cpu()))
+	if (!m_table.KeyPress(event->key(), event->text().size() ? event->text().at(0) : '\0', cpu()))
 	{
 		switch (event->key())
 		{

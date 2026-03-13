@@ -294,7 +294,7 @@ void EmuThread::loadState(const QString& filename)
 {
 	if (!isOnEmuThread())
 	{
-		QMetaObject::invokeMethod(this, "loadState", Qt::QueuedConnection, Q_ARG(const QString&, filename));
+		QMetaObject::invokeMethod(this, "loadState", Qt::QueuedConnection, Q_ARG(QString, filename));
 		return;
 	}
 
@@ -334,7 +334,7 @@ void EmuThread::saveState(const QString& filename)
 {
 	if (!isOnEmuThread())
 	{
-		QMetaObject::invokeMethod(this, "saveState", Qt::QueuedConnection, Q_ARG(const QString&, filename));
+		QMetaObject::invokeMethod(this, "saveState", Qt::QueuedConnection, Q_ARG(QString, filename));
 		return;
 	}
 
@@ -628,7 +628,7 @@ void EmuThread::changeDisc(CDVD_SourceType source, const QString& path)
 {
 	if (!isOnEmuThread())
 	{
-		QMetaObject::invokeMethod(this, "changeDisc", Qt::QueuedConnection, Q_ARG(CDVD_SourceType, source), Q_ARG(const QString&, path));
+		QMetaObject::invokeMethod(this, "changeDisc", Qt::QueuedConnection, Q_ARG(CDVD_SourceType, source), Q_ARG(QString, path));
 		return;
 	}
 
@@ -642,7 +642,7 @@ void EmuThread::setELFOverride(const QString& path)
 {
 	if (!isOnEmuThread())
 	{
-		QMetaObject::invokeMethod(this, "setELFOverride", Qt::QueuedConnection, Q_ARG(const QString&, path));
+		QMetaObject::invokeMethod(this, "setELFOverride", Qt::QueuedConnection, Q_ARG(QString, path));
 		return;
 	}
 
@@ -656,7 +656,7 @@ void EmuThread::changeGSDump(const QString& path)
 {
 	if (!isOnEmuThread())
 	{
-		QMetaObject::invokeMethod(this, "changeGSDump", Qt::QueuedConnection, Q_ARG(const QString&, path));
+		QMetaObject::invokeMethod(this, "changeGSDump", Qt::QueuedConnection, Q_ARG(QString, path));
 		return;
 	}
 
@@ -854,7 +854,7 @@ void EmuThread::beginCapture(const QString& path)
 {
 	if (!isOnEmuThread())
 	{
-		QMetaObject::invokeMethod(this, "beginCapture", Qt::QueuedConnection, Q_ARG(const QString&, path));
+		QMetaObject::invokeMethod(this, "beginCapture", Qt::QueuedConnection, Q_ARG(QString, path));
 		return;
 	}
 
@@ -996,7 +996,7 @@ void EmuThread::updatePerformanceMetrics(bool force)
 			}
 		}
 
-		QMetaObject::invokeMethod(g_main_window->getStatusVerboseWidget(), "setText", Qt::QueuedConnection, Q_ARG(const QString&, gs_stat));
+		QMetaObject::invokeMethod(g_main_window->getStatusVerboseWidget(), "setText", Qt::QueuedConnection, Q_ARG(QString, gs_stat));
 	}
 
 	const GSRendererType renderer = GSGetCurrentRenderer(); // Reading from GS thread, therefore racey, but it's just visual.
@@ -1012,7 +1012,7 @@ void EmuThread::updatePerformanceMetrics(bool force)
 		if (renderer != m_last_renderer || force)
 		{
 			QMetaObject::invokeMethod(g_main_window->getStatusRendererWidget(), "setText", Qt::QueuedConnection,
-				Q_ARG(const QString&, QString::fromUtf8(Pcsx2Config::GSOptions::GetRendererName(renderer))));
+				Q_ARG(QString, QString::fromUtf8(Pcsx2Config::GSOptions::GetRendererName(renderer))));
 			m_last_renderer = renderer;
 		}
 
@@ -1025,7 +1025,7 @@ void EmuThread::updatePerformanceMetrics(bool force)
 				text = tr("%1x%2").arg(iwidth).arg(iheight);
 
 			QMetaObject::invokeMethod(
-				g_main_window->getStatusResolutionWidget(), "setText", Qt::QueuedConnection, Q_ARG(const QString&, text));
+				g_main_window->getStatusResolutionWidget(), "setText", Qt::QueuedConnection, Q_ARG(QString, text));
 
 			m_last_internal_width = iwidth;
 			m_last_internal_height = iheight;
@@ -1040,20 +1040,20 @@ void EmuThread::updatePerformanceMetrics(bool force)
 				text = tr("FPS: %1").arg(gfps, 0, 'f', 0);
 
 			QMetaObject::invokeMethod(g_main_window->getStatusFPSWidget(), "setText", Qt::QueuedConnection,
-				Q_ARG(const QString&, text));
+				Q_ARG(QString, text));
 			m_last_game_fps = gfps;
 		}
 
 		if (vfps != m_last_video_fps || force)
 		{
 			QMetaObject::invokeMethod(g_main_window->getStatusVPSWidget(), "setText", Qt::QueuedConnection,
-				Q_ARG(const QString&, tr("VPS: %1 ").arg(vfps, 0, 'f', 0)));
+				Q_ARG(QString, tr("VPS: %1 ").arg(vfps, 0, 'f', 0)));
 			m_last_video_fps = vfps;
 
 			if (speed != m_last_speed || force)
 			{
 				QMetaObject::invokeMethod(g_main_window->getStatusSpeedWidget(), "setText", Qt::QueuedConnection,
-					Q_ARG(const QString&, tr("Speed: %1% ").arg(speed, 0, 'f', 0)));
+					Q_ARG(QString, tr("Speed: %1% ").arg(speed, 0, 'f', 0)));
 				m_last_speed = speed;
 			}
 		}
@@ -1166,8 +1166,8 @@ void Host::OpenHostFileSelectorAsync(std::string_view title, bool select_directo
 			filters_str.append(
 				QStringLiteral(";;%1 Files (%2)")
 					.arg(
-						QtUtils::StringViewToQString(std::string_view(filter).substr(filter.starts_with("*.") ? 2 : 0)).toUpper())
-					.arg(QString::fromStdString(filter)));
+						QtUtils::StringViewToQString(std::string_view(filter).substr(filter.starts_with("*.") ? 2 : 0)).toUpper(),
+						QString::fromStdString(filter)));
 		}
 	}
 
@@ -1209,7 +1209,7 @@ void Host::RunOnCPUThread(std::function<void()> function, bool block /* = false 
 	}
 
 	QMetaObject::invokeMethod(g_emu_thread, "runOnCPUThread", block ? Qt::BlockingQueuedConnection : Qt::QueuedConnection,
-		Q_ARG(const std::function<void()>&, std::move(function)));
+		Q_ARG(std::function<void()>, std::move(function)));
 }
 
 void Host::RunOnGSThread(std::function<void()> function)
@@ -1305,8 +1305,8 @@ bool QtHost::InitializeConfig()
 						   "The error was: %2\n"
 						   "Please ensure this directory is writable. You can also try portable mode "
 						   "by creating portable.txt in the same directory you installed PCSX2 into.")
-				.arg(QString::fromStdString(EmuFolders::DataRoot))
-				.arg(QString::fromStdString(error.GetDescription())));
+				.arg(QString::fromStdString(EmuFolders::DataRoot),
+					QString::fromStdString(error.GetDescription())));
 		return false;
 	}
 
@@ -1344,8 +1344,8 @@ bool QtHost::InitializeConfig()
 				QStringLiteral(
 					"Failed to save configuration to\n\n%1\n\nThe error was: %2\n\nPlease ensure this directory is writable. You "
 					"can also try portable mode by creating portable.txt in the same directory you installed PCSX2 into.")
-					.arg(QString::fromStdString(s_base_settings_interface->GetFileName()))
-					.arg(QString::fromStdString(error.GetDescription())));
+					.arg(QString::fromStdString(s_base_settings_interface->GetFileName()),
+						QString::fromStdString(error.GetDescription())));
 			return false;
 		}
 
@@ -1370,8 +1370,8 @@ bool QtHost::InitializeConfig()
 				QStringLiteral(
 					"Failed to save secrets to\n\n%1\n\nThe error was: %2\n\nPlease ensure this directory is writable. You "
 					"can also try portable mode by creating portable.txt in the same directory you installed PCSX2 into.")
-					.arg(QString::fromStdString(s_secrets_settings_interface->GetFileName()))
-					.arg(QString::fromStdString(error.GetDescription())));
+					.arg(QString::fromStdString(s_secrets_settings_interface->GetFileName()),
+						QString::fromStdString(error.GetDescription())));
 			return false;
 		}
 	}
@@ -1475,7 +1475,7 @@ void QtHost::RunOnUIThread(const std::function<void()>& func, bool block /*= fal
 {
 	// main window always exists, so it's fine to attach it to that.
 	QMetaObject::invokeMethod(g_main_window, "runOnUIThread", block ? Qt::BlockingQueuedConnection : Qt::QueuedConnection,
-		Q_ARG(const std::function<void()>&, func));
+		Q_ARG(std::function<void()>, func));
 }
 
 bool Host::RequestResetSettings(bool folders, bool core, bool controllers, bool hotkeys, bool ui)
@@ -1645,8 +1645,8 @@ void Host::ReportInfoAsync(const std::string_view title, const std::string_view 
 		INFO_LOG("ReportInfoAsync: {}", message);
 
 	QMetaObject::invokeMethod(g_main_window, "reportInfo", Qt::QueuedConnection,
-		Q_ARG(const QString&, title.empty() ? QString() : QString::fromUtf8(title.data(), title.size())),
-		Q_ARG(const QString&, message.empty() ? QString() : QString::fromUtf8(message.data(), message.size())));
+		Q_ARG(QString, title.empty() ? QString() : QString::fromUtf8(title.data(), title.size())),
+		Q_ARG(QString, message.empty() ? QString() : QString::fromUtf8(message.data(), message.size())));
 }
 
 void Host::ReportErrorAsync(const std::string_view title, const std::string_view message)
@@ -1657,8 +1657,8 @@ void Host::ReportErrorAsync(const std::string_view title, const std::string_view
 		ERROR_LOG("ReportErrorAsync: {}", message);
 
 	QMetaObject::invokeMethod(g_main_window, "reportError", Qt::QueuedConnection,
-		Q_ARG(const QString&, title.empty() ? QString() : QString::fromUtf8(title.data(), title.size())),
-		Q_ARG(const QString&, message.empty() ? QString() : QString::fromUtf8(message.data(), message.size())));
+		Q_ARG(QString, title.empty() ? QString() : QString::fromUtf8(title.data(), title.size())),
+		Q_ARG(QString, message.empty() ? QString() : QString::fromUtf8(message.data(), message.size())));
 }
 
 void Host::OpenURL(const std::string_view url)
@@ -2297,8 +2297,8 @@ bool QtHost::ParseCommandLineOptions(const QStringList& args, std::shared_ptr<VM
 		Console.Warning("Skipping autoboot due to no boot parameters.");
 		autoboot.reset();
 	}
-	
-	if(autoboot && autoboot->start_turbo.value_or(false) && autoboot->start_unlimited.value_or(false))
+
+	if (autoboot && autoboot->start_turbo.value_or(false) && autoboot->start_unlimited.value_or(false))
 	{
 		Console.Warning("Both turbo and unlimited frame limit modes requested. Using unlimited.");
 		autoboot->start_turbo.reset();

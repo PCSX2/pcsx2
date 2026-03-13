@@ -504,7 +504,7 @@ void MemoryCardSlotWidget::setCard(const std::optional<std::string>& name, bool 
 	if (mcd.has_value())
 	{
 		item->setIcon(getCardIcon(mcd.value()));
-		item->setText(tr("%1 [%2]").arg(QString::fromStdString(mcd->name)).arg(getSizeSummary(mcd.value())));
+		item->setText(tr("%1 [%2]").arg(QString::fromStdString(mcd->name), getSizeSummary(mcd.value())));
 	}
 	else
 	{
