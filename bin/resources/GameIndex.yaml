@@ -24845,7 +24845,7 @@ SLES-53830:
   name: "Psychonauts"
   region: "PAL-M3"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned bloom.
+    halfPixelOffset: 4 # Fixes misaligned bloom.
 SLES-53831:
   name: "BloodRayne 2"
   region: "PAL-M5"
@@ -69904,7 +69904,7 @@ SLUS-21120:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned bloom.
+    halfPixelOffset: 4 # Fixes misaligned bloom.
 SLUS-21122:
   name: "Taito Legends"
   region: "NTSC-U"
