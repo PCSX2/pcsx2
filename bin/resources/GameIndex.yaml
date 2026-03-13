@@ -27426,6 +27426,8 @@ SLES-54664:
 SLES-54665:
   name: "Paddington Bear"
   region: "PAL-M11"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes half right.
 SLES-54666:
   name: "Mr. Bean"
   region: "PAL-M11"
