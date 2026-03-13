@@ -120,6 +120,7 @@ bool SysMemory::AllocateMemoryMap()
 	HostMemoryMap::IOPmem = (uptr)(s_data_memory + HostMemoryMap::IOPmemOffset);
 	HostMemoryMap::VUmem = (uptr)(s_data_memory + HostMemoryMap::VUmemOffset);
 
+	DumpMemoryMap();
 	return true;
 }
 
@@ -171,20 +172,12 @@ void SysMemory::ReleaseMemoryMap()
 	}
 }
 
-void SysMemory::ReserveMemory()
-{
-	if (!s_data_memory_file_handle)
-		AllocateMemoryMap();
-}
-
 bool SysMemory::Allocate()
 {
 	DevCon.WriteLn(Color_StrongBlue, "Allocating host memory for virtual systems...");
 
-	if (!s_data_memory_file_handle && !AllocateMemoryMap())
+	if (!AllocateMemoryMap())
 		return false;
-
-	DumpMemoryMap();
 
 	memAllocate();
 	iopMemAlloc();
@@ -217,6 +210,8 @@ void SysMemory::Release()
 	vuMemRelease();
 	iopMemRelease();
 	memRelease();
+
+	ReleaseMemoryMap();
 }
 
 u8* SysMemory::GetDataPtr(size_t offset)
