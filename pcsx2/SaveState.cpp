@@ -36,7 +36,7 @@
 #include "common/Path.h"
 #include "common/ScopedGuard.h"
 #include "common/StringUtil.h"
-#include "common/ZipHelpers.h"
+#include "common/ZipFile.h"
 
 #include "IconsFontAwesome.h"
 #include "fmt/format.h"
@@ -67,7 +67,7 @@ static void PreLoadPrep()
 static void PostLoadPrep()
 {
 	resetCache();
-//	WriteCP0Status(cpuRegs.CP0.n.Status.val);
+	// WriteCP0Status(cpuRegs.CP0.n.Status.val);
 	for (int i = 0; i < 48; i++)
 	{
 		if (std::memcmp(&s_tlb_backup[i], &tlb[i], sizeof(tlbs)) != 0)
@@ -77,7 +77,9 @@ static void PostLoadPrep()
 		}
 	}
 
-	if (EmuConfig.Gamefixes.GoemonTlbHack) GoemonPreloadTlb();
+	if (EmuConfig.Gamefixes.GoemonTlbHack)
+		GoemonPreloadTlb();
+
 	CBreakPoints::SetSkipFirst(BREAKPOINT_EE, 0);
 	CBreakPoints::SetSkipFirst(BREAKPOINT_IOP, 0);
 
@@ -131,7 +133,7 @@ bool SaveStateBase::FreezeTag(const char* src)
 
 	if (std::strcmp(tagspace, src) != 0)
 	{
-		Console.Error(fmt::format("Savestate data corruption detected while reading tag: {}", src));
+		Console.ErrorFmt("Savestate data corruption detected while reading tag: {}", src);
 		m_error = true;
 		return false;
 	}
@@ -163,8 +165,7 @@ bool SaveStateBase::FreezeBios()
 			"    Current BIOS:   %s (crc=0x%08x)\n"
 			"    Savestate BIOS: %s (crc=0x%08x)\n",
 			BiosDescription.c_str(), BiosChecksum,
-			biosdesc, bioscheck
-		);
+			biosdesc, bioscheck);
 	}
 
 	return IsOkay();
@@ -184,12 +185,12 @@ bool SaveStateBase::FreezeInternals(Error* error)
 	if (!FreezeTag("cpuRegs"))
 		return false;
 
-	Freeze(cpuRegs);		// cpu regs + COP0
-	Freeze(psxRegs);		// iop regs
+	Freeze(cpuRegs); // cpu regs + COP0
+	Freeze(psxRegs); // iop regs
 	Freeze(fpuRegs);
-	Freeze(tlb);			// tlbs
-	Freeze(cachedTlbs);		// cached tlbs
-	Freeze(AllowParams1);	//OSDConfig written (Fast Boot)
+	Freeze(tlb); // tlbs
+	Freeze(cachedTlbs); // cached tlbs
+	Freeze(AllowParams1); //OSDConfig written (Fast Boot)
 	Freeze(AllowParams2);
 
 	// Third Block - Cycle Timers and Events
@@ -231,7 +232,7 @@ bool SaveStateBase::FreezeInternals(Error* error)
 	if (!FreezeTag("IOP-Subsystems"))
 		return false;
 
-	FreezeMem(iopMem->Sif, sizeof(iopMem->Sif));		// iop's sif memory (not really needed, but oh well)
+	FreezeMem(iopMem->Sif, sizeof(iopMem->Sif)); // iop's sif memory (not really needed, but oh well)
 
 	okay = okay && psxRcntFreeze();
 
@@ -301,7 +302,8 @@ memSavingState::memSavingState(VmStateBuffer& save_to)
 // Saving of state data
 void memSavingState::FreezeMem(void* data, int size)
 {
-	if (!size) return;
+	if (!size)
+		return;
 
 	const int new_size = m_idx + size;
 	if (static_cast<u32>(new_size) > m_memory.size())
@@ -320,7 +322,7 @@ memLoadingState::memLoadingState(const VmStateBuffer& load_from)
 }
 
 // Loading of state data from a memory buffer...
-void memLoadingState::FreezeMem( void* data, int size )
+void memLoadingState::FreezeMem(void* data, int size)
 {
 	if (static_cast<u32>(m_idx + size) > m_memory.size())
 		m_error = true;
@@ -349,20 +351,20 @@ struct SysState_Component
 
 static int SysState_MTGSFreeze(FreezeAction mode, freezeData* fP)
 {
-	MTGS::FreezeData sstate = { fP, 0 };
+	MTGS::FreezeData sstate = {fP, 0};
 	MTGS::Freeze(mode, sstate);
 	return sstate.retval;
 }
 
-static constexpr SysState_Component SPU2_{ "SPU2", SPU2freeze };
-static constexpr SysState_Component GS{ "GS", SysState_MTGSFreeze };
+static constexpr SysState_Component SPU2_{"SPU2", SPU2freeze};
+static constexpr SysState_Component GS{"GS", SysState_MTGSFreeze};
 
-static bool SysState_ComponentFreezeIn(zip_file_t* zf, SysState_Component comp)
+static bool SysState_ComponentFreezeIn(ZipEntry* ze, SysState_Component comp)
 {
-	if (!zf)
+	if (!ze)
 		return true;
 
-	freezeData fP = { 0, nullptr };
+	freezeData fP = {0, nullptr};
 	if (comp.freeze(FreezeAction::Size, &fP) != 0)
 		fP.size = 0;
 
@@ -374,16 +376,17 @@ static bool SysState_ComponentFreezeIn(zip_file_t* zf, SysState_Component comp)
 		data = std::make_unique<u8[]>(fP.size);
 		fP.data = data.get();
 
-		if (zip_fread(zf, data.get(), fP.size) != static_cast<zip_int64_t>(fP.size))
+		Error error;
+		if (!ze->Read(data.get(), fP.size, &error))
 		{
-			Console.Error(fmt::format("* {}: Failed to decompress save data", comp.name));
+			Console.ErrorFmt("* {}: Failed to decompress save data ({})", comp.name, error.GetDescription());
 			return false;
 		}
 	}
 
 	if (comp.freeze(FreezeAction::Load, &fP) != 0)
 	{
-		Console.Error(fmt::format("* {}: Failed to load freeze data", comp.name));
+		Console.ErrorFmt("* {}: Failed to load freeze data", comp.name);
 		return false;
 	}
 
@@ -395,7 +398,7 @@ static bool SysState_ComponentFreezeOut(SaveStateBase& writer, SysState_Componen
 	freezeData fP = {};
 	if (comp.freeze(FreezeAction::Size, &fP) != 0)
 	{
-		Console.Error(fmt::format("* {}: Failed to get freeze size", comp.name));
+		Console.ErrorFmt("* {}: Failed to get freeze size", comp.name);
 		return false;
 	}
 
@@ -410,7 +413,7 @@ static bool SysState_ComponentFreezeOut(SaveStateBase& writer, SysState_Componen
 	fP.data = writer.GetBlockPtr();
 	if (comp.freeze(FreezeAction::Save, &fP) != 0)
 	{
-		Console.Error(fmt::format("* {}: Failed to save freeze data", comp.name));
+		Console.ErrorFmt("* {}: Failed to save freeze data", comp.name);
 		return false;
 	}
 
@@ -418,13 +421,13 @@ static bool SysState_ComponentFreezeOut(SaveStateBase& writer, SysState_Componen
 	return true;
 }
 
-static bool SysState_ComponentFreezeInNew(zip_file_t* zf, const char* name, bool(*do_state_func)(StateWrapper&))
+static bool SysState_ComponentFreezeInNew(ZipEntry* ze, const char* name, bool (*do_state_func)(StateWrapper&))
 {
 	// TODO: We could decompress on the fly here for a little bit more speed.
 	std::vector<u8> data;
-	if (zf)
+	if (ze)
 	{
-		std::optional<std::vector<u8>> optdata(ReadBinaryFileInZip(zf));
+		std::optional<std::vector<u8>> optdata(ze->ReadBinary(nullptr));
 		if (optdata.has_value())
 			data = std::move(optdata.value());
 	}
@@ -466,7 +469,7 @@ public:
 	virtual ~BaseSavestateEntry() = default;
 
 	virtual const char* GetFilename() const = 0;
-	virtual bool FreezeIn(zip_file_t* zf) const = 0;
+	virtual bool FreezeIn(ZipEntry* ze) const = 0;
 	virtual bool FreezeOut(SaveStateBase& writer) const = 0;
 	virtual bool IsRequired() const = 0;
 };
@@ -478,7 +481,7 @@ protected:
 	virtual ~MemorySavestateEntry() = default;
 
 public:
-	virtual bool FreezeIn(zip_file_t* zf) const;
+	virtual bool FreezeIn(ZipEntry* ze) const;
 	virtual bool FreezeOut(SaveStateBase& writer) const;
 	virtual bool IsRequired() const { return true; }
 
@@ -487,14 +490,13 @@ protected:
 	virtual u32 GetDataSize() const = 0;
 };
 
-bool MemorySavestateEntry::FreezeIn(zip_file_t* zf) const
+bool MemorySavestateEntry::FreezeIn(ZipEntry* ze) const
 {
-	const u32 expectedSize = GetDataSize();
-	const s64 bytesRead = zip_fread(zf, GetDataPtr(), expectedSize);
-	if (bytesRead != static_cast<s64>(expectedSize))
+	Error error;
+	if (ze->Read(GetDataPtr(), GetDataSize(), &error))
 	{
-		Console.WriteLn(Color_Yellow, " '%s' is incomplete (expected 0x%x bytes, loading only 0x%x bytes)",
-			GetFilename(), expectedSize, static_cast<u32>(bytesRead));
+		Console.WriteLnFmt(Color_Yellow, "* '{}' is incomplete ({})",
+			GetFilename(), error.GetDescription());
 	}
 
 	return true;
@@ -524,9 +526,9 @@ public:
 	u8* GetDataPtr() const override { return eeMem->Main; }
 	uint GetDataSize() const override { return Ps2MemSize::ExposedRam; }
 
-	virtual bool FreezeIn(zip_file_t* zf) const override
+	virtual bool FreezeIn(ZipEntry* ze) const override
 	{
-		return MemorySavestateEntry::FreezeIn(zf);
+		return MemorySavestateEntry::FreezeIn(ze);
 	}
 };
 
@@ -616,7 +618,7 @@ public:
 	~SavestateEntry_SPU2() override = default;
 
 	const char* GetFilename() const override { return "SPU2.bin"; }
-	bool FreezeIn(zip_file_t* zf) const override { return SysState_ComponentFreezeIn(zf, SPU2_); }
+	bool FreezeIn(ZipEntry* ze) const override { return SysState_ComponentFreezeIn(ze, SPU2_); }
 	bool FreezeOut(SaveStateBase& writer) const override { return SysState_ComponentFreezeOut(writer, SPU2_); }
 	bool IsRequired() const override { return true; }
 };
@@ -627,7 +629,7 @@ public:
 	~SavestateEntry_USB() override = default;
 
 	const char* GetFilename() const override { return "USB.bin"; }
-	bool FreezeIn(zip_file_t* zf) const override { return SysState_ComponentFreezeInNew(zf, "USB", &USB::DoState); }
+	bool FreezeIn(ZipEntry* ze) const override { return SysState_ComponentFreezeInNew(ze, "USB", &USB::DoState); }
 	bool FreezeOut(SaveStateBase& writer) const override { return SysState_ComponentFreezeOutNew(writer, "USB", 16 * 1024, &USB::DoState); }
 	bool IsRequired() const override { return false; }
 };
@@ -638,7 +640,7 @@ public:
 	~SavestateEntry_PAD() override = default;
 
 	const char* GetFilename() const override { return "PAD.bin"; }
-	bool FreezeIn(zip_file_t* zf) const override { return SysState_ComponentFreezeInNew(zf, "PAD", &Pad::Freeze); }
+	bool FreezeIn(ZipEntry* ze) const override { return SysState_ComponentFreezeInNew(ze, "PAD", &Pad::Freeze); }
 	bool FreezeOut(SaveStateBase& writer) const override { return SysState_ComponentFreezeOutNew(writer, "PAD", 16 * 1024, &Pad::Freeze); }
 	bool IsRequired() const override { return true; }
 };
@@ -649,7 +651,7 @@ public:
 	~SavestateEntry_GS() = default;
 
 	const char* GetFilename() const { return "GS.bin"; }
-	bool FreezeIn(zip_file_t* zf) const { return SysState_ComponentFreezeIn(zf, GS); }
+	bool FreezeIn(ZipEntry* ze) const { return SysState_ComponentFreezeIn(ze, GS); }
 	bool FreezeOut(SaveStateBase& writer) const { return SysState_ComponentFreezeOut(writer, GS); }
 	bool IsRequired() const { return true; }
 };
@@ -659,14 +661,14 @@ class SaveStateEntry_Achievements final : public BaseSavestateEntry
 	~SaveStateEntry_Achievements() override = default;
 
 	const char* GetFilename() const override { return "Achievements.bin"; }
-	bool FreezeIn(zip_file_t* zf) const override
+	bool FreezeIn(ZipEntry* ze) const override
 	{
 		if (!Achievements::IsActive())
 			return true;
 
 		std::optional<std::vector<u8>> data;
-		if (zf)
-			data = ReadBinaryFileInZip(zf);
+		if (ze)
+			data = ze->ReadBinary(nullptr);
 
 		if (data.has_value())
 			Achievements::LoadState(data.value());
@@ -741,7 +743,7 @@ std::unique_ptr<ArchiveEntryList> SaveState_DownloadState(Error* error)
 		uint startpos = saveme.GetCurrentPos();
 		if (!entry->FreezeOut(saveme))
 		{
-			Error::SetString(error, fmt::format("FreezeOut() failed for {}.", entry->GetFilename()));
+			Error::SetStringFmt(error, "FreezeOut() failed for {}.", entry->GetFilename());
 			destlist.reset();
 			break;
 		}
@@ -775,25 +777,23 @@ std::unique_ptr<SaveStateScreenshotData> SaveState_SaveScreenshot()
 	return data;
 }
 
-static bool SaveState_CompressScreenshot(SaveStateScreenshotData* data, zip_t* zf)
+static bool SaveState_CompressScreenshot(SaveStateScreenshotData* data, ZipArchive& archive, Error* error)
 {
-	zip_error_t ze = {};
-	zip_source_t* const zs = zip_source_buffer_create(nullptr, 0, 0, &ze);
-	if (!zs)
+	ZipSource source;
+
+	if (!source.CreateBuffer(nullptr, 0, 0, error))
 		return false;
 
-	if (zip_source_begin_write(zs) != 0)
-	{
-		zip_source_free(zs);
+	if (!source.BeginWrite(error))
 		return false;
-	}
-
-	ScopedGuard zs_free([zs]() { zip_source_free(zs); });
 
 	png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
 	png_infop info_ptr = nullptr;
 	if (!png_ptr)
+	{
+		Error::SetString(error, "png_create_write_struct failed");
 		return false;
+	}
 
 	ScopedGuard cleanup([&png_ptr, &info_ptr]() {
 		if (png_ptr)
@@ -802,14 +802,24 @@ static bool SaveState_CompressScreenshot(SaveStateScreenshotData* data, zip_t* z
 
 	info_ptr = png_create_info_struct(png_ptr);
 	if (!info_ptr)
+	{
+		Error::SetString(error, "png_create_info_struct failed");
 		return false;
+	}
 
 	if (setjmp(png_jmpbuf(png_ptr)))
 		return false;
 
-	png_set_write_fn(png_ptr, zs, [](png_structp png_ptr, png_bytep data_ptr, png_size_t size) {
-		zip_source_write(static_cast<zip_source_t*>(png_get_io_ptr(png_ptr)), data_ptr, size);
-	}, [](png_structp png_ptr) {});
+	png_set_write_fn(
+		png_ptr, &source,
+		[](png_structp png_ptr, png_bytep data_ptr, png_size_t size) {
+			ZipSource& source = *static_cast<ZipSource*>(png_get_io_ptr(png_ptr));
+
+			Error write_error;
+			if (!source.Write(data_ptr, size, &write_error))
+				png_error(png_ptr, write_error.GetDescription().c_str());
+		},
+		[](png_structp png_ptr) {});
 	png_set_compression_level(png_ptr, 5);
 	png_set_IHDR(png_ptr, info_ptr, data->width, data->height, 8, PNG_COLOR_TYPE_RGBA,
 		PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
@@ -827,25 +837,33 @@ static bool SaveState_CompressScreenshot(SaveStateScreenshotData* data, zip_t* z
 
 	png_write_end(png_ptr, nullptr);
 
-	if (zip_source_commit_write(zs) != 0)
+	if (!source.CommitWrite(error))
 		return false;
 
-	const s64 file_index = zip_file_add(zf, EntryFilename_Screenshot, zs, 0);
-	if (file_index < 0)
+	std::optional<ZipEntryIndex> index = archive.AddFileFromSource(
+		EntryFilename_Screenshot, source, 0, error);
+	if (!index.has_value())
+	{
 		return false;
+	}
 
 	// png is already compressed, no point doing it twice
-	zip_set_file_compression(zf, file_index, ZIP_CM_STORE, 0);
+	if (!archive.SetFileCompression(*index, ZIP_CM_STORE, 0, error))
+		return false;
 
-	// source is now owned by the zip file for later compression
-	zs_free.Cancel();
 	return true;
 }
 
-static bool SaveState_ReadScreenshot(zip_t* zf, u32* out_width, u32* out_height, std::vector<u32>* out_pixels)
+static bool SaveState_ReadScreenshot(
+	ZipArchive& archive, u32* out_width, u32* out_height, std::vector<u32>* out_pixels)
 {
-	auto zff = zip_fopen_managed(zf, EntryFilename_Screenshot, 0);
-	if (!zff)
+	ZipEntry entry;
+
+	std::optional<ZipEntryIndex> index = archive.LocateFile(EntryFilename_Screenshot, 0, nullptr);
+	if (!index.has_value())
+		return false;
+
+	if (!entry.Open(archive, *index, 0, nullptr))
 		return false;
 
 	png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
@@ -866,8 +884,12 @@ static bool SaveState_ReadScreenshot(zip_t* zf, u32* out_width, u32* out_height,
 	if (setjmp(png_jmpbuf(png_ptr)))
 		return false;
 
-	png_set_read_fn(png_ptr, zff.get(), [](png_structp png_ptr, png_bytep data_ptr, png_size_t size) {
-		zip_fread(static_cast<zip_file_t*>(png_get_io_ptr(png_ptr)), data_ptr, size);
+	png_set_read_fn(png_ptr, &entry, [](png_structp png_ptr, png_bytep data_ptr, png_size_t size) {
+		ZipEntry& entry = *static_cast<ZipEntry*>(png_get_io_ptr(png_ptr));
+
+		Error read_error;
+		if (!entry.Read(data_ptr, size, &read_error))
+			png_error(png_ptr, read_error.GetDescription().c_str());
 	});
 
 	png_read_info(png_ptr, info_ptr);
@@ -921,56 +943,92 @@ static bool SaveState_ReadScreenshot(zip_t* zf, u32* out_width, u32* out_height,
 	return true;
 }
 
-// --------------------------------------------------------------------------------------
-//  CompressThread_VmState
-// --------------------------------------------------------------------------------------
-static bool SaveState_AddToZip(zip_t* zf, ArchiveEntryList* srclist, SaveStateScreenshotData* screenshot)
+static std::tuple<u32, u32> SaveState_Get_CompressionParameters()
 {
-	u32 compression;
-	u32 compression_level;
+	u32 compression = ZIP_CM_STORE;
+	u32 compression_level = 0;
 
-	if (EmuConfig.Savestate.CompressionType == SavestateCompressionMethod::Zstandard)
+	switch (EmuConfig.Savestate.CompressionType)
 	{
-		compression = ZIP_CM_ZSTD;
+		case SavestateCompressionMethod::Uncompressed:
+		{
+			break;
+		}
+		case SavestateCompressionMethod::Deflate64:
+		{
+			compression = ZIP_CM_DEFLATE64;
 
-		if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::Low)
-			compression_level = 1;
-		else if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::Medium)
-			compression_level = 3;
-		else if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::High)
-			compression_level = 10;
-		else if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::VeryHigh)
-			compression_level = 22;
+			switch (EmuConfig.Savestate.CompressionRatio)
+			{
+				case SavestateCompressionLevel::Low:
+					compression_level = 1;
+					break;
+				case SavestateCompressionLevel::Medium:
+					compression_level = 3;
+					break;
+				case SavestateCompressionLevel::High:
+					compression_level = 7;
+					break;
+				case SavestateCompressionLevel::VeryHigh:
+					compression_level = 9;
+					break;
+			}
+
+			break;
+		}
+		case SavestateCompressionMethod::Zstandard:
+		{
+			compression = ZIP_CM_ZSTD;
+
+			switch (EmuConfig.Savestate.CompressionRatio)
+			{
+				case SavestateCompressionLevel::Low:
+					compression_level = 1;
+					break;
+				case SavestateCompressionLevel::Medium:
+					compression_level = 3;
+					break;
+				case SavestateCompressionLevel::High:
+					compression_level = 10;
+					break;
+				case SavestateCompressionLevel::VeryHigh:
+					compression_level = 22;
+					break;
+			}
+
+			break;
+		}
+		case SavestateCompressionMethod::LZMA2:
+		{
+			compression = ZIP_CM_LZMA2;
+
+			switch (EmuConfig.Savestate.CompressionRatio)
+			{
+				case SavestateCompressionLevel::Low:
+					compression_level = 1;
+					break;
+				case SavestateCompressionLevel::Medium:
+					compression_level = 3;
+					break;
+				case SavestateCompressionLevel::High:
+					compression_level = 7;
+					break;
+				case SavestateCompressionLevel::VeryHigh:
+					compression_level = 9;
+					break;
+			}
+
+			break;
+		}
 	}
-	else if (EmuConfig.Savestate.CompressionType == SavestateCompressionMethod::Deflate64)
-	{
-		compression = ZIP_CM_DEFLATE64;
-		if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::Low)
-			compression_level = 1;
-		else if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::Medium)
-			compression_level = 3;
-		else if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::High)
-			compression_level = 7;
-		else if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::VeryHigh)
-			compression_level = 9;
-	}
-	else if (EmuConfig.Savestate.CompressionType == SavestateCompressionMethod::LZMA2)
-	{
-		compression = ZIP_CM_LZMA2;
-		if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::Low)
-			compression_level = 1;
-		else if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::Medium)
-			compression_level = 3;
-		else if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::High)
-			compression_level = 7;
-		else if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::VeryHigh)
-			compression_level = 9;
-	}
-	else if (EmuConfig.Savestate.CompressionType == SavestateCompressionMethod::Uncompressed)
-	{
-		compression = ZIP_CM_STORE;
-		compression_level = 0;
-	}
+
+	return {compression, compression_level};
+}
+
+static bool SaveState_AddToZip(
+	ZipArchive& archive, ArchiveEntryList* srclist, SaveStateScreenshotData* screenshot)
+{
+	auto [compression, compression_level] = SaveState_Get_CompressionParameters();
 
 	// version indicator
 	{
@@ -991,22 +1049,23 @@ static bool SaveState_AddToZip(zip_t* zf, ArchiveEntryList* srclist, SaveStateSc
 			StringUtil::Strlcpy(vi->version, "Unknown", std::size(vi->version));
 		}
 
-		zip_source_t* const zs = zip_source_buffer(zf, vi, sizeof(*vi), 1);
-		if (!zs)
+		Error add_error;
+		std::optional<ZipEntryIndex> index = archive.AddFileFromBuffer(
+			EntryFilename_StateVersion, vi, sizeof(*vi), ZIP_FL_ENC_UTF_8, 1, &add_error);
+
+		if (!index.has_value())
 		{
-			std::free(vi);
+			Console.ErrorFmt("Failed to add version indicator to zip ({}).", add_error.GetDescription());
 			return false;
 		}
 
-		// NOTE: Source should not be freed if successful.
-		const s64 fi = zip_file_add(zf, EntryFilename_StateVersion, zs, ZIP_FL_ENC_UTF_8);
-		if (fi < 0)
+		Error compression_error;
+		if (!archive.SetFileCompression(*index, compression, compression_level, &compression_error))
 		{
-			zip_source_free(zs);
+			Console.ErrorFmt("Failed to set compression parameters ({}, {}).",
+				compression, compression_level);
 			return false;
 		}
-
-		zip_set_file_compression(zf, fi, compression, compression_level);
 	}
 
 	const uint listlen = srclist->GetLength();
@@ -1016,24 +1075,33 @@ static bool SaveState_AddToZip(zip_t* zf, ArchiveEntryList* srclist, SaveStateSc
 		if (!entry.GetDataSize())
 			continue;
 
-		zip_source_t* const zs = zip_source_buffer(zf, srclist->GetPtr(entry.GetDataIndex()), entry.GetDataSize(), 0);
-		if (!zs)
-			return false;
+		u8* ptr = srclist->GetPtr(entry.GetDataIndex());
+		uint size = entry.GetDataSize();
 
-		const s64 fi = zip_file_add(zf, entry.GetFilename().c_str(), zs, ZIP_FL_ENC_UTF_8);
-		if (fi < 0)
+		Error add_error;
+		std::optional<ZipEntryIndex> index = archive.AddFileFromBuffer(
+			EntryFilename_StateVersion, ptr, size, ZIP_FL_ENC_UTF_8, 0, &add_error);
+
+		if (!index.has_value())
 		{
-			zip_source_free(zs);
+			Console.ErrorFmt("Failed to add '{}' to zip ({}).", entry.GetFilename(), add_error.GetDescription());
 			return false;
 		}
 
-		zip_set_file_compression(zf, fi, compression, compression_level);
+		Error compression_error;
+		if (!archive.SetFileCompression(*index, compression, compression_level, &compression_error))
+		{
+			Console.ErrorFmt("Failed to set compression parameters ({}, {}).",
+				compression, compression_level);
+			return false;
+		}
 	}
 
-	if (screenshot)
+	Error screenshot_error;
+	if (screenshot && !SaveState_CompressScreenshot(screenshot, archive, &screenshot_error))
 	{
-		if (!SaveState_CompressScreenshot(screenshot, zf))
-			return false;
+		Console.ErrorFmt("Failed to compress save state screenshot ({}).", screenshot_error.GetDescription());
+		return false;
 	}
 
 	return true;
@@ -1043,35 +1111,30 @@ bool SaveState_ZipToDisk(
 	std::unique_ptr<ArchiveEntryList> srclist, std::unique_ptr<SaveStateScreenshotData> screenshot,
 	const char* filename, Error* error)
 {
-	zip_error_t ze = {};
-	zip_source_t* zs = zip_source_file_create(filename, 0, 0, &ze);
-	zip_t* zf = nullptr;
-	if (zs && !(zf = zip_open_from_source(zs, ZIP_CREATE | ZIP_TRUNCATE, &ze)))
+	ZipArchive archive;
+
+	Error open_error;
+	if (!archive.Open(filename, ZIP_CREATE | ZIP_TRUNCATE, nullptr, &open_error))
 	{
 		Error::SetStringFmt(error,
-			TRANSLATE_FS("SaveState", "Failed to open zip file '{}' for save state: {}."),
-			filename, zip_error_strerror(&ze));
-
-		// have to clean up source
-		zip_source_free(zs);
+			TRANSLATE_FS("SaveState", "Cannot open zip file '{}' ({})."),
+			filename, open_error.GetDescription());
 		return false;
 	}
 
-	// discard zip file if we fail saving something
-	if (!SaveState_AddToZip(zf, srclist.get(), screenshot.get()))
+	if (!SaveState_AddToZip(archive, srclist.get(), screenshot.get()))
 	{
 		Error::SetStringFmt(error,
 			TRANSLATE_FS("SaveState", "Failed to save state to zip file '{}'."), filename);
-		zip_discard(zf);
 		return false;
 	}
 
-	// force the zip to close, this is the expensive part with libzip.
-	if (zip_close(zf) != 0)
+	Error close_error;
+	if (archive.SaveChangesAndClose(&close_error))
 	{
 		Error::SetStringFmt(error,
-			TRANSLATE_FS("SaveState", "Failed to save state to zip file '{}': {}."), filename, zip_strerror(zf));
-		zip_discard(zf);
+			TRANSLATE_FS("SaveState", "Cannot save state to zip file '{}' ({})."),
+			filename, close_error.GetDescription());
 		return false;
 	}
 
@@ -1080,30 +1143,50 @@ bool SaveState_ZipToDisk(
 
 bool SaveState_ReadScreenshot(const std::string& filename, u32* out_width, u32* out_height, std::vector<u32>* out_pixels)
 {
-	zip_error_t ze = {};
-	auto zf = zip_open_managed(filename.c_str(), ZIP_RDONLY, &ze);
-	if (!zf)
+	ZipArchive archive;
+
+	Error open_error;
+	if (!archive.Open(filename.c_str(), ZIP_RDONLY, nullptr, &open_error))
 	{
-		Console.Error("Failed to open zip file '%s' for save state screenshot: %s", filename.c_str(), zip_error_strerror(&ze));
+		Console.ErrorFmt("Failed to open save state '{}' for save state screenshot: {}",
+			filename, open_error.GetDescription());
 		return false;
 	}
 
-	return SaveState_ReadScreenshot(zf.get(), out_width, out_height, out_pixels);
+	return SaveState_ReadScreenshot(archive, out_width, out_height, out_pixels);
 }
 
-static bool CheckVersion(const std::string& filename, zip_t* zf, Error* error)
+static bool CheckVersion(const std::string& filename, ZipArchive& archive, Error* error)
 {
 	u32 savever;
 
-	auto zff = zip_fopen_managed(zf, EntryFilename_StateVersion, 0);
-	if (!zff || zip_fread(zff.get(), &savever, sizeof(savever)) != sizeof(savever))
+	ZipEntry entry;
+
+	std::optional<ZipEntryIndex> index = archive.LocateFile(EntryFilename_StateVersion, 0, nullptr);
+	if (!index.has_value())
 	{
-		Error::SetString(error, "Savestate file does not contain version indicator.");
+		Error::SetString(error, "Save state file does not contain version indicator.");
+		return false;
+	}
+
+	Error open_error;
+	if (!entry.Open(archive, *index, 0, &open_error))
+	{
+		Error::SetStringFmt(error, "Failed to open save state version indicator entry ({}).",
+			open_error.GetDescription());
+		return false;
+	}
+
+	Error read_error;
+	if (!entry.Read(&savever, sizeof(savever), &read_error))
+	{
+		Error::SetStringFmt(error, "Save state file contains invalid version indicator ({}).",
+			read_error.GetDescription());
 		return false;
 	}
 
 	char version_string[STATE_PCSX2_VERSION_SIZE];
-	if (zip_fread(zff.get(), version_string, STATE_PCSX2_VERSION_SIZE) == STATE_PCSX2_VERSION_SIZE)
+	if (entry.Read(version_string, STATE_PCSX2_VERSION_SIZE, nullptr))
 		version_string[STATE_PCSX2_VERSION_SIZE - 1] = 0;
 	else
 		StringUtil::Strlcpy(version_string, "Unknown", std::size(version_string));
@@ -1119,53 +1202,47 @@ static bool CheckVersion(const std::string& filename, zip_t* zf, Error* error)
 		{
 			current_emulator_version = "Unknown";
 		}
-		Error::SetString(error, fmt::format(TRANSLATE_FS("SaveState","This save state was created with PCSX2 version {0}. It is no longer compatible "
-											"with your current PCSX2 version {1}.\n\n"
-											"If you have any unsaved progress on this save state, you can download the compatible PCSX2 version {0} "
-											"from pcsx2.net, load the save state, and save your progress to the memory card."),
-											version_string, current_emulator_version));
+		Error::SetStringFmt(error,
+			TRANSLATE_FS("SaveState",
+				"This save state was created with PCSX2 version {0}. It is no longer compatible "
+				"with your current PCSX2 version {1}.\n\n"
+				"If you have any unsaved progress on this save state, you can download the compatible PCSX2 version {0} "
+				"from pcsx2.net, load the save state, and save your progress to the memory card."),
+			version_string, current_emulator_version);
 		return false;
 	}
 
 	return true;
 }
 
-static zip_int64_t CheckFileExistsInState(zip_t* zf, const char* name, bool required)
+static std::optional<ZipEntryIndex> CheckFileExistsInState(ZipArchive& archive, const char* name, bool required)
 {
-	zip_int64_t index = zip_name_locate(zf, name, /*ZIP_FL_NOCASE*/ 0);
-	if (index >= 0)
+	std::optional<ZipEntryIndex> index = archive.LocateFile(name, 0, nullptr);
+	if (!index.has_value())
 	{
-		DevCon.WriteLn(Color_Green, " ... found '%s'", name);
-		return index;
+		if (required)
+			Console.WriteLnFmt(Color_Red, " ... not found '{}'!", name);
+		else
+			DevCon.WriteLnFmt(Color_Red, " ... not found '{}'!", name);
+
+		return std::nullopt;
 	}
 
-	if (required)
-		Console.WriteLn(Color_Red, " ... not found '%s'!", name);
-	else
-		DevCon.WriteLn(Color_Red, " ... not found '%s'!", name);
+	DevCon.WriteLn(Color_Green, " ... found '%s'", name);
 
 	return index;
 }
 
-static bool LoadInternalStructuresState(zip_t* zf, s64 index, Error* error)
+static bool LoadInternalStructuresState(ZipArchive& archive, ZipEntryIndex index, Error* error)
 {
-	zip_stat_t zst;
-	if (zip_stat_index(zf, index, 0, &zst) != 0 || zst.size > std::numeric_limits<int>::max())
+	std::optional<std::vector<u8>> buffer = archive.ReadBinaryFile(index, 0, error);
+	if (!buffer.has_value())
 		return false;
 
-	// Load all the internal data
-	auto zff = zip_fopen_index_managed(zf, index, 0);
-	if (!zff)
-		return false;
-
-	std::vector<u8> buffer(zst.size);
-	if (zip_fread(zff.get(), buffer.data(), buffer.size()) != static_cast<zip_int64_t>(buffer.size()))
-		return false;
-
-	memLoadingState state(buffer);
+	memLoadingState state(*buffer);
 	if (!state.FreezeBios())
 		return false;
-	
+
 	if (!state.FreezeInternals(error))
 		return false;
 
@@ -1174,40 +1251,45 @@ static bool LoadInternalStructuresState(zip_t* zf, s64 index, Error* error)
 
 bool SaveState_UnzipFromDisk(const std::string& filename, Error* error)
 {
-	zip_error_t ze = {};
-	auto zf = zip_open_managed(filename.c_str(), ZIP_RDONLY, &ze);
-	if (!zf)
+	ZipArchive archive;
+
+	int err;
+	Error open_error;
+	if (!archive.Open(filename.c_str(), 0, &err, &open_error))
 	{
-		Console.Error("Failed to open zip file '%s' for save state load: %s", filename.c_str(), zip_error_strerror(&ze));
-		if (zip_error_code_zip(&ze) == ZIP_ER_NOENT)
-			Error::SetString(error, "Savestate file does not exist.");
+		Console.ErrorFmt("Failed to open zip file '{}' for save state load: {}",
+			filename, open_error.GetDescription());
+
+		if (err == ZIP_ER_NOENT)
+			Error::SetString(error, "Save state file does not exist.");
 		else
-			Error::SetString(error, fmt::format("Savestate zip error: {}", zip_error_strerror(&ze)));
+			Error::SetStringFmt(error, "Save state zip error: {}", open_error.GetDescription());
 
 		return false;
 	}
 
 	// look for version and screenshot information in the zip stream:
-	if (!CheckVersion(filename, zf.get(), error))
+	if (!CheckVersion(filename, archive, error))
 		return false;
 
 	// check that all parts are included
-	const s64 internal_index = CheckFileExistsInState(zf.get(), EntryFilename_InternalStructures, true);
-	s64 entryIndices[std::size(SavestateEntries)];
+	const std::optional<ZipEntryIndex> internal_index = CheckFileExistsInState(
+		archive, EntryFilename_InternalStructures, true);
+	std::optional<ZipEntryIndex> entry_indices[std::size(SavestateEntries)];
 
 	// Log any parts and pieces that are missing, and then generate an exception.
-	bool allPresent = (internal_index >= 0);
+	bool all_present = internal_index >= 0;
 	for (u32 i = 0; i < std::size(SavestateEntries); i++)
 	{
 		const bool required = SavestateEntries[i]->IsRequired();
-		entryIndices[i] = CheckFileExistsInState(zf.get(), SavestateEntries[i]->GetFilename(), required);
-		if (entryIndices[i] < 0 && required)
+		entry_indices[i] = CheckFileExistsInState(archive, SavestateEntries[i]->GetFilename(), required);
+		if (!entry_indices[i].has_value() && required)
 		{
-			allPresent = false;
+			all_present = false;
 			break;
 		}
 	}
-	if (!allPresent)
+	if (!all_present)
 	{
 		Error::SetString(error, "Some required components were not found or are incomplete.");
 		return false;
@@ -1215,7 +1297,7 @@ bool SaveState_UnzipFromDisk(const std::string& filename, Error* error)
 
 	PreLoadPrep();
 
-	if (!LoadInternalStructuresState(zf.get(), internal_index, error))
+	if (!internal_index.has_value() || !LoadInternalStructuresState(archive, *internal_index, error))
 	{
 		if (!error->IsValid())
 			Error::SetString(error, "Save state corruption in internal structures.");
@@ -1226,16 +1308,18 @@ bool SaveState_UnzipFromDisk(const std::string& filename, Error* error)
 
 	for (u32 i = 0; i < std::size(SavestateEntries); ++i)
 	{
-		if (entryIndices[i] < 0)
+		if (!entry_indices[i].has_value())
 		{
 			SavestateEntries[i]->FreezeIn(nullptr);
 			continue;
 		}
 
-		auto zff = zip_fopen_index_managed(zf.get(), entryIndices[i], 0);
-		if (!zff || !SavestateEntries[i]->FreezeIn(zff.get()))
+		ZipEntry zip_entry;
+		bool opened = zip_entry.Open(archive, *entry_indices[i], 0, error);
+
+		if (!opened || !SavestateEntries[i]->FreezeIn(&zip_entry))
 		{
-			Error::SetString(error, fmt::format("Save state corruption in {}.", SavestateEntries[i]->GetFilename()));
+			Error::SetStringFmt(error, "Save state corruption in {}.", SavestateEntries[i]->GetFilename());
 			VMManager::Reset();
 			return false;
 		}
