@@ -673,6 +673,11 @@ void GSDevice::Recycle(GSTexture* t)
 	if (!t)
 		return;
 
+	if (t->IsDepthColor())
+	{
+		t->ForgetDepthColor();
+	}
+
 	t->SetLastFrameUsed(m_frame);
 
 	FastList<GSTexture*>& pool = m_pool[!t->IsTexture()];
