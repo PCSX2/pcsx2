@@ -259,6 +259,7 @@ public:
 	bool m_temp_z_full_copy = false;
 	bool m_in_target_draw = false;
 	bool m_channel_shuffle_finish = false;
+	bool m_z_integer_enabled = false;
 
 	u32 m_target_offset = 0;
 	u8 m_scanmask_used = 0;
@@ -486,6 +487,12 @@ public:
 	bool SpriteDrawWithoutGaps();
 	void CalculatePrimitiveCoversWithoutGaps();
 	GIFRegTEX0 GetTex0Layer(u32 lod);
+
+	__fi void UpdateZIntegerEnabled()
+	{
+		m_z_integer_enabled = GSIsHardwareRenderer() && g_gs_device->Features().depth_integer &&
+			GSConfig.HWZIntegerMode >= GSHardwareZIntegerMode::Enabled;
+	}
 };
 
 // We put this in the header because of Multi-ISA.

@@ -18,27 +18,77 @@ void main()
 
 #ifdef FRAGMENT_SHADER
 
+#if defined(ps_datm1) || \
+	defined(ps_datm0) || \
+	defined(ps_datm1_rta_correction) || \
+	defined(ps_datm0_rta_correction) || \
+	defined(ps_convert_rgba8_float32) || \
+	defined(ps_convert_rgba8_float24) || \
+	defined(ps_convert_rgba8_float16) || \
+	defined(ps_convert_rgb5a1_float16) || \
+	defined(ps_convert_rgba8_float32_biln) || \
+	defined(ps_convert_rgba8_float24_biln) || \
+	defined(ps_convert_rgba8_float16_biln) || \
+	defined(ps_convert_rgb5a1_float16_biln) || \
+	defined(ps_convert_float32_color_to_depth) || \
+	defined(ps_convert_float32_float24) || \
+	defined(ps_convert_uint32_float32) || \
+	defined(ps_convert_uint32_float24) || \
+	defined(ps_depth_copy)
+#define HAS_DEPTHSTENCIL_OUTPUT 1
+#else
+#define HAS_DEPTHSTENCIL_OUTPUT 0
+#endif
+
+#if defined(ps_copy_uint) || \
+	defined(ps_convert_uint32_float32) || \
+	defined(ps_convert_uint32_float24) || \
+	defined(ps_convert_uint32_rgba8) || \
+	defined(ps_convert_uint16_rgb5a1) || \
+	defined(ps_convert_uint32_uint24)
+#define HAS_INTEGER_INPUT 1
+#else
+#define HAS_INTEGER_INPUT 0
+#endif
+
+#if	defined(ps_convert_rgba8_16bits) || \
+	defined(ps_copy_uint) || \
+	defined(ps_convert_float32_uint32) || \
+	defined(ps_convert_float32_uint24) || \
+	defined(ps_convert_rgba8_uint32) || \
+	defined(ps_convert_rgba8_uint24) || \
+	defined(ps_convert_rgba8_uint16) || \
+	defined(ps_convert_rgb5a1_uint16) || \
+	defined(ps_convert_rgba8_uint32_biln) || \
+	defined(ps_convert_rgba8_uint24_biln) || \
+	defined(ps_convert_rgba8_uint16_biln) || \
+	defined(ps_convert_rgb5a1_uint16_biln) || \
+	defined(ps_convert_uint32_uint24)
+#define HAS_INTEGER_OUTPUT 1
+#else
+#define HAS_INTEGER_OUTPUT 0
+#endif
+
 layout(location = 0) in vec2 v_tex;
 
-#if defined(ps_convert_rgba8_16bits) || defined(ps_convert_float32_32bits)
+#if HAS_INTEGER_OUTPUT
 layout(location = 0) out uint o_col0;
 #elif defined(ps_convert_float32_depth_to_color)
 layout(location = 0) out float o_col0;
-#elif !defined(ps_datm1) && \
-	!defined(ps_datm0) && \
-	!defined(ps_datm1_rta_correction) && \
-	!defined(ps_datm0_rta_correction) && \
-	!defined(ps_convert_rgba8_float32) && \
-	!defined(ps_convert_rgba8_float24) && \
-	!defined(ps_convert_rgba8_float16) && \
-	!defined(ps_convert_rgb5a1_float16) && \
-	!defined(ps_convert_rgba8_float32_biln) && \
-	!defined(ps_convert_rgba8_float24_biln) && \
-	!defined(ps_convert_rgba8_float16_biln) && \
-	!defined(ps_convert_rgb5a1_float16_biln) && \
-	!defined(ps_depth_copy)
+#elif !HAS_DEPTHSTENCIL_OUTPUT
 layout(location = 0) out vec4 o_col0;
 #endif
+
+#if HAS_INTEGER_INPUT
+
+layout(set = 0, binding = 0) uniform usampler2D samp0;
+
+uint sample_c(vec2 uv)
+{
+	return texture(samp0, uv).r;
+}
+
+#else
 
 layout(set = 0, binding = 0) uniform sampler2D samp0;
 
@@ -47,8 +97,17 @@ vec4 sample_c(vec2 uv)
 	return texture(samp0, uv);
 }
 
+#endif
+
 #ifdef ps_copy
 void ps_copy()
+{
+	o_col0 = sample_c(v_tex);
+}
+#endif
+
+#ifdef ps_copy_uint
+void ps_copy_uint()
 {
 	o_col0 = sample_c(v_tex);
 }
@@ -182,11 +241,19 @@ void ps_convert_float32_color_to_depth()
 }
 #endif
 
-#ifdef ps_convert_float32_32bits
-void ps_convert_float32_32bits()
+#ifdef ps_convert_float32_uint32
+void ps_convert_float32_uint32()
 {
 	// Convert a vec32 depth texture into a 32 bits UINT texture
 	o_col0 = uint(exp2(32.0f) * sample_c(v_tex).r);
+}
+#endif
+
+#ifdef ps_convert_float32_uint24
+void ps_convert_float32_uint24()
+{
+	// Convert a FLOAT32 depth texture into a 24 bits UINT texture
+	o_col0 = uint(exp2(32.0f) * sample_c(v_tex).r) & 0xFFFFFF;
 }
 #endif
 
@@ -208,28 +275,86 @@ void ps_convert_float16_rgb5a1()
 }
 #endif
 
+#ifdef ps_convert_uint32_float32
+void ps_convert_uint32_float32()
+{
+	// Convert a 32 bits UINT texture to FLOAT32 depth texture
+	gl_FragDepth = float(exp2(-32.0f) * sample_c(v_tex).r);
+}
+#endif
+
+#ifdef ps_convert_uint32_float24
+void ps_convert_uint32_float24()
+{
+	// Convert a 32 bits UINT texture to FLOAT24 depth texture
+	gl_FragDepth = float(exp2(-32.0f) * (sample_c(v_tex).r & 0xFFFFFF));
+}
+#endif
+
+#ifdef ps_convert_uint32_rgba8
+void ps_convert_uint32_rgba8()
+{
+	// Convert a 32 bits UINT texture into a RGBA color texture
+	uint d = sample_c(v_tex).r;
+	o_col0 = vec4(uvec4((d & 0xFFu), ((d >> 8) & 0xFFu), ((d >> 16) & 0xFFu), (d >> 24))) / 255.0f;
+}
+#endif
+
+#ifdef ps_convert_uint16_rgb5a1
+void ps_convert_uint16_rgb5a1()
+{
+	// Convert a 16 bits UINT into a RGB5A1 color texture
+	uint d = sample_c(v_tex).r;
+	o_col0 = vec4(uvec4(d << 3, d >> 2, d >> 7, d >> 8) & uvec4(0xf8, 0xf8, 0xf8, 0x80)) / 255.0f;
+}
+#endif
+
+uint rgba8_to_uint32(vec4 unorm)
+{
+	uvec4 c = uvec4(unorm * vec4(255.5f));
+	return c.r | (c.g << 8) | (c.b << 16) | (c.a << 24);
+}
+
+uint rgba8_to_uint24(vec4 unorm)
+{
+	uvec3 c = uvec3(unorm.rgb * vec3(255.5f));
+	return c.r | (c.g << 8) | (c.b << 16);
+}
+
+uint rgba8_to_uint16(vec4 unorm)
+{
+	uvec2 c = uvec2(unorm.rg * vec2(255.5f));
+	return c.r | (c.g << 8);
+}
+
+uint rgb5a1_to_uint16(vec4 unorm)
+{
+	uvec4 c = uvec4(unorm * vec4(255.5f));
+	return ((c.r & 0xF8u) >> 3) | ((c.g & 0xF8u) << 2) | ((c.b & 0xF8u) << 7) | ((c.a & 0x80u) << 8);
+}
+
 float rgba8_to_depth32(vec4 unorm)
 {
 	uvec4 c = uvec4(unorm * vec4(255.5f));
-	return float(c.r | (c.g << 8) | (c.b << 16) | (c.a << 24)) * exp2(-32.0f);
+	return float(rgba8_to_uint32(unorm)) * exp2(-32.0f);
 }
 
 float rgba8_to_depth24(vec4 unorm)
 {
 	uvec3 c = uvec3(unorm.rgb * vec3(255.5f));
-	return float(c.r | (c.g << 8) | (c.b << 16)) * exp2(-32.0f);
+	return float(rgba8_to_uint24(unorm)) * exp2(-32.0f);
 }
 
 float rgba8_to_depth16(vec4 unorm)
 {
 	uvec2 c = uvec2(unorm.rg * vec2(255.5f));
-	return float(c.r | (c.g << 8)) * exp2(-32.0f);
+	return float(rgba8_to_uint16(unorm)) * exp2(-32.0f);
 }
 
 float rgb5a1_to_depth16(vec4 unorm)
 {
 	uvec4 c = uvec4(unorm * vec4(255.5f));
-	return float(((c.r & 0xF8u) >> 3) | ((c.g & 0xF8u) << 2) | ((c.b & 0xF8u) << 7) | ((c.a & 0x80u) << 8)) * exp2(-32.0f);
+	return float(rgb5a1_to_uint16(unorm)) * exp2(-32.0f);
 }
 
 #ifdef ps_convert_float32_float24
@@ -238,6 +363,14 @@ void ps_convert_float32_float24()
 	// Truncates depth value to 24bits
 	uint d = uint(sample_c(v_tex).r * exp2(32.0f)) & 0xFFFFFFu;
 	gl_FragDepth = float(d) * exp2(-32.0f);
+}
+#endif
+
+#ifdef ps_convert_uint32_uint24
+void ps_convert_uint32_uint24()
+{
+	// Truncates depth value to 24bits
+	o_col0 = sample_c(v_tex).r & 0xFFFFFFu;
 }
 #endif
 
@@ -274,6 +407,42 @@ void ps_convert_rgb5a1_float16()
 {
 	// Convert an RGB5A1 (saved as RGBA8) color to a 16 bit Z
 	gl_FragDepth = rgb5a1_to_depth16(sample_c(v_tex));
+}
+#endif
+
+#ifdef ps_convert_rgba8_uint32
+void ps_convert_rgba8_uint32()
+{
+	// Convert an RGBA texture into a 32 bit UINT texture
+	o_col0 = rgba8_to_uint32(sample_c(v_tex));
+}
+#endif
+
+#ifdef ps_convert_rgba8_uint24
+void ps_convert_rgba8_uint24()
+{
+	// Same as above but without the alpha channel (24 bits Z)
+
+	// Convert an RGBA texture into a 32 bit UINT texture
+	o_col0 = rgba8_to_uint24(sample_c(v_tex));
+}
+#endif
+
+#ifdef ps_convert_rgba8_uint16
+void ps_convert_rgba8_uint16()
+{
+	// Same as above but without the A/B channels (16 bits Z)
+
+	// Convert an RGBA texture into a 32 bit UINT texture
+	o_col0 = rgba8_to_uint16(sample_c(v_tex));
+}
+#endif
+
+#ifdef ps_convert_rgb5a1_uint16
+void ps_convert_rgb5a1_uint16()
+{
+	// Convert an RGB5A1 (saved as RGBA8) color to a 16 bit UINT
+	o_col0 = rgb5a1_to_uint16(sample_c(v_tex));
 }
 #endif
 
@@ -322,6 +491,49 @@ void ps_convert_rgb5a1_float16_biln()
 {
 	// Convert an RGB5A1 (saved as RGBA8) color to a 16 bit Z
 	SAMPLE_RGBA_DEPTH_BILN(rgb5a1_to_depth16);
+}
+#endif
+
+#ifdef ps_convert_rgba8_uint32_biln
+void ps_convert_rgba8_uint32_biln()
+{
+	// Note: Bilinear is not implemented for integer.
+	// Convert an RGBA texture into a 32 bit UINT texture
+	o_col0 = rgba8_to_uint32(sample_c(v_tex));
+}
+#endif
+
+#ifdef ps_convert_rgba8_uint24_biln
+void ps_convert_rgba8_uint24_biln()
+{
+	// Note: Bilinear is not implemented for integer.
+
+	// Same as above but without the alpha channel (24 bits Z)
+
+	// Convert an RGBA texture into a 32 bit UINT texture
+	o_col0 = rgba8_to_uint24(sample_c(v_tex));
+}
+#endif
+
+#ifdef ps_convert_rgba8_uint16_biln
+void ps_convert_rgba8_uint16_biln()
+{
+	// Note: Bilinear is not implemented for integer.
+
+	// Same as above but without the A/B channels (16 bits Z)
+
+	// Convert an RGBA texture into a 32 bit UINT texture
+	o_col0 = rgba8_to_uint16(sample_c(v_tex));
+}
+#endif
+
+#ifdef ps_convert_rgb5a1_uint16_biln
+void ps_convert_rgb5a1_uint16_biln()
+{
+	// Note: Bilinear is not implemented for integer.
+
+	// Convert an RGB5A1 (saved as RGBA8) color to a 16 bit UINT
+	o_col0 = rgb5a1_to_uint16(sample_c(v_tex));
 }
 #endif
 
