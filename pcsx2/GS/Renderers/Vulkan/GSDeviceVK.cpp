@@ -2692,7 +2692,7 @@ bool GSDeviceVK::CheckFeatures()
 	m_features.line_expand =
 		(m_device_features.wideLines && limits.lineWidthRange[0] <= f_upscale && limits.lineWidthRange[1] >= f_upscale);
 
-	if (m_features.test_and_sample_depth && (GSConfig.DepthFeedbackMode == GSDepthFeedbackMode::Auto ||
+	if (m_features.texture_barrier && (GSConfig.DepthFeedbackMode == GSDepthFeedbackMode::Auto ||
 		GSConfig.DepthFeedbackMode == GSDepthFeedbackMode::Depth))
 	{
 		m_features.depth_feedback = GSDevice::DepthFeedbackSupport::Depth;

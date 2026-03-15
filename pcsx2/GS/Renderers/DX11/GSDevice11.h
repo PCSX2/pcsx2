@@ -138,7 +138,6 @@ private:
 	bool m_is_exclusive_fullscreen = false;
 	bool m_conservative_depth = false;
 	bool m_rgba16_unorm_hw_blend = false;
-	bool m_read_only_dsv_support = false;
 
 	struct
 	{

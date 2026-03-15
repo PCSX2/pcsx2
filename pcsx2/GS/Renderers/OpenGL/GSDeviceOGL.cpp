@@ -740,7 +740,7 @@ bool GSDeviceOGL::CheckFeatures()
 	m_features.prefer_new_textures = false;
 	m_features.stencil_buffer = true;
 	m_features.test_and_sample_depth = m_features.texture_barrier;
-	if (m_features.test_and_sample_depth)
+	if (m_features.texture_barrier)
 	{
 		// Auto select chooses depth-as-rt as it appears to be more compatible across hardware.
 		if (GSConfig.DepthFeedbackMode == GSDepthFeedbackMode::DepthAsRT ||

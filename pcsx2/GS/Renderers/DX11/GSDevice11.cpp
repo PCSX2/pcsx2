@@ -67,7 +67,7 @@ GSDevice11::GSDevice11()
 	m_features.framebuffer_fetch = false;
 	m_features.stencil_buffer = true;
 	m_features.cas_sharpening = true;
-	m_features.test_and_sample_depth = true;
+	m_features.test_and_sample_depth = false;
 	if (m_features.multidraw_fb_copy && (GSConfig.DepthFeedbackMode == GSDepthFeedbackMode::Auto ||
 		GSConfig.DepthFeedbackMode == GSDepthFeedbackMode::Depth))
 	{
@@ -614,7 +614,7 @@ void GSDevice11::SetFeatures(IDXGIAdapter1* adapter)
 
 	m_features.vs_expand = (!GSConfig.DisableVertexShaderExpand && m_feature_level >= D3D_FEATURE_LEVEL_11_0);
 	m_features.cas_sharpening = (m_feature_level >= D3D_FEATURE_LEVEL_11_0);
-	m_read_only_dsv_support = (m_feature_level >= D3D_FEATURE_LEVEL_11_0);
+	m_features.test_and_sample_depth = (m_feature_level >= D3D_FEATURE_LEVEL_11_0);
 
 	m_max_texture_size = (m_feature_level >= D3D_FEATURE_LEVEL_11_0) ?
 	                         D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION :
@@ -629,7 +629,6 @@ void GSDevice11::SetFeatures(IDXGIAdapter1* adapter)
 	Console.WriteLnFmt("D3D11: Conservative Depth: {}", m_conservative_depth ? "Supported" : "Not Supported");
 	Console.WriteLnFmt("D3D11: Depth Testing and Sampling: {}", m_features.test_and_sample_depth ? "Supported" : "Not Supported");
 	Console.WriteLnFmt("D3D11: RGBA16 UNORM Hardware Blending: {}", m_rgba16_unorm_hw_blend ? "Supported" : "Not Supported");
-	Console.WriteLnFmt("D3D11: Read-only DSV support: {}", m_read_only_dsv_support ? "Supported" : "Not Supported");
 }
 
 bool GSDevice11::HasSurface() const
@@ -2797,7 +2796,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	ID3D11DepthStencilView* read_only_dsv = nullptr;
 	if (config.tex && config.tex == config.ds)
 	{
-		if (m_read_only_dsv_support && !config.depth.zwe && !config.ps.IsFeedbackLoopDepth())
+		if (m_features.test_and_sample_depth && !config.depth.zwe && !config.ps.IsFeedbackLoopDepth())
 			read_only_dsv = static_cast<GSTexture11*>(config.ds)->ReadOnlyDepthStencilView();
 		else
 			config.tex = nullptr;
