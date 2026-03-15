@@ -22,6 +22,8 @@ layout(location = 0) in vec2 v_tex;
 
 #if defined(ps_convert_rgba8_16bits) || defined(ps_convert_float32_32bits)
 layout(location = 0) out uint o_col0;
+#elif defined(ps_convert_float32_depth_to_color)
+layout(location = 0) out float o_col0;
 #elif !defined(ps_datm1) && \
 	!defined(ps_datm0) && \
 	!defined(ps_datm1_rta_correction) && \
@@ -163,6 +165,20 @@ void ps_colclip_resolve()
 {
 	vec4 value = sample_c(v_tex);
 	o_col0 = vec4(vec3(uvec3(value.rgb * 65535.5f) & 255u) / 255.0f, value.a);
+}
+#endif
+
+#ifdef ps_convert_float32_depth_to_color
+void ps_convert_float32_depth_to_color()
+{
+	o_col0 = sample_c(v_tex).r;
+}
+#endif
+
+#ifdef ps_convert_float32_color_to_depth
+void ps_convert_float32_color_to_depth()
+{
+	gl_FragDepth = sample_c(v_tex).r;
 }
 #endif
 
