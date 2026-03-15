@@ -12,6 +12,7 @@
 
 #include "common/Console.h"
 #include "common/Error.h"
+#include "common/ScopedGuard.h"
 #include "common/StringUtil.h"
 
 #include "imgui.h"
@@ -128,6 +129,71 @@ GSDeviceOGL::GSDeviceOGL() = default;
 GSDeviceOGL::~GSDeviceOGL()
 {
 	pxAssert(!m_gl_context);
+}
+
+std::vector<GSAdapterInfo> GSDeviceOGL::GetAdapterInfo()
+{
+	std::vector<GSAdapterInfo> ret;
+
+	// If OGL is currently active, query the live device directly.
+	if (g_gs_device && g_gs_device->GetRenderAPI() == RenderAPI::OpenGL)
+	{
+		GSAdapterInfo ai;
+		const std::string& live_name = static_cast<GSDeviceOGL*>(g_gs_device.get())->m_name;
+		ai.name = live_name.empty() ? "OpenGL" : live_name;
+		ai.max_texture_size = g_gs_device->GetMaxTextureSize();
+		ai.max_upscale_multiplier = GSGetMaxUpscaleMultiplier(ai.max_texture_size);
+		ret.emplace_back(std::move(ai));
+		return ret;
+	}
+
+	static std::optional<GSAdapterInfo> s_cached_adapter;
+	if (s_cached_adapter.has_value())
+	{
+		ret.emplace_back(*s_cached_adapter);
+		return ret;
+	}
+
+	static bool s_logged_probe_failure = false;
+
+	WindowInfo wi = {};
+	wi.type = WindowInfo::Type::Surfaceless;
+
+	Error error;
+	std::unique_ptr<GLContext> context = GLContext::Create(wi, &error);
+	if (!context)
+	{
+		if (!s_logged_probe_failure)
+		{
+			Console.WarningFmt("GL: Failed to query GL_MAX_TEXTURE_SIZE for adapter info: {}", error.GetDescription());
+			s_logged_probe_failure = true;
+		}
+		return ret;
+	}
+
+	if (!context->MakeCurrent())
+	{
+		if (!s_logged_probe_failure)
+		{
+			Console.Warning("GL: Failed to make temporary context current while querying GL_MAX_TEXTURE_SIZE for adapter info.");
+			s_logged_probe_failure = true;
+		}
+		return ret;
+	}
+
+	const ScopedGuard done_current([&context]() { context->DoneCurrent(); });
+
+	GLint max_texture_size = 1024;
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
+
+	GSAdapterInfo ai;
+	const GLubyte* renderer_name = glGetString(GL_RENDERER);
+	ai.name = renderer_name ? reinterpret_cast<const char*>(renderer_name) : "OpenGL";
+	ai.max_texture_size = std::max(static_cast<u32>((max_texture_size > 0) ? max_texture_size : 1024), 1024u);
+	ai.max_upscale_multiplier = GSGetMaxUpscaleMultiplier(ai.max_texture_size);
+	s_cached_adapter = ai;
+	ret.emplace_back(std::move(ai));
+	return ret;
 }
 
 GSTexture* GSDeviceOGL::CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format)

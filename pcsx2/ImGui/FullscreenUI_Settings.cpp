@@ -3,6 +3,7 @@
 
 #include "GS/Renderers/Common/GSDevice.h"
 #include "GS/Renderers/Common/GSTexture.h"
+#include "GS/GSUtil.h"
 #include "Achievements.h"
 #include "GameList.h"
 #include "Host.h"
@@ -1192,6 +1193,11 @@ void FullscreenUI::DrawStringListSetting(SettingsInterface* bsi, const char* tit
 				FSUI_CSTR("Use Global Setting"),
 			enabled, height, font, summary_font))
 	{
+		std::vector<std::string> option_values_copy;
+		option_values_copy.reserve(option_count);
+		for (size_t i = 0; i < option_count; i++)
+			option_values_copy.emplace_back(option_values[i]);
+
 		ImGuiFullscreen::ChoiceDialogOptions cd_options;
 		cd_options.reserve(option_count + 1);
 		if (game_settings)
@@ -1202,7 +1208,7 @@ void FullscreenUI::DrawStringListSetting(SettingsInterface* bsi, const char* tit
 				(value.has_value() && i == static_cast<size_t>(index)));
 		}
 		OpenChoiceDialog(title, false, std::move(cd_options),
-			[game_settings, section, key, option_values](s32 index, const std::string& title, bool checked) {
+			[game_settings, section, key, option_values_copy = std::move(option_values_copy)](s32 index, const std::string& title, bool checked) {
 				if (index >= 0)
 				{
 					auto lock = Host::GetSettingsLock();
@@ -1212,11 +1218,11 @@ void FullscreenUI::DrawStringListSetting(SettingsInterface* bsi, const char* tit
 						if (index == 0)
 							bsi->DeleteValue(section, key);
 						else
-							bsi->SetStringValue(section, key, option_values[index - 1]);
+							bsi->SetStringValue(section, key, option_values_copy[index - 1].c_str());
 					}
 					else
 					{
-						bsi->SetStringValue(section, key, option_values[index]);
+						bsi->SetStringValue(section, key, option_values_copy[index].c_str());
 					}
 
 					SetSettingsChanged(bsi);
@@ -2777,6 +2783,19 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 		FSUI_NSTR("10x Native (~3600px/6K UHD)"),
 		FSUI_NSTR("11x Native (~3960px)"),
 		FSUI_NSTR("12x Native (~4320px/8K UHD)"),
+		FSUI_NSTR("13x Native (~4680px)"),
+		FSUI_NSTR("14x Native (~5040px)"),
+		FSUI_NSTR("15x Native (~5400px)"),
+		FSUI_NSTR("16x Native (~5760px)"),
+		FSUI_NSTR("17x Native (~6120px)"),
+		FSUI_NSTR("18x Native (~6480px/12K UHD)"),
+		FSUI_NSTR("19x Native (~6840px)"),
+		FSUI_NSTR("20x Native (~7200px)"),
+		FSUI_NSTR("21x Native (~7560px)"),
+		FSUI_NSTR("22x Native (~7920px)"),
+		FSUI_NSTR("23x Native (~8280px)"),
+		FSUI_NSTR("24x Native (~8640px/16K UHD)"),
+		FSUI_NSTR("25x Native (~9000px)"),
 	};
 	static const char* s_resolution_values[] = {
 		"1",
@@ -2791,6 +2810,19 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 		"10",
 		"11",
 		"12",
+		"13",
+		"14",
+		"15",
+		"16",
+		"17",
+		"18",
+		"19",
+		"20",
+		"21",
+		"22",
+		"23",
+		"24",
+		"25",
 	};
 	static constexpr const char* s_bilinear_options[] = {
 		FSUI_NSTR("Nearest"),
@@ -2861,9 +2893,84 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 
 	const GSRendererType renderer =
 		static_cast<GSRendererType>(GetEffectiveIntSetting(bsi, "EmuCore/GS", "Renderer", static_cast<int>(GSRendererType::Auto)));
+	const GSRendererType effective_renderer =
+		(renderer == GSRendererType::Auto) ? GSUtil::GetPreferredRenderer() : renderer;
 	const bool is_hardware = (renderer == GSRendererType::Auto || renderer == GSRendererType::DX11 || renderer == GSRendererType::DX12 ||
 							  renderer == GSRendererType::OGL || renderer == GSRendererType::VK || renderer == GSRendererType::Metal);
 	//const bool is_software = (renderer == GSRendererType::SW);
+	const bool is_vk = (effective_renderer == GSRendererType::VK);
+	const bool is_ogl = (effective_renderer == GSRendererType::OGL);
+	const bool extended_upscales =
+		((is_vk || is_ogl) && bsi->GetBoolValue("EmuCore/GS", "ExtendedUpscalingMultipliers", false));
+
+	u32 max_upscale_multiplier = 12;
+	if (is_hardware && !s_graphics_adapter_list_cache.empty())
+	{
+		std::string current_adapter;
+		if (!bsi->GetStringValue("EmuCore/GS", "Adapter", &current_adapter))
+			current_adapter.clear();
+
+		const GSAdapterInfo* current_adapter_info = nullptr;
+		if (!current_adapter.empty())
+		{
+			for (const GSAdapterInfo& adapter : s_graphics_adapter_list_cache)
+			{
+				if (current_adapter == adapter.name)
+				{
+					current_adapter_info = &adapter;
+					break;
+				}
+			}
+		}
+
+		if (!current_adapter_info)
+			current_adapter_info = &s_graphics_adapter_list_cache.front();
+
+		u32 adapter_max = current_adapter_info->max_upscale_multiplier;
+		if (adapter_max < 12u)
+			adapter_max = 12u;
+		if (adapter_max > static_cast<u32>(std::size(s_resolution_options)))
+			adapter_max = static_cast<u32>(std::size(s_resolution_options));
+
+		max_upscale_multiplier = adapter_max;
+	}
+
+	size_t max_shown_multiplier = static_cast<size_t>(
+		extended_upscales ? max_upscale_multiplier : 12u);
+	const bool game_settings = IsEditingGameSettings(bsi);
+	std::optional<float> saved_multiplier;
+	if (const std::optional<SmallString> config_value = bsi->GetOptionalSmallStringValue(
+			"EmuCore/GS", "upscale_multiplier", game_settings ? std::nullopt : std::optional<const char*>("1.000000"));
+		config_value.has_value())
+	{
+		saved_multiplier = StringUtil::FromChars<float>(config_value->c_str());
+		if (saved_multiplier.has_value() && saved_multiplier.value() > static_cast<float>(max_shown_multiplier))
+		{
+			bsi->SetFloatValue("EmuCore/GS", "upscale_multiplier", 1.0f);
+			SetSettingsChanged(bsi);
+			saved_multiplier = 1.0f;
+		}
+	}
+
+	std::vector<const char*> resolution_options;
+	std::vector<const char*> resolution_values;
+
+	for (size_t i = 0; i < max_shown_multiplier; i++)
+	{
+		resolution_options.push_back(s_resolution_options[i]);
+		resolution_values.push_back(s_resolution_values[i]);
+	}
+
+	if (saved_multiplier.has_value())
+	{
+		// if saved multiplier goes above the current UI cap, expose it temporarily.
+		const size_t saved_count = static_cast<size_t>(saved_multiplier.value());
+		if (saved_count > max_shown_multiplier && saved_count <= std::size(s_resolution_options) && static_cast<float>(saved_count) == saved_multiplier.value())
+		{
+			resolution_options.push_back(s_resolution_options[saved_count - 1]);
+			resolution_values.push_back(s_resolution_values[saved_count - 1]);
+		}
+	}
 
 #ifndef PCSX2_DEVBUILD
 	const bool hw_fixes_visible = is_hardware && IsEditingGameSettings(bsi);
@@ -2930,7 +3037,7 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 	{
 		DrawStringListSetting(bsi, FSUI_ICONSTR(ICON_FA_ARROW_UP_RIGHT_FROM_SQUARE, "Internal Resolution"),
 			FSUI_CSTR("Multiplies the render resolution by the specified factor (upscaling)."), "EmuCore/GS", "upscale_multiplier",
-			"1.000000", s_resolution_options, s_resolution_values, std::size(s_resolution_options), true);
+			"1.000000", resolution_options.data(), resolution_values.data(), resolution_options.size(), true);
 		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_TABLE_CELLS_LARGE, "Bilinear Filtering"),
 			FSUI_CSTR("Selects where bilinear filtering is utilized when rendering textures."), "EmuCore/GS", "filter",
 			static_cast<int>(BiFiltering::PS2), s_bilinear_options, std::size(s_bilinear_options), true);
@@ -3206,10 +3313,9 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 			FSUI_CSTR("Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. "
 					  "Usually results in worse frame pacing."),
 			"EmuCore/GS", "DisableMailboxPresentation", false);
-		/* DrawToggleSetting(bsi, FSUI_CSTR("Extended Upscaling Multipliers"),
-			FSUI_CSTR("Displays additional, very high upscaling multipliers dependent on GPU capability."),
-			"EmuCore/GS", "ExtendedUpscalingMultipliers", false); */
-		// TODO: Immplement this button properly
+		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_ARROW_UP_RIGHT_FROM_SQUARE, "Extended Upscaling Multipliers"),
+			FSUI_CSTR("Displays additional, very high upscaling multipliers dependent on GPU capability. Available only with the Vulkan or OpenGL renderer."),
+			"EmuCore/GS", "ExtendedUpscalingMultipliers", false, (is_vk || is_ogl));
 		if (IsEditingGameSettings(bsi))
 		{
 			DrawIntListSetting(bsi, FSUI_CSTR("Hardware Download Mode"), FSUI_CSTR("Changes synchronization behavior for GS downloads."),
