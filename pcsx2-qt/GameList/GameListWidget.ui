@@ -121,6 +121,31 @@
         </widget>
        </item>
        <item>
+        <widget class="QToolButton" name="viewFullGridTitles">
+         <property name="minimumSize">
+          <size>
+           <width>32</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string>Show Full Titles</string>
+         </property>
+         <property name="text">
+          <string>Show  Full Titles</string>
+         </property>
+         <property name="icon">
+          <iconset theme="price-tag-2-line"/>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="autoRaise">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QSlider" name="gridScale">
          <property name="minimumSize">
           <size>
@@ -218,6 +243,7 @@
   <tabstop>viewGameList</tabstop>
   <tabstop>viewGameGrid</tabstop>
   <tabstop>viewGridTitles</tabstop>
+  <tabstop>viewFullGridTitles</tabstop>
   <tabstop>gridScale</tabstop>
   <tabstop>filterType</tabstop>
   <tabstop>filterRegion</tabstop>
