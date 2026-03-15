@@ -1141,7 +1141,7 @@ void VMManager::UpdateDiscDetails(bool booting)
 	UpdateGameSettingsLayer();
 	ApplySettings();
 
-	// Patches are game-dependent, thus should get applied after game settings ia loaded.
+	// Patches are game-dependent, thus should get applied after game settings are loaded.
 	Patch::ReloadPatches(s_disc_serial, HasBootedELF() ? s_current_crc : 0, true, true, false, false);
 
 	ReportGameChangeToHost();

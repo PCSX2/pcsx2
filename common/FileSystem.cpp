@@ -279,7 +279,7 @@ bool Path::IsAbsolute(const std::string_view path)
 #ifdef _WIN32
 	return (path.length() >= 3 && ((path[0] >= 'A' && path[0] <= 'Z') || (path[0] >= 'a' && path[0] <= 'z')) &&
 			   path[1] == ':' && (path[2] == '/' || path[2] == '\\')) ||
-		   (path.length() >= 3 && path[0] == '\\' && path[1] == '\\');
+	       (path.length() >= 3 && path[0] == '\\' && path[1] == '\\');
 #else
 	return (path.length() >= 1 && path[0] == '/');
 #endif
@@ -2725,3 +2725,53 @@ FileSystem::POSIXLock::~POSIXLock()
 }
 
 #endif
+
+bool FileSystem::ReadString(std::FILE* file, std::string* dest)
+{
+	u32 size;
+	if (std::fread(&size, sizeof(size), 1, file) != 1)
+		return false;
+
+	dest->resize(size);
+	if (size > 0 && std::fread(dest->data(), size, 1, file) != 1)
+		return false;
+
+	return true;
+}
+
+bool FileSystem::ReadU8(std::FILE* file, u8* dest)
+{
+	return std::fread(dest, sizeof(u8), 1, file) == 1;
+}
+
+bool FileSystem::ReadU32(std::FILE* file, u32* dest)
+{
+	return std::fread(dest, sizeof(u32), 1, file) == 1;
+}
+
+bool FileSystem::ReadU64(std::FILE* file, u64* dest)
+{
+	return std::fread(dest, sizeof(u64), 1, file) == 1;
+}
+
+bool FileSystem::WriteString(std::FILE* file, const std::string& str)
+{
+	const u32 size = static_cast<u32>(str.size());
+	return (std::fwrite(&size, sizeof(size), 1, file) == 1 &&
+			(size == 0 || std::fwrite(str.data(), size, 1, file) == 1));
+}
+
+bool FileSystem::WriteU8(std::FILE* file, u8 dest)
+{
+	return std::fwrite(&dest, sizeof(u8), 1, file) == 1;
+}
+
+bool FileSystem::WriteU32(std::FILE* file, u32 dest)
+{
+	return std::fwrite(&dest, sizeof(u32), 1, file) == 1;
+}
+
+bool FileSystem::WriteU64(std::FILE* file, u64 dest)
+{
+	return std::fwrite(&dest, sizeof(u64), 1, file) == 1;
+}
