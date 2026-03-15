@@ -47,6 +47,9 @@ namespace ImGuiManager
 	/// Updates scaling of the on-screen elements.
 	void RequestScaleUpdate();
 
+	/// Rebuilds the ImGui font atlas using current settings.
+	void ReloadFonts();
+
 	/// Call at the beginning of the frame to set up ImGui state.
 	void NewFrame();
 
@@ -64,6 +67,9 @@ namespace ImGuiManager
 
 	/// Returns the fixed-width font for external drawing.
 	ImFont* GetFixedFont();
+
+	/// Returns the On-screen Display font for external drawing.
+	ImFont* GetOSDFont();
 
 	// Returns the standard font size for external drawing.
 	float GetFontSizeStandard();

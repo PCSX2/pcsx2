@@ -188,9 +188,9 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 {
 	const float shadow_offset = std::ceil(scale);
 
-	ImFont* const fixed_font = ImGuiManager::GetFixedFont();
+	ImFont* const osd_font = ImGuiManager::GetOSDFont();
 	const float font_size = ImGuiManager::GetFontSizeStandard();
-	const float line_height = ImGuiFullscreen::GetLineHeight({ fixed_font, font_size });
+	const float line_height = ImGuiFullscreen::GetLineHeight({ osd_font, font_size });
 
 	ImDrawList* dl = ImGui::GetBackgroundDrawList();
 	ImVec2 text_size;
@@ -225,8 +225,106 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 	{ \
 		text_size = font->CalcTextSizeA(size, std::numeric_limits<float>::max(), -1.0f, (text), nullptr, nullptr); \
 		const ImVec2 text_pos = CalculatePerformanceOverlayTextPosition(GSConfig.OsdPerformancePos, margin, text_size, GetWindowWidth(), position_y); \
+		const bool __bold_osd = GSConfig.OsdBoldText; \
 		dl->AddText(font, size, ImVec2(text_pos.x + shadow_offset, text_pos.y + shadow_offset), IM_COL32(0, 0, 0, 100), (text)); \
 		dl->AddText(font, size, text_pos, color, (text)); \
+		const auto __is_all_digits = [](const char* __begin, const char* __end) -> bool \
+		{ \
+			for (const char* __c = __begin; __c < __end; __c++) \
+			{ \
+				if (!std::isdigit(static_cast<unsigned char>(*__c))) \
+					return false; \
+			} \
+			return true; \
+		}; \
+		const auto __is_all_alpha = [](const char* __begin, const char* __end) -> bool \
+		{ \
+			for (const char* __c = __begin; __c < __end; __c++) \
+			{ \
+				if (!std::isalpha(static_cast<unsigned char>(*__c))) \
+					return false; \
+			} \
+			return true; \
+		}; \
+		for (const char* __p = (text); __p && *__p;) \
+		{ \
+			const char* __sep = strstr(__p, " | "); \
+			const char* __seg_end = __sep ? __sep : __p + strlen(__p); \
+			const char* __label_begin = nullptr; \
+			const char* __label_end = nullptr; \
+			const unsigned char __first = static_cast<unsigned char>(*__p); \
+			const bool __starts_numeric = (std::isdigit(__first) || __first == '+' || __first == '-' || __first == '.'); \
+			for (const char* __c = __p; __c < __seg_end; __c++) \
+			{ \
+				if (*__c == ':') \
+				{ \
+					__label_begin = __p; \
+					__label_end = __c + 1; \
+					break; \
+				} \
+			} \
+			if (!__label_begin) \
+			{ \
+				if (!__starts_numeric) \
+				{ \
+					__label_begin = __p; \
+					__label_end = __seg_end; \
+				} \
+				else \
+				{ \
+					const char* __first_space = __p; \
+					while (__first_space < __seg_end && *__first_space != ' ') \
+						__first_space++; \
+					if (__first_space < __seg_end) \
+					{ \
+						const char* __x = __p; \
+						while (__x < __first_space && *__x != 'x' && *__x != 'X') \
+							__x++; \
+						const bool __has_resolution_prefix = \
+							(__x > __p && (__x + 1) < __first_space && \
+							__is_all_digits(__p, __x) && __is_all_digits(__x + 1, __first_space)); \
+						if (__has_resolution_prefix && (__first_space + 1) < __seg_end) \
+						{ \
+							__label_begin = __first_space + 1; \
+							__label_end = __seg_end; \
+							const char* __trim_end = __label_end; \
+							while (__trim_end > __label_begin && std::isspace(static_cast<unsigned char>(*(__trim_end - 1)))) \
+								__trim_end--; \
+							if (__trim_end > __label_begin && *(__trim_end - 1) == ')') \
+							{ \
+								const char* __open = __trim_end - 1; \
+								while (__open > __label_begin && *__open != '(') \
+									__open--; \
+								if (__open > __label_begin && *__open == '(' && *(__open - 1) == ' ') \
+									__label_end = __open - 1; \
+							} \
+						} \
+					} \
+					if (!__label_begin) \
+					{ \
+						const char* __space = __seg_end; \
+						while (__space > __p && *(__space - 1) != ' ') \
+							__space--; \
+						if (__space > __p && __space < __seg_end && __is_all_alpha(__space, __seg_end)) \
+						{ \
+							__label_begin = __space; \
+							__label_end = __seg_end; \
+						} \
+					} \
+				} \
+			} \
+			if (__label_begin && __label_end && __label_begin < __label_end) \
+			{ \
+				const float __x0 = font->CalcTextSizeA(size, FLT_MAX, -1.0f, (text), __label_begin).x; \
+				const ImVec2 __pos(text_pos.x + __x0, text_pos.y); \
+				if (__bold_osd) \
+				{ \
+					dl->AddText(font, size, __pos, color, __label_begin, __label_end); \
+					dl->AddText(font, size, ImVec2(__pos.x + 0.6f, __pos.y), color, __label_begin, __label_end); \
+				} \
+			} \
+			__p = __sep ? __sep + 3 : nullptr; \
+		} \
 		position_y += text_size.y + spacing; \
 	} while (0)
 
@@ -283,7 +381,7 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 				else
 					s_speed_line_color = white_color;
 
-				DRAW_LINE(fixed_font, font_size, s_speed_line.c_str(), s_speed_line_color);
+				DRAW_LINE(osd_font, font_size, s_speed_line.c_str(), s_speed_line_color);
 			}
 
 			if (GSConfig.OsdShowGSStats)
@@ -297,10 +395,10 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 					PerformanceMetrics::GetMaximumFrameTime());
 
 				if (!s_gs_stats_line.empty())
-					DRAW_LINE(fixed_font, font_size, s_gs_stats_line.c_str(), white_color);
+					DRAW_LINE(osd_font, font_size, s_gs_stats_line.c_str(), white_color);
 				if (!s_gs_memory_stats_line.empty())
-					DRAW_LINE(fixed_font, font_size, s_gs_memory_stats_line.c_str(), white_color);
-				DRAW_LINE(fixed_font, font_size, s_gs_frame_times_line.c_str(), white_color);
+					DRAW_LINE(osd_font, font_size, s_gs_memory_stats_line.c_str(), white_color);
+				DRAW_LINE(osd_font, font_size, s_gs_frame_times_line.c_str(), white_color);
 			}
 
 			if (GSConfig.OsdShowResolution)
@@ -309,7 +407,7 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 				GSgetInternalResolution(&iwidth, &iheight);
 
 				s_resolution_line.format("{}x{} {} {}", iwidth, iheight, ReportVideoMode(), ReportInterlaceMode());
-				DRAW_LINE(fixed_font, font_size, s_resolution_line.c_str(), white_color);
+				DRAW_LINE(osd_font, font_size, s_resolution_line.c_str(), white_color);
 			}
 
 			if (GSConfig.OsdShowHardwareInfo)
@@ -332,11 +430,11 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 						s_hardware_info_cpu_line.append_format(" ({}C/{}T)", info.num_big_cores, info.num_threads);
 				}
 
-				DRAW_LINE(fixed_font, font_size, s_hardware_info_cpu_line.c_str(), white_color);
+				DRAW_LINE(osd_font, font_size, s_hardware_info_cpu_line.c_str(), white_color);
 
 				// GPU
 				s_hardware_info_gpu_line.format("GPU: {}{}", g_gs_device->GetName(), GSConfig.UseDebugDevice ? " (Debug)" : "");
-				DRAW_LINE(fixed_font, font_size, s_hardware_info_gpu_line.c_str(), white_color);
+				DRAW_LINE(osd_font, font_size, s_hardware_info_gpu_line.c_str(), white_color);
 			}
 
 			if (GSConfig.OsdShowCPU)
@@ -346,17 +444,17 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 				else
 					s_cpu_usage_ee_line.assign("EE: ");
 				FormatProcessorStat(s_cpu_usage_ee_line, PerformanceMetrics::GetCPUThreadUsage(), PerformanceMetrics::GetCPUThreadAverageTime());
-				DRAW_LINE(fixed_font, font_size, s_cpu_usage_ee_line.c_str(), white_color);
+				DRAW_LINE(osd_font, font_size, s_cpu_usage_ee_line.c_str(), white_color);
 
 				s_cpu_usage_gs_line.assign("GS: ");
 				FormatProcessorStat(s_cpu_usage_gs_line, PerformanceMetrics::GetGSThreadUsage(), PerformanceMetrics::GetGSThreadAverageTime());
-				DRAW_LINE(fixed_font, font_size, s_cpu_usage_gs_line.c_str(), white_color);
+				DRAW_LINE(osd_font, font_size, s_cpu_usage_gs_line.c_str(), white_color);
 
 				if (THREAD_VU1)
 				{
 					s_cpu_usage_vu_line.assign("VU: ");
 					FormatProcessorStat(s_cpu_usage_vu_line, PerformanceMetrics::GetVUThreadUsage(), PerformanceMetrics::GetVUThreadAverageTime());
-					DRAW_LINE(fixed_font, font_size, s_cpu_usage_vu_line.c_str(), white_color);
+					DRAW_LINE(osd_font, font_size, s_cpu_usage_vu_line.c_str(), white_color);
 				}
 
 				const u32 gs_sw_threads = PerformanceMetrics::GetGSSWThreadCount();
@@ -367,14 +465,14 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 					else
 						s_software_thread_lines.push_back(SmallString("SW-{}: ", thread));
 					FormatProcessorStat(s_software_thread_lines[thread], PerformanceMetrics::GetGSSWThreadUsage(thread), PerformanceMetrics::GetGSSWThreadAverageTime(thread));
-					DRAW_LINE(fixed_font, font_size, s_software_thread_lines[thread].c_str(), white_color);
+					DRAW_LINE(osd_font, font_size, s_software_thread_lines[thread].c_str(), white_color);
 				}
 
 				if (GSCapture::IsCapturing())
 				{
 					s_capture_line.assign("CAP: ");
 					FormatProcessorStat(s_capture_line, PerformanceMetrics::GetCaptureThreadUsage(), PerformanceMetrics::GetCaptureThreadAverageTime());
-					DRAW_LINE(fixed_font, font_size, s_capture_line.c_str(), white_color);
+					DRAW_LINE(osd_font, font_size, s_capture_line.c_str(), white_color);
 				}
 			}
 
@@ -382,156 +480,270 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 			{
 				s_gpu_usage_line.assign("GPU: ");
 				FormatProcessorStat(s_gpu_usage_line, PerformanceMetrics::GetGPUUsage(), PerformanceMetrics::GetGPUAverageTime());
-				DRAW_LINE(fixed_font, font_size, s_gpu_usage_line.c_str(), white_color);
+				DRAW_LINE(osd_font, font_size, s_gpu_usage_line.c_str(), white_color);
 			}
 		}
 		// No refresh yet. Display cached lines.
 		else
 		{
 			if (GSConfig.OsdShowFPS || GSConfig.OsdShowVPS || GSConfig.OsdShowSpeed || GSConfig.OsdShowVersion)
-				DRAW_LINE(fixed_font, font_size, s_speed_line.c_str(), s_speed_line_color);
+				DRAW_LINE(osd_font, font_size, s_speed_line.c_str(), s_speed_line_color);
 
 			if (GSConfig.OsdShowGSStats)
 			{
 				if (!s_gs_stats_line.empty())
-					DRAW_LINE(fixed_font, font_size, s_gs_stats_line.c_str(), white_color);
+					DRAW_LINE(osd_font, font_size, s_gs_stats_line.c_str(), white_color);
 				if (!s_gs_memory_stats_line.empty())
-					DRAW_LINE(fixed_font, font_size, s_gs_memory_stats_line.c_str(), white_color);
-				DRAW_LINE(fixed_font, font_size, s_gs_frame_times_line.c_str(), white_color);
+					DRAW_LINE(osd_font, font_size, s_gs_memory_stats_line.c_str(), white_color);
+				DRAW_LINE(osd_font, font_size, s_gs_frame_times_line.c_str(), white_color);
 			}
 
 			if (GSConfig.OsdShowResolution)
-				DRAW_LINE(fixed_font, font_size, s_resolution_line.c_str(), white_color);
+				DRAW_LINE(osd_font, font_size, s_resolution_line.c_str(), white_color);
 
 			if (GSConfig.OsdShowHardwareInfo)
 			{
-				DRAW_LINE(fixed_font, font_size, s_hardware_info_cpu_line.c_str(), white_color);
-				DRAW_LINE(fixed_font, font_size, s_hardware_info_gpu_line.c_str(), white_color);
+				DRAW_LINE(osd_font, font_size, s_hardware_info_cpu_line.c_str(), white_color);
+				DRAW_LINE(osd_font, font_size, s_hardware_info_gpu_line.c_str(), white_color);
 			}
 
 			if (GSConfig.OsdShowCPU)
 			{
-				DRAW_LINE(fixed_font, font_size, s_cpu_usage_ee_line.c_str(), white_color);
-				DRAW_LINE(fixed_font, font_size, s_cpu_usage_gs_line.c_str(), white_color);
+				DRAW_LINE(osd_font, font_size, s_cpu_usage_ee_line.c_str(), white_color);
+				DRAW_LINE(osd_font, font_size, s_cpu_usage_gs_line.c_str(), white_color);
 				if (THREAD_VU1)
-					DRAW_LINE(fixed_font, font_size, s_cpu_usage_vu_line.c_str(), white_color);
+					DRAW_LINE(osd_font, font_size, s_cpu_usage_vu_line.c_str(), white_color);
 
 				const u32 thread_count = std::min(
 					PerformanceMetrics::GetGSSWThreadCount(),
 					static_cast<u32>(s_software_thread_lines.size()));
 				for (u32 thread = 0; thread < thread_count; thread++)
-					DRAW_LINE(fixed_font, font_size, s_software_thread_lines[thread].c_str(), white_color);
+					DRAW_LINE(osd_font, font_size, s_software_thread_lines[thread].c_str(), white_color);
 
 				if (GSCapture::IsCapturing())
-					DRAW_LINE(fixed_font, font_size, s_capture_line.c_str(), white_color);
+					DRAW_LINE(osd_font, font_size, s_capture_line.c_str(), white_color);
 			}
 
 			if (GSConfig.OsdShowGPU)
-				DRAW_LINE(fixed_font, font_size, s_gpu_usage_line.c_str(), white_color);
+				DRAW_LINE(osd_font, font_size, s_gpu_usage_line.c_str(), white_color);
 		}
 
 		// Check every OSD frame because this is an animation.
 		if (GSConfig.OsdShowFrameTimes)
 		{
-			const ImVec2 history_size(200.0f * scale, 50.0f * scale);
-			ImGui::SetNextWindowSize(ImVec2(history_size.x, history_size.y));
+			const auto& history = PerformanceMetrics::GetFrameTimeHistory();
+			const u32 sample_count = PerformanceMetrics::NUM_FRAME_TIME_SAMPLES;
+			const u32 hist_pos = PerformanceMetrics::GetFrameTimeHistoryPos();
+			static constexpr u32 SCALE_WINDOW = 60u;
+			static constexpr float DEFAULT_FT_MIN = 0.0f;
+			static constexpr float DEFAULT_FT_MAX = 20.0f;
+			static constexpr float DEFAULT_VPS_MIN = 0.0f;
+			static constexpr float DEFAULT_VPS_MAX = 100.0f;
+			static constexpr float SCALE_SMOOTHING = 0.25f;
 
-			const ImVec2 window_pos = CalculatePerformanceOverlayTextPosition(GSConfig.OsdPerformancePos, margin, history_size, GetWindowWidth(), position_y);
-			ImGui::SetNextWindowPos(window_pos);
-			ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.25f));
-			ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
-			ImGui::PushStyleColor(ImGuiCol_PlotLines, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+			const auto compute_window_extents = [&](const auto& values) {
+				float lo = 1.0e9f;
+				float hi = 0.0f;
+				for (u32 k = 0; k < SCALE_WINDOW && k < sample_count; k++)
+				{
+					const float v = values[(hist_pos + sample_count - SCALE_WINDOW + k) % sample_count];
+					if (v > 0.0f)
+					{
+						lo = std::min(lo, v);
+						hi = std::max(hi, v);
+					}
+				}
+				return std::pair(lo, hi);
+			};
+
+			auto [initial_lo, initial_hi] = compute_window_extents(history);
+			auto [min_val, max_val] = [&]() {
+				float lo = initial_lo;
+				float hi = initial_hi;
+				if (hi < lo)
+					return std::pair(DEFAULT_FT_MIN, DEFAULT_FT_MAX);
+				if ((hi - lo) < 4.0f)
+				{
+					lo = lo - std::fmod(lo, 1.0f);
+					hi = hi - std::fmod(hi, 1.0f) + 1.0f;
+					lo = std::max(lo - 2.0f, 0.0f);
+					hi += 2.0f;
+				}
+				return std::pair(lo, std::max(hi, lo + 1.0f));
+			}();
+
+			PerformanceMetrics::FrameTimeHistory ft_history = history;
+
+			float last_ft = 0.0f;
+			for (u32 k = 0; k < sample_count; k++)
+			{
+				const u32 idx = (hist_pos + sample_count - 1 - k) % sample_count;
+				const float ft = ft_history[idx];
+				if (ft > 0.0f)
+				{
+					last_ft = ft;
+					break;
+				}
+			}
+
+			for (u32 i = 0; i < sample_count; i++)
+			{
+				const u32 idx = (hist_pos + i) % sample_count;
+				float& ft = ft_history[idx];
+				if (ft > 0.0f)
+				{
+					last_ft = ft;
+					continue;
+				}
+
+				ft = last_ft;
+			}
+
+			std::array<float, PerformanceMetrics::NUM_FRAME_TIME_SAMPLES> vps_history;
+			for (u32 i = 0; i < sample_count; i++)
+				vps_history[i] = (ft_history[i] >= 0.01f) ? std::min(10000.0f, 1000.0f / ft_history[i]) : 0.0f;
+
+			auto [vps_initial_lo, vps_initial_hi] = compute_window_extents(vps_history);
+			auto [vps_scale_min, vps_scale_max] = [&]() {
+				float lo = vps_initial_lo;
+				float hi = vps_initial_hi;
+				if (hi < lo)
+					return std::pair(DEFAULT_VPS_MIN, DEFAULT_VPS_MAX);
+				if (hi - lo < 10.0f)
+				{
+					lo = std::floor(lo / 50.0f) * 50.0f;
+					hi = std::ceil(hi / 50.0f) * 50.0f;
+					lo = std::max(0.0f, lo - 5.0f);
+					hi = std::max(hi + 5.0f, lo + 10.0f);
+				}
+				return std::pair(lo, hi);
+			}();
+
+			static float s_ft_min = DEFAULT_FT_MIN;
+			static float s_ft_max = DEFAULT_FT_MAX;
+			static float s_vps_min = DEFAULT_VPS_MIN;
+			static float s_vps_max = DEFAULT_VPS_MAX;
+			s_ft_min += (min_val - s_ft_min) * SCALE_SMOOTHING;
+			s_ft_max += (max_val - s_ft_max) * SCALE_SMOOTHING;
+			s_vps_min += (vps_scale_min - s_vps_min) * SCALE_SMOOTHING;
+			s_vps_max += (vps_scale_max - s_vps_max) * SCALE_SMOOTHING;
+			min_val = s_ft_min;
+			max_val = std::max(s_ft_max, min_val + 1.0f);
+			float min_vps = s_vps_min;
+			float max_vps = std::max(s_vps_max, min_vps + 10.0f);
+
+			SmallString label_buf;
+			label_buf.format("{:.1f}", max_val);
+			const float y_label_w = osd_font->CalcTextSizeA(font_size, FLT_MAX, 0.0f, label_buf.c_str(), label_buf.c_str() + label_buf.length()).x + 4.0f * scale;
+			label_buf.format("{:.0f}", max_vps);
+			const float right_label_w = osd_font->CalcTextSizeA(font_size, FLT_MAX, 0.0f, label_buf.c_str(), label_buf.c_str() + label_buf.length()).x + 4.0f * scale;
+
+			const float pad = 4.0f * scale;
+			const float row_gap = 2.0f * scale;
+			const float legend_h = (font_size * 2.0f) + row_gap + pad;
+			const ImVec2 graph_size(200.0f * scale, 60.0f * scale);
+			const ImVec2 total_size(y_label_w + graph_size.x + right_label_w + 2.0f * pad, graph_size.y + legend_h + 2.0f * pad);
+
+			ImGui::SetNextWindowSize(total_size);
+			ImGui::SetNextWindowPos(CalculatePerformanceOverlayTextPosition(GSConfig.OsdPerformancePos, margin, total_size, GetWindowWidth(), position_y));
+			ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.45f));
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 4.0f * scale);
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
-			ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
-			ImGui::PushFont(fixed_font, font_size);
+			ImGui::PushFont(osd_font, font_size);
 			if (ImGui::Begin("##frame_times", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs))
 			{
-				auto [min, max] = GetMinMax(PerformanceMetrics::GetFrameTimeHistory());
+				ImDrawList* dl = ImGui::GetWindowDrawList();
+				const ImVec2 wpos(ImGui::GetWindowPos());
+				const ImVec2 plot_tl(wpos.x + pad + y_label_w, wpos.y + pad);
+				const ImVec2 plot_br(plot_tl.x + graph_size.x, plot_tl.y + graph_size.y);
 
-				// add a little bit of space either side, so we're not constantly resizing
-				if ((max - min) < 4.0f)
-				{
-					min = min - std::fmod(min, 1.0f);
-					max = max - std::fmod(max, 1.0f) + 1.0f;
-					min = std::max(min - 2.0f, 0.0f);
-					max += 2.0f;
-				}
+				dl->AddRectFilled(plot_tl, plot_br, IM_COL32(0, 0, 0, 60));
 
-				ImGui::PlotEx(
-					ImGuiPlotType_Lines, "##frame_times",
-					[](void*, int idx) -> float {
-						return PerformanceMetrics::GetFrameTimeHistory()[(
-							(PerformanceMetrics::GetFrameTimeHistoryPos() + idx) % PerformanceMetrics::NUM_FRAME_TIME_SAMPLES)];
-					},
-					nullptr, PerformanceMetrics::NUM_FRAME_TIME_SAMPLES, 0, nullptr, min, max, history_size);
+				const int num_ticks = std::max(1, std::min(8, static_cast<int>(graph_size.y / (font_size * 1.1f))));
+				const float left_label_x = wpos.x + pad + y_label_w;
+				const float right_label_x = plot_br.x + 2.0f * scale;
 
-				ImDrawList* win_dl = ImGui::GetCurrentWindow()->DrawList;
-				const ImVec2 wpos(ImGui::GetCurrentWindow()->Pos);
+				const ImU32 ft_col = IM_COL32(100, 200, 255, 230);
+				const ImU32 vps_col = IM_COL32(100, 255, 100, 230);
 
-				SmallString frame_times_text;
-				frame_times_text.format("Max: {:.1f} ms", max);
-				text_size = fixed_font->CalcTextSizeA(font_size, FLT_MAX, 0.0f, frame_times_text.c_str(), frame_times_text.c_str() + frame_times_text.length());
+				auto draw_grid_and_labels = [&](int ticks) {
+					SmallString s;
+					for (int i = 0; i <= ticks; i++)
+					{
+						const float frac = static_cast<float>(i) / ticks;
+						const float grid_y = plot_br.y - frac * graph_size.y;
+						const float ly = grid_y - font_size * 0.5f;
 
-				float text_x;
-				switch (GSConfig.OsdPerformancePos)
-				{
-					case OsdOverlayPos::TopLeft:
-					case OsdOverlayPos::CenterLeft:
-					case OsdOverlayPos::BottomLeft:
-						text_x = wpos.x + 2.0f * spacing; // Left alignment within window
-						break;
-					case OsdOverlayPos::TopCenter:
-					case OsdOverlayPos::Center:
-					case OsdOverlayPos::BottomCenter:
-						text_x = wpos.x + (history_size.x - text_size.x) * 0.5f; // Center alignment within window
-						break;
-					case OsdOverlayPos::TopRight:
-					case OsdOverlayPos::CenterRight:
-					case OsdOverlayPos::BottomRight:
-					default:
-						text_x = wpos.x + history_size.x - text_size.x - spacing; // Right alignment within window
-						break;
-				}
-				win_dl->AddText(ImVec2(text_x + shadow_offset, wpos.y + shadow_offset),
-					IM_COL32(0, 0, 0, 100), frame_times_text.c_str(), frame_times_text.c_str() + frame_times_text.length());
-				win_dl->AddText(ImVec2(text_x, wpos.y),
-					white_color, frame_times_text.c_str(), frame_times_text.c_str() + frame_times_text.length());
+						dl->AddLine(ImVec2(plot_tl.x, grid_y), ImVec2(plot_br.x, grid_y), IM_COL32(255, 255, 255, 40), 1.0f);
 
-				frame_times_text.format("Min: {:.1f} ms", min);
-				text_size = fixed_font->CalcTextSizeA(font_size, FLT_MAX, 0.0f, frame_times_text.c_str(), frame_times_text.c_str() + frame_times_text.length());
+						s.format("{:.1f}", min_val + (max_val - min_val) * frac);
+						const float left_text_w = osd_font->CalcTextSizeA(font_size, FLT_MAX, 0.0f, s.c_str(), s.c_str() + s.length()).x;
+						const float lx = left_label_x - left_text_w - 2.0f * scale;
+						dl->AddText(osd_font, font_size, ImVec2(lx + shadow_offset, ly + shadow_offset), IM_COL32(0, 0, 0, 100), s.c_str(), s.c_str() + s.length());
+						dl->AddText(osd_font, font_size, ImVec2(lx, ly), ft_col, s.c_str(), s.c_str() + s.length());
 
-				float min_text_x;
-				switch (GSConfig.OsdPerformancePos)
-				{
-					case OsdOverlayPos::TopLeft:
-					case OsdOverlayPos::CenterLeft:
-					case OsdOverlayPos::BottomLeft:
-						min_text_x = wpos.x + 2.0f * spacing; // Left alignment within window
-						break;
-					case OsdOverlayPos::TopCenter:
-					case OsdOverlayPos::Center:
-					case OsdOverlayPos::BottomCenter:
-						min_text_x = wpos.x + (history_size.x - text_size.x) * 0.5f; // Center alignment within window
-						break;
-					case OsdOverlayPos::TopRight:
-					case OsdOverlayPos::CenterRight:
-					case OsdOverlayPos::BottomRight:
-					default:
-						min_text_x = wpos.x + history_size.x - text_size.x - spacing; // Right alignment within window
-						break;
-				}
-				win_dl->AddText(ImVec2(min_text_x + shadow_offset, wpos.y + history_size.y - text_size.y + shadow_offset),
-					IM_COL32(0, 0, 0, 100), frame_times_text.c_str(), frame_times_text.c_str() + frame_times_text.length());
-				win_dl->AddText(ImVec2(min_text_x, wpos.y + history_size.y - text_size.y),
-					white_color, frame_times_text.c_str(), frame_times_text.c_str() + frame_times_text.length());
+						s.format("{:.0f}", min_vps + (max_vps - min_vps) * frac);
+						dl->AddText(osd_font, font_size, ImVec2(right_label_x + shadow_offset, ly + shadow_offset), IM_COL32(0, 0, 0, 100), s.c_str(), s.c_str() + s.length());
+						dl->AddText(osd_font, font_size, ImVec2(right_label_x, ly), vps_col, s.c_str(), s.c_str() + s.length());
+					}
+				};
+
+				draw_grid_and_labels(num_ticks);
+
+				const auto col32_to_vec4 = [](ImU32 col) -> ImVec4 {
+					return ImVec4(
+						static_cast<float>((col >> IM_COL32_R_SHIFT) & 0xFF) / 255.0f,
+						static_cast<float>((col >> IM_COL32_G_SHIFT) & 0xFF) / 255.0f,
+						static_cast<float>((col >> IM_COL32_B_SHIFT) & 0xFF) / 255.0f,
+						static_cast<float>((col >> IM_COL32_A_SHIFT) & 0xFF) / 255.0f);
+				};
+
+				ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0, 0, 0, 0));
+				ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0, 0, 0, 0));
+				ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+
+				ImGui::SetCursorScreenPos(plot_tl);
+				ImGui::PushStyleColor(ImGuiCol_PlotLines, col32_to_vec4(ft_col));
+				ImGui::PlotLines("##frame_time_plot", ft_history.data(), static_cast<int>(sample_count), static_cast<int>(hist_pos),
+					nullptr, min_val, max_val, graph_size);
+				ImGui::PopStyleColor();
+
+				ImGui::SetCursorScreenPos(plot_tl);
+				ImGui::PushStyleColor(ImGuiCol_PlotLines, col32_to_vec4(vps_col));
+				ImGui::PlotLines("##vps_plot", vps_history.data(), static_cast<int>(sample_count), static_cast<int>(hist_pos),
+					nullptr, min_vps, max_vps, graph_size);
+				ImGui::PopStyleColor();
+
+				ImGui::PopStyleVar();
+				ImGui::PopStyleColor(2);
+
+				const float legend_y = plot_br.y + pad * 0.5f;
+				const float legend_square_size = font_size * 0.65f;
+				const float legend_gap = 4.0f * scale;
+				SmallString frame_part, vps_part;
+				frame_part.format("Frame: {:.2f} ms", PerformanceMetrics::GetAverageFrameTime());
+				vps_part.format("V-Blank: {:.2f}", PerformanceMetrics::GetFPS());
+				const float fw = osd_font->CalcTextSizeA(font_size, FLT_MAX, 0.0f, frame_part.c_str(), nullptr).x;
+				const float vw = osd_font->CalcTextSizeA(font_size, FLT_MAX, 0.0f, vps_part.c_str(), nullptr).x;
+				const float max_text_w = std::max(fw, vw);
+				const float row_width = legend_square_size + legend_gap + max_text_w;
+				float base_x = wpos.x + (total_size.x - row_width) * 0.5f;
+				auto draw_legend_entry = [&](ImU32 col, const char* text, float text_w, float y) {
+					float lx = base_x;
+					dl->AddRectFilled(ImVec2(lx, y + (font_size - legend_square_size) * 0.5f),
+						ImVec2(lx + legend_square_size, y + (font_size + legend_square_size) * 0.5f), col);
+					lx += legend_square_size + legend_gap;
+					dl->AddText(osd_font, font_size, ImVec2(lx + shadow_offset, y + shadow_offset), IM_COL32(0, 0, 0, 100), text, nullptr);
+					dl->AddText(osd_font, font_size, ImVec2(lx, y), white_color, text, nullptr);
+				};
+				draw_legend_entry(IM_COL32(100, 200, 255, 230), frame_part.c_str(), fw, legend_y);
+				draw_legend_entry(IM_COL32(100, 255, 100, 230), vps_part.c_str(), vw, legend_y + font_size + row_gap);
 			}
 			ImGui::End();
 			ImGui::PopFont();
-			ImGui::PopStyleVar(5);
-			ImGui::PopStyleColor(3);
+			ImGui::PopStyleVar(3);
+			ImGui::PopStyleColor(1);
 		}
 	}
 
@@ -664,18 +876,25 @@ __ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spa
 		text.pop_back();
 
 	const float shadow_offset = std::ceil(scale);
-	ImFont* const font = ImGuiManager::GetFixedFont();
+	ImFont* const font = ImGuiManager::GetOSDFont();
 	const float font_size = ImGuiManager::GetFontSizeStandard();
 	const float position_y = GetWindowHeight() - margin - font_size;
 
 	ImDrawList* dl = ImGui::GetBackgroundDrawList();
 	ImVec2 text_size =
 		font->CalcTextSizeA(font_size, std::numeric_limits<float>::max(), -1.0f, text.c_str(), text.c_str() + text.length(), nullptr);
+	const ImVec2 text_pos(GetWindowWidth() - margin - text_size.x, position_y);
+	const bool bold_osd = GSConfig.OsdBoldText;
 	dl->AddText(font, font_size,
-		ImVec2(GetWindowWidth() - margin - text_size.x + shadow_offset, position_y + shadow_offset), IM_COL32(0, 0, 0, 100),
+		ImVec2(text_pos.x + shadow_offset, text_pos.y + shadow_offset), IM_COL32(0, 0, 0, 100),
 		text.c_str(), text.c_str() + text.length());
-	dl->AddText(font, font_size, ImVec2(GetWindowWidth() - margin - text_size.x, position_y), white_color,
+	dl->AddText(font, font_size, text_pos, white_color,
 		text.c_str(), text.c_str() + text.length());
+	if (bold_osd)
+	{
+		dl->AddText(font, font_size, ImVec2(text_pos.x + 0.6f, text_pos.y), white_color,
+			text.c_str(), text.c_str() + text.length());
+	}
 }
 
 __ri void ImGuiManager::DrawInputsOverlay(float scale, float margin, float spacing)
@@ -686,7 +905,7 @@ __ri void ImGuiManager::DrawInputsOverlay(float scale, float margin, float spaci
 		return;
 
 	const float shadow_offset = std::ceil(scale);
-	ImFont* const font = ImGuiManager::GetStandardFont();
+	ImFont* const font = ImGuiManager::GetOSDFont();
 	const float font_size = ImGuiManager::GetFontSizeStandard();
 	const float line_height = ImGuiFullscreen::GetLineHeight({ font, font_size });
 
@@ -834,8 +1053,7 @@ __ri void ImGuiManager::DrawInputRecordingOverlay(float& position_y, float scale
 
 	const float shadow_offset = std::ceil(scale);
 
-	ImFont* const fixed_font = ImGuiManager::GetFixedFont();
-	ImFont* const standard_font = ImGuiManager::GetStandardFont();
+	ImFont* const osd_font = ImGuiManager::GetOSDFont();
 	const float font_size = ImGuiManager::GetFontSizeStandard();
 
 	ImDrawList* dl = ImGui::GetBackgroundDrawList();
@@ -857,17 +1075,17 @@ __ri void ImGuiManager::DrawInputRecordingOverlay(float& position_y, float scale
 	// Status Indicators
 	if (g_InputRecordingData.is_recording)
 	{
-		DRAW_LINE(standard_font, font_size, TinyString::from_format(TRANSLATE_FS("ImGuiOverlays", "{} Recording Input"), ICON_PF_CIRCLE).c_str(), IM_COL32(255, 0, 0, 255));
+		DRAW_LINE(osd_font, font_size, TinyString::from_format(TRANSLATE_FS("ImGuiOverlays", "{} Recording Input"), ICON_PF_CIRCLE).c_str(), IM_COL32(255, 0, 0, 255));
 	}
 	else
 	{
-		DRAW_LINE(standard_font, font_size, TinyString::from_format(TRANSLATE_FS("ImGuiOverlays", "{} Replaying"), ICON_FA_PLAY).c_str(), IM_COL32(97, 240, 84, 255));
+		DRAW_LINE(osd_font, font_size, TinyString::from_format(TRANSLATE_FS("ImGuiOverlays", "{} Replaying"), ICON_FA_PLAY).c_str(), IM_COL32(97, 240, 84, 255));
 	}
 
 	// Input Recording Metadata
-	DRAW_LINE(fixed_font, font_size, g_InputRecordingData.recording_active_message.c_str(), IM_COL32(117, 255, 241, 255));
-	DRAW_LINE(fixed_font, font_size, g_InputRecordingData.frame_data_message.c_str(), IM_COL32(117, 255, 241, 255));
-	DRAW_LINE(fixed_font, font_size, g_InputRecordingData.undo_count_message.c_str(), IM_COL32(117, 255, 241, 255));
+	DRAW_LINE(osd_font, font_size, g_InputRecordingData.recording_active_message.c_str(), IM_COL32(117, 255, 241, 255));
+	DRAW_LINE(osd_font, font_size, g_InputRecordingData.frame_data_message.c_str(), IM_COL32(117, 255, 241, 255));
+	DRAW_LINE(osd_font, font_size, g_InputRecordingData.undo_count_message.c_str(), IM_COL32(117, 255, 241, 255));
 
 #undef DRAW_LINE
 }
@@ -880,29 +1098,29 @@ __ri void ImGuiManager::DrawVideoCaptureOverlay(float& position_y, float scale, 
 		return;
 
 	const float shadow_offset = std::ceil(scale);
-	ImFont* const standard_font = ImGuiManager::GetStandardFont();
+	ImFont* const osd_font = ImGuiManager::GetOSDFont();
 	float font_size = ImGuiManager::GetFontSizeStandard();
 	ImDrawList* dl = ImGui::GetBackgroundDrawList();
 
 	static constexpr const char* ICON = ICON_PF_CIRCLE;
 	const TinyString text_msg = TinyString::from_format(" {}", GSCapture::GetElapsedTime());
-	const ImVec2 icon_size = standard_font->CalcTextSizeA(font_size, std::numeric_limits<float>::max(),
+	const ImVec2 icon_size = osd_font->CalcTextSizeA(font_size, std::numeric_limits<float>::max(),
 		-1.0f, ICON, nullptr, nullptr);
-	const ImVec2 text_size = standard_font->CalcTextSizeA(font_size, std::numeric_limits<float>::max(),
+	const ImVec2 text_size = osd_font->CalcTextSizeA(font_size, std::numeric_limits<float>::max(),
 		-1.0f, text_msg.c_str(), text_msg.end_ptr(), nullptr);
 
 	// Shadow
-	dl->AddText(standard_font, font_size,
+	dl->AddText(osd_font, font_size,
 		ImVec2(GetWindowWidth() - margin - text_size.x - icon_size.x + shadow_offset, position_y + shadow_offset),
 		IM_COL32(0, 0, 0, 100), ICON);
-	dl->AddText(standard_font, font_size,
+	dl->AddText(osd_font, font_size,
 		ImVec2(GetWindowWidth() - margin - text_size.x + shadow_offset, position_y + shadow_offset),
 		IM_COL32(0, 0, 0, 100), text_msg.c_str(), text_msg.end_ptr());
 
 	// Text
-	dl->AddText(standard_font, font_size,
+	dl->AddText(osd_font, font_size,
 		ImVec2(GetWindowWidth() - margin - text_size.x - icon_size.x, position_y), IM_COL32(255, 0, 0, 255), ICON);
-	dl->AddText(standard_font, font_size,
+	dl->AddText(osd_font, font_size,
 		ImVec2(GetWindowWidth() - margin - text_size.x, position_y), white_color, text_msg.c_str(),
 		text_msg.end_ptr());
 
@@ -922,7 +1140,7 @@ __ri void ImGuiManager::DrawTextureReplacementsOverlay(float& position_y, float 
 		return;
 
 	const float shadow_offset = std::ceil(scale);
-	ImFont* const standard_font = ImGuiManager::GetStandardFont();
+	ImFont* const osd_font = ImGuiManager::GetOSDFont();
 	const float font_size = ImGuiManager::GetFontSizeStandard();
 	ImDrawList* dl = ImGui::GetBackgroundDrawList();
 
@@ -940,11 +1158,11 @@ __ri void ImGuiManager::DrawTextureReplacementsOverlay(float& position_y, float 
 		texture_line.append_format("{} Dumped: {}", ICON_FA_DOWNLOAD, dumped_count);
 	}
 
-	ImVec2 text_size = standard_font->CalcTextSizeA(font_size, std::numeric_limits<float>::max(), -1.0f, texture_line.c_str(), nullptr, nullptr);
+	ImVec2 text_size = osd_font->CalcTextSizeA(font_size, std::numeric_limits<float>::max(), -1.0f, texture_line.c_str(), nullptr, nullptr);
 	const ImVec2 text_pos(GetWindowWidth() - margin - text_size.x, position_y);
 
-	dl->AddText(standard_font, font_size, ImVec2(text_pos.x + shadow_offset, text_pos.y + shadow_offset), IM_COL32(0, 0, 0, 100), texture_line.c_str());
-	dl->AddText(standard_font, font_size, text_pos, white_color, texture_line.c_str());
+	dl->AddText(osd_font, font_size, ImVec2(text_pos.x + shadow_offset, text_pos.y + shadow_offset), IM_COL32(0, 0, 0, 100), texture_line.c_str());
+	dl->AddText(osd_font, font_size, text_pos, white_color, texture_line.c_str());
 
 	position_y += text_size.y + spacing;
 }
@@ -957,7 +1175,7 @@ __ri void ImGuiManager::DrawIndicatorsOverlay(float& position_y, float scale, fl
 
 	const float shadow_offset = std::ceil(scale);
 
-	ImFont* const standard_font = ImGuiManager::GetStandardFont();
+	ImFont* const osd_font = ImGuiManager::GetOSDFont();
 	const float font_size = ImGuiManager::GetFontSizeStandard();
 
 	ImDrawList* dl = ImGui::GetBackgroundDrawList();
@@ -991,14 +1209,14 @@ __ri void ImGuiManager::DrawIndicatorsOverlay(float& position_y, float scale, fl
 				else // Unlimited
 					s_speed_icon = ICON_FA_FORWARD;
 
-				DRAW_LINE(standard_font, font_size, s_speed_icon, white_color);
+				DRAW_LINE(osd_font, font_size, s_speed_icon, white_color);
 			}
 		}
 		else
 		{
 			// Draw Pause indicator
 			const TinyString pause_msg = TinyString::from_format(TRANSLATE_FS("ImGuiOverlays", "{} Paused"), ICON_FA_PAUSE);
-			DRAW_LINE(standard_font, font_size, pause_msg, white_color);
+			DRAW_LINE(osd_font, font_size, pause_msg, white_color);
 		}
 		#undef DRAW_LINE
 }
@@ -1433,7 +1651,7 @@ void SaveStateSelectorUI::ShowSlotOSDMessage()
 void ImGuiManager::RenderOverlays()
 {
 	const float scale = ImGuiManager::GetGlobalScale();
-	const float margin = std::ceil(10.0f * scale);
+	const float margin = std::ceil(GSConfig.OsdMargin * scale);
 	const float spacing = std::ceil(5.0f * scale);
 	float position_y = margin;
 

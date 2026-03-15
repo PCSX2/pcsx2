@@ -813,6 +813,8 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(Crop[3]) &&
 
 		OpEqu(OsdScale) &&
+		OpEqu(OsdMargin) &&
+		OpEqu(OsdFontPath) &&
 		OpEqu(OsdMessagesPos) &&
 		OpEqu(OsdPerformancePos) &&
 
@@ -964,6 +966,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(OsdShowVideoCapture);
 	SettingsWrapBitBool(OsdShowInputRec);
 	SettingsWrapBitBool(OsdShowTextureReplacements);
+	SettingsWrapBitBool(OsdBoldText);
 
 	SettingsWrapBitBool(HWSpinGPUForReadbacks);
 	SettingsWrapBitBool(HWSpinCPUForReadbacks);
@@ -1018,6 +1021,8 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapIntEnumEx(InterlaceMode, "deinterlace_mode");
 
 	SettingsWrapEntry(OsdScale);
+	SettingsWrapEntry(OsdMargin);
+	SettingsWrapEntry(OsdFontPath);
 	SettingsWrapIntEnumEx(OsdMessagesPos, "OsdMessagesPos");
 	SettingsWrapIntEnumEx(OsdPerformancePos, "OsdPerformancePos");
 

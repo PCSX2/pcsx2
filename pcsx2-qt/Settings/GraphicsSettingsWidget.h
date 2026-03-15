@@ -10,7 +10,6 @@
 #include "ui_GraphicsHardwareFixesSettingsTab.h"
 #include "ui_GraphicsHardwareRenderingSettingsTab.h"
 #include "ui_GraphicsMediaCaptureSettingsTab.h"
-#include "ui_GraphicsOnScreenDisplaySettingsTab.h"
 #include "ui_GraphicsPostProcessingSettingsTab.h"
 #include "ui_GraphicsSettingsHeader.h"
 #include "ui_GraphicsSoftwareRenderingSettingsTab.h"
@@ -45,8 +44,6 @@ private Q_SLOTS:
 	void onTextureDumpChanged();
 	void onTextureReplacementChanged();
 	void onShadeBoostChanged();
-	void onMessagesPosChanged();
-	void onPerformancePosChanged();
 	void onCaptureContainerChanged();
 	void onCaptureCodecChanged();
 	void onEnableVideoCaptureChanged();
@@ -54,7 +51,6 @@ private Q_SLOTS:
 	void onVideoCaptureAutoResolutionChanged();
 	void onEnableAudioCaptureChanged();
 	void onEnableAudioCaptureArgumentsChanged();
-	void onOsdShowSettingsToggled();
 
 private:
 	GSRendererType getEffectiveRenderer() const;
@@ -69,7 +65,6 @@ private:
 	Ui::GraphicsUpscalingFixesSettingsTab m_upscaling;
 	Ui::GraphicsTextureReplacementSettingsTab m_texture;
 	Ui::GraphicsPostProcessingSettingsTab m_post;
-	Ui::GraphicsOnScreenDisplaySettingsTab m_osd;
 	Ui::GraphicsMediaCaptureSettingsTab m_capture;
 	Ui::GraphicsAdvancedSettingsTab m_advanced;
 

@@ -121,7 +121,6 @@ target_sources(pcsx2-qt PRIVATE
 	Settings/GraphicsHardwareFixesSettingsTab.ui
 	Settings/GraphicsHardwareRenderingSettingsTab.ui
 	Settings/GraphicsMediaCaptureSettingsTab.ui
-	Settings/GraphicsOnScreenDisplaySettingsTab.ui
 	Settings/GraphicsPostProcessingSettingsTab.ui
 	Settings/GraphicsSettingsHeader.ui
 	Settings/GraphicsSettingsWidget.cpp
@@ -150,6 +149,12 @@ target_sources(pcsx2-qt PRIVATE
 	Settings/MemoryCardSettingsWidget.cpp
 	Settings/MemoryCardSettingsWidget.h
 	Settings/MemoryCardSettingsWidget.ui
+	Settings/OSDSettingsWidget.cpp
+	Settings/OSDSettingsWidget.h
+	Settings/OSDSettingsWidget.ui
+	Settings/OsdFontPickerDialog.cpp
+	Settings/OsdFontPickerDialog.h
+	Settings/OsdFontPickerDialog.ui
 	Settings/DEV9DnsHostDialog.cpp
 	Settings/DEV9DnsHostDialog.h
 	Settings/DEV9DnsHostDialog.ui

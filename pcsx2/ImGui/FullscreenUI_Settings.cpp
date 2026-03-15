@@ -1770,6 +1770,7 @@ void FullscreenUI::DrawSettingsWindow()
 			ICON_PF_MICROCHIP,
 			ICON_PF_GEARS_OPTIONS_SETTINGS,
 			ICON_PF_PICTURE,
+			ICON_FA_GAUGE,
 			ICON_PF_SOUND,
 			ICON_PF_MEMORY_CARD,
 			ICON_FA_NETWORK_WIRED,
@@ -1785,6 +1786,7 @@ void FullscreenUI::DrawSettingsWindow()
 			ICON_FA_BANDAGE,
 			ICON_PF_INFINITY,
 			ICON_PF_PICTURE,
+			ICON_FA_GAUGE,
 			ICON_PF_SOUND,
 			ICON_PF_MEMORY_CARD,
 			ICON_FA_TRIANGLE_EXCLAMATION,
@@ -1794,6 +1796,7 @@ void FullscreenUI::DrawSettingsWindow()
 			SettingsPage::BIOS,
 			SettingsPage::Emulation,
 			SettingsPage::Graphics,
+			SettingsPage::OSD,
 			SettingsPage::Audio,
 			SettingsPage::MemoryCard,
 			SettingsPage::NetworkHDD,
@@ -1809,6 +1812,7 @@ void FullscreenUI::DrawSettingsWindow()
 			SettingsPage::Patches,
 			SettingsPage::Cheats,
 			SettingsPage::Graphics,
+			SettingsPage::OSD,
 			SettingsPage::Audio,
 			SettingsPage::MemoryCard,
 			SettingsPage::GameFixes,
@@ -1819,6 +1823,7 @@ void FullscreenUI::DrawSettingsWindow()
 			FSUI_NSTR("BIOS Settings"),
 			FSUI_NSTR("Emulation Settings"),
 			FSUI_NSTR("Graphics Settings"),
+			FSUI_NSTR("On-Screen Display Settings"),
 			FSUI_NSTR("Audio Settings"),
 			FSUI_NSTR("Memory Card Settings"),
 			FSUI_NSTR("Network & HDD Settings"),
@@ -1943,6 +1948,10 @@ void FullscreenUI::DrawSettingsWindow()
 
 			case SettingsPage::Graphics:
 				DrawGraphicsSettingsPage(bsi, show_advanced_settings);
+				break;
+
+			case SettingsPage::OSD:
+				DrawOSDSettingsPage();
 				break;
 
 			case SettingsPage::Audio:
@@ -2357,82 +2366,6 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 		FSUI_CSTR("Hides the mouse pointer/cursor when the emulator is in fullscreen mode."), "UI", "HideMouseCursor", false);
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_TABLET_SCREEN_BUTTON, "Start Big Picture UI"),
 		FSUI_CSTR("Automatically starts Big Picture Mode instead of the regular Qt interface when PCSX2 launches."), "UI", "StartBigPictureMode", false);
-
-	MenuHeading(FSUI_CSTR("On-Screen Display"));
-	DrawIntSpinBoxSetting(bsi, FSUI_ICONSTR(ICON_FA_MAGNIFYING_GLASS, "OSD Scale"),
-		FSUI_CSTR("Determines how large the on-screen messages and monitors are."), "EmuCore/GS", "OsdScale", 100, 25, 500, 1, FSUI_CSTR("%d%%"));
-
-	// OSD Positioning Options
-	static constexpr const char* s_osd_position_options[] = {
-		FSUI_NSTR("None"),
-		FSUI_NSTR("Top Left"),
-		FSUI_NSTR("Top Center"),
-		FSUI_NSTR("Top Right"),
-		FSUI_NSTR("Center Left"),
-		FSUI_NSTR("Center"),
-		FSUI_NSTR("Center Right"),
-		FSUI_NSTR("Bottom Left"),
-		FSUI_NSTR("Bottom Center"),
-		FSUI_NSTR("Bottom Right"),
-	};
-	static constexpr const char* s_osd_position_values[] = {
-		"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
-
-	DrawStringListSetting(bsi, FSUI_ICONSTR(ICON_FA_COMMENT, "OSD Messages Position"),
-		FSUI_CSTR("Determines where on-screen display messages are positioned."), "EmuCore/GS", "OsdMessagesPos", "1",
-		s_osd_position_options, s_osd_position_values, std::size(s_osd_position_options), true);
-	DrawStringListSetting(bsi, FSUI_ICONSTR(ICON_FA_CHART_BAR, "OSD Performance Position"),
-		FSUI_CSTR("Determines where performance statistics are positioned."), "EmuCore/GS", "OsdPerformancePos", "3",
-		s_osd_position_options, s_osd_position_values, std::size(s_osd_position_options), true);
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_CODE_MERGE, "Show PCSX2 Version"),
-		FSUI_CSTR("Shows the current PCSX2 version."), "EmuCore/GS",
-		"OsdShowVersion", false);
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_GAUGE_SIMPLE_HIGH, "Show Speed"),
-		FSUI_CSTR("Shows the current emulation speed of the system as a percentage."), "EmuCore/GS",
-		"OsdShowSpeed", false);
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_FILM, "Show FPS"),
-		FSUI_CSTR("Shows the number of internal video frames displayed per second by the system."),
-		"EmuCore/GS", "OsdShowFPS", false);
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_CLAPPERBOARD, "Show VPS"),
-		FSUI_CSTR("Shows the number of Vsyncs performed per second by the system."), "EmuCore/GS", "OsdShowVPS", false);
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_PF_MONITOR_CODE, "Show Resolution"),
-		FSUI_CSTR("Shows the internal resolution of the game."), "EmuCore/GS", "OsdShowResolution", false);
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_COMPUTER, "Show Hardware Info"),
-		FSUI_CSTR("Shows the current system CPU and GPU information."), "EmuCore/GS", "OsdShowHardwareInfo", false);
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_CHART_PIE, "Show GS Statistics"),
-		FSUI_CSTR("Shows statistics about the emulated GS such as primitives and draw calls."),
-		"EmuCore/GS", "OsdShowGSStats", false);
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_PF_MICROCHIP_ALT, "Show CPU Usage"),
-		FSUI_CSTR("Shows the host's CPU utilization based on threads."), "EmuCore/GS", "OsdShowCPU", false);
-	// TODO: Change this to a GPU icon when FA gets one or PromptFont fixes their codepoints.
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_IMAGE, "Show GPU Usage"),
-		FSUI_CSTR("Shows the host's GPU utilization."), "EmuCore/GS", "OsdShowGPU", false);
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_PLAY, "Show Status Indicators"),
-		FSUI_CSTR("Shows indicators when fast forwarding, pausing, and other abnormal states are active."), "EmuCore/GS",
-		"OsdShowIndicators", true);
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_PF_HEARTBEAT_ALT, "Show Frame Times"),
-		FSUI_CSTR("Shows a visual history of frame times."), "EmuCore/GS", "OsdShowFrameTimes", false);
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_SLIDERS, "Show Settings"),
-		FSUI_CSTR("Shows the current configuration in the bottom-right corner of the display."),
-		"EmuCore/GS", "OsdShowSettings", false);
-	bool show_settings = (bsi->GetBoolValue("EmuCore/GS", "OsdShowSettings", false) == false);
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_HAMMER, "Show Patches"),
-		FSUI_CSTR("Shows the amount of currently active patches/cheats on the bottom-right corner of the display."), "EmuCore/GS",
-		"OsdshowPatches", false, !show_settings);
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_PF_GAMEPAD_ALT, "Show Inputs"),
-		FSUI_CSTR("Shows the current controller state of the system in the bottom-left corner of the display."), "EmuCore/GS",
-		"OsdShowInputs", false);
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_VIDEO, "Show Video Capture Status"),
-		FSUI_CSTR("Shows the status of the currently active video capture."), "EmuCore/GS",
-		"OsdShowVideoCapture", true);
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_KEYBOARD, "Show Input Recording Status"),
-		FSUI_CSTR("Shows the status of the currently active input recording."), "EmuCore/GS",
-		"OsdShowInputRec", true);
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_IMAGES, "Show Texture Replacement Status"),
-		FSUI_CSTR("Shows the number of dumped and loaded texture replacements on the OSD."), "EmuCore/GS",
-		"OsdShowTextureReplacements", true);
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_TRIANGLE_EXCLAMATION, "Warn About Unsafe Settings"),
-		FSUI_CSTR("Displays warnings when settings are enabled which may break games."), "EmuCore", "WarnAboutUnsafeSettings", true);
 
 	MenuHeading(FSUI_CSTR("Operations"));
 	if (MenuButton(FSUI_ICONSTR(u8"🔥", "Reset Settings"),
@@ -3241,6 +3174,139 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 		DrawFloatRangeSetting(bsi, FSUI_CSTR("PAL Frame Rate"), FSUI_CSTR("Determines what frame rate PAL games run at."),
 			"EmuCore/GS", "FrameRatePAL", 50.0f, 10.0f, 300.0f, "%.2f Hz");
 	}
+
+	EndMenuButtons();
+}
+
+void FullscreenUI::DrawOSDSettingsPage()
+{
+	SettingsInterface* bsi = GetEditingSettingsInterface();
+
+	BeginMenuButtons();
+
+	MenuHeading(FSUI_CSTR("On-Screen Display"));
+	DrawIntSpinBoxSetting(bsi, FSUI_ICONSTR(ICON_FA_MAGNIFYING_GLASS, "OSD Scale"),
+		FSUI_CSTR("Determines how large the on-screen messages and monitors are."), "EmuCore/GS", "OsdScale", 100, 25, 500, 1, FSUI_CSTR("%d%%"));
+	DrawIntSpinBoxSetting(bsi, FSUI_ICONSTR(ICON_FA_BORDER_ALL, "OSD Margin"),
+		FSUI_CSTR("Determines the distance in pixels from the edges of the screen for OSD elements."), "EmuCore/GS", "OsdMargin", 10, 0, 100, 1, FSUI_CSTR("%dpx"));
+
+	// OSD Positioning Options
+	static constexpr const char* s_osd_position_options[] = {
+		FSUI_NSTR("None"),
+		FSUI_NSTR("Top Left"),
+		FSUI_NSTR("Top Center"),
+		FSUI_NSTR("Top Right"),
+		FSUI_NSTR("Center Left"),
+		FSUI_NSTR("Center"),
+		FSUI_NSTR("Center Right"),
+		FSUI_NSTR("Bottom Left"),
+		FSUI_NSTR("Bottom Center"),
+		FSUI_NSTR("Bottom Right"),
+	};
+	static constexpr const char* s_osd_position_values[] = {
+		"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
+
+	DrawStringListSetting(bsi, FSUI_ICONSTR(ICON_FA_COMMENT, "OSD Messages Position"),
+		FSUI_CSTR("Determines where on-screen display messages are positioned."), "EmuCore/GS", "OsdMessagesPos", "1",
+		s_osd_position_options, s_osd_position_values, std::size(s_osd_position_options), true);
+	DrawStringListSetting(bsi, FSUI_ICONSTR(ICON_FA_CHART_BAR, "OSD Performance Position"),
+		FSUI_CSTR("Determines where performance statistics are positioned."), "EmuCore/GS", "OsdPerformancePos", "3",
+		s_osd_position_options, s_osd_position_values, std::size(s_osd_position_options), true);
+
+	{
+		const bool game_settings = IsEditingGameSettings(bsi);
+		const std::optional<SmallString> osd_font_value(bsi->GetOptionalSmallStringValue(
+			"EmuCore/GS", "OsdFontPath", game_settings ? std::nullopt : std::optional<const char*>("")));
+
+		const std::string osd_font_summary_str =
+			(osd_font_value.has_value() && !osd_font_value->empty()) ?
+				std::string(osd_font_value->c_str()) :
+				EmuFolders::GetOverridableResourcePath("fonts" FS_OSPATH_SEPARATOR_STR "RobotoMono-Medium.ttf");
+		const char* osd_font_summary = osd_font_summary_str.c_str();
+
+		if (MenuButton(FSUI_ICONSTR(ICON_FA_FONT, "OSD Font File"), osd_font_summary))
+		{
+			auto callback = [game_settings = IsEditingGameSettings(bsi)](const std::string& path) {
+				auto lock = Host::GetSettingsLock();
+				SettingsInterface* ebsi = GetEditingSettingsInterface(game_settings);
+
+				if (!path.empty())
+					ebsi->SetStringValue("EmuCore/GS", "OsdFontPath", path.c_str());
+
+				SetSettingsChanged(ebsi);
+				CloseFileSelector();
+			};
+
+			std::string initial_path;
+			if (osd_font_value.has_value() && !osd_font_value->empty())
+				initial_path = Path::GetDirectory(osd_font_value.value());
+
+			OpenFileSelector(FSUI_CSTR("Select OSD Font"), false, std::move(callback),
+				{"*.ttf", "*.ttc", "*.otf", "*.otc"}, std::move(initial_path));
+		}
+
+		if (osd_font_value.has_value() && !osd_font_value->empty())
+		{
+			if (MenuButton(FSUI_CSTR("Clear OSD Font Override"), FSUI_CSTR("Use default bundled font")))
+			{
+				SettingsInterface* ebsi = bsi;
+				ebsi->DeleteValue("EmuCore/GS", "OsdFontPath");
+				SetSettingsChanged(ebsi);
+			}
+		}
+	}
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_BOLD, "Bold OSD Text"),
+		FSUI_CSTR("Draws OSD text with heavier weight for improved readability."), 
+		"EmuCore/GS", "OsdBoldText", true);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_CODE_MERGE, "Show PCSX2 Version"),
+		FSUI_CSTR("Shows the current PCSX2 version."), "EmuCore/GS",
+		"OsdShowVersion", false);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_GAUGE_SIMPLE_HIGH, "Show Speed"),
+		FSUI_CSTR("Shows the current emulation speed of the system as a percentage."), "EmuCore/GS",
+		"OsdShowSpeed", false);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_FILM, "Show FPS"),
+		FSUI_CSTR("Shows the number of internal video frames displayed per second by the system."),
+		"EmuCore/GS", "OsdShowFPS", false);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_CLAPPERBOARD, "Show VPS"),
+		FSUI_CSTR("Shows the number of Vsyncs performed per second by the system."), "EmuCore/GS", "OsdShowVPS", false);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_PF_MONITOR_CODE, "Show Resolution"),
+		FSUI_CSTR("Shows the internal resolution of the game."), "EmuCore/GS", "OsdShowResolution", false);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_COMPUTER, "Show Hardware Info"),
+		FSUI_CSTR("Shows the current system CPU and GPU information."), "EmuCore/GS", "OsdShowHardwareInfo", false);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_CHART_PIE, "Show GS Statistics"),
+		FSUI_CSTR("Shows statistics about the emulated GS such as primitives and draw calls."),
+		"EmuCore/GS", "OsdShowGSStats", false);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_PF_MICROCHIP_ALT, "Show CPU Usage"),
+		FSUI_CSTR("Shows the host's CPU utilization based on threads."), "EmuCore/GS", "OsdShowCPU", false);
+	// TODO: Change this to a GPU icon when FA gets one or PromptFont fixes their codepoints.
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_IMAGE, "Show GPU Usage"),
+		FSUI_CSTR("Shows the host's GPU utilization."), "EmuCore/GS", "OsdShowGPU", false);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_PLAY, "Show Status Indicators"),
+		FSUI_CSTR("Shows indicators when fast forwarding, pausing, and other abnormal states are active."), "EmuCore/GS",
+		"OsdShowIndicators", true);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_PF_HEARTBEAT_ALT, "Show Frame Times"),
+		FSUI_CSTR("Shows a visual history of frame times."), "EmuCore/GS", "OsdShowFrameTimes", false);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_SLIDERS, "Show Settings"),
+		FSUI_CSTR("Shows the current configuration in the bottom-right corner of the display."),
+		"EmuCore/GS", "OsdShowSettings", false);
+	bool show_settings = (bsi->GetBoolValue("EmuCore/GS", "OsdShowSettings", false) == false);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_HAMMER, "Show Patches"),
+		FSUI_CSTR("Shows the amount of currently active patches/cheats on the bottom-right corner of the display."), "EmuCore/GS",
+		"OsdshowPatches", false, !show_settings);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_PF_GAMEPAD_ALT, "Show Inputs"),
+		FSUI_CSTR("Shows the current controller state of the system in the bottom-left corner of the display."), "EmuCore/GS",
+		"OsdShowInputs", false);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_VIDEO, "Show Video Capture Status"),
+		FSUI_CSTR("Shows the status of the currently active video capture."), "EmuCore/GS",
+		"OsdShowVideoCapture", true);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_KEYBOARD, "Show Input Recording Status"),
+		FSUI_CSTR("Shows the status of the currently active input recording."), "EmuCore/GS",
+		"OsdShowInputRec", true);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_IMAGES, "Show Texture Replacement Status"),
+		FSUI_CSTR("Shows the number of dumped and loaded texture replacements on the OSD."), "EmuCore/GS",
+		"OsdShowTextureReplacements", true);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_TRIANGLE_EXCLAMATION, "Warn About Unsafe Settings"),
+		FSUI_CSTR("Displays warnings when settings are enabled which may break games."), "EmuCore", "WarnAboutUnsafeSettings", true);
 
 	EndMenuButtons();
 }

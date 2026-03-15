@@ -164,6 +164,7 @@ namespace FullscreenUI
 		BIOS,
 		Emulation,
 		Graphics,
+		OSD,
 		Audio,
 		MemoryCard,
 		NetworkHDD,
@@ -382,6 +383,7 @@ namespace FullscreenUI
 	void DrawBIOSSettingsPage();
 	void DrawEmulationSettingsPage();
 	void DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_advanced_settings);
+	void DrawOSDSettingsPage();
 	void DrawAudioSettingsPage();
 	void DrawMemoryCardSettingsPage();
 	void DrawNetworkHDDSettingsPage();

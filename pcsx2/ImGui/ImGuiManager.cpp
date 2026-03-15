@@ -18,6 +18,7 @@
 #include "VMManager.h"
 
 #include "common/FileSystem.h"
+#include "common/Console.h"
 #include "common/Easing.h"
 #include "common/StringUtil.h"
 #include "common/Path.h"
@@ -60,6 +61,7 @@ namespace ImGuiManager
 	static bool AddImGuiFonts();
 	static ImFont* AddTextFont();
 	static ImFont* AddFixedFont();
+	static ImFont* AddOsdFont();
 	static bool AddIconFonts();
 	static bool AddEmojiFont();
 	static void AcquirePendingOSDMessages(Common::Timer::Value current_time);
@@ -79,8 +81,10 @@ static FT_Library s_ft_lib = nullptr;
 
 static ImFont* s_standard_font;
 static ImFont* s_fixed_font;
+static ImFont* s_osd_font;
 
 static std::vector<ImGuiManager::FontInfo> s_font_info;
+static std::vector<u8> s_custom_font_data;
 static std::vector<u8> s_fixed_font_data;
 static std::vector<u8> s_icon_fa_font_data;
 static std::vector<u8> s_icon_pf_font_data;
@@ -205,6 +209,7 @@ void ImGuiManager::Shutdown(bool clear_state)
 
 	s_standard_font = nullptr;
 	s_fixed_font = nullptr;
+	s_osd_font = nullptr;
 
 	if (clear_state)
 		UnloadFontData();
@@ -237,6 +242,28 @@ void ImGuiManager::RequestScaleUpdate()
 {
 	if (s_window_width > 0 && s_window_height > 0)
 		s_scale_changed = true;
+}
+
+void ImGuiManager::ReloadFonts()
+{
+	if (!ImGui::GetCurrentContext())
+		return;
+
+	ImGui::EndFrame();
+
+	if (!LoadFontData())
+	{
+		pxFailRel("Failed to load font data");
+		return;
+	}
+
+	if (!AddImGuiFonts())
+	{
+		pxFailRel("Failed to create ImGui font text");
+		return;
+	}
+
+	NewFrame();
 }
 
 void ImGuiManager::UpdateScale()
@@ -398,6 +425,26 @@ void ImGuiManager::SetKeyMap()
 
 bool ImGuiManager::LoadFontData()
 {
+	const std::string custom_font_path(StringUtil::StripWhitespace(GSConfig.OsdFontPath));
+	if (custom_font_path.empty())
+	{
+		s_custom_font_data.clear();
+	}
+	else
+	{
+		std::optional<std::vector<u8>> font_data = FileSystem::ReadBinaryFile(custom_font_path.c_str());
+		if (font_data.has_value())
+		{
+			s_custom_font_data = std::move(font_data.value());
+			Console.WriteLn("Using custom OSD font '%s'.", custom_font_path.c_str());
+		}
+		else
+		{
+			Console.ErrorFmt("Failed to load custom OSD font '{}'", custom_font_path);
+			s_custom_font_data.clear();
+		}
+	}
+
 	if (s_fixed_font_data.empty())
 	{
 		std::optional<std::vector<u8>> font_data = FileSystem::ReadBinaryFile(
@@ -433,6 +480,7 @@ bool ImGuiManager::LoadFontData()
 
 void ImGuiManager::UnloadFontData()
 {
+	std::vector<u8>().swap(s_custom_font_data);
 	std::vector<u8>().swap(s_fixed_font_data);
 	std::vector<u8>().swap(s_icon_fa_font_data);
 	std::vector<u8>().swap(s_icon_pf_font_data);
@@ -460,7 +508,7 @@ static u32 GetFontIndex(const ImGuiManager::FontInfo& font)
 	FT_Face face;
 	RET_IF_ERR(FT_New_Memory_Face(s_ft_lib, font.data.data(), font.data.size(), face_idx, &face));
 	FT_Long nfaces = face->num_faces;
-	while (face_idx < nfaces)
+	while (static_cast<FT_Long>(face_idx) < nfaces)
 	{
 		if (0 == strcmp(face->family_name, font.face_name))
 			break;
@@ -468,7 +516,7 @@ static u32 GetFontIndex(const ImGuiManager::FontInfo& font)
 		RET_IF_ERR(FT_New_Memory_Face(s_ft_lib, font.data.data(), font.data.size(), ++face_idx, &face));
 	}
 	FT_Done_Face(face);
-	if (face_idx == nfaces)
+	if (static_cast<FT_Long>(face_idx) == nfaces)
 		return 0; // Couldn't find face, just use first one
 
 	// For fonts with variations, try to find one named "Regular"
@@ -505,6 +553,7 @@ ImFont* ImGuiManager::AddTextFont()
 	cfg.LineHeight = FONT_LINE_HEIGHT;
 	cfg.FontDataOwnedByAtlas = false;
 	ImFont* res = nullptr;
+
 	for (const FontInfo& info : s_font_info)
 	{
 		if (info.is_emoji_font)
@@ -538,6 +587,25 @@ ImFont* ImGuiManager::AddFixedFont()
 	ImFontConfig cfg;
 	cfg.LineHeight = FONT_LINE_HEIGHT;
 	cfg.FontDataOwnedByAtlas = false;
+	return ImGui::GetIO().Fonts->AddFontFromMemoryTTF(
+		s_fixed_font_data.data(), static_cast<int>(s_fixed_font_data.size()), FONT_BASE_SIZE, &cfg, nullptr);
+}
+
+ImFont* ImGuiManager::AddOsdFont()
+{
+	ImFontConfig cfg;
+	cfg.LineHeight = FONT_LINE_HEIGHT;
+	cfg.FontDataOwnedByAtlas = false;
+	if (!s_custom_font_data.empty())
+	{
+		ImFont* custom = ImGui::GetIO().Fonts->AddFontFromMemoryTTF(
+			s_custom_font_data.data(), static_cast<int>(s_custom_font_data.size()), FONT_BASE_SIZE, &cfg, nullptr);
+		if (custom)
+			return custom;
+
+		Console.ErrorFmt("Failed to add custom OSD font to ImGui atlas");
+	}
+
 	return ImGui::GetIO().Fonts->AddFontFromMemoryTTF(
 		s_fixed_font_data.data(), static_cast<int>(s_fixed_font_data.size()), FONT_BASE_SIZE, &cfg, nullptr);
 }
@@ -658,6 +726,10 @@ bool ImGuiManager::AddImGuiFonts()
 
 	s_fixed_font = AddFixedFont();
 	if (!s_fixed_font || !AddEmojiFont())
+		return false;
+
+	s_osd_font = AddOsdFont();
+	if (!s_osd_font || !AddIconFonts() || !AddEmojiFont())
 		return false;
 
 	ImGuiFullscreen::SetFont(s_standard_font);
@@ -798,7 +870,7 @@ void ImGuiManager::DrawOSDMessages(Common::Timer::Value current_time)
 	const float font_size = GetFontSizeStandard();
 	const float scale = s_global_scale;
 	const float spacing = std::ceil(5.0f * scale);
-	const float margin = std::ceil(10.0f * scale);
+	const float margin = std::ceil(GSConfig.OsdMargin * scale);
 	const float padding = std::ceil(8.0f * scale);
 	const float rounding = std::ceil(5.0f * scale);
 	const float max_width = s_window_width - (margin + padding) * 2.0f;
@@ -960,6 +1032,11 @@ ImFont* ImGuiManager::GetStandardFont()
 ImFont* ImGuiManager::GetFixedFont()
 {
 	return s_fixed_font;
+}
+
+ImFont* ImGuiManager::GetOSDFont()
+{
+	return s_osd_font;
 }
 
 float ImGuiManager::GetFontSizeStandard()
