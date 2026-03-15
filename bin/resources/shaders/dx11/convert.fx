@@ -61,6 +61,22 @@ VS_OUTPUT vs_main(VS_INPUT input)
 	return output;
 }
 
+VS_OUTPUT vs_blit_1to1(uint vID : SV_VertexID)
+{
+	VS_OUTPUT output;
+
+	// Hard-coded positions for the Oversized Triangle.
+	static const float2 positions[3] = {
+		float2(-1.0f,  1.0f),
+		float2( 3.0f,  1.0f),
+		float2(-1.0f, -3.0f)
+	};
+
+	output.p = float4(positions[vID], 0.0f, 1.0f);
+
+	return output;
+}
+
 PS_OUTPUT ps_copy(PS_INPUT input)
 {
 	PS_OUTPUT output;
@@ -68,6 +84,11 @@ PS_OUTPUT ps_copy(PS_INPUT input)
 	output.c = sample_c(input.t);
 
 	return output;
+}
+
+float4 ps_blit_1to1(float4 pos : SV_Position) : SV_Target
+{
+	return Texture.Load(int3(pos.xy, 0));
 }
 
 float ps_depth_copy(PS_INPUT input) : SV_Depth
