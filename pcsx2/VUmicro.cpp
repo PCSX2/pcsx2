@@ -51,7 +51,7 @@ void BaseVUmicroCPU::ExecuteBlock(bool startUp)
 	}
 	else // Continue Executing
 	{
-		u32 cycle = m_Idx ? VU1.cycle : VU0.cycle;
+		u64 cycle = m_Idx ? VU1.cycle : VU0.cycle;
 		s32 delta = (s32)(u32)(cpuRegs.cycle - cycle);
 
 		if (delta > 0)
@@ -70,7 +70,7 @@ void BaseVUmicroCPU::ExecuteBlockJIT(BaseVUmicroCPU* cpu, bool interlocked)
 
 	if (stat & test)
 	{ // VU is running
-		s32 delta = (s32)(u32)(cpuRegs.cycle - VU0.cycle);
+		s64 delta = (s64)(u64)(cpuRegs.cycle - VU0.cycle);
 
 		if (delta > 0)
 		{
