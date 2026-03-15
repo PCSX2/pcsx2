@@ -199,6 +199,11 @@
               "minimum": 0,
               "maximum": 1
             },
+            "rewriteLargeST": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
             "PCRTCOffsets": {
               "type": "integer",
               "minimum": 0,
