@@ -81,7 +81,7 @@ struct fdivPipe
 {
 	int enable;
 	REG_VI reg;
-	u32 sCycle;
+	u64 sCycle;
 	u32 Cycle;
 	u32 statusflag;
 };
@@ -90,7 +90,7 @@ struct efuPipe
 {
 	int enable;
 	REG_VI reg;
-	u32 sCycle;
+	u64 sCycle;
 	u32 Cycle;
 };
 
@@ -101,7 +101,7 @@ struct fmacPipe
 	int flagreg;
 	u32 xyzwupper;
 	u32 xyzwlower;
-	u32 sCycle;
+	u64 sCycle;
 	u32 Cycle;
 	u32 macflag;
 	u32 statusflag;
@@ -111,7 +111,7 @@ struct fmacPipe
 struct ialuPipe
 {
 	int reg;
-	u32 sCycle;
+	u64 sCycle;
 	u32 Cycle;
 };
 

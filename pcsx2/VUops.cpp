@@ -221,7 +221,7 @@ static void _vuFMACTestStall(VURegs* VU, u32 reg, u32 xyzw)
 		if ((VU->fmac[currentpipe].regupper == reg && VU->fmac[currentpipe].xyzwupper & xyzw)
 			|| (VU->fmac[currentpipe].reglower == reg && VU->fmac[currentpipe].xyzwlower & xyzw))
 		{
-			u32 newCycle = VU->fmac[currentpipe].Cycle + VU->fmac[currentpipe].sCycle;
+			u64 newCycle = VU->fmac[currentpipe].Cycle + VU->fmac[currentpipe].sCycle;
 
 			VUM_LOG("FMAC[%d] stall %d", currentpipe, newCycle - VU->cycle);
 			if (newCycle > VU->cycle)
@@ -248,7 +248,7 @@ static __fi void _vuTestFDIVStalls(VURegs* VU, _VURegsNum* VUregsn)
 
 	if (VU->fdiv.enable != 0)
 	{
-		u32 newCycle = VU->fdiv.Cycle + VU->fdiv.sCycle;
+		u64 newCycle = VU->fdiv.Cycle + VU->fdiv.sCycle;
 		VUM_LOG("waiting FDIV pipe %d", newCycle - VU->cycle);
 		if (newCycle > VU->cycle)
 			VU->cycle = newCycle;
@@ -268,7 +268,7 @@ static __fi void _vuTestEFUStalls(VURegs* VU, _VURegsNum* VUregsn)
 	// than WAITP, we're going to overwrite the value in the pipeline, which will break everything.
 	// So the TL;DR of this is that we should be safe to release 1 cycle early and write back P
 	VU->efu.Cycle -= 1;
-	u32 newCycle = VU->efu.sCycle + VU->efu.Cycle;
+	u64 newCycle = VU->efu.sCycle + VU->efu.Cycle;
 
 	VUM_LOG("waiting EFU pipe %d", newCycle - VU->cycle);
 	if (newCycle > VU->cycle)
@@ -286,7 +286,7 @@ static __fi void _vuTestALUStalls(VURegs* VU, _VURegsNum* VUregsn)
 
 		if (VU->ialu[currentpipe].reg & VUregsn->VIread) // Read and written VI regs share the same register
 		{
-			u32 newCycle = VU->ialu[currentpipe].Cycle + VU->ialu[currentpipe].sCycle;
+			u64 newCycle = VU->ialu[currentpipe].Cycle + VU->ialu[currentpipe].sCycle;
 
 			VUM_LOG("ALU[%d] stall %d", currentpipe, newCycle - VU->cycle);
 			if (newCycle > VU->cycle)

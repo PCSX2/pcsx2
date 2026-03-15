@@ -222,7 +222,7 @@ __fi void vif1VUFinish()
 	// Sync up VU1 so we don't errantly wait.
 	while (!THREAD_VU1 && (VU0.VI[REG_VPU_STAT].UL & 0x100))
 	{
-		const int cycle_diff = static_cast<int>(cpuRegs.cycle - VU1.cycle);
+		const s64 cycle_diff = static_cast<int>(cpuRegs.cycle - VU1.cycle);
 
 		if ((EmuConfig.Gamefixes.VUSyncHack && cycle_diff < VU1.nextBlockCycles) || cycle_diff <= 0)
 			break;
@@ -244,7 +244,7 @@ __fi void vif1VUFinish()
 
 	if (VU0.VI[REG_VPU_STAT].UL & 0x100)
 	{
-		u32 _cycles = VU1.cycle;
+		u64 _cycles = VU1.cycle;
 		//DevCon.Warning("Finishing VU1");
 		vu1Finish(false);
 		if (THREAD_VU1 && !INSTANT_VU1 && (VU0.VI[REG_VPU_STAT].UL & 0x100))
