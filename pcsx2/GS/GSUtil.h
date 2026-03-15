@@ -157,6 +157,14 @@ public:
 		};
 	}
 
+	BoundingOct ExpandOne() const
+	{
+		return {
+			bbox0 + GSVector4i(-1, -1, 1, 1),
+			bbox1 + GSVector4i(-1, -1, 1, 1),
+		};
+	}
+
 	const GSVector4i& ToBBox()
 	{
 		return bbox0;

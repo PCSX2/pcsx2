@@ -14,6 +14,7 @@
 #include "common/Error.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
+#include "common/ScopedGuard.h"
 
 #include "imgui.h"
 #include "IconsFontAwesome.h"
@@ -66,7 +67,16 @@ GSDevice11::GSDevice11()
 	m_features.framebuffer_fetch = false;
 	m_features.stencil_buffer = true;
 	m_features.cas_sharpening = true;
-	m_features.test_and_sample_depth = false;
+	m_features.test_and_sample_depth = true;
+	if (m_features.multidraw_fb_copy && (GSConfig.DepthFeedbackMode == GSDepthFeedbackMode::Auto ||
+		GSConfig.DepthFeedbackMode == GSDepthFeedbackMode::Depth))
+	{
+		m_features.depth_feedback = GSDevice::DepthFeedbackSupport::Depth;
+	}
+	else
+	{
+		m_features.depth_feedback = GSDevice::DepthFeedbackSupport::None;
+	}
 }
 
 GSDevice11::~GSDevice11() = default;
@@ -404,6 +414,30 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		}
 	}
 
+	if (m_features.aa1)
+	{
+		bd.ByteWidth = INDEX_BUFFER_SIZE;
+		bd.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+		bd.StructureByteStride = sizeof(u32);
+		bd.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+
+		if (FAILED(m_dev->CreateBuffer(&bd, nullptr, m_expand_ib_vs.put())))
+		{
+			Console.Error("D3D11: Failed to create vertex shader index buffer.");
+			return false;
+		}
+
+		const CD3D11_SHADER_RESOURCE_VIEW_DESC expand_ib_vs_srv_desc(
+			D3D11_SRV_DIMENSION_BUFFER, DXGI_FORMAT_UNKNOWN, 0, INDEX_BUFFER_SIZE / sizeof(u32));
+		if (FAILED(m_dev->CreateShaderResourceView(m_expand_ib_vs.get(), &expand_ib_vs_srv_desc, m_expand_ib_vs_srv.put())))
+		{
+			Console.Error("D3D11: Failed to create vertex shader index buffer SRV.");
+			return false;
+		}
+
+		m_ctx->VSSetShaderResources(5, 1, m_expand_ib_vs_srv.addressof());
+	}
+
 	// rasterizer
 
 	memset(&rd, 0, sizeof(rd));
@@ -604,7 +638,7 @@ void GSDevice11::SetFeatures(IDXGIAdapter1* adapter)
 
 	m_features.vs_expand = (!GSConfig.DisableVertexShaderExpand && m_feature_level >= D3D_FEATURE_LEVEL_11_0);
 	m_features.cas_sharpening = (m_feature_level >= D3D_FEATURE_LEVEL_11_0);
-	m_features.test_and_sample_depth = (m_feature_level >= D3D_FEATURE_LEVEL_11_0);
+	m_read_only_dsv_support = (m_feature_level >= D3D_FEATURE_LEVEL_11_0);
 
 	m_max_texture_size = (m_feature_level >= D3D_FEATURE_LEVEL_11_0) ?
 	                         D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION :
@@ -613,12 +647,15 @@ void GSDevice11::SetFeatures(IDXGIAdapter1* adapter)
 	m_conservative_depth = (m_feature_level >= D3D_FEATURE_LEVEL_11_0);
 	m_rgba16_unorm_hw_blend = IsTextureFormatHWBlendable(m_dev.get(), DXGI_FORMAT_R16G16B16A16_UNORM);
 
+	m_features.aa1 = GSConfig.HWAA1 && m_features.vs_expand && (m_features.depth_feedback != GSDevice::DepthFeedbackSupport::None);
+
 	// Let the user know if said features are available.
 	Console.WriteLnFmt("D3D11: DXTn Texture Compression: {}", m_features.dxt_textures ? "Supported" : "Not Supported");
 	Console.WriteLnFmt("D3D11: BC6/7 Texture Compression: {}", m_features.bptc_textures ? "Supported" : "Not Supported");
 	Console.WriteLnFmt("D3D11: Conservative Depth: {}", m_conservative_depth ? "Supported" : "Not Supported");
 	Console.WriteLnFmt("D3D11: Depth Testing and Sampling: {}", m_features.test_and_sample_depth ? "Supported" : "Not Supported");
 	Console.WriteLnFmt("D3D11: RGBA16 UNORM Hardware Blending: {}", m_rgba16_unorm_hw_blend ? "Supported" : "Not Supported");
+	Console.WriteLnFmt("D3D11: Read-only DSV support: {}", m_read_only_dsv_support ? "Supported" : "Not Supported");
 }
 
 bool GSDevice11::HasSurface() const
@@ -1141,6 +1178,23 @@ void GSDevice11::DrawIndexedPrimitive(int offset, int count)
 	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
 	PSUpdateShaderState(true, true);
 	m_ctx->DrawIndexed(count, m_index.start + offset, m_vertex.start);
+}
+
+void GSDevice11::DrawVertexShaderIndexedPrimitive(int offset, int count, int expansion_factor)
+{
+	pxAssert(offset + count <= (int)m_index.count);
+
+	// Vertex shader needs the updated offset into the index buffer since the vertex ID resets every draw call.
+	int full_offset = m_index.start + offset;
+	if (m_vs_cb_cache.base_vertex_index.y != full_offset)
+	{
+		m_vs_cb_cache.base_vertex_index.y = full_offset;
+		m_ctx->UpdateSubresource(m_vs_cb.get(), 0, NULL, &m_vs_cb_cache, 0, 0);
+	}
+
+	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
+	PSUpdateShaderState(true, true);
+	m_ctx->Draw(count * expansion_factor, 0);
 }
 
 void GSDevice11::CommitClear(GSTexture* t)
@@ -1816,12 +1870,18 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 		sm.AddMacro("PS_DITHER_ADJUST", sel.dither_adjust);
 		sm.AddMacro("PS_ZCLAMP", sel.zclamp);
 		sm.AddMacro("PS_ZFLOOR", sel.zfloor);
+		sm.AddMacro("PS_ZWRITE", sel.zwrite);
 		sm.AddMacro("PS_SCANMSK", sel.scanmsk);
 		sm.AddMacro("PS_AUTOMATIC_LOD", sel.automatic_lod);
 		sm.AddMacro("PS_MANUAL_LOD", sel.manual_lod);
 		sm.AddMacro("PS_TEX_IS_FB", sel.tex_is_fb);
 		sm.AddMacro("PS_NO_COLOR", sel.no_color);
 		sm.AddMacro("PS_NO_COLOR1", sel.no_color1);
+		sm.AddMacro("PS_ZTST", sel.ztst);
+		sm.AddMacro("PS_COLOR_FEEDBACK", sel.color_feedback);
+		sm.AddMacro("PS_DEPTH_FEEDBACK", sel.depth_feedback);
+		sm.AddMacro("PS_AA1", sel.aa1);
+		sm.AddMacro("PS_ABE", sel.abe);
 
 		wil::com_ptr_nothrow<ID3D11PixelShader> ps = m_shader_cache.GetPixelShader(m_dev.get(), m_tfx_source, sm.GetPtr(), "ps_main");
 		i = m_ps.try_emplace(sel, std::move(ps)).first;
@@ -2292,12 +2352,7 @@ void GSDevice11::IAUnmapVertexBuffer(u32 stride, u32 count)
 {
 	m_ctx->Unmap(m_vb.get(), 0);
 
-	if (m_state.vb_stride != stride)
-	{
-		m_state.vb_stride = stride;
-		const UINT vb_offset = 0;
-		m_ctx->IASetVertexBuffers(0, 1, m_vb.addressof(), &stride, &vb_offset);
-	}
+	IASetVertexBuffer(m_vb.get(), stride);
 
 	m_vertex.count = count;
 }
@@ -2312,6 +2367,16 @@ bool GSDevice11::IASetVertexBuffer(const void* vertex, u32 stride, u32 count)
 
 	IAUnmapVertexBuffer(stride, count);
 	return true;
+}
+
+void GSDevice11::IASetVertexBuffer(ID3D11Buffer* buffer, u32 stride)
+{
+	if (m_state.vb != buffer || stride != m_state.vb_stride)
+	{
+		const UINT zero = 0;
+		m_ctx->IASetVertexBuffers(0, 1, &buffer, buffer ? &stride : &zero, &zero);
+		m_state.vb = buffer;
+	}
 }
 
 bool GSDevice11::IASetExpandVertexBuffer(const void* vertex, u32 stride, u32 count)
@@ -2431,6 +2496,47 @@ void GSDevice11::VSSetShader(ID3D11VertexShader* vs, ID3D11Buffer* vs_cb)
 
 		m_ctx->VSSetConstantBuffers(0, 1, &vs_cb);
 	}
+}
+
+u16* GSDevice11::VSMapIndexBuffer(u32 count)
+{
+	if (count > (INDEX_BUFFER_SIZE / sizeof(u16)))
+		return nullptr;
+
+	D3D11_MAP type = D3D11_MAP_WRITE_NO_OVERWRITE;
+
+	m_index.start = m_expand_ib_vs_pos;
+	m_expand_ib_vs_pos += count;
+
+	if (m_expand_ib_vs_pos > (INDEX_BUFFER_SIZE / sizeof(u16)))
+	{
+		m_index.start = 0;
+		m_expand_ib_vs_pos = count;
+		type = D3D11_MAP_WRITE_DISCARD;
+	}
+
+	D3D11_MAPPED_SUBRESOURCE m;
+	if (FAILED(m_ctx->Map(m_expand_ib_vs.get(), 0, type, 0, &m)))
+		return nullptr;
+
+	return static_cast<u16*>(m.pData) + m_index.start;
+}
+
+void GSDevice11::VSUnmapIndexBuffer(u32 count)
+{
+	m_ctx->Unmap(m_expand_ib_vs.get(), 0);
+	m_index.count = count;
+}
+
+bool GSDevice11::VSSetIndexBuffer(const void* index, u32 count)
+{
+	u16* map = VSMapIndexBuffer(count);
+	if (!map)
+		return false;
+
+	std::memcpy(map, index, count * sizeof(u16));
+	VSUnmapIndexBuffer(count);
+	return true;
 }
 
 void GSDevice11::PSSetShaderResource(int i, GSTexture* sr)
@@ -2664,6 +2770,18 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 {
 	const GSVector2i rtsize = (config.rt ? config.rt : config.ds)->GetSize();
 	GSTexture* colclip_rt = g_gs_device->GetColorClipTexture();
+	GSTexture* draw_rt_clone = nullptr;
+	GSTexture* draw_ds_clone = nullptr;
+	GSTexture* primid_texture = nullptr;
+
+	ScopedGuard recycle_temp_textures([&]() {
+		if (draw_rt_clone)
+			Recycle(draw_rt_clone);
+		if (draw_ds_clone)
+			Recycle(draw_ds_clone);
+		if (primid_texture)
+			Recycle(primid_texture);
+	});
 
 	if (colclip_rt)
 	{
@@ -2706,7 +2824,6 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 
 	// Destination Alpha Setup
 	const bool multidraw_fb_copy = m_features.multidraw_fb_copy && (config.require_one_barrier || config.require_full_barrier);
-	GSTexture* primid_texture = nullptr;
 	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking)
 	{
 		primid_texture = CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::PrimID, false);
@@ -2731,7 +2848,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 			return;
 		}
 
-		config.cb_vs.max_depth.y = m_vertex.start;
+		config.cb_vs.base_vertex_index.x = m_vertex.start;
 	}
 	else
 	{
@@ -2742,11 +2859,16 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		}
 	}
 
-	if (config.vs.UseExpandIndexBuffer())
+	if (config.vs.UseFixedExpandIndexBuffer())
 	{
 		IASetIndexBuffer(m_expand_ib.get());
 		m_index.start = 0;
 		m_index.count = config.nindices;
+	}
+	else if (config.vs.UseVertexShaderExpandIndexBuffer())
+	{
+		VSSetIndexBuffer(config.indices, config.nindices);
+		IASetVertexBuffer(nullptr, 0); // Unbind the vertex buffer to prevent unwanted fetches.
 	}
 	else
 	{
@@ -2767,15 +2889,15 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	IASetPrimitiveTopology(topology);
 
 	// Depth testing and sampling, bind resource as dsv read only and srv at the same time without the need of a copy.
-	// TODO: On older feature levels read only depth is not supported, we can fallback to a copy but a better solution
-	// is to wait for Depth feedback loops, in this case we can use it always, unbind the dsv and do testing in shader
-	// with no copies or separate read only dsv.
+	// Disable this for depth feedback loops, since in those cases we simultaneously read/write depth.
 	ID3D11DepthStencilView* read_only_dsv = nullptr;
 	if (config.tex && config.tex == config.ds)
-		if (m_features.test_and_sample_depth)
+	{
+		if (m_read_only_dsv_support && !config.depth.zwe && !config.ps.IsFeedbackLoopDepth())
 			read_only_dsv = static_cast<GSTexture11*>(config.ds)->ReadOnlyDepthStencilView();
 		else
 			config.tex = nullptr;
+	}
 
 	// Preemptively bind srv if possible.
 	// We update the local state, then if there are srv conflicts PSUnbindConflictingSRVs will update the gpu state.
@@ -2836,8 +2958,6 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		draw_ds = m_state.cached_dsv;
 	}
 
-	GSTexture* draw_rt_clone = nullptr;
-
 	if (draw_rt && (config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy) || (config.tex && config.tex == config.rt)))
 	{
 		// Requires a copy of the RT.
@@ -2848,6 +2968,16 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 			Console.Warning("D3D11: Failed to allocate temp texture for RT copy.");
 	}
 
+	if (draw_ds && (config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy)) &&
+		config.ps.IsFeedbackLoopDepth())
+	{
+		// Requires a copy of the DS.
+		// Used as "bind ds" flag when texture barrier is unsupported for tex is fb.
+		draw_ds_clone = CreateTexture(rtsize.x, rtsize.y, 1, draw_ds->GetFormat(), true);
+		if (!draw_rt_clone)
+			Console.Warning("D3D11: Failed to allocate temp texture for DS copy.");
+	}
+
 	OMSetRenderTargets(draw_rt, draw_ds, &config.scissor, read_only_dsv);
 	SetupOM(config.depth, OMBlendSelector(config.colormask, config.blend), config.blend.constant);
 
@@ -2855,7 +2985,8 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne && multidraw_fb_copy)
 		m_ctx->ClearDepthStencilView(*static_cast<GSTexture11*>(draw_ds), D3D11_CLEAR_STENCIL, 0.0f, 1);
 
-	SendHWDraw(config, draw_rt_clone, draw_rt, config.require_one_barrier, config.require_full_barrier, false);
+	SendHWDraw(config, draw_rt_clone, draw_rt, draw_ds_clone, draw_ds,
+		config.require_one_barrier, config.require_full_barrier, false);
 
 	if (config.blend_multi_pass.enable)
 	{
@@ -2881,14 +3012,9 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		}
 
 		SetupOM(config.alpha_second_pass.depth, OMBlendSelector(config.alpha_second_pass.colormask, config.blend), config.blend.constant);
-		SendHWDraw(config, draw_rt_clone, draw_rt, config.alpha_second_pass.require_one_barrier, config.alpha_second_pass.require_full_barrier, true);
+		SendHWDraw(config, draw_rt_clone, draw_rt, draw_ds_clone, draw_ds,
+			config.alpha_second_pass.require_one_barrier, config.alpha_second_pass.require_full_barrier, true);
 	}
-
-	if (draw_rt_clone)
-		Recycle(draw_rt_clone);
-
-	if (primid_texture)
-		Recycle(primid_texture);
 
 	if (colclip_rt)
 	{
@@ -2907,19 +3033,39 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	}
 }
 
-void GSDevice11::SendHWDraw(const GSHWDrawConfig& config, GSTexture* draw_rt_clone, GSTexture* draw_rt, const bool one_barrier, const bool full_barrier, const bool skip_first_barrier)
+void GSDevice11::SendHWDraw(const GSHWDrawConfig& config,
+	GSTexture* draw_rt_clone, GSTexture* draw_rt, GSTexture* draw_ds_clone, GSTexture* draw_ds,
+	const bool one_barrier, const bool full_barrier, const bool skip_first_barrier)
 {
-	if (draw_rt_clone)
+	const u32 expansion_factor = GetExpansionFactor(config.vs.expand);
+
+	auto Draw = [&](int offset, int count) {
+		if (config.vertex_shader_indexing)
+		{
+			DrawVertexShaderIndexedPrimitive(offset, count, expansion_factor);
+		}
+		else
+		{
+			DrawIndexedPrimitive(offset, count);
+		}
+	};
+
+	if (draw_rt_clone || draw_ds_clone)
 	{
 #ifdef PCSX2_DEVBUILD
-		if ((one_barrier || full_barrier) && !config.ps.IsFeedbackLoop()) [[unlikely]]
+		if ((one_barrier || full_barrier) && !(config.ps.IsFeedbackLoopRT() || config.ps.IsFeedbackLoopDepth())) [[unlikely]]
 			Console.Warning("D3D11: Possible unnecessary copy detected.");
 #endif
 
 		auto CopyAndBind = [&](GSVector4i drawarea) {
-			CopyRect(draw_rt, draw_rt_clone, drawarea, drawarea.left, drawarea.top);
-			if (one_barrier || full_barrier)
+			if (draw_rt_clone)
+				CopyRect(draw_rt, draw_rt_clone, drawarea, drawarea.left, drawarea.top);
+			if (draw_ds_clone)
+				CopyRect(draw_ds, draw_ds_clone, drawarea, drawarea.left, drawarea.top);
+			if ((one_barrier || full_barrier) && draw_rt_clone)
 				PSSetShaderResource(2, draw_rt_clone);
+			if ((one_barrier || full_barrier) && draw_ds_clone)
+				PSSetShaderResource(4, draw_ds_clone);
 			if (config.tex && config.tex == config.rt)
 				PSSetShaderResource(0, draw_rt_clone);
 		};
@@ -2941,7 +3087,8 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config, GSTexture* draw_rt_clo
 				const GSVector4i original_bbox = (*config.drawlist_bbox)[n].rintersect(config.drawarea);
 				CopyAndBind(ProcessCopyArea(rtsize, original_bbox));
 
-				DrawIndexedPrimitive(p, count);
+				Draw(p, count);
+				
 				p += count;
 			}
 
@@ -2953,5 +3100,5 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config, GSTexture* draw_rt_clo
 			CopyAndBind(ProcessCopyArea(rtsize, config.drawarea));
 	}
 
-	DrawIndexedPrimitive();
+	Draw(0, m_index.count);
 }
