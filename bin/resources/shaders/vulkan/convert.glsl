@@ -22,6 +22,8 @@ layout(location = 0) in vec2 v_tex;
 
 #if defined(ps_convert_rgba8_16bits) || defined(ps_convert_float32_32bits)
 layout(location = 0) out uint o_col0;
+#elif defined(ps_convert_float32_depth_to_color)
+layout(location = 0) out float o_col0;
 #elif !defined(ps_datm1) && \
 	!defined(ps_datm0) && \
 	!defined(ps_datm1_rta_correction) && \
@@ -215,6 +217,20 @@ float rgb5a1_to_depth16(vec4 unorm)
 	uvec4 c = uvec4(unorm * vec4(255.5f));
 	return float(((c.r & 0xF8u) >> 3) | ((c.g & 0xF8u) << 2) | ((c.b & 0xF8u) << 7) | ((c.a & 0x80u) << 8)) * exp2(-32.0f);
 }
+
+#ifdef ps_convert_float32_depth_to_color
+void ps_convert_float32_depth_to_color()
+{
+	o_col0 = sample_c(v_tex).r;
+}
+#endif
+
+#ifdef ps_convert_float32_color_to_depth
+void ps_convert_float32_color_to_depth()
+{
+	gl_FragDepth = sample_c(v_tex).r;
+}
+#endif
 
 #ifdef ps_convert_float32_float24
 void ps_convert_float32_float24()
