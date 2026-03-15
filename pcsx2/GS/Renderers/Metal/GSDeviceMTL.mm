@@ -1054,6 +1054,7 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		setFnConstantB(m_fn_constants, sel.fst,        GSMTLConstantIndex_FST);
 		setFnConstantB(m_fn_constants, sel.iip,        GSMTLConstantIndex_IIP);
 		setFnConstantB(m_fn_constants, sel.point_size, GSMTLConstantIndex_VS_POINT_SIZE);
+		setFnConstantB(m_fn_constants, sel.round_uv,   GSMTLConstantIndex_ROUND_UV);
 		NSString* shader = @"vs_main";
 		if (sel.expand != GSMTLExpandType::None)
 		{
@@ -1824,6 +1825,7 @@ void GSDeviceMTL::MRESetHWPipelineState(GSHWDrawConfig::VSSelector vssel, GSHWDr
 	vssel_mtl.fst = vssel.fst;
 	vssel_mtl.iip = vssel.iip;
 	vssel_mtl.point_size = vssel.point_size;
+	vssel_mtl.round_uv = vssel.round_uv;
 	vssel_mtl.expand = ConvertVSExpand(vssel.expand);
 	id<MTLFunction> vs = m_hw_vs[vssel_mtl.key];
 
@@ -1837,6 +1839,7 @@ void GSDeviceMTL::MRESetHWPipelineState(GSHWDrawConfig::VSSelector vssel, GSHWDr
 	{
 		setFnConstantB(m_fn_constants, pssel.fst,                   GSMTLConstantIndex_FST);
 		setFnConstantB(m_fn_constants, pssel.iip,                   GSMTLConstantIndex_IIP);
+		setFnConstantB(m_fn_constants, pssel.round_uv,              GSMTLConstantIndex_ROUND_UV);
 		setFnConstantI(m_fn_constants, pssel.aem_fmt,               GSMTLConstantIndex_PS_AEM_FMT);
 		setFnConstantI(m_fn_constants, pssel.pal_fmt,               GSMTLConstantIndex_PS_PAL_FMT);
 		setFnConstantI(m_fn_constants, pssel.dst_fmt,               GSMTLConstantIndex_PS_DST_FMT);
@@ -2090,6 +2093,11 @@ static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, TCOffsetHack)     == of
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, STScale)          == offsetof(GSMTLMainPSUniform, st_scale));
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, DitherMatrix)     == offsetof(GSMTLMainPSUniform, dither_matrix));
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, ScaleFactor)      == offsetof(GSMTLMainPSUniform, scale_factor));
+
+static_assert(ROUND_UV_DENOMINATOR_MTL == ROUND_UV_DENOMINATOR);
+static_assert(ROUND_UV_THRESHOLD_MTL == ROUND_UV_THRESHOLD);
+static_assert(ROUND_UV_UP_MTL == ROUND_UV_UP);
+static_assert(ROUND_UV_DOWN_MTL == ROUND_UV_DOWN);
 
 void GSDeviceMTL::SetupDestinationAlpha(GSTexture* rt, GSTexture* ds, const GSVector4i& r, SetDATM datm)
 {
