@@ -392,7 +392,8 @@ void SmallStringBase::vsprintf(const char* format, va_list ap)
 
 void SmallStringBase::assign(const SmallStringBase& copy)
 {
-	assign(copy.c_str(), copy.length());
+	if (this != &copy)
+		assign(copy.c_str(), copy.length());
 }
 
 void SmallStringBase::assign(const char* str)
