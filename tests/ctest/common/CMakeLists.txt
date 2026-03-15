@@ -2,6 +2,7 @@ add_pcsx2_test(common_test
 	byteswap_tests.cpp
 	filesystem_tests.cpp
 	path_tests.cpp
+	small_string_tests.cpp
 	string_util_tests.cpp
 )
 
