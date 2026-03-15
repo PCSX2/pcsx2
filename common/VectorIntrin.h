@@ -5,7 +5,9 @@
 
 #pragma once
 
-#if defined(_M_X86)
+#include "common/Pcsx2Defs.h"
+
+#if defined(ARCH_X86)
 
 #ifdef _MSC_VER
 #include <intrin.h>
@@ -35,7 +37,7 @@
 #include <smmintrin.h>
 #include <immintrin.h>
 
-#elif defined(_M_ARM64)
+#elif defined(ARCH_ARM64)
 #include <arm_neon.h>
 #endif
 

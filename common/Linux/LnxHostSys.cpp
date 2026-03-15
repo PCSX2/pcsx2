@@ -243,7 +243,7 @@ namespace PageFaultHandler
 	static bool s_installed = false;
 } // namespace PageFaultHandler
 
-#ifdef _M_ARM64
+#ifdef ARCH_ARM64
 
 void HostSys::FlushInstructionCache(void* address, u32 size)
 {
@@ -285,7 +285,7 @@ void HostSys::FlushInstructionCache(void* address, u32 size)
 	}
 }
 
-#endif // _M_ARM64
+#endif // ARCH_ARM64
 
 namespace PageFaultHandler
 {
@@ -297,21 +297,21 @@ void PageFaultHandler::SignalHandler(int sig, siginfo_t* info, void* ctx)
 #if defined(__linux__)
 	void* const exception_address = reinterpret_cast<void*>(info->si_addr);
 
-#if defined(_M_X86)
+#if defined(ARCH_X86)
 	void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.gregs[REG_RIP]);
 	const bool is_write = (static_cast<ucontext_t*>(ctx)->uc_mcontext.gregs[REG_ERR] & 2) != 0;
-#elif defined(_M_ARM64)
+#elif defined(ARCH_ARM64)
 	void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.pc);
 	const bool is_write = IsStoreInstruction(exception_pc);
 #endif
 
 #elif defined(__FreeBSD__)
 
-#if defined(_M_X86)
+#if defined(ARCH_X86)
 	void* const exception_address = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.mc_addr);
 	void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.mc_rip);
 	const bool is_write = (static_cast<ucontext_t*>(ctx)->uc_mcontext.mc_err & 2) != 0;
-#elif defined(_M_ARM64)
+#elif defined(ARCH_ARM64)
 	void* const exception_address = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__es.__far);
 	void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__ss.__pc);
 	const bool is_write = IsStoreInstruction(exception_pc);
@@ -358,7 +358,7 @@ bool PageFaultHandler::Install(Error* error)
 		return false;
 	}
 
-#ifdef _M_ARM64
+#ifdef ARCH_ARM64
 	// We can get SIGBUS on ARM64.
 	if (sigaction(SIGBUS, &sa, nullptr) != 0)
 	{

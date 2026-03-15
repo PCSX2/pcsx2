@@ -207,7 +207,7 @@ bool VMManager::PerformEarlyHardwareChecks(const char** error)
 {
 #define COMMON_DOWNLOAD_MESSAGE "PCSX2 builds can be downloaded from https://pcsx2.net/downloads/"
 
-#if defined(_M_X86)
+#if defined(ARCH_X86)
 	// On Windows, this gets called as a global object constructor, before any of our objects are constructed.
 	// So, we have to put it on the stack instead.
 	cpuinfo_initialize();
@@ -231,7 +231,7 @@ bool VMManager::PerformEarlyHardwareChecks(const char** error)
 		return false;
 	}
 #endif
-#elif defined(_M_ARM64)
+#elif defined(ARCH_ARM64)
 	// Check page size. If it doesn't match, it is a fatal error.
 	const size_t runtime_host_page_size = HostSys::GetRuntimePageSize();
 	if (__pagesize != runtime_host_page_size)
@@ -2608,7 +2608,7 @@ void VMManager::LogCPUCapabilities()
 	LogUserPowerPlan();
 #endif
 
-#ifdef _M_X86
+#ifdef ARCH_X86
 	std::string extensions;
 	if (g_cpu.vectorISA >= ProcessorFeatures::VectorISA::AVX)
 		extensions += "AVX ";
@@ -2616,7 +2616,7 @@ void VMManager::LogCPUCapabilities()
 		extensions += "AVX2 ";
 	if (g_cpu.vectorISA >= ProcessorFeatures::VectorISA::AVX512F)
 		extensions += "AVX512F ";
-#ifdef _M_ARM64
+#ifdef ARCH_ARM64
 	if (cpuinfo_has_arm_neon())
 		extensions += "NEON ";
 #endif
@@ -2628,7 +2628,7 @@ void VMManager::LogCPUCapabilities()
 	Console.WriteLn();
 #endif
 
-#ifdef _M_ARM64
+#ifdef ARCH_ARM64
 	const size_t runtime_cache_line_size = HostSys::GetRuntimeCacheLineSize();
 	if (__cachelinesize != runtime_cache_line_size)
 	{

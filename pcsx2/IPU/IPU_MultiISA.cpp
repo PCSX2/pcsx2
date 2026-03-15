@@ -1374,7 +1374,7 @@ __fi static bool mpeg2_slice()
 				//Cr bias	- 8 * 8
 				//Cb bias	- 8 * 8
 
-#if defined(_M_X86)
+#if defined(ARCH_X86)
 				__m128i zeroreg = _mm_setzero_si128();
 
 				for (uint i = 0; i < (256+64+64) / 32; ++i)
@@ -1389,7 +1389,7 @@ __fi static bool mpeg2_slice()
 					s += 32;
 					d += 32;
 				}
-#elif defined(_M_ARM64)
+#elif defined(ARCH_ARM64)
 				uint8x16_t zeroreg = vmovq_n_u8(0);
 
 				for (uint i = 0; i < (256 + 64 + 64) / 32; ++i)

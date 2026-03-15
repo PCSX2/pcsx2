@@ -107,7 +107,7 @@ namespace HostSys
 	extern void UnmapSharedMemory(void* baseaddr, size_t size);
 
 	/// JIT write protect for Apple Silicon. Needs to be called prior to writing to any RWX pages.
-#if !defined(__APPLE__) || !defined(_M_ARM64)
+#if !defined(__APPLE__) || !defined(ARCH_ARM64)
 	// clang-format -off
 	[[maybe_unused]] __fi static void BeginCodeWrite() {}
 	[[maybe_unused]] __fi static void EndCodeWrite() {}
@@ -119,7 +119,7 @@ namespace HostSys
 
 	/// Flushes the instruction cache on the host for the specified range.
 	/// Only needed on ARM64, X86 has coherent D/I cache.
-#ifdef _M_X86
+#ifdef ARCH_X86
 	[[maybe_unused]] __fi static void FlushInstructionCache(void* address, u32 size) {}
 #else
 	void FlushInstructionCache(void* address, u32 size);

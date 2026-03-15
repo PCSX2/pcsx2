@@ -23,12 +23,20 @@ static constexpr bool IsDebugBuild = true;
 static constexpr bool IsDebugBuild = false;
 #endif
 
+#if defined(_M_ARM64) || defined(__aarch64__)
+	#define ARCH_ARM64
+#elif defined(_M_X86) || defined(__x86_64__) || defined(__i386__)
+	#define ARCH_X86
+#else
+	#error Unsupported Platform
+#endif
+
 // Defines the memory page size for the target platform at compilation.
 #if defined(OVERRIDE_HOST_PAGE_SIZE)
 	static constexpr unsigned int __pagesize = OVERRIDE_HOST_PAGE_SIZE;
 	static constexpr unsigned int __pagemask = __pagesize - 1;
 	static constexpr unsigned int __pageshift = std::bit_width(__pagemask);
-#elif defined(_M_ARM64)
+#elif defined(ARCH_ARM64)
 	// Apple Silicon uses 16KB pages and 128 byte cache lines.
 	static constexpr unsigned int __pagesize = 0x4000;
 	static constexpr unsigned int __pageshift = 14;
@@ -41,7 +49,7 @@ static constexpr bool IsDebugBuild = false;
 #endif
 #if defined(OVERRIDE_HOST_CACHE_LINE_SIZE)
 	static constexpr unsigned int __cachelinesize = OVERRIDE_HOST_CACHE_LINE_SIZE;
-#elif defined(_M_ARM64)
+#elif defined(ARCH_ARM64)
 	static constexpr unsigned int __cachelinesize = 128;
 #else
 	static constexpr unsigned int __cachelinesize = 64;
