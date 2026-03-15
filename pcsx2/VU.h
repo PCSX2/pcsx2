@@ -149,8 +149,8 @@ struct alignas(16) VURegs
 	alignas(16) u32 micro_macflags[4];
 	alignas(16) u32 micro_clipflags[4];
 	alignas(16) u32 micro_statusflags[4];
-	// MAC/Status flags -- these are used by interpreters but are kind of hacky
-	// and shouldn't be relied on for any useful/valid info.  Would like to move them out of
+	// MAC/Status flags -- these are used by interpreters but are kind of hacky without soft floats
+	// shouldn't be relied on for any useful/valid info without using float floats.  Would like to move them out of
 	// this struct eventually.
 	u32 macflag;
 	u32 statusflag;
