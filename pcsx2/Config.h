@@ -405,6 +405,13 @@ enum class GSHardwareDownloadMode : u8
 	Disabled
 };
 
+enum class GSHardwareZIntegerMode : u8
+{
+	Disabled,
+	Enabled,
+	Always
+};
+
 enum class GSCASMode : u8
 {
 	Disabled,
@@ -467,6 +474,14 @@ enum class GSNativeScaling : u8
 	NormalUpscaled,
 	AggressiveUpscaled,
 	MaxCount
+};
+
+enum class GSDepthFeedbackMode : u8
+{
+	None      = 0,
+	Auto      = 1,
+	Depth     = 2,
+	DepthAsRT = 3,
 };
 
 enum class AchievementOverlayPosition : u8
@@ -780,6 +795,7 @@ struct Pcsx2Config
 					PreloadFrameWithGSData : 1,
 					Mipmap : 1,
 					HWMipmap : 1,
+					HWAccurateAlphaTest: 1,
 					ManualUserHacks : 1,
 					UserHacks_AlignSpriteX : 1,
 					UserHacks_CPUFBConversion : 1,
@@ -848,6 +864,7 @@ struct Pcsx2Config
 		GSDumpCompressionMethod GSDumpCompression = GSDumpCompressionMethod::Zstandard;
 		GSHardwareDownloadMode HWDownloadMode = GSHardwareDownloadMode::Enabled;
 		GSCASMode CASMode = DEFAULT_CAS_MODE;
+		GSHardwareZIntegerMode HWZIntegerMode = GSHardwareZIntegerMode::Disabled;
 		u8 Dithering = 2;
 		u8 MaxAnisotropy = 0;
 		u8 TVShader = 0;
@@ -872,6 +889,7 @@ struct Pcsx2Config
 		GSBilinearDirtyMode UserHacks_BilinearHack = GSBilinearDirtyMode::Automatic;
 		TriFiltering TriFilter = DEFAULT_TRILINEAR_FILTERING_MODE;
 		s8 OverrideTextureBarriers = -1;
+		GSDepthFeedbackMode DepthFeedbackMode = GSDepthFeedbackMode::Auto;
 
 		u8 CAS_Sharpness = 50;
 		u8 ShadeBoost_Brightness = DEFAULT_SHADEBOOST_BRIGHTNESS;

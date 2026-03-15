@@ -506,6 +506,7 @@ static constexpr MTLPixelFormat ConvertPixelFormat(GSTexture::Format format)
 {
 	switch (format)
 	{
+		case GSTexture::Format::Float32:      return MTLPixelFormatR32Float;
 		case GSTexture::Format::PrimID:       return MTLPixelFormatR32Float;
 		case GSTexture::Format::UInt32:       return MTLPixelFormatR32Uint;
 		case GSTexture::Format::UInt16:       return MTLPixelFormatR16Uint;
@@ -935,6 +936,7 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	m_features.stencil_buffer = true;
 	m_features.cas_sharpening = true;
 	m_features.test_and_sample_depth = true;
+	m_features.depth_feedback = GSDevice::DepthFeedbackSupport::None;
 	m_max_texture_size = m_dev.features.max_texsize;
 
 	// Init metal stuff
@@ -1125,7 +1127,7 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 			case ShaderConvert::COLCLIP_INIT:
 			case ShaderConvert::COLCLIP_RESOLVE:
 				continue;
-			case ShaderConvert::FLOAT32_TO_32_BITS:
+			case ShaderConvert::FLOAT32_TO_UINT32:
 				pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::UInt32);
 				pdesc.depthAttachmentPixelFormat = MTLPixelFormatInvalid;
 				break;
@@ -1136,6 +1138,7 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 				break;
 			case ShaderConvert::DEPTH_COPY:
 			case ShaderConvert::FLOAT32_TO_FLOAT24:
+			case ShaderConvert::FLOAT32_COLOR_TO_DEPTH:
 			case ShaderConvert::RGBA8_TO_FLOAT32:
 			case ShaderConvert::RGBA8_TO_FLOAT24:
 			case ShaderConvert::RGBA8_TO_FLOAT16:
@@ -1160,6 +1163,13 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 			case ShaderConvert::YUV:
 				pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::Color);
 				pdesc.depthAttachmentPixelFormat = MTLPixelFormatInvalid;
+				break;
+			case ShaderConvert::FLOAT32_DEPTH_TO_COLOR:
+				pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::Float32);
+				pdesc.depthAttachmentPixelFormat = MTLPixelFormatInvalid;
+				break;
+			default:
+				pxFail("Unimplemented convert shader.");
 				break;
 		}
 		const u32 scmask = ShaderConvertWriteMask(conv);
@@ -1796,10 +1806,11 @@ static GSMTLExpandType ConvertVSExpand(GSHWDrawConfig::VSExpand generic)
 {
 	switch (generic)
 	{
-		case GSHWDrawConfig::VSExpand::None:   return GSMTLExpandType::None;
-		case GSHWDrawConfig::VSExpand::Point:  return GSMTLExpandType::Point;
-		case GSHWDrawConfig::VSExpand::Line:   return GSMTLExpandType::Line;
-		case GSHWDrawConfig::VSExpand::Sprite: return GSMTLExpandType::Sprite;
+		case GSHWDrawConfig::VSExpand::None:         return GSMTLExpandType::None;
+		case GSHWDrawConfig::VSExpand::Point:        return GSMTLExpandType::Point;
+		case GSHWDrawConfig::VSExpand::Line:         return GSMTLExpandType::Line;
+		case GSHWDrawConfig::VSExpand::Sprite:       return GSMTLExpandType::Sprite;
+		default: pxFail("Unhandled VS expand type"); return static_cast<GSMTLExpandType>(-1);
 	}
 }
 
