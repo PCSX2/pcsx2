@@ -254,6 +254,12 @@ enum AVFrameSideDataType {
      * libavutil/tdrdi.h.
      */
     AV_FRAME_DATA_3D_REFERENCE_DISPLAYS,
+
+    /**
+     * Extensible image file format metadata. The payload is a buffer containing
+     * EXIF metadata, starting with either 49 49 2a 00, or 4d 4d 00 2a.
+     */
+     AV_FRAME_DATA_EXIF,
 };
 
 enum AVActiveFormatDescription {
@@ -652,7 +658,7 @@ typedef struct AVFrame {
  *
  * For coding bitstream formats which support both lossless and lossy
  * encoding, it is sometimes possible for a decoder to determine which method
- * was used when the bitsream was encoded.
+ * was used when the bitstream was encoded.
  */
 #define AV_FRAME_FLAG_LOSSLESS        (1 << 5)
 /**
@@ -736,7 +742,7 @@ typedef struct AVFrame {
     /**
      * @anchor cropping
      * @name Cropping
-     * Video frames only. The number of pixels to discard from the the
+     * Video frames only. The number of pixels to discard from the
      * top/bottom/left/right border of the frame to obtain the sub-rectangle of
      * the frame intended for presentation.
      * @{
@@ -767,6 +773,13 @@ typedef struct AVFrame {
      * Duration of the frame, in the same units as pts. 0 if unknown.
      */
     int64_t duration;
+
+    /**
+     * Indicates how the alpha channel of the video is to be handled.
+     * - encoding: Set by user
+     * - decoding: Set by libavcodec
+     */
+    enum AVAlphaMode alpha_mode;
 } AVFrame;
 
 
@@ -812,7 +825,7 @@ int av_frame_ref(AVFrame *dst, const AVFrame *src);
  * Ensure the destination frame refers to the same data described by the source
  * frame, either by creating a new reference for each AVBufferRef from src if
  * they differ from those in dst, by allocating new buffers and copying data if
- * src is not reference counted, or by unrefencing it if src is empty.
+ * src is not reference counted, or by unreferencing it if src is empty.
  *
  * Frame properties on dst will be replaced by those from src.
  *

@@ -82,6 +82,7 @@ typedef enum SwsDither {
     SWS_DITHER_A_DITHER, /* arithmetic addition */
     SWS_DITHER_X_DITHER, /* arithmetic xor */
     SWS_DITHER_NB,       /* not part of the ABI */
+    SWS_DITHER_MAX_ENUM = 0x7FFFFFFF, /* force size to 32 bits, not a valid dither type */
 } SwsDither;
 
 typedef enum SwsAlphaBlend {
@@ -89,6 +90,7 @@ typedef enum SwsAlphaBlend {
     SWS_ALPHA_BLEND_UNIFORM,
     SWS_ALPHA_BLEND_CHECKERBOARD,
     SWS_ALPHA_BLEND_NB,  /* not part of the ABI */
+    SWS_ALPHA_BLEND_MAX_ENUM = 0x7FFFFFFF, /* force size to 32 bits, not a valid blend mode */
 } SwsAlphaBlend;
 
 typedef enum SwsFlags {
@@ -154,6 +156,13 @@ typedef enum SwsFlags {
      */
     SWS_ACCURATE_RND   = 1 << 18,
     SWS_BITEXACT       = 1 << 19,
+
+    /**
+     * Allow using experimental new code paths. This may be faster, slower,
+     * or produce different output, with semantics subject to change at any
+     * point in time. For testing and debugging purposes only.
+     */
+    SWS_UNSTABLE = 1 << 20,
 
     /**
      * Deprecated flags.
@@ -258,7 +267,7 @@ void sws_free_context(SwsContext **ctx);
  ***************************/
 
 /**
- * Test if a given pixel format is supported.
+ * Test if a given (software) pixel format is supported.
  *
  * @param output  If 0, test if compatible with the source/input frame;
  *                otherwise, with the destination/output frame.
@@ -267,6 +276,15 @@ void sws_free_context(SwsContext **ctx);
  * @return A positive integer if supported, 0 otherwise.
  */
 int sws_test_format(enum AVPixelFormat format, int output);
+
+/**
+ * Test if a given hardware pixel format is supported.
+ *
+ * @param format  The hardware format to check, or AV_PIX_FMT_NONE.
+ *
+ * @return A positive integer if supported or AV_PIX_FMT_NONE, 0 otherwise.
+ */
+int sws_test_hw_format(enum AVPixelFormat format);
 
 /**
  * Test if a given color space is supported.
@@ -422,7 +440,7 @@ int sws_isSupportedEndiannessConversion(enum AVPixelFormat pix_fmt);
  * Initialize the swscaler context sws_context.
  *
  * This function is considered deprecated, and provided only for backwards
- * compatibility with sws_scale() and sws_start_frame(). The preferred way to
+ * compatibility with sws_scale() and sws_frame_start(). The preferred way to
  * use libswscale is to set all frame properties correctly and call
  * sws_scale_frame() directly, without explicitly initializing the context.
  *
@@ -467,8 +485,8 @@ SwsContext *sws_getContext(int srcW, int srcH, enum AVPixelFormat srcFormat,
 /**
  * Scale the image slice in srcSlice and put the resulting scaled
  * slice in the image in dst. A slice is a sequence of consecutive
- * rows in an image. Requires a context that has been previously
- * been initialized with sws_init_context().
+ * rows in an image. Requires a context that has previously been
+ * initialized with sws_init_context().
  *
  * Slices have to be provided in sequential order, either in
  * top-bottom or bottom-top order. If slices are provided in
@@ -498,8 +516,7 @@ int sws_scale(SwsContext *c, const uint8_t *const srcSlice[],
 /**
  * Initialize the scaling process for a given pair of source/destination frames.
  * Must be called before any calls to sws_send_slice() and sws_receive_slice().
- * Requires a context that has been previously been initialized with
- * sws_init_context().
+ * Requires a context that has previously been initialized with sws_init_context().
  *
  * This function will retain references to src and dst, so they must both use
  * refcounted buffers (if allocated by the caller, in case of dst).
@@ -570,7 +587,7 @@ int sws_receive_slice(SwsContext *c, unsigned int slice_start,
                       unsigned int slice_height);
 
 /**
- * Get the alignment required for slices. Requires a context that has been
+ * Get the alignment required for slices. Requires a context that has
  * previously been initialized with sws_init_context().
  *
  * @param c   The scaling context
@@ -582,8 +599,8 @@ unsigned int sws_receive_slice_alignment(const SwsContext *c);
 
 /**
  * @param c the scaling context
- * @param dstRange flag indicating the while-black range of the output (1=jpeg / 0=mpeg)
- * @param srcRange flag indicating the while-black range of the input (1=jpeg / 0=mpeg)
+ * @param dstRange flag indicating the white-black range of the output (1=jpeg / 0=mpeg)
+ * @param srcRange flag indicating the white-black range of the input (1=jpeg / 0=mpeg)
  * @param table the yuv2rgb coefficients describing the output yuv space, normally ff_yuv2rgb_coeffs[x]
  * @param inv_table the yuv2rgb coefficients describing the input yuv space, normally ff_yuv2rgb_coeffs[x]
  * @param brightness 16.16 fixed point brightness correction

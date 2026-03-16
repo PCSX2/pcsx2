@@ -416,6 +416,14 @@ typedef struct RcOverride{
 #define AV_GET_ENCODE_BUFFER_FLAG_REF (1 << 0)
 
 /**
+ * The decoder will bypass frame threading and return the next frame as soon as
+ * possible. Note that this may deliver frames earlier than the advertised
+ * `AVCodecContext.delay`. No effect when frame threading is disabled, or on
+ * encoding.
+ */
+#define AV_CODEC_RECEIVE_FRAME_FLAG_SYNCHRONOUS (1 << 0)
+
+/**
  * main external API structure.
  * New fields can be added to the end with minor version bumps.
  * Removal, reordering and changes to existing fields require a major
@@ -963,12 +971,16 @@ typedef struct AVCodecContext {
      */
     uint16_t *chroma_intra_matrix;
 
+#if FF_API_INTRA_DC_PRECISION
     /**
      * precision of the intra DC coefficient - 8
      * - encoding: Set by user.
      * - decoding: Set by libavcodec
+     * @deprecated Use the MPEG-2 encoder's private option "intra_dc_precision" instead.
      */
+    attribute_deprecated
     int intra_dc_precision;
+#endif
 
     /**
      * minimum MB Lagrange multiplier
@@ -1923,6 +1935,13 @@ typedef struct AVCodecContext {
      */
     AVFrameSideData  **decoded_side_data;
     int             nb_decoded_side_data;
+
+    /**
+     * Indicates how the alpha channel of the video is represented.
+     * - encoding: Set by user
+     * - decoding: Set by libavcodec
+     */
+    enum AVAlphaMode alpha_mode;
 } AVCodecContext;
 
 /**
@@ -2353,6 +2372,7 @@ int avcodec_send_packet(AVCodecContext *avctx, const AVPacket *avpkt);
  *              frame (depending on the decoder type) allocated by the
  *              codec. Note that the function will always call
  *              av_frame_unref(frame) before doing anything else.
+ * @param flags Combination of AV_CODEC_RECEIVE_FRAME_FLAG_* flags.
  *
  * @retval 0                success, a frame was returned
  * @retval AVERROR(EAGAIN)  output is not available in this state - user must
@@ -2362,6 +2382,11 @@ int avcodec_send_packet(AVCodecContext *avctx, const AVPacket *avpkt);
  * @retval AVERROR(EINVAL)  codec not opened, or it is an encoder without the
  *                          @ref AV_CODEC_FLAG_RECON_FRAME flag enabled
  * @retval "other negative error code" legitimate decoding errors
+ */
+int avcodec_receive_frame_flags(AVCodecContext *avctx, AVFrame *frame, unsigned flags);
+
+/**
+ * Alias for `avcodec_receive_frame_flags(avctx, frame, 0)`.
  */
 int avcodec_receive_frame(AVCodecContext *avctx, AVFrame *frame);
 
@@ -2528,6 +2553,7 @@ enum AVCodecConfig {
     AV_CODEC_CONFIG_CHANNEL_LAYOUT, ///< AVChannelLayout, terminated by {0}
     AV_CODEC_CONFIG_COLOR_RANGE,    ///< AVColorRange, terminated by AVCOL_RANGE_UNSPECIFIED
     AV_CODEC_CONFIG_COLOR_SPACE,    ///< AVColorSpace, terminated by AVCOL_SPC_UNSPECIFIED
+    AV_CODEC_CONFIG_ALPHA_MODE,     ///< AVAlphaMode, terminated by AVALPHA_MODE_UNSPECIFIED
 };
 
 /**
@@ -2724,17 +2750,35 @@ typedef struct AVCodecParserContext {
 } AVCodecParserContext;
 
 typedef struct AVCodecParser {
+#if FF_API_PARSER_CODECID
     int codec_ids[7]; /* several codec IDs are permitted */
+#else
+    enum AVCodecID codec_ids[7]; /* several codec IDs are permitted */
+#endif
+#if FF_API_PARSER_PRIVATE
+    /*****************************************************************
+     * All fields below this line are not part of the public API. They
+     * may not be used outside of libavcodec and can be changed and
+     * removed at will.
+     * New public fields should be added right above.
+     *****************************************************************
+     */
+    attribute_deprecated
     int priv_data_size;
+    attribute_deprecated
     int (*parser_init)(AVCodecParserContext *s);
     /* This callback never returns an error, a negative value means that
      * the frame start was in a previous packet. */
+    attribute_deprecated
     int (*parser_parse)(AVCodecParserContext *s,
                         AVCodecContext *avctx,
                         const uint8_t **poutbuf, int *poutbuf_size,
                         const uint8_t *buf, int buf_size);
+    attribute_deprecated
     void (*parser_close)(AVCodecParserContext *s);
+    attribute_deprecated
     int (*split)(AVCodecContext *avctx, const uint8_t *buf, int buf_size);
+#endif
 } AVCodecParser;
 
 /**
@@ -2748,7 +2792,11 @@ typedef struct AVCodecParser {
  */
 const AVCodecParser *av_parser_iterate(void **opaque);
 
+#if FF_API_PARSER_CODECID
 AVCodecParserContext *av_parser_init(int codec_id);
+#else
+AVCodecParserContext *av_parser_init(enum AVCodecID codec_id);
+#endif
 
 /**
  * Parse a packet.

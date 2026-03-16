@@ -363,6 +363,12 @@ enum AVPacketSideDataType {
     AV_PKT_DATA_RTCP_SR,
 
     /**
+     * Extensible image file format metadata. The payload is a buffer containing
+     * EXIF metadata, starting with either 49 49 2a 00, or 4d 4d 00 2a.
+     */
+     AV_PKT_DATA_EXIF,
+
+    /**
      * The number of side data types.
      * This is not part of the public API/ABI in the sense that it may
      * change when new side data types are added.
@@ -482,6 +488,36 @@ void av_packet_side_data_remove(AVPacketSideData *sd, int *nb_sd,
  *              the array. Will be set to 0 upon return.
  */
 void av_packet_side_data_free(AVPacketSideData **sd, int *nb_sd);
+
+struct AVFrameSideData;
+
+/**
+ * Add a new packet side data entry to an array based on existing frame
+ * side data, if a matching type exists for packet side data.
+ *
+ * @param flags              Currently unused. Must be 0.
+ * @retval >= 0              Success
+ * @retval AVERROR(EINVAL)   The frame side data type does not have a matching
+ *                           packet side data type.
+ * @retval AVERROR(ENOMEM)   Failed to add a side data entry to the array, or
+ *                           similar.
+ */
+int av_packet_side_data_from_frame(AVPacketSideData **sd, int *nb_sd,
+                                   const struct AVFrameSideData *src, unsigned int flags);
+/**
+ * Add a new frame side data entry to an array based on existing packet
+ * side data, if a matching type exists for frame side data.
+ *
+ * @param flags              Some combination of AV_FRAME_SIDE_DATA_FLAG_* flags,
+ *                           or 0.
+ * @retval >= 0              Success
+ * @retval AVERROR(EINVAL)   The packet side data type does not have a matching
+ *                           frame side data type.
+ * @retval AVERROR(ENOMEM)   Failed to add a side data entry to the array, or
+ *                           similar.
+ */
+int av_packet_side_data_to_frame(struct AVFrameSideData ***sd, int *nb_sd,
+                                 const AVPacketSideData *src, unsigned int flags);
 
 const char *av_packet_side_data_name(enum AVPacketSideDataType type);
 
