@@ -288,6 +288,7 @@ public:
 			m_size = 0;
 		}
 	}
+
 	void assign(const T* begin, size_t count)
 	{
 		if (count > 0)
@@ -308,7 +309,13 @@ public:
 			m_size = 0;
 		}
 	}
-	void assign(const this_type& copy) { assign(copy.m_data, copy.m_size); }
+
+	void assign(const this_type& copy)
+	{
+		if (this != &copy)
+			assign(copy.m_data, copy.m_size);
+	}
+
 	void assign(this_type&& move)
 	{
 		internal_deallocate();
