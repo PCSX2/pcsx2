@@ -407,10 +407,20 @@
       <string>Savestate Settings</string>
      </property>
      <layout class="QGridLayout" name="savestateSettingsLayout">
-      <item row="3" column="1">
-       <widget class="QCheckBox" name="saveStateOnShutdown">
+      <item row="3" column="0">
+       <widget class="QCheckBox" name="backupSaveStates">
         <property name="text">
-         <string>Save State On Shutdown</string>
+         <string>Create Save State Backups</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="savestateCompressionLabel">
+        <property name="text">
+         <string>Compression Method:</string>
+        </property>
+        <property name="buddy">
+         <cstring>savestateCompressionMethod</cstring>
         </property>
        </widget>
       </item>
@@ -438,6 +448,23 @@
         </item>
        </widget>
       </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="savestateCompressionMethodLabel">
+        <property name="text">
+         <string>Compression Level:</string>
+        </property>
+        <property name="buddy">
+         <cstring>savestateCompressionLevel</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QCheckBox" name="saveStateOnShutdown">
+        <property name="text">
+         <string>Save State On Shutdown</string>
+        </property>
+       </widget>
+      </item>
       <item row="0" column="1">
        <widget class="QComboBox" name="savestateCompressionMethod">
         <item>
@@ -460,40 +487,6 @@
           <string>LZMA2</string>
          </property>
         </item>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="savestateCompressionMethodLabel">
-        <property name="text">
-         <string>Compression Level:</string>
-        </property>
-        <property name="buddy">
-         <cstring>savestateCompressionLevel</cstring>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QCheckBox" name="backupSaveStates">
-        <property name="text">
-         <string>Create Save State Backups</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="savestateCompressionLabel">
-        <property name="text">
-         <string>Compression Method:</string>
-        </property>
-        <property name="buddy">
-         <cstring>savestateCompressionMethod</cstring>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0">
-       <widget class="QCheckBox" name="savestateSelector">
-        <property name="text">
-         <string>Use Save State Selector</string>
-        </property>
        </widget>
       </item>
      </layout>
@@ -582,7 +575,6 @@
   <tabstop>savestateCompressionLevel</tabstop>
   <tabstop>backupSaveStates</tabstop>
   <tabstop>saveStateOnShutdown</tabstop>
-  <tabstop>savestateSelector</tabstop>
   <tabstop>pineEnable</tabstop>
   <tabstop>pineSlot</tabstop>
  </tabstops>
