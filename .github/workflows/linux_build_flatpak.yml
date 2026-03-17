@@ -91,12 +91,6 @@ jobs:
         run: |
           flatpak-builder-lint manifest .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.json
 
-      - name: Clean Caches
-        uses: PCSX2/cache-clean-action@v1.0.0
-        with:
-          items: '[{"key": " flatpak", "count": 1}]'
-          token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Build Flatpak (beta)
         if: ${{ inputs.stableBuild == false || inputs.stableBuild == 'false' }}
         uses: flatpak/flatpak-github-actions/flatpak-builder@92ae9851ad316786193b1fd3f40c4b51eb5cb101
