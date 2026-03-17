@@ -19,49 +19,49 @@
     <string-array name="interlace_modes">
         <item>Automatico</item>
         <item>Off</item>
-        <item>Onda TFF (Fix Movimento Immagine)</item>
-        <item>Weave BFF</item>
-        <item>Bob TFF</item>
-        <item>Bob BFF</item>
-        <item>Blend TFF</item>
-        <item>Blend BFF</item>
-        <item>Adaptive TFF</item>
-        <item>Adaptive BFF</item>
+        <item>Onda TFF (fix movimento - sup.)</item>
+        <item>Onda BFF (fix movimento - inf.)</item>
+        <item>Bob TFF (fix fluidità - sup.)</item>
+        <item>Bob BFF (fix fluidità - inf.)</item>
+        <item>Blend TFF (sfumatura movimento - sup.)</item>
+        <item>Blend BFF (sfumatura movimento - inf.)</item>
+        <item>Adattivo TFF (correzione dinamica - sup.)</item>
+        <item>Adattivo BFF (correzione dinamica - inf.)</item>
     </string-array>
     <string-array name="cas_modes">
-        <item>None (Default)</item>
-        <item>Sharpen Only (Internal)</item>
-        <item>Sharpen and Resize (Display)</item>
+        <item>Nessuno (Predefinito)</item>
+        <item>Solo Nitidezza (Interna)</item>
+        <item>Nitidezza e ridimensiona (visualizza)</item>
     </string-array>
     <string-array name="texture_preloading">
         <item>Off</item>
-        <item>Partial</item>
-        <item>Full</item>
+        <item>Parziale</item>
+        <item>Completo</item>
     </string-array>
     <string-array name="bilinear_present">
         <item>Off</item>
-        <item>Bilinear (Smooth)</item>
-        <item>Bilinear (Sharp)</item>
+        <item>Bilineare (Smussato)</item>
+        <item>Bilineare (Nitido)</item>
     </string-array>
     <string-array name="trilinear_filtering">
-        <item>Automatic</item>
+        <item>Automatico</item>
         <item>Off</item>
         <item>PS2</item>
-        <item>Forced</item>
+        <item>Forzato</item>
     </string-array>
     <string-array name="dithering_modes">
         <item>Off</item>
-        <item>Scaled</item>
-        <item>Unscaled (Default)</item>
-        <item>Force 32-bit</item>
+        <item>Scalato</item>
+        <item>Non Scalato (Predefinito)</item>
+        <item>Forza 32-bit</item>
     </string-array>
     <string-array name="acc_blending">
-        <item>Minimum</item>
-        <item>Basic</item>
-        <item>Medium</item>
-        <item>High</item>
-        <item>Full</item>
-        <item>Maximum</item>
+        <item>Minimo</item>
+        <item>Base</item>
+        <item>Medio</item>
+        <item>Alto</item>
+        <item>Completo</item>
+        <item>Massimo</item>
     </string-array>
     <string-array name="anisotropic">
         <item>Off</item>
@@ -71,7 +71,7 @@
         <item>16x</item>
     </string-array>
     <string-array name="aspect_ratios">
-        <item>Stretch</item>
+        <item>Allungato</item>
         <item>Auto 4:3/3:2</item>
         <item>4:3</item>
         <item>16:9</item>
@@ -88,16 +88,16 @@
         <item>8x</item>
     </string-array>
     <string-array name="auto_flush_hw">
-        <item>Disabled</item>
-        <item>Sprites Only</item>
-        <item>Enabled</item>
+        <item>Disabilitato</item>
+        <item>Solo Sprite</item>
+        <item>Abilitato</item>
     </string-array>
     <string-array name="cpu_cores_basic">
-        <item>Translator (default)</item>
-        <item>Interpreter</item>
+        <item>Traduttore (predefinito)</item>
+        <item>Interprete</item>
     </string-array>
     <string-array name="network_ethapi">
-        <item>Unset</item>
+        <item>Non impostato</item>
         <item>PCAP Bridged</item>
         <item>PCAP Switched</item>
         <item>Sockets</item>
