@@ -177,7 +177,9 @@ private:
 	{
 		wil::com_ptr_nothrow<ID3D11InputLayout> il;
 		wil::com_ptr_nothrow<ID3D11VertexShader> vs;
+		wil::com_ptr_nothrow<ID3D11VertexShader> vs_blit_1to1;
 		wil::com_ptr_nothrow<ID3D11PixelShader> ps[static_cast<int>(ShaderConvert::Count)];
+		wil::com_ptr_nothrow<ID3D11PixelShader> ps_ps_blit_1to1;
 		wil::com_ptr_nothrow<ID3D11SamplerState> ln;
 		wil::com_ptr_nothrow<ID3D11SamplerState> pt;
 		wil::com_ptr_nothrow<ID3D11DepthStencilState> dss;
@@ -308,6 +310,7 @@ public:
 	void CommitClear(GSTexture* t);
 
 	void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY) override;
+	void BlitOnetoOne(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r);
 
 	void DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ID3D11PixelShader* ps, ID3D11Buffer* ps_cb, bool linear);
 	void DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ID3D11PixelShader* ps, ID3D11Buffer* ps_cb, ID3D11BlendState* bs, bool linear);
@@ -332,6 +335,7 @@ public:
 
 	void IASetInputLayout(ID3D11InputLayout* layout);
 	void IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY topology);
+	D3D11_PRIMITIVE_TOPOLOGY IAGetPrimitiveTopology(GSHWDrawConfig::Topology topology);
 
 	void VSSetShader(ID3D11VertexShader* vs, ID3D11Buffer* vs_cb);
 
@@ -354,7 +358,8 @@ public:
 	void SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, u8 afix);
 
 	void RenderHW(GSHWDrawConfig& config) override;
-	void SendHWDraw(const GSHWDrawConfig& config, GSTexture* draw_rt_clone, GSTexture* draw_rt, const bool one_barrier, const bool full_barrier, const bool skip_first_barrier);
+	void SendHWDraw(GSHWDrawConfig& config, GSTexture* draw_rt_clone, GSTexture* draw_rt, GSTexture* draw_ds, ID3D11DepthStencilView* read_only_dsv,
+		const bool one_barrier, const bool full_barrier, const bool skip_first_barrier);
 
 	void ClearSamplerCache() override;
 
