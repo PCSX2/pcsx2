@@ -49,9 +49,6 @@ jobs:
       options: --privileged
     timeout-minutes: 60
 
-    permissions:
-      actions: write
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v6

@@ -53,9 +53,6 @@ jobs:
       CCACHE_COMPRESSLEVEL: 9
       CCACHE_MAXSIZE: 100M
 
-    permissions:
-      actions: write
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v6
