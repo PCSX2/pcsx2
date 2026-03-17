@@ -82,12 +82,6 @@ jobs:
           PR_SHA: ${{ github.event.pull_request.head.sha }}
         run: ./.github/workflows/scripts/common/name-artifacts.sh
 
-      - name: Clean Caches
-        uses: PCSX2/cache-clean-action@v1.0.0
-        with:
-          items: '[{"key": " deps", "count": 4}, {"key": " ccache", "count": 1}]'
-          token: ${{ secrets.GITHUB_TOKEN }}
-
       # -- SETUP CCACHE - https://cristianadam.eu/20200113/speeding-up-c-plus-plus-github-actions-using-ccache/
       - name: Prepare ccache timestamp
         id: ccache_cache_timestamp

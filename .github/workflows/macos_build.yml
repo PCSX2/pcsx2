@@ -89,12 +89,6 @@ jobs:
             brew install ccache nasm
           fi
 
-      - name: Clean Caches
-        uses: PCSX2/cache-clean-action@v1.0.0
-        with:
-          items: '[{"key": " deps", "count": 4}, {"key": " ccache", "count": 1}]'
-          token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Cache Dependencies
         id: cache-deps
         uses: actions/cache@v5
