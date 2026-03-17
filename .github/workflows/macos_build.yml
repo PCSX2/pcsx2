@@ -46,6 +46,9 @@ jobs:
       # Only way to use a secret in an if statement
       SIGN_KEY: ${{ secrets.APPLE_SIGN_P12_B64 }}
 
+    permissions:
+      actions: write
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v6
