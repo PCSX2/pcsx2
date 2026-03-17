@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="renderers">
-        <item>Auto</item>
+        <item>Automatico</item>
         <item>OpenGL</item>
         <item>Software</item>
         <item>Vulkan</item>
     </string-array>
     <string-array name="gpu_profile_override">
-        <item>Auto (Recommended)</item>
-        <item>Force Mali</item>
-        <item>Force Adreno</item>
+        <item>Automatico (Consigliato)</item>
+        <item>Forzare Mali</item>
+        <item>Forzare Adreno</item>
     </string-array>
     <string-array name="texture_filtering">
-        <item>PS2 (default)</item>
-        <item>Forced</item>
-        <item>Nearest</item>
+        <item>PS2 (impostazione predefinita)</item>
+        <item>Forzato</item>
+        <item>Più vicino</item>
     </string-array>
     <string-array name="interlace_modes">
-        <item>Automatic</item>
+        <item>Automatico</item>
         <item>Off</item>
-        <item>Weave TFF</item>
+        <item>Onda TFF (Fix Movimento Immagine)</item>
         <item>Weave BFF</item>
         <item>Bob TFF</item>
         <item>Bob BFF</item>
