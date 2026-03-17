@@ -1,0 +1,21 @@
+name: 🧹 Clean Up Old Caches
+
+on:
+  schedule:
+    - cron: "0 0 * * *" # Every day at 12am UTC.
+  workflow_dispatch: # As well as manually.
+
+jobs:
+  clean:
+    name: "Clean Up Caches"
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Clean Caches
+        uses: PCSX2/cache-clean-action@v1.1.0
+        with:
+          items: '[{"key": " deps", "count": 4}, {"key": " ccache", "count": 1}, {"key": " flatpak", "count": 1}]'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: all
+          on_failure: error
