@@ -1333,5 +1333,5 @@ bool EEMemoryInterface::WriteBytes(u32 address, void* src, u32 size)
 
 bool EEMemoryInterface::CompareBytes(u32 address, void* src, u32 size)
 {
-	return vtlb_memSafeCmpBytes(address, src, size) != 0;
+	return vtlb_memSafeCmpBytes(address, src, size) == 0;
 }
