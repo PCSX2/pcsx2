@@ -20,7 +20,7 @@ bool GSTexture::Save(const std::string& fn)
 {
 	// Depth textures need special treatment - we have a stencil component.
 	// Just re-use the existing conversion shader instead.
-	if (m_format == Format::DepthStencil || m_format == Format::Float32)
+	if (IsDepthStencilOrDepthInteger() || m_format == Format::Float32)
 	{
 		GSTexture* temp = g_gs_device->CreateRenderTarget(GetWidth(), GetHeight(), Format::Color, false);
 		if (!temp)
@@ -29,7 +29,8 @@ bool GSTexture::Save(const std::string& fn)
 			return false;
 		}
 
-		g_gs_device->StretchRect(this, GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f), temp, GSVector4(GetRect()), ShaderConvert::FLOAT32_TO_RGBA8, false);
+		g_gs_device->StretchRect(this, GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f), temp, GSVector4(GetRect()),
+			IsDepthInteger() ? ShaderConvert::UINT32_TO_RGBA8 : ShaderConvert::FLOAT32_TO_RGBA8, false);
 		const bool res = temp->Save(fn);
 		g_gs_device->Recycle(temp);
 		return res;
