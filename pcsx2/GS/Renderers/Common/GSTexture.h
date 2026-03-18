@@ -5,6 +5,7 @@
 
 #include "GS/GSVector.h"
 
+#include <memory>
 #include <string>
 #include <string_view>
 
@@ -65,6 +66,8 @@ protected:
 	Type m_type = Type::Invalid;
 	Format m_format = Format::Invalid;
 	State m_state = State::Dirty;
+	std::unique_ptr<GSTexture> m_depth_color; // For depth texture points to the parallel color texture.
+	bool m_depth_color_active = false; // Tracks if depth is being used as color.
 
 	// frame number (arbitrary base) the texture was recycled on
 	// different purpose than texture cache ages, do not attempt to merge
@@ -133,9 +136,21 @@ public:
 	{
 		return (m_type == Type::Texture);
 	}
+	__fi bool IsDepthColor() const
+	{
+		return m_depth_color_active;
+	}
+	__fi void ForgetDepthColor()
+	{
+		m_depth_color_active = false;
+	}
+	virtual bool IsUnorderedAccess() const { return false; }
 
 	__fi State GetState() const { return m_state; }
 	__fi void SetState(State state) { m_state = state; }
+
+	void CreateDepthColor();
+	virtual void UpdateDepthColor(bool color_to_ds) { pxFailRel("Not implemented."); }
 
 	__fi u32 GetLastFrameUsed() const { return m_last_frame_used; }
 	void SetLastFrameUsed(u32 frame) { m_last_frame_used = frame; }
@@ -159,7 +174,13 @@ public:
 	void ClearMipmapGenerationFlag() { m_needs_mipmaps_generated = false; }
 
 	// Typical size of a RGBA texture
-	u32 GetMemUsage() const { return m_size.x * m_size.y * (m_format == Format::UNorm8 ? 1 : 4); }
+	u32 GetMemUsage() const
+	{
+		u32 mem =  m_size.x * m_size.y * (m_format == Format::UNorm8 ? 1 : 4);
+		if (m_depth_color)
+			return mem += m_depth_color.get()->GetMemUsage();
+		return mem;
+	}
 
 	// Helper routines for formats/types
 	static bool IsCompressedFormat(Format format) { return (format >= Format::BC1 && format <= Format::BC7); }

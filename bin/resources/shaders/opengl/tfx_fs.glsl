@@ -83,6 +83,11 @@ layout(std140, binding = 0) uniform cb21
 
 	float ScaledScaleFactor;
 	float RcpScaleFactor;
+
+	float pad0;
+	float pad1;
+	
+	uvec4 ColorMask;
 };
 
 in SHADER
@@ -1106,7 +1111,7 @@ void ps_main()
 
 	bool atst_pass = atst(C);
 
-#if PS_AFAIL == AFAIL_KEEP
+#if PS_ATST != PS_ATST_NONE && PS_AFAIL == AFAIL_KEEP
 	if (!atst_pass)
 		discard;
 #endif
