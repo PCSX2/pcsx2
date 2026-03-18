@@ -51,9 +51,9 @@
    <item row="6" column="0" colspan="2">
     <layout class="QGridLayout" name="hardwareRenderingOptionsLayout">
      <item row="0" column="1">
-      <widget class="QCheckBox" name="enableHWFixes">
+      <widget class="QCheckBox" name="accurateAlphaTest">
        <property name="text">
-        <string>Manual Hardware Renderer Fixes</string>
+        <string>Accurate Alpha Test</string>
        </property>
       </widget>
      </item>
@@ -64,10 +64,10 @@
        </property>
       </widget>
      </item>
-	 <item row="1" column="0">
-      <widget class="QCheckBox" name="accurateAlphaTest">
+     <item row="1" column="0">
+      <widget class="QCheckBox" name="enableHWFixes">
        <property name="text">
-        <string>Accurate Alpha Test</string>
+        <string>Manual Hardware Renderer Fixes</string>
        </property>
       </widget>
      </item>
@@ -234,6 +234,7 @@
   <tabstop>dithering</tabstop>
   <tabstop>blending</tabstop>
   <tabstop>mipmapping</tabstop>
+  <tabstop>accurateAlphaTest</tabstop>
   <tabstop>enableHWFixes</tabstop>
  </tabstops>
  <resources/>
