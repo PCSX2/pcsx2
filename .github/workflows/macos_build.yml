@@ -66,7 +66,11 @@ jobs:
         run: sudo xcode-select -s /Applications/Xcode_26.2.app
 
       - name: Install Metal Toolchain
-        run: xcodebuild -downloadComponent MetalToolchain
+        run: |
+          for i in {1..5}; do
+            if xcrun metal -v; then break; fi
+            xcodebuild -downloadComponent MetalToolchain
+          done
 
       - name: Prepare Artifact Metadata
         id: artifact-metadata
