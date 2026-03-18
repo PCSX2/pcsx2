@@ -386,7 +386,7 @@ void GSRendererHW::ConvertSpriteTextureShuffle(u32& process_rg, u32& process_ba,
 	const bool rev_pos = v[prim].XYZ.X > v[prim + 1].XYZ.X;
 	const GSVertex& first_vert = rev_pos ? v[prim + 1] : v[prim];
 	const GSVertex& second_vert = rev_pos ? v[prim] : v[prim + 1];
-	const int pos = std::max(static_cast<int>(first_vert.XYZ.X) - static_cast<int>(o.OFX), 0) & 0xFF;
+	const int pos = (static_cast<int>(first_vert.XYZ.X) - static_cast<int>(o.OFX)) & 0xFF;
 
 	// Read texture is 8 to 16 pixels (same as above)
 	const float tw = static_cast<float>(1u << m_cached_ctx.TEX0.TW);
