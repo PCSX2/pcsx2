@@ -12217,37 +12217,37 @@ Please see our official documentation for more information.</source>
 <context>
     <name>GameDatabase</name>
     <message>
-        <location filename="../../pcsx2/GameDatabase.cpp" line="887"/>
+        <location filename="../../pcsx2/GameDatabase.cpp" line="898"/>
         <source>Minimum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameDatabase.cpp" line="888"/>
+        <location filename="../../pcsx2/GameDatabase.cpp" line="899"/>
         <source>Basic</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameDatabase.cpp" line="889"/>
+        <location filename="../../pcsx2/GameDatabase.cpp" line="900"/>
         <source>Medium</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameDatabase.cpp" line="890"/>
+        <location filename="../../pcsx2/GameDatabase.cpp" line="901"/>
         <source>High</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameDatabase.cpp" line="891"/>
+        <location filename="../../pcsx2/GameDatabase.cpp" line="902"/>
         <source>Full</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameDatabase.cpp" line="892"/>
+        <location filename="../../pcsx2/GameDatabase.cpp" line="903"/>
         <source>Maximum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameDatabase.cpp" line="896"/>
+        <location filename="../../pcsx2/GameDatabase.cpp" line="907"/>
         <source>{0} Current Blending Accuracy is {1}.
 Recommended Blending Accuracy for this game is {2}.
 You can adjust the blending level in Game Properties to improve
@@ -12255,39 +12255,39 @@ graphical quality, but this will increase system requirements.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameDatabase.cpp" line="939"/>
+        <location filename="../../pcsx2/GameDatabase.cpp" line="950"/>
         <source>Manual GS hardware renderer fixes are enabled, automatic fixes were not applied:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameDatabase.cpp" line="1180"/>
+        <location filename="../../pcsx2/GameDatabase.cpp" line="1191"/>
         <source>No tracks provided.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameDatabase.cpp" line="1189"/>
+        <location filename="../../pcsx2/GameDatabase.cpp" line="1200"/>
         <source>Hash {} is not in database.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameDatabase.cpp" line="1198"/>
+        <location filename="../../pcsx2/GameDatabase.cpp" line="1209"/>
         <source>Data track number does not match data track in database.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameDatabase.cpp" line="1215"/>
+        <location filename="../../pcsx2/GameDatabase.cpp" line="1226"/>
         <source>Track {0} with hash {1} is not found in database.
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameDatabase.cpp" line="1226"/>
+        <location filename="../../pcsx2/GameDatabase.cpp" line="1237"/>
         <source>Track {0} with hash {1} is for a different game ({2}).
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameDatabase.cpp" line="1237"/>
+        <location filename="../../pcsx2/GameDatabase.cpp" line="1248"/>
         <source>Track {0} with hash {1} does not match database track.
 </source>
         <translation type="unfinished"></translation>
