@@ -1623,6 +1623,8 @@ SCAJ-20058:
 SCAJ-20059:
   name: "Minna no Golf 4"
   region: "NTSC-Unk"
+  gsHWFixes:
+    accurateAlphaTest: 1 # Fixes broken face and UI rendering.
 SCAJ-20060:
   name: "Time Crisis 3"
   region: "NTSC-Unk"
@@ -1848,6 +1850,8 @@ SCAJ-20093:
 SCAJ-20094:
   name: "Minna no Golf 4 [PlayStation2 the Best]"
   region: "NTSC-Unk"
+  gsHWFixes:
+    accurateAlphaTest: 1 # Fixes broken face and UI rendering.
 SCAJ-20095:
   name: "Digital Devil Saga - Avatar Tuner"
   region: "NTSC-Unk"
@@ -2525,6 +2529,8 @@ SCAJ-20193:
 SCAJ-20194:
   name: "Minna no Golf 4 [PlayStation2 the Best]"
   region: "NTSC-Unk"
+  gsHWFixes:
+    accurateAlphaTest: 1 # Fixes broken face and UI rendering.
 SCAJ-20195:
   name: "Ape Escape 3 [PlayStation2 the Best]"
   region: "NTSC-C"
@@ -5844,8 +5850,10 @@ SCES-52566:
   name: "SingStar"
   region: "PAL-I"
 SCES-52582:
-  name: "Everybody's Golf"
+  name: "Everybody's Golf 4"
   region: "PAL-M5"
+  gsHWFixes:
+    accurateAlphaTest: 1 # Fixes broken face and UI rendering.
 SCES-52586:
   name: "Death by Degrees"
   region: "PAL-E-S"
@@ -7632,6 +7640,8 @@ SCKA-20057:
   name: "모두의 골프 4"
   name-en: "Everybody's Golf 4"
   region: "NTSC-K"
+  gsHWFixes:
+    accurateAlphaTest: 1 # Fixes broken face and UI rendering.
 SCKA-20058:
   name: "액션 로망 범피 트롯"
   name-en: "Action Romance Bumpy Trot"
@@ -7962,6 +7972,8 @@ SCKA-20096:
   name: "반야드"
   name-en: "Nickelodeon Barnyard"
   region: "NTSC-K"
+  speedHacks:
+    instantVU1: 0 # Significantly improves game speed.
   gsHWFixes:
     halfPixelOffset: 2 # Fix text and post blur.
     autoFlush: 2 # Needed for recursive mipmap rendering.
@@ -9124,6 +9136,8 @@ SCPS-15059:
   name-sort: "みんなのごるふ 4"
   name-en: "Minna no Golf 4"
   region: "NTSC-J"
+  gsHWFixes:
+    accurateAlphaTest: 1 # Fixes broken face and UI rendering.
 SCPS-15060:
   name: "幸福操作官"
   name-sort: "こうふくそうさかん"
@@ -10027,6 +10041,8 @@ SCPS-19301:
   name-sort: "みんなのごるふ4 [PlayStation2 the Best]"
   name-en: "Minna no Golf 4 [PlayStation2 the Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    accurateAlphaTest: 1 # Fixes broken face and UI rendering.
 SCPS-19302:
   name: "ラチェット&クランク2 ガガガ！銀河のコマンドーっす [PlayStation2 the Best]"
   name-sort: "らちぇっとあんどくらんく2 ががが！ぎんがのこまんどーっす [PlayStation2 the Best]"
@@ -10213,6 +10229,8 @@ SCPS-19319:
   name-sort: "みんなのごるふ 4 [PlayStation2 the Best]"
   name-en: "Minna no Golf 4 [PlayStation2 the Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    accurateAlphaTest: 1 # Fixes broken face and UI rendering.
 SCPS-19320:
   name: "ワンダと巨像 [PlayStation2 the Best]"
   name-sort: "わんだときょぞう [PlayStation2 the Best]"
@@ -12150,9 +12168,11 @@ SCUS-97400:
   name: "EyeToy - Groove"
   region: "NTSC-U"
 SCUS-97401:
-  name: "Hot Shots Golf FORE!"
+  name: "Hot Shots Golf Fore!"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    accurateAlphaTest: 1 # Fixes broken face and UI rendering.
 SCUS-97402:
   name: "Killzone"
   region: "NTSC-U"
@@ -12273,8 +12293,10 @@ SCUS-97425:
   name: "Online Start-Up Disc v3.0"
   region: "NTSC-U"
 SCUS-97427:
-  name: "Hot Shots Golf FORE! [Online Public Beta]"
+  name: "Hot Shots Golf Fore! [Online Public Beta]"
   region: "NTSC-U"
+  gsHWFixes:
+    accurateAlphaTest: 1 # Fixes broken face and UI rendering.
 SCUS-97428:
   name: "Kiosk Demo Disc Q3-Q4 2004"
   region: "NTSC-U"
@@ -12295,8 +12317,10 @@ SCUS-97429:
     - "SCUS-97429"
     - "SCUS-97465"
 SCUS-97430:
-  name: "Hot Shots Golf FORE! [Regular Demo]"
+  name: "Hot Shots Golf Fore! [Regular Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    accurateAlphaTest: 1 # Fixes broken face and UI rendering.
 SCUS-97431:
   name: "Killzone Public Beta V1.0"
   region: "NTSC-U"
@@ -12749,8 +12773,10 @@ SCUS-97514:
   name: "ATV Offroad Fury 3 [Greatest Hits]"
   region: "NTSC-U"
 SCUS-97515:
-  name: "Hot Shots Golf FORE! [Greatest Hits]"
+  name: "Hot Shots Golf Fore! [Greatest Hits]"
   region: "NTSC-U"
+  gsHWFixes:
+    accurateAlphaTest: 1 # Fixes broken face and UI rendering.
 SCUS-97516:
   name: "Jak 3 [Greatest Hits]"
   region: "NTSC-U"
@@ -23172,6 +23198,8 @@ SLES-53382:
   name: "The King of Fighters 2003"
   name-sort: "King of Fighters 2003, The"
   region: "PAL-E"
+  gsHWFixes:
+    limit24BitDepth: 2 # Fixes flickering and missing textures.
 SLES-53383:
   name: "Metal Slug 5"
   region: "PAL-E"
@@ -26449,6 +26477,8 @@ SLES-54374:
 SLES-54376:
   name: "Nickelodeon Barnyard"
   region: "PAL-E"
+  speedHacks:
+    instantVU1: 0 # Significantly improves game speed.
   gsHWFixes:
     halfPixelOffset: 2 # Fix text and post blur.
     autoFlush: 2 # Needed for recursive mipmap rendering.
@@ -26457,6 +26487,8 @@ SLES-54376:
 SLES-54377:
   name: "Nick - Der tierisch verrückte Bauernhof"
   region: "PAL-G"
+  speedHacks:
+    instantVU1: 0 # Significantly improves game speed.
   gsHWFixes:
     halfPixelOffset: 2 # Fix text and post blur.
     autoFlush: 2 # Needed for recursive mipmap rendering.
@@ -26465,6 +26497,8 @@ SLES-54377:
 SLES-54378:
   name: "Nickelodeon Barnyard"
   region: "PAL-M4"
+  speedHacks:
+    instantVU1: 0 # Significantly improves game speed.
   gsHWFixes:
     halfPixelOffset: 2 # Fix text and post blur.
     autoFlush: 2 # Needed for recursive mipmap rendering.
@@ -32449,6 +32483,8 @@ SLKA-25276:
   name-sort: "King of Fighters 2003, The"
   name-en: "The King of Fighters 2003"
   region: "NTSC-K"
+  gsHWFixes:
+    limit24BitDepth: 2 # Fixes flickering and missing textures.
 SLKA-25277:
   name: "브라더스 인 암스 - 30 고지를 향한 길"
   name-en: "Brothers in Arms - Road to Hill 30"
@@ -59581,6 +59617,8 @@ SLPS-25407:
   name-sort: "ざ きんぐ おぶ ふぁいたーず2003"
   name-en: "King of Fighters 2003, The"
   region: "NTSC-J"
+  gsHWFixes:
+    limit24BitDepth: 2 # Fixes flickering and missing textures.
 SLPS-25408:
   name: "アーマード・コア ナインブレイカー"
   name-sort: "あーまーどこあ ないんぶれいかー"
@@ -60971,6 +61009,8 @@ SLPS-25635:
   name-sort: "ざ きんぐ おぶ ふぁいたーず2003 [SNK BEST COLLECTION]"
   name-en: "King of Fighters 2003, The [SNK Best Collection]"
   region: "NTSC-J"
+  gsHWFixes:
+    limit24BitDepth: 2 # Fixes flickering and missing textures.
 SLPS-25636:
   name: "KOF MAXIMUM IMPACT MANIAX"
   name-sort: "ざ きんぐ おぶ ふぁいたーず まきしまむ いんぱくと まにあっくす"
@@ -71002,6 +71042,8 @@ SLUS-21277:
   name: "Nickelodeon Barnyard"
   region: "NTSC-U"
   compat: 5
+  speedHacks:
+    instantVU1: 0 # Significantly improves game speed.
   gsHWFixes:
     halfPixelOffset: 2 # Fix text and post blur.
     autoFlush: 2 # Needed for recursive mipmap rendering.
@@ -75969,8 +76011,10 @@ TCES-52456:
     nativeScaling: 1 # Fixes light blooms.
     autoFlush: 2 # Helps fix misaligned bloom.
 TCES-52582:
-  name: "Everybody's Golf 4 Beta Trial Code"
+  name: "Everybody's Golf 4 [Beta Trial Code]"
   region: "PAL-E"
+  gsHWFixes:
+    accurateAlphaTest: 1 # Fixes broken face and UI rendering.
 TCES-53033:
   name: "Formula One 05 Beta Trial Code"
   region: "PAL-E"
