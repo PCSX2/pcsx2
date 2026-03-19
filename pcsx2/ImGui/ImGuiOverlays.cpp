@@ -593,6 +593,9 @@ __ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spa
 		if (GSConfig.HWMipmap)
 			APPEND("MM ");
 
+		if (GSConfig.HWAccurateAlphaTest)
+			APPEND("AAT ");
+
 		// deliberately test global and print local here for auto values
 		if (EmuConfig.GS.TextureFiltering != BiFiltering::PS2)
 			APPEND("BF={} ", static_cast<unsigned>(GSConfig.TextureFiltering));

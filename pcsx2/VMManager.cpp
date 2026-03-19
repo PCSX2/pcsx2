@@ -3261,6 +3261,11 @@ void VMManager::WarnAboutUnsafeSettings()
 			append(ICON_FA_IMAGES,
 				TRANSLATE_SV("VMManager", "Mipmapping is disabled. This may break rendering in some games."));
 		}
+		if (EmuConfig.GS.HWAccurateAlphaTest)
+		{
+			append(ICON_FA_IMAGES,
+				TRANSLATE_SV("VMManager", "Accurate Alpha Test is enabled, this may reduce performance."));
+		}
 		if (EmuConfig.GS.UseDebugDevice)
 		{
 			append(ICON_FA_BUG,

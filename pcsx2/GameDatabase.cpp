@@ -372,6 +372,7 @@ static const char* s_gs_hw_fix_names[] = {
 	"alignSprite",
 	"mergeSprite",
 	"mipmap",
+	"accurateAlphaTest",
 	"forceEvenSpritePosition",
 	"bilinearUpscale",
 	"nativePaletteDraw",
@@ -627,6 +628,9 @@ bool GameDatabaseSchema::GameEntry::configMatchesHWFix(const Pcsx2Config::GSOpti
 		case GSHWFixId::Mipmap:
 			return (static_cast<int>(config.HWMipmap) == value);
 
+		case GSHWFixId::AccurateAlphaTest:
+			return (static_cast<int>(config.HWAccurateAlphaTest) == value);
+
 		case GSHWFixId::TrilinearFiltering:
 			return (config.TriFilter == TriFiltering::Automatic || static_cast<int>(config.TriFilter) == value);
 
@@ -791,6 +795,10 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 
 			case GSHWFixId::Mipmap:
 				config.HWMipmap = (value > 0);
+				break;
+
+			case GSHWFixId::AccurateAlphaTest:
+				config.HWAccurateAlphaTest = (value > 0);
 				break;
 
 			case GSHWFixId::TrilinearFiltering:
