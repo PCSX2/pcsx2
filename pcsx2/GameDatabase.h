@@ -55,6 +55,7 @@ namespace GameDatabaseSchema
 		AlignSprite,
 		MergeSprite,
 		Mipmap,
+		AccurateAlphaTest,
 		ForceEvenSpritePosition,
 		BilinearUpscale,
 		NativePaletteDraw,
