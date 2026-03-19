@@ -18,7 +18,7 @@ find_package(Zstd 1.5.5 REQUIRED)
 find_package(LZ4 REQUIRED)
 find_package(WebP REQUIRED) # v1.3.2, spews an error on Linux because no pkg-config.
 find_package(SDL3 3.2.6 REQUIRED)
-find_package(Freetype 2.12 REQUIRED)
+find_package(Freetype 2.10 REQUIRED) # 2.10 is the first with COLRv0 support, which we need for rendering emoji
 find_package(plutovg 1.1.0 REQUIRED)
 find_package(plutosvg 0.0.7 REQUIRED)
 find_package(ryml REQUIRED)
