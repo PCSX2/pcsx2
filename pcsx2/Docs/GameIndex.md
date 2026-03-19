@@ -155,6 +155,8 @@ The clamp modes are also numerically based.
 
 ### GS Hardware Renderer Fixes
 
+* accurateAlphaTest                     [`0` or `1`]    {Off, On}                   Default: Off
+
 * autoFlush                   [`0` or `1` or `2`]          {Disabled, Enabled (Sprites Only), Enabled (All Primitives)}                            Default: Off (`0`)
 * partialTargetInvalidation         [`0` or `1`]          {Off, On}                               Default: Off (`0`)
 * PCRTCOffsets    [`0` or `1`]          {Off, On}                               Default: Off (`0`)
