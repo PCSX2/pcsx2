@@ -9,7 +9,7 @@
 
 static bool spr0finished = false;
 static bool spr1finished = false;
-static u32 mfifotransferred = 0;
+static u32 mfifotransferred = 0; // FIXME: Remove next time someone bumps savestates, no longer required.
 
 static void TestClearVUs(u32 madr, u32 qwc, bool isWrite)
 {
@@ -122,8 +122,6 @@ int  _SPR0chain()
 
 			if ((spr0ch.madr & ~dmacRegs.rbsr.RMSK) != dmacRegs.rbor.ADDR)
 				Console.WriteLn("SPR MFIFO Write outside MFIFO area");
-			else
-				mfifotransferred += partialqwc;
 
 			hwMFIFOWrite(spr0ch.madr, &psSu128(spr0ch.sadr), partialqwc);
 			spr0ch.madr += partialqwc << 4;
@@ -198,7 +196,6 @@ void _SPR0interleave()
 			case MFD_VIF1:
 			case MFD_GIF:
 				hwMFIFOWrite(spr0ch.madr, &psSu128(spr0ch.sadr), spr0ch.qwc);
-				mfifotransferred += spr0ch.qwc;
 				break;
 
 			case NO_MFD:
@@ -307,24 +304,17 @@ void SPRFROMinterrupt()
 
 		// The qwc check is simply because having data still to transfer from the packet can freak games out if they do a d.tadr == s.madr check
 		// and there is still data to come over (FF12 ingame menu)
-		if(mfifotransferred != 0 && spr0ch.qwc == 0)
+		if(spr0ch.qwc == 0)
 		{
 			switch (dmacRegs.ctrl.MFD)
 			{
 				case MFD_VIF1: // Most common case.
 				case MFD_GIF:
-				{
-					if ((spr0ch.madr & ~dmacRegs.rbsr.RMSK) != dmacRegs.rbor.ADDR) Console.WriteLn("GIF MFIFO Write outside MFIFO area");
-					spr0ch.madr = dmacRegs.rbor.ADDR + (spr0ch.madr & dmacRegs.rbsr.RMSK);
-					//Console.WriteLn("mfifoGIFtransfer %x madr %x, tadr %x", gif->chcr._u32, gif->madr, gif->tadr);
-					hwMFIFOResume(mfifotransferred);
+					hwMFIFOResume();
 					break;
-				}
 				default:
 					break;
 			}
-
-			mfifotransferred = 0;
 		}
 
 		return;

@@ -151,18 +151,13 @@ __ri bool hwMFIFOWrite(u32 addr, const u128* data, uint qwc)
 	return true;
 }
 
-__ri void hwMFIFOResume(u32 transferred) {
-
-	if (transferred == 0)
-	{
-		return; //Nothing got put in the MFIFO, we don't care
-	}
+__ri void hwMFIFOResume() {
 
 	switch (dmacRegs.ctrl.MFD)
 	{
 		case MFD_VIF1: // Most common case.
 		{
-			SPR_LOG("Added %x qw to mfifo, Vif CHCR %x Stalled %x done %x", transferred, vif1ch.chcr._u32, vif1.vifstalled.enabled, vif1.done);
+			SPR_LOG("Resuming VIF1 MFIFO, Vif CHCR %x Stalled %x done %x", vif1ch.chcr._u32, vif1.vifstalled.enabled, vif1.done);
 			if (vif1.inprogress & 0x10)
 			{
 				vif1.inprogress &= ~0x10;
@@ -171,7 +166,7 @@ __ri void hwMFIFOResume(u32 transferred) {
 				{
 					SPR_LOG("Data Added, Resuming");
 					//Need to simulate the time it takes to copy here, if the VIF resumes before the SPR has finished, it isn't happy.
-					CPU_INT(DMAC_MFIFO_VIF, transferred * BIAS);
+					CPU_INT(DMAC_MFIFO_VIF, cpuRegs.eCycle[DMAC_FROM_SPR]);
 				}
 
 				//Apparently this is bad, i guess so, the data is going to memory rather than the FIFO
@@ -181,9 +176,9 @@ __ri void hwMFIFOResume(u32 transferred) {
 		}
 		case MFD_GIF:
 		{
-			SPR_LOG("Added %x qw to mfifo, Gif CHCR %x done %x", transferred, gifch.chcr._u32, gif.gspath3done);
+			SPR_LOG("Resuming GIF MFIFO, Gif CHCR %x done %x", gifch.chcr._u32, gif.gspath3done);
 			if ((gif.gifstate & GIF_STATE_EMPTY)) {
-				CPU_INT(DMAC_MFIFO_GIF, transferred * BIAS);
+				CPU_INT(DMAC_MFIFO_GIF, cpuRegs.eCycle[DMAC_FROM_SPR]);
 				gif.gifstate = GIF_STATE_READY;
 			}
 			break;
