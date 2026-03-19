@@ -337,10 +337,11 @@ namespace FontNames
 		{nullptr, "Noto Sans Devanagari"},
 	};
 	static constexpr FontLoadInfo Emoji[] = {
-		{"NotoColorEmoji-Regular.ttf"},
+		{"Twemoji.Mozilla.ttf"},
 		{"Seguiemj.ttf"},
 		// {nullptr, "Apple Color Emoji"}, // Freetype can't properly render Apple Color Emoji.
-		{nullptr, "Noto Color Emoji"},
+		{nullptr, "Twemoji Mozilla"},
+		// {nullptr, "Noto Color Emoji"}, // Noto Color Emoji comes in bitmap, SVG, and COLRv1 variants, none of which are supported
 		{nullptr, "Noto Emoji"},
 	};
 	static constexpr FontLoadInfo Hebrew[] = {
@@ -473,29 +474,7 @@ static std::span<const u8> TryLoadFont(FontSearchContext* ctx, const FontLoadInf
 
 static bool ValidateFont(const FontLoadInfo& info, std::span<const u8> data)
 {
-	if (info.face_name && 0 == strcmp(info.face_name, "Noto Color Emoji"))
-	{
-		// Noto Color Emoji comes in bitmap, SVG, and COLRv1 variants.
-		// We can only render the SVG variant.
-		if (data.size() < 8)
-			return false;
-		u32 magic_be;
-		u16 num_tables_be;
-		memcpy(&magic_be, &data[0], sizeof(u32));
-		memcpy(&num_tables_be, &data[4], sizeof(u16));
-		if (qFromBigEndian(magic_be) != 0x10000)
-			return false;
-		size_t num_tables = qFromBigEndian(num_tables_be);
-		if (data.size() < num_tables * 16 + 12)
-			return false;
-		for (size_t i = 0; i < num_tables; i++)
-		{
-			// Check if there's an "SVG " table
-			if (0 == memcmp(&data[i * 16 + 12], "SVG ", 4))
-				return true;
-		}
-		return false;
-	}
+	// We currently don't search for any fonts that might have unsupported versions installed on some OSes
 	return true;
 }
 
