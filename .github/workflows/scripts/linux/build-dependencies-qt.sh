@@ -22,8 +22,6 @@ QT=6.11.0
 QTAPNG=1.3.0
 
 FFMPEG=8.0
-FREETYPE=2.14.1
-HARFBUZZ=13.0.0
 LIBBACKTRACE=ad106d5fdd5d960bd33fae1c48a351af567fd075
 LIBJPEGTURBO=3.1.3
 LIBPNG=1.6.55
@@ -58,8 +56,6 @@ e710e6e760f92922b86e4dd68f6bbe94ef6510919519d1b0068e874b5ad84d37  qtwayland-ever
 f1d3be3489f758efe1a8f12118a212febbe611aa670af32e0159fa3c1feab2a6  QtApng-$QTAPNG.tar.gz
 
 b2751fccb6cc4c77708113cd78b561059b6fa904b24162fa0be2d60273d27b8e  ffmpeg-$FFMPEG.tar.xz
-32427e8c471ac095853212a37aef816c60b42052d4d9e48230bab3bdf2936ccc  freetype-$FREETYPE.tar.xz
-207f96964dc9475b13c1f66565bf145d2658089d65b4cf786d351da2857fc269  harfbuzz-$HARFBUZZ.tar.gz
 96e5c2d7f2c482a60d5804da48a2eb9a0db0719b2c65dcc169fbfdcf37f3a45d  libbacktrace-$LIBBACKTRACE.tar.gz
 075920b826834ac4ddf97661cc73491047855859affd671d52079c6867c1c6c0  libjpeg-turbo-$LIBJPEGTURBO.tar.gz
 d925722864837ad5ae2a82070d4b2e0603dc72af44bd457c3962298258b8e82d  libpng-$LIBPNG.tar.xz
@@ -83,8 +79,6 @@ EOF
 
 if ! shasum -sa 256 --check SHASUMS 2> /dev/null; then
 	curl -L \
-		-O "https://sourceforge.net/projects/freetype/files/freetype2/$FREETYPE/freetype-$FREETYPE.tar.xz" \
-		-O "https://github.com/harfbuzz/harfbuzz/archive/$HARFBUZZ/harfbuzz-$HARFBUZZ.tar.gz" \
 		-O "https://github.com/ianlancetaylor/libbacktrace/archive/$LIBBACKTRACE/libbacktrace-$LIBBACKTRACE.tar.gz" \
 		-O "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/$LIBJPEGTURBO/libjpeg-turbo-$LIBJPEGTURBO.tar.gz" \
 		-O "https://downloads.sourceforge.net/project/libpng/libpng16/$LIBPNG/libpng-$LIBPNG.tar.xz" \
@@ -206,35 +200,6 @@ cmake --build build --parallel
 ninja -C build install
 cd ..
 
-echo "Building FreeType without HarfBuzz..."
-rm -fr "freetype-$FREETYPE"
-tar xf "freetype-$FREETYPE.tar.xz"
-cd "freetype-$FREETYPE"
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DBUILD_SHARED_LIBS=ON -DFT_REQUIRE_ZLIB=ON -DFT_REQUIRE_PNG=ON -DFT_DISABLE_BZIP2=TRUE -DFT_DISABLE_BROTLI=TRUE -DFT_DISABLE_HARFBUZZ=TRUE -B build -G Ninja
-cmake --build build --parallel
-ninja -C build install
-cd ..
-
-echo "Building HarfBuzz..."
-rm -fr "harfbuzz-$HARFBUZZ"
-tar xf "harfbuzz-$HARFBUZZ.tar.gz"
-cd "harfbuzz-$HARFBUZZ"
-# Add an SOVERSION to match system harfbuzz
-sed -i 's/PROPERTIES VISIBILITY_INLINES_HIDDEN TRUE)/PROPERTIES VISIBILITY_INLINES_HIDDEN TRUE SOVERSION 0)/g' CMakeLists.txt
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DBUILD_SHARED_LIBS=ON -DHB_BUILD_UTILS=OFF -DHB_HAVE_FREETYPE=ON -B build -G Ninja
-cmake --build build --parallel
-ninja -C build install
-cd ..
-
-echo "Building FreeType with HarfBuzz..."
-rm -fr "freetype-$FREETYPE"
-tar xf "freetype-$FREETYPE.tar.xz"
-cd "freetype-$FREETYPE"
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DBUILD_SHARED_LIBS=ON -DFT_REQUIRE_ZLIB=ON -DFT_REQUIRE_PNG=ON -DFT_DISABLE_BZIP2=TRUE -DFT_DISABLE_BROTLI=TRUE -DFT_REQUIRE_HARFBUZZ=TRUE -B build -G Ninja
-cmake --build build --parallel
-ninja -C build install
-cd ..
-
 echo "Building SDL..."
 rm -fr "$SDL"
 tar xf "$SDL.tar.gz"
@@ -347,7 +312,7 @@ echo "Building PlutoSVG..."
 rm -fr "plutosvg-$PLUTOSVG"
 tar xf "plutosvg-$PLUTOSVG.tar.gz"
 cd "plutosvg-$PLUTOSVG"
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DBUILD_SHARED_LIBS=ON -DPLUTOSVG_ENABLE_FREETYPE=ON -DPLUTOSVG_BUILD_EXAMPLES=OFF -B build -G Ninja
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DBUILD_SHARED_LIBS=ON -DPLUTOSVG_ENABLE_FREETYPE=OFF -DPLUTOSVG_BUILD_EXAMPLES=OFF -B build -G Ninja
 cmake --build build --parallel
 ninja -C build install
 cd ..
