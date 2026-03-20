@@ -14,16 +14,10 @@
 #include "VMManager.h"
 
 #if defined(_WIN32)
-#include "common/RedtapeWindows.h"
+#include "common/RedtapeWilCom.h"
 #include <shlobj.h>
-#include <winnls.h>
 #include <shobjidl.h>
-#include <objbase.h>
-#include <objidl.h>
-#include <shlguid.h>
 #include <comdef.h>
-
-#include <wrl/client.h>
 #endif
 
 ShortcutCreationDialog::ShortcutCreationDialog(QWidget* parent, const QString& title, const QString& path)
@@ -197,10 +191,9 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 	// https://learn.microsoft.com/en-us/windows/win32/api/shlobj_core/nf-shlobj_core-shgetknownfolderpath
 	// https://learn.microsoft.com/en-us/windows/win32/shell/knownfolderid
 	std::string link_file;
-	if (PWSTR directory; SUCCEEDED(SHGetKnownFolderPath(is_desktop ? FOLDERID_Desktop : FOLDERID_Programs, 0, NULL, &directory)))
+	if (wil::unique_cotaskmem_string directory; SUCCEEDED(SHGetKnownFolderPath(is_desktop ? FOLDERID_Desktop : FOLDERID_Programs, 0, NULL, &directory)))
 	{
-		std::string directory_utf8 = StringUtil::WideStringToUTF8String(directory);
-		CoTaskMemFree(directory);
+		std::string directory_utf8 = StringUtil::WideStringToUTF8String(directory.get());
 
 		if (is_desktop)
 			link_file = Path::ToNativePath(fmt::format("{}/{}.lnk", directory_utf8, clean_name));
@@ -218,7 +211,6 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 	}
 	else
 	{
-		CoTaskMemFree(directory);
 		QMessageBox::critical(this, tr("Failed to create shortcut"), is_desktop ? tr("'Desktop' directory not found") : tr("User's 'Start Menu\\Programs' directory not found"), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
 		return;
 	}
@@ -263,23 +255,19 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 		return;
 	}
 
-	Microsoft::WRL::ComPtr<IShellLink> pShellLink;
-	Microsoft::WRL::ComPtr<IPersistFile> pPersistFile;
+	wil::unique_couninitialize_call co_cleanup;
 
-	const auto cleanup = [&](bool return_value, const QString& fail_reason) -> bool {
-		if (!return_value)
-		{
-			Console.ErrorFmt("Failed to create shortcut: {}", fail_reason.toStdString());
-			QMessageBox::critical(this, tr("Failed to create shortcut"), fail_reason, QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
-		}
-		CoUninitialize();
-		return return_value;
+	const auto report_error = [&](const QString& reason) {
+		Console.ErrorFmt("Failed to create shortcut: {}", reason.toStdString());
+		QMessageBox::critical(this, tr("Failed to create shortcut"), reason, QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
 	};
 
-	res = CoCreateInstance(__uuidof(ShellLink), NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pShellLink));
-	if (FAILED(res))
+	wil::com_ptr_nothrow<IShellLink> pShellLink = wil::CoCreateInstanceNoThrow<IShellLink>(CLSID_ShellLink);
+	wil::com_ptr_nothrow<IPersistFile> pPersistFile;
+
+	if (!pShellLink)
 	{
-		cleanup(false, tr("CoCreateInstance failed"));
+		report_error(tr("CoCreateInstance failed"));
 		return;
 	}
 
@@ -288,7 +276,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 	res = pShellLink->SetPath(target_file.c_str());
 	if (FAILED(res))
 	{
-		cleanup(false, tr("SetPath failed (%1)").arg(str_error(res)));
+		report_error(tr("SetPath failed (%1)").arg(str_error(res)));
 		return;
 	}
 
@@ -297,7 +285,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 	res = pShellLink->SetWorkingDirectory(working_dir.c_str());
 	if (FAILED(res))
 	{
-		cleanup(false, tr("SetWorkingDirectory failed (%1)").arg(str_error(res)));
+		report_error(tr("SetWorkingDirectory failed (%1)").arg(str_error(res)));
 		return;
 	}
 
@@ -308,7 +296,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 		res = pShellLink->SetArguments(target_cli_args.c_str());
 		if (FAILED(res))
 		{
-			cleanup(false, tr("SetArguments failed (%1)").arg(str_error(res)));
+			report_error(tr("SetArguments failed (%1)").arg(str_error(res)));
 			return;
 		}
 	}
@@ -333,15 +321,15 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 	res = pShellLink->SetIconLocation(w_icon_path.c_str(), 0);
 	if (FAILED(res))
 	{
-		cleanup(false, tr("SetIconLocation failed (%1)").arg(str_error(res)));
+		report_error(tr("SetIconLocation failed (%1)").arg(str_error(res)));
 		return;
 	}
 
 	// Use the IPersistFile object to save the shell link
-	res = pShellLink.As(&pPersistFile);
+	res = pShellLink.query_to(&pPersistFile);
 	if (FAILED(res))
 	{
-		cleanup(false, tr("QueryInterface failed (%1)").arg(str_error(res)));
+		report_error(tr("QueryInterface failed (%1)").arg(str_error(res)));
 		return;
 	}
 
@@ -350,11 +338,9 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 	res = pPersistFile->Save(w_link_file.c_str(), TRUE);
 	if (FAILED(res))
 	{
-		cleanup(false, tr("Failed to save the shortcut (%1)").arg(str_error(res)));
+		report_error(tr("Failed to save the shortcut (%1)").arg(str_error(res)));
 		return;
 	}
-
-	cleanup(true, {});
 
 #else
 
