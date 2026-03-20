@@ -151,6 +151,19 @@ jobs:
       sign_and_notarize: true
     secrets: inherit
 
+  # We don't use the artifacts, but we need this for the cache it generates
+  build_macos_qt_arm:
+    if: github.repository == 'PCSX2/pcsx2'
+    needs:
+      - cut-release
+    name: "MacOS"
+    uses: ./.github/workflows/macos_build.yml
+    with:
+      jobName: "Generate arm64 Caches"
+      artifactPrefixName: "PCSX2-macos-Qt-arm64"
+      arch: arm64
+    secrets: inherit
+
   # Upload the Artifacts
   upload_artifacts:
     if: github.repository == 'PCSX2/pcsx2'
