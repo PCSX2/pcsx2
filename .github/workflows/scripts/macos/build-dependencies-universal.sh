@@ -83,7 +83,7 @@ CMAKE_ARCH_X64=-DCMAKE_OSX_ARCHITECTURES="x86_64"
 CMAKE_ARCH_ARM64=-DCMAKE_OSX_ARCHITECTURES="arm64"
 CMAKE_ARCH_UNIVERSAL=-DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
 
-cat > SHASUMS <<EOF
+grep . > SHASUMS <<EOF
 231ad85979864d914dc9568a1b71c91d6cf20d7b2021d059103bf0eb51cb755e  qtbase-everywhere-src-$QT.tar.xz
 d3adb02ac5e2fe24068dbdaee0d7cc68cc3fa8553291c1bfce77c9fe8e940cc8  qtimageformats-everywhere-src-$QT.tar.xz
 dfa8d653be07087d9407ed4a4ebae847f8953e0b7abd829f089803ab652a30e6  qtsvg-everywhere-src-$QT.tar.xz
