@@ -59,7 +59,7 @@ CMAKE_COMMON=(
 	-DCMAKE_INSTALL_NAME_DIR='$<INSTALL_PREFIX>/lib'
 )
 
-cat > SHASUMS <<EOF
+grep . > SHASUMS <<EOF
 aeb78d29291a2b5fd53cb55950f8f5065b4978c25fb1d77f627d695ab9adf21e  qtbase-everywhere-src-$QT.tar.xz
 8b8f9c718638081e7b3c000e7f31910140b1202a98e98df5d1b496fe6f639d67  qtimageformats-everywhere-src-$QT.tar.xz
 f07ff80f38caf235187200345392ca7479445ddf49a36c3694cd52a735dad6e1  qtsvg-everywhere-src-$QT.tar.xz

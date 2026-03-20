@@ -33,7 +33,7 @@ SHADERC_SPIRVTOOLS=971a7b6e8d7740035bbff089bbbf9f42951ecfd5
 mkdir -p deps-build
 cd deps-build
 
-cat > SHASUMS <<EOF
+grep . > SHASUMS <<EOF
 32427e8c471ac095853212a37aef816c60b42052d4d9e48230bab3bdf2936ccc  freetype-$FREETYPE.tar.xz
 f63fc519f150465bd0bdafcdf3d0e9c23474f4c474171cd515ea1b3a72c081fb  harfbuzz-$HARFBUZZ.tar.gz
 fd6f417fe9e3a071cf1424a5152d926a34c4a3c5070745470be6cf12a404ed79  $LIBBACKTRACE.zip
