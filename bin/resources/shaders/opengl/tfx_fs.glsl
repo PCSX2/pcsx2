@@ -22,6 +22,7 @@
 #define AFAIL_ZB_ONLY 2
 #define AFAIL_RGB_ONLY 3
 #define AFAIL_RGB_ONLY_DSB 4
+#define AFAIL_RGB_ONLY_SW_Z 5
 #endif
 
 #ifndef PS_ATST_NONE
@@ -46,13 +47,14 @@
 #define SW_AD_TO_HW (PS_BLEND_C == 1 && PS_A_MASKED)
 #define PS_PRIMID_INIT (PS_DATE == 1 || PS_DATE == 2)
 #define NEEDS_RT_EARLY (PS_TEX_IS_FB == 1 || PS_DATE >= 5)
-#define NEEDS_RT_FOR_AFAIL (PS_AFAIL == PS_ZB_ONLY || PS_AFAIL == AFAIL_RGB_ONLY)
-#define NEEDS_DEPTH_FOR_AFAIL (PS_AFAIL == AFAIL_FB_ONLY || PS_AFAIL == AFAIL_RGB_ONLY)
+#define NEEDS_RT_FOR_AFAIL (PS_AFAIL == PS_ZB_ONLY || PS_AFAIL == AFAIL_RGB_ONLY || PS_AFAIL == AFAIL_RGB_ONLY_SW_Z)
+#define NEEDS_DEPTH_FOR_AFAIL (PS_AFAIL == AFAIL_FB_ONLY || PS_AFAIL == AFAIL_RGB_ONLY_SW_Z)
 #define NEEDS_DEPTH_FOR_ZTST (PS_ZTST == ZTST_GEQUAL || PS_ZTST == ZTST_GREATER)
 
 #define NEEDS_RT (NEEDS_RT_EARLY || NEEDS_RT_FOR_AFAIL || (!PS_PRIMID_INIT && (PS_FBMASK || SW_BLEND_NEEDS_RT || SW_AD_TO_HW)) || PS_COLOR_FEEDBACK)
 #define NEEDS_TEX (PS_TFX != 4)
-#define NEEDS_DEPTH (PS_DEPTH_FEEDBACK && (NEEDS_DEPTH_FOR_AFAIL || NEEDS_DEPTH_FOR_ZTST))
+#define SW_DEPTH (NEEDS_DEPTH_FOR_AFAIL || NEEDS_DEPTH_FOR_ZTST)
+#define ZWRITE (SW_DEPTH || PS_ZCLAMP || PS_ZFLOOR)
 
 layout(std140, binding = 0) uniform cb21
 {
@@ -124,7 +126,7 @@ in SHADER
 
 // Depth feedback mode 2 is for depth as color.
 // Use FB fetch for the feedback if it's available.
-#if NEEDS_DEPTH && PS_NO_COLOR1 && (DEPTH_FEEDBACK_SUPPORT == 2)
+#if SW_DEPTH && PS_NO_COLOR1 && (DEPTH_FEEDBACK_SUPPORT == 2)
 #if HAS_FRAMEBUFFER_FETCH
 	layout(location = 1) inout float SV_Target1;
 #else
@@ -148,11 +150,11 @@ layout(binding = 3) uniform sampler2D img_prim_min;
 // Depth feedback mode 1 binds depth buffer directly as a texture.
 // Depth feedback mode 2 (depth as color) can use FB fetch for the feedback,
 // in which case we don't need to explicitly bind depth as a texture.
-#if (DEPTH_FEEDBACK_SUPPORT == 1 || (DEPTH_FEEDBACK_SUPPORT == 2 && !HAS_FRAMEBUFFER_FETCH)) && NEEDS_DEPTH
+#if (DEPTH_FEEDBACK_SUPPORT == 1 || (DEPTH_FEEDBACK_SUPPORT == 2 && !HAS_FRAMEBUFFER_FETCH)) && SW_DEPTH
 layout(binding = 4) uniform sampler2D DepthSampler;
 #endif
 
-#if PS_ZWRITE && PS_HAS_CONSERVATIVE_DEPTH && !NEEDS_DEPTH
+#if ZWRITE && PS_HAS_CONSERVATIVE_DEPTH && !SW_DEPTH
 layout(depth_less) out float gl_FragDepth;
 #endif
 
@@ -169,7 +171,7 @@ vec4 sample_from_rt()
 
 vec4 sample_from_depth()
 {
-#if !NEEDS_DEPTH
+#if !SW_DEPTH
 	return vec4(0.0);
 #elif HAS_FRAMEBUFFER_FETCH && (DEPTH_FEEDBACK_SUPPORT == 2)
 	return SV_Target1;
@@ -1040,15 +1042,13 @@ void ps_main()
 	input_z = floor(input_z * exp2(32.0f)) * exp2(-32.0f);
 #endif
 
-#if NEEDS_DEPTH && (PS_ZTST == ZTST_GEQUAL || PS_ZTST == ZTST_GREATER)
-	#if PS_ZTST == ZTST_GEQUAL
-		if (input_z < sample_from_depth().r)
-			discard;
-	#elif PS_ZTST == ZTST_GREATER
-		if (input_z <= sample_from_depth().r)
-			discard;
-	#endif
-#endif // PS_ZTST
+#if PS_ZTST == ZTST_GEQUAL
+	if (input_z < sample_from_depth().r)
+		discard;
+#elif PS_ZTST == ZTST_GREATER
+	if (input_z <= sample_from_depth().r)
+		discard;
+#endif
 
 #if PS_SCANMSK & 2
 	// fail depth test on prohibited lines
@@ -1215,19 +1215,17 @@ void ps_main()
 	#endif
 
 	// Alpha test with feedback
-	#if (PS_AFAIL == AFAIL_FB_ONLY) && NEEDS_DEPTH && PS_ZWRITE
+	#if PS_AFAIL == AFAIL_FB_ONLY
 		if (!atst_pass)
 			input_z = sample_from_depth().r;
-	#elif (PS_AFAIL == AFAIL_ZB_ONLY) && NEEDS_RT
+	#elif PS_AFAIL == AFAIL_ZB_ONLY
 		if (!atst_pass)
 			C = sample_from_rt();
-	#elif (PS_AFAIL == AFAIL_RGB_ONLY)
+	#elif (PS_AFAIL == AFAIL_RGB_ONLY || PS_AFAIL == AFAIL_RGB_ONLY_SW_Z)
 		if (!atst_pass)
 		{
-		#if NEEDS_RT
-			C.a = sample_from_rt().a;
-		#endif
-		#if NEEDS_DEPTH && PS_ZWRITE
+		C.a = sample_from_rt().a;
+		#if PS_AFAIL == AFAIL_RGB_ONLY_SW_Z
 			input_z = sample_from_depth().r;
 		#endif
 		}
@@ -1246,8 +1244,8 @@ void ps_main()
 	input_z = min(input_z, MaxDepthPS);
 #endif
 
-#if PS_ZWRITE
-	#if NEEDS_DEPTH && PS_NO_COLOR1 && (DEPTH_FEEDBACK_SUPPORT == 2)
+#if ZWRITE
+	#if SW_DEPTH && PS_NO_COLOR1 && (DEPTH_FEEDBACK_SUPPORT == 2)
 		// Depth as color write. For depth as color feedback we write to both
 		// color copy and real depth to avoid having to copy back to real depth.
 		// Warning: do not write SV_Target1 until the end since the value might

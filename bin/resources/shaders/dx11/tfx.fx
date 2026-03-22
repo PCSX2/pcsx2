@@ -32,6 +32,7 @@
 #define AFAIL_ZB_ONLY 2
 #define AFAIL_RGB_ONLY 3
 #define AFAIL_RGB_ONLY_DSB 4
+#define AFAIL_RGB_ONLY_SW_Z 5
 #endif
 
 #ifndef PS_ATST_NONE
@@ -93,7 +94,6 @@
 #define PS_DITHER_ADJUST 0
 #define PS_ZCLAMP 0
 #define PS_ZFLOOR 0
-#define PS_ZWRITE 0
 #define PS_SCANMSK 0
 #define PS_AUTOMATIC_LOD 0
 #define PS_MANUAL_LOD 0
@@ -102,15 +102,16 @@
 #define PS_NO_COLOR1 0
 #define PS_DATE 0
 #define PS_TEX_IS_FB 0
-#define PS_COLOR_FEEDBACK 0
-#define PS_DEPTH_FEEDBACK 0
 #endif
 
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
 #define SW_BLEND_NEEDS_RT (SW_BLEND && (PS_BLEND_A == 1 || PS_BLEND_B == 1 || PS_BLEND_C == 1 || PS_BLEND_D == 1))
 #define SW_AD_TO_HW (PS_BLEND_C == 1 && PS_A_MASKED)
-#define AFAIL_NEEDS_RT (PS_AFAIL == AFAIL_ZB_ONLY || PS_AFAIL == AFAIL_RGB_ONLY)
-#define AFAIL_NEEDS_DEPTH (PS_AFAIL == AFAIL_FB_ONLY || PS_AFAIL == AFAIL_RGB_ONLY)
+#define NEEDS_RT_FOR_AFAIL (PS_AFAIL == AFAIL_ZB_ONLY || PS_AFAIL == AFAIL_RGB_ONLY || PS_AFAIL == AFAIL_RGB_ONLY_SW_Z)
+#define NEEDS_DEPTH_FOR_AFAIL (PS_AFAIL == AFAIL_FB_ONLY || PS_AFAIL == AFAIL_RGB_ONLY_SW_Z)
+#define NEEDS_DEPTH_FOR_ZTST (PS_ZTST == ZTST_GEQUAL || PS_ZTST == ZTST_GREATER)
+#define SW_DEPTH (NEEDS_DEPTH_FOR_AFAIL || NEEDS_DEPTH_FOR_ZTST)
+#define ZWRITE (PS_ZFLOOR || PS_ZCLAMP || SW_DEPTH)
 
 struct VS_INPUT
 {
@@ -168,16 +169,16 @@ struct PS_OUTPUT
 #endif
 #endif
 #endif
-#if PS_ZWRITE
+#if ZWRITE
 	// In DX12 we do depth feedback loops with a color copy.
-	#if PS_DEPTH_FEEDBACK && PS_NO_COLOR1 && DX12
+	#if SW_DEPTH && PS_NO_COLOR1 && DX12
 		#if NUM_RTS > 0
 			float depth_color : SV_Target1;
 		#else
 			float depth_color : SV_Target0;
 		#endif
 	#endif
-	#if PS_HAS_CONSERVATIVE_DEPTH && !PS_DEPTH_FEEDBACK
+	#if PS_HAS_CONSERVATIVE_DEPTH && !SW_DEPTH
 		float depth : SV_DepthLessEqual;
 	#else
 		float depth : SV_Depth;
@@ -1067,16 +1068,13 @@ PS_OUTPUT ps_main(PS_INPUT input)
 	input.p.z = floor(input.p.z * exp2(32.0f)) * exp2(-32.0f);
 #endif
 
-#if PS_DEPTH_FEEDBACK && (PS_ZTST == ZTST_GEQUAL || PS_ZTST == ZTST_GREATER)
-	#if PS_ZTST == ZTST_GEQUAL
-		if (input.p.z < DepthTexture.Load(int3(input.p.xy, 0)).r)
-			discard;
-	#elif PS_ZTST == ZTST_GREATER
-		if (input.p.z <= DepthTexture.Load(int3(input.p.xy, 0)).r)
-			discard;
-	#endif
-#endif // PS_ZTST
-
+#if PS_ZTST == ZTST_GEQUAL
+	if (input.p.z < DepthTexture.Load(int3(input.p.xy, 0)).r)
+		discard;
+#elif PS_ZTST == ZTST_GREATER
+	if (input.p.z <= DepthTexture.Load(int3(input.p.xy, 0)).r)
+		discard;
+#endif
 	float4 C = ps_color(input);
 
 #if PS_FIXED_ONE_A
@@ -1257,19 +1255,17 @@ PS_OUTPUT ps_main(PS_INPUT input)
 #endif
 
 	// Alpha test with feedback
-#if (PS_AFAIL == AFAIL_FB_ONLY) && PS_DEPTH_FEEDBACK && PS_ZWRITE
+#if PS_AFAIL == AFAIL_FB_ONLY
 	if (!atst_pass)
 		input.p.z = DepthTexture.Load(int3(input.p.xy, 0)).r;
-#elif (PS_AFAIL == AFAIL_ZB_ONLY) && PS_COLOR_FEEDBACK
+#elif PS_AFAIL == AFAIL_ZB_ONLY
 	if (!atst_pass)
 		output.c0 = RtTexture.Load(int3(input.p.xy, 0));
-#elif (PS_AFAIL == AFAIL_RGB_ONLY)
+#elif PS_AFAIL == AFAIL_RGB_ONLY || PS_AFAIL == AFAIL_RGB_ONLY_SW_Z
 	if (!atst_pass)
 	{
-	#if PS_COLOR_FEEDBACK
-		output.c0.a = RtTexture.Load(int3(input.p.xy, 0)).a;
-	#endif
-	#if PS_DEPTH_FEEDBACK && PS_ZWRITE
+	output.c0.a = RtTexture.Load(int3(input.p.xy, 0)).a;
+	#if PS_AFAIL == AFAIL_RGB_ONLY_SW_Z
 		input.p.z = DepthTexture.Load(int3(input.p.xy, 0)).r; 
 	#endif
 	}
@@ -1283,8 +1279,8 @@ PS_OUTPUT ps_main(PS_INPUT input)
 	input.p.z = min(input.p.z, MaxDepthPS);
 #endif
 
-#if PS_ZWRITE
-#if PS_DEPTH_FEEDBACK && PS_NO_COLOR1 && DX12
+#if ZWRITE
+#if SW_DEPTH && PS_NO_COLOR1 && DX12
 	// Output color clone for feedback as well as real depth.
 	output.depth_color = input.p.z;
 #endif

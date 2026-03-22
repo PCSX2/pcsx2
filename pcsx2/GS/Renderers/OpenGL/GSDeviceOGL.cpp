@@ -1550,7 +1550,6 @@ std::string GSDeviceOGL::GetPSSource(const PSSelector& sel)
 		+ fmt::format("#define PS_DITHER_ADJUST {}\n", sel.dither_adjust)
 		+ fmt::format("#define PS_ZCLAMP {}\n", sel.zclamp)
 		+ fmt::format("#define PS_ZFLOOR {}\n", sel.zfloor)
-		+ fmt::format("#define PS_ZWRITE {}\n", sel.zwrite)
 		+ fmt::format("#define PS_BLEND_MIX {}\n", sel.blend_mix)
 		+ fmt::format("#define PS_ROUND_INV {}\n", sel.round_inv)
 		+ fmt::format("#define PS_FIXED_ONE_A {}\n", sel.fixed_one_a)
@@ -1559,8 +1558,6 @@ std::string GSDeviceOGL::GetPSSource(const PSSelector& sel)
 		+ fmt::format("#define PS_NO_COLOR {}\n", sel.no_color)
 		+ fmt::format("#define PS_NO_COLOR1 {}\n", sel.no_color1)
 		+ fmt::format("#define PS_ZTST {}\n", sel.ztst)
-		+ fmt::format("#define PS_COLOR_FEEDBACK {}\n", sel.color_feedback)
-		+ fmt::format("#define PS_DEPTH_FEEDBACK {}\n", sel.depth_feedback)
 	;
 
 	std::string src = GenGlslHeader("ps_main", GL_FRAGMENT_SHADER, macro);
