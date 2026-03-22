@@ -4371,7 +4371,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		}
 	}
 
-	GSTexture12* draw_ds_as_rt = static_cast<GSTexture12*>(config.ds_as_rt);
+	GSTexture12* draw_ds_as_rt = static_cast<GSTexture12*>(m_ds_as_rt);
 
 	const bool feedback_rt = draw_rt && (config.require_one_barrier || (config.require_full_barrier && m_features.texture_barrier) || (config.tex && config.tex == config.rt));
 	const bool feedback_depth = draw_ds_as_rt != nullptr;
@@ -4612,7 +4612,7 @@ void GSDevice12::UpdateHWPipelineSelector(GSHWDrawConfig& config)
 	m_pipeline_selector.topology = static_cast<u32>(config.topology);
 	m_pipeline_selector.rt = config.rt != nullptr;
 	m_pipeline_selector.ds = config.ds != nullptr;
-	m_pipeline_selector.ds_as_rt = config.ds_as_rt != nullptr;
+	m_pipeline_selector.ds_as_rt = m_ds_as_rt != nullptr;
 }
 
 void GSDevice12::UploadHWDrawVerticesAndIndices(GSHWDrawConfig& config)

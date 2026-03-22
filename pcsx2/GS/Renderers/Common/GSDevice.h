@@ -812,7 +812,6 @@ struct alignas(16) GSHWDrawConfig
 	};
 
 	GSTexture* rt;        ///< Render target
-	GSTexture* ds_as_rt;  ///< Depth as color (if supported)
 	GSTexture* ds;        ///< Depth stencil
 	GSTexture* tex;       ///< Source texture
 	GSTexture* pal;       ///< Palette texture
@@ -1039,6 +1038,7 @@ protected:
 	GSTexture* m_current = nullptr;
 	GSTexture* m_cas = nullptr;
 	GSTexture* m_colclip_rt = nullptr; ///< Temp hw colclip texture
+	GSTexture* m_ds_as_rt = nullptr; ///< Depth as color
 
 	bool AcquireWindow(bool recreate_window);
 
@@ -1075,6 +1075,11 @@ public:
 	GSTexture* GetColorClipTexture() const { return m_colclip_rt; }
 		
 	void SetColorClipTexture(GSTexture* tex) { m_colclip_rt = tex; }
+
+	bool IsDSInRTActive() const { return m_ds_as_rt; }
+	/// Create a temporary color clone of depth for depth feedback
+	void BeginDSAsRT(GSTexture* ds, const GSVector4i& drawarea);
+	void EndDSAsRT();
 
 	/// Returns a string representing the specified API.
 	static const char* RenderAPIToString(RenderAPI api);
