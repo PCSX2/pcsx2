@@ -870,18 +870,17 @@ static MRCOwned<id<MTLSamplerState>> CreateSampler(id<MTLDevice> dev, GSHWDrawCo
 	return ret;
 }
 
-static GSDevice::DepthFeedbackSupport getDepthFeedback(const GSMTLDevice& dev, bool fbfetch)
+static bool getDepthFeedback(const GSMTLDevice& dev, bool fbfetch)
 {
 	switch (GSConfig.DepthFeedbackMode)
 	{
-		case GSDepthFeedbackMode::None:      return GSDevice::DepthFeedbackSupport::None;
-		case GSDepthFeedbackMode::Auto:      return dev.features.preferred_depth_feedback;
-		case GSDepthFeedbackMode::DepthAsRT: return GSDevice::DepthFeedbackSupport::DepthAsRT;
+		case GSDepthFeedbackMode::Auto:
+			return dev.features.depth_feedback;
 		case GSDepthFeedbackMode::Depth:
-			if (!fbfetch)
-				return GSDevice::DepthFeedbackSupport::Depth;
-			else
-				return GSDevice::DepthFeedbackSupport::DepthAsRT; // Depth + FBFetch not supported
+			// Depth feedback + FBFetch not supported
+			return !fbfetch;
+		default:
+			return false;
 	}
 }
 
@@ -977,7 +976,7 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	// Init metal stuff
 	m_fn_constants = MRCTransfer([MTLFunctionConstantValues new]);
 	setFnConstantB(m_fn_constants, m_features.framebuffer_fetch, GSMTLConstantIndex_FRAMEBUFFER_FETCH);
-	setFnConstantI(m_fn_constants, m_features.depth_feedback, GSMTLConstantIndex_DEPTH_FEEDBACK);
+	setFnConstantB(m_fn_constants, m_features.depth_feedback,    GSMTLConstantIndex_DEPTH_FEEDBACK);
 
 	m_draw_sync_fence = MRCTransfer([m_dev.dev newFence]);
 	[m_draw_sync_fence setLabel:@"Draw Sync Fence"];
@@ -1018,7 +1017,7 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		const bool depth   = i & 2;
 		const bool stencil = i & 4;
 		const bool rt1     = i & 8;
-		if (rt1 && m_features.depth_feedback != GSDevice::DepthFeedbackSupport::DepthAsRT)
+		if (rt1 && m_features.depth_feedback)
 			continue;
 		if (rt1 && !depth)
 			continue;
@@ -1332,6 +1331,7 @@ std::string GSDeviceMTL::GetDriverInfo() const
 	desc += "\n    Framebuffer Fetch:   " + std::string(m_dev.features.framebuffer_fetch   ? "Supported" : "Unsupported");
 	desc += "\n    Memoryless Textures: " + std::string(m_dev.features.memoryless_textures ? "Supported" : "Unsupported");
 	desc += "\n    Primitive ID:        " + std::string(m_dev.features.primid              ? "Supported" : "Unsupported");
+	desc += "\n    Depth Feedback:      " + std::string(m_dev.features.depth_feedback      ? "Supported" : "Unsupported");
 	desc += "\n    Shader Version:      " + std::string(to_string(m_dev.features.shader_version));
 	desc += "\n    Max Texture Size:    " + std::to_string(m_dev.features.max_texsize);
 	return desc;
@@ -2380,7 +2380,7 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 	}
 
 	const bool feedback_depth = config.ps.IsFeedbackLoopDepth();
-	const bool rt1 = feedback_depth && m_features.depth_feedback == GSDevice::DepthFeedbackSupport::DepthAsRT;
+	const bool rt1 = feedback_depth && !m_features.depth_feedback;
 	BeginRenderPass(@"RenderHW", rt, MTLLoadActionLoad, config.ds, MTLLoadActionLoad, stencil, MTLLoadActionLoad, rt1);
 	id<MTLRenderCommandEncoder> mtlenc = m_current_render.encoder;
 	FlushDebugEntries(mtlenc);
@@ -2391,8 +2391,7 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 		MRESetTexture(rt, GSMTLTextureIndexRenderTarget);
 	if (feedback_depth)
 	{
-		bool depth_as_rt = m_features.depth_feedback == GSDevice::DepthFeedbackSupport::DepthAsRT;
-		GSTexture* tex = depth_as_rt && !m_features.framebuffer_fetch ? m_ds_as_rt : config.ds;
+		GSTexture* tex = !m_features.depth_feedback && !m_features.framebuffer_fetch ? m_ds_as_rt : config.ds;
 		MRESetTexture(tex, GSMTLTextureIndexDepthTarget);
 	}
 	if (primid_tex)

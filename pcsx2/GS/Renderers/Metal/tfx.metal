@@ -12,7 +12,7 @@ constant uint SHUFFLE_READ = 1;
 constant uint SHUFFLE_READWRITE = 3;
 
 constant bool HAS_FBFETCH           [[function_constant(GSMTLConstantIndex_FRAMEBUFFER_FETCH)]];
-constant uint DEPTH_FEEDBACK_RAW    [[function_constant(GSMTLConstantIndex_DEPTH_FEEDBACK)]];
+constant bool DEPTH_FEEDBACK        [[function_constant(GSMTLConstantIndex_DEPTH_FEEDBACK)]];
 constant bool FST                   [[function_constant(GSMTLConstantIndex_FST)]];
 constant bool IIP                   [[function_constant(GSMTLConstantIndex_IIP)]];
 constant bool VS_POINT_SIZE         [[function_constant(GSMTLConstantIndex_VS_POINT_SIZE)]];
@@ -74,12 +74,10 @@ constant bool PS_REGION_RECT        [[function_constant(GSMTLConstantIndex_PS_RE
 constant uint PS_SCANMSK            [[function_constant(GSMTLConstantIndex_PS_SCANMSK)]];
 constant uint PS_SW_ANISO           [[function_constant(GSMTLConstantIndex_PS_SW_ANISO)]];
 
-using GSShader::DepthFeedbackSupport;
 using GSShader::VSExpand;
 using AFAIL = GSShader::PS_AFAIL;
 using ATST = GSShader::PS_ATST;
 using GSShader::ZTST;
-constant DepthFeedbackSupport DEPTH_FEEDBACK = static_cast<DepthFeedbackSupport>(DEPTH_FEEDBACK_RAW);
 constant VSExpand VS_EXPAND_TYPE = static_cast<VSExpand>(VS_EXPAND_TYPE_RAW);
 constant AFAIL PS_AFAIL = static_cast<AFAIL>(PS_AFAIL_RAW);
 constant ATST  PS_ATST  = static_cast<ATST>(PS_ATST_RAW);
@@ -121,7 +119,7 @@ constant bool PS_COLOR1 = !PS_NO_COLOR1;
 constant bool PS_ZOUTPUT = PS_ZCLAMP || PS_ZFLOOR || SW_DEPTH;
 constant bool PS_ZOUTPUT_LESS = PS_ZOUTPUT && !SW_DEPTH;
 constant bool PS_ZOUTPUT_ANY  = PS_ZOUTPUT && SW_DEPTH;
-constant bool PS_ZOUTPUT_COLOR = PS_ZOUTPUT_ANY && DEPTH_FEEDBACK == DepthFeedbackSupport::DepthAsRT;
+constant bool PS_ZOUTPUT_COLOR = PS_ZOUTPUT_ANY && !DEPTH_FEEDBACK;
 
 struct MainVSIn
 {
@@ -1406,14 +1404,14 @@ fragment float4 fbfetch_test(float4 in [[color(0), raster_order_group(0)]])
 
 constant bool NEEDS_RT_TEX = NEEDS_RT && !HAS_FBFETCH;
 constant bool NEEDS_RT_FBF = NEEDS_RT &&  HAS_FBFETCH;
-constant bool NEEDS_DS_FBF = SW_DEPTH &&  HAS_FBFETCH && DEPTH_FEEDBACK == DepthFeedbackSupport::DepthAsRT;
+constant bool NEEDS_DS_FBF = SW_DEPTH &&  HAS_FBFETCH && !DEPTH_FEEDBACK;
 #else
 constant bool NEEDS_RT_TEX = NEEDS_RT;
 constant bool NEEDS_DS_FBF = false;
 constant float ds_fbf = 0;
 #endif
-constant bool NEEDS_DS_TEX   = SW_DEPTH && DEPTH_FEEDBACK == DepthFeedbackSupport::DepthAsRT && !NEEDS_DS_FBF;
-constant bool NEEDS_DS_DEPTH = SW_DEPTH && DEPTH_FEEDBACK == DepthFeedbackSupport::Depth || NEEDS_DS_FBF;
+constant bool NEEDS_DS_TEX   = SW_DEPTH && !DEPTH_FEEDBACK && !NEEDS_DS_FBF;
+constant bool NEEDS_DS_DEPTH = SW_DEPTH && DEPTH_FEEDBACK || NEEDS_DS_FBF;
 
 fragment MainPSOut ps_main(
 	MainPSIn in [[stage_in]],
@@ -1453,22 +1451,12 @@ fragment MainPSOut ps_main(
 
 	if (SW_DEPTH)
 	{
-		switch (DEPTH_FEEDBACK)
-		{
-			case DepthFeedbackSupport::Depth:
-				main.current_depth = ds_depth.read(coord);
-				break;
-			case DepthFeedbackSupport::DepthAsRT:
-				if (NEEDS_DS_FBF)
-					main.current_depth = ds_fbf < 0 ? ds_depth.read(coord) : ds_fbf;
-				else
-					main.current_depth = ds_tex.read(coord).x;
-				break;
-			case DepthFeedbackSupport::None:
-				// Should never happen
-				main.current_depth = 0;
-				break;
-		}
+		if (DEPTH_FEEDBACK)
+			main.current_depth = ds_depth.read(coord);
+		else if (NEEDS_DS_FBF)
+			main.current_depth = ds_fbf < 0 ? ds_depth.read(coord) : ds_fbf;
+		else
+			main.current_depth = ds_tex.read(coord).x;
 	}
 
 	if (NEEDS_RT)

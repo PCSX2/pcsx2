@@ -930,8 +930,6 @@ public:
 		Performance
 	};
 
-	using DepthFeedbackSupport = GSShader::DepthFeedbackSupport;
-
 	// clang-format off
 	struct FeatureSupport
 	{
@@ -950,7 +948,7 @@ public:
 		bool stencil_buffer       : 1; ///< Supports stencil buffer, and can use for DATE.
 		bool cas_sharpening       : 1; ///< Supports sufficient functionality for contrast adaptive sharpening.
 		bool test_and_sample_depth: 1; ///< Supports concurrently binding the depth-stencil buffer for sampling and depth testing.
-		DepthFeedbackSupport depth_feedback : 2; ///< Support for depth feedback loops.
+		bool depth_feedback       : 1; ///< Depth feedback loops can be done with DS directly (otherwise need to copy to separate RT).
 		bool aa1                  : 1; ///< Supports the GS AA1 feature.
 		FeatureSupport()
 		{

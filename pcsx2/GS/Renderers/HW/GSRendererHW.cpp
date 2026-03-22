@@ -5796,7 +5796,7 @@ void GSRendererHW::EmulateZbufferAA1()
 {
 	const GSDevice::FeatureSupport& features = g_gs_device->Features();
 
-	pxAssert(!features.aa1 || features.depth_feedback != GSDevice::DepthFeedbackSupport::None);
+	pxAssert(!features.aa1 || features.texture_barrier || features.multidraw_fb_copy);
 
 	if (IsCoverageAlphaSupported())
 	{
@@ -6149,8 +6149,7 @@ void GSRendererHW::DetermineBarriers(GSTextureCache::Target* rt)
 
 		// If we use depth feedback directly, we must use barriers for the depth texture.
 		// If we use depth-as-color feedback, then FB fetch can be used for depth also.
-		bool need_barriers_for_depth = m_conf.ps.IsFeedbackLoopDepth() &&
-			(features.depth_feedback == GSDevice::DepthFeedbackSupport::Depth);
+		bool need_barriers_for_depth = m_conf.ps.IsFeedbackLoopDepth() && features.depth_feedback;
 
 		if (!need_barriers_for_depth)
 		{
@@ -6952,8 +6951,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, DATEOptio
 		}
 	}
 
-	if (m_conf.alpha_test == GSHWDrawConfig::AlphaTestMode::FEEDBACK &&
-		features.depth_feedback == GSDevice::DepthFeedbackSupport::DepthAsRT)
+	if (m_conf.alpha_test == GSHWDrawConfig::AlphaTestMode::FEEDBACK && !features.depth_feedback)
 	{
 		// If we are doing feedback alpha test with a second RT we must use SW blending to avoid
 		// mixing dual source blending with multiple render targets.
@@ -8435,7 +8433,7 @@ void GSRendererHW::EmulateAlphaTest(DATEOptions& date_options)
 	const bool free_fbfetch_feedback = features.framebuffer_fetch && !afail_needs_depth;
 
 	// Determine if we have the correct features for depth feedback.
-	const bool depth_feedback_supported = features.depth_feedback != GSDevice::DepthFeedbackSupport::None;
+	const bool depth_feedback_supported = features.texture_barrier || features.multidraw_fb_copy;
 
 	// We need depth feedback but do not have the correct features.
 	const bool avoid_feedback = afail_needs_depth && !depth_feedback_supported;
@@ -8929,7 +8927,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 
 	SetupIA(rtscale, vs_scale_x, vs_scale_y, m_channel_shuffle_width != 0);
 
-	if (m_conf.ds && m_conf.ps.IsFeedbackLoopDepth() && g_gs_device->Features().depth_feedback == GSDevice::DepthFeedbackSupport::DepthAsRT)
+	if (m_conf.ds && m_conf.ps.IsFeedbackLoopDepth() && !g_gs_device->Features().depth_feedback)
 	{
 		GL_PUSH("HW: Creating temporary R32 RT for depth feedback");
 
