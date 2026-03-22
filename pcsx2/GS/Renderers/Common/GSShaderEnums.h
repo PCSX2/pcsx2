@@ -19,6 +19,13 @@ enum class VSExpand : uint8_t
 	TriangleAA1 = 5,
 };
 
+enum class DepthFeedbackSupport : uint32_t
+{
+	None      = 0, ///< No support for depth feedback loops.
+	Depth     = 1, ///< Implement depth feedback loops directly on the depth buffer.
+	DepthAsRT = 2, ///< Implement depth feedback loops by first converting depth to a color RT.
+};
+
 enum class PS_ATST : uint32_t
 {
 	NONE = 0,
@@ -37,6 +44,15 @@ enum class PS_AFAIL : uint32_t
 	RGB_ONLY = 3,      ///< RGB only with hardware Z discard and software A discard
 	RGB_ONLY_DSB = 4,  ///< RGB only with dual source blend
 	RGB_ONLY_SW_Z = 5, ///< RGB only with software Z discard
+};
+
+// Identical to GS_ZTST
+enum class ZTST : uint32_t
+{
+	NEVER   = 0,
+	ALWAYS  = 1,
+	GEQUAL  = 2,
+	GREATER = 3,
 };
 
 enum class PS_AA1 : uint32_t

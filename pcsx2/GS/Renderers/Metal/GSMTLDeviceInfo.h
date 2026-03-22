@@ -11,6 +11,7 @@
 
 #include "common/MRCHelpers.h"
 #include "common/Pcsx2Types.h"
+#include "GS/Renderers/Common/GSShaderEnums.h"
 #include <Metal/Metal.h>
 
 struct GSMTLDevice
@@ -23,15 +24,18 @@ struct GSMTLDevice
 		Metal23, ///< Metal 2.3 (macOS 11, iOS 14)
 	};
 
+	using DepthFeedbackSupport = GSShader::DepthFeedbackSupport;
+
 	struct Features
 	{
-		bool unified_memory;
-		bool texture_swizzle;
-		bool framebuffer_fetch;
-		bool primid;
-		bool slow_color_compression; ///< Color compression seems to slow down rt read on AMD
-		bool has_fast_half;
+		bool unified_memory         : 1;
+		bool texture_swizzle        : 1;
+		bool framebuffer_fetch      : 1;
+		bool primid                 : 1;
+		bool slow_color_compression : 1; ///< Color compression seems to slow down rt read on AMD
+		bool has_fast_half          : 1;
 		MetalVersion shader_version;
+		DepthFeedbackSupport preferred_depth_feedback : 8;
 		int max_texsize;
 	};
 
