@@ -830,7 +830,8 @@ struct Pcsx2Config
 					VideoCaptureAutoResolution : 1,
 					EnableAudioCapture : 1,
 					EnableAudioCaptureParameters : 1,
-					OrganizeSnapshotsByGame : 1;
+					OrganizeSnapshotsByGame : 1,
+					OrganizeVideoCaptureByGame : 1;
 			};
 		};
 
