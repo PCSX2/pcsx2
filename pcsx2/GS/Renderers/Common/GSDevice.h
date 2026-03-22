@@ -402,7 +402,6 @@ struct alignas(16) GSHWDrawConfig
 				// Depth writing
 				u32 zclamp : 1;
 				u32 zfloor : 1;
-				u32 zwrite : 1;
 
 				// Hack
 				u32 tcoffsethack : 1;
@@ -416,10 +415,6 @@ struct alignas(16) GSHWDrawConfig
 
 				// Scan mask
 				u32 scanmsk : 2;
-
-				// Feedback
-				u32 color_feedback : 1;
-				u32 depth_feedback : 1;
 			};
 
 			struct
@@ -438,12 +433,15 @@ struct alignas(16) GSHWDrawConfig
 		{
 			const u32 sw_blend_bits = blend_a | blend_b | blend_d;
 			const bool sw_blend_needs_rt = (sw_blend_bits != 0 && ((sw_blend_bits | blend_c) & 1u)) || ((a_masked & blend_c) != 0);
-			return color_feedback || channel_fb || tex_is_fb || fbmask || (date >= 5) || sw_blend_needs_rt;
+			const bool afail_needs_rt = afail == PS_AFAIL::ZB_ONLY || afail == PS_AFAIL::RGB_ONLY || afail == PS_AFAIL::RGB_ONLY_SW_Z;
+			return channel_fb || tex_is_fb || fbmask || (date >= 5) || sw_blend_needs_rt || afail_needs_rt;
 		}
 
 		__fi bool IsFeedbackLoopDepth() const
 		{
-			return depth_feedback;
+			const bool afail_needs_depth = afail == PS_AFAIL::FB_ONLY || afail == PS_AFAIL::RGB_ONLY_SW_Z;
+			const bool ztst_needs_depth = ztst == ZTST_GEQUAL || ztst == ZTST_GREATER;
+			return afail_needs_depth || ztst_needs_depth;
 		}
 
 		/// Disables color output from the pixel shader, this is done when all channels are masked.

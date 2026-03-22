@@ -26,14 +26,15 @@ enum class PS_ATST : uint32_t
 	NOTEQUAL = 4
 };
 
-// Identical with the usual GS enum except for the RGB_ONLY_DSB
+// Identical to the usual GS enum except for RGB_ONLY_DSB and RGB_ONLY_SW_Z
 enum class PS_AFAIL : uint32_t
 {
-	KEEP = 0,
-	FB_ONLY = 1,
-	ZB_ONLY = 2,
-	RGB_ONLY = 3,
-	RGB_ONLY_DSB = 4 // RGB only with dual source blend.
+	KEEP = 0,          ///< Hardware discard
+	FB_ONLY = 1,       ///< FB only with software Z discard
+	ZB_ONLY = 2,       ///< ZB only with software RGBA discard
+	RGB_ONLY = 3,      ///< RGB only with hardware Z discard and software A discard
+	RGB_ONLY_DSB = 4,  ///< RGB only with dual source blend
+	RGB_ONLY_SW_Z = 5, ///< RGB only with software Z discard
 };
 
 } // namespace GSShader
