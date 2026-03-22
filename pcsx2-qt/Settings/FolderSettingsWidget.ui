@@ -46,11 +46,11 @@
         <property name="text">
          <string>Used for storing shaders, game list, and achievement data.</string>
         </property>
+        <property name="textInteractionFlags">
+         <set>Qt::TextInteractionFlag::TextBrowserInteraction</set>
+        </property>
         <property name="buddy">
          <cstring>cache</cstring>
-        </property>
-        <property name="textInteractionFlags">
-         <set>Qt::TextBrowserInteraction</set>
         </property>
        </widget>
       </item>
@@ -92,11 +92,11 @@
         <property name="text">
          <string>Used for storing .pnach files containing game cheats.</string>
         </property>
+        <property name="textInteractionFlags">
+         <set>Qt::TextInteractionFlag::TextBrowserInteraction</set>
+        </property>
         <property name="buddy">
          <cstring>cheats</cstring>
-        </property>
-        <property name="textInteractionFlags">
-         <set>Qt::TextBrowserInteraction</set>
         </property>
        </widget>
       </item>
@@ -139,7 +139,7 @@
          <string>Used for saving screenshots and GS dumps.</string>
         </property>
         <property name="textInteractionFlags">
-         <set>Qt::TextBrowserInteraction</set>
+         <set>Qt::TextInteractionFlag::TextBrowserInteraction</set>
         </property>
         <property name="buddy">
          <cstring>snapshots</cstring>
@@ -167,11 +167,11 @@
         <property name="text">
          <string>Used for storing save states.</string>
         </property>
+        <property name="textInteractionFlags">
+         <set>Qt::TextInteractionFlag::TextBrowserInteraction</set>
+        </property>
         <property name="buddy">
          <cstring>saveStates</cstring>
-        </property>
-        <property name="textInteractionFlags">
-         <set>Qt::TextBrowserInteraction</set>
         </property>
        </widget>
       </item>
@@ -237,11 +237,11 @@
         <property name="text">
          <string>Used for storing covers in the game grid/Big Picture UIs.</string>
         </property>
+        <property name="textInteractionFlags">
+         <set>Qt::TextInteractionFlag::TextBrowserInteraction</set>
+        </property>
         <property name="buddy">
          <cstring>covers</cstring>
-        </property>
-        <property name="textInteractionFlags">
-         <set>Qt::TextBrowserInteraction</set>
         </property>
        </widget>
       </item>
@@ -251,7 +251,7 @@
    <item>
     <widget class="QGroupBox" name="videoDumpDirectory">
      <property name="title">
-      <string>Video Dumping Directory</string>
+      <string>Video Recording Directory</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_7">
       <item row="3" column="2">
@@ -271,6 +271,19 @@
         </property>
        </widget>
       </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="videoDumpLabel">
+        <property name="text">
+         <string>Used for storing video recordings.</string>
+        </property>
+        <property name="textInteractionFlags">
+         <set>Qt::TextInteractionFlag::TextBrowserInteraction</set>
+        </property>
+        <property name="buddy">
+         <cstring>videoDumpingDirectory</cstring>
+        </property>
+       </widget>
+      </item>
       <item row="3" column="3">
        <widget class="QPushButton" name="videoDumpingDirectoryReset">
         <property name="text">
@@ -278,16 +291,10 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="videoDumpLabel">
+      <item row="4" column="0">
+       <widget class="QCheckBox" name="organizeVideoDumpByGame">
         <property name="text">
-         <string>Used for storing video captures.</string>
-        </property>
-        <property name="buddy">
-         <cstring>videoDumpingDirectory</cstring>
-        </property>
-        <property name="textInteractionFlags">
-         <set>Qt::TextBrowserInteraction</set>
+         <string>Save Video Recording in Game-Specific Folders</string>
         </property>
        </widget>
       </item>

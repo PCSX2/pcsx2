@@ -112,12 +112,12 @@ bool GSRenderer::Merge(int field)
 				(!(m_regs->PMODE.MMOD == 1 && m_regs->PMODE.ALP == 0) || // Blend RC1 with non-zero alpha.
 				(m_regs->PMODE.AMOD == 0) ||                             // Use alpha of RC1.
 				(feedback_merge && m_regs->EXTBUF.FBIN == 0));           // Use RC1 for feedback merge.
-		
+
 		// The following two flags determine if RC1 output completely overwrites RC2 output
 		// due to the alpha used for blending and the respective rectangles of the outputs.
 		const bool rc1_contains_rc2 =
 			PCRTCDisplays.PCRTCDisplays[0].displayRect.rcontains(PCRTCDisplays.PCRTCDisplays[1].displayRect);
-		
+
 		const bool rc1_overwrites_rc2 = use_rc1 && rc1_contains_rc2 && m_regs->PMODE.MMOD == 1 && m_regs->PMODE.ALP == 255;
 
 		const bool use_rc2 =
@@ -184,7 +184,7 @@ bool GSRenderer::Merge(int field)
 
 		// src_gs_read is the size which we're really reading from GS memory.
 		src_gs_read[i] = ((GSVector4(curCircuit.framebufferRect) + GSVector4(0, y_offset[i], 0, y_offset[i])) * scale) / GSVector4(tex[i]->GetSize()).xyxy();
-		
+
 		float interlace_offset = 0.0f;
 		if (isReallyInterlaced() && m_regs->SMODE2.FFMD && !is_bob && !GSConfig.DisableInterlaceOffset && GSConfig.InterlaceMode != GSInterlaceMode::Off)
 		{
@@ -194,7 +194,7 @@ bool GSRenderer::Merge(int field)
 		if (m_scanmask_used)
 		{
 			int displayIntOffset = PCRTCDisplays.PCRTCDisplays[i].displayRect.y - PCRTCDisplays.PCRTCDisplays[1 - i].displayRect.y;
-			
+
 			if (displayIntOffset > 0)
 			{
 				displayIntOffset &= 1;
@@ -908,7 +908,8 @@ std::string GSGetBaseSnapshotFilename()
 	// If organize by game is enabled, use or create a game-specific folder.
 	if (GSConfig.OrganizeSnapshotsByGame)
 	{
-		std::string game_name = VMManager::GetTitle(true);
+		const bool prefer_english = Host::GetBaseBoolSettingValue("UI", "PreferEnglishGameList", false);
+		std::string game_name = VMManager::GetTitle(prefer_english);
 		if (!game_name.empty())
 		{
 			Path::SanitizeFileName(&game_name);
@@ -925,6 +926,21 @@ std::string GSGetBaseSnapshotFilename()
 
 std::string GSGetBaseVideoFilename()
 {
+	// If organize by game is enabled, use or create a game-specific folder.
+	if (GSConfig.OrganizeVideoCaptureByGame)
+	{
+		const bool prefer_english = Host::GetBaseBoolSettingValue("UI", "PreferEnglishGameList", false);
+		std::string game_name = VMManager::GetTitle(prefer_english);
+		if (!game_name.empty())
+		{
+			Path::SanitizeFileName(&game_name);
+			const std::string game_dir = Path::Combine(EmuFolders::Videos, game_name);
+
+			// Make sure the per-game directory exists or that we can successfully create it.
+			if (FileSystem::DirectoryExists(game_dir.c_str()) || FileSystem::CreateDirectoryPath(game_dir.c_str(), false))
+				return Path::Combine(game_dir, GSGetBaseFilename());
+		}
+	}
 	// prepend video directory
 	return Path::Combine(EmuFolders::Videos, GSGetBaseFilename());
 }

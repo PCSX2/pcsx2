@@ -934,6 +934,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapIntEnumEx(ScreenshotFormat, "ScreenshotFormat");
 	SettingsWrapEntry(ScreenshotQuality);
 	SettingsWrapBitBoolEx(OrganizeSnapshotsByGame, "OrganizeScreenshotsByGame");
+	SettingsWrapBitBoolEx(OrganizeVideoCaptureByGame, "OrganizeVideoCaptureByGame");
 	SettingsWrapEntry(StretchY);
 	SettingsWrapEntryEx(Crop[0], "CropLeft");
 	SettingsWrapEntryEx(Crop[1], "CropTop");
