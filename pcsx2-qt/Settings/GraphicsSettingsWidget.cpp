@@ -120,6 +120,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	connect(m_hw.trilinearFiltering, &QComboBox::currentIndexChanged, this,
 		&GraphicsSettingsWidget::onTrilinearFilteringChanged);
 	onTrilinearFilteringChanged();
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.swAnsio, "EmuCore/GS", "SWAnisotropy", true);
 
 	//////////////////////////////////////////////////////////////////////////
 	// SW Settings
