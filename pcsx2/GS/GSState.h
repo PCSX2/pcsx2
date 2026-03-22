@@ -487,9 +487,9 @@ public:
 	bool SpriteDrawWithoutGaps();
 	void CalculatePrimitiveCoversWithoutGaps();
 	GIFRegTEX0 GetTex0Layer(u32 lod);
-	template<u32 primclass, bool fst>
-	bool GetVertexUVRoundingInfoImpl();
-	bool GetVertexUVRoundingInfo();
+	template<u32 primclass, bool tme, bool fst>
+	bool GetVertexUVRoundingInfoImpl(const bool upscaling);
+	bool GetVertexUVRoundingInfo(const bool tex, const bool upscaling = false);
 };
 
 // We put this in the header because of Multi-ISA.

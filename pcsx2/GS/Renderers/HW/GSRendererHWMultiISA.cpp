@@ -39,7 +39,7 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc, b
 	GSRasterizerData data;
 	GSScanlineGlobalData& gd = data.global;
 
-	const u32 round_uv = static_cast<u32>(hw.GetVertexUVRoundingInfo());
+	const u32 round_uv = PRIM->TME ? static_cast<u32>(hw.GetVertexUVRoundingInfo(true)) : 0u;
 	const u32 fst = PRIM->FST | round_uv; // UV rounding pre-divides ST by Q and saves as UVs.
 
 	hw.m_sw_vertex_buffer.resize(((hw.m_vertex.next + 1) & ~1));

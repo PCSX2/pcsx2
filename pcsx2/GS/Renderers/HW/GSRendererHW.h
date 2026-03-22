@@ -186,6 +186,8 @@ private:
 	GSVector4i m_channel_shuffle_src_valid = GSVector4i::zero();
 	bool m_full_screen_shuffle = false;
 
+	bool m_manual_deswizzle = false;
+
 	GSTextureCache::Target* m_last_rt;
 
 	GIFRegFRAME m_split_clear_start = {};
@@ -280,4 +282,7 @@ public:
 	/// Create a temporary color clone of depth for depth feedback (DX12 and GL only right now)
 	void StartDepthAsRTFeedback();
 	void CleanupDepthAsRTFeedback();
+
+	/// Handle UV rounding and sprite alignment/clamping.
+	void SetupSpriteRoundClampAlign(GSTextureCache::Target* rt, GSTextureCache::Target* ds, GSTextureCache::Source* tex);
 };

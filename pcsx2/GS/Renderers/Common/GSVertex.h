@@ -55,4 +55,5 @@ enum
 {
 	ROUND_UV_UP = 1,
 	ROUND_UV_DOWN = 2,
+	ROUND_UV_PER_PIXEL = 4
 };
