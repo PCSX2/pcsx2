@@ -197,7 +197,7 @@ jobs:
           app_store_connect_api_key_json_file: 'key.json'
 
       - name: Zip Build Artifacts
-        if: inputs.arch == 'x86-64'
+        # if: inputs.arch == 'x86-64'
         run: |
           TAG="$(git tag --points-at HEAD)"
           if [ -z "$TAG" ]; then
@@ -211,7 +211,7 @@ jobs:
           cp "${{ steps.artifact-metadata.outputs.artifact-name }}.tar.xz" ci-artifacts/macOS.tar.xz
 
       - name: Upload Artifact
-        if: inputs.arch == 'x86-64'
+        # if: inputs.arch == 'x86-64'
         uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.artifact-metadata.outputs.artifact-name }}
