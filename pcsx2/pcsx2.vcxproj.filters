@@ -1452,6 +1452,9 @@
     <ClCompile Include="GS\GSDrawingEnvironment.cpp">
       <Filter>System\Ps2\GS\Renderers\Software</Filter>
     </ClCompile>
+    <ClCompile Include="USB\usb-pad\usb-flightstick.cpp">
+      <Filter>System\Ps2\USB\usb-pad</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -2415,6 +2418,9 @@
     </ClInclude>
     <ClInclude Include="SIO\Pad\PadNegcon.h">
       <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-pad\usb-flightstick.h">
+      <Filter>System\Ps2\USB\usb-pad</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
