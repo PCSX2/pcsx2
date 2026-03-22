@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <ui version="4.0">
  <class>FolderSettingsWidget</class>
  <widget class="QWidget" name="FolderSettingsWidget">
@@ -18,7 +18,7 @@
      </property>
      <layout class="QGridLayout" name="gridLayout_3">
       <item row="1" column="0">
-       <widget class="QLineEdit" name="cache"/>
+       <widget class="QLineEdit" name="cache" />
       </item>
       <item row="1" column="1">
        <widget class="QPushButton" name="cacheBrowse">
@@ -44,13 +44,20 @@
       <item row="0" column="0" colspan="4">
        <widget class="QLabel" name="cacheLabel">
         <property name="text">
-         <string>Used for storing shaders, game list, and achievement data.</string>
+         <string
+									>Used for storing shaders, game list, and achievement data.</string>
+        </property>
+        <property name="textInteractionFlags">
+         <set>Qt::TextInteractionFlag::TextBrowserInteraction</set>
+        </property>
+        <property name="textInteractionFlags">
+         <set>Qt::TextInteractionFlag::TextBrowserInteraction</set>
+        </property>
+        <property name="textInteractionFlags">
+         <set>Qt::TextInteractionFlag::TextBrowserInteraction</set>
         </property>
         <property name="buddy">
          <cstring>cache</cstring>
-        </property>
-        <property name="textInteractionFlags">
-         <set>Qt::TextBrowserInteraction</set>
         </property>
        </widget>
       </item>
@@ -64,7 +71,7 @@
      </property>
      <layout class="QGridLayout" name="gridLayout_5">
       <item row="1" column="0">
-       <widget class="QLineEdit" name="cheats"/>
+       <widget class="QLineEdit" name="cheats" />
       </item>
       <item row="1" column="1">
        <widget class="QPushButton" name="cheatsBrowse">
@@ -92,11 +99,11 @@
         <property name="text">
          <string>Used for storing .pnach files containing game cheats.</string>
         </property>
+        <property name="textInteractionFlags">
+         <set>Qt::TextInteractionFlag::TextBrowserInteraction</set>
+        </property>
         <property name="buddy">
          <cstring>cheats</cstring>
-        </property>
-        <property name="textInteractionFlags">
-         <set>Qt::TextBrowserInteraction</set>
         </property>
        </widget>
       </item>
@@ -110,7 +117,7 @@
      </property>
      <layout class="QGridLayout" name="gridLayout">
       <item row="1" column="0">
-       <widget class="QLineEdit" name="snapshots"/>
+       <widget class="QLineEdit" name="snapshots" />
       </item>
       <item row="1" column="1">
        <widget class="QPushButton" name="snapshotsBrowse">
@@ -139,7 +146,7 @@
          <string>Used for saving screenshots and GS dumps.</string>
         </property>
         <property name="textInteractionFlags">
-         <set>Qt::TextBrowserInteraction</set>
+         <set>Qt::TextInteractionFlag::TextBrowserInteraction</set>
         </property>
         <property name="buddy">
          <cstring>snapshots</cstring>
@@ -167,11 +174,11 @@
         <property name="text">
          <string>Used for storing save states.</string>
         </property>
+        <property name="textInteractionFlags">
+         <set>Qt::TextInteractionFlag::TextBrowserInteraction</set>
+        </property>
         <property name="buddy">
          <cstring>saveStates</cstring>
-        </property>
-        <property name="textInteractionFlags">
-         <set>Qt::TextBrowserInteraction</set>
         </property>
        </widget>
       </item>
@@ -190,7 +197,7 @@
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QLineEdit" name="saveStates"/>
+       <widget class="QLineEdit" name="saveStates" />
       </item>
       <item row="1" column="2">
        <widget class="QPushButton" name="saveStatesOpen">
@@ -209,7 +216,7 @@
      </property>
      <layout class="QGridLayout" name="gridLayout_4">
       <item row="1" column="0">
-       <widget class="QLineEdit" name="covers"/>
+       <widget class="QLineEdit" name="covers" />
       </item>
       <item row="1" column="1">
        <widget class="QPushButton" name="coversBrowse">
@@ -235,13 +242,20 @@
       <item row="0" column="0" colspan="4">
        <widget class="QLabel" name="coversLabel">
         <property name="text">
-         <string>Used for storing covers in the game grid/Big Picture UIs.</string>
+         <string
+									>Used for storing covers in the game grid/Big Picture UIs.</string>
+        </property>
+        <property name="textInteractionFlags">
+         <set>Qt::TextInteractionFlag::TextBrowserInteraction</set>
+        </property>
+        <property name="textInteractionFlags">
+         <set>Qt::TextInteractionFlag::TextBrowserInteraction</set>
+        </property>
+        <property name="textInteractionFlags">
+         <set>Qt::TextInteractionFlag::TextBrowserInteraction</set>
         </property>
         <property name="buddy">
          <cstring>covers</cstring>
-        </property>
-        <property name="textInteractionFlags">
-         <set>Qt::TextBrowserInteraction</set>
         </property>
        </widget>
       </item>
@@ -251,7 +265,7 @@
    <item>
     <widget class="QGroupBox" name="videoDumpDirectory">
      <property name="title">
-      <string>Video Dumping Directory</string>
+      <string>Video Recording Directory</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_7">
       <item row="3" column="2">
@@ -262,12 +276,25 @@
        </widget>
       </item>
       <item row="3" column="0">
-       <widget class="QLineEdit" name="videoDumpingDirectory"/>
+       <widget class="QLineEdit" name="videoDumpingDirectory" />
       </item>
       <item row="3" column="1">
        <widget class="QPushButton" name="videoDumpingDirectoryBrowse">
         <property name="text">
          <string>Browse...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="videoDumpLabel">
+        <property name="text">
+         <string>Used for storing video recordings.</string>
+        </property>
+        <property name="textInteractionFlags">
+         <set>Qt::TextInteractionFlag::TextBrowserInteraction</set>
+        </property>
+        <property name="buddy">
+         <cstring>videoDumpingDirectory</cstring>
         </property>
        </widget>
       </item>
@@ -278,16 +305,10 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="videoDumpLabel">
+      <item row="4" column="0">
+       <widget class="QCheckBox" name="organizeVideoDumpByGame">
         <property name="text">
-         <string>Used for storing video captures.</string>
-        </property>
-        <property name="buddy">
-         <cstring>videoDumpingDirectory</cstring>
-        </property>
-        <property name="textInteractionFlags">
-         <set>Qt::TextBrowserInteraction</set>
+         <string>Save Video Recording in Game-Specific Folders</string>
         </property>
        </widget>
       </item>
@@ -337,7 +358,7 @@
   <tabstop>videoDumpingDirectoryReset</tabstop>
  </tabstops>
  <resources>
-  <include location="../resources/resources.qrc"/>
+  <include location="../resources/resources.qrc" />
  </resources>
- <connections/>
+ <connections />
 </ui>
