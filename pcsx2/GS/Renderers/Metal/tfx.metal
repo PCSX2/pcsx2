@@ -1413,7 +1413,7 @@ constant bool NEEDS_DS_FBF = false;
 constant float ds_fbf = 0;
 #endif
 constant bool NEEDS_DS_TEX   = SW_DEPTH && DEPTH_FEEDBACK == DepthFeedbackSupport::DepthAsRT && !NEEDS_DS_FBF;
-constant bool NEEDS_DS_DEPTH = SW_DEPTH && DEPTH_FEEDBACK == DepthFeedbackSupport::Depth;
+constant bool NEEDS_DS_DEPTH = SW_DEPTH && DEPTH_FEEDBACK == DepthFeedbackSupport::Depth || NEEDS_DS_FBF;
 
 fragment MainPSOut ps_main(
 	MainPSIn in [[stage_in]],
@@ -1459,7 +1459,10 @@ fragment MainPSOut ps_main(
 				main.current_depth = ds_depth.read(coord);
 				break;
 			case DepthFeedbackSupport::DepthAsRT:
-				main.current_depth = HAS_FBFETCH ? ds_fbf : ds_tex.read(coord).x;
+				if (NEEDS_DS_FBF)
+					main.current_depth = ds_fbf < 0 ? ds_depth.read(coord) : ds_fbf;
+				else
+					main.current_depth = ds_tex.read(coord).x;
 				break;
 			case DepthFeedbackSupport::None:
 				// Should never happen

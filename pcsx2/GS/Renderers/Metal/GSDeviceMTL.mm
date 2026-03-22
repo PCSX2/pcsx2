@@ -95,6 +95,11 @@ GSDeviceMTL::GSDeviceMTL()
 
 GSDeviceMTL::~GSDeviceMTL()
 {
+	// m_ds_as_rt_texture is owned if the device has memoryless textures
+	if (m_dev.features.memoryless_textures)
+		[m_ds_as_rt_texture release];
+	else if (m_ds_as_rt_gstexture)
+		delete m_ds_as_rt_gstexture;
 }
 
 GSDeviceMTL::Map GSDeviceMTL::Allocate(UploadBuffer& buffer, size_t amt)
@@ -247,7 +252,10 @@ id<MTLFence> GSDeviceMTL::GetSpinFence()
 
 id<MTLTexture> GSDeviceMTL::GetRT1DepthTexture(GSTextureMTL* depth)
 {
-	return static_cast<GSTextureMTL*>(m_ds_as_rt)->GetTexture();
+	if (m_dev.features.framebuffer_fetch)
+		return m_ds_as_rt_texture;
+	else
+		return static_cast<GSTextureMTL*>(m_ds_as_rt)->GetTexture();
 }
 
 void GSDeviceMTL::DrawCommandBufferFinished(u64 draw, id<MTLCommandBuffer> buffer)
@@ -1023,7 +1031,15 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		{
 			MTLRenderPassColorAttachmentDescriptor* color1 = [[desc colorAttachments] objectAtIndexedSubscript:1];
 			[color1 setStoreAction:MTLStoreActionDontCare];
-			[color1 setLoadAction:MTLLoadActionLoad];
+			if (m_features.framebuffer_fetch)
+			{
+				[color1 setLoadAction:MTLLoadActionClear];
+				[color1 setClearColor:MTLClearColorMake(-1, 0, 0, 0)];
+			}
+			else
+			{
+				[color1 setLoadAction:MTLLoadActionLoad];
+			}
 		}
 		m_render_pass_desc[i] = desc;
 	}
@@ -1311,12 +1327,13 @@ bool GSDeviceMTL::SupportsExclusiveFullscreen() const { return false; }
 std::string GSDeviceMTL::GetDriverInfo() const
 { @autoreleasepool {
 	std::string desc([[m_dev.dev description] UTF8String]);
-	desc += "\n    Texture Swizzle:   " + std::string(m_dev.features.texture_swizzle   ? "Supported" : "Unsupported");
-	desc += "\n    Unified Memory:    " + std::string(m_dev.features.unified_memory    ? "Supported" : "Unsupported");
-	desc += "\n    Framebuffer Fetch: " + std::string(m_dev.features.framebuffer_fetch ? "Supported" : "Unsupported");
-	desc += "\n    Primitive ID:      " + std::string(m_dev.features.primid            ? "Supported" : "Unsupported");
-	desc += "\n    Shader Version:    " + std::string(to_string(m_dev.features.shader_version));
-	desc += "\n    Max Texture Size:  " + std::to_string(m_dev.features.max_texsize);
+	desc += "\n    Texture Swizzle:     " + std::string(m_dev.features.texture_swizzle     ? "Supported" : "Unsupported");
+	desc += "\n    Unified Memory:      " + std::string(m_dev.features.unified_memory      ? "Supported" : "Unsupported");
+	desc += "\n    Framebuffer Fetch:   " + std::string(m_dev.features.framebuffer_fetch   ? "Supported" : "Unsupported");
+	desc += "\n    Memoryless Textures: " + std::string(m_dev.features.memoryless_textures ? "Supported" : "Unsupported");
+	desc += "\n    Primitive ID:        " + std::string(m_dev.features.primid              ? "Supported" : "Unsupported");
+	desc += "\n    Shader Version:      " + std::string(to_string(m_dev.features.shader_version));
+	desc += "\n    Max Texture Size:    " + std::to_string(m_dev.features.max_texsize);
 	return desc;
 }}
 
@@ -1801,6 +1818,50 @@ void GSDeviceMTL::FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u3
 
 	DoStretchRect(sTex, GSVector4::zero(), dTex, dRect, pipeline, false, LoadAction::DontCareIfFull, &uniform, sizeof(uniform));
 }}
+
+static id<MTLTexture> CreateDSAsRTTexture(id<MTLDevice> dev, NSUInteger width, NSUInteger height, MTLStorageMode storage, NSString* name)
+{
+	MTLTextureDescriptor *desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatR32Float width:width height:height mipmapped:false];
+	[desc setUsage:MTLTextureUsageRenderTarget];
+	[desc setStorageMode:storage];
+	id<MTLTexture> result = [dev newTextureWithDescriptor:desc];
+	[result setLabel:name];
+	return result;
+}
+
+void GSDeviceMTL::BeginDSAsRT(GSTexture* ds, const GSVector4i& drawarea)
+{
+	if (!m_features.framebuffer_fetch)
+		return GSDevice::BeginDSAsRT(ds, drawarea);
+	u32 needed_width = ds->GetWidth();
+	u32 needed_height = ds->GetHeight();
+	u32 current_width = static_cast<u32>([m_ds_as_rt_texture width]);
+	u32 current_height = static_cast<u32>([m_ds_as_rt_texture height]);
+	if (m_dev.features.memoryless_textures)
+	{
+		if (needed_width > current_width || needed_height > current_height) [[unlikely]] @autoreleasepool
+		{
+			u32 width = std::max(needed_width, current_width);
+			u32 height = std::max(needed_height, current_height);
+			[m_ds_as_rt_texture release];
+			m_ds_as_rt_texture = CreateDSAsRTTexture(m_dev.dev, width, height, MTLStorageModeMemoryless, @"DS as RT");
+		}
+	}
+	else
+	{
+		if (needed_width == current_width && needed_height == current_height)
+			return;
+		if (m_ds_as_rt_gstexture)
+			Recycle(m_ds_as_rt_gstexture);
+		m_ds_as_rt_gstexture = CreateRenderTarget(needed_width, needed_height, GSTexture::Format::Float32, false, true);
+		m_ds_as_rt_texture = static_cast<GSTextureMTL*>(m_ds_as_rt_gstexture)->GetTexture();
+		@autoreleasepool
+		{
+			NSString* name = [NSString stringWithFormat:@"DS as RT %dx%d", needed_width, needed_height];
+			[m_ds_as_rt_texture setLabel:name];
+		}
+	}
+}
 
 void GSDeviceMTL::FlushClears(GSTexture* tex)
 {
@@ -2328,10 +2389,10 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 	MREInitHWDraw(config, allocation);
 	if (config.require_one_barrier || config.require_full_barrier)
 		MRESetTexture(rt, GSMTLTextureIndexRenderTarget);
-	if (feedback_depth && !m_features.framebuffer_fetch)
+	if (feedback_depth)
 	{
 		bool depth_as_rt = m_features.depth_feedback == GSDevice::DepthFeedbackSupport::DepthAsRT;
-		GSTexture* tex = depth_as_rt ? m_ds_as_rt : config.ds;
+		GSTexture* tex = depth_as_rt && !m_features.framebuffer_fetch ? m_ds_as_rt : config.ds;
 		MRESetTexture(tex, GSMTLTextureIndexDepthTarget);
 	}
 	if (primid_tex)
@@ -2366,7 +2427,7 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 
 			Recycle(colclip_rt);
 			
-			g_gs_device->SetColorClipTexture(nullptr);
+			SetColorClipTexture(nullptr);
 		}
 	}
 

@@ -1073,7 +1073,7 @@ public:
 
 	bool IsDSInRTActive() const { return m_ds_as_rt; }
 	/// Create a temporary color clone of depth for depth feedback
-	void BeginDSAsRT(GSTexture* ds, const GSVector4i& drawarea);
+	virtual void BeginDSAsRT(GSTexture* ds, const GSVector4i& drawarea);
 	void EndDSAsRT();
 
 	/// Returns a string representing the specified API.

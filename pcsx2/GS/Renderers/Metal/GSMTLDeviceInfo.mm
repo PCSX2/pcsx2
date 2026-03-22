@@ -147,7 +147,7 @@ GSMTLDevice::GSMTLDevice(MRCOwned<id<MTLDevice>> dev)
 
 	if (@available(macOS 11.0, iOS 13.0, *))
 		if ([dev supportsFamily:MTLGPUFamilyApple1])
-			features.framebuffer_fetch = true;
+			features.framebuffer_fetch = features.memoryless_textures = true;
 
 	if (@available(macOS 10.15, iOS 13.0, *))
 		if ([dev supportsFamily:MTLGPUFamilyMac2] || [dev supportsFamily:MTLGPUFamilyApple1])
