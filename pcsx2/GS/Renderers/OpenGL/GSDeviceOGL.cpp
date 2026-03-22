@@ -2832,7 +2832,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	const bool depth_feedback = m_features.depth_feedback == GSDevice::DepthFeedbackSupport::Depth;
 	if (m_features.texture_barrier && (config.require_one_barrier || config.require_full_barrier) && config.ps.IsFeedbackLoopDepth() &&
 		(depth_feedback || m_features.depth_feedback == GSDevice::DepthFeedbackSupport::DepthAsRT))
-		PSSetShaderResource(4, depth_feedback ? config.ds : config.ds_as_rt);
+		PSSetShaderResource(4, depth_feedback ? config.ds : m_ds_as_rt);
 	SetupSampler(config.sampler);
 
 	if (m_vs_cb_cache.Update(config.cb_vs))
@@ -2848,7 +2848,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 
 	SetupPipeline(psel);
 
-	bool rt_hazard_barrier = config.tex && (config.tex == config.ds || config.tex == config.rt || config.tex == config.ds_as_rt);
+	bool rt_hazard_barrier = config.tex && (config.tex == config.ds || config.tex == config.rt);
 	// In Time Crisis:
 	// 1. Fullscreen sprite reads depth and writes alpha (rt_hazard_barrier true from config.ds == config.tex)
 	// 2. Fullscreen sprite writes gray, rta hw blend blends based on dst alpha.
@@ -2906,7 +2906,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		PSSetShaderResource(3, primid_texture);
 	}
 
-	if (config.ds_as_rt)
+	if (m_ds_as_rt)
 	{
 		// We must clear the blend equation of any dual source blending factors or
 		// it may interact badly with MRTs, even if blending is disabled.
@@ -2926,7 +2926,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	}
 
 	GSTexture* draw_rt = colclip_rt ? colclip_rt : config.rt;
-	GSTexture* draw_ds_as_rt = config.ds_as_rt;
+	GSTexture* draw_ds_as_rt = m_ds_as_rt;
 	GSTexture* draw_ds = config.ds;
 
 	// Clear texture binding when it's bound to RT or DS.

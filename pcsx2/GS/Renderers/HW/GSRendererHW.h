@@ -402,8 +402,4 @@ public:
 
 	/// Does the current draw allow using AA1 coverage (if AA1 is enabled).
 	bool IsCoverageAlphaSupported() override;
-
-	/// Create a temporary color clone of depth for depth feedback (DX12 and GL only right now)
-	void StartDepthAsRTFeedback();
-	void CleanupDepthAsRTFeedback();
 };

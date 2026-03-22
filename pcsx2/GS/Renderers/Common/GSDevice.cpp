@@ -1007,6 +1007,23 @@ bool GSDevice::ResizeRenderTarget(GSTexture** t, int w, int h, bool preserve_con
 	return true;
 }
 
+void GSDevice::BeginDSAsRT(GSTexture* ds, const GSVector4i& drawarea)
+{
+	// Create a temporary RT and copy the area needed for the draw.
+	const int w = ds->GetWidth();
+	const int h = ds->GetHeight();
+	m_ds_as_rt = g_gs_device->CreateRenderTarget(w, h, GSTexture::Format::Float32, false, true);
+	const GSVector4 dRect(drawarea);
+	const GSVector4 sRect(dRect.x / w, dRect.y / h, dRect.z / w, dRect.w / h);
+	StretchRect(ds, sRect, m_ds_as_rt, dRect, ShaderConvert::FLOAT32_DEPTH_TO_COLOR, false);
+}
+
+void GSDevice::EndDSAsRT()
+{
+	Recycle(m_ds_as_rt);
+	m_ds_as_rt = nullptr;
+}
+
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-function"
