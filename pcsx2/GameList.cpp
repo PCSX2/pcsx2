@@ -1165,6 +1165,41 @@ void GameList::ClearPlayedTimeForSerial(const std::string& serial)
 	}
 }
 
+void GameList::UpdatePlayedTimeForSerial(const std::string& serial, std::time_t new_time)
+{
+	if (serial.empty())
+		return;
+
+	std::time_t current_last = 0;
+	std::time_t current_time = 0;
+
+	std::unique_lock<std::recursive_mutex> lock(s_mutex);
+
+	for (const GameList::Entry& entry : s_entries)
+	{
+		if (entry.serial != serial)
+			continue;
+
+		current_last = entry.last_played_time;
+		current_time = entry.total_played_time;
+	}
+
+	// Allow updating time played, even if last played is zero (due to how UpdatePlayedTimeFile() works).
+	if (current_last == 0)
+		current_last = std::time(nullptr);
+
+	// Weird solution (i.e., to add the difference) to use the same function to update the file, but it works!
+	const PlayedTimeEntry pt(UpdatePlayedTimeFile(GetPlayedTimeFile(), serial, current_last, (new_time - current_time)));
+
+	for (GameList::Entry& entry : s_entries)
+	{
+		if (entry.serial != serial)
+			continue;
+
+		entry.last_played_time = pt.last_played_time;
+		entry.total_played_time = pt.total_played_time;
+	}
+}
 
 std::time_t GameList::GetCachedPlayedTimeForSerial(const std::string& serial)
 {
