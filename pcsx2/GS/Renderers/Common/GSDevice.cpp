@@ -1191,11 +1191,12 @@ static const char* GetPSAFAILName(GSShader::PS_AFAIL afail)
 	using GSShader::PS_AFAIL;
 	switch (afail)
 	{
-		case PS_AFAIL::KEEP:         return "KEEP";
-		case PS_AFAIL::FB_ONLY:      return "FB_ONLY";
-		case PS_AFAIL::ZB_ONLY:      return "ZB_ONLY";
-		case PS_AFAIL::RGB_ONLY:     return "RGB_ONLY";
-		case PS_AFAIL::RGB_ONLY_DSB: return "RGB_ONLY_DSB";
+		case PS_AFAIL::KEEP:          return "KEEP";
+		case PS_AFAIL::FB_ONLY:       return "FB_ONLY";
+		case PS_AFAIL::ZB_ONLY:       return "ZB_ONLY";
+		case PS_AFAIL::RGB_ONLY:      return "RGB_ONLY";
+		case PS_AFAIL::RGB_ONLY_DSB:  return "RGB_ONLY_DSB";
+		case PS_AFAIL::RGB_ONLY_SW_Z: return "RGB_ONLY_SW_Z";
 	};
 	return "UNKNOWN";
 }
