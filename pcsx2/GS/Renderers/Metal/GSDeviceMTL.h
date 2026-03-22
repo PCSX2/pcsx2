@@ -318,6 +318,8 @@ public:
 	MRCOwned<id<MTLBlitCommandEncoder>> m_late_texture_upload_encoder;
 	MRCOwned<id<MTLCommandBuffer>> m_vertex_upload_cmdbuf;
 	MRCOwned<id<MTLBlitCommandEncoder>> m_vertex_upload_encoder;
+	id<MTLTexture> m_ds_as_rt_texture = nil;
+	GSTexture* m_ds_as_rt_gstexture = nullptr;
 
 	struct DebugEntry
 	{
@@ -417,6 +419,7 @@ public:
 	void UpdateCLUTTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize) override;
 	void ConvertToIndexedTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, u32 SBW, u32 SPSM, GSTexture* dTex, u32 DBW, u32 DPSM) override;
 	void FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u32 downsample_factor, const GSVector2i& clamp_min, const GSVector4& dRect) override;
+	void BeginDSAsRT(GSTexture* ds, const GSVector4i& drawarea) override;
 
 	void FlushClears(GSTexture* tex);
 
