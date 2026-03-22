@@ -164,7 +164,7 @@ GSMTLDevice::GSMTLDevice(MRCOwned<id<MTLDevice>> dev)
 	if (features.primid && !detectPrimIDSupport(dev, shaders))
 		features.primid = false;
 
-	features.preferred_depth_feedback = DepthFeedbackSupport::DepthAsRT;
+	features.depth_feedback = false;
 
 	NSString* name = [dev name];
 	if ([name containsString:@"Intel"])
@@ -175,7 +175,7 @@ GSMTLDevice::GSMTLDevice(MRCOwned<id<MTLDevice>> dev)
 			{
 				case DetectionResult::HaswellOrNotIntel:
 					// Older Intel GPUs seem to be fine with depth feedback
-					features.preferred_depth_feedback = DepthFeedbackSupport::Depth;
+					features.depth_feedback = true;
 					break;
 				case DetectionResult::Broadwell:
 					features.primid = false; // Broken
@@ -192,12 +192,12 @@ GSMTLDevice::GSMTLDevice(MRCOwned<id<MTLDevice>> dev)
 		// RDNA+ seems to work fine with depth feedback
 		if (@available(macOS 13, iOS 16, *))
 			if ([dev supportsFamily:MTLGPUFamilyMetal3])
-				features.preferred_depth_feedback = DepthFeedbackSupport::Depth;
+				features.depth_feedback = true;
 	}
 	else if ([name containsString:@"NVIDIA"])
 	{
 		// macOS only supports Kepler, which seems to work fine with depth feedback
-		features.preferred_depth_feedback = DepthFeedbackSupport::Depth;
+		features.depth_feedback = true;
 	}
 	else if ([name containsString:@"Apple"])
 	{

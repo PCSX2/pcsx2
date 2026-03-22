@@ -68,15 +68,7 @@ GSDevice11::GSDevice11()
 	m_features.stencil_buffer = true;
 	m_features.cas_sharpening = true;
 	m_features.test_and_sample_depth = false;
-	if (m_features.multidraw_fb_copy && (GSConfig.DepthFeedbackMode == GSDepthFeedbackMode::Auto ||
-		GSConfig.DepthFeedbackMode == GSDepthFeedbackMode::Depth))
-	{
-		m_features.depth_feedback = GSDevice::DepthFeedbackSupport::Depth;
-	}
-	else
-	{
-		m_features.depth_feedback = GSDevice::DepthFeedbackSupport::None;
-	}
+	m_features.depth_feedback = true;
 }
 
 GSDevice11::~GSDevice11() = default;
@@ -654,7 +646,7 @@ void GSDevice11::SetFeatures(IDXGIAdapter1* adapter)
 	m_features.vs_expand = (!GSConfig.DisableVertexShaderExpand && m_feature_level >= D3D_FEATURE_LEVEL_11_0);
 	m_features.cas_sharpening = (m_feature_level >= D3D_FEATURE_LEVEL_11_0);
 	m_features.test_and_sample_depth = (m_feature_level >= D3D_FEATURE_LEVEL_11_0);
-	m_features.aa1 = GSConfig.HWAA1 && m_features.vs_expand && (m_features.depth_feedback != GSDevice::DepthFeedbackSupport::None);
+	m_features.aa1 = GSConfig.HWAA1 && m_features.vs_expand && m_features.multidraw_fb_copy;
 
 	m_max_texture_size = (m_feature_level >= D3D_FEATURE_LEVEL_11_0) ?
 	                         D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION :
@@ -2998,7 +2990,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	}
 
 	if (draw_ds && (config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy)) &&
-		m_features.depth_feedback == GSDevice::DepthFeedbackSupport::Depth && config.ps.IsFeedbackLoopDepth())
+		m_features.depth_feedback && config.ps.IsFeedbackLoopDepth())
 	{
 		// Requires a copy of the DS.
 		draw_ds_clone = CreateTexture(rtsize.x, rtsize.y, 1, draw_ds->GetFormat(), true);

@@ -19,13 +19,6 @@ enum class VSExpand : uint8_t
 	TriangleAA1 = 5,
 };
 
-enum class DepthFeedbackSupport : uint32_t
-{
-	None      = 0, ///< No support for depth feedback loops.
-	Depth     = 1, ///< Implement depth feedback loops directly on the depth buffer.
-	DepthAsRT = 2, ///< Implement depth feedback loops by first converting depth to a color RT.
-};
-
 enum class PS_ATST : uint32_t
 {
 	NONE = 0,
