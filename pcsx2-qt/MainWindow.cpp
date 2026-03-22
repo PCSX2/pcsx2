@@ -1566,8 +1566,18 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 		if (!entry->serial.empty())
 			connect(menu.addAction(tr("Check Wiki Page")), &QAction::triggered, [this, entry]() { goToWikiPage(*entry); });
 
+		menu.addSeparator();
+		action = menu.addAction(tr("Open Memory Card Folder"));
+		connect(action, &QAction::triggered, [this, entry]() { openMemoryCardFolder(); });
+
 		action = menu.addAction(tr("Open Snapshots Folder"));
 		connect(action, &QAction::triggered, [this, entry]() { openSnapshotsFolderForGame(*entry); });
+
+		action = menu.addAction(tr("Open Texture Dump/Replacement Folder"));
+		connect(action, &QAction::triggered, [this, entry]() { openTextureFolderForGame(*entry); });
+
+		action = menu.addAction(tr("Open Video Capture Folder"));
+		connect(action, &QAction::triggered, [this, entry]() { openVideoCaptureFolder(*entry); });
 		menu.addSeparator();
 
 		if (!s_vm_valid)
@@ -3095,7 +3105,8 @@ void MainWindow::openSnapshotsFolderForGame(const GameList::Entry& entry)
 	// Go to top-level snapshots directory if not organizing by game.
 	if (EmuConfig.GS.OrganizeSnapshotsByGame && !entry.title.empty())
 	{
-		std::string game_name = entry.title;
+		const bool prefer_english = Host::GetBaseBoolSettingValue("UI", "PreferEnglishGameList", false);
+		std::string game_name =  (prefer_english && !entry.title_en.empty()) ? entry.title_en : entry.title;
 		Path::SanitizeFileName(&game_name);
 
 		const std::string game_dir = Path::Combine(EmuFolders::Snapshots, game_name);
@@ -3112,6 +3123,64 @@ void MainWindow::openSnapshotsFolderForGame(const GameList::Entry& entry)
 	}
 
 	QtUtils::OpenURL(this, QUrl::fromLocalFile(QString::fromStdString(EmuFolders::Snapshots)));
+}
+
+void MainWindow::openTextureFolderForGame(const GameList::Entry& entry)
+{
+	const std::string serial = entry.serial;
+	const std::string game_texture_dir = Path::Combine(EmuFolders::Textures, serial);
+
+	// Make sure the per-game directory exists or that we can successfully create it.
+	if (FileSystem::DirectoryExists(game_texture_dir.c_str()) || FileSystem::CreateDirectoryPath(game_texture_dir.c_str(), false))
+	{
+		const QFileInfo fi(QString::fromStdString(game_texture_dir));
+		QtUtils::OpenURL(this, QUrl::fromLocalFile(fi.absoluteFilePath()));
+		return;
+	}
+
+	QMessageBox::critical(this, tr("Error"), tr("Failed to create game texture directory '%1'\n\nOpening default directory.").arg(QString::fromStdString(game_texture_dir)));
+
+	QtUtils::OpenURL(this, QUrl::fromLocalFile(QString::fromStdString(EmuFolders::Textures)));
+}
+
+void MainWindow::openMemoryCardFolder()
+{
+	const std::string memcard_dir = EmuFolders::MemoryCards;
+
+	// Make sure directory exists or that we can successfully create it.
+	if (FileSystem::DirectoryExists(memcard_dir.c_str()) || FileSystem::CreateDirectoryPath(memcard_dir.c_str(), false))
+	{
+		const QFileInfo fi(QString::fromStdString(memcard_dir));
+		QtUtils::OpenURL(this, QUrl::fromLocalFile(fi.absoluteFilePath()));
+		return;
+	}
+
+	QMessageBox::critical(this, tr("Error"), tr("Failed to open memory card directory."));
+}
+
+void MainWindow::openVideoCaptureFolder(const GameList::Entry& entry)
+{
+	// Go to top-level video directory if not organizing by game.
+	if (EmuConfig.GS.OrganizeVideoCaptureByGame && !entry.title.empty())
+	{
+		const bool prefer_english = Host::GetBaseBoolSettingValue("UI", "PreferEnglishGameList", false);
+		std::string game_name =  (prefer_english && !entry.title_en.empty()) ? entry.title_en : entry.title;
+		Path::SanitizeFileName(&game_name);
+
+		const std::string game_dir = Path::Combine(EmuFolders::Videos, game_name);
+
+		// Make sure the per-game directory exists or that we can successfully create it.
+		if (FileSystem::DirectoryExists(game_dir.c_str()) || FileSystem::CreateDirectoryPath(game_dir.c_str(), false))
+		{
+			const QFileInfo fi(QString::fromStdString(game_dir));
+			QtUtils::OpenURL(this, QUrl::fromLocalFile(fi.absoluteFilePath()));
+			return;
+		}
+
+		QMessageBox::critical(this, tr("Error"), tr("Failed to create game video capture directory '%1'\n\nOpening default directory.").arg(QString::fromStdString(game_dir)));
+	}
+
+	QtUtils::OpenURL(this, QUrl::fromLocalFile(QString::fromStdString(EmuFolders::Videos)));
 }
 
 std::optional<bool> MainWindow::promptForResumeState(const QString& save_state_path)
