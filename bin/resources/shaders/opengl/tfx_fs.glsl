@@ -331,8 +331,8 @@ uvec4 sample_4_index(vec4 uv)
 	c.y = sample_c(uv.zy).a;
 	c.z = sample_c(uv.xw).a;
 	c.w = sample_c(uv.zw).a;
-	
-#if PS_RTA_SRC_CORRECTION 
+
+#if PS_RTA_SRC_CORRECTION
 	uvec4 i = uvec4(round(c * 128.25f)); // Denormalize value
 #else
 	uvec4 i = uvec4(c * 255.5f); // Denormalize value
@@ -760,10 +760,10 @@ vec4 ps_color()
 			T.b = float((denorm_c_before.g << 1) & 0xF8u);
 			T.a = float(denorm_c_before.g & 0x80u);
 		#endif
-		
+
 		T.a = ((T.a >= 127.5f) ? TA.y : ((PS_AEM == 0 || any(bvec3(ivec3(T.rgb) & ivec3(0xF8)))) ? TA.x : 0.0f)) * 255.0f;
 	#endif
-	
+
 	vec4 C = tfx(T, PSin.c);
 
 	fog(C, PSin.t_float.z);
@@ -894,7 +894,7 @@ float As = As_rgba.a;
 			RT.a = float(denorm_rt.g & 0x80u);
 		#endif
 	#endif
-		
+
 	// Let the compiler do its jobs !
 	#if PS_COLCLIP_HW == 1
 		vec3 Cd = trunc(RT.rgb * 65535.0f);
@@ -1170,7 +1170,7 @@ void ps_main()
 	#elif PS_READ16_SRC
 		uvec4 denorm_c = uvec4(C);
 		uvec2 denorm_TA = uvec2(vec2(TA.xy) * 255.0f + 0.5f);
-		
+
 		C.rb = vec2(float((denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7u) << 5)));
 		if (bool(denorm_c.a & 0x80u))
 			C.ga = vec2(float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.y & 0x80u)));
@@ -1213,7 +1213,7 @@ void ps_main()
 	#else
 		C.rgb = C.rgb / 255.0f;
 	#endif
-	
+
 	// Alpha test with feedback
 	#if (PS_AFAIL == AFAIL_FB_ONLY) && NEEDS_DEPTH && PS_ZWRITE
 		if (!atst_pass)
@@ -1221,7 +1221,7 @@ void ps_main()
 	#elif (PS_AFAIL == AFAIL_ZB_ONLY) && NEEDS_RT
 		if (!atst_pass)
 			C = sample_from_rt();
-	#elif (PS_AFAIL == AFAIL_RGB_ONLY) 
+	#elif (PS_AFAIL == AFAIL_RGB_ONLY)
 		if (!atst_pass)
 		{
 		#if NEEDS_RT

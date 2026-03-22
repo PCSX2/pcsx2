@@ -165,7 +165,7 @@ void main()
 
 	vtx = load_vertex(vid >> 2);
 
-	vtx.p.x += ((vid & 1u) != 0u) ? PointSize.x : 0.0f; 
+	vtx.p.x += ((vid & 1u) != 0u) ? PointSize.x : 0.0f;
 	vtx.p.y += ((vid & 2u) != 0u) ? PointSize.y : 0.0f;
 
 #elif VS_EXPAND == 2 // Line
@@ -175,7 +175,7 @@ void main()
 	bool is_bottom = (vid & 2u) != 0u;
 	bool is_right = (vid & 1u) != 0u;
 	uint vid_other = is_bottom ? vid_base - 1 : vid_base + 1;
-	
+
 	vtx = load_vertex(vid_base);
 	ProcessedVertex other = load_vertex(vid_other);
 
@@ -575,7 +575,7 @@ uvec4 sample_4_index(vec4 uv)
 	c.w = sample_c(uv.zw).a;
 
 	// Denormalize value
-			
+
 #if PS_RTA_SRC_CORRECTION
 	uvec4 i = uvec4(round(c * 128.25f));
 #else
@@ -1010,10 +1010,10 @@ vec4 ps_color()
 			T.b = float((denorm_c_before.g << 1) & 0xF8u);
 			T.a = float(denorm_c_before.g & 0x80u);
 		#endif
-		
+
 		T.a = ((T.a >= 127.5f) ? TA.y : ((PS_AEM == 0 || any(bvec3(ivec3(T.rgb) & ivec3(0xF8)))) ? TA.x : 0.0f)) * 255.0f;
 	#endif
-	
+
 	vec4 C = tfx(T, vsIn.c);
 
 	C = fog(C, vsIn.t.z);
@@ -1045,7 +1045,7 @@ void ps_dither(inout vec3 C, float As)
 		#endif
 
 		float value = DitherMatrix[fpos.y & 3][fpos.x & 3];
-		
+
 		// The idea here is we add on the dither amount adjusted by the alpha before it goes to the hw blend
 		// so after the alpha blend the resulting value should be the same as (Cs - Cd) * As + Cd + Dither.
 		#if PS_DITHER_ADJUST
@@ -1057,7 +1057,7 @@ void ps_dither(inout vec3 C, float As)
 
 			value *= Alpha > 0.0f ? min(1.0f / Alpha, 1.0f) : 1.0f;
 		#endif
-		
+
 		#if PS_ROUND_INV
 			C -= value;
 		#else
@@ -1131,7 +1131,7 @@ void ps_blend(inout vec4 Color, inout vec4 As_rgba)
 		#else
 			float Ad = trunc(RT.a * 255.0f + 0.1f) / 128.0f;
 		#endif
-		
+
 		#if PS_SHUFFLE && PS_FEEDBACK_LOOP_IS_NEEDED_RT
 			uvec4 denorm_rt = uvec4(RT);
 			#if (PS_PROCESS_BA & SHUFFLE_WRITE)
@@ -1472,7 +1472,7 @@ void main()
 		#elif (PS_AFAIL == AFAIL_ZB_ONLY) && PS_FEEDBACK_LOOP_IS_NEEDED_RT
 			if (!atst_pass)
 				o_col0 = sample_from_rt();
-		#elif (PS_AFAIL == AFAIL_RGB_ONLY) 
+		#elif (PS_AFAIL == AFAIL_RGB_ONLY)
 			if (!atst_pass)
 			{
 			#if PS_FEEDBACK_LOOP_IS_NEEDED_RT
@@ -1488,7 +1488,7 @@ void main()
 	#if PS_ZCLAMP
 		input_z = min(input_z, MaxDepthPS);
 	#endif
-	
+
 	#if PS_ZWRITE
 		gl_FragDepth = input_z;
 	#endif
