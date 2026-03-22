@@ -245,6 +245,11 @@ id<MTLFence> GSDeviceMTL::GetSpinFence()
 	return m_spin_timer ? m_spin_fence : nil;
 }
 
+id<MTLTexture> GSDeviceMTL::GetRT1DepthTexture(GSTextureMTL* depth)
+{
+	return static_cast<GSTextureMTL*>(m_ds_as_rt)->GetTexture();
+}
+
 void GSDeviceMTL::DrawCommandBufferFinished(u64 draw, id<MTLCommandBuffer> buffer)
 {
 	// We can do the update non-atomically because we only ever update under the lock
@@ -388,14 +393,15 @@ void GSDeviceMTL::EndRenderPass()
 	}
 }
 
-void GSDeviceMTL::BeginRenderPass(NSString* name, GSTexture* color, MTLLoadAction color_load, GSTexture* depth, MTLLoadAction depth_load, GSTexture* stencil, MTLLoadAction stencil_load)
+void GSDeviceMTL::BeginRenderPass(NSString* name, GSTexture* color, MTLLoadAction color_load, GSTexture* depth, MTLLoadAction depth_load, GSTexture* stencil, MTLLoadAction stencil_load, bool rt1)
 {
 	GSTextureMTL* mc = static_cast<GSTextureMTL*>(color);
 	GSTextureMTL* md = static_cast<GSTextureMTL*>(depth);
 	GSTextureMTL* ms = static_cast<GSTextureMTL*>(stencil);
 	bool needs_new = color   != m_current_render.color_target
 	              || depth   != m_current_render.depth_target
-	              || stencil != m_current_render.stencil_target;
+	              || stencil != m_current_render.stencil_target
+	              || rt1     != m_current_render.has.rt1_depth;
 	GSVector4 color_clear;
 	float depth_clear;
 	// Depth and stencil might be the same, so do all invalidation checks before resetting invalidation
@@ -449,6 +455,7 @@ void GSDeviceMTL::BeginRenderPass(NSString* name, GSTexture* color, MTLLoadActio
 	if (mc) idx |= 1;
 	if (md) idx |= 2;
 	if (ms) idx |= 4;
+	if (rt1) idx |= 8;
 
 	MTLRenderPassDescriptor* desc = m_render_pass_desc[idx];
 	if (mc)
@@ -474,6 +481,11 @@ void GSDeviceMTL::BeginRenderPass(NSString* name, GSTexture* color, MTLLoadActio
 		pxAssert(stencil_load != MTLLoadActionClear);
 		desc.stencilAttachment.loadAction = stencil_load;
 	}
+	if (rt1)
+	{
+		pxAssert(md);
+		desc.colorAttachments[1].texture = GetRT1DepthTexture(md);
+	}
 
 	EndRenderPass();
 	m_current_render.encoder = MRCRetain([GetRenderCmdBuf() renderCommandEncoderWithDescriptor:desc]);
@@ -485,6 +497,7 @@ void GSDeviceMTL::BeginRenderPass(NSString* name, GSTexture* color, MTLLoadActio
 	m_current_render.color_target = color;
 	m_current_render.depth_target = depth;
 	m_current_render.stencil_target = stencil;
+	m_current_render.has.rt1_depth |= rt1;
 	pxAssertRel(m_current_render.encoder, "Failed to create render encoder!");
 }
 
@@ -849,6 +862,21 @@ static MRCOwned<id<MTLSamplerState>> CreateSampler(id<MTLDevice> dev, GSHWDrawCo
 	return ret;
 }
 
+static GSDevice::DepthFeedbackSupport getDepthFeedback(const GSMTLDevice& dev, bool fbfetch)
+{
+	switch (GSConfig.DepthFeedbackMode)
+	{
+		case GSDepthFeedbackMode::None:      return GSDevice::DepthFeedbackSupport::None;
+		case GSDepthFeedbackMode::Auto:      return dev.features.preferred_depth_feedback;
+		case GSDepthFeedbackMode::DepthAsRT: return GSDevice::DepthFeedbackSupport::DepthAsRT;
+		case GSDepthFeedbackMode::Depth:
+			if (!fbfetch)
+				return GSDevice::DepthFeedbackSupport::Depth;
+			else
+				return GSDevice::DepthFeedbackSupport::DepthAsRT; // Depth + FBFetch not supported
+	}
+}
+
 bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 { @autoreleasepool {
 	if (!GSDevice::Create(vsync_mode, allow_present_throttle))
@@ -935,12 +963,13 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	m_features.stencil_buffer = true;
 	m_features.cas_sharpening = true;
 	m_features.test_and_sample_depth = true;
-	m_features.depth_feedback = GSDevice::DepthFeedbackSupport::None;
+	m_features.depth_feedback = getDepthFeedback(m_dev, m_features.framebuffer_fetch);
 	m_max_texture_size = m_dev.features.max_texsize;
 
 	// Init metal stuff
 	m_fn_constants = MRCTransfer([MTLFunctionConstantValues new]);
-	setFnConstantB(m_fn_constants, m_dev.features.framebuffer_fetch, GSMTLConstantIndex_FRAMEBUFFER_FETCH);
+	setFnConstantB(m_fn_constants, m_features.framebuffer_fetch, GSMTLConstantIndex_FRAMEBUFFER_FETCH);
+	setFnConstantI(m_fn_constants, m_features.depth_feedback, GSMTLConstantIndex_DEPTH_FEEDBACK);
 
 	m_draw_sync_fence = MRCTransfer([m_dev.dev newFence]);
 	[m_draw_sync_fence setLabel:@"Draw Sync Fence"];
@@ -976,11 +1005,27 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	applyAttribute(m_hw_vertex, GSMTLAttributeIndexUV, MTLVertexFormatUShort2,          offsetof(GSVertex, UV),      GSMTLBufferIndexHWVertices);
 	applyAttribute(m_hw_vertex, GSMTLAttributeIndexF,  MTLVertexFormatUChar4Normalized, offsetof(GSVertex, FOG),     GSMTLBufferIndexHWVertices);
 
-	for (auto& desc : m_render_pass_desc)
+	for (size_t i = 0; i < std::size(m_render_pass_desc); i++)
 	{
-		desc = MRCTransfer([MTLRenderPassDescriptor new]);
+		const bool depth   = i & 2;
+		const bool stencil = i & 4;
+		const bool rt1     = i & 8;
+		if (rt1 && m_features.depth_feedback != GSDevice::DepthFeedbackSupport::DepthAsRT)
+			continue;
+		if (rt1 && !depth)
+			continue;
+		if (stencil && m_features.framebuffer_fetch)
+			continue;
+		auto desc = MRCTransfer([MTLRenderPassDescriptor new]);
 		[[desc   depthAttachment] setStoreAction:MTLStoreActionStore];
 		[[desc stencilAttachment] setStoreAction:MTLStoreActionStore];
+		if (rt1)
+		{
+			MTLRenderPassColorAttachmentDescriptor* color1 = [[desc colorAttachments] objectAtIndexedSubscript:1];
+			[color1 setStoreAction:MTLStoreActionDontCare];
+			[color1 setLoadAction:MTLLoadActionLoad];
+		}
+		m_render_pass_desc[i] = desc;
 	}
 
 	// Init samplers
@@ -1800,7 +1845,7 @@ static MTLBlendOperation ConvertBlendOp(GSDevice::BlendOp generic)
 
 void GSDeviceMTL::MRESetHWPipelineState(GSHWDrawConfig::VSSelector vssel, GSHWDrawConfig::PSSelector pssel, GSHWDrawConfig::BlendState blend, GSHWDrawConfig::ColorMaskSelector cms)
 {
-	PipelineSelectorExtrasMTL extras(blend, m_current_render.color_target, cms, m_current_render.depth_target, m_current_render.stencil_target);
+	PipelineSelectorExtrasMTL extras(blend, m_current_render.color_target, cms, m_current_render.depth_target, m_current_render.stencil_target, m_current_render.has.rt1_depth);
 	PipelineSelectorMTL fullsel(vssel, pssel, extras);
 	if (m_current_render.has.pipeline_sel && fullsel == m_current_render.pipeline_sel)
 		return;
@@ -1842,6 +1887,7 @@ void GSDeviceMTL::MRESetHWPipelineState(GSHWDrawConfig::VSSelector vssel, GSHWDr
 		setFnConstantI(m_fn_constants, pssel.date,                  GSMTLConstantIndex_PS_DATE);
 		setFnConstantI(m_fn_constants, pssel.atst,                  GSMTLConstantIndex_PS_ATST);
 		setFnConstantI(m_fn_constants, pssel.afail,                 GSMTLConstantIndex_PS_AFAIL);
+		setFnConstantI(m_fn_constants, pssel.ztst,                  GSMTLConstantIndex_PS_ZTST);
 		setFnConstantI(m_fn_constants, pssel.tfx,                   GSMTLConstantIndex_PS_TFX);
 		setFnConstantB(m_fn_constants, pssel.tcc,                   GSMTLConstantIndex_PS_TCC);
 		setFnConstantI(m_fn_constants, pssel.wms,                   GSMTLConstantIndex_PS_WMS);
@@ -1919,6 +1965,11 @@ void GSDeviceMTL::MRESetHWPipelineState(GSHWDrawConfig::VSSelector vssel, GSHWDr
 		color.destinationRGBBlendFactor = ConvertBlendFactor(extras.dst_factor);
 		color.sourceAlphaBlendFactor = ConvertBlendFactor(extras.src_factor_alpha);
 		color.destinationAlphaBlendFactor = ConvertBlendFactor(extras.dst_factor_alpha);
+	}
+	if (extras.has_rt1)
+	{
+		MTLRenderPipelineColorAttachmentDescriptor* color1 = [[pdesc colorAttachments] objectAtIndexedSubscript:1];
+		[color1 setPixelFormat:MTLPixelFormatR32Float];
 	}
 	NSString* pname = [NSString stringWithFormat:@"HW Render %x.%x.%llx.%x", vssel_mtl.key, pssel.key_hi, pssel.key_lo, extras.fullkey];
 	auto pipeline = MakePipeline(pdesc, vs, ps, pname);
@@ -2266,7 +2317,9 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 		return;
 	}
 
-	BeginRenderPass(@"RenderHW", rt, MTLLoadActionLoad, config.ds, MTLLoadActionLoad, stencil, MTLLoadActionLoad);
+	const bool feedback_depth = config.ps.IsFeedbackLoopDepth();
+	const bool rt1 = feedback_depth && m_features.depth_feedback == GSDevice::DepthFeedbackSupport::DepthAsRT;
+	BeginRenderPass(@"RenderHW", rt, MTLLoadActionLoad, config.ds, MTLLoadActionLoad, stencil, MTLLoadActionLoad, rt1);
 	id<MTLRenderCommandEncoder> mtlenc = m_current_render.encoder;
 	FlushDebugEntries(mtlenc);
 	if (usesStencil(config.destination_alpha))
@@ -2274,6 +2327,12 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 	MREInitHWDraw(config, allocation);
 	if (config.require_one_barrier || config.require_full_barrier)
 		MRESetTexture(rt, GSMTLTextureIndexRenderTarget);
+	if (feedback_depth && !m_features.framebuffer_fetch)
+	{
+		bool depth_as_rt = m_features.depth_feedback == GSDevice::DepthFeedbackSupport::DepthAsRT;
+		GSTexture* tex = depth_as_rt ? m_ds_as_rt : config.ds;
+		MRESetTexture(tex, GSMTLTextureIndexDepthTarget);
+	}
 	if (primid_tex)
 		MRESetTexture(primid_tex, GSMTLTextureIndexPrimIDs);
 	if (config.blend.constant_enable)

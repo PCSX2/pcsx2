@@ -20,6 +20,8 @@ enum GSMTLTextureIndex
 	GSMTLTextureIndexPalette,
 	GSMTLTextureIndexRenderTarget,
 	GSMTLTextureIndexPrimIDs,
+	GSMTLTextureIndexDepthTarget,
+	GSMTLTextureIndexCount,
 };
 
 struct GSMTLConvertPSUniform
@@ -154,6 +156,7 @@ enum GSMTLFnConstants
 {
 	GSMTLConstantIndex_CAS_SHARPEN_ONLY,
 	GSMTLConstantIndex_FRAMEBUFFER_FETCH,
+	GSMTLConstantIndex_DEPTH_FEEDBACK,
 	GSMTLConstantIndex_FST,
 	GSMTLConstantIndex_IIP,
 	GSMTLConstantIndex_VS_POINT_SIZE,
@@ -168,6 +171,7 @@ enum GSMTLFnConstants
 	GSMTLConstantIndex_PS_DATE,
 	GSMTLConstantIndex_PS_ATST,
 	GSMTLConstantIndex_PS_AFAIL,
+	GSMTLConstantIndex_PS_ZTST,
 	GSMTLConstantIndex_PS_TFX,
 	GSMTLConstantIndex_PS_TCC,
 	GSMTLConstantIndex_PS_WMS,

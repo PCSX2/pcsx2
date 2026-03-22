@@ -40,14 +40,15 @@ struct PipelineSelectorExtrasMTL
 			GSDevice::BlendFactor dst_factor_alpha : 4;
 			GSDevice::BlendOp     blend_op : 2;
 			bool blend_enable : 1;
-			bool has_depth : 1;
-			bool has_stencil : 1;
+			bool has_depth    : 1;
+			bool has_stencil  : 1;
+			bool has_rt1      : 1;
 		};
 		u32 fullkey;
 	};
 
 	PipelineSelectorExtrasMTL(): fullkey(0) {}
-	PipelineSelectorExtrasMTL(GSHWDrawConfig::BlendState blend, GSTexture* rt, GSHWDrawConfig::ColorMaskSelector cms, bool has_depth, bool has_stencil)
+	PipelineSelectorExtrasMTL(GSHWDrawConfig::BlendState blend, GSTexture* rt, GSHWDrawConfig::ColorMaskSelector cms, bool has_depth, bool has_stencil, bool has_rt1)
 		: fullkey(0)
 	{
 		this->rt = rt ? rt->GetFormat() : GSTexture::Format::Invalid;
@@ -65,6 +66,7 @@ struct PipelineSelectorExtrasMTL
 		this->blend_enable = blend.enable;
 		this->has_depth   = has_depth;
 		this->has_stencil = has_stencil;
+		this->has_rt1     = has_rt1;
 	}
 };
 struct PipelineSelectorMTL
@@ -267,7 +269,7 @@ public:
 	std::unordered_map<PSSelector, MRCOwned<id<MTLFunction>>> m_hw_ps;
 	std::unordered_map<PipelineSelectorMTL, MRCOwned<id<MTLRenderPipelineState>>> m_hw_pipeline;
 
-	MRCOwned<MTLRenderPassDescriptor*> m_render_pass_desc[8];
+	MRCOwned<MTLRenderPassDescriptor*> m_render_pass_desc[16];
 
 	MRCOwned<id<MTLSamplerState>> m_sampler_hw[1 << 8];
 
@@ -287,7 +289,7 @@ public:
 		GSTexture* color_target = nullptr;
 		GSTexture* depth_target = nullptr;
 		GSTexture* stencil_target = nullptr;
-		GSTexture* tex[8] = {};
+		GSTexture* tex[GSMTLTextureIndexCount] = {};
 		void* vertex_buffer = nullptr;
 		void* name = nullptr;
 		struct Has
@@ -298,6 +300,7 @@ public:
 			bool blend_color  : 1;
 			bool pipeline_sel : 1;
 			bool sampler      : 1;
+			bool rt1_depth    : 1;
 		} has = {};
 		DepthStencilSelector depth_sel = DepthStencilSelector::NoDepth();
 		// Clear line (Things below here are tracked by `has` and don't need to be cleared to reset)
@@ -347,6 +350,8 @@ public:
 	id<MTLCommandBuffer> GetRenderCmdBufWithoutCreate();
 	/// Get the spin fence if spinning is enabled.
 	id<MTLFence> GetSpinFence();
+	/// Get the texture to use as RT1 depth for the given depth texture
+	id<MTLTexture> GetRT1DepthTexture(GSTextureMTL* depth);
 	/// Called by command buffers when they finish
 	void DrawCommandBufferFinished(u64 draw, id<MTLCommandBuffer> buffer);
 	/// Flush pending operations from all encoders to the GPU
@@ -356,7 +361,7 @@ public:
 	/// End current render pass without flushing
 	void EndRenderPass();
 	/// Begin a new render pass (may reuse existing)
-	void BeginRenderPass(NSString* name, GSTexture* color, MTLLoadAction color_load, GSTexture* depth, MTLLoadAction depth_load, GSTexture* stencil = nullptr, MTLLoadAction stencil_load = MTLLoadActionDontCare);
+	void BeginRenderPass(NSString* name, GSTexture* color, MTLLoadAction color_load, GSTexture* depth, MTLLoadAction depth_load, GSTexture* stencil = nullptr, MTLLoadAction stencil_load = MTLLoadActionDontCare, bool rt1 = false);
 	/// Call at the end of each frame
 	void FrameCompleted();
 

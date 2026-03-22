@@ -12,6 +12,7 @@ constant uint SHUFFLE_READ = 1;
 constant uint SHUFFLE_READWRITE = 3;
 
 constant bool HAS_FBFETCH           [[function_constant(GSMTLConstantIndex_FRAMEBUFFER_FETCH)]];
+constant uint DEPTH_FEEDBACK_RAW    [[function_constant(GSMTLConstantIndex_DEPTH_FEEDBACK)]];
 constant bool FST                   [[function_constant(GSMTLConstantIndex_FST)]];
 constant bool IIP                   [[function_constant(GSMTLConstantIndex_IIP)]];
 constant bool VS_POINT_SIZE         [[function_constant(GSMTLConstantIndex_VS_POINT_SIZE)]];
@@ -26,6 +27,7 @@ constant bool PS_FOG                [[function_constant(GSMTLConstantIndex_PS_FO
 constant uint PS_DATE               [[function_constant(GSMTLConstantIndex_PS_DATE)]];
 constant uint PS_ATST_RAW           [[function_constant(GSMTLConstantIndex_PS_ATST)]];
 constant uint PS_AFAIL_RAW          [[function_constant(GSMTLConstantIndex_PS_AFAIL)]];
+constant uint PS_ZTST_RAW           [[function_constant(GSMTLConstantIndex_PS_ZTST)]];
 constant uint PS_TFX                [[function_constant(GSMTLConstantIndex_PS_TFX)]];
 constant bool PS_TCC                [[function_constant(GSMTLConstantIndex_PS_TCC)]];
 constant uint PS_WMS                [[function_constant(GSMTLConstantIndex_PS_WMS)]];
@@ -71,12 +73,16 @@ constant bool PS_MANUAL_LOD         [[function_constant(GSMTLConstantIndex_PS_MA
 constant bool PS_REGION_RECT        [[function_constant(GSMTLConstantIndex_PS_REGION_RECT)]];
 constant uint PS_SCANMSK            [[function_constant(GSMTLConstantIndex_PS_SCANMSK)]];
 
+using GSShader::DepthFeedbackSupport;
 using GSShader::VSExpand;
 using AFAIL = GSShader::PS_AFAIL;
 using ATST = GSShader::PS_ATST;
+using GSShader::ZTST;
+constant DepthFeedbackSupport DEPTH_FEEDBACK = static_cast<DepthFeedbackSupport>(DEPTH_FEEDBACK_RAW);
 constant VSExpand VS_EXPAND_TYPE = static_cast<VSExpand>(VS_EXPAND_TYPE_RAW);
 constant AFAIL PS_AFAIL = static_cast<AFAIL>(PS_AFAIL_RAW);
 constant ATST  PS_ATST  = static_cast<ATST>(PS_ATST_RAW);
+constant ZTST  PS_ZTST  = static_cast<ZTST>(PS_ZTST_RAW);
 
 #if defined(__METAL_MACOS__) && __METAL_VERSION__ >= 220
 	#define PRIMID_SUPPORT 1
@@ -103,12 +109,18 @@ constant bool SW_BLEND = (PS_BLEND_A != PS_BLEND_B) || PS_BLEND_D;
 constant bool SW_AD_TO_HW = (PS_BLEND_C == 1 && PS_A_MASKED);
 constant bool NEEDS_RT_FOR_BLEND = (((PS_BLEND_A != PS_BLEND_B) && (PS_BLEND_A == 1 || PS_BLEND_B == 1 || PS_BLEND_C == 1)) || PS_BLEND_D == 1 || SW_AD_TO_HW);
 constant bool NEEDS_RT_EARLY = PS_TEX_IS_FB || PS_DATE >= 5;
-constant bool NEEDS_RT_FOR_AFAIL = PS_AFAIL == AFAIL::ZB_ONLY || PS_AFAIL == AFAIL::RGB_ONLY;
+constant bool NEEDS_RT_FOR_AFAIL = PS_AFAIL == AFAIL::ZB_ONLY || PS_AFAIL == AFAIL::RGB_ONLY || PS_AFAIL == AFAIL::RGB_ONLY_SW_Z;
 constant bool NEEDS_RT = NEEDS_RT_FOR_AFAIL || NEEDS_RT_EARLY || (!PS_PRIM_CHECKING_INIT && (PS_FBMASK || NEEDS_RT_FOR_BLEND));
+constant bool NEEDS_DEPTH_FOR_AFAIL = PS_AFAIL == AFAIL::FB_ONLY || PS_AFAIL == AFAIL::RGB_ONLY_SW_Z;
+constant bool NEEDS_DEPTH_FOR_ZTST  = PS_ZTST == ZTST::GEQUAL || PS_ZTST == ZTST::GREATER;
+constant bool SW_DEPTH = NEEDS_DEPTH_FOR_AFAIL || NEEDS_DEPTH_FOR_ZTST;
 
 constant bool PS_COLOR0 = !PS_NO_COLOR;
 constant bool PS_COLOR1 = !PS_NO_COLOR1;
-constant bool PS_ZOUTPUT = PS_ZCLAMP || PS_ZFLOOR;
+constant bool PS_ZOUTPUT = PS_ZCLAMP || PS_ZFLOOR || SW_DEPTH;
+constant bool PS_ZOUTPUT_LESS = PS_ZOUTPUT && !SW_DEPTH;
+constant bool PS_ZOUTPUT_ANY  = PS_ZOUTPUT && SW_DEPTH;
+constant bool PS_ZOUTPUT_COLOR = PS_ZOUTPUT_ANY && DEPTH_FEEDBACK == DepthFeedbackSupport::DepthAsRT;
 
 struct MainVSIn
 {
@@ -144,7 +156,18 @@ struct MainPSOut
 {
 	float4 c0 [[color(0), index(0), function_constant(PS_COLOR0)]];
 	float4 c1 [[color(0), index(1), function_constant(PS_COLOR1)]];
-	float depth [[depth(less), function_constant(PS_ZOUTPUT)]];
+	float depthColor [[color(1), function_constant(PS_ZOUTPUT_COLOR)]];
+	float depthLess [[depth(less), function_constant(PS_ZOUTPUT_LESS)]];
+	float depthAny  [[depth(any),  function_constant(PS_ZOUTPUT_ANY)]];
+	void setDepth(float depth)
+	{
+		if (PS_ZOUTPUT_LESS)
+			depthLess = depth;
+		if (PS_ZOUTPUT_ANY)
+			depthAny = depth;
+		if (PS_ZOUTPUT_COLOR)
+			depthColor = depth;
+	}
 };
 
 // MARK: - Vertex functions
@@ -299,6 +322,7 @@ struct PSMain
 	texture2d<float> prim_id_tex;
 	sampler tex_sampler;
 	float4 current_color;
+	float current_depth;
 	uint prim_id;
 	const thread MainPSIn& in;
 	constant GSMTLMainPSUniform& cb;
@@ -1061,6 +1085,17 @@ struct PSMain
 	MainPSOut ps_main()
 	{
 		MainPSOut out = {};
+		float input_z = in.p.z;
+		if (PS_ZFLOOR)
+			input_z = floor(input_z * 0x1p32) * 0x1p-32;
+
+		if (PS_ZTST == ZTST::GEQUAL || PS_ZTST == ZTST::GREATER)
+		{
+			if (PS_ZTST == ZTST::GEQUAL && input_z < current_depth)
+				discard_fragment();
+			if (PS_ZTST == ZTST::GREATER && input_z <= current_depth)
+				discard_fragment();
+		}
 
 		if (PS_SCANMSK & 2)
 		{
@@ -1211,18 +1246,25 @@ struct PSMain
 		{
 			out.c0.a = PS_RTA_CORRECTION ? C.a / 128.f : C.a / 255.f;
 			out.c0.rgb = PS_COLCLIP_HW ? float3(C.rgb / 65535.f) : C.rgb / 255.f;
-			if (PS_AFAIL == AFAIL::RGB_ONLY && !atst_pass)
-				out.c0.a = current_color.a;
 		}
 		if (PS_COLOR1)
 			out.c1 = alpha_blend;
-		
-		float depth_value = PS_ZFLOOR ? (floor(in.p.z * exp2(32.0f)) * exp2(-32.0f)) : in.p.z;
-		
+
 		if (PS_ZCLAMP)
-			out.depth = min(depth_value, cb.max_depth);
-		else if (PS_ZFLOOR)
-			out.depth = depth_value;
+			input_z = min(input_z, cb.max_depth);
+
+		if (!atst_pass)
+		{
+			if (PS_AFAIL == AFAIL::RGB_ONLY_SW_Z || PS_AFAIL == AFAIL::RGB_ONLY)
+				out.c0.a = current_color.a;
+			else if (PS_AFAIL == AFAIL::ZB_ONLY)
+				out.c0 = current_color;
+
+			if (PS_AFAIL == AFAIL::RGB_ONLY_SW_Z || PS_AFAIL == AFAIL::FB_ONLY)
+				input_z = current_depth;
+		}
+
+		out.setDepth(input_z);
 
 		return out;
 	}
@@ -1236,9 +1278,14 @@ fragment float4 fbfetch_test(float4 in [[color(0), raster_order_group(0)]])
 
 constant bool NEEDS_RT_TEX = NEEDS_RT && !HAS_FBFETCH;
 constant bool NEEDS_RT_FBF = NEEDS_RT &&  HAS_FBFETCH;
+constant bool NEEDS_DS_FBF = SW_DEPTH &&  HAS_FBFETCH && DEPTH_FEEDBACK == DepthFeedbackSupport::DepthAsRT;
 #else
 constant bool NEEDS_RT_TEX = NEEDS_RT;
+constant bool NEEDS_DS_FBF = false;
+constant float ds_fbf = 0;
 #endif
+constant bool NEEDS_DS_TEX   = SW_DEPTH && DEPTH_FEEDBACK == DepthFeedbackSupport::DepthAsRT && !NEEDS_DS_FBF;
+constant bool NEEDS_DS_DEPTH = SW_DEPTH && DEPTH_FEEDBACK == DepthFeedbackSupport::Depth;
 
 fragment MainPSOut ps_main(
 	MainPSIn in [[stage_in]],
@@ -1249,12 +1296,15 @@ fragment MainPSOut ps_main(
 #endif
 #if FBFETCH_SUPPORT
 	float4 rt_fbf [[color(0), raster_order_group(0), function_constant(NEEDS_RT_FBF)]],
+	float  ds_fbf [[color(1), raster_order_group(1), function_constant(NEEDS_DS_FBF)]],
 #endif
 	texture2d<float> tex       [[texture(GSMTLTextureIndexTex),          function_constant(PS_TEX_IS_COLOR)]],
 	depth2d<float>   depth     [[texture(GSMTLTextureIndexTex),          function_constant(PS_TEX_IS_DEPTH)]],
 	texture2d<float> palette   [[texture(GSMTLTextureIndexPalette),      function_constant(PS_HAS_PALETTE)]],
 	texture2d<float> rt        [[texture(GSMTLTextureIndexRenderTarget), function_constant(NEEDS_RT_TEX)]],
-	texture2d<float> primidtex [[texture(GSMTLTextureIndexPrimIDs),      function_constant(PS_PRIM_CHECKING_READ)]])
+	texture2d<float> primidtex [[texture(GSMTLTextureIndexPrimIDs),      function_constant(PS_PRIM_CHECKING_READ)]],
+	texture2d<float> ds_tex    [[texture(GSMTLTextureIndexDepthTarget),  function_constant(NEEDS_DS_TEX)]],
+	depth2d<float>   ds_depth  [[texture(GSMTLTextureIndexDepthTarget),  function_constant(NEEDS_DS_DEPTH)]])
 {
 	PSMain main(in, cb);
 	main.tex_sampler = s;
@@ -1271,12 +1321,31 @@ fragment MainPSOut ps_main(
 		main.prim_id = primid;
 #endif
 
+	uint2 coord = uint2(in.p.xy);
+
+	if (SW_DEPTH)
+	{
+		switch (DEPTH_FEEDBACK)
+		{
+			case DepthFeedbackSupport::Depth:
+				main.current_depth = ds_depth.read(coord);
+				break;
+			case DepthFeedbackSupport::DepthAsRT:
+				main.current_depth = HAS_FBFETCH ? ds_fbf : ds_tex.read(coord).x;
+				break;
+			case DepthFeedbackSupport::None:
+				// Should never happen
+				main.current_depth = 0;
+				break;
+		}
+	}
+
 	if (NEEDS_RT)
 	{
 #if FBFETCH_SUPPORT
-		main.current_color = HAS_FBFETCH ? rt_fbf : rt.read(uint2(in.p.xy));
+		main.current_color = HAS_FBFETCH ? rt_fbf : rt.read(coord);
 #else
-		main.current_color = rt.read(uint2(in.p.xy));
+		main.current_color = rt.read(coord);
 #endif
 	}
 	else

@@ -928,12 +928,7 @@ public:
 		Performance
 	};
 
-	enum class DepthFeedbackSupport : u8
-	{
-		None,      // No support for depth feedback loops.
-		Depth,     // Implement depth feedback loops directly on the depth buffer.
-		DepthAsRT, // Implement depth feedback loops by first converting depth to a color RT.
-	};
+	using DepthFeedbackSupport = GSShader::DepthFeedbackSupport;
 
 	// clang-format off
 	struct FeatureSupport
