@@ -323,6 +323,7 @@ void GSState::ResetPCRTC()
 void GSState::UpdateSettings(const Pcsx2Config::GSOptions& old_config)
 {
 	m_mipmap = GSConfig.Mipmap;
+	UpdateZIntegerEnabled();
 
 	if (
 		GSConfig.AutoFlushSW != old_config.AutoFlushSW ||
@@ -5254,7 +5255,9 @@ __forceinline void GSState::VertexKick(u32 skip)
 	temp_draw_rect = temp_draw_rect.rintersect(m_context->scissor.in);
 
 	constexpr u32 max_vertices = MaxVerticesForPrim(prim);
-	if (max_vertices != 0 && m_vertex.tail >= max_vertices)
+	// Z integer vertices get expanded to have unique indices so we need to check the index count instead.
+	const u32 check_size = static_cast<u32>(m_z_integer_enabled ? m_index.tail : m_vertex.tail);
+	if (max_vertices != 0 && check_size >= max_vertices)
 		Flush(VERTEXCOUNT);
 }
 

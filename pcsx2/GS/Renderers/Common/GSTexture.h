@@ -55,7 +55,7 @@ public:
 
 	union ClearValue
 	{
-		u32 color;
+		u32 color; // Used for color and integer depth
 		float depth;
 	};
 
@@ -129,9 +129,21 @@ public:
 	{
 		return (m_type == Type::DepthStencil);
 	}
+	__fi bool IsDepthInteger() const
+	{
+		return (m_type == Type::RenderTarget && m_format == Format::UInt32);
+	}
+	__fi bool IsDepthStencilOrDepthInteger() const
+	{
+		return IsDepthStencil() || IsDepthInteger();
+	}
 	__fi bool IsTexture() const
 	{
 		return (m_type == Type::Texture);
+	}
+	__fi bool IsIntegerFormat() const
+	{
+		return m_format == Format::UInt16 || m_format == Format::UInt32;
 	}
 
 	__fi State GetState() const { return m_state; }
@@ -142,7 +154,9 @@ public:
 
 	__fi u32 GetClearColor() const { return m_clear_value.color; }
 	__fi float GetClearDepth() const { return m_clear_value.depth; }
-	__fi GSVector4 GetUNormClearColor() const { return GSVector4::unorm8(m_clear_value.color); }
+	__fi float GetClearDepthInteger() const { return m_clear_value.color; }
+	// FIXME: Rename to GetVectorClearColor
+	virtual GSVector4 GetUNormClearColor() const { return GSVector4::unorm8(m_clear_value.color); }
 
 	__fi void SetClearColor(u32 color)
 	{
@@ -153,6 +167,11 @@ public:
 	{
 		m_state = State::Cleared;
 		m_clear_value.depth = depth;
+	}
+	__fi void SetClearDepthInteger(u32 depth)
+	{
+		m_state = State::Cleared;
+		m_clear_value.color = depth;
 	}
 
 	void GenerateMipmapsIfNeeded();
