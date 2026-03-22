@@ -213,6 +213,10 @@ namespace FullscreenUI
 	void CopyTextToClipboard(std::string title, const std::string_view text);
 	void DrawAboutWindow();
 	void OpenAboutWindow();
+	void DrawCoverDownloaderWindow();
+	void OpenCoverDownloaderWindow();
+	void CloseCoverDownloaderWindow();
+	void CoverDownloaderThreadFunc(const std::vector<std::string>& urls);
 	void GetStandardSelectionFooterText(SmallStringBase& dest, bool back_instead_of_cancel);
 	void ApplyLayoutSettings(const SettingsInterface* bsi = nullptr);
 
@@ -235,6 +239,18 @@ namespace FullscreenUI
 	inline char s_achievements_login_username[256] = {};
 	inline char s_achievements_login_password[256] = {};
 	inline Achievements::LoginRequestReason s_achievements_login_reason = Achievements::LoginRequestReason::UserInitiated;
+
+	// cover downloader dialog state
+	inline bool s_cover_downloader_open = false;
+	inline std::array<char, 4096> s_cover_downloader_urls_buffer = {};
+	inline bool s_cover_downloader_use_title_filenames = false;
+	inline bool s_cover_downloader_downloading = false;
+	inline std::unique_ptr<std::thread> s_cover_downloader_thread;
+	inline std::mutex s_cover_downloader_mutex;
+	inline std::string s_cover_downloader_status;
+	inline bool s_cover_downloader_has_error = false;
+	inline s32 s_cover_downloader_progress_max = 0;
+	inline s32 s_cover_downloader_progress_value = 0;
 
 	// local copies of the currently-running game
 	inline std::string s_current_game_title;
