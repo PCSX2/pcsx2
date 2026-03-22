@@ -282,7 +282,10 @@ private:
 	void setGameListEntryCoverImage(const GameList::Entry& entry);
 	void clearGameListEntryPlayTime(const GameList::Entry& entry, const time_t entry_played_time);
 	void goToWikiPage(const GameList::Entry& entry);
+	void openMemoryCardFolder();
 	void openSnapshotsFolderForGame(const GameList::Entry& entry);
+	void openTextureFolderForGame(const GameList::Entry& entry);
+	void openVideoCaptureFolder(const GameList::Entry& entry);
 
 	std::optional<bool> promptForResumeState(const QString& save_state_path);
 	void loadSaveStateSlot(s32 slot, bool load_backup = false);

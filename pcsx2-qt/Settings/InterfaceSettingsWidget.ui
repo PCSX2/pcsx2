@@ -402,6 +402,8 @@
   <tabstop>pauseOnControllerDisconnection</tabstop>
   <tabstop>savestateSelector</tabstop>
   <tabstop>promptOnStateLoadSaveFailure</tabstop>
+  <tabstop>preferEnglishGameList</tabstop>
+  <tabstop>mouseLock</tabstop>
   <tabstop>startFullscreen</tabstop>
   <tabstop>doubleClickTogglesFullscreen</tabstop>
   <tabstop>renderToSeparateWindow</tabstop>
