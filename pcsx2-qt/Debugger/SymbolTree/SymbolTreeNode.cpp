@@ -452,7 +452,7 @@ QString SymbolTreeNode::generateDisplayString(
 					field_value = QString("(%1)").arg(ccc::ast::node_type_to_string(field_type));
 
 				QString field_name = QString::fromStdString(field.node->name);
-				result += QString(".%1=%2").arg(field_name).arg(field_value);
+				result += QString(".%1=%2").arg(field_name, field_value);
 
 				if (i + 1 != fields.size() || !all_fields)
 					result += ",";

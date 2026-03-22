@@ -6,7 +6,6 @@
 #include <optional>
 #include <type_traits>
 
-#include <QtCore/QtCore>
 #include <QtGui/QAction>
 #include <QtGui/QFont>
 #include <QtWidgets/QAbstractButton>

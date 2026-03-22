@@ -91,7 +91,7 @@ void ControllerGlobalSettingsWidget::addDeviceToList(const QString& identifier, 
 	if (identifier.compare(name, Qt::CaseInsensitive) == 0)
 		item->setText(identifier);
 	else
-		item->setText(QStringLiteral("%1: %2").arg(identifier).arg(name));
+		item->setText(QStringLiteral("%1: %2").arg(identifier, name));
 
 	item->setData(Qt::UserRole, identifier);
 	m_ui.deviceList->addItem(item);

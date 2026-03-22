@@ -49,6 +49,7 @@
 
 #include <QtCore/QDateTime>
 #include <QtCore/QDir>
+#include <QtCore/QUrl>
 #include <QtGui/QCloseEvent>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QInputDialog>
@@ -743,9 +744,9 @@ void MainWindow::onVideoCaptureToggled(bool checked)
 			{
 				const QString container(QString::fromStdString(
 					Host::GetStringSettingValue("EmuCore/GS", "CaptureContainer", Pcsx2Config::GSOptions::DEFAULT_CAPTURE_CONTAINER)));
-				const QString filter(tr("%1 Files (*.%2)").arg(container.toUpper()).arg(container));
+				const QString filter(tr("%1 Files (*.%2)").arg(container.toUpper(), container));
 
-				const QString base_video_filename(QStringLiteral("%1.%2").arg(QString::fromStdString(GSGetBaseVideoFilename())).arg(container));
+				const QString base_video_filename(QStringLiteral("%1.%2").arg(QString::fromStdString(GSGetBaseVideoFilename()), container));
 				s_path_to_recording_for_record_on_start = QDir::toNativeSeparators(QFileDialog::getSaveFileName(this, tr("Video Capture"), base_video_filename, filter));
 				s_record_on_start = !s_path_to_recording_for_record_on_start.isEmpty();
 			}
@@ -783,9 +784,9 @@ void MainWindow::onVideoCaptureToggled(bool checked)
 	{
 		const QString container(QString::fromStdString(
 			Host::GetStringSettingValue("EmuCore/GS", "CaptureContainer", Pcsx2Config::GSOptions::DEFAULT_CAPTURE_CONTAINER)));
-		const QString filter(tr("%1 Files (*.%2)").arg(container.toUpper()).arg(container));
+		const QString filter(tr("%1 Files (*.%2)").arg(container.toUpper(), container));
 
-		QString path(QStringLiteral("%1.%2").arg(QString::fromStdString(GSGetBaseVideoFilename())).arg(container));
+		QString path(QStringLiteral("%1.%2").arg(QString::fromStdString(GSGetBaseVideoFilename()), container));
 		path = QDir::toNativeSeparators(QFileDialog::getSaveFileName(this, tr("Video Capture"), path, filter));
 		if (path.isEmpty())
 			return;
@@ -3058,7 +3059,7 @@ void MainWindow::setGameListEntryCoverImage(const GameList::Entry& entry)
 
 	if (!QFile::copy(filename, new_filename))
 	{
-		QMessageBox::critical(this, tr("Copy Error"), tr("Failed to copy '%1' to '%2'").arg(filename).arg(new_filename));
+		QMessageBox::critical(this, tr("Copy Error"), tr("Failed to copy '%1' to '%2'").arg(filename, new_filename));
 		return;
 	}
 

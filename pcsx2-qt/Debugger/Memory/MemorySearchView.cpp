@@ -13,7 +13,7 @@
 #include <QtGui/QClipboard>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QScrollBar>
-#include <QtConcurrent/QtConcurrent>
+#include <QtConcurrent/QtConcurrentRun>
 #include <QtCore/QFutureWatcher>
 #include <QtGui/QPainter>
 

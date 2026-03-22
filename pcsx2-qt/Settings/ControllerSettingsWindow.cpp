@@ -460,7 +460,7 @@ void ControllerSettingsWindow::createWidgets()
 		if (mtap_enabled[port])
 		{
 			//: Controller Port is an official term from Sony. Find the official translation for your language inside the console's manual.
-			item->setText(tr("Controller Port %1%2\n%3").arg(port + 1).arg(s_mtap_slot_names[slot]).arg(display_name));
+			item->setText(tr("Controller Port %1%2\n%3").arg(port + 1).arg(s_mtap_slot_names[slot], display_name));
 		}
 		else
 		{
@@ -522,7 +522,7 @@ void ControllerSettingsWindow::updateListDescription(u32 global_slot, Controller
 			if (mtap_enabled)
 			{
 				//: Controller Port is an official term from Sony. Find the official translation for your language inside the console's manual.
-				item->setText(tr("Controller Port %1%2\n%3").arg(port + 1).arg(s_mtap_slot_names[slot]).arg(display_name));
+				item->setText(tr("Controller Port %1%2\n%3").arg(port + 1).arg(s_mtap_slot_names[slot], display_name));
 			}
 			else
 			{
