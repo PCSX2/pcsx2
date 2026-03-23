@@ -3187,9 +3187,6 @@ void FullscreenUI::DrawGameListSettingsWindow()
 		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_TAG, "Show Titles"),
 			FSUI_CSTR("Shows Titles for Games when in Game Grid View Mode"), "UI",
 			"FullscreenUIShowGameGridTitles", true);
-		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_GLOBE, "Prefer English Titles"),
-			FSUI_CSTR("For games with both a title in the game's native language and one in English, prefer the English title."), "UI",
-			"PreferEnglishGameList", false);
 	}
 
 	MenuHeading(FSUI_CSTR("Cover Settings"));

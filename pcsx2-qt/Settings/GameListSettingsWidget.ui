@@ -10,7 +10,7 @@
     <height>800</height>
    </rect>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="1">
    <property name="leftMargin">
     <number>0</number>
    </property>
@@ -36,11 +36,11 @@
           <property name="text">
            <string>Search Directories (will be scanned for games)</string>
           </property>
+          <property name="textInteractionFlags">
+           <set>Qt::TextInteractionFlag::TextBrowserInteraction</set>
+          </property>
           <property name="buddy">
            <cstring>searchDirectoryList</cstring>
-          </property>
-          <property name="textInteractionFlags">
-           <set>Qt::TextBrowserInteraction</set>
           </property>
          </widget>
         </item>
@@ -118,11 +118,11 @@
           <property name="text">
            <string>Excluded Paths (will not be scanned)</string>
           </property>
+          <property name="textInteractionFlags">
+           <set>Qt::TextInteractionFlag::TextBrowserInteraction</set>
+          </property>
           <property name="buddy">
            <cstring>excludedPaths</cstring>
-          </property>
-          <property name="textInteractionFlags">
-           <set>Qt::TextBrowserInteraction</set>
           </property>
          </widget>
         </item>
@@ -253,22 +253,6 @@
      </layout>
     </widget>
    </item>
-   <item>
-    <widget class="QGroupBox" name="gameListGroup">
-     <property name="title">
-      <string>Display</string>
-     </property>
-     <layout class="QGridLayout" name="gridLayout_gameList">
-      <item row="0" column="0">
-       <widget class="QCheckBox" name="preferEnglishGameList">
-        <property name="text">
-         <string>Prefer English Titles</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
   </layout>
  </widget>
  <tabstops>
@@ -281,7 +265,6 @@
   <tabstop>excludedPaths</tabstop>
   <tabstop>scanForNewGames</tabstop>
   <tabstop>rescanAllGames</tabstop>
-  <tabstop>preferEnglishGameList</tabstop>
  </tabstops>
  <resources>
   <include location="../resources/resources.qrc"/>
