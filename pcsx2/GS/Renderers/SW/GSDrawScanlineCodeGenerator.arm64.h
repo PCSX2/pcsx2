@@ -62,6 +62,10 @@ private:
 		int pixels, int mip_offset);
 	void ReadTexelImpl(const vixl::aarch64::VRegister& dst, const vixl::aarch64::VRegister& addr,
 		u8 i, const vixl::aarch64::Register& baseRegister, bool preserveDst);
+	void RoundUV(const vixl::aarch64::VRegister& u, const vixl::aarch64::VRegister& v,
+		const vixl::aarch64::VRegister& tmp1, const vixl::aarch64::VRegister& tmp2,
+		const vixl::aarch64::VRegister& tmp3, const vixl::aarch64::VRegister& tmp4,
+		const vixl::aarch64::VRegister& tmp5, const vixl::aarch64::VRegister& tmp6);
 
 	void modulate16(const vixl::aarch64::VRegister& d, const vixl::aarch64::VRegister& a, const vixl::aarch64::VRegister& f, u8 shift);
 	void modulate16(const vixl::aarch64::VRegister& a, const vixl::aarch64::VRegister& f, u8 shift);
