@@ -2634,6 +2634,7 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
 	{
 		if (monitor_index > 0)
 		{
+			m_pre_game_main_window_geometry = saveGeometry();
 			const QRect screenGeo = target_screen->availableGeometry();
 			const QPoint center(screenGeo.x() + (screenGeo.width() - width()) / 2,
 				screenGeo.y() + (screenGeo.height() - height()) / 2);
@@ -2745,6 +2746,11 @@ void MainWindow::destroyDisplayWidget(bool show_game_list)
 	{
 		pxAssertRel(m_ui.mainContainer->indexOf(m_display_container) == 1, "Display widget in stack");
 		m_ui.mainContainer->removeWidget(m_display_container);
+		if (!m_pre_game_main_window_geometry.isEmpty())
+		{
+			restoreGeometry(m_pre_game_main_window_geometry);
+			m_pre_game_main_window_geometry.clear();
+		}
 		if (show_game_list)
 		{
 			m_ui.mainContainer->setCurrentIndex(0);
