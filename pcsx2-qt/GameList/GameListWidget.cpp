@@ -576,8 +576,11 @@ void GameListWidget::onListViewContextMenuRequested(const QPoint& point)
 
 void GameListWidget::onTableViewHeaderContextMenuRequested(const QPoint& point)
 {
-	QHeaderView* const header = m_table_view->horizontalHeader();
-	QMenu menu(this);
+	QHeaderView* header = m_table_view->horizontalHeader();
+
+	QMenu* menu = new QMenu(this);
+	menu->setAttribute(Qt::WA_DeleteOnClose);
+
 	// Iterate through all available columns defined in the model.
 	for (int column = 0; column < GameListModel::Column_Count; column++)
 	{
@@ -586,7 +589,7 @@ void GameListWidget::onTableViewHeaderContextMenuRequested(const QPoint& point)
 			continue;
 		// Create a checkable menu item for each column title.
 		const QString title = m_model->headerData(column, Qt::Horizontal, Qt::DisplayRole).toString();
-		QAction* const action = menu.addAction(title);
+		QAction* const action = menu->addAction(title);
 		action->setCheckable(true);
 		action->setChecked(!header->isSectionHidden(column));
 		// Update the GUI when the user toggles a column with left-click actions in the right-click menu on the column.
@@ -599,12 +602,14 @@ void GameListWidget::onTableViewHeaderContextMenuRequested(const QPoint& point)
 		});
 	}
 
-	menu.addSeparator();
+	menu->addSeparator();
+
 	// Add a "panic button" that fully restores the default column layout.
 	// This allows users to recover without editing configuration files such as [GameListTableView] has a key with
 	// and variable HeaderState which you can remove the line to also do the same effect but old method is not user-friendly.
-	menu.addAction(tr("Reset All Columns"), this, &GameListWidget::resetTableHeaderToDefault);
-	menu.exec(m_table_view->viewport()->mapToGlobal(point));
+	menu->addAction(tr("Reset All Columns"), this, &GameListWidget::resetTableHeaderToDefault);
+
+	menu->popup(header->mapToGlobal(point));
 }
 
 void GameListWidget::onCoverScaleChanged()
