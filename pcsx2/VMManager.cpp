@@ -341,7 +341,7 @@ std::string VMManager::GetTitle(bool prefer_en)
 {
 	std::unique_lock lock(s_info_mutex);
 	std::string out = s_title;
-	if (!s_title_en_search.empty())
+	if (prefer_en && !s_title_en_search.empty())
 	{
 		size_t pos = out.find(s_title_en_search);
 		if (pos != out.npos)
@@ -1221,8 +1221,10 @@ void VMManager::ReportGameChangeToHost()
 {
 	const std::string& disc_path = CDVDsys_GetFile(CDVDsys_GetSourceType());
 	const u32 crc_to_report = HasBootedELF() ? s_current_crc : 0;
-	FullscreenUI::GameChanged(disc_path, s_disc_serial, GetTitle(true), s_disc_crc, crc_to_report);
-	Host::OnGameChanged(s_title, s_elf_override, disc_path, s_disc_serial, s_disc_crc, crc_to_report);
+	const bool prefer_english = Host::GetBaseBoolSettingValue("UI", "PreferEnglishGameList", false);
+	const std::string game_title = GetTitle(prefer_english);
+	FullscreenUI::GameChanged(disc_path, s_disc_serial, game_title, s_disc_crc, crc_to_report);
+	Host::OnGameChanged(game_title, s_elf_override, disc_path, s_disc_serial, s_disc_crc, crc_to_report);
 }
 
 bool VMManager::HasBootedELF()
@@ -3757,12 +3759,21 @@ void VMManager::UpdateDiscordPresence(bool update_session_time)
 	if (update_session_time)
 		s_discord_presence_time_epoch = std::time(nullptr);
 
+	std::string rp_title;
+	const bool prefer_english = Host::GetBaseBoolSettingValue("UI", "PreferEnglishGameList", false);
+	if (!s_title.empty())
+		rp_title = GetTitle(prefer_english);
+
 	// https://discord.com/developers/docs/rich-presence/how-to#updating-presence-update-presence-payload-fields
 	DiscordRichPresence rp = {};
 	rp.largeImageKey = "4k-pcsx2";
 	rp.largeImageText = "PCSX2 PS2 Emulator";
 	rp.startTimestamp = s_discord_presence_time_epoch;
-	rp.details = s_title.empty() ? TRANSLATE("VMManager", "No Game Running") : s_title.c_str();
+
+	if (rp_title.empty())
+		rp.details = TRANSLATE("VMManager", "No Game Running");
+	else
+		rp.details = rp_title.c_str();
 
 	std::string state_string;
 
