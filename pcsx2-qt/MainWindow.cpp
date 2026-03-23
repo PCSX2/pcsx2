@@ -2549,6 +2549,11 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
 	}
 
 	m_display_surface = new DisplaySurface();
+	const int monitor_index = Host::GetBaseIntSettingValue("UI", "DisplayMonitor", 0);
+	const QList<QScreen*> screens = QGuiApplication::screens();
+	QScreen* target_screen = (monitor_index > 0 && monitor_index <= screens.size()) ? screens[monitor_index - 1] : QGuiApplication::primaryScreen();
+	m_display_surface->setScreen(target_screen);
+
 	if (fullscreen || !render_to_main)
 	{
 #ifdef DISPLAY_SURFACE_WINDOW
@@ -2571,8 +2576,9 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
 		// Other platforms can position windows fine, but the only thing that matters here is the screen.
 
 #ifdef DISPLAY_SURFACE_WINDOW
-		if (isVisible() && g_emu_thread->shouldRenderToMain())
-			m_display_surface->setPosition(screen()->availableGeometry().topLeft());
+		m_display_surface->create();
+		if (monitor_index > 0 || (isVisible() && g_emu_thread->shouldRenderToMain()))
+			m_display_surface->setPosition(target_screen->availableGeometry().topLeft());
 		else
 			restoreDisplayWindowGeometryFromConfig();
 
@@ -2581,8 +2587,8 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
 		else
 			m_display_surface->showNormal();
 #else
-		if (isVisible() && g_emu_thread->shouldRenderToMain())
-			m_display_container->move(screen()->availableGeometry().topLeft());
+		if (monitor_index > 0 || (isVisible() && g_emu_thread->shouldRenderToMain()))
+			m_display_container->move(target_screen->availableGeometry().topLeft());
 		else
 			restoreDisplayWindowGeometryFromConfig();
 
@@ -2600,16 +2606,40 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
 		else
 			restoreDisplayWindowGeometryFromConfig();
 		m_display_surface->showNormal();
+		if (monitor_index > 0)
+		{
+			const QSize windowSize = m_display_surface->size();
+			const QRect screenGeo = target_screen->availableGeometry();
+			const QPoint center(screenGeo.x() + (screenGeo.width() - windowSize.width()) / 2,
+				screenGeo.y() + (screenGeo.height() - windowSize.height()) / 2);
+			m_display_surface->setGeometry(QRect(center, windowSize));
+		}
 #else
 		if (m_is_temporarily_windowed && g_emu_thread->shouldRenderToMain())
 			m_display_container->setGeometry(geometry());
 		else
 			restoreDisplayWindowGeometryFromConfig();
 		m_display_container->showNormal();
+		if (monitor_index > 0)
+		{
+			const QSize windowSize = m_display_container->size();
+			const QRect screenGeo = target_screen->availableGeometry();
+			const QPoint center(screenGeo.x() + (screenGeo.width() - windowSize.width()) / 2,
+				screenGeo.y() + (screenGeo.height() - windowSize.height()) / 2);
+			m_display_container->setGeometry(QRect(center, windowSize));
+		}
 #endif
 	}
 	else
 	{
+		if (monitor_index > 0)
+		{
+			m_pre_game_main_window_geometry = saveGeometry();
+			const QRect screenGeo = target_screen->availableGeometry();
+			const QPoint center(screenGeo.x() + (screenGeo.width() - width()) / 2,
+				screenGeo.y() + (screenGeo.height() - height()) / 2);
+			move(center);
+		}
 		pxAssertRel(m_ui.mainContainer->count() == 1, "Has no display widget");
 		m_ui.mainContainer->addWidget(m_display_container);
 		m_ui.mainContainer->setCurrentIndex(1);
@@ -2716,6 +2746,11 @@ void MainWindow::destroyDisplayWidget(bool show_game_list)
 	{
 		pxAssertRel(m_ui.mainContainer->indexOf(m_display_container) == 1, "Display widget in stack");
 		m_ui.mainContainer->removeWidget(m_display_container);
+		if (!m_pre_game_main_window_geometry.isEmpty())
+		{
+			restoreGeometry(m_pre_game_main_window_geometry);
+			m_pre_game_main_window_geometry.clear();
+		}
 		if (show_game_list)
 		{
 			m_ui.mainContainer->setCurrentIndex(0);
