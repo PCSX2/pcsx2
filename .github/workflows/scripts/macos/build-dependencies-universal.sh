@@ -83,7 +83,7 @@ CMAKE_ARCH_X64=-DCMAKE_OSX_ARCHITECTURES="x86_64"
 CMAKE_ARCH_ARM64=-DCMAKE_OSX_ARCHITECTURES="arm64"
 CMAKE_ARCH_UNIVERSAL=-DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
 
-cat > SHASUMS <<EOF
+grep . > SHASUMS <<EOF
 aeb78d29291a2b5fd53cb55950f8f5065b4978c25fb1d77f627d695ab9adf21e  qtbase-everywhere-src-$QT.tar.xz
 8b8f9c718638081e7b3c000e7f31910140b1202a98e98df5d1b496fe6f639d67  qtimageformats-everywhere-src-$QT.tar.xz
 f07ff80f38caf235187200345392ca7479445ddf49a36c3694cd52a735dad6e1  qtsvg-everywhere-src-$QT.tar.xz
@@ -101,42 +101,45 @@ e4ab7009bf0629fd11982d4c2aa83964cf244cffba7347ecd39019a9e38c4564  libwebp-$LIBWE
 017c06f75ffed25f6cda9b5369ec6da0ac35a6616adf7abe4222516a0237f37a  libpng-$LIBPNG-apng.patch.gz
 075920b826834ac4ddf97661cc73491047855859affd671d52079c6867c1c6c0  libjpeg-turbo-$LIBJPEGTURBO.tar.gz
 b2751fccb6cc4c77708113cd78b561059b6fa904b24162fa0be2d60273d27b8e  ffmpeg-$FFMPEG.tar.xz
-9985f141902a17de818e264d17c1ce334b748e499ee02fcb4703e4dc0038f89c  v$MOLTENVK.tar.gz
+9985f141902a17de818e264d17c1ce334b748e499ee02fcb4703e4dc0038f89c  MoltenVK-$MOLTENVK.tar.gz
 51dbf24fe72e43dd7cb9a289d3cab47112010f1a2ed69b6fc8ac0dff31991ed2  KDDockWidgets-$KDDOCKWIDGETS.tar.gz
 7bd4e79ce18b1d47517e7e91fbb7cf19d4f01942804a519bc7c0bf32b6325dd5  plutovg-$PLUTOVG.tar.gz
 78561b571ac224030cdc450ca2986b4de915c2ba7616004a6d71a379bffd15f3  plutosvg-$PLUTOSVG.tar.gz
 
 245002feccbe7f8361b223545a5654cea69780745886872d7efff50a38d96c66  shaderc-$SHADERC.tar.gz
-bd58dca4dac67dcf7640292d7d63e0416274d40ee2200f7301878cec11ac6647  shaderc-glslang-$SHADERC_GLSLANG.tar.gz
-1b220e3eec1714f0451b0e3652979bd280edf10893f617837b88e6359a804ded  shaderc-spirv-headers-$SHADERC_SPIRVHEADERS.tar.gz
-cabb35f4eef0da3ef72ad9edd596af4191d7507a8f35c05df526d2d5ff889f59  shaderc-spirv-tools-$SHADERC_SPIRVTOOLS.tar.gz
+bd58dca4dac67dcf7640292d7d63e0416274d40ee2200f7301878cec11ac6647  glslang-$SHADERC_GLSLANG.tar.gz
+1b220e3eec1714f0451b0e3652979bd280edf10893f617837b88e6359a804ded  SPIRV-Headers-$SHADERC_SPIRVHEADERS.tar.gz
+cabb35f4eef0da3ef72ad9edd596af4191d7507a8f35c05df526d2d5ff889f59  SPIRV-Tools-$SHADERC_SPIRVTOOLS.tar.gz
 EOF
 
-curl -C - -L \
-	-o "freetype-$FREETYPE.tar.xz" "https://sourceforge.net/projects/freetype/files/freetype2/$FREETYPE/freetype-$FREETYPE.tar.xz/download" \
-	-o "harfbuzz-$HARFBUZZ.tar.gz" "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/$HARFBUZZ.tar.gz" \
-	-O "https://libsdl.org/release/$SDL.tar.gz" \
-	-O "https://github.com/facebook/zstd/releases/download/v$ZSTD/zstd-$ZSTD.tar.gz" \
-	-O "https://github.com/lz4/lz4/releases/download/v$LZ4/lz4-$LZ4.tar.gz" \
-	-O "https://downloads.sourceforge.net/project/libpng/libpng16/$LIBPNG/libpng-$LIBPNG.tar.xz" \
-	-O "https://download.sourceforge.net/libpng-apng/libpng-$LIBPNG-apng.patch.gz" \
-	-O "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/$LIBJPEGTURBO/libjpeg-turbo-$LIBJPEGTURBO.tar.gz" \
-	-O "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-$LIBWEBP.tar.gz" \
-	-O "https://ffmpeg.org/releases/ffmpeg-$FFMPEG.tar.xz" \
-	-O "https://github.com/KhronosGroup/MoltenVK/archive/refs/tags/v$MOLTENVK.tar.gz" \
-	-O "https://download.qt.io/archive/qt/${QT%.*}/$QT/submodules/qtbase-everywhere-src-$QT.tar.xz" \
-	-O "https://download.qt.io/archive/qt/${QT%.*}/$QT/submodules/qtimageformats-everywhere-src-$QT.tar.xz" \
-	-O "https://download.qt.io/archive/qt/${QT%.*}/$QT/submodules/qtsvg-everywhere-src-$QT.tar.xz" \
-	-O "https://download.qt.io/archive/qt/${QT%.*}/$QT/submodules/qttools-everywhere-src-$QT.tar.xz" \
-	-O "https://download.qt.io/archive/qt/${QT%.*}/$QT/submodules/qttranslations-everywhere-src-$QT.tar.xz" \
-	-o "QtApng-$QTAPNG.tar.gz" "https://github.com/jurplel/QtApng/archive/refs/tags/$QTAPNG.tar.gz" \
-	-o "shaderc-$SHADERC.tar.gz" "https://github.com/google/shaderc/archive/refs/tags/v$SHADERC.tar.gz" \
-	-o "shaderc-glslang-$SHADERC_GLSLANG.tar.gz" "https://github.com/KhronosGroup/glslang/archive/$SHADERC_GLSLANG.tar.gz" \
-	-o "shaderc-spirv-headers-$SHADERC_SPIRVHEADERS.tar.gz" "https://github.com/KhronosGroup/SPIRV-Headers/archive/$SHADERC_SPIRVHEADERS.tar.gz" \
-	-o "shaderc-spirv-tools-$SHADERC_SPIRVTOOLS.tar.gz" "https://github.com/KhronosGroup/SPIRV-Tools/archive/$SHADERC_SPIRVTOOLS.tar.gz" \
-	-o "KDDockWidgets-$KDDOCKWIDGETS.tar.gz" "https://github.com/KDAB/KDDockWidgets/archive/v$KDDOCKWIDGETS.tar.gz" \
-	-o "plutovg-$PLUTOVG.tar.gz" "https://github.com/sammycage/plutovg/archive/v$PLUTOVG.tar.gz" \
-	-o "plutosvg-$PLUTOSVG.tar.gz" "https://github.com/sammycage/plutosvg/archive/v$PLUTOSVG.tar.gz"
+if ! shasum -sa 256 --check SHASUMS 2> /dev/null; then
+	rm -f -- *.tar.xz *.tar.gz
+	curl -JL \
+		-O "https://sourceforge.net/projects/freetype/files/freetype2/$FREETYPE/freetype-$FREETYPE.tar.xz" \
+		-O "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/$HARFBUZZ.tar.gz" \
+		-O "https://libsdl.org/release/$SDL.tar.gz" \
+		-O "https://github.com/facebook/zstd/releases/download/v$ZSTD/zstd-$ZSTD.tar.gz" \
+		-O "https://github.com/lz4/lz4/releases/download/v$LZ4/lz4-$LZ4.tar.gz" \
+		-O "https://downloads.sourceforge.net/project/libpng/libpng16/$LIBPNG/libpng-$LIBPNG.tar.xz" \
+		-O "https://download.sourceforge.net/libpng-apng/libpng-$LIBPNG-apng.patch.gz" \
+		-O "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/$LIBJPEGTURBO/libjpeg-turbo-$LIBJPEGTURBO.tar.gz" \
+		-O "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-$LIBWEBP.tar.gz" \
+		-O "https://ffmpeg.org/releases/ffmpeg-$FFMPEG.tar.xz" \
+		-O "https://github.com/KhronosGroup/MoltenVK/archive/refs/tags/v$MOLTENVK.tar.gz" \
+		-O "https://download.qt.io/archive/qt/${QT%.*}/$QT/submodules/qtbase-everywhere-src-$QT.tar.xz" \
+		-O "https://download.qt.io/archive/qt/${QT%.*}/$QT/submodules/qtimageformats-everywhere-src-$QT.tar.xz" \
+		-O "https://download.qt.io/archive/qt/${QT%.*}/$QT/submodules/qtsvg-everywhere-src-$QT.tar.xz" \
+		-O "https://download.qt.io/archive/qt/${QT%.*}/$QT/submodules/qttools-everywhere-src-$QT.tar.xz" \
+		-O "https://download.qt.io/archive/qt/${QT%.*}/$QT/submodules/qttranslations-everywhere-src-$QT.tar.xz" \
+		-O "https://github.com/jurplel/QtApng/archive/refs/tags/$QTAPNG.tar.gz" \
+		-O "https://github.com/google/shaderc/archive/refs/tags/v$SHADERC.tar.gz" \
+		-O "https://github.com/KhronosGroup/glslang/archive/$SHADERC_GLSLANG.tar.gz" \
+		-O "https://github.com/KhronosGroup/SPIRV-Headers/archive/$SHADERC_SPIRVHEADERS.tar.gz" \
+		-O "https://github.com/KhronosGroup/SPIRV-Tools/archive/$SHADERC_SPIRVTOOLS.tar.gz" \
+		-O "https://github.com/KDAB/KDDockWidgets/archive/v$KDDOCKWIDGETS.tar.gz" \
+		-O "https://github.com/sammycage/plutovg/archive/v$PLUTOVG.tar.gz" \
+		-O "https://github.com/sammycage/plutosvg/archive/v$PLUTOSVG.tar.gz"
+fi
 
 shasum -a 256 --check SHASUMS
 
@@ -281,9 +284,9 @@ cd ..
 
 # MoltenVK already builds universal binaries, nothing special to do here.
 echo "Installing MoltenVK..."
-rm -fr "MoltenVK-${MOLTENVK}"
-tar xf "v$MOLTENVK.tar.gz"
-cd "MoltenVK-${MOLTENVK}"
+rm -fr "MoltenVK-$MOLTENVK"
+tar xf "MoltenVK-$MOLTENVK.tar.gz"
+cd "MoltenVK-$MOLTENVK"
 ./fetchDependencies --macos
 make macos MVK_CONFIG_USE_METAL_ARGUMENT_BUFFERS=0 MVK_CONFIG_USE_METAL_PRIVATE_API=1
 cp Package/Latest/MoltenVK/dynamic/dylib/macOS/libMoltenVK.dylib "$INSTALLDIR/lib/"
@@ -362,13 +365,12 @@ cd ../..
 echo "Building shaderc..."
 rm -fr "shaderc-$SHADERC"
 tar xf "shaderc-$SHADERC.tar.gz"
-cd "shaderc-$SHADERC"
-cd third_party
-tar xf "../../shaderc-glslang-$SHADERC_GLSLANG.tar.gz"
+cd "shaderc-$SHADERC/third_party"
+tar xf "../../glslang-$SHADERC_GLSLANG.tar.gz"
 mv "glslang-$SHADERC_GLSLANG" "glslang"
-tar xf "../../shaderc-spirv-headers-$SHADERC_SPIRVHEADERS.tar.gz"
+tar xf "../../SPIRV-Headers-$SHADERC_SPIRVHEADERS.tar.gz"
 mv "SPIRV-Headers-$SHADERC_SPIRVHEADERS" "spirv-headers"
-tar xf "../../shaderc-spirv-tools-$SHADERC_SPIRVTOOLS.tar.gz"
+tar xf "../../SPIRV-Tools-$SHADERC_SPIRVTOOLS.tar.gz"
 mv "SPIRV-Tools-$SHADERC_SPIRVTOOLS" "spirv-tools"
 cd ..
 patch -p1 < "$SCRIPTDIR/../common/shaderc-changes.patch"
