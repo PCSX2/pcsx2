@@ -202,9 +202,41 @@ private:
 	D3D_FEATURE_LEVEL m_feature_level = D3D_FEATURE_LEVEL_11_0;
 
 public:
-	struct alignas(8) PipelineSelector
+	struct alignas(8) PixelShaderSelector
 	{
 		GSHWDrawConfig::PSSelector ps;
+
+		union
+		{
+			struct
+			{
+				u32 sw_ansio : 1;
+				u32 sw_ansio_level : 5; 
+			};
+
+			u32 key;
+		};
+
+		__fi bool operator==(const PixelShaderSelector& p) const { return BitEqual(*this, p); }
+		__fi bool operator!=(const PixelShaderSelector& p) const { return !BitEqual(*this, p); }
+
+		__fi PixelShaderSelector() { std::memset(this, 0, sizeof(*this)); }
+	};
+	static_assert(sizeof(PixelShaderSelector) == 16, "Pixel shader selector is 24 bytes");
+
+	struct PixelShaderSelectorHash
+	{
+		std::size_t operator()(const PixelShaderSelector& e) const noexcept
+		{
+			std::size_t hash = 0;
+			HashCombine(hash, e.ps.key_hi, e.ps.key_lo, e.key);
+			return hash;
+		}
+	};
+
+	struct alignas(8) PipelineSelector
+	{
+		PixelShaderSelector ps;
 
 		union
 		{
@@ -230,14 +262,14 @@ public:
 
 		__fi PipelineSelector() { std::memset(this, 0, sizeof(*this)); }
 	};
-	static_assert(sizeof(PipelineSelector) == 24, "Pipeline selector is 24 bytes");
+	static_assert(sizeof(PipelineSelector) == 32, "Pipeline selector is 24 bytes");
 
 	struct PipelineSelectorHash
 	{
 		std::size_t operator()(const PipelineSelector& e) const noexcept
 		{
 			std::size_t hash = 0;
-			HashCombine(hash, e.vs.key, e.ps.key_hi, e.ps.key_lo, e.dss.key, e.cms.key, e.bs.key, e.key);
+			HashCombine(hash, e.vs.key, e.ps.ps.key_hi, e.ps.ps.key_lo, e.ps.key, e.dss.key, e.cms.key, e.bs.key, e.key);
 			return hash;
 		}
 	};
@@ -355,7 +387,7 @@ private:
 	ComPtr<ID3D12PipelineState> m_imgui_pipeline;
 
 	std::unordered_map<u32, ComPtr<ID3DBlob>> m_tfx_vertex_shaders;
-	std::unordered_map<GSHWDrawConfig::PSSelector, ComPtr<ID3DBlob>, GSHWDrawConfig::PSSelectorHash>
+	std::unordered_map<PixelShaderSelector, ComPtr<ID3DBlob>, PixelShaderSelectorHash>
 		m_tfx_pixel_shaders;
 	std::unordered_map<PipelineSelector, ComPtr<ID3D12PipelineState>, PipelineSelectorHash> m_tfx_pipelines;
 
@@ -398,7 +430,7 @@ private:
 		D3D12DescriptorHandle* gpu_handle, const D3D12DescriptorHandle* cpu_handles, u32 count);
 
 	const ID3DBlob* GetTFXVertexShader(GSHWDrawConfig::VSSelector sel);
-	const ID3DBlob* GetTFXPixelShader(const GSHWDrawConfig::PSSelector& sel);
+	const ID3DBlob* GetTFXPixelShader(const PixelShaderSelector& sel);
 	ComPtr<ID3D12PipelineState> CreateTFXPipeline(const PipelineSelector& p);
 	const ID3D12PipelineState* GetTFXPipeline(const PipelineSelector& p);
 

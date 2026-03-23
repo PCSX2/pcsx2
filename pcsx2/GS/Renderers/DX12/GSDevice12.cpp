@@ -3090,11 +3090,13 @@ const ID3DBlob* GSDevice12::GetTFXVertexShader(GSHWDrawConfig::VSSelector sel)
 	return it->second.get();
 }
 
-const ID3DBlob* GSDevice12::GetTFXPixelShader(const GSHWDrawConfig::PSSelector& sel)
+const ID3DBlob* GSDevice12::GetTFXPixelShader(const PixelShaderSelector& ps_sel)
 {
-	auto it = m_tfx_pixel_shaders.find(sel);
+	auto it = m_tfx_pixel_shaders.find(ps_sel);
 	if (it != m_tfx_pixel_shaders.end())
 		return it->second.get();
+
+	const GSHWDrawConfig::PSSelector& sel = ps_sel.ps;
 
 	ShaderMacro sm;
 	sm.AddMacro("PIXEL_SHADER", 1);
@@ -3161,8 +3163,10 @@ const ID3DBlob* GSDevice12::GetTFXPixelShader(const GSHWDrawConfig::PSSelector& 
 	sm.AddMacro("PS_COLOR_FEEDBACK", sel.color_feedback);
 	sm.AddMacro("PS_DEPTH_FEEDBACK", sel.depth_feedback);
 
+	sm.AddMacro("PS_ANISOTROPIC_FILTERING", ps_sel.sw_ansio ? ps_sel.sw_ansio_level : 0);
+
 	ComPtr<ID3DBlob> ps(m_shader_cache.GetPixelShader(m_tfx_source, sm.GetPtr(), "ps_main"));
-	it = m_tfx_pixel_shaders.emplace(sel, std::move(ps)).first;
+	it = m_tfx_pixel_shaders.emplace(ps_sel, std::move(ps)).first;
 	return it->second.get();
 }
 
@@ -3175,12 +3179,12 @@ GSDevice12::ComPtr<ID3D12PipelineState> GSDevice12::CreateTFXPipeline(const Pipe
 	}};
 
 	GSHWDrawConfig::BlendState pbs{p.bs};
-	GSHWDrawConfig::PSSelector pps{p.ps};
+	PixelShaderSelector pps{p.ps};
 	if (!p.bs.IsEffective(p.cms))
 	{
 		// disable blending when colours are masked
 		pbs = {};
-		pps.no_color1 = true;
+		pps.ps.no_color1 = true;
 	}
 
 	const ID3DBlob* vs = GetTFXVertexShader(p.vs);
@@ -3197,9 +3201,9 @@ GSDevice12::ComPtr<ID3D12PipelineState> GSDevice12::CreateTFXPipeline(const Pipe
 	u32 num_rts = 0;
 	if (p.rt)
 	{
-		const GSTexture::Format format = IsDATEModePrimIDInit(p.ps.date) ?
+		const GSTexture::Format format = IsDATEModePrimIDInit(p.ps.ps.date) ?
 		                                     GSTexture::Format::PrimID :
-		                                     (p.ps.colclip_hw ? GSTexture::Format::ColorClip : GSTexture::Format::Color);
+		                                     (p.ps.ps.colclip_hw ? GSTexture::Format::ColorClip : GSTexture::Format::Color);
 
 		DXGI_FORMAT native_format;
 		LookupNativeFormat(format, nullptr, nullptr, &native_format, nullptr);
@@ -3247,7 +3251,7 @@ GSDevice12::ComPtr<ID3D12PipelineState> GSDevice12::CreateTFXPipeline(const Pipe
 	}
 
 	// Blending
-	if (IsDATEModePrimIDInit(p.ps.date))
+	if (IsDATEModePrimIDInit(p.ps.ps.date))
 	{
 		// image DATE prepass
 		gpb.SetBlendState(0, true, D3D12_BLEND_ONE, D3D12_BLEND_ONE, D3D12_BLEND_OP_MIN, D3D12_BLEND_ONE,
@@ -3287,7 +3291,7 @@ GSDevice12::ComPtr<ID3D12PipelineState> GSDevice12::CreateTFXPipeline(const Pipe
 	if (pipeline)
 	{
 		D3D12::SetObjectName(
-			pipeline.get(), TinyString::from_format("TFX Pipeline {:08X}/{:08X}{:016X}", p.vs.key, p.ps.key_hi, p.ps.key_lo));
+			pipeline.get(), TinyString::from_format("TFX Pipeline {:08X}/{:08X}{:016X}", p.vs.key, p.ps.ps.key_hi, p.ps.ps.key_lo));
 	}
 
 	return pipeline;
@@ -4077,9 +4081,9 @@ GSTexture12* GSDevice12::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config, Pipe
 	init_pipe.cms.wrgba = 0;
 	init_pipe.bs = {};
 	init_pipe.rt = true;
-	init_pipe.ps.blend_a = init_pipe.ps.blend_b = init_pipe.ps.blend_c = init_pipe.ps.blend_d = false;
-	init_pipe.ps.no_color = false;
-	init_pipe.ps.no_color1 = true;
+	init_pipe.ps.ps.blend_a = init_pipe.ps.ps.blend_b = init_pipe.ps.ps.blend_c = init_pipe.ps.ps.blend_d = false;
+	init_pipe.ps.ps.no_color = false;
+	init_pipe.ps.ps.no_color1 = true;
 	if (BindDrawPipeline(init_pipe))
 		DrawIndexedPrimitive();
 
@@ -4087,7 +4091,7 @@ GSTexture12* GSDevice12::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config, Pipe
 	EndRenderPass();
 
 	// .. by setting it to DATE=3
-	pipe.ps.date = 3;
+	pipe.ps.ps.date = 3;
 	config.alpha_second_pass.ps.date = 3;
 
 	// and bind the image to the primitive sampler
@@ -4175,7 +4179,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		else
 		{
 			draw_rt = colclip_rt;
-			pipe.ps.colclip_hw = 1;
+			pipe.ps.ps.colclip_hw = 1;
 		}
 	}
 
@@ -4235,7 +4239,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	}
 
 	// Switch to colclip target for colclip hw rendering
-	if (pipe.ps.colclip_hw)
+	if (pipe.ps.ps.colclip_hw)
 	{
 		if (!colclip_rt)
 		{
@@ -4344,7 +4348,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	if (!m_in_render_pass)
 	{
 		GSVector4 clear_color = draw_rt ? draw_rt->GetUNormClearColor() : GSVector4::zero();
-		if (pipe.ps.colclip_hw)
+		if (pipe.ps.ps.colclip_hw)
 		{
 			// Denormalize clear color for hw colclip.
 			clear_color *= GSVector4::cxpr(255.0f / 65535.0f, 255.0f / 65535.0f, 255.0f / 65535.0f, 1.0f);
@@ -4397,9 +4401,9 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 			SetBlendConstants(config.blend_multi_pass.blend.constant);
 
 		pipe.bs = config.blend_multi_pass.blend;
-		pipe.ps.no_color1 = config.blend_multi_pass.no_color1;
-		pipe.ps.blend_hw = config.blend_multi_pass.blend_hw;
-		pipe.ps.dither = config.blend_multi_pass.dither;
+		pipe.ps.ps.no_color1 = config.blend_multi_pass.no_color1;
+		pipe.ps.ps.blend_hw = config.blend_multi_pass.blend_hw;
+		pipe.ps.ps.dither = config.blend_multi_pass.dither;
 		if (BindDrawPipeline(pipe))
 			DrawIndexedPrimitive();
 	}
@@ -4414,7 +4418,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 			SetPSConstantBuffer(config.cb_ps);
 		}
 
-		pipe.ps = config.alpha_second_pass.ps;
+		pipe.ps.ps = config.alpha_second_pass.ps;
 		pipe.cms = config.alpha_second_pass.colormask;
 		pipe.dss = config.alpha_second_pass.depth;
 		pipe.bs = config.blend;
@@ -4530,8 +4534,10 @@ void GSDevice12::SendHWDraw(const PipelineSelector& pipe, const GSHWDrawConfig& 
 void GSDevice12::UpdateHWPipelineSelector(GSHWDrawConfig& config)
 {
 	m_pipeline_selector.vs.key = config.vs.key;
-	m_pipeline_selector.ps.key_hi = config.ps.key_hi;
-	m_pipeline_selector.ps.key_lo = config.ps.key_lo;
+	m_pipeline_selector.ps.ps.key_hi = config.ps.key_hi;
+	m_pipeline_selector.ps.ps.key_lo = config.ps.key_lo;
+	m_pipeline_selector.ps.sw_ansio = GSConfig.SWAnisotropy & config.sampler.aniso;
+	m_pipeline_selector.ps.sw_ansio_level = m_pipeline_selector.ps.sw_ansio ? GSConfig.MaxAnisotropy : 0;
 	m_pipeline_selector.dss.key = config.depth.key;
 	m_pipeline_selector.bs.key = config.blend.key;
 	m_pipeline_selector.bs.constant = 0; // don't dupe states with different alpha values
@@ -4540,6 +4546,9 @@ void GSDevice12::UpdateHWPipelineSelector(GSHWDrawConfig& config)
 	m_pipeline_selector.rt = config.rt != nullptr;
 	m_pipeline_selector.ds = config.ds != nullptr;
 	m_pipeline_selector.ds_as_rt = config.ds_as_rt != nullptr;
+
+	if (GSConfig.SWAnisotropy)
+		config.sampler.aniso = false;
 }
 
 void GSDevice12::UploadHWDrawVerticesAndIndices(GSHWDrawConfig& config)

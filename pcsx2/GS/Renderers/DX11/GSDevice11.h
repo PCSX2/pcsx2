@@ -25,7 +25,6 @@ class GSDevice11 final : public GSDevice
 {
 public:
 	using VSSelector = GSHWDrawConfig::VSSelector;
-	using PSSelector = GSHWDrawConfig::PSSelector;
 	using PSSamplerSelector = GSHWDrawConfig::SamplerSelector;
 	using OMDepthStencilSelector = GSHWDrawConfig::DepthStencilSelector;
 
@@ -48,6 +47,38 @@ public:
 		}
 	};
 	static_assert(sizeof(OMBlendSelector) == sizeof(u64));
+
+	struct alignas(8) PixelShaderSelector
+	{
+		GSHWDrawConfig::PSSelector ps;
+
+		union
+		{
+			struct
+			{
+				u32 sw_ansio : 1;
+				u32 sw_ansio_level : 5;
+			};
+
+			u32 key;
+		};
+
+		__fi bool operator==(const PixelShaderSelector& p) const { return BitEqual(*this, p); }
+		__fi bool operator!=(const PixelShaderSelector& p) const { return !BitEqual(*this, p); }
+
+		__fi PixelShaderSelector() { std::memset(this, 0, sizeof(*this)); }
+	};
+	static_assert(sizeof(PixelShaderSelector) == 16, "Pixel shader selector is 24 bytes");
+
+	struct PixelShaderSelectorHash
+	{
+		std::size_t operator()(const PixelShaderSelector& e) const noexcept
+		{
+			std::size_t hash = 0;
+			HashCombine(hash, e.ps.key_hi, e.ps.key_lo, e.key);
+			return hash;
+		}
+	};
 
 	class ShaderMacro
 	{
@@ -247,7 +278,7 @@ private:
 	std::unordered_map<u32, GSVertexShader11> m_vs;
 	wil::com_ptr_nothrow<ID3D11Buffer> m_vs_cb;
 	std::unordered_map<u32, wil::com_ptr_nothrow<ID3D11GeometryShader>> m_gs;
-	std::unordered_map<PSSelector, wil::com_ptr_nothrow<ID3D11PixelShader>, GSHWDrawConfig::PSSelectorHash> m_ps;
+	std::unordered_map<PixelShaderSelector, wil::com_ptr_nothrow<ID3D11PixelShader>, PixelShaderSelectorHash> m_ps;
 	wil::com_ptr_nothrow<ID3D11Buffer> m_ps_cb;
 	std::unordered_map<u32, wil::com_ptr_nothrow<ID3D11SamplerState>> m_ps_ss;
 	std::unordered_map<u32, wil::com_ptr_nothrow<ID3D11DepthStencilState>> m_om_dss;
@@ -350,7 +381,7 @@ public:
 	void UpdateSubresource(ID3D11Buffer* buffer, const void* cb_uniforms, void* cached_cb_uniforms, size_t cb_uniforms_size);
 
 	void SetupVS(VSSelector sel, const GSHWDrawConfig::VSConstantBuffer* cb);
-	void SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstantBuffer* cb, PSSamplerSelector ssel);
+	void SetupPS(const PixelShaderSelector& sel, const GSHWDrawConfig::PSConstantBuffer* cb, PSSamplerSelector ssel);
 	void SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, u8 afix);
 
 	void RenderHW(GSHWDrawConfig& config) override;

@@ -1765,9 +1765,11 @@ void GSDevice11::SetupVS(VSSelector sel, const GSHWDrawConfig::VSConstantBuffer*
 	IASetInputLayout(i->second.il.get());
 }
 
-void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstantBuffer* cb, PSSamplerSelector ssel)
+void GSDevice11::SetupPS(const PixelShaderSelector& ps_sel, const GSHWDrawConfig::PSConstantBuffer* cb, PSSamplerSelector ssel)
 {
-	auto i = std::as_const(m_ps).find(sel);
+	const GSHWDrawConfig::PSSelector& sel = ps_sel.ps;
+
+	auto i = std::as_const(m_ps).find(ps_sel);
 
 	if (i == m_ps.end())
 	{
@@ -1837,8 +1839,10 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 		sm.AddMacro("PS_COLOR_FEEDBACK", sel.color_feedback);
 		sm.AddMacro("PS_DEPTH_FEEDBACK", sel.depth_feedback);
 
+		sm.AddMacro("PS_ANISOTROPIC_FILTERING", ps_sel.sw_ansio ? ps_sel.sw_ansio_level : 0);
+
 		wil::com_ptr_nothrow<ID3D11PixelShader> ps = m_shader_cache.GetPixelShader(m_dev.get(), m_tfx_source, sm.GetPtr(), "ps_main");
-		i = m_ps.try_emplace(sel, std::move(ps)).first;
+		i = m_ps.try_emplace(ps_sel, std::move(ps)).first;
 	}
 
 	if (cb && m_ps_cb_cache.Update(*cb))
@@ -1854,6 +1858,9 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 		{
 			pxAssert(ssel.biln == 0);
 		}
+
+		if (ps_sel.sw_ansio)
+			ssel.aniso = false;
 
 		auto i = std::as_const(m_ps_ss).find(ssel.key);
 
@@ -2825,8 +2832,13 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	if (config.pal)
 		PSSetShaderResource(1, config.pal);
 
+	PixelShaderSelector pss;
+	pss.ps = config.ps;
+	pss.sw_ansio = (GSConfig.SWAnisotropy & config.sampler.aniso);
+	pss.sw_ansio_level = pss.sw_ansio ? GSConfig.MaxAnisotropy : 0;
+
 	SetupVS(config.vs, &config.cb_vs);
-	SetupPS(config.ps, &config.cb_ps, config.sampler);
+	SetupPS(pss, &config.cb_ps, config.sampler);
 
 	if (primid_texture)
 	{
@@ -2840,7 +2852,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 
 		config.ps.date = 3;
 		config.alpha_second_pass.ps.date = 3;
-		SetupPS(config.ps, nullptr, config.sampler);
+		SetupPS(pss, nullptr, config.sampler);
 		PSSetShaderResource(3, primid_texture);
 	}
 
@@ -2896,22 +2908,23 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		config.ps.no_color1 = config.blend_multi_pass.no_color1;
 		config.ps.blend_hw = config.blend_multi_pass.blend_hw;
 		config.ps.dither = config.blend_multi_pass.dither;
-		SetupPS(config.ps, &config.cb_ps, config.sampler);
+		SetupPS(pss, &config.cb_ps, config.sampler);
 		SetupOM(config.depth, OMBlendSelector(config.colormask, config.blend_multi_pass.blend), config.blend_multi_pass.blend.constant);
 		DrawIndexedPrimitive();
 	}
 
 	if (config.alpha_second_pass.enable)
 	{
+		pss.ps = config.alpha_second_pass.ps;
 		if (config.cb_ps.FogColor_AREF.a != config.alpha_second_pass.ps_aref)
 		{
 			config.cb_ps.FogColor_AREF.a = config.alpha_second_pass.ps_aref;
-			SetupPS(config.alpha_second_pass.ps, &config.cb_ps, config.sampler);
+			SetupPS(pss, &config.cb_ps, config.sampler);
 		}
 		else
 		{
 			// ps cbuffer hasn't changed, so don't bother checking
-			SetupPS(config.alpha_second_pass.ps, nullptr, config.sampler);
+			SetupPS(pss, nullptr, config.sampler);
 		}
 
 		SetupOM(config.alpha_second_pass.depth, OMBlendSelector(config.alpha_second_pass.colormask, config.blend), config.blend.constant);
