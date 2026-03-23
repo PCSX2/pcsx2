@@ -1785,8 +1785,8 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 		sm.AddMacro("PS_TFX", sel.tfx);
 		sm.AddMacro("PS_TCC", sel.tcc);
 		sm.AddMacro("PS_DATE", sel.date);
-		sm.AddMacro("PS_ATST", sel.atst);
-		sm.AddMacro("PS_AFAIL", sel.afail);
+		sm.AddMacro("PS_ATST", static_cast<u32>(sel.atst));
+		sm.AddMacro("PS_AFAIL", static_cast<u32>(sel.afail));
 		sm.AddMacro("PS_FOG", sel.fog);
 		sm.AddMacro("PS_IIP", sel.iip);
 		sm.AddMacro("PS_BLEND_HW", sel.blend_hw);
@@ -1826,7 +1826,6 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 		sm.AddMacro("PS_DITHER_ADJUST", sel.dither_adjust);
 		sm.AddMacro("PS_ZCLAMP", sel.zclamp);
 		sm.AddMacro("PS_ZFLOOR", sel.zfloor);
-		sm.AddMacro("PS_ZWRITE", sel.zwrite);
 		sm.AddMacro("PS_SCANMSK", sel.scanmsk);
 		sm.AddMacro("PS_AUTOMATIC_LOD", sel.automatic_lod);
 		sm.AddMacro("PS_MANUAL_LOD", sel.manual_lod);
@@ -1834,8 +1833,6 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 		sm.AddMacro("PS_NO_COLOR", sel.no_color);
 		sm.AddMacro("PS_NO_COLOR1", sel.no_color1);
 		sm.AddMacro("PS_ZTST", sel.ztst);
-		sm.AddMacro("PS_COLOR_FEEDBACK", sel.color_feedback);
-		sm.AddMacro("PS_DEPTH_FEEDBACK", sel.depth_feedback);
 
 		wil::com_ptr_nothrow<ID3D11PixelShader> ps = m_shader_cache.GetPixelShader(m_dev.get(), m_tfx_source, sm.GetPtr(), "ps_main");
 		i = m_ps.try_emplace(sel, std::move(ps)).first;

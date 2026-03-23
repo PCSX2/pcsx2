@@ -4813,8 +4813,8 @@ VkShaderModule GSDeviceVK::GetTFXFragmentShader(const GSHWDrawConfig::PSSelector
 	AddMacro(ss, "PS_AEM", sel.aem);
 	AddMacro(ss, "PS_TFX", sel.tfx);
 	AddMacro(ss, "PS_TCC", sel.tcc);
-	AddMacro(ss, "PS_ATST", sel.atst);
-	AddMacro(ss, "PS_AFAIL", sel.afail);
+	AddMacro(ss, "PS_ATST", static_cast<u32>(sel.atst));
+	AddMacro(ss, "PS_AFAIL", static_cast<u32>(sel.afail));
 	AddMacro(ss, "PS_FOG", sel.fog);
 	AddMacro(ss, "PS_BLEND_HW", sel.blend_hw);
 	AddMacro(ss, "PS_A_MASKED", sel.a_masked);
@@ -4849,15 +4849,12 @@ VkShaderModule GSDeviceVK::GetTFXFragmentShader(const GSHWDrawConfig::PSSelector
 	AddMacro(ss, "PS_DITHER_ADJUST", sel.dither_adjust);
 	AddMacro(ss, "PS_ZCLAMP", sel.zclamp);
 	AddMacro(ss, "PS_ZFLOOR", sel.zfloor);
-	AddMacro(ss, "PS_ZWRITE", sel.zwrite);
 	AddMacro(ss, "PS_PABE", sel.pabe);
 	AddMacro(ss, "PS_SCANMSK", sel.scanmsk);
 	AddMacro(ss, "PS_TEX_IS_FB", sel.tex_is_fb);
 	AddMacro(ss, "PS_NO_COLOR", sel.no_color);
 	AddMacro(ss, "PS_NO_COLOR1", sel.no_color1);
 	AddMacro(ss, "PS_ZTST", sel.ztst);
-	AddMacro(ss, "PS_COLOR_FEEDBACK", sel.color_feedback);
-	AddMacro(ss, "PS_DEPTH_FEEDBACK", sel.depth_feedback);
 	ss << m_tfx_source;
 
 	VkShaderModule mod = g_vulkan_shader_cache->GetFragmentShader(ss.str());

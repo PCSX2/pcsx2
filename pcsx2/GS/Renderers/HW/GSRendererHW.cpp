@@ -12,6 +12,9 @@
 #include "common/StringUtil.h"
 #include <bit>
 
+using PS_ATST  = GSShader::PS_ATST;
+using PS_AFAIL = GSShader::PS_AFAIL;
+
 GSRendererHW::GSRendererHW()
 	: GSRenderer()
 {
@@ -5223,9 +5226,6 @@ void GSRendererHW::EmulateZbuffer(const GSTextureCache::Target* ds)
 			m_conf.ps.zclamp = true;
 		}
 	}
-
-	// Enables writing to depth (e.g. SV_Depth or gl_FragDepth) in the pixel shader.
-	m_conf.ps.zwrite = m_conf.ps.zfloor || m_conf.ps.zclamp;
 }
 
 void GSRendererHW::EmulateTextureShuffleAndFbmask(GSTextureCache::Target* rt, GSTextureCache::Source* tex)
@@ -7293,7 +7293,7 @@ bool GSRendererHW::CanUseTexIsFB(const GSTextureCache::Target* rt, const GSTextu
 	return false;
 }
 
-void GSRendererHW::GetAlphaTestConfigPS(const u32 atst, const u8 aref, const bool invert_test, u32& ps_atst_out, float& aref_out)
+void GSRendererHW::GetAlphaTestConfigPS(const u32 atst, const u8 aref, const bool invert_test, PS_ATST& ps_atst_out, float& aref_out)
 {
 	static const u32 inverted_atst[] = {
 		ATST_ALWAYS,
@@ -7312,32 +7312,32 @@ void GSRendererHW::GetAlphaTestConfigPS(const u32 atst, const u8 aref, const boo
 	{
 		case ATST_LESS:
 			aref_out = static_cast<float>(aref) - small_val;
-			ps_atst_out = GSHWDrawConfig::PS_ATST_LEQUAL;
+			ps_atst_out = PS_ATST::LEQUAL;
 			break;
 		case ATST_LEQUAL:
 			aref_out = static_cast<float>(aref) - small_val + 1.0f;
-			ps_atst_out = GSHWDrawConfig::PS_ATST_LEQUAL;
+			ps_atst_out = PS_ATST::LEQUAL;
 			break;
 		case ATST_GEQUAL:
 			aref_out = static_cast<float>(aref) - small_val;
-			ps_atst_out = GSHWDrawConfig::PS_ATST_GEQUAL;
+			ps_atst_out = PS_ATST::GEQUAL;
 			break;
 		case ATST_GREATER:
 			aref_out = static_cast<float>(aref) - small_val + 1.0f;
-			ps_atst_out = GSHWDrawConfig::PS_ATST_GEQUAL;
+			ps_atst_out = PS_ATST::GEQUAL;
 			break;
 		case ATST_EQUAL:
 			aref_out = static_cast<float>(aref);
-			ps_atst_out = GSHWDrawConfig::PS_ATST_EQUAL;
+			ps_atst_out = PS_ATST::EQUAL;
 			break;
 		case ATST_NOTEQUAL:
 			aref_out = static_cast<float>(aref);
-			ps_atst_out = GSHWDrawConfig::PS_ATST_NOTEQUAL;
+			ps_atst_out = PS_ATST::NOTEQUAL;
 			break;
 		case ATST_NEVER:
 		case ATST_ALWAYS:
 		default:
-			ps_atst_out = GSHWDrawConfig::PS_ATST_NONE;
+			ps_atst_out = PS_ATST::NONE;
 			break;
 	}
 }
@@ -7356,7 +7356,7 @@ void GSRendererHW::EmulateAlphaTest(const bool& DATE, bool& DATE_BARRIER, bool& 
 	GL_PUSH("HW: Alpha test config (1)");
 
 	// Temp pixel shader constants for the setup.
-	u32 ps_atst;
+	PS_ATST ps_atst;
 	float ps_aref;
 
 	u32 atst = m_cached_ctx.TEST.ATST;
@@ -7413,7 +7413,7 @@ void GSRendererHW::EmulateAlphaTest(const bool& DATE, bool& DATE_BARRIER, bool& 
 		GetAlphaTestConfigPS(atst, aref, false, ps_atst, ps_aref);
 		m_conf.ps.atst = ps_atst;
 		m_conf.cb_ps.FogColor_AREF.a = ps_aref;
-		m_conf.ps.afail = GSHWDrawConfig::PS_AFAIL_KEEP;
+		m_conf.ps.afail = PS_AFAIL::KEEP;
 		m_conf.alpha_test = GSHWDrawConfig::AlphaTestMode::KEEP;
 		return;
 	}
@@ -7438,7 +7438,7 @@ void GSRendererHW::EmulateAlphaTest(const bool& DATE, bool& DATE_BARRIER, bool& 
 
 	// Determine where RT and/or depth are needed for the feedback methods.
 	const bool afail_needs_rt = (afail == AFAIL_ZB_ONLY) || (afail == AFAIL_RGB_ONLY);
-	const bool afail_needs_depth = (afail == AFAIL_FB_ONLY) || ((afail == AFAIL_RGB_ONLY) && zwe);
+	const bool afail_needs_depth = (afail == AFAIL_FB_ONLY || afail == AFAIL_RGB_ONLY) && zwe;
 
 	// Determine whether the feedback methods require a single pass.
 	const bool feedback_one_pass = simple_fb_only || simple_rgb_only || simple_zb_only;
@@ -7455,11 +7455,6 @@ void GSRendererHW::EmulateAlphaTest(const bool& DATE, bool& DATE_BARRIER, bool& 
 
 	// Determine if we have the correct features for depth feedback.
 	const bool depth_feedback_supported = features.depth_feedback != GSDevice::DepthFeedbackSupport::None;
-
-	// Determine if the method for doing depth feedback uses multiple render targets.
-	// This should not be used in conjunction with dual source blend.
-	const bool depth_as_rt_feedback = afail_needs_depth &&
-		(features.depth_feedback == GSDevice::DepthFeedbackSupport::DepthAsRT);
 
 	// We need depth feedback but do not have the correct features.
 	const bool avoid_feedback = afail_needs_depth && !depth_feedback_supported;
@@ -7480,22 +7475,21 @@ void GSRendererHW::EmulateAlphaTest(const bool& DATE, bool& DATE_BARRIER, bool& 
 		GetAlphaTestConfigPS(atst, aref, false, ps_atst, ps_aref);
 		m_conf.ps.atst = ps_atst;
 		m_conf.cb_ps.FogColor_AREF.a = ps_aref;
-		m_conf.ps.afail = afail;
+		m_conf.ps.afail = static_cast<PS_AFAIL>(afail);
 
-		m_conf.ps.color_feedback |= afail_needs_rt;
-		m_conf.ps.depth_feedback |= afail_needs_depth;
-
-		if (!free_fbfetch_feedback && (features.texture_barrier || features.multidraw_fb_copy))
+		if ((afail_needs_rt || afail_needs_depth) && (features.texture_barrier || features.multidraw_fb_copy))
 		{
 			m_conf.require_one_barrier |= feedback_one_pass;
 			m_conf.require_full_barrier |= !feedback_one_pass;
 		}
 
 		// Handle SW depth writing and/or testing.
-		if (afail_needs_depth && zwe)
+		if (afail_needs_depth)
 		{
+			pxAssert(zwe);
 			GL_INS("Enable SW depth write for depth feedback");
-			m_conf.ps.zwrite = true; // Make sure pixel shader writes to depth.
+			if (afail == AFAIL_RGB_ONLY)
+				m_conf.ps.afail = PS_AFAIL::RGB_ONLY_SW_Z;
 
 			if (m_cached_ctx.DepthRead())
 			{
@@ -7503,6 +7497,9 @@ void GSRendererHW::EmulateAlphaTest(const bool& DATE, bool& DATE_BARRIER, bool& 
 				m_conf.ps.ztst = m_cached_ctx.TEST.ZTST; // Enable SW Z test.
 				m_conf.depth.ztst = ZTST_ALWAYS; // Disable HW Z test.
 			}
+		} else {
+			// Should have early exited
+			pxAssert(afail != AFAIL_FB_ONLY);
 		}
 
 		m_conf.alpha_test = GSHWDrawConfig::AlphaTestMode::FEEDBACK;
@@ -7523,7 +7520,7 @@ void GSRendererHW::EmulateAlphaTest(const bool& DATE, bool& DATE_BARRIER, bool& 
 		GetAlphaTestConfigPS(atst, aref, false, ps_atst, ps_aref);
 		m_conf.ps.atst = ps_atst;
 		m_conf.cb_ps.FogColor_AREF.a = ps_aref;
-		m_conf.ps.afail = GSHWDrawConfig::PS_AFAIL_RGB_ONLY_DSB;
+		m_conf.ps.afail = PS_AFAIL::RGB_ONLY_DSB;
 		m_conf.ps.no_color1 = false;
 
 		// Swap stencil DATE for PrimID DATE, for both Z on and off cases.
@@ -7550,7 +7547,7 @@ void GSRendererHW::EmulateAlphaTest(const bool& DATE, bool& DATE_BARRIER, bool& 
 		GetAlphaTestConfigPS(atst, aref, false, ps_atst, ps_aref);
 		m_conf.ps.atst = ps_atst;
 		m_conf.cb_ps.FogColor_AREF.a = ps_aref;
-		m_conf.ps.afail = GSHWDrawConfig::PS_AFAIL_KEEP;
+		m_conf.ps.afail = PS_AFAIL::KEEP;
 		m_conf.alpha_test = GSHWDrawConfig::AlphaTestMode::PASS_THEN_FAIL;
 	}
 }
@@ -7569,7 +7566,7 @@ void GSRendererHW::EmulateAlphaTestSecondPass()
 	const u32 aref = m_cached_ctx.TEST.AREF;
 
 	// Temp variables for PS config.
-	u32 ps_atst;
+	PS_ATST ps_atst;
 	float ps_aref;
 
 	std::memcpy(&m_conf.alpha_second_pass.ps, &m_conf.ps, sizeof(m_conf.ps));
@@ -7593,7 +7590,7 @@ void GSRendererHW::EmulateAlphaTestSecondPass()
 			m_conf.alpha_second_pass.enable = true;
 			m_conf.alpha_second_pass.ps.atst = ps_atst;
 			m_conf.alpha_second_pass.ps_aref = ps_aref;
-			m_conf.alpha_second_pass.ps.afail = GSHWDrawConfig::PS_AFAIL_KEEP;
+			m_conf.alpha_second_pass.ps.afail = PS_AFAIL::KEEP;
 		}
 
 		// Setup for RBG_ONLY dual source blend selection
@@ -7650,7 +7647,7 @@ void GSRendererHW::EmulateAlphaTestSecondPass()
 			m_conf.alpha_second_pass.enable = true;
 			m_conf.alpha_second_pass.ps.atst = ps_atst;
 			m_conf.alpha_second_pass.ps_aref = ps_aref;
-			m_conf.alpha_second_pass.ps.afail = GSHWDrawConfig::PS_AFAIL_KEEP;
+			m_conf.alpha_second_pass.ps.afail = PS_AFAIL::KEEP;
 		}
 	}
 

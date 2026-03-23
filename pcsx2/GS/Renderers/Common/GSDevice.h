@@ -7,6 +7,7 @@
 #include "common/WindowInfo.h"
 #include "GS/GS.h"
 #include "GS/Renderers/Common/GSFastList.h"
+#include "GS/Renderers/Common/GSShaderEnums.h"
 #include "GS/Renderers/Common/GSTexture.h"
 #include "GS/Renderers/Common/GSVertex.h"
 #include "GS/GSAlignedClass.h"
@@ -300,13 +301,9 @@ struct alignas(16) GSHWDrawConfig
 		Line,
 		Triangle,
 	};
-	enum class VSExpand: u8
-	{
-		None,
-		Point,
-		Line,
-		Sprite,
-	};
+	using VSExpand = GSShader::VSExpand;
+	using PS_ATST  = GSShader::PS_ATST;
+	using PS_AFAIL = GSShader::PS_AFAIL;
 #pragma pack(push, 1)
 	struct VSSelector
 	{
@@ -330,28 +327,7 @@ struct alignas(16) GSHWDrawConfig
 		__fi bool UseExpandIndexBuffer() const { return (expand == VSExpand::Point || expand == VSExpand::Sprite); }
 	};
 	static_assert(sizeof(VSSelector) == 1, "VSSelector is a single byte");
-#pragma pack(pop)
 
-	enum PSAlphaTest
-	{
-		PS_ATST_NONE = 0,
-		PS_ATST_LEQUAL = 1,
-		PS_ATST_GEQUAL = 2,
-		PS_ATST_EQUAL = 3,
-		PS_ATST_NOTEQUAL = 4
-	};
-
-	// Identical with the usual GS enum except for the RGB_ONLY_DSB
-	enum PSAfail
-	{
-		PS_AFAIL_KEEP = 0,
-		PS_AFAIL_FB_ONLY = 1,
-		PS_AFAIL_ZB_ONLY = 2,
-		PS_AFAIL_RGB_ONLY = 3,
-		PS_AFAIL_RGB_ONLY_DSB = 4 // RGB only with dual source blend.
-	};
-
-#pragma pack(push, 4)
 	struct PSSelector
 	{
 		// Performance note: there are too many shader combinations
@@ -375,8 +351,8 @@ struct alignas(16) GSHWDrawConfig
 				u32 iip : 1;
 				// Pixel test
 				u32 date : 3;
-				u32 atst : 3;
-				u32 afail : 3;
+				PS_ATST atst : 3;
+				PS_AFAIL afail : 3;
 				u32 ztst : 2;
 				// Color sampling
 				u32 fst : 1; // Investigate to do it on the VS
@@ -426,7 +402,6 @@ struct alignas(16) GSHWDrawConfig
 				// Depth writing
 				u32 zclamp : 1;
 				u32 zfloor : 1;
-				u32 zwrite : 1;
 
 				// Hack
 				u32 tcoffsethack : 1;
@@ -440,10 +415,6 @@ struct alignas(16) GSHWDrawConfig
 
 				// Scan mask
 				u32 scanmsk : 2;
-
-				// Feedback
-				u32 color_feedback : 1;
-				u32 depth_feedback : 1;
 			};
 
 			struct
@@ -462,12 +433,15 @@ struct alignas(16) GSHWDrawConfig
 		{
 			const u32 sw_blend_bits = blend_a | blend_b | blend_d;
 			const bool sw_blend_needs_rt = (sw_blend_bits != 0 && ((sw_blend_bits | blend_c) & 1u)) || ((a_masked & blend_c) != 0);
-			return color_feedback || channel_fb || tex_is_fb || fbmask || (date >= 5) || sw_blend_needs_rt;
+			const bool afail_needs_rt = afail == PS_AFAIL::ZB_ONLY || afail == PS_AFAIL::RGB_ONLY || afail == PS_AFAIL::RGB_ONLY_SW_Z;
+			return channel_fb || tex_is_fb || fbmask || (date >= 5) || sw_blend_needs_rt || afail_needs_rt;
 		}
 
 		__fi bool IsFeedbackLoopDepth() const
 		{
-			return depth_feedback;
+			const bool afail_needs_depth = afail == PS_AFAIL::FB_ONLY || afail == PS_AFAIL::RGB_ONLY_SW_Z;
+			const bool ztst_needs_depth = ztst == ZTST_GEQUAL || ztst == ZTST_GREATER;
+			return afail_needs_depth || ztst_needs_depth;
 		}
 
 		/// Disables color output from the pixel shader, this is done when all channels are masked.
@@ -840,34 +814,7 @@ struct alignas(16) GSHWDrawConfig
 	GSVector4i colclip_update_area; ///< Area in the framebuffer which colclip will modify;
 
 	// Dumping
-	static std::string GetTopologyName(u32 topology);
-	static std::string GetVSExpandName(u32 vsexpand);
-	static std::string GetPSAlphaTestName(u32 dstfmt);
-	static std::string GetPSDstFmtName(u32 dstfmt);
-	static std::string GetPSDepthFmtName(u32 depthfmt);
-	static std::string GetPSBlendABDName(u32 abd);
-	static std::string GetPSBlendCName(u32 c);
-	static std::string GetPSBlendHWName(u32 blendhw);
-	static std::string GetPSBlendMixName(u32 blendmix);
-	static std::string GetPSDitherName(u32 dither);
-	static std::string GetPSChannelName(u32 channel);
-	static std::string GetSSTrilnName(u32 triln);
-	static std::string GetBlendOpName(u32 blendop);
-	static std::string GetBlendFactorName(u32 blendfactor);
-	static std::string GetDestinationAlphaModeName(u32 datm);
-	static std::string GetPSDateName(u32 date);
-	static std::string GetColClipModeName(u32 ccmode);
-	static std::string GetSetDATMName(u32 setdatm);
-	static void DumpPSSelector(std::ostream& out, const PSSelector& ps, const std::string& indent = "");
-	static void DumpVSSelector(std::ostream& out, const VSSelector& vs, const std::string& indent = "");
-	static void DumpBlendState(std::ostream& out, const BlendState& bs, const std::string& indent = "");
-	static void DumpDepthStencilSelctor(std::ostream& out, const DepthStencilSelector& ds, const std::string& indent = "");
-	static void DumpSamplerSelector(std::ostream& out, const SamplerSelector& ss, const std::string& indent = "");
-	static void DumpAlphaPass(std::ostream& out, const AlphaPass& ap, const std::string& indent = "");
-	static void DumpBlendMultipass(std::ostream& out, const BlendMultiPass& bmp, const std::string& indent = "");
-	static void DumpConfig(std::ostream& out, const GSHWDrawConfig& conf,
-		bool ps = true, bool vs = true, bool bs = true, bool dss = true, bool ss = true, bool asp = true, bool bmp = true);
-	static void DumpConfig(const std::string& fn, const GSHWDrawConfig& conf,
+	static void DumpConfig(const std::string& path, const GSHWDrawConfig& conf,
 		bool ps = true, bool vs = true, bool bs = true, bool dss = true, bool ss = true, bool asp = true, bool bmp = true);
 };
 

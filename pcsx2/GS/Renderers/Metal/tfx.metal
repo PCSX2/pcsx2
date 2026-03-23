@@ -24,8 +24,8 @@ constant bool PS_AEM                [[function_constant(GSMTLConstantIndex_PS_AE
 constant bool PS_FBA                [[function_constant(GSMTLConstantIndex_PS_FBA)]];
 constant bool PS_FOG                [[function_constant(GSMTLConstantIndex_PS_FOG)]];
 constant uint PS_DATE               [[function_constant(GSMTLConstantIndex_PS_DATE)]];
-constant uint PS_ATST               [[function_constant(GSMTLConstantIndex_PS_ATST)]];
-constant uint PS_AFAIL              [[function_constant(GSMTLConstantIndex_PS_AFAIL)]];
+constant uint PS_ATST_RAW           [[function_constant(GSMTLConstantIndex_PS_ATST)]];
+constant uint PS_AFAIL_RAW          [[function_constant(GSMTLConstantIndex_PS_AFAIL)]];
 constant uint PS_TFX                [[function_constant(GSMTLConstantIndex_PS_TFX)]];
 constant bool PS_TCC                [[function_constant(GSMTLConstantIndex_PS_TCC)]];
 constant uint PS_WMS                [[function_constant(GSMTLConstantIndex_PS_WMS)]];
@@ -71,7 +71,12 @@ constant bool PS_MANUAL_LOD         [[function_constant(GSMTLConstantIndex_PS_MA
 constant bool PS_REGION_RECT        [[function_constant(GSMTLConstantIndex_PS_REGION_RECT)]];
 constant uint PS_SCANMSK            [[function_constant(GSMTLConstantIndex_PS_SCANMSK)]];
 
-constant GSMTLExpandType VS_EXPAND_TYPE = static_cast<GSMTLExpandType>(VS_EXPAND_TYPE_RAW);
+using GSShader::VSExpand;
+using AFAIL = GSShader::PS_AFAIL;
+using ATST = GSShader::PS_ATST;
+constant VSExpand VS_EXPAND_TYPE = static_cast<VSExpand>(VS_EXPAND_TYPE_RAW);
+constant AFAIL PS_AFAIL = static_cast<AFAIL>(PS_AFAIL_RAW);
+constant ATST  PS_ATST  = static_cast<ATST>(PS_ATST_RAW);
 
 #if defined(__METAL_MACOS__) && __METAL_VERSION__ >= 220
 	#define PRIMID_SUPPORT 1
@@ -98,7 +103,7 @@ constant bool SW_BLEND = (PS_BLEND_A != PS_BLEND_B) || PS_BLEND_D;
 constant bool SW_AD_TO_HW = (PS_BLEND_C == 1 && PS_A_MASKED);
 constant bool NEEDS_RT_FOR_BLEND = (((PS_BLEND_A != PS_BLEND_B) && (PS_BLEND_A == 1 || PS_BLEND_B == 1 || PS_BLEND_C == 1)) || PS_BLEND_D == 1 || SW_AD_TO_HW);
 constant bool NEEDS_RT_EARLY = PS_TEX_IS_FB || PS_DATE >= 5;
-constant bool NEEDS_RT_FOR_AFAIL = PS_AFAIL == 3 && PS_NO_COLOR1;
+constant bool NEEDS_RT_FOR_AFAIL = PS_AFAIL == AFAIL::ZB_ONLY || PS_AFAIL == AFAIL::RGB_ONLY;
 constant bool NEEDS_RT = NEEDS_RT_FOR_AFAIL || NEEDS_RT_EARLY || (!PS_PRIM_CHECKING_INIT && (PS_FBMASK || NEEDS_RT_FOR_BLEND));
 
 constant bool PS_COLOR0 = !PS_NO_COLOR;
@@ -219,9 +224,9 @@ vertex MainVSOut vs_main_expand(
 {
 	switch (VS_EXPAND_TYPE)
 	{
-		case GSMTLExpandType::None:
+		case VSExpand::None:
 			return vs_main_run(load_vertex(vertices[vid]), cb);
-		case GSMTLExpandType::Point:
+		case VSExpand::Point:
 		{
 			MainVSOut point = vs_main_run(load_vertex(vertices[vid >> 2]), cb);
 			if (vid & 1)
@@ -230,7 +235,7 @@ vertex MainVSOut vs_main_expand(
 				point.p.y += cb.point_size.y;
 			return point;
 		}
-		case GSMTLExpandType::Line:
+		case VSExpand::Line:
 		{
 			uint vid_base = vid >> 2;
 			bool is_bottom = vid & 2;
@@ -252,7 +257,7 @@ vertex MainVSOut vs_main_expand(
 
 			return point;
 		}
-		case GSMTLExpandType::Sprite:
+		case VSExpand::Sprite:
 		{
 			uint vid_base = vid >> 1;
 			bool is_bottom = vid & 2;
@@ -765,21 +770,21 @@ struct PSMain
 		float a = C.a;
 		switch (PS_ATST)
 		{
-			case 0:
+			case ATST::NONE:
 				break; // Nothing to do
-			case 1:
+			case ATST::LEQUAL:
 				if (a > cb.aref)
 					return false;
 				break;
-			case 2:
+			case ATST::GEQUAL:
 				if (a < cb.aref)
 					return false;
 				break;
-			case 3:
+			case ATST::EQUAL:
 				if (abs(a - cb.aref) > 0.5f)
 					return false;
 				break;
-			case 4:
+			case ATST::NOTEQUAL:
 				if (abs(a - cb.aref) < 0.5f)
 					return false;
 				break;
@@ -1084,7 +1089,7 @@ struct PSMain
 
 		float4 C = ps_color();
 		bool atst_pass = atst(C);
-		if (PS_AFAIL == 0 && !atst_pass)
+		if (PS_AFAIL == GSShader::PS_AFAIL::KEEP && !atst_pass)
 			discard_fragment();
 
 		// Must be done before alpha correction
@@ -1199,14 +1204,14 @@ struct PSMain
 		ps_fbmask(C);
 
 		// Use alpha blend factor to determine whether to update A.
-		if (PS_AFAIL == 3) // RGB_ONLY
+		if (PS_AFAIL == AFAIL::RGB_ONLY_DSB)
 			alpha_blend.a = float(atst_pass);
 
 		if (PS_COLOR0)
 		{
 			out.c0.a = PS_RTA_CORRECTION ? C.a / 128.f : C.a / 255.f;
 			out.c0.rgb = PS_COLCLIP_HW ? float3(C.rgb / 65535.f) : C.rgb / 255.f;
-			if (PS_AFAIL == 3 && !PS_COLOR1 && !atst_pass) // Doing RGB_ONLY without COLOR1
+			if (PS_AFAIL == AFAIL::RGB_ONLY && !atst_pass)
 				out.c0.a = current_color.a;
 		}
 		if (PS_COLOR1)
