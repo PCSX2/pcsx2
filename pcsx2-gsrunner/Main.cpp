@@ -91,6 +91,7 @@ static double s_last_barriers = 0;
 static double s_last_copies = 0;
 static double s_last_uploads = 0;
 static double s_last_readbacks = 0;
+static double s_last_target_transitions = 0;
 static u64 s_total_internal_draws = 0;
 static u64 s_total_draws = 0;
 static u64 s_total_render_passes = 0;
@@ -927,9 +928,15 @@ void GSRunner::DumpStats()
 #define main real_main
 #endif
 
+// FIXME: DEBUGGING - REMOVE
+std::string dump_name;
+
 static void CPUThreadMain(VMBootParameters* params, std::atomic<int>* ret)
 {
 	ret->store(EXIT_FAILURE);
+
+	// FIXME: DEBUGGING - REMOVE
+	dump_name = Path::GetFileName(params->filename);
 
 	if (VMManager::Internal::CPUThreadInitialize())
 	{
