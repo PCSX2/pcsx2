@@ -3688,6 +3688,10 @@ static void AddShaderHeader(std::stringstream& ss)
 		ss << "#define DISABLE_TEXTURE_BARRIER 1\n";
 	if (features.texture_barrier && dev->UseFeedbackLoopLayout())
 		ss << "#define HAS_FEEDBACK_LOOP_LAYOUT 1\n";
+
+	ss << "#define PS_ROUND_UV_THRESHOLD " << fmt::format("{}", static_cast<float>(ROUND_UV_THRESHOLD)) << "\n";
+	ss << "#define PS_ROUND_UV_UP " << fmt::format("{}", static_cast<int>(ROUND_UV_UP)) << "\n";
+	ss << "#define PS_ROUND_UV_DOWN " << fmt::format("{}", static_cast<int>(ROUND_UV_DOWN)) << "\n";
 }
 
 static void AddShaderStageMacro(std::stringstream& ss, bool vs, bool gs, bool fs)
@@ -4777,6 +4781,7 @@ VkShaderModule GSDeviceVK::GetTFXVertexShader(GSHWDrawConfig::VSSelector sel)
 	AddMacro(ss, "VS_FST", sel.fst);
 	AddMacro(ss, "VS_IIP", sel.iip);
 	AddMacro(ss, "VS_POINT_SIZE", sel.point_size);
+	AddMacro(ss, "VS_ROUND_UV", static_cast<int>(sel.round_uv));
 	AddMacro(ss, "VS_EXPAND", static_cast<int>(sel.expand));
 	AddMacro(ss, "VS_PROVOKING_VERTEX_LAST", static_cast<int>(m_features.provoking_vertex_last));
 	ss << m_tfx_source;
@@ -4858,6 +4863,7 @@ VkShaderModule GSDeviceVK::GetTFXFragmentShader(const GSHWDrawConfig::PSSelector
 	AddMacro(ss, "PS_ZTST", sel.ztst);
 	AddMacro(ss, "PS_COLOR_FEEDBACK", sel.color_feedback);
 	AddMacro(ss, "PS_DEPTH_FEEDBACK", sel.depth_feedback);
+	AddMacro(ss, "PS_ROUND_UV", sel.round_uv);
 	ss << m_tfx_source;
 
 	VkShaderModule mod = g_vulkan_shader_cache->GetFragmentShader(ss.str());
