@@ -5942,6 +5942,158 @@ GIFRegTEX0 GSState::GetTex0Layer(u32 lod)
 	return TEX0;
 }
 
+// Fix large ST coorindates that may cause graphical glitches.
+template <u32 primclass>
+void GSState::RewriteVerticesIfLargeSTImpl(const GSVector4& large_val, bool check_clamp_mode)
+{
+	// Need to be texture mapping with ST and not have so many vertices that rewritten indices will overflow.
+	if (PRIM->TME && PRIM->FST == 0)
+	{
+		const float tw = static_cast<float>(1 << m_context->TEX0.TW);
+		const float th = static_cast<float>(1 << m_context->TEX0.TH);
+		const GSVector4 tsize = GSVector4(tw, th, 1.0f, 1.0f);
+
+		// Only rewrite big/small S or T when the clamping mode is CLAMP or REGION_CLAMP (if requested).
+		const GIFRegCLAMP& clamp = m_context->CLAMP;
+		const GSVector4 clamp_mask =
+			check_clamp_mode ?
+				GSVector4::cast(GSVector4i(
+					(clamp.WMS == CLAMP_CLAMP || clamp.WMS == CLAMP_REGION_CLAMP) ? 0xFFFFFFFF : 0,
+					(clamp.WMT == CLAMP_CLAMP || clamp.WMT == CLAMP_REGION_CLAMP) ? 0xFFFFFFFF : 0,
+					0,
+					0)) :
+				GSVector4::cast(GSVector4i::cxpr(0xFFFFFFFF));
+
+		const GSVector4 tex_bbox = m_vt.m_min.t.xyxy(m_vt.m_max.t) / tsize.xyxy();
+		const bool large_st = ((tex_bbox.abs() >= large_val) & clamp_mask).mask() || m_vt.nan.value;
+
+		if (large_st)
+		{
+			GL_PUSH("Large ST detected, rewriting vertices.");
+			if (m_index.tail > UINT16_MAX)
+			{
+				GL_INS("Too many vertices to rewrite safely, exiting.");
+				DevCon.Warning("Large ST detected but too many vertices to rewrite safely.");
+				return;
+			}
+
+			constexpr int n = GSUtil::GetClassVertexCount(primclass);
+
+			// Make sure the copy buffer is large enough.
+			while (m_vertex.maxcount < m_index.tail)
+				GrowVertexBuffer();
+
+			GSVertex* RESTRICT vertex = m_vertex.buff;
+			GSVertex* RESTRICT vertex_copy = m_vertex.buff_copy;
+			u16* RESTRICT index = m_index.buff;
+
+			for (int i = 0; i < static_cast<int>(m_index.tail); i += n)
+			{
+				GSVector4 stcq[n];
+
+				// Load STQ for this primitive.
+				for (int j = 0; j < n; j++)
+					stcq[j] = GSVector4::cast(GSVector4i(vertex[index[i + j]].m[0]));
+
+				// Perform Q division and see which values need to be rewritten.
+				GSVector4 uv[n];
+				GSVector4 small{}, big{}, nan{};
+				for (int j = 0; j < n; j++)
+				{
+					// For sprites always use Q of second vertex.
+					const GSVector4 q = primclass == GS_SPRITE_CLASS ? stcq[1].wwww() : stcq[j].wwww();
+					uv[j] = (stcq[j] / q).xyzw(GSVector4::zero());
+					small |= (uv[j] <= -large_val);
+					big |= (uv[j] >= large_val);
+					nan |= (uv[j] != uv[j]);
+				}
+
+				// Get the new values for fields that will be rewritten.
+				// The follows rules are used:
+				// 1. If there are small values but not big or nans, make all vertices small.
+				// 2. If there are big values but not small or nans, make all vertices big.
+				// 3. If there are both big and small values, or nans, make all vertices zero.
+				GSVector4 uv_new = GSVector4::zero();
+				uv_new = uv_new.blend32(-large_val, small);
+				uv_new = uv_new.blend32(large_val, big);
+				uv_new = uv_new.blend32(GSVector4::zero(), (small & big) | nan);
+
+				const GSVector4 rewrite = (((small | big) & clamp_mask) | nan).xyxy(GSVector4::zero());
+
+				// If both S and T are rewritten, no point in keeping Q. Just set it to 1.0f;
+				if ((rewrite.mask() & 3) == 3)
+				{
+					for (int j = 0; j < n; j++)
+						stcq[j] = stcq[j].template insert32<0, 3>(GSVector4::m_one);
+				}
+
+				// Rewrite the fields that require it and write to the copy buffer.
+				for (int j = 0; j < n; j++)
+				{
+					// For sprites always use Q of second vertex.
+					const GSVector4 q = (primclass == GS_SPRITE_CLASS) ? stcq[1].wwww() : stcq[j].wwww();
+					stcq[j] = stcq[j].blend32(uv_new * q, rewrite);
+
+					vertex_copy[i + j].m[0] = GSVector4i::cast(stcq[j]);
+					vertex_copy[i + j].m[1] = vertex[index[i + j]].m[1];
+					index[i + j] = i + j;
+				}
+			}
+
+			// Swap the buffers and fix the counts.
+			std::swap(m_vertex.buff, m_vertex.buff_copy);
+			m_vertex.head = m_vertex.next = m_vertex.tail = m_index.tail;
+
+			// Recalculate ST min/max/eq in the vertex trace.
+			GSVector4 tmin = GSVector4::cxpr(FLT_MAX);
+			GSVector4 tmax = GSVector4::cxpr(-FLT_MAX);
+			for (int i = 0; i < static_cast<int>(m_index.tail); i += n)
+			{
+				for (int j = 0; j < n; j++)
+				{
+					GSVector4 stcq = GSVector4::cast(GSVector4i(m_vertex.buff[i + j].m[0]));
+					const float q = (primclass == GS_SPRITE_CLASS) ? m_vertex.buff[i + 1].RGBAQ.Q : stcq.w;
+					stcq = (stcq / q).xyzw(stcq);
+
+					tmin = tmin.min(stcq);
+					tmax = tmax.max(stcq);
+				}
+			}
+			m_vt.m_min.t = tmin.xyww() * tsize;
+			m_vt.m_max.t = tmax.xyww() * tsize;
+			m_vt.m_eq.stq = (m_vt.m_min.t == m_vt.m_max.t).mask();
+
+			// Dump vertices if needed.
+			if (GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()) && GSConfig.SaveInfo)
+			{
+				DumpVertices(GetDrawDumpPath("%05d_vertices_st_rewrite.txt", s_n));
+			}
+		}
+	}
+}
+
+void GSState::RewriteVerticesIfLargeST(const GSVector4& large_val, bool check_clamp_mode)
+{
+	switch (m_vt.m_primclass)
+	{
+		case GS_POINT_CLASS:
+			RewriteVerticesIfLargeSTImpl<GS_POINT_CLASS>(large_val, check_clamp_mode);
+			break;
+		case GS_LINE_CLASS:
+			RewriteVerticesIfLargeSTImpl<GS_LINE_CLASS>(large_val, check_clamp_mode);
+			break;
+		case GS_SPRITE_CLASS:
+			RewriteVerticesIfLargeSTImpl<GS_SPRITE_CLASS>(large_val, check_clamp_mode);
+			break;
+		case GS_TRIANGLE_CLASS:
+			RewriteVerticesIfLargeSTImpl<GS_TRIANGLE_CLASS>(large_val, check_clamp_mode);
+			break;
+		default:
+			pxFail("Invalid primclass"); // Impossible
+			break;
+	}
+}
+
 // GSTransferBuffer
 
 GSState::GSTransferBuffer::GSTransferBuffer()
