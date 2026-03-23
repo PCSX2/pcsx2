@@ -384,10 +384,10 @@ static const void* _DynGen_JITCompile()
 	// void(**base)() = (void(**)())recLUT[addr >> 16];
 	// base[addr >> 2]();
 	xMOV(eax, ptr[&cpuRegs.pc]);
-	xMOV(ebx, eax);
+	xMOV(edx, eax);
 	xSHR(eax, 16);
 	xMOV(rcx, ptrNative[xComplexAddress(rcx, recLUT, rax * wordsize)]);
-	xJMP(ptrNative[rbx * (wordsize / 4) + rcx]);
+	xJMP(ptrNative[rdx * (wordsize / 4) + rcx]);
 
 	return retval;
 }
@@ -402,10 +402,10 @@ static const void* _DynGen_DispatcherReg()
 	// void(**base)() = (void(**)())recLUT[addr >> 16];
 	// base[addr >> 2]();
 	xMOV(eax, ptr[&cpuRegs.pc]);
-	xMOV(ebx, eax);
+	xMOV(edx, eax);
 	xSHR(eax, 16);
 	xMOV(rcx, ptrNative[xComplexAddress(rcx, recLUT, rax * wordsize)]);
-	xJMP(ptrNative[rbx * (wordsize / 4) + rcx]);
+	xJMP(ptrNative[rdx * (wordsize / 4) + rcx]);
 
 	return retval;
 }
@@ -439,6 +439,9 @@ static const void* _DynGen_EnterRecompiledCode()
 	// We never return through this function, instead we fastjmp() out.
 	// So we don't need to worry about preserving callee-saved registers, but we do need to align the stack.
 	xSUB(rsp, stack_size);
+
+	if (u8* ptr = xGetTextPtr())
+		xLoadFarAddr(RTEXTPTR, ptr);
 #endif
 
 	if (CHECK_FASTMEM)
@@ -611,6 +614,7 @@ static void recResetRaw()
 
 	EE::Profiler.Reset();
 
+	xSetTextPtr(R5900_TEXTPTR);
 	xSetPtr(SysMemory::GetEERec());
 	_DynGen_Dispatchers();
 	vtlb_DynGenDispatchers();
@@ -877,6 +881,7 @@ u8* recBeginThunk()
 	if (recPtr >= recPtrEnd)
 		eeRecNeedsReset = true;
 
+	xSetTextPtr(R5900_TEXTPTR);
 	xSetPtr(recPtr);
 	recPtr = xGetAlignedCallTarget();
 
@@ -2127,17 +2132,17 @@ static bool recSkipTimeoutLoop(s32 reg, bool is_timeout_loop)
 	// if new_v0 > 0 { jump to dispatcher because loop exited early }
 	// else new_v0 is 0, so exit loop
 
-	xMOV(rbx, ptr64[&cpuRegs.cycle]); // ebx = cycle
+	xMOV(r12, ptr64[&cpuRegs.cycle]); // ebx = cycle
 	xMOV(rcx, ptr64[&cpuRegs.nextEventCycle]); // ecx = nextEventCycle
-	xCMP(rbx, rcx);
+	xCMP(r12, rcx);
 	xJAE((void*)DispatcherEvent); // jump to dispatcher if event immediately
 
 	xMOV(edx, ptr32[&cpuRegs.GPR.r[reg].UL[0]]); // eax = v0
-	xLEA(rax, ptrNative[rdx * 8 + rbx]); // edx = v0 * 8 + cycle
+	xLEA(rax, ptrNative[rdx * 8 + r12]); // edx = v0 * 8 + cycle
 	xCMP(rcx, rax);
 	xCMOVB(rax, rcx); // eax = new_cycles = min(v8 * 8, nextEventCycle)
 	xMOV(ptr64[&cpuRegs.cycle], rax); // writeback new_cycles
-	xSUB(rax, rbx); // new_cycles -= cycle
+	xSUB(rax, r12); // new_cycles -= cycle
 	xSHR(rax, 3); // compute new v0 value
 	xSUB(rdx, rax); // v0 -= cycle_diff
 	xMOV(ptr32[&cpuRegs.GPR.r[reg].UL[0]], edx); // write back new value of v0
@@ -2171,6 +2176,7 @@ static void recRecompile(const u32 startpc)
 		recResetRaw();
 	}
 
+	xSetTextPtr(R5900_TEXTPTR);
 	xSetPtr(recPtr);
 	recPtr = xGetAlignedCallTarget();
 
