@@ -29,17 +29,17 @@
       <string>Behaviour</string>
      </property>
      <layout class="QGridLayout" name="formLayout_4">
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="inhibitScreensaver">
+        <property name="text">
+         <string>Inhibit Screensaver</string>
+        </property>
+       </widget>
+      </item>
       <item row="0" column="1">
        <widget class="QCheckBox" name="pauseOnFocusLoss">
         <property name="text">
          <string>Pause On Focus Loss</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QCheckBox" name="discordPresence">
-        <property name="text">
-         <string>Enable Discord Presence</string>
         </property>
        </widget>
       </item>
@@ -50,10 +50,17 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="1">
-       <widget class="QCheckBox" name="promptOnStateLoadSaveFailure">
+      <item row="3" column="0">
+       <widget class="QCheckBox" name="savestateSelector">
         <property name="text">
-         <string>Prompt On State Load/Save Failure</string>
+         <string>Use Save State Selector</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QCheckBox" name="discordPresence">
+        <property name="text">
+         <string>Enable Discord Presence</string>
         </property>
        </widget>
       </item>
@@ -71,21 +78,21 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
-       <widget class="QCheckBox" name="inhibitScreensaver">
+      <item row="3" column="1">
+       <widget class="QCheckBox" name="promptOnStateLoadSaveFailure">
         <property name="text">
-         <string>Inhibit Screensaver</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QCheckBox" name="savestateSelector">
-        <property name="text">
-         <string>Use Save State Selector</string>
+         <string>Prompt On State Load/Save Failure</string>
         </property>
        </widget>
       </item>
       <item row="4" column="0">
+       <widget class="QCheckBox" name="preferEnglishGameList">
+        <property name="text">
+         <string>Prefer English Game Titles</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
        <widget class="QCheckBox" name="mouseLock">
         <property name="text">
          <string>Enable Mouse Lock</string>
@@ -395,7 +402,6 @@
   <tabstop>pauseOnControllerDisconnection</tabstop>
   <tabstop>savestateSelector</tabstop>
   <tabstop>promptOnStateLoadSaveFailure</tabstop>
-  <tabstop>mouseLock</tabstop>
   <tabstop>startFullscreen</tabstop>
   <tabstop>doubleClickTogglesFullscreen</tabstop>
   <tabstop>renderToSeparateWindow</tabstop>

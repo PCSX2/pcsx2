@@ -20,9 +20,6 @@ public:
 	bool addExcludedPath(const std::string& path);
 	void refreshExclusionList();
 
-Q_SIGNALS:
-	void preferEnglishGameListChanged();
-
 public Q_SLOTS:
 	void addSearchDirectory(QWidget* parent_widget);
 
