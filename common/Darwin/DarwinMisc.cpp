@@ -687,15 +687,10 @@ void PageFaultHandler::SignalHandler(mach_port_t port)
 
 		if (result != HandlerResult::ContinueExecution) // cooked
 		{
+			// Continue to the next exception handler (debugger or crash)
 			msg_out.RetCode = KERN_FAILURE;
 			msg_out.flavor = 0;
 			msg_out.new_stateCnt = 0;
-
-			// The crash handler on macOS or Linux doesn't use context passed to it
-			// Stubbing it here is fine
-			CrashHandler::CrashSignalHandler(-1, nullptr, nullptr);
-
-			pxFailRel("CrashSignalHandler returned when it should have terminated us!");
 		}
 		else
 		{
