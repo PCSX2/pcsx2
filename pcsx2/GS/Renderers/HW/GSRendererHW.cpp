@@ -9947,8 +9947,9 @@ void GSRendererHW::EndHLEHardwareDraw(bool force_copy_on_hazard /* = false */)
 		if (!force_copy_on_hazard && config.tex == config.rt)
 		{
 			// Sample RT 1:1.
-			config.require_one_barrier = !features.framebuffer_fetch;
+			config.tex = nullptr;
 			config.ps.tex_is_fb = true;
+			config.require_one_barrier = !features.framebuffer_fetch;
 		}
 		else if (!force_copy_on_hazard && config.tex == config.ds && !config.depth.zwe &&
 				 features.test_and_sample_depth)
