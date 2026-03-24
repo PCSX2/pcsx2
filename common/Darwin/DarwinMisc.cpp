@@ -662,7 +662,6 @@ void PageFaultHandler::SignalHandler(mach_port_t port)
 			return;
 		}
 
-		s_exception_handler_mutex.lock();
 		thread_state64_t* state = (thread_state64_t*)msg_in.old_state;
 
 		HandlerResult result = HandlerResult::ExecuteNextHandler;
@@ -705,8 +704,6 @@ void PageFaultHandler::SignalHandler(mach_port_t port)
 			offsetof(__typeof__(msg_out), new_state) + msg_out.new_stateCnt * sizeof(natural_t);
 		send_size = msg_out.Head.msgh_size;
 		option |= MACH_SEND_MSG;
-
-		s_exception_handler_mutex.unlock();
 	}
 }
 
