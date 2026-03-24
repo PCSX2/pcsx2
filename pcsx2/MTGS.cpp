@@ -145,6 +145,11 @@ void MTGS::ThreadEntryPoint()
 {
 	Threading::SetNameOfCurrentThread("GS");
 
+	// GS can hit SMC write traps when executing InitAndReadFIFO
+	// As racey as it sounds, it should be safe, since InitAndReadFIFO is requested and immediately waited for,
+	// so the EE thread shouldn't be touching any of its codegen structures while it happens.
+	PageFaultHandler::InstallSecondaryThread();
+
 	// Explicitly set rounding mode to default (nearest, FTZ off).
 	// Otherwise it appears to get inherited from the EE thread on Linux.
 	FPControlRegister::SetCurrent(FPControlRegister::GetDefault());
