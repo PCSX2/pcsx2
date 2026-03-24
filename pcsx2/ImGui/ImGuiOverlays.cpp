@@ -908,7 +908,7 @@ __ri void ImGuiManager::DrawInputsOverlay(float scale, float margin, float spaci
 		return;
 
 	const float shadow_offset = std::ceil(scale);
-	ImFont* const font = ImGuiManager::GetOSDFont();
+	ImFont* const font = ImGuiManager::GetStandardFont();
 	const float font_size = ImGuiManager::GetFontSizeStandard();
 	const float line_height = ImGuiFullscreen::GetLineHeight({ font, font_size });
 
