@@ -157,13 +157,16 @@ private:
 
 	std::unique_ptr<GLStreamBuffer> m_vertex_stream_buffer;
 	std::unique_ptr<GLStreamBuffer> m_index_stream_buffer;
+	std::unique_ptr<GLStreamBuffer> m_expand_index_stream_buffer;
 	GLuint m_expand_ibo = 0;
 	GLuint m_vao = 0;
 	GLuint m_expand_vao = 0;
+	GLuint m_dummy_vao = 0;
 	GLenum m_draw_topology = 0;
 
 	std::unique_ptr<GLStreamBuffer> m_vertex_uniform_stream_buffer;
 	std::unique_ptr<GLStreamBuffer> m_fragment_uniform_stream_buffer;
+	std::unique_ptr<GLStreamBuffer> m_vertex_push_constants_stream_buffer;
 	GLint m_uniform_buffer_alignment = 0;
 
 	struct
@@ -233,6 +236,7 @@ private:
 
 	GSHWDrawConfig::VSConstantBuffer m_vs_cb_cache;
 	GSHWDrawConfig::PSConstantBuffer m_ps_cb_cache;
+	GSHWDrawConfig::VSPushConstants m_vs_pc_cache;
 
 	std::string m_shader_tfx_vgs;
 	std::string m_shader_tfx_fs;
@@ -271,6 +275,8 @@ private:
 	void OMSetFBO(GLuint fbo);
 
 	void DrawStretchRect(const GSVector4& sRect, const GSVector4& dRect, const GSVector2i& ds);
+
+	void SetIndexBuffer(std::unique_ptr<GLStreamBuffer>& buffer, const void* index, size_t count);
 
 protected:
 	virtual void DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
@@ -315,6 +321,7 @@ public:
 	void DrawPrimitive();
 	void DrawIndexedPrimitive();
 	void DrawIndexedPrimitive(int offset, int count);
+	void DrawIndexedPrimitiveVSExpand(int offset, int count, bool vs_indexing = false, int vs_indexing_expansion = 1);
 
 	std::unique_ptr<GSDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format) override;
 
@@ -345,10 +352,15 @@ public:
 		const bool one_barrier, const bool full_barrier);
 	void SetupDATE(GSTexture* rt, GSTexture* ds, SetDATM datm, const GSVector4i& bbox);
 
+	void VSSetUniformBuffer(GSHWDrawConfig::VSConstantBuffer& cb);
+	void PSSetUniformBuffer(GSHWDrawConfig::PSConstantBuffer& cb);
+	void VSSetPushConstants(u32 base_vertex, u32 base_index = 0, bool force_update = false);
+
 	void IASetVAO(GLuint vao);
 	void IASetPrimitiveTopology(GLenum topology);
 	void IASetVertexBuffer(const void* vertices, size_t count, size_t align_multiplier = 1);
 	void IASetIndexBuffer(const void* index, size_t count);
+	void VSSetIndexBuffer(const void* index, size_t count);
 
 	void PSSetShaderResource(int i, GSTexture* sr);
 	void PSSetSamplerState(GLuint ss);

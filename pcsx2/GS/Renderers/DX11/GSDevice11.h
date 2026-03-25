@@ -125,12 +125,15 @@ private:
 	wil::com_ptr_nothrow<ID3D11Buffer> m_ib;
 	wil::com_ptr_nothrow<ID3D11Buffer> m_expand_vb;
 	wil::com_ptr_nothrow<ID3D11Buffer> m_expand_ib;
+	wil::com_ptr_nothrow<ID3D11Buffer> m_expand_ib_vs;
 	wil::com_ptr_nothrow<ID3D11ShaderResourceView> m_expand_vb_srv;
+	wil::com_ptr_nothrow<ID3D11ShaderResourceView> m_expand_ib_vs_srv;
 
 	D3D_FEATURE_LEVEL m_feature_level = D3D_FEATURE_LEVEL_10_0;
 	u32 m_vb_pos = 0; // bytes
-	u32 m_ib_pos = 0; // indices/sizeof(u32)
+	u32 m_ib_pos = 0; // indices/sizeof(u16)
 	u32 m_structured_vb_pos = 0; // bytes
+	u32 m_expand_ib_vs_pos = 0; // indices/sizeof(u16)
 
 	bool m_allow_tearing_supported = false;
 	bool m_using_flip_model_swap_chain = true;
@@ -146,6 +149,7 @@ private:
 		ID3D11Buffer* index_buffer;
 		ID3D11VertexShader* vs;
 		ID3D11Buffer* vs_cb;
+		ID3D11Buffer* vs_pc;
 		std::array<ID3D11ShaderResourceView*, MAX_TEXTURES> ps_pending_srv;
 		std::array<ID3D11ShaderResourceView*, MAX_TEXTURES> ps_current_srv;
 		ID3D11PixelShader* ps;
@@ -154,6 +158,7 @@ private:
 		std::array<ID3D11SamplerState*, MAX_SAMPLERS> ps_current_ss;
 		GSVector2i viewport;
 		GSVector4i scissor;
+		ID3D11Buffer* vb;
 		u32 vb_stride;
 		ID3D11DepthStencilState* dss;
 		u8 sref;
@@ -246,6 +251,7 @@ private:
 
 	std::unordered_map<u32, GSVertexShader11> m_vs;
 	wil::com_ptr_nothrow<ID3D11Buffer> m_vs_cb;
+	wil::com_ptr_nothrow<ID3D11Buffer> m_vs_pc;
 	std::unordered_map<u32, wil::com_ptr_nothrow<ID3D11GeometryShader>> m_gs;
 	std::unordered_map<PSSelector, wil::com_ptr_nothrow<ID3D11PixelShader>, GSHWDrawConfig::PSSelectorHash> m_ps;
 	wil::com_ptr_nothrow<ID3D11Buffer> m_ps_cb;
@@ -256,6 +262,7 @@ private:
 
 	GSHWDrawConfig::VSConstantBuffer m_vs_cb_cache;
 	GSHWDrawConfig::PSConstantBuffer m_ps_cb_cache;
+	GSHWDrawConfig::VSPushConstants m_vs_pc_cache;
 
 	D3D11ShaderCache m_shader_cache;
 	std::string m_tfx_source;
@@ -297,6 +304,7 @@ public:
 	void DrawPrimitive();
 	void DrawIndexedPrimitive();
 	void DrawIndexedPrimitive(int offset, int count);
+	void DrawIndexedPrimitiveVSExpand(int offset, int count, bool vs_indexing = false, int vs_indexing_expansion = 1);
 
 	void PushDebugGroup(const char* fmt, ...) override;
 	void PopDebugGroup() override;
@@ -323,6 +331,7 @@ public:
 	void* IAMapVertexBuffer(u32 stride, u32 count);
 	void IAUnmapVertexBuffer(u32 stride, u32 count);
 	bool IASetVertexBuffer(const void* vertex, u32 stride, u32 count);
+	void IASetVertexBuffer(ID3D11Buffer* buffer, u32 stride);
 	bool IASetExpandVertexBuffer(const void* vertex, u32 stride, u32 count);
 
 	u16* IAMapIndexBuffer(u32 count);
@@ -334,6 +343,10 @@ public:
 	void IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY topology);
 
 	void VSSetShader(ID3D11VertexShader* vs, ID3D11Buffer* vs_cb);
+	void VSSetPushConstants(u32 base_vertex, u32 base_index	= 0, bool force_update = false);
+	u16* VSMapIndexBuffer(u32 count);
+	void VSUnmapIndexBuffer(u32 count);
+	bool VSSetIndexBuffer(const void* indices, u32 count);
 
 	void PSSetShaderResource(int i, GSTexture* sr);
 	void PSSetShader(ID3D11PixelShader* ps, ID3D11Buffer* ps_cb);

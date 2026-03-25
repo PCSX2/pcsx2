@@ -226,6 +226,7 @@ private:
 		const TextureMinMaxResult& tmm);
 
 	void EmulateZbuffer(const GSTextureCache::Target* ds);
+	void EmulateZbufferAA1();
 	static void GetAlphaTestConfigPS(const u32 atst, const u8 aref, const bool invert_test, PS_ATST& ps_atst_out, float& aref_out);
 	void EmulateAlphaTest(DATEOptions& date_options);
 	void EmulateAlphaTestSecondPass();
@@ -398,6 +399,9 @@ public:
 
 	/// Compute the drawlist (if not already present) and bounding boxes for the current draw.
 	std::size_t ComputeDrawlistGetSize(float scale);
+
+	/// Does the current draw allow using AA1 coverage (if AA1 is enabled).
+	bool IsCoverageAlphaSupported() override;
 
 	/// Create a temporary color clone of depth for depth feedback (DX12 and GL only right now)
 	void StartDepthAsRTFeedback();

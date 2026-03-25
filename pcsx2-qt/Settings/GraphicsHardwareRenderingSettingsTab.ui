@@ -65,6 +65,13 @@
       </widget>
      </item>
      <item row="1" column="0">
+      <widget class="QCheckBox" name="hwAA1">
+       <property name="text">
+        <string>AA1</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
       <widget class="QCheckBox" name="enableHWFixes">
        <property name="text">
         <string>Manual Hardware Renderer Fixes</string>
@@ -235,6 +242,7 @@
   <tabstop>blending</tabstop>
   <tabstop>mipmapping</tabstop>
   <tabstop>accurateAlphaTest</tabstop>
+  <tabstop>hwAA1</tabstop>
   <tabstop>enableHWFixes</tabstop>
  </tabstops>
  <resources/>
