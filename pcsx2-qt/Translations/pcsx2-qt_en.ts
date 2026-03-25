@@ -12067,12 +12067,12 @@ This action cannot be undone.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/MTGS.cpp" line="997"/>
+        <location filename="../../pcsx2/MTGS.cpp" line="1002"/>
         <source>Switching to Software Renderer...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/MTGS.cpp" line="997"/>
+        <location filename="../../pcsx2/MTGS.cpp" line="1002"/>
         <source>Switching to Hardware Renderer...</source>
         <translation type="unfinished"></translation>
     </message>
