@@ -2726,10 +2726,14 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	// 2. Fullscreen sprite writes gray, rta hw blend blends based on dst alpha.
 	// On Nvidia, 2 seems to not pick up the data written by 1 unless we add a second barrier.
 	// Pretty sure GL is supposed to guarantee that the blend unit is coherent with previous pixel write out, so calling this a bug.
+	bool broken_blend_coherency_barrier = false;
 	if (m_bugs.broken_blend_coherency)
-		rt_hazard_barrier |= (psel.ps.IsFeedbackLoopRT() || psel.ps.blend_c == 1) && GLState::rt == config.rt;
+		broken_blend_coherency_barrier = (psel.ps.IsFeedbackLoopRT() || psel.ps.blend_c == 1) && GLState::rt == config.rt;
 	if (config.require_one_barrier || !m_features.texture_barrier)
+	{
 		rt_hazard_barrier = false; // Already in place or not available
+		broken_blend_coherency_barrier = false;
+	}
 
 	// additional non-pipeline config stuff
 	const bool point_size_enabled = config.vs.point_size;
@@ -2821,7 +2825,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	}
 
 	// Be careful of the rt already being bound and the blend using the RT without a barrier.
-	if (fb_optimization_needs_barrier && rt_hazard_barrier)
+	if ((fb_optimization_needs_barrier && broken_blend_coherency_barrier) || rt_hazard_barrier)
 	{
 		// Ensure all depth writes are finished before sampling
 		GL_INS("GL: Texture barrier to flush depth or rt before reading");
