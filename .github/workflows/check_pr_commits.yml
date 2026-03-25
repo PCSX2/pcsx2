@@ -16,7 +16,7 @@ jobs:
         uses: gsactions/commit-message-checker@16fa2d5de096ae0d35626443bcd24f1e756cafee
         with:
           accessToken: ${{ secrets.GITHUB_TOKEN }}
-          pattern: '^[A-Z][A-Za-z0-9 \["\/\\]+:.+'
+          pattern: '^[A-Z0-9][A-Za-z0-9 \["\/\\]+:.+'
           excludeTitle: true
           excludeDescription: true
           checkAllCommitMessages: true
