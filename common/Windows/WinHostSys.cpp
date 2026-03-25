@@ -373,3 +373,5 @@ bool PageFaultHandler::Install(Error* error)
 	s_installed = true;
 	return true;
 }
+
+bool PageFaultHandler::InstallSecondaryThread() { return true; }

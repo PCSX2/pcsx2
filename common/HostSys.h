@@ -142,6 +142,7 @@ namespace PageFaultHandler
 
 	HandlerResult HandlePageFault(void* exception_pc, void* fault_address, bool is_write);
 	bool Install(Error* error = nullptr);
+	bool InstallSecondaryThread();
 } // namespace PageFaultHandler
 
 class SharedMemoryMappingArea

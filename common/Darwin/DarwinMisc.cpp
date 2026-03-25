@@ -578,6 +578,7 @@ namespace PageFaultHandler
 {
 #ifdef USE_MACH_EXCEPTION_PORTS
 	static void SignalHandler(mach_port_t port);
+	static mach_port_t s_port = 0;
 #else
 	static void SignalHandler(int sig, siginfo_t* info, void* ctx);
 #endif
@@ -661,7 +662,6 @@ void PageFaultHandler::SignalHandler(mach_port_t port)
 			return;
 		}
 
-		s_exception_handler_mutex.lock();
 		thread_state64_t* state = (thread_state64_t*)msg_in.old_state;
 
 		HandlerResult result = HandlerResult::ExecuteNextHandler;
@@ -686,15 +686,10 @@ void PageFaultHandler::SignalHandler(mach_port_t port)
 
 		if (result != HandlerResult::ContinueExecution) // cooked
 		{
+			// Continue to the next exception handler (debugger or crash)
 			msg_out.RetCode = KERN_FAILURE;
 			msg_out.flavor = 0;
 			msg_out.new_stateCnt = 0;
-
-			// The crash handler on macOS or Linux doesn't use context passed to it
-			// Stubbing it here is fine
-			CrashHandler::CrashSignalHandler(-1, nullptr, nullptr);
-
-			pxFailRel("CrashSignalHandler returned when it should have terminated us!");
 		}
 		else
 		{
@@ -709,8 +704,6 @@ void PageFaultHandler::SignalHandler(mach_port_t port)
 			offsetof(__typeof__(msg_out), new_state) + msg_out.new_stateCnt * sizeof(natural_t);
 		send_size = msg_out.Head.msgh_size;
 		option |= MACH_SEND_MSG;
-
-		s_exception_handler_mutex.unlock();
 	}
 }
 
@@ -751,22 +744,27 @@ bool PageFaultHandler::Install(Error* error)
 		return false;
 	}
 
-	if ((r = mach_port_mod_refs(mach_task_self(), port, MACH_PORT_RIGHT_SEND, -1)))
-	{
-		mach_port_deallocate(mach_task_self(), port);
-		pxFailRel(fmt::format("mach_port_mod_refs: {:x}", r).c_str());
-		return false;
-	}
-
 	mach_port_t previous;
 	if ((r = mach_port_request_notification(mach_task_self(), port, MACH_NOTIFY_NO_SENDERS, 0, port, MACH_MSG_TYPE_MAKE_SEND_ONCE, &previous)))
 	{
 		mach_port_deallocate(mach_task_self(), port);
-		pxFailRel(fmt::format("mach_port_mod_refs: {:x}", r).c_str());
+		pxFailRel(fmt::format("mach_port_request_notification: {:x}", r).c_str());
 		return false;
 	}
 
 	s_installed = true;
+	s_port = port;
+	return true;
+}
+
+bool PageFaultHandler::InstallSecondaryThread()
+{
+	kern_return_t r = thread_set_exception_ports(mach_thread_self(), EXC_MASK_BAD_ACCESS, s_port, EXCEPTION_STATE | MACH_EXCEPTION_CODES, THREAD_STATE64);
+	if (r)
+	{
+		pxFailRel(fmt::format("thread_set_exception_ports(secondary): {:x}", r).c_str());
+		return false;
+	}
 	return true;
 }
 
@@ -839,4 +837,6 @@ bool PageFaultHandler::Install(Error* error)
 	s_installed = true;
 	return true;
 }
+
+bool PageFaultHandler::InstallSecondaryThread() { return true; }
 #endif
