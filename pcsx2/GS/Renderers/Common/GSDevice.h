@@ -304,6 +304,7 @@ struct alignas(16) GSHWDrawConfig
 	using VSExpand = GSShader::VSExpand;
 	using PS_ATST  = GSShader::PS_ATST;
 	using PS_AFAIL = GSShader::PS_AFAIL;
+	using PS_AA1   = GSShader::PS_AA1;
 #pragma pack(push, 1)
 	struct VSSelector
 	{
@@ -315,8 +316,8 @@ struct alignas(16) GSHWDrawConfig
 				u8 tme : 1;
 				u8 iip : 1;
 				u8 point_size : 1;		///< Set when points need to be expanded without VS expanding.
-				VSExpand expand : 2;
-				u8 _free : 2;
+				VSExpand expand : 3;
+				u8 _free : 1;
 			};
 			u8 key;
 		};
@@ -324,7 +325,10 @@ struct alignas(16) GSHWDrawConfig
 		VSSelector(u8 k): key(k) {}
 
 		/// Returns true if the fixed index buffer should be used.
-		__fi bool UseExpandIndexBuffer() const { return (expand == VSExpand::Point || expand == VSExpand::Sprite); }
+		__fi bool UseFixedExpandIndexBuffer() const { return (expand == VSExpand::Point || expand == VSExpand::Sprite); }
+		
+		/// Return true if the index buffer should be bound as a vertex shader resource.
+		__fi bool UseVSExpandIndexBuffer() const { return (expand == VSExpand::TriangleAA1); }
 	};
 	static_assert(sizeof(VSSelector) == 1, "VSSelector is a single byte");
 
@@ -415,6 +419,10 @@ struct alignas(16) GSHWDrawConfig
 
 				// Scan mask
 				u32 scanmsk : 2;
+
+				// AA1
+				PS_AA1 aa1 : 2; // Pixel shader AA1 primitive. Must be used in conjunction with VS AA1 expand.
+				u32 abe : 1; // Alpha blend enabled. Currently only used for emulating AA1/ABE interaction.
 			};
 
 			struct
@@ -441,7 +449,8 @@ struct alignas(16) GSHWDrawConfig
 		{
 			const bool afail_needs_depth = afail == PS_AFAIL::FB_ONLY || afail == PS_AFAIL::RGB_ONLY_SW_Z;
 			const bool ztst_needs_depth = ztst == ZTST_GEQUAL || ztst == ZTST_GREATER;
-			return afail_needs_depth || ztst_needs_depth;
+			const bool aa1_needs_depth = aa1 == PS_AA1::TRIANGLE_SW_Z;
+			return afail_needs_depth || ztst_needs_depth || aa1_needs_depth;
 		}
 
 		/// Disables color output from the pixel shader, this is done when all channels are masked.
@@ -458,6 +467,20 @@ struct alignas(16) GSHWDrawConfig
 
 			// disable both outputs.
 			no_color = no_color1 = 1;
+		}
+
+		/// Disables depth output from the pixel shader.
+		__fi void DisableDepthOutput()
+		{
+			if (afail == PS_AFAIL::RGB_ONLY_SW_Z)
+			{
+				afail = PS_AFAIL::RGB_ONLY;
+			}
+
+			if (aa1 == PS_AA1::TRIANGLE_SW_Z)
+			{
+				aa1 = PS_AA1::TRIANGLE;
+			}
 		}
 	};
 	static_assert(sizeof(PSSelector) == 12, "PSSelector is 12 bytes");
@@ -618,6 +641,46 @@ struct alignas(16) GSHWDrawConfig
 			return true;
 		}
 	};
+
+	struct alignas(16) VSPushConstants
+	{
+		u32 base_vertex;
+		u32 base_index;
+		u32 _pad0;
+		u32 _pad1;
+
+		__fi VSPushConstants()
+		{
+			memset(static_cast<void*>(this), 0, sizeof(*this));
+		}
+		__fi VSPushConstants(const VSPushConstants& other)
+		{
+			memcpy(static_cast<void*>(this), static_cast<const void*>(&other), sizeof(*this));
+		}
+		__fi VSPushConstants& operator=(const VSPushConstants& other)
+		{
+			new (this) VSPushConstants(other);
+			return *this;
+		}
+		__fi bool operator==(const VSPushConstants& other) const
+		{
+			return BitEqual(*this, other);
+		}
+		__fi bool operator!=(const VSPushConstants& other) const
+		{
+			return !(*this == other);
+		}
+		__fi bool Update(const VSPushConstants& other)
+		{
+			if (*this == other)
+				return false;
+
+			memcpy(static_cast<void*>(this), static_cast<const void*>(&other), sizeof(*this));
+			return true;
+		}
+	};
+	static_assert(sizeof(VSPushConstants) == 16, "VSPushConstants wrong size");
+
 	struct alignas(16) PSConstantBuffer
 	{
 		GSVector4 FogColor_AREF;
@@ -776,8 +839,8 @@ struct alignas(16) GSHWDrawConfig
 	AlphaTestMode alpha_test;
 
 	DestinationAlphaMode destination_alpha;
-	SetDATM datm : 2;
-	bool line_expand : 1;
+	SetDATM datm;
+	bool line_expand;
 
 	struct AlphaPass
 	{
@@ -824,9 +887,12 @@ static inline u32 GetExpansionFactor(GSHWDrawConfig::VSExpand expand)
 	{
 		case GSHWDrawConfig::VSExpand::Point:
 		case GSHWDrawConfig::VSExpand::Line:
+		case GSHWDrawConfig::VSExpand::LineAA1:
 			return 4;
 		case GSHWDrawConfig::VSExpand::Sprite:
 			return 2;
+		case GSHWDrawConfig::VSExpand::TriangleAA1:
+			return 7;
 		default:
 			return 1;
 	}
@@ -889,6 +955,7 @@ public:
 		bool cas_sharpening       : 1; ///< Supports sufficient functionality for contrast adaptive sharpening.
 		bool test_and_sample_depth: 1; ///< Supports concurrently binding the depth-stencil buffer for sampling and depth testing.
 		DepthFeedbackSupport depth_feedback : 2; ///< Support for depth feedback loops.
+		bool aa1                  : 1; ///< Supports the GS AA1 feature.
 		FeatureSupport()
 		{
 			memset(this, 0, sizeof(*this));

@@ -43,6 +43,13 @@
 #define PS_ATST_NOTEQUAL 4
 #endif
 
+#ifndef PS_AA1_NONE
+#define PS_AA1_NONE 0
+#define PS_AA1_LINE 1
+#define PS_AA1_TRIANGLE 2
+#define PS_AA1_TRIANGLE_SW_Z 3
+#endif
+
 #ifndef PS_FST
 #define PS_IIP 0
 #define PS_FST 0
@@ -102,6 +109,17 @@
 #define PS_NO_COLOR1 0
 #define PS_DATE 0
 #define PS_TEX_IS_FB 0
+#define PS_AA1 0
+#define PS_ABE 0
+#endif
+
+#ifndef VS_EXPAND_NONE
+#define VS_EXPAND_NONE 0
+#define VS_EXPAND_POINT 1
+#define VS_EXPAND_LINE 2
+#define VS_EXPAND_SPRITE 3
+#define VS_EXPAND_LINE_AA1 4
+#define VS_EXPAND_TRIANGLE_AA1 5
 #endif
 
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
@@ -110,7 +128,8 @@
 #define NEEDS_RT_FOR_AFAIL (PS_AFAIL == AFAIL_ZB_ONLY || PS_AFAIL == AFAIL_RGB_ONLY || PS_AFAIL == AFAIL_RGB_ONLY_SW_Z)
 #define NEEDS_DEPTH_FOR_AFAIL (PS_AFAIL == AFAIL_FB_ONLY || PS_AFAIL == AFAIL_RGB_ONLY_SW_Z)
 #define NEEDS_DEPTH_FOR_ZTST (PS_ZTST == ZTST_GEQUAL || PS_ZTST == ZTST_GREATER)
-#define SW_DEPTH (NEEDS_DEPTH_FOR_AFAIL || NEEDS_DEPTH_FOR_ZTST)
+#define NEEDS_DEPTH_FOR_AA1 (PS_AA1 == PS_AA1_TRIANGLE_SW_Z)
+#define SW_DEPTH (NEEDS_DEPTH_FOR_AFAIL || NEEDS_DEPTH_FOR_ZTST || NEEDS_DEPTH_FOR_AA1)
 #define ZWRITE (PS_ZFLOOR || PS_ZCLAMP || SW_DEPTH)
 
 struct VS_INPUT
@@ -135,6 +154,9 @@ struct VS_OUTPUT
 #else
 	nointerpolation float4 c : COLOR0;
 #endif
+
+	float inv_cov : COLOR1; // We use the inverse to make it simpler to interpolate.
+	nointerpolation uint interior : COLOR2; // 1 for triangle interior; 0 for edge;
 };
 
 struct PS_INPUT
@@ -147,6 +169,8 @@ struct PS_INPUT
 #else
 	nointerpolation float4 c : COLOR0;
 #endif
+	float inv_cov : COLOR1; // We use the inverse to make it simpler to interpolate.
+	nointerpolation uint interior : COLOR2; // 1 for triangle interior; 0 for edge;
 #if (PS_DATE >= 1 && PS_DATE <= 3) || GS_FORWARD_PRIMID
 	uint primid : SV_PrimitiveID;
 #endif
@@ -1077,7 +1101,15 @@ PS_OUTPUT ps_main(PS_INPUT input)
 #endif
 	float4 C = ps_color(input);
 
-#if PS_FIXED_ONE_A
+#if PS_AA1
+	float cov = clamp(1.0f - abs(input.inv_cov), 0.0f, 1.0f);
+	#if PS_ABE
+		if (floor(C.a) == 128.0f) // The coverage is only used if the fragment alpha is 128.
+			C.a = 128.0f * cov;
+	#else
+		C.a = 128.0f * cov;
+	#endif
+#elif PS_FIXED_ONE_A
 	// AA (Fixed one) will output a coverage of 1.0 as alpha
 	C.a = 128.0f;
 #endif
@@ -1279,6 +1311,11 @@ PS_OUTPUT ps_main(PS_INPUT input)
 	input.p.z = min(input.p.z, MaxDepthPS);
 #endif
 
+#if PS_AA1 == PS_AA1_TRIANGLE_SW_Z
+	if (!bool(input.interior))
+		input.p.z = DepthTexture.Load(int3(input.p.xy, 0)).r; // No depth update for triangle edges.
+#endif
+
 #if ZWRITE
 #if SW_DEPTH && PS_NO_COLOR1 && DX12
 	// Output color clone for feedback as well as real depth.
@@ -1310,7 +1347,19 @@ cbuffer cb0
 	float2 TextureOffset;
 	float2 PointSize;
 	uint MaxDepth;
-	uint BaseVertex; // Only used in DX11.
+	uint _cb0_pad0;
+};
+
+#ifdef DX12
+cbuffer cb2 : register(b2)
+#else
+cbuffer cb2
+#endif
+{
+	uint BaseVertex;
+	uint BaseIndex;
+	uint _cb2_pad0;
+	uint _cb2_pad1;
 };
 
 VS_OUTPUT vs_main(VS_INPUT input)
@@ -1362,10 +1411,14 @@ VS_OUTPUT vs_main(VS_INPUT input)
 	output.c = input.c;
 	output.t.z = input.f.r;
 
+	// Silence compiler warnings; should be optimized out when not needed.
+	output.inv_cov = 0.0f;
+	output.interior = 0;
+
 	return output;
 }
 
-#if VS_EXPAND != 0
+#if VS_EXPAND != VS_EXPAND_NONE
 
 struct VS_RAW_INPUT
 {
@@ -1379,14 +1432,19 @@ struct VS_RAW_INPUT
 };
 
 StructuredBuffer<VS_RAW_INPUT> vertices : register(t0);
+StructuredBuffer<uint> IndexBuffer : register(t5);
+
+uint load_index(uint _i)
+{
+	uint i = _i + BaseIndex;
+	// i is even => load lower 16 bits; i odd => load upper 16 bits.
+	uint shift = (i & 1) << 4;
+	return (IndexBuffer.Load(i >> 1) >> shift) & 0xFFFF;
+}
 
 VS_INPUT load_vertex(uint index)
 {
-#ifdef DX12
-	VS_RAW_INPUT raw = vertices.Load(index);
-#else
 	VS_RAW_INPUT raw = vertices.Load(BaseVertex + index);
-#endif
 
 	VS_INPUT vert;
 	vert.st = raw.ST;
@@ -1401,7 +1459,7 @@ VS_INPUT load_vertex(uint index)
 
 VS_OUTPUT vs_main_expand(uint vid : SV_VertexID)
 {
-#if VS_EXPAND == 1 // Point
+#if VS_EXPAND == VS_EXPAND_POINT
 
 	VS_OUTPUT vtx = vs_main(load_vertex(vid >> 2));
 
@@ -1410,7 +1468,13 @@ VS_OUTPUT vs_main_expand(uint vid : SV_VertexID)
 
 	return vtx;
 
-#elif VS_EXPAND == 2 // Line
+#elif (VS_EXPAND == VS_EXPAND_LINE) || (VS_EXPAND == VS_EXPAND_LINE_AA1)
+
+	// The difference between EXPAND_LINE and EXPAND_LINE_AA1
+	// is that EXPAND_LINE expands in the perpendicular direction while
+	// EXPAND_LINE_AA1 expands in the Y direction for shallow lines (X dominant)
+	// and the X direction for steep lines (Y dominant).
+	// EXPAND_LINE_AA1 also adds coverage to the output.
 
 	uint vid_base = vid >> 2;
 	bool is_bottom = vid & 2;
@@ -1419,12 +1483,23 @@ VS_OUTPUT vs_main_expand(uint vid : SV_VertexID)
 	VS_OUTPUT vtx = vs_main(load_vertex(vid_base));
 	VS_OUTPUT other = vs_main(load_vertex(vid_other));
 
-	float2 line_vector = normalize(vtx.p.xy - other.p.xy);
-	float2 line_normal = float2(line_vector.y, -line_vector.x);
-	float2 line_width = (line_normal * PointSize) / 2;
-	// line_normal is inverted for bottom point
-	float2 offset = (is_bottom ^ is_right) ? line_width : -line_width;
+	// Use bottom minus top for delta regardless of which vertex we are expanding.
+	float2 line_delta = is_bottom ? (vtx.p.xy - other.p.xy) : (other.p.xy - vtx.p.xy);
+	float2 line_vector = normalize(line_delta);
+#if VS_EXPAND == VS_EXPAND_LINE
+	float2 line_expand = float2(line_vector.y, -line_vector.x);
+#elif VS_EXPAND == VS_EXPAND_LINE_AA1
+	// Expand in y direction for shallow lines and x direction for steep lines.
+	line_delta /= VertexScale;
+	float2 line_expand = abs(line_delta.x) >= abs(line_delta.y) ? float2(0.0f, 2.0f) : float2(2.0f, 0.0f);
+#endif
+	float2 line_width = (line_expand * PointSize) / 2;
+	float2 offset = is_right ? line_width : -line_width;
 	vtx.p.xy += offset;
+
+#if VS_EXPAND == VS_EXPAND_LINE_AA1
+	vtx.inv_cov = is_right ? 1.0f : -1.0f;
+#endif
 
 	// Lines will be run as (0 1 2) (1 2 3)
 	// This means that both triangles will have a point based off the top line point as their first point
@@ -1432,7 +1507,7 @@ VS_OUTPUT vs_main_expand(uint vid : SV_VertexID)
 
 	return vtx;
 
-#elif VS_EXPAND == 3 // Sprite
+#elif VS_EXPAND == VS_EXPAND_SPRITE
 
 	// Sprite points are always in pairs
 	uint vid_base = vid >> 1;
@@ -1452,6 +1527,72 @@ VS_OUTPUT vs_main_expand(uint vid : SV_VertexID)
 	vtx.p.y = is_bottom ? lt.p.y : vtx.p.y;
 	vtx.t.y = is_bottom ? lt.t.y : vtx.t.y;
 	vtx.ti.yw = is_bottom ? lt.ti.yw : vtx.ti.yw;
+
+	return vtx;
+
+#elif VS_EXPAND == VS_EXPAND_TRIANGLE_AA1
+
+	// Triangles with AA1 are expanded as follows:
+	// - Vertices 0-2: Interior of triangle (1 triangle).
+	// - Vertices 3-8: First edge expanded (2 triangles).
+	// - Vertices 9-14: Second edge expanded (2 triangles).
+	// - Vertices 15-20: Third edge expanded (2 triangles).
+
+	uint prim_id = vid / 21;
+	uint prim_offset = vid - 21 * prim_id; // range: 0-20
+	bool interior = prim_offset < 3;
+
+	VS_OUTPUT vtx;
+	if (interior)
+	{
+		vtx = vs_main(load_vertex(load_index(3 * prim_id + prim_offset)));
+		vtx.inv_cov = 0.0f; // Full coverage
+		vtx.interior = 1;
+	}
+	else
+	{
+		// Vertex indices for this edge. We need all 3 for determining exterior/interior.
+		uint prim_offset_edges = prim_offset - 3; // range: 0-17
+		uint i0 = prim_offset_edges / 6;
+		uint i1 = (i0 >= 2) ? i0 - 2 : i0 + 1;
+		uint i2 = (i0 >= 1) ? i0 - 1 : i0 + 2;
+		uint edge_offset = prim_offset_edges - 6 * i0; // range: 0-5
+
+		// Note: order of top/bottom, inside/outside order is arbitrary,
+		// as long as it assembles into two triangles forming a quad.
+		bool is_bottom = (2 <= edge_offset) && (edge_offset <= 4);
+		bool is_outside = edge_offset & 1;
+
+		vtx = vs_main(load_vertex(load_index(3 * prim_id + i0)));
+		VS_OUTPUT other = vs_main(load_vertex(load_index(3 * prim_id + i1)));
+		VS_OUTPUT opposite = vs_main(load_vertex(load_index(3 * prim_id + i2)));
+
+		// Similar expansion to line AA1 except instead of expanding on both sides of
+		// the line we expand on on the side towards the outside of the triangle.
+		float2 line_delta = vtx.p.xy - other.p.xy;
+		float2 line_normal = normalize(float2(line_delta.y, -line_delta.x));
+		float2 line_expand = abs(line_delta.x) >= abs(line_delta.y) ? float2(0.0f, 2.0f) : float2(2.0f, 0.0f);
+		if ((dot(line_expand, line_normal) >= 0.0f) == (dot(opposite.p.xy - vtx.p.xy, line_normal) >= 0.0f))
+		{
+			// Expand direction point towards the interior so flip it.
+			line_expand = -line_expand;
+		}
+		float2 line_width = (line_expand * PointSize) / 2;
+
+		if (is_bottom)
+			vtx = other;
+		if (is_outside)
+		{
+			vtx.p.xy += line_width;
+			vtx.inv_cov = 1.0f; // No coverage
+		}
+		else
+		{
+			vtx.inv_cov = 0.0f; // Full coverage
+		}
+
+		vtx.interior = 0;
+	}
 
 	return vtx;
 

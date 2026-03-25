@@ -549,6 +549,7 @@ bool GSDevice12::ExecuteCommandList(WaitType wait_for_completion)
 	// Flush stream buffers to GPU memory
 	m_vertex_stream_buffer.FlushMemory();
 	m_index_stream_buffer.FlushMemory();
+	m_expand_index_stream_buffer.FlushMemory();
 	m_vertex_constant_buffer.FlushMemory();
 	m_pixel_constant_buffer.FlushMemory();
 
@@ -602,6 +603,9 @@ bool GSDevice12::ExecuteCommandList(WaitType wait_for_completion)
 	MoveToNextCommandList();
 	if (wait_for_completion != WaitType::None)
 		WaitForFence(res.ready_fence_value, wait_for_completion == WaitType::Spin);
+
+	// Push constants need to be refreshed each command list.
+	m_dirty_flags |= DIRTY_FLAG_VS_PUSH_CONSTANTS;
 
 	return true;
 }
@@ -1410,6 +1414,8 @@ bool GSDevice12::CheckFeatures(const u32& vendor_id)
 	{
 		m_features.depth_feedback = GSDevice::DepthFeedbackSupport::None;
 	}
+		
+	m_features.aa1 = GSConfig.HWAA1 && m_features.vs_expand && (m_features.depth_feedback != GSDevice::DepthFeedbackSupport::None);
 
 	m_features.dxt_textures = SupportsTextureFormat(DXGI_FORMAT_BC1_UNORM) &&
 	                          SupportsTextureFormat(DXGI_FORMAT_BC2_UNORM) &&
@@ -1456,6 +1462,21 @@ void GSDevice12::DrawPrimitive()
 {
 	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
 	GetCommandList().list4->DrawInstanced(m_vertex.count, 1, m_vertex.start, 0);
+}
+
+void GSDevice12::DrawIndexedPrimitiveVSExpand(int offset, int count, bool vs_indexing, int vs_indexing_expansion)
+{
+	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
+	if (vs_indexing)
+	{
+		SetVSPushConstants(m_vertex.start, m_index.start + offset);
+		GetCommandList().list4->DrawInstanced(count * vs_indexing_expansion, 1, 0, 0);
+	}
+	else
+	{
+		SetVSPushConstants(m_vertex.start);
+		GetCommandList().list4->DrawIndexedInstanced(count, 1, m_index.start + offset, 0, 0);
+	}
 }
 
 void GSDevice12::DrawIndexedPrimitive()
@@ -2383,22 +2404,32 @@ void GSDevice12::IASetVertexBuffer(const void* vertex, size_t stride, size_t cou
 	m_vertex_stream_buffer.CommitMemory(size);
 }
 
-void GSDevice12::IASetIndexBuffer(const void* index, size_t count)
+void GSDevice12::UploadIndices(D3D12StreamBuffer& buffer, const void* index, size_t count)
 {
 	const u32 size = sizeof(u16) * static_cast<u32>(count);
-	if (!m_index_stream_buffer.ReserveMemory(size, sizeof(u16)))
+	if (!buffer.ReserveMemory(size, sizeof(u16)))
 	{
 		ExecuteCommandListAndRestartRenderPass(false, "Uploading bytes to index buffer");
-		if (!m_index_stream_buffer.ReserveMemory(size, sizeof(u16)))
-			pxFailRel("Failed to reserve space for vertices");
+		if (!buffer.ReserveMemory(size, sizeof(u16)))
+			pxFailRel("Failed to reserve space for indices");
 	}
 
-	m_index.start = m_index_stream_buffer.GetCurrentOffset() / sizeof(u16);
+	m_index.start = buffer.GetCurrentOffset() / sizeof(u16);
 	m_index.count = count;
-	SetIndexBuffer(m_index_stream_buffer.GetGPUPointer(), m_index_stream_buffer.GetSize(), DXGI_FORMAT_R16_UINT);
 
-	std::memcpy(m_index_stream_buffer.GetCurrentHostPointer(), index, size);
-	m_index_stream_buffer.CommitMemory(size);
+	std::memcpy(buffer.GetCurrentHostPointer(), index, size);
+	buffer.CommitMemory(size);
+}
+
+void GSDevice12::IASetIndexBuffer(const void* index, size_t count)
+{
+	UploadIndices(m_index_stream_buffer, index, count);
+	SetIndexBuffer(m_index_stream_buffer.GetGPUPointer(), m_index_stream_buffer.GetSize(), DXGI_FORMAT_R16_UINT);
+}
+
+void GSDevice12::VSSetIndexBuffer(const void* index, size_t count)
+{
+	UploadIndices(m_expand_index_stream_buffer, index, count);
 }
 
 void GSDevice12::OMSetRenderTargets(GSTexture* rt, GSTexture* ds_as_rt, GSTexture* ds, const GSVector4i& scissor,
@@ -2591,6 +2622,12 @@ bool GSDevice12::CreateBuffers()
 		return false;
 	}
 
+	if (!m_expand_index_stream_buffer.Create(m_features.aa1 ? INDEX_BUFFER_SIZE : 4, false))
+	{
+		Host::ReportErrorAsync("GS", "Failed to allocate expansion index buffer (VS resource)");
+		return false;
+	}
+
 	if (!m_vertex_constant_buffer.Create(VERTEX_UNIFORM_BUFFER_SIZE, !m_uma))
 	{
 		Host::ReportErrorAsync("GS", "Failed to allocate vertex uniform buffer");
@@ -2641,9 +2678,11 @@ bool GSDevice12::CreateRootSignatures()
 	rsb.AddCBVParameter(0, D3D12_SHADER_VISIBILITY_ALL);
 	rsb.AddCBVParameter(1, D3D12_SHADER_VISIBILITY_PIXEL);
 	rsb.AddSRVParameter(0, D3D12_SHADER_VISIBILITY_VERTEX);
+	rsb.AddSRVParameter(5, D3D12_SHADER_VISIBILITY_VERTEX);
 	rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 2, D3D12_SHADER_VISIBILITY_PIXEL); // Source / Palette 
 	rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, NUM_TFX_SAMPLERS, D3D12_SHADER_VISIBILITY_PIXEL);
 	rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 3, D3D12_SHADER_VISIBILITY_PIXEL); // RT / PrimID / Depth
+	rsb.Add32BitConstants(2, sizeof(m_vs_pc_cache) / sizeof(u32), D3D12_SHADER_VISIBILITY_VERTEX);
 	if (!(m_tfx_root_signature = rsb.Create()))
 		return false;
 	D3D12::SetObjectName(m_tfx_root_signature.get(), "TFX root signature");
@@ -3037,6 +3076,7 @@ void GSDevice12::DestroyResources()
 	m_vertex_constant_buffer.Destroy(false);
 	m_index_stream_buffer.Destroy(false);
 	m_vertex_stream_buffer.Destroy(false);
+	m_expand_index_stream_buffer.Destroy(false);
 
 	m_utility_root_signature.reset();
 	m_tfx_root_signature.reset();
@@ -3157,6 +3197,8 @@ const ID3DBlob* GSDevice12::GetTFXPixelShader(const GSHWDrawConfig::PSSelector& 
 	sm.AddMacro("PS_NO_COLOR", sel.no_color);
 	sm.AddMacro("PS_NO_COLOR1", sel.no_color1);
 	sm.AddMacro("PS_ZTST", sel.ztst);
+	sm.AddMacro("PS_AA1", static_cast<u32>(sel.aa1));
+	sm.AddMacro("PS_ABE", sel.abe);
 
 	ComPtr<ID3DBlob> ps(m_shader_cache.GetPixelShader(m_tfx_source, sm.GetPtr(), "ps_main"));
 	it = m_tfx_pixel_shaders.emplace(sel, std::move(ps)).first;
@@ -3393,7 +3435,7 @@ void GSDevice12::ExecuteCommandListForReadback()
 
 void GSDevice12::InvalidateCachedState()
 {
-	m_dirty_flags |= DIRTY_BASE_STATE | DIRTY_TFX_STATE | DIRTY_UTILITY_STATE | DIRTY_CONSTANT_BUFFER_STATE;
+	m_dirty_flags |= DIRTY_BASE_STATE | DIRTY_ROOT_PARAMS | DIRTY_TFX_STATE | DIRTY_UTILITY_STATE | DIRTY_CONSTANT_BUFFER_STATE;
 	m_current_root_signature = RootSignature::Undefined;
 	m_utility_texture_cpu.Clear();
 	m_utility_texture_gpu.Clear();
@@ -3786,7 +3828,7 @@ __ri void GSDevice12::ApplyBaseState(u32 flags, ID3D12GraphicsCommandList* cmdli
 	if (flags & DIRTY_FLAG_PRIMITIVE_TOPOLOGY)
 		cmdlist->IASetPrimitiveTopology(m_primitive_topology);
 
-	if (flags & DIRTY_FLAG_PIPELINE)
+	if ((flags & DIRTY_FLAG_PIPELINE) && m_current_pipeline)
 		cmdlist->SetPipelineState(const_cast<ID3D12PipelineState*>(m_current_pipeline));
 
 	if (flags & DIRTY_FLAG_VIEWPORT)
@@ -3918,9 +3960,7 @@ bool GSDevice12::ApplyTFXState(bool already_execed)
 	if (m_current_root_signature != RootSignature::TFX)
 	{
 		m_current_root_signature = RootSignature::TFX;
-		flags |= DIRTY_FLAG_VS_CONSTANT_BUFFER_BINDING | DIRTY_FLAG_PS_CONSTANT_BUFFER_BINDING |
-		         DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE | DIRTY_FLAG_SAMPLERS_DESCRIPTOR_TABLE |
-		         DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE_2 | DIRTY_FLAG_PIPELINE;
+		flags |= DIRTY_ROOT_PARAMS | DIRTY_FLAG_PIPELINE;
 		cmdlist->SetGraphicsRootSignature(m_tfx_root_signature.get());
 	}
 
@@ -3928,10 +3968,17 @@ bool GSDevice12::ApplyTFXState(bool already_execed)
 		cmdlist->SetGraphicsRootConstantBufferView(TFX_ROOT_SIGNATURE_PARAM_VS_CBV, m_tfx_constant_buffers[0]);
 	if (flags & DIRTY_FLAG_PS_CONSTANT_BUFFER_BINDING)
 		cmdlist->SetGraphicsRootConstantBufferView(TFX_ROOT_SIGNATURE_PARAM_PS_CBV, m_tfx_constant_buffers[1]);
+	if (m_features.vs_expand && (flags & DIRTY_FLAG_VS_PUSH_CONSTANTS))
+		SetVSPushConstants(m_vs_pc_cache.base_vertex, m_vs_pc_cache.base_index, true);
 	if (flags & DIRTY_FLAG_VS_VERTEX_BUFFER_BINDING)
 	{
-		cmdlist->SetGraphicsRootShaderResourceView(TFX_ROOT_SIGNATURE_PARAM_VS_SRV,
-			m_vertex_stream_buffer.GetGPUPointer() + m_vertex.start * sizeof(GSVertex));
+		cmdlist->SetGraphicsRootShaderResourceView(TFX_ROOT_SIGNATURE_PARAM_VS_VB_SRV,
+			m_vertex_stream_buffer.GetGPUPointer());
+	}
+	if (flags & DIRTY_FLAG_VS_INDEX_BUFFER_BINDING)
+	{
+		cmdlist->SetGraphicsRootShaderResourceView(TFX_ROOT_SIGNATURE_PARAM_VS_IB_SRV,
+			m_expand_index_stream_buffer.GetGPUPointer());
 	}
 	if (flags & DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE)
 		cmdlist->SetGraphicsRootDescriptorTable(TFX_ROOT_SIGNATURE_PARAM_PS_TEXTURES, m_tfx_textures_handle_gpu);
@@ -3980,6 +4027,19 @@ void GSDevice12::SetPSConstantBuffer(const GSHWDrawConfig::PSConstantBuffer& cb)
 {
 	if (m_ps_cb_cache.Update(cb))
 		m_dirty_flags |= DIRTY_FLAG_PS_CONSTANT_BUFFER;
+}
+
+void GSDevice12::SetVSPushConstants(u32 base_vertex, u32 base_index, bool force_update)
+{
+	GSHWDrawConfig::VSPushConstants pc;
+	pc.base_vertex = base_vertex;
+	pc.base_index = base_index;
+	if (m_vs_pc_cache.Update(pc) || force_update)
+	{
+		GetCommandList().list4->SetGraphicsRoot32BitConstants(
+			TFX_ROOT_SIGNATURE_PARAM_VS_PUSH_CONSTANTS, sizeof(m_vs_pc_cache) / sizeof(u32),
+			&m_vs_pc_cache, 0);
+	}
 }
 
 void GSDevice12::SetupDATE(GSTexture* rt, GSTexture* ds, SetDATM datm, const GSVector4i& bbox)
@@ -4470,6 +4530,21 @@ void GSDevice12::SendHWDraw(const PipelineSelector& pipe, const GSHWDrawConfig& 
 
 	const int n_barriers = static_cast<int>(feedback_rt) + static_cast<int>(feedback_depth);
 
+	const bool vs_expand = config.vs.expand != GSHWDrawConfig::VSExpand::None;
+	const bool vs_indexing = config.vs.UseVSExpandIndexBuffer();
+	const u32 vs_indexing_expansion = GetExpansionFactor(config.vs.expand);
+
+	auto Draw = [&](int offset, int count) {
+		if (vs_expand)
+		{
+			DrawIndexedPrimitiveVSExpand(offset, count, vs_indexing, vs_indexing_expansion);
+		}
+		else
+		{
+			DrawIndexedPrimitive(offset, count);
+		}
+	};
+	
 	if (feedback_rt || feedback_depth)
 	{
 #ifdef PCSX2_DEVBUILD
@@ -4502,7 +4577,7 @@ void GSDevice12::SendHWDraw(const PipelineSelector& pipe, const GSHWDrawConfig& 
 					FeedbackBarrier(draw_ds);
 
 				if (BindDrawPipeline(pipe))
-					DrawIndexedPrimitive(p, count);
+					Draw(p, count);
 				p += count;
 			}
 
@@ -4514,14 +4589,14 @@ void GSDevice12::SendHWDraw(const PipelineSelector& pipe, const GSHWDrawConfig& 
 			g_perfmon.Put(GSPerfMon::Barriers, n_barriers);
 
 			if (feedback_rt)
-					FeedbackBarrier(draw_rt);
+				FeedbackBarrier(draw_rt);
 			if (feedback_depth)
 				FeedbackBarrier(draw_ds);
 		}
 	}
 
 	if (BindDrawPipeline(pipe))
-		DrawIndexedPrimitive();
+		Draw(0, m_index.count);
 }
 
 void GSDevice12::UpdateHWPipelineSelector(GSHWDrawConfig& config)
@@ -4542,16 +4617,16 @@ void GSDevice12::UpdateHWPipelineSelector(GSHWDrawConfig& config)
 void GSDevice12::UploadHWDrawVerticesAndIndices(GSHWDrawConfig& config)
 {
 	IASetVertexBuffer(config.verts, sizeof(GSVertex), config.nverts);
-
-	// Update SRV in root signature directly, rather than using a uniform for base vertex.
-	if (config.vs.expand != GSHWDrawConfig::VSExpand::None)
-		m_dirty_flags |= DIRTY_FLAG_VS_VERTEX_BUFFER_BINDING;
-
-	if (config.vs.UseExpandIndexBuffer())
+	
+	if (config.vs.UseFixedExpandIndexBuffer())
 	{
 		m_index.start = 0;
 		m_index.count = config.nindices;
 		SetIndexBuffer(m_expand_index_buffer->GetGPUVirtualAddress(), EXPAND_BUFFER_SIZE, DXGI_FORMAT_R16_UINT);
+	}
+	else if (config.vs.UseVSExpandIndexBuffer())
+	{
+		VSSetIndexBuffer(config.indices, config.nindices);
 	}
 	else
 	{

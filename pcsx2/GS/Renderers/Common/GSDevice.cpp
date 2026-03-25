@@ -1150,10 +1150,12 @@ static const char* GetVSExpandName(GSHWDrawConfig::VSExpand vsexpand)
 {
 	switch (vsexpand)
 	{
-		case GSHWDrawConfig::VSExpand::None:   return "None";
-		case GSHWDrawConfig::VSExpand::Point:  return "Point";
-		case GSHWDrawConfig::VSExpand::Line:   return "Line";
-		case GSHWDrawConfig::VSExpand::Sprite: return "Sprite";
+		case GSHWDrawConfig::VSExpand::None:        return "None";
+		case GSHWDrawConfig::VSExpand::Point:       return "Point";
+		case GSHWDrawConfig::VSExpand::Line:        return "Line";
+		case GSHWDrawConfig::VSExpand::Sprite:      return "Sprite";
+		case GSHWDrawConfig::VSExpand::LineAA1:     return "LineAA1";
+		case GSHWDrawConfig::VSExpand::TriangleAA1: return "TriangleAA1";
 	}
 	return "Unknown";
 }
@@ -1395,6 +1397,18 @@ static const char* GetSetDATMName(SetDATM datm)
 	return "Unknown";
 }
 
+static const char* GetPSAA1Name(u32 aa1)
+{
+	switch (static_cast<GSHWDrawConfig::PS_AA1>(aa1))
+	{
+		case GSHWDrawConfig::PS_AA1::NONE: return "NONE";
+		case GSHWDrawConfig::PS_AA1::LINE: return "LINE";
+		case GSHWDrawConfig::PS_AA1::TRIANGLE: return "TRIANGLE";
+		case GSHWDrawConfig::PS_AA1::TRIANGLE_SW_Z: return "TRIANGLE_SW_Z";
+	}
+	return "Unknown";
+}
+
 static void DumpPSSelector(DrawConfigWriter& out, const GSHWDrawConfig::PSSelector& ps)
 {
 	out.WriteLn("aem_fmt: {}", ps.aem_fmt);
@@ -1451,6 +1465,8 @@ static void DumpPSSelector(DrawConfigWriter& out, const GSHWDrawConfig::PSSelect
 	out.WriteLn("point_sampler: {}", ps.point_sampler);
 	out.WriteLn("region_rect: {}", ps.region_rect);
 	out.WriteLn("scanmsk: {} ({})", GSUtil::GetSCANMSKName(ps.scanmsk), ps.scanmsk);
+	out.WriteLn("aa1: {} ({})", static_cast<u32>(ps.aa1), GetPSAA1Name(static_cast<u32>(ps.aa1)));
+	out.WriteLn("abe: {}", static_cast<u32>(ps.abe));
 }
 
 static void DumpVSSelector(DrawConfigWriter& out, const GSHWDrawConfig::VSSelector& vs)

@@ -414,6 +414,30 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		}
 	}
 
+	if (m_features.aa1)
+	{
+		bd.ByteWidth = INDEX_BUFFER_SIZE;
+		bd.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+		bd.StructureByteStride = sizeof(u32);
+		bd.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+
+		if (FAILED(m_dev->CreateBuffer(&bd, nullptr, m_expand_ib_vs.put())))
+		{
+			Console.Error("D3D11: Failed to create vertex shader index buffer.");
+			return false;
+		}
+
+		const CD3D11_SHADER_RESOURCE_VIEW_DESC expand_ib_vs_srv_desc(
+			D3D11_SRV_DIMENSION_BUFFER, DXGI_FORMAT_UNKNOWN, 0, INDEX_BUFFER_SIZE / sizeof(u32));
+		if (FAILED(m_dev->CreateShaderResourceView(m_expand_ib_vs.get(), &expand_ib_vs_srv_desc, m_expand_ib_vs_srv.put())))
+		{
+			Console.Error("D3D11: Failed to create vertex shader index buffer SRV.");
+			return false;
+		}
+
+		m_ctx->VSSetShaderResources(5, 1, m_expand_ib_vs_srv.addressof());
+	}
+
 	// rasterizer
 
 	memset(&rd, 0, sizeof(rd));
@@ -467,6 +491,18 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 
 	memset(&bd, 0, sizeof(bd));
 
+	bd.ByteWidth = sizeof(GSHWDrawConfig::VSConstantBuffer);
+	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+
+	if (FAILED(m_dev->CreateBuffer(&bd, nullptr, m_vs_pc.put())))
+	{
+		Console.Error("D3D11: Failed to create vertex shader push constant buffer.");
+		return false;
+	}
+
+	memset(&bd, 0, sizeof(bd));
+
 	bd.ByteWidth = sizeof(GSHWDrawConfig::PSConstantBuffer);
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
@@ -476,6 +512,8 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		Console.Error("D3D11: Failed to create pixel shader constant buffer.");
 		return false;
 	}
+
+	VSSetPushConstants(0, 0, true); // Avoid undefined data.
 
 	// create layout
 
@@ -563,6 +601,7 @@ void GSDevice11::Destroy()
 
 	m_vs.clear();
 	m_vs_cb.reset();
+	m_vs_pc.reset();
 	m_gs.clear();
 	m_ps.clear();
 	m_ps_cb.reset();
@@ -615,6 +654,7 @@ void GSDevice11::SetFeatures(IDXGIAdapter1* adapter)
 	m_features.vs_expand = (!GSConfig.DisableVertexShaderExpand && m_feature_level >= D3D_FEATURE_LEVEL_11_0);
 	m_features.cas_sharpening = (m_feature_level >= D3D_FEATURE_LEVEL_11_0);
 	m_features.test_and_sample_depth = (m_feature_level >= D3D_FEATURE_LEVEL_11_0);
+	m_features.aa1 = GSConfig.HWAA1 && m_features.vs_expand && (m_features.depth_feedback != GSDevice::DepthFeedbackSupport::None);
 
 	m_max_texture_size = (m_feature_level >= D3D_FEATURE_LEVEL_11_0) ?
 	                         D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION :
@@ -1151,6 +1191,24 @@ void GSDevice11::DrawIndexedPrimitive(int offset, int count)
 	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
 	PSUpdateShaderState(true, true);
 	m_ctx->DrawIndexed(count, m_index.start + offset, m_vertex.start);
+}
+
+void GSDevice11::DrawIndexedPrimitiveVSExpand(int offset, int count, bool vs_indexing, int vs_indexing_expansion)
+{
+	pxAssert(offset + count <= (int)m_index.count);
+
+	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
+	PSUpdateShaderState(true, true);
+	if (vs_indexing)
+	{
+		VSSetPushConstants(m_vertex.start, m_index.start + offset);
+		m_ctx->Draw(count * vs_indexing_expansion, 0);
+	}
+	else
+	{
+		VSSetPushConstants(m_vertex.start);
+		m_ctx->DrawIndexed(count, m_index.start + offset, 0);
+	}
 }
 
 void GSDevice11::CommitClear(GSTexture* t)
@@ -1833,6 +1891,8 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 		sm.AddMacro("PS_NO_COLOR", sel.no_color);
 		sm.AddMacro("PS_NO_COLOR1", sel.no_color1);
 		sm.AddMacro("PS_ZTST", sel.ztst);
+		sm.AddMacro("PS_AA1", static_cast<u32>(sel.aa1));
+		sm.AddMacro("PS_ABE", sel.abe);
 
 		wil::com_ptr_nothrow<ID3D11PixelShader> ps = m_shader_cache.GetPixelShader(m_dev.get(), m_tfx_source, sm.GetPtr(), "ps_main");
 		i = m_ps.try_emplace(sel, std::move(ps)).first;
@@ -2303,12 +2363,7 @@ void GSDevice11::IAUnmapVertexBuffer(u32 stride, u32 count)
 {
 	m_ctx->Unmap(m_vb.get(), 0);
 
-	if (m_state.vb_stride != stride)
-	{
-		m_state.vb_stride = stride;
-		const UINT vb_offset = 0;
-		m_ctx->IASetVertexBuffers(0, 1, m_vb.addressof(), &stride, &vb_offset);
-	}
+	IASetVertexBuffer(m_vb.get(), stride);
 
 	m_vertex.count = count;
 }
@@ -2323,6 +2378,16 @@ bool GSDevice11::IASetVertexBuffer(const void* vertex, u32 stride, u32 count)
 
 	IAUnmapVertexBuffer(stride, count);
 	return true;
+}
+
+void GSDevice11::IASetVertexBuffer(ID3D11Buffer* buffer, u32 stride)
+{
+	if (m_state.vb != buffer || stride != m_state.vb_stride)
+	{
+		const UINT zero = 0;
+		m_ctx->IASetVertexBuffers(0, 1, &buffer, buffer ? &stride : &zero, &zero);
+		m_state.vb = buffer;
+	}
 }
 
 bool GSDevice11::IASetExpandVertexBuffer(const void* vertex, u32 stride, u32 count)
@@ -2442,6 +2507,66 @@ void GSDevice11::VSSetShader(ID3D11VertexShader* vs, ID3D11Buffer* vs_cb)
 
 		m_ctx->VSSetConstantBuffers(0, 1, &vs_cb);
 	}
+}
+
+void GSDevice11::VSSetPushConstants(u32 base_vertex, u32 base_index, bool force_update)
+{
+	GSHWDrawConfig::VSPushConstants vs_pc;
+	vs_pc.base_vertex = base_vertex;
+	vs_pc.base_index = base_index;
+
+	if (m_vs_pc_cache.Update(vs_pc) || force_update)
+	{
+		m_ctx->UpdateSubresource(m_vs_pc.get(), 0, NULL, &vs_pc, 0, 0);
+	}
+
+	if (m_state.vs_pc != m_vs_pc.get())
+	{
+		m_state.vs_pc = m_vs_pc.get();
+
+		m_ctx->VSSetConstantBuffers(1, 1, &m_state.vs_pc);
+	}
+}
+
+u16* GSDevice11::VSMapIndexBuffer(u32 count)
+{
+	if (count > (INDEX_BUFFER_SIZE / sizeof(u16)))
+		return nullptr;
+
+	D3D11_MAP type = D3D11_MAP_WRITE_NO_OVERWRITE;
+
+	m_index.start = m_expand_ib_vs_pos;
+	m_expand_ib_vs_pos += count;
+
+	if (m_expand_ib_vs_pos > (INDEX_BUFFER_SIZE / sizeof(u16)))
+	{
+		m_index.start = 0;
+		m_expand_ib_vs_pos = count;
+		type = D3D11_MAP_WRITE_DISCARD;
+	}
+
+	D3D11_MAPPED_SUBRESOURCE m;
+	if (FAILED(m_ctx->Map(m_expand_ib_vs.get(), 0, type, 0, &m)))
+		return nullptr;
+
+	return static_cast<u16*>(m.pData) + m_index.start;
+}
+
+void GSDevice11::VSUnmapIndexBuffer(u32 count)
+{
+	m_ctx->Unmap(m_expand_ib_vs.get(), 0);
+	m_index.count = count;
+}
+
+bool GSDevice11::VSSetIndexBuffer(const void* index, u32 count)
+{
+	u16* map = VSMapIndexBuffer(count);
+	if (!map)
+		return false;
+
+	std::memcpy(map, index, count * sizeof(u16));
+	VSUnmapIndexBuffer(count);
+	return true;
 }
 
 void GSDevice11::PSSetShaderResource(int i, GSTexture* sr)
@@ -2755,8 +2880,6 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 			Console.Error("D3D11: Failed to upload structured vertices (%u)", config.nverts);
 			return;
 		}
-
-		config.cb_vs.max_depth.y = m_vertex.start;
 	}
 	else
 	{
@@ -2767,11 +2890,16 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		}
 	}
 
-	if (config.vs.UseExpandIndexBuffer())
+	if (config.vs.UseFixedExpandIndexBuffer())
 	{
 		IASetIndexBuffer(m_expand_ib.get());
 		m_index.start = 0;
 		m_index.count = config.nindices;
+	}
+	else if (config.vs.UseVSExpandIndexBuffer())
+	{
+		VSSetIndexBuffer(config.indices, config.nindices);
+		IASetVertexBuffer(nullptr, 0); // Unbind the vertex buffer to prevent unwanted fetches.
 	}
 	else
 	{
@@ -2937,6 +3065,21 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config,
 	GSTexture* draw_rt_clone, GSTexture* draw_rt, GSTexture* draw_ds_clone, GSTexture* draw_ds,
 	const bool one_barrier, const bool full_barrier)
 {
+	const bool vs_expand = config.vs.expand != GSHWDrawConfig::VSExpand::None;
+	const bool vs_indexing = config.vs.UseVSExpandIndexBuffer();
+	const u32 vs_indexing_expansion = GetExpansionFactor(config.vs.expand);
+
+	auto Draw = [&](int offset, int count) {
+		if (vs_expand)
+		{
+			DrawIndexedPrimitiveVSExpand(offset, count, vs_indexing, vs_indexing_expansion);
+		}
+		else
+		{
+			DrawIndexedPrimitive(offset, count);
+		}
+	};
+
 	if (draw_rt_clone || draw_ds_clone)
 	{
 #ifdef PCSX2_DEVBUILD
@@ -2977,7 +3120,8 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config,
 				const GSVector4i original_bbox = (*config.drawlist_bbox)[n].rintersect(config.drawarea);
 				CopyAndBind(ProcessCopyArea(rtsize, original_bbox));
 
-				DrawIndexedPrimitive(p, count);
+				Draw(p, count);
+				
 				p += count;
 			}
 
@@ -2988,5 +3132,5 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config,
 		CopyAndBind(ProcessCopyArea(rtsize, config.drawarea));
 	}
 
-	DrawIndexedPrimitive();
+	Draw(0, m_index.count);
 }

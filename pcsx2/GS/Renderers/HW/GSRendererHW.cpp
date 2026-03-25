@@ -2922,7 +2922,7 @@ void GSRendererHW::Draw()
 
 	// Need to fix the alpha test, since the alpha will be fixed to 1.0 if ABE is disabled and AA1 is enabled
 	// So if it doesn't meet the condition, always fail, if it does, always pass (turn off the test).
-	if (IsCoverageAlpha() && m_cached_ctx.TEST.ATE && m_cached_ctx.TEST.ATST > 1)
+	if (IsCoverageAlphaFixedOne() && m_cached_ctx.TEST.ATE && m_cached_ctx.TEST.ATST > 1)
 	{
 		const float aref = static_cast<float>(m_cached_ctx.TEST.AREF);
 		const int old_ATST = m_cached_ctx.TEST.ATST;
@@ -5419,7 +5419,20 @@ void GSRendererHW::SetupIA(float target_scale, float sx, float sy, bool req_vert
 			{
 				m_conf.topology = GSHWDrawConfig::Topology::Line;
 				m_conf.indices_per_prim = 2;
-				if (unscale_pt_ln)
+				if (PRIM->AA1 && features.aa1)
+				{
+					// AA1 expansion uses a similar path as upscale expansion but it is used
+					// for both upscaling and native resolution drawing.
+					GL_INS("HW: AA1 line expand.");
+					m_conf.vs.expand = GSHWDrawConfig::VSExpand::LineAA1;
+					m_conf.cb_vs.point_size = GSVector2(16.0f * sx, 16.0f * sy);
+					m_conf.topology = GSHWDrawConfig::Topology::Triangle;
+					m_conf.indices_per_prim = 6;
+					m_conf.ps.aa1 = GSHWDrawConfig::PS_AA1::LINE;
+					m_conf.ps.abe = PRIM->ABE != 0;
+					ExpandLineIndices();
+				}
+				else if (unscale_pt_ln)
 				{
 					if (features.line_expand)
 					{
@@ -5476,8 +5489,22 @@ void GSRendererHW::SetupIA(float target_scale, float sx, float sy, bool req_vert
 
 		case GS_TRIANGLE_CLASS:
 			{
-				m_conf.topology = GSHWDrawConfig::Topology::Triangle;
-				m_conf.indices_per_prim = 3;
+				if (PRIM->AA1 && features.aa1)
+				{
+					GL_INS("HW: AA1 triangle expand.");
+					m_conf.vs.expand = GSHWDrawConfig::VSExpand::TriangleAA1;
+					m_conf.cb_vs.point_size = GSVector2(16.0f * sx, 16.0f * sy);
+					m_conf.topology = GSHWDrawConfig::Topology::Triangle;
+					m_conf.indices_per_prim = 3;
+					m_conf.ps.aa1 = m_cached_ctx.DepthWrite() ? GSHWDrawConfig::PS_AA1::TRIANGLE_SW_Z :
+					                                            GSHWDrawConfig::PS_AA1::TRIANGLE;
+					m_conf.ps.abe = PRIM->ABE != 0;
+				}
+				else
+				{
+					m_conf.topology = GSHWDrawConfig::Topology::Triangle;
+					m_conf.indices_per_prim = 3;
+				}
 
 				// See note above in GS_SPRITE_CLASS.
 				if (m_vt.m_accurate_stq && m_vt.m_eq.stq) [[unlikely]]
@@ -5765,6 +5792,46 @@ void GSRendererHW::DetermineAlphaScaling(GSTextureCache::Target* rt, GSTextureCa
 	}
 }
 
+void GSRendererHW::EmulateZbufferAA1()
+{
+	const GSDevice::FeatureSupport& features = g_gs_device->Features();
+
+	pxAssert(!features.aa1 || features.depth_feedback != GSDevice::DepthFeedbackSupport::None);
+
+	if (IsCoverageAlphaSupported())
+	{
+		if (m_vt.m_primclass == GS_LINE_CLASS)
+		{
+			// AA1: Z is not written on lines since coverage is always less than 0x80.
+			m_conf.depth.zwe = false;
+		}
+		else if (m_vt.m_primclass == GS_TRIANGLE_CLASS)
+		{
+			// Force SW depth so that Z writes can be prevented for edge pixels.
+			if (m_cached_ctx.DepthWrite())
+			{
+				// Z test must be also done in the shader.
+				if (m_conf.depth.ztst == ZTST_GEQUAL || m_conf.depth.ztst == ZTST_GREATER)
+				{
+					m_conf.ps.ztst = m_conf.depth.ztst; // Enable shader Z test.
+					m_conf.depth.ztst = ZTST_ALWAYS; // Disable HW Z test.
+
+					// We need barriers for the feedback
+					if (features.texture_barrier || features.multidraw_fb_copy)
+					{
+						m_conf.require_one_barrier |= (m_prim_overlap == PRIM_OVERLAP_NO);
+						m_conf.require_full_barrier |= (m_prim_overlap != PRIM_OVERLAP_NO);
+					}
+				}
+			}
+		}
+		else
+		{
+			pxFail("Unsupported primclass for AA1"); // Impossible
+		}
+	}
+}
+
 bool GSRendererHW::EmulateDATEEarlyFail(DATEOptions& date, GSTextureCache::Target* rt)
 {
 	if (!date.enabled)
@@ -5774,7 +5841,7 @@ bool GSRendererHW::EmulateDATEEarlyFail(DATEOptions& date, GSTextureCache::Targe
 	if (m_cached_ctx.TEST.DATM == 0)
 	{
 		// Some pixels are >= 1 so some fail, or some pixels get written but the written alpha matches or exceeds 1 (so overlap doesn't always pass).
-		date.enabled = rt->m_alpha_max >= 128 || (is_overlap_alpha && rt->m_alpha_min < 128 && (GetAlphaMinMax().max >= 128 || (m_context->FBA.FBA || IsCoverageAlpha())));
+		date.enabled = rt->m_alpha_max >= 128 || (is_overlap_alpha && rt->m_alpha_min < 128 && (GetAlphaMinMax().max >= 128 || (m_context->FBA.FBA || IsCoverageAlphaFixedOne())));
 
 		// All pixels fail.
 		if (date.enabled && rt->m_alpha_min >= 128)
@@ -5783,7 +5850,7 @@ bool GSRendererHW::EmulateDATEEarlyFail(DATEOptions& date, GSTextureCache::Targe
 	else
 	{
 		// Some pixels are < 1 so some fail, or some pixels get written but the written alpha goes below 1 (so overlap doesn't always pass).
-		date.enabled = rt->m_alpha_min < 128 || (is_overlap_alpha && rt->m_alpha_max >= 128 && (GetAlphaMinMax().min < 128 && !(m_context->FBA.FBA || IsCoverageAlpha())));
+		date.enabled = rt->m_alpha_min < 128 || (is_overlap_alpha && rt->m_alpha_max >= 128 && (GetAlphaMinMax().min < 128 && !(m_context->FBA.FBA || IsCoverageAlphaFixedOne())));
 
 		// All pixels fail.
 		if (date.enabled && rt->m_alpha_max < 128)
@@ -5823,6 +5890,13 @@ void GSRendererHW::EmulateDATESelectMethod(DATEOptions& date_options, GSTextureC
 		date_options.barrier = true;
 		m_conf.require_full_barrier = true;
 	}
+	else if (IsCoverageAlphaSupported())
+	{
+		// We're using AA1 for this draw so use only full barrier DATE, to avoid the complications
+		// with stencil/primid setup with AA1 vertex shaders. AA1 triangles usually require full barriers anyway.
+		date_options.barrier = true;
+		m_conf.require_full_barrier = true;
+	}
 	else if ((features.texture_barrier && m_prim_overlap == PRIM_OVERLAP_NO) || m_texture_shuffle)
 	{
 		GL_PERF("DATE: Accurate with %s", (features.texture_barrier && m_prim_overlap == PRIM_OVERLAP_NO) ? "no overlap" : "texture shuffle");
@@ -5834,7 +5908,7 @@ void GSRendererHW::EmulateDATESelectMethod(DATEOptions& date_options, GSTextureC
 	}
 	// When Blending is disabled and Edge Anti Aliasing is enabled,
 	// the output alpha is Coverage (which we force to 128) so DATE will fail/pass guaranteed on second pass.
-	else if (m_conf.colormask.wa && (m_context->FBA.FBA || IsCoverageAlpha()) && features.stencil_buffer)
+	else if (m_conf.colormask.wa && (m_context->FBA.FBA || IsCoverageAlphaFixedOne()) && features.stencil_buffer)
 	{
 		GL_PERF("DATE: Fast with FBA, all pixels will be >= 128");
 		date_options.stencil_one = !m_cached_ctx.TEST.DATM;
@@ -6593,15 +6667,13 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, DATEOptio
 {
 	const GIFRegALPHA& ALPHA = m_context->ALPHA;
 	{
-		// AA1: Blending needs to be enabled on draw.
-		const bool AA1 = PRIM->AA1 && (m_vt.m_primclass == GS_LINE_CLASS || m_vt.m_primclass == GS_TRIANGLE_CLASS);
 		// PABE: Check condition early as an optimization, no blending when As < 128.
 		// For Cs*As + Cd*(1 - As) if As is 128 then blending can be disabled as well.
 		const bool PABE_skip = m_draw_env->PABE.PABE &&
 			((GetAlphaMinMax().max < 128) || (GetAlphaMinMax().max == 128 && ALPHA.A == 0 && ALPHA.B == 1 && ALPHA.C == 0 && ALPHA.D == 1));
 
 		// No blending or coverage anti-aliasing so early exit
-		if (PABE_skip || !(NeedsBlending() || AA1))
+		if (PABE_skip || !(NeedsBlending() || IsCoverageAlpha()))
 		{
 			m_conf.blend = {};
 
@@ -8568,10 +8640,20 @@ void GSRendererHW::EmulateAlphaTestSecondPass()
 			"Alpha second pass has no color/depth write.");
 	}
 
+	// Some housekeeping for the first pass.
+	if (!m_conf.depth.zwe)
+	{
+		m_conf.ps.DisableDepthOutput();
+	}
+
 	// Some housekeeping for the second pass.
 	if (m_conf.alpha_second_pass.colormask.wrgba == 0)
 	{
 		m_conf.alpha_second_pass.ps.DisableColorOutput();
+	}
+	if (!m_conf.alpha_second_pass.depth.zwe)
+	{
+		m_conf.alpha_second_pass.ps.DisableDepthOutput();
 	}
 	if (m_conf.alpha_second_pass.ps.IsFeedbackLoopRT() || m_conf.alpha_second_pass.ps.IsFeedbackLoopDepth())
 	{
@@ -8660,6 +8742,8 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 
 	m_prim_overlap = PrimitiveOverlap(false);
 
+	EmulateZbufferAA1();
+
 	if (rt)
 	{
 		EmulateTextureShuffleAndFbmask(rt, tex);
@@ -8726,8 +8810,8 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	// Perform alpha test first pass setup here as bending depends on it.
 	EmulateAlphaTest(date_options);
 
-	// AA1: Set alpha source to coverage 128 when there is no alpha blending.
-	m_conf.ps.fixed_one_a = IsCoverageAlpha();
+	// AA1: Set alpha source to coverage 128 when AA1 is not supported.
+	m_conf.ps.fixed_one_a = IsCoverageAlphaFixedOne();
 
 	if ((!IsOpaque() || m_context->ALPHA.IsBlack()) && rt && ((m_conf.colormask.wrgba & 0x7) || (m_texture_shuffle && !m_texture_shuffle.real_16_bit_source && !m_texture_shuffle.SameGroupShuffle())))
 	{
@@ -10388,7 +10472,7 @@ void GSRendererHW::StartDepthAsRTFeedback()
 
 		// We should have depth output or feedback doesn't make sense.
 		// We will output to both the depth buffer and color clone simultaneously in the shader.
-		pxAssert(m_conf.depth.zwe);
+		pxAssert(m_conf.depth.zwe || (m_conf.alpha_second_pass.enable && m_conf.alpha_second_pass.depth.zwe));
 
 		// Disable HW depth test since we will be using SW depth test (if needed).
 		m_conf.depth.ztst = ZTST_ALWAYS;
@@ -10416,4 +10500,11 @@ void GSRendererHW::CleanupDepthAsRTFeedback()
 		g_gs_device->Recycle(m_conf.ds_as_rt);
 		m_conf.ds_as_rt = nullptr;
 	}
+}
+
+bool GSRendererHW::IsCoverageAlphaSupported()
+{
+	return IsCoverageAlpha() &&
+	       ((m_vt.m_primclass == GS_LINE_CLASS || m_vt.m_primclass == GS_TRIANGLE_CLASS) &&
+			   g_gs_device->Features().aa1);
 }
