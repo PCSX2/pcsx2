@@ -8552,7 +8552,7 @@ GSTextureCache::PaletteMap::PaletteMap()
 {
 	for (auto& map : m_maps)
 	{
-		map.reserve(MAX_SIZE);
+		map.reserve(MAX_CACHED_PALETES);
 	}
 }
 
@@ -8588,10 +8588,10 @@ std::shared_ptr<GSTextureCache::Palette> GSTextureCache::PaletteMap::LookupPalet
 
 	// No palette with matching clut content, MISS
 
-	if (map.size() > MAX_SIZE)
+	if (map.size() > MAX_CACHED_PALETES)
 	{
 		// If the map is too big, try to clean it by disposing and removing unused palettes, before adding the new one
-		GL_INS("TC: WARNING, %u-bit PaletteMap (Size %u): Max size %u exceeded, clearing unused palettes.", pal * sizeof(u32), map.size(), MAX_SIZE);
+		GL_INS("TC: WARNING, %u-bit PaletteMap (Size %u): Max size %u exceeded, clearing unused palettes.", pal * sizeof(u32), map.size(), MAX_CACHED_PALETES);
 
 		const u32 current_size = map.size();
 
@@ -8615,11 +8615,11 @@ std::shared_ptr<GSTextureCache::Palette> GSTextureCache::PaletteMap::LookupPalet
 
 		if (cleared_palette_count == 0)
 		{
-			GL_INS("TC: ERROR, %u-bit PaletteMap (Size %u): Max size %u exceeded, could not clear any palette, negative performance impact.", pal * sizeof(u32), map.size(), MAX_SIZE);
+			GL_INS("TC: ERROR, %u-bit PaletteMap (Size %u): Max size %u exceeded, could not clear any palette, negative performance impact.", pal * sizeof(u32), map.size(), MAX_CACHED_PALETES);
 		}
 		else
 		{
-			map.reserve(MAX_SIZE); // Ensure map capacity is not modified by the clearing
+			map.reserve(MAX_CACHED_PALETES); // Ensure map capacity is not modified by the clearing
 			GL_INS("TC: INFO, %u-bit PaletteMap (Size %u): Cleared %u palettes.", pal * sizeof(u32), map.size(), cleared_palette_count);
 		}
 	}
@@ -8638,7 +8638,7 @@ void GSTextureCache::PaletteMap::Clear()
 	for (auto& map : m_maps)
 	{
 		map.clear(); // Clear all the nodes of the map, deleting Palette objects managed by shared pointers as they should be unused elsewhere
-		map.reserve(MAX_SIZE); // Ensure map capacity is not modified by the clearing
+		map.reserve(MAX_CACHED_PALETES); // Ensure map capacity is not modified by the clearing
 	}
 }
 

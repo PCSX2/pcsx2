@@ -349,7 +349,7 @@ public:
 	class PaletteMap
 	{
 	private:
-		static const u16 MAX_SIZE = 65535; // Max size of each map.
+		static const u16 MAX_CACHED_PALETES = 4096; // Max size of each map.
 
 		// Array of 2 maps, the first for 64B palettes and the second for 1024B palettes.
 		// Each map stores the key PaletteKey (clut copy, pal value) pointing to the relevant shared pointer to Palette object.
