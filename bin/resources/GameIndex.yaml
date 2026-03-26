@@ -11823,6 +11823,8 @@ SCUS-97277:
 SCUS-97278:
   name: "NCAA Final Four 2004"
   region: "NTSC-U"
+  speedHacks:
+    mvuFlag: 0 # Fixes disappearing basketball.
 SCUS-97279:
   name: "Jet Li - Rise to Honor"
   region: "NTSC-U"
@@ -12060,6 +12062,8 @@ SCUS-97369:
 SCUS-97370:
   name: "NCAA Final Four 2004"
   region: "NTSC-U"
+  speedHacks:
+    mvuFlag: 0 # Fixes disappearing basketball.
 SCUS-97372:
   name: "Jet Li - Rise to Honor [Demo]"
   region: "NTSC-U"
