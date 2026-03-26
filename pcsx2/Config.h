@@ -317,6 +317,7 @@ enum class BiFiltering : u8
 	Forced,
 	PS2,
 	Forced_But_Sprite,
+	PS2_But_Flat_Nearest,
 };
 
 enum class TriFiltering : s8

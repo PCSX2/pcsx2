@@ -497,7 +497,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 			   "Nearest: Makes no attempt to blend colors.<br> "
 			   "Bilinear (Forced): Will blend colors together to remove harsh edges between different colored pixels even if the game told the PS2 not to.<br> "
 			   "Bilinear (PS2): Will apply filtering to all surfaces that a game instructs the PS2 to filter.<br> "
-			   "Bilinear (Forced Excluding Sprites): Will apply filtering to all surfaces, even if the game told the PS2 not to, except sprites."));
+			   "Bilinear (Forced Excluding Sprites): Will apply filtering to all surfaces, even if the game told the PS2 not to, except sprites.<br>",
+			   "Bilinear (PS2 Except Flat Nearest): Will apply filtering to all surfaces that a game instructs the PS2 to filter, with the exception of flat draws that will be forced to nearest."));
 
 		dialog()->registerWidgetHelp(m_hw.trilinearFiltering, tr("Trilinear Filtering"), tr("Automatic (Default)"),
 			tr("Reduces blurriness of large textures applied to small, steeply angled surfaces by sampling colors from the two nearest Mipmaps. Requires Mipmapping to be 'on'.<br> "
