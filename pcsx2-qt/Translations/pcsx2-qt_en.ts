@@ -13132,7 +13132,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListWidget.cpp" line="606"/>
+        <location filename="../GameList/GameListWidget.cpp" line="610"/>
         <source>Reset All Columns</source>
         <translation type="unfinished"></translation>
     </message>
