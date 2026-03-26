@@ -9070,6 +9070,20 @@ bool GSRendererHW::DetectRedundantBufferClear(bool& no_rt, bool& no_ds, u32 fm_m
 	if (((~m_cached_ctx.FRAME.FBMSK & fm_mask) & GSLocalMemory::m_psm[m_cached_ctx.ZBUF.PSM].fmsk) == 0)
 		return false;
 
+	// Frame and Z have different bit depths and we're doing a zero clear. We don't care about page alignment here.
+	// If we don't disable one or the other, the texture cache could get corrupted on target lookup.
+	// Only Tokyo Xtreme Racer 3 is know to hit this path, and draws small vertical strips with 32 bit color and 16 bit depth.
+	const bool is_zero_color_clear = m_vt.m_eq.rgba == 0xFFFF && GetConstantDirectWriteMemClearColor() == 0;
+	const bool is_zero_depth_clear = m_vt.m_eq.z && GetConstantDirectWriteMemClearDepth() == 0;
+	if (GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp != GSLocalMemory::m_psm[m_cached_ctx.ZBUF.PSM].bpp &&
+		is_zero_color_clear && is_zero_depth_clear)
+	{
+		m_cached_ctx.ZBUF.ZMSK = true;
+		no_ds = true;
+		no_rt = false;
+		return true;
+	}
+
 	// Make sure the width is page aligned, so we don't break powerdrome-style clears where Z writes the right side of the page.
 	// We can't check page alignment on the size entirely, because Ratchet does 256x127 clears...
 	// Test cases: Devil May Cry 3, Tom & Jerry.
