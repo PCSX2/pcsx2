@@ -772,6 +772,7 @@ struct Pcsx2Config
 					OsdShowGSStats : 1,
 					OsdShowCPU : 1,
 					OsdShowGPU : 1,
+					OsdShowGPUDebug : 1,
 					OsdShowIndicators : 1,
 					OsdShowFrameTimes : 1,
 					OsdShowHardwareInfo : 1,
