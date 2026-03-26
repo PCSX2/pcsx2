@@ -102,6 +102,18 @@ void D3D12DescriptorHeapManager::Free(D3D12DescriptorHandle* handle)
 	handle->Clear();
 }
 
+u32 D3D12DescriptorHeapManager::GetAllocatedDescriptors()
+{
+	u32 ret = 0;
+
+	for (u32 group = 0; group < m_free_slots.size(); group++)
+	{
+		BitSetType& bs = m_free_slots[group];
+		ret += BITSET_SIZE - bs.count();
+	}
+	return ret;
+}
+
 D3D12DescriptorAllocator::D3D12DescriptorAllocator() = default;
 D3D12DescriptorAllocator::~D3D12DescriptorAllocator() = default;
 

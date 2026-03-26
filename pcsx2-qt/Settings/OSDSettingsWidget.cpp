@@ -61,6 +61,7 @@ OSDSettingsWidget::OSDSettingsWidget(SettingsWindow* settings_dialog, QWidget* p
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showGSStats, "EmuCore/GS", "OsdShowGSStats", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showUsageCPU, "EmuCore/GS", "OsdShowCPU", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showUsageGPU, "EmuCore/GS", "OsdShowGPU", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showDebugGPU, "EmuCore/GS", "OsdShowGPUDebug", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showStatusIndicators, "EmuCore/GS", "OsdShowIndicators", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showFrameTimes, "EmuCore/GS", "OsdShowFrameTimes", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showHardwareInfo, "EmuCore/GS", "OsdShowHardwareInfo", false);
@@ -73,6 +74,11 @@ OSDSettingsWidget::OSDSettingsWidget(SettingsWindow* settings_dialog, QWidget* p
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showInputRec, "EmuCore/GS", "OsdShowInputRec", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showTextureReplacements, "EmuCore/GS", "OsdShowTextureReplacements", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.warnAboutUnsafeSettings, "EmuCore", "OsdWarnAboutUnsafeSettings", true);
+
+#ifndef _WIN32
+	// Currently DX12 only
+	m_ui.showDebugGPU->deleteLater();
+#endif
 
 	connect(m_ui.showSettings, &QCheckBox::checkStateChanged, this, &OSDSettingsWidget::onOsdShowSettingsToggled);
 
@@ -117,7 +123,10 @@ OSDSettingsWidget::OSDSettingsWidget(SettingsWindow* settings_dialog, QWidget* p
 
 	dialog()->registerWidgetHelp(m_ui.showStatusIndicators, tr("Show Status Indicators"), tr("Checked"),
 		tr("Shows icon indicators for emulation states such as Pausing, Turbo, Fast-Forward, and Slow-Motion."));
-
+#ifdef _WIN32
+	dialog()->registerWidgetHelp(m_ui.showDebugGPU, tr("Show GPU Debug Info"),
+		tr("Unchecked"), tr("Shows debug information about the renderer."));
+#endif
 	dialog()->registerWidgetHelp(m_ui.showFrameTimes, tr("Show Frame Times"), tr("Unchecked"),
 		tr("Displays a graph showing the average frametimes."));
 
