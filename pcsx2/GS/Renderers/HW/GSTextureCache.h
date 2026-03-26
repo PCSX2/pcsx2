@@ -141,6 +141,7 @@ public:
 		Surface();
 		~Surface();
 
+		bool OverlapsHelper(u32 start_block0, u32 end_block0, u32 bp, u32 bw, u32 psm, const GSVector4i& rect) const;
 	public:
 		GSTexture* m_texture = nullptr;
 		GIFRegTEX0 m_TEX0 = {};
@@ -167,8 +168,8 @@ public:
 		/// Can be used for overlap tests.
 		u32 UnwrappedEndBlock() const { return (m_end_block + (Wraps() ? GS_MAX_BLOCKS : 0)); }
 
-		bool Inside(u32 bp, u32 bw, u32 psm, const GSVector4i& rect);
-		bool Overlaps(u32 bp, u32 bw, u32 psm, const GSVector4i& rect);
+		bool Inside(u32 bp, u32 bw, u32 psm, const GSVector4i& rect) const;
+		bool Overlaps(u32 bp, u32 bw, u32 psm, const GSVector4i& rect) const;
 	};
 
 	struct PaletteKey
@@ -257,6 +258,8 @@ public:
 		~Target();
 
 		static Target* Create(GIFRegTEX0 TEX0, int w, int h, float scale, int type, bool clear);
+
+		bool OverlapsValid(u32 bp, u32 bw, u32 psm, const GSVector4i& rect) const;
 
 		__fi bool HasValidAlpha() const { return (m_valid_alpha_low | m_valid_alpha_high); }
 		bool HasValidBitsForFormat(u32 psm, bool req_color, bool req_alpha, bool width_match);
