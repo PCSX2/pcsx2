@@ -698,6 +698,7 @@ void GameListWidget::handleControllerNavigation(int qtKey)
 		view->setFocus();
 		view->setCurrentIndex(first);
 		view->selectionModel()->select(first, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+		view->scrollToTop();
 		return;
 	}
 
