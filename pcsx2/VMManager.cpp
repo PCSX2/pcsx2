@@ -3268,6 +3268,11 @@ void VMManager::WarnAboutUnsafeSettings()
 			append(ICON_FA_IMAGES,
 				TRANSLATE_SV("VMManager", "Accurate Alpha Test is enabled, this may reduce performance."));
 		}
+		if (EmuConfig.GS.DepthFeedbackMode != GSDepthFeedbackMode::Auto)
+		{
+			append(ICON_FA_IMAGES,
+				TRANSLATE_SV("VMManager", "Overriding default depth feedback mode, this may break rendering in some games."));
+		}
 		if (EmuConfig.GS.UseDebugDevice)
 		{
 			append(ICON_FA_BUG,
@@ -3297,6 +3302,11 @@ void VMManager::WarnAboutUnsafeSettings()
 			append(ICON_FA_CIRCLE_EXCLAMATION,
 				TRANSLATE_SV("VMManager", "Graphics API is not set to Automatic. This may cause performance problems and graphical issues."));
 		}
+	}
+	if (EmuConfig.GS.DumpGSData)
+	{
+		const std::string& dir = is_sw_renderer ? EmuConfig.GS.SWDumpDirectory : EmuConfig.GS.HWDumpDirectory;
+		append(ICON_FA_LAYER_GROUP, fmt::format(TRANSLATE_FS("VMManager", "Dumping draw data to {}."), dir));
 	}
 	if (EmuConfig.GS.TextureFiltering != BiFiltering::PS2)
 	{
