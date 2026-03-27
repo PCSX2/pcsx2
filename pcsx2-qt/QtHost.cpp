@@ -391,7 +391,7 @@ void EmuThread::run()
 			return false;
 
 		static constexpr float NAV_THRESHOLD = 0.5f;
-		static u8 s_nav_state = 0; // bitmask per direction to debounce analog stick
+		static u8 s_nav_state = 0;
 
 		u8 bit = 0;
 		int qt_key = -1;
@@ -440,7 +440,10 @@ void EmuThread::run()
 			s_nav_state &= ~bit;
 		}
 
-		return false;
+		// Consume the event so it doesn't reach InvokeEvents/pad bindings.
+		// If it were forwarded, the pad plugin would buffer the button state
+		// and the game would see a spurious press on launch.
+		return true;
 	});
 
 	// Main CPU thread loop.
