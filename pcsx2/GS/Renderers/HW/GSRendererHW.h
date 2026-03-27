@@ -106,6 +106,15 @@ private:
 		SHUFFLE_READWRITE,
 	};
 
+	// Intermediate struct for determining DATE config.
+	struct DATEOptions
+	{
+		bool enabled;
+		bool barrier;
+		bool primid;
+		bool stencil_one;
+	};
+
 	bool HasEEUpload(GSVector4i r);
 	CLUTDrawTestResult PossibleCLUTDraw();
 	CLUTDrawTestResult PossibleCLUTDrawAggressive();
@@ -122,7 +131,7 @@ private:
 	void SetupIA(float target_scale, float sx, float sy, bool req_vert_backup);
 	void EmulateTextureShuffleAndFbmask(GSTextureCache::Target* rt, GSTextureCache::Source* tex);
 	u32 EmulateChannelShuffle(GSTextureCache::Target* src, bool test_only, GSTextureCache::Target* rt = nullptr);
-	void EmulateBlending(int rt_alpha_min, int rt_alpha_max, const bool DATE, bool& DATE_PRIMID, bool& DATE_BARRIER, GSTextureCache::Target* rt,
+	void EmulateBlending(int rt_alpha_min, int rt_alpha_max, DATEOptions& date_options, GSTextureCache::Target* rt,
 		bool can_scale_rt_alpha, bool& new_rt_alpha_scale);
 	void CleanupDraw(bool invalidate_temp_src);
 
@@ -136,8 +145,12 @@ private:
 
 	void EmulateZbuffer(const GSTextureCache::Target* ds);
 	static void GetAlphaTestConfigPS(const u32 atst, const u8 aref, const bool invert_test, u32& ps_atst_out, float& aref_out);
-	void EmulateAlphaTest(const bool& DATE, bool& DATE_BARRIER, bool& DATE_one, bool& DATE_PRIMID);
+	void EmulateAlphaTest(DATEOptions& date_options);
 	void EmulateAlphaTestSecondPass();
+
+	bool EmulateDATEEarlyFail(DATEOptions& date, GSTextureCache::Target* rt);
+	void EmulateDATESelectMethod(DATEOptions& date, GSTextureCache::Target* rt, int& blend_alpha_min, int& blend_alpha_max);
+	void EmulateDATEGetConfig(DATEOptions& date, bool scale_rt_alpha, GSDevice::RecycledTexture& temp_ds);
 
 	void SetTCOffset();
 	bool NextDrawColClip() const;
