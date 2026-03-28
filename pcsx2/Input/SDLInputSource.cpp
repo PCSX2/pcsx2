@@ -7,6 +7,7 @@
 #include "Host.h"
 
 #include "ImGui/FullscreenUI.h"
+#include "ImGui/ImGuiManager.h"
 
 #include "common/Assertions.h"
 #include "common/Console.h"
@@ -1489,7 +1490,18 @@ bool SDLInputSource::HandleGamepadAxisEvent(const SDL_GamepadAxisEvent* ev)
 		return false;
 
 	const InputBindingKey key(MakeGenericControllerAxisKey(InputSourceType::SDL, it->player_id, ev->axis));
-	InputManager::InvokeEvents(key, NormalizeS16(ev->value));
+	const float value = NormalizeS16(ev->value);
+	InputManager::InvokeEvents(key, value);
+
+	if (ev->axis < std::size(s_sdl_generic_binding_axis_mapping))
+	{
+		ImGuiManager::ProcessGenericAxisEvent(
+			s_sdl_generic_binding_axis_mapping[ev->axis][0],
+			s_sdl_generic_binding_axis_mapping[ev->axis][1],
+			GetControllerLayout(it->player_id),
+			value);
+	}
+
 	return true;
 }
 
