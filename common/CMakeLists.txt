@@ -211,7 +211,7 @@ target_link_libraries(common PRIVATE
 target_link_libraries(common PUBLIC
 	fmt::fmt
 	fast_float
-	rapidyaml::rapidyaml
+	ryml::ryml
 )
 
 fixup_file_properties(common)

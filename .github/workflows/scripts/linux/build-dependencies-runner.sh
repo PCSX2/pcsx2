@@ -24,6 +24,7 @@ LZ4=1.10.0
 ZSTD=1.5.7
 PLUTOVG=1.3.2
 PLUTOSVG=0.0.7
+RAPIDYAML=0.11.1
 
 SHADERC=2025.4
 SHADERC_GLSLANG=7a47e2531cb334982b2a2dd8513dca0a3de4373d
@@ -49,6 +50,7 @@ c693867f10a7760ef1bcf85419d51783586768cc2c601d03841bc6a8b2554b9c  shaderc-spirv-
 06b0a042f2e121e954badb4fd78c9e2d4bc7ed6087eceb26ab559c23cf94334f  shaderc-spirv-tools-$SHADERC_SPIRVTOOLS.tar.gz
 7bd4e79ce18b1d47517e7e91fbb7cf19d4f01942804a519bc7c0bf32b6325dd5  plutovg-$PLUTOVG.tar.gz
 78561b571ac224030cdc450ca2986b4de915c2ba7616004a6d71a379bffd15f3  plutosvg-$PLUTOSVG.tar.gz
+9d9938269adc25e9a9b84650338b87d130cf469d82685fffc028c325279619c1  rapidyaml-$RAPIDYAML-src.tgz
 EOF
 
 if ! shasum -sa 256 --check SHASUMS 2> /dev/null; then
@@ -67,7 +69,8 @@ if ! shasum -sa 256 --check SHASUMS 2> /dev/null; then
 		-O "https://github.com/KhronosGroup/SPIRV-Headers/archive/$SHADERC_SPIRVHEADERS/shaderc-spirv-headers-$SHADERC_SPIRVHEADERS.tar.gz" \
 		-O "https://github.com/KhronosGroup/SPIRV-Tools/archive/$SHADERC_SPIRVTOOLS/shaderc-spirv-tools-$SHADERC_SPIRVTOOLS.tar.gz" \
 		-O "https://github.com/sammycage/plutovg/archive/v$PLUTOVG/plutovg-$PLUTOVG.tar.gz" \
-		-O "https://github.com/sammycage/plutosvg/archive/v$PLUTOSVG/plutosvg-$PLUTOSVG.tar.gz"
+		-O "https://github.com/sammycage/plutosvg/archive/v$PLUTOSVG/plutosvg-$PLUTOSVG.tar.gz" \
+		-O "https://github.com/biojppm/rapidyaml/releases/download/v$RAPIDYAML/rapidyaml-$RAPIDYAML-src.tgz"
 fi
 
 shasum -a 256 --check --strict SHASUMS
@@ -171,6 +174,15 @@ rm -fr "plutosvg-$PLUTOSVG"
 tar xf "plutosvg-$PLUTOSVG.tar.gz"
 cd "plutosvg-$PLUTOSVG"
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DBUILD_SHARED_LIBS=ON -DPLUTOSVG_ENABLE_FREETYPE=ON -DPLUTOSVG_BUILD_EXAMPLES=OFF -B build -G Ninja
+cmake --build build --parallel
+ninja -C build install
+cd ..
+
+echo "Building RapidYAML..."
+rm -fr "rapidyaml-$RAPIDYAML-src"
+tar xf "rapidyaml-$RAPIDYAML-src.tgz"
+cd "rapidyaml-$RAPIDYAML-src"
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DBUILD_SHARED_LIBS=ON -B build -G Ninja
 cmake --build build --parallel
 ninja -C build install
 cd ..

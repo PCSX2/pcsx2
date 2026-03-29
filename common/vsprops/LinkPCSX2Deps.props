@@ -4,7 +4,7 @@
   <ItemDefinitionGroup>
     <Link>
       <AdditionalLibraryDirectories>$(DepsLibDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>%(AdditionalDependencies);freetype.lib;jpeg.lib;libpng16.lib;libwebp.lib;lz4.lib;SDL3.lib;z.lib;zstd.lib;plutovg.lib;plutosvg.lib</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies);freetype.lib;jpeg.lib;libpng16.lib;libwebp.lib;lz4.lib;SDL3.lib;z.lib;zstd.lib;plutovg.lib;plutosvg.lib;ryml.lib</AdditionalDependencies>
       <AdditionalDependencies Condition="$(Configuration.Contains(Debug))">%(AdditionalDependencies);kddockwidgets-qt6d.lib;</AdditionalDependencies>
       <AdditionalDependencies Condition="!$(Configuration.Contains(Debug))">%(AdditionalDependencies);kddockwidgets-qt6.lib;</AdditionalDependencies>
     </Link>
@@ -27,6 +27,7 @@
     <DepsDLLs Condition="!$(Configuration.Contains(Debug))" Include="$(DepsBinDir)kddockwidgets-qt6.dll" />
     <DepsDLLs Include="$(DepsBinDir)plutovg.dll" />
     <DepsDLLs Include="$(DepsBinDir)plutosvg.dll" />
+    <DepsDLLs Include="$(DepsBinDir)ryml.dll" />
     <DepsDLLs Condition="Exists('$(DepsBinDir)avcodec-62.dll')" Include="$(DepsBinDir)avcodec-62.dll" />
     <DepsDLLs Condition="Exists('$(DepsBinDir)avformat-62.dll')" Include="$(DepsBinDir)avformat-62.dll" />
     <DepsDLLs Condition="Exists('$(DepsBinDir)avutil-60.dll')" Include="$(DepsBinDir)avutil-60.dll" />

@@ -89,6 +89,7 @@ set ZSTD=1.5.7
 set KDDOCKWIDGETS=2.4.0
 set PLUTOVG=1.3.2
 set PLUTOSVG=0.0.7
+set RAPIDYAML=0.11.1
 
 set SHADERC=2026.1
 set SHADERC_GLSLANG=f0bd0257c308b9a26562c1a30c4748a0219cc951
@@ -128,6 +129,7 @@ call :downloadfile "KDDockWidgets-%KDDOCKWIDGETS%.zip" "https://github.com/KDAB/
 call :downloadfile "plutovg-%PLUTOVG%.zip" "https://github.com/sammycage/plutovg/archive/v%PLUTOVG%.zip" 4fe4e48f28aa80171b2166d45c0976ab0f21eecedb52cd4c3ef73b5afb48fac9 || goto error
 call :downloadfile "plutosvg-%PLUTOSVG%.zip" "https://github.com/sammycage/plutosvg/archive/v%PLUTOSVG%.zip" 82dee2c57ad712bdd6d6d81d3e76249d89caa4b5a4214353660fd5adff12201a || goto error
 call :downloadfile "agility-sdk-%AGILITYSDK%.nupkg" "https://www.nuget.org/api/v2/package/Microsoft.Direct3D.D3D12/%AGILITYSDK%" d5edab9a0c4d1b78ba6fe55b425eeef9fefba7d2a101e889d70fd21d481e6cb1 || goto error
+call :downloadfile "rapidyaml-%RAPIDYAML%-src.zip" "https://github.com/biojppm/rapidyaml/releases/download/v%RAPIDYAML%/rapidyaml-%RAPIDYAML%-src.zip" 30054b74abdf0ba35bf2cb435b6e49fcb6d62a8e78a240a018c36aa60dba765f || goto error
 
 call :downloadfile "shaderc-%SHADERC%.zip" "https://github.com/google/shaderc/archive/refs/tags/v%SHADERC%.zip" 3ac59c8216d367ab7858684d39c8faf872a64150aeb139335f4e083c5f79dde0 || goto error
 call :downloadfile "shaderc-glslang-%SHADERC_GLSLANG%.zip" "https://github.com/KhronosGroup/glslang/archive/%SHADERC_GLSLANG%.zip" 42a30acca4a35955370ed8ff6e54b823b4d4a5a86571baec1203d3fce87da447 || goto error
@@ -477,6 +479,15 @@ rmdir /S /Q "plutosvg-%PLUTOSVG%"
 %SEVENZIP% x "plutosvg-%PLUTOSVG%.zip" || goto error
 cd "plutosvg-%PLUTOSVG%" || goto error
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=ON -DPLUTOSVG_ENABLE_FREETYPE=ON -DPLUTOSVG_BUILD_EXAMPLES=OFF -B build -G Ninja || goto error
+cmake --build build --parallel || goto error
+ninja -C build install || goto error
+cd .. || goto error
+
+echo "Building RapidYAML..."
+rmdir /S /Q "rapidyaml-%RAPIDYAML%-src"
+%SEVENZIP% x "rapidyaml-%RAPIDYAML%-src.zip" || goto error
+cd "rapidyaml-%RAPIDYAML%-src" || goto error
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=ON -B build -G Ninja || goto error
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
 cd .. || goto error

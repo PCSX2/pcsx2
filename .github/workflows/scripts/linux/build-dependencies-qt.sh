@@ -36,6 +36,7 @@ ZSTD=1.5.7
 KDDOCKWIDGETS=2.4.0
 PLUTOVG=1.3.2
 PLUTOSVG=0.0.7
+RAPIDYAML=0.11.1
 
 SHADERC=2026.1
 SHADERC_GLSLANG=f0bd0257c308b9a26562c1a30c4748a0219cc951
@@ -72,6 +73,7 @@ eb33e51f49a15e023950cd7825ca74a4a2b43db8354825ac24fc1b7ee09e6fa3  zstd-$ZSTD.tar
 51dbf24fe72e43dd7cb9a289d3cab47112010f1a2ed69b6fc8ac0dff31991ed2  KDDockWidgets-$KDDOCKWIDGETS.tar.gz
 7bd4e79ce18b1d47517e7e91fbb7cf19d4f01942804a519bc7c0bf32b6325dd5  plutovg-$PLUTOVG.tar.gz
 78561b571ac224030cdc450ca2986b4de915c2ba7616004a6d71a379bffd15f3  plutosvg-$PLUTOSVG.tar.gz
+9d9938269adc25e9a9b84650338b87d130cf469d82685fffc028c325279619c1  rapidyaml-$RAPIDYAML-src.tgz
 
 245002feccbe7f8361b223545a5654cea69780745886872d7efff50a38d96c66  shaderc-$SHADERC.tar.gz
 bd58dca4dac67dcf7640292d7d63e0416274d40ee2200f7301878cec11ac6647  shaderc-glslang-$SHADERC_GLSLANG.tar.gz
@@ -107,7 +109,8 @@ if ! shasum -sa 256 --check SHASUMS 2> /dev/null; then
 		-O "https://github.com/KhronosGroup/SPIRV-Tools/archive/$SHADERC_SPIRVTOOLS/shaderc-spirv-tools-$SHADERC_SPIRVTOOLS.tar.gz" \
 		-O "https://github.com/KDAB/KDDockWidgets/archive/v$KDDOCKWIDGETS/KDDockWidgets-$KDDOCKWIDGETS.tar.gz" \
 		-O "https://github.com/sammycage/plutovg/archive/v$PLUTOVG/plutovg-$PLUTOVG.tar.gz" \
-		-O "https://github.com/sammycage/plutosvg/archive/v$PLUTOSVG/plutosvg-$PLUTOSVG.tar.gz"
+		-O "https://github.com/sammycage/plutosvg/archive/v$PLUTOSVG/plutosvg-$PLUTOSVG.tar.gz" \
+		-O "https://github.com/biojppm/rapidyaml/releases/download/v$RAPIDYAML/rapidyaml-$RAPIDYAML-src.tgz"
 fi
 
 shasum -a 256 --check --strict SHASUMS
@@ -345,6 +348,15 @@ rm -fr "plutosvg-$PLUTOSVG"
 tar xf "plutosvg-$PLUTOSVG.tar.gz"
 cd "plutosvg-$PLUTOSVG"
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DBUILD_SHARED_LIBS=ON -DPLUTOSVG_ENABLE_FREETYPE=ON -DPLUTOSVG_BUILD_EXAMPLES=OFF -B build -G Ninja
+cmake --build build --parallel
+ninja -C build install
+cd ..
+
+echo "Building RapidYAML..."
+rm -fr "rapidyaml-$RAPIDYAML-src"
+tar xf "rapidyaml-$RAPIDYAML-src.tgz"
+cd "rapidyaml-$RAPIDYAML-src"
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DBUILD_SHARED_LIBS=ON -B build -G Ninja
 cmake --build build --parallel
 ninja -C build install
 cd ..
