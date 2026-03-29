@@ -1208,40 +1208,75 @@ void ImGuiManager::ProcessGenericAxisEvent(GenericInputBinding negative_key, Gen
 	static constexpr float DEADZONE = 0.25f;
 
 	// Ignore diagonal analog stick input — neither axis fires when both exceed the deadzone.
-	static float s_left_stick_x = 0.0f, s_left_stick_y = 0.0f;
-	static float s_right_stick_x = 0.0f, s_right_stick_y = 0.0f;
+	// Also track last sent binary state per direction to avoid bursting duplicate events when
+	// the controller sends many axis updates in quick succession.
+	struct AxisState
+	{
+		float x = 0.0f, y = 0.0f;
+		bool x_neg_active = false, x_pos_active = false;
+		bool y_neg_active = false, y_pos_active = false;
+	};
+	static AxisState s_left_stick, s_right_stick;
 
-	float suppressed_value = value;
+	AxisState* state = nullptr;
+	bool is_x_axis = false;
 	if (negative_key == GenericInputBinding::LeftStickLeft)
 	{
-		s_left_stick_x = value;
-		if (std::abs(s_left_stick_y) > DEADZONE)
-			suppressed_value = 0.0f;
+		state = &s_left_stick;
+		state->x = value;
+		is_x_axis = true;
 	}
 	else if (negative_key == GenericInputBinding::LeftStickUp)
 	{
-		s_left_stick_y = value;
-		if (std::abs(s_left_stick_x) > DEADZONE)
-			suppressed_value = 0.0f;
+		state = &s_left_stick;
+		state->y = value;
+		is_x_axis = false;
 	}
 	else if (negative_key == GenericInputBinding::RightStickLeft)
 	{
-		s_right_stick_x = value;
-		if (std::abs(s_right_stick_y) > DEADZONE)
-			suppressed_value = 0.0f;
+		state = &s_right_stick;
+		state->x = value;
+		is_x_axis = true;
 	}
 	else if (negative_key == GenericInputBinding::RightStickUp)
 	{
-		s_right_stick_y = value;
-		if (std::abs(s_right_stick_x) > DEADZONE)
+		state = &s_right_stick;
+		state->y = value;
+		is_x_axis = false;
+	}
+
+	float suppressed_value = value;
+	if (state)
+	{
+		const float other = is_x_axis ? state->y : state->x;
+		if (std::abs(other) > DEADZONE)
 			suppressed_value = 0.0f;
 	}
 
 	// Treat as binary like the D-pad: either fully pressed or released, with a deadzone.
+	bool* neg_active_ptr = state ? (is_x_axis ? &state->x_neg_active : &state->y_neg_active) : nullptr;
+	bool* pos_active_ptr = state ? (is_x_axis ? &state->x_pos_active : &state->y_pos_active) : nullptr;
+
 	if (negative_key != GenericInputBinding::Unknown)
-		ProcessGenericInputEvent(negative_key, layout, (suppressed_value < -DEADZONE) ? 1.0f : 0.0f);
+	{
+		const bool active = suppressed_value < -DEADZONE;
+		if (!neg_active_ptr || active != *neg_active_ptr)
+		{
+			if (neg_active_ptr)
+				*neg_active_ptr = active;
+			ProcessGenericInputEvent(negative_key, layout, active ? 1.0f : 0.0f);
+		}
+	}
 	if (positive_key != GenericInputBinding::Unknown)
-		ProcessGenericInputEvent(positive_key, layout, (suppressed_value > DEADZONE) ? 1.0f : 0.0f);
+	{
+		const bool active = suppressed_value > DEADZONE;
+		if (!pos_active_ptr || active != *pos_active_ptr)
+		{
+			if (pos_active_ptr)
+				*pos_active_ptr = active;
+			ProcessGenericInputEvent(positive_key, layout, active ? 1.0f : 0.0f);
+		}
+	}
 }
 
 void ImGuiManager::SwapGamepadNorthWest(bool value)
