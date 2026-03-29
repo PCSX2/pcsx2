@@ -59,6 +59,9 @@ namespace Host
 	/// Requests Big Picture mode to be shut down, returning to the desktop interface.
 	void RequestExitBigPicture();
 
+	/// Requests Big Picture mode to be started from the desktop interface.
+	void RequestEnterBigPicture();
+
 	void OnCoverDownloaderOpenRequested();
 	void OnCreateMemoryCardOpenRequested();
 

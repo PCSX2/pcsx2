@@ -387,7 +387,7 @@ void EmuThread::run()
 
 	// Install controller navigation callback so D-pad/analog stick can navigate the game list.
 	InputManager::SetUINavigationCallback([](GenericInputBinding key, float value) -> bool {
-		if (VMManager::HasValidVM())
+		if (VMManager::HasValidVM() || FullscreenUI::IsInitialized())
 			return false;
 
 		static constexpr float NAV_THRESHOLD = 0.5f;
@@ -1297,6 +1297,11 @@ void Host::RequestExitApplication(bool allow_confirm)
 void Host::RequestExitBigPicture()
 {
 	g_emu_thread->stopFullscreenUI();
+}
+
+void Host::RequestEnterBigPicture()
+{
+	g_emu_thread->startFullscreenUI(false);
 }
 
 void Host::RequestVMShutdown(bool allow_confirm, bool allow_save_state, bool default_save_state)
