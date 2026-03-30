@@ -72,6 +72,8 @@ SmallString s_gpu_usage_line;
 SmallString s_gpu_debug_info_line;
 SmallString s_speed_icon;
 
+static constexpr float VIB_DISPLAY_DURATION = 1.0f;
+
 constexpr ImU32 white_color = IM_COL32(255, 255, 255, 255);
 
 // OSD positioning funcs
@@ -1008,6 +1010,14 @@ __ri void ImGuiManager::DrawInputsOverlay(float scale, float margin, float spaci
 				break;
 
 				case InputBindingInfo::Type::Motor:
+				{
+					const auto [large_intensity, small_intensity] = InputManager::getPadVibrationIntensity(slot);
+					const float intensity = (bi.bind_index == 0) ? large_intensity : small_intensity;
+					if (intensity > 0.0f)
+						text.append_format(" {}", (bi.bind_index == 0) ? ICON_PF_CONTROLLER_VIBRATION : ICON_PF_REZ_VIBRATOR);
+				}
+				break;
+
 				case InputBindingInfo::Type::Macro:
 				case InputBindingInfo::Type::Unknown:
 				default:
@@ -1061,6 +1071,13 @@ __ri void ImGuiManager::DrawInputsOverlay(float scale, float margin, float spaci
 				break;
 
 				case InputBindingInfo::Type::Motor:
+				{
+					const auto [large_intensity, small_intensity] = InputManager::getPadVibrationIntensity(Pad::NUM_CONTROLLER_PORTS + port);
+					const float intensity = (bi.bind_index == 0) ? large_intensity : small_intensity;
+					if (intensity > 0.0f)
+						text.append_format(" {}", (bi.bind_index == 0) ? ICON_PF_CONTROLLER_VIBRATION : ICON_PF_REZ_VIBRATOR);
+				}
+				break;
 				case InputBindingInfo::Type::Macro:
 				case InputBindingInfo::Type::Unknown:
 				default:
