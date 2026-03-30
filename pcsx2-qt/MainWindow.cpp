@@ -2552,8 +2552,6 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
 	const int monitor_index = Host::GetBaseIntSettingValue("UI", "DisplayMonitor", 0);
 	const QList<QScreen*> screens = QGuiApplication::screens();
 	QScreen* target_screen = (monitor_index > 0 && monitor_index <= screens.size()) ? screens[monitor_index - 1] : QGuiApplication::primaryScreen();
-	m_display_surface->setScreen(target_screen);
-
 	if (fullscreen || !render_to_main)
 	{
 #ifdef DISPLAY_SURFACE_WINDOW
@@ -2574,6 +2572,7 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
 	{
 		// On Wayland, while move/restoreGeometry can't position the window, it can influence which screen they show up on.
 		// Other platforms can position windows fine, but the only thing that matters here is the screen.
+		m_display_surface->setScreen(target_screen);
 
 #ifdef DISPLAY_SURFACE_WINDOW
 		m_display_surface->create();
@@ -2632,7 +2631,7 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
 	}
 	else
 	{
-		if (monitor_index > 0)
+		if (monitor_index > 0 && screen() != target_screen)
 		{
 			m_pre_game_main_window_geometry = saveGeometry();
 			const QRect screenGeo = target_screen->availableGeometry();
