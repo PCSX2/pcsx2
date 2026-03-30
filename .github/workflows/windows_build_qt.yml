@@ -63,10 +63,10 @@ jobs:
         shell: pwsh
         run: |
           [string[]] $clang_cl = &clang-cl.exe --version
-          
+
           $version = [Regex]::Match($clang_cl[0], "(\d+\.\d+\.\d+)")
           $path = $clang_cl[3].TrimStart("InstalledDir: ").TrimEnd("\bin")
-          
+
           $output = @"
           <Project>
             <PropertyGroup>
@@ -75,9 +75,9 @@ jobs:
             </PropertyGroup>
           </Project>
           "@
-          
+
           Write-Host $output
-          
+
           $output | Out-File Directory.build.props
 
       # actions/checkout elides tags, fetch them primarily for releases
@@ -186,9 +186,9 @@ jobs:
         shell: pwsh
         run: |
           mkdir -Force symbols
-          Get-ChildItem -Path ./bin -Recurse -File | Where-Object { 
-            ($_.Extension -eq ".exe" -or $_.Extension -eq ".pdb") -and ($_.Name -notmatch "updater") 
-          } | ForEach-Object { 
+          Get-ChildItem -Path ./bin -Recurse -File | Where-Object {
+            ($_.Extension -eq ".exe" -or $_.Extension -eq ".pdb") -and ($_.Name -notmatch "updater")
+          } | ForEach-Object {
             & dump_syms $_.FullName >> symbols/pcsx2-qt.bpsym
           }
           Get-ChildItem -Path ./bin -Recurse -Filter "*.pdb" | ForEach-Object {
