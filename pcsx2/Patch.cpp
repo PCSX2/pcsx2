@@ -5,10 +5,11 @@
 
 #include "common/Assertions.h"
 #include "common/ByteSwap.h"
+#include "common/Console.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
-#include "common/ZipHelpers.h"
+#include "common/ZipFile.h"
 
 #include "Achievements.h"
 #include "Config.h"
@@ -93,6 +94,7 @@ namespace Patch
 
 	template <typename F>
 	static void EnumeratePnachFiles(const std::string_view serial, u32 crc, bool cheats, bool for_ui, const F& f);
+	static std::optional<std::string> ReadPnachFileFromZip(const std::string& filename);
 
 	static bool PatchStringHasUnlabelledPatch(const std::string& pnach_data);
 	static void ExtractPatchInfo(std::vector<PatchInfo>* dst, const std::string& pnach_data, u32* num_unlabelled_patches);
@@ -121,7 +123,7 @@ namespace Patch
 	const char* PATCH_ENABLE_CONFIG_KEY = "Enable";
 	const char* PATCH_DISABLE_CONFIG_KEY = "Disable";
 
-	static zip_t* s_patches_zip;
+	static ZipArchive s_patches_zip;
 	static std::vector<PatchGroup> s_gamedb_patches;
 	static std::vector<PatchGroup> s_game_patches;
 	static std::vector<PatchGroup> s_cheat_patches;
@@ -215,8 +217,9 @@ u32 Patch::LoadPatchesFromString(std::vector<PatchGroup>* patch_list, const std:
 					[](const PatchGroup& pg) { return pg.name.empty(); });
 				if (ungrouped_patch != patch_list->end())
 				{
-					Console.WriteLn(Color_Gray, fmt::format(
-						"Patch: Merging {} new patch commands into ungrouped list.", current_patch_group.patches.size()));
+					Console.WriteLnFmt(Color_Gray,
+						"Patch: Merging {} new patch commands into ungrouped list.",
+						current_patch_group.patches.size());
 
 					ungrouped_patch->patches.reserve(ungrouped_patch->patches.size() + current_patch_group.patches.size());
 					for (PatchCommand& cmd : current_patch_group.patches)
@@ -242,9 +245,9 @@ u32 Patch::LoadPatchesFromString(std::vector<PatchGroup>* patch_list, const std:
 		}
 		else
 		{
-			Console.WriteLn(Color_Gray, fmt::format(
+			Console.WriteLnFmt(Color_Gray,
 				"Patch: Skipped loading patch '{}' since a patch with a duplicate name was already loaded.",
-				current_patch_group.name));
+				current_patch_group.name);
 		}
 	};
 
@@ -260,7 +263,7 @@ u32 Patch::LoadPatchesFromString(std::vector<PatchGroup>* patch_list, const std:
 		{
 			if (line.length() < 2 || line.back() != ']')
 			{
-				Console.Error(fmt::format("Malformed patch line: {}", line.c_str()));
+				Console.ErrorFmt("Malformed patch line: {}", line.c_str());
 				continue;
 			}
 
@@ -272,7 +275,7 @@ u32 Patch::LoadPatchesFromString(std::vector<PatchGroup>* patch_list, const std:
 
 			current_patch_group.name = line.substr(1, line.length() - 2);
 			if (current_patch_group.name.empty())
-				Console.Error(fmt::format("Malformed patch name: {}", line));
+				Console.ErrorFmt("Malformed patch name: {}", line);
 
 			continue;
 		}
@@ -288,15 +291,16 @@ u32 Patch::LoadPatchesFromString(std::vector<PatchGroup>* patch_list, const std:
 
 bool Patch::OpenPatchesZip()
 {
-	if (s_patches_zip)
+	if (s_patches_zip.IsValid())
 		return true;
 
 	const std::string filename = Path::Combine(EmuFolders::Resources, PATCHES_ZIP_NAME);
 
-	zip_error ze = {};
-	zip_source_t* zs = zip_source_file_create(filename.c_str(), 0, 0, &ze);
-	if (zs && !(s_patches_zip = zip_open_from_source(zs, ZIP_RDONLY, &ze)))
+	Error error;
+	if (!s_patches_zip.Open(filename.c_str(), ZIP_RDONLY, nullptr, &error))
 	{
+		Console.ErrorFmt("Failed to open {}: {}", filename, error.GetDescription());
+
 		static bool warning_shown = false;
 		if (!warning_shown)
 		{
@@ -307,13 +311,9 @@ bool Patch::OpenPatchesZip()
 			warning_shown = true;
 		}
 
-		// have to clean up source
-		Console.Error("Failed to open %s: %s", filename.c_str(), zip_error_strerror(&ze));
-		zip_source_free(zs);
 		return false;
 	}
 
-	std::atexit([]() { zip_close(s_patches_zip); });
 	return true;
 }
 
@@ -381,7 +381,7 @@ void Patch::EnumeratePnachFiles(const std::string_view serial, u32 crc, bool che
 				if (PatchStringHasUnlabelledPatch(contents.value()))
 				{
 					unlabeled_patch_found = true;
-					Console.WriteLn(fmt::format("Patch: Disabling any bundled '{}' patches due to unlabeled patch being loaded. (To avoid conflicts)", PATCHES_ZIP_NAME));
+					Console.WriteLnFmt("Patch: Disabling any bundled '{}' patches due to unlabeled patch being loaded. (To avoid conflicts)", PATCHES_ZIP_NAME);
 				}
 
 				f(std::move(file), std::move(contents.value()));
@@ -393,16 +393,45 @@ void Patch::EnumeratePnachFiles(const std::string_view serial, u32 crc, bool che
 	if (cheats || unlabeled_patch_found || !OpenPatchesZip())
 		return;
 
-	// Prefer filename with serial.
-	std::string zip_filename = GetPnachTemplate(serial, crc, true, false, false);
-	std::optional<std::string> pnach_data(ReadFileInZipToString(s_patches_zip, zip_filename.c_str()));
+	std::string zip_filename;
+	std::optional<std::string> pnach_data;
+
+	{
+		// Prefer filename with serial.
+		zip_filename = GetPnachTemplate(serial, crc, true, false, false);
+		pnach_data = ReadPnachFileFromZip(zip_filename);
+	}
+
 	if (!pnach_data.has_value())
 	{
 		zip_filename = GetPnachTemplate(serial, crc, false, false, false);
-		pnach_data = ReadFileInZipToString(s_patches_zip, zip_filename.c_str());
+		pnach_data = ReadPnachFileFromZip(zip_filename);
 	}
+
 	if (pnach_data.has_value())
 		f(std::move(zip_filename), std::move(pnach_data.value()));
+}
+
+std::optional<std::string> Patch::ReadPnachFileFromZip(const std::string& filename)
+{
+	std::optional<ZipEntryIndex> pnach_index =
+		s_patches_zip.LocateFile(filename.c_str(), ZIP_FL_NOCASE, nullptr);
+	if (!pnach_index.has_value())
+	{
+		// The file doesn't exist.
+		return std::nullopt;
+	}
+
+	Error error;
+	std::optional<std::string> pnach_data = s_patches_zip.ReadTextFile(*pnach_index, 0, &error);
+	if (!pnach_data.has_value())
+	{
+		Console.ErrorFmt("Failed to read pnach file '{}' from patches zip: {}.",
+			filename, error.GetDescription());
+		return std::nullopt;
+	}
+
+	return pnach_data;
 }
 
 bool Patch::PatchStringHasUnlabelledPatch(const std::string& pnach_data)
@@ -469,7 +498,7 @@ void Patch::ExtractPatchInfo(std::vector<PatchInfo>* dst, const std::string& pna
 					}
 					else
 					{
-						Console.WriteLn(Color_Gray, fmt::format("Patch: Skipped reading patch '{}' since a patch with a duplicate name was already loaded.", current_patch.name));
+						Console.WriteLnFmt(Color_Gray, "Patch: Skipped reading patch '{}' since a patch with a duplicate name was already loaded.", current_patch.name);
 					}
 				}
 				current_patch = {};
@@ -651,8 +680,8 @@ u32 Patch::EnablePatches(const std::vector<PatchGroup>* patches, const std::vect
 		if (!p.name.empty() && std::find(enable_list.begin(), enable_list.end(), p.name) == enable_list.end())
 			continue;
 
-		Console.WriteLn(Color_Green, fmt::format("Enabled patch: {}",
-										 p.name.empty() ? std::string_view("<unknown>") : std::string_view(p.name)));
+		Console.WriteLnFmt(Color_Green, "Enabled patch: {}",
+			p.name.empty() ? std::string_view("<unknown>") : std::string_view(p.name));
 
 		// Indicate that a new group has started so that extended code state
 		// such as the skip counter can be reset.
@@ -732,7 +761,7 @@ void Patch::ReloadPatches(const std::string& serial, u32 crc, bool reload_files,
 			{
 				const u32 patch_count = LoadPatchesFromString(&s_gamedb_patches, *patches);
 				if (patch_count > 0)
-					Console.WriteLn(Color_Green, fmt::format("Found {} game patches in GameDB.", patch_count));
+					Console.WriteLnFmt(Color_Green, "Found {} game patches in GameDB.", patch_count);
 			}
 
 			LoadDynamicPatches(game->dynaPatches);
@@ -743,7 +772,7 @@ void Patch::ReloadPatches(const std::string& serial, u32 crc, bool reload_files,
 			serial, s_patches_crc, false, false, [](const std::string& filename, const std::string& pnach_data) {
 				const u32 patch_count = LoadPatchesFromString(&s_game_patches, pnach_data);
 				if (patch_count > 0)
-					Console.WriteLn(Color_Green, fmt::format("Found {} game patches in {}.", patch_count, filename));
+					Console.WriteLnFmt(Color_Green, "Found {} game patches in {}.", patch_count, filename);
 			});
 
 		s_cheat_patches.clear();
@@ -751,7 +780,7 @@ void Patch::ReloadPatches(const std::string& serial, u32 crc, bool reload_files,
 			serial, s_patches_crc, true, false, [](const std::string& filename, const std::string& pnach_data) {
 				const u32 patch_count = LoadPatchesFromString(&s_cheat_patches, pnach_data);
 				if (patch_count > 0)
-					Console.WriteLn(Color_Green, fmt::format("Found {} cheats in {}.", patch_count, filename));
+					Console.WriteLnFmt(Color_Green, "Found {} cheats in {}.", patch_count, filename);
 			});
 	}
 
@@ -824,15 +853,15 @@ void Patch::ApplyPatchSettingOverrides()
 	{
 		EmuConfig.CurrentCustomAspectRatio = s_override_aspect_ratio.value();
 
-		Console.WriteLn(Color_Gray,
-			fmt::format("Patch: Setting aspect ratio to {} by patch request.", s_override_aspect_ratio.value()));
+		Console.WriteLn(Color_Gray, "Patch: Setting aspect ratio to {} by patch request.",
+			s_override_aspect_ratio.value());
 	}
 
 	// Disable interlacing in GS if active.
 	if (s_override_interlace_mode.has_value() && EmuConfig.GS.InterlaceMode == GSInterlaceMode::Automatic)
 	{
-		Console.WriteLn(Color_Gray, fmt::format("Patch: Setting deinterlace mode to {} by patch request.",
-										static_cast<int>(s_override_interlace_mode.value())));
+		Console.WriteLnFmt(Color_Gray, "Patch: Setting deinterlace mode to {} by patch request.",
+			static_cast<int>(s_override_interlace_mode.value()));
 		EmuConfig.GS.InterlaceMode = s_override_interlace_mode.value();
 	}
 }
@@ -887,7 +916,7 @@ void Patch::UnloadPatches()
 void Patch::PatchFunc::patch(PatchGroup* group, const std::string_view cmd, const std::string_view param)
 {
 #define PATCH_ERROR(fstring, ...) \
-	Console.Error(fmt::format("(Patch) Error Parsing: {}={}: " fstring, cmd, param, __VA_ARGS__))
+	Console.ErrorFmt("(Patch) Error Parsing: {}={}: " fstring, cmd, param, __VA_ARGS__)
 
 	// [0]=PlaceToPatch,[1]=CpuType,[2]=MemAddr,[3]=OperandSize,[4]=WriteValue
 	const std::vector<std::string_view> pieces(StringUtil::SplitString(param, ',', false));
@@ -980,7 +1009,7 @@ void Patch::PatchFunc::gsaspectratio(PatchGroup* group, const std::string_view c
 		return;
 	}
 
-	Console.Error(fmt::format("Patch error: {} is an unknown aspect ratio.", param));
+	Console.ErrorFmt("Patch error: {} is an unknown aspect ratio.", param);
 }
 
 void Patch::PatchFunc::gsinterlacemode(PatchGroup* group, const std::string_view cmd, const std::string_view param)
@@ -989,7 +1018,7 @@ void Patch::PatchFunc::gsinterlacemode(PatchGroup* group, const std::string_view
 	if (!interlace_mode.has_value() || interlace_mode.value() < 0 ||
 		interlace_mode.value() >= static_cast<int>(GSInterlaceMode::Count))
 	{
-		Console.Error(fmt::format("Patch error: {} is an unknown interlace mode.", param));
+		Console.ErrorFmt("Patch error: {} is an unknown interlace mode.", param);
 		return;
 	}
 
@@ -999,7 +1028,7 @@ void Patch::PatchFunc::gsinterlacemode(PatchGroup* group, const std::string_view
 void Patch::PatchFunc::dpatch(PatchGroup* group, const std::string_view cmd, const std::string_view param)
 {
 #define PATCH_ERROR(fstring, ...) \
-	Console.Error(fmt::format("(dPatch) Error Parsing: {}={}: " fstring, cmd, param, __VA_ARGS__))
+	Console.ErrorFmt("(dPatch) Error Parsing: {}={}: " fstring, cmd, param, __VA_ARGS__)
 
 	// [0]=version/type,[1]=number of patterns,[2]=number of replacements
 	// Each pattern or replacement is [3]=offset,[4]=hex
