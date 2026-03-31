@@ -30283,8 +30283,11 @@ SLES-55569:
   name: "Silent Hill - Shattered Memories"
   region: "PAL-M5"
   gsHWFixes:
+    minimumBlendingLevel: 2 # Fixes pause menu transition.
     disablePartialInvalidation: 1 # Fixes missing graphics.
-    halfPixelOffset: 2 # Fixes ghosting.
+    textureInsideRT: 1 # Fixes pause menu transition.
+    halfPixelOffset: 5 # Fixes post-processing and bloom misaligment.
+    nativeScaling: 2 # Fixes post-processing smoothness and position.
 SLES-55572:
   name: "Marvel Super Hero Squad"
   region: "PAL-M6"
@@ -33551,6 +33554,12 @@ SLKA-25465:
   name: "사일런트 힐: 섀터드 메모리즈" # Undumped on ReDump as of 2025-08-28
   name-en: "Silent Hill - Shattered Memories"
   region: "NTSC-K"
+  gsHWFixes:
+    minimumBlendingLevel: 2 # Fixes pause menu transition.
+    disablePartialInvalidation: 1 # Fixes missing graphics.
+    textureInsideRT: 1 # Fixes pause menu transition.
+    halfPixelOffset: 5 # Fixes post-processing and bloom misaligment.
+    nativeScaling: 2 # Fixes post-processing smoothness and position.
 SLKA-25466:
   name: "비트매니아 IIDX 16 엠프레스 + 프리미엄 베스트 [Disc 1 of 2 - Empress Disc]" # Undumped and unconfirmed on ReDump as of 2025-08-28
   name-en: "Beatmania IIDX 16 - Empress + Premium Best [Disc 1 of 2 - Empress Disc]"
@@ -34923,6 +34932,12 @@ SLPM-55231:
   name-sort: "さいれんとひる しゃったーどめもりーず"
   name-en: "Silent Hill - Shattered Memories"
   region: "NTSC-J"
+  gsHWFixes:
+    minimumBlendingLevel: 2 # Fixes pause menu transition.
+    disablePartialInvalidation: 1 # Fixes missing graphics.
+    textureInsideRT: 1 # Fixes pause menu transition.
+    halfPixelOffset: 5 # Fixes post-processing and bloom misaligment.
+    nativeScaling: 2 # Fixes post-processing smoothness and position.
 SLPM-55233:
   name: "金色のコルダ [KOEI The Best]"
   name-sort: "きんいろのこるだ [KOEI The Best]"
@@ -74640,8 +74655,11 @@ SLUS-21899:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    minimumBlendingLevel: 2 # Fixes pause menu transition.
     disablePartialInvalidation: 1 # Fixes missing graphics.
-    halfPixelOffset: 2 # Fixes ghosting.
+    textureInsideRT: 1 # Fixes pause menu transition.
+    halfPixelOffset: 5 # Fixes post-processing and bloom misaligment.
+    nativeScaling: 2 # Fixes post-processing smoothness and position.
 SLUS-21900:
   name: "Scooby-Doo! First Frights"
   region: "NTSC-U"
