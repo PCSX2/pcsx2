@@ -43,8 +43,14 @@ namespace ReplaceGL
 		glViewport(GLint(x), GLint(y), GLsizei(w), GLsizei(h));
 	}
 
+	static void GLAPIENTRY MemoryBarrierAsTextureBarrier()
+	{
+		glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+	}
+
 	static void GLAPIENTRY TextureBarrier()
 	{
+
 	}
 
 } // namespace ReplaceGL
@@ -751,11 +757,17 @@ bool GSDeviceOGL::CheckFeatures()
 
 	if (!GLAD_GL_ARB_texture_barrier)
 	{
-		glTextureBarrier = ReplaceGL::TextureBarrier;
-		// Switch to fallback.
-		m_features.multidraw_fb_copy = true;
-		Host::AddOSDMessage(
-			"GL_ARB_texture_barrier is not supported, blending will be slower.", Host::OSD_ERROR_DURATION);
+		// First try NV only barrier.
+		// If that doesn't work then switch to multidraw fb copy.
+		if (GLAD_GL_NV_texture_barrier)
+			glTextureBarrier = glTextureBarrierNV;
+		else
+		{
+			glTextureBarrier = ReplaceGL::TextureBarrier;
+			m_features.multidraw_fb_copy = true;
+			Host::AddOSDMessage(
+				"GL_ARB_texture_barrier is not supported, blending will be slower.", Host::OSD_ERROR_DURATION);
+		}
 	}
 
 	if (!GLAD_GL_ARB_direct_state_access)
@@ -797,11 +809,16 @@ bool GSDeviceOGL::CheckFeatures()
 	}
 	else if (GSConfig.OverrideTextureBarriers == 1)
 	{
+		// No texture barriers supported so try to use memory barrier.
+		// Not guaranteed to work so only enable it in Force Enabled mode.
+		if (!GLAD_GL_ARB_texture_barrier && !GLAD_GL_NV_texture_barrier && GLAD_GL_ARB_shader_image_load_store)
+			glTextureBarrier = ReplaceGL::MemoryBarrierAsTextureBarrier;
+
 		m_features.texture_barrier = true; // Force Enabled
 		m_features.multidraw_fb_copy = false;
 	}
 	else
-		m_features.texture_barrier = m_features.framebuffer_fetch || GLAD_GL_ARB_texture_barrier;
+		m_features.texture_barrier = m_features.framebuffer_fetch || GLAD_GL_ARB_texture_barrier || GLAD_GL_NV_texture_barrier;
 
 	m_features.provoking_vertex_last = true;
 	m_features.dxt_textures = GLAD_GL_EXT_texture_compression_s3tc;
