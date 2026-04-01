@@ -211,6 +211,32 @@ protected:
 	void CalcAlphaMinMax(const int tex_min, const int tex_max);
 	void CorrectATEAlphaMinMax(const u32 atst, const int aref);
 
+	// Utility functions for getting position/texture coordinates.
+	GSVector4 GetXYWindow(const GSVertex& v);
+	template<bool fst>
+	GSVector4 GetTexCoordsImpl(const GSVertex& v, float q);
+	template<bool fst>
+	GSVector4 GetTexCoordsImpl(const GSVertex& v);
+	GSVector4 GetTexCoords(const GSVertex& v, float q);
+	GSVector4 GetTexCoords(const GSVertex& v);
+
+	// Utility functions to detect and get corners of quads.
+	template<u32 primclass, bool tme = false, bool fst = false>
+	static bool GetQuadCornersImpl(const GSVertex* v, const u16* i, GSVertex& vout0, GSVertex& vout1);
+	bool GetQuadCorners(const GSVertex* v, const u16* i, GSVertex& vout0, GSVertex& vout1);
+
+	// Utility functions to get window/texture coordinates of a quad.
+	template<u32 primclass>
+	void GetQuadBBoxWindowImpl(const GSVertex& v0, const GSVertex& v1, GSVector4& xyout);
+	template<u32 primclass, bool tme = false, bool fst = false>
+	void GetQuadBBoxWindowImpl(const GSVertex& v0, const GSVertex& v1, GSVector4& xyout, GSVector4& texout, bool keep_tex_order = true);
+	void GetQuadBBoxWindow(const GSVertex& v0, const GSVertex& v1, GSVector4& xyout);
+	void GetQuadBBoxWindow(const GSVertex& v0, const GSVertex& v1, GSVector4& xyout, GSVector4& texout, bool keep_tex_order = true);
+
+	// Adjusts a quad so that it contains exactly the centers of the pixels that the GS would rasterize.
+	static void GetQuadRasterizedPoints(GSVector4& xy, bool keep_order = true);
+	static void GetQuadRasterizedPoints(GSVector4& xy, GSVector4& tex, bool keep_order = true);
+
 public:
 	enum EEGS_TransferType
 	{
