@@ -752,8 +752,10 @@ bool GSDeviceOGL::CheckFeatures()
 	if (!GLAD_GL_ARB_texture_barrier)
 	{
 		glTextureBarrier = ReplaceGL::TextureBarrier;
+		// Switch to fallback.
+		m_features.multidraw_fb_copy = true;
 		Host::AddOSDMessage(
-			"GL_ARB_texture_barrier is not supported, blending will not be accurate.", Host::OSD_ERROR_DURATION);
+			"GL_ARB_texture_barrier is not supported, blending will be slower.", Host::OSD_ERROR_DURATION);
 	}
 
 	if (!GLAD_GL_ARB_direct_state_access)
@@ -787,18 +789,20 @@ bool GSDeviceOGL::CheckFeatures()
 	}
 
 	if (GSConfig.OverrideTextureBarriers == 0)
+	{
 		m_features.texture_barrier = m_features.framebuffer_fetch; // Force Disabled
+		m_features.multidraw_fb_copy = false;
+		Host::AddOSDMessage(
+			"Texture Barrier is disabled, blending will not be accurate.", Host::OSD_ERROR_DURATION);
+	}
 	else if (GSConfig.OverrideTextureBarriers == 1)
+	{
 		m_features.texture_barrier = true; // Force Enabled
+		m_features.multidraw_fb_copy = false;
+	}
 	else
 		m_features.texture_barrier = m_features.framebuffer_fetch || GLAD_GL_ARB_texture_barrier;
-	if (!m_features.texture_barrier)
-	{
-		Host::AddOSDMessage(
-			"GL_ARB_texture_barrier is not supported, blending will not be accurate.", Host::OSD_ERROR_DURATION);
-	}
 
-	m_features.multidraw_fb_copy = false;
 	m_features.provoking_vertex_last = true;
 	m_features.dxt_textures = GLAD_GL_EXT_texture_compression_s3tc;
 	m_features.bptc_textures =
@@ -2640,6 +2644,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	}
 
 	// Destination Alpha Setup
+	const bool multidraw_fb_copy = m_features.multidraw_fb_copy && (config.require_one_barrier || config.require_full_barrier);
 	switch (config.destination_alpha)
 	{
 		case GSHWDrawConfig::DestinationAlphaMode::Off:
@@ -2654,7 +2659,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 			}
 			break;
 		case GSHWDrawConfig::DestinationAlphaMode::StencilOne:
-			if (m_features.texture_barrier)
+			if (m_features.texture_barrier || multidraw_fb_copy)
 			{
 				// Cleared after RT bind.
 				break;
@@ -2833,23 +2838,12 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		glTextureBarrier();
 	}
 
-	if (draw_rt && (config.require_one_barrier || (config.tex && config.tex == config.rt)) && !m_features.texture_barrier)
+	if (draw_rt && (config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy) || (config.tex && config.tex == config.rt)) &&
+		!m_features.texture_barrier)
 	{
 		// Requires a copy of the RT.
 		draw_rt_clone = CreateTexture(rtsize.x, rtsize.y, 1, draw_rt->GetFormat(), true);
-		if (draw_rt_clone)
-		{
-			GL_PUSH("GL: Copy RT to temp texture {%d,%d %dx%d}",
-				config.drawarea.left, config.drawarea.top,
-				config.drawarea.width(), config.drawarea.height());
-			const GSVector4i snapped_drawarea = ProcessCopyArea(GSVector4i(0, 0, rtsize.x, rtsize.y), config.drawarea);
-			CopyRect(draw_rt, draw_rt_clone, snapped_drawarea, snapped_drawarea.left, snapped_drawarea.top);
-			if (config.require_one_barrier)
-				PSSetShaderResource(2, draw_rt_clone);
-			if (config.tex && config.tex == config.rt)
-				PSSetShaderResource(0, draw_rt_clone);
-		}
-		else
+		if (!draw_rt_clone)
 			Console.Warning("GL: Failed to allocate temp texture for RT copy.");
 	}
 
@@ -2858,13 +2852,13 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	SetupOM(config.depth);
 
 	// Clear stencil as close as possible to the RT bind, to avoid framebuffer swaps.
-	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne && m_features.texture_barrier)
+	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne && (m_features.texture_barrier || multidraw_fb_copy))
 	{
 		constexpr GLint clear_color = 1;
 		glClearBufferiv(GL_STENCIL, 0, &clear_color);
 	}
 
-	SendHWDraw(config, config.require_one_barrier, config.require_full_barrier);
+	SendHWDraw(config, draw_rt_clone, draw_rt, config.require_one_barrier, config.require_full_barrier);
 
 	if (config.blend_multi_pass.enable)
 	{
@@ -2911,7 +2905,8 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 			OMSetBlendState();
 		}
 		SetupOM(config.alpha_second_pass.depth);
-		SendHWDraw(config, config.alpha_second_pass.require_one_barrier, config.alpha_second_pass.require_full_barrier);
+		SendHWDraw(config, draw_rt_clone, draw_rt, m_features.texture_barrier ? config.alpha_second_pass.require_one_barrier : false,
+			config.alpha_second_pass.require_full_barrier);
 	}
 
 	if (primid_texture)
@@ -2936,47 +2931,48 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	}
 }
 
-void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config, bool one_barrier, bool full_barrier)
+void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config, GSTexture* draw_rt_clone, GSTexture* draw_rt, bool one_barrier, bool full_barrier)
 {
-	if (!m_features.texture_barrier) [[unlikely]]
-	{
-		DrawIndexedPrimitive();
-		return;
-	}
-
 #ifdef PCSX2_DEVBUILD
 	if ((one_barrier || full_barrier) && !(config.ps.IsFeedbackLoopRT() || config.ps.IsFeedbackLoopDepth())) [[unlikely]]
 		Console.Warning("OpenGL: Possible unnecessary barrier detected.");
 #endif
 
+	auto CopyAndBind = [&](GSVector4i drawarea) {
+		if (draw_rt_clone)
+			CopyRect(draw_rt, draw_rt_clone, drawarea, drawarea.left, drawarea.top);
+		if ((one_barrier || full_barrier) && draw_rt_clone)
+			PSSetShaderResource(2, draw_rt_clone);
+		if (config.tex && config.tex == draw_rt)
+			PSSetShaderResource(0, draw_rt_clone);
+	};
+
+	const GSVector4i rtsize(0, 0, (draw_rt ? draw_rt : draw_ds)->GetWidth(), (draw_rt ? draw_rt : draw_ds)->GetHeight());
+
 	if (full_barrier)
 	{
 		pxAssert(config.drawlist && !config.drawlist->empty());
 		
-		GL_PUSH("Split the draw");
-#if defined(_DEBUG)
-		// Check how draw call is split.
-		std::map<size_t, size_t> frequency;
-		for (const auto& it : *config.drawlist)
-			++frequency[it];
-
-		std::string message;
-		for (const auto& it : frequency)
-			message += " " + std::to_string(it.first) + "(" + std::to_string(it.second) + ")";
-
-		GL_PERF("Split single draw (%d primitives) into %zu draws: consecutive draws(frequency):%s",
-		        config.nindices / config.indices_per_prim, config.drawlist->size(), message.c_str());
-#endif
-
 		const u32 indices_per_prim = config.indices_per_prim;
 		const u32 draw_list_size = static_cast<u32>(config.drawlist->size());
 
-		g_perfmon.Put(GSPerfMon::Barriers, static_cast<u32>(draw_list_size));
+		if (m_features.texture_barrier)
+			g_perfmon.Put(GSPerfMon::Barriers, static_cast<u32>(draw_list_size));
+		else
+			pxAssert(config.drawlist_bbox && static_cast<u32>(config.drawlist_bbox->size()) == draw_list_size);
 
 		for (u32 n = 0, p = 0; n < draw_list_size; n++)
 		{
 			const u32 count = (*config.drawlist)[n] * indices_per_prim;
-			glTextureBarrier();
+
+			if (m_features.texture_barrier)
+				glTextureBarrier();
+			else
+			{
+				const GSVector4i original_bbox = (*config.drawlist_bbox)[n].rintersect(config.drawarea);
+				CopyAndBind(ProcessCopyArea(rtsize, original_bbox));
+			}
+
 			DrawIndexedPrimitive(p, count);
 			p += count;
 		}
@@ -2986,8 +2982,16 @@ void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config, bool one_barrier, boo
 
 	if (one_barrier)
 	{
-		g_perfmon.Put(GSPerfMon::Barriers, 1);
-		glTextureBarrier();
+		if (m_features.texture_barrier)
+		{
+			g_perfmon.Put(GSPerfMon::Barriers, 1);
+			glTextureBarrier();
+		}
+		else
+		{
+			// Optimization: For alpha second pass we can reuse the copy snapshot from the first pass.
+			CopyAndBind(ProcessCopyArea(rtsize, config.drawarea));
+		}
 	}
 
 	DrawIndexedPrimitive();
