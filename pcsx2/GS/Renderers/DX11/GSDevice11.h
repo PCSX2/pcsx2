@@ -356,7 +356,7 @@ public:
 	void RenderHW(GSHWDrawConfig& config) override;
 	void SendHWDraw(const GSHWDrawConfig& config,
 		GSTexture* draw_rt_clone, GSTexture* draw_rt, GSTexture* draw_ds_clone, GSTexture* draw_ds,
-		const bool one_barrier, const bool full_barrier, const bool skip_first_barrier);
+		const bool one_barrier, const bool full_barrier);
 
 	void ClearSamplerCache() override;
 
