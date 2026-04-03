@@ -281,7 +281,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 
 #ifndef _WIN32
 	// Exclusive fullscreen control is Windows-only.
-	m_advanced.advancedOptionsFormLayout->removeRow(2);
+	m_advanced.advancedOptionsFormLayout->removeRow(m_advanced.exclusiveFullscreenControl);
 	m_advanced.exclusiveFullscreenControl = nullptr;
 #endif
 
@@ -289,13 +289,13 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	if (!dialog()->isPerGameSettings())
 	{
 		// Only allow disabling readbacks for per-game settings, it's too dangerous.
-		m_advanced.advancedOptionsFormLayout->removeRow(0);
+		m_advanced.advancedOptionsFormLayout->removeRow(m_advanced.gsDownloadMode);
 		m_advanced.gsDownloadMode = nullptr;
 
 		// Don't allow setting hardware fixes globally.
 		// Too many stupid YouTube "best settings" guides that break other games.
-		m_hw.hardwareRenderingOptionsLayout->removeWidget(m_hw.enableHWFixes);
-		delete m_hw.enableHWFixes;
+		m_hw.renderingGridLayout->layout()->removeWidget(m_hw.enableHWFixes);
+		m_hw.enableHWFixes->deleteLater();
 		m_hw.enableHWFixes = nullptr;
 	}
 #endif

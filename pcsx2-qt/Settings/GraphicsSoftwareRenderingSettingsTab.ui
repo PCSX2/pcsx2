@@ -13,80 +13,89 @@
   <property name="windowTitle">
    <string/>
   </property>
-  <layout class="QGridLayout" name="gridLayout" columnstretch="0,1">
-   <item row="1" column="0">
-    <widget class="QLabel" name="extraSWThreadsLabel">
-     <property name="text">
-      <string>Software Rendering Threads:</string>
-     </property>
-     <property name="buddy">
-      <cstring>extraSWThreads</cstring>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0">
-    <widget class="QLabel" name="swTextureFilteringLabel">
-     <property name="text">
-      <string>Texture Filtering:</string>
-     </property>
-     <property name="buddy">
-      <cstring>swTextureFiltering</cstring>
-     </property>
-    </widget>
-   </item>
+  <layout class="QGridLayout" name="gridLayout" columnstretch="0,0">
    <item row="2" column="0" colspan="2">
-    <layout class="QGridLayout" name="swRenderingLayout">
-     <item row="0" column="1">
-      <widget class="QCheckBox" name="swMipmap">
-       <property name="text">
-        <string>Mipmapping</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="0">
-      <widget class="QCheckBox" name="swAutoFlush">
-       <property name="text">
-        <string>Auto Flush</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item row="0" column="1">
-    <widget class="QComboBox" name="swTextureFiltering">
-     <property name="enabled">
-      <bool>true</bool>
+    <widget class="QGroupBox" name="swGroupBox">
+     <property name="title">
+      <string>Rendering Options</string>
      </property>
-     <property name="layoutDirection">
-      <enum>Qt::LayoutDirection::LeftToRight</enum>
-     </property>
-     <item>
-      <property name="text">
-       <string>Nearest</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Bilinear (Forced)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Bilinear (PS2)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Bilinear (Forced excluding sprite)</string>
-      </property>
-     </item>
-    </widget>
-   </item>
-   <item row="1" column="1">
-    <widget class="QSpinBox" name="extraSWThreads">
-     <property name="suffix">
-      <string> threads</string>
-     </property>
+     <layout class="QGridLayout" name="gridLayout_2" columnstretch="0,1">
+      <item row="0" column="0">
+       <widget class="QLabel" name="extraSWThreadsLabel">
+        <property name="text">
+         <string>Software Rendering Threads:</string>
+        </property>
+        <property name="buddy">
+         <cstring>extraSWThreads</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QComboBox" name="swTextureFiltering">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="layoutDirection">
+         <enum>Qt::LayoutDirection::LeftToRight</enum>
+        </property>
+        <item>
+         <property name="text">
+          <string>Nearest</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Bilinear (Forced)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Bilinear (PS2)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Bilinear (Forced excluding sprite)</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QSpinBox" name="extraSWThreads">
+        <property name="suffix">
+         <string> threads</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="swTextureFilteringLabel">
+        <property name="text">
+         <string>Texture Filtering:</string>
+        </property>
+        <property name="buddy">
+         <cstring>swTextureFiltering</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0" colspan="2">
+       <layout class="QGridLayout" name="swRenderingGridLayout">
+        <item row="0" column="1">
+         <widget class="QCheckBox" name="swMipmap">
+          <property name="text">
+           <string>Mipmapping</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QCheckBox" name="swAutoFlush">
+          <property name="text">
+           <string>Auto Flush</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
     </widget>
    </item>
    <item row="3" column="0">
@@ -105,8 +114,8 @@
   </layout>
  </widget>
  <tabstops>
-  <tabstop>swTextureFiltering</tabstop>
   <tabstop>extraSWThreads</tabstop>
+  <tabstop>swTextureFiltering</tabstop>
   <tabstop>swAutoFlush</tabstop>
   <tabstop>swMipmap</tabstop>
  </tabstops>
