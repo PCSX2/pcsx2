@@ -2870,7 +2870,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	}
 
 	if (draw_ds && (config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy)) &&
-		config.ps.IsFeedbackLoopDepth())
+		m_features.depth_feedback == GSDevice::DepthFeedbackSupport::Depth && config.ps.IsFeedbackLoopDepth())
 	{
 		// Requires a copy of the DS.
 		draw_ds_clone = CreateTexture(rtsize.x, rtsize.y, 1, draw_ds->GetFormat(), true);
@@ -2946,15 +2946,18 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config,
 
 		auto CopyAndBind = [&](GSVector4i drawarea) {
 			if (draw_rt_clone)
+			{
 				CopyRect(draw_rt, draw_rt_clone, drawarea, drawarea.left, drawarea.top);
+				if ((one_barrier || full_barrier))
+					PSSetShaderResource(2, draw_rt_clone);
+				if (config.tex && config.tex == draw_rt)
+					PSSetShaderResource(0, draw_rt_clone);
+			}
 			if (draw_ds_clone)
+			{
 				CopyRect(draw_ds, draw_ds_clone, drawarea, drawarea.left, drawarea.top);
-			if ((one_barrier || full_barrier) && draw_rt_clone)
-				PSSetShaderResource(2, draw_rt_clone);
-			if ((one_barrier || full_barrier) && draw_ds_clone)
 				PSSetShaderResource(4, draw_ds_clone);
-			if (config.tex && config.tex == draw_rt)
-				PSSetShaderResource(0, draw_rt_clone);
+			}
 		};
 
 		const GSVector4i rtsize(0, 0, (draw_rt ? draw_rt : draw_ds)->GetWidth(), (draw_rt ? draw_rt : draw_ds)->GetHeight());
