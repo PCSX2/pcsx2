@@ -17,7 +17,7 @@
    <item>
     <widget class="QGroupBox" name="textureOptions">
      <property name="title">
-      <string>Options</string>
+      <string>Texture Replacement Options</string>
      </property>
      <layout class="QGridLayout" name="textureOptionLayout">
       <item row="3" column="0">
@@ -100,11 +100,11 @@
         <property name="text">
          <string>PCSX2 will dump and load texture replacements from this directory.</string>
         </property>
+        <property name="textInteractionFlags">
+         <set>Qt::TextInteractionFlag::TextBrowserInteraction</set>
+        </property>
         <property name="buddy">
          <cstring>texturesDirectory</cstring>
-        </property>
-        <property name="textInteractionFlags">
-         <set>Qt::TextBrowserInteraction</set>
         </property>
        </widget>
       </item>
