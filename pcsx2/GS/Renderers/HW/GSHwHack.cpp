@@ -671,30 +671,19 @@ bool GSHwHack::GSC_NFSUndercover(GSRendererHW& r, int& skip)
 	// NFS Undercover does a weird texture shuffle by page, which really isn't supported by our TC.
 	// This causes it to spam creating new sources, severely destroying the speed.
 	// The CRC hack bypasses the entire shuffle and does it in one go.
+	// This is detected as a GappedSwizzle shuffle in texture shuffle detection.
 	const GIFRegTEX0& Texture = RTEX0;
 	const GIFRegFRAME& Frame = RFRAME;
 
 	if (RPRIM->TME && Frame.PSM == PSMCT16S && Frame.FBMSK != 0 && Frame.FBW == 10 && Texture.TBW == 1 && Texture.TBP0 == 0x02800 && Texture.PSM == PSMZ16S)
 	{
-		GSVertex* v = &r.m_vertex.buff[1];
-		v[0].XYZ.X = static_cast<u16>(RCONTEXT->XYOFFSET.OFX + ((r.m_r.z * 2) << 4));
-		v[0].XYZ.Y = static_cast<u16>(RCONTEXT->XYOFFSET.OFY + (r.m_r.w << 4));
-		v[0].U = r.m_r.z << 4;
-		v[0].V = r.m_r.w << 4;
-		RCONTEXT->scissor.in.z = r.m_r.z * 2;
-		RCONTEXT->scissor.in.w = r.m_r.w;
-		r.m_vt.m_max.p.x = r.m_r.z * 2;
-		r.m_vt.m_max.p.y = r.m_r.w;
-		r.m_vt.m_max.t.x = r.m_r.z;
-		r.m_vt.m_max.t.y = r.m_r.w;
-		r.m_vertex.head = r.m_vertex.tail = r.m_vertex.next = 2;
-		r.m_index.tail = 2;
 		skip = 79;
+		return false;
 	}
 	else
+	{
 		return skip > 0;
-
-	return false;
+	}
 }
 
 bool GSHwHack::GSC_PolyphonyDigitalGames(GSRendererHW& r, int& skip)
