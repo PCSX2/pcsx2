@@ -830,11 +830,13 @@ set(pcsx2DebugToolsHeaders
 set(pcsx2HostSources
 	Host/AudioStream.cpp
 	Host/CubebAudioStream.cpp
-	Host/SDLAudioStream.cpp)
+	Host/SDLAudioStream.cpp
+	Host/Linux/GameMode.cpp)
 
 set(pcsx2HostHeaders
 	Host/AudioStream.h
-	Host/AudioStreamTypes.h)
+	Host/AudioStreamTypes.h
+	Host/Linux/GameMode.h)
 
 set(pcsx2ImGuiSources
 	ImGui/FullscreenUI.cpp
@@ -1172,6 +1174,12 @@ target_link_libraries(PCSX2_FLAGS INTERFACE
 	plutosvg::plutosvg
 	${LIBC_LIBRARIES}
 )
+
+# Link gamemode separately since its Linux only
+if (LINUX)
+	target_compile_definitions(PCSX2_FLAGS INTERFACE ENABLE_GAMEMODE)
+	target_link_libraries(PCSX2_FLAGS INTERFACE gamemode)
+endif()
 
 if(WIN32)
 	target_link_libraries(PCSX2_FLAGS INTERFACE

@@ -73,6 +73,11 @@ else()
 			find_package(Libbacktrace REQUIRED)
 		endif()
 
+		## Feral Interactive GameMode (Linux-only)
+		if(LINUX)
+			add_subdirectory(3rdparty/gamemode EXCLUDE_FROM_ALL)
+		endif()
+
 		find_package(PkgConfig REQUIRED)
 		pkg_check_modules(DBUS REQUIRED dbus-1)
 	endif()

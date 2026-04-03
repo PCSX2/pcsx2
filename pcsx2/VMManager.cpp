@@ -42,6 +42,7 @@
 #include "Vif_Dynarec.h"
 #include "VMManager.h"
 #include "ps2/BiosTools.h"
+#include "Host/Linux/GameMode.h"
 
 #include "common/Console.h"
 #include "common/Error.h"
@@ -1629,6 +1630,7 @@ VMBootResult VMManager::Initialize(const VMBootParameters& boot_params, Error* e
 	Host::OnVMStarted();
 	FullscreenUI::OnVMStarted();
 	UpdateInhibitScreensaver(EmuConfig.InhibitScreensaver);
+	GameMode::Update(EmuConfig.EnableGameMode);
 
 	SetEmuThreadAffinities();
 
@@ -1738,6 +1740,7 @@ void VMManager::Shutdown(bool save_resume_state)
 	UpdateInhibitScreensaver(false);
 	SetEmuThreadAffinities();
 	Host::OnVMDestroyed();
+	GameMode::Update(false);
 
 	// clear out any potentially-incorrect settings from the last game
 	LoadSettings();
@@ -3079,7 +3082,10 @@ void VMManager::CheckForMiscConfigChanges(const Pcsx2Config& old_config)
 	}
 
 	if (EmuConfig.InhibitScreensaver != old_config.InhibitScreensaver)
-		UpdateInhibitScreensaver(EmuConfig.InhibitScreensaver && VMManager::GetState() == VMState::Running);
+		UpdateInhibitScreensaver(EmuConfig.InhibitScreensaver && VMManager::HasValidVM());
+
+	if (EmuConfig.EnableGameMode != old_config.EnableGameMode)
+		GameMode::Update(EmuConfig.EnableGameMode && VMManager::HasValidVM());
 
 	if (EmuConfig.EnableDiscordPresence != old_config.EnableDiscordPresence)
 	{

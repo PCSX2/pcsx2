@@ -8,6 +8,7 @@
 #include "GameList.h"
 #include "Host.h"
 #include "Host/AudioStream.h"
+#include "Host/Linux/GameMode.h"
 #include "INISettingsInterface.h"
 #include "ImGui/FullscreenUI_Internal.h"
 #include "ImGui/ImGuiFullscreen.h"
@@ -2592,6 +2593,11 @@ void FullscreenUI::DrawEmulationSettingsPage()
 
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Enable CDVD Precaching"), FSUI_CSTR("Loads the disc image into RAM before starting the virtual machine."),
 		"EmuCore", "CdvdPrecache", false);
+
+	if (GameMode::IsAvailable())
+		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_BOLT_LIGHTNING, "Enable Feral GameMode"), FSUI_CSTR("Enables Feral Interactive's GameMode, which is a set of system tweaks and optimizations that can potentially benefits some systems. "
+		"Only available on Linux."),
+			"EmuCore", "EnableGameMode", false);
 
 	MenuHeading(FSUI_CSTR("Frame Pacing/Latency Control"));
 

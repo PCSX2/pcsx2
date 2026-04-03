@@ -1356,6 +1356,7 @@ struct Pcsx2Config
 		EnableDiscordPresence : 1, // enables discord rich presence integration
 		UseSavestateSelector : 1,
 		InhibitScreensaver : 1,
+		EnableGameMode : 1, // activates feral interactive gamemode system tweaks
 		BackupSavestate : 1,
 		ManuallySetRealTimeClock : 1, // passes user-set real-time clock information to cdvd at startup
 		UseSystemLocaleFormat : 1, // presents OS time format instead of yyyy-MM-dd HH:mm:ss for manual RTC

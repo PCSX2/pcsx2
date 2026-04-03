@@ -3,8 +3,10 @@
 
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMessageBox>
+#include <QtWidgets/QCheckBox>
 
 #include "pcsx2/Host.h"
+#include "pcsx2/Host/Linux/GameMode.h"
 
 #include "EmulationSettingsWidget.h"
 #include "QtUtils.h"
@@ -39,11 +41,21 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* settings_dialog
 	m_ui.optimalFramePacing->setTristate(dialog()->isPerGameSettings());
 
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.eeCycleSkipping, "EmuCore/Speedhacks", "EECycleSkip", DEFAULT_EE_CYCLE_SKIP);
-
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.MTVU, "EmuCore/Speedhacks", "vuThread", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.threadPinning, "EmuCore", "EnableThreadPinning", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastCDVD, "EmuCore/Speedhacks", "fastCDVD", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.precacheCDVD, "EmuCore", "CdvdPrecache", false);
+
+	if (GameMode::IsAvailable())
+	{
+		QCheckBox *feralGameMode = new QCheckBox(tr("Enable Feral GameMode"), m_ui.systemSettingsGroup);
+		m_ui.systemSettingsLayout->addWidget(feralGameMode, 2, 1, Qt::AlignLeft);
+		SettingWidgetBinder::BindWidgetToBoolSetting(sif, feralGameMode, "EmuCore", "EnableGameMode", false);
+		dialog()->registerWidgetHelp(feralGameMode, tr("Enable Feral GameMode"), tr("Unchecked"),
+			tr("Enables Feral Interactive's GameMode, which is a set of system tweaks and optimizations that can potentially benefits some systems. "
+			   "Only available on Linux."));
+	}
+
 
 	if (dialog()->isPerGameSettings())
 	{

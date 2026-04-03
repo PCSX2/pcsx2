@@ -18,7 +18,7 @@
      </property>
      <layout class="QGridLayout" name="gridLayout_3">
       <item row="2" column="0">
-       <widget class="QLabel" name="label_6">
+       <widget class="QLabel" name="slowMotionSpeedLabel">
         <property name="text">
          <string>Slow-Motion Speed:</string>
         </property>
@@ -34,7 +34,7 @@
        <widget class="QComboBox" name="slowMotionSpeed"/>
       </item>
       <item row="0" column="0">
-       <widget class="QLabel" name="label_4">
+       <widget class="QLabel" name="normalSpeedLabel">
         <property name="text">
          <string>Normal Speed:</string>
         </property>
@@ -44,7 +44,7 @@
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="label_5">
+       <widget class="QLabel" name="fastForwardSpeedLabel">
         <property name="text">
          <string>Fast-Forward Speed:</string>
         </property>
@@ -130,10 +130,24 @@
       </item>
       <item row="2" column="0" colspan="2">
        <layout class="QGridLayout" name="systemSettingsLayout">
+        <item row="2" column="0">
+         <widget class="QCheckBox" name="precacheCDVD">
+          <property name="text">
+           <string>Enable CDVD Precaching</string>
+          </property>
+         </widget>
+        </item>
         <item row="1" column="0">
          <widget class="QCheckBox" name="cheats">
           <property name="text">
            <string>Enable Cheats</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QCheckBox" name="threadPinning">
+          <property name="text">
+           <string>Enable Thread Pinning</string>
           </property>
          </widget>
         </item>
@@ -158,24 +172,10 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="0">
-         <widget class="QCheckBox" name="precacheCDVD">
-          <property name="text">
-           <string>Enable CDVD Precaching</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QCheckBox" name="threadPinning">
-          <property name="text">
-           <string>Enable Thread Pinning</string>
-          </property>
-         </widget>
-        </item>
        </layout>
       </item>
       <item row="0" column="0">
-       <widget class="QLabel" name="label_9">
+       <widget class="QLabel" name="eeCycleRateLabel">
         <property name="text">
          <string>EE Cycle Rate:</string>
         </property>
@@ -185,7 +185,7 @@
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="label_10">
+       <widget class="QLabel" name="eeCycleSkippingLabel">
         <property name="text">
          <string>EE Cycle Skipping:</string>
         </property>
@@ -217,7 +217,7 @@
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="label_2">
+       <widget class="QLabel" name="maxFrameLatencyLabel">
         <property name="text">
          <string>Maximum Frame Latency:</string>
         </property>
@@ -329,6 +329,7 @@
   <tabstop>skipPresentingDuplicateFrames</tabstop>
   <tabstop>manuallySetRealTimeClock</tabstop>
   <tabstop>rtcDateTime</tabstop>
+  <tabstop>rtcUseSystemLocaleFormat</tabstop>
  </tabstops>
  <resources>
   <include location="../resources/resources.qrc"/>
