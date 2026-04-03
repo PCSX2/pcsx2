@@ -1704,7 +1704,7 @@ void MainWindow::onStartFullscreenUITriggered()
 
 void MainWindow::onFullscreenUIStateChange(bool running)
 {
-	m_ui.actionStartFullscreenUI->setText(running ? tr("Stop Big Picture Mode") : tr("Start Big Picture Mode"));
+	m_ui.actionStartFullscreenUI->setText(running ? tr("Stop Big Picture Mode") : tr("Start Big Picture &Mode"));
 	m_ui.actionToolbarStartFullscreenUI->setText(running ? tr("Exit Big Picture", "In Toolbar") : tr("Big Picture", "In Toolbar"));
 }
 
