@@ -90,7 +90,6 @@ private:
 	bool IsDiscardingDstRGB();
 	bool IsDiscardingDstAlpha() const;
 	bool TextureCoversWithoutGapsNotEqual();
-	bool Is8PixelReverseSprite(const GSVertex& v0, const GSVertex& v1);
 
 	using PS_ATST  = GSShader::PS_ATST;
 	using PS_AFAIL = GSShader::PS_AFAIL;
@@ -116,6 +115,86 @@ private:
 		bool barrier;
 		bool primid;
 		bool stencil_one;
+	};
+
+	// Internal enum for classifying texture shuffles.
+	enum class TextureShuffleType
+	{
+		None,
+		Copy,
+		Offset,
+		RegionRepeat8,
+		RegionRepeat16,
+		Reverse,
+		Swizzle,
+		SwizzleTex32,
+		TwoPixel,
+		GappedSwizzle,
+		HackShuffle,
+	};
+
+	// Enum for determining which channels to read/write in a texture shuffle.
+	enum TextureShuffleChannels : u32
+	{
+		TextureShuffleChannels_None = 0x0,
+		TextureShuffleChannels_RedToBlue = 0x1,
+		TextureShuffleChannels_BlueToRed = 0x2,
+		TextureShuffleChannels_GreenToAlpha = 0x4,
+		TextureShuffleChannels_AlphaToGreen = 0x8,
+		TextureShuffleChannels_RedCopy = 0x10,
+		TextureShuffleChannels_GreenCopy = 0x20,
+		TextureShuffleChannels_BlueCopy = 0x40,
+		TextureShuffleChannels_AlphaCopy = 0x80,
+		TextureShuffleChannels_BlueToAlpha = 0x100,
+
+		TextureShuffleChannels_ReadRed = TextureShuffleChannels_RedToBlue | TextureShuffleChannels_RedCopy,
+		TextureShuffleChannels_ReadGreen = TextureShuffleChannels_GreenToAlpha | TextureShuffleChannels_GreenCopy,
+		TextureShuffleChannels_ReadBlue = TextureShuffleChannels_BlueToRed | TextureShuffleChannels_BlueCopy |
+		                                  TextureShuffleChannels_BlueToAlpha,
+		TextureShuffleChannels_ReadAlpha = TextureShuffleChannels_AlphaToGreen | TextureShuffleChannels_AlphaCopy,
+
+		TextureShuffleChannels_WriteRed = TextureShuffleChannels_BlueToRed | TextureShuffleChannels_RedCopy,
+		TextureShuffleChannels_WriteGreen = TextureShuffleChannels_AlphaToGreen | TextureShuffleChannels_GreenCopy,
+		TextureShuffleChannels_WriteBlue = TextureShuffleChannels_RedToBlue | TextureShuffleChannels_BlueCopy,
+		TextureShuffleChannels_WriteAlpha = TextureShuffleChannels_GreenToAlpha | TextureShuffleChannels_AlphaCopy |
+		                                    TextureShuffleChannels_BlueToAlpha,
+
+		TextureShuffleChannels_ReadRedGreen = TextureShuffleChannels_ReadRed | TextureShuffleChannels_ReadGreen,
+		TextureShuffleChannels_ReadBlueAlpha = TextureShuffleChannels_ReadBlue | TextureShuffleChannels_ReadAlpha,
+
+		TextureShuffleChannels_WriteRedGreen = TextureShuffleChannels_WriteRed | TextureShuffleChannels_WriteGreen,
+		TextureShuffleChannels_WriteBlueAlpha = TextureShuffleChannels_WriteBlue | TextureShuffleChannels_WriteAlpha,
+
+		TextureShuffleChannels_ShuffleAcross = TextureShuffleChannels_RedToBlue | TextureShuffleChannels_GreenToAlpha |
+		                                       TextureShuffleChannels_BlueToRed | TextureShuffleChannels_AlphaToGreen |
+		                                       TextureShuffleChannels_BlueToAlpha,
+
+		// It's not actually possible to do a C16->C16 texture shuffle of B to A as they are the same group
+		// However you can do it by using C32 and offsetting the target vertices to point to B A, then mask as appropriate.
+		TextureShuffleChannels_SameGroup = TextureShuffleChannels_BlueToAlpha,
+	};
+
+	// Intermediate struct for texture shuffle detection.
+	struct TextureShuffleInfo
+	{
+		TextureShuffleType type = TextureShuffleType::None;
+		TextureShuffleChannels channels = TextureShuffleChannels_None;
+		bool real_16_bit_source = false;
+
+		operator bool() const
+		{
+			return type != TextureShuffleType::None;
+		}
+
+		void Disable()
+		{
+			type = TextureShuffleType::None;
+		}
+
+		bool SameGroupShuffle() const
+		{
+			return (channels & TextureShuffleChannels_SameGroup) != 0;
+		}
 	};
 
 	bool HasEEUpload(GSVector4i r);
@@ -171,9 +250,21 @@ private:
 	bool IsPossibleChannelShuffle() const;
 	bool IsPageCopy() const;
 	bool NextDrawMatchesShuffle() const;
+
+	// Texture shuffle functions.
 	bool IsSplitTextureShuffle(GIFRegTEX0& rt_TEX0, GSVector4i& valid_area);
+	void FixSplitTextureShuffleState();
 	GSVector4i GetSplitTextureShuffleDrawRect() const;
 	u32 GetEffectiveTextureShuffleFbmsk() const;
+	template<u32 primclass, bool fst>
+	TextureShuffleInfo DetectTextureShuffleImpl();
+	void DetectTextureShuffle();
+	void DetectTextureShuffleSecondPass(GSTextureCache::Target* rt, GSTextureCache::Source* tex);
+	template<u32 primclass, bool fst>
+	void ConvertSpriteTextureShuffleImpl(GSTextureCache::Target* rt, GSTextureCache::Source* tex);
+	void ConvertSpriteTextureShuffle(GSTextureCache::Target* rt, GSTextureCache::Source* tex);
+
+	static u32 Convert32BitTo16BitMask(u32 m);
 
 	static GSVector4i GetDrawRectForPages(u32 bw, u32 psm, u32 num_pages);
 	bool IsSinglePageDraw() const;
@@ -198,6 +289,11 @@ private:
 	MV_Ptr m_mv = nullptr;
 	int m_skip = 0;
 	int m_skip_offset = 0;
+
+	bool m_process_texture = false;
+	bool m_downscale_source = false;
+
+	TextureShuffleInfo m_texture_shuffle;
 
 	u32 m_split_texture_shuffle_pages = 0;
 	u32 m_split_texture_shuffle_pages_high = 0;
@@ -250,7 +346,6 @@ public:
 	void Lines2Sprites();
 	bool VerifyIndices();
 	void ExpandLineIndices();
-	void ConvertSpriteTextureShuffle(u32& process_rg, u32& process_ba, bool& shuffle_across, GSTextureCache::Target* rt, GSTextureCache::Source* tex);
 	GSVector4 RealignTargetTextureCoordinate(const GSTextureCache::Source* tex);
 	GSVector4i ComputeBoundingBox(const GSVector2i& rtsize, float rtscale);
 	void MergeSprite(GSTextureCache::Source* tex);
