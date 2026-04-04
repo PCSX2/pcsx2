@@ -79,7 +79,7 @@ set SHADERC_GLSLANG=f0bd0257c308b9a26562c1a30c4748a0219cc951
 set SHADERC_SPIRVHEADERS=04f10f650d514df88b76d25e83db360142c7b174
 set SHADERC_SPIRVTOOLS=fbe4f3ad913c44fe8700545f8ffe35d1382b7093
 
-set AGILITYSDK=1.618.5
+set AGILITYSDK=1.619.1
 
 call :downloadfile "qtbase-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtbase-everywhere-src-%QT%.zip" 590d5ae246c85fa14d6458a36ff75a11236acfe8987c2475090aab1770acbdf8 || goto error
 call :downloadfile "qtimageformats-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtimageformats-everywhere-src-%QT%.zip" 5dfb3c0cb84d2c935c1716b3b86358ca496fb9216676e7e28fee1357fb4a050e || goto error
@@ -101,7 +101,7 @@ call :downloadfile "zstd-%ZSTD%.zip" "https://github.com/facebook/zstd/archive/r
 call :downloadfile "KDDockWidgets-%KDDOCKWIDGETS%.zip" "https://github.com/KDAB/KDDockWidgets/archive/v%KDDOCKWIDGETS%.zip" 47ddb48197872055f0adf8e90a7235f8a3b795ca1ee3a28ac2c504c673ae3806 || goto error
 call :downloadfile "plutovg-%PLUTOVG%.zip" "https://github.com/sammycage/plutovg/archive/v%PLUTOVG%.zip" 4fe4e48f28aa80171b2166d45c0976ab0f21eecedb52cd4c3ef73b5afb48fac9 || goto error
 call :downloadfile "plutosvg-%PLUTOSVG%.zip" "https://github.com/sammycage/plutosvg/archive/v%PLUTOSVG%.zip" 82dee2c57ad712bdd6d6d81d3e76249d89caa4b5a4214353660fd5adff12201a || goto error
-call :downloadfile: "agility-sdk-%AGILITYSDK%.nupkg" "https://www.nuget.org/api/v2/package/Microsoft.Direct3D.D3D12/%AGILITYSDK%" 0027fc24f947c48dbded13ada7d280be221eb651644e23a8a476f0f1f0a079dd || goto error
+call :downloadfile "agility-sdk-%AGILITYSDK%.nupkg" "https://www.nuget.org/api/v2/package/Microsoft.Direct3D.D3D12/%AGILITYSDK%" 9073a264301e93183844026239c9081717d52d13fb71aae68a0555c576b8de44 || goto error
 call :downloadfile "rapidyaml-%RAPIDYAML%-src.zip" "https://github.com/biojppm/rapidyaml/releases/download/v%RAPIDYAML%/rapidyaml-%RAPIDYAML%-src.zip" 30054b74abdf0ba35bf2cb435b6e49fcb6d62a8e78a240a018c36aa60dba765f || goto error
 
 call :downloadfile "shaderc-%SHADERC%.zip" "https://github.com/google/shaderc/archive/refs/tags/v%SHADERC%.zip" 3ac59c8216d367ab7858684d39c8faf872a64150aeb139335f4e083c5f79dde0 || goto error
