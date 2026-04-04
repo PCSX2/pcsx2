@@ -24,8 +24,8 @@ QT=6.11.0
 QTAPNG=1.3.0
 
 FREETYPE=2.14.3
-HARFBUZZ=13.0.0
 SDL=SDL3-3.4.4
+HARFBUZZ=14.0.0
 ZSTD=1.5.7
 LZ4=1.10.0
 LIBPNG=1.6.56
@@ -69,8 +69,8 @@ cfb1993d7a10848965b01b9cf33a54b8a4ba4e5e3a6d28d59483e73f10d9fc76  qttools-everyw
 f1d3be3489f758efe1a8f12118a212febbe611aa670af32e0159fa3c1feab2a6  QtApng-$QTAPNG.tar.gz
 
 36bc4f1cc413335368ee656c42afca65c5a3987e8768cc28cf11ba775e785a5f  freetype-$FREETYPE.tar.xz
-207f96964dc9475b13c1f66565bf145d2658089d65b4cf786d351da2857fc269  harfbuzz-$HARFBUZZ.tar.gz
 ee712dbe6a89bb140bbfc2ce72358fb5ee5cc2240abeabd54855012db30b3864  $SDL.tar.gz
+f29db9470e0ca5cef484e04e27baeec233aa428e8fdabe9e51b0f706c0809d24  harfbuzz-$HARFBUZZ.tar.gz
 eb33e51f49a15e023950cd7825ca74a4a2b43db8354825ac24fc1b7ee09e6fa3  zstd-$ZSTD.tar.gz
 537512904744b35e232912055ccf8ec66d768639ff3abe5788d90d792ec5f48b  lz4-$LZ4.tar.gz
 f7d8bf1601b7804f583a254ab343a6549ca6cf27d255c302c47af2d9d36a6f18  libpng-$LIBPNG.tar.xz
@@ -211,7 +211,7 @@ echo "Building HarfBuzz..."
 rm -fr "harfbuzz-$HARFBUZZ"
 tar xf "harfbuzz-$HARFBUZZ.tar.gz"
 cd "harfbuzz-$HARFBUZZ"
-cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DHB_BUILD_UTILS=OFF -B build
+cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DHB_BUILD_UTILS=OFF -DHB_BUILD_GPU=OFF -B build
 make -C build "-j$NPROCS"
 make -C build install
 cd ..
