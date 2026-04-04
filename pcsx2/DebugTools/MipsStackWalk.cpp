@@ -84,7 +84,7 @@ namespace MipsStackWalk
 		u32 stop = pc - 32 * 4;
 		for (; cpu->isValidAddress(pc) && pc >= stop; pc -= 4)
 		{
-			u32 rawOp = cpu->read32(pc);
+			u32 rawOp = cpu->Read32(pc);
 			const R5900::OPCODE& op = R5900::GetInstruction(rawOp);
 
 			// We're looking for a "mov fp, sp" close by a "addiu sp, sp, -N".
@@ -113,7 +113,7 @@ namespace MipsStackWalk
 
 		for (u32 pc = start; cpu->isValidAddress(pc) && pc >= stop; pc -= 4)
 		{
-			u32 rawOp = cpu->read32(pc);
+			u32 rawOp = cpu->Read32(pc);
 			const R5900::OPCODE& op = R5900::GetInstruction(rawOp);
 
 			// Look for RA write to ram
@@ -154,7 +154,7 @@ namespace MipsStackWalk
 				frame.stackSize = -_IMM16;
 				if (ra_offset != -1 && cpu->isValidAddress(frame.sp + ra_offset))
 				{
-					ra = cpu->read32(frame.sp + ra_offset);
+					ra = cpu->Read32(frame.sp + ra_offset);
 				}
 				return true;
 			}

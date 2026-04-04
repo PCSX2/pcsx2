@@ -8,6 +8,8 @@
 #include "SymbolGuardian.h"
 #include "SymbolImporter.h"
 
+#include "common/MemoryInterface.h"
+
 #include <string>
 
 enum
@@ -38,20 +40,7 @@ inline const std::array<BreakPointCpu, 2> DEBUG_CPUS = {
 	BREAKPOINT_IOP,
 };
 
-class MemoryReader
-{
-public:
-	virtual u32 read8(u32 address) = 0;
-	virtual u32 read8(u32 address, bool& valid) = 0;
-	virtual u32 read16(u32 address) = 0;
-	virtual u32 read16(u32 address, bool& valid) = 0;
-	virtual u32 read32(u32 address) = 0;
-	virtual u32 read32(u32 address, bool& valid) = 0;
-	virtual u64 read64(u32 address) = 0;
-	virtual u64 read64(u32 address, bool& valid) = 0;
-};
-
-class DebugInterface : public MemoryReader
+class DebugInterface : public MemoryInterface
 {
 public:
 	enum RegisterType
@@ -59,13 +48,6 @@ public:
 		NORMAL,
 		SPECIAL
 	};
-
-	virtual u128 read128(u32 address) = 0;
-	virtual void write8(u32 address, u8 value) = 0;
-	virtual void write16(u32 address, u16 value) = 0;
-	virtual void write32(u32 address, u32 value) = 0;
-	virtual void write64(u32 address, u64 value) = 0;
-	virtual void write128(u32 address, u128 value) = 0;
 
 	// register stuff
 	virtual int getRegisterCategoryCount() = 0;
@@ -119,20 +101,21 @@ private:
 class R5900DebugInterface : public DebugInterface
 {
 public:
-	u32 read8(u32 address) override;
-	u32 read8(u32 address, bool& valid) override;
-	u32 read16(u32 address) override;
-	u32 read16(u32 address, bool& valid) override;
-	u32 read32(u32 address) override;
-	u32 read32(u32 address, bool& valid) override;
-	u64 read64(u32 address) override;
-	u64 read64(u32 address, bool& valid) override;
-	u128 read128(u32 address) override;
-	void write8(u32 address, u8 value) override;
-	void write16(u32 address, u16 value) override;
-	void write32(u32 address, u32 value) override;
-	void write64(u32 address, u64 value) override;
-	void write128(u32 address, u128 value) override;
+	u8 Read8(u32 address, bool* valid = nullptr) override;
+	u16 Read16(u32 address, bool* valid = nullptr) override;
+	u32 Read32(u32 address, bool* valid = nullptr) override;
+	u64 Read64(u32 address, bool* valid = nullptr) override;
+	u128 Read128(u32 address, bool* valid = nullptr) override;
+	bool ReadBytes(u32 address, void* dest, u32 size) override;
+
+	bool Write8(u32 address, u8 value) override;
+	bool Write16(u32 address, u16 value) override;
+	bool Write32(u32 address, u32 value) override;
+	bool Write64(u32 address, u64 value) override;
+	bool Write128(u32 address, u128 value) override;
+	bool WriteBytes(u32 address, void* src, u32 size) override;
+
+	bool CompareBytes(u32 address, void* src, u32 size) override;
 
 	// register stuff
 	int getRegisterCategoryCount() override;
@@ -163,20 +146,21 @@ public:
 class R3000DebugInterface : public DebugInterface
 {
 public:
-	u32 read8(u32 address) override;
-	u32 read8(u32 address, bool& valid) override;
-	u32 read16(u32 address) override;
-	u32 read16(u32 address, bool& valid) override;
-	u32 read32(u32 address) override;
-	u32 read32(u32 address, bool& valid) override;
-	u64 read64(u32 address) override;
-	u64 read64(u32 address, bool& valid) override;
-	u128 read128(u32 address) override;
-	void write8(u32 address, u8 value) override;
-	void write16(u32 address, u16 value) override;
-	void write32(u32 address, u32 value) override;
-	void write64(u32 address, u64 value) override;
-	void write128(u32 address, u128 value) override;
+	u8 Read8(u32 address, bool* valid = nullptr) override;
+	u16 Read16(u32 address, bool* valid = nullptr) override;
+	u32 Read32(u32 address, bool* valid = nullptr) override;
+	u64 Read64(u32 address, bool* valid = nullptr) override;
+	u128 Read128(u32 address, bool* valid = nullptr) override;
+	bool ReadBytes(u32 address, void* dest, u32 size) override;
+
+	bool Write8(u32 address, u8 value) override;
+	bool Write16(u32 address, u16 value) override;
+	bool Write32(u32 address, u32 value) override;
+	bool Write64(u32 address, u64 value) override;
+	bool Write128(u32 address, u128 value) override;
+	bool WriteBytes(u32 address, void* src, u32 size) override;
+
+	bool CompareBytes(u32 address, void* src, u32 size) override;
 
 	// register stuff
 	int getRegisterCategoryCount() override;
@@ -205,19 +189,26 @@ public:
 };
 
 // Provides access to the loadable segments from the ELF as they are on disk.
-class ElfMemoryReader : public MemoryReader
+class ElfMemoryReader : public MemoryInterface
 {
 public:
 	ElfMemoryReader(const ccc::ElfFile& elf);
 
-	u32 read8(u32 address) override;
-	u32 read8(u32 address, bool& valid) override;
-	u32 read16(u32 address) override;
-	u32 read16(u32 address, bool& valid) override;
-	u32 read32(u32 address) override;
-	u32 read32(u32 address, bool& valid) override;
-	u64 read64(u32 address) override;
-	u64 read64(u32 address, bool& valid) override;
+	u8 Read8(u32 address, bool* valid = nullptr) override;
+	u16 Read16(u32 address, bool* valid = nullptr) override;
+	u32 Read32(u32 address, bool* valid = nullptr) override;
+	u64 Read64(u32 address, bool* valid = nullptr) override;
+	u128 Read128(u32 address, bool* valid = nullptr) override;
+	bool ReadBytes(u32 address, void* dest, u32 size) override;
+
+	bool Write8(u32 address, u8 value) override;
+	bool Write16(u32 address, u16 value) override;
+	bool Write32(u32 address, u32 value) override;
+	bool Write64(u32 address, u64 value) override;
+	bool Write128(u32 address, u128 value) override;
+	bool WriteBytes(u32 address, void* src, u32 size) override;
+
+	bool CompareBytes(u32 address, void* src, u32 size) override;
 
 protected:
 	const ccc::ElfFile& m_elf;

@@ -152,7 +152,7 @@ FunctionInfo SymbolGuardian::FunctionOverlappingAddress(u32 address) const
 	return info;
 }
 
-void SymbolGuardian::GenerateFunctionHashes(ccc::SymbolDatabase& database, MemoryReader& reader)
+void SymbolGuardian::GenerateFunctionHashes(ccc::SymbolDatabase& database, MemoryInterface& reader)
 {
 	for (ccc::Function& function : database.functions)
 	{
@@ -164,7 +164,7 @@ void SymbolGuardian::GenerateFunctionHashes(ccc::SymbolDatabase& database, Memor
 	}
 }
 
-void SymbolGuardian::UpdateFunctionHashes(ccc::SymbolDatabase& database, MemoryReader& reader)
+void SymbolGuardian::UpdateFunctionHashes(ccc::SymbolDatabase& database, MemoryInterface& reader)
 {
 	for (ccc::Function& function : database.functions)
 	{
@@ -182,7 +182,7 @@ void SymbolGuardian::UpdateFunctionHashes(ccc::SymbolDatabase& database, MemoryR
 		source_file.check_functions_match(database);
 }
 
-std::optional<ccc::FunctionHash> SymbolGuardian::HashFunction(const ccc::Function& function, MemoryReader& reader)
+std::optional<ccc::FunctionHash> SymbolGuardian::HashFunction(const ccc::Function& function, MemoryInterface& reader)
 {
 	if (!function.address().valid())
 		return std::nullopt;
@@ -195,7 +195,7 @@ std::optional<ccc::FunctionHash> SymbolGuardian::HashFunction(const ccc::Functio
 	for (u32 i = 0; i < function.size() / 4; i++)
 	{
 		bool valid;
-		u32 value = reader.read32(function.address().value + i * 4, valid);
+		u32 value = reader.Read32(function.address().value + i * 4, &valid);
 		if (!valid)
 			return std::nullopt;
 

@@ -24,9 +24,9 @@
 
 namespace MIPSAnalyst
 {
-	u32 GetJumpTarget(u32 addr, MemoryReader& reader)
+	u32 GetJumpTarget(u32 addr, MemoryInterface& reader)
 	{
-		u32 op = reader.read32(addr);
+		u32 op = reader.Read32(addr);
 		const R5900::OPCODE& opcode = R5900::GetInstruction(op);
 
 		if ((opcode.flags & IS_BRANCH) && (opcode.flags & BRANCHTYPE_MASK) == BRANCHTYPE_JUMP)
@@ -38,9 +38,9 @@ namespace MIPSAnalyst
 			return INVALIDTARGET;
 	}
 
-	u32 GetBranchTarget(u32 addr, MemoryReader& reader)
+	u32 GetBranchTarget(u32 addr, MemoryInterface& reader)
 	{
-		u32 op = reader.read32(addr);
+		u32 op = reader.Read32(addr);
 		const R5900::OPCODE& opcode = R5900::GetInstruction(op);
 
 		int branchType = (opcode.flags & BRANCHTYPE_MASK);
@@ -50,9 +50,9 @@ namespace MIPSAnalyst
 			return INVALIDTARGET;
 	}
 
-	u32 GetBranchTargetNoRA(u32 addr, MemoryReader& reader)
+	u32 GetBranchTargetNoRA(u32 addr, MemoryInterface& reader)
 	{
-		u32 op = reader.read32(addr);
+		u32 op = reader.Read32(addr);
 		const R5900::OPCODE& opcode = R5900::GetInstruction(op);
 
 		int branchType = (opcode.flags & BRANCHTYPE_MASK);
@@ -67,9 +67,9 @@ namespace MIPSAnalyst
 			return INVALIDTARGET;
 	}
 
-	u32 GetSureBranchTarget(u32 addr, MemoryReader& reader)
+	u32 GetSureBranchTarget(u32 addr, MemoryInterface& reader)
 	{
-		u32 op = reader.read32(addr);
+		u32 op = reader.Read32(addr);
 		const R5900::OPCODE& opcode = R5900::GetInstruction(op);
 
 		if ((opcode.flags & IS_BRANCH) && (opcode.flags & BRANCHTYPE_MASK) == BRANCHTYPE_BRANCH)
@@ -115,7 +115,7 @@ namespace MIPSAnalyst
 			return INVALIDTARGET;
 	}
 
-	static u32 ScanAheadForJumpback(u32 fromAddr, u32 knownStart, u32 knownEnd, MemoryReader& reader) {
+	static u32 ScanAheadForJumpback(u32 fromAddr, u32 knownStart, u32 knownEnd, MemoryInterface& reader) {
 		static const u32 MAX_AHEAD_SCAN = 0x1000;
 		// Maybe a bit high... just to make sure we don't get confused by recursive tail recursion.
 		static const u32 MAX_FUNC_SIZE = 0x20000;
@@ -134,7 +134,7 @@ namespace MIPSAnalyst
 		u32 furthestJumpbackAddr = INVALIDTARGET;
 
 		for (u32 ahead = fromAddr; ahead < fromAddr + MAX_AHEAD_SCAN; ahead += 4) {
-			u32 aheadOp = reader.read32(ahead);
+			u32 aheadOp = reader.Read32(ahead);
 			u32 target = GetBranchTargetNoRA(ahead, reader);
 			if (target == INVALIDTARGET && ((aheadOp & 0xFC000000) == 0x08000000)) {
 				target = GetJumpTarget(ahead, reader);
@@ -158,7 +158,7 @@ namespace MIPSAnalyst
 
 		if (closestJumpbackAddr != INVALIDTARGET && furthestJumpbackAddr == INVALIDTARGET) {
 			for (u32 behind = closestJumpbackTarget; behind < fromAddr; behind += 4) {
-				u32 behindOp = reader.read32(behind);
+				u32 behindOp = reader.Read32(behind);
 				u32 target = GetBranchTargetNoRA(behind, reader);
 				if (target == INVALIDTARGET && ((behindOp & 0xFC000000) == 0x08000000)) {
 					target = GetJumpTarget(behind, reader);
@@ -175,7 +175,7 @@ namespace MIPSAnalyst
 		return furthestJumpbackAddr;
 	}
 
-	void ScanForFunctions(ccc::SymbolDatabase& database, MemoryReader& reader, u32 startAddr, u32 endAddr, bool generateHashes) {
+	void ScanForFunctions(ccc::SymbolDatabase& database, MemoryInterface& reader, u32 startAddr, u32 endAddr, bool generateHashes) {
 		std::vector<MIPSAnalyst::AnalyzedFunction> functions;
 		AnalyzedFunction currentFunction = {startAddr};
 
@@ -200,7 +200,7 @@ namespace MIPSAnalyst
 				continue;
 			}
 
-			u32 op = reader.read32(addr);
+			u32 op = reader.Read32(addr);
 
 			u32 target = GetBranchTargetNoRA(addr, reader);
 			if (target != INVALIDTARGET) {
@@ -288,7 +288,7 @@ namespace MIPSAnalyst
 				// Most functions are aligned to 8 or 16 bytes, so add padding
 				// to this one unless a symbol exists implying a new function
 				// follows immediately.
-				while (next_symbol == nullptr && ((addr+8) % 16) && reader.read32(addr+8) == 0)
+				while (next_symbol == nullptr && ((addr+8) % 16) && reader.Read32(addr+8) == 0)
 					addr += 4;
 
 				currentFunction.end = addr + 4;
@@ -373,7 +373,7 @@ namespace MIPSAnalyst
 
 		info.cpu = cpu;
 		info.opcodeAddress = address;
-		info.encodedOpcode = cpu->read32(address);
+		info.encodedOpcode = cpu->Read32(address);
 		u32 op = info.encodedOpcode;
 		const R5900::OPCODE& opcode = R5900::GetInstruction(op);
 

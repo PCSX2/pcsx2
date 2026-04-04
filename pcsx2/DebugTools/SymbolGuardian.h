@@ -3,19 +3,18 @@
 
 #pragma once
 
-#include <atomic>
-#include <thread>
-#include <functional>
-#include <mutex>
-#include <shared_mutex>
+#include "common/MemoryInterface.h"
+#include "common/Pcsx2Types.h"
 
 #include <ccc/ast.h>
 #include <ccc/symbol_database.h>
 #include <ccc/symbol_file.h>
 
-#include "common/Pcsx2Types.h"
-
-class MemoryReader;
+#include <atomic>
+#include <functional>
+#include <mutex>
+#include <shared_mutex>
+#include <thread>
 
 struct SymbolInfo
 {
@@ -76,14 +75,14 @@ public:
 
 	// Hash all the functions in the database and store the hashes in the
 	// original hash field of said objects.
-	static void GenerateFunctionHashes(ccc::SymbolDatabase& database, MemoryReader& reader);
+	static void GenerateFunctionHashes(ccc::SymbolDatabase& database, MemoryInterface& reader);
 
 	// Hash all the functions in the database that have original hashes and
 	// store the results in the current hash fields of said objects.
-	static void UpdateFunctionHashes(ccc::SymbolDatabase& database, MemoryReader& reader);
+	static void UpdateFunctionHashes(ccc::SymbolDatabase& database, MemoryInterface& reader);
 
 	// Hash a function and return the result.
-	static std::optional<ccc::FunctionHash> HashFunction(const ccc::Function& function, MemoryReader& reader);
+	static std::optional<ccc::FunctionHash> HashFunction(const ccc::Function& function, MemoryInterface& reader);
 
 	// Delete all symbols from modules that have the "is_irx" flag set.
 	void ClearIrxModules();
