@@ -958,11 +958,22 @@ void GSDeviceOGL::DestroyResources()
 		glDeleteBuffers(1, &m_expand_ibo);
 
 	if (m_fbo != 0)
+	{
 		glDeleteFramebuffers(1, &m_fbo);
+		m_fbo = 0;
+	}
 	if (m_fbo_read != 0)
+	{
 		glDeleteFramebuffers(1, &m_fbo_read);
+		m_fbo_read = 0;
+	}
 	if (m_fbo_write != 0)
+	{
 		glDeleteFramebuffers(1, &m_fbo_write);
+		m_fbo_write = 0;
+	}
+
+	GLState::fbo = 0;
 }
 
 bool GSDeviceOGL::UpdateWindow()
