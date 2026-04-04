@@ -63,7 +63,7 @@ set HARFBUZZ=13.0.0
 set LIBJPEGTURBO=3.1.3
 set LIBPNG=1655
 set LIBPNGLONG=1.6.55
-set SDL=SDL3-3.4.2
+set SDL=SDL3-3.4.4
 set LZ4=1.10.0
 set WEBP=1.6.0
 set ZLIB=1.3.2
@@ -94,7 +94,7 @@ call :downloadfile "lpng%LIBPNG%.zip" https://download.sourceforge.net/libpng/lp
 call :downloadfile "lpng%LIBPNG%-apng.patch.gz" https://download.sourceforge.net/libpng-apng/libpng-%LIBPNGLONG%-apng.patch.gz 452a1a290bd0cf18737fad0057dc17b7fdf10a73eda2d6d4f31ba04fda25ef2c || goto error
 call :downloadfile "libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/%LIBJPEGTURBO%/libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" 075920b826834ac4ddf97661cc73491047855859affd671d52079c6867c1c6c0 || goto error
 call :downloadfile "libwebp-%WEBP%.tar.gz" "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-%WEBP%.tar.gz" e4ab7009bf0629fd11982d4c2aa83964cf244cffba7347ecd39019a9e38c4564 || goto error
-call :downloadfile "%SDL%.zip" "https://libsdl.org/release/%SDL%.zip" 4954d436c95c42aa258d4eb3fb95f8ecc5d7a3dc411f0f41ac2692d34b9b9e9c || goto error
+call :downloadfile "%SDL%.zip" "https://libsdl.org/release/%SDL%.zip" 6bd4fbb665f77899a488b381c5b6e9681fc57c60b669738f985fea714f3456c5 || goto error
 call :downloadfile "lz4-%LZ4%.zip" "https://github.com/lz4/lz4/archive/refs/tags/v%LZ4%.zip" 3224b4c80f351f194984526ef396f6079bd6332dd9825c72ac0d7a37b3cdc565 || goto error
 call :downloadfile "zlib%ZLIBSHORT%.zip" "https://github.com/madler/zlib/releases/download/v%ZLIB%/zlib%ZLIBSHORT%.zip" e8bf55f3017aa181690990cb58a994e77885da140609fc8f94abe9b65d2cae28 || goto error
 call :downloadfile "zstd-%ZSTD%.zip" "https://github.com/facebook/zstd/archive/refs/tags/v%ZSTD%.zip" 7897bc5d620580d9b7cd3539c44b59d78f3657d33663fe97a145e07b4ebd69a4 || goto error
