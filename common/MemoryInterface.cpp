@@ -3,6 +3,8 @@
 
 #include "MemoryInterface.h"
 
+#include <bit>
+
 template <MemoryAccessType Value>
 Value MemoryInterface::Read(u32 address, bool* valid)
 {
@@ -24,6 +26,10 @@ Value MemoryInterface::Read(u32 address, bool* valid)
 			.hi = static_cast<s64>(value.hi),
 		};
 	}
+	else if constexpr (std::is_same_v<Value, float>)
+		return std::bit_cast<float>(Read32(address, valid));
+	else if constexpr (std::is_same_v<Value, double>)
+		return std::bit_cast<double>(Read64(address, valid));
 	else
 		return Value(0);
 }
@@ -48,6 +54,10 @@ bool MemoryInterface::Write(u32 address, Value value)
 		unsigned_value.hi = static_cast<u64>(value.hi);
 		return Write128(address, unsigned_value);
 	}
+	else if constexpr (std::is_same_v<Value, float>)
+		return Write32(address, std::bit_cast<u32>(value));
+	else if constexpr (std::is_same_v<Value, double>)
+		return Write64(address, std::bit_cast<u64>(value));
 	else
 		return false;
 }
@@ -135,4 +145,6 @@ EXPLICITLY_INSTANTIATE_TEMPLATES(u64)
 EXPLICITLY_INSTANTIATE_TEMPLATES(s64)
 EXPLICITLY_INSTANTIATE_TEMPLATES(u128)
 EXPLICITLY_INSTANTIATE_TEMPLATES(s128)
+EXPLICITLY_INSTANTIATE_TEMPLATES(float)
+EXPLICITLY_INSTANTIATE_TEMPLATES(double)
 #undef EXPLICITLY_INSTANTIATE_TEMPLATES

@@ -14,6 +14,7 @@
 #include "R3000A.h"
 #include "IopMem.h"
 #include "VMManager.h"
+#include "vtlb.h"
 
 #include "common/StringUtil.h"
 
@@ -74,7 +75,7 @@ char* DebugInterface::stringFromPointer(u32 p)
 	// Hopefully the checks in isValidAddress() are sufficient.
 	for (u32 i = 0; i < BUFFER_LEN; i++)
 	{
-		char c = read8(p + i);
+		char c = Read8(p + i);
 		buf[i] = c;
 
 		if (c == 0)
@@ -121,7 +122,7 @@ std::optional<u32> DebugInterface::getStackFrameSize(const ccc::Function& functi
 		// start of the current function that is in the form of
 		// "addiu $sp, $sp, frame_size" instead.
 
-		u32 instruction = read32(function.address().value);
+		u32 instruction = Read32(function.address().value);
 
 		if ((instruction & 0xffff0000) == 0x27bd0000)
 			stack_frame_size = -static_cast<s16>(instruction & 0xffff);
@@ -209,167 +210,140 @@ const char* DebugInterface::longCpuName(BreakPointCpu cpu)
 	return "";
 }
 
-//
-// R5900DebugInterface
-//
+// *****************************************************************************
 
 BreakPointCpu R5900DebugInterface::getCpuType()
 {
 	return BREAKPOINT_EE;
 }
 
-u32 R5900DebugInterface::read8(u32 address)
+static int InvalidReadResult(bool* valid)
+{
+	if (valid)
+		*valid = false;
+	return -1;
+}
+
+u8 R5900DebugInterface::Read8(u32 address, bool* valid)
 {
 	if (!isValidAddress(address))
-		return -1;
+		return static_cast<u8>(InvalidReadResult(valid));
 
 	u8 value;
-	if (!vtlb_memSafeReadBytes(address, &value, sizeof(u8)))
-		return -1;
+	if (!vtlb_memSafeReadBytes(address, &value, sizeof(value)))
+		return static_cast<u8>(InvalidReadResult(valid));
 
+	if (valid)
+		*valid = true;
 	return value;
 }
 
-u32 R5900DebugInterface::read8(u32 address, bool& valid)
+u16 R5900DebugInterface::Read16(u32 address, bool* valid)
 {
-	if (!(valid = isValidAddress(address)))
-		return -1;
-
-	u8 value;
-	if (!(valid = vtlb_memSafeReadBytes(address, &value, sizeof(u8))))
-		return -1;
-
-	return value;
-}
-
-
-u32 R5900DebugInterface::read16(u32 address)
-{
-	if (!isValidAddress(address) || address % 2)
-		return -1;
+	if (!isValidAddress(address))
+		return static_cast<u16>(InvalidReadResult(valid));
 
 	u16 value;
-	if (!vtlb_memSafeReadBytes(address, &value, sizeof(u16)))
-		return -1;
+	if (!vtlb_memSafeReadBytes(address, &value, sizeof(value)))
+		return static_cast<u16>(InvalidReadResult(valid));
 
-	return static_cast<u32>(value);
+	if (valid)
+		*valid = true;
+	return value;
 }
 
-u32 R5900DebugInterface::read16(u32 address, bool& valid)
+u32 R5900DebugInterface::Read32(u32 address, bool* valid)
 {
-	if (!(valid = (isValidAddress(address) || address % 2)))
-		return -1;
-
-	u16 value;
-	if (!(valid = vtlb_memSafeReadBytes(address, &value, sizeof(u16))))
-		return -1;
-
-	return static_cast<u32>(value);
-}
-
-u32 R5900DebugInterface::read32(u32 address)
-{
-	if (!isValidAddress(address) || address % 4)
-		return -1;
+	if (!isValidAddress(address))
+		return static_cast<u32>(InvalidReadResult(valid));
 
 	u32 value;
-	if (!vtlb_memSafeReadBytes(address, &value, sizeof(u32)))
-		return -1;
+	if (!vtlb_memSafeReadBytes(address, &value, sizeof(value)))
+		return static_cast<u32>(InvalidReadResult(valid));
 
+	if (valid)
+		*valid = true;
 	return value;
 }
 
-u32 R5900DebugInterface::read32(u32 address, bool& valid)
+u64 R5900DebugInterface::Read64(u32 address, bool* valid)
 {
-	if (!(valid = (isValidAddress(address) || address % 4)))
-		return -1;
-
-	u32 value;
-	if (!(valid = vtlb_memSafeReadBytes(address, &value, sizeof(u32))))
-		return -1;
-
-	return value;
-}
-
-u64 R5900DebugInterface::read64(u32 address)
-{
-	if (!isValidAddress(address) || address % 8)
-		return -1;
+	if (!isValidAddress(address))
+		return static_cast<u64>(InvalidReadResult(valid));
 
 	u64 value;
-	if (!vtlb_memSafeReadBytes(address, &value, sizeof(u64)))
-		return -1;
+	if (!vtlb_memSafeReadBytes(address, &value, sizeof(value)))
+		return static_cast<u64>(InvalidReadResult(valid));
+
+	if (valid)
+		*valid = true;
+	return value;
+}
+
+static u128 InvalidReadResult128(bool* valid)
+{
+	if (valid)
+		*valid = false;
+
+	u128 value;
+	value.lo = static_cast<u64>(-1);
+	value.hi = static_cast<u64>(-1);
+	return value;
+}
+
+u128 R5900DebugInterface::Read128(u32 address, bool* valid)
+{
+	if (!isValidAddress(address))
+		return InvalidReadResult128(valid);
+
+	u128 value;
+	if (!vtlb_memSafeReadBytes(address, &value, sizeof(u128)))
+		return InvalidReadResult128(valid);
+
+	if (valid)
+		*valid = true;
 
 	return value;
 }
 
-u64 R5900DebugInterface::read64(u32 address, bool& valid)
+bool R5900DebugInterface::ReadBytes(u32 address, void* dest, u32 size)
 {
-	if (!(valid = (isValidAddress(address) || address % 8)))
-		return -1;
-
-	u64 value;
-	if (!(valid = vtlb_memSafeReadBytes(address, &value, sizeof(u64))))
-		return -1;
-
-	return value;
+	return vtlb_memSafeReadBytes(address, dest, size);
 }
 
-u128 R5900DebugInterface::read128(u32 address)
+bool R5900DebugInterface::Write8(u32 address, u8 value)
 {
-	alignas(16) u128 result;
-	if (!isValidAddress(address) || address % 16)
-	{
-		result.hi = result.lo = -1;
-		return result;
-	}
-
-	if (!vtlb_memSafeReadBytes(address, &result, sizeof(u128)))
-	{
-		result.hi = result.lo = -1;
-	}
-
-	return result;
+	return isValidAddress(address) && vtlb_memSafeWriteBytes(address, &value, sizeof(value));
 }
 
-void R5900DebugInterface::write8(u32 address, u8 value)
+bool R5900DebugInterface::Write16(u32 address, u16 value)
 {
-	if (!isValidAddress(address))
-		return;
-
-	vtlb_memSafeWriteBytes(address, &value, sizeof(u8));
+	return isValidAddress(address) && vtlb_memSafeWriteBytes(address, &value, sizeof(value));
 }
 
-void R5900DebugInterface::write16(u32 address, u16 value)
+bool R5900DebugInterface::Write32(u32 address, u32 value)
 {
-	if (!isValidAddress(address))
-		return;
-
-	vtlb_memSafeWriteBytes(address, &value, sizeof(u16));
+	return isValidAddress(address) && vtlb_memSafeWriteBytes(address, &value, sizeof(value));
 }
 
-void R5900DebugInterface::write32(u32 address, u32 value)
+bool R5900DebugInterface::Write64(u32 address, u64 value)
 {
-	if (!isValidAddress(address))
-		return;
-
-	vtlb_memSafeWriteBytes(address, &value, sizeof(u32));
+	return isValidAddress(address) && vtlb_memSafeWriteBytes(address, &value, sizeof(value));
 }
 
-void R5900DebugInterface::write64(u32 address, u64 value)
+bool R5900DebugInterface::Write128(u32 address, u128 value)
 {
-	if (!isValidAddress(address))
-		return;
-
-	vtlb_memSafeWriteBytes(address, &value, sizeof(u64));
+	return isValidAddress(address) && vtlb_memSafeWriteBytes(address, &value, sizeof(value));
 }
 
-void R5900DebugInterface::write128(u32 address, u128 value)
+bool R5900DebugInterface::WriteBytes(u32 address, void* src, u32 size)
 {
-	if (!isValidAddress(address))
-		return;
+	return vtlb_memSafeWriteBytes(address, src, size);
+}
 
-	vtlb_memSafeWriteBytes(address, &value, sizeof(u128));
+bool R5900DebugInterface::CompareBytes(u32 address, void* src, u32 size)
+{
+	return vtlb_memSafeCmpBytes(address, src, size) == 0;
 }
 
 int R5900DebugInterface::getRegisterCategoryCount()
@@ -650,7 +624,7 @@ std::string R5900DebugInterface::disasm(u32 address, bool simplify)
 {
 	std::string out;
 
-	u32 op = read32(address);
+	u32 op = Read32(address);
 	R5900::disR5900Fasm(out, op, address, simplify);
 	return out;
 }
@@ -748,106 +722,114 @@ BreakPointCpu R3000DebugInterface::getCpuType()
 	return BREAKPOINT_IOP;
 }
 
-u32 R3000DebugInterface::read8(u32 address)
+u8 R3000DebugInterface::Read8(u32 address, bool* valid)
 {
 	if (!isValidAddress(address))
-		return -1;
-	return iopMemRead8(address);
+		return static_cast<u8>(InvalidReadResult(valid));
+
+	u8 value = iopMemRead8(address);
+
+	if (valid)
+		*valid = true;
+	return value;
 }
 
-u32 R3000DebugInterface::read8(u32 address, bool& valid)
-{
-	if (!(valid = isValidAddress(address)))
-		return -1;
-	return iopMemRead8(address);
-}
-
-u32 R3000DebugInterface::read16(u32 address)
+u16 R3000DebugInterface::Read16(u32 address, bool* valid)
 {
 	if (!isValidAddress(address))
-		return -1;
-	return iopMemRead16(address);
+		return static_cast<u16>(InvalidReadResult(valid));
+
+	u16 value = iopMemRead16(address);
+
+	if (valid)
+		*valid = true;
+	return value;
 }
 
-u32 R3000DebugInterface::read16(u32 address, bool& valid)
-{
-	if (!(valid = isValidAddress(address)))
-		return -1;
-	return iopMemRead16(address);
-}
-
-u32 R3000DebugInterface::read32(u32 address)
+u32 R3000DebugInterface::Read32(u32 address, bool* valid)
 {
 	if (!isValidAddress(address))
-		return -1;
-	return iopMemRead32(address);
+		return static_cast<u32>(InvalidReadResult(valid));
+
+	u32 value = iopMemRead32(address);
+
+	if (valid)
+		*valid = true;
+	return value;
 }
 
-u32 R3000DebugInterface::read32(u32 address, bool& valid)
+u64 R3000DebugInterface::Read64(u32 address, bool* valid)
 {
-	if (!(valid = isValidAddress(address)))
-		return -1;
-	return iopMemRead32(address);
+	return InvalidReadResult(valid);
 }
 
-u64 R3000DebugInterface::read64(u32 address)
+u128 R3000DebugInterface::Read128(u32 address, bool* valid)
 {
-	return 0;
+	return InvalidReadResult128(valid);
 }
 
-u64 R3000DebugInterface::read64(u32 address, bool& valid)
+bool R3000DebugInterface::ReadBytes(u32 address, void* dest, u32 size)
 {
-	return 0;
+	return iopMemSafeReadBytes(address, dest, size);
 }
 
-
-u128 R3000DebugInterface::read128(u32 address)
-{
-	return u128::From32(0);
-}
-
-void R3000DebugInterface::write8(u32 address, u8 value)
+bool R3000DebugInterface::Write8(u32 address, u8 value)
 {
 	if (!isValidAddress(address))
-		return;
+		return false;
 
 	iopMemWrite8(address, value);
+	return true;
 }
 
-void R3000DebugInterface::write16(u32 address, u16 value)
+bool R3000DebugInterface::Write16(u32 address, u16 value)
 {
 	if (!isValidAddress(address))
-		return;
+		return false;
 
 	iopMemWrite16(address, value);
+	return true;
 }
 
-void R3000DebugInterface::write32(u32 address, u32 value)
+bool R3000DebugInterface::Write32(u32 address, u32 value)
 {
 	if (!isValidAddress(address))
-		return;
+		return false;
 
 	iopMemWrite32(address, value);
+	return true;
 }
 
-void R3000DebugInterface::write64(u32 address, u64 value)
+bool R3000DebugInterface::Write64(u32 address, u64 value)
 {
 	if (!isValidAddress(address))
-		return;
+		return false;
 
 	iopMemWrite32(address + 0, value);
 	iopMemWrite32(address + 4, value >> 32);
+	return true;
 }
 
-void R3000DebugInterface::write128(u32 address, u128 value)
+bool R3000DebugInterface::Write128(u32 address, u128 value)
 {
 	if (!isValidAddress(address))
-		return;
+		return false;
 
 	iopMemWrite32(address + 0x0, value._u32[0]);
 	iopMemWrite32(address + 0x4, value._u32[1]);
 	iopMemWrite32(address + 0x8, value._u32[2]);
 	iopMemWrite32(address + 0xc, value._u32[3]);
+	return true;
+}
+
+bool R3000DebugInterface::WriteBytes(u32 address, void* src, u32 size)
+{
+	return iopMemSafeWriteBytes(address, src, size);
+}
+
+bool R3000DebugInterface::CompareBytes(u32 address, void* src, u32 size)
+{
+	return iopMemSafeCmpBytes(address, src, size) == 0;
 }
 
 int R3000DebugInterface::getRegisterCategoryCount()
@@ -1016,7 +998,7 @@ std::string R3000DebugInterface::disasm(u32 address, bool simplify)
 {
 	std::string out;
 
-	u32 op = read32(address);
+	u32 op = Read32(address);
 	R5900::disR5900Fasm(out, op, address, simplify);
 	return out;
 }
@@ -1072,90 +1054,119 @@ std::vector<IopMod> R3000DebugInterface::GetModuleList() const
 	return getIOPModules();
 }
 
+// *****************************************************************************
+
 ElfMemoryReader::ElfMemoryReader(const ccc::ElfFile& elf)
 	: m_elf(elf)
 {
 }
 
-u32 ElfMemoryReader::read8(u32 address)
+u8 ElfMemoryReader::Read8(u32 address, bool* valid)
 {
 	std::optional<u8> result = m_elf.get_object_virtual<u8>(address);
 	if (!result.has_value())
-		return 0;
+		return InvalidReadResult(valid);
 
+	if (valid)
+		*valid = true;
 	return *result;
 }
 
-u32 ElfMemoryReader::read8(u32 address, bool& valid)
-{
-	std::optional<u8> result = m_elf.get_object_virtual<u8>(address);
-	valid = result.has_value();
-	if (!valid)
-		return 0;
-
-	return *result;
-}
-
-u32 ElfMemoryReader::read16(u32 address)
+u16 ElfMemoryReader::Read16(u32 address, bool* valid)
 {
 	std::optional<u16> result = m_elf.get_object_virtual<u16>(address);
 	if (!result.has_value())
-		return 0;
+		return InvalidReadResult(valid);
 
+	if (valid)
+		*valid = true;
 	return *result;
 }
 
-u32 ElfMemoryReader::read16(u32 address, bool& valid)
-{
-	std::optional<u16> result = m_elf.get_object_virtual<u16>(address);
-	valid = result.has_value();
-	if (!valid)
-		return 0;
-
-	return *result;
-}
-
-u32 ElfMemoryReader::read32(u32 address)
+u32 ElfMemoryReader::Read32(u32 address, bool* valid)
 {
 	std::optional<u32> result = m_elf.get_object_virtual<u32>(address);
 	if (!result.has_value())
-		return 0;
+		return InvalidReadResult(valid);
 
+	if (valid)
+		*valid = true;
 	return *result;
 }
 
-u32 ElfMemoryReader::read32(u32 address, bool& valid)
-{
-	std::optional<u32> result = m_elf.get_object_virtual<u32>(address);
-	valid = result.has_value();
-	if (!valid)
-		return 0;
-
-	return *result;
-}
-
-u64 ElfMemoryReader::read64(u32 address)
+u64 ElfMemoryReader::Read64(u32 address, bool* valid)
 {
 	std::optional<u64> result = m_elf.get_object_virtual<u64>(address);
 	if (!result.has_value())
-		return 0;
+		return InvalidReadResult(valid);
 
+	if (valid)
+		*valid = true;
 	return *result;
 }
 
-u64 ElfMemoryReader::read64(u32 address, bool& valid)
+u128 ElfMemoryReader::Read128(u32 address, bool* valid)
 {
-	std::optional<u64> result = m_elf.get_object_virtual<u64>(address);
-	valid = result.has_value();
-	if (!valid)
-		return 0;
+	std::optional<u128> result = m_elf.get_object_virtual<u128>(address);
+	if (!result.has_value())
+		return InvalidReadResult128(valid);
 
+	if (valid)
+		*valid = true;
 	return *result;
 }
 
-//
-// MipsExpressionFunctions
-//
+bool ElfMemoryReader::ReadBytes(u32 address, void* dest, u32 size)
+{
+	std::optional<std::span<const u8>> bytes = m_elf.get_virtual(address, size);
+	if (!bytes.has_value())
+		return false;
+
+	std::memcpy(dest, bytes->data(), size);
+
+	return true;
+}
+
+bool ElfMemoryReader::Write8(u32 address, u8 value)
+{
+	return false;
+}
+
+bool ElfMemoryReader::Write16(u32 address, u16 value)
+{
+	return false;
+}
+
+bool ElfMemoryReader::Write32(u32 address, u32 value)
+{
+	return false;
+}
+
+bool ElfMemoryReader::Write64(u32 address, u64 value)
+{
+	return false;
+}
+
+bool ElfMemoryReader::Write128(u32 address, u128 value)
+{
+	return false;
+}
+
+bool ElfMemoryReader::WriteBytes(u32 address, void* src, u32 size)
+{
+	return false;
+}
+
+bool ElfMemoryReader::CompareBytes(u32 address, void* src, u32 size)
+{
+	std::optional<std::span<const u8>> bytes = m_elf.get_virtual(address, size);
+	if (!bytes.has_value())
+		return false;
+
+	return std::memcmp(src, bytes->data(), size) == 0;
+}
+
+// *****************************************************************************
 
 MipsExpressionFunctions::MipsExpressionFunctions(
 	DebugInterface* cpu, const ccc::SymbolDatabase* symbolDatabase, bool shouldEnumerateSymbols)
@@ -1309,7 +1320,7 @@ u64 MipsExpressionFunctions::getReferenceValue(u64 referenceIndex)
 		return m_cpu->getLO()._u64[0];
 	if (referenceIndex & REF_INDEX_IS_OPSL)
 	{
-		const u32 OP = m_cpu->read32(m_cpu->getPC());
+		const u32 OP = m_cpu->Read32(m_cpu->getPC());
 		const R5900::OPCODE& opcode = R5900::GetInstruction(OP);
 		if (opcode.flags & IS_MEMORY)
 		{
@@ -1373,16 +1384,16 @@ bool MipsExpressionFunctions::getMemoryValue(u32 address, int size, u64& dest, s
 	switch (size)
 	{
 		case 1:
-			dest = m_cpu->read8(address);
+			dest = m_cpu->Read8(address);
 			break;
 		case 2:
-			dest = m_cpu->read16(address);
+			dest = m_cpu->Read16(address);
 			break;
 		case 4:
-			dest = m_cpu->read32(address);
+			dest = m_cpu->Read32(address);
 			break;
 		case 8:
-			dest = m_cpu->read64(address);
+			dest = m_cpu->Read64(address);
 			break;
 	}
 
