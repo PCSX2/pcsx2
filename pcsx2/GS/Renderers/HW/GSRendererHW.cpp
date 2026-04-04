@@ -10003,7 +10003,8 @@ void GSRendererHW::StartDepthAsRTFeedback()
 	{
 		GL_PUSH("HW: Creating temporary R32 RT for depth feedback");
 
-		pxAssert(m_conf.ps.no_color1); // Should not be dual-source blending with multiple render targets.
+		 // Should not be hw blending with multiple render targets.
+		pxAssert(!m_conf.blend.enable && !m_conf.blend_multi_pass.blend.enable);
 
 		// We should have depth output or feedback doesn't make sense.
 		// We will output to both the depth buffer and color clone simultaneously in the shader.
