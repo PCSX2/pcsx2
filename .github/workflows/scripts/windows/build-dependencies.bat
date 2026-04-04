@@ -78,9 +78,9 @@ set LIBX264=b35605ace3ddf7c1a5d67a2eb553f034aef41d55
 set FREETYPE=2.14.1
 set HARFBUZZ=13.0.0
 set LIBJPEGTURBO=3.1.3
-set LIBPNG=1655
-set LIBPNGLONG=1.6.55
 set SDL=SDL3-3.4.4
+set LIBPNG=1656
+set LIBPNGLONG=1.6.56
 set LZ4=1.10.0
 set WEBP=1.6.0
 set ZLIB=1.3.2
@@ -117,8 +117,8 @@ call :downloadfile "x264-%LIBX264%.zip" "https://code.videolan.org/videolan/x264
 
 call :downloadfile "freetype-%FREETYPE%.tar.gz" https://sourceforge.net/projects/freetype/files/freetype2/%FREETYPE%/freetype-%FREETYPE%.tar.gz/download 174d9e53402e1bf9ec7277e22ec199ba3e55a6be2c0740cb18c0ee9850fc8c34 || goto error
 call :downloadfile "harfbuzz-%HARFBUZZ%.zip" https://github.com/harfbuzz/harfbuzz/archive/refs/tags/%HARFBUZZ%.zip a448a8abc3f9ae8eef19ef3ce247370957c1fada5d58a01b5e281e792f40fa61 || goto error
-call :downloadfile "lpng%LIBPNG%.zip" https://download.sourceforge.net/libpng/lpng1655.zip aa45ef52ff7a4e61f34af866b3254b0b243ddc42fe2adb823b0843d2a57c2e86 || goto error
-call :downloadfile "lpng%LIBPNG%-apng.patch.gz" https://download.sourceforge.net/libpng-apng/libpng-%LIBPNGLONG%-apng.patch.gz 017c06f75ffed25f6cda9b5369ec6da0ac35a6616adf7abe4222516a0237f37a || goto error
+call :downloadfile "lpng%LIBPNG%.zip" https://download.sourceforge.net/libpng/lpng1656.zip 1ccf023c5f4ee1a7b75c5624f53acede5066f79b2fb14ddffaa28369adf9baac || goto error
+call :downloadfile "lpng%LIBPNG%-apng.patch.gz" https://download.sourceforge.net/libpng-apng/libpng-%LIBPNGLONG%-apng.patch.gz 9ce32d4a2763a2ac5f258726ba2f49e9011327c1ee8c30862a32d0f30889fbe8 || goto error
 call :downloadfile "libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/%LIBJPEGTURBO%/libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" 075920b826834ac4ddf97661cc73491047855859affd671d52079c6867c1c6c0 || goto error
 call :downloadfile "libwebp-%WEBP%.tar.gz" "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-%WEBP%.tar.gz" e4ab7009bf0629fd11982d4c2aa83964cf244cffba7347ecd39019a9e38c4564 || goto error
 call :downloadfile "%SDL%.zip" "https://libsdl.org/release/%SDL%.zip" 6bd4fbb665f77899a488b381c5b6e9681fc57c60b669738f985fea714f3456c5 || goto error
