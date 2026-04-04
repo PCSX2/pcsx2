@@ -207,7 +207,7 @@ echo Building SDL...
 rmdir /S /Q "%SDL%"
 %SEVENZIP% x "%SDL%.zip" || goto error
 cd "%SDL%" || goto error
-cmake -B build %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release %FORCEPDB% -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=ON -DSDL_SHARED=ON -DSDL_STATIC=OFF -G Ninja || goto error
+cmake -B build %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release %FORCEPDB% -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=ON -DSDL_SHARED=ON -DSDL_STATIC=OFF -DSDL_VIDEO=OFF -DSDL_POWER=OFF -DSDL_SENSOR=OFF -DSDL_DIALOG=OFF -DSDL_TRAY=OFF -DSDL_TEST_LIBRARY=OFF -G Ninja || goto error
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
 copy build\SDL3.pdb "%INSTALLDIR%\bin" || goto error

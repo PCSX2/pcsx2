@@ -149,7 +149,7 @@ echo "Installing SDL..."
 rm -fr "$SDL"
 tar xf "$SDL.tar.gz"
 cd "$SDL"
-cmake -B build "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DSDL_X11=OFF -DBUILD_SHARED_LIBS=ON
+cmake -B build "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DSDL_VIDEO=OFF -DSDL_POWER=OFF -DSDL_SENSOR=OFF -DSDL_DIALOG=OFF -DSDL_TRAY=OFF -DSDL_TEST_LIBRARY=OFF -DBUILD_SHARED_LIBS=ON
 make -C build "-j$NPROCS"
 make -C build install
 cd ..
