@@ -5,7 +5,9 @@
 
 #include "Assertions.h"
 
+#if RYML_VERSION_MAJOR > 0 || RYML_VERSION_MINOR >= 11
 #include "c4/yml/error.def.hpp" // for ryml::err_basic_format etc
+#endif
 
 #include <csetjmp>
 
