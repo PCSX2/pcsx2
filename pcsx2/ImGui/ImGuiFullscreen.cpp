@@ -2302,7 +2302,7 @@ void ImGuiFullscreen::DrawFileSelector()
 
 		ImGui::PopStyleColor(1);
 
-		if ((ImGui::Shortcut(ImGuiKey_Backspace, false) || ImGui::Shortcut(ImGuiKey_NavGamepadInput, false)) &&
+		if ((ImGui::Shortcut(ImGuiKey_Backspace, false) || ImGui::Shortcut(ImGuiKey_NavGamepadContextMenu, false)) &&
 			(!s_file_selector_items.empty() && s_file_selector_items.front().display_name == ICON_FA_FOLDER_OPEN " <Parent Directory>"))
 		{
 			parent_wanted = true;

@@ -1347,7 +1347,7 @@ void FullscreenUI::DrawLandingWindow()
 
 	if (ImGui::Shortcut(ImGuiKey_GamepadBack) || ImGui::Shortcut(ImGuiKey_F1))
 		OpenAboutWindow();
-	if (ImGui::Shortcut(ImGuiKey_NavGamepadInput) || ImGui::Shortcut(ImGuiKey_Space))
+	if (ImGui::Shortcut(ImGuiKey_NavGamepadContextMenu) || ImGui::Shortcut(ImGuiKey_Space))
 		SwitchToGameList();
 	else if (ImGui::Shortcut(ImGuiKey_NavGamepadMenu) || ImGui::Shortcut(ImGuiKey_F11))
 		DoToggleFullscreen();
@@ -2564,7 +2564,7 @@ void FullscreenUI::DrawGameListWindow()
 
 	EndFullscreenWindow();
 
-	if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadInput, false) || ImGui::IsKeyPressed(ImGuiKey_F1, false))
+	if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadContextMenu, false) || ImGui::IsKeyPressed(ImGuiKey_F1, false))
 	{
 		s_game_list_view = (s_game_list_view == GameListView::Grid) ? GameListView::List : GameListView::Grid;
 	}
