@@ -220,7 +220,7 @@ void WavInFile::init()
     }
 
     // sanity check for format parameters
-    if ((header.format.channel_number < 1) || (header.format.channel_number > 9) ||
+    if ((header.format.channel_number < 1) || (header.format.channel_number > 32) ||
         (header.format.sample_rate < 4000) || (header.format.sample_rate > 192000) ||
         (header.format.byte_per_sample < 1) || (header.format.byte_per_sample > 320) ||
         (header.format.bits_per_sample < 8) || (header.format.bits_per_sample > 32))
