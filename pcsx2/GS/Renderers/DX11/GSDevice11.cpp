@@ -571,19 +571,19 @@ void GSDevice11::Destroy()
 	m_om_bs.clear();
 	m_rs.reset();
 
-	if (m_state.rt_view)
+	if (m_state.rtv)
 	{
-		m_state.rt_view->Release();
-		m_state.rt_view = nullptr;
+		m_state.rtv->Release();
+		m_state.rtv = nullptr;
 	}
-	m_state.cached_rt_view = nullptr;
+	m_state.current_rt = nullptr;
 
 	if (m_state.dsv)
 	{
 		m_state.dsv->Release();
 		m_state.dsv = nullptr;
 	}
-	m_state.cached_dsv = nullptr;
+	m_state.current_ds = nullptr;
 
 	m_shader_cache.Close();
 
@@ -973,17 +973,17 @@ GSDevice::PresentResult GSDevice11::BeginPresent(bool frame_skip)
 
 	m_ctx->ClearRenderTargetView(m_swap_chain_rtv.get(), s_present_clear_color.data());
 	m_ctx->OMSetRenderTargets(1, m_swap_chain_rtv.addressof(), nullptr);
-	if (m_state.rt_view)
-		m_state.rt_view->Release();
-	m_state.rt_view = m_swap_chain_rtv.get();
-	m_state.rt_view->AddRef();
-	m_state.cached_rt_view = nullptr;
+	if (m_state.rtv)
+		m_state.rtv->Release();
+	m_state.rtv = m_swap_chain_rtv.get();
+	m_state.rtv->AddRef();
+	m_state.current_rt = nullptr;
 	if (m_state.dsv)
 	{
 		m_state.dsv->Release();
 		m_state.dsv = nullptr;
 	}
-	m_state.cached_dsv = nullptr;
+	m_state.current_ds = nullptr;
 
 	g_perfmon.Put(GSPerfMon::RenderPasses, 1);
 
@@ -1336,7 +1336,7 @@ void GSDevice11::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTextur
 	if (dTex)
 	{
 		// preemptively bind srv if possible
-		if (m_state.cached_rt_view != sTex && m_state.cached_dsv != sTex)
+		if (m_state.current_rt != sTex && m_state.current_ds != sTex)
 			PSSetShaderResource(0, sTex);
 
 		// ps unbind conflicting srvs
@@ -1410,7 +1410,7 @@ void GSDevice11::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	if (dTex)
 	{
 		// preemptively bind srv if possible
-		if (m_state.cached_rt_view != sTex && m_state.cached_dsv != sTex)
+		if (m_state.current_rt != sTex && m_state.current_ds != sTex)
 			PSSetShaderResource(0, sTex);
 
 		// ps unbind conflicting srvs
@@ -2208,7 +2208,7 @@ void GSDevice11::RenderImGui()
 			}
 
 			// Since we don't have the GSTexture...
-			m_state.ps_sr_views[0] = reinterpret_cast<ID3D11ShaderResourceView*>(pcmd->GetTexID());
+			m_state.ps_pending_srv[0] = reinterpret_cast<ID3D11ShaderResourceView*>(pcmd->GetTexID());
 			PSUpdateShaderState(true, true);
 
 			m_ctx->DrawIndexed(pcmd->ElemCount, m_index.start + pcmd->IdxOffset, vertex_offset + pcmd->VtxOffset);
@@ -2233,7 +2233,7 @@ void GSDevice11::SetupDATE(GSTexture* rt, GSTexture* ds, SetDATM datm, const GSV
 
 	// preemptively bind srv if possible
 
-	if (m_state.cached_rt_view != rt && m_state.cached_dsv != rt)
+	if (m_state.current_rt != rt && m_state.current_ds != rt)
 		PSSetShaderResource(0, rt);
 
 	// ps unbind conflicting srvs
@@ -2450,12 +2450,12 @@ void GSDevice11::VSSetShader(ID3D11VertexShader* vs, ID3D11Buffer* vs_cb)
 void GSDevice11::PSSetShaderResource(int i, GSTexture* sr)
 {
 	// Update local state only, PSUpdateShaderState updates gpu state.
-	m_state.ps_sr_views[i] = *static_cast<GSTexture11*>(sr);
+	m_state.ps_pending_srv[i] = *static_cast<GSTexture11*>(sr);
 }
 
 void GSDevice11::PSSetSamplerState(ID3D11SamplerState* ss0)
 {
-	m_state.ps_ss[0] = ss0;
+	m_state.ps_pending_ss[0] = ss0;
 }
 
 void GSDevice11::ClearSamplerCache()
@@ -2488,7 +2488,7 @@ void GSDevice11::PSUpdateShaderState(const bool sr_update, const bool ss_update)
 		bool sr_changed = false;
 		for (size_t i = 0; i < MAX_TEXTURES; ++i)
 		{
-			if (m_state.ps_cached_sr_views[i] != m_state.ps_sr_views[i])
+			if (m_state.ps_current_srv[i] != m_state.ps_pending_srv[i])
 			{
 				sr_changed = true;
 				break;
@@ -2497,8 +2497,8 @@ void GSDevice11::PSUpdateShaderState(const bool sr_update, const bool ss_update)
 
 		if (sr_changed)
 		{
-			m_state.ps_cached_sr_views = m_state.ps_sr_views;
-			m_ctx->PSSetShaderResources(0, MAX_TEXTURES, m_state.ps_sr_views.data());
+			m_ctx->PSSetShaderResources(0, MAX_TEXTURES, m_state.ps_pending_srv.data());
+			m_state.ps_current_srv = m_state.ps_pending_srv;
 		}
 	}
 
@@ -2507,7 +2507,7 @@ void GSDevice11::PSUpdateShaderState(const bool sr_update, const bool ss_update)
 		bool ss_changed = false;
 		for (size_t i = 0; i < MAX_SAMPLERS; ++i)
 		{
-			if (m_state.ps_cached_ss[i] != m_state.ps_ss[i])
+			if (m_state.ps_current_ss[i] != m_state.ps_pending_ss[i])
 			{
 				ss_changed = true;
 				break;
@@ -2516,8 +2516,8 @@ void GSDevice11::PSUpdateShaderState(const bool sr_update, const bool ss_update)
 
 		if (ss_changed)
 		{
-			m_state.ps_cached_ss = m_state.ps_ss;
-			m_ctx->PSSetSamplers(0, MAX_SAMPLERS, m_state.ps_ss.data());
+			m_ctx->PSSetSamplers(0, MAX_SAMPLERS, m_state.ps_pending_ss.data());
+			m_state.ps_current_ss = m_state.ps_pending_ss;
 		}
 	}
 }
@@ -2528,14 +2528,14 @@ void GSDevice11::PSUnbindConflictingSRVs(GSTexture* tex1, GSTexture* tex2)
 	bool changed = false;
 	for (size_t i = 0; i < MAX_TEXTURES; i++)
 	{
-		// We chech against what's currently bound (cached_sr_views), then update local state (ps_sr_views) which calls PSUpdateShaderState to update gpu state.
-		if ((tex1 && m_state.ps_cached_sr_views[i] == *static_cast<GSTexture11*>(tex1)) || (tex2 && m_state.ps_cached_sr_views[i] == *static_cast<GSTexture11*>(tex2)))
+		// We chech against what's currently bound, then update pending state which calls PSUpdateShaderState to update gpu state.
+		if ((tex1 && m_state.ps_current_srv[i] == *static_cast<GSTexture11*>(tex1)) || (tex2 && m_state.ps_current_srv[i] == *static_cast<GSTexture11*>(tex2)))
 		{
 			// Local and gpu cached state can differ, if it does check if it conflicts and if it doesn't then we can bind that instead of unbinding.
-			const bool unbind_needed = (tex1 && m_state.ps_sr_views[i] == *static_cast<GSTexture11*>(tex1)) || (tex2 && m_state.ps_sr_views[i] == *static_cast<GSTexture11*>(tex2));
+			const bool unbind_needed = (tex1 && m_state.ps_pending_srv[i] == *static_cast<GSTexture11*>(tex1)) || (tex2 && m_state.ps_pending_srv[i] == *static_cast<GSTexture11*>(tex2));
 
 			if (unbind_needed)
-				m_state.ps_sr_views[i] = nullptr;
+				m_state.ps_pending_srv[i] = nullptr;
 
 			changed = true;
 		}
@@ -2589,17 +2589,17 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 		dsv = *static_cast<GSTexture11*>(ds);
 	}
 
-	const bool changed = (m_state.rt_view != rtv || m_state.dsv != dsv);
+	const bool changed = (m_state.rtv != rtv || m_state.dsv != dsv);
 	g_perfmon.Put(GSPerfMon::RenderPasses, static_cast<double>(changed));
 
-	if (m_state.rt_view != rtv)
+	if (m_state.rtv != rtv)
 	{
-		if (m_state.rt_view)
-			m_state.rt_view->Release();
+		if (m_state.rtv)
+			m_state.rtv->Release();
 		if (rtv)
 			rtv->AddRef();
-		m_state.rt_view = rtv;
-		m_state.cached_rt_view = rt;
+		m_state.rtv = rtv;
+		m_state.current_rt = rt;
 	}
 	if (m_state.dsv != dsv)
 	{
@@ -2608,7 +2608,7 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 		if (dsv)
 			dsv->AddRef();
 		m_state.dsv = dsv;
-		m_state.cached_dsv = ds;
+		m_state.current_ds = ds;
 	}
 	if (changed)
 		m_ctx->OMSetRenderTargets(1, &rtv, dsv);
@@ -2807,13 +2807,13 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	if (config.tex)
 	{
 		CommitClear(config.tex);
-		if (m_state.cached_rt_view != config.tex && m_state.cached_dsv != config.tex)
+		if (m_state.current_rt != config.tex && m_state.current_ds != config.tex)
 			PSSetShaderResource(0, config.tex);
 	}
 	if (config.pal)
 	{
 		CommitClear(config.pal);
-		if (m_state.cached_rt_view != config.pal && m_state.cached_dsv != config.pal)
+		if (m_state.current_rt != config.pal && m_state.current_ds != config.pal)
 			PSSetShaderResource(1, config.pal);
 	}
 
@@ -2850,15 +2850,15 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	// Make sure no tex is bound as both rtv and srv at the same time.
 	// All conflicts should've been taken care of by PSUnbindConflictingSRVs.
 	// It is fine to do the optimiation when on slot 0 tex is fb, tex is ds, and slot 2 sw blend as they are copies bound to srv.
-	if (!draw_rt && draw_ds && m_state.rt_view && m_state.cached_rt_view && m_state.rt_view == *static_cast<GSTexture11*>(m_state.cached_rt_view) &&
-		m_state.cached_dsv == draw_ds && config.tex != m_state.cached_rt_view && m_state.cached_rt_view->GetSize() == draw_ds->GetSize())
+	if (!draw_rt && draw_ds && m_state.rtv && m_state.current_rt && m_state.rtv == *static_cast<GSTexture11*>(m_state.current_rt) &&
+		m_state.current_ds == draw_ds && config.tex != m_state.current_rt && m_state.current_rt->GetSize() == draw_ds->GetSize())
 	{
-		draw_rt = m_state.cached_rt_view;
+		draw_rt = m_state.current_rt;
 	}
-	else if (!draw_ds && draw_rt && m_state.dsv && m_state.cached_dsv && m_state.dsv == *static_cast<GSTexture11*>(m_state.cached_dsv) &&
-		m_state.cached_rt_view == draw_rt && config.tex != m_state.cached_dsv && m_state.cached_dsv->GetSize() == draw_rt->GetSize())
+	else if (!draw_ds && draw_rt && m_state.dsv && m_state.current_ds && m_state.dsv == *static_cast<GSTexture11*>(m_state.current_ds) &&
+		m_state.current_rt == draw_rt && config.tex != m_state.current_ds && m_state.current_ds->GetSize() == draw_rt->GetSize())
 	{
-		draw_ds = m_state.cached_dsv;
+		draw_ds = m_state.current_ds;
 	}
 
 	if (draw_rt && (config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy) || (config.tex && config.tex == config.rt)))
