@@ -148,9 +148,20 @@ private:
 	void EmulateAlphaTest(DATEOptions& date_options);
 	void EmulateAlphaTestSecondPass();
 
+	void CalculateAlphaRange(GSTextureCache::Target* rt, GSTextureCache::Target* ds, DATEOptions& date_options,
+		int& blend_alpha_min, int& blend_alpha_max, int& rt_new_alpha_min, int& rt_new_alpha_max);
+	void DetermineAlphaScaling(GSTextureCache::Target* rt, GSTextureCache::Source* tex,
+		bool req_source_update, int rt_new_alpha_max, bool& can_scale_rt_alpha, bool& new_scale_rt_alpha);
+
 	bool EmulateDATEEarlyFail(DATEOptions& date, GSTextureCache::Target* rt);
 	void EmulateDATESelectMethod(DATEOptions& date, GSTextureCache::Target* rt, int& blend_alpha_min, int& blend_alpha_max);
 	void EmulateDATEGetConfig(DATEOptions& date, bool scale_rt_alpha, GSDevice::RecycledTexture& temp_ds);
+
+	void EmulateDither();
+
+	void DetermineVSConfig(GSTextureCache::Target* rt, float rtscale, const GSVector2i& rtsize,
+		const GSVector2i& unscaled_size, float& vs_scale_x, float& vs_scale_y);
+	void DetermineBarriers(GSTextureCache::Target* rt);
 
 	void SetTCOffset();
 	bool NextDrawColClip() const;
