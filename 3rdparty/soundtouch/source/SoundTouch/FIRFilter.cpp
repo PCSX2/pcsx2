@@ -165,7 +165,7 @@ uint FIRFilter::evaluateFilterMulti(SAMPLETYPE *dest, const SAMPLETYPE *src, uin
     for (j = 0; j < end; j += numChannels)
     {
         const SAMPLETYPE *ptr;
-        LONG_SAMPLETYPE sums[16];
+        LONG_SAMPLETYPE sums[SOUNDTOUCH_MAX_CHANNELS];
         uint c;
         int i;
 

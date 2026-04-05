@@ -220,7 +220,7 @@ void FIRFilterSSE::setCoefficients(const float *coeffs, uint newLength, uint uRe
     filterCoeffsUnalign = new float[2 * newLength + 4];
     filterCoeffsAlign = (float *)SOUNDTOUCH_ALIGN_POINTER_16(filterCoeffsUnalign);
 
-    const float scale = ::pow(0.5, (int)resultDivFactor);
+    const float scale = static_cast<float>(::pow(0.5, (int)resultDivFactor));
 
     // rearrange the filter coefficients for sse routines
     for (auto i = 0U; i < newLength; i ++)
