@@ -32,7 +32,8 @@ namespace GameDatabaseSchema
 
 namespace GameDatabase
 {
-	static void parseAndInsert(const std::string_view serial, const ryml::NodeRef& node);
+	static void parseAndInsert(std::string_view serial, const ryml::ConstNodeRef& game_node);
+	static std::vector<Patch::DynamicPatchEntry> parseDynamicPatchEntries(std::string_view serial, const ryml::ConstNodeRef& entries_node);
 	static void initDatabase();
 } // namespace GameDatabase
 
@@ -83,120 +84,122 @@ const char* GameDatabaseSchema::GameEntry::compatAsString() const
 	}
 }
 
-void GameDatabase::parseAndInsert(const std::string_view serial, const ryml::NodeRef& node)
+void GameDatabase::parseAndInsert(const std::string_view serial, const ryml::ConstNodeRef& game_node)
 {
 	GameDatabaseSchema::GameEntry gameEntry;
-	if (node.has_child("name"))
+
+	if (const ryml::ConstNodeRef node = game_node.find_child("name"); node.readable() && node.has_val())
+		ryml::from_chars(node.val(), &gameEntry.name);
+
+	if (const ryml::ConstNodeRef node = game_node.find_child("name-sort"); node.readable() && node.has_val())
+		ryml::from_chars(node.val(), &gameEntry.name_sort);
+
+	if (const ryml::ConstNodeRef node = game_node.find_child("name-en"); node.readable() && node.has_val())
+		ryml::from_chars(node.val(), &gameEntry.name_en);
+
+	if (const ryml::ConstNodeRef node = game_node.find_child("region"); node.readable() && node.has_val())
+		ryml::from_chars(node.val(), &gameEntry.region);
+
+	if (const ryml::ConstNodeRef node = game_node.find_child("compat"); node.readable() && node.has_val() && node.val().is_integer())
 	{
-		node["name"] >> gameEntry.name;
+		int value = 0;
+		ryml::from_chars(node.val(), &value);
+		gameEntry.compat = static_cast<GameDatabaseSchema::Compatibility>(value);
 	}
-	if (node.has_child("name-sort"))
+
+	if (const ryml::ConstNodeRef round_modes = game_node.find_child("roundModes"); round_modes.readable() && round_modes.is_map())
 	{
-		node["name-sort"] >> gameEntry.name_sort;
-	}
-	if (node.has_child("name-en"))
-	{
-		node["name-en"] >> gameEntry.name_en;
-	}
-	if (node.has_child("region"))
-	{
-		node["region"] >> gameEntry.region;
-	}
-	if (node.has_child("compat"))
-	{
-		int val = 0;
-		node["compat"] >> val;
-		gameEntry.compat = static_cast<GameDatabaseSchema::Compatibility>(val);
-	}
-	if (node.has_child("roundModes"))
-	{
-		if (node["roundModes"].has_child("eeRoundMode"))
+		if (const ryml::ConstNodeRef node = round_modes.find_child("eeRoundMode"); node.readable() && node.has_val() && node.val().is_integer())
 		{
-			int eeVal = -1;
-			node["roundModes"]["eeRoundMode"] >> eeVal;
-			if (eeVal >= 0 && eeVal < static_cast<int>(FPRoundMode::MaxCount))
-				gameEntry.eeRoundMode = static_cast<FPRoundMode>(eeVal);
+			int value = -1;
+			ryml::from_chars(node.val(), &value);
+			if (value >= 0 && value < static_cast<int>(FPRoundMode::MaxCount))
+				gameEntry.eeRoundMode = static_cast<FPRoundMode>(value);
 			else
-				Console.Error(fmt::format("GameDB: Invalid EE round mode '{}', specified for serial: '{}'.", eeVal, serial));
+				Console.ErrorFmt("GameDB: Invalid EE round mode '{}', specified for serial: '{}'.", value, serial);
 		}
-		if (node["roundModes"].has_child("eeDivRoundMode"))
+		if (const ryml::ConstNodeRef node = round_modes.find_child("eeDivRoundMode"); node.readable() && node.has_val() && node.val().is_integer())
 		{
-			int eeVal = -1;
-			node["roundModes"]["eeDivRoundMode"] >> eeVal;
-			if (eeVal >= 0 && eeVal < static_cast<int>(FPRoundMode::MaxCount))
-				gameEntry.eeDivRoundMode = static_cast<FPRoundMode>(eeVal);
+			int value = -1;
+			ryml::from_chars(node.val(), &value);
+			if (value >= 0 && value < static_cast<int>(FPRoundMode::MaxCount))
+				gameEntry.eeDivRoundMode = static_cast<FPRoundMode>(value);
 			else
-				Console.Error(fmt::format("GameDB: Invalid EE division round mode '{}', specified for serial: '{}'.", eeVal, serial));
+				Console.ErrorFmt("GameDB: Invalid EE division round mode '{}', specified for serial: '{}'.", value, serial);
 		}
-		if (node["roundModes"].has_child("vuRoundMode"))
+		if (const ryml::ConstNodeRef node = round_modes.find_child("vuRoundMode"); node.readable() && node.has_val() && node.val().is_integer())
 		{
-			int vuVal = -1;
-			node["roundModes"]["vuRoundMode"] >> vuVal;
-			if (vuVal >= 0 && vuVal < static_cast<int>(FPRoundMode::MaxCount))
+			int value = -1;
+			ryml::from_chars(node.val(), &value);
+			if (value >= 0 && value < static_cast<int>(FPRoundMode::MaxCount))
 			{
-				gameEntry.vu0RoundMode = static_cast<FPRoundMode>(vuVal);
-				gameEntry.vu1RoundMode = static_cast<FPRoundMode>(vuVal);
+				gameEntry.vu0RoundMode = static_cast<FPRoundMode>(value);
+				gameEntry.vu1RoundMode = static_cast<FPRoundMode>(value);
 			}
 			else
 			{
-				Console.Error(fmt::format("GameDB: Invalid VU round mode '{}', specified for serial: '{}'.", vuVal, serial));
+				Console.ErrorFmt("GameDB: Invalid VU round mode '{}', specified for serial: '{}'.", value, serial);
 			}
 		}
-		if (node["roundModes"].has_child("vu0RoundMode"))
+		if (const ryml::ConstNodeRef node = round_modes.find_child("vu0RoundMode"); node.readable() && node.has_val() && node.val().is_integer())
 		{
-			int vuVal = -1;
-			node["roundModes"]["vu0RoundMode"] >> vuVal;
-			if (vuVal >= 0 && vuVal < static_cast<int>(FPRoundMode::MaxCount))
-				gameEntry.vu0RoundMode = static_cast<FPRoundMode>(vuVal);
+			int value = -1;
+			ryml::from_chars(node.val(), &value);
+			if (value >= 0 && value < static_cast<int>(FPRoundMode::MaxCount))
+				gameEntry.vu0RoundMode = static_cast<FPRoundMode>(value);
 			else
-				Console.Error(fmt::format("GameDB: Invalid VU0 round mode '{}', specified for serial: '{}'.", vuVal, serial));
+				Console.ErrorFmt("GameDB: Invalid VU0 round mode '{}', specified for serial: '{}'.", value, serial);
 		}
-		if (node["roundModes"].has_child("vu1RoundMode"))
+		if (const ryml::ConstNodeRef node = round_modes.find_child("vu1RoundMode"); node.readable() && node.has_val() && node.val().is_integer())
 		{
-			int vuVal = -1;
-			node["roundModes"]["vu1RoundMode"] >> vuVal;
-			if (vuVal >= 0 && vuVal < static_cast<int>(FPRoundMode::MaxCount))
-				gameEntry.vu1RoundMode = static_cast<FPRoundMode>(vuVal);
+			int value = -1;
+			ryml::from_chars(node.val(), &value);
+			if (value >= 0 && value < static_cast<int>(FPRoundMode::MaxCount))
+				gameEntry.vu1RoundMode = static_cast<FPRoundMode>(value);
 			else
-				Console.Error(fmt::format("GameDB: Invalid VU1 round mode '{}', specified for serial: '{}'.", vuVal, serial));
+				Console.ErrorFmt("GameDB: Invalid VU1 round mode '{}', specified for serial: '{}'.", value, serial);
 		}
 	}
-	if (node.has_child("clampModes"))
+
+	if (const ryml::ConstNodeRef clamp_modes = game_node.find_child("clampModes"); clamp_modes.readable() && clamp_modes.is_map())
 	{
-		if (node["clampModes"].has_child("eeClampMode"))
+		if (const ryml::ConstNodeRef node = clamp_modes.find_child("eeClampMode"); node.readable() && node.has_val() && node.val().is_integer())
 		{
-			int eeVal = -1;
-			node["clampModes"]["eeClampMode"] >> eeVal;
-			gameEntry.eeClampMode = static_cast<GameDatabaseSchema::ClampMode>(eeVal);
+			int value = -1;
+			ryml::from_chars(node.val(), &value);
+			gameEntry.eeClampMode = static_cast<GameDatabaseSchema::ClampMode>(value);
 		}
-		if (node["clampModes"].has_child("vuClampMode"))
+		if (const ryml::ConstNodeRef node = clamp_modes.find_child("vuClampMode"); node.readable() && node.has_val() && node.val().is_integer())
 		{
-			int vuVal = -1;
-			node["clampModes"]["vuClampMode"] >> vuVal;
-			gameEntry.vu0ClampMode = static_cast<GameDatabaseSchema::ClampMode>(vuVal);
-			gameEntry.vu1ClampMode = static_cast<GameDatabaseSchema::ClampMode>(vuVal);
+			int value = -1;
+			ryml::from_chars(node.val(), &value);
+			gameEntry.vu0ClampMode = static_cast<GameDatabaseSchema::ClampMode>(value);
+			gameEntry.vu1ClampMode = static_cast<GameDatabaseSchema::ClampMode>(value);
 		}
-		if (node["clampModes"].has_child("vu0ClampMode"))
+		if (const ryml::ConstNodeRef node = clamp_modes.find_child("vu0ClampMode"); node.readable() && node.has_val() && node.val().is_integer())
 		{
-			int vuVal = -1;
-			node["clampModes"]["vu0ClampMode"] >> vuVal;
-			gameEntry.vu0ClampMode = static_cast<GameDatabaseSchema::ClampMode>(vuVal);
+			int value = -1;
+			ryml::from_chars(node.val(), &value);
+			gameEntry.vu0ClampMode = static_cast<GameDatabaseSchema::ClampMode>(value);
 		}
-		if (node["clampModes"].has_child("vu1ClampMode"))
+		if (const ryml::ConstNodeRef node = clamp_modes.find_child("vu1ClampMode"); node.readable() && node.has_val() && node.val().is_integer())
 		{
-			int vuVal = -1;
-			node["clampModes"]["vu1ClampMode"] >> vuVal;
-			gameEntry.vu1ClampMode = static_cast<GameDatabaseSchema::ClampMode>(vuVal);
+			int value = -1;
+			ryml::from_chars(node.val(), &value);
+			gameEntry.vu1ClampMode = static_cast<GameDatabaseSchema::ClampMode>(value);
 		}
 	}
 
 	// Validate game fixes, invalid ones will be dropped!
-	if (node.has_child("gameFixes") && node["gameFixes"].has_children())
+	if (const ryml::ConstNodeRef game_fixes = game_node.find_child("gameFixes"); game_fixes.readable() && game_fixes.has_children())
 	{
-		for (const auto& n : node["gameFixes"].children())
+		for (const ryml::ConstNodeRef& game_fix_node : game_fixes.children())
 		{
-			bool fixValidated = false;
-			auto fix = std::string(n.val().str, n.val().len);
+			if (!game_fix_node.has_val())
+				continue;
+
+			bool fix_validated = false;
+			std::string fix(game_fix_node.val().str, game_fix_node.val().len);
 
 			// Enum values don't end with Hack, but gamedb does, so remove it before comparing.
 			if (fix.ends_with("Hack"))
@@ -208,25 +211,28 @@ void GameDatabase::parseAndInsert(const std::string_view serial, const ryml::Nod
 						std::find(gameEntry.gameFixes.begin(), gameEntry.gameFixes.end(), id) == gameEntry.gameFixes.end())
 					{
 						gameEntry.gameFixes.push_back(id);
-						fixValidated = true;
+						fix_validated = true;
 						break;
 					}
 				}
 			}
 
-			if (!fixValidated)
+			if (!fix_validated)
 			{
-				Console.Error(fmt::format("GameDB: Invalid gamefix: '{}', specified for serial: '{}'. Dropping!", fix, serial));
+				Console.ErrorFmt("GameDB: Invalid gamefix: '{}', specified for serial: '{}'. Dropping!", fix, serial);
 			}
 		}
 	}
 
-	if (node.has_child("speedHacks") && node["speedHacks"].has_children())
+	if (const ryml::ConstNodeRef speed_hacks = game_node.find_child("speedHacks"); speed_hacks.readable() && speed_hacks.has_children())
 	{
-		for (const auto& n : node["speedHacks"].children())
+		for (const ryml::ConstNodeRef& node : speed_hacks.children())
 		{
-			const std::string_view id_view = std::string_view(n.key().str, n.key().len);
-			const std::string_view value_view = std::string_view(n.val().str, n.val().len);
+			if (!node.has_val())
+				continue;
+
+			const std::string_view id_view = std::string_view(node.key().str, node.key().len);
+			const std::string_view value_view = std::string_view(node.val().str, node.val().len);
 			const std::optional<SpeedHack> id = Pcsx2Config::SpeedhackOptions::ParseSpeedHackName(id_view);
 			const std::optional<int> value = StringUtil::FromChars<int>(value_view);
 
@@ -238,24 +244,27 @@ void GameDatabase::parseAndInsert(const std::string_view serial, const ryml::Nod
 			}
 			else
 			{
-				Console.Error(fmt::format("GameDB: Invalid speedhack: '{}={}', specified for serial: '{}'. Dropping!",
-					id_view, value_view, serial));
+				Console.ErrorFmt("GameDB: Invalid speedhack: '{}={}', specified for serial: '{}'. Dropping!",
+					id_view, value_view, serial);
 			}
 		}
 	}
 
-	if (node.has_child("gsHWFixes"))
+	if (const ryml::ConstNodeRef gs_hw_fixes = game_node.find_child("gsHWFixes"); gs_hw_fixes.readable() && gs_hw_fixes.has_children())
 	{
-		for (const auto& n : node["gsHWFixes"].children())
+		for (const ryml::ConstNodeRef& node : gs_hw_fixes.children())
 		{
-			const std::string_view id_name(n.key().data(), n.key().size());
-			std::optional<GameDatabaseSchema::GSHWFixId> id = GameDatabaseSchema::parseHWFixName(id_name);
+			if (!node.has_val())
+				continue;
+
+			const std::string_view id_name(node.key().data(), node.key().size());
+			const std::optional<GameDatabaseSchema::GSHWFixId> id = GameDatabaseSchema::parseHWFixName(id_name);
 			std::optional<s32> value;
 			if (id.has_value() && (id.value() == GameDatabaseSchema::GSHWFixId::GetSkipCount ||
 									  id.value() == GameDatabaseSchema::GSHWFixId::BeforeDraw ||
 									  id.value() == GameDatabaseSchema::GSHWFixId::MoveHandler))
 			{
-				const std::string_view str_value(n.has_val() ? std::string_view(n.val().data(), n.val().size()) : std::string_view());
+				const std::string_view str_value(node.has_val() ? std::string_view(node.val().data(), node.val().size()) : std::string_view());
 				if (id.value() == GameDatabaseSchema::GSHWFixId::GetSkipCount)
 					value = GSLookupGetSkipCountFunctionId(str_value);
 				else if (id.value() == GameDatabaseSchema::GSHWFixId::BeforeDraw)
@@ -265,17 +274,17 @@ void GameDatabase::parseAndInsert(const std::string_view serial, const ryml::Nod
 
 				if (value.value_or(-1) < 0)
 				{
-					Console.Error(fmt::format("GameDB: Invalid GS HW Fix Value for '{}' in '{}': '{}'", id_name, serial, str_value));
+					Console.ErrorFmt("GameDB: Invalid GS HW Fix Value for '{}' in '{}': '{}'", id_name, serial, str_value);
 					continue;
 				}
 			}
 			else
 			{
-				value = n.has_val() ? StringUtil::FromChars<s32>(std::string_view(n.val().data(), n.val().size())) : 1;
+				value = node.has_val() ? StringUtil::FromChars<s32>(std::string_view(node.val().data(), node.val().size())) : 1;
 			}
 			if (!id.has_value() || !value.has_value())
 			{
-				Console.Error(fmt::format("GameDB: Invalid GS HW Fix: '{}' specified for serial '{}'. Dropping!", id_name, serial));
+				Console.ErrorFmt("GameDB: Invalid GS HW Fix: '{}' specified for serial '{}'. Dropping!", id_name, serial);
 				continue;
 			}
 
@@ -285,71 +294,86 @@ void GameDatabase::parseAndInsert(const std::string_view serial, const ryml::Nod
 
 	// Memory Card Filters - Store as a vector to allow flexibility in the future
 	// - currently they are used as a '\n' delimited string in the app
-	if (node.has_child("memcardFilters") && node["memcardFilters"].has_children())
+	if (const ryml::ConstNodeRef memcard_filters = game_node.find_child("memcardFilters"); memcard_filters.readable() && memcard_filters.has_children())
 	{
-		for (const auto& n : node["memcardFilters"].children())
+		for (const ryml::ConstNodeRef& node : memcard_filters.children())
 		{
-			auto memcardFilter = std::string(n.val().str, n.val().len);
-			gameEntry.memcardFilters.emplace_back(std::move(memcardFilter));
+			if (!node.has_val())
+				continue;
+
+			std::string memcard_filter(node.val().str, node.val().len);
+			gameEntry.memcardFilters.emplace_back(std::move(memcard_filter));
 		}
 	}
 
 	// Game Patches
-	if (node.has_child("patches") && node["patches"].has_children())
+	if (const ryml::ConstNodeRef patches = game_node.find_child("patches"); patches.readable() && patches.has_children())
 	{
-		for (const auto& n : node["patches"].children())
+		for (const ryml::ConstNodeRef& patch_node : patches.children())
 		{
 			// use a crc of 0 for default patches
-			const std::string_view crc_str(n.key().str, n.key().len);
+			const std::string_view crc_str(patch_node.key().str, patch_node.key().len);
 			const std::optional<u32> crc = (StringUtil::compareNoCase(crc_str, "default")) ? std::optional<u32>(0) : StringUtil::FromChars<u32>(crc_str, 16);
 			if (!crc.has_value())
 			{
-				Console.Error(fmt::format("GameDB: Invalid CRC '{}' found for serial: '{}'. Skipping!", crc_str, serial));
+				Console.ErrorFmt("GameDB: Invalid CRC '{}' found for serial '{}'. Skipping!", crc_str, serial);
 				continue;
 			}
 			if (gameEntry.patches.find(crc.value()) != gameEntry.patches.end())
 			{
-				Console.Error(fmt::format("GameDB: Duplicate CRC '{}' found for serial: '{}'. Skipping, CRCs are case-insensitive!", crc_str, serial));
+				Console.ErrorFmt("GameDB: Duplicate CRC '{}' found for serial '{}'. Skipping, CRCs are case-insensitive!", crc_str, serial);
 				continue;
 			}
 
 			std::string patch;
-			if (n.has_child("content"))
-				n["content"] >> patch;
+			if (ryml::ConstNodeRef content_node = patch_node.find_child("content"); content_node.readable())
+				ryml::from_chars(content_node.val(), &patch);
 			gameEntry.patches.emplace(crc.value(), std::move(patch));
 		}
 	}
 
-	if (node.has_child("dynaPatches") && node["dynaPatches"].has_children())
+	if (const ryml::ConstNodeRef dyna_patches = game_node.find_child("dynaPatches"); dyna_patches.readable() && dyna_patches.has_children())
 	{
-		for (const auto& n : node["dynaPatches"].children())
+		for (const ryml::ConstNodeRef& dyna_patch_node : dyna_patches.children())
 		{
-			Patch::DynamicPatch patch;
-
-			if (n.has_child("pattern") && n["pattern"].has_children())
-			{
-				for (const auto& db_pattern : n["pattern"].children())
-				{
-					Patch::DynamicPatchEntry entry;
-					db_pattern["offset"] >> entry.offset;
-					db_pattern["value"] >> entry.value;
-
-					patch.pattern.push_back(entry);
-				}
-				for (const auto& db_replacement : n["replacement"].children())
-				{
-					Patch::DynamicPatchEntry entry;
-					db_replacement["offset"] >> entry.offset;
-					db_replacement["value"] >> entry.value;
-
-					patch.replacement.push_back(entry);
-				}
-			}
-			gameEntry.dynaPatches.push_back(patch);
+			Patch::DynamicPatch& patch = gameEntry.dynaPatches.emplace_back();
+			patch.pattern = parseDynamicPatchEntries(serial, dyna_patch_node.at("pattern"));
+			patch.replacement = parseDynamicPatchEntries(serial, dyna_patch_node.at("replacement"));
 		}
 	}
 
 	s_game_db.emplace(std::move(serial), std::move(gameEntry));
+}
+
+std::vector<Patch::DynamicPatchEntry> GameDatabase::parseDynamicPatchEntries(const std::string_view serial, const ryml::ConstNodeRef& entries_node)
+{
+	std::vector<Patch::DynamicPatchEntry> entries;
+
+	if (entries_node.readable() && entries_node.has_children())
+	{
+		for (const auto& entry_node : entries_node.children())
+		{
+			ryml::ConstNodeRef offset_node = entry_node.find_child("offset");
+			if (!offset_node.readable() || !offset_node.has_val() || !offset_node.val().is_integer())
+			{
+				Console.ErrorFmt("GameDB: Invalid dynamic patch entry found for serial '{}'.", serial);
+				continue;
+			}
+
+			ryml::ConstNodeRef value_node = entry_node.find_child("value");
+			if (!value_node.readable() || !value_node.has_val() || !value_node.val().is_integer())
+			{
+				Console.ErrorFmt("GameDB: Invalid dynamic patch entry found for serial '{}'.", serial);
+				continue;
+			}
+
+			Patch::DynamicPatchEntry& entry = entries.emplace_back();
+			ryml::from_chars(offset_node.val(), &entry.offset);
+			ryml::from_chars(value_node.val(), &entry.value);
+		}
+	}
+
+	return entries;
 }
 
 static const char* s_round_modes[static_cast<u32>(FPRoundMode::MaxCount)] = {
@@ -978,7 +1002,7 @@ void GameDatabase::initDatabase()
 	const ryml::csubstr yaml = ryml::to_csubstr(*buffer);
 
 	Error error;
-	std::optional<ryml::Tree> tree = ParseYAMLFromString(yaml, ryml::to_csubstr(name), &error);
+	const std::optional<ryml::Tree> tree = ParseYAMLFromString(yaml, ryml::to_csubstr(name), &error);
 	if (!tree.has_value())
 	{
 		Console.ErrorFmt("GameDB: Failed to parse game database file {}:", path);
@@ -986,11 +1010,11 @@ void GameDatabase::initDatabase()
 		return;
 	}
 
-	ryml::NodeRef root = tree->rootref();
+	ryml::ConstNodeRef root = tree->crootref();
 
-	for (const ryml::NodeRef& n : root.children())
+	for (const ryml::ConstNodeRef& game_node : root.children())
 	{
-		auto serial = StringUtil::toLower(std::string(n.key().str, n.key().len));
+		auto serial = StringUtil::toLower(std::string(game_node.key().str, game_node.key().len));
 
 		// Serials and CRCs must be inserted as lower-case, as that is how they are retrieved
 		// this is because the application may pass a lowercase CRC or serial along
@@ -1002,10 +1026,10 @@ void GameDatabase::initDatabase()
 			continue;
 		}
 
-		if (n.is_map())
-		{
-			parseAndInsert(serial, n);
-		}
+		if (!game_node.is_map())
+			continue;
+
+		parseAndInsert(serial, game_node);
 	}
 }
 
