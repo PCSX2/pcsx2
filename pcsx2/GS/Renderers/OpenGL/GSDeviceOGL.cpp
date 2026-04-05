@@ -2599,7 +2599,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		GLState::scissor = config.scissor;
 	}
 
-	if (config.tex)
+	if (config.tex && (m_features.texture_barrier || (config.tex != config.rt)))
 		CommitClear(config.tex, true);
 	if (config.pal)
 		CommitClear(config.pal, true);
@@ -2715,7 +2715,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	}
 	IASetPrimitiveTopology(topology);
 
-	if (config.tex)
+	if (config.tex && (m_features.texture_barrier || (config.tex != config.rt)))
 		PSSetShaderResource(0, config.tex);
 	if (config.pal)
 		PSSetShaderResource(1, config.pal);

@@ -2804,7 +2804,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 
 	// Preemptively bind srv if possible.
 	// We update the local state, then if there are srv conflicts PSUnbindConflictingSRVs will update the gpu state.
-	if (config.tex)
+	if (config.tex && config.tex != config.rt)
 	{
 		CommitClear(config.tex);
 		if (m_state.cached_rt_view != config.tex && m_state.cached_dsv != config.tex)
@@ -2820,7 +2820,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	// Should be called before changing current gpu state.
 	PSUnbindConflictingSRVs(colclip_rt ? colclip_rt : config.rt, read_only_dsv ? nullptr : config.ds);
 
-	if (config.tex)
+	if (config.tex && config.tex != config.rt)
 		PSSetShaderResource(0, config.tex);
 	if (config.pal)
 		PSSetShaderResource(1, config.pal);
