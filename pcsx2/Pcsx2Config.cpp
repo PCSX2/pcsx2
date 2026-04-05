@@ -1884,15 +1884,6 @@ void Pcsx2Config::AchievementsOptions::LoadSave(SettingsWrapper& wrap)
 {
 	SettingsWrapSection("Achievements");
 
-	if (InfoSoundName.empty())
-		InfoSoundName = Path::Combine(EmuFolders::Resources, DEFAULT_INFO_SOUND_NAME);
-
-	if (UnlockSoundName.empty())
-		UnlockSoundName = Path::Combine(EmuFolders::Resources, DEFAULT_UNLOCK_SOUND_NAME);
-
-	if (LBSubmitSoundName.empty())
-		LBSubmitSoundName = Path::Combine(EmuFolders::Resources, DEFAULT_LBSUBMIT_SOUND_NAME);
-
 	SettingsWrapBitBool(Enabled);
 	SettingsWrapBitBoolEx(HardcoreMode, "ChallengeMode");
 	SettingsWrapBitBool(EncoreMode);

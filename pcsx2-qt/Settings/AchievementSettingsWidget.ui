@@ -316,10 +316,18 @@
      </property>
      <layout class="QGridLayout" name="gridLayout_6">
       <item row="5" column="0">
-       <widget class="QLineEdit" name="lbSoundPath"/>
+       <widget class="QLineEdit" name="lbSoundPath">
+        <property name="placeholderText">
+         <string>Default Sound Effect</string>
+        </property>
+       </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QLineEdit" name="notificationSoundPath"/>
+       <widget class="QLineEdit" name="notificationSoundPath">
+        <property name="placeholderText">
+         <string>Default Sound Effect</string>
+        </property>
+       </widget>
       </item>
       <item row="3" column="1">
        <widget class="QPushButton" name="unlockSoundBrowse">
@@ -350,7 +358,11 @@
        </widget>
       </item>
       <item row="3" column="0">
-       <widget class="QLineEdit" name="unlockSoundPath"/>
+       <widget class="QLineEdit" name="unlockSoundPath">
+        <property name="placeholderText">
+         <string>Default Sound Effect</string>
+        </property>
+       </widget>
       </item>
       <item row="5" column="1">
        <widget class="QPushButton" name="lbSoundBrowse">
@@ -426,11 +438,11 @@ Login token generated at:</string>
         <property name="alignment">
          <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
         </property>
+        <property name="textInteractionFlags">
+         <set>Qt::TextInteractionFlag::TextBrowserInteraction</set>
+        </property>
         <property name="buddy">
          <cstring>viewProfile</cstring>
-        </property>
-        <property name="textInteractionFlags">
-         <set>Qt::TextBrowserInteraction</set>
         </property>
        </widget>
       </item>
@@ -473,7 +485,7 @@ Login token generated at:</string>
          <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
         </property>
         <property name="textInteractionFlags">
-         <set>Qt::TextBrowserInteraction</set>
+         <set>Qt::TextInteractionFlag::TextBrowserInteraction</set>
         </property>
        </widget>
       </item>

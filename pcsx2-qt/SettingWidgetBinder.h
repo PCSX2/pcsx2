@@ -23,6 +23,7 @@
 #include <QtWidgets/QSpinBox>
 
 #include "common/FileSystem.h"
+#include "common/HostSys.h"
 #include "common/Path.h"
 
 #include "pcsx2/Config.h"
@@ -1261,8 +1262,8 @@ namespace SettingWidgetBinder
 		widget->connect(widget, &QLineEdit::editingFinished, widget, std::move(value_changed));
 	}
 
-	static inline void BindWidgetToFileSetting(SettingsInterface* sif, QLineEdit* widget, QAbstractButton* browse_button,
-		QAbstractButton* open_button, QAbstractButton* reset_button, std::string section, std::string key, std::string default_value,
+	static inline void BindWidgetToAudioFileSetting(SettingsInterface* sif, QLineEdit* widget, QAbstractButton* browse_button,
+		QAbstractButton* preview_button, QAbstractButton* reset_button, std::string section, std::string key, std::string default_value,
 		const QString& filter, bool allow_pergame = false, bool use_relative = true)
 	{
 		using Accessor = SettingAccessor<QLineEdit>;
@@ -1296,40 +1297,25 @@ namespace SettingWidgetBinder
 					Host::SetBaseStringSettingValue(section.c_str(), key.c_str(), relative_path.c_str());
 				}
 				else
-				{
 					Host::SetBaseStringSettingValue(section.c_str(), key.c_str(), new_value.c_str());
-				}
 
 				if (!FileSystem::FileExists(new_value.c_str()))
-				{
 					QMessageBox::critical(QtUtils::GetRootWidget(widget), qApp->translate("SettingWidgetBinder", "Error"),
 						qApp->translate("SettingWidgetBinder", "File cannot be found."));
-				}
 
 				Host::CommitBaseSettingChanges();
 				return;
 			}
 			else
-			{
-				QMessageBox::critical(QtUtils::GetRootWidget(widget), qApp->translate("SettingWidgetBinder", "Error"),
-					qApp->translate("SettingWidgetBinder", "File path cannot be empty."));
-			}
+				Host::RemoveBaseSettingValue(section.c_str(), key.c_str());
 
-			// reset to old value
-			std::string current_path(Host::GetBaseStringSettingValue(section.c_str(), key.c_str(), default_value.c_str()));
-			if (current_path.empty())
-				current_path = default_value;
-			else if (use_relative && !Path::IsAbsolute(current_path))
-				current_path = Path::Canonicalize(Path::Combine(EmuFolders::DataRoot, current_path));
-
-			widget->setText(QString::fromStdString(current_path));
 		};
 
 		if (browse_button)
 		{
 			QObject::connect(browse_button, &QAbstractButton::clicked, browse_button, [widget, key, value_changed, filter]() {
 				const QString path(QDir::toNativeSeparators(QFileDialog::getOpenFileName(QtUtils::GetRootWidget(widget),
-					qApp->translate("SettingWidgetBinder", "Select File"), QString(), filter)));
+					qApp->translate("SettingWidgetBinder", "Select Audio File"), QString(), filter)));
 				if (path.isEmpty())
 					return;
 
@@ -1337,19 +1323,22 @@ namespace SettingWidgetBinder
 				value_changed();
 			});
 		}
-		if (open_button)
+		if (preview_button)
 		{
-			QObject::connect(open_button, &QAbstractButton::clicked, open_button, [widget]() {
-				QString path(Accessor::getStringValue(widget));
-				if (!path.isEmpty())
-					QtUtils::OpenURL(QtUtils::GetRootWidget(widget), QUrl::fromLocalFile(path));
+			QObject::connect(preview_button, &QAbstractButton::clicked, preview_button, [widget, default_value = std::move(default_value)]() {
+				const QByteArray path = widget->text().toUtf8();
+				Common::PlaySoundAsync(
+					(path.isEmpty()
+						? default_value
+						: path.constData()).c_str()
+				);
 			});
 		}
 		if (reset_button)
 		{
 			QObject::connect(
-				reset_button, &QAbstractButton::clicked, reset_button, [widget, default_value = std::move(default_value), value_changed]() {
-					widget->setText(QString::fromStdString(default_value));
+				reset_button, &QAbstractButton::clicked, reset_button, [widget, value_changed]() {
+					widget->clear();
 					value_changed();
 				});
 		}

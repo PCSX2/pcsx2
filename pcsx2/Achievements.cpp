@@ -63,6 +63,10 @@ namespace Achievements
 	static constexpr float LEADERBOARD_STARTED_NOTIFICATION_TIME = 3.0f;
 	static constexpr float LEADERBOARD_FAILED_NOTIFICATION_TIME = 3.0f;
 
+	static constexpr const char* DEFAULT_INFO_SOUND_NAME = "sounds/achievements/message.wav";
+	static constexpr const char* DEFAULT_UNLOCK_SOUND_NAME = "sounds/achievements/unlock.wav";
+	static constexpr const char* DEFAULT_LBSUBMIT_SOUND_NAME = "sounds/achievements/lbsubmit.wav";
+
 	static constexpr float INDICATOR_FADE_IN_TIME = 0.1f;
 	static constexpr float INDICATOR_FADE_OUT_TIME = 0.5f;
 
@@ -1142,7 +1146,11 @@ void Achievements::DisplayAchievementSummary()
 	}
 
 	if (EmuConfig.Achievements.SoundEffects && EmuConfig.Achievements.InfoSound)
-		Common::PlaySoundAsync(EmuConfig.Achievements.InfoSoundName.c_str());
+		Common::PlaySoundAsync(
+			(EmuConfig.Achievements.InfoSoundName.empty()
+				? Path::Combine(EmuFolders::Resources, DEFAULT_INFO_SOUND_NAME)
+				: EmuConfig.Achievements.InfoSoundName).c_str()
+		);
 }
 
 void Achievements::DisplayHardcoreDeferredMessage()
@@ -1194,7 +1202,11 @@ void Achievements::HandleUnlockEvent(const rc_client_event_t* event)
 	}
 
 	if (EmuConfig.Achievements.SoundEffects && EmuConfig.Achievements.UnlockSound)
-		Common::PlaySoundAsync(EmuConfig.Achievements.UnlockSoundName.c_str());
+		Common::PlaySoundAsync(
+			(EmuConfig.Achievements.UnlockSoundName.empty()
+				? Path::Combine(EmuFolders::Resources, DEFAULT_UNLOCK_SOUND_NAME)
+				: EmuConfig.Achievements.UnlockSoundName).c_str()
+		);
 }
 
 void Achievements::HandleGameCompleteEvent(const rc_client_event_t* event)
@@ -1315,7 +1327,11 @@ void Achievements::HandleLeaderboardSubmittedEvent(const rc_client_event_t* even
 	}
 
 	if (EmuConfig.Achievements.SoundEffects && EmuConfig.Achievements.LBSubmitSound)
-		Common::PlaySoundAsync(EmuConfig.Achievements.LBSubmitSoundName.c_str());
+		Common::PlaySoundAsync(
+			(EmuConfig.Achievements.LBSubmitSoundName.empty()
+				? Path::Combine(EmuFolders::Resources, DEFAULT_LBSUBMIT_SOUND_NAME)
+				: EmuConfig.Achievements.LBSubmitSoundName).c_str()
+		);
 }
 
 void Achievements::HandleLeaderboardScoreboardEvent(const rc_client_event_t* event)
