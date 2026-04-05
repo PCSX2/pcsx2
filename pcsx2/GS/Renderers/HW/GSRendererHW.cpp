@@ -5229,6 +5229,201 @@ void GSRendererHW::EmulateZbuffer(const GSTextureCache::Target* ds)
 	m_conf.ps.zwrite = m_conf.ps.zfloor || m_conf.ps.zclamp;
 }
 
+void GSRendererHW::CalculateAlphaRange(GSTextureCache::Target* rt, GSTextureCache::Target* ds,
+	DATEOptions& date_options, int& blend_alpha_min, int& blend_alpha_max, int& rt_new_alpha_min, int& rt_new_alpha_max)
+{
+	// Calculate alpha range for RT.
+	if (rt)
+	{
+		GL_INS("HW: RT alpha was %s before draw", rt->m_rt_alpha_scale ? "scaled" : "NOT scaled");
+
+		blend_alpha_min = rt_new_alpha_min = rt->m_alpha_min;
+		blend_alpha_max = rt_new_alpha_max = rt->m_alpha_max;
+
+		const int fba_value = m_draw_env->CTXT[m_draw_env->PRIM.CTXT].FBA.FBA * 128;
+		const bool is_24_bit = (GSLocalMemory::m_psm[rt->m_TEX0.PSM].trbpp == 24);
+		if (is_24_bit)
+		{
+			// C24/Z24 - alpha is 1.
+			blend_alpha_min = 128;
+			blend_alpha_max = 128;
+		}
+
+		if (GSUtil::GetChannelMask(m_cached_ctx.FRAME.PSM) & 0x8 && !m_texture_shuffle)
+		{
+			const int s_alpha_max = GetAlphaMinMax().max | fba_value;
+			const int s_alpha_min = GetAlphaMinMax().min | fba_value;
+
+			const bool afail_always_fb_alpha = m_cached_ctx.TEST.AFAIL == AFAIL_FB_ONLY || (m_cached_ctx.TEST.AFAIL == AFAIL_RGB_ONLY && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].trbpp != 32);
+			const bool always_passing_alpha = !m_cached_ctx.TEST.ATE || afail_always_fb_alpha || (m_cached_ctx.TEST.ATE && m_cached_ctx.TEST.ATST == ATST_ALWAYS);
+			const bool full_cover = rt->m_valid.rintersect(m_r).eq(rt->m_valid) && m_primitive_covers_without_gaps == NoGapsType::FullCover &&
+				!(date_options.enabled || !always_passing_alpha || !IsDepthAlwaysPassing());
+
+			// On DX FBMask emulation can be missing on lower blend levels, so we'll do whatever the API does.
+			const u32 fb_mask = m_conf.colormask.wa ? (m_conf.ps.fbmask ? m_conf.cb_ps.FbMask.a : 0) : 0xFF;
+			const u32 alpha_mask = (GSLocalMemory::m_psm[rt->m_TEX0.PSM].fmsk & 0xFF000000) >> 24;
+			if ((fb_mask & alpha_mask) == 0)
+			{
+				if (full_cover)
+				{
+					rt_new_alpha_max = s_alpha_max;
+					rt_new_alpha_min = s_alpha_min;
+				}
+				else
+				{
+					rt_new_alpha_max = std::max(s_alpha_max, rt_new_alpha_max);
+					rt_new_alpha_min = std::min(s_alpha_min, rt_new_alpha_min);
+				}
+			}
+			else if ((fb_mask & alpha_mask) != alpha_mask) // We can't be sure of the alpha if it's partially masked.
+			{
+				// Any number of bits could be set, so let's be paranoid about it
+				const u32 new_max_alpha = (s_alpha_max != s_alpha_min) ? (std::min(s_alpha_max, ((1 << (32 - std::countl_zero(static_cast<u32>(s_alpha_max)))) - 1)) & ~fb_mask) : (s_alpha_max & ~fb_mask);
+				const u32 curr_max = (rt_new_alpha_max != rt_new_alpha_min && rt->m_alpha_range) ? (((1 << (32 - std::countl_zero(static_cast<u32>(rt_new_alpha_max)))) - 1) & fb_mask) : ((rt_new_alpha_max | rt_new_alpha_min) & fb_mask);
+				if (full_cover)
+					rt_new_alpha_max = new_max_alpha | curr_max;
+				else
+					rt_new_alpha_max = std::max(static_cast<int>(new_max_alpha | curr_max), rt_new_alpha_max);
+
+				rt_new_alpha_min = std::min(s_alpha_min, rt_new_alpha_min);
+			}
+
+			if ((fb_mask & alpha_mask) != alpha_mask)
+			{
+				if (full_cover && (fb_mask & alpha_mask) == 0)
+					rt->m_alpha_range = s_alpha_max != s_alpha_min;
+				else
+					rt->m_alpha_range |= (s_alpha_max & ~fb_mask) != (s_alpha_min & ~fb_mask);
+			}
+		}
+		else if ((m_texture_shuffle && m_conf.colormask.wa))
+		{
+			// in shuffles, the alpha top bit values are set according to TEXA
+			const GSVector4i shuffle_rect = GSVector4i(m_vt.m_min.p.x, m_vt.m_min.p.y, m_vt.m_max.p.x, m_vt.m_max.p.y);
+			if (!rt->m_valid.rintersect(shuffle_rect).eq(rt->m_valid) || (m_cached_ctx.FRAME.FBMSK & 0xFFFC0000))
+			{
+				rt_new_alpha_max = std::max(static_cast<int>((std::max(m_cached_ctx.TEXA.TA1, m_cached_ctx.TEXA.TA0) & 0x80) + 127), rt_new_alpha_max) | fba_value;
+				rt_new_alpha_min = std::min(static_cast<int>(std::min(m_cached_ctx.TEXA.TA1, m_cached_ctx.TEXA.TA0) & 0x80), rt_new_alpha_min);
+			}
+			else
+			{
+				rt_new_alpha_max = (std::max(m_cached_ctx.TEXA.TA1, m_cached_ctx.TEXA.TA0) & 0x80) + 127 | fba_value;
+				rt_new_alpha_min = (std::min(m_cached_ctx.TEXA.TA1, m_cached_ctx.TEXA.TA0) & 0x80) | fba_value;
+			}
+			rt->m_alpha_range = true;
+		}
+
+		GL_INS("HW: RT Alpha Range: %d-%d => %d-%d", blend_alpha_min, blend_alpha_max, rt_new_alpha_min, rt_new_alpha_max);
+
+		// If there's no overlap, the values in the RT before FB write will be the old values.
+		if (m_prim_overlap != PRIM_OVERLAP_NO)
+		{
+			// Otherwise, it may be a mix of the old/new values.
+			blend_alpha_min = std::min(blend_alpha_min, rt_new_alpha_min);
+			blend_alpha_max = std::max(blend_alpha_max, rt_new_alpha_max);
+		}
+
+		if (!rt->m_32_bits_fmt)
+		{
+			rt_new_alpha_max &= 128;
+			rt_new_alpha_min &= 128;
+
+			if (rt_new_alpha_max == rt_new_alpha_min)
+				rt->m_alpha_range = false;
+		}
+	}
+
+	// Calculate alpha range for DS.
+	if (ds)
+	{
+		ds->m_alpha_max = std::max(static_cast<u32>(ds->m_alpha_max), static_cast<u32>(m_vt.m_max.p.z) >> 24);
+		ds->m_alpha_min = std::min(static_cast<u32>(ds->m_alpha_min), static_cast<u32>(m_vt.m_min.p.z) >> 24);
+		GL_INS("HW: New DS Alpha Range: %d-%d", ds->m_alpha_min, ds->m_alpha_max);
+
+		if (GSLocalMemory::m_psm[ds->m_TEX0.PSM].bpp == 16)
+		{
+			ds->m_alpha_max &= 128;
+			ds->m_alpha_min &= 128;
+		}
+	}
+}
+
+void GSRendererHW::DetermineAlphaScaling(GSTextureCache::Target* rt, GSTextureCache::Source* tex,
+	bool req_src_update, int rt_new_alpha_max, bool& can_scale_rt_alpha, bool& new_scale_rt_alpha)
+{
+	if (rt)
+	{
+		const bool needs_ad = rt && m_context->ALPHA.C == 1 && rt->m_alpha_min != rt->m_alpha_max && rt->m_alpha_max > 128;
+
+		can_scale_rt_alpha = !needs_ad && (GSUtil::GetChannelMask(m_cached_ctx.FRAME.PSM) & 0x8) && rt_new_alpha_max <= 128;
+
+		const bool partial_fbmask = (m_conf.ps.fbmask && m_conf.cb_ps.FbMask.a != 0xFF && m_conf.cb_ps.FbMask.a != 0);
+		const bool rta_decorrection = m_channel_shuffle || m_texture_shuffle || (m_conf.colormask.wa && (rt_new_alpha_max > 128 || partial_fbmask));
+
+		if (rta_decorrection)
+		{
+			if (m_texture_shuffle)
+			{
+				if (m_conf.ps.process_ba & SHUFFLE_READ)
+				{
+					can_scale_rt_alpha = false;
+
+					rt->UnscaleRTAlpha();
+					m_conf.rt = rt->m_texture;
+
+					if (req_src_update)
+						tex->m_texture = rt->m_texture;
+				}
+				else if (m_conf.colormask.wa)
+				{
+					if (!(m_cached_ctx.FRAME.FBMSK & 0xFFFC0000))
+					{
+						can_scale_rt_alpha = false;
+						rt->m_rt_alpha_scale = false;
+					}
+					else if (m_cached_ctx.FRAME.FBMSK & 0xFFFC0000)
+					{
+						can_scale_rt_alpha = false;
+						rt->UnscaleRTAlpha();
+						m_conf.rt = rt->m_texture;
+
+						if (req_src_update)
+							tex->m_texture = rt->m_texture;
+					}
+				}
+			}
+			else if (m_channel_shuffle)
+			{
+				if (m_conf.ps.tales_of_abyss_hle || (tex && tex->m_from_target && tex->m_from_target == rt && m_conf.ps.channel == ChannelFetch_ALPHA) || partial_fbmask || rt_new_alpha_max > 128)
+				{
+					can_scale_rt_alpha = false;
+					rt->UnscaleRTAlpha();
+					m_conf.rt = rt->m_texture;
+
+					if (req_src_update)
+						tex->m_texture = rt->m_texture;
+				}
+			}
+			else if (rt->m_last_draw == s_n)
+			{
+				can_scale_rt_alpha = false;
+				rt->m_rt_alpha_scale = false;
+			}
+			else
+			{
+				can_scale_rt_alpha = false;
+				rt->UnscaleRTAlpha();
+				m_conf.rt = rt->m_texture;
+
+				if (req_src_update)
+					tex->m_texture = rt->m_texture;
+			}
+		}
+
+		new_scale_rt_alpha = rt->m_rt_alpha_scale;
+	}
+}
+
 bool GSRendererHW::EmulateDATEEarlyFail(DATEOptions& date, GSTextureCache::Target* rt)
 {
 	if (!date.enabled)
@@ -5446,6 +5641,151 @@ void GSRendererHW::EmulateDATEGetConfig(DATEOptions& date_options, bool scale_rt
 	else if (date_options.enabled)
 	{
 		m_conf.depth.date = 1;
+	}
+}
+
+void GSRendererHW::DetermineVSConfig(GSTextureCache::Target* rt, float rtscale, const GSVector2i& rtsize,
+	const GSVector2i& unscaled_size, float& scale_x, float& scale_y)
+{
+	m_conf.vs.tme = m_process_texture;
+	m_conf.vs.fst = PRIM->FST;
+
+	float sx, sy, ox2, oy2;
+	const float ox = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFX));
+	const float oy = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFY));
+
+	if ((GSConfig.UserHacks_HalfPixelOffset < GSHalfPixelOffset::Native) && rtscale > 1.0f)
+	{
+		sx = 2.0f * rtscale / (rtsize.x << 4);
+		sy = 2.0f * rtscale / (rtsize.y << 4);
+		ox2 = -1.0f / rtsize.x;
+		oy2 = -1.0f / rtsize.y;
+		float mod_xy = 0.0f;
+
+		//This hack subtracts around half a pixel from OFX and OFY.
+		//The resulting shifted output aligns better with common blending / corona / blurring effects,
+		//but introduces a few bad pixels on the edges.
+		if (!rt)
+			mod_xy = GetModXYOffset();
+		else
+			mod_xy = rt->OffsetHack_modxy;
+
+		if (mod_xy > 1.0f)
+		{
+			ox2 *= mod_xy;
+			oy2 *= mod_xy;
+		}
+	}
+	else
+	{
+		// Align coordinates to native resolution framebuffer, hope for the best.
+		const int unscaled_x = unscaled_size.x;
+		const int unscaled_y = unscaled_size.y;
+		sx = 2.0f / (unscaled_x << 4);
+		sy = 2.0f / (unscaled_y << 4);
+
+		if (GSConfig.UserHacks_HalfPixelOffset == GSHalfPixelOffset::NativeWTexOffset)
+		{
+			ox2 = (-1.0f / (unscaled_x * rtscale));
+			oy2 = (-1.0f / (unscaled_y * rtscale));
+
+			// Having the vertex negatively offset is a common thing for copying sprites but this causes problems
+			// when upscaling, so we need to further adjust the offset.
+			// This kinda screws things up when using ST, so let's not.
+			if (m_vt.m_primclass == GS_SPRITE_CLASS && rtscale > 1.0f && (m_process_texture && PRIM->FST))
+			{
+				const GSVertex* v = &m_vertex.buff[0];
+				const int x1_frac = ((v[1].XYZ.X - m_context->XYOFFSET.OFX) & 0xf);
+				const int y1_frac = ((v[1].XYZ.Y - m_context->XYOFFSET.OFY) & 0xf);
+				if (x1_frac & 8)
+					ox2 *= 1.0f + ((static_cast<float>(16 - x1_frac) / 8.0f) * rtscale);
+
+				if (y1_frac & 8)
+					oy2 *= 1.0f + ((static_cast<float>(16 - y1_frac) / 8.0f) * rtscale);
+			}
+		}
+		else
+		{
+			ox2 = -1.0f / unscaled_x;
+			oy2 = -1.0f / unscaled_y;
+		}
+	}
+
+	scale_x = sx;
+	scale_y = sy;
+	m_conf.cb_vs.vertex_scale = GSVector2(sx, sy);
+	m_conf.cb_vs.vertex_offset = GSVector2(ox * sx + ox2 + 1, oy * sy + oy2 + 1);
+
+	m_conf.vs.iip = !IsFlatShaded();
+}
+
+void GSRendererHW::DetermineBarriers(GSTextureCache::Target* rt)
+{
+	const GSDevice::FeatureSupport& features = g_gs_device->Features();
+
+	if (features.framebuffer_fetch)
+	{
+		// Intel GPUs on Metal lock up if you try to use DSB and framebuffer fetch at once
+		// We should never need to do that (since using framebuffer fetch means you should be able to do all blending in shader),
+		// but sometimes it slips through
+		if (m_conf.require_one_barrier || m_conf.require_full_barrier)
+			pxAssert(!m_conf.blend.enable);
+
+		// If we use depth feedback directly, we must use barriers for the depth texture.
+		// If we use depth-as-color feedback, then FB fetch can be used for depth also.
+		bool need_barriers_for_depth = m_conf.ps.IsFeedbackLoopDepth() &&
+			(features.depth_feedback == GSDevice::DepthFeedbackSupport::Depth);
+
+		if (!need_barriers_for_depth)
+		{
+			// Barriers aren't needed with fbfetch
+			m_conf.require_one_barrier = false;
+			m_conf.require_full_barrier = false;
+		}
+	}
+	// Multi-pass algorithms shouldn't be needed with full barrier and backends may not handle this correctly
+	pxAssert(!m_conf.require_full_barrier || !m_conf.ps.colclip_hw);
+
+	// Swap full barrier for one barrier when there's no overlap, or a shuffle.
+	if ((features.texture_barrier || features.multidraw_fb_copy) && m_conf.require_full_barrier && (m_prim_overlap == PRIM_OVERLAP_NO || m_conf.ps.shuffle || m_channel_shuffle))
+	{
+		m_conf.require_full_barrier = false;
+		m_conf.require_one_barrier = true;
+	}
+	else if (!(features.texture_barrier || features.multidraw_fb_copy))
+	{
+		// These shouldn't be enabled if texture barriers aren't supported, make sure they are off.
+		m_conf.ps.write_rg = 0;
+		m_conf.require_full_barrier = false;
+	}
+
+	if (m_conf.require_full_barrier && (g_gs_device->Features().texture_barrier || g_gs_device->Features().multidraw_fb_copy))
+	{
+		ComputeDrawlistGetSize(rt->m_scale);
+		m_conf.drawlist = &m_drawlist;
+		m_conf.drawlist_bbox = &m_drawlist_bbox;
+	}
+}
+
+void GSRendererHW::EmulateDither()
+{
+	if (m_conf.ps.dither || m_conf.blend_multi_pass.dither)
+	{
+		const GIFRegDIMX& DIMX = m_draw_env->DIMX;
+		GL_DBG("DITHERING mode %d (%d)", (GSConfig.Dithering == 3) ? "Force 32bit" : ((GSConfig.Dithering == 0) ? "Disabled" : "Enabled"), GSConfig.Dithering);
+
+		if (m_conf.ps.dither || GSConfig.Dithering == 3)
+			m_conf.ps.dither = GSConfig.Dithering;
+
+		m_conf.cb_ps.DitherMatrix[0] = GSVector4(DIMX.DM00, DIMX.DM01, DIMX.DM02, DIMX.DM03);
+		m_conf.cb_ps.DitherMatrix[1] = GSVector4(DIMX.DM10, DIMX.DM11, DIMX.DM12, DIMX.DM13);
+		m_conf.cb_ps.DitherMatrix[2] = GSVector4(DIMX.DM20, DIMX.DM21, DIMX.DM22, DIMX.DM23);
+		m_conf.cb_ps.DitherMatrix[3] = GSVector4(DIMX.DM30, DIMX.DM31, DIMX.DM32, DIMX.DM33);
+	}
+	else if (GSConfig.Dithering > 2)
+	{
+		m_conf.ps.dither = GSConfig.Dithering;
+		m_conf.blend_multi_pass.dither = GSConfig.Dithering;
 	}
 }
 
@@ -7997,110 +8337,10 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		CorrectATEAlphaMinMax(m_cached_ctx.TEST.ATST, aref);
 	}
 
-	const bool needs_ad = rt && m_context->ALPHA.C == 1 && rt->m_alpha_min != rt->m_alpha_max && rt->m_alpha_max > 128;
-
-	// Blend
+	// Determine alpha range before blending.
 	int blend_alpha_min = 0, blend_alpha_max = 255;
 	int rt_new_alpha_min = 0, rt_new_alpha_max = 255;
-	if (rt)
-	{
-		GL_INS("HW: RT alpha was %s before draw", rt->m_rt_alpha_scale ? "scaled" : "NOT scaled");
-
-		blend_alpha_min = rt_new_alpha_min = rt->m_alpha_min;
-		blend_alpha_max = rt_new_alpha_max = rt->m_alpha_max;
-
-		const int fba_value = m_draw_env->CTXT[m_draw_env->PRIM.CTXT].FBA.FBA * 128;
-		const bool is_24_bit = (GSLocalMemory::m_psm[rt->m_TEX0.PSM].trbpp == 24);
-		if (is_24_bit)
-		{
-			// C24/Z24 - alpha is 1.
-			blend_alpha_min = 128;
-			blend_alpha_max = 128;
-		}
-
-		if (GSUtil::GetChannelMask(m_cached_ctx.FRAME.PSM) & 0x8 && !m_texture_shuffle)
-		{
-			const int s_alpha_max = GetAlphaMinMax().max | fba_value;
-			const int s_alpha_min = GetAlphaMinMax().min | fba_value;
-
-			const bool afail_always_fb_alpha = m_cached_ctx.TEST.AFAIL == AFAIL_FB_ONLY || (m_cached_ctx.TEST.AFAIL == AFAIL_RGB_ONLY && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].trbpp != 32);
-			const bool always_passing_alpha = !m_cached_ctx.TEST.ATE || afail_always_fb_alpha || (m_cached_ctx.TEST.ATE && m_cached_ctx.TEST.ATST == ATST_ALWAYS);
-			const bool full_cover = rt->m_valid.rintersect(m_r).eq(rt->m_valid) && m_primitive_covers_without_gaps == NoGapsType::FullCover &&
-				!(date_options.enabled || !always_passing_alpha || !IsDepthAlwaysPassing());
-
-			// On DX FBMask emulation can be missing on lower blend levels, so we'll do whatever the API does.
-			const u32 fb_mask = m_conf.colormask.wa ? (m_conf.ps.fbmask ? m_conf.cb_ps.FbMask.a : 0) : 0xFF;
-			const u32 alpha_mask = (GSLocalMemory::m_psm[rt->m_TEX0.PSM].fmsk & 0xFF000000) >> 24;
-			if ((fb_mask & alpha_mask) == 0)
-			{
-				if (full_cover)
-				{
-					rt_new_alpha_max = s_alpha_max;
-					rt_new_alpha_min = s_alpha_min;
-				}
-				else
-				{
-					rt_new_alpha_max = std::max(s_alpha_max, rt_new_alpha_max);
-					rt_new_alpha_min = std::min(s_alpha_min, rt_new_alpha_min);
-				}
-			}
-			else if ((fb_mask & alpha_mask) != alpha_mask) // We can't be sure of the alpha if it's partially masked.
-			{
-				// Any number of bits could be set, so let's be paranoid about it
-				const u32 new_max_alpha = (s_alpha_max != s_alpha_min) ? (std::min(s_alpha_max, ((1 << (32 - std::countl_zero(static_cast<u32>(s_alpha_max)))) - 1)) & ~fb_mask) : (s_alpha_max & ~fb_mask);
-				const u32 curr_max = (rt_new_alpha_max != rt_new_alpha_min && rt->m_alpha_range) ? (((1 << (32 - std::countl_zero(static_cast<u32>(rt_new_alpha_max)))) - 1) & fb_mask) : ((rt_new_alpha_max | rt_new_alpha_min) & fb_mask);
-				if (full_cover)
-					rt_new_alpha_max = new_max_alpha | curr_max;
-				else
-					rt_new_alpha_max = std::max(static_cast<int>(new_max_alpha | curr_max), rt_new_alpha_max);
-
-				rt_new_alpha_min = std::min(s_alpha_min, rt_new_alpha_min);
-			}
-
-			if ((fb_mask & alpha_mask) != alpha_mask)
-			{
-				if (full_cover && (fb_mask & alpha_mask) == 0)
-					rt->m_alpha_range = s_alpha_max != s_alpha_min;
-				else
-					rt->m_alpha_range |= (s_alpha_max & ~fb_mask) != (s_alpha_min & ~fb_mask);
-			}
-		}
-		else if ((m_texture_shuffle && m_conf.colormask.wa))
-		{
-			// in shuffles, the alpha top bit values are set according to TEXA
-			const GSVector4i shuffle_rect = GSVector4i(m_vt.m_min.p.x, m_vt.m_min.p.y, m_vt.m_max.p.x, m_vt.m_max.p.y);
-			if (!rt->m_valid.rintersect(shuffle_rect).eq(rt->m_valid) || (m_cached_ctx.FRAME.FBMSK & 0xFFFC0000))
-			{
-				rt_new_alpha_max = std::max(static_cast<int>((std::max(m_cached_ctx.TEXA.TA1, m_cached_ctx.TEXA.TA0) & 0x80) + 127), rt_new_alpha_max) | fba_value;
-				rt_new_alpha_min = std::min(static_cast<int>(std::min(m_cached_ctx.TEXA.TA1, m_cached_ctx.TEXA.TA0) & 0x80), rt_new_alpha_min);
-			}
-			else
-			{
-				rt_new_alpha_max = (std::max(m_cached_ctx.TEXA.TA1, m_cached_ctx.TEXA.TA0) & 0x80) + 127 | fba_value;
-				rt_new_alpha_min = (std::min(m_cached_ctx.TEXA.TA1, m_cached_ctx.TEXA.TA0) & 0x80) | fba_value;
-			}
-			rt->m_alpha_range = true;
-		}
-
-		GL_INS("HW: RT Alpha Range: %d-%d => %d-%d", blend_alpha_min, blend_alpha_max, rt_new_alpha_min, rt_new_alpha_max);
-
-		// If there's no overlap, the values in the RT before FB write will be the old values.
-		if (m_prim_overlap != PRIM_OVERLAP_NO)
-		{
-			// Otherwise, it may be a mix of the old/new values.
-			blend_alpha_min = std::min(blend_alpha_min, rt_new_alpha_min);
-			blend_alpha_max = std::max(blend_alpha_max, rt_new_alpha_max);
-		}
-
-		if (!rt->m_32_bits_fmt)
-		{
-			rt_new_alpha_max &= 128;
-			rt_new_alpha_min &= 128;
-
-			if (rt_new_alpha_max == rt_new_alpha_min)
-				rt->m_alpha_range = false;
-		}
-	}
+	CalculateAlphaRange(rt, ds, date_options, blend_alpha_min, blend_alpha_max, rt_new_alpha_min, rt_new_alpha_max);
 
 	// DATE: selection of the algorithm.
 	EmulateDATESelectMethod(date_options, rt, blend_alpha_min, blend_alpha_max);
@@ -8114,20 +8354,6 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		m_conf.colormask.wa = 0;
 	}
 
-	// Not gonna spend too much time with this, it's not likely to be used much, can't be less accurate than it was.
-	if (ds)
-	{
-		ds->m_alpha_max = std::max(static_cast<u32>(ds->m_alpha_max), static_cast<u32>(m_vt.m_max.p.z) >> 24);
-		ds->m_alpha_min = std::min(static_cast<u32>(ds->m_alpha_min), static_cast<u32>(m_vt.m_min.p.z) >> 24);
-		GL_INS("HW: New DS Alpha Range: %d-%d", ds->m_alpha_min, ds->m_alpha_max);
-
-		if (GSLocalMemory::m_psm[ds->m_TEX0.PSM].bpp == 16)
-		{
-			ds->m_alpha_max &= 128;
-			ds->m_alpha_min &= 128;
-		}
-	}
-
 	// If we Correct/Decorrect and tex is rt, we will need to update the texture reference
 	const bool req_src_update = tex && rt && tex->m_target && tex->m_target_direct && tex->m_texture == rt->m_texture;
 
@@ -8135,75 +8361,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	// because otherwise we'll treat tex-is-fb as a scaled source, when it's not yet.
 	bool can_scale_rt_alpha = false;
 	bool new_scale_rt_alpha = false;
-	if (rt)
-	{
-		can_scale_rt_alpha = !needs_ad && (GSUtil::GetChannelMask(m_cached_ctx.FRAME.PSM) & 0x8) && rt_new_alpha_max <= 128;
-
-		const bool partial_fbmask = (m_conf.ps.fbmask && m_conf.cb_ps.FbMask.a != 0xFF && m_conf.cb_ps.FbMask.a != 0);
-		const bool rta_decorrection = m_channel_shuffle || m_texture_shuffle || (m_conf.colormask.wa && (rt_new_alpha_max > 128 || partial_fbmask));
-
-		if (rta_decorrection)
-		{
-			if (m_texture_shuffle)
-			{
-				if (m_conf.ps.process_ba & SHUFFLE_READ)
-				{
-					can_scale_rt_alpha = false;
-
-					rt->UnscaleRTAlpha();
-					m_conf.rt = rt->m_texture;
-
-					if (req_src_update)
-						tex->m_texture = rt->m_texture;
-				}
-				else if (m_conf.colormask.wa)
-				{
-					if (!(m_cached_ctx.FRAME.FBMSK & 0xFFFC0000))
-					{
-						can_scale_rt_alpha = false;
-						rt->m_rt_alpha_scale = false;
-					}
-					else if (m_cached_ctx.FRAME.FBMSK & 0xFFFC0000)
-					{
-						can_scale_rt_alpha = false;
-						rt->UnscaleRTAlpha();
-						m_conf.rt = rt->m_texture;
-
-						if (req_src_update)
-							tex->m_texture = rt->m_texture;
-					}
-				}
-			}
-			else if (m_channel_shuffle)
-			{
-				if (m_conf.ps.tales_of_abyss_hle || (tex && tex->m_from_target && tex->m_from_target == rt && m_conf.ps.channel == ChannelFetch_ALPHA) || partial_fbmask || rt_new_alpha_max > 128)
-				{
-					can_scale_rt_alpha = false;
-					rt->UnscaleRTAlpha();
-					m_conf.rt = rt->m_texture;
-
-					if (req_src_update)
-						tex->m_texture = rt->m_texture;
-				}
-			}
-			else if (rt->m_last_draw == s_n)
-			{
-				can_scale_rt_alpha = false;
-				rt->m_rt_alpha_scale = false;
-			}
-			else
-			{
-				can_scale_rt_alpha = false;
-				rt->UnscaleRTAlpha();
-				m_conf.rt = rt->m_texture;
-
-				if (req_src_update)
-					tex->m_texture = rt->m_texture;
-			}
-		}
-
-		new_scale_rt_alpha = rt->m_rt_alpha_scale;
-	}
+	DetermineAlphaScaling(rt, tex, req_src_update, rt_new_alpha_max, can_scale_rt_alpha, new_scale_rt_alpha);
 
 	GSDevice::RecycledTexture tex_copy;
 	if (tex)
@@ -8287,104 +8445,23 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	GSDevice::RecycledTexture temp_ds; // If we're doing stencil DATE and we don't have a depth buffer, we need to allocate a temporary one.
 	EmulateDATEGetConfig(date_options, new_scale_rt_alpha, temp_ds);
 
-	// vs
-
-	m_conf.vs.tme = m_process_texture;
-	m_conf.vs.fst = PRIM->FST;
-
-	// FIXME D3D11 and GL support half pixel center. Code could be easier!!!
 	const GSTextureCache::Target* rt_or_ds = rt ? rt : ds;
 	const float rtscale = rt_or_ds->GetScale();
 	const GSVector2i rtsize = rt_or_ds->GetTexture()->GetSize();
-	float sx, sy, ox2, oy2;
-	const float ox = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFX));
-	const float oy = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFY));
+	const GSVector2i rt_unscaled_size = rt_or_ds->GetUnscaledSize();
 
-	if ((GSConfig.UserHacks_HalfPixelOffset < GSHalfPixelOffset::Native) && rtscale > 1.0f)
-	{
-		sx = 2.0f * rtscale / (rtsize.x << 4);
-		sy = 2.0f * rtscale / (rtsize.y << 4);
-		ox2 = -1.0f / rtsize.x;
-		oy2 = -1.0f / rtsize.y;
-		float mod_xy = 0.0f;
-		//This hack subtracts around half a pixel from OFX and OFY.
-		//
-		//The resulting shifted output aligns better with common blending / corona / blurring effects,
-		//but introduces a few bad pixels on the edges.
-		if (!rt)
-			mod_xy = GetModXYOffset();
-		else
-			mod_xy = rt->OffsetHack_modxy;
+	// Vertex shader config
+	float vs_scale_x, vs_scale_y;
+	DetermineVSConfig(rt, rtscale, rtsize, rt_unscaled_size, vs_scale_x, vs_scale_y);
 
-		if (mod_xy > 1.0f)
-		{
-			ox2 *= mod_xy;
-			oy2 *= mod_xy;
-		}
-	}
-	else
-	{
-		// Align coordinates to native resolution framebuffer, hope for the best.
-		const int unscaled_x = rt_or_ds ? rt_or_ds->GetUnscaledWidth() : 0;
-		const int unscaled_y = rt_or_ds ? rt_or_ds->GetUnscaledHeight() : 0;
-		sx = 2.0f / (unscaled_x << 4);
-		sy = 2.0f / (unscaled_y << 4);
-
-		if (GSConfig.UserHacks_HalfPixelOffset == GSHalfPixelOffset::NativeWTexOffset)
-		{
-			ox2 = (-1.0f / (unscaled_x * rtscale));
-			oy2 = (-1.0f / (unscaled_y * rtscale));
-
-			// Having the vertex negatively offset is a common thing for copying sprites but this causes problems when upscaling, so we need to further adjust the offset.
-			// This kinda screws things up when using ST, so let's not.
-			if (m_vt.m_primclass == GS_SPRITE_CLASS && rtscale > 1.0f && (tex && PRIM->FST))
-			{
-				const GSVertex* v = &m_vertex.buff[0];
-				const int x1_frac = ((v[1].XYZ.X - m_context->XYOFFSET.OFX) & 0xf);
-				const int y1_frac = ((v[1].XYZ.Y - m_context->XYOFFSET.OFY) & 0xf);
-				if (x1_frac & 8)
-					ox2 *= 1.0f + ((static_cast<float>(16 - x1_frac) / 8.0f) * rtscale);
-
-				if (y1_frac & 8)
-					oy2 *= 1.0f + ((static_cast<float>(16 - y1_frac) / 8.0f) * rtscale);
-			}
-		}
-		else
-		{
-			ox2 = -1.0f / unscaled_x;
-			oy2 = -1.0f / unscaled_y;
-		}
-	}
-
-	m_conf.cb_vs.vertex_scale = GSVector2(sx, sy);
-	m_conf.cb_vs.vertex_offset = GSVector2(ox * sx + ox2 + 1, oy * sy + oy2 + 1);
-	// END of FIXME
-
-	// GS_SPRITE_CLASS are already flat (either by CPU or the GS)
-	m_conf.ps.iip = (m_vt.m_primclass == GS_SPRITE_CLASS) ? 0 : PRIM->IIP;
-	m_conf.vs.iip = m_conf.ps.iip;
+	m_conf.ps.iip = !IsFlatShaded();
 
 	m_conf.ps.fba = m_context->FBA.FBA;
 
-	if (m_conf.ps.dither || m_conf.blend_multi_pass.dither)
-	{
-		const GIFRegDIMX& DIMX = m_draw_env->DIMX;
-		GL_DBG("DITHERING mode %d (%d)", (GSConfig.Dithering == 3) ? "Force 32bit" : ((GSConfig.Dithering == 0) ? "Disabled" : "Enabled"), GSConfig.Dithering);
+	// Dither config
+	EmulateDither();
 
-		if (m_conf.ps.dither || GSConfig.Dithering == 3)
-			m_conf.ps.dither = GSConfig.Dithering;
-
-		m_conf.cb_ps.DitherMatrix[0] = GSVector4(DIMX.DM00, DIMX.DM01, DIMX.DM02, DIMX.DM03);
-		m_conf.cb_ps.DitherMatrix[1] = GSVector4(DIMX.DM10, DIMX.DM11, DIMX.DM12, DIMX.DM13);
-		m_conf.cb_ps.DitherMatrix[2] = GSVector4(DIMX.DM20, DIMX.DM21, DIMX.DM22, DIMX.DM23);
-		m_conf.cb_ps.DitherMatrix[3] = GSVector4(DIMX.DM30, DIMX.DM31, DIMX.DM32, DIMX.DM33);
-	}
-	else if (GSConfig.Dithering > 2)
-	{
-		m_conf.ps.dither = GSConfig.Dithering;
-		m_conf.blend_multi_pass.dither = GSConfig.Dithering;
-	}
-
+	// Fogging config
 	if (PRIM->FGE)
 	{
 		m_conf.ps.fog = 1;
@@ -8402,41 +8479,8 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		m_conf.ps.rta_correction = rt->m_rt_alpha_scale;
 	}
 
-	if (features.framebuffer_fetch)
-	{
-		// Intel GPUs on Metal lock up if you try to use DSB and framebuffer fetch at once
-		// We should never need to do that (since using framebuffer fetch means you should be able to do all blending in shader),
-		// but sometimes it slips through
-		if (m_conf.require_one_barrier || m_conf.require_full_barrier)
-			pxAssert(!m_conf.blend.enable);
-
-		// If we use depth feedback directly, we must use barriers for the depth texture.
-		// If we use depth-as-color feedback, then FB fetch can be used for depth also.
-		bool need_barriers_for_depth = m_conf.ps.IsFeedbackLoopDepth() &&
-		                               (features.depth_feedback == GSDevice::DepthFeedbackSupport::Depth);
-
-		if (!need_barriers_for_depth)
-		{
-			// Barriers aren't needed with fbfetch
-			m_conf.require_one_barrier = false;
-			m_conf.require_full_barrier = false;
-		}
-	}
-	// Multi-pass algorithms shouldn't be needed with full barrier and backends may not handle this correctly
-	pxAssert(!m_conf.require_full_barrier || !m_conf.ps.colclip_hw);
-
-	// Swap full barrier for one barrier when there's no overlap, or a shuffle.
-	if ((features.texture_barrier || features.multidraw_fb_copy) && m_conf.require_full_barrier && (m_prim_overlap == PRIM_OVERLAP_NO || m_conf.ps.shuffle || m_channel_shuffle))
-	{
-		m_conf.require_full_barrier = false;
-		m_conf.require_one_barrier = true;
-	}
-	else if (!(features.texture_barrier || features.multidraw_fb_copy))
-	{
-		// These shouldn't be enabled if texture barriers aren't supported, make sure they are off.
-		m_conf.ps.write_rg = 0;
-		m_conf.require_full_barrier = false;
-	}
+	// Barriers must be determined before indices are modified via HandleProvokingVertexFirst/SetupIA.
+	DetermineBarriers(rt);
 
 	// Perform second pass setup here once barriers are determined.
 	EmulateAlphaTestSecondPass();
@@ -8454,17 +8498,9 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	m_conf.drawarea = m_channel_shuffle ? scissor : scissor.rintersect(ComputeBoundingBox(rtsize, rtscale));
 	m_conf.scissor = (date_options.enabled && !date_options.barrier) ? m_conf.drawarea : scissor;
 
-	// ComputeDrawlistGetSize expects the original index layout, so needs to be called before we modify it via HandleProvokingVertexFirst/SetupIA.
-	if (m_conf.require_full_barrier && (g_gs_device->Features().texture_barrier || g_gs_device->Features().multidraw_fb_copy))
-	{
-		ComputeDrawlistGetSize(rt->m_scale);
-		m_conf.drawlist = &m_drawlist;
-		m_conf.drawlist_bbox = &m_drawlist_bbox;
-	}
-
 	HandleProvokingVertexFirst();
 
-	SetupIA(rtscale, sx, sy, m_channel_shuffle_width != 0);
+	SetupIA(rtscale, vs_scale_x, vs_scale_y, m_channel_shuffle_width != 0);
 
 	StartDepthAsRTFeedback(); // Depends on the drawarea and alpha test having been determined.
 	

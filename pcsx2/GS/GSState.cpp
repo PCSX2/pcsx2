@@ -5836,6 +5836,12 @@ bool GSState::TryAlphaTest(u32& fm, u32& zm)
 	return true;
 }
 
+bool GSState::IsFlatShaded()
+{
+	return m_vt.m_eq.rgba == 0xFFFF || m_vt.m_primclass == GS_SPRITE_CLASS ||
+	       m_vt.m_primclass == GS_POINT_CLASS || !PRIM->IIP;
+}
+
 bool GSState::IsOpaque()
 {
 	if (PRIM->AA1)

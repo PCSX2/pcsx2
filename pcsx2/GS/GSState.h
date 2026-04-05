@@ -203,6 +203,7 @@ protected:
 	};
 	TextureMinMaxResult GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCLAMP CLAMP, bool linear, bool clamp_to_tsize);
 	bool TryAlphaTest(u32& fm, u32& zm);
+	bool IsFlatShaded();
 	bool IsOpaque();
 	bool IsMipMapDraw();
 	bool IsMipMapActive();
