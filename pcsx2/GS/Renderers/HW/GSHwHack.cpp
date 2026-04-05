@@ -50,8 +50,8 @@ bool GSHwHack::GSC_IRem(GSRendererHW& r, int& skip)
 			GIFRegTEX0 RTLookup = GIFRegTEX0::Create(RTBP0, RFBW, RFPSM);
 			GSTextureCache::Source* src = g_texture_cache->LookupSource(true, RTLookup, r.m_cached_ctx.TEXA, r.m_cached_ctx.CLAMP, GSVector4i(0, 0, 1, 1), nullptr, true, false, r.m_cached_ctx.FRAME, true, true);
 
-			GSTextureCache::Target* rt = g_texture_cache->LookupTarget(GIFRegTEX0::Create(RTBP0, RFBW, RFPSM),
-				GSVector2i(1, 1), r.GetTextureScaleFactor(), GSTextureCache::RenderTarget, true, 0, false, false, true, true, GSVector4i(0, 0, 1, 1), true, false, true, src);
+			GSTextureCache::Target* rt = g_texture_cache->LookupDrawTarget(GIFRegTEX0::Create(RTBP0, RFBW, RFPSM),
+				GSVector2i(1, 1), r.GetTextureScaleFactor(), GSTextureCache::RenderTarget, true, 0, false, true, true, GSVector4i(0, 0, 1, 1), true, false, true, src);
 
 			if (!rt)
 				return false;
@@ -138,8 +138,8 @@ bool GSHwHack::GSC_IRem(GSRendererHW& r, int& skip)
 				GIFRegTEX0 RTLookup = GIFRegTEX0::Create(RTBP0, RFBW, RFPSM);
 				GSTextureCache::Source* src = g_texture_cache->LookupSource(true, RTLookup, r.m_cached_ctx.TEXA, r.m_cached_ctx.CLAMP, GSVector4i(0,0,1,1), nullptr, true, false, r.m_cached_ctx.FRAME, true, true);
 
-				GSTextureCache::Target* rt = g_texture_cache->LookupTarget(GIFRegTEX0::Create(RTBP0, RFBW, RFPSM),
-					GSVector2i(1, 1), r.GetTextureScaleFactor(), GSTextureCache::RenderTarget, true, 0, false, false, true, true, GSVector4i(0,0,1,1), true, false, true, src);
+				GSTextureCache::Target* rt = g_texture_cache->LookupDrawTarget(GIFRegTEX0::Create(RTBP0, RFBW, RFPSM),
+					GSVector2i(1, 1), r.GetTextureScaleFactor(), GSTextureCache::RenderTarget, true, 0, false, true, true, GSVector4i(0,0,1,1), true, false, true, src);
 
 				if (!rt)
 					return false;
@@ -283,7 +283,7 @@ bool GSHwHack::GSC_DTGames(GSRendererHW& r, int& skip)
 		// The further problem to this is the limitation of alpha we can save on an RT as they copy in 255, so I can cheese it here pretending it's RTA'd
 		if (RTME && RFPSM == PSMCT32 && RTBP0 == RFBP && RTPSM == PSMCT16 && RTEST.ATE && RTEST.ATST == ATST_NEVER && RTEST.AFAIL == AFAIL_FB_ONLY && RFBMSK == 0xFFFFFF)
 		{
-			GSTextureCache::Target* rt = g_texture_cache->LookupTarget(GIFRegTEX0::Create(RTBP0, RFBW, RFPSM),
+			GSTextureCache::Target* rt = g_texture_cache->LookupDrawTarget(GIFRegTEX0::Create(RTBP0, RFBW, RFPSM),
 				GSVector2i(1, 1), r.GetTextureScaleFactor(), GSTextureCache::RenderTarget);
 
 			if (!rt)
@@ -373,13 +373,13 @@ bool GSHwHack::GSC_SandGrainGames(GSRendererHW& r, int& skip)
 
 		if (r.PRIM->PRIM == GS_SPRITE && RTME && RFPSM == PSMCT16S && RTPSM == PSMZ16S && next_ctx.TEX0.TBP0 == RFBP && next_ctx.TEX0.PSM == PSMT8H)
 		{
-			GSTextureCache::Target* texsrc = g_texture_cache->LookupTarget(GIFRegTEX0::Create(RTBP0, RTBW, RTPSM),
+			GSTextureCache::Target* texsrc = g_texture_cache->LookupDrawTarget(GIFRegTEX0::Create(RTBP0, RTBW, RTPSM),
 				GSVector2i(1, 1), r.GetTextureScaleFactor(), GSTextureCache::DepthStencil);
 
 			if (!texsrc)
 				return false;
 
-			GSTextureCache::Target* rt = g_texture_cache->LookupTarget(GIFRegTEX0::Create(next_ctx.FRAME.Block(), next_ctx.FRAME.FBW, next_ctx.FRAME.PSM),
+			GSTextureCache::Target* rt = g_texture_cache->LookupDrawTarget(GIFRegTEX0::Create(next_ctx.FRAME.Block(), next_ctx.FRAME.FBW, next_ctx.FRAME.PSM),
 				GSVector2i(1, 1), r.GetTextureScaleFactor(), GSTextureCache::RenderTarget);
 
 			if (!rt)
@@ -468,7 +468,7 @@ bool GSHwHack::GSC_BurnoutGames(GSRendererHW& r, int& skip)
 				break;
 
 			// Next draw should contain our source.
-			GSTextureCache::Target* tgt = g_texture_cache->LookupTarget(r.m_env.CTXT[r.m_backed_up_ctx].TEX0,
+			GSTextureCache::Target* tgt = g_texture_cache->LookupDrawTarget(r.m_env.CTXT[r.m_backed_up_ctx].TEX0,
 				GSVector2i(1, 1), r.GetTextureScaleFactor(), GSTextureCache::RenderTarget);
 			if (!tgt)
 				break;
@@ -718,8 +718,8 @@ bool GSHwHack::GSC_PolyphonyDigitalGames(GSRendererHW& r, int& skip)
 		return false;
 	}
 
-	GSTextureCache::Target* src = g_texture_cache->LookupTarget(RTEX0, GSVector2i(1, 1), r.GetTextureScaleFactor(),
-		GSTextureCache::RenderTarget, true, 0, false, false, true, true, GSVector4i::zero(), true);
+	GSTextureCache::Target* src = g_texture_cache->LookupDrawTarget(RTEX0, GSVector2i(1, 1), r.GetTextureScaleFactor(),
+		GSTextureCache::RenderTarget, true, 0, false, true, true, GSVector4i::zero(), true);
 	if (!src)
 		return false;
 
@@ -777,7 +777,7 @@ bool GSHwHack::GSC_PolyphonyDigitalGames(GSRendererHW& r, int& skip)
 		for (u32 channel = 0; channel < 3; channel++)
 		{
 			const GIFRegTEX0 TEX0 = GIFRegTEX0::Create(base + channel * page_offset, 10, PSMCT32);
-			GSTextureCache::Target* dst = g_texture_cache->LookupTarget(TEX0, src->GetUnscaledSize(), src->GetScale(), GSTextureCache::RenderTarget, true, fbmsk);
+			GSTextureCache::Target* dst = g_texture_cache->LookupDrawTarget(TEX0, src->GetUnscaledSize(), src->GetScale(), GSTextureCache::RenderTarget, true, fbmsk);
 			if (!dst)
 			{
 				dst = g_texture_cache->CreateTarget(TEX0, size, size, src->GetScale(), GSTextureCache::RenderTarget, true, fbmsk);
@@ -822,7 +822,7 @@ bool GSHwHack::GSC_Battlefield2(GSRendererHW& r, int& skip)
 			GIFRegTEX0 TEX0 = {};
 			TEX0.TBP0 = RFBP;
 			TEX0.TBW = 8;
-			GSTextureCache::Target* dst = g_texture_cache->LookupTarget(TEX0, r.GetTargetSize(), r.GetTextureScaleFactor(), GSTextureCache::DepthStencil);
+			GSTextureCache::Target* dst = g_texture_cache->LookupDrawTarget(TEX0, r.GetTargetSize(), r.GetTextureScaleFactor(), GSTextureCache::DepthStencil);
 
 			if (!dst)
 				dst = g_texture_cache->CreateTarget(TEX0, r.GetTargetSize(), r.GetValidSize(nullptr), r.GetTextureScaleFactor(), GSTextureCache::DepthStencil,
@@ -1067,7 +1067,7 @@ bool GSHwHack::OI_RozenMaidenGebetGarden(GSRendererHW& r, GSTexture* rt, GSTextu
 			TEX0.TBW = RFRAME.FBW;
 			TEX0.PSM = RFRAME.PSM;
 
-			if (GSTextureCache::Target* tmp_rt = g_texture_cache->LookupTarget(TEX0, r.GetTargetSize(), r.GetTextureScaleFactor(), GSTextureCache::RenderTarget))
+			if (GSTextureCache::Target* tmp_rt = g_texture_cache->LookupDrawTarget(TEX0, r.GetTargetSize(), r.GetTextureScaleFactor(), GSTextureCache::RenderTarget))
 			{
 				GL_INS("OI_RozenMaidenGebetGarden FB clear");
 				g_gs_device->ClearRenderTarget(tmp_rt->m_texture, 0);
@@ -1089,7 +1089,7 @@ bool GSHwHack::OI_RozenMaidenGebetGarden(GSRendererHW& r, GSTexture* rt, GSTextu
 			TEX0.TBW = RFRAME.FBW;
 			TEX0.PSM = RZBUF.PSM;
 
-			if (GSTextureCache::Target* tmp_ds = g_texture_cache->LookupTarget(TEX0, r.GetTargetSize(), r.GetTextureScaleFactor(), GSTextureCache::DepthStencil))
+			if (GSTextureCache::Target* tmp_ds = g_texture_cache->LookupDrawTarget(TEX0, r.GetTargetSize(), r.GetTextureScaleFactor(), GSTextureCache::DepthStencil))
 			{
 				GL_INS("OI_RozenMaidenGebetGarden ZB clear");
 				g_gs_device->ClearDepth(tmp_ds->m_texture, 0.0f);
@@ -1122,14 +1122,14 @@ bool GSHwHack::OI_SonicUnleashed(GSRendererHW& r, GSTexture* rt, GSTexture* ds, 
 
 	GL_INS("OI_SonicUnleashed replace draw by a copy draw %lld", r.s_n);
 
-	GSTextureCache::Target* src = g_texture_cache->LookupTarget(Texture, GSVector2i(1, 1), r.GetTextureScaleFactor(), GSTextureCache::RenderTarget, true, 0, false, false, true, true, GSVector4i::zero(), true);
+	GSTextureCache::Target* src = g_texture_cache->LookupDrawTarget(Texture, GSVector2i(1, 1), r.GetTextureScaleFactor(), GSTextureCache::RenderTarget, true, 0, false, true, true, GSVector4i::zero(), true);
 
 	if (!src)
 		return true;
 
 	const GSVector2i src_size(src->m_texture->GetSize());
 
-	GSTextureCache::Target* rt_again = g_texture_cache->LookupTarget(Frame, src_size, src->m_scale, GSTextureCache::RenderTarget);
+	GSTextureCache::Target* rt_again = g_texture_cache->LookupDrawTarget(Frame, src_size, src->m_scale, GSTextureCache::RenderTarget);
 	if ((rt_again->m_TEX0.PSM & 0x3) == PSMCT16)
 	{
 		GSVector4 dRect;
@@ -1284,15 +1284,15 @@ static bool GetMoveTargetPair(GSRendererHW& r, GSTextureCache::Target** src, GIF
 	const int src_type =
 		GSLocalMemory::m_psm[src_desc.PSM].depth ? GSTextureCache::DepthStencil : GSTextureCache::RenderTarget;
 	GSTextureCache::Target* tsrc =
-		g_texture_cache->LookupTarget(src_desc, GSVector2i(1, 1), r.GetTextureScaleFactor(), src_type);
+		g_texture_cache->LookupDrawTarget(src_desc, GSVector2i(1, 1), r.GetTextureScaleFactor(), src_type);
 	if (!tsrc)
 		return false;
 
 	// The target might not.
 	const int dst_type =
 		GSLocalMemory::m_psm[dst_desc.PSM].depth ? GSTextureCache::DepthStencil : GSTextureCache::RenderTarget;
-	GSTextureCache::Target* tdst = g_texture_cache->LookupTarget(dst_desc, tsrc->GetUnscaledSize(), tsrc->GetScale(),
-		dst_type, true, 0, false, false, preserve_target, preserve_target, tsrc->GetUnscaledRect());
+	GSTextureCache::Target* tdst = g_texture_cache->LookupDrawTarget(dst_desc, tsrc->GetUnscaledSize(), tsrc->GetScale(),
+		dst_type, true, 0, false, preserve_target, preserve_target, tsrc->GetUnscaledRect());
 	if (!tdst)
 	{
 		if (req_target)
