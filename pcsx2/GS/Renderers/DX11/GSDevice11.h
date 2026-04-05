@@ -146,12 +146,12 @@ private:
 		ID3D11Buffer* index_buffer;
 		ID3D11VertexShader* vs;
 		ID3D11Buffer* vs_cb;
-		std::array<ID3D11ShaderResourceView*, MAX_TEXTURES> ps_sr_views;
-		std::array<ID3D11ShaderResourceView*, MAX_TEXTURES> ps_cached_sr_views;
+		std::array<ID3D11ShaderResourceView*, MAX_TEXTURES> ps_pending_srv;
+		std::array<ID3D11ShaderResourceView*, MAX_TEXTURES> ps_current_srv;
 		ID3D11PixelShader* ps;
 		ID3D11Buffer* ps_cb;
-		std::array<ID3D11SamplerState*, MAX_SAMPLERS> ps_ss;
-		std::array<ID3D11SamplerState*, MAX_SAMPLERS> ps_cached_ss;
+		std::array<ID3D11SamplerState*, MAX_SAMPLERS> ps_pending_ss;
+		std::array<ID3D11SamplerState*, MAX_SAMPLERS> ps_current_ss;
 		GSVector2i viewport;
 		GSVector4i scissor;
 		u32 vb_stride;
@@ -159,10 +159,10 @@ private:
 		u8 sref;
 		ID3D11BlendState* bs;
 		u8 bf;
-		ID3D11RenderTargetView* rt_view;
+		ID3D11RenderTargetView* rtv;
 		ID3D11DepthStencilView* dsv;
-		GSTexture* cached_rt_view;
-		GSTexture* cached_dsv;
+		GSTexture* current_rt;
+		GSTexture* current_ds;
 	} m_state;
 
 	std::array<std::array<wil::com_ptr_nothrow<ID3D11Query>, 3>, NUM_TIMESTAMP_QUERIES> m_timestamp_queries = {};
