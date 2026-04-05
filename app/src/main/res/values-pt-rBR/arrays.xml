@@ -2,7 +2,7 @@
 <resources>
     <string-array name="renderers">
         <item>Automático</item>
-        <item>OpenGL</item>
+        <item></item>
         <item>Software</item>
         <item>Vulkan</item>
     </string-array>
