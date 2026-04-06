@@ -128,6 +128,7 @@ private:
 
 	void ResetStates();
 	void HandleProvokingVertexFirst();
+	void HandleZIntegerVertices();
 	void SetupIA(float target_scale, float sx, float sy, bool req_vert_backup);
 	void EmulateTextureShuffleAndFbmask(GSTextureCache::Target* rt, GSTextureCache::Source* tex);
 	u32 EmulateChannelShuffle(GSTextureCache::Target* src, bool test_only, GSTextureCache::Target* rt = nullptr);
@@ -220,6 +221,9 @@ private:
 	std::unique_ptr<GSTextureCacheSW::Texture> m_sw_texture[7 + 1];
 	std::unique_ptr<GSVirtualAlignedClass<32>> m_sw_rasterizer;
 
+	// DS as RT
+	bool m_temp_ds_as_rt = false;
+
 public:
 	GSRendererHW();
 	virtual ~GSRendererHW() override;
@@ -293,4 +297,13 @@ public:
 	/// Create a temporary color clone of depth for depth feedback (DX12 and GL only right now)
 	void StartDepthAsRTFeedback();
 	void CleanupDepthAsRTFeedback();
+
+	/// Determine if the upcoming draw will use multiple render targets
+	bool UsingMultipleRenderTargets();
+
+	/// Handle cases where we need a temporary DS for DATE.
+	void HandleTemporaryDSForDATE(GSDevice::RecycledTexture& temp_ds, DATEOptions& date);
+
+	/// Setup depth integer if needed.
+	void EmulateDepthInteger();
 };
