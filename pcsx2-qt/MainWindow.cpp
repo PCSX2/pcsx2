@@ -70,7 +70,7 @@
 #endif
 
 const char* MainWindow::OPEN_FILE_FILTER =
-	QT_TRANSLATE_NOOP("MainWindow", "All File Types (*.bin *.iso *.cue *.mdf *.chd *.cso *.zso *.gz *.elf *.irx *.gs *.gs.xz *.gs.zst *.dump);;"
+	QT_TRANSLATE_NOOP("MainWindow", "All File Types (*.bin *.iso *.cue *.mdf *.chd *.cso *.zso *.gz *.elf *.irx *.gs *.gs.xz *.gs.zst *.dump *.m3u);;"
 									"Single-Track Raw Images (*.bin *.iso);;"
 									"Cue Sheets (*.cue);;"
 									"Media Descriptor File (*.mdf);;"
@@ -81,9 +81,10 @@ const char* MainWindow::OPEN_FILE_FILTER =
 									"ELF Executables (*.elf);;"
 									"IRX Executables (*.irx);;"
 									"GS Dumps (*.gs *.gs.xz *.gs.zst);;"
-									"Block Dumps (*.dump)");
+									"Block Dumps (*.dump);;"
+									"M3U Playlists (*.m3u)");
 
-const char* MainWindow::DISC_IMAGE_FILTER = QT_TRANSLATE_NOOP("MainWindow", "All File Types (*.bin *.iso *.cue *.mdf *.chd *.cso *.zso *.gz *.dump);;"
+const char* MainWindow::DISC_IMAGE_FILTER = QT_TRANSLATE_NOOP("MainWindow", "All File Types (*.bin *.iso *.cue *.mdf *.chd *.cso *.zso *.gz *.dump *.m3u);;"
 																			"Single-Track Raw Images (*.bin *.iso);;"
 																			"Cue Sheets (*.cue);;"
 																			"Media Descriptor File (*.mdf);;"
@@ -91,7 +92,8 @@ const char* MainWindow::DISC_IMAGE_FILTER = QT_TRANSLATE_NOOP("MainWindow", "All
 																			"CSO Images (*.cso);;"
 																			"ZSO Images (*.zso);;"
 																			"GZ Images (*.gz);;"
-																			"Block Dumps (*.dump)");
+																			"Block Dumps (*.dump);;"
+																			"M3U Playlists (*.m3u)");
 
 const char* MainWindow::DEFAULT_TOOLBAR_LAYOUT =
 	"start_file,start_disc,start_bios,fullscreen_ui,,"
@@ -2742,7 +2744,7 @@ bool MainWindow::startFile(const QString& filename)
 		return true;
 	}
 
-	if (VMManager::IsDiscFileName(filename_str) || VMManager::IsBlockDumpFileName(filename_str))
+	if (VMManager::IsDiscFileName(filename_str) || VMManager::IsM3UFileName(filename_str) || VMManager::IsBlockDumpFileName(filename_str))
 	{
 		doDiscChange(CDVD_SourceType::Iso, filename);
 	}

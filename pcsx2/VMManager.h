@@ -233,6 +233,9 @@ namespace VMManager
 	/// Returns true if the specified path is a save state.
 	bool IsSaveStateFileName(const std::string_view path);
 
+	/// Returns true if the specified path is an M3U playlist.
+	bool IsM3UFileName(const std::string_view path);
+
 	/// Returns true if the specified path is a disc image.
 	bool IsDiscFileName(const std::string_view path);
 

@@ -800,7 +800,7 @@ ImGuiFullscreen::FileSelectorFilters FullscreenUI::GetOpenFileFilters()
 
 ImGuiFullscreen::FileSelectorFilters FullscreenUI::GetDiscImageFilters()
 {
-	return {"*.bin", "*.iso", "*.cue", "*.mdf", "*.chd", "*.cso", "*.zso", "*.gz"};
+	return {"*.bin", "*.iso", "*.cue", "*.mdf", "*.chd", "*.cso", "*.zso", "*.gz", "*.m3u"};
 }
 
 ImGuiFullscreen::FileSelectorFilters FullscreenUI::GetAudioFileFilters()
@@ -995,7 +995,7 @@ void FullscreenUI::DoChangeDiscFromFile()
 	auto callback = [](const std::string& path) {
 		if (!path.empty())
 		{
-			if (!VMManager::IsDiscFileName(path))
+			if (!VMManager::IsDiscFileName(path) && !VMManager::IsM3UFileName(path))
 			{
 				ShowToast(ICON_FA_TRIANGLE_EXCLAMATION, fmt::format(FSUI_FSTR("{} is not a valid disc image."), Path::GetFileName(path)));
 			}
