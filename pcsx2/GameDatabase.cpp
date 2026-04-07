@@ -1098,25 +1098,30 @@ static constexpr char HASHDB_YAML_FILE_NAME[] = "RedumpDatabase.yaml";
 std::unordered_map<GameDatabase::TrackHash, u32, TrackHashHasher> s_track_hash_to_entry_map;
 std::vector<GameDatabase::HashDatabaseEntry> s_hash_database;
 
-static bool parseHashDatabaseEntry(const ryml::NodeRef& node)
+static bool parseHashDatabaseEntry(const ryml::ConstNodeRef& entry_node)
 {
-	if (!node.has_child("name") || !node.has_child("hashes"))
+	const ryml::ConstNodeRef name_node = entry_node.find_child("name");
+	const ryml::ConstNodeRef hashes_node = entry_node.find_child("hashes");
+	if (!name_node.readable() || !name_node.has_val() || !hashes_node.readable() || !hashes_node.has_children())
 	{
 		Console.Warning("[HashDatabase] Incomplete entry found.");
 		return false;
 	}
 
 	GameDatabase::HashDatabaseEntry entry;
-	node["name"] >> entry.name;
-	if (node.has_child("version"))
-		node["version"] >> entry.version;
-	if (node.has_child("serial"))
-		node["serial"] >> entry.serial;
+	ryml::from_chars(name_node.val(), &entry.name);
+
+	if (const ryml::ConstNodeRef node = entry_node.find_child("version"); node.readable() && node.has_val())
+		ryml::from_chars(node.val(), &entry.version);
+	if (const ryml::ConstNodeRef node = entry_node.find_child("serial"); node.readable() && node.has_val())
+		ryml::from_chars(node.val(), &entry.serial);
 
 	const u32 index = static_cast<u32>(s_hash_database.size());
-	for (const ryml::ConstNodeRef& n : node["hashes"].children())
+	for (const ryml::ConstNodeRef& hash_node : hashes_node.children())
 	{
-		if (!n.is_map() || !n.has_child("size") || !n.has_child("md5"))
+		const ryml::ConstNodeRef size_node = hash_node.find_child("size");
+		const ryml::ConstNodeRef md5_node = hash_node.find_child("md5");
+		if (!hash_node.is_map() || !size_node.readable() || !size_node.has_val() || !size_node.val().is_integer() || !md5_node.readable())
 		{
 			Console.ErrorFmt("[HashDatabase] Incomplete hash definition in {}", entry.name);
 			return false;
@@ -1124,8 +1129,8 @@ static bool parseHashDatabaseEntry(const ryml::NodeRef& node)
 
 		GameDatabase::TrackHash th;
 		std::string md5;
-		n["md5"] >> md5;
-		n["size"] >> th.size;
+		ryml::from_chars(md5_node.val(), &md5);
+		ryml::from_chars(size_node.val(), &th.size);
 
 		if (!th.parseHash(md5))
 		{
@@ -1164,7 +1169,7 @@ bool GameDatabase::loadHashDatabase()
 	ryml::csubstr yaml = ryml::to_csubstr(*buffer);
 
 	Error error;
-	std::optional<ryml::Tree> tree = ParseYAMLFromString(yaml, ryml::to_csubstr(name), &error);
+	const std::optional<ryml::Tree> tree = ParseYAMLFromString(yaml, ryml::to_csubstr(name), &error);
 	if (!tree.has_value())
 	{
 		Console.ErrorFmt("[HashDatabase] Failed to parse hash database file {}:", path);
@@ -1172,12 +1177,12 @@ bool GameDatabase::loadHashDatabase()
 		return false;
 	}
 
-	ryml::NodeRef root = tree->rootref();
+	ryml::ConstNodeRef root = tree->crootref();
 
 	bool okay = true;
-	for (const ryml::NodeRef& n : root.children())
+	for (const ryml::ConstNodeRef& entry_node : root.children())
 	{
-		if (!parseHashDatabaseEntry(n))
+		if (!parseHashDatabaseEntry(entry_node))
 		{
 			okay = false;
 			break;
