@@ -46,6 +46,7 @@
 #include "common/Console.h"
 #include "common/Error.h"
 #include "common/FileSystem.h"
+#include "common/Path.h"
 #include "common/FPControl.h"
 #include "common/ScopedGuard.h"
 #include "common/SettingsWrapper.h"
@@ -1235,6 +1236,41 @@ bool VMManager::HasBootedELF()
 	return s_current_crc != 0 && s_elf_executed;
 }
 
+static std::vector<std::string> ParseM3UPlaylist(const std::string& m3u_path)
+{
+	std::vector<std::string> disc_paths;
+
+	const std::optional<std::string> content = FileSystem::ReadFileToString(m3u_path.c_str());
+	if (!content.has_value())
+		return disc_paths;
+
+	const std::string_view m3u_dir = Path::GetDirectory(m3u_path);
+
+	const std::vector<std::string_view> lines = StringUtil::SplitString(*content, '\n', false);
+	for (const std::string_view line : lines)
+	{
+		// Skip empty lines and comments
+		const std::string_view trimmed = StringUtil::StripWhitespace(line);
+		if (trimmed.empty() || trimmed[0] == '#')
+			continue;
+
+		// Resolve relative paths
+		std::string disc_path;
+		if (Path::IsAbsolute(trimmed))
+		{
+			disc_path = std::string(trimmed);
+		}
+		else
+		{
+			disc_path = Path::Combine(m3u_dir, trimmed);
+		}
+
+		disc_paths.push_back(std::move(disc_path));
+	}
+
+	return disc_paths;
+}
+
 bool VMManager::AutoDetectSource(const std::string& filename, Error* error)
 {
 	if (!filename.empty())
@@ -1266,6 +1302,20 @@ bool VMManager::AutoDetectSource(const std::string& filename, Error* error)
 			}
 
 			s_elf_override = filename;
+			return true;
+		}
+		else if (StringUtil::EndsWithNoCase(filename, ".m3u"))
+		{
+			const std::vector<std::string> disc_paths = ParseM3UPlaylist(filename);
+			if (disc_paths.empty())
+			{
+				Error::SetStringFmt(error, TRANSLATE_FS("VMManager", "M3U playlist '{}' does not contain any valid disc paths."), filename);
+				return false;
+			}
+
+			// For now, just load the first disc
+			CDVDsys_SetFile(CDVD_SourceType::Iso, disc_paths[0]);
+			CDVDsys_ChangeSource(CDVD_SourceType::Iso);
 			return true;
 		}
 		else
@@ -2424,7 +2474,7 @@ bool VMManager::IsSaveStateFileName(const std::string_view path)
 
 bool VMManager::IsDiscFileName(const std::string_view path)
 {
-	static const char* extensions[] = {".iso", ".bin", ".img", ".mdf", ".gz", ".cso", ".zso", ".chd"};
+	static const char* extensions[] = {".iso", ".bin", ".img", ".mdf", ".gz", ".cso", ".zso", ".chd", ".m3u"};
 
 	for (const char* test_extension : extensions)
 	{

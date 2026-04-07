@@ -746,7 +746,7 @@ ImGuiFullscreen::FileSelectorFilters FullscreenUI::GetOpenFileFilters()
 
 ImGuiFullscreen::FileSelectorFilters FullscreenUI::GetDiscImageFilters()
 {
-	return {"*.bin", "*.iso", "*.cue", "*.mdf", "*.chd", "*.cso", "*.zso", "*.gz"};
+	return {"*.bin", "*.iso", "*.cue", "*.mdf", "*.chd", "*.cso", "*.zso", "*.gz", "*.m3u"};
 }
 
 ImGuiFullscreen::FileSelectorFilters FullscreenUI::GetAudioFileFilters()
