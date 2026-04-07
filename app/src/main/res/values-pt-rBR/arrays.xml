@@ -7,7 +7,7 @@
         <item>Vulkan</item>
     </string-array>
     <string-array name="gpu_profile_override">
-        <item>Auto (Recommended)</item>
+        <item></item>
         <item>Force Mali</item>
         <item>Forçar Adreno</item>
     </string-array>
