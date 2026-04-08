@@ -3,13 +3,21 @@
 
 #include "IsoFileFormats.h"
 #include "CDVD/CDVD.h"
+#include "CDVD/IsoReader.h"
+#include "DebugTools/SimpSkateTrace.h"
+#include "R3000A.h"
+#include "R5900.h"
 
 #include "common/Assertions.h"
 #include "common/Console.h"
 #include "common/Error.h"
+#include "common/StringUtil.h"
 
 #include <cstring>
 #include <array>
+#include <algorithm>
+#include <string>
+#include <vector>
 
 static InputIsoFile iso;
 
@@ -18,14 +26,202 @@ static int pmode, cdtype;
 static s32 layer1start = -1;
 static bool layer1searched = false;
 
+struct IsoMappedFile final
+{
+	std::string path;
+	u32 start_lsn = 0;
+	u32 end_lsn = 0;
+	u32 size = 0;
+};
+
+struct PendingIsoReadRun final
+{
+	bool valid = false;
+	u32 start_lsn = 0;
+	u32 sector_count = 0;
+	int mode = 0;
+	u32 ee_pc = 0;
+	u32 iop_pc = 0;
+	std::string owner_path;
+	u32 owner_offset = 0;
+	u32 owner_size = 0;
+};
+
+static std::vector<IsoMappedFile> s_iso_file_map;
+static PendingIsoReadRun s_pending_iso_read;
+
+static void FlushPendingIsoRead()
+{
+	if (!s_pending_iso_read.valid)
+		return;
+
+	SimpSkateTrace::OnIsoReadRun(
+		s_pending_iso_read.start_lsn,
+		s_pending_iso_read.sector_count,
+		s_pending_iso_read.mode,
+		s_pending_iso_read.ee_pc,
+		s_pending_iso_read.iop_pc,
+		s_pending_iso_read.owner_path,
+		s_pending_iso_read.owner_offset,
+		s_pending_iso_read.owner_size);
+	s_pending_iso_read = {};
+}
+
+static const IsoMappedFile* FindOwnerForLsn(const u32 lsn)
+{
+	if (s_iso_file_map.empty())
+		return nullptr;
+
+	const auto it = std::upper_bound(
+		s_iso_file_map.begin(),
+		s_iso_file_map.end(),
+		lsn,
+		[](const u32 needle, const IsoMappedFile& file) { return needle < file.start_lsn; });
+	if (it == s_iso_file_map.begin())
+		return nullptr;
+
+	const IsoMappedFile& candidate = *(it - 1);
+	if (lsn >= candidate.start_lsn && lsn < candidate.end_lsn)
+		return &candidate;
+
+	return nullptr;
+}
+
+static void BuildIsoFileMap()
+{
+	s_iso_file_map.clear();
+
+	if (!SimpSkateTrace::IsEnabled())
+		return;
+
+	IsoReader reader;
+	Error open_error;
+	if (!reader.Open(&open_error))
+	{
+		Console.Warning("SimpSkateTrace: failed to build ISO map (%s)", open_error.GetDescription().c_str());
+		return;
+	}
+
+	std::vector<std::string> pending_dirs;
+	pending_dirs.emplace_back("");
+
+	while (!pending_dirs.empty())
+	{
+		const std::string current_dir = std::move(pending_dirs.back());
+		pending_dirs.pop_back();
+
+		Error list_error;
+		const std::vector<std::string> entries = reader.GetFilesInDirectory(current_dir, &list_error);
+		if (list_error.IsValid())
+		{
+			Console.Warning("SimpSkateTrace: directory list failed for '%s' (%s)",
+				current_dir.c_str(), list_error.GetDescription().c_str());
+			continue;
+		}
+
+		for (const std::string& entry : entries)
+		{
+			Error locate_error;
+			const auto de = reader.LocateFile(entry, &locate_error);
+			if (!de.has_value())
+				continue;
+
+			if ((de->flags & IsoReader::ISODirectoryEntryFlag_Directory) != 0)
+			{
+				pending_dirs.push_back(entry);
+				continue;
+			}
+
+			const u32 sector_count = (de->length_le + (IsoReader::SECTOR_SIZE - 1)) / IsoReader::SECTOR_SIZE;
+			if (sector_count == 0)
+				continue;
+
+			IsoMappedFile file;
+			file.path = std::string(IsoReader::RemoveVersionIdentifierFromPath(entry));
+			file.start_lsn = de->location_le;
+			file.end_lsn = de->location_le + sector_count;
+			file.size = de->length_le;
+			s_iso_file_map.push_back(std::move(file));
+		}
+	}
+
+	std::sort(
+		s_iso_file_map.begin(),
+		s_iso_file_map.end(),
+		[](const IsoMappedFile& lhs, const IsoMappedFile& rhs) { return lhs.start_lsn < rhs.start_lsn; });
+
+	bool has_assets_blt = false;
+	u32 assets_blt_lsn = 0;
+	u32 assets_blt_size = 0;
+	for (const IsoMappedFile& file : s_iso_file_map)
+	{
+		const std::string::size_type slash = file.path.find_last_of('/');
+		const std::string_view basename = (slash == std::string::npos) ? std::string_view(file.path) :
+			std::string_view(file.path).substr(slash + 1);
+		if (StringUtil::compareNoCase(basename, "ASSETS.BLT"))
+		{
+			has_assets_blt = true;
+			assets_blt_lsn = file.start_lsn;
+			assets_blt_size = file.size;
+			break;
+		}
+	}
+
+	SimpSkateTrace::OnIsoMapBuilt(
+		s_iso_file_map.size(),
+		has_assets_blt,
+		assets_blt_lsn,
+		assets_blt_size);
+}
+
+static void TrackIsoRead(const u32 lsn, const int mode)
+{
+	if (!SimpSkateTrace::IsEnabled())
+		return;
+
+	const IsoMappedFile* owner = FindOwnerForLsn(lsn);
+	const std::string owner_path = owner ? owner->path : std::string();
+	const u32 owner_offset = owner ? ((lsn - owner->start_lsn) * IsoReader::SECTOR_SIZE) : 0;
+	const u32 owner_size = owner ? owner->size : 0;
+	const u32 ee_pc = cpuRegs.pc;
+	const u32 iop_pc = psxRegs.pc;
+
+	if (s_pending_iso_read.valid &&
+		s_pending_iso_read.mode == mode &&
+		s_pending_iso_read.ee_pc == ee_pc &&
+		s_pending_iso_read.iop_pc == iop_pc &&
+		s_pending_iso_read.owner_path == owner_path &&
+		s_pending_iso_read.owner_size == owner_size &&
+		lsn == (s_pending_iso_read.start_lsn + s_pending_iso_read.sector_count))
+	{
+		s_pending_iso_read.sector_count++;
+		return;
+	}
+
+	FlushPendingIsoRead();
+	s_pending_iso_read.valid = true;
+	s_pending_iso_read.start_lsn = lsn;
+	s_pending_iso_read.sector_count = 1;
+	s_pending_iso_read.mode = mode;
+	s_pending_iso_read.ee_pc = ee_pc;
+	s_pending_iso_read.iop_pc = iop_pc;
+	s_pending_iso_read.owner_path = owner_path;
+	s_pending_iso_read.owner_offset = owner_offset;
+	s_pending_iso_read.owner_size = owner_size;
+}
+
 static void ISOclose()
 {
+	FlushPendingIsoRead();
+	s_iso_file_map.clear();
+
 	iso.Close();
 }
 
 static bool ISOopen(std::string filename, Error* error)
 {
 	ISOclose(); // just in case
+	SimpSkateTrace::OnIsoOpen(filename);
 
 	if (filename.empty())
 	{
@@ -51,6 +247,7 @@ static bool ISOopen(std::string filename, Error* error)
 
 	layer1start = -1;
 	layer1searched = false;
+	BuildIsoFileMap();
 
 	return true;
 }
@@ -370,6 +567,7 @@ static s32 ISOreadTrack(u32 lsn, int mode)
 	if (_lsn < 0)
 		lsn = iso.GetBlockCount() + _lsn;
 
+	TrackIsoRead(lsn, mode);
 	iso.BeginRead2(lsn);
 
 	pmode = mode;

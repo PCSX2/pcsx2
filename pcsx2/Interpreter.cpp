@@ -8,6 +8,7 @@
 #include "Cache.h"
 
 #include "DebugTools/Breakpoints.h"
+#include "DebugTools/SimpSkateTrace.h"
 
 #include "common/FastJmp.h"
 
@@ -169,6 +170,9 @@ static void execI()
 #endif
 
 	const u32 pc = cpuRegs.pc;
+	if (SimpSkateTrace::IsEETracepoint(pc))
+		SimpSkateTrace::OnEETracepoint(pc);
+
 	// We need to increase the pc before executing the memRead32. An exception could appears
 	// and it expects the PC counter to be pre-incremented
 	cpuRegs.pc += 4;

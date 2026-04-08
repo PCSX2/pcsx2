@@ -1,0 +1,87 @@
+name: SimpSkate Trace Build (Windows)
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_ffmpeg:
+        description: Build FFmpeg dependency bundle (slower, larger)
+        required: true
+        default: false
+        type: boolean
+      clean_deps_cache:
+        description: Ignore dependency cache and rebuild deps from scratch
+        required: true
+        default: false
+        type: boolean
+
+jobs:
+  build_windows_trace:
+    name: Build Trace-Enabled PCSX2
+    runs-on: windows-2025
+    timeout-minutes: 240
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Locate vcvars
+        shell: cmd
+        run: |
+          for /f "usebackq tokens=*" %%i in (`call vswhere -latest -property installationPath`) do set "VSINSTPATH=%%i"
+          echo VCVARSPATH=%VSINSTPATH%\VC\Auxiliary\Build\vcvars64.bat>>%GITHUB_ENV%
+
+      - name: Cache Dependencies
+        id: cache-deps
+        if: ${{ !inputs.clean_deps_cache }}
+        uses: actions/cache@v5
+        with:
+          path: deps
+          key: windows x64 simpskate-deps-v1 ${{ hashFiles('.github/workflows/scripts/windows/build-dependencies.bat', '.github/workflows/scripts/common/*.patch') }}
+
+      - name: Build Dependencies
+        if: ${{ inputs.clean_deps_cache || steps.cache-deps.outputs.cache-hit != 'true' }}
+        shell: cmd
+        env:
+          DEBUG: 0
+          BUILD_FFMPEG: ${{ inputs.build_ffmpeg && '1' || '0' }}
+        run: .github/workflows/scripts/windows/build-dependencies.bat
+
+      - name: Configure CMake
+        shell: cmd
+        run: |
+          call "%VCVARSPATH%" || exit /b
+          cmake . -B build -G Ninja ^
+            "-DCMAKE_PREFIX_PATH=%cd%\deps" ^
+            -DQT_BUILD=ON ^
+            -DENABLE_QT_UI=ON ^
+            -DCMAKE_BUILD_TYPE=Release ^
+            -DDISABLE_ADVANCE_SIMD=ON ^
+            -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON
+
+      - name: Build + Install
+        shell: cmd
+        run: |
+          call "%VCVARSPATH%" || exit /b
+          cmake --build build --config Release --parallel || exit /b
+          cmake --install build --config Release || exit /b
+
+      - name: Stage Trace Notes
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path "bin\simpskate" -Force | Out-Null
+          if (Test-Path "tools\simpskate_trace_notes.md") {
+            Copy-Item "tools\simpskate_trace_notes.md" "bin\simpskate\simpskate_trace_notes.md" -Force
+          }
+          if (Test-Path "tools\analyze_simpskate_trace.py") {
+            Copy-Item "tools\analyze_simpskate_trace.py" "bin\simpskate\analyze_simpskate_trace.py" -Force
+          }
+          if (Test-Path "tools\run_simpskate_trace.ps1") {
+            Copy-Item "tools\run_simpskate_trace.ps1" "bin\simpskate\run_simpskate_trace.ps1" -Force
+          }
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: pcsx2-simpskate-trace-windows
+          path: |
+            ./bin

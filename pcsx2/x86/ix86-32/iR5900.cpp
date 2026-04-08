@@ -4,6 +4,7 @@
 #include "Common.h"
 #include "CDVD/CDVD.h"
 #include "DebugTools/Breakpoints.h"
+#include "DebugTools/SimpSkateTrace.h"
 #include "Elfheader.h"
 #include "GS.h"
 #include "Host.h"
@@ -369,6 +370,12 @@ static void recEventTest()
 	}
 }
 
+static __fi void recMaybeTraceDispatch(const u32 dispatch_pc)
+{
+	if (SimpSkateTrace::IsEETracepoint(dispatch_pc))
+		SimpSkateTrace::OnEETracepoint(dispatch_pc);
+}
+
 // The address for all cleared blocks.  It recompiles the current pc and then
 // dispatches to the recompiled block address.
 static const void* _DynGen_JITCompile()
@@ -378,6 +385,7 @@ static const void* _DynGen_JITCompile()
 	u8* retval = xGetAlignedCallTarget();
 
 	xFastCall((const void*)recRecompile, ptr32[&cpuRegs.pc]);
+	xFastCall((const void*)recMaybeTraceDispatch, ptr32[&cpuRegs.pc]);
 
 	// C equivalent:
 	// u32 addr = cpuRegs.pc;
@@ -396,6 +404,7 @@ static const void* _DynGen_JITCompile()
 static const void* _DynGen_DispatcherReg()
 {
 	u8* retval = xGetPtr(); // fallthrough target, can't align it!
+	xFastCall((const void*)recMaybeTraceDispatch, ptr32[&cpuRegs.pc]);
 
 	// C equivalent:
 	// u32 addr = cpuRegs.pc;
