@@ -1,78 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="renderers">
-        <item>Auto</item>
+        <item>Автоматично</item>
         <item>OpenGL</item>
-        <item>Software</item>
+        <item>Програмне забезпечення</item>
         <item>Vulkan</item>
     </string-array>
     <string-array name="gpu_profile_override">
-        <item>Auto (Recommended)</item>
+        <item>Автоматично (рекомендовано)</item>
         <item>Force Mali</item>
         <item>Force Adreno</item>
     </string-array>
     <string-array name="texture_filtering">
-        <item>PS2 (default)</item>
-        <item>Forced</item>
-        <item>Nearest</item>
+        <item>PS2 (За замовчуванням)</item>
+        <item>Примусово</item>
+        <item>Найближче</item>
     </string-array>
     <string-array name="interlace_modes">
-        <item>Automatic</item>
-        <item>Off</item>
+        <item>Автоматично</item>
+        <item>Вимкнено</item>
         <item>Weave TFF</item>
-        <item>Weave BFF</item>
+        <item>Weave TFF</item>
         <item>Bob TFF</item>
-        <item>Bob BFF</item>
-        <item>Blend TFF</item>
+        <item>Bob TFF</item>
+        <item>Змішування TFF</item>
         <item>Blend BFF</item>
-        <item>Adaptive TFF</item>
-        <item>Adaptive BFF</item>
+        <item>Адаптивна TFF</item>
+        <item>Адаптивне BFF</item>
     </string-array>
     <string-array name="cas_modes">
-        <item>None (Default)</item>
-        <item>Sharpen Only (Internal)</item>
-        <item>Sharpen and Resize (Display)</item>
+        <item>Немає (типовий)</item>
+        <item>Тільки різка (внутрішня)</item>
+        <item>Чіткість і розмір (Display)</item>
     </string-array>
     <string-array name="texture_preloading">
-        <item>Off</item>
-        <item>Partial</item>
-        <item>Full</item>
+        <item>Вимкнути</item>
+        <item>Частково</item>
+        <item>Акумулятор заряджено</item>
     </string-array>
     <string-array name="bilinear_present">
-        <item>Off</item>
-        <item>Bilinear (Smooth)</item>
-        <item>Bilinear (Sharp)</item>
+        <item>Вимкнено</item>
+        <item>Білінійна (гладка)</item>
+        <item>Білінійна (різка)</item>
     </string-array>
     <string-array name="trilinear_filtering">
-        <item>Automatic</item>
-        <item>Off</item>
+        <item>Автоматично</item>
+        <item>Вимкнено</item>
         <item>PS2</item>
-        <item>Forced</item>
+        <item>Примусово</item>
     </string-array>
     <string-array name="dithering_modes">
-        <item>Off</item>
-        <item>Scaled</item>
-        <item>Unscaled (Default)</item>
-        <item>Force 32-bit</item>
+        <item>Вимкнено</item>
+        <item>Масштабування</item>
+        <item>Без масштабування (за замовчуванням)</item>
+        <item>Примусово 32-бітний</item>
     </string-array>
     <string-array name="acc_blending">
-        <item>Minimum</item>
-        <item>Basic</item>
-        <item>Medium</item>
-        <item>High</item>
-        <item>Full</item>
-        <item>Maximum</item>
+        <item>Мінімум</item>
+        <item>Базовий</item>
+        <item>Середній</item>
+        <item>Високий</item>
+        <item>Повний</item>
+        <item>Максимум</item>
     </string-array>
     <string-array name="anisotropic">
-        <item>Off</item>
+        <item>Вимкнено</item>
         <item>2x</item>
         <item>4x</item>
         <item>8x</item>
         <item>16x</item>
     </string-array>
     <string-array name="aspect_ratios">
-        <item>Stretch</item>
-        <item>Auto 4:3/3:2</item>
+        <item>Розтягнути</item>
+        <item>Авто 4:3/3:2</item>
         <item>4:3</item>
         <item>16:9</item>
         <item>10:7</item>
@@ -88,18 +88,18 @@
         <item>8x</item>
     </string-array>
     <string-array name="auto_flush_hw">
-        <item>Disabled</item>
-        <item>Sprites Only</item>
-        <item>Enabled</item>
+        <item>Відключено</item>
+        <item>Лише спрайти</item>
+        <item>Увімкнено</item>
     </string-array>
     <string-array name="cpu_cores_basic">
-        <item>Translator (default)</item>
-        <item>Interpreter</item>
+        <item>Перекладач (за замовчуванням)</item>
+        <item>Інтерпретатор</item>
     </string-array>
     <string-array name="network_ethapi">
-        <item>Unset</item>
-        <item>PCAP Bridged</item>
-        <item>PCAP Switched</item>
-        <item>Sockets</item>
+        <item>Скинути</item>
+        <item>PCAP заряджено</item>
+        <item>Перемикання PCAP</item>
+        <item>Слоти</item>
     </string-array>
 </resources>
