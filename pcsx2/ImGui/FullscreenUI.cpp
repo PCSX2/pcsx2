@@ -1246,9 +1246,8 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
 			const ImVec2 logo_size = LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 			dl->AddImage(reinterpret_cast<ImTextureID>(GetCachedTexture("icons/AppIconLarge.png")->GetNativeHandle()),
 				logo_pos, logo_pos + logo_size);
-			dl->AddText(heading_font.first, heading_font.second,
-				ImVec2(logo_pos.x + logo_size.x + LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING), logo_pos.y),
-				ImGui::GetColorU32(ImGuiCol_Text), "PCSX2");
+			const ImVec2 branding_pos(logo_pos.x + logo_size.x + LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING), logo_pos.y);
+			ImGuiFullscreen::AddTextWithShadow(dl, heading_font, branding_pos, ImGui::GetColorU32(ImGuiCol_Text), "PCSX2");
 		}
 
 		// draw time
@@ -1269,6 +1268,8 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
 			const ImVec2 time_size = heading_font.first->CalcTextSizeA(heading_font.second, FLT_MAX, 0.0f, "00:00");
 			time_pos = ImVec2(heading_size.x - LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING) - time_size.x,
 				LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING));
+			ImGuiFullscreen::AddTextWithShadow(
+				dl, heading_font, time_pos, ImGui::GetColorU32(ImGuiCol_Text), heading_str.c_str(), heading_str.end_ptr());
 			ImGui::RenderTextClipped(time_pos, time_pos + time_size, heading_str.c_str(), heading_str.end_ptr(), &time_size);
 		}
 
@@ -1282,6 +1283,7 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
 				const ImVec2 name_size = heading_font.first->CalcTextSizeA(heading_font.second, FLT_MAX, 0.0f, username);
 				const ImVec2 name_pos =
 					ImVec2(time_pos.x - name_size.x - LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING), time_pos.y);
+				ImGuiFullscreen::AddTextWithShadow(dl, heading_font, name_pos, ImGui::GetColorU32(ImGuiCol_Text), username, nullptr);
 				ImGui::RenderTextClipped(name_pos, name_pos + name_size, username, nullptr, &name_size);
 
 				// TODO: should we cache this? heap allocations bad...
@@ -1507,8 +1509,7 @@ void FullscreenUI::DrawExitWindow()
 static void DrawShadowedText(
 	ImDrawList* dl, std::pair<ImFont*, float> font, const ImVec2& pos, u32 col, const char* text, const char* text_end = nullptr, float wrap_width = 0.0f)
 {
-	dl->AddText(font.first, font.second, pos + LayoutScale(1.0f, 1.0f), IM_COL32(0, 0, 0, 100), text, text_end, wrap_width);
-	dl->AddText(font.first, font.second, pos, col, text, text_end, wrap_width);
+	ImGuiFullscreen::AddTextWithShadow(dl, font, pos, col, text, text_end, wrap_width);
 }
 
 void FullscreenUI::DrawPauseMenu(MainWindowType type)
@@ -2202,7 +2203,8 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 				const ImVec2 title_pos(bb.Min.x, bb.Min.y + image_height + title_spacing);
 				const ImRect title_bb(title_pos, ImVec2(bb.Max.x, title_pos.y + g_large_font.second));
 				ImGui::PushFont(g_large_font.first, g_large_font.second);
-				ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, entry.title.c_str(), nullptr, nullptr, ImVec2(0.0f, 0.0f), &title_bb);
+				ImGuiFullscreen::RenderTextClippedWithShadow(
+					title_bb.Min, title_bb.Max, entry.title.c_str(), nullptr, nullptr, ImVec2(0.0f, 0.0f), &title_bb);
 				ImGui::PopFont();
 
 				if (!entry.summary.empty())
@@ -2210,7 +2212,7 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 					const ImVec2 summary_pos(bb.Min.x, title_pos.y + g_large_font.second + summary_spacing);
 					const ImRect summary_bb(summary_pos, ImVec2(bb.Max.x, summary_pos.y + g_medium_font.second));
 					ImGui::PushFont(g_medium_font.first, g_medium_font.second);
-					ImGui::RenderTextClipped(
+					ImGuiFullscreen::RenderTextClippedWithShadow(
 						summary_bb.Min, summary_bb.Max, entry.summary.c_str(), nullptr, nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
 					ImGui::PopFont();
 				}
@@ -2935,8 +2937,8 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
 				draw_title.clear();
 				fmt::format_to(std::back_inserter(draw_title), "{}{}", title, (title.length() == full_title.length()) ? "" : g_ellipsis);
 				ImGui::PushFont(g_medium_font.first, g_medium_font.second);
-				ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, draw_title.c_str(), draw_title.c_str() + draw_title.length(), nullptr,
-					ImVec2(0.5f, 0.0f), &title_bb);
+				ImGuiFullscreen::RenderTextClippedWithShadow(
+					title_bb.Min, title_bb.Max, draw_title.c_str(), draw_title.c_str() + draw_title.length(), nullptr, ImVec2(0.5f, 0.0f), &title_bb);
 				ImGui::PopFont();
 			}
 

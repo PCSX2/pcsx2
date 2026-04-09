@@ -2468,7 +2468,8 @@ void Achievements::DrawAchievementsWindow()
 			top += GetLineHeight(g_large_font) + spacing;
 
 			ImGui::PushFont(g_large_font.first, g_large_font.second);
-			ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, text.c_str(), text.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), &title_bb);
+			ImGuiFullscreen::RenderTextClippedWithShadow(
+				title_bb.Min, title_bb.Max, text.c_str(), text.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), &title_bb);
 			ImGui::PopFont();
 
 			const ImRect summary_bb(ImVec2(left, top), ImVec2(right, top + GetLineHeight(g_medium_font)));
@@ -2599,7 +2600,8 @@ void Achievements::DrawAchievementsWindow()
 					const ImRect text_bb(ImVec2(text_x, bb.Min.y), ImVec2(bb.Max.x - padding, bb.Max.y));
 
 					ImGui::PushFont(g_medium_font.first, g_medium_font.second);
-					ImGui::RenderTextClipped(text_bb.Min, text_bb.Max, subset->title, nullptr, nullptr, ImVec2(0.0f, 0.5f), &text_bb);
+					ImGuiFullscreen::RenderTextClippedWithShadow(
+						text_bb.Min, text_bb.Max, subset->title, nullptr, nullptr, ImVec2(0.0f, 0.5f), &text_bb);
 					ImGui::PopFont();
 
 					if (ImGui::IsItemClicked() || ImGui::IsItemActivated())
@@ -2878,8 +2880,9 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
 		ImVec2(points_template_start + ((points_template_size.x - right_icon_size.x) * 0.5f), bb.Min.y), ImVec2(bb.Max.x, midpoint));
 
 	ImGui::PushFont(g_large_font.first, g_large_font.second);
-	ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, cheevo->title, nullptr, nullptr, ImVec2(0.0f, 0.0f), &title_bb);
-	ImGui::RenderTextClipped(lock_bb.Min, lock_bb.Max, right_icon_text, nullptr, &right_icon_size, ImVec2(0.0f, 0.0f), &lock_bb);
+	ImGuiFullscreen::RenderTextClippedWithShadow(title_bb.Min, title_bb.Max, cheevo->title, nullptr, nullptr, ImVec2(0.0f, 0.0f), &title_bb);
+	ImGuiFullscreen::RenderTextClippedWithShadow(
+		lock_bb.Min, lock_bb.Max, right_icon_text, nullptr, &right_icon_size, ImVec2(0.0f, 0.0f), &lock_bb);
 	ImGui::PopFont();
 
 	if (badge_text && badge_icon)
@@ -2905,14 +2908,16 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
 	{
 		ImGui::RenderTextWrapped(summary_bb.Min, cheevo->description, cheevo->description + summary_length, summary_wrap_width);
 	}
-	ImGui::RenderTextClipped(points_bb.Min, points_bb.Max, text.c_str(), text.end_ptr(), &points_size, ImVec2(0.0f, 0.0f), &points_bb);
+	ImGuiFullscreen::RenderTextClippedWithShadow(
+		points_bb.Min, points_bb.Max, text.c_str(), text.end_ptr(), &points_size, ImVec2(0.0f, 0.0f), &points_bb);
 
 	if (is_unlocked)
 	{
 		text.format(TRANSLATE_FS("Achievements", "Unlocked: {}"), FullscreenUI::TimeToPrintableString(cheevo->unlock_time));
 
 		const ImRect unlock_bb(summary_bb.Min.x, summary_bb.Max.y + spacing, summary_bb.Max.x, bb.Max.y);
-		ImGui::RenderTextClipped(unlock_bb.Min, unlock_bb.Max, text.c_str(), text.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), &unlock_bb);
+		ImGuiFullscreen::RenderTextClippedWithShadow(
+			unlock_bb.Min, unlock_bb.Max, text.c_str(), text.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), &unlock_bb);
 	}
 	else if (is_measured)
 	{
@@ -3071,7 +3076,8 @@ void Achievements::DrawLeaderboardsWindow()
 			top += GetLineHeight(g_large_font) + spacing;
 
 			ImGui::PushFont(g_large_font.first, g_large_font.second);
-			ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, text.c_str(), text.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), &title_bb);
+			ImGuiFullscreen::RenderTextClippedWithShadow(
+				title_bb.Min, title_bb.Max, text.c_str(), text.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), &title_bb);
 			ImGui::PopFont();
 
 			if (is_leaderboard_open)
@@ -3082,7 +3088,7 @@ void Achievements::DrawLeaderboardsWindow()
 				top += GetLineHeight(g_large_font) + spacing_small;
 
 				ImGui::PushFont(g_large_font.first, g_large_font.second);
-				ImGui::RenderTextClipped(
+				ImGuiFullscreen::RenderTextClippedWithShadow(
 					subtitle_bb.Min, subtitle_bb.Max, text.c_str(), text.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), &subtitle_bb);
 				ImGui::PopFont();
 
@@ -3100,7 +3106,7 @@ void Achievements::DrawLeaderboardsWindow()
 			top += GetLineHeight(g_medium_font) + spacing_small;
 
 			ImGui::PushFont(g_medium_font.first, g_medium_font.second);
-			ImGui::RenderTextClipped(
+			ImGuiFullscreen::RenderTextClippedWithShadow(
 				summary_bb.Min, summary_bb.Max, text.c_str(), text.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
 
 			if (!is_leaderboard_open && !Achievements::IsHardcoreModeActive())
@@ -3108,9 +3114,9 @@ void Achievements::DrawLeaderboardsWindow()
 				const ImRect hardcore_warning_bb(ImVec2(left, top), ImVec2(right, top + GetLineHeight(g_medium_font)));
 				top += GetLineHeight(g_medium_font) + spacing_small;
 
-				ImGui::RenderTextClipped(hardcore_warning_bb.Min, hardcore_warning_bb.Max,
-					TRANSLATE("Achievements", "Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only."),
-					nullptr, nullptr, ImVec2(0.0f, 0.0f), &hardcore_warning_bb);
+				ImGuiFullscreen::RenderTextClippedWithShadow(hardcore_warning_bb.Min, hardcore_warning_bb.Max,
+					TRANSLATE("Achievements", "Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only."), nullptr,
+					nullptr, ImVec2(0.0f, 0.0f), &hardcore_warning_bb);
 			}
 
 			ImGui::PopFont();
@@ -3159,7 +3165,7 @@ void Achievements::DrawLeaderboardsWindow()
 
 				const auto render_centered_heading = [&](const char* text, float width) {
 					const ImRect rect(ImVec2(column_left, bb.Min.y), ImVec2(column_left + width, midpoint));
-					ImGui::RenderTextClipped(rect.Min, rect.Max, text, nullptr, nullptr, ImVec2(0.5f, 0.0f), &rect);
+					ImGuiFullscreen::RenderTextClippedWithShadow(rect.Min, rect.Max, text, nullptr, nullptr, ImVec2(0.5f, 0.0f), &rect);
 					column_left += width + column_spacing;
 				};
 
@@ -3168,7 +3174,7 @@ void Achievements::DrawLeaderboardsWindow()
 				const float name_column_total_width = icon_column_width + column_spacing + name_column_width;
 				const ImRect user_bb(ImVec2(column_left + icon_column_width + column_spacing, bb.Min.y),
 					ImVec2(column_left + name_column_total_width, midpoint));
-				ImGui::RenderTextClipped(
+				ImGuiFullscreen::RenderTextClippedWithShadow(
 					user_bb.Min, user_bb.Max, TRANSLATE("Achievements", "Name"), nullptr, nullptr, ImVec2(0.5f, 0.0f), &user_bb);
 				column_left += name_column_total_width + column_spacing;
 
@@ -3185,8 +3191,8 @@ void Achievements::DrawLeaderboardsWindow()
 
 				const float date_column_width = std::max(bb.Max.x - column_left, 0.0f);
 				const ImRect date_bb(ImVec2(column_left, bb.Min.y), ImVec2(column_left + date_column_width, midpoint));
-				ImGui::RenderTextClipped(date_bb.Min, date_bb.Max, TRANSLATE("Achievements", "Date Submitted"), nullptr, nullptr,
-					ImVec2(0.5f, 0.0f), &date_bb);
+				ImGuiFullscreen::RenderTextClippedWithShadow(
+					date_bb.Min, date_bb.Max, TRANSLATE("Achievements", "Date Submitted"), nullptr, nullptr, ImVec2(0.5f, 0.0f), &date_bb);
 				column_left += date_column_width;
 
 				ImGui::PopFont();
@@ -3353,7 +3359,8 @@ void Achievements::DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& ent
 		ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 242, 0, 255));
 
 	const ImRect rank_bb(ImVec2(column_left, bb.Min.y), ImVec2(column_left + rank_column_width, midpoint));
-	ImGui::RenderTextClipped(rank_bb.Min, rank_bb.Max, text.c_str(), text.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), &rank_bb);
+	ImGuiFullscreen::RenderTextClippedWithShadow(
+		rank_bb.Min, rank_bb.Max, text.c_str(), text.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), &rank_bb);
 	column_left += rank_column_width + column_spacing;
 
 	const ImRect icon_bb(ImVec2(column_left, bb.Min.y), ImVec2(column_left + icon_column_width, bb.Min.y + icon_column_width));
@@ -3383,16 +3390,18 @@ void Achievements::DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& ent
 	column_left += icon_column_width + column_spacing;
 
 	const ImRect user_bb(ImVec2(column_left, bb.Min.y), ImVec2(column_left + name_column_width, midpoint));
-	ImGui::RenderTextClipped(user_bb.Min, user_bb.Max, entry.user, nullptr, nullptr, ImVec2(0.0f, 0.0f), &user_bb);
+	ImGuiFullscreen::RenderTextClippedWithShadow(user_bb.Min, user_bb.Max, entry.user, nullptr, nullptr, ImVec2(0.0f, 0.0f), &user_bb);
 	column_left += name_column_width + column_spacing;
 
 	const ImRect score_bb(ImVec2(column_left, bb.Min.y), ImVec2(column_left + time_column_width, midpoint));
-	ImGui::RenderTextClipped(score_bb.Min, score_bb.Max, entry.display, nullptr, nullptr, ImVec2(0.0f, 0.0f), &score_bb);
+	ImGuiFullscreen::RenderTextClippedWithShadow(
+		score_bb.Min, score_bb.Max, entry.display, nullptr, nullptr, ImVec2(0.0f, 0.0f), &score_bb);
 	column_left += time_column_width + column_spacing;
 
 	const ImRect time_bb(ImVec2(column_left, bb.Min.y), ImVec2(bb.Max.x, midpoint));
 	const auto submit_time = FullscreenUI::TimeToPrintableString(entry.submitted);
-	ImGui::RenderTextClipped(time_bb.Min, time_bb.Max, submit_time.c_str(), submit_time.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), &time_bb);
+	ImGuiFullscreen::RenderTextClippedWithShadow(
+		time_bb.Min, time_bb.Max, submit_time.c_str(), submit_time.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), &time_bb);
 
 	if (is_self)
 		ImGui::PopStyleColor();
@@ -3436,13 +3445,14 @@ void Achievements::DrawLeaderboardListEntry(const rc_client_leaderboard_t* lboar
 	const ImRect summary_bb(ImVec2(text_start_x, midpoint), bb.Max);
 
 	ImGui::PushFont(g_large_font.first, g_large_font.second);
-	ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, lboard->title, nullptr, nullptr, ImVec2(0.0f, 0.0f), &title_bb);
+	ImGuiFullscreen::RenderTextClippedWithShadow(title_bb.Min, title_bb.Max, lboard->title, nullptr, nullptr, ImVec2(0.0f, 0.0f), &title_bb);
 	ImGui::PopFont();
 
 	if (lboard->description && lboard->description[0] != '\0')
 	{
 		ImGui::PushFont(g_medium_font.first, g_medium_font.second);
-		ImGui::RenderTextClipped(summary_bb.Min, summary_bb.Max, lboard->description, nullptr, nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
+		ImGuiFullscreen::RenderTextClippedWithShadow(
+			summary_bb.Min, summary_bb.Max, lboard->description, nullptr, nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
 		ImGui::PopFont();
 	}
 

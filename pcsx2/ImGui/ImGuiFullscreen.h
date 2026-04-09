@@ -176,6 +176,11 @@ namespace ImGuiFullscreen
 	void DrawFullscreenFooter();
 
 	void PrerenderMenuButtonBorder();
+	void AddTextWithShadow(ImDrawList* dl, std::pair<ImFont*, float> font, const ImVec2& pos, ImU32 col, const char* text,
+		const char* text_end = nullptr, float wrap_width = 0.0f, const ImVec4* cpu_fine_clip_rect = nullptr,
+		ImU32 shadow_col = IM_COL32(0, 0, 0, 64), bool strip_id_suffix = false);
+	void RenderTextClippedWithShadow(const ImVec2& pos_min, const ImVec2& pos_max, const char* text, const char* text_end = nullptr,
+		const ImVec2* text_size_if_known = nullptr, const ImVec2& align = ImVec2(0.0f, 0.0f), const ImRect* clip_rect = nullptr);
 	void BeginMenuButtons(u32 num_items = 0, float y_align = 0.0f, float x_padding = LAYOUT_MENU_BUTTON_X_PADDING,
 		float y_padding = LAYOUT_MENU_BUTTON_Y_PADDING, float item_height = LAYOUT_MENU_BUTTON_HEIGHT);
 	void EndMenuButtons();
