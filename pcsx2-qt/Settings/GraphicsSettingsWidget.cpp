@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "GraphicsSettingsWidget.h"
+#include "QtHost.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
 #include "SettingsWindow.h"
@@ -222,6 +223,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	// Advanced Settings
 	//////////////////////////////////////////////////////////////////////////
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_advanced.useBlitSwapChain, "EmuCore/GS", "UseBlitSwapChain", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_display.enableAutoHDR, "EmuCore/GS", "EnableAutoHDR", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_advanced.useDebugDevice, "EmuCore/GS", "UseDebugDevice", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_advanced.disableMailboxPresentation, "EmuCore/GS", "DisableMailboxPresentation", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_advanced.extendedUpscales, "EmuCore/GS", "ExtendedUpscalingMultipliers", false);
@@ -271,6 +273,11 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 
 	connect(m_header.rendererDropdown, &QComboBox::currentIndexChanged, this, &GraphicsSettingsWidget::onRendererChanged);
 	connect(m_header.adapterDropdown, &QComboBox::currentIndexChanged, this, &GraphicsSettingsWidget::onAdapterChanged);
+#ifdef _WIN32
+	connect(m_display.enableAutoHDR, &QCheckBox::checkStateChanged, this, [](Qt::CheckState state) {
+		QtHost::UpdateAutoHDRRegistration(state == Qt::Checked);
+	});
+#endif
 	connect(m_hw.enableHWFixes, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::updateRendererDependentOptions);
 	connect(m_advanced.extendedUpscales, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::updateRendererDependentOptions);
 	connect(m_hw.textureFiltering, &QComboBox::currentIndexChanged, this, &GraphicsSettingsWidget::onTextureFilteringChange);
@@ -281,6 +288,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	// Exclusive fullscreen control is Windows-only.
 	m_advanced.advancedOptionsFormLayout->removeRow(2);
 	m_advanced.exclusiveFullscreenControl = nullptr;
+	// Auto HDR is Windows-only.
+	m_display.enableAutoHDR->setVisible(false);
 #endif
 
 #ifndef PCSX2_DEVBUILD
@@ -738,6 +747,12 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 			tr("Change the compression algorithm used when creating a GS dump."));
 
 		//: Blit = a data operation. You might want to write it as-is, but fully uppercased. More information: https://en.wikipedia.org/wiki/Bit_blit \nSwap chain: see Microsoft's Terminology Portal.
+		dialog()->registerWidgetHelp(m_display.enableAutoHDR, tr("Enable Windows Auto HDR"), tr("Unchecked"),
+			tr("Registers PCSX2 with Windows to enable Auto HDR on the game image. "
+			   "Windows Auto HDR automatically enhances SDR content with high dynamic range on supported displays. "
+			   "Only applies when using the Direct3D 11 or Direct3D 12 renderers. "
+			   "Requires restarting PCSX2 to take effect."));
+
 		dialog()->registerWidgetHelp(m_advanced.useBlitSwapChain, tr("Use Blit Swap Chain"), tr("Unchecked"),
 			//: Blit = a data operation. You might want to write it as-is, but fully uppercased. More information: https://en.wikipedia.org/wiki/Bit_blit
 			tr("Uses a blit presentation model instead of flipping when using the Direct3D 11 "

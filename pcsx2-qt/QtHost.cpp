@@ -2037,6 +2037,74 @@ static void SignalHandler(int signal)
 
 #ifdef _WIN32
 
+static void RegisterAutoHDR(bool enable)
+{
+	// Get the actual exe path (varies by build: pcsx2-qt.exe, pcsx2-qtx64.exe, etc.)
+	wchar_t exe_path[MAX_PATH];
+	if (GetModuleFileNameW(nullptr, exe_path, MAX_PATH) == 0)
+		return;
+
+	HKEY base_key;
+	if (RegCreateKeyExW(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Direct3D",
+			0, nullptr, 0, KEY_READ | KEY_WRITE, nullptr, &base_key, nullptr) != ERROR_SUCCESS)
+		return;
+
+	// Find an existing entry for this exe or the first free slot.
+	wchar_t subkey_name[32];
+	HKEY app_key = nullptr;
+	bool is_existing = false;
+	for (int i = 0; i < 128; i++)
+	{
+		swprintf_s(subkey_name, L"Application%d", i);
+
+		HKEY candidate;
+		if (RegCreateKeyExW(base_key, subkey_name, 0, nullptr, 0, KEY_READ | KEY_WRITE,
+				nullptr, &candidate, nullptr) != ERROR_SUCCESS)
+			break;
+
+		wchar_t name_val[MAX_PATH] = {};
+		DWORD name_val_size = sizeof(name_val);
+		DWORD type = 0;
+		const bool has_name = RegQueryValueExW(candidate, L"Name", nullptr, &type,
+								  reinterpret_cast<BYTE*>(name_val), &name_val_size) == ERROR_SUCCESS;
+
+		if (!has_name || _wcsicmp(name_val, exe_path) == 0)
+		{
+			app_key = candidate;
+			is_existing = has_name;
+			break;
+		}
+		RegCloseKey(candidate);
+	}
+
+	if (app_key)
+	{
+		if (enable)
+		{
+			RegSetValueExW(app_key, L"Name", 0, REG_SZ,
+				reinterpret_cast<const BYTE*>(exe_path), static_cast<DWORD>((wcslen(exe_path) + 1) * sizeof(wchar_t)));
+
+			constexpr const wchar_t behaviors[] = L"BufferUpgradeOverride=1";
+			RegSetValueExW(app_key, L"D3DBehaviors", 0, REG_SZ,
+				reinterpret_cast<const BYTE*>(behaviors), sizeof(behaviors));
+		}
+		else if (is_existing)
+		{
+			// Remove D3DBehaviors so Auto HDR no longer activates.
+			RegDeleteValueW(app_key, L"D3DBehaviors");
+		}
+
+		RegCloseKey(app_key);
+	}
+
+	RegCloseKey(base_key);
+}
+
+void QtHost::UpdateAutoHDRRegistration(bool enable)
+{
+	RegisterAutoHDR(enable);
+}
+
 static BOOL WINAPI ConsoleCtrlHandler(DWORD dwCtrlType)
 {
 	if (dwCtrlType != CTRL_C_EVENT)
@@ -2297,8 +2365,8 @@ bool QtHost::ParseCommandLineOptions(const QStringList& args, std::shared_ptr<VM
 		Console.Warning("Skipping autoboot due to no boot parameters.");
 		autoboot.reset();
 	}
-	
-	if(autoboot && autoboot->start_turbo.value_or(false) && autoboot->start_unlimited.value_or(false))
+
+	if (autoboot && autoboot->start_turbo.value_or(false) && autoboot->start_unlimited.value_or(false))
 	{
 		Console.Warning("Both turbo and unlimited frame limit modes requested. Using unlimited.");
 		autoboot->start_turbo.reset();
@@ -2414,6 +2482,10 @@ int main(int argc, char* argv[])
 	// Bail out if we can't find any config.
 	if (!QtHost::InitializeConfig())
 		return EXIT_FAILURE;
+
+#ifdef _WIN32
+	RegisterAutoHDR(Host::GetBoolSettingValue("EmuCore/GS", "EnableAutoHDR", false));
+#endif
 
 	// Are we just setting up the configuration?
 	if (s_test_config_and_exit)

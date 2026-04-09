@@ -298,4 +298,9 @@ namespace QtHost
 	/// inside its exec function, which would cause a crash.
 	void LockVMWithDialog();
 	void UnlockVMWithDialog();
+
+#ifdef _WIN32
+	/// Registers or unregisters PCSX2 with Windows for Auto HDR.
+	void UpdateAutoHDRRegistration(bool enable);
+#endif
 } // namespace QtHost
