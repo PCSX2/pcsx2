@@ -1451,7 +1451,9 @@ bool ImGuiFullscreen::MenuButton(const char* title, const char* summary, bool en
 	if (summary)
 	{
 		ImGui::PushFont(summary_font.first, summary_font.second);
+		ImGui::PushStyleColor(ImGuiCol_Text, MulAlpha(ImGui::GetStyleColorVec4(ImGuiCol_Text), 0.60f));
 		RenderTextClippedWithShadow(summary_bb.Min, summary_bb.Max, summary, nullptr, nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
+		ImGui::PopStyleColor();
 		ImGui::PopFont();
 	}
 
@@ -1515,7 +1517,9 @@ bool ImGuiFullscreen::MenuImageButton(const char* title, const char* summary, Im
 	if (summary)
 	{
 		ImGui::PushFont(summary_font.first, summary_font.second);
+		ImGui::PushStyleColor(ImGuiCol_Text, MulAlpha(ImGui::GetStyleColorVec4(ImGuiCol_Text), 0.60f));
 		RenderTextClippedWithShadow(summary_bb.Min, summary_bb.Max, summary, nullptr, nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
+		ImGui::PopStyleColor();
 		ImGui::PopFont();
 	}
 
@@ -1639,7 +1643,9 @@ bool ImGuiFullscreen::ToggleButton(
 	if (summary)
 	{
 		ImGui::PushFont(summary_font.first, summary_font.second);
+		ImGui::PushStyleColor(ImGuiCol_Text, MulAlpha(ImGui::GetStyleColorVec4(ImGuiCol_Text), 0.60f));
 		RenderTextClippedWithShadow(summary_bb.Min, summary_bb.Max, summary, nullptr, nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
+		ImGui::PopStyleColor();
 		ImGui::PopFont();
 	}
 
@@ -1709,7 +1715,9 @@ bool ImGuiFullscreen::ThreeWayToggleButton(
 	if (summary)
 	{
 		ImGui::PushFont(summary_font.first, summary_font.second);
+		ImGui::PushStyleColor(ImGuiCol_Text, MulAlpha(ImGui::GetStyleColorVec4(ImGuiCol_Text), 0.60f));
 		RenderTextClippedWithShadow(summary_bb.Min, summary_bb.Max, summary, nullptr, nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
+		ImGui::PopStyleColor();
 		ImGui::PopFont();
 	}
 
@@ -1789,7 +1797,9 @@ bool ImGuiFullscreen::MenuButtonWithValue(
 	if (summary)
 	{
 		ImGui::PushFont(summary_font.first, summary_font.second);
+		ImGui::PushStyleColor(ImGuiCol_Text, MulAlpha(ImGui::GetStyleColorVec4(ImGuiCol_Text), 0.60f));
 		RenderTextClippedWithShadow(summary_bb.Min, summary_bb.Max, summary, nullptr, nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
+		ImGui::PopStyleColor();
 		ImGui::PopFont();
 	}
 
