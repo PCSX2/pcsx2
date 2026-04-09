@@ -12066,7 +12066,7 @@ This action cannot be undone.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/HW/GSRendererHW.cpp" line="132"/>
+        <location filename="../../pcsx2/GS/Renderers/HW/GSRendererHW.cpp" line="135"/>
         <source>Hash cache has used {:.2f} MB of VRAM, disabling.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12081,7 +12081,7 @@ This action cannot be undone.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="5157"/>
+        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="5154"/>
         <source>Spin GPU During Readbacks is enabled, but calibrated timestamps are unavailable.  This might be really slow.</source>
         <translation type="unfinished"></translation>
     </message>
