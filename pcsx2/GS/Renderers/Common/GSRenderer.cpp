@@ -840,6 +840,9 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 			}
 		}
 	}
+
+	if (GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()) && GSConfig.SaveTransferImages)
+		DumpTransferImages();
 }
 
 void GSRenderer::QueueSnapshot(const std::string& path, const u32 gsdump_frames)
