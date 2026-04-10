@@ -3899,44 +3899,65 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
 	if (!IsEditingGameSettings(bsi))
 	{
 		MenuHeading(FSUI_CSTR("Sound Effects"));
-		if (MenuButton(FSUI_ICONSTR(ICON_FA_MUSIC, "Notification Sound"), bsi->GetTinyStringValue("Achievements", "InfoSoundName")))
-		{
-			auto callback = [bsi](const std::string& path) {
-				if (!path.empty())
-				{
-					bsi->SetStringValue("Achievements", "InfoSoundName", path.c_str());
-					SetSettingsChanged(bsi);
-				}
-				CloseFileSelector();
-			};
-			OpenFileSelector(FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Select Notification Sound"), false, std::move(callback), GetAudioFileFilters());
-		}
+		const auto draw_sound_setting = [bsi](const char* title, const char* key, const char* default_filename, const char* selector_title) {
+			const std::string default_path = Path::Combine(EmuFolders::Resources, default_filename);
+			const std::optional<SmallString> custom_path = bsi->GetOptionalSmallStringValue("Achievements", key, std::nullopt);
+			const char* value = custom_path.has_value() ? custom_path->c_str() : default_path.c_str();
+			if (!MenuButton(title, value))
+				return;
 
-		if (MenuButton(FSUI_ICONSTR(ICON_FA_MUSIC, "Unlock Sound"), bsi->GetTinyStringValue("Achievements", "UnlockSoundName")))
-		{
-			auto callback = [bsi](const std::string& path) {
-				if (!path.empty())
-				{
-					bsi->SetStringValue("Achievements", "UnlockSoundName", path.c_str());
-					SetSettingsChanged(bsi);
-				}
-				CloseFileSelector();
-			};
-			OpenFileSelector(FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Select Unlock Sound"), false, std::move(callback), GetAudioFileFilters());
-		}
+			ImGuiFullscreen::ChoiceDialogOptions options;
+			options.emplace_back(FSUI_ICONSTR(ICON_FA_FILE, "Select File"), false);
+			options.emplace_back(FSUI_ICONSTR(ICON_FA_VOLUME_HIGH, "Preview"), false);
+			options.emplace_back(FSUI_ICONSTR(ICON_FA_ROTATE_RIGHT, "Reset to Default"), false);
+			OpenChoiceDialog(title, false, std::move(options),
+				[bsi, key = std::string(key), selector_title = std::string(selector_title), default_path = std::move(default_path)](
+					s32 index, const std::string&, bool) {
+					if (index == 0)
+					{
+						auto callback = [bsi, key = key](const std::string& path) {
+							if (!path.empty())
+							{
+								bsi->SetStringValue("Achievements", key.c_str(), path.c_str());
+								SetSettingsChanged(bsi);
+							}
+							CloseFileSelector();
+						};
+						OpenFileSelector(selector_title.c_str(), false, std::move(callback), GetAudioFileFilters());
+					}
+					else if (index == 1)
+					{
+						const TinyString preview_path = bsi->GetTinyStringValue("Achievements", key.c_str(), default_path.c_str());
+						if (!Common::PlaySoundAsync(preview_path.c_str()))
+						{
+							ShowToast(std::string(),
+								fmt::format(FSUI_FSTR("Failed to preview sound:\n{}"),
+									preview_path.empty() ? FSUI_STR("No file selected.") : preview_path.c_str()));
+						}
+					}
+					else if (index == 2)
+					{
+						if (bsi->ContainsValue("Achievements", key.c_str()))
+						{
+							bsi->DeleteValue("Achievements", key.c_str());
+							SetSettingsChanged(bsi);
+							ShowToast(std::string(), FSUI_STR("Sound reset to default."));
+						}
+						else
+						{
+							ShowToast(std::string(), FSUI_STR("Sound is already using default."));
+						}
+					}
+					CloseChoiceDialog();
+				});
+		};
 
-		if (MenuButton(FSUI_ICONSTR(ICON_FA_MUSIC, "Leaderboard Submit Sound"), bsi->GetTinyStringValue("Achievements", "LBSubmitSoundName")))
-		{
-			auto callback = [bsi](const std::string& path) {
-				if (!path.empty())
-				{
-					bsi->SetStringValue("Achievements", "LBSubmitSoundName", path.c_str());
-					SetSettingsChanged(bsi);
-				}
-				CloseFileSelector();
-			};
-			OpenFileSelector(FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Select Leaderboard Submit Sound"), false, std::move(callback), GetAudioFileFilters());
-		}
+		draw_sound_setting(FSUI_ICONSTR(ICON_FA_MUSIC, "Notification Sound"), "InfoSoundName", "sounds/achievements/message.wav",
+			FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Select Notification Sound"));
+		draw_sound_setting(FSUI_ICONSTR(ICON_FA_MUSIC, "Unlock Sound"), "UnlockSoundName", "sounds/achievements/unlock.wav",
+			FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Select Unlock Sound"));
+		draw_sound_setting(FSUI_ICONSTR(ICON_FA_MUSIC, "Leaderboard Submit Sound"), "LBSubmitSoundName",
+			"sounds/achievements/lbsubmit.wav", FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Select Leaderboard Submit Sound"));
 
 		MenuHeading(FSUI_CSTR("Account"));
 		if (bsi->ContainsValue("Achievements", "Token"))
