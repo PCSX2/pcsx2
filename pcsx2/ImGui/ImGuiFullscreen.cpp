@@ -735,7 +735,7 @@ void ImGuiFullscreen::EndLayout()
 void ImGuiFullscreen::PushResetLayout()
 {
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(LAYOUT_WINDOW_ROUNDING));
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(8.0f, 8.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(4.0f, 3.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, LayoutScale(8.0f, 4.0f));
@@ -743,7 +743,7 @@ void ImGuiFullscreen::PushResetLayout()
 	ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, LayoutScale(4.0f, 2.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, LayoutScale(21.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarSize, LayoutScale(14.0f));
-	ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarRounding, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarRounding, LayoutScale(LAYOUT_SCROLLBAR_ROUNDING));
 	ImGui::PushStyleVar(ImGuiStyleVar_GrabMinSize, LayoutScale(10.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_TabRounding, LayoutScale(4.0f));
 
@@ -1095,7 +1095,7 @@ void ImGuiFullscreen::PrerenderMenuButtonBorder()
 	const float t = std::min<float>(std::abs(std::sin(ImGui::GetTime() * 0.75) * 1.1), 1.0f);
 	ImGui::PushStyleColor(ImGuiCol_Border, ImGui::GetColorU32(ImGuiCol_Border, t));
 
-	ImGui::RenderFrame(min, max, col, true, 0.0f);
+	ImGui::RenderFrame(min, max, col, true, LayoutScale(LAYOUT_FRAME_ROUNDING));
 
 	ImGui::PopStyleColor();
 
@@ -1107,7 +1107,7 @@ void ImGuiFullscreen::BeginMenuButtons(u32 num_items, float y_align, float x_pad
 	s_menu_button_index = 0;
 
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(x_padding, y_padding));
-	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(LAYOUT_FRAME_ROUNDING));
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, LayoutScale(1.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 0.0f));
 
@@ -1249,7 +1249,7 @@ bool ImGuiFullscreen::MenuButtonFrame(
 			const float t = std::min<float>(std::abs(std::sin(ImGui::GetTime() * 0.75) * 1.1), 1.0f);
 			ImGui::PushStyleColor(ImGuiCol_Border, ImGui::GetColorU32(ImGuiCol_Border, t));
 
-			DrawMenuButtonFrame(bb->Min, bb->Max, col, true, 0.0f);
+			DrawMenuButtonFrame(bb->Min, bb->Max, col, true, LayoutScale(LAYOUT_FRAME_ROUNDING));
 
 			ImGui::PopStyleColor();
 		}
@@ -1361,7 +1361,8 @@ bool ImGuiFullscreen::ActiveButtonWithRightText(const char* title, const char* r
 		const ImVec2 border_size_v = ImVec2(border_size, border_size);
 		ImVec2 pos, size;
 		GetMenuButtonFrameBounds(height, &pos, &size);
-		ImGui::RenderFrame(pos + border_size_v, pos + size - border_size_v, ImGui::GetColorU32(UIPrimaryColor), false);
+		ImGui::RenderFrame(pos + border_size_v, pos + size - border_size_v, ImGui::GetColorU32(UIPrimaryColor), false,
+			LayoutScale(LAYOUT_FRAME_ROUNDING));
 	}
 
 	ImRect bb;
@@ -1556,7 +1557,7 @@ bool ImGuiFullscreen::FloatingButton(const char* text, float x, float y, float w
 			const float t = std::min<float>(std::abs(std::sin(ImGui::GetTime() * 0.75) * 1.1), 1.0f);
 			const ImU32 col = ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered, 1.0f);
 			ImGui::PushStyleColor(ImGuiCol_Border, ImGui::GetColorU32(ImGuiCol_Border, t));
-			DrawMenuButtonFrame(bb.Min, bb.Max, col, true, 0.0f);
+			DrawMenuButtonFrame(bb.Min, bb.Max, col, true, LayoutScale(LAYOUT_FRAME_ROUNDING));
 			ImGui::PopStyleColor();
 		}
 	}
@@ -1814,7 +1815,7 @@ void ImGuiFullscreen::BeginNavBar(float x_padding /*= LAYOUT_MENU_BUTTON_X_PADDI
 	s_menu_button_index = 0;
 
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(x_padding, y_padding));
-	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(LAYOUT_FRAME_ROUNDING));
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, LayoutScale(1.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, LayoutScale(1.0f, 0.0f));
 	PushPrimaryColor();
@@ -1907,7 +1908,7 @@ bool ImGuiFullscreen::NavButton(const char* title, bool is_active, bool enabled 
 		if (hovered)
 		{
 			const ImU32 col = ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered, 1.0f);
-			DrawMenuButtonFrame(bb.Min, bb.Max, col, true, 0.0f);
+			DrawMenuButtonFrame(bb.Min, bb.Max, col, true, LayoutScale(LAYOUT_FRAME_ROUNDING));
 		}
 	}
 	else
@@ -1975,7 +1976,7 @@ bool ImGuiFullscreen::NavTab(const char* title, bool is_active, bool enabled /* 
 		if (hovered)
 		{
 			const ImU32 col = ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered, 1.0f);
-			DrawMenuButtonFrame(bb.Min, bb.Max, col, true, 0.0f);
+			DrawMenuButtonFrame(bb.Min, bb.Max, col, true, LayoutScale(LAYOUT_FRAME_ROUNDING));
 		}
 	}
 	else
@@ -1988,7 +1989,7 @@ bool ImGuiFullscreen::NavTab(const char* title, bool is_active, bool enabled /* 
 	if (!hovered)
 	{
 		const ImU32 col = ImGui::GetColorU32(is_active ? background : ImVec4(background.x, background.y, background.z, 0.5f));
-		ImGui::RenderFrame(bb.Min, bb.Max, col, false, 0.0f);
+		ImGui::RenderFrame(bb.Min, bb.Max, col, false, LayoutScale(LAYOUT_FRAME_ROUNDING));
 	}
 
 #if 0
@@ -2030,7 +2031,7 @@ bool ImGuiFullscreen::BeginHorizontalMenu(const char* name, const ImVec2& positi
 	const float menu_height = LayoutScale(LAYOUT_HORIZONTAL_MENU_HEIGHT);
 
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(item_padding, item_padding));
-	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(LAYOUT_FRAME_ROUNDING));
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, LayoutScale(1.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(item_spacing, 0.0f));
 
@@ -2074,7 +2075,7 @@ bool ImGuiFullscreen::HorizontalMenuItem(GSTexture* icon, const ImVec2& icon_uv0
 		const float t = static_cast<float>(std::min(std::abs(std::sin(ImGui::GetTime() * 0.75) * 1.1), 1.0));
 		ImGui::PushStyleColor(ImGuiCol_Border, ImGui::GetColorU32(ImGuiCol_Border, t));
 
-		DrawMenuButtonFrame(bb.Min, bb.Max, col, true, 0.0f);
+		DrawMenuButtonFrame(bb.Min, bb.Max, col, true, LayoutScale(LAYOUT_FRAME_ROUNDING));
 
 		ImGui::PopStyleColor();
 	}
@@ -2262,7 +2263,7 @@ void ImGuiFullscreen::DrawFileSelector()
 	FileSelectorItem* selected = nullptr;
 
 	ImGui::PushFont(g_large_font.first, g_large_font.second);
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(LAYOUT_WINDOW_ROUNDING));
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
 	ImGui::PushStyleColor(ImGuiCol_Text, UIPrimaryTextColor);
@@ -2389,7 +2390,7 @@ void ImGuiFullscreen::DrawChoiceDialog()
 
 	ImGui::PushFont(g_large_font.first, g_large_font.second);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(LAYOUT_WINDOW_ROUNDING));
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
 	ImGui::PushStyleColor(ImGuiCol_Text, UIPrimaryTextColor);
@@ -2518,7 +2519,7 @@ void ImGuiFullscreen::DrawInputDialog()
 
 	ImGui::PushFont(g_large_font.first, g_large_font.second);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(LAYOUT_WINDOW_ROUNDING));
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
 	ImGui::PushStyleColor(ImGuiCol_Text, UIPrimaryTextColor);
@@ -2578,7 +2579,7 @@ void ImGuiFullscreen::DrawInputDialog()
 		if (s_focus_reset_queued != FocusResetType::None)
 			ImGui::SetKeyboardFocusHere();
 
-		ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(8.0f));
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(LAYOUT_FRAME_ROUNDING));
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(12.0f, 10.0f));
 		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, LayoutScale(1.0f));
 		ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
@@ -2723,7 +2724,7 @@ void ImGuiFullscreen::DrawMessageDialog()
 
 	ImGui::PushFont(g_large_font.first, g_large_font.second);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(LAYOUT_WINDOW_ROUNDING));
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
 	ImGui::PushStyleColor(ImGuiCol_Text, UIPrimaryTextColor);
@@ -2889,7 +2890,7 @@ void ImGuiFullscreen::DrawProgressDialogs(ImVec2& position, float spacing)
 
 		ImGui::PushFont(g_large_font.first, g_large_font.second);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(LAYOUT_WINDOW_ROUNDING));
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
 		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
 		ImGui::PushStyleColor(ImGuiCol_Text, UIPrimaryTextColor);

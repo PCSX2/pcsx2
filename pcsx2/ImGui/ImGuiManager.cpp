@@ -375,6 +375,14 @@ void ImGuiManager::SetStyle()
 	colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
 	colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
 
+	style.WindowRounding = 6.0f;
+	style.ChildRounding = 6.0f;
+	style.PopupRounding = 6.0f;
+	style.FrameRounding = 5.0f;
+	style.GrabRounding = 5.0f;
+	style.TabRounding = 5.0f;
+	style.ScrollbarRounding = 5.0f;
+
 	style.ScaleAllSizes(s_global_scale);
 }
 

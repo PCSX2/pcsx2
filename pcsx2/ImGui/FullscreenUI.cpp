@@ -2915,7 +2915,7 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
 				const float t = std::min<float>(std::abs(std::sin(ImGui::GetTime() * 0.75) * 1.1), 1.0f);
 				ImGui::PushStyleColor(ImGuiCol_Border, ImGui::GetColorU32(ImGuiCol_Border, t));
 
-				ImGuiFullscreen::DrawMenuButtonFrame(bb.Min, bb.Max, col, true, 0.0f);
+				ImGuiFullscreen::DrawMenuButtonFrame(bb.Min, bb.Max, col, true, LayoutScale(ImGuiFullscreen::LAYOUT_FRAME_ROUNDING));
 
 				ImGui::PopStyleColor();
 			}
@@ -3379,7 +3379,7 @@ void FullscreenUI::DrawAboutWindow()
 	ImGui::OpenPopup(FSUI_CSTR("About PCSX2"));
 
 	ImGui::PushFont(g_large_font.first, g_large_font.second);
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(ImGuiFullscreen::LAYOUT_WINDOW_ROUNDING));
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(30.0f, 30.0f));
 
 	if (ImGui::BeginPopupModal(FSUI_CSTR("About PCSX2"), &s_about_window_open, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
@@ -3459,7 +3459,7 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 	ImGui::SetNextWindowSize(LayoutScale(400.0f, 330.0f));
 	ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(12.0f));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(ImGuiFullscreen::LAYOUT_WINDOW_ROUNDING));
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(24.0f, 24.0f));
 	ImGui::PushStyleColor(ImGuiCol_PopupBg, ImVec4(0.13f, 0.13f, 0.13f, 0.95f));
 
@@ -3501,7 +3501,7 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 		ImGui::Spacing();
 		ImGui::Spacing();
 
-		ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(8.0f));
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(ImGuiFullscreen::LAYOUT_FRAME_ROUNDING));
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(12.0f, 10.0f));
 		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, LayoutScale(1.0f));
 		ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
@@ -3548,7 +3548,7 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + start_x);
 
-		ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(8.0f));
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(ImGuiFullscreen::LAYOUT_FRAME_ROUNDING));
 
 		const bool can_login = !s_achievements_login_logging_in &&
 							   strlen(s_achievements_login_username) > 0 &&
