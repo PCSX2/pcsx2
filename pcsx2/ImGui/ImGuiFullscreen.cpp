@@ -23,6 +23,7 @@
 #include "common/Timer.h"
 
 #include "IconsFontAwesome.h"
+#include "IconsPromptFont.h"
 #include "imgui_internal.h"
 #include "imgui_stdlib.h"
 
@@ -965,6 +966,45 @@ void ImGuiFullscreen::ReportGamepadLayout(InputLayout layout)
 InputLayout ImGuiFullscreen::GetGamepadLayout()
 {
 	return s_gamepad_layout;
+}
+
+static InputLayout GetEffectiveGlyphLayout()
+{
+	const InputLayout preferred_layout = InputManager::GetGamepadIconPreference();
+	if (preferred_layout == InputLayout::Xbox || preferred_layout == InputLayout::Playstation || preferred_layout == InputLayout::Nintendo)
+		return preferred_layout;
+
+	const InputLayout detected_layout = ImGuiFullscreen::GetGamepadLayout();
+	switch (detected_layout)
+	{
+		case InputLayout::Playstation:
+			return InputLayout::Playstation;
+		case InputLayout::Xbox:
+			return InputLayout::Xbox;
+		case InputLayout::Nintendo:
+			return InputLayout::Nintendo;
+		case InputLayout::Unknown:
+		default:
+			return InputLayout::Playstation;
+	}
+}
+
+ImGuiFullscreen::GamepadGlyphs ImGuiFullscreen::GetGamepadGlyphs()
+{
+	const InputLayout layout = GetEffectiveGlyphLayout();
+	const bool xbox = (layout == InputLayout::Xbox);
+	const bool nintendo = (layout == InputLayout::Nintendo);
+	return {
+		nintendo ? ICON_PF_BUTTON_B : (xbox ? ICON_PF_BUTTON_A : ICON_PF_BUTTON_CROSS),
+		nintendo ? ICON_PF_BUTTON_A : (xbox ? ICON_PF_BUTTON_B : ICON_PF_BUTTON_CIRCLE),
+		nintendo ? ICON_PF_BUTTON_Y : (xbox ? ICON_PF_BUTTON_X : ICON_PF_BUTTON_SQUARE),
+		nintendo ? ICON_PF_BUTTON_X : (xbox ? ICON_PF_BUTTON_Y : ICON_PF_BUTTON_TRIANGLE),
+		xbox ? ICON_PF_XBOX_DPAD : ICON_PF_DPAD,
+		xbox ? ICON_PF_XBOX_DPAD_LEFT_RIGHT : ICON_PF_DPAD_LEFT_RIGHT,
+		xbox ? ICON_PF_XBOX_DPAD_UP_DOWN : ICON_PF_DPAD_UP_DOWN,
+		nintendo ? ICON_PF_MINUS : (xbox ? ICON_PF_SHARE_CAPTURE : ICON_PF_SELECT_SHARE),
+		nintendo ? ICON_PF_PLUS : (xbox ? ICON_PF_BURGER_MENU : ICON_PF_START),
+	};
 }
 
 void ImGuiFullscreen::CreateFooterTextString(SmallStringBase& dest,

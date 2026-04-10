@@ -68,12 +68,13 @@ void FullscreenUI::GetStandardSelectionFooterText(SmallStringBase& dest, bool ba
 	if (IsGamepadInputSource())
 	{
 		const bool circleOK = ImGui::GetIO().ConfigNavSwapGamepadButtons;
+		const auto glyphs = GetGamepadGlyphs();
 		ImGuiFullscreen::CreateFooterTextString(
 			dest,
 			std::array{
-				std::make_pair(ICON_PF_DPAD_UP_DOWN, FSUI_VSTR("Change Selection")),
-				std::make_pair(circleOK ? ICON_PF_BUTTON_CIRCLE : ICON_PF_BUTTON_CROSS, FSUI_VSTR("Select")),
-				std::make_pair(circleOK ? ICON_PF_BUTTON_CROSS : ICON_PF_BUTTON_CIRCLE, back_instead_of_cancel ? FSUI_VSTR("Back") : FSUI_VSTR("Cancel")),
+				std::make_pair(glyphs.dpad_ud, FSUI_VSTR("Change Selection")),
+				std::make_pair(glyphs.confirm(circleOK), FSUI_VSTR("Select")),
+				std::make_pair(glyphs.cancel(circleOK), back_instead_of_cancel ? FSUI_VSTR("Back") : FSUI_VSTR("Cancel")),
 			});
 	}
 	else
@@ -105,12 +106,13 @@ void ImGuiFullscreen::GetFileSelectorHelpText(SmallStringBase& dest)
 	{
 		const bool circleOK = ImGui::GetIO().ConfigNavSwapGamepadButtons;
 		const bool swapNorthWest = ImGuiManager::IsGamepadNorthWestSwapped();
+		const auto glyphs = GetGamepadGlyphs();
 		ImGuiFullscreen::CreateFooterTextString(
 			dest, std::array{
-					  std::make_pair(ICON_PF_DPAD_UP_DOWN, FSUI_VSTR("Change Selection")),
-					  std::make_pair(swapNorthWest ? ICON_PF_BUTTON_SQUARE : ICON_PF_BUTTON_TRIANGLE, FSUI_VSTR("Parent Directory")),
-					  std::make_pair(circleOK ? ICON_PF_BUTTON_CIRCLE : ICON_PF_BUTTON_CROSS, FSUI_VSTR("Select")),
-					  std::make_pair(circleOK ? ICON_PF_BUTTON_CROSS : ICON_PF_BUTTON_CIRCLE, FSUI_VSTR("Cancel")),
+					  std::make_pair(glyphs.dpad_ud, FSUI_VSTR("Change Selection")),
+					  std::make_pair(swapNorthWest ? glyphs.west : glyphs.north, FSUI_VSTR("Parent Directory")),
+					  std::make_pair(glyphs.confirm(circleOK), FSUI_VSTR("Select")),
+					  std::make_pair(glyphs.cancel(circleOK), FSUI_VSTR("Cancel")),
 				  });
 	}
 	else
@@ -131,10 +133,11 @@ void ImGuiFullscreen::GetInputDialogHelpText(SmallStringBase& dest)
 	if (IsGamepadInputSource())
 	{
 		const bool circleOK = ImGui::GetIO().ConfigNavSwapGamepadButtons;
+		const auto glyphs = GetGamepadGlyphs();
 		CreateFooterTextString(dest, std::array{
 										 std::make_pair(ICON_PF_KEYBOARD, FSUI_VSTR("Enter Value")),
-										 std::make_pair(circleOK ? ICON_PF_BUTTON_CIRCLE : ICON_PF_BUTTON_CROSS, FSUI_VSTR("Select")),
-										 std::make_pair(circleOK ? ICON_PF_BUTTON_CROSS : ICON_PF_BUTTON_CIRCLE, FSUI_VSTR("Cancel")),
+										 std::make_pair(glyphs.confirm(circleOK), FSUI_VSTR("Select")),
+										 std::make_pair(glyphs.cancel(circleOK), FSUI_VSTR("Cancel")),
 									 });
 	}
 	else
@@ -157,6 +160,34 @@ void FullscreenUI::ApplyLayoutSettings(const SettingsInterface* bsi)
 
 	// Check Nintendo Setting
 	SmallString sdl2_nintendo_mode = GET_SETTINGS_VALUE(SmallString, "UI", "SDL2NintendoLayout", "false");
+	// Check glyph preference
+	SmallString glyph_mode = GET_SETTINGS_VALUE(SmallString, "UI", "FullscreenUIGlyphStyle", "auto");
+
+	const auto parse_glyph_layout = [](const SmallString& mode) -> InputLayout {
+		if (mode == "xbox")
+			return InputLayout::Xbox;
+		if (mode == "playstation")
+			return InputLayout::Playstation;
+		if (mode == "nintendo")
+			return InputLayout::Nintendo;
+		return InputLayout::Unknown;
+	};
+
+	switch (parse_glyph_layout(glyph_mode))
+	{
+		case InputLayout::Xbox:
+			InputManager::SetGamepadIconPreference(InputLayout::Xbox);
+			break;
+		case InputLayout::Playstation:
+			InputManager::SetGamepadIconPreference(InputLayout::Playstation);
+			break;
+		case InputLayout::Nintendo:
+			InputManager::SetGamepadIconPreference(InputLayout::Nintendo);
+			break;
+		default:
+			InputManager::SetGamepadIconPreference(InputLayout::Unknown);
+			break;
+	}
 
 	const InputLayout layout = ImGuiFullscreen::GetGamepadLayout();
 
@@ -1360,13 +1391,14 @@ void FullscreenUI::DrawLandingWindow()
 	{
 		const bool circleOK = ImGui::GetIO().ConfigNavSwapGamepadButtons;
 		const bool swapNorthWest = ImGuiManager::IsGamepadNorthWestSwapped();
+		const auto glyphs = GetGamepadGlyphs();
 		SetFullscreenFooterText(std::array{
-			std::make_pair(ICON_PF_SELECT_SHARE, FSUI_VSTR("About")),
-			std::make_pair(ICON_PF_DPAD_LEFT_RIGHT, FSUI_VSTR("Navigate")),
-			std::make_pair(swapNorthWest ? ICON_PF_BUTTON_SQUARE : ICON_PF_BUTTON_TRIANGLE, FSUI_VSTR("Game List")),
-			std::make_pair(swapNorthWest ? ICON_PF_BUTTON_TRIANGLE : ICON_PF_BUTTON_SQUARE, FSUI_VSTR("Toggle Fullscreen")),
-			std::make_pair(circleOK ? ICON_PF_BUTTON_CIRCLE : ICON_PF_BUTTON_CROSS, FSUI_VSTR("Select")),
-			std::make_pair(circleOK ? ICON_PF_BUTTON_CROSS : ICON_PF_BUTTON_CIRCLE, FSUI_VSTR("Exit")),
+			std::make_pair(glyphs.select, FSUI_VSTR("About")),
+			std::make_pair(glyphs.dpad_lr, FSUI_VSTR("Navigate")),
+			std::make_pair(swapNorthWest ? glyphs.west : glyphs.north, FSUI_VSTR("Game List")),
+			std::make_pair(swapNorthWest ? glyphs.north : glyphs.west, FSUI_VSTR("Toggle Fullscreen")),
+			std::make_pair(glyphs.confirm(circleOK), FSUI_VSTR("Select")),
+			std::make_pair(glyphs.cancel(circleOK), FSUI_VSTR("Exit")),
 		});
 	}
 	else
@@ -1431,11 +1463,12 @@ void FullscreenUI::DrawStartGameWindow()
 	{
 		const bool circleOK = ImGui::GetIO().ConfigNavSwapGamepadButtons;
 		const bool swapNorthWest = ImGuiManager::IsGamepadNorthWestSwapped();
+		const auto glyphs = GetGamepadGlyphs();
 		SetFullscreenFooterText(std::array{
-			std::make_pair(ICON_PF_DPAD_LEFT_RIGHT, FSUI_VSTR("Navigate")),
-			std::make_pair(swapNorthWest ? ICON_PF_BUTTON_TRIANGLE : ICON_PF_BUTTON_SQUARE, FSUI_VSTR("Load Global State")),
-			std::make_pair(circleOK ? ICON_PF_BUTTON_CIRCLE : ICON_PF_BUTTON_CROSS, FSUI_VSTR("Select")),
-			std::make_pair(circleOK ? ICON_PF_BUTTON_CROSS : ICON_PF_BUTTON_CIRCLE, FSUI_VSTR("Back")),
+			std::make_pair(glyphs.dpad_lr, FSUI_VSTR("Navigate")),
+			std::make_pair(swapNorthWest ? glyphs.north : glyphs.west, FSUI_VSTR("Load Global State")),
+			std::make_pair(glyphs.confirm(circleOK), FSUI_VSTR("Select")),
+			std::make_pair(glyphs.cancel(circleOK), FSUI_VSTR("Back")),
 		});
 	}
 	else
@@ -1490,10 +1523,11 @@ void FullscreenUI::DrawExitWindow()
 	if (IsGamepadInputSource())
 	{
 		const bool circleOK = ImGui::GetIO().ConfigNavSwapGamepadButtons;
+		const auto glyphs = GetGamepadGlyphs();
 		SetFullscreenFooterText(std::array{
-			std::make_pair(ICON_PF_DPAD_LEFT_RIGHT, FSUI_VSTR("Navigate")),
-			std::make_pair(circleOK ? ICON_PF_BUTTON_CIRCLE : ICON_PF_BUTTON_CROSS, FSUI_VSTR("Select")),
-			std::make_pair(circleOK ? ICON_PF_BUTTON_CROSS : ICON_PF_BUTTON_CIRCLE, FSUI_VSTR("Back")),
+			std::make_pair(glyphs.dpad_lr, FSUI_VSTR("Navigate")),
+			std::make_pair(glyphs.confirm(circleOK), FSUI_VSTR("Select")),
+			std::make_pair(glyphs.cancel(circleOK), FSUI_VSTR("Back")),
 		});
 	}
 	else
@@ -1813,10 +1847,11 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 	if (IsGamepadInputSource())
 	{
 		const bool circleOK = ImGui::GetIO().ConfigNavSwapGamepadButtons;
+		const auto glyphs = GetGamepadGlyphs();
 		SetFullscreenFooterText(std::array{
-			std::make_pair(ICON_PF_DPAD_UP_DOWN, FSUI_VSTR("Change Selection")),
-			std::make_pair(circleOK ? ICON_PF_BUTTON_CIRCLE : ICON_PF_BUTTON_CROSS, FSUI_VSTR("Select")),
-			std::make_pair(circleOK ? ICON_PF_BUTTON_CROSS : ICON_PF_BUTTON_CIRCLE, FSUI_VSTR("Return To Game")),
+			std::make_pair(glyphs.dpad_ud, FSUI_VSTR("Change Selection")),
+			std::make_pair(glyphs.confirm(circleOK), FSUI_VSTR("Select")),
+			std::make_pair(glyphs.cancel(circleOK), FSUI_VSTR("Return To Game")),
 		});
 	}
 	else
@@ -2259,11 +2294,12 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 		{
 			const bool circleOK = ImGui::GetIO().ConfigNavSwapGamepadButtons;
 			const bool swapNorthWest = ImGuiManager::IsGamepadNorthWestSwapped();
+			const auto glyphs = GetGamepadGlyphs();
 			SetFullscreenFooterText(std::array{
-				std::make_pair(ICON_PF_DPAD, FSUI_VSTR("Select State")),
-				std::make_pair(swapNorthWest ? ICON_PF_BUTTON_TRIANGLE : ICON_PF_BUTTON_SQUARE, FSUI_VSTR("Options")),
-				std::make_pair(circleOK ? ICON_PF_BUTTON_CIRCLE : ICON_PF_BUTTON_CROSS, FSUI_VSTR("Load/Save State")),
-				std::make_pair(circleOK ? ICON_PF_BUTTON_CROSS : ICON_PF_BUTTON_CIRCLE, FSUI_VSTR("Cancel")),
+				std::make_pair(glyphs.dpad, FSUI_VSTR("Select State")),
+				std::make_pair(swapNorthWest ? glyphs.north : glyphs.west, FSUI_VSTR("Options")),
+				std::make_pair(glyphs.confirm(circleOK), FSUI_VSTR("Load/Save State")),
+				std::make_pair(glyphs.cancel(circleOK), FSUI_VSTR("Cancel")),
 			});
 		}
 		else
@@ -2604,13 +2640,14 @@ void FullscreenUI::DrawGameListWindow()
 	{
 		const bool circleOK = ImGui::GetIO().ConfigNavSwapGamepadButtons;
 		const bool swapNorthWest = ImGuiManager::IsGamepadNorthWestSwapped();
+		const auto glyphs = GetGamepadGlyphs();
 		SetFullscreenFooterText(std::array{
-			std::make_pair(ICON_PF_DPAD, FSUI_VSTR("Select Game")),
-			std::make_pair(ICON_PF_START, FSUI_VSTR("Settings")),
-			std::make_pair(swapNorthWest ? ICON_PF_BUTTON_SQUARE : ICON_PF_BUTTON_TRIANGLE, FSUI_VSTR("Change View")),
-			std::make_pair(swapNorthWest ? ICON_PF_BUTTON_TRIANGLE : ICON_PF_BUTTON_SQUARE, FSUI_VSTR("Launch Options")),
-			std::make_pair(circleOK ? ICON_PF_BUTTON_CIRCLE : ICON_PF_BUTTON_CROSS, FSUI_VSTR("Start Game")),
-			std::make_pair(circleOK ? ICON_PF_BUTTON_CROSS : ICON_PF_BUTTON_CIRCLE, FSUI_VSTR("Back")),
+			std::make_pair(glyphs.dpad, FSUI_VSTR("Select Game")),
+			std::make_pair(glyphs.start, FSUI_VSTR("Settings")),
+			std::make_pair(swapNorthWest ? glyphs.west : glyphs.north, FSUI_VSTR("Change View")),
+			std::make_pair(swapNorthWest ? glyphs.north : glyphs.west, FSUI_VSTR("Launch Options")),
+			std::make_pair(glyphs.confirm(circleOK), FSUI_VSTR("Start Game")),
+			std::make_pair(glyphs.cancel(circleOK), FSUI_VSTR("Back")),
 		});
 	}
 	else

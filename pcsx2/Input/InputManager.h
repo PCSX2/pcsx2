@@ -222,6 +222,10 @@ namespace InputManager
 	/// Represents a binding with icon fonts, if available.
 	bool PrettifyInputBinding(SmallStringBase& binding, bool use_icons = true);
 
+	/// Sets the preferred button icon style for UI and binding displays, overriding per-device detection.
+	void SetGamepadIconPreference(InputLayout layout);
+	InputLayout GetGamepadIconPreference();
+
 	/// Splits a chord into individual bindings.
 	std::vector<std::string_view> SplitChord(const std::string_view binding);
 

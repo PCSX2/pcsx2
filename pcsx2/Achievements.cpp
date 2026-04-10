@@ -2706,21 +2706,22 @@ void Achievements::DrawAchievementsWindow()
 		if (ImGuiFullscreen::IsGamepadInputSource())
 		{
 			const bool circleOK = ImGui::GetIO().ConfigNavSwapGamepadButtons;
+			const auto glyphs = ImGuiFullscreen::GetGamepadGlyphs();
 			if (s_sidebar_has_focus)
 			{
 				ImGuiFullscreen::SetFullscreenFooterText(std::array{
-					std::make_pair(ICON_PF_DPAD_UP_DOWN, TRANSLATE_SV("Achievements", "Navigate Subsets")),
-					std::make_pair(ICON_PF_DPAD_LEFT_RIGHT, TRANSLATE_SV("Achievements", "Back to List")),
-					std::make_pair(circleOK ? ICON_PF_BUTTON_CIRCLE : ICON_PF_BUTTON_CROSS, TRANSLATE_SV("Achievements", "Select")),
-					std::make_pair(circleOK ? ICON_PF_BUTTON_CROSS : ICON_PF_BUTTON_CIRCLE, TRANSLATE_SV("Achievements", "Back")),
+					std::make_pair(glyphs.dpad_ud, TRANSLATE_SV("Achievements", "Navigate Subsets")),
+					std::make_pair(glyphs.dpad_lr, TRANSLATE_SV("Achievements", "Back to List")),
+					std::make_pair(glyphs.confirm(circleOK), TRANSLATE_SV("Achievements", "Select")),
+					std::make_pair(glyphs.cancel(circleOK), TRANSLATE_SV("Achievements", "Back")),
 				});
 			}
 			else
 			{
 				ImGuiFullscreen::SetFullscreenFooterText(std::array{
-					std::make_pair(ICON_PF_DPAD_LEFT_RIGHT, TRANSLATE_SV("Achievements", "Navigate Subsets")),
-					std::make_pair(ICON_PF_DPAD_UP_DOWN, TRANSLATE_SV("Achievements", "Change Selection")),
-					std::make_pair(circleOK ? ICON_PF_BUTTON_CROSS : ICON_PF_BUTTON_CIRCLE, TRANSLATE_SV("Achievements", "Back")),
+					std::make_pair(glyphs.dpad_lr, TRANSLATE_SV("Achievements", "Navigate Subsets")),
+					std::make_pair(glyphs.dpad_ud, TRANSLATE_SV("Achievements", "Change Selection")),
+					std::make_pair(glyphs.cancel(circleOK), TRANSLATE_SV("Achievements", "Back")),
 				});
 			}
 		}
@@ -3325,10 +3326,11 @@ void Achievements::DrawLeaderboardsWindow()
 		if (ImGuiFullscreen::IsGamepadInputSource())
 		{
 			const bool circleOK = ImGui::GetIO().ConfigNavSwapGamepadButtons;
+			const auto glyphs = ImGuiFullscreen::GetGamepadGlyphs();
 			ImGuiFullscreen::SetFullscreenFooterText(std::array{
-				std::make_pair(ICON_PF_DPAD_LEFT_RIGHT, TRANSLATE_SV("Achievements", "Switch Rankings")),
-				std::make_pair(ICON_PF_DPAD_UP_DOWN, TRANSLATE_SV("Achievements", "Change Selection")),
-				std::make_pair(circleOK ? ICON_PF_BUTTON_CROSS : ICON_PF_BUTTON_CIRCLE, TRANSLATE_SV("Achievements", "Back")),
+				std::make_pair(glyphs.dpad_lr, TRANSLATE_SV("Achievements", "Switch Rankings")),
+				std::make_pair(glyphs.dpad_ud, TRANSLATE_SV("Achievements", "Change Selection")),
+				std::make_pair(glyphs.cancel(circleOK), TRANSLATE_SV("Achievements", "Back")),
 			});
 		}
 		else

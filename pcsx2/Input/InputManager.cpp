@@ -139,6 +139,9 @@ static InputInterceptHook::Callback m_event_intercept_callback;
 // Input sources. Keyboard/mouse don't exist here.
 static std::array<std::unique_ptr<InputSource>, static_cast<u32>(InputSourceType::Count)> s_input_sources;
 
+// Layout preference for gamepad controller glyphs.
+static std::atomic<InputLayout> s_gamepad_icon_preference = InputLayout::Unknown;
+
 // ------------------------------------------------------------------------
 // Hotkeys
 // ------------------------------------------------------------------------
@@ -442,6 +445,16 @@ bool InputManager::PrettifyInputBinding(SmallStringBase& binding, bool use_icons
 		binding = ret;
 
 	return changed;
+}
+
+void InputManager::SetGamepadIconPreference(InputLayout layout)
+{
+	s_gamepad_icon_preference.store(layout, std::memory_order_relaxed);
+}
+
+InputLayout InputManager::GetGamepadIconPreference()
+{
+	return s_gamepad_icon_preference.load(std::memory_order_relaxed);
 }
 
 void InputManager::PrettifyInputBindingPart(const std::string_view binding, SmallString& ret, bool& changed, bool use_icons)
