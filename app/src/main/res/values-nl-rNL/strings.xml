@@ -104,7 +104,7 @@ Open het later vanuit Instellingen → Open ARMSX2 map.</string>
     <string name="settings_app_icon_pin_not_supported">Uw launcher ondersteunt geen vastgezette snelkoppelingen.</string>
     <string name="settings_app_icon_error_loading">Kan dit pictogram niet laden.</string>
     <string name="drawer_toggle_content_description">in-game opties in-/uitschakelen</string>
-    <string name="drawer_title_in_game_options">In-game options</string>
+    <string name="drawer_title_in_game_options">Spelinstellingen</string>
     <string name="drawer_reboot_content_description"></string>
     <string name="drawer_pause_content_description">Pauzeer het spel</string>
     <string name="drawer_resume_content_description">Hervat het spel</string>
@@ -120,7 +120,7 @@ Open het later vanuit Instellingen → Open ARMSX2 map.</string>
     <string name="drawer_apply_widescreen_patch">Verspreiding scherm patch toepassen</string>
     <string name="drawer_action_import_cheats">Importeer cheats</string>
     <string name="drawer_action_import_textures">Importeer textures</string>
-    <string name="drawer_button_games">Games</string>
+    <string name="drawer_button_games">Spellen</string>
     <string name="drawer_button_game_state">Game State</string>
     <string name="drawer_resolution_scale">Resolution Scale</string>
     <string name="drawer_patches">Patches</string>
