@@ -2215,7 +2215,7 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 				bool pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, 0);
 				if (hovered)
 				{
-					const ImU32 col = ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered, 1.0f);
+					const ImU32 col = ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered, 0.7f);
 
 					const float t = std::min<float>(std::abs(std::sin(ImGui::GetTime() * 0.75) * 1.1), 1.0f);
 					ImGui::PushStyleColor(ImGuiCol_Border, ImGui::GetColorU32(ImGuiCol_Border, t));
@@ -2949,7 +2949,7 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
 			bool pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, 0);
 			if (hovered)
 			{
-				const ImU32 col = ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered, 1.0f);
+				const ImU32 col = ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered, 0.7f);
 
 				const float t = std::min<float>(std::abs(std::sin(ImGui::GetTime() * 0.75) * 1.1), 1.0f);
 				ImGui::PushStyleColor(ImGuiCol_Border, ImGui::GetColorU32(ImGuiCol_Border, t));

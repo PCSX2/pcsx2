@@ -56,7 +56,7 @@ namespace ImGuiFullscreen
 	static void DrawNotifications(ImVec2& position, float spacing);
 	static void DrawToast();
 	static bool MenuButtonFrame(const char* str_id, bool enabled, float height, bool* visible, bool* hovered, ImRect* bb,
-		ImGuiButtonFlags flags = 0, float hover_alpha = 1.0f);
+		ImGuiButtonFlags flags = 0, float hover_alpha = 0.7f);
 	static void PopulateFileSelectorItems();
 	static void SetFileSelectorDirectory(std::string dir);
 
@@ -1130,7 +1130,7 @@ void ImGuiFullscreen::PrerenderMenuButtonBorder()
 	// updating might finish the animation
 	const ImVec2& min = s_menu_button_frame_min_animated.UpdateAndGetValue();
 	const ImVec2& max = s_menu_button_frame_max_animated.UpdateAndGetValue();
-	const ImU32 col = ImGui::GetColorU32(ImGuiCol_ButtonHovered);
+	const ImU32 col = ImGui::GetColorU32(ImGuiCol_ButtonHovered, 0.7f);
 
 	const float t = std::min<float>(std::abs(std::sin(ImGui::GetTime() * 0.75) * 1.1), 1.0f);
 	ImGui::PushStyleColor(ImGuiCol_Border, ImGui::GetColorU32(ImGuiCol_Border, t));
@@ -1340,7 +1340,7 @@ bool ImGuiFullscreen::MenuButtonFrame(
 }
 
 bool ImGuiFullscreen::MenuButtonFrame(const char* str_id, bool enabled, float height, bool* visible, bool* hovered, ImVec2* min,
-	ImVec2* max, ImGuiButtonFlags flags /*= 0*/, float hover_alpha /*= 0*/)
+	ImVec2* max, ImGuiButtonFlags flags /*= 0*/, float hover_alpha /*= 0.7f*/)
 {
 	ImRect bb;
 	const bool result = MenuButtonFrame(str_id, enabled, height, visible, hovered, &bb, flags, hover_alpha);
@@ -1652,7 +1652,7 @@ bool ImGuiFullscreen::FloatingButton(const char* text, float x, float y, float w
 		if (hovered)
 		{
 			const float t = std::min<float>(std::abs(std::sin(ImGui::GetTime() * 0.75) * 1.1), 1.0f);
-			const ImU32 col = ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered, 1.0f);
+			const ImU32 col = ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered, 0.7f);
 			ImGui::PushStyleColor(ImGuiCol_Border, ImGui::GetColorU32(ImGuiCol_Border, t));
 			DrawMenuButtonFrame(bb.Min, bb.Max, col, true, LayoutScale(LAYOUT_FRAME_ROUNDING));
 			ImGui::PopStyleColor();
@@ -2074,7 +2074,7 @@ bool ImGuiFullscreen::NavButton(const char* title, bool is_active, bool enabled 
 		pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, ImGuiButtonFlags_NoNavFocus);
 		if (hovered)
 		{
-			const ImU32 col = ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered, 1.0f);
+			const ImU32 col = ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered, 0.7f);
 			DrawMenuButtonFrame(bb.Min, bb.Max, col, true, LayoutScale(LAYOUT_FRAME_ROUNDING));
 		}
 	}
@@ -2142,7 +2142,7 @@ bool ImGuiFullscreen::NavTab(const char* title, bool is_active, bool enabled /* 
 		pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, ImGuiButtonFlags_NoNavFocus);
 		if (hovered)
 		{
-			const ImU32 col = ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered, 1.0f);
+			const ImU32 col = ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered, 0.7f);
 			DrawMenuButtonFrame(bb.Min, bb.Max, col, true, LayoutScale(LAYOUT_FRAME_ROUNDING));
 		}
 	}
@@ -2237,7 +2237,7 @@ bool ImGuiFullscreen::HorizontalMenuItem(GSTexture* icon, const ImVec2& icon_uv0
 	const bool pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, 0);
 	if (hovered)
 	{
-		const ImU32 col = ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered, 1.0f);
+		const ImU32 col = ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered, 0.7f);
 
 		const float t = static_cast<float>(std::min(std::abs(std::sin(ImGui::GetTime() * 0.75) * 1.1), 1.0));
 		ImGui::PushStyleColor(ImGuiCol_Border, ImGui::GetColorU32(ImGuiCol_Border, t));
