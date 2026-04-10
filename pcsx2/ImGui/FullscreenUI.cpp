@@ -3426,10 +3426,18 @@ void FullscreenUI::DrawAboutWindow()
 		const ImVec2 image_size = LayoutScale(500.0f, 76.0f);
 		const ImRect image_bb(ImGui::GetCursorScreenPos(), ImGui::GetCursorScreenPos() + ImVec2(ImGui::GetCurrentWindow()->WorkRect.GetWidth(), image_size.y));
 		const ImRect image_rect(CenterImage(image_bb, image_size));
+		const float start_y = ImGui::GetCursorPosY();
 
 		DrawListSvgTexture(ImGui::GetWindowDrawList(), s_banner_texture.get(), image_rect.Min, image_rect.Max);
 
-		const float indent = image_size.y + LayoutScale(12.0f);
+		ImGui::SetCursorPosY(start_y + image_size.y + LayoutScale(2.0f));
+		static const std::string version_text = fmt::format(FSUI_FSTR("Version: {}"), BuildVersion::GitRev);
+		const float version_center_x =
+			ImGui::GetCursorPosX() + ((ImGui::GetCurrentWindow()->WorkRect.GetWidth() - ImGui::CalcTextSize(version_text.c_str()).x) * 0.5f);
+		ImGui::SetCursorPosX(version_center_x);
+		ImGui::TextUnformatted(version_text.c_str());
+
+		const float indent = LayoutScale(12.0f);
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + indent);
 		ImGui::TextWrapped("%s", FSUI_CSTR(
 									 "PCSX2 is a free and open-source PlayStation 2 (PS2) emulator. Its purpose is to emulate the PS2's hardware, using a "
@@ -3466,10 +3474,6 @@ void FullscreenUI::DrawAboutWindow()
 		}
 
 		EndMenuButtons();
-
-		const float alignment = image_size.x + image_size.y;
-		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + alignment);
-		ImGui::TextWrapped(FSUI_CSTR("Version: %s"), BuildVersion::GitRev);
 
 		ImGui::EndPopup();
 	}
