@@ -191,14 +191,21 @@ GSMTLDevice::GSMTLDevice(MRCOwned<id<MTLDevice>> dev)
 	else
 		features.slow_color_compression = [[dev name] containsString:@"AMD"] || [[dev name] isEqualToString:@"Intel HD Graphics 4000"];
 
-	features.max_texsize = 8192;
-	if ([dev supportsFeatureSet:MTLFeatureSet_macOS_GPUFamily1_v1])
-		features.max_texsize = 16384;
-	if (@available(macOS 10.15, iOS 13.0, *))
-		if ([dev supportsFamily:MTLGPUFamilyApple3])
-			features.max_texsize = 16384;
+	features.max_texsize = GetMaxTextureSize(dev);
 
 	this->dev = std::move(dev);
+}
+
+u32 GSMTLDevice::GetMaxTextureSize(id<MTLDevice> dev)
+{
+	if (@available(macOS 10.15, iOS 13.0, *))
+	{
+		if ([dev supportsFamily:MTLGPUFamilyApple3])
+			return 16384;
+	}
+	if ([dev supportsFeatureSet:MTLFeatureSet_macOS_GPUFamily1_v1])
+		return 16384;
+	return 8192;
 }
 
 const char* to_string(GSMTLDevice::MetalVersion ver)

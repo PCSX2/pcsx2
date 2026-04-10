@@ -42,6 +42,8 @@ struct GSMTLDevice
 	GSMTLDevice() = default;
 	explicit GSMTLDevice(MRCOwned<id<MTLDevice>> dev);
 
+	static u32 GetMaxTextureSize(id<MTLDevice> dev);
+
 	bool IsOk() const { return dev && shaders; }
 	void Reset()
 	{
