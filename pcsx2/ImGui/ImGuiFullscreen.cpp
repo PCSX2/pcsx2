@@ -1187,7 +1187,7 @@ void ImGuiFullscreen::GetMenuButtonFrameBounds(float height, ImVec2* pos, ImVec2
 {
 	ImGuiWindow* window = ImGui::GetCurrentWindow();
 	*pos = window->DC.CursorPos;
-	*size = ImVec2(window->WorkRect.GetWidth(), LayoutScale(height) + ImGui::GetStyle().FramePadding.y * 2.0f);
+	*size = ImVec2(ImGui::GetContentRegionAvail().x, LayoutScale(height) + ImGui::GetStyle().FramePadding.y * 2.0f);
 }
 
 void ImGuiFullscreen::DrawMenuButtonFrame(const ImVec2& p_min, const ImVec2& p_max, ImU32 fill_col,
@@ -1431,9 +1431,24 @@ bool ImGuiFullscreen::ActiveButtonWithRightText(const char* title, const char* r
 
 bool ImGuiFullscreen::MenuButton(const char* title, const char* summary, bool enabled, float height, std::pair<ImFont*, float> font, std::pair<ImFont*, float> summary_font)
 {
+	float dynamic_height = height;
+	float avail_summary_width = 0.0f;
+	const float frame_width = ImGui::GetContentRegionAvail().x;
+	if (summary && summary[0])
+	{
+		avail_summary_width = frame_width - ImGui::GetStyle().FramePadding.x * 2.0f;
+		if (avail_summary_width > 0.0f)
+		{
+			const float wrapped_summary_height =
+				summary_font.first->CalcTextSizeA(summary_font.second, FLT_MAX, avail_summary_width, summary).y;
+			const float content_height_px = GetLineHeight(font) + LayoutScale(4.0f) + wrapped_summary_height;
+			dynamic_height = std::max(height, LayoutUnscale(content_height_px));
+		}
+	}
+
 	ImRect bb;
 	bool visible, hovered;
-	bool pressed = MenuButtonFrame(title, enabled, height, &visible, &hovered, &bb);
+	bool pressed = MenuButtonFrame(title, enabled, dynamic_height, &visible, &hovered, &bb);
 	if (!visible)
 		return false;
 
@@ -1452,7 +1467,13 @@ bool ImGuiFullscreen::MenuButton(const char* title, const char* summary, bool en
 	{
 		ImGui::PushFont(summary_font.first, summary_font.second);
 		ImGui::PushStyleColor(ImGuiCol_Text, MulAlpha(ImGui::GetStyleColorVec4(ImGuiCol_Text), 0.60f));
-		RenderTextClippedWithShadow(summary_bb.Min, summary_bb.Max, summary, nullptr, nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
+		if (avail_summary_width > 0.0f)
+		{
+			ImDrawList* dl = ImGui::GetWindowDrawList();
+			const ImVec4 summary_clip(summary_bb.Min.x, summary_bb.Min.y, summary_bb.Max.x, summary_bb.Max.y);
+			AddTextWithShadow(dl, summary_font, summary_bb.Min, ImGui::GetColorU32(ImGuiCol_Text),
+				summary, nullptr, avail_summary_width, &summary_clip);
+		}
 		ImGui::PopStyleColor();
 		ImGui::PopFont();
 	}
@@ -1623,15 +1644,34 @@ bool ImGuiFullscreen::FloatingButton(const char* text, float x, float y, float w
 bool ImGuiFullscreen::ToggleButton(
 	const char* title, const char* summary, bool* v, bool enabled, float height, std::pair<ImFont*, float> font, std::pair<ImFont*, float> summary_font)
 {
+	const float toggle_width = LayoutScale(50.0f);
+	const float toggle_height = LayoutScale(25.0f);
+	const float toggle_gap = LayoutScale(8.0f);
+
+	float dynamic_height = height;
+	float avail_summary_width = 0.0f;
+	const float frame_width = ImGui::GetContentRegionAvail().x;
+	if (summary && summary[0])
+	{
+		avail_summary_width = frame_width - ImGui::GetStyle().FramePadding.x * 2.0f - toggle_width - toggle_gap;
+		if (avail_summary_width > 0.0f)
+		{
+			const float wrapped_summary_height =
+				summary_font.first->CalcTextSizeA(summary_font.second, FLT_MAX, avail_summary_width, summary).y;
+			const float content_height_px = GetLineHeight(font) + LayoutScale(4.0f) + wrapped_summary_height;
+			dynamic_height = std::max(height, LayoutUnscale(content_height_px));
+		}
+	}
+
 	ImRect bb;
 	bool visible, hovered;
-	bool pressed = MenuButtonFrame(title, enabled, height, &visible, &hovered, &bb, ImGuiButtonFlags_PressedOnClick);
+	bool pressed = MenuButtonFrame(title, enabled, dynamic_height, &visible, &hovered, &bb, ImGuiButtonFlags_PressedOnClick);
 	if (!visible)
 		return false;
 
 	const float midpoint = bb.Min.y + GetLineHeight(font) + LayoutScale(4.0f);
 	const ImRect title_bb(bb.Min, ImVec2(bb.Max.x, midpoint));
-	const ImRect summary_bb(ImVec2(bb.Min.x, midpoint), bb.Max);
+	const ImRect summary_bb(ImVec2(bb.Min.x, midpoint), ImVec2(bb.Max.x - toggle_width - toggle_gap, bb.Max.y));
 
 	if (!enabled)
 		ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetColorU32(ImGuiCol_TextDisabled));
@@ -1644,7 +1684,13 @@ bool ImGuiFullscreen::ToggleButton(
 	{
 		ImGui::PushFont(summary_font.first, summary_font.second);
 		ImGui::PushStyleColor(ImGuiCol_Text, MulAlpha(ImGui::GetStyleColorVec4(ImGuiCol_Text), 0.60f));
-		RenderTextClippedWithShadow(summary_bb.Min, summary_bb.Max, summary, nullptr, nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
+		if (avail_summary_width > 0.0f)
+		{
+			ImDrawList* dl = ImGui::GetWindowDrawList();
+			const ImVec4 summary_clip(summary_bb.Min.x, summary_bb.Min.y, summary_bb.Max.x, summary_bb.Max.y);
+			AddTextWithShadow(dl, summary_font, summary_bb.Min, ImGui::GetColorU32(ImGuiCol_Text),
+				summary, nullptr, avail_summary_width, &summary_clip);
+		}
 		ImGui::PopStyleColor();
 		ImGui::PopFont();
 	}
@@ -1652,10 +1698,8 @@ bool ImGuiFullscreen::ToggleButton(
 	if (!enabled)
 		ImGui::PopStyleColor();
 
-	const float toggle_width = LayoutScale(50.0f);
-	const float toggle_height = LayoutScale(25.0f);
-	const float toggle_y = (LayoutScale(height) - toggle_height) * 0.5f;
 	const float toggle_radius = toggle_height * 0.5f;
+	const float toggle_y = (bb.Max.y - bb.Min.y - toggle_height) * 0.5f;
 	const ImVec2 toggle_pos(bb.Max.x - toggle_width, bb.Min.y + toggle_y);
 
 	if (pressed)
@@ -1695,15 +1739,34 @@ bool ImGuiFullscreen::ToggleButton(
 bool ImGuiFullscreen::ThreeWayToggleButton(
 	const char* title, const char* summary, std::optional<bool>* v, bool enabled, float height, std::pair<ImFont*, float> font, std::pair<ImFont*, float> summary_font)
 {
+	const float toggle_width = LayoutScale(50.0f);
+	const float toggle_height = LayoutScale(25.0f);
+	const float toggle_gap = LayoutScale(8.0f);
+
+	float dynamic_height = height;
+	float avail_summary_width = 0.0f;
+	const float frame_width = ImGui::GetContentRegionAvail().x;
+	if (summary && summary[0])
+	{
+		avail_summary_width = frame_width - ImGui::GetStyle().FramePadding.x * 2.0f - toggle_width - toggle_gap;
+		if (avail_summary_width > 0.0f)
+		{
+			const float wrapped_summary_height =
+				summary_font.first->CalcTextSizeA(summary_font.second, FLT_MAX, avail_summary_width, summary).y;
+			const float content_height_px = GetLineHeight(font) + LayoutScale(4.0f) + wrapped_summary_height;
+			dynamic_height = std::max(height, LayoutUnscale(content_height_px));
+		}
+	}
+
 	ImRect bb;
 	bool visible, hovered;
-	bool pressed = MenuButtonFrame(title, enabled, height, &visible, &hovered, &bb, ImGuiButtonFlags_PressedOnClick);
+	bool pressed = MenuButtonFrame(title, enabled, dynamic_height, &visible, &hovered, &bb, ImGuiButtonFlags_PressedOnClick);
 	if (!visible)
 		return false;
 
 	const float midpoint = bb.Min.y + GetLineHeight(font) + LayoutScale(4.0f);
 	const ImRect title_bb(bb.Min, ImVec2(bb.Max.x, midpoint));
-	const ImRect summary_bb(ImVec2(bb.Min.x, midpoint), bb.Max);
+	const ImRect summary_bb(ImVec2(bb.Min.x, midpoint), ImVec2(bb.Max.x - toggle_width - toggle_gap, bb.Max.y));
 
 	if (!enabled)
 		ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetColorU32(ImGuiCol_TextDisabled));
@@ -1716,7 +1779,13 @@ bool ImGuiFullscreen::ThreeWayToggleButton(
 	{
 		ImGui::PushFont(summary_font.first, summary_font.second);
 		ImGui::PushStyleColor(ImGuiCol_Text, MulAlpha(ImGui::GetStyleColorVec4(ImGuiCol_Text), 0.60f));
-		RenderTextClippedWithShadow(summary_bb.Min, summary_bb.Max, summary, nullptr, nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
+		if (avail_summary_width > 0.0f)
+		{
+			ImDrawList* dl = ImGui::GetWindowDrawList();
+			const ImVec4 summary_clip(summary_bb.Min.x, summary_bb.Min.y, summary_bb.Max.x, summary_bb.Max.y);
+			AddTextWithShadow(dl, summary_font, summary_bb.Min, ImGui::GetColorU32(ImGuiCol_Text),
+				summary, nullptr, avail_summary_width, &summary_clip);
+		}
 		ImGui::PopStyleColor();
 		ImGui::PopFont();
 	}
@@ -1724,10 +1793,8 @@ bool ImGuiFullscreen::ThreeWayToggleButton(
 	if (!enabled)
 		ImGui::PopStyleColor();
 
-	const float toggle_width = LayoutScale(50.0f);
-	const float toggle_height = LayoutScale(25.0f);
-	const float toggle_y = (LayoutScale(height) - toggle_height) * 0.5f;
 	const float toggle_radius = toggle_height * 0.5f;
+	const float toggle_y = (bb.Max.y - bb.Min.y - toggle_height) * 0.5f;
 	const ImVec2 toggle_pos(bb.Max.x - toggle_width, bb.Min.y + toggle_y);
 
 	if (pressed)
@@ -1773,13 +1840,27 @@ bool ImGuiFullscreen::ThreeWayToggleButton(
 bool ImGuiFullscreen::MenuButtonWithValue(
 	const char* title, const char* summary, const char* value, bool enabled, float height, std::pair<ImFont*, float> font, std::pair<ImFont*, float> summary_font)
 {
+	const ImVec2 value_size(ImGui::CalcTextSize(value));
+	float dynamic_height = height;
+	float avail_summary_width = 0.0f;
+	const float frame_width = ImGui::GetContentRegionAvail().x;
+	if (summary && summary[0])
+	{
+		avail_summary_width = frame_width - ImGui::GetStyle().FramePadding.x * 2.0f - value_size.x;
+		if (avail_summary_width > 0.0f)
+		{
+			const float wrapped_summary_height =
+				summary_font.first->CalcTextSizeA(summary_font.second, FLT_MAX, avail_summary_width, summary).y;
+			const float content_height_px = GetLineHeight(font) + LayoutScale(4.0f) + wrapped_summary_height;
+			dynamic_height = std::max(height, LayoutUnscale(content_height_px));
+		}
+	}
+
 	ImRect bb;
 	bool visible, hovered;
-	bool pressed = MenuButtonFrame(title, enabled, height, &visible, &hovered, &bb);
+	bool pressed = MenuButtonFrame(title, enabled, dynamic_height, &visible, &hovered, &bb);
 	if (!visible)
 		return false;
-
-	const ImVec2 value_size(ImGui::CalcTextSize(value));
 
 	const float midpoint = bb.Min.y + GetLineHeight(font) + LayoutScale(4.0f);
 	const float text_end = bb.Max.x - value_size.x;
@@ -1798,7 +1879,13 @@ bool ImGuiFullscreen::MenuButtonWithValue(
 	{
 		ImGui::PushFont(summary_font.first, summary_font.second);
 		ImGui::PushStyleColor(ImGuiCol_Text, MulAlpha(ImGui::GetStyleColorVec4(ImGuiCol_Text), 0.60f));
-		RenderTextClippedWithShadow(summary_bb.Min, summary_bb.Max, summary, nullptr, nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
+		if (avail_summary_width > 0.0f)
+		{
+			ImDrawList* dl = ImGui::GetWindowDrawList();
+			const ImVec4 summary_clip(summary_bb.Min.x, summary_bb.Min.y, summary_bb.Max.x, summary_bb.Max.y);
+			AddTextWithShadow(dl, summary_font, summary_bb.Min, ImGui::GetColorU32(ImGuiCol_Text),
+				summary, nullptr, avail_summary_width, &summary_clip);
+		}
 		ImGui::PopStyleColor();
 		ImGui::PopFont();
 	}
