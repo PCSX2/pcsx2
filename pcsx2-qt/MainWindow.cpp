@@ -49,6 +49,7 @@
 
 #include <QtCore/QDateTime>
 #include <QtCore/QDir>
+#include <QtCore/QFileInfo>
 #include <QtGui/QCloseEvent>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QInputDialog>
@@ -1687,11 +1688,37 @@ void MainWindow::onRemoveDiscActionTriggered()
 
 void MainWindow::onChangeDiscMenuAboutToShow()
 {
-	// TODO: This is where we would populate the playlist if there is one.
+	const std::vector<std::string>& playlist = VMManager::GetM3UPlaylistEntries();
+	if (playlist.empty())
+		return;
+
+	m_change_disc_playlist_actions.clear();
+	m_change_disc_playlist_actions.append(m_ui.menuChangeDisc->addSeparator());
+
+	const int active_index = VMManager::GetM3UPlaylistCurrentIndex();
+	for (int i = 0; i < static_cast<int>(playlist.size()); ++i)
+	{
+		const QString label = tr("%1: %2").arg(i + 1).arg(QFileInfo(QString::fromStdString(playlist[i])).fileName());
+		QAction* action = m_ui.menuChangeDisc->addAction(label);
+		action->setCheckable(true);
+		action->setChecked(i == active_index);
+		action->setToolTip(QString::fromStdString(playlist[i]));
+		const std::string target_path = playlist[i];
+		connect(action, &QAction::triggered, this, [target_path]() {
+			g_emu_thread->changeDisc(CDVD_SourceType::Iso, QString::fromStdString(target_path));
+		});
+		m_change_disc_playlist_actions.append(action);
+	}
 }
 
 void MainWindow::onChangeDiscMenuAboutToHide()
 {
+	for (QAction* action : m_change_disc_playlist_actions)
+	{
+		m_ui.menuChangeDisc->removeAction(action);
+		action->deleteLater();
+	}
+	m_change_disc_playlist_actions.clear();
 }
 
 void MainWindow::onLoadStateMenuAboutToShow()
