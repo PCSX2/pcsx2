@@ -41,6 +41,9 @@ namespace ImGuiFullscreen
 	static constexpr float LAYOUT_HORIZONTAL_MENU_HEIGHT = 320.0f;
 	static constexpr float LAYOUT_HORIZONTAL_MENU_PADDING = 30.0f;
 	static constexpr float LAYOUT_HORIZONTAL_MENU_ITEM_WIDTH = 250.0f;
+	static constexpr float LAYOUT_WINDOW_ROUNDING = 8.0f;
+	static constexpr float LAYOUT_FRAME_ROUNDING = 6.0f;
+	static constexpr float LAYOUT_SCROLLBAR_ROUNDING = 5.0f;
 
 	extern std::pair<ImFont*, float> g_standard_font;
 	extern std::pair<ImFont*, float> g_medium_font;
