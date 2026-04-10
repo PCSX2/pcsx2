@@ -202,7 +202,7 @@ namespace ImGuiFullscreen
 	void EndMenuButtons();
 	void GetMenuButtonFrameBounds(float height, ImVec2* pos, ImVec2* size);
 	bool MenuButtonFrame(const char* str_id, bool enabled, float height, bool* visible, bool* hovered, ImVec2* min, ImVec2* max,
-		ImGuiButtonFlags flags = 0, float hover_alpha = 1.0f);
+		ImGuiButtonFlags flags = 0, float hover_alpha = 0.7f);
 	void DrawMenuButtonFrame(const ImVec2& p_min, const ImVec2& p_max, ImU32 fill_col, bool border = true, float rounding = 0.0f);
 	void ResetMenuButtonFrame();
 	void MenuHeading(const char* title, bool draw_line = true);
