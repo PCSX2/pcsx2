@@ -1248,6 +1248,42 @@ bool VMManager::HasBootedELF()
 	return s_current_crc != 0 && s_elf_executed;
 }
 
+static std::string s_current_m3u_playlist_source;
+static std::vector<std::string> s_current_m3u_playlist_entries;
+static int s_current_m3u_playlist_index = -1;
+static std::mutex s_m3u_playlist_mutex;
+
+static void ClearM3UPlaylist()
+{
+	std::lock_guard<std::mutex> lock(s_m3u_playlist_mutex);
+	s_current_m3u_playlist_source.clear();
+	s_current_m3u_playlist_entries.clear();
+	s_current_m3u_playlist_index = -1;
+}
+
+static void SetM3UPlaylist(const std::string& m3u_path, std::vector<std::string> entries, int current_index)
+{
+	std::lock_guard<std::mutex> lock(s_m3u_playlist_mutex);
+	s_current_m3u_playlist_source = m3u_path;
+	s_current_m3u_playlist_entries = std::move(entries);
+	s_current_m3u_playlist_index = current_index;
+}
+
+static int UpdateM3UPlaylistCurrentIndex(const std::string& current_disc_path)
+{
+	std::lock_guard<std::mutex> lock(s_m3u_playlist_mutex);
+	s_current_m3u_playlist_index = -1;
+	for (size_t i = 0; i < s_current_m3u_playlist_entries.size(); ++i)
+	{
+		if (s_current_m3u_playlist_entries[i] == current_disc_path)
+		{
+			s_current_m3u_playlist_index = static_cast<int>(i);
+			return static_cast<int>(i);
+		}
+	}
+	return -1;
+}
+
 static std::vector<std::string> ParseM3UPlaylist(const std::string& m3u_path)
 {
 	std::vector<std::string> disc_paths;
@@ -1285,6 +1321,7 @@ static std::vector<std::string> ParseM3UPlaylist(const std::string& m3u_path)
 
 bool VMManager::AutoDetectSource(const std::string& filename, Error* error)
 {
+	ClearM3UPlaylist();
 	if (!filename.empty())
 	{
 		if (!FileSystem::FileExists(filename.c_str()))
@@ -1292,7 +1329,7 @@ bool VMManager::AutoDetectSource(const std::string& filename, Error* error)
 			Error::SetStringFmt(error, TRANSLATE_FS("VMManager", "Requested filename '{}' does not exist."), filename);
 			return false;
 		}
-
+		
 		if (IsGSDumpFileName(filename))
 		{
 			CDVDsys_ChangeSource(CDVD_SourceType::NoDisc);
@@ -1325,7 +1362,7 @@ bool VMManager::AutoDetectSource(const std::string& filename, Error* error)
 				return false;
 			}
 
-			// For now, just load the first disc
+			SetM3UPlaylist(filename, disc_paths, 0);
 			CDVDsys_SetFile(CDVD_SourceType::Iso, disc_paths[0]);
 			CDVDsys_ChangeSource(CDVD_SourceType::Iso);
 			return true;
@@ -2399,6 +2436,27 @@ bool VMManager::ChangeDisc(CDVD_SourceType source, std::string path)
 	const CDVD_SourceType old_type = CDVDsys_GetSourceType();
 	const std::string old_path(CDVDsys_GetFile(old_type));
 
+	if (source == CDVD_SourceType::Iso && IsM3UFileName(path))
+	{
+		const std::vector<std::string> disc_paths = ParseM3UPlaylist(path);
+		if (disc_paths.empty())
+		{
+			return false;
+		}
+
+		SetM3UPlaylist(path, disc_paths, 0);
+		path = disc_paths[0];
+	}
+	else if (source != CDVD_SourceType::Iso)
+	{
+		ClearM3UPlaylist();
+	}
+	else if (!path.empty())
+	{
+		if (UpdateM3UPlaylistCurrentIndex(path) < 0)
+			ClearM3UPlaylist();
+	}
+
 	CDVDsys_ChangeSource(source);
 	if (!path.empty())
 		CDVDsys_SetFile(source, path);
@@ -2451,6 +2509,18 @@ bool VMManager::ChangeDisc(CDVD_SourceType source, std::string path)
 	cdvd.Tray.trayState = CDVD_DISC_OPEN;
 	UpdateDiscDetails(false);
 	return result;
+}
+
+std::vector<std::string> VMManager::GetM3UPlaylistEntries()
+{
+	std::lock_guard<std::mutex> lock(s_m3u_playlist_mutex);
+	return s_current_m3u_playlist_entries;
+}
+
+int VMManager::GetM3UPlaylistCurrentIndex()
+{
+	std::lock_guard<std::mutex> lock(s_m3u_playlist_mutex);
+	return s_current_m3u_playlist_index;
 }
 
 bool VMManager::SetELFOverride(std::string path)
