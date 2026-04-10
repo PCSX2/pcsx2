@@ -35,14 +35,7 @@ std::vector<GSAdapterInfo> GetMetalAdapterList()
 	{
 		GSAdapterInfo ai;
 		ai.name = [[dev name] UTF8String];
-		
-		ai.max_texture_size = 8192;
-		if ([dev supportsFeatureSet:MTLFeatureSet_macOS_GPUFamily1_v1])
-			ai.max_texture_size = 16384;
-		if (@available(macOS 10.15, iOS 13.0, *))
-			if ([dev supportsFamily:MTLGPUFamilyApple3])
-				ai.max_texture_size = 16384;
-
+		ai.max_texture_size = GSMTLDevice::GetMaxTextureSize(dev);
 		ai.max_upscale_multiplier = GSGetMaxUpscaleMultiplier(ai.max_texture_size);
 		list.push_back(std::move(ai));
 	}
