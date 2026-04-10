@@ -3933,6 +3933,8 @@ GSTextureCache::Target* GSTextureCache::LookupDisplayTarget(GIFRegTEX0 TEX0, con
 	// Didn't find a target, check if the frame was uploaded.
 
 	bool can_create = is_feedback;
+	bool exact_match = false;
+	u32 exact_match_psm = 0;
 	GSVector2i new_size = size;
 
 	if (!is_feedback && GSRendererHW::GetInstance()->m_draw_transfers.size() > 0)
@@ -3970,6 +3972,8 @@ GSTextureCache::Target* GSTextureCache::LookupDisplayTarget(GIFRegTEX0 TEX0, con
 
 				if (iter->blit.DBP == TEX0.TBP0 && transfer_end == rect_end)
 				{
+					exact_match = true;
+					exact_match_psm = iter->blit.DPSM;
 					iter = std::vector<GSState::GSUploadQueue>::reverse_iterator(GSRendererHW::GetInstance()->m_draw_transfers.erase(iter.base() - 1));
 				}
 				// Double buffers, usually FMV's, if checking for the upper buffer, creating another target could mess things up.
@@ -4001,7 +4005,32 @@ GSTextureCache::Target* GSTextureCache::LookupDisplayTarget(GIFRegTEX0 TEX0, con
 		}
 	}
 
-	return can_create ? CreateTarget(TEX0, new_size, new_size, scale, RenderTarget, true, 0, true) : nullptr;
+	if (can_create)
+	{
+		Target* tgt = CreateTarget(TEX0, new_size, new_size, scale, RenderTarget, true, 0, true);
+		if (tgt && exact_match)
+		{
+			// Exact match, so it's likely that the game uploaded the whole frame to memory.
+			// Since we will be loading this from memory, flag the data as valid.
+			// Needed in case the game draws on top of the frame (e.g. for a pause screen) to prevent
+			// the loaded data from being nuked because it's assumed to be invalid.
+			const u32 channel_mask = GSUtil::GetChannelMask(exact_match_psm);
+			if (channel_mask & 7)
+			{
+				tgt->m_valid_rgb = true;
+			}
+			if (channel_mask & 8)
+			{
+				tgt->m_valid_alpha_low = true;
+				tgt->m_valid_alpha_high = true;
+			}
+		}
+		return tgt;
+	}
+	else
+	{
+		return nullptr;
+	}
 }
 
 void GSTextureCache::Target::ScaleRTAlpha()
