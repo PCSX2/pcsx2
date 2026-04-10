@@ -340,8 +340,9 @@ void FullscreenUI::DrawInputBindingButton(
 			if (ImGuiFullscreen::IsGamepadInputSource())
 			{
 				const bool swapNorthWest = ImGuiManager::IsGamepadNorthWestSwapped();
+				const auto glyphs = GetGamepadGlyphs();
 				ImGuiFullscreen::QueueFooterHint(std::array{
-					std::make_pair(swapNorthWest ? ICON_PF_BUTTON_TRIANGLE : ICON_PF_BUTTON_SQUARE, FSUI_VSTR("Clear Binding")),
+					std::make_pair(swapNorthWest ? glyphs.north : glyphs.west, FSUI_VSTR("Clear Binding")),
 				});
 			}
 			else
@@ -2014,11 +2015,12 @@ void FullscreenUI::DrawSettingsWindow()
 	if (IsGamepadInputSource())
 	{
 		const bool circleOK = ImGui::GetIO().ConfigNavSwapGamepadButtons;
+		const auto glyphs = GetGamepadGlyphs();
 		SetFullscreenFooterText(std::array{
-			std::make_pair(ICON_PF_DPAD_LEFT_RIGHT, FSUI_VSTR("Change Page")),
-			std::make_pair(ICON_PF_DPAD_UP_DOWN, FSUI_VSTR("Navigate")),
-			std::make_pair(circleOK ? ICON_PF_BUTTON_CIRCLE : ICON_PF_BUTTON_CROSS, FSUI_VSTR("Select")),
-			std::make_pair(circleOK ? ICON_PF_BUTTON_CROSS : ICON_PF_BUTTON_CIRCLE, FSUI_VSTR("Back")),
+			std::make_pair(glyphs.dpad_lr, FSUI_VSTR("Change Page")),
+			std::make_pair(glyphs.dpad_ud, FSUI_VSTR("Navigate")),
+			std::make_pair(glyphs.confirm(circleOK), FSUI_VSTR("Select")),
+			std::make_pair(glyphs.cancel(circleOK), FSUI_VSTR("Back")),
 		});
 	}
 	else
@@ -2282,6 +2284,51 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_BOX_ARCHIVE, "Create Save State Backups"),
 		FSUI_CSTR("Creates a backup copy of a save state if it already exists when the save is created. The backup copy has a .backup suffix"),
 		"EmuCore", "BackupSavestate", true);
+	const SmallString glyph_mode = bsi->GetSmallStringValue("UI", "FullscreenUIGlyphStyle", "auto");
+	static constexpr const char* glyph_names[] = {
+		FSUI_NSTR("Automatic"),
+		FSUI_NSTR("Xbox"),
+		FSUI_NSTR("PlayStation"),
+		FSUI_NSTR("Nintendo"),
+	};
+	static constexpr const char* glyph_values[] = {
+		"auto",
+		"xbox",
+		"playstation",
+		"nintendo",
+	};
+	size_t glyph_index = std::size(glyph_values);
+	for (size_t i = 0; i < std::size(glyph_values); i++)
+	{
+		if (glyph_mode == glyph_values[i])
+		{
+			glyph_index = i;
+			break;
+		}
+	}
+	if (MenuButtonWithValue(FSUI_ICONSTR(ICON_FA_GAMEPAD, "Controller Glyph Style"),
+			FSUI_CSTR("Changes which gamepad button glyph set is used in Big Picture UI and input binding displays."),
+			(glyph_index < std::size(glyph_values)) ? FSUI_CSTR(glyph_names[glyph_index]) : FSUI_CSTR("Unknown")))
+	{
+		ImGuiFullscreen::ChoiceDialogOptions cd_options;
+		cd_options.reserve(std::size(glyph_values));
+		for (size_t i = 0; i < std::size(glyph_values); i++)
+			cd_options.emplace_back(FSUI_STR(glyph_names[i]), i == static_cast<size_t>(glyph_index));
+
+		OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_GAMEPAD, "Controller Glyph Style"), false, std::move(cd_options), [](s32 index, const std::string& title, bool checked) {
+			if (index >= 0 && static_cast<size_t>(index) < std::size(glyph_values))
+			{
+				auto lock = Host::GetSettingsLock();
+				SettingsInterface* bsi = GetEditingSettingsInterface(false);
+				bsi->SetStringValue("UI", "FullscreenUIGlyphStyle", glyph_values[index]);
+				SetSettingsChanged(bsi);
+				ApplyLayoutSettings(bsi);
+			}
+
+			CloseChoiceDialog();
+		});
+	}
+
 	// DrawStringListSetting dosn't have a callback for applying settings
 	const SmallString swap_mode = bsi->GetSmallStringValue("UI", "SwapOKFullscreenUI", "auto");
 	static constexpr const char* swap_names[] = {
@@ -2305,9 +2352,11 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 	}
 
 	SmallStackString<256> swap_summery;
-	swap_summery.format(FSUI_FSTR("Uses {} as confirm when using a controller."), ICON_PF_BUTTON_CIRCLE);
+	const auto glyphs = GetGamepadGlyphs();
+	swap_summery.format(FSUI_FSTR("Uses {} as confirm when using a controller."),
+		glyphs.confirm(ImGui::GetIO().ConfigNavSwapGamepadButtons));
 	if (MenuButtonWithValue(FSUI_ICONSTR(ICON_FA_GAMEPAD, "Swap OK/Cancel in Big Picture Mode"), swap_summery.c_str(),
-			(swap_index < std::size(swap_values)) ? Host::TranslateToCString(TR_CONTEXT, swap_names[swap_index]) : FSUI_CSTR("Unknown")))
+			(swap_index < std::size(swap_values)) ? FSUI_CSTR(swap_names[swap_index]) : FSUI_CSTR("Unknown")))
 	{
 		ImGuiFullscreen::ChoiceDialogOptions cd_options;
 		cd_options.reserve(std::size(swap_values));
@@ -2338,9 +2387,10 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 			break;
 		}
 	}
-	swap_summery.format(FSUI_FSTR("Swaps both {}/{} (When Swap OK/Cancel is set to automatic) and {}/{} buttons"), ICON_PF_BUTTON_CROSS, ICON_PF_BUTTON_CIRCLE, ICON_PF_BUTTON_SQUARE, ICON_PF_BUTTON_TRIANGLE);
+	swap_summery.format(FSUI_FSTR("Swaps both {}/{} (When Swap OK/Cancel is set to automatic) and {}/{} buttons"),
+		glyphs.south, glyphs.east, glyphs.west, glyphs.north);
 	if (MenuButtonWithValue(FSUI_ICONSTR(ICON_FA_GAMEPAD, "Use Legacy Nintendo Layout in Big Picture Mode"), swap_summery.c_str(),
-			(nintendo_index < std::size(swap_values)) ? Host::TranslateToCString(TR_CONTEXT, swap_names[nintendo_index]) : FSUI_CSTR("Unknown")))
+			(nintendo_index < std::size(swap_values)) ? FSUI_CSTR(swap_names[nintendo_index]) : FSUI_CSTR("Unknown")))
 	{
 		ImGuiFullscreen::ChoiceDialogOptions cd_options;
 		cd_options.reserve(std::size(swap_values));

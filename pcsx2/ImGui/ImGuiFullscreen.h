@@ -168,6 +168,22 @@ namespace ImGuiFullscreen
 	bool IsGamepadInputSource();
 	void ReportGamepadLayout(InputLayout layout);
 	InputLayout GetGamepadLayout();
+	struct GamepadGlyphs
+	{
+		const char* south;
+		const char* east;
+		const char* west;
+		const char* north;
+		const char* dpad;
+		const char* dpad_lr;
+		const char* dpad_ud;
+		const char* select;
+		const char* start;
+
+		const char* confirm(bool circleOK) const { return circleOK ? east : south; }
+		const char* cancel(bool circleOK) const { return circleOK ? south : east; }
+	};
+	GamepadGlyphs GetGamepadGlyphs();
 	void CreateFooterTextString(SmallStringBase& dest, std::span<const std::pair<const char*, std::string_view>> items);
 	void SetFullscreenFooterText(std::string_view text);
 	void SetFullscreenFooterText(std::span<const std::pair<const char*, std::string_view>> items);
