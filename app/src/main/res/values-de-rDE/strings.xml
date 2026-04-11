@@ -295,6 +295,12 @@ Später über Einstellungen → ARMSX2-Verzeichnis öffnen.</string>
     <string name="settings_achievements_hardcore_label">Hardcore-Modus aktivieren</string>
     <string name="settings_achievements_hardcore_inactive">Hardcore-Modus ist für die aktuelle Sitzung vorübergehend deaktiviert.</string>
     <string name="settings_achievements_token_invalid">Deine Sitzung ist abgelaufen. Melde dich erneut an, um weiterhin Achiements zu verdienen.</string>
+    <string name="settings_ntsc_framerate_default">NTSC Framerate: 59.94</string>
+    <string name="settings_ntsc_framerate_value">NTSC Framerate: %1$.2f</string>
+    <string name="settings_pal_framerate_default">PAL Framerate: 50.00</string>
+    <string name="settings_pal_framerate_value">PAL Framerate: %1$.2f</string>
+    <string name="settings_framerate_reset">Reset Framerates to Default</string>
+    <string name="settings_framerate_control_title">Framerate Control</string>
     <string name="cover_template_dialog_title">Cover Quelle</string>
     <string name="cover_template_dialog_hint">https://…/${serial}.jpg</string>
     <string name="cover_template_dialog_description">Benutze ${serial}, ${title} oder ${filetitle} um jedes Spiel zu erreichen.</string>
