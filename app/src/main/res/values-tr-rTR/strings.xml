@@ -295,6 +295,12 @@ Daha sonra Ayarlar → ARMSX2 dizinini aç seçeneğinden açabilirsiniz.</strin
     <string name="settings_achievements_hardcore_label">Zorlu Modu Etkinleştir</string>
     <string name="settings_achievements_hardcore_inactive">Zorlu mod, mevcut oturum için geçici olarak devre dışı bırakılmıştır.</string>
     <string name="settings_achievements_token_invalid">Oturumunuzun süresi doldu. Başarımlar kazanmaya devam etmek için tekrar oturum açın.</string>
+    <string name="settings_ntsc_framerate_default">NTSC Framerate: 59.94</string>
+    <string name="settings_ntsc_framerate_value">NTSC Framerate: %1$.2f</string>
+    <string name="settings_pal_framerate_default">PAL Framerate: 50.00</string>
+    <string name="settings_pal_framerate_value">PAL Framerate: %1$.2f</string>
+    <string name="settings_framerate_reset">Reset Framerates to Default</string>
+    <string name="settings_framerate_control_title">Framerate Control</string>
     <string name="cover_template_dialog_title">Kapak Kaynağı</string>
     <string name="cover_template_dialog_hint">https://…/${serial}.jpg</string>
     <string name="cover_template_dialog_description">Her oyunu hedeflemek için ${serial}, ${title} veya ${filetitle} ifadelerini kullanın.</string>
