@@ -297,6 +297,12 @@ Concedi l\'autorizzazione \"Accesso a tutti i file\" nelle impostazioni di siste
     <string name="settings_achievements_hardcore_label">Abilita Modalità Estrema</string>
     <string name="settings_achievements_hardcore_inactive">La modalità hardcore è temporaneamente disabilitata per la sessione corrente.</string>
     <string name="settings_achievements_token_invalid">La tua sessione è scaduta. Accedi di nuovo per continuare ad ottenere gli obbiettivi.</string>
+    <string name="settings_ntsc_framerate_default">NTSC Framerate: 59.94</string>
+    <string name="settings_ntsc_framerate_value">NTSC Framerate: %1$.2f</string>
+    <string name="settings_pal_framerate_default">PAL Framerate: 50.00</string>
+    <string name="settings_pal_framerate_value">PAL Framerate: %1$.2f</string>
+    <string name="settings_framerate_reset">Reset Framerates to Default</string>
+    <string name="settings_framerate_control_title">Framerate Control</string>
     <string name="cover_template_dialog_title">Sorgente della Copertina</string>
     <string name="cover_template_dialog_hint">https://…/${serial}.jpg</string>
     <string name="cover_template_dialog_description">Usa ${serial}, ${title}o ${filetitle} per ogni partita.</string>
