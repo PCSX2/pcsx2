@@ -861,7 +861,8 @@ void GSRendererHW::ConvertSpriteTextureShuffleImpl(GSTextureCache::Target* rt, G
 	const bool bilinear = m_vt.IsRealLinear();
 	
 	// Copy the attributes from the provoking vertex.
-	GSVertex v_default = primclass == GS_SPRITE_CLASS ? m_vertex.buff[1] : m_vertex.buff[2];
+	GSVertex v_default = primclass == GS_SPRITE_CLASS ? m_vertex.buff[m_index.buff[1]] :
+	                                                    m_vertex.buff[m_index.buff[2]];
 
 	const auto SetTexCoords = [&](float u, float v, GSVertex& vtx_out) {
 		if constexpr (fst)
@@ -882,11 +883,15 @@ void GSRendererHW::ConvertSpriteTextureShuffleImpl(GSTextureCache::Target* rt, G
 		vtx_out.XYZ.Y = xyof.y + static_cast<u32>(y * 16.0f);
 	};
 
-	const auto WriteQuad = [&](const GSVector4& xy, GSVector4 uv, GSVertex*& vout, u16*& iout) {
+	const auto WriteQuad = [&](const GSVector4i& xyi, const GSVector4i& uvi, GSVertex*& vout, u16*& iout) {
+		GSVector4 xy(xyi);
+		GSVector4 uv(uvi);
+
 		if (bilinear)
 		{
 			// Translate to texel center for bilinear.
-			uv += GSVector4(0.5f);
+			GL_INS("HW: Translate to texel center for bilinear.");
+			uv += GSVector4(0.5f) / rt->GetScale();
 		}
 
 		if constexpr (primclass == GS_SPRITE_CLASS)
@@ -982,7 +987,7 @@ void GSRendererHW::ConvertSpriteTextureShuffleImpl(GSTextureCache::Target* rt, G
 
 	GL_PUSH("HW: Converting to single quad for texture shuffle.");
 	
-	GL_INS("Before adjustment: pos={%d, %d, %d, %d}, tex={%d, %d, %d, %d}, scissor={%d, %d, %d, %d}",
+	GL_INS("HW: Before adjustment: pos={%d, %d, %d, %d}, tex={%d, %d, %d, %d}, scissor={%d, %d, %d, %d}",
 		m_r.x ,m_r.y, m_r.z, m_r.w, tex_r.x, tex_r.y, tex_r.z, tex_r.w,
 		scissor_r.x, scissor_r.y, scissor_r.z, scissor_r.w);
 
@@ -994,6 +999,7 @@ void GSRendererHW::ConvertSpriteTextureShuffleImpl(GSTextureCache::Target* rt, G
 
 	if (m_texture_shuffle.real_16_bit_source)
 	{
+		GL_INS("HW: Real 16 bit source: no tex coord change.");
 		half_u = false;
 		half_v = false;
 	}
@@ -1002,6 +1008,7 @@ void GSRendererHW::ConvertSpriteTextureShuffleImpl(GSTextureCache::Target* rt, G
 		m_texture_shuffle.type == TextureShuffleType::TwoPixel ||
 		m_texture_shuffle.type == TextureShuffleType::HackShuffle)
 	{
+		GL_INS("HW: Split shuffle/TwoPixel/HackShuffle: no pos or tex coord change.");
 		half_x = false;
 		half_y = false;
 		half_u = false;
@@ -1012,6 +1019,8 @@ void GSRendererHW::ConvertSpriteTextureShuffleImpl(GSTextureCache::Target* rt, G
 		// Currently, this shuffle is done with the NFS CRC hack.
 		// It is a split texture shuffle, but the draws are skipped with the hack instead of
 		// being combined in the usual way, so we need to adjust the draw rect here.
+		GL_INS("HW: GappedSwizzle (NFS Undercover): rewriting rects to use full area.");
+
 		half_x = false;
 		half_y = false;
 		half_u = false;
@@ -1020,12 +1029,12 @@ void GSRendererHW::ConvertSpriteTextureShuffleImpl(GSTextureCache::Target* rt, G
 		m_r = rt->GetUnscaledRect();
 		tex_r = tex->GetUnscaledRect();
 		scissor_r = m_r;
-
-		GL_INS("GappedSwizzle (NFS Undercover): rewriting rects to use full area.");
 	}
 	else if (m_texture_shuffle.type == TextureShuffleType::Swizzle ||
 	    m_texture_shuffle.type == TextureShuffleType::SwizzleTex32)
 	{
+		GL_INS("HW: Swizzle/SwizzleTex32: no tex coord change.");
+
 		if (m_cached_ctx.FRAME.FBW == rt->m_TEX0.TBW * 2)
 		{
 			half_y = false;
@@ -1044,6 +1053,7 @@ void GSRendererHW::ConvertSpriteTextureShuffleImpl(GSTextureCache::Target* rt, G
 		// No super source of truth here, since the width can get batted around, the valid is probably our best bet.
 		// Dogs will reuse the Z in a different size format for a completely unrelated draw with an FBW of 2,
 		// then go back to using it in full width.
+		GL_INS("HW: Non-recursive draw, complex case.");
 
 		const bool tex_tbw_is_wrong =
 			tex->m_target &&
@@ -1131,6 +1141,7 @@ void GSRendererHW::ConvertSpriteTextureShuffleImpl(GSTextureCache::Target* rt, G
 	else
 	{
 		// Handle recursive draws.
+		GL_INS("HW: Recursive draw, complex case.");
 
 		const GSVector2i& frame_pgs = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs;
 
@@ -1149,7 +1160,7 @@ void GSRendererHW::ConvertSpriteTextureShuffleImpl(GSTextureCache::Target* rt, G
 		}
 	}
 
-	GL_INS("Halving: X: %d, Y: %d, U: %d, V: %d", half_x, half_y, half_u, half_v);
+	GL_INS("HW: Halving: X: %d, Y: %d, U: %d, V: %d", half_x, half_y, half_u, half_v);
 
 	if (half_x)
 	{
@@ -1205,7 +1216,7 @@ void GSRendererHW::ConvertSpriteTextureShuffleImpl(GSTextureCache::Target* rt, G
 		GL_CACHE("HW: Half width/double height shuffle detected, BW changed to %d", m_cached_ctx.FRAME.FBW);
 	}
 
-	GL_INS("After adjustment: pos={%d, %d, %d, %d}, tex={%d, %d, %d, %d}, scissor={%d, %d, %d, %d}",
+	GL_INS("HW: After adjustment: pos={%d, %d, %d, %d}, tex={%d, %d, %d, %d}, scissor={%d, %d, %d, %d}",
 		m_r.x, m_r.y, m_r.z, m_r.w, tex_r.x, tex_r.y, tex_r.z, tex_r.w,
 		scissor_r.x, scissor_r.y, scissor_r.z, scissor_r.w);
 
@@ -1227,7 +1238,7 @@ void GSRendererHW::ConvertSpriteTextureShuffleImpl(GSTextureCache::Target* rt, G
 	GSVertex* vout = m_vertex.buff;
 	u16* iout = m_index.buff;
 
-	WriteQuad(GSVector4(m_r), GSVector4(tex_r), vout, iout);
+	WriteQuad(m_r, tex_r, vout, iout);
 
 	m_index.tail = iout - m_index.buff;
 	m_vertex.head = m_vertex.tail = m_vertex.next = vout - m_vertex.buff;
@@ -1267,7 +1278,8 @@ GSVector4 GSRendererHW::RealignTargetTextureCoordinate(const GSTextureCache::Sou
 {
 	if (GSConfig.UserHacks_HalfPixelOffset <= GSHalfPixelOffset::Normal ||
 		GSConfig.UserHacks_HalfPixelOffset >= GSHalfPixelOffset::Native ||
-		GetUpscaleMultiplier() == 1.0f || m_downscale_source || tex->GetScale() == 1.0f)
+		GetUpscaleMultiplier() == 1.0f || m_downscale_source || tex->GetScale() == 1.0f ||
+		m_texture_shuffle) // Do not apply HPO on texture shuffles as it already aligns the coordinates.
 	{
 		return GSVector4(0.0f);
 	}
@@ -5359,7 +5371,9 @@ void GSRendererHW::SetupIA(float target_scale, float sx, float sy, bool req_vert
 {
 	GL_PUSH("HW: IA");
 
-	if (GSConfig.UserHacks_ForceEvenSpritePosition && !m_isPackedUV_HackFlag && m_process_texture && PRIM->FST)
+	// Do not force even sprite positive for texture shuffles since the coordinates are already aligned.
+	if (GSConfig.UserHacks_ForceEvenSpritePosition && !m_isPackedUV_HackFlag && m_process_texture && PRIM->FST &&
+		!m_texture_shuffle)
 	{
 		for (u32 i = 0; i < m_vertex.next; i++)
 			m_vertex.buff[i].UV &= 0x3FEF3FEF;
@@ -5986,7 +6000,8 @@ void GSRendererHW::DetermineVSConfig(GSTextureCache::Target* rt, float rtscale, 
 	const float ox = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFX));
 	const float oy = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFY));
 
-	if ((GSConfig.UserHacks_HalfPixelOffset < GSHalfPixelOffset::Native) && rtscale > 1.0f)
+	// Do not apply HPO on texture shuffle draws, as the coordinates are already aligned.
+	if ((GSConfig.UserHacks_HalfPixelOffset < GSHalfPixelOffset::Native || m_texture_shuffle) && rtscale > 1.0f)
 	{
 		sx = 2.0f * rtscale / (rtsize.x << 4);
 		sy = 2.0f * rtscale / (rtsize.y << 4);
@@ -7520,7 +7535,8 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 
 		// Can be seen with the cabin part of the ship in God of War, offsets are required when using FST.
 		// ST uses a normalized position so doesn't need an offset here, will break Bionicle Heroes.
-		if (GSConfig.UserHacks_HalfPixelOffset == GSHalfPixelOffset::NativeWTexOffset)
+		// Do not apply HPO on texture shuffles as it already aligns the coordinates.
+		if (GSConfig.UserHacks_HalfPixelOffset == GSHalfPixelOffset::NativeWTexOffset && !m_texture_shuffle)
 		{
 			const u32 psm = rt ? rt->m_TEX0.PSM : ds->m_TEX0.PSM;
 			const bool can_offset = m_r.width() > GSLocalMemory::m_psm[psm].pgs.x || m_r.height() > GSLocalMemory::m_psm[psm].pgs.y;
