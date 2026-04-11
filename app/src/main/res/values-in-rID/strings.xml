@@ -295,6 +295,12 @@ Buka nanti dari Pengaturan → Buka direktori ARMSX2.</string>
     <string name="settings_achievements_hardcore_label">Aktifkan Mode Hardcore</string>
     <string name="settings_achievements_hardcore_inactive">Mode Hardcore sementara dinonaktifkan untuk sesi saat ini.</string>
     <string name="settings_achievements_token_invalid">Sesi Anda telah berakhir. Masuk kembali untuk terus mendapatkan pencapaian.</string>
+    <string name="settings_ntsc_framerate_default">NTSC Framerate: 59.94</string>
+    <string name="settings_ntsc_framerate_value">NTSC Framerate: %1$.2f</string>
+    <string name="settings_pal_framerate_default">PAL Framerate: 50.00</string>
+    <string name="settings_pal_framerate_value">PAL Framerate: %1$.2f</string>
+    <string name="settings_framerate_reset">Reset Framerates to Default</string>
+    <string name="settings_framerate_control_title">Framerate Control</string>
     <string name="cover_template_dialog_title">Sumber Cover</string>
     <string name="cover_template_dialog_hint">https://…/${serial}.jpg</string>
     <string name="cover_template_dialog_description">Gunakan ${serial},${title}, atau ${filetitle} untuk memilih setiap game.</string>
