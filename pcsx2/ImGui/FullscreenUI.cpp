@@ -964,9 +964,16 @@ void FullscreenUI::RequestChangeDisc()
 {
 	ConfirmShutdownIfMemcardBusy([](bool result) {
 		if (result)
-			DoChangeDiscFromFile();
+		{
+			if (!VMManager::GetM3UPlaylistEntries().empty())
+				OpenPauseSubMenu(PauseSubMenu::ChangeDisc);
+			else
+				DoChangeDiscFromFile();
+		}
 		else
+		{
 			ClosePauseMenu();
+		}
 	});
 }
 
@@ -1634,10 +1641,14 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 			11, // None
 			4, // Exit
 			3, // Achievements
+			0,  // ChangeDisc placeholder
 		};
 
+		const std::vector<std::string>& change_disc_playlist = VMManager::GetM3UPlaylistEntries();
+		const u32 change_disc_item_count = static_cast<u32>(change_disc_playlist.size()) + 2; // +2 for back and from file
 		const bool just_focused = ResetFocusHere();
-		BeginMenuButtons(submenu_item_count[static_cast<u32>(s_current_pause_submenu)], 1.0f, ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
+		BeginMenuButtons((s_current_pause_submenu == PauseSubMenu::ChangeDisc) ? change_disc_item_count : submenu_item_count[static_cast<u32>(s_current_pause_submenu)],
+			1.0f, ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
 			ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 
 		if (!ImGui::IsPopupOpen(0u, ImGuiPopupFlags_AnyPopup))
@@ -1667,6 +1678,10 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 					case PauseSubMenu::Achievements:
 						first_id = ImGui::GetID(FSUI_ICONSTR(ICON_PF_BACKWARD, "Back To Pause Menu"));
 						last_id = ImGui::GetID(FSUI_ICONSTR(ICON_FA_STOPWATCH, "Leaderboards"));
+						break;
+					case PauseSubMenu::ChangeDisc:
+						first_id = ImGui::GetID(FSUI_ICONSTR(ICON_PF_BACKWARD, "Back To Pause Menu"));
+						last_id = ImGui::GetID(FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "From File..."));
 						break;
 				}
 
@@ -1796,6 +1811,33 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 
 				if (ActiveButton(FSUI_ICONSTR(ICON_FA_STOPWATCH, "Leaderboards"), false))
 					OpenLeaderboardsWindow();
+			}
+			break;
+
+
+			case PauseSubMenu::ChangeDisc:
+			{
+				if (ActiveButton(FSUI_ICONSTR(ICON_PF_BACKWARD, "Back To Pause Menu"), false) || WantsToCloseMenu())
+					OpenPauseSubMenu(PauseSubMenu::None);
+
+				const std::vector<std::string>& playlist = VMManager::GetM3UPlaylistEntries();
+				const int active_index = VMManager::GetM3UPlaylistCurrentIndex();
+
+				for (int i = 0; i < static_cast<int>(playlist.size()); ++i)
+				{
+					const std::string label = fmt::format("{}: {}", i + 1, Path::GetFileName(playlist[i]));
+					const bool is_active = (i == active_index);
+					if (ActiveButton(FSUI_ICONSTR(ICON_FA_COMPACT_DISC, label.c_str()), is_active))
+					{
+						Host::RunOnCPUThread([path = playlist[i]]() { VMManager::ChangeDisc(CDVD_SourceType::Iso, path); });
+						ClosePauseMenu();
+					}
+				}
+
+				if (ActiveButton(FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "From File..."), false))
+				{
+					DoChangeDiscFromFile();
+				}
 			}
 			break;
 		}

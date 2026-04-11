@@ -155,6 +155,7 @@ namespace FullscreenUI
 		None,
 		Exit,
 		Achievements,
+		ChangeDisc,
 	};
 
 	enum class SettingsPage
