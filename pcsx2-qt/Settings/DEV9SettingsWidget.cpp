@@ -132,6 +132,9 @@ DEV9SettingsWidget::DEV9SettingsWidget(SettingsWindow* settings_dialog, QWidget*
 	onEthDNSModeChanged(m_ui.ethDNS2Mode, m_ui.ethDNS2Mode->currentIndex(), m_ui.ethDNS2Addr, "DEV9/Eth", "ModeDNS2");
 	connect(m_ui.ethDNS2Mode, &QComboBox::currentIndexChanged, this, [&](int index) { onEthDNSModeChanged(m_ui.ethDNS2Mode, index, m_ui.ethDNS2Addr, "DEV9/Eth", "ModeDNS2"); });
 
+	// UDP Ports
+	SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.ethUDPPorts, "DEV9/Eth", "EthUDPPorts", "");
+
 	//////////////////////////////////////////////////////////////////////////
 	// DNS Settings
 	//////////////////////////////////////////////////////////////////////////
