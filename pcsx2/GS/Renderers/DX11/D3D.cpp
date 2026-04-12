@@ -85,10 +85,81 @@ std::vector<GSAdapterInfo> D3D::GetAdapterInfo(IDXGIFactory5* factory)
 		ai.max_texture_size = D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION;
 		ai.max_upscale_multiplier = GSGetMaxUpscaleMultiplier(ai.max_texture_size);
 
-		wil::com_ptr_nothrow<IDXGIOutput> output;
-		// Only check the first output, which would be the primary display (if any is connected)
-		if (SUCCEEDED(hr = adapter->EnumOutputs(0, &output)))
+		for (u32 output_index = 0;; output_index++)
 		{
+			wil::com_ptr_nothrow<IDXGIOutput> output;
+			hr = adapter->EnumOutputs(output_index, output.put());
+			if (hr == DXGI_ERROR_NOT_FOUND)
+				break;
+			if (FAILED(hr))
+			{
+				ERROR_LOG("EnumOutputs() failed: {:08X}", static_cast<unsigned>(hr));
+				break;
+			}
+
+			DXGI_OUTPUT_DESC output_desc;
+			if (FAILED(output->GetDesc(&output_desc)) || !output_desc.AttachedToDesktop)
+				continue;
+
+			// Build a friendly monitor name using QueryDisplayConfig, with a fallback to the device name.
+			MONITORINFOEX monitor_info = {};
+			monitor_info.cbSize = sizeof(monitor_info);
+			const bool got_monitor_info = GetMonitorInfo(output_desc.Monitor, &monitor_info);
+			const bool is_primary = got_monitor_info && (monitor_info.dwFlags & MONITORINFOF_PRIMARY);
+
+			std::string monitor_name;
+			if (got_monitor_info)
+			{
+				UINT32 num_paths = 0, num_modes = 0;
+				if (GetDisplayConfigBufferSizes(QDC_ONLY_ACTIVE_PATHS, &num_paths, &num_modes) == ERROR_SUCCESS)
+				{
+					std::vector<DISPLAYCONFIG_PATH_INFO> paths(num_paths);
+					std::vector<DISPLAYCONFIG_MODE_INFO> modes(num_modes);
+					if (QueryDisplayConfig(QDC_ONLY_ACTIVE_PATHS, &num_paths, paths.data(), &num_modes, modes.data(), nullptr) == ERROR_SUCCESS)
+					{
+						for (const DISPLAYCONFIG_PATH_INFO& path : paths)
+						{
+							DISPLAYCONFIG_SOURCE_DEVICE_NAME source = {};
+							source.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_SOURCE_NAME;
+							source.header.size = sizeof(source);
+							source.header.adapterId = path.sourceInfo.adapterId;
+							source.header.id = path.sourceInfo.id;
+							if (DisplayConfigGetDeviceInfo(&source.header) != ERROR_SUCCESS)
+								continue;
+							if (wcscmp(source.viewGdiDeviceName, monitor_info.szDevice) != 0)
+								continue;
+
+							DISPLAYCONFIG_TARGET_DEVICE_NAME target = {};
+							target.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_TARGET_NAME;
+							target.header.size = sizeof(target);
+							target.header.adapterId = path.targetInfo.adapterId;
+							target.header.id = path.targetInfo.id;
+							if (DisplayConfigGetDeviceInfo(&target.header) != ERROR_SUCCESS)
+								continue;
+
+							if (target.flags.friendlyNameFromEdid)
+								monitor_name = StringUtil::WideStringToUTF8String(target.monitorFriendlyDeviceName);
+							break;
+						}
+					}
+				}
+			}
+
+			// Format: "Primary: <name>", "Display N: <name>", or "Display N" if no friendly name.
+			std::string label;
+			if (is_primary)
+				label = "Primary";
+			else
+				label = fmt::format("Display {}", output_index + 1);
+
+			if (!monitor_name.empty())
+				label += ": " + monitor_name;
+
+			monitor_name = std::move(label);
+
+			GSAdapterInfo::MonitorInfo mi;
+			mi.name = std::move(monitor_name);
+
 			UINT num_modes = 0;
 			if (SUCCEEDED(hr = output->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, 0, &num_modes, nullptr)))
 			{
@@ -97,8 +168,10 @@ std::vector<GSAdapterInfo> D3D::GetAdapterInfo(IDXGIFactory5* factory)
 				{
 					for (const DXGI_MODE_DESC& mode : dmodes)
 					{
-						ai.fullscreen_modes.push_back(GSDevice::GetFullscreenModeString(mode.Width, mode.Height,
-							static_cast<float>(mode.RefreshRate.Numerator) / static_cast<float>(mode.RefreshRate.Denominator)));
+						std::string fs_mode = GSDevice::GetFullscreenModeString(mode.Width, mode.Height,
+							static_cast<float>(mode.RefreshRate.Numerator) / static_cast<float>(mode.RefreshRate.Denominator));
+						if (std::find(mi.fullscreen_modes.begin(), mi.fullscreen_modes.end(), fs_mode) == mi.fullscreen_modes.end())
+							mi.fullscreen_modes.push_back(std::move(fs_mode));
 					}
 				}
 				else
@@ -110,10 +183,8 @@ std::vector<GSAdapterInfo> D3D::GetAdapterInfo(IDXGIFactory5* factory)
 			{
 				ERROR_LOG("GetDisplayModeList() failed: {:08X}", static_cast<unsigned>(hr));
 			}
-		}
-		else if (hr != DXGI_ERROR_NOT_FOUND)
-		{
-			ERROR_LOG("EnumOutputs() failed: {:08X}", static_cast<unsigned>(hr));
+
+			ai.monitors.push_back(std::move(mi));
 		}
 
 		adapters.push_back(std::move(ai));
@@ -385,10 +456,10 @@ GSRendererType D3D::GetPreferredRenderer()
 		if (!GSDeviceVK::EnumerateGPUs().empty())
 			return true;
 
-		Host::AddIconOSDMessage("VKDriverUnsupported", ICON_FA_TV, TRANSLATE_STR("GS",
-			"The Vulkan graphics API was automatically selected, but no compatible devices were found.\n"
-			"       You should update all graphics drivers in your system, including any integrated GPUs\n"
-			"       to use the Vulkan renderer."), Host::OSD_WARNING_DURATION);
+		Host::AddIconOSDMessage("VKDriverUnsupported", ICON_FA_TV, TRANSLATE_STR("GS", "The Vulkan graphics API was automatically selected, but no compatible devices were found.\n"
+																					   "       You should update all graphics drivers in your system, including any integrated GPUs\n"
+																					   "       to use the Vulkan renderer."),
+			Host::OSD_WARNING_DURATION);
 		return false;
 	};
 #else
