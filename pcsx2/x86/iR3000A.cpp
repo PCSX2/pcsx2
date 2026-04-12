@@ -955,16 +955,23 @@ void recResetIOP()
 	// The bottom 2 bits of PC are always zero, so we <<14 to "compress"
 	// the pc indexer into it's lower common denominator.
 
-	// We're only mapping 20 pages here in 4 places.
-	// 0x80 comes from : (Ps2MemSize::IopRam / _64kb) * 4
-
-	for (int i = 0; i < 0x80; i++)
+	// Map IOP RAM with mirrors throughout kuseg (0x0000-0x1DFF).
+	// The PS2 IOP mirrors its 2MB (or 8MB) RAM across the entire kuseg
+	// address space. The BIOS uses mirrored addresses (e.g. 0x0d000100
+	// which maps to physical 0x00000100) during IOP soft resets.
 	{
-		u32 mask = (Ps2MemSize::ExposedIopRam / _64kb) - 1;
+		const u32 mask = (Ps2MemSize::ExposedIopRam / _64kb) - 1;
 
-		recLUT_SetPage(psxRecLUT, psxhwLUT, recRAM, 0x0000, i, i & mask);
-		recLUT_SetPage(psxRecLUT, psxhwLUT, recRAM, 0x8000, i, i & mask);
-		recLUT_SetPage(psxRecLUT, psxhwLUT, recRAM, 0xa000, i, i & mask);
+		for (int i = 0; i < 0x1e00; i++)
+		{
+			recLUT_SetPage(psxRecLUT, psxhwLUT, recRAM, 0x0000, i, i & mask);
+		}
+
+		for (int i = 0; i < 0x80; i++)
+		{
+			recLUT_SetPage(psxRecLUT, psxhwLUT, recRAM, 0x8000, i, i & mask);
+			recLUT_SetPage(psxRecLUT, psxhwLUT, recRAM, 0xa000, i, i & mask);
+		}
 	}
 
 	for (int i = 0x1fc0; i < 0x2000; i++)
