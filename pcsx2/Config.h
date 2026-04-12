@@ -1059,6 +1059,10 @@ struct Pcsx2Config
 
 		std::vector<HostEntry> EthHosts;
 
+		// Comma-separated list of UDP ports to pre-bind for inbound traffic.
+		// Allows host-to-PS2 communication in Sockets mode (e.g. ps2link on port 18194).
+		std::string EthUDPPorts;
+
 		bool HddEnable{false};
 		std::string HddFile;
 
