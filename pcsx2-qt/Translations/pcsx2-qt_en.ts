@@ -19307,17 +19307,17 @@ The saves will not be recoverable.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Translations.cpp" line="651"/>
+        <location filename="../Translations.cpp" line="630"/>
         <source>Missing Font File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Translations.cpp" line="657"/>
+        <location filename="../Translations.cpp" line="636"/>
         <source>The font file &apos;%1&apos; is required for the On-Screen Display and Big Picture Mode to show messages in your language.&lt;br&gt;&lt;br&gt;Do you want to download this file now? These files are usually less than 10 megabytes in size.&lt;br&gt;&lt;br&gt;&lt;strong&gt;If you do not download this file, on-screen messages will not be readable.&lt;/strong&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Translations.cpp" line="667"/>
+        <location filename="../Translations.cpp" line="646"/>
         <source>Downloading Files</source>
         <translation type="unfinished"></translation>
     </message>
