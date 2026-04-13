@@ -1354,6 +1354,7 @@ static const char* GetBlendFactorFormula(GSDevice::BlendFactor blendfactor)
 		case GSDevice::CONST_ONE:       return "1";
 		case GSDevice::CONST_ZERO:      return "0";
 	}
+	return "Unknown";
 }
 
 static const char* GetDestinationAlphaModeName(GSHWDrawConfig::DestinationAlphaMode datm)

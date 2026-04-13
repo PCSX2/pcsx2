@@ -335,12 +335,9 @@ GSRendererHW::TextureShuffleInfo GSRendererHW::DetectTextureShuffleImpl()
 	const GIFRegCLAMP& clamp = m_context->CLAMP;
 	const GSLocalMemory::psm_t& frame_psm = GSLocalMemory::m_psm[frame.PSM];
 	const GSLocalMemory::psm_t& tex_psm = GSLocalMemory::m_psm[tex0.PSM];
-	const float tw = static_cast<float>(1 << tex0.TW);
-	const float th = static_cast<float>(1 << tex0.TH);
 
 	const GSVertex* RESTRICT verts = m_vertex.buff;
 	const u16* RESTRICT index = m_index.buff;
-	const GSVector4i xyof = m_context->scissor.xyof.xyxy();
 	constexpr u32 verts_per_quad = primclass == GS_SPRITE_CLASS ? 2 : 6;
 	const u32 num_quads = m_index.tail / verts_per_quad;
 
@@ -436,7 +433,7 @@ GSRendererHW::TextureShuffleInfo GSRendererHW::DetectTextureShuffleImpl()
 			return false;
 
 		// Position and texture coords must be moving in opposite axes to swizzle.
-		GSVector4i xy_1, uv_1;
+		GSVector4i xy_1(GSVector4i::zero()), uv_1(GSVector4i::zero());
 		if (!GetQuadXYUV(first_quad + 1, xy_1, uv_1))
 			return false;
 
@@ -447,7 +444,7 @@ GSRendererHW::TextureShuffleInfo GSRendererHW::DetectTextureShuffleImpl()
 	};
 
 	const auto CheckQuadOffsetXU = [&](
-		u32 offset, const GSVector4i& xy0, const GSVector4i& uv0,
+		int offset, const GSVector4i& xy0, const GSVector4i& uv0,
 		const GSVector4i& xy1, const GSVector4i& uv1) {
 			// Check whether the two quads are offset by the given number of pixels. 
 			return
@@ -456,8 +453,8 @@ GSRendererHW::TextureShuffleInfo GSRendererHW::DetectTextureShuffleImpl()
 	};
 
 	// Checks that the next quad is offset by the specified pixels.
-	const auto CheckNextQuadOffsetXU = [&](u32 offset) {
-		GSVector4i xy_1, uv_1;
+	const auto CheckNextQuadOffsetXU = [&](int offset) {
+		GSVector4i xy_1(GSVector4i::zero()), uv_1(GSVector4i::zero());
 		if (!GetQuadXYUV(first_quad + 1, xy_1, uv_1))
 			return false;
 
@@ -470,7 +467,7 @@ GSRendererHW::TextureShuffleInfo GSRendererHW::DetectTextureShuffleImpl()
 		if (!CheckSwizzleShuffle())
 			return false;
 
-		GSVector4i xy_1, uv_1, xy_2, uv_2;
+		GSVector4i xy_1(GSVector4i::zero()), uv_1(GSVector4i::zero()), xy_2(GSVector4i::zero()), uv_2(GSVector4i::zero());
 		if (!GetQuadXYUV(first_quad + 1, xy_1, uv_1))
 			return false;
 		if (!GetQuadXYUV(first_quad + 2, xy_2, uv_2))
@@ -4395,7 +4392,6 @@ void GSRendererHW::Draw()
 	if (m_process_texture)
 	{
 		GIFRegCLAMP MIP_CLAMP = m_cached_ctx.CLAMP;
-		const GSVertex* v = &m_vertex.buff[0];
 
 		if (rt)
 		{
@@ -8674,8 +8670,6 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 			return;
 		}
 	}
-
-	const GSDevice::FeatureSupport features = g_gs_device->Features();
 
 	if (EmulateDATEEarlyFail(date_options, rt))
 		return;

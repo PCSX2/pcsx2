@@ -3942,7 +3942,7 @@ GSTextureCache::Target* GSTextureCache::LookupDisplayTarget(GIFRegTEX0 TEX0, con
 
 		std::vector<GSState::GSUploadQueue>::reverse_iterator iter;
 		GSVector4i eerect = GSVector4i::zero();
-		const int last_draw = GSRendererHW::GetInstance()->m_draw_transfers.back().draw;
+		const u64 last_draw = GSRendererHW::GetInstance()->m_draw_transfers.back().draw;
 
 		for (iter = GSRendererHW::GetInstance()->m_draw_transfers.rbegin(); iter != GSRendererHW::GetInstance()->m_draw_transfers.rend();)
 		{
@@ -3955,7 +3955,7 @@ GSTextureCache::Target* GSTextureCache::LookupDisplayTarget(GIFRegTEX0 TEX0, con
 			// If the format, and location doesn't overlap
 			if (transfer_end >= TEX0.TBP0 && iter->blit.DBP <= rect_end && GSUtil::HasCompatibleBits(iter->blit.DPSM, TEX0.PSM))
 			{
-				GSVector4i targetr = iter->rect;
+				const GSVector4i targetr = iter->rect;
 
 				if (eerect.rempty())
 					eerect = targetr;
