@@ -2872,7 +2872,6 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 
 	size_t max_shown_multiplier = static_cast<size_t>(
 		(supports_extended_upscales && bsi->GetBoolValue("EmuCore/GS", "ExtendedUpscalingMultipliers", false)) ? max_upscale_multiplier : 12u);
-	const bool game_settings = IsEditingGameSettings(bsi);
 	std::optional<float> saved_multiplier;
 	if (const std::optional<SmallString> config_value = bsi->GetOptionalSmallStringValue("EmuCore/GS", "upscale_multiplier"))
 	{
