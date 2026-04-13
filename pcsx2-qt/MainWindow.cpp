@@ -2583,7 +2583,7 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
 
 #ifdef DISPLAY_SURFACE_WINDOW
 		if (isVisible() && g_emu_thread->shouldRenderToMain())
-			m_display_surface->setPosition(screen()->availableGeometry().topLeft());
+			m_display_surface->setGeometry(screen()->geometry());
 		else
 			restoreDisplayWindowGeometryFromConfig();
 
