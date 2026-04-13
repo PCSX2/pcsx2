@@ -8,6 +8,12 @@
 
 게임 데이터는 TCP/IP를 통해 전송되므로, 물리적 모뎀 없이 두 대의 PCSX2가 로컬 네트워크 또는 인터넷을 통해 연결할 수 있습니다.
 
+## 사용법
+
+- [English](How_to_use_EN.md)
+- [한국어](How_to_use_KR.md)
+- [日本語](How_to_use_JP.md)
+
 ## 시연 영상
 
 [![Demo](https://img.youtube.com/vi/luzijcTlwYk/0.jpg)](https://youtu.be/luzijcTlwYk?si=nV5E8qtBftBgjss6)

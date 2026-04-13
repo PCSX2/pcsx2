@@ -8,6 +8,12 @@ This is a modified version of [PCSX2](https://github.com/PCSX2/pcsx2) with built
 
 The modem emulation tunnels game data over TCP/IP, allowing two PCSX2 instances to connect over a local network or the internet — no physical modem required.
 
+## How to Use
+
+- [English](How_to_use_EN.md)
+- [한국어](How_to_use_KR.md)
+- [日本語](How_to_use_JP.md)
+
 ## Demo Video
 
 [![Demo](https://img.youtube.com/vi/luzijcTlwYk/0.jpg)](https://youtu.be/luzijcTlwYk?si=nV5E8qtBftBgjss6)

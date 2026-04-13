@@ -8,6 +8,12 @@
 
 ゲームデータはTCP/IPを介して転送されるため、物理モデムなしで2台のPCSX2がLANまたはインターネット経由で接続できます。
 
+## 使い方
+
+- [English](How_to_use_EN.md)
+- [한국어](How_to_use_KR.md)
+- [日本語](How_to_use_JP.md)
+
 ## デモ動画
 
 [![Demo](https://img.youtube.com/vi/luzijcTlwYk/0.jpg)](https://youtu.be/luzijcTlwYk?si=nV5E8qtBftBgjss6)
