@@ -3900,8 +3900,8 @@ GSState::PRIM_OVERLAP GSState::GetPrimitiveOverlapDrawlistImpl(bool save_drawlis
 
 				// For the end triangle only consider the last edge of the triangle.
 				// For the start triangle only consider the first edge of the triangle.
-				const u32 base0 = end0 ? 1 : 0;
-				const u32 base1 = end1 ? 1 : 0;
+				constexpr int base0 = end0 ? 1 : 0;
+				constexpr int base1 = end1 ? 1 : 0;
 
 				for (int i0 = base0; i0 < base0 + 2; i0++)
 				{
