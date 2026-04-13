@@ -216,10 +216,14 @@ private:
 	bool m_was_paused_by_focus_loss = false;
 
 	float m_last_speed = 0.0f;
+	float m_last_gpu_usage = 0.0f;
 	float m_last_game_fps = 0.0f;
 	float m_last_video_fps = 0.0f;
 	int m_last_internal_width = 0;
 	int m_last_internal_height = 0;
+	float m_last_upscale = 0.0f;
+	u32 m_last_volume = 0;
+	bool m_last_muted = false;
 	GSRendererType m_last_renderer = GSRendererType::Auto;
 };
 
