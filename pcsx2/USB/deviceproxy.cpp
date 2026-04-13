@@ -16,6 +16,7 @@
 #include "usb-pad/usb-turntable.h"
 #include "usb-printer/usb-printer.h"
 #include "usb-lightgun/guncon2.h"
+#include "usb-modem/usb-modem.h"
 
 RegisterDevice* RegisterDevice::registerDevice = nullptr;
 
@@ -85,6 +86,7 @@ void RegisterDevice::Register()
 	inst.Add(DEVTYPE_GAMETRAK, new usb_pad::GametrakDevice());
 	inst.Add(DEVTYPE_REALPLAY, new usb_pad::RealPlayDevice());
 	inst.Add(DEVTYPE_TRAIN, new usb_pad::TrainDevice());
+	inst.Add(DEVTYPE_MODEM, new usb_modem::ModemDevice());
 }
 
 void RegisterDevice::Unregister()

@@ -1,27 +1,88 @@
-# PCSX2
+# PCSX2 Modem — ME56PS2 USB Modem Emulation
 
-![Windows Build Status](https://img.shields.io/github/actions/workflow/status/PCSX2/pcsx2/windows_build_matrix.yml?label=%F0%9F%96%A5%EF%B8%8F%20Windows%20Builds)
-![Linux Build Status](https://img.shields.io/github/actions/workflow/status/PCSX2/pcsx2/linux_build_matrix.yml?label=%F0%9F%90%A7%20Linux%20Builds)
-![MacOS Build Status](https://img.shields.io/github/actions/workflow/status/PCSX2/pcsx2/macos_build_matrix.yml?label=%F0%9F%8D%8E%20MacOS%20Builds)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/1f7c0d75fec74d6daa6adb084e5b4f71)](https://app.codacy.com/gh/PCSX2/pcsx2/dashboard?utm_source=github.com&utm_medium=referral&utm_content=PCSX2/pcsx2&utm_campaign=Badge_Grade)
-[![Discord Server](https://img.shields.io/discord/309643527816609793?color=%235CA8FA&label=PCSX2%20Discord&logo=discord&logoColor=white)](https://discord.com/invite/TCz3t9k)
+[한국어](README_KR.md) | [日本語](README_JP.md)
 
-PCSX2 is a free and open-source PlayStation 2 (PS2) emulator. Its purpose is to emulate the PS2's hardware, using a combination of MIPS CPU [Interpreters](<https://en.wikipedia.org/wiki/Interpreter_(computing)>), [Recompilers](https://en.wikipedia.org/wiki/Dynamic_recompilation) and a [Virtual Machine](https://en.wikipedia.org/wiki/Virtual_machine) which manages hardware states and PS2 system memory. This allows you to play PS2 games on your PC, with many additional features and benefits.
+## Overview
 
-## Project Details
+This is a modified version of [PCSX2](https://github.com/PCSX2/pcsx2) with built-in **Omron ME56PS2 USB modem emulation**, enabling online multiplayer for PS2 games that support modem connectivity (e.g., Armored Core 2 Another Age).
 
-PCSX2 has been in development for more than 20 years. Past versions could only run a few public domain game demos, but newer versions can run most games at full speed, including popular titles such as Final Fantasy X and Devil May Cry 3. Visit the [PCSX2 compatibility list](https://pcsx2.net/compat/) to check the latest compatibility status of games (with more than 2500 titles tested).
+The modem emulation tunnels game data over TCP/IP, allowing two PCSX2 instances to connect over a local network or the internet — no physical modem required.
 
-Installers and binaries for both stable and nightly builds are available from [our website](https://pcsx2.net/downloads/).
+## Demo Video
 
-## System Requirements
+[![Demo](https://img.youtube.com/vi/luzijcTlwYk/0.jpg)](https://youtu.be/luzijcTlwYk?si=nV5E8qtBftBgjss6)
 
-PCSX2 supports Windows, Linux, and Mac platforms. Our [setup documentation page](https://pcsx2.net/docs/setup/requirements) contains additional details on software and hardware requirements.
+## How It Works
 
-Please note that a BIOS dump from a legitimately-owned PS2 console is required to use the emulator. For more information, visit [this page](https://pcsx2.net/docs/setup/bios/).
+The plugin emulates an **FTDI FT232-based USB modem** (VID: 0x0590, PID: 0x001A) that the PS2's IOP recognizes as a standard serial modem. AT commands from the game (ATD, ATA, ATH, etc.) are intercepted and translated into TCP socket operations.
 
-## Contributing / Building
+- **Server mode**: Listens for incoming TCP connections (answering side)
+- **Client mode**: Connects to a remote host via TCP (calling side)
+- **PPP/game data**: Passed through transparently over the TCP tunnel
 
-PCSX2 supports translation into other languages using [Crowdin](https://crowdin.com/project/pcsx2-emulator).
+## Quick Start
 
-See the [Contribution Guide](https://pcsx2.net/docs/contributing/) for more info on how to contribute.
+### Player A (Server)
+
+1. **Settings > Controllers > USB > Port 1** → ME56PS2 Modem
+2. Settings: **Port** = `10023`, **Server Mode** = Enabled
+3. Start game → enter modem multiplayer menu → wait
+
+### Player B (Client)
+
+1. **Settings > Controllers > USB > Port 1** → ME56PS2 Modem
+2. Settings: **Remote Host** = Player A's IP, **Port** = `10023`, **Server Mode** = Disabled
+3. Start game → enter modem multiplayer menu → dial any number (e.g., `0528#0528`)
+
+When you enter a number that is not a valid IP address, the configured Remote Host and Port are used automatically.
+
+## Network Setup
+
+- **LAN**: Use the local IP address directly.
+- **Internet**: Port forward the configured port on the server's router, or use a VPN (ZeroTier, Hamachi, etc.).
+
+## Building from Source
+
+```bash
+cd pcsx2
+export MSYS_NO_PATHCONV=1
+"/c/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/MSBuild.exe" \
+  PCSX2_qt.sln /t:pcsx2-qt /p:Configuration=Release /p:Platform=x64 /m
+```
+
+Output: `pcsx2/bin/pcsx2-qtx64.exe`
+
+## Credits
+
+- **PCSX2** — [https://github.com/PCSX2/pcsx2](https://github.com/PCSX2/pcsx2) (GPL-3.0+)
+- **me56ps2-emulator** — [https://github.com/msawahara/me56ps2-emulator](https://github.com/msawahara/me56ps2-emulator) by Masataka Sawahara (MIT License)
+- **Reference** — [Qiita blog post](https://qiita.com/msawahara/items/f109b75919ddcf0db05a)
+- **PCSX2 port** — ChungSo
+
+## License
+
+This project is based on PCSX2, licensed under **GPL-3.0+**.
+
+The USB modem emulation is based on me56ps2-emulator, licensed under the **MIT License**:
+
+> MIT License
+>
+> Copyright (c) 2022 Masataka Sawahara
+>
+> Permission is hereby granted, free of charge, to any person obtaining a copy
+> of this software and associated documentation files (the "Software"), to deal
+> in the Software without restriction, including without limitation the rights
+> to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+> copies of the Software, and to permit persons to whom the Software is
+> furnished to do so, subject to the following conditions:
+>
+> The above copyright notice and this permission notice shall be included in all
+> copies or substantial portions of the Software.
+>
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+> IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+> FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+> AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+> LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+> OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+> SOFTWARE.

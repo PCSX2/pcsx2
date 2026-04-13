@@ -244,6 +244,9 @@
     <Filter Include="System\Ps2\USB\usb-printer">
       <UniqueIdentifier>{001fa220-df32-4da7-ba7e-2a7eca5cdb78}</UniqueIdentifier>
     </Filter>
+    <Filter Include="System\Ps2\USB\usb-modem">
+      <UniqueIdentifier>{b2e3f1a0-4c5d-6e7f-8a9b-0c1d2e3f4a5b}</UniqueIdentifier>
+    </Filter>
     <Filter Include="System\Ps2\USB\usb-msd">
       <UniqueIdentifier>{20789ef3-7c0e-41ac-babd-03a9be9fe994}</UniqueIdentifier>
     </Filter>
@@ -1171,6 +1174,9 @@
     </ClCompile>
     <ClCompile Include="USB\usb-printer\usb-printer.cpp">
       <Filter>System\Ps2\USB\usb-printer</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-modem\usb-modem.cpp">
+      <Filter>System\Ps2\USB\usb-modem</Filter>
     </ClCompile>
     <ClCompile Include="USB\usb-msd\usb-msd.cpp">
       <Filter>System\Ps2\USB\usb-msd</Filter>
@@ -2132,6 +2138,9 @@
     </ClInclude>
     <ClInclude Include="USB\usb-printer\usb-printer.h">
       <Filter>System\Ps2\USB\usb-printer</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-modem\usb-modem.h">
+      <Filter>System\Ps2\USB\usb-modem</Filter>
     </ClInclude>
     <ClInclude Include="USB\usb-msd\usb-msd.h">
       <Filter>System\Ps2\USB\usb-msd</Filter>

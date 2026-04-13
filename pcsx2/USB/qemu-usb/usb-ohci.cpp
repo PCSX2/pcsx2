@@ -855,6 +855,7 @@ static int ohci_service_td(OHCIState* ohci, struct ohci_ed* ed)
 			return 1;
 		}
 		ep = usb_ep_get(dev, pid, OHCI_BM(ed->flags, ED_EN));
+
 		usb_packet_setup(&ohci->usb_packet, pid, ep, 0, addr, !flag_r,
 						 OHCI_BM(td.flags, TD_DI) == 0);
 		usb_packet_addbuf(&ohci->usb_packet, ohci->usb_buf, pktlen);
@@ -977,6 +978,7 @@ static int ohci_service_td(OHCIState* ohci, struct ohci_ed* ed)
 	i = OHCI_BM(td.flags, TD_DI);
 	if (i < ohci->done_count)
 		ohci->done_count = i;
+
 exit_no_retire:
 	if (!ohci_put_td(ohci, addr, &td))
 	{
@@ -1092,6 +1094,43 @@ static void ohci_process_lists(OHCIState* ohci, int completion)
 			ohci->status &= ~OHCI_STATUS_BLF;
 		}
 	}
+
+	// DEBUG: Dump bulk ED list periodically to diagnose IN endpoint starvation
+	{
+		static int dbg_bulk_counter = 0;
+		dbg_bulk_counter++;
+		if (dbg_bulk_counter <= 5 || dbg_bulk_counter % 50000 == 0)
+		{
+			bool ble = (ohci->ctl & OHCI_CTL_BLE) != 0;
+			bool blf = (ohci->status & OHCI_STATUS_BLF) != 0;
+			Console.WriteLn("OHCI_DBG[%d]: BLE=%d BLF=%d bulk_head=0x%08X", dbg_bulk_counter, ble, blf, ohci->bulk_head);
+
+			if (ohci->bulk_head)
+			{
+				struct ohci_ed ed;
+				u32 cur = ohci->bulk_head;
+				for (int i = 0; i < 8 && cur; i++)
+				{
+					if (ohci_read_ed(ohci, cur, &ed))
+					{
+						int fa = OHCI_BM(ed.flags, ED_FA);
+						int en = OHCI_BM(ed.flags, ED_EN);
+						int dir = OHCI_BM(ed.flags, ED_D);
+						int mps = (ed.flags & OHCI_ED_MPS_MASK) >> OHCI_ED_MPS_SHIFT;
+						bool halted = (ed.head & OHCI_ED_H) != 0;
+						bool skip = (ed.flags & OHCI_ED_K) != 0;
+						bool has_td = (ed.head & OHCI_DPTR_MASK) != ed.tail;
+						Console.WriteLn("  ED[%d] @0x%08X: FA=%d EN=%d D=%d(%s) MPS=%d halted=%d skip=%d has_td=%d head=0x%08X tail=0x%08X",
+							i, cur, fa, en, dir,
+							dir == 1 ? "OUT" : dir == 2 ? "IN" : "TD",
+							mps, halted, skip, has_td,
+							ed.head & OHCI_DPTR_MASK, ed.tail);
+					}
+					cur = ed.next & OHCI_DPTR_MASK;
+				}
+			}
+		}
+	}
 }
 
 /* Do frame processing on frame boundary */
@@ -1117,6 +1156,46 @@ void ohci_frame_boundary(void* opaque)
 	{
 		const int n = ohci->frame_number & 0x1f;
 		ohci_service_ed_list(ohci, hcca->intr[n], 0);
+
+		// DEBUG: Dump periodic (interrupt) list to diagnose modem IN endpoint
+		{
+			static int dbg_periodic_counter = 0;
+			dbg_periodic_counter++;
+			if (dbg_periodic_counter == 50000 || dbg_periodic_counter == 100000)
+			{
+				Console.WriteLn("OHCI_PERIODIC_DBG[%d]: PLE=%d frame=%d hcca=0x%08X",
+					dbg_periodic_counter, 1, ohci->frame_number, ohci->hcca);
+				// Scan all 32 interrupt list heads
+				for (int slot = 0; slot < 32; slot++)
+				{
+					u32 head = hcca->intr[slot];
+					if (head)
+					{
+						Console.WriteLn("  intr[%d]=0x%08X", slot, head);
+						struct ohci_ed ed;
+						u32 cur = head;
+						for (int j = 0; j < 4 && cur; j++)
+						{
+							if (ohci_read_ed(ohci, cur, &ed))
+							{
+								int fa = OHCI_BM(ed.flags, ED_FA);
+								int en = OHCI_BM(ed.flags, ED_EN);
+								int dir = OHCI_BM(ed.flags, ED_D);
+								int mps = (ed.flags & OHCI_ED_MPS_MASK) >> OHCI_ED_MPS_SHIFT;
+								bool halted = (ed.head & OHCI_ED_H) != 0;
+								bool skip = (ed.flags & OHCI_ED_K) != 0;
+								bool has_td = (ed.head & OHCI_DPTR_MASK) != ed.tail;
+								Console.WriteLn("    ED @0x%08X: FA=%d EN=%d D=%d(%s) MPS=%d halted=%d skip=%d has_td=%d",
+									cur, fa, en, dir,
+									dir == 1 ? "OUT" : dir == 2 ? "IN" : "TD",
+									mps, halted, skip, has_td);
+							}
+							cur = ed.next & OHCI_DPTR_MASK;
+						}
+					}
+				}
+			}
+		}
 	}
 
 	/* Cancel all pending packets if either of the lists has been disabled.  */
@@ -1152,6 +1231,7 @@ void ohci_frame_boundary(void* opaque)
 		if (ohci->intr & ohci->intr_status)
 			ohci->done |= 1;
 		hcca->done = ohci->done;
+
 		ohci->done = 0;
 		ohci->done_count = 7;
 		ohci_set_interrupt(ohci, OHCI_INTR_WD);
