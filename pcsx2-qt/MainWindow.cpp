@@ -36,6 +36,9 @@
 #include "pcsx2/ImGui/FullscreenUI.h"
 #include "pcsx2/MTGS.h"
 #include "pcsx2/PerformanceMetrics.h"
+#include "pcsx2/VMManager.h"
+#include "pcsx2/ImGui/ImGuiOverlays.h"
+#include "pcsx2/SPU2/spu2.h"
 #include "pcsx2/Recording/InputRecording.h"
 #include "pcsx2/Recording/InputRecordingControls.h"
 #include "pcsx2/SaveState.h"
@@ -54,8 +57,11 @@
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QProgressBar>
+#include <QtWidgets/QSlider>
 #include <QtWidgets/QStyle>
 #include <QtWidgets/QStyleFactory>
+#include <QtWidgets/QWidgetAction>
+#include <QtWidgets/QHBoxLayout>
 
 #ifdef _WIN32
 #include "common/RedtapeWindows.h"
@@ -185,6 +191,7 @@ void MainWindow::setupAdditionalUi()
 {
 	makeIconsMasks(menuBar());
 	updateAdvancedSettingsVisibility();
+	setupStatusBarWidgets();
 
 	const bool toolbar_visible = Host::GetBaseBoolSettingValue("UI", "ShowToolbar", false);
 	m_ui.actionViewToolbar->setChecked(toolbar_visible);
@@ -195,58 +202,6 @@ void MainWindow::setupAdditionalUi()
 	m_ui.toolBar->setMovable(!toolbars_locked);
 	m_ui.toolBar->setContextMenuPolicy(Qt::PreventContextMenu);
 
-	const bool status_bar_visible = Host::GetBaseBoolSettingValue("UI", "ShowStatusBar", true);
-	m_ui.actionViewStatusBar->setChecked(status_bar_visible);
-	m_ui.statusBar->setVisible(status_bar_visible);
-
-	const bool show_game_grid = Host::GetBaseBoolSettingValue("UI", "GameListGridView", false);
-	updateGameGridActions(show_game_grid);
-
-	m_game_list_widget = new GameListWidget(getContentParent());
-	m_game_list_widget->initialize();
-	m_ui.actionGridViewShowTitles->setChecked(m_game_list_widget->getShowGridCoverTitles());
-	m_ui.mainContainer->addWidget(m_game_list_widget);
-
-	m_status_progress_widget = new QProgressBar(m_ui.statusBar);
-	m_status_progress_widget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
-	m_status_progress_widget->setFixedSize(140, 16);
-	m_status_progress_widget->setMinimum(0);
-	m_status_progress_widget->setMaximum(100);
-	m_status_progress_widget->hide();
-
-	m_status_verbose_widget = new QLabel(m_ui.statusBar);
-	m_status_verbose_widget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-	m_status_verbose_widget->setFixedHeight(16);
-	m_status_verbose_widget->hide();
-
-	m_status_renderer_widget = new QLabel(m_ui.statusBar);
-	m_status_renderer_widget->setFixedHeight(16);
-	m_status_renderer_widget->setFixedSize(65, 16);
-	m_status_renderer_widget->hide();
-
-	m_status_resolution_widget = new QLabel(m_ui.statusBar);
-	m_status_resolution_widget->setFixedHeight(16);
-	m_status_resolution_widget->setFixedSize(75, 16);
-	m_status_resolution_widget->hide();
-
-	m_status_fps_widget = new QLabel(m_ui.statusBar);
-	m_status_fps_widget->setFixedHeight(16);
-	m_status_fps_widget->setMinimumWidth(60);
-	m_status_fps_widget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
-	m_status_fps_widget->hide();
-
-	m_status_vps_widget = new QLabel(m_ui.statusBar);
-	m_status_vps_widget->setFixedHeight(16);
-	m_status_vps_widget->setMinimumWidth(60);
-	m_status_vps_widget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
-	m_status_vps_widget->hide();
-
-	m_status_speed_widget = new QLabel(m_ui.statusBar);
-	m_status_speed_widget->setFixedHeight(16);
-	m_status_speed_widget->setMinimumWidth(130);
-	m_status_speed_widget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
-	m_status_speed_widget->hide();
-
 	m_settings_toolbar_menu = new QMenu(m_ui.toolBar);
 	m_settings_toolbar_menu->addAction(m_ui.actionSettings);
 	m_settings_toolbar_menu->addAction(m_ui.actionViewGameProperties);
@@ -256,6 +211,14 @@ void MainWindow::setupAdditionalUi()
 		QAction* action = m_ui.menuWindowSize->addAction((scale == 0) ? tr("Internal Resolution") : tr("%1x Scale").arg(scale));
 		connect(action, &QAction::triggered, [scale]() { g_emu_thread->requestDisplaySize(static_cast<float>(scale)); });
 	}
+
+	const bool show_game_grid = Host::GetBaseBoolSettingValue("UI", "GameListGridView", false);
+	updateGameGridActions(show_game_grid);
+
+	m_game_list_widget = new GameListWidget(getContentParent());
+	m_game_list_widget->initialize();
+	m_ui.actionGridViewShowTitles->setChecked(m_game_list_widget->getShowGridCoverTitles());
+	m_ui.mainContainer->addWidget(m_game_list_widget);
 
 	updateEmulationActions(false, false, false);
 	updateDisplayRelatedActions(false, false, false);
@@ -290,6 +253,216 @@ void MainWindow::setupAdditionalUi()
 		m_ui.menuTools->insertMenu(m_ui.menuInputRecording->menuAction(), raMenu);
 	}
 #endif
+}
+
+void MainWindow::setupStatusBarWidgets()
+{
+	const bool status_bar_visible = Host::GetBaseBoolSettingValue("UI", "ShowStatusBar", true);
+	m_ui.actionViewStatusBar->setChecked(status_bar_visible);
+	m_ui.statusBar->setVisible(status_bar_visible);
+
+	m_status_progress_widget = new QProgressBar(m_ui.statusBar);
+	m_status_progress_widget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+	m_status_progress_widget->setFixedSize(140, 16);
+	m_status_progress_widget->setMinimum(0);
+	m_status_progress_widget->setMaximum(100);
+	m_status_progress_widget->hide();
+
+	m_status_verbose_widget = new QLabel(m_ui.statusBar);
+	m_status_verbose_widget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+	m_status_verbose_widget->setContentsMargins(10, 0, 10, 0);
+	m_status_verbose_widget->setFixedHeight(20);
+	m_status_verbose_widget->setMinimumWidth(20);
+	m_status_verbose_widget->hide();
+
+	m_status_renderer_widget = new QLabel(m_ui.statusBar);
+	m_status_renderer_widget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+	m_status_renderer_widget->setContentsMargins(10, 0, 10, 0);
+	m_status_renderer_widget->setAlignment(Qt::AlignCenter);
+	m_status_renderer_widget->setFixedHeight(20);
+	m_status_renderer_widget->hide();
+
+	m_status_resolution_widget = new QLabel(m_ui.statusBar);
+	m_status_resolution_widget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+	m_status_resolution_widget->setContentsMargins(10, 0, 10, 0);
+	m_status_resolution_widget->setAlignment(Qt::AlignCenter);
+	m_status_resolution_widget->setFixedHeight(20);
+	m_status_resolution_widget->hide();
+
+	m_status_volume_widget = new QToolButton(m_ui.statusBar);
+	m_status_volume_widget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+	m_status_volume_widget->setContentsMargins(10, 0, 10, 0);
+	m_status_volume_widget->setAutoRaise(true);
+	m_status_volume_widget->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+	m_status_volume_widget->setIcon(QIcon::fromTheme(QStringLiteral("volume-up-line")));
+	m_status_volume_widget->setPopupMode(QToolButton::InstantPopup);
+	m_status_volume_widget->setFixedHeight(20);
+
+	m_status_volume_menu = new QMenu(m_status_volume_widget);
+
+	m_status_volume_per_game_action = new QAction(tr("Adjust Per-Game"), m_status_volume_menu);
+	m_status_volume_per_game_action->setCheckable(true);
+
+	connect(m_status_volume_menu, &QMenu::aboutToShow, this, [this]() {
+		auto lock = Host::GetSettingsLock();
+		SettingsInterface* game_layer = Host::Internal::GetGameSettingsLayer();
+		m_status_volume_per_game_action->setEnabled(game_layer != nullptr && QtHost::IsVMValid());
+		m_status_volume_per_game_action->setChecked(game_layer &&
+			(game_layer->ContainsValue("SPU2/Output", "StandardVolume") || game_layer->ContainsValue("SPU2/Output", "OutputMuted")));
+	});
+
+	connect(m_status_volume_per_game_action, &QAction::triggered, this, [this](bool checked) {
+		m_status_volume_slider_applied = true;
+		applyStatusBarVolumeChanges(std::nullopt, false, checked);
+	});
+
+	m_status_volume_toggle_mute_action = new QAction(tr("Toggle Mute"), m_status_volume_menu);
+	m_status_volume_toggle_mute_action->setIcon(QIcon::fromTheme(QStringLiteral("volume-mute-line")));
+
+	connect(m_status_volume_toggle_mute_action, &QAction::triggered, this, [this]() {
+		m_status_volume_slider_applied = true;
+		applyStatusBarVolumeChanges(std::nullopt, true, std::nullopt);
+	});
+
+	m_status_volume_menu->addAction(m_status_volume_per_game_action);
+	m_status_volume_menu->addAction(m_status_volume_toggle_mute_action);
+	m_status_volume_menu->addSeparator();
+
+	m_status_volume_slider = new QSlider(Qt::Horizontal, m_status_volume_menu);
+	m_status_volume_slider->setRange(0, 100);
+	m_status_volume_slider->setFixedWidth(120);
+	m_status_volume_slider->setValue(Host::GetIntSettingValue("SPU2/Output", "StandardVolume", 100));
+	connect(m_status_volume_slider, &QSlider::valueChanged, this, [this](int value) {
+		Host::RunOnCPUThread([value]() {
+			if (!VMManager::HasValidVM())
+				return;
+			EmuConfig.SPU2.StandardVolume = static_cast<u32>(value);
+			SPU2::SetOutputVolume(static_cast<u32>(value));
+		});
+		if (m_status_volume_slider->isSliderDown())
+			setStatusVolumeText(m_status_volume_muted ? tr("Volume: Muted") : tr("Volume: %1%").arg(value), value, m_status_volume_muted);
+	});
+	connect(m_status_volume_slider, &QSlider::sliderReleased, this, [this]() {
+		m_status_volume_slider_applied = true;
+		applyStatusBarVolumeChanges(m_status_volume_slider->value(), false);
+	});
+	connect(m_status_volume_menu, &QMenu::aboutToHide, this, [this]() {
+		if (!m_status_volume_slider_applied)
+			applyStatusBarVolumeChanges(m_status_volume_slider->value(), false);
+		m_status_volume_slider_applied = false;
+	});
+
+	QWidget* container = new QWidget(m_status_volume_menu);
+	QHBoxLayout* layout = new QHBoxLayout(container);
+	layout->setContentsMargins(8, 4, 8, 4);
+	layout->addWidget(m_status_volume_slider);
+
+	QWidgetAction* slider_action = new QWidgetAction(m_status_volume_menu);
+	slider_action->setDefaultWidget(container);
+	m_status_volume_menu->addAction(slider_action);
+	m_status_volume_widget->setMenu(m_status_volume_menu);
+	m_status_volume_widget->hide();
+
+	m_status_speed_widget = new QToolButton(m_ui.statusBar);
+	m_status_speed_widget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+	m_status_speed_widget->setContentsMargins(10, 0, 10, 0);
+	m_status_speed_widget->setAutoRaise(true);
+	m_status_speed_widget->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+	m_status_speed_widget->setPopupMode(QToolButton::InstantPopup);
+	m_status_speed_widget->setFixedHeight(20);
+	m_status_speed_widget->hide();
+
+	m_status_speed_menu = new QMenu(m_status_speed_widget);
+	m_status_speed_menu->addAction(tr("Unlimited"), []() { Host::RunOnCPUThread([]() { VMManager::SetLimiterMode(LimiterModeType::Unlimited); }); });
+	m_status_speed_menu->addAction(tr("Turbo"), []() { Host::RunOnCPUThread([]() { VMManager::SetLimiterMode(LimiterModeType::Turbo); }); });
+	m_status_speed_menu->addAction(tr("Slow-Motion"), []() { Host::RunOnCPUThread([]() { VMManager::SetLimiterMode(LimiterModeType::Slomo); }); });
+	m_status_speed_menu->addAction(tr("Normal"), []() { Host::RunOnCPUThread([]() { VMManager::SetLimiterMode(LimiterModeType::Nominal); }); });
+	m_status_speed_widget->setMenu(m_status_speed_menu);
+	m_status_speed_widget->hide();
+
+	m_status_gpu_widget = new QLabel(m_ui.statusBar);
+	m_status_gpu_widget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+	m_status_gpu_widget->setContentsMargins(10, 0, 10, 0);
+	m_status_gpu_widget->setAlignment(Qt::AlignCenter);
+	m_status_gpu_widget->setFixedHeight(20);
+	m_status_gpu_widget->hide();
+
+	m_status_fps_widget = new QLabel(m_ui.statusBar);
+	m_status_fps_widget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+	m_status_fps_widget->setContentsMargins(10, 0, 10, 0);
+	m_status_fps_widget->setAlignment(Qt::AlignCenter);
+	m_status_fps_widget->setFixedHeight(20);
+	m_status_fps_widget->hide();
+
+	m_status_vps_widget = new QLabel(m_ui.statusBar);
+	m_status_vps_widget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+	m_status_vps_widget->setContentsMargins(10, 0, 10, 0);
+	m_status_vps_widget->setAlignment(Qt::AlignCenter);
+	m_status_vps_widget->setFixedHeight(20);
+	m_status_vps_widget->hide();
+}
+
+void MainWindow::applyStatusBarVolumeChanges(std::optional<int> volume, bool toggle_mute, std::optional<bool> override_per_game)
+{
+	const bool use_per_game = override_per_game.value_or(m_status_volume_per_game_action->isChecked());
+	Host::RunOnCPUThread([this, volume, toggle_mute, use_per_game]() {
+		int target_vol = 100;
+		bool target_mute = false;
+
+		{
+			auto lock = Host::GetSettingsLock();
+			SettingsInterface* per_game_settings = Host::Internal::GetGameSettingsLayer();
+			SettingsInterface* global_settings = Host::Internal::GetBaseSettingsLayer();
+			SettingsInterface* active_setting = (use_per_game && per_game_settings) ? per_game_settings : global_settings;
+
+			if (active_setting)
+			{
+				if (!active_setting->GetIntValue("SPU2/Output", "StandardVolume", &target_vol) && global_settings)
+					global_settings->GetIntValue("SPU2/Output", "StandardVolume", &target_vol);
+				if (!active_setting->GetBoolValue("SPU2/Output", "OutputMuted", &target_mute) && global_settings)
+					global_settings->GetBoolValue("SPU2/Output", "OutputMuted", &target_mute);
+			}
+
+			target_vol = volume.value_or(target_vol);
+			if (toggle_mute)
+				target_mute = !(VMManager::HasValidVM() ? SPU2::IsOutputMuted() : target_mute);
+
+			if (active_setting)
+			{
+				active_setting->SetIntValue("SPU2/Output", "StandardVolume", target_vol);
+				active_setting->SetBoolValue("SPU2/Output", "OutputMuted", target_mute);
+			}
+
+			if (per_game_settings && active_setting == per_game_settings)
+				QtHost::SaveGameSettings(per_game_settings, true);
+			else
+			{
+				if (per_game_settings)
+				{
+					const bool had_per_game_volume =
+						per_game_settings->ContainsValue("SPU2/Output", "StandardVolume") ||
+						per_game_settings->ContainsValue("SPU2/Output", "OutputMuted");
+					per_game_settings->DeleteValue("SPU2/Output", "StandardVolume");
+					per_game_settings->DeleteValue("SPU2/Output", "OutputMuted");
+					if (had_per_game_volume)
+						QtHost::SaveGameSettings(per_game_settings, true);
+				}
+				Host::CommitBaseSettingChanges();
+			}
+		}
+
+		if (VMManager::HasValidVM())
+		{
+			EmuConfig.SPU2.StandardVolume = static_cast<u32>(target_vol);
+			EmuConfig.SPU2.OutputMuted = target_mute;
+			SPU2::SetOutputMuted(target_mute);
+			SPU2::SetOutputVolume(static_cast<u32>(target_vol));
+		}
+
+		QTimer::singleShot(0, this, [this, target_vol, target_mute]() {
+			setStatusVolumeText(target_mute ? tr("Volume: Muted") : tr("Volume: %1%").arg(target_vol), target_vol, target_mute);
+		});
+	});
 }
 
 void MainWindow::connectSignals()
@@ -496,12 +669,11 @@ void MainWindow::createRendererSwitchMenu()
 			QString::fromUtf8(Pcsx2Config::GSOptions::GetRendererName(renderer)), switch_renderer_group);
 		action->setCheckable(true);
 		action->setChecked(current_renderer == renderer);
-		connect(action,
-			&QAction::triggered, [renderer] {
-				Host::SetBaseIntSettingValue("EmuCore/GS", "Renderer", static_cast<int>(renderer));
-				Host::CommitBaseSettingChanges();
-				g_emu_thread->applySettings();
-			});
+		connect(action, &QAction::triggered, [renderer] {
+			Host::SetBaseIntSettingValue("EmuCore/GS", "Renderer", static_cast<int>(renderer));
+			Host::CommitBaseSettingChanges();
+			g_emu_thread->applySettings();
+		});
 	}
 
 	m_ui.menuDebugSwitchRenderer->addActions(switch_renderer_group->actions());
@@ -1019,13 +1191,15 @@ void MainWindow::updateDisplayRelatedActions(bool has_surface, bool render_to_ma
 void MainWindow::updateStatusBarWidgetVisibility()
 {
 	auto Update = [this](QWidget* widget, bool visible, int stretch) {
+		if (widget->isVisible() == visible)
+			return;
+
 		if (widget->isVisible())
 		{
 			m_ui.statusBar->removeWidget(widget);
 			widget->hide();
 		}
-
-		if (visible)
+		else
 		{
 			m_ui.statusBar->addPermanentWidget(widget, stretch);
 			widget->show();
@@ -1035,9 +1209,63 @@ void MainWindow::updateStatusBarWidgetVisibility()
 	Update(m_status_verbose_widget, s_vm_valid, 1);
 	Update(m_status_renderer_widget, s_vm_valid, 0);
 	Update(m_status_resolution_widget, s_vm_valid, 0);
+	Update(m_status_gpu_widget, s_vm_valid, 0);
 	Update(m_status_fps_widget, s_vm_valid, 0);
 	Update(m_status_vps_widget, s_vm_valid, 0);
 	Update(m_status_speed_widget, s_vm_valid, 0);
+	Update(m_status_volume_widget, s_vm_valid, 0);
+}
+
+void MainWindow::setStatusVerboseText(const QString& text)
+{
+	m_status_verbose_widget->setText(text);
+}
+
+void MainWindow::setStatusRendererText(const QString& text)
+{
+	m_status_renderer_widget->setText(text);
+}
+
+void MainWindow::setStatusResolutionText(const QString& text)
+{
+	m_status_resolution_widget->setText(text);
+}
+
+void MainWindow::setStatusVolumeText(const QString& text, int volume, bool muted)
+{
+	m_status_volume_widget->setText(text);
+	if (muted != m_status_volume_muted)
+	{
+		m_status_volume_muted = muted;
+		m_status_volume_widget->setIcon(QIcon::fromTheme(muted ? QStringLiteral("volume-mute-line") : QStringLiteral("volume-up-line")));
+		m_status_volume_toggle_mute_action->setIcon(QIcon::fromTheme(muted ? QStringLiteral("volume-up-line") : QStringLiteral("volume-mute-line")));
+	}
+
+	if (!muted && !m_status_volume_slider->isSliderDown())
+	{
+		QSignalBlocker blocker(m_status_volume_slider);
+		m_status_volume_slider->setValue(volume);
+	}
+}
+
+void MainWindow::setStatusGPUText(const QString& text)
+{
+	m_status_gpu_widget->setText(text);
+}
+
+void MainWindow::setStatusFPSText(const QString& text)
+{
+	m_status_fps_widget->setText(text);
+}
+
+void MainWindow::setStatusVPSText(const QString& text)
+{
+	m_status_vps_widget->setText(text);
+}
+
+void MainWindow::setStatusSpeedText(const QString& text)
+{
+	m_status_speed_widget->setText(text);
 }
 
 void MainWindow::updateWindowTitle()
@@ -2218,6 +2446,8 @@ void MainWindow::onVMStopped()
 	m_last_fps_status = empty_string;
 	m_status_renderer_widget->setText(empty_string);
 	m_status_resolution_widget->setText(empty_string);
+	m_status_volume_widget->setText(empty_string);
+	m_status_gpu_widget->setText(empty_string);
 	m_status_fps_widget->setText(empty_string);
 	m_status_vps_widget->setText(empty_string);
 	m_status_speed_widget->setText(empty_string);

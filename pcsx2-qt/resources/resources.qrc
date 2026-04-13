@@ -18,6 +18,7 @@
 		<file>icons/black/svg/close-line.svg</file>
 		<file>icons/black/svg/controller-line.svg</file>
 		<file>icons/black/svg/controller-strike-line.svg</file>
+		<file>icons/black/svg/dashboard-line.svg</file>
 		<file>icons/black/svg/debug-step-into-line.svg</file>
 		<file>icons/black/svg/debug-step-out-line.svg</file>
 		<file>icons/black/svg/debug-step-over-line.svg</file>
@@ -32,6 +33,7 @@
 		<file>icons/black/svg/eject-line.svg</file>
 		<file>icons/black/svg/emulation-line.svg</file>
 		<file>icons/black/svg/eyetoy-line.svg</file>
+		<file>icons/black/svg/fast-forward-line.svg</file>
 		<file>icons/black/svg/file-add-line.svg</file>
 		<file>icons/black/svg/file-line.svg</file>
 		<file>icons/black/svg/file-list-line.svg</file>
@@ -90,6 +92,8 @@
 		<file>icons/black/svg/settings-3-line.svg</file>
 		<file>icons/black/svg/shut-down-line.svg</file>
 		<file>icons/black/svg/singstar-line.svg</file>
+		<file>icons/black/svg/slow-mo.svg</file>
+		<file>icons/black/svg/speed-line.svg</file>
 		<file>icons/black/svg/tools-line.svg</file>
 		<file>icons/black/svg/train-line.svg</file>
 		<file>icons/black/svg/trance-vibrator-line.svg</file>
@@ -97,6 +101,7 @@
 		<file>icons/black/svg/trophy-line.svg</file>
 		<file>icons/black/svg/tv-2-line.svg</file>
 		<file>icons/black/svg/usb-fill.svg</file>
+		<file>icons/black/svg/volume-mute-line.svg</file>
 		<file>icons/black/svg/volume-up-line.svg</file>
 		<file>icons/black/svg/warning-line.svg</file>
 		<file>icons/black/svg/wheel-line.svg</file>
@@ -123,6 +128,7 @@
 		<file>icons/white/svg/close-line.svg</file>
 		<file>icons/white/svg/controller-line.svg</file>
 		<file>icons/white/svg/controller-strike-line.svg</file>
+		<file>icons/white/svg/dashboard-line.svg</file>
 		<file>icons/white/svg/debug-step-into-line.svg</file>
 		<file>icons/white/svg/debug-step-out-line.svg</file>
 		<file>icons/white/svg/debug-step-over-line.svg</file>
@@ -137,6 +143,7 @@
 		<file>icons/white/svg/eject-line.svg</file>
 		<file>icons/white/svg/emulation-line.svg</file>
 		<file>icons/white/svg/eyetoy-line.svg</file>
+		<file>icons/white/svg/fast-forward-line.svg</file>
 		<file>icons/white/svg/file-add-line.svg</file>
 		<file>icons/white/svg/file-line.svg</file>
 		<file>icons/white/svg/file-list-line.svg</file>
@@ -198,6 +205,8 @@
 		<file>icons/white/svg/settings-3-line.svg</file>
 		<file>icons/white/svg/shut-down-line.svg</file>
 		<file>icons/white/svg/singstar-line.svg</file>
+		<file>icons/white/svg/slow-mo.svg</file>
+		<file>icons/white/svg/speed-line.svg</file>
 		<file>icons/white/svg/tools-line.svg</file>
 		<file>icons/white/svg/train-line.svg</file>
 		<file>icons/white/svg/trance-vibrator-line.svg</file>
@@ -205,6 +214,7 @@
 		<file>icons/white/svg/trophy-line.svg</file>
 		<file>icons/white/svg/tv-2-line.svg</file>
 		<file>icons/white/svg/usb-fill.svg</file>
+		<file>icons/white/svg/volume-mute-line.svg</file>
 		<file>icons/white/svg/volume-up-line.svg</file>
 		<file>icons/white/svg/warning-line.svg</file>
 		<file>icons/white/svg/wheel-line.svg</file>
