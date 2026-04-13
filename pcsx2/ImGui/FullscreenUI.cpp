@@ -1631,7 +1631,8 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 		}
 	}
 
-	const ImVec2 window_size(LayoutScale(500.0f, LAYOUT_SCREEN_HEIGHT));
+	const float window_width = (s_current_pause_submenu == PauseSubMenu::ChangeDisc) ? display_size.x : 500.0f;
+	const ImVec2 window_size(LayoutScale(window_width, LAYOUT_SCREEN_HEIGHT));
 	const ImVec2 window_pos(0.0f, display_size.y - LayoutScale(LAYOUT_FOOTER_HEIGHT) - window_size.y);
 
 	if (BeginFullscreenWindow(window_pos, window_size, "pause_menu", ImVec4(0.0f, 0.0f, 0.0f, 0.0f), 0.0f,
@@ -1647,8 +1648,9 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 		const std::vector<std::string>& change_disc_playlist = VMManager::GetM3UPlaylistEntries();
 		const u32 change_disc_item_count = static_cast<u32>(change_disc_playlist.size()) + 2; // +2 for back and from file
 		const bool just_focused = ResetFocusHere();
+		const float y_align = (s_current_pause_submenu == PauseSubMenu::ChangeDisc) ? 0.5f : 1.0f;
 		BeginMenuButtons((s_current_pause_submenu == PauseSubMenu::ChangeDisc) ? change_disc_item_count : submenu_item_count[static_cast<u32>(s_current_pause_submenu)],
-			1.0f, ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
+			y_align, ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
 			ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 
 		if (!ImGui::IsPopupOpen(0u, ImGuiPopupFlags_AnyPopup))
