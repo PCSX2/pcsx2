@@ -200,6 +200,9 @@ u32 GSMTLDevice::GetMaxTextureSize(id<MTLDevice> dev)
 {
 	if (@available(macOS 10.15, iOS 13.0, *))
 	{
+		MTLGPUFamily apple10 = static_cast<MTLGPUFamily>(1010); // Avoid relying on latest SDK, define ourselves
+		if ([dev supportsFamily:apple10])
+			return 32768;
 		if ([dev supportsFamily:MTLGPUFamilyApple3])
 			return 16384;
 	}
