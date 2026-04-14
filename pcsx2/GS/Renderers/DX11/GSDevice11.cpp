@@ -2447,7 +2447,10 @@ void GSDevice11::VSSetShader(ID3D11VertexShader* vs, ID3D11Buffer* vs_cb)
 void GSDevice11::PSSetShaderResource(int i, GSTexture* sr)
 {
 	// Update local state only, PSUpdateShaderState updates gpu state.
-	m_state.ps_pending_srv[i] = *static_cast<GSTexture11*>(sr);
+	if (sr)
+		m_state.ps_pending_srv[i] = *static_cast<GSTexture11*>(sr);
+	else
+		m_state.ps_pending_srv[i] = nullptr;
 }
 
 void GSDevice11::PSSetSamplerState(ID3D11SamplerState* ss0)
