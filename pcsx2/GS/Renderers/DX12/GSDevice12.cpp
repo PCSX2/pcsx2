@@ -3363,7 +3363,7 @@ void GSDevice12::ExecuteCommandListAndRestartRenderPass(bool wait_for_completion
 {
 	Console.Warning("D3D12: Executing command buffer due to '%s'", reason);
 
-	const bool was_in_render_pass = m_in_render_pass;
+	const bool was_in_render_pass = InRenderPass();
 	EndRenderPass();
 	ExecuteCommandList(GetWaitType(wait_for_completion, GSConfig.HWSpinCPUForReadbacks));
 	InvalidateCachedState();
@@ -4278,7 +4278,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		(draw_ds && static_cast<GSTexture12*>(draw_ds)->GetSRVDescriptor() == m_tfx_textures[0])))
 		PSSetShaderResource(0, nullptr, false);
 
-	if (m_in_render_pass && (m_current_render_target == draw_rt || m_current_depth_target == draw_ds))
+	if (InRenderPass() && (m_current_render_target == draw_rt || m_current_depth_target == draw_ds))
 	{
 		// avoid restarting the render pass just to switch from rt+depth to rt and vice versa
 		// keep the depth even if doing colclip hw draws, because the next draw will probably re-enable depth
@@ -4338,7 +4338,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	}
 
 	// Begin render pass if new target or out of the area.
-	if (!m_in_render_pass)
+	if (!InRenderPass())
 	{
 		GSVector4 clear_color = draw_rt ? draw_rt->GetUNormClearColor() : GSVector4::zero();
 		if (pipe.ps.colclip_hw)
