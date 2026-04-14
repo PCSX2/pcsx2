@@ -4288,12 +4288,12 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 			draw_rt = m_current_render_target;
 			m_pipeline_selector.rt = true;
 		}
-	}
-	else if (!draw_ds && m_current_depth_target && config.tex != m_current_depth_target &&
-			 m_current_depth_target->GetSize() == draw_rt->GetSize())
-	{
-		draw_ds = m_current_depth_target;
-		m_pipeline_selector.ds = true;
+		else if (!draw_ds && m_current_depth_target && config.tex != m_current_depth_target &&
+				 m_current_depth_target->GetSize() == draw_rt->GetSize())
+		{
+			draw_ds = m_current_depth_target;
+			m_pipeline_selector.ds = true;
+		}
 	}
 
 	GSTexture12* draw_ds_as_rt = static_cast<GSTexture12*>(config.ds_as_rt);
