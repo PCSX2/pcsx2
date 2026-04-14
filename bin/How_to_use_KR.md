@@ -44,7 +44,7 @@ https://youtu.be/luzijcTlwYk?si=nV5E8qtBftBgjss6
 | **Compatible (stable)** | **실기 PS2 + ME56PS2 하드웨어**(원본 me56ps2-emulator 경유)와 대전할 때. 데이터 무결성 우선. 원본과 동일한 ~40ms IN 페이싱·OS 기본 소켓 버퍼. |
 | **Fast (low latency)** | 양쪽 모두 PCSX2이고 같은 LAN에서 RTT가 매우 낮아 지연을 최소화하고 싶을 때. 가장 공격적 튜닝. 네트워크가 깨끗하지 않으면 프레임을 흘릴 수 있음. |
 
-실기 PS2와 대전 시 AP/HP 동기 어긋남이 보이면 **Compatible**로 전환하세요. 렉은 심하지만 안정적이라면 **Balanced**를 먼저 시도하고, 신뢰할 수 있는 LAN에서만 **Fast**로 이동하는 것을 권장합니다.
+실기 PS2와 대전 시 AP/HP 동기 ズレ가 보이면 **Compatible**로 전환하세요. 렉은 심하지만 안정적이라면 **Balanced**를 먼저 시도하고, 신뢰할 수 있는 LAN에서만 **Fast**로 이동하는 것을 권장합니다.
 
 ## 게임 내 다이얼 입력
 

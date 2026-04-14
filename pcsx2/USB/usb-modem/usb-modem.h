@@ -71,6 +71,16 @@ namespace usb_modem
 		0x00,        // bInterval 0
 	};
 
+	// Compatibility/performance variants. Index order is load-bearing:
+	// index 0 becomes the default when PCSX2.ini has no subtype entry.
+	enum ModemVariant : uint32_t
+	{
+		MOD_BALANCED = 0,
+		MOD_COMPATIBLE = 1,
+		MOD_FAST = 2,
+		MOD_COUNT = 3,
+	};
+
 	class ModemDevice final : public DeviceProxy
 	{
 	public:
@@ -78,6 +88,7 @@ namespace usb_modem
 		const char* Name() const override;
 		const char* TypeName() const override;
 		const char* IconName() const override;
+		std::span<const char*> SubTypes() const override;
 		std::span<const SettingInfo> Settings(u32 subtype) const override;
 		bool Freeze(USBDevice* dev, StateWrapper& sw) const override;
 		void UpdateSettings(USBDevice* dev, SettingsInterface& si) const override;

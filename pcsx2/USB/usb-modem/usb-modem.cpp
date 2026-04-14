@@ -76,7 +76,7 @@ namespace usb_modem
 		size_t read_pos = 0;
 		size_t write_pos = 0;
 		size_t count = 0;
-		std::mutex mutex;
+		mutable std::mutex mutex;
 
 		void clear()
 		{
@@ -125,6 +125,7 @@ namespace usb_modem
 
 		size_t available() const
 		{
+			std::lock_guard<std::mutex> lock(mutex);
 			return count;
 		}
 	};
@@ -167,6 +168,15 @@ namespace usb_modem
 		int in_poll_counter = 0;
 		int out_counter = 0;
 
+		// Compatibility mode (selected via USB SubType dropdown)
+		ModemVariant mode = MOD_BALANCED;
+		// Mode-driven tuning knobs (initialized in CreateDevice).
+		int recv_chunk = 512;          // TCP recv() chunk size
+		int select_timeout_us = 10000; // recv thread select() timeout
+		int in_min_interval_ms = 20;   // Min gap between data-bearing IN responses (0=off)
+		int socket_buf_size = 65536;   // SO_SNDBUF/SO_RCVBUF (0 = leave at OS default)
+		// Timestamp of last IN response that actually delivered data.
+		std::chrono::steady_clock::time_point last_in_data_time{};
 	};
 
 	// ---- Socket helpers ----
@@ -190,6 +200,9 @@ namespace usb_modem
 
 	static void set_socket_buffers(socket_t sock, int size)
 	{
+		// size == 0 means "leave OS defaults alone" (Compatible mode).
+		if (size <= 0)
+			return;
 		setsockopt(sock, SOL_SOCKET, SO_SNDBUF, (const char*)&size, sizeof(size));
 		setsockopt(sock, SOL_SOCKET, SO_RCVBUF, (const char*)&size, sizeof(size));
 	}
@@ -301,8 +314,9 @@ namespace usb_modem
 
 	static void tcp_recv_thread(ModemState* s)
 	{
-		modem_log("RECV_THREAD: started");
-		uint8_t buf[4096];
+		modem_log("RECV_THREAD: started (mode=%d recv_chunk=%d select_us=%d)",
+			(int)s->mode, s->recv_chunk, s->select_timeout_us);
+		uint8_t buf[4096]; // max-size stack buffer; we only read up to s->recv_chunk bytes
 		while (s->recv_thread_running.load())
 		{
 			if (s->comm_sock == SOCKET_INVALID)
@@ -320,12 +334,17 @@ namespace usb_modem
 
 			struct timeval tv;
 			tv.tv_sec = 0;
-			tv.tv_usec = 1000; // 1ms timeout
+			tv.tv_usec = s->select_timeout_us;
 
 			int ret = select((int)s->comm_sock + 1, &readfds, nullptr, nullptr, &tv);
 			if (ret > 0 && FD_ISSET(s->comm_sock, &readfds))
 			{
-				int n = recv(s->comm_sock, (char*)buf, sizeof(buf), 0);
+				// Mode-dependent chunk: smaller chunks preserve TCP packet boundaries
+				// closer to the PPP/game frames, at some CPU cost.
+				int to_read = s->recv_chunk;
+				if (to_read <= 0 || to_read > (int)sizeof(buf))
+					to_read = sizeof(buf);
+				int n = recv(s->comm_sock, (char*)buf, to_read, 0);
 				if (n > 0)
 				{
 					modem_log("RECV_THREAD: received %d bytes from TCP", n);
@@ -393,7 +412,7 @@ namespace usb_modem
 
 				set_socket_nonblocking(new_sock);
 				set_socket_nodelay(new_sock);
-				set_socket_buffers(new_sock, 4096);
+				set_socket_buffers(new_sock, s->socket_buf_size);
 				s->comm_sock = new_sock;
 				s->ring_pending = true;
 				s->conn_cv.notify_one();
@@ -508,7 +527,7 @@ namespace usb_modem
 
 		set_socket_nonblocking(sock);
 		set_socket_nodelay(sock);
-		set_socket_buffers(sock, 4096);
+		set_socket_buffers(sock, s->socket_buf_size);
 		s->comm_sock = sock;
 		s->connected = true;
 		s->tx_buffer.clear();
@@ -788,20 +807,44 @@ namespace usb_modem
 
 				if (s->connected)
 				{
-					// Online mode: forward directly to TCP
+					// Online mode: forward directly to TCP.
+					// send() may do a partial write (returns < payload_len) when the
+					// kernel send buffer fills up, especially with small SO_SNDBUF.
+					// Dropping the remainder corrupts PPP frame boundaries on the
+					// peer and causes AP desync, so loop until fully sent.
 					if (s->comm_sock != SOCKET_INVALID && payload_len > 0)
 					{
 						modem_log_hex("USB_OUT: sending to TCP", payload, payload_len);
-						int sent = send(s->comm_sock, (const char*)payload, payload_len, 0);
-						modem_log("USB_OUT: TCP send returned %d", sent);
-						if (sent < 0)
+						int total_sent = 0;
+						int retries = 0;
+						while (total_sent < payload_len)
 						{
+							int n = send(s->comm_sock, (const char*)payload + total_sent,
+								payload_len - total_sent, 0);
+							if (n > 0)
+							{
+								total_sent += n;
+								continue;
+							}
+							// n <= 0 path: EAGAIN retries briefly, other errors break out.
 #ifdef _WIN32
-							modem_log("USB_OUT: TCP send error %d", WSAGetLastError());
+							int err = (n < 0) ? WSAGetLastError() : 0;
+							const bool would_block = (err == WSAEWOULDBLOCK);
 #else
-							modem_log("USB_OUT: TCP send error %d", errno);
+							int err = (n < 0) ? errno : 0;
+							const bool would_block = (err == EAGAIN || err == EWOULDBLOCK);
 #endif
+							if (would_block && retries < 10)
+							{
+								retries++;
+								std::this_thread::sleep_for(std::chrono::microseconds(200));
+								continue;
+							}
+							modem_log("USB_OUT: TCP send error %d (partial %d/%d)",
+								err, total_sent, payload_len);
+							break;
 						}
+						modem_log("USB_OUT: TCP send completed %d/%d", total_sent, payload_len);
 					}
 				}
 				else
@@ -890,10 +933,37 @@ namespace usb_modem
 				//   byte 1: line status  (0x60 = THRE+TEMT, bit 0 = DR when data ready)
 				pkt[0] = s->connected ? FTDI_MODEM_STATUS_ONLINE : FTDI_MODEM_STATUS_IDLE;
 
-				// Read available data from tx_buffer (max 62 bytes per packet)
+				// Read available data from tx_buffer (max 62 bytes per packet).
+				//
+				// Pacing: the original me56ps2-emulator emits IN packets on a ~40ms
+				// timer, which approximates 14.4kbps serial pacing. Responding
+				// instantly on every OHCI IN poll can overrun the IOP's UART FIFO
+				// and also coalesce multiple PPP frames into single USB reads, which
+				// appears to cause AP desync against real PS2 hardware.
+				// When in_min_interval_ms > 0, skip delivering data if insufficient
+				// time has elapsed since the last data-bearing response; the IN still
+				// returns the 2-byte status so OHCI stays happy.
 				size_t buf_size = std::min<size_t>(p->buffer_size, sizeof(pkt));
 				size_t max_data = (buf_size > 2) ? buf_size - 2 : 0;
-				size_t data_len = s->tx_buffer.read(pkt + 2, max_data);
+				size_t data_len = 0;
+				bool throttled = false;
+				if (max_data > 0)
+				{
+					if (s->in_min_interval_ms > 0)
+					{
+						auto now = std::chrono::steady_clock::now();
+						auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+							now - s->last_in_data_time).count();
+						if (elapsed_ms < s->in_min_interval_ms)
+							throttled = true;
+					}
+					if (!throttled)
+					{
+						data_len = s->tx_buffer.read(pkt + 2, max_data);
+						if (data_len > 0)
+							s->last_in_data_time = std::chrono::steady_clock::now();
+					}
+				}
 
 				// Line status: THRE+TEMT (0x60) always set.
 				// DR (Data Ready, bit 0) = 1 when RX FIFO has data.
@@ -1019,10 +1089,46 @@ namespace usb_modem
 		s->remote_port = USB::GetConfigInt(si, port, TypeName(), "RemotePort", 10023);
 		s->server_mode = USB::GetConfigBool(si, port, TypeName(), "ServerMode", false);
 
-		modem_log("CREATE: host='%s' port=%d server_mode=%d usb_port=%u",
-			s->remote_host.c_str(), s->remote_port, s->server_mode, port);
-		Console.WriteLn("USB Modem: Creating device - Host=%s Port=%d Server=%s",
-			s->remote_host.c_str(), s->remote_port, s->server_mode ? "true" : "false");
+		// Map SubType index to tuning knobs. Index 0 (MOD_BALANCED) is the default
+		// for users with no prior modem_subtype entry in PCSX2.ini.
+		if (subtype >= MOD_COUNT)
+			subtype = MOD_BALANCED;
+		s->mode = static_cast<ModemVariant>(subtype);
+		const char* mode_name = "Balanced";
+		switch (s->mode)
+		{
+			case MOD_COMPATIBLE:
+				// Closest to the original me56ps2-emulator: OS-default socket
+				// buffers, small recv chunks, 40ms pacing on data delivery.
+				s->recv_chunk = 64;
+				s->select_timeout_us = 50000;
+				s->in_min_interval_ms = 40;
+				s->socket_buf_size = 0; // leave OS defaults
+				mode_name = "Compatible";
+				break;
+			case MOD_FAST:
+				// Preserves the pre-existing aggressive tuning for low-latency LAN.
+				s->recv_chunk = 4096;
+				s->select_timeout_us = 1000;
+				s->in_min_interval_ms = 0;
+				s->socket_buf_size = 4096;
+				mode_name = "Fast";
+				break;
+			case MOD_BALANCED:
+			default:
+				s->recv_chunk = 512;
+				s->select_timeout_us = 10000;
+				s->in_min_interval_ms = 20;
+				s->socket_buf_size = 65536;
+				mode_name = "Balanced";
+				break;
+		}
+		s->last_in_data_time = std::chrono::steady_clock::now();
+
+		modem_log("CREATE: host='%s' port=%d server_mode=%d usb_port=%u mode=%s",
+			s->remote_host.c_str(), s->remote_port, s->server_mode, port, mode_name);
+		Console.WriteLn("USB Modem: Creating device - Host=%s Port=%d Server=%s Mode=%s",
+			s->remote_host.c_str(), s->remote_port, s->server_mode ? "true" : "false", mode_name);
 
 		s->dev.speed = USB_SPEED_FULL;
 		s->desc.full = &s->desc_dev;
@@ -1093,8 +1199,21 @@ namespace usb_modem
 		return ICON_FA_PHONE;
 	}
 
+	std::span<const char*> ModemDevice::SubTypes() const
+	{
+		// Order matches ModemVariant enum; index 0 becomes the default subtype
+		// in PCSX2.ini for fresh users, which we want to be Balanced.
+		static const char* subtypes[] = {
+			TRANSLATE_NOOP("USB", "Balanced"),
+			TRANSLATE_NOOP("USB", "Compatible (stable)"),
+			TRANSLATE_NOOP("USB", "Fast (low latency)"),
+		};
+		return subtypes;
+	}
+
 	std::span<const SettingInfo> ModemDevice::Settings(u32 subtype) const
 	{
+		(void)subtype; // All three modes share the same user-facing settings.
 		static constexpr const SettingInfo info[] = {
 			{SettingInfo::Type::String, "RemoteHost", TRANSLATE_NOOP("USB", "Remote Host"),
 				TRANSLATE_NOOP("USB", "IP address of the remote player (client mode) or bind address (server mode)."),
