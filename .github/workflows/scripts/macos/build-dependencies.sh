@@ -244,6 +244,8 @@ cd "qtbase-everywhere-src-$QT"
 
 # Patch Qt to support macOS 11
 patch -p1 < "$SCRIPTDIR/qt-macos11compat.patch"
+# Backport fix build on Xcode 26.4 (https://codereview.qt-project.org/c/qt/qtbase/+/724619)
+patch -p1 < "$SCRIPTDIR/qt110-xcode264.patch"
 
 # since we don't have a direct reference to QtSvg, it doesn't deployed directly from the main binary
 # (only indirectly from iconengines), and the libqsvg.dylib imageformat plugin does not get deployed.
