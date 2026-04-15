@@ -17558,7 +17558,7 @@ SLES-51257:
   name: "The Sims"
   name-sort: "Sims, The"
   region: "PAL-M8"
-  compat: 3
+  compat: 5
   speedHacks:
     mtvu: 0 # Fixes bad graphics due to bad T-Bit handling.
 SLES-51258:
@@ -17719,7 +17719,7 @@ SLES-51315:
   compat: 5
 SLES-51316:
   name: "Grand Theft Auto - Vice City"
-  region: "PAL-E"
+  region: "PAL-A"
 SLES-51317:
   name: "Minority Report - Le Futur vous Rattrape"
   region: "PAL-F"
@@ -27045,6 +27045,9 @@ SLES-54522:
 SLES-54527:
   name: "DreamWorks & Aardman Flushed Away"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 5 # Fixes post alignment.
+    nativeScaling: 2 # Fixes post effects.
 SLES-54532:
   name: "Home Alone"
   region: "PAL-PL-P"
@@ -72499,6 +72502,9 @@ SLUS-21484:
   name: "DreamWorks & Aardman Flushed Away"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 5 # Fixes post alignment.
+    nativeScaling: 2 # Fixes post effects.
 SLUS-21485:
   name: "Backyard Sports - Basketball 2007"
   region: "NTSC-U"
@@ -75930,6 +75936,9 @@ SLUS-29196:
 SLUS-29197:
   name: "DreamWorks & Aardman Flushed Away [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 5 # Fixes post alignment.
+    nativeScaling: 2 # Fixes post effects.
 SLUS-29198:
   name: "Guitar Hero II [Demo]"
   region: "NTSC-U"
