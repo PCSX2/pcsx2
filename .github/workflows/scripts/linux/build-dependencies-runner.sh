@@ -87,7 +87,7 @@ cd ..
 echo "Building libpng..."
 rm -fr "libpng-$LIBPNG"
 tar xf "libpng-$LIBPNG.tar.xz"
-gunzip -d -f "libpng-$LIBPNG-apng.patch.gz"
+gzip -kd -f "libpng-$LIBPNG-apng.patch.gz"
 cd "libpng-$LIBPNG"
 patch -p1 < "../libpng-$LIBPNG-apng.patch"
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DBUILD_SHARED_LIBS=ON -DBUILD_SHARED_LIBS=ON -DPNG_TESTS=OFF -DPNG_STATIC=OFF -DPNG_SHARED=ON -DPNG_TOOLS=OFF -B build -G Ninja
