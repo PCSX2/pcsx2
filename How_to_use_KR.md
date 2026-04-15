@@ -36,15 +36,14 @@ https://youtu.be/luzijcTlwYk?si=nV5E8qtBftBgjss6
 
 ## 호환성 모드 (SubType)
 
-모뎀 장치는 세 가지 **서브타입(SubType)**을 제공합니다. 설정 > 컨트롤러 > USB > Port 1 > Device Subtype에서 선택하세요.
+모뎀 장치는 두 가지 **서브타입(SubType)**을 제공합니다. 설정 > 컨트롤러 > USB > Port 1 > Device Subtype에서 선택하세요.
 
 | SubType | 사용 시점 |
 |---|---|
 | **Balanced** (기본값) | PCSX2 ↔ PCSX2 대전, LAN 또는 합리적인 RTT의 인터넷. 지연과 안정성의 균형. |
-| **Compatible (stable)** | **실기 PS2 + ME56PS2 하드웨어**(원본 me56ps2-emulator 경유)와 대전할 때. 데이터 무결성 우선. 원본과 동일한 ~40ms IN 페이싱·OS 기본 소켓 버퍼. |
 | **Fast (low latency)** | 양쪽 모두 PCSX2이고 같은 LAN에서 RTT가 매우 낮아 지연을 최소화하고 싶을 때. 가장 공격적 튜닝. 네트워크가 깨끗하지 않으면 프레임을 흘릴 수 있음. |
 
-실기 PS2와 대전 시 AP/HP 동기 어긋남이 보이면 **Compatible**로 전환하세요. 렉은 심하지만 안정적이라면 **Balanced**를 먼저 시도하고, 신뢰할 수 있는 LAN에서만 **Fast**로 이동하는 것을 권장합니다.
+먼저 **Balanced**를 사용하고, RTT가 매우 낮은 신뢰할 수 있는 LAN에서만 **Fast**로 이동하는 것을 권장합니다.
 
 ## 게임 내 다이얼 입력
 

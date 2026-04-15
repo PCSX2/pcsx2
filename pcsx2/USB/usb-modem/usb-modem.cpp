@@ -1097,15 +1097,6 @@ namespace usb_modem
 		const char* mode_name = "Balanced";
 		switch (s->mode)
 		{
-			case MOD_COMPATIBLE:
-				// Closest to the original me56ps2-emulator: OS-default socket
-				// buffers, small recv chunks, 40ms pacing on data delivery.
-				s->recv_chunk = 64;
-				s->select_timeout_us = 50000;
-				s->in_min_interval_ms = 40;
-				s->socket_buf_size = 0; // leave OS defaults
-				mode_name = "Compatible";
-				break;
 			case MOD_FAST:
 				// Preserves the pre-existing aggressive tuning for low-latency LAN.
 				s->recv_chunk = 4096;
@@ -1205,7 +1196,6 @@ namespace usb_modem
 		// in PCSX2.ini for fresh users, which we want to be Balanced.
 		static const char* subtypes[] = {
 			TRANSLATE_NOOP("USB", "Balanced"),
-			TRANSLATE_NOOP("USB", "Compatible (stable)"),
 			TRANSLATE_NOOP("USB", "Fast (low latency)"),
 		};
 		return subtypes;

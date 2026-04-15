@@ -36,15 +36,14 @@ https://youtu.be/luzijcTlwYk?si=nV5E8qtBftBgjss6
 
 ## 互換性モード（SubType）
 
-モデムデバイスは3種類の **SubType** を提供します。Settings > Controllers > USB > Port 1 > Device Subtype から選択してください。
+モデムデバイスは2種類の **SubType** を提供します。Settings > Controllers > USB > Port 1 > Device Subtype から選択してください。
 
 | SubType | 推奨用途 |
 |---|---|
 | **Balanced** (既定値) | PCSX2 ↔ PCSX2 対戦、LAN または妥当な RTT のインターネット。遅延と安定性の中間。 |
-| **Compatible (stable)** | **実機PS2 + ME56PS2ハードウェア**（オリジナル me56ps2-emulator 経由）との対戦時。データ完全性を優先し、オリジナルと同じ ~40ms の IN ペーシング・OSデフォルトのソケットバッファを使用。 |
 | **Fast (low latency)** | 両方とも PCSX2 で、同一LAN上で RTT が非常に低く、遅延を最小化したい場合。最も攻撃的なチューニング。ネットワークが綺麗でないとフレームを取りこぼす可能性あり。 |
 
-実機PS2との対戦で AP / HP の同期ズレが見られる場合は **Compatible** に切り替えてください。ラグが大きいが安定している場合はまず **Balanced** を試し、信頼できる LAN のみで **Fast** に移行することを推奨します。
+まず **Balanced** から始めてください。信頼できる LAN かつ RTT が非常に低い場合のみ **Fast** に移行することを推奨します。
 
 ## ゲーム内ダイヤル入力
 

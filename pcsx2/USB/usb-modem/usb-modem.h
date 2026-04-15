@@ -76,9 +76,8 @@ namespace usb_modem
 	enum ModemVariant : uint32_t
 	{
 		MOD_BALANCED = 0,
-		MOD_COMPATIBLE = 1,
-		MOD_FAST = 2,
-		MOD_COUNT = 3,
+		MOD_FAST = 1,
+		MOD_COUNT = 2,
 	};
 
 	class ModemDevice final : public DeviceProxy

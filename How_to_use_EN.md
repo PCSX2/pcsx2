@@ -36,15 +36,14 @@ https://youtu.be/luzijcTlwYk?si=nV5E8qtBftBgjss6
 
 ## Compatibility Modes
 
-The modem device exposes three **SubType** variants. Pick the one that matches your setup in Settings > Controllers > USB > Port 1 > Device Subtype.
+The modem device exposes two **SubType** variants. Pick the one that matches your setup in Settings > Controllers > USB > Port 1 > Device Subtype.
 
 | SubType | Use When |
 |---|---|
 | **Balanced** (default) | Two PCSX2 instances over LAN or reasonable-RTT internet. Good trade-off between latency and stability. |
-| **Compatible (stable)** | Playing against a **real PS2 + ME56PS2 hardware** bridged by the original me56ps2-emulator. Prioritizes data integrity; uses ~40ms IN pacing and OS-default socket buffers to mirror the original timing. |
 | **Fast (low latency)** | Both sides PCSX2 on the same LAN with very low RTT, and you want minimum latency. Most aggressive tuning; may drop frames if the network isn't clean. |
 
-If you see AP/HP desync against a real PS2, switch to **Compatible**. If gameplay feels laggy but stable, try **Balanced** first and only move to **Fast** on a trusted LAN.
+Start with **Balanced**. Only move to **Fast** on a trusted LAN with very low RTT.
 
 ## In-Game Dialing
 
