@@ -226,11 +226,6 @@ namespace PageFaultHandler
 
 #ifdef ARCH_ARM64
 
-void HostSys::FlushInstructionCache(void* address, u32 size)
-{
-	__builtin___clear_cache(reinterpret_cast<char*>(address), reinterpret_cast<char*>(address) + size);
-}
-
 [[maybe_unused]] static bool IsStoreInstruction(const void* ptr)
 {
 	u32 bits;
