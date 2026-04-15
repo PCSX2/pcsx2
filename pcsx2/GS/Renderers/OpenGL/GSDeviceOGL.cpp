@@ -2865,6 +2865,15 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	if (!draw_rt && GLState::rt && GLState::ds == draw_ds && config.tex != GLState::rt &&
 		GLState::rt->GetSize() == draw_ds->GetSize() && !draw_ds_as_rt)
 	{
+		// Clear texture binding when it's bound to RT, a previous feedbackloop might have used slot 2,
+		// if so we need to unbind it to avoid rt hazards, we only need to do this with texture barriers.
+		if (m_features.texture_barrier && !(config.require_one_barrier || config.require_full_barrier) &&
+			static_cast<GSTextureOGL*>(GLState::rt)->GetID() == GLState::tex_unit[2])
+		{
+			GLState::tex_unit[2] = 0;
+			glBindTextureUnit(2, 0);
+		}
+
 		draw_rt = GLState::rt;
 		fb_optimization_needs_barrier = !GLState::rt_written;
 	}

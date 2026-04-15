@@ -4285,6 +4285,12 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		if (!draw_rt && m_current_render_target && config.tex != m_current_render_target &&
 			m_current_render_target->GetSize() == draw_ds->GetSize())
 		{
+			// Clear texture binding when it's bound to RT, a previous feedbackloop might have used slot 2,
+			// if so we need to unbind it to avoid rt hazards, we only need to do this with texture barriers.
+			if (m_features.texture_barrier && !(config.require_one_barrier || config.require_full_barrier) &&
+				static_cast<GSTexture12*>(m_current_render_target)->GetSRVDescriptor() == m_tfx_textures[2])
+				PSSetShaderResource(2, nullptr, false);
+
 			draw_rt = m_current_render_target;
 			m_pipeline_selector.rt = true;
 		}
