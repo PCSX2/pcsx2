@@ -6,6 +6,7 @@
 #include "Host.h"
 #include "Memory.h"
 #include "Elfheader.h"
+#include "Achievements.h"
 #include "SaveState.h"
 #include "PINE.h"
 #include "VMManager.h"
@@ -159,6 +160,9 @@ namespace PINEServer
 		MsgUUID = 0xD, /**< Returns the game UUID. */
 		MsgGameVersion = 0xE, /**< Returns the game verion. */
 		MsgStatus = 0xF, /**< Returns the emulator status. */
+		MsgPause = 0x10, /**< Pauses the emulator. */
+		MsgResume = 0x11, /**< Resumes the emulator. */
+		MsgFrameAdvance = 0x12, /**< Advances the emulator by N frames. */
 		MsgUnimplemented = 0xFF /**< Unimplemented IPC message. */
 	};
 
@@ -640,34 +644,43 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 				ret_cnt += size;
 				break;
 			}
-			case MsgSaveState:
-			{
-				if (!VMManager::HasValidVM())
-					goto error;
-				if (!SafetyChecks(buf_cnt, 1, ret_cnt, 0, buf_size)) [[unlikely]]
-					goto error;
-				Host::RunOnCPUThread([slot = FromSpan<u8>(buf, buf_cnt)] {
-					VMManager::SaveStateToSlot(slot, true, [slot](const std::string& error) {
-						SaveState_ReportSaveErrorOSD(error, slot);
-					});
-				});
-				buf_cnt += 1;
-				break;
-			}
-			case MsgLoadState:
-			{
-				if (!VMManager::HasValidVM())
-					goto error;
-				if (!SafetyChecks(buf_cnt, 1, ret_cnt, 0, buf_size)) [[unlikely]]
-					goto error;
-				Host::RunOnCPUThread([slot = FromSpan<u8>(buf, buf_cnt)] {
-					Error state_error;
-					if (!VMManager::LoadStateFromSlot(slot, false, &state_error))
-						SaveState_ReportLoadErrorOSD(state_error.GetDescription(), slot, false);
-				});
-				buf_cnt += 1;
-				break;
-			}
+				case MsgSaveState:
+				{
+					if (!VMManager::HasValidVM())
+						goto error;
+					if (!SafetyChecks(buf_cnt, 1, ret_cnt, 0, buf_size)) [[unlikely]]
+						goto error;
+					const u8 slot = FromSpan<u8>(buf, buf_cnt);
+					std::string save_error;
+					Host::RunOnCPUThread([slot, &save_error] {
+						VMManager::SaveStateToSlot(slot, false, [&save_error, slot](const std::string& error) {
+							save_error = error;
+							SaveState_ReportSaveErrorOSD(error, slot);
+						});
+					}, true);
+					if (!save_error.empty())
+						goto error;
+					buf_cnt += 1;
+					break;
+				}
+				case MsgLoadState:
+				{
+					if (!VMManager::HasValidVM())
+						goto error;
+					if (!SafetyChecks(buf_cnt, 1, ret_cnt, 0, buf_size)) [[unlikely]]
+						goto error;
+					bool loaded = false;
+					Host::RunOnCPUThread([slot = FromSpan<u8>(buf, buf_cnt), &loaded] {
+						Error state_error;
+						loaded = VMManager::LoadStateFromSlot(slot, false, &state_error);
+						if (!loaded)
+							SaveState_ReportLoadErrorOSD(state_error.GetDescription(), slot, false);
+					}, true);
+					if (!loaded)
+						goto error;
+					buf_cnt += 1;
+					break;
+				}
 			case MsgTitle:
 			{
 				if (!VMManager::HasValidVM())
@@ -725,10 +738,10 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 				ret_cnt += size;
 				break;
 			}
-			case MsgStatus:
-			{
-				if (!SafetyChecks(buf_cnt, 0, ret_cnt, 4, buf_size)) [[unlikely]]
-					goto error;
+				case MsgStatus:
+				{
+					if (!SafetyChecks(buf_cnt, 0, ret_cnt, 4, buf_size)) [[unlikely]]
+						goto error;
 				EmuStatus status;
 
 				switch (VMManager::GetState())
@@ -744,14 +757,45 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 						break;
 				}
 
-				ToResultVector(ret_buffer, status, ret_cnt);
-				ret_cnt += 4;
-				break;
-			}
-			default:
-			{
-			error:
-				return IPCBuffer{5, MakeFailIPC(ret_buffer)};
+					ToResultVector(ret_buffer, status, ret_cnt);
+					ret_cnt += 4;
+					break;
+				}
+				case MsgPause:
+				{
+					if (!VMManager::HasValidVM())
+						goto error;
+					if (!SafetyChecks(buf_cnt, 0, ret_cnt, 0, buf_size)) [[unlikely]]
+						goto error;
+					Host::RunOnCPUThread([]() { VMManager::SetPaused(true); }, true);
+					break;
+				}
+				case MsgResume:
+				{
+					if (!VMManager::HasValidVM())
+						goto error;
+					if (!SafetyChecks(buf_cnt, 0, ret_cnt, 0, buf_size)) [[unlikely]]
+						goto error;
+					Host::RunOnCPUThread([]() { VMManager::SetPaused(false); }, true);
+					break;
+				}
+				case MsgFrameAdvance:
+				{
+					if (!VMManager::HasValidVM() || Achievements::IsHardcoreModeActive())
+						goto error;
+					if (!SafetyChecks(buf_cnt, 4, ret_cnt, 0, buf_size)) [[unlikely]]
+						goto error;
+					const u32 num_frames = FromSpan<u32>(buf, buf_cnt);
+					if (num_frames < 1)
+						goto error;
+					Host::RunOnCPUThread([num_frames]() { VMManager::FrameAdvance(num_frames); }, true);
+					buf_cnt += 4;
+					break;
+				}
+				default:
+				{
+				error:
+					return IPCBuffer{5, MakeFailIPC(ret_buffer)};
 			}
 		}
 	}
