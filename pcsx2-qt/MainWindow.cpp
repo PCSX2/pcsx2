@@ -1114,7 +1114,7 @@ bool MainWindow::shouldHideMainWindow() const
 {
 	// NOTE: We can't use isRenderingToMain() here, because this happens post-fullscreen-switch.
 	return (Host::GetBoolSettingValue("UI", "HideMainWindowWhenRunning", false) && !g_emu_thread->shouldRenderToMain()) ||
-	       (g_emu_thread->shouldRenderToMain() && (isRenderingFullscreen() || m_is_temporarily_windowed)) ||
+	       (g_emu_thread->shouldRenderToMain() && (isRenderingFullscreen() || g_emu_thread->isExclusiveFullscreen() || m_is_temporarily_windowed)) ||
 	       Host::InNoGUIMode();
 }
 
