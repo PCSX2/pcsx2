@@ -1043,7 +1043,7 @@ void GSDevice11::EndPresent()
 		PopTimestampQuery();
 
 	// clear out the swap chain view, it might get resized..
-	OMSetRenderTargets(nullptr, nullptr, nullptr, nullptr);
+	OMSetRenderTargets(nullptr, nullptr);
 
 	const UINT sync_interval = static_cast<UINT>(m_vsync_mode == GSVSyncMode::FIFO);
 	const UINT flags = (m_vsync_mode == GSVSyncMode::Disabled && m_using_allow_tearing) ? DXGI_PRESENT_ALLOW_TEARING : 0;
@@ -2092,13 +2092,13 @@ bool GSDevice11::DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, cons
 {
 	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
-	static const int threadGroupWorkRegionDim = 16;
+	static constexpr int threadGroupWorkRegionDim = 16;
 	const int dispatchX = (dTex->GetWidth() + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;
 	const int dispatchY = (dTex->GetHeight() + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;
 
 	ID3D11ShaderResourceView* srvs[1] = {*static_cast<GSTexture11*>(sTex)};
 	ID3D11UnorderedAccessView* uavs[1] = {*static_cast<GSTexture11*>(dTex)};
-	m_ctx->OMSetRenderTargets(0, nullptr, nullptr);
+	OMSetRenderTargets(nullptr, nullptr);
 	m_ctx->UpdateSubresource(m_cas.cb.get(), 0, nullptr, constants.data(), 0, 0);
 	m_ctx->CSSetConstantBuffers(0, 1, m_cas.cb.addressof());
 	m_ctx->CSSetShader(sharpen_only ? m_cas.cs_sharpen.get() : m_cas.cs_upscale.get(), nullptr, 0);
