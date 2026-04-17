@@ -553,6 +553,9 @@ bool GSDeviceOGL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		glDisable(GL_MULTISAMPLE);
 
 		glDisable(GL_DITHER); // Honestly I don't know!
+
+		// Initialise stencil ref/mask.
+		glStencilFunc(GLState::stencil_func, 1, 1);
 	}
 
 	// ****************************************************************
