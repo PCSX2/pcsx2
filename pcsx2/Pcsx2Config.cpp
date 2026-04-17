@@ -2195,51 +2195,58 @@ std::string EmuFolders::GetPortableModePath()
 
 bool EmuFolders::SetDataDirectory(Error* error)
 {
+	// Portable mode has the absolute priority.
 	if (!ShouldUsePortableMode())
 	{
+		// Also check if the user has overriden the DataRoot path.
+		if (EmuConfig.CustomDataPath.empty())
+		{
 #if defined(_WIN32)
-		// On Windows, use My Documents\PCSX2 to match old installs.
-		PWSTR documents_directory;
-		if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_Documents, 0, NULL, &documents_directory)))
-		{
-			if (std::wcslen(documents_directory) > 0)
-				DataRoot = Path::Combine(StringUtil::WideStringToUTF8String(documents_directory), "PCSX2");
-			CoTaskMemFree(documents_directory);
-		}
+			// On Windows, use My Documents\PCSX2 to match old installs.
+			PWSTR documents_directory;
+			if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_Documents, 0, NULL, &documents_directory)))
+			{
+				if (std::wcslen(documents_directory) > 0)
+					DataRoot = Path::Combine(StringUtil::WideStringToUTF8String(documents_directory), "PCSX2");
+				CoTaskMemFree(documents_directory);
+			}
 #elif defined(__linux__) || defined(__FreeBSD__)
-		// Use $XDG_CONFIG_HOME/PCSX2 if it exists.
-		const char* xdg_config_home = getenv("XDG_CONFIG_HOME");
-		if (xdg_config_home && Path::IsAbsolute(xdg_config_home))
-		{
-			DataRoot = Path::RealPath(Path::Combine(xdg_config_home, "PCSX2"));
-		}
-		else
-		{
-			// Use ~/PCSX2 for non-XDG, and ~/.config/PCSX2 for XDG.
+			// Use $XDG_CONFIG_HOME/PCSX2 if it exists.
+			const char* xdg_config_home = getenv("XDG_CONFIG_HOME");
+			if (xdg_config_home && Path::IsAbsolute(xdg_config_home))
+			{
+				DataRoot = Path::RealPath(Path::Combine(xdg_config_home, "PCSX2"));
+			}
+			else
+			{
+				// Use ~/PCSX2 for non-XDG, and ~/.config/PCSX2 for XDG.
+				const char* home_dir = getenv("HOME");
+				if (home_dir)
+				{
+					// ~/.config should exist, but just in case it doesn't and this is a fresh profile..
+					const std::string config_dir(Path::Combine(home_dir, ".config"));
+					if (!FileSystem::DirectoryExists(config_dir.c_str()))
+						FileSystem::CreateDirectoryPath(config_dir.c_str(), false);
+
+					DataRoot = Path::RealPath(Path::Combine(config_dir, "PCSX2"));
+				}
+			}
+#elif defined(__APPLE__)
+			static constexpr char MAC_DATA_DIR[] = "Library/Application Support/PCSX2";
 			const char* home_dir = getenv("HOME");
 			if (home_dir)
-			{
-				// ~/.config should exist, but just in case it doesn't and this is a fresh profile..
-				const std::string config_dir(Path::Combine(home_dir, ".config"));
-				if (!FileSystem::DirectoryExists(config_dir.c_str()))
-					FileSystem::CreateDirectoryPath(config_dir.c_str(), false);
-
-				DataRoot = Path::RealPath(Path::Combine(config_dir, "PCSX2"));
-			}
-		}
-#elif defined(__APPLE__)
-		static constexpr char MAC_DATA_DIR[] = "Library/Application Support/PCSX2";
-		const char* home_dir = getenv("HOME");
-		if (home_dir)
-			DataRoot = Path::RealPath(Path::Combine(home_dir, MAC_DATA_DIR));
+				DataRoot = Path::RealPath(Path::Combine(home_dir, MAC_DATA_DIR));
 #endif
-	}
+			}
+			else // Otherwise use the custom path provided by the user
+				DataRoot = Path::RealPath(Path::Combine(EmuConfig.CustomDataPath, "PCSX2"));
+		}
 
-	// couldn't determine the data directory, or using portable mode? fallback to portable.
+	// Couldn't determine the data directory, or using portable mode? fallback to portable.
 	if (DataRoot.empty())
 	{
 #if defined(__linux__)
-		// special check if we're on appimage
+		// Special check if we're on appimage
 		// always make sure that DataRoot
 		// is adjacent next to the appimage
 		if (getenv("APPIMAGE"))
@@ -2254,10 +2261,10 @@ bool EmuFolders::SetDataDirectory(Error* error)
 #endif
 	}
 
-	// inis is always below the data root
+	// Inis is always below the data root
 	Settings = Path::Combine(DataRoot, "inis");
 
-	// make sure it exists
+	// Make sure it exists
 	Console.WriteLnFmt("DataRoot Directory: {}", DataRoot);
 	return (FileSystem::EnsureDirectoryExists(DataRoot.c_str(), false, error) &&
 			FileSystem::EnsureDirectoryExists(Settings.c_str(), false, error));
