@@ -116,7 +116,7 @@ __forceinline_odr GSVector4i::GSVector4i(const GSVector4& v, bool truncate)
 	m = truncate ? _mm_cvttps_epi32(v) : _mm_cvtps_epi32(v);
 #elif defined(ARCH_ARM64)
 	// GS thread uses default (nearest) rounding.
-	v4s = truncate ? vcvtq_s32_f32(v.v4s) : vcvtnq_u32_f32(v.v4s);
+	v4s = truncate ? vcvtq_s32_f32(v.v4s) : vreinterpretq_s32_u32(vcvtnq_u32_f32(v.v4s));
 #endif
 }
 

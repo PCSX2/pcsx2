@@ -2717,7 +2717,7 @@ void ImGuiFullscreen::DrawInputDialog()
 
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
 
-		static auto input_callback = [](ImGuiInputTextCallbackData* data) -> int {
+		static const ImGuiInputTextCallback input_callback = [](ImGuiInputTextCallbackData* data) -> int {
 			InputFilterType* filter_type = static_cast<InputFilterType*>(data->UserData);
 
 			if (data->EventFlag == ImGuiInputTextFlags_CallbackCharFilter) {
