@@ -41,6 +41,14 @@ if defined BUILD_FFMPEG (
   set BUILD_FFMPEG=0
 )
 
+rem librashader needs to be built with cargo and we won't want to force everyone to have 
+rem cargo installed just for that, so make it optional for now.
+if defined BUILD_LIBRASHADER (
+  echo BUILD_LIBRASHADER=%BUILD_LIBRASHADER%
+) else (
+  set BUILD_LIBRASHADER=0
+)
+
 pushd %~dp0
 set "SCRIPTDIR=%CD%"
 cd ..\..\..\..
@@ -90,6 +98,7 @@ set KDDOCKWIDGETS=2.4.0
 set PLUTOVG=1.3.2
 set PLUTOSVG=0.0.7
 set RAPIDYAML=0.12.1
+set LIBRASHADER=0.11.3
 
 set SHADERC=2026.2
 set SHADERC_GLSLANG=275822a6261ee689aadb1da5f09a0ec2f058685c
@@ -98,6 +107,8 @@ set SHADERC_SPIRVTOOLS=6337eb62cadd7d124ac6789bf39c0f71148f0a73
 
 set AGILITYSDK=1.619.2
 set DXHEADERS=1.619.1
+set DXC_TAG=v1.9.2602.24
+set DXC_ASSET=2026_05_27
 
 call :downloadfile "qtbase-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtbase-everywhere-src-%QT%.zip" 3529cc37297a5a7aae4486843b9fd41c30df1d79a770f85e240b537dcc327ca5 || goto error
 call :downloadfile "qtimageformats-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtimageformats-everywhere-src-%QT%.zip" 37fba768f2780580dfae535ad6654cb9dc0bf2272e71b9b9781988de9ed0dac0 || goto error
@@ -131,12 +142,22 @@ call :downloadfile "plutovg-%PLUTOVG%.zip" "https://github.com/sammycage/plutovg
 call :downloadfile "plutosvg-%PLUTOSVG%.zip" "https://github.com/sammycage/plutosvg/archive/v%PLUTOSVG%.zip" 82dee2c57ad712bdd6d6d81d3e76249d89caa4b5a4214353660fd5adff12201a || goto error
 call :downloadfile "agility-sdk-%AGILITYSDK%.nupkg" "https://www.nuget.org/api/v2/package/Microsoft.Direct3D.D3D12/%AGILITYSDK%" eb92d90bb23b2ec23410c41d791e41dbdbec942ab946924d1fdcb31eac6f0735 || goto error
 call :downloadfile "DirectX-Headers-%DXHEADERS%.zip" "https://github.com/microsoft/DirectX-Headers/archive/v%DXHEADERS%.zip" 9eb8b102a90a42e4ea72a825f7d249d55ec90d164f030966c9b7784b93374927 || goto error
+call :downloadfile "dxc_%DXC_ASSET%.zip" "https://github.com/microsoft/DirectXShaderCompiler/releases/download/%DXC_TAG%/dxc_%DXC_ASSET%.zip" cf658aacf070d3045e31b8f1f8a696c2945f37c1095019481ef7c513368db3b4 || goto error
 call :downloadfile "rapidyaml-%RAPIDYAML%-src.zip" "https://github.com/biojppm/rapidyaml/releases/download/v%RAPIDYAML%/rapidyaml-%RAPIDYAML%-src.zip" 96276f55b9fa7837ac8f3f72fd52965879cbb5d5d2e6af548c69a177fb078304 || goto error
+call :downloadfile "librashader-v%LIBRASHADER%.zip" "https://github.com/SnowflakePowered/librashader/archive/refs/tags/librashader-v%LIBRASHADER%.zip" 0493f5dd948af5f9bc723eec40f408eaa205b6cf06a6f260cf28025a0051b43b || goto error
 
 call :downloadfile "shaderc-%SHADERC%.zip" "https://github.com/google/shaderc/archive/refs/tags/v%SHADERC%.zip" f9401cc5cb36c276cd1e072b6595dbd728148e8dba389e50f7339e2d388dbc08 || goto error
 call :downloadfile "shaderc-glslang-%SHADERC_GLSLANG%.zip" "https://github.com/KhronosGroup/glslang/archive/%SHADERC_GLSLANG%.zip" 2b63189efad0348d88d410a5e12ec550a612e0b6ceef64624b8f45491269fb9c || goto error
 call :downloadfile "shaderc-spirv-headers-%SHADERC_SPIRVHEADERS%.zip" "https://github.com/KhronosGroup/SPIRV-Headers/archive/%SHADERC_SPIRVHEADERS%.zip" d2f071e94c081f5a4606559770ebf1f7d1eac92a1def0c3e10609844aa8b69b2 || goto error
 call :downloadfile "shaderc-spirv-tools-%SHADERC_SPIRVTOOLS%.zip" "https://github.com/KhronosGroup/SPIRV-Tools/archive/%SHADERC_SPIRVTOOLS%.zip" 4011be89aa73e3461c9deef73936a62c79a3097590c5135d058041cc9fb99c6f || goto error
+
+if %BUILD_LIBRASHADER%==1 (
+  where cargo /q
+  if not !ERRORLEVEL!==0 (
+    echo Rust cargo not found in PATH, skipping librashader build.
+    set BUILD_LIBRASHADER=0
+  )
+)
 
 if %DEBUG%==1 (
   echo Building debug and release libraries...
@@ -494,6 +515,49 @@ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INST
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
 cd .. || goto error
+
+if %BUILD_LIBRASHADER%==1 (
+  echo Building librashader...
+  rmdir /S /Q "librashader-librashader-v%LIBRASHADER%"
+  %SEVENZIP% x "librashader-v%LIBRASHADER%.zip" || goto error
+  cd "librashader-librashader-v%LIBRASHADER%" || goto error
+  cargo run -p librashader-build-script -- --profile optimized --stable -- --no-default-features --features runtime-opengl,runtime-d3d11,runtime-d3d12,runtime-vulkan || goto error
+  if not exist "%INSTALLDIR%\include\librashader" mkdir "%INSTALLDIR%\include\librashader" || goto error
+  copy "include\librashader.h" "%INSTALLDIR%\include\librashader\librashader.h" || goto error
+  copy "include\librashader_ld.h" "%INSTALLDIR%\include\librashader\librashader_ld.h" || goto error
+  if not exist "%INSTALLDIR%\lib" mkdir "%INSTALLDIR%\lib" || goto error
+  if exist "target\optimized\librashader.dll.lib" (
+    copy "target\optimized\librashader.dll.lib" "%INSTALLDIR%\lib\librashader.lib" || goto error
+  ) else if exist "target\optimized\librashader.lib" (
+    copy "target\optimized\librashader.lib" "%INSTALLDIR%\lib\librashader.lib" || goto error
+  ) else (
+    echo librashader import library not found.
+    goto error
+  )
+  if not exist "%INSTALLDIR%\bin" mkdir "%INSTALLDIR%\bin" || goto error
+  rem Move the DLL/PDB to librashader_capi.* to match the DLL name baked into the import lib.
+  if exist "target\optimized\librashader.dll" move /Y "target\optimized\librashader.dll" "%INSTALLDIR%\bin\librashader_capi.dll" || goto error
+  if exist "target\optimized\librashader.pdb" move /Y "target\optimized\librashader.pdb" "%INSTALLDIR%\bin\librashader_capi.pdb" || goto error
+  cd .. || goto error
+
+  rmdir /S /Q "dxc_%DXC_ASSET%"
+  %SEVENZIP% x -o"dxc_%DXC_ASSET%" "dxc_%DXC_ASSET%.zip" || goto error
+  set "LIBRASHADER_DXC_DIR="
+  for %%D in (
+    "dxc_%DXC_ASSET%\bin\x64"
+    "dxc_%DXC_ASSET%\bin\arm64"
+    "dxc_%DXC_ASSET%\bin"
+  ) do (
+    if not defined LIBRASHADER_DXC_DIR if exist "%%~D\dxcompiler.dll" set "LIBRASHADER_DXC_DIR=%%~D"
+  )
+  if not defined LIBRASHADER_DXC_DIR (
+    echo Failed to locate dxcompiler.dll in dxc_%DXC_ASSET%.zip.
+    goto error
+  )
+  copy "!LIBRASHADER_DXC_DIR!\dxcompiler.dll" "%INSTALLDIR%\bin\dxcompiler.dll" || goto error
+) else (
+  echo Skipping librashader build.
+)
 
 echo Unpacking Agility SDK
 rmdir /S /Q "agility-sdk-%AGILITYSDK%"
