@@ -934,6 +934,17 @@ void Achievements::UpdateRichPresence(std::unique_lock<std::recursive_mutex>& lo
 	lock.lock();
 }
 
+void Achievements::PlayAchievementSound(bool is_specific_sound_enabled, const std::string& custom_sound_name, const std::string& default_sound_name)
+{
+	if (!EmuConfig.Achievements.SoundEffects || !is_specific_sound_enabled)
+		return;
+
+	if (custom_sound_name.empty() || !FileSystem::FileExists(custom_sound_name.c_str()))
+		Common::PlaySoundAsync(Path::Combine(EmuFolders::Resources, default_sound_name).c_str());
+	else
+		Common::PlaySoundAsync(custom_sound_name.c_str());
+}
+
 void Achievements::GameChanged(u32 disc_crc, u32 crc)
 {
 	std::unique_lock lock(s_achievements_mutex);
@@ -1151,13 +1162,7 @@ void Achievements::DisplayAchievementSummary()
 			}
 		});
 	}
-
-	if (EmuConfig.Achievements.SoundEffects && EmuConfig.Achievements.InfoSound)
-		Common::PlaySoundAsync(
-			(EmuConfig.Achievements.InfoSoundName.empty()
-				? Path::Combine(EmuFolders::Resources, DEFAULT_INFO_SOUND_NAME)
-				: EmuConfig.Achievements.InfoSoundName).c_str()
-		);
+	Achievements::PlayAchievementSound(EmuConfig.Achievements.InfoSound, EmuConfig.Achievements.InfoSoundName, DEFAULT_INFO_SOUND_NAME);
 }
 
 void Achievements::DisplayHardcoreDeferredMessage()
@@ -1207,13 +1212,7 @@ void Achievements::HandleUnlockEvent(const rc_client_event_t* event)
 					std::move(title), std::move(summary), std::move(badge_path));
 			});
 	}
-
-	if (EmuConfig.Achievements.SoundEffects && EmuConfig.Achievements.UnlockSound)
-		Common::PlaySoundAsync(
-			(EmuConfig.Achievements.UnlockSoundName.empty()
-				? Path::Combine(EmuFolders::Resources, DEFAULT_UNLOCK_SOUND_NAME)
-				: EmuConfig.Achievements.UnlockSoundName).c_str()
-		);
+	Achievements::PlayAchievementSound(EmuConfig.Achievements.UnlockSound, EmuConfig.Achievements.UnlockSoundName, DEFAULT_UNLOCK_SOUND_NAME);
 }
 
 void Achievements::HandleGameCompleteEvent(const rc_client_event_t* event)
@@ -1332,13 +1331,7 @@ void Achievements::HandleLeaderboardSubmittedEvent(const rc_client_event_t* even
 			}
 		});
 	}
-
-	if (EmuConfig.Achievements.SoundEffects && EmuConfig.Achievements.LBSubmitSound)
-		Common::PlaySoundAsync(
-			(EmuConfig.Achievements.LBSubmitSoundName.empty()
-				? Path::Combine(EmuFolders::Resources, DEFAULT_LBSUBMIT_SOUND_NAME)
-				: EmuConfig.Achievements.LBSubmitSoundName).c_str()
-		);
+	Achievements::PlayAchievementSound(EmuConfig.Achievements.LBSubmitSound, EmuConfig.Achievements.LBSubmitSoundName, DEFAULT_LBSUBMIT_SOUND_NAME);
 }
 
 void Achievements::HandleLeaderboardScoreboardEvent(const rc_client_event_t* event)
