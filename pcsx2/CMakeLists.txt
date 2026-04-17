@@ -662,6 +662,10 @@ if(USE_VULKAN)
 	target_include_directories(PCSX2_FLAGS INTERFACE ${SHADERC_INCLUDE_DIR})
 endif()
 
+if(USE_LIBRASHADER)
+	target_link_libraries(PCSX2_FLAGS INTERFACE Librashader::Librashader)
+endif()
+
 set(pcsx2GSMetalShaders
 	GS/Renderers/Metal/cas.metal
 	GS/Renderers/Metal/convert.metal
@@ -1332,6 +1336,9 @@ function(setup_main_executable target)
 			"${DEPS_BINDIR}/swscale-*.dll"
 			"${DEPS_BINDIR}/swresample-*.dll"
 		)
+		if(USE_LIBRASHADER)
+			list(APPEND OPT_DEPS_FULL_PATHS "${DEPS_BINDIR}/librashader_capi.dll")
+		endif()
 		install(FILES ${OPT_DEPS_FULL_PATHS} DESTINATION "${CMAKE_SOURCE_DIR}/bin" OPTIONAL)
 
 		set(OPT_DEPS_TO_COPY ${OPT_DEPS_FULL_PATHS})
