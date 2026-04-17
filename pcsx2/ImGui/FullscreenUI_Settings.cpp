@@ -1778,6 +1778,7 @@ void FullscreenUI::DrawSettingsWindow()
 			ICON_PF_MICROCHIP,
 			ICON_PF_GEARS_OPTIONS_SETTINGS,
 			ICON_PF_PICTURE,
+			ICON_FA_WAND_MAGIC_SPARKLES,
 			ICON_FA_GAUGE,
 			ICON_PF_SOUND,
 			ICON_PF_MEMORY_CARD,
@@ -1794,6 +1795,7 @@ void FullscreenUI::DrawSettingsWindow()
 			ICON_FA_BANDAGE,
 			ICON_PF_INFINITY,
 			ICON_PF_PICTURE,
+			ICON_FA_WAND_MAGIC_SPARKLES,
 			ICON_FA_GAUGE,
 			ICON_PF_SOUND,
 			ICON_PF_MEMORY_CARD,
@@ -1804,6 +1806,7 @@ void FullscreenUI::DrawSettingsWindow()
 			SettingsPage::BIOS,
 			SettingsPage::Emulation,
 			SettingsPage::Graphics,
+			SettingsPage::PostProcessing,
 			SettingsPage::OSD,
 			SettingsPage::Audio,
 			SettingsPage::MemoryCard,
@@ -1820,6 +1823,7 @@ void FullscreenUI::DrawSettingsWindow()
 			SettingsPage::Patches,
 			SettingsPage::Cheats,
 			SettingsPage::Graphics,
+			SettingsPage::PostProcessing,
 			SettingsPage::OSD,
 			SettingsPage::Audio,
 			SettingsPage::MemoryCard,
@@ -1831,6 +1835,7 @@ void FullscreenUI::DrawSettingsWindow()
 			FSUI_NSTR("BIOS Settings"),
 			FSUI_NSTR("Emulation Settings"),
 			FSUI_NSTR("Graphics Settings"),
+			FSUI_NSTR("Post Processing Settings"),
 			FSUI_NSTR("On-Screen Display Settings"),
 			FSUI_NSTR("Audio Settings"),
 			FSUI_NSTR("Memory Card Settings"),
@@ -1956,6 +1961,10 @@ void FullscreenUI::DrawSettingsWindow()
 
 			case SettingsPage::Graphics:
 				DrawGraphicsSettingsPage(bsi, show_advanced_settings);
+				break;
+
+			case SettingsPage::PostProcessing:
+				DrawPostProcessingSettingsPage();
 				break;
 
 			case SettingsPage::OSD:
@@ -3247,52 +3256,6 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 			"DumpTexturesWithFMVActive", false, dumping_active);
 	}
 
-	MenuHeading(FSUI_CSTR("Post-Processing"));
-	{
-		static constexpr const char* s_cas_options[] = {
-			FSUI_NSTR("None (Default)"),
-			FSUI_NSTR("Sharpen Only (Internal Resolution)"),
-			FSUI_NSTR("Sharpen and Resize (Display Resolution)"),
-		};
-		const bool cas_active = (GetEffectiveIntSetting(bsi, "EmuCore/GS", "CASMode", 0) != static_cast<int>(GSCASMode::Disabled));
-
-		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_EYE, "FXAA"), FSUI_CSTR("Enables FXAA post-processing shader."), "EmuCore/GS", "fxaa", false);
-		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_SUN, "Contrast Adaptive Sharpening"), FSUI_CSTR("Enables FidelityFX Contrast Adaptive Sharpening."),
-			"EmuCore/GS", "CASMode", static_cast<int>(GSCASMode::Disabled), s_cas_options, std::size(s_cas_options), true);
-		DrawIntSpinBoxSetting(bsi, FSUI_ICONSTR(ICON_FA_PENCIL, "CAS Sharpness"),
-			FSUI_CSTR("Determines the intensity the sharpening effect in CAS post-processing."), "EmuCore/GS", "CASSharpness", 50, 0, 100,
-			1, FSUI_CSTR("%d%%"), cas_active);
-	}
-
-	MenuHeading(FSUI_CSTR("Filters"));
-	{
-		const bool shadeboost_active = GetEffectiveBoolSetting(bsi, "EmuCore/GS", "ShadeBoost", false);
-
-		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_GEM, "Shade Boost"), FSUI_CSTR("Enables brightness/contrast/gamma/saturation adjustment."), "EmuCore/GS",
-			"ShadeBoost", false);
-		DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_SUN, "Shade Boost Brightness"), FSUI_CSTR("Adjusts brightness. 50 is normal."), "EmuCore/GS",
-			"ShadeBoost_Brightness", 50, 1, 100, "%d", shadeboost_active);
-		DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_LIGHTBULB, "Shade Boost Contrast"), FSUI_CSTR("Adjusts contrast. 50 is normal."), "EmuCore/GS",
-			"ShadeBoost_Contrast", 50, 1, 100, "%d", shadeboost_active);
-		DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_DROPLET_SLASH, "Shade Boost Gamma"), FSUI_CSTR("Adjusts gamma. 50 is normal."), "EmuCore/GS",
-			"ShadeBoost_Gamma", 50, 1, 100, "%d", shadeboost_active);
-		DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_DROPLET, "Shade Boost Saturation"), FSUI_CSTR("Adjusts saturation. 50 is normal."), "EmuCore/GS",
-			"ShadeBoost_Saturation", 50, 1, 100, "%d", shadeboost_active);
-
-		static constexpr const char* s_tv_shaders[] = {
-			FSUI_NSTR("None (Default)"),
-			FSUI_NSTR("Scanline Filter"),
-			FSUI_NSTR("Diagonal Filter"),
-			FSUI_NSTR("Triangular Filter"),
-			FSUI_NSTR("Wave Filter"),
-			FSUI_NSTR("Lottes CRT"),
-			FSUI_NSTR("4xRGSS"),
-			FSUI_NSTR("NxAGSS"),
-		};
-		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_TV, "TV Shaders"), FSUI_CSTR("Applies a shader which replicates the visual effects of different styles of television set."), "EmuCore/GS", "TVShader", 0,
-			s_tv_shaders, std::size(s_tv_shaders), true);
-	}
-
 	static constexpr const char* s_gsdump_compression[] = {
 		FSUI_NSTR("Uncompressed"),
 		FSUI_NSTR("LZMA (xz)"),
@@ -3346,6 +3309,61 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 			"EmuCore/GS", "FrameRateNTSC", 59.94f, 10.0f, 300.0f, "%.2f Hz");
 		DrawFloatRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_TV, "PAL Frame Rate"), FSUI_CSTR("Determines what frame rate PAL games run at."),
 			"EmuCore/GS", "FrameRatePAL", 50.0f, 10.0f, 300.0f, "%.2f Hz");
+	}
+
+	EndMenuButtons();
+}
+
+void FullscreenUI::DrawPostProcessingSettingsPage()
+{
+	SettingsInterface* bsi = GetEditingSettingsInterface();
+
+	BeginMenuButtons();
+
+	MenuHeading(FSUI_CSTR("Post-Processing"));
+	{
+		static constexpr const char* s_cas_options[] = {
+			FSUI_NSTR("None (Default)"),
+			FSUI_NSTR("Sharpen Only (Internal Resolution)"),
+			FSUI_NSTR("Sharpen and Resize (Display Resolution)"),
+		};
+		const bool cas_active = (GetEffectiveIntSetting(bsi, "EmuCore/GS", "CASMode", 0) != static_cast<int>(GSCASMode::Disabled));
+
+		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_EYE, "FXAA"), FSUI_CSTR("Enables FXAA post-processing shader."), "EmuCore/GS", "fxaa", false);
+		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_SUN, "Contrast Adaptive Sharpening"), FSUI_CSTR("Enables FidelityFX Contrast Adaptive Sharpening."),
+			"EmuCore/GS", "CASMode", static_cast<int>(GSCASMode::Disabled), s_cas_options, std::size(s_cas_options), true);
+		DrawIntSpinBoxSetting(bsi, FSUI_ICONSTR(ICON_FA_PENCIL, "CAS Sharpness"),
+			FSUI_CSTR("Determines the intensity the sharpening effect in CAS post-processing."), "EmuCore/GS", "CASSharpness", 50, 0, 100,
+			1, FSUI_CSTR("%d%%"), cas_active);
+	}
+
+	MenuHeading(FSUI_CSTR("Filters"));
+	{
+		const bool shadeboost_active = GetEffectiveBoolSetting(bsi, "EmuCore/GS", "ShadeBoost", false);
+
+		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_GEM, "Shade Boost"), FSUI_CSTR("Enables brightness/contrast/gamma/saturation adjustment."), "EmuCore/GS",
+			"ShadeBoost", false);
+		DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_SUN, "Shade Boost Brightness"), FSUI_CSTR("Adjusts brightness. 50 is normal."), "EmuCore/GS",
+			"ShadeBoost_Brightness", 50, 1, 100, "%d", shadeboost_active);
+		DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_LIGHTBULB, "Shade Boost Contrast"), FSUI_CSTR("Adjusts contrast. 50 is normal."), "EmuCore/GS",
+			"ShadeBoost_Contrast", 50, 1, 100, "%d", shadeboost_active);
+		DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_DROPLET_SLASH, "Shade Boost Gamma"), FSUI_CSTR("Adjusts gamma. 50 is normal."), "EmuCore/GS",
+			"ShadeBoost_Gamma", 50, 1, 100, "%d", shadeboost_active);
+		DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_DROPLET, "Shade Boost Saturation"), FSUI_CSTR("Adjusts saturation. 50 is normal."), "EmuCore/GS",
+			"ShadeBoost_Saturation", 50, 1, 100, "%d", shadeboost_active);
+
+		static constexpr const char* s_tv_shaders[] = {
+			FSUI_NSTR("None (Default)"),
+			FSUI_NSTR("Scanline Filter"),
+			FSUI_NSTR("Diagonal Filter"),
+			FSUI_NSTR("Triangular Filter"),
+			FSUI_NSTR("Wave Filter"),
+			FSUI_NSTR("Lottes CRT"),
+			FSUI_NSTR("4xRGSS"),
+			FSUI_NSTR("NxAGSS"),
+		};
+		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_TV, "TV Shaders"), FSUI_CSTR("Applies a shader which replicates the visual effects of different styles of television set."), "EmuCore/GS", "TVShader", 0,
+			s_tv_shaders, std::size(s_tv_shaders), true);
 	}
 
 	EndMenuButtons();
