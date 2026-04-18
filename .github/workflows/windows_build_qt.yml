@@ -150,7 +150,7 @@ jobs:
             cmake --build build --config Release || exit /b
             cmake --install build --config Release || exit /b
           ) else (
-            msbuild "PCSX2_qt.sln" /m /v:m /p:Configuration="${{ inputs.configuration }}" /p:Platform="${{ inputs.platform }}"
+            msbuild "PCSX2_qt.sln" /m /v:m /p:Configuration="${{ inputs.configuration }}" /p:Platform="${{ inputs.platform }}" || exit /b
           )
           REM We can use Segoe UI Emoji so we don't need to bundle this
           del bin\resources\fonts\Twemoji*
