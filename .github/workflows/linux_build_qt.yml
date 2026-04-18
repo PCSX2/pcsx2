@@ -163,6 +163,12 @@ jobs:
         working-directory: ./build
         run: ninja unittests
 
+      - name: Clean Caches
+        run: |
+          ccache -s
+          ccache --evict-older-than 1d
+          ccache -s
+
       - name: Package AppImage
         if: inputs.buildAppImage == true
         env:
