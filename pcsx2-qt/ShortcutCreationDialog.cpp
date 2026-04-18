@@ -89,7 +89,7 @@ ShortcutCreationDialog::ShortcutCreationDialog(QWidget* parent, const QString& t
 			}
 
 			m_ui.iconPath->setText(Path::ToNativePath(icon_file.toStdString()).c_str());
-			m_ui.iconPreview->setPixmap(pixmap.scaled(m_ui.iconPreview->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+			m_ui.iconPreview->setPixmap(pixmap.scaled(m_ui.iconPreview->size(), Qt::KeepAspectRatio, Qt::FastTransformation));
 			m_ui.resetIconButton->setEnabled(true);
 		}
 	});
