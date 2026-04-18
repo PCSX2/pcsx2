@@ -178,7 +178,7 @@ Open het later vanuit Instellingen → Open ARMSX2 map.</string>
     <string name="settings_osc_timeout_never">Schermbediening verbergen na: nooit</string>
     <string name="settings_osc_never_hide">Schermbediening nooit verbergen</string>
     <string name="settings_upscale_default">Opschalen: 1x</string>
-    <string name="settings_upscale_value">Opschalen: %1$dx</string>
+    <string name="settings_upscale_value">Upscale: %1$sx</string>
     <string name="settings_texture_filtering">Textuurfiltering</string>
     <string name="settings_interlace_mode">Interlacingmodus</string>
     <string name="settings_cas_mode">CAS-modus</string>
