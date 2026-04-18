@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="renderers">
-        <item>Автоматично</item>
+        <item>Auto</item>
         <item>OpenGL</item>
         <item>Програмне забезпечення</item>
         <item>Vulkan</item>
@@ -78,9 +78,9 @@
         <item>10:7</item>
     </string-array>
     <string-array name="resolution_scales">
-        <item>0.25x</item>
+        <item>0.25х</item>
         <item>0.5x</item>
-        <item>0.75x</item>
+        <item>0.75х</item>
         <item>1x</item>
         <item>2x</item>
         <item>3x</item>
