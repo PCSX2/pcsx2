@@ -178,7 +178,7 @@ Aprilo più tardi da Impostazioni → Apri la directory ARMSX2.</string>
     <string name="settings_osc_timeout_never">Timeout controlli su schermo: mai</string>
     <string name="settings_osc_never_hide">Non nascondere mai i controlli sullo schermo</string>
     <string name="settings_upscale_default">Upscale: 1x</string>
-    <string name="settings_upscale_value">Upscale: %1$dx</string>
+    <string name="settings_upscale_value">Upscale: %1$sx</string>
     <string name="settings_texture_filtering">Filtraggio texture</string>
     <string name="settings_interlace_mode">Modalità Interlacciamento</string>
     <string name="settings_cas_mode">CAS Mode</string>
