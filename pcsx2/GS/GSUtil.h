@@ -28,6 +28,8 @@ public:
 	static const char* GetACName(u32 ac);
 	static const char* GetPerfMonCounterName(GSPerfMon::counter_t counter, bool hw = true);
 
+	static bool IsValidPSM(int psm);
+
 	static const u32* HasSharedBitsPtr(u32 dpsm);
 	static bool HasSharedBits(u32 spsm, const u32* ptr);
 	static bool HasSharedBits(u32 spsm, u32 dpsm);
